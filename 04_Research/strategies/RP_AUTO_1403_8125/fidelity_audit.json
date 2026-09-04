@@ -1,0 +1,93 @@
+{
+  "verdict": "misdeclared",
+  "undeclared_changes": [
+    "[portfolio] 논문 §3.2 는 basket 을 형성 시 EW 로 구성하고 'After 6 months (weeks) of the holding period, each basket is liquidated' — 즉 6개월 수명을 채우고 청산한다. 구현은 이미 형성된 basket 의 구성원을 **보유월마다 유니버스 멤버십으로 다시 걸러** 수명 중간에 부분 청산하고, 풀린 비중을 재배분도 재정규화도 하지 않는다(run_paper_replication.R:252 `.apply_universe(PORTFOLIO[Date >= start_date])` — 시그널일 K200/KQ150 멤버십으로 inner-join). 결과: 논문의 dollar-balanced W−L 스프레드가 깨진다. 2005-02-01 실현 순노출 = +1/96(아래 counterexample). FIDELITY.changed ① 은 '유니버스 KOSPI200 → K200∪KQ150(PIT 시변 멤버십)' 만 선언하고 **형성 후 basket 의 중도 가지치기는 선언하지 않는다**. engine.R:94(C6) 은 오히려 '유니버스 = 각 f 의 멤버십' 이라 적어 형성 시점 1회 적용을 명시한다 — 산출물은 그 진술과 다르다.",
+    "[portfolio] 논문 §3.2 는 'Each group is constructed as an equal-weighted portfolio' + 6개월 후 청산만 말한다(형성 시 1회 EW · J-T 표준은 수명 중 무리밸). 구현은 매월 전 basket 을 **형성시 EW 로 되돌린다** — 엔진이 매 월말 코호트별 ±1/(6·n_decile) 을 재발행하고(engine.R:214-216, 239) 하네스가 그 target 으로 재매매하므로(replication_harness.R:83, 91) 6개월 basket 이 사실상 월간 리밸런싱된다. 실증: A000070 의 target_weight 가 2005-02-01 과 2005-03-02 에 0.0185185185185185(=1/54)로 **비트 단위 동일** — 2월 수익만큼 drift 했어야 할 값이 그대로다(04_holdings.csv 2행 vs 85행). FIDELITY.changed 의 '논문이 침묵해 규약을 정한 4건' 에 이 항목은 없다. 크기는 작다 — 실측 Σ|Δw| ≈ 0.583/월로 순수 롤(2/6 ≈ 0.667)보다 오히려 낮아(netting 이 상쇄) 비용 영향은 2차다.",
+    "[cost] FIDELITY.json:7 'commission_paper': null 및 engine.R:44-45 주석은 '원문 전체에 비용 공제 없음(gross)'을 선언한다(원문 재대조로도 확인 — 논문 전체에 transaction cost/commission/slippage/bps/round-trip 언급이 참고문헌 [19] Lesmond et al. 1건뿐이고 본문 방법론·성과표에 비용 공제 서술이 없어 gross 해석이 맞다). 그런데 이 전략의 측정 산출물 stage_artifacts/replication/20260904_163647_18444/authoritative_remeasure.json:46 'commission_paper_bps': 15 는 '논문기준(paper_basis)'으로 라벨된 성과(cagr 6.785%·sharpe 0.301·mdd 63.19%, 47-52행)가 실제로는 15bps 비용을 공제해 계산됐음을 보여준다. 즉 병기된 '논문기준' 수치가 선언(gross/0bps)과 다른 비용가정(15bps)으로 산출됐고, 이 전환이 FIDELITY.changed 어디에도 선언돼 있지 않다. run_paper_replication.R:304 comm_paper <- commission_paper %||% 0 설계상 호출자가 commission_paper 인자를 명시 전달하지 않으면 0(gross)이 되어야 하는데, 이 런은 15bps 로 전달된 채 실행됐다.",
+    "[cost] L-code stage_artifacts/l_code/paper_replication/l_code_RP_20260904_163647_18444.json:6 lesson_text '논문기준 SR 0.30 vs 15bps SR 0.43' 은 두 수치가 서로 다른 비용가정을 비교하는 것처럼 서술하지만, run_paper_replication.R:304-309 로직상 comm_paper=0.0015(15bps) 이면 sim_grade <- sim_paper(동일 시뮬레이션)이 되어 두 수치는 사실상 **같은 15bps 시뮬레이션**에서 파생됐다(SR 차이 0.30 vs 0.43 은 .rp_paper_summary 의 월간-Sharpe(SharpeRatio.annualized, scale=12) 대 계약 06_metrics.csv 의 일간-Sharpe(mean/sd*sqrt(N), Charter v1.4 §12) 계산방식 차이일 뿐이다 — CAGR·MDD 가 두 수치 간 거의 동일한 것이 그 방증). 이 비교 서술은 비용 축이 아니라 계산방식 축의 차이를 비용 차이로 오인시킨다.",
+    "[undeclared] 논문 §3.2 는 바스켓을 형성 후 6개월 보유하고 그때 청산한다('After 6 months (weeks) of the holding period, each basket is liquidated') — 보유 중 지수 편출을 이유로 한 부분청산 규정이 없다. 구현은 매 보유월마다 유니버스 멤버십을 **재적용**해 이미 바스켓에 든 종목을 중도 탈락시킨다: engine.R:233-245 는 형성 시점에 고정된 코호트를 재검증 없이 합산하지만, FIDELITY.changed ③ 이 지목한 바로 그 줄 run_paper_replication.R:252 가 `.apply_universe(PORTFOLIO[Date >= start_date])` 를 호출하고, 그 함수(L228-231)는 `RAWDATA[Date %in% unique(dt$Date) & (K200==TRUE | KQ150==TRUE)]` 로 만든 명부와 **포트폴리오 Date(=보유월 말)** 기준 inner-join(merge) 한다. 그 시점 비회원(편출·상장폐지)은 행이 사라진다. FIDELITY.changed 에 없음 — ① 은 유니버스 '치환'만 선언하고 보유기간 중 재심사는 말하지 않으며, engine.R:94 는 오히려 '유니버스 = 각 f 의 K200/KQ150 멤버십'(=형성 시점)이라고 적는다.",
+    "[undeclared] 위 탈락분의 비중이 **재분배되지 않는다** — merge 는 행만 지우고 정규화 단계가 없다. 이는 엔진이 명시적으로 선언한 규약과도 어긋난다: FIDELITY.changed ④(d)와 engine.R:227 은 '고정 1/K 로만 나눈다 · 생존 코호트 재스케일 없음'을 코호트 결측에 한정해 선언했는데, 러너의 종목 단위 탈락은 그 선언의 정의역 밖에서 같은 종류의 노출 누수를 만든다. engine.R:214-216 은 코호트마다 롱합 +1 / 숏합 −1 로 순노출을 **정확히 0** 으로 보장하는데, 일부 행만 지워지면 그 균형이 깨져 전달된 장부의 순노출이 0 이 아니게 된다. FIDELITY.changed 에 없음.",
+    "[undeclared] FIDELITY.changed ③ 의 러너 줄 서술이 사실의 절반이다 — 'run_paper_replication.R:252 가 (기간 절단을) 적용' 이라고만 적었으나 그 줄은 기간 절단과 유니버스 재적용 **두 가지**를 한다. 기간 절단 부분은 실측 대조 결과 정확했다(252행 = `PORTFOLIO <- .apply_universe(PORTFOLIO[Date >= as.Date(start_date)])`). 선언이 지목한 줄을 열었을 때 선언에 없는 두 번째 효과가 나오는 형태다."
+  ],
+  "signal_mismatch": [],
+  "evidence": "[signal] arxiv.org/html/1403.8125v1 전문 대조(4회 교차질의). 식(1) 'MDD = max_{tau in (0,T)} ( max_{t in (0,tau)} ( P(t)-P(tau) ) )' + 'P(t) is the log-price at time t' · 식(2) 'MDD = -min_{tau in (0,T)} ( min_{t in (0,tau)} R(t,tau) )' · 회복 'The successive recovery to the maximum drawdown is defined by R = R(t*, T) where t* is the moment for the end of the maximum drawdown formation.' · 분해 'C = R_I + R_II + R_III = PP - MDD + R' + 'PP is the log-return during the pre-peak period.' · Table 1(Description on alternative selection rules using maximum drawdown and recovery) 7행 전수: C(1,1,1)/M(0,1,0)/R(0,0,1)/RM(0,1,1)/CM 'Cumulative return-MDD' 'more weights on MDD period' (1,2,1)/CR(1,1,2)/CMR(1,2,2) · Table 1 직전 문단 '...even when two assets have the same cumulative return, one with the larger maximum drawdown can be penalized in the ranking measure.'(부호 방향 확정) · Table 1 직후 'Taking weighted average with more weights on certain specific period is one way of the construction.' · §3.2 'Based on given selection rules during 6 months (weeks) of estimation period, assets in market universes are sorted in ascending order. In this study, most criteria will be used in increasing order except for the maximum drawdown. Then several ranking baskets are fomulated.' · 'The group 1 is for losers that exhibit the worst ranking scores and the last group is for the best performers in the selection rules.' · 'The winner group is at long (short) position and the loser group is at short (long) position.' · 'In the cases of the S&P 500 and KOSPI 200 universes, numbers of groups are 10.' · Table 3(monthly 6/6 momentum, KOSPI 200) CM mean 1.4330 / sd 7.0357 = 7규칙 중 최고(C 1.3305/6.8258 · M 1.0234 · R 0.3740 · RM 1.2803 · CR 1.1028 · CMR 1.3106) + 'The best strategy is the momentum portfolio by the composite rule of cumulative return and maximum drawdown. The monthly average return of 1.433% with the volatility of 7.036% is obtained by the CM portfolio...' · 표 목록 전수(Table 1~9) 확인 결과 (J,K) 조합은 6/6 단일 · §3.1/§3.2 전체에 winsorize/truncation/clipping/z-score/rank 정규화/최소관측 언급 0건. / [timing] §3.2: \"Based on given selection rules during 6 months (weeks) of estimation period, assets in market universes are sorted in ascending order.\" + \"After 6 months (weeks) of the holding period, each basket is liquidated. The portfolio is constructed at the beginning of every month, i.e. it is the overlapping portfolio.\" — KOSPI200 1.433%/7.036% 결과(Table 3 추정)는 monthly 변형. 원문은 skip period 를 언급하지 않는다(형성 종료 직후 보유 개시). / [universe] §3.1 (arxiv.org/html/1403.8125v1): 'The KOSPI 200 is a stock benchmark index... Historical price information and component-roster are downloaded from Korea Exchange. The period from January 2003 to December 2012 is considered.' / §3.2: 'Based on given selection rules during 6 months (weeks) of estimation period, assets in market universes are sorted in ascending order... In the cases of the S&P 500 and KOSPI 200 universes, numbers of groups are 10.' — 이 두 절 전체에 가격 하한·유동성·거래대금·금융주 제외·최소 종목수 스크린에 대한 언급이 전무함(WebFetch 전문 대조, 2회 교차질의 동일 결론). / [portfolio] 원문 전문 arxiv.org/html/1403.8125v1 §3.2 (methodology) 전 문장: 'In the cases of the S&P 500 and KOSPI 200 universes, numbers of groups are 10 and three baskets are formed for U.S. sector ETFs.' / 'The group 1 is for losers that exhibit the worst ranking scores and the last group is for the best performers in the selection rules.' / 'Each group is constructed as an equal-weighted portfolio.' / 'The winner group is at long (short) position and the loser group is at short (long) position.' / 'After 6 months (weeks) of the holding period, each basket is liquidated. The portfolio is constructed at the beginning of every month, i.e. it is the overlapping portfolio.' — Table 1(규칙 7종 C/M/R/RM/CM/CR/CMR 과 가중치 (1,1,1)…(1,2,2)) · Table 3 캡션 'Summary statistics and risk measures of monthly 6/6 momentum portfolios in South Korea KOSPI 200' 의 스프레드 행 라벨 = 'W – L'(월간 = 승자 롱, 패자 숏) · §4.1.2 'The best strategy is the momentum portfolio by the composite rule of cumulative return and maximum drawdown. The monthly average return of 1.433% with the volatility of 7.036% is obtained by the CM portfolio' · §3.1.1 'The KOSPI 200 is a stock benchmark index that is the value-weighted and sector-diversified index with 200 stocks' → 논문 데실 = 20종/그룹. 논문에 long-only 판·비중상한·VW 그룹 서술은 전무. / [cost] arxiv.org/html/1403.8125v1 전문 재대조: 거래비용/수수료/슬리피지/시장충격/bps/왕복비용에 대한 본문 서술 0건(참고문헌 [19] Lesmond et al. 1건 인용뿐, 자기 방법론에는 비용 미적용) — gross 해석이 옳다는 FIDELITY.json의 자체 선언과 일치. 다만 실측 산출물(authoritative_remeasure.json:46, l_code_RP_20260904_163647_18444.json:6)이 그 선언과 다른 비용(15bps)으로 '논문기준' 수치를 산출·유통한 것이 발견의 근거다. / [undeclared] 원문 https://arxiv.org/html/1403.8125v1 — §3.2: 'Based on given selection rules during 6 months (weeks) of estimation period, assets in market universes are sorted in ascending order... most criteria will be used in increasing order except for the maximum drawdown' / 'Each group is constructed as an equal-weighted portfolio. The winner group is at long (short) position and the loser group is at short (long) position. After 6 months (weeks) of the holding period, each basket is liquidated. The portfolio is constructed at the beginning of every month, i.e. it is the overlapping portfolio.' / 'numbers of groups are 10'. §3.1.1: 'Historical price information and component-roster are downloaded from Korea Exchange. The period from January 2003 to December 2012 is considered.' 식(1) MDD=max_τ(max_t(P(t)−P(τ))) · 식(2) MDD=−min_τ(min_t R(t,τ)) · C=R_I+R_II+R_III=PP−MDD+R. Table 1 = 7 규칙 C(1,1,1)/M(0,1,0)/R(0,0,1)/RM(0,1,1)/CM(1,2,1)/CR(1,1,2)/CMR(1,2,2). 전문 용어 검색: transaction cost·commission·slippage·liquidity·volume·turnover·filter·screen·winsorize·outlier·delisting·minimum number of stocks **전부 미등장** — 엔진이 장치를 덜어낸 방향은 이 부재가 뒷받침한다.",
+  "confidence": "medium",
+  "note": "축 팬아웃 6개(판독형 opus 3 · 대조형 sonnet 3) — 발견 7건. faithful/faithful/adapted/misdeclared/misdeclared/misdeclared",
+  "mode": "fanout",
+  "axis_verdicts": [
+    {
+      "axis": "signal",
+      "required": true,
+      "model": "opus",
+      "verdict": "faithful",
+      "admissible": true,
+      "reason": "",
+      "confidence": "high",
+      "checked": "① CM 가중치 대수 재도출: engine.R:204 score = 1*RI + 2*RII + 1*RIII, RII = path[ts]-path[tp] = -MDD(engine.R:144-150 에서 dd=path-cummax(path), ts=which.min(dd), tp=which.max(path[1:ts]) 로 항등) → score = path[n] - (path[tp]-path[ts]) = C - MDD, Table 1 표기 'Cumulative return-MDD' 와 산술 일치. 나머지 6규칙도 (R_I,R_II,R_III) 가중합 해석으로 이름과 전부 정합(RM=R-MDD, CR=C+R, CMR=C-MDD+R) → 가중치 적용면 해석 확정 ② 부호: 오름차순(engine.R:209) + 최상위 데실 롱/최하위 숏(engine.R:211-212) vs 원문 'group 1 is for losers'/'winner group is at long' 및 월간=모멘텀(W-L, 주간=반전 L-W) 분기 — 반전 0건, C13 수동 부호조작 0건. 'except for the maximum drawdown' 예외는 R_II=-MDD 부호로 흡수되며 원문의 penalize 예시가 이를 확증 ③ 룩백 창: 길이 6개월(engine.R:187-188 me_dates[k-6]) · 종점 f=월말 종가 포함, 스킵 없음 — Table 3 캡션 '6/6' 및 표 전수에서 타 (J,K) 부재 확인 ④ 표준화: 논문·엔진 모두 z/rank/winsorize/절단 0건, 원시 score 를 그대로 10등분(engine.R:210) ⑤ 로그 여부: 식(1)(2) log-price/log-return vs engine.R:143 log(cl)-log(cl[1]) 일치 ⑥ 회복 R 부호 유지(engine.R:151 path[n]-path[ts], 음수 허용) 대조.",
+      "counterexample": "구성했다 — 다만 선언돼 있어 판정을 움직이지 않는다. 형성일 f=2008-12-30, 창=(2008-06-30, 2008-12-30] (~123 거래일). 종목 X 가 2008-11-20 신규상장(또는 장기 거래정지 후 재개)이고 f 시점 KQ150 회원 + adv20(t-1)>=2e8 을 통과한다고 하자. engine.R:197-207 은 X 의 창 내 종가 ~28개만으로 경로를 세운다(커버리지 요건 없음 · .mdd_stats 의 하한은 n>=2 뿐). MDD 는 창에 대한 최댓값이므로 창을 자르면 약단조로 줄고, C 도 짧아질수록 0 으로 수축한다 → score=C-MDD 가 0 으로 끌려간다. 예: X 는 MDD~0.15 · C~+0.05 → score~-0.10 인 반면, 같은 창의 정상 편입종목 Y 는 MDD~0.55 · C~-0.45 → score~-1.00. 따라서 X 는 신호가 좋아서가 아니라 **룩백 창이 잘렸다는 이유만으로** 최상위 데실(롱)에 들어간다. 논문 설계에서는 순위 대상 자산이 6개월 추정창 경로를 온전히 갖는 것이 전제(§3.2 'during 6 months (weeks) of estimation period')라 이 배치가 성립하지 않는다. 방향성 편의다 — 횡단면 중앙 score<0 인 달(하락 국면)에서만 발화해 단기이력 종목을 승자 데실로 민다. ★단 FIDELITY.changed ④ 가 '창 커버리지 80% 제거 · 창 관측 커버리지는 거르지 않고 진단으로만 보고한다'로 명시 선언했고, 원문 §3.1/§3.2 에 커버리지·최소관측 요건이 실제로 전무하므로 misdeclared 가 아니다.",
+      "n_findings": 0
+    },
+    {
+      "axis": "timing",
+      "required": false,
+      "model": "sonnet",
+      "verdict": "faithful",
+      "admissible": true,
+      "reason": "",
+      "confidence": "high",
+      "checked": "engine.R:125-127 .FORM_M=6L/.HOLD=6L 상수 ↔ 원문 '6 months of estimation period'·'6 months of the holding period' 대조 · 스킵기간 부재 대조 · 월간 오버래핑 리밸 루프(engine.R:184, 233) ↔ 'portfolio is constructed at the beginning of every month' 대조 · 1/K 고정 가중(engine.R:239) — 원문은 오버래핑 코호트 집계 방식을 명시하지 않음(FIDELITY.changed (d) 에 이미 침묵 항목으로 정직 선언돼 있어 undeclared 아님)",
+      "counterexample": "구성하지 못했다 — J(형성)=6개월, K(보유)=6개월, 스킵=0, 리밸=월간 오버래핑이 원문과 engine.R 상수(.FORM_M=6L, .HOLD=6L, 리밸 루프가 매 me_dates[k]마다 실행)가 정확히 일치한다. 반례가 성립할 지점을 찾지 못했다.",
+      "n_findings": 0
+    },
+    {
+      "axis": "universe",
+      "required": false,
+      "model": "sonnet",
+      "verdict": "adapted",
+      "admissible": true,
+      "reason": "",
+      "confidence": "high",
+      "checked": "논문 §3.1 데이터 절(KOSPI200/S&P500 구성·기간·출처) + §3.2 방법론(정렬·10분위) 전문 대조 vs engine.R:190-195(멤버십+유동성 자격 게이트) 및 FIDELITY.json::changed — 가격하한/거래소상장/유동성/금융주제외 5항목 각각 확인",
+      "counterexample": "형성일 f 에 K200 회원이지만 adv20(t-1) < 2e8 KRW 인 종목 X 가 있다고 하자. 논문 규칙(§3.1: 'Historical price information and component-roster are downloaded from Korea Exchange' — 유동성·가격·회전 관련 사전 스크린 서술 전무)대로라면 X 는 그 달 횡단면(N)에 포함되어 CM-score 로 순위가 매겨지고 최하위/최상위 데실 배정 대상이 된다. engine.R:192-195 는 `ADV20_L1 >= .LIQ`(2e8) 를 자격 조건에 넣어 X 를 elig 에서 배제한다 — 논문판이면 X 를 포함해 N 이 다르고(따라서 ceiling(rank·10/N) 경계가 이동), X 가 극단 CM-score 를 가졌다면 롱/숏 다리 구성 자체가 달라진다. 이는 코드-레벨에서 구성 가능한 실제 반례이며(구성 못 한 것이 아님), 다만 FIDELITY.changed ②에 '유동성 하한 adv20(t-1)≥2e8 KRW 신설 — 논문은 유동성 필터 없음'으로 정직하게 선언돼 있어 misdeclared 는 아니다.",
+      "n_findings": 0
+    },
+    {
+      "axis": "portfolio",
+      "required": true,
+      "model": "opus",
+      "verdict": "misdeclared",
+      "admissible": true,
+      "reason": "",
+      "confidence": "high",
+      "checked": "그룹 수 10(§3.2 vs engine.R:127 .NDEC=10L, 등분할 ceiling(rank·10/N) 은 N 비배수에서도 그룹 간 차이 ≤1종 — 확인) · 롱숏 방향(승자=최상위 데실 롱 grp==10 / 패자=최하위 숏 grp==1, engine.R:211-212 vs Table 3 'W – L' 월간 모멘텀 — 일치) · 그룹 내 EW(engine.R:215-216 ±1/length — 일치) · 오버래핑 6 basket 고정 1/K(engine.R:235-239 vs §3.2 — 일치) · 2층 top-N 절단 부재(run_paper_replication.R:283-289 engine_direct 무절단 + replication_harness.R:83 무캡 → 종목수 곱셈 축소 없음 — 해당 없음) · 고정 축(long-only·≤25종) 충돌은 선언됨(01_strategy_spec.json n_max=187·has_short=true, 10_audit.csv holdings_cap 'replication profile — 상한 비적용', FIDELITY.kept '10-decile 롱숏') · netting 의 수익 등가성(Σ w_i r_i = r_W − r_L, 하네스 105행) · 레그 gross 균형 실측 2개 날짜 전수 합산 · 데실 크기 실측(2005 코호트 9·16·17·18·19종 — 논문 20종 대비 축소는 선언된 유니버스+유동성 축의 산술적 귀결) · target_weight drift 부재로 월간 EW 리셋 확인",
+      "counterexample": "2005-02-01(첫 리밸 · 04_holdings.csv 2~84행 = 83종). 롱 47종 Σw = +0.9540082847 · 숏 36종 Σw = −0.9435916179 → **순노출 +0.0104166668 = 정확히 1/96 = 1/(6×16)**, 즉 데실 16종짜리 코호트의 포지션 1개분. 엔진은 코호트마다 롱 합 +1 · 숏 합 −1 을 내고(engine.R:214-216) 상수 1/K 로만 나누므로(engine.R:239) **날짜별 ΣWeight ≡ 0** 이 구조적으로 보장된다 — 이 +1/96 은 엔진 밖에서 들어왔다. 엔진→WEIGHTS 사이 유일한 변형은 run_paper_replication.R:252 `.apply_universe` 이고(하네스는 replication_harness.R:83 `md <- W[Date == d]` 로 무가공 소비, 45행은 정확히 0 인 행만 제거), 따라서 제거된 행들의 순합 = −1/96 인 숏 포지션이 6개월 수명 중간에 사라졌다. 논문 Table 3(monthly 6/6 momentum, KOSPI 200)의 보고 대상은 균형 잡힌 'W – L' 스프레드다. ★대조군(내 합산 방법의 양성 대조): 2005-03-02(85~164행 = 80종)는 롱 Σ = +0.9559855522 · 숏 Σ = −0.9559855522 로 소수 10자리까지 **정확히 균형** — 같은 방법이 한 날짜에서는 0, 다른 날짜에서는 정확한 코호트 분수를 냈다. 즉 결손은 상시가 아니라 산발적이고, 그래서 요약 통계(n_max·Average_N_Holdings)로는 보이지 않는다. 양쪽 레그가 1.0 이 아니라 ~0.955 인 부분은 netting(코호트 간 롱·숏 상계)이며 이는 정확한 변환이다(Σ_i w_i r_i = r_W − r_L, 하네스 105행 Rg = GL·Lr − GS·Sr 가 이를 보존).",
+      "n_findings": 2
+    },
+    {
+      "axis": "cost",
+      "required": false,
+      "model": "sonnet",
+      "verdict": "misdeclared",
+      "admissible": true,
+      "reason": "",
+      "confidence": "high",
+      "checked": "engine.R 비용 관련 주석(44-45행) · FIDELITY.json commission_paper 필드 · run_paper_replication.R 의 comm_paper/paper_sum/sim_grade 로직(304-313행) · authoritative_remeasure.json paper_basis 블록 · L-code lesson_text · arxiv.org/html/1403.8125v1 원문 비용 언급 전수 재확인",
+      "counterexample": "authoritative_remeasure.json 의 paper_basis(commission_paper_bps=15 로 계산된 cagr 6.785%/sharpe 0.301/mdd 63.19%)를 FIDELITY.json 이 선언한 논문 실제 비용가정(gross, 0bps)으로 재계산하면 — 260개월간 매월 리밸런스에서 15bps 왕복비용을 전부 되돌려 받으므로 CAGR·Sharpe 는 이 병기값보다 명백히 높아진다. 즉 '논문 기준 성과를 병기'했다고 주장하는 지점에서 실제로는 병기값이 15bps 로 깎인 채 보고돼, 논문 원저자가 보고했을 gross 성과보다 낮은 수치가 '논문기준'이라는 이름으로 텔레그램·L-code·감사 원장에 유통된다. 반대로 이는 우리 15bps net 결과(SR 0.43)를 상대적으로 '논문기준'(SR 0.30)보다 우월해 보이게 만드는 방향으로 작동한다 — 실제로는 두 수치가 동일 비용가정이라 이 우월 비교 자체가 무의미하다.",
+      "n_findings": 2
+    },
+    {
+      "axis": "undeclared",
+      "required": true,
+      "model": "opus",
+      "verdict": "misdeclared",
+      "admissible": true,
+      "reason": "",
+      "confidence": "medium",
+      "checked": "engine.R 전 행을 코드→논문 방향으로 전수 대조: 상수 6종(.W=(1,2,1)/.FORM_M/.HOLD/.NDEC = Table 1·§3.2 원문 일치, .LIQ/.LIQ_WIN = changed ②) · .mdd_stats(L138-153) 의 path·dd·ts·tp·RI/RII/RIII 항등식이 C=PP−MDD+R 을 정확히 복원하는지(복원함, RII=dd[ts]=−MDD) · Table 1 가중 삼중항이 (R_I,R_II,R_III) 위에 서는지 7규칙 이름과 산술 일치로 교차검증(일치) · 형성창 (me_dates[k−6], f] = 6개월(L188) · 오름차순/데실10/최상위롱·최하위숏/EW(L209-216) · 고정 1/K 오버래핑·nc 정규화 부재(L239) · 워밍업 k≥12(L234) · engine.rejected1.R 대조로 자기신고가 '제거했다'고 한 5종(.DCAP=log(3) 절단·.COV=0.80·.NMIN=30·최소창 40일·nc 정규화) 이 실제로 전부 부재함을 확인 · changed ①②④(a~d)⑤ 가 코드에 실재하는지 역방향 확인(전부 실재, 하지 않은 변경을 신고한 항목 0건) · changed ③ 이 지목한 run_paper_replication.R:252 실물 확인 · TV=Close*Vol 의 단위가 KRW 인지(krx_build_rawdata.R:113 Vol=ACC_TRDVOL=주식수 → 단위 정합) · 러너 engine_direct 분기가 절단하지 않는지(L283-292, 경고만) · 04_holdings.csv 가중값 역산(0.0185185=1/(6·9), 0.0272904=1/(6·9)+1/(6·19), −0.0473856=2/(6·17)+1/(6·9)+1/(6·18))으로 코호트 합산·상계가 설계대로인지.",
+      "counterexample": "형성일 f_j 에 K200 회원이던 종목 X 가 CM score 최상위 데실에 들어 코호트 j 에 +1/(6·n_L) 로 편입된다(engine.R:210-216). f_j 이후 첫 6월 정기변경에서 X 가 K200 에서 편출되거나(또는 상장폐지로 RAWDATA 행 자체가 사라지거나) 한다. engine.R:233-245 는 코호트를 재검증하지 않으므로 X 를 j+1..j+5 월 장부에 그대로 실어 내보낸다. 그러나 run_paper_replication.R:252→L228-231 의 merge 가 **보유월 말 기준** 명부와 inner-join 하므로 X 의 행은 편출 직후 보유월부터 사라지고, 남은 보유월(최대 5개월)의 수익이 장부에서 빠지며 그 비중은 다른 종목에 재분배되지 않는다. 결과: 롱 그로스가 1 미만으로 내려가고 엔진이 정확히 0 으로 만든 순노출이 0 이 아니게 된다. 논문(§3.2)에서는 X 를 그 바스켓의 6개월 만기까지 보유한다. 방향성도 있다 — 편출·상장폐지 후보는 패자 데실(숏 다리)에 몰리므로 숏 북에서 더 자주 발화한다. ★크기는 미측정: 보유 CSV 의 날짜별 가중 합산을 시도했으나 집계 명령(Rscript/PowerShell 파이프)이 권한 차단되어 실행하지 못했다. 기전과 코드 경로는 확정, 영향 규모는 미측정이다. (정황: 10_audit.csv:10 `survivorship_bias_checked = WARN`.)",
+      "n_findings": 3
+    }
+  ],
+  "flags": [],
+  "merged_at": "2026-09-04T16:53:32+0900"
+}
