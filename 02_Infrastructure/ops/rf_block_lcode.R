@@ -79,7 +79,9 @@ rf_emit_block_lcode <- function(base_id, n_used, root = Sys.getenv("QM_ROOT",
 
   r <- tryCatch(emit_lcode(mode = "reinforcement",
       strategy_id = sprintf("%s_%s", base_id, bid),
-      grade = best$grade %||% "F", lesson_text = substr(lesson, 1, 900),
+      grade = best$grade %||% "F", # ★절단 없음 (도훈 지시 2026-09-04) — 구판은 규칙이 썰 교훈을 900자에서 잘랐다.
+      #   칸이 많은 블록일수록 뒤가 잘리므로, 정작 정보가 많은 블록에서 가장 많이 잎혀다.
+      lesson_text = lesson,
       metric_type = "backtested",
       next_probe = probes, source_paper = sp,
       portfolio_alpha_t = if (is.finite(best$port_t)) best$port_t else NULL,

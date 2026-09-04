@@ -79,11 +79,23 @@ lcm_materials <- function(base_id, block_id, out_p) {
     L <- c(L, "", sprintf("## 이 전략에 이미 쌓인 교훈 (%d블록) — 기전은 블록 사이에서 드러난다", length(pri)))
     for (b in names(pri)) {
       L <- c(L, sprintf("### %s", b),
-             sprintf("- 규칙 요약: %s", substr(as.character(pri[[b]]$lesson_text %||% ""), 1, 300)))
+             sprintf("- 규칙 요약: %s", as.character(pri[[b]]$lesson_text %||% "")))
       if (nzchar(as.character(pri[[b]]$mechanism %||% "")))
-        L <- c(L, sprintf("- 기전(앞서 적힌 것): %s", substr(as.character(pri[[b]]$mechanism), 1, 300)))
+        L <- c(L, sprintf("- 기전(앞서 적힌 것): %s", as.character(pri[[b]]$mechanism)))
       np <- pri[[b]]$next_probes %||% character(0)
-      if (length(np)) L <- c(L, sprintf("- 다음 탐침: %s", paste(as.character(np), collapse = " / ")))
+      if (length(np)) L <- c(L, sprintf("- 다음 탐침(규칙): %s", paste(as.character(np), collapse = " / ")))
+      # ★앞 블록이 내놓은 **처방**과 그 결과를 같이 준다 — 처방이 먹혔는지 안 먹혔는지가
+      #   다음 처방의 가장 좋은 재료다(생산자만 있고 소비자가 없는 계기를 만들지 않는다).
+      .pa <- pri[[b]]$next_block_actions
+      if (!is.null(.pa) && length(.pa)) {
+        .txt <- if (is.data.frame(.pa)) as.character(.pa$action) else
+                vapply(.pa, function(x) as.character(x$action %||% "")[1], character(1))
+        L <- c(L, sprintf("- 앞서 내놓은 처방: %s", paste(.txt, collapse = " / ")),
+               "  (이 블록 결과가 그 처방을 지지하는가 · 반증하는가를 반드시 언급하라)")
+      }
+      .av <- pri[[b]]$avoid
+      if (!is.null(.av) && length(.av)) L <- c(L, sprintf("- 앞서 '쓰지 말 것': %s",
+                                                          paste(as.character(unlist(.av)), collapse = " / ")))
     }
   } else L <- c(L, "", "## 이 전략에 쌓인 앞선 블록 교훈: 없음(첫 블록)")
   writeLines(L, out_p, useBytes = TRUE)
@@ -102,20 +114,42 @@ lcm_merge <- function(base_id, block_id, mech_p) {
   if (is.null(M)) return(bad("JSON 파싱 실패"))
   mech <- as.character(M$mechanism %||% "")[1]
   if (is.na(mech) || !nzchar(trimws(mech))) return(bad("mechanism 비어 있음"))
-  if (nchar(mech) > 1200L) return(bad(sprintf("mechanism %d자 — 서술이 아니라 보고서", nchar(mech))))
-  if (nchar(mech) < 40L) return(bad("mechanism 40자 미만 — 기전이 아니라 감상"))
+  # ★글자수 제한 없음 (도훈 지시 2026-09-04). 길이는 품질의 대용물이었고 대용물은 늘 틀린다 —
+  #   위는 긴 기전을 "보고서" 라며 잘랐고, 아래는 짧지만 정확한 한 줄을 "감상" 으로 몰았다.
+  #   품질 게이트는 **구조**가 진다: 이 블록 셀 코드 인용 · 등급 주장 금지 · 처방 존재.
+  #   그 셋은 길이와 무관하게 "기전인가" 를 가른다.
   # ★이 블록 셀을 최소 1개 인용해야 한다 — 일반론은 기전이 아니다
   lp <- .lc_path(base_id, block_id)
   if (!file.exists(lp)) return(bad("L-code 파일 부재 — 규칙 척추가 먼저다"))
   if (!grepl(sprintf("%s_[0-9]+", block_id), mech)) return(bad("이 블록 셀 코드 인용 0건 — 일반론"))
   # ★등급·합격 주장 금지 — 판정은 계약이 한다(AX-008)
   if (grepl(LCM_BANNED, mech)) return(bad("등급·합격 주장 포함 — 판정은 계약 소관"))
+  # ★처방 없는 기전은 반려한다 — 진단만 쌓이는 것이 지금까지의 문제였다(도훈 2026-09-04).
+  #   단 "이 블록만으로는 못 가른다" 도 처방이다: 무엇이 있어야 갈리는지를 적으면 된다.
+  .acts0 <- M$next_block_actions %||% list()
+  if (!length(.acts0)) return(bad("next_block_actions 0건 — 진단만 있고 처방이 없다"))
+  .empty <- Filter(function(x) !nzchar(trimws(as.character(x$action %||% "")[1])), .acts0)
+  if (length(.empty) == length(.acts0)) return(bad("처방 action 이 전부 비어 있다"))
   D <- tryCatch(fromJSON(lp, simplifyVector = TRUE), error = function(e) NULL)
   if (is.null(D)) return(bad("L-code 파싱 실패"))
   D$mechanism        <- mech
   D$mechanism_by     <- "llm:block_end"
   D$mechanism_at     <- format(Sys.time(), "%Y-%m-%dT%H:%M:%S%z")
   D$prior_lessons_used <- as.character(unlist(M$prior_lessons_used %||% list()))
+  # ★처방 (도훈 지시 2026-09-04) — 진단만으로는 다음 칸이 안 바뀐다.
+  #   규칙이 쓴 next_probes 는 격자 순서에서 나오는 일반문("다음 축 B2 로")이라 방향이 없다.
+  #   여기는 기전에서 따라 나오는 **집행 가능한 처치**다. 둘을 덮어쓰지 않고 나란히 둔다 —
+  #   규칙 척추는 불변이고, 이건 그 위에 얹는 층이다.
+  .acts <- M$next_block_actions %||% list()
+  if (length(.acts)) {
+    D$next_block_actions <- lapply(.acts, function(x) list(
+      action = as.character(x$action %||% "")[1],
+      why    = as.character(x$why    %||% "")[1],
+      expect = as.character(x$expect %||% "")[1]))
+    D$next_block_actions_by <- "llm:block_end"
+  }
+  .av <- as.character(unlist(M$avoid %||% list()))
+  if (length(.av)) D$avoid <- .av
   D$mechanism_confidence <- as.character(M$confidence %||% "")
   write(toJSON(D, auto_unbox = TRUE, pretty = TRUE, null = "null", na = "null"), lp)
   .mx_log("mechanism_merged", base_id = base_id, block = block_id, chars = nchar(mech),

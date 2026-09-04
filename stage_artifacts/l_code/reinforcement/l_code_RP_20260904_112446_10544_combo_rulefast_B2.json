@@ -17,11 +17,13 @@
   "calmar": 0.41,
   "oos_retention": -0.21,
   "portfolio_alpha_t": 1.472,
-  "next_probes": [
-    "다음 격자 축 B3(universe) — 이 블록 승자 위에서 측정",
-    "B2_7(최고 1.472)는 B4 조합 후보로 고정 · B2_10(최저 0.397)는 축 역작동 여부를 조합 LOO 로 분리"
-  ],
+  "next_probes": ["다음 격자 축 B3(universe) — 이 블록 승자 위에서 측정", "B2_7(최고 1.472)는 B4 조합 후보로 고정 · B2_10(최저 0.397)는 축 역작동 여부를 조합 LOO 로 분리"],
   "next_probe": "다음 격자 축 B3(universe) — 이 블록 승자 위에서 측정 | B2_7(최고 1.472)는 B4 조합 후보로 고정 · B2_10(최저 0.397)는 축 역작동 여부를 조합 LOO 로 분리",
   "source_paper": "https://arxiv.org/abs/2301.09173",
-  "record_type": "performance"
+  "record_type": "performance",
+  "mechanism": "B2 는 팩터(GP/A+Q35_CashBased_OpProf)·유니버스를 고정하고 비중 방법만 바꾼 축이다. cvar·entropy·factor_rp·ivol 네 칸(B2_6~B2_9)이 한 점으로 붙는다 — CAGR 17.1~17.3%·MDD 40.4~42.3%·Calmar 0.410~0.423·PORT_t 1.40~1.47 로 전부 잡음 폭이다. 네 방법 모두 총노출을 보존한 채 25종 안에서만 비중을 재분배하는 횡단면 스킴이라, 근접 공선인 두 수익성 팩터의 같은 점수 위에서는 거의 같은 포트폴리오로 수렴한다 — 결과를 정하는 건 비중 방법이 아니라 팩터 틸트다. 군집을 깨는 유일한 칸은 SchurDamping(B2_10)인데 아래로 깬다: 이 방법만 재분배가 아니라 노출을 감쇠하고, 감쇠가 위험보다 수익을 더 깎아 CAGR 12.8%·MDD 52.7%(악화)·PORT_t 0.397 로 둘 다 무너진다 — 팩터 실패가 아니라 소비 지점(노출 스케일 vs 횡단면)의 차이다. 앞 블록 B1(멀티팩터 축 최고 Calmar 0.400)·B5(리스크오버레이 축, MDD 34~41% 고정·최고 Calmar 0.402)가 축을 바꿔도 같은 벽에 걸렸고, B2 생존 네 칸도 Calmar ~0.42·MDD ~40% 로 B5 대역 상단에 앉는다. 어느 팩터·어느 오버레이·어느 비중을 갈아도 안 움직이는 ~40% MDD 는 비중 방법의 성질이 아니라 이 combo 의 위기 동조 낙폭 바닥이다. 낙폭을 옮기려면 위기에 무엇에 노출되는지를 바꿔야지 횡단면 가중으로는 안 된다. SchurDamping 이 감쇠 강도 탓인지 신호 파괴 탓인지는 이 한 칸으로 못 가르며, 감쇠 강도 스윕이 있어야 분리된다.",
+  "mechanism_by": "llm:block_end",
+  "mechanism_at": "2026-09-04T12:47:20+0900",
+  "prior_lessons_used": ["B1", "B5"],
+  "mechanism_confidence": "medium"
 }
