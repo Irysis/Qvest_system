@@ -1,0 +1,11 @@
+{
+  "axis": "timing",
+  "verdict": "adapted",
+  "undeclared_changes": [],
+  "signal_mismatch": [],
+  "counterexample": "종목 X 가 월중 5거래일째 REGIME=1(UP63>0.60)로 진입해 15거래일째 REGIME=0 으로 이탈한다고 하면, 논문(일간 리밸)은 그 종목을 5~14일 구간에서만 편입·이탈 즉시 청산한다(Table 5 중위보유 8일 · 일간회전 42% 가 이런 진입/이탈의 지문). engine.R 은 월말 시그널일 d 하나에서만 X 의 REGIME 을 평가하므로, d 시점에 REGIME=1 이면 그 달 전체(약 21거래일)를 보유하고 REGIME=0 이면 그 달 전체를 편입조차 하지 않는다 — 월중 진입/이탈 이벤트 자체가 관측되지 않는다. 이는 FIDELITY.changed ①과 engine.R:52-67 주석이 정확히 이 divergence 를 자인·선언한 사례이며, 반례는 선언의 정확성을 확인하는 용도로만 구성했다.",
+  "evidence": "§2.1 식(1): 'trailing 10-day returns'(REV_WIN=10, engine.R:145 일치) · 식(2): 'UpFraction_i,t = 1/63 Σ_{k=1..63} I[r_{i,t-k}>0]'(DRIFT_W=63, engine.R:146 일치, k=1..63 오프셋도 engine.R:173-177 frollsum+shift(1) 로 정확히 구현) · §6: 'Daily execution involves preliminary signal calculation at 3:30 PM, ... market-on-close participation at 4:00 PM' (일간 리밸 확인) · Table 5: 'Daily Turnover: 42%', 'Median Holding Period: 8 days' — FIDELITY.json changed①·engine.R:52-67 주석의 인용과 정확히 일치(자체 대조로 웹 재조회 없이도 원문 인용이 오타·왜곡 없음을 확인).",
+  "confidence": "high",
+  "checked": "리밸 주기(daily vs monthly) · 10일 reversal 창 · 63일 drift 창(오프셋 k=1..63 포함) · 논문에 J/K/skip 프레임 자체가 없음(momentum J/K 설계가 아니라 일간 신호+국면게이트) · exec_date=시그널월 익월 첫거래일 메커니즘(backtest_harness.R:316, replication_harness.R:84-90) 이 engine.R 주석의 서술과 일치하는지 코드 레벨 재확인",
+  "note": "이 축의 유일한 실질 차이(daily→monthly 리밸/보유)는 FIDELITY.changed①·engine.R 주석에 사유·기전·미보완 사실(반전창 미확장)까지 구체적으로 선언돼 misdeclared 요건(선언 없음/선언과 불일치)을 충족하지 않는다. 10일·63일 두 lookback 창의 파라미터·오프셋은 원문과 정확히 일치. 이 논문은 고전적 J(형성)/K(보유)/skip 모멘텀 설계가 아니라 매일 재계산되는 국면게이트 신호라 '스킵 기간' 항목은 해당사항 없음."
+}
