@@ -24,8 +24,12 @@ ok <- function(m) { PASS <<- PASS + 1L; cat(sprintf("  OK   %s\n", m)) }
 ng <- function(m, d = "") { FAIL <<- FAIL + 1L; cat(sprintf("  FAIL %s%s\n", m, if (nzchar(d)) paste0(" — ", d) else "")) }
 
 .CAP <- NULL
+## ★notify 는 이제 블록당 두 건을 보낸다(본문 + '알게 된 것' 전체판, 2026-09-04) — 마지막 호출만 담으면 본문이 덮인다.
+##   순위 줄이 있는 본문(무엇을 강화했나)을 골라 담는다.
 tg_agent_brief <- function(agent, title, sections, charts = NULL, ...) {
-  .CAP <<- list(title = title, sections = sections); invisible(list(ok = TRUE, bytes = 1L, error = NULL))
+  .has <- any(vapply(sections, function(z) identical(z$heading %||% "", "무엇을 강화했나"), logical(1)))
+  if (.has || is.null(.CAP)) .CAP <<- list(title = title, sections = sections)
+  invisible(list(ok = TRUE, bytes = 1L, error = NULL))
 }
 #' 발송 텍스트에서 "n위 …" 줄만 뽑는다.
 rank_lines <- function(base_id, block = "") {

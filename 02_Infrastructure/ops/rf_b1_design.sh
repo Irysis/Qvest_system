@@ -139,7 +139,10 @@ rf_llm_resolve b1_design "${QVEST_B1_MODEL:-}" "${QVEST_B1_EFFORT:-}"
 B1_MODEL="$LLM_MODEL"
 B1_EFFORT="$LLM_EFFORT"
 jl start "base_id=$BID" "model=$B1_MODEL" "effort=$B1_EFFORT" "max_cells=$MAXC"
-timeout 1800 claude -p "$PROMPT" \
+# ★프롬프트는 stdin 으로 (2026-09-04): argv 로 넘기면 Windows 인자 상한(32K)에 걸려 에이전트가 안 뜰다 — 승격 entry B1 설계 재료 41KB 실사고.
+PF="$DDIR/prompt_${BID:0:60}.txt"
+printf %s "$PROMPT" > "$PF"
+timeout 1800 claude -p < "$PF" \
   --model "$B1_MODEL" --effort "$B1_EFFORT" \
   --permission-mode acceptEdits \
   --allowed-tools "Read,Write,Edit,Glob,Grep,WebFetch,WebSearch" \

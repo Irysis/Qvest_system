@@ -108,13 +108,18 @@ b1_materials <- function(base_id, out_p) {
     for (x in .prior) {
       L <- c(L, sprintf("### %s / %s", as.character(x$strategy_id %||% "?"),
                         as.character(x$l_code %||% "")))
-      if (nzchar(as.character(x$mechanism %||% "")))
-        L <- c(L, sprintf("- 기전: %s", as.character(x$mechanism)))
+      ## ★발췌 상한 (2026-09-04): 승격 entry 는 부모 사슬의 교훈까지 쌓여 이 절이 34KB 가 됐고
+      ##   프롬프트가 argv 상한에 걸려 설계 에이전트가 안 떴다. 기전은 결론부터 쓰라고 했으니 앞 700자가 요지다.
+      if (nzchar(as.character(x$mechanism %||% ""))) {
+        .mx <- as.character(x$mechanism)
+        if (nchar(.mx) > 700L) .mx <- paste0(substr(.mx, 1L, 700L), "…")
+        L <- c(L, sprintf("- 기전: %s", .mx))
+      }
       .a <- x$next_block_actions
       if (!is.null(.a) && length(.a)) {
         .t <- if (is.data.frame(.a)) as.character(.a$action) else
               vapply(.a, function(z) as.character(z$action %||% "")[1], character(1))
-        L <- c(L, sprintf("- 그때의 처방: %s", paste(.t, collapse = " / ")))
+        L <- c(L, sprintf("- 그때의 처방: %s", paste(utils::head(.t, 3L), collapse = " / ")))
       }
       .v <- x$avoid
       if (!is.null(.v) && length(.v))

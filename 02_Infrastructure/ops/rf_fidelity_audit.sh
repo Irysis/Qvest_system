@@ -151,7 +151,10 @@ rf_llm_resolve fidelity_audit "${QVEST_FA_MODEL:-}" "${QVEST_FA_EFFORT:-}"
 FA_MODEL="$LLM_MODEL"
 FA_EFFORT="$LLM_EFFORT"
 jl start "paper=$PKEY" "wdir=$WDIR" "model=$FA_MODEL" "effort=$FA_EFFORT" "html=$HTMLU"
-timeout 1800 claude -p "$PROMPT" \
+# ★프롬프트는 stdin 으로 (2026-09-04): argv 로 넘기면 Windows 인자 상한(32K)에 걸려 에이전트가 안 뜰다 — 승격 entry B1 설계 재료 41KB 실사고.
+PF="$WDIR/fidelity_prompt.txt"
+printf %s "$PROMPT" > "$PF"
+timeout 1800 claude -p < "$PF" \
   --model "$FA_MODEL" --effort "$FA_EFFORT" \
   --permission-mode acceptEdits \
   --allowed-tools "Read,Write,Glob,Grep,WebFetch,WebSearch" \

@@ -130,7 +130,11 @@ lcm_materials <- function(base_id, block_id, out_p) {
 LCM_BANNED <- "(Grade\\s*[ABCF]\\b|등급\\s*[ABCF]\\b|합격|졸업|BOOK\\s*등재)"
 lcm_merge <- function(base_id, block_id, mech_p) {
   bad <- function(why) { .mx_log("mechanism_rejected", base_id = base_id, block = block_id, why = why)
-                         unlink(mech_p, force = TRUE); return(FALSE) }
+                         unlink(mech_p, force = TRUE)
+                         ## ★시도 횟수를 남긴다 (2026-09-04) — 백필(rf_mech_backfill)이 같은 블록을 무한히 안 돌게
+                         tryCatch({ suppressMessages(source(file.path(ROOT, "02_Infrastructure/ops/rf_mech_backfill.R"), local = TRUE))
+                                    rf_mech_note_try(base_id, block_id, ROOT) }, error = function(e) NULL)
+                         return(FALSE) }
   if (!file.exists(mech_p) || file.size(mech_p) == 0L) return(bad("기전 파일 부재"))
   M <- tryCatch(fromJSON(mech_p, simplifyVector = FALSE), error = function(e) NULL)
   if (is.null(M)) return(bad("JSON 파싱 실패"))

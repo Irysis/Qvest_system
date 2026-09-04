@@ -686,8 +686,10 @@ echo "=== 28. 고아 claim 회수의 순서 (상태 판정보다 먼저) ==="
 _RPD="$ROOT/.cache/_test_rp_claim_order"
 rm -rf "$_RPD"; mkdir -p "$_RPD"; : > "$_RPD/jlog.jsonl"
 _mkreq(){ printf '%s\n' '{"requested_at":"2026-01-01T00:00:00+0900","source":"test","paper":{"title":"t","paper_title":"t","url":"","paper_key":"TEST","source":"arxiv"},"status":"in_progress","started_at":"2026-01-01T00:00:00+0900"}' > "$_RPD/req.json"; }
+# ★동시실행 가드(halt_reinforce_active, 2026-09-04)는 실제 원장의 active entry 를 보므로 이 검사에서는 풀어 둔다 —
+#   여기서 재는 것은 claim 회수 순서지 가드가 아니다(가드는 자기 검사가 따로 있다).
 _rprun(){ QVEST_RP_REQUEST="$_RPD/req.json" QVEST_RP_CLAIM="$_RPD/claim" QVEST_RP_JLOG="$_RPD/jlog.jsonl" \
-          bash 02_Infrastructure/ops/rf_replication_auto.sh >/dev/null 2>&1; }
+          QVEST_RP_ALLOW_CONCURRENT=1 bash 02_Infrastructure/ops/rf_replication_auto.sh >/dev/null 2>&1; }
 _st(){ "$PY" -c "
 import io,json
 print(json.loads(io.open(r'$_RPD/req.json','rb').read().decode('utf-8')).get('status'))" 2>/dev/null; }

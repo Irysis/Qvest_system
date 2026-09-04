@@ -152,7 +152,7 @@ while IFS=$'\t' read -r K M E PF OUT; do
   [ -n "${K:-}" ] || continue
   rm -f "$OUT"
   (
-    timeout "${QVEST_FA_TIMEOUT:-1800}" claude -p "$(cat "$PF")" \
+    timeout "${QVEST_FA_TIMEOUT:-1800}" claude -p < "$PF" \
       --model "$M" --effort "$E" \
       --permission-mode acceptEdits \
       --allowed-tools "Read,Write,Glob,Grep,WebFetch,WebSearch" \

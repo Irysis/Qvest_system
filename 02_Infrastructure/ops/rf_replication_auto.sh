@@ -454,7 +454,10 @@ rf_llm_resolve replication "${QVEST_RP_MODEL:-}" "${QVEST_RP_EFFORT:-}"
 RP_MODEL="$LLM_MODEL"
 RP_EFFORT="$LLM_EFFORT"
 jl model_selected "model=$RP_MODEL" "effort=$RP_EFFORT"
-timeout 3000 claude -p "$PROMPT" \
+# ★프롬프트는 stdin 으로 (2026-09-04): argv 로 넘기면 Windows 인자 상한(32K)에 걸려 에이전트가 안 뜰다 — 승격 entry B1 설계 재료 41KB 실사고.
+PF="$WDIR/prompt.txt"
+printf %s "$PROMPT" > "$PF"
+timeout 3000 claude -p < "$PF" \
   --model "$RP_MODEL" --effort "$RP_EFFORT" \
   --permission-mode acceptEdits \
   --allowed-tools "Read,Write,Edit,Glob,Grep,WebFetch,WebSearch" \

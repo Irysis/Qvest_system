@@ -119,7 +119,10 @@ if (length(ex)) {
     if (is.null(ws)) {
       jlog("promote_skipped", reason = "winner_spec_unreadable", spec = sp)
     } else {
+      ## ★overlay 도 실는다 (2026-09-04): 소비자(러너 carry 병합)는 E$carry$overlay 를 읽는데 생산자가 안 실었다 —
+      ##   승자가 B5/B4 칸이면 위험 통제가 세대마다 리셋된다(승계 목록에서 빠진 축은 없는 축이 된다).
       carry <- list(factors = cf %||% list(), weighting = ws$weighting, universe = ws$universe,
+                    overlay = ws$overlay,
                     source_cell = best$cell_code %||% "NA", source_spec = sp)
       nid <- PD$new_base_id
       rf_open_entry(1L, nid, base_grade = best$grade,

@@ -20,6 +20,8 @@ ROOT <- Sys.getenv("QM_ROOT", "C:/Users/99922/OneDrive/Quant_Module_Moltbot")
 # ★승자 셀 성과 요약 = 예전 알파 서칭 포맷(도훈 지시 2026-08-30).
 #   배치 kv 는 전 칸 요약이라 상세가 없다 — 승자 한 칸의 전체 지표를 붙인다.
 suppressMessages(source(file.path(ROOT, "02_Infrastructure/ops/rf_perf_summary.R")))
+## 알게 된 것 규칙 생성기 — 파일 최상위에서 source (list() 인자 안 promise 에서 local source 하면 함수가 안 보인다)
+suppressMessages(source(file.path(ROOT, "02_Infrastructure/ops/rf_block_insights.R")))
 
 # ── 원장에서 이 entry 의 실측 표를 뽑는다 (계약 산출값만 — 손계산 금지) ───────
 # ★스펙 헬퍼는 정본(rf_spec_sig.R)을 쓴다 — 재구현하면 두 벌이 갈린다.
@@ -730,11 +732,21 @@ rf_auto_notify <- function(base_id, n, kind = "block") {
                    }, character(1)))
                    it }),
 
-    list(type = "bullet", emoji = "💡", heading = "이번 배치에서 알게 된 것",
-         items = { ins <- rf_insights(tab)
-                   if (length(ins) < 2) ins <- c(ins, "등급은 계약 산출값만 인용 — 손계산 없음",
-                                                 "무인 러너는 자본에 접근하지 않음")
-                   utils::head(ins, 5) }),
+    ## ★규칙 생성기 교체 (도훈 지적 2026-09-04 "내용이 너무 획일화") — 구판은 entry 전체에 고정 규칙 5개를
+    ##   대어 블록이 바뀌어도 같은 세 문장이 나왔다. 새 생성기는 **이 블록**을 직전 최고와 대조하고
+    ##   증거가 있는 절만 낸다(rf_block_insights.R). 비면 구판 bullet 폴백 — 채움말은 없다.
+    { .BI <- tryCatch(rf_block_insights_parts(S, ROOT), error = function(e) { cat("[rf_notify] 알게 된 것 생성 실패:", conditionMessage(e), "
+"); list() })
+      .bi_sp <- if (length(.BI)) rf_block_insights_split(.BI) else list(short = "", full = "")
+      ## ★본문엔 요약(판정·갈린 처치)만 — 블록 메시지가 평소 3,300자라 4,096자 한계까지 여유가 700자뿐이다
+      ##   (23:29 실측: 전체판을 넣자 2/5 가 "message is too long"). 전체판은 바로 뒤 후속 메시지로 간다.
+      assign(".rf_bi_full", .bi_sp$full, envir = globalenv())
+      if (nzchar(.bi_sp$short))
+        list(type = "text", emoji = "💡", heading = "이번 배치에서 알게 된 것",
+             body = paste0(.bi_sp$short, if (nzchar(.bi_sp$full) && .bi_sp$n_parts > 2L) "\n\n(전체 — 다음 메시지)" else ""))
+      else
+        list(type = "bullet", emoji = "💡", heading = "이번 배치에서 알게 된 것",
+             items = utils::head(rf_insights(tab), 5)) },
     list(type = "bullet", emoji = "\u27A1\uFE0F", heading = "다음",
          items = if (identical(kind, "grade_a"))
            c("처분: 자동 진행 정지 — 검증과 등재는 사람 확인 후",
@@ -780,6 +792,30 @@ rf_auto_notify <- function(base_id, n, kind = "block") {
                           ##   본문을 끊는다. 표준 용어를 그대로 쓴다.
                           decode_jargon = FALSE, decode_mode = "off")
   # ★승자 셀의 [팩터 분석] — FF3/FF5/Carhart + Fama-MacBeth
+  ## ── ★후속 메시지: '이번 배치에서 알게 된 것' 전체판 (2026-09-04 도훈 "구성과 내용이 풍성하게") ──
+  ##   본문은 4,096자 한계 때문에 요약만 실었다. 전체(위험·수익 교환 · 군집/단조 · 경계까지 · 앞 처방 대비 ·
+  ##   미측정/강등 · 승격 사슬)는 따로 보낸다. 블록당 1건 · lock_scope 로 중복 차단.
+  .bi_full <- tryCatch(get(".rf_bi_full", envir = globalenv()), error = function(e) "")
+  if (is.character(.bi_full) && nzchar(.bi_full) && identical(kind, "block")) tryCatch({
+    .blk_now <- sub("_.*$", "", tab[n == max(tab$n)]$code)
+    .bb <- tab[grepl(paste0("^", .blk_now, "_"), code) & is.finite(port_t)]
+    .base_kv <- tryCatch({ .pr <- tab[n < min(tab[grepl(paste0("^", .blk_now, "_"), code)]$n) & is.finite(port_t)]
+      if (nrow(.pr)) { .b <- .pr[which.max(port_t)]
+        list("기저(직전 최고)" = sprintf("%s · PORT_t %.3f · Calmar %.3f · MDD %.1f%%", .b$code, .b$port_t, .b$calmar, 100 * .b$mdd)) }
+      else if (!is.null(S$entry$parent))
+        list("기저(부모 승자)" = sprintf("%s · PORT_t %.3f", S$entry$parent$cell %||% "?", as.numeric(S$entry$parent$best_port_t %||% NA)))
+      else list("기저" = "없음(첫 블록)") }, error = function(e) list("기저" = "?"))
+    if (nrow(.bb)) { .b2 <- .bb[which.max(port_t)]
+      .base_kv[["블록 최고"]] <- sprintf("%s · PORT_t %.3f · Calmar %.3f · MDD %.1f%%", .b2$code, .b2$port_t, .b2$calmar, 100 * .b2$mdd) }
+    .base_kv[["측정"]] <- sprintf("%d칸 · 사슬 깊이 %s", nrow(.bb), as.character((S$entry$parent %||% list())$depth %||% 0L))
+    tg_agent_brief(agent = "AlphaSearch",
+      title = sprintf("[1계층·강화 %d/%d] 알게 된 것 — %s", n, S$maxa, .rf_axname(.blk_now, long = TRUE)),
+      lock_scope = sprintf("rf_block_insights_%s_%s", substr(base_id, 1, 40), .blk_now),
+      sections = list(
+        list(type = "kv", emoji = "📌", heading = "대조 기저", kv = .base_kv),
+        list(type = "text", emoji = "💡", heading = "이번 배치에서 알게 된 것 — 전체", body = .bi_full)),
+      relaxed = TRUE, glossary = FALSE, decode_jargon = FALSE, decode_mode = "off")
+  }, error = function(e) cat("[rf_notify] 알게 된 것 후속 발송 실패:", conditionMessage(e), "\n"))
   if (!is.null(.win_dir) &&
       (file.exists(file.path(.win_dir, "analysis_multifactor.csv")) ||
        file.exists(file.path(.win_dir, "analysis_fmb_summary.csv"))))

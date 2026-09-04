@@ -170,6 +170,19 @@ if (length(.b1_design)) {
 pending <- Filter(function(a) (is.null(a$essence) || is.null(a$essence$port_t)) && !isTRUE(a$terminal),
                   E$attempts)
 
+## ── ★기전 백필 (2026-09-04) — 블록 L-code 는 있는데 기전(LLM 서술)이 빈 블록을 한 번 더 시도한다 ──
+##   실사고: 15블록 중 6블록의 '배운 것' 이 비었다(모델 400 · 킬스위치 · 호출부 도입 전). 기전 레인은 블록 종료
+##   직후 한 번만 불리고 실패하면 영영 비었다. 상한 2회(mechanism_tries) · 레인 스위치가 꺼져 있으면 안 부른다.
+if (isTRUE(CFG$enabled) && isTRUE((CFG$lcode_mechanism %||% list())$enabled)) tryCatch({
+  suppressMessages(source(file.path(ROOT, "02_Infrastructure/ops/rf_mech_backfill.R"), local = TRUE))
+  .bf <- rf_mech_backfill_targets(BID, ROOT)
+  for (.b in utils::head(.bf, 2L)) {
+    jlog("mechanism_backfill", base_id = BID, block = .b, note = "기전이 빈 블록 — 레인 재시도(상한 2회)")
+    system2("bash", c(shQuote(file.path(ROOT, "02_Infrastructure/ops/rf_lcode_mechanism.sh")), BID, .b),
+            stdout = FALSE, stderr = FALSE)
+  }
+}, error = function(e) jlog("mechanism_backfill_failed", err = conditionMessage(e)))
+
 if (!length(pending) && used >= MAXA) { jlog("halt_exhausted_delegate", used = used)
   # ★Windows 에서 system2(env=) 는 무시된다(실측 2026-08-30: 자식이 로그 한 줄도 안 남겼다).
   #   부모 환경에 심어 자식이 상속하게 한다.

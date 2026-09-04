@@ -137,7 +137,10 @@ $(cat "$MAT")
 . "$ROOT/02_Infrastructure/ops/rf_llm_env.sh"
 rf_llm_resolve lcode_mechanism "${QVEST_LM_MODEL:-}" "${QVEST_LM_EFFORT:-}"
 jl start "base_id=$BID" "block=$BLK" "model=$LLM_MODEL" "effort=$LLM_EFFORT"
-timeout 900 claude -p "$PROMPT" \
+# ★프롬프트는 stdin 으로 (2026-09-04): argv 로 넘기면 Windows 인자 상한(32K)에 걸려 에이전트가 안 뜰다 — 승격 entry B1 설계 재료 41KB 실사고.
+PF="$WDIR/${BID:0:50}_${BLK}.prompt.txt"
+printf %s "$PROMPT" > "$PF"
+timeout 900 claude -p < "$PF" \
   --model "$LLM_MODEL" --effort "$LLM_EFFORT" \
   --permission-mode acceptEdits \
   --allowed-tools "Read,Write,Glob,Grep" \

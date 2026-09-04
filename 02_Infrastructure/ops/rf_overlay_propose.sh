@@ -121,7 +121,10 @@ rf_llm_resolve overlay_propose "${QVEST_OV_MODEL:-}" "${QVEST_OV_EFFORT:-}"
 RP_MODEL="$LLM_MODEL"
 RP_EFFORT="$LLM_EFFORT"
 jl model_selected "model=$RP_MODEL" "effort=$RP_EFFORT" "kind=$KIND"
-QVEST_ARM_GEN=1 timeout 1800 claude -p "$PROMPT" \
+# ★프롬프트는 stdin 으로 (2026-09-04): argv 로 넘기면 Windows 인자 상한(32K)에 걸려 에이전트가 안 뜰다 — 승격 entry B1 설계 재료 41KB 실사고.
+PF="$ADIR/prompt_${KIND}.txt"
+printf %s "$PROMPT" > "$PF"
+QVEST_ARM_GEN=1 timeout 1800 claude -p < "$PF" \
   --model "$RP_MODEL" --effort "$RP_EFFORT" \
   --permission-mode acceptEdits \
   --allowed-tools "Read,Write,Edit,Glob,Grep" \

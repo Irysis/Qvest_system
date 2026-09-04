@@ -1161,7 +1161,9 @@ tg_agent_brief <- function(agent,
                              charts = NULL,
                              footer = NULL,
                              emoji_min = .TG_CONFIG$EMOJI_MIN,
-                             dry_run = FALSE,
+                             ## ★QVEST_TG_DRY_RUN=1 이면 발송 없이 본문만 낸다 (2026-09-04: 미리보기가 실제 3건을 쏐다 —
+                             ##   호출자가 tg_agent_brief 를 덮어써도 내부 re-source 가 그 스텁을 되돌린다)
+                             dry_run = identical(Sys.getenv("QVEST_TG_DRY_RUN", ""), "1"),
                              force = FALSE,
                              lock_scope = NULL,
                              # ─── v6 SOT (2026-05-07) — SKILL.md §5/§6 동기화 ───
