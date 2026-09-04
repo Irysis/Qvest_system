@@ -1252,6 +1252,9 @@ SUITES=(
   "08_Tests/reinforcement/test_rf_b1_design.R"
   # 2026-09-04 — 적대적 충실도 감사: 스키마·처분·**소비보다 앞**에 서는가 (양방향).
   "08_Tests/reinforcement/test_rf_fidelity_audit.R"
+  # 2026-09-04 — 강화 누적 구조: 블록 승계·다음블록 설계·집행 판정 (양방향).
+  "08_Tests/reinforcement/test_rf_block_accumulate.R"
+  "08_Tests/reinforcement/test_rf_block_design.R"
 )
 
 

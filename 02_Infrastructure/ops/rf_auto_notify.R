@@ -22,6 +22,10 @@ ROOT <- Sys.getenv("QM_ROOT", "C:/Users/99922/OneDrive/Quant_Module_Moltbot")
 suppressMessages(source(file.path(ROOT, "02_Infrastructure/ops/rf_perf_summary.R")))
 
 # ── 원장에서 이 entry 의 실측 표를 뽑는다 (계약 산출값만 — 손계산 금지) ───────
+# ★스펙 헬퍼는 정본(rf_spec_sig.R)을 쓴다 — 재구현하면 두 벌이 갈린다.
+#   ★인자 안에서 source(local=TRUE) 하면 suppressMessages 프레임에 정의돼 사라진다(2026-09-04 실측).
+if (!exists(".rp_all_factors")) suppressMessages(source(file.path(ROOT, "02_Infrastructure/reinforcement/rf_spec_sig.R")))
+
 rf_notify_table <- function(base_id) {
   led <- fromJSON(file.path(ROOT, "06_Registry/reinforce_ledger_l1.json"), simplifyVector = FALSE)
   E <- Filter(function(e) identical(e$base_id, base_id), led$entries)
@@ -40,7 +44,9 @@ rf_notify_table <- function(base_id) {
   if (!nrow(rows)) return(NULL)
   setorder(rows, n)
   list(entry = E, tab = rows, used = as.integer(E$attempts_used %||% nrow(rows)),
-       maxa = as.integer(led$max_attempts %||% 25L))
+       # ★분모는 **entry 별 상한**이다 (2026-09-04). B1 설계가 가변 길이가 되면서 총예산이
+       #   entry 마다 다르다(실측 34). 전역 25 를 쓰면 "34/25" 같은 보고가 나간다.
+       maxa = as.integer(E$max_attempts %||% led$max_attempts %||% 25L))
 }
 
 # ── 차트 2장 (원칙 9 — 실측 보고는 글만 보내지 않는다) ────────────────────────
@@ -345,6 +351,36 @@ rf_auto_notify <- function(base_id, n, kind = "block") {
   else
     sprintf("[1계층·강화 %d/%d] 무인 블록 완료 — %s", n, S$maxa, sub("_.*$", "", tab[n == max(tab$n)]$code))
   suppressMessages(source(file.path(ROOT, "02_Infrastructure/telegram/telegram_notify.R")))
+  .learn_sec <- NULL
+  # ★이번 블록에서 배운 것 (도훈 지시 2026-09-04) — 규칙 요약 + LLM 기전 + 처방.
+  #   L-code 에 있을 때만 낸다. 없으면 그 줄을 안 낸다(없는 것을 지어내지 않는다).
+  #   ★발송이 L-code·기전보다 **뒤로** 옮겨졌기에 이 절이 채워질 수 있다 — 구판 순서에서는
+  #     텔레그램이 먼저 나가서 기전이 영원히 메시지에 못 들어갔다.
+  { .lcp <- file.path(ROOT, "stage_artifacts/l_code/reinforcement",
+                      sprintf("l_code_%s_%s.json", base_id,
+                              sub("_.*$", "", tab[n == max(tab[n <= S$used]$n)]$code[1])))
+    .LD <- if (file.exists(.lcp)) tryCatch(fromJSON(.lcp, simplifyVector = TRUE),
+                                           error = function(e) NULL) else NULL
+    .items <- character(0)
+    if (!is.null(.LD)) {
+      if (nzchar(as.character(.LD$mechanism %||% "")))
+        .items <- c(.items, paste0("기전: ", as.character(.LD$mechanism)))
+      .na <- .LD$next_block_actions
+      if (!is.null(.na) && length(.na)) {
+        .at <- if (is.data.frame(.na)) as.character(.na$action) else
+               vapply(.na, function(x) as.character(x$action %||% "")[1], character(1))
+        .items <- c(.items, paste0("다음 블록 처방: ", paste(.at, collapse = " / ")))
+      }
+      .av <- .LD$avoid
+      if (!is.null(.av) && length(.av))
+        .items <- c(.items, paste0("쓰지 말 것: ", paste(as.character(unlist(.av)), collapse = " / ")))
+      if (nzchar(as.character(.LD$prior_action_status %||% "")))
+        .items <- c(.items, paste0("앞 처방 집행: ", as.character(.LD$prior_action_status)))
+    }
+    .learn_sec <- if (length(.items)) list(type = "bullet", emoji = "\U0001F9E0",
+      heading = "이번 블록에서 배운 것", items = .items) else NULL
+  }
+
   secs <- list(
     list(type = "bullet", emoji = "\U0001F3AF", heading = "현재 리서치 상황",
          items = c("단계: 1계층 강화 프로세스 — 무인 규칙 러너",
@@ -368,6 +404,7 @@ rf_auto_notify <- function(base_id, n, kind = "block") {
       list(type = "kv", emoji = "\U0001F4C8",
            heading = sprintf("승자 셀 성과 요약 (%s)", best$code),
            kv = .win_kv) else NULL,
+    .learn_sec,
     # ★"무엇을 강화했나" — 순위표만으로는 **무엇 위에 무엇을 얹었는지**가 안 읽힌다
     #   (도훈 2026-08-31 "무엇을 강화했나 파트 설명을 좀 더"). 네 줄을 먼저 세운다:
     #   ①기저(무엇 위에) ②컴포짓 비율(희석의 크기) ③승계 구성과 그 성능(=이번 기준선)
@@ -404,6 +441,26 @@ rf_auto_notify <- function(base_id, n, kind = "block") {
                      if (is.finite(.cb)) it <- c(it,
                        .cut(sprintf("기준선 t %.2f — 이번 칸들은 이걸 넘어야 개선이다", .cb)))
                    } else it <- c(it, "승계: 없음(최초 강화) — 기준선은 기저 신호 자신")
+                   # ★블록 누적 (2026-09-04) — 이제 각 블록은 **지금까지 최고 구성** 위에 선다.
+                   #   구판은 B1 승자만 물어서, 순서가 적응하면 앞 블록 승자가 버려졌다.
+                   #   그 사실이 보고에 없으면 "무엇 위에 얹었나" 가 실제와 다르다.
+                   .bst <- ord[0]
+                   { .m2 <- tab[n <= S$used & is.finite(port_t)]
+                     if (nrow(.m2)) .bst <- .m2[which.max(port_t)] }
+                   if (nrow(.bst)) {
+                     .bsp <- tryCatch({ .a <- Filter(function(x)
+                         identical(as.integer(x$n %||% -1L), as.integer(.bst$n)), EN$attempts)
+                       if (length(.a)) .a[[1]]$essence$spec else NULL }, error = function(e) NULL)
+                     .bd  <- if (!is.null(.bsp) && nzchar(.bsp) && file.exists(.bsp))
+                               tryCatch(fromJSON(.bsp, simplifyVector = FALSE), error = function(e) NULL) else NULL
+                     it <- c(it, .cut(sprintf("누적 바닥: %s (t %.2f) — 이 구성 위에 이번 축만 얹는다",
+                                              .bst$code, .bst$port_t)))
+                     if (!is.null(.bd))
+                       it <- c(it, .cut(sprintf("  = %s | %s | %s%s",
+                         paste(vapply(.rp_all_factors(.bd), .rf_f2, character(1)), collapse = "+"),
+                         .rf_wt(.bd$weighting), .rf_un(.bd$universe),
+                         { .o <- .rf_ov(.bd$overlay); if (is.na(.o)) "" else paste0(" | ", .o) })))
+                   }
                    .blk <- if (!is.na(.curblk)) .curblk else sub("_.*$", "", ord[1]$code)
                    it <- c(it, .cut(sprintf("이번 축: %s", switch(.blk,
                      "B1" = "B1 멀티팩터 — 기저에 팩터 1종을 등가중으로 더한다",

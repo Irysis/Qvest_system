@@ -98,6 +98,28 @@ lcm_materials <- function(base_id, block_id, out_p) {
                                                           paste(as.character(unlist(.av)), collapse = " / ")))
     }
   } else L <- c(L, "", "## 이 전략에 쌓인 앞선 블록 교훈: 없음(첫 블록)")
+
+  # ── ★다음 블록 설계 재료 (도훈 지시 ④ · 2026-09-04) ─────────────────────
+  #   처방을 쓰는 자와 설계를 하는 자가 갈리면 어긋나도 아무도 모른다 —
+  #   그래서 **같은 산출물**로 만든다. 여기에 다음 블록이 고를 수 있는 것을 준다.
+  suppressMessages(source(file.path(ROOT, "02_Infrastructure/reinforcement/rf_block_design.R"), local = TRUE))
+  .ord <- as.character(E$block_order %||% c("B1", "B2", "B3", "B5", "B4"))
+  .k <- match(block_id, .ord)
+  .nxt <- if (!is.na(.k) && .k < length(.ord)) .ord[.k + 1L] else NA_character_
+  if (!is.na(.nxt) && .nxt %in% RFBD_BLOCKS) {
+    .cat <- rfbd_catalog(.nxt, ROOT)
+    L <- c(L, "", sprintf("## 다음 블록 = %s — 여기서 무엇을 시험할지 **네가 정한다**", .nxt),
+           sprintf("고를 수 있는 항목 %d종 (여기 있는 id 만 쓸 수 있다):", length(.cat)))
+    for (x in .cat) L <- c(L, sprintf("- %s | %s | %s", x$id, x$label, x$family %||% ""))
+    # 앞서 그 블록에 설계가 있었다면 집행 여부도 준다(고리를 닫는 자리)
+    .as <- tryCatch(rfbd_action_status(ROOT, base_id, block_id, E$attempts), error = function(e) NULL)
+    if (!is.null(.as) && !identical(.as$status, "no_design"))
+      L <- c(L, "", sprintf("## 이 블록에 걸었던 설계의 집행 결과: %s — %s", .as$status, .as$detail),
+             "  (집행됐는데도 안 먹혔다면 처방이 틀린 것이고, 안 집행됐다면 이유를 봐야 한다)")
+  } else if (!is.na(.nxt)) {
+    L <- c(L, "", sprintf("## 다음 블록 = %s — 이 블록은 **설계 대상이 아니다**(계약)", .nxt),
+           "  B4 결합은 LOO 가 계약이다. 부분집합을 흔들면 귀속이 깨진다 — 설계를 내지 마라.")
+  } else L <- c(L, "", "## 다음 블록: 없음(마지막 블록) — 설계를 내지 마라.")
   writeLines(L, out_p, useBytes = TRUE)
   .mx_log("materials_written", base_id = base_id, block = block_id,
           cells = nrow(blk), prior_blocks = length(pri))
@@ -150,6 +172,32 @@ lcm_merge <- function(base_id, block_id, mech_p) {
   }
   .av <- as.character(unlist(M$avoid %||% list()))
   if (length(.av)) D$avoid <- .av
+  # ★다음 블록 설계 — 검증을 통과해야 저장한다. 실패해도 기전·처방은 남고 그 블록만 규칙 폴백.
+  .nd <- M$next_block_design
+  if (!is.null(.nd) && length(.nd$cells %||% list())) {
+    suppressMessages(source(file.path(ROOT, "02_Infrastructure/reinforcement/rf_block_design.R"), local = TRUE))
+    .nb <- as.character(.nd$block %||% "")[1]
+    .vv <- if (!(.nb %in% RFBD_BLOCKS)) sprintf("설계 대상 블록이 아니다: %s", .nb)
+           else rfbd_verify(.nd, .nb, ROOT)
+    if (isTRUE(.vv)) {
+      dir.create(dirname(rfbd_path(ROOT, base_id, .nb)), recursive = TRUE, showWarnings = FALSE)
+      write(toJSON(.nd, auto_unbox = TRUE, pretty = TRUE, null = "null"),
+            rfbd_path(ROOT, base_id, .nb))
+      D$next_block_design_for <- .nb
+      D$next_block_design_n   <- length(.nd$cells)
+      .mx_log("block_design_saved", base_id = base_id, block = .nb, cells = length(.nd$cells))
+    } else .mx_log("block_design_rejected", base_id = base_id, block = .nb, why = as.character(.vv))
+  }
+  # ★이 블록에 걸었던 설계의 집행 판정 — 고리를 닫는다(먹혔다고 믿는 상태 차단)
+  .as2 <- tryCatch({ suppressMessages(source(file.path(ROOT, "02_Infrastructure/reinforcement/rf_block_design.R"), local = TRUE))
+                     .E2 <- NULL
+                     .led <- tryCatch(fromJSON(file.path(ROOT, "06_Registry/reinforce_ledger_l1.json"),
+                                               simplifyVector = FALSE), error = function(e) NULL)
+                     if (!is.null(.led)) { .f <- Filter(function(x) identical(x$base_id, base_id), .led$entries)
+                                           if (length(.f)) .E2 <- .f[[1]] }
+                     if (is.null(.E2)) NULL else rfbd_action_status(ROOT, base_id, block_id, .E2$attempts) },
+                   error = function(e) NULL)
+  if (!is.null(.as2)) { D$prior_action_status <- .as2$status; D$prior_action_detail <- .as2$detail }
   D$mechanism_confidence <- as.character(M$confidence %||% "")
   write(toJSON(D, auto_unbox = TRUE, pretty = TRUE, null = "null", na = "null"), lp)
   .mx_log("mechanism_merged", base_id = base_id, block = block_id, chars = nchar(mech),

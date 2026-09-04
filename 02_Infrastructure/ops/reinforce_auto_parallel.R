@@ -124,6 +124,24 @@ cells <- do.call(c, lapply(PROG$blocks, function(b) lapply(b$cells, function(c) 
   suppressMessages(source(file.path(ROOT, "02_Infrastructure/ops/rf_b1_design_lib.R"), local = TRUE))
   rf_b1_design_cells(BID, root = ROOT)
 }, error = function(e) { jlog("b1_design_load_failed", err = conditionMessage(e)); NULL })
+# ★블록 전이 설계 소비 (도훈 지시 ④ · 2026-09-04) — B2/B3/B5 도 설계가 있으면 그것으로 돈다.
+#   설계는 앞 블록 기전 에이전트가 낸 것이고, 검증(카탈로그 실재성·중복)을 통과한 것만 저장돼 있다.
+#   없으면 이 블록은 그냥 규칙 선정으로 돈다 — 폴백은 조용하지 않고 로그에 남는다.
+.blk_design <- tryCatch({
+  suppressMessages(source(file.path(ROOT, "02_Infrastructure/reinforcement/rf_block_design.R"), local = TRUE))
+  .out <- list()
+  for (.bb in RFBD_BLOCKS) { .cc <- rfbd_cells(ROOT, BID, .bb); if (length(.cc)) .out[[.bb]] <- .cc }
+  .out }, error = function(e) { jlog("block_design_load_failed", err = conditionMessage(e)); list() })
+if (length(.blk_design)) for (.bb in names(.blk_design)) {
+  .rest2 <- Filter(function(c) !identical(as.character(c$block %||% ""), .bb), cells)
+  .new2  <- lapply(.blk_design[[.bb]], function(c) { c$block <- .bb
+    c$axis <- switch(.bb, B2 = "weighting", B3 = "universe", B5 = "risk_overlay", "multifactor"); c })
+  cells <- c(Filter(function(c) identical(as.character(c$block %||% ""), "B1"), .rest2),
+             .new2,
+             Filter(function(c) !identical(as.character(c$block %||% ""), "B1"), .rest2))
+  jlog("block_design_applied", base_id = BID, block = .bb, cells = length(.new2),
+       note = "앞 블록 기전이 낸 설계로 이 블록을 돈다")
+}
 if (length(.b1_design)) {
   .rest <- Filter(function(c) !identical(as.character(c$block %||% ""), "B1"), cells)
   cells <- c(lapply(.b1_design, function(c) { c$block <- "B1"; c$axis <- "multifactor"; c }), .rest)
@@ -254,7 +272,7 @@ if (length(batch) && identical(first$block, "B1") && !length(.b1_design)) {
 # ★B5(오버레이) 칸은 격자에 박힌 값이 아니라 **등록부에서 배치 시점에 뽑는다**
 #   (도훈 2026-08-30 "오버레이 방법론을 특정하는건 별로인데"). 이미 측정한 팔은 제외하므로
 #   승격 사슬·다음 논문에서 같은 다섯 개를 반복 측정하지 않는다. 격자의 B5 cells 는 스냅샷일 뿐이다.
-if (length(batch) && identical(first$block, "B5")) {
+if (length(batch) && identical(first$block, "B5") && is.null(.blk_design[["B5"]])) {
   # ★중첩(v10.2) 이후 overlay 는 단수 객체 또는 층 리스트다. 구판 s$overlay$arm_id 는
   #   리스트에서 NULL 을 내 제외 목록이 통째로 비고, 이미 측정한 팔이 다시 뽑힌다.
   .arm_ids <- .ov_arm_ids   # 정본 = rf_spec_sig.R
@@ -284,7 +302,7 @@ if (length(batch) && identical(first$block, "B5")) {
 # ★B2(비중) 칸도 등록부에서 뽑는다 (2026-09-03). B1·B5 와 같은 형태 —
 #   격자의 B2 cells 는 스냅샷일 뿐이고, 이미 측정한 label 은 제외해 반복 측정을 막는다.
 #   구판은 이 호출이 아예 없어 카탈로그 52종이 격자에 한 번도 닿지 않았다.
-if (length(batch) && identical(first$block, "B2")) {
+if (length(batch) && identical(first$block, "B2") && is.null(.blk_design[["B2"]])) {
   .done_wt <- unique(unlist(lapply(E$attempts, function(a) {
     sp <- a$essence$spec
     if (is.null(sp) || !nzchar(sp) || !file.exists(sp)) return(NULL)
@@ -441,7 +459,33 @@ if (!length(jobs)) for (CELL in batch) {
                           else if (.beats_carry(w1, "B1")) .win_factors(w1) else NULL),
                weighting = CELL$weighting %||% list(kind = "ew"),
                universe = CELL$universe %||% list(kind = "k200_kq150"))
-  if (identical(CELL$block, "B3")) SPEC$weighting <- list(kind = "ew")
+  # ── ★블록 누적 — 실행 순서를 따라간다 (도훈 지시 2026-09-04) ────────────────
+  #   구판은 B2·B3 가 **B1 승자만** 물었다. 블록 순서가 고정(B1→B2→B3→B5→B4)일 때는
+  #   맞았지만, 교훈 재귀가 순서를 적응시키면서(2026-09-04 B5 를 2번째로) 전제가 깨졌다.
+  #   실측: B5_18 이 Calmar 0.405 를 냈는데 그 다음에 돈 B2·B3 는 overlay=none 으로 돌았다 —
+  #   **순서는 바뀌었는데 누적 규칙이 안 따라갔다.** 궤적이 언덕이 아니라 부채꼴이 된 이유다
+  #   (블록 최고 1.454 → 1.163 → 1.472 → 1.147 → 1.167, 34칸 쓰고 첫 블록 대비 +0.018).
+  #
+  #   그래서 축 목록을 나열하지 않는다 — **지금까지 최고 구성**을 바닥으로 깔고 자기 축만 덮는다.
+  #   순서가 또 바뀌어도 어긋나지 않는다(개수 대신 격자에서 재도출한 것과 같은 원리).
+  #   ★"지금까지 최고" 이므로 더 나쁜 구성 위에 서는 일이 원리상 없다(도훈 ②).
+  #     기준은 port_t — Grade A 두 축 중 더 멀리 있는 쪽이다(1.47/2.95 vs 0.42/0.64).
+  #     이 기본값을 뒤집을 근거는 설계 레인이 처방으로 낸다(예: 낙폭이 구속이면 Calmar 기준).
+  #   ★구판의 `B3 는 weighting 을 EW 로 되돌린다` 줄은 여기서 폐기된다 — 그 줄이 B2 승자를
+  #     매번 버렸다. 유니버스를 재려고 비중을 리셋하면 그건 통제가 아니라 누적 파괴다.
+  if (!(CELL$block %in% c("B1", "B4")) && !is.null(.wbest_spec)) {
+    .own <- switch(CELL$block, B2 = "weighting", B3 = "universe", B5 = "overlay", NA_character_)
+    if (is.null(SPEC$factors) || !length(SPEC$factors)) SPEC$factors <- .wbest_spec$factors
+    if (!identical(.own, "weighting") && !is.null(.wbest_spec$weighting)) SPEC$weighting <- .wbest_spec$weighting
+    if (!identical(.own, "universe")  && !is.null(.wbest_spec$universe))  SPEC$universe  <- .wbest_spec$universe
+    if (!identical(.own, "overlay")   && !is.null(.wbest_spec$overlay))   SPEC$overlay   <- .wbest_spec$overlay
+    jlog("block_accumulate", code = CELL$code, own_axis = .own %||% "-",
+         w = (SPEC$weighting$kind %||% "?"), u = (SPEC$universe$kind %||% "?"),
+         ov = length(.ov_layers(SPEC$overlay)),
+         note = "직전까지 최고 구성을 바닥으로 — 순서 무관 누적")
+  } else if (identical(CELL$block, "B3") && is.null(.wbest_spec)) {
+    SPEC$weighting <- list(kind = "ew")   # 측정이 아직 없을 때만 구판 기본값
+  }
   if (identical(CELL$block, "B4")) {
     use <- unlist(CELL$combo$use)
     # ★B4 에는 carry 기준선 게이트를 걸지 않는다. 게이트의 취지는 "개선 못 찾은 승자를
@@ -633,6 +677,23 @@ if (!length(jobs)) for (CELL in batch) {
          note = "carry 와 동일 — 미결 종결(실행 안 함)")
     next
   }
+  # ── ★arm × 유니버스 양립성 사전 검사 (도훈 지시 ③ · 2026-09-04) ──
+  #   실사고: 비중 arm entropy 가 KQ150 단독 위에서 커버리지 77%(<80%) 로 막혔다.
+  #   엔진 가드는 옷게 발화했지만 **백테를 다 돌린 뒤**였고, 결정론이라 재시도까지 태웠다
+  #   (3칸 × 2회). 같은 조합은 몇 번을 돌려도 같은 자리에서 죽는다.
+  #   ⇒ 이미 막힌 적 있는 조합이면 스폰하지 않고 미결로 닫는다. 판정 근거는 **실행 기록**
+  #     뿐이고 추정하지 않는다 — 첫 조합은 여전히 한 번 태운다(정직한 비용).
+  .rac <- tryCatch({ suppressMessages(source(file.path(ROOT, "02_Infrastructure/reinforcement/rf_arm_compat.R"), local = TRUE))
+                     rac_blocked(SPEC, ROOT) }, error = function(e) NULL)
+  if (!is.null(.rac)) {
+    rf_record_result(1L, BID, att$n, grade = "NA (미결 — arm×유니버스 양립 불가)",
+      lessons = sprintf("%s: %s", CELL$code, .rac), terminal = TRUE,
+      terminal_reason = sprintf("양립성 장부 차단 — %s", .rac), root = ROOT)
+    jlog("cell_arm_incompatible", n = att$n, code = CELL$code, why = .rac,
+         note = "앞서 커버리지로 막힌 조합 — 백테 전에 닫는다(재시도 소각 방지)")
+    unlink(sp, force = TRUE)
+    next
+  }
   jobs[[length(jobs) + 1L]] <- list(n = as.integer(att$n), code = CELL$code, spec = sp,
     name = sprintf("RF_PAR_%s_%s", CELL$code, gsub("[^A-Za-z0-9]", "", CELL$label)),
     out = file.path(WDIR, sprintf("result_%s.json", CELL$code)))
@@ -703,6 +764,14 @@ for (j in jobs) {
                      lessons = sprintf("%s 실패: %s", j$code, .err),
                      terminal = .term, terminal_reason = if (.term) .reason else NULL,
                      root = ROOT)
+    # ★커버리지 실패를 장부에 남긴다 — 다음부터는 백테 전에 막힌다.
+    #   다른 실패는 기록하지 않는다(과잉 차단 금지) — 엔진 메시지가 정본이다.
+    if (grepl("커버리지", .err, fixed = TRUE))
+      tryCatch({ suppressMessages(source(file.path(ROOT, "02_Infrastructure/reinforcement/rf_arm_compat.R"), local = TRUE))
+                 .sp3 <- tryCatch(fromJSON(j$spec, simplifyVector = FALSE), error = function(e) NULL)
+                 if (!is.null(.sp3)) rac_record(.sp3, "coverage_fail", ROOT,
+                                                detail = substr(.err, 1, 160), cell = j$code) },
+               error = function(e) jlog("arm_compat_record_failed", err = conditionMessage(e)))
     jlog("cell_error", n = j$n, code = j$code, err = .err,
          structural = .structural, fail_count = .fc0 + 1L, terminal = .term); next
   }
@@ -728,6 +797,12 @@ for (j in jobs) {
                   error = function(e) list(ok = NA, note = conditionMessage(e)))
   if (identical(.vf$ok, FALSE))
     jlog("AXIS_VIOLATION", n = j$n, code = j$code, violations = paste(.vf$violations, collapse = "; "))
+  # ★장부 기록 — 통과한 (arm, universe) 조합을 남긴다. 실패만 모으면 장부가 금지 목록이 되고,
+  #   금지 목록은 AX-000 위반이다. 성공도 같이 남겨야 "막힌 적 있다" 가 의미를 갖는다.
+  tryCatch({ suppressMessages(source(file.path(ROOT, "02_Infrastructure/reinforcement/rf_arm_compat.R"), local = TRUE))
+             .sp2 <- tryCatch(fromJSON(j$spec, simplifyVector = FALSE), error = function(e) NULL)
+             if (!is.null(.sp2)) rac_record(.sp2, "ok", ROOT, detail = "cell_done", cell = j$code) },
+           error = function(e) jlog("arm_compat_record_failed", err = conditionMessage(e)))
   jlog("cell_done", n = j$n, code = j$code, grade = R$grade,
        port_t = es$port_t, calmar = es$calmar, axes_ok = .vf$ok, artifacts = R$artifacts)
   nb <- nb + 1L
@@ -779,23 +854,16 @@ u2 <- as.integer(E2$attempts_used %||% 0L)
   sum(vapply(cells[.fr2], function(c) identical(as.character(c$block %||% ""), .blk_now), logical(1)))
 } else 0L
 if (nb > 0L && (.blk_left == 0L || u2 >= MAXA)) {
-  # ★"보냈다" 를 예외 부재로 지어내지 않는다 — rf_auto_notify 가 실제 발송 결과를 돌려준다.
-  #   구판은 429(레이트 리밋)로 메시지가 유실돼도 sent=true 를 기록했다(2026-08-30 실증 9건).
-  ok <- tryCatch({ source(file.path(ROOT, "02_Infrastructure/ops/rf_auto_notify.R"))
-                   isTRUE(rf_auto_notify(BID, u2, kind = "block")) },
-                 error = function(e) { jlog("telegram_failed", err = conditionMessage(e)); FALSE })
-  if (!ok) jlog("telegram_send_failed", n = u2,
-                note = "발송 실패 — lock 미생성이므로 다음 tick 이 재발송을 시도한다")
-  jlog("telegram_block", n = u2, sent = ok)
-  # ★L-code 무인 발행 — SKILL §0 "블록당 L-code 1건" 의 소비자가 없었다(러너 2종 emit_lcode 0건).
-  #   세션이 안 오면 그 블록의 학습이 원장 밖에서 증발한다. 텔레그램과 같은 생산자를 쓴다.
+  # ★순서 (2026-09-04): L-code -> 기전 -> **텔레그램**.
+  #   구판은 텔레그램이 먼저라 기전·처방이 메시지에 영원히 못 들어갔다 — 도훈이 받는 보고에
+  #   "무엇을 배웠고 다음에 뭘 할 것인가" 가 빠져 있었다. 발송을 뒤로 옮긴다.
   lc <- tryCatch({ source(file.path(ROOT, "02_Infrastructure/ops/rf_block_lcode.R"))
                    rf_emit_block_lcode(BID, u2, root = ROOT) },
                  error = function(e) { jlog("lcode_failed", err = conditionMessage(e)); NULL })
   jlog("lcode_block", n = u2, l_code = as.character(lc %||% "NA"))
-  # ★기전 서술 (도훈 지시 2026-09-04) — 규칙이 적은 수치 척추 위에 "왜" 한 문단.
-  #   재료에 **이 전략의 앞선 블록 L-code** 를 함께 넣는다(누적 교훈 참조).
-  #   병합은 R 이 하고 검증(셀 인용·금칙어·길이)을 통과해야 얄힌다. 실패해도 L-code 는 그대로 남는다.
+  # 기전 서술 — 규칙이 적은 수치 척추 위에 "왜" 한 문단 + 다음 블록 처방.
+  #   재료에 이 전략의 앞선 블록 L-code 를 함께 넣는다(누적 교훈 참조).
+  #   병합은 R 이 하고 구조 검증(셀 인용·금칙어·처방 존재)을 통과해야 얹힌다.
   if (!is.null(lc) && nzchar(as.character(lc))) {
     .mblk <- if (!is.na(.blk_now) && nzchar(.blk_now)) .blk_now else NA_character_
     if (!is.na(.mblk)) tryCatch(system2("bash",
@@ -803,6 +871,13 @@ if (nb > 0L && (.blk_left == 0L || u2 >= MAXA)) {
           shQuote(BID), shQuote(.mblk)), wait = TRUE, stdout = TRUE, stderr = TRUE),
       error = function(e) jlog("lcode_mechanism_failed", err = conditionMessage(e)))
   }
+  # ★"보냈다" 를 예외 부재로 지어내지 않는다 — rf_auto_notify 가 실제 발송 결과를 돌려준다.
+  ok <- tryCatch({ source(file.path(ROOT, "02_Infrastructure/ops/rf_auto_notify.R"))
+                   isTRUE(rf_auto_notify(BID, u2, kind = "block")) },
+                 error = function(e) { jlog("telegram_failed", err = conditionMessage(e)); FALSE })
+  if (!ok) jlog("telegram_send_failed", n = u2,
+                note = "발송 실패 — lock 미생성이므로 다음 tick 이 재발송을 시도한다")
+  jlog("telegram_block", n = u2, sent = ok)
 }
 jlog("batch_done", block = (if (!is.null(first)) first$block else "resume"), recorded = nb, used = u2)
 0L

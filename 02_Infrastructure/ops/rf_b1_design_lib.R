@@ -80,8 +80,50 @@ b1_materials <- function(base_id, out_p) {
     L <- c(L, sprintf("### %s (%d)", cc, length(ids)),
            paste(strwrap(paste(ids, collapse = ", "), width = 110), collapse = "\n"))
   }
+  # ── ★논문 간 축적 (도훈 지시 ② · 2026-09-04) ────────────────────────────
+  #   B1 은 entry 의 **첫 블록**이라 안에 쌓인 교훈이 없다. 그래서 여기에 아무것도 안 주면
+  #   논문이 바뀔 때마다 배운 것이 끊긴다 — entry 안에서만 누적되고 entry 사이에서는 0이다.
+  #   ⇒ 직전 entry 들의 블록 L-code 에서 **기전·처방·쓰지 말 것**을 물려준다.
+  #   ★수치가 아니라 기전을 물려준다: 다른 논문의 t 값은 이 기저에 의미가 없지만,
+  #     "어떤 축이 어느 소비 지점에서 죽더라" 는 기저가 달라도 옮겨 붙는다.
+  .prior <- tryCatch({
+    fs <- list.files(file.path(ROOT, "stage_artifacts/l_code/reinforcement"),
+                     pattern = "^l_code_.*_B[0-9]+\\.json$", full.names = TRUE)
+    fs <- fs[!grepl(base_id, basename(fs), fixed = TRUE)]   # 자기 entry 는 제외(첫 블록이라 없다)
+    if (!length(fs)) list() else {
+      fs <- fs[order(file.info(fs)$mtime, decreasing = TRUE)]
+      n_keep <- as.integer((.cfg()$b1_design$prior_entries) %||% 12L)
+      lapply(head(fs, n_keep), function(f)
+        tryCatch(fromJSON(f, simplifyVector = TRUE), error = function(e) NULL))
+    } }, error = function(e) list())
+  .prior <- Filter(function(x) !is.null(x) &&
+                     (nzchar(as.character(x$mechanism %||% "")) ||
+                      length(x$next_block_actions %||% list()) ||
+                      length(x$avoid %||% list())), .prior)
+  if (length(.prior)) {
+    L <- c(L, "", sprintf("## 앞선 논문들에서 이미 배운 것 (%d블록) — 기저가 달라도 옮겨 붙는 것만", length(.prior)),
+           "  ★수치는 그 논문의 것이라 여기에 의미가 없다. **기전과 처방**만 읽어라.",
+           "  ★이미 벽이 확인된 축에 칸을 쓰는 것이 예산의 가장 큰 낭비다.")
+    for (x in .prior) {
+      L <- c(L, sprintf("### %s / %s", as.character(x$strategy_id %||% "?"),
+                        as.character(x$l_code %||% "")))
+      if (nzchar(as.character(x$mechanism %||% "")))
+        L <- c(L, sprintf("- 기전: %s", as.character(x$mechanism)))
+      .a <- x$next_block_actions
+      if (!is.null(.a) && length(.a)) {
+        .t <- if (is.data.frame(.a)) as.character(.a$action) else
+              vapply(.a, function(z) as.character(z$action %||% "")[1], character(1))
+        L <- c(L, sprintf("- 그때의 처방: %s", paste(.t, collapse = " / ")))
+      }
+      .v <- x$avoid
+      if (!is.null(.v) && length(.v))
+        L <- c(L, sprintf("- 쓰지 말 것: %s", paste(as.character(unlist(.v)), collapse = " / ")))
+    }
+  } else L <- c(L, "", "## 앞선 논문 교훈: 없음(기전이 적힌 L-code 가 아직 없다)")
+
   writeLines(L, out_p, useBytes = TRUE)
-  .b1_log("materials_written", base_id = base_id, n_factors = nrow(pool), out = out_p)
+  .b1_log("materials_written", base_id = base_id, n_factors = nrow(pool),
+          prior_lessons = length(.prior), out = out_p)
   invisible(out_p)
 }
 
