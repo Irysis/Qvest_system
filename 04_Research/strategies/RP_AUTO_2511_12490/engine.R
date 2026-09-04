@@ -169,7 +169,9 @@ setorder(.rd, Ticker, Date)
 #   1/수정주가는 t 이후 분할·무상증자로 재작성된 값이라 PIT 위반(상방편의)이므로 금지.
 #   대체 추정기 = 1/시가총액 — 분할·무상증자에 **불변**(주가 x 주식수)이라 재작성이
 #   없고, accounting-free 이며 논문과 같은 '횡단면 수준변수의 낮은 쪽 선호' 방향이다.
-.rd[, INVV := fifelse(is.finite(Size) & as.numeric(Size) > 0, 1 / as.numeric(Size), NA_real_)]
+.rd[, CAP := as.numeric(Size)]
+.rd[, INVV := fifelse(is.finite(CAP) & CAP > 0, 1 / CAP, NA_real_)]
+.rd[, CAP := NULL]
 
 # reversal 원자료 — 종점 d 의 10 **시장거래일** 수익 (미거래로 끊기면 NA → 그날 제외)
 .rd[, R10 := Close / shift(Close, .REV_WIN) - 1, by = Ticker]
@@ -347,12 +349,13 @@ cat(sprintf(paste0(
   "[RP_2511_12490] adapted: EDGE = (0.7*pct(1/Size) + 0.3*z(-R10)) x I[UpFrac63(t-1..t-63) > 0.60]\n",
   "  → 활성 부분집합 z · 부호 절단 롱숏 · 사이드별 |z| 비례 50%%/50%% · x s*(식5) · kill-switch\n",
   "  자격 단면 %s행 · 국면 활성 비율 평균 %.1f%% (논문 Table 5 'Active Stock-Days 35%%')\n",
-  "  발행 %d개월 %s~%s · 월평균 롱 %.0f/숏 %.0f종 (논문 187/189) · 최대비중 평균 %.2f%% of gross (논문 2-3%%)\n",
+  "  발행 %d개월(정상노출 %d) %s~%s · 월평균 롱 %.0f/숏 %.0f종 (논문 187/189) · 최대비중 평균 %.2f%% of gross (논문 2-3%%)\n",
   "  s* 범위 %.3f~%.3f (중위 %.3f) · 학습창 일수 %d~%d · kill 발효 %d/%d개월\n",
   "  ★engine_direct · commission_paper=6e-05(0.6bp/unit) · 기간 절단은 러너 · %.1f분\n"),
   format(.n_elig_raw, big.mark = ","),
   100 * mean(.dg$n_act / .dg$n_elig),
-  nrow(.pm), as.character(min(PORTFOLIO$Date)), as.character(max(PORTFOLIO$Date)),
+  uniqueN(PORTFOLIO$Date), nrow(.pm),
+  as.character(min(PORTFOLIO$Date)), as.character(max(PORTFOLIO$Date)),
   mean(.pm$nL), mean(.pm$nS), 100 * mean(.pm$wmax_g),
   min(.ss$SCALE), max(.ss$SCALE), median(.ss$SCALE),
   min(.ss$TRN, na.rm = TRUE), max(.ss$TRN, na.rm = TRUE),
