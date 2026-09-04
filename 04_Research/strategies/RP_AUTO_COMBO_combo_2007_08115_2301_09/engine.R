@@ -131,6 +131,11 @@
 #  [보충1] Eq.2 AR = **expanding window**(논문은 전표본 1회 추정 — C1 위반이라 PIT 가 논문
 #          문자를 이긴다) · burn-in 60개월 · 월 결번 자리는 Δ·시차항 제외(인접성 가드).
 #          선례 RP_2301_09173_CID 승계.
+#          ★그 expanding OLS 의 3x3 정규방정식이 특이해 풀리지 않는 달은 u 를 발행하지
+#          않는다. **이 파일에 남은 유일한 `next`(§4)** 이고 §7 형성일 루프에는 없다.
+#          결과는 그 달이 Eq.3 표본에서 빠지는 것뿐이며([보충16](ㄱ)) FACTORS 월은 죽지
+#          않는다. 조용히 넘어가지 않도록 발생 건수를 §4 가 로그로 찍는다 — 0 이 아니면
+#          그 자체가 진단이다(expanding 60관측 이상에서는 발생 사유가 없다).
 #  [보충2] 종목별 회귀 최소 유효 개월 .MIN_MO = 18/24. 논문은 최소관측 규정이 없으나
 #          절편+2회귀변수 OLS 라 하한이 필요하다. ★**종목 필터**다.
 #  [보충3] 구조 추정 종목의 장기창 커버리지 .COV_L = 0.60. 이 종목집합은 공통 임계값
@@ -445,16 +450,20 @@ if (length(.rw) < (.AR_BURN + .WIN_M))
 .c1  <- seq_len(.nn);      .ca <- cumsum(.x1);        .cb <- cumsum(.x2)
 .caa <- cumsum(.x1 * .x1); .cab <- cumsum(.x1 * .x2); .cbb <- cumsum(.x2 * .x2)
 .cy  <- cumsum(.yv);       .cay <- cumsum(.x1 * .yv); .cby <- cumsum(.x2 * .yv)
-.uv <- rep(NA_real_, .nn)
+.uv   <- rep(NA_real_, .nn)
+.nsing <- 0L                       # [보충1] 특이 정규방정식으로 u 를 못 낸 달 — 반드시 로그
 for (k in seq.int(.AR_BURN, .nn)) {
   M3 <- matrix(c(.c1[k], .ca[k],  .cb[k],
                  .ca[k], .caa[k], .cab[k],
                  .cb[k], .cab[k], .cbb[k]), 3L, 3L)
   g <- tryCatch(solve(M3, c(.cy[k], .cay[k], .cby[k])), error = function(e) NULL)
-  if (is.null(g)) next
+  if (is.null(g)) { .nsing <- .nsing + 1L; next }
   .uv[k] <- .yv[k] - (g[1] + g[2] * .x1[k] + g[3] * .x2[k])
 }
 set(CIDM, i = .rw, j = "u", value = .uv)
+if (.nsing > 0L)
+  cat(sprintf(paste0("[COMBO_TAILCTRL] ★Eq.2 expanding OLS 특이 %d개월 — 그 달만 u 미발행",
+                     "([보충1]). Eq.3 표본에서 빠질 뿐 FACTORS 월은 유지된다\n"), .nsing))
 if (sum(is.finite(CIDM$u)) < (.WIN_M + 12L))
   stop("[COMBO_TAILCTRL] CID 충격 u 유효 개월 부족 — AR 적합 실패")
 .uok <- CIDM[is.finite(u)]
