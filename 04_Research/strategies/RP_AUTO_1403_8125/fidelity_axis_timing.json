@@ -3,9 +3,9 @@
   "verdict": "faithful",
   "undeclared_changes": [],
   "signal_mismatch": [],
-  "counterexample": "구성 불가. J·K·스킵·리밸 주기 모두 어긋나는 숫자 지점 없음.",
-  "evidence": "Section 3.2: '6 months (weeks) of estimation period ... After 6 months (weeks) of the holding period, each basket is liquidated ... The portfolio is constructed at the beginning of every month, i.e. it is the overlapping portfolio.' — J=6·K=6·스킵 없음·월간 오버래핑이 명시적으로 선언돼 있고 (J,K) 다중 조합 표는 존재하지 않음(단일 6/6). 코드: .FORM_M=6L(line 114) · .HOLD=6L(line 115) · 스킵 로직 없음 · idx=(k-.HOLD+1L):k 로 최근 K=6 코호트 1/K 평균(J-T, lines 230-237).",
+  "counterexample": "구성하지 못했다 — J(형성)=6개월, K(보유)=6개월, 스킵=0, 리밸=월간 오버래핑이 원문과 engine.R 상수(.FORM_M=6L, .HOLD=6L, 리밸 루프가 매 me_dates[k]마다 실행)가 정확히 일치한다. 반례가 성립할 지점을 찾지 못했다.",
+  "evidence": "§3.2: \"Based on given selection rules during 6 months (weeks) of estimation period, assets in market universes are sorted in ascending order.\" + \"After 6 months (weeks) of the holding period, each basket is liquidated. The portfolio is constructed at the beginning of every month, i.e. it is the overlapping portfolio.\" — KOSPI200 1.433%/7.036% 결과(Table 3 추정)는 monthly 변형. 원문은 skip period 를 언급하지 않는다(형성 종료 직후 보유 개시).",
   "confidence": "high",
-  "checked": "형성창 6개월(FORM_M=6 vs 논문 '6 months') · 보유 6개월(HOLD=6 vs '6 months') · 스킵 0(코드 스킵 로직 없음 vs 논문 스킵 언급 없음) · 월간 오버래핑 리밸(me_dates 월말 격자 + 코호트 블렌드 idx vs '오버래핑 포트폴리오, 매월 초') · 단일 (J,K)=(6,6) 조합(다중 조합 표 없음)",
-  "note": "논문은 monthly 와 weekly 두 주기를 병행 보고하나 월간이 헤드라인(KOSPI200 1.433%/월). 코드는 monthly만 구현 — FIDELITY.changed 에 미선언이나 논문의 주 결과가 monthly 이므로 충실구현 범위 내."
+  "checked": "engine.R:125-127 .FORM_M=6L/.HOLD=6L 상수 ↔ 원문 '6 months of estimation period'·'6 months of the holding period' 대조 · 스킵기간 부재 대조 · 월간 오버래핑 리밸 루프(engine.R:184, 233) ↔ 'portfolio is constructed at the beginning of every month' 대조 · 1/K 고정 가중(engine.R:239) — 원문은 오버래핑 코호트 집계 방식을 명시하지 않음(FIDELITY.changed (d) 에 이미 침묵 항목으로 정직 선언돼 있어 undeclared 아님)",
+  "note": "원문은 weekly(6주) 변형도 병기하지만 KOSPI200 헤드라인 결과는 monthly이고 엔진도 monthly만 구현 — 축 불일치 없음. 코호트 오버래핑 집계(1/K)는 원문 미명시 항목으로 FIDELITY 에 이미 선언돼 있어 이 축에서는 misdeclared 사유가 아니다."
 }
