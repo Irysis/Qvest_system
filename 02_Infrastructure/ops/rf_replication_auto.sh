@@ -300,6 +300,30 @@ $(cat "$KOMBO_TXT")
 ${PROMPT_TAIL}"
 fi
 
+# --- 재구현 지적사항 (적대적 충실도 감사 2026-09-04) -------------------------
+#   감사가 misdeclared 를 내면 검증기가 소비를 보류하고 요청을 pending 으로 되돌린다.
+#   그때 지적사항을 프롬프트에 얹지 않으면 같은 구현이 그대로 다시 나온다 —
+#   재시도가 아니라 되풀이가 된다(재개 장치의 고전적 실패 형태).
+AUDFB=$("$PY" -c "
+import io,json
+try:
+    d=json.loads(io.open(r'$REQ','rb').read().decode('utf-8'))
+    print(d.get('audit_feedback') or '')
+except Exception: print('')" 2>/dev/null)
+if [ -n "$AUDFB" ]; then
+  jl reimplement_with_audit "paper=$P_KEY"
+  PROMPT="$PROMPT
+
+## ★재구현이다 — 앞 구현이 적대적 충실도 감사에서 기각됐다
+아래는 감사자가 **원문과 대조해** 찾은 지적이다. 같은 구현을 다시 내지 마라.
+
+$AUDFB
+
+앞 판은 ${WDIR}/engine.rejected*.R 로 남아 있다. 무엇이 틀렸는지 보고, 지적된 지점을
+논문 원문으로 되돌려라. 지적이 부당하다고 판단하면 FIDELITY.json 의 changed 에
+**왜 그것이 논문과 일치하는지** 원문 근거로 적어라 — 침묵으로 넘기지 마라."
+fi
+
 # ★모델·노력수준 명시 (도훈 지적 2026-08-30 — 구판은 미지정이라 CLI 기본값에 의존했다).
 #   충실구현은 **깊이** 문제다: 논문 하나를 정확히 읽고 기전을 이식할 수 있는지 판단한다.
 #   넓이(팬아웃)가 아니므로 울트라코드가 아니라 **단일 에이전트 · 최대 노력**이 맞다.

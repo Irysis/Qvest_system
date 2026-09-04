@@ -193,6 +193,63 @@ jlog("fidelity", label = .fidelity, kept = substr(.fid$kept %||% "", 1, 90),
 G <- AR$essence_grade
 jlog("verified", grade = G, port_t = es$portfolio_alpha_t_nw_lag3, artifacts = dirname(ar))
 
+# ── ★④ 적대적 충실도 감사 (도훈 지시 2026-09-04) ─────────────────────────────
+#   위 3관문은 전부 **산출물**을 본다(계약·고정축·PIT). "논문대로 구현했는가" 만
+#   재도출이 없었고, FIDELITY.json 은 에이전트 자신의 진술이었다 — 진술은 증거가 아니다.
+#   ★값어치는 A등급 보호보다 **F 판정의 신뢰**에 있다: 아래 base_below_threshold 분기가
+#     ledger_consumed 로 논문을 영구 소비하기 때문이다. 구현이 틀려서 F 였다면 그 논문은
+#     잘못된 이유로 영영 버려진다. 그래서 감사는 **등급 무관 전건**이고 소비 **앞에** 선다.
+#   처분(도훈 선택): misdeclared → 자동 재구현 1회 + 소비 보류. 재구현도 기각되면
+#   소비하되 implementation_suspect 꼬리표를 남긴다(무한 재시도도, 조용한 소비도 아니다).
+suppressMessages(source(file.path(ROOT, "02_Infrastructure/ops/rf_fidelity_audit_lib.R"), local = TRUE))
+.aud_p <- file.path(WDIR, "fidelity_audit.json")
+tryCatch(system2("bash", c(shQuote(file.path(ROOT, "02_Infrastructure/ops/rf_fidelity_audit.sh")),
+                           shQuote(WDIR), shQuote(dirname(ar)), shQuote(URL), shQuote(PKEY %||% "")),
+                 wait = TRUE, stdout = TRUE, stderr = TRUE),
+         error = function(e) jlog("fidelity_audit_spawn_failed", err = conditionMessage(e)))
+.aud <- rf_audit_read(.aud_p)
+.rq0 <- tryCatch(fromJSON(REQ, simplifyVector = FALSE), error = function(e) list())
+.aud_tries <- as.integer(.rq0$audit_retries %||% 0L)
+.disp <- rf_audit_disposition(.aud, retries_done = .aud_tries)
+jlog("fidelity_audit_verdict", verdict = .aud$verdict, action = .disp$action,
+     undeclared = length(.aud$undeclared_changes %||% list()),
+     mismatch = length(.aud$signal_mismatch %||% list()), retries = .aud_tries)
+
+if (identical(.disp$action, "reimplement")) {
+  # ★소비 보류 — 원장에 아무것도 열지 않고 요청만 되돌린다. selector 는 원장으로 소비를
+  #   판단하므로, 여기서 열지 않으면 같은 논문이 다시 잡힌다(그게 의도다).
+  .bk <- file.path(WDIR, sprintf("engine.rejected%d.R", .aud_tries + 1L))
+  tryCatch(file.rename(file.path(WDIR, "engine.R"), .bk), error = function(e) NULL)
+  d <- .rq0
+  d$status <- "pending"
+  d$audit_retries <- .aud_tries + 1L
+  d$audit_feedback <- .disp$feedback
+  d$audit_verdict <- .aud$verdict
+  d$audit_at <- format(Sys.time(), "%Y-%m-%dT%H:%M:%S%z")
+  write(toJSON(d, auto_unbox = TRUE, pretty = TRUE, null = "null"), REQ)
+  jlog("fidelity_reimplement_requested", paper_key = PKEY %||% "", grade = G,
+       note = "충실도 기각 — 소비 보류. 다음 tick 이 지적사항을 안고 재구현한다")
+  tryCatch({ suppressMessages(source(file.path(ROOT, "02_Infrastructure/telegram/telegram_notify.R")))
+    tg_agent_brief(agent = "AlphaSearch",
+      lock_scope = sprintf("rf_fidelity_%s", PKEY %||% "unknown"),
+      title = sprintf("[1계층] 충실도 감사 기각 — 재구현 (측정 등급 %s)", G),
+      sections = list(
+        list(type = "bullet", emoji = "\U0001F50D", heading = "현재 리서치 상황",
+             items = c("단계: 1계층 무인 충실구현 — 적대적 충실도 감사",
+                       sprintf("대상: %s", substr(TITLE, 1, 60)),
+                       sprintf("판정: %s · 지적 %d건", .aud$verdict,
+                               length(.aud$undeclared_changes %||% list()) +
+                               length(.aud$signal_mismatch %||% list())),
+                       "처분: 소비 보류 + 자동 재구현 1회 — 논문을 잘못된 이유로 버리지 않는다")),
+        list(type = "summary", emoji = "\U0001F4CC",
+             body = substr(.disp$feedback, 1, 500)))) },
+    error = function(e) jlog("telegram_failed", err = conditionMessage(e)))
+  quit(status = 0)
+}
+.aud_suspect <- identical(.disp$action, "proceed_suspect")
+if (.aud_suspect) jlog("fidelity_suspect_proceed", paper_key = PKEY %||% "",
+  note = "재구현도 충실도 기각 — 소비하되 implementation_suspect 로 남긴다")
+
 # ── ★B등급 이상 신호를 팩터 DB 에 무인 등록 (도훈 지시 2026-09-01) ───────────
 #   충실구현이 낸 신호가 어디에도 적립되지 않아, B+ 를 받아도 그 논문의 25칸이 끝나면
 #   사라졌다 — 다음 논문의 B1 조합 후보가 되지 못했다. 여기가 그 루프를 닫는 자리다.
@@ -322,6 +379,7 @@ if (IS_COMBO) tryCatch({
 d <- tryCatch(fromJSON(REQ, simplifyVector = FALSE), error = function(e) list())
 d$status <- "done"; d$base_id <- BID; d$grade <- G; d$artifacts <- dirname(ar)
 d$fidelity <- .fidelity; d$fidelity_detail <- .fid
+d$fidelity_audit <- .aud; d$implementation_suspect <- isTRUE(.aud_suspect)
 d$completed_at <- format(Sys.time(), "%Y-%m-%dT%H:%M:%S%z")
 write(toJSON(d, auto_unbox = TRUE, pretty = TRUE, null = "null"), REQ)
 

@@ -13,6 +13,13 @@
     "max_cells_note": "연구 제한이 아니라 예산 폭주 backstop. 25칸 총예산은 원장 max_attempts 가 지키므로, B1 이 많이 가져가면 뒤 블록이 그만큼 줄어든다 — 그 교환은 설계가 진다.",
     "kill_switch": "b1_design.enabled=false 면 즉시 규칙 선정으로 돌아간다."
   },
+  "fidelity_audit": {
+    "enabled": true,
+    "note": "★도훈 지시 2026-09-04 — 검증 4관문은 전부 산출물(계약·고정축·PIT·원장)을 본다. '논문대로 구현했는가'만 재도출이 없었고 FIDELITY.json 은 에이전트의 진술이었다(2608.23944 는 하지도 않은 변경을 스스로 신고했고 원문 대조로만 잡혔다). 적대적 감사자가 arxiv html 전문과 engine.R 을 대조해 미신고 변경·신호 불일치를 찾는다. 등급은 못 건드린다(AX-008) — 움직이는 것은 귀속 라벨과 소비 보류뿐이다.",
+    "scope": "등급 무관 전건. 값어치는 A등급 보호보다 F 판정의 신뢰에 있다 — F 면 ledger_consumed 로 논문이 영구 소비되므로, 구현이 틀려서 F 였다면 논문이 잘못된 이유로 버려진다.",
+    "disposition": "misdeclared → 자동 재구현 1회 + 소비 보류(도훈 선택). 재구현도 기각되면 소비하되 implementation_suspect 꼬리표. 무한 재시도도 조용한 소비도 아니다.",
+    "kill_switch": "fidelity_audit.enabled=false 면 감사를 건너뛰고 구판 흐름으로 돌아간다."
+  },
   "note": "강화 무인 러너 kill switch. enabled=false 면 reinforce_auto_run.R / _next_paper.R 가 즉시 정지한다. ★도훈 지시 2026-08-30 '모든 작업을 무인화' 로 v10 의 '무인은 수집까지' 경계가 해제됐다. 단 무인 개시는 **규칙 개시**다 — 셀은 reinforce_program.json 격자에서 나오고 엔진은 rf_cell_engine.R 하나이며 러너는 코드를 생성하지 않는다. LLM 무인 개시가 아니다.",
   "daily_cap": 120,
   "claim_stale_hours": 6,

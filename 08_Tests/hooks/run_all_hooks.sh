@@ -1250,6 +1250,8 @@ SUITES=(
   "08_Tests/reinforcement/test_rf_combination_design.R"
   # 2026-09-04 — B1 블록 설계(LLM 1회): 등록부 실재성·중복·상한·폴백 (양방향).
   "08_Tests/reinforcement/test_rf_b1_design.R"
+  # 2026-09-04 — 적대적 충실도 감사: 스키마·처분·**소비보다 앞**에 서는가 (양방향).
+  "08_Tests/reinforcement/test_rf_fidelity_audit.R"
 )
 
 
