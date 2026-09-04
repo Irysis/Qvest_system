@@ -1281,6 +1281,8 @@ SUITES=(
   "08_Tests/reinforcement/test_rf_lane_parity.R"
   "08_Tests/reinforcement/test_rf_block_insights.R"
   "08_Tests/reinforcement/test_rf_skill_reflects_runtime.R"
+  # 2026-09-05 — 승격·결합 entry 의 B1 설계가 승계를 알고 예산 규칙을 아는가(충실구현과 같은 구조)
+  "08_Tests/reinforcement/test_rf_b1_carry_aware.R"
 )
 
 

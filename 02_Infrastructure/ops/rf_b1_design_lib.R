@@ -46,9 +46,19 @@ rf_b1_max_cells <- function() as.integer((.cfg()$b1_design$max_cells) %||% 15L)
 }
 
 #' 후보 팩터 풀 (규칙 선정기와 **같은 정본**을 쓴다 — 두 벌이 갈리면 설계가 없는 팩터를 고른다)
+## ★코드 루트는 데이터 루트가 아니다 — 자기 라이브러리는 **자기 위치**에서 읽는다(self-first).
+##   ROOT(=QVEST_RF_ROOT)를 격리하면 데이터만 갈라야 하는데, 구판은 코드와 팩터 등록부까지 그 밑에서 찾아
+##   격리 검사 자체가 불가능했다. (normalizePath 는 안 쓴다 — 한글 경로를 파손한다)
+.CODE_ROOT <- Sys.getenv("QM_ROOT", "C:/Users/99922/OneDrive/Quant_Module_Moltbot")
+.SELF_DIR <- local({
+  a <- grep("^--file=", commandArgs(trailingOnly = FALSE), value = TRUE)
+  d <- if (length(a)) dirname(sub("^--file=", "", a[1])) else ""
+  if (nzchar(d) && file.exists(file.path(d, "rf_factor_arms.R"))) d
+  else file.path(.CODE_ROOT, "02_Infrastructure/ops")
+})
 .pool <- function() {
-  suppressMessages(source(file.path(ROOT, "02_Infrastructure/ops/rf_factor_arms.R"), local = TRUE))
-  P <- rf_factor_pool(root = ROOT)
+  suppressMessages(source(file.path(.SELF_DIR, "rf_factor_arms.R"), local = TRUE))
+  P <- rf_factor_pool(root = .CODE_ROOT)
   if (is.list(P) && !is.data.table(P)) P$pool else P
 }
 
@@ -73,7 +83,33 @@ b1_materials <- function(base_id, out_p) {
             as.character(E$base_grade %||% "?"),
             as.character(es$portfolio_alpha_t_nw_lag3 %||% "?"),
             as.character(es$calmar %||% "?")),
-    "",
+    "")
+  ## ★승계 절 (2026-09-05) — 승격·결합 entry 는 기저가 "논문 신호" 가 아니라 "논문 신호 + carry" 다.
+  ##   이걸 안 주면 설계자가 이미 켜진 팩터를 다시 골라 dedup 에 먹히고(= 무처치 칸) 예산만 탄다.
+  cy <- E$carry
+  if (!is.null(cy)) {
+    .fid <- function(x) as.character((x %||% list())$id %||% (x %||% list())$catalog_id %||% "?")
+    cf <- vapply(cy$factors %||% list(), .fid, character(1))
+    L <- c(L,
+      "## ★이 entry 는 승격이다 — 아래가 **이미 켜져 있다**(네가 다시 고를 필요가 없다)",
+      sprintf("- 승계 팩터 %d종: %s", length(cf),
+              if (length(cf)) paste(cf, collapse = ", ") else "없음"),
+      sprintf("- 승계 비중: %s", as.character((cy$weighting %||% list())$label %||%
+                                              (cy$weighting %||% list())$kind %||% "동일가중")),
+      sprintf("- 승계 유니버스: %s", as.character((cy$universe %||% list())$kind %||% "k200_kq150")),
+      sprintf("- 승계 오버레이: %s", as.character((cy$overlay %||% list())$arm_id %||%
+                                                 (cy$overlay %||% list())$kind %||% "없음")),
+      sprintf("- 부모: %s · 깊이 %s · 승자 칸 %s(다중검정 t %s)",
+              as.character((E$parent %||% list())$base_id %||% "?"),
+              as.character((E$parent %||% list())$depth %||% "?"),
+              as.character((E$parent %||% list())$cell %||% "?"),
+              as.character((E$parent %||% list())$best_port_t %||% "?")),
+      "  ★네가 고르는 팩터는 이 승계 집합에 **더해지는 것**이다. 같은 id 를 다시 넣으면 중복 제거되어",
+      "    그 칸은 승계와 동일해지고 **처치 미전달로 미측정 종결**된다(예산만 탄다).",
+      "  ★승계 팩터를 빼는 설계는 이 블록에서 불가능하다 — 빼는 실험은 결합 블록(B4)의 leave-one-out 이 한다.",
+      "")
+  }
+  L <- c(L,
     sprintf("## 후보 팩터 등록부 (%d종 — 여기 있는 id 만 쓸 수 있다)", nrow(pool)))
   cats <- sort(unique(as.character(pool$category)))
   for (cc in cats) {
