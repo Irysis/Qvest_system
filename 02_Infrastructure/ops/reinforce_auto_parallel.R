@@ -606,6 +606,49 @@ if (!length(jobs)) for (CELL in batch) {
     jlog("preflight_dead_precedent", code = CELL$code,
          kw = paste(names(.pf$dead_precedents), collapse = ","),
          note = "죽은 선례 존재 — 실행은 진행(AX-000: 사실 기록이지 금지 목록 아님)")
+  ## ── ★기전 회피 목록 집행 (2026-09-04) ──────────────────────────────────────
+  ##   실측: avoid 를 읽는 코드가 rf_b1_design_lib.R 하나뿐이었다(B1 설계 프롬프트).
+  ##   러너는 안 읽으므로 격자 기본 칸에는 **원리상 안 걸렸다** — 기전이 무엇을 쓰지
+  ##   말라고 적든 그대로 돌았다(실사고: B3_11 KOSDAQ150 단독).
+  ##   ★건너뛰는 것은 **측정 무효 사유**뿐이다. "성과가 나빴다" 는 금지 목록이 아니라
+  ##     사실 기록이므로(AX-000) 그건 로그만 남기고 실행한다.
+  .avoid_hit <- tryCatch({
+    lcd <- file.path(ROOT, "stage_artifacts/l_code/reinforcement")
+    fs2 <- list.files(lcd, pattern = "[.]json$", full.names = TRUE)
+    fs2 <- fs2[startsWith(basename(fs2), paste0("l_code_", BID, "_B"))]
+    hit <- NULL
+    if (length(fs2)) {
+      fs2 <- fs2[order(file.info(fs2)$mtime)]
+      for (f2 in rev(fs2)) {
+        L2 <- tryCatch(fromJSON(f2, simplifyVector = TRUE), error = function(e) NULL)
+        av2 <- as.character(unlist((L2 %||% list())$avoid %||% list()))
+        for (x in av2[nzchar(av2)]) {
+          if (!grepl(sprintf("(^|[^A-Za-z0-9_])%s([^0-9]|$)", CELL$code), x)) next
+          ## 측정 무효 사유만 건너뛴다 — 성과 사유는 사실 기록이다
+          if (grepl("측정 무효|편의|편향|누출|look-?ahead|미래참조|PIT", x)) {
+            hit <- x; break
+          } else {
+            jlog("avoid_noted", code = CELL$code, why = substr(x, 1, 120),
+                 note = "기전 회피 목록에 있으나 **성과 사유** — 실행한다(AX-000: 사실 기록이지 금지 목록 아님)")
+          }
+        }
+        if (!is.null(hit)) break
+      }
+    }
+    hit
+  }, error = function(e) NULL)
+  if (!is.null(.avoid_hit)) {
+    rf_record_result(1L, BID, att$n, grade = "NA (미결 — 기전 회피: 측정 무효 사유)",
+      lessons = sprintf("%s: 기전이 측정 무효 사유로 회피 지정 — %s",
+                        CELL$code, substr(.avoid_hit, 1, 160)),
+      terminal = TRUE,
+      terminal_reason = sprintf("기전 회피 집행 — %s", substr(.avoid_hit, 1, 160)),
+      root = ROOT)
+    jlog("avoid_enforced", n = att$n, code = CELL$code, why = substr(.avoid_hit, 1, 130),
+         note = "측정 무효 사유 — 예산은 쓰되 측정은 안 한다(결과가 무효라 재도 소용없다)")
+    next
+  }
+
   # ★spec 경로에 entry 식별자를 넣는다. 구판은 spec_<code>.json 고정이라 다음 entry 가
   #   같은 이름으로 덮어썼고, 원장이 그 경로를 가리키는 채로 **부모 스펙이 소실**됐다
   #   (2026-08-31: 부모 B3_12 의 spec 을 열면 자식 것이 나온다 — 사후 재현 불가).

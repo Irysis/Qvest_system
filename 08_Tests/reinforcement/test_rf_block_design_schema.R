@@ -138,6 +138,26 @@ if (grepl("resume_pending", psrc, fixed = TRUE))
 cat("  NOTE 코드 수리 후에는 .cache/rf_parallel/spec_<code>__<base>.json 을 지울 것 —\n")
 cat("       2026-09-04 19:21 재기동이 19:15 자 스펙을 재사용해 같은 오류로 두 번째 죽었다.\n")
 
+cat("
+=== G. 기전 회피 목록이 집행되는가 ===
+")
+## 실측 2026-09-04: avoid 를 읽는 코드가 rf_b1_design_lib.R **하나뿐**이었다(B1 설계
+##   프롬프트). 칸을 고르는 러너는 안 읽으므로 격자 기본 칸에는 원리상 안 걸렸다 —
+##   기전이 "B3_11 은 측정 무효 사유" 라고 적었는데 그대로 돌았다.
+psrc2 <- paste(readLines("02_Infrastructure/ops/reinforce_auto_parallel.R", warn = FALSE), collapse = "
+")
+if (grepl("avoid_enforced", psrc2, fixed = TRUE))
+  ok("G1 러너가 회피를 집행한다 ★실사고") else ng("G1 러너가 avoid 를 안 읽는다")
+if (grepl("측정 무효|편의|편향|누출", psrc2))
+  ok("G2 **측정 무효 사유**만 건너뛴다") else ng("G2 사유 구분 없음")
+if (grepl("avoid_noted", psrc2, fixed = TRUE) && grepl("AX-000", psrc2, fixed = TRUE))
+  ok("G3 성과 사유는 로그만 — 사실 기록이지 금지 목록이 아니다(AX-000)") else
+  ng("G3 성과 사유까지 막는다", "3~4회 실패로 한계 단정 금지와 충돌")
+lsrc <- paste(readLines("02_Infrastructure/ops/rf_b1_design_lib.R", warn = FALSE), collapse = "
+")
+if (grepl("avoid", lsrc, fixed = TRUE))
+  ok("G4 설계 프롬프트 주입은 보존(회귀)") else ng("G4 구 경로 손상")
+
 cat(sprintf("\n합계: 통과 %d · 실패 %d\n", PASS, FAIL))
 cat(sprintf('{"test":"rf_block_design_schema","pass":%d,"fail":%d,"total":%d}\n', PASS, FAIL, PASS + FAIL))
 quit(status = if (FAIL > 0L) 1L else 0L)
