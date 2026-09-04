@@ -78,7 +78,12 @@ import io,json
 try: print((json.loads(io.open(r'$CFG','rb').read().decode('utf-8')).get('b1_design') or {}).get('max_cells') or 15)
 except Exception: print(15)" 2>/dev/null)
 
+. "$ROOT/02_Infrastructure/ops/rf_axiom_brief.sh"
+AXB="$(rf_axiom_brief)"
+
 PROMPT="이 전략의 **B1 멀티팩터 블록**을 설계하라. 산출은 설계 JSON 파일 하나다.
+
+${AXB}
 
 $(cat "$MAT")
 

@@ -878,6 +878,21 @@ if (nb > 0L && (.blk_left == 0L || u2 >= MAXA)) {
   if (!ok) jlog("telegram_send_failed", n = u2,
                 note = "발송 실패 — lock 미생성이므로 다음 tick 이 재발송을 시도한다")
   jlog("telegram_block", n = u2, sent = ok)
+  # ★증류 주기 맞춤 (도훈 지시 2026-09-04) — corpus 는 부팅마다 갱신되는데 증류
+  #   (cluster_extractor)는 주간 cleaner 안에서만 돌았다. 강화는 하루에 블록 L-code 를
+  #   5~6건 내므로 주 1회로는 못 따라간다 — 실측: 강화 75건이 corpus 에 있는데
+  #   distilled 에는 0건이었다(오늘 수동 실행하자 후보 7건이 바로 나왔다).
+  #   ⇒ 블록 L-code 를 낸 자리에서 증류도 같이 돈다. 실패해도 루프는 안 선다.
+  tryCatch(system2(Sys.getenv("QVEST_PY", "python"),
+      c(shQuote(file.path(ROOT, "02_Infrastructure/axiom/lcode_harvester.py"))),
+      env = character(0), wait = TRUE, stdout = FALSE, stderr = FALSE),
+    error = function(e) jlog("harvest_failed", err = conditionMessage(e)))
+  .dz <- tryCatch(system2(Sys.getenv("QVEST_PY", "python"),
+      c(shQuote(file.path(ROOT, "02_Infrastructure/axiom/cluster_extractor.py"))),
+      wait = TRUE, stdout = TRUE, stderr = TRUE), error = function(e) NULL)
+  jlog("distill_ran", n = u2,
+       new_cands = length(grep("CAND_", as.character(.dz %||% character(0)), value = TRUE)),
+       note = "블록 L-code 발행 직후 증류 — 주간 주기가 강화 속도를 못 따라간다")
 }
 jlog("batch_done", block = (if (!is.null(first)) first$block else "resume"), recorded = nb, used = u2)
 0L

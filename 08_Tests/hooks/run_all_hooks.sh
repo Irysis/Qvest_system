@@ -1255,6 +1255,8 @@ SUITES=(
   # 2026-09-04 — 강화 누적 구조: 블록 승계·다음블록 설계·집행 판정 (양방향).
   "08_Tests/reinforcement/test_rf_block_accumulate.R"
   "08_Tests/reinforcement/test_rf_block_design.R"
+  # 2026-09-04 — 공리가 판단 지점(LLM 레인 4종)에 닿는가 + 증류 주기.
+  "08_Tests/reinforcement/test_rf_axiom_inject.R"
 )
 
 

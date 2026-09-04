@@ -46,7 +46,12 @@ rm -f "$OUT"
 Rscript "$ROOT/02_Infrastructure/ops/rf_lcode_mechanism_lib.R" materials "$BID" "$BLK" "$MAT" >> "$LOG" 2>&1 || {
   jl materials_failed "base_id=$BID" "block=$BLK"; exit 0; }
 
+. "$ROOT/02_Infrastructure/ops/rf_axiom_brief.sh"
+AXB="$(rf_axiom_brief)"
+
 PROMPT="이 강화 블록의 **기전**을 한 문단으로 써라. 수치는 이미 규칙이 적었다 — 너는 **왜**를 쓴다.
+
+${AXB}
 
 $(cat "$MAT")
 

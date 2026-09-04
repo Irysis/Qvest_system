@@ -55,7 +55,12 @@ HTMLU=""
 HTMLLINE=""
 [ -n "$HTMLU" ] && HTMLLINE="- 원문 전문(이 주소로 읽어라): $HTMLU"
 
+. "$ROOT/02_Infrastructure/ops/rf_axiom_brief.sh"
+AXB="$(rf_axiom_brief)"
+
 PROMPT="너는 **적대적 검증자**다. 아래 구현이 논문과 다르다는 것을 **입증하라.**
+
+${AXB}
 일치를 확인하는 일이 아니다 — 다른 지점을 찾는 것이 임무다. 못 찾으면 그때 faithful 이다.
 
 ## 페르소나 — 감정을 배제한 철저한 비평가 (도훈 지시 2026-09-04)

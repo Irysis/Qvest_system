@@ -1,0 +1,237 @@
+{
+  "schema_version": "distilled_v1",
+  "dist_id": "DIST-GEN-018",
+  "cluster_key": "67e4fd86e900",
+  "candidate_id": "CAND_reinforcement_67e4fd86e900",
+  "status": "pending_5axis",
+  "statement_refined": null,
+  "retry_condition": null,
+  "refined_at": null,
+  "refined_by": null,
+  "promoted_to_axiom": null,
+  "created_at": "2026-09-04T06:08:42+00:00",
+  "updated_at": "2026-09-04T06:08:42+00:00",
+  "research_mode": "reinforcement",
+  "metric_type": "estimated",
+  "type": "empirical",
+  "polarity": "negative",
+  "statement_draft": "[실증 실패 규칙 초안] family=momentum, tags=reinforcement,multifactor,momentum, supporting=7건 L-code. (promote.R 5축 검증에서 범위·메커니즘·OOS 확정 필요)",
+  "supporting_l_codes": [
+    "L-RF-20260829_142955",
+    "L-RF-20260829_152717",
+    "L-RF-20260829_163417",
+    "L-RF-20260829_193556",
+    "L-RF-20260829_193556_02",
+    "L-RF-20260829_195704",
+    "L-RF-20260829_224532"
+  ],
+  "scope_draft": {
+    "market": "KR",
+    "factor_family": "momentum",
+    "regime": null,
+    "construction_types": null
+  },
+  "evidence_draft": {
+    "independent_l_codes": 7,
+    "independent_strategies": 7,
+    "strategies": [
+      "RF_WT-R20260829_001_JT1993_x_SUE_2way",
+      "RF_WT-R20260829_002_JT1993_form_decomposition",
+      "RF_WT-R20260829_003_JT1993_x_turnover_MLC",
+      "RF_WT-R20260829_008_DGW2014_ABORTED_AT_POWER_GATE",
+      "WTR20260829_004_DM2016_CRASHOVL_IV25",
+      "WTR20260829_006_EL2022_FACMOM_EWBAND40",
+      "WTR20260829_007_GH2004_52WHIGH_EW25_BUF50"
+    ],
+    "effect_direction_consistency": null,
+    "note": "evidence_draft — promote.R 5축 검증에서 hurdle_result/grade_a_catalog 교차검증으로 확정",
+    "n_eff_signatures": 7,
+    "independent_constructions": 7,
+    "constructions": [
+      "composite",
+      "independent_2way_sort",
+      "momentum",
+      "orthogonal_4cell_form_decomposition",
+      "single_factor_long_only",
+      "turnover_stratified_2way",
+      "volatility_timing_overlay"
+    ],
+    "metric_types": [
+      "backtested",
+      "canonical_screen",
+      "unavailable"
+    ]
+  },
+  "falsification_draft": {
+    "attempts": [
+      {
+        "test": "1급 전제 — EL2022 Table 2 사양 pooled 지시변수 회귀(12-1, 모멘텀 계열 제외, 계열-대표 사양 사전등록)",
+        "result": "전제 존재 확인 — +0.8157%/월 t 2.169(p 0.030). lag 사다리 2.169/2.438/2.673 로 동월 누출 지문 없음. 단 전수 261팩터 해상도에서는 t 1.888 로 유의성 소멸",
+        "effect_retained": true
+      },
+      {
+        "test": "2급 스패닝 — 개별주 모멘텀(M02) vs TS-FMOM 양방향 절편 검정",
+        "result": "양방향 모두 spanned → 사전등록 무효화 조항 발동 = 미결. 정방향 t 2.486→1.448(49.3% 흡수), 역방향 2.564→1.771(38.5%)",
+        "effect_retained": {}
+      },
+      {
+        "test": "배관 양성대조 — F-사다리(F=1/3/5/10/12) + sham-FMOM 300회",
+        "result": "F-사다리 잔여 |t| 단조 감소(2.360→1.448) · sham 경험 p 0.0000, sham 절편 |t| 중앙 2.498 = base 2.486 → 절편 하락은 회귀자 추가 효과가 아니라 실제 타이밍 신호",
+        "effect_retained": true
+      },
+      {
+        "test": "기전 (d) 고유값 정렬 방향성 — 팩터 모멘텀이 고고유값 축에 집중되는가",
+        "result": "미결 — Spearman -0.287, 상위5 PC 기울기 0.0970(t 1.478) vs 하위5 0.00014(t 0.002). 부호는 EL2022 방향이나 비유의·판본 민감. 논문 대조강도(t 6.08 vs 2.15) 재현 실패",
+        "effect_retained": {}
+      },
+      {
+        "test": "소비면 전이 — EW_band40 회전 제어의 알파 교환",
+        "result": "비용 -0.486%p 확정, 알파 +0.476%p 이나 t 0.438 로 0 과 구별 불가. 합산 t 0.883 비유의. 명제 = 회전 27% 감축에 알파 손실 무증거",
+        "effect_retained": {}
+      },
+      {
+        "test": "벤치 basis 2x2 귀속(248개월)",
+        "result": "벤치 교체 -0.3277 vs 전략 교체 -0.0239 = 벤치 항이 13.7배 지배. 네 basis 전부 B 문턱 2.0 미만이라 등급 불변",
+        "effect_retained": true
+      },
+      {
+        "test": "PIT 수정 blast radius — ast_verify 23리프 FAIL_LOOKAHEAD 제외 후 재실행",
+        "result": "consensus 계열 전멸(13→12)에도 alpha 5.66%→6.36% 상승. 제외분이 성과를 부풀리지 않았다는 실증. 월수익 상관 0.9714",
+        "effect_retained": true
+      },
+      {
+        "test": "detect_lookahead 양방향 대조(forge 층 직접 실행)",
+        "result": "양성 1/3 발화(sd*sqrt 만; quantile·scale 미발화) · 음성 0/5(전 표본 mean/cov · shift(-1) · 재정규화 · which.max). CLEAN 은 선언 idiom 부재의 증거로만 인용",
+        "effect_retained": false
+      },
+      {
+        "test": "계기 공허 PASS 적발 — audit Check 13 · Check 16",
+        "result": "Check 13 은 정규식이 t_plus_1 표기 미인식으로 skip 하며 PASS, Check 16 은 manifest frequency 가 rebalance_frequency 에서 채워져 월간 전략에서 원리적 미발화. 둘 다 통과로 세지 않고 직접 재도출로 대체",
+        "effect_retained": false
+      },
+      {
+        "test": "1급 GH2004 Table V 이식 FM(시장-내 랭킹, 1554 단면회귀)",
+        "result": "reject_if 발동 — FHH +0.095%/월 t +0.910 비유의. FHL -0.310 t -2.616 로 숏 쪽에만 유의",
+        "effect_retained": false
+      },
+      {
+        "test": "F4 통제 사다리(시장-내 랭킹 + 모멘텀/규모 + 산업모멘텀 + 변동성 + L-family + D35/M17)",
+        "result": "S0 +0.877 → S5 +0.097. 통제 전에 이미 비유의. 누출 귀무가 더 셈(Kyle 2.557 · RealVol 2.111 vs 1.541)",
+        "effect_retained": false
+      },
+      {
+        "test": "선행 런 t +3.199 재귀속 4축 분해",
+        "result": "유니버스 축 확정 — 전 시장 N 1397.7 에서만 성립, mandate 유니버스에서 t Score -0.090 부호 반전. 나머지 3축 기각",
+        "effect_retained": false
+      },
+      {
+        "test": "F2 장기 무반전(k=12/24/36/48) — anchoring vs 수익률 외삽",
+        "result": "NOT_REJECTED — 근접도 전 구간 무반전 vs JT winner 유의 반전(k=12 -2.01 · k=48 -2.87). GH2004 Table VI 재현",
+        "effect_retained": true
+      },
+      {
+        "test": "시장 더미 아티팩트 통제(혼합 랭킹 vs 시장-내 랭킹)",
+        "result": "혼합 z vs KQ더미 rho -0.165, 시장-내 랭킹이 정확히 0 으로 제거. 3/20 과 달리 유의를 만들지는 않음",
+        "effect_retained": true
+      },
+      {
+        "test": "detect_lookahead 양방향 대조(forge 직접 실행)",
+        "result": "양성 5/5 발화. 커버리지 반증 0/4 미발화 — shift(Close,-1L) · 전표본 cov() · 전표본 mean() 재정규화 · 수동 미래 인덱싱. 원인: is_python 분기 + PY_* 가 .py 전용 → R 분기에 음수 shift 패턴 부재",
+        "effect_retained": false
+      },
+      {
+        "test": "벤치 basis 2x2 귀속(259개월)",
+        "result": "벤치 교체 -0.3577 vs 전략 교체 -0.0518 = 6.9배 지배. 상류 0.929 != 권위 0.636",
+        "effect_retained": true
+      },
+      {
+        "test": "자기적대 초판 철회 — FF3 +15.59% 정렬 아티팩트",
+        "result": "신호월 라벨을 회귀에 넘긴 오류. 홀딩월 정렬 시 선행 런의 Carhart4 모멘텀 흡수 재현. 손익분기 40.7bps 이나 비용 0 에서도 활성 t +1.471 → 급소는 비용이 아니라 신호",
+        "effect_retained": false
+      },
+      {
+        "test": "오버레이 한계기여 반사실 대조(ON vs OFF, 동일 기간·비용·NAV 규약)",
+        "result": "전 축 음수 재현 — IV 짝 dCalmar -0.0178 · dSR -0.0328 · dnetIR -0.0588 · dPORT_t -0.2602. 무조건화 C2_IV_off 가 전 구성 지배(PORT_t 1.0149)",
+        "effect_retained": false
+      },
+      {
+        "test": "국면 라벨 정확성 검정(패닉일 벤치 수중깊이 · 발화율)",
+        "result": "라벨은 정확 — 패닉일 중앙 수중 -28.5%(정상 -12.5%), 벤치 20% 수중 시 발화율 34.7% vs 전체 10.2%. 실패는 라벨이 아니라 소비면에서 온다",
+        "effect_retained": true
+      },
+      {
+        "test": "기전 재도출 — 패닉 구간 시장 거동",
+        "result": "패닉 라벨 구간 벤치 연율 +45.5%(강한 반등). 저변동 구성 교체가 반등 베타를 반납 — 패닉 액티브 연율 -8.05%p, 정상 +4.81%p. alpha F2 의 다른 얼굴",
+        "effect_retained": false
+      },
+      {
+        "test": "자기 반증 — 국면별 액티브 유의성",
+        "result": "패닉 t -0.60 · 정상 t +1.02 로 둘 다 무의미(26개월). 한계기여 음수는 전 표본 점추정으로만 읽어야 한다고 자기 제한",
+        "effect_retained": {}
+      },
+      {
+        "test": "오버레이 PIT 4항 + 위반 주입 양성 대조",
+        "result": "assert_overlay_pit HARD PASS · lag1 NO_COLLAPSE(+5.69%) · strict A/B 인플레 0.0000. 위반 주입판 Calmar 0.2350 = +27.54% 로 최선 무조건화(0.2063) 초과 — alpha·optimizer 와 3층 동형",
+        "effect_retained": false
+      },
+      {
+        "test": "자기참조 함정 — anchor_date/realized_ym 오탐",
+        "result": "초판 TRUE 의 정체가 자기 spec 선언 문장이었다. 문장 미삭제 + 결정경로 정의를 deparse(.replay)+소비 블록으로 좁혀 재도출, 전문 스캔 결과 병기",
+        "effect_retained": false
+      },
+      {
+        "test": "벤치 basis 귀속",
+        "result": "상류 월별 1.1575 → 권위 일별 0.7547. 전략 누적은 forge 가 1.0688배 높은데 벤치가 1.2286배 더 복리 — 지배항은 벤치 계열",
+        "effect_retained": true
+      },
+      {
+        "test": "detect_lookahead 양방향 대조",
+        "result": "선언 idiom 주입 발화(1) · 비선언 idiom 주입 미발화(0) — 상류 3층(0/3)과 동형. CLEAN 은 선언 idiom 부재의 증거로만 인용하고 한계를 spec 에 문장으로 박아 audit Check 7 이 보존",
+        "effect_retained": false
+      },
+      {
+        "test": "DIST-AR-041 범주 판단(가격-파생 저EV)",
+        "result": "IN_CATEGORY — IDZ 는 일별 종가수익 부호만으로 계산되는 가격-파생. 구성 형태 차이는 원천 차이가 아니다. Q-Lead 착수 논거 반박됨",
+        "effect_retained": false
+      },
+      {
+        "test": "승자-레그 단독 효과크기 추출(원문 Table 2 Panel A/C, 저자 배포 PDF 직접 판독)",
+        "result": "승자 몫 Panel C 49.1%/51.6% · Panel A 25.3%/43.6% — 효과의 절반 이상이 숏 레그. 원문은 승자 열 t 를 보고하지 않음(보고 t 는 전부 롱숏). 승자 레그 비단조(Panel A 최댓값 3분위)",
+        "effect_retained": false
+      },
+      {
+        "test": "사전 검정력 게이트(승자-레그 앵커, 롱숏 헤드라인 금지어)",
+        "result": "ratio 0.166(post-1980) ~ 0.091(post-1927)로 중단 문턱 0.15 에 걸침. 실현 컷 후 승자 단독 +2.2%p/yr vs 필요 +13.25%/yr",
+        "effect_retained": false
+      },
+      {
+        "test": "사후 표적 교체 자기검사",
+        "result": "표적을 수준→지속(OOS)으로 옮긴 결정이 앵커 계산 이후에 나왔음을 설계자가 자백(ACCEPT, 미방어). 사후 표적 교체에 해당",
+        "effect_retained": false
+      },
+      {
+        "test": "측정 이력 조회(hypothesis_index: discreteness / path shape / return consistency)",
+        "result": "0건 — 미측정 축인 것은 맞다. 그러나 미측정이 착수 정당성을 만들지는 않는다(범주·효과크기·게이트가 별개로 걸린다)",
+        "effect_retained": {}
+      },
+      {
+        "test": "★교차 논문 구조 관찰(3편 독립)",
+        "result": "LS2000 효과 본체 패자·Year2+ · GH2004 숏 레그 76.6% · DGW2014 승자 몫 25~52%. 롱온리 수확 몫이 모멘텀 후속 문헌 전반에서 체계적으로 작다",
+        "effect_retained": true
+      }
+    ],
+    "note": "L-code 기록 반증 시도 실값 집계"
+  },
+  "mechanism_draft": {
+    "economic_explanation": "KR 에서 끊어진 마디는 '이익정보 도착' 이 아니라 '도착한 정보의 미반영분' 이다 — T4(후속 컨센서스 개정 격차)는 관측되나(t 19/17/14) 가격 축 통제 후 초과수익으로 전이되지 않는다(T2 powered null). 단 T4 는 t 시점 SUE 수준 미통제라 기전 확증 근거로는 인용 불가. (멤버 가설 7건 — promote.R에서 일치성 재검증)",
+    "mechanism_type": "friction",
+    "causal_plausibility": null
+  },
+  "oos_validation_draft": {
+    "oos_months": null,
+    "oos_effect_vs_is": -0.693,
+    "note": "L-code oos_retention 실값 3건 median (IS65/OOS35 활성SR retention) — oos_months 실값 무 → None 유지 — promote.R essence_score 경유 재확정"
+  },
+  "cluster_members_count": 7,
+  "expiry": "2026-12-03"
+}

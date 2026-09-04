@@ -126,5 +126,22 @@
   "materials": "이 블록 측정표 + **이 전략의 앞선 블록 L-code**(규칙 요약·앞서 적힌 기전·다음 탐침). 도훈 지시 \"이번 배치에서 쌓인 교훈들 참고해서 작성\" — 기전은 블록 하나가 아니라 블록 사이에서 드러나는 일이 많다(2026-09-04: B1 방어계열 3칸 F ↔ B5 종목별 arm 성공 = 소비 지점 차이).",
   "guards": "①이 블록 셀 코드 최소 1개 인용(일반론 차단) ②등급·합격·졸업·BOOK 주장 정규식 차단(AX-008) ③40~1200자 ④병합은 R — 에이전트는 L-code 파일 미접근 ⑤검증 실패해도 L-code 는 남는다(규칙 척추 불변).",
   "kill_switch": "lcode_mechanism.enabled=false 면 규칙 L-code 만 남는다."
+ },
+ "axiom_inject": {
+  "enabled": true,
+  "source": "qepm/memory/axioms/active/AX-*.json (rf_preflight 와 같은 정본)",
+  "lanes": [
+   "replication",
+   "fidelity_audit",
+   "b1_design",
+   "lcode_mechanism"
+  ],
+  "note": "★도훈 지시 2026-09-04 — 공리 주입 경로가 둘 있었는데 둘 다 판단 지점에 안 닿았다. axiom_context_inject 는 PreToolUse[Agent] 훅인데 무인 레인은 Agent 를 0개 스폰하고, rf_preflight 는 셀 스펙에 싣지만 rf_cell_engine 이 preflight 를 한 번도 참조하지 않는다. 그래서 규칙이 도는 자리에만 실리고 LLM 네 지점은 비어 있었다. rf_axiom_brief.sh 가 단일 지점.",
+  "framing": "공리는 전제이지 지시가 아니다. 어긋나는 결론을 낼 수 있되 무엇이 전제를 뒤집는 증거인지 적게 한다. 특히 AX-000(소수 실패를 구조적 한계로 단정 금지)이 없으면 기전 에이전트가 세 칸 보고 축을 닫아 버린다.",
+  "no_truncation": "110자 절단은 원장 기록용이다. 판단에 쓰려면 문장이 온전해야 한다."
+ },
+ "distill_on_block": {
+  "enabled": true,
+  "note": "★도훈 지시 2026-09-04 — corpus(lcode_harvester)는 부팅마다, 증류(cluster_extractor)는 주간 cleaner 안에서만 돌았다. 강화는 하루 블록 L-code 5~6건이라 주기가 안 맞았다: 실측으로 강화 75건이 corpus 에 있는데 distilled 0건 → 수동 실행하자 후보 7건 즉시 생성. 이제 블록 L-code 발행 직후 같이 돈다."
  }
 }
