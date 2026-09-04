@@ -17,11 +17,36 @@
   "calmar": 0.351,
   "oos_retention": -0.385,
   "portfolio_alpha_t": 2.171,
-  "next_probes": [
-    "다음 격자 축 B2(weighting) — 이 블록 승자 위에서 측정",
-    "B1_2(최고 2.171)는 B4 조합 후보로 고정 · B1_5(최저 1.011)는 축 역작동 여부를 조합 LOO 로 분리"
-  ],
+  "next_probes": ["다음 격자 축 B2(weighting) — 이 블록 승자 위에서 측정", "B1_2(최고 2.171)는 B4 조합 후보로 고정 · B1_5(최저 1.011)는 축 역작동 여부를 조합 LOO 로 분리"],
   "next_probe": "다음 격자 축 B2(weighting) — 이 블록 승자 위에서 측정 | B1_2(최고 2.171)는 B4 조합 후보로 고정 · B1_5(최저 1.011)는 축 역작동 여부를 조합 LOO 로 분리",
   "source_paper": "https://arxiv.org/abs/1403.8125",
-  "record_type": "performance"
+  "record_type": "performance",
+  "mechanism": "실측: B1 블록에서 팩터를 하나씩 결합할수록 PORT_t 가 단조 하락했고(B1_2 2.171 → B1_3 2.065 → B1_4 1.950 → B1_5 1.011), MDD 는 0.600(B1_1)에서 0.548(B1_5)로 5.2%p 만 내려왔다. 즉 Size+EBIT/EV 2팩터 코어(B1_1, PORT_t 2.155)가 초과수익의 거의 전부를 쥐고 있고, L27_Price_Level 결합(B1_2)만 PORT_t +0.016·CAGR 20.4→20.7% 로 부호 유지 수준의 미세 개선이며, R14_DUVOL·TR01_ADX_Proxy·C15_Forecast_Error_Trend 는 순서대로 초과수익을 희석했다 — B1_5 에서 CAGR 이 20.7→14.7% 로 6%p 빠진 반면 MDD 는 4.1%p 만 줄어 Calmar 가 0.351→0.268 로 함께 내려갔다. 이것은 위험 감소가 아니라 신호 희석이다: 등가중 결합에서 저IC 팩터가 랭크를 잠식하면 상위 25종의 Value 노출이 묽어지고, 그 대가로 얻는 MDD 개선은 위기 동조 낙폭(2008·2020·2022 유형)을 건드리지 못한다. 실측으로 확인되는 것: 이 5칸의 MDD 범위 0.548~0.600 은 팩터 구성에 거의 반응하지 않았다(폭 0.052) — 팩터 축은 초과수익 축이지 낙폭 축이 아니다. 정황: 모든 칸이 동일 cvar 비중이라 MDD 의 상수성이 cvar 자체의 특성인지, long-only 25종 K200∪KQ150 구성의 시장 베타 특성인지는 이 블록만으로 갈리지 않는다 — 비중 방법을 고정 팩터 셋 위에서 바꿔야 분리된다. 미결: L27 의 +0.016 이 유의한지(B1 은 반복 측정이 없어 표준오차를 모른다) — 다음 블록의 기저를 B1_2 로 잡되 B1_1 과의 차이를 해석에 쓰지 않는다.",
+  "mechanism_by": "llm:block_end",
+  "mechanism_at": "2026-09-04T20:45:48+0900",
+  "prior_lessons_used": [],
+  "next_block_actions": [
+    {
+      "action": "팩터 셋을 B1_2(S01_Size+V14_EBIT_EV+L27_Price_Level)로 고정하고 비중 방법만 5종으로 교체해 MDD 0.548~0.600 범위가 비중 축에 반응하는지 잰다.",
+      "why": "B1 5칸의 MDD 폭이 0.052 로 팩터 구성에 무반응했다 — 낙폭이 팩터 축이 아니라면 다음 후보는 비중 축이다.",
+      "expect": "비중 축이 낙폭 축이면 5칸 사이 MDD 폭이 B1 의 0.052 를 넘고 Calmar 순위가 갈린다. 폭이 그대로면 낙폭은 비중도 아니고 총노출(오버레이) 축으로 넘긴다."
+    },
+    {
+      "action": "신호를 쓰지 않는 순수 위험 비중(minvar·HRP)과 신호 가중(score_tilt)을 같은 블록에 나란히 두어 PORT_t 와 MDD 의 교환비를 분리한다.",
+      "why": "B1 에서 CAGR 6%p 하락 대 MDD 4.1%p 개선이라는 교환비가 나왔다 — 비중 축의 교환비가 이보다 나은지가 판정 기준이다.",
+      "expect": "minvar 가 MDD 를 낮추되 PORT_t 를 2.0 아래로 떨어뜨리면 위험 비중도 팩터 희석과 같은 교환비다. score_tilt 가 PORT_t 를 유지하며 MDD 를 못 내리면 비중 축 상한이 확인된다."
+    },
+    {
+      "action": "낙폭을 목적함수에 직접 넣는 CDaR_LP 를 1칸 배정해 MDD 가 목적함수로 움직이는 양인지 확인한다.",
+      "why": "cvar 는 꼬리 손실 분포를 보지만 경로 낙폭은 보지 않는다 — MDD 상수성이 목적함수 선택 탓인지 가르는 가장 직접적인 대조다.",
+      "expect": "CDaR_LP 의 MDD 가 0.548 아래로 내려오면 낙폭은 최적화로 움직인다. 0.55~0.60 안에 머물면 낙폭은 최적화 축 밖(총노출·국면)에 있다."
+    }
+  ],
+  "next_block_actions_by": "llm:block_end",
+  "avoid": ["팩터 4종 이상 결합(B1_4·B1_5 유형) — PORT_t 2.065→1.011 로 단조 희석이 실측됐다. B2 에서는 팩터 셋을 고정한다.", "R14_DUVOL·TR01_ADX_Proxy·C15_Forecast_Error_Trend 의 재결합 — 이 세 팩터가 순서대로 초과수익을 깎았다. 재시도는 소비 지점을 바꾸는 새 각도(오버레이 신호 등)일 때만.", "score_blend 계열 중복(rank_tilt·softmax_tilt·winsor_tilt·regime_tilt) — score_tilt 1칸으로 계열 대표를 재고 계열 안 변형은 결과가 갈릴 때만 다음에 쓴다.", "PPO_RL·DPL·Genetic — 저장소 실측에서 ML 을 결합기·사이징으로 쓴 구성은 negative 였다. 분포 표적 축이 아닌 한 이 블록의 칸을 쓰지 않는다."],
+  "next_block_design_for": "B2",
+  "next_block_design_n": 5,
+  "prior_action_status": "no_design",
+  "prior_action_detail": "그 블록에 설계가 없었다(규칙 선정)",
+  "mechanism_confidence": "medium"
 }

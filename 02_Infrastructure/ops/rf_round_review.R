@@ -110,6 +110,9 @@ rf_round_review <- function(entry, promo = NULL, root = Sys.getenv("QM_ROOT", ge
   secs <- Filter(Negate(is.null), secs)
 
   ok <- tryCatch({
+    ## ★telegram 을 **명시적으로** source 한다 — rf_auto_notify.R 은 그걸 함수 안에서
+    ##   하므로 이 파일에서는 tg_agent_brief 가 보이지 않는다(실측: could not find function).
+    suppressMessages(source(file.path(root, "02_Infrastructure/telegram/telegram_notify.R")))
     suppressMessages(source(file.path(root, "02_Infrastructure/ops/rf_auto_notify.R")))
     secs <- .rf_axname_deep(secs)          # 블록 코드 → 축 이름 (같은 정본)
     r <- tg_agent_brief(agent = "AlphaSearch",

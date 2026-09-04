@@ -126,28 +126,16 @@ if (length(ex)) {
       jlog("promoted", base_id = nid, parent = E2$base_id, depth = depth,
            cell = best$cell_code %||% "NA", grade = best$grade, port_t = best$port_t,
            carry_factors = length(carry$factors))
+      ## ★승격 안내 대신 **라운드 종료 리뷰** 를 보낸다 (도훈 지시 2026-09-04).
+      ##   종료 시점에 두 통이 나갔고(마지막 블록 리뷰 + 승격 쪽지) 어느 쪽도
+      ##   35칸 전체의 결론이 아니었다. 라운드를 닫는 메시지가 라운드를 요약해야 한다.
+      ##   승격 정보는 그 리뷰의 마지막 절로 들어간다 — 두 통을 한 통으로 합치는 것이다.
       tryCatch({
-        suppressMessages(source(file.path(ROOT, "02_Infrastructure/telegram/telegram_notify.R")))
-        tg_agent_brief(agent = "AlphaSearch",
-          lock_scope = sprintf("rf_promote_%s", nid),
-          title = sprintf("[1계층·승격] %s 등급 구성 추가 강화 개시 (깊이 %d)", best$grade, depth),
-          sections = list(
-            list(type = "bullet", emoji = "\U0001F3AF", heading = "현재 리서치 상황",
-                 # ★bullet item 은 80자 상한(qvest-telegram) — id 는 꼬리만 쓴다
-                 items = c("단계: 1계층 강화 — B등급 이상 승격 레인",
-                           substr(sprintf("대상: ...%s (깊이 %d)",
-                                          substring(nid, max(1, nchar(nid) - 26)), depth), 1, 78),
-                           substr(sprintf("승자 셀: %s · 다중검정 t값 %.3f",
-                                          best$cell_code %||% "NA", best$port_t), 1, 78),
-                           substr(sprintf("물려받은: 팩터 %d종 · 비중 %s · 유니버스 %s",
-                                   length(carry$factors), (carry$weighting$kind %||% "ew"),
-                                   (carry$universe$kind %||% "k200_kq150")), 1, 78))),
-            list(type = "summary", emoji = "\U0001F4CC",
-                 body = sprintf("%d칸 소진 시 승자가 B등급 이상이라 그 구성을 기저로 물려 새 %d칸을 엽니다. 다음 논문은 이 사슬이 끝난 뒤로 밀립니다.", MAXA, MAXA)),
-            list(type = "bullet", emoji = "\u27A1\uFE0F", heading = "다음",
-                 items = c(sprintf("깊이 상한 %d — 부모 최고치를 못 넘으면 승격 중단", MAXD),
-                           "처분: 자본 배정 없음 — 등재는 Judge(PIT) + 도훈 confirm"))))
-      }, error = function(e) jlog("telegram_failed", err = conditionMessage(e)))
+        suppressMessages(source(file.path(ROOT, "02_Infrastructure/ops/rf_round_review.R")))
+        rf_round_review(E2, promo = list(base_id = nid, depth = depth,
+                          cell = best$cell_code %||% "NA", grade = best$grade,
+                          port_t = best$port_t), root = ROOT)
+      }, error = function(e) jlog("round_review_failed", err = conditionMessage(e)))
       return(invisible(0L))   # ★다음 논문으로 넘어가지 않는다 — 승격이 우선
     }
   }
