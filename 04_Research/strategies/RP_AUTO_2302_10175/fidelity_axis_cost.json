@@ -1,0 +1,11 @@
+{
+  "axis": "cost",
+  "verdict": "adapted",
+  "undeclared_changes": [],
+  "signal_mismatch": [],
+  "counterexample": "c=0.0015 (decimal 15bps) 는 논문이 실험한 최대값 c=10bps (=0.001 decimal) 를 초과한다. 즉 논문이 한 번도 훈련하지 않은 비용 수준으로 모델을 학습한다. 그러나 이 차이는 FIDELITY.json changed (4) 에 명시적으로 선언돼 있고, commission_paper=null 로 논문 기준 성과 병기 주장이 없다. 반례 구성 가능하지만 선언된 적응이다.",
+  "evidence": "논문 Table 6 'Impact of Transactions Costs on Sharpe Ratio': c ∈ {0.0, 0.5, 1.0, 2.0, 3.0, 4.0, 5.0, 10.0} basis points 시나리오 전수 실험. Eq.12: TO_t^(i)=σ_tgt|X_t^(i)/σ_t^(i)−X_{t−1}^(i)/σ_{t−1}^(i)|. Eq.13: r̃=Σ(X·σ_tgt/σ·r−c·TO) 로 비용 차감 수익 정의. Eq.14: localized minibatch 버전 TO~ (t*=배치 내 직전 표본). 논문은 단일 c 명시값 없이 민감도 분석만 제시. 왕복/편도 구분 명시 없음.",
+  "confidence": "high",
+  "checked": "c 파라미터 값(0.0015 vs 논문 0~0.001 범위), TO 산식(Eq.12·14) vs engine.R DXS 계산 일치 여부, commission_paper=null 선언의 정직성, 학습-평가 비용 일관성(둘 다 15bps 기준), 왕복·편도 처리 방식",
+  "note": "engine.R:149 에서 .COST_C 를 '계산예산' 블록에 배치했는데 c 는 모델 학습 행동을 바꾸는 실질 파라미터이지 계산예산 파라미터가 아니다 — 주석 분류가 이 축에 해당하나 FIDELITY.json changed(4) 가 정확히 선언하므로 misdeclared 에 해당하지 않는다. TO 산식과 localized minibatch 구조(diff(XS), 배치 첫행=0)는 논문 Eq.12·14 에 충실하다."
+}
