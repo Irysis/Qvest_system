@@ -10,143 +10,144 @@
 # ★fidelity = COMBINATION. 정본 = FIDELITY.json
 #
 # =============================================================================
-# 결합의 형태 — 두 논문이 같은 자리에서 맞물린다
+# 결합의 형태 — estimand(재료 1) / estimator(재료 2) 의 역할 분담
 # =============================================================================
-# 재료 2 의 초록 첫 문장이 이 결합의 전부다(원문 축자):
-#   "Given the success and almost universal acceptance of the simple linear
-#    regression three-factor model, it is interesting to analyze the informational
-#    content of the three factors in explaining stock returns when the analysis is
-#    allowed to consider **non-linear dependencies** between factors and stock
-#    returns."
-# 재료 1 의 민감도 추정식(Eq.3)은 정확히 그 "simple linear regression" 이다(원문 축자):
-#   "I use two years of monthly excess returns to obtain estimates of their
-#    sensitivities to CID"  ·  R_i,t = alpha + beta * CID_t + eps_t
+# 두 재료의 스코어를 각각 만들어 섞는 지점이 이 파일에 없다. 산출은 하나뿐이고,
+# 재료 1 이 **무엇을 재는가**를, 재료 2 가 **어떻게 재는가**를 통째로 공급한다.
 #
-# 그러므로 결합은 **평균이 아니라 치환**이다:
-#   재료 1 이 정하는 것 = 무엇을 재는가(estimand)
-#       · 상태변수      : Eq.1  CID_t = (1/N) sum_i |R_i,t - R_MKT,t|  (VW 산업, >=10사)
-#       · 충격          : Eq.2  dCID_t = g0 + g1 dCID_{t-1} + g2 CID_{t-1} + u_t
-#                         ("residuals ... referred to as CID in the rest of the paper")
-#       · 창            : "two years"  = 24개월
-#       · 단면 처리     : "I winsorize beta_CID at 1% and 99% percentiles"
-#       · 방향(사전선언): 고민감 = 저수익 (Q1 0.79% > ... > Q5 0.30%, L/S 49bps t=3.19)
-#       · 리밸          : "I update estimates of beta_CID and rebalance portfolios
-#                          every month"
-#   재료 2 가 정하는 것 = 어떻게 재는가(estimator)
-#       · 선형 기울기 대신 **depth=1 계단**    ("Limiting to max depth = 1")
-#       · 임계값은 전 종목 SSE 합으로 하나만   ("a single model capable of predicting
-#                                              simultaneously n stocks is built",
-#                                              "Min sum_i (y_i - prediction(y_i))^2")
-#       · 전 분기점 greedy 탐색                ("all input variables and all possible
-#                                              split points are evaluated")
-#       · 종목별 표준화 없음(dominant stock 은 제거 대상이 아니라 성질)
-#       · 시장초과수익은 **경쟁자가 아니라 통제항**  ("in all cases (solo and joint)
-#         the most informative factor is always the market excess return factor")
+#   재료 1 이 정하는 것 (estimand) — 전부 원문 명시값
+#     · Eq.1  CID_t = (1/N) sum_i |R_i,t - R_MKT,t|   (VW 산업, 소속 >=10사,
+#             R_MKT = 전 상장종목 VW)  ← **월간**
+#     · Eq.2  d(CID_t) = g0 + g1*d(CID_{t-1}) + g2*CID_{t-1} + u_t
+#             잔차 u_t 가 논문의 operative 변수다
+#     · 창    "two years of monthly excess returns" = 24개월
+#     · 단면  "I winsorize beta_CID at 1% and 99% percentiles"
+#     · 방향  **사전 선언** — 고민감 = 저수익 (Q1 0.79% > Q2 0.63 > Q3 0.58 >
+#             Q4 0.45 > Q5 0.30 · L/S -49bps t=-3.19)
+#     · 리밸  "rebalance portfolios every month"
 #
-# 즉 이 엔진의 산출은 재료 1 의 beta_CID 를 재료 2 의 계단으로 바꾼 것이다:
+#   재료 2 가 정하는 것 (estimator) — 재료 1 의 Eq.3 선형 기울기를 대체한다
+#     · "Limiting to max depth = 1"                         → 계단 1개
+#     · "a single model capable of predicting simultaneously n stocks is built"
+#       "correlation information enters the tree structure" → **공통 임계값 1개**
+#     · "Min for all split points  Sum_i (y_i - prediction(y_i))^2"
+#       "all input variables and all possible split points are evaluated and
+#        chosen in a greedy algorithm"                      → 전 분기점 joint SSE
+#     · 종목별 표준화 없음 ('dominant stock' 은 제거 대상이 아니라 설계의 성질)
 #
-#     Delta_i = E[ eps_i,t | u_t >  c* ]  -  E[ eps_i,t | u_t <= c* ]
-#     Score_i = -Delta_i        (부호 = 재료 1 이 사전 선언한 방향)
-#
-#   eps_i,t = 창 안에서 시장모형(재료 2 의 만장일치 승자 = market factor)을 통제한 잔차
-#   c*      = 그 창의 전 종목 SSE 합을 최소화하는 **공통** u 임계값 하나 (재료 2)
-#
-# ★두 신호의 rank-Z 평균 계보(저장소 5회 측정 · 최고 t 0.766)와 같은 지점이 없다.
-#   재료별 스코어를 만들어 섞는 코드가 이 파일에 없다. 재료 1 은 estimand 를,
-#   재료 2 는 estimator 를 각각 통째로 공급하고, 산출은 하나뿐이다.
-# ★직전 결합판(같은 디렉터리, 2026-09-04 10:20 측정 · Grade F · PORT_t -0.678 ·
-#   IC -0.021)과도 다른 수술이다. 그 판은 u_t 를 **조건화 변수**로 썼는데,
-#   재료 1 자신이 u_t 의 1-lag 자기상관을 -0.05 로 보고한다("very low persistence") —
-#   지속성 0 인 변수로는 형성일에 "현재 국면" 이 정의되지 않는다. 그래서 그 판의
-#   스코어는 사실상 창 무조건부 평균(5년 모멘텀)이 됐다. 여기서 u_t 는 조건화 변수가
-#   아니라 **민감도의 축**이고, 축으로 쓸 때는 지속성이 필요 없다(창 안에서 동시점
-#   대비를 재는 것이므로). 같은 변수를 옳은 자리에 넣는 것이 이번 수술이다.
-#   ★역으로, 지속성이 0 이라는 그 성질이 여기서는 **자산**이다: Eq.2 의 AR 잔차는
-#     추세·수준이 제거된 변수라 u 로 자른 잎이 시간 블록이 되지 않는다(시간분기 함정
-#     방지). 재료 2 의 트리에 안전하게 건넬 수 있는 축을 재료 1 의 Eq.2 가 만들어 준다.
+#   결합 산출:
+#       Delta_i = E[ eps_i | u > c* ] - E[ eps_i | u <= c* ]
+#       Score_i = -Delta_i          (부호 = 재료 1 의 사전 선언)
+#     c*    = 그 창의 전 종목 SSE 합을 최소화하는 **공통** u 임계값 하나 (재료 2)
+#     eps_i = 창 안 시장모형 잔차 (아래 "시장을 왜 뺐나")
 #
 # =============================================================================
-# 왜 각 재료 단독보다 나을 것이라 보는가 (반증 형태는 FIDELITY.json changed ②)
+# 왜 이 형태인가 — 재료 1 의 Eq.3 이 KR 에서 무엇에 죽었나
 # =============================================================================
-#  ▸ 재료 1 단독(다중검정 t 1.228 · 충실구현 Grade F)의 사인은 사내 실측으로 특정돼 있다
-#    (RP_2301_09173_CID/NOTES.md): KR 에서 cor(u, 시장) = +0.43(2022-26 +0.63) —
-#    분산 급등이 하락장이 아니라 섹터(반도체) 주도 **급등**에서 나온다. Eq.3 이
-#    **단변량**이라 시장 성분이 통제되지 않고 beta_CID 정렬 = 시장베타 정렬로 변질됐다
-#    (일간 beta -0.39, FF 알파 9~12%는 역베타의 회계). 5분위 VW 라 숏 레그를 삼성전자
-#    39% + 하이닉스 29% 가 지배했다.
-#      → 이 엔진은 시장을 **회귀항으로** 넣는다. 그 근거가 재료 2 다: 시장초과수익이
-#        "always the most informative factor" 라면, 그것을 뺀 단변량 적합의 잔차에는
-#        시장이 통째로 남고, 시장과 상관된 축의 기울기는 그 잔차를 주워 담는다.
-#        (재료 1 이 Eq.2 사양을 그대로 따온 Pastor-Stambaugh(2003) 역시 유동성 베타를
-#         시장 포함 다변량 1단계에서 추정한다. 재료 1 의 표제 결과도 raw 가 아니라
-#         FF5+MOM+STR **초과** 스프레드 -50bps(t=-3.26)다 — 시장통제는 재료 1 자신의
-#         추정 대상 안에 이미 있다.)
-#  ▸ 재료 2 단독(다중검정 t 1.11)의 한계: 산출이 잎의 **수준**(예측 기대수익)이라 창이
-#    5년이면 스코어가 그 종목의 5년 평균수익과 거의 같아진다 — 조건부 구조를 회수해
-#    놓고 무조건부 수준을 발행하는 셈이다(직전 결합판의 IC -0.021 이 그 지문).
-#      → 이 엔진의 산출은 수준이 아니라 **두 잎의 차**다. 게다가 eps 는 창 안에서
-#        평균 0 이라 수준 성분이 구조적으로 존재하지 않는다. 5년 모멘텀 별칭이 원리상
-#        불가능하다.
-#  ▸ 그래서 이 결합의 주장은 하나로 좁혀진다: **"KR 에서 CID 민감도의 단면 분산은
-#    전부 시장베타인가, 아니면 시장을 통제하고 선형을 계단으로 바꾼 뒤에도 남는가."**
-#    남으면 재료 1 의 경제학(분산 국면의 패자가 위험을 지고 프리미엄을 받는다)이
-#    KR 에서도 성립한다는 뜻이고, 남지 않으면 이 계보는 여기서 닫힌다. 어느 쪽이든
-#    엔진이 매월 로그하는 계기 (a)~(f) 가 판정한다(아래 §9).
+# 재료 1 의 민감도 추정식은 단변량 OLS 다:  R_i,t = a + beta*u_t + e.
+#   beta_i = sum_t (u_t - ubar)(R_i,t - Rbar_i) / sum_t (u_t - ubar)^2
+# 즉 **월 t 의 가중치가 (u_t - ubar) 에 비례**한다. u 가 두꺼운 꼬리를 가지면
+# 한 달이 분모·분자를 동시에 지배해 beta_i 의 단면 순위가 그 한 달의 단면 수익
+# 순위로 붕괴한다. 그리고 사내 실측(RP_2301_09173_CID/NOTES.md)이 KR 에서 그 달이
+# 무엇인지 특정했다: cor(u, KOSPI200 월수익) = **+0.43**(2022-26 +0.63), 최대 u 달 =
+# 2026-05(시장 +35%) · 2025-10(+22%) · 2026-04(+33%) — 분산 급등이 하락장이 아니라
+# **반도체 주도 급등**에서 온다. 그래서 beta_CID 정렬이 시장베타 정렬로 변질됐고
+# (L/S 일간 beta -0.39), FF 알파 9~12% 는 역베타의 회계였다(raw CAGR 0.6% · Grade F).
+#
+# ★그런데 이건 재료 1 자신의 estimand 가 아니다. 논문 Table 5 는 5분위의 시장 로딩을
+#   Q1 1.07 · Q5 1.11, **L/S 스프레드 0.04** 로 보고하고 "Controlling for market beta
+#   does not have significant effect on the CID premium" 이라고 쓴다. 즉 US 에서
+#   공짜로 성립하던 성질(시장베타 중립)이 KR 충실구현에서 깨진 것이지, 논문이 시장
+#   베팅을 요구한 적이 없다. 시장을 회귀 통제항으로 넣는 것은 **논문이 보고하는 성질을
+#   KR 에서 강제로 복원**하는 조치다(재료 2 도 같은 자리를 가리킨다 — 시장초과수익이
+#   "always the most informative factor" 라면 그것을 뺀 단변량 적합의 잔차에 시장이
+#   통째로 남고, 시장과 상관된 축의 기울기가 그 잔차를 주워 담는다).
+#
+# 그 위에서 재료 2 의 계단이 남은 절반을 닫는다: 잎 평균은 잎 안의 모든 관측을 1/n 로
+# 실으므로 **어떤 한 달도 Delta 를 지배할 수 없다**(잎 최소 3개월). 기울기의
+# (u_t - ubar) 가중 → 계단의 균등 가중이 이 결합의 핵심 수술이다.
 #
 # =============================================================================
-# 미명시값 보충 — 전부 출처를 적는다 (지어낸 수치를 숨기지 않는다)
+# 왜 각 재료 단독보다 나을 것이라 보는가 (반증 형태 = FIDELITY.json changed ②)
 # =============================================================================
-#  · **창 안의 관측 주기: 월간 -> 일간.** 재료 1 의 창 길이(24개월)는 그대로 두고
-#    해상도만 바꾼다. 이유는 재료 2 의 추정기가 요구하는 최소 조건이다 — 계단 임계값을
-#    전 분기점 탐색으로 고르려면 관측이 24개로는 성립하지 않는다(재료 2 자신의 표본은
-#    1,259 daily returns). Eq.1 은 수익 주기에 무관한 정의이므로 일간 산업 VW 수익으로
-#    그대로 계산된다. **바꾼 것은 해상도이고 창의 시간 길이가 아니다.**
-#    ★대가(정직 기록): 재료 1 의 거시 검증(CID -> 분기 실업률)은 월/분기 축의 결과다.
-#      일간 CID 가 그 노동시장 해석을 그대로 물려받는지는 이 엔진이 검정하지 않는다.
-#  · AR(Eq.2)은 **expanding window**. 논문은 전표본 1회 추정이지만 C1(full-sample) 위반이라
-#    PIT 가 논문 문자를 이긴다. burn-in 60개월 = RP_2301_09173_CID 선례 승계.
-#  · 산업분류 = RAWDATA Sector_Lv2(48군 — FF49 의 최근접 아날로그), **전월말** 기록값.
-#  · 산업/시장 가중 = **전월말 시총**(재료 1 의 VW 규약). 월 m 의 모든 거래일에 월 m-1
-#    말 시총을 고정 적용 — 월 시작 시점에 이미 알려진 값이다.
-#  · 잎 최소 관측:
-#      - 공통 잎 >= **24 관측** — 재료 1 이 이 민감도를 추정하는 표본 크기 그 자체다
-#        ("two years of monthly" = 24). 어느 잎도 논문의 회귀 전체보다 작은 표본 위에
-#        서지 않게 한다.
-#      - 종목별 잎 >= **18 관측** · 창 커버리지 >= **75%** — RP_2301_09173_CID 가
-#        같은 estimand 에 쓴 최소 유효관측(24개월 중 >=18)의 승계.
+#  ▸ 재료 1 단독(다중검정 t 1.228 · 충실구현 Grade F): 위 기전. 이 엔진은 (i) 창 안
+#    OLS 라 cov(eps, 시장) = 0 이 **구조적으로** 성립하고 (ii) 균등가중 잎 평균이라
+#    단일 극단월 지배가 원리상 불가능하다. 두 사인을 각각 닫는다.
+#  ▸ 재료 2 단독(다중검정 t 1.11): 산출이 잎의 **수준**(예측 기대수익)이라 긴 창에서
+#    그 종목의 장기 평균수익과 같아진다 — 조건부 구조를 회수해 놓고 무조건부 수준을
+#    발행한 셈이다. 이 엔진의 산출은 두 잎의 **차**이고, eps 의 창 내 평균이 0 이라
+#    수준 성분이 두 겹으로 제거된다(5년 모멘텀 별칭이 원리상 불가능). 또 재료 2 는
+#    방향을 주지 않지만(그래서 단독 구현은 부호를 고르길 거부했다) 재료 1 이 사전
+#    선언한 부호를 공급한다.
+#  ▸ 남는 주장은 하나다: **KR 에서 CID 민감도의 단면 분산은 전부 시장베타인가,
+#    아니면 시장을 통제하고 선형을 계단으로 바꾼 뒤에도 남는가.** 아래 §8 계기가 판정한다.
+#
+# =============================================================================
+# 해상도 — CID 는 월간 그대로, 잎은 일간 (무엇을 바꾸고 무엇을 안 바꿨나)
+# =============================================================================
+#  · **상태변수는 월간이다.** Eq.1·Eq.2 를 논문 그대로 월간으로 계산한다. 일간 CID 는
+#    산업 일간 분산(변동성 계열)이지 논문이 실업률로 검증한 그 변수가 아니다 — 논문의
+#    거시 검증은 분기 축이고 기전은 "sectoral reallocation" 이라는 저빈도 사건이다.
+#    (이 지점을 일간으로 바꾸면 estimand 가 통째로 갈린다. 바꾸지 않았다.)
+#  · **잎 평균과 시장 통제만 일간이다.** 창의 시간 길이는 재료 1 의 24개월 그대로이고,
+#    그 안에서 관측을 일간으로 읽는다. 이유는 둘 다 추정 정밀도이지 취향이 아니다:
+#      - 시장베타를 24 관측으로 추정하면 통제항 자체가 잡음이라 통제가 성립하지 않는다.
+#        같은 창 일간 ~490 관측이면 통제가 실제로 발화한다(계기 (b) 가 검증).
+#      - 재료 2 의 표본이 1,259 daily returns 이고, joint SSE 스캔은 그 해상도를 전제한다.
+#    ★잎 경계는 여전히 **월 단위**다(u 가 월간이므로 잎 = 월들의 합집합). 그래서
+#      후보 분기점은 24개 월값 사이의 23곳뿐이고, joint SSE 는 그 23곳에서만 평가된다.
+#      이 축약은 근사가 아니라 정확하다: sum_{d in leaf} eps = sum_{m in leaf} (월별 합).
+#  · 대가(정직 기록): 잎 대비의 **유효 표본은 여전히 월 수**다(월 안 일간 수익은 그 달의
+#    공통 성분을 공유한다). 일간화가 사는 것은 시장베타의 정밀도이지 잎 대비의 검정력이
+#    아니다. 이 엔진은 후자를 개선했다고 주장하지 않는다.
+#
+# =============================================================================
+# 미명시값 보충 — 전부 출처를 적는다
+# =============================================================================
+#  · AR(Eq.2) = **expanding window**. 논문은 전표본 1회 추정이나 C1 위반이라 PIT 가
+#    논문 문자를 이긴다. burn-in 60개월 = RP_2301_09173_CID 선례 승계.
+#  · 창 유효 개월 >= 18/24 = 같은 선례(같은 estimand)의 최소 유효관측 승계.
+#  · 잎 최소 **3개월**(양쪽). 논문 둘 다 하한을 주지 않는다. 3 은 성과에서 온 값이 아니라
+#    수치 타당성 하한이다 — 2모수 계단모형에서 어느 잎도 (모수+2) 미만 관측 위에 서지
+#    않게 하고, 어떤 한 달도 잎 평균의 1/3 을 넘지 못하게 한다(= 이 결합이 고치려는
+#    '단일 월 지배' 를 계단 쪽에서 재발시키지 않는 하한). 재료 2 의 Table 2c 에서
+#    **joint** 트리 임계값이 solo(1-99% 까지 극단)보다 훨씬 덜 극단적으로 수렴한다는
+#    점(-70bp ≈ 일간 -0.5sd)이 이 하한이 상시 구속되지 않으리라는 근거이고, 실제
+#    binding 여부는 매월 로그로 드러낸다(계기 (c)).
+#  · 산업분류·가중 = **전월말** Sector_Lv2(48군 — FF49 의 최근접 아날로그) / 전월말 시총.
+#    월 t 의 산업 귀속은 t 시작 전에 알려져 있어야 한다.
+#  · rf 미사용. 재료 1 은 초과수익을 쓰지만 (i) 산출이 두 잎 평균의 **차**이고 rf 는
+#    잎 간 거의 상수라 차분에서 소거되며 (ii) 단면 순위가 불변이다. 시장변수도 재료 1 이
+#    Eq.1 에서 직접 만드는 R_MKT(전 상장종목 VW)를 쓴다 — 외부 캐시 의존 0.
 #  · |일간 Ret| > 1.0 = 결측. KRX 가격제한폭 ±30% 하에서 한 세션에 불가능한 값이므로
 #    액면/재상장 단위 아티팩트다. 전략 파라미터가 아니라 거래소 규칙 근거의 위생 조치.
-#  · rf 미사용. Eq.3 은 초과수익을 쓰지만 이 엔진의 산출은 **두 잎 평균의 차**이고,
-#    일간 rf 는 잎 간에 거의 상수라 차분에서 소거된다. 시장변수도 재료 1 이 Eq.1 에서
-#    직접 만드는 R_MKT(전 상장종목 VW)를 쓴다 — 외부 캐시 의존 0.
-#  · 종목수·비중 = 고정 축(top-25 롱온리 EW). 두 논문의 포트폴리오 규약이 충돌하기
-#    때문이다: 재료 2 는 포트폴리오를 아예 주지 않고("only done for demonstration
-#    purposes and not for statistical inference"), 재료 1 의 5분위 VW 는 레그당 ~70종이다.
-#    **리밸 주기(월간)만 재료 1 명시값 그대로** 따른다.
+#  · 종목수·비중 = 고정 축(top-25 롱온리 EW). 두 논문 규약이 충돌하기 때문이다: 재료 2 는
+#    포트폴리오가 아예 없고("only done for demonstration purposes and not for statistical
+#    inference"), 재료 1 의 5분위 VW 는 레그당 ~70종이며 KR 에서 숏 레그를 삼성전자 39%
+#    + 하이닉스 29% 가 지배했다(선례 실측). **리밸 주기(월간)만 재료 1 명시값 그대로.**
 #
 # =============================================================================
 # PIT (C1~C15) — 구조로 보장한다. detect_lookahead 통과를 근거로 삼지 않는다.
 # =============================================================================
-#  ▸ 구조 경계 1 — 창: 모든 창의 종점이 형성일 D 이하다. 창은 `.rymi` 가 [m-23, m] 인
-#    행 AND `.rdt <= D` 로 잘린다. ip 를 넘는 인덱스·음수 shift·lead 가 코드에 0건.
-#  ▸ 구조 경계 2 — 가중치: 일간 CID 의 산업/시장 가중은 `ymi_w = ymi - 1L` 한 줄로
-#    만들어진다. 동월 시총을 쓰는 경로가 코드에 **존재하지 않는다**(막는 검사가 아니라
-#    표현 불가능한 배치).
-#  ▸ 구조 경계 3 — AR: expanding 누적 교차곱이 `k` 까지만 더해진다. u_k 는 <=k 정보만.
+#  ▸ 구조 경계 1 — 창: 창은 `.wm` 이 [m-23, m] 인 월 AND `.rdt <= D` 로만 잘린다.
+#    형성일 인덱스를 넘는 인덱싱·음수 shift·lead 가 코드에 0건.
+#  ▸ 구조 경계 2 — 가중치/산업: `ymi_w = ymi - 1L` 한 줄로 만들어진다. 동월 시총·동월
+#    섹터를 쓰는 경로가 코드에 **존재하지 않는다**(막는 검사가 아니라 표현 불가능한 배치).
+#  ▸ 구조 경계 3 — AR: expanding 누적 교차곱이 k 까지만 더해진다. u_k 는 <=k 정보만.
 #  ▸ 구조 경계 4 — 상태 이월 없음: 형성일 루프 반복이 서로 독립이다. 시장모형 계수·
 #    임계값·잎 평균이 전부 그 창 안에서만 계산된다.
-#  C1  : rolling/expanding 만. 전표본 mean/quantile/cov/lm 0건. 단면 winsorize 는
-#        그 형성일 벡터 내부에서만(시계열 미래 미참조).
+#  C1  : rolling/expanding 만. 전표본 mean/quantile/cov/lm 0건. winsorize 는 그 형성일
+#        단면 벡터 내부에서만(시계열 미래 미참조).
 #  C2  : same-day 순환참조 없음. D 종가까지 쓰고 집행은 익 거래일(하네스).
 #  C3  : 같은 기간 집계->적용 없음. 신호 컷오프(월 m 말) < 보유월(m+1) 시작.
 #  C4  : 재무제표 패널 미사용.
 #  C5  : 오버레이 없음(S0/S1 오버레이 금지 준수).
-#  C6  : 유니버스 = 각 D 의 K200/KQ150 멤버십(PIT 시변). 최종 명부 주입 없음.
-#        창 커버리지 요건은 **과거** 데이터 요건이라 생존편의를 만들지 않는다.
+#  C6  : 유니버스 = 각 D 의 K200/KQ150 멤버십(PIT 시변). 최종 명부 주입 없음. 창 커버리지
+#        요건은 **과거** 데이터 요건이라 생존편의를 만들지 않는다.
 #  C7  : shift(-N)·lead()·수동 미래 인덱싱 0건. shift 는 전부 +1(과거 방향).
 #  C9  : DD/VT 미사용.
 #  C10 : 유동성 = D **직전 20 거래일** 평균 거래대금. `(ip-20):(ip-1)` 로 당일 배제.
-#  C11 : 외부 매크로 0건(rf·FRED·팩터 캐시 미사용).
+#  C11 : 외부 매크로 0건(rf·FRED·팩터 캐시·BM_DT 미사용).
 #  C13 : Factor DB 미소비 -> 정렬 대상 없음. 부호는 재료 1 의 **사전 선언**(고민감 =
 #        저수익)이지 사후 반전이 아니다.
 #  C15 : Factor DB parquet 직접 load 0건.
@@ -154,52 +155,51 @@
 #    멤버십 플래그로만 한다.
 #
 # ===== 산출 =====
-#   FACTORS(Date, Ticker, Score) — Score = -Delta (계단 CID 민감도의 음수). 클수록 롱.
+#   FACTORS(Date, Ticker, Score) — Score = -Delta. 클수록 롱.
 #   러너 호출: portfolio_spec = list(construction="top_n_long", weighting="ew",
 #              rebalance="monthly", n_long=25, n_max=25) · commission_paper = NULL
 # =============================================================================
 
 suppressWarnings(suppressMessages({
   library(data.table)
-  library(matrixStats)
 }))
 
-set.seed(20070811L)   # 난수 미사용(결정론적 엔진) — 재현성 선언 고정
+set.seed(23010917L)   # 난수 미사용(결정론적 엔진) — 재현성 선언 고정
 
 stopifnot(exists("RAWDATA"), is.data.table(RAWDATA))
 .RQ <- c("Date", "Ticker", "Close", "Vol", "Ret", "Size", "Sector_Lv2", "K200", "KQ150")
 if (!all(.RQ %in% names(RAWDATA)))
-  stop(sprintf("[COMBO_08115_09173] RAWDATA 열 부족: %s",
+  stop(sprintf("[COMBO_CIDSTEP] RAWDATA 열 부족: %s",
                paste(setdiff(.RQ, names(RAWDATA)), collapse = ", ")))
 
 # =============================================================================
 # 0. 상수 — 전부 출처 표기
 # =============================================================================
-# ▸ 재료 1 (Pinchuk 2301.09173)
-.CID_MIN_FIRMS <- 10L     # "industries with at least 10 firms"
-.BETA_WIN_M    <- 24L     # "two years of monthly excess returns" — 창의 시간 길이
-.WINS_LO       <- 0.01    # "winsorize beta_CID at 1% and 99% percentiles"
-.WINS_HI       <- 0.99
-.LEAF_MIN_G    <- 24L     # 공통 잎 최소 관측 = 논문 회귀의 표본 크기(24개월) 그 자체
-# ▸ 재료 2 (Polimenis 2007.08115)
-#   depth=1 · 공통 임계값 1개 · 전 분기점 greedy · 종목별 표준화 없음 · 시장은 통제항.
-#   수치 파라미터는 아래 .MIN_STK 하나뿐이다(논문 표본 5종 -> joint 성립 하한 2종).
-.MIN_STK       <- 2L
+# ▸ 재료 1 (Pinchuk 2301.09173) 명시값
+.MIN_FIRMS <- 10L          # "industries with at least 10 firms"
+.WIN_M     <- 24L          # "two years of monthly excess returns"
+.WINS_LO   <- 0.01         # "winsorize beta_CID at 1% and 99% percentiles"
+.WINS_HI   <- 0.99
+# ▸ 재료 2 (Polimenis 2007.08115): depth=1 · 공통 임계값 1개 · 전 분기점 greedy ·
+#   종목별 표준화 없음. 수치 파라미터는 joint 성립 하한 하나뿐이다(논문 표본 5종).
+.MIN_STK   <- 2L
+# ▸ 수치 타당성 하한 (성과에서 오지 않은 값 — 위 "미명시값 보충" 에 근거)
+.LEAF_MO   <- 3L           # 잎 최소 개월(양쪽) — 2모수 계단의 자유도 + 단일월 지배 차단
 # ▸ 사내 선례 승계 (RP_2301_09173_CID — 같은 estimand 의 기존 구현)
-.AR_BURN_M     <- 60L     # AR expanding burn-in (개월)
-.LEAF_MIN_S    <- 18L     # 종목별 잎 최소 유효관측 (24개월 중 >=18 의 승계)
-.COV_MIN       <- 0.75    # 창 커버리지 하한 (= 18/24)
-.RET_CAP       <- 1.0     # |일간수익| > 100% = 데이터 아티팩트(KRX 가격제한폭 ±30%)
+.AR_BURN   <- 60L          # AR expanding burn-in (개월)
+.MIN_MO    <- 18L          # 창 24개월 중 유효 >= 18
+.COV       <- 0.75         # 창 일간 커버리지 하한 (= 18/24)
+.RET_CAP   <- 1.0          # |일간수익| > 100% = 데이터 아티팩트 (KRX 가격제한폭 ±30%)
 # ▸ 축(도훈 고정)
-.LIQ           <- 2e8     # adv20(t-1) 하한 (KRW)
-.LIQ_WIN       <- 20L     # 거래일 (D 직전 20 거래일, 종점 = D-1)
-.START         <- as.Date("2005-01-01")
+.LIQ       <- 2e8          # adv20(t-1) 하한 (KRW)
+.LIQ_WIN   <- 20L          # 거래일 (D 직전 20 거래일, 종점 = D-1)
+.START     <- as.Date("2005-01-01")
 
-.tru <- function(x) !is.na(x) & (x != 0)      # 논리/0-1 혼재 방어
+.tru <- function(x) !is.na(x) & (x != 0)          # 논리/0-1 혼재 방어
 .t0  <- Sys.time()
 
-# 안전 Spearman — 벡터만 받는다(DT 열 직접 전달 금지: lookahead_detector C1b 회피)
-.sp <- function(a, b) {
+# 안전 헬퍼 — 전부 **벡터**만 받는다(DT 열 직접 전달 금지: lookahead_detector C1b 회피)
+.sp <- function(a, b) {                            # Spearman
   a <- as.numeric(a); b <- as.numeric(b)
   ok <- is.finite(a) & is.finite(b)
   if (sum(ok) < 5L) return(NA_real_)
@@ -207,133 +207,142 @@ if (!all(.RQ %in% names(RAWDATA)))
   if (stats::sd(ra) == 0 || stats::sd(rb) == 0) return(NA_real_)
   as.numeric(stats::cor(ra, rb))
 }
-.med <- function(x) if (!length(x) || all(is.na(x))) NA_real_ else stats::median(x, na.rm = TRUE)
+.med <- function(x) {
+  x <- as.numeric(x)
+  if (!length(x) || all(!is.finite(x))) return(NA_real_)
+  as.numeric(stats::median(x[is.finite(x)]))
+}
 
 if (!inherits(RAWDATA$Date, "Date")) RAWDATA[, Date := as.Date(Date)]
 
 # =============================================================================
-# 1. 재료 1 Eq.1 — 일간 CID (거시 상태변수: 시장 전체에서 만든다)
+# 1. 일간 기저 패널 — 전월말 시총/산업라벨 부착 (구조 경계 2)
 # =============================================================================
-# ★유니버스 치환(K200∪KQ150)은 **정렬 대상(test asset)** 에만 걸린다. CID 자체는 논문이
-#   "value-weighted market return across all firms" 라 한 거시 변수이므로 전 상장종목에서
-#   만든다. 가중치·산업라벨은 **전월말** 관측치를 그 달 내내 고정한다(구조 경계 2).
-.ALLD  <- data.table(Date = sort(unique(RAWDATA$Date)))
-.ALLD[, ymi := year(Date) * 12L + month(Date)]
-.MEALL <- .ALLD[, .(me = max(Date)), by = ymi]$me            # 시장 전체 월말 거래일
-.EOM   <- RAWDATA[Date %in% .MEALL & is.finite(Size) & Size > 0 & !is.na(Sector_Lv2),
-                  .(Ticker, ymi_w = year(Date) * 12L + month(Date), w = Size, ind = Sector_Lv2)]
-.EOM   <- unique(.EOM, by = c("Ticker", "ymi_w"))
-rm(.ALLD, .MEALL); gc(verbose = FALSE)
-if (!nrow(.EOM)) stop("[COMBO_08115_09173] 월말 시총/섹터 관측 0건 — Size/Sector_Lv2 확인")
+# ★유니버스 치환(K200∪KQ150)은 **정렬 대상(test asset)** 에만 걸린다. CID·시장은 재료 1 이
+#   "value-weighted market return across all firms" 라 한 거시 변수라 전 상장종목에서 만든다.
+.AD  <- data.table(Date = sort(unique(RAWDATA$Date)))
+.AD[, ymi := year(Date) * 12L + month(Date)]
+.MEA <- .AD[, .(me = max(Date)), by = ymi]$me                   # 시장 전체 월말 거래일
+.EOM <- RAWDATA[Date %in% .MEA & is.finite(Size) & Size > 0 & !is.na(Sector_Lv2),
+                .(Ticker, ymi_w = year(Date) * 12L + month(Date),
+                  w = as.numeric(Size), ind = Sector_Lv2)]
+.EOM <- unique(.EOM, by = c("Ticker", "ymi_w"))
+rm(.AD, .MEA); gc(verbose = FALSE)
+if (!nrow(.EOM)) stop("[COMBO_CIDSTEP] 월말 시총/섹터 관측 0건 — Size/Sector_Lv2 확인")
 
-.DD <- RAWDATA[is.finite(Ret) & abs(Ret) <= .RET_CAP, .(Date, Ticker, rr = Ret)]
-.DD[, ymi_w := year(Date) * 12L + month(Date) - 1L]        # ★전월말 가중치 (동월 경로 없음)
+.DD <- RAWDATA[is.finite(Ret), .(Date, Ticker, rr = as.numeric(Ret))]
+.DD <- .DD[abs(rr) <= .RET_CAP]            # rr 은 위에서 finite 로 걸러져 NA 첨자가 없다
+.DD[, ymi := year(Date) * 12L + month(Date)]
+.DD[, ymi_w := ymi - 1L]                                        # ★전월말 (동월 경로 없음)
 .DD[.EOM, on = .(Ticker, ymi_w), c("w", "ind") := .(i.w, i.ind)]
 .DD <- .DD[is.finite(w) & w > 0 & !is.na(ind)]
-if (!nrow(.DD)) stop("[COMBO_08115_09173] 전월말 가중치 결합 후 0행 — 월말 격자 확인")
+if (!nrow(.DD)) stop("[COMBO_CIDSTEP] 전월말 가중치 결합 후 0행 — 월말 격자 확인")
 
-# 시장 = 전 상장종목 VW (>=10사 필터 **전**)
+# 일간 VW 시장 (>=10사 필터 **전**, 전 상장종목) — 시장 통제항의 원천
 MKTD <- .DD[, .(r_mkt = sum(w * rr) / sum(w), n_all = .N), by = Date]
-# 산업 = VW, 소속기업 >=10사
-.IND <- .DD[, .(r_ind = sum(w * rr) / sum(w), nf = .N), by = .(Date, ind)][nf >= .CID_MIN_FIRMS]
-rm(.DD, .EOM); gc(verbose = FALSE)
-
-CIDD <- merge(.IND[, .(Date, r_ind)], MKTD[, .(Date, r_mkt)], by = "Date")
-CIDD <- CIDD[, .(CID = mean(abs(r_ind - r_mkt)), n_ind = .N), by = Date]
-setorder(CIDD, Date)
-rm(.IND); gc(verbose = FALSE)
-if (nrow(CIDD) < 500L)
-  stop(sprintf("[COMBO_08115_09173] 일간 CID %d일 — 표본 부족", nrow(CIDD)))
-cat(sprintf("[COMBO_08115_09173] Eq.1 일간 CID %s일 (%s ~ %s) · 산업수 중앙 %.0f · 평균 %.4f sd %.4f\n",
-            format(nrow(CIDD), big.mark = ","), as.character(min(CIDD$Date)),
-            as.character(max(CIDD$Date)), .med(CIDD$n_ind),
-            mean(CIDD$CID), stats::sd(CIDD$CID)))
+setorder(MKTD, Date)
 
 # =============================================================================
-# 2. 재료 1 Eq.2 — CID 충격 u_t (expanding window AR · PIT 보정)
+# 2. 재료 1 Eq.1 — **월간** CID (상태변수는 논문 그대로 월간이다)
 # =============================================================================
-#   dCID_t = g0 + g1*dCID_{t-1} + g2*CID_{t-1} + u_t
+MON <- .DD[, .(mret = prod(1 + rr) - 1, nd = .N, w = w[1], ind = ind[1]),
+           by = .(Ticker, ymi)]
+rm(.DD); gc(verbose = FALSE)
+
+IPF  <- MON[, .(r_ind = sum(w * mret) / sum(w), nf = .N), by = .(ymi, ind)][nf >= .MIN_FIRMS]
+MKTM <- MON[, .(r_mktm = sum(w * mret) / sum(w)), by = ymi]
+CIDM <- merge(IPF[, .(ymi, r_ind)], MKTM, by = "ymi")
+CIDM <- CIDM[, .(CID = mean(abs(r_ind - r_mktm)), n_ind = .N), by = ymi]
+setorder(CIDM, ymi)
+rm(IPF); gc(verbose = FALSE)
+if (nrow(CIDM) < (.AR_BURN + .WIN_M + 12L))
+  stop(sprintf("[COMBO_CIDSTEP] 월간 CID %d개월 — 표본 부족", nrow(CIDM)))
+cat(sprintf("[COMBO_CIDSTEP] Eq.1 월간 CID %d개월 · 산업수 중앙 %.0f · 평균 %.4f sd %.4f\n",
+            nrow(CIDM), .med(CIDM$n_ind), mean(CIDM$CID), stats::sd(CIDM$CID)))
+
+# =============================================================================
+# 3. 재료 1 Eq.2 — CID 충격 u_t (expanding window AR · PIT 보정)
+# =============================================================================
+#   d(CID_t) = g0 + g1*d(CID_{t-1}) + g2*CID_{t-1} + u_t
 #   expanding OLS 를 누적 교차곱으로 정확히 구현한다(lm 반복과 수치 동일 · O(n)).
 #   구조 경계 3: 각 k 의 계수는 1..k 만 더한 X'X, X'y 에서 나온다.
-CIDD[, dC := CID - shift(CID)]
-CIDD[, `:=`(dC_l1 = shift(dC), C_l1 = shift(CID))]
-CIDD[, u := NA_real_]
-
-.rows <- which(is.finite(CIDD$dC) & is.finite(CIDD$dC_l1) & is.finite(CIDD$C_l1))
-if (length(.rows) < 200L)
-  stop("[COMBO_08115_09173] AR 적합 가능 행 부족")
-.yv <- CIDD$dC[.rows]; .x1 <- CIDD$dC_l1[.rows]; .x2 <- CIDD$C_l1[.rows]
-.dv <- CIDD$Date[.rows]
-.nn <- length(.rows)
-# burn-in = 첫 60개월에 해당하는 행 수 (선례 승계값을 '개월' 로 유지 — 일수 하드코딩 회피)
-.ymr  <- year(.dv) * 12L + month(.dv)
-.burn <- sum(.ymr < (min(.ymr) + .AR_BURN_M))
-if (.burn < 100L) .burn <- 100L
-if (.burn >= .nn) stop("[COMBO_08115_09173] AR burn-in 이 표본을 초과")
-
-.c11 <- seq_len(.nn); .c1a <- cumsum(.x1); .c1b <- cumsum(.x2)
+CIDM[, dC := CID - shift(CID)]
+CIDM[, `:=`(dC_l1 = shift(dC), C_l1 = shift(CID))]
+CIDM[, u := NA_real_]
+.rw <- which(is.finite(CIDM$dC) & is.finite(CIDM$dC_l1) & is.finite(CIDM$C_l1))
+if (length(.rw) < (.AR_BURN + .WIN_M))
+  stop("[COMBO_CIDSTEP] AR 적합 가능 개월 부족")
+.yv <- CIDM$dC[.rw]; .x1 <- CIDM$dC_l1[.rw]; .x2 <- CIDM$C_l1[.rw]; .nn <- length(.rw)
+.c1  <- seq_len(.nn);      .ca <- cumsum(.x1);        .cb <- cumsum(.x2)
 .caa <- cumsum(.x1 * .x1); .cab <- cumsum(.x1 * .x2); .cbb <- cumsum(.x2 * .x2)
-.c1y <- cumsum(.yv);  .cay <- cumsum(.x1 * .yv); .cby <- cumsum(.x2 * .yv)
+.cy  <- cumsum(.yv);       .cay <- cumsum(.x1 * .yv); .cby <- cumsum(.x2 * .yv)
 .uv <- rep(NA_real_, .nn)
-for (k in seq.int(.burn, .nn)) {
-  M3 <- matrix(c(.c11[k], .c1a[k], .c1b[k],
-                 .c1a[k], .caa[k], .cab[k],
-                 .c1b[k], .cab[k], .cbb[k]), 3L, 3L)
-  v3 <- c(.c1y[k], .cay[k], .cby[k])
-  g  <- tryCatch(solve(M3, v3), error = function(e) NULL)
+for (k in seq.int(.AR_BURN, .nn)) {
+  M3 <- matrix(c(.c1[k], .ca[k],  .cb[k],
+                 .ca[k], .caa[k], .cab[k],
+                 .cb[k], .cab[k], .cbb[k]), 3L, 3L)
+  g <- tryCatch(solve(M3, c(.cy[k], .cay[k], .cby[k])), error = function(e) NULL)
   if (is.null(g)) next
   .uv[k] <- .yv[k] - (g[1] + g[2] * .x1[k] + g[3] * .x2[k])
 }
-set(CIDD, i = .rows, j = "u", value = .uv)
-if (sum(is.finite(CIDD$u)) < 500L)
-  stop("[COMBO_08115_09173] CID 충격 u 유효 관측 부족 — AR 적합 실패")
-cat(sprintf("[COMBO_08115_09173] Eq.2 충격 u: 유효 %s일 (%s ~) · sd %.5f · 1-lag 자기상관 %.3f (논문 US 월간: -0.05)\n",
-            format(sum(is.finite(CIDD$u)), big.mark = ","),
-            as.character(min(CIDD$Date[is.finite(CIDD$u)])),
-            stats::sd(CIDD$u, na.rm = TRUE),
-            .sp(CIDD$u[-1L], CIDD$u[-nrow(CIDD)])))
+set(CIDM, i = .rw, j = "u", value = .uv)
+if (sum(is.finite(CIDM$u)) < (.WIN_M + 12L))
+  stop("[COMBO_CIDSTEP] CID 충격 u 유효 개월 부족 — AR 적합 실패")
+.uok <- CIDM[is.finite(u)]
+cat(sprintf("[COMBO_CIDSTEP] Eq.2 충격 u: 유효 %d개월 · sd %.5f · 1-lag 자기상관 %+.3f (논문 US: -0.05)\n",
+            nrow(.uok), stats::sd(.uok$u), .sp(.uok$u[-1L], .uok$u[-nrow(.uok)])))
+rm(.uok)
 
 # =============================================================================
-# 3. 테스트 자산 패널 — K200∪KQ150 일간수익 wide 행렬
+# 4. 테스트 자산 — K200∪KQ150 일간/월간 수익 wide 행렬
 # =============================================================================
 .tk <- unique(RAWDATA[.tru(K200) | .tru(KQ150), Ticker])
-if (!length(.tk))
-  stop("[COMBO_08115_09173] K200/KQ150 멤버십 0건 — RAWDATA 확인")
+if (!length(.tk)) stop("[COMBO_CIDSTEP] K200/KQ150 멤버십 0건 — RAWDATA 확인")
 
-.gdv <- CIDD[is.finite(u), Date]                     # 상태·시장이 모두 있는 거래일 격자
-.rs  <- RAWDATA[Ticker %chin% .tk & Date %in% .gdv & is.finite(Ret) & abs(Ret) <= .RET_CAP,
-                .(Date, Ticker, r = Ret)]
-.ndup <- sum(duplicated(.rs, by = c("Ticker", "Date")))
-if (.ndup > 0L) {
-  cat(sprintf("[COMBO_08115_09173] (Date,Ticker) 중복 %d행 — 첫 행만 남긴다\n", .ndup))
+.gd <- MKTD$Date                                        # 시장이 정의된 거래일 격자
+.rs <- RAWDATA[Ticker %chin% .tk & Date %in% .gd & is.finite(Ret), .(Date, Ticker, r = as.numeric(Ret))]
+.rs <- .rs[abs(r) <= .RET_CAP]             # r 은 위에서 finite 로 걸러져 NA 첨자가 없다
+.nd <- sum(duplicated(.rs, by = c("Ticker", "Date")))
+if (.nd > 0L) {
+  cat(sprintf("[COMBO_CIDSTEP] (Date,Ticker) 중복 %d행 — 첫 행만 남긴다\n", .nd))
   .rs <- unique(.rs, by = c("Ticker", "Date"))
 }
-.RW <- dcast(.rs, Date ~ Ticker, value.var = "r")
+.RW  <- dcast(.rs, Date ~ Ticker, value.var = "r")
 setorder(.RW, Date)
 .rdt <- .RW$Date
-RET  <- as.matrix(.RW[, -1L, with = FALSE])
-.tick <- colnames(RET)
+RETD <- as.matrix(.RW[, -1L, with = FALSE])
+.tick <- colnames(RETD)
 rm(.RW, .rs); gc(verbose = FALSE)
-.rymi <- year(.rdt) * 12L + month(.rdt)
+.rym <- year(.rdt) * 12L + month(.rdt)
 
-setkey(CIDD, Date); setkey(MKTD, Date)
-.uvec <- CIDD[.(.rdt), u]
+setkey(MKTD, Date)
 .mvec <- MKTD[.(.rdt), r_mkt]
-if (anyNA(.uvec) || anyNA(.mvec))
-  stop("[COMBO_08115_09173] u/시장 계열 정렬 실패 — 격자 불일치")
-cat(sprintf("[COMBO_08115_09173] 테스트 자산 %d일 x %d종 (%s ~ %s) · 결측 %.1f%%\n",
-            nrow(RET), ncol(RET), as.character(min(.rdt)), as.character(max(.rdt)),
-            100 * mean(is.na(RET))))
+if (anyNA(.mvec)) stop("[COMBO_CIDSTEP] 시장 계열 정렬 실패 — 격자 불일치")
+
+# 월간 wide (계기 (a) 전용 — 재료 1 Eq.3 원판을 같은 창/같은 유니버스에서 재현)
+.MW  <- dcast(MON[Ticker %chin% .tick, .(ymi, Ticker, mret)], ymi ~ Ticker, value.var = "mret")
+setorder(.MW, ymi)
+.mym <- .MW$ymi
+RETM <- as.matrix(.MW[, -1L, with = FALSE])
+RETM <- RETM[, match(.tick, colnames(RETM)), drop = FALSE]     # 열 순서 = RETD 와 동일
+rm(.MW); gc(verbose = FALSE)
+
+.SEC <- unique(.EOM[, .(Ticker, ymi_w, ind)], by = c("Ticker", "ymi_w"))
+setkey(.SEC, ymi_w, Ticker)
+rm(.EOM); gc(verbose = FALSE)
+
+cat(sprintf("[COMBO_CIDSTEP] 테스트 자산 %d거래일 x %d종 (%s ~ %s) · 일간 결측 %.1f%%\n",
+            nrow(RETD), ncol(RETD), as.character(min(.rdt)), as.character(max(.rdt)),
+            100 * mean(is.na(RETD))))
 
 # =============================================================================
-# 4. 형성일(월말 거래일) · 유동성 창 · 자격
+# 5. 형성일(월말 거래일) · 유동성 창 · 자격
 # =============================================================================
-.GD <- data.table(Date = .rdt, ymi = .rymi)
-.ME <- .GD[, .(Date = max(Date)), by = ymi]
+.GD   <- data.table(Date = .rdt, ymi = .rym)
+.ME   <- .GD[, .(Date = max(Date)), by = ymi]
 setorder(.ME, Date)
 .FORM <- .ME[Date >= .START, Date]
-if (!length(.FORM))
-  stop("[COMBO_08115_09173] 형성일 0건 — RAWDATA 날짜 범위 확인")
+if (!length(.FORM)) stop("[COMBO_CIDSTEP] 형성일 0건 — RAWDATA 날짜 범위 확인")
 
 .LW <- rbindlist(lapply(seq_along(.FORM), function(k) {
   D  <- .FORM[k]
@@ -341,13 +350,11 @@ if (!length(.FORM))
   if (is.na(ip) || (ip - .LIQ_WIN) < 1L) return(NULL)
   data.table(Date = .rdt[(ip - .LIQ_WIN):(ip - 1L)], FormDate = D)   # 종점 = D-1 (C10)
 }), use.names = TRUE)
-if (!nrow(.LW))
-  stop("[COMBO_08115_09173] 유동성 창 구성 실패 — 거래일 수 부족")
+if (!nrow(.LW)) stop("[COMBO_CIDSTEP] 유동성 창 구성 실패 — 거래일 수 부족")
 .FORM <- .FORM[.FORM %in% unique(.LW$FormDate)]
 .fym  <- year(.FORM) * 12L + month(.FORM)
 
-.rdq <- RAWDATA[Date %in% unique(c(.LW$Date, .FORM)),
-                .(Date, Ticker, Close, Vol, K200, KQ150)]
+.rdq <- RAWDATA[Date %in% unique(c(.LW$Date, .FORM)), .(Date, Ticker, Close, Vol, K200, KQ150)]
 .rdq <- unique(.rdq, by = c("Ticker", "Date"))
 .ADV <- merge(.rdq[is.finite(Close) & is.finite(Vol), .(Date, Ticker, TV = Close * Vol)],
               .LW, by = "Date", allow.cartesian = TRUE)
@@ -359,46 +366,16 @@ if (!nrow(.LW))
 setkey(.ELG, FormDate)
 rm(.rdq, .LW, .ADV); gc(verbose = FALSE)
 
-# =============================================================================
-# 5. 재료 2 의 추정기 — joint depth=1 SSE 스캔 (공통 임계값 1개)
-# =============================================================================
-# 목적함수 전개 (원문 "Min sum_i (y_i - prediction(y_i))^2" 와 정확히 동치):
-#   SSE(k) = sum_i [ TSS_i - CX_i(k)^2/CM_i(k) - (SX_i-CX_i(k))^2/(SM_i-CM_i(k)) ]
-#   TSS_i 는 k 와 분기변수에 무관하므로 SSE 최소화 = 아래 gain 최대화이고, **같은 y·
-#   같은 창** 위에서라면 변수 간 비교도 같은 gain 으로 유효하다.
-#   종목별 표준화는 하지 않는다 — 논문의 joint 트리가 그렇고 'dominant stock' 이
-#   제거 대상이 아니라 그 설계의 성질이다.
-.scan <- function(Emat, sv, min_leaf) {
-  n  <- nrow(Emat)
-  o  <- order(sv)
-  so <- sv[o]
-  Eo <- Emat[o, , drop = FALSE]
-  Xs <- Eo; Xs[which(is.na(Xs))] <- 0
-  Ms <- matrix(as.numeric(!is.na(Eo)), n, ncol(Eo))
-  CX <- colCumsums(Xs); CM <- colCumsums(Ms)
-  SX <- CX[n, ]; SM <- CM[n, ]
-  g0 <- SX^2 / SM; g0[!is.finite(g0)] <- 0
-  RX <- matrix(SX, n, ncol(Eo), byrow = TRUE) - CX
-  RM <- matrix(SM, n, ncol(Eo), byrow = TRUE) - CM
-  LT <- CX^2 / CM; RT <- RX^2 / RM
-  LT[!is.finite(LT)] <- 0                     # 잎에 관측이 없는 종목 = 기여 0
-  RT[!is.finite(RT)] <- 0
-  gv <- rowSums(LT + RT)
-  ki <- seq_len(n)
-  ok <- c(so[-n] < so[-1L], FALSE)            # 값이 실제로 갈리는 자리만
-  ok <- ok & (ki >= min_leaf) & ((n - ki) >= min_leaf)
-  if (!any(ok)) return(NULL)
-  gv[!ok] <- -Inf
-  k <- as.integer(which.max(gv))              # 이름 붙은 인덱스가 새지 않게 as.integer
-  if (!is.finite(gv[k])) return(NULL)
-  list(k = k, gain = as.numeric(gv[k]), drop = as.numeric(gv[k] - sum(g0)),
-       thr = as.numeric(so[k] + so[k + 1L]) / 2,
-       CX = CX, CM = CM, SX = SX, SM = SM, n = n)
-}
+setkey(CIDM, ymi)
 
 # =============================================================================
-# 6. 형성일 루프 — 시장 통제 -> joint 계단 -> Delta -> winsorize -> Score
+# 6. 형성일 루프 — 시장 통제 -> joint depth=1 계단 -> Delta -> winsorize -> Score
 # =============================================================================
+# joint SSE 목적함수 (원문 "Min sum_i (y_i - prediction(y_i))^2" 와 정확히 동치):
+#   SSE(k) = sum_i [ TSS_i - CS_i(k)^2/CN_i(k) - (TS_i-CS_i(k))^2/(TN_i-CN_i(k)) ]
+#   TSS_i 는 k 에 무관하므로 SSE 최소화 = 아래 gain 최대화. **종목별 표준화는 하지
+#   않는다** — 재료 2 의 joint 트리가 그렇고 'dominant stock' 이 그 설계의 성질이다.
+#   u 가 월간이라 잎 경계는 월이고, 후보 분기점은 창 안 월값 사이 (nM-1) 곳뿐이다.
 .OUT  <- vector("list", length(.FORM))
 .LOG  <- vector("list", length(.FORM))
 .skip <- 0L
@@ -407,58 +384,84 @@ for (kk in seq_along(.FORM)) {
   D  <- .FORM[kk]
   fy <- .fym[kk]
 
-  # ── 창: 형성월 m 으로 끝나는 24개월, 종점 D 이하 (구조 경계 1) ──
-  wi <- which(.rymi <= fy & .rymi > (fy - .BETA_WIN_M) & .rdt <= D)
+  # ── 창: 형성월 m 으로 끝나는 24개월, 유효 u 가 있는 월만 (구조 경계 1) ──
+  wm <- CIDM[.(seq.int(fy - .WIN_M + 1L, fy)), .(ymi, u), nomatch = 0L]
+  wm <- wm[is.finite(u)]
+  nM <- nrow(wm)
+  if (nM < .MIN_MO || nM < (2L * .LEAF_MO + 1L)) { .skip <- .skip + 1L; next }
+
+  wi <- which(.rym %in% wm$ymi & .rdt <= D)                 # 창 거래일
   nw <- length(wi)
-  if (nw < (.BETA_WIN_M * 15L)) { .skip <- .skip + 1L; next }   # 월 15거래일도 안 되면 창 미성립
+  if (nw < (nM * 10L)) { .skip <- .skip + 1L; next }
 
   cand <- .ELG[.(D), Ticker, nomatch = 0L]
   cand <- intersect(cand, .tick)
-  if (!length(cand)) { .skip <- .skip + 1L; next }
+  if (length(cand) < .MIN_STK) { .skip <- .skip + 1L; next }
+  ci <- match(cand, .tick)
 
-  Y  <- RET[wi, cand, drop = FALSE]
-  uw <- .uvec[wi]                                    # 시간 순서 유지
+  Y  <- RETD[wi, ci, drop = FALSE]
   mw <- .mvec[wi]
 
-  # ── 창 통계 (시간 순서에서 계산: 시장모형 · 재료 1 원판 OLS beta · 무조건부 평균) ──
-  Ms <- matrix(as.numeric(!is.na(Y)), nw, ncol(Y))
-  Xs <- Y; Xs[which(is.na(Xs))] <- 0
+  # ── 창 안 시장모형 (일간 ~490 관측) — 통제항이 잡음이 되지 않게 ──
+  Ms  <- matrix(as.numeric(!is.na(Y)), nw, ncol(Y))
+  Xs  <- Y; Xs[is.na(Xs)] <- 0
   n_i <- colSums(Ms); Sy <- colSums(Xs)
-
   Sm  <- colSums(Ms * mw); Smm <- colSums(Ms * mw^2); Smy <- colSums(Xs * mw)
-  dm  <- n_i * Smm - Sm * Sm
-  b_m <- ifelse(is.finite(dm) & dm > 0, (n_i * Smy - Sm * Sy) / dm, NA_real_)   # 시장베타
+  den <- n_i * Smm - Sm * Sm
+  b_m <- ifelse(is.finite(den) & den > 0, (n_i * Smy - Sm * Sy) / den, NA_real_)
   a_m <- (Sy - b_m * Sm) / n_i
 
-  Su  <- colSums(Ms * uw); Suu <- colSums(Ms * uw^2); Suy <- colSums(Xs * uw)
-  du  <- n_i * Suu - Su * Su
-  b_u <- ifelse(is.finite(du) & du > 0, (n_i * Suy - Su * Sy) / du, NA_real_)   # 재료1 Eq.3 기울기
-  mu_raw <- ifelse(n_i > 0, Sy / n_i, NA_real_)                                 # 창 무조건부 평균
-
-  keep <- (n_i >= as.integer(.COV_MIN * nw)) & is.finite(b_m) & is.finite(a_m) & !is.na(Y[nw, ])
+  keep <- (n_i >= .COV * nw) & is.finite(b_m) & is.finite(a_m) & !is.na(Y[nw, ])
   if (sum(keep) < .MIN_STK) { .skip <- .skip + 1L; next }
-  Y <- Y[, keep, drop = FALSE]
-  nm <- colnames(Y)
-  b_m <- b_m[keep]; a_m <- a_m[keep]; b_u <- b_u[keep]; mu_raw <- mu_raw[keep]
+  Y <- Y[, keep, drop = FALSE]; Ms <- Ms[, keep, drop = FALSE]; Xs <- Xs[, keep, drop = FALSE]
+  nm <- .tick[ci][keep]; b_m <- b_m[keep]; a_m <- a_m[keep]
+  nc <- ncol(Y)
 
-  # ── 시장 통제 잔차 (재료 2: 시장초과수익이 always the most informative factor) ──
-  #    창 안 OLS 라 sum_t eps = 0 · cov(eps, mkt) = 0 — 수준 성분과 선형 시장 성분이
-  #    구조적으로 제거된다(모멘텀 별칭·역베타 오염의 두 경로가 동시에 닫힌다).
-  E <- Y - matrix(a_m, nw, ncol(Y), byrow = TRUE) - outer(mw, b_m)
+  # 잔차: sum_d eps = 0 이고 cov(eps, mkt) = 0 — 수준 성분과 선형 시장 성분이 구조적으로 제거
+  E  <- Y - matrix(a_m, nw, nc, byrow = TRUE) - outer(mw, b_m)
+  Xe <- E; Xe[is.na(Xe)] <- 0
 
-  # ── joint depth=1 스캔: 축 = u (재료 1 의 상태 충격) ──
-  sc_u <- .scan(E, uw, .LEAF_MIN_G)
-  if (is.null(sc_u)) { .skip <- .skip + 1L; next }
-  # 진단 전용: 같은 잔차·같은 창에서 시장축이 남기는 계단(선형 통제 후 잔존 비선형성)
-  sc_m <- .scan(E, mw, .LEAF_MIN_G)
+  # ── 월별 집계 (잎 경계 = 월. 이 축약은 근사가 아니라 정확하다) ──
+  gm  <- .rym[wi]
+  MS  <- rowsum(Xe, gm, reorder = TRUE)                     # 행 = ymi 오름차순
+  MN  <- rowsum(Ms, gm, reorder = TRUE)
+  MSr <- rowsum(Xs, gm, reorder = TRUE)                     # 통제 전(양성 대조용)
+  gu  <- as.integer(rownames(MS))
+  uu  <- wm$u[match(gu, wm$ymi)]
+  if (anyNA(uu) || nrow(MS) < (2L * .LEAF_MO + 1L)) { .skip <- .skip + 1L; next }
 
-  k   <- sc_u$k
-  nlo <- k; nhi <- sc_u$n - k
-  cl  <- sc_u$CM[k, ]; ch <- sc_u$SM - cl
-  ml  <- sc_u$CX[k, ] / cl
-  mh  <- (sc_u$SX - sc_u$CX[k, ]) / ch
-  dl  <- mh - ml                                     # Delta = E[eps|u>c*] - E[eps|u<=c*]
-  good <- is.finite(dl) & cl >= .LEAF_MIN_S & ch >= .LEAF_MIN_S
+  # ── 재료 2 의 joint depth=1 스캔: 축 = u, 전 분기점 greedy, 공통 임계값 1개 ──
+  o   <- order(uu)
+  us  <- uu[o]
+  MSp <- MS[o, , drop = FALSE]; MNp <- MN[o, , drop = FALSE]; MSq <- MSr[o, , drop = FALSE]
+  nMo <- nrow(MSp)
+  CS  <- matrix(apply(MSp, 2L, cumsum), nMo, nc)
+  CN  <- matrix(apply(MNp, 2L, cumsum), nMo, nc)
+  CQ  <- matrix(apply(MSq, 2L, cumsum), nMo, nc)
+  CI  <- matrix(apply(MNp > 0, 2L, cumsum), nMo, nc)        # 잎별 **개월** 수
+  TS  <- CS[nMo, ]; TN <- CN[nMo, ]; TQ <- CQ[nMo, ]; TI <- CI[nMo, ]
+
+  RS <- matrix(TS, nMo, nc, byrow = TRUE) - CS
+  RN <- matrix(TN, nMo, nc, byrow = TRUE) - CN
+  LT <- CS^2 / CN; RT <- RS^2 / RN
+  LT[!is.finite(LT)] <- 0; RT[!is.finite(RT)] <- 0           # 잎에 관측 없는 종목 = 기여 0
+  gv <- rowSums(LT + RT)
+  g0 <- TS^2 / TN; g0[!is.finite(g0)] <- 0                   # 무분기(root) 기준값
+
+  ki <- seq_len(nMo)
+  ok <- c(us[-nMo] < us[-1L], FALSE) & (ki >= .LEAF_MO) & ((nMo - ki) >= .LEAF_MO)
+  if (!any(ok)) { .skip <- .skip + 1L; next }
+  gv[!ok] <- -Inf
+  ks <- as.integer(which.max(gv))
+  if (!is.finite(gv[ks])) { .skip <- .skip + 1L; next }
+  cstar <- as.numeric(us[ks] + us[ks + 1L]) / 2
+
+  # ── Delta = E[eps | u > c*] - E[eps | u <= c*] ──
+  cl <- CN[ks, ]; ch <- TN - cl
+  ml <- CI[ks, ]; mh <- TI - ml                              # 잎별 개월 수(종목별)
+  dl <- (TS - CS[ks, ]) / ch - CS[ks, ] / cl
+  dq <- (TQ - CQ[ks, ]) / ch - CQ[ks, ] / cl                 # 통제 전 Delta (양성 대조)
+  good <- is.finite(dl) & ml >= .LEAF_MO & mh >= .LEAF_MO
   if (sum(good) < .MIN_STK) { .skip <- .skip + 1L; next }
 
   # ── 단면 winsorize 1%/99% (재료 1 명시) ──
@@ -467,29 +470,58 @@ for (kk in seq_along(.FORM)) {
   dw <- pmin(pmax(dv, qq[1]), qq[2])
 
   # ── 부호 = 재료 1 의 사전 선언(고민감 = 저수익) ──
-  .OUT[[kk]] <- data.table(Date = D, Ticker = nm[good], Score = -dw)
+  tk_g <- nm[good]
+  .OUT[[kk]] <- data.table(Date = D, Ticker = tk_g, Score = -dw)
 
-  # ── 반증 계기 (a)~(g) ─────────────────────────────────────────────────────
-  usd  <- stats::sd(uw)
-  tss  <- colSums(E^2, na.rm = TRUE)                        # 잔차 평균 0 이므로 = 잔차분산 * n
-  idom <- if (any(is.finite(tss))) as.integer(which.max(tss)) else NA_integer_
+  # ── 계기 (a)~(f) ──────────────────────────────────────────────────────────
+  # (a) 재료 1 Eq.3 원판: 같은 창·같은 유니버스의 **월간 단변량 OLS** beta_CID
+  mi   <- match(wm$ymi, .mym)
+  b_ol <- rep(NA_real_, nc)
+  if (!anyNA(mi)) {
+    Ym <- RETM[mi, ci, drop = FALSE][, keep, drop = FALSE]
+    Mm <- matrix(as.numeric(!is.na(Ym)), nrow(Ym), nc); Xm <- Ym; Xm[is.na(Xm)] <- 0
+    uwm <- wm$u
+    nn2 <- colSums(Mm); Su <- colSums(Mm * uwm); Suu <- colSums(Mm * uwm^2)
+    Sy2 <- colSums(Xm); Suy <- colSums(Xm * uwm)
+    d2  <- nn2 * Suu - Su * Su
+    b_ol <- ifelse(is.finite(d2) & d2 > 0 & nn2 >= .MIN_MO,
+                   (nn2 * Suy - Su * Sy2) / d2, NA_real_)
+  }
+  mu_w <- ifelse(TN > 0, (colSums(Xs)) / TN, NA_real_)       # 창 무조건부 평균(수준 별칭 검사)
+  # (f) 롱 상위 25 의 최대 섹터 점유율 — 재료 1 의 기전(산업 재배치의 패자)이 보이는가
+  sc_g   <- -dw                                              # 발행 Score
+  sec_sh <- NA_real_
+  if (length(sc_g) >= 25L) {
+    tp <- tk_g[order(-sc_g)][seq_len(25L)]                   # Score 내림차순 상위 25
+    sv <- .SEC[.(fy - 1L, tp), ind]
+    sv <- sv[!is.na(sv)]
+    if (length(sv) >= 10L) sec_sh <- 100 * max(table(sv)) / length(sv)
+  }
+  usd <- stats::sd(us)
+  # ★분기 이득은 **잔차 총제곱합 대비**로 잰다. root 대비로 재면 안 된다 —
+  #   eps 는 창 안 OLS 잔차라 열합이 0 이고 root 기준값 g0 = TS^2/TN 이 0 이므로
+  #   분모가 소멸한다(0 으로 나눠 무한대가 나온다).
+  tss <- sum(Xe * Xe)
   .LOG[[kk]] <- data.table(
-    Date = D, n_win = nw, n_stock = sum(good),
-    thr_z    = if (is.finite(usd) && usd > 0) sc_u$thr / usd else NA_real_,
-    bal_hi   = 100 * nhi / sc_u$n,                          # 고-u 잎 비중(%)
-    leaf_hi  = as.numeric(.med(ch[good])),                  # 종목별 고-u 잎 관측 중앙
-    rho_ols  = .sp(dv, b_u[good]),                          # (a) 추정기 치환이 하중을 받는가
-    rho_beta = .sp(-dw, b_m[good]),                         # (b) 역베타 오염 잔존
-    rho_lvl  = .sp(-dw, mu_raw[good]),                      # (c) 5년 수준(모멘텀) 별칭
-    t_deg    = .sp(seq_len(nw), as.numeric(uw > sc_u$thr)), # (f) 시간분기 퇴화
-    g_ratio  = if (!is.null(sc_m) && is.finite(sc_u$drop) && sc_u$drop > 0)
-                 sc_m$drop / sc_u$drop else NA_real_,       # (g) 시장축 잔존 계단 / CID축 계단
-    dom      = if (is.na(idom)) NA_character_ else nm[idom])  # 재료 2 의 dominant stock
+    Date = D, n_mo = nMo, n_day = nw, n_stock = sum(good),
+    thr_z    = if (is.finite(usd) && usd > 0) as.numeric(cstar / usd) else NA_real_,
+    thr_pct  = 100 * ks / nMo,                               # c* 가 u 분포의 몇 %ile 인가
+    mo_hi    = nMo - ks,                                     # 고-u 잎 개월수
+    gain_r   = if (is.finite(tss) && tss > 0)
+                 as.numeric((gv[ks] - sum(g0)) / tss) else NA_real_,
+    rho_ols  = .sp(dv, b_ol[good]),                          # (a) 추정기 치환이 하중을 받는가
+    rho_bm   = .sp(sc_g, b_m[good]),                         # (b) 시장베타 오염 — 통제 후
+    rho_bm0  = .sp(-as.numeric(dq[good]), b_m[good]),        # (b') 양성 대조 — 통제 전
+    rho_lvl  = .sp(sc_g, mu_w[good]),                        # (c) 창 수준(모멘텀) 별칭
+    # (e) 상태분기 vs 시간분기 — ★**캘린더 순서**의 ymi 와 잎 소속을 잰다.
+    #     정렬된 us 로 재면 정의상 +1 이 나와 계기가 죽는다.
+    t_deg    = .sp(gu, as.numeric(uu > cstar)),
+    sec_sh   = sec_sh)                                       # (f) 롱 사이드 섹터 집중
 }
 
 FACTORS <- rbindlist(Filter(Negate(is.null), .OUT), use.names = TRUE)
 if (!nrow(FACTORS))
-  stop("[COMBO_08115_09173] FACTORS 0행 — 창 길이/유니버스/커버리지/잎 최소관측 확인")
+  stop("[COMBO_CIDSTEP] FACTORS 0행 — 창 유효개월/유니버스/커버리지/잎 하한 확인")
 setorder(FACTORS, Date, -Score)
 
 # =============================================================================
@@ -497,47 +529,48 @@ setorder(FACTORS, Date, -Score)
 # =============================================================================
 LOGDT <- rbindlist(Filter(Negate(is.null), .LOG), use.names = TRUE)
 setorder(LOGDT, Date)
-# (e) 임계값 안정성 — 겹치는 창끼리 c* 가 튀면 계단이 아니라 잡음이다
-LOGDT[, thr_jump := abs(thr_z - shift(thr_z))]
-
+LOGDT[, thr_jump := abs(thr_z - shift(thr_z))]     # (e) 겹치는 창(23/24 공통)의 임계값 안정성
 LOGDT[, yr := year(Date)]
-.byyr <- LOGDT[, .(n_m = .N, n_stock = as.integer(.med(n_stock)),
-                   thr_z = round(.med(thr_z), 2), bal_hi = round(.med(bal_hi), 1),
-                   leaf_hi = as.integer(.med(leaf_hi)),
-                   rho_ols = round(.med(rho_ols), 2), rho_beta = round(.med(rho_beta), 2),
-                   rho_lvl = round(.med(rho_lvl), 2)), by = yr]
-setorder(.byyr, yr)
-cat("[COMBO_08115_09173] 연도별 joint depth=1 계단 구조 (축 = Eq.2 충격 u · y = 시장통제 잔차):\n")
-cat("      연도 | 월수 종목  c*(sd) 고u잎%  잎관측  rho(D,OLSbeta) rho(S,mktbeta) rho(S,창평균)\n")
-for (i in seq_len(nrow(.byyr)))
-  cat(sprintf("      %d |  %2d  %3d  %+6.2f  %5.1f    %4d      %+6.2f        %+6.2f        %+6.2f\n",
-              .byyr$yr[i], .byyr$n_m[i], .byyr$n_stock[i], .byyr$thr_z[i],
-              .byyr$bal_hi[i], .byyr$leaf_hi[i],
-              .byyr$rho_ols[i], .byyr$rho_beta[i], .byyr$rho_lvl[i]))
 
-.domtop <- LOGDT[!is.na(dom), .N, by = dom][order(-N)]
-.domtop <- .domtop[seq_len(min(3L, nrow(.domtop)))]
-if (!nrow(.domtop)) .domtop <- data.table(dom = "NA", N = 0L)   # sprintf 길이-0 인자 방지
+.byyr <- LOGDT[, .(n_m = .N, n_stock = as.integer(.med(n_stock)),
+                   thr_pct = round(.med(thr_pct)), mo_hi = round(.med(mo_hi), 1),
+                   rho_ols = round(.med(rho_ols), 2), rho_bm = round(.med(rho_bm), 2),
+                   rho_bm0 = round(.med(rho_bm0), 2), rho_lvl = round(.med(rho_lvl), 2)), by = yr]
+setorder(.byyr, yr)
+cat("[COMBO_CIDSTEP] 연도별 joint depth=1 계단 (축 = Eq.2 월간 충격 u · y = 창 안 시장모형 잔차):\n")
+cat("      연도 | 월수 종목  c*%ile 고u잎(월)  rho(D,Eq.3beta)  rho(S,bmkt) [통제전]  rho(S,창평균)\n")
+for (i in seq_len(nrow(.byyr)))
+  cat(sprintf("      %4d |  %2d  %3d   %3.0f%%     %4.1f          %+6.2f         %+6.2f  [%+6.2f]      %+6.2f\n",
+              .byyr$yr[i], .byyr$n_m[i], .byyr$n_stock[i], .byyr$thr_pct[i], .byyr$mo_hi[i],
+              .byyr$rho_ols[i], .byyr$rho_bm[i], .byyr$rho_bm0[i], .byyr$rho_lvl[i]))
+
 .nmn <- FACTORS[, .N, by = Date]
 .scv <- as.numeric(FACTORS[["Score"]])   # ★벡터로 뽑아 잰다(quantile(DT$col) = C1b 오탐)
+.bind <- 100 * mean(LOGDT$mo_hi <= .LEAF_MO | (LOGDT$n_mo - LOGDT$mo_hi) <= .LEAF_MO)
 cat(sprintf(paste0(
-  "[COMBO_08115_09173] combination: 재료1 의 estimand(Eq.1 CID -> Eq.2 충격 u -> 24개월 민감도\n",
-  "  -> 1%%/99%% winsorize -> 고민감=저수익 -> 월간 리밸)를 재료2 의 estimator(joint depth=1\n",
-  "  공통 임계값 · 전 분기점 greedy · 시장은 경쟁자 아닌 통제항)로 추정한다.\n",
+  "[COMBO_CIDSTEP] combination — 재료1 의 estimand(Eq.1 월간 CID -> Eq.2 충격 u -> 24개월\n",
+  "  민감도 -> 1%%/99%% winsorize -> 고민감=저수익 -> 월간 리밸)를 재료2 의 estimator\n",
+  "  (joint depth=1 · 전 종목 SSE 합의 공통 임계값 1개 · 전 분기점 greedy · 표준화 없음)로\n",
+  "  추정한다. 시장은 경쟁 분기변수가 아니라 회귀 통제항 — 재료1 Table 5 가 보고하는\n",
+  "  성질(5분위 시장로딩 스프레드 0.04)을 KR 에서 강제 복원하는 자리다.\n",
   "  형성 %d개월(skip %d) · %s ~ %s · FACTORS %s행 · 월 종목 중앙 %d (min %d / max %d)\n",
-  "  창 거래일 중앙 %.0f (= 재료1 의 24개월 · 해상도만 일간)\n",
-  "  ── 반증 계기 (전 기간 중앙값) ───────────────────────────────────────────\n",
-  "  (a) rho(Delta, 재료1 원판 OLS beta) %+5.2f  [+1 이면 추정기 치환이 무하중 = 결합 아님]\n",
-  "  (b) rho(Score, 창 시장베타)         %+5.2f  [부호 고정·大 이면 CID 단독의 역베타 재현]\n",
-  "  (c) rho(Score, 창 무조건부 평균)    %+5.2f  [±1 이면 5년 수준(모멘텀)의 별칭]\n",
-  "  (d) 고-u 잎 비중 %.1f%% · 종목별 잎 관측 중앙 %.0f  [하한 24/18 에 상시 붙으면 계단 = 잡음]\n",
-  "  (e) |c* 변화| 중앙 %.2f sd  [겹치는 창인데 크면 임계값이 구조가 아니라 표본]\n",
-  "  (f) 시간퇴화 |rho(시간, 잎)| 중앙 %.2f  [1 에 가까우면 상태분기가 아니라 시간분기]\n",
-  "  (g) 시장축 잔존계단 / CID축 계단 = %.2f배  [>>1 이면 mex 를 경쟁시켰을 때 estimand 가\n",
-  "      통째로 바뀐다 — 직전 결합판이 그렇게 죽었다. 그래서 통제항으로 넣었다]\n",
-  "  ── 구조 요약 ────────────────────────────────────────────────────────────\n",
-  "  c* 중앙 %+.2f sd(u) · 지배 종목(잔차분산 최대) 상위: %s\n",
-  "  Score = -Delta (계단 CID 민감도의 음수 · 중앙 %.2fbp · IQR %.2f~%.2fbp)\n",
+  "  창 = 유효 %.0f개월 / 일간 %.0f거래일 (창의 시간 길이는 재료1 의 24개월 그대로)\n",
+  "  ── 반증 계기 (전 기간 중앙값) ───────────────────────────────────────────────\n",
+  "  (a) rho(Delta, Eq.3 원판 월간 OLS beta) %+5.2f\n",
+  "      → +1 근방이면 추정기 치환이 무하중 = 이 엔진은 CID 단독의 재실행이고 결합이 아니다.\n",
+  "  (b) rho(Score, 창 시장베타) %+5.2f   [양성 대조 = 통제 전 %+5.2f]\n",
+  "      → 두 값이 같으면 시장 통제가 발화하지 않은 것(CID 단독을 죽인 역베타 채널 재현).\n",
+  "        통제 후만 0 에 붙어야 수술이 성립한다.\n",
+  "  (c) rho(Score, 창 무조건부 평균) %+5.2f\n",
+  "      → ±1 쪽이면 수준(장기 모멘텀) 별칭 — 재료2 단독의 사인이 살아남은 것.\n",
+  "  (d) c* 위치 %.0f%%ile · 고-u 잎 %.1f개월 · 잎 하한(%d개월) 구속 %.0f%%\n",
+  "      → 하한 상시 구속 또는 c*가 50%%ile 근방이면 계단이 구조가 아니다(에피소드 없음).\n",
+  "  (e) |c* 변화| 중앙 %.2f sd(u)  · 시간퇴화 |rho(시간, 잎)| %.2f\n",
+  "      → 겹치는 창(23/24 공통)인데 c*가 튀면 임계값이 표본 산물 · |rho|~1 이면 시간분기.\n",
+  "  (f) 롱 상위25 의 최대 섹터 점유율 %.0f%% (기전 확인: 재배치 국면의 산업 편중)\n",
+  "  ── 구조 요약 ────────────────────────────────────────────────────────────────\n",
+  "  c* 중앙 %+.2f sd(u) · 계단이 설명하는 잔차분산 %.2f%%\n",
+  "  Score = -Delta (계단형 CID 민감도의 음수 · 중앙 %.2fbp · IQR %.2f~%.2fbp)\n",
   "  ★러너 호출: portfolio_spec = list(construction=\"top_n_long\", weighting=\"ew\",\n",
   "                                    rebalance=\"monthly\", n_long=25, n_max=25)\n",
   "              commission_paper = NULL (양 논문 비용 무명시) · %.1f분\n"),
@@ -545,12 +578,14 @@ cat(sprintf(paste0(
   as.character(min(FACTORS$Date)), as.character(max(FACTORS$Date)),
   format(nrow(FACTORS), big.mark = ","),
   as.integer(.med(.nmn$N)), min(.nmn$N), max(.nmn$N),
-  .med(LOGDT$n_win),
-  .med(LOGDT$rho_ols), .med(LOGDT$rho_beta), .med(LOGDT$rho_lvl),
-  .med(LOGDT$bal_hi), .med(LOGDT$leaf_hi),
-  .med(LOGDT$thr_jump), .med(abs(LOGDT$t_deg)), .med(LOGDT$g_ratio),
-  .med(LOGDT$thr_z),
-  paste(sprintf("%s(%d개월)", .domtop$dom, .domtop$N), collapse = " "),
+  .med(LOGDT$n_mo), .med(LOGDT$n_day),
+  .med(LOGDT$rho_ols),
+  .med(LOGDT$rho_bm), .med(LOGDT$rho_bm0),
+  .med(LOGDT$rho_lvl),
+  .med(LOGDT$thr_pct), .med(LOGDT$mo_hi), .LEAF_MO, .bind,
+  .med(LOGDT$thr_jump), .med(abs(LOGDT$t_deg)),
+  .med(LOGDT$sec_sh),
+  .med(LOGDT$thr_z), 100 * .med(LOGDT$gain_r),
   1e4 * stats::median(.scv),
   1e4 * as.numeric(stats::quantile(.scv, 0.25, names = FALSE)),
   1e4 * as.numeric(stats::quantile(.scv, 0.75, names = FALSE)),
