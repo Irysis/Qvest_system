@@ -41,7 +41,13 @@ rfbd_catalog <- function(block, root) {
   if (identical(block, "B5")) {
     d <- tryCatch(fromJSON(file.path(root, "06_Registry/overlay_catalog.json"), simplifyVector = FALSE),
                   error = function(e) NULL)
+    ## ★kind 를 버리면 안 된다 — 엔진은 overlay$kind 로 overlay_arms/<kind>.R 을 찾는다.
+    ##   실사고 2026-09-04 19:18: 설계 경로가 overlay=list(arm_id=id) 만 내서 B5 다섯 칸이
+    ##   전부 "$ operator is invalid for atomic vectors" 로 죽었다. 정상 경로
+    ##   (rf_pick_overlay_arms)는 list(kind = r$kind, arm_id = r$id) 를 낸다 — 둘이 달랐다.
     return(lapply(d$arms %||% list(), function(x) list(id = as.character(x$id %||% ""),
+                                                       kind = as.character(x$kind %||% x$id %||% ""),
+                                                       basis = as.character(x$basis %||% ""),
                                                        label = as.character(x$basis %||% ""),
                                                        family = as.character(x$family %||% ""))))
   }
@@ -98,7 +104,12 @@ rfbd_cells <- function(root, base_id, block) {
                                 substr(as.character(ce$why %||% D$rationale %||% ""), 1, 200)),
                 note = "★설계 산출 — 카탈로그 실재성·중복은 rfbd_verify 가 재도출로 검증했다.")
     if (identical(block, "B2")) out$weighting <- list(kind = "catalog", arm = id)
-    if (identical(block, "B5")) out$overlay   <- list(arm_id = id)
+    if (identical(block, "B5")) {
+      ## ★정상 경로와 **같은 모양**을 낸다. 카탈로그에 없는 id 면 NULL 로 둠 —
+      ##   그러면 rfbd_verify 가 재도출로 걸러낸다(없는 arm 을 지어내지 않는다).
+      if (is.null(cm) || !nzchar(as.character(cm$kind %||% ""))) return(NULL)
+      out$overlay <- list(kind = as.character(cm$kind), arm_id = id)
+    }
     if (identical(block, "B3")) out$universe  <- cm$universe
     out
   })

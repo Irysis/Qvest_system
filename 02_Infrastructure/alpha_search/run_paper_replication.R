@@ -411,6 +411,14 @@ run_paper_replication <- function(strategy_name, strategy_idea, factor_engine_pa
     essence = es$essence, hard_fail = es$hard_fail,
     structural_drawdown = es$structural_drawdown,
     selection_type = es$selection_type, dsr_gate_applied = es$dsr_gate_applied,
+    ## ★essence_score 가 산출한 겼을 **떨어뜨리지 않는다** (도훈 2026-09-04).
+    ##   이 쓰기는 반환 list 를 통째로 실지 않고 필드를 골라 쓴다. 그래서 새로
+    ##   붙인 rolling_grade / defensive_score / grade_base 가 산출물에서 사라졌다 —
+    ##   소급은 380건에 기입됐는데 **새 측정은 빈 채** 나갔다(2511.12490 실측).
+    ##   생산자만 있고 소비자가 없는 형태의 거울상 — 산출하는데 실리지 않았다.
+    grade_base = es$grade_base, recent_regime_rescued = es$recent_regime_rescued,
+    recent_regime_label = es$recent_regime_label,
+    rolling_grade = es$rolling_grade, defensive_score = es$defensive_score,
     reasons = es$reasons,
     replication = list(
       source_paper = source_paper,

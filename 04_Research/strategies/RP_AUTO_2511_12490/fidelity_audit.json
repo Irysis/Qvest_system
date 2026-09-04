@@ -1,0 +1,90 @@
+{
+  "verdict": "misdeclared",
+  "undeclared_changes": [
+    "[undeclared] ① [신호 공백 월의 '직전 책 이월' — 실측 59/260 월말(22.7%)] 논문 §2.2 는 'Each day we identify all stocks with valid, non-zero EDGE scores, compute standardized z-scores ... then construct market-neutral long-short portfolios' — 매 리밸 시점에 그때 자격을 갖춘 종목으로 책을 **다시 만든다**. 구현은 활성 종목이 부족한 월말에 PORTFOLIO 행을 **아예 발행하지 않는다**(engine.R:225 `NX>=2` · :232 `is.finite(REVZ)` · :250 `NA_ACT>=2` · :255 · :371 `is.finite(SCALE)` · :375-377). 그런데 하네스는 발행된 날짜만 `sig_dates` 로 돌면서(replication_harness.R:81-83) `hold_pool` 을 **다음으로 발행된 exec 까지** 늘린다(:86-88) — 즉 공백 월은 '무포지션'이 아니라 **직전 달 책의 무갱신 연장 보유**다. 논문에도 changed[] 에도 이 거동의 근거가 없다. changed 는 이 기전을 ⑪(c)에서 '알고 있다'고 적으면서 ε 인코딩을 **kill 구간에만** 적용했고, ⑬ 은 N≥2 가드를 '스크린이 아니라 백분위·표준편차의 최소 관측'이라며 무해한 정의역 가드로 서술한다. ⑪(d)의 '완전 부재면 그 해는 미발행(논문도 학습 완료 전 OOS 가 없다)' 는 계열 **시작부**에서만 참이고, 계열 중간의 미발행은 '없음'이 아니라 '이월'이다. 실측(04_holdings.csv · 10_audit.csv:4 '201 rebalance dates' · 06_metrics.csv 구간 2005-02-01~2026-09-03 = exec 슬롯 260개): 발행 201 / 미발행 59. 확인된 공백 — 2013-09(2013-08-01 → 2013-10-01) · **2020-03·04·05·06(2020-02-03 → 2020-07-01)** · 2025-04(2025-03-04 → 2025-05-02) · 2026-08(2026-07-01 → 2026-09-01). 일간 수익 계열은 5,325행으로 끊김이 없으므로(06_metrics.csv observation_count) 공백 구간은 '거래하지 않은 구간'이 아니라 '옛 책으로 거래한 구간'이다. 논문 Table 5 'Median Holding Period: 8 days' 와 대비되는 최대 **5개월 무갱신 보유**이고, 논문 §2.1 은 crash 상태를 '활성 8%'(=책은 계속 새로 만든다)로 서술할 뿐 정지·동결을 두지 않는다.",
+    "[undeclared] ② [kill-switch 트리거 4종 중 2종 미구현 — 게다가 선언이 원문 Table 10 을 2종으로 서술] 논문 Table 10 'Kill-Switch Parameters and History' 는 트리거 **4행**이다: Absolute Drawdown −30% / Rolling 63-day Loss −10% / **Volatility Spike 3× target** / **Correlation Break |ρ|>0.5**. 구현은 앞의 2종만 있다(engine.R:130-131 `.KS_DD`/`.KS_R63`, 발화 조건은 :360-362 두 항뿐). 실현 변동성 감시기도, 상관 계산도 엔진에 존재하지 않는다(`cor(`·`cov(` 전수 grep = 주석 1건 외 0건). changed[] 에 이 누락 항목이 없을 뿐 아니라, FIDELITY 는 두 곳에서 **원문을 2종으로 진술**한다 — kept: '§2.2/§4/Table 10 kill-switch(절대낙폭 −30% · 롤링 63일 −10%, 평가구간 내 리셋 불가)', changed ⑤: '동적 kill-switch(절대낙폭 −30% · 롤링 63일 −10%, ... §4 한 절 + Table 10)를 얹는다'. 즉 인용 출처(Table 10)가 실제로는 4종을 싣고 있는데 선언은 2종으로 적어 구현 공백을 '완전 승계'로 덮는다. 논문 표본에서는 4종 모두 미발화(Table 10 'Triggered 0 of 3' · §4 'The kill-switch never activated during any out-of-sample period')라 논문 수치와는 무관하지만, KR 판에서는 구현된 2종이 실제로 발화하므로(changed ⑥ 자인 '2판 실측 62/247개월 정지') 미구현 2종도 발화 가능 구간이 존재한다 — 방어 강도가 논문 사양보다 낮은 쪽으로 어긋난다."
+  ],
+  "signal_mismatch": [
+    "[signal] 논문 식(1) 의 value 가중 0.7 은 percentile 규약에 대해 불변이 아닌데, FIDELITY ⑫(a) 는 불변이라고 선언한다. ⑫(a) 원문 = '백분위 규약 미명시 → (frank−1)/(N−1) 로 [0,1] 정확히 채움(최종 z 표준화가 아핀변환을 흡수하므로 결과 영향 없음)'. 이 산술은 닫히지 않는다: engine.R:235 BASE = 0.7·PCT + 0.3·REVZ 에서 PCT 만 스케일 a 로 바꾸면 BASE' = 0.7a·PCT + 0.3·REVZ + b 이고, 이것이 BASE 의 아핀변환이려면 a = 1 이어야 한다. 즉 마지막 z(engine.R:251)는 **BASE 전체**의 아핀변환만 흡수하고 **한 성분만**의 재척도는 흡수하지 못한다 — 규약을 바꾸면 실효 value 가중이 0.7·a 로 움직인다. 크기: (frank−1)/(N−1) vs frank/(N+1) 이면 a = (N−1)/(N+1), 실측 자격 단면 N ≈ 245(FIDELITY ⑨ 인용 108,238행/441 월말) 기준 실효 가중 0.700 → 0.694, 상대 0.8%. Table 6 이 value weight 0.49~0.91 에서 SR 9.1~13.2 로 완만하므로 **판정을 옮기는 크기는 아니다**. 지적 대상은 채택한 식((frank−1)/(N−1) 은 'percentile scores between 0 and 1' 의 정당한 직독이다)이 아니라 그 식에 붙은 '결과 영향 없음' 이라는 근거 진술이다. engine.R:229 · FIDELITY.changed ⑫(a)."
+  ],
+  "evidence": "[signal] arxiv.org/html/2511.12490v1 전문 판독. §2.1 value = 'computing inverse price for each stock then converting to cross-sectional ranks through percentile scores between 0 and 1' / reversal = 'computing trailing 10-day returns and negating them to create contrarian signals, then standardizing cross-sectionally to z-scores'. 식(1) BASE_{i,t} = 0.7×value_{i,t} + 0.3×reversal_{i,t}. 식(2) UpFraction_{i,t} = (1/63)Σ_{k=1}^{63} I[r_{i,t−k}>0]. 식(3) REGIME_{i,t} = I[UpFraction_{i,t} > 0.60]. 식(4) EDGE_{i,t} = BASE_{i,t}×REGIME_{i,t}. §2.2 'identify all stocks with valid, non-zero EDGE scores, compute standardized z-scores ensuring zero mean and unit variance, then ... separating stocks into long and short buckets based on z-scores'. Table 6 Base Case: Drift Window 63d · Up Threshold 0.60 · Value Weight 0.70(감응 −30%=0.42/0.49 로 base 값 역산 확인). 논문 전수 확인 결과 **부재**: winsorize/clip/truncate 문장 0건 · r_{i,t} 의 정의(총수익/가격수익, 로그/단순) 0건 · 백분위·z 의 횡단면 모집단 명시 0건 · 결측·거래정지·워밍업 처리 0건 · 신호 의사코드/부록 재기술 0건. / [timing] eq(2) 'UpFraction_{i,t} = (1/63)Σ_{k=1..63} I[r_{i,t-k}>0]' (t-k, k≥1 → 당일 t 제외) · §2.2/§6 'Each day we identify all stocks with valid, non-zero EDGE scores...' + 'Daily execution involves preliminary signal calculation at 3:30 PM...market-on-close participation at 4:00 PM' (일간 리밸) · §2.1 'trailing 10-day returns' · §2.1 'trailing 63 trading days'+'exceeds 60%' · Table 5 'Daily Turnover: 42%; Median Holding Period: 8 days' · §2.2 walk-forward 'five-year training periods...followed by one-year test periods...Window 1(train 2005–2010, test 2010–2011), Window 2(train 2010–2015, test 2015–2016), Window 3(train 2015–2020, test 2020–2021)' — 스킵 기간 언급 없음(WebFetch 확인, 문서 전체에 skip/formation-gap 서술 부재). / [universe] §2.1 'We constructed our empirical analysis using daily data for all current constituents of the S&P 500 index ... deliberately choosing current constituents despite introducing survivorship bias to ensure results are based on the most liquid and economically significant segment' — 유니버스 자격은 S&P500 편입 여부 하나뿐, 별도 가격 하한·유동성 문턱·금융주 제외 규정 없음. §2.2 비용 문장 'liquid large-cap stocks' 은 비용 산정 근거 서술이지 선별 규칙이 아님. Table 13 'Sector Deviation ±10% typical, ±15% max' 는 섹터 배제가 아니라 사후 특성/구성 제약(포트폴리오 축) — 유니버스 선별 규칙 아님. §7 'Survivorship bias likely inflates performance metrics by 20-30%' 는 생존편의 자인. / [portfolio] arxiv.org/html/2511.12490v1 §2.2 'Portfolio Implementation and Risk Management' 원문: 'Each day we identify all stocks with valid, non-zero EDGE scores, compute standardized z-scores ensuring zero mean and unit variance, then construct market-neutral long-short portfolios by separating stocks into long and short buckets based on z-scores. We normalize within each side to control gross exposure, with long positions summing to 50% and short positions to 50%, ensuring constant gross exposure of 100% and approximately zero net exposure for market neutrality.' · 식(5) 'all portfolio weights multiplied by this factor determined once during training and applied without modification during testing' · Table 5 (Average Positions 187 long/189 short · Largest Position 2–3% of gross · Top Decile Weight 35% of gross · Sector Deviation ±10% typical/±15% max · Active Stock-Days 35% of universe) · §3.2 본문 'The strategy maintains substantial diversification with 150–300 positions typically'. ★두 축 결정적 확인: (i) 논문 전문 어디에도 사이드 **내부** 개별 비중 결정 규칙(EW/z비례/EDGE비례)이 없다 — 별도 질의 2회 모두 '해당 문장 부재' 로 회수. (ii) 분위 절단(데실·퀸타일) 문장이 없다 — 'decile' 은 Table 5 의 사후 보고 지표 'Top Decile Weight' 한 곳뿐이고 선택 규칙이 아니다. (iii) 'Largest Position 2–3%' · 'Sector Deviation ±15% max' 는 구성 제약문이 아니라 §3.2/Table 5 의 사후 관측 특성으로 제시된다(제약형 동사 we cap/limit/constrain 부재) — FIDELITY ⑫ 의 '제약 문장 부재' 주장이 원문과 일치한다. / [cost] WebFetch arxiv.org/html/2511.12490v1 §2.2 'Transaction costs of 0.6 basis points per unit traded reflect combined explicit and implicit costs' (+ 'conservatively charged against subsequent returns') · Table 5 'Daily Turnover: 42%' · Table 6 'Transaction Cost | 13.2 (0.6bp) | 12.1 (0.5bp) | 10.8 (0.7bp) | 9.6 (0.8bp)' / [undeclared] arxiv.org/html/2511.12490v1 — §2.2 'Each day we identify all stocks with valid, non-zero EDGE scores, compute standardized z-scores ensuring zero mean and unit variance, then construct market-neutral long-short portfolios' / §2.1 'Approximately 35% of stock-days qualify on average, varying from 8% during market crashes to 67% during strong bull markets' / Table 5 'Median Holding Period: 8 days' · 'Daily Turnover: 42%' / **Table 10 'Kill-Switch Parameters and History' = 4 trigger rows (Absolute Drawdown −30% · Rolling 63-day Loss −10% · Volatility Spike 3× target · Correlation Break |ρ|>0.5)** / §4 'switches that cannot reset within evaluation periods' · 'The kill-switch never activated during any out-of-sample period'. 코드측: engine.R:130-131·225·232·250·255·360-362·371·375-377 · 02_Infrastructure/replication/replication_harness.R:45-46·81-89·126. 산출물측: 10_audit.csv:4(201 rebalance dates) · 06_metrics.csv(2005-02-01~2026-09-03, 5325 obs) · 04_holdings.csv(2013·2020·2025·2026 공백 실측).",
+  "confidence": "medium",
+  "note": "축 팬아웃 6개(판독형 opus 3 · 대조형 sonnet 3) — 발견 3건. adapted/adapted/adapted/adapted/adapted/misdeclared",
+  "mode": "fanout",
+  "axis_verdicts": [
+    {
+      "axis": "signal",
+      "required": true,
+      "model": "opus",
+      "verdict": "adapted",
+      "admissible": true,
+      "reason": "",
+      "confidence": "high",
+      "checked": "식(1)~(4) 계수·연산 대조(engine.R:122-126,235-237) · 반전 부호 −R10 이중부정 0건(:230-231) · 국면 게이트 방향(상승국면만 거래)·엄격부등호(:236) · 룩백 창 길이와 종점 — R10 = CLS/shift(CLS,10)−1 종점 d 포함(:198), UP63 = shift(frollsum(UPD,63,'right'),1)/63 → 정확히 k=1..63 = 당일 t 배제(:204) 로 식(2) 비대칭 재현 · 창 단위가 시장거래일 격자인지(:171-172,179) · 표준화 2단(성분단 PCT[0,1]+REVZ z by Date :229-231 / EDGE→z 활성 부분집합 by Date :251)과 그 모집단 순서(BASE 를 REGIME 이전에 전 자격단면에서 계산 = 식(4) 곱셈구조) · 윈저·클리핑 부재 대조 · 롱/숏 배정이 z 부호인지(:257,373) · value 입력 대체의 실체 확인(RAWDATA$Size = 시가총액 — compute_size.R:38 · Close = 수정주가 — krx_arrow_pipeline.R:8 로 ⑦ 의 '명목주가 패널 부재' 전제와 R10/RET1 의 분할오염 부재를 함께 확인) · 04_holdings.csv 실현 롱숏 부호 구조 확인.",
+      "counterexample": "구성했다 — 삼성전자(A005930), 2018-04-30 대 2018-05-31 월말 시그널일. 삼성전자는 2018-05-04 발효 50:1 액면분할로 명목주가가 약 2,650,000 → 약 51,900 KRW 로 끊겼고 시가총액은 불변이다. ▸ 논문(§2.1 value = percentile(1/명목주가)): 2018-04-30 에는 P ≈ 2.65M 이 유니버스 최고가 수준이라 1/P 가 횡단면 최소 → value ≈ 0(숏 방향). 2018-05-31 에는 P ≈ 51,900 이 K200∪KQ150 명목주가 분포의 내부값이라 value 백분위가 0 에서 이탈한다(보수적으로 ΔPCT ≳ 0.2). 즉 논문 신호에서 이 종목의 value 성분은 한 달 사이 0.7·ΔPCT ≳ 0.14 만큼 **분할 하나 때문에** 움직인다. ▸ 구현(engine.R:194 INVV = 1/Size, :229 PCT = (frank(INVV)−1)/(NX−1)): 삼성전자는 두 날짜 모두 유니버스 최대 시총이므로 INVV 가 횡단면 최소 → frank = 1 → **PCT = 정확히 0**, value 성분 = 0.7×0 = 0. 두 날짜 모두 이동 0. ▸ 부호가 갈리는 근거: 나머지 성분은 0.3·REVZ 하나뿐이고(engine.R:235) 횡단면의 약 68%가 |REVZ| < 1 이므로 |0.3·REVZ| < 0.3 이다. 따라서 ≳0.14, 통상 0.2 대의 value 격차는 활성 부분집합 z(engine.R:251)의 평균을 가로지르기에 충분하고, 삼성전자가 국면 활성(UpFrac63 > 0.60 — 2017~2018 반도체 상승국면에서 성립)인 달에는 논문 신호가 롱으로 놓는 종목을 구현은 숏 레그(Z<0)에 놓는다. ▸ 일반형: 두 구현은 1/P 와 1/시총의 횡단면 순위가 어긋나는 모든 종목에서 갈리며, KR 은 고가 소형주(예 태광산업)와 저가 대형주가 동시에 흔해 순위 상관이 낮다. 분할 사례는 그 중 **종목 내부에서 구현측 값이 상수임이 증명되는**(frank=1 고정) 가장 깨끗한 절단면이다. ▸ 검증 한계 정직 신고: 명목주가는 이 저장소 패널에 없어(수정계열 — krx_arrow_pipeline.R:8 'Sheet4: 수정주가(Close)' · build_cache.R:32) 논문측 값은 재계산으로 확인하지 못했고 분할일·분할비율이라는 공개 사실에 의존한다. 구현측 값(PCT = 0)은 코드에서 연역된다.",
+      "n_findings": 1
+    },
+    {
+      "axis": "timing",
+      "required": false,
+      "model": "sonnet",
+      "verdict": "adapted",
+      "admissible": true,
+      "reason": "",
+      "confidence": "high",
+      "checked": "리밸 주기(일간 vs 월간) · 형성창(reversal 10일·drift 63일, 문턱 0.60) 수치 대조 · UpFraction 인덱스 범위(t-k,k=1..63 = 당일 제외) 코드 정합(engine.R:200-204 shift(1) 처리) · 스킵 기간 유무 · walk-forward 창 구조(3개 이산 창 vs 엔진의 연속 연간 타일링, engine.R:328-347)",
+      "counterexample": "논문 median holding 8일(Table 5)인 종목이 활성화 6영업일 뒤 UpFrac63이 0.60 문턱 아래로 내려가 REGIME=0 이 되는 경우: 논문(일간 리밸)은 그 다음 날 즉시 청산한다. engine.R 구현(월간 리밸 — .me 월말 격자 §2, 집행 §5 .exec=익월 첫 거래일)은 다음 월말 시그널일까지 최대 ~1개월 그 포지션을 그대로 들고 간다(월중 재평가 없음 — REGIME 재계산은 .sig가 .me 날짜에서만 도는 구조, engine.R:215). 이 괴리는 FIDELITY.changed①/⑨에 명시적으로 선언돼 있어 misdeclared 사유는 아니다.",
+      "n_findings": 0
+    },
+    {
+      "axis": "universe",
+      "required": false,
+      "model": "sonnet",
+      "verdict": "adapted",
+      "admissible": true,
+      "reason": "",
+      "confidence": "high",
+      "checked": "engine.R:135(.LIQ=2e8),154-166(패널·ever-member 축소),184(ADV20_L1 = shift(frollmean(TV,20),1)),217-218(자격 필터 (K200|KQ150) & ADV20_L1>=2e8),225(NX>=2) vs 논문 §2.1(유니버스 정의)·§2.2(비용 문장)·§7(생존편의 자인)·Table 13(섹터) 전문 대조. 가격 하한(Close>0, line 158)·금융주 제외·상장거래소 필터 유무도 확인.",
+      "counterexample": "월말 시그널일에 KQ150 소속(K200 미포함) 종목이면서 ADV20(t-1) < 2e8 KRW 인 종목은, 논문 기준(유동성 필터 없음 — S&P500 편입만으로 자격)이면 후보에 남지만 engine.R:218 의 adv20 하한에 걸려 본 구현에서는 그 달 횡단면에서 배제된다.",
+      "n_findings": 0
+    },
+    {
+      "axis": "portfolio",
+      "required": true,
+      "model": "opus",
+      "verdict": "adapted",
+      "admissible": true,
+      "reason": "",
+      "confidence": "high",
+      "checked": "롱숏 여부(paper 시장중립 롱숏 = engine.R:373 Leg · manifest has_short=true) · 버킷 분할 규칙(paper z 부호 = engine.R:257 fifelse(Z>0,...)) · 분위 절단 유무(원문 부재 = 구현 부재) · 사이드별 그로스 50/50(engine.R:127 .SIDE_G=0.5, engine.R:253-257 GP/GN 정규화 → 롱 합 +0.5·s*, 숏 합 −0.5·s*, net 0 · 홀딩 산술로 재도출 확인) · 사이드 내부 배분(paper 미명시 → engine |z| 비례, FIDELITY ⑩ 선언) · 식(5) 노출 스칼라의 그로스 전달(engine.R:372 Weight=SCALE*W0 → replication_harness.R:57 gross=sum|w| → :105 Rg=GL·Lr−GS·Sr) · 실현 종목수·레그 구성(04_holdings.csv 1,186행/201 리밸일, 롱 621/숏 565) · 최대 비중 of gross(2005-04-01 50.00% 등 3개월 재계산) · ★2층 top-N 절단 여부(run_paper_replication.R:283-292 engine_direct 는 무절단이고 경고만, :224-235 .apply_universe 는 엔진이 이미 같은 d 멤버십을 건 뒤라 무효과, replication_harness.R:45 는 Weight!=0 만 — **곱해지는 상위 N 절단 없음**) · 고정 축 충돌(롱숏 = 충실구현 축상 허용 · 실현 n_max 24 ≤ 25 로 훅 미발화, FIDELITY ⑨ 가 이를 정합 근거로 삼지 말라고 명시)",
+      "counterexample": "구성했다 — 다만 그 괴리는 FIDELITY.changed ⑨ 에 이미 수치까지 선언돼 있다. 04_holdings.csv 의 집행일 2005-04-01: 롱 1종(A004830, w=+0.17643098219914) · 숏 5종(A003550 −0.131953870449421, A033530 −0.019805424693038, A025530 −0.0158440788184022, A009540 −0.00530303922524638, A010520 −0.0035245690130317). 숏 합 = −0.176430983 으로 롱과 정확히 상쇄(net=0 ✓) · gross = 0.352861964(= s*). 최대 포지션 = 0.176431/0.352862 = **50.00% of gross** 이고 롱 사이드 전체가 **단 1종**이다. 논문 Table 5 는 'Average Positions 187 long, 189 short' · 'Largest Position 2–3% of gross'. 즉 이 달의 롱 레그 집중도는 논문 상한의 약 17~25배, 종목수는 1/187 이다. 전 구간 실측도 같은 방향이다: 홀딩 1,186행 / 201 리밸일 = 리밸당 5.90종(롱 621행=3.09종 · 숏 565행=2.81종), 10_audit.csv 'holdings_cap' 은 리밸일별 distinct ticker 2~24종, 01_strategy_spec.json n_max=24. 논문 376종 대비 30~60배 축소. 이 값들은 FIDELITY ⑨ 의 선언('월평균 롱 3/숏 3종' · '최대 비중 평균 39.8% of gross' · '리밸일별 2~24종')과 3판 산출물에서도 일치한다 — 선언이 낡지 않았다.",
+      "n_findings": 0
+    },
+    {
+      "axis": "cost",
+      "required": false,
+      "model": "sonnet",
+      "verdict": "adapted",
+      "admissible": true,
+      "reason": "",
+      "confidence": "high",
+      "checked": "논문 명시 비용요율(0.6bp/unit)과 engine.R:54 주석·run_paper_replication.R commission_paper 값 일치 여부 · 'unit traded' 정의(round-trip/one-way) 명시 여부 · replication_harness.R:107-118 비용 계산식(Σ|Δw_target|×commission, 양 레그 포함) · 이번 산출물 authoritative_remeasure.json 의 commission_paper_bps·paper_basis 값 · Table 5/6 회전율·비용감도 수치와의 교차대조",
+      "counterexample": "논문 Table 5(Daily Turnover 42%) → 연환산 ≈105.8회전/년. 구현은 월간 리밸(FIDELITY.changed①)이라 이번 산출물(replication/20260904_190039_22572/06_metrics.csv:24) Annualized_Turnover=2.304 — 연 ≈46배 낮다. 0.6bp 요율 자체는 정확히 일치(authoritative_remeasure.json:46 commission_paper_bps=0.6)하지만, 그 요율이 물리는 회전이 실제와 다르므로 논문 Table 6(0.6bp→SR13.2, 0.8bp→SR9.6 — 요율 0.2bp 변화에 SR 3.6 이동, 즉 paper 의 헤드라인 성과가 '요율×고회전'의 곱에 강하게 민감)과 병기값(authoritative_remeasure.json:47-52 paper_basis: SR −0.076, CAGR −0.7%)은 같은 비용축을 재는 값이 아니다. 요율 일치를 '논문 비용으로 계산됐다'는 근거로 오독하면 이 병기값이 논문의 실제 비용 강도를 대표한다고 잘못 읽게 된다 — 방향은 항상 구현에 유리(회전이 준 만큼 비용도 준다).",
+      "n_findings": 0
+    },
+    {
+      "axis": "undeclared",
+      "required": true,
+      "model": "opus",
+      "verdict": "misdeclared",
+      "admissible": true,
+      "reason": "",
+      "confidence": "high",
+      "checked": "engine.R 전 라인의 거동을 changed[]①~⑬ 및 원문 §2.1/§2.2/§4/§6·Table 5/6/10/12 에 1:1 대조 — 대응 확인(=발견 아님): ever-member 축소(:165 · .cal 은 :160 에서 선행 산출되고 :218 날짜별 멤버십이 지배하므로 출력 동일) · 식(2) 시프트 정합(:204 frollsum+shift(1) = Σ_{k=1..63}, 당일 t 제외) · 식(3) 엄격부등호(:236) · 식(1) 0.7/0.3(:122-123, Table 6 Base Case) · 활성 부분집합 z(:251, §2.2 'valid, non-zero EDGE') · 사이드 50/50(:257) · s* min 2항(:310-311) · 학습창 [j1,j2] 및 PIT assert(:336-340) · 252 환산(:138) · NAV 하한 1e-12(:357) · ties average(:229) · Vol 결측=거래대금 0(:182) · 워밍업 NA 전파(:222) · 윈저·클리핑·섹터중립·비중상한 부재(원문 구성절에도 부재 — ⑫ 일치).",
+      "counterexample": "2020-02-03 집행분. 이 리밸에서 발행된 책은 4종목(04_holdings.csv:772-775)이고, 다음 발행 시그널일의 집행은 2020-07-01 이다(같은 파일 :776). replication_harness.R:86-88 이 hold_pool 을 [2020-02-03, 2020-06-30] 으로 잡으므로, 이 4종 롱숏 책(그로스 = s*, 레버리지 스칼라 적용분)이 **COVID 폭락 전 구간을 신호 갱신 없이 그대로 통과**한다 — 2/26의 UpFrac63·10일반전·유동성·K200/KQ150 멤버십이 어떻게 바뀌었든 책은 고정이다. 논문 사양대로면 이 구간은 매일 재구성되고(§2.2 'Each day we identify all stocks with valid, non-zero EDGE scores'), 국면 게이트가 꺼진 종목은 그날로 빠진다(§2.1 crash 시 활성 8%). 두 구성이 내는 값은 같을 수 없고, 06_metrics.csv 의 MDD 0.4199 · Annualized_Turnover 2.304(논문 Table 5 일간회전 42% ⇒ 연 ~105회전, FIDELITY ① 이 월간판 근거로 인용한 8.41 과도 3.7배 괴리)가 그 동결의 자국이다. 같은 기전의 짧은 사례 = 2013-09(2013-08-01 4종 책이 10/1 까지 2개월 유지) · 2025-04 · 2026-08.",
+      "n_findings": 2
+    }
+  ],
+  "flags": [],
+  "merged_at": "2026-09-04T19:15:43+0900"
+}

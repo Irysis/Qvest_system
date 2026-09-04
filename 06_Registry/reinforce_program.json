@@ -1,473 +1,477 @@
 {
- "schema": "reinforce_program_v1",
- "version": "2026-09-01",
- "note": "규칙기반 고속강화 프로그램 정본. ★논문 독립: 기저 신호만 각 논문의 충실구현에서 오고 아래 25칸은 고정 변환이다. 2026-09-01 재편(도훈 지시): ①B1 이 팩터를 격자에 박지 않고 등록부를 소비한다(rf_factor_arms.R — IC 시계열 상관 최소화 사슬 + 계열 라운드로빈 시드 회전) ②기저 가중 w0 고정으로 결합 깊이와 논문신호 희석의 교락을 끊었다 ③블록 실행 순서를 B5→B4 로 바꿔 B4 가 오버레이를 조합 축으로 쓴다(4축 LOO). 셀 실행은 rf_cell_engine.R 하나 — LLM 이 엔진을 쓰지 않는다.",
- "fixed_axes": {
-  "long_only": true,
-  "n_max": 25,
-  "universe": "K200_KQ150",
-  "start_date": "2005-01-01",
-  "commission_bps": 15,
-  "liq_adv20_min": 200000000,
-  "weight_cap": null,
-  "base_weight": 0.5,
-  "base_weight_note": "기저(논문) 신호 가중. 등가중이면 팩터 n개에서 1/(1+n) 로 떨어져 결합 깊이와 기저 희석이 교락된다(실측 2026-08-31: 1/2->1/3 희석만으로 B1 다섯 칸 전부 기준선 미달). 고정하면 깊이가 순수 축이 된다. 1팩터일 때 0.5 는 등가중과 수치적으로 동일하다."
- },
- "blocks": [
-  {
-   "id": "B1",
-   "axis": "multifactor",
-   "n": 5,
-   "rule": "기저 신호 + 팩터 N종을 횡단면 rank-Z 로 결합(기저 w0, 나머지 (1-w0) 등분). 팩터 **집합**이 셀마다 바뀌고 깊이가 1..5 로 늘어난다. ★2026-09-01 도훈 지시로 카탈로그 소비로 전환 — 구판은 5종이 격자에 박혀 있어 모든 논문이 같은 팩터를 썼다(rf_grid_propose.sh 는 로그 0건, 한 번도 안 돎).",
-   "select_winner_by": "port_t",
-   "cells": [
-    {
-     "code": "B1_1",
-     "label": "1팩터 직교(defense)",
-     "factors": [
-      {
-       "kind": "db",
-       "id": "D42_EWMA_Vol"
-      }
-     ],
-     "basis": "IC 시계열 상관 최소화 사슬 · 깊이 1 · 계열 1종(중복 0) · max|rho| n/a · 시드 D42_EWMA_Vol(회전 오프셋 0) · 후보 331종 · substrate 2026-07-31",
-     "root_paper": {
-      "title": "Ang, Hodrick, Xing & Zhang (2006), The Cross-Section of Volatility and Expected Returns, JF 61(1)",
-      "url": "https://onlinelibrary.wiley.com/doi/10.1111/j.1540-6261.2006.00836.x"
-     },
-     "note": "등록부 선정 — 격자가 팩터를 갖지 않고 factor_evidence+factor_ic_monthly 를 소비한다. IC 이력 부재로 제외 42종 · 횡단면 아님으로 제외 41종. ★선정은 IC 시계열 상관, 결합은 횡단면 rank-Z — 다른 직교성이다."
-    },
-    {
-     "code": "B1_2",
-     "label": "2팩터 직교(defense+crowding)",
-     "factors": [
-      {
-       "kind": "db",
-       "id": "D42_EWMA_Vol"
-      },
-      {
-       "kind": "db",
-       "id": "SE02_Consensus_Revision"
-      }
-     ],
-     "basis": "IC 시계열 상관 최소화 사슬 · 깊이 2 · 계열 2종(중복 0) · max|rho| 0.001 · 시드 D42_EWMA_Vol(회전 오프셋 0) · 후보 331종 · substrate 2026-07-31",
-     "root_paper": {
-      "title": "Ang, Hodrick, Xing & Zhang (2006), The Cross-Section of Volatility and Expected Returns, JF 61(1)",
-      "url": "https://onlinelibrary.wiley.com/doi/10.1111/j.1540-6261.2006.00836.x"
-     },
-     "note": "등록부 선정 — 격자가 팩터를 갖지 않고 factor_evidence+factor_ic_monthly 를 소비한다. IC 이력 부재로 제외 42종 · 횡단면 아님으로 제외 41종. ★선정은 IC 시계열 상관, 결합은 횡단면 rank-Z — 다른 직교성이다."
-    },
-    {
-     "code": "B1_3",
-     "label": "3팩터 직교(defense+crowding+liquidity)",
-     "factors": [
-      {
-       "kind": "db",
-       "id": "D42_EWMA_Vol"
-      },
-      {
-       "kind": "db",
-       "id": "SE02_Consensus_Revision"
-      },
-      {
-       "kind": "db",
-       "id": "L38_DolVol_Mom"
-      }
-     ],
-     "basis": "IC 시계열 상관 최소화 사슬 · 깊이 3 · 계열 3종(중복 0) · max|rho| 0.014 · 시드 D42_EWMA_Vol(회전 오프셋 0) · 후보 331종 · substrate 2026-07-31",
-     "root_paper": {
-      "title": "Ang, Hodrick, Xing & Zhang (2006), The Cross-Section of Volatility and Expected Returns, JF 61(1)",
-      "url": "https://onlinelibrary.wiley.com/doi/10.1111/j.1540-6261.2006.00836.x"
-     },
-     "note": "등록부 선정 — 격자가 팩터를 갖지 않고 factor_evidence+factor_ic_monthly 를 소비한다. IC 이력 부재로 제외 42종 · 횡단면 아님으로 제외 41종. ★선정은 IC 시계열 상관, 결합은 횡단면 rank-Z — 다른 직교성이다."
-    },
-    {
-     "code": "B1_4",
-     "label": "4팩터 직교(defense+crowding+liquidity+quality)",
-     "factors": [
-      {
-       "kind": "db",
-       "id": "D42_EWMA_Vol"
-      },
-      {
-       "kind": "db",
-       "id": "SE02_Consensus_Revision"
-      },
-      {
-       "kind": "db",
-       "id": "L38_DolVol_Mom"
-      },
-      {
-       "kind": "db",
-       "id": "Q18_Op_Leverage"
-      }
-     ],
-     "basis": "IC 시계열 상관 최소화 사슬 · 깊이 4 · 계열 4종(중복 0) · max|rho| 0.024 · 시드 D42_EWMA_Vol(회전 오프셋 0) · 후보 331종 · substrate 2026-07-31",
-     "root_paper": {
-      "title": "Ang, Hodrick, Xing & Zhang (2006), The Cross-Section of Volatility and Expected Returns, JF 61(1)",
-      "url": "https://onlinelibrary.wiley.com/doi/10.1111/j.1540-6261.2006.00836.x"
-     },
-     "note": "등록부 선정 — 격자가 팩터를 갖지 않고 factor_evidence+factor_ic_monthly 를 소비한다. IC 이력 부재로 제외 42종 · 횡단면 아님으로 제외 41종. ★선정은 IC 시계열 상관, 결합은 횡단면 rank-Z — 다른 직교성이다."
-    },
-    {
-     "code": "B1_5",
-     "label": "5팩터 직교(defense+crowding+accrual+liquidity+quality)",
-     "factors": [
-      {
-       "kind": "db",
-       "id": "D42_EWMA_Vol"
-      },
-      {
-       "kind": "db",
-       "id": "SE02_Consensus_Revision"
-      },
-      {
-       "kind": "db",
-       "id": "L38_DolVol_Mom"
-      },
-      {
-       "kind": "db",
-       "id": "Q18_Op_Leverage"
-      },
-      {
-       "kind": "db",
-       "id": "AC05_NOA"
-      }
-     ],
-     "basis": "IC 시계열 상관 최소화 사슬 · 깊이 5 · 계열 5종(중복 0) · max|rho| 0.075 · 시드 D42_EWMA_Vol(회전 오프셋 0) · 후보 331종 · substrate 2026-07-31",
-     "root_paper": {
-      "title": "Ang, Hodrick, Xing & Zhang (2006), The Cross-Section of Volatility and Expected Returns, JF 61(1)",
-      "url": "https://onlinelibrary.wiley.com/doi/10.1111/j.1540-6261.2006.00836.x"
-     },
-     "note": "등록부 선정 — 격자가 팩터를 갖지 않고 factor_evidence+factor_ic_monthly 를 소비한다. IC 이력 부재로 제외 42종 · 횡단면 아님으로 제외 41종. ★선정은 IC 시계열 상관, 결합은 횡단면 rank-Z — 다른 직교성이다."
-    }
-   ],
-   "depths": [
-    1,
-    2,
-    3,
-    4,
-    5
-   ],
-   "source": {
-    "registry": "06_Registry/factor_evidence.json + .cache/factor_db/factor_ic_monthly.parquet",
-    "axis_filter": "06_Registry/factor_panel_axis.json (cross_sectional 만 — 시장수준 시계열은 B5 재료)",
-    "picker": "02_Infrastructure/ops/rf_factor_arms.R::rf_pick_factor_sets",
-    "note": "격자는 팩터를 갖지 않고 등록부를 소비한다. 위 cells 는 스냅샷이고 정본은 배치 시점 picker 다. ★시드 회전(계열 라운드로빈 · 오프셋 = 원장 누적 entry 수)이 없으면 그리디가 결정론이라 전 논문이 같은 사슬을 받아 총 조합이 entry 수와 무관하게 5개로 고정된다. ★선정은 IC 시계열 상관(언제 벌리나), 결합은 횡단면 rank-Z(어떤 종목을 고르나) — 다른 직교성이다."
-   }
+  "schema": "reinforce_program_v1",
+  "version": "2026-09-01",
+  "note": "규칙기반 고속강화 프로그램 정본. ★논문 독립: 기저 신호만 각 논문의 충실구현에서 오고 아래 25칸은 고정 변환이다. 2026-09-01 재편(도훈 지시): ①B1 이 팩터를 격자에 박지 않고 등록부를 소비한다(rf_factor_arms.R — IC 시계열 상관 최소화 사슬 + 계열 라운드로빈 시드 회전) ②기저 가중 w0 고정으로 결합 깊이와 논문신호 희석의 교락을 끊었다 ③블록 실행 순서를 B5→B4 로 바꿔 B4 가 오버레이를 조합 축으로 쓴다(4축 LOO). 셀 실행은 rf_cell_engine.R 하나 — LLM 이 엔진을 쓰지 않는다.",
+  "fixed_axes": {
+    "long_only": true,
+    "n_max": 25,
+    "universe": "K200_KQ150",
+    "start_date": "2005-01-01",
+    "commission_bps": 15,
+    "liq_adv20_min": 200000000,
+    "weight_cap": null,
+    "base_weight": 0.5,
+    "base_weight_note": "기저(논문) 신호 가중. 등가중이면 팩터 n개에서 1/(1+n) 로 떨어져 결합 깊이와 기저 희석이 교락된다(실측 2026-08-31: 1/2->1/3 희석만으로 B1 다섯 칸 전부 기준선 미달). 고정하면 깊이가 순수 축이 된다. 1팩터일 때 0.5 는 등가중과 수치적으로 동일하다."
   },
-  {
-   "id": "B2",
-   "axis": "weighting",
-   "n": 5,
-   "rule": "B1 승자 컴포짓을 신호로 고정하고 비중 규칙만 교체. 종목 선정 동일(순수 비중-only A/B). ★2026-08-30 도훈 지시로 **카탈로그 소비**로 전환 — 세션이 5종을 재구현하던 것을 폐기하고 06_Registry/weight_catalog.json(29종 실행가능/52종 등록)에서 뽑는다. 계열당 1개 강제 + 낙폭 축 계열(tail_aware·entropy·risk_parity) 우선 — 구판은 5종 중 3종이 score_blend 한 계열이라 같은 결론만 냈다(1.441/1.411/1.396).",
-   "requires": "B1",
-   "select_winner_by": "port_t",
-   "cells": [
+  "blocks": [
     {
-     "code": "B2_6",
-     "label": "cvar(tail_aware)",
-     "weighting": {
-      "kind": "catalog",
-      "catalog_id": "lean:cvar",
-      "label": "cvar"
-     },
-     "note": "카탈로그 선정 — 계열 tail_aware · 출처 lean_builtin. 격자가 재구현하지 않고 등록부를 소비한다.",
-     "root_paper": {
-      "title": "weight_catalog: lean:cvar",
-      "url": "https://github.com/qvest/weight_catalog"
-     }
+      "id": "B1",
+      "axis": "multifactor",
+      "n": 5,
+      "rule": "기저 신호 + 팩터 N종을 횡단면 rank-Z 로 결합(기저 w0, 나머지 (1-w0) 등분). ★깊이와 팩터 집합은 **블록 진입 1회 LLM 설계**가 정한다 — 구판처럼 1..5 로 누적하지 않는다(2026-09-04 실측 설계: 깊이 1 이 10칸, 2 가 2칸, 3/4/5 각 1칸). 폭주 방지선 = execution.factor_blend.hard_max_factors.",
+      "select_winner_by": "port_t",
+      "cells": [
+        {
+          "code": "B1_1",
+          "label": "1팩터 직교(defense)",
+          "factors": [
+            {
+              "kind": "db",
+              "id": "D42_EWMA_Vol"
+            }
+          ],
+          "basis": "IC 시계열 상관 최소화 사슬 · 깊이 1 · 계열 1종(중복 0) · max|rho| n/a · 시드 D42_EWMA_Vol(회전 오프셋 0) · 후보 331종 · substrate 2026-07-31",
+          "root_paper": {
+            "title": "Ang, Hodrick, Xing & Zhang (2006), The Cross-Section of Volatility and Expected Returns, JF 61(1)",
+            "url": "https://onlinelibrary.wiley.com/doi/10.1111/j.1540-6261.2006.00836.x"
+          },
+          "note": "등록부 선정 — 격자가 팩터를 갖지 않고 factor_evidence+factor_ic_monthly 를 소비한다. IC 이력 부재로 제외 42종 · 횡단면 아님으로 제외 41종. ★선정은 IC 시계열 상관, 결합은 횡단면 rank-Z — 다른 직교성이다."
+        },
+        {
+          "code": "B1_2",
+          "label": "2팩터 직교(defense+crowding)",
+          "factors": [
+            {
+              "kind": "db",
+              "id": "D42_EWMA_Vol"
+            },
+            {
+              "kind": "db",
+              "id": "SE02_Consensus_Revision"
+            }
+          ],
+          "basis": "IC 시계열 상관 최소화 사슬 · 깊이 2 · 계열 2종(중복 0) · max|rho| 0.001 · 시드 D42_EWMA_Vol(회전 오프셋 0) · 후보 331종 · substrate 2026-07-31",
+          "root_paper": {
+            "title": "Ang, Hodrick, Xing & Zhang (2006), The Cross-Section of Volatility and Expected Returns, JF 61(1)",
+            "url": "https://onlinelibrary.wiley.com/doi/10.1111/j.1540-6261.2006.00836.x"
+          },
+          "note": "등록부 선정 — 격자가 팩터를 갖지 않고 factor_evidence+factor_ic_monthly 를 소비한다. IC 이력 부재로 제외 42종 · 횡단면 아님으로 제외 41종. ★선정은 IC 시계열 상관, 결합은 횡단면 rank-Z — 다른 직교성이다."
+        },
+        {
+          "code": "B1_3",
+          "label": "3팩터 직교(defense+crowding+liquidity)",
+          "factors": [
+            {
+              "kind": "db",
+              "id": "D42_EWMA_Vol"
+            },
+            {
+              "kind": "db",
+              "id": "SE02_Consensus_Revision"
+            },
+            {
+              "kind": "db",
+              "id": "L38_DolVol_Mom"
+            }
+          ],
+          "basis": "IC 시계열 상관 최소화 사슬 · 깊이 3 · 계열 3종(중복 0) · max|rho| 0.014 · 시드 D42_EWMA_Vol(회전 오프셋 0) · 후보 331종 · substrate 2026-07-31",
+          "root_paper": {
+            "title": "Ang, Hodrick, Xing & Zhang (2006), The Cross-Section of Volatility and Expected Returns, JF 61(1)",
+            "url": "https://onlinelibrary.wiley.com/doi/10.1111/j.1540-6261.2006.00836.x"
+          },
+          "note": "등록부 선정 — 격자가 팩터를 갖지 않고 factor_evidence+factor_ic_monthly 를 소비한다. IC 이력 부재로 제외 42종 · 횡단면 아님으로 제외 41종. ★선정은 IC 시계열 상관, 결합은 횡단면 rank-Z — 다른 직교성이다."
+        },
+        {
+          "code": "B1_4",
+          "label": "4팩터 직교(defense+crowding+liquidity+quality)",
+          "factors": [
+            {
+              "kind": "db",
+              "id": "D42_EWMA_Vol"
+            },
+            {
+              "kind": "db",
+              "id": "SE02_Consensus_Revision"
+            },
+            {
+              "kind": "db",
+              "id": "L38_DolVol_Mom"
+            },
+            {
+              "kind": "db",
+              "id": "Q18_Op_Leverage"
+            }
+          ],
+          "basis": "IC 시계열 상관 최소화 사슬 · 깊이 4 · 계열 4종(중복 0) · max|rho| 0.024 · 시드 D42_EWMA_Vol(회전 오프셋 0) · 후보 331종 · substrate 2026-07-31",
+          "root_paper": {
+            "title": "Ang, Hodrick, Xing & Zhang (2006), The Cross-Section of Volatility and Expected Returns, JF 61(1)",
+            "url": "https://onlinelibrary.wiley.com/doi/10.1111/j.1540-6261.2006.00836.x"
+          },
+          "note": "등록부 선정 — 격자가 팩터를 갖지 않고 factor_evidence+factor_ic_monthly 를 소비한다. IC 이력 부재로 제외 42종 · 횡단면 아님으로 제외 41종. ★선정은 IC 시계열 상관, 결합은 횡단면 rank-Z — 다른 직교성이다."
+        },
+        {
+          "code": "B1_5",
+          "label": "5팩터 직교(defense+crowding+accrual+liquidity+quality)",
+          "factors": [
+            {
+              "kind": "db",
+              "id": "D42_EWMA_Vol"
+            },
+            {
+              "kind": "db",
+              "id": "SE02_Consensus_Revision"
+            },
+            {
+              "kind": "db",
+              "id": "L38_DolVol_Mom"
+            },
+            {
+              "kind": "db",
+              "id": "Q18_Op_Leverage"
+            },
+            {
+              "kind": "db",
+              "id": "AC05_NOA"
+            }
+          ],
+          "basis": "IC 시계열 상관 최소화 사슬 · 깊이 5 · 계열 5종(중복 0) · max|rho| 0.075 · 시드 D42_EWMA_Vol(회전 오프셋 0) · 후보 331종 · substrate 2026-07-31",
+          "root_paper": {
+            "title": "Ang, Hodrick, Xing & Zhang (2006), The Cross-Section of Volatility and Expected Returns, JF 61(1)",
+            "url": "https://onlinelibrary.wiley.com/doi/10.1111/j.1540-6261.2006.00836.x"
+          },
+          "note": "등록부 선정 — 격자가 팩터를 갖지 않고 factor_evidence+factor_ic_monthly 를 소비한다. IC 이력 부재로 제외 42종 · 횡단면 아님으로 제외 41종. ★선정은 IC 시계열 상관, 결합은 횡단면 rank-Z — 다른 직교성이다."
+        }
+      ],
+      "depths": [
+        1,
+        2,
+        3,
+        4,
+        5
+      ],
+      "source": {
+        "registry": "06_Registry/factor_evidence.json + .cache/factor_db/factor_ic_monthly.parquet",
+        "axis_filter": "06_Registry/factor_panel_axis.json (cross_sectional 만 — 시장수준 시계열은 B5 재료)",
+        "picker": "02_Infrastructure/ops/rf_factor_arms.R::rf_pick_factor_sets",
+        "note": "격자는 팩터를 갖지 않고 등록부를 소비한다. 위 cells 는 스냅샷이고 정본은 배치 시점 picker 다. ★시드 회전(계열 라운드로빈 · 오프셋 = 원장 누적 entry 수)이 없으면 그리디가 결정론이라 전 논문이 같은 사슬을 받아 총 조합이 entry 수와 무관하게 5개로 고정된다. ★선정은 IC 시계열 상관(언제 벌리나), 결합은 횡단면 rank-Z(어떤 종목을 고르나) — 다른 직교성이다."
+      },
+      "n_note": "★n 은 폴백 칸 수다. 실제 칸 수는 LLM 설계가 정한다(2026-09-04 실측: 15칸).",
+      "cells_note": "★아래 cells 는 **설계 실패 시 폴백**이다. B1 설계 레인이 산출물을 내면 그것이 이 배열을 대체한다(.cache/rf_b1_design/<base_id>.json). 여기 박힌 구체 팩터(D42_EWMA_Vol 등)는 설계가 성공한 라운드에서는 소비되지 않는다."
     },
     {
-     "code": "B2_7",
-     "label": "entropy(entropy)",
-     "weighting": {
-      "kind": "catalog",
-      "catalog_id": "lean:entropy",
-      "label": "entropy"
-     },
-     "note": "카탈로그 선정 — 계열 entropy · 출처 lean_builtin. 격자가 재구현하지 않고 등록부를 소비한다.",
-     "root_paper": {
-      "title": "weight_catalog: lean:entropy",
-      "url": "https://github.com/qvest/weight_catalog"
-     }
+      "id": "B2",
+      "axis": "weighting",
+      "n": 5,
+      "rule": "B1 승자 컴포짓을 신호로 고정하고 비중 규칙만 교체. 종목 선정 동일(순수 비중-only A/B). ★2026-08-30 도훈 지시로 **카탈로그 소비**로 전환 — 세션이 5종을 재구현하던 것을 폐기하고 06_Registry/weight_catalog.json(29종 실행가능/52종 등록)에서 뽑는다. 계열당 1개 강제 + 낙폭 축 계열(tail_aware·entropy·risk_parity) 우선 — 구판은 5종 중 3종이 score_blend 한 계열이라 같은 결론만 냈다(1.441/1.411/1.396).",
+      "requires": "B1",
+      "select_winner_by": "port_t",
+      "cells": [
+        {
+          "code": "B2_6",
+          "label": "cvar(tail_aware)",
+          "weighting": {
+            "kind": "catalog",
+            "catalog_id": "lean:cvar",
+            "label": "cvar"
+          },
+          "note": "카탈로그 선정 — 계열 tail_aware · 출처 lean_builtin. 격자가 재구현하지 않고 등록부를 소비한다.",
+          "root_paper": {
+            "title": "weight_catalog: lean:cvar",
+            "url": "https://github.com/qvest/weight_catalog"
+          }
+        },
+        {
+          "code": "B2_7",
+          "label": "entropy(entropy)",
+          "weighting": {
+            "kind": "catalog",
+            "catalog_id": "lean:entropy",
+            "label": "entropy"
+          },
+          "note": "카탈로그 선정 — 계열 entropy · 출처 lean_builtin. 격자가 재구현하지 않고 등록부를 소비한다.",
+          "root_paper": {
+            "title": "weight_catalog: lean:entropy",
+            "url": "https://github.com/qvest/weight_catalog"
+          }
+        },
+        {
+          "code": "B2_8",
+          "label": "factor_rp(risk_parity)",
+          "weighting": {
+            "kind": "catalog",
+            "catalog_id": "lean:factor_rp",
+            "label": "factor_rp"
+          },
+          "note": "카탈로그 선정 — 계열 risk_parity · 출처 lean_builtin. 격자가 재구현하지 않고 등록부를 소비한다.",
+          "root_paper": {
+            "title": "weight_catalog: lean:factor_rp",
+            "url": "https://github.com/qvest/weight_catalog"
+          }
+        },
+        {
+          "code": "B2_9",
+          "label": "ivol(risk_based)",
+          "weighting": {
+            "kind": "catalog",
+            "catalog_id": "lean:ivol",
+            "label": "ivol"
+          },
+          "note": "카탈로그 선정 — 계열 risk_based · 출처 lean_builtin. 격자가 재구현하지 않고 등록부를 소비한다.",
+          "root_paper": {
+            "title": "weight_catalog: lean:ivol",
+            "url": "https://github.com/qvest/weight_catalog"
+          }
+        },
+        {
+          "code": "B2_10",
+          "label": "SchurDamping(optimizer)",
+          "weighting": {
+            "kind": "catalog",
+            "catalog_id": "paper:SchurDamping",
+            "label": "SchurDamping"
+          },
+          "note": "카탈로그 선정 — 계열 optimizer · 출처 paper_adapter. 격자가 재구현하지 않고 등록부를 소비한다.",
+          "root_paper": {
+            "title": "weight_catalog: paper:SchurDamping",
+            "url": "https://github.com/qvest/weight_catalog"
+          }
+        }
+      ],
+      "source": {
+        "registry": "06_Registry/weight_catalog.json",
+        "picker": "02_Infrastructure/ops/rf_weight_arms.R::rf_pick_weight_arms",
+        "note": "격자는 비중 규칙을 재구현하지 않는다 — 등록부를 소비한다. 카탈로그가 늘면 격자도 자동으로 넓어진다."
+      }
     },
     {
-     "code": "B2_8",
-     "label": "factor_rp(risk_parity)",
-     "weighting": {
-      "kind": "catalog",
-      "catalog_id": "lean:factor_rp",
-      "label": "factor_rp"
-     },
-     "note": "카탈로그 선정 — 계열 risk_parity · 출처 lean_builtin. 격자가 재구현하지 않고 등록부를 소비한다.",
-     "root_paper": {
-      "title": "weight_catalog: lean:factor_rp",
-      "url": "https://github.com/qvest/weight_catalog"
-     }
+      "id": "B3",
+      "axis": "universe",
+      "n": 5,
+      "rule": "B1 승자 컴포짓 + EW 로 고정하고 적용 유니버스만 교체. 유동성 하한은 전 유니버스 공통 유지.",
+      "requires": "B1",
+      "select_winner_by": "calmar",
+      "cells": [
+        {
+          "code": "B3_11",
+          "label": "KOSDAQ150 단독",
+          "universe": {
+            "kind": "index",
+            "flag": "KQ150"
+          },
+          "root_paper": {
+            "title": "Hong, Lim & Stein (2000), Bad News Travels Slowly, JF 55(1)",
+            "url": "https://onlinelibrary.wiley.com/doi/10.1111/0022-1082.00206"
+          },
+          "note": "★2026-08-31 교체 (도훈 \"강화프로세스에서 유니버스 격자변경 허용\"). 구 셀 = \"지수 멤버십 해제\"(all_listed) — 이 아키텍처에서 **영구 미전달**이다. 기저 신호는 충실구현 engine.R 에서 오는데 그 엔진이 헌법 유니버스(K200∪KQ150)로 자기 유니버스를 이미 자르므로, 멤버십을 풀어도 넓힐 대상이 없다. 실측(2026-08-31, 기저 패널 72,117행): 지수 밖 0행 · K200 47,863행/415종 · KQ150 24,254행/369종. rf_cell_engine 이 이를 \"측정 무효\"로 거절했고 러너에 출구가 없어 루프가 7.5시간 제자리를 돌았다. 대체 셀은 K200 단독(B3_12)의 **대칭축** — 겹침 0, 월별 후보 106~146종(25종 미달 0개월)."
+        },
+        {
+          "code": "B3_12",
+          "label": "KOSPI200 단독",
+          "universe": {
+            "kind": "index",
+            "flag": "K200"
+          },
+          "root_paper": {
+            "title": "Hong, Lim & Stein (2000), Bad News Travels Slowly, JF 55(1)",
+            "url": "https://onlinelibrary.wiley.com/doi/10.1111/0022-1082.00206"
+          }
+        },
+        {
+          "code": "B3_13",
+          "label": "소형주(시총 하위 1/3)",
+          "universe": {
+            "kind": "size_band",
+            "q_lo": 0,
+            "q_hi": 0.3333
+          },
+          "root_paper": {
+            "title": "Banz (1981), The Relationship Between Return and Market Value of Common Stocks, JFE 9(1)",
+            "url": "https://www.sciencedirect.com/science/article/abs/pii/0304405X81900180"
+          }
+        },
+        {
+          "code": "B3_14",
+          "label": "대형주(시총 상위 1/3)",
+          "universe": {
+            "kind": "size_band",
+            "q_lo": 0.6667,
+            "q_hi": 1
+          },
+          "root_paper": {
+            "title": "Banz (1981), The Relationship Between Return and Market Value of Common Stocks, JFE 9(1)",
+            "url": "https://www.sciencedirect.com/science/article/abs/pii/0304405X81900180"
+          }
+        },
+        {
+          "code": "B3_15",
+          "label": "섹터 중립",
+          "universe": {
+            "kind": "sector_neutral",
+            "field": "Sector_Lv2"
+          },
+          "root_paper": {
+            "title": "Moskowitz & Grinblatt (1999), Do Industries Explain Momentum?, JF 54(4)",
+            "url": "https://onlinelibrary.wiley.com/doi/10.1111/0022-1082.00146"
+          }
+        }
+      ],
+      "note": "유니버스 축. ★all_listed(지수 멤버십 해제)는 이 격자에 다시 넣지 말 것 — 기저 엔진이 유니버스를 먼저 자르는 한 처치가 전달되지 않는다(구조적 미결). 넓히는 처치를 재려면 엔진 계약에서 \"신호\"와 \"유니버스\"를 분리해야 하고, 그건 격자가 아니라 충실구현 계약의 문제다. 여기 셀은 전부 **좁히는/재배치하는** 처치다."
     },
     {
-     "code": "B2_9",
-     "label": "ivol(risk_based)",
-     "weighting": {
-      "kind": "catalog",
-      "catalog_id": "lean:ivol",
-      "label": "ivol"
-     },
-     "note": "카탈로그 선정 — 계열 risk_based · 출처 lean_builtin. 격자가 재구현하지 않고 등록부를 소비한다.",
-     "root_paper": {
-      "title": "weight_catalog: lean:ivol",
-      "url": "https://github.com/qvest/weight_catalog"
-     }
+      "id": "B5",
+      "axis": "risk_overlay",
+      "note": "★도훈 2026-08-30 '오버레이 방법론을 특정하는건 별로인데'. 그래서 격자는 축만 선언하고 칸의 내용은 06_Registry/overlay_catalog.json 에서 규칙으로 뽑는다(rf_overlay_arms.R). 아래 cells 는 그 선정의 스냅샷이고 정본이 아니다 — 러너가 배치 시점에 이미 측정한 팔을 제외하고 다시 뽑는다. 비중 축(weight_catalog)과 같은 형태이고 이유도 같다: 방법을 격자에 박으면 새 방법이 등록돼도 아무도 안 쓴다. ★근거는 논문이 아니라 method(통계/수리/ML). ★2026-09-01: 실행 순서가 B4 **앞으로** 왔다 — B4 가 오버레이를 조합 축으로 쓰려면 B5 승자가 먼저 확정돼야 한다. 승자 기준은 calmar(오버레이의 목적이 낙폭이므로 B3 과 동일).",
+      "cells": [
+        {
+          "code": "B5_16",
+          "label": "dd_brake_q(drawdown)",
+          "overlay": {
+            "kind": "dd_brake",
+            "arm_id": "dd_brake_q"
+          },
+          "basis": "낙폭이 확장창 중앙값(진입)~90분위(전량현금) 구간에서 선형 축소. 임계를 상수로 두지 않고 데이터에서 추정.",
+          "note": "등록부 선정 — 계열 drawdown. 격자가 방법을 갖지 않고 overlay_catalog 를 소비한다."
+        },
+        {
+          "code": "B5_17",
+          "label": "vol_x_dd(combo)",
+          "overlay": {
+            "kind": "vol_x_dd",
+            "arm_id": "vol_x_dd"
+          },
+          "basis": "변동성 타게팅 노출 x 데이터주도 낙폭 브레이크 노출. 고변동과 깊은 낙폭은 다른 국면이다.",
+          "note": "등록부 선정 — 계열 combo. 격자가 방법을 갖지 않고 overlay_catalog 를 소비한다."
+        },
+        {
+          "code": "B5_18",
+          "label": "turbulence(state_multivar)",
+          "overlay": {
+            "kind": "turbulence",
+            "arm_id": "turbulence"
+          },
+          "basis": "(실현변동성·횡단면분산·낙폭) 벡터의 마할라노비스 거리를 확장창 평균·공분산 기준으로 계산, 확장분위 게이트.",
+          "note": "등록부 선정 — 계열 state_multivar. 격자가 방법을 갖지 않고 overlay_catalog 를 소비한다."
+        },
+        {
+          "code": "B5_19",
+          "label": "ml_tail_gate(ml)",
+          "overlay": {
+            "kind": "ml_tail_gate",
+            "arm_id": "ml_tail_gate"
+          },
+          "basis": "확장창 로지스틱으로 익월 시장수익이 하위 10분위에 들 확률을 예측하고 노출 = 1 - p_hat. 라벨 임계도 그 시점 표본에서.",
+          "note": "등록부 선정 — 계열 ml. 격자가 방법을 갖지 않고 overlay_catalog 를 소비한다."
+        },
+        {
+          "code": "B5_20",
+          "label": "vol_median(vol_target)",
+          "overlay": {
+            "kind": "vol_scale",
+            "arm_id": "vol_median"
+          },
+          "basis": "노출 = min(1, 확장창 중앙 실현변동성 / 현재 60일 실현변동성). 목표치를 상수로 두지 않는다.",
+          "note": "등록부 선정 — 계열 vol_target. 격자가 방법을 갖지 않고 overlay_catalog 를 소비한다."
+        }
+      ],
+      "n": 5,
+      "source": "overlay_catalog",
+      "select_winner_by": "calmar"
     },
     {
-     "code": "B2_10",
-     "label": "SchurDamping(optimizer)",
-     "weighting": {
-      "kind": "catalog",
-      "catalog_id": "paper:SchurDamping",
-      "label": "SchurDamping"
-     },
-     "note": "카탈로그 선정 — 계열 optimizer · 출처 paper_adapter. 격자가 재구현하지 않고 등록부를 소비한다.",
-     "root_paper": {
-      "title": "weight_catalog: paper:SchurDamping",
-      "url": "https://github.com/qvest/weight_catalog"
-     }
+      "id": "B4",
+      "axis": "combination",
+      "n": 5,
+      "rule": "B1/B2/B3/B5 승자 요소의 **4축 부분집합 분해**: 전체 결합 1칸 + 축별 leave-one-out 4칸. ★2026-09-01 재편 사유: 구판은 3축(팩터·비중·유니버스)만 봤는데 그 격자는 이미 완비였다(공집합=기저 · 단일 3=각 블록 승자 · 쌍 3=LOO · 전체 1). 칸을 늘려도 중복만 늘고 실제로 2026-08-31 에 네 칸이 같은 t(2.241)를 냈다. 빈 곳은 칸이 아니라 **축**이고 그 축은 오버레이다 — A 를 막는 것이 낙폭인데 구판 B4 는 오버레이를 보지 않았다. ★B4_25(오버레이 제외) = 구 B4_16(3축 전체결합)이라 새 설계가 구 설계를 포함한다. 구 B4_20(3팩터 승자+차순위)은 B1 이 깊이를 직접 재므로 폐기(같은 질문을 두 블록에서 묻지 않는다).",
+      "requires": [
+        "B1",
+        "B2",
+        "B3",
+        "B5"
+      ],
+      "select_winner_by": "port_t",
+      "cells": [
+        {
+          "code": "B4_21",
+          "label": "전 요소 결합(4축)",
+          "combo": {
+            "use": [
+              "B1",
+              "B2",
+              "B3",
+              "B5"
+            ]
+          }
+        },
+        {
+          "code": "B4_22",
+          "label": "팩터 제외(LOO)",
+          "combo": {
+            "use": [
+              "B2",
+              "B3",
+              "B5"
+            ]
+          }
+        },
+        {
+          "code": "B4_23",
+          "label": "비중 제외(LOO)",
+          "combo": {
+            "use": [
+              "B1",
+              "B3",
+              "B5"
+            ]
+          }
+        },
+        {
+          "code": "B4_24",
+          "label": "유니버스 제외(LOO)",
+          "combo": {
+            "use": [
+              "B1",
+              "B2",
+              "B5"
+            ]
+          }
+        },
+        {
+          "code": "B4_25",
+          "label": "오버레이 제외(LOO) = 구 3축 전체결합",
+          "combo": {
+            "use": [
+              "B1",
+              "B2",
+              "B3"
+            ]
+          }
+        }
+      ]
     }
-   ],
-   "source": {
-    "registry": "06_Registry/weight_catalog.json",
-    "picker": "02_Infrastructure/ops/rf_weight_arms.R::rf_pick_weight_arms",
-    "note": "격자는 비중 규칙을 재구현하지 않는다 — 등록부를 소비한다. 카탈로그가 늘면 격자도 자동으로 넓어진다."
-   }
+  ],
+  "graduation": {
+    "target_grade": "A",
+    "exhaust_action": "next_paper",
+    "improvement_check": {
+      "metric": "port_t",
+      "min_gain_vs_base": 0,
+      "note": "25회 소진 시 최고 셀이 기저 대비 개선을 못 냈으면 exhausted → 큐 다음 논문. 개선이 있어도 A 미달이면 동일하게 exhausted(상한은 25회)."
+    },
+    "on_grade_a": "큐 적재(grade_a_queue.json) + judge_request 발행 + 텔레그램. **루프 정지 없음** — 남은 칸과 다음 논문은 계속 진행한다(도훈 2026-08-30). BOOK 등재만 Judge PASS + 도훈 confirm 을 거친다.",
+    "judge_on_grade_a": true
   },
-  {
-   "id": "B3",
-   "axis": "universe",
-   "n": 5,
-   "rule": "B1 승자 컴포짓 + EW 로 고정하고 적용 유니버스만 교체. 유동성 하한은 전 유니버스 공통 유지.",
-   "requires": "B1",
-   "select_winner_by": "calmar",
-   "cells": [
-    {
-     "code": "B3_11",
-     "label": "KOSDAQ150 단독",
-     "universe": {
-      "kind": "index",
-      "flag": "KQ150"
-     },
-     "root_paper": {
-      "title": "Hong, Lim & Stein (2000), Bad News Travels Slowly, JF 55(1)",
-      "url": "https://onlinelibrary.wiley.com/doi/10.1111/0022-1082.00206"
-     },
-     "note": "★2026-08-31 교체 (도훈 \"강화프로세스에서 유니버스 격자변경 허용\"). 구 셀 = \"지수 멤버십 해제\"(all_listed) — 이 아키텍처에서 **영구 미전달**이다. 기저 신호는 충실구현 engine.R 에서 오는데 그 엔진이 헌법 유니버스(K200∪KQ150)로 자기 유니버스를 이미 자르므로, 멤버십을 풀어도 넓힐 대상이 없다. 실측(2026-08-31, 기저 패널 72,117행): 지수 밖 0행 · K200 47,863행/415종 · KQ150 24,254행/369종. rf_cell_engine 이 이를 \"측정 무효\"로 거절했고 러너에 출구가 없어 루프가 7.5시간 제자리를 돌았다. 대체 셀은 K200 단독(B3_12)의 **대칭축** — 겹침 0, 월별 후보 106~146종(25종 미달 0개월)."
-    },
-    {
-     "code": "B3_12",
-     "label": "KOSPI200 단독",
-     "universe": {
-      "kind": "index",
-      "flag": "K200"
-     },
-     "root_paper": {
-      "title": "Hong, Lim & Stein (2000), Bad News Travels Slowly, JF 55(1)",
-      "url": "https://onlinelibrary.wiley.com/doi/10.1111/0022-1082.00206"
-     }
-    },
-    {
-     "code": "B3_13",
-     "label": "소형주(시총 하위 1/3)",
-     "universe": {
-      "kind": "size_band",
-      "q_lo": 0,
-      "q_hi": 0.3333
-     },
-     "root_paper": {
-      "title": "Banz (1981), The Relationship Between Return and Market Value of Common Stocks, JFE 9(1)",
-      "url": "https://www.sciencedirect.com/science/article/abs/pii/0304405X81900180"
-     }
-    },
-    {
-     "code": "B3_14",
-     "label": "대형주(시총 상위 1/3)",
-     "universe": {
-      "kind": "size_band",
-      "q_lo": 0.6667,
-      "q_hi": 1
-     },
-     "root_paper": {
-      "title": "Banz (1981), The Relationship Between Return and Market Value of Common Stocks, JFE 9(1)",
-      "url": "https://www.sciencedirect.com/science/article/abs/pii/0304405X81900180"
-     }
-    },
-    {
-     "code": "B3_15",
-     "label": "섹터 중립",
-     "universe": {
-      "kind": "sector_neutral",
-      "field": "Sector_Lv2"
-     },
-     "root_paper": {
-      "title": "Moskowitz & Grinblatt (1999), Do Industries Explain Momentum?, JF 54(4)",
-      "url": "https://onlinelibrary.wiley.com/doi/10.1111/0022-1082.00146"
-     }
+  "execution": {
+    "mode": "parallel_within_block",
+    "rule": "도훈 지시 2026-08-30 '병렬 실행도 규칙에 넣어줘'. 배치는 **같은 블록 안에서만** 묶는다. 블록 경계를 넘지 않는 이유: B2/B3 는 B1 승자 위에, B4 는 B1~B3 승자 위에 선다 — 승자가 확정되기 전에 다음 블록을 띄우면 결정되지 않은 값 위에서 측정하는 공허한 시도가 된다. ★2026-09-01 블록 순서 = B1→B2→B3→**B5→B4**. B4 가 오버레이를 조합 축으로 쓰므로 B5 가 먼저 서야 한다. 셀 코드는 실행 순서대로 재번호했다(B5_16..20 · B4_21..25). 격자 계약 검사는 코드 유일성·블록당 5칸·축 허용목록만 보고 .winner_of 는 코드 접두로 매칭하므로 번호와 위치의 일치를 요구하지 않는다.",
+    "concurrency_source": "reinforce_auto_config.json::parallel_cells",
+    "ledger_contract": "등록(순차) → 실행(병렬·워커는 원장 미접근) → 수집(순차). read-modify-write 경합 원천 차단.",
+    "runner": "02_Infrastructure/ops/reinforce_auto_parallel.R (워커 = rf_cell_worker.R)",
+    "factor_blend": {
+      "hard_max_factors": 10,
+      "hard_max_note": "★폭주 방지선이지 설계 규약이 아니다 (도훈 2026-09-04 (다)안). 강제 지점 = 02_Infrastructure/ops/rf_b1_design_lib.R 검증 — 이 값을 넘는 칸이 하나라도 있으면 설계 전체를 design_rejected 한다. 구판의 max_factors=5 는 그리디 사슬(깊이 1..5 누적) 시절 값이었고 **강제하는 코드가 0건**이었다 — 선언만 있고 아무도 안 보는 상태였다.",
+      "who_decides": "★B1 은 **블록 진입 시 LLM 이 1회 설계**한다(rf_b1_design.sh). 팩터 선택·개수·칸 수를 설계가 정하고, 격자의 blocks[B1].cells 는 그때 대체된다. 구 문구 '선정은 rf_factor_arms.R 이 정한다 · 실행 중 LLM 판단 없음' 은 사실이 아니게 됐다 — 같은 파일이 자기 코드를 잘못 서술하고 있었다.",
+      "weighting": "기저 w0 = fixed_axes.base_weight 고정 · 나머지 팩터는 (1-w0) 등분. 깊이 n 이면 팩터당 몫이 (1-w0)/n 으로 얇아지고, 상위 n_max 절단에서 얇은 신호는 순위를 못 움직인다 — 이것이 깊이의 실질 한계이지 하드 상한이 아니다.",
+      "depth_evidence": "실측 2026-09-04 (1403.8125 구제분 B1 15칸, 깊이 1~5): 깊이 -> PORT_t 회귀 기울기 +0.073 (SE 0.121) · R^2 0.027 — SE 안이다. 깊이별 평균 PORT_t 는 1.043 / 1.120 / 0.942 / 1.383 / 1.344 이고 **최고 칸이 깊이 1**(size_axis 1.951) 이었다. Calmar 는 0.246~0.295 로 깊이와 거의 무관. 깊이 3~5 는 각 1칸이라 약한 증거지만, '깊이를 늘려야 한다' 는 근거는 없다."
     }
-   ],
-   "note": "유니버스 축. ★all_listed(지수 멤버십 해제)는 이 격자에 다시 넣지 말 것 — 기저 엔진이 유니버스를 먼저 자르는 한 처치가 전달되지 않는다(구조적 미결). 넓히는 처치를 재려면 엔진 계약에서 \"신호\"와 \"유니버스\"를 분리해야 하고, 그건 격자가 아니라 충실구현 계약의 문제다. 여기 셀은 전부 **좁히는/재배치하는** 처치다."
-  },
-  {
-   "id": "B5",
-   "axis": "risk_overlay",
-   "note": "★도훈 2026-08-30 '오버레이 방법론을 특정하는건 별로인데'. 그래서 격자는 축만 선언하고 칸의 내용은 06_Registry/overlay_catalog.json 에서 규칙으로 뽑는다(rf_overlay_arms.R). 아래 cells 는 그 선정의 스냅샷이고 정본이 아니다 — 러너가 배치 시점에 이미 측정한 팔을 제외하고 다시 뽑는다. 비중 축(weight_catalog)과 같은 형태이고 이유도 같다: 방법을 격자에 박으면 새 방법이 등록돼도 아무도 안 쓴다. ★근거는 논문이 아니라 method(통계/수리/ML). ★2026-09-01: 실행 순서가 B4 **앞으로** 왔다 — B4 가 오버레이를 조합 축으로 쓰려면 B5 승자가 먼저 확정돼야 한다. 승자 기준은 calmar(오버레이의 목적이 낙폭이므로 B3 과 동일).",
-   "cells": [
-    {
-     "code": "B5_16",
-     "label": "dd_brake_q(drawdown)",
-     "overlay": {
-      "kind": "dd_brake",
-      "arm_id": "dd_brake_q"
-     },
-     "basis": "낙폭이 확장창 중앙값(진입)~90분위(전량현금) 구간에서 선형 축소. 임계를 상수로 두지 않고 데이터에서 추정.",
-     "note": "등록부 선정 — 계열 drawdown. 격자가 방법을 갖지 않고 overlay_catalog 를 소비한다."
-    },
-    {
-     "code": "B5_17",
-     "label": "vol_x_dd(combo)",
-     "overlay": {
-      "kind": "vol_x_dd",
-      "arm_id": "vol_x_dd"
-     },
-     "basis": "변동성 타게팅 노출 x 데이터주도 낙폭 브레이크 노출. 고변동과 깊은 낙폭은 다른 국면이다.",
-     "note": "등록부 선정 — 계열 combo. 격자가 방법을 갖지 않고 overlay_catalog 를 소비한다."
-    },
-    {
-     "code": "B5_18",
-     "label": "turbulence(state_multivar)",
-     "overlay": {
-      "kind": "turbulence",
-      "arm_id": "turbulence"
-     },
-     "basis": "(실현변동성·횡단면분산·낙폭) 벡터의 마할라노비스 거리를 확장창 평균·공분산 기준으로 계산, 확장분위 게이트.",
-     "note": "등록부 선정 — 계열 state_multivar. 격자가 방법을 갖지 않고 overlay_catalog 를 소비한다."
-    },
-    {
-     "code": "B5_19",
-     "label": "ml_tail_gate(ml)",
-     "overlay": {
-      "kind": "ml_tail_gate",
-      "arm_id": "ml_tail_gate"
-     },
-     "basis": "확장창 로지스틱으로 익월 시장수익이 하위 10분위에 들 확률을 예측하고 노출 = 1 - p_hat. 라벨 임계도 그 시점 표본에서.",
-     "note": "등록부 선정 — 계열 ml. 격자가 방법을 갖지 않고 overlay_catalog 를 소비한다."
-    },
-    {
-     "code": "B5_20",
-     "label": "vol_median(vol_target)",
-     "overlay": {
-      "kind": "vol_scale",
-      "arm_id": "vol_median"
-     },
-     "basis": "노출 = min(1, 확장창 중앙 실현변동성 / 현재 60일 실현변동성). 목표치를 상수로 두지 않는다.",
-     "note": "등록부 선정 — 계열 vol_target. 격자가 방법을 갖지 않고 overlay_catalog 를 소비한다."
-    }
-   ],
-   "n": 5,
-   "source": "overlay_catalog",
-   "select_winner_by": "calmar"
-  },
-  {
-   "id": "B4",
-   "axis": "combination",
-   "n": 5,
-   "rule": "B1/B2/B3/B5 승자 요소의 **4축 부분집합 분해**: 전체 결합 1칸 + 축별 leave-one-out 4칸. ★2026-09-01 재편 사유: 구판은 3축(팩터·비중·유니버스)만 봤는데 그 격자는 이미 완비였다(공집합=기저 · 단일 3=각 블록 승자 · 쌍 3=LOO · 전체 1). 칸을 늘려도 중복만 늘고 실제로 2026-08-31 에 네 칸이 같은 t(2.241)를 냈다. 빈 곳은 칸이 아니라 **축**이고 그 축은 오버레이다 — A 를 막는 것이 낙폭인데 구판 B4 는 오버레이를 보지 않았다. ★B4_25(오버레이 제외) = 구 B4_16(3축 전체결합)이라 새 설계가 구 설계를 포함한다. 구 B4_20(3팩터 승자+차순위)은 B1 이 깊이를 직접 재므로 폐기(같은 질문을 두 블록에서 묻지 않는다).",
-   "requires": [
-    "B1",
-    "B2",
-    "B3",
-    "B5"
-   ],
-   "select_winner_by": "port_t",
-   "cells": [
-    {
-     "code": "B4_21",
-     "label": "전 요소 결합(4축)",
-     "combo": {
-      "use": [
-       "B1",
-       "B2",
-       "B3",
-       "B5"
-      ]
-     }
-    },
-    {
-     "code": "B4_22",
-     "label": "팩터 제외(LOO)",
-     "combo": {
-      "use": [
-       "B2",
-       "B3",
-       "B5"
-      ]
-     }
-    },
-    {
-     "code": "B4_23",
-     "label": "비중 제외(LOO)",
-     "combo": {
-      "use": [
-       "B1",
-       "B3",
-       "B5"
-      ]
-     }
-    },
-    {
-     "code": "B4_24",
-     "label": "유니버스 제외(LOO)",
-     "combo": {
-      "use": [
-       "B1",
-       "B2",
-       "B5"
-      ]
-     }
-    },
-    {
-     "code": "B4_25",
-     "label": "오버레이 제외(LOO) = 구 3축 전체결합",
-     "combo": {
-      "use": [
-       "B1",
-       "B2",
-       "B3"
-      ]
-     }
-    }
-   ]
   }
- ],
- "graduation": {
-  "target_grade": "A",
-  "exhaust_action": "next_paper",
-  "improvement_check": {
-   "metric": "port_t",
-   "min_gain_vs_base": 0,
-   "note": "25회 소진 시 최고 셀이 기저 대비 개선을 못 냈으면 exhausted → 큐 다음 논문. 개선이 있어도 A 미달이면 동일하게 exhausted(상한은 25회)."
-  },
-  "on_grade_a": "큐 적재(grade_a_queue.json) + judge_request 발행 + 텔레그램. **루프 정지 없음** — 남은 칸과 다음 논문은 계속 진행한다(도훈 2026-08-30). BOOK 등재만 Judge PASS + 도훈 confirm 을 거친다.",
-  "judge_on_grade_a": true
- },
- "execution": {
-  "mode": "parallel_within_block",
-  "rule": "도훈 지시 2026-08-30 '병렬 실행도 규칙에 넣어줘'. 배치는 **같은 블록 안에서만** 묶는다. 블록 경계를 넘지 않는 이유: B2/B3 는 B1 승자 위에, B4 는 B1~B3 승자 위에 선다 — 승자가 확정되기 전에 다음 블록을 띄우면 결정되지 않은 값 위에서 측정하는 공허한 시도가 된다. ★2026-09-01 블록 순서 = B1→B2→B3→**B5→B4**. B4 가 오버레이를 조합 축으로 쓰므로 B5 가 먼저 서야 한다. 셀 코드는 실행 순서대로 재번호했다(B5_16..20 · B4_21..25). 격자 계약 검사는 코드 유일성·블록당 5칸·축 허용목록만 보고 .winner_of 는 코드 접두로 매칭하므로 번호와 위치의 일치를 요구하지 않는다.",
-  "concurrency_source": "reinforce_auto_config.json::parallel_cells",
-  "ledger_contract": "등록(순차) → 실행(병렬·워커는 원장 미접근) → 수집(순차). read-modify-write 경합 원천 차단.",
-  "runner": "02_Infrastructure/ops/reinforce_auto_parallel.R (워커 = rf_cell_worker.R)",
-  "factor_blend": {
-   "max_factors": 5,
-   "weighting": "기저 w0 = fixed_axes.base_weight 고정 · 나머지 팩터는 (1-w0) 등분",
-   "who_decides": "팩터 **선정**은 등록부 소비 규칙(rf_factor_arms.R)이 정한다 — 실행 중 LLM 판단 없음. 구판의 rf_grid_propose.R(LLM 1회 제안) 경로는 호출된 적이 없다(로그 0건)."
-  }
- }
 }
