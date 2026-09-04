@@ -138,7 +138,7 @@ if (!all(.REQ %in% names(RAWDATA)))
 #    여기서는 각 종목을 상장구간의 **모든 시장 거래일**로 채워 창을 거래일로 고정한다.
 # =============================================================================
 .cols <- c("Date", "Ticker", "Close", "Ret", "Vol", "Size", "K200", "KQ150")
-.rd0 <- RAWDATA[, ..cols]
+.rd0 <- RAWDATA[, .SD, .SDcols = .cols]   # ★.. 접두어는 'cols'(무점) 를 찾는다 — 점 이름은 .SDcols 로
 if (!inherits(.rd0$Date, "Date")) .rd0[, Date := as.Date(Date)]
 .rd0 <- unique(.rd0, by = c("Ticker", "Date"))
 .rd0 <- .rd0[is.finite(Close) & Close > 0]
