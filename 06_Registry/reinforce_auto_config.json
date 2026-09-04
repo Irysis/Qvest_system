@@ -65,37 +65,64 @@
   "axiom_max_active_per_mode": 6,
   "axiom_max_active_total": 20,
   "llm": {
-    "model": "opus",
+    "model": "claude-fable-5-1",
     "effort": "max",
     "env_override": [
       "QVEST_RP_MODEL",
       "QVEST_RP_EFFORT"
     ],
-    "rationale": "무인 루프 자체에는 LLM 이 없다(규칙 실행). LLM 이 남는 두 지점(충실구현·격자 제안)은 **깊이** 문제다 — 논문 하나를 정확히 읽고 기전을 이식할 수 있는지, 팩터 331종에서 5종을 왜 고르는지. 넓이(팬아웃)가 아니므로 울트라코드가 아니라 단일 에이전트 최대 노력이 맞다. 2026-08-29 실증: 최고 산출(sigma 허수 버그 적발·위기구간 폴백 51.5% 진단·Market 열 날조 발견)이 전부 깊은 프롬프트를 받은 단일 에이전트에서 나왔다. ★구판은 --model/--effort 미지정이라 CLI 기본값에 의존했다(도훈 지적).",
+    "rationale": "★2026-09-04 도훈 결정 — 모델 claude-fable-5-1 · 노력수준은 **레인마다 다르게**. 하나로 정하면 손해다: 레인마다 한 번 실패의 대가가 다르다. 실측(9월 로그): replication 은 28회 착수에 재구현 10회이고 한 번 실패가 에이전트 12분 + 측정 + 팬아웃 6축을 다시 태운다 -> max. b1_design/lcode_mechanism/overlay_propose 는 단발이고 폴백·probe 가 뒤에 있어 실패가 싸다 -> high. fidelity_audit 은 팬아웃으로 축이 좁아져(6축 각자 논문 한 절) 요구 깊이가 줄었다 -> xhigh. ★구 근거(2026-08-29 '최고 산출이 전부 깊은 opus 단일 에이전트에서 나왔다')는 사실 기록으로 남지만 Fable 5.1 이 이 레인에 붙기 전 관측이다 — 재보는 것이 맞다. 설정이 중앙화돼 있어 한 줄씩 되돌릴 수 있다.",
     "consumed_by": "02_Infrastructure/ops/rf_llm_env.sh::rf_llm_resolve — 네 레인(replication·overlay_propose·b1_design·fidelity_audit)이 여기서 읽는다. ★2026-09-04 이전에는 이 블록을 **읽는 코드가 0건**이었고 각 레인이 자기 기본값(:-opus/:-max)을 들고 있었다 — 정책을 적어 둔 문서를 아무도 소비하지 않는 상태였다.",
     "lanes": {
       "replication": {
-        "model": "opus",
-        "effort": "max"
-      },
-      "overlay_propose": {
-        "model": "opus",
-        "effort": "max"
-      },
-      "b1_design": {
-        "model": "opus",
-        "effort": "max"
+        "model": "claude-fable-5-1",
+        "effort": "max",
+        "note": "★실패가 사이클 하나를 태운다(재구현 10/28). 다만 재구현 지적 20건 중 9건이 **엔지니어링 가드 미신고**(.COV/.NMIN/.SD_FLOOR/set.seed) 라 노력을 올려도 안 고쳐진다 — 신고 체크리스트가 먼저다."
       },
       "fidelity_audit": {
-        "model": "opus",
-        "effort": "max",
-        "note": "★도훈 지시 2026-09-04 \"적대적 검증자도 opus 최신버전 노력레벨 max\". 반증은 깊이 문제다 — 논문 전문과 엔진을 동시에 들고 식·부호·창을 대조해야 하므로 팬아웃이 아니라 단일 에이전트 최대 노력이 맞다."
+        "model": "claude-fable-5-1",
+        "effort": "xhigh",
+        "note": "★팬아웃 축별 모델은 06_Registry/rf_fidelity_axes.json 이 정본이다. 이 값은 단일 감사자 폴백 경로용."
+      },
+      "b1_design": {
+        "model": "claude-fable-5-1",
+        "effort": "high"
       },
       "lcode_mechanism": {
-        "model": "opus",
-        "effort": "max",
-        "note": "기전 서술은 깊이 문제 — 블록 사이를 잇는 판단이라 단일 에이전트 최대 노력."
+        "model": "claude-fable-5-1",
+        "effort": "high"
+      },
+      "overlay_propose": {
+        "model": "claude-fable-5-1",
+        "effort": "high"
       }
+    },
+    "prev_setting": {
+      "model": "opus",
+      "effort": "max",
+      "lanes": {
+        "replication": [
+          "opus",
+          "max"
+        ],
+        "overlay_propose": [
+          "opus",
+          "max"
+        ],
+        "b1_design": [
+          "opus",
+          "max"
+        ],
+        "fidelity_audit": [
+          "opus",
+          "max"
+        ],
+        "lcode_mechanism": [
+          "opus",
+          "max"
+        ]
+      },
+      "note": "되돌릴 때 이 값으로. 2026-09-04 이전 설정."
     }
   },
   "base_min_port_t": 0,

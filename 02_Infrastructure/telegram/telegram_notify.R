@@ -1335,7 +1335,13 @@ tg_agent_brief <- function(agent,
                         heading, .TG_CONFIG$TEXT_MIN, n_chars))
         }
         # v6.1 SOT — TEXT_MAX 강제 (모바일 짤림 방지)
-        if (n_chars > .TG_CONFIG$TEXT_MAX) {
+        # ★relaxed 면 면제한다 (2026-09-04 도훈 지시 "교훈 글자수 제한은 없애").
+        #   relaxed 는 이미 bullet 길이·kv 값 길이·영어약어를 면제하는데 **text 만 빠져
+        #   있었다** — 그래서 긴 서술을 bullet 에서 text 로 옮기자 같은 발송이 다른
+        #   상한에 다시 걸렸다(실사고 2026-09-04 18:32 bullet → 19:36 text).
+        #   상한을 푸는 것은 항상이 아니라 **호출자가 relaxed 를 명시한 때**만이고,
+        #   4096 byte 가드·skeleton 가드는 relaxed 여도 그대로 산다(구조 안전망).
+        if (!isTRUE(relaxed) && n_chars > .TG_CONFIG$TEXT_MAX) {
           stop(sprintf("[tg_agent_brief] 'text' section heading='%s' body %d chars > %d max. 분할: bullet (≤%d 자/항목) 또는 별도 섹션.",
                         heading, n_chars, .TG_CONFIG$TEXT_MAX, .TG_CONFIG$BULLET_ITEM_MAX))
         }
