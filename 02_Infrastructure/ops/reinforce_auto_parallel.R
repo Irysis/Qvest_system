@@ -827,6 +827,14 @@ for (j in jobs) {
   write(toJSON(.q, auto_unbox = TRUE, pretty = TRUE, null = "null"), .aq)
     jlog("grade_a_queued", n = j$n, code = j$code, note = "루프 계속 — Judge/BOOK 만 confirm 대기")
     tryCatch({ source(file.path(ROOT, "02_Infrastructure/ops/rf_auto_notify.R"))
+               ## ★A 는 즉시 경로에서도 팡파레를 앞세운다 (중복은 마커가 막는다)
+               tryCatch({ source(file.path(ROOT, "02_Infrastructure/ops/rf_grade_fanfare.R"))
+                          .EA <- rf_load(1L, ROOT); .iA <- .rf_find(.EA, BID)
+                          if (!is.na(.iA)) rf_grade_fanfare(BID, "A", j$code,
+                            j$essence %||% list(), n = j$n, maxa = MAXA,
+                            title = .rf_target_label(.EA$entries[[.iA]]),
+                            base_grade = .EA$entries[[.iA]]$base_grade %||% "", root = ROOT) },
+                        error = function(e) jlog("grade_fanfare_failed", err = conditionMessage(e)))
                rf_auto_notify(BID, j$n, kind = "grade_a") }, error = function(e) jlog("telegram_failed", err = conditionMessage(e)))
   }
 }
@@ -871,6 +879,33 @@ if (nb > 0L && (.blk_left == 0L || u2 >= MAXA)) {
           shQuote(BID), shQuote(.mblk)), wait = TRUE, stdout = TRUE, stderr = TRUE),
       error = function(e) jlog("lcode_mechanism_failed", err = conditionMessage(e)))
   }
+  # ★등급 팡파레 — 블록 보고 **앞에** 짧은 이펙트 하나 (도훈 지시 2026-09-04).
+  #   이번 블록이 이 entry 의 **첫 B(또는 A)** 를 냈을 때만. 원장에서 재도출한다 —
+  #   "B 가 있다" 가 아니라 "이번 블록이 처음 만들었다" 여야 한다. 그러지 않으면
+  #   B 하나 나온 뒤 매 블록 축포가 울려 소음이 된다(적응형 절이 밟은 그 병).
+  tryCatch({
+    source(file.path(ROOT, "02_Infrastructure/ops/rf_grade_fanfare.R"))
+    .E3 <- rf_load(1L, ROOT); .i3 <- .rf_find(.E3, BID)
+    if (!is.na(.i3)) {
+      .en3 <- .E3$entries[[.i3]]
+      .bc  <- vapply(cells, function(c) as.character(c$code %||% ""), character(1))
+      .bc  <- .bc[startsWith(.bc, paste0(.blk_now, "_"))]
+      .ng  <- rf_fanfare_new_grade(.en3, .bc)
+      if (!is.na(.ng)) {
+        .hit <- Filter(function(a) identical(toupper(substr(as.character(a$grade %||% ""), 1, 1)), .ng) &&
+                         as.character(a$cell_code %||% "") %in% .bc, .en3$attempts %||% list())
+        if (length(.hit)) {
+          .h1 <- .hit[[which.max(vapply(.hit, function(a)
+                    suppressWarnings(as.numeric((a$essence %||% list())$port_t %||% NA)), numeric(1)))]]
+          .fok <- rf_grade_fanfare(BID, .ng, as.character(.h1$cell_code %||% ""),
+                    .h1$essence %||% list(), n = u2, maxa = MAXA,
+                    title = .rf_target_label(.en3), base_grade = .en3$base_grade %||% "",
+                    root = ROOT)
+          jlog("grade_fanfare", grade = .ng, code = as.character(.h1$cell_code %||% ""), sent = .fok)
+        }
+      }
+    }
+  }, error = function(e) jlog("grade_fanfare_failed", err = conditionMessage(e)))
   # ★"보냈다" 를 예외 부재로 지어내지 않는다 — rf_auto_notify 가 실제 발송 결과를 돌려준다.
   ok <- tryCatch({ source(file.path(ROOT, "02_Infrastructure/ops/rf_auto_notify.R"))
                    isTRUE(rf_auto_notify(BID, u2, kind = "block")) },
