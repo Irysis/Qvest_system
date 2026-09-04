@@ -1,31 +1,52 @@
 {
- "requested_at": "2026-09-04T09:18:28+0900",
- "source": "reinforce_auto_next_paper",
- "reason": "직전 논문 강화 25회 소진 — 큐 다음 논문 충실구현 대기",
- "prev": {
-  "base_id": "RP_20260903_105808_combo",
-  "n": 4,
-  "port_t": 1.578,
-  "grade": "C",
-  "base_grade": "NA",
-  "cell_code": "B1_5",
-  "spec": "C:/Users/99922/OneDrive/Quant_Module_Moltbot/.cache/rf_parallel/spec_B1_5__RP_20260903_105808_combo.json",
-  "artifacts": "C:/Users/99922/OneDrive/Quant_Module_Moltbot/stage_artifacts/replication/20260903_110631_13904"
- },
+ "requested_at": "2026-09-04T09:57:55+0900",
+ "source": "rf_combination_launch",
+ "reason": "논문 결합 — LLM 전략설계 후 충실구현 1회로 기저를 측정한다(도훈 지시 2026-09-04)",
  "paper": {
-  "title": "시공간 모멘텀(STMOM)",
-  "paper_title": "Spatio-Temporal Momentum: Jointly Learning Time-Series and Cross-Sectional Strategies",
-  "url": "https://arxiv.org/abs/2302.10175",
-  "paper_key": "2302.10175",
-  "source": "arxiv",
-  "reason": "공간+시간축 모멘텀 통합 — OHLCV 가용",
-  "factor_name": "시공간 모멘텀(STMOM)",
-  "factor_def": "We introduce Spatio-Temporal Momentum strategies, a class of models that unify both time-series and cross-sectional momentum strategies by trading assets based on their cross-sectional momentum featur",
-  "kr_feasible": null,
-  "skipped_no_url": 0
+  "title": "결합: Pinchuk (2023) Labor Income Risk and the Cross-Section of Expected Returns + Uncovering a factor-based expected return conditioning structure with Regression Trees jointly for many stocks",
+  "paper_title": "결합: Pinchuk (2023) Labor Income Risk and the Cross-Section of Expected Returns + Uncovering a factor-based expected return conditioning structure with Regression Trees jointly for many stocks",
+  "url": "https://arxiv.org/abs/2301.09173",
+  "paper_key": "combo:2007.08115+2301.09173",
+  "source": "combination"
+ },
+ "combo": {
+  "setkey": "2007.08115+2301.09173",
+  "k_items": 2,
+  "n_papers": 2,
+  "papers": [
+   {
+    "key": "2301.09173",
+    "url": "https://arxiv.org/abs/2301.09173",
+    "title": "Pinchuk (2023) Labor Income Risk and the Cross-Section of Expected Returns"
+   },
+   {
+    "key": "2007.08115",
+    "url": "https://arxiv.org/abs/2007.08115",
+    "title": "Uncovering a factor-based expected return conditioning structure with Regression Trees jointly for many stocks"
+   }
+  ],
+  "item_engines": [
+   {
+    "key": "2301.09173",
+    "engine": "C:/Users/99922/OneDrive/Quant_Module_Moltbot/04_Research/strategies/RP_2301_09173_CID/engine.R",
+    "t": 1.228
+   },
+   {
+    "key": "2007.08115",
+    "engine": "C:\\Users\\99922\\OneDrive\\Quant_Module_Moltbot/04_Research/strategies/RP_AUTO_2007_08115/engine.R",
+    "t": 1.11
+   }
+  ],
+  "parent_t": [
+   1.228,
+   1.11
+  ],
+  "best_parent_t": 1.228,
+  "tries_before": 1,
+  "axis": "n_max_25",
+  "dilution_test": "희석 판정 = 설계 기저 PORT_t vs 최고 재료 t 1.228 (같은 축). 기록만 하고 차단하지 않는다 — 격자는 기저 **위에** 쌓으므로 재료보다 낮은 기저에서도 강화가 뒤집을 수 있다.",
+  "count_paper": false
  },
  "status": "in_progress",
- "started_at": "2026-09-04T09:46:01+0900",
- "revived_from": "in_progress",
- "revived_at": "2026-09-04T09:46:01+0900"
+ "started_at": "2026-09-04T10:02:02+0900"
 }

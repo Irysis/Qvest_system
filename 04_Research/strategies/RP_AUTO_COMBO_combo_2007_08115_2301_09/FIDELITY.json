@@ -1,0 +1,36 @@
+{
+  "fidelity": "combination",
+
+  "kept": "재료 1(Pinchuk 2301.09173)에서 남긴 것 = **상태변수 생성기** 전부 — Eq.1 CID_t = (1/N)Σ|R_i,t − R_MKT,t| (VW 산업 포트폴리오, 소속기업 ≥10사, VW 시장수익), Eq.2 ΔCID_t = γ0 + γ1ΔCID_{t−1} + γ2CID_{t−1} + u_t 의 잔차 u_t(논문 자신의 operative 변수: 'residuals û_t treated as CID in subsequent analysis'). CID 는 논문대로 시장 전체(전 상장종목)에서 만든다 — 유니버스 치환은 정렬 대상(test asset)에만 걸린다. 재료 2(Polimenis 2007.08115)에서 남긴 것 = **추정기** 전부 — n 종목 동시적합 joint multi-output depth=1 회귀트리('a single model capable of predicting simultaneously n stocks is built'), 전 종목 SSE 합 최소화로 고르는 공통 분기점 1개('Min Σ_i (y_i − prediction(y_i))^2'), 전 입력변수·전 분기점 greedy 탐색('all input variables and all possible split points are evaluated'), 종목별 표준화 없음(dominant stock 은 제거 대상이 아니라 설계의 성질), 추정 창 1,259 daily returns, 그리고 계단이 0 이 아니라 꼬리에 서고 balance 가 극단적으로 불균형하다는 회수 구조(Table 2c: 1-99% ~ 22-78%).",
+
+  "changed": "① **무엇을 어떻게 결합했는가** — 두 재료의 스코어를 각각 만들어 평균·합성하는 지점이 이 엔진에 없다(저장소가 5회 측정한 rank-Z 평균 계보와 다른 수술이다). Pinchuk 에서 가져온 것은 그 논문의 소비 방식(β_CID 24개월 회귀 → 5분위 VW 롱숏)이 **아니라 상태변수 u_t 자체**이고, Polimenis 에서 가져온 것은 그 논문의 산출물(서술적 진단표)이 **아니라 추정기**다. 결합 지점은 두 곳뿐이다: (ㄱ) Polimenis 트리의 **분기 후보 변수 집합**에 u_t 를 넣어 논문 자신의 승자 mex('in all cases the most informative factor is always the market excess return factor')와 매월 SSE 로 경합시킨다 — 어느 축이 조건축이 될지를 내가 고르지 않고 트리가 고른다. (ㄴ) 트리의 예측을 **다수 잎(모달 국면)이 아니라 현재 상태가 실제로 떨어지는 잎**의 평균으로 발행한다 — 논문 제목의 conditioning structure 를 실제로 조건부로 소비한다. 상태는 항상 전월값이다(월 j 수익 ↔ 월 j−1 상태 · 형성일 D=월 m 말 → 보유월 m+1 의 조건값 = 월 m 상태). u_t 는 월 단위라 일간 수익행렬에 월 블록으로 붙고, 월 집계 후 누적합은 일간 계산과 수치적으로 동일하다. 잎 최소 크기 = 관측 1%(논문이 회수해 보고한 최소 balance, KO 1-99%) + 최소 2개월(상태가 월 블록이라 1개월 잎의 평균은 조건부 기대값이 아니라 그 달의 실현치 하나다). y = 원 일간수익 — 스코어는 한 잎 안에서만 횡단면 비교되고 rf 는 그 잎 전 종목에 동일 상수라 순위가 불변이다. SMB/HML 은 제외한다(인프라 KR FF3 는 월간뿐이고, 일간 KR FF3 를 새로 만들면 장부가 정의·절단점·형성주기를 논문 밖에서 지어내야 한다 — 논문 결론이 mex 만장일치 승리이므로 이 축소가 지우는 것은 결과가 보고된 경마다. 대가: KR 에서 SMB/HML 이 이겼을 가능성을 이 엔진은 검정하지 않는다). 유니버스 = K200∪KQ150(PIT 시변) + adv20(t−1) ≥ 2e8, 2005-01-01~, top-25 롱온리 EW 월간(Polimenis 가 포트폴리오를 주지 않으므로 고정 축). AR(Eq.2)은 expanding window — 논문의 전표본 1회 추정은 C1 위반이라 PIT 가 논문 문자를 이긴다(burn-in 60개월, RP_2301_09173_CID 선례 승계).\n\n② **왜 각 재료 단독보다 나을 것이라 보는가 (반증 가능한 형태)** — 두 단독의 실패가 같은 병(무조건부 소비)의 두 얼굴이라고 본다. CID 단독(다중검정 t 1.228 · 충실구현 Grade F)은 상태를 **동시점 선형 기울기** β_CID 로 소비했고, KR 에서 cor(u_t, 시장_t)=+0.43(2022–26 +0.63 — 분산 급등이 하락이 아니라 반도체 주도 급등에서 온다)이라 그 기울기가 시장베타로 변질돼 스프레드가 고정부호 역베타 베팅(일간 β −0.39)이 됐다. 이 결합은 상태(월 j−1)와 반응(월 j)을 **다른 달에 놓아 동시점 회귀 채널을 구조적으로 제거**하고, 발행할 잎을 그 달의 상태가 정하므로 민감도 방향의 부호가 국면에 따라 뒤집힌다 — 고정부호 베팅이 원리상 불가능하다. 트리 단독(다중검정 t 1.11)은 분기변수 mex 가 지속성 없는 일간수익이라 형성일에 '현재 국면'이 정의되지 않아 **다수 잎만** 발행할 수 있었고, 그래서 조건부 구조를 회수해 놓고 사실상 무조건부 창 평균을 냈다. u_t 는 형성일에 관측되는 월 단위 거시 상태라 현재-상태 잎이 정의된다. **반증**: 엔진이 매월 산출·로그하는 다섯 계기 중 하나라도 아래에 걸리면 이 결합 주장은 기각이다 — (a) u_CID 분기 승률 ≈ 0%(트리가 언제나 mex 를 고르면 Pinchuk 재료가 하중을 안 받는다 = 결합이 아니라 트리 단독의 재실행), (b) 중앙 ρ(μ_L, μ_R) ≈ +1(잎 간 종목 순위가 같다 = 조건부 구조 미회수), (c) 중앙 ρ(Score, 창 무조건부 평균) ≈ +1(스코어가 5년 모멘텀의 별칭), (d) 중앙 ρ(Score, 창 시장베타)의 부호가 고정이고 |·|가 크다(CID 단독을 죽인 역베타 오염의 재현), (e) 잎이 전환된 달의 인접월 순위상관이 같은 잎일 때와 다르지 않다(조건부가 순위를 실제로 갈라놓지 못한다). 시간퇴화 계기 |ρ(달력월, 잎 소속)| ≈ 1 도 같은 기각 사유다(상태분기가 아니라 시간분기 = 추세 절단).",
+
+  "paper_original_form": "재료 1 (Pinchuk 2023, arXiv:2301.09173): FF49 VW 산업 포트폴리오(≥10사)로 월간 CID 를 만들고(Eq.1), ΔCID 의 AR(Eq.2) 잔차 û_t 를 CID 충격으로 쓴 뒤, 종목별 24개월 월간 초과수익 단변량 회귀로 β_CID 를 추정(1%/99% winsorize)해 매월 5분위 VW 정렬·월간 리밸로 롱숏을 만든다. US 1963–2018, 스프레드 월 49bps(t=3.19), FF5+MOM+STR 알파 −50bps(t=−3.26). CID 레벨은 별도로 분기 실업증가율을 예측한다(t=2.77, 장기실업 t=2.62). 재료 2 (Polimenis 2020, arXiv:2007.08115): US 대형주 5종(IBM·KO·BK·PG·GOOG)의 2015-01-05~2020-04-30 일간수익 1,259개를 FF3 에 대해 depth=1 회귀트리(solo 및 joint multi-output)로 적합하고, 분기변수·임계값(−350bp~+300bp)·balance(1-99%~22-78%)·joint 트리의 지배 종목을 표로 보고하는 **서술적 진단 연구**다. 매매전략·포트폴리오·백테스트·거래비용·종목수·비중·리밸 주기가 전무하며 저자 스스로 'only done for demonstration purposes and not for statistical inference' 라고 명시한다. 두 논문 사이에는 인용 관계도 공통 저자도 없다 — 결합은 상태변수(재료 1)와 추정기(재료 2)의 역할 분담이지 결과의 합성이 아니다.",
+
+  "portfolio_spec": {
+    "construction": "top_n_long",
+    "weighting": "ew",
+    "rebalance": "monthly",
+    "top_n": 25,
+    "n_long": 25,
+    "n_max": 25
+  },
+
+  "commission_paper": null,
+
+  "_notes": {
+    "engine_output": "FACTORS(Date, Ticker, Score) — Score = joint depth=1 트리가 **현재 상태의 잎**에 내놓는 기대 일간수익. 클수록 롱. 부호를 내가 고르지 않는다: 스코어가 기대수익 예측값 그 자체이고, 어느 잎을 발행할지는 그 달의 상태가 정한다.",
+    "why_not_the_average": "이 저장소는 '두 엔진 신호의 rank-Z 평균' 결합 기저를 5회 측정했고 계보 최고 다중검정 t 0.766 이다(재료 집합 최고 단독 t 1.228). 평균은 두 신호가 각자 이미 잡은 순위를 섞을 뿐 어느 쪽의 실패 기전도 건드리지 않는다 — CID 의 동시점 β 오염도, 트리의 다수-잎 무조건부화도 평균 뒤에 그대로 남는다. 그래서 평균이 아니라 **한 재료를 다른 재료의 내부 축으로 넣는** 형태를 골랐다.",
+    "load_bearing_test": "결합이 하중을 받는지는 엔진 로그의 'u_CID 분기 승률'(반증 (a))이 단독으로 판정한다. 승률 0% 면 이 엔진은 monthly-state 트리 단독이고 Pinchuk 재료는 장식이다 — 그 경우 결과 해석에서 결합을 주장하지 말 것.",
+    "portfolio_spec_keys": "top_n 은 지시 스키마 키, n_long/n_max 는 run_paper_replication::.rp_build_weights 가 실제로 읽는 키다. 둘 다 25로 둬 이 객체가 러너에 그대로 전달돼도 정확히 25종이 나오게 했다.",
+    "source_text_access": "2301.09173 = arxiv.org/html/2301.09173v1 로 전문 대조(Eq.1·Eq.2·24개월 창·5분위 VW·49bps t=3.19·CIV/CSD 이중정렬·실업 예측). 2007.08115 = 2020년 투고분이라 /html·ar5iv 가 없어(404/redirect) PDF 전문을 텍스트 렌더러 경유로 읽었다(인용 전문 = RP_AUTO_2007_08115/engine.R 헤더 Q1~Q6, 이 결합의 근거 문장도 거기서 축자 승계).",
+    "prior_solo_implementations": {
+      "2301.09173": "04_Research/strategies/RP_2301_09173_CID/engine.R — 다중검정 t 1.228 · 충실구현 Grade F(역베타 헤지 기전)",
+      "2007.08115": "04_Research/strategies/RP_AUTO_2007_08115/engine.R — 다중검정 t 1.11"
+    },
+    "paper_url": [
+      "https://arxiv.org/abs/2301.09173",
+      "https://arxiv.org/abs/2007.08115"
+    ]
+  }
+}
