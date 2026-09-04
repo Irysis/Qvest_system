@@ -1257,6 +1257,8 @@ SUITES=(
   "08_Tests/reinforcement/test_rf_block_design.R"
   # 2026-09-04 — 공리가 판단 지점(LLM 레인 4종)에 닿는가 + 증류 주기.
   "08_Tests/reinforcement/test_rf_axiom_inject.R"
+  # 2026-09-04 — 재시도가 실패 사유를 안고 가는가 (사유별 프레이밍).
+  "08_Tests/reinforcement/test_rf_retry_feedback.R"
 )
 
 

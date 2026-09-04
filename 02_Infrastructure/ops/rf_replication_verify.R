@@ -16,6 +16,18 @@
 suppressMessages({ library(jsonlite); library(data.table) })
 `%||%` <- function(a, b) if (is.null(a) || length(a) == 0L) b else a
 ROOT <- Sys.getenv("QM_ROOT", "C:/Users/99922/OneDrive/Quant_Module_Moltbot")
+
+# ── 큐 소비 미러 (도훈 2026-09-04) ────────────────────────────────────────────
+#   큐 카운터(alpha-pending)는 alpha_search_queue_done.json 만 본다. 강화 레인의 소비는
+#   강화 원장에만 남아 두 원장이 안 이어져 있었다 — 오늘 5편을 소비했는데 카운터는 75 그대로.
+#   ★판정의 정본은 옮기지 않는다. 이건 표시용 미러이고, 실패해도 리서치를 멈추지 않는다.
+.qmirror <- function(pk, why, sid = "") tryCatch({
+  if (!isTRUE(COUNT_PAPER)) return(invisible(FALSE))   # 결합은 새 논문 소비가 아니다
+  suppressMessages(source(file.path(ROOT, "02_Infrastructure/reinforcement/rf_queue_done.R")))
+  okm <- rf_mark_queue_done(pk, why, sid, root = ROOT)
+  jlog(if (isTRUE(okm)) "queue_done_mirrored" else "queue_done_mirror_skip",
+       paper_key = as.character(pk %||% ""), note = why)
+}, error = function(e) jlog("queue_done_mirror_failed", err = conditionMessage(e)))
 # ★강화 칸 상한은 원장(reinforce_ledger_l1.json::max_attempts)이 정본이다. 메시지에 숫자를
 #   박으면 상한을 바꿔도 안 따라온다 — 2026-08-31 도훈 지적: 상한이 25 인데 알림이 "20칸".
 .RF_MAXA <- tryCatch(as.integer(fromJSON(file.path(ROOT, "06_Registry/reinforce_ledger_l1.json"),
@@ -289,6 +301,7 @@ if (is.finite(.base_pt) && .base_pt < .min_pt) {
       .base_pt, .min_pt), root = ROOT)
     jlog("ledger_consumed", base_id = .bid_sk, paper_key = PKEY %||% "",
          note = "소비 기록 — selector 가 이 논문을 다시 집지 않는다")
+    .qmirror(PKEY, sprintf("skipped_base_quality (PORT_t %.3f)", .base_pt), .bid_sk)
   }, error = function(e) jlog("ledger_consume_failed", err = conditionMessage(e),
        note = "★소비 기록 실패 — 같은 논문이 재선택될 수 있다"))
   d <- tryCatch(fromJSON(REQ, simplifyVector = FALSE), error = function(e) list())
@@ -345,6 +358,7 @@ tryCatch(rf_open_entry(1L, BID, base_grade = G, paper_key = PKEY,
                        base_artifacts = dirname(ar), engine_path = eng,
                        count_paper = COUNT_PAPER, root = ROOT),
          error = function(e) fail("ledger_open_failed", conditionMessage(e)))
+.qmirror(PKEY, sprintf("강화 entry 개설 (기저 %s)", G), BID)
 
 # ★결합이면 원장 entry 에 앵커와 **희석 판정**을 남긴다 (2026-09-04).
 #   구판은 이 판정을 "첫 셀(B1_1)이 부모를 넘는가" 로 대리했는데, B1_1 은 순수 기저가

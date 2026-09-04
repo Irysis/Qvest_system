@@ -40,7 +40,7 @@ suppressMessages(source(file.path(ROOT, "02_Infrastructure/reinforcement/reinfor
 led <- rf_load(1L, ROOT)
 # ★칸 상한은 원장이 정본이다 — 메시지에 숫자를 박으면 상한을 바꿔도 안 따라온다
 #   (2026-08-31 도훈 지적: 상한이 25 인데 텔레그램이 계속 "20칸" 이라고 말했다).
-MAXA <- as.integer(led$max_attempts %||% 25L)
+MAXA <- as.integer(led$max_attempts %||% 25L)   # 전역 기본값 — 아래에서 소진 entry 값으로 덮는다
 
 # 이미 active 가 있으면 이월할 필요 없음 (중복 개설 방지)
 if (length(Filter(function(e) identical(e$status, "active"), led$entries))) {
@@ -56,6 +56,11 @@ ex <- Filter(function(e) identical(e$status, "exhausted") && !isTRUE(e$handed_of
 best <- NULL
 if (length(ex)) {
   E <- ex[[length(ex)]]
+  # ★예산은 **entry 별**이다 (2026-09-04 도훈 지적: 텔레그램이 계속 "25회" 라고 말했다).
+  #   B1 설계가 격자 5칸을 k칸으로 늘리면 그 entry 예산은 25+(k-5) 가 된다 — 오늘 실제로
+  #   34였다. 전역 max_attempts 를 읽으면 **실제로 태운 횟수와 다른 숫자**를 보고하게 된다.
+  #   구판이 "20 vs 25" 로 틀렸던 것과 같은 병이고, 이번엔 분모가 entry 마다 다르다.
+  MAXA <- as.integer(E$max_attempts %||% led$max_attempts %||% 25L)
   pts <- vapply(E$attempts, function(a) {
     v <- tryCatch(as.numeric(a$essence$port_t), error = function(e) NA_real_)
     if (length(v) != 1L) NA_real_ else v

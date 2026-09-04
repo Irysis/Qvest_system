@@ -46,6 +46,22 @@ except Exception: print('0')" 2>/dev/null)
 command -v claude >/dev/null 2>&1 || { jl halt_no_claude_cli; exit 0; }
 rm -f "$AUD"
 
+# ── ★축별 팬아웃으로 위임 (도훈 지시 2026-09-04) ─────────────────────────────
+#   단일 감사자는 **분류한다** — 2302.10175 감사가 "최고위험 2건을 원문 대조" 라고 적었고,
+#   나머지 축을 안 본 사실은 아무 데도 안 남았다. 축마다 에이전트를 세우면 안 본 축이
+#   존재할 수 없다. 호출부(rf_replication_verify.R)는 그대로다 — 산출 파일도 스키마도 같다.
+#   fanout.enabled=false 면 아래 단일 레인으로 돌아간다(구판 보존).
+FANOUT=$("$PY" -c "
+import io,json
+try:
+    c=json.loads(io.open(r'$CFG','rb').read().decode('utf-8'))
+    print('1' if ((c.get('fidelity_audit') or {}).get('fanout') or {}).get('enabled') else '0')
+except Exception: print('0')" 2>/dev/null)
+if [ "$FANOUT" = "1" ]; then
+  jl delegate_fanout "paper=$PKEY"
+  exec bash "$ROOT/02_Infrastructure/ops/rf_fidelity_fanout.sh" "$WDIR" "$ART" "$PURL" "$PKEY"
+fi
+
 # ★원문 접근 경로를 프롬프트에 박는다 — /abs 는 초록뿐이고 /pdf 는 이 환경에서 못 읽는다.
 #   그 사실을 모르면 감사자가 초록만 보고 "일치" 라고 쓴다(2026-09-02 실측 교훈).
 AXID=$(printf '%s' "$PURL" | sed -n 's#.*arxiv\.org/\(abs\|html\|pdf\)/\([0-9v.]*\).*#\2#p')

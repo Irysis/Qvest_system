@@ -1,147 +1,157 @@
 {
- "schema": "reinforce_auto_config_v1",
- "enabled": true,
- "combination": {
+  "schema": "reinforce_auto_config_v1",
   "enabled": true,
-  "note": "★도훈 지시 2026-09-04 — 결합은 rank-Z 평균 blend 가 아니라 **LLM 이 두 논문을 읽고 설계한 전략(기저)**에서 출발한다. 그 기저를 충실구현 1회로 측정해 base_grade 를 얻고, base_min_port_t 가드를 통과한 뒤에야 강화 25칸을 열어야 한다. 그 레인이 서기 전까지 구판 blend 착수를 정지한다 — 정지 중에는 호출자가 다음 논문 충실구현으로 정상 이월한다.",
-  "gate": "base_min_port_t (단독 논문 레인과 동일). 희석 여부(blend t ≤ max(a_t,b_t))는 같은 축에서 재서 원장에 기록만 하고 차단하지 않는다 — 격자는 기저 **위에** 쌓는 구조라 부모보다 낮은 기저에서도 강화가 뒤집을 수 있다."
- },
- "b1_design": {
-  "enabled": true,
-  "max_cells": 15,
-  "note": "★도훈 지시 2026-09-04 — B1 멀티팩터를 규칙 선정(깊이 1~5 · 5칸 고정 · IC 상관 그리디 사슬)에서 **블록 진입 시 1회 LLM 설계**로 바꿈. 칸 수·팩터 수·조합 방식은 설계가 정하고, 칸들은 그 설계를 규칙으로 전개한다. LLM 이 닿는 지점은 논문당 하나이며(칸마다 부르면 강화 레인의 규칙 개시 경계가 사라지고 비용이 25배다), 산출물은 rf_b1_design_lib::b1_verify 가 등록부 실재성·중복을 재도출로 검증해야 쓰인다. 검증 실패 = 설계 폐기 + 규칙 선정 폴백(조용한 통과 없음).",
-  "max_cells_note": "연구 제한이 아니라 예산 폭주 backstop. 25칸 총예산은 원장 max_attempts 가 지키므로, B1 이 많이 가져가면 뒤 블록이 그만큼 줄어든다 — 그 교환은 설계가 진다.",
-  "kill_switch": "b1_design.enabled=false 면 즉시 규칙 선정으로 돌아간다.",
-  "prior_entries": 12,
-  "prior_entries_note": "★도훈 지시 ② 2026-09-04 — B1 은 entry 의 첫 블록이라 안에 쌓인 교훈이 없다. 직전 entry 들의 블록 L-code 에서 기전·처방·avoid 를 최근 N건 물려준다. 수치가 아니라 기전만 옮긴다 — 다른 논문의 t 는 이 기저에 의미가 없지만 \"어떤 축이 어느 소비 지점에서 죽더라\" 는 기저가 달라도 성립한다. ★금지 목록이 아니다(AX-000): 다른 각도면 재시도는 정당하고 그 근거를 rationale 에 적게 한다."
- },
- "fidelity_audit": {
-  "enabled": true,
-  "note": "★도훈 지시 2026-09-04 — 검증 4관문은 전부 산출물(계약·고정축·PIT·원장)을 본다. '논문대로 구현했는가'만 재도출이 없었고 FIDELITY.json 은 에이전트의 진술이었다(2608.23944 는 하지도 않은 변경을 스스로 신고했고 원문 대조로만 잡혔다). 적대적 감사자가 arxiv html 전문과 engine.R 을 대조해 미신고 변경·신호 불일치를 찾는다. 등급은 못 건드린다(AX-008) — 움직이는 것은 귀속 라벨과 소비 보류뿐이다.",
-  "scope": "등급 무관 전건. 값어치는 A등급 보호보다 F 판정의 신뢰에 있다 — F 면 ledger_consumed 로 논문이 영구 소비되므로, 구현이 틀려서 F 였다면 논문이 잘못된 이유로 버려진다.",
-  "disposition": "misdeclared → 자동 재구현 1회 + 소비 보류(도훈 선택). 재구현도 기각되면 소비하되 implementation_suspect 꼬리표. 무한 재시도도 조용한 소비도 아니다.",
-  "kill_switch": "fidelity_audit.enabled=false 면 감사를 건너뛰고 구판 흐름으로 돌아간다."
- },
- "note": "강화 무인 러너 kill switch. enabled=false 면 reinforce_auto_run.R / _next_paper.R 가 즉시 정지한다. ★도훈 지시 2026-08-30 '모든 작업을 무인화' 로 v10 의 '무인은 수집까지' 경계가 해제됐다. 단 무인 개시는 **규칙 개시**다 — 셀은 reinforce_program.json 격자에서 나오고 엔진은 rf_cell_engine.R 하나이며 러너는 코드를 생성하지 않는다. LLM 무인 개시가 아니다.",
- "daily_cap": 120,
- "claim_stale_hours": 6,
- "cell_max_retry": 2,
- "cell_max_retry_note": "한 칸의 재시도 상한. 병렬 러너의 재개(resume)는 *일시적* 실패(워커 미기동·시간초과)만 상정한 장치였는데 구조적 실패에는 출구가 없어 루프가 제자리를 돌았다(2026-08-31 실사고: B3_11 이 7.5시간 16회 동일 실패, used 15 고정). rf_cell_engine 의 '측정 무효/처치 미전달' 계열은 결정론이라 1회로 즉시 닫고, 나머지는 이 횟수까지만 재개한다. 닫힘 = 미결(essence 없음) — 성공 위장 아님.",
- "halt_on": {
-  "queue_empty": "논문 큐가 비면 무동작(정지 아님) — 수집이 채우면 재개",
-  "replication_pending": "충실구현은 논문 원문 판독이 필요해 규칙으로 환원되지 않는다 — 세션이 착수해야 다음 강화가 돈다",
-  "block_boundary": "병렬은 **같은 블록 안에서만** 묶는다 — B2/B3 는 B1 승자 위에, B4 는 B1~B3 승자 위에 서므로 승자 확정 전에 다음 블록을 띄우면 결정되지 않은 값 위에서 측정하게 된다(2026-08-30 '공허한 LOO' 사고의 병렬판)."
- },
- "boundaries": [
-  "book_state / 05_Production 미접근",
-  "쓰기 = 원장·로그·stage_artifacts 만",
-  "PIT C1~C15 는 엔진·계약이 강제",
-  "등급 = authoritative_remeasure.json 만 인용(손계산 금지)",
-  "병렬 시 원장 쓰기는 실행에서 분리 — 등록(순차) → 실행(병렬·원장 미접근) → 수집(순차)",
-  "Grade A 는 큐 적재 + 알림까지. 자동 BOOK 등재 없음 — 그 관문만 사람이 지킨다",
-  "결합 검토는 논문 3편마다 자동 실행(rf_combination_review) — 후보 제시까지. 결합 라운드 착수는 세션",
-  "무인 충실구현은 engine.R 만 생성 — 등급은 계약이 낸다(AX-008). 검증 실패 시 원장 미개설"
- ],
- "mode": "parallel",
- "parallel_cells": 5,
- "worker_timeout_sec": 5400,
- "continue_on": {
-  "grade_a": "★도훈 지시 2026-08-30 'A등급 달성하더라도 리서치가 이어지게'. Grade A 는 **리서치를 멈추지 않는다** — 06_Registry/grade_a_queue.json 에 쌓이고 judge_request.json 이 발행되며 텔레그램이 즉시 나가되, 남은 칸·다음 논문은 그대로 진행한다. 리서치 루프와 BOOK 등재 관문은 다른 층이다. ★불변: BOOK 등재는 Judge(PIT) + 도훈 confirm — 자동 등재 없음(헌법).",
-  "axiom_activation": "★도훈 지시 2026-08-30 \"활성화까지도 무인화\". 사전 승인(opt-in) → 자동 활성화 + 사후 검토(opt-out). 기계 승인 게이트는 refine_statement.R 의 R0~R6 이 이미 담당한다(그 파일이 명시: \"사람 승인을 없애려면 승인이 하던 일을 기계가 해야 한다\"). 조건 3중: all_hurdles_pass ∧ needs_refinement=FALSE ∧ 활성 상한. ★초안(needs_refinement=TRUE)은 절대 활성화하지 않는다 — 클러스터 메타데이터가 대전제로 박힌다. 되돌리기 = deactivate_axiom / rollback_axiom (텔레그램 본문에 항상 포함).",
-  "paper_replication": "★도훈 지시 2026-08-30 '논문 충실구현도 무인으로 바로 실행'. cleaner 선례의 '무인 LLM 호출 배제' 경계를 도훈 명시 요청으로 넘는다. 리스크는 구조로 막는다: ①에이전트 산출은 engine.R 하나 — 측정·등급·PIT 는 계약 강제 ②권한 축소(Bash/Agent 금지 · 쓰기 디렉터리 한정) ③사후 검증 4관문(계약 산출물·고정축·PIT 구조·원장 개설) ④실패는 failed_needs_session 으로 기록하고 원장에 열지 않는다(조용한 통과 없음).",
-  "base_below_threshold": "★도훈 지시 2026-08-30 — 기저 PORT_t < 0 이면 강화 20칸을 생략하고 다음 논문으로 이월한다. 강화는 기저 신호 **위에** 팩터를 얹는 구조라 기저 알파가 음수면 무엇을 얹어도 헛돈다. 실측 근거: JT1993 은 기저 F 였으나 PORT_t 0.16(0 근처)이었고 거기서 12칸이 C 로 올라왔다. 반면 Lead-Lag 착안판은 -1.559 — '약하다' 가 아니라 '반대로 작동한다' 이다. ★측정과 기록은 남는다 — 생략은 포기가 아니라 예산 배분이다."
- },
- "combination_review_every": 3,
- "axiom_max_active_per_mode": 6,
- "axiom_max_active_total": 20,
- "llm": {
-  "model": "opus",
-  "effort": "max",
-  "env_override": [
-   "QVEST_RP_MODEL",
-   "QVEST_RP_EFFORT"
+  "combination": {
+    "enabled": true,
+    "note": "★도훈 지시 2026-09-04 — 결합은 rank-Z 평균 blend 가 아니라 **LLM 이 두 논문을 읽고 설계한 전략(기저)**에서 출발한다. 그 기저를 충실구현 1회로 측정해 base_grade 를 얻고, base_min_port_t 가드를 통과한 뒤에야 강화 25칸을 열어야 한다. 그 레인이 서기 전까지 구판 blend 착수를 정지한다 — 정지 중에는 호출자가 다음 논문 충실구현으로 정상 이월한다.",
+    "gate": "base_min_port_t (단독 논문 레인과 동일). 희석 여부(blend t ≤ max(a_t,b_t))는 같은 축에서 재서 원장에 기록만 하고 차단하지 않는다 — 격자는 기저 **위에** 쌓는 구조라 부모보다 낮은 기저에서도 강화가 뒤집을 수 있다."
+  },
+  "b1_design": {
+    "enabled": true,
+    "max_cells": 15,
+    "note": "★도훈 지시 2026-09-04 — B1 멀티팩터를 규칙 선정(깊이 1~5 · 5칸 고정 · IC 상관 그리디 사슬)에서 **블록 진입 시 1회 LLM 설계**로 바꿈. 칸 수·팩터 수·조합 방식은 설계가 정하고, 칸들은 그 설계를 규칙으로 전개한다. LLM 이 닿는 지점은 논문당 하나이며(칸마다 부르면 강화 레인의 규칙 개시 경계가 사라지고 비용이 25배다), 산출물은 rf_b1_design_lib::b1_verify 가 등록부 실재성·중복을 재도출로 검증해야 쓰인다. 검증 실패 = 설계 폐기 + 규칙 선정 폴백(조용한 통과 없음).",
+    "max_cells_note": "연구 제한이 아니라 예산 폭주 backstop. 25칸 총예산은 원장 max_attempts 가 지키므로, B1 이 많이 가져가면 뒤 블록이 그만큼 줄어든다 — 그 교환은 설계가 진다.",
+    "kill_switch": "b1_design.enabled=false 면 즉시 규칙 선정으로 돌아간다.",
+    "prior_entries": 12,
+    "prior_entries_note": "★도훈 지시 ② 2026-09-04 — B1 은 entry 의 첫 블록이라 안에 쌓인 교훈이 없다. 직전 entry 들의 블록 L-code 에서 기전·처방·avoid 를 최근 N건 물려준다. 수치가 아니라 기전만 옮긴다 — 다른 논문의 t 는 이 기저에 의미가 없지만 \"어떤 축이 어느 소비 지점에서 죽더라\" 는 기저가 달라도 성립한다. ★금지 목록이 아니다(AX-000): 다른 각도면 재시도는 정당하고 그 근거를 rationale 에 적게 한다."
+  },
+  "fidelity_audit": {
+    "enabled": true,
+    "note": "★도훈 지시 2026-09-04 — 검증 4관문은 전부 산출물(계약·고정축·PIT·원장)을 본다. '논문대로 구현했는가'만 재도출이 없었고 FIDELITY.json 은 에이전트의 진술이었다(2608.23944 는 하지도 않은 변경을 스스로 신고했고 원문 대조로만 잡혔다). 적대적 감사자가 arxiv html 전문과 engine.R 을 대조해 미신고 변경·신호 불일치를 찾는다. 등급은 못 건드린다(AX-008) — 움직이는 것은 귀속 라벨과 소비 보류뿐이다.",
+    "scope": "등급 무관 전건. 값어치는 A등급 보호보다 F 판정의 신뢰에 있다 — F 면 ledger_consumed 로 논문이 영구 소비되므로, 구현이 틀려서 F 였다면 논문이 잘못된 이유로 버려진다.",
+    "disposition": "misdeclared → 자동 재구현 1회 + 소비 보류(도훈 선택). 재구현도 기각되면 소비하되 implementation_suspect 꼬리표. 무한 재시도도 조용한 소비도 아니다.",
+    "kill_switch": "fidelity_audit.enabled=false 면 감사를 건너뛰고 구판 흐름으로 돌아간다.",
+    "fanout": {
+      "enabled": true,
+      "axes_registry": "06_Registry/rf_fidelity_axes.json",
+      "note": "★도훈 지시 2026-09-04 — 단일 감사자는 분류한다. 2302.10175 감사가 자기 산출물에 '최고위험 2건을 원문 대조' 라고 적었다: 나머지 축은 안 봤다는 뜻인데 verdict 는 하나로 나왔고 **무엇을 안 봤는지가 아무 데도 안 남았다**. 축마다 에이전트를 세우면 안 본 축이 존재할 수 없고, 못 찾은 축은 no_finding 으로 명시된다.",
+      "why_not_orchestrator": "opus 오케스트레이터가 '무엇을 위임할지' 고르면 분류가 한 층 위로 올라갈 뿐 사라지지 않는다 — 고치려는 병이 그것이다. 축은 이미 고정이라 오케스트레이터가 결정할 것이 없다. 게다가 무인 레인은 claude -p 로 도는데 그 안에서 Agent 를 또 스폰하면 12분 레인이 30분이 되고 클레임·타임아웃이 두 겹이 된다.",
+      "model_split": "판독형(signal·portfolio·undeclared) = opus/max — 원문 문장을 해석해 코드와 대조하는 깊이 문제. 대조형(timing·universe·cost) = sonnet/high — 논문의 수치를 찾아 코드 수치와 비교하는 일이라 해석이 안 들어간다. 축이 좁아지는 것 자체가 비용 절감이다(각자 논문 전문이 아니라 자기 절만 읽는다).",
+      "merge": "02_Infrastructure/ops/rf_fidelity_merge.R — **R 이 결정론으로** 병합한다. LLM 판정자를 하나 더 세우면 팬아웃으로 없앤 분류가 마지막 단계에서 되살아난다. 규칙: 발견 하나는 나머지 축의 '이상 없음' 으로 희석되지 않는다(최악 채택) · faithful 은 required 축 3종이 전부 원문을 읽었을 때만 낼 수 있다 · 근거 없는 misdeclared 는 불채택.",
+      "output": "<wdir>/fidelity_audit.json — 구판과 **같은 스키마**. 하류(verify·disposition·재구현 피드백)는 한 줄도 안 바뀐다. axis_verdicts 배열이 추가되고 그게 '무엇을 안 봤는지' 가 남는 자리다.",
+      "kill_switch": "fanout.enabled=false 면 구판 단일 감사자로 돌아간다."
+    }
+  },
+  "note": "강화 무인 러너 kill switch. enabled=false 면 reinforce_auto_run.R / _next_paper.R 가 즉시 정지한다. ★도훈 지시 2026-08-30 '모든 작업을 무인화' 로 v10 의 '무인은 수집까지' 경계가 해제됐다. 단 무인 개시는 **규칙 개시**다 — 셀은 reinforce_program.json 격자에서 나오고 엔진은 rf_cell_engine.R 하나이며 러너는 코드를 생성하지 않는다. LLM 무인 개시가 아니다.",
+  "daily_cap": 120,
+  "claim_stale_hours": 6,
+  "cell_max_retry": 2,
+  "cell_max_retry_note": "한 칸의 재시도 상한. 병렬 러너의 재개(resume)는 *일시적* 실패(워커 미기동·시간초과)만 상정한 장치였는데 구조적 실패에는 출구가 없어 루프가 제자리를 돌았다(2026-08-31 실사고: B3_11 이 7.5시간 16회 동일 실패, used 15 고정). rf_cell_engine 의 '측정 무효/처치 미전달' 계열은 결정론이라 1회로 즉시 닫고, 나머지는 이 횟수까지만 재개한다. 닫힘 = 미결(essence 없음) — 성공 위장 아님.",
+  "halt_on": {
+    "queue_empty": "논문 큐가 비면 무동작(정지 아님) — 수집이 채우면 재개",
+    "replication_pending": "충실구현은 논문 원문 판독이 필요해 규칙으로 환원되지 않는다 — 세션이 착수해야 다음 강화가 돈다",
+    "block_boundary": "병렬은 **같은 블록 안에서만** 묶는다 — B2/B3 는 B1 승자 위에, B4 는 B1~B3 승자 위에 서므로 승자 확정 전에 다음 블록을 띄우면 결정되지 않은 값 위에서 측정하게 된다(2026-08-30 '공허한 LOO' 사고의 병렬판)."
+  },
+  "boundaries": [
+    "book_state / 05_Production 미접근",
+    "쓰기 = 원장·로그·stage_artifacts 만",
+    "PIT C1~C15 는 엔진·계약이 강제",
+    "등급 = authoritative_remeasure.json 만 인용(손계산 금지)",
+    "병렬 시 원장 쓰기는 실행에서 분리 — 등록(순차) → 실행(병렬·원장 미접근) → 수집(순차)",
+    "Grade A 는 큐 적재 + 알림까지. 자동 BOOK 등재 없음 — 그 관문만 사람이 지킨다",
+    "결합 검토는 논문 3편마다 자동 실행(rf_combination_review) — 후보 제시까지. 결합 라운드 착수는 세션",
+    "무인 충실구현은 engine.R 만 생성 — 등급은 계약이 낸다(AX-008). 검증 실패 시 원장 미개설"
   ],
-  "rationale": "무인 루프 자체에는 LLM 이 없다(규칙 실행). LLM 이 남는 두 지점(충실구현·격자 제안)은 **깊이** 문제다 — 논문 하나를 정확히 읽고 기전을 이식할 수 있는지, 팩터 331종에서 5종을 왜 고르는지. 넓이(팬아웃)가 아니므로 울트라코드가 아니라 단일 에이전트 최대 노력이 맞다. 2026-08-29 실증: 최고 산출(sigma 허수 버그 적발·위기구간 폴백 51.5% 진단·Market 열 날조 발견)이 전부 깊은 프롬프트를 받은 단일 에이전트에서 나왔다. ★구판은 --model/--effort 미지정이라 CLI 기본값에 의존했다(도훈 지적).",
-  "consumed_by": "02_Infrastructure/ops/rf_llm_env.sh::rf_llm_resolve — 네 레인(replication·overlay_propose·b1_design·fidelity_audit)이 여기서 읽는다. ★2026-09-04 이전에는 이 블록을 **읽는 코드가 0건**이었고 각 레인이 자기 기본값(:-opus/:-max)을 들고 있었다 — 정책을 적어 둔 문서를 아무도 소비하지 않는 상태였다.",
-  "lanes": {
-   "replication": {
-    "model": "opus",
-    "effort": "max"
-   },
-   "overlay_propose": {
-    "model": "opus",
-    "effort": "max"
-   },
-   "b1_design": {
-    "model": "opus",
-    "effort": "max"
-   },
-   "fidelity_audit": {
+  "mode": "parallel",
+  "parallel_cells": 5,
+  "worker_timeout_sec": 5400,
+  "continue_on": {
+    "grade_a": "★도훈 지시 2026-08-30 'A등급 달성하더라도 리서치가 이어지게'. Grade A 는 **리서치를 멈추지 않는다** — 06_Registry/grade_a_queue.json 에 쌓이고 judge_request.json 이 발행되며 텔레그램이 즉시 나가되, 남은 칸·다음 논문은 그대로 진행한다. 리서치 루프와 BOOK 등재 관문은 다른 층이다. ★불변: BOOK 등재는 Judge(PIT) + 도훈 confirm — 자동 등재 없음(헌법).",
+    "axiom_activation": "★도훈 지시 2026-08-30 \"활성화까지도 무인화\". 사전 승인(opt-in) → 자동 활성화 + 사후 검토(opt-out). 기계 승인 게이트는 refine_statement.R 의 R0~R6 이 이미 담당한다(그 파일이 명시: \"사람 승인을 없애려면 승인이 하던 일을 기계가 해야 한다\"). 조건 3중: all_hurdles_pass ∧ needs_refinement=FALSE ∧ 활성 상한. ★초안(needs_refinement=TRUE)은 절대 활성화하지 않는다 — 클러스터 메타데이터가 대전제로 박힌다. 되돌리기 = deactivate_axiom / rollback_axiom (텔레그램 본문에 항상 포함).",
+    "paper_replication": "★도훈 지시 2026-08-30 '논문 충실구현도 무인으로 바로 실행'. cleaner 선례의 '무인 LLM 호출 배제' 경계를 도훈 명시 요청으로 넘는다. 리스크는 구조로 막는다: ①에이전트 산출은 engine.R 하나 — 측정·등급·PIT 는 계약 강제 ②권한 축소(Bash/Agent 금지 · 쓰기 디렉터리 한정) ③사후 검증 4관문(계약 산출물·고정축·PIT 구조·원장 개설) ④실패는 failed_needs_session 으로 기록하고 원장에 열지 않는다(조용한 통과 없음).",
+    "base_below_threshold": "★도훈 지시 2026-08-30 — 기저 PORT_t < 0 이면 강화 20칸을 생략하고 다음 논문으로 이월한다. 강화는 기저 신호 **위에** 팩터를 얹는 구조라 기저 알파가 음수면 무엇을 얹어도 헛돈다. 실측 근거: JT1993 은 기저 F 였으나 PORT_t 0.16(0 근처)이었고 거기서 12칸이 C 로 올라왔다. 반면 Lead-Lag 착안판은 -1.559 — '약하다' 가 아니라 '반대로 작동한다' 이다. ★측정과 기록은 남는다 — 생략은 포기가 아니라 예산 배분이다."
+  },
+  "combination_review_every": 3,
+  "axiom_max_active_per_mode": 6,
+  "axiom_max_active_total": 20,
+  "llm": {
     "model": "opus",
     "effort": "max",
-    "note": "★도훈 지시 2026-09-04 \"적대적 검증자도 opus 최신버전 노력레벨 max\". 반증은 깊이 문제다 — 논문 전문과 엔진을 동시에 들고 식·부호·창을 대조해야 하므로 팬아웃이 아니라 단일 에이전트 최대 노력이 맞다."
-   },
-   "lcode_mechanism": {
-    "model": "opus",
-    "effort": "max",
-    "note": "기전 서술은 깊이 문제 — 블록 사이를 잇는 판단이라 단일 에이전트 최대 노력."
-   }
+    "env_override": [
+      "QVEST_RP_MODEL",
+      "QVEST_RP_EFFORT"
+    ],
+    "rationale": "무인 루프 자체에는 LLM 이 없다(규칙 실행). LLM 이 남는 두 지점(충실구현·격자 제안)은 **깊이** 문제다 — 논문 하나를 정확히 읽고 기전을 이식할 수 있는지, 팩터 331종에서 5종을 왜 고르는지. 넓이(팬아웃)가 아니므로 울트라코드가 아니라 단일 에이전트 최대 노력이 맞다. 2026-08-29 실증: 최고 산출(sigma 허수 버그 적발·위기구간 폴백 51.5% 진단·Market 열 날조 발견)이 전부 깊은 프롬프트를 받은 단일 에이전트에서 나왔다. ★구판은 --model/--effort 미지정이라 CLI 기본값에 의존했다(도훈 지적).",
+    "consumed_by": "02_Infrastructure/ops/rf_llm_env.sh::rf_llm_resolve — 네 레인(replication·overlay_propose·b1_design·fidelity_audit)이 여기서 읽는다. ★2026-09-04 이전에는 이 블록을 **읽는 코드가 0건**이었고 각 레인이 자기 기본값(:-opus/:-max)을 들고 있었다 — 정책을 적어 둔 문서를 아무도 소비하지 않는 상태였다.",
+    "lanes": {
+      "replication": {
+        "model": "opus",
+        "effort": "max"
+      },
+      "overlay_propose": {
+        "model": "opus",
+        "effort": "max"
+      },
+      "b1_design": {
+        "model": "opus",
+        "effort": "max"
+      },
+      "fidelity_audit": {
+        "model": "opus",
+        "effort": "max",
+        "note": "★도훈 지시 2026-09-04 \"적대적 검증자도 opus 최신버전 노력레벨 max\". 반증은 깊이 문제다 — 논문 전문과 엔진을 동시에 들고 식·부호·창을 대조해야 하므로 팬아웃이 아니라 단일 에이전트 최대 노력이 맞다."
+      },
+      "lcode_mechanism": {
+        "model": "opus",
+        "effort": "max",
+        "note": "기전 서술은 깊이 문제 — 블록 사이를 잇는 판단이라 단일 에이전트 최대 노력."
+      }
+    }
+  },
+  "base_min_port_t": 0,
+  "factor_analysis": {
+    "enabled": true,
+    "produces": [
+      "analysis_multifactor.csv (FF3/FF5/Carhart4)",
+      "analysis_fmb_summary.csv (Fama-MacBeth)",
+      "analysis_ic.csv",
+      "analysis_stress.csv",
+      "analysis_report.md"
+    ],
+    "producer": "02_Infrastructure/strategy_analyzer.R::run_analysis (재구현 아님 — 구 알파 서칭과 동일 함수)",
+    "consumer": "telegram_notify.R::tg_pass_analysis → [팩터 분석] 메시지",
+    "kill_switch": "QVEST_RP_NO_FACTOR_ANALYSIS=1",
+    "note": "★도훈 지시 2026-08-30 — 예전 알파 서칭의 FF3/FF5/Carhart4·Fama-MacBeth 포맷을 무인 경로에도. run_paper_replication 한 곳에 배선해 충실구현과 강화 셀 20칸이 함께 덮인다. FACTORS 가 NULL(PORTFOLIO 형 엔진)이면 IC·FMB 가 서지 않으므로 건너뛰되 사유를 로그에 남긴다."
+  },
+  "promote_min_grade": "B",
+  "promote_max_depth": 3,
+  "promote_note": "★도훈 지시 2026-08-30 'B등급 이상 전략에 대해 추가 강화프로세스'. 20칸 소진 시 승자가 B 이상이면 그 승자 구성(factors/weighting/universe)을 carry 로 물려 새 20칸 entry 를 열고, 다음 논문은 그 사슬이 끝난 뒤로 밀린다. 승계 조건 2중: ①부모 최고 PORT_t 초과(못 넘으면 같은 실패의 재생산) ②깊이 ≤ promote_max_depth(한 논문이 큐 예산을 무한히 먹지 않게). ★병렬 폭은 늘리지 않았다 — 실측상 RAM 이 제약(워커 1개 ≈ 3GB · 총 31.7GB)이라 다논문 병렬은 농도를 나누는 것이지 처리량을 늘리지 않는다(도훈 결정 2026-08-30: 현행 유지).",
+  "daily_cap_note": "★도훈 지시 2026-08-30 '무한리서치 진행'. 구값 20 은 배치 4회(약 1시간) 만에 루프를 세워 무한 진행과 양립했다. 120 은 실질 상한이 아니다 — 셀 1칸이 약 14분이라 하루 물리적 최대가 100칸 안팛이다. 즉 폭주 backstop 은 유지하되 정상 진행을 막지 않는다.",
+  "factor_autoregister": {
+    "enabled": true,
+    "min_grade": "B",
+    "dedup_rho_max": 0.8,
+    "category": "custom",
+    "kill_switch": "QVEST_RP_NO_FACTOR_REGISTER=1",
+    "producer": "02_Infrastructure/ops/rf_factor_autoregister.R",
+    "consumer": "02_Infrastructure/ops/rf_factor_arms.R (B1 조합 후보 풀)",
+    "note": "★도훈 지시 2026-09-01. 충실구현 B+ 신호를 팩터 DB 에 등록해 **다음 논문의 B1 조합 후보**로 만든다 — 리서치 산출이 다음 리서치의 입력이 되는 닫힌 루프. 기존 온보딩 계약(add_factor -> build_factor_db -> backfill_custom_factor -> compute_all_factor_ic_monthly)을 우회하지 않고, 수식으로 환원 안 되는 논문 신호는 engine 템플릿(동결 패널)으로 들인다. ★후속 compute_all_factor_ic_monthly 는 필수 — 없으면 Z_Score_Aligned(C13 방향 정렬)가 안 서서 다음 조합에서 방향이 조용히 뒤집힌다. ★알려진 비대칭: 엔진 패널은 K200∪KQ150 범위이고 DB 네이티브는 그 달 전체 상장이라 조합 시 교집합으로 좁혀진다(Coverage 열에 기록). '성과가 좋아서 등록'은 selection 채널이므로 origin·evidence_tier 에 남긴다 — DSR 게이트는 도훈 지시로 넣지 않는다. 되돌리기 = remove_custom_factor(id, from_registry=TRUE)."
+  },
+  "disabled_at": "2026-09-01T17:41:35+0900",
+  "disabled_reason": "★도훈 지시 2026-09-01 — 측정 축 전환 후 새 세션에서 새 리서치를 시작하기 위해 정지. 정지 시점 상태: active entry 없음(마지막 entry 는 축 전환으로 park) · current_axis=n_max_25 · 과거 entry 15건 axis_valid=false(측정 147건은 보존). 재개는 이 파일의 enabled 를 true 로 되돌리면 된다 — 다음 tick 이 큐 상단 논문의 충실구현을 띄우고 거기서 열리는 entry 가 첫 새 축 entry 가 된다. ★이 스위치는 강화 러너 2종 + 무인 충실구현(rf_replication_auto)을 함께 세운다. 팩터 DB 백필([6d])과 일간 리프레시는 별개 스케줄이라 계속 돈다 — 새 축 리서치가 쓸 technical 12종·C15·M12 이력을 채우는 중이므로 의도적으로 남겨 둔다(정지하려면 QVEST_FDB_NO_BACKFILL=1).",
+  "_resumed_note": "2026-09-04 도훈 지시 — 격자 커서 결함 수리 후 재개. 수리 전에는 등록 거부 1건이 격자 위치를 영우적 어긋냈다 (cells[[used+1L]] — 개수 기반). 지금은 기록된 cell_code 집합에서 뽑는다 (.rf_free_cells · 검사 test_rf_grid_cursor 23항 양방향). 재개 시점 상태: active RP_20260903_160341_combo 5/25 · 다음 칸 B2_6 · 빈 칸 20.",
+  "lcode_mechanism": {
+    "enabled": true,
+    "note": "★도훈 지시 2026-09-04 — 강화 L-code 는 전부 규칙 조립(측정표→sprintf)이라 \"무엇이\" 는 정확하지만 \"왜\" 가 없었다. lean-loop 는 \"기전이 특정되는 실패만 적립\" 이라 쓰는데 무인 레인엔 특정할 수단이 없어 73건이 수치만으로 쌓였다. 블록 끝에 LLM 이 기전 한 문단을 얹는다 — 수치·등급·next_probe 는 규칙이 쓴 것을 건드리지 않고, 병합은 R 이 한다.",
+    "materials": "이 블록 측정표 + **이 전략의 앞선 블록 L-code**(규칙 요약·앞서 적힌 기전·다음 탐침). 도훈 지시 \"이번 배치에서 쌓인 교훈들 참고해서 작성\" — 기전은 블록 하나가 아니라 블록 사이에서 드러나는 일이 많다(2026-09-04: B1 방어계열 3칸 F ↔ B5 종목별 arm 성공 = 소비 지점 차이).",
+    "guards": "①이 블록 셀 코드 최소 1개 인용(일반론 차단) ②등급·합격·졸업·BOOK 주장 정규식 차단(AX-008) ③40~1200자 ④병합은 R — 에이전트는 L-code 파일 미접근 ⑤검증 실패해도 L-code 는 남는다(규칙 척추 불변).",
+    "kill_switch": "lcode_mechanism.enabled=false 면 규칙 L-code 만 남는다."
+  },
+  "axiom_inject": {
+    "enabled": true,
+    "source": "qepm/memory/axioms/active/AX-*.json (rf_preflight 와 같은 정본)",
+    "lanes": [
+      "replication",
+      "fidelity_audit",
+      "b1_design",
+      "lcode_mechanism"
+    ],
+    "note": "★도훈 지시 2026-09-04 — 공리 주입 경로가 둘 있었는데 둘 다 판단 지점에 안 닿았다. axiom_context_inject 는 PreToolUse[Agent] 훅인데 무인 레인은 Agent 를 0개 스폰하고, rf_preflight 는 셀 스펙에 싣지만 rf_cell_engine 이 preflight 를 한 번도 참조하지 않는다. 그래서 규칙이 도는 자리에만 실리고 LLM 네 지점은 비어 있었다. rf_axiom_brief.sh 가 단일 지점.",
+    "framing": "공리는 전제이지 지시가 아니다. 어긋나는 결론을 낼 수 있되 무엇이 전제를 뒤집는 증거인지 적게 한다. 특히 AX-000(소수 실패를 구조적 한계로 단정 금지)이 없으면 기전 에이전트가 세 칸 보고 축을 닫아 버린다.",
+    "no_truncation": "110자 절단은 원장 기록용이다. 판단에 쓰려면 문장이 온전해야 한다."
+  },
+  "distill_on_block": {
+    "enabled": true,
+    "note": "★도훈 지시 2026-09-04 — corpus(lcode_harvester)는 부팅마다, 증류(cluster_extractor)는 주간 cleaner 안에서만 돌았다. 강화는 하루 블록 L-code 5~6건이라 주기가 안 맞았다: 실측으로 강화 75건이 corpus 에 있는데 distilled 0건 → 수동 실행하자 후보 7건 즉시 생성. 이제 블록 L-code 발행 직후 같이 돈다."
   }
- },
- "base_min_port_t": 0,
- "factor_analysis": {
-  "enabled": true,
-  "produces": [
-   "analysis_multifactor.csv (FF3/FF5/Carhart4)",
-   "analysis_fmb_summary.csv (Fama-MacBeth)",
-   "analysis_ic.csv",
-   "analysis_stress.csv",
-   "analysis_report.md"
-  ],
-  "producer": "02_Infrastructure/strategy_analyzer.R::run_analysis (재구현 아님 — 구 알파 서칭과 동일 함수)",
-  "consumer": "telegram_notify.R::tg_pass_analysis → [팩터 분석] 메시지",
-  "kill_switch": "QVEST_RP_NO_FACTOR_ANALYSIS=1",
-  "note": "★도훈 지시 2026-08-30 — 예전 알파 서칭의 FF3/FF5/Carhart4·Fama-MacBeth 포맷을 무인 경로에도. run_paper_replication 한 곳에 배선해 충실구현과 강화 셀 20칸이 함께 덮인다. FACTORS 가 NULL(PORTFOLIO 형 엔진)이면 IC·FMB 가 서지 않으므로 건너뛰되 사유를 로그에 남긴다."
- },
- "promote_min_grade": "B",
- "promote_max_depth": 3,
- "promote_note": "★도훈 지시 2026-08-30 'B등급 이상 전략에 대해 추가 강화프로세스'. 20칸 소진 시 승자가 B 이상이면 그 승자 구성(factors/weighting/universe)을 carry 로 물려 새 20칸 entry 를 열고, 다음 논문은 그 사슬이 끝난 뒤로 밀린다. 승계 조건 2중: ①부모 최고 PORT_t 초과(못 넘으면 같은 실패의 재생산) ②깊이 ≤ promote_max_depth(한 논문이 큐 예산을 무한히 먹지 않게). ★병렬 폭은 늘리지 않았다 — 실측상 RAM 이 제약(워커 1개 ≈ 3GB · 총 31.7GB)이라 다논문 병렬은 농도를 나누는 것이지 처리량을 늘리지 않는다(도훈 결정 2026-08-30: 현행 유지).",
- "daily_cap_note": "★도훈 지시 2026-08-30 '무한리서치 진행'. 구값 20 은 배치 4회(약 1시간) 만에 루프를 세워 무한 진행과 양립했다. 120 은 실질 상한이 아니다 — 셀 1칸이 약 14분이라 하루 물리적 최대가 100칸 안팛이다. 즉 폭주 backstop 은 유지하되 정상 진행을 막지 않는다.",
- "factor_autoregister": {
-  "enabled": true,
-  "min_grade": "B",
-  "dedup_rho_max": 0.8,
-  "category": "custom",
-  "kill_switch": "QVEST_RP_NO_FACTOR_REGISTER=1",
-  "producer": "02_Infrastructure/ops/rf_factor_autoregister.R",
-  "consumer": "02_Infrastructure/ops/rf_factor_arms.R (B1 조합 후보 풀)",
-  "note": "★도훈 지시 2026-09-01. 충실구현 B+ 신호를 팩터 DB 에 등록해 **다음 논문의 B1 조합 후보**로 만든다 — 리서치 산출이 다음 리서치의 입력이 되는 닫힌 루프. 기존 온보딩 계약(add_factor -> build_factor_db -> backfill_custom_factor -> compute_all_factor_ic_monthly)을 우회하지 않고, 수식으로 환원 안 되는 논문 신호는 engine 템플릿(동결 패널)으로 들인다. ★후속 compute_all_factor_ic_monthly 는 필수 — 없으면 Z_Score_Aligned(C13 방향 정렬)가 안 서서 다음 조합에서 방향이 조용히 뒤집힌다. ★알려진 비대칭: 엔진 패널은 K200∪KQ150 범위이고 DB 네이티브는 그 달 전체 상장이라 조합 시 교집합으로 좁혀진다(Coverage 열에 기록). '성과가 좋아서 등록'은 selection 채널이므로 origin·evidence_tier 에 남긴다 — DSR 게이트는 도훈 지시로 넣지 않는다. 되돌리기 = remove_custom_factor(id, from_registry=TRUE)."
- },
- "disabled_at": "2026-09-01T17:41:35+0900",
- "disabled_reason": "★도훈 지시 2026-09-01 — 측정 축 전환 후 새 세션에서 새 리서치를 시작하기 위해 정지. 정지 시점 상태: active entry 없음(마지막 entry 는 축 전환으로 park) · current_axis=n_max_25 · 과거 entry 15건 axis_valid=false(측정 147건은 보존). 재개는 이 파일의 enabled 를 true 로 되돌리면 된다 — 다음 tick 이 큐 상단 논문의 충실구현을 띄우고 거기서 열리는 entry 가 첫 새 축 entry 가 된다. ★이 스위치는 강화 러너 2종 + 무인 충실구현(rf_replication_auto)을 함께 세운다. 팩터 DB 백필([6d])과 일간 리프레시는 별개 스케줄이라 계속 돈다 — 새 축 리서치가 쓸 technical 12종·C15·M12 이력을 채우는 중이므로 의도적으로 남겨 둔다(정지하려면 QVEST_FDB_NO_BACKFILL=1).",
- "_resumed_note": "2026-09-04 도훈 지시 — 격자 커서 결함 수리 후 재개. 수리 전에는 등록 거부 1건이 격자 위치를 영우적 어긋냈다 (cells[[used+1L]] — 개수 기반). 지금은 기록된 cell_code 집합에서 뽑는다 (.rf_free_cells · 검사 test_rf_grid_cursor 23항 양방향). 재개 시점 상태: active RP_20260903_160341_combo 5/25 · 다음 칸 B2_6 · 빈 칸 20.",
- "lcode_mechanism": {
-  "enabled": true,
-  "note": "★도훈 지시 2026-09-04 — 강화 L-code 는 전부 규칙 조립(측정표→sprintf)이라 \"무엇이\" 는 정확하지만 \"왜\" 가 없었다. lean-loop 는 \"기전이 특정되는 실패만 적립\" 이라 쓰는데 무인 레인엔 특정할 수단이 없어 73건이 수치만으로 쌓였다. 블록 끝에 LLM 이 기전 한 문단을 얹는다 — 수치·등급·next_probe 는 규칙이 쓴 것을 건드리지 않고, 병합은 R 이 한다.",
-  "materials": "이 블록 측정표 + **이 전략의 앞선 블록 L-code**(규칙 요약·앞서 적힌 기전·다음 탐침). 도훈 지시 \"이번 배치에서 쌓인 교훈들 참고해서 작성\" — 기전은 블록 하나가 아니라 블록 사이에서 드러나는 일이 많다(2026-09-04: B1 방어계열 3칸 F ↔ B5 종목별 arm 성공 = 소비 지점 차이).",
-  "guards": "①이 블록 셀 코드 최소 1개 인용(일반론 차단) ②등급·합격·졸업·BOOK 주장 정규식 차단(AX-008) ③40~1200자 ④병합은 R — 에이전트는 L-code 파일 미접근 ⑤검증 실패해도 L-code 는 남는다(규칙 척추 불변).",
-  "kill_switch": "lcode_mechanism.enabled=false 면 규칙 L-code 만 남는다."
- },
- "axiom_inject": {
-  "enabled": true,
-  "source": "qepm/memory/axioms/active/AX-*.json (rf_preflight 와 같은 정본)",
-  "lanes": [
-   "replication",
-   "fidelity_audit",
-   "b1_design",
-   "lcode_mechanism"
-  ],
-  "note": "★도훈 지시 2026-09-04 — 공리 주입 경로가 둘 있었는데 둘 다 판단 지점에 안 닿았다. axiom_context_inject 는 PreToolUse[Agent] 훅인데 무인 레인은 Agent 를 0개 스폰하고, rf_preflight 는 셀 스펙에 싣지만 rf_cell_engine 이 preflight 를 한 번도 참조하지 않는다. 그래서 규칙이 도는 자리에만 실리고 LLM 네 지점은 비어 있었다. rf_axiom_brief.sh 가 단일 지점.",
-  "framing": "공리는 전제이지 지시가 아니다. 어긋나는 결론을 낼 수 있되 무엇이 전제를 뒤집는 증거인지 적게 한다. 특히 AX-000(소수 실패를 구조적 한계로 단정 금지)이 없으면 기전 에이전트가 세 칸 보고 축을 닫아 버린다.",
-  "no_truncation": "110자 절단은 원장 기록용이다. 판단에 쓰려면 문장이 온전해야 한다."
- },
- "distill_on_block": {
-  "enabled": true,
-  "note": "★도훈 지시 2026-09-04 — corpus(lcode_harvester)는 부팅마다, 증류(cluster_extractor)는 주간 cleaner 안에서만 돌았다. 강화는 하루 블록 L-code 5~6건이라 주기가 안 맞았다: 실측으로 강화 75건이 corpus 에 있는데 distilled 0건 → 수동 실행하자 후보 7건 즉시 생성. 이제 블록 L-code 발행 직후 같이 돈다."
- }
 }

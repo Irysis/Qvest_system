@@ -141,6 +141,34 @@ import io,json,sys
 try: d=json.loads(io.open(r'$REQ','rb').read().decode('utf-8'))
 except Exception: sys.exit(1)
 sys.exit(0 if d.get('status')=='pending' else 1)" 2>/dev/null || { jl no_pending_request; exit 0; }
+# ── ★스킵리스트 게이트 (2026-09-04 실사고) ──────────────────────────────────
+#   결합 런처가 스킵리스트 쌍을 재요청하던 결함은 런처 쪽에서 고쳤지만, **이미 쓰인 요청**은
+#   그 수리가 못 막는다. 실측: 15:46 에 수리 전 런처가 쓴 요청이 남아 in_progress 로 죽었고,
+#   재시도 장치가 그걸 pending 으로 되살리면 스킵리스트 쌍으로 3회를 또 태운다.
+#   ⇒ 착수 직전에 한 번 더 본다. status=revoked 면 정상 후보다(철회 경로를 막지 않는다).
+SKIPPED=$("$PY" -c "
+import io,json,os,sys
+req=r'$REQ'; sp=os.path.join(r'$ROOT','06_Registry','replication_skiplist.json')
+try: d=json.loads(io.open(req,'rb').read().decode('utf-8'))
+except Exception: sys.exit(0)
+pk=(d.get('paper') or {}).get('paper_key') or ''
+if not pk: sys.exit(0)
+try: sk=json.loads(io.open(sp,'rb').read().decode('utf-8'))
+except Exception: sys.exit(0)
+for e in sk.get('entries') or []:
+    if e.get('paper_key')==pk and (e.get('status') or '')!='revoked':
+        print('%s|%s' % (pk, (e.get('reason') or '')[:100])); break" 2>/dev/null)
+if [ -n "$SKIPPED" ]; then
+  jl halt_skiplisted "key=${SKIPPED%%|*}" "note=스킵리스트 항목 — 착수하지 않는다(철회는 status=revoked)"
+  "$PY" -c "
+import io,json,time
+d=json.loads(io.open(r'$REQ','rb').read().decode('utf-8'))
+d['status']='skipped_by_skiplist'; d['skipped_at']=time.strftime('%Y-%m-%dT%H:%M:%S%z')
+io.open(r'$REQ','wb').write(json.dumps(d,ensure_ascii=False,indent=1).encode('utf-8'))"
+  Rscript "$ROOT/02_Infrastructure/ops/reinforce_auto_next_paper.R" >> "$LOG" 2>&1
+  exit 0
+fi
+
 command -v claude >/dev/null 2>&1 || { jl halt_no_claude_cli; exit 0; }
 mkdir "$CLAIM" 2>/dev/null || { jl halt_claimed; exit 0; }
 echo $$ > "$CLAIM/owner"
@@ -310,6 +338,50 @@ try:
     d=json.loads(io.open(r'$REQ','rb').read().decode('utf-8'))
     print(d.get('audit_feedback') or '')
 except Exception: print('')" 2>/dev/null)
+# ★측정 실패 사유 — 사유별로 **다른 프레이밍**에 싣는다 (도훈 지시 2026-09-04).
+#   뭉뚱그려 오류 문자열만 던지면 에이전트가 증상을 지워 넘긴다("adj 를 안 쓰면 되지").
+#   그래서 종류를 갈라 "무엇을 다시 보라" 를 함께 준다. PIT 는 따로 세운다 — 계층 무관 절대다.
+FAILFB=$("$PY" -c "
+import io,json
+try: d=json.loads(io.open(r'$REQ','rb').read().decode('utf-8'))
+except Exception: d={}
+why=(d.get('failure') or '').strip(); det=(d.get('failure_detail') or '').strip()
+if not why: raise SystemExit
+H={
+ 'pit_structural': ('PIT 구조 위반 — 계층 무관 절대 규칙이다',
+   '이건 코드 오류가 아니라 **설계 오류**다. 창의 종점이 t-1 인지, 전 표본 통계를 쓰지 않았는지, '
+   'Z_Score_Aligned 만 소비했는지를 구조로 다시 세워라. 우회하지 말고 되돌려라.'),
+ 'fixed_axis_violation': ('고정 축 위반',
+   '종목수 25 이하 · long-only · 기간 · 비용은 협상 대상이 아니다. 논문 값과 충돌하면 '
+   'FIDELITY.changed 에 그 사실을 적고 고정 축을 따르라.'),
+ 'replication_error': ('엔진 실행 오류',
+   '오류를 **없애는 것**이 목표가 아니다. 그 줄이 논문의 어느 대목을 구현하려던 것인지 다시 보고, '
+   '그 대목을 올바르게 쓰면 오류가 사라지는 형태로 고쳐라. 증상만 지우면 충실도 감사에서 걸린다.'),
+ 'too_many_missing_packages': ('의존 패키지 과다',
+   '설계를 줄여라. 없는 패키지를 쓰는 것보다 **더 단순한 구현**이 낫다 — 기전이 남으면 된다.'),
+ 'dependency_install_failed': ('의존 설치 실패',
+   '네 잘못이 아니다. 그 패키지 없이 되는 구현으로 바꿔라.'),
+ 'no_authoritative_remeasure': ('계약 미경유(측정 산출물 없음)',
+   '엔진이 FACTORS 또는 PORTFOLIO 를 규약대로 내지 못했을 수 있다. 산출 형태를 먼저 확인하라.'),
+}
+title, guide = H.get(why, ('측정 실패', '아래 사유를 읽고 같은 실패를 반복하지 마라.'))
+print('### %s' % title)
+print(guide)
+if det: print(''); print('원문 오류: %s' % det[:400])
+" 2>/dev/null)
+if [ -n "$FAILFB" ]; then
+  jl reimplement_with_failure "paper=$P_KEY"
+  PROMPT="$PROMPT
+
+## ★재구현이다 — 앞 판이 **측정에서** 실패했다
+아래는 계약이 낸 실패 사유다. 같은 자리에서 다시 죽지 마라.
+
+$FAILFB
+
+앞 판은 ${WDIR}/engine.R 에 그대로 있다(감사 기각분은 engine.rejected*.R).
+★그래도 **목적은 충실구현이다.** 오류를 피하려고 논문을 훼손하지 마라 — 그렇게 만든 엔진은
+측정은 통과하고 충실도 감사에서 걸린다(두 번 낭비)."
+fi
 if [ -n "$AUDFB" ]; then
   jl reimplement_with_audit "paper=$P_KEY"
   PROMPT="$PROMPT

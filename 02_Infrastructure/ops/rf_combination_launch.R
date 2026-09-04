@@ -151,6 +151,25 @@ V <- V[seq_len(ENUM_M)]
 # ★table(NULL) 은 에러고, table[[없는이름]] 도 에러다 — 결합 이력이 0건인
 #   첫 회차가 정확히 그 상황이다. 없으면 0회로 읽는다.
 .tried <- if (length(.tried_v)) table(.tried_v) else NULL
+# ★스킵리스트 존중 (2026-09-04 실사고) — 결합 설계가 3회 연속 실패해 스킵리스트에 오른
+#   직후 이 런처가 **같은 쌍을 즉시 재요청**했다(tries_before=3 으로 4회차 착수). 실패한
+#   쌍이 유일한 후보이면 무한히 되풀이한다 — 한 번에 에이전트 3회 + 측정 3회를 태우면서.
+#   ★금지가 아니라 **후순위 최하**다(AX-000): 다른 쌍이 없을 때만, 그리고 status 가
+#     revoked 로 바뀌면 다시 정상 후보가 된다. 판정 철회 경로를 막지 않는다.
+.skip_keys <- tryCatch({
+  sp <- file.path(ROOT, "06_Registry/replication_skiplist.json")
+  if (!file.exists(sp)) character(0) else {
+    sk <- fromJSON(sp, simplifyVector = FALSE)
+    ks <- vapply(sk$entries %||% list(), function(e) {
+      st <- as.character(e$status %||% "")
+      pk <- as.character(e$paper_key %||% "")
+      if (identical(st, "revoked") || !startsWith(pk, "combo:")) NA_character_
+      else paste(sort(.papers_of_key(pk)), collapse = "+")
+    }, character(1))
+    unique(ks[!is.na(ks)])
+  } }, error = function(e) character(0))
+if (length(.skip_keys)) jlog("skiplist_pairs", n = length(.skip_keys),
+                             keys = paste(.skip_keys, collapse = ","))
 .ntry_of <- function(k) { if (is.null(.tried)) return(0L)
                           v <- .tried[k]; if (is.na(v)) 0L else as.integer(v) }
 combos <- list()
@@ -175,11 +194,18 @@ combos <- Filter(function(x) all(vapply(x$items, function(z) z$t > 0, logical(1)
 if (!length(combos)) { jlog("halt_no_new_pair", note = "양수 재료가 2개 미만이다"); quit(status = 0) }
 # 미착수 우선 → 그 다음 착수 횟수 적은 순 → 점수 높은 순
 .ntry <- vapply(combos, function(x) .ntry_of(x$setkey), integer(1))
+# ★스킵리스트 쌍은 최하위로 — 배제가 아니라 후순위다(다른 후보가 없으면 그때는 간다).
+.skipped <- vapply(combos, function(x) as.integer(x$setkey %in% .skip_keys), integer(1))
 .scr  <- vapply(combos, function(x) x$score, numeric(1))
-combos <- combos[order(.ntry, -.scr)]
+combos <- combos[order(.skipped, .ntry, -.scr)]
 jlog("combos_enumerated", n = length(combos), enum_items = length(V),
      untried = sum(.ntry == 0L), max_k = max(vapply(combos, function(x) x$k, integer(1))))
 top <- combos[[1]]
+if (top$setkey %in% .skip_keys) {
+  jlog("halt_all_pairs_skiplisted", setkey = top$setkey, n = length(combos),
+       note = "남은 후보가 전부 스킵리스트 — 결합은 물러난다(다음 논문으로 이월). 철회 = status revoked")
+  quit(status = 0)
+}
 .tries_before <- .ntry_of(top$setkey)
 
 cat(sprintf("\n결합 후보 %d건(재료 %d개 열거) · 1위 = %s (재료 %d · 논문 %d · 합 %.3f · 기왕 착수 %d회)\n\n",

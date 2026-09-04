@@ -154,6 +154,41 @@ if [ "$TOKEN_HITS" -gt 0 ] || [ "$GENERIC_HITS" -gt 0 ] || [ "$ENV_INCLUDED" -eq
 fi
 
 # ─── Staging (gitignore 자동 적용) ──────────────────────────────────
+# ── ★사연 커밋 우선 (도훈 지시 2026-09-04) ───────────────────────────────────
+#   이 훅은 SessionEnd 마다 무조건 커밋해 왔다. 안전망으로는 옳지만, 그 결과
+#   2026-09-04 하루에 19건이 전부 "[auto-commit] — N files" 로 남았다 — 이 저장소는
+#   커밋 하나가 사연 한 문장인 곳인데(직전 판: "오버레이가 세대마다 사라지고 있었다"),
+#   그날 무엇을 왜 고쳤는지가 git log 에서 사라졌다.
+#
+#   규칙: HEAD 가 **사연 커밋**(auto-commit 이 아닌 것)이고 남은 변경이 **기계 산출물뿐**이면
+#   넘어간다. 소스·검사가 섞여 있으면 그건 아무도 서술하지 않은 작업이므로 그대로 커밋한다 —
+#   안전망을 잃지 않는 지점이 여기다.
+#   ★기계 산출물은 파일로 남아 있고 다음 SessionEnd 가 가져간다. 유실이 아니라 지연이다.
+_HEAD_SUBJ="$(git log -1 --pretty=%s 2>/dev/null || echo '')"
+case "$_HEAD_SUBJ" in
+  "[auto-commit]"*) _NARRATED=0 ;;
+  "")               _NARRATED=0 ;;
+  *)                _NARRATED=1 ;;
+esac
+_MACHINE_ONLY=1
+while IFS= read -r _ln; do
+  [ -n "$_ln" ] || continue
+  _f="${_ln:3}"
+  case "$_f" in
+    stage_artifacts/*|.cache/*|qepm/observability/*|qepm/memory/axioms/*|06_Registry/*) : ;;
+    *) _MACHINE_ONLY=0 ;;
+  esac
+done <<EOF_ST
+$(git status --porcelain 2>/dev/null)
+EOF_ST
+if [ "$_NARRATED" = "1" ] && [ "$_MACHINE_ONLY" = "1" ]; then
+  echo "$TS SKIP_NARRATED head=$(printf '%.60s' "$_HEAD_SUBJ")" >> "$LOG"
+  MSG="[SKIP] [auto-commit] HEAD 가 사연 커밋이고 남은 변경은 기계 산출물뿐 — 넘어갑니다."
+  MSG_ESC=$(_json_msg "$MSG")
+  echo "{\"hookSpecificOutput\":{\"hookEventName\":\"SessionEnd\",\"additionalContext\":$MSG_ESC}}"
+  exit 0
+fi
+
 git add -A 2>>"$LOG"
 
 # ─── 대량-신규 격리 밸브 v2 (2026-07-26 근본 재설계, 도훈 지시) ─────────────────────
@@ -272,7 +307,7 @@ if [ -n "$GUARDED" ]; then
 fi
 
 git commit -m "$(cat <<COMMIT_EOF
-[auto-commit] $TS — $STAGED files
+[auto-commit] $TS — $STAGED files ($([ "$_MACHINE_ONLY" = "1" ] && echo "무인 산출물" || echo "미서술 변경"))
 
 $SUMMARY
 $GUARD_NOTE
