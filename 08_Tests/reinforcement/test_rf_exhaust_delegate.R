@@ -11,7 +11,15 @@ invisible(capture.output(suppressMessages(source(file.path(ROOT, "02_Infrastruct
 TMP <- file.path(tempdir(), paste0("rf_exh_", Sys.getpid())); dir.create(file.path(TMP, "06_Registry"), recursive = TRUE, showWarnings = FALSE)
 file.copy(file.path(ROOT, "06_Registry/reinforce_ledger_l1.json"), file.path(TMP, "06_Registry/reinforce_ledger_l1.json"))
 L <- rf_load(1L, TMP); act <- Filter(function(e) identical(e$status, "active"), L$entries)
-if (!length(act)) { cat("active entry 없음 — 픽스처 불가\n"); quit(status = 0) }
+## ★active entry 가 없으면 합성한다 — 운영 상태(소진/이월)에 따라 건너뛰면 그 건너뜀이 초록으로 보인다.
+##   격리 사본이라 운영 원장은 안 건드린다.
+if (!length(act)) {
+  L$entries[[length(L$entries) + 1L]] <- list(base_id = "T_FIXTURE_ACTIVE", status = "active",
+    base_grade = "B", attempts = list(), attempts_used = 0L,
+    opened_at = format(Sys.time(), "%Y-%m-%dT%H:%M:%S%z"))
+  .rf_write(L, 1L, TMP)
+  L <- rf_load(1L, TMP); act <- Filter(function(e) identical(e$status, "active"), L$entries)
+}
 BID <- act[[1]]$base_id
 e1 <- rf_exhaust_entry(1L, BID, root = TMP)
 L2 <- rf_load(1L, TMP); k <- .rf_find(L2, BID)
@@ -22,6 +30,7 @@ t1 <- L2$entries[[k]]$exhausted_at; Sys.sleep(1); rf_exhaust_entry(1L, BID, root
 if (identical(L3$entries[[k]]$exhausted_at, t1)) ok("E3 멱등 — 재호출이 시각을 안 바꾼다") else ng("E3 재호출이 덮어쓴다")
 if (file.exists(file.path(ROOT, "06_Registry/reinforce_ledger_l1.json"))) {
   Lp <- rf_load(1L, ROOT); kp <- .rf_find(Lp, BID)
+  if (is.na(kp)) ok("E4 합성 픽스처 — 운영 원장에 없음(격리 확인)") else
   if (identical(Lp$entries[[kp]]$status, "active")) ok("E4 운영 원장은 건드리지 않았다(격리 확인)") else ng("E4 운영 원장이 바뀌었다 ★검사 오염")
 }
 src <- sub("#.*$", "", readLines(file.path(ROOT, "02_Infrastructure/ops/reinforce_auto_parallel.R"), encoding = "UTF-8", warn = FALSE))

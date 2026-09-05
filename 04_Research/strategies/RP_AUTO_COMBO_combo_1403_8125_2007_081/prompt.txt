@@ -30,33 +30,7 @@
 
 ★FIDELITY.json 의 fidelity 는 "combination" 으로 적어라. 나머지 키는 아래 규약과 같다.
 
-## 산출 (이것만)
-## 산출 (이것만)
-`C:\Users\99922\OneDrive\Quant_Module_Moltbot/04_Research/strategies/RP_AUTO_COMBO_combo_1403_8125_2007_081/engine.R` — source 되면 `FACTORS(Date,Ticker,Score)` 또는
-`PORTFOLIO(Date,Ticker,Weight,Leg)` 를 만드는 R 스크립트. 호출자가 환경에 `RAWDATA`·`BM_DT` 를 넣어준다.
 
-## 축 (변수 아님)
-- **논문 그대로** 복제하되 **유니버스만 K200∪KQ150**. 유동성 하한 adv20 ≥ 2e8 은 t-1 로 적용.
-- 기간 2005-01-01~. 종목수·비중·리밸 주기는 논문 명시값을 따른다.
-- **PIT C1~C15 절대**: 모든 창의 종점은 t-1. 전 표본 통계 금지(rolling/expanding만).
-  팩터 DB 는 `load_month_factors()` 경유(C15), `Z_Score_Aligned` 만 소비(C13).
-  ★`detect_lookahead` 는 비선언 idiom(전 표본 cov()/mean() · shift(-1) · 수동 미래 인덱싱)을
-  못 잡는다 — 통과를 근거로 삼지 말고 **구조로** 보장하라.
-- 원문 접근이 불가하면 **지어내지 마라**. `C:\Users\99922\OneDrive\Quant_Module_Moltbot/04_Research/strategies/RP_AUTO_COMBO_combo_1403_8125_2007_081/ABORT.txt` 에 사유를 쓰고 끝내라.
-
-## 실행 환경
-- R 349개 패키지가 이미 있고(data.table · arrow · PerformanceAnalytics · xts · quadprog ·
-  cluster · matrixStats · glmnet · TTR · roll · proxy 등), **없는 패키지는 호출자가 자동 설치**한다
-  (검증 러너가 엔진을 스캔해 CRAN 에서 최대 6개까지 설치). 그러니 필요한 패키지를 자유롭게 쓰라.
-- 다만 **정말 필요한 것만** 쓰라 — 의존이 6개를 넘으면 착수가 차단된다.
-- 파이썬 연동(reticulate)도 가능하나, R 로 충분하면 R 로 하라(무인 실행에서 층이 하나 줄어든다).
-- 원문 접근이 불가하거나 논문을 훼손하지 않고는 구현할 수 없으면 `ABORT.txt` 에 사유를 쓰고 멈춰라.
-
-## 금지
-- `C:\Users\99922\OneDrive\Quant_Module_Moltbot/04_Research/strategies/RP_AUTO_COMBO_combo_1403_8125_2007_081` 밖 쓰기. 원장·설정·훅·테스트 수정. 백테스트 직접 실행(측정은 호출자 계약이 한다).
-- 등급·성과 수치 선언(계약이 낸다).
-
-엔진을 쓰고 1~2줄로 무엇을 구현했는지만 보고하라.
 
 ## 공리 (전제 — 지시가 아니다)
 아래는 이 저장소가 실측으로 세운 전제다. 네 판단은 이 위에서 이뤄진다.

@@ -1,6 +1,6 @@
 {
   "schema": "reinforce_auto_config_v1",
-  "enabled": true,
+  "enabled": false,
   "combination": {
     "enabled": true,
     "note": "★도훈 지시 2026-09-04 — 결합은 rank-Z 평균 blend 가 아니라 **LLM 이 두 논문을 읽고 설계한 전략(기저)**에서 출발한다. 그 기저를 충실구현 1회로 측정해 base_grade 를 얻고, base_min_port_t 가드를 통과한 뒤에야 강화 25칸을 열어야 한다. 그 레인이 서기 전까지 구판 blend 착수를 정지한다 — 정지 중에는 호출자가 다음 논문 충실구현으로 정상 이월한다.",
@@ -293,5 +293,10 @@
     "why_not_caught": "bash -n 은 문자열이 일찍 닫혀도 문법상 유효라 통과한다. 그리고 이 레인은 강화가 도는 동안 한 번도 안 불린다.",
     "fix": "293행 맨따옴표를 이스케이프. 검사 08_Tests/ops/test_rf_prompt_quote_parity.R 7/7 — 프롬프트 4레인 전수 + 위반 주입 + 이스케이프판 통과(과잉 차단 방지) + 293행 회귀. ★검사기 자체도 한 번 틀렸다: $(cat \"$MAT\") 를 위반으로 읽어 3건 오탐 → 명령치환 문맥을 건너뛰도록 수리.",
     "recovery": "claim 은 kill -0 로 owner 사망을 판정해 자가회수하고, 그 뒤 in_progress→pending 복원이 돈다(수동 개입 불필요)."
+  },
+  "infra_hold": {
+    "at": "2026-09-05T13:59:08+0900",
+    "reason": "도훈 지시 2026-09-05 오후 — '무인러너 멈추고 인프라 수리부터'. 재개는 이 파일 enabled=true + 예약작업 Enable 둘 다.",
+    "state_at_stop": "promo3 exhausted(29/29) · active entry 0 · 결합 충실구현 요청 in_progress(중단됨 — winpid 회수로 다음 재개 시 pending 복원)"
   }
 }

@@ -50,8 +50,11 @@ GP  <- "RP_20260904_163647_18444_rescued_rulefast"
   as.character(unlist(tryCatch(fromJSON(f, simplifyVector = TRUE)$avoid, error = function(e) NULL)))
 }
 fx_b4 <- .avoid_of(GP, "B4"); fx_b4 <- fx_b4[grepl("B2_6", fx_b4, fixed = TRUE)]
-fx_b2 <- .avoid_of(GP, "B2"); fx_b2 <- fx_b2[grepl("B3_11", fx_b2, fixed = TRUE)]
-src_b4 <- if (length(fx_b4)) "실물" else "인라인"; src_b2 <- if (length(fx_b2)) "실물" else "인라인"
+## ★A1(집행 양성대조)은 **인라인 고정**이다 — 운영 L-code 의 회피문은 세션이 정정할 수 있고
+##   실제로 2026-09-05 C6 철회 때 이 문장이 "측정 가능한 칸이다" 로 바뀌어 A1 이 빨개졌다.
+##   검사는 자기 픽스처를 소유해야 한다(운영 데이터에 매달리지 않는다).
+fx_b2 <- character(0)
+src_b4 <- if (length(fx_b4)) "실물" else "인라인"; src_b2 <- "인라인(고정)"
 if (!length(fx_b4)) fx_b4 <- "소형 유니버스(시총 0~33 분위) 위에서 결합 칸 추가 — 세 칸이 전부 B2_6 아래이고, 2015-07 분리 전에는 어떤 값도 생존편향과 분리되지 않는다."
 if (!length(fx_b2)) fx_b2 <- "B3_11(KOSDAQ150 단독) — 2015-07 이전 KQ150 멤버십이 퇴출 미기록 누적 명부(C6 상방 편의)라 단독 유니버스는 그 결함이 100% 가 된다. 벽이 아니라 측정 무효 사유이며 근거는 이 블록 밖(KQ150 백필 카드)이다. 소형 축은 B3_13(시총 하위 1/3)이 Size 기반 우회로 대체한다."
 fx_b4 <- fx_b4[[1L]]; fx_b2 <- fx_b2[[1L]]

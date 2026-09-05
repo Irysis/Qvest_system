@@ -79,10 +79,12 @@ writeLines(c('PROMPT="첫 줄', paste0('본문에 ', BS, Q, '따옴표', BS, Q, 
 if (length(scan_file(tmp)) == 0L) ok("이스케이프판은 통과(과잉 차단 아님)") else ng("이스케이프된 따옴표를 위반으로 오판")
 unlink(tmp)
 
-cat("=== 3. 실사고 회귀 — 293행 ===\n")
+cat("=== 3. 실사고 회귀 — 이스케이프 유지 ===\n")
+## ★줄번호로 앵커하지 않는다 — winpid 수리로 앞줄이 늘어 293 -> 304 로 밀렸고 검사가 빨개졌다.
 rl <- readLines(file.path(ROOT, "02_Infrastructure/ops/rf_replication_auto.sh"), encoding = "UTF-8", warn = FALSE)
-if (length(rl) >= 293 && grepl(paste0(BS, Q, "영향이 미미해서"), rl[293], fixed = TRUE))
-  ok("293행 이스케이프 유지") else ng("293행이 구판으로 되돌아갔다")
+hit <- grep("영향이 미미해서", rl, fixed = TRUE)
+if (length(hit) == 1L && grepl(paste0(BS, Q, "영향이 미미해서"), rl[hit[1]], fixed = TRUE))
+  ok(sprintf("%d행 이스케이프 유지", hit[1])) else ng("실사고 문장 부재 또는 구판 복귀")
 
 cat(sprintf("\n합계: 통과 %d · 실패 %d\n", PASS, FAIL))
 cat(sprintf('{"test":"rf_prompt_quote_parity","pass":%d,"fail":%d,"total":%d}\n', PASS, FAIL, PASS + FAIL))
