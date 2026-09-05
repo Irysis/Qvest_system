@@ -181,9 +181,15 @@ jlog("paper_picked", title = substr(pick$title %||% "", 1, 100), url = pick$url,
 # ── ★결합 검토 (논문 3편마다 의무 — 2026-08-30 배선). 이월 시점이 논문 소비 지점이다.
 #   구판은 원장이 "★결합 검토 도래" 를 stdout 에 출력하는 데서 끝났고 호출자가 0개였다
 #   (소비자 없는 계기). 여기서 동기 호출한다 — 수 초짜리고 실패해도 이월을 막지 않는다.
-tryCatch(system2("Rscript", shQuote(file.path(ROOT, "02_Infrastructure/ops/rf_combination_review.R")),
+.rev <- tryCatch(system2("Rscript", shQuote(file.path(ROOT, "02_Infrastructure/ops/rf_combination_review.R")),
                  wait = TRUE, stdout = TRUE, stderr = TRUE),
-         error = function(e) jlog("combination_review_failed", err = conditionMessage(e)))
+         error = function(e) { jlog("combination_review_failed", err = conditionMessage(e)); character(0) })
+## ★결합 착수는 결합 검토가 due 일 때만 (도훈 결정 2026-09-05 "새 논문 우선"). 구판은 검토 결과와 무관하게
+##   착수기를 매번 불러, 재료 풀의 미시도 부분집합(예: 1403.8125+2301.09173)이 큐 상단 논문보다 먼저 열렸다 —
+##   직전 3편 결합이 dilution 으로 park 된 직후 같은 재료의 2편 결합이 다시 뜨는 식. 검토기가 not_due 를 찍으면
+##   (새 논문 소비 < threshold) 착수하지 않고 이월한다. ★큐가 비면 이 블록 앞(halt_queue_empty)에서 이미 멈추므로
+##   "큐 공백 시 결합" 은 여기서 생기지 않는다 — 원하면 블록 순서를 바꿔야 한다(도훈 결정 항목).
+.review_due <- !any(grepl("not_due", as.character(.rev), fixed = TRUE))
 
 # ── ★결합 **착수** (2026-08-31 도훈 지시 "착수해주고") ───────────────────────
 #   검토기는 후보만 쌓았고 소비자가 없었다(4회 · 10쌍이 그대로 남아 있었다).
@@ -192,7 +198,9 @@ tryCatch(system2("Rscript", shQuote(file.path(ROOT, "02_Infrastructure/ops/rf_co
 #   ★결합이 열리면 **이월을 하지 않는다**. 결합 entry 가 곧 active 라, 이월까지 하면
 #     충실구현이 돌아도 그 결과로 entry 를 못 연다(active 중복). 둘 중 하나만 간다.
 .combo_opened <- FALSE
-tryCatch({
+if (!isTRUE(.review_due)) {
+  jlog("combination_launch_skipped", reason = "review_not_due", note = "새 논문 우선 — 검토 due 전에는 결합을 열지 않는다")
+} else tryCatch({
   .out <- system2("Rscript", shQuote(file.path(ROOT, "02_Infrastructure/ops/rf_combination_launch.R")),
                   wait = TRUE, stdout = TRUE, stderr = TRUE)
   # ★2026-09-04: 결합은 entry 를 여는 대신 **설계 요청**을 발행한다.
