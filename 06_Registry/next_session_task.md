@@ -61,6 +61,9 @@ LOO 가 유니버스(+0.945)·비중(+0.290)을 해로운 축으로 정확히 �
   probe_retained 보존·WARN 호명. 카드 = feedback-an-unloaded-instrument-is-not-evidence-about-the-arm-20260905.
 - 오늘 함정 추가 2건: `Rscript -e` 안 `%in%` 은 cmd 가 먹는다(스크립트 파일로) · `git show > /tmp/x` 는 Windows Python 이 못 읽는다(/c ≠ C:).
 
+- **③ nostalgic-gauss — 완료·main 반영** (`rf_lcode_mechanism_lib.R` 원자 벡터 `[[` 수리 + 검사 8/8). 표류 작업 세 번째.
+- **워크트리 정리 후보**: youthful-torvalds·zen-pare(변경 0) · practical-varahamihira·sharp-chebyshev(전부-삭제 스테이징 — 깨진 상태, 병합 금지) · 승계 완료 3곳(vibrant-hellman·elegant-bose·nostalgic-gauss)은 잔여 미커밋 확인 후 제거 가능. **도훈 결정**.
+
 ## 열린 결정 (도훈)
 
 - **승격 carry 비중**: promo3 carry 가 EW — 승자 B3_12 가 KQ150 에서 cvar→EW 강등된 스펙이라. 유니버스 리셋 시 강등 전 비중(cvar) 복원할지(`rf_promote_carry` 한 줄).

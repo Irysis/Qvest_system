@@ -311,5 +311,11 @@
     "what": "bare Rscript(하네스 미적재) probe 가 lean 23종을 '빌트인 부재' 로 덮어써 실효 강등 → 엔진 '카탈로그 arm 부재'. 계기 부재가 arm 결함으로 기록되던 것.",
     "fix": "weight_catalog.R: .wc_ensure_lean_builtins(자동 적재) + 계기 문장(.WC_INSTRUMENT_MARK)일 때만 이전 probe 보존(probe_retained · WARN 호명). grow.sh: env 경로·LANGUAGE=en. 검사 (h-5) 양방향. 별도 세션(elegant-bose)이 완성·미커밋 방치 → main 적용 후 64/64.",
     "verified": "test_weight_catalog 64/64 · rf_weight_arms_explore 6/6 · catalog_parity 6/6 · reinforce_auto 135/135"
+  },
+  "repair_20260905_lcm_materials_atomic": {
+    "at": "2026-09-05T16:09:24+0900",
+    "what": "rf_lcode_mechanism_lib.R 재료 조립이 이름 있는 원자 벡터에 [[name]] → 없는 이름에서 예외 → %||% 폴백 도달 불가 → 셸이 materials_failed 로 덮고 exit 0 → 기전 레인이 빈 기전.",
+    "fix": "안전 조회(as.character(x[name])) · 검사 test_rf_materials_next_block.R 8/8 · run_all_hooks 등록. 별도 세션(nostalgic-gauss)이 완성·미커밋 방치 → main 적용.",
+    "verified": "8/8 · block_insights 19/19 · notify_rank_distinct 16/16"
   }
 }
