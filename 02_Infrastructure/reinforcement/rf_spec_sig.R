@@ -109,3 +109,21 @@ if (!exists("%||%")) `%||%` <- function(a, b) if (is.null(a) || length(a) == 0L)
   tk <- .rf_taken_codes(attempts, cells)
   which(!vapply(cells, function(c) as.character(c$code %||% "") %in% tk, logical(1)))
 }
+
+#' 재개(resume) 대상 attempt 가 어느 셀인가 — **코드로** 찾는다 (2026-09-05).
+#'   실사고 promo2 B4 재시도: 실패 칸은 essence 가 없어 구판이 cells[[a$n]] **위치**로 떨어졌는데,
+#'   B3 설계가 4칸이라 cells 가 24개뿐 → n=21→B4_22 · n=22→B4_23 · n=25→NULL. n=22(B4_22) 에 B4_23 결과가
+#'   중복 기록되고 n=25 는 영구 pending(소진 불가). 등록 시점에 박은 a$cell_code 를 안 읽었다.
+#' @return list(cell, how) — how ∈ essence_code / registered_code / positional_legacy / unknown
+rf_resume_cell <- function(a, cells, by_code) {
+  cd <- a$essence$cell_code %||% a$cell_code %||% NULL
+  if (!is.null(cd) && nzchar(as.character(cd))) {
+    cell <- by_code(as.character(cd))
+    if (!is.null(cell)) return(list(cell = cell, how = if (!is.null(a$essence$cell_code)) "essence_code" else "registered_code"))
+    return(list(cell = NULL, how = "unknown"))
+  }
+  ## 코드가 전혀 없는 구 entry 만 위치로 — 그리고 그 사실을 남긴다(조용한 폴백 아님)
+  n <- suppressWarnings(as.integer(a$n))
+  if (!is.na(n) && n >= 1L && n <= length(cells)) return(list(cell = cells[[n]], how = "positional_legacy"))
+  list(cell = NULL, how = "unknown")
+}

@@ -17706,7 +17706,7 @@
       "paper_id": "",
       "base_artifacts": "C:/Users/99922/OneDrive/Quant_Module_Moltbot/stage_artifacts/replication/20260904_203512_29928",
       "engine_path": "04_Research/strategies/RP_AUTO_1403_8125/engine.R",
-      "status": "active",
+      "status": "exhausted",
       "target_grade": "A",
       "measurement_axis": "n_max_25",
       "axis_valid": true,
@@ -18781,7 +18781,8 @@
           "closed_at": "2026-09-05T10:46:28+0900",
           "fail_count": 2,
           "terminal": true,
-          "terminal_reason": "일시 실패 2회 연속 — 재시도 상한 2 도달: [rf_cell_engine] arm lean:maxdiv 커버리지 77.0% (<80%) — 침묵 부분측정 금지"
+          "terminal_reason": "[rf_cell_engine] arm lean:maxdiv 커버리지 77.0% (<80%) — 침묵 부분측정 금지 (결정론). ★provenance 정정 2026-09-05: 10:4x 재시도에서 매핑 결함으로 이 n=21 라벨에 B4_22 워커가 돌았다. B4_21(전 요소 결합 · maxdiv×KQ150)은 동일 구성이라 같은 커버리지 사유로 종결(첫 실패 10:2x fail_count 1 + 동일 원인 확정).",
+          "repair_note": "resume 위치 매핑 결함 — rf_spec_sig.R::rf_resume_cell 로 수리(2026-09-05)"
         },
         {
           "n": 22,
@@ -18812,24 +18813,13 @@
           "evidence": "paper",
           "unmapped_families": [],
           "axiom_injected": true,
-          "grade": "C",
-          "lessons": "[B4_23] Grade C · 구속 port_t(1.209/2.95)·calmar(0.400/0.64)·oos(-0.607/0.70) (5조건 중 2 충족) · carry 대비 MDD 0.405→0.445(+9.9%) · CAGR 0.174→0.178(+2.3%) → 수익만 늘었다(위험 축 미개입)",
+          "grade": "NA (등급 미발행 — 병렬 실행 실패)",
+          "lessons": "[rf_cell_engine] arm lean:maxdiv 커버리지 77.0% (<80%) — 침묵 부분측정 금지 (결정론 · fail_count 2). ★정정 2026-09-05 10:5x: 재시도 매핑 결함(resume 이 essence 없는 실패 칸을 cells[[n]] 위치로 찾음 · cells 24개)으로 n=22 슬롯에 B4_23 워커 결과(C · 1.209)가 중복 기록됐던 것을 되돌림. 이 칸(B4_22 · 팩터 제외 LOO · maxdiv×KQ150)의 워커는 n=21 라벨로 돌아 위 커버리지 오류를 냈다.",
           "opened_at": "2026-09-05T10:28:14+0900",
-          "closed_at": "2026-09-05T10:46:29+0900",
-          "fail_count": 1,
-          "essence": {
-            "cell_code": "B4_23",
-            "block": "B4",
-            "port_t": 1.209,
-            "net_sharpe": 0.822,
-            "cagr": 0.178,
-            "mdd": 0.445,
-            "calmar": 0.4,
-            "oos_retention": -0.607,
-            "spec": "C:/Users/99922/OneDrive/Quant_Module_Moltbot/.cache/rf_parallel/spec_B4_23__RP_20260904_163647_18444_rescued_rulefast_promo2.json",
-            "source": "authoritative_remeasure.json"
-          },
-          "artifacts": "C:/Users/99922/OneDrive/Quant_Module_Moltbot/stage_artifacts/replication/20260905_104220_30896"
+          "closed_at": "2026-09-05T10:49:55+0900",
+          "fail_count": 2,
+          "terminal": true,
+          "terminal_reason": "[rf_cell_engine] arm lean:maxdiv 커버리지 77.0% (<80%) — 침묵 부분측정 금지 (결정론 · fail_count 2). ★정정 2026-09-05 10:5x: 재시도 매핑 결함(resume 이 essence 없는 실패 칸을 cells[[n]] 위치로 찾음 · cells 24개)으로 n=22 슬롯에 B4_23 워커 결과(C · 1.209)가 중복 기록됐던 것을 되돌림. 이 칸(B4_22 · 팩터 제외 LOO · maxdiv×KQ150)의 워커는 n=21 라벨로 돌아 위 커버리지 오류를 냈다."
         },
         {
           "n": 23,
@@ -18969,8 +18959,10 @@
           "grade": "NA (등급 미발행 — 병렬 실행 실패)",
           "lessons": "B4_25 실패: [rf_cell_engine] arm lean:maxdiv 커버리지 77.0% (<80%) — 침묵 부분측정 금지",
           "opened_at": "2026-09-05T10:28:25+0900",
-          "closed_at": "2026-09-05T10:35:33+0900",
-          "fail_count": 1
+          "closed_at": "2026-09-05T11:01:47+0900",
+          "fail_count": 2,
+          "terminal": true,
+          "terminal_reason": "일시 실패 2회 연속 — 재시도 상한 2 도달: [rf_cell_engine] arm lean:maxdiv 커버리지 77.0% (<80%) — 침묵 부분측정 금지"
         }
       ],
       "judge": {
@@ -19020,7 +19012,68 @@
       ],
       "block_order_reason": "CAGR 0.207 >= 0.16 충족 · Calmar 0.364 < 0.64 미달 → 위험 축(B5)을 2번째로. 비중·유니버스는 MDD 를 거의 안 움직이므로 그 축을 먼저 돌면 출하되지 않는 구성을 최적화하게 된다.",
       "block_order_at": "2026-09-05T08:59:56+0900",
-      "search_adaptive": true
+      "search_adaptive": true,
+      "exhausted_at": "2026-09-05T11:08:40+0900",
+      "summarized_at": "2026-09-05T11:08:41+0900"
+    },
+    {
+      "base_id": "RP_20260904_163647_18444_rescued_rulefast_promo3",
+      "base_grade": "B",
+      "paper_key": "1403.8125",
+      "paper_id": "",
+      "base_artifacts": "C:/Users/99922/OneDrive/Quant_Module_Moltbot/stage_artifacts/replication/20260905_095537_7692",
+      "engine_path": "04_Research/strategies/RP_AUTO_1403_8125/engine.R",
+      "status": "active",
+      "target_grade": "A",
+      "measurement_axis": "n_max_25",
+      "axis_valid": true,
+      "attempts_used": 0,
+      "attempts": [],
+      "judge": {
+        "spawned": false,
+        "verdict_path": null
+      },
+      "opened_at": "2026-09-05T11:08:41+0900",
+      "carry": {
+        "factors": [
+          {
+            "kind": "db",
+            "id": "S01_Size"
+          },
+          {
+            "kind": "db",
+            "id": "V14_EBIT_EV"
+          },
+          {
+            "kind": "db",
+            "id": "L27_Price_Level"
+          },
+          {
+            "kind": "db",
+            "id": "R03_CVaR_95"
+          }
+        ],
+        "weighting": {
+          "kind": "ew"
+        },
+        "universe": {
+          "kind": "k200_kq150"
+        },
+        "universe_reset_from": {
+          "kind": "index",
+          "flag": "KQ150"
+        },
+        "overlay": null,
+        "source_cell": "B3_12",
+        "source_spec": "C:/Users/99922/OneDrive/Quant_Module_Moltbot/.cache/rf_parallel/spec_B3_12__RP_20260904_163647_18444_rescued_rulefast_promo2.json"
+      },
+      "parent": {
+        "base_id": "RP_20260904_163647_18444_rescued_rulefast_promo2",
+        "depth": 3,
+        "cell": "B3_12",
+        "best_port_t": 2.567,
+        "promoted_at": "2026-09-05T11:08:41+0900"
+      }
     }
   ],
   "combination_review": {
@@ -19138,7 +19191,7 @@
     ],
     "retro_note": "2026-09-04 소급: count_paper 키 부재로 1→4 (rf_replication_auto.sh C_COUNT 수리)"
   },
-  "last_updated": "2026-09-05T10:46:29+0900",
+  "last_updated": "2026-09-05T11:08:41+0900",
   "removed_entries": [
     {
       "removed_at": "2026-08-30T10:07:35+0900",

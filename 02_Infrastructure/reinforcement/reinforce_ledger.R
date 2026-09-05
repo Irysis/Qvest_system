@@ -363,6 +363,22 @@ rf_record_result <- function(layer, base_id, n, grade, essence = NULL,
 #' @param legacy 과거 축 이름(예: "legacy_double_selection")
 #' @param reason 왜 축이 바뀌었나 (필수)
 #' @param evidence 실측 근거 1줄 (필수 — 진술만으로 무효화하지 않는다)
+#' 25칸 소진 — status=exhausted (2026-09-05 · 퇴역 러너의 인라인 루틴을 writer 로 승격)
+#'   실사고: 러너 단일화(09-05)로 병렬 러너의 소진 위임부가 퇴역된 reinforce_auto_run.R 을 부르고 있었고,
+#'   그 파일은 안내문만 찍고 종료해 promo2 소진 → 승격이 조용히 실패했다(exhaust_reached 이벤트 0건).
+#'   park 아님 — park 은 도훈 조기중단 전용. 이미 exhausted 면 멱등.
+rf_exhaust_entry <- function(layer, base_id, root = .rf_root()) {
+  obj <- rf_load(layer, root)
+  i <- .rf_find(obj, base_id)
+  if (is.na(i)) stop(sprintf("[reinforce_ledger] entry 부재: %s", base_id))
+  if (!identical(obj$entries[[i]]$status, "exhausted")) {
+    obj$entries[[i]]$status <- "exhausted"
+    obj$entries[[i]]$exhausted_at <- format(Sys.time(), "%Y-%m-%dT%H:%M:%S%z")
+    .rf_write(obj, layer, root)
+  }
+  invisible(obj$entries[[i]])
+}
+
 rf_mark_axis_epoch <- function(layer, epoch, legacy, reason, evidence, root = .rf_root()) {
   for (.a in list(epoch, legacy, reason, evidence))
     if (!nzchar(as.character(.a %||% "")))

@@ -1,6 +1,6 @@
 {
   "schema": "reinforce_auto_config_v1",
-  "enabled": false,
+  "enabled": true,
   "combination": {
     "enabled": true,
     "note": "★도훈 지시 2026-09-04 — 결합은 rank-Z 평균 blend 가 아니라 **LLM 이 두 논문을 읽고 설계한 전략(기저)**에서 출발한다. 그 기저를 충실구현 1회로 측정해 base_grade 를 얻고, base_min_port_t 가드를 통과한 뒤에야 강화 25칸을 열어야 한다. 그 레인이 서기 전까지 구판 blend 착수를 정지한다 — 정지 중에는 호출자가 다음 논문 충실구현으로 정상 이월한다.",
@@ -269,5 +269,15 @@
     "why": "SKILL §0 'B1·B2·B4 기본 유니버스 = K200∪KQ150'. promo2 최고 n=17(KOSDAQ150 단독 · NAV 2010-02~ · B 2.567)이 승격 조건을 채워, 구판(next_paper.R universe=ws$universe)이면 다음 세대 25칸이 고정 축 밖·다른 창에서 돌 뻔했다.",
     "code": "rf_promote.R::rf_promote_carry (신설) · next_paper.R call site 교체 · 검사 test_rf_promote_carry_universe_reset.R 5/5 · test_rf_promote.R 13/13"
   },
-  "resume_hold": "10:4x — 재시도(resume) 경로가 pending n 을 셀에 한 칸 밀어 매핑(n=21→B4_22, n=22→B4_23, n=25 unknown). n=22 에 B4_23 결과 중복 기록 · n=25 영구 pending → 소진 불가. 매핑 수리·원장 복구 후 재개."
+  "repair_20260905_resume_mapping": {
+    "at": "2026-09-05T10:50:38+0900",
+    "incident": "재시도 루프가 essence 없는 실패 칸을 cells[[a$n]] 위치로 찾음 · B3 설계 4칸 → cells 24개 → n=21→B4_22 · n=22→B4_23(중복 기록) · n=25→unknown(영구 pending).",
+    "fix": "rf_spec_sig.R::rf_resume_cell — essence 코드 → 등록 코드(a$cell_code) → 코드 없는 구 entry 만 위치 폴백(resume_positional_fallback 로그). 검사 test_rf_resume_cell_by_code.R 7/7 · test_rf_grid_cursor 28/28.",
+    "ledger_repair": "n=22 → NA(병렬 실행 실패)·terminal(커버리지 77%) · n=21 terminal_reason provenance 정정 · n=25 는 수리된 매핑으로 다음 틱 정상 재시도(결정론 실패 → terminal → 소진 → 승격·유니버스 리셋)."
+  },
+  "repair_20260905_exhaust_delegate": {
+    "at": "2026-09-05T11:08:37+0900",
+    "incident": "병렬 러너 halt_exhausted_delegate 가 퇴역된 reinforce_auto_run.R 을 호출 → 안내문만 찍고 종료 → promo2 소진·승격 무발화(09-05 단일화 잔재).",
+    "fix": "reinforce_ledger.R::rf_exhaust_entry (writer) + 러너가 exhaust_reached → exhausted → entry_exhausted → reinforce_auto_next_paper.R 동기 호출. 검사 test_rf_exhaust_delegate.R 6/6(격리 원장 사본 · 운영 원장 미접근 확인)."
+  }
 }

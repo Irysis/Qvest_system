@@ -190,7 +190,15 @@ if (!length(pending) && used >= MAXA) { jlog("halt_exhausted_delegate", used = u
   #   부모 환경에 심어 자식이 상속하게 한다.
   Sys.setenv(QVEST_RF_CLAIM_HELD = "1")
   on.exit(Sys.unsetenv("QVEST_RF_CLAIM_HELD"), add = TRUE)
-  system2("Rscript", shQuote(file.path(ROOT, "02_Infrastructure/ops/reinforce_auto_run.R")),
+  ## ★소진 처리는 여기서 직접 (2026-09-05). 구판은 퇴역된 reinforce_auto_run.R 에 위임했는데 그 파일은
+  ##   안내문만 찍고 종료해 promo2 소진 → 승격이 조용히 실패했다(러너 단일화 잔재 · 회귀 가드는 신판 부재를 못 잡는다).
+  ##   퇴역 러너가 하던 루틴 그대로: exhaust_reached → status=exhausted(writer) → entry_exhausted → next_paper(동기).
+  jlog("exhaust_reached", base_id = BID, used = used)
+  tryCatch(rf_exhaust_entry(1L, BID, root = ROOT),
+           error = function(e) jlog("exhaust_mark_failed", base_id = BID, err = conditionMessage(e)))
+  jlog("entry_exhausted", base_id = BID)
+  ## ★wait=TRUE — 부모가 먼저 끝나면 자식이 함께 죽어 이월이 조용히 안 된다(2026-08-30 실사고).
+  system2("Rscript", shQuote(file.path(ROOT, "02_Infrastructure/ops/reinforce_auto_next_paper.R")),
           wait = TRUE)
   Sys.unsetenv("QVEST_RF_CLAIM_HELD"); return(0L) }
 
@@ -429,9 +437,13 @@ if (length(pending)) {
   jlog("resume_pending", n_pending = length(pending),
        ns = paste(vapply(pending, function(a) as.character(a$n), character(1)), collapse = ","))
   for (a in pending) {
-    cd <- a$essence$cell_code %||% NULL
-    CELL <- if (!is.null(cd)) .cell_by_code(cd) else (if (a$n <= length(cells)) cells[[a$n]] else NULL)
-    if (is.null(CELL)) { jlog("resume_skip_unknown_cell", n = a$n); next }
+    ## ★코드로 찾는다 — 정본 rf_spec_sig.R::rf_resume_cell (2026-09-05). 구판은 essence 없는 실패 칸을
+    ##   cells[[a$n]] 위치로 떨어뜨려, B3 설계 4칸(cells 24개)에서 n=21→B4_22 · n=25→NULL 로 밀렸다.
+    .rc <- rf_resume_cell(a, cells, .cell_by_code)
+    CELL <- .rc$cell
+    if (identical(.rc$how, "positional_legacy")) jlog("resume_positional_fallback", n = a$n, code = CELL$code %||% "",
+         note = "attempt 에 cell_code 가 없어 위치로 찾았다 — 구 entry 호환 폴백")
+    if (is.null(CELL)) { jlog("resume_skip_unknown_cell", n = a$n, how = .rc$how); next }
     # entry 별 spec 이 정본. 구 이름(spec_<code>.json)은 이 수리 이전 entry 호환용 폴백이다.
     sp <- file.path(WDIR, sprintf("spec_%s__%s.json", CELL$code, substr(BID, 1, 48)))
     if (!file.exists(sp)) sp <- file.path(WDIR, sprintf("spec_%s.json", CELL$code))
