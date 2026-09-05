@@ -89,16 +89,7 @@ if [ -d "$CLAIM" ]; then
   CAGE=$(( ( $(date +%s) - $(date -r "$CLAIM" +%s 2>/dev/null || echo 0) ) / 3600 ))
   COWN=$(cat "$CLAIM/owner" 2>/dev/null || echo "")
   CDEAD=0
-  CWIN=$(cat "$CLAIM/owner_win" 2>/dev/null || echo "")
-  ## ★생존 판정은 Windows pid 로 한다 (2026-09-05 실측). kill -0 은 MSYS pid 공간을 보는데,
-  ##   죽은 owner 69256 에 대해 TRUE 를 냈다(pid 재사용/잔존 테이블). 같은 pid 에 tasklist 는 0건.
-  ##   그 오판이 in_progress + 고아 claim 교착을 만든다 — 2026-09-01 13시간 정지의 재발이 오늘이었다.
-  ##   owner_win 이 없는 구판 claim 은 기존 kill -0 로 떨어진다(하위호환).
-  if [ -n "$CWIN" ]; then
-    tasklist //FI "PID eq $CWIN" //NH 2>/dev/null | awk -v p="$CWIN" '$2==p{f=1} END{exit !f}' || CDEAD=1
-  elif [ -n "$COWN" ] && ! kill -0 "$COWN" 2>/dev/null; then
-    CDEAD=1
-  fi
+  if [ -n "$COWN" ] && ! kill -0 "$COWN" 2>/dev/null; then CDEAD=1; fi
   # owner 표식이 아예 없으면 구판이 만든 claim 이다 — 나이 기준만 적용한다
   if [ "$CDEAD" = "1" ] || [ "$CAGE" -ge 2 ]; then
     rm -rf "$CLAIM" 2>/dev/null
@@ -203,8 +194,6 @@ fi
 command -v claude >/dev/null 2>&1 || { jl halt_no_claude_cli; exit 0; }
 mkdir "$CLAIM" 2>/dev/null || { jl halt_claimed; exit 0; }
 echo $$ > "$CLAIM/owner"
-## ★Windows pid 를 함께 남긴다 — 회수 판정의 정본(위 CDEAD 주석 참조).
-cat /proc/$$/winpid > "$CLAIM/owner_win" 2>/dev/null || true
 trap 'rm -rf "$CLAIM" 2>/dev/null' EXIT
 
 # ── 논문 정보 ─────────────────────────────────────────────────────────────────

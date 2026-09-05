@@ -286,5 +286,12 @@
     "incident": "promo3 B1(9칸)·B5(6칸) 블록 본문 4332자/7663B → send 400. '이번 블록에서 배운 것'(LLM 기전+처방+회피) 2498자.",
     "fix": "①rf_auto_notify.R .cap_items — 처방 3건·160자 / 회피 3건·120자 + '처방·회피 전문: <L-code>' 포인터(기전 문단은 안 자름) ②telegram_notify.R tg_agent_brief .tg_fit_parts — 3900자 넘으면 가장 긴 섹션부터 절삭(표식·<b>/<i> 재균형), 제목 보존. 실측 재렌더 B5 3820자·B1 3771자(절삭 없이 통과).",
     "tests": "test_rf_notify_fit_length.R 9/9 (과대 본문·표식·태그 균형·작은 본문 무변·돌연변이 통제·cap_items 3축·실물 재렌더)"
+  },
+  "repair_20260905_replication_prompt_quote": {
+    "at": "2026-09-05T13:46:39+0900",
+    "incident": "rf_replication_auto.sh:241 PROMPT=\" 문자열이 293행 본문의 맨따옴표(\"영향이 미미해서 안 적었다\")에서 조기 종료. bash 는 이를 명령 앞 임시 환경할당(PROMPT=val cmd)으로 읽어 PROMPT 가 셸에 안 남고, 351행 set -u 에서 unbound variable 로 죽었다. 어제 19:47 커밋 유입 → 오늘 13:22 첫 호출까지 18시간 잠복(그동안 강화가 active 라 호출이 없었다). 결과: promo3 소진 후 active entry 0 · 결합 요청 in_progress 정체.",
+    "why_not_caught": "bash -n 은 문자열이 일찍 닫혀도 문법상 유효라 통과한다. 그리고 이 레인은 강화가 도는 동안 한 번도 안 불린다.",
+    "fix": "293행 맨따옴표를 이스케이프. 검사 08_Tests/ops/test_rf_prompt_quote_parity.R 7/7 — 프롬프트 4레인 전수 + 위반 주입 + 이스케이프판 통과(과잉 차단 방지) + 293행 회귀. ★검사기 자체도 한 번 틀렸다: $(cat \"$MAT\") 를 위반으로 읽어 3건 오탐 → 명령치환 문맥을 건너뛰도록 수리.",
+    "recovery": "claim 은 kill -0 로 owner 사망을 판정해 자가회수하고, 그 뒤 in_progress→pending 복원이 돈다(수동 개입 불필요)."
   }
 }

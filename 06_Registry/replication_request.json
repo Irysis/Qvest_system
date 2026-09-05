@@ -1,42 +1,65 @@
 {
-  "requested_at": "2026-09-04T16:53:39+0900",
-  "source": "reinforce_auto_next_paper",
-  "reason": "직전 논문 강화 25회 소진 — 큐 다음 논문 충실구현 대기",
-  "prev": {
-    "base_id": "RP_20260903_093807_combo",
-    "n": 12,
-    "port_t": 0.324,
-    "grade": "C",
-    "base_grade": "NA",
-    "cell_code": "B3_12",
-    "spec": "C:/Users/99922/OneDrive/Quant_Module_Moltbot/.cache/rf_parallel/spec_B3_12__RP_20260903_093807_combo.json",
-    "artifacts": "C:/Users/99922/OneDrive/Quant_Module_Moltbot/stage_artifacts/replication/20260903_103432_13904"
-  },
-  "paper": {
-    "title": "드리프트 국면+가치+반전",
-    "paper_title": "Discovery of a 13-Sharpe OOS Factor: Drift Regimes Unlock Hidden Cross-Sectional Predictability",
-    "url": "https://arxiv.org/abs/2511.12490",
-    "paper_key": "2511.12490",
-    "source": "arxiv",
-    "reason": "국면+크로스섹셔널 신호 — OHLCV+DART 가용",
-    "factor_name": "드리프트 국면+가치+반전",
-    "factor_def": "We document a high-performing cross-sectional equity factor that achieves out-of-sample Sharpe ratios above 13 through regime-conditional signal activation. The strategy combines value and short-term ",
-    "kr_feasible": null,
-    "skipped_no_url": 0
-  },
-  "status": "done_no_reinforce",
-  "started_at": "2026-09-04T18:34:02+0900",
-  "audit_retries": 1,
-  "audit_feedback": "- 미신고 변경: [signal] 논문 §2.1 value = 'computing inverse price for each stock' — 시점 t 의 주가. 구현은 engine.R:168 `INVP := 1 / Close` 인데 이 Close 는 RAWDATA 의 **수정주가(전기간 재작성)** 다: build_cache.R:32 'build_cache.R은 OHLCVS 수정주가 + Benchmark만 담당' · registry_migrate_ast_v11.py:17 'rawdata/price : A1 (수정주가 재작성=restatement true)' · 같은 파일 :74 DOMAIN_MAP['rawdata'] `restatement_prone: True,  # 수정주가 원장 전기간 재작성`. 따라서 구현의 value_{i,t} 는 1/P_{i,t} 가 아니라 1/(P_{i,t} × A_{i,t}) 이고, A 는 **t 이후** 액면분할·무상증자로 결정된다 = t 시점 정보만의 함수가 아니다. FIDELITY.changed ⑤ 는 '논문이 침묵해 규약을 정한 5건'을 (a)백분위규약 (b)ties (c)complete-case (d)Ret결측 (e)워밍업 으로 열거하는데 **가격 조정 basis 는 그 목록에 없다**. FIDELITY 가 수정주가를 언급하는 유일한 곳은 '수정주가 아티팩트 방어 … 신호식에 가드를 겹치지 않았다' 로, 이는 이상치 클리핑을 안 넣었다는 별개 진술이지 1/P 의 입력이 재작성 계열이라는 선언이 아니다. FIDELITY.kept 는 오히려 'value = accounting-free 역가격 백분위' 로 단서 없이 논문 신호와 동일하다고 진술한다. ★영향 범위는 정확히 이 한 성분 = 식(1) 가중 0.7 (최대 가중). 나머지 둘은 영향 없음: R10 은 수익률이라 수정주가 사용이 오히려 옳고(engine.R:171), UP63 은 부호판정 I[Ret>0] 이라 로그/단순 수익률 및 조정 여부에 불변(engine.R:176)\n- 미신고 변경: [signal] 논문 §2.1 은 'trailing 10-day returns' · 'trailing 63 trading days' 로 **거래일** 창을 정의한다. 구현은 engine.R:158 `.rd <- .rd[is.finite(Close) & Close > 0]` 로 미거래(거래정지·NA) 행을 패널에서 제거한 뒤 engine.R:171 `shift(Close, 10)` · engine.R:177 `frollsum(UPD, 63)` 을 적용하므로, 창이 **시장 거래일이 아니라 그 종목의 잔존 행 수** 로 세어진다. 거래정지 20일을 겪은 종목의 'trailing 10-day return' 은 실제로 30 거래일을 가로지른다. FIDELITY.changed ⑤(d)는 '행은 있는데 Ret 이 결측'인 경우만(=상승일 아님, 분모 고정 63) 선언하고, '행 자체가 없어 창이 늘어나는' 경우는 선언하지 않는다. 규모는 adv20 ≥ 2e8 을 통과하면서도 정지 이력이 있는 종목에 한정 — 1항 대비 부차적이나 축(룩백 창)에 해당해 기록한다\n- 미신고 변경: [portfolio] 논문 §2.2 식(5) s* = min(12%/TrainingVol, 15%/|TrainingMaxDD|) 는 비중을 결정하는 단계다 — 원문: 'We implement volatility and drawdown controls through scaling factor: ... with **all portfolio weights multiplied by this factor** determined once during training and applied without modification during testing.' 구현은 이 배율을 전혀 적용하지 않는다: engine.R:148 .SIDE_G <- 0.5 고정 → engine.R:233 Weight = 0.5*Z/GP 로 그로스가 항상 정확히 1.0 이다. FIDELITY.changed 6개 항목 어디에도 없고, 더 나아가 FIDELITY.paper_original_form 은 논문 구성을 '그로스 100%·net≈0' 에서 끝내 **식(5)의 존재 자체를 서술하지 않는다** — 논문 원형을 적는 필드가 비중 결정 단계 하나를 누락했다. engine.R:110 은 반대로 '총노출은 항상 그로스 1.0 고정' 을 충실성의 근거로 적어, 누락된 단계를 정상으로 서술한다. 논문의 보고 성과(Table 2 · §3.1: 연 158.6% · σ 12.0% · SR 13.19 · MDD −11.9%)는 이 배율 적용 **후** 값이고, σ 12.0% 가 12% 상한과 정확히 일치하므로 s* 는 변동성 제약에서 결속(s* = 12%/TrainingVol)됐다 — 즉 논문의 s* 는 1 이 아니다. 배율은 SR 을 바꾸지 않지만 CAGR·MDD(등급 축)를 s* 배로 옮긴다.\n- 미신고 변경: [portfolio] 실현 종목수·집중도가 논문 Table 5 와 1~2 자릿수 갈리는데 선언이 없다. 논문 Table 5 'Average Positions: 187 long, 189 short'(=376종) · 'Largest Position: 2–3% of gross' · 'Top Decile Weight: 35% of gross'. 구현 실현치 = 10_audit.csv:20 '리밸일별 distinct ticker 2~24종 (201 리밸일)' — 04_holdings.csv 기준 최대 비중 ≈30% of gross. FIDELITY.changed 는 종목수·집중도 변경을 한 줄도 선언하지 않고, 반대로 FIDELITY.kept 와 changed⑥ 이 그 187/189 와 2–3% 를 **충실성의 증거로** 인용한다. 원인은 상류(국면 게이트 발화율·유니버스)이지만 — 선언된 유니버스 교체(S&P500 ~500종 → K200∪KQ150 ~350종)는 ~30% 축소일 뿐 376→~5 를 설명하지 못한다 — 선언되지 않은 것은 그 상류 원인이 아니라 **포트폴리오 실현형(2~24종·±30% 포지션)이 논문의 376종·2–3% 책과 다르다는 사실 자체**다. engine.R:253-254 는 이 두 대조를 실제로 출력하도록 짜여 있다(계기는 존재) — 그 출력이 FIDELITY 로 넘어오지 않았다.\n- 미신고 변경: [cost] 논문은 일간 리밸(§2.2 '0.6 basis points per unit traded' 가 Table 5 'Daily Turnover: 42%'·'Median Holding Period: 8 days' 위에서 산출된 비용값)인데, 구현은 월간 리밸(00_manifest.json frequency=monthly)로 같은 0.6bp/unit 요율을 적용한다(engine.R:150 .commission_paper, run_paper_replication.R:304-306 comm_paper 그대로 전달). 그 결과 실측 Annualized_Turnover=8.41x/yr(06_metrics.csv 24행, Average_Turnover=0.908/월)인데, 논문 자신의 42%×252거래일≈105.8x/yr turnover 를 같은 0.6bp 요율로 환산하면 약 63.5bp/yr 비용 부담인 반면 구현은 약 5.05bp/yr(8.41×0.6bp)로 약 12.6배 낮다. FIDELITY.changed ①은 이 daily→monthly 변경의 신호감쇠 결과('10일 반전 성분이 월간 보유에서 약해지는 것은 결과')만 명시하고, 같은 변경이 비용 축에서 논문 대비 유리하게(≈12.6배 낮은 turnover-비용 부담) 작동한다는 사실은 어디에도 선언돼 있지 않다 — 비용 요율 자체(0.6bp)는 정확히 옮겼지만 그 요율이 적용되는 거래빈도가 논문과 달라 '논문 기준' 병기값의 비용 부담이 논문의 실제 비용 부담을 대표하지 못한다.\n- 미신고 변경: [undeclared] 논문 §2.2 는 최종 비중에 정적 노출 스칼라 s* 를 곱한다 — 원문 그대로: 'We implement volatility and drawdown controls through scaling factor: s* = min(12%/TrainingVol, 15%/|TrainingMaxDD|) satisfying both 12% annual volatility cap and 15% maximum drawdown constraint, **with all portfolio weights multiplied by this factor** determined once during training and applied without modification during testing.' 구현은 engine.R:233 `Weight := fifelse(Z > 0, .SIDE_G * Z / GP, .SIDE_G * Z / GN)` 에서 끝나고 s* 가 없다 — 그로스는 항상 정확히 1.0 으로 고정된다(engine.R:148 `.SIDE_G <- 0.5`, engine.R:247-248 이 gL/gS 를 0.5/0.5 로 자기확인). FIDELITY.changed ①~⑥ 어디에도 이 축이 없다.\n- 미신고 변경: [undeclared] 논문 §2.2 는 s* 위에 동적 kill-switch 를 얹는다 — 원문: 'Beyond static scaling, we implement dynamic kill-switch protection shutting down the strategy entirely if experiencing losses beyond historical norms, monitoring absolute drawdown from peak (30% threshold) and rolling 63-day performance (-10% threshold)... with switches that cannot reset within evaluation periods'(별도 §4 'Kill-Switch Implementation and Capacity Analysis' 로 한 절 전체가 배정돼 있다). 구현에는 경로 의존 상태변수가 0건이다 — engine.R 전체에 NAV·낙폭·롤링 성과를 참조하는 코드가 없고, 국면 게이트(engine.R:212)는 종목별 alpha 게이트이지 전략 중단 스위치가 아니다. FIDELITY.changed 에 없다. ★단 논문은 'The kill-switch never activated during any out-of-sample period' 라고 보고하므로 **논문 보고 수치에는 무영향**이다 — 그러나 무발화는 그들 표본의 성질이지 사양의 성질이 아니며, KR 패널에서 무발화는 보장되지 않는다.\n- 미신고 변경: [undeclared] 논문 §2.2 의 평가 프로토콜은 3창 walk-forward 다 — 원문: 'Each evaluation consists of five-year training periods for parameter estimation followed by one-year test periods where we apply frozen strategies. We conduct three walk-forward windows: Window 1 (train 2005-2010, test 2010-2011), Window 2 (train 2010-2015, test 2015-2016), and Window 3 (train 2015-2020, test 2020-2021).' 보고 성과는 그 test 구간의 연결이다('Concatenating all test periods provides definitive out-of-sample assessment with combined Sharpe ratio of 13.19, annualized returns of 158.6%, volatility of 12.0%, and maximum drawdown of -11.9%') — 즉 **총 3년**이다. 구현은 2005-01-01~가용말일 **단일 연속 경로**를 낸다(engine.R:181-182 가 전 표본 월말 격자를 생성, 절단은 run_paper_replication.R:252). FIDELITY.changed ④ 는 기간 축의 변경을 '2004-01~2024-12 → 2005-01-01~가용말일' 즉 **시작일 이동**으로만 선언하고, paper_original_form 도 논문을 '2004-01~2024-12' 데이터 구간으로만 서술한다 — 3창 walk-forward → full-sample 단일 경로라는 평가 프로토콜 교체는 어디에도 선언돼 있지 않다.\n- 미신고 변경: [undeclared] 위 3건의 결과로 **선언이 논문을 사실과 다르게 서술한다**(자기신고 방향의 오류): FIDELITY.paper_original_form 은 논문을 '사이드별 |z| 비례로 롱 50%·숏 50%(그로스 100%·net≈0)를 담는 시장중립 롱숏' 으로 끝맺어 s*·kill-switch·walk-forward 를 논문 쪽에 없는 것으로 만든다. 같은 전제가 engine.R:109-110 (C5) 'C5 : 오버레이 없음(...총노출은 항상 그로스 1.0 고정이라 국면이 사이징을 건드리지 않는다)' 와 engine.R:88 '윈저·클리핑·최소가격 요건도 전무 → 넣지 않는다' 에 반복된다. engine.R:30-36 은 §2.2 의 첫 문단('Each day we identify all stocks with valid, non-zero EDGE scores... long positions summing to 50% and short positions to 50%')을 원문 그대로 인용하고 **바로 다음 문단('Professional investment strategies require sophisticated risk management...' = s* 문단)에서 인용을 끊는다** — 절 경계가 아니라 문단 경계에서 대조가 멈췄다.\n- 신호 불일치: [signal] 논문 §2.1 의 value 입력은 시점 t 의 price(스칼라 관측)인데, engine.R:168 의 입력 Close 는 t 이후 기업행위로 소급 재작성되는 계열이다. 결과적으로 engine.R:205 `PCT := (frank(INVP)-1)/(NX-1)` 가 매기는 횡단면 순위는 '그 날 실제로 비쌌던 순서'가 아니라 '그 날 이후 분할·무상증자를 얼마나 겪었는지가 섞인 순서'다. 방향성 편의가 있다: 분할·무상증자는 통상 주가 급등 뒤에 일어나고, 소급조정은 그 종목의 사건 이전 가격을 일률적으로 **낮추므로** → 1/P 상승 → value 백분위 상승 → 롱 레그로 밀린다. 즉 0.7 가중 성분이 '나중에 분할할 만큼 오른 종목'을 사전에 롱으로 편향한다(성과 상방)\n- 신호 불일치: [signal] 논문 §2.1 의 부호·창·문턱은 구현과 일치한다(반증 실패를 기록): reversal 은 'negating them' → engine.R:206 `REV_RAW := -R10` 부호 일치 · 식(2) Σ_{k=1..63} 는 당일 t 를 제외하는데 engine.R:177 `shift(frollsum(UPD,63),1L)` 이 정확히 k=1..63 을 덮어 일치(대부분의 구현이 틀리는 지점을 맞췄다) · 식(3) '>0.60' 엄격부등호가 engine.R:212 `UP63 > .UP_THR` 로 일치 · 식(4) 곱셈 게이트가 engine.R:213 로 일치 · 파라미터 0.7/0.3/10/63/0.60 은 Table 6 Base Case(Drift Window 63 · Up Threshold 0.60 · Value Weight 0.70)와 일치. 표준화도 일치: value 는 'percentile scores between 0 and 1'(engine.R:205, [0,1]) · reversal 은 'standardizing cross-sectionally to z-scores'(engine.R:207, by=Date) · 포트폴리오 z 는 §2.2 'stocks with valid, non-zero EDGE scores, compute standardized z-scores ensuring zero mean and unit variance' 를 활성 부분집합 표준화로 구현(engine.R:223,227). 논문 구성절에 winsorize·clip·섹터중립 언급이 없고 구현에도 없다\n- 신호 불일치: [portfolio] 사이드 내 배분 규칙이 원문에 없다. 논문 §2.2 는 'We normalize within each side to control gross exposure, with long positions summing to 50% and short positions to 50%' 까지만 말하고 사이드 **내부** 배분 함수를 명시하지 않는다. engine.R:230-233 은 |z| 비례(Weight = 0.5*Z/Σz+, 0.5*Z/Σ|z−|)를 택했는데, FIDELITY.changed⑥ 은 이를 Table 5 가 판별해 준 것처럼 '|z| 비례 사이징이어야 두 수가 함께 성립한다(→ EW 배제)' 로 선언한다. 그 산술은 닫히지 않는다: 논문 자신의 N=376(187/189)에서 |z| 비례를 가우시안 단면에 적용하면 최대 비중 = 0.5×max|z|/Σ_side|z| ≈ 0.5×2.90/150 ≈ 0.97% of gross(보고값 2–3%), 상위 데실 비중 ≈ 24.8%(보고값 35%) 로 **두 값 모두 미달**한다. 꼬리가 두꺼우면 격차가 줄지만 그때도 유일하게 결정되지는 않는다. 즉 Table 5 는 EW 를 배제할 뿐 |z| 비례를 선택하지 못한다 — 선언이 근거의 강도를 과장했다. (배분 함수는 논문 미명시이므로 이 항목은 코드 오류가 아니라 '미결정 규약을 결정된 것으로 선언' 이다.)\n원문 근거: [signal] 논문 전문 arxiv.org/html/2511.12490v1 — §2.1 Strategy Construction: value 'The value component employs a price-based measure requiring no accounting information, computing inverse price for each stock then converting to cross-sectional ranks through percentile scores between 0 and 1.' / reversal 'computing trailing 10-day returns and negating them to create contrarian signals, then standardizing cross-sectionally to z-scores' / 식(1) BASE=0.7×value+0.3×reversal / 식(2) UpFraction=(1/63)Σ_{k=1}^{63} I[r_{i,t-k}>0] / 식(3) REGIME=I[UpFraction>0.60] / 식(4) EDGE=BASE×REGIME. §2.2 Portfolio Implementation: 'Each day we identify all stocks with valid, non-zero EDGE scores, compute standardized z-scores ensuring zero mean and unit variance …'. Table 6 Base Case: Drift Window 63 days · Up Threshold 0.60 · Value Weight 0.70. 논문에 pseudocode·algorithm block 없음, winsorize/clip 언급 없음. 구현측 데이터 의미론 근거: build_cache.R:32 · registry_migrate_ast_v11.py:17,74. 코드 행: engine.R:168,171,176,177,205,206,207,211,212,213,223,227. / [timing] §2.1 식(1): 'trailing 10-day returns'(REV_WIN=10, engine.R:145 일치) · 식(2): 'UpFraction_i,t = 1/63 Σ_{k=1..63} I[r_{i,t-k}>0]'(DRIFT_W=63, engine.R:146 일치, k=1..63 오프셋도 engine.R:173-177 frollsum+shift(1) 로 정확히 구현) · §6: 'Daily execution involves preliminary signal calculation at 3:30 PM, ... market-on-close participation at 4:00 PM' (일간 리밸 확인) · Table 5: 'Daily Turnover: 42%', 'Median Holding Period: 8 days' — FIDELITY.json changed①·engine.R:52-67 주석의 인용과 정확히 일치(자체 대조로 웹 재조회 없이도 원문 인용이 오타·왜곡 없음을 확인). / [universe] §2.1(전문): 'We constructed our empirical analysis using daily data for all current constituents of the S&P 500 index spanning twenty years from January 2004 through December 2024' + 'deliberately choosing current constituents despite introducing survivorship bias ... to ensure results are based on the most liquid and economically significant segment'. 논문 전문(§2.1·§2.2·§3.2·§5.1·Table 12 포함)을 재검색해도 가격 하한·거래대금 문턱·거래소 상장요건·금융주/REIT/ADR 제외·시가총액 필터에 대한 명시적 선별규칙은 전무하다 — 'liquid large-cap' 은 비용 산정 근거 문장(§2.2)이지 선별 규칙이 아니며, Table 12 의 거래량 +30%는 국면 활성 시 부수 관측치이지 자격 조건이 아니다. / [portfolio] arxiv.org/html/2511.12490v1 — §2.2 'Portfolio Implementation and Risk Management' 산출 문단('market-neutral long-short portfolios by separating stocks into long and short buckets based on z-scores' · 'normalize within each side ... long positions summing to 50% and short positions to 50%' · 'constant gross exposure of 100%') · **식(5) s* = min(12%/TrainingVol, 15%/|TrainingMaxDD|)** 및 그 직후 문장('all portfolio weights multiplied by this factor determined once during training and applied without modification during testing') · Table 5 'Portfolio Characteristics'(Average Positions 187 long/189 short · Largest Position 2–3% of gross · Top Decile Weight 35% of gross · Daily Turnover 42% · Median Holding Period 8 days) · Table 2 / §3.1 OOS(158.6% · 12.0% · SR 13.19 · MDD −11.9%). 원문 전체 번호식은 (1)~(5) 뿐이고 (6)은 없음. 분위·데실·상위N 절단 서술은 원문에 NONE — 부호 절단 독법과 충돌하지 않음. long-only 서술도 NONE. / [cost] §2.2 'Transaction costs of 0.6 basis points per unit traded reflect combined explicit and implicit costs for liquid large-cap stocks.' + Table 5 'Daily Turnover: 42%' · 'Median Holding Period: 8 days' (arxiv.org/html/2511.12490v1) / [undeclared] arxiv.org/html/2511.12490v1 §2.2 'Portfolio Implementation and Risk Management' 전문(3회 독립 판독 일치): (1) s* 식과 'with all portfolio weights multiplied by this factor determined once during training and applied without modification during testing' (2) kill-switch 문단(30% 절대낙폭 · 63일 롤링 -10%)과 이를 확장한 §4 'Kill-Switch Implementation and Capacity Analysis' (3) walk-forward 문단(5년 학습/1년 검증 · 3창 · 구간 명시) 및 §3.1 'Concatenating all test periods ... Sharpe ratio of 13.19, annualized returns of 158.6%, volatility of 12.0%, and maximum drawdown of -11.9%'. 대조 기준선: 같은 §2.2 첫 문단(포트폴리오 구성)과 Table 5 는 engine.R:30-46 이 이미 정확히 인용하고 있어 판독 대상 문서가 동일함이 확인된다. ★반대 방향 확인: Table 5 의 'Largest Position 2-3% of gross' · 'Sector Deviation ±10% typical, ±15% max' 는 원문에서 **사후 보고 특성**이지 제약 문장이 아니며(제약형 표현 'we cap/limited to/constrained to' 부재), 이를 제약 아님으로 읽은 FIDELITY·engine.R:88 의 판단은 원문과 일치한다 — 이 두 건은 발견이 아니다.",
-  "audit_verdict": "misdeclared",
-  "audit_at": "2026-09-04T17:28:08+0900",
-  "failure": "replication_error",
-  "failure_detail": "[replication] PIT 위반 감지 — 중단. engine 을 t-1 기준으로 수정하세요.",
-  "auto_retries": 2,
-  "retry_at": "2026-09-04T18:34:01+0900",
-  "grade": "F",
-  "fidelity": "adapted",
-  "base_port_t": -2.655,
-  "artifacts": "C:/Users/99922/OneDrive/Quant_Module_Moltbot/stage_artifacts/replication/20260904_190039_22572",
-  "skip_reason": "기저 PORT_t -2.655 < 0.00 — 음수 알파 위의 강화는 헛돈다"
+ "requested_at": "2026-09-05T13:14:07+0900",
+ "source": "rf_combination_launch",
+ "reason": "논문 결합 — LLM 전략설계 후 충실구현 1회로 기저를 측정한다(도훈 지시 2026-09-04)",
+ "paper": {
+  "title": "결합: Maximum drawdown, recovery, and momentum + Pinchuk (2023) Labor Income Risk and the Cross-Section of Expected Returns + Uncovering a factor-based expected return conditioning structure with Regression Trees jointly for many stocks",
+  "paper_title": "결합: Maximum drawdown, recovery, and momentum + Pinchuk (2023) Labor Income Risk and the Cross-Section of Expected Returns + Uncovering a factor-based expected return conditioning structure with Regression Trees jointly for many stocks",
+  "url": "https://arxiv.org/abs/1403.8125",
+  "paper_key": "combo:1403.8125+2007.08115+2301.09173",
+  "source": "combination"
+ },
+ "combo": {
+  "setkey": "1403.8125+2007.08115+2301.09173",
+  "k_items": 3,
+  "n_papers": 3,
+  "papers": [
+   {
+    "key": "1403.8125",
+    "url": "https://arxiv.org/abs/1403.8125",
+    "title": "Maximum drawdown, recovery, and momentum"
+   },
+   {
+    "key": "2301.09173",
+    "url": "https://arxiv.org/abs/2301.09173",
+    "title": "Pinchuk (2023) Labor Income Risk and the Cross-Section of Expected Returns"
+   },
+   {
+    "key": "2007.08115",
+    "url": "https://arxiv.org/abs/2007.08115",
+    "title": "Uncovering a factor-based expected return conditioning structure with Regression Trees jointly for many stocks"
+   }
+  ],
+  "item_engines": [
+   {
+    "key": "1403.8125",
+    "engine": "04_Research/strategies/RP_AUTO_1403_8125/engine.R",
+    "t": 2.567
+   },
+   {
+    "key": "2301.09173",
+    "engine": "C:/Users/99922/OneDrive/Quant_Module_Moltbot/04_Research/strategies/RP_2301_09173_CID/engine.R",
+    "t": 1.228
+   },
+   {
+    "key": "2007.08115",
+    "engine": "C:\\Users\\99922\\OneDrive\\Quant_Module_Moltbot/04_Research/strategies/RP_AUTO_2007_08115/engine.R",
+    "t": 1.11
+   }
+  ],
+  "parent_t": [
+   2.567,
+   1.228,
+   1.11
+  ],
+  "best_parent_t": 2.567,
+  "tries_before": 0,
+  "axis": "n_max_25",
+  "dilution_test": "희석 판정 = 설계 기저 PORT_t vs 최고 재료 t 2.567 (같은 축). 기록만 하고 차단하지 않는다 — 격자는 기저 **위에** 쌓으므로 재료보다 낮은 기저에서도 강화가 뒤집을 수 있다.",
+  "count_paper": false
+ },
+ "status": "in_progress",
+ "started_at": "2026-09-05T13:48:46+0900",
+ "revived_from": "in_progress",
+ "revived_at": "2026-09-05T13:48:46+0900"
 }
