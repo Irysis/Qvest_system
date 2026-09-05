@@ -3,8 +3,7 @@
 ## 지금 상태 한 줄
 
 - 루프 `enabled=true`(17:45 재개) · active entry 0 · 충실구현 요청 `in_progress` = **2404.08129 "One Factor to Bind the Cross-Section of Returns"** —
-  18:07:39 `[rp_auto] start · model_selected claude-fable-5-1/max`(첫 Fable 레인, 에이전트 = 실디스크 `Roaming
-pm\…in\claude.exe`).
+  18:07:39 `[rp_auto] start · model_selected claude-fable-5-1/max`(첫 Fable 레인, 에이전트 = 실디스크 `Roaming\npm\…\bin\claude.exe`).
   확인 지점 = `04_Research/strategies/RP_AUTO_2404_08129/engine.R` 실물 + `verify_*` + 원장 entry 개설(어제 롤백은 rc=0·산출물 0 이었다).
 - 2006.04639 "Dynamic Network Risk" = **Grade F · PORT_t −2.874**(opus/max · 17:26 소비 `RP_20260905_172632_skipped_base`) · 충실도 `unverifiable/proceed`
   (arxiv html 전문 경로 없음 — F 가 논문의 성질인지 구현 실수인지 이 판정으로는 안 갈린다).
@@ -77,8 +76,7 @@ LOO 가 유니버스(+0.945)·비중(+0.290)을 해로운 축으로 정확히 �
 2. **대기 요청 재발행** (9da39a609): no-active 위임이 tick 마다 같은 요청을 다시 발행(requested_at 덮임 · 텔레그램은 dedup 이 막았을 뿐).
    수리 = next_paper §1.7 `halt_request_pending`(pending·in_progress). 검사 `test_rf_next_paper_halts_on_pending_request.R` 8/8 · 변이 6/8.
 3. **스케줄러가 claude CLI 를 못 봄** (`halt_no_claude_cli` 17:54~18:03): 세션의 npm 전역 갱신이 **데스크톱 앱(MSIX) AppData 가상화**로
-   `Packages\Claude_pzs8sxrjxfjjc\LocalCache\Roaming
-pm` 에만 들어갔다 — 세션의 Bash·PowerShell·비샌드박스 셸 전부 병합 뷰를 보고 Task Scheduler 만
+   `Packages\Claude_pzs8sxrjxfjjc\LocalCache\Roaming\npm` 에만 들어갔다 — 세션의 Bash·PowerShell·비샌드박스 셸 전부 병합 뷰를 보고 Task Scheduler 만
    실디스크(`node_modules` 하나)를 본다. 실디스크 설치 = 일회성 스케줄 태스크(`Register/Start/Unregister-ScheduledTask`)로 `npm install -g …@2.1.261`
    ("added 2 packages" — 실디스크엔 패키지 자체가 없었다). 진단 줄(whoami·npm ls·PATH) 은 halt 에 상주(1d6f8cb16).
    카드 = reference-desktop-app-msix-virtualizes-appdata-writes-scheduler-sees-real-disk-20260905.
