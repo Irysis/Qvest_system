@@ -162,6 +162,21 @@ if (length(ex)) {
   }
 }
 
+# ── ★1.7 충실구현 요청이 대기·진행 중이면 다시 발행하지 않는다 (2026-09-05 실사고) ──────────
+#   러너가 active 0 마다 이 파일을 부르게 되자(no-active 위임) 요청이 pending 인 채로 tick 마다 다시
+#   paper_picked → replication_requested 가 찍히고 요청 파일이 덮였다(requested_at 갱신 · 텔레그램은 30분
+#   dedup 이 막았을 뿐). 소비자(rf_replication_auto.sh)가 아직 안 집은 요청은 **한 번만** 서 있어야 한다 —
+#   in_progress 도 같다(진행 중 요청을 pending 으로 덮으면 같은 논문이 두 번 뜬다). 종결 상태(done_* ·
+#   skipped_by_skiplist · failed_needs_session · unreproducible)만 새 발행을 허용한다.
+REQ_P <- file.path(ROOT, "06_Registry/replication_request.json")
+.req  <- if (file.exists(REQ_P)) tryCatch(fromJSON(REQ_P, simplifyVector = FALSE), error = function(e) NULL) else NULL
+.req_status <- as.character(.req$status %||% "")
+if (.req_status %in% c("pending", "in_progress")) {
+  jlog("halt_request_pending", status = .req_status, paper_key = .req$paper$paper_key %||% "",
+       requested_at = .req$requested_at %||% "", note = "요청이 아직 소비되지 않았다 — 재발행하지 않고 대기(rp_auto 가 집는다)")
+  return(invisible(0L))
+}
+
 # ── 2. 큐에서 다음 논문 (술어 정본 CLI — 재구현 금지) ────────────────────────
 stage <- file.path(ROOT, "stage_artifacts/paper_recharge")
 n_pending <- suppressWarnings(as.integer(system2(PY,
