@@ -195,22 +195,25 @@ if (isTRUE(CFG$enabled) && isTRUE((CFG$lcode_mechanism %||% list())$enabled)) tr
   }
 }, error = function(e) jlog("mechanism_backfill_failed", err = conditionMessage(e)))
 
-if (!length(pending) && used >= MAXA) { jlog("halt_exhausted_delegate", used = used)
+## ★소진 루틴 하나 — 예산 소진(used >= MAXA)과 격자 소진(빈 칸 0 · 아래 halt_no_jobs 자리) 두 입구가 같은 출구를 쓴다.
+##   구판은 퇴역된 reinforce_auto_run.R 에 위임했는데 그 파일은 안내문만 찍고 종료해 promo2 소진 → 승격이 조용히 실패했다.
+##   퇴역 러너가 하던 루틴 그대로: exhaust_reached → status=exhausted(writer) → entry_exhausted → next_paper(동기).
+.exhaust_and_delegate <- function(why) {
   # ★Windows 에서 system2(env=) 는 무시된다(실측 2026-08-30: 자식이 로그 한 줄도 안 남겼다).
   #   부모 환경에 심어 자식이 상속하게 한다.
   Sys.setenv(QVEST_RF_CLAIM_HELD = "1")
   on.exit(Sys.unsetenv("QVEST_RF_CLAIM_HELD"), add = TRUE)
-  ## ★소진 처리는 여기서 직접 (2026-09-05). 구판은 퇴역된 reinforce_auto_run.R 에 위임했는데 그 파일은
-  ##   안내문만 찍고 종료해 promo2 소진 → 승격이 조용히 실패했다(러너 단일화 잔재 · 회귀 가드는 신판 부재를 못 잡는다).
-  ##   퇴역 러너가 하던 루틴 그대로: exhaust_reached → status=exhausted(writer) → entry_exhausted → next_paper(동기).
-  jlog("exhaust_reached", base_id = BID, used = used)
+  jlog("exhaust_reached", base_id = BID, used = used, why = why)
   tryCatch(rf_exhaust_entry(1L, BID, root = ROOT),
            error = function(e) jlog("exhaust_mark_failed", base_id = BID, err = conditionMessage(e)))
   jlog("entry_exhausted", base_id = BID)
   ## ★wait=TRUE — 부모가 먼저 끝나면 자식이 함께 죽어 이월이 조용히 안 된다(2026-08-30 실사고).
   system2("Rscript", shQuote(file.path(ROOT, "02_Infrastructure/ops/reinforce_auto_next_paper.R")),
           wait = TRUE)
-  Sys.unsetenv("QVEST_RF_CLAIM_HELD"); return(0L) }
+  Sys.unsetenv("QVEST_RF_CLAIM_HELD"); 0L
+}
+if (!length(pending) && used >= MAXA) { jlog("halt_exhausted_delegate", used = used)
+  return(.exhaust_and_delegate("budget")) }
 
 # 기저 논문 — 전략의 출처. B1 등록부 셀(계열 맵에 없는 계열)과 B5 오버레이 셀의 근거로 쓴다.
 # ★배치 선정보다 **앞에** 둔다 — B1 picker 가 fallback_paper 로 받아야 하기 때문이다.
@@ -844,7 +847,17 @@ if (!length(jobs)) for (CELL in batch) {
     name = sprintf("RF_PAR_%s_%s", CELL$code, gsub("[^A-Za-z0-9]", "", CELL$label)),
     out = file.path(WDIR, sprintf("result_%s.json", CELL$code)))
 }
-if (!length(jobs)) { jlog("halt_no_jobs"); return(1L) }
+if (!length(jobs)) {
+  ## ★격자 소진 (2026-09-05 실사고): B1 설계 9칸으로 예산 25→29, B3 설계 4칸이라 격자 총합 28 → used 28 < 29 로
+  ##   예산 소진이 영영 안 서고 매 tick halt_no_jobs — 승격·다음 논문 모두 정지(무동작이 대기로 보였다).
+  ##   빈 칸이 없고 재개 대상도 없으면 예산이 남아도 소진이다(정본 rf_spec_sig.R::rf_grid_consumed — 커서와 같은 정의).
+  if (isTRUE(rf_grid_consumed(cells, E$attempts))) {
+    jlog("grid_consumed", base_id = BID, used = used, max_attempts = MAXA, n_cells = length(cells),
+         note = "격자 전 칸 측정 완료 — 예산 미달이어도 소진 처리")
+    return(.exhaust_and_delegate("grid"))
+  }
+  jlog("halt_no_jobs"); return(1L)
+}
 
 # ── ② 실행 (병렬 — 워커는 원장 미접근) ────────────────────────────────────────
 for (j in jobs) {

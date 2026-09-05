@@ -1,13 +1,16 @@
-# 다음 세션 인계 — 2026-09-05 (무인 루프 가동 · 2404.08129 첫 Fable 충실구현 C → 강화 entry active · 하네스 수리 11건)
+# 다음 세션 인계 — 2026-09-05 (무인 루프 가동 · 2404.08129 C → 28칸 강화 최고 B4_25 B 2.128 → promo1 active · 하네스 수리 12건)
 
 ## 지금 상태 한 줄
 
-- 루프 `enabled=true`(18:53 재개) · **active entry = `RP_20260905_184253_720_adapted_rulefast`**(2404.08129 "One Factor to Bind the Cross-Section
-  of Returns" · 첫 Fable 레인 산출물 · 기저 **Grade C · PORT_t 0.55** · 15bps 순비용 판 CAGR 11.4% · SR 0.50 · MDD 65.7% · Calmar 0.17 · n_max 25 ·
-  fidelity ADAPTED — 논문은 가격결정 검정(HFL 단일 비선형 팩터)이라 거래전략이 없어 모형 함의 기대수익을 Score 로 이식 · 감사 unverifiable/proceed).
-  다음 tick 부터 B1 LLM 설계 → 25칸 강화. 요청 파일 `done`.
-- 2006.04639 "Dynamic Network Risk" = **Grade F · PORT_t −2.874**(opus/max · 17:26 소비 `RP_20260905_172632_skipped_base`) · 충실도 `unverifiable/proceed`.
-- ★로그·텔레그램이 2006.04639 와 2404.08129 를 둘 다 "횡단면 주식 팩터" 로 부른다 — 트리아지 범주 라벨이 제목 자리(칩 task_aede5cd1). 중복 논문 아님.
+- 루프 `enabled=true` · **active entry = `RP_20260905_184253_720_adapted_rulefast_promo1`**(depth 1 · 기저 B · carry = B4_25 의 팩터·비중(catalog)·
+  오버레이 none, 유니버스는 size_band → **K200∪KQ150 리셋**(provenance `universe_reset_from=size_band`)). 다음 tick 부터 B1 설계 → 25칸.
+- 부모 `RP_20260905_184253_720_adapted_rulefast`(2404.08129 "One Factor to Bind the Cross-Section of Returns" · 첫 Fable 레인 · 기저 C 0.55)
+  = **28칸 소진 · 최고 B4_25 B PORT_t 2.128 · Calmar 0.355**(B1+B2+B3 결합에서 오버레이를 뺀 칸 — B5 5종은 Calmar 를 못 움직였다).
+  블록별 최고: B1_2 1.567 · B5_20 1.582 · B2_7 1.441 · B3_13 1.588 · B4_25 2.128. 팡파레 B 발송 확인. 소진은 **격자 소진**(28/29 · 아래 5번) 경로.
+- ★충실도 감사(적대적)는 **오늘 3건 전부 미실행**(halt_disabled ×2 · halt_no_claude_cli ×1)이었고 검증기는 unverifiable→proceed 로 통과시켰다 —
+  도훈에게 보고, 처분(즉시 감사 실행 vs 수리 우선) **답 대기 중**. 원문(arxiv html)은 3편 다 있다.
+- 2006.04639 "Dynamic Network Risk" = Grade F · PORT_t −2.874 (17:26 소비).
+- ★로그·텔레그램 제목 라벨 결함(둘 다 "횡단면 주식 팩터") = 칩 task_aede5cd1.
 
 ## 오늘 일어난 일 (시간순)
 
@@ -90,6 +93,14 @@ LOO 가 유니버스(+0.945)·비중(+0.290)을 해로운 축으로 정확히 �
    pending guard 11/11. **재검증은 에이전트 없이 검증기만**(RP_WDIR 등 레인 env · nohup) → Grade C · entry 개설. 카드 = 아카이브
    feedback-a-token-scanner-that-reads-strings-rejects-the-artifact-it-guards-20260905.
 - 소음: 텔레그램 성과 차트 중 drawdown.png 가 빈 파일(579 bytes)로 제외됨 — 차트 생성기 확인 대상.
+
+5. **격자 소진 ≠ 예산 소진** (20:18~20:34): B1 설계 9칸으로 예산 25→29 인데 B3 설계가 4칸이라 격자 총합 28 → used 28 < 29 로 예산 소진이
+   영영 안 서고 매 tick `halt_no_jobs`(승격·다음 논문 정지, 2 tick). 수리 = `rf_spec_sig.R::rf_grid_consumed(cells, attempts)`(커서의
+   free-cell 정의 재사용) + 러너 halt_no_jobs 앞에서 `grid_consumed → .exhaust_and_delegate("grid")`(예산 소진과 같은 루틴).
+   검사 `test_rf_grid_consumed_exhausts.R` 8/8. 첫 tick 에 exhaust → promo1 개설 확인.
+6. **적대적 충실도 감사 미실행 3건** — `rf_fidelity_audit.sh` 가 킬스위치·CLI 존재를 전제로 물러나고 파일을 안 남겨 `rf_audit_read` 가
+   "감사 미실행" 사유의 unverifiable 을 냈는데 검증기는 proceed(undeclared 0·mismatch 0 으로 깨끗해 보임). 수리안 3: ①감사는 킬스위치를
+   따르지 않는다 ②"미실행" 은 별개 사건으로 jsonl·텔레그램·entry 꼬리표 ③"감사 없이 개설 불가" 양성 대조. **도훈 결정 대기**.
 
 ## 열린 결정 (도훈)
 

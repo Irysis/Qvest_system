@@ -127,3 +127,17 @@ rf_resume_cell <- function(a, cells, by_code) {
   if (!is.na(n) && n >= 1L && n <= length(cells)) return(list(cell = cells[[n]], how = "positional_legacy"))
   list(cell = NULL, how = "unknown")
 }
+
+#' 격자 소진 판정 — 격자의 모든 칸에 시도(측정 또는 terminal)가 있고 미측정(재개 대상) 시도가 없으면 TRUE.
+#'   ★예산(max_attempts)과 별개다 (2026-09-05 실사고): B1 설계 9칸으로 예산이 25→29 로 올랐는데 B3 설계가 4칸이라
+#'   격자 총합이 28 — used 28 < 29 라 소진 판정(used >= MAXA)이 영영 안 서고 러너가 매 tick halt_no_jobs 만 찍었다
+#'   (승격·다음 논문 모두 정지). 격자가 다 찼으면 예산이 남아도 소진이다.
+#' @param cells 격자 칸 목록(list of list(code=...)) — 설계 적용 후 전 블록
+#' @param attempts 원장 entry 의 attempts
+rf_grid_consumed <- function(cells, attempts) {
+  if (!length(cells %||% list())) return(FALSE)
+  if (length(.rf_free_cells(cells, attempts))) return(FALSE)          # 빈 칸이 남았다 — 커서와 같은 정의
+  pending <- Filter(function(a) (is.null(a$essence) || is.null(a$essence$port_t)) && !isTRUE(a$terminal),
+                    attempts %||% list())
+  !length(pending)                                                     # 재개 대상이 남았으면 아직 아니다
+}
