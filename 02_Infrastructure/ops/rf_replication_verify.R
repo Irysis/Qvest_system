@@ -86,10 +86,31 @@ if (!file.exists(eng) || file.info(eng)$size < 200) fail("engine_too_small", eng
 #   ★CRAN 만 · 개수 상한 6 · 설치 내역 로그 — 무인이라 조용한 설치를 남기지 않는다.
 #   ★정규식을 쓰지 않는다: 이 파일을 스크립트로 고치는 왕복에서 역슬래시가 두 번 뭉개져
 #     문자열이 깨졌다. 고정문자열 분해가 이 맥락에서는 더 견고하다.
+#   ★문자열 리터럴도 벗긴다 (2026-09-05 실사고): 에이전트 엔진의 cat() 메시지 안 "FIDELITY.json::portfolio_spec" 을
+#     `::` 스캐너가 패키지 FIDELITY.json 으로 읽어 install.packages 실패 → dependency_install_failed → 31분짜리
+#     Fable 산출물이 2초 만에 기각됐다. 주석만 벗기던 구판은 문자열 안 `#` 도 주석으로 잘라 그 뒤 코드를 잃었다.
+#     문자 단위로 걷는다(정규식·역슬래시 리터럴 없음 — 이 파일의 왕복 규약).
+.strip_strings <- function(x) {
+  ch <- strsplit(x, "", fixed = TRUE)[[1]]
+  if (!length(ch)) return(x)
+  BS <- intToUtf8(92); DQ <- intToUtf8(34); SQ <- intToUtf8(39); HASH <- intToUtf8(35)
+  q <- ""; esc <- FALSE; out <- character(0)
+  for (c in ch) {
+    if (nzchar(q)) {                       # 문자열 안 — 아무것도 내보내지 않는다
+      if (esc) { esc <- FALSE; next }
+      if (identical(c, BS)) { esc <- TRUE; next }
+      if (identical(c, q)) q <- ""
+      next
+    }
+    if (identical(c, DQ) || identical(c, SQ)) { q <- c; next }
+    if (identical(c, HASH)) break          # 문자열 밖 # = 주석 시작
+    out <- c(out, c)
+  }
+  paste(out, collapse = "")
+}
 .extract_pkgs <- function(path) {
   ln <- readLines(path, warn = FALSE)
-  ln <- vapply(ln, function(x) { k <- regexpr("#", x, fixed = TRUE)
-                                 if (k > 0) substr(x, 1, k - 1) else x }, character(1))
+  ln <- vapply(ln, .strip_strings, character(1), USE.NAMES = FALSE)
   out <- character(0)
   clean <- function(s) gsub("[^A-Za-z0-9._]", "", s)
   for (kw in c("library(", "require(")) {

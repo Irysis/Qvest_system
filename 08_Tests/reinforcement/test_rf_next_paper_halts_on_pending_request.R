@@ -46,9 +46,10 @@ run_np <- function(S) {
 req_bytes <- function(S) { p <- file.path(S, "06_Registry/replication_request.json"); if (file.exists(p)) readBin(p, "raw", file.info(p)$size) else raw(0) }
 reached_queue <- function(o) grepl("halt_queue_empty|halt_pick_failed|paper_picked", o)
 
-for (st in c("pending", "in_progress")) {
+## P3 failed_needs_session (2026-09-05 18:38 실사고): 검증 실패 직후 새 요청으로 덮으면 레인의 auto_retries 3회 상한이 0 으로 리셋된다
+for (st in c("pending", "in_progress", "failed_needs_session")) {
   S <- sbx(st); b0 <- req_bytes(S); o <- run_np(S); b1 <- req_bytes(S)
-  tag <- if (st == "pending") "P1" else "P2"
+  tag <- c(pending = "P1", in_progress = "P2", failed_needs_session = "P3")[[st]]
   if (grepl("halt_request_pending", o, fixed = TRUE)) ok(sprintf("%s status=%s → halt_request_pending", tag, st)) else ng(sprintf("%s status=%s 관문 미발화 ★실사고", tag, st), substr(o, max(1L, nchar(o) - 300L), nchar(o)))
   if (!grepl("paper_picked|replication_requested", o)) ok(sprintf("%s 재발행 0", tag)) else ng(sprintf("%s 재발행됨", tag))
   if (identical(b0, b1)) ok(sprintf("%s 요청 파일 바이트 불변", tag)) else ng(sprintf("%s 요청 파일이 덮였다", tag))

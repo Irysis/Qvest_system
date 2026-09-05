@@ -171,9 +171,14 @@ if (length(ex)) {
 REQ_P <- file.path(ROOT, "06_Registry/replication_request.json")
 .req  <- if (file.exists(REQ_P)) tryCatch(fromJSON(REQ_P, simplifyVector = FALSE), error = function(e) NULL) else NULL
 .req_status <- as.character(.req$status %||% "")
-if (.req_status %in% c("pending", "in_progress")) {
+#   ★failed_needs_session 도 막는다 (2026-09-05 18:38 실사고): 검증 실패 직후 같은 tick 의 no-active 위임이 이 파일을 불러
+#     같은 논문을 **새 요청**으로 다시 발행했다 — 레인의 유한 재시도(auto_retries 3회 → 스킵리스트)가 카운터 0 으로 리셋돼
+#     31분짜리 Fable 실행이 무한 반복될 상황이었다. 실패 요청의 처분(재시도·스킵리스트)은 레인(rf_replication_auto.sh) 소관이다.
+if (.req_status %in% c("pending", "in_progress", "failed_needs_session")) {
   jlog("halt_request_pending", status = .req_status, paper_key = .req$paper$paper_key %||% "",
-       requested_at = .req$requested_at %||% "", note = "요청이 아직 소비되지 않았다 — 재발행하지 않고 대기(rp_auto 가 집는다)")
+       requested_at = .req$requested_at %||% "", auto_retries = .req$auto_retries %||% 0L,
+       note = if (identical(.req_status, "failed_needs_session")) "실패 요청의 재시도·스킵리스트는 레인 소관 — 새 요청으로 덮지 않는다"
+              else "요청이 아직 소비되지 않았다 — 재발행하지 않고 대기(rp_auto 가 집는다)")
   return(invisible(0L))
 }
 
