@@ -32,7 +32,7 @@ LOG="$ROOT/.cache/scheduler_logs/cleaner_distill_$(date +%Y%m%d).log"
 OWNER="auto_distill"
 mkdir -p "$(dirname "$LOG")"
 
-jl(){ Rscript -e "cat('')" >/dev/null 2>&1; echo "[$(date -Iseconds)] [cleaner_distill] $*" >> "$LOG"; echo "[cleaner_distill] $*"; }
+jl(){ echo "[$(date -Iseconds)] [cleaner_distill] $*" >> "$LOG"; echo "[cleaner_distill] $*"; }
 
 # ── (0) 게이트 — 꺼짐/할 일 없음/충돌 판정 ─────────────────────────────────────
 GV="$(Rscript "$LIB" gate 2>>"$LOG")"; GRC=$?

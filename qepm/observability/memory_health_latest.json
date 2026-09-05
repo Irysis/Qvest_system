@@ -1,10 +1,10 @@
 {
   "schema_version": "v7.2.1_memory_health",
-  "ran_at": "2026-09-05T09:37:28+0900",
+  "ran_at": "2026-09-05T10:17:53+0900",
   "hard_fails": [
     {
       "check_id": "HARD_10_inject_budget",
-      "message": "주입면 계약 위반 — 계측 43.7h 경과(>24h) · 마커 소실(positive=FALSE recent=FALSE dead=FALSE) | agent=alpha-research pc_status=missing ml_rendered=4/4 rung=0 | 재현: echo '{\"tool_input\":{\"subagent_type\":\"forge\"}}' | bash 02_Infrastructure/hooks/axiom_context_inject.sh"
+      "message": "주입면 계약 위반 — 계측 44.4h 경과(>24h) · 마커 소실(positive=FALSE recent=FALSE dead=FALSE) | agent=alpha-research pc_status=missing ml_rendered=4/4 rung=0 | 재현: echo '{\"tool_input\":{\"subagent_type\":\"forge\"}}' | bash 02_Infrastructure/hooks/axiom_context_inject.sh"
     }
   ],
   "warnings": [
@@ -14,7 +14,7 @@
     },
     {
       "check_id": "WARN_1_lcode_corpus_integrity",
-      "message": "중복 ID 43건(L-RP-20260830_201656,L-RP-20260830_203323,L-RP-20260830_235311,L-RP-20260831_001552,L-RP-20260831_093239,L-RP-20260831_103933) · 미수확 아티팩트 4건(l_code_RP_20260905_092705_13892.json,l_code_RP_20260905_092705_2132.json,l_code_RP_20260905_092705_27888.json,l_code_RP_20260904_163647_18444_rescued_rulefast_promo2_B2.json) — 코퍼스가 아티팩트를 충실히 반영하지 못함"
+      "message": "중복 ID 43건(L-RP-20260830_201656,L-RP-20260830_203323,L-RP-20260830_235311,L-RP-20260831_001552,L-RP-20260831_093239,L-RP-20260831_103933) — 코퍼스가 아티팩트를 충실히 반영하지 못함"
     },
     {
       "check_id": "WARN_6_cache_core_stale",
@@ -22,11 +22,11 @@
     },
     {
       "check_id": "WARN_10_knowledge_index_stale",
-      "message": "knowledge_index 낙후 — count_mismatch(corpus=1081, index=1075); missing_in_index=5  (검사: ops/knowledge_index_freshness.R · 복구: Rscript 02_Infrastructure/ops/build_knowledge_index.R)"
+      "message": "knowledge_index 낙후 — count_mismatch(corpus=1089, index=1085); missing_in_index=4  (검사: ops/knowledge_index_freshness.R · 복구: Rscript 02_Infrastructure/ops/build_knowledge_index.R)"
     },
     {
       "check_id": "WARN_11_revival_flags_stale",
-      "message": "주입 사본이 정본보다 26.0h 뒤처짐 — DIST frontier 수정이 주입면에 미반영일 수 있음 (정본 09-05 09:12 > 사본 09-04 07:12). 복구: Rscript -e 'source(\"02_Infrastructure/ops/failure_revival_monitor.R\"); revival_monitor_run(write_flags=TRUE)'"
+      "message": "주입 사본이 정본보다 26.9h 뒤처짐 — DIST frontier 수정이 주입면에 미반영일 수 있음 (정본 09-05 10:07 > 사본 09-04 07:12). 복구: Rscript -e 'source(\"02_Infrastructure/ops/failure_revival_monitor.R\"); revival_monitor_run(write_flags=TRUE)'"
     }
   ],
   "infos": [],
