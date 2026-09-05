@@ -1296,6 +1296,10 @@ SUITES=(
   # 2026-09-05 — 블록 L-code 의 "다음 격자 축" 이 러너의 **적응 순서**를 가리키는가 (양방향).
   #   구판은 선언 순서 k+1 을 적어 부팅 `Last:` 줄이 틀린 축을 echo 했다(L-RF-20260904_223318).
   "08_Tests/reinforcement/test_rf_block_lcode_next.R"
+  # 2026-09-05 — **같은 결함이 재료 생성기에도** 있었다: entry$block_order 부재 시 정적 목록
+  #   c("B1","B2","B3","B5","B4") 폴백 → 설계자에게 rfbd_catalog("B2") 를 넘기는데 러너는 B5 로 갔다.
+  #   양방향(적응 축 + 그 축 카탈로그 / 구판 리졸버 주입).
+  "08_Tests/reinforcement/test_rf_materials_next_block.R"
 )
 
 
