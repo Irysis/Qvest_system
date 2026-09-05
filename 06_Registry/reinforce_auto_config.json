@@ -75,9 +75,9 @@
     "consumed_by": "02_Infrastructure/ops/rf_llm_env.sh::rf_llm_resolve — 다섯 레인(replication·overlay_propose·b1_design·fidelity_audit·cleaner_distill)이 여기서 읽는다. ★2026-09-04 이전에는 이 블록을 **읽는 코드가 0건**이었고 각 레인이 자기 기본값(:-opus/:-max)을 들고 있었다 — 정책을 적어 둔 문서를 아무도 소비하지 않는 상태였다.",
     "lanes": {
       "replication": {
-        "model": "opus",
+        "model": "claude-fable-5-1",
         "effort": "max",
-        "note": "★실패가 사이클 하나를 태운다(재구현 10/28). 다만 지적 20건 중 9건이 가드 미신고라 노력수준으로는 안 고쳐진다 — 신고 체크리스트가 먼저다."
+        "note": "★도훈 지시 2026-09-05 17:1x — 충실구현 레인을 Fable 5.1/max 로(npm 전역 CLI 2.1.170→최신 업데이트 후 claude -p 실응답 FABLE_OK 로 검증). 다른 레인은 opus 유지. ★첫 Fable 착수는 engine.R 실물 생성까지 확인(어제 롤백 교훈: rc=0 인데 산출물 0)."
       },
       "fidelity_audit": {
         "model": "opus",
@@ -131,11 +131,16 @@
     },
     "rollback_note": "★2026-09-04 21:25 롤백 — claude-fable-5-1 은 이 환경에서 못 쓴다. API Error 400: 'Claude Code 2.1.170 does not support this model; version 2.1.251 or newer is required.' ★내 사전 검증이 부실했다: `claude -p --model claude-fable-5-1` 이 rc=0 을 내서 통과로 읽었는데, 종료 코드는 0 이고 API 는 400 이었다. 출력이 훅 컨텍스트에 섞여 에러가 안 보였고 그걸 넘어갔다. 실피해: lcode_mechanism 이 12초 만에 파일 없이 종료 -> mechanism_rejected(기전 파일 부재) -> B2 블록 메시지에 '배운 것' 절이 통째로 빠졌다. ★모델 검증은 rc 가 아니라 **산출물**로 해야 한다 — 그게 이 저장소가 반복해서 적은 규율이다. 노력수준 배분(레인별 max/xhigh/high)은 유지한다 — 그건 모델과 무관한 결정이었다.",
     "blocked_model": {
-      "id": "claude-fable-5-1",
-      "reason": "CLI 2.1.170 < 2.1.251",
-      "retry_when": "claude update 후 재시도 가능"
+      "id": null,
+      "cleared_at": "2026-09-05T17:17:49+0900",
+      "prev": "claude-fable-5-1 (CLI 2.1.170 < 2.1.251) — npm 업데이트로 해소"
     },
-    "effort_rationale": "레인별 배분은 **모델과 무관한 결정**이다(도훈 승인안 2026-09-04). 한 번 실패의 대가가 레인마다 다르다: replication 은 실패가 에이전트 12분+측정+감사 6축을 다시 태우므로 max · b1_design/lcode_mechanism/overlay_propose 는 단발이고 폴백·probe 가 뒤에 있어 high · fidelity_audit 은 팬아웃으로 축이 좁아져 xhigh. 모델만 fable-5-1 -> opus 로 되돌렸다(CLI 미지원)."
+    "effort_rationale": "레인별 배분은 **모델과 무관한 결정**이다(도훈 승인안 2026-09-04). 한 번 실패의 대가가 레인마다 다르다: replication 은 실패가 에이전트 12분+측정+감사 6축을 다시 태우므로 max · b1_design/lcode_mechanism/overlay_propose 는 단발이고 폴백·probe 가 뒤에 있어 high · fidelity_audit 은 팬아웃으로 축이 좁아져 xhigh. 모델만 fable-5-1 -> opus 로 되돌렸다(CLI 미지원).",
+    "replication_prev_setting": {
+      "model": "opus",
+      "effort": "max",
+      "note": "★실패가 사이클 하나를 태운다(재구현 10/28). 다만 지적 20건 중 9건이 가드 미신고라 노력수준으로는 안 고쳐진다 — 신고 체크리스트가 먼저다."
+    }
   },
   "base_min_port_t": 0,
   "factor_analysis": {
