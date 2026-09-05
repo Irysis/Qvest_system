@@ -23,7 +23,11 @@ suppressMessages({ library(data.table); library(jsonlite) })
 ROOT <- Sys.getenv("QM_ROOT", "C:/Users/99922/OneDrive/Quant_Module_Moltbot")
 setwd(ROOT); Sys.setenv(QM_ROOT = ROOT, CLAUDE_PROJECT_DIR = ROOT)
 LOG_P <- file.path(ROOT, ".cache/reinforce_auto_log.jsonl")
-CFG_P <- file.path(ROOT, "06_Registry/reinforce_auto_config.json")
+## ★설정 경로는 러너(reinforce_auto_parallel.R)와 같은 식으로 푼다 — QVEST_RF_CONFIG 격리 존중 (2026-09-05).
+##   구판은 ROOT 고정이라 격리 실행(배터리 샌드박스)에서 위임받은 이 자식만 샌드박스 사본을 읽어 halt_disabled 를
+##   찍었다. 운영에선 두 경로가 같은 파일이라 안 보였다(소비자 정합: 같은 질문엔 같은 해석기).
+CFG_P <- { .c <- Sys.getenv("QVEST_RF_CONFIG", "")
+           if (nzchar(.c) && file.exists(.c)) .c else file.path(ROOT, "06_Registry/reinforce_auto_config.json") }
 PY    <- Sys.getenv("QVEST_PY", "C:/Users/99922/OneDrive/Quant_Module_Moltbot/.venv_qvest_ml/Scripts/python.exe")
 
 jlog <- function(event, ...) {
