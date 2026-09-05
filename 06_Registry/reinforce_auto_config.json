@@ -298,5 +298,18 @@
     "at": "2026-09-05T13:59:08+0900",
     "reason": "도훈 지시 2026-09-05 오후 — '무인러너 멈추고 인프라 수리부터'. 재개는 이 파일 enabled=true + 예약작업 Enable 둘 다.",
     "state_at_stop": "promo3 exhausted(29/29) · active entry 0 · 결합 충실구현 요청 in_progress(중단됨 — winpid 회수로 다음 재개 시 pending 복원)"
+  },
+  "repair_20260905_cdar_dispatch": {
+    "at": "2026-09-05T15:58:40+0900",
+    "what": "qepm 디스패처가 하네스 규약 (tickers, ret_dt) 표적에 returns= 를 넘겨 unused arguments → EW 폴백 → probe 실패 → 실효 강등. 2026-04-23 등재 이래 CDaR_LP·CVaR_LP·MaxDiv 는 라벨만 active. promo2·promo3 B2 의 결정적 질문(낙폭 경로 목적함수)이 이것 때문에 두 세대 미측정.",
+    "fix": ".wmr_dispatch_harness(조립층 번역) — 별도 세션이 worktree vibrant-hellman 에서 완성·미커밋으로 방치 → 전 브랜치·작업본 grep 으로 찾아 3파일 범위 커밋(8ea22d58b) → main 병합(11c1cb28e). JSON 충돌은 3-way 대조(기저 대비 main arm 변경 0)로 브랜치 판 채택.",
+    "verified": "test_weight_catalog.R 55/55 (h 절 포함) · 적격 arm 29→32 · lean 23종 probe 보존 · test_rf_weight_arms_explore 6/6 · catalog_parity 6/6",
+    "why_their_test_was_red": "~/.Renviron 이 Rscript 안에서 QM_ROOT 를 main 으로 덮어 검사가 main 의 구판 디스패처를 실었다(코드 루트 ≠ 데이터 루트). main 에 올리자 해소."
+  },
+  "repair_20260905_instrument_preserve": {
+    "at": "2026-09-05T16:07:46+0900",
+    "what": "bare Rscript(하네스 미적재) probe 가 lean 23종을 '빌트인 부재' 로 덮어써 실효 강등 → 엔진 '카탈로그 arm 부재'. 계기 부재가 arm 결함으로 기록되던 것.",
+    "fix": "weight_catalog.R: .wc_ensure_lean_builtins(자동 적재) + 계기 문장(.WC_INSTRUMENT_MARK)일 때만 이전 probe 보존(probe_retained · WARN 호명). grow.sh: env 경로·LANGUAGE=en. 검사 (h-5) 양방향. 별도 세션(elegant-bose)이 완성·미커밋 방치 → main 적용 후 64/64.",
+    "verified": "test_weight_catalog 64/64 · rf_weight_arms_explore 6/6 · catalog_parity 6/6 · reinforce_auto 135/135"
   }
 }

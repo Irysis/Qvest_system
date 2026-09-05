@@ -46,6 +46,21 @@
 LOO 가 유니버스(+0.945)·비중(+0.290)을 해로운 축으로 정확히 분리했다. 다만 그 08-31 사고는 현 원장에서 **확인하지 못했다**
 (09-01 축 전환으로 15 entry 무효화). 철회 근거는 사고 기록이 아니라 설계 논리다.
 
+## 저녁 (세션 재시작 후 · 15:46~)
+
+- **#1 CDaR_LP — 완료·병합** (`11c1cb28e`). 수리 자체는 별도 세션이 worktree `vibrant-hellman` 에서 끝냈는데 세션 종료로
+  **미커밋 방치** → 메모리 카드는 "수리됨" 이라 적혀 있었고 저장소엔 0건. `git grep` 전 브랜치 + 워크트리 작업본 grep 으로 찾아
+  3파일만 범위 커밋·병합. 그 세션 검사가 빨갰던 이유 = `~/.Renviron` 의 QM_ROOT(main) 가 Rscript 안에서 이겨 구판 디스패처를 실음.
+  main 에서 계약 55/55 · 적격 32 · lean 23 보존.
+- **hopeful-burnell(낡은 검사 이설) — 병합** (`2b3522729`) + 섹션 28 전제 소유 수리(`7eb8dd30b`) → 배터리 135/135.
+- **combo entry park** (도훈 지시) — 기저 C 0.691 · dilution.
+- **② elegant-bose — 완료·main 반영**(코드 2 + 검사 1 범위 적용 · 64/64 · 배터리 135/135). 그쪽 6건 빨강은 환경(워크트리·Renviron root) 탓. 아래는 승계 전 기록:
+- (구) elegant-bose(lean 빌트인 계기 — 하네스 미적재 probe 가 arm 을 '부재' 로 덮어씀)**: main 에 0건, 워크트리 미커밋 3파일
+  (weight_catalog.R +103 · test +250 · grow.sh +42), 자기 검사 6건 빨강(구현이 검사를 못 따라감). 기저가 (h) 이전이라 병합 시
+  test_weight_catalog.R·weight_catalog.R **충돌 확실**. 헬퍼 자체는 정상 작동(직접 호출 ensure=TRUE) — 남은 건 probe 경로 배선·
+  probe_retained 보존·WARN 호명. 카드 = feedback-an-unloaded-instrument-is-not-evidence-about-the-arm-20260905.
+- 오늘 함정 추가 2건: `Rscript -e` 안 `%in%` 은 cmd 가 먹는다(스크립트 파일로) · `git show > /tmp/x` 는 Windows Python 이 못 읽는다(/c ≠ C:).
+
 ## 열린 결정 (도훈)
 
 - **승격 carry 비중**: promo3 carry 가 EW — 승자 B3_12 가 KQ150 에서 cvar→EW 강등된 스펙이라. 유니버스 리셋 시 강등 전 비중(cvar) 복원할지(`rf_promote_carry` 한 줄).
