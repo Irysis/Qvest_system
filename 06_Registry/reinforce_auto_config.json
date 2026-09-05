@@ -1,6 +1,6 @@
 {
   "schema": "reinforce_auto_config_v1",
-  "enabled": false,
+  "enabled": true,
   "combination": {
     "enabled": true,
     "note": "★도훈 지시 2026-09-04 — 결합은 rank-Z 평균 blend 가 아니라 **LLM 이 두 논문을 읽고 설계한 전략(기저)**에서 출발한다. 그 기저를 충실구현 1회로 측정해 base_grade 를 얻고, base_min_port_t 가드를 통과한 뒤에야 강화 25칸을 열어야 한다. 그 레인이 서기 전까지 구판 blend 착수를 정지한다 — 정지 중에는 호출자가 다음 논문 충실구현으로 정상 이월한다.",
@@ -238,5 +238,19 @@
     "fix": "rfbd_cells: pick 이 그 블록의 격자 코드(^B3_[0-9]+$)면 코드 = pick. B2/B5(arm id pick)는 위치 유지. 검사 08_Tests/reinforcement/test_rf_block_design_code_follows_pick.R 5/5 (격리 root · 음성 대조 · 돌연변이 통제).",
     "budget_note": "19/25 사용 · B4 5칸 → 24 · 여유 1칸. 후보: KOSPI200 단독 재측정(n16 소실분) 또는 CDaR_LP 재측정(어댑터 수리 후) — 도훈 결정."
   },
-  "pit_hold": "2026-09-05 10:0x 세션 — promo2 n=17(코드 B3_12 · 실내용 KOSDAQ150 단독) Grade B 2.567 은 C6 측정 무효(KQ150 백필 상방 편의). B4 가 그 위에 서기 전에 정지 → 원장 writer 로 무효화 → 재개."
+  "incident_20260905_b3_c6": {
+    "at": "2026-09-05T10:08:53+0900",
+    "what": "promo2 n=17(코드 B3_12 · 실내용 KOSDAQ150 단독) Grade B · PORT_t 2.567 · Calmar 0.499 — entry 최고치였으나 PIT C6 측정 무효(KQ150 백필 상방 편의 · 조부모 B2 회피문이 같은 사유로 지정). rfbd_cells 위치 매김 결함으로 회피 집행이 KOSPI200 단독(n=16)을 대신 건너뛰어 오염 칸이 측정됐다.",
+    "propagation_observed": "블록 끝 흐름(L-code → 기전 → 텔레그램 → harvester → cluster_extractor)이 오염 L-code L-RF-20260905_100200 을 발행 직후 코퍼스에 수확하고 후보 4건을 만들었다(distill_ran new_cands=4). 팡파레는 안 나갔다 — rf_fanfare_new_grade 가 'entry 에 처음 나온 등급'만 울리고 B 는 B1_1 에서 이미 나왔기 때문(설계).",
+    "correction_chain": [
+      "kill switch 정지(B4 형성 전)",
+      "원장 writer rf_record_result(n=17, grade='NA (측정 무효 — PIT C6 …)', essence=NULL, terminal=TRUE)",
+      "rf_emit_block_lcode(BID, 19) 재발행 → L-RF-20260905_100534 · Grade C · 최고 B3_13 1.245 (기전은 백필 레인이 재생성)",
+      "lcode_harvester + cluster_extractor 재실행 → 코퍼스에서 구 id 소멸",
+      "DIST-GEN-051 · CAND_reinforcement_d6b4600ddd90 의 supporters 구 id → 신 id 교체 + retraction_notes · rebuild_distilled_index()",
+      "정정 텔레그램 [1계층·강화 19/25] 발송 · 재개"
+    ],
+    "budget": "19/25 · B4 5칸 → 24 · 여유 1칸 (KOSPI200 단독 재측정 / CDaR_LP 재측정 — 도훈 결정)",
+    "open_design_question": "같은 등급이라도 entry 최고 PORT_t 를 갱신하면 팡파레를 울릴지 — 현행은 '새 등급'만. 이번엔 침묵이 우연히 옳았다."
+  }
 }
