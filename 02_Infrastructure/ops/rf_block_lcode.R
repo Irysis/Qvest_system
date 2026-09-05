@@ -12,6 +12,53 @@
 #==============================================================================
 `%||%` <- function(a, b) if (is.null(a) || length(a) == 0L) b else a
 
+#' 다음 블록 해석 — ★entry 의 **적응 순서**가 정본이다 (2026-09-05)
+#'
+#' 왜 생겼나: 구판은 `prog$blocks` 의 **선언 순서**에서 k+1 을 집었다. 그런데 러너는
+#'   선언 순서로 돌지 않는다 — `rf_block_order_decide()` 가 entry 마다 순서를 정하고
+#'   (수익 축 충족 · 위험 축 미달이면 B5 를 2번째로 당긴다), 그 순서로 배치를 재배열한다.
+#'   실측(RP_20260904_163647_18444_rescued_rulefast_promo2 · B1 · L-RF-20260904_223318):
+#'   L-code 는 "다음 격자 축 B2(weighting)" 라 적었는데 재도출한 적응 순서는
+#'   B1>B5>B2>B3>B4 였다. 부팅 `Last:` 줄이 next_probe[0] 을 그대로 echo 하므로
+#'   **세션이 보는 계기가 틀린 축을 가리켰다**.
+#'
+#' 순서 정본은 셋이고 우선순위가 있다:
+#'   ① entry$block_order — 러너가 사전등록한 것. 덮어쓰기 금지(rf_record_block_order)라
+#'      이게 있으면 이게 사실이다.
+#'   ② rf_block_order_decide(entry, prog) — 아직 등록 전. 러너는 `used >= 5` 인 **다음 배치
+#'      직전**에 등록하는데 L-code 는 그 앞(블록 경계)에서 나간다 — 실측 사례가 정확히 이 창이다.
+#'      규칙이 결정론이라 재도출이 가능하다. 다만 등록 전이므로 잠정으로 표시한다.
+#'   ③ prog$blocks 선언 순서 — 위 둘이 다 없을 때만.
+#'
+#' @return list(id = 다음 블록(없으면 NULL), order = 쓴 순서, src = ledger/decide/program)
+rf_next_block <- function(entry, bid, prog,
+                          root = Sys.getenv("QM_ROOT",
+                            "C:/Users/99922/OneDrive/Quant_Module_Moltbot")) {
+  ids <- if (is.null(prog)) character(0) else
+         vapply(prog$blocks, function(b) as.character(b$id %||% ""), character(1))
+  ids <- ids[nzchar(ids)]
+
+  ord <- as.character(unlist(entry$block_order %||% character(0)))
+  ord <- ord[nzchar(ord)]
+  src <- "ledger"
+
+  if (!length(ord) && !is.null(prog) && !is.null(entry)) {
+    ord <- tryCatch({
+      suppressMessages(source(file.path(root, "02_Infrastructure/reinforcement/rf_lesson.R"),
+                              local = TRUE))
+      as.character(rf_block_order_decide(entry, prog, root = root)$order)
+    }, error = function(e) character(0))
+    ord <- ord[nzchar(ord)]
+    src <- "decide"
+  }
+  # ★순서가 이 블록을 담고 있지 않으면 그 순서로는 다음을 못 읽는다 — 선언 순서로 떨어진다.
+  if (!length(ord) || is.na(match(bid, ord))) { ord <- ids; src <- "program" }
+
+  k <- match(bid, ord)
+  list(id = if (!is.na(k) && k < length(ord)) ord[k + 1L] else NULL,
+       order = ord, src = src)
+}
+
 #' @param base_id 원장 entry
 #' @param n_used  블록 경계에서의 attempts_used (이번 블록 = n_used-4 .. n_used)
 #' @return l_code (문자) 또는 NULL
@@ -47,9 +94,8 @@ rf_emit_block_lcode <- function(base_id, n_used, root = Sys.getenv("QM_ROOT",
   prog <- tryCatch(jsonlite::fromJSON(file.path(root, "06_Registry/reinforce_program.json"),
                                       simplifyVector = FALSE), error = function(e) NULL)
   axis_of <- function(x) { for (b in prog$blocks) if (identical(b$id, x)) return(b$axis %||% x); x }
-  nxt <- NULL
-  if (!is.null(prog)) { ids <- vapply(prog$blocks, function(b) b$id %||% "", character(1))
-                        k <- match(bid, ids); if (!is.na(k) && k < length(ids)) nxt <- ids[k + 1L] }
+  .nb  <- rf_next_block(S$entry, bid, prog, root = root)
+  nxt  <- .nb$id
 
   # 기준선 = 이 블록 이전까지의 최고 (없으면 기저 등급)
   # ★기준선은 **이 블록 밖**의 최고다. 구판은 n < lo 로 잘라 같은 블록의 앞 칸이
@@ -68,7 +114,9 @@ rf_emit_block_lcode <- function(base_id, n_used, root = Sys.getenv("QM_ROOT",
 
   # next_probe — 규칙 도출(C/F 는 2건 이상 계약)
   probes <- character(0)
-  if (!is.null(nxt)) probes <- c(probes, sprintf("다음 격자 축 %s(%s) — 이 블록 승자 위에서 측정", nxt, axis_of(nxt)))
+  if (!is.null(nxt)) probes <- c(probes, sprintf("다음 격자 축 %s(%s) — 이 블록 승자 위에서 측정%s",
+                                                 nxt, axis_of(nxt),
+                                                 if (identical(.nb$src, "decide")) " (적응 순서 잠정 — 원장 미등록)" else ""))
   probes <- c(probes, sprintf("%s(최고 %.3f)는 B4 조합 후보로 고정 · %s(최저 %.3f)는 축 역작동 여부를 조합 LOO 로 분리",
                               best$code, best$port_t, worst$code, worst$port_t))
   if (is.null(nxt)) probes <- c(probes, "격자 소진 — 승자가 B 이상이면 승격(carry) 사슬, 아니면 큐 다음 논문")
