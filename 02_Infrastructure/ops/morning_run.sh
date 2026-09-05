@@ -239,6 +239,18 @@ stage_result() {   # $1=표시명 $2=exit코드 $3=경보 컴포넌트명
     echo "      task_health skip (스크립트 없음)"
   fi
 
+  # (2026-09-05 도훈 지시 — 주간 증류 무인화) 주간 클리너 스윕 직후에 증류 레인이 한 번 돌지만,
+  #   그때 강화 무인 러너(ReinforceAutoLoop, ~20분 주기)가 칸을 돌고 있으면 gate 가 **연기**한다.
+  #   연기가 곧 소멸이 되지 않게 일간 재시도 훅을 둔다 — 할 일이 없으면 gate 가 exit 0 으로
+  #   즉시 물러나므로(claude 미호출) 매일 걸어도 비용이 0 이다.
+  echo "[0.75/3] cleaner_distill_run.sh (주간 증류 무인 레인 — 미증류 주가 남아 있을 때만 발화)"
+  if [ -f "$BASE/02_Infrastructure/ops/cleaner_distill_run.sh" ]; then
+    bash "$BASE/02_Infrastructure/ops/cleaner_distill_run.sh" >> /tmp/qm_cleaner_distill.log 2>&1
+    stage_result "cleaner_distill" "$?" "cleaner_distill"
+  else
+    echo "      cleaner_distill skip (스크립트 없음)"
+  fi
+
   if [ "$IS_WEEKEND" = "1" ]; then
     echo "[1-2/3] 주말 — morning_briefing/mrs_daily(브리핑·데이터refresh·P3·regime) skip (논문 파이프라인만 매일)"
   else

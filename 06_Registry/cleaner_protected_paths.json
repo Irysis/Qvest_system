@@ -1,0 +1,54 @@
+{
+  "schema": "cleaner_protected_paths_v1",
+  "generated_at": "2026-09-05",
+  "note": "무인 증류 레인(cleaner_distill_run.sh)의 삭제 집행이 **기계로** 거부하는 경로 목록. 도훈 지시 2026-09-05 '삭제 전면 무인 — LLM 판단 위임' 에 따라 무엇을 지울지는 에이전트가 고르지만, 이 목록 안쪽은 에이전트가 골라도 집행되지 않는다. 목록을 코드가 아니라 레지스트리에 두는 이유 = 하드코딩 금지(헌법) + 도훈이 코드를 안 열고 경계를 조정할 수 있어야 함.",
+  "source_of_truth": ".claude/skills/cleaner/SKILL.md §4 절대보존 + CLAUDE.md 절대규칙 + artifact-storage.md §6",
+
+  "absolute_preserve": [
+    { "prefix": "05_Production/",           "source": "CLAUDE.md 절대규칙 — NEVER modify (promote_to_production 만 예외)" },
+    { "prefix": "01_Literature/",           "source": "CLAUDE.md 절대규칙 — read-only" },
+    { "prefix": "stage_artifacts/",         "source": "artifact-storage §6 — 불변 런 기록(감사 증거)" },
+    { "prefix": "qepm/",                    "source": "artifact-storage §6 — mailbox·registry·memory 경로가 계약" },
+    { "prefix": "06_Registry/",             "source": "artifact-storage §4 — 무기한, writer 경유 갱신만" },
+    { "prefix": "04_Research/strategies/",  "source": "SKILL §4 절대보존" },
+    { "prefix": "04_Research/90_legacy/",   "source": "SKILL §4 절대보존 (legacy 격리 보존)" },
+    { "prefix": "04_Research/01_reports/",  "source": "SKILL §4 절대보존 (digest 자신이 여기 산다)" },
+    { "prefix": "outputs/",                 "source": "SKILL §4 절대보존 — canonical 데이터" },
+    { "prefix": "00_Lawbook/",              "source": "SOT 문서 존" },
+    { "prefix": ".git/",                    "source": "★하네스 (2026-09-05 무인 삭제 신설 시 추가) — 이력 자체" },
+    { "prefix": ".claude/",                 "source": "★하네스 (2026-09-05 추가) — 스킬·훅·룰·에이전트. lean-loop '하네스 파일 쓰기 0' 의 삭제판" },
+    { "prefix": "08_Tests/",                "source": "★하네스 (2026-09-05 추가) — 검사기를 지우면 다음 감사가 초록이 된다" },
+    { "prefix": ".venv_qvest_ml/",          "source": "★런타임 (2026-09-05 추가) — 파이썬 1급 실행환경" }
+  ],
+
+  "absolute_preserve_files": [
+    { "path": "CLAUDE.md",   "source": "헌법" },
+    { "path": "MEMORY.md",   "source": "메모리 인덱스" },
+    { "path": "ARTIFACTS.md","source": "artifact-storage §5 인덱스 의무" }
+  ],
+
+  "named_exceptions": [
+    { "match": "bearish_forecast_v3", "source": "SKILL §4 — morning_briefing 일간 소비(활성)" }
+  ],
+
+  "underscore_ok_paths": {
+    "note": "artifact-storage §3 예외 — `_` 접두여도 실소비자가 있는 private 모듈. hygiene 감사의 UNDERSCORE_OK_PATHS 와 같은 명제이며, 여기 있는 것은 infra_underscore 후보에서 자동 제외된다(에이전트에게 후보로도 안 보인다).",
+    "paths": [
+      "02_Infrastructure/ops/morning_steps/_root.R",
+      "02_Infrastructure/search/_query.py",
+      "02_Infrastructure/observability/_wt_pretty.py",
+      "02_Infrastructure/ramp/debug/_cache_pool.rds",
+      "02_Infrastructure/portfolio/frontier_hrp/_validate_dynamic_regime_rp.R"
+    ]
+  },
+
+  "execution_guards": {
+    "mtime_guard_hours": 24,
+    "mtime_guard_note": "최근 24h 내 수정된 파일은 삭제하지 않는다 — 진행 중인 라운드가 쓰고 있을 수 있다(2계층 무인 러너와의 충돌 회피). 게이트가 라운드 부재를 이미 확인하지만 이건 그 게이트가 틀렸을 때의 두 번째 그물.",
+    "ref_check": "git_grep_basename",
+    "ref_check_note": "SKILL §4 '참조 0 검증 의무' 의 기계 재도출. 에이전트가 '참조 없음' 이라 적어도 기계가 다시 센다 — 에이전트 진술은 근거가 아니다. 1건이라도 걸리면 그 항목만 거부(rejected_ref_nonzero)하고 나머지는 집행.",
+    "max_deletions": 40,
+    "max_delete_mb": 2048,
+    "cap_note": "예산 폭주 backstop이지 연구/판단 제한이 아니다(b1_design.max_cells 와 같은 성격). 상한 초과 시 초과분만 deferred 로 남기고 다음 주에 다시 후보가 된다."
+  }
+}

@@ -102,6 +102,8 @@ suppressMessages(source(file.path(ROOT, "02_Infrastructure/reinforcement/reinfor
 #   .fkeys 가 이 파일과 reinforce_auto_run.R 에 중복 정의돼 있었고, 커버리지 색인이
 #   세 번째 복제본을 만들 참이었다. 서명이 갈리면 "같은 포트폴리오" 판정이 소비자마다 달라진다.
 suppressMessages(source(file.path(ROOT, "02_Infrastructure/reinforcement/rf_spec_sig.R"), local = TRUE))
+# ★기전 회피 표적 판정 — 정본은 rf_avoid.R (2026-09-05 추출 · 실사고 사연은 그 파일 머리)
+suppressMessages(source(file.path(ROOT, "02_Infrastructure/reinforcement/rf_avoid.R"), local = TRUE))
 PROG <- fromJSON(PROG_P, simplifyVector = FALSE)
 led <- rf_load(1L, ROOT)
 act <- Filter(function(e) identical(e$status, "active"), led$entries)
@@ -619,6 +621,37 @@ if (!length(jobs)) for (CELL in batch) {
     jlog("preflight_dead_precedent", code = CELL$code,
          kw = paste(names(.pf$dead_precedents), collapse = ","),
          note = "죽은 선례 존재 — 실행은 진행(AX-000: 사실 기록이지 금지 목록 아님)")
+  # ★spec 경로에 entry 식별자를 넣는다. 구판은 spec_<code>.json 고정이라 다음 entry 가
+  #   같은 이름으로 덮어썼고, 원장이 그 경로를 가리키는 채로 **부모 스펙이 소실**됐다
+  #   (2026-08-31: 부모 B3_12 의 spec 을 열면 자식 것이 나온다 — 사후 재현 불가).
+  sp <- file.path(WDIR, sprintf("spec_%s__%s.json", CELL$code, substr(BID, 1, 48)))
+  # ★등록이 먼저다 (2026-09-03). 구판은 spec 을 먼저 쓰고 등록을 시도해서, 거부된 칸의
+  #   산출물이 디스크에 남았다(실측: spec 5 vs 원장 4 — 산출물만 보면 5칸을 돈 것처럼 보인다).
+  #   원장이 정본이므로 원장에 없는 칸의 흔적을 남기지 않는다.
+  att <- tryCatch(rf_append_attempt(1L, BID, SPEC$idea, CELL$axis, .root_papers, wt_id = NULL, root = ROOT,
+                                    unmapped_families = .rpz$unmapped_families,
+                                    # ★실제 적재 여부를 넘긴다 — 상수 TRUE 는 거짓 기록이었다
+                                    axiom_injected = isTRUE(SPEC$preflight$axiom_injected),
+                                    # ★격자 좌표를 등록 시점에 박는다 — 커서의 정본(2026-09-04)
+                                    cell_code = CELL$code),
+                  error = function(e) { jlog("append_failed", base_id = BID, code = CELL$code,
+                                             err = conditionMessage(e)); NULL })
+  if (is.null(att)) {
+    unlink(sp, force = TRUE)
+    # ★거부된 칸은 자리를 잃지 않는다 — 커서가 코드 집합 기반이라 다음 tick 에 다시 잡힌다.
+    #   다만 같은 사유로 계속 거부되면 근면하게 제자리를 돌 뿐이므로 상한에서 멈춰 세운다.
+    .afc <- .append_fail_count(CELL$code, BID)
+    if (.afc >= MAX_RETRY) {
+      jlog("halt_append_stuck", code = CELL$code, fails = .afc,
+           note = "등록 반복 거부 — 조용히 건너뛰지 않는다. 거부 사유를 고치고 재개할 것")
+      break
+    }
+    next
+  }
+  ## ── ★기전 회피 집행은 **등록 뒤** (2026-09-05 이동) ──────────────────────────────
+  ##   실사고 09:14: 이 블록이 등록(att <- rf_append_attempt) 앞에 있어 att$n 을 미정의로
+  ##   읽고 러너가 fatal 로 죽었다 — 8분마다 같은 자리에서 반복되는 결정론적 정지.
+  ##   "예산은 쓰되 측정은 안 한다" 는 등록이 먼저라는 뜻이다. 건너뛴 칸은 spec 을 남기지 않는다.
   ## ── ★기전 회피 목록 집행 (2026-09-04) ──────────────────────────────────────
   ##   실측: avoid 를 읽는 코드가 rf_b1_design_lib.R 하나뿐이었다(B1 설계 프롬프트).
   ##   러너는 안 읽으므로 격자 기본 칸에는 **원리상 안 걸렸다** — 기전이 무엇을 쓰지
@@ -648,17 +681,15 @@ if (!length(jobs)) for (CELL in batch) {
       for (f2 in rev(fs2)) {
         L2 <- tryCatch(fromJSON(f2, simplifyVector = TRUE), error = function(e) NULL)
         av2 <- as.character(unlist((L2 %||% list())$avoid %||% list()))
-        for (x in av2[nzchar(av2)]) {
-          if (!grepl(sprintf("(^|[^A-Za-z0-9_])%s([^0-9]|$)", CELL$code), x)) next
-          ## 측정 무효 사유만 건너뛴다 — 성과 사유는 사실 기록이다
-          if (grepl("측정 무효|편의|편향|누출|look-?ahead|미래참조|PIT", x)) {
-            hit <- x; break
-          } else {
-            jlog("avoid_noted", code = CELL$code, why = substr(x, 1, 120),
-                 note = "기전 회피 목록에 있으나 **성과 사유** — 실행한다(AX-000: 사실 기록이지 금지 목록 아님)")
-          }
-        }
-        if (!is.null(hit)) break
+        ## ★표적 판정은 rf_avoid.R 하나 (2026-09-05). 구판은 셀 코드가 문장 **어디에든** 나오면
+        ##   표적으로 읽어, 조부모 B4 회피문("세 칸이 전부 B2_6 아래이고 … 생존편향")이 손자
+        ##   B2_6(CDaR_LP · 설계 머리 칸)을 측정 무효로 잡았다 — 비교 기준으로 언급된 코드였다.
+        ##   같은 문장의 "B3_13 이 대체한다" 도 표적으로 읽혀 **권고 칸**을 건너뛸 뻔했다.
+        .at <- rf_avoid_target(av2, CELL$code)
+        for (x in .at$noted)
+          jlog("avoid_noted", code = CELL$code, why = substr(x, 1, 120),
+               note = "기전 회피 목록에 있으나 **성과 사유** — 실행한다(AX-000: 사실 기록이지 금지 목록 아님)")
+        if (!is.null(.at$hit)) { hit <- .at$hit; break }
       }
     }
     hit
@@ -675,33 +706,6 @@ if (!length(jobs)) for (CELL in batch) {
     next
   }
 
-  # ★spec 경로에 entry 식별자를 넣는다. 구판은 spec_<code>.json 고정이라 다음 entry 가
-  #   같은 이름으로 덮어썼고, 원장이 그 경로를 가리키는 채로 **부모 스펙이 소실**됐다
-  #   (2026-08-31: 부모 B3_12 의 spec 을 열면 자식 것이 나온다 — 사후 재현 불가).
-  sp <- file.path(WDIR, sprintf("spec_%s__%s.json", CELL$code, substr(BID, 1, 48)))
-  # ★등록이 먼저다 (2026-09-03). 구판은 spec 을 먼저 쓰고 등록을 시도해서, 거부된 칸의
-  #   산출물이 디스크에 남았다(실측: spec 5 vs 원장 4 — 산출물만 보면 5칸을 돈 것처럼 보인다).
-  #   원장이 정본이므로 원장에 없는 칸의 흔적을 남기지 않는다.
-  att <- tryCatch(rf_append_attempt(1L, BID, SPEC$idea, CELL$axis, .root_papers, wt_id = NULL, root = ROOT,
-                                    unmapped_families = .rpz$unmapped_families,
-                                    # ★실제 적재 여부를 넘긴다 — 상수 TRUE 는 거짓 기록이었다
-                                    axiom_injected = isTRUE(SPEC$preflight$axiom_injected),
-                                    # ★격자 좌표를 등록 시점에 박는다 — 커서의 정본(2026-09-04)
-                                    cell_code = CELL$code),
-                  error = function(e) { jlog("append_failed", base_id = BID, code = CELL$code,
-                                             err = conditionMessage(e)); NULL })
-  if (is.null(att)) {
-    unlink(sp, force = TRUE)
-    # ★거부된 칸은 자리를 잃지 않는다 — 커서가 코드 집합 기반이라 다음 tick 에 다시 잡힌다.
-    #   다만 같은 사유로 계속 거부되면 근면하게 제자리를 돌 뿐이므로 상한에서 멈춰 세운다.
-    .afc <- .append_fail_count(CELL$code, BID)
-    if (.afc >= MAX_RETRY) {
-      jlog("halt_append_stuck", code = CELL$code, fails = .afc,
-           note = "등록 반복 거부 — 조용히 건너뛰지 않는다. 거부 사유를 고치고 재개할 것")
-      break
-    }
-    next
-  }
   write(toJSON(SPEC, auto_unbox = TRUE, pretty = TRUE, null = "null"), sp)
   # ★중복 판정 — 배치 안 · entry 안 · **전 entry**(2026-09-03 확장) 세 층을 본다.
   #   먼저 온 칸 하나는 측정하고 나머지를 닫는다. 같은 포트폴리오에 다른 이름을 붙이지 않는다.

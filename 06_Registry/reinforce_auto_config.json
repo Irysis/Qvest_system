@@ -72,7 +72,7 @@
       "QVEST_RP_EFFORT"
     ],
     "rationale": "★2026-09-04 도훈 결정 — 모델 claude-fable-5-1 · 노력수준은 **레인마다 다르게**. 하나로 정하면 손해다: 레인마다 한 번 실패의 대가가 다르다. 실측(9월 로그): replication 은 28회 착수에 재구현 10회이고 한 번 실패가 에이전트 12분 + 측정 + 팬아웃 6축을 다시 태운다 -> max. b1_design/lcode_mechanism/overlay_propose 는 단발이고 폴백·probe 가 뒤에 있어 실패가 싸다 -> high. fidelity_audit 은 팬아웃으로 축이 좁아져(6축 각자 논문 한 절) 요구 깊이가 줄었다 -> xhigh. ★구 근거(2026-08-29 '최고 산출이 전부 깊은 opus 단일 에이전트에서 나왔다')는 사실 기록으로 남지만 Fable 5.1 이 이 레인에 붙기 전 관측이다 — 재보는 것이 맞다. 설정이 중앙화돼 있어 한 줄씩 되돌릴 수 있다.",
-    "consumed_by": "02_Infrastructure/ops/rf_llm_env.sh::rf_llm_resolve — 네 레인(replication·overlay_propose·b1_design·fidelity_audit)이 여기서 읽는다. ★2026-09-04 이전에는 이 블록을 **읽는 코드가 0건**이었고 각 레인이 자기 기본값(:-opus/:-max)을 들고 있었다 — 정책을 적어 둔 문서를 아무도 소비하지 않는 상태였다.",
+    "consumed_by": "02_Infrastructure/ops/rf_llm_env.sh::rf_llm_resolve — 다섯 레인(replication·overlay_propose·b1_design·fidelity_audit·cleaner_distill)이 여기서 읽는다. ★2026-09-04 이전에는 이 블록을 **읽는 코드가 0건**이었고 각 레인이 자기 기본값(:-opus/:-max)을 들고 있었다 — 정책을 적어 둔 문서를 아무도 소비하지 않는 상태였다.",
     "lanes": {
       "replication": {
         "model": "opus",
@@ -95,6 +95,11 @@
       "overlay_propose": {
         "model": "opus",
         "effort": "high"
+      },
+      "cleaner_distill": {
+        "model": "opus",
+        "effort": "high",
+        "note": "단발 회차이고 뒤에 기계 검증 + 일간 재시도가 있어 한 번 실패가 싸다(b1_design 과 같은 성격). 다만 digest 실측 추적과 적대검증 5체크가 길어 xhigh 로 올릴 여지는 있다 — 백로그 드레인 품질을 보고 재보정."
       }
     },
     "prev_setting": {
@@ -199,5 +204,26 @@
     "next_block": "B5",
     "next_block_source": "rf_block_order_decide 재도출 — CAGR 0.207 >= 0.16 · Calmar 0.364 < 0.64 → 위험 축 2번째 (B1 then B5 then B2 then B3 then B4)",
     "note": "★블록 L-code 의 next_probe 는 'B2(weighting)' 라고 적혀 있다 — rf_block_lcode.R 이 격자 **정적 선언 순서**(ids[k+1])를 읽어서다. 실행은 적응 순서를 따르므로 서술과 집행이 갈린다(별건 수리 대상). 부팅 Last: 줄이 그 서술을 전재한다."
+  },
+  "repair_20260905_avoid": {
+    "at": "2026-09-05T09:26:28+0900",
+    "incident": "09:14 promo2 B2 첫 칸에서 러너 fatal(객체 'att' 미정의) — 기전 회피 집행 블록이 등록(rf_append_attempt) 앞에 있어 att$n 을 읽었다. 8분마다 같은 자리 반복(결정론적 정지).",
+    "hidden_defect": "죽지 않았다면 조부모 B4 회피문(\"세 칸이 전부 B2_6 아래이고 … 생존편향\")이 손자 B2_6(CDaR_LP · B2 설계 머리 칸)을 측정 무효로 잡아 조용히 미측정으로 남겼다. 표적 판정이 '코드가 문장 어디에든' 이었고 entry 를 넘으면 셀 코드는 같은 스펙도 아니다. 같은 규칙은 B3_11 회피문의 'B3_13 이 대체한다' 로 권고 칸까지 건너뛴다.",
+    "fix": "①집행 블록을 등록 뒤로 이동 ②표적 판정을 rf_avoid.R 로 추출 — 문장이 셀 코드로 시작할 때만 표적(오판 방향 = 놓치면 잰다, AX-000). 부모 사슬 walk 는 유지.",
+    "tests": "08_Tests/reinforcement/test_rf_avoid_target.R 11/11 (실물 실사고 문장 픽스처 · 돌연변이 통제 · 러너 정적 5축) · test_rf_block_design_schema.R 20/20 (G1~G5 생존). 배터리 등록은 다른 세션이 test_reinforce_auto.sh 수리 중이라 보류.",
+    "transport_trap": "heredoc 이 백슬래시를 반으로 접었다(\\[ → \\[) — 헬퍼·검사 둘 다 정규식에서 백슬래시를 없애는 쪽으로 해결(기록: reference-r-backreference-becomes-octal-escape 계열)."
+  },
+  "cleaner_distill": {
+    "enabled": true,
+    "note": "★도훈 지시 2026-09-05 — 주간 증류를 무인화한다. 구판은 스윕(토 09:00)이 재료만 쌓고 status=awaiting_distill 로 멈춘 뒤 다음 대화 세션의 /cleaner 가 증류하기로 되어 있었는데, 그 세션이 3주 안 왔다(digest 마지막 2026-08-15 · pending_5axis 49→104건). 2026-07-04 '증류 자동화 금지' 와 2026-08-30 '모든 작업을 무인화' 가 충돌하던 지점이고, 도훈이 무인화로 정합했다. 범위 = digest(실측만) + DIST pending_5axis→proposed 자동초안(적대검증 5체크) + 미적립 L-code + 잔재 삭제. ★삭제 판단은 LLM 위임(도훈 2026-09-05)이되 집행은 기계가 재도출로 검증한다 — 에이전트에겐 Bash 가 없고 삭제 요청 JSON 만 낸다.",
+    "scope_note": "★불변: proposed → distilled 활성화는 여전히 도훈 승인(INV-6, approve_proposed). 초안은 주입 3배선에 들어가지 않는다. 공리(AX-*) 활성화는 별개 층으로 refine_statement.R R0~R6 이 무인 판정한다(2026-08-30) — 두 계층을 섞지 말 것.",
+    "max_drafts": 8,
+    "max_drafts_note": "한 회차 DIST 초안 상한. SKILL 백로그 드레인 규약의 '세션당 최소 5건+' 을 무인 회차로 옮긴 값이며, 우선순위는 supporting L-code 수 상위. 백로그 104건이라 이 값이 곧 드레인 속도다 — 낮추면 백로그가 다시 쌓인다.",
+    "claim_stale_hours": 6,
+    "ignore_reinforce_claim": false,
+    "conflict_note": "★2계층 충돌 회피(도훈 2026-09-05 '2계층 리서치 프로세스와 운용상 충돌없게'). Qvest_ReinforceAutoLoop 은 ~20분마다 돌며 강화 칸 5개 + LLM 레인 3종을 띄우는데 주간 클리너는 토 09:00 이라 정면으로 겹친다. gate 가 reinforce claim(owner.json pid 생존)·sweep lock·distill claim 을 보고 겹치면 **연기**한다. 연기는 취소가 아니다 — pending 이 남고 morning_run [0.75] 일간 훅이 다음 날 집으므로 한 주를 통째로 잃지 않는다. ignore_reinforce_claim=true 는 검사 전용.",
+    "kill_switch": "cleaner_distill.enabled=false 면 레인이 즉시 물러나고 구판(스윕만 무인 + 세션 /cleaner 증류)으로 돌아간다. 스윕 자체는 영향 없음.",
+    "protected_paths": "06_Registry/cleaner_protected_paths.json",
+    "consumed_by": "02_Infrastructure/ops/cleaner_distill_run.sh · 02_Infrastructure/ops/cleaner_distill_lib.R"
   }
 }
