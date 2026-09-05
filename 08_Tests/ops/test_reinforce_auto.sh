@@ -7,7 +7,13 @@
 #   ①정상 경로에서 통과하는가 ②위반을 주입하면 실제로 막는가 를 **둘 다** 건다.
 #
 # 실행: bash 08_Tests/ops/test_reinforce_auto.sh
-# 부작용 없음 — 원장·산출물에 쓰지 않는다(kill switch off 상태에서만 러너를 부른다).
+# 부작용 없음 — 러너를 부르는 절(2·2b·3)은 **격리 샌드박스 ROOT** 에서 돈다(설정·claim·로그·원장 전부 사본).
+#   구판은 "kill switch off 상태에서만 러너를 부른다" 로 안전을 샀는데, 그러면 enabled=true 경로
+#   (daily_cap·claim)를 실물로 못 잰다. 샌드박스는 그 교환을 없앤다 — 가드가 전부 깨져도 러너가
+#   닿는 곳은 빈 사본 원장이라 halt_no_active_entry 로 끝난다.
+# 2026-09-05 이설: 2·3 절이 퇴역한 reinforce_auto_run.R 을 부르고 있어 세 항목이 죽은 표적에
+#   빨강을 냈고, 정작 **실행되는 유일한 러너**에서는 그 셋이 미검증이었다. 표적을 옮기고
+#   퇴역 사실은 3c 절의 독립 항목으로 분리했다.
 #==============================================================================
 set -uo pipefail
 ROOT="${QM_ROOT:-C:/Users/99922/OneDrive/Quant_Module_Moltbot}"
@@ -28,8 +34,88 @@ PASS=0; FAIL=0
 ok(){ printf '  OK   %s\n' "$1"; PASS=$((PASS+1)); }
 ng(){ printf '  FAIL %s — %s\n' "$1" "${2:-}"; FAIL=$((FAIL+1)); }
 
+#── ★격리 샌드박스 ROOT (2026-09-05) ──────────────────────────────────────────
+# 왜 필요한가: QVEST_RF_CONFIG·QVEST_RF_CLAIM 은 **설정과 mutex 만** 격리한다. 러너의
+#   나머지 데이터 경로(원장·로그·산출물)는 ROOT 에서 나오고 ROOT 는 QM_ROOT 에서 나오는데,
+#   자식 R 프로세스의 QM_ROOT 는 ~/.Renviron 이 덮어써서 env 로 못 바꾼다(실측 카드 존재).
+#   탈출구는 R_ENVIRON_USER 다 — 빈 파일을 가리키면 ~/.Renviron 이 안 읽히고 상속 env 가 이긴다.
+# 무엇을 사는가: 러너가 가드를 통과해 **버려도** 빈 샌드박스 원장에 닿아 halt_no_active_entry
+#   로 끝난다. 즉 mutex 가 깨진 순간에도 검사가 살아있는 스케줄러 옆에서 진짜 배치를 띄울 길이
+#   없다. 덤으로 jlog 가 공유 .cache/reinforce_auto_log.jsonl 을 더는 오염시키지 않는다.
+# ★경로 정규화 — QM_ROOT 는 역슬래시로 들어온다(C:\Users\...). 그 문자열을 bash glob 에 넣으면
+#   역슬래시가 이스케이프로 먹혀 패턴이 통째로 빈다(샌드박스 재료를 glob 으로 뜬다). R 문자열
+#   리터럴에 넣으면 '\U' 가 이스케이프로 읽혀 죽는다. 그래서 여기서 한 번 뒤집어 쓴다.
+#   ★치환 자체에 역슬래시 문자를 안 쓴다 — 셸·sed·awk·R 이 층마다 다르게 먹는다(실측 카드 3장).
+ROOTF="$("$PY" -c "import sys;print(sys.argv[1].replace(chr(92),chr(47)))" "$ROOT")"
+SBX="$ROOTF/.cache/_test_rf_sandbox"
+SBX_LOG="$SBX/.cache/reinforce_auto_log.jsonl"
+CLAIM_UNIT="$ROOTF/.cache/_test_rf_claim_unit"
+FIXPID_F="$ROOTF/.cache/_test_rf_fixture.pid"
+
+sbx_build(){
+  rm -rf "$SBX"
+  mkdir -p "$SBX/02_Infrastructure/ops" "$SBX/02_Infrastructure/reinforcement" "$SBX/06_Registry" "$SBX/.cache"
+  : > "$SBX/empty.Renviron"
+  # ★재료를 손으로 고르지 않는다 — 러너가 source() 를 하나 늘리면 그날로 픽스처가 낡아
+  #   '가드 통과' 자리에서 엉뚱한 이유로 죽는다(2026-09-05 실측: rf_avoid.R 추출 당일 발생).
+  #   두 디렉터리의 .R 을 통째로 뜬다(≈1.4MB · 검사 1회). 완결성은 아래 절이 재도출로 확인한다.
+  cp "$ROOTF"/02_Infrastructure/ops/*.R           "$SBX/02_Infrastructure/ops/"           2>/dev/null
+  cp "$ROOTF"/02_Infrastructure/reinforcement/*.R "$SBX/02_Infrastructure/reinforcement/" 2>/dev/null
+  cp "$ROOTF/06_Registry/reinforce_program.json"  "$SBX/06_Registry/"
+  # ★원장은 **빈 사본**이다 — 진짜 원장을 뜨면 활성 entry 가 따라와 러너가 실제 칸을 돌린다.
+  printf '%s\n' '{"schema_version":"reinforce_ledger_v2","layer":1,"max_attempts":25,"entries":[],"last_updated":""}' \
+    > "$SBX/06_Registry/reinforce_ledger_l1.json"
+  cat > "$SBX/claim_probe.R" <<'RPROBE'
+# rf_claim 단위 검사 — 러너를 안 거치고 mutex 자체를 양방향으로 잰다.
+# ★계기(rf_claim_pid_alive)도 함께 잰다: 2026-09-05 실측에서 픽스처가 bash sleep 의 PID
+#   (= MSYS pid, tasklist 에 안 잡힌다)를 owner.json 에 넣는 바람에 "소유자 사망" 이 나오고
+#   가짜 MUTEX_DEFECT 가 났다. 픽스처는 실제 PID 공간을 흉내내야 한다 — R 의 Sys.getpid() 는 진짜다.
+args <- commandArgs(trailingOnly = TRUE)
+ROOT <- args[1]; CL <- args[2]
+suppressMessages(library(jsonlite))
+suppressMessages(source(file.path(ROOT, "02_Infrastructure/ops/rf_claim.R")))
+unlink(CL, recursive = TRUE); dir.create(CL, recursive = TRUE, showWarnings = FALSE)
+self <- Sys.getpid(); DEAD <- 999901L
+wr <- function(pid) writeLines(toJSON(list(pid = pid,
+        started_at = format(Sys.time(), "%Y-%m-%dT%H:%M:%S%z"), host = "fixture"),
+        auto_unbox = TRUE), file.path(CL, "owner.json"))
+r <- list()
+r$instr_self_alive <- isTRUE(rf_claim_pid_alive(self))    # 양성 대조: 살아있는 걸 살았다고 하는가
+r$instr_dead_alive <- isTRUE(rf_claim_pid_alive(DEAD))    # 위반 주입: 없는 pid 를 죽었다고 하는가
+wr(self); a1 <- rf_claim_acquire(CL, stale_hours = 6)
+r$live_ok <- isTRUE(a1$ok); r$live_reason <- as.character(a1$reason %||% "")
+r$live_owner_kept <- identical(as.integer(a1$owner_pid), as.integer(self))
+wr(DEAD); a2 <- rf_claim_acquire(CL, stale_hours = 6)
+r$dead_ok <- isTRUE(a2$ok); r$dead_reason <- as.character(a2$reason %||% "")
+o <- tryCatch(fromJSON(file.path(CL, "owner.json"), simplifyVector = TRUE), error = function(e) NULL)
+r$dead_owner_replaced <- !is.null(o) && identical(as.integer(o$pid), as.integer(self))
+unlink(CL, recursive = TRUE)
+cat(toJSON(r, auto_unbox = TRUE), "\n")
+RPROBE
+}
+
+# 현행 러너 1회 실행 (샌드박스 ROOT + 격리 설정 + 격리 claim). 표준출력 반환 · rc 는 호출자가 $? 로.
+# ★QVEST_RF_CLAIM_HELD 는 반드시 지운다 — 그게 켜져 있으면 claim 획득 자체를 건너뛰어
+#   mutex 검사가 '통과' 로 위장된다(위임 호출용 플래그다).
+rf_run(){ env -u QVEST_RF_CLAIM_HELD QM_ROOT="$SBX" CLAUDE_PROJECT_DIR="$SBX" \
+            R_ENVIRON_USER="$SBX/empty.Renviron" QVEST_RF_CONFIG="$CFG" QVEST_RF_CLAIM="$CLAIM" \
+            timeout 300 Rscript "$ROOTF/02_Infrastructure/ops/reinforce_auto_parallel.R" 2>&1; }
+# $1 = enabled(1/0) · $2 = daily_cap
+cfg_set(){ "$PY" -c "
+import io,json,sys;p=r'$CFG';d=json.load(io.open(p,encoding='utf-8'))
+d['enabled']=(sys.argv[1]=='1');d['daily_cap']=int(sys.argv[2])
+io.open(p,'w',encoding='utf-8').write(json.dumps(d,ensure_ascii=False,indent=1))" "$1" "$2"; }
+# $1 = cell_done 건수 · $2 = 며칠 전 (0=오늘). 샌드박스 로그에만 쓴다.
+sbx_log_set(){ "$PY" -c "
+import io,json,sys,datetime
+p=r'$SBX_LOG';n=int(sys.argv[1]);off=int(sys.argv[2])
+d=(datetime.date.today()-datetime.timedelta(days=off)).strftime('%Y-%m-%d')
+io.open(p,'w',encoding='utf-8').write(''.join(json.dumps({'ts':d+'T10:00:00+0900','event':'cell_done','src':'fixture'})+'\n' for _ in range(n)))" "$1" "$2"; }
 BAK="$(mktemp)"; cp "$CFG" "$BAK" 2>/dev/null   # 사본의 사본 — 공유 설정 무접촉
-restore(){ [ -s "$BAK" ] && cp "$BAK" "$CFG"; rm -f "$BAK" "$CFG"; rm -rf "$CLAIM"; unset QVEST_RF_CONFIG QVEST_RF_CLAIM; }
+restore(){ [ -s "$BAK" ] && cp "$BAK" "$CFG"; rm -f "$BAK" "$CFG"; rm -rf "$CLAIM" "$CLAIM_UNIT"
+           # 배경 픽스처(살아있는 소유자 pid)가 남았으면 **Windows pid** 로 정리한다 — bash kill 은 MSYS pid 를 본다
+           [ -s "$FIXPID_F" ] && taskkill //F //PID "$(cat "$FIXPID_F")" >/dev/null 2>&1
+           rm -f "$FIXPID_F"; rm -rf "$SBX"; unset QVEST_RF_CONFIG QVEST_RF_CLAIM; return 0; }
 trap restore EXIT
 
 echo "=== 1. 구문 ==="
@@ -41,36 +127,130 @@ done
 if "$PY" -c "import ast,io,sys; ast.parse(io.open('02_Infrastructure/ops/rf_next_paper_pick.py',encoding='utf-8').read())" 2>/dev/null; then
   ok "parse rf_next_paper_pick.py"; else ng "parse rf_next_paper_pick.py"; fi
 
-echo "=== 2. kill switch (양방향) ==="
+echo "=== 2. kill switch (양방향 · 현행 러너) ==="
+# ★2026-09-05 이설: 이 절과 아래 두 절은 **퇴역한** reinforce_auto_run.R 을 부르고 있었다.
+#   세 항목이 전부 퇴역 배너(rc=3)에 걸려 빨갛게 죽었고, 그 사이 **실행되는 유일한 러너**
+#   (reinforce_auto_parallel.R)에서는 kill switch·daily_cap·claim 세 불변식이 미검증이었다.
+#   죽은 표적에 빨강을 내는 것은 낡은 목록에 초록을 내는 것과 같은 구멍이다 — 표적을 옮긴다.
+sbx_build
+# 픽스처 무결성 — 샌드박스 사본이 원본과 바이트 동일한가(낡은 픽스처 = 상시 오탐)
+if cmp -s "$ROOTF/02_Infrastructure/ops/rf_claim.R" "$SBX/02_Infrastructure/ops/rf_claim.R"; then
+  ok "샌드박스 rf_claim.R 사본 = 원본 (픽스처 무결)"; else ng "샌드박스 rf_claim.R 사본이 원본과 다르다"; fi
+
 # ②위반 주입: enabled=false → 반드시 즉시 정지하고 아무것도 안 한다
-"$PY" -c "
-import io,json;p=r'$CFG';d=json.load(io.open(p,encoding='utf-8'));d['enabled']=False
-io.open(p,'w',encoding='utf-8').write(json.dumps(d,ensure_ascii=False,indent=1))"
-OUT=$(Rscript 02_Infrastructure/ops/reinforce_auto_run.R 2>&1)
-if printf '%s' "$OUT" | grep -q "halt_disabled"; then ok "kill switch off → halt_disabled"; else ng "kill switch off" "$(printf '%s' "$OUT" | head -2)"; fi
+cfg_set 0 120; sbx_log_set 0 0
+OUT=$(rf_run); RC=$?
+if printf '%s' "$OUT" | grep -q "halt_disabled"; then ok "kill switch off → halt_disabled(현행 러너)"
+else ng "kill switch off" "$(printf '%s' "$OUT" | head -2)"; fi
+if [ "$RC" = "0" ]; then ok "kill switch off → rc=0 (스케줄러가 실패로 안 읽는다)"
+else ng "kill switch off rc=$RC (기대 0)" "$(printf '%s' "$OUT" | head -2)"; fi
 if [ -d "$CLAIM" ]; then ng "kill switch off 인데 claim 을 잡았다"; else ok "kill switch off → claim 미점유"; fi
 
 # ①정상 대조: enabled=true 면 halt_disabled 가 아니어야 한다(다른 사유로는 멈출 수 있다)
-"$PY" -c "
-import io,json;p=r'$CFG';d=json.load(io.open(p,encoding='utf-8'));d['enabled']=True;d['daily_cap']=0
-io.open(p,'w',encoding='utf-8').write(json.dumps(d,ensure_ascii=False,indent=1))"
-OUT=$(Rscript 02_Infrastructure/ops/reinforce_auto_run.R 2>&1)
-if printf '%s' "$OUT" | grep -q "halt_disabled"; then ng "enabled=true 인데 halt_disabled" ; else ok "enabled=true → kill switch 통과"; fi
-# ②daily_cap=0 주입 → 예산 가드가 실제로 막는가
-if printf '%s' "$OUT" | grep -q "halt_daily_cap"; then ok "daily_cap 가드 발화"; else ng "daily_cap=0 인데 미발화" "$(printf '%s' "$OUT" | head -2)"; fi
+cfg_set 1 9999; sbx_log_set 0 0
+OUT=$(rf_run); rm -rf "$CLAIM"
+if printf '%s' "$OUT" | grep -q "halt_disabled"; then ng "enabled=true 인데 halt_disabled" "$(printf '%s' "$OUT" | head -2)"
+else ok "enabled=true → kill switch 통과"; fi
+# ★픽스처 완결성 — 가드를 다 통과했을 때 러너가 **빈 사본 원장**에 착지하는가.
+#   이게 깨지면 아래 '미발화' 항목들이 "가드를 지났다" 가 아니라 "앞에서 죽었다" 를 통과로 읽는다
+#   (계기가 재야 할 것 대신 재기 쉬운 것을 잰다 — 이 저장소가 반복해 적은 병).
+if printf '%s' "$OUT" | grep -q "halt_no_active_entry"; then ok "샌드박스 완결 — 가드 통과 시 빈 원장 착지(부작용 0)"
+else ng "샌드박스 픽스처 불완전 — main 미도달" "$(printf '%s' "$OUT" | grep -o "cannot open file '[^']*'" | head -1)"; fi
 
-echo "=== 3. claim mutex (양방향) ==="
-# ★daily_cap 은 claim 보다 **먼저** 판정된다. 오늘 실행분이 많으면 claim 축에 닿기도 전에
-#   halt_daily_cap 으로 멈춰 이 검사가 엉뚱한 이유로 실패한다(2026-08-30 실사고).
-#   그래서 claim 축만 재도록 상한을 충분히 올린다.
-"$PY" -c "
-import io,json;p=r'$CFG';d=json.load(io.open(p,encoding='utf-8'));d['enabled']=True;d['daily_cap']=9999
-io.open(p,'w',encoding='utf-8').write(json.dumps(d,ensure_ascii=False,indent=1))"
-mkdir -p "$CLAIM"                       # ②위반 주입: 이미 점유된 상태
-OUT=$(Rscript 02_Infrastructure/ops/reinforce_auto_run.R 2>&1)
-if printf '%s' "$OUT" | grep -q "halt_claimed"; then ok "claim 점유 중 → halt_claimed"; else ng "claim 점유 무시" "$(printf '%s' "$OUT" | head -2)"; fi
-rm -rf "$CLAIM"
+echo "=== 2b. daily_cap 예산 가드 (4방향 · 현행 러너) ==="
+# ★세는 범위를 먼저 선언한다: done_today = **오늘 날짜의 cell_done 이벤트 수**, 경계는 done >= cap.
+#   네 칸을 다 건다 — 경계 두 방향 + 날짜 범위 두 방향. 미발화 쪽은 "발화 안 했다" 로 끝내지 않고
+#   **가드를 지나 main 에 닿았다는 증거**(halt_no_active_entry)까지 요구한다.
+cfg_set 1 0; sbx_log_set 0 0
+OUT=$(rf_run); rm -rf "$CLAIM"
+if printf '%s' "$OUT" | grep -q "halt_daily_cap"; then ok "cap=0 · 오늘 0건 → 발화 (done>=cap 경계)"
+else ng "daily_cap=0 인데 미발화" "$(printf '%s' "$OUT" | head -2)"; fi
+cfg_set 1 3; sbx_log_set 3 0
+OUT=$(rf_run); rm -rf "$CLAIM"
+if printf '%s' "$OUT" | grep -q "halt_daily_cap done=3 cap=3"; then ok "cap=3 · 오늘 3건 → 발화 (동수도 정지)"
+else ng "cap=3 · 오늘 3건인데 미발화" "$(printf '%s' "$OUT" | head -2)"; fi
+cfg_set 1 3; sbx_log_set 2 0
+OUT=$(rf_run); rm -rf "$CLAIM"
+if printf '%s' "$OUT" | grep -q "halt_daily_cap"; then ng "cap=3 · 오늘 2건인데 발화 — 예산이 남았는데 막았다" "$(printf '%s' "$OUT" | head -2)"
+elif printf '%s' "$OUT" | grep -q "halt_no_active_entry"; then ok "cap=3 · 오늘 2건 → 미발화 (가드 통과 확인)"
+else ng "cap=3 · 오늘 2건 — 통과 증거(main 도달) 없음" "$(printf '%s' "$OUT" | head -2)"; fi
+cfg_set 1 3; sbx_log_set 9 1
+OUT=$(rf_run); rm -rf "$CLAIM"
+if printf '%s' "$OUT" | grep -q "halt_daily_cap"; then ng "어제 9건이 오늘 예산을 먹었다 — 세는 범위 오류" "$(printf '%s' "$OUT" | head -2)"
+elif printf '%s' "$OUT" | grep -q "halt_no_active_entry"; then ok "cap=3 · 어제 9건 → 미발화 (오늘만 센다)"
+else ng "cap=3 · 어제 9건 — 통과 증거(main 도달) 없음" "$(printf '%s' "$OUT" | head -2)"; fi
+
+echo "=== 3. claim mutex (양방향 · 계기 포함) ==="
+# 3a. 단위 — rf_claim_acquire 자체를 양방향으로. 러너를 안 거치므로 부작용이 원천적으로 없다.
+PROBE=$(Rscript "$SBX/claim_probe.R" "$ROOTF" "$CLAIM_UNIT" 2>&1 | tail -1)
+jget(){ printf '%s' "$PROBE" | "$PY" -c "
+import sys,json
+try: print(json.loads(sys.stdin.read()).get(sys.argv[1]))
+except Exception: print('PARSE_FAIL')" "$1" 2>/dev/null; }
+if [ "$(jget instr_self_alive)" = "True" ]; then ok "계기 양성 대조 — rf_claim_pid_alive(살아있는 Windows pid)=TRUE"
+else ng "계기가 살아있는 pid 를 사망으로 읽는다 — 가짜 MUTEX_DEFECT 원천" "$PROBE"; fi
+if [ "$(jget instr_dead_alive)" = "False" ]; then ok "계기 위반 주입 — rf_claim_pid_alive(없는 pid)=FALSE"
+else ng "계기가 없는 pid 를 생존으로 읽는다 — 고아 claim 영구 정지" "$PROBE"; fi
+if [ "$(jget live_ok)" = "False" ] && [ "$(jget live_reason)" = "claimed" ]; then
+  ok "살아있는 소유자 pid → 인수 거부 (reason=claimed)"; else ng "살아있는 소유자 claim 을 빼앗았다" "$PROBE"; fi
+if [ "$(jget live_owner_kept)" = "True" ]; then ok "거부 시 owner_pid 를 그대로 보고(누가 쥐었는지 남는다)"
+else ng "거부했는데 소유자 pid 를 못 낸다 — 정상 대기와 구분 불가" "$PROBE"; fi
+if [ "$(jget dead_ok)" = "True" ] && [ "$(jget dead_reason)" = "acquired" ]; then
+  ok "죽은 소유자 pid → 나이 무관 즉시 회수 (reason=acquired)"; else ng "죽은 소유자 claim 을 회수 못 한다" "$PROBE"; fi
+if [ "$(jget dead_owner_replaced)" = "True" ]; then ok "회수 후 owner.json 이 새 소유자로 교체"
+else ng "회수했다면서 owner.json 이 안 바뀌었다" "$PROBE"; fi
+
+# 3b. 통합 — 살아있는 Windows 소유자가 claim 을 쥐고 있을 때 **현행 러너**가 물러나는가.
+#   ★daily_cap 은 claim 보다 먼저 판정되므로 상한을 올려 claim 축만 재도록 한다(2026-08-30 실사고).
+cfg_set 1 9999; sbx_log_set 0 0
+rm -rf "$CLAIM"; mkdir -p "$CLAIM"
+# 배경 R 프로세스가 자기 Sys.getpid() 를 owner.json 에 적는다 — R 의 pid 는 MSYS 가 아니라 진짜 Windows pid 다.
+Rscript -e 'writeLines(jsonlite::toJSON(list(pid=Sys.getpid(), started_at=format(Sys.time(), "%Y-%m-%dT%H:%M:%S%z"), host="fixture"), auto_unbox=TRUE), file.path(Sys.getenv("QVEST_RF_CLAIM"), "owner.json")); Sys.sleep(180)' >/dev/null 2>&1 &
+BG_MSYS=$!
+for _ in $(seq 1 80); do [ -s "$CLAIM/owner.json" ] && break; sleep 0.5; done
+OWNER=$("$PY" -c "
+import io,json
+try: print(json.load(io.open(r'$CLAIM/owner.json',encoding='utf-8'))['pid'])
+except Exception: print('')" 2>/dev/null)
+# ★경로·pid 는 env 로 넘긴다 — R 문자열 리터럴에 Windows 경로를 박으면 '\U' 가 이스케이프로 읽혀 죽는다.
+if [ -z "$OWNER" ]; then ALIVE="(no-owner)"
+else printf '%s' "$OWNER" > "$FIXPID_F"
+     ALIVE=$(RF_PROBE_SRC="$ROOTF/02_Infrastructure/ops/rf_claim.R" RF_PROBE_PID="$OWNER" \
+             Rscript -e 'source(Sys.getenv("RF_PROBE_SRC")); cat(rf_claim_pid_alive(as.integer(Sys.getenv("RF_PROBE_PID"))))' 2>/dev/null | tail -1); fi
+if [ "$ALIVE" = "TRUE" ]; then ok "픽스처 소유자 pid($OWNER) 가 실제로 살아있다 — 검사 전제 성립"
+else ng "픽스처 pid($OWNER) 가 tasklist 에 없다 — 이 상태의 halt_claimed 는 무의미" "alive=$ALIVE"; fi
+OUT=$(rf_run)
+if printf '%s' "$OUT" | grep -q "halt_claimed"; then ok "살아있는 소유자 claim → 현행 러너 halt_claimed"
+else ng "claim 점유 무시(현행 러너)" "$(printf '%s' "$OUT" | head -2)"; fi
+if printf '%s' "$OUT" | grep -q "halt_no_active_entry"; then ng "claim 을 뚫고 main 까지 갔다 — mutex 무력"
+else ok "claim 에서 멈춤 — main 미진입"; fi
+[ -n "$OWNER" ] && taskkill //F //PID "$OWNER" >/dev/null 2>&1
+kill "$BG_MSYS" >/dev/null 2>&1; wait "$BG_MSYS" 2>/dev/null
+rm -f "$FIXPID_F"; rm -rf "$CLAIM"
 if [ ! -d "$CLAIM" ]; then ok "claim 해제 확인"; else ng "claim 해제 실패"; fi
+
+echo "=== 3c. 퇴역 러너 — 실행 경로에서 빠졌는가 (양방향) ==="
+# ★퇴역 사실 자체는 검사할 값이 있다. 다만 그것을 위 세 불변식의 **커버리지로 세면 안 된다** —
+#   그게 2026-09-05 의 구멍이었다. 여기서는 "퇴역 경로가 실행을 거부하는가" 만 묻는다.
+OUT=$(env -u QVEST_RF_ALLOW_SEQ Rscript "$ROOTF/02_Infrastructure/ops/reinforce_auto_run.R" 2>&1); RC=$?
+if [ "$RC" = "3" ] && printf '%s' "$OUT" | grep -q "퇴역된 러너"; then ok "퇴역 러너 직접 실행 거부 (rc=3)"
+else ng "퇴역 러너가 그냥 돈다" "rc=$RC $(printf '%s' "$OUT" | head -1)"; fi
+# ①반대 방향: 탈출구가 실제로 열리는가 — 조건부 가드지 무조건 벽이 아님을 보인다(디버깅 경로 생존).
+cfg_set 0 120
+OUT=$(env QVEST_RF_ALLOW_SEQ=1 QM_ROOT="$SBX" CLAUDE_PROJECT_DIR="$SBX" R_ENVIRON_USER="$SBX/empty.Renviron" QVEST_RF_CONFIG="$CFG" QVEST_RF_CLAIM="$CLAIM" timeout 120 Rscript "$ROOTF/02_Infrastructure/ops/reinforce_auto_run.R" 2>&1); rm -rf "$CLAIM"
+if printf '%s' "$OUT" | grep -q "퇴역된 러너"; then ng "탈출구 QVEST_RF_ALLOW_SEQ=1 이 안 먹는다" "$(printf '%s' "$OUT" | head -1)"
+elif printf '%s' "$OUT" | grep -q "halt_disabled"; then ok "탈출구 → 가드 통과(kill switch 까지 도달)"
+else ng "탈출구는 통과했는데 kill switch 미도달" "$(printf '%s' "$OUT" | head -2)"; fi
+# 스케줄 진입점이 퇴역 러너를 안 부른다 (주석 제외 — 판정 축은 실행 코드다)
+TICK_NC=$(sed 's/#.*$//' 02_Infrastructure/ops/reinforce_auto_tick.sh)
+if printf '%s' "$TICK_NC" | grep -q "reinforce_auto_parallel.R" && ! printf '%s' "$TICK_NC" | grep -q "reinforce_auto_run.R"; then
+  ok "tick 진입점이 현행 러너만 호출"; else ng "tick 이 퇴역 러너를 부른다(또는 현행 러너를 안 부른다)"; fi
+TICKPRB="$ROOT/.cache/_rf_tick_probe.sh"
+echo 'Rscript "$ROOT/02_Infrastructure/ops/reinforce_auto_run.R"' > "$TICKPRB"
+if sed 's/#.*$//' "$TICKPRB" | grep -q "reinforce_auto_run.R"; then ok "tick 검사기 양성 대조 발화"
+else ng "tick 검사기가 위반 주입에도 미발화 — 죽은 검사"; fi
+rm -f "$TICKPRB"
+cp "$BAK" "$CFG" 2>/dev/null   # 이후 절이 원본 설정을 보게 되돌린다
 
 echo "=== 4. 프로그램 격자 무결성 ==="
 "$PY" - <<'PYEOF'
