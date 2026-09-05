@@ -107,7 +107,14 @@ rfbd_cells <- function(root, base_id, block) {
   .base_n <- switch(block, B2 = 6L, B3 = 11L, B5 = 16L, 1L)
   lapply(seq_along(D$cells), function(i) {
     ce <- D$cells[[i]]; id <- as.character(ce$pick %||% "")[1]; cm <- .find(id)
-    out <- list(code = sprintf("%s_%d", block, .base_n + i - 1L),
+    ## ★코드는 pick 이 이 블록의 격자 코드면 **그 코드**다 (2026-09-05). 구판은 전 블록을 위치로 매겼다 —
+    ##   B2/B5 는 pick 이 arm id 라 무해했지만 B3 은 pick 자체가 격자 코드(B3_11=KQ150 단독 …)라서
+    ##   설계 [B3_12,B3_11,B3_15,B3_14] 가 슬롯 [B3_11..B3_14] 로 밀렸다. 내용은 설계를 따르고 코드만 어긋나
+    ##   코드로 대조하는 회피 집행이 **KOSPI200 단독(슬롯 B3_11)** 을 C6 사유로 건너뛰고, 정작 C6 대상인
+    ##   KOSDAQ150 단독은 코드 B3_12 로 측정됐다(실사고 promo2 n=16~19 · 예산 1칸 소실). 코드가 스펙을
+    ##   가리키지 않으면 코드로 하는 모든 판정이 다른 칸을 때린다.
+    .code <- if (grepl(sprintf("^%s_[0-9]+$", block), id)) id else sprintf("%s_%d", block, .base_n + i - 1L)
+    out <- list(code = .code,
                 label = as.character(ce$label %||% id),
                 basis = sprintf("LLM 설계(블록 전이) · %s · %s", id,
                                 substr(as.character(ce$why %||% D$rationale %||% ""), 1, 200)),

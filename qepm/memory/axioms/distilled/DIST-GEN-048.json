@@ -3,9 +3,9 @@
   "dist_id": "DIST-GEN-048",
   "cluster_key": "8ab85100ccad",
   "candidate_id": "CAND_paper_replication_8ab85100ccad",
-  "status": "pending_5axis",
-  "statement_refined": null,
-  "retry_condition": null,
+  "status": "proposed",
+  "statement_refined": "충실구현(논문 그대로·유니버스만 K200∪KQ150)과 그 위 강화격자 재현(B1~B5) 450건 실측에서 15bps 순비용 등급은 F~B 대역에 분포하고 A는 0건이다. 봉투 안 단일 최강축은 비유동성(Amihud B1_5, 15bps SR 0.69·B)과 지수단독 재단(B3_11/12, SR 0.69~0.73·B)이며, 최고 비중결합은 cvar(tail_aware) 15bps SR 0.95(B2_6·B). JT1993 6-6 모멘텀은 F(논문기준 SR 0.16=15bps SR 0.16)로 KR 모멘텀 부재와 정합. 모든 B는 강화격자에서만 나왔고 논문 단독은 최고 C에 머문다. 이 재현 경로들의 관측 천장은 B이며, 판정을 접는 축은 t가 아니라 Calmar·OOS 유지(위험 축)다.",
+  "retry_condition": "강화격자 어느 블록이 Calmar>=0.5 이면서 t>2.0 인 칸을 내면 재정제 — 위험축이 접히는지 재측정",
   "refined_at": null,
   "refined_by": null,
   "promoted_to_axiom": null,
@@ -963,5 +963,24 @@
     "oos_effect_vs_is": -0.815,
     "note": "L-code oos_retention 실값 404건 median (IS65/OOS35 활성SR retention) — oos_months 실값 무 → None 유지 — promote.R essence_score 경유 재확정"
   },
-  "cluster_members_count": 450
+  "cluster_members_count": 450,
+  "adversarial_verdict": {
+    "a_exaggeration": "PASS — 헤드라인이 'A 0건·천장 B'로 정직. 낙관 서술 없음, Calmar/OOS가 병목임을 명시.",
+    "b_evidence": "PASS — 450 supporting L-code의 15bps SR·등급 실측 인용(Amihud 0.69·cvar 0.95·JT1993 0.16). metric_type=backtested 정확.",
+    "c_ax000": "PASS — '관측 천장(B)'이지 '불가능/dead-end' 단정 아님. 봉투 안 미탐색(횡단면 차등·국면배합) 열어둠.",
+    "d_firewall": "PASS — 유니버스 KR 전환은 충실구현 계약의 유일 허용 변경(고정축 완화 아님). 실패를 고정제약에 귀속하거나 완화를 레버로 제시하지 않음. B3 지수단독은 강화격자 내부 측정치로 서술.",
+    "e_frontier": "PASS — frontier로 Amihud×비중(cvar)×횡단면 오버레이 결합, 국면조건부 활성화 제시(전부 envelope-안 레버)."
+  },
+  "frontier": [
+    "Amihud(B1_5)와 cvar 비중(B2_6)의 결합 블록에서 상호작용 측정",
+    "지수단독에서 얻은 t를 유니버스 고정(K200∪KQ150) 위 국면조건부 tilt로 재현",
+    "논문 단독 C 다수를 composite factor로 결합해 얕은 조합의 천장 재측정"
+  ],
+  "revival_spec": [],
+  "constraint_firewall": {
+    "mode": "backstop_passed",
+    "checked_at": "2026-09-05"
+  },
+  "drafted_at": "2026-09-05T09:52:31+0900",
+  "drafted_by": "auto_distill"
 }

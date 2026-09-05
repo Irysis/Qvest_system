@@ -3,9 +3,9 @@
   "dist_id": "DIST-AR-055",
   "cluster_key": "894c7d3df737",
   "candidate_id": "CAND_alpha_research_894c7d3df737",
-  "status": "pending_5axis",
-  "statement_refined": null,
-  "retry_condition": null,
+  "status": "proposed",
+  "statement_refined": "국면·오버레이 방법론 16건(alpha_research) 종합: (1) 오버레이 예측기는 방향이 아니라 분산을 예측한다 — 네 예측기 시계열 rank-IC |t|<1, 하방꼬리 판별력은 전부 변동성 수준에서 오고 꼬리 '형태'에는 정보가 없다(TAIL_SHAPE AUC 0.55≈우연). (2) 시장-레벨 vol-target의 cov(e,r) 수확 채널은 월간 벤치자료로 원리적 미해소 — 순효과 |t|=1.96 도달에 ~404년. (3) ΔIR·상대basis t는 졸업 척도가 될 수 없다 — 정보 0인 순열도 개입 규모에 비례해 ΔIR이 음으로 가고, dual-basis는 포트가 아니라 벤치만 바꾼다. (4) 팩터 era는 실재하나 t시점 정보로 사전추정 불가. (5) 계약-국면조건부는 생존하나 감쇠의 정체는 벤치 방향이 아니라 mega-cap breadth다. 이는 방법론 판정으로, 소비면을 방향게이트가 아니라 분산예산·일별 축으로 재라우팅하는 경로가 봉투 안에서 미탐색이다.",
+  "retry_condition": "오버레이 신호를 사이징(방향게이트)이 아니라 리스크 예산(분산배분) 소비면에서 일별 축으로 측정한 결과가 나오면 재정제",
   "refined_at": null,
   "refined_by": null,
   "promoted_to_axiom": null,
@@ -262,9 +262,29 @@
     "causal_plausibility": null
   },
   "oos_validation_draft": {
-    "oos_months": 221.0,
+    "oos_months": 221,
     "oos_effect_vs_is": 0.346,
     "note": "L-code oos_retention 실값 4건 median (IS65/OOS35 활성SR retention) + oos_months 실값 10건 median — promote.R essence_score 경유 재확정"
   },
-  "cluster_members_count": 16
+  "cluster_members_count": 16,
+  "adversarial_verdict": {
+    "a_exaggeration": "PASS — 성과 주장이 아니라 측정 방법 판정(metric_type=unavailable/방법론). 게이트·검정력 벽을 정직하게 명시.",
+    "b_evidence": "PASS — 16 supporting L-code(WT002/003 기전게이트·FQ168·FR002·계약국면조건부) 실측 인용. proxy를 backtested로 오라벨 안 함(방법론/unavailable 유지).",
+    "c_ax000": "PASS — '연속비율 매핑 한정 기각·문턱형 미검·일별축 재라우팅 미탐색'으로 재도전 경로 명시. dead-end 단정 아님.",
+    "d_firewall": "PASS — overlay·regime-conditional·분산예산은 envelope-안 레버. 404년 벽은 '월간 벤치자료의 정보한계'이지 고정제약 귀속 아님.",
+    "e_frontier": "PASS — 분산예산 소비면·일별 축·문턱형(이진) 노출 매핑을 frontier로."
+  },
+  "frontier": [
+    "오버레이를 방향게이트가 아니라 분산예산(리스크 배분)으로 소비하는 일별 축 측정",
+    "연속비율 대신 문턱형(이진) 노출 매핑 재측정(연속형만 기각됨)",
+    "계약-국면조건부 감쇠를 mega-cap breadth 통제 후 재현",
+    "vol-target cov(e,r) 채널을 종목레벨(횡단면)로 옮겨 404년 벽 회피 여부 측정"
+  ],
+  "revival_spec": [],
+  "constraint_firewall": {
+    "mode": "backstop_passed",
+    "checked_at": "2026-09-05"
+  },
+  "drafted_at": "2026-09-05T09:52:32+0900",
+  "drafted_by": "auto_distill"
 }

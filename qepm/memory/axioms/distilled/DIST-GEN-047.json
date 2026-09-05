@@ -3,9 +3,9 @@
   "dist_id": "DIST-GEN-047",
   "cluster_key": "88c869b7adfc",
   "candidate_id": "CAND_reinforcement_88c869b7adfc",
-  "status": "pending_5axis",
-  "statement_refined": null,
-  "retry_condition": null,
+  "status": "proposed",
+  "statement_refined": "강화격자 B4(결합)·B5(리스크오버레이) 30개 블록 실측에서 두 축 모두 직전 블록 최고 t를 거의 넘지 못하고(B5는 다수 음수 t) A등급 0건이며, Calmar가 축을 바꿔도 0.13~0.42 대역에 갇힌다. 블록 내 5칸의 낙폭 대역 폭은 5~15%p에 불과해 오버레이·결합 축이 봉투 안에서 위험(낙폭) 축을 유의하게 접지 못함을 보인다. 예외는 횡단면 차등형(csd_idio_tilt B5_17, t 2.025·B)으로, 스칼라 총노출 축소형 오버레이가 죽는 지점에서 유일하게 t=2를 넘겼다.",
+  "retry_condition": "B5 횡단면 차등형(csd_idio_tilt·dbeta_tilt)만 별도 블록으로 5칸 이상 측정해 스칼라형과 분리 판정",
   "refined_at": null,
   "refined_by": null,
   "promoted_to_axiom": null,
@@ -115,5 +115,24 @@
     "oos_effect_vs_is": -0.474,
     "note": "L-code oos_retention 실값 30건 median (IS65/OOS35 활성SR retention) — oos_months 실값 무 → None 유지 — promote.R essence_score 경유 재확정"
   },
-  "cluster_members_count": 30
+  "cluster_members_count": 30,
+  "adversarial_verdict": {
+    "a_exaggeration": "PASS — 'A 0건·Calmar 0.13~0.42 대역 갇힘'으로 정직. 유일 예외(csd_idio_tilt B)를 과장 없이 병기.",
+    "b_evidence": "PASS — 30 supporting L-code의 t·Calmar·등급분포(A0/B/C/F) 실측 인용. backtested 라벨 정확.",
+    "c_ax000": "PASS — 스칼라 오버레이 열위를 '이 봉투에서 못 접는다(관측)'로 서술, 횡단면 차등형을 미탐색 방향으로 열어둠. 구조 단정 아님.",
+    "d_firewall": "PASS — 오버레이는 envelope-안 레버. 고정제약 귀속·완화 제시 없음.",
+    "e_frontier": "PASS — 횡단면 차등 오버레이 심화·국면조건부 배합(2계층)을 frontier로."
+  },
+  "frontier": [
+    "횡단면 차등 오버레이(csd_idio_tilt·dbeta_tilt·holdlvl_syscrowd_tilt)를 스칼라형과 분리한 전용 블록",
+    "국면조건부로 오버레이를 켜고 끄는 2계층 배합",
+    "오버레이 소비면을 사이징이 아니라 리스크 예산(분산배분)으로 재라우팅"
+  ],
+  "revival_spec": [],
+  "constraint_firewall": {
+    "mode": "backstop_passed",
+    "checked_at": "2026-09-05"
+  },
+  "drafted_at": "2026-09-05T09:52:31+0900",
+  "drafted_by": "auto_distill"
 }

@@ -3,9 +3,9 @@
   "dist_id": "DIST-GEN-049",
   "cluster_key": "4a4931769028",
   "candidate_id": "CAND_reinforcement_4a4931769028",
-  "status": "pending_5axis",
-  "statement_refined": null,
-  "retry_condition": null,
+  "status": "proposed",
+  "statement_refined": "강화격자 B2 비중방법론 17블록 실측 — cvar(tail_aware)·entropy·factor_rp·ivol·상관구조표적 카탈로그 비중이 다중검정 t를 최고 2.11(cvar B2_6)까지 내고 cvar는 15bps SR 0.95(B)까지 도달하나 Calmar는 0.16~0.41에 머물고 A등급 0건이다. SchurDamping(optimizer)은 반복적으로 최하위(다수 음수 t). 비중방법 단독 교체는 봉투 안에서 t는 올려도 낙폭 축을 못 접는다.",
+  "retry_condition": "cvar 비중을 팩터축(B1)이 t>2인 블록 위에 얹어 상호작용이 Calmar를 접는지 측정",
   "refined_at": null,
   "refined_by": null,
   "promoted_to_axiom": null,
@@ -88,5 +88,24 @@
     "oos_effect_vs_is": -0.491,
     "note": "L-code oos_retention 실값 17건 median (IS65/OOS35 활성SR retention) — oos_months 실값 무 → None 유지 — promote.R essence_score 경유 재확정"
   },
-  "cluster_members_count": 17
+  "cluster_members_count": 17,
+  "adversarial_verdict": {
+    "a_exaggeration": "PASS — cvar 0.95(B)를 인용하되 'Calmar 0.16~0.41·A 0건'으로 균형. 낙관 헤드라인 아님.",
+    "b_evidence": "PASS — 17 supporting L-code 실측(cvar t 2.11·SchurDamping 음수). backtested 정확.",
+    "c_ax000": "PASS — '단독 교체는 못 접는다(관측)'로, 결합 경로 열어둠.",
+    "d_firewall": "PASS — 비중방법은 envelope-안 레버. 고정제약(Σw=1·비중상한) 귀속·완화 없음.",
+    "e_frontier": "PASS — 비중×팩터 결합·국면조건부 비중 전환을 frontier로."
+  },
+  "frontier": [
+    "cvar/ivol 비중을 최강 팩터축(B1) 위에 얹은 결합 블록",
+    "국면조건부로 tail-aware 비중을 켜는 오버레이 소비",
+    "일별 축 비중 재산정(월간으로 접히는 tail 정보 회수)"
+  ],
+  "revival_spec": [],
+  "constraint_firewall": {
+    "mode": "backstop_passed",
+    "checked_at": "2026-09-05"
+  },
+  "drafted_at": "2026-09-05T09:52:32+0900",
+  "drafted_by": "auto_distill"
 }

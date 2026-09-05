@@ -3,9 +3,9 @@
   "dist_id": "DIST-GEN-027",
   "cluster_key": "dade3b3c065e",
   "candidate_id": "CAND_reinforcement_dade3b3c065e",
-  "status": "pending_5axis",
-  "statement_refined": null,
-  "retry_condition": null,
+  "status": "proposed",
+  "statement_refined": "강화격자 B5 리스크오버레이 14블록(dd_brake_q·turbulence·ml_tail_gate·vol_median·vol_x_dd 등 스칼라 총노출 축소형)에서 단독 오버레이 축은 직전 블록 최고 t를 못 넘고 다수 음수 t, Calmar 0.14~0.44, A등급 0건이다. 스칼라 총노출 축소형 오버레이는 봉투 안에서 낙폭 축을 유의하게 접지 못한다(관측 천장). 라벨상 10 arm이 계열로 다양해도 소비지점의 행동은 총노출 스칼라 축소 하나로 수렴한다는 관측과 정합하며, 같은 격자에서 횡단면 차등형(csd_idio_tilt)은 t=2를 넘겨 유효 축이 스칼라가 아니라 횡단면임을 시사한다.",
+  "retry_condition": "횡단면 차등형 오버레이(csd_idio_tilt·dbeta_tilt)만 전용 블록으로 분리 측정해 스칼라형과의 분리가 Calmar에서 확인되면 재정제",
   "refined_at": null,
   "refined_by": null,
   "promoted_to_axiom": null,
@@ -83,5 +83,42 @@
     "note": "L-code oos_retention 실값 14건 median (IS65/OOS35 활성SR retention) — oos_months 실값 무 → None 유지 — promote.R essence_score 경유 재확정"
   },
   "cluster_members_count": 14,
-  "expiry": "2026-12-03"
+  "expiry": "2026-12-03",
+  "adversarial_verdict": {
+    "a_exaggeration": "PASS — negative를 'A 0건·다수 음수 t'로 정직. 유일 예외(횡단면 차등형)를 과장 없이 대조.",
+    "b_evidence": "PASS — 14 supporting L-code 실측 인용. backtested 정확.",
+    "c_ax000": "PASS — 스칼라형 열위를 '관측 천장'으로, 횡단면 차등형을 미탐색 방향으로 열어둠. 구조 단정 아님.",
+    "d_firewall": "PASS — 오버레이는 envelope-안 레버. 고정제약 귀속·완화 없음.",
+    "e_frontier": "PASS — frontier+live_trigger+expiry 동반. 횡단면 차등 심화·2계층 국면배합·분산예산 소비면."
+  },
+  "frontier": [
+    "횡단면 차등 오버레이(csd_idio_tilt B5_17이 스칼라형보다 우위·t 2.025) 전용 블록 심화",
+    "국면조건부로 오버레이를 켜는 2계층 배합",
+    "오버레이를 사이징이 아니라 분산예산(리스크 배분)으로 소비하는 일별 축"
+  ],
+  "live_trigger": {
+    "type": "regime",
+    "condition": "B1/B4가 Calmar>=0.5 블록을 내면 그 위에서 횡단면 차등 오버레이를 재측정",
+    "monitored_source": "06_Registry/reinforce_ledger_l1.json"
+  },
+  "revival_spec": [
+    {
+      "signal_id": "wall_clock_date",
+      "condition": "x >= as.Date('2026-12-03')",
+      "from_trigger": "expiry",
+      "status": "active"
+    },
+    {
+      "signal_id": "regime_category",
+      "condition": "x %in% c('CRISIS','CAUTION')",
+      "from_trigger": "regime",
+      "status": "active"
+    }
+  ],
+  "constraint_firewall": {
+    "mode": "backstop_passed",
+    "checked_at": "2026-09-05"
+  },
+  "drafted_at": "2026-09-05T09:52:33+0900",
+  "drafted_by": "auto_distill"
 }

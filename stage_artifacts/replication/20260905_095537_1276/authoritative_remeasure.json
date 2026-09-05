@@ -1,0 +1,121 @@
+{
+  "status": "OK",
+  "strategy_id": "RP_20260905_095537_1276",
+  "strategy_name": "RF_PAR_B3_14_13",
+  "remeasured_at": "2026-09-05T10:01:48+0900",
+  "run_id": "20260905_095537_1276",
+  "bt_result_path": "C:/Users/99922/OneDrive/Quant_Module_Moltbot/stage_artifacts/replication/20260905_095537_1276/bt_result.rds",
+  "metric_type": "backtested",
+  "essence_grade": "C",
+  "grade_basis": "replication_chain",
+  "essence": {
+    "net_sharpe": 0.581,
+    "net_ir": 0.039,
+    "portfolio_alpha_t_nw_lag3": 0.179,
+    "oos_retention": -1.123,
+    "dsr": null,
+    "mdd": 0.644,
+    "calmar": 0.178,
+    "cagr": 0.114,
+    "drawdown_profile": {
+      "severe45_count": 8,
+      "severe55_count": 2,
+      "severe45_total_periods": 181,
+      "severe45_max_periods": 71,
+      "severe45_period_frac": 0.034,
+      "catastrophic_mdd_threshold": 0.7,
+      "severe45_hard_count": 15,
+      "severe55_hard_count": 6,
+      "severe45_period_hard_frac": 0.25,
+      "severe45_max_hard_periods": 252,
+      "tail_review": true,
+      "structural_hard_fail": false
+    }
+  },
+  "hard_fail": false,
+  "structural_drawdown": false,
+  "selection_type": "chain",
+  "dsr_gate_applied": false,
+  "grade_base": "C",
+  "recent_regime_rescued": false,
+  "recent_regime_label": null,
+  "rolling_grade": {
+    "status": "ok",
+    "n_points": 225,
+    "window_months": 36,
+    "pass_life": 0.2133,
+    "pass_recent": 0.75,
+    "current": {
+      "ym": "2026-09",
+      "sharpe": 0.793642,
+      "cagr": 0.277599,
+      "mdd": 0.35662,
+      "calmar": 0.778418,
+      "pass": false
+    },
+    "prior_recoveries": 4,
+    "current_run": 0,
+    "span": ["2008-01", "2026-09"]
+  },
+  "defensive_score": {
+    "status": "ok",
+    "defensive": true,
+    "convex": false,
+    "down": {
+      "n": 111,
+      "excess": 0.00581,
+      "hit": 0.621622,
+      "t": 1.864513,
+      "capture": 0.863591
+    },
+    "mid": {
+      "n": 30,
+      "excess": -0.005863,
+      "hit": 0.466667,
+      "t": -0.92247,
+      "capture": 1.061327
+    },
+    "deep": {
+      "n": 10,
+      "excess": 0.000424,
+      "hit": 0.7,
+      "t": 0.039762,
+      "capture": 0.997197
+    },
+    "up": {
+      "n": 149,
+      "excess": -0.002987,
+      "hit": 0.516779,
+      "t": -0.810355,
+      "capture": 0.940535
+    },
+    "reason": "하락월 111개: 초과 +0.58%/월 (t 1.86 · 적중 62%) · 벤치-10% 이하 10개: 초과 +0.04%/월 · 상승월 초과 -0.30%/월"
+  },
+  "reasons": "Ensemble: positive alpha이나 B 미달 (블렌드에서만 가치)",
+  "replication": {
+    "source_paper": {
+      "url": "https://arxiv.org/abs/1403.8125",
+      "title": "Maximum drawdown, recovery, and momentum",
+      "paper_key": "1403.8125"
+    },
+    "commission_paper_bps": 15,
+    "paper_basis": {
+      "cagr": 0.114119,
+      "sharpe": 0.446385,
+      "mdd": 0.643921,
+      "n_months": 260
+    },
+    "grade_basis_note": "등급은 15bps 순비용 판 (essence 문턱 15bps 보정 — gross 등급은 인플레)",
+    "fidelity": "universe 치환(K200∪KQ150)만 — 그 외 논문 그대로 (v10 완전 충실구현)",
+    "benchmark_note": "long_vs_long_bm",
+    "n_max": 25,
+    "has_short": false
+  },
+  "contract": {
+    "integrity_status": "OK",
+    "cagr": 0.114,
+    "sharpe": 0.581,
+    "mdd": 0.644,
+    "calmar": 0.178
+  }
+}

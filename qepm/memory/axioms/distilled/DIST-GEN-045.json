@@ -3,9 +3,9 @@
   "dist_id": "DIST-GEN-045",
   "cluster_key": "a768822367d0",
   "candidate_id": "CAND_reinforcement_a768822367d0",
-  "status": "pending_5axis",
-  "statement_refined": null,
-  "retry_condition": null,
+  "status": "proposed",
+  "statement_refined": "강화격자 B1 멀티팩터 17블록 실측 — 1→5팩터 직교 적층은 다중검정 t를 최고 2.28(risk·catalog 비중)까지 올리나 Calmar는 0.14~0.40에 머물고 A등급 0건이다. 팩터 수 증가가 위험조정 성과를 단조 개선하지 않으며(적층이 깊을수록 t가 하락하는 칸이 다수) 최강은 얕은 조합과 catalog 비중 결합이다. 봉투 안에서 B1 팩터선택 단독 축의 관측 천장은 B이고 병목은 낙폭(Calmar)이다.",
+  "retry_condition": "얕은 조합(1~2팩터)에 B2 비중(cvar·ivol) 또는 B5 횡단면 오버레이를 얹은 결합 블록이 Calmar>=0.5를 내면 재측정",
   "refined_at": null,
   "refined_by": null,
   "promoted_to_axiom": null,
@@ -88,5 +88,24 @@
     "oos_effect_vs_is": -0.239,
     "note": "L-code oos_retention 실값 17건 median (IS65/OOS35 활성SR retention) — oos_months 실값 무 → None 유지 — promote.R essence_score 경유 재확정"
   },
-  "cluster_members_count": 17
+  "cluster_members_count": 17,
+  "adversarial_verdict": {
+    "a_exaggeration": "PASS — 'A 0건·Calmar 0.14~0.40'로 정직. 적층이 개선을 안 준다는 반직관을 과장 없이 서술.",
+    "b_evidence": "PASS — 17 supporting L-code의 t·Calmar·등급 실측. backtested 정확.",
+    "c_ax000": "PASS — '관측 천장 B'이지 단정 아님. 결합 방향 열어둠.",
+    "d_firewall": "PASS — 팩터선택은 envelope-안. 고정제약 귀속·완화 없음.",
+    "e_frontier": "PASS — 얕은 조합 × 비중/오버레이 결합을 frontier로."
+  },
+  "frontier": [
+    "얕은 조합(1~2팩터)에 cvar 비중을 얹은 결합 블록",
+    "적층 대신 계열 라운드로빈으로 팩터 다양성을 소비지점에서 확보",
+    "국면조건부 팩터 활성화(가치/모멘텀 시변 켜짐)"
+  ],
+  "revival_spec": [],
+  "constraint_firewall": {
+    "mode": "backstop_passed",
+    "checked_at": "2026-09-05"
+  },
+  "drafted_at": "2026-09-05T09:52:32+0900",
+  "drafted_by": "auto_distill"
 }

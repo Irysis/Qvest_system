@@ -3,9 +3,9 @@
   "dist_id": "DIST-GEN-023",
   "cluster_key": "d5fae42656fa",
   "candidate_id": "CAND_reinforcement_d5fae42656fa",
-  "status": "pending_5axis",
-  "statement_refined": null,
-  "retry_condition": null,
+  "status": "proposed",
+  "statement_refined": "강화격자 B2 비중방법론 14블록에서 카탈로그 비중(entropy·cvar·factor_rp·ivol·SchurDamping) 단독 교체는 직전 블록 최고 t를 반복적으로 못 넘고(SchurDamping 다수 음수 t) Calmar 0.16~0.41, A등급 0건이다. 봉투 안에서 비중방법 단독 축은 위험조정 성과의 유효 레버가 아니라는 것이 14블록의 반복 관측이다 — 관측 천장이지 구조적 불가 단정은 아니다.",
+  "retry_condition": "신규 팩터축(B1)이 t>2.0인 블록을 내면 그 위에서 비중방법을 재측정 — 팩터가 있는 위에서는 tail-aware 비중이 낙폭을 접는지 확인",
   "refined_at": null,
   "refined_by": null,
   "promoted_to_axiom": null,
@@ -83,5 +83,42 @@
     "note": "L-code oos_retention 실값 14건 median (IS65/OOS35 활성SR retention) — oos_months 실값 무 → None 유지 — promote.R essence_score 경유 재확정"
   },
   "cluster_members_count": 14,
-  "expiry": "2026-12-03"
+  "expiry": "2026-12-03",
+  "adversarial_verdict": {
+    "a_exaggeration": "PASS — negative 결론을 'A 0건·반복 관측'으로 정직 서술. 낙관 없음.",
+    "b_evidence": "PASS — 14 supporting L-code 실측(t·Calmar·A0). backtested 정확.",
+    "c_ax000": "PASS — '단독 축은 레버가 아니다(관측 천장)'로, '구조적 불가 단정 아님' 명시하고 결합 위 재측정을 live_trigger로 열어둠.",
+    "d_firewall": "PASS — 비중방법은 envelope-안. Σw=1·비중상한 등 고정제약 귀속·완화 없음.",
+    "e_frontier": "PASS — frontier+live_trigger+expiry 동반(negative 필수). 결합(B4)·국면조건부·일별축 제시."
+  },
+  "frontier": [
+    "비중방법 × 팩터선택(B1) 결합 블록에서 상호작용 측정",
+    "cvar 비중을 국면조건부로 켜고 끄는 오버레이 소비",
+    "일별 축 비중 재산정으로 월간에서 소멸하는 tail 정보 회수"
+  ],
+  "live_trigger": {
+    "type": "regime",
+    "condition": "신규 B1 팩터축이 다중검정 t>2.0 블록을 내면 그 위에서 B2 비중방법을 재측정",
+    "monitored_source": "06_Registry/reinforce_ledger_l1.json"
+  },
+  "revival_spec": [
+    {
+      "signal_id": "wall_clock_date",
+      "condition": "x >= as.Date('2026-12-03')",
+      "from_trigger": "expiry",
+      "status": "active"
+    },
+    {
+      "signal_id": "regime_category",
+      "condition": "x %in% c('CRISIS','CAUTION')",
+      "from_trigger": "regime",
+      "status": "active"
+    }
+  ],
+  "constraint_firewall": {
+    "mode": "backstop_passed",
+    "checked_at": "2026-09-05"
+  },
+  "drafted_at": "2026-09-05T09:52:32+0900",
+  "drafted_by": "auto_distill"
 }
