@@ -17,11 +17,41 @@
   "calmar": 0.364,
   "oos_retention": -0.239,
   "portfolio_alpha_t": 2.28,
-  "next_probes": [
-    "다음 격자 축 B2(weighting) — 이 블록 승자 위에서 측정",
-    "B1_1(최고 2.280)는 B4 조합 후보로 고정 · B1_4(최저 0.396)는 축 역작동 여부를 조합 LOO 로 분리"
-  ],
+  "next_probes": ["다음 격자 축 B2(weighting) — 이 블록 승자 위에서 측정", "B1_1(최고 2.280)는 B4 조합 후보로 고정 · B1_4(최저 0.396)는 축 역작동 여부를 조합 LOO 로 분리"],
   "next_probe": "다음 격자 축 B2(weighting) — 이 블록 승자 위에서 측정 | B1_1(최고 2.280)는 B4 조합 후보로 고정 · B1_4(최저 0.396)는 축 역작동 여부를 조합 LOO 로 분리",
   "source_paper": "https://arxiv.org/abs/1403.8125",
-  "record_type": "performance"
+  "record_type": "performance",
+  "mechanism": "이 블록의 판정: 팩터 추가는 횡단면 정보를 늘리지 않고 희석했고, MDD 는 이 축에 아예 반응하지 않는다. B1_1(4팩터 · S01_Size+V14_EBIT_EV+L27_Price_Level+R03_CVaR_95 · 비중 cvar) 이 PORT_t 2.280 · CAGR 0.207 · Calmar 0.364 로 이 블록 최고이고, 팩터를 하나씩 추가할 때마다 PORT_t 는 B1_2 1.883 → B1_3 1.722 → B1_4 0.396 으로, CAGR 은 0.188 → 0.179 → 0.120 으로 단조 감소했다. 처치 문자열이 동일한 B1_4·B1_5 가 PORT_t 0.396 vs 0.589 로 갈리므로 이 블록의 셀간 분산 하한은 약 PORT_t 0.19 다 — B1_2 와 B1_3 의 차이 0.161 은 그 안이라 비유의로 읽고, B1_1 대비 B1_4/B1_5 의 차이 약 1.7 은 그 밖이라 실측 효과로 읽는다. 결정적인 것은 MDD 다: PORT_t 가 2.280 에서 0.396 까지 갈리는 동안 MDD 는 0.568~0.608 로 4pp 만 움직였다. 즉 Calmar 0.364 → 0.201 하락은 전량 CAGR 쪽에서 났고 MDD 쪽 기여는 0에 가깝다. R03_CVaR_95 를 횡단면 점수에 포함하고 비중까지 cvar 로 잡아 위험 축을 두 지점에서 소비했는데도 MDD 가 이 범위에 갇혀 있다는 것은, 이 전략의 MDD 가 종목 선별이 아니라 총노출·공분산이 소비되는 지점에서 결정된다는 정황이다. 미결: 비중 축이 MDD 를 움직일 수 있는지는 B1 만으로 안 갈린다 — B1 은 비중을 cvar 하나로 고정한 채 횡단면만 바꿨기 때문이다. 이를 가르려면 목적함수가 서로 다른 비중 방법을 같은 4팩터 선별(B1_1) 위에서 재야 한다.",
+  "mechanism_by": "llm:block_end",
+  "mechanism_at": "2026-09-05T08:59:56+0900",
+  "prior_lessons_used": [],
+  "next_block_actions": [
+    {
+      "action": "B2 의 선별 축은 B1_1 의 4팩터(S01_Size+V14_EBIT_EV+L27_Price_Level+R03_CVaR_95)로 고정하고 비중 방법만 교체한다",
+      "why": "B1_2~B1_5 에서 팩터 추가가 PORT_t·CAGR 을 단조로 깎았으므로, 선별을 함께 움직이면 비중 효과와 희석 효과가 섞여 어느 쪽도 안 갈린다",
+      "expect": "선별 고정이 맞으면 B2 셀들의 PORT_t 분산이 B1 의 셀간 분산 하한 0.19 를 넘는 폭으로 벌어지고, 그 폭은 비중 목적함수에 귀속된다. 0.19 안에 갇히면 비중 축 자체가 이 전략에서 비유의다"
+    },
+    {
+      "action": "낙폭 경로를 직접 표적하는 CDaR_LP 와 분산 최소화 minvar 를 같은 블록에 넣어 MDD 의 하한을 실측한다",
+      "why": "MDD 0.568~0.608 이 횡단면 축에 무반응이었고, 수익 꼬리를 표적하는 cvar 비중은 이미 B1_1 에서 소진됐다 — 남은 가설은 낙폭 경로/분산을 직접 표적해야 MDD 가 움직인다는 것이다",
+      "expect": "가설이 맞으면 CDaR_LP 또는 minvar 에서 MDD 가 0.568 아래로 내려간다. 두 칸 모두 0.568~0.608 안에 머무르면 MDD 는 비중 축으로도 못 움직이는 것이고, Calmar 개선 경로는 B4 리스크오버레이(노출 스케일)로만 남는다"
+    },
+    {
+      "action": "score_tilt 와 kelly 로 점수 정보를 비중에 실어 CAGR 회복 여지를 잰다",
+      "why": "Calmar 하락이 전량 CAGR 쪽에서 났으므로, 점수를 무시하는 순수 위험 최적화가 CAGR 을 깎고 있는지 여부가 이 블록에서 갈릴 수 있는 유일한 CAGR 축이다",
+      "expect": "점수 무시가 원인이면 score_tilt·kelly 의 CAGR 이 B1_1 의 0.207 을 넘고 MDD 는 0.568 근처에 머문다. CAGR 이 안 오르면 CAGR 상한은 선별 쪽에 있고 비중으로는 못 산다"
+    },
+    {
+      "action": "score_tilt 를 목적함수 그대로 두고 공분산 추정만 lw_nls 로 바꾼 칸을 하나 둔다",
+      "why": "목적함수 실패와 공분산 추정오차를 분리해야 한다 — B1 은 cvar 하나뿐이라 이 둘이 구분된 적이 없다",
+      "expect": "추정오차가 원인이면 lean:score_tilt 와 gen:lean_score_tilt__shr_lw_nls 의 PORT_t 차이가 0.19 를 넘는다. 두 칸이 붙으면 이후 블록에서 공분산 추정 변형에 칸을 쓰지 않는다"
+    }
+  ],
+  "next_block_actions_by": "llm:block_end",
+  "avoid": ["횡단면 팩터를 더 추가하는 처치 — B1_2·B1_3·B1_4·B1_5 네 칸이 PORT_t 2.280 → 0.396 · CAGR 0.207 → 0.120 단조 감소로 벽을 확인했다. 5번째 이후 팩터는 순위 정보를 희석만 한다", "수익 꼬리를 표적하는 CVaR 계열 비중 재시도(qepm:CVaR_LP · qepm:Protection_ES · lean:cvar) — B1 다섯 칸 전부가 cvar 비중 위에서 측정됐고 MDD 는 0.568~0.608 에 갇혔다. 같은 소비 지점에 칸을 또 쓰는 것이다", "B1_4 와 B1_5 의 PORT_t 차이 0.193 을 처치 효과로 읽는 것 — 처치 문자열이 동일하다. 이 값은 분산 하한이지 신호가 아니다", "라벨만 다르고 소비 지점이 같은 위험 최적화를 여러 칸에 채우는 것(예: minvar·ERC·HRP 동시 투입) — 셋 다 점수를 무시하고 저변동 종목으로 몰리는 같은 행동이라 칸 수만 쓰고 축이 안 갈린다"],
+  "next_block_design_for": "B2",
+  "next_block_design_n": 5,
+  "prior_action_status": "no_design",
+  "prior_action_detail": "그 블록에 설계가 없었다(규칙 선정)",
+  "mechanism_confidence": "medium"
 }
