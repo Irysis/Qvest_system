@@ -1,12 +1,7 @@
 {
   "schema_version": "v7.2.1_memory_health",
-  "ran_at": "2026-09-05T10:17:53+0900",
-  "hard_fails": [
-    {
-      "check_id": "HARD_10_inject_budget",
-      "message": "주입면 계약 위반 — 계측 44.4h 경과(>24h) · 마커 소실(positive=FALSE recent=FALSE dead=FALSE) | agent=alpha-research pc_status=missing ml_rendered=4/4 rung=0 | 재현: echo '{\"tool_input\":{\"subagent_type\":\"forge\"}}' | bash 02_Infrastructure/hooks/axiom_context_inject.sh"
-    }
-  ],
+  "ran_at": "2026-09-05T11:16:17+0900",
+  "hard_fails": [],
   "warnings": [
     {
       "check_id": "WARN_13_backlink_conflict",
@@ -19,21 +14,13 @@
     {
       "check_id": "WARN_6_cache_core_stale",
       "message": ".cache/axiom_core.json STALE — missing: AX-AR-001,AX-AR-002,AX-AR-003,AX-AR-004,AX-AS-001,AX-AS-002,AX-AS-003,AX-JG-001,AX-QPM-001,AX-QPM-002,AX-QPM-003,AX-QPM-004,AX-QPM-005,AX-RAMP-001,AX-RAMP-002,AX-RAMP-003,AX-RAMP-004,AX-RAMP-005,AX-RAMP-006 (regenerate via bootstrap)"
-    },
-    {
-      "check_id": "WARN_10_knowledge_index_stale",
-      "message": "knowledge_index 낙후 — count_mismatch(corpus=1089, index=1085); missing_in_index=4  (검사: ops/knowledge_index_freshness.R · 복구: Rscript 02_Infrastructure/ops/build_knowledge_index.R)"
-    },
-    {
-      "check_id": "WARN_11_revival_flags_stale",
-      "message": "주입 사본이 정본보다 26.9h 뒤처짐 — DIST frontier 수정이 주입면에 미반영일 수 있음 (정본 09-05 10:07 > 사본 09-04 07:12). 복구: Rscript -e 'source(\"02_Infrastructure/ops/failure_revival_monitor.R\"); revival_monitor_run(write_flags=TRUE)'"
     }
   ],
   "infos": [],
   "summary": {
-    "hard_fail_count": 1,
-    "warning_count": 5,
+    "hard_fail_count": 0,
+    "warning_count": 3,
     "info_count": 0,
-    "overall": "FAIL"
+    "overall": "PASS"
   }
 }
