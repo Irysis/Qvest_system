@@ -363,5 +363,158 @@ if (!file.exists(AW)) cat("  SKIP  advanced_weights.R 부재\n") else {
   }
 }
 
+cat("== (h) ★QEPM 하네스 규약 표적 — 시그니처 번역 (CDaR_LP · CVaR_LP · MaxDiv) ==\n")
+# 왜 여기 있나 (2026-09-05): dispatch_weight_method 는 (alpha, cov_matrix, returns, bounds, max_names)
+#   를 조립해 do.call 하는데 advanced_weights.R 의 tail-aware 3종은 (tickers, ret_dt, …) 규약이고
+#   `...` 이 없다 → "unused arguments" → 카탈로그 wrapper EW 폴백 → probe.ok=FALSE →
+#   weight_catalog_arms 가 unverified 로 실효 강등 → rf_cell_engine "카탈로그 arm 부재"
+#   (실측: 강화 RP_20260904_163647_18444_rescued_rulefast_promo2 B2_6 n=11 미측정).
+#   수리 = weight_method_registry.R::.wmr_dispatch_harness (조립층 번역 · 표적 시그니처 불변).
+# ★축의 급소는 "지금 도는가" 가 아니라 **"틀린 이름의 인자는 여전히 강등되는가"** 다 —
+#   번역이 '모르는 인자를 떨어뜨리는' 방식이면 틀린 시그니처가 기본값으로 돌아 초록이 된다.
+#   그래서 h-0 이 결함 자체를 재현(양성 대조)하고 h-4 가 틀린 이름을 주입한다.
+qe <- tryCatch(.wc_qepm_env(ROOT), error = function(e) FALSE)
+if (isFALSE(qe)) ng("qepm private env 로드") else {
+  HARN <- c("qepm:CDaR_LP", "qepm:CVaR_LP", "qepm:MaxDiv")
+  ids_h <- vapply(CAT$entries, function(e) as.character(e$catalog_id), character(1))
+  ent <- setNames(lapply(HARN, function(id) { i <- match(id, ids_h); if (is.na(i)) NULL else CAT$entries[[i]] }), HARN)
+  NA_ <- length(fx$assets)
+  isEWv <- function(v) { v <- as.numeric(v); length(v) == NA_ && max(abs(v - 1 / NA_)) < 1e-6 }
+  inb <- function(v) all(is.finite(v)) && all(v >= -1e-9) && all(v <= 0.20 + 1e-9) && abs(sum(v) - 1) < 1e-6
+
+  # ── h-0 결함의 양성 대조 — 표적이 정말 `returns=` 를 안 받는가(번역이 하중을 받는 축인지) ──
+  tgt <- tryCatch(get("calc_cdar_weights", envir = qe), error = function(e) NULL)
+  if (is.null(tgt)) ng("calc_cdar_weights 가 private env 에 없다") else {
+    fm <- names(formals(tgt))
+    if (all(c("tickers", "ret_dt") %in% fm) && !("returns" %in% fm) && !("..." %in% fm))
+      ok("양성 대조: calc_cdar_weights 는 (tickers, ret_dt) 규약 · returns=/... 부재 — 번역이 하중을 받는다") else
+      ng("표적 시그니처가 바뀌었다 — 번역 축을 재검토할 것", paste(fm, collapse = ","))
+    r0 <- tryCatch({ tgt(returns = fx$R); "NO_ERROR" }, error = function(e) conditionMessage(e))
+    if (grepl("unused argument", r0, fixed = TRUE))
+      ok("표적 직접 호출(returns=) → 'unused argument' — 원 결함 재현") else
+      ng("원 결함 미재현 — 표적이 returns= 를 받는다면 번역은 죽은 코드다", substr(r0, 1, 80))
+  }
+
+  # ── h-1 dispatch 직접: 번역 경로가 유효·비-EW·이름 붙은 비중을 낸다 (짧은 창 — 인터페이스만 본다) ──
+  disp <- get("dispatch_weight_method", envir = qe)
+  Rs <- utils::tail(fx$R, 60L)                     # LP 비용 절감. 규약 검사엔 창 길이가 축이 아니다
+  Ss <- stats::cov(Rs); dimnames(Ss) <- list(fx$assets, fx$assets)
+  for (id in HARN) {
+    nm <- sub("^qepm:", "", id)
+    r <- NULL
+    invisible(utils::capture.output(r <- suppressWarnings(tryCatch(
+      disp(nm, alpha = fx$mu, cov_matrix = Ss, returns = Rs, bounds = c(0, 0.20), max_names = 25L),
+      error = function(e) list(infeasible = TRUE, reason = conditionMessage(e))))))
+    if (is.list(r) && !isTRUE(r$infeasible) && is.numeric(r$weights) &&
+        identical(names(r$weights), fx$assets) && inb(r$weights) && !isEWv(r$weights) &&
+        identical(r$interface, "harness_convention"))
+      ok(sprintf("%s dispatch — 비-EW · Σw=1 · long-only · ≤0.20 · 이름=fixture · n_days=%d max_w=%.2f",
+                 id, as.integer(r$n_days), as.numeric(r$max_w))) else
+      ng(sprintf("%s dispatch", id), if (is.list(r)) as.character(r$reason)[1] else class(r)[1])
+  }
+  # 호출자 창을 기본값 120 으로 다시 자르지 않는다(호출자 lookback 이 축) — n_days = nrow
+  r_nd <- NULL
+  invisible(utils::capture.output(r_nd <- suppressWarnings(
+    disp("MaxDiv", cov_matrix = Ss, returns = Rs, bounds = c(0, 0.20), max_names = 25L))))
+  if (is.list(r_nd) && identical(as.integer(r_nd$n_days), nrow(Rs)))
+    ok(sprintf("n_days = 호출자 창 전체(%d) — 표적 기본값(120)으로 재절단 없음", nrow(Rs))) else
+    ng("n_days 가 호출자 창과 다르다", r_nd$n_days)
+  # ≤25 종목 — breadth 인자가 없는 표적에 26종을 주면 조용히 26종 비중이 아니라 infeasible
+  R26 <- cbind(Rs, X99999 = Rs[, 1] * 0.5)
+  r26 <- NULL
+  invisible(utils::capture.output(r26 <- suppressWarnings(
+    disp("MaxDiv", cov_matrix = NULL, returns = R26, bounds = c(0, 0.20), max_names = 25L))))
+  if (is.list(r26) && isTRUE(r26$infeasible) && grepl("max_names", r26$reason, fixed = TRUE))
+    ok("26종 > max_names 25 → infeasible(호명) — 초과 유니버스가 조용히 통과하지 않는다") else
+    ng("26종이 통과했다 — ≤25 축이 하네스 규약 경로에서 비어 있다", r26$reason)
+
+  # ── h-2 probe: 카탈로그 fixture(25×260)에서 ok=TRUE ∧ EW 와 구별 ──
+  for (id in HARN) {
+    e <- ent[[id]]
+    if (is.null(e)) { ng(paste(id, "카탈로그 미등재")); next }
+    pr <- NULL; invisible(utils::capture.output(pr <- suppressWarnings(.wc_probe_entry(e, ROOT))))
+    dev <- suppressWarnings(as.numeric(pr$max_abs_dev_from_ew))
+    if (isTRUE(pr$ok) && length(dev) == 1L && is.finite(dev) && dev > 0)
+      ok(sprintf("%s probe.ok · max_abs_dev_from_ew=%.4f", id, dev)) else
+      ng(paste(id, "probe"), c(as.character(pr$reason), substr(as.character(pr$log), 1, 120)))
+    ent[[id]]$probe <- pr
+  }
+  # 라벨 = 행동: CDaR_LP 의 LP 가 실제로 풀렸는가(폴백 min-vol 로 돌면 이름과 계산이 다르다)
+  lgc <- as.character(ent[["qepm:CDaR_LP"]]$probe$log)
+  if (length(lgc) && !any(grepl("LP failed", lgc, fixed = TRUE)))
+    ok("CDaR_LP probe 로그에 'LP failed' 없음 — 드로우다운 LP 가 실제로 풀렸다(폴백 아님)") else
+    ng("★CDaR_LP 가 LP 폴백(min-vol)으로 돌았다 — 라벨과 계산이 다르다", lgc)
+
+  # ── h-3 arms: 갱신된 probe 로 기본 집합(min_status=active)에 오른다 ──
+  inj <- CAT
+  for (id in HARN) { i <- match(id, ids_h); if (!is.na(i)) inj$entries[[i]]$probe <- ent[[id]]$probe }
+  Dh <- weight_catalog_arms(axis = "carrier", root = ROOT, catalog = inj, quiet = TRUE)
+  miss <- setdiff(HARN, Dh$catalog_id)
+  if (!length(miss)) ok("3종이 기본 arm 집합(active)에 오른다 — rf_cell_engine 이 소비 가능") else
+    ng("기본 arm 집합에 빠짐", miss)
+  # 소비면(JSON) — rf_cell_engine 은 메모리가 아니라 06_Registry/weight_catalog.json 을 읽는다.
+  #   코드를 고치고 sync_catalog(probe=TRUE) 를 안 돌리면 소비면은 여전히 '부재' 다.
+  Dp <- weight_catalog_arms(axis = "carrier", root = ROOT, quiet = TRUE)
+  if ("qepm:CDaR_LP" %in% Dp$catalog_id)
+    ok("소비면(weight_catalog.json)에서도 qepm:CDaR_LP 가 active — 파생 파일이 현행") else
+    ng("★소비면이 낡았다 — sync_catalog(root, probe=TRUE) 로 재생성할 것", "qepm:CDaR_LP 부재")
+  # ★재생성의 양성 대조 — probe 는 lean 빌트인을 **전역의 calc_*** 에서 찾는다. backtest_harness.R 을
+  #   싣지 않은 세션에서 sync_catalog(probe=TRUE) 를 돌리면 lean 23종이 전부 "빌트인 함수 부재" 로
+  #   실패 기록되고, 그 JSON 을 rf_cell_engine 이 읽으면 lean arm 전체가 실효 unverified 가 된다
+  #   (2026-09-05 실측 — CDaR 수리 직후 bare Rscript 재생성에서 23종 flip). 소비면에 lean 이 살아 있어야
+  #   "CDaR_LP 가 올라왔다" 가 다른 arm 을 죽인 대가가 아님이 선다.
+  lean_ok <- sum(grepl("^lean:", Dp$catalog_id))
+  if ("lean:ivol" %in% Dp$catalog_id && lean_ok >= 20L)
+    ok(sprintf("소비면에 lean 빌트인 %d종 생존(lean:ivol 포함) — 재생성이 하네스 적재 하에 이뤄졌다", lean_ok)) else
+    ng("★소비면의 lean 빌트인이 죽어 있다 — backtest_harness.R 을 싣고 sync_catalog(probe=TRUE) 재생성",
+       sprintf("lean active=%d", lean_ok))
+
+  # ── h-4 위반 주입: 인자 이름이 틀린 표적은 여전히 강등되는가 ──
+  reg0 <- get("WEIGHT_METHOD_REGISTRY", envir = qe)
+  regX <- reg0
+  regX[["WC_BADSIG_PROBE"]] <- list(fn = ".wc_badsig_probe_fn", family = "test", requires = c("returns"),
+                                    description = "위반 주입: 인자 이름이 틀린 표적", hyperparams = character(0))
+  regX[["WC_HALFSIG_PROBE"]] <- list(fn = ".wc_halfsig_probe_fn", family = "test", requires = c("returns"),
+                                     description = "위반 주입: tickers 만 있고 ret_dt 가 오타", hyperparams = character(0))
+  assign("WEIGHT_METHOD_REGISTRY", regX, envir = qe)
+  assign(".wc_badsig_probe_fn", function(ret_matrix, max_w = 0.15) {
+    v <- 1 / apply(ret_matrix, 2, stats::sd); v / sum(v) }, envir = qe)
+  assign(".wc_halfsig_probe_fn", function(tickers, retdt, n_days = 120, max_w = 0.15) {
+    v <- seq_along(tickers); v / sum(v) }, envir = qe)
+  mk_bad <- function(nm) list(
+    catalog_id = paste0("qepm:", nm), label = nm, origin = "qepm_registry", family = "test",
+    status = "active",
+    resolver = list(kind = "qepm_registry", dispatch_name = nm, requires = "returns", hyperparams = character(0)),
+    screen_axes = list(shrinkage_builtin = NA, statistic_order = NA, screen_priority = NA),
+    selection_type = "chain", n_trials_family = 1L, est_cost_min = 1)
+  bads <- list(mk_bad("WC_BADSIG_PROBE"), mk_bad("WC_HALFSIG_PROBE"))
+  inj2 <- inj
+  for (b in bads) {
+    # suppressWarnings: dispatch 의 warning() 이 수익률 벡터 전체를 문자열로 실어 출력을 덮는다 —
+    #   판정은 probe$log(호명된 사유)로 하므로 경고 본문은 필요 없다.
+    pb <- NULL; invisible(utils::capture.output(pb <- suppressWarnings(.wc_probe_entry(b, ROOT))))
+    if (!isTRUE(pb$ok) && grepl("unused argument", as.character(pb$log), fixed = TRUE))
+      ok(sprintf("위반 주입 %s: probe.ok=FALSE · 로그가 'unused argument' 를 호명(기본값으로 돌지 않았다)", b$label)) else
+      ng(sprintf("★위반 주입 %s 가 통과/침묵", b$label), c(pb$ok, as.character(pb$reason), substr(as.character(pb$log), 1, 100)))
+    b$probe <- pb
+    inj2$entries[[length(inj2$entries) + 1L]] <- b
+  }
+  assign("WEIGHT_METHOD_REGISTRY", reg0, envir = qe)            # 복원
+  suppressWarnings(rm(list = c(".wc_badsig_probe_fn", ".wc_halfsig_probe_fn"), envir = qe))
+  Db <- weight_catalog_arms(axis = "carrier", root = ROOT, catalog = inj2, quiet = TRUE)
+  if (!any(c("qepm:WC_BADSIG_PROBE", "qepm:WC_HALFSIG_PROBE") %in% Db$catalog_id))
+    ok("주입 2종은 선언 active 인데 기본 집합에서 빠진다(실효 unverified)") else
+    ng("★probe 실패 arm 이 기본 집합에 올라왔다")
+  Du <- weight_catalog_arms(axis = "carrier", min_status = "unverified", root = ROOT, catalog = inj2, quiet = TRUE)
+  rb <- Du[catalog_id == "qepm:WC_BADSIG_PROBE"]
+  if (nrow(rb) == 1L && identical(rb$status, "unverified") && identical(rb$status_declared, "active") &&
+      isFALSE(rb$probe_ok))
+    ok("강등은 숨김이 아니라 표시 — status=unverified · status_declared=active · probe_ok=FALSE") else
+    ng("강등 표시 필드", c(rb$status, rb$status_declared, rb$probe_ok))
+  # 양성 대조 — 같은 카탈로그에서 정상 3종은 여전히 살아 있다(검사가 '전부 강등'로 통과하지 않음)
+  if (all(HARN %in% Db$catalog_id)) ok("양성 대조: 같은 카탈로그에서 정상 3종은 기본 집합 유지") else
+    ng("양성 대조 실패 — 정상 3종이 함께 빠졌다", setdiff(HARN, Db$catalog_id))
+}
+
 .emit()
 if (FAIL > 0L) quit(save = "no", status = 1)
