@@ -1,16 +1,14 @@
-# 다음 세션 인계 — 2026-09-05 (무인 루프 가동 · 2404.08129 C → 28칸 강화 최고 B4_25 B 2.128 → promo1 active · 하네스 수리 12건)
+# 다음 세션 인계 — 2026-09-05 (무인 루프 가동 · 2404.08129 C → promo1 B2_10 B 2.749 → promo2 active(depth 2) · 하네스 수리 12건)
 
 ## 지금 상태 한 줄
 
-- 루프 `enabled=true` · **active entry = `RP_20260905_184253_720_adapted_rulefast_promo1`**(depth 1 · 기저 B · carry = B4_25 의 팩터·비중(catalog)·
-  오버레이 none, 유니버스는 size_band → **K200∪KQ150 리셋**(provenance `universe_reset_from=size_band`)). 다음 tick 부터 B1 설계 → 25칸.
-- 부모 `RP_20260905_184253_720_adapted_rulefast`(2404.08129 "One Factor to Bind the Cross-Section of Returns" · 첫 Fable 레인 · 기저 C 0.55)
-  = **28칸 소진 · 최고 B4_25 B PORT_t 2.128 · Calmar 0.355**(B1+B2+B3 결합에서 오버레이를 뺀 칸 — B5 5종은 Calmar 를 못 움직였다).
-  블록별 최고: B1_2 1.567 · B5_20 1.582 · B2_7 1.441 · B3_13 1.588 · B4_25 2.128. 팡파레 B 발송 확인. 소진은 **격자 소진**(28/29 · 아래 5번) 경로.
-- ★충실도 감사(적대적)는 **오늘 3건 전부 미실행**(halt_disabled ×2 · halt_no_claude_cli ×1)이었고 검증기는 unverifiable→proceed 로 통과시켰다 —
-  도훈에게 보고, 처분(즉시 감사 실행 vs 수리 우선) **답 대기 중**. 원문(arxiv html)은 3편 다 있다.
-- 2006.04639 "Dynamic Network Risk" = Grade F · PORT_t −2.874 (17:26 소비).
-- ★로그·텔레그램 제목 라벨 결함(둘 다 "횡단면 주식 팩터") = 칩 task_aede5cd1.
+- 루프 `enabled=true` · **active entry = `RP_20260905_184253_720_adapted_rulefast_promo2`**(depth 2 · 기저 B · carry = promo1 B2_10 의 팩터 2 ·
+  비중 `score_pure`(위험항 제거 대조) · 오버레이 none · 유니버스 K200∪KQ150). 22:18 개설 → 다음 tick B1 설계부터. 승격 상한 depth 3.
+- 계보(2404.08129 "One Factor to Bind the Cross-Section of Returns" · 첫 Fable 레인): 기저 C 0.55 → 부모 28칸 최고 B4_25 B 2.128
+  → promo1 26칸 최고 **B2_10 B 2.749 · Calmar 0.366** (B1_5 2.265 · B5_19 1.929 · B3_13 1.334 · B4_25 1.811). 세 entry 공통: 오버레이·유니버스·결합은
+  Calmar 를 못 움직이고 t 를 깎는다; 위험항을 뺀 비중(score_pure)이 위험 인식 arm 을 이겼다. 격자 소진 경로(28/29 · 26/28) 2회 정상 발화.
+- ★충실도 감사(적대적) 오늘 3건 미실행(halt_disabled ×2 · halt_no_claude_cli ×1) → 검증기 unverifiable→proceed. **도훈 처분 답 대기**(즉시 감사 vs 수리 우선).
+- 2006.04639 "Dynamic Network Risk" = Grade F · PORT_t −2.874 (17:26 소비). 제목 라벨 결함("횡단면 주식 팩터" 중복) = 칩 task_aede5cd1.
 
 ## 오늘 일어난 일 (시간순)
 
