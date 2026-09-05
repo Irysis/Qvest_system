@@ -20605,6 +20605,81 @@
       "search_adaptive": true,
       "exhausted_at": "2026-09-05T13:14:04+0900",
       "summarized_at": "2026-09-05T13:14:05+0900"
+    },
+    {
+      "base_id": "RP_20260905_142502_37820_combo_rulefast",
+      "base_grade": "C",
+      "paper_key": "combo:1403.8125+2007.08115+2301.09173",
+      "paper_id": "",
+      "base_artifacts": "C:/Users/99922/OneDrive/Quant_Module_Moltbot/stage_artifacts/replication/20260905_142502_37820",
+      "engine_path": "C:\\Users\\99922\\OneDrive\\Quant_Module_Moltbot/04_Research/strategies/RP_AUTO_COMBO_combo_1403_8125_2007_081/engine.R",
+      "status": "parked",
+      "target_grade": "A",
+      "measurement_axis": "n_max_25",
+      "axis_valid": true,
+      "attempts_used": 0,
+      "attempts": [],
+      "judge": {
+        "spawned": false,
+        "verdict_path": null
+      },
+      "opened_at": "2026-09-05T14:34:41+0900",
+      "combo": {
+        "setkey": "1403.8125+2007.08115+2301.09173",
+        "k_items": 3,
+        "n_papers": 3,
+        "papers": [
+          {
+            "key": "1403.8125",
+            "url": "https://arxiv.org/abs/1403.8125",
+            "title": "Maximum drawdown, recovery, and momentum"
+          },
+          {
+            "key": "2301.09173",
+            "url": "https://arxiv.org/abs/2301.09173",
+            "title": "Pinchuk (2023) Labor Income Risk and the Cross-Section of Expected Returns"
+          },
+          {
+            "key": "2007.08115",
+            "url": "https://arxiv.org/abs/2007.08115",
+            "title": "Uncovering a factor-based expected return conditioning structure with Regression Trees jointly for many stocks"
+          }
+        ],
+        "item_engines": [
+          {
+            "key": "1403.8125",
+            "engine": "04_Research/strategies/RP_AUTO_1403_8125/engine.R",
+            "t": 2.567
+          },
+          {
+            "key": "2301.09173",
+            "engine": "C:/Users/99922/OneDrive/Quant_Module_Moltbot/04_Research/strategies/RP_2301_09173_CID/engine.R",
+            "t": 1.228
+          },
+          {
+            "key": "2007.08115",
+            "engine": "C:\\Users\\99922\\OneDrive\\Quant_Module_Moltbot/04_Research/strategies/RP_AUTO_2007_08115/engine.R",
+            "t": 1.11
+          }
+        ],
+        "parent_t": [
+          2.567,
+          1.228,
+          1.11
+        ],
+        "best_parent_t": 2.567,
+        "tries_before": 0,
+        "axis": "n_max_25",
+        "dilution_test": "희석 판정 = 설계 기저 PORT_t vs 최고 재료 t 2.567 (같은 축). 기록만 하고 차단하지 않는다 — 격자는 기저 **위에** 쌓으므로 재료보다 낮은 기저에서도 강화가 뒤집을 수 있다.",
+        "count_paper": false,
+        "base_port_t": 0.691,
+        "best_parent_t.1": 2.567,
+        "dilution_verdict": "dilution",
+        "note": "LLM 결합 설계 → 충실구현 1회로 기저 측정 → base_min_port_t 통과분만 25칸(2026-09-04 도훈). 희석 판정은 기록 전용 — 차단하지 않는다."
+      },
+      "parked_reason": "도훈 지시 2026-09-05 — 희석 기저 위에서 25칸을 태우지 않는다. 결합(1403.8125+2007.08115+2301.09173) 충실구현 기저 = Grade C · PORT_t 0.691 · CAGR 0.133 · MDD 0.566 · Calmar 0.235 로, 러너 자체 판정도 combo_verdict=dilution(부모 최고 2.567 대비). 충실도 감사는 unverifiable(결합이라 대조할 원문 없음). ★이 entry 는 무인 루프 정지 중 이미 게이트를 통과해 돌던 에이전트가 14:34 에 완주해 열린 것이다 — 정지 지시 위반이 아니라 게이트가 프로세스 시작 시점에만 검사되기 때문. 재개 조건: 결합 설계를 다시 세워 기저 PORT_t 가 부모 최고를 넘거나, 도훈이 명시 지시.",
+      "parked_at": "2026-09-05T15:19:15+0900",
+      "parked_at_attempt": 0
     }
   ],
   "combination_review": {
@@ -20722,7 +20797,7 @@
     ],
     "retro_note": "2026-09-04 소급: count_paper 키 부재로 1→4 (rf_replication_auto.sh C_COUNT 수리)"
   },
-  "last_updated": "2026-09-05T13:14:05+0900",
+  "last_updated": "2026-09-05T15:19:15+0900",
   "removed_entries": [
     {
       "removed_at": "2026-08-30T10:07:35+0900",
