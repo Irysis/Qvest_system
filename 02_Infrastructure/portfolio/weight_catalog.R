@@ -44,6 +44,7 @@
 #   weight_catalog_arms(axis=…)      사다리 ②칸 / 캐리어 배터리가 소비하는 arm 표
 #   catalog_weight_arms()            Σ-A/B 배터리 주입용 named list(extra_adapters 모양)
 #   admit_generated(…)               생성물(generate_weight_variants.R)의 카탈로그 편입
+#   .wc_ensure_lean_builtins(root)   probe 전 계기(backtest_harness.R) 적재 — 못 실으면 WARN + 보존 병합
 #==============================================================================
 
 suppressWarnings(suppressMessages({
@@ -113,6 +114,64 @@ WC_UB                 <- 0.20
 }
 
 #------------------------------------------------------------------------------
+# lean 빌트인 **계기 적재** (2026-09-05)
+#
+# ★왜: lean 23종의 calc_*_weights 는 backtest_harness.R(5종)과, 하네스가 싣는 advanced_weights.R
+#   (18종)이 **전역**에 정의한다. 하네스를 안 실은 세션에서 sync_catalog(probe=TRUE) 를 돌리면
+#   23종 전부가 "빌트인 함수 부재" 로 실패 기록되고, weight_catalog_arms 가 그 실패를 실효 강등
+#   (unverified)으로 읽어 rf_cell_engine 이 lean arm 전체를 "카탈로그 arm 부재" 로 본다
+#   (2026-09-05 실측 — 주간 grow 태스크의 bare Rscript 가 정확히 그 경로였다).
+#   **계기가 안 실린 것은 arm 의 증거가 아니다.** 그래서 두 겹:
+#     ① probe 전에 계기를 스스로 싣는다(rf_cell_engine 과 같은 setwd 방식 — 하네스는 ./config.R 을
+#        상대경로로 읽는다).
+#     ② 그래도 못 실었으면 sync_catalog 가 **이전 probe 를 보존**하고 WARN 을 남긴다.
+#   발신 문장(.wc_lean_carrier_fn 의 stop)과 판별 문장(.wc_probe_is_instrument_failure)은
+#   .WC_INSTRUMENT_MARK 한 상수를 나눠 쓴다 — 축을 옮기면 양성 대조도 같이 옮겨지게.
+#------------------------------------------------------------------------------
+.WC_INSTRUMENT_MARK <- "backtest_harness.R 미로드"
+.WC_LEAN_SENTINELS  <- c("calc_ivol_weights", "calc_cvar_weights")   # 하네스 본체 1종 · advanced_weights 1종
+
+.wc_lean_builtins_loaded <- function()
+  all(vapply(.WC_LEAN_SENTINELS, function(f) exists(f, mode = "function"), logical(1)))
+
+.wc_ensure_lean_builtins <- function(root = .wc_root(), quiet = FALSE) {
+  if (.wc_lean_builtins_loaded()) return(TRUE)
+  if (root %in% .WC_ENV$harness_tried) return(FALSE)           # 같은 root 재시도 없음 — 실패는 결정적이다
+  .WC_ENV$harness_tried <- c(.WC_ENV$harness_tried, root)
+  hp <- file.path(root, "02_Infrastructure", "backtest_harness.R")
+  if (!file.exists(hp)) {
+    cat(sprintf("[wcat] WARN 계기 부재 — %s 없음. lean 빌트인 probe 는 '%s' 로 실패하고 이전 probe 가 보존된다.\n",
+                hp, .WC_INSTRUMENT_MARK))
+    return(FALSE)
+  }
+  # ★config.R 은 QM_ROOT 를 최우선으로 읽는다 — 코드 루트(root)와 데이터 루트가 갈리면 worktree 의
+  #   카탈로그가 main 의 calc_* 를 잰다(feedback-code-root-is-not-data-root). 하네스가 config.R 을
+  #   읽을 때(= PROJECT_ROOT 가 아직 없을 때)만 root 로 핀한다. 이미 정해진 루트는 건드리지 않는다.
+  if (!exists("PROJECT_ROOT", envir = globalenv()) && !identical(Sys.getenv("QM_ROOT", ""), root)) {
+    Sys.setenv(QM_ROOT = root)
+    if (!quiet) cat(sprintf("[wcat] QM_ROOT 를 root 로 핀(하네스 config.R 용): %s\n", root))
+  }
+  owd <- getwd()
+  ok <- tryCatch({
+    setwd(dirname(hp))
+    suppressMessages(suppressWarnings(source("backtest_harness.R", local = FALSE)))
+    TRUE
+  }, error = function(e) { cat(sprintf("[wcat] WARN backtest_harness.R 적재 실패: %s\n", conditionMessage(e))); FALSE })
+  setwd(owd)
+  ld <- .wc_lean_builtins_loaded()
+  if (!quiet) cat(sprintf("[wcat] backtest_harness.R 적재 %s — lean 빌트인 %s\n",
+                          if (ok) "완료" else "실패", if (ld) "가용" else "부재"))
+  ld
+}
+
+#' probe 실패가 **계기(세션) 실패**인가 — arm 에 대한 증거가 아니라 보존 대상이다.
+.wc_probe_is_instrument_failure <- function(pr) {
+  if (is.null(pr) || isTRUE(.wc_get(pr, "ok", FALSE))) return(FALSE)
+  txt <- paste(as.character(.wc_get(pr, "reason", "")), as.character(.wc_get(pr, "log", "")), collapse = " ")
+  grepl(.WC_INSTRUMENT_MARK, txt, fixed = TRUE)
+}
+
+#------------------------------------------------------------------------------
 # R1 — lean 빌트인 23종. 이 표가 backtest_harness.R:1084-1181 분기와 1:1 대응이다.
 #   carrier_call : ctx 축에서 그 규칙을 부르는 방법(needs_score → ctx$mu 를 scores 로)
 #   cov_hook     : cov_method= 인자를 받는가 (G1 shrinkage_lift 의 pass-through 경로)
@@ -166,11 +225,15 @@ WC_LEAN_BUILTIN <- list(
       if (is.null(m)) stop(sprintf("[wcat] %s 는 score 를 요구하는데 ctx$mu 가 없다", spec$name))
       v <- suppressWarnings(as.numeric(m[a])); v[!is.finite(v)] <- 0; stats::setNames(v, a)
     } else NULL
+    # ★부재 문장은 .WC_INSTRUMENT_MARK 를 품는다 — sync_catalog 가 이 문장으로 '계기 실패' 를 가려
+    #   이전 probe 를 보존한다(arm 의 증거가 아니므로). 문장을 바꾸려면 상수를 바꿔라.
     res <- if (identical(spec$name, "score_pure")) {
+      if (!exists("calc_score_tilt_weights", mode = "function"))
+        stop(sprintf("[wcat] 빌트인 함수 부재: calc_score_tilt_weights (%s?)", .WC_INSTRUMENT_MARK))
       calc_score_tilt_weights(a, sc, rd, alpha = 1.0, max_w = 1.0)
     } else {
       if (!exists(fname, mode = "function"))
-        stop(sprintf("[wcat] 빌트인 함수 부재: %s (backtest_harness.R 미로드?)", fname))
+        stop(sprintf("[wcat] 빌트인 함수 부재: %s (%s?)", fname, .WC_INSTRUMENT_MARK))
       fn <- get(fname, mode = "function")
       if (is.null(sc)) fn(a, rd) else fn(a, sc, rd)
     }
@@ -457,14 +520,33 @@ sync_catalog <- function(root = .wc_root(), probe = FALSE, write = TRUE, quiet =
   }
 
   # probe (선택) — EW 퇴화 검거. 보존 병합.
+  # ★계기 미적재 실패는 보존한다(2026-09-05): 새 probe 가 .WC_INSTRUMENT_MARK 로 실패했다면 그것은
+  #   arm 이 아니라 **이 세션**의 증거다. 이전 probe 가 있으면 그대로 두고 WARN 을 남긴다(어느 ok
+  #   값이든 — 이전 진짜 실패의 진단도 계기 문장으로 대체하지 않는다). 이전 probe 가 없으면 그 실패를
+  #   그대로 적는다(빈칸보다 정직하다 — 소비면은 unverified 로 읽는다). 진짜 실패(예외·EW 퇴화)는
+  #   여전히 덮어쓴다 — 보존은 계기 문장이 있을 때만이다(test_weight_catalog.R (h-5) 양방향).
+  retained <- character(0)
+  if (isTRUE(probe) && any(vapply(entries, function(e) identical(e$origin, "lean_builtin"), logical(1))))
+    .wc_ensure_lean_builtins(root, quiet = quiet)
   for (i in seq_along(entries)) {
     cid <- entries[[i]]$catalog_id
+    old <- .wc_get(prev_probe, cid)            # 빈 list()[[cid]] 는 에러다 — 안전 조회
     if (isTRUE(probe) && .wc_rank(entries[[i]]$status) >= 1L) {
-      entries[[i]]$probe <- .wc_probe_entry(entries[[i]], root)
-    } else if (!is.null(prev_probe[[cid]])) {
-      entries[[i]]$probe <- prev_probe[[cid]]
+      new <- .wc_probe_entry(entries[[i]], root)
+      if (!is.null(old) && .wc_probe_is_instrument_failure(new)) {
+        entries[[i]]$probe <- old
+        retained <- c(retained, cid)
+      } else {
+        entries[[i]]$probe <- new
+      }
+    } else if (!is.null(old)) {
+      entries[[i]]$probe <- old
     }
   }
+  if (length(retained))
+    cat(sprintf(paste0("[wcat] WARN probe 보존 %d건 — 계기 미적재(%s)는 arm 의 증거가 아니다. ",
+                       "이전 probe 유지: %s\n"),
+                length(retained), .WC_INSTRUMENT_MARK, paste(retained, collapse = ", ")))
 
   cnt <- table(vapply(entries, function(e) e$origin, character(1)))
   out <- list(
@@ -478,6 +560,10 @@ sync_catalog <- function(root = .wc_root(), probe = FALSE, write = TRUE, quiet =
                              "DPL·PPO_RL·Genetic 은 retired 로 박지 않는다 — 정상 등재하고 ",
                              "같은 게이트(verify_adapter · sweep/DSR · book-marginal ΔIR≥0.05 · PIT)를 건다."),
     counts = as.list(cnt), n_entries = length(entries), entries = entries)
+  # 보존이 일어났으면 파생 파일에도 적는다 — 낡은 probe 가 generated_at 뒤에 숨지 않게.
+  if (length(retained))
+    out$probe_retained <- list(ids = retained, at = out$generated_at,
+                               note = sprintf("계기 미적재(%s) 실패 — 이전 probe 보존", .WC_INSTRUMENT_MARK))
 
   if (isTRUE(write)) {
     p <- file.path(root, WEIGHT_CATALOG_PATH)
@@ -491,12 +577,21 @@ sync_catalog <- function(root = .wc_root(), probe = FALSE, write = TRUE, quiet =
                 paste(sprintf("%s %d", names(cnt), as.integer(cnt)), collapse = " · ")))
     st <- table(vapply(entries, function(e) e$status, character(1)))
     cat(sprintf("[wcat] status: %s\n", paste(sprintf("%s %d", names(st), as.integer(st)), collapse = " · ")))
+    if (isTRUE(probe)) {
+      pk <- vapply(entries, function(e) isTRUE(.wc_get(.wc_get(e, "probe"), "ok", FALSE)), logical(1))
+      ln <- vapply(entries, function(e) identical(e$origin, "lean_builtin"), logical(1))
+      cat(sprintf("[wcat] probe ok %d/%d (lean %d/%d · 보존 %d)\n",
+                  sum(pk), length(pk), sum(pk & ln), sum(ln), length(retained)))
+    }
   }
   invisible(out)
 }
 
 #' 합성 fixture 1회 실행 — **EW 와 구별되는가**만 본다(성과 아님).
 .wc_probe_entry <- function(entry, root = .wc_root()) {
+  # lean 빌트인은 전역의 calc_* 를 쓴다 — bare 세션이면 여기서 계기를 먼저 싣는다(메모: root 당 1회).
+  if (identical(.wc_get(.wc_get(entry, "resolver"), "kind"), "lean_builtin"))
+    .wc_ensure_lean_builtins(root, quiet = TRUE)
   fx <- tryCatch(.wc_fixture(), error = function(z) NULL)
   if (is.null(fx)) return(list(ok = FALSE, reason = "fixture 생성 실패"))
   f <- tryCatch(as_ctx_adapter(entry, root = root), error = function(z) NULL)

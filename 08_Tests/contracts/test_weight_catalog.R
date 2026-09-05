@@ -15,6 +15,8 @@
 #   (d) retired 엔트리가 weight_catalog_arms 에 안 뜸
 #   (e) 형제 방출이 **측정보다 먼저** 기록됨 (+ 생성기 시그니처에 ir/measured 부재)
 #   (f) `.normalize` 가 **합-정규화를 캡보다 먼저** 한다 (advanced_weights.R, 2026-08-24 수리)
+#   (h-5) 계기 미적재(backtest_harness.R 미로드) probe 는 이전 probe 를 **덮어쓰지 못하고**,
+#         진짜 실패는 **덮어쓴다** — 양방향 (2026-09-05, 주간 grow 태스크 bare Rscript 실사고)
 #
 # 실행: Rscript 08_Tests/contracts/test_weight_catalog.R
 suppressWarnings(suppressMessages({
@@ -362,6 +364,108 @@ if (!file.exists(AW)) cat("  SKIP  advanced_weights.R 부재\n") else {
     }
   }
 }
+
+cat("== (h-5) ★계기 미적재는 arm 의 증거가 아니다 — bare 세션 probe 의 보존 병합 (양방향) ==\n")
+# 왜 여기 있나 (2026-09-05): 주간 grow 태스크(rf_weight_catalog_grow.sh)가 bare Rscript 로
+#   sync_catalog(probe=TRUE) 를 돌려 lean 23종 전부를 "빌트인 함수 부재(backtest_harness.R 미로드?)" 로
+#   실패 기록했고, weight_catalog_arms 가 그것을 실효 강등으로 읽어 rf_cell_engine 이 lean arm 전체를
+#   "카탈로그 arm 부재" 로 봤다. 수리 2겹 = ① .wc_probe_entry/sync_catalog 가 계기를 스스로 싣는다
+#   ② 그래도 못 실었으면 이전 probe 를 보존한다(.WC_INSTRUMENT_MARK). (h) 의 "소비면에 lean 생존" 은
+#   **지금 파일**이 살아 있는가를 보고, 여기는 **다음 bare 재생성이 그것을 죽이지 못하는가** 를 본다.
+# ★양방향: 보존은 계기 문장이 있을 때만이다 — 진짜 실패는 여전히 덮어써야 한다. 한 방향만 재면
+#   "모든 실패를 보존" 하는 결함판도 초록이 된다([[feedback-verify-both-directions-always]]).
+# ★격리: 실 JSON 을 빌리지 않는다([[feedback-a-test-that-borrows-live-state-flaps-when-you-fix-the-state]]) —
+#   임시 root 에 합성 카탈로그를 심고 **자식 Rscript**(진짜 bare 세션)로 돈다. 임시 root 에는
+#   backtest_harness.R 을 일부러 두지 않는다(= 계기 부재의 재현). 자식 스크립트는 ASCII 만 쓴다.
+h5_lib  <- file.path(ROOT, "02_Infrastructure", "portfolio", "weight_catalog.R")
+h5_tmp  <- file.path(tempdir(), sprintf("wc_h5_%d", Sys.getpid()))
+h5_json <- file.path(h5_tmp, "06_Registry", "weight_catalog.json")
+for (d in c("02_Infrastructure/portfolio", "02_Infrastructure/methods", "06_Registry"))
+  dir.create(file.path(h5_tmp, d), recursive = TRUE, showWarnings = FALSE)
+for (f in c("02_Infrastructure/methods/method_registry.R",          # wrap_adapter(정규형)
+            "02_Infrastructure/portfolio/strategy_tilt_weights.R",  # normalize_long_only
+            "02_Infrastructure/portfolio/weight_catalog.R"))        # .wc_root marker
+  file.copy(file.path(ROOT, f), file.path(h5_tmp, f), overwrite = TRUE)
+h5_seed <- function() writeLines(as.character(toJSON(list(`_doc` = "h5 fixture", entries = list(
+  list(catalog_id = "lean:ivol",   probe = list(ok = TRUE,  max_abs_dev_from_ew = 0.1234, reason = NULL, log = "")),
+  list(catalog_id = "lean:hrp",    probe = list(ok = FALSE, max_abs_dev_from_ew = 0, reason = "exception: H5_PRIOR_GENUINE", log = "")),
+  list(catalog_id = "lean:minvar"))), auto_unbox = TRUE, null = "null", digits = NA)), h5_json)
+h5_child <- file.path(h5_tmp, "h5_child.R")
+writeLines(c(
+  'lib <- Sys.getenv("WC_H5_LIB"); tmp <- Sys.getenv("WC_H5_TMP")',
+  '.WC_QUIET_LOAD <- TRUE; suppressMessages(source(lib))',
+  'if (identical(Sys.getenv("WC_H5_INJECT"), "1"))',
+  '  calc_ivol_weights <- function(tickers, ret_dt, ...) stop("H5_GENUINE_FAILURE")',
+  'cat(sprintf("H5_PRE calc_ivol=%s calc_cvar=%s\\n", exists("calc_ivol_weights", mode = "function"),',
+  '            exists("calc_cvar_weights", mode = "function")))',
+  'out <- sync_catalog(root = tmp, probe = TRUE, quiet = TRUE)',
+  'cat("H5_DONE\\n")'), h5_child)
+h5_probe_of <- function(j, id) { for (e in (j$entries %||% list())) if (identical(as.character(e$catalog_id), id)) return(e$probe); NULL }
+h5_txt <- function(p) paste(as.character(p$reason), as.character(p$log), collapse = " ")
+h5_run <- function(inject) {
+  h5_seed()
+  Sys.setenv(WC_H5_LIB = h5_lib, WC_H5_TMP = h5_tmp, WC_H5_INJECT = if (inject) "1" else "0")
+  on.exit(Sys.unsetenv(c("WC_H5_LIB", "WC_H5_TMP", "WC_H5_INJECT")), add = TRUE)
+  rs <- file.path(R.home("bin"), if (.Platform$OS.type == "windows") "Rscript.exe" else "Rscript")
+  o  <- suppressWarnings(system2(rs, shQuote(h5_child), stdout = TRUE, stderr = TRUE))
+  list(out = as.character(o), cat = tryCatch(fromJSON(h5_json, simplifyVector = FALSE), error = function(e) NULL))
+}
+
+# ── h-5a 양성 대조(자동 적재): 이 프로세스는 아직 bare 다 — .wc_probe_entry 가 계기를 스스로 싣는가 ──
+if (exists("calc_ivol_weights", mode = "function"))
+  ng("전제 붕괴 — 이 프로세스에 calc_ivol_weights 가 이미 있다: 자동 적재 경로를 잴 수 없다(앞 절이 하네스를 실었다면 이 검사를 그 앞으로 옮길 것)") else {
+  h5_ent <- NULL; for (e in CAT$entries) if (identical(as.character(e$catalog_id), "lean:ivol")) h5_ent <- e
+  h5_pr <- NULL
+  h5_log <- utils::capture.output(h5_pr <- tryCatch(.wc_probe_entry(h5_ent, ROOT),
+                                                    error = function(e) list(ok = FALSE, reason = conditionMessage(e))))
+  h5_dev <- suppressWarnings(as.numeric(h5_pr$max_abs_dev_from_ew))
+  if (exists("calc_ivol_weights", mode = "function") && isTRUE(h5_pr$ok) &&
+      length(h5_dev) == 1L && is.finite(h5_dev) && h5_dev > 0)
+    ok(sprintf("자동 적재: bare 프로세스의 .wc_probe_entry(lean:ivol) 가 하네스를 스스로 싣고 ok=TRUE(dev=%.4f)", h5_dev)) else
+    ng("★자동 적재 실패 — bare probe 가 여전히 계기 실패를 낸다",
+       c(exists("calc_ivol_weights", mode = "function"), h5_pr$ok, as.character(h5_pr$reason), utils::tail(h5_log, 3)))
+}
+
+# ── h-5b bare 자식 세션(계기 부재): ok probe · 이전 진짜 실패는 보존, 무-이전은 계기 실패를 그대로 기록 ──
+r1 <- h5_run(inject = FALSE)
+if (!any(grepl("H5_DONE", r1$out, fixed = TRUE)) || is.null(r1$cat))
+  ng("bare 자식 세션 sync 미완주", utils::tail(r1$out, 4)) else {
+  if (any(grepl("H5_PRE calc_ivol=FALSE calc_cvar=FALSE", r1$out, fixed = TRUE)))
+    ok("전제: 자식 세션은 bare(calc_* 부재) · 임시 root 에 backtest_harness.R 없음(자동 적재 실패 경로)") else
+    ng("전제 붕괴 — 자식 세션이 bare 가 아니다", grep("H5_PRE", r1$out, value = TRUE))
+  p_iv <- h5_probe_of(r1$cat, "lean:ivol"); p_hr <- h5_probe_of(r1$cat, "lean:hrp"); p_mv <- h5_probe_of(r1$cat, "lean:minvar")
+  if (isTRUE(p_iv$ok) && isTRUE(all.equal(as.numeric(p_iv$max_abs_dev_from_ew), 0.1234)))
+    ok("보존: lean:ivol 의 ok probe 가 **자구 그대로**(dev=0.1234) 남았다 — bare 재생성이 덮어쓰지 못한다") else
+    ng("★bare 세션 probe 가 ok probe 를 덮어썼다", c(p_iv$ok, as.character(p_iv$reason), substr(as.character(p_iv$log), 1, 90)))
+  if (!isTRUE(p_hr$ok) && identical(as.character(p_hr$reason), "exception: H5_PRIOR_GENUINE"))
+    ok("보존: 이전 **진짜** 실패(lean:hrp)의 진단도 계기 문장으로 대체되지 않는다") else
+    ng("이전 진짜 실패가 계기 문장으로 대체됨", as.character(p_hr$reason))
+  if (!is.null(p_mv) && !isTRUE(p_mv$ok) && grepl("backtest_harness.R 미로드", h5_txt(p_mv), fixed = TRUE))
+    ok("무-이전 lean:minvar 는 계기 실패를 **그대로 적는다**(빈칸 아님 — 소비면은 unverified 로 읽는다)") else
+    ng("무-이전 엔트리의 계기 실패 기록", c(is.null(p_mv), p_mv$ok, as.character(p_mv$reason)))
+  if (any(grepl("WARN probe", r1$out, fixed = TRUE) & grepl("lean:ivol", r1$out, fixed = TRUE)))
+    ok("WARN 이 보존 대상을 호명한다(lean:ivol)") else ng("WARN 미출력/미호명", grep("WARN", r1$out, value = TRUE))
+  rt <- as.character(unlist(r1$cat$probe_retained$ids))
+  if (all(c("lean:ivol", "lean:hrp") %in% rt) && !("lean:minvar" %in% rt))
+    ok("JSON probe_retained.ids = 보존 2건(minvar 제외) — 낡은 probe 가 generated_at 뒤에 숨지 않는다") else
+    ng("probe_retained 표기", rt)
+}
+
+# ── h-5c 반대 방향: 진짜 실패(주입 calc_ivol_weights 가 stop)는 ok probe 를 **덮어쓴다** ──
+r2 <- h5_run(inject = TRUE)
+if (!any(grepl("H5_DONE", r2$out, fixed = TRUE)) || is.null(r2$cat))
+  ng("주입 자식 세션 sync 미완주", utils::tail(r2$out, 4)) else {
+  q_iv <- h5_probe_of(r2$cat, "lean:ivol")
+  if (!isTRUE(q_iv$ok) && grepl("H5_GENUINE_FAILURE", h5_txt(q_iv), fixed = TRUE) &&
+      !grepl("backtest_harness.R 미로드", h5_txt(q_iv), fixed = TRUE))
+    ok("양방향: 진짜 실패는 ok probe 를 덮어쓴다 — 보존은 계기 문장에만 걸린다") else
+    ng("★진짜 실패가 보존됐다 — '모든 실패를 보존' 하는 결함판", c(q_iv$ok, as.character(q_iv$reason), substr(as.character(q_iv$log), 1, 100)))
+  rt2 <- as.character(unlist(r2$cat$probe_retained$ids))
+  if (!("lean:ivol" %in% rt2) && "lean:hrp" %in% rt2)
+    ok("probe_retained 는 hrp(계기 실패)만 — ivol(진짜 실패)은 미보존") else ng("probe_retained 혼선", rt2)
+}
+unlink(h5_tmp, recursive = TRUE)
+
 
 cat("== (h) ★QEPM 하네스 규약 표적 — 시그니처 번역 (CDaR_LP · CVaR_LP · MaxDiv) ==\n")
 # 왜 여기 있나 (2026-09-05): dispatch_weight_method 는 (alpha, cov_matrix, returns, bounds, max_names)
