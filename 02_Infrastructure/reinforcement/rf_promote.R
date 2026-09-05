@@ -23,11 +23,18 @@
 #' @param best  그 entry 의 최고 셀 요약 (grade · port_t · spec · cell_code)
 #' @param cfg   reinforce_auto_config.json (promote_min_grade · promote_max_depth)
 #' @return list(ok, reason, depth, new_base_id)
-rf_promote_decide <- function(entry, best, cfg = list()) {
+rf_promote_decide <- function(entry, best, cfg = list(), existing_ids = NULL) {
   depth <- as.integer(entry$parent$depth %||% 0L) + 1L
   maxd  <- as.integer(cfg$promote_max_depth %||% 3L)
   nid   <- sprintf("%s_promo%d", sub("_promo[0-9]+$", "", entry$base_id %||% "unknown"), depth)
   out   <- function(ok, reason) list(ok = ok, reason = reason, depth = depth, new_base_id = nid)
+
+  ## ★이미 승격한 entry 는 다시 승격하지 않는다 (2026-09-05 실사고: promo2 가 handed_off 없이 남아
+  ##   손자(promo3)가 큐로 넘어간 뒤 매 tick "승격" 을 반복 — rf_open_entry 는 기존 entry 를 조용히
+  ##   재사용하므로 로그엔 promoted 가 찍히고 라운드 리뷰 텔레그램이 중복 발송됐다. 큐 논문은 미착수).
+  ##   자식 base_id 가 원장에 있으면 승격은 끝난 사건이다 — handed_off 표식과 별개로 여기서도 막는다.
+  if (!is.null(existing_ids) && nid %in% as.character(existing_ids)) return(out(FALSE, "child_exists"))
+  if (isTRUE(entry$handed_off)) return(out(FALSE, "already_handed_off"))
 
   if (is.null(best)) return(out(FALSE, "no_measured_cell"))
   if (!((best$grade %||% "") %in% .rf_promote_grades(cfg$promote_min_grade %||% "B")))

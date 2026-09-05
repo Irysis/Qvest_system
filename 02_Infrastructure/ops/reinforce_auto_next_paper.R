@@ -100,7 +100,9 @@ if (length(ex)) {
 if (length(ex)) {
   E2 <- ex[[length(ex)]]
   suppressMessages(source(file.path(ROOT, "02_Infrastructure/reinforcement/rf_promote.R")))
-  PD    <- rf_promote_decide(E2, best, CFG)
+  ## ★자식 base_id 가 이미 원장에 있으면 승격은 끝난 사건 — child_exists (2026-09-05 실사고 promo2 재승격 반복)
+  .ids  <- vapply(led$entries, function(z) as.character(z$base_id %||% ""), character(1))
+  PD    <- rf_promote_decide(E2, best, CFG, existing_ids = .ids)
   MAXD  <- as.integer(CFG$promote_max_depth %||% 3L)
   depth <- PD$depth
   sp    <- best$spec %||% NA_character_
@@ -141,6 +143,10 @@ if (length(ex)) {
       jlog("promoted", base_id = nid, parent = E2$base_id, depth = depth,
            cell = best$cell_code %||% "NA", grade = best$grade, port_t = best$port_t,
            carry_factors = length(carry$factors))
+      ## ★부모에 이월 표식 — 다음 논문 hand-off 와 같은 표식(rf_mark_handed_off). 이게 없으면 자식이 큐로
+      ##   넘어간 뒤 부모가 "마지막 미이월 소진 entry" 로 다시 떠올라 매 tick 재승격한다(2026-09-05 실사고).
+      tryCatch(rf_mark_handed_off(1L, E2$base_id, ROOT, promoted_to = nid),
+               error = function(e) jlog("handoff_mark_failed", base_id = E2$base_id, err = conditionMessage(e)))
       ## ★승격 안내 대신 **라운드 종료 리뷰** 를 보낸다 (도훈 지시 2026-09-04).
       ##   종료 시점에 두 통이 나갔고(마지막 블록 리뷰 + 승격 쪽지) 어느 쪽도
       ##   35칸 전체의 결론이 아니었다. 라운드를 닫는 메시지가 라운드를 요약해야 한다.
@@ -225,16 +231,10 @@ write(toJSON(list(requested_at = format(Sys.time(), "%Y-%m-%dT%H:%M:%S%z"),
                   prev = best, paper = pick, status = "pending"),
              auto_unbox = TRUE, pretty = TRUE, null = "null"), REQ)
 jlog("replication_requested", path = REQ)
-  # 이월 완료 표식 — 이 entry 는 다음 tick 부터 요약 대상이 아니다
+  # 이월 완료 표식 — 이 entry 는 다음 tick 부터 요약·승격 대상이 아니다 (writer = rf_mark_handed_off · 승격 경로와 동일)
   if (!is.null(best$base_id)) tryCatch({
-    .o <- rf_load(1L, ROOT)
-    .k <- which(vapply(.o$entries, function(z) identical(z$base_id, best$base_id), logical(1)))
-    if (length(.k)) { .o$entries[[.k[1]]]$handed_off <- TRUE
-      .o$entries[[.k[1]]]$handed_off_at <- format(Sys.time(), "%Y-%m-%dT%H:%M:%S%z")
-      .txt <- toJSON(.o, auto_unbox = TRUE, pretty = TRUE, null = "null", na = "null", digits = 6)
-      if (!is.null(fromJSON(.txt, simplifyVector = FALSE)$entries))
-        writeLines(.txt, file.path(ROOT, "06_Registry/reinforce_ledger_l1.json"), useBytes = TRUE)
-      jlog("handed_off", base_id = best$base_id) }
+    rf_mark_handed_off(1L, best$base_id, ROOT)
+    jlog("handed_off", base_id = best$base_id)
   }, error = function(e) jlog("handoff_mark_failed", err = conditionMessage(e)))
 
 tryCatch({

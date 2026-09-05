@@ -334,5 +334,17 @@
     "decision": "도훈 — 새 논문 우선. 결합 착수는 결합 검토가 due(새 논문 3편 소비)일 때만. 검토 not_due 면 combination_launch_skipped 로 기록하고 이월.",
     "code": "reinforce_auto_next_paper.R: .review_due 게이트 · 검사 test_rf_combo_launch_gated_by_review.R 5/5. held 결합 요청은 다음 이월이 덮어쓴다.",
     "open": "큐가 비었을 때 결합을 열지는 블록 순서(halt_queue_empty 가 먼저) 때문에 별도 결정 필요."
+  },
+  "repair_20260905_1735_promotion_replay": {
+    "at": "2026-09-05T17:36:12",
+    "by": "Q",
+    "reason": "next_paper 가 handed_off 안 된 promo2 를 매 tick 재승격(기존 promo3 재사용) — 큐 논문 미착수 + 라운드 리뷰 텔레그램 중복(17:26). 수리 중 일시 정지",
+    "reenable": "수리·검사 후 즉시"
+  },
+  "resumed_20260905_1745_after_promotion_replay_fix": {
+    "at": "2026-09-05T17:41:51",
+    "by": "Q",
+    "repair": "rf_promote_decide child_exists/already_handed_off 가드 + rf_mark_handed_off writer(승격·hand-off 공통) + 소급 표식 4 entry",
+    "test": "test_rf_promote_child_exists.R 13/13 · 변이(구판) 5/14"
   }
 }

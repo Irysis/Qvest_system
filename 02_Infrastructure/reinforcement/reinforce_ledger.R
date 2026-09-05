@@ -105,6 +105,24 @@ rf_mark_summarized <- function(layer, base_id, root = .rf_root()) {
   invisible(TRUE)
 }
 
+#' 이월 완료 표식 — 이 entry 는 다음 tick 부터 요약·승격 대상이 아니다.
+#'   두 이월 경로(다음 논문 hand-off · 승격)가 **같은 표식**을 남겨야 한다. 2026-09-05 실사고: 승격 경로가
+#'   부모에 표식을 안 남겨, 손자가 큐로 넘어간 뒤 부모(promo2)가 "마지막 미이월 소진 entry" 로 다시 떠올라
+#'   매 tick 재승격(기존 promo3 재사용)했다 — 큐 논문 미착수 + 라운드 리뷰 텔레그램 중복.
+#' @param promoted_to 승격 경로면 자식 base_id (provenance) · hand-off 면 NULL
+#' @param reason 소급 표식 등 사유(선택)
+rf_mark_handed_off <- function(layer, base_id, root = .rf_root(), promoted_to = NULL, reason = NULL) {
+  obj <- rf_load(layer, root)
+  k <- which(vapply(obj$entries, function(e) identical(e$base_id, base_id), logical(1)))
+  if (!length(k)) stop("[reinforce_ledger] entry not found: ", base_id)
+  obj$entries[[k[1]]]$handed_off    <- TRUE
+  obj$entries[[k[1]]]$handed_off_at <- format(Sys.time(), "%Y-%m-%dT%H:%M:%S%z")
+  if (!is.null(promoted_to) && nzchar(promoted_to)) obj$entries[[k[1]]]$promoted_to <- promoted_to
+  if (!is.null(reason) && nzchar(reason)) obj$entries[[k[1]]]$handed_off_reason <- reason
+  .rf_write(obj, layer, root)
+  invisible(TRUE)
+}
+
 #' 강화 대상 등록 (충실구현/로테이션 라운드가 A 미달로 끝났을 때)
 #' @param carry  승격 entry 전용 — 부모의 승자 구성(factors/weighting/universe).
 #'   러너가 매 셀 스펙에 이것을 먼저 깔고 그 위에 격자 축을 얹는다.
