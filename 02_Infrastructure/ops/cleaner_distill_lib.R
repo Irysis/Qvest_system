@@ -192,6 +192,7 @@ cd_gate <- function() {
     if (!file.exists(full) && !dir.exists(full)) next
     fi <- file.info(full)
     prot <- .cd_is_protected(p, pr)
+    rc <- .cd_ref_count(p, pr)   # ★한 번만 — git grep 은 후보마다 전 저장소를 훑는다
     res[[length(res) + 1L]] <- list(
       path      = p,
       kind      = c1$kind,
@@ -200,8 +201,9 @@ cd_gate <- function() {
       age_days  = round(as.numeric(difftime(Sys.time(), fi$mtime, units = "days")), 1),
       protected = prot$protected,
       protected_by = prot$by,
-      n_refs    = .cd_ref_count(p)$n,
-      refs      = paste(utils::head(.cd_ref_count(p)$files, 3), collapse = " | ")
+      n_refs    = rc$n,
+      n_refs_raw = rc$n_raw,
+      refs      = paste(utils::head(rc$files, 3), collapse = " | ")
     )
     if (length(res) >= limit) break
   }
@@ -229,16 +231,42 @@ cd_gate <- function() {
 }
 
 # 참조 0 검증 — SKILL §4 의무의 기계 재도출. basename 으로 전 저장소(추적+미추적) 조회.
-#   자기 자신은 제외. 넓게 잡히는 쪽이 보수적이라 의도한 것이다(참조가 많으면 안 지운다).
-.cd_ref_count <- function(relpath) {
+#
+#   ★기록과 소비를 가른다 (2026-09-05 양성 대조에서 적발): 삭제 후보는 전부
+#     hygiene_report.json 에서 나오는데 그 파일이 후보 경로를 적어 두므로, 문자 그대로 세면
+#     **모든 후보가 참조 1건**이 되어 삭제가 원리상 불가능해진다. 위반 주입 방향만 쟀다면
+#     "가드 완벽 · 20/20 초록" 으로 나가고 레인은 영영 아무것도 안 지웠을 것이다.
+#     제외 목록은 레지스트리(ref_check_ignore)에 사유와 함께 있고, 무엇이 제외됐는지는
+#     n_refs_raw / ignored 로 매니페스트에 남는다 — 조용한 완화 금지.
+#   ★목록에 없는 것은 전부 참조로 센다. 넓게 잡히는 쪽이 보수적이다.
+.cd_ref_ignore_rx <- function(pr) {
+  gl <- vapply(pr$ref_check_ignore$globs %||% list(),
+               function(e) as.character(e$glob %||% ""), character(1))
+  gl <- gl[nzchar(gl)]
+  if (!length(gl)) return(character(0))
+  # glob → regex: 정규식 특수문자를 죽이고 `*` 만 살린다 (역참조 미사용 — R 8진 함정 회피)
+  vapply(gl, function(g) {
+    e <- gsub("([.+^$(){}|\\[\\]\\\\])", "\\\\\\1", g, perl = TRUE)
+    paste0("^", gsub("*", ".*", e, fixed = TRUE), "$")
+  }, character(1), USE.NAMES = FALSE)
+}
+
+.cd_ref_count <- function(relpath, pr = NULL) {
   bn <- basename(sub("/+$", "", gsub("\\\\", "/", relpath)))
-  if (!nzchar(bn)) return(list(n = -1L, files = character(0)))
+  if (!nzchar(bn)) return(list(n = -1L, n_raw = -1L, files = character(0), ignored = character(0)))
   out <- tryCatch(suppressWarnings(system2("git",
            c("-C", shQuote(ROOT), "grep", "-l", "--untracked", "-F", "--", shQuote(bn)),
            stdout = TRUE, stderr = FALSE)), error = function(e) NULL)
-  if (is.null(out)) return(list(n = -1L, files = character(0)))   # -1 = 판정 불가(보수적)
+  if (is.null(out)) return(list(n = -1L, n_raw = -1L, files = character(0), ignored = character(0)))
   files <- setdiff(gsub("\\\\", "/", out), sub("^\\./", "", gsub("\\\\", "/", relpath)))
-  list(n = length(files), files = files)
+  n_raw <- length(files)
+  rx <- .cd_ref_ignore_rx(pr %||% .cd_protected())
+  ignored <- character(0)
+  if (length(rx) && n_raw) {
+    hit <- vapply(files, function(f) any(vapply(rx, function(r) grepl(r, f), logical(1))), logical(1))
+    ignored <- files[hit]; files <- files[!hit]
+  }
+  list(n = length(files), n_raw = n_raw, files = files, ignored = ignored)
 }
 
 cd_materials <- function(out_path) {
@@ -344,6 +372,8 @@ cd_materials <- function(out_path) {
     ad("집행 가드(기계가 재도출): 보호 prefix %d종 · 최근 %s시간 내 수정분 제외 · 참조0 재검(git grep) · 상한 %s건/%sMB",
        length(pr$absolute_preserve %||% list()), as.character(g$mtime_guard_hours %||% 24),
        as.character(g$max_deletions %||% 40), as.character(g$max_delete_mb %||% 2048))
+    ad("참조수는 basename 전 저장소 조회다 — 이름이 짧거나 흔하면(`25`·`x.rds` 류) 수백 건으로 뜨는데")
+    ad("그건 '쓰인다' 가 아니라 '이름이 겹친다' 이다. 그런 항목은 기계가 어차피 거부하니 `deferred` 로 넘겨라.")
     ad("")
     cands <- .cd_delete_candidates(pr)
     if (!length(cands)) ad("(후보 없음)")
@@ -488,7 +518,7 @@ cd_apply <- function(result_path) {
     fi <- file.info(full)
     age_h <- as.numeric(difftime(Sys.time(), fi$mtime, units = "hours"))
     if (!is.na(age_h) && age_h < mt_h) { rj(sprintf("최근 %.1fh 내 수정 — 진행 중 라운드 보호(<%sh)", age_h, mt_h)); next }
-    rc <- .cd_ref_count(p)
+    rc <- .cd_ref_count(p, pr)
     if (identical(rc$n, -1L)) { rj("참조 판정 불가(git grep 실패) — 보수적 보존"); next }
     if (rc$n > 0L) { rj(sprintf("참조 %d건 잔존: %s", rc$n, paste(utils::head(rc$files, 3), collapse = ", "))); next }
     if (length(executed) >= max_n) { rj(sprintf("상한 초과(max_deletions=%d) — 다음 주 재후보", max_n)); next }
@@ -499,9 +529,13 @@ cd_apply <- function(result_path) {
                      !file.exists(full) && !dir.exists(full) }, error = function(e) FALSE)
     if (!isTRUE(ok)) { rj("삭제 실패(OS 거부/사용 중)"); next }
     acc_mb <- acc_mb + mb
+    # ★n_refs_raw / ignored 를 같이 남긴다 — 무엇을 '기록' 으로 보고 분모에서 뺐는지가
+    #   보이지 않으면 그 완화는 조용한 완화가 된다(ref_check_ignore 의 감사 흔적).
     executed[[length(executed)+1L]] <- list(path = p, reason = as.character(d$reason %||% ""),
                                             size_kb = round((fi$size %||% 0)/1024, 1),
-                                            ref_check = "0건(git grep 재도출)")
+                                            ref_check = "0건(git grep 재도출)",
+                                            n_refs_raw = rc$n_raw,
+                                            refs_ignored_as_record = as.list(rc$ignored))
     try(cat(sprintf("%s\tweekly_distill_llm\t%s\n", format(Sys.time(), "%Y-%m-%d %H:%M:%S"), p),
             file = file.path(ROOT, ".cache", "hygiene_manifest.log"), append = TRUE), silent = TRUE)
   }

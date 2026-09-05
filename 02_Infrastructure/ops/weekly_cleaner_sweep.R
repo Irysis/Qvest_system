@@ -996,7 +996,9 @@ run_step("write_pending", {
     continuity_firewall = continuity_review_summary,  # [3.7] 포기 원천차단 게이트 — 차단 이력 + pending 신어 후보(승격 대상)
     step_status   = step_status,
     status        = "awaiting_distill",
-    next_action   = "/cleaner 스킬 (다음 세션) — 주간 엑기스 증류 + L-code 적립 + axiom 후보 현황 검토(near-miss 정제) + continuity 신어 후보 승격(--append-case) + 잔재 무아카이브 삭제"
+    # (2026-09-05) 증류 무인화 — 소비자가 세션에서 레인으로 바뀌었다. 이 문자열을 안 고치면
+    #   표시기가 낡은 세대를 가리킨다(침묵은 결손으로 보이지만 낡은 값은 답으로 보인다).
+    next_action   = "cleaner_distill_run.sh (무인 증류 레인 — 이 스윕 직후 자동 실행, 충돌 시 morning_run [0.75] 이 일간 재시도). 레인이 3주+ 못 돌면 그때 /cleaner 세션이 폴백 — SKILL §0.1 gate 판정부터"
   )
   write_json(pending, pending_path, auto_unbox = TRUE, pretty = TRUE,
              null = "null", na = "null")
@@ -1024,7 +1026,7 @@ if (Sys.getenv("QVEST_CLEANER_NO_TG", "0") != "1" && !DRY) {
     n_gc <- inventory$git_log_7d$n_commits %||% 0
     secs <- list(
       list(type = "summary", heading = "주간 Cleaner 기계 스윕",
-           body = sprintf("정크 %d건 자동 정리 + 주간 리서치 인벤토리 수집 완료. 증류(엑기스 추출·L-code 적립·잔재 삭제)는 다음 세션 /cleaner 대기.",
+           body = sprintf("정크 %d건 자동 정리 + 주간 리서치 인벤토리 수집 완료. 증류(엑기스 추출·DIST 초안·L-code 적립·잔재 삭제)는 곧바로 무인 레인이 이어받는다 — 완료 보고가 따로 온다(충돌 시 연기 후 일간 재시도).",
                           sweep_deleted_n)),
       list(type = "bullet", heading = "이번 주 인벤토리", items = c(
         sprintf("실험 신규 엔트리 %d건 (stage_artifacts 7일)", n_sa),

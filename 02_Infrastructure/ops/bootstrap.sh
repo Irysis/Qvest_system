@@ -240,7 +240,24 @@ CLEANER_PENDING="$PROJECT/.cache/cleaner_pending.json"
 CLEANER_STALE_HOURS=6   # cleaner_claim.R stale_hours 기본과 동기 (boot WARN ↔ helper stale_reclaim 정합)
 if [ -f "$CLEANER_PENDING" ]; then
   if grep -q '"status"[[:space:]]*:[[:space:]]*"awaiting_distill"' "$CLEANER_PENDING"; then
-    echo "[boot] WARN: [cleaner] 주간 증류 대기 (cleaner_pending.json awaiting_distill) — /cleaner 실행 (기계 스윕 완료·엑기스 증류/L-code 적립/잔재 삭제 미완)"
+    # (2026-09-05) 증류 무인화 이후 이 WARN 의 뜻이 바뀌었다 — "세션이 해야 한다" 가 아니라
+    #   "무인 레인이 아직 못 했다" 다. **계기에 나이와 마지막 시도를 같이 출력한다**:
+    #   낡은 값은 결손과 달리 답처럼 보이므로, 대기가 하루째인지 3주째인지가 판단을 가른다.
+    CL_GEN=$(grep -oE '"generated_at"[[:space:]]*:[[:space:]]*"[^"]*"' "$CLEANER_PENDING" 2>/dev/null | head -1 | sed -E 's/.*:[[:space:]]*"([^"]*)"/\1/')
+    CL_AGE_D=""
+    if [ -n "$CL_GEN" ]; then
+      CL_GEN_S=$(date -d "$CL_GEN" +%s 2>/dev/null || echo "")
+      [ -n "$CL_GEN_S" ] && CL_AGE_D=$(( ($(date +%s) - CL_GEN_S) / 86400 ))
+    fi
+    CD_JLOG="$PROJECT/.cache/cleaner_distill_log.jsonl"
+    CD_LAST="시도 기록 없음"
+    if [ -s "$CD_JLOG" ]; then
+      CD_TAIL=$(tail -1 "$CD_JLOG" 2>/dev/null)
+      CD_TS=$(echo "$CD_TAIL"  | grep -oE '"ts"[[:space:]]*:[[:space:]]*"[^"]*"'    | head -1 | sed -E 's/.*:[[:space:]]*"([^"]*)"/\1/')
+      CD_EV=$(echo "$CD_TAIL"  | grep -oE '"event"[[:space:]]*:[[:space:]]*"[^"]*"' | head -1 | sed -E 's/.*:[[:space:]]*"([^"]*)"/\1/')
+      [ -n "$CD_EV" ] && CD_LAST="마지막 시도 ${CD_TS:-?} ${CD_EV}"
+    fi
+    echo "[boot] WARN: [cleaner] 주간 증류 대기 (awaiting_distill${CL_AGE_D:+, ${CL_AGE_D}일 경과}) — 무인 레인(cleaner_distill_run.sh) 소관 · ${CD_LAST}. 지연이 길면 /cleaner (SKILL §0.1 gate 판정부터 — 손으로 §1 반복 금지)"
   fi
   CL_DSTATUS=$(grep -oE '"distill_status"[[:space:]]*:[[:space:]]*"[^"]*"' "$CLEANER_PENDING" 2>/dev/null | head -1 | sed -E 's/.*:[[:space:]]*"([^"]*)"/\1/')
   if [ "$CL_DSTATUS" = "in_progress" ]; then

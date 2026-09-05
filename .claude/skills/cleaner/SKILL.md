@@ -1,12 +1,12 @@
 ---
 name: cleaner
-description: 주간 Cleaner 증류 절차 (/cleaner) — 토 09:00 무인 기계 스윕(weekly_cleaner_sweep.R)이 남긴 .cache/cleaner_pending.json을 소비해, 주간 리서치 엑기스를 weekly_digest로 증류(실측만), 미적립 학습을 L-code로 발행, 가치없는 잔재를 참조0 검증 후 무아카이브 삭제. bootstrap "[cleaner] 주간 증류 대기" WARN 또는 수동 트리거 시 사용.
+description: 주간 Cleaner 증류 절차 (/cleaner) — 토 09:00 무인 기계 스윕(weekly_cleaner_sweep.R)이 남긴 .cache/cleaner_pending.json을 소비해, 주간 리서치 엑기스를 weekly_digest로 증류(실측만), 미적립 학습을 L-code로 발행, 가치없는 잔재를 참조0 검증 후 무아카이브 삭제. ★2026-09-05부터 증류는 무인 레인(cleaner_distill_run.sh)이 먼저 돈다 — 본 스킬은 그 레인이 연기·실패했을 때의 수동 경로이자 사후 검토 절차다. bootstrap "[cleaner] 주간 증류 대기" WARN 또는 수동 트리거 시 사용.
 ---
 
 # Cleaner Skill — 주간 증류 절차 (LLM 세션 파트)
 
 **발효**: 2026-07-04 (도훈 mandate — "가치없는 잔재 무아카이브 삭제 + 지식은 L-code 적립 + 시스템 자체 증류")
-**설계**: 스킬+스케줄러 하이브리드. **기계 스윕은 무인**(Task Scheduler `Qvest_WeeklyCleaner`, 매주 토 09:00 + StartWhenAvailable), **증류는 본 스킬**(무인 LLM 호출은 권한/판단 리스크로 배제 — 다음 세션에서 수행).
+**설계 (v2 — 2026-09-05 도훈 지시로 개정)**: 기계 스윕은 무인(Task Scheduler `Qvest_WeeklyCleaner`, 매주 토 09:00 + StartWhenAvailable), **증류도 이제 무인**(`cleaner_distill_run.sh` — 스윕 직후 + morning_run `[0.75]` 일간 재시도). 본 스킬은 그 레인이 **연기·실패했을 때의 수동 경로**이자 산출 **사후 검토** 절차다.
 **규칙 SOT**: `02_Infrastructure/docs/rules/artifact-storage.md` §8 3선.
 
 ---
@@ -19,6 +19,34 @@ description: 주간 Cleaner 증류 절차 (/cleaner) — 토 09:00 무인 기계
 
 pending 파일이 없으면: "증류 대기 없음" 보고 후 종료 (기계 스윕을 수동으로 돌리려면 `Rscript 02_Infrastructure/ops/weekly_cleaner_sweep.R`).
 
+### §0.1 ★먼저 물을 것 — 무인 레인이 이미 했는가 (2026-09-05 신설)
+
+WARN 이 떠 있다는 건 **무인 레인이 아직 못 돌았다**는 뜻이다. 원인이 셋이라 구분해서 시작한다:
+
+```
+Rscript 02_Infrastructure/ops/cleaner_distill_lib.R gate
+```
+
+| rc | 뜻 | 세션이 할 일 |
+|---|---|---|
+| 0 | 착수 가능인데 레인이 아직 안 불렸다 | `bash 02_Infrastructure/ops/cleaner_distill_run.sh` 한 번 돌리고 결과만 검토. 손으로 §1 을 반복하지 말 것 |
+| 11 | 충돌로 연기 중(강화 러너 활성·스윕 실행 중) | **기다린다**. 일간 훅이 집는다. 급하면 강화 tick 이 끝난 뒤 위 명령 |
+| 12 | kill switch off | 도훈 의도적 정지 — 손으로 증류할지 먼저 물을 것 |
+| 10 | 할 일 없음/이미 완료 | WARN 이 남아 있다면 그게 결함이다(release 누락) — `.cache/cleaner_pending.json` 확인 |
+
+`.cache/scheduler_logs/cleaner_distill_*.log` 와 `.cache/cleaner_distill_log.jsonl` 이 레인의 이력이다.
+**반복 실패(3주+)면 그게 그 주의 과제다** — 손으로 증류를 대신하는 것보다 레인이 왜 못 도는지가 크다.
+
+### §0.1b 사후 검토 (무인 레인이 돌았을 때 — 이쪽이 기본 경로)
+
+`06_Registry/distill_manifest_YYYYMMDD.json` 을 읽고 **네 가지만** 본다:
+1. `deleted[]` — 지워진 것 중 지우면 안 됐던 게 있나. 있으면 `git checkout` 으로 되살리고(추적분) 보호 목록에 등재.
+2. `rejected[]` — 기계가 거부한 사유가 **매주 같은 것**이면 목록이나 가드가 낡은 것이다.
+3. `dist_drafts[]` — `ok=false` 사유. 방화벽 backstop 이 반복 거부하면 프롬프트의 (d) 절이 안 먹고 있다.
+4. `digest` — 실측만 쓰였나(추정 수치·회피표현 grep).
+
+**★백로그 속도**: `pending_5axis` 잔량이 줄고 있나. 안 줄면 `cleaner_distill.max_drafts`(현행 8)가 유입보다 느린 것이다 — 그게 조정 신호다.
+
 ---
 
 ## §0.2 선점 프로토콜 (claim — 2-pass 중복실행 방지, 2026-07-18 도훈 mandate W29 next_probe #4)
@@ -26,6 +54,8 @@ pending 파일이 없으면: "증류 대기 없음" 보고 후 종료 (기계 �
 **사건**: W29 증류에서 스폰된 Cleaner(task#89)와 메인 세션 자동 증류가 같은 `cleaner_pending.json`을 **병행 소비 → 2-pass 중복실행**(07-06 병렬 중복실행 사고 ops 재현). 착수 선점 표시 부재가 원인.
 
 **규약 (§1 절차 착수 *전* 의무)**: `cleaner_pending.json`의 `distill_status`(pending/in_progress/done)를 **claim 트랜잭션으로 점유**한다. `status`(awaiting_distill→distilled)는 bootstrap 마커용으로 불변 — `distill_status`가 그 사이 `in_progress` 중간상태를 표현해 두 소비자의 동시 착수를 차단한다.
+
+★**소비자가 셋이 됐다 (2026-09-05)**: 메인 세션(`session_main`) · 스폰 Cleaner(`task#<id>`) · **무인 레인(`auto_distill`)**. 같은 프로토콜을 그대로 쓴다 — 무인 레인도 claim 을 잡고, 비정상 종료 시 `final_status="pending"` 으로 반납한다(claim 을 쥔 채 죽으면 stale 6h 까지 다음 훅이 막히기 때문). owner 가 `auto_distill` 인 `in_progress` 를 보면 **손으로 증류하지 말고 기다린다**.
 
 1. **착수 claim (atomic)** — §1 ① 직전 실행. owner는 세션/태스크 식별자(예: 메인 세션 = `session_main`, 스폰 Cleaner = `task#<id>`):
    ```
@@ -84,7 +114,7 @@ DIST 초안 lifecycle이 반자동화됨:
 ```
 pending_5axis → [자동초안 에이전트 + 적대검증] → proposed(주입 안 됨) → [도훈 승인] → distilled(주입 가능) → promoted | expired
 ```
-- **★자동화 경계 (정직 — 무인 완주 아님)**: 무인 기계 스윕(`weekly_cleaner_sweep`, 토 09:00)은 **harvest→cluster→promote 진단 + 후보 현황 집계까지만** 수행하고 `status:"awaiting_distill"`로 멈춘다. pending_5axis → proposed 자동초안(`statement_refined` + `adversarial_verdict` 작성)은 **본 /cleaner 세션 에이전트**가 수행한다(스윕 스크립트는 `draft_proposed`를 호출하지 않음). proposed → distilled 활성화(주입 스트림 개방)는 **도훈 배치 승인**이 필수다. 즉 "스윕이 무인으로 증류를 완주한다"는 문구는 오류 — 스윕은 재료를 쌓을 뿐, 초안은 세션, 활성화는 승인.
+- **★자동화 경계 (2026-09-05 개정 — 한 칸 옮겨졌다)**: 무인 기계 스윕(`weekly_cleaner_sweep`, 토 09:00)은 여전히 **harvest→cluster→promote 진단 + 후보 현황 집계까지만** 하고 `status:"awaiting_distill"`로 멈춘다(스윕 스크립트는 `draft_proposed`를 호출하지 않는다 — 이 문장은 불변). 달라진 것은 그 **다음 소비자**다: pending_5axis → proposed 자동초안은 이제 **무인 증류 레인**(`cleaner_distill_run.sh`)이 수행하고, 세션은 그 레인이 못 돌았을 때만 대신한다. proposed → distilled 활성화(주입 스트림 개방)는 **여전히 도훈 배치 승인**이 필수다 — 무인화가 옮긴 것은 *초안 작성자*이지 *활성화 게이트*가 아니다. 즉: 스윕은 재료, **초안은 무인 레인(세션은 폴백)**, 활성화는 승인.
 - **자동초안(허용)**: 본 /cleaner 세션 에이전트가 pending_5axis → proposed 로 `statement_refined` 초안 + `adversarial_verdict`(적대검증)를 작성. **초안 수치·결론은 supporting L-code 실측 결론만** — 창작 금지.
 - **자동초안 적대검증 5체크 (a~e — 초안 승인 전 의무)**:
   - (a) **과장**: 헤드라인 수치가 게이트/재현/deflate 반영 없이 낙관적인가? envelope-상대 정직 서술로 강등.
@@ -129,8 +159,13 @@ pending_5axis → [자동초안 에이전트 + 적대검증] → proposed(주입
 
 ## §2 금지·주의
 
-- **증류(digest·삭제 판단) 자동화 금지** — 본 스킬은 항상 대화 세션에서 실행 (④ 삭제 판단은 LLM+도훈 감독 하).
-- **§0.2 claim 없이 증류 착수 금지** — claim `claimed=TRUE` 확인 전 digest 작성·L-code 발행·삭제 금지 (2-pass 중복실행 방지). in_progress면 병합 정합만.
+- ~~**증류(digest·삭제 판단) 자동화 금지**~~ → **2026-09-05 도훈 지시로 해제**. 구 조항(2026-07-04)은 "무인 LLM 호출은 권한/판단 리스크" 를 근거로 증류를 세션에 묶었는데, 2026-08-30 "모든 작업을 무인화" 와 충돌한 채 방치되는 동안 **증류 세션이 3주 오지 않았다**(digest 마지막 2026-08-15 · `pending_5axis` 49→104건). 도훈이 무인화로 정합했고 **삭제 판단도 LLM 위임**이다. 리스크는 금지가 아니라 **경계로** 막는다:
+  - 에이전트에겐 **Bash 가 없다** — 스스로 지울 수 없고 삭제 요청 JSON 만 낸다.
+  - 집행 전 기계가 재도출한다: 보호목록(`06_Registry/cleaner_protected_paths.json`) · 참조0 `git grep` · 최근 24h 수정분 제외 · 건수/용량 상한. **에이전트의 `reason` 은 근거가 아니다.**
+  - 검증 실패 = release 안 함 → 다음 훅이 재시도(조용한 통과 없음).
+- **여전히 금지**: **DIST `proposed` → `distilled` 무인 활성화**(INV-6 — `approve_proposed` 는 도훈 권한. 무인 레인은 `proposed` 까지만 쓰고 주입 3배선은 건드리지 않는다). 공리(AX-*)는 별개 층으로 `refine_statement.R` R0~R6 이 무인 판정한다(2026-08-30) — **두 계층을 섞지 말 것**.
+- **§0.2 claim 없이 증류 착수 금지** — claim `claimed=TRUE` 확인 전 digest 작성·L-code 발행·삭제 금지 (2-pass 중복실행 방지). in_progress면 병합 정합만. 무인 레인도 같은 규약을 지킨다.
+- **2계층 충돌 시 손으로 밀어붙이지 말 것** — gate 가 `reinforce_active` 로 연기했다는 건 강화 러너가 원장·`stage_artifacts` 를 쓰고 있다는 뜻이다. 그 창에서 증류를 수동 실행하면 게이트를 우회하는 것이다.
 - **DIST 초안 무인 *활성화* 금지 (INV-6, DIST 카드 한정)** — DIST 카드는 자동초안(pending→proposed)+적대검증까지 허용되나 proposed → distilled 활성화는 **도훈 배치 승인 게이트 필수**(`approve_proposed`). ★**공리(AX-<MODE>-NNN)는 다르다(v9.1)**: 활성화는 `refine_statement.R` R0~R6 가 무인 판정하며 이 스킬은 승인 대행이 아니라 **HELD 사유 소비**(위 §공리 사다리 산출)를 한다. 두 계층을 섞지 말 것 — DIST 는 탐색지도 카드, AX 는 mode-local 공리다.
 - digest에 proxy/추정 수치를 실측처럼 기재 금지 (answer-principles 회피표현 grep 대상).
 - `stage_artifacts/` 내부는 인벤토리 소스일 뿐 — 어떤 파일도 이동·수정·삭제 금지 (§6 불변 런 기록).
@@ -139,7 +174,12 @@ pending_5axis → [자동초안 에이전트 + 적대검증] → proposed(주입
 ## 참조
 
 - `02_Infrastructure/ops/weekly_cleaner_sweep.R` (무인 기계 스윕 — pending 생산자, schema cleaner_pending_v2)
-- `02_Infrastructure/ops/cleaner_claim.R` (§0.2 선점 프로토콜 — `cleaner_claim_distill`/`cleaner_release_distill`/`cleaner_distill_state`. 2-pass 중복실행 방지)
+- **`02_Infrastructure/ops/cleaner_distill_run.sh`** (무인 증류 레인 — 2026-09-05 신설. gate→claim→materials→`claude -p`(stdin)→apply→release→telegram)
+- **`02_Infrastructure/ops/cleaner_distill_lib.R`** (기계 절반 — `gate`/`materials`/`apply`/`notify`. 격리 변수 `QVEST_CD_ROOT`)
+- **`06_Registry/cleaner_protected_paths.json`** (절대보존 + `ref_check_ignore` + 집행 상한 — 코드가 아니라 레지스트리라 도훈이 직접 고친다)
+- **`06_Registry/reinforce_auto_config.json::cleaner_distill`** (kill switch·`max_drafts`·충돌 정책) + `llm.lanes.cleaner_distill`
+- **`08_Tests/ops/test_cleaner_distill.sh`** (양방향 20항 — 양성 대조 + 위반 주입 5종. `run_all_hooks.sh` SUITES 등재)
+- `02_Infrastructure/ops/cleaner_claim.R` (§0.2 선점 프로토콜 — `cleaner_claim_distill`/`cleaner_release_distill`/`cleaner_distill_state`. 2-pass 중복실행 방지. owner 3종: `session_main`·`task#<id>`·`auto_distill`)
 - `02_Infrastructure/ops/scheduler/Qvest_WeeklyCleaner.bat` + Task Scheduler `Qvest_WeeklyCleaner`
 - `02_Infrastructure/docs/rules/artifact-storage.md` §3.1 / §4 / §8
 - `02_Infrastructure/axiom/lcode_emit.R` · `.claude/skills/qvest-telegram/SKILL.md`
