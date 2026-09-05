@@ -1469,6 +1469,34 @@ tg_agent_brief <- function(agent,
   parts <- c(hdr, section_blocks)
   if (!is.null(footer) && nzchar(footer)) parts <- c(parts, footer)
 
+  ## ★길이 맞춤 (2026-09-05 도훈 "압축판을 만들지 말고 4096자 제한에 맞추라"): 넘으면 실패하지 말고
+  ##   **가장 긴 섹션부터** 잘라 맞춘다. 실측 09-05: 9칸·6칸 블록 본문 4332자/7663B 로 send 400 —
+  ##   '이번 블록에서 배운 것'(LLM 기전+처방+회피) 하나가 2498자였다. 제목(hdr)은 안 자른다.
+  ##   잘린 섹션엔 절삭 표식을 남기고 <b>/<i> 짝을 다시 맞춘다(불균형 태그는 텔레그램이 거부).
+  .TG_FIT_CHARS <- 3900L
+  .tg_balance <- function(s, o, c) {
+    n <- length(gregexpr(o, s, fixed = TRUE)[[1]]) - length(gregexpr(c, s, fixed = TRUE)[[1]])
+    if (regexpr(o, s, fixed = TRUE) < 0) n <- n - 1L
+    if (regexpr(c, s, fixed = TRUE) < 0) n <- n + 1L
+    if (n > 0) paste0(s, strrep(c, n)) else s
+  }
+  .tg_fit_parts <- function(parts, limit = .TG_FIT_CHARS) {
+    for (.k in seq_len(20L)) {
+      .over <- nchar(paste(parts, collapse = "\n\n"), type = "chars") - limit
+      if (.over <= 0L || length(parts) < 2L) return(parts)
+      .idx <- 1L + which.max(nchar(parts[-1L], type = "chars"))
+      .p <- parts[.idx]
+      .keep <- max(200L, nchar(.p, type = "chars") - .over - 60L)
+      .cut <- substr(.p, 1L, .keep)
+      .nl <- regexpr("\n[^\n]*$", .cut)
+      if (.nl > 200L) .cut <- substr(.cut, 1L, .nl - 1L)
+      .cut <- sub("<[^>]*$", "", .cut)
+      .cut <- .tg_balance(.tg_balance(.cut, "<b>", "</b>"), "<i>", "</i>")
+      parts[.idx] <- paste0(.cut, "\n<i>… (길이 한계로 절삭 — 전문은 산출물·L-code)</i>")
+    }
+    parts
+  }
+  parts <- .tg_fit_parts(parts)
   msg <- paste(parts, collapse = "\n\n")
 
   # ── 3.5. v6 SOT 약어 풀이 (default inline_first, 첫 등장 1회) ─────────────────

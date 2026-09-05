@@ -28,6 +28,18 @@ suppressMessages(source(file.path(ROOT, "02_Infrastructure/ops/rf_block_insights
 #   ★인자 안에서 source(local=TRUE) 하면 suppressMessages 프레임에 정의돼 사라진다(2026-09-04 실측).
 if (!exists(".rp_all_factors")) suppressMessages(source(file.path(ROOT, "02_Infrastructure/reinforcement/rf_spec_sig.R")))
 
+## ★배운 것 섹션 상한 (2026-09-05): 처방·회피 원문은 L-code 에 있다 — 본문엔 앞 3건·각 160/120자만.
+##   실측: 6칸 블록에서 이 섹션이 2498자(본문 58%)로 4096자 한계를 넘겼다. 기전 문단은 자르지 않는다("왜").
+.cap_items <- function(x, n = 3L, w = 160L) {
+  x <- as.character(x); x <- x[nzchar(x)]
+  if (!length(x)) return(x)
+  more <- length(x) - n
+  x <- utils::head(x, n)
+  x <- vapply(x, function(s) if (nchar(s, type = "chars") > w) paste0(substr(s, 1L, w - 1L), "…") else s, character(1), USE.NAMES = FALSE)
+  if (more > 0L) x <- c(x, sprintf("(외 %d건 — L-code 전문)", more))
+  x
+}
+
 rf_notify_table <- function(base_id) {
   led <- fromJSON(file.path(ROOT, "06_Registry/reinforce_ledger_l1.json"), simplifyVector = FALSE)
   E <- Filter(function(e) identical(e$base_id, base_id), led$entries)
@@ -469,6 +481,7 @@ rf_auto_notify <- function(base_id, n, kind = "block") {
         .at <- if (is.data.frame(.na)) as.character(.na$action) else
                vapply(.na, function(x) as.character(x$action %||% "")[1], character(1))
         .at <- .at[nzchar(.at)]
+        .at <- .cap_items(.at, 3L, 160L)
         if (length(.at))
           .parts <- c(.parts, paste0("<b>▸ 다음 블록 처방</b>
 ",
@@ -479,6 +492,7 @@ rf_auto_notify <- function(base_id, n, kind = "block") {
       .av <- .LD$avoid
       if (!is.null(.av) && length(.av)) {
         .avv <- as.character(unlist(.av)); .avv <- .avv[nzchar(.avv)]
+        .avv <- .cap_items(.avv, 3L, 120L)
         if (length(.avv))
           .parts <- c(.parts, paste0("<b>▸ 쓰지 말 것</b>
 ",
@@ -493,6 +507,8 @@ rf_auto_notify <- function(base_id, n, kind = "block") {
         "no_prior"  = "앞 처방 없음.", .ps)
       if (nzchar(.ps)) .parts <- c(.parts, paste0("<b>▸ 앞 처방 집행</b>
 ", .ps))
+      .lcid <- as.character(.LD$l_code %||% "")
+      if (nzchar(.lcid)) .parts <- c(.parts, sprintf("<i>처방·회피 전문: %s</i>", .lcid))
     }
     if (length(.parts))
       .learn_sec <- list(type = "text", emoji = "🧠",

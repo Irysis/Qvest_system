@@ -279,5 +279,12 @@
     "at": "2026-09-05T11:08:37+0900",
     "incident": "병렬 러너 halt_exhausted_delegate 가 퇴역된 reinforce_auto_run.R 을 호출 → 안내문만 찍고 종료 → promo2 소진·승격 무발화(09-05 단일화 잔재).",
     "fix": "reinforce_ledger.R::rf_exhaust_entry (writer) + 러너가 exhaust_reached → exhausted → entry_exhausted → reinforce_auto_next_paper.R 동기 호출. 검사 test_rf_exhaust_delegate.R 6/6(격리 원장 사본 · 운영 원장 미접근 확인)."
+  },
+  "repair_20260905_tg_fit_length": {
+    "at": "2026-09-05T12:09:40+0900",
+    "decision": "도훈 — 압축판을 손으로 보내지 말고 무인 본문이 4096자 안에 들어오게.",
+    "incident": "promo3 B1(9칸)·B5(6칸) 블록 본문 4332자/7663B → send 400. '이번 블록에서 배운 것'(LLM 기전+처방+회피) 2498자.",
+    "fix": "①rf_auto_notify.R .cap_items — 처방 3건·160자 / 회피 3건·120자 + '처방·회피 전문: <L-code>' 포인터(기전 문단은 안 자름) ②telegram_notify.R tg_agent_brief .tg_fit_parts — 3900자 넘으면 가장 긴 섹션부터 절삭(표식·<b>/<i> 재균형), 제목 보존. 실측 재렌더 B5 3820자·B1 3771자(절삭 없이 통과).",
+    "tests": "test_rf_notify_fit_length.R 9/9 (과대 본문·표식·태그 균형·작은 본문 무변·돌연변이 통제·cap_items 3축·실물 재렌더)"
   }
 }
