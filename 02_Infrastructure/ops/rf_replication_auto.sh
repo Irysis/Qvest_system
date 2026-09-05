@@ -200,7 +200,7 @@ io.open(r'$REQ','wb').write(json.dumps(d,ensure_ascii=False,indent=1).encode('ut
   exit 0
 fi
 
-command -v claude >/dev/null 2>&1 || { jl halt_no_claude_cli "home=$HOME" "shell=$0" "path=$(printf %s "$PATH" | tr : ";" | cut -c1-600)"; exit 0; }
+command -v claude >/dev/null 2>&1 || { jl halt_no_claude_cli "who=$(whoami 2>&1)" "npm_ls=$(ls /c/Users/99922/AppData/Roaming/npm 2>&1 | paste -sd, - | cut -c1-200)" "npm_on_path=$(case ":$PATH:" in *Roaming/npm*) echo 1;; *) echo 0;; esac)"; exit 0; }
 mkdir "$CLAIM" 2>/dev/null || { jl halt_claimed; exit 0; }
 echo $$ > "$CLAIM/owner"
 ## ★Windows pid 를 함께 남긴다 — 회수 판정의 정본(위 CDEAD 주석 참조).
