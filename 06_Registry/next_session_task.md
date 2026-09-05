@@ -1,10 +1,14 @@
-# 다음 세션 인계 — 2026-09-05 (무인 루프 재개 · promo3 진행 중 · 하네스 수리 6건)
+# 다음 세션 인계 — 2026-09-05 (무인 루프 가동 · 2404.08129 첫 Fable 충실구현 진행 중 · 하네스 수리 9건)
 
 ## 지금 상태 한 줄
 
-**무인 리서치 루프는 돌고 있다** — `reinforce_auto_config.json::enabled = true`, 예약작업 `Qvest_ReinforceAutoLoop` = Ready(8분 주기).
-활성 entry = `RP_20260904_163647_18444_rescued_rulefast_promo3`(depth 3 · 예산 29 · B1 9/9 착지 · 최고 B1_3 GR03 B 2.553).
-다음 = **B5 리스크 오버레이**(적응 순서 B1→B5→B2→B3→B4 · 기전이 6칸 설계를 남김 · avoid: 목표변동성 스칼라 3종·스칼라 곱·ts_mom_sign).
+- 루프 `enabled=true`(17:45 재개) · active entry 0 · 충실구현 요청 `in_progress` = **2404.08129 "One Factor to Bind the Cross-Section of Returns"** —
+  18:07:39 `[rp_auto] start · model_selected claude-fable-5-1/max`(첫 Fable 레인, 에이전트 = 실디스크 `Roaming
+pm\…in\claude.exe`).
+  확인 지점 = `04_Research/strategies/RP_AUTO_2404_08129/engine.R` 실물 + `verify_*` + 원장 entry 개설(어제 롤백은 rc=0·산출물 0 이었다).
+- 2006.04639 "Dynamic Network Risk" = **Grade F · PORT_t −2.874**(opus/max · 17:26 소비 `RP_20260905_172632_skipped_base`) · 충실도 `unverifiable/proceed`
+  (arxiv html 전문 경로 없음 — F 가 논문의 성질인지 구현 실수인지 이 판정으로는 안 갈린다).
+- ★로그·텔레그램이 2006.04639 와 2404.08129 를 둘 다 "횡단면 주식 팩터" 로 부른다 — 트리아지 범주 라벨이 제목 자리(칩 task_aede5cd1). 중복 논문 아님.
 
 ## 오늘 일어난 일 (시간순)
 
@@ -64,11 +68,28 @@ LOO 가 유니버스(+0.945)·비중(+0.290)을 해로운 축으로 정확히 �
 - **③ nostalgic-gauss — 완료·main 반영** (`rf_lcode_mechanism_lib.R` 원자 벡터 `[[` 수리 + 검사 8/8). 표류 작업 세 번째.
 - **워크트리 정리 후보**: youthful-torvalds·zen-pare(변경 0) · practical-varahamihira·sharp-chebyshev(전부-삭제 스테이징 — 깨진 상태, 병합 금지) · 승계 완료 3곳(vibrant-hellman·elegant-bose·nostalgic-gauss)은 잔여 미커밋 확인 후 제거 가능. **도훈 결정**.
 
+## 밤 (17:26~ · 무인 재개 뒤 드러난 결함 3건 — 전부 수리·커밋·양방향 검사)
+
+1. **승격 재생 루프** (dc621efba): promo2→promo3 승격 때 부모에 handed_off 가 안 남아, promo3 가 소진·큐 이월된 뒤 promo2 가 "마지막 미이월
+   소진 entry" 로 다시 떠올라 **매 tick 재승격**(rf_open_entry 가 기존 promo3 를 조용히 재사용 → 로그 promoted · 17:26 라운드 리뷰 텔레그램 **중복 발송** ·
+   큐 논문 미착수 3분마다). 수리 = `rf_promote_decide(existing_ids=)` child_exists/already_handed_off + writer `rf_mark_handed_off`(승격·hand-off 공통) +
+   원장 소급 4건. 검사 `test_rf_promote_child_exists.R` 13/13 · 구판 변이 5/14. 카드 = feedback-two-handoff-paths-must-leave-the-same-mark-20260905.
+2. **대기 요청 재발행** (9da39a609): no-active 위임이 tick 마다 같은 요청을 다시 발행(requested_at 덮임 · 텔레그램은 dedup 이 막았을 뿐).
+   수리 = next_paper §1.7 `halt_request_pending`(pending·in_progress). 검사 `test_rf_next_paper_halts_on_pending_request.R` 8/8 · 변이 6/8.
+3. **스케줄러가 claude CLI 를 못 봄** (`halt_no_claude_cli` 17:54~18:03): 세션의 npm 전역 갱신이 **데스크톱 앱(MSIX) AppData 가상화**로
+   `Packages\Claude_pzs8sxrjxfjjc\LocalCache\Roaming
+pm` 에만 들어갔다 — 세션의 Bash·PowerShell·비샌드박스 셸 전부 병합 뷰를 보고 Task Scheduler 만
+   실디스크(`node_modules` 하나)를 본다. 실디스크 설치 = 일회성 스케줄 태스크(`Register/Start/Unregister-ScheduledTask`)로 `npm install -g …@2.1.261`
+   ("added 2 packages" — 실디스크엔 패키지 자체가 없었다). 진단 줄(whoami·npm ls·PATH) 은 halt 에 상주(1d6f8cb16).
+   카드 = reference-desktop-app-msix-virtualizes-appdata-writes-scheduler-sees-real-disk-20260905.
+- 잔존 소음: `claim_release_failed reason=unlink_failed` 매 tick(오전부터 · 다음 tick 이 released.json 으로 제자리 인수 — 기능 영향 0, 로그 소음).
+  `schtasks /run` 은 MSYS 경로 변환에 먹힌다 → `Start-ScheduledTask`. PowerShell 도구의 `Remove-Item` 은 훅이 막는다.
+
 ## 열린 결정 (도훈)
 
 - **승격 carry 비중**: promo3 carry 가 EW — 승자 B3_12 가 KQ150 에서 cvar→EW 강등된 스펙이라. 유니버스 리셋 시 강등 전 비중(cvar) 복원할지(`rf_promote_carry` 한 줄).
 - **팡파레**: 현행 "entry 에 처음 나온 등급" 만. 같은 등급이라도 entry 최고 PORT_t 갱신 시 울릴지(오염 팡파레 위험 병기).
-- **무인 LLM 레인 모델**: 전부 opus. Fable 5.1 은 CLI 2.1.170 < 2.1.251 로 차단(config `llm.blocked_model`). `claude update` 시점 = 도훈. 이후 ②config ③산출물 검증은 세션.
+- **무인 LLM 레인 모델**: replication 레인만 `claude-fable-5-1/max`(config a3fef6621 · CLI 2.1.261 실디스크 설치 완료) — 나머지 레인(B1 설계·기전·팬아웃·오버레이)은 opus. 첫 Fable 산출물 검증 후 확대 여부 = 도훈.
 - promo2 에서 소실된 KOSPI200 단독 칸(n=16 오판 회피) 재측정 여부 — 예산 밖.
 
 ## 칩 (별도 세션) · 미검증
