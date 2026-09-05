@@ -317,5 +317,11 @@
     "at": "2026-09-05T16:13:17+0900",
     "by": "도훈 지시 — '루프 재개'. 인프라 수리 13건(제 10 + 회수 3) 반영 후.",
     "state": "active entry 없음 · combo entry parked · 요청 done → 다음 틱이 큐 상단 논문 충실구현부터 시작. CDaR_LP·CVaR_LP·MaxDiv 적격, B2 탐색 슬롯(shrinkage) 활성."
+  },
+  "repair_20260905_no_active_delegate": {
+    "at": "2026-09-05T16:20:27+0900",
+    "incident": "combo entry 를 park(소진 아님)로 닫자 active 0 → 러너 halt_no_active_entry 에서 정지 → 새 요청의 유일한 생산자 next_paper 가 소진 위임에서만 불려 미호출 → rp_auto no_pending_request. 재개 첫 틱(16:18)이 3초 만에 침묵.",
+    "fix": "러너: active 없으면 next_paper 에 동기 위임(CLAIM_HELD 규약 · next_paper 자체 가드 enabled/active_exists/queue_empty). 실물: 16:19 paper_picked. 검사 test_rf_no_active_delegates_next_paper.R 5/5.",
+    "lesson": "park 는 '정지' 가 아니라 '이 entry 제외' 여야 한다 — 상태기계의 모든 종결 상태(exhausted·parked·graduated)에서 다음 논문으로 가는 길이 있어야 한다."
   }
 }

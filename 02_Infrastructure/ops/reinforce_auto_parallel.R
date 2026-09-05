@@ -107,7 +107,17 @@ suppressMessages(source(file.path(ROOT, "02_Infrastructure/reinforcement/rf_avoi
 PROG <- fromJSON(PROG_P, simplifyVector = FALSE)
 led <- rf_load(1L, ROOT)
 act <- Filter(function(e) identical(e$status, "active"), led$entries)
-if (!length(act)) { jlog("halt_no_active_entry"); return(0L) }
+if (!length(act)) {
+  ## ★active 가 없으면 **다음 논문을 연다** (2026-09-05 실사고). 구판은 여기서 멈췄다 — 새 요청의 유일한 생산자
+  ##   (reinforce_auto_next_paper.R)를 부르는 자리가 소진 위임뿐이라, entry 를 park 로 닫으면(소진 아님)
+  ##   아무도 큐 상단을 열지 않고 8분마다 halt_no_active_entry + no_pending_request 만 반복됐다.
+  ##   next_paper 는 자기 가드(enabled · active_exists · queue_empty)를 갖고 있어 중복 개설이 없다.
+  jlog("halt_no_active_entry", note = "next_paper 에 위임 — 큐 상단 논문 개설 시도")
+  Sys.setenv(QVEST_RF_CLAIM_HELD = "1")
+  on.exit(Sys.unsetenv("QVEST_RF_CLAIM_HELD"), add = TRUE)
+  system2("Rscript", shQuote(file.path(ROOT, "02_Infrastructure/ops/reinforce_auto_next_paper.R")), wait = TRUE)
+  Sys.unsetenv("QVEST_RF_CLAIM_HELD"); return(0L)
+}
 E <- act[[1]]; BID <- E$base_id
 used <- as.integer(E$attempts_used %||% 0L)
 # ★entry 별 상한 (2026-09-04 도훈 지시). B1 이 설계에 따라 가변 길이가 되면서,
