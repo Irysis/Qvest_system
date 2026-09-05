@@ -1,17 +1,17 @@
 {
   "_doc": "좌초 수리 감사 — worktree에 갇혀 main에 도달하지 못한 수리 탐지. 생성기 02_Infrastructure/ops/stranded_repairs_audit.sh. verdict: merged_upstream=worktree가 stale 사본(정리 가능) / lost=main에 전무(조치 필요) / mostly_lost=80%+ 미존재(사실상 유실) / partial=일부만 반영(수동 확인) / deletion_only=삭제만 / ledger_divergence=append-only 원장의 세션별 분기(수리 아님·경보 제외) / superseded_upstream=main이 그 경로에서 더 앞서 나감(구판 교체·조치 불요·경보 제외) / *_legacy_pre_v10=(v10 2026-09-02) 브랜치 tip 이 v10 경계(legacy_ref) 이전에 멎은 worktree 의 유실/부분 — 폐기된 판의 잔재라 경보·충돌 계수에서 제외, 처분은 도훈 결정. ★lost/partial만 조치 대상이다 — 2026-08-08 이전 판은 뒤 2종을 유실로 계상해 경보의 80%가 허위였다(36건 중 진짜 7건). collisions=2개 이상 worktree가 같은 파일을 main 밖에서 수정 중(병합 순서 결정 필요).",
-  "generated_at": "2026-09-04 20:00:32",
+  "generated_at": "2026-09-05 12:00:19",
   "main_ref": "main",
   "stale_threshold_days": 3,
   "summary": {
-    "worktrees_total": 4,
-    "with_uncommitted": 2,
-    "with_unmerged": 1,
+    "worktrees_total": 6,
+    "with_uncommitted": 5,
+    "with_unmerged": 2,
     "stale_over_threshold": 2,
-    "files_lost": 0,
+    "files_lost": 3,
     "files_partial": 0,
-    "files_ledger_divergence": 3,
-    "files_superseded_upstream": 0,
+    "files_ledger_divergence": 6,
+    "files_superseded_upstream": 1,
     "files_scratch_artifact": 0,
     "worktrees_legacy_pre_v10": 0,
     "files_lost_legacy_pre_v10": 0,
@@ -19,7 +19,7 @@
     "legacy_ref": "pre-v10-2layer",
     "legacy_epoch": 1787970068,
     "collisions": 0,
-    "prune_candidates": 1,
+    "prune_candidates": 0,
     "uninspected_over_cap": 0
   },
   "worktrees": [
@@ -29,7 +29,7 @@
       "path":"C:/Users/99922/OneDrive/Quant_Module_Moltbot/.claude/worktrees/amazing-morse-f39e4f",
       "ahead_of_main":0,
       "dirty_files":3,
-      "last_commit_age_days":4,
+      "last_commit_age_days":5,
       "stale":true,
       "lost":0,
       "partial":0,
@@ -40,7 +40,7 @@
       "files":[
         {"path":"02_Infrastructure/alpha_search/run_paper_replication.R","state":"M","added_lines":43,"missing_in_main":0,"main_extra_lines":126,"verdict":"merged_upstream"},
         {"path":"08_Tests/contracts/test_replication_harness.R","state":"M","added_lines":44,"missing_in_main":0,"main_extra_lines":2,"verdict":"merged_upstream"},
-        {"path":"qepm/observability/events.jsonl","state":"M","added_lines":73,"missing_in_main":59,"main_extra_lines":8036,"verdict":"ledger_divergence"}
+        {"path":"qepm/observability/events.jsonl","state":"M","added_lines":73,"missing_in_main":59,"main_extra_lines":8833,"verdict":"ledger_divergence"}
       ]
     },
     {
@@ -60,11 +60,69 @@
       "files":[
         {"path":"02_Infrastructure/regime/regime_signal.R","state":"B","added_lines":79,"missing_in_main":0,"main_extra_lines":0,"verdict":"merged_upstream"},
         {"path":"06_Registry/m4_published/PROVENANCE_bocpd_guard_defect.md","state":"B","added_lines":145,"missing_in_main":0,"main_extra_lines":0,"verdict":"merged_upstream"},
-        {"path":"08_Tests/hooks/run_all_hooks.sh","state":"B","added_lines":13,"missing_in_main":0,"main_extra_lines":84,"verdict":"merged_upstream"},
+        {"path":"08_Tests/hooks/run_all_hooks.sh","state":"B","added_lines":13,"missing_in_main":0,"main_extra_lines":117,"verdict":"merged_upstream"},
         {"path":"08_Tests/regime/test_m4_bocpd_guard.R","state":"B","added_lines":184,"missing_in_main":0,"main_extra_lines":0,"verdict":"merged_upstream"},
         {"path":"08_Tests/regime/test_regime_l3_ramp.R","state":"B","added_lines":168,"missing_in_main":0,"main_extra_lines":0,"verdict":"merged_upstream"},
         {"path":"qepm/mailbox/worktask/WT-D20260430_001/stage_artifacts/factor_engine.R","state":"B","added_lines":51,"missing_in_main":0,"main_extra_lines":31,"verdict":"merged_upstream"},
-        {"path":"qepm/observability/events.jsonl","state":"B","added_lines":102,"missing_in_main":102,"main_extra_lines":8050,"verdict":"ledger_divergence"}
+        {"path":"qepm/observability/events.jsonl","state":"B","added_lines":102,"missing_in_main":102,"main_extra_lines":8847,"verdict":"ledger_divergence"}
+      ]
+    },
+    {
+      "worktree":"hopeful-burnell-516aa4",
+      "branch":"claude/hopeful-burnell-516aa4",
+      "path":"C:/Users/99922/OneDrive/Quant_Module_Moltbot/.claude/worktrees/hopeful-burnell-516aa4",
+      "ahead_of_main":1,
+      "dirty_files":1,
+      "last_commit_age_days":0,
+      "stale":false,
+      "lost":1,
+      "partial":0,
+      "legacy_pre_v10":false,
+      "lost_legacy":0,
+      "partial_legacy":0,
+      "uninspected_over_cap":0,
+      "files":[
+        {"path":"qepm/observability/events.jsonl","state":"M","added_lines":75,"missing_in_main":71,"main_extra_lines":283,"verdict":"ledger_divergence"},
+        {"path":"08_Tests/ops/test_reinforce_auto.sh","state":"B","added_lines":195,"missing_in_main":194,"main_extra_lines":20,"verdict":"mostly_lost"}
+      ]
+    },
+    {
+      "worktree":"nostalgic-gauss-1e2d04",
+      "branch":"claude/nostalgic-gauss-1e2d04",
+      "path":"C:/Users/99922/OneDrive/Quant_Module_Moltbot/.claude/worktrees/nostalgic-gauss-1e2d04",
+      "ahead_of_main":0,
+      "dirty_files":4,
+      "last_commit_age_days":0,
+      "stale":false,
+      "lost":2,
+      "partial":0,
+      "legacy_pre_v10":false,
+      "lost_legacy":0,
+      "partial_legacy":0,
+      "uninspected_over_cap":0,
+      "files":[
+        {"path":"02_Infrastructure/ops/rf_lcode_mechanism_lib.R","state":"M","added_lines":26,"missing_in_main":25,"main_extra_lines":4,"verdict":"mostly_lost"},
+        {"path":"08_Tests/hooks/run_all_hooks.sh","state":"M","added_lines":4,"missing_in_main":4,"main_extra_lines":10,"verdict":"superseded_upstream"},
+        {"path":"qepm/observability/events.jsonl","state":"M","added_lines":32,"missing_in_main":32,"main_extra_lines":264,"verdict":"ledger_divergence"},
+        {"path":"08_Tests/reinforcement/test_rf_materials_next_block.R","state":"??","added_lines":1,"missing_in_main":1,"main_extra_lines":0,"verdict":"lost"}
+      ]
+    },
+    {
+      "worktree":"sharp-heyrovsky-a56a79",
+      "branch":"claude/sharp-heyrovsky-a56a79",
+      "path":"C:/Users/99922/OneDrive/Quant_Module_Moltbot/.claude/worktrees/sharp-heyrovsky-a56a79",
+      "ahead_of_main":0,
+      "dirty_files":1,
+      "last_commit_age_days":0,
+      "stale":false,
+      "lost":0,
+      "partial":0,
+      "legacy_pre_v10":false,
+      "lost_legacy":0,
+      "partial_legacy":0,
+      "uninspected_over_cap":0,
+      "files":[
+        {"path":"qepm/observability/events.jsonl","state":"M","added_lines":78,"missing_in_main":74,"main_extra_lines":299,"verdict":"ledger_divergence"}
       ]
     },
     {
@@ -73,7 +131,7 @@
       "path":"C:/Users/99922/OneDrive/Quant_Module_Moltbot/.claude/worktrees/wizardly-rosalind-4b676c",
       "ahead_of_main":0,
       "dirty_files":15,
-      "last_commit_age_days":5,
+      "last_commit_age_days":6,
       "stale":true,
       "lost":0,
       "partial":0,
@@ -90,9 +148,9 @@
         {"path":"02_Infrastructure/ops/run_pg2_rebalance_full.sh","state":"M","added_lines":10,"missing_in_main":0,"main_extra_lines":0,"verdict":"merged_upstream"},
         {"path":"02_Infrastructure/portfolio/forward_weights_D3_M4gAE.R","state":"M","added_lines":30,"missing_in_main":0,"main_extra_lines":0,"verdict":"merged_upstream"},
         {"path":"02_Infrastructure/regime/ae_regime_monthly.py","state":"M","added_lines":124,"missing_in_main":0,"main_extra_lines":0,"verdict":"merged_upstream"},
-        {"path":"08_Tests/hooks/run_all_hooks.sh","state":"M","added_lines":21,"missing_in_main":0,"main_extra_lines":76,"verdict":"merged_upstream"},
+        {"path":"08_Tests/hooks/run_all_hooks.sh","state":"M","added_lines":21,"missing_in_main":0,"main_extra_lines":109,"verdict":"merged_upstream"},
         {"path":"08_Tests/hooks/test_benchmark_scale_seam.py","state":"M","added_lines":122,"missing_in_main":0,"main_extra_lines":0,"verdict":"merged_upstream"},
-        {"path":"qepm/observability/events.jsonl","state":"M","added_lines":110,"missing_in_main":108,"main_extra_lines":8048,"verdict":"ledger_divergence"},
+        {"path":"qepm/observability/events.jsonl","state":"M","added_lines":110,"missing_in_main":108,"main_extra_lines":8845,"verdict":"ledger_divergence"},
         {"path":"02_Infrastructure/utils/atomic_parquet.R","state":"??","added_lines":1,"missing_in_main":0,"main_extra_lines":0,"verdict":"merged_upstream"},
         {"path":"08_Tests/data/test_parquet_atomic_write.R","state":"??","added_lines":1,"missing_in_main":0,"main_extra_lines":0,"verdict":"merged_upstream"},
         {"path":"08_Tests/portfolio/test_ae_consumer_freshness.R","state":"??","added_lines":1,"missing_in_main":0,"main_extra_lines":0,"verdict":"merged_upstream"},
@@ -103,6 +161,5 @@
   "collisions": [
   ],
   "prune_candidates": [
-      {"branch":"claude/youthful-torvalds-0c1f1b","path":"C:/Users/99922/OneDrive/Quant_Module_Moltbot/.claude/worktrees/youthful-torvalds-0c1f1b","age_days":4}
   ]
 }
