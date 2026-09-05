@@ -1,6 +1,6 @@
 {
   "schema": "reinforce_auto_config_v1",
-  "enabled": false,
+  "enabled": true,
   "combination": {
     "enabled": true,
     "note": "★도훈 지시 2026-09-04 — 결합은 rank-Z 평균 blend 가 아니라 **LLM 이 두 논문을 읽고 설계한 전략(기저)**에서 출발한다. 그 기저를 충실구현 1회로 측정해 base_grade 를 얻고, base_min_port_t 가드를 통과한 뒤에야 강화 25칸을 열어야 한다. 그 레인이 서기 전까지 구판 blend 착수를 정지한다 — 정지 중에는 호출자가 다음 논문 충실구현으로 정상 이월한다.",
@@ -352,5 +352,12 @@
     "by": "Q",
     "what": "2404.08129 Fable 충실구현 31분 → verify_failed dependency_install_failed(detail=FIDELITY.json) 2초 → 논문 미소비 → next_paper 가 같은 논문 재요청(pending 18:38:12). 다음 tick 이 같은 31분 실행을 반복할 상황이라 정지",
     "reenable": "검증기 결함 수리 + 재시도 상한 후"
+  },
+  "resumed_20260905_1853_after_verify_scanner_fix": {
+    "at": "2026-09-05T18:52:07",
+    "by": "Q",
+    "repair": "rf_replication_verify .strip_strings(문자열 리터럴 제거) + next_paper failed_needs_session 관문",
+    "reverify": "기존 엔진에 검증기만 재실행 → 2404.08129 Grade C · PORT_t 0.55 · entry RP_20260905_184253_720_adapted_rulefast 개설(active, 첫 Fable 산출물)",
+    "tests": "extract_pkgs 7/7(변이 3/8) · pending guard 11/11"
   }
 }

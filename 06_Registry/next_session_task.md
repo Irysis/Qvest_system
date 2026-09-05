@@ -1,12 +1,12 @@
-# 다음 세션 인계 — 2026-09-05 (무인 루프 가동 · 2404.08129 첫 Fable 충실구현 진행 중 · 하네스 수리 9건)
+# 다음 세션 인계 — 2026-09-05 (무인 루프 가동 · 2404.08129 첫 Fable 충실구현 C → 강화 entry active · 하네스 수리 11건)
 
 ## 지금 상태 한 줄
 
-- 루프 `enabled=true`(17:45 재개) · active entry 0 · 충실구현 요청 `in_progress` = **2404.08129 "One Factor to Bind the Cross-Section of Returns"** —
-  18:07:39 `[rp_auto] start · model_selected claude-fable-5-1/max`(첫 Fable 레인, 에이전트 = 실디스크 `Roaming\npm\…\bin\claude.exe`).
-  확인 지점 = `04_Research/strategies/RP_AUTO_2404_08129/engine.R` 실물 + `verify_*` + 원장 entry 개설(어제 롤백은 rc=0·산출물 0 이었다).
-- 2006.04639 "Dynamic Network Risk" = **Grade F · PORT_t −2.874**(opus/max · 17:26 소비 `RP_20260905_172632_skipped_base`) · 충실도 `unverifiable/proceed`
-  (arxiv html 전문 경로 없음 — F 가 논문의 성질인지 구현 실수인지 이 판정으로는 안 갈린다).
+- 루프 `enabled=true`(18:53 재개) · **active entry = `RP_20260905_184253_720_adapted_rulefast`**(2404.08129 "One Factor to Bind the Cross-Section
+  of Returns" · 첫 Fable 레인 산출물 · 기저 **Grade C · PORT_t 0.55** · 15bps 순비용 판 CAGR 11.4% · SR 0.50 · MDD 65.7% · Calmar 0.17 · n_max 25 ·
+  fidelity ADAPTED — 논문은 가격결정 검정(HFL 단일 비선형 팩터)이라 거래전략이 없어 모형 함의 기대수익을 Score 로 이식 · 감사 unverifiable/proceed).
+  다음 tick 부터 B1 LLM 설계 → 25칸 강화. 요청 파일 `done`.
+- 2006.04639 "Dynamic Network Risk" = **Grade F · PORT_t −2.874**(opus/max · 17:26 소비 `RP_20260905_172632_skipped_base`) · 충실도 `unverifiable/proceed`.
 - ★로그·텔레그램이 2006.04639 와 2404.08129 를 둘 다 "횡단면 주식 팩터" 로 부른다 — 트리아지 범주 라벨이 제목 자리(칩 task_aede5cd1). 중복 논문 아님.
 
 ## 오늘 일어난 일 (시간순)
@@ -82,6 +82,14 @@ LOO 가 유니버스(+0.945)·비중(+0.290)을 해로운 축으로 정확히 �
    카드 = reference-desktop-app-msix-virtualizes-appdata-writes-scheduler-sees-real-disk-20260905.
 - 잔존 소음: `claim_release_failed reason=unlink_failed` 매 tick(오전부터 · 다음 tick 이 released.json 으로 제자리 인수 — 기능 영향 0, 로그 소음).
   `schtasks /run` 은 MSYS 경로 변환에 먹힌다 → `Start-ScheduledTask`. PowerShell 도구의 `Remove-Item` 은 훅이 막는다.
+
+4. **검증기 의존 스캐너가 문자열을 읽음** (f8e9b1c97): 첫 Fable 엔진(18:07~18:38, 31분)의 마지막 cat() 문자열 "FIDELITY.json::portfolio_spec" 을
+   `::` 스캐너가 패키지로 읽어 install 실패 → `dependency_install_failed` 로 2초 만에 기각. 같은 tick 의 no-active 위임이 실패 요청을
+   **새 요청**으로 덮어 레인의 auto_retries 3회 상한을 0 으로 리셋 — 31분 실행 무한 반복 4분 전 킬스위치. 수리 = `.strip_strings`
+   문자 걷기(문자열 밖 # 만 주석) + next_paper 관문에 failed_needs_session. 검사 `test_rf_verify_extract_pkgs.R` 7/7(변이 3/8) ·
+   pending guard 11/11. **재검증은 에이전트 없이 검증기만**(RP_WDIR 등 레인 env · nohup) → Grade C · entry 개설. 카드 = 아카이브
+   feedback-a-token-scanner-that-reads-strings-rejects-the-artifact-it-guards-20260905.
+- 소음: 텔레그램 성과 차트 중 drawdown.png 가 빈 파일(579 bytes)로 제외됨 — 차트 생성기 확인 대상.
 
 ## 열린 결정 (도훈)
 
