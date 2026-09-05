@@ -30,13 +30,22 @@ rfbd_path <- function(root, base_id, block)
 #' 그 블록이 고를 수 있는 것 — 카탈로그를 **정본에서** 읽는다(재구현 금지)
 rfbd_catalog <- function(block, root) {
   if (identical(block, "B2")) {
-    d <- tryCatch(fromJSON(file.path(root, "06_Registry/weight_catalog.json"), simplifyVector = FALSE),
-                  error = function(e) NULL)
-    en <- (d$entries %||% list())
-    ok <- Filter(function(x) !identical(as.character(x$status %||% ""), "retracted"), en)
-    return(lapply(ok, function(x) list(id = as.character(x$catalog_id %||% ""),
-                                       label = as.character(x$label %||% ""),
-                                       family = as.character(x$family %||% ""))))
+    ## ★엔진과 **같은 함수·같은 기본값** (2026-09-05). 구판은 JSON 을 직접 읽어 status != retracted 만
+    ##   걸렀는데, 엔진(rf_cell_engine)은 weight_catalog_arms(min_status = "active") 를 읽는다.
+    ##   술어가 둘이라 unverified 생성 arm(gen:lean_score_tilt__shr_lw_nls)이 설계를 통과하고 엔진에서
+    ##   "카탈로그 arm 부재" 로 죽었다 — 실사고 promo2 B2_10, 설계의 대조쌍(추정오차 축) 칸이 미측정.
+    ##   "실행 가능한 arm 인가" 의 정본은 엔진이 부르는 함수 하나다. 적재 실패 = 빈 목록 = 설계 전체 기각
+    ##   (규칙 선정 폴백) — 조용한 통과가 아니라 조용한 거부 쪽으로 넘어진다.
+    a <- tryCatch({
+      invisible(capture.output(suppressMessages(
+        source(file.path(root, "02_Infrastructure/portfolio/weight_catalog.R"), local = TRUE))))
+      weight_catalog_arms(quiet = TRUE)
+    }, error = function(e) NULL)
+    if (is.null(a) || !NROW(a)) return(list())
+    return(lapply(seq_len(NROW(a)), function(i) list(
+      id     = as.character(a$catalog_id[i]),
+      label  = as.character(if ("label"  %in% names(a)) a$label[i]  else a$catalog_id[i]),
+      family = as.character(if ("family" %in% names(a)) a$family[i] else ""))))
   }
   if (identical(block, "B5")) {
     d <- tryCatch(fromJSON(file.path(root, "06_Registry/overlay_catalog.json"), simplifyVector = FALSE),

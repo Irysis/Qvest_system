@@ -502,6 +502,12 @@ cd_apply <- function(result_path) {
   mt_h   <- as.numeric(g$mtime_guard_hours %||% 24)
   acc_mb <- 0
 
+  # ★QVEST_CLEANER_DRY=1 — 스윕과 같은 관례를 삭제 축에도 둔다("관측이지 통보가 아니다").
+  #   가드는 그대로 다 돌고 **집행만** 안 한다. 그래야 dry 산출이 실행 예정과 같은 판정을 보여준다
+  #   (가드를 건너뛰는 dry 는 실행과 다른 답을 내므로 관측 가치가 없다).
+  DRY_DEL <- identical(Sys.getenv("QVEST_CLEANER_DRY", "0"), "1")
+  if (DRY_DEL) rep$dry_run_deletions <- TRUE
+
   if (isTRUE(pr$broken) && length(dels)) {
     for (d in dels) rejected[[length(rejected)+1L]] <-
       list(path = as.character(d$path %||% ""), reason = "protected_list_broken — 보호 목록 부재로 삭제 전면 금지")
@@ -525,6 +531,16 @@ cd_apply <- function(result_path) {
     mb <- (fi$size %||% 0) / 1048576
     if (acc_mb + mb > max_mb) { rj(sprintf("용량 상한 초과(max_delete_mb=%s)", max_mb)); next }
 
+    if (DRY_DEL) {
+      acc_mb <- acc_mb + mb
+      executed[[length(executed)+1L]] <- list(path = p, reason = as.character(d$reason %||% ""),
+                                              size_kb = round((fi$size %||% 0)/1024, 1),
+                                              ref_check = "0건(git grep 재도출)",
+                                              n_refs_raw = rc$n_raw,
+                                              refs_ignored_as_record = as.list(rc$ignored),
+                                              dry_run = TRUE, note = "DRY — 가드 전부 통과했으나 집행 안 함")
+      next
+    }
     ok <- tryCatch({ if (isTRUE(fi$isdir)) unlink(full, recursive = TRUE) else unlink(full)
                      !file.exists(full) && !dir.exists(full) }, error = function(e) FALSE)
     if (!isTRUE(ok)) { rj("삭제 실패(OS 거부/사용 중)"); next }
@@ -536,7 +552,8 @@ cd_apply <- function(result_path) {
                                             ref_check = "0건(git grep 재도출)",
                                             n_refs_raw = rc$n_raw,
                                             refs_ignored_as_record = as.list(rc$ignored))
-    try(cat(sprintf("%s\tweekly_distill_llm\t%s\n", format(Sys.time(), "%Y-%m-%d %H:%M:%S"), p),
+    try(cat(sprintf("%s\tweekly_distill_llm\t%s%s\n", format(Sys.time(), "%Y-%m-%d %H:%M:%S"), p,
+                    if (DRY_DEL) "\t[DRY]" else ""),
             file = file.path(ROOT, ".cache", "hygiene_manifest.log"), append = TRUE), silent = TRUE)
   }
   rep$deletions <- list(executed = executed, rejected = rejected,

@@ -3,6 +3,47 @@
 > CLAUDE.md는 "현재 유효한 헌법"만 담는다. 버전 연혁·릴리스 상세는 본 파일이 SOT.
 > 최신 릴리스 상세: `qvest_v8_4_asymmetry_ml_sot.md` (**v8.4 — 주력 SOT**) · `qvest_v8_3_alpha_discovery_sot.md` (v8.3) · `qvest_v8_1_sot.md` (v8.1) · `qvest_v8_0_upgrade_plan.md` (v8.0)
 
+## (v10.4 유지 · 버전 미변경) 주간 증류 무인화 — 삭제 판단까지 LLM 위임 (2026-09-05)
+
+**도훈 지시**: "주간 클리너에 자동 증류 기능까지 넣고 싶어" → 범위 ①안(digest + DIST 초안 + L-code) · 삭제 **전면 무인(LLM 판단 위임)** ·
+"2계층 리서치 프로세스와 운용상 충돌없게".
+
+### 왜 — 금지 조항이 지시와 충돌한 채 방치됐다
+`.claude/skills/cleaner/SKILL.md` §2 의 "증류(digest·삭제 판단) 자동화 금지"(2026-07-04)는 2026-08-30 "모든 작업을 무인화" 와
+정면으로 충돌한 채 남아 있었고, 그 사이 **증류 세션이 3주 오지 않았다** — digest 마지막 2026-08-15, `pending_5axis` 백로그
+49건(07-17) → **104건**(09-05). 스윕은 매주 재료를 쌓았는데 소비자가 없었다. 도훈이 무인화 쪽으로 정합을 지시했다.
+
+### 결정
+- **무인 증류 레인 신설** — 스윕 직후 `claude -p`(stdin) 로 digest·DIST 자동초안(적대검증 5체크)·L-code·삭제를 완주.
+- **역할 분담**: 에이전트 = *무엇을* 증류·삭제할지 판단. 기계 = 재도출로 **검증하고 집행**. 에이전트에겐 **Bash 가 없다** —
+  스스로 못 지우고 삭제 요청 JSON 만 낸다. 집행 가드 = 보호목록 · 참조0 `git grep` · 최근 24h 수정분 제외 · 건수/용량 상한.
+- **2계층 충돌 회피**: `Qvest_ReinforceAutoLoop`(~20분 주기, 칸 5개 + LLM 레인 3종)과 토 09:00 이 정면으로 겹친다.
+  gate 가 reinforce claim(owner.json pid 생존)·sweep lock·distill claim 을 보고 겹치면 **연기**하고,
+  `morning_run [0.75]` 일간 훅이 재시도해 한 주를 통째로 잃지 않는다. (착수 직후 실측에서 실제로 `reinforce_active` 를 잡았다.)
+  ★**역방향도 막았다** — 게이트만 두면 "강화 중 증류 착수" 는 막히는데 "증류 중 강화 착수" 가 안 막힌다.
+  둘 다 L-code 원장·`distilled_knowledge.json` 을 쓰므로 겹치면 lost update 다. `reinforce_auto_tick.sh` 가
+  `distill_status=in_progress ∧ owner=auto_distill ∧ 나이<1h` 일 때만 물러난다(죽은 레인이 강화를 stale 6h 세우지
+  않도록 1h 로 끊는다). 주 1회 20분짜리라 손실은 tick 1~2회.
+- **불변**: DIST `proposed` → `distilled` 활성화는 여전히 도훈 승인(INV-6). 무인화가 옮긴 것은 *초안 작성자*이지 *활성화 게이트*가 아니다.
+  공리(AX-*)는 별개 층으로 `refine_statement.R` R0~R6 이 무인 판정(2026-08-30) — 두 계층을 섞지 않는다.
+- `/cleaner` 스킬은 **폴백 + 사후 검토** 경로로 재정의(SKILL §0.1 gate 판정부터 · 손으로 §1 반복 금지).
+
+### 실측 — 양성 대조가 잡은 결함 (위반 주입만 쟀으면 못 봤다)
+첫 검사에서 **위반 주입 5종은 전부 통과했는데 양성 대조가 실패**했다: 참조0 인 죽은 파일이 안 지워졌다.
+원인 = 삭제 후보는 전부 `hygiene_report.json` 에서 나오는데 **그 파일이 후보 경로를 적어 둔다** → 문자 그대로 세면
+모든 후보가 "참조 1건" → 삭제가 원리상 불가능. 주입 방향만 쟀다면 "가드 완벽 · 전부 거부" 로 초록이 나고
+레인은 영영 아무것도 안 지웠을 것이다. 수리 = `ref_check_ignore` 로 **기록과 소비를 가르고**(감사 리포트·매니페스트·
+불변 런 기록·이벤트 로그는 분모에서 제외) `n_refs_raw`·`refs_ignored_as_record` 를 매니페스트에 병기(조용한 완화 금지).
+실데이터 재료 조립에서 글롭 누락 2건(`cache_cleanup_manifest_*`·`qepm/observability/*`)도 같은 축으로 적발.
+
+### 파일
+`cleaner_distill_run.sh`(레인) · `cleaner_distill_lib.R`(gate/materials/apply/notify · 격리 `QVEST_CD_ROOT`) ·
+`06_Registry/cleaner_protected_paths.json`(경계 정본) · `reinforce_auto_config.json::cleaner_distill` + `llm.lanes.cleaner_distill` ·
+배선 = `Qvest_WeeklyCleaner.bat` · `morning_run.sh [0.75]` · 표시기 정합 = `weekly_cleaner_sweep.R`(텔레그램·`next_action`) ·
+`bootstrap.sh`(WARN 에 **나이 + 마지막 시도** 병기) · `reinforce_auto_tick.sh`(역방향 가드) ·
+SKILL §0.1/§0.1b/§0.2/§2 · `artifact-storage.md` §8 3선 · `weekly_cleaner_sweep.R`/`rf_replication_auto.sh` 헤더(구 경계 사료화).
+검사 = `08_Tests/ops/test_cleaner_distill.sh` **25항 전부 양방향**(gate 4 · materials 6 · 삭제 양성 2/주입 6 · DRY 1 · 역방향 가드 4), SUITES 등재.
+
 ## v10.4 — 강화 격자의 LLM 설계 · 적응 순서 · 승격 사슬 · 롤링/방어형 구제 (2026-09-04)
 
 **도훈 지시**: "빠른 규칙 반복" 위에 (다)안 — B1 을 블록 진입 시 1회 LLM 설계로 · 최근 성과·개선 추세를 등급에 반영(F 확실히 구제) ·

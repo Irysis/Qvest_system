@@ -10,6 +10,23 @@ LOG="$ROOT/.cache/scheduler_logs/reinforce_auto_${TODAY}.log"
 mkdir -p "$(dirname "$LOG")"
 {
   echo "=== $(date -Iseconds) tick 시작 ==="
+  # ★주간 증류 레인과의 역방향 충돌 차단 (2026-09-05 도훈 '운용상 충돌없게').
+  #   증류 게이트는 "강화 중이면 증류를 연기" 하는데, 그 반대(증류 중 강화 착수)는 안 막혀 있었다.
+  #   둘 다 L-code 원장과 distilled_knowledge.json 을 읽고 쓴다 — 겹치면 lost update 다.
+  #   증류 claim(distill_status=in_progress · owner=auto_distill)이 **신선할 때만** 물러난다:
+  #   레인이 죽은 채 claim 을 쥐고 있으면 강화가 stale 6h 까지 서 버리므로 1h 로 끊는다
+  #   (그 뒤는 증류 쪽 stale 재점유 규약이 처리한다). 주 1회 · 20분짜리라 tick 1~2회 손실이 전부다.
+  CDP="$ROOT/.cache/cleaner_pending.json"
+  if [ -f "$CDP" ] && grep -q '"distill_status"[[:space:]]*:[[:space:]]*"in_progress"' "$CDP" 2>/dev/null; then
+    CDO=$(grep -oE '"distill_owner"[[:space:]]*:[[:space:]]*"[^"]*"' "$CDP" | head -1 | sed -E 's/.*:[[:space:]]*"([^"]*)"/\1/')
+    CDA=$(grep -oE '"distill_claimed_at"[[:space:]]*:[[:space:]]*"[^"]*"' "$CDP" | head -1 | sed -E 's/.*:[[:space:]]*"([^"]*)"/\1/')
+    CDS=""; [ -n "$CDA" ] && CDS=$(date -d "$CDA" +%s 2>/dev/null || echo "")
+    if [ "$CDO" = "auto_distill" ] && [ -n "$CDS" ] && [ $(( $(date +%s) - CDS )) -lt 3600 ]; then
+      echo "[rf_tick] halt_distill_active — 무인 증류 레인 진행 중(claimed_at=$CDA). 원장 동시쓰기 회피로 이번 tick 물러남"
+      echo "=== $(date -Iseconds) tick 종료 rc=0 (distill 양보) ==="
+      exit 0
+    fi
+  fi
   # ★충실구현 대기가 있으면 먼저 처리한다 — active entry 없이는 강화가 못 돈다.
   #   자체 claim/게이트를 갖고 있어 대기가 없으면 즉시 종료한다.
   bash "$ROOT/02_Infrastructure/ops/rf_replication_auto.sh"

@@ -196,6 +196,19 @@ done
 [ "$(chk rejected ../../../etc/passwd)" = "YES" ] \
   && ok "C5 [주입] 경로 탈출 거부" || ng "C5 경로 탈출" "거부 기록 없음"
 
+# DRY — 가드는 전부 통과하되 집행만 안 해야 한다(스윕의 QVEST_CLEANER_DRY 관례 승계).
+#   ★"dry 라서 아무것도 안 지웠다" 와 "가드가 거부했다" 는 다른 사건이다 — deleted 에 실리되
+#     파일이 남아 있어야 그 둘이 구분된다.
+echo "-- D. DRY 집행 억제"
+echo "dead again" > "$T/02_Infrastructure/ops/_dead_scratch.R"
+touch -d "10 days ago" "$T/02_Infrastructure/ops/_dead_scratch.R" 2>/dev/null || touch -t 202608200900 "$T/02_Infrastructure/ops/_dead_scratch.R"
+QVEST_CLEANER_DRY=1 Rscript "$LIB" apply "$T/.cache/result.json" >/dev/null 2>&1
+if [ -f "$T/02_Infrastructure/ops/_dead_scratch.R" ] && [ "$(chk deleted 02_Infrastructure/ops/_dead_scratch.R)" = "YES" ]; then
+  ok "D1 [DRY] 가드 통과 기록되되 파일은 잔존"
+else
+  ng "D1 DRY" "파일존재=$([ -f "$T/02_Infrastructure/ops/_dead_scratch.R" ] && echo y || echo n) deleted기록=$(chk deleted 02_Infrastructure/ops/_dead_scratch.R)"
+fi
+
 # digest 부재 경로 — release 되면 안 되므로 rc≠0
 cat > "$T/.cache/result_nodigest.json" <<'EOF'
 {"schema":"cleaner_distill_v1","week_of":"2026-W36",
@@ -205,6 +218,48 @@ EOF
 Rscript "$LIB" apply "$T/.cache/result_nodigest.json" >/dev/null 2>&1; RC=$?
 [ "$RC" != "0" ] && ok "C6 [주입] digest 부재 → rc≠0 (release 안 됨, 재시도)" \
                  || ng "C6 digest 부재" "rc=0 으로 통과했다"
+
+# ── E. 역방향 충돌 가드 (reinforce_auto_tick.sh) ──────────────────────────────
+#   증류 게이트는 "강화 중이면 증류 연기" 를 하는데, 그 반대(증류 중 강화 착수)도 막혀야 한다
+#   — 둘 다 L-code 원장·distilled_knowledge.json 을 쓴다. **양방향**: 진행 중이면 양보하고,
+#   아니면 양보하지 않아야 한다. 한 방향만 재면 "항상 양보"(=강화 정지)를 못 구분한다.
+echo "-- E. 역방향 가드 (증류 중 강화 착수 차단)"
+TICK="$REPO/02_Infrastructure/ops/reinforce_auto_tick.sh"
+if [ -f "$TICK" ]; then
+  ET="$T/tickroot"; mkdir -p "$ET/.cache/scheduler_logs"
+  NOWTS="$(date '+%Y-%m-%d %H:%M:%S')"
+  mkfix(){ cat > "$ET/.cache/cleaner_pending.json" <<EOF
+{"distill_status":"$1","distill_owner":"$2","distill_claimed_at":"$3"}
+EOF
+}
+  # E1 진행 중(신선) → 양보
+  mkfix in_progress auto_distill "$NOWTS"
+  QM_ROOT="$ET" bash "$TICK" >/dev/null 2>&1
+  grep -q "halt_distill_active" "$ET/.cache/scheduler_logs/reinforce_auto_$(date +%Y%m%d).log" 2>/dev/null \
+    && ok "E1 [양성] 증류 진행 중 → 강화 tick 양보" || ng "E1 양보" "halt_distill_active 미기록"
+  # E2 완료 → 양보하지 않음 (항상 양보 = 강화 정지와 구분)
+  rm -f "$ET/.cache/scheduler_logs/"*.log
+  mkfix done auto_distill "$NOWTS"
+  QM_ROOT="$ET" bash "$TICK" >/dev/null 2>&1
+  grep -q "halt_distill_active" "$ET/.cache/scheduler_logs/reinforce_auto_$(date +%Y%m%d).log" 2>/dev/null \
+    && ng "E2 [주입] 증류 완료면 양보 안 함" "done 인데 양보했다 = 강화 영구 정지" \
+    || ok "E2 [주입] 증류 완료 → 양보 안 함"
+  # E3 stale claim(1h 초과) → 양보하지 않음 (죽은 레인이 강화를 6h 세우면 안 된다)
+  rm -f "$ET/.cache/scheduler_logs/"*.log
+  mkfix in_progress auto_distill "$(date -d '3 hours ago' '+%Y-%m-%d %H:%M:%S' 2>/dev/null || echo '2020-01-01 00:00:00')"
+  QM_ROOT="$ET" bash "$TICK" >/dev/null 2>&1
+  grep -q "halt_distill_active" "$ET/.cache/scheduler_logs/reinforce_auto_$(date +%Y%m%d).log" 2>/dev/null \
+    && ng "E3 [주입] stale claim 은 양보 안 함" "3h 된 claim 에 양보했다" \
+    || ok "E3 [주입] stale claim(>1h) → 양보 안 함"
+  # E4 다른 owner(세션 /cleaner)면 양보 안 함 — 세션 증류는 원장을 그렇게 쓰지 않는다
+  rm -f "$ET/.cache/scheduler_logs/"*.log
+  mkfix in_progress session_main "$NOWTS"
+  QM_ROOT="$ET" bash "$TICK" >/dev/null 2>&1
+  grep -q "halt_distill_active" "$ET/.cache/scheduler_logs/reinforce_auto_$(date +%Y%m%d).log" 2>/dev/null \
+    && ng "E4 [주입] owner 한정" "auto_distill 이 아닌데 양보했다" || ok "E4 [주입] owner=auto_distill 한정"
+else
+  echo "  SKIP  E (reinforce_auto_tick.sh 없음)"
+fi
 
 echo ""
 echo "=== 결과: PASS=$PASS FAIL=$FAIL ==="

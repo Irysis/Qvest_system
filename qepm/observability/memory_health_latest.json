@@ -1,30 +1,39 @@
 {
   "schema_version": "v7.2.1_memory_health",
-  "ran_at": "2026-09-03T13:53:04+0900",
-  "hard_fails": [],
-  "warnings": [
+  "ran_at": "2026-09-05T09:37:28+0900",
+  "hard_fails": [
     {
-      "check_id": "HARD_5_active_uncommitted",
-      "message": "active dir uncommitted changes (18 files, 그중 신규 1) — verify intent | 신규 = 무인 승격 산출물일 수 있음(공리 diff 확인)"
-    },
+      "check_id": "HARD_10_inject_budget",
+      "message": "주입면 계약 위반 — 계측 43.7h 경과(>24h) · 마커 소실(positive=FALSE recent=FALSE dead=FALSE) | agent=alpha-research pc_status=missing ml_rendered=4/4 rung=0 | 재현: echo '{\"tool_input\":{\"subagent_type\":\"forge\"}}' | bash 02_Infrastructure/hooks/axiom_context_inject.sh"
+    }
+  ],
+  "warnings": [
     {
       "check_id": "WARN_13_backlink_conflict",
       "message": "active 공리 2건 이상이 같은 L-code 를 주장: 30건 — promoted_to_axiom 은 스칼라라 마지막 기록만 남는다(근본 수리 = 배열화, 별건)"
     },
     {
       "check_id": "WARN_1_lcode_corpus_integrity",
-      "message": "중복 ID 26건(L-RP-20260830_201656,L-RP-20260830_203323,L-RP-20260830_235311,L-RP-20260831_001552,L-RP-20260831_093239,L-RP-20260831_103933) · 미수확 아티팩트 30건(l_code_RP_20260903_101012_13828.json,l_code_RP_20260903_101846_24356.json,l_code_RP_20260903_101846_3376.json,l_code_RP_20260903_101846_34420.json) — 코퍼스가 아티팩트를 충실히 반영하지 못함"
+      "message": "중복 ID 43건(L-RP-20260830_201656,L-RP-20260830_203323,L-RP-20260830_235311,L-RP-20260831_001552,L-RP-20260831_093239,L-RP-20260831_103933) · 미수확 아티팩트 4건(l_code_RP_20260905_092705_13892.json,l_code_RP_20260905_092705_2132.json,l_code_RP_20260905_092705_27888.json,l_code_RP_20260904_163647_18444_rescued_rulefast_promo2_B2.json) — 코퍼스가 아티팩트를 충실히 반영하지 못함"
     },
     {
       "check_id": "WARN_6_cache_core_stale",
       "message": ".cache/axiom_core.json STALE — missing: AX-AR-001,AX-AR-002,AX-AR-003,AX-AR-004,AX-AS-001,AX-AS-002,AX-AS-003,AX-JG-001,AX-QPM-001,AX-QPM-002,AX-QPM-003,AX-QPM-004,AX-QPM-005,AX-RAMP-001,AX-RAMP-002,AX-RAMP-003,AX-RAMP-004,AX-RAMP-005,AX-RAMP-006 (regenerate via bootstrap)"
+    },
+    {
+      "check_id": "WARN_10_knowledge_index_stale",
+      "message": "knowledge_index 낙후 — count_mismatch(corpus=1081, index=1075); missing_in_index=5  (검사: ops/knowledge_index_freshness.R · 복구: Rscript 02_Infrastructure/ops/build_knowledge_index.R)"
+    },
+    {
+      "check_id": "WARN_11_revival_flags_stale",
+      "message": "주입 사본이 정본보다 26.0h 뒤처짐 — DIST frontier 수정이 주입면에 미반영일 수 있음 (정본 09-05 09:12 > 사본 09-04 07:12). 복구: Rscript -e 'source(\"02_Infrastructure/ops/failure_revival_monitor.R\"); revival_monitor_run(write_flags=TRUE)'"
     }
   ],
   "infos": [],
   "summary": {
-    "hard_fail_count": 0,
-    "warning_count": 4,
+    "hard_fail_count": 1,
+    "warning_count": 5,
     "info_count": 0,
-    "overall": "PASS"
+    "overall": "FAIL"
   }
 }
