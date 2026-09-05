@@ -121,9 +121,9 @@ if (length(ex)) {
     } else {
       ## ★overlay 도 실는다 (2026-09-04): 소비자(러너 carry 병합)는 E$carry$overlay 를 읽는데 생산자가 안 실었다 —
       ##   승자가 B5/B4 칸이면 위험 통제가 세대마다 리셋된다(승계 목록에서 빠진 축은 없는 축이 된다).
-      carry <- list(factors = cf %||% list(), weighting = ws$weighting, universe = ws$universe,
-                    overlay = ws$overlay,
-                    source_cell = best$cell_code %||% "NA", source_spec = sp)
+      ## ★유니버스는 carry 하지 않는다 — 고정 축(K200∪KQ150)으로 리셋 (도훈 결정 2026-09-05 · 정본 rf_promote_carry).
+      ##   승자가 B3 칸이면 ws$universe 는 시험 축이라 그대로 물려주면 다음 세대가 고정 축 밖에서 돈다(promo2 n=17 실사고).
+      carry <- rf_promote_carry(ws, cf, best, sp)
       nid <- PD$new_base_id
       rf_open_entry(1L, nid, base_grade = best$grade,
                     paper_key = E2$paper_key %||% "", paper_id = E2$paper_id %||% "",

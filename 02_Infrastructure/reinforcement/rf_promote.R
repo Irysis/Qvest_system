@@ -46,3 +46,17 @@ rf_promote_decide <- function(entry, best, cfg = list()) {
 
   out(TRUE, "ok")
 }
+
+#' 승격 carry 구성 — 승자 스펙에서 팩터·비중·오버레이만 물려주고 **유니버스는 고정 축으로 리셋**한다.
+#'   (도훈 결정 2026-09-05) SKILL §0: B1·B2·B4 의 기본 유니버스는 K200∪KQ150 이고 B3 만 유니버스를 바꾼다.
+#'   승자가 B3 칸이면 ws$universe 는 그 블록의 시험 축(예: KQ150 단독 · NAV 2010-02~)이라 그대로 물려주면
+#'   다음 세대 25칸이 전부 고정 축 밖에서 돌고, 창이 다른 PORT_t(2.567 vs 2005~ 칸)가 기저가 된다(실사고 promo2 n=17).
+#'   승자의 유니버스는 provenance(universe_reset_from)로만 남긴다.
+#' @param ws 승자 스펙(list) · cf 팩터 목록 · best 승자 attempt 요약 · sp 스펙 경로
+rf_promote_carry <- function(ws, cf, best, sp) {
+  list(factors = cf %||% list(), weighting = ws$weighting,
+       universe = list(kind = "k200_kq150"),
+       universe_reset_from = ws$universe,
+       overlay = ws$overlay,
+       source_cell = best$cell_code %||% "NA", source_spec = sp)
+}
