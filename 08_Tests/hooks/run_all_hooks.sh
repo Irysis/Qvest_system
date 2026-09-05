@@ -1283,6 +1283,9 @@ SUITES=(
   "08_Tests/reinforcement/test_rf_skill_reflects_runtime.R"
   # 2026-09-05 — 승격·결합 entry 의 B1 설계가 승계를 알고 예산 규칙을 아는가(충실구현과 같은 구조)
   "08_Tests/reinforcement/test_rf_b1_carry_aware.R"
+  # 2026-09-05 — 블록 L-code 의 "다음 격자 축" 이 러너의 **적응 순서**를 가리키는가 (양방향).
+  #   구판은 선언 순서 k+1 을 적어 부팅 `Last:` 줄이 틀린 축을 echo 했다(L-RF-20260904_223318).
+  "08_Tests/reinforcement/test_rf_block_lcode_next.R"
 )
 
 
