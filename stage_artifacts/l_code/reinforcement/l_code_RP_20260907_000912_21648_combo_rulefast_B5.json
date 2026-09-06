@@ -17,11 +17,36 @@
   "calmar": 0.299,
   "oos_retention": -0.363,
   "portfolio_alpha_t": 1.564,
-  "next_probes": [
-    "다음 격자 축 B2(weighting) — 이 블록 승자 위에서 측정",
-    "B5_20(최고 1.564)는 B4 조합 후보로 고정 · B5_18(최저 1.328)는 축 역작동 여부를 조합 LOO 로 분리"
-  ],
+  "next_probes": ["다음 격자 축 B2(weighting) — 이 블록 승자 위에서 측정", "B5_20(최고 1.564)는 B4 조합 후보로 고정 · B5_18(최저 1.328)는 축 역작동 여부를 조합 LOO 로 분리"],
   "next_probe": "다음 격자 축 B2(weighting) — 이 블록 승자 위에서 측정 | B5_20(최고 1.564)는 B4 조합 후보로 고정 · B5_18(최저 1.328)는 축 역작동 여부를 조합 LOO 로 분리",
   "source_paper": "https://arxiv.org/abs/2404.08129",
-  "record_type": "performance"
+  "record_type": "performance",
+  "mechanism": "판정: 이 블록에서 낙폭 축을 실제로 움직인 것은 종목축 차등 중 비체계 채널 둘뿐이고, 총노출 스칼라 대조는 기저와 구분되지 않았다. B5_20(dd_recovery)은 Calmar 0.299 · MDD 0.608 · CAGR 0.182 로 기저 B1_4(PORT_t 1.585 · CAGR 0.184 · Calmar 0.299)와 사실상 동일 — 총노출 스칼라 축소는 위험 축에 아무것도 하지 않았다(실측). 반면 B5_18(multivar_channel_tilt)은 MDD 0.467 로 B1 9칸 전 범위(0.513~0.633) 밖으로 나갔고 Calmar 0.379 로 블록 최고, B5_17(csd_idio_tilt)이 MDD 0.562 · Calmar 0.334 · CAGR 0.188 로 뒤를 이었다. B1 이 남긴 처방(종목축 차등 4칸 + 스칼라 대조 1칸, 설계 5건 전건 집행)은 이로써 지지된다 — 공통 낙폭은 고정 축의 불변량이 아니라 소비 지점의 문제였다. 다만 채널에는 순서가 있다: 체계위험·혼잡 기준 B5_16(MDD 0.600 · PORT_t 1.400)은 낙폭을 못 줄이면서 PORT_t 만 기저 대비 -0.185 깎아 두 축 모두 열위이고, 학습 기반 B5_19(PORT_t 1.534 · MDD 0.609)는 신호는 보존했으나 위험 축은 기저 그대로다. 즉 낙폭 감소는 체계위험 성분을 표적할 때가 아니라 특이변동·다변량 채널을 표적할 때만 나왔다(정황 — 채널당 구현 1종뿐). 대가도 실측된다: MDD 를 가장 많이 줄인 B5_18 이 PORT_t 1.328 로 tilt 4칸 중 최저 — MDD -0.148 과 PORT_t -0.257 이 함께 왔고, 이 교환을 신호 파괴 없이 끊을 수 있는지는 미결이다. 가르려면 같은 비체계 채널을 사후 오버레이 tilt 가 아니라 비중 결정 자체(공분산 기반 최적화)에서 소비해 같은 MDD 감소가 PORT_t 손실 없이 재현되는지를 봐야 한다 — 그것이 다음 블록 B2 다.",
+  "mechanism_by": "llm:block_end",
+  "mechanism_at": "2026-09-07T01:07:06+0900",
+  "prior_lessons_used": "B1",
+  "next_block_actions": [
+    {
+      "action": "B2 에서 비체계 위험 채널을 오버레이가 아니라 비중 결정 지점에서 소비한다 — lean:ivol(특이변동 역가중) · lean:minvar(공분산 최소분산) · lean:hrp(상관 군집) 3칸을 같은 기저(S01_Size · K200∪KQ150) 위에 나란히 돌린다.",
+      "why": "B5_17(csd_idio_tilt MDD 0.562) · B5_18(multivar_channel_tilt MDD 0.467)이 낙폭을 B1 범위 0.513~0.633 밖으로 옮긴 반면 B5_16(체계위험/혼잡, MDD 0.600)은 못 옮겼다 — 움직이는 것은 비체계·다변량 채널이라는 실측. 소비 지점이 tilt 냐 비중이냐가 PORT_t 대가를 결정하는지는 아직 미결이다.",
+      "expect": "맞으면 ivol·minvar·hrp 중 최소 1칸이 MDD ≤ 0.50 을 PORT_t 1.4 이상에서 낸다(B5_18 의 MDD -0.148 을 PORT_t -0.257 없이 재현). 틀리면 세 칸 모두 MDD 0.55~0.62 로 되돌아가고, 그때 낙폭 감소는 공분산 구조가 아니라 multivar_channel_tilt 특유의 표적에서 온 것이다."
+    },
+    {
+      "action": "낙폭이 경로 의존 목적함수를 요구하는지 분리한다 — qepm:CDaR_LP(경로 의존 낙폭 목적)와 lean:cvar(단기간 꼬리 목적) 2칸을 대조로 배정한다.",
+      "why": "B5 에서 개선된 양은 MDD(경로량)인데 처치는 전부 횡단면 tilt 였다. B5_18 의 Calmar 0.379 가 꼬리 축소에서 온 것인지 낙폭 경로 자체를 다르게 밟은 것인지 이 블록으로는 안 갈린다.",
+      "expect": "CDaR_LP 가 cvar 보다 MDD 를 유의하게 낮추면 위험 축은 경로 의존 목적을 요구한다. 둘이 같은 MDD(±0.02)를 내면 단기간 꼬리 통제로 충분하고, 이후 칸은 값싼 cvar 계열로 간다. 메모리 09-05: CDaR_LP 디스패처 인자 불일치 수리 후 첫 실측이므로, 미실행이면 결과가 아니라 배선으로 기록할 것."
+    },
+    {
+      "action": "동일가중 이탈 자체의 효과를 재는 대조 1칸으로 lean:score_tilt(S01_Size 점수 기울기) 를 넣는다.",
+      "why": "B2 카탈로그의 위험 기반 항목은 전부 EW 를 떠난다. B5_16 처럼 PORT_t 만 깎이는 결과가 나올 때 그것이 위험 채널 탓인지 EW 이탈 탓인지 구분할 기준선이 블록 안에 있어야 한다.",
+      "expect": "score_tilt 가 MDD 0.60 부근을 유지하면서 PORT_t 만 움직이면, 같은 블록의 minvar·ivol·hrp 에서 관측되는 MDD 변화는 공분산 채널에 귀속된다. score_tilt 가 MDD 도 함께 낮추면 B5 의 낙폭 감소 해석 자체가 EW 이탈로 환원되어 기전 문장을 철회해야 한다."
+    }
+  ],
+  "next_block_actions_by": "llm:block_end",
+  "avoid": ["총노출 스칼라 축소 계열을 B2·B3 에 다시 배정하는 것 — B5_20(dd_recovery)이 Calmar 0.299 · MDD 0.608 로 기저 B1_4(Calmar 0.299)와 구분되지 않았다. B1 의 '스칼라는 위험 축을 안 움직인다' 가 이 블록의 전용 대조 칸으로 확인됐고, 벽 근거는 이제 이 격자 안에 있다(블록 외 B5 50셀 실측과 동일 방향).", "체계위험·혼잡 기준 표적을 다른 구현으로 다시 켜는 것 — B5_16 은 MDD 0.600(기저 대비 거의 무변)에 PORT_t 1.400(-0.185)으로 두 축 모두 열위인 유일한 칸이다. 같은 표적의 다른 포장은 순서만 재확인한다.", "학습 기반 예측 tilt 를 위험 축 개선 목적으로 또 쓰는 것 — B5_19 는 PORT_t 1.534 로 신호는 보존했으나 MDD 0.609 로 기저와 동일했다. 위험 축 처치로는 무효였고, 신호 축 처치로 쓰려면 B4 결합 슬롯이 맞는 자리다.", "KR 수급·마이크로구조 다리(price_delay · 외국인-개인 잔차 flow)를 B4 결합에서 재사용하는 것 — 근거는 이 블록 밖 B1(B1_3 PORT_t -0.398 · B1_6 -0.340 · B1_8 결합 시 희석)이며 B5 는 이 축에 대해 아무것도 재지 않았다."],
+  "next_block_design_for": "B2",
+  "next_block_design_n": 6,
+  "prior_action_status": "executed",
+  "prior_action_detail": "설계 5건 중 5건 집행 (설계: holdlvl_syscrowd_tilt,csd_idio_tilt,multivar_channel_tilt,ml_dual_forecast_tilt,dd_recovery / 실측: holdlvl_syscrowd_tilt,csd_idio_tilt,multivar_channel_tilt,ml_dual_forecast_tilt,dd_recovery)",
+  "mechanism_confidence": "medium"
 }
