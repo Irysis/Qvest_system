@@ -1,0 +1,11 @@
+{
+  "axis": "universe",
+  "verdict": "adapted",
+  "undeclared_changes": [],
+  "signal_mismatch": [],
+  "counterexample": "구성 못 했다 — 논문이 개별 종목 선별 규칙(상장거래소·가격 하한·유동성 필터·금융주 제외) 자체를 갖지 않으므로, engine.R 의 K200∪KQ150 멤버십(MEM, engine.R:177,201) + adv20(t-1)≥2e8 필터(engine.R:189,201)와 '같은 종류의 규칙'을 논문에서 대조할 지점이 없다. 두 필터 체계가 서로 다른 대상(다자산군 포트폴리오 vs 개별 종목)에 적용되므로 동일 입력에 대해 값이 갈리는 구체 상황을 만들 수 없다.",
+  "evidence": "arxiv.org/abs/2404.08129 초록 원문(WebFetch 확인, 2026-09-06): 'Using 171 assets across major classes, our model delivers superior cross-sectional performance...' — 개별 종목이 아니라 자산군(major classes) 단위 시험자산임을 원문이 직접 확인한다. 자산군의 구체 구성(미국 주식 포트폴리오·미국/국제 국채·상품·통화, 171개)은 arxiv HTML 본문(HTML 수식 변환 파손 확인 — WebFetch 재시도 3회 전부 '수학 표기만 보이고 서술 문단 미변환' 응답)과 PDF(economics.yale.edu/.../d2386.pdf — poppler 부재로 렌더 불가, 기존 환경 제약과 일치)에서 직접 인용하지 못했고, WebSearch 스니펫(SSRN/NBER 요약)으로만 교차확인했다 — 이 부분은 2차 출처.",
+  "confidence": "medium",
+  "checked": "engine.R:173-205 의 유니버스 조립(MEM = K200|KQ150 union, engine.R:177) · adv20(t-1)≥2e8 유동성 필터(engine.R:189,201) · Close>0 기본 클렌징(engine.R:176) 을 FIDELITY.json::changed(1) 선언 및 arxiv 초록 원문과 대조 — 논문이 개별 종목 유니버스/필터 개념 자체가 없는 다자산군 포트폴리오 연구라는 점이 원문(초록)으로 확인됨",
+  "note": "이 축에서 실질적으로 대조 가능한 대상이 없다 — 논문에 '유니버스·필터' 층위가 존재하지 않는 유형의 논문(개별 주식이 아니라 사전구성된 자산군 포트폴리오 사용)이며, FIDELITY.changed(1)가 이 치환을 이미 정직하게 선언했다. K200∪KQ150+adv20 필터 자체는 허용된 유니버스 교체 범위 내(CLAUDE.md 실투형 고정 축)로, 미신고 변경이나 서술 불일치를 찾지 못했다. 원문 본문(HTML/PDF)을 직접 못 읽어 자산군 세부 구성(171개 중 주식/채권/상품/통화 비율)은 2차 출처 의존 — 그 세부치가 misdeclared 판정을 낳을 여지는 낮다(개별종목 비존재라는 핵심 사실은 원문 1차 확인됨)."
+}
