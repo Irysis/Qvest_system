@@ -1,0 +1,11 @@
+{
+  "axis": "cost",
+  "verdict": "faithful",
+  "undeclared_changes": [],
+  "signal_mismatch": [],
+  "counterexample": "구성 못 했다 — 논문 원문(arxiv.org/html/2006.04639v1) 전체에 cost/bps/basis point/transaction/turnover/net of/gross/round-trip/trading cost/fee 어느 문자열도 등장하지 않는다(2회 독립 전문 조회로 확인). 비교할 논문측 비용값 자체가 없으므로 '논문보다 유리하게 기울었다'고 지목할 기준점이 없다.",
+  "evidence": "arxiv.org/html/2006.04639v1 전문(§4.1, §4.1.1, Table 1/6/7/8 포함) 어디에도 거래비용·왕복비용·시장충격·bps·turnover 언급 없음 — 전문 검색 2회(일반 스캔 + 리터럴 문자열 스캔) 모두 0건. FIDELITY.json:12 commission_paper=null 이 이 사실과 정합. run_paper_replication.R:180 주석 'NULL = 논문 무명시 → gross(0)' 및 :304 comm_paper <- commission_paper %||% 0 이 이 null 을 gross(0bps) 로 해석하는 하네스 전역 규약(이 전략 전용 임의값 아님 — rf_replication_verify.R:174, reinforce_auto_run.R:414 등도 동일 계약 소비).",
+  "confidence": "high",
+  "checked": "논문 원문 전체 거래비용/turnover/net-gross 서술 유무(전문 재조회 2회) vs FIDELITY.commission_paper(null) vs authoritative_remeasure.json::replication.commission_paper_bps(0, '논문 기준' 병기값 산출에 실사용) vs essence 등급 산출용 15bps(run_paper_replication.R:307-309,331, grade_basis_note 명시) — 두 판이 같은 run_replication_simulation() 을 commission 인자만 바꿔 호출하므로 다리별(long/short) 비대칭 적용 없음.",
+  "note": "논문이 비용을 전혀 명시하지 않으므로(전문 확인) '논문 기준 성과' 병기값에 gross(0bps)를 쓴 것은 통상적 학계 관행(무언급=gross)과 정합하고, FIDELITY.commission_paper=null 로 정직하게 신고돼 있다. 15bps 등급판은 v10 하네스 규약(전 전략 공통)이지 이 논문 대비 변경이 아니다 — 지시문 전제와 일치."
+}
