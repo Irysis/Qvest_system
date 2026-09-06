@@ -1,0 +1,121 @@
+{
+  "status": "OK",
+  "strategy_id": "RP_20260906_211754_19148",
+  "strategy_name": "RF_PAR_B4_25_LOO3",
+  "remeasured_at": "2026-09-06T21:24:01+0900",
+  "run_id": "20260906_211754_19148",
+  "bt_result_path": "C:/Users/99922/OneDrive/Quant_Module_Moltbot/stage_artifacts/replication/20260906_211754_19148/bt_result.rds",
+  "metric_type": "backtested",
+  "essence_grade": "C",
+  "grade_basis": "replication_chain",
+  "essence": {
+    "net_sharpe": 0.786,
+    "net_ir": 0.379,
+    "portfolio_alpha_t_nw_lag3": 1.635,
+    "oos_retention": -0.552,
+    "dsr": null,
+    "mdd": 0.674,
+    "calmar": 0.279,
+    "cagr": 0.188,
+    "drawdown_profile": {
+      "severe45_count": 14,
+      "severe55_count": 2,
+      "severe45_total_periods": 208,
+      "severe45_max_periods": 63,
+      "severe45_period_frac": 0.0391,
+      "catastrophic_mdd_threshold": 0.7,
+      "severe45_hard_count": 15,
+      "severe55_hard_count": 6,
+      "severe45_period_hard_frac": 0.25,
+      "severe45_max_hard_periods": 252,
+      "tail_review": true,
+      "structural_hard_fail": false
+    }
+  },
+  "hard_fail": false,
+  "structural_drawdown": false,
+  "selection_type": "chain",
+  "dsr_gate_applied": false,
+  "grade_base": "C",
+  "recent_regime_rescued": false,
+  "recent_regime_label": null,
+  "rolling_grade": {
+    "status": "ok",
+    "n_points": 225,
+    "window_months": 36,
+    "pass_life": 0.3467,
+    "pass_recent": 0,
+    "current": {
+      "ym": "2026-09",
+      "sharpe": 0.231096,
+      "cagr": 0.025374,
+      "mdd": 0.38178,
+      "calmar": 0.066462,
+      "pass": false
+    },
+    "prior_recoveries": 4,
+    "current_run": 0,
+    "span": ["2008-01", "2026-09"]
+  },
+  "defensive_score": {
+    "status": "ok",
+    "defensive": true,
+    "convex": false,
+    "down": {
+      "n": 111,
+      "excess": 0.020441,
+      "hit": 0.585586,
+      "t": 3.734074,
+      "capture": 0.520088
+    },
+    "mid": {
+      "n": 30,
+      "excess": 0.016865,
+      "hit": 0.566667,
+      "t": 1.663769,
+      "capture": 0.823582
+    },
+    "deep": {
+      "n": 10,
+      "excess": 0.009823,
+      "hit": 0.5,
+      "t": 0.406177,
+      "capture": 0.935127
+    },
+    "up": {
+      "n": 149,
+      "excess": -0.003785,
+      "hit": 0.510067,
+      "t": -0.614968,
+      "capture": 0.924655
+    },
+    "reason": "하락월 111개: 초과 +2.04%/월 (t 3.73 · 적중 59%) · 벤치-10% 이하 10개: 초과 +0.98%/월 · 상승월 초과 -0.38%/월"
+  },
+  "reasons": "Ensemble: positive alpha이나 B 미달 (블렌드에서만 가치)",
+  "replication": {
+    "source_paper": {
+      "url": "https://arxiv.org/abs/2404.08129",
+      "title": "One Factor to Bind the Cross-Section of Returns",
+      "paper_key": "2404.08129"
+    },
+    "commission_paper_bps": 15,
+    "paper_basis": {
+      "cagr": 0.187765,
+      "sharpe": 0.666339,
+      "mdd": 0.673633,
+      "n_months": 260
+    },
+    "grade_basis_note": "등급은 15bps 순비용 판 (essence 문턱 15bps 보정 — gross 등급은 인플레)",
+    "fidelity": "universe 치환(K200∪KQ150)만 — 그 외 논문 그대로 (v10 완전 충실구현)",
+    "benchmark_note": "long_vs_long_bm",
+    "n_max": 25,
+    "has_short": false
+  },
+  "contract": {
+    "integrity_status": "OK",
+    "cagr": 0.188,
+    "sharpe": 0.786,
+    "mdd": 0.674,
+    "calmar": 0.279
+  }
+}
