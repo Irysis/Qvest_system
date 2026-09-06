@@ -1,0 +1,50 @@
+{
+  "l_code": "L-RF-20260905_215306",
+  "strategy_id": "RP_20260905_184253_720_adapted_rulefast_promo1_B3",
+  "grade": "C",
+  "core_reference": "",
+  "lesson_text": "[B3 universe] 4칸 실측 — 최고 B3_13 다중검정t 1.334 · 칼마 0.269 · 등급 A0/B0/C4/F0. 직전 최고 B2_10(2.749) 대비 열위 — 이 축은 기준선을 못 넘었다. 칼마 최고 0.27 — 낙폭 62% 하에서 합격선은 연복리 40% 를 요구",
+  "tags": ["reinforcement", "rule_grid", "b3"],
+  "created_at": "2026-09-05",
+  "research_mode": "reinforcement",
+  "created_by": "emit:reinforcement",
+  "metric_type": "backtested",
+  "construction_type": "single_factor_long_only",
+  "mechanism_hypothesis": "",
+  "lcode_schema_version": 3,
+  "cagr": 0.168,
+  "mdd": 0.625,
+  "calmar": 0.269,
+  "oos_retention": -0.598,
+  "portfolio_alpha_t": 1.334,
+  "next_probes": ["다음 격자 축 B4(combination) — 이 블록 승자 위에서 측정", "B3_13(최고 1.334)는 B4 조합 후보로 고정 · B3_14(최저 -0.768)는 축 역작동 여부를 조합 LOO 로 분리"],
+  "next_probe": "다음 격자 축 B4(combination) — 이 블록 승자 위에서 측정 | B3_13(최고 1.334)는 B4 조합 후보로 고정 · B3_14(최저 -0.768)는 축 역작동 여부를 조합 LOO 로 분리",
+  "source_paper": "https://arxiv.org/abs/2404.08129",
+  "record_type": "performance",
+  "mechanism": "판정: 유니버스 축은 초과수익의 부호를 바꾸지만 낙폭은 바꾸지 못한다. PORT_t 가 풀의 시가총액에 대해 단조 감소했다 — B3_13(시총 0~33 분위) 1.334 > B3_15(섹터 중립 Sector_Lv2) 0.468 > B3_12(K200 단독) -0.281 > B3_14(시총 67~100 분위) -0.768. V14_EBIT_EV+D51_Ulcer_Index 는 소형 구간에서만 부호를 유지하고 대형 구간에서 반전한다. 이는 B1_6(size_soft_tilt, PORT_t 1.996)이 팩터 tilt 라는 소비 지점에서 보인 방향을 유니버스 필터라는 다른 소비 지점에서 재확인한 것이다(두 지점 실측). 동시에 B2 가 남긴 미결 — 낙폭의 공통요인이 섹터 집중인가 사이즈 집중인가 — 이 갈렸고 답은 둘 다 아니다. 섹터 중립 B3_15 의 MDD 0.556 은 무처치 기저(B5_19 0.553 · B2 최저 0.550)와 같은 값이고, 사이즈를 한쪽 1/3 으로 잘라도 MDD 0.573~0.625 로 누적 범위 0.550~0.658 안에 머문다. 대형주만 남긴 B3_14 조차 MDD 0.573 으로 낙폭이 접히지 않은 채 CAGR 만 0.093 으로 잃었다 — 대형주가 방어적이라는 통념은 이 축에서 반증이다. 남는 공통요인 후보는 시장 전체 요인 하나이며, 그것은 이 격자의 어느 축에도 없다. B2 의 처방 중 섹터 중립·사이즈 양분할을 걸라는 부분은 질문을 갈랐다는 점에서 지지된다. 반면 '비중 score_pure(B2_10) 고정 위에서 돌라'는 부분은 미집행이다 — 4칸 전부 비중 ivol 로 돌았다. 따라서 B3 의 PORT_t 절대 수준(최고 1.334)을 B2 칸(최고 2.749)과 직접 비교할 수 없고, 이 블록엔 무처치 대조칸도 없어 읽을 수 있는 것은 칸 간 순서뿐이다.",
+  "mechanism_by": "llm:block_end",
+  "mechanism_at": "2026-09-05T21:55:11+0900",
+  "prior_lessons_used": ["B1", "B2", "B5"],
+  "next_block_actions": [
+    {
+      "action": "B4 결합 실행 전에 비중 축이 score_pure(B2_10)로 들어가는지 스펙에서 확인하고, ivol 이면 교체한 뒤 돈다.",
+      "why": "B2 승자가 B3 로 이월되지 않아 4칸 전부 ivol 로 돌았다 — 승계 목록에서 빠진 축은 다음 블록에서도 빠진다.",
+      "expect": "이월되면 B4 결합 기저 PORT_t 가 B3 최고 1.334 가 아니라 B2_10 수준(2.749 부근)에서 출발한다. 안 바뀌면 이월 경로가 비중 축을 실제로 전달하지 않는 것이다."
+    },
+    {
+      "action": "B4 LOO 를 시가총액 노출 중복 여부로 읽는다 — 유니버스 항(소형 1/3)과 B1_6 계열 size tilt 가 결합에 함께 들어가면 각각의 LOO 기여를 비교한다.",
+      "why": "B3 의 시총 단조성과 B1_6 의 tilt 우위가 같은 노출을 두 소비 지점에서 산 것일 수 있다.",
+      "expect": "두 항의 LOO 기여 합이 동시 제거 시 손실보다 크게 나오면 중복이다. 서로 다른 축이면 두 LOO 가 대략 가산적이다."
+    },
+    {
+      "action": "B4 의 판정 축을 PORT_t·CAGR 귀속으로 한정하고 MDD 개선은 결합 목표로 걸지 않는다 — 결합 후 MDD 가 0.550~0.658 범위 안인지만 기록한다.",
+      "why": "팩터(B1)·비중(B2)·오버레이(B5)·유니버스(B3) 네 축 21칸 전부에서 MDD 가 같은 범위에 머물렀다(스칼라 총노출 축소 극단 B5_16 의 0.428 만 예외이고 그 칸은 CAGR 을 같은 비율로 잃었다).",
+      "expect": "결합에서도 MDD 가 이 범위 안이면 위험축은 이 격자 안 어느 조합으로도 안 움직인다는 확인이고, 범위를 벗어나면 결합에만 있는 상호작용이 존재한다는 증거다."
+    }
+  ],
+  "next_block_actions_by": "llm:block_end",
+  "avoid": ["섹터 중립·섹터 제약 계열 재투입 — B3_15 의 MDD 0.556 이 무처치 기저 0.550~0.553 과 같은 값이라 섹터 집중은 낙폭 원인이 아님이 이 블록에서 확인됐다. PORT_t 0.468 로 초과수익도 잃었다.", "대형주 편향 유니버스(K200 단독 · 시총 상위 1/3) 재투입 — B3_12 PORT_t -0.281 · B3_14 -0.768 로 부호가 반전했고 MDD 는 0.587·0.573 으로 접히지도 않았다. 두 칸이 같은 방향으로 죽었다.", "총노출 스칼라 축소 계열 전부(dd_brake_q · vol_median/vol_ewma/vol_har · vol_x_dd/vol_x_turb) — B5 승계. B5_16 이 MDD 0.428 까지 접고도 Calmar 0.352 로 무처치 칸과 동일했다.", "D02_Beta · D04_Downside_Beta · D25_Left_Tail_Beta 계열의 팩터·tilt 재투입 — B1 승계(팩터 1.152 · 교차 tilt 1.397 로 두 소비 지점 모두 블록 하위).", "비중 위험항 계열(hrp · maxdiv · nco · cvar) 재투입 — B2 승계. 점수 비례에서 멀어질수록 PORT_t·CAGR 이 단조 하락했고 4칸 전부 대조칸 B2_10 아래였다.", "B4 에서 부분집합을 임의로 흔드는 것 — LOO 가 계약이고 부분집합을 바꾸면 귀속이 깨진다."],
+  "prior_action_status": "ignored",
+  "prior_action_detail": "설계 4건 중 0건 집행 (설계: B3_15,B3_14,B3_13,B3_12 / 실측: sector_neutral,size_band,index)",
+  "mechanism_confidence": "medium"
+}

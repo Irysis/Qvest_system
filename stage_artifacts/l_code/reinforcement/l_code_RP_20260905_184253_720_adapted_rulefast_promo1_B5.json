@@ -1,0 +1,52 @@
+{
+  "l_code": "L-RF-20260905_212102",
+  "strategy_id": "RP_20260905_184253_720_adapted_rulefast_promo1_B5",
+  "grade": "C",
+  "core_reference": "",
+  "lesson_text": "[B5 risk_overlay] 4칸 실측 — 최고 B5_19 다중검정t 1.929 · 칼마 0.351 · 등급 A0/B0/C4/F0. 직전 최고 B1_5(2.265) 대비 열위 — 이 축은 기준선을 못 넘었다. 칼마 최고 0.35 — 낙폭 43% 하에서 합격선은 연복리 27% 를 요구",
+  "tags": ["reinforcement", "rule_grid", "b5"],
+  "created_at": "2026-09-05",
+  "research_mode": "reinforcement",
+  "created_by": "emit:reinforcement",
+  "metric_type": "backtested",
+  "construction_type": "overlay_regime",
+  "mechanism_hypothesis": "",
+  "lcode_schema_version": 3,
+  "cagr": 0.194,
+  "mdd": 0.553,
+  "calmar": 0.351,
+  "oos_retention": -0.217,
+  "portfolio_alpha_t": 1.929,
+  "next_probes": ["다음 격자 축 B2(weighting) — 이 블록 승자 위에서 측정", "B5_19(최고 1.929)는 B4 조합 후보로 고정 · B5_16(최저 0.670)는 축 역작동 여부를 조합 LOO 로 분리"],
+  "next_probe": "다음 격자 축 B2(weighting) — 이 블록 승자 위에서 측정 | B5_19(최고 1.929)는 B4 조합 후보로 고정 · B5_16(최저 0.670)는 축 역작동 여부를 조합 LOO 로 분리",
+  "source_paper": "https://arxiv.org/abs/2404.08129",
+  "record_type": "performance",
+  "mechanism": "이 블록의 판정: 오버레이는 MDD 를 움직였지만 Calmar 를 움직이지 못했다 — 네 칸이 (MDD, CAGR) 평면에서 원점을 지나는 한 직선 위에 놓이고, 그 기울기가 곧 Calmar 이며 0.336~0.352 로 불변이다. B5_16(dd_brake_q)은 MDD 를 0.428 까지 접었지만 CAGR 도 0.150 으로 같이 내려가 Calmar 0.352 — MDD 를 전혀 접지 않은 B5_19(csd_idio_tilt, MDD 0.553 · CAGR 0.194 · Calmar 0.351)와 같은 값이다. Calmar 폭 0.016 에 MDD 폭 0.125 다. PORT_t 는 개입 강도의 역순으로 단조다: B5_16 0.670 < B5_17 1.356 < B5_18 1.894 < B5_19 1.929. 세 상태변수(낙폭·체계위험 집중·횡단면분산) 어느 것도 타이밍 정보를 담지 않았다는 실측이다 — 정보가 있었다면 노출을 줄인 칸에서 Calmar 가 올라야 했다. B1 이 남긴 질문(스칼라 총노출 축소 vs 보유 횡단면 차등 축소)에 대한 답도 나왔고, 처방과는 반대다: 두 소비 지점은 MDD 를 다르게 움직였으나(B5_16 0.428 vs B5_17 0.510) Calmar 는 0.352 vs 0.336 으로 갈리지 않았다. 소비 지점은 노출 수준만 바꾼다. 상태변수 축도 갈리지 않았다 — 낙폭 상태(B5_17)만 MDD 를 0.510 으로 내렸고, 집중·분산 상태(B5_18·B5_19)는 MDD 0.553 으로 기저에서 전혀 움직이지 않은 채 PORT_t 만 높다. 종합하면 B1 의 '위험 개선은 B5 오버레이에서만 나올 수 있다'는 처방은 반증됐다: 팩터 선택(B1)과 오버레이(B5) 두 축 모두에서 Calmar 는 0.34 근방에 머문다. 미결: 현행 비중 ivol 은 한계변동성만 소비하고 보유 종목 간 공분산 구조를 쓰지 않는다 — MDD 0.553 이 공통요인 집중에서 오는지는 이 블록으로 안 갈리고, 상관구조를 직접 소비하는 비중 계열을 B2 에 걸어야 갈린다.",
+  "mechanism_by": "llm:block_end",
+  "mechanism_at": "2026-09-05T21:23:51+0900",
+  "prior_lessons_used": "B1",
+  "next_block_actions": [
+    {
+      "action": "B2 에서 비중을 ivol 에서 종목 간 공분산·상관 구조를 직접 소비하는 계열(lean:hrp · lean:maxdiv · lean:nco)로 교체하고, 각 칸의 (MDD, CAGR) 점이 B5 가 그린 Calmar 0.34 직선 위인지 위쪽인지로 판정한다.",
+      "why": "B5 네 칸이 그 직선 위에 정확히 놓였고, ivol 은 한계변동성만 쓰므로 보유 종목의 공통요인 집중은 한 번도 처치된 적이 없다. 노출 수준을 안 바꾸면서 MDD 를 접을 수 있는 유일한 남은 소비 지점이 비중이다.",
+      "expect": "직선 위쪽 점(예: MDD 0.50 이하이면서 CAGR 0.19 이상 → Calmar 0.38 이상)이 하나라도 나오면 MDD 는 공통요인 집중에서 온 것이고 비중 축에서 접근 가능하다. 세 칸이 모두 Calmar 0.33~0.35 로 되돌아오면 이 전략의 MDD 는 비중으로도 안 접히며, 남는 축은 B3(유니버스)·B4(결합)뿐이다."
+    },
+    {
+      "action": "lean:score_pure 를 대조칸으로 한 칸 고정한다 — 위험항 없는 순수 점수 비중.",
+      "why": "B5 는 오버레이가 무기여임을 보였지만 기저 비중 ivol 자체가 위험을 사고 있는지는 미측정이다. 위험기반 비중의 기여를 재려면 위험항을 끈 극을 둬야 한다.",
+      "expect": "score_pure 의 Calmar 가 0.34 근방이고 MDD 가 0.55 근방이면 ivol 이 지불하는 위험 비용이 0 이라는 뜻이고, B2 의 나머지 칸 해석 기준선이 된다. score_pure 의 MDD 가 0.60 이상으로 벌어지면 ivol 은 실제로 위험을 접고 있었고 그 위에서 더 접을 여지를 재는 문제로 바뀐다."
+    },
+    {
+      "action": "lean:cvar 로 목적함수를 분산에서 좌측꼬리로 바꾼 칸을 하나 둔다.",
+      "why": "B1 에서 유일하게 상위에 선 위험 팩터가 경로의존 낙폭 측도 D51_Ulcer_Index(PORT_t 2.265)였고 공분산 계열은 전부 하위였다. 이 전략의 위험이 분산이 아니라 경로·꼬리에 있다는 정황이며, 그 축을 비중 소비 지점에서 처음 시험하는 것이다.",
+      "expect": "cvar 가 hrp·maxdiv 보다 MDD 를 더 접으면 목적함수 축(분산 vs 꼬리)이 유효한 구분이다. 셋이 MDD 0.53~0.56 로 붙으면 목적함수 차이는 이 유니버스에서 무의미하고 비중 계열 전체가 벽이다."
+    }
+  ],
+  "next_block_actions_by": "llm:block_end",
+  "avoid": ["총노출 스칼라 축소 계열 전부(dd_brake_q 재투입 · vol_median/vol_ewma/vol_har · vol_x_dd/vol_x_turb) — B5_16 이 이 계열의 극단을 이미 쟀다. MDD 를 0.428 까지 접고도 Calmar 0.352 로 무처치 칸과 동일했으므로 축소량을 조절해봐야 같은 직선 위를 움직일 뿐이다.", "상태변수 교체로 위험을 얻으려는 시도(체계위험 집중 · 횡단면분산 · 그 파생 상태) — B5_18·B5_19 가 MDD 0.553 으로 기저에서 전혀 움직이지 않았고 PORT_t 만 높았다. 두 상태변수는 노출을 사실상 줄이지 않는다.", "D02_Beta · D04_Downside_Beta · D25_Left_Tail_Beta 계열의 팩터·tilt 재투입(B1 승계) — 두 소비 지점에서 모두 블록 하위로 확인된 벽이다.", "qepm:CDaR_LP · qepm:CVaR_LP · qepm:MaxDiv 를 이 블록의 결정칸으로 쓰는 것 — 엔진 디스패처 인자 불일치로 장기간 미실행이었고 수리가 당일자다. 라벨 active 가 실행 가능을 뜻하지 않으므로 블록의 결정적 질문(공분산 구조 소비)은 실행 이력이 있는 lean: 계열로 재고, 이 arm 들은 별도 probe 로 살아난 것을 확인한 뒤 다음 세대에 건다."],
+  "next_block_design_for": "B2",
+  "next_block_design_n": 5,
+  "prior_action_status": "executed",
+  "prior_action_detail": "설계 4건 중 4건 집행 (설계: dd_brake_q,dbeta_tilt_rank,holdlvl_syscrowd_tilt,csd_idio_tilt / 실측: dd_brake_q,dbeta_tilt_rank,holdlvl_syscrowd_tilt,csd_idio_tilt)",
+  "mechanism_confidence": "high"
+}

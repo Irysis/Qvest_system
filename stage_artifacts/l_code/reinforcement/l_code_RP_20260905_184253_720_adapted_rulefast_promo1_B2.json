@@ -1,0 +1,57 @@
+{
+  "l_code": "L-RF-20260905_213747",
+  "strategy_id": "RP_20260905_184253_720_adapted_rulefast_promo1_B2",
+  "grade": "B",
+  "core_reference": "",
+  "lesson_text": "[B2 weighting] 5칸 실측 — 최고 B2_10 다중검정t 2.749 · 칼마 0.366 · 등급 A0/B2/C3/F0. 직전 최고 B1_5(2.265) 대비 전진. 낙폭이 축을 바꿔도 55~64% 대역에 갇힘 (폭 8.8%p) · 칼마 최고 0.37 — 낙폭 64% 하에서 합격선은 연복리 41% 를 요구 · 표본외 유지율 최고 0.03 — 5칸 전부 합격 구간 밖 · A등급 0건 — 5칸 측정 후 이 축 조합의 상한이 관측됨",
+  "tags": ["reinforcement", "rule_grid", "b2"],
+  "created_at": "2026-09-05",
+  "research_mode": "reinforcement",
+  "created_by": "emit:reinforcement",
+  "metric_type": "backtested",
+  "construction_type": "single_factor_long_only",
+  "mechanism_hypothesis": "",
+  "lcode_schema_version": 3,
+  "cagr": 0.233,
+  "mdd": 0.638,
+  "calmar": 0.366,
+  "oos_retention": 0.03,
+  "portfolio_alpha_t": 2.749,
+  "next_probes": ["다음 격자 축 B3(universe) — 이 블록 승자 위에서 측정", "B2_10(최고 2.749)는 B4 조합 후보로 고정 · B2_7(최저 1.041)는 축 역작동 여부를 조합 LOO 로 분리"],
+  "next_probe": "다음 격자 축 B3(universe) — 이 블록 승자 위에서 측정 | B2_10(최고 2.749)는 B4 조합 후보로 고정 · B2_7(최저 1.041)는 축 역작동 여부를 조합 LOO 로 분리",
+  "source_paper": "https://arxiv.org/abs/2404.08129",
+  "record_type": "performance",
+  "mechanism": "판정: 비중이 위험항에 예산을 쓸수록 Calmar 가 내려갔다. 위험항이 없는 대조칸 B2_10(score_pure)이 PORT_t 2.749 · CAGR 0.233 · Calmar 0.366 으로 5칸 최고이면서 MDD 0.638 로 최악이다. B5 의 처방(공분산·상관 구조를 직접 소비하는 비중이면 Calmar 0.34 위로 올라가는가)은 반증됐다 — 구조 소비 3칸이 전부 대조칸 아래다: B2_6(hrp) PORT_t 1.804 · Calmar 0.337, B2_9(nco) 1.633 · 0.327, B2_7(maxdiv) 1.041 · 0.264. 순서가 있다 — 비중이 점수 비례에서 멀어질수록 PORT_t 와 CAGR 이 단조 하락하고, 가장 멀리 간 B2_7 은 MDD 0.586 으로 B2_6·B2_9 의 0.550 보다도 높아 분산 극대화가 낙폭을 사지도 못했다. MDD 를 실제로 접은 B2_6·B2_9 는 대조칸 대비 0.088 를 접는 대가로 CAGR 0.047~0.053 을 잃었다 — B5 의 스칼라 총노출 축소와 같은 교환비다. 소비 지점이 노출 스칼라(B5)에서 보유 횡단면 비중(B2)으로 바뀌어도 교환비가 유지된다는 것은, 낙폭이 보유 종목 간 공분산 구조로 분산 가능한 성분이 아니라 보유 전체가 공유하는 공통요인 성분이라는 실측이다. B2_8(cvar)이 목적함수를 좌측꼬리로 바꿔 PORT_t 2.318 로 구조 3칸을 앞서고도 MDD 0.582 인 것도 같은 방향 — 위험 목적함수의 차이는 점수 신호 훼손량으로만 나타나고 낙폭에 닿지 않는다. 누적 MDD 는 B1 0.553~0.658 · B5 비개입칸 0.553 · B2 0.550~0.638 로 같은 범위다. 설계 5건은 전부 집행됐다(대조기가 0건으로 읽은 것은 라벨 lean: 접두 부재). 미결: 공통요인이 시장 베타인지 섹터·사이즈 집중인지는 이 블록으로 안 갈리고, 유니버스 축에서 섹터 중립·사이즈 분할을 걸어야 갈린다.",
+  "mechanism_by": "llm:block_end",
+  "mechanism_at": "2026-09-05T21:41:34+0900",
+  "prior_lessons_used": ["B1", "B5"],
+  "next_block_actions": [
+    {
+      "action": "B3 전 칸을 비중 score_pure(B2_10) 고정 위에서 돈다 — 위험항 비중은 쓰지 않는다.",
+      "why": "B2 에서 위험항은 PORT_t·CAGR 만 깎고 MDD 는 0.550~0.638 범위를 벗어나지 못했다. 위험항을 얹으면 유니버스 효과가 그 손실에 가려진다.",
+      "expect": "유니버스 간 PORT_t 폭이 B2 의 비중 간 폭 1.708 보다 작으면 유니버스도 이 성분을 못 건드린다는 뜻이다."
+    },
+    {
+      "action": "섹터 중립(B3_15)을 걸어 MDD 0.550~0.638 범위가 깨지는지 본다.",
+      "why": "낙폭이 보유 공통요인 성분이라는 이 블록의 실측에서, 공통요인 후보 중 유니버스 축에서 직접 제거 가능한 것이 섹터 집중이다.",
+      "expect": "섹터 집중이 원인이면 MDD 가 0.550 아래로 내려가면서 CAGR 손실이 B2 교환비(MDD 0.088 당 CAGR 0.05)보다 작아 Calmar 가 0.366 을 넘는다. 원인이 아니면 MDD 가 범위 안에 남는다."
+    },
+    {
+      "action": "사이즈 축을 양쪽에서 동시에 잰다 — 소형주 하위 1/3(B3_13)과 대형주 상위 1/3(B3_14)을 각각 한 칸씩.",
+      "why": "공통요인이 대형주 시장 베타면 B3_14 에서 MDD 가 커지고 B3_13 에서 작아져야 한다. 한쪽만 걸면 유니버스 축소로 인한 종목 풀 감소 효과와 구분되지 않는다.",
+      "expect": "두 칸의 MDD 차가 0.05 를 넘으면 낙폭 성분에 사이즈 방향성이 있다. 두 칸 모두 0.550~0.638 에 남으면 사이즈는 이 성분의 축이 아니다."
+    },
+    {
+      "action": "K200 단독(B3_12)으로 창(2005~)을 유지한 채 풀에서 KQ150 를 제거한다.",
+      "why": "기저 유니버스가 K200∪KQ150 이므로 창이 잘리지 않는 유일한 절반 제거가 K200 단독이다. 낙폭 기여가 코스닥 쪽에서 오는지 판별한다.",
+      "expect": "MDD 가 기저 대비 0.05 이상 내려가면 낙폭 기여가 KQ150 쪽에 있다. 변화가 없으면 두 시장이 같은 공통요인을 공유한다는 뜻이다."
+    }
+  ],
+  "next_block_actions_by": "llm:block_end",
+  "avoid": ["B3_11(KOSDAQ150 단독) — 근거는 이 블록 밖이다: 원장의 다른 entry 실측에서 KQ150 단독은 NAV 창이 2010-02 이후로 잘려 2008 이 빠지고 MDD 가 그만큼 싸게 나왔다. 기저(2005~)와 낙폭을 비교할 수 없어 이 블록의 질문에 답하지 못한다.", "비중 축 재투입(hrp·maxdiv·nco·cvar 의 파라미터 변형 포함) — 5칸이 점수 비례로부터의 거리에 대해 단조였고 위험항을 넣은 4칸 전부가 대조칸 B2_10 보다 PORT_t·Calmar 열위였다. 세부 조정은 같은 단조선 위를 움직인다.", "총노출 스칼라 축소 계열 전부(dd_brake_q · vol_median/vol_ewma/vol_har · vol_x_dd/vol_x_turb) — B5 승계. B2 가 다른 소비 지점에서 같은 교환비를 재확인해 벽이 두 지점에서 확인됐다.", "D02_Beta · D04_Downside_Beta · D25_Left_Tail_Beta 계열의 팩터·tilt 재투입 — B1 승계. 두 소비 지점 모두에서 블록 하위였다."],
+  "next_block_design_for": "B3",
+  "next_block_design_n": 4,
+  "prior_action_status": "ignored",
+  "prior_action_detail": "설계 5건 중 0건 집행 (설계: lean:hrp,lean:maxdiv,lean:cvar,lean:nco,lean:score_pure / 실측: )",
+  "mechanism_confidence": "medium"
+}

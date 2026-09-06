@@ -1,0 +1,52 @@
+{
+  "l_code": "L-RF-20260905_192114",
+  "strategy_id": "RP_20260905_184253_720_adapted_rulefast_B1",
+  "grade": "C",
+  "core_reference": "",
+  "lesson_text": "[B1 multifactor] 9칸 실측 — 최고 B1_2 다중검정t 1.567 · 칼마 0.266 · 등급 A0/B0/C9/F0. 낙폭이 축을 바꿔도 60~69% 대역에 갇힘 (폭 8.7%p) · 칼마 최고 0.27 — 낙폭 64% 하에서 합격선은 연복리 41% 를 요구 · 표본외 유지율 최고 -0.17 — 9칸 전부 합격 구간 밖 · A등급 0건 — 9칸 측정 후 이 축 조합의 상한이 관측됨",
+  "tags": ["reinforcement", "rule_grid", "b1"],
+  "created_at": "2026-09-05",
+  "research_mode": "reinforcement",
+  "created_by": "emit:reinforcement",
+  "metric_type": "backtested",
+  "construction_type": "single_factor_long_only",
+  "mechanism_hypothesis": "",
+  "lcode_schema_version": 3,
+  "cagr": 0.171,
+  "mdd": 0.642,
+  "calmar": 0.266,
+  "oos_retention": -0.565,
+  "portfolio_alpha_t": 1.567,
+  "next_probes": ["다음 격자 축 B5(risk_overlay) — 이 블록 승자 위에서 측정", "B1_2(최고 1.567)는 B4 조합 후보로 고정 · B1_1(최저 0.045)는 축 역작동 여부를 조합 LOO 로 분리"],
+  "next_probe": "다음 격자 축 B5(risk_overlay) — 이 블록 승자 위에서 측정 | B1_2(최고 1.567)는 B4 조합 후보로 고정 · B1_1(최저 0.045)는 축 역작동 여부를 조합 LOO 로 분리",
+  "source_paper": "https://arxiv.org/abs/2404.08129",
+  "record_type": "performance",
+  "mechanism": "결론: 팩터 축은 수익 쪽만 움직였고 MDD 는 움직이지 않았다. B1_1(INV13_Foreign_Resid_Individual_63d) PORT_t 0.045 에서 B1_2(V14_EBIT_EV) PORT_t 1.567 까지 초과수익 축이 35배 벌어지는 동안, 같은 9칸의 MDD 는 0.599(B1_1)~0.686(B1_7) 폭 0.087 안에 머물렀다. CAGR 도 0.090~0.171 로 같은 방향으로만 갈렸고, 따라서 Calmar 0.149~0.266 의 차이는 전부 CAGR 이 만든 것이다 — 위험 쪽은 어느 팩터를 넣어도 사실상 상수였다(실측). 둘째, 결합이 단독을 넘지 못했다: B1_8(value x quality) PORT_t 1.168, B1_9(flow+value+tail 3축) 1.316 이 단독 value 인 B1_2 1.567 보다 낮고 Calmar 도 0.241/0.257 대 0.266 으로 낮다. 등가중 1/25 · K200 합집합 KQ150 고정 축 아래서 팩터를 더하는 것은 상위 종목 선택을 희석할 뿐 새 위험 축을 만들지 않는다. 셋째, MDD 가 팩터 정체성과 무관하다는 것은 낙폭이 신호에서가 아니라 등가중 long-only 구성의 시장 공통성분 노출에서 나온다는 뜻이다 — 다만 이건 정황이다. 이 블록은 부하 분해를 재지 않았고, 가르려면 보유 종목의 bcorr^2(체계위험 비중)와 하방베타 횡단면 분포를 실제로 봐야 한다. 따라서 다음 블록에서 팩터를 더 고르는 것은 CAGR 을 0.17 근처에서 미세하게 옮길 뿐이고, 갈리는 축은 MDD 를 '어디서' 소비하느냐(총노출 스칼라인가 보유 횡단면인가)다.",
+  "mechanism_by": "llm:block_end",
+  "mechanism_at": "2026-09-05T19:23:27+0900",
+  "prior_lessons_used": "없음(첫 블록) — 블록 내 9칸 대조만이 실측 근거다. 인용한 블록 밖 근거는 카탈로그가 서술한 B5 50셀 실측(스칼라 대칭 축소가 MDD 감축 대비 상방을 더 잃었다) 1건이며, 그 값은 이 블록에서 재측정되지 않았다.",
+  "next_block_actions": [
+    {
+      "action": "B5 를 상태 소스(시장 시계열 vs 보유 자체) x 소비 지점(총노출 스칼라 vs 보유 횡단면 tilt) 2x2 대조로 짠다 — 횡단면 tilt 3칸(holdlvl_syscrowd_tilt · csd_idio_tilt · dbeta_tilt_rank) + 스칼라 대조 2칸(turbulence · ts_mom_sign).",
+      "why": "B1 9칸에서 MDD 폭이 0.087 로 고정된 반면 PORT_t 는 0.045~1.567 로 갈렸다 — 위험 축이 팩터 선택과 직교하므로, 다음에 갈릴 수 있는 것은 팩터가 아니라 위험 노출의 소비 지점뿐이다.",
+      "expect": "맞으면 횡단면 tilt 3칸이 스칼라 2칸 대비 같은 MDD 감축에서 CAGR 손실이 작아 Calmar 가 B1 최고 0.266 위로 올라간다. 틀리면 5칸 전부 Calmar 0.15~0.27 범위에 다시 갇히고, 그때 결론은 '이 고정 축의 MDD 는 오버레이 층에서 못 깎는다'가 되어 B2(비중방법론)로 넘어가야 한다."
+    },
+    {
+      "action": "상태 소스를 통제한 A/B 를 블록 안에 심는다: dbeta_tilt_rank(상태=낙폭, 소비=횡단면)와 turbulence(상태=다변량, 소비=스칼라)를 같은 블록에 둔다.",
+      "why": "카탈로그가 인용한 B5 50셀 실측(스칼라 축소는 MDD 감축 대비 CAGR 손실이 커 Calmar 중앙값이 전 블록 최악)은 이 블록 밖 근거다. 상태를 고정한 채 소비 지점만 바꾼 칸이 없으면 'tilt 가 이겼다'가 상태 풍부함 덕인지 소비 지점 덕인지 안 갈린다.",
+      "expect": "낙폭이라는 동일 상태에서 dbeta_tilt_rank 가 스칼라 낙폭 브레이크 계열의 알려진 CAGR 손실보다 작은 손실을 내면, 원인은 상태가 아니라 소비 지점으로 확정된다."
+    },
+    {
+      "action": "ts_mom_sign(음의 12개월 시장수익 시 전량 현금)을 상한 탐침으로 1칸만 쓴다 — 정교화 이전에 스칼라 축의 최대치를 먼저 잰다.",
+      "why": "스칼라 축소가 낼 수 있는 MDD 감축의 극단값이 이 칸이다. B1 에서 CAGR 이 0.171(B1_2)을 넘지 못하는데 Calmar 0.64 에 닿으려면 MDD 를 0.6 대에서 0.27 근처까지 잘라야 하고, 그 감축을 총노출 스칼라로 낼 수 있는지 여부가 남은 블록 배분을 결정한다.",
+      "expect": "이 칸에서도 MDD 가 0.6 대에서 크게 안 내려가면 스칼라 축은 그 자리에서 닫히고, B2/B3/B4 를 위험이 아니라 수익 쪽에 전부 배정하는 근거가 된다."
+    }
+  ],
+  "next_block_actions_by": "llm:block_end",
+  "avoid": ["팩터를 하나 더 얹는 칸 — B1_8(1.168)·B1_9(1.316)이 단독 B1_2(1.567)를 못 넘었다. 등가중 1/25 고정 축에서 결합은 상위 선택을 희석하는 방향으로만 작동했고, 무엇보다 9칸 어느 것도 MDD 를 0.599~0.686 밖으로 못 옮겼다. 이 블록에서 팩터 축은 위험 쪽에 대해 벽이다.", "vol_median · vol_ewma · vol_har 를 한 블록에 함께 쓰는 것 — 세 항목은 변동성 추정기만 다르고 소비 지점은 전부 동일한 총노출 스칼라 축소다. 라벨은 3종이지만 행동은 1종이라 칸 3개를 같은 답에 쓰게 된다.", "vol_x_dd · vol_x_turb 같은 스칼라 x 스칼라 곱 — 두 스칼라의 곱은 여전히 총노출 스칼라 하나이고, B1 이 보여준 '위험 축이 팩터와 직교' 문제를 새 소비 지점 없이 반복한다.", "ml_tail_gate — 노출 = 1 - p_hat 역시 총노출 스칼라이며, 스칼라 축이 닫혀 있는지부터 ts_mom_sign 상한 탐침으로 가른 뒤에 쓸 항목이다. 상한을 재기 전에 추정기를 정교화하지 않는다."],
+  "next_block_design_for": "B5",
+  "next_block_design_n": 5,
+  "prior_action_status": "no_design",
+  "prior_action_detail": "그 블록에 설계가 없었다(규칙 선정)",
+  "mechanism_confidence": "medium"
+}

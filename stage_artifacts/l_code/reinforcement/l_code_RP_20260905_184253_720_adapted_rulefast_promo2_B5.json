@@ -1,0 +1,52 @@
+{
+  "l_code": "L-RF-20260905_230546",
+  "strategy_id": "RP_20260905_184253_720_adapted_rulefast_promo2_B5",
+  "grade": "B",
+  "core_reference": "",
+  "lesson_text": "[B5 risk_overlay] 5칸 실측 — 최고 B5_18 다중검정t 2.485 · 칼마 0.388 · 등급 A0/B4/C1/F0. 직전 최고 B1_1(2.650) 대비 열위 — 이 축은 기준선을 못 넘었다. 낙폭이 축을 바꿔도 52~65% 대역에 갇힘 (폭 13.2%p) · 칼마 최고 0.39 — 낙폭 61% 하에서 합격선은 연복리 39% 를 요구 · 표본외 유지율 최고 -0.20 — 5칸 전부 합격 구간 밖 · A등급 0건 — 5칸 측정 후 이 축 조합의 상한이 관측됨",
+  "tags": ["reinforcement", "rule_grid", "b5"],
+  "created_at": "2026-09-05",
+  "research_mode": "reinforcement",
+  "created_by": "emit:reinforcement",
+  "metric_type": "backtested",
+  "construction_type": "overlay_regime",
+  "mechanism_hypothesis": "",
+  "lcode_schema_version": 3,
+  "cagr": 0.237,
+  "mdd": 0.61,
+  "calmar": 0.388,
+  "oos_retention": -0.204,
+  "portfolio_alpha_t": 2.485,
+  "next_probes": ["다음 격자 축 B2(weighting) — 이 블록 승자 위에서 측정", "B5_18(최고 2.485)는 B4 조합 후보로 고정 · B5_16(최저 1.403)는 축 역작동 여부를 조합 LOO 로 분리"],
+  "next_probe": "다음 격자 축 B2(weighting) — 이 블록 승자 위에서 측정 | B5_18(최고 2.485)는 B4 조합 후보로 고정 · B5_16(최저 1.403)는 축 역작동 여부를 조합 LOO 로 분리",
+  "source_paper": "https://arxiv.org/abs/2404.08129",
+  "record_type": "performance",
+  "mechanism": "판정: 이 base 에서 MDD 는 노출 수준에서만 움직이고 횡단면 tilt 로는 안 움직이며, 노출을 줄이면 CAGR 이 MDD 보다 더 빠져 Calmar 가 제자리다(실측). tilt 3칸 B5_17/18/19 의 MDD 는 0.600·0.610·0.649 로 B1 대역 0.630~0.729 하단에 붙었을 뿐 이탈하지 못했다. 대역을 벗어난 유일한 칸은 총노출을 줄인 B5_16(MDD 0.517)이고, 대가는 PORT_t 1.403 으로 B1 최저 1.753 아래·CAGR 0.191 로 B1 최저 0.186 근처다. B5_18→B5_16 은 MDD −15.2%(0.610→0.517)인데 CAGR −19.4%(0.237→0.191) — 축소가 비례 이상으로 수익을 깎아 Calmar 는 0.388→0.369 로 오히려 낮다. 설계한 A/B(상태=낙폭 고정·소비 지점만 교체)의 답은 B5_16 Calmar 0.369 vs B5_17 0.354, 폭 0.015 — 소비 지점은 PORT_t 와 MDD 를 반대로 움직이지만 Calmar 는 불변이다(소비 지점 가설 부분 반증). 대신 같은 총노출 스칼라끼리 갈렸다: base 의 D51_Ulcer_Index 와 정보원이 겹치는 낙폭 상태 B5_16 PORT_t 1.403 vs 시장 12개월 추세 부호 B5_20 PORT_t 2.472·Calmar 0.385 — '스칼라 축소가 신호를 파괴한다'는 블록 밖 근거는 계열 전체가 아니라 중복 상태에 한해 성립한다(정황 — 발화 빈도 차이와 미분리). 시장 시계열 밖 상태 2칸도 갈렸다: 횡단면 분산 B5_18 Calmar 0.388 이 블록 최고, 보유 밀집도 B5_19 0.351 이 최저. 종합하면 B5 5칸 Calmar 0.351~0.388(폭 0.037), B1 최고 0.362 대비 최대 +0.026 이다. Σw=1 long-only 에서 오버레이는 MDD 와 CAGR 을 거의 같은 배율로 움직인다 — 이 구성의 낙폭은 시장 노출 그 자체이고, 노출을 유지한 채 재가중하는 처치는 MDD 0.60 아래로 못 갔다.",
+  "mechanism_by": "llm:block_end",
+  "mechanism_at": "2026-09-05T23:09:16+0900",
+  "prior_lessons_used": "B1",
+  "next_block_actions": [
+    {
+      "action": "B2 에서 목적함수 기반 비중(lean:minvar · lean:hrp · qepm:CDaR_LP)을 score_pure 대체로 배치해, Σw=1 long-only 를 유지한 채 MDD 0.60 을 깰 수 있는지 잰다.",
+      "why": "B5_17/18/19 는 점수 위 tilt 라 실효 시장 노출을 못 줄였고 MDD 0.600~0.649 에 갇혔다. 노출 축소 없이 위험 축을 건드리는 남은 경로는 비중의 목적함수를 점수에서 공분산·낙폭으로 바꾸는 것뿐이다.",
+      "expect": "minvar 또는 CDaR_LP 가 MDD ≤0.55 를 내면서 CAGR ≥0.20 을 유지하면 Calmar 가 B5_18 의 0.388 위로 올라간다. 세 칸 모두 MDD >0.60 이면 이 base 의 낙폭은 비중 선택이 아니라 유니버스의 시장 노출이며, B3(유니버스)이 위험 축의 유일한 남은 레버가 된다."
+    },
+    {
+      "action": "경로 위험(qepm:CDaR_LP)과 분포 꼬리(lean:cvar)를 같은 블록에 나란히 놓아, MDD 를 만드는 것이 연속 하락 경로인지 수익 분포의 꼬리인지 가른다.",
+      "why": "B5 에서 낙폭 상태(B5_16/17)와 횡단면 분산 상태(B5_18)가 서로 다른 결과를 냈다 — 상태의 경로 의존성이 결과를 갈랐으므로 비중 층에서 같은 대조가 필요하다.",
+      "expect": "CDaR_LP 의 MDD 가 cvar 보다 0.05 이상 낮으면 낙폭은 경로에서 생기고, 이후 오버레이 재설계는 분포가 아니라 경로 상태변수로 간다. 둘의 MDD 가 0.02 이내면 경로/분포 구분은 이 base 에서 정보가 없다."
+    },
+    {
+      "action": "lean:nco_score_tilt 를 1칸 넣어 점수 정보와 공분산 구조를 동시에 실은 판을 순수 위험 비중(minvar)과 대조한다.",
+      "why": "B5_16 이 보여준 위험 처치의 비용은 전부 PORT_t 에서 나왔다(B5_18 2.485 → B5_16 1.403). 비중 층에서도 같은 비용이 나는지 분리하지 않으면 MDD 개선을 Calmar 로 읽을 수 없다.",
+      "expect": "minvar 의 PORT_t 가 B1_1 2.650 대비 크게 깎이는데 nco_score_tilt 가 2.4 대를 유지하면, 위험 비중의 비용은 제약 자체가 아니라 점수 소실이고 다음 처치는 점수 보존형 위험 비중으로 좁혀진다."
+    }
+  ],
+  "next_block_actions_by": "llm:block_end",
+  "avoid": ["score_blend 단조변환 계열을 2칸 이상 배치(lean:rank_tilt · lean:softmax_tilt · lean:winsor_tilt · lean:score_tilt) — 전부 base score_pure 의 점수 순위 단조변환이라 라벨 4종에 행동은 1종이고, B5_17/18/19 가 이미 '횡단면 재가중으로는 MDD 0.600~0.649 를 못 벗어난다'를 실측했다.", "gen:* shrinkage 4종(shr_sample · shr_ledoit_wolf · shr_gerber_rmt · shr_lw_nls)을 여러 칸에 배치 — 전부 공분산 추정기 교체이고 소비 지점이 minvar/hrp 와 동일하다. 추정기 차이를 재는 것은 목적함수 축이 MDD 를 실제로 움직인다는 게 먼저 확인된 뒤의 일이다(현재 미확인).", "maxdiv 계열 3중 배치(lean:maxdiv · lean:entropy · qepm:MaxDiv) — 같은 공분산 스펙트럼 목적함수의 변형이다. 목적함수 축의 상한은 minvar 1칸으로 먼저 잰다.", "총노출 스칼라 축소 축의 재시도(B2 카탈로그 밖이지만 B4 결합에서 재등장 가능) — B5_16 이 MDD 0.517 로 유일하게 B1 대역을 벗어났으나 CAGR 이 비례 이상 빠져 Calmar 0.369 가 B1 최고 0.362 와 사실상 같다. 이 축의 상한은 이 base 에서 관측됐다."],
+  "next_block_design_for": "B2",
+  "next_block_design_n": 5,
+  "prior_action_status": "executed",
+  "prior_action_detail": "설계 5건 중 5건 집행 (설계: dd_brake_q,dbeta_tilt_rank,csd_idio_tilt,holdlvl_syscrowd_tilt,ts_mom_sign / 실측: dd_brake_q,dbeta_tilt_rank,csd_idio_tilt,holdlvl_syscrowd_tilt,ts_mom_sign)",
+  "mechanism_confidence": "medium"
+}

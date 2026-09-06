@@ -1,0 +1,52 @@
+{
+  "l_code": "L-RF-20260905_210445",
+  "strategy_id": "RP_20260905_184253_720_adapted_rulefast_promo1_B1",
+  "grade": "B",
+  "core_reference": "",
+  "lesson_text": "[B1 multifactor] 8칸 실측 — 최고 B1_5 다중검정t 2.265 · 칼마 0.344 · 등급 A0/B2/C6/F0. 낙폭이 축을 바꿔도 55~66% 대역에 갇힘 (폭 10.5%p) · 칼마 최고 0.34 — 낙폭 59% 하에서 합격선은 연복리 38% 를 요구 · 표본외 유지율 최고 -0.12 — 8칸 전부 합격 구간 밖 · A등급 0건 — 8칸 측정 후 이 축 조합의 상한이 관측됨",
+  "tags": ["reinforcement", "rule_grid", "b1"],
+  "created_at": "2026-09-05",
+  "research_mode": "reinforcement",
+  "created_by": "emit:reinforcement",
+  "metric_type": "backtested",
+  "construction_type": "single_factor_long_only",
+  "mechanism_hypothesis": "",
+  "lcode_schema_version": 3,
+  "cagr": 0.202,
+  "mdd": 0.587,
+  "calmar": 0.344,
+  "oos_retention": -0.119,
+  "portfolio_alpha_t": 2.265,
+  "next_probes": ["다음 격자 축 B5(risk_overlay) — 이 블록 승자 위에서 측정", "B1_5(최고 2.265)는 B4 조합 후보로 고정 · B1_3(최저 1.073)는 축 역작동 여부를 조합 LOO 로 분리"],
+  "next_probe": "다음 격자 축 B5(risk_overlay) — 이 블록 승자 위에서 측정 | B1_5(최고 2.265)는 B4 조합 후보로 고정 · B1_3(최저 1.073)는 축 역작동 여부를 조합 LOO 로 분리",
+  "source_paper": "https://arxiv.org/abs/2404.08129",
+  "record_type": "performance",
+  "mechanism": "B1 판정: 이 블록의 Calmar 변동은 전부 CAGR 쪽에서 나왔고 MDD 는 어떤 처치로도 개선되지 않았다(MDD 0.553~0.658, 최저 Calmar 셀 B1_4 가 오히려 최고 MDD 0.658). 두 번째 팩터로 시장 공분산 계열을 붙인 세 칸 — B1_3(D02_Beta, PORT_t 1.073)·B1_1(D04_Downside_Beta, PORT_t 1.152)·B1_2(D25_Left_Tail_Beta, PORT_t 1.424) — 이 나란히 블록 하위였고, 같은 하방베타를 팩터가 아니라 size 교차 tilt 로 소비한 B1_7(dbeta_x_size, PORT_t 1.397)도 같은 구간으로 떨어졌다. 소비 지점을 바꿔도 순위가 회복되지 않은 것은 하방베타가 V14_EBIT_EV 에 대해 증분 정보가 없다는 실측이다(밸류 tilt 가 이미 저베타 노출을 담고 있어 두 축이 직교하지 않는다). 반대로 위험 계열에서 유일하게 상위에 선 것은 경로의존 낙폭 측도인 B1_5(D51_Ulcer_Index, PORT_t 2.265·CAGR 0.202·Calmar 0.344)이고, 나머지 상위 두 칸 B1_8(ret_axis_ctrl, PORT_t 2.048)·B1_6(size_soft_tilt, PORT_t 1.996)은 위험축이 아니라 수익축 통제·사이즈 tilt 다. 켜진 것은 종목 횡단면에서 읽은 경로 낙폭과 수익축 통제, 꺼진 것은 공분산(베타) 계열 전부다. 미결 1건: B1_4(R13_NCSKEW)는 PORT_t 1.580 으로 베타 계열보다 높은데 MDD 0.658 로 블록 최악이다 — 왜도 정렬이 PORT_t 를 얻는 대신 낙폭을 키우는지는 이 블록으로 안 갈린다. 가르려면 같은 팩터쌍에서 낙폭 국면만 분리한 조건부 기여를 재야 한다. 이 블록에서 위험축(MDD)은 팩터 선택으로 전혀 움직이지 않았으므로, 위험 개선은 B5 오버레이 축에서만 나올 수 있다.",
+  "mechanism_by": "llm:block_end",
+  "mechanism_at": "2026-09-05T21:06:47+0900",
+  "prior_lessons_used": [],
+  "next_block_actions": [
+    {
+      "action": "B5 에서 동일한 낙폭 상태(확장창 낙폭 경험분포 중앙)를 두 소비 지점에 각각 걸어 A/B 한다 — 스칼라 총노출 축소(dd_brake_q) vs 보유 횡단면 차등 축소(dbeta_tilt_rank).",
+      "why": "B1 은 낙폭 축이 종목 횡단면에서 소비될 때만 상위였다(B1_5 Ulcer PORT_t 2.265, Calmar 0.344)는 반면 공분산 계열은 어느 소비 지점에서도 하위였다(B1_1 1.152 · B1_7 1.397). 상태가 아니라 소비 지점이 갈랐다는 가설을 같은 상태로 직접 대조해야 확정된다.",
+      "expect": "가설이 맞으면 dbeta_tilt_rank 가 dd_brake_q 대비 CAGR 손실이 작으면서 MDD 는 같거나 낮아 Calmar 가 높다. 두 칸의 Calmar 차가 0.02 이내면 소비 지점 가설은 기각이고, 낙폭 축 자체가 이 전략의 MDD 0.553~0.658 을 못 건드린다는 뜻이다."
+    },
+    {
+      "action": "MDD 불변의 원인을 보유 자체의 체계위험 집중으로 가정하고 holdlvl_syscrowd_tilt 를 한 칸 건다(개입 강도 = 보유 bcorr² 중앙값, 차등 = 분산 불가능한 하방 기여 순위).",
+      "why": "B1 8칸 전부가 MDD 0.553~0.658 범위 안에 갇혔다 — 팩터 조합을 바꿔도 낙폭이 안 움직이는 것은 낙폭이 종목 선택이 아니라 책 전체의 시장 공통성분에서 나온다는 정황이다.",
+      "expect": "맞으면 MDD 가 B1 범위 하단(0.553) 아래로 처음 내려간다. MDD 가 여전히 0.55 이상이면 낙폭원은 체계위험 집중이 아니라 밸류 팩터 자체의 국면 노출이고, 그때는 위험 개선을 오버레이가 아니라 B2 비중방법론에서 찾아야 한다."
+    },
+    {
+      "action": "상태 축을 하나 더 벌려 csd_idio_tilt(횡단면분산 상태 · 특이변동 차등)를 건다 — 낙폭 상태(dbeta_tilt_rank)·상관 상태(holdlvl_syscrowd_tilt)와 서로 다른 상태변수를 같은 횡단면 소비 지점에서 비교한다.",
+      "why": "B1 에서 상위/하위를 가른 것은 측도의 계열(경로 낙폭 vs 공분산)이었다. 상태변수 계열이 결과를 가르는지, 소비 지점만 가르는지는 소비 지점을 고정하고 상태를 바꿔야 분리된다.",
+      "expect": "세 횡단면 칸의 Calmar 가 서로 0.03 이상 갈리면 상태변수 선택이 살아 있는 축이고 B5 를 더 쓸 가치가 있다. 세 칸이 거의 같으면 상태변수는 무차별이고 남은 예산은 B2·B3 로 넘긴다."
+    }
+  ],
+  "next_block_actions_by": "llm:block_end",
+  "avoid": ["vol_median · vol_ewma · vol_har — 셋 다 총노출을 스칼라로 곱하는 변동성 타게팅 한 계열이다. 라벨은 셋이지만 행동은 하나이고, 이 소비 지점의 벽은 이미 실측됐다(스칼라 축소는 MDD 감소 대비 CAGR 손실이 커 Calmar 가 오히려 내려갔다). 세 칸을 쓰면 같은 처치를 세 번 재는 것이다.", "vol_x_dd · vol_x_turb — 스칼라 노출 두 개의 곱이라 여전히 총노출 축소 하나다. 두 상태를 곱해도 소비 지점이 안 바뀌므로 B1 이 남긴 질문(소비 지점 vs 상태)에 답하지 못한다.", "ts_mom_sign — 전량 현금 이산 스위치는 축소량과 신호 파괴를 분리할 수 없어, 결과가 어느 쪽이든 기전이 안 갈린다.", "B2~B4 에서 D02_Beta · D04_Downside_Beta · D25_Left_Tail_Beta 계열을 팩터로 재투입하지 말 것 — 두 소비 지점(팩터 B1_1 1.152 · 교차 tilt B1_7 1.397)에서 각각 블록 하위로 확인된 벽이다. 단 dbeta_tilt_rank 는 예외로 한 칸 허용한다: 그것은 수익 예측이 아니라 축소 몫 배분으로 쓰는 다른 소비 지점이다."],
+  "next_block_design_for": "B5",
+  "next_block_design_n": 4,
+  "prior_action_status": "no_design",
+  "prior_action_detail": "그 블록에 설계가 없었다(규칙 선정)",
+  "mechanism_confidence": "medium"
+}

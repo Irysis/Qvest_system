@@ -1,0 +1,52 @@
+{
+  "l_code": "L-RF-20260905_193559",
+  "strategy_id": "RP_20260905_184253_720_adapted_rulefast_B5",
+  "grade": "C",
+  "core_reference": "",
+  "lesson_text": "[B5 risk_overlay] 5칸 실측 — 최고 B5_20 다중검정t 1.582 · 칼마 0.290 · 등급 A0/B0/C5/F0. 직전 최고 B1_2(1.567) 대비 전진. 낙폭이 축을 바꿔도 52~64% 대역에 갇힘 (폭 12.7%p) · 칼마 최고 0.29 — 낙폭 60% 하에서 합격선은 연복리 39% 를 요구 · 표본외 유지율 최고 -0.58 — 5칸 전부 합격 구간 밖 · A등급 0건 — 5칸 측정 후 이 축 조합의 상한이 관측됨",
+  "tags": ["reinforcement", "rule_grid", "b5"],
+  "created_at": "2026-09-05",
+  "research_mode": "reinforcement",
+  "created_by": "emit:reinforcement",
+  "metric_type": "backtested",
+  "construction_type": "overlay_regime",
+  "mechanism_hypothesis": "",
+  "lcode_schema_version": 3,
+  "cagr": 0.175,
+  "mdd": 0.604,
+  "calmar": 0.29,
+  "oos_retention": -0.581,
+  "portfolio_alpha_t": 1.582,
+  "next_probes": ["다음 격자 축 B2(weighting) — 이 블록 승자 위에서 측정", "B5_20(최고 1.582)는 B4 조합 후보로 고정 · B5_18(최저 0.776)는 축 역작동 여부를 조합 LOO 로 분리"],
+  "next_probe": "다음 격자 축 B2(weighting) — 이 블록 승자 위에서 측정 | B5_20(최고 1.582)는 B4 조합 후보로 고정 · B5_18(최저 0.776)는 축 역작동 여부를 조합 LOO 로 분리",
+  "source_paper": "https://arxiv.org/abs/2404.08129",
+  "record_type": "performance",
+  "mechanism": "판정: 오버레이 축은 MDD 를 소비 지점에서만 움직였고, 그것도 보유 횡단면에서 낙폭을 만드는 노출 자체를 tilt 한 한 칸에서만 움직였다. 총노출 스칼라 축은 상한이 실측됐다 — B5_20(ts_mom_sign, 음의 12개월 시장수익 시 전량 현금)은 스칼라가 취할 수 있는 최대 처치인데 MDD 0.604 로 B1 범위(0.599~0.686) 안에 그대로 남았고, PORT_t 1.582 · CAGR 0.175 로 기저 B1_2(PORT_t 1.567 · CAGR 0.171)를 사실상 재현했다. B5_19(turbulence)는 MDD 0.642 · Calmar 0.229 로 오히려 열위다. 즉 스칼라 축은 초과수익도 위험도 바꾸지 못한다(실측). 횡단면이라고 자동으로 갈리지도 않았다: B5_16(holdlvl_syscrowd_tilt) MDD 0.600, B5_17(csd_idio_tilt) MDD 0.599 로 B1 하한에 머물렀고, 오직 B5_18(dbeta_tilt_rank)만 MDD 0.515 로 B1 하한을 0.084 내렸다. 세 칸을 가르는 것은 '횡단면이냐'가 아니라 tilt 축이 낙폭을 만드는 노출(하방베타)이냐다 — 크라우딩·고유분산은 상태 변수일 뿐 낙폭의 원인 축이 아니었다. B1 에서 정황으로 남긴 '낙폭은 신호가 아니라 등가중 long-only 구성의 시장 공통성분에서 온다'는 가설은, 그 공통성분을 직접 건드린 유일한 칸이 유일하게 MDD 를 옮겼다는 점에서 방향이 지지된다(여전히 정황 — 이 블록도 부하 분해를 재지 않았다). 설계 대조는 셋 중 둘이 지지, 하나가 부분 반증이다: 소비 지점 A/B(B5_18 MDD 0.515 vs B5_19 MDD 0.642, 폭 0.127 — 두 블록 통틀어 최대)와 스칼라 상한 탐침은 지지, 상태 소스별 횡단면 3칸이 함께 움직일 것이라는 부분은 반증됐다. 대가는 컸다: B5_18 은 PORT_t 0.776 · CAGR 0.146 으로 초과수익이 기저의 절반이고, Calmar 0.284 는 CAGR 로 번 B5_20 의 0.290 과 사실상 같다 — 반대 경로 둘이 같은 Calmar 0.28~0.29 에서 멈췄다.",
+  "mechanism_by": "llm:block_end",
+  "mechanism_at": "2026-09-05T19:38:45+0900",
+  "prior_lessons_used": "B1",
+  "next_block_actions": [
+    {
+      "action": "B2 를 비중 벡터가 쓰는 공분산 정보의 깊이별 대조로 짠다 — minvar(전 공분산) · ivol(대각 분산만) · hrp(상관 구조, 역행렬 없음) · score_tilt(위험정보 0 통제) 4칸.",
+      "why": "B5 에서 MDD 를 움직인 유일한 처치(B5_18, MDD 0.515)는 보유 횡단면에서 체계노출을 tilt 한 것이고, B2 의 비중 벡터가 정확히 같은 소비 지점이다. 반면 스칼라 축은 B5_20 에서 상한이 났다.",
+      "expect": "공분산 깊이가 MDD 를 가르면 minvar/hrp 가 통제 score_tilt 대비 MDD 를 B5_18 이 낸 폭(0.084)에 준하게 내린다. 네 칸이 전부 B1·B5 가 머문 MDD 0.599~0.642 안에 남으면 비중 벡터 축도 MDD 에 대해 벽이고, 남은 축은 B3(유니버스)·B4(결합)뿐이다."
+    },
+    {
+      "action": "같은 블록에 꼬리 목적함수 1칸(lean:cvar)을 심어 '전분산 최소화'와 '좌측 꼬리 최소화'를 가른다.",
+      "why": "B5 에서 움직인 상태 축은 하방베타(하방 전용)였지 전분산이 아니었다. 대칭 위험 목적함수가 같은 일을 하는지는 이 블록으로 안 갈린다.",
+      "expect": "cvar 가 minvar 보다 MDD 를 더 내리면 원인은 전분산이 아니라 하방 노출이고 B3·B4 는 하방 조건부로 짜야 한다. 둘의 MDD 차가 B5 횡단면 3칸의 폭(0.600~0.515) 대비 무시할 수준이면 이 구성에서 하방/전분산 구분은 의미가 없다."
+    },
+    {
+      "action": "B5_18(dbeta_tilt_rank)을 B4 결합 후보로 고정하되 단독으로는 더 밀지 않는다 — B4 에서 PORT_t 를 지키는 축(B1_2 · B5_20)과의 결합으로 초과수익 회수 가능성만 잰다.",
+      "why": "B5_18 은 MDD 0.515 로 두 블록 중 유일하게 B1 하한을 뚫었지만 PORT_t 0.776 으로 기저 B1_2(1.567)의 절반이다. 위험 감소분이 신호 파괴로 산 것인지 직교 축인지가 미결이다.",
+      "expect": "결합에서 MDD 가 B5_18 의 0.515 수준을 유지하면서 PORT_t 가 B1_2 의 1.567 쪽으로 회복되면 두 축은 직교다. MDD 가 0.599~0.642 로 되돌아가면 하방베타 tilt 의 MDD 감소는 노출 축소와 분리되지 않는다."
+    }
+  ],
+  "next_block_actions_by": "llm:block_end",
+  "avoid": ["총노출 스칼라 오버레이를 한 칸 더 쓰는 것(vol_median·vol_ewma·vol_har 등 추정기 정교화, ml_tail_gate, 스칼라×스칼라 곱) — B5_20 이 그 축의 최대 처치인데 MDD 0.604 로 B1 범위 안에 남았고 B5_19 는 MDD 0.642·Calmar 0.229 로 열위였다. 상한이 실측된 축이다.", "score_blend 계열을 복수로 고르는 것(score_pure·softmax_tilt·winsor_tilt·rank_tilt·nco_score_tilt) — 전부 같은 점수 벡터의 단조 변환이라 라벨은 5종이지만 소비 지점은 하나다. 통제용 score_tilt 1칸이면 족하다.", "팩터를 더 얹는 방향 — B1_8(PORT_t 1.168)·B1_9(1.316)이 단독 B1_2(1.567)를 못 넘었고 MDD 는 9칸 전부 0.599~0.686 안이었다. B1 에서 이미 벽이 확인됐다.", "qepm:CDaR_LP · qepm:CVaR_LP · qepm:MaxDiv — 근거는 이 블록 밖이다. 디스패처 인자 불일치로 실행 이력이 없던 arm 이라 라벨 active 가 실행 가능을 뜻하지 않는다. 실행 실증 전에는 칸을 걸지 않고, 꼬리 목적함수는 lean:cvar 로 대체한다."],
+  "next_block_design_for": "B2",
+  "next_block_design_n": 5,
+  "prior_action_status": "executed",
+  "prior_action_detail": "설계 5건 중 5건 집행 (설계: holdlvl_syscrowd_tilt,csd_idio_tilt,dbeta_tilt_rank,turbulence,ts_mom_sign / 실측: holdlvl_syscrowd_tilt,csd_idio_tilt,dbeta_tilt_rank,turbulence,ts_mom_sign)",
+  "mechanism_confidence": "medium"
+}

@@ -1,0 +1,52 @@
+{
+  "l_code": "L-RF-20260905_225052",
+  "strategy_id": "RP_20260905_184253_720_adapted_rulefast_promo2_B1",
+  "grade": "B",
+  "core_reference": "",
+  "lesson_text": "[B1 multifactor] 10칸 실측 — 최고 B1_1 다중검정t 2.650 · 칼마 0.362 · 등급 A0/B6/C4/F0. 낙폭이 축을 바꿔도 63~73% 대역에 갇힘 (폭 9.9%p) · 칼마 최고 0.36 — 낙폭 67% 하에서 합격선은 연복리 43% 를 요구 · 표본외 유지율 최고 0.24 — 10칸 전부 합격 구간 밖 · A등급 0건 — 10칸 측정 후 이 축 조합의 상한이 관측됨",
+  "tags": ["reinforcement", "rule_grid", "b1"],
+  "created_at": "2026-09-05",
+  "research_mode": "reinforcement",
+  "created_by": "emit:reinforcement",
+  "metric_type": "backtested",
+  "construction_type": "single_factor_long_only",
+  "mechanism_hypothesis": "",
+  "lcode_schema_version": 3,
+  "cagr": 0.241,
+  "mdd": 0.667,
+  "calmar": 0.362,
+  "oos_retention": -0.17,
+  "portfolio_alpha_t": 2.65,
+  "next_probes": ["다음 격자 축 B5(risk_overlay) — 이 블록 승자 위에서 측정", "B1_1(최고 2.650)는 B4 조합 후보로 고정 · B1_8(최저 1.753)는 축 역작동 여부를 조합 LOO 로 분리"],
+  "next_probe": "다음 격자 축 B5(risk_overlay) — 이 블록 승자 위에서 측정 | B1_1(최고 2.650)는 B4 조합 후보로 고정 · B1_8(최저 1.753)는 축 역작동 여부를 조합 LOO 로 분리",
+  "source_paper": "https://arxiv.org/abs/2404.08129",
+  "record_type": "performance",
+  "mechanism": "이 블록의 판정: 3번째 팩터 축은 초과수익만 움직이고 위험 축은 못 움직인다. 10칸 전부 MDD 0.630~0.729(폭 0.099)에 갇혀 있고 Calmar 최고치가 B1_1 0.362다. 반면 PORT_t 는 1.753(B1_8)~2.650(B1_1)로 1.5배 벌어졌다 — 팩터 교체 자체는 실제로 전달되고 있다(처치 미전달로 인한 미결이 아니다). 갈린 방향은 두 갈래다. ①단기 반전 축은 이 base(V14_EBIT_EV+D51_Ulcer_Index) 위에서 일관되게 열위다: 단독 결합 B1_2 PORT_t 1.981, Size 와 교차시킨 B1_8 1.753 둘 다 하위권인데, 같은 Size 축이 반전 대신 현금흐름 수익성과 붙은 B1_9 는 2.269 다 — Size 가 죽인 게 아니라 반전이 죽였다. ②정적 회계 수준량보다 정보 갱신 흐름이 낫다: Q35_CashBased_OpProf B1_3 1.794 < AC10_Pct_Accruals B1_4 2.027 < C13_Revision_Breadth_3m B1_5 2.325 로 단조다. 상단은 축을 덜 쌓은 쪽에서 나왔다 — 단일 Size 인 B1_1 2.650 과 설계 계열 B1_6 2.637 이 최고이고, 3층 적재를 명시적으로 시험한 B1_10 은 1.801 로 하단이다. 축 누적은 이 base 에서 희석으로 작동한다. 다만 MDD 최저 B1_7 0.630 조차 최고 B1_2 0.729 와 0.099 차이라, 위험 축은 이 블록의 어떤 팩터 조합으로도 갈리지 않는다. CAGR 은 0.186~0.241 로 전 칸이 이미 16% 위에 있고 Calmar 를 누르는 것은 분모의 MDD 하나다. 따라서 남은 레버는 팩터 선택이 아니라 오버레이의 소비 지점이다.",
+  "mechanism_by": "llm:block_end",
+  "mechanism_at": "2026-09-05T22:53:21+0900",
+  "prior_lessons_used": [],
+  "next_block_actions": [
+    {
+      "action": "B5 에서 같은 상태변수(낙폭의 확장창 경험분포 중앙 위)를 스칼라 총노출 축소(dd_brake_q)와 종목별 tilt(dbeta_tilt_rank) 두 칸에 나란히 붙여, 상태 정의는 고정하고 소비 지점만 다른 A/B 를 만든다.",
+      "why": "B1 10칸에서 MDD 폭이 0.099 에 불과해 위험 축이 팩터 선택으로 전달되지 않는다는 대목. 위험이 신호 축에서 안 갈리면 남은 자유도는 그 신호를 노출로 바꾸는 지점뿐이다.",
+      "expect": "두 칸의 MDD 감소분이 비슷한데 CAGR 감소분이 tilt 쪽에서 작으면 소비 지점 명제가 선다(Calmar 로 갈린다). 두 칸이 MDD·CAGR 모두 사실상 같으면 tilt 는 스칼라 축소의 리라벨이고, 횡단면 소비 축은 이 base 에서 기각된다."
+    },
+    {
+      "action": "ts_mom_sign 을 1칸 넣어 스칼라 축소의 상한을 잰다 — 시장 12개월 누적수익 부호가 음이면 전량 현금.",
+      "why": "MDD 0.667(B1_1)에서 Calmar 를 의미 있게 올리려면 MDD 를 0.4 대로 접어야 하는데, 비례 감쇠형 스칼라는 그 크기를 못 낸다. 0/1 전환은 스칼라 계열 중 유일하게 그 크기를 낼 수 있는 형태다.",
+      "expect": "MDD 가 0.667 → 0.45 아래로 접히고 CAGR 손실이 그보다 작으면 스칼라 축소는 '강도 부족'이었던 것이고, MDD 는 접히는데 CAGR 이 같은 비율 이상으로 깎이면 스칼라 계열 전체의 벽이 강도가 아니라 형태(대칭 축소)임이 확정된다."
+    },
+    {
+      "action": "상태 원천을 시장 시계열 밖으로 옮긴 두 칸을 배치한다 — csd_idio_tilt(횡단면분산 상태, 특이변동 기여 순위로 차등)와 holdlvl_syscrowd_tilt(그 달 보유의 bcorr^2 중앙값을 강도로).",
+      "why": "①·②에서 갈린 것은 전부 종목 선택 축인데 MDD 는 안 움직였다. 낙폭·변동성은 이미 D51_Ulcer_Index 로 base 신호에 들어가 있어 오버레이가 같은 정보를 두 번 읽을 소지가 있다. 보유 구성 자체에서 읽는 상태는 base 와 정보원이 겹치지 않는다.",
+      "expect": "holdlvl_syscrowd_tilt 의 MDD 감소가 dd_brake_q 와 비슷하면서 CAGR 손실이 작으면, 이 전략의 낙폭은 시장 국면이 아니라 보유의 시장베타 수렴에서 온다. 세 tilt 가 모두 스칼라 대비 개선이 없으면 위험 축은 B5 밖(B2 유니버스 / B3 비중)에 있다."
+    }
+  ],
+  "next_block_actions_by": "llm:block_end",
+  "avoid": ["팩터를 3층 이상 적재하는 조합 — B1_10 1.801, B1_9 2.269, B1_8 1.753 로 축을 더 얹을수록 단일 축 B1_1 2.650 에서 멀어진다. 누적 방향은 이 base 에서 희석으로 실측됐다.", "단기 반전(M11_ST_Reversal) 계열 재시도 — B1_2 1.981, B1_8 1.753 두 번 다 하위권. 결합 상대를 바꿔도 부호는 유지하되 PORT_t 를 끌어내린다.", "변동성 타게팅 스칼라 계열을 여러 칸에 배치(vol_median · vol_ewma · vol_har · vol_x_dd · vol_x_turb · turbulence) — 라벨은 6종이지만 행동은 전부 총노출 스칼라 축소 하나이고, 상태변수(변동성)는 base 의 D51_Ulcer_Index 와 정보원이 겹친다. ★근거의 일부는 이 블록 밖이다(다른 entry 의 B5 50셀 실측: 스칼라 축소가 MDD −10% 대비 CAGR −23%). 이 전략에서 직접 재도출한 값이 아니므로 dd_brake_q · ts_mom_sign 두 칸을 대조군으로 남겨 그 벽을 이 base 에서 확인한다."],
+  "next_block_design_for": "B5",
+  "next_block_design_n": 5,
+  "prior_action_status": "no_design",
+  "prior_action_detail": "그 블록에 설계가 없었다(규칙 선정)",
+  "mechanism_confidence": "medium"
+}
