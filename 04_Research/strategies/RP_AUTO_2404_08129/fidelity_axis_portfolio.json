@@ -1,0 +1,20 @@
+{
+  "axis": "portfolio",
+  "verdict": "faithful",
+
+  "undeclared_changes": [],
+
+  "signal_mismatch": [],
+
+  "counterexample": "구성하지 못했다 — 시도와 그 결과를 적는다. (1) 분위 폭 규칙: 논문 §5.7 'the first four portfolios contain 34 assets each, and the last portfolio contains the remaining 35 assets'(171 = 4x34 + 35 = floor(N/5) x 4 + 나머지). engine.R:365-368 nb <- n %/% 5 · i_lo <- o[1:nb] · i_hi <- o[(4*nb+1):n] 는 같은 산식이다(n=171 대입 시 34 / 35 재현). (2) 실현값 대조: 04_holdings.csv 2016-01-04 은 target_weight = -0.0147058823529412 (= -1/68) 68행 + 0.0144927536231884 (= +1/69) 69행 = 137행. N=341 → floor(341/5)=68, 341-4x68=69 로 논문 규칙과 정확히 일치하며, 두 다리 모두 다리 안 EW·다리 합 ±1 이다. (3) 전 구간 대조: 129 리밸일에 걸쳐 숏 8793행 / 롱 9043행(합 17836 = 전체 행). 롱-숏 = 250, 리밸일당 평균 1.94 로 논문 규칙이 강제하는 구간 (n mod 5) ∈ [0,4] 안에 있다 — 어느 날짜에서도 다리가 붕괴하거나 롱<숏 으로 뒤집힌 흔적이 없다. (4) 두 층 절단의 곱 효과: 러너가 engine_direct 를 자르지 않음을 코드(run_paper_replication.R:283-292 — PORTFOLIO 를 그대로 WEIGHTS 로 통과)와 산출물(10_audit.csv holdings_cap = PASS '상한 비적용 ... 리밸일별 distinct ticker 131~141종') 양쪽에서 확인했다. 실현 종목수가 줄어드는 이중 절단은 없다. (5) 다리 방향: 논문 'Portfolio 1 groups the assets with ... the lowest predicted returns ... Portfolio 5 ... the highest', 'long in the last portfolio and short in the first portfolio'. engine.R:364 o <- order(pred) 오름차순 → i_lo(최저)=숏 -1/nb, i_hi(최고)=롱 +1/n_hi. 부호가 갈리는 지점 없음.",
+
+  "evidence": "논문 §5.7 Predictability + Table 8. 인용(축 관련 전부): 'Next, we use the model predicted returns to sort assets in five portfolios, and compute the equally-weighted average portfolio return in the following six months.' · 'In each period, the first four portfolios contain 34 assets each, and the last portfolio contains the remaining 35 assets.' · 'Portfolio 1 groups the assets with, each period, the lowest predicted returns by the HFL model. Portfolio 5 groups the assets with, each period, the highest predicted returns by the HFL model.' · Table 8 캡션 'This table describes the properties of five portfolios formed by sorting assets by the predicted values of the HFL model' + 'a long-short strategy long in the last portfolio and short in the first portfolio' · Table 8 Panel A 'Mean (%) 0.079 0.084 0.29 0.612 0.769 0.689' / 'SR 0.147' · 자산 수 'The All sample includes 171 assets'. ★추출 경로: arxiv.org/html/2404.08129v1 은 LaTeXML 변환이 실증 절을 통째로 떨어뜨려(3회 독립 질의에서 'portfolio'/'predict' 포함 문장 NONE FOUND) 이 축의 근거가 없다 — FIDELITY.source_paper.note 의 진술과 합치한다. 전문은 NBER w32365 PDF 텍스트 프록시로 읽었다(동일 논문). 추출 타당성 자체 검산 2건: 4x34+35 = 171(자산 수와 정합) · P5 0.769 − P1 0.079 = 0.690 ≈ 보고된 롱숏 0.689(반올림) — 즉 Table 8 의 롱숏이 EW 다리의 P5−P1 임이 수치로 닫힌다.",
+
+  "confidence": "high",
+
+  "checked": "분위 개수(5) · 분위 폭 규칙(floor(N/5)x4 + 나머지, engine.R:365-368 대 논문 34/34/34/34/35) · 다리 구성(P5 롱 / P1 숏, order(pred) 오름차순 방향) · 다리 내 비중방법(EW, ±1/n) · 다리 합(+1/−1, engine.R:410-414 검산) · 롱숏 결합식(replication_harness.R:105 Rg = GL*Lr − GS*Sr, GL=GS=1 → P5−P1) · 실현 종목수(holdings 2016-01-04 68숏/69롱, 전 구간 8793/9043, 감사 131~141종) · 러너 절단 여부(engine_direct 무절단, 10_audit.csv holdings_cap PASS) · 롱숏 중복편입 가드 · 고정 축(long-only·≤25종) 충돌의 선언 유무.",
+
+  "_배열 규약": "undeclared_changes·signal_mismatch 는 **발견만** 담는다. 없으면 빈 배열 [] 로 두고 '불일치 없음' 같은 비발견을 항목으로 넣지 마라 - 근거 게이트가 배열 길이로 선다.",
+
+  "note": "고정 축 충돌(롱숏 · 실현 137종 ≫ 25)은 침묵하지 않았다 — FIDELITY.changed(6) · portfolio_spec.note(has_short=true, n_max 초과 명시) · engine_contract.expected_n_max 세 곳에 선언돼 있고 러너 로그·10_audit.csv 에도 남는다. 보유표현(월별 EW 재설정)은 changed(5) 선언인데 논문 문장 'compute the equally-weighted average portfolio return in the following six months' 의 직독이라 이 축에서 논문과 갈리지 않는다. ★축 밖 1줄: holdings 첫 날짜가 2016-01-04(첫 형성 = 2015-12 시그널 · 리밸 129회)로, FIDELITY.changed(4)가 선언한 최악 시나리오 2011-06 보다 약 5년 늦고 논문의 40회 형성에도 못 미친다 — 추정창/rf 커버리지 축(timing)의 몫이다."
+}
