@@ -1,0 +1,13 @@
+{
+  "axis": "cost",
+  "verdict": "misdeclared",
+  "undeclared_changes": [
+    "논문(arxiv.org/html/2404.08129v1 전문)은 거래비용·왕복비용·시장충격·롱숏 전략·SR/CAGR/MDD 성과를 전혀 명시하지 않는다(WebFetch 로 전문 확인 — 언급 0건). FIDELITY.json 자신도 paper_original_form 에 '종목 정렬 포트폴리오·롱숏 전략·SR 보고는 없다' 고 인정하고 commission_paper: null 로 정직하게 선언한다. 그런데 측정 산출물 authoritative_remeasure.json::replication.paper_basis (cagr=0.119379, sharpe=0.380497, mdd=0.655583, n_months=260) 는 같은 파일 replication.commission_paper_bps=0 으로 재계산한 '이 구현 자신의 0bps(무비용) 재현 결과'일 뿐인데, 필드명이 'paper_basis' 로 라벨돼 마치 논문이 보고한 비교 기준인 것처럼 병기된다. FIDELITY.json::changed 항목 어디에도 'commission_paper=null 이 하류에서 0bps 로 치환되어 paper_basis 라는 이름의 성과로 병기된다'는 사실이 선언돼 있지 않다."
+  ],
+  "signal_mismatch": [],
+  "counterexample": "essence 등급 판정은 15bps 순비용(contract.cagr=0.114, sharpe=0.498)으로 나는데, 같은 authoritative_remeasure.json 안에 나란히 적힌 replication.paper_basis.cagr=0.1194/sharpe=0.380 을 '논문이 보고한 성과'로 읽으면 존재하지 않는 논문 수치(논문은 애초에 CAGR/SR/MDD 자체를 보고하지 않음)를 실재하는 벤치마크로 오인하게 된다. 구성 가능 — 실제로 authoritative_remeasure.json:101-107 에 그 값이 그대로 들어 있다.",
+  "evidence": "arxiv.org/html/2404.08129v1 전문 WebFetch 결과: 거래비용/SR/CAGR/MDD/롱숏전략 언급 없음. FIDELITY.json 자기신고: paper_original_form('...롱숏 전략·SR 보고는 없다') + commission_paper: null. authoritative_remeasure.json:101 commission_paper_bps=0, :102-107 paper_basis 블록.",
+  "confidence": "high",
+  "checked": "FIDELITY.json::commission_paper 선언 vs authoritative_remeasure.json::replication.commission_paper_bps/paper_basis 대조 · engine.R 내 비용 관련 코드 유무(없음 — 비용은 러너/컨트랙트가 적용) · arxiv HTML 원문의 거래비용·성과지표 언급 여부(WebFetch 확인)",
+  "note": "FIDELITY.json 의 commission_paper=null 선언 자체는 정직하다(논문에 비용이 없다는 사실을 올바르게 인정). misdeclared 판정의 근거는 그 null 이 하류 파이프라인에서 0bps 로 치환되어 'paper_basis' 라는 이름의 병기 성과로 재탄생하는 과정이 FIDELITY.changed 에 전혀 선언돼 있지 않다는 점이다 — 이 축은 FIDELITY.json 하나만이 아니라 그것이 소비되는 측정 산출물까지 포함해 판정했다."
+}
