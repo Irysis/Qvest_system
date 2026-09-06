@@ -1,0 +1,11 @@
+{
+  "axis": "cost",
+  "verdict": "adapted",
+  "undeclared_changes": [],
+  "signal_mismatch": [],
+  "counterexample": "형성 F에서 P5(롱)에 2종목 A,B가 EW 1/2씩 편입됐다고 하자. 보유 1개월차에 A가 +20%, B가 -20%로 갈렸다면, '매월 EW로 재설정'이라는 §5.7 문구('compute the equally-weighted average portfolio return in the following six months')를 문자 그대로 매월 재조정으로 구현하려면 2개월차 시작 전에 A를 팔고 B를 사서 다시 1/2:1/2로 되돌리는 실거래(레그 노출의 약 20%)가 필요하다. 그러나 engine.R 은 이 6행을 전부 동일한 Weight=1/n_hi 값으로 emit 하고(engine.R:370,382), replication_harness.R:107-119 의 비용모델은 Σ|Δw_target|(직전 리밸 대비 '선언된' 목표비중의 차)만 과금한다 — 이 값은 두 행의 Weight 열이 문자 그대로 같으므로 항상 0이다. 결과: 형성당 6개월 중 5개월의 '재설정'은 드리프트를 되돌리는 실거래가 있어야 정상인데도 0bps 로 통과한다(형성 전환 시점의 교체분만 과금). 이는 순성과를 유리하게(비용 과소) 기울인다.",
+  "evidence": "논문(§5.7, r.jina.ai 프록시로 확인한 arxiv PDF 텍스트 — html/v1 엔드포인트는 §5.7·Table 8 자체가 없다): 'a zero-cost long-short strategy ... yields a monthly average excess return of 0.69%, with a monthly Sharpe ratio of 0.15' — 비용(transaction/trading cost) 언급이 본문 어디에도 없다('zero-cost'는 롱-숏 순노출 0을 뜻하는 표준 용법이지 수수료 0이 아니다). 논문이 비용을 명시하지 않는다는 점 자체는 FIDELITY.json changed(14)가 정확히 반영해 0bps gross 로 병기한다. 문제로 지목한 월별 재설정 무과금은 FIDELITY.json changed(5)(b)가 스스로 '월별 재설정의 실제 거래는 과금되지 않는다(하네스 근사)'로 선언하고 있어 undeclared 는 아니다. 코드: engine.R:374-384(h in 0:5 동일 구성·동일 Weight 재설정 행 발행), replication_harness.R:107-119(Σ|Δw_target| 델타 비용모델), run_paper_replication.R:304-313(comm_paper=0 → paper_basis, 15bps → 등급).",
+  "confidence": "medium",
+  "checked": "논문 비용 언급 유무(§5.7/Table 8, jina 프록시 2-source 재확인) · commission_paper=null→0bps gross 병기 vs 15bps 등급판 이중 시뮬레이션 정합 · 월별 EW 재설정 행과 Σ|Δw_target| 비용모델의 상호작용(형성 전환만 과금, 블록 내 재설정 무과금) · 초기 매수·형성 전환 시 turnover 계산(Σ|a-b|) 정합성",
+  "note": "논문은 §5.7/Table 8 어디에도 거래비용을 언급하지 않아 '0bps=gross' 비교축 자체는 정당하고 정확히 그렇게 병기돼 있다(changed 14). 유일하게 유리하게 기운 지점은 월별 EW 재설정 무과금인데, 이는 changed(5)(b)에 방향까지 정확히 선언돼 있어 misdeclared 가 아니라 adapted 다. html/v1 엔드포인트에는 §5.7·Table 8 자체가 없어(이론부만 렌더) 이 축 근거는 jina 텍스트 프록시로 확보했다 — confidence medium은 그 경로 제약을 반영한다."
+}
