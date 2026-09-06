@@ -1,0 +1,24 @@
+{
+  "axis": "undeclared",
+  "verdict": "misdeclared",
+  "undeclared_changes": [
+    "changed(8)은 '수치 가드 없음'이라고 적었으나 engine.R:119 `cf[!is.finite(cf)] <- 0` 이 있다 - lm.fit 이 rank-deficient 로 NA 를 낸 다항계수를 조용히 0 으로 치환한다. 논문 식(4)는 |c_j| <= L 제약 하의 argmin 만 정의하며 NA->0 대체 조항이 없다. 발화하면 유효 다항차수가 선언된 K=4 아래로 조용히 내려가는데 그 사실이 어디에도 기록되지 않는다(엔진은 24개월마다 c 만 stdout 에 찍고 산출물에 남기지 않는다)",
+    "engine.R:101 `m <- rowSums(R0) / pmax(rowSums(M), 1)` 및 engine.R:108 `b[i] <- if (vm > 0) sum(mv*rv)/vm else 0` - 분모 0 방지 가드 2종. 프롬프트 신고 체크리스트가 '수치 가드(분모 0 방지)'로 명시한 항목인데 changed 어디에도 없고, changed(8)은 반대로 '없음'을 단언한다",
+    "engine.R:141,154,162,166 및 271,275 - 손실/계수/Score 가 비유한이면 `fit$ok=FALSE` 또는 `sum(fin) < .NMIN` 으로 그 시그널월의 신호를 통째로 미발행(.nskip)한다. 실패 시 침묵 스킵이라는 동작이 changed 에 없다",
+    "engine.R:176 `.rd[is.finite(Close) & Close > 0]` - changed(8)은 '비유한 종가만 제외'라고 적었으나 코드는 0 이하 종가도 제외한다(선언보다 넓은 필터)",
+    "engine.R:182-186 (Ticker,Date) 중복행 제거(첫 행만 유지) - 결측/중복 처리 항목인데 changed 에 없다",
+    "engine.R:262 `if (sum(kt) < .TMIN)` - .TMIN(24)을 '패널 월 개수 하한'(= 사실상 24개월 워밍업)으로 재사용한다. changed(4)는 .TMIN 을 '종목 최소 24개월 관측' 한 가지 용도로만 신고했고, 창/워밍업 길이는 체크리스트의 별도 신고 항목이다",
+    "engine.R:194-196 `.mend <- .rd[, .(SigDate = max(Date)), by = MI]` - 마지막 부분월(이 런에서 2026-09, 거래일 4일)이 완전월 관측으로 월간 패널과 시그널월 집합에 들어간다. 부분월을 월간 수익률로 취급하는 처리가 changed 에 없다",
+    "engine.R:153,161 optimize 구간 하한 `max(step/10, ...)` - changed(6)은 '격자 +-1칸'만 적었고 하한을 step/10(=0.001)으로 치환하는 처리는 적지 않았다. (0,1] 제약 유지라 논문 정합이지만 미신고)"
+  ],
+  "signal_mismatch": [
+    "논문 식(4)는 ({c_j} in R^{K+1}, |c_j| <= L / h_j^K in [-L,L]) x ({phi_t} in (0,1]^T) x ({l_i} in (0,1]^N) 위의 argmin 으로 추정기를 정의한다. engine.R:118-119 는 무제약 lm.fit(제약 미부과는 changed(6)에 신고됨) 결과의 비유한 성분을 0 으로 치환하는데(미신고), 이 치환은 식(4) 제약집합 위의 argmin 이 아니다 - 퇴화 적합에서 c_4=0 이 되어도 K=4 로 보고된다",
+    "changed(7)이 rf 생략의 근거로 든 'h 의 절편·phi_t 가 흡수, 횡단면 순위에는 무영향'은 식(1) r_it = h(f_t lambda_i) + eps_it 의 형태에서 도출되지 않는다 - 모형은 (t,i)를 곱 phi_t*l_i 를 통해서만 통과시키므로 t-고유 가법항 rf_t 를 표현할 수 없고, c_0 는 시변하지 않는 단일 상수다. rf_t 흡수는 phi_t 를 왜곡시켜 l_i 추정과 Score 순위를 바꿀 수 있다. 변경(rf 생략) 자체는 신고됐으나 그 근거 진술이 논문 식과 어긋난다"
+  ],
+  "counterexample": "이 런의 수치를 바꾸는 반례는 구성하지 못했다. 값을 바꿀 수 있는 유일한 항목은 (1) cf NA->0 이고, 발화 조건은 관측 셀의 x = phi_t*l_i 가 5개 미만의 서로 다른 값을 갖는 퇴화 적합(phi 와 l 이 동시에 상수로 붕괴)이다. 실측 반증: 10_audit.csv 는 260 리밸일 x 25종을 기록해 시그널월 스킵이 사실상 0 이고, analysis_holdings.csv 의 월 회전율은 0~60%(대부분 0~24%)로 매끄럽게 지속적이다 - Score 가 상수로 붕괴했다면 ties.method='first' 로 결정되는 임의 top-25 가 나와야 하므로 퇴화는 없었다. 항목 (2)는 .NMIN_T>=20 / .TMIN>=24 필터가 .fit_hfl 진입 전에 적용되므로 pmax 와 vm>0 분기가 원리상 구속되지 않는다. (3)(4)(5)(6)(7)(8)은 이 표본에서 값을 바꾸지 않는다. 따라서 지적은 전부 '신고 누락'이지 '측정 오염'이 아니다.",
+  "evidence": "arXiv abs 페이지: 제출이력 v1 단일, 공식 HTML 판 미제공 -> /html/2404.08129v1 은 LaTeXML 실패판(rotfloat·bibtopic)이라 이론부만 판독된다. 그 이론부에서 축자 확인한 것: 식(1) r_it = h(f_t lambda_i) + eps_it / 식(4) argmin sum_i sum_t (r_it - sum_{j=0}^{K} c_j (phi_t l_i)^j)^2 / 제약 3종 {c_j} in R^{K+1}, {phi_t} in (0,1]^T, {l_i} in (0,1]^N / 계수 상계 'h_0^K, ..., h_K^K in [-L,L]', '|c_j| <= L' / 'K = o(max(N,T))'. 초록 축자 'Using 171 assets across major classes'. 식별·정규화 문장은 판독 범위 내 ABSENT. 데이터절(빈도·표본기간·초과수익 여부)과 K 선택 문장은 미판독 - PDF 3종(arxiv/pdf, Yale Cowles d2386, NBER)은 바이너리로만 회수되고 로컬 poppler 부재로 렌더 불가, 셸(python) 은 샌드박스 차단.",
+  "checked": "changed(1)~(10) 10항 전부를 engine.R 코드행에 역대조(전부 코드에 실재 - 하지도 않은 변경의 허위신고는 0건) + engine.R 1~303행을 프롬프트 신고 체크리스트 7종(하한/상한·수치가드·결측처리·난수/초기값·창/워밍업·설정 선택·수식 근사)으로 정방향 스윕 + portfolio_spec 을 01_strategy_spec.json·10_audit.csv 실행값과 대조(top_n_long/ew/monthly/25, 260 리밸일 25종 일치)",
+  "_배열 규약": "undeclared_changes·signal_mismatch 는 **발견만** 담는다. 없으면 빈 배열 [] 로 두고 '불일치 없음' 같은 비발견을 항목으로 넣지 마라 - 근거 게이트가 배열 길이로 선다.",
+  "note": "핵심 모형축(식1·식4·제약·K=4 선택·확장창·유니버스·산출형태 전환)은 changed 에 정직하게 신고돼 있고 코드와 일치한다 - 결함은 전부 추정기 내부의 수치가드/침묵스킵 미신고이며 이 표본에서 발화 흔적이 없다. 재구현이 아니라 FIDELITY.changed(7)(8) 두 줄의 수정으로 닫히는 종류다. 축 밖 1줄: analysis_holdings.csv 2010-02-01 회전율 1.0(25/25 전량 교체)은 KQ150 명부 개시(2010-02)와 같은 달이라 유니버스 축에서 볼 값이다.",
+  "confidence": "medium"
+}
