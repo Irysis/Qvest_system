@@ -120,6 +120,16 @@
       "est_cost_min": 8,
       "action": "cross_sectional",
       "state": "holding_level"
+    },
+    {
+      "id": "ml_dual_forecast_tilt",
+      "kind": "gen_20260906_174032",
+      "family": "cross_sectional",
+      "basis": "확장창 과거쌍(i<=t-1, 결과가 실현된 쌍만)으로 시장 상태(rv60·dd·r252·xs)에서 두 예보를 학습한다 — ①익월 하방 손실폭 loss=max(0,-fwd) 회귀의 예보 s_m(체계 충격 크기) ②익월 실현 횡단면분산 disp 회귀의 예보 s_x(특이 산포 크기, 학습 중앙값으로 나눈 무차원 배수 kappa). 개입 강도 g 는 모형의 오늘 예보가 자기 적합값 경험분포에서 차지하는 분위를 중앙에서 센터링해 뽑고(상수 문턱 없음), 종목 차등은 각 보유의 예측 하방 산포 L=sqrt((max(0,dbeta)*s_m)^2+(ovol*sqrt(1-bcorr^2)/sqrt(12)*kappa)^2) 의 보유 내 순위 r 에 비례해 e=1-g*r 로 준다. 기존 cross_sectional arm 3종이 상태로 강도만 정하고 랭킹 축을 dbeta 또는 특이변동 한 열에 고정하는 것과 달리, 두 학습 예보의 상대 크기가 그 달의 랭킹 축 자체를 회전시킨다 — 체계 충격 예보가 클수록 하방베타가, 조용하지만 흩어지는 국면일수록 특이변동이 순서를 지배한다. 하방베타가 음인 진짜 헤지는 체계 성분이 0 이 되어 보존되고, 횡단면 평균 노출 1-g/2 로 스칼라 총노출 축소(1-g)의 대칭 한계를 종목축에서 깬다.",
+      "status": "active",
+      "est_cost_min": 8,
+      "action": "cross_sectional",
+      "state": "ml"
     }
   ]
 }

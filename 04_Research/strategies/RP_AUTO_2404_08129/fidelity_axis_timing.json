@@ -1,0 +1,11 @@
+{
+  "axis": "timing",
+  "verdict": "unverifiable",
+  "undeclared_changes": [],
+  "signal_mismatch": [],
+  "counterexample": "구성 못 했다. 이 논문은 종목을 정렬해 롱숏 포트폴리오를 형성·보유하는 모멘텀류 설계(J/K)가 아니라 다자산 횡단면 가격결정 모형(식 1·4)을 전표본 sieve 최소제곱으로 공동추정하는 논문이라, 원문에 형성기간·보유기간·스킵월 개념 자체가 있는지부터 확인이 필요했다. arxiv.org/html/2404.08129v1 에서 'monthly', '360', 'rebalanc', 'holding period', 'sample period', 'portfolio', '1963', '2019' 등 키워드로 반복 조회했으나 이론(식 1~4, 수렴성 증명) 구간만 노출되고 데이터/실증 섹션 본문을 확인하지 못했다 — FIDELITY.json 자신도 change 항목 (10)에서 '171자산·월간 360관측' 수치를 원문이 아니라 SSRN/NBER 초록·검색 스니펫에서 가져왔다고 자백하고 있다. 즉 구현(월간 리밸런싱, 확장창, 스킵월 없음)이 근거로 삼는 '논문 = 월간 데이터'라는 전제 자체를 이 세션에서 원문으로 재확인할 수 없었다.",
+  "evidence": "없음 — arxiv.org/html/2404.08129v1 에 대해 'monthly/360/rebalance/holding period/sample period/portfolio/1963/2019' 키워드 전용 조회를 4회 반복했으나 매번 해당 구간(데이터·실증 섹션)을 찾지 못했다는 응답만 반환됨. 논문 본문에서 형성/보유/스킵/리밸런싱 주기에 관한 문장을 확인하지 못함.",
+  "confidence": "high",
+  "checked": "arxiv.org/html/2404.08129v1 원문에서 형성기간(J)·보유기간(K)·스킵월·리밸런싱 주기·표본기간·자산군 구성을 나타내는 문장을 4회 다른 각도(섹션 목록·키워드 검색·후반부 인용)로 조회 — 전부 미검출. 구현(engine.R:191~239, 월말 시그널·월간 수익률 패널·리밸 monthly)과 FIDELITY.json::portfolio_spec.rebalance=monthly 는 확인했으나 대조할 원문 근거를 찾지 못함.",
+  "note": "이 축(J/K/리밸/스킵)은 애초에 이 논문의 설계 어휘가 아닐 가능성이 높다 — 논문은 정렬·보유 전략이 아니라 전표본 공동추정 가격결정 검정이라고 FIDELITY.json 자신이 'paper_original_form'에 명시했다(정렬 포트폴리오·롱숏·SR 없음). 다만 그 전제(월간 360관측)조차 원문에서 직접 확인 못 했으므로 faithful/adapted 어느 쪽으로도 적을 근거가 없다."
+}
