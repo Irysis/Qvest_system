@@ -17,11 +17,41 @@
   "calmar": 0.315,
   "oos_retention": -0.015,
   "portfolio_alpha_t": 1.636,
-  "next_probes": [
-    "다음 격자 축 B5(risk_overlay) — 이 블록 승자 위에서 측정",
-    "B1_8(최고 1.636)는 B4 조합 후보로 고정 · B1_3(최저 1.045)는 축 역작동 여부를 조합 LOO 로 분리"
-  ],
+  "next_probes": ["다음 격자 축 B5(risk_overlay) — 이 블록 승자 위에서 측정", "B1_8(최고 1.636)는 B4 조합 후보로 고정 · B1_3(최저 1.045)는 축 역작동 여부를 조합 LOO 로 분리"],
   "next_probe": "다음 격자 축 B5(risk_overlay) — 이 블록 승자 위에서 측정 | B1_8(최고 1.636)는 B4 조합 후보로 고정 · B1_3(최저 1.045)는 축 역작동 여부를 조합 LOO 로 분리",
   "source_paper": "https://arxiv.org/abs/2404.08129",
-  "record_type": "performance"
+  "record_type": "performance",
+  "mechanism": "이 블록에서 갈린 것은 초과수익 축 하나뿐이고, MDD 는 8칸 전부 0.554~0.616(폭 0.062)에 갇혔다 — 2번째 팩터 교체는 손실 축을 움직이지 못한다. PORT_t 는 1.045(B1_3 S01_Size+Q35_CashBased_OpProf)~1.636(B1_8 size+equity_issuance)로 0.591 폭이고, 계열로 묶으면 순서가 있다: 자본조달·유동성 같은 비회계 축(B1_8 1.636 · B1_7 size+illiquidity 1.364)이 상위, 밸류(B1_1 S01_Size+V14_EBIT_EV 1.320)가 중간, 회계 퀄리티·발생액·이익수정 계열(B1_2 1.201 · B1_4 1.175 · B1_5 1.127 · B1_6 cheap_and_safe 1.074 · B1_3 1.045)이 하위에 나란히 눌렸다. 퀄리티 계열 5칸이 같은 자리에서 함께 비유의에 가깝게 눌렸고, 부호와 크기를 유지한 것은 Size 와 겹치지 않는 미시구조·자본조달 축 둘이다. Calmar 0.259~0.315 의 변동은 사실상 전부 CAGR 0.158~0.186 에서 나왔다(상대폭 CAGR 18% 대 MDD 11%), 그리고 MDD 최저 B1_7 0.554 와 최고 B1_6 0.616 은 PORT_t 순위와 무관하다. 실측 결론: 이 고정 축(long-only · Size 주도 · K200∪KQ150)의 낙폭은 알파 축의 함수가 아니라 책 전체의 시장 동조의 함수이고, 팩터 교체로는 위험 축에 손을 댈 수 없다. 정황(근거는 이 블록 밖 — 앞선 B5 50셀 실측): 총노출 스칼라 축소는 MDD -10% 대비 CAGR -23% 로 상방을 더 잃어 Calmar 중앙값 0.160 으로 오히려 내려갔다. B1 은 그 결과를 강화한다 — 스칼라 축소가 깎는 CAGR 이 이 블록에서 유일하게 움직인 축이기 때문이다. 미결: 같은 낙폭 상태를 총노출이 아니라 보유 횡단면에서 소비하면 CAGR 손실 없이 MDD 를 깎을 수 있는가. 이건 같은 상태변수를 두 소비 지점에 붙인 짝지은 A/B 로만 갈린다.",
+  "mechanism_by": "llm:block_end",
+  "mechanism_at": "2026-09-07T05:10:00+0900",
+  "prior_lessons_used": [],
+  "next_block_actions": [
+    {
+      "action": "B5 에서 낙폭 상태 하나를 소비 지점만 바꿔 짝으로 돌린다 — dd_brake_q(총노출 스칼라) vs dbeta_tilt_rank(보유 횡단면 하방베타 순위 tilt). 상태변수·개입 분위는 동일하게 두고 소비 지점만 다르게 한다.",
+      "why": "B1 에서 MDD 0.554~0.616 이 알파 축과 무관하게 고정된 반면 CAGR 0.158~0.186 만 움직였다 — 위험 축은 종목 선택이 아니라 노출 구조에서 온다. 그런데 스칼라 소비는 그 유일하게 움직이는 CAGR 을 깎는다.",
+      "expect": "소비 지점 가설이 맞으면 두 칸의 MDD 감소폭은 비슷한데 CAGR 감소폭이 갈린다(tilt 쪽이 유의하게 덜 깎임 → Calmar 우위). 두 칸의 CAGR·MDD 가 같이 붙어 나오면 소비 지점 가설은 반증되고, 낙폭 축 자체가 KR long-only 에서 회수 불가한 것으로 읽어야 한다."
+    },
+    {
+      "action": "랭킹 축을 고정한 tilt(dbeta_tilt_rank · csd_idio_tilt)와 랭킹 축이 상태에 따라 회전하는 tilt(multivar_channel_tilt · ml_dual_forecast_tilt)를 같은 블록에 나란히 둔다.",
+      "why": "B1 의 계열 순서(비회계 축 상위 · 회계 퀄리티 5칸 하위 동반 침몰)는 이 책의 위험이 한 열이 아니라 Size 노출을 매개로 여러 열에 실려 있음을 시사한다. 단일 열 랭킹으로 충분한지가 미결이다.",
+      "expect": "회전형이 고정형을 Calmar 로 이기면 랭킹 축 선택이 구속 조건이다. 넷이 Calmar 0.26~0.32 범위(=B1 수준)에 다시 몰리면 랭킹 축이 아니라 tilt 라는 개입 형태 자체가 무력한 것이다."
+    },
+    {
+      "action": "상태를 시장 시계열이 아니라 그 달 보유에서 읽는 칸을 하나 넣는다(holdlvl_syscrowd_tilt).",
+      "why": "B1 은 8칸 모두 동일 유니버스·동일 비중방법에서 MDD 가 붙었다 — 책이 매달 얼마나 단일 시장베팅으로 수렴했는지는 측정된 적이 없고, 그것이 MDD 0.554~0.616 고정의 직접 후보다.",
+      "expect": "보유 수준 체계위험 비중(bcorr^2 중앙값)이 낙폭 이전에 상승한다면 시장 시계열 기반 칸보다 개입 시점이 앞서고 MDD 감소가 커야 한다. 시점이 앞서지 않으면 이 상태는 낙폭의 동행지표일 뿐이다."
+    },
+    {
+      "action": "판정은 MDD 단독이 아니라 (ΔCAGR, ΔMDD) 쌍으로 기록한다 — 기저 대비 두 값을 같이 남긴다.",
+      "why": "B1 에서 Calmar 순위는 MDD 가 아니라 CAGR 이 만들었다(CAGR 상대폭 18% > MDD 11%). MDD 만 보면 스칼라 축소가 이기고 Calmar 로는 진다.",
+      "expect": "이 형식이면 다음 블록에서 '위험을 줄였다'와 '수익을 깎았다'가 분리되어 기록되고, 어떤 arm 이 감쇠량 대비 신호파괴가 큰지 칸 간 비교가 가능해진다."
+    }
+  ],
+  "next_block_actions_by": "llm:block_end",
+  "avoid": ["총노출 스칼라 축소 계열(vol_median · vol_ewma · vol_har · ts_mom_sign · ml_tail_gate)에 칸을 여러 개 쓰는 것 — 앞선 B5 50셀에서 MDD -10% 대비 CAGR -23%, Calmar 중앙값 0.160 으로 벽이 확인된 축이다. B1 이 그 벽을 강화한다(스칼라가 깎는 CAGR 이 이 블록에서 유일하게 움직인 축). 짝지은 A/B 의 대조군으로 dd_brake_q 한 칸만 남긴다.", "스칼라끼리 곱한 조합(vol_x_dd · vol_x_turb) — 두 스칼라의 곱은 여전히 총노출 하나를 깎는 같은 행동이고, 라벨만 늘고 행동은 안 갈린다. 상태 축을 늘리려면 스칼라 곱이 아니라 종목축 소비(multivar_channel_tilt)로 늘린다.", "turbulence 단독 — 상태 추정만 정교해지고 소비 지점은 여전히 총노출 스칼라다. 이 블록에서 갈리지 않는 축에 칸을 쓰는 셈이다.", "B1 에서 확인된 회계 퀄리티 계열(Piotroski · CashBased_OpProf · Pct_Accruals · Revision_Breadth)로 되돌아가 2번째 팩터를 더 바꾸는 것 — 5칸이 PORT_t 1.045~1.201 에 함께 눌렸고 MDD 는 그 사이에서 전혀 안 움직였다.", "dd_recovery — 낙폭 국면에서 직전 1개월 시장수익 부호로 재진입을 거는 형태 역시 총노출 on/off 이고, 조건이 붙어 표본이 더 얇아진다. 소비 지점 질문을 흐린다."],
+  "next_block_design_for": "B5",
+  "next_block_design_n": 6,
+  "prior_action_status": "no_design",
+  "prior_action_detail": "그 블록에 설계가 없었다(규칙 선정)",
+  "mechanism_confidence": "medium"
 }
