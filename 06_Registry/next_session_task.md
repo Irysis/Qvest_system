@@ -1,3 +1,46 @@
+# 다음 세션 인계 — 2026-09-06 (절전 정지 재개 · promo2 B2 재측정 · 사후 충실도 감사 2/2 misdeclared → 도훈 결정 대기)
+
+## 지금 상태 한 줄 (2026-09-06 18:20 · Q)
+
+- 루프 `enabled=true` · active = `RP_20260905_184253_720_adapted_rulefast_promo2`(depth 2 · 30칸 예산 · B1 10 / B5 5 측정 · **B2 5칸 재측정 중**).
+  어젯밤 23:14 B2 스폰 직후 노트북 절전 → 예약 tick 134회 누락 · 부모 러너 종료(SCHED_S_TASK_TERMINATED) · B2 결과 4칸이 원장 미기록.
+  17:45 tick 이 claim 을 **시간 폴백(18.5h>6h)** 으로 회수해 5칸 전부 재실행(4칸 18:00 완료 · B2_7 CDaR_LP 진행 중, 워커 상한 90분).
+  ★pid 검사는 못 잡았다 — 죽은 owner pid 12816 을 Windows 가 `Widgets` 에 재사용해 alive 로 읽혔다(칩 task_d57ff271).
+  ★재개 경로가 완료된 result_*.json 을 unlink 하고 재측정한다 — 중복 산출물·L-code(칩 task_19e90a34).
+- 어젯밤 B2 결과(재측정 전 값): B2_10 NCO+점수 B 2.107 · B2_8 cvar C 1.916 · B2_9 HRP C 1.436 · B2_6 minvar C 1.154 — 전부 carry(score_pure 2.749) 아래.
+  B5 기전의 처방("목적함수 비중이 MDD 0.60 을 깨는가")은 이 4칸으로는 MDD 0.545~0.609 = 못 깼다. CDaR_LP 가 결정적 칸.
+- **사후 충실도 감사(세션 손기동 · 6축 팬아웃 · 병합은 손으로 복구)**:
+  - `2404.08129`(활성 계보 기저) → **misdeclared**(22건 · signal/portfolio/cost/undeclared). 원문 §2 = SVD 초기값+경사하강(구현 rank+격자),
+    §5.7/Table 8 = 예측값 5분위 EW · P5롱/P1숏 · 반년 리밸 · 롤링 120M · 6M 보유 · 월 SR 0.15 — FIDELITY 는 "거래전략 없음·본문 열람 불가" 로 신고(거짓).
+  - `2006.04639`(F −2.874 · 소비됨) → **misdeclared**(5건): 일수익 정의(논문 일중 Σ5분차분 vs 구현 종가~종가) · VAR 실패월 처리 선언≠코드. 다리 반전은 사전 신고(adapted).
+  - 두 건 다 계약 처분 = `reimplement`(재구현 1회 + 소비 보류). **사후 적용은 도훈 결정** — 세션이 AskUserQuestion 발행(아래 열린 결정 ①).
+  - 산출: `04_Research/strategies/RP_AUTO_<key>/fidelity_audit.json`(+axis 6종) · jlog `audit_verified` 2건 · request 파일의 `fidelity_audit: unverifiable` 은 아직 낡은 값.
+  - ★팬아웃 병합이 세션 셸에서 죽는다(`Rscript -e "source('$ROOT…')"` + 백슬래시 QM_ROOT → 역슬래시-U 리터럴 즉사) — merge rc=1 인데 레인 exit 0. 손 복구 = 슬래시 경로로 병합 R 재실행 + `rf_fidelity_audit_lib.R verify`. 칩 task_392e9901. 카드 = 아카이브 feedback-lane-exits-0-after-merge-rc1-….
+- 부팅 `Queue:` 의 `20/25` 는 원장 루트 max_attempts(25)를 읽는다 — entry 값(30)을 무시(boot_lean.sh:84 `mx=d.get("max_attempts")`). 표시 결함, 미수리.
+- 무인 arm 생성 레인이 17:45 `ml_dual_forecast_tilt`(cross_sectional × ml 상태 · 두 예보의 상대 크기가 랭킹 축을 회전) 를 등재했다 — probe ok.
+
+## 19:16 집행 (도훈 결정 = "둘 다 재구현 예약")
+
+- `06_Registry/replication_request.json` → verify 의 reimplement 분기와 같은 형태로 되돌림: `status=pending · audit_retries=1 · audit_verdict=misdeclared ·
+  audit_feedback(계약 함수 rf_audit_disposition 산출 10,557자) · decided_by`. 구 done 필드는 `prior_implementation` 아래로. jlog `fidelity_reimplement_requested`(src session_posthoc).
+  → 활성 entry 가 있는 동안은 매 tick `halt_reinforce_active` 로 보류, **promo2 소진 → next_paper `halt_request_pending`(덮지 않음) → 다음 tick `reimplement_with_audit`**(Fable/max).
+- 엔진은 **복사** 보존(`engine.rejected1.R`) — 이름을 바꾸면 promo2 잔여 칸이 `base_signal.path` 로 engine.R 을 읽다 죽는다(rf_cell_engine.R:66). 기저 캐시 키는 md5(엔진)라 새 엔진과 안 섞인다.
+  ★소진 뒤 새 engine.R 이 같은 경로에 쓰이면 구 계보 3 entry 의 `engine_path` 는 낡은 값이 된다 — as-built 재현은 `engine.rejected1.R`.
+- `2006.04639` 는 `06_Registry/reimplement_queue.json`(신설 데이터 · order 2 · feedback 6,547자 · engine.rejected1.R 보존)에 예약. **소비자 없음** — next_paper 가 큐 상단보다 이 목록을 먼저 집는 경로는 칩(아래)이고, 그 전엔 세션이 2404 재구현 완료 후 같은 형태로 요청을 발행한다.
+- B2 재측정 결과(원장 기록 · 어젯밤 값과 동일 = 결정론): B2_10 NCO+점수 **B 2.107**(MDD 0.609) · B2_8 cvar C 1.916 · B2_9 HRP C 1.436 · B2_6 minvar C 1.154 — 전부 carry score_pure 2.749 아래 · MDD 0.545~0.609 로 B5 처방("목적함수 비중이 0.60 을 깨는가")은 minvar 0.545 가 깼지만 PORT_t 1.154 로 대가가 컸다.
+  **B2_7 CDaR_LP = 워커 90분 시간초과(`cell_missing` fail_count 1/`cell_max_retry`)** — 동시 부하(백필 64분 + 감사 에이전트 6 + 워커 5) 탓일 가능성. 다음 tick 이 단독 재실행. promo1 에서는 완주했었다(B2_9 C −0.576).
+- 남은 promo2: B2_7 재시도 → B3 5칸 → B4 5칸 → 소진 → 최고가 2.749 를 못 넘으면 승격 없음 → 위 재구현.
+
+## 열린 결정 (도훈) — 2026-09-06 추가
+
+- ① ~~misdeclared 2건의 사후 처분~~ → **결정됨 19:15 "둘 다 재구현 예약"(집행 완료, 위 절)**. 원안: (a) promo2 소진 전에 `replication_request.json` 을 reimplement 형태(pending·audit_retries 1·audit_feedback·engine.rejected1.R)로 되돌려
+  다음 무인 tick 에 2404.08129 를 §5.7 그대로 재구현(권장 — 계보 등급은 as-built 실측으로 유지, 귀속만 보류) / (b) 지금 중단·즉시 재구현 / (c) 현행 유지(정책 위반).
+  2006.04639 도 같은 형태로 재구현 요청 여부(F 판정 신뢰 — 수익 구간 차이가 F 를 뒤집을지 미측정).
+- ② 핸드오프 09-05 항목 6(감사 미실행 3건)의 수리안 3종 — 오늘 사례가 근거.
+- (이전 열린 결정 4종은 아래 09-05 절 그대로)
+
+---
+
 # 다음 세션 인계 — 2026-09-05 (무인 루프 가동 · 2404.08129 C → promo1 B2_10 B 2.749 → promo2 active(depth 2) · 하네스 수리 12건)
 
 ## 지금 상태 한 줄

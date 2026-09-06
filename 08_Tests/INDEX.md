@@ -1,6 +1,6 @@
 # 08_Tests INDEX
 
-> 자동 생성 2026-09-05 10:59 — 큐레이션 원본: `06_Registry/index_descriptions.json` (role/status/category 수동 보완처) · 재생성: `Rscript 02_Infrastructure/tools/build_artifact_index.R` (daily_refresh 말미 자동). 본 파일 직접 수정 금지 — 재생성 시 덮어씀.
+> 자동 생성 2026-09-06 19:02 — 큐레이션 원본: `06_Registry/index_descriptions.json` (role/status/category 수동 보완처) · 재생성: `Rscript 02_Infrastructure/tools/build_artifact_index.R` (daily_refresh 말미 자동). 본 파일 직접 수정 금지 — 재생성 시 덮어씀.
 
 ## 계약 (4)
 
@@ -15,7 +15,7 @@
 
 | 항목 | 정체 | status | 최근 | 크기 |
 |---|---|---|---|---|
-| `hooks/` | hook 배터리 dry-run 스위트(run_all_hooks.sh + role_guard/cert/sequence 테스트) — readiness gate·hook-debug skill이 직접 호출. _archive_codex_round_v8_2는 v8.2 폐지분 격리 | active | 2026-09-05 | 876KB |
+| `hooks/` | hook 배터리 dry-run 스위트(run_all_hooks.sh + role_guard/cert/sequence 테스트) — readiness gate·hook-debug skill이 직접 호출. _archive_codex_round_v8_2는 v8.2 폐지분 격리 | active | 2026-09-05 | 877KB |
 | `integration/` | WT lifecycle E2E + execution path + readiness gate 통합테스트 — readiness gate가 test_wt_lifecycle_e2e.R·_e2e_cleanup_guard.sh 직접 참조 | active | 2026-08-20 | 69KB |
 | `regime/` | 국면엔진 테스트 5종(ktri_v3·msm_daily_refit·fred_robust·briefing_partial·signal_merge) — 대상 코드 전부 02_Infrastructure/regime/에 현존 | active | 2026-09-02 | 90KB |
 
@@ -43,13 +43,13 @@
 |---|---|---|---|---|
 | `axiom` | (미분류 — index_descriptions.json에 추가하세요) | - | 2026-08-23 | 41KB |
 | `book` | (미분류 — index_descriptions.json에 추가하세요) | - | 2026-09-02 | 29KB |
-| `contracts` | (미분류 — index_descriptions.json에 추가하세요) | - | 2026-09-04 | 243KB |
+| `contracts` | (미분류 — index_descriptions.json에 추가하세요) | - | 2026-09-05 | 263KB |
 | `data` | (미분류 — index_descriptions.json에 추가하세요) | - | 2026-08-30 | 196KB |
 | `fixtures` | (미분류 — index_descriptions.json에 추가하세요) | - | 2026-09-04 | 3KB |
 | `lib` | (미분류 — index_descriptions.json에 추가하세요) | - | 2026-08-02 | 6KB |
 | `methods` | (미분류 — index_descriptions.json에 추가하세요) | - | 2026-08-13 | 21KB |
-| `ops` | (미분류 — index_descriptions.json에 추가하세요) | - | 2026-09-05 | 480KB |
-| `reinforcement` | (미분류 — index_descriptions.json에 추가하세요) | - | 2026-09-05 | 346KB |
+| `ops` | (미분류 — index_descriptions.json에 추가하세요) | - | 2026-09-05 | 507KB |
+| `reinforcement` | (미분류 — index_descriptions.json에 추가하세요) | - | 2026-09-05 | 397KB |
 | `validation` | (미분류 — index_descriptions.json에 추가하세요) | - | 2026-07-26 | 20KB |
 | `worktask` | (미분류 — index_descriptions.json에 추가하세요) | - | 2026-09-03 | 31KB |
 
