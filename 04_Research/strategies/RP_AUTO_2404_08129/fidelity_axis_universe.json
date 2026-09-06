@@ -1,0 +1,11 @@
+{
+  "axis": "universe",
+  "verdict": "adapted",
+  "undeclared_changes": [],
+  "signal_mismatch": [],
+  "counterexample": "구성 못 했다. 논문 원문(§2 데이터 문단, r.jina.ai 텍스트 프록시로 확인)은 상장거래소·가격 하한·금융주 제외·유동성 요건에 해당하는 단어(exclude/excluding/financial firm/delist/listing/NYSE/price filter/minimum price/liquidity/screen/restrict)가 전문 어디에도 없다 — 171개 시험자산은 개별 종목이 아니라 이미 구성된 자산군: 주식 = Ken French 라이브러리의 FF25(size×value) + FF25(size×OP) 정렬 포트폴리오 + 3개 팩터(=53) · 미국채 11(CRSP Fama Bond Portfolios) · 국제채 40(Datastream) · 상품 21(Datastream) · 통화 46(Nucera·Sarno·Zinna 2024 포트폴리오). 즉 논문 쪽에는 '선별 규칙'이라는 개념 자체가 없다(선별은 이미 인용된 지수/포트폴리오 구성사가 한 일이고 논문은 재서술하지 않는다) — 그래서 engine.R 의 멤버십(K200/KQ150 PIT)·유동성(adv20(t−1)≥2e8)·최소 관측 커버리지(.TMIN_I=12) 필터를 논문과 '다른 규칙'으로 대조할 지점이 원문에 없다. 이 결핍 자체는 FIDELITY.json changed_checklist 의 '유니버스·유동성' 행("paper: 171 다자산, 필터 없음")과 정확히 일치하며, 이번 세션 재확인으로 그 진술이 사실임을 확인했다.",
+  "evidence": "arxiv.org/pdf/2404.08129 (r.jina.ai 텍스트 프록시 — arxiv.org/html/2404.08129v1 는 §2 데이터 문단·§5.7·Table 8 이 빠진 이론부만 반환함을 이번 세션에서 재확인) §2 데이터 문단: 'we use the Fama and French (1993) 25 size and value sorted portfolios and the Fama and French (2015) 25 size and operating profitability sorted portfolios... These equity portfolios and factors are from Ken French's data library' / 'eleven maturity-sorted government bond portfolios from CRSP's Fama Bond Portfolios file' / 'Refinitiv Datastream Government Bond Indices for 8 advanced economies' / '21 commodity spot price indices from Datastream' / '46 portfolios from Nucera, Sarno, and Zinna (2024)'. 전문 검색 결과 exclude/financial firm/delisting/NYSE/liquidity/screen/restrict 류 표현 0건.",
+  "confidence": "high",
+  "checked": "FIDELITY.json changed(1)·changed_checklist 유니버스·유동성 행 vs 원문 §2 데이터 문단(자산군 구성·필터 언급 유무) · engine.R:233(MEM=K200|KQ150, 형성일 한정) · engine.R:327(.ELIG = MEM & ADV20_L1≥.LIQ) · engine.R:69(.LIQ=2e8) · engine.R:78(.TMIN_I=12, 커버리지 요건) 대조 · 원문 필터 관련 어휘 전수 검색",
+  "note": "논문의 171 자산은 개별 종목이 아니라 사전 구성된 포트폴리오/지수라 '상장거래소·가격 하한·금융주 제외' 같은 종목 단위 선별 규칙 자체가 원문에 없다. K200∪KQ150 개별 종목 전환 + 멤버십/유동성/커버리지 필터 부가는 전부 FIDELITY.changed 에 정직하게 선언돼 있고 이번 대조로 그 선언이 원문과 어긋나지 않음을 확인했다 — misdeclared 근거 없음."
+}
