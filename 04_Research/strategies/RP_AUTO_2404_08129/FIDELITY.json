@@ -1,15 +1,137 @@
 {
-  "fidelity": "adapted",
-  "kept": "논문의 단일 비선형 팩터 모형과 그 추정기를 그대로 옮겼다 — 식(1) r_it = h(f_t λ_i) + ε_it (f_t>0, λ_i>0, h 비모수 링크) · 식(4) ({c_j},{φ_t},{l_i}) = argmin Σ_i Σ_t (r_it − Σ_{j=0}^{K} c_j (φ_t l_i)^j)², 제약 φ_t ∈ (0,1] · l_i ∈ (0,1] · 다항식 시브 차수 K=4(논문 HFL 사양: 'degree of the polynomial used to approximate h(.) equal to 4' / 'polynomials of degree as low as four suffices for the majority of results') · 월간 수익률 빈도(논문 171자산 × 월간 360관측) · 횡단면 함의 = 자산의 기대수익이 단일 적재 λ_i 의 함수 E[h(f λ_i)] 로 묶인다. 신호 = 그 모형 함의 기대수익 Score_i = (1/T) Σ_t ĥ(φ̂_t l̂_i) (l̂_i 만의 함수 g(l) — 정렬 방향은 추정된 ĥ 의 형상이 정하고 부호 조작은 없다).",
-  "changed": "(1) 유니버스: 논문 171 시험자산(미국 주식 포트폴리오·미국/국제 국채·상품·통화 포트폴리오) → K200∪KQ150 개별 종목(PIT 시변 멤버십) + adv20(t-1) ≥ 2e8. (2) 산출 형태: 논문 = 횡단면 가격결정 검정(Fama-MacBeth adj.R²·MAPE, FF3/FF5/FF5+MOM 대비 α, 거래전략 없음) → 종목선택 FACTORS(Score = 모형 함의 기대수익) → 고정 축 top 25 · EW · 월간(러너 구성). (3) 추정 창: 논문 전표본 1회(T=360) → 매 월말 확장창(RAWDATA 가용 첫 달 ~ 시그널 월, 창 종점 = 시그널 월) 재추정. 롤링 창 길이 같은 논문 밖 수치를 새로 정하지 않기 위해 확장창을 택했다. (4) 불균형 패널: 논문 균형 패널 → 관측 셀만 합산(결측은 채우지 않음). 커버리지 요건 3종은 논문에 없다 — 종목 최소 24개월 관측(.TMIN) · 월 최소 20종 관측(.NMIN_T) · 시그널월 최소 횡단면 50종(.NMIN, 미달 월은 신호 미발행). (5) 추정 패널 = 시그널일 적격 종목만(그 종목들의 과거 전 이력). (6) 알고리즘(논문 본문의 계산 세부는 열람 불가 — 아래 (10)): 교대 최소화 — c 는 관측 셀 OLS, φ_t·l_i 는 (0,1] 100점 격자 전역 최소(각 블록 정확 최소화라 손실 단조 비증가), 최대 40 스윕·상대 개선 1e-6 수렴 후 격자 ±1칸 안에서 optimize 연속 정련(동점 제거). 초기값 = EW 패널평균 대비 종목별 기울기의 순위/N(l), 패널평균의 순위/T(φ). 논문 제약 |c_j| ≤ L 은 미부과(무제약 OLS). 격자 이산화는 논문 연속 모수공간의 근사다. (7) 초과수익 → 원수익: 일/월간 무위험 패널 부재로 항을 생략(날짜별 공통항이라 h 의 절편·φ_t 가 흡수, 횡단면 순위에는 무영향). (8) winsorize·clip·변동성 바닥 등 수치 가드 없음(논문 최소제곱 그대로; 비유한 종가만 제외). 난수 미사용(set.seed 는 선언 고정). (9) 논문이 K=0~5 등 여러 차수를 보고하는 것으로 보이나 헤드라인 HFL 사양 K=4 하나를 택했다. (10) ★원문 접근 한계 신고: 본문(PDF·arXiv HTML)이 이 세션의 도구로 판독 불가(PDF 렌더러 부재, HTML 수식 변환 파손, 텍스트 프록시 403)라 식(1)(4)·제약은 arXiv HTML 초반부에서, 데이터(171자산·월간 360관측·자산군)·K=4·FMB adj.R²/MAPE 평가는 SSRN/NBER 초록 및 검색 스니펫에서 확보했다. 표본 시작·종료 연도, 논문의 표본 외 설계, F_LN 팩터의 정확한 정의는 미확인이며 본 구현은 그것들에 의존하지 않는다.",
-  "paper_original_form": "다자산 횡단면 가격결정 모형 검정 — 171 시험자산(미국 주식 포트폴리오·미국/국제 국채·상품·통화 포트폴리오) × 월간 360 관측 패널에 r_it = h(f_t λ_i) + ε_it 를 다항식 시브(HFL, K=4)로 전표본 공동 추정(sieve 최소제곱), Fama-MacBeth 횡단면 회귀의 adj.R²·MAPE 로 FF3/FF5/FF5+MOM 등과 비교하고 알려진 금융·거시 팩터가 단일 팩터 통제 시 무의미해짐을 보이는 논문. 종목 정렬 포트폴리오·롱숏 전략·SR 보고는 없다.",
+  "fidelity": "faithful",
+
+  "fidelity_label_basis": "프롬프트 판정 순서 1단계(충실구현이 되는가 — 논문 그대로 신호·종목수·비중·리밸)에 해당한다. 신호(식1·식4·K=4·§2 추정 3단계·§5.1 예측값) · 분위(5, floor(N/5)×4 + 나머지) · 다리(P5 롱 / P1 숏) · 비중(EW) · 리밸(반년, 1월·7월 형성) · 추정창(확장, 첫 창 ≥120개월) · 보유(6개월)가 전부 논문값이다. 유일한 설계 변경은 유니버스 K200∪KQ150 이다. 아래 changed 의 나머지 항목은 설계 변경이 아니라 (i) 유니버스 치환이 강제한 처리(불균형 패널·KR 무위험) (ii) 논문이 값을 주지 않는 구현 상수 (iii) 측정 하네스·데이터 제약 (iv) 데이터 위생 가드이며, 신고 체크리스트 규약에 따라 전수 적는다. 감사자가 이를 '유니버스 외 변경'으로 세어 adapted 로 판정한다면 그 판정을 다투지 않는다 — 라벨보다 선언의 완전성이 우선이다.",
+
+  "kept": "논문 전부. 식(1) r_it = h(f_t λ_i) + ε_it (f_t>0 · λ_i>0 · h 비모수) · 식(4) argmin Σ_i Σ_t (r_it − Σ_{j=0}^{K} c_j (φ_t l_i)^j)² 제약 {c_j}∈R^{K+1}, {φ_t}∈(0,1]^T, {l_i}∈(0,1]^N · K=4(표 주석 'degree of the polynomial used to approximate the function h(.) equal to 4') · |c_j|≤L 은 논문 실무대로 무제약('In practice, we find that these constraints are not binding if the constant L is chosen large enough') · §2 추정 3단계 그대로: ① 초기값 = T×N 수익률 행렬의 제1 좌/우 특이벡터를 (0,1] 로 shift·scale ② 초기값에서 경사하강으로 국소최소 ③ {φ_t}·{l_i} 각 성분을 번갈아 재최적화, 기준함수 변화가 무시할 만해질 때까지 (c 는 언제나 OLS — 'optimization over {c_j} is easy as it can be implemented via OLS') · 데이터 = 월간 초과수익('Returns are monthly and in excess of the US risk-free rate') · 예측값 = §5.1 식(8) E[h(f_t λ_i)] 의 표본판 (1/T) Σ_t ĥ(φ̂_t l̂_i) · §5.7 그대로: 첫 120개월로 추정 → 예측수익으로 5개 포트폴리오 정렬(앞 4개 = floor(N/5), 마지막 = 나머지; 논문 171 → 34/34/34/34/35) → 등가중 → 다음 6개월 보유 → 추정창을 6개월씩 확장하며 반복 → 반년 리밸('rebalancing at a semi-annual frequency', 'Starting in January 1998' → 형성 1월·7월) · Table 8 의 전략 = P5 롱 / P1 숏(제로코스트) · 논문 보고 = 월 0.689%(연 8.28%) · 월 SR 0.147 (Panel A: P1 0.079% ~ P5 0.769%, n=240 개월).",
+
+  "changed": [
+    "(1) [유니버스 — 유일한 설계 변경] 논문 171 시험자산(주식 포트폴리오 53 · 미국채 11 · 국제채 40 · 상품 21 · 통화 46, 균형 패널 1988-01~2017-12) → K200∪KQ150 개별 종목(날짜별 PIT 시변 멤버십, engine.R MEM) + adv20(t−1) ≥ 2e8 KRW(engine.R ADV20_L1 = shift(frollmean(Close×Vol, 20), 1)). 지시 축. 형성일 적격 집합 = 추정 패널 = 정렬 집합(논문도 추정 자산 = 정렬 자산).",
+    "(2) [유니버스 치환이 강제한 것 — 불균형 패널] 논문은 균형 패널(각 자산 360관측). 개별 종목은 상장·상폐로 결측이 있다. 처리: 식(4)의 합은 관측 셀(M_ti=1)만 — 결측은 채우지 않는다(nafill/LOCF 0건). 관측이 하나도 없는 달은 φ_t 가 정의되지 않아 그 창에서 제외한다(engine.R kt). 종목 커버리지 요건 = 창 안 월간 관측 ≥ 12개월(.TMIN_I — 논문에 없는 우리 상수; 관측 1~2개짜리 종목의 l̂_i 는 정렬 잡음이라 하한을 뒀다. 12 는 달력 1년이라는 선택이며 논문 근거 없음). 미달 종목은 그 형성의 추정·정렬 양쪽에서 빠진다. ①의 SVD 초기값은 결측 셀을 0 으로 둔 행렬로 계산한다(초기값에만 영향, 목적함수는 관측 셀만).",
+    "(3) [유니버스 치환이 강제한 것 — 무위험] 논문 rf = Ken French 미국 1개월 T-bill. KR 대체 = ECOS KR_CD91(일별 호가, .cache/ecos_bond_rates.parquet — 저장소 FF 트래커의 표준 rf, ff5_kr_tracker.R:136). 타이밍: 월 m 의 rf_m = m−1 월의 마지막 CD91 호가(연 %)/100/12 — 사전 확정(C11: 일별 시장호가라 공표 시차 없음). 단순 /12 환산은 트래커와 같은 규약(트래커는 당월 평균, 본 엔진은 전월말 호가 = French RF 의 사전 확정 성격을 따름). rf 가 없는 달은 패널에서 제외(내부 결합)되므로 **추정창의 시작 = 수익률과 rf 가 함께 있는 첫 달**이다. ★1판(engine.rejected1.R:218)의 원수익 사용과 그 근거('h 절편·φ_t 가 흡수, 순위 무영향')는 철회한다 — 감사 지적대로 모형은 (t,i) 를 곱 φ_t l_i 로만 통과시켜 t-고유 가법항을 흡수할 수 없다. rf 패널이 없으면 엔진은 원수익으로 대체하지 않고 중단한다.",
+    "(4) [첫 형성일 — 논문 규칙 + 데이터 결정] 논문: 첫 추정 = 표본 첫 120개월, 이후 6개월씩 확장. 구현: 형성 후보 = 6월·12월 말 시그널(형성 = 1월·7월, 논문 'Starting in January 1998' 의 달력 위상) 중 확장창 길이 ip ≥ 120 인 첫 것부터(engine.R ip < .T0 → 스킵, 스킵 수 출력). 창의 시작은 (3)에 따라 CD91 커버리지가 정한다: RAWDATA 는 1990-01 부터(문서 qvest_v8_4_asymmetry_ml_sot.md:198)지만 ECOS 수집기 기본 시작이 2001-01-01(data_collector_ecos.R:136)이라 캐시가 그 기본값이면 rf 첫 달 = 2001-02, 120개월 도달 = 2011-01 → 첫 형성 = 2011-06-30 시그널(보유 2011-07~). 캐시가 1995-01 이전부터면 첫 형성 = 2004-12-30(보유 2005-01~). 어느 쪽인지는 엔진이 '월간 초과수익 패널 %d개월 (%s ~ %s)' 와 '형성 %d회 (%s ~ %s)' 줄로 출력한다 — 이 세션은 R 실행이 차단돼 캐시 커버리지를 직접 확인하지 못했다. ★120 하한을 지키는 대신 고정 축 구간 앞부분이 비는 쪽을 택했다(논문 첫 창 길이는 저자 선택값이라 줄이지 않는다). 대안(2005 부터 짧은 창으로 시작)은 강화 레인 probe 로 남긴다.",
+    "(5) [보유 6개월의 표현 — 월별 EW 재설정 행] 논문 'compute the equally-weighted average portfolio return in the following six months' + Table 8 이 월간 수익(n=240 = 40 형성 × 6개월; SE=SD/√240 정합)을 보고하므로 = 매월 EW 평균 포트폴리오 수익(월별 등가중 재설정)으로 읽었다. 구현: 형성 시그널 월말과 그 뒤 5개 월말에 **같은 구성·같은 EW 비중** 행을 낸다(engine.R h in 0:5). 구성은 형성일에만 바뀐다. 대안 독법(6개월 매수후보유 drift)은 채택하지 않았다 — 채택했다면 반년 시그널 1행만 내면 된다(하네스 Return.portfolio rebalance_on=NA 가 drift 를 만든다). 부수 효과 2건 신고: (a) 러너가 매 행 날짜의 K200∪KQ150 멤버십으로 행을 거른다(run_paper_replication.R:224-235 .apply_universe) — 보유 중 멤버십을 잃은 종목은 그 달부터 빠지고 하네스가 잔여 비중을 재정규화한다(논문은 6개월 고정 구성). (b) 하네스 비용 = Σ|Δ목표비중| × 15bps(replication_harness.R:107-118 weight_delta_approx)라 블록 안 재설정 행은 비용 0, 형성 시 양 다리 교체분만 부과 — 월별 재설정의 실제 거래는 과금되지 않는다(하네스 근사).",
+    "(6) [고정 축과의 충돌 — 선언] 실투형 고정 축(long-only · ≤25종)과 논문 형태(롱숏 · 분위당 적격 횡단면의 20% ≈ 36~70종 × 2다리)가 충돌한다. 충실구현 단계는 논문 그대로가 축이므로 롱숏·분위 그대로 낸다(construction=engine_direct). 러너는 engine_direct 를 자르지 않고 n_max 초과를 로그·감사에 남긴다(run_paper_replication.R:283-292). 실투형 변환(롱온리 top-25)은 강화 레인의 일이다. 폭은 논문처럼 비율(1/5)로 자르므로 종목수는 적격 횡단면 N 을 따라 변한다(N=181 → 36/36, N=343 → 68/71).",
+    "(7) [하네스 제약 — 첫 달 소실] 12월 말 시그널 행은 날짜가 2004-12-30 등 고정 축 시작 전이라 러너 start_date 필터(run_paper_replication.R:252, replication_harness.R:46)가 버린다. 첫 형성이 2004-12 인 경우 2005-01 보유월은 측정에서 빠지고 2005-02 행부터 산다. 엔진도 Date ≥ 2005-01-01 행만 낸다. 첫 형성이 2011-06 인 경우 해당 없음.",
+    "(8) [데이터 위생 — 부분월] RAWDATA 마지막 달력 월은 진행 중(부분월)으로 보고 월간 패널·시그널 격자에서 제외한다(engine.R .MI_LAST; ff5_kr_tracker.R:52 선례). 데이터가 정확히 월말에 끝나도 그 달은 제외된다 — 그 경우 마지막 재설정 행 하나가 빠지고 하네스는 직전 행을 데이터 끝까지 보유한다(구성 동일).",
+    "(9) [데이터 위생 — 월간 수익률 정의] 종목의 월간 종가 = 그 달 마지막 관측 종가(휴장·정지면 그 이전 거래일 값). 수익률은 연속한 두 달(GAP=1)에만 정의하고 결측 월이 끼면 그 달 수익률은 NA(채우지 않음). 비유한·0 이하 종가 행 제외(engine.R is.finite(Close) & Close > 0 — 1판 changed(8)이 '비유한만'이라 적었던 것을 정정). (Ticker,Date) 중복은 첫 행만 유지(발생 시 건수 출력). Vol 결측일은 거래대금 NA → 그 20일 창의 adv20 이 NA 라 그 기간 부적격(보수 방향). 윈저·클리핑·수익률 상하한 없음 — 논문 최소제곱 그대로라 데이터 오류 하나가 목적함수에 그대로 들어간다(신고).",
+    "(10) [구현 상수 — 논문이 값을 주지 않는 것 전수] (a) 열린구간 (0,1] 의 닫힌 근사 [EPS,1], EPS=1e-6 — 사영과 근 탐색에 닫힌 집합이 필요하다. 초기값 아핀 사상도 [EPS,1] 로 보낸다(min→EPS, max→1; 상수 벡터면 전부 1). (b) SVD 부호: 특이벡터 쌍 (u,v) 는 결합 부호가 임의라 Σ_i v_i > 0 이 되도록 둘을 함께 뒤집는다(적재 다수 양수 규약 — 논문 미명시). (c) 2단계 경사하강: (φ,l) 위의 사영 경사하강, c 는 매 수락 스텝 뒤 OLS 로 재해(프로파일 — 논문 '{c_j} 는 OLS'), Armijo 역추적(상수 1e-4, 반감 ≤40회, 수락 후 보폭 ×2), 정지 = 반복당 손실 상대개선 < 1e-7 또는 300회 또는 선탐색 실패. (d) 3단계: 모든 φ_t 를 동시에(고정 (c,l) 에서 t 별 목적함수는 분리됨) 8차 다항식의 [EPS,1] 위 정확 최소로 갱신 — 도함수(7차) 실근을 polyroot 로 구해 근·끝점·현재값 중 최소(허수부 허용 1e-7). l_i 도 대칭. 이어 c OLS. 정지 = 라운드당 기준함수 상대변화 < 1e-6('negligible' 의 우리 수치화) 또는 50라운드. (e) 실근 판정 허용치 1e-7, 도함수 계수는 최대 절대값으로 정규화(근 불변). (f) 초기 c = 초기 (φ,l) 에서의 OLS(논문은 c 초기값을 말하지 않음). (g) 난수 0건(SVD·polyroot 결정론적) — set.seed 없음.",
+    "(11) [단위] 논문은 % 단위, 구현은 소수. |c_j|≤L 을 부과하지 않으므로 목적함수는 r 의 스케일에 등변(c_j → c_j/100 이 같은 적합을 재현, (φ̂,l̂) 불변). 정지 규칙이 전부 상대 기준이라 단위에 무관.",
+    "(12) [선택한 칸] 논문은 K=2~5 등 여러 차수를 보고하나 헤드라인 HFL 사양 K=4 하나만 실행. L 은 논문 실무대로 무제약(위 kept 인용). 그 외 칸 선택 없음.",
+    "(13) [실패 처리 — 침묵 스킵 없음] OLS 계수 비유한(퇴화 설계행렬) · 초기 손실 비유한 · 예측수익 비유한 → 엔진 중단(stop). 1판의 NA→0 치환(engine.rejected1.R:119)·비유한 시 미발행(.nskip)은 제거. 남은 스킵 2종은 정의상 것뿐이고 둘 다 세어 출력한다: 창 < 120개월(논문 규칙) · 적격 N < 5(5분위 불가).",
+    "(14) [비용 — 병기값의 정체] 논문은 거래비용을 어디에도 두지 않는다(Table 8 = gross 초과수익). commission_paper=null → 러너가 0bps(gross)로 병기판을 돌려 authoritative_remeasure.json::replication.paper_basis 에 적는다(run_paper_replication.R:304-313). 그 블록은 **이 구현 자신의 무비용 재실행**이지 논문 보고 수치가 아니다 — 논문 수치는 위 kept 의 Table 8 값이다. 등급은 15bps 순비용 판.",
+    "(15) [원문 접근 — 1판 진술 철회] 1판 changed(6)(10)의 '본문 열람 불가' 는 철회한다. 전문은 arxiv.org/pdf/2404.08129 와 NBER w32365 PDF 를 텍스트 프록시(r.jina.ai)로 각각 독립 추출해 §2·§4·§5.7·Table 8 문장을 대조했고 두 추출이 일치한다(AX-008 2-source). 로컬 PDF(01_Literature/.../MCP_2404_08129.pdf)는 이 세션에서 렌더 불가."
+  ],
+
+  "paper_original_form": "다자산 횡단면 가격결정 논문. 171 시험자산(주식 53 · 미국채 11 · 국제채 40 · 상품 21 · 통화 46) × 월간 초과수익 360개월(1988-01~2017-12)에 단일 비선형 팩터 모형 r_it = h(f_t λ_i) + ε_it 를 다항식 시브(K=4) 최소제곱(식4)으로 §2 3단계(SVD 초기값 → 경사하강 → 성분별 재최적화)로 추정하고, Fama-MacBeth adj.R²·MAPE 로 FF3/FF5 등과 비교하며 알려진 팩터가 단일 팩터 통제 시 무의미해짐을 보인다. ★거래 설계도 있다(§5.7 Predictability, Table 8): 첫 120개월로 추정 → 모형 예측수익으로 자산을 5개 등가중 포트폴리오(34/34/34/34/35)로 정렬 → 다음 6개월 보유 → 창을 6개월씩 확장하며 40회 반복(반년 리밸) → P5 롱 / P1 숏 제로코스트 전략이 월 0.689%(연 8.28%) · 월 SR 0.147(연 0.51). 1판의 '정렬 포트폴리오·롱숏·SR 보고 없음' 진술은 오진술이었다.",
+
   "portfolio_spec": {
-    "construction": "top_n_long",
+    "construction": "engine_direct",
     "weighting": "ew",
-    "rebalance": "monthly",
-    "top_n": 25,
-    "n_long": 25,
-    "n_max": 25
+    "rebalance": "semi_annual_formation_JanJul__monthly_ew_reset_rows",
+    "n_quantiles": 5,
+    "quantile_size_rule": "floor(N/5) x 4, remainder in the top portfolio (paper: 34/34/34/34/35 of 171)",
+    "long_leg": "P5 = highest model-predicted return, EW, sum +1",
+    "short_leg": "P1 = lowest model-predicted return, EW, sum -1",
+    "holding_months": 6,
+    "estimation_window": "expanding, first window >= 120 months, re-estimated every 6 months",
+    "note": "engine_direct: weights are the paper's. n_max = 2 x ~20% of eligible cross-section (> fixed axis 25 by construction) and has_short = true — declared in changed(6)."
   },
-  "commission_paper": null
+
+  "commission_paper": null,
+
+  "source_paper": {
+    "title": "One Factor to Bind the Cross-Section of Returns",
+    "authors": "Nicola Borri, Denis Chetverikov, Yukun Liu, Aleh Tsyvinski",
+    "arxiv_id": "2404.08129",
+    "version_read": "v1 (2024-04-11) — arXiv PDF + NBER w32365 PDF, two independent text extractions",
+    "url": "https://arxiv.org/abs/2404.08129",
+    "fulltext_paths": ["https://arxiv.org/pdf/2404.08129 (via text proxy)", "https://www.nber.org/system/files/working_papers/w32365/w32365.pdf (via text proxy)"],
+    "note": "arxiv.org/html/2404.08129v1 returns only the theory sections (LaTeXML failure) — 171 assets, §5.7 and Table 8 are absent there."
+  },
+
+  "paper_values_used_unchanged": {
+    "model": "r_it = h(f_t lambda_i) + eps_it, f_t > 0, lambda_i > 0",
+    "estimator": "eq (4): argmin sum_i sum_t (r_it - sum_{j=0..K} c_j (phi_t l_i)^j)^2, phi in (0,1]^T, l in (0,1]^N",
+    "K": 4,
+    "c_constraint": "unconstrained OLS (paper: constraints not binding when L large enough)",
+    "estimation_steps": "1) first left/right singular vectors of the T x N return matrix shifted+scaled into (0,1]; 2) gradient descent to a local minimum; 3) re-optimize each phi_t and l_i in turn until the criterion change is negligible; c by OLS throughout",
+    "return_type": "monthly excess returns (rf = KR CD91 proxy for the US T-bill)",
+    "predicted_return": "(1/T) sum_t hhat(phihat_t lhat_i)  (Section 5.1 eq (8), expectation replaced by sample mean)",
+    "first_window_months": 120,
+    "window_type": "expanding by 6 months",
+    "n_portfolios": 5,
+    "portfolio_sizes": "floor(N/5) for the first four, remainder in the last",
+    "weighting": "equal-weighted",
+    "holding_months": 6,
+    "rebalance": "semi-annual, formation in January and July",
+    "strategy": "long P5 (highest predicted), short P1 (lowest predicted)",
+    "paper_reported": "long-short monthly mean 0.689% (8.28% p.a.), monthly Sharpe 0.147 (0.51 annualized), n = 240 months, gross of costs"
+  },
+
+  "changed_checklist": [
+    { "axis": "값 하한·상한·커버리지", "paper": "균형 패널 — 요건 없음", "ours": "종목 창 안 관측 ≥ 12개월(.TMIN_I) · 달 관측 ≥ 1 · 형성 적격 N ≥ 5(5분위 정의) · 창 ≥ 120개월(논문)", "why": "불균형 패널 전용. 12 는 우리 상수" },
+    { "axis": "수치 가드", "paper": "없음", "ours": "[EPS,1] 박스(1e-6) · 실근 허용 허수부 1e-7 · 도함수 계수 정규화 · 상수 특이벡터 → 전부 1. 분모 0 가드·NA 치환·winsorize·clip 없음", "why": "열린구간과 근 탐색의 닫힌 근사. 값 치환은 0건" },
+    { "axis": "결측 처리", "paper": "없음(균형)", "ours": "관측 셀만 합산 · SVD 초기값 행렬은 결측 0 · 수익률은 연속 월만 · 부분월 제외 · Vol 결측 = adv20 NA", "why": "채우지 않는다(LOCF 0건)" },
+    { "axis": "난수·초기값·재현", "paper": "SVD 초기값(명시)", "ours": "SVD 초기값 그대로 + 결합 부호 Σv>0 + [EPS,1] 아핀 사상 · c 초기 = OLS · 난수 0건 · 앙상블 0건", "why": "논문 미명시 세부 3종 신고" },
+    { "axis": "창·워밍업", "paper": "첫 120개월, 6개월씩 확장", "ours": "동일. 창 시작 = 수익률·CD91 공존 첫 달(데이터 결정). 첫 형성 = 창 ≥120 인 첫 6/12월 말", "why": "rf 커버리지가 첫 형성일을 정한다 — changed(4)" },
+    { "axis": "여러 설정 중 선택", "paper": "K 2~5 보고, L 명시 안 함", "ours": "K=4 헤드라인, L 무제약", "why": "표 주석·실무 문장" },
+    { "axis": "수식 근사", "paper": "경사하강(보폭·정지 미명시) · 성분별 재최적화(정지 미명시)", "ours": "사영 GD + Armijo(1e-4, ≤40 반감, 300회, 1e-7) · 성분별 정확 최소(polyroot) 라운드 ≤50, 1e-6", "why": "논문 절차의 수치화. 다항식 근으로 푸는 1차원 최소화는 근사가 아니라 정확해" },
+    { "axis": "리밸·보유 표현", "paper": "반년 형성, 6개월 EW 평균수익", "ours": "형성 반년(1월·7월) + 월별 EW 재설정 행 6개", "why": "changed(5) — 월별 EW 평균의 직독. 하네스 멤버십 재필터·비용 근사 신고" },
+    { "axis": "유니버스·유동성", "paper": "171 다자산, 필터 없음", "ours": "K200∪KQ150 PIT + adv20(t−1) ≥ 2e8", "why": "지시 축" },
+    { "axis": "무위험", "paper": "US 1M T-bill", "ours": "KR CD91 전월말 호가 /100/12", "why": "changed(3)" },
+    { "axis": "비용", "paper": "없음(gross)", "ours": "commission_paper=null → 러너 0bps 병기 + 15bps 등급", "why": "changed(14)" }
+  ],
+
+  "audit_response_v1": {
+    "note": "1판(engine.rejected1.R) 적대 감사 22건에 대한 처분. '수정' = 이번 판에서 논문으로 되돌림, '선언' = 남아 있으나 위 changed 에 적음, '반박' = 원문 근거로 논문 정합을 주장.",
+    "undeclared_changes": [
+      "① 초기값 SVD → 수정: 제1 좌/우 특이벡터 + (0,1] 아핀 사상(engine.R .fit_hfl ①). 세부(결측 0·부호·EPS)는 changed(2)(10) 선언",
+      "② 최적화기 → 수정: 사영 경사하강(②) + 성분별 재최적화(③). 격자 탐색 제거. 상수는 changed(10) 선언",
+      "③ '열람 불가' 진술 → 철회(changed 15). 전문 2-source 대조",
+      "④ 5분위 EW → 수정: floor(N/5)×4 + 나머지, EW(engine.R nb, i_lo, i_hi)",
+      "⑤ 롱숏 → 수정: P5 롱 Σ+1 / P1 숏 Σ−1, engine_direct. 고정 축 충돌은 changed(6) 선언",
+      "⑥ paper_original_form 오진술 → 수정(§5.7·Table 8 기재)",
+      "⑦ 폭(절대 종목수 vs 비율) → 수정: 분위(비율). N 에 따른 종목수 변동은 changed(6) 선언",
+      "⑧ commission null → 0bps paper_basis 병기 → 선언(changed 14)",
+      "⑨ cf NA→0 → 수정: 제거, 비유한이면 중단(changed 13)",
+      "⑩ 분모 0 가드 2종 → 수정: 해당 코드 없음(초기값이 순위/기울기가 아니라 SVD). 아핀 사상의 상수 벡터 처리는 changed(10a) 선언",
+      "⑪ 침묵 스킵 → 수정: 수치 실패 = 중단. 남은 스킵은 정의상 2종뿐이고 출력(changed 13)",
+      "⑫ Close>0 필터 → 선언(changed 9)",
+      "⑬ 중복행 제거 → 선언(changed 9)",
+      "⑭ .TMIN 재사용 → 수정: 120(논문 .T0)과 12(우리 .TMIN_I)로 분리, 패널 월수 하한은 논문 120 하나(changed 2·4)",
+      "⑮ 부분월 → 수정: 마지막 달 제외(changed 8)",
+      "⑯ optimize 하한 step/10 → 수정: 제거. 박스 [EPS,1] 로 통일(changed 10a)"
+    ],
+    "signal_mismatch": [
+      "⑰ 초과수익 → 수정: CD91 초과수익(changed 3). '무영향' 근거 철회",
+      "⑱ 초기값이 국소해를 정한다 → 수정: 논문 초기값 채택",
+      "⑲ 숏 다리 부재 → 수정",
+      "⑳ '포트폴리오 산출 없다' 전제 → 철회, §5.7 구현",
+      "㉑ 무제약 OLS + NA→0 → NA→0 제거(수정). 무제약 OLS 는 반박: 논문 '|c_j| ≤ L ... In practice, we find that these constraints are not binding if the constant L is chosen large enough' — L 을 충분히 크게 잡은 실무와 무제약은 같은 추정치다",
+      "㉒ rf 생략 근거 → 철회(changed 3)"
+    ],
+    "timing_axis_previously_unverifiable": "이번 판은 §5.7 문장으로 확정: 형성 반년(1월·7월) · 보유 6개월 · 추정창 첫 120개월 확장 · 스킵 없음. 코드 상수 .T0=120 · .HOLD=6 · .FORM_M=c(6,12)."
+  },
+
+  "pit_notes": {
+    "signal_date": "월 마지막 거래일 d. 러너 집행 = 익월 첫 거래일(backtest_harness.R get_execution_date) → 창 종점 = t−1 구조 성립.",
+    "estimation_window": ".RM[seq_len(ip), ] — ip = 시그널 월 행. ip 초과 행을 읽는 코드가 없다. 전 표본 통계 0건(SVD·OLS·경사하강 전부 창 내부).",
+    "risk_free": "월 m 의 rf = m−1 월 마지막 CD91 호가 — 월 시작 전에 확정된 값(C11).",
+    "liquidity": "adv20 = shift(frollmean(Close×Vol, 20), 1) by Ticker (C10, t−1).",
+    "membership": "형성일 d 의 K200/KQ150 플래그 (C6). 월별 재설정 행은 러너가 다시 그 날짜 멤버십으로 거른다.",
+    "sign": "부호 조작 0건. 정렬 방향 = 추정된 ĥ 의 형상이 정하는 예측수익 오름차순(P1 최저, P5 최고) — 논문 정의.",
+    "not_used": "Factor DB 미접근(C14/C15 무관) · 재무 패널 미사용(C4 무관) · 오버레이 0건(C5 무관) · shift(-N)/lead/수동 미래 인덱싱 0건."
+  },
+
+  "engine_contract": {
+    "output": "PORTFOLIO(Date, Ticker, Weight, Leg)",
+    "long_gross": 1.0,
+    "short_gross": 1.0,
+    "rows": "형성 시그널 월말 + 뒤 5개 월말(같은 구성, EW 재설정). Date ≥ 2005-01-01 만 발행.",
+    "expected_n_max": "≈ 2 × 20% × 적격 횡단면 (72~140) — 고정 축 25 초과는 논문 정의상. engine_direct 라 러너가 자르지 않는다.",
+    "dependencies": ["data.table", "arrow"],
+    "external_input": ".cache/ecos_bond_rates.parquet (Series == KR_CD91) — 부재 시 중단",
+    "runtime_note": "형성 1회당 SVD + GD ≤300회 + 재최적화 ≤50라운드(T ≤ ~430, N ≤ ~350). 이 세션은 R 실행이 차단돼 실측 미실행 — 러너 로그의 형성별 손실 궤적·시간 줄로 확인."
+  }
 }
