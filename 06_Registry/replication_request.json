@@ -1,78 +1,312 @@
 {
- "requested_at": "2026-09-06T22:34:45+0900",
- "source": "rf_combination_launch",
- "reason": "논문 결합 — LLM 전략설계 후 충실구현 1회로 기저를 측정한다(도훈 지시 2026-09-04)",
- "paper": {
-  "title": "결합: One Factor to Bind the Cross-Section of Returns + Maximum drawdown, recovery, and momentum + Pinchuk (2023) Labor Income Risk and the Cross-Section of Expected Returns + Uncovering a factor-based expected return conditioning structure with Regression Trees jointly for many stocks",
-  "paper_title": "결합: One Factor to Bind the Cross-Section of Returns + Maximum drawdown, recovery, and momentum + Pinchuk (2023) Labor Income Risk and the Cross-Section of Expected Returns + Uncovering a factor-based expected return conditioning structure with Regression Trees jointly for many stocks",
-  "url": "https://arxiv.org/abs/2404.08129",
-  "paper_key": "combo:1403.8125+2007.08115+2301.09173+2404.08129",
-  "source": "combination"
- },
- "combo": {
-  "setkey": "1403.8125+2007.08115+2301.09173+2404.08129",
-  "k_items": 4,
-  "n_papers": 4,
-  "papers": [
-   {
-    "key": "2404.08129",
+  "requested_at": "2026-09-06T22:34:45+0900",
+  "source": "rf_combination_launch",
+  "reason": "논문 결합 — LLM 전략설계 후 충실구현 1회로 기저를 측정한다(도훈 지시 2026-09-04)",
+  "paper": {
+    "title": "결합: One Factor to Bind the Cross-Section of Returns + Maximum drawdown, recovery, and momentum + Pinchuk (2023) Labor Income Risk and the Cross-Section of Expected Returns + Uncovering a factor-based expected return conditioning structure with Regression Trees jointly for many stocks",
+    "paper_title": "결합: One Factor to Bind the Cross-Section of Returns + Maximum drawdown, recovery, and momentum + Pinchuk (2023) Labor Income Risk and the Cross-Section of Expected Returns + Uncovering a factor-based expected return conditioning structure with Regression Trees jointly for many stocks",
     "url": "https://arxiv.org/abs/2404.08129",
-    "title": "One Factor to Bind the Cross-Section of Returns"
-   },
-   {
-    "key": "1403.8125",
-    "url": "https://arxiv.org/abs/1403.8125",
-    "title": "Maximum drawdown, recovery, and momentum"
-   },
-   {
-    "key": "2301.09173",
-    "url": "https://arxiv.org/abs/2301.09173",
-    "title": "Pinchuk (2023) Labor Income Risk and the Cross-Section of Expected Returns"
-   },
-   {
-    "key": "2007.08115",
-    "url": "https://arxiv.org/abs/2007.08115",
-    "title": "Uncovering a factor-based expected return conditioning structure with Regression Trees jointly for many stocks"
-   }
-  ],
-  "item_engines": [
-   {
-    "key": "2404.08129",
-    "engine": "C:/Users/99922/OneDrive/Quant_Module_Moltbot/04_Research/strategies/RP_AUTO_2404_08129/engine.R",
-    "t": 2.749
-   },
-   {
-    "key": "1403.8125",
-    "engine": "04_Research/strategies/RP_AUTO_1403_8125/engine.R",
-    "t": 2.567
-   },
-   {
-    "key": "2301.09173",
-    "engine": "C:/Users/99922/OneDrive/Quant_Module_Moltbot/04_Research/strategies/RP_2301_09173_CID/engine.R",
-    "t": 1.228
-   },
-   {
-    "key": "2007.08115",
-    "engine": "C:\\Users\\99922\\OneDrive\\Quant_Module_Moltbot/04_Research/strategies/RP_AUTO_2007_08115/engine.R",
-    "t": 1.11
-   }
-  ],
-  "parent_t": [
-   2.749,
-   2.567,
-   1.228,
-   1.11
-  ],
-  "best_parent_t": 2.749,
-  "tries_before": 0,
-  "axis": "n_max_25",
-  "dilution_test": "희석 판정 = 설계 기저 PORT_t vs 최고 재료 t 2.749 (같은 축). 기록만 하고 차단하지 않는다 — 격자는 기저 **위에** 쌓으므로 재료보다 낮은 기저에서도 강화가 뒤집을 수 있다.",
-  "count_paper": false
- },
- "status": "in_progress",
- "started_at": "2026-09-06T23:40:31+0900",
- "audit_retries": 1,
- "audit_feedback": "- 미신고 변경: [signal] 논문 §2 3단계 ①은 초기값을 '제1 좌/우 특이벡터 of the T×N matrix {r_it}' 로 규정한다(171자산×360월 완전패널). 구현은 특이벡터를 관측행렬이 아니라 **결측셀을 숫자 0 으로 대체한 행렬**에서 뽑는다 — engine.R:525 `R0 <- Rm; R0[!M] <- 0` 로 만든 R0 를 engine.R:272 `sv <- svd(R0, nu=1L, nv=1L)` 에 그대로 넘긴다. 퍼센트 초과수익 단위에서 0 은 '그 달 무위험 수익을 정확히 냈다'는 값이므로, 미상장/미관측 달이 관측치로 계산에 들어간다. 손실함수(engine.R:268)·OLS(engine.R:256)·블록 최소화(engine.R:221-229)는 전부 마스크 Mn 으로 결측을 제거하지만 **svd 호출만 마스크를 받지 않는다** — 결측 0 대체가 답에 새는 유일한 지점이다. FIDELITY.changed ③ 은 (16) 에서 'SVD 초기값의 결합 부호 규약(Σv > 0)과 [eps,1] 아핀 사상' 두 가지만 신고하고, (22) 의 수치 가드 목록에도 결측 0 대체는 없다. ③ 의 자기 선언 범위가 '논문에 없는데 넣은 것 / 논문과 다르게 한 것 **전부**'이고 같은 목록이 '거래량 결측 = 그날 거래대금 0'·'(Ticker,Date) 중복은 첫 행' 같은 더 작은 항목까지 신고하고 있으므로, 이 누락은 신고 입도의 문제가 아니다. 영향 경로: 초기값 → (비볼록) 사영 GD·성분별 재최적화의 국소해 → (ĉ, φ̂, l̂) → ε_im = x_im − ĥ(φ̂_m l̂_i) → Score 전량. ★영향의 크기는 측정하지 않았다(엔진 실행 금지) — 확실한 것은 구현이 논문이 지정한 행렬과 다른 행렬의 특이벡터를 쓴다는 사실이고, engine.R:598 이 인쇄하는 loss_init 이 그 크기의 관측지점이다.\n- 미신고 변경: [undeclared] 논문 §2 1단계는 'the first left and right singular vectors of the T × N matrix {r_it}' 를 초기값으로 쓰라고 하고, 그 행렬은 §4 의 균형 패널(171자산 × 360개월, 'constructing a balanced long sample')이라 결측 셀이 없다 — 결측 처리 규칙을 원문은 한 줄도 주지 않는다. 구현은 결측 셀을 **0 으로 채운 행렬에 SVD 를 돌린다**(engine.R:525 `R0 <- Rm; R0[!M] <- 0` → engine.R:272 `sv <- svd(R0, nu=1L, nv=1L)`). FIDELITY.changed (16) 은 SVD 초기값에서 물려받은 자유도를 **부호 규약(Σv>0)과 [eps,1] 아핀 사상 두 가지로 명시 열거**하고 (15) 는 수치 상수 9종을 열거하는데, 이 결측-0 채움은 어느 쪽에도 없다. ★이 채움은 엔진 전체에서 정확히 한 곳에서만 결과를 바꾼다: 손실(engine.R:268 `E <- M*(...)`)·OLS(engine.R:256 `obs <- which(M>0)`)·경사(engine.R:285 `G <- (M*(...))*...`)·성분별 최소화(engine.R:226~228 `lin <- -2*(Rm %*% A)` · `coef <- Mm %*% B`)는 전부 마스크를 받아 결측이 중립인데, engine.R:272 의 svd() 만 마스크를 받지 않는다. 그리고 논문 §2 2단계는 그 초기값에서 'a **local** minimum' 만 찾는다고 명시하므로 초기값이 최종 (ĉ, φ̂, l̂) 을 고른다 — 이 판의 Score 는 전부 그 적합의 잔차다. 선언된 (4)('적합 유니버스를 그 달에 존재했던 종목 전체로 넓혔다')가 결측률을 **키우는** 변경이라 미신고 항목의 하중은 v2 보다 커졌다.\n- 미신고 변경: [undeclared] 월 단위 커버리지 문턱이 선언에 없다. FIDELITY.changed (4) 는 **종목당** 최소 월간 관측 ≥ 12(.TMIN_I)만 신고한다. 코드는 그 외에 **월당** 문턱을 따로 두고 있고 그 값은 1 이다 — engine.R:521 `kt <- rowSums(M) >= 1L`(적합 행 선택), engine.R:544 `ph[rowSums(Mn) < 1] <- NA_real_`(확장 월). 즉 횡단면 관측이 단 1개인 달도 자기 몫의 자유 파라미터 φ_t ∈ [eps,1] 를 받아 식(4)에 들어간다. 논문의 패널은 매달 171자산이라 이런 달이 없고 원문은 이 문턱을 정의하지 않는다. (★본 감사는 이 달이 실제로 발생했는지 확인하지 못했다 — 엔진 stdout 이 산출물에 남아 있지 않고 백테스트 실행은 금지다. 미신고 사실 자체는 확정, 발화 여부는 미확인.)\n- 미신고 변경: [undeclared] FIDELITY.changed (15) 은 '구현 상수 **9종** 승계'로 목록을 닫고 (22) 는 '나머지 수치 가드'를 8항목으로 열거하는데, 코드에는 그 목록 밖의 판정 상수가 더 있다 — engine.R:514 `length(cols) < 5L` · engine.R:519 `sum(ki) < 5L`(둘 다 적합 자체를 포기) · engine.R:524 `length(rows) < 2L` · engine.R:620 `length(elig) < 2L` · engine.R:630 `length(lv) < 2L` · engine.R:635 `sum(okc) < 2L`. 또 engine.R:542 `cur <- rep(stats::median(st$phi, na.rm=TRUE), ...)` 와 engine.R:560 `cur <- rep(stats::median(st$l), ...)` 는 논문에 없는 시작값이고, engine.R:234 `if (!all(is.finite(cr))) next` 는 그 시작값(=중앙값)을 **인쇄 없이** 그대로 채택하는 침묵 폴백이다 — (17) 이 신고한 '인쇄되는 폴백'(적합 실패 시 직전 상태 유지 + 건수 인쇄)과 대비된다. 개별 영향은 작지만 ③ 머리글의 '전부'와 (15) 의 '9종'이라는 닫힌 수치 선언이 사실과 다르다.\n원문 근거: [signal] [H] arXiv:2404.08129 — arxiv.org/html/2404.08129v1 은 이론부만 렌더(§4 자료·§5.7·Table 8 부재)이고, 그 부분은 r.jina.ai 텍스트 프록시 경유 arXiv PDF 로 확보(FIDELITY (21) 의 접근 신고와 본 감사 판독이 일치 — 재도출로 확인). ▸식(1) 'r_{it}=h(f_t λ_i)+ε_{it}, i=1,…,N, t=1,…,T' · 'f_t > 0' · 'λ_i > 0'(h 의 단조·볼록 가정은 없음 — 두 판독 일치, 엔진 헤더 (H8) 과 정합). ▸식(4) argmin Σ_i Σ_t (r_it − Σ_{j=0}^{K} c_j(φ_t l_i)^j)², {c_j}∈ℝ^{K+1} · {φ_t}∈(0,1]^T · {l_i}∈(0,1]^N, 별도로 '|c_j| ≤ L for all j = 0,…,K' + 'In practice, we find that these constraints are not binding if the constant L is chosen large enough' → engine.R:257-265 의 무제약 lm.fit OLS 는 이 문장에 근거해 정당(FIDELITY kept ② 의 인용도 축자 일치). ▸§2 3단계 축자: 'First, we calculate the initial values of {φ_t} and {l_i} as the first left and right singular vectors of the T × N matrix {r_it}.' / 'Second, we perform gradient descent starting from the initial values to find a local minimum.' / 'Third, we reoptimize each component of the sequences {φ_t} and {l_i} in turn multiple times until the change in the criterion function from reoptimization becomes negligible.' ← **위 undeclared 항목의 근거는 이 첫 문장**. ▸차수: Table 주석 'degree of the polynomial used to approximate the function h(.) equal to 4' → engine.R:168 `.K <- 4L` 일치. ▸자료: 'Returns are in excess of the U.S. risk-free rate and reported in percentage.' · 'The sample period is January 1988 to December 2017' · 171 자산 → engine.R:171 `.UNIT <- 100`·engine.R:461 `X := (R - RF)*100` 일치. 윈저·트리밍·표준화 언급 없음 → engine.R 도 없음(일치). ▸§5.7 전문: 'We start by estimating the model on all 171 assets and the first 120 months of data. Next, we use the model predicted returns to sort assets in five portfolios, and compute the equally-weighted average portfolio return in the following six months. Finally, we repeat the procedure expanding the estimation window by 6 months each time until the end of the sample (i.e., we repeat the procedure 40 times…).' → **확장창**(롤링 아님) 확정 · engine.R:516 `Rm <- .RM[seq_len(ip0), ci]`(패널 첫 달~형성월, 최소 120 = engine.R:169·573) 및 engine.R:170 반년 재적합과 일치. 룩백 종점 = 정렬 시점 t 포함 — 구현도 형성월 f 포함(engine.R:613 `wr <- seq.int(ip-5, ip)`) 일치. ▸잔차 ε 를 정렬·모멘텀·경로에 쓰는 서술은 원문에 없음(정렬은 'predicted values' 뿐) — 구현의 잔차 경로 사용은 논문 밖이고 FIDELITY.changed ① 에 선언돼 있음. [A] arXiv:1403.8125 — arxiv.org/html/1403.8125v1 직접 판독: §2 'MDD = max_{τ∈(0,T)}(max_{t∈(0,τ)}(P(t)−P(τ)))' (P = log-price) · 'C = R_I + R_II + R_III = PP − MDD + R' · Table 1 **CM = (1,2,1)** (C(1,1,1)·M(0,1,0)·R(0,0,1)·RM(0,1,1)·CR(1,1,2)·CMR(1,2,2)) · §3.2 '6 months (weeks) of estimation period' · 'sorted in ascending order' · 10 그룹 · 'winner group is at long position' · 보유 6개월 오버래핑 · **스킵 구간 서술 없음** · 형성창 내부 표본주기 미명시. → engine.R:174 `.W <- c(1,2,1)`, engine.R:337 `.W[1]*RI + .W[2]*RII + .W[3]*RIII` = R_I+2R_II+R_III = C+R_II = C−MDD(∵R_II=−MDD) 대수 일치 · engine.R:332-336 의 ts=argmin(path−cummax)·tp=argmax(path[1..ts]) 는 §2 의 t*·peak 정의와 일치 · 부호 무반전(engine.R:669 내림차순 = 오름차순 정렬의 승자군) 일치. 로그가격→월간 가산경로 치환과 월간 해상도는 FIDELITY.changed ③(11) 에 선언됨. / [timing] [A] arxiv.org/html/1403.8125v1 §3.1~3.2(형성 6개월/보유 6개월 overlapping, 스킵 언급 없음, 매월 초 신규 구성) · [H] arxiv.org/html/2404.08129v1 §5.7(H6 인용, 반년 보유·반년 재추정, 첫 120개월 확장창) — engine.R 108~183행 상수, 566~614행 형성월 루프, FIDELITY.json portfolio_spec(26~33행) 및 changed ③(3)(6행) 대조. / [universe] 1403.8125 arxiv.org/html/1403.8125v1 §3.1(Dataset) — 'The KOSPI 200 is a stock benchmark index ... value-weighted and sector-diversified index with 200 stocks', 가격/시총/업종 선별기준 및 상장폐지 처리 서술 부재(WebFetch 확인). 2404.08129 §5.7 — 자산 유형이 주식/채권/상품/통화 포트폴리오로, 종목 단위 유동성/거래소 필터 대상이 아님. / [portfolio] [H] arXiv:2404.08129 §5.7 Predictability + Table 8 (arxiv.org/html/2404.08129v1 은 이론부만 렌더 — §5.7·Table 8 부재를 본 감사가 직접 재확인. 전문은 r.jina.ai 프록시 2-source: arXiv PDF + NBER w32365 PDF, 두 판독 일치). 축자: ①분위 수 = 'we use the model predicted returns to sort assets in five portfolios' ②비중 = 'compute the equally-weighted average portfolio return in the following six months' (Table 8 캡션도 'equally-weighted average portfolio return') ③레그 = 'zero-cost long-short strategy, wherein assets with the highest predicted returns are bought while those with the lowest predicted returns are sold short' · 'Portfolio 1 groups the assets with, each period, the lowest predicted returns ... Portfolio 5 ... the highest predicted returns' ④종목수 = 171 자산 5분위 → 레그당 ~34 ⑤보유 = 6개월·반년 리밸 40회. Table 8: P1 0.079% · P5 0.769% · LS 0.689%/월 · 월 SR 0.147. ★NBER 판독은 '논문 어디에도 value-weighted 정렬은 없다'로 응답 — 원문 비중 축은 EW 단일. / [cost] [H] arxiv.org/html/2404.08129v1 전문 대조(본 세션) — transaction cost/commission/market impact/turnover 언급 0건, §5.7(5분위 포트폴리오 소트·확장창·6개월) 포함 전 절 무비용 서술. [A] arxiv.org/html/1403.8125v1 전문 대조(본 세션) — 자기 분석에 거래비용 미적용, 참고문헌 인용 문맥에서만 1회 등장. FIDELITY.json paper_original_form 필드도 '거래비용 언급 없음(gross)'/'gross' 로 동일하게 신고. / [undeclared] arxiv.org/html/2404.08129v1(§1~§3 이론부만 렌더) + r.jina.ai 경유 arXiv PDF(§4·§5.7·Table 8·Assumption 3.2). ①§2 Motivation and Estimation: 'we calculate the initial values of {φ_t} and {l_i} as the first left and right singular vectors of the T × N matrix {r_it} shifted and scaled', 'we perform gradient descent starting from the initial values to find a local minimum of the optimization problem', 'we reoptimize each component ... until the change in the criterion function ... becomes negligible', 'the optimization over {c_j} is easy as it can be implemented via OLS', 'it is then without loss of generality to assume that both f_t and λ_i are taking values in the (0,1] interval'. ②식(4) 제약집합 {c_j} ∈ R^{K+1} · {φ_t} ∈ (0,1]^T · {l_i} ∈ (0,1]^N. ③Assumption 3.2: 'In practice, we find that these constraints are not binding if the constant L is chosen large enough'. ④§4 Data and Summary Statistics: 171자산(주식53·미채권11·국제채권40·상품21·통화46), 1988-01~2017-12, 자산당 360 월간 관측, 'guided by the objective of constructing a balanced long sample' — **결측·불균형 패널·자산별 최소 관측수 규칙은 원문 어디에도 없다**. ⑤§5.7/Table 8: 첫 120개월 확장창 · 예측수익 5분위 EW · 6개월 보유 · 반년 확장 40회 · 'the first four portfolios contain 34 assets each'. ⑥Table 8 주석 K=4.",
- "audit_verdict": "misdeclared",
- "audit_at": "2026-09-06T23:35:51+0900"
+    "paper_key": "combo:1403.8125+2007.08115+2301.09173+2404.08129",
+    "source": "combination"
+  },
+  "combo": {
+    "setkey": "1403.8125+2007.08115+2301.09173+2404.08129",
+    "k_items": 4,
+    "n_papers": 4,
+    "papers": [
+      {
+        "key": "2404.08129",
+        "url": "https://arxiv.org/abs/2404.08129",
+        "title": "One Factor to Bind the Cross-Section of Returns"
+      },
+      {
+        "key": "1403.8125",
+        "url": "https://arxiv.org/abs/1403.8125",
+        "title": "Maximum drawdown, recovery, and momentum"
+      },
+      {
+        "key": "2301.09173",
+        "url": "https://arxiv.org/abs/2301.09173",
+        "title": "Pinchuk (2023) Labor Income Risk and the Cross-Section of Expected Returns"
+      },
+      {
+        "key": "2007.08115",
+        "url": "https://arxiv.org/abs/2007.08115",
+        "title": "Uncovering a factor-based expected return conditioning structure with Regression Trees jointly for many stocks"
+      }
+    ],
+    "item_engines": [
+      {
+        "key": "2404.08129",
+        "engine": "C:/Users/99922/OneDrive/Quant_Module_Moltbot/04_Research/strategies/RP_AUTO_2404_08129/engine.R",
+        "t": 2.749
+      },
+      {
+        "key": "1403.8125",
+        "engine": "04_Research/strategies/RP_AUTO_1403_8125/engine.R",
+        "t": 2.567
+      },
+      {
+        "key": "2301.09173",
+        "engine": "C:/Users/99922/OneDrive/Quant_Module_Moltbot/04_Research/strategies/RP_2301_09173_CID/engine.R",
+        "t": 1.228
+      },
+      {
+        "key": "2007.08115",
+        "engine": "C:\\Users\\99922\\OneDrive\\Quant_Module_Moltbot/04_Research/strategies/RP_AUTO_2007_08115/engine.R",
+        "t": 1.11
+      }
+    ],
+    "parent_t": [
+      2.749,
+      2.567,
+      1.228,
+      1.11
+    ],
+    "best_parent_t": 2.749,
+    "tries_before": 0,
+    "axis": "n_max_25",
+    "dilution_test": "희석 판정 = 설계 기저 PORT_t vs 최고 재료 t 2.749 (같은 축). 기록만 하고 차단하지 않는다 — 격자는 기저 **위에** 쌓으므로 재료보다 낮은 기저에서도 강화가 뒤집을 수 있다.",
+    "count_paper": false
+  },
+  "status": "done",
+  "started_at": "2026-09-06T23:40:31+0900",
+  "audit_retries": 1,
+  "audit_feedback": "- 미신고 변경: [signal] 논문 §2 3단계 ①은 초기값을 '제1 좌/우 특이벡터 of the T×N matrix {r_it}' 로 규정한다(171자산×360월 완전패널). 구현은 특이벡터를 관측행렬이 아니라 **결측셀을 숫자 0 으로 대체한 행렬**에서 뽑는다 — engine.R:525 `R0 <- Rm; R0[!M] <- 0` 로 만든 R0 를 engine.R:272 `sv <- svd(R0, nu=1L, nv=1L)` 에 그대로 넘긴다. 퍼센트 초과수익 단위에서 0 은 '그 달 무위험 수익을 정확히 냈다'는 값이므로, 미상장/미관측 달이 관측치로 계산에 들어간다. 손실함수(engine.R:268)·OLS(engine.R:256)·블록 최소화(engine.R:221-229)는 전부 마스크 Mn 으로 결측을 제거하지만 **svd 호출만 마스크를 받지 않는다** — 결측 0 대체가 답에 새는 유일한 지점이다. FIDELITY.changed ③ 은 (16) 에서 'SVD 초기값의 결합 부호 규약(Σv > 0)과 [eps,1] 아핀 사상' 두 가지만 신고하고, (22) 의 수치 가드 목록에도 결측 0 대체는 없다. ③ 의 자기 선언 범위가 '논문에 없는데 넣은 것 / 논문과 다르게 한 것 **전부**'이고 같은 목록이 '거래량 결측 = 그날 거래대금 0'·'(Ticker,Date) 중복은 첫 행' 같은 더 작은 항목까지 신고하고 있으므로, 이 누락은 신고 입도의 문제가 아니다. 영향 경로: 초기값 → (비볼록) 사영 GD·성분별 재최적화의 국소해 → (ĉ, φ̂, l̂) → ε_im = x_im − ĥ(φ̂_m l̂_i) → Score 전량. ★영향의 크기는 측정하지 않았다(엔진 실행 금지) — 확실한 것은 구현이 논문이 지정한 행렬과 다른 행렬의 특이벡터를 쓴다는 사실이고, engine.R:598 이 인쇄하는 loss_init 이 그 크기의 관측지점이다.\n- 미신고 변경: [undeclared] 논문 §2 1단계는 'the first left and right singular vectors of the T × N matrix {r_it}' 를 초기값으로 쓰라고 하고, 그 행렬은 §4 의 균형 패널(171자산 × 360개월, 'constructing a balanced long sample')이라 결측 셀이 없다 — 결측 처리 규칙을 원문은 한 줄도 주지 않는다. 구현은 결측 셀을 **0 으로 채운 행렬에 SVD 를 돌린다**(engine.R:525 `R0 <- Rm; R0[!M] <- 0` → engine.R:272 `sv <- svd(R0, nu=1L, nv=1L)`). FIDELITY.changed (16) 은 SVD 초기값에서 물려받은 자유도를 **부호 규약(Σv>0)과 [eps,1] 아핀 사상 두 가지로 명시 열거**하고 (15) 는 수치 상수 9종을 열거하는데, 이 결측-0 채움은 어느 쪽에도 없다. ★이 채움은 엔진 전체에서 정확히 한 곳에서만 결과를 바꾼다: 손실(engine.R:268 `E <- M*(...)`)·OLS(engine.R:256 `obs <- which(M>0)`)·경사(engine.R:285 `G <- (M*(...))*...`)·성분별 최소화(engine.R:226~228 `lin <- -2*(Rm %*% A)` · `coef <- Mm %*% B`)는 전부 마스크를 받아 결측이 중립인데, engine.R:272 의 svd() 만 마스크를 받지 않는다. 그리고 논문 §2 2단계는 그 초기값에서 'a **local** minimum' 만 찾는다고 명시하므로 초기값이 최종 (ĉ, φ̂, l̂) 을 고른다 — 이 판의 Score 는 전부 그 적합의 잔차다. 선언된 (4)('적합 유니버스를 그 달에 존재했던 종목 전체로 넓혔다')가 결측률을 **키우는** 변경이라 미신고 항목의 하중은 v2 보다 커졌다.\n- 미신고 변경: [undeclared] 월 단위 커버리지 문턱이 선언에 없다. FIDELITY.changed (4) 는 **종목당** 최소 월간 관측 ≥ 12(.TMIN_I)만 신고한다. 코드는 그 외에 **월당** 문턱을 따로 두고 있고 그 값은 1 이다 — engine.R:521 `kt <- rowSums(M) >= 1L`(적합 행 선택), engine.R:544 `ph[rowSums(Mn) < 1] <- NA_real_`(확장 월). 즉 횡단면 관측이 단 1개인 달도 자기 몫의 자유 파라미터 φ_t ∈ [eps,1] 를 받아 식(4)에 들어간다. 논문의 패널은 매달 171자산이라 이런 달이 없고 원문은 이 문턱을 정의하지 않는다. (★본 감사는 이 달이 실제로 발생했는지 확인하지 못했다 — 엔진 stdout 이 산출물에 남아 있지 않고 백테스트 실행은 금지다. 미신고 사실 자체는 확정, 발화 여부는 미확인.)\n- 미신고 변경: [undeclared] FIDELITY.changed (15) 은 '구현 상수 **9종** 승계'로 목록을 닫고 (22) 는 '나머지 수치 가드'를 8항목으로 열거하는데, 코드에는 그 목록 밖의 판정 상수가 더 있다 — engine.R:514 `length(cols) < 5L` · engine.R:519 `sum(ki) < 5L`(둘 다 적합 자체를 포기) · engine.R:524 `length(rows) < 2L` · engine.R:620 `length(elig) < 2L` · engine.R:630 `length(lv) < 2L` · engine.R:635 `sum(okc) < 2L`. 또 engine.R:542 `cur <- rep(stats::median(st$phi, na.rm=TRUE), ...)` 와 engine.R:560 `cur <- rep(stats::median(st$l), ...)` 는 논문에 없는 시작값이고, engine.R:234 `if (!all(is.finite(cr))) next` 는 그 시작값(=중앙값)을 **인쇄 없이** 그대로 채택하는 침묵 폴백이다 — (17) 이 신고한 '인쇄되는 폴백'(적합 실패 시 직전 상태 유지 + 건수 인쇄)과 대비된다. 개별 영향은 작지만 ③ 머리글의 '전부'와 (15) 의 '9종'이라는 닫힌 수치 선언이 사실과 다르다.\n원문 근거: [signal] [H] arXiv:2404.08129 — arxiv.org/html/2404.08129v1 은 이론부만 렌더(§4 자료·§5.7·Table 8 부재)이고, 그 부분은 r.jina.ai 텍스트 프록시 경유 arXiv PDF 로 확보(FIDELITY (21) 의 접근 신고와 본 감사 판독이 일치 — 재도출로 확인). ▸식(1) 'r_{it}=h(f_t λ_i)+ε_{it}, i=1,…,N, t=1,…,T' · 'f_t > 0' · 'λ_i > 0'(h 의 단조·볼록 가정은 없음 — 두 판독 일치, 엔진 헤더 (H8) 과 정합). ▸식(4) argmin Σ_i Σ_t (r_it − Σ_{j=0}^{K} c_j(φ_t l_i)^j)², {c_j}∈ℝ^{K+1} · {φ_t}∈(0,1]^T · {l_i}∈(0,1]^N, 별도로 '|c_j| ≤ L for all j = 0,…,K' + 'In practice, we find that these constraints are not binding if the constant L is chosen large enough' → engine.R:257-265 의 무제약 lm.fit OLS 는 이 문장에 근거해 정당(FIDELITY kept ② 의 인용도 축자 일치). ▸§2 3단계 축자: 'First, we calculate the initial values of {φ_t} and {l_i} as the first left and right singular vectors of the T × N matrix {r_it}.' / 'Second, we perform gradient descent starting from the initial values to find a local minimum.' / 'Third, we reoptimize each component of the sequences {φ_t} and {l_i} in turn multiple times until the change in the criterion function from reoptimization becomes negligible.' ← **위 undeclared 항목의 근거는 이 첫 문장**. ▸차수: Table 주석 'degree of the polynomial used to approximate the function h(.) equal to 4' → engine.R:168 `.K <- 4L` 일치. ▸자료: 'Returns are in excess of the U.S. risk-free rate and reported in percentage.' · 'The sample period is January 1988 to December 2017' · 171 자산 → engine.R:171 `.UNIT <- 100`·engine.R:461 `X := (R - RF)*100` 일치. 윈저·트리밍·표준화 언급 없음 → engine.R 도 없음(일치). ▸§5.7 전문: 'We start by estimating the model on all 171 assets and the first 120 months of data. Next, we use the model predicted returns to sort assets in five portfolios, and compute the equally-weighted average portfolio return in the following six months. Finally, we repeat the procedure expanding the estimation window by 6 months each time until the end of the sample (i.e., we repeat the procedure 40 times…).' → **확장창**(롤링 아님) 확정 · engine.R:516 `Rm <- .RM[seq_len(ip0), ci]`(패널 첫 달~형성월, 최소 120 = engine.R:169·573) 및 engine.R:170 반년 재적합과 일치. 룩백 종점 = 정렬 시점 t 포함 — 구현도 형성월 f 포함(engine.R:613 `wr <- seq.int(ip-5, ip)`) 일치. ▸잔차 ε 를 정렬·모멘텀·경로에 쓰는 서술은 원문에 없음(정렬은 'predicted values' 뿐) — 구현의 잔차 경로 사용은 논문 밖이고 FIDELITY.changed ① 에 선언돼 있음. [A] arXiv:1403.8125 — arxiv.org/html/1403.8125v1 직접 판독: §2 'MDD = max_{τ∈(0,T)}(max_{t∈(0,τ)}(P(t)−P(τ)))' (P = log-price) · 'C = R_I + R_II + R_III = PP − MDD + R' · Table 1 **CM = (1,2,1)** (C(1,1,1)·M(0,1,0)·R(0,0,1)·RM(0,1,1)·CR(1,1,2)·CMR(1,2,2)) · §3.2 '6 months (weeks) of estimation period' · 'sorted in ascending order' · 10 그룹 · 'winner group is at long position' · 보유 6개월 오버래핑 · **스킵 구간 서술 없음** · 형성창 내부 표본주기 미명시. → engine.R:174 `.W <- c(1,2,1)`, engine.R:337 `.W[1]*RI + .W[2]*RII + .W[3]*RIII` = R_I+2R_II+R_III = C+R_II = C−MDD(∵R_II=−MDD) 대수 일치 · engine.R:332-336 의 ts=argmin(path−cummax)·tp=argmax(path[1..ts]) 는 §2 의 t*·peak 정의와 일치 · 부호 무반전(engine.R:669 내림차순 = 오름차순 정렬의 승자군) 일치. 로그가격→월간 가산경로 치환과 월간 해상도는 FIDELITY.changed ③(11) 에 선언됨. / [timing] [A] arxiv.org/html/1403.8125v1 §3.1~3.2(형성 6개월/보유 6개월 overlapping, 스킵 언급 없음, 매월 초 신규 구성) · [H] arxiv.org/html/2404.08129v1 §5.7(H6 인용, 반년 보유·반년 재추정, 첫 120개월 확장창) — engine.R 108~183행 상수, 566~614행 형성월 루프, FIDELITY.json portfolio_spec(26~33행) 및 changed ③(3)(6행) 대조. / [universe] 1403.8125 arxiv.org/html/1403.8125v1 §3.1(Dataset) — 'The KOSPI 200 is a stock benchmark index ... value-weighted and sector-diversified index with 200 stocks', 가격/시총/업종 선별기준 및 상장폐지 처리 서술 부재(WebFetch 확인). 2404.08129 §5.7 — 자산 유형이 주식/채권/상품/통화 포트폴리오로, 종목 단위 유동성/거래소 필터 대상이 아님. / [portfolio] [H] arXiv:2404.08129 §5.7 Predictability + Table 8 (arxiv.org/html/2404.08129v1 은 이론부만 렌더 — §5.7·Table 8 부재를 본 감사가 직접 재확인. 전문은 r.jina.ai 프록시 2-source: arXiv PDF + NBER w32365 PDF, 두 판독 일치). 축자: ①분위 수 = 'we use the model predicted returns to sort assets in five portfolios' ②비중 = 'compute the equally-weighted average portfolio return in the following six months' (Table 8 캡션도 'equally-weighted average portfolio return') ③레그 = 'zero-cost long-short strategy, wherein assets with the highest predicted returns are bought while those with the lowest predicted returns are sold short' · 'Portfolio 1 groups the assets with, each period, the lowest predicted returns ... Portfolio 5 ... the highest predicted returns' ④종목수 = 171 자산 5분위 → 레그당 ~34 ⑤보유 = 6개월·반년 리밸 40회. Table 8: P1 0.079% · P5 0.769% · LS 0.689%/월 · 월 SR 0.147. ★NBER 판독은 '논문 어디에도 value-weighted 정렬은 없다'로 응답 — 원문 비중 축은 EW 단일. / [cost] [H] arxiv.org/html/2404.08129v1 전문 대조(본 세션) — transaction cost/commission/market impact/turnover 언급 0건, §5.7(5분위 포트폴리오 소트·확장창·6개월) 포함 전 절 무비용 서술. [A] arxiv.org/html/1403.8125v1 전문 대조(본 세션) — 자기 분석에 거래비용 미적용, 참고문헌 인용 문맥에서만 1회 등장. FIDELITY.json paper_original_form 필드도 '거래비용 언급 없음(gross)'/'gross' 로 동일하게 신고. / [undeclared] arxiv.org/html/2404.08129v1(§1~§3 이론부만 렌더) + r.jina.ai 경유 arXiv PDF(§4·§5.7·Table 8·Assumption 3.2). ①§2 Motivation and Estimation: 'we calculate the initial values of {φ_t} and {l_i} as the first left and right singular vectors of the T × N matrix {r_it} shifted and scaled', 'we perform gradient descent starting from the initial values to find a local minimum of the optimization problem', 'we reoptimize each component ... until the change in the criterion function ... becomes negligible', 'the optimization over {c_j} is easy as it can be implemented via OLS', 'it is then without loss of generality to assume that both f_t and λ_i are taking values in the (0,1] interval'. ②식(4) 제약집합 {c_j} ∈ R^{K+1} · {φ_t} ∈ (0,1]^T · {l_i} ∈ (0,1]^N. ③Assumption 3.2: 'In practice, we find that these constraints are not binding if the constant L is chosen large enough'. ④§4 Data and Summary Statistics: 171자산(주식53·미채권11·국제채권40·상품21·통화46), 1988-01~2017-12, 자산당 360 월간 관측, 'guided by the objective of constructing a balanced long sample' — **결측·불균형 패널·자산별 최소 관측수 규칙은 원문 어디에도 없다**. ⑤§5.7/Table 8: 첫 120개월 확장창 · 예측수익 5분위 EW · 6개월 보유 · 반년 확장 40회 · 'the first four portfolios contain 34 assets each'. ⑥Table 8 주석 K=4.",
+  "audit_verdict": "misdeclared",
+  "audit_at": "2026-09-06T23:35:51+0900",
+  "base_id": "RP_20260907_000912_21648_combo_rulefast",
+  "grade": "C",
+  "artifacts": "C:/Users/99922/OneDrive/Quant_Module_Moltbot/stage_artifacts/replication/20260907_000912_21648",
+  "fidelity": "combination",
+  "fidelity_detail": {
+    "fidelity": "combination",
+    "kept": "[A] Choi-Choi-Kang(2014, arXiv:1403.8125 · 전문 arxiv.org/html/1403.8125v1 · 본 세션 직접 판독 2회) 에서 — ①경로 정의 그대로: 'P(t) is the log-price at time t' · 'R(t,τ) is the log-return between t and τ' · MDD = max_{τ∈(0,T)}(max_{t∈(0,τ)}(P(t)−P(τ))) · 't* is the moment for the end of the maximum drawdown formation' · R = R(t*, T) · 'C = R_I + R_II + R_III = PP − MDD + R' (R_I 시작→peak · R_II peak→trough = −MDD · R_III trough→말일 = R). ②Table 1 의 두 규칙을 가중 그대로: CM = (1,2,1) = C − MDD, R = (0,0,1) = 회복. ③각 시간척도의 최우수 규칙 = 논문 헤드라인: 월간 6/6 momentum(Table 3, KOSPI 200) 은 CM 이 최우수(W−L 1.4330%/σ 7.0357% · 승자 1.7005%/8.0623% · 패자 0.2676%/9.1117%) · 주간 6/6 contrarian(Table 2, KOSPI 200) 은 R 이 최우수(L−W 0.1455%/σ 1.7567% · 승자 0.1688%/4.0728% · 패자 0.3143%/3.3376% — 패자 > 승자 = 반전 · 전통 반전 C 는 0.0731%/2.8417%). ④정렬·방향 그대로: 'assets in market universes are sorted in ascending order. In this study, most criteria will be used in increasing order except for the maximum drawdown.' · 'The group 1 is for losers that exhibit the worst ranking scores and the last group is for the best performers' · 'The winner group is at long (short) position and the loser group is at short (long) position.' → 월간 CM 은 큰 값(승자) 롱, 주간 R 은 작은 값(패자) 롱. 'except for the maximum drawdown' 은 R_II = −MDD 부호로 자동 처리(수동 반전 0건). ⑤형성창 길이 그대로: 'during 6 months (weeks) of estimation period' → 6개월 · 6주. ⑥저자 해석 그대로: 'In weekly scale, the contrarian portfolios constructed by the recovery measures exhibit the outperformance over the traditional contrarian strategy.' · 'The R, CR, and CMR criteria are the best stock selection rules for the weekly contrarian strategy in any markets.' · 'In monthly scale, the maximum drawdown associated strategies outperform the traditional momentum strategy.' · 회복이 작을수록 반전 여력이 남는다('the asset already spent the fuel for the reversion'). ⑦경로에 winsorize·절단·커버리지 스크린을 두지 않는 무스크린 입장(원문에 전무). ★한 문장으로: '[A] 는 같은 시장에서 6개월 모멘텀(CM)과 6주 반전(R)을 따로 보고했다 — 이 판은 그 둘을 한 종목 점수 CM_6m − R_6w 로 합친다.' [H] Borri-Chetverikov-Liu-Tsyvinski(arXiv:2404.08129) · [B] Polimenis(arXiv:2007.08115) · [C] Pinchuk(arXiv:2301.09173) 은 이 엔진에 **코드가 없다**(changed ③ (1)~(3)).",
+    "changed": "① 무엇을 어떻게 결합했는가 — **논문 하나의 두 시간척도를 결합한다. 다른 세 재료는 점수에 들어가지 않는다.** [A] 는 KOSPI 200 에서 6개월 척도의 모멘텀(Table 3 · 최우수 규칙 CM = C − MDD, 승자 롱)과 6주 척도의 반전(Table 2 · 최우수 규칙 R = 저점→말일 회복, 회복이 작은 패자 롱)을 각각 보고한다. 본 판은 매월 마지막 거래일 f 에서 두 창을 같은 종목에 대해 동시에 재고 하나의 점수로 합친다:\n\n  **Score_i = CM_i(6개월 일별 로그가격 경로) − R_i(6주 일별 로그가격 경로)**\n\n즉 '6개월 경로가 매끄럽게 올랐고(중기 모멘텀) 최근 6주의 저점에서 아직 반등을 소진하지 않은(단기 반전 여지) 종목'을 산다. 결합 연산자 = Table 1 의 합성 규칙 형식(국면 수익의 정수 가중 합)을 두 창에 걸쳐 확장한 것: 월간 창 가중 (1,2,1), 주간 창 가중 (0,0,−1). 주간 항의 음부호는 논문이 선언한 주간 contrarian 방향(Table 2 제목 'weekly 6/6 contrarian portfolios' · '(short) ... (long)' 괄호 규약)이고, 창 간 상대 척도는 1 이다(둘 다 로그수익 단위 · 자유 파라미터 0). ★R ≥ 0 이 구조로 성립하므로(t* 가 dd 의 최솟값이라 path(T) ≥ path(t*)) 주간 항은 '이미 반등한 만큼의 벌점'이고, 6주 저점에 있는 종목(R = 0)은 벌점 0, 그 사이의 순위는 CM 이 정한다. 스코어 층 평균·rank-Z·가중 블렌딩 0건. 이것이 이 저장소의 결합 계보(두 엔진 rank-Z 평균 5회 최고 0.766 · 1판 [A]+[B] 체계낙폭 가중 0.691 · 2판 [A] on [H] 잔차 0.788)와 다른 지점이다 — 다른 논문의 약한 신호를 섞지 않고, 같은 논문이 같은 시장에서 보고한 두 현상을 그 논문의 가중·방향 그대로 겹친다.\n\n② 왜 각 재료 단독보다 나을 것이라 보는가 (반증 가능) — 논지: **KR 에서 CM 승자에는 6개월 상승 후 최근 6주에 반등을 이미 소진한 종목과 아직 저점 근처인 종목이 섞여 있고, 후자가 다음 달 더 오른다.** 근거 세 겹: (i) 논문 자신 — Table 2 는 KOSPI 200 에서 회복이 작은 그룹이 다음 6주 더 올랐음을 보고한다(패자 0.3143% > 승자 0.1688% · L−W 0.1455%/σ 1.76%), 그리고 R 은 전통 반전 C(0.0731%/2.84%)보다 평균 2배·σ 0.62배다. (ii) 저장소 실측 — 같은 CM 기저(RP_20260904_163647_18444_rescued_rulefast entry)에서 등록부 팩터를 0.5 로 얹은 칸들 중, 단순 1개월 반전 M11_ST_Reversal 을 얹은 B1_4 가 PORT_t 1.502(SR 0.688 · CAGR 0.166 · MDD 0.669 · Calmar 0.247)로 B1_1(SUE 얹음, 0.925)을 크게 넘었다 — 'CM 위에 단기 반전을 더하면 오른다'는 이 축의 직접 실측이다. 본 판은 그 반전 신호를 논문의 경로형 R 로 바꾸고, 가중 블렌딩 대신 논문 가중의 합성으로 넣는다. (iii) 두 항의 시간척도가 다르다(6개월 vs 6주)는 것이 상쇄가 아니라 보완의 조건이다 — 엔진 F3 가 단면 rho(CM, R) 를 인쇄해 실제 독립성을 보고한다. ★단독 대비: [A] 월간 CM 단독(같은 축 비교군 B1_1 0.925 — 순수 CM top-25 는 이 축에서 미측정, 가장 가까운 값) 보다 나은 이유 = (i)(ii). [A] 주간 R 단독보다 나은 이유 = 주간 신호를 월간 보유에 얹으면 6주 반전이 한 달 안에 절반 소진되므로 단독으로는 약하고, 여기서는 CM 이 주 축이고 R 은 그 안의 순위를 가른다(F2 로 확인). [H] 0.55 · [B] 1.11 · [C] F(−1.16) 는 점수에 없으므로 '넘어야 할 단독'이 아니라 '왜 뺐나'의 근거다(③ (1)~(3)). ★반증 조건 — 계약이 판정한다. 비교는 같은 축(top-25 롱온리 EW · 월간 · K200∪KQ150 PIT 시변 · 2005-01-01~ · 15bps)에서만 성립한다. 1급: **PORT_t > 0.925 ∧ Calmar > 0.240**(B1_1). 미달이면 주간 R 항은 월간 CM 에 아무것도 더하지 못한 것이고 [A] 의 두 시간척도는 월간 리밸 축에서 분리되지 않는다 — 다음 결합은 이 축을 다시 밟지 않는다. 2급(지시적 — B1_4 는 등록부 팩터 0.5 가중 블렌딩이라 형식이 다르다): PORT_t vs **1.502**. 미달이면 논문의 경로형 반전(R)이 단순 1개월 반전보다 못 더한 것이라, 다음 판은 주간 항을 R 이 아니라 C_6w(전통 반전)로 바꿔 재는 것이 정당하다. 3급: 2판(0.788 · Calmar 0.204)·1판(0.691 · 0.235)을 넘지 못하면 이 재료 집합의 결합 세 판이 전부 [A] 월간 단독 아래이므로 결합 축 자체를 접고 [A] 강화 격자에 맡긴다. ★엔진 F1(top-25 겹침 vs CM 단독 중앙 ≥ 0.80)이 FAIL 이면 등급과 무관하게 설계 실패다 — 주간 항이 순위를 못 바꾼 것. ★프롬프트 라벨 '단독 t 2.749'(2404.08129)·'2.567'(1403.8125)은 강화 최고 시도(각각 promo1 B2_10 catalog 비중 · promo2 B3_12 KQ150 단독·창 2010~)이지 충실구현 기저가 아니므로 문턱으로 쓰지 않는다. 러너의 희석 판정(vs 2.749)은 기록 전용이라고 요청 자신이 적었다.\n\n③ 신고 체크리스트 — 논문에 없는데 넣은 것 / 논문과 다르게 한 것 / 쓰지 않은 재료 **전부**: (1) **[H] 2404.08129 미사용 — 엔진에 HFL 코드가 없다.** 논문의 신호(식(1) r_it = h(f_t λ_i) + ε_it 를 식(4) 다항 K=4 로 §2 3단계 추정한 예측수익 (1/T)Σ_t ĥ(φ̂_t l̂_i)) · 포트폴리오(§5.7 예측수익 5분위 · P5 롱/P1 숏 EW · 첫 120개월 확장창 · 반년 재추정 · 6개월 보유) 어느 것도 구현하지 않는다. 사유(전부 실측): (a) 2판(engine.rejected1.R · [A] 의 CM 을 [H] 잔차 경로에 적용)은 계약으로 측정됐고 Grade C · PORT_t 0.788 · SR 0.567 · MDD 0.650 · Calmar 0.204 · IC −0.006 · FMB t −0.54 · OOS retention −0.477 (stage_artifacts/replication/20260906_231128_5756) — 사전등록 반증(PORT_t > 0.925 ∧ Calmar > 0.240)이 둘 다 깨졌다. (b) 그 엔진의 F1 이 '원수익 CM 과 top-25 겹침 중앙 0.800' 을 인쇄했다 — [H] 잔차 정화는 25종 중 5종만 바꿨고 알파를 낮췄다. (c) KR 패널에서 [H] 의 단일 요인은 시장이다: 53회 반년 적합의 rho(φ̂, 시장초과) 중앙 +0.77 · 패널 R² 중앙 0.234 · 예측수익 정렬 IC −0.002(충실구현 기저 PORT_t 0.55 · C, stage_artifacts/replication/20260905_184253_720). (d) 논문 §2 3단계의 초기값(T×N 행렬의 제1 특이벡터)은 §4 의 균형 패널(171자산×360개월, 'constructing a balanced long sample')에서 정의되고 결측 규칙이 없다 — K200∪KQ150 의 상장·퇴출 패널에서 그 행렬을 만들려면 결측 규칙을 지어내야 한다(2판이 0 대체를 미신고한 지점). 지어내지 않고 뺀다. ★복귀 조건: KQ150 이력 없이 K200 단독의 균형 패널(생존 종목만 — C6 상방편의라 별도 통제 필요)로 [H] 를 다시 재는 판은 이 판과 다른 질문이다. (2) **[B] 2007.08115 미사용.** 원문은 포트폴리오를 만들지 않는 서술적 진단 연구(US 대형주 5종 · 1,259 일간수익 · FF3 에 depth=1 회귀트리 · 'only done for demonstration purposes')이고, 저장소 이식판(joint depth=1 트리의 다수-잎 예측수익 정렬)은 다중검정 t 1.11 · 분기변수 = 시장초과수익 단일 = 시장 베타 축. 1판([A]+[B] · 낙폭의 체계 성분 가중)이 C 0.691 로 CM 단독 아래였다. 같은 축을 세 번째로 재지 않는다. 복귀 조건: 본 판이 B1_1 을 넘고 하락월 초과가 음수로 나오면(하락 동조가 구속) [B] 의 꼬리-잎 조건부 평균을 CM 승자 안의 2단계 필터로 재는 판이 다음 후보다. (3) **[C] 2301.09173 미사용.** KR 실측: cor(CID 충격, 시장) +0.43(2022~26 +0.63) · β_CID 정렬 = 시장베타 정렬 · 충실구현 Grade F(PORT_t −1.16 · VW 숏 레그 삼성+하이닉스 68%) · 강화 최고 t 1.228. [H] 와 같은 축(시장 베타)이라 (1) 의 사유가 그대로 적용된다. (4) **산출 형태 = 지시된 고정 축** top-25 롱온리 EW · 월간 리밸(FIDELITY.portfolio_spec). [A] 원문은 10 그룹 오름차순 · 승자 데실 롱/패자 데실 숏 · 각 그룹 EW · 6개월(주간: 6주) 보유 오버래핑('constructed at the beginning of every month, i.e. it is the overlapping portfolio' · 'After 6 months (weeks) of the holding period, each basket is liquidated')이다. 롱숏·데실·J-T 오버래핑 전부 대체. 이유: 러너(rf_replication_verify)가 long-only · n_max ≤ 25 를 산출물에서 재도출해 차단하고, 비교군(B1_1·B1_4)이 정확히 이 축이다. (5) **결합 연산자 = 논문에 없다.** Score = CM_6m − R_6w. 논문은 두 시간척도를 따로 보고하고 합치지 않는다. 창 간 상대 척도 1 · 주간 항 부호 −1 (근거 ①). 그룹 경계 대신 연속 값을 쓴다 — 주간 '패자 그룹'을 데실로 자르지 않고 R 값 자체를 벌점으로 쓴다(10 그룹은 (4) 에서 이미 대체됐다). (6) **주간 항의 일정**: 논문은 매주 형성 · 6주 보유; 본 판은 매월 말 f 에서 6주 창을 평가하고 그 점수를 월간 리밸 한 번에 쓴다(주간 리밸 없음). (7) **창 내부 표본주기 = 일별 로그가격 경로** — 원문은 형성창 내부 주기를 명시하지 않는다(§3.1 은 자료원·기간만 · 위험 측정만 'calculated from the daily time series of the overlapping portfolio'). 충실구현 판(RP_AUTO_1403_8125 · 감사 faithful)과 같은 규약이고 함수(.path_stats)도 그 판의 .mdd_stats 와 동일하다. (8) **창 정의**: 월간 창 = (me[k−6], f] — me = 전 종목 통합 월말 거래일 격자, k−6 = 6스텝 전 월말(경계 배타) · 주간 창 = (f − 42 캘린더일, f] — 6주 = 6×7 캘린더일(논문은 '6 weeks' 만 말한다; 거래일 30일이 아니라 캘린더 6주로 잡았다). 두 창 다 종점 = f 의 종가. (9) **경로 기준점·정의역**: path = log(P) − log(P_0), P_0 = 창 안 그 종목의 첫 관측 종가(상장·거래재개가 창 중간이면 그 시점부터) · 관측 ≥ 2 인 창만 경로가 정의된다(그 미만 = 정의역 밖, NA) · 창 커버리지 스크린 없음(진단으로만 인쇄: 관측수/창 거래일수 중앙). (10) **두 항이 모두 정의된 종목만 점수를 받는다**(정의역 조건이지 성과 스크린이 아니다) — 6주 창 관측 < 2 면 그 달 그 종목은 미점수. (11) **유니버스 K200∪KQ150(PIT 시변 멤버십 · f 당일 플래그) + adv20(t−1) ≥ 2e8 KRW + 기간 2005-01-01~** = 지시된 고정 축. [A] 는 KOSPI 200 구성종목 · 2003-01~2012-12 · 유동성 필터 없음. 기간 절단은 러너가 적용한다(엔진은 기간을 선택하지 않고 가용 전 구간 1990~ 을 낸다). (12) **데이터 가드**: is.finite(Close) ∧ Close > 0 행만 · (Ticker,Date) 중복은 첫 행(건수 인쇄) · 거래량 결측 = 그날 거래대금 0 · 멤버십 플래그는 .as_flag(논리/0-1/문자 혼재 방어) · adv20 = 20 거래일 평균 후 shift(1)이라 상장 후 21 거래일 전에는 자격 미달(NA) · 자격은 f 에 종가가 있는 종목만(경로 종점이 f 의 종가). (13) **RAWDATA 의 마지막(진행 중) 달도 형성 격자에 포함** — 그 형성은 익월 집행이 없어 백테스트에 안 들어간다. (14) **결정론**: 동값 정렬 (Score 내림, Ticker 오름) · FACTORS 정렬 (Date, −Score) · 난수 미사용 · set.seed 없음 · 시작값·중앙값 초기화 없음(반복 추정기가 없다). (15) **진단 전용 상수**(Score 계산에 안 들어간다): 25(고정 축 종목수 — top-25 겹침의 n) · 5(순위상관 최소 횡단면, 미만 NA) · 0.80(F1/F2 재라벨 판정 문턱) · 2005-01-01(F4 월 결번 분모 범위). (16) **윈저·절단·캡 없음 · 최소 횡단면 없음** — 러너의 top_n_long 이 n ≥ 2 를 요구하는 것은 러너 규약이다. (17) **침묵 폴백 0건**: 모든 skip 은 두 계수(워밍업 · 정의역)로 인쇄된다. (18) 논문의 정렬 규약 'except for the maximum drawdown' 은 R_II = −MDD 부호로 자동 처리 — 수동 반전 0건(충실구현 판과 동일). (19) **Table 1 의 7 규칙 중 2건(CM·R)만** — 각 시간척도의 논문 헤드라인이지 성과를 보고 고른 값이 아니다. (20) **원문 접근**: [A] = arxiv.org/html/1403.8125v1 본 세션 직접 판독 2회(§2 정의 · Table 1 · §3.1 · §3.2 축자 · Table 2 주간 KOSPI 200 7 규칙 전열 · Table 3 월간 7 규칙 전열 · §4.1.1 · 결론). [H]·[B]·[C] 는 이 판에 코드가 없으므로 원문 대조 대상이 아니며, 위 (1)~(3) 의 인용은 앞 판 FIDELITY·감사 evidence·저장소 엔진 헤더(RP_AUTO_2404_08129 v2 · RP_AUTO_2007_08115 · RP_2301_09173_CID)에서 승계한 것이다.\n\n④ 앞 판(engine.rejected1.R) 감사 지적 4건에 대한 응답 — 전부 수용한다. 지적 1·2(§2 3단계 초기값을 결측 0 대체 행렬의 SVD 에서 뽑았고 미신고)·지적 3(월당 관측 문턱 1 미신고)은 셋 다 HFL 추정기 안의 결함이고, 원문이 균형 패널만 다루어 되돌릴 규칙이 없다(§4 'constructing a balanced long sample' — 결측·불균형·최소 관측수 규칙 전무). 지어내서 되돌리는 대신 추정기를 제거했다(③ (1)(d)) — 그리고 그 설계는 미신고와 무관하게 자기 반증에 실패했다(③ (1)(a)(b)). 지적 4(닫힌 수치 선언 '9종'·'전부'가 사실과 다름 · 중앙값 시작값 · 침묵 폴백): 이 판은 _notes.constants 표에 판정 수치뿐 아니라 구조 리터럴(shift 1 · n ≥ 2 · 결측 거래량 0 · 월 인덱스 12 · nomatch 0 · 표시 ×100)까지 전수 열거하고, 시작값·반복 추정기·침묵 폴백이 없다(③ (14)(17)).",
+    "changed_supplements": ["③ 신고 체크리스트 (1)~(20) 과 ④ 감사 응답의 구조화 사본이다 — 판정 정본은 changed 필드다.", "[H] 2404.08129 = 코드 없음(모형·§2 3단계 추정·예측수익·§5.7 5분위 롱숏 전부 미구현). 사유 = 2판 사전등록 반증 실패(0.788/0.204) · F1 겹침 0.80 · KR 단일요인 = 시장(rho +0.77) · 균형 패널 규칙 부재.", "[B] 2007.08115 = 미사용(진단 연구 · 시장 베타 축 · 1판 0.691). [C] 2301.09173 = 미사용(KR 에서 β_CID = 시장베타 · 충실구현 F).", "산출 형태 = 고정 축 top-25 롱온리 EW 월간 — [A] 10-decile 롱숏 J-T 오버래핑(월간 6/6 · 주간 6/6) 대체. 러너가 long-only·n_max≤25 를 재도출한다.", "결합 연산자 = Score = CM_6m − R_6w (논문에 없음 · 창 간 척도 1 · 주간 항 부호 = 논문 contrarian). 그룹 경계 대신 연속 값.", "주간 항 일정 = 월말 평가·월간 보유(논문은 매주 형성·6주 보유). 창 내부 = 일별 로그가격 경로(원문 침묵 · 충실구현 판과 동일 함수).", "창 정의 = 월간 (me[k−6], f] · 주간 (f−42 캘린더일, f]. 경로 기준점 = 창 첫 관측 종가 · 관측 ≥ 2 정의역 · 커버리지 스크린 없음(진단만).", "두 항 모두 정의된 종목만 점수(정의역). 유니버스·유동성·기간 = 고정 축(기간 절단은 러너).", "데이터 가드: Close 유한·>0 · 중복 첫 행(인쇄) · 거래량 결측 = 거래대금 0 · adv20 은 21 거래일 이력 · 마지막 부분월 격자 포함.", "결정론: (Score 내림, Ticker 오름) · 난수·시작값·반복 추정기 없음 · 침묵 폴백 0(모든 skip 인쇄).", "진단 전용 상수 25 · 5 · 0.80 · 2005-01-01 — Score 무관.", "원문 접근: [A] html 직접 2회(Table 1·2·3 · §2·§3.1·§3.2·§4.1.1·결론). 나머지 세 논문은 코드가 없어 대조 대상 아님(인용은 승계)."],
+    "paper_original_form": "[A] Choi, Choi & Kang (2014, arXiv:1403.8125): KOSPI 200(2003-01~2012-12)·S&P 500·미 섹터 ETF 구성종목을 6개월(주간 축: 6주) 형성창 로그가격 경로의 3-국면 분해로 7 규칙(C/M/R/RM/CM/CR/CMR)을 만들어 오름차순 10 그룹(KOSPI 200·S&P 500) EW 로 나누고 승자 그룹 롱·패자 그룹 숏을 6개월(6주) 보유하는 오버래핑 포트폴리오. 월간 척도는 모멘텀이고 CM 이 최우수(KOSPI 200 W−L 월 1.4330%/σ 7.0357%), 주간 척도는 반전(contrarian)이고 R 이 최우수(KOSPI 200 L−W 주 0.1455%/σ 1.7567% · 패자 0.3143% > 승자 0.1688%). 거래비용 미공제(gross). [H] Borri, Chetverikov, Liu & Tsyvinski (2024, arXiv:2404.08129): 171개 다중자산(주식·채권·상품·통화 포트폴리오)의 1988-01~2017-12 균형 패널 월간 초과수익에 r_it = h(f_t λ_i) + ε_it 를 4차 다항으로 §2 3단계 추정(SVD 초기값 → 경사하강 → 성분별 재최적화), §5.7 에서 첫 120개월 확장창 · 예측수익 5분위 EW · P5 롱/P1 숏 · 6개월 보유 · 반년 재추정 40회로 월 0.689%(SR 0.147) 보고. gross. [B] Polimenis (2020, arXiv:2007.08115): 매매전략·백테스트·비용·종목수·비중·리밸 주기가 없는 서술적 진단 — US 대형주 5종 1,259 일간수익을 FF3 에 depth=1 회귀트리(solo·joint)로 적합해 분기변수(항상 mex)·임계값(좌측 꼬리)·balance·지배 종목을 보고. [C] Pinchuk (2023, arXiv:2301.09173): FF49 산업 VW 월수익의 횡단면 분산 CID 의 AR 잔차 충격에 대한 24개월 β 로 5분위 VW 월간 정렬, Q1 0.79% > Q5 0.30%, L/S −0.49%(t −3.19). → 네 논문을 합친 '논문 그대로의 포트폴리오'는 존재하지 않으므로 fidelity = combination 이고, 포트폴리오 사양은 지시된 고정 축(top-25 롱온리 EW·월간)을 쓴다.",
+    "portfolio_spec": {
+      "construction": "top_n_long",
+      "weighting": "ew",
+      "rebalance": "monthly",
+      "top_n": 25,
+      "n_long": 25,
+      "n_max": 25
+    },
+    "commission_paper": null,
+    "_notes": {
+      "engine_output": "FACTORS(Date, Ticker, Score) — Score = CM_6m − R_6w (로그수익 단위 · 클수록 롱). Date = 매월 마지막 거래일(전 종목 통합 격자), 집행은 러너가 익 거래일. 부호는 [A] 가 사전 선언한 두 방향(월간 승자 롱 · 주간 패자 롱)이지 사후 반전이 아니다(C13).",
+      "combination_operator": "같은 논문의 두 시간척도 규칙을 Table 1 형식(국면 수익의 정수 가중 합)으로 두 창에 걸쳐 합성: (1,2,1)·6개월 경로 + (0,0,−1)·6주 경로. 스코어 층 평균·rank-Z·가중 블렌딩 0건. 다른 세 재료는 점수에 없다.",
+      "why_this_is_not_a_sixth_variant_of_the_same_lever": "결합 계보 M1(rank-Z 평균 5회 · 최고 0.766) · 1판([A]+[B] 체계낙폭 가중 · 0.691) · 2판([A] on [H] 잔차 · 0.788)은 전부 '다른 논문의 약한 신호를 [A] 에 섞거나 [A] 의 경로를 다른 논문으로 정화'했고 셋 다 CM 단독 비교군(0.925) 아래였다. 이 판은 (i) 재료 집합에서 KR 실측이 양(+)인 유일한 신호원([A])만 쓰고, (ii) 그 논문이 같은 시장에서 따로 보고한 두 현상(6개월 모멘텀 · 6주 반전)을 논문 가중·방향 그대로 겹치며, (iii) 그 방향의 직접 실측(B1_4: CM + 단순 반전 = 1.502)이 이미 있다.",
+      "materials_not_in_score": {
+        "H_2404.08129": "코드 없음. 2판 실측 C 0.788 · Calmar 0.204 · IC −0.006 · FMB t −0.54 · F1 겹침 0.80 · KR 단일요인 rho(φ̂, 시장) +0.77 · R² 0.234 · 충실구현 기저 0.55(IC −0.002) · 균형 패널 결측 규칙 부재.",
+        "B_2007.08115": "미사용. 진단 연구(포트폴리오 없음) · 이식판 t 1.11 · 분기변수 = 시장초과수익 = 베타 축 · 1판 0.691.",
+        "C_2301.09173": "미사용. KR 에서 cor(CID 충격, 시장) +0.43 · β_CID = 시장베타 · 충실구현 F(−1.16) · 강화 최고 1.228."
+      },
+      "audit_response_to_rejected1": {
+        "finding_1_2_svd_on_zero_filled_matrix": "수용. HFL 추정기를 제거했다(코드 0행). 원문 §2 3단계 초기값은 §4 균형 패널(171×360)에서만 정의되고 결측 규칙이 없다 — K200∪KQ150 상장·퇴출 패널에서는 지어내지 않고는 되돌릴 수 없다. 그 설계는 미신고와 별개로 사전등록 반증(PORT_t > 0.925 ∧ Calmar > 0.240)에 실측 0.788/0.204 로 실패했다.",
+        "finding_3_per_month_threshold": "수용. 같은 추정기 안의 문턱 — 코드 없음.",
+        "finding_4_closed_constant_counts": "수용. 이 판은 constants 표에 판정 수치와 구조 리터럴을 전수 열거하고(표 밖 리터럴 없음), 시작값·중앙값 초기화·반복 추정기·침묵 폴백이 없다. 모든 skip 은 두 계수(워밍업·정의역)로 인쇄된다."
+      },
+      "constants": [
+        {
+          "name": ".W_CM",
+          "value": "(1, 2, 1)",
+          "source": "[A] Table 1 CM",
+          "role": "월간 항 국면 가중 (C − MDD)"
+        },
+        {
+          "name": ".W_R",
+          "value": "(0, 0, 1)",
+          "source": "[A] Table 1 R",
+          "role": "주간 항 국면 가중 (회복)"
+        },
+        {
+          "name": ".FORM_M",
+          "value": "6 (months)",
+          "source": "[A] §3.2 '6 months ... of estimation period'",
+          "role": "월간 창 길이 = 월말 격자 6스텝"
+        },
+        {
+          "name": ".FORM_W",
+          "value": "6 (weeks)",
+          "source": "[A] §3.2 '6 ... (weeks) of estimation period'",
+          "role": "주간 창 길이"
+        },
+        {
+          "name": ".WEEK_D",
+          "value": "7 (calendar days)",
+          "source": "규약 — 1주 = 7 캘린더일 (③ (8))",
+          "role": "주간 창 = 42 캘린더일"
+        },
+        {
+          "name": "주간 항 부호",
+          "value": "−1 (Score = cm − rw)",
+          "source": "[A] Table 2 'contrarian' · §3.2 '(short) ... (long)' 괄호 규약",
+          "role": "패자(회복 작음) 롱"
+        },
+        {
+          "name": "창 간 상대 척도",
+          "value": "1",
+          "source": "규약 — 둘 다 로그수익 단위 (③ (5))",
+          "role": "자유 파라미터 0"
+        },
+        {
+          "name": ".LIQ",
+          "value": "2e8 KRW",
+          "source": "지시된 고정 축",
+          "role": "adv20(t−1) 하한"
+        },
+        {
+          "name": ".LIQ_WIN",
+          "value": "20 (trading days)",
+          "source": "지시된 고정 축",
+          "role": "유동성 창"
+        },
+        {
+          "name": "shift lag",
+          "value": "1",
+          "source": "PIT C10",
+          "role": "adv20 종점 = f−1"
+        },
+        {
+          "name": "경로 정의역",
+          "value": "n ≥ 2 관측",
+          "source": "정의역 — MDD·경로가 성립하는 최소 관측 (③ (9))",
+          "role": "미만 = NA"
+        },
+        {
+          "name": "결측 거래량",
+          "value": "0",
+          "source": "데이터 가드 (③ (12)) — 충실구현 판과 동일",
+          "role": "그날 거래대금 0"
+        },
+        {
+          "name": "월 인덱스",
+          "value": "year×12 + month",
+          "source": "구조",
+          "role": "월말 격자 키"
+        },
+        {
+          "name": "nomatch",
+          "value": "0L",
+          "source": "data.table 조인 규약",
+          "role": "격자 밖 날짜 행 없음"
+        },
+        {
+          "name": ".NTOP",
+          "value": "25",
+          "source": "지시된 고정 축 종목수 (진단 전용)",
+          "role": "top-25 겹침 진단의 n — Score 무관"
+        },
+        {
+          "name": ".DIAG_MIN",
+          "value": "5",
+          "source": "진단 전용",
+          "role": "순위상관 최소 횡단면 — 미만 NA"
+        },
+        {
+          "name": ".OVL_MAX",
+          "value": "0.80",
+          "source": "진단 전용",
+          "role": "F1/F2 재라벨 판정 문턱"
+        },
+        {
+          "name": ".RANGE0",
+          "value": "2005-01-01",
+          "source": "측정구간 시작 = 러너 start_date (진단 전용)",
+          "role": "F4 월 결번 분모 범위"
+        },
+        {
+          "name": "표시 배수",
+          "value": "100",
+          "source": "보고 형식",
+          "role": "MDD 를 % 로 인쇄 — Score 무관"
+        },
+        {
+          "name": "멤버십 플래그 판정",
+          "value": "숫자 ≠ 0 · 문자 'TRUE'/'T'/'1'/'Y'/'YES' · 논리 TRUE",
+          "source": "데이터 가드 .as_flag (③ (12))",
+          "role": "K200/KQ150 열의 형 혼재 방어"
+        },
+        {
+          "name": "가격 가드",
+          "value": "is.finite(Close) ∧ Close > 0",
+          "source": "데이터 가드 (③ (12))",
+          "role": "로그가격이 정의되는 행만"
+        },
+        {
+          "name": "경로 기준점",
+          "value": "창 첫 관측 종가 (인덱스 1)",
+          "source": "[A] P(t) 상대 경로 규약 (③ (9))",
+          "role": "path = log(P) − log(P_0)"
+        },
+        {
+          "name": "R = 0 판정",
+          "value": "rw == 0",
+          "source": "진단 전용",
+          "role": "f 가 6주 저점인 종목 비율 인쇄 — Score 무관"
+        },
+        {
+          "name": "skip·중복 계수",
+          "value": "0 에서 +1 씩 · 중복 > 0 이면 인쇄",
+          "source": "구조",
+          "role": "워밍업·정의역 skip 과 중복 행수 인쇄(침묵 폴백 0)"
+        }
+      ],
+      "falsification_printed_by_engine": {
+        "F1_not_a_relabel_of_A_monthly": "형성일마다 composite top-25 와 CM 단독 top-25 의 겹침 → 중앙 ≥ 0.80 이면 FAIL (주간 R 항이 순위를 못 바꿨다 = 이 판은 [A] 월간의 재라벨 — 등급과 무관하게 설계 실패)",
+        "F2_not_a_relabel_of_A_weekly": "composite top-25 와 R 단독(오름차순) top-25 의 겹침 → 중앙 ≥ 0.80 이면 FAIL (월간 항이 무작동)",
+        "F3_independence_of_the_two_horizons": "형성일 단면 rho(CM, R_w) 중앙을 인쇄 — 보고만. |rho| 가 크면 두 시간척도가 같은 정보를 담는다",
+        "F4_no_month_dropout": "범위를 먼저 선언 — 분모 = 2005-01-01~ ∧ 워밍업 이후 월말. 결번 > 0 → FAIL",
+        "extra_diagnostics": "창 커버리지 중앙(월간·주간) · 6주 저점 종목 비율(R=0) · top-25 의 R_w/CM/MDD 중앙 vs 전체 — 전부 형성일 단면·창 내부 통계"
+      },
+      "falsification_judged_by_the_contract_not_the_engine": {
+        "axis": "top-25 롱온리 EW · 월간 · 15bps · K200∪KQ150(PIT 시변) · 2005-01-01~",
+        "comparator_primary": "[A] CM 기저 같은 축 — 06_Registry/reinforce_ledger_l1.json · entry RP_20260904_163647_18444_rescued_rulefast · attempt n=1 · cell B1_1 (CM 신호 0.5 + C01_SUE 0.5) · PORT_t 0.925 · SR 0.631 · CAGR 0.138 · MDD 0.577 · Calmar 0.240 · Grade C. ★순수 CM top-25 는 이 축에서 미측정 — 가장 가까운 비교군",
+        "comparator_secondary": "같은 entry · cell B1_4 (CM 신호 0.5 + M11_ST_Reversal 0.5) · PORT_t 1.502 · SR 0.688 · CAGR 0.166 · MDD 0.669 · Calmar 0.247 · Grade C — 'CM + 단순 1개월 반전' 의 실측",
+        "comparator_tertiary": "2판 [A] on [H] 잔차 = 0.788 · Calmar 0.204 (20260906_231128_5756) · 1판 [A]+[B] = 0.691 · 0.235 (20260905_142502_37820) · [A] 충실구현 롱숏 = −0.639 F(구제) (20260904_163647_18444)",
+        "prediction": "1급: PORT_t > 0.925 AND Calmar > 0.240. 2급(지시적): PORT_t vs 1.502 — 미달이면 논문의 R 이 단순 반전보다 못 더한 것이라 다음 판은 주간 항을 C_6w 로 바꿔 잰다. 3급: 0.788 · 0.691 을 못 넘으면 결합 세 판 전부 CM 단독 아래 — 결합 축을 접고 [A] 강화 격자에 맡긴다.",
+        "why_not_2749_or_2567": "프롬프트 라벨 '단독 t' 는 강화 최고 시도(2404.08129 promo1 B2_10 catalog 비중 · 1403.8125 promo2 B3_12 KQ150 단독·창 2010~)이지 충실구현 기저가 아니다. 강화 최고판은 기저 위에 쌓인 값이라 기저의 문턱이 될 수 없고, 러너의 희석 판정은 기록 전용이다.",
+        "note": "이것은 예측이지 성과 선언이 아니다 — 등급·성과는 계약이 낸다."
+      },
+      "pit": "C1~C15 를 구조로 보장한다(엔진 헤더 §3). 모든 창이 (·, f] 로 닫히고 종점 = f 의 종가 · 집행은 러너가 익 거래일(C2·C3·C5) · f 를 넘는 날짜·음수 shift·lead·전표본 통계 0건(shift 는 +1 한 번, adv20 의 t−1 · C7·C10) · 유니버스 = f 당일 K200/KQ150 플래그(C6) · 재무·매크로·팩터 DB 미접근(C4·C11·C15) · 방향 = 논문이 정한 두 곳(C13) · rawdata Market 열 미사용.",
+      "dependencies": "data.table",
+      "determinism": "난수 미사용 · set.seed 없음 · 동값 정렬 (Score 내림, Ticker 오름) · FACTORS 정렬 (Date, −Score) · 반복 추정기·시작값 없음.",
+      "source_text_access": "[A] arxiv.org/html/1403.8125v1 본 세션(2026-09-06) 직접 판독 2회 — §2 정의(MDD·t*·R·3-국면) · Table 1 7 규칙 가중 · §3.1 KOSPI 200 자료 · §3.2 형성·정렬·방향·그룹 수·오버래핑·보유 축자 · Table 2(weekly 6/6 contrarian, KOSPI 200) 7 규칙 전열 + R 승자/패자 · Table 3(monthly 6/6 momentum, KOSPI 200) 7 규칙 전열 + CM 승자/패자 · §4.1.1 · 결론 · 거래비용 언급 없음. [H]·[B]·[C] = 이 판에 코드가 없어 원문 대조 대상이 아니다. ③ (1)~(3) 의 인용·수치는 앞 판 FIDELITY(2판)·fidelity_audit.json evidence·저장소 엔진 헤더·강화 원장에서 승계했고 본 세션에 재판독하지 않았다.",
+      "paper_urls": {
+        "A_two_horizons_used": "https://arxiv.org/abs/1403.8125",
+        "H_not_used": "https://arxiv.org/abs/2404.08129",
+        "B_not_used": "https://arxiv.org/abs/2007.08115",
+        "C_not_used": "https://arxiv.org/abs/2301.09173"
+      },
+      "prior_measurements_on_this_material_set": {
+        "prompt_label_best_solo": "2.749 (2404.08129 promo1 B2_10 · 강화 3세대 · catalog 비중) · 2.567 (1403.8125 promo2 B3_12 · KQ150 단독 · 창 2010~) — 기저 문턱으로 쓰지 않는다",
+        "faithful_base_A": "PORT_t −0.639 (10-decile 롱숏 · J-T 6/6 · n_max 187) · F → recent_regime 구제 C",
+        "same_axis_A_plus_one_factor": "B1_1 SUE 0.925 · B1_3 value_ep 1.865 · B1_4 ST_Reversal 1.502 · B1_6 prof_gpa 1.37 · B1_2 sysbeta_bab −0.018(F)",
+        "faithful_base_H": "PORT_t 0.55 · MDD 0.657 · Calmar 0.174 · IC −0.002 (top-25 롱온리 변환)",
+        "combo_edition_1_A_plus_B": "C 0.691 · MDD 0.566 · Calmar 0.235 · 하락월 초과 +1.21%/월(t 2.41) · 상승월 −0.45%/월",
+        "combo_edition_2_A_on_H_residual": "C 0.788 · SR 0.567 · CAGR 0.132 · MDD 0.650 · Calmar 0.204 · IC −0.006 · FMB t −0.54 · OOS −0.477 · F1 겹침 0.80 · 감사 misdeclared(SVD 결측 0 대체 등 4건)",
+        "solo_B": "다중검정 t 1.11",
+        "solo_C": "다중검정 t 1.228 · 충실구현 F(−1.16)",
+        "this_exact_material_set_tried": "1 (2판 · 계약 측정 C 0.788 · 감사 misdeclared 로 소비 보류 — 요청 파일의 tries_before 0 은 그 판 이전 값) · 3편 부분집합(1403+2007+2301)은 1판 1회",
+        "graduation_bar": "PORT_t ≥ 2.95 · OOS retention ≥ 0.70 · SR ≥ 0.8 · CAGR ≥ 0.16 · Calmar ≥ 0.64"
+      }
+    }
+  },
+  "fidelity_audit": {
+    "verdict": "misdeclared",
+    "undeclared_changes": [
+      "[undeclared] 논문 [A](1403.8125) §2 는 Table 1 의 규칙을 **가중평균**으로 정의한다 — 'Taking weighted average with more weights on certain specific period is one way of the construction.' 구현은 두 규칙 모두 **정규화 없는 가중합**으로 계산한다: engine.R:238 `cm := 1*RI + 2*RII + 1*RIII` (가중 합계 4) · engine.R:240 `rw := 0*RI + 0*RII + 1*RIII` (가중 합계 1). 단일 규칙 랭킹에서는 합/평균이 양의 상수배라 순위 불변이지만(그래서 충실구현 판 RP_AUTO_1403_8125 감사에서 발견으로 세지 않았다), 이 판은 **가중 합계가 다른 두 규칙을 뺄셈으로 결합**하므로(engine.R:246 `Score := cm - rw`) 정규화 선택이 곧 두 항의 상대 척도가 되어 순위를 바꾼다. 논문 표기대로면 Score' = CM/4 − R_w 이고, 구현은 Score = CM − R_w = 4·(CM/4 − R_w/4) — 즉 논문 정규화 기준으로 **주간 회복 벌점을 1/4 로 축소**한 판이다. FIDELITY.changed 20항 어디에도 '가중평균 → 가중합' 이 없다.",
+      "[undeclared] FIDELITY 는 그 반대를 적극적으로 선언한다 — 하지 않은 '논문 그대로'를 신고하는 방향의 어긋남이다. FIDELITY.json:4(kept ②) '**Table 1 의 두 규칙을 가중 그대로**: CM = (1,2,1) = C − MDD, R = (0,0,1) = 회복' · FIDELITY.json:6(changed ①) '결합 연산자 = Table 1 의 합성 규칙 형식(**국면 수익의 정수 가중 합**)을 두 창에 걸쳐 확장한 것 … 창 간 상대 척도는 1 이다(둘 다 로그수익 단위 · **자유 파라미터 0**)' · FIDELITY.json:57 constants {'창 간 상대 척도', value '1', source '규약 — 둘 다 로그수익 단위'}. 원문은 '정수 가중 합' 이라고 말한 적이 없고(Table 1 Criterion 열은 'Cumulative return-MDD'·'Recovery' 로 척도-불변 명칭뿐, 산술을 규정하는 유일한 문장이 §2 의 'weighted average'), 논문이 두 규칙을 결합하지 않으므로 상대 척도는 논문이 정해 주지 않는다. 상대 척도는 **선택된 자유 파라미터**(논문 정규화 기준 1/4)이지 '0개' 가 아니며, 그 선택이 changed 에 없다."
+    ],
+    "signal_mismatch": [
+      "[undeclared] 논문 §2 'Taking weighted average with more weights on certain specific period' + Table 1 CM (1,2,1) → CM_avg = (R_I + 2R_II + R_III)/4 = (C − MDD)/4, R_avg = R_III/1. engine.R:238·240 은 분모 없이 합만 계산하고 engine.R:246 이 그 둘을 그대로 뺀다 — 두 항의 가중 합계(4 대 1)가 달라 뺄셈에서 상수배가 상쇄되지 않는다."
+    ],
+    "evidence": "[signal] arxiv.org/html/2404.08129v1 직접 판독(본 세션 2026-09-07 · 독립 경로 2회 — arxiv html · r.jina.ai). 축자 확인: 식(1) 'r_{it}=h(f_t λ_i)+ε_{it}, i=1,…,N, t=1,…,T' (f_t > 0 · λ_i > 0 · h 미지함수) · 식(4) '({ĥ_j}_{j=0}^K, {f̂_t}_{t=1}^T, {λ̂_i}_{i=1}^N) = arg min Σ_{i=1}^N Σ_{t=1}^T (r_{it} − Σ_{j=0}^K c_j(φ_t l_i)^j)²' (결합 최소자승) · 식(5) 'ĥ(x)=Σ_{j=0}^K ĥ_j x^j, x>0' (h 의 다항 근사 · 앞선 테일러 전개 'h(x)=Σ_{j=0}^K h_j x^j + e_K(x)') · 식(8) 'E[r_{it}]=α+β E[h(f_t λ_i)]+ϵ_i' (정렬·가격결정 대상량) · K 는 이론부에서 점근 조건(K→∞, K log(TN) = o(NT))으로만 다뤄진다. 대조 대상 코드: engine.R:164-179(.path_stats — path = log(P) − log(P_0) · dd = path − cummax(path) · t* = which.min(dd) · peak = which.max(path[1..t*]) · MDD = −dd[t*]) · :136-137(.W_CM = (1,2,1) · .W_R = (0,0,1)) · :138-140(.FORM_M 6 · .FORM_W 6 · .WEEK_D 7) · :221-222(창 = (me[k−6], f] · (f − 42 캘린더일, f] · 두 창 모두 종점 = f 종가) · :238·240·246(cm · rw · Score := cm − rw). 선언 위치: FIDELITY.kept 말미('[H] … 은 이 엔진에 **코드가 없다**') · FIDELITY.changed ③(1)('[H] 2404.08129 미사용 — 엔진에 HFL 코드가 없다. 논문의 신호(식(1) … 식(4) 다항 … §2 3단계 추정한 예측수익 (1/T)Σ_t ĥ(φ̂_t l̂_i)) · 포트폴리오(§5.7 …) 어느 것도 구현하지 않는다') · changed_supplements[1] · _notes.materials_not_in_score.H_2404.08129 · _notes.source_text_access · engine.R:7-9 헤더. / [timing] FIDELITY.json changed 필드 ①('[H] 는 이 엔진에 코드가 없다') · ③(1)('[H] 2404.08129 미사용 — 엔진에 HFL 코드가 없다') · paper_original_form 필드가 H 의 §5.7 을 '첫 120개월 확장창 · 예측수익 5분위 EW · P5 롱/P1 숏 · 6개월 보유 · 반년 재추정 40회'로 인용하나, source_text_access 필드가 스스로 '[H]·[B]·[C] 는 이 판에 코드가 없어 원문 대조 대상이 아니며 ... 인용은 앞 판 FIDELITY·감사 evidence에서 승계했고 본 세션에 재판독하지 않았다'고 적어, 이 판 자신이 원문 재확인을 안 했다고 신고한다. 본 검증에서 arxiv.org/html/2404.08129v1 을 WebFetch(3회, 프롬프트 상이) 로 직접 재확인 시도했으나 매번 이론/증명 파트만 반환되고 §5 실증 절이 확인되지 않았다(도구 요약 한계로 판단 — 문서가 매우 길다) — 그 수치의 진위를 이 세션에서 1차 사료로 직접 재검증하지는 못했다. / [universe] arxiv.org/abs/2404.08129 초록: 'achieves superior cross-sectional performance across 171 assets' (아브스트랙트 fetch 확인 — html 전문 fetch 는 5회 시도(§·표 헤더·'171' 문자열 검색 포함) 전부 도구가 '해당 절 없음/변환 손실'로 반환해 §4/§5 데이터 절 원문 축자 인용은 확보하지 못함). FIDELITY.json paper_original_form 필드가 이 초록치와 정합하는 서술을 담고 있다: '171개 다중자산(주식·채권·상품·통화 포트폴리오)의 1988-01~2017-12 균형 패널'. FIDELITY.changed ③(1) 및 _notes.materials_not_in_score.H_2404.08129 가 'H 코드 없음'을 반복 명시. engine.R 전문 대조(184-233행 유니버스/유동성 블록, 전체 309행)에서 H 관련 코드 부재 확인. / [portfolio] arXiv:2404.08129 §5.7 'Predictability' + Table 8. 축자 인용: 'we use the model predicted returns to sort assets in five portfolios, and compute the equally-weighted average portfolio return in the following six months.' · 'In each period, the first four portfolios contain 34 assets each, and the last portfolio contains the remaining 35 assets.' · Table 8 캡션 'For each portfolio, and for the long-short portfolio long in the last portfolio and short in the first portfolio, Panel A reports the mean (Mean), standard deviation (SD), and standard error (SE), along the Sharpe ratio (SR)' · 롱숏 실적 'monthly average excess return of 0.69%' · 'a monthly Sharpe ratio of 0.15'. 논문 전체에서 포트폴리오를 만드는 절은 §5.7 하나(다른 실증은 예측치에 대한 횡단면 회귀). ★원문 접근 경로: 지시된 arxiv.org/html/2404.08129v1 은 3회 독립 질의에서 실증 절이 잘려 §5.7 이 나오지 않았고(LaTeXML 변환 + 길이 절단), ar5iv.labs.arxiv.org/html/2404.08129 에서 위 문장들을 직접 읽었다(본 세션 2회 질의, 상호 정합). 인용은 FIDELITY·앞 판 감사 파일이 아니라 이 원문 판독에서 왔고, FIDELITY.changed ③(1) 의 서술('§5.7 예측수익 5분위 · P5 롱/P1 숏 EW · 6개월 보유')과 대조한 결과 사실과 합치한다. / [cost] arxiv.org/html/1403.8125v1 원문 전체 — transaction cost/commission/slippage/bid-ask 언급 없음(서론 문헌리뷰의 momentum 이론 인용 1건 제외). §3.1·§3.2·Table 2·Table 3 어디에도 비용 공제 서술 없음. / [undeclared] https://arxiv.org/html/1403.8125v1 — §2 (Table 1 도입 문단) 'Taking weighted average with more weights on certain specific period is one way of the construction.' (동일 문장을 독립 판독 2회에서 축자 확인) · Table 1 = Portfolio/Criterion/Description/Weights 4열, CM 행 Criterion 'Cumulative return-MDD' · Weights (1,2,1), R 행 Criterion 'Recovery' · Weights (0,0,1) — Criterion 열은 척도-불변 명칭이고 분모를 규정하지 않는다 · §2 분해 'C = R_I + R_II + R_III = PP − MDD + R' · §3.2 'Based on given selection rules during 6 months (weeks) of estimation period, assets in market universes are sorted in ascending order' — 논문은 규칙을 **각각** 정렬에 쓸 뿐 두 규칙·두 시간척도를 산술 결합하지 않는다(그래서 상대 척도를 정해 주는 원문 문장이 존재하지 않는다). 교차 확인: 같은 논문 충실구현 판 감사 04_Research/strategies/RP_AUTO_1403_8125/fidelity_axis_signal.json:10 이 '원문은 weighted average, 엔진은 가중합 — CM 은 상수배(1/4) 차이라 횡단면 데실 배정이 바뀌지 않는다' 로 같은 원문 자구를 기록했다(그 판에서는 단일 규칙이라 순위 불변, 이 판에서는 결합이라 불변이 깨진다).",
+    "confidence": "medium",
+    "note": "축 팬아웃 6개(판독형 opus 3 · 대조형 sonnet 3) — 발견 3건. adapted/adapted/adapted/adapted/faithful/misdeclared"
+  },
+  "implementation_suspect": true,
+  "completed_at": "2026-09-07T00:23:13+0900"
 }
