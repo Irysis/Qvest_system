@@ -1,0 +1,11 @@
+{
+  "axis": "universe",
+  "verdict": "adapted",
+  "undeclared_changes": [],
+  "signal_mismatch": [],
+  "counterexample": "구성 못 했다. [A](1403.8125 §3.1)는 KOSPI200/S&P500/SPDR ETF 구성종목만 명시할 뿐 가격 하한·시총 하한·금융주 제외·상장폐지 처리 방법을 서술하지 않아, 코드가 이 축에서 논문과 '다른 값'을 낼 수 있는 구체적 시나리오를 원문에서 도출할 수 없었다. [H](2404.08129)는 171개 다중자산(주식/채권/상품/통화) 패널이라 종목 단위 필터 개념 자체가 없고, 유니버스 전환(K200∪KQ150) 자체는 과제에서 허용된 변경이라 반례 구성 대상이 아니다.",
+  "evidence": "1403.8125 arxiv.org/html/1403.8125v1 §3.1(Dataset) — 'The KOSPI 200 is a stock benchmark index ... value-weighted and sector-diversified index with 200 stocks', 가격/시총/업종 선별기준 및 상장폐지 처리 서술 부재(WebFetch 확인). 2404.08129 §5.7 — 자산 유형이 주식/채권/상품/통화 포트폴리오로, 종목 단위 유동성/거래소 필터 대상이 아님.",
+  "confidence": "medium",
+  "checked": "engine.R:376-404(멤버십 MEM=K200|KQ150, PIT), :379(Close>0 데이터가드), :388-390(ADV20_L1 t-1 shift), :502(ELIG=MEM & ADV20_L1>=LIQ), :510-532([H] 적합 유니버스=첫편입월≤ip0) 를 FIDELITY.changed(19)(22)(4)(6)(7) 및 원문 1403.8125 §3.1·2404.08129 §5.7 과 대조",
+  "note": "코드에 있는데 논문에 없는 필터(유동성 2e8, Close>0 가드, [H]용 확장 유니버스)는 전부 changed 필드에 '지시된 고정 축' 또는 'v2 승계 상수'로 선언돼 있다. 논문 자체가 세부 선별규칙을 침묵하므로 misdeclared 근거를 세울 수 없었다 — 이 축은 발견 없음이 정직한 결과다."
+}
