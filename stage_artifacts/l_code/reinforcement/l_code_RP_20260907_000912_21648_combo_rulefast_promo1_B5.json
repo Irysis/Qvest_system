@@ -17,11 +17,46 @@
   "calmar": 0.315,
   "oos_retention": -0.124,
   "portfolio_alpha_t": 1.397,
-  "next_probes": [
-    "다음 격자 축 B2(weighting) — 이 블록 승자 위에서 측정",
-    "B5_19(최고 1.397)는 B4 조합 후보로 고정 · B5_16(최저 0.430)는 축 역작동 여부를 조합 LOO 로 분리"
-  ],
+  "next_probes": ["다음 격자 축 B2(weighting) — 이 블록 승자 위에서 측정", "B5_19(최고 1.397)는 B4 조합 후보로 고정 · B5_16(최저 0.430)는 축 역작동 여부를 조합 LOO 로 분리"],
   "next_probe": "다음 격자 축 B2(weighting) — 이 블록 승자 위에서 측정 | B5_19(최고 1.397)는 B4 조합 후보로 고정 · B5_16(최저 0.430)는 축 역작동 여부를 조합 LOO 로 분리",
   "source_paper": "https://arxiv.org/abs/2404.08129",
-  "record_type": "performance"
+  "record_type": "performance",
+  "mechanism": "판정: 낙폭을 움직인 것은 소비 지점(총노출 vs 보유 횡단면)이 아니라 tilt 랭킹 축의 다변량 여부다. 6칸은 MDD-PORT_t 상충선 위에 거의 단조로 늘어선다 — B5_16 dd_brake_q(MDD 0.421 · PORT_t 0.430) → B5_17 dbeta_tilt_rank(0.493 · 0.879) → B5_18 csd_idio_tilt(0.554 · 1.386) → B5_19 holdlvl_syscrowd_tilt(0.561 · 1.397) → B5_21 ml_dual_forecast_tilt(0.592 · 1.344). 이 선을 벗어난 칸은 B5_20 multivar_channel_tilt 하나다(MDD 0.426 · PORT_t 1.152 · CAGR 0.169 · Calmar 0.396). 앞선 처방 두 개가 여기서 갈렸다. ①짝지은 A/B(총노출 스칼라 vs 하방베타 횡단면 tilt)는 반증됐다 — B5_17 은 MDD 를 0.493 까지만 내리면서 PORT_t 를 B1_8 의 1.636 에서 0.879 로 떨어뜨렸고 Calmar 0.315 로 대조군 B5_16 의 0.331 을 넘지 못했다. 소비 지점만 바꾸는 것으로 CAGR 손실 없는 MDD 감축은 나오지 않는다. ②고정 랭킹축 vs 회전 랭킹축 대조는 지지됐으나 조건은 회전이 아니라 채널 다변량이다 — 고정축 두 칸(B5_18 · B5_19)은 CAGR 0.180/0.177 을 지키는 대신 MDD 0.554/0.561 로 B1 의 0.554~0.616 범위 안에 그대로 남았고, 회전축이라도 학습 예보 단독인 B5_21 은 MDD 0.592 로 블록 최악이다. 상태를 시장 시계열이 아니라 그 달 보유에서 읽는다는 처방(B5_19)은 초과수익 축에서만 최고였고 위험 축은 전혀 안 움직였다 — 반증. 실측으로 남는 것: B1 8칸 내내 알파 축 교체로 꿈쩍 않던 MDD 하한 0.554 가 B5_20 에서 0.426 으로 내려가면서 CAGR 0.169(B1 범위 0.158~0.186 안)를 유지했고 Calmar 0.396 은 B1 최고 0.315 를 넘었다. 미결: 이 이탈이 종목축 다변량 상태 구조 때문인지 그 채널 조합의 표본 특이성인지 — 한 칸으로는 안 갈린다. 가르려면 같은 다변량 구조를 오버레이가 아니라 비중 형성 지점(공분산 구조)에서 재현하고, 분산 단일축 통제와 축소추정 통제를 같은 블록에 나란히 둬야 한다.",
+  "mechanism_by": "llm:block_end",
+  "mechanism_at": "2026-09-07T05:30:48+0900",
+  "prior_lessons_used": ["B1", "B5"],
+  "next_block_actions": [
+    {
+      "action": "B2 에서 B5_20 의 다변량 구조를 오버레이가 아니라 비중 형성 지점으로 옮겨 재현한다 — 상관을 계층으로 소비하는 lean:hrp 와 군집 후 재조립하는 lean:nco 를 같은 블록에 나란히 둔다(기저 비중 ivol 대비).",
+      "why": "이 블록에서 상충선을 벗어난 칸은 B5_20 하나이고, 그 칸의 유일한 구별점이 종목축 다변량 상태다. 오버레이 tilt 에서 나온 이탈이 비중 형성 지점에서도 재현되면 원인은 소비 지점이 아니라 공분산 구조다.",
+      "expect": "hrp·nco 중 최소 하나가 MDD 0.50 미만을 유지하면서 CAGR 0.16 이상이면 구조 가설이 지지된다. 둘 다 MDD 0.554~0.616 범위로 되돌아오면 B5_20 은 채널 조합 특이성으로 판정하고 다변량 축을 접는다."
+    },
+    {
+      "action": "같은 블록에 lean:minvar 를 분산 단일축 통제로 넣는다 — 점수 정보 없이 분산만 최소화한다.",
+      "why": "B5 의 tilt 계열은 전부 분산·베타·군집 중 하나를 대리변수로 썼다. hrp/nco 의 이득이 계층 구조에서 오는지 그냥 분산 축에서 오는지 통제 없이는 안 갈린다.",
+      "expect": "minvar 가 hrp/nco 와 (MDD, CAGR) 에서 같은 자리면 계층 구조는 분산 축 이상을 주지 않는다 — 그러면 B2 이후 다변량 축에 칸을 더 쓰지 않는다."
+    },
+    {
+      "action": "gen:lean_score_tilt__shr_ledoit_wolf 를 축소추정 통제로 넣는다 — 구조를 바꾸지 않고 공분산 추정오차만 줄인 판.",
+      "why": "B5_20 의 이탈이 다변량 상태가 아니라 추정 노이즈 감소의 부수효과일 수 있다. 이건 이 블록만으로 못 가른다.",
+      "expect": "축소추정만으로 MDD 가 0.50 미만으로 내려가면 B5_20 의 이탈은 상태 정보가 아니라 추정오차 감축으로 재해석되고, 다음 처치는 채널 설계가 아니라 추정기로 간다."
+    },
+    {
+      "action": "qepm:CDaR_LP 를 한 칸 넣어 낙폭을 대리변수가 아니라 목적함수로 직접 최적화한다.",
+      "why": "B5 6칸 전부 MDD 를 분산·베타·군집·총노출이라는 대리변수를 통해서만 건드렸고, 상충선을 못 벗어났다. 낙폭 자체를 목적함수로 쓴 지점은 아직 미측정이다.",
+      "expect": "CDaR_LP 가 MDD 0.45 미만에서 CAGR 0.15 이상이면 낙폭은 오버레이가 아니라 목적함수 지점에서 가장 싸게 사진다. 실행 리스크 — 이 팔은 09-05 까지 디스패처 인자 불일치로 미발화 이력이 있다. 부재로 죽으면 그 칸은 미측정으로 기록하고 결과를 축의 증거로 읽지 않는다."
+    },
+    {
+      "action": "B2 전 칸의 판정을 (ΔCAGR, ΔMDD) 쌍으로 기저(ivol) 대비 기록한다 — Calmar 단일 스칼라로 접지 않는다.",
+      "why": "이 블록에서 B5_16(Calmar 0.331)과 B5_17(0.315)은 Calmar 로는 거의 같지만 (CAGR 0.139/MDD 0.421) 대 (0.155/0.493) 로 행동이 전혀 다르다. 스칼라 하나로 접으면 상충선 이탈 여부가 안 보인다.",
+      "expect": "쌍으로 기록하면 B2 칸이 상충선 위인지 이탈인지 즉시 갈린다 — B5_20 형 이탈이 재현되는지가 한 눈에 판정된다."
+    }
+  ],
+  "next_block_actions_by": "llm:block_end",
+  "avoid": ["고정 랭킹축 tilt 계열(csd_idio_tilt · holdlvl_syscrowd_tilt)을 더 시험하는 것 — B5_18/B5_19 가 CAGR 0.180/0.177 을 지키면서 MDD 0.554/0.561 로 B1 의 0.554~0.616 범위 안에 그대로 남았다. 초과수익 축만 움직이고 위험 축은 안 움직이는 것이 실측으로 확인된 벽이다.", "학습 예보를 위험 축 tilt 로 쓰는 것(ml_dual_forecast_tilt 계열) — B5_21 은 PORT_t 1.344 로 상위권인데 MDD 0.592 로 블록 최악이고 Calmar 0.297 로 최저다. 초과수익 랭킹은 재현하지만 별개의 위험 상태 랭킹을 못 낸다.", "총노출 스칼라 축소 계열에 칸을 더 쓰는 것 — B5_16 대조군 한 칸으로 벽이 재확인됐다(MDD 는 0.421 로 최저지만 PORT_t 0.430 · CAGR 0.139 로 둘 다 블록 최저). 앞선 B5 50셀 결과와 같은 방향이다.", "B2 를 score_blend 계열(score_pure · score_tilt · softmax_tilt · winsor_tilt · rank_tilt)로 채우는 것 — 알파 점수 축을 비중 지점에서 다시 정렬하는 형태라 B5_18/B5_19 와 같은 결과(초과수익만 움직이고 MDD 불변)를 비중 지점에서 반복할 뿐이다. 이 블록의 미결은 알파 축이 아니라 공분산 구조다."],
+  "next_block_design_for": "B2",
+  "next_block_design_n": 5,
+  "prior_action_status": "executed",
+  "prior_action_detail": "설계 6건 중 6건 집행 (설계: dd_brake_q,dbeta_tilt_rank,csd_idio_tilt,holdlvl_syscrowd_tilt,multivar_channel_tilt,ml_dual_forecast_tilt / 실측: dd_brake_q,dbeta_tilt_rank,csd_idio_tilt,holdlvl_syscrowd_tilt,multivar_channel_tilt,ml_dual_forecast_tilt)",
+  "mechanism_confidence": "medium"
 }
