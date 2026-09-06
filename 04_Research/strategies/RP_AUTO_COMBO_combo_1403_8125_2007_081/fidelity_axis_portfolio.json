@@ -1,0 +1,22 @@
+{
+  "axis": "portfolio",
+  "verdict": "adapted",
+
+  "undeclared_changes": [],
+
+  "signal_mismatch": [],
+
+  "counterexample": "구성했으나 그것이 곧 선언된 차이다 — 원문 사양과 구현이 같은 값을 낼 수 없는 지점은 존재하고, 전부 FIDELITY.changed ③(3) 에 적혀 있다. 실측: 2008-10-01 리밸일에 04_holdings.csv 는 롱 25행 뿐이고 각 target_weight=actual_weight=0.04, Σw=1.00, 숏 0행이다(has_short=false, 01_strategy_spec.json:13). 같은 날 [H] §5.7 사양은 171자산을 5분위로 갈라 P5(~34종) 롱 · P1(~34종) 숏의 zero-cost 구성이므로 Σw_net=0 이다. 시장수익이 0 이 아닌 어느 달에도 두 사양은 같은 수익을 낼 수 없다 — 논문판은 구성상 시장중립이고 구현판은 순노출 100% 롱이다. 논문의 헤드라인 산출(P5−P1 0.689%/월 · 월 SR 0.147)은 구현이 원리상 재현하지 않는 양이다. ★두 층 곱셈형 축소(내 축의 표적 병리)는 **없다**: engine.R:645 `.OUT[[k]] <- data.table(Date=d_f, Ticker=tk[ok], Score=ps$score[ok])` 는 스코어를 받은 종목 전부를 절단 없이 배출하고, n25/top_sc(650~661행)는 `.LOG` 진단표 안에서만 소비돼 FACTORS 에 닿지 않는다. 절단 층은 러너 top_n=25 하나뿐이고 실현값도 정확히 25 다(6500행 = 260 리밸일 × 25 · 10_audit.csv:20 'distinct ticker 25~25종 (260 리밸일)').",
+
+  "evidence": "[H] arXiv:2404.08129 §5.7 Predictability + Table 8 (arxiv.org/html/2404.08129v1 은 이론부만 렌더 — §5.7·Table 8 부재를 본 감사가 직접 재확인. 전문은 r.jina.ai 프록시 2-source: arXiv PDF + NBER w32365 PDF, 두 판독 일치). 축자: ①분위 수 = 'we use the model predicted returns to sort assets in five portfolios' ②비중 = 'compute the equally-weighted average portfolio return in the following six months' (Table 8 캡션도 'equally-weighted average portfolio return') ③레그 = 'zero-cost long-short strategy, wherein assets with the highest predicted returns are bought while those with the lowest predicted returns are sold short' · 'Portfolio 1 groups the assets with, each period, the lowest predicted returns ... Portfolio 5 ... the highest predicted returns' ④종목수 = 171 자산 5분위 → 레그당 ~34 ⑤보유 = 6개월·반년 리밸 40회. Table 8: P1 0.079% · P5 0.769% · LS 0.689%/월 · 월 SR 0.147. ★NBER 판독은 '논문 어디에도 value-weighted 정렬은 없다'로 응답 — 원문 비중 축은 EW 단일.",
+
+  "confidence": "high",
+
+  "checked": "분위 수(5분위 ~34종/레그 vs 고정 top-25) · 레그 구성(zero-cost 롱숏 vs 롱온리 Σw=1, has_short=false) · 비중 방법(EW vs EW — 6500행 전부 target=actual=0.04=1/25) · 실현 종목수(260 리밸일 전부 정확히 25 · 6500=260×25 · 10_audit.csv holdings_cap) · 엔진 내 top-N 절단 유무(engine.R:645 무절단 · n25 는 .LOG 진단 전용) · FIDELITY.changed ③(3)·changed_supplements[3]·paper_original_form 의 원문 진술 정확성",
+
+  "_배열 규약": "undeclared_changes·signal_mismatch 는 **발견만** 담는다. 없으면 빈 배열 [] 로 두고 '불일치 없음' 같은 비발견을 항목으로 넣지 마라 - 근거 게이트가 배열 길이로 선다.",
+
+  "note": "내 축의 세 요소가 전부 선언돼 있고 선언 내용이 원문과 축자로 일치한다 — FIDELITY.changed ③(3) 이 '[H] §5.7 은 예측수익 5분위 P5 롱/P1 숏 EW · 반년 리밸이다' 라고 원문 형태를 정확히 적은 뒤 고정 축 top-25 롱온리 EW 로의 대체를 명시한다(paper_original_form 은 171자산·40회·0.689%·SR 0.147 까지 병기). 비중 축은 대체조차 아니다 — 논문도 EW, 구현도 EW. 축 밖 한 줄: 리밸 주기(반년→월간)도 같은 문장에 선언돼 있으나 판정은 timing 축 소관이다.",
+
+  "_note_2": "이 판정은 이전 세대 RP_AUTO_2404_08129 의 '§5.7 전략 없음' 신고(사후 감사에서 misdeclared)와 대조된다 — 본 판 구현자는 §5.7 을 프록시로 읽고 5분위 롱숏 EW 반년 리밸을 원문 형태로 정확히 신고했다. 원문 접근 신고(FIDELITY source_text_access)도 본 감사의 html v1 판독(이론부만 렌더)과 일치했다."
+}
