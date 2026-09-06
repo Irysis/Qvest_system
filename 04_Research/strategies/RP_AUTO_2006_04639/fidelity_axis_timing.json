@@ -1,0 +1,11 @@
+{
+  "axis": "timing",
+  "verdict": "adapted",
+  "undeclared_changes": [],
+  "signal_mismatch": [],
+  "counterexample": "구성 못 했음. 최종 β^NET(d) 5분위 포트폴리오의 실제 매매 리밸런싱 주기(月, engine.R:381 .sig_all 월말 거래일)는 논문 Table 6 각주 'Portfolios are rebalanced monthly' 와 수치가 일치한다. 유일한 리밸런싱-주기 축 차이는 NET(d) 팩터를 구성하는 중간 to/from 4-포트폴리오(§4.1.1 'each day we sort...')가 논문은 매일, 구현은 월말(engine.R:262 .sig_net)이라는 점인데, 이는 FIDELITY.json::changed_checklist[3]('연결성·팩터 정렬 주기')에 이미 정확히 신고돼 있어 반례를 구성해도 misdeclared 로 이어지지 않는다.",
+  "evidence": "footnote 11('p=2 lags'), §3('H=100 ... H∈{50,100,200}'), §5.2('rolling regressions using daily data, a 3-year rolling window, and moving forward through the sample on a day-by-day basis'), Table 6 각주('Portfolios are rebalanced monthly during each year'), §4.1.1('each day we sort S&P500 stocks ... create value-weighted to and from portfolios')",
+  "confidence": "high",
+  "checked": "VAR lag p(2=2 일치, engine.R:93) · H(100=100 일치, engine.R:94, robustness 50/200 미실행은 changed_checklist['H 칸 선택']에 신고) · beta window(논문 '3-year rolling'·일별 이동 vs 구현 756거래일 유효관측·frollsum 매일 계산 후 월말만 채택, engine.R:356-381 — 창 정의는 changed_checklist['창 길이 정의']에 신고) · 최종 포트폴리오 리밸주기(논문 monthly = 구현 .sig_all 월말, 일치) · 중간 NET(d) 구성 포트폴리오 리밸주기(논문 daily vs 구현 monthly, changed_checklist['연결성·팩터 정렬 주기']에 신고) · 스킵기간(논문·구현 모두 명시적 skip-month 없음, 일치)",
+  "note": "형성/보유/리밸 3항 모두 숫자 자체는 논문과 일치하거나(p=2, H=100, monthly 최종 리밸) 불일치가 FIDELITY 에 정확한 위치로 신고돼 있다(network→factor 구성 daily→monthly). 이 축에서 undeclared misdeclared 사유를 못 찾았다."
+}
