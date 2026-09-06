@@ -1,0 +1,11 @@
+{
+  "axis": "universe",
+  "verdict": "adapted",
+  "undeclared_changes": [],
+  "signal_mismatch": [],
+  "counterexample": "구성 못 함 — 논문에 유동성·가격·금융주 필터가 존재하지 않아 코드가 추가한 유일한 실질 필터(adv20 >= 2e8 KRW, t-1)가 FIDELITY.changed_checklist('유니버스 / 유동성' 항목)에 정직하게 선언돼 있고, 세 소비 지점(네트워크 단면 eg, NET 조건부 정렬, 최종 5분위 정렬 .SIG-.ELG 병합)에 동일하게 적용되는 것도 engine.R:66-69,269-281,392 대조로 확인돼 값이 어긋나는 시나리오를 만들 수 없었다.",
+  "evidence": "arxiv.org/html/2006.04639v1 §3.1(데이터): 'We use high frequency data for all stocks listed on the S&P500 from July 5, 2005 to August 31, 2018' — 가격 하한·유동성·금융주 제외 문구 없음. §3.1.1: 'each day we sort S&P500 stocks above and below the day's median price level and define these as small and big stocks' (median price level = 가격, 시총 아님 — engine.R:287-288 Close median 과 일치).",
+  "confidence": "high",
+  "checked": "S&P500 무필터 유니버스 vs K200∪KQ150 PIT 멤버십 교체(허용축) · 논문에 없는데 코드에 있는 유일한 필터인 adv20>=2e8 유동성 하한의 선언 여부 및 3개 소비 지점(네트워크 단면/NET 조건부 정렬/최종 quintile 정렬) 일관 적용 · 금융주 제외·가격 하한 유무(양쪽 다 없음, 대칭) · size-split 기준이 median price(engine.R:287) 로 시총 아닌 것과 논문 문구 일치 · ever-member 축소(engine.R:119-121)가 날짜별 멤버십 출력에 영향 없는지",
+  "note": "이 축에서 발견은 0건. 유일한 실질 필터 추가(유동성)는 지시된 축(유니버스 치환)에 얹힌 것으로 FIDELITY 에 정직히 신고돼 있어 misdeclared 요건(선언 부재/불일치)을 충족하지 못한다."
+}
