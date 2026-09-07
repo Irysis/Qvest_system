@@ -1319,6 +1319,9 @@ SUITES=(
   #   빨강이 없는 게 아니라 재지 않은 것이다. 신설 시 등재까지가 한 단위.
   "08_Tests/ops/test_boot_lean_rf_budget.R"
   "08_Tests/ops/test_rf_prompt_quote_parity.R"
+  # 2026-09-07 실사고: 프롬프트 예시의 "24%" 가 파이썬 포맷을 깨 계획 미생성 → 감사 3회 스폰 전부 halt_no_plan.
+  #   따옴표 검사(quote_parity)의 사각이었다 — 포맷 문자를 본다(블록을 실제로 조립해 보고, 위반 주입으로 검출력 실증).
+  "08_Tests/ops/test_rf_prompt_format_safety.R"
   "08_Tests/ops/test_rf_reimplement_queue.R"
   "08_Tests/ops/test_rf_verify_extract_pkgs.R"
   "08_Tests/reinforcement/test_rf_avoid_target.R"
@@ -1354,6 +1357,14 @@ SUITES=(
   #   ★1급 축은 "붙였다"가 아니라 **"부른다"** — 러너 두 곳의 블록을 소스에서 잘라 실제로 eval 하고
   #   (좌표 아닌 의미 앵커로 찾는다), 위반 주입으로 검출력을 실증한다. 부재≠거짓 사유 분리 포함.
   "08_Tests/contracts/test_module_admission_seam.R"
+  # 2026-09-07 도훈 승인(A안) — 수출본 이음매 **레벨 연속성** 가드. base(quantiwise)와 증분
+  #   (quantiwise_update)은 수정주가 조정기준이 달라, 그 이음매를 `Close/shift(Close)` 로
+  #   가로지르면 분할 비율이 그대로 하루 수익률이 된다(실측 2026-03-30 275종·최대 +7,863%).
+  #   기존 이음매 가드는 **날짜 커버리지 구멍만** 봤고, 같은 병을 벤치 배관만 고쳐 놓은 상태였다.
+  #   ★검사 축은 검거뿐 아니라 **오검거 금지**(상한가 +30%)와 **부재≠정상**(한쪽에만 있는 종목이
+  #   별도 사유를 받는가), 그리고 두 배관이 가드를 **부르는가**(AST 재도출)까지 잰다.
+  #   변이 2종(가드 제거 · 처분표 무력화)으로 검출력을 실증한다.
+  "08_Tests/data/test_seam_scale_guard.R"
 )
 
 
