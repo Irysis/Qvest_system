@@ -1,0 +1,68 @@
+논문 여러 편을 재료로 하는 **결합 전략**을 설계하라. 산출은 **엔진 R 파일 하나**다.
+
+## 재료 논문 (3편)
+1. One Factor to Bind the Cross-Section of Returns
+   원문: https://arxiv.org/abs/2404.08129
+2. Maximum drawdown, recovery, and momentum
+   원문: https://arxiv.org/abs/1403.8125
+3. Pinchuk (2023) Labor Income Risk and the Cross-Section of Expected Returns
+   원문: https://arxiv.org/abs/2301.09173
+
+## 이 재료들의 이전 구현 (참고용 — 합치는 것이 설계가 아니다)
+- 2404.08129 : C:/Users/99922/OneDrive/Quant_Module_Moltbot/04_Research/strategies/RP_AUTO_2404_08129/engine.R  (단독 다중검정 t 2.749)
+- 1403.8125 : 04_Research/strategies/RP_AUTO_1403_8125/engine.R  (단독 다중검정 t 2.567)
+- 2301.09173 : C:/Users/99922/OneDrive/Quant_Module_Moltbot/04_Research/strategies/RP_2301_09173_CID/engine.R  (단독 다중검정 t 1.228)
+
+## 설계 — 방식은 네가 정한다
+결합의 형태를 지정하지 않는다. 고를 목록도 없다. 논문을 읽고 **무엇이 어떻게 맞물리는지
+네가 판단하라.** 재료를 전부 쓸 필요도 없다 — 읽어 보고 일부만 쓰는 편이 낫다면 그렇게 하고
+그 판단을 적어라.
+
+남길 것은 형식이 아니라 **근거**다. FIDELITY.json 의 changed 에 두 줄로:
+  (1) 무엇을 어떻게 결합했는가
+  (2) 그것이 각 재료 **단독보다 나을 것**이라 보는 이유 — 반증 가능한 형태로
+
+## 실측 기록 (금지가 아니라 자료다)
+이 저장소는 결합 기저를 "두 엔진 신호의 rank-Z 평균" 으로 만든 판을 **5회** 측정했고,
+전부 재료 단독 성적을 못 넘었다(그 계보 최고 다중검정 t 0.766 · 합격선 2.95).
+이 재료 집합의 최고 단독 t 는 2.749 이고, 같은 집합을 시도한 횟수는 0 회다.
+평균을 다시 고르는 것도 네 자유지만, 이 기록을 읽고 고르라는 뜻이다.
+
+★FIDELITY.json 의 fidelity 는 "combination" 으로 적어라. 나머지 키는 아래 규약과 같다.
+
+## 산출 (이것만)
+## 산출 (이것만)
+`C:\Users\99922\OneDrive\Quant_Module_Moltbot/04_Research/strategies/RP_AUTO_COMBO_combo_1403_8125_2301_091/engine.R` — source 되면 `FACTORS(Date,Ticker,Score)` 또는
+`PORTFOLIO(Date,Ticker,Weight,Leg)` 를 만드는 R 스크립트. 호출자가 환경에 `RAWDATA`·`BM_DT` 를 넣어준다.
+
+## 축 (변수 아님)
+- **논문 그대로** 복제하되 **유니버스만 K200∪KQ150**. 유동성 하한 adv20 ≥ 2e8 은 t-1 로 적용.
+- 기간 2005-01-01~. 종목수·비중·리밸 주기는 논문 명시값을 따른다.
+- **PIT C1~C15 절대**: 모든 창의 종점은 t-1. 전 표본 통계 금지(rolling/expanding만).
+  팩터 DB 는 `load_month_factors()` 경유(C15), `Z_Score_Aligned` 만 소비(C13).
+  ★`detect_lookahead` 는 비선언 idiom(전 표본 cov()/mean() · shift(-1) · 수동 미래 인덱싱)을
+  못 잡는다 — 통과를 근거로 삼지 말고 **구조로** 보장하라.
+- 원문 접근이 불가하면 **지어내지 마라**. `C:\Users\99922\OneDrive\Quant_Module_Moltbot/04_Research/strategies/RP_AUTO_COMBO_combo_1403_8125_2301_091/ABORT.txt` 에 사유를 쓰고 끝내라.
+
+## 실행 환경
+- R 349개 패키지가 이미 있고(data.table · arrow · PerformanceAnalytics · xts · quadprog ·
+  cluster · matrixStats · glmnet · TTR · roll · proxy 등), **없는 패키지는 호출자가 자동 설치**한다
+  (검증 러너가 엔진을 스캔해 CRAN 에서 최대 6개까지 설치). 그러니 필요한 패키지를 자유롭게 쓰라.
+- 다만 **정말 필요한 것만** 쓰라 — 의존이 6개를 넘으면 착수가 차단된다.
+- 파이썬 연동(reticulate)도 가능하나, R 로 충분하면 R 로 하라(무인 실행에서 층이 하나 줄어든다).
+- 원문 접근이 불가하거나 논문을 훼손하지 않고는 구현할 수 없으면 `ABORT.txt` 에 사유를 쓰고 멈춰라.
+
+## 금지
+- `C:\Users\99922\OneDrive\Quant_Module_Moltbot/04_Research/strategies/RP_AUTO_COMBO_combo_1403_8125_2301_091` 밖 쓰기. 원장·설정·훅·테스트 수정. 백테스트 직접 실행(측정은 호출자 계약이 한다).
+- 등급·성과 수치 선언(계약이 낸다).
+
+엔진을 쓰고 1~2줄로 무엇을 구현했는지만 보고하라.
+
+## 공리 (전제 — 지시가 아니다)
+아래는 이 저장소가 실측으로 세운 전제다. 네 판단은 이 위에서 이뤄진다.
+어긋나는 결론을 낼 수는 있지만, 그때는 **무엇이 이 전제를 뒤집는 증거인지** 적어라.
+
+- **AX-000 · 한계란 없다** — 한계는 대개 법칙이 아니라 방법의 한계다. 모든 목표는 충분한 엄밀함·창의성·반복으로 달성 가능하다는 전제로 임한다. 소수(3~4회)의 실험 실패를 '구조적 한계'나 'dead-end'로 단정하는 것을 금지하며, 탐색은 가용한 모든 수단(개념 발산·다른 데이터원·다른 구조·ML·수리·물리)을 소진하거나 도훈이 중단을 지시할 때까지 계속한다. 실증·PIT·수리로 얻은 결과는 정직히 보고하되(성공 위장·추측 금지), 그 자체가 탐색 중단의 근거가 되지 않는다.
+- **AX-001 · Defense는 조건부 성과로 평가** — 방어형 팩터를 전기간 SR/CAGR/MDD로 평가하면 Grade F. 위기 구간 alpha + Core 대비 MDD + bad/normal IC ratio로 평가.
+- **AX-002 · 규칙 안에서 찾아낸 성과가 진짜 성과** — 프로세스 우회 = 판단의 미래참조. 하네스 내 성과만 유효.
+- **AX-008 · Verification Triangulation** — 백테스트 결과·전략 admit·SR provenance 등 의사결정 영향 산출은 Forge + Self-Adversarial(메인 에이전트 Opus 4.8 자체 적대검증) + Architect 3-source 중 최소 2-source PASS가 필수다. Single-source PASS는 자기합리화 risk이며 admission 근거로 부적합. 2/3 미만 PASS 시 Q-Lead 직접 escalation 의무.

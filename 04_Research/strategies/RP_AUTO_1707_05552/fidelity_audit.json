@@ -1,0 +1,91 @@
+{
+  "verdict": "misdeclared",
+  "undeclared_changes": [
+    "[signal] [순위변수 입력이 이음매 미보정 Close] 논문 §3 Data sets 는 순위변수를 'the dividend-adjusted and split-adjusted monthly returns' 로 규정하는데, 구현의 월수익은 수출본 이음매에서 조정기준이 끊긴 Close 로 만들어진다. 저장소의 이음매 가드는 Ret 열만 재정렬한다 — seam_scale_guard.R:302 는 stopifnot(\"Ret\" %in% names(dt)) 로 열을 못 박고 :312·:316 이 set(dt, j=\"Ret\") 만 쓴다. 적재본 정정 경로도 같은 함수를 부른다(seam_scale_repair.R:117 seam_apply_actions). 즉 Close 를 되돌리는 코드 경로가 저장소에 존재하지 않는데, engine.R:43 의 .REQ 는 Ret 을 요청하지 않고 Close 만 읽어 engine.R:84·108 에서 P[m]/P[m-1]-1 로 순위변수를 만든다. 이 노출이 FIDELITY.changed 어느 항목에도 선언돼 있지 않다.",
+    "[signal] [손익은 보정 Ret · 신호만 미보정 Close] 같은 패널 안에서 수익 축과 신호 축의 조정기준이 갈린다 — 하네스 손익은 dcast(sub, Date ~ Ticker, value.var = \"Ret\")(backtest_harness.R:578)로 보정된 Ret 을 소비하고, 신호만 미보정 Close 로 계산된다. changed(10) 은 '수정주가 아티팩트는 값을 바꾸지 않는다 — 데이터 층(rawdata_sanitize.R · seam_scale_guard.R) 소관' 이라며 이 계열을 가드에 위임했으나, 위임 대상 가드가 쓰는 열은 이 엔진이 읽지 않는 열이다. 위임 문장이 실제 보호 범위와 어긋나 있고 그 어긋남이 선언돼 있지 않다."
+  ],
+  "signal_mismatch": [
+    "[signal] [이음매 달 월수익 = 조정배율 그 자체] 논문 §2 의 순위변수는 '직전 J개월 past average return' 인데, engine.R:108(.R = P[i,]/P[i-1,] - 1)·:135(colMeans)는 이음매가 낀 달에 실수익이 아니라 조정배율을 순위변수로 낸다. seam_guard_config.json:21 이 실측한 배율 지문은 5x 118건 · 2x 49건 · 10x 23건 · 0.5x 13건 · 0.2x 10건이고 :18 의 최대 관측 배율은 79.63(A042040) 이다 — 5x 는 +400%, 0.2x 는 -80% 의 '월수익' 으로 들어간다. J=1 이라 창 안 평균으로 희석될 항이 없어(엔진 스스로 changed(6) 에서 'J=1 은 순위변수가 한 달치라 희석되지 않는다' 고 인정) 해당 종목의 데실이 확정되고, 데실 절단점을 밀어 정상 종목까지 양끝에서 밀어낸다.",
+    "[signal] [잔여 차이 '배당 하나' 선언이 사실과 다름] changed(6) 은 '순위변수 = 총수익 - 배당수익률(잔여 차이 = 배당 하나)' 이라 적고 fidelity_label_basis 에서 '★이 항목이 라벨을 faithful 이 아닌 adapted 로 잡은 유일한 사유다' 라고 못 박았다. 그러나 같은 변수에 이음매 차이가 하나 더 있으므로 '잔여 차이 = 배당 하나' 는 참이 아니다. 그 좁히기의 근거였던 A005930 2018-05 50:1 분할 검증은 내가 04_holdings.csv 로 재도출해 참임을 확인했으나(형성월 2018-05 → 시그널월 2018-06 → 집행 2018-07 첫 거래일에 A005930 부재 · 이 종목은 260 리밸 중 20회만 양끝 데실에 등장), 그 검사는 단일 수출본 **내부** 분할만 본다 — 수출본 **간** 조정기준 단절은 원리상 탐지할 수 없는 검사로 패널 전체의 무결성을 일반화했다."
+  ],
+  "evidence": "[signal] 원문 2-source 대조(arxiv.org/html/1707.05552v1 LaTeXML 렌더 + r.jina.ai/https://arxiv.org/pdf/1707.05552 PDF 텍스트 프록시 — 두 소스 일치). §2 Methodology: 'for the current month t, individual stocks are ranked according to their historical performance during the previous J months' · 'The winner refers to the decile group with the highest past average return and the loser is the decile group with the lowest past average return. By longing the loser (winner) and shorting the winner (loser), the CSCON (CSMOM) portfolio is constructed' · 'we follow the common approach to skip one month between estimation period and the holding period'(J 별 예외 문장 부재 → J=1 에도 적용) · 'K-month buy-and-hold return is obtained by longing or shorting the portfolio formed at the month t and then held for K months'. ★§2 에는 순위변수를 정의하는 번호 붙은 등식이 없다(두 소스 확인 · 등식 (1)(2)는 §4.1 의 CAPM·FF3) → 산술평균 채택은 논문 위반이 아님. ★표준화·winsorize·z-score·rank transform·동률 규약·10 비배수 분할 규약은 두 소스 모두 부재 = 논문 무규정. §3 Data sets: 'we retrieve the monthly data from the RESSET database, including the dividend-adjusted and split-adjusted monthly returns for all A-share individual stocks' ← 위 지적 4건의 직접 근거(순위변수는 split-adjusted 수익이어야 한다). §4.1: 'we consider six kinds of CSCON portfolios with different estimation periods J belonging to {1,12,24,36,48,60} month(s), while the holding period K is fixed to 1 month'. / [timing] arxiv.org/html/1707.05552v1 §2 Methodology: 'Parameters J and K represent the lengths of estimation period and holding period, respectively.' / 'individual stocks are ranked according to their historical performance during the previous J months.' / 'we follow the common approach to skip one month between estimation period and the holding period' / '...the CSCON (CSMOM) portfolio is constructed at the beginning of each month during the whole sample period.' / 'K-month buy-and-hold return is obtained by longing or shorting the portfolio formed at the month t and then held for K months.' §4.1: 1차 설계 J∈{1,12,24,36,48,60}, K=1 고정 / 확장 설계 J,K∈{1,6,12,18,24,30,36,42,48,54,60}(11×11=121칸). engine.R:51-53(.J<-1L·.K<-1L·.SKIP<-1L) · engine.R:123-125(형성창 r1:r2) · backtest_harness.R:316-323(get_execution_date, 다음달 첫 거래일) · replication_harness.R:84-90(보유창 = exec_date .. 다음 신호의 exec_date 직전) · stage_artifacts/replication/20260907_172213_22908/00_manifest.json(rebalance_rule='month_end_signal_t_plus_1', frequency='monthly'). / [universe] §3 Data sets 전문(arxiv.org/html/1707.05552v1): 'we retrieve the monthly data from the RESSET database, including the dividend-adjusted and split-adjusted monthly returns for all A-share individual stocks' — 그 외 어떤 배제·포함 규칙도 없음. 전문 재검색(전 섹션·각주·Table 1)으로 IPO 신규상장 제외·ST 제외·상장정지 제외·가격제한폭·금융주 제외·데실 최소종목수·최소상장기간 규정 부재를 재확인. / [portfolio] §2 Methodology 축자(HTML 전문 2회 독립 질의로 일치): 'individual stocks are ranked according to their historical performance during the previous J months. The winner refers to the decile group with the highest past average return and the loser is the decile group with the lowest past average return. By longing the loser (winner) and shorting the winner (loser), the CSCON (CSMOM) portfolio is constructed...' → 10분위 · CSCON = 패자 롱/승자 숏 · 롱숏 제로코스트. §2 같은 절의 Ref [21,22] vs Ref [25] 문단: 'the average return at time t is equally-weighted return of all portfolios at same time' 의 'equally-weighted' 는 **중첩 포트폴리오 간 평균**을 가리키며 논문은 그 방식을 따르지 않는다('Instead, we consider the buy-and-hold return series...') → 데실 **내부** 비중 규정이 아니다. 시가총액가중 언급 = NOT PRESENT · 데실당 종목수·최소 종목수 요건 = NOT PRESENT · 데실 외 분위(5분위·3분위 등) = NOT PRESENT(전 절). §3 Data sets 'all A-share individual stocks' — 종목 선별 규칙 없음. / [cost] arxiv.org/html/1707.05552v1 §2/§3 재질의(2026-09-07 WebFetch): 거래비용·commission·slippage·market impact 수치 언급 없음('수치는 명시되지 않았습니다') — bid-ask spread 문장은 스킵-1개월의 편향 회피 근거로만 등장. FIDELITY.json changed(11)·paper_values_used_unchanged.costs='none stated (gross)' 와 일치. / [undeclared] 원문 = arxiv.org/html/1707.05552v1 (이 세션 직접 열람) §2 Methodology · §3 Data sets. 이 축이 근거로 쓴 축자: (i) 'individual stocks are ranked according to their historical performance during the previous J months. The winner refers to the decile group with the highest past average return and the loser is the decile group with the lowest past average return.' (ii) 'By longing the loser (winner) and shorting the winner (loser), the CSCON (CSMOM) portfolio is constructed at the beginning of each month during the whole sample period.' (iii) 'We follow the common approach to skip one month between estimation period and the holding period.' (iv) K-month buy-and-hold(Ref [25] · 중첩 리밸 대신) (v) §3 'the dividend-adjusted and split-adjusted monthly returns for all A-share individual stocks' — 종목 배제·최소관측·유동성 규칙 서술 없음 (vi) §2·§3 에 거래비용 서술 없음. 코드 대조 = engine.R:43(Vol 미독) · :63~65(Close>0 · 멤버십 술어) · :84(월말 종가) · :89(적격 = d 당일 행 ∧ 멤버십) · :108(월수익 = 종가비) · :123~125(스킵·워밍업) · :135~140(완전 창 · N≥10) · :142~145(오름차순 데실 · 그룹1 롱/그룹10 숏) · :151~153(EW ±1 · Score=−s) · :170~174(다리 총노출 1e-9 검산). changed 의 외부 인용 4건 전수 재도출: run_paper_replication.R:205(LiqPass 미적용) · :224~235(.apply_universe 술어 `K200 == TRUE | KQ150 == TRUE` — 엔진과 동일) · :252(PORTFOLIO Date ≥ start_date) · replication_harness.R:95~105(GL/GS · `Rg = GL*Lr − GS*Sr`) · backtest_harness.R:316~323(get_execution_date = 익월 1일 이후 첫 거래일) — 네 인용 모두 실재하고 서술과 일치. 산출물 재도출: 10_audit.csv 260 리밸일 · distinct ticker 39~71 · analysis_liquidity.csv 매 리밸일 저유동 4종(약 10%) 잔류(유동성 스크린 부재의 양성 증거) · authoritative_remeasure.json replication.paper_basis 존재(changed(11) 서술과 일치).",
+  "confidence": "medium",
+  "note": "축 팬아웃 6개(판독형 opus 3 · 대조형 sonnet 3) — 발견 4건. misdeclared/faithful/faithful/adapted/faithful/adapted",
+  "mode": "fanout",
+  "axis_verdicts": [
+    {
+      "axis": "signal",
+      "required": true,
+      "model": "opus",
+      "verdict": "misdeclared",
+      "admissible": true,
+      "reason": "",
+      "confidence": "high",
+      "checked": "논문 §2·§3·§4.1 대조 — ①산식(past average return = colMeans, J=1 은 단일월 · 논문 등식 부재 확인 → faithful) ②부호(engine.R:142~145 order(s,tk) 오름차순 · grp1=최저 평균수익=패자=롱 +1/nL · grp10=승자=숏 -1/nS = §2 CSCON 정의와 일치. 역검증: Score=-s 의 IC +0.0136·양수율 58.7%·FMB λ +0.00118 전부 양수 → 부호 반전 아님) ③룩백 창 길이·종점(J=1 · r2=i-1 → 형성=달 m-1 월수익 · 스킵=달 m · 집행=달 m+1 첫 거래일 = §2 'skip one month' 와 구조 동형 · 홀딩 이후 행 접근 0건) ④표준화(논문 무규정 · 엔진 z/winsorize/clip/rank transform 0건 → faithful) ⑤순위변수 **입력 열**(분할조정은 A005930 2018-05 50:1 로 04_holdings.csv 재도출해 충족 확인 · 이음매 미보정 Close 소비는 미선언 발견).",
+      "counterexample": "2026-03-30 이음매(naver_collector_config.json:43 '두 수출본은 수정주가 조정기준이 다르고(실측 2026-03-30 이음매 275종·최대 +7,863%)' · seam_guard_config.json:6 이 같은 이음매를 판정 사례로 인용)에서 5x 조정기준 단절(모달 지문 · 275종 중 118종)을 받은 종목 X 를 보자. 가드는 2026-03-30 의 Ret 을 implied_ret = ratio/5 - 1 (≈ 평범한 하루)로 재정렬하지만 Close 는 5배 레벨에 그대로 남는다(seam_scale_guard.R:296~320 은 Ret 만 쓴다). 엔진은 Ret 을 읽지 않으므로(engine.R:43) X 의 2026-03 월수익 = P[3월말]/P[2월말] - 1 ≈ +400% 가 된다 — 논문 §3 의 split-adjusted 월수익이라면 X 의 실제 3월 수익(예: +2%)이어야 할 자리다. J=1 이라 이 값이 순위변수 전부이므로(engine.R:135 창 길이 1의 colMeans) X 는 횡단면 최상위 = 승자 데실 확정 → engine.R:145 wi 에 들어가 2026-05 첫 거래일에 **숏**된다(형성월 2026-03 → 시그널월 2026-04 → 집행 2026-05). 0.2x 단절이면 -80% 로 패자 데실 확정 → **롱**. 어느 쪽도 논문 신호가 고를 종목이 아니다. 문서화된 실례: A001470 은 08-20~08-31 내내 종가 347 에 붙어 있다가 09-01 에 5820 으로 뛴다(ratio ≈ 16.8 · seam_guard_config.json:24) — 이 종목이 유니버스 안에 있으면 그 달 월수익 +1,577% 로 승자 데실이 확정된다.",
+      "n_findings": 4
+    },
+    {
+      "axis": "timing",
+      "required": false,
+      "model": "sonnet",
+      "verdict": "faithful",
+      "admissible": true,
+      "reason": "",
+      "confidence": "medium",
+      "checked": "J(형성 길이)·K(보유 길이·비중첩 여부)·스킵 1개월의 위치·월간 리밸 빈도·1차 설계 6칸 중 선택 칸(J=1,K=1)을 원문(html 2회 재질의: §2 전문 인용 + §4.1 설계 확인)과 engine.R:51-56,105,123-125 + backtest_harness.R get_execution_date + replication_harness.R 보유창 로직 + 실측 manifest(rebalance_rule) 대조.",
+      "counterexample": "구성하지 못했다. J=1·K=1·skip=1 셀에서 engine.R:123-125 의 형성창(r1:r2 = 달 m-J..m-1)과 러너 get_execution_date(backtest_harness.R:316-323, 신호달의 다음달 첫 거래일)를 결합하면 형성 종료(달 m-1) → 스킵 1개월(달 m, 신호일이 속한 달 자체가 형성-보유 사이 간극) → 보유 개시(달 m+1)가 되어, 논문 §2 '전월 J개월로 순위 후 형성-보유 사이 1개월 스킵'과 정확히 1개월 간극으로 들어맞는다. 반증을 만들려면 논문이 스킵 위치(달 m-1 스킵 vs 달 m 스킵)를 지수식으로 명시해야 하는데 원문(HTML 재질의 2회)에 그 문장 어디에도 t-1/t-2 같은 인덱스가 없어 산문 서술뿐이다 — 숫자로 어긋나는 지점을 짚을 수 없었다.",
+      "n_findings": 0
+    },
+    {
+      "axis": "universe",
+      "required": false,
+      "model": "sonnet",
+      "verdict": "faithful",
+      "admissible": true,
+      "reason": "",
+      "confidence": "high",
+      "checked": "engine.R:42~46(.REQ 열) · :63(종가 유한>0) · :68~72(중복 제거) · :86~90(적격 = d 당일 행 ∧ K200|KQ150) · :140(N<10 제외) 을 §3 Data sets 전문 + 전 섹션/각주/Table 1 재검색과 대조 — FIDELITY.json changed(1)(2)(7)(10)의 유니버스·유동성·정의역·위생 서술과 일치",
+      "counterexample": "구성 못 했다. 논문 §3 은 'all A-share individual stocks' 외 어떤 선별 규칙도 두지 않는다(전문·표·각주 재확인 — ST·상장정지·금융주 제외·가격제한·상장기간·최소관측·유동성 전부 부재). engine.R 은 유니버스 교체(K200∪KQ150, 허용 축) 외에 종가 유한·>0(data hygiene, engine.R:63) · (Ticker,Date) 중복 제거(engine.R:68~72, data hygiene) · 횡단면 N≥10(engine.R:140, 10분위가 성립하는 정의역) 만 두고 있으며, 이 셋 중 어느 것도 논문에 없는 종목 선별 규칙(가격·유동성·상장기간·업종·ST)에 해당하지 않는다 — 논문도 이런 위생 처리 없이는 정의되지 않는 계산이라 위반이라 부를 수 없다. 반대 방향(코드에 없는데 논문에 있는 필터)도 없다 — 논문이 아무 필터를 두지 않기 때문이다.",
+      "n_findings": 0
+    },
+    {
+      "axis": "portfolio",
+      "required": true,
+      "model": "opus",
+      "verdict": "adapted",
+      "admissible": true,
+      "reason": "",
+      "confidence": "high",
+      "checked": "분위 개수(논문 decile ↔ engine.R:54 .NGRP=10L · 144행 ceiling(rank×10/N)) · 레그 방향(패자=grp 1=최저 평균수익 롱 / 승자=grp 10 숏 — engine.R:142 order(s,tk) 오름차순 → 145·151~152행, CSCON 일치) · 데실 내 비중(논문 미명시 → EW 1/nL·-1/nS, changed(4) 선언 · 산출물 실측 2005-02-01 ±0.05(20/20) · 2026-09-01 +1/34 / -1/35(34/35)) · 레그 총노출(engine.R:170~174 가 매 리밸일 gL=gS=1 을 1e-9 로 검산 · replication_harness.R:57·95~96·105 GL·Lr − GS·Sr, GL=GS=1 → 달러중립 총노출 2.0, changed(4) 진술과 일치) · 실현 종목수(10_audit.csv:20 리밸일별 39~71종 · 260 리밸일 · 01_strategy_spec.json n_max 71 · has_short true) · 2층 절단 여부(run_paper_replication.R:283~295 engine_direct 는 PORTFOLIO 를 자르지 않고 그대로 반환 · 초과 시 로그만 — 상위 N 이 두 번 잘려 곱해지는 형태 없음) · N 비배수 잔여 방향(changed(7) 신고 ↔ 실측 34/35 일치).",
+      "counterexample": "이 축에서 논문과 다른 값을 내는 상황은 구성했지만 전부 FIDELITY.changed 에 선언돼 있다. ① [데실 브레이크포인트 모집단] 2026-09-01 리밸일 실측(04_holdings.csv 16131~16199행): 롱 34종 @ +1/34 = 0.0294117647058824 · 숏 35종 @ -1/35 = -0.0285714285714286 → 횡단면 N=345. 논문의 데실은 A주 전 종목(Table 1 SHSE 1,097 + SZSE 1,757) 위에서 잘리므로 패자 데실이 ~280종인데, 이 구현은 K200∪KQ150 345종 위에서 잘려 34종이다 — 한국 대·중형주 횡단면의 9.8 분위 종목은 여기서 롱 다리에 들어가지만 논문 설계에서는 소형주까지 포함한 전체 횡단면의 상위 분위라 롱 다리 밖일 수 있다. 이는 허용된 유니버스 교체의 직접 귀결이고 changed(1)에 그대로 선언돼 있다. ② [잔여 1종의 방향] N=345 는 10 의 배수가 아니어서 ceiling(rank×10/N) 규약이 잔여 1종을 항상 승자(숏) 데실에 붙인다 — 실측 34/35 가 그 지문이다. floor 기반 규약이었다면 같은 날 35/34 로 갈려 절단점 종목 1건의 레그가 뒤집힌다. 논문은 N 이 10 의 배수가 아닐 때의 분할을 말하지 않으므로 어느 규약도 논문 위반이 아니며, 방향과 비대칭 폭(≤0.3%p)이 changed(7)에 선언돼 있다. ③ [고정 축 충돌] 실현 종목수 39~71종/리밸(10_audit.csv:20 holdings_cap PASS · 260 리밸일)로 고정 축 ≤25 를 상시 초과하고 has_short=true 다 — changed(1)·portfolio_spec.note·01_strategy_spec.json(n_max 71 · has_short true)에 전부 선언돼 있다. 미신고 변경은 이 축에서 구성하지 못했다.",
+      "n_findings": 0
+    },
+    {
+      "axis": "cost",
+      "required": false,
+      "model": "sonnet",
+      "verdict": "faithful",
+      "admissible": true,
+      "reason": "",
+      "confidence": "high",
+      "checked": "논문 원문(§2·§3) 비용 언급 유무 재질의 · engine.R(비용 코드 없음 확인) · run_paper_replication.R:180,296-334(이중 시뮬레이션 분기·commission_paper 전파) · replication_harness.R:19-21,107-119(Σ|Δw|×commission 모델·초기매수 특례) · backtest_result_contract.R:120-158(transaction_cost_bps 는 라벨, 재계산 없음) · authoritative_remeasure.json.replication(commission_paper_bps=0, paper_basis 별도 필드) · FIDELITY.json changed(11)/paper_values_used_unchanged.costs 대조",
+      "counterexample": "구성하지 못했다. 논문은 거래비용·bid-ask spread·시장충격·commission 수치를 어디에도 명시하지 않는다(§2 스킵-1개월 채택 근거 문장 'bid-ask spread, non-synchronous trading as well as the lack of liquidity would enlarge the CSMOM and CSCON effects' 는 비용 계상이 아니라 편향 회피 사유). 러너는 commission_paper=NULL -> comm_paper=0 으로 병기판(paper_basis)을 계산하고(run_paper_replication.R:180,304,306 · 실측 authoritative_remeasure.json.replication.commission_paper_bps=0), 15bps 는 별도 등급판(run_paper_replication.R:307-309,331)에만 적용된다 — 두 시뮬레이션이 분리돼 있어 병기값이 15bps 로 오염되는 경로가 없다. build_bt_result 의 transaction_cost_bps=15 인자는 manifest 라벨일 뿐 반환값 재계산에 쓰이지 않는다(backtest_result_contract.R:120-158 build_manifest — 필드 기록만, backtest-contract.md '제외: trades+costs, commission 입력 단계 차감'과 일치) — 이중차감으로 병기판이 유리해지는 경로도 없다. 비용 모델(replication_harness.R:107-119) 은 Σ|Δw_target|×commission 을 리밸일 1회 부과하며, 완전 재구성(월간 데실 교체)에서 Δw 합이 신규 편입·전량 청산 양쪽을 다 담아 회전율을 과소평가하지 않는다.",
+      "n_findings": 0
+    },
+    {
+      "axis": "undeclared",
+      "required": true,
+      "model": "opus",
+      "verdict": "adapted",
+      "admissible": true,
+      "reason": "",
+      "confidence": "high",
+      "checked": "engine.R 38~195 행 전수 → changed(1)~(14) 대응표(대응처 없는 동작 0) · 숫자 리터럴 전수(J/K/SKIP/NGRP/1e-9/2L/Close>0 — 미선언 매직넘버 0) · 1판(engine.rejected1.R) 대비 실제 차분(유동성 스크린·Vol·.as_flag 제거 = changed(2), 나머지는 로그·주석) · git 6a79b97e7↔db40a8682 diff 로 '3판 = 2판 계산 동일' 주장 검증(차이 = 헤더 주석 + 로그 문자열 '(3판)' 하나뿐 — 주장 사실) · changed 의 외부 파일:행 인용 5건 재도출 · declared-but-not-done 역방향 점검(다리 검산·Vol 미독·seed 부재·K≠1 stop·부분월 제외·2005 절단·paper_basis) · 측정 산출물(감사 CSV·metrics·holdings·liquidity·manifest·strategy_spec) 대조.",
+      "counterexample": "구성하지 못했다. 코드에서 출발해 engine.R 38~195 행의 모든 동작(값을 바꾸는 것·행을 지우는 것·행을 발행하는 것)을 하나씩 changed(1)~(14) 에 대응시켰고, 대응처 없는 동작을 하나도 찾지 못했다. 대응 시도 중 논문과 실제로 다른 값을 내는 상황 둘을 구성했으나 둘 다 선언 안에 있었다: ① ceiling 분할 — 횡단면 N=345 인 달에 롱 34종 / 숏 35종이 되어 잔여 1종이 항상 승자(숏) 데실로 간다(engine.R:144 `ceiling(seq_len(N)*.NGRP/N)`; 일반해 N=10k+r, r≠0 이면 group10−group1 = 1 로 방향 고정). 논문은 N 이 10 의 배수가 아닐 때의 분할을 §2 에서 규정하지 않으므로 논문 위반이 아니고, 방향·비대칭 폭(≤0.3%p)·미측정 대안까지 changed(7) 이 그대로 적고 있다. ② 완전 창 요건 — 상장 2개월 미만이거나 직전 달 월말 관측이 없는 종목은 그 달 순위·데실·FACTORS 에서 전부 빠진다(engine.R:135~138 `colMeans` → `is.finite`). 논문에는 최소 이력 규칙이 없어 실제로 횡단면이 달라지지만 changed(5) 가 '완전 창 요건'으로 명시하고 changed_checklist '값 하한·상한·커버리지' 행이 같은 것을 반복한다. 즉 두 반례 모두 undeclared 가 아니라 declared 다.",
+      "n_findings": 0
+    }
+  ],
+  "flags": [],
+  "merged_at": "2026-09-07T17:39:18+0900"
+}
