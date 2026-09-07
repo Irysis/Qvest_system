@@ -1,0 +1,11 @@
+{
+  "axis": "cost",
+  "verdict": "faithful",
+  "undeclared_changes": [],
+  "signal_mismatch": [],
+  "counterexample": "구성하지 못했다. 논문이 비용을 수치로 두지 않아(정성적 주장만) '논문 비용으로 계산됐는가'를 판정할 기준값 자체가 없다 — paper_basis(0bps)와 실제 논문 수치(예: H100 16.7%) 는 authoritative_remeasure.json 과 FIDELITY.json 양쪽에서 별개 항목으로 병기되고 있어 혼동 사례를 찾지 못했다.",
+  "evidence": "Abstract: \"...are not eroded by trading costs.\" / §4.1.1: \"Note, however, that for small portfolios (i.e., H10, H20, H30), even were the turnover to be 100%, such costs are relatively moderate as they occur only at quarterly intervals.\" / §4.1.1: \"A 6% annual risk-free rate of return has been assumed (high, therefore conservative).\" — arxiv.org/pdf/0806.2606 텍스트 프록시 재추출(2회 독립 질의: abstract 대상, 전문 키워드 대상)로 확인. 본문 전체에 commission/transaction cost/slippage/impact/bps 수치는 0건.",
+  "confidence": "high",
+  "checked": "논문 원문의 비용 관련 전 문구(abstract·4.1.1·4.2.1·6.3) 재추출 대조 vs engine.R/FIDELITY.json commission_paper=null 선언 vs run_paper_replication.R 의 paper_basis(comm=0)·grade(15bps) 이중계산 vs authoritative_remeasure.json 의 실제 기록값(commission_paper_bps=0, paper_basis 필드, grade_basis_note 문구) 상호 정합",
+  "note": "논문은 비용을 정성적으로만 언급하고(수치 0건) H10~H30(소형)에 한해 '분기 거래라 완화된다'고 적었다 — FIDELITY changed(16)이 이 범위를 '소형 H' 로 정확히 한정 인용했고 H100(우리 선택 칸)에 그 완화 주장을 확대 적용하지 않았다. authoritative_remeasure.json 의 paper_basis(0bps 재실행)는 논문의 실제 보고 수치(H100 16.7%)와 별개로 기록돼 있어 두 값이 뒤섞여 유리하게 병기된 지점을 찾지 못했다. 15bps 등급 자체는 프롬프트 전제상 규약이라 변경으로 세지 않았다."
+}
