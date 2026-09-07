@@ -171,8 +171,8 @@
     "consumer": "02_Infrastructure/ops/rf_factor_arms.R (B1 조합 후보 풀)",
     "note": "★도훈 지시 2026-09-01. 충실구현 B+ 신호를 팩터 DB 에 등록해 **다음 논문의 B1 조합 후보**로 만든다 — 리서치 산출이 다음 리서치의 입력이 되는 닫힌 루프. 기존 온보딩 계약(add_factor -> build_factor_db -> backfill_custom_factor -> compute_all_factor_ic_monthly)을 우회하지 않고, 수식으로 환원 안 되는 논문 신호는 engine 템플릿(동결 패널)으로 들인다. ★후속 compute_all_factor_ic_monthly 는 필수 — 없으면 Z_Score_Aligned(C13 방향 정렬)가 안 서서 다음 조합에서 방향이 조용히 뒤집힌다. ★알려진 비대칭: 엔진 패널은 K200∪KQ150 범위이고 DB 네이티브는 그 달 전체 상장이라 조합 시 교집합으로 좁혀진다(Coverage 열에 기록). '성과가 좋아서 등록'은 selection 채널이므로 origin·evidence_tier 에 남긴다 — DSR 게이트는 도훈 지시로 넣지 않는다. 되돌리기 = remove_custom_factor(id, from_registry=TRUE)."
   },
-  "disabled_at": "2026-09-01T17:41:35+0900",
-  "disabled_reason": "★도훈 지시 2026-09-01 — 측정 축 전환 후 새 세션에서 새 리서치를 시작하기 위해 정지. 정지 시점 상태: active entry 없음(마지막 entry 는 축 전환으로 park) · current_axis=n_max_25 · 과거 entry 15건 axis_valid=false(측정 147건은 보존). 재개는 이 파일의 enabled 를 true 로 되돌리면 된다 — 다음 tick 이 큐 상단 논문의 충실구현을 띄우고 거기서 열리는 entry 가 첫 새 축 entry 가 된다. ★이 스위치는 강화 러너 2종 + 무인 충실구현(rf_replication_auto)을 함께 세운다. 팩터 DB 백필([6d])과 일간 리프레시는 별개 스케줄이라 계속 돈다 — 새 축 리서치가 쓸 technical 12종·C15·M12 이력을 채우는 중이므로 의도적으로 남겨 둔다(정지하려면 QVEST_FDB_NO_BACKFILL=1).",
+  "disabled_at": "2026-09-07T07:55:43+0900",
+  "disabled_reason": "(해제됨 2026-09-07 09:2x) 직전 정지 = infra_repair — 재개 경로 결과 재사용 · claim pid 재사용 · 감사 레인 4종 · 재구현 큐 소비 · CDaR 솔버 · 닫힌 칸 복구 · 편입 드리프트 21건. 커밋 68f2367b7 · 배터리 수리분 전부 초록. 도훈 지시 2026-09-07 '무인 리서치는 수리 완료 후에 재개하자'.",
   "_resumed_note": "2026-09-04 도훈 지시 — 격자 커서 결함 수리 후 재개. 수리 전에는 등록 거부 1건이 격자 위치를 영우적 어긋냈다 (cells[[used+1L]] — 개수 기반). 지금은 기록된 cell_code 집합에서 뽑는다 (.rf_free_cells · 검사 test_rf_grid_cursor 23항 양방향). 재개 시점 상태: active RP_20260903_160341_combo 5/25 · 다음 칸 B2_6 · 빈 칸 20.",
   "lcode_mechanism": {
     "enabled": true,
@@ -359,5 +359,6 @@
     "repair": "rf_replication_verify .strip_strings(문자열 리터럴 제거) + next_paper failed_needs_session 관문",
     "reverify": "기존 엔진에 검증기만 재실행 → 2404.08129 Grade C · PORT_t 0.55 · entry RP_20260905_184253_720_adapted_rulefast 개설(active, 첫 Fable 산출물)",
     "tests": "extract_pkgs 7/7(변이 3/8) · pending guard 11/11"
-  }
+  },
+  "enabled_at": "2026-09-07T09:07:37+0900"
 }

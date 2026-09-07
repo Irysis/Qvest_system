@@ -26620,11 +26620,34 @@
           "evidence": "paper",
           "unmapped_families": [],
           "axiom_injected": true,
-          "grade": "NA (등급 미발행 — 병렬 워커 미완료/시간초과)",
-          "lessons": "워커 산출 부재: C:/Users/99922/OneDrive/Quant_Module_Moltbot/.cache/rf_parallel/result_B2_10.json (로그 C:/Users/99922/OneDrive/Quant_Module_Moltbot/.cache/rf_parallel/log_B2_10.txt)",
+          "grade": "C",
+          "lessons": "[B2_10] Grade C · 구속 port_t(0.942/2.95)·calmar(0.254/0.64)·sharpe(0.703/0.80)·cagr(0.158/0.16)·oos(-0.335/0.70) (5조건 중 0 충족) · carry 대비 MDD 0.586→0.622(+6.1%) · CAGR 0.183→0.158(-13.7%) → 양쪽 다 악화",
           "opened_at": "2026-09-07T05:32:57+0900",
-          "closed_at": "2026-09-07T07:03:12+0900",
-          "fail_count": 1
+          "closed_at": "2026-09-07T09:13:41+0900",
+          "fail_count": 0,
+          "terminal": false,
+          "reopened": [
+            {
+              "at": "2026-09-07T09:07:27+0900",
+              "reason": "CDaR_LP 워커 시간초과의 원인은 arm 이 아니라 솔버였다 — cccp 밀집 IPM ~T^3(T=252 월 30초 x 260회 = 130분 > 상한 90분). lpSolve 사슬로 0.106초(목적값 동일 · 커밋 68f2367b7). 원인이 제거됐으므로 미측정 칸을 되살린다",
+              "was_terminal": true,
+              "was_fail_count": 2,
+              "prev_terminal_reason": "워커 산출 부재 2회 연속 — 재시도 상한 2 도달"
+            }
+          ],
+          "essence": {
+            "cell_code": "B2_10",
+            "block": "B2",
+            "port_t": 0.942,
+            "net_sharpe": 0.703,
+            "cagr": 0.158,
+            "mdd": 0.622,
+            "calmar": 0.254,
+            "oos_retention": -0.335,
+            "spec": "C:/Users/99922/OneDrive/Quant_Module_Moltbot/.cache/rf_parallel/spec_B2_10__RP_20260907_000912_21648_combo_rulefast_promo1.json",
+            "source": "authoritative_remeasure.json"
+          },
+          "artifacts": "C:/Users/99922/OneDrive/Quant_Module_Moltbot/stage_artifacts/replication/20260907_090843_20516"
         }
       ],
       "judge": {
@@ -26824,7 +26847,7 @@
     ],
     "retro_note": "2026-09-04 소급: count_paper 키 부재로 1→4 (rf_replication_auto.sh C_COUNT 수리)"
   },
-  "last_updated": "2026-09-07T07:03:12+0900",
+  "last_updated": "2026-09-07T09:13:41+0900",
   "removed_entries": [
     {
       "removed_at": "2026-08-30T10:07:35+0900",

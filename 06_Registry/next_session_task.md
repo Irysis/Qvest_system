@@ -1,4 +1,22 @@
-# 다음 세션 인계 — 2026-09-06 (절전 정지 재개 · promo2 B2 재측정 · 사후 충실도 감사 2/2 misdeclared → 도훈 결정 대기)
+# 다음 세션 인계 — 2026-09-07 (밤사이: 2404 충실 재구현 F → 4논문 combo 계보 promo1 · 아침: 하네스 수리 4갈래 + 루프 일시정지)
+
+## 2026-09-07 아침 (Q · 도훈 "수리 진행해주고 리서치 재개해줘")
+
+**밤사이 루프(무인)**: promo2 격자 소진(29/30 · 최고 2.65 < 부모 2.749 → 승격 없음) → next_paper 가 pending 재구현 요청을 존중(`halt_request_pending`) →
+21:40 `reimplement_with_audit`(Fable/max · 36분) → **2404.08129 §5.7 그대로(5분위 EW 롱숏 · 반년 리밸 · 롤링 120M · 6M 보유) = Grade F · PORT_t −2.326**(faithful ·
+감사 adapted/retries 1 → proceed) → `base_below_threshold` 로 정식 소비(`RP_20260906_223437_skipped_base`). ★각색판 계보(C→B 2.749)는 논문 성과가 아니었다 —
+카드 project-faithful-2404-08129-is-F-…. → 22:34 결합 검토(23편·후보 253) → 결합 레인이 **4논문 combo**(1403.8125+2007.08115+2301.09173+2404.08129 · 재료 풀에
+각색판 2404 포함) 설계 요청 → 충실구현 C 0.788 → 감사 misdeclared → 재구현 C 0.716 → 재감사 misdeclared → `proceed_suspect`(dilution vs 부모 2.749 기록만) →
+격자 29칸(B1 9 설계 · B5 · B2 · B3 · B4) → **B3_13 B 2.162**(팡파레) → 소진·승격 → `…combo_rulefast_promo1` active(예산 28 · 19 사용 · B3 설계 3칸·B4 남음).
+★CDaR_LP(qepm) 칸이 **매 entry 90분 워커 시간초과 ×2 → terminal**(promo2 B2_7 · combo B2_9 · combo promo1 B2_10 진행 중 07:08~) — 3시간씩 태우는 결정적 칸. 진단 에이전트 D.
+★2006.04639 재구현 예약은 `reimplement_queue.json`(reserved · order 1 로 갱신 예정) — 소비자는 수리 C 가 붙인다.
+
+**★도훈 지시 2026-09-07 08:30 — "무인 리서치는 수리 완료 후에 재개하자"**: 킬스위치 `enabled=false` 유지. 재개 조건 = ①수리 4갈래 착지 ②전체 배터리 초록(사전 존재 빨강 2건 제외) ③범위 커밋. 진행 중이던 tick(07:08 · combo promo1 B2_10 CDaR_LP)은 끝까지 돌게 두고, 그 뒤 새 tick 은 킬스위치가 막는다.
+
+**아침 수리(07:56~)**: 킬스위치 `enabled=false (infra_repair)` — 진행 중 tick(B2_10 워커)은 끝까지 돈다. 병렬 4갈래:
+A 러너 재개 결과 재사용 + claim pid 재사용 / B 감사 레인(ROOT 정규화 · 병합 실패 exit≠0 · 킬스위치 독립 · `audit_required` 처분 · 감사 없이 개설 불가 · 레인 verify-only 재시도) /
+C reimplement 큐 소비(next_paper) + 부팅 `Queue:` entry 예산 / D CDaR_LP 시간초과 진단(순수 효율 결함일 때만 수리).
+★SessionEnd 훅 `auto_commit_on_stop.sh` 가 **모든 claude -p 레인 종료마다 `git add -A` 커밋**한다(밤사이 [auto-commit] 30여 건) — 수리 중 레인이 돌면 반쪽 편집이 "미서술 변경" 으로 실릴 수 있다. 우회는 레인 env `QVEST_SKIP_AUTO_COMMIT=1` 뿐(미적용).
 
 ## 지금 상태 한 줄 (2026-09-06 18:20 · Q)
 
