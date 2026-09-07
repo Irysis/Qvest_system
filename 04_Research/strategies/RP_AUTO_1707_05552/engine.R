@@ -1,30 +1,30 @@
 # =============================================================================
-# engine.R — RP_AUTO_1707_05552  (재구현 2판 · 2026-09-07 · 1판 = engine.rejected1.R)
+# engine.R — RP_AUTO_1707_05552  (3판 · 2026-09-07 17시 tick · 1판 = engine.rejected1.R · 2판 = 15:32 판)
 # Huai-Long Shi · Wei-Xing Zhou, "Wax and wane of the cross-sectional momentum and
 #   contrarian effects: Evidence from the Chinese stock markets"
 #   arXiv:1707.05552 (2017)  https://arxiv.org/abs/1707.05552
-#   원문 2-source(이 세션): arxiv.org/html/1707.05552v1 (LaTeXML 전문) + r.jina.ai 프록시(PDF 텍스트)
+#   원문 2-source: arxiv.org/html/1707.05552v1 (LaTeXML 전문) + r.jina.ai/https://arxiv.org/pdf/1707.05552 (PDF 텍스트)
 #
 # ★라벨(adapted)·변경 전수 신고·러너 사양의 정본 = FIDELITY.json. 이 주석은 아무것도 결정하지 않는다.
 #   코드 옆 ★changed(n) 표식 = FIDELITY.json changed 의 항목 번호.
 #
+# 3판 = 2판과 계산 동일(코드 행 38~195 의 행 번호 보존 — 2판 6축 감사가 인용한 행이 그대로 맞는다).
+#   2판은 1판 감사 지적 5건(유동성 스크린 '지시 축' 오기재 · J=1 근거 · HTML 경로 · 스크린 분류 · 배당 미조정)을
+#   반영해 15:42~15:53 6축 감사에서 adapted·admissible·미신고 0 을 받았으나, 감사 도중 요청 원장이
+#   되살아나(15:48) 그 판정을 잃은 채 1판 피드백으로 재구현이 다시 스폰됐다. 이 판은 그 지적을 원문과
+#   다시 대조해 유지한다(상세 = FIDELITY.json revision · audit_round1_response · audit_round2_response).
+#
 # 구현 = 논문 1차 설계(J ∈ {1,12,24,36,48,60} · K=1)의 CSCON 포트폴리오 1칸: J=1 · K=1 · 스킵 1개월.
-#   §2 Methodology 축자:
-#   "for the current month t, individual stocks are ranked according to their historical performance
-#    during the previous J months. The winner refers to the decile group with the highest past average
-#    return and the loser is the decile group with the lowest past average return."
+#   §2 Methodology 축자: "for the current month t, individual stocks are ranked according to their
+#   historical performance during the previous J months. The winner refers to the decile group with the
+#   highest past average return and the loser is the decile group with the lowest past average return."
 #   "By longing the loser (winner) and shorting the winner (loser), the CSCON (CSMOM) portfolio is
-#    constructed at the beginning of each month during the whole sample period."
+#   constructed at the beginning of each month during the whole sample period."
 #   "we follow the common approach to skip one month between estimation period and the holding period"
 #   "K-month buy-and-hold return is obtained by longing or shorting the portfolio formed at the month t
-#    and then held for K months"  (Ref [25] 비중첩 · K=1 = 매월 재구성)
+#   and then held for K months"  (Ref [25] 비중첩 · K=1 = 매월 재구성)
 #   §3 Data sets: "the dividend-adjusted and split-adjusted monthly returns for all A-share individual
-#    stocks" — 종목 선별·유동성·최소관측 규칙 없음.
-#
-# 2판에서 바뀐 것(1판 감사 지적 반영 — 상세 = FIDELITY.json audit_round1_response):
-#   · 유동성 스크린(adv20 ≥ 2e8) 제거 — 논문에 필터 없음 · SOT 충실구현 행 = 논문 우선(paper_faithful).
-#     그래서 Vol 열을 읽지 않는다. 유니버스 교체(K200∪KQ150) 외 어떤 스크린도 없다.
-#   · 칸 선택 근거 정정(changed(3)) · 원문 경로 정정(changed(14)) · 배당 미조정 확정(changed(6)).
+#   stocks" — 종목 선별·유동성·최소관측 규칙 없음 → 유니버스 교체(K200∪KQ150) 외 어떤 스크린도 없다(Vol 미독).
 #
 # 산출: PORTFOLIO(Date, Ticker, Weight, Leg) — 패자 데실 롱(EW Σ=+1) / 승자 데실 숏(EW Σ=−1)
 #       FACTORS(Date, Ticker, Score)          — 전 순위 대상 종목 · Score = −(직전 J개월 평균 월수익) = CSCON 방향
@@ -107,7 +107,7 @@ if (.NR < .J + .SKIP + 2L)
 .R <- matrix(NA_real_, .NR, ncol(.P), dimnames = list(NULL, .TK))
 .R[2L:.NR, ] <- .P[2L:.NR, , drop = FALSE] / .P[1L:(.NR - 1L), , drop = FALSE] - 1
 rm(.P); gc(verbose = FALSE)
-cat(sprintf("[RP_AUTO_1707_05552] 월간 종가 패널 %d개월 (%s ~ %s) × %d종 | 일간 행 %d | 마지막 부분월 %s 시그널 제외 | 시그널 월말 %d개 | 적격 집합 있는 달 %d\n",
+cat(sprintf("[RP_AUTO_1707_05552] (3판) 월간 종가 패널 %d개월 (%s ~ %s) × %d종 | 일간 행 %d | 마지막 부분월 %s 시그널 제외 | 시그널 월말 %d개 | 적격 집합 있는 달 %d\n",
             .NR, .ym(min(.MIs)), .ym(max(.MIs)), length(.TK), .n_rd, .ym(.MI_LAST), nrow(.me), length(.EL)))
 
 # =============================================================================
