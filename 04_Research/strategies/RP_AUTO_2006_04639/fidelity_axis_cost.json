@@ -1,0 +1,11 @@
+{
+  "axis": "cost",
+  "verdict": "faithful",
+  "undeclared_changes": [],
+  "signal_mismatch": [],
+  "counterexample": "구성 못 했다. 논문 원문(arxiv.org/html/2006.04639v1, §Data·§2·§3·§5.2·Table 6/7/8 전체)에 거래비용·수수료·시장충격·왕복 언급이 0건이라 '논문 비용'이라는 비교 대상 자체가 없다. 구현은 이를 gross(0bps)로 정확히 반영했다(commission_paper=null→comm_paper=0, run_paper_replication.R:180,304 · FIDELITY.json:12 'commission_paper: null'). authoritative_remeasure.json의 paper_basis(CAGR 4.26%·SR 0.178·MDD 73.5%)는 comm_paper=0bps 판이고, 이는 논문이 비용을 전혀 언급하지 않는 것과 정합적이다 — 논문 비용으로 계산됐어야 할 값을 우리 쪽에 유리한 값으로 대체한 지점이 없다.",
+  "evidence": "arxiv.org/html/2006.04639v1 전문(Data·Methodology·§5.2 Cross-sectional pricing·Table 6 VW·Table 7 EW·Table 8 캡션 포함) 대조 — transaction cost/commission/market impact/round-trip/net of fees 등 어떤 표현도 없음. 등급용 15bps(run_paper_replication.R:315,331 transaction_cost_bps=15)는 CLAUDE.md·pit.md 의 저장소 공통 축(v2.4 delta)이며, 이 축의 검토 지시문 자체가 '15bps 판은 규약이지 변경이 아니다'로 전제하고 있다.",
+  "confidence": "high",
+  "checked": "engine.R(비용 로직 0건 — 엔진은 PORTFOLIO만 산출, 비용은 하네스 소관) · run_paper_replication.R:180,303-313,425(commission_paper 기본값·이중 시뮬레이션·논문기준 로그) · replication_harness.R:19-21,38-39,107-119(비용모델 Σ|Δw|×commission, 리밸일 1회) · FIDELITY.json:12(commission_paper:null) · authoritative_remeasure.json(commission_paper_bps:0, paper_basis, grade_basis_note) · 논문 원문 전체(비용 언급 유무)",
+  "note": "이 축에서 발견 없음 — 논문이 비용을 전혀 명시하지 않아 대조 대상이 없고, 구현은 그 부재를 gross(0bps)로 정직하게 표기했다. 15bps 등급 판은 저장소 공통 규약이라 이 축의 판정 대상이 아니다(지시문 명시)."
+}
