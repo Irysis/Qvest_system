@@ -1,0 +1,18 @@
+{
+  "axis": "undeclared",
+  "verdict": "adapted",
+
+  "undeclared_changes": [],
+
+  "signal_mismatch": [],
+
+  "counterexample": "구성하지 못했다. 코드에서 출발해 engine.R 38~195 행의 모든 동작(값을 바꾸는 것·행을 지우는 것·행을 발행하는 것)을 하나씩 changed(1)~(14) 에 대응시켰고, 대응처 없는 동작을 하나도 찾지 못했다. 대응 시도 중 논문과 실제로 다른 값을 내는 상황 둘을 구성했으나 둘 다 선언 안에 있었다: ① ceiling 분할 — 횡단면 N=345 인 달에 롱 34종 / 숏 35종이 되어 잔여 1종이 항상 승자(숏) 데실로 간다(engine.R:144 `ceiling(seq_len(N)*.NGRP/N)`; 일반해 N=10k+r, r≠0 이면 group10−group1 = 1 로 방향 고정). 논문은 N 이 10 의 배수가 아닐 때의 분할을 §2 에서 규정하지 않으므로 논문 위반이 아니고, 방향·비대칭 폭(≤0.3%p)·미측정 대안까지 changed(7) 이 그대로 적고 있다. ② 완전 창 요건 — 상장 2개월 미만이거나 직전 달 월말 관측이 없는 종목은 그 달 순위·데실·FACTORS 에서 전부 빠진다(engine.R:135~138 `colMeans` → `is.finite`). 논문에는 최소 이력 규칙이 없어 실제로 횡단면이 달라지지만 changed(5) 가 '완전 창 요건'으로 명시하고 changed_checklist '값 하한·상한·커버리지' 행이 같은 것을 반복한다. 즉 두 반례 모두 undeclared 가 아니라 declared 다.",
+
+  "evidence": "원문 = arxiv.org/html/1707.05552v1 (이 세션 직접 열람) §2 Methodology · §3 Data sets. 이 축이 근거로 쓴 축자: (i) 'individual stocks are ranked according to their historical performance during the previous J months. The winner refers to the decile group with the highest past average return and the loser is the decile group with the lowest past average return.' (ii) 'By longing the loser (winner) and shorting the winner (loser), the CSCON (CSMOM) portfolio is constructed at the beginning of each month during the whole sample period.' (iii) 'We follow the common approach to skip one month between estimation period and the holding period.' (iv) K-month buy-and-hold(Ref [25] · 중첩 리밸 대신) (v) §3 'the dividend-adjusted and split-adjusted monthly returns for all A-share individual stocks' — 종목 배제·최소관측·유동성 규칙 서술 없음 (vi) §2·§3 에 거래비용 서술 없음. 코드 대조 = engine.R:43(Vol 미독) · :63~65(Close>0 · 멤버십 술어) · :84(월말 종가) · :89(적격 = d 당일 행 ∧ 멤버십) · :108(월수익 = 종가비) · :123~125(스킵·워밍업) · :135~140(완전 창 · N≥10) · :142~145(오름차순 데실 · 그룹1 롱/그룹10 숏) · :151~153(EW ±1 · Score=−s) · :170~174(다리 총노출 1e-9 검산). changed 의 외부 인용 4건 전수 재도출: run_paper_replication.R:205(LiqPass 미적용) · :224~235(.apply_universe 술어 `K200 == TRUE | KQ150 == TRUE` — 엔진과 동일) · :252(PORTFOLIO Date ≥ start_date) · replication_harness.R:95~105(GL/GS · `Rg = GL*Lr − GS*Sr`) · backtest_harness.R:316~323(get_execution_date = 익월 1일 이후 첫 거래일) — 네 인용 모두 실재하고 서술과 일치. 산출물 재도출: 10_audit.csv 260 리밸일 · distinct ticker 39~71 · analysis_liquidity.csv 매 리밸일 저유동 4종(약 10%) 잔류(유동성 스크린 부재의 양성 증거) · authoritative_remeasure.json replication.paper_basis 존재(changed(11) 서술과 일치).",
+
+  "confidence": "high",
+
+  "checked": "engine.R 38~195 행 전수 → changed(1)~(14) 대응표(대응처 없는 동작 0) · 숫자 리터럴 전수(J/K/SKIP/NGRP/1e-9/2L/Close>0 — 미선언 매직넘버 0) · 1판(engine.rejected1.R) 대비 실제 차분(유동성 스크린·Vol·.as_flag 제거 = changed(2), 나머지는 로그·주석) · git 6a79b97e7↔db40a8682 diff 로 '3판 = 2판 계산 동일' 주장 검증(차이 = 헤더 주석 + 로그 문자열 '(3판)' 하나뿐 — 주장 사실) · changed 의 외부 파일:행 인용 5건 재도출 · declared-but-not-done 역방향 점검(다리 검산·Vol 미독·seed 부재·K≠1 stop·부분월 제외·2005 절단·paper_basis) · 측정 산출물(감사 CSV·metrics·holdings·liquidity·manifest·strategy_spec) 대조.",
+
+  "note": "축 밖 1줄씩: ① run_paper_replication.R:428 이 모든 충실구현 산출물의 authoritative_remeasure.json 에 `replication.fidelity = \"universe 치환(K200∪KQ150)만 — 그 외 논문 그대로\"` 를 하드코딩해, 이 구현 자신의 라벨(adapted · 배당 미조정 순위변수)을 덮는다 — 엔진·FIDELITY 소관이 아닌 하네스 배관 문제지만, 산출물만 읽는 소비자는 adapted 를 못 본다. ② changed(7) 말미의 '상장기간 하한 없음' 은 changed(5) 의 완전 창 요건(J=1 에서 사실상 상장 2개월 하한)과 표현이 어긋난다 — 변경 자체는 changed(5)·checklist 에 이름 그대로 선언돼 있어 misdeclared 로 세지 않았고, 다음 판에서 문구만 정합시키면 될 항목이다. ③ 이 세션은 R 실행이 차단돼 엔진을 돌리지 못했다 — 위 검증은 전부 정적 대조 + 17:22:13 런의 산출물 재도출이다."
+}
