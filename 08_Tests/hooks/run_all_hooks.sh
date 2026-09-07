@@ -1309,6 +1309,8 @@ SUITES=(
   #   병합 단계 ROOT 정규화·실패 전파(셸 · claude 미호출) · 처분 audit_required · 감사 없이 개설 불가(rf_audit_gate + 배선 재도출).
   "08_Tests/ops/test_rf_fanout_merge_root.sh"
   "08_Tests/ops/test_rf_audit_disposition_required.R"
+  # 2026-09-07 도훈 "텔레 보내는 양식 자체를 수정해줘" — 감사 지적 통지는 요약(축 1줄 + 소제목 + 포인터)이고 원문은 파일에 남는다
+  "08_Tests/ops/test_rf_audit_tg_brief.R"
   "08_Tests/ops/test_rf_audit_not_run_blocks_open.R"
   # ── ★편입 드리프트 수리 (2026-09-07): 09-04~09-07 에 신설된 검사 21종이 SUITES 에 없어 배터리가 한 번도 돌리지 않았다
   #   (test_suite_enrollment 의 E2 가 21/276 으로 세고 있었다). 검사를 만들고 등재하지 않으면 다음 회귀를 못 잡는다 —

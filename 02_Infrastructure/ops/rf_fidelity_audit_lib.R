@@ -80,7 +80,91 @@ rf_audit_read <- function(audit_p) {
        signal_mismatch = A$signal_mismatch %||% list(),
        evidence = as.character(A$evidence %||% ""),
        confidence = as.character(A$confidence %||% ""),
+       ## 축별 판정 — 팬아웃 산출에만 있다. 텔레그램 요약이 "어느 축이 기각을 만들었나" 를
+       ## 말하려면 이 값이 필요하다(항목 본문의 자유 서술로 추정하면 감사자 문체에 의존한다).
+       axis_verdicts = A$axis_verdicts %||% list(),
        note = as.character(A$note %||% ""))
+}
+
+#' 텔레그램용 지적 요약 (도훈 지시 2026-09-07 "텔레 보내는 양식 자체를 수정해줘")
+#'
+#' ★왜: 구판은 재구현 프롬프트용 feedback(`rf_audit_disposition$feedback`)을 1500자로 잘라
+#'   그대로 실었다. 그 문자열은 **에이전트가 읽는 것**이라 항목마다 원문 인용·행번호가 붙어
+#'   길다(실측 2404.08129 10,557자 · 0806.2606 5건에 4천자). 사람이 폰에서 읽는 통지에
+#'   그것을 넣으면 절단된 원문 덩어리가 된다 — 읽히지 않으면 안 보낸 것과 같다.
+#'   손으로 짧게 다시 보내는 것은 한 통만 구한다(2026-09-05 교훈) → **발신기를 고친다.**
+#' 규칙: ①어느 축이 기각을 만들었나 1줄 ②항목은 축 라벨 + 첫 문장만, 최대 n_max 줄
+#'   ③나머지는 "외 N건" ④전문 포인터 1줄. 원문은 지우지 않는다 — 파일에 그대로 있고
+#'   재구현 프롬프트도 전문을 받는다. 짧아지는 것은 **통지 표면**뿐이다.
+#' @param aud rf_audit_read() 결과
+#' @param audit_path 전문 경로(포인터로 실린다). 없으면 포인터 줄 생략.
+#' @return 문자열 (본문 · 상한 max_chars)
+rf_audit_tg_brief <- function(aud, audit_path = NULL, n_max = 4L,
+                              item_chars = 62L, max_chars = 520L) {
+  .one <- function(x) {
+    s <- gsub("[\r\n]+", " ", as.character(x %||% ""))
+    s <- gsub("[[:space:]]+", " ", s)
+    trimws(s)
+  }
+  ## 축 라벨은 대괄호 접두다(팬아웃 병합이 "[portfolio] …" 로 붙인다). 접두를 축으로 쓰고
+  ## 본문에서는 뗀다 — 줄마다 같은 대괄호가 반복되면 읽는 사람이 축을 못 센다.
+  .split_axis <- function(s) {
+    m <- regexpr("^\\[[A-Za-z_]+\\]", s)
+    if (m[1] == 1L) {
+      ax <- substr(s, 2L, attr(m, "match.length") - 1L)
+      list(axis = ax, body = trimws(substr(s, attr(m, "match.length") + 1L, nchar(s))))
+    } else list(axis = "", body = s)
+  }
+  ## 첫 문장 = 마침표·중점·콜론 중 먼저 오는 경계. 없으면 item_chars 로 자른다.
+  .first_clause <- function(s, n) {
+    if (nchar(s) <= n) return(s)
+    cut <- n
+    for (mark in c(". ", " · ", " — ")) {
+      k <- regexpr(mark, substr(s, 1L, n), fixed = TRUE)
+      if (k[1] > 20L) { cut <- min(cut, k[1] - 1L); break }
+    }
+    paste0(trimws(substr(s, 1L, cut)), "…")
+  }
+  items <- c(lapply(aud$undeclared_changes %||% list(), function(x) list(kind = "미신고", raw = .one(x))),
+             lapply(aud$signal_mismatch    %||% list(), function(x) list(kind = "불일치", raw = .one(x))))
+  items <- Filter(function(it) nzchar(it$raw), items)
+  n_tot <- length(items)
+  lines <- character(0)
+
+  ## ① 축 줄 — 기각을 만든 축과 그렇지 않은 축을 가른다(이게 사람이 먼저 알아야 하는 한 가지다).
+  av <- aud$axis_verdicts %||% list()
+  if (length(av)) {
+    .ax <- vapply(av, function(x) as.character(x$axis %||% x$id %||% "?"), character(1))
+    .vd <- vapply(av, function(x) as.character(x$verdict %||% "?"), character(1))
+    bad <- .ax[.vd == "misdeclared"]; unv <- .ax[.vd == "unverifiable"]
+    ok  <- .ax[!(.vd %in% c("misdeclared", "unverifiable"))]
+    lines <- c(lines, paste0("축 ", length(av), "개 — ",
+      if (length(bad)) paste0("기각 ", paste(bad, collapse = "·")) else "기각 없음",
+      if (length(unv)) paste0(" · 확인불가 ", paste(unv, collapse = "·")) else "",
+      if (length(ok)) paste0(" · 통과 ", length(ok), "개") else ""))
+  }
+
+  ## ② 항목 — 축 + 첫 문장. 미신고(기각을 만드는 것)를 앞세운다.
+  ord <- order(vapply(items, function(it) if (identical(it$kind, "미신고")) 0L else 1L, integer(1)))
+  items <- items[ord]
+  ## ★감사자가 본문 머리에 다는 두 번째 대괄호(`[다리 총노출]`)는 **그 자체가 요약**이다.
+  ##   있으면 그것만 쓴다 — 원문 인용을 62자로 자르면 따옴표 안에서 끊겨 읽히지 않는다.
+  ##   없을 때만 첫 절을 자른다. 상세는 파일에 그대로 있고 여기서 지워지는 것은 없다.
+  for (it in head(items, n_max)) {
+    sp <- .split_axis(it$raw)
+    m2 <- regexpr("^\\[[^]]{2,40}\\]", sp$body)
+    lab <- if (m2[1] == 1L) trimws(substr(sp$body, 2L, attr(m2, "match.length") - 1L))
+           else .first_clause(sp$body, item_chars)
+    lines <- c(lines, sprintf("• [%s] %s%s", it$kind,
+                              if (nzchar(sp$axis)) paste0(sp$axis, " — ") else "", lab))
+  }
+  if (n_tot > n_max) lines <- c(lines, sprintf("… 외 %d건", n_tot - n_max))
+  if (!n_tot) lines <- c(lines, "(지적 항목 없음 — 판정만 기록됐다)")
+  if (!is.null(audit_path) && nzchar(audit_path))
+    lines <- c(lines, paste0("전문: ", audit_path))
+  out <- paste(lines, collapse = "\n")
+  if (nchar(out) > max_chars) out <- paste0(substr(out, 1L, max_chars - 1L), "…")
+  out
 }
 
 #' 처분 — 도훈 선택 2026-09-04: **자동 재구현 1회 + 소비 보류**
@@ -94,7 +178,12 @@ rf_audit_disposition <- function(aud, retries_done = 0L) {
   if (!identical(aud$verdict, "misdeclared")) return(list(action = "proceed"))
   items <- c(vapply(aud$undeclared_changes %||% list(), function(x) paste0("- 미신고 변경: ", as.character(x)), character(1)),
              vapply(aud$signal_mismatch    %||% list(), function(x) paste0("- 신호 불일치: ", as.character(x)), character(1)))
-  fb <- paste(c(items, if (nzchar(aud$evidence)) paste0("원문 근거: ", aud$evidence)), collapse = "\n")
+  ## ★evidence 는 길이 0 일 수 있다(구판 감사 산출·직접 구성한 aud). `nzchar(character(0))` 는
+  ##   logical(0) 이라 if 가 "argument is of length zero" 로 **죽는다** — 처분이 죽으면 재구현도
+  ##   통지도 못 간다. 이 저장소의 sprintf/[[ 계열과 같은 병이라 같은 방식으로 막는다.
+  .ev <- as.character(aud$evidence %||% "")[1]
+  if (is.na(.ev)) .ev <- ""
+  fb <- paste(c(items, if (nzchar(.ev)) paste0("원문 근거: ", .ev)), collapse = "\n")
   if (as.integer(retries_done) < 1L)
     list(action = "reimplement", feedback = fb)
   else

@@ -286,15 +286,13 @@ if (identical(.disp$action, "audit_required")) {
                        "처분: 개설 보류 — 감사 없이는 소비도 entry 개설도 하지 않는다")),
         list(type = "summary", emoji = "\U0001F4CC",
              body = sprintf("충실도 감사 미실행 — 스폰 %d회 산출 없음 · 소비·개설 보류", as.integer(.gate$spawns))),
+        ## ★본문은 짧게 (도훈 지시 2026-09-07). 왜 보류하는지의 논거는 코드 주석과 인계 문서에 있고,
+        ##   통지에 필요한 것은 사유 한 줄 · 다음 동작 한 줄 · 어디를 볼지 한 줄이다.
         list(type = "text", emoji = "\U0001F4DD", heading = "미실행 사유와 다음",
              body = substr(paste0(
                "사유: ", .why, "\n",
-               "측정은 끝났고 등급도 나왔지만(", .Gs, "), 감사가 안 돈 판정은 소비하지 않는다 — ",
-               "F 면 논문이 잘못된 이유로 영구 소비되고, A 면 근거 없는 등급이 BOOK 후보가 된다.\n",
-               "다음: 요청을 failed_needs_session/audit_not_run 으로 두었다. 다음 주기의 무인 레인이 ",
-               "엔진을 그대로 두고 검증기(측정+감사)만 다시 돈다(자동 재시도 3회 규약). ",
-               "감사 레인 자체가 죽어 있으면(claude CLI 부재·fidelity_audit.enabled=false·병합 오류) ",
-               "그 원인을 먼저 고쳐야 한다 — 저널 fidelity_audit_retry/merge_failed/halt_* 줄을 보라."), 1, 1500)))) },
+               "다음: 엔진은 그대로 두고 검증기(측정+감사)만 재시도한다(3회 규약).\n",
+               "레인이 죽었으면 저널 fidelity_audit_retry / merge_failed / halt_* 을 먼저 보라."), 1, 420)))) },
     error = function(e) jlog("telegram_failed", err = conditionMessage(e)))
   quit(status = 0)
 }
@@ -320,10 +318,7 @@ if (identical(.disp$action, "reimplement")) {
       sections = list(
         list(type = "bullet", emoji = "\U0001F50D", heading = "현재 리서치 상황",
              items = c("단계: 1계층 무인 충실구현 — 적대적 충실도 감사",
-                       sprintf("대상: %s", substr(TITLE, 1, 60)),
-                       sprintf("판정: %s · 지적 %d건", .aud$verdict,
-                               length(.aud$undeclared_changes %||% list()) +
-                               length(.aud$signal_mismatch %||% list())),
+                       sprintf("대상: %s (측정 등급 %s)", substr(TITLE, 1, 52), G),
                        "처분: 소비 보류 + 자동 재구현 1회 — 논문을 잘못된 이유로 버리지 않는다")),
         ## ★summary 는 [20,100]자 헤드라인 계약이고 relaxed 로도 안 풀린다 — 500자 지적을 여기 넣어
         ##   오늘 3/3 유실됐다(13:56·16:16·17:28). 지적은 text 섹션(relaxed 면 길이 면제)으로.
@@ -332,8 +327,13 @@ if (identical(.disp$action, "reimplement")) {
                             substr(as.character(.aud$verdict %||% "?"), 1, 20),
                             length(.aud$undeclared_changes %||% list()) +
                               length(.aud$signal_mismatch %||% list()))),
-        list(type = "text", emoji = "\U0001F4DD", heading = "감사 지적사항",
-             body = substr(as.character(.disp$feedback %||% ""), 1, 1500)))) },
+        ## ★지적은 **요약만** 싣는다 (도훈 지시 2026-09-07 "텔레 보내는 양식 자체를 수정해줘").
+        ##   구판은 재구현 프롬프트용 feedback 을 1500자로 잘라 그대로 실었는데, 그 문자열은
+        ##   에이전트가 읽는 것이라 원문 인용·행번호가 붙어 사람이 폰에서 읽을 물건이 아니었다
+        ##   (실측 0806.2606 1500자 → 요약 315자 · 2006.04639 175자). 원문은 감사 파일에 그대로
+        ##   있고 재구현 프롬프트도 전문을 받는다 — 짧아지는 것은 통지 표면뿐이다.
+        list(type = "text", emoji = "\U0001F4DD", heading = "감사 지적 요약",
+             body = rf_audit_tg_brief(.aud, audit_path = sub(paste0("^", ROOT, "/?"), "", .aud_p))))) },
     error = function(e) jlog("telegram_failed", err = conditionMessage(e)))
   quit(status = 0)
 }
