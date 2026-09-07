@@ -271,6 +271,44 @@ MODULE_QUARANTINE_PATH <- file.path(.RM_ROOT(), "06_Registry", "module_quarantin
   list(moved = moved, n_modules = obj$n_modules, n_superseded = obj$n_superseded)
 }
 
+## ── 권위 산출물에서 essence 등급 · 방어형 스코어를 **읽어** 싣는다 (2026-09-07) ──
+##   재측정하지 않는다. authoritative_remeasure.json 은 이미 계약을 통과한 측정의 기록이고,
+##   등재기는 그 값을 카탈로그로 옮기는 이음매일 뿐이다.
+##   구판 결함: essence_score.R 이 defensive_score 를 산출하고(:627) 2계층 풀이 그것을
+##   소비하는데(build_module_performance) 그 사이를 잇는 등재기가 필드를 안 실었다 —
+##   생산자·소비자 둘 다 있는데 **전이가 없는** 형태. 실측 275/275 부재.
+.rm_compact_dscore <- function(ds, source = NA_character_) {
+  if (is.null(ds) || !is.list(ds) || length(ds) == 0L) return(NULL)
+  .n1 <- function(x) { v <- suppressWarnings(as.numeric(x)[1]); if (length(v) == 1L) v else NA_real_ }
+  .i1 <- function(x) { v <- suppressWarnings(as.integer(x)[1]); if (length(v) == 1L) v else NA_integer_ }
+  .seg <- function(s) if (is.null(s) || !is.list(s)) NULL else
+    list(n = .i1(s$n), excess = .n1(s$excess), hit = .n1(s$hit),
+         t = .n1(s$t), capture = .n1(s$capture))
+  st <- suppressWarnings(as.character(ds$status)[1])
+  list(status = if (length(st) == 1L && !is.na(st)) st else NA_character_,
+       defensive = if (is.null(ds$defensive) || length(ds$defensive) == 0L) NA else as.logical(ds$defensive)[1],
+       convex = isTRUE(ds$convex),
+       n_months = .i1(ds$n_months),
+       down = .seg(ds$down), deep = .seg(ds$deep), mid = .seg(ds$mid), up = .seg(ds$up),
+       reason = { r <- suppressWarnings(as.character(ds$reason)[1])
+                  if (length(r) == 1L && !is.na(r)) r else NA_character_ },
+       source = source)
+}
+.rm_read_auth <- function(path) {
+  if (is.null(path) || !nzchar(path) || !file.exists(path)) return(list())
+  y <- tryCatch(jsonlite::fromJSON(path, simplifyVector = FALSE), error = function(e) NULL)
+  if (is.null(y)) return(list())
+  list(essence_grade = { g <- suppressWarnings(as.character(y$essence_grade)[1])
+                         if (length(g) == 1L && !is.na(g) && nzchar(g)) g else NA_character_ },
+       defensive_score = y$defensive_score)
+}
+.rm_auth_path <- function(auth_remeasure_path, bt_result_path) {
+  if (!is.null(auth_remeasure_path) && nzchar(auth_remeasure_path)) return(auth_remeasure_path)
+  p <- suppressWarnings(as.character(bt_result_path)[1])
+  if (length(p) != 1L || is.na(p) || !nzchar(p)) return("")
+  file.path(dirname(gsub("\\\\", "/", p)), "authoritative_remeasure.json")
+}
+
 #' Register a strategy output. FR-consumable only when the v8.1 input floor passes.
 #' @param sim_result list(DAILY_NAV_DT[Date,NAV,Strategy_Ret], bm_xts, ...) (run_monthly_simulation 산출)
 #' @param strategy_id 예 "STR_AS_<run_id>" / "STR_1715"
@@ -280,8 +318,18 @@ MODULE_QUARANTINE_PATH <- file.path(.RM_ROOT(), "06_Registry", "module_quarantin
 #'   "dohoon_mandate_YYYYMMDD"). v10 신규 등재분 기록 의무 — proxy 등급과의 혼동 방지.
 #' @param origin_mode "alpha_search" | "qepm" | "factor_rotation" | "reinforcement" | ...
 #' @param role 선택 (diversifier/defensive/core 등 — RCMA 경제논리 휴리스틱에 활용)
+#' @param essence_grade 권위 등급(essence). 미지정이면 `authoritative_remeasure.json`
+#'   에서 읽는다(재측정 안 함 — **이미 있는 산출물을 읽을 뿐**).
+#' @param defensive_score ds_score() 결과. 미지정이면 같은 산출물에서 읽는다.
+#'   ★2026-09-07 신설: 생산자(essence_score.R:627)와 소비자(2계층 풀 자격)가 둘 다
+#'   있는데 **등재기가 그 값을 안 실어서** 카탈로그 275건 전체가 defensive_score 부재였다.
+#'   그래서 방어형 경로(`defensive_specialist`)가 전 이력 한 번도 발화하지 않았다.
+#' @param auth_remeasure_path authoritative_remeasure.json 경로(미지정이면
+#'   bt_result_path 의 형제 파일로 해석).
 register_module <- function(sim_result, strategy_id, grade = NA_character_,
                             grade_basis = NA_character_,
+                            essence_grade = NA_character_, defensive_score = NULL,
+                            auth_remeasure_path = NULL,
                             origin_mode = "unknown", role = NA_character_, meta = list(),
                             catalog_path = MODULE_CATALOG_PATH,
                             metric_type = NULL, contract_pass = NULL, frozen = NULL,
@@ -311,10 +359,31 @@ register_module <- function(sim_result, strategy_id, grade = NA_character_,
   sim_result_path <- file.path(rel_dir, "sim_result.rds")
 
   d <- as.data.table(sim_result$DAILY_NAV_DT)[, Date := as.Date(Date)]
+
+  ## ── 권위 산출물 → 카탈로그 전이 (2026-09-07 신설 이음매) ────────────────────
+  ##   호출자가 명시로 넘긴 값이 우선, 없으면 authoritative_remeasure.json 에서 읽는다.
+  ##   ★부재와 실패를 가른다: 산출물이 없으면 필드를 **안 싣는다**(NULL) — 거짓(FALSE)이
+  ##     아니다. 소비자(ds_pool_eligible)가 dscore_absent 로 따로 센다.
+  .ap <- .rm_auth_path(auth_remeasure_path, contract$bt_result_path)
+  if (nzchar(.ap) && !file.exists(.ap)) {
+    .ap2 <- file.path(root, .ap)
+    .ap <- if (file.exists(.ap2)) .ap2 else .ap
+  }
+  .auth <- .rm_read_auth(.ap)
+  .eg <- essence_grade %||% (.auth$essence_grade %||% NA_character_)
+  .eg <- suppressWarnings(as.character(.eg)[1])
+  if (length(.eg) != 1L || is.na(.eg) || !nzchar(.eg)) .eg <- NA_character_
+  .ds_src <- if (!is.null(defensive_score)) "caller" else if (!is.null(.auth$defensive_score)) "authoritative_remeasure" else NA_character_
+  .ds <- .rm_compact_dscore(defensive_score %||% .auth$defensive_score, .ds_src)
+
   entry <- list(
     strategy_id     = strategy_id,
     grade           = grade %||% "ungraded",
     grade_basis     = grade_basis %||% NA,   # v10: 등급 출처 (essence/mandate/proxy 구분)
+    ## ★권위 등급 — 2계층 풀 floor 가 읽는 축(SKILL §3). `grade` 는 발행 시점 기록이라
+    ##   재채점 이후 갈린다(essence_regrade_apply.R 이 명시). 둘을 같이 싣는다.
+    essence_grade   = .eg,
+    defensive_score = .ds,                   # NULL 이면 필드 자체가 안 실린다 = 미산출
     role            = role %||% NA,
     origin_mode     = origin_mode,
     sim_result_path = sim_result_path,

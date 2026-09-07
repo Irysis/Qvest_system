@@ -91,33 +91,62 @@ ds_score <- function(period_returns, benchmark_returns, params = ds_params()) {
 `%||%` <- function(a, b) if (is.null(a) || length(a) == 0L) b else a
 
 #==============================================================================
-# 2계층 로테이션 풀 자격 (도훈 선택 2026-09-04)
+# 2계층 로테이션 풀 자격 (도훈 선택 2026-09-04 · 소비자 배선 2026-09-07)
 #
-# ★소비자가 아직 없다. 2계층 풀 게이트는 코드로 존재하지 않고(SKILL 서술만 · L2 원장 0건),
-#   이 함수는 그것이 만들어질 때 호출되라고 미리 둔 계약이다.
-#   이 저장소의 상습병이 "생산자만 있고 소비자가 없는 계기" 이므로 그 사실을 여기 적어 둔다 —
-#   2계층을 처음 돌리는 세션은 풀 조립부에서 **반드시 이 함수를 경유**할 것.
+# ★소비자가 생겼다 — `02_Infrastructure/regime/l2_pool_admission.R::l2_admit()` 가
+#   이 함수를 경유하고, `build_module_performance.R` 이 그것으로 풀을 조립한다.
+#   2026-09-04~09-07 사이에는 풀 조립부가 `.defensive_ok()` 라는 **자체 술어**를 따로
+#   갖고 있었다 = 자격 술어가 둘로 갈린 상태. 그 사본은 제거됐다.
+#   (규약: 자격 술어는 소비자의 함수여야 한다 — 소비자가 자기 사본을 들면 두 판정이 갈린다.)
 #
 # 규약: essence 등급 floor(B+) 를 **대체하지 않고 병렬 경로**로 연다.
 #   방어형은 단독 알파가 약한 것이 사실이고(실측: 방어형 184건 중 B 이상 0건),
 #   값어치는 조합 안에서 나온다. 그래서 등급이 아니라 풀 자격에서만 인정한다.
 #   이는 2026-08-29 'F-overall specialist 풀 부적격' 결정을 **방어형에 한해** 되돌린다.
+#
+# ★부재와 거짓을 가른다 — `code` 로 구분한다.
+#   `dscore_absent`(한 번도 산출된 적 없음) ≠ `not_defensive`(재서 아니었음)
+#   ≠ `dscore_not_ok`(재려 했으나 표본 부족 등으로 판정 불가). 셋을 한 칸에 합치면
+#   "배선이 안 됐다" 와 "배선은 됐는데 자격이 없다" 가 같은 숫자가 된다.
 #==============================================================================
 #' @param grade essence 등급 (구제 후 값)
-#' @param dscore ds_score() 결과
-#' @return list(eligible, route, reason)
-ds_pool_eligible <- function(grade, dscore, params = ds_params()) {
-  g <- as.character(grade %||% NA)
-  if (!is.na(g) && g %in% c("A", "B"))
-    return(list(eligible = TRUE, route = "grade_floor",
-                reason = sprintf("essence 등급 %s — 기존 B+ floor 통과", g)))
-  if (is.null(dscore) || !identical(dscore$status, "ok"))
-    return(list(eligible = FALSE, route = NA_character_,
-                reason = sprintf("등급 %s 이고 방어형 판정 불가(%s)", g,
-                                 as.character(dscore$status %||% "미산출"))))
+#' @param dscore ds_score() 결과 (또는 카탈로그에 실린 그 사본). NULL = 미산출.
+#' @param params ds_params()
+#' @param floor 등급 floor — "B"(기본) / "A" / "OFF"(진단). 소비자의 env
+#'   `QVEST_L2_GRADE_FLOOR` 를 **호출자가** 넘긴다(이 함수가 env 를 읽지 않는다 —
+#'   읽으면 검사가 운영 env 를 빌리게 된다).
+#' @param defensive_route 방어형 병렬 경로 on/off (kill switch `QVEST_L2_DEFENSIVE_ROUTE`).
+#' @return list(eligible, route, code, reason)
+ds_pool_eligible <- function(grade, dscore, params = ds_params(),
+                             floor = "B", defensive_route = TRUE) {
+  ## sprintf 는 인자 하나가 길이 0이면 문자열 전체를 없앤다 — 스칼라화를 강제한다.
+  .one <- function(x, alt = "NA") {
+    v <- suppressWarnings(as.character(x)[1])
+    if (length(v) != 1L || is.na(v) || !nzchar(v)) alt else v
+  }
+  g  <- .one(grade %||% NA)
+  fl <- toupper(.one(floor, "B"))
+  floor_set <- if (identical(fl, "A")) "A" else c("A", "B")
+
+  if (identical(fl, "OFF"))
+    return(list(eligible = TRUE, route = "grade_floor", code = "floor_off",
+                reason = sprintf("등급 floor OFF(진단 모드) — 등급 %s 무관 편입", g)))
+  if (g %in% floor_set)
+    return(list(eligible = TRUE, route = "grade_floor", code = "grade_floor",
+                reason = sprintf("essence 등급 %s — 등급 floor(%s) 통과", g, fl)))
+  if (!isTRUE(defensive_route))
+    return(list(eligible = FALSE, route = NA_character_, code = "route_off",
+                reason = sprintf("등급 %s · 방어형 경로 해제(QVEST_L2_DEFENSIVE_ROUTE=OFF)", g)))
+  if (is.null(dscore) || length(dscore) == 0L)
+    return(list(eligible = FALSE, route = NA_character_, code = "dscore_absent",
+                reason = sprintf("등급 %s · 방어형 **미산출**(부재 — '아님'이 아니다)", g)))
+  st <- .one(dscore$status, "미산출")
+  if (!identical(st, "ok"))
+    return(list(eligible = FALSE, route = NA_character_, code = "dscore_not_ok",
+                reason = sprintf("등급 %s · 방어형 판정 불가(%s)", g, st)))
   if (isTRUE(dscore$defensive))
-    return(list(eligible = TRUE, route = "defensive_specialist",
-                reason = sprintf("등급 %s 이나 방어형 자격 — %s", g, dscore$reason)))
-  list(eligible = FALSE, route = NA_character_,
-       reason = sprintf("등급 %s · 방어형 아님 — %s", g, dscore$reason))
+    return(list(eligible = TRUE, route = "defensive_specialist", code = "defensive_specialist",
+                reason = sprintf("등급 %s 이나 방어형 자격 — %s", g, .one(dscore$reason, "사유 미기록"))))
+  list(eligible = FALSE, route = NA_character_, code = "not_defensive",
+       reason = sprintf("등급 %s · 방어형 아님 — %s", g, .one(dscore$reason, "사유 미기록")))
 }
