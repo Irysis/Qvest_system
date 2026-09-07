@@ -404,6 +404,9 @@ register_module <- function(sim_result, strategy_id, grade = NA_character_,
       eligibility_reason = reason
     )
   )
+  ## 부재는 **필드 자체가 없다** — NULL 을 실으면 jsonlite 가 `{}` 로 굳어 '빈 판정'처럼 읽힌다.
+  if (is.null(.ds)) entry$defensive_score <- NULL
+  if (is.na(.eg))   entry$essence_grade <- NULL
   if (length(meta)) entry$meta <- meta
 
   if (!fr_eligible) {
