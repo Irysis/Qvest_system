@@ -408,7 +408,7 @@ if (is.finite(.base_pt) && .base_pt < .min_pt && !.resc_ok) {
              "defensive_admitted" else "pool_admitted",
            route = as.character(.adm$route)[1], grade = as.character(.adm$grade)[1],
            down_n = .adm$n_down, down_t = .adm$down_t, down_excess = .adm$down_excess,
-           deep_excess = .adm$deep_excess, convex = isTRUE(.adm$convex),
+           deep_excess = .adm$deep_excess,   # convex 폐기 2026-09-07(도훈)
            registered = isTRUE(.reg$registered), strategy_id = .reg$strategy_id,
            code = .reg$code, port_t = .base_pt,
            note = "기저 음수여도 2계층 풀 후보로 등재 — 1계층 강화는 생략(현행 유지)")

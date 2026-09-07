@@ -106,7 +106,7 @@ rmm_read_auth <- function(out_dir) {
 
 #' 권위 산출물 1건의 **풀 자격 판정** — 판정 자체는 계약 ds_pool_eligible() 이 낸다.
 #' @return list(eligible, route, code, reason, grade, has_dscore,
-#'              n_down, down_t, down_excess, deep_excess, convex, ds_status)
+#'              n_down, down_t, down_excess, deep_excess, ds_status)   ★convex 폐기 2026-09-07
 rmm_admission <- function(auth, floor = "B", defensive_route = TRUE, params = NULL) {
   eg <- .rmm_c1(.rmm_get(auth, "essence_grade"))
   if (is.na(eg)) {   # 카탈로그 레코드 형태로 들어온 경우도 같은 축으로 읽는다
@@ -125,7 +125,6 @@ rmm_admission <- function(auth, floor = "B", defensive_route = TRUE, params = NU
   r$down_t      <- .rmm_n1(.rmm_get(dn, "t"))
   r$down_excess <- .rmm_n1(.rmm_get(dn, "excess"))
   r$deep_excess <- .rmm_n1(.rmm_get(dp, "excess"))
-  r$convex      <- isTRUE(.rmm_get(ds, "convex"))
   r
 }
 
@@ -134,12 +133,13 @@ rmm_gate_note <- function(adm) {
   if (!isTRUE(adm$eligible))
     return(sprintf("풀 미편입(%s) — %s", .rmm_c1(adm$code, "unknown"), .rmm_c1(adm$reason, "사유 미기록")))
   if (identical(.rmm_c1(adm$route), "defensive_specialist"))
-    return(sprintf("방어형 등재 — 하락월 %s개 초과 %s%%/월 (t %s) · 심층 %s%%/월 · 볼록 %s",
+    ## ★"볼록" 문구 제거 (도훈 결정 2026-09-07) — 그 플래그는 무신호에서 더 잘 켜졌고(52% vs 32%)
+    ##   실제 한계반응은 전부 오목이었다. 심층 초과는 표본(심도월 10개)이 얇아 참고값으로만 적는다.
+    return(sprintf("방어형 등재 — 하락월 %s개 초과 %s%%/월 (t %s) · 심층 %s%%/월(n 얇음)",
                    .rmm_fmt(adm$n_down, "%.0f"),
                    .rmm_fmt(100 * .rmm_n1(adm$down_excess), "%+.2f"),
                    .rmm_fmt(adm$down_t, "%.2f"),
-                   .rmm_fmt(100 * .rmm_n1(adm$deep_excess), "%+.2f"),
-                   if (isTRUE(adm$convex)) "TRUE" else "FALSE"))
+                   .rmm_fmt(100 * .rmm_n1(adm$deep_excess), "%+.2f")))
   sprintf("등급 %s — 등급 floor 통과 등재", .rmm_c1(adm$grade, "NA"))
 }
 

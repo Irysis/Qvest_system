@@ -87,7 +87,7 @@ for (dd in ds) {
       current = roll$current, prior_recoveries = roll$history$prior_recoveries,
       current_run = roll$history$current_run, span = roll$span)
     aj$defensive_score <- if (is.null(defn) || !identical(defn$status, "ok")) NULL else list(
-      status = defn$status, defensive = defn$defensive, convex = defn$convex,
+      status = defn$status, defensive = defn$defensive,   # convex 폐기 2026-09-07
       down = defn$down, mid = defn$mid, deep = defn$deep, up = defn$up, reason = defn$reason)
     aj$recent_regime_rescued <- isTRUE(resc$rescued)
     aj$retro <- list(version = "rolling_defensive_v1", applied_at = STAMP,

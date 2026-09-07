@@ -1282,6 +1282,8 @@ SUITES=(
   "08_Tests/reinforcement/test_rf_fidelity_fanout.R"
   "08_Tests/reinforcement/test_rf_queue_mirror.R"
   "08_Tests/contracts/test_rolling_defensive.R"
+  # 2026-09-07 도훈 결정 — 볼록성 플래그 폐기(무신호 52% vs 실제 32% · 진짜 볼록 0/179 · 심도월 10개 중 2개가 2026)
+  "08_Tests/contracts/test_ds_convex_retired.R"
   "08_Tests/reinforcement/test_rf_block_design_schema.R"
   "08_Tests/reinforcement/test_rf_mechanism_tone.R"
   # 2026-09-04 — 논문 명시 비용의 전달: 무명시를 15bps 로 덮으면 병기판이 등급판과 같아진다.

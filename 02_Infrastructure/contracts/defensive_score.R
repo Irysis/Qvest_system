@@ -75,18 +75,26 @@ ds_score <- function(period_returns, benchmark_returns, params = ds_params()) {
   ok <- is.finite(down$excess) && down$excess > params$min_excess &&
         is.finite(down$t) && down$t >= params$min_t &&
         is.finite(down$hit) && down$hit >= params$min_hit
-  # 볼록성 — 심도가 깊어질수록 우위가 커지는가 (선형 베타와 구분)
-  convex <- is.finite(deep$excess) && is.finite(down$excess) && deep$excess > down$excess
-
-  list(status = "ok", defensive = ok, convex = convex,
+  ## ★볼록성 플래그 폐기 (도훈 결정 2026-09-07) — 구판: convex <- deep$excess > down$excess
+  ##   폐기 사유는 실측이다:
+  ##   ①**무신호에서 더 잘 켜진다** — 실제 전략 57/179(32%) vs 무작위 25종 대조 25/48(52%).
+  ##     저베타 판은 정의상 deep$excess > down$excess 를 만족하므로, 이 플래그는 방어 기전이 아니라
+  ##     베타 부족을 재고 있었다. 구판 주석("선형 베타 효과가 아니라 실제 방어 기전")은 반증됐다.
+  ##   ②**진짜 볼록은 0건** — Henriksson-Merton 회귀(s = a + b·k + γ·max(−k,0))로 재니 실제 179건 전부
+  ##     up-β 0.42 < down-β 1.06(γ 중앙 −0.608 · γ_t 179/179 ≤ −1.5)로 **오목**이었다. 하락이 깊을수록
+  ##     오히려 더 실린다 — "심도↑ 우위↑" 라는 문구가 사실과 반대였다.
+  ##   ③**표본이 못 버틴다** — 심도월(k < −10%)이 10개월뿐이고 그중 2개가 2026-03·2026-07(역대 최심도
+  ##     1위·3위)이다. 판정이 사실상 두 달에 얹혀 있었다.
+  ##   ⇒ 새 산출에는 이 필드를 넣지 않는다. 과거 산출물의 convex 값은 기록으로 그대로 둔다(지우지 않는다).
+  ##     심도 축을 다시 세우려면 표본을 늘리거나(일별·주별 붕괴 구간) HM γ 같은 한계반응 지표를 쓸 것.
+  list(status = "ok", defensive = ok,
        down = down, mid = mid, deep = deep, up = up,
        n_months = nrow(m),
        reason = sprintf(paste0("하락월 %d개: 초과 %+.2f%%/월 (t %.2f · 적중 %.0f%%) · ",
-                               "벤치%.0f%% 이하 %d개: 초과 %+.2f%%/월 · 상승월 초과 %+.2f%%/월%s"),
+                               "벤치%.0f%% 이하 %d개: 초과 %+.2f%%/월 · 상승월 초과 %+.2f%%/월"),
                         down$n, 100*down$excess, down$t, 100*down$hit,
                         100*params$deep_threshold, deep$n,
-                        100*(deep$excess %||% NA_real_), 100*(up$excess %||% NA_real_),
-                        if (isTRUE(convex)) " · 볼록(심도↑ 우위↑)" else ""))
+                        100*(deep$excess %||% NA_real_), 100*(up$excess %||% NA_real_)))
 }
 `%||%` <- function(a, b) if (is.null(a) || length(a) == 0L) b else a
 

@@ -625,7 +625,7 @@ essence_score <- function(bt_result, n_trials_cumulative = NULL,
     ## 방어형 — 벤치가 **실제로 마이너스를 기록한 국면**에서 아웃퍼폼했는가(국면 라벨 비의존).
     ##   ★essence 등급을 건드리지 않는다. 소비는 2계층 로테이션 풀 자격이다.
     defensive_score = if (is.null(.defn)) NULL else list(
-      status = .defn$status, defensive = .defn$defensive, convex = .defn$convex,
+      status = .defn$status, defensive = .defn$defensive,   # convex 폐기 2026-09-07(무신호에서 더 잘 켜졌다 · 진짜 볼록 0/179)
       down = .defn$down, mid = .defn$mid, deep = .defn$deep, up = .defn$up,
       reason = .defn$reason),
     hard_fail = hard_fail,

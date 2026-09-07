@@ -76,7 +76,7 @@ cat(sprintf("[backfill] 대상 모듈 %d건 (catalog n=%d)\n", length(ids), leng
     list(n = .i1(s$n), excess = .n1(s$excess), hit = .n1(s$hit), t = .n1(s$t), capture = .n1(s$capture))
   list(status = .c1(ds$status),
        defensive = if (is.null(ds$defensive) || length(ds$defensive) == 0L) NA else as.logical(ds$defensive)[1],
-       convex = isTRUE(ds$convex), n_months = .i1(ds$n_months),
+       n_months = .i1(ds$n_months),   # convex 폐기 2026-09-07
        down = .sg(ds$down), deep = .sg(ds$deep), mid = .sg(ds$mid), up = .sg(ds$up),
        reason = .c1(ds$reason), source = src, backfilled_at = STAMP)
 }

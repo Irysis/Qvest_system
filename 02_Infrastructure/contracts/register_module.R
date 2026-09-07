@@ -287,7 +287,6 @@ MODULE_QUARANTINE_PATH <- file.path(.RM_ROOT(), "06_Registry", "module_quarantin
   st <- suppressWarnings(as.character(ds$status)[1])
   list(status = if (length(st) == 1L && !is.na(st)) st else NA_character_,
        defensive = if (is.null(ds$defensive) || length(ds$defensive) == 0L) NA else as.logical(ds$defensive)[1],
-       convex = isTRUE(ds$convex),
        n_months = .i1(ds$n_months),
        down = .seg(ds$down), deep = .seg(ds$deep), mid = .seg(ds$mid), up = .seg(ds$up),
        reason = { r <- suppressWarnings(as.character(ds$reason)[1])

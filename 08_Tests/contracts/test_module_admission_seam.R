@@ -56,7 +56,7 @@ suppressMessages(sys.source(file.path(ROOT, "02_Infrastructure/contracts/registe
 
 # ── 합성 산출물 (계약 산출물과 **같은 배치·같은 파일명**) ─────────────────────
 .ds <- function(defensive, status = "ok", t = 6.16, ex = 0.0474)
-  list(status = status, defensive = defensive, convex = TRUE, n_months = 240L,
+  list(status = status, defensive = defensive, n_months = 240L,   # convex 폐기 2026-09-07
        down = list(n = 111L, excess = ex, hit = 0.61, t = t, capture = 0.4),
        deep = list(n = 10L, excess = 0.1915, hit = 0.9, t = 3.1, capture = 0.2),
        mid = list(n = 30L, excess = 0.06, hit = 0.7, t = 2.2, capture = 0.3),
@@ -193,8 +193,11 @@ if (is.null(GATE)) {
       sprintf("events=%s err=%s", paste(r1$ev, collapse = ","), r1$err %||% "-"))
   A <- if (length(i_adm)) r1$args[[i_adm[1]]] else list()
   chk(length(i_adm) > 0L && is.finite(suppressWarnings(as.numeric(A$down_t))) &&
-      is.finite(suppressWarnings(as.numeric(A$down_excess))) && !is.null(A$convex),
-      "B1b defensive_admitted 에 하락월 t·초과·convex 가 병기된다",
+      ## ★convex 요구 제거 (도훈 결정 2026-09-07 폐기) — 그 플래그는 무신호에서 더 잘 켜졌고
+      ##   진짜 볼록은 0/179 였다. 표적을 남은 축(심층 초과)으로 옮긴다: 폐기된 필드를 요구하면
+      ##   옳은 변경에 검사가 빨개진다("축을 옮기면 양성 대조도 옮겨라").
+      is.finite(suppressWarnings(as.numeric(A$down_excess))) && !is.null(A$deep_excess),
+      "B1b defensive_admitted 에 하락월 t·초과·심층초과가 병기된다",
       paste(names(A), collapse = ","))
   chk(length(r1$note) == 1L && nzchar(r1$note) && grepl("하락월", r1$note),
       "B1c 텔레그램 1줄(.adm_note)이 채워진다", paste(r1$note, collapse = "|"))
