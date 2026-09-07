@@ -1,0 +1,17 @@
+{
+  "axis": "portfolio",
+  "verdict": "adapted",
+
+  "undeclared_changes": [],
+  "signal_mismatch": [],
+
+  "counterexample": "이 축에서 논문과 다른 값을 내는 상황은 구성했지만 전부 FIDELITY.changed 에 선언돼 있다. ① [데실 브레이크포인트 모집단] 2026-09-01 리밸일 실측(04_holdings.csv 16131~16199행): 롱 34종 @ +1/34 = 0.0294117647058824 · 숏 35종 @ -1/35 = -0.0285714285714286 → 횡단면 N=345. 논문의 데실은 A주 전 종목(Table 1 SHSE 1,097 + SZSE 1,757) 위에서 잘리므로 패자 데실이 ~280종인데, 이 구현은 K200∪KQ150 345종 위에서 잘려 34종이다 — 한국 대·중형주 횡단면의 9.8 분위 종목은 여기서 롱 다리에 들어가지만 논문 설계에서는 소형주까지 포함한 전체 횡단면의 상위 분위라 롱 다리 밖일 수 있다. 이는 허용된 유니버스 교체의 직접 귀결이고 changed(1)에 그대로 선언돼 있다. ② [잔여 1종의 방향] N=345 는 10 의 배수가 아니어서 ceiling(rank×10/N) 규약이 잔여 1종을 항상 승자(숏) 데실에 붙인다 — 실측 34/35 가 그 지문이다. floor 기반 규약이었다면 같은 날 35/34 로 갈려 절단점 종목 1건의 레그가 뒤집힌다. 논문은 N 이 10 의 배수가 아닐 때의 분할을 말하지 않으므로 어느 규약도 논문 위반이 아니며, 방향과 비대칭 폭(≤0.3%p)이 changed(7)에 선언돼 있다. ③ [고정 축 충돌] 실현 종목수 39~71종/리밸(10_audit.csv:20 holdings_cap PASS · 260 리밸일)로 고정 축 ≤25 를 상시 초과하고 has_short=true 다 — changed(1)·portfolio_spec.note·01_strategy_spec.json(n_max 71 · has_short true)에 전부 선언돼 있다. 미신고 변경은 이 축에서 구성하지 못했다.",
+
+  "evidence": "§2 Methodology 축자(HTML 전문 2회 독립 질의로 일치): 'individual stocks are ranked according to their historical performance during the previous J months. The winner refers to the decile group with the highest past average return and the loser is the decile group with the lowest past average return. By longing the loser (winner) and shorting the winner (loser), the CSCON (CSMOM) portfolio is constructed...' → 10분위 · CSCON = 패자 롱/승자 숏 · 롱숏 제로코스트. §2 같은 절의 Ref [21,22] vs Ref [25] 문단: 'the average return at time t is equally-weighted return of all portfolios at same time' 의 'equally-weighted' 는 **중첩 포트폴리오 간 평균**을 가리키며 논문은 그 방식을 따르지 않는다('Instead, we consider the buy-and-hold return series...') → 데실 **내부** 비중 규정이 아니다. 시가총액가중 언급 = NOT PRESENT · 데실당 종목수·최소 종목수 요건 = NOT PRESENT · 데실 외 분위(5분위·3분위 등) = NOT PRESENT(전 절). §3 Data sets 'all A-share individual stocks' — 종목 선별 규칙 없음.",
+
+  "confidence": "high",
+
+  "checked": "분위 개수(논문 decile ↔ engine.R:54 .NGRP=10L · 144행 ceiling(rank×10/N)) · 레그 방향(패자=grp 1=최저 평균수익 롱 / 승자=grp 10 숏 — engine.R:142 order(s,tk) 오름차순 → 145·151~152행, CSCON 일치) · 데실 내 비중(논문 미명시 → EW 1/nL·-1/nS, changed(4) 선언 · 산출물 실측 2005-02-01 ±0.05(20/20) · 2026-09-01 +1/34 / -1/35(34/35)) · 레그 총노출(engine.R:170~174 가 매 리밸일 gL=gS=1 을 1e-9 로 검산 · replication_harness.R:57·95~96·105 GL·Lr − GS·Sr, GL=GS=1 → 달러중립 총노출 2.0, changed(4) 진술과 일치) · 실현 종목수(10_audit.csv:20 리밸일별 39~71종 · 260 리밸일 · 01_strategy_spec.json n_max 71 · has_short true) · 2층 절단 여부(run_paper_replication.R:283~295 engine_direct 는 PORTFOLIO 를 자르지 않고 그대로 반환 · 초과 시 로그만 — 상위 N 이 두 번 잘려 곱해지는 형태 없음) · N 비배수 잔여 방향(changed(7) 신고 ↔ 실측 34/35 일치).",
+
+  "note": "레그 판정은 Weight 부호로 이뤄지고(replication_harness.R:55) 산출물의 부호가 보존돼 있어 숏 다리가 롱으로 접히는 경로는 없다. ★축 인접 관찰 2건(발견 아님, 판정 무게 없음): ① replication_harness.R:58~68 은 보유창 동안 finite Ret 이 하나도 없는 종목을 레그에서 제외하고 남은 종목으로 비중을 재정규화한다 — 신고된 데실 크기와 손익에 실제로 실린 EW 분모가 갈릴 수 있다(하네스 공통 동작 · 논문도 상장폐지 처리를 말하지 않음 · 이 세션 R 실행 차단으로 미정량). ② FIDELITY changed(1)·engine_contract 의 산문 범위 '두 다리 합 30~70종'은 실측 39~71 과 하단 9·상단 1 어긋난다 — 정확값은 01_strategy_spec.json n_max=71 에 있고 '≈' 로 서술된 추정 범위라 미신고로 보지 않는다."
+}
