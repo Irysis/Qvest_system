@@ -1,0 +1,93 @@
+논문 1편의 **충실구현**을 수행하라. 산출은 **엔진 R 파일 하나**다.
+
+## 논문
+제목: Wax and wane of the cross-sectional momentum and contrarian effects: Evidence from the Chinese stock markets
+원문: https://arxiv.org/abs/1707.05552
+트리아지가 뽑은 후보 팩터: 단기반전+중기모멘텀(중국)
+정의 초안: This paper investigates the time-varying risk-premium relation of the Chinese stock markets within the framework of cross-sectional momentum and contrarian effects by adopting the Capital Asset Pricin
+
+## 판정 순서 (★2026-08-30 도훈 지시 — 어떤 논문이라도 팩터 전략으로 변형 가능한
+##   형태인지부터 판단하는 게 참된 리서치의 자세다. 인사이트가 중요한 거니까)
+**논문이 횡단면 종목선택 형태가 아니어도 즉시 포기하지 마라.** 순서는 이렇다:
+
+1. **충실구현이 되는가** — 논문 그대로 신호·종목수·비중·리밸. 되면 fidelity=faithful.
+2. 안 되면 **인사이트가 이식되는가** — 논문의 *기전*을 횡단면 팩터로 옮길 수 있는가.
+   되면 fidelity=adapted. ★이때 **무엇을 남기고 무엇을 바꿨는지 명시 의무**다.
+   예: 리더-팔로워 군집 논문에서 특정 군집기·정렬기는 **한 구현일 뿐**이고, 기전은
+   선행 종목의 움직임이 후행 종목을 예측한다는 것이다. 그건 가용한 추정기로 이식된다.
+3. **데이터가 진짜 없으면** ABORT. 대리변수로 지어내지 마라 — 레버리지 ETF NAV,
+   장중·종가단일가 같은 미보유 패널은 근사 대상이 아니다. ABORT.txt + 필요 데이터 명시.
+
+★adapted 는 정직한 결과다. 등급은 계약이 내되 귀속이 충실구현이 아니라 **착안**이며,
+  그 구분이 원장에 남으므로 misattribution 이 되지 않는다. 인사이트를 버리는 것보다 낫다.
+★단 **지어내기와 이식은 다르다**: 논문이 주지 않는 수치를 임의로 정하면 그건 이식이 아니다.
+  이식은 *기전*을 옮기는 것이고, 파라미터는 **우리 고정 축**(25종·월간·EW)을 쓴다.
+
+★산출에 `C:\Users\99922\OneDrive\Quant_Module_Moltbot/04_Research/strategies/RP_AUTO_1707_05552/FIDELITY.json` 을 함께 써라 — 키 6개:
+  fidelity(faithful 또는 adapted) · kept(논문에서 남긴 기전 1줄) ·
+  changed(바꾼 것과 이유 1줄) · paper_original_form(논문 원래 산출 형태 1줄) ·
+  ★portfolio_spec(러너에 그대로 넘어가는 **기계 판독** 객체) ·
+  ★commission_paper(논문 명시 왕복비용. 미명시면 null).
+  faithful 이면 changed 는 유니버스만 K200 합집합 KQ150 이다.
+  portfolio_spec 은 산출 형태에 맞춰라 — 산문으로 적지 말고 이 형태로:
+    PORTFOLIO 를 만들면 {"construction":"engine_direct"}
+      (네가 만든 비중이 곧 논문 비중이다. 롱숏이면 반드시 이 값이어야 한다 —
+       이게 없으면 러너가 숏 다리를 버리고 롱온리 top-N 으로 다시 구성한다.)
+    FACTORS 만 만들면 {"construction":"top_n_long","weighting":"ew","rebalance":"monthly","top_n":<논문값>}
+  ★engine.R 주석에만 적지 마라 — 주석은 아무도 읽지 않는다. 이 파일이 유일한 통로다.
+
+### ★changed 신고 체크리스트 — 논문에 없는데 네가 넣은 것을 **전부** 적어라
+실측(2026-09-04, 적대적 감사 4편 · 지적 20건): 그중 **9건이 이 종류**였다 —
+논문을 못 읽은 게 아니라, 합리적인 방어 코드를 넣고 **신고를 잊은** 것이다.
+그래서 재구현 한 사이클(에이전트 12분 + 측정 + 감사 6축)이 통째로 타율다.
+아래를 한 줄씩 훑고 해당하는 것을 changed 에 옮겨라. 해당 없으면 적지 마라.
+
+- 값 하한·상한·커버리지 요건 (예: 관측 80% 이상만 정렬, 최소 종목수 30)
+- 수치 가드 (분모 0 방지 · 변동성 바닥 · |값| 상한 치환 · winsorize·clip)
+- 결측 처리 (nafill/locf · 상장 전 상수 · 비유한값 0 치환)
+- 난수·재현 (set.seed · 초기값 · 앞상빌업 횟수 · 앜상블 여부)
+- 창·워밍업 길이를 논문과 다르게 잡은 것
+- 논문이 여러 설정을 보고했는데 하나를 골랏으면 **어느 칸을 골랐는지**
+- 논문 수식을 근사한 것 (폐형·선형화·이산화)
+
+★"영향이 미미해서 안 적었다" 는 사유가 아니다. 영향의 크기를 판단하는 것은
+감사와 도훈이지 구현자가 아니고, 그 판단은 **적혀 있어야** 할 수 있다.
+적어둔 변경은 adapted 로 통과하고, 안 적은 변경은 misdeclared 로 재구현을 부른다 —
+**적는 쪽이 싼다.**
+
+## 산출 (이것만)
+## 산출 (이것만)
+`C:\Users\99922\OneDrive\Quant_Module_Moltbot/04_Research/strategies/RP_AUTO_1707_05552/engine.R` — source 되면 `FACTORS(Date,Ticker,Score)` 또는
+`PORTFOLIO(Date,Ticker,Weight,Leg)` 를 만드는 R 스크립트. 호출자가 환경에 `RAWDATA`·`BM_DT` 를 넣어준다.
+
+## 축 (변수 아님)
+- **논문 그대로** 복제하되 **유니버스만 K200∪KQ150**. 유동성 하한 adv20 ≥ 2e8 은 t-1 로 적용.
+- 기간 2005-01-01~. 종목수·비중·리밸 주기는 논문 명시값을 따른다.
+- **PIT C1~C15 절대**: 모든 창의 종점은 t-1. 전 표본 통계 금지(rolling/expanding만).
+  팩터 DB 는 `load_month_factors()` 경유(C15), `Z_Score_Aligned` 만 소비(C13).
+  ★`detect_lookahead` 는 비선언 idiom(전 표본 cov()/mean() · shift(-1) · 수동 미래 인덱싱)을
+  못 잡는다 — 통과를 근거로 삼지 말고 **구조로** 보장하라.
+- 원문 접근이 불가하면 **지어내지 마라**. `C:\Users\99922\OneDrive\Quant_Module_Moltbot/04_Research/strategies/RP_AUTO_1707_05552/ABORT.txt` 에 사유를 쓰고 끝내라.
+
+## 실행 환경
+- R 349개 패키지가 이미 있고(data.table · arrow · PerformanceAnalytics · xts · quadprog ·
+  cluster · matrixStats · glmnet · TTR · roll · proxy 등), **없는 패키지는 호출자가 자동 설치**한다
+  (검증 러너가 엔진을 스캔해 CRAN 에서 최대 6개까지 설치). 그러니 필요한 패키지를 자유롭게 쓰라.
+- 다만 **정말 필요한 것만** 쓰라 — 의존이 6개를 넘으면 착수가 차단된다.
+- 파이썬 연동(reticulate)도 가능하나, R 로 충분하면 R 로 하라(무인 실행에서 층이 하나 줄어든다).
+- 원문 접근이 불가하거나 논문을 훼손하지 않고는 구현할 수 없으면 `ABORT.txt` 에 사유를 쓰고 멈춰라.
+
+## 금지
+- `C:\Users\99922\OneDrive\Quant_Module_Moltbot/04_Research/strategies/RP_AUTO_1707_05552` 밖 쓰기. 원장·설정·훅·테스트 수정. 백테스트 직접 실행(측정은 호출자 계약이 한다).
+- 등급·성과 수치 선언(계약이 낸다).
+
+엔진을 쓰고 1~2줄로 무엇을 구현했는지만 보고하라.
+
+## 공리 (전제 — 지시가 아니다)
+아래는 이 저장소가 실측으로 세운 전제다. 네 판단은 이 위에서 이뤄진다.
+어긋나는 결론을 낼 수는 있지만, 그때는 **무엇이 이 전제를 뒤집는 증거인지** 적어라.
+
+- **AX-000 · 한계란 없다** — 한계는 대개 법칙이 아니라 방법의 한계다. 모든 목표는 충분한 엄밀함·창의성·반복으로 달성 가능하다는 전제로 임한다. 소수(3~4회)의 실험 실패를 '구조적 한계'나 'dead-end'로 단정하는 것을 금지하며, 탐색은 가용한 모든 수단(개념 발산·다른 데이터원·다른 구조·ML·수리·물리)을 소진하거나 도훈이 중단을 지시할 때까지 계속한다. 실증·PIT·수리로 얻은 결과는 정직히 보고하되(성공 위장·추측 금지), 그 자체가 탐색 중단의 근거가 되지 않는다.
+- **AX-001 · Defense는 조건부 성과로 평가** — 방어형 팩터를 전기간 SR/CAGR/MDD로 평가하면 Grade F. 위기 구간 alpha + Core 대비 MDD + bad/normal IC ratio로 평가.
+- **AX-002 · 규칙 안에서 찾아낸 성과가 진짜 성과** — 프로세스 우회 = 판단의 미래참조. 하네스 내 성과만 유효.
+- **AX-008 · Verification Triangulation** — 백테스트 결과·전략 admit·SR provenance 등 의사결정 영향 산출은 Forge + Self-Adversarial(메인 에이전트 Opus 4.8 자체 적대검증) + Architect 3-source 중 최소 2-source PASS가 필수다. Single-source PASS는 자기합리화 risk이며 admission 근거로 부적합. 2/3 미만 PASS 시 Q-Lead 직접 escalation 의무.

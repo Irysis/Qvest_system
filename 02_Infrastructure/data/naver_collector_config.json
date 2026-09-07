@@ -1,0 +1,40 @@
+{
+  "schema": "naver_collector_config_v1",
+  "_purpose": "네이버 개별종목 수집기(naver_data_collector.R)의 운영 상수 단일 정본. 요청 페이싱·재시도·실패 상한·엔드포인트를 코드 밖에 둔다(하드코딩 금지). 값 변경은 도훈 권한.",
+
+  "price_endpoint": "https://api.finance.naver.com/siseJson.naver",
+  "_price_endpoint": "★수정주가(adjusted) 일별 OHLCV 정본. 2026-09-07 실측으로 확정: 삼성전자 50:1 분할(2018-05-04) 전일 2018-04-27 종가가 이 엔드포인트에서 **53,000**(분할 반영), 같은 날짜가 item/sise_day.naver 에서는 **2,650,000**(원주가)로 나온다. 즉 sise_day 는 수정주가가 아니다 — 구판 주석의 '일별시세 = 수정주가' 전제는 반증됐다. 벤치 배관(naver_benchmark_update.py)이 이미 같은 API 계열을 쓰므로 새 원천이 아니다.",
+
+  "price_columns": ["Date", "Open", "High", "Low", "Close", "Vol", "ForeignRatio"],
+  "_price_columns": "응답 헤더 = 날짜/시가/고가/저가/종가/거래량/외국인소진율. 구판 시세페이지 경로에는 Open/High/Low 가 없어 naver 구간 전체가 NA 였다(실측 2026-08-31~09-04 12,563행 Open non-null 0.0%). 이 경로는 채운다.",
+
+  "size_endpoint": "https://finance.naver.com/sise/sise_market_sum.naver",
+  "_size_source_decision": "★두 경로를 섞는 결정과 근거(과제 §1). 시가총액은 price_endpoint 에 없다. 그래도 시세페이지를 **Size 전용**으로 남긴다. 이유: 이음매(seam)는 **가격 레벨의 조정기준 단절**에서 생기는데 시가총액은 조정기준 불변량이다(분할해도 주식수x주가 = 동일). 두 경로가 **같은 양을 다른 기준으로 산출하는 일이 없으므로** 새 이음매가 생기지 않는다 — 가격은 price_endpoint 단독, Size 는 size_endpoint 단독으로 소관이 겹치지 않는다. 반대로 가격을 두 경로에서 받으면(예: 최신일만 시세페이지) 그 순간 원주가/수정주가 이음매가 매일 생긴다 — 그래서 시세페이지의 Close/Vol 은 **가격으로 쓰지 않는다**(price_basis 스탬프로 강제).",
+  "_size_backfill_rule": "과거일 백필에는 그날의 시세페이지 스냅샷이 없다. 이때 Size 는 shares x Close 로 복원하되 **shares 가 창 안에서 안정일 때만** 쓴다(shares := Size/Close 를 검증된 날들에서 재도출해 상대편차 <= size_shares_tol). 불안정(유상증자·감자·병합)이면 복원하지 않고 NA + 사유를 남긴다 — 부재를 거짓으로 읽지 않는다.",
+  "size_shares_tol": 0.02,
+
+  "request_sleep_sec": 0.12,
+  "_request_sleep_sec": "요청 간 기본 대기(초). 워커당 적용된다 — 실효 요청률 = workers / (sleep + 왕복지연). 기본값에서 4워커 기준 약 10~14 req/s 로 과하게 두드리지 않는다.",
+  "request_jitter_sec": 0.08,
+  "_request_jitter_sec": "대기에 더하는 균등 난수 상한. 고정 주기 요청은 차단 탐지에 걸리기 쉽다.",
+  "request_timeout_sec": 20,
+  "max_retries": 3,
+  "_max_retries": "1회 시도 + 재시도 max_retries 회. HTTP 5xx/429/타임아웃만 재시도하고 4xx(404 등)는 즉시 확정 실패 — 재시도해도 안 바뀐다.",
+  "retry_backoff_base_sec": 0.8,
+  "_retry_backoff_base_sec": "지수 백오프 기저. n 번째 재시도 대기 = base * 2^(n-1) + jitter.",
+  "workers": 4,
+  "_workers": "병렬 워커 수. 1 이면 순차. 클러스터 기동 실패 시 순차로 폴백한다(조용한 실패 금지 — 폴백 사실을 찍는다).",
+
+  "max_failure_rate": 0.02,
+  "_max_failure_rate": "실패 종목 비율 상한. 초과하면 병합을 **차단**한다. 실패 종목을 조용히 빠뜨리면 그 종목은 그 날짜에 '상장폐지'와 구분되지 않는다(부재 != 정상).",
+
+  "no_trade_ohl_policy": "fill_from_close",
+  "_no_trade_ohl_policy": "거래정지/무거래일 응답은 Open=High=Low=0, Vol=0, 종가=직전 종가 carry 로 온다(실측: 삼성전자 2018-04-30~05-03 분할 정지 구간, A032860 2026-08-20~08-28). 0 은 '가격 0' 이 아니라 '거래 없음' 센티널이다. quantiwise 는 같은 상태를 O=H=L=C 로 적재하므로(실측 A032860 08-28 690/690/690/690 Vol 0) 그 규약에 맞춰 Close 로 채우고 no_trade 카운트를 산출물에 남긴다. 'as_na' 로 바꾸면 NA 로 둔다.",
+
+  "seam_mode": "verify",
+  "_seam_mode": "★naver 경로의 이음매 처리(과제 §2). 구판은 quantiwise 종가와 naver 종가를 **생가격 비율**로 가로질러 Ret 을 만들었고, 그래서 seam_scale_guard 의 배율 추정(rescale_ret)이 Ret 을 **생성**해야 했다. 새 경로는 첫 naver 일의 직전 종가도 naver 에서 받아 **같은 조정기준 안에서** Ret 을 계산한다 — 추정이 아니라 측정이다. 따라서 가드는 '수리' 가 아니라 '검증' 으로 부른다: 레벨 단절은 그대로 판정·기록하되(침묵 통과 금지), Ret 은 가드가 덮어쓰지 않고 **가드의 implied_ret 과 대조**해 일치 여부를 사이드카에 남긴다(가드의 양성 대조). 'repair' 로 두면 구판처럼 가드가 Ret 을 덮는다. ★incremental_update_file.R 은 여전히 두 수출본을 가로지르므로 그쪽은 repair 그대로다.",
+  "seam_verify_tol": 1e-6,
+  "_seam_verify_tol": "가드 implied_ret 과 naver 내부 측정 Ret 의 일치 허용오차. 2026-09-07 손검증 4/4 가 소수 6자리까지 일치했다(A032860 -0.0318841 · A090410 +0.0244200 · A091810 -0.0431310 · A286750 +0.0263158).",
+
+  "_owner": "도훈 지시 2026-09-07 (네이버 개별종목 = 수정주가 · 벤치 = 종가 · 원천 2단)."
+}
