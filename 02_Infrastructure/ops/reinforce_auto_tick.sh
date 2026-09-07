@@ -45,6 +45,16 @@ mkdir -p "$(dirname "$LOG")"
   #   "구판이 남았나"는 보지만 "신판이 안 왔나"는 안 본다. config 가 한 글자 바뀌면
   #   예산 25 고정 · 설계 없는 레인으로 조용히 내려앉는 구조라 분기 자체를 없앤다.
   #   순차 실행이 필요하면 reinforce_auto_config.json::parallel_cells 를 1 로 둔다.
-  Rscript "$ROOT/02_Infrastructure/ops/reinforce_auto_parallel.R"
+  # ★강화 셀의 모듈 등재만 한시 보류 (2026-09-07 · Q 세션 판단, 도훈 보고됨).
+  #   오늘 생산 레인 → module_catalog 이음매를 이었는데(register_measured_module.R), 자격이
+  #   "essence B+ ∨ defensive TRUE" 이고 **방어형 판정률이 179건 중 93%** 다(문턱 t 1.5 가 분포
+  #   1사분위 1.80 아래). 그 상태로 강화가 돌면 entry 당 25~30칸이 거의 전부 등재돼 카탈로그가
+  #   하루에 수십 건씩 자라고, dispatcher 하이퍼(τ 0.6·cap 0.25·k0 36)가 5~10 모듈 캘리브라
+  #   풀 91 에서 이미 retention 붕괴가 예고돼 있다. 게다가 같은 기저의 변형 30칸은 서로 상관이
+  #   높아 풀 다양성을 못 늘린다("라벨의 다양성은 행동의 다양성이 아니다").
+  #   ⇒ 충실구현·결합 레인(rf_replication_auto.sh · 별도 프로세스)의 등재는 **그대로 열어 두고**,
+  #     강화 셀 경로만 막는다. 해제 조건 = 무신호 대조로 방어형 판정이 신호를 가른다는 실증
+  #     (+ 필요 시 문턱 재보정 = 도훈 권한) 또는 dispatcher 캘리브 수리. 이 줄만 지우면 원복된다.
+  QVEST_RP_REGISTER=0 Rscript "$ROOT/02_Infrastructure/ops/reinforce_auto_parallel.R"
   echo "=== $(date -Iseconds) tick 종료 rc=$? ==="
 } >> "$LOG" 2>&1
