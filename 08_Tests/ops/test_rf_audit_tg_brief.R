@@ -74,6 +74,27 @@ if (length(rr$axis_verdicts) == 6L) ok("B6 rf_audit_read 가 axis_verdicts 를 �
   ng("B6 축 판정이 read 에서 소실 — 요약 첫 줄이 죽는다")
 unlink(tmp, force = TRUE)
 
+cat("=== D. 자르지 말고 줄인다 (도훈 2026-09-07) ===\n")
+## 원문 인용·파일:행이 통지에 실리면 그게 부피의 대부분이다. 걷어내면 남는 서술이 요약이고,
+## 그때야 문장 경계에서 끝낼 수 있다 — 구판은 따옴표 한가운데를 끊었다.
+q <- paste0("[signal] 아키텍처를 'a simple back propagation network with a single hidden layer and recurrence' 로 ",
+            "규정한다. engine.R:272-275 의 순전파는 은닉 상태 이월이 없다. 부가 서술은 더 이어진다.")
+d1 <- rf_audit_tg_brief(list(verdict = "misdeclared", undeclared_changes = list(),
+                             signal_mismatch = list(q), axis_verdicts = list()), audit_path = NULL)
+if (!grepl("back propagation", d1, fixed = TRUE)) ok("D1 따옴표 안 원문은 통지에 안 들어간다") else
+  ng("D1 인용문이 실렸다", d1)
+if (!grepl("engine.R:272", d1, fixed = TRUE)) ok("D2 파일:행 좌표는 통지에서 뺀다(전문에서 본다)") else ng("D2 좌표가 실렸다")
+if (grepl("규정한다", d1, fixed = TRUE)) ok("D3 서술은 남는다 — 지우는 것은 인용과 좌표뿐") else ng("D3 서술까지 사라졌다", d1)
+ln <- grep("^\u2022", strsplit(d1, "\n", fixed = TRUE)[[1]], value = TRUE)[1]
+## ★정규식을 쓰지 않는다 — heredoc·Write 경로가 백슬래시를 하나 먹어 "\." 가 R 에서 죽는다
+##   (이 저장소에서 하루 세 번 밟은 함정). endsWith 는 고정 문자열이라 그 경로가 없다.
+if (length(ln) && endsWith(trimws(ln), ".")) ok("D4 문장 경계에서 끝난다(따옴표 중간 절단 아님)") else
+  ng("D4 문장 중간에서 끊겼다", ln)
+d2 <- rf_audit_tg_brief(list(verdict = "misdeclared",
+                             undeclared_changes = list(paste0("[x] ", paste(rep("\uac00\ub098\ub2e4\ub77c\ub9c8\ubc14\uc0ac", 30), collapse = ""))),
+                             signal_mismatch = list(), axis_verdicts = list()), audit_path = NULL)
+if (grepl("\u2026", d2, fixed = TRUE)) ok("D5 경계 없는 입력만 절단 + 말줄임") else ng("D5 절단 표식 없음")
+
 cat("=== C. 배선 — 소비자가 요약을 쓰는가 ===\n")
 src <- readLines(file.path(ROOT, "02_Infrastructure/ops/rf_replication_verify.R"), encoding = "UTF-8", warn = FALSE)
 src <- sub("#.*$", "", src)

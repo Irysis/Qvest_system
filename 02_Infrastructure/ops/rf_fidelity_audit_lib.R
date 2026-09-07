@@ -115,15 +115,32 @@ rf_audit_tg_brief <- function(aud, audit_path = NULL, n_max = 4L,
       list(axis = ax, body = trimws(substr(s, attr(m, "match.length") + 1L, nchar(s))))
     } else list(axis = "", body = s)
   }
-  ## 첫 문장 = 마침표·중점·콜론 중 먼저 오는 경계. 없으면 item_chars 로 자른다.
+  ## ★자르지 말고 줄인다 (도훈 지시 2026-09-07 "불일치항목 텍스트 자르지말고 요약해줘").
+  ##   항목 본문의 부피 대부분은 **원문 인용**과 **파일:행 좌표**다. 둘 다 통지에서는 값이 없다 —
+  ##   인용은 감사 파일에 그대로 있고 좌표는 코드를 열 때 쓴다. 그 둘을 걷어내면 남는 서술이
+  ##   이미 요약이고, 그때야 문장 경계에서 끝낼 수 있다. 구판은 62자에서 무조건 잘라
+  ##   따옴표 한가운데가 끊겼다("… 'a simple back propagation network with a single…").
+  .condense <- function(s) {
+    s <- gsub("'[^']*'", "…", s)                       # 작은따옴표 인용
+    s <- gsub('"[^"]*"', "…", s)                       # 큰따옴표 인용
+    s <- gsub("‘[^’]*’", "…", s)        # 한글 따옴표
+    s <- gsub("[A-Za-z_]+\\.(R|json|csv|sh):[0-9]+(-[0-9]+)?", "", s)   # 파일:행 좌표
+    s <- gsub("\\([^)]{0,3}\\)", "", s)                # 빈 괄호 잔재
+    s <- gsub("…[ ,·]*…", "…", s)                      # 연속 말줄임 접기
+    s <- gsub("[[:space:]]+", " ", s)
+    trimws(s)
+  }
+  ## 문장 경계에서 끝낸다. 경계를 못 찾으면 그때만 자른다(그 사실을 말줄임으로 남긴다).
   .first_clause <- function(s, n) {
+    s <- .condense(s)
     if (nchar(s) <= n) return(s)
-    cut <- n
-    for (mark in c(". ", " · ", " — ")) {
-      k <- regexpr(mark, substr(s, 1L, n), fixed = TRUE)
-      if (k[1] > 20L) { cut <- min(cut, k[1] - 1L); break }
+    cut <- 0L
+    for (mark in c(". ", "다. ", " · ", " — ")) {
+      k <- regexpr(mark, substr(s, 1L, n + 24L), fixed = TRUE)
+      if (k[1] > 12L) { cut <- max(cut, k[1] + nchar(mark) - 2L); break }
     }
-    paste0(trimws(substr(s, 1L, cut)), "…")
+    if (cut > 0L) return(trimws(substr(s, 1L, cut)))
+    paste0(trimws(substr(s, 1L, n)), "…")
   }
   items <- c(lapply(aud$undeclared_changes %||% list(), function(x) list(kind = "미신고", raw = .one(x))),
              lapply(aud$signal_mismatch    %||% list(), function(x) list(kind = "불일치", raw = .one(x))))

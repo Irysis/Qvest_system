@@ -138,7 +138,8 @@ ${HTMLLINE}
 \`${AUD}\` :
 {
   \"verdict\": \"faithful|adapted|misdeclared|unverifiable\",
-  \"undeclared_changes\": [\"논문은 X 인데 구현은 Y — FIDELITY.changed 에 없음\"],
+  \"undeclared_changes\": [\"[한 줄 요약] 논문은 X 인데 구현은 Y — FIDELITY.changed 에 없음\"],
+  \"_항목 서술 규약\": \"★모든 항목은 대괄호 **한 줄 요약**으로 시작한다 — 12~30자 · 그 항목만 읽고도 무엇이 어긋났는지 아는 문장 · 원문 인용이나 파일:행은 요약이 아니라 뒤 본문에 적는다(이 요약이 통지에 실리고 본문은 안 실린다). ★용어는 정통 표기를 쓴다 — 임의 한글 조어 금지, 영문 통용어는 그대로(gross exposure · long/short leg · winsorize), 우리 지표는 정본 표기 그대로(PORT_t · Calmar · MDD).\",
   \"signal_mismatch\": [\"논문 식 (3) 의 부호는 …, engine.R:NN 은 …\"],
   \"evidence\": \"원문에서 근거를 찾은 위치(절·식 번호·표)\",
   \"confidence\": \"high|medium|low\",
