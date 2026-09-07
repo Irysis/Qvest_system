@@ -191,6 +191,40 @@ if (all(is.finite(c(gi, pi, ci))) && gi > pi && gi < ci)
   ng("F2 게이트 위치가 어긋난다 — 도달 불가하거나 예산을 이미 쓴 뒤",
      sprintf("gate=%s pending=%s call=%s", gi, pi, ci))
 
+## ★존재 확인은 진술이다 — 게이트를 실제로 돌려 양방향으로 재도출한다.
+##   (중첩 명령치환이 들어 있어 bash -n 은 통과해도 실행에서 죽을 수 있다)
+gs <- which(grepl("^ENV_WAIT=\\$\\(", SRC))[1]
+ge <- which(trimws(SRC) == "fi")
+ge <- ge[ge > gs][1]
+run_gate <- function(req_json, tag) {
+  rq <- file.path(SBX, sprintf("gate_%s.json", tag))
+  writeLines(req_json, rq, useBytes = TRUE)
+  sf <- file.path(SBX, sprintf("gate_%s.sh", tag))
+  writeLines(c("#!/usr/bin/env bash", "set -u", 'REQ="$1"', 'PY="$2"',
+               'jl(){ echo "[jl] $*"; }', SRC[gs:ge], 'echo "GATE_PASSED"'),
+             sf, useBytes = TRUE)
+  out <- suppressWarnings(system2("bash", c(shQuote(sf), shQuote(rq), shQuote(PY)),
+                                  stdout = TRUE, stderr = TRUE))
+  list(rc = as.integer(attr(out, "status") %||% 0L), txt = paste(out %||% "", collapse = " "))
+}
+if (all(is.finite(c(gs, ge)))) {
+  fut <- as.integer(as.numeric(Sys.time()) + 1500)
+  r <- run_gate(sprintf('{"status":"pending","auto_retries":0,"last_env_failure":"model_quota_exhausted","env_retry_after_epoch":%d}', fut), "hot")
+  if (identical(r$rc, 0L) && grepl("halt_env_cooldown", r$txt, fixed = TRUE) &&
+      !grepl("GATE_PASSED", r$txt, fixed = TRUE))
+    ok("F3 백오프 중이면 게이트가 실제로 막는다(실행 재도출)") else
+    ng("F3 백오프 중인데 통과했다", substr(r$txt, 1, 160))
+  r2 <- run_gate('{"status":"pending","auto_retries":0}', "cold")
+  if (identical(r2$rc, 0L) && grepl("GATE_PASSED", r2$txt, fixed = TRUE))
+    ok("F4 백오프 없으면 통과한다(과잉 차단 아님)") else
+    ng("F4 정상 요청을 막는다 — 레인이 영구 정지한다", substr(r2$txt, 1, 160))
+  ## 지난 백오프는 통과해야 한다 — 안 그러면 한 번 걸린 뒤 영영 안 풀린다
+  r3 <- run_gate(sprintf('{"status":"pending","env_retry_after_epoch":%d}', as.integer(as.numeric(Sys.time()) - 60)), "past")
+  if (grepl("GATE_PASSED", r3$txt, fixed = TRUE))
+    ok("F5 만료된 백오프는 통과 — 회복 경로가 살아 있다") else
+    ng("F5 지난 백오프가 안 풀린다 — 영구 정지", substr(r3$txt, 1, 160))
+} else ng("F3~F5 게이트 블록 추출 실패 — 실행 재도출 불가")
+
 cat("=== G. 따옴표 헤레독 전수 — 파싱 + 셸변수 미전개 0건 ===\n")
 ## ★구판 결함이 안 보였던 이유: 스캐너가 <<'X' 뒤에 리다이렉션이 붙은 블록을 놓쳤다.
 ##   여기서는 주석을 지우고, 여는 줄 뒤 임의 텍스트를 허용해 전수를 잡는다.
