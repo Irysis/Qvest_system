@@ -1,0 +1,11 @@
+{
+  "axis": "universe",
+  "verdict": "adapted",
+  "undeclared_changes": [],
+  "signal_mismatch": [],
+  "counterexample": "K200∪KQ150 편입 종목 A가 어느 월말 d 에 ADV20_L1(t−1, 20일 평균 거래대금) = 1.5e8 KRW(<2e8) 인 경우 — engine.R:128 (`.el <- .mp[OnMEnd & is.finite(ADV20_L1) & ADV20_L1 >= .LIQ, ...]`)이 A 를 그 달 형성 적격 집합(.EL)에서 제외해 순위·트랜치 양쪽에서 빠진다. 논문 규칙을 그대로 적용하면(§3.1 유일한 선별 = 데이터 불일치율 >0.5% 제거) A 는 순위 대상에 포함돼야 한다 — 유동성으로 종목을 거르는 절차가 원문에 없다.",
+  "evidence": "arxiv.org/pdf/0806.2606 (r.jina.ai 프록시, 이 세션에서 2회 질의) §3.1 축자: 'More than 1600 equities from the VL universe were selected...' / 'Equities with irreconcilable data discrepancy rates > 0.5% were eliminated from use.' / '...a permanently fixed set of 1452 equities were identified for data extraction.' 이어서 'fewer than 1452 stocks may actually be ranked... because of the listing of new corporations and the delisting of existing ones' — 저자는 상장/상폐로 인한 자연 감소만 인정하고, survivorship bias를 피하려 상장기간이 짧은 종목도 포함했다고 명시(대형주 편향 회피 의도). 거래소·가격 하한·유동성·업종(금융주 등) 필터는 원문 어디에도 없음(재질의로 재확인, '전 문서에서 발견 안 됨' 회신).",
+  "confidence": "high",
+  "checked": "논문 §3.1 유니버스 구성·선별 규칙 전문(2회 독립 jina 프록시 질의: 유니버스 크기/출처/필터, 금융주·REIT·가격하한·거래소·시총 필터 키워드 스윕) vs engine.R L27-45(RAWDATA 필수열·상수) · L92-132(.rd/.memd/.el 형성 적격 = 멤버십∧유동성∧원자료) vs FIDELITY.json changed(1)·changed(8)·changed(17)·portfolio_spec.membership_filter",
+  "note": "논문의 유일한 선별 규칙은 일회성 데이터 품질 제거(>0.5% 불일치)뿐이고 그 외 어떤 지속적 필터도 없다 — 오히려 저자는 대형주 편향을 피하려 상장기간이 짧은 종목까지 포함했다고 명시한다. 구현은 유니버스 교체(허용 축) 위에 지속적 유동성 필터(adv20(t-1)≥2e8)를 얹었는데, 이는 저자의 의도(비-대형주 편향)와 방향이 반대다. 다만 이 필터 자체와 그 결과(횡단면이 논문보다 얇아짐)는 FIDELITY changed(1)에 수치·근거와 함께 정직하게 신고돼 있어 misdeclared 는 아니다. 금융주 제외·가격 하한·거래소 제한은 논문·코드 양쪽에 없어 일치."
+}
