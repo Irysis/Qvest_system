@@ -585,7 +585,8 @@ NAVER_VALUE_COLS <- c("Open", "High", "Low", "Close", "Vol", "Size", "Ret")
 }
 
 naver_backfill_range <- function(start, end, dry_run = TRUE, cfg = naver_collector_config(),
-                                 tickers = NULL, out_dir = NULL, label = "naver_adjusted") {
+                                 tickers = NULL, out_dir = NULL, label = "naver_adjusted",
+                                 size_ref = NULL) {
   start <- as.Date(start); end <- as.Date(end)
   if (!file.exists(RAWDATA_CACHE)) stop("[naver_backfill] RAWDATA 부재: ", RAWDATA_CACHE)
   raw <- as.data.table(read_parquet(RAWDATA_CACHE))
@@ -621,7 +622,19 @@ naver_backfill_range <- function(start, end, dry_run = TRUE, cfg = naver_collect
   }
 
   # ── Size 결정 ──
-  sized <- .naver_resolve_size(new_win, win_old[Date >= start], cfg)
+  #   참조원 = ①rawdata 에 이미 있는 그 날짜의 행(재수집) + ②당일 시세페이지 스냅샷(전진).
+  #   둘 다 (Date,Ticker,Close,Size) 모양으로 맞춰 넘긴다. 채택 조건은 하나 —
+  #   **그 참조의 가격이 새로 받은 수정주가와 일치할 때만** 같은 날·같은 기준임이 실증된다.
+  size_pool <- win_old[Date >= start, .(Date, Ticker, Close, Size)]
+  if (!is.null(size_ref) && nrow(size_ref)) {
+    sr <- as.data.table(size_ref)
+    cl <- if ("snap_close" %in% names(sr)) "snap_close" else "Close"
+    size_pool <- rbindlist(list(size_pool,
+                                sr[, .(Date = as.Date(Date), Ticker, Close = get(cl), Size)]),
+                           fill = TRUE)
+    size_pool <- unique(size_pool, by = c("Date", "Ticker"))
+  }
+  sized <- .naver_resolve_size(new_win, size_pool, cfg)
 
   # ── 이음매 검증 ──
   anch <- win_old[Date == anchor_date, .(Ticker, Close)]
@@ -629,8 +642,8 @@ naver_backfill_range <- function(start, end, dry_run = TRUE, cfg = naver_collect
   seam <- .naver_seam_verify(anch$Close, anch$Ticker, sized[Date == first_day], cfg)
 
   # ── 전후 대조 (dry-run 산출물의 본체) ──
-  old_win <- win_old[Date >= start, .(Date, Ticker, old_Close = Close, old_Vol = Vol,
-                                      old_Size = Size, old_Ret = Ret)]
+  old_win <- win_old[Date >= start, .(Date, Ticker, old_Open = Open, old_Close = Close,
+                                      old_Vol = Vol, old_Size = Size, old_Ret = Ret)]
   cmp <- merge(sized[, .(Date, Ticker, Open, High, Low, Close, Vol, Size, Ret,
                          no_trade, size_source)],
                old_win, by = c("Date", "Ticker"), all = TRUE)
@@ -639,7 +652,8 @@ naver_backfill_range <- function(start, end, dry_run = TRUE, cfg = naver_collect
   by_date <- cmp[, .(n = .N,
                      n_old_only = sum(is.na(Close)), n_new_only = sum(is.na(old_Close)),
                      n_close_changed = sum(close_changed, na.rm = TRUE),
-                     n_open_nonnull_old = 0L,          # 구판 naver 구간은 OHL 전량 결측
+                     # ★세지 말고 재라 — 상수 0 을 적으면 보고서가 관측이 아니라 선언이 된다
+                     n_open_nonnull_old = sum(is.finite(old_Open)),
                      n_open_nonnull_new = sum(is.finite(Open)),
                      n_no_trade = sum(no_trade, na.rm = TRUE),
                      ret_mean_old = mean(old_Ret, na.rm = TRUE),
@@ -766,11 +780,30 @@ naver_run_pipeline <- function(target_date = NULL, dry_run = FALSE, cfg = naver_
   }
   cat(sprintf("Last RAWDATA: %s | Target: %s\n", last_date, target))
 
+  # Size 는 시세 페이지 스냅샷에서만 온다(가격은 절대 여기서 안 온다 — 소관 분리).
+  snap <- tryCatch(naver_collect_size_snapshot(cfg), error = function(e) {
+    cat(sprintf("[pipeline][WARN] Size 스냅샷 실패 (%s) — Size 는 미측정(NA)으로 남는다\n",
+                conditionMessage(e))); NULL })
+  if (!is.null(snap)) snap <- snap[Date == target]     # 다른 날 스냅샷은 이 날의 증거가 아니다
+
   # ★날짜는 응답 행이 스스로 들고 온다 — 구판의 '현재 화면을 target 으로 스탬프'
   #   경로가 사라졌다. 09-01 오각인(장중 스냅샷을 전일 종가로 적재)의 구조적 차단.
-  naver_backfill_range(last_date + 1L, target, dry_run = dry_run, cfg = cfg,
-                       tickers = unique(raw[Date == last_date]$Ticker),
-                       label = "daily")
+  res <- naver_backfill_range(last_date + 1L, target, dry_run = dry_run, cfg = cfg,
+                              tickers = unique(raw[Date == last_date]$Ticker),
+                              label = "daily", size_ref = snap)
+
+  # ★T+0 장중 스냅샷 검거: 스냅샷 가격이 그날 확정 종가와 널리 어긋나면 그 스냅샷은
+  #   장중값이다(2026-09-01 사고의 지문 — 70종 표본 중 5종만 일치, 거래량이 종일의 55%).
+  #   구판은 이 사실을 잴 자리가 아예 없었다. 이제는 Size 출처 분포가 그 계기다.
+  if (!is.null(res) && !is.null(res$report)) {
+    sc <- res$report$size_source_counts
+    n_same <- as.numeric(sc[["snapshot_same_day"]] %||% 0)
+    n_tot <- max(1, sum(unlist(sc)))
+    if (n_same / n_tot < 0.5)
+      cat(sprintf("[pipeline] ⚠ Size 스냅샷 일치율 %.1f%% — 장중 스냅샷 의심(종가 확정 후 재실행 권고)\n",
+                  100 * n_same / n_tot))
+  }
+  invisible(res)
 }
 
 cat("[naver_data_collector] Loaded (adjusted-price path). Cache:", NAVER_CACHE_DIR, "\n")
