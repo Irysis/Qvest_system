@@ -91,11 +91,30 @@ if (!is.null(CLS)) {
   if (identical(r, "model_quota_exhausted")) ok("A3 429/rate_limit 변형도 잡는다") else
     ng("A3 429 변형 미검출", sprintf("얻은 값 '%s'", r))
 
+  ## ★09-02 실문구 — 이 판은 "reached your" 를 안 쓰고 "hit your session limit" 이다.
+  ##   좁은 패턴이 이걸 놓쳐 논문 2003.02515 가 skiplist 에 unreproducible 로 들어갔다
+  ##   (22:32·22:40·22:48·22:56 no_engine 4회 → 23:04 retries_exhausted). 문구는 한 종이 아니다.
+  r <- run_classifier(CLS, "You've hit your session limit · resets 11:30pm (Asia/Seoul)", "sesslimit")
+  if (identical(r, "model_quota_exhausted"))
+    ok("A4 09-02 실문구('hit your session limit')도 잡는다") else
+    ng("A4 세션 한도 변형 미검출 — 09-02 오판이 재발한다", sprintf("얻은 값 '%s'", r))
+
   cat("=== B. 과잉 차단 금지 — 평범한 리서치 실패는 환경 실패가 아니다 ===\n")
   r <- run_classifier(CLS, BENIGN, "benign")
   if (identical(r, ""))
     ok("B1 리서치 실패 로그는 미분류(no_engine 경로 유지)") else
     ng("B1 평범한 실패를 환경 실패로 오분류 — 진짜 실패가 영원히 재시도된다", sprintf("얻은 값 '%s'", r))
+
+  ## ★패턴을 넓혔으니 'limit' 이 든 리서치 문장까지 삼키지 않는지 재라.
+  ##   여기서 오분류하면 진짜 실패가 예산을 안 태우고 영원히 재시도된다(반대 방향 사고).
+  LIMITY <- c("유동성 필터 limit 2e8 미달로 종목 3건 제외",
+              "n_max limit 25 적용 — 보유 22종",
+              "position limit 위반 없음", "drawdown limit 미설정",
+              "[optimizer] weight upper limit 없음(v10 폐지)")
+  r <- run_classifier(CLS, LIMITY, "limity")
+  if (identical(r, ""))
+    ok("B2 'limit' 이 든 리서치 문장은 안 삼킨다(넓힌 패턴 과잉차단 대조)") else
+    ng("B2 리서치 문장의 limit 을 한도 소진으로 읽는다 — 진짜 실패가 무한 재시도된다", sprintf("얻은 값 '%s'", r))
 
   cat("=== C. 위반 주입 — 한도 문구를 목록에서 빼면 잡히는가 ===\n")
   ## 구판 재현: elif 분기(한도)를 통째로 지운다 → 한도 문구가 미분류로 떨어져야 한다

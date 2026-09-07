@@ -544,7 +544,8 @@ fi
 # ★환경 실패와 리서치 실패를 구분한다 — 401/인증만료·모델 한도 소진은 "논문이
 #   어려웠다" 가 아니라 "환경을 고치거나 기다리면 된다" 이다.
 #   실사고 2026-08-30: OAuth 만료. 실사고 2026-09-07: 충실구현 레인이 Fable 한도에
-#   걸렸는데("You've reached your Fable limit") 이 분기가 그 문구를 안 봐서 no_engine 으로
+#   걸렸는데("You've reached your Fable limit" · 09-02 판은 "You've hit your session limit ·
+#   resets 11:30pm" — 문구가 한 종이 아니다) 이 분기가 그 문구를 안 봐서 no_engine 으로
 #   떨어졌고, 재시도 3회를 태운 뒤 **3편 결합 논문이 skiplist 에 'unreproducible' 로
 #   영구 등재**될 참이었다. 모델이 안 떴다는 사실은 논문에 대한 증거가 아니다.
 # ★같은 날 발견한 두 번째 결함: 알림 블록이 한 번도 나간 적이 없다. 구판은 따옴표 헤레독(quoted delimiter)이라 $ROOT 가 안 풀렸고(리터럴 경로), 문자열 안에 생짜 개행이 있어
@@ -553,7 +554,7 @@ fi
 ENV_FAIL=""
 if grep -qiE "OAuth access token has expired|Failed to authenticate|API Error: 401|Invalid API key" "$LOG" 2>/dev/null; then
   ENV_FAIL="claude_auth_expired"
-elif grep -qiE "reached your [A-Za-z0-9 .-]*limit|usage limit reached|manage usage credits|rate_limit_error|API Error: 429" "$LOG" 2>/dev/null; then
+elif grep -qiE "(reached|hit) your [A-Za-z0-9 .-]*limit|(session|usage) limit|manage usage credits|rate_limit_error|API Error: 429|resets [0-9]+(:[0-9]+)?(am|pm)" "$LOG" 2>/dev/null; then
   ENV_FAIL="model_quota_exhausted"
 fi
 if [ -n "$ENV_FAIL" ]; then
