@@ -208,6 +208,13 @@ fi
 #   6일 내내 매일 "성공"으로 끝났다 - fail-soft 가 지평선을 삼킨 것.
 #   게이트는 A축(갱신기 rc)과 B축(파일 정체)을 따로 본다.
 #   검사: 08_Tests/data/test_benchmark_currency_gate.R (위반 주입 11/11, 실사고 재현 포함)
+#   ★2026-09-07 축 C 추가 — **레벨 축 정합**(BM_Close 대 공표 코스피200 레벨).
+#     실측 사건: BM_Close 가 지수의 8.834448배 위에 있었는데 하루 사이 배수 점프가
+#     0건이라 "연속이면 정상" 으로 보였고 두 달 넘게 안 걸렸다. 같은 불변식을 적어 둔
+#     가드(build_cache.R:47)는 ①이 체인이 부르지 않는 찬 경로에 있고 ②방금 자기가 쓴
+#     산출물을 비교하는 동어반복이라 발화할 수 없었다. 축 C 는 그 불변식을 **소비면에서
+#     · 상시 경로에서 · 독립 소스(.cache/krx/kospi_index)로** 잰다.
+#     검사: 08_Tests/data/test_benchmark_level_axis.R (양방향 주입 30/30)
 if ! "$RSCRIPT" --no-save "$INFRA/data/benchmark_currency_gate.R" --updater-rc "$_bm_rc"; then
   DR_FAILED+=("benchmark_currency(rc=$_bm_rc)")
   echo "!! [1pre] ★거래일 지평선 이상 - 하류 gap 판정이 무의미해진다 (위 [bm-gate] 사유 참조)"

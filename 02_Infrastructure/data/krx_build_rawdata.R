@@ -132,9 +132,21 @@ krx_compute_bm_ret <- function(date_strs) {
     f <- file.path(idx_dir, sprintf("kospi_index_%s.parquet", ds))
     if (file.exists(f)) {
       dt <- as.data.table(read_parquet(f))
-      # Filter for KOSPI 200 index
-      # BM = KOSPI(전체). "^코스피$" = 전체 지수, "코스피 200" = 다른 지수.
-      k200 <- dt[grepl("^코스피$", IDX_NM)]
+      # ★2026-09-07 정정 — 여기는 **코스피200**이어야 한다 (구판은 "^코스피$" = 종합지수).
+      #   근거 3중:
+      #     ① 2026-07-02 도훈 mandate: 북 벤치 = 코스피200(IKS200). build_index_cache.py 도
+      #        naver_benchmark_update.py(symbol='KPI200') 도 전부 코스피200이다.
+      #     ② 이 함수의 이름·주석이 이미 "Compute BM_Ret from KOSPI 200 index" 다.
+      #     ③ 실측: `.cache/benchmark.parquet::BM_Ret` 은 indices.parquet$kospi200 과 일치하고
+      #        kospi(종합)와는 0% 일치한다. 종합을 넣으면 **다른 지수의 수익률**이 RAWDATA::BM_Ret
+      #        으로 들어간다(benchmark_source_parity.R 이 2026-07 에 잡은 8일 불일치의 계통).
+      #   ★아래 |BM_Ret|>0.30 가드는 이 오선택을 못 잡는다(실측 2026-09-02: 종합 6,562 vs
+      #     BM_Close 9,113 → 이음매 수익률 -28.0%, 문턱 0.30 **바로 아래**로 통과했을 것).
+      #     지수 선택이 맞아야 그 가드가 fail-closed 로 작동한다.
+      #   한글 리터럴은 비교식에 직접 박지 않는다 — Windows 네이티브 인코딩 세션에서
+      #   parquet(UTF-8) 문자열과 바이트가 갈린다(benchmark_level_axis.R 과 같은 규약).
+      .idx_nm_k200 <- intToUtf8(c(0xCF54, 0xC2A4, 0xD53C, 0x20, 0x32, 0x30, 0x30))  # KOSPI 200
+      k200 <- dt[trimws(enc2utf8(as.character(IDX_NM))) == .idx_nm_k200]
       if (nrow(k200) > 0) {
         idx_list[[length(idx_list) + 1]] <- data.table(
           Date     = as.Date(ds, "%Y%m%d"),

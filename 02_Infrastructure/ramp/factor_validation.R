@@ -49,17 +49,72 @@ source("02_Infrastructure/contracts/canonical_screen_bt.R")
 #' i >= 20 구간에서는 adaptive 창 폭이 20 으로 고정되어 표준 frollmean(.,20) 과 동일하다.
 #' @param daily data.table(Date, Ticker, Vol, Close) 일간 패널
 #' @param at_dates 값을 뽑을 날짜(월말 거래일). NULL 이면 전 구간 반환.
-#' @return data.table(Date, Ticker, adv)
-build_adv20_t1 <- function(daily, at_dates = NULL) {
+#' @param basis_reset [2026-09-07] data.table(Ticker, Date) — **조정기준 단절**로 거래대금
+#'        시계열에 계단이 남은 자리. 그 날짜에서 평균 창을 **재시작**한다.
+#'        NULL(기본) = 레지스트리(06_Registry/basis_break_registry.json)에서 자동 적재.
+#'        빈 data.table 을 넘기면 기준 인지 없이 구판과 동일하게 돈다.
+#' @return data.table(Date, Ticker, adv) — attr "liq_basis_aware"(logical),
+#'         "liq_basis_resets"(적용된 재시작 지점 수)
+#'
+#' ─── [2026-09-07] 기준 인지 (구멍 A) ────────────────────────────────────────
+#' 거래대금 = Close x Vol 이고 분할은 Close 를 x k · Vol 을 x 1/k 로 움직이므로
+#' **거래대금은 원리적으로 기준 불변**이다(실측 확인: 단절 창 TV 비율 q50 0.867 vs
+#' 무작위 대조 0.916 — 사실상 동일). 그래서 가격 레벨은 **건드리지 않는다** —
+#' 레벨만 재척도하면 그 상쇄가 깨져 거래대금이 배수만큼 틀어진다.
+#' 남는 것은 **한쪽 다리만 재척도된** 잔여(전기간 107건)이고, 그 자리에서만 창을
+#' 재시작한다. 이는 이 함수가 이미 종목의 첫 20거래일에 쓰는 adaptive 확장창과
+#' **같은 기전**이다 — "같은 기준 위의 관측만 평균한다".
+#' ★NA 로 비우지 않는 이유는 위 규약 그대로다: NA 는 하류에서 필터를 **통과**한다.
+#' ★킬 스위치: QVEST_LIQ_BASIS_AWARE=0 이면 자동 적재를 끄고 구판과 동일하게 돈다.
+build_adv20_t1 <- function(daily, at_dates = NULL, basis_reset = NULL) {
   stopifnot(all(c("Date", "Ticker", "Vol", "Close") %in% names(daily)))
   DV <- data.table::as.data.table(daily)[, .(Ticker, Date = as.Date(Date), dval = Vol * Close)]
   data.table::setorder(DV, Ticker, Date)
+
+  # ── 기준 재시작 지점 해석 ──────────────────────────────────────────────────
+  #    부재를 조용히 "단절 없음" 으로 읽지 않는다: 적재 여부·건수를 attr 로 자백한다.
+  .off <- identical(Sys.getenv("QVEST_LIQ_BASIS_AWARE", "1"), "0")
+  if (is.null(basis_reset) && !.off) {
+    basis_reset <- tryCatch({
+      if (!exists("liq_basis_reset_points", mode = "function")) {
+        .p <- c(file.path(gsub("\\\\", "/", Sys.getenv("QM_ROOT", "")),
+                          "02_Infrastructure/data/liquidity_basis.R"),
+                file.path(gsub("\\\\", "/", Sys.getenv("CLAUDE_PROJECT_DIR", "")),
+                          "02_Infrastructure/data/liquidity_basis.R"))
+        .p <- .p[nzchar(.p) & file.exists(.p)]
+        if (length(.p)) source(.p[1])
+      }
+      if (exists("liq_basis_reset_points", mode = "function"))
+        liq_basis_reset_points() else NULL
+    }, error = function(e) NULL)
+  }
+  n_reset <- 0L
+  if (!is.null(basis_reset) && NROW(basis_reset)) {
+    R <- data.table::as.data.table(basis_reset)
+    rk <- paste0(R$Ticker, "|", as.character(as.Date(R$Date)))
+    DV[, .rst := paste0(Ticker, "|", as.character(Date)) %chin% rk]
+    n_reset <- sum(DV$.rst)
+    DV[, .seg := cumsum(.rst), by = Ticker]     # 단절마다 구간 번호가 오른다
+  } else {
+    DV[, .seg := 0L]
+  }
+
   # adaptive: 창 폭 = min(누적 관측수, 20). 그 다음 shift(1) 로 당일을 창에서 제외한다.
+  # ★by 에 .seg 가 들어가면 단절에서 창이 재시작한다 — 신규 상장과 같은 취급.
   DV[, adv := data.table::shift(
         data.table::frollmean(dval, n = pmin(seq_len(.N), 20L),
-                              adaptive = TRUE, na.rm = TRUE), 1L), by = Ticker]
+                              adaptive = TRUE, na.rm = TRUE), 1L), by = .(Ticker, .seg)]
+  # ★단절 **당일**은 새 구간의 첫 행이라 shift(1) 이 NA 를 낸다. NA 는 하류에서
+  #   필터를 통과하므로(완화) 그대로 두면 안 된다 — 직전 구간의 마지막 값도 쓸 수 없다
+  #   (다른 기준이다). 그 하루는 **당일 거래대금**으로 채운다: 같은 기준 위의
+  #   유일한 관측이고, C10(당일 거래량 미사용)은 shift 로 이미 지켜진 뒤 새 기준의
+  #   첫 관측만 남은 경계 사례다. 완화가 아니라 가장 보수적인 가용값이다.
+  if (n_reset > 0L) DV[.rst == TRUE & is.na(adv), adv := dval]
+
   res <- if (is.null(at_dates)) DV[, .(Date, Ticker, adv)]
          else DV[Date %in% as.Date(at_dates), .(Date, Ticker, adv)]
+  data.table::setattr(res, "liq_basis_aware", n_reset > 0L)
+  data.table::setattr(res, "liq_basis_resets", n_reset)
   res[]
 }
 
@@ -171,7 +226,8 @@ build_monthly_forward_returns <- function(rawdata, sig_dates, liq_daily = NULL,
   .inj <- .resolve_liq_daily(liq_daily, .md)
   if (!is.null(.inj)) {
     adv_tbl <- .inj$tbl
-    liq_ruler <- "adv20_t1"
+    liq_ruler <- if (isTRUE(attr(adv_tbl, "liq_basis_aware", exact = TRUE)))
+                   "adv20_t1_basis_aware" else "adv20_t1"   # [2026-09-07 구멍 A]
     liq_ruler_source <- .inj$source
     # 주입 패널이 실제로 이 측정창을 덮는가 — 존재 검사가 아니라 **덮개 실측**.
     .cov <- mean(as.character(.md) %in% as.character(unique(adv_tbl$Date)))
@@ -192,6 +248,11 @@ build_monthly_forward_returns <- function(rawdata, sig_dates, liq_daily = NULL,
     liq_ruler_source <- "input_daily"
     adv_tbl <- build_adv20_t1(rawdata[Date <= max(sig_dates), .(Date, Ticker, Vol, Close)],
                               at_dates = .md)
+    # ★[2026-09-07 구멍 A] 기준 인지가 실제로 물렸으면 **자 이름이 달라진다**.
+    #   이 파일의 규약이 "자 라벨 없는 유동성 수치를 서로 비교하지 말 것" 이므로,
+    #   창을 재시작한 판과 안 한 판은 같은 이름을 쓰면 안 된다.
+    if (isTRUE(attr(adv_tbl, "liq_basis_aware", exact = TRUE)))
+      liq_ruler <- "adv20_t1_basis_aware"
     data.table::setkeyv(adv_tbl, c("Date", "Ticker"))
   } else {
     # ── ③계산 불가 — 자백 경로(FQ-181). 조용히 쓰지 않는다 ───────────────────

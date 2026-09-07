@@ -92,6 +92,66 @@ if (!file.exists(BM_PATH)) {
   }
 }
 
+# ── 축 C: 레벨 축 정합 (하드) ─────────────────────────────────────────────────
+#
+# 왜 여기인가 (실측 2026-09-07):
+#   `.cache/benchmark.parquet::BM_Close` 가 공표 코스피200 레벨의 **8.834448배** 위에
+#   있었다(BM_Ret 은 결백 — 코스피200과 일치). 두 달 넘게 아무 검사에도 안 걸렸다.
+#   이 불변식을 적어 둔 가드는 **이미 있었다**: build_cache.R:47
+#     `abs(tail(BM_DT$BM_Close,1) - tail(IDX_DT$kospi200,1)) > 1e-6 → stop`
+#   그 가드가 안 발화한 이유는 두 겹이다.
+#     ① **찬 경로다.** build_cache.R 은 OHLCVS.xlsx(890MB) 전체 재빌드 스크립트이고
+#        daily_refresh.sh 는 그것을 부르지 않는다([0a] incremental_cache_update.R /
+#        [1pre] naver_benchmark_update.py / [2] krx_build_rawdata.R 뿐).
+#     ② **동어반복이다.** 그 줄은 바로 앞에서 build_index_cache.py 가 **같은 프로세스에서
+#        같은 xlsx 컬럼으로** 방금 쓴 두 파일을 비교한다(`bm["BM_Close"] = df["kospi200"]`).
+#        구조적으로 거의 언제나 통과한다 — 쓴 직후의 자기 산출물을 검사하지, 그 뒤
+#        다른 writer 가 파일을 어떻게 바꿔 놓았는지는 **볼 수 없는 자리**에 있다.
+#   ⇒ 축 C 는 같은 불변식을 **소비면에서 · 상시 경로에서 · 독립 소스로** 잰다.
+#      판정 정본은 benchmark_level_axis.R 하나(build_cache.R 도 같은 함수를 쓴다).
+#
+# ★부재는 '정상' 이 아니다: 참조 지수를 못 구하거나 공통 세션이 부족하면 no_measure 로
+#   남기고 fails 에 올리지 않는다. 조용히 초록을 내는 것과 다르다(로그에 명시된다).
+if (!"--no-level" %in% args && file.exists(BM_PATH)) {
+  LVL_SRC <- file.path(ROOT, "02_Infrastructure/data/benchmark_level_axis.R")
+  if (!file.exists(LVL_SRC)) {
+    say("   [bm-gate][C] 레벨 축 정본 부재 — 미측정 (%s)\n", LVL_SRC)
+  } else {
+    source(LVL_SRC)
+    lcfg <- bench_level_config(ROOT)
+    ltol <- suppressWarnings(as.numeric(getarg("--level-tol", as.character(lcfg$BENCH_LEVEL_TOL))))
+    if (!is.finite(ltol) || ltol <= 0) ltol <- as.numeric(lcfg$BENCH_LEVEL_TOL)
+
+    bm_lvl <- tryCatch(as.data.table(read_parquet(BM_PATH)), error = function(e) NULL)
+    ref_path <- getarg("--ref-path", NULL)          # 테스트용 주입 경로 (Date + ref_close)
+    ref <- if (!is.null(ref_path) && file.exists(ref_path)) {
+      rr <- tryCatch(as.data.table(read_parquet(ref_path)), error = function(e) NULL)
+      if (is.null(rr)) NULL else {
+        if (!"ref_close" %in% names(rr) && "kospi200" %in% names(rr))
+          setnames(rr, "kospi200", "ref_close")
+        if (!"ref_source" %in% names(rr)) rr[, ref_source := "injected"]
+        rr[, .(Date = as.Date(Date), ref_close = as.numeric(ref_close),
+               ref_source = as.character(ref_source))]
+      }
+    } else bench_level_reference(ROOT)
+
+    lv <- bench_level_axis_check(bm_lvl, ref, tol = ltol,
+                                 min_sessions = lcfg$BENCH_LEVEL_MIN_SESSIONS,
+                                 window_sessions = lcfg$BENCH_LEVEL_WINDOW_SESSIONS)
+    if (identical(lv$status, "violation")) {
+      fails <- c(fails, sprintf("C:레벨 축 이탈(배수=%.6f)", lv$scale))
+      say("!! [bm-gate][C] ★%s\n", lv$detail)
+      say("   축 정본 = seam_guard_config.json::BENCH_LEVEL_AXIS ('%s'). 수리 = repair_benchmark_level_axis.R\n",
+          lcfg$BENCH_LEVEL_AXIS)
+      say("   ※BM_Ret 은 스케일 불변이라 재척도로 한 값도 바뀌지 않는다 — 어긋난 것은 레벨뿐이다.\n")
+    } else if (identical(lv$status, "no_measure")) {
+      say("   [bm-gate][C] 미측정 — %s\n", lv$detail)
+    } else {
+      say("   [bm-gate][C] 레벨 축 정합 — %s\n", lv$detail)
+    }
+  }
+}
+
 if (length(fails) > 0L) {
   cat(sprintf("[bm-gate] FAIL: %s\n", paste(fails, collapse = " | ")))
   quit(status = 1L)

@@ -44,8 +44,30 @@ rc <- system2(PYEXE, args = shQuote(file.path(FUNC_PATH, "data/build_index_cache
 if (rc != 0) stop("[build_cache] build_index_cache.py 실패 (rc=", rc, ") — 벤치 미갱신")
 BM_DT  <- as.data.table(read_parquet(file.path(CACHE_DIR, "benchmark.parquet")))
 IDX_DT <- as.data.table(read_parquet(file.path(CACHE_DIR, "indices.parquet")))
+# ★이 줄은 **writer 자기검사**다 — 방어선으로 세지 말 것 (2026-09-07 자기정정).
+#   바로 위 build_index_cache.py 가 같은 프로세스에서 같은 xlsx 컬럼으로 두 파일을
+#   방금 썼다(`bm["BM_Close"] = df["kospi200"]`). 그래서 이 비교는 구조적으로 거의
+#   언제나 통과하고, 그 뒤 다른 writer(naver/krx)가 파일을 어떤 축으로 바꿔 놓는지는
+#   **볼 수 없는 자리**에 있다. 게다가 build_cache.R 은 daily_refresh 가 부르지 않는
+#   전체 재빌드 경로다 — 2026-09-07 실측(BM_Close 가 코스피200의 8.834448배)에서 이
+#   가드는 두 달 넘게 한 번도 발화하지 않았다. 잡는 축은 소비면 상시 가드(축 C):
+#     02_Infrastructure/data/benchmark_currency_gate.R  (daily_refresh.sh:211)
+#   그것이 쓰는 판정 정본과 같은 함수를 여기서도 쓴다(구현 하나, 소비 둘).
 if (abs(tail(BM_DT$BM_Close, 1) - tail(IDX_DT$kospi200, 1)) > 1e-6)
   stop("[build_cache] benchmark sanity FAIL: benchmark.parquet != kospi200 (코스피 전체 오선택 의심)")
+local({
+  src <- file.path(FUNC_PATH, "data/benchmark_level_axis.R")
+  if (!file.exists(src)) { cat("  > [level] 정본 부재 — 레벨 축 미측정\n"); return(invisible(NULL)) }
+  source(src, local = TRUE)
+  cfg <- bench_level_config(PROJECT_ROOT)
+  lv  <- bench_level_axis_check(BM_DT, bench_level_reference(PROJECT_ROOT),
+                                tol = cfg$BENCH_LEVEL_TOL,
+                                min_sessions = cfg$BENCH_LEVEL_MIN_SESSIONS,
+                                window_sessions = cfg$BENCH_LEVEL_WINDOW_SESSIONS)
+  cat(sprintf("  > [level] %s — %s\n", lv$status, lv$detail))
+  if (identical(lv$status, "violation"))
+    stop("[build_cache] benchmark 레벨 축 이탈: ", lv$detail)
+})
 BM_DT[, Date := as.Date(Date)]
 cat(sprintf("  > Benchmark(코스피200): %d rows | 최근 %.1f | Indices %d지수\n",
             nrow(BM_DT), tail(BM_DT$BM_Close, 1), ncol(IDX_DT) - 1L))
