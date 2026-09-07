@@ -126,19 +126,23 @@ naver_collector_config <- function(path = NAVER_COLLECTOR_CONFIG_PATH, reload = 
 #' 무거래/거래정지 행 규약 — Open=High=Low=0 & Vol=0 은 '가격 0' 이 아니라 센티널.
 #' quantiwise 는 같은 상태를 O=H=L=C 로 적재하므로 그 규약에 맞춘다(정책은 설정에서).
 .naver_apply_no_trade_policy <- function(dt, cfg = naver_collector_config()) {
-  if (!nrow(dt)) { dt[, no_trade := logical(0)]; return(dt) }
-  dt[, no_trade := is.finite(Close) & Close > 0 &
-       (!is.finite(Open) | Open <= 0) & (!is.finite(High) | High <= 0) &
+  if (!nrow(dt)) { dt[, `:=`(no_trade = logical(0), ohl_absent = logical(0))]; return(dt) }
+  # ★두 사실을 갈라 둔다 — 응답의 무거래 표기가 **한 가지가 아니다**(2026-09-07 실측):
+  #     A032860 2026-08-27 = (3450, 3450, 3450, 3450, Vol 0)  ← OHL 을 종가로 채워 보낸다
+  #     A005930 2018-04-30 = (0, 0, 0, 53000, Vol 0)          ← OHL 을 0 으로 보낸다
+  #   'Vol 0 = 무거래' 와 'OHL 0 = 값 부재' 는 다른 명제다. 하나로 접으면 둘 중 하나를
+  #   놓친다 — 구판 판정은 후자만 봐서 전자를 '정상 거래일' 로 읽었다.
+  dt[, no_trade   := !is.finite(Vol) | Vol <= 0]
+  dt[, ohl_absent := (!is.finite(Open) | Open <= 0) & (!is.finite(High) | High <= 0) &
        (!is.finite(Low) | Low <= 0)]
+  idx <- which(dt$ohl_absent & is.finite(dt$Close) & dt$Close > 0)
   if (identical(cfg$no_trade_ohl_policy, "fill_from_close")) {
-    idx <- which(dt$no_trade)
     if (length(idx)) {
       set(dt, i = idx, j = "Open", value = dt$Close[idx])
       set(dt, i = idx, j = "High", value = dt$Close[idx])
       set(dt, i = idx, j = "Low",  value = dt$Close[idx])
     }
   } else if (identical(cfg$no_trade_ohl_policy, "as_na")) {
-    idx <- which(dt$no_trade)
     if (length(idx)) for (cc in c("Open", "High", "Low")) set(dt, i = idx, j = cc, value = NA_real_)
   } else {
     stop("[naver_collector] 미지원 no_trade_ohl_policy: ", cfg$no_trade_ohl_policy)
