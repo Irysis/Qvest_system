@@ -109,16 +109,47 @@ if (length(detect_size_scale_break(osc_fx, min_jumps = 10L)) > 0)
   ng("진동 조건에서 실제 결함 검출", ">0", "0")
 
 cat("── ③ source 스탬프 계약 ───────────────────────────────────────────────\n")
-src <- system2("grep", c("-c", "'new_rows\\[, source := \"naver\"'",
-                         "02_Infrastructure/data/naver_data_collector.R"),
-               stdout = TRUE, stderr = FALSE)
-f <- readLines("02_Infrastructure/data/naver_data_collector.R", warn = FALSE)
+NAVF <- "02_Infrastructure/data/naver_data_collector.R"
+f <- readLines(NAVF, warn = FALSE)
 if (any(grepl('source := "naver"', f, fixed = TRUE)))
   ok("naver 수집기가 source 를 스탬프한다") else
   ng("naver 수집기가 source 를 스탬프한다", "source := \"naver\"", "부재")
-if (any(grepl('"Ret", "source"', f, fixed = TRUE)))
-  ok("rawdata_cols 가 source 를 보존한다(select 단계 탈락 방지)") else
-  ng("rawdata_cols 가 source 를 보존한다", '"Ret", "source"', "부재")
+
+# ★2026-09-07 표적 이설: 구판은 `rawdata_cols` 열 목록에 '"Ret", "source"' 라는
+#   **문자열이 있는가**를 봤다. 수집 경로가 수정주가로 교체되며 그 select 목록 자체가
+#   사라졌고(이제 값만 갱신하고 나머지 열은 승계한다) 의도는 오히려 더 잘 지켜지는데
+#   검사만 빨개졌다 — 소스 텍스트 단정이 리팩터가 옮기는 좌표를 못박은 것이다.
+#   ⇒ 이름 대신 **행동**을 잰다: 갱신을 실제로 돌려 source 열이 살아남고 스탬프되는가.
+.pick <- function(path, nm) {
+  ex <- parse(path)
+  for (i in seq_along(ex)) {
+    e <- ex[[i]]
+    if (is.call(e) && length(e) >= 3 && as.character(e[[1]])[1] %in% c("<-", "=") &&
+        identical(as.character(e[[2]]), nm)) return(e)
+  }
+  NULL
+}
+.fd <- .pick(NAVF, ".naver_apply_update")
+if (is.null(.fd)) {
+  ng("rawdata 갱신이 source 를 보존/스탬프한다", ".naver_apply_update", "AST 에 없음")
+} else {
+  .e <- new.env(parent = globalenv()); eval(.fd, envir = .e)
+  .syn <- data.table(Date = as.Date("2026-08-31"), Ticker = c("T1", "T2"),
+                     Close = c(10, 20), Vol = c(1, 2), Open = 1, High = 1, Low = 1,
+                     Size = 1e9, Ret = 0, K200 = c(1, 0), source = "quantiwise_update")
+  .vc <- eval(.pick(NAVF, "NAVER_VALUE_COLS")[[3]])     # 값 축도 재도출(목록 재기입 금지)
+  .err <- ""
+  .out <- tryCatch(get(".naver_apply_update", envir = .e)(
+    .syn, .syn[, .(Date, Ticker, Close = c(11, 21), Vol, Open, High, Low, Size, Ret)],
+    value_cols = .vc)$dt,
+    error = function(z) { .err <<- conditionMessage(z); NULL })
+  if (!is.null(.out) && "source" %in% names(.out) && all(.out$source == "naver") &&
+      "K200" %in% names(.out) && identical(.out[Ticker == "T1"]$K200, 1) &&
+      identical(.out[Ticker == "T1"]$Close, 11))
+    ok("rawdata 갱신이 source 를 보존/스탬프한다(+승계열 K200 생존)") else
+    ng("rawdata 갱신이 source 를 보존/스탬프한다", 'source=="naver" & K200 보존',
+       if (is.null(.out)) paste("실행 실패:", .err) else paste(names(.out), collapse = ","))
+}
 if (any(grepl("* 1e8", f, fixed = TRUE)))
   ok("Size 단위가 1e8 (억원 -> 원)") else
   ng("Size 단위가 1e8", "* 1e8", "부재")

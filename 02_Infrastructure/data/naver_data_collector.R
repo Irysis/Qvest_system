@@ -701,13 +701,17 @@ naver_backfill_range <- function(start, end, dry_run = TRUE, cfg = naver_collect
   if (isTRUE(got$over_cap))
     stop(sprintf("[naver_backfill] ⛔ 실패율 %.3f > 상한 %.3f — 병합 차단(부재를 정상으로 읽지 않는다)",
                  got$failure_rate, as.numeric(cfg$max_failure_rate)))
-  .naver_assert_write_allowed()
-
-  bk <- file.path(CACHE_DIR, sprintf("rawdata_pre_naveradj_%s.parquet", format(Sys.Date(), "%Y%m%d")))
-  if (!file.exists(bk)) { file.copy(RAWDATA_CACHE, bk); cat(sprintf("[naver_backfill] 백업: %s\n", bk)) }
 
   upd <- sized[, .(Date, Ticker, Open, High, Low, Close, Vol, Size, Ret)]
   applied <- .naver_apply_update(raw, upd)
+  # ★허가 검사는 **기존 행 재작성**에만 건다. 일상 전진(신규 거래일 append)까지 막으면
+  #   무인 루프가 켜져 있는 동안 daily_refresh 가 매일 죽는다 — 고치려는 병보다 큰 병이다.
+  #   재작성은 다르다: 소비 중인 패널의 과거 행을 바꾸는 것이라 루프가 읽는 도중에
+  #   하면 같은 tick 안에서 값이 갈린다.
+  if (applied$n_updated > 0L) .naver_assert_write_allowed(applied$n_updated)
+
+  bk <- file.path(CACHE_DIR, sprintf("rawdata_pre_naveradj_%s.parquet", format(Sys.Date(), "%Y%m%d")))
+  if (!file.exists(bk)) { file.copy(RAWDATA_CACHE, bk); cat(sprintf("[naver_backfill] 백업: %s\n", bk)) }
   raw <- applied$dt
   if (applied$n_appended) cat(sprintf("[naver_backfill] 신규 행 %d 추가\n", applied$n_appended))
   if (exists("qvest_atomic_write_parquet")) {
@@ -720,13 +724,17 @@ naver_backfill_range <- function(start, end, dry_run = TRUE, cfg = naver_collect
   invisible(list(report = report, new = sized, cmp = cmp, seam = seam, path = fp))
 }
 
-#' RAWDATA 실쓰기 허가 — 무인 루프가 이 파일을 읽는다. 킬스위치가 켜져 있으면 차단.
-.naver_assert_write_allowed <- function() {
+#' RAWDATA **과거 행 재작성** 허가 — 무인 루프(Qvest_ReinforceAutoLoop)가 이 파일을
+#' 읽는다. 킬스위치가 켜져 있으면 차단한다. 신규 거래일 append 에는 걸지 않는다
+#' (일상 전진까지 막으면 루프가 켜진 내내 daily_refresh 가 죽는다).
+#' ★판독 실패는 '허용' 이 아니라 '차단' 으로 떨어진다 — 부재를 정상으로 읽지 않는다.
+.naver_assert_write_allowed <- function(n_rewrite = NA_integer_) {
   p <- file.path(PROJECT_ROOT, "06_Registry", "reinforce_auto_config.json")
   if (!file.exists(p)) return(invisible(TRUE))
   en <- tryCatch(isTRUE(jsonlite::fromJSON(p)$enabled), error = function(e) TRUE)
-  if (en) stop("[naver_backfill] ⛔ reinforce_auto_config.json::enabled=true — ",
-               "무인 루프가 RAWDATA 를 읽는 중이다. 킬스위치를 내린 뒤 다시 부를 것.")
+  if (en) stop(sprintf(
+    "[naver_backfill] ⛔ reinforce_auto_config.json::enabled=true 인데 기존 행 %s 를 재작성하려 한다 — 무인 루프가 RAWDATA 를 읽는 중이다. 킬스위치를 내린 뒤 다시 부를 것.",
+    format(n_rewrite, big.mark = ",")))
   invisible(TRUE)
 }
 
