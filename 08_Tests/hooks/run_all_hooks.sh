@@ -1323,6 +1323,11 @@ SUITES=(
   #   따옴표 검사(quote_parity)의 사각이었다 — 포맷 문자를 본다(블록을 실제로 조립해 보고, 위반 주입으로 검출력 실증).
   "08_Tests/ops/test_rf_prompt_format_safety.R"
   "08_Tests/ops/test_rf_reimplement_queue.R"
+  # 2026-09-07 실사고: 충실구현 레인이 Fable 모델 한도에 걸렸는데 환경/리서치 실패 분기가 그 문구를
+  #   안 봐서 no_engine 으로 떨어졌다 — 재시도 3회를 태우면 3편 결합 논문이 skiplist 에
+  #   'unreproducible' 로 영구 등재된다. 모델이 안 뜬 것은 논문에 대한 증거가 아니다.
+  #   같은 블록의 인증만료 알림은 따옴표 헤레독+생짜 개행으로 한 번도 나간 적이 없었다.
+  "08_Tests/ops/test_rp_env_failure_classify.R"
   "08_Tests/ops/test_rf_verify_extract_pkgs.R"
   "08_Tests/reinforcement/test_rf_avoid_target.R"
   "08_Tests/reinforcement/test_rf_block_design_catalog_parity.R"
