@@ -1,0 +1,18 @@
+{
+  "axis": "undeclared",
+  "verdict": "adapted",
+
+  "undeclared_changes": [],
+
+  "signal_mismatch": [],
+
+  "counterexample": "구성하지 못했다. 코드에서 출발해 (a) 상수 26종 전부 (b) 제어흐름 분기 전부 (c) 데이터 변환 전부를 열거하고 각각을 '논문 문장' 또는 'FIDELITY.changed_checklist 항목'에 사상했는데, 어느 쪽에도 닿지 않는 항목이 남지 않았다. 판정을 갈랐을 후보 3건은 전부 실측으로 무효화됐다: ①`.RD <- .RD[Ticker %in% .evm]`(ever-member 축소, changed_checklist 부재) — 선택은 전부 날짜별 `.ELG`(engine.R:158)를 통과하고 `.RET`·`.M_RV` 소비자도 `.ELG` 하위라 행동상 불활성. 게다가 engine.R:63 에 명시돼 있다. ②`.net_long` 의 `sweep(Xl,2,colMeans(Xl),'-')`(engine.R:186-187, 절편 = 미신고) — 논문 TVP-VAR 도 절편을 갖는 표준형이라 변경이 아니다. ③`S0 <- crossprod(E)/max(1, nn - dfl)`(engine.R:214, 유효자유도 분모 = 미신고) — 식(4)의 θ 는 Σ→cΣ 에 불변이다(분자 c²/σ_kk=c · 분모 c → 비율 1). 스칼라 배는 NET 값을 한 자리도 바꾸지 못한다.",
+
+  "evidence": "arxiv.org/html/2006.04639v1 전문 대조. §Data(\"R_t=SUM(p_{t,i}-p_{t,i-1})\" · \"RV_t=SUM(p_{t,i}-p_{t,i-1})^2\" · 5분 · \"N=496 stocks with p=2 lags\" · \"T=3278 days\" · 2005-07-05~2018-08-31) · §2(\"we set our truncation horizon H=100; results are qualitatively similar for H in {50,100,200}\" · QBLL \"a kernel weighting function that provides larger weights to observations that surround the period\") · 식(4)(6)(7) 원형 · §3.1.1(\"each day we sort S&P500 stocks above and below the day's median price level\" · \"conditional on size, we sort on horizon specific net-directional connectedness and create value-weighted to and from portfolios\" · \"above (below) the 70th (30th) percentile\") · 식(8) NET(d)=(from_small+to_small)/2-(from_big+to_big)/2 · §5.2 식(17) R_i,t=b0+bMKT*MKT_t+bNET(d)*NET(d)_t+e (통제 = 시장 하나) · \"3-year rolling window, and moving forward through the sample on a day-by-day basis\" · \"From July 10, 2009 we sort stocks into quintiles\" · \"We rebalance portfolios monthly\" · \"long position in the portfolio containing assets with the highest 20% loadings, and a short position in ... the lowest 20%\" · Table 6 캡션 value-weighted / Table 7 equal-weighted · fn13 대역 경계 subjective(수치 없음) · fn20 FF5 추가통제는 '유사'. 거래비용·턴오버·winsorize·최소관측 요건 = 원문 0건.",
+
+  "confidence": "high",
+
+  "checked": "코드→논문 방향 전수: 상수 26종(.P_LAG/.H_TRUNC/.PCT_LO/.PCT_HI/.QUINT/.BETA_YRS/.C_SCALE = 논문 확인 · .WEEK_D/.WC/.VAR_WIN/.N_NET_MAX/.N_NET_MIN/.PORT_MIN/.MIN_SORT/.BETA_MIN_OBS/.LIQ_MIN/.ADV_WIN/.RV_FLOOR/.SIG_JIT/.PSI_CAP/.LAM_STEP/.LAM_TRY/lam_grid/det 1e-10/kq>=2/2*.PORT_MIN = changed_checklist 등재), 분기·skip 사유 5종(skip_universe/coverage/var/ports + PORTFOLIO 미발행), 데이터 변환 5종(.tv/.adv/.rv/.rid/.M_RV), 사상 2종(.mdt$SigDate 직전달 월말 · .ELG 자격술어 3지점 동일), GFEVD 재도출(식4 분자 sigma_kk^-1 sweep margin 2 · 분모 den_j 행별 · 식6 rowSums-diag · 식7 colSums-diag · tot_norm=N · 장기+단기=전대역 정확 성립 확인), VMA 재귀(Psi_0=I·Phi1/Phi2 전치 방향 · Bc 블록 lag 순서), beta 창(findInterval (d-3y,d] · 누적합 차분 · 2회귀자 정규방정식), .mk_leg 다리 방향(hi=최고 beta=long). 역방향(선언→코드) 전수: changed_checklist 29항 + paper_values_used_unchanged 17항 + audit_response 5건 전부 코드 대조 — 미이행 선언 0건. 하네스 측 BM_Ret = KOSPI200 종가-종가(krx_build_rawdata.R:124,223) · Vol = ACC_TRDVOL(주식수) · Size = MKTCAP 확인.",
+
+  "note": "이 판의 FIDELITY 는 09-06 감사에서 지적된 2건(종가-종가 수익 · findInterval 이월)을 실제로 되돌렸고, 그 되돌림 5건이 전부 코드에 반영돼 있다(R_t=log(Close/Open) engine.R:132 · SigDate 직전달 고정 engine.R:154-155 · 고beta 롱 engine.R:426-431 · wc=pi/5 engine.R:92). 축 밖 1줄: `paper_values_used_unchanged.rv_definition` 의 제곱근(sd 척도)은 html 엔드포인트가 radical 을 떨궈 이 세션에서 독립 확인 불가 — PDF 텍스트 추출을 근거로 든 자기신고에 의존한다(signal 축 소관). 축 밖 1줄 더: adv20 >= 2e8 은 논문에 없는 필터이고 strategy_spec 은 liquidity_filter=paper_faithful 을 적는데, 신고는 돼 있으나 '충실구현의 유일한 변경 = 유니버스' 규약과의 정합은 universe 축 판단이다."
+}

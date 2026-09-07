@@ -141,8 +141,14 @@ cat("
 bmp <- "02_Infrastructure/regime/build_module_performance.R"
 bsrc <- paste(readLines(bmp, warn = FALSE), collapse = "
 ")
-if (grepl(".defensive_ok", bsrc, fixed = TRUE)) ok("J1 풀 빌더에 방어형 판정 함수") else
-  ng("J1 미배선", "산출만 하고 소비 없음 = 이 저장소의 상습병")
+## ★2026-09-07 표적 이설: 구판은 `.defensive_ok`(풀 빌더의 **자체 사본**) 존재를 물었다.
+##   그 사본이 있다는 것 자체가 결함이었다 — 계약 `ds_pool_eligible()` 은 검사 말고
+##   아무도 안 불렀고(자격 술어 2개 병존), 게다가 catalog 에 defensive_score 가 0건이라
+##   그 사본은 전 이력 미발화였다. 이제 묻는 것은 "**계약을 경유하는가**" 다.
+##   런타임 재도출(sentinel 주입)은 08_Tests/regime/test_l2_pool_admission.R §E 가 한다.
+if (grepl("l2_admit(", bsrc, fixed = TRUE) && !grepl(".defensive_ok", bsrc, fixed = TRUE))
+  ok("J1 풀 빌더가 계약 술어를 경유(l2_admit → ds_pool_eligible) · 자체 사본 없음") else
+  ng("J1 미배선/사본 잔존", "산출만 하고 소비 없음 = 이 저장소의 상습병")
 if (grepl("defensive_specialist", bsrc, fixed = TRUE))
   ok("J2 편입 경로가 산출물에 라벨로 남는다") else ng("J2 경로 라벨 없음")
 if (grepl("n_defensive_admitted", bsrc, fixed = TRUE))
@@ -151,8 +157,22 @@ if (grepl("QVEST_L2_DEFENSIVE_ROUTE", bsrc, fixed = TRUE))
   ok("J4 kill switch 존재") else ng("J4 스위치 없음")
 .bcode <- paste(sub("#.*$", "", readLines(bmp, warn = FALSE)), collapse = "
 ")
-if (grepl("grade_floor", .bcode, fixed = TRUE) && grepl(".floor_ok", .bcode, fixed = TRUE))
-  ok("J5 등급 floor 를 대체하지 않고 병렬 경로 (회귀)") else ng("J5 floor 손상")
+## J5 도 이름이 아니라 **동작**으로 재도출한다 — `.floor_ok` 는 계약 술어로 흡수됐다.
+##   floor 가 살아 있는가 = 방어형 경로를 꺼도 등급 경로 편입이 남는가.
+suppressMessages(source("02_Infrastructure/regime/l2_pool_admission.R"))
+.fx <- list(g = list(grade = "B", essence_grade = "B", fr_eligible = TRUE,
+                     metric_type = "backtested", contract = list(contract_pass = TRUE)),
+            d = list(grade = "F", essence_grade = "F", fr_eligible = TRUE,
+                     metric_type = "backtested", contract = list(contract_pass = TRUE),
+                     defensive_score = list(status = "ok", defensive = TRUE, reason = "fx")))
+.on  <- l2_admit_catalog(.fx, floor = "B", defensive_route = TRUE)
+.off <- l2_admit_catalog(.fx, floor = "B", defensive_route = FALSE)
+if (grepl("grade_floor", .bcode, fixed = TRUE) &&
+    .on$n_grade_floor == 1L && .on$n_defensive == 1L &&
+    .off$n_grade_floor == 1L && .off$n_defensive == 0L)
+  ok("J5 등급 floor 를 대체하지 않고 병렬 경로 (방어형 OFF 에도 등급 경로 생존 — 실구동 재도출)") else
+  ng("J5 floor 손상", sprintf("on=%d/%d off=%d/%d", .on$n_grade_floor, .on$n_defensive,
+                              .off$n_grade_floor, .off$n_defensive))
 
 cat("
 === K. 기저 품질 게이트가 구제를 존중하는가 ===
