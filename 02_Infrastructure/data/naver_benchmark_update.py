@@ -140,9 +140,36 @@ def _atomic_write_table(table: 'pa.Table', path: str) -> None:
         f'  기록분은 {tmp} 에 보존됨. 대개 소비자가 대상 핸들/매핑을 점유 중이다. 최종 오류: {last}')
 
 
-SCALE_LOOKBACK_DAYS = 150   # naver 재조회 여유 — canonical 스케일 추정 + 앵커 후퇴용
-SCALE_TOL = 1e-6            # 스케일 일치 판정 허용오차 (상대)
-SEAM_MAX_RET = 0.35         # 이음매 하루 수익률 상한 (2026-07-31 실측 +19.98% 통과, 스케일 단절 -89% 차단)
+# ── 이음매 상수 = seam_guard_config.json 단일 정본 (2026-09-07 도훈 승인 A안) ──────
+#   같은 병(수출본 조정기준 단절)이 종목 배관에도 있어 그쪽에 가드를 이식하면서
+#   상수를 두 곳에 적으면 다음 사람이 또 한쪽만 고친다 → 파일 하나로 합쳤다.
+#   ★폴백은 남긴다: 이 스크립트는 daily_refresh 0:03 배관이라 설정 부재로 죽으면 안 된다.
+#     (R 정본 seam_scale_guard.R 은 반대로 설정 부재 = stop — 그쪽은 신규 코드라
+#      하드코딩 문턱이 되살아나는 것을 막는 쪽이 옳다.)
+SEAM_GUARD_CONFIG = PROJECT_ROOT / '02_Infrastructure' / 'data' / 'seam_guard_config.json'
+_SEAM_FALLBACK = {
+    'SCALE_LOOKBACK_DAYS': 150,   # naver 재조회 여유 — canonical 스케일 추정 + 앵커 후퇴용
+    'SCALE_TOL': 1e-6,            # 스케일 일치 판정 허용오차 (상대)
+    'SEAM_MAX_RET': 0.35,         # 이음매 하루 수익률 상한 (2026-07-31 실측 +19.98% 통과, 스케일 단절 -89% 차단)
+}
+
+
+def _load_seam_consts() -> dict:
+    import json
+    try:
+        with open(SEAM_GUARD_CONFIG, encoding='utf-8') as fh:
+            cfg = json.load(fh)
+        return {k: type(v)(cfg[k]) for k, v in _SEAM_FALLBACK.items()}
+    except Exception as e:                       # 부재/파손 — 침묵하지 않고 폴백을 알린다
+        print(f'  ⚠ [seam_guard] 설정 미적용({e.__class__.__name__}) — 파일 내 폴백값 사용: '
+              f'{SEAM_GUARD_CONFIG}')
+        return dict(_SEAM_FALLBACK)
+
+
+_SEAM = _load_seam_consts()
+SCALE_LOOKBACK_DAYS = _SEAM['SCALE_LOOKBACK_DAYS']
+SCALE_TOL = _SEAM['SCALE_TOL']
+SEAM_MAX_RET = _SEAM['SEAM_MAX_RET']
 
 
 def patch_benchmark_parquet(start_date: str = '2026-04-01',

@@ -1,0 +1,49 @@
+{
+  "schema": "seam_guard_config_v1",
+  "_purpose": "수출본 이음매(seam)의 레벨 연속성 판정 상수 — 단일 정본. 벤치 배관(naver_benchmark_update.py)과 종목 배관(seam_scale_guard.R)이 같은 값·같은 어휘를 쓴다. 두 배관이 다른 이름으로 같은 일을 하면 다음 사람이 또 한쪽만 고친다(2026-09-07 도훈 A안).",
+
+  "SEAM_MAX_RET": 0.35,
+  "_SEAM_MAX_RET": "이음매 하루 수익률 상한. 이 값을 넘으면 '하루치 등락'으로 설명되지 않는다 = 조정기준 단절 의심. ★데이터 근거(2026-09-07 실측): KR 가격제한폭 ±30%가 rawdata 에 그대로 보인다 — 2016+ 이음매 밖 |Ret| 의 q0.999=0.2994 · q0.9999=0.3030 이고 |Ret|>0.30 은 0.0376%뿐이다. 게다가 2026-03-30 이음매에는 ratio 가 **정확히 1.300000** 인 종목이 3건(A058110·A161000, A004380=1.3052) 있다 — 진짜 상한가다. 0.30 으로 조이면 그 3건을 오검거한다. 벤치 배관이 2026-07-31 에 독립적으로 고른 값(+19.98% 통과 / -89% 차단)과 같은 값으로 수렴했다.",
+
+  "SCALE_TOL": 1e-6,
+  "_SCALE_TOL": "'정확히 canonical scale 위에 있다' 판정의 상대 허용오차. 벤치의 동명 상수와 같은 뜻 — 추정이 아니라 사후검증(post-condition)에 쓴다.",
+
+  "SCALE_LOOKBACK_DAYS": 150,
+  "_SCALE_LOOKBACK_DAYS": "앵커 후퇴 한도(캘린더 일). 이음매 직전일에 종가가 없으면(거래정지·미상장) 이 창 안에서 뒤로 물러나며 마지막 유효 종가를 찾는다. 창 밖이면 앵커 부재 = 별도 사유(no_anchor)이지 '정상' 이 아니다.",
+
+  "SCALE_SNAP_TOL": 0.05,
+  "_SCALE_SNAP_TOL": "분할 지문 스냅 허용오차. ratio = canonical_scale x (1 + 그날 실수익률) 이므로, 후보 배율로 나눈 잔차가 '평범한 하루'로 보이면 그 배율을 채택한다. ★데이터 근거(2026-03-30 이음매 275건): 가장 가까운 정수배/역수배에 대한 잔차 중앙값 |1.35%|, 224/275 가 5% 이내. 이 값에서 후보군이 213 unique / 11 ambiguous / 51 unattributed 로 갈린다. 0.10 으로 늘리면 역수 구간(1/10 vs 1/11)이 겹쳐 ambiguous 가 58 로 튄다.",
+
+  "SCALE_SPLIT_MAX": 100,
+  "_SCALE_SPLIT_MAX": "분할 배율 후보의 최대 정수. 실측 최대 관측 배율은 80(A042040 ratio 79.63)이라 100 이면 덮는다.",
+
+  "SCALE_FAMILY": "integer_and_reciprocal",
+  "_SCALE_FAMILY": "후보 배율 계열. 'integer_and_reciprocal' = {2..SCALE_SPLIT_MAX} 와 그 역수. ★임의 문턱 대신 이 구조를 쓰는 이유: 액면분할·병합의 지문은 정수배다(실측 최빈 5x=118건 · 2x=49 · 10x=23 · 0.5x=13 · 0.2x=10, 그리고 잔차 0 인 정확한 2.000000/5.000000/10.000000/30.000000/50.000000 이 다수). 유상증자 권리락처럼 정수배가 아닌 조정은 스냅되지 않고 unattributed_jump 로 남는다 — 그것이 옳다(모르는 것을 아는 척하지 않는다).",
+
+  "SEAM_SCAN_SESSIONS": 5,
+  "_SEAM_SCAN_SESSIONS": "이음매 첫날부터 훑을 거래일 수. ★하루만 보면 절반을 놓친다(2026-09-07 실측): 이음매 당일 값이 직전 수출본의 **정지값 그대로**인 종목이 있어 단절이 하루 뒤에 나타난다. A001470 은 08-20~08-31 내내 347 에 붙어 있다가(=08-31 비율 1.000 '정상') 09-01 에 5820 으로 뛴다. naver 경계 실측이 08-31 5건 · 09-01 8건(|ret|>0.5)으로 갈린 것이 정확히 이 기전이다.",
+
+  "SCALE_MAX_ANCHOR_GAP_SESSIONS": 5,
+  "_SCALE_MAX_ANCHOR_GAP_SESSIONS": "앵커와 이음매 사이 시장 세션 수 상한. 정상 이음매는 1이다. 오래 거래정지된 종목은 하루치 상한(SEAM_MAX_RET)으로 등락을 묶을 수 없으므로 배율을 추정하지 않고 stale_anchor 로 남긴다.",
+
+  "rescale_ret_enabled": true,
+  "_rescale_ret_enabled": "adjustment_basis_break 로 배율이 **유일하게** 특정된 종목에 한해 이음매 하루 Ret 을 조정계수로 재정렬한다(Ret := ratio / canonical_scale - 1) — 벤치가 canonical scale 을 나눠 재체인하는 것과 같은 연산을 수익률 축에서 한다. false 면 전건 block_ret(NA). 어느 쪽이든 종목별 전후값이 사이드카에 남는다.",
+
+  "_verdicts": [
+    "on_scale — |ratio-1| <= SEAM_MAX_RET. 같은 조정기준. 무처치",
+    "adjustment_basis_break — 후보 배율 정확히 1개로 스냅. 조정기준 단절 확정",
+    "ambiguous_scale — 후보 배율 2개 이상. 특정 불가 = 차단",
+    "unattributed_jump — 후보 배율 0개. 정수배 지문 없음(권리락 등) = 차단",
+    "stale_anchor — 앵커 세션 간격 > SCALE_MAX_ANCHOR_GAP_SESSIONS. 하루 상한으로 못 묶음 = 차단",
+    "no_anchor — 앵커 자체 부재(창 안에 유효 종가 없음). ★'정상' 아님 = 차단",
+    "no_seam_close — 이음매 당일 행은 있으나 종가가 결측/0. 고칠 값이 없음 = no_measure",
+    "absent_at_seam — 이음매 직전까지 거래하다 창 안에서 행 자체가 사라짐(한쪽에만 존재). ★'정상' 아님 = no_measure 로 명시 기록"
+  ],
+  "_actions": ["none", "rescale_ret", "block_ret", "no_measure"],
+
+  "_consumers": [
+    "02_Infrastructure/data/seam_scale_guard.R (R 정본 — incremental_update_file.R / naver_data_collector.R)",
+    "02_Infrastructure/data/naver_benchmark_update.py (벤치 — 부재 시 파일 내 리터럴로 폴백. 일일 배관이라 설정 부재로 죽지 않는다)"
+  ],
+  "_owner": "도훈 승인 2026-09-07 (A안). 값 변경은 도훈 권한."
+}

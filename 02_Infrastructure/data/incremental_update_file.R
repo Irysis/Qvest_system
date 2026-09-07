@@ -166,9 +166,42 @@ incremental_ohlcvs <- function() {
   common_cols <- intersect(names(raw), names(all_long))
   raw <- rbind(raw[, ..common_cols], all_long[, ..common_cols], fill = TRUE)
 
+  # ── [guard 2026-09-07 도훈 승인 A안] 레벨 연속성 ────────────────────────────
+  # 위 L124 가드는 **날짜 커버리지 구멍만** 본다. base 수출본(quantiwise)과 증분
+  # 수출본(quantiwise_update)은 **수정주가 조정기준이 다르고**, 그 이음매를 아래
+  # `Close / shift(Close)` 로 가로지르면 분할·액면 비율이 그대로 하루 수익률이 된다.
+  #   실측 2026-03-30: 2,548종 중 275종(10.8%)이 |Ret| > 0.35, 최대 +7,863%.
+  #   배율이 5x·2x·10x·0.2x 로 군집(분할 지문)하고 인접일(03-27/03-31)은 0건.
+  # 벤치 배관(naver_benchmark_update.py)은 같은 병을 2026-08-09 에 canonical scale +
+  # 앵커 후퇴 + SEAM_MAX_RET 로 이미 고쳤다 — 그 어휘를 그대로 이식한다.
+  # ★판정은 Ret 재계산 **앞**에서, Close 만 보고 낸다(오염된 Ret 을 근거로 삼지 않는다).
+  seam_date <- min(update_dates)
+  seam_rep <- tryCatch({
+    source(file.path(DATA_DIR, "seam_scale_guard.R"))
+    # 하루가 아니라 창 — 이음매 당일 값이 직전 수출본의 정지값 그대로여서 단절이
+    # 하루 뒤에 나타나는 종목이 있다(SEAM_SCAN_SESSIONS 주석 참조).
+    seam_scan_report(raw, seam_scan_dates(raw, seam_date))
+  }, error = function(e) {
+    cat(sprintf("  ⛔ [seam_guard] 판정 실패 (%s) — fail-closed 로 진행\n", conditionMessage(e)))
+    NULL
+  })
+
   # Ret 재계산
   setorder(raw, Ticker, Date)
   raw[, Ret := Close / shift(Close) - 1, by = Ticker]
+
+  if (!is.null(seam_rep)) {
+    raw <- seam_apply_actions(raw, seam_rep)
+    seam_report_print(seam_rep, "quantiwise_update")
+    cat(sprintf("  [seam_guard] 사이드카: %s\n",
+                seam_write_sidecar(seam_rep, "quantiwise_update")))
+  } else {
+    # ★fail-closed 는 배관이 아니라 **측정**에 건다: 이음매 하루 Ret 전량 NA.
+    #   가드가 못 돌았는데 조용히 통과시키면 그것이 이 계통의 재발 기전이다.
+    raw[Date == seam_date, Ret := NA_real_]
+    cat(sprintf("  [seam_guard] 이음매 %s Ret 전량 NA 처리 (미측정 — 조용한 통과 금지)\n",
+                seam_date))
+  }
 
   # BM_Ret 매핑
   bm <- as.data.table(read_parquet(file.path(CACHE_DIR, "benchmark.parquet")))

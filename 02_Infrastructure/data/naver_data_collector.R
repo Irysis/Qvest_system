@@ -326,6 +326,41 @@ naver_merge_rawdata <- function(snapshot = NULL) {
     last_closes, by = "Ticker", all.x = TRUE
   )
   first_match[!is.na(Prev_Close) & Prev_Close > 0, Ret := Close / Prev_Close - 1]
+
+  # ── [guard 2026-09-07 도훈 승인 A안] 레벨 연속성 — **같은 병이 이 배관에도 있다** ──
+  # 위 한 줄은 quantiwise 수출본의 종가(Prev_Close)와 naver 스냅샷의 종가(Close)를
+  # 생가격 비율로 가로지른다. 두 소스의 수정주가 조정기준이 다르면 그 비율이 그대로
+  # 하루 수익률이 된다 — 실측 2026-08-31 이음매 5건(ratio 4.84·5.12·4.78·2.60·2.05).
+  # incremental_update_file.R 과 **같은 계약·같은 어휘**를 쓴다(한쪽만 고치지 않기 위해).
+  seam_cls <- tryCatch({
+    source(file.path(DATA_DIR, "seam_scale_guard.R"))
+    seam_classify_pair(first_match$Prev_Close, first_match$Close, gap = 1L)
+  }, error = function(e) {
+    cat(sprintf("[naver_merge] ⛔ [seam_guard] 판정 실패 (%s) — fail-closed\n",
+                conditionMessage(e)))
+    NULL
+  })
+  if (!is.null(seam_cls)) {
+    first_match[, `:=`(seam_verdict = seam_cls$verdict,
+                       seam_scale = seam_cls$canonical_scale,
+                       seam_action = seam_action_for(seam_cls$verdict))]
+    # ★인덱스는 밖에서 잡는다 — DT[i, j:=] 의 j 는 부분집합 문맥이라 전체길이
+    #   벡터(seam_cls$implied_ret)를 부분집합 논리로 색인하면 조용히 어긋난다.
+    .jj <- which(first_match$seam_action == "block_ret")
+    if (length(.jj)) set(first_match, i = .jj, j = "Ret", value = NA_real_)
+    .ii <- which(first_match$seam_action == "rescale_ret")
+    if (length(.ii)) set(first_match, i = .ii, j = "Ret", value = seam_cls$implied_ret[.ii])
+    off <- first_match[seam_verdict != "on_scale" & seam_verdict != "no_seam_close"]
+    if (nrow(off) > 0) {
+      cat(sprintf("[naver_merge] [seam_guard] 이음매 %s — off-scale %d종\n", first_day, nrow(off)))
+      for (v in unique(off$seam_verdict))
+        cat(sprintf("    %-24s %3d\n", v, off[seam_verdict == v, .N]))
+      cat(sprintf("    티커: %s\n", paste(head(off$Ticker, 20), collapse = ", ")))
+    }
+  } else {
+    first_match[, Ret := NA_real_]   # ★미측정을 조용히 통과시키지 않는다
+  }
+
   new_rows[Date == first_day,
            Ret := first_match[match(new_rows[Date == first_day, Ticker], Ticker), Ret]]
 
