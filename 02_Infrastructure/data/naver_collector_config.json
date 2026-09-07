@@ -36,5 +36,15 @@
   "seam_verify_tol": 1e-6,
   "_seam_verify_tol": "가드 implied_ret 과 naver 내부 측정 Ret 의 일치 허용오차. 2026-09-07 손검증 4/4 가 소수 6자리까지 일치했다(A032860 -0.0318841 · A090410 +0.0244200 · A091810 -0.0431310 · A286750 +0.0263158).",
 
+  "_source_tier_decision": {
+    "verdict": "quantiwise_update 라벨을 quantiwise 로 통합하지 않고 **그대로 둔다**. 행 삭제도 없다.",
+    "tiers_are_routes_not_labels": "도훈이 확정한 '2단' 은 **취득 경로** 2개다 — (1) QuantiWise xlsx 수출(1990-01-05~2026-08-28), (2) naver 수정주가 API(2026-08-31~). quantiwise 와 quantiwise_update 는 **같은 경로의 base/증분 수출본**이라 이미 한 단이다. 라벨을 합쳐야 2단이 되는 것이 아니다. '다른 원천은 삭제' = 앞으로 **세 번째 취득 경로를 만들지 않는다**(krx_api 등 신규 적재 금지)로 확정됐다.",
+    "no_consumer_branches_on_it": "★재도출(2026-09-07): rawdata 를 읽는 코드 중 `source` 값으로 분기하는 소비자가 **0건**이다. 검색에 걸린 source=='quantiwise' 는 전부 trading_calendar.parquet(별도 테이블)의 동명 열이다. 즉 라벨 통합은 소비 동작을 하나도 바꾸지 않는다 — 얻는 것이 없다.",
+    "label_is_the_seam_map": "반대로 잃는 것은 크다. 두 수출본은 **수정주가 조정기준이 다르고**(실측 2026-03-30 이음매 275종·최대 +7,863%), seam_scale_guard 의 어휘·사이드카·검사기가 전부 'quantiwise → quantiwise_update' 라는 이름 위에 서 있다. 라벨을 합치면 조정기준이 바뀌는 지점이 **데이터 안에서 사라진다**. rawdata 의 source 는 라우팅 스위치가 아니라 **이음매의 지도**다.",
+    "forensic_precedent": "이 저장소는 라벨 부재로 한 번 크게 데였다 — naver writer 가 source 를 안 찍어 100배 축소 Size 결함이 어느 writer 산물인지 몰라 오래 살아남았고, 역설적으로 그 NA 자체가 검거 지문이 됐다(naver_data_collector.R Size 주석). 지문을 지우는 방향의 정리는 하지 않는다.",
+    "what_actually_changes": "라벨이 아니라 **경로**가 바뀐다: 가격의 전진은 이제 naver 수정주가만 한다. incremental_update_file.R::incremental_ohlcvs 는 과거 재빌드 전용으로 퇴역 표기(그 파일 머리 참조)하고, 가드는 재빌드에 필요하므로 존치한다.",
+    "rows_deleted": 0
+  },
+
   "_owner": "도훈 지시 2026-09-07 (네이버 개별종목 = 수정주가 · 벤치 = 종가 · 원천 2단)."
 }

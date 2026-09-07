@@ -668,6 +668,7 @@ naver_backfill_range <- function(start, end, dry_run = TRUE, cfg = naver_collect
     size_source_counts = as.list(setNames(sized[, .N, by = size_source]$N,
                                           sized[, .N, by = size_source]$size_source)),
     no_trade_rows = sum(sized$no_trade, na.rm = TRUE),
+    ohl_absent_rows = sum(sized$ohl_absent, na.rm = TRUE),
     by_date = by_date,
     seam_verdict_counts = if (!is.null(seam)) as.list(setNames(
       seam[, .N, by = verdict]$N, seam[, .N, by = verdict]$verdict)) else list(),

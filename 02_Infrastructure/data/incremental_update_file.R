@@ -5,10 +5,28 @@
 # QuantiWise 증분 도착 시 KRX/Naver 임시 데이터 완벽 교체
 # Factor DB는 이 함수 완료 후에만 재빌드 (Level 0 규칙)
 #
+# ★★ OHLCVS 레인 = **퇴역 표기 (RETIRED for forward use) · 2026-09-07 도훈 지시** ★★
+#   확정 구성: quantiwise(1990-01-05 ~ 2026-08-28) + naver 수정주가(2026-08-31 ~) **2단**.
+#   즉 **가격의 전진(신규 거래일 적재)은 이제 naver_data_collector.R 이 진다.**
+#   `incremental_ohlcvs()` 는 앞으로 정상 흐름에서 새 날짜를 만들지 않는다.
+#
+#   ▸ 남겨 두는 이유(삭제하지 않음):
+#       ① **과거 데이터 재빌드** — base/증분 xlsx 에서 rawdata 를 다시 세울 때 필요하다.
+#       ② 그 경로의 **이음매 가드**(아래 seam_scale_guard 블록)는 그대로 살아 있어야 한다.
+#          두 수출본은 수정주가 조정기준이 달라 이어붙이면 분할 비율이 하루 수익률이 된다.
+#       ③ 원장/라벨 축: rawdata 의 `source` 는 지우지 않는다 — 라벨이 **이음매의 지도**다.
+#
+#   ⚠ 열린 위험(오케스트레이터 판단 필요): daily_refresh.sh 가 이 모듈을 **매일** 부른다.
+#     2026-08-31 이후를 덮는 새 OHLCVS_update.xlsx 가 들어오면 이 함수는
+#     `raw <- raw[!Date %in% update_dates]` 로 **naver 수정주가 구간을 통째로 교체**한다.
+#     그게 옳은 경우(퀀티와이즈 재수출로 전 구간 일관)와 사고인 경우(부분 수출본이
+#     naver 구간을 원주가로 덮어씀)가 **코드에서 구분되지 않는다**. 지시 없이 라우팅을
+#     바꾸지 않았으므로 이 줄이 그 사실의 기록이다.
+#
 # 사용법:
 #   source("02_Infrastructure/incremental_update_file.R")
 #   result <- incremental_update_all()  # 전체 자동
-#   result <- incremental_ohlcvs()      # OHLCVS만
+#   result <- incremental_ohlcvs()      # OHLCVS만 (퇴역 표기 — 재빌드 전용)
 #==============================================================================
 
 suppressPackageStartupMessages({
@@ -56,7 +74,10 @@ detect_update_changes <- function() {
   list(changed = changed, mtimes = current_mtimes)
 }
 
-# ─── OHLCVS 증분 ────────────────────────────────────────────────────────────
+# ─── OHLCVS 증분 ── ★퇴역 표기(전진 용도) 2026-09-07 ─────────────────────────
+#   가격 전진 = naver_data_collector.R::naver_run_pipeline (수정주가 siseJson).
+#   이 함수는 **과거 재빌드 전용**으로 남는다. 아래 seam_scale_guard 블록은 그 재빌드가
+#   base/증분 두 수출본을 이어붙일 때 여전히 필요하므로 **건드리지 않는다**.
 incremental_ohlcvs <- function() {
   ohlcvs_update <- file.path(UPDATE_DIR, "OHLCVS_update.xlsx")
   if (!file.exists(ohlcvs_update)) {

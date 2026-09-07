@@ -153,18 +153,31 @@ if (length(r01) == 1L && r01 < -0.25 && r01 > -0.35) {
 #──────────────────────────────────────────────────────────────────────────────
 # ⑥ 무거래 규약 — Vol 0 · OHL 0 을 '가격 0' 으로 적재하지 않는다
 #──────────────────────────────────────────────────────────────────────────────
+# ★응답의 무거래 표기가 두 가지라는 것이 이 축의 실제 내용이다(2026-09-07 실측):
+#     A032860 2026-08-27 = (3450,3450,3450,3450, Vol 0)  → Vol 0 인데 OHL 은 있다
+#     A005930 2018-04-30 = (0,0,0,53000, Vol 0)          → OHL 이 0(부재)
+#   두 사실이 갈려 있지 않으면 전자를 '정상 거래일' 로 읽는다.
 ntp <- get(".naver_apply_no_trade_policy", envir = SBX)
-nt <- ntp(copy(s32), CFG_STUB)
-z <- nt[Date == as.Date("2026-08-27")]
-if (nrow(z) == 1L && isTRUE(z$no_trade) && z$Open == z$Close && z$High == z$Close && z$Low == z$Close &&
-    !any(nt$Open == 0, na.rm = TRUE) && !any(nt$Close == 0, na.rm = TRUE)) {
-  ok("no_trade_policy", sprintf("정지일 OHL=Close(%s) · 잔여 0 가격 없음", z$Close))
+nt32 <- ntp(copy(s32), CFG_STUB)
+z32 <- nt32[Date == as.Date("2026-08-27")]
+nt59 <- ntp(copy(adj), CFG_STUB)
+z59 <- nt59[Date == as.Date("2018-04-30")]
+if (nrow(z32) == 1L && isTRUE(z32$no_trade) && isFALSE(z32$ohl_absent) &&
+    nrow(z59) == 1L && isTRUE(z59$no_trade) && isTRUE(z59$ohl_absent) &&
+    z59$Open == z59$Close && z59$High == z59$Close && z59$Low == z59$Close &&
+    !any(nt59$Open == 0, na.rm = TRUE) && !any(nt59$Close == 0, na.rm = TRUE)) {
+  ok("no_trade_policy",
+     sprintf("무거래 표기 2종 분리 (Vol0+OHL있음 / Vol0+OHL부재) · 부재는 Close(%s)로 충전 · 잔여 0가격 0건",
+             z59$Close))
 } else {
-  bad("no_trade_policy", sprintf("no_trade=%s Open=%s Close=%s", paste(z$no_trade, collapse=""),
-                                 paste(z$Open, collapse=""), paste(z$Close, collapse="")))
+  bad("no_trade_policy",
+      sprintf("A032860 no_trade=%s ohl_absent=%s | A005930 no_trade=%s ohl_absent=%s Open=%s",
+              paste(z32$no_trade, collapse = ""), paste(z32$ohl_absent, collapse = ""),
+              paste(z59$no_trade, collapse = ""), paste(z59$ohl_absent, collapse = ""),
+              paste(z59$Open, collapse = "")))
 }
-nt_na <- ntp(copy(s32), modifyList(CFG_STUB, list(no_trade_ohl_policy = "as_na")))
-if (is.na(nt_na[Date == as.Date("2026-08-27")]$Open[1])) {
+nt_na <- ntp(copy(adj), modifyList(CFG_STUB, list(no_trade_ohl_policy = "as_na")))
+if (is.na(nt_na[Date == as.Date("2018-04-30")]$Open[1])) {
   ok("no_trade_policy_configurable", "정책을 as_na 로 바꾸면 결과가 따라 바뀐다(하드코딩 부재)")
 } else bad("no_trade_policy_configurable", "정책 전환이 결과를 안 바꾼다 — 상수가 코드에 있다")
 
@@ -241,8 +254,8 @@ if (!length(contract)) {
   produced <- c("Date", "Ticker", "source", get("NAVER_VALUE_COLS", envir = SBX))
   # 값 축은 이 writer 가 산출, 나머지(Name/Market/Sector/BM_Ret)는 **승계**로 충족된다.
   inherited <- setdiff(contract, produced)
-  synth <- data.table(Date = as.Date("2026-08-31"), Ticker = "A000001")
-  for (cc in contract) if (!cc %in% names(synth)) synth[, (cc) := NA]
+  synth <- data.table(Date = as.Date("2026-08-31"), Ticker = "A000001", source = NA_character_)
+  for (cc in contract) if (!cc %in% names(synth)) synth[, (cc) := NA_real_]
   upd_cols <- c("Date", "Ticker", get("NAVER_VALUE_COLS", envir = SBX))
   applied <- get(".naver_apply_update", envir = SBX)(synth, synth[, ..upd_cols])
   if (all(contract %in% names(applied$dt))) {
