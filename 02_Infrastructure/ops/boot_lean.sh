@@ -81,7 +81,10 @@ def RF(l):
     if not d: return "?"
     act=[e for e in (d.get("entries") or []) if isinstance(e,dict) and e.get("status")=="active"]
     if not act: return "0"
-    e=act[-1]; mx=d.get("max_attempts")
+    # ★예산은 entry 별이다 (2026-09-07 · "칸 수는 격자·원장에서 세라"): B1 설계가 격자를 늘리면 entry.max_attempts(실측 30)가
+    #   루트 상한(25)과 갈린다. 루트를 읽으면 부팅이 20/25 라고 말하는데 실제 예산은 30 이었다. entry 값 우선 · 없으면 루트.
+    #   검사: 08_Tests/ops/test_boot_lean_rf_budget.R (이 블록을 패턴 추출해 격리 원장에 대고 실행 · 변이 대조)
+    e=act[-1]; mx=e.get("max_attempts") or d.get("max_attempts")
     dep=S(lambda: int((e.get("parent") or {}).get("depth")))
     return "%d(%s %s/%s%s)"%(len(act),str(e.get("base_id") or "?")[-24:],
         e.get("attempts_used") if e.get("attempts_used") is not None else "?",

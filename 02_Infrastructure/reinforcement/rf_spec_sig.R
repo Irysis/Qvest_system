@@ -141,3 +141,54 @@ rf_grid_consumed <- function(cells, attempts) {
                     attempts %||% list())
   !length(pending)                                                     # 재개 대상이 남았으면 아직 아니다
 }
+
+#' 재개(resume) job 의 **기존 워커 결과를 재사용해도 되는가** (2026-09-07).
+#'   실사고 2026-09-05 23:14: B2 워커 5개 스폰 직후 노트북 절전으로 부모 러너만 죽었는데(SCHED_S_TASK_TERMINATED)
+#'   워커 4개는 result_B2_{6,8,9,10}.json 을 정상 완료했다(ok=true · essence · artifacts 실재). 다음 tick 의 재개
+#'   경로가 pending attempt 를 job 으로 다시 만들고 실행 절이 그 결과 파일을 unlink 한 뒤 5칸을 전부 재실행했다 —
+#'   8분 낭비 + 같은 칸의 중복 산출물·L-code. 신뢰할 수 있는 결과는 다시 재지 않고 수집 절이 그대로 읽는다.
+#' ★거부 방향이 기본값이다 — 조건 하나라도 못 세우면 재실행(현행 거동). 조건(전부):
+#'   result 존재 ∧ JSON 파싱 ∧ ok=TRUE ∧ 같은 칸(code·n) ∧ result$spec == job$spec(구분자 정규화) ∧
+#'   result mtime ≥ spec mtime ∧ essence$port_t 존재(원장이 '측정됨' 으로 볼 것 — 없으면 pending 이 안 풀려 매 tick
+#'   무비용 재사용만 반복한다) ∧ artifacts 디렉터리 ∧ 그 안의 authoritative_remeasure.json.
+#' ★경로 대조는 OS 정규화 함수를 쓰지 않는다(저장소 규칙 — 한글 경로에서 깨진다 · safety_guard 차단 대상).
+#'   역슬래시→슬래시 · 중복 슬래시 접기 · 꼬리 슬래시 제거 · 상대경로는 root 기준 · Windows 는 대소문자 무시.
+#' @param j 러너의 job 레코드 list(n, code, spec, out)
+#' @param root 상대 경로(spec·artifacts) 해석 기준 — 결과는 절대 경로를 쓰므로 보통 무관
+#' @return list(reuse = TRUE/FALSE, why = <판정 코드>, artifacts = <경로 또는 NA>)
+rf_result_reusable <- function(j, root = NULL) {
+  .no <- function(why) list(reuse = FALSE, why = why, artifacts = NA_character_)
+  .rt <- if (!is.null(root) && nzchar(as.character(root)[1])) sub("/+$", "", gsub("\\", "/", as.character(root)[1], fixed = TRUE)) else ""
+  .norm <- function(p) {
+    p <- gsub("\\", "/", as.character(p)[1], fixed = TRUE)
+    p <- gsub("/{2,}", "/", p)
+    p <- sub("/+$", "", p)
+    if (!grepl("^(/|[A-Za-z]:/)", p) && nzchar(.rt)) p <- paste0(.rt, "/", sub("^\\./", "", p))
+    if (identical(.Platform$OS.type, "windows")) tolower(p) else p
+  }
+  out <- as.character(j$out %||% ""); sp <- as.character(j$spec %||% "")
+  if (!nzchar(out) || !file.exists(out)) return(.no("result_absent"))
+  if (!nzchar(sp) || !file.exists(sp)) return(.no("spec_absent"))
+  R <- tryCatch(jsonlite::fromJSON(out, simplifyVector = FALSE), error = function(e) NULL)
+  if (is.null(R) || !is.list(R)) return(.no("result_unparseable"))
+  if (!isTRUE(R$ok)) return(.no("result_not_ok"))
+  # 같은 칸인가 — 결과 파일 이름이 셀 코드라 entry 를 넘으면 같은 이름이 겹친다. 코드·n 이 어긋나면 남의 결과다.
+  if (!is.null(R$code) && nzchar(as.character(R$code)[1]) && !is.null(j$code) &&
+      !identical(as.character(R$code)[1], as.character(j$code)[1])) return(.no("code_mismatch"))
+  if (!is.null(R$n) && !is.null(j$n) &&
+      !identical(suppressWarnings(as.integer(R$n))[1], suppressWarnings(as.integer(j$n))[1])) return(.no("n_mismatch"))
+  rs <- as.character(R$spec %||% "")
+  if (!nzchar(rs)) return(.no("spec_missing_in_result"))
+  if (!identical(.norm(rs), .norm(sp))) return(.no("spec_path_mismatch"))
+  # 결과가 스펙보다 오래됐으면 스펙이 그 뒤에 다시 쓰인 것 — 그 결과는 다른 스펙의 측정이다.
+  mo <- suppressWarnings(file.mtime(out)); ms <- suppressWarnings(file.mtime(sp))
+  if (is.na(mo) || is.na(ms) || mo < ms) return(.no("result_older_than_spec"))
+  if (!is.list(R$essence) || is.null(R$essence$port_t)) return(.no("essence_missing"))
+  ar <- as.character(R$artifacts %||% "")
+  if (!nzchar(ar)) return(.no("artifacts_missing"))
+  if (!dir.exists(ar) && nzchar(.rt) && !grepl("^(/|[A-Za-z]:)", gsub("\\", "/", ar, fixed = TRUE)) &&
+      dir.exists(file.path(.rt, ar))) ar <- file.path(.rt, ar)
+  if (!dir.exists(ar)) return(.no("artifacts_dir_absent"))
+  if (!file.exists(file.path(ar, "authoritative_remeasure.json"))) return(.no("authoritative_remeasure_absent"))
+  list(reuse = TRUE, why = "fresh_ok_result", artifacts = ar)
+}

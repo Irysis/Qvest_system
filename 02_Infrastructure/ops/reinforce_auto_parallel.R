@@ -463,7 +463,8 @@ if (length(pending)) {
     if (!file.exists(sp)) { jlog("resume_skip_no_spec", n = a$n, code = CELL$code); next }
     jobs[[length(jobs) + 1L]] <- list(n = as.integer(a$n), code = CELL$code, spec = sp,
       name = sprintf("RF_PAR_%s_%s", CELL$code, gsub("[^A-Za-z0-9]", "", CELL$label)),
-      out = file.path(WDIR, sprintf("result_%s.json", CELL$code)))
+      out = file.path(WDIR, sprintf("result_%s.json", CELL$code)),
+      resume = TRUE)   # ★재개분 표식 — 실행 절이 기존 결과 재사용 여부를 이 표식으로만 판단한다(신규 job 은 항상 재실행)
   }
   if (length(jobs) > NPAR) jobs <- jobs[seq_len(NPAR)]
 }
@@ -861,6 +862,21 @@ if (!length(jobs)) {
 
 # ── ② 실행 (병렬 — 워커는 원장 미접근) ────────────────────────────────────────
 for (j in jobs) {
+  ## ★재개 job — **신뢰할 수 있는 기존 결과는 다시 재지 않는다** (2026-09-07 · 정본 rf_spec_sig.R::rf_result_reusable).
+  ##   실사고 2026-09-05 23:14: 워커 5개 스폰 직후 절전으로 부모만 죽었는데(SCHED_S_TASK_TERMINATED) 워커 4개는
+  ##   result_B2_{6,8,9,10}.json 을 정상 완료했다. 다음 tick 이 아래 unlink 로 그 파일을 지우고 5칸을 전부 재실행 —
+  ##   8분 낭비 + 같은 칸의 중복 산출물·L-code. 조건(ok · 같은 칸 · 같은 spec · spec 보다 새것 · essence ·
+  ##   artifacts/authoritative_remeasure.json 실재) 하나라도 어긋나면 현행대로 지우고 다시 돈다.
+  ##   재사용한 결과는 ③ 수집 절이 평소대로 읽어 원장에 기록한다(워커 미스폰 · 대기 루프는 파일 존재로 곧장 통과).
+  if (isTRUE(j$resume)) {
+    .ru <- rf_result_reusable(j, ROOT)
+    if (isTRUE(.ru$reuse)) {
+      jlog("resume_reuse_result", n = j$n, code = j$code, artifacts = .ru$artifacts,
+           note = "완료된 워커 결과 재사용 — 재측정 없이 수집 절로")
+      next
+    }
+    jlog("resume_rerun", n = j$n, code = j$code, why = .ru$why)
+  }
   unlink(j$out, force = TRUE)
   # ★stderr 는 파일명/TRUE/FALSE 만 받는다. "2>&1"(셸 관용구)을 넘기면 R 이 **파일명으로 해석**하고
   #   Windows 에서 '>' 는 부정 문자라 실행이 조용히 죽는다(2026-08-30 실사고 — 워커 4개 전부 미기동).

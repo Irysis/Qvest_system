@@ -1,9 +1,9 @@
 {
  "schema": "reimplement_queue_v1",
- "note": "사후 충실도 감사 misdeclared 재구현 예약(도훈 2026-09-06). replication_request.json 은 슬롯이 하나라 순번 대기. 소비자(next_paper 가 큐 상단보다 이 목록을 먼저 집는 경로)는 아직 없다 — 세션이 같은 형태(status=pending · audit_retries · audit_feedback · engine.rejected1.R)로 요청을 발행한다.",
+ "note": "사후 충실도 감사 misdeclared 재구현 예약(도훈 2026-09-06). replication_request.json 은 슬롯이 하나라 순번 대기. 소비자 = reinforce_auto_next_paper.R §1.8(rf_reimplement_queue_take · 2026-09-07 배선) — 활성 entry 0 · 요청 종결 뒤 큐 상단 논문보다 먼저 reserved 항목(order 오름차순)을 같은 형태(status=pending · audit_retries · audit_feedback · prior_implementation · engine.rejected*.R)로 발행하고 status=issued 로 바꾼다. 원장 소비 술어의 명시적 override — 예약은 도훈 결정으로만.",
  "entries": [
   {
-   "order": 2,
+   "order": 1,
    "paper_key": "2006.04639",
    "url": "https://arxiv.org/abs/2006.04639",
    "paper_title": "Dynamic Network Risk",

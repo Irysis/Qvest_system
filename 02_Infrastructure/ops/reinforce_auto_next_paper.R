@@ -8,6 +8,8 @@
 # 하는 일:
 #   1) 소진된 entry 의 최고 셀이 기저 대비 개선을 냈는지 판정해 로그·텔레그램에 남긴다
 #      (개선 유무와 무관하게 이월한다 — 상한은 25회다(원장 max_attempts). 개선이 있었다면 그 사실이 기록된다)
+#   1.8) ★재구현 대기열(06_Registry/reimplement_queue.json · reserved)이 있으면 그 항목으로 요청을 발행하고 끝낸다
+#        — 큐 상단 논문·결합 착수보다 우선(도훈 예약 2026-09-06 · 정본 rf_reimplement_queue.R · 2026-09-07 배선)
 #   2) 논문 큐(alpha-pending)에서 다음 논문 1편을 뽑는다
 #      ★술어는 research_pool_predicates.py 정본을 **CLI 로 호출**한다 — 재구현 금지
 #        (그 파일이 명시한 계약. 소비자 독립 구현이 같은 결함을 3번 재발시킨 전례)
@@ -179,6 +181,24 @@ if (.req_status %in% c("pending", "in_progress", "failed_needs_session")) {
        requested_at = .req$requested_at %||% "", auto_retries = .req$auto_retries %||% 0L,
        note = if (identical(.req_status, "failed_needs_session")) "실패 요청의 재시도·스킵리스트는 레인 소관 — 새 요청으로 덮지 않는다"
               else "요청이 아직 소비되지 않았다 — 재발행하지 않고 대기(rp_auto 가 집는다)")
+  return(invisible(0L))
+}
+
+# ── ★1.8 재구현 대기열이 큐 상단보다 먼저다 (2026-09-07 · 도훈 재구현 예약 2026-09-06) ─────────────
+#   사후 충실도 감사 misdeclared 재구현을 도훈이 승인했는데 요청 슬롯이 하나라 두 번째 논문은
+#   06_Registry/reimplement_queue.json 에 예약만 됐고 소비자가 없었다(생산자만 있는 계기 — 이 저장소의 반복 형태).
+#   여기서 집는다: reserved 항목(order 오름차순)이 있으면 그 항목으로 요청을 발행하고 **새 논문 pick·결합 착수를 하지
+#   않는다**. selector 의 소비 술어(원장에 있는 논문 = 소비됨)는 그대로다 — 대기열이 명시적 override 다.
+#   파일 부재·파손은 reimplement_queue_unreadable 로 남기고 현행 경로로 폴백한다(절대 죽지 않는다). 정본 = rf_reimplement_queue.R.
+suppressMessages(source(file.path(ROOT, "02_Infrastructure/ops/rf_reimplement_queue.R")))
+.rq <- tryCatch(rf_reimplement_queue_take(ROOT, REQ_P, prev = best, jlog = jlog),
+                error = function(e) { jlog("reimplement_queue_failed", err = conditionMessage(e)); list(issued = FALSE) })
+if (isTRUE(.rq$issued)) {
+  # 이월 완료 표식 — 승격·다음 논문 경로와 같은 writer(rf_mark_handed_off). 재구현으로 넘어간 것도 이월이다.
+  if (!is.null(best$base_id)) tryCatch({
+    rf_mark_handed_off(1L, best$base_id, ROOT, reason = "reimplement_queue")
+    jlog("handed_off", base_id = best$base_id)
+  }, error = function(e) jlog("handoff_mark_failed", err = conditionMessage(e)))
   return(invisible(0L))
 }
 

@@ -24,12 +24,20 @@
 #==============================================================================
 set -uo pipefail
 ROOT="${QVEST_RF_ROOT:-${QM_ROOT:-C:/Users/99922/OneDrive/Quant_Module_Moltbot}}"
+# ★슬래시 정규화 (2026-09-06 실사고 — merge_done rc=1: 09-04 16:19 · 09-06 17:58 · 18:08).
+#   Windows User-scope QM_ROOT 는 역슬래시(C:\Users\…)다. 그 문자열이 아래 `Rscript -e "source('$ROOT/…')"`
+#   의 R 리터럴에 들어가면 '\U' 가 이스케이프로 읽혀 병합기가 한 줄도 못 돌고 죽는다.
+#   verify(R)→system2(bash) 경로는 R 이 ~/.Renviron 의 슬래시 값을 물려줘 살고, 세션 셸·스케줄러 셸에서
+#   직접 기동하면 죽었다 — 같은 스크립트가 기동 부모에 따라 살고 죽는 형태. 여기서 한 번 뒤집는다.
+#   (--file= 은 저장소 규칙으로 금지 · rf_weight_catalog_grow.sh 와 같은 한 줄 · 검사 = test_rf_fanout_merge_root.sh)
+ROOT="${ROOT//\\//}"
 cd "$ROOT" || exit 1
 PY="${QVEST_PY:-$ROOT/.venv_qvest_ml/Scripts/python.exe}"
 AXES="${QVEST_RF_AXES:-$ROOT/06_Registry/rf_fidelity_axes.json}"
 # ★jlog 싱크는 QVEST_RP_JLOG 로 돌린다 (2026-09-04: 검사 픽스처가 운영 로그에 design_rejected 60·audit_rejected 44건을 박았다)
 JLOG="${QVEST_RP_JLOG:-$ROOT/.cache/reinforce_auto_log.jsonl}"
-LOG="$ROOT/.cache/scheduler_logs/fidelity_fanout_$(date +%Y%m%d).log"
+# ★QVEST_FA_LOG — 검사가 병합 단계만 분리 실행할 때 운영 로그에 실패 지문('\U' 오류 등)을 남기지 않게 돌린다
+LOG="${QVEST_FA_LOG:-$ROOT/.cache/scheduler_logs/fidelity_fanout_$(date +%Y%m%d).log}"
 mkdir -p "$(dirname "$LOG")"
 
 WDIR="${1:-}"; ART="${2:-}"; PURL="${3:-}"; PKEY="${4:-}"
@@ -43,6 +51,24 @@ io.open(r'$JLOG','a',encoding='utf-8').write(json.dumps(rec,ensure_ascii=False)+
 print('[fanout] '+sys.argv[1])" "$@" ; }
 
 [ -n "$WDIR" ] && [ -s "$WDIR/engine.R" ] || { jl halt_no_engine "wdir=$WDIR"; exit 0; }
+
+# ── 병합 + 스키마 검증 — R 이 한다 (LLM 판정자 없음) ──────────────────────────
+#   ★함수로 둔 이유: 검사가 QVEST_FA_MERGE_ONLY=1 로 **이 단계만** 분리 실행한다(claude -p 없이).
+#   ★병합 실패는 크게 (2026-09-06): 구판은 `merge_done rc=1` 을 적고도 exit 0 이었고, 호출자(verify)는
+#     감사 파일 부재를 unverifiable 로 읽어 proceed 했다 — 감사 없이 소비·개설이 일어났다.
+#     이제 rc≠0 이면 merge_failed 저널 + exit 3. 성공하면 단일 레인과 같이 스키마 검증(audit_verified)까지 남긴다
+#     (검증기가 형식 위반 파일을 지우므로, 그 뒤의 부재는 verify 쪽 rf_audit_gate 가 미실행으로 잡는다).
+fa_merge(){
+  Rscript -e "source('$ROOT/02_Infrastructure/ops/rf_fidelity_merge.R')" "$WDIR" "$AXES" >> "$LOG" 2>&1
+  local rc=$?
+  if [ "$rc" != "0" ]; then jl merge_failed "rc=$rc" "paper=$PKEY"; return 3; fi
+  jl merge_done "rc=$rc" "paper=$PKEY"
+  Rscript "$ROOT/02_Infrastructure/ops/rf_fidelity_audit_lib.R" verify "$WDIR/fidelity_audit.json" >> "$LOG" 2>&1
+  jl verify_done "rc=$?" "paper=$PKEY"
+  return 0
+}
+if [ "${QVEST_FA_MERGE_ONLY:-0}" = "1" ]; then fa_merge; exit $?; fi
+
 command -v claude >/dev/null 2>&1 || { jl halt_no_claude_cli; exit 0; }
 
 # ★원문 접근 경로 — /abs 는 초록뿐이고 /pdf 는 이 환경에서 못 읽는다(2026-09-02 실측).
@@ -173,7 +199,5 @@ for f in "$LOG".*; do
   cat "$f" >> "$LOG"; rm -f "$f"
 done
 
-# ── 병합 — R 이 한다 (LLM 판정자 없음) ────────────────────────────────────────
-Rscript -e "source('$ROOT/02_Infrastructure/ops/rf_fidelity_merge.R')" "$WDIR" "$AXES" >> "$LOG" 2>&1
-jl merge_done "rc=$?" "paper=$PKEY"
-exit 0
+# ── 병합 — fa_merge (위 정의). 실패 = exit 3 (호출자 audit.sh 는 exec 라 그대로 verify 에 전파된다) ──
+fa_merge; exit $?

@@ -9,7 +9,7 @@
 #   source("02_Infrastructure/portfolio/advanced_weights.R")
 #   w <- calc_cvar_weights(tickers, ret_dt)
 #
-# Dependencies: data.table, quadprog (for QP)
+# Dependencies: data.table, quadprog (for QP), lpSolve (CDaR LP 1차 솔버 · 부재 시 cccp)
 #==============================================================================
 
 suppressPackageStartupMessages({
@@ -840,6 +840,7 @@ cat("[advanced_weights] Score Tilt Variants: regime_tilt(V1), ic_tilt(V2), rank_
 .HAS_CCCP  <- requireNamespace("cccp",  quietly = TRUE)
 .HAS_RRCOV <- requireNamespace("rrcov", quietly = TRUE)
 .HAS_FRAPO <- requireNamespace("FRAPO", quietly = TRUE)
+.HAS_LPSOLVE <- requireNamespace("lpSolve", quietly = TRUE)   # CDaR LP 1차 솔버 (2026-09-07)
 
 # ── Phase 2 내부 헬퍼 ─────────────────────────────────────────────────────────
 
@@ -1099,10 +1100,20 @@ calc_cdar_weights <- function(tickers, ret_dt, alpha = 0.95,
   # q_t = q_{t-1} + R_t'w  (선형, q_0 = 1)
   # u_t >= D_t - zeta, u_t >= 0
   # CDaR = zeta + 1/(alpha_bar*T)*sum(u_t)
-  result <- tryCatch({
-    if (!.HAS_CCCP) stop("cccp not available")
-    library(cccp, quietly = TRUE)
-
+  # ★솔버 순서 (2026-09-07 수리): lpSolve(simplex) → cccp(IPM) → min-vol 폴백.
+  #   같은 LP(같은 c·A·b·G·h)를 다른 알고리즘으로 푼다 — 목적함수·제약·창·alpha 불변(추정량 불변).
+  #   왜: cccp 는 밀집 콘 IPM 이라 비용이 ~T³ 로 는다(실측 p=25: T=120 2.4 s · T=252 27~36 s).
+  #   qepm 번역층(weight_method_registry.R::.wmr_dispatch_harness)은 n_days = 호출자 창 전체
+  #   (rf_cell_engine lookback 252)를 넘기므로 리밸 260회 × ~32 s ≈ 140 분 > 워커 상한 90 분 →
+  #   qepm:CDaR_LP 칸이 entry 마다 두 번씩(배치 + 단독 재시도) 미측정으로 끝났다
+  #   (2026-09-06 promo2 B2_7 · 09-07 combo B2_9 · combo promo1 B2_10). lpSolve 는 같은 LP 를
+  #   0.1 s 에 풀고 목적함수·비중이 cccp 와 1e-6(cccp 기본 허용오차) 안에서 같다(실창 대조).
+  #   ★lpSolve::lp 는 전 변수에 x>=0 을 암묵 부과한다. 이 LP 에서 w(G5)·m(G7: m>=1)·u(G3)·zeta(G8)
+  #     는 이미 >=0 이고 q_t(누적가치)만 자유변수다. 최적해에서 q_t>0 이면 그 하한은 비활성이고
+  #     (KKT — 비활성 제약의 승수 0) 그 해는 원 LP(q 자유)의 최적해다. q_t 가 0 에 닿으면 판정
+  #     불가이므로 cccp(자유변수 지원)로 넘긴다 — 조용히 다른 문제를 풀지 않는다.
+  #   관측: 마지막 호출의 솔버·크기·시간을 정의 환경의 .CDAR_LAST 에 남긴다(검사가 재도출).
+  lp_mats <- tryCatch(local({
     # Return matrix: T_obs × p
     # q_t = sum_{s=1}^{t} R_s'w + 1  = 1 + cumsum(R)w
     # D_t = max_{s<=t}(q_s) - q_t 는 비선형(max 연산자)이라
@@ -1178,21 +1189,62 @@ calc_cdar_weights <- function(tickers, ret_dt, alpha = 0.95,
       G_all3 <- rbind(G1c, G3c, G4c, G5c, G6c, G7c, G8c)
       h_all3 <- as.numeric(c(h1c, h3c, h4c, h5c, h6c, h7c, h8c))
     }
+    list(c = c_obj3, A = A_eq4, b = as.numeric(b_eq4), G = G_all3, h = h_all3,
+         iz_w = iz_w, iz_q = iz_q)
+  }), error = function(e) e)
 
-    res_c <- cccp(q     = c_obj3,
-                  A     = A_eq4,
-                  b     = as.numeric(b_eq4),
-                  cList = list(nnoc(G_all3, h_all3)),
+  # 관측 기록 — 정의 환경의 .CDAR_LAST 에 마지막 호출의 솔버·크기·시간을 남긴다.
+  #   비중 벡터에 속성을 붙이지 않는다(소비자가 identical()/이름으로 비교한다). 잠긴 환경이면 조용히 건너뛴다.
+  .ENV_DEF <- parent.env(environment())
+  .t_lp0 <- proc.time()[["elapsed"]]
+  .cdar_note <- function(solver, note = "")
+    try(assign(".CDAR_LAST", list(solver = solver, T = T_obs, p = p,
+                                  sec = proc.time()[["elapsed"]] - .t_lp0, note = note),
+               envir = .ENV_DEF), silent = TRUE)
+
+  result <- NULL
+  # ── 1차: lpSolve (simplex · T=252 에서 ~0.1 s) ──────────────────────────────────────
+  if (.HAS_LPSOLVE && !inherits(lp_mats, "error")) {
+    result <- tryCatch({
+      sol <- lpSolve::lp("min", lp_mats$c,
+                         const.mat = rbind(lp_mats$A, lp_mats$G),
+                         const.dir = c(rep("=", nrow(lp_mats$A)), rep("<=", nrow(lp_mats$G))),
+                         const.rhs = c(lp_mats$b, lp_mats$h))
+      if (!identical(as.integer(sol$status), 0L)) stop(paste("lpSolve status:", sol$status))
+      x_opt <- as.numeric(sol$solution)
+      # q_t 는 원 LP 에서 자유변수 — lpSolve 의 암묵 x>=0 이 최적해에서 활성이면 같은 문제가 아니다.
+      if (any(x_opt[lp_mats$iz_q] <= 1e-9))
+        stop("q_t bound active under lpSolve implicit x>=0 — free-variable solver required")
+      w_new <- pmax(x_opt[lp_mats$iz_w], 0)
+      if (sum(w_new) < 1e-10) stop("CDaR degenerate")
+      .cdar_note("lpSolve")
+      w_new / sum(w_new)
+    }, error = function(e) {
+      cat(sprintf("[cdar] lpSolve declined (%s) — cccp 로 넘긴다\n", e$message))
+      NULL
+    })
+  }
+  # ── 2차: cccp (밀집 콘 IPM · 수리 전 유일 경로) → 실패 시 min-vol 폴백 (수리 전과 동일) ──
+  if (is.null(result)) result <- tryCatch({
+    if (inherits(lp_mats, "error")) stop(conditionMessage(lp_mats))
+    if (!.HAS_CCCP) stop("cccp not available")
+    library(cccp, quietly = TRUE)
+    res_c <- cccp(q     = lp_mats$c,
+                  A     = lp_mats$A,
+                  b     = lp_mats$b,
+                  cList = list(nnoc(lp_mats$G, lp_mats$h)),
                   optctrl = ctrl(trace = FALSE, maxiters = 200L))
 
     if (getstatus(res_c)[[1]] == "optimal") {
       x_opt <- getx(res_c)
-      w_new <- pmax(as.numeric(x_opt[iz_w]), 0)
+      w_new <- pmax(as.numeric(x_opt[lp_mats$iz_w]), 0)
       if (sum(w_new) < 1e-10) stop("CDaR degenerate")
+      .cdar_note("cccp")
       w_new / sum(w_new)
     } else stop(paste("CDaR status:", getstatus(res_c)[[1]]))
   }, error = function(e) {
     cat(sprintf("[cdar] LP failed (%s), falling back to min-vol\n", e$message))
+    .cdar_note("minvol_fallback", conditionMessage(e))
     # 폴백: EW 드로우다운 기반 cov 역수 가중
     cov_mat <- cov(mat_v)
     diag_inv <- 1 / pmax(diag(cov_mat), 1e-8)
@@ -1428,7 +1480,8 @@ compute_robust_cov <- function(ret_mat, method = c("OGK", "MCD", "SDE")) {
 # Phase 2 로드 확인
 .p2_methods <- c("cvar_lp", "cvar_budget", "cdar", "pmtd", "robust_socp", "robust_cov")
 cat(sprintf("[advanced_weights] Phase 2 loaded. New methods: %s\n", paste(.p2_methods, collapse = ", ")))
-cat(sprintf("[advanced_weights] Phase 2 pkgs: cccp=%s, rrcov=%s, FRAPO=%s\n",
+cat(sprintf("[advanced_weights] Phase 2 pkgs: cccp=%s, rrcov=%s, FRAPO=%s, lpSolve=%s\n",
             if (.HAS_CCCP) "OK" else "MISSING (LP fallback)",
             if (.HAS_RRCOV) "OK" else "MISSING (sample cov)",
-            if (.HAS_FRAPO) "OK" else "MISSING (pure-R fallback)"))
+            if (.HAS_FRAPO) "OK" else "MISSING (pure-R fallback)",
+            if (.HAS_LPSOLVE) "OK (CDaR 1차)" else "MISSING (CDaR → cccp ~T^3)"))

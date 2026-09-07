@@ -17,6 +17,7 @@
 #   ①귀속 라벨 정정 ②소비 보류(+자동 재구현 1회). 측정은 계약이, 판정은 essence 가 한다.
 #
 # 사용: Rscript rf_fidelity_audit_lib.R verify <audit.json>
+#   verify(R) 는 rf_audit_gate() 만 부른다 — 스폰·읽기·처분·미실행 재스폰이 한 자리에 있다(2026-09-06).
 #==============================================================================
 suppressMessages({ library(jsonlite) })
 `%||%` <- function(a, b) if (is.null(a) || length(a) == 0L) b else a
@@ -65,6 +66,9 @@ rf_audit_verify <- function(audit_p) {
 }
 
 #' 감사 판정 읽기 (파일이 없거나 깨졌으면 unverifiable — 침묵을 통과로 읽지 않는다)
+#' ★`reason` 은 **이 함수가 판정을 못 읽었을 때만** 실린다 — 감사자 파일의 필드는 옮기지 않는다.
+#'   rf_audit_disposition 이 그 유무로 "감사자의 unverifiable(원문 판독 실패)" 과 "미실행·파손" 을 가른다.
+#'   정상 분기에 reason 을 넣으면 그 구분이 죽는다(양방향 검사 test_rf_audit_disposition_required.R).
 rf_audit_read <- function(audit_p) {
   if (!file.exists(audit_p)) return(list(verdict = "unverifiable", reason = "감사 미실행"))
   A <- tryCatch(fromJSON(audit_p, simplifyVector = FALSE), error = function(e) NULL)
@@ -80,8 +84,13 @@ rf_audit_read <- function(audit_p) {
 }
 
 #' 처분 — 도훈 선택 2026-09-04: **자동 재구현 1회 + 소비 보류**
-#' @return list(action = "proceed"|"reimplement"|"proceed_suspect", feedback = <재구현 지적사항>)
+#' @return list(action = "audit_required"|"proceed"|"reimplement"|"proceed_suspect", feedback = <재구현 지적사항>)
 rf_audit_disposition <- function(aud, retries_done = 0L) {
+  # ★미실행·파손 ≠ 판독 실패 (2026-09-05~06 실사고). 구판은 파일 부재를 감사자의 unverifiable 과 같은 칸
+  #   (proceed)에 넣었다 — 킬스위치·CLI 부재·병합 즉사('\U')로 감사가 **안 돈** 논문 3건이 감사 없이
+  #   소비·개설됐다. 감사자가 원문을 못 읽어 낸 unverifiable(reason 없음)은 정직한 판정이라 proceed 를 유지한다.
+  if (identical(aud$verdict, "unverifiable") && !is.null(aud$reason))
+    return(list(action = "audit_required", reason = as.character(aud$reason)[1]))
   if (!identical(aud$verdict, "misdeclared")) return(list(action = "proceed"))
   items <- c(vapply(aud$undeclared_changes %||% list(), function(x) paste0("- 미신고 변경: ", as.character(x)), character(1)),
              vapply(aud$signal_mismatch    %||% list(), function(x) paste0("- 신호 불일치: ", as.character(x)), character(1)))
@@ -92,6 +101,37 @@ rf_audit_disposition <- function(aud, retries_done = 0L) {
     # ★재구현도 기각되면 소비하되 꼬리표를 단다. 무한 재시도는 예산을 태우고,
     #   조용한 소비는 논문을 잘못된 이유로 버린다 — 둘 다 피한다.
     list(action = "proceed_suspect", feedback = fb)
+}
+
+#' 감사 관문 — 스폰 → 읽기 → 처분. 미실행(audit_required)이면 최대 max_retries 회 더 스폰한다 (2026-09-06).
+#' ★verify 는 이 함수만 부른다: "감사 없이 개설 불가" 의 판정이 한 자리에 있어야 검사가 그 자리를 잰다.
+#' ★스폰 전에 낡은 fidelity_audit.json 을 지운다 — 감사 레인이 게이트(halt_*)에서 나가면 자기 rm -f 에
+#'   못 닿아, 같은 wdir 의 앞 판 감사가 이번 엔진의 감사로 읽힐 수 있다(재구현 2회차가 같은 wdir 을 쓴다).
+#' @param spawn_fn     인자 없는 함수 — 감사 레인을 한 번 돌리고 rc(정수)를 돌려준다. 파일을 쓰는 건 레인이다.
+#' @param max_retries  첫 스폰 뒤 추가 스폰 상한(총 스폰 = 1 + max_retries)
+#' @param retries_done 재구현 횟수(요청 파일 audit_retries) — rf_audit_disposition 에 그대로 넘긴다
+#' @param log_fn       jlog 형 함수(event, ...) — 재스폰마다 fidelity_audit_retry · 스폰 예외는 fidelity_audit_spawn_failed
+#' @return list(aud, disp, spawns, retries, last_rc, reason) — reason 은 최종이 audit_required 일 때만
+rf_audit_gate <- function(wdir, spawn_fn, max_retries = 2L, retries_done = 0L, log_fn = NULL) {
+  aud_p <- file.path(wdir, "fidelity_audit.json")
+  .log <- function(...) if (is.function(log_fn)) log_fn(...)
+  .spawn <- function() {
+    unlink(aud_p, force = TRUE)
+    rc <- tryCatch(suppressWarnings(as.integer(spawn_fn())[1]),
+                   error = function(e) { .log("fidelity_audit_spawn_failed", err = conditionMessage(e)); -1L })
+    if (!length(rc) || is.na(rc)) -1L else rc       # -1 = 레인이 rc 를 안 돌려줬거나 던졌다
+  }
+  max_retries <- max(0L, suppressWarnings(as.integer(max_retries)), na.rm = TRUE)
+  spawns <- 0L; rc <- -1L
+  repeat {
+    rc <- .spawn(); spawns <- spawns + 1L
+    aud  <- rf_audit_read(aud_p)
+    disp <- rf_audit_disposition(aud, retries_done = retries_done)
+    if (!identical(disp$action, "audit_required") || spawns > max_retries) break
+    .log("fidelity_audit_retry", n = spawns, max = max_retries, rc = rc, reason = disp$reason)
+  }
+  list(aud = aud, disp = disp, spawns = spawns, retries = spawns - 1L, last_rc = rc,
+       reason = if (identical(disp$action, "audit_required")) disp$reason else NULL)
 }
 
 if (!interactive()) {

@@ -243,17 +243,61 @@ jlog("verified", grade = G, port_t = es$portfolio_alpha_t_nw_lag3, artifacts = d
 #   소비하되 implementation_suspect 꼬리표를 남긴다(무한 재시도도, 조용한 소비도 아니다).
 suppressMessages(source(file.path(ROOT, "02_Infrastructure/ops/rf_fidelity_audit_lib.R"), local = TRUE))
 .aud_p <- file.path(WDIR, "fidelity_audit.json")
-tryCatch(system2("bash", c(shQuote(file.path(ROOT, "02_Infrastructure/ops/rf_fidelity_audit.sh")),
-                           shQuote(WDIR), shQuote(dirname(ar)), shQuote(URL), shQuote(PKEY %||% "")),
-                 wait = TRUE, stdout = TRUE, stderr = TRUE),
-         error = function(e) jlog("fidelity_audit_spawn_failed", err = conditionMessage(e)))
-.aud <- rf_audit_read(.aud_p)
 .rq0 <- tryCatch(fromJSON(REQ, simplifyVector = FALSE), error = function(e) list())
 .aud_tries <- as.integer(.rq0$audit_retries %||% 0L)
-.disp <- rf_audit_disposition(.aud, retries_done = .aud_tries)
+# 감사 레인 스폰 1회 → rc. system2(stdout=TRUE) 는 rc≠0 일 때만 status 속성을 단다(없으면 0).
+.spawn_audit <- function() {
+  r <- system2("bash", c(shQuote(file.path(ROOT, "02_Infrastructure/ops/rf_fidelity_audit.sh")),
+                         shQuote(WDIR), shQuote(dirname(ar)), shQuote(URL), shQuote(PKEY %||% "")),
+               wait = TRUE, stdout = TRUE, stderr = TRUE)
+  as.integer(attr(r, "status") %||% 0L)
+}
+# ★감사 없이는 개설하지 않는다 (2026-09-06 — 09-05 실사고 3건: 킬스위치·CLI 부재·병합 즉사로 감사가
+#   안 돌았는데 그 부재를 unverifiable 로 읽어 전부 proceed 했다). 관문은 rf_audit_gate 하나다:
+#   스폰 → 읽기 → 처분, 미실행이면 최대 2회 더 스폰(사이 rc 는 fidelity_audit_retry 저널로 남는다).
+.gate <- rf_audit_gate(WDIR, .spawn_audit, max_retries = 2L, retries_done = .aud_tries, log_fn = jlog)
+.aud <- .gate$aud; .disp <- .gate$disp
 jlog("fidelity_audit_verdict", verdict = .aud$verdict, action = .disp$action,
      undeclared = length(.aud$undeclared_changes %||% list()),
-     mismatch = length(.aud$signal_mismatch %||% list()), retries = .aud_tries)
+     mismatch = length(.aud$signal_mismatch %||% list()), retries = .aud_tries,
+     spawns = .gate$spawns, last_rc = .gate$last_rc)
+
+if (identical(.disp$action, "audit_required")) {
+  # ★미실행은 별개 사건이다 — 소비도 개설도 큐 미러도 없이 세션 대기(failed_needs_session/audit_not_run)로
+  #   되돌린다. 엔진은 그대로 둔다: 다음 tick 의 레인(rf_replication_auto.sh)이 audit_not_run + engine.R
+  #   존재를 보면 에이전트 없이 검증기만 다시 돈다 — 30분짜리 재구현을 감사 미실행 때문에 태우지 않는다.
+  .why <- sprintf("%s (스폰 %d회 · 마지막 rc %d)", as.character(.disp$reason %||% "감사 미실행")[1],
+                  as.integer(.gate$spawns), as.integer(.gate$last_rc))
+  .Gs <- as.character(G %||% "NA")[1]
+  jlog("fidelity_audit_not_run", reason = .why, paper_key = PKEY %||% "", grade = .Gs,
+       note = "감사 없이 개설 불가 — 요청을 failed_needs_session/audit_not_run 으로 되돌린다(원장·큐 미러 손대지 않음)")
+  d <- tryCatch(fromJSON(REQ, simplifyVector = FALSE), error = function(e) list())
+  d$status <- "failed_needs_session"; d$failure <- "audit_not_run"; d$failure_detail <- substr(.why, 1, 400)
+  write(toJSON(d, auto_unbox = TRUE, pretty = TRUE, null = "null"), REQ)
+  tryCatch({ suppressMessages(source(file.path(ROOT, "02_Infrastructure/telegram/telegram_notify.R")))
+    tg_agent_brief(agent = "AlphaSearch", relaxed = TRUE, glossary = FALSE, decode_jargon = FALSE, decode_mode = "off",
+      lock_scope = sprintf("rf_fidelity_notrun_%s", PKEY %||% "unknown"),
+      title = sprintf("[1계층] 충실도 감사 미실행 — 개설 보류 (측정 등급 %s)", .Gs),
+      sections = list(
+        list(type = "bullet", emoji = "\U0001F50D", heading = "현재 리서치 상황",
+             items = c("단계: 1계층 무인 충실구현 — 적대적 충실도 감사",
+                       sprintf("대상: %s", substr(TITLE, 1, 60)),
+                       sprintf("판정: 감사 미실행 · 스폰 %d회 전부 산출 없음", as.integer(.gate$spawns)),
+                       "처분: 개설 보류 — 감사 없이는 소비도 entry 개설도 하지 않는다")),
+        list(type = "summary", emoji = "\U0001F4CC",
+             body = sprintf("충실도 감사 미실행 — 스폰 %d회 산출 없음 · 소비·개설 보류", as.integer(.gate$spawns))),
+        list(type = "text", emoji = "\U0001F4DD", heading = "미실행 사유와 다음",
+             body = substr(paste0(
+               "사유: ", .why, "\n",
+               "측정은 끝났고 등급도 나왔지만(", .Gs, "), 감사가 안 돈 판정은 소비하지 않는다 — ",
+               "F 면 논문이 잘못된 이유로 영구 소비되고, A 면 근거 없는 등급이 BOOK 후보가 된다.\n",
+               "다음: 요청을 failed_needs_session/audit_not_run 으로 두었다. 다음 주기의 무인 레인이 ",
+               "엔진을 그대로 두고 검증기(측정+감사)만 다시 돈다(자동 재시도 3회 규약). ",
+               "감사 레인 자체가 죽어 있으면(claude CLI 부재·fidelity_audit.enabled=false·병합 오류) ",
+               "그 원인을 먼저 고쳐야 한다 — 저널 fidelity_audit_retry/merge_failed/halt_* 줄을 보라."), 1, 1500)))) },
+    error = function(e) jlog("telegram_failed", err = conditionMessage(e)))
+  quit(status = 0)
+}
 
 if (identical(.disp$action, "reimplement")) {
   # ★소비 보류 — 원장에 아무것도 열지 않고 요청만 되돌린다. selector 는 원장으로 소비를

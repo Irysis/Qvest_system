@@ -100,7 +100,9 @@ if (identical(d2$action, "proceed_suspect"))
 cat("\n=== D. 조립 순서 — 감사가 **소비보다 앞**에 서는가 (이 검사의 핵심) ===\n")
 vf <- readLines(file.path(ROOT, "02_Infrastructure/ops/rf_replication_verify.R"), warn = FALSE)
 code <- sub("#.*$", "", vf)
-i_aud <- which(grepl("rf_audit_disposition", code, fixed = TRUE))[1]
+## ★감사 호출 지점 = rf_audit_gate (2026-09-06 이설 — 스폰·읽기·처분·미실행 재스폰이 lib 함수 하나로 옮겨졌다).
+##   구판의 직접 호출(rf_audit_disposition)도 인정한다 — 이름이 아니라 "감사가 소비 앞에 서는가" 를 잰다.
+i_aud <- which(grepl("rf_audit_gate(", code, fixed = TRUE) | grepl("rf_audit_disposition(", code, fixed = TRUE))[1]
 i_con <- which(grepl("ledger_consumed", code, fixed = TRUE))[1]
 i_opn <- which(grepl("rf_open_entry(1L, BID", code, fixed = TRUE))[1]
 if (!is.na(i_aud) && !is.na(i_con) && i_aud < i_con)

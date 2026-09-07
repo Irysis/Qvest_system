@@ -159,8 +159,9 @@ if pk and not any(e.get("paper_key") == pk for e in sk.get("entries") or []):
     sk.setdefault("entries", []).append({
         "paper_key": pk, "status": "unreproducible",
         "added_at": time.strftime("%Y-%m-%dT%H:%M:%S%z"),
-        "reason": "무인 충실구현 3회 연속 no_engine — 에이전트가 엔진을 산출하지 못했다. "
-                  "★판정 철회는 status=revoked 로 (AX-000 — 새 각도면 재시도 정당)."})
+        "last_failure": (d.get("failure") or ""),
+        "reason": "무인 충실구현 3회 연속 실패(마지막 사유 %s) — 에이전트가 엔진을 산출하지 못했거나 검증기가 막았다. "
+                  "★판정 철회는 status=revoked 로 (AX-000 — 새 각도면 재시도 정당)." % (d.get("failure") or "no_engine")})
     io.open(SKP, "wb").write(json.dumps(sk, ensure_ascii=False, indent=1).encode("utf-8"))
 PYSKIP
   Rscript "$ROOT/02_Infrastructure/ops/reinforce_auto_next_paper.R" >> "$LOG" 2>&1
@@ -247,6 +248,36 @@ import io,json,time
 d=json.loads(io.open(r'$REQ','rb').read().decode('utf-8'))
 d['status']='in_progress'; d['started_at']=time.strftime('%Y-%m-%dT%H:%M:%S%z')
 io.open(r'$REQ','wb').write(json.dumps(d,ensure_ascii=False,indent=1).encode('utf-8'))"
+
+# ── 측정 + 검증 호출 — 한 곳 (정상 경로와 아래 감사 미실행 재시도가 같은 호출을 쓴다) ──
+rp_verify(){
+  QM_ROOT="$ROOT" RP_WDIR="$WDIR" RP_URL="$P_URL" RP_TITLE="$P_TITLE" RP_KEY="$P_KEY" \
+    QVEST_RP_JLOG="$JLOG" RP_IS_COMBO="${IS_COMBO:-0}" RP_COUNT_PAPER="${C_COUNT:-1}" \
+    Rscript "$ROOT/02_Infrastructure/ops/rf_replication_verify.R" >> "$LOG" 2>&1
+  VRC=$?
+  jl verify_done "rc=$VRC"
+  return $VRC
+}
+# ── ★감사 미실행 재시도 = 검증기만 (2026-09-06 실사고) ─────────────────────────
+#   audit_not_run 은 엔진의 결함이 아니라 감사 레인의 결함이다(역슬래시 QM_ROOT 병합 즉사 · 킬스위치 · CLI 부재).
+#   검증기가 그 사유로 failed_needs_session 을 내면 위 auto_retries 가 pending 으로 되살리는데, 그때 30분짜리
+#   Fable 재구현을 다시 태울 이유가 없다 — 엔진이 그대로 있으면 에이전트를 건너뛰고 측정+감사만 다시 돈다.
+#   재시도 상한은 auto_retries(3회) 규약 그대로다(이 분기는 그 안에서 **무엇을 다시 하나**만 바꾼다).
+#   엔진이 없으면(감사 기각으로 engine.rejected*.R 로 이름이 바뀐 경우) 정상 경로로 간다.
+#   ★표식은 여기서 지운다 — 남겨 두면 뒤의 재구현 프롬프트가 낡은 사유(audit_not_run)를 안고 간다.
+PREV_FAIL=$("$PY" -c "
+import io,json
+try: print((json.loads(io.open(r'$REQ','rb').read().decode('utf-8')).get('failure') or '').strip())
+except Exception: print('')" 2>/dev/null)
+if [ "$PREV_FAIL" = "audit_not_run" ] && [ -s "$WDIR/engine.R" ]; then
+  jl verify_only_retry "paper=$P_KEY" "note=감사 미실행 재시도 — 에이전트 없이 검증기(측정+감사)만 재실행(엔진 보존)"
+  "$PY" -c "
+import io,json,time
+d=json.loads(io.open(r'$REQ','rb').read().decode('utf-8'))
+d['failure']=''; d['failure_detail']=''; d['verify_only_at']=time.strftime('%Y-%m-%dT%H:%M:%S%z')
+io.open(r'$REQ','wb').write(json.dumps(d,ensure_ascii=False,indent=1).encode('utf-8'))"
+  rp_verify; exit $?
+fi
 
 # ── 헤드리스 에이전트 (권한 축소 · 산출물은 엔진 1개) ────────────────────────
 PROMPT="논문 1편의 **충실구현**을 수행하라. 산출은 **엔진 R 파일 하나**다.
@@ -419,6 +450,9 @@ H={
    '네 잘못이 아니다. 그 패키지 없이 되는 구현으로 바꿔라.'),
  'no_authoritative_remeasure': ('계약 미경유(측정 산출물 없음)',
    '엔진이 FACTORS 또는 PORTFOLIO 를 규약대로 내지 못했을 수 있다. 산출 형태를 먼저 확인하라.'),
+ 'audit_not_run': ('충실도 감사 미실행 — 앞 판 엔진의 결함이 아니었다',
+   '앞 판은 측정을 통과했고 감사 레인이 안 돌았을 뿐이다(정상은 엔진을 두고 검증기만 재실행한다). '
+   '엔진 파일이 없어 다시 부르는 것이니, 논문을 다시 읽고 같은 기준(충실구현)으로 구현하라.'),
 }
 title, guide = H.get(why, ('측정 실패', '아래 사유를 읽고 같은 실패를 반복하지 마라.'))
 print('### %s' % title)
@@ -518,10 +552,5 @@ d=json.loads(io.open(r'$REQ','rb').read().decode('utf-8'))
 d['status']='failed_needs_session'; d['failure']='no_engine'
 io.open(r'$REQ','wb').write(json.dumps(d,ensure_ascii=False,indent=1).encode('utf-8'))"; exit 1; }
 
-# ── 측정 + 검증 (계약이 판정한다 — 에이전트 진술은 근거가 아니다) ────────────
-QM_ROOT="$ROOT" RP_WDIR="$WDIR" RP_URL="$P_URL" RP_TITLE="$P_TITLE" RP_KEY="$P_KEY" \
-  QVEST_RP_JLOG="$JLOG" RP_IS_COMBO="${IS_COMBO:-0}" RP_COUNT_PAPER="${C_COUNT:-1}" \
-  Rscript "$ROOT/02_Infrastructure/ops/rf_replication_verify.R" >> "$LOG" 2>&1
-VRC=$?
-jl verify_done "rc=$VRC"
-exit $VRC
+# ── 측정 + 검증 (계약이 판정한다 — 에이전트 진술은 근거가 아니다) — rp_verify(위 정의) ──
+rp_verify; exit $?

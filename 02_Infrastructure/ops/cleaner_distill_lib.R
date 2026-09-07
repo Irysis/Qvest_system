@@ -138,7 +138,7 @@ cd_gate <- function() {
                        error = function(err) FALSE)
         o <- .cd_read_json(ow, NULL)
         if (ok && !is.null(o))
-          alive <- tryCatch(isTRUE(e$rf_claim_pid_alive(o$pid)), error = function(err) TRUE)
+          alive <- tryCatch(isTRUE(e$rf_claim_pid_alive(o$pid, o$proc_start)), error = function(err) TRUE)   # proc_start: pid 재사용 판별(2026-09-07)
       }
       if (isTRUE(alive))
         out(FALSE, "reinforce_active", 11L,

@@ -17,6 +17,9 @@
 #==============================================================================
 set -uo pipefail
 ROOT="${QVEST_RF_ROOT:-${QM_ROOT:-C:/Users/99922/OneDrive/Quant_Module_Moltbot}}"
+# ★슬래시 정규화 (2026-09-06) — Windows User-scope QM_ROOT 는 역슬래시다. 이 레인 자체는 R 리터럴에 ROOT 를
+#   안 넣지만, exec 로 넘기는 rf_fidelity_fanout.sh 와 같은 규약을 둔다(그쪽 주석 참조 — 병합 즉사 실사고).
+ROOT="${ROOT//\\//}"
 cd "$ROOT" || exit 1
 PY="${QVEST_PY:-$ROOT/.venv_qvest_ml/Scripts/python.exe}"
 CFG="${QVEST_RF_CONFIG:-$ROOT/06_Registry/reinforce_auto_config.json}"
@@ -36,11 +39,16 @@ for kv in sys.argv[2:]:
 io.open(r'$JLOG','a',encoding='utf-8').write(json.dumps(rec,ensure_ascii=False)+'\n')
 print('[fid_audit] '+sys.argv[1])" "$@" ; }
 
+# ★감사는 루프 킬스위치(enabled)를 따르지 않는다 (2026-09-05 실사고 · 도훈 처분 2026-09-04).
+#   구판 게이트는 `c.get('enabled') and fidelity_audit.enabled` 였다. 루프 킬스위치는 **새 측정을 멈추는**
+#   장치이고, 감사는 이미 끝난 측정의 **신뢰 계기**다 — 킬스위치가 내려간 09-05 에 감사 3건이 halt_disabled
+#   로 안 돌았고, verify 는 그 부재를 unverifiable 로 읽어 전부 proceed 했다(감사 없이 소비·entry 개설).
+#   감사만의 스위치는 fidelity_audit.enabled 하나다. 미실행은 이제 verify 의 rf_audit_gate 가 별개 사건으로 잡는다.
 EN=$("$PY" -c "
 import io,json
 try:
     c=json.loads(io.open(r'$CFG','rb').read().decode('utf-8'))
-    print('1' if c.get('enabled') and (c.get('fidelity_audit') or {}).get('enabled') else '0')
+    print('1' if (c.get('fidelity_audit') or {}).get('enabled') else '0')
 except Exception: print('0')" 2>/dev/null)
 [ "$EN" = "1" ] || { jl halt_disabled; exit 0; }
 [ -n "$WDIR" ] && [ -s "$WDIR/engine.R" ] || { jl halt_no_engine "wdir=$WDIR"; exit 0; }

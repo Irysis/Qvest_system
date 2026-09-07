@@ -1090,6 +1090,11 @@ SUITES=(
   "08_Tests/regime/test_regime_l3_ramp.R"
   "08_Tests/portfolio/test_mvo_turnover_penalty.R"
   "08_Tests/portfolio/test_optimizer_breadth.R"
+  # 2026-09-07 신설: calc_cdar_weights 솔버 사슬(lpSolve → cccp → min-vol). cccp 밀집 IPM 이 ~T³ 라
+  #   T=252 에서 월 1회 27~36 s × 리밸 260회 ≈ 140 분 > 워커 상한 90 분 — qepm:CDaR_LP 칸이 entry 마다
+  #   두 번씩 미측정(09-06/07 실사고). 같은 LP 를 lpSolve 가 0.1 s 에 푼다(추정량 불변). 양성(1차=lpSolve ·
+  #   전후 비중/목적값 동치 · 시간 상한) + 음성(lpSolve 실패 주입 → 호명 후 cccp 낙하 · alpha 감도).
+  "08_Tests/portfolio/test_cdar_lp_solver_parity.R"
   "08_Tests/portfolio/test_pg2_coherence_check.R"
   "08_Tests/data/test_dart_account_id_fallback.R"
   "08_Tests/ops/test_frontier_citation_scan.R"
@@ -1300,6 +1305,35 @@ SUITES=(
   #   c("B1","B2","B3","B5","B4") 폴백 → 설계자에게 rfbd_catalog("B2") 를 넘기는데 러너는 B5 로 갔다.
   #   양방향(적응 축 + 그 축 카탈로그 / 구판 리졸버 주입).
   "08_Tests/reinforcement/test_rf_materials_next_block.R"
+  # 2026-09-06 — 적대적 충실도 감사 레인 결함 3종(역슬래시 QM_ROOT 병합 즉사 · 병합 실패 exit 0 · 미실행=unverifiable→proceed):
+  #   병합 단계 ROOT 정규화·실패 전파(셸 · claude 미호출) · 처분 audit_required · 감사 없이 개설 불가(rf_audit_gate + 배선 재도출).
+  "08_Tests/ops/test_rf_fanout_merge_root.sh"
+  "08_Tests/ops/test_rf_audit_disposition_required.R"
+  "08_Tests/ops/test_rf_audit_not_run_blocks_open.R"
+  # ── ★편입 드리프트 수리 (2026-09-07): 09-04~09-07 에 신설된 검사 21종이 SUITES 에 없어 배터리가 한 번도 돌리지 않았다
+  #   (test_suite_enrollment 의 E2 가 21/276 으로 세고 있었다). 검사를 만들고 등재하지 않으면 다음 회귀를 못 잡는다 —
+  #   빨강이 없는 게 아니라 재지 않은 것이다. 신설 시 등재까지가 한 단위.
+  "08_Tests/ops/test_boot_lean_rf_budget.R"
+  "08_Tests/ops/test_rf_prompt_quote_parity.R"
+  "08_Tests/ops/test_rf_reimplement_queue.R"
+  "08_Tests/ops/test_rf_verify_extract_pkgs.R"
+  "08_Tests/reinforcement/test_rf_avoid_target.R"
+  "08_Tests/reinforcement/test_rf_block_design_catalog_parity.R"
+  "08_Tests/reinforcement/test_rf_block_design_code_follows_pick.R"
+  "08_Tests/reinforcement/test_rf_claim_pid_reuse.R"
+  "08_Tests/reinforcement/test_rf_combo_launch_gated_by_review.R"
+  "08_Tests/reinforcement/test_rf_exhaust_delegate.R"
+  "08_Tests/reinforcement/test_rf_grid_consumed_exhausts.R"
+  "08_Tests/reinforcement/test_rf_next_paper_halts_on_pending_request.R"
+  "08_Tests/reinforcement/test_rf_no_active_delegates_next_paper.R"
+  "08_Tests/reinforcement/test_rf_notify_fit_length.R"
+  "08_Tests/reinforcement/test_rf_notify_rank_distinct.R"
+  "08_Tests/reinforcement/test_rf_overlay_stack.R"
+  "08_Tests/reinforcement/test_rf_promote_carry_universe_reset.R"
+  "08_Tests/reinforcement/test_rf_promote_child_exists.R"
+  "08_Tests/reinforcement/test_rf_resume_cell_by_code.R"
+  "08_Tests/reinforcement/test_rf_resume_reuse_result.R"
+  "08_Tests/reinforcement/test_rf_weight_arms_explore.R"
 )
 
 

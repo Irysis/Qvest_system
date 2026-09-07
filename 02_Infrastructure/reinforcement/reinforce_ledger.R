@@ -359,6 +359,47 @@ rf_record_result <- function(layer, base_id, n, grade, essence = NULL,
   invisible(e$attempts[[j]])
 }
 
+#' 닫힌 칸을 되살린다 — **원인이 제거됐을 때만** (2026-09-07)
+#'
+#' ★왜 필요한가: `terminal` 은 켜는 어휘만 있고 끄는 어휘가 없었다. 그 설계는 "닫는 이유는
+#'   구조적 실패(같은 스펙이면 같은 자리에서 죽는다)" 를 상정했는데, 실제로 닫힌 칸의 상당수는
+#'   **일시 실패의 상한 도달**이었고 그 원인이 나중에 하네스 수리로 제거된다. 2026-09-07 실사고:
+#'   qepm:CDaR_LP 칸이 세 entry 연속 워커 90분 초과로 terminal — 원인은 arm 이 아니라 솔버였고
+#'   (cccp 밀집 IPM ~T³ · 월 30초 × 260회 = 130분), lpSolve 사슬로 고치자 0.1초가 됐다. 원인이
+#'   사라졌는데도 그 칸은 영영 미측정으로 남는다 — 미측정 칸은 절약이 아니라 헌법 위반이다.
+#' ★남용 방지: 사유(무엇이 원인이었고 무엇으로 제거됐나)를 필수로 받고, 되살린 이력을
+#'   `reopened` 에 누적한다(지운 기록 없음). essence 가 이미 있는 칸은 되살리지 않는다 —
+#'   그건 재측정 요청이지 미측정 복구가 아니다(측정된 값을 덮는 경로는 이 함수가 아니다).
+#' @param reason 원인 제거 서술. 없이 되살리지 않는다(terminal 이 사유를 요구하는 것과 대칭).
+rf_reopen_attempt <- function(layer, base_id, n, reason, root = .rf_root()) {
+  if (!nzchar(as.character(reason %||% "")))
+    stop("[reinforce_ledger] reopen 은 사유 필수 — 무엇이 원인이었고 무엇으로 제거됐는지 없이 되살리지 않는다")
+  obj <- rf_load(layer, root)
+  i <- .rf_find(obj, base_id)
+  if (is.na(i)) stop(sprintf("[reinforce_ledger] entry 부재: %s", base_id))
+  e <- obj$entries[[i]]
+  j <- which(vapply(e$attempts, function(a) identical(as.integer(a$n), as.integer(n)), logical(1)))
+  if (!length(j)) stop(sprintf("[reinforce_ledger] attempt n=%s 부재 (%s)", n, base_id))
+  j <- j[1]
+  a <- e$attempts[[j]]
+  if (!is.null(a$essence) && !is.null(a$essence$port_t))
+    stop(sprintf("[reinforce_ledger] n=%s 는 이미 측정됐다(port_t=%s) — reopen 대상 아님", n, a$essence$port_t))
+  a$reopened <- c(as.list(a$reopened %||% list()),
+                  list(list(at = format(Sys.time(), "%Y-%m-%dT%H:%M:%S%z"),
+                            reason = as.character(reason),
+                            was_terminal = isTRUE(a$terminal),
+                            was_fail_count = as.integer(a$fail_count %||% 0L),
+                            prev_terminal_reason = as.character(a$terminal_reason %||% ""))))
+  a$terminal <- FALSE          # 재개 대상으로 되돌린다 (러너 pending = essence 없음 ∧ !terminal)
+  a$terminal_reason <- NULL
+  a$fail_count <- 0L           # 재시도 예산도 함께 되돌린다 — 원인이 다르면 상한도 새로 센다
+  e$attempts[[j]] <- a
+  obj$entries[[i]] <- e
+  .rf_write(obj, layer, root)
+  cat(sprintf("[reinforce_ledger] reopen n=%s (%s) — %s\n", n, e$attempts[[j]]$cell_code %||% "?", reason))
+  invisible(e$attempts[[j]])
+}
+
 #' 조기 중단(파킹) — 25회 소진 전에 도훈 결정으로 논문을 접을 때
 #'
 #' ★왜 필요한가: status enum 은 active / exhausted(25회 소진) / graduated(Grade A) 뿐이라
