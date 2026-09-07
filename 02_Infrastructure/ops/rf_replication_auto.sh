@@ -173,6 +173,23 @@ import io,json,sys
 try: d=json.loads(io.open(r'$REQ','rb').read().decode('utf-8'))
 except Exception: sys.exit(1)
 sys.exit(0 if d.get('status')=='pending' else 1)" 2>/dev/null || { jl no_pending_request; exit 0; }
+# ── ★환경 실패 백오프 게이트 (2026-09-07) ───────────────────────
+#   모델 한도 소진은 사람도 리트라이도 못 고친다. 게이트가 없으면 매 tick(≈4분) 빈 CLI
+#   호출이 쌓이고 로그가 오염된다. epoch 로 비교한다 — 문자열 시각은 시간대 표기에 깨진다.
+#   ★재시도 예산을 안 태우므로 기다리는 동안 논문이 skiplist 로 내려앉지 않는다.
+ENV_WAIT=$("$PY" -c "
+import io,json,time
+try: d=json.loads(io.open(r'$REQ','rb').read().decode('utf-8'))
+except Exception: raise SystemExit(0)
+t=d.get('env_retry_after_epoch')
+if isinstance(t,(int,float)) and time.time() < t: print(int(t-time.time()))" 2>/dev/null)
+if [ -n "$ENV_WAIT" ]; then
+  jl halt_env_cooldown "wait_s=$ENV_WAIT" "kind=$("$PY" -c "
+import io,json
+try: print(json.loads(io.open(r'$REQ','rb').read().decode('utf-8')).get('last_env_failure') or '')
+except Exception: print('')" 2>/dev/null)" "note=환경 실패 백오프 중 — 논문 사유 아님"
+  exit 0
+fi
 # ── ★스킵리스트 게이트 (2026-09-04 실사고) ──────────────────────────────────
 #   결합 런처가 스킵리스트 쌍을 재요청하던 결함은 런처 쪽에서 고쳤지만, **이미 쓰인 요청**은
 #   그 수리가 못 막는다. 실측: 15:46 에 수리 전 런처가 쓴 요청이 남아 in_progress 로 죽었고,
@@ -524,25 +541,49 @@ d['status']='failed_needs_session'; d['failure']='agent_abort'
 io.open(r'$REQ','wb').write(json.dumps(d,ensure_ascii=False,indent=1).encode('utf-8'))"
   exit 1
 fi
-# ★환경 실패와 리서치 실패를 구분한다 — 401/인증 만료는 "논문이 어려웠다" 가 아니라
-#   "재인증하면 된다" 이고, 뭉뚱그리면 리서처가 엉뚱한 판단을 한다(2026-08-30 실측: OAuth 만료).
+# ★환경 실패와 리서치 실패를 구분한다 — 401/인증만료·모델 한도 소진은 "논문이
+#   어려웠다" 가 아니라 "환경을 고치거나 기다리면 된다" 이다.
+#   실사고 2026-08-30: OAuth 만료. 실사고 2026-09-07: 충실구현 레인이 Fable 한도에
+#   걸렸는데("You've reached your Fable limit") 이 분기가 그 문구를 안 봐서 no_engine 으로
+#   떨어졌고, 재시도 3회를 태운 뒤 **3편 결합 논문이 skiplist 에 'unreproducible' 로
+#   영구 등재**될 참이었다. 모델이 안 떴다는 사실은 논문에 대한 증거가 아니다.
+# ★같은 날 발견한 두 번째 결함: 알림 블록이 한 번도 나간 적이 없다. 구판은 따옴표 헤레독(quoted delimiter)이라 $ROOT 가 안 풀렸고(리터럴 경로), 문자열 안에 생짜 개행이 있어
+#   파이썬이 파싱에서 죽었다 — 2>/dev/null || true 가 그 죽음을 삼켰다.
+#   ⇒ ROOT 를 argv 로 넘기고 개행은 \n 으로 쓴다(같은 계통 재발 방지 = 검사 B절).
+ENV_FAIL=""
 if grep -qiE "OAuth access token has expired|Failed to authenticate|API Error: 401|Invalid API key" "$LOG" 2>/dev/null; then
-  jl halt_auth_expired "hint=claude 재인증 필요 — 리서치 실패 아님"
-  "$PY" -c "
-import io,json
-d=json.loads(io.open(r'$REQ','rb').read().decode('utf-8'))
-d['status']='pending'                      # ★pending 복원 — 재인증 후 자동 재시도된다
-d['last_env_failure']='claude_auth_expired'
-d['last_env_failure_at']=__import__('time').strftime('%Y-%m-%dT%H:%M:%S%z')
-io.open(r'$REQ','wb').write(json.dumps(d,ensure_ascii=False,indent=1).encode('utf-8'))"
-  "$PY" - <<'PYX' 2>/dev/null || true
-import io, os, time
-m = r"$ROOT/.cache/scheduler_alerts"
+  ENV_FAIL="claude_auth_expired"
+elif grep -qiE "reached your [A-Za-z0-9 .-]*limit|usage limit reached|manage usage credits|rate_limit_error|API Error: 429" "$LOG" 2>/dev/null; then
+  ENV_FAIL="model_quota_exhausted"
+fi
+if [ -n "$ENV_FAIL" ]; then
+  jl halt_env_failure "kind=$ENV_FAIL" "hint=환경 실패 — 리서치 실패 아님(재시도 예산 미소모)"
+  "$PY" - "$REQ" "$ENV_FAIL" "${RP_ENV_COOLDOWN_SEC:-1800}" <<'PYENV'
+import io, json, sys, time
+REQ, KIND, CD = sys.argv[1], sys.argv[2], int(sys.argv[3])
+d = json.loads(io.open(REQ, "rb").read().decode("utf-8"))
+d["status"] = "pending"                     # ★pending 복원 — 환경이 풀리면 자동 재개
+d["last_env_failure"] = KIND
+d["last_env_failure_at"] = time.strftime("%Y-%m-%dT%H:%M:%S%z")
+# ★재시도 예산(auto_retries)을 태우지 않는다 — 모델이 안 떠서 산출이 없는 것은
+#   논문에 대한 증거가 아니다. 구판은 이 경로가 없어 no_engine 3회 → skiplist 로 갔다.
+# ★백오프: 한도는 사람이 못 고친다. 매 tick 재시도하면 빈 호출만 쌓인다.
+#   문자열 비교는 시간대 표기에 깨진다 — epoch 를 게이트의 정본으로 둔다.
+if KIND == "model_quota_exhausted":
+    d["env_retry_after_epoch"] = int(time.time()) + CD
+    d["env_retry_after"] = time.strftime("%Y-%m-%dT%H:%M:%S%z", time.localtime(time.time() + CD))
+io.open(REQ, "wb").write(json.dumps(d, ensure_ascii=False, indent=1).encode("utf-8"))
+PYENV
+  "$PY" - "$ROOT" "$ENV_FAIL" <<'PYX' 2>/dev/null || true
+import io, os, sys, time
+ROOT, KIND = sys.argv[1], sys.argv[2]
+m = os.path.join(ROOT, ".cache", "scheduler_alerts")
 os.makedirs(m, exist_ok=True)
-f = os.path.join(m, "replication_auth_%s.alert" % time.strftime("%Y%m%d"))
+f = os.path.join(m, "replication_env_%s_%s.alert" % (KIND, time.strftime("%Y%m%d")))
+MSG = {"claude_auth_expired": "claude CLI OAuth 만료 — 무인 충실구현 정지. 재인증 필요",
+       "model_quota_exhausted": "충실구현 레인 모델 한도 소진 — 재시도 예산은 안 태웠다. 한도 회복 시 자동 재개"}
 if not os.path.exists(f):
-    io.open(f, "w", encoding="utf-8").write("claude CLI OAuth 만료 — 무인 충실구현 정지. 재인증 필요
-")
+    io.open(f, "w", encoding="utf-8").write(MSG.get(KIND, KIND) + "\n")
 PYX
   exit 2
 fi
