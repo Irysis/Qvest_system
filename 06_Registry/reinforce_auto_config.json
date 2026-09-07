@@ -1,6 +1,6 @@
 {
   "schema": "reinforce_auto_config_v1",
-  "enabled": true,
+  "enabled": false,
   "combination": {
     "enabled": true,
     "note": "★도훈 지시 2026-09-04 — 결합은 rank-Z 평균 blend 가 아니라 **LLM 이 두 논문을 읽고 설계한 전략(기저)**에서 출발한다. 그 기저를 충실구현 1회로 측정해 base_grade 를 얻고, base_min_port_t 가드를 통과한 뒤에야 강화 25칸을 열어야 한다. 그 레인이 서기 전까지 구판 blend 착수를 정지한다 — 정지 중에는 호출자가 다음 논문 충실구현으로 정상 이월한다.",
@@ -171,8 +171,8 @@
     "consumer": "02_Infrastructure/ops/rf_factor_arms.R (B1 조합 후보 풀)",
     "note": "★도훈 지시 2026-09-01. 충실구현 B+ 신호를 팩터 DB 에 등록해 **다음 논문의 B1 조합 후보**로 만든다 — 리서치 산출이 다음 리서치의 입력이 되는 닫힌 루프. 기존 온보딩 계약(add_factor -> build_factor_db -> backfill_custom_factor -> compute_all_factor_ic_monthly)을 우회하지 않고, 수식으로 환원 안 되는 논문 신호는 engine 템플릿(동결 패널)으로 들인다. ★후속 compute_all_factor_ic_monthly 는 필수 — 없으면 Z_Score_Aligned(C13 방향 정렬)가 안 서서 다음 조합에서 방향이 조용히 뒤집힌다. ★알려진 비대칭: 엔진 패널은 K200∪KQ150 범위이고 DB 네이티브는 그 달 전체 상장이라 조합 시 교집합으로 좁혀진다(Coverage 열에 기록). '성과가 좋아서 등록'은 selection 채널이므로 origin·evidence_tier 에 남긴다 — DSR 게이트는 도훈 지시로 넣지 않는다. 되돌리기 = remove_custom_factor(id, from_registry=TRUE)."
   },
-  "disabled_at": "2026-09-07T07:55:43+0900",
-  "disabled_reason": "(해제됨 2026-09-07 09:2x) 직전 정지 = infra_repair — 재개 경로 결과 재사용 · claim pid 재사용 · 감사 레인 4종 · 재구현 큐 소비 · CDaR 솔버 · 닫힌 칸 복구 · 편입 드리프트 21건. 커밋 68f2367b7 · 배터리 수리분 전부 초록. 도훈 지시 2026-09-07 '무인 리서치는 수리 완료 후에 재개하자'.",
+  "disabled_at": "2026-09-07T14:28:22+0900",
+  "disabled_reason": "seam_repair 2026-09-07 (도훈 승인) — 증분 수출본 이음매 소급 정정 중. RAWDATA 재빌드가 도는 동안 워커가 절단된 파일을 읽지 않게 세운다. 정정·검증 후 즉시 true.",
   "_resumed_note": "2026-09-04 도훈 지시 — 격자 커서 결함 수리 후 재개. 수리 전에는 등록 거부 1건이 격자 위치를 영우적 어긋냈다 (cells[[used+1L]] — 개수 기반). 지금은 기록된 cell_code 집합에서 뽑는다 (.rf_free_cells · 검사 test_rf_grid_cursor 23항 양방향). 재개 시점 상태: active RP_20260903_160341_combo 5/25 · 다음 칸 B2_6 · 빈 칸 20.",
   "lcode_mechanism": {
     "enabled": true,
