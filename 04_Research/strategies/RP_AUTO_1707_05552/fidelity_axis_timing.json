@@ -1,0 +1,11 @@
+{
+  "axis": "timing",
+  "verdict": "faithful",
+  "undeclared_changes": [],
+  "signal_mismatch": [],
+  "counterexample": "구성하지 못했다. J=1(engine.R:51)·K=1(engine.R:52·55)·스킵 1개월(engine.R:53)은 논문 1차 설계 6칸(J∈{1,12,24,36,48,60}, K=1) 중 첫 칸과 숫자로 일치한다. 형성창 r1:r2 = i-J .. i-SKIP(engine.R:123~124, i = 신호월 mi 의 인덱스)이므로 J=1 일 때 형성 = 신호월 mi 의 직전달(mi-1) 단일월. 러너 get_execution_date(backtest_harness.R:316~323)는 집행일을 신호월 mi 의 다음달 1거래일로 고정하므로 보유 시작월 t=mi+1 이고, 형성 마지막월(mi-1)은 t-2, 그 사이 t-1(=mi)이 정확히 1개월 스킵된다 — 논문 §2 'skip one month between estimation period and the holding period'와 표기가 일치. 실측 산출물 04_holdings.csv 의 리밸일이 2005-02-01→2005-03-02→2005-04-01 로 매달 연속(중간 월 누락 없음·중첩 없음)이라 K=1 비중첩 매월 재구성과도 일치한다.",
+  "evidence": "arxiv.org/html/1707.05552v1 §2: 'Parameters J and K represent the lengths of estimation period and holding period, respectively.' / 'for the current month t, individual stocks are ranked according to their historical performance during the previous J months... the CSCON (CSMOM) portfolio is constructed at the beginning of each month' / 'we follow the common approach to skip one month between estimation period and the holding period' / 'K-month buy-and-hold return is obtained by longing or shorting the portfolio formed at the month t and then held for K months' / §4.1: 'we consider six kinds of CSCON portfolios with different estimation periods J belonging to {1,12,24,36,48,60} month(s), while the holding period K is fixed to 1 month'. 이 세션이 WebFetch 로 위 문장들을 원문 html 에서 직접 재확인(FIDELITY.json 의 자기신고와 별도 재질의).",
+  "confidence": "high",
+  "checked": "engine.R 상수 .J/.K/.SKIP(51~55) 대 논문 §2·§4.1 원문 · 형성창 인덱싱(123~124) 대 스킵 문장 · 러너 get_execution_date(backtest_harness.R:316~323) 대 '매월 초 구성' 문장 · 04_holdings.csv 실제 리밸일 간격(2005-02-01/03-02/04-01, 매월·중첩 없음) 대 K=1 non-overlapping buy-and-hold 서술.",
+  "note": "이 축(J/K/스킵/리밸주기)만 보면 구현은 논문 1차 설계의 정확한 한 칸(J=1,K=1)을 숫자 그대로 재현한다. 라벨 전체가 adapted 인 사유(순위변수 = 배당 미조정 가격수익률)는 이 축이 아니라 신호 정의 축(FIDELITY changed(6))이다."
+}
