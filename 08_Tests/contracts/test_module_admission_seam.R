@@ -203,6 +203,9 @@ if (is.null(GATE)) {
   chk(!("defensive_admitted" %in% r2$ev) && ("ledger_consumed" %in% r2$ev) &&
       ("defensive_not_admitted" %in% r2$ev),
       "B2 방어형 FALSE → 등재 없이 현행대로 소비만", paste(r2$ev, collapse = ","))
+  chk(!nzchar(paste(r2$note, collapse = "")),
+      "B2b 평범한 비방어형은 텔레그램 줄을 만들지 않는다(소음 억제 · 저널에는 남는다)",
+      paste(r2$note, collapse = "|"))
 
   r3 <- .run_gate(.mk("B3", "F", NULL))
   c3 <- if (length(r3$args)) vapply(r3$args, function(a) as.character(a$code %||% "")[1], "") else ""
@@ -210,6 +213,9 @@ if (is.null(GATE)) {
       any(c3 == "dscore_absent"),
       "B3 defensive_score 부재 → 소비하되 사유가 dscore_absent 로 남는다",
       paste(paste(r3$ev, collapse = ","), paste(c3, collapse = ",")))
+  chk(nzchar(paste(r3$note, collapse = "")) && grepl("dscore_absent", paste(r3$note, collapse = "")),
+      "B3b 방어형 **미산출**은 텔레그램에도 뜬다 — 배선·측정 결손 신호이지 정상 결과가 아니다",
+      paste(r3$note, collapse = "|"))
 
   ## B4 — 러너의 **진짜 조건식**을 꺼내 PORT_t ≥ 문턱에서 FALSE 인지 본다(분기 미진입).
   cond <- tryCatch(GATE$expr[[1]][[2]], error = function(e) NULL)
@@ -306,6 +312,26 @@ if (is.null(BLK)) {
       "C6 run_paper_replication 의 등재 블록이 실제로 등재를 일으킨다 (충실구현·결합·강화 셀 공통 경유)",
       err %||% "카탈로그에 항목 없음")
 }
+
+## C7 — **메모리 sim** 경로. 라이브 레인은 항상 sim_grade 를 넘기는데, replication_harness 의
+##   DAILY_NAV_DT 는 (Date, NAV, NAV_gross) 라 Strategy_Ret 이 없다 — 계약 검증도 소비자도
+##   그 열을 요구한다. 어댑터(rmm_normalize_sim)가 그 모양 차이를 메우는지 실측한다.
+C7 <- .mk("C7", "F", .ds(TRUE))
+set.seed(7); n7 <- 500L
+d7 <- data.table(Date = seq(as.Date("2019-01-01"), by = "day", length.out = n7),
+                 r = rnorm(n7, 2e-4, 0.01))
+sim7 <- list(strategy_xts = xts::xts(d7$r, order.by = d7$Date),
+             DAILY_NAV_DT = data.table(Date = d7$Date, NAV = cumprod(1 + d7$r),
+                                       NAV_gross = cumprod(1 + d7$r + 1e-5)),
+             bm_xts = xts::xts(rnorm(n7, 1e-4, 0.011), order.by = d7$Date),
+             diagnostics = list(n_max = 25L, has_short = FALSE))
+r7c <- RMM$rmm_register_measured(C7$dir, sim_result = sim7,
+                                 catalog_path = TCAT, quarantine_path = TQ)
+MC7 <- fromJSON(TCAT, simplifyVector = FALSE)$modules
+s7 <- tryCatch(readRDS(file.path(ROOT, MC7[[C7$sid]]$sim_result_path)), error = function(e) NULL)
+chk(isTRUE(r7c$registered) && !is.null(s7) &&
+    all(c("Date", "Strategy_Ret") %in% names(as.data.table(s7$DAILY_NAV_DT))),
+    "C7 메모리 sim(Strategy_Ret 없는 harness 모양) → 어댑터가 붙여 등재한다", r7c$code)
 
 cat("\n[D] 격리 — 운영 원장·저널을 건드리지 않는다\n")
 ops <- tryCatch(fromJSON(OPS_CAT, simplifyVector = FALSE)$modules, error = function(e) NULL)

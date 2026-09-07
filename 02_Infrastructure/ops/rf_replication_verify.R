@@ -393,7 +393,11 @@ if (is.finite(.base_pt) && .base_pt < .min_pt && !.resc_ok) {
     .rmm <- new.env(parent = globalenv())     # 전역 %||% 오염 방지 — 격리 적재
     sys.source(file.path(ROOT, "02_Infrastructure/contracts/register_measured_module.R"), envir = .rmm)
     .adm <- .rmm$rmm_admission(.rmm$rmm_read_auth(dirname(ar)))
-    .adm_note <- .rmm$rmm_gate_note(.adm)
+    ## 텔레그램 줄은 **편입됐을 때**와 **방어형이 미산출일 때**만 낸다.
+    ##   전자는 처분이 바뀐 사실이고, 후자는 배선/측정 결손 신호다. 평범한 비방어형
+    ##   (not_defensive)은 매 라운드 반복되는 정상 결과라 소음이 된다 — 저널에만 남긴다.
+    if (isTRUE(.adm$eligible) || identical(as.character(.adm$code)[1], "dscore_absent"))
+      .adm_note <- .rmm$rmm_gate_note(.adm)
     if (isTRUE(.adm$eligible)) {
       .reg <- .rmm$rmm_register_measured(
         dirname(ar), origin_mode = "replication_skipped_base",
