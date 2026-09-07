@@ -1,0 +1,11 @@
+{
+  "axis": "timing",
+  "verdict": "faithful",
+  "undeclared_changes": [],
+  "signal_mismatch": [],
+  "counterexample": "구성하지 못했다. J=1·K=1·skip=1 셀에서 engine.R:123-125 의 형성창(r1:r2 = 달 m-J..m-1)과 러너 get_execution_date(backtest_harness.R:316-323, 신호달의 다음달 첫 거래일)를 결합하면 형성 종료(달 m-1) → 스킵 1개월(달 m, 신호일이 속한 달 자체가 형성-보유 사이 간극) → 보유 개시(달 m+1)가 되어, 논문 §2 '전월 J개월로 순위 후 형성-보유 사이 1개월 스킵'과 정확히 1개월 간극으로 들어맞는다. 반증을 만들려면 논문이 스킵 위치(달 m-1 스킵 vs 달 m 스킵)를 지수식으로 명시해야 하는데 원문(HTML 재질의 2회)에 그 문장 어디에도 t-1/t-2 같은 인덱스가 없어 산문 서술뿐이다 — 숫자로 어긋나는 지점을 짚을 수 없었다.",
+  "evidence": "arxiv.org/html/1707.05552v1 §2 Methodology: 'Parameters J and K represent the lengths of estimation period and holding period, respectively.' / 'individual stocks are ranked according to their historical performance during the previous J months.' / 'we follow the common approach to skip one month between estimation period and the holding period' / '...the CSCON (CSMOM) portfolio is constructed at the beginning of each month during the whole sample period.' / 'K-month buy-and-hold return is obtained by longing or shorting the portfolio formed at the month t and then held for K months.' §4.1: 1차 설계 J∈{1,12,24,36,48,60}, K=1 고정 / 확장 설계 J,K∈{1,6,12,18,24,30,36,42,48,54,60}(11×11=121칸). engine.R:51-53(.J<-1L·.K<-1L·.SKIP<-1L) · engine.R:123-125(형성창 r1:r2) · backtest_harness.R:316-323(get_execution_date, 다음달 첫 거래일) · replication_harness.R:84-90(보유창 = exec_date .. 다음 신호의 exec_date 직전) · stage_artifacts/replication/20260907_172213_22908/00_manifest.json(rebalance_rule='month_end_signal_t_plus_1', frequency='monthly').",
+  "confidence": "medium",
+  "checked": "J(형성 길이)·K(보유 길이·비중첩 여부)·스킵 1개월의 위치·월간 리밸 빈도·1차 설계 6칸 중 선택 칸(J=1,K=1)을 원문(html 2회 재질의: §2 전문 인용 + §4.1 설계 확인)과 engine.R:51-56,105,123-125 + backtest_harness.R get_execution_date + replication_harness.R 보유창 로직 + 실측 manifest(rebalance_rule) 대조.",
+  "note": "논문 §2 는 스킵 위치를 월 인덱스(t-1/t-2 등) 없이 산문으로만 서술해 정확한 지수 대조는 불가능하다 — 구현의 해석(형성 종료 m-1 → 스킵 m → 보유 m+1)은 이 문헌 계열의 표준 관행(Jegadeesh-Titman skip-month convention)과 부합하고 FIDELITY.json changed(3)(8)이 칸 선택·스킵 위치를 정직하게 신고하고 있어 misdeclared 근거는 없다. 축 밖 소견 1줄: FIDELITY.revision 은 '3판은 R 실행 차단으로 미실행 제출(계산은 2판과 동일)'이라 적었는데, 배정된 측정 산출물(00_manifest.json run_datetime 2026-09-07T17:26:54, n_max=71 실측치)은 이번 run_id(20260907_172213_22908)로 실제로 실행된 결과처럼 보인다 — 이 불일치는 undeclared 축 소관."
+}
