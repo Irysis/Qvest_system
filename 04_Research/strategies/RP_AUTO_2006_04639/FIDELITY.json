@@ -1,95 +1,158 @@
 {
   "fidelity": "adapted",
 
-  "kept": "논문의 기전 그대로 — 종목별 변동성 네트워크의 주파수 분해(BK 2018)로 얻은 장·단기 net-directional connectedness(TO−FROM)를 size×30/70 조건부 이중정렬로 NET(d) 팩터로 만들고(식16), 개별 종목의 3년 롤링 β^NET(d)(통제는 시장 하나)로 5분위 정렬해 월간 리밸런싱한다.",
+  "kept": "논문의 기전 그대로 — 종목별 변동성 네트워크의 주파수 분해(BK 2018 GFEVD)로 얻은 장기 net-directional connectedness(TO−FROM, 식 4·6·7)를 중앙값 주가 size × 30/70 조건부 이중정렬로 NET(d) 팩터로 만들고(식 8/16), 개별 종목의 일중수익 R_t 를 시장 하나만 통제한 3년 롤링 회귀(식 17)로 β^NET(d) 를 얻어 5분위 정렬, 최고 20% 로딩 롱 / 최저 20% 로딩 숏(§5.2 다리 그대로)을 가치가중·월간 리밸런싱한다.",
 
-  "changed": "일중 5분 RV 패널 미보유 → 일별 고저범위 Parkinson(1980) 변동성으로 대체하고, N=496 일별 QBLL TVP-VAR 이 하네스에서 실행 불가라 750거래일 롤링 ridge-VAR(창 안 GCV λ)·월별 재추정·단면 150종 상한으로 대체했다. 그 외 신고: 유니버스 K200∪KQ150 + adv20 ≥ 2e8(t−1) · MKT=KOSPI200(무위험 미차감) · 장기 대역 1칸만 산출 · 가치가중 판 선택 · 헤지 다리를 논문의 Q5−Q1 대신 저베타 롱/고베타 숏으로 방향 지정(논문이 그 스프레드를 음(−)으로 보고) · H=100 칸 선택 · 1주=5거래일 이산화 · 3년=종목별 756 유효관측 · 수치/커버리지 가드 8종(아래 changed_checklist 전수).",
+  "changed": "일중 5분 RV 패널 미보유 → 일별 고저범위 Parkinson(1980, sd 척도)으로 대체하고, N=496 일별 양측(u 전후 가중) QBLL TVP-VAR 은 미래참조(PIT)이자 하네스에서 실행 불가라 750거래일 **후행** 롤링 ridge-VAR(창 안 GCV λ)·월별 재추정·단면 150종 상한으로 대체했다. 그 외 신고: 유니버스 K200∪KQ150 + adv20 ≥ 2e8(t−1) · 논문 R_t(일중 텔레스코핑 합) = log(Close/Open) 로 구현(로그가격 해석, 시가/종가 = 그날 첫/마지막 가격) · 초과수익 미차감(R_i·MKT 모두 원수익, MKT = KOSPI200 종가-종가) · 네트워크 실패월은 NET(d) 부재(NA, 이월 없음) · β 창 = 달력 3년 (d−3y, d] 안 유효관측 ≥ 504 · 대역 경계 π/5(저자 소프트웨어 관행) · 장기 대역 1칸(S/L/A 중 L) · 가치가중 판 · H=100 칸 · RV 레벨 투입(논문 무명시) · 중앙값 주가는 단면 150종 안에서 계산 · 수치/커버리지 가드 전수 = changed_checklist. ★헤지 다리는 이 판에서 논문 그대로 되돌렸다(앞 판의 저β 롱 반전 폐기).",
 
-  "paper_original_form": "S&P500 496종 일별 실현변동성 TVP-VAR(QBLL, p=2, H=100)의 주파수별 GFEVD 로 매일 net-directional connectedness 를 산출 → 중앙값 주가 small/big × NET 30/70 조건부 이중정렬 가치가중 to/from 포트폴리오 4개로 NET(d)_t 팩터 생성 → 3년 롤링 R_i = b0 + bMKT·MKT + bNET(d)·NET(d) + e → β^NET(d) 5분위 월간 리밸런싱, 헤지 = 최고 20% 로딩 롱 / 최저 20% 숏 (2009-07-10 ~ 2018-08-31, VW·EW 병기). 결과는 그 헤지가 음(−) — 고민감도 종목이 낮은 수익.",
+  "paper_original_form": "S&P500 496종 일별 실현변동성(5분 수익 제곱합의 제곱근) TVP-VAR(QBLL 양측 커널, p=2, H=100)의 주파수별 GFEVD 로 매일 net-directional connectedness 산출 → 그날 중앙값 주가 small/big × NET 30/70 조건부 이중정렬 가치가중 to/from 포트폴리오 4개로 NET(d)_t 팩터 생성(일중수익 R_t 사용) → 종목별 3년 롤링 R_i = b0 + bMKT·MKT + bNET(d)·NET(d) + e (일별 이동) → β^NET(d) 5분위 월간 리밸런싱, 헤지 = 최고 20% 로딩 롱 / 최저 20% 숏 (2009-07-10 ~ 2018-08-31, VW Table 6 · EW Table 7). 논문은 그 헤지를 음(−)으로 보고한다 — 고민감도 종목이 낮은 수익(초록: 장기 로딩 2sd 당 −14.73%/년 v1 · 1sd 당 −7.66% v2).",
 
   "portfolio_spec": { "construction": "engine_direct" },
 
   "commission_paper": null,
 
   "source_paper": {
-    "title": "Dynamic Network Risk",
+    "title": "Dynamic Network Risk (v1 표제: Dynamic Horizon Specific Network Risk)",
     "authors": "Jozef Barunik, Michael Ellington",
     "arxiv_id": "2006.04639",
-    "version_read": "v2 (2020-07-11)",
+    "version_read": "v1 (html) + v2 (html) 대조 · RV 식의 제곱근은 v1 PDF 텍스트(jina 추출)로 확인",
     "url": "https://arxiv.org/abs/2006.04639",
-    "fulltext_url": "https://arxiv.org/html/2006.04639v2"
+    "fulltext_url": "https://arxiv.org/html/2006.04639v1"
   },
 
+  "audit_response_20260906": [
+    {
+      "finding": "[undeclared] 수익 정의 — 논문 R_t = SUM(p_{t,i} − p_{t,i−1}) = 일중 구간인데 앞 판은 종가-종가 RAWDATA$Ret 을 썼고 미신고",
+      "action": "되돌림. 이 판은 R_t = log(Close_t/Open_t) (텔레스코핑 합 = p_{t,D} − p_{t,0}) 를 식(16) 구성 포트폴리오 수익과 식(17) LHS 둘 다에 쓴다(engine.R §1 .rid · §5 .RET · §6 .BP). RAWDATA$Ret 은 엔진에서 미사용. 남는 해석 2건(로그가격·초과수익)은 changed_checklist 에 신고."
+    },
+    {
+      "finding": "[undeclared] 선언은 '실패 달을 비운다' 인데 코드는 findInterval 로 직전 성공 시그널일 비중을 이월",
+      "action": "되돌림. 날짜→시그널일 사상을 '그 날이 속한 달의 직전 달 월말' 하나로 고정(engine.R .mdt$SigDate). 실패월은 .NETW 에 행이 없어 그 달 전부 NET(d) 부재(NA) 가 되고, 러너 로그에 skip 사유별 개수와 구간 내 부재일 수를 출력한다. 하류 β 창은 유효관측만 세므로 부재일이 조용히 채워지지 않는다."
+    },
+    {
+      "finding": "[signal] 헤지 다리 부호 — 논문은 최고 20% 롱 / 최저 20% 숏인데 앞 판은 반대(신고는 돼 있었음)",
+      "action": "되돌림. 이 판은 논문 §5.2 그대로 최고 20% β^NET 롱 / 최저 20% 숏(engine.R .mk_leg). 측정 스프레드 부호는 논문 Table 6 헤지와 직접 비교 가능하며, 논문이 음(−)을 보고하므로 KR 에서 음이 나와도 논문과 정합이다(강화 단계에서 부호를 다루는 것은 이 파일의 소관 밖)."
+    },
+    {
+      "finding": "[signal] 대역 경계 주파수 — 논문 수치 없음, 앞 판 2π/5 는 저자 관행(π/d)과 다른 사상",
+      "action": "저자 본인 소프트웨어(frequencyConnectedness) 관행 π/d 에 맞춰 wc = π/5 로 변경. 물리적 주기로는 10거래일 초과가 장기 대역이다 — changed_checklist '주 단위 이산화' 에 두 사상을 병기."
+    },
+    {
+      "finding": "[note] paper_values_used_unchanged.rv_transform 이 '논문 값' 칸에 있었으나 논문은 변환을 명시하지 않음 · '표본 기간'.paper 의 '(1년 적립 후)' 부정확 · 중앙값 주가가 상한 150종 부분표본에서 계산되는 파급 미기술 · 지평 칸이 S/L 2개가 아니라 S/L/A 3개",
+      "action": "전부 반영 — RV 레벨 투입은 우리 결정으로 changed_checklist 이동, 표본 기간 서술 수정(2005-07-05 데이터 시작 · 2009-07-10 정렬 개시 ≈ 4년 = 3년 β 창 + 워밍업), 중앙값 계산 모집단 신고, 지평 칸 3개로 정정."
+    }
+  ],
+
   "paper_values_used_unchanged": {
+    "return_definition": "R_t = SUM_{i=1..D}(p_{t,i} − p_{t,i−1}) = p_{t,D} − p_{t,0} = 일중 구간(오버나이트 배제) — log(Close/Open) 으로 정확히 구현(로그가격 해석은 changed_checklist)",
+    "rv_definition": "RV_t = sqrt(SUM_{i=1..D}(p_{t,i} − p_{t,i−1})^2) — 표준편차 척도 (PDF 텍스트에서 √ 확인; html 변환은 radical 을 떨군다)",
     "var_lag_p": 2,
     "truncation_horizon_H": 100,
-    "band_split": "short = 1일~1주 / long = 1주 초과",
-    "row_normalization": "theta(u,inf) 행합으로 정규화 (논문 명시)",
-    "net_definition": "NET_j = TO_j - FROM_j (to connectedness - from connectedness)",
-    "size_split": "그날 중앙값 주가 (market cap 아님 — 논문 문장 그대로 price level)",
+    "band_split": "short = 1일~1주 / long = 1주 초과 (수치 경계는 논문 미명시 — 이산화는 changed_checklist)",
+    "gfevd": "식(4) 분자 σ_kk^{-1} ∫_band |[Ψ e^{-iω} Σ]_{jk}|^2 / 분모 ∫_{-π}^{π} [Ψ e^{-iω} Σ Ψ' e^{iω}]_{jj} · 정규화 [θ~(u,d)]_{jk} = [θ(u,d)]_{jk} / SUM_k [θ(u,∞)]_{jk}",
+    "from_to_net": "식(6) C_{j←•} = 100 × SUM_{k≠j} θ~_{jk} / SUM_{j,k} θ~(u,∞)_{jk} · 식(7) C_{j→•} = 100 × SUM_{k≠j} θ~_{kj} / SUM_{j,k} θ~(u,∞)_{kj} · net = to − from (100× 와 분모 SUM_{j,k}θ~(u,∞) = N 을 그대로 포함)",
+    "size_split": "그날 중앙값 주가 (market cap 아님 — 논문 문장 그대로 'median price level'); small = 중앙값 미만, big = 이상",
     "conditional_sort_percentiles": [0.30, 0.70],
-    "factor_equation": "NET(d)_t = (from_small + to_small)/2 - (from_big + to_big)/2",
-    "beta_regression": "R_i,t = b0 + bMKT*MKT_t + bNET(d)*NET(d)_t + e  (통제 = 시장 하나)",
+    "to_from_naming": "to = net-directional 70th 초과(순전달자) · from = 30th 미만(순수신자) — §3.1 'from denotes portfolios using assets that are most receptive to shocks … to denotes … the strongest shock propagators'",
+    "factor_equation": "NET(d)_t = (from_small + to_small)/2 − (from_big + to_big)/2 (v1 식 8 · v2 식 16)",
+    "beta_regression": "R_{i,t} = b0_i + bMKT_i·MKT_t + bNET(d)_i·NET(d)_t + e_{i,t} — 통제는 시장 하나 (식 17)",
     "beta_window": "3-year rolling",
-    "sort_buckets": "quintile (상/하 20%)",
+    "sort_buckets": "quintile (상/하 20%) — kq = floor(n × 0.20), 양다리 동수",
+    "hedge_legs": "long = 최고 20% β^NET(d) · short = 최저 20% (§5.2 · Table 6 Panel A 캡션) — 이 판에서 논문 그대로",
     "rebalance": "monthly",
-    "rv_transform": "levels — 논문에 로그 변환 언급 없음"
+    "weighting_reported": "VW(Table 6) 와 EW(Table 7) 둘 다 보고 — 우리는 VW 칸(changed_checklist)"
   },
 
   "changed_checklist": [
     {
-      "axis": "데이터 원천",
-      "paper": "5분 간격 일중 로그가격으로 RV_t = sqrt(SUM (p_{t,i}-p_{t,i-1})^2)",
-      "ours": "일별 고저범위 Parkinson(1980): RV_t = sqrt( (log(High/Low))^2 / (4 log 2) )",
-      "why": "일중 패널 미보유. 일별 범위 변동성은 이 문헌 계열(Diebold–Yilmaz 2014 변동성 연결성)의 표준 대체 추정량이고 저장소에도 이미 있다(factor_db_daily_phase6.R D37). 제곱수익(|r_t|)보다 효율이 높아 VAR 신호대잡음을 지킨다."
+      "axis": "수익 정의 — 로그가격 해석",
+      "paper": "R_t = SUM_{i=1..D}(p_{t,i} − p_{t,i−1}), 'p_{t,i} is the intraday price of the asset' (로그 여부 미명시)",
+      "ours": "p 를 로그가격으로 읽어 R_t = log(Close_t / Open_t). 가격 차분의 합이 수익이 되려면 p 가 로그가격이어야 하고(실현변동성 문헌의 표준 표기) 원가격 차분이면 단위가 원(KRW)이라 횡단면 비교가 성립하지 않는다.",
+      "why": "논문이 '로그' 를 쓰지 않아 해석은 우리 것. 텔레스코핑 합 = p_{t,D} − p_{t,0} 이므로 5분 패널 없이 일별 시가·종가(그날 첫/마지막 가격)로 정확히 재현된다. KRX 시가 = 09:00 동시호가, 종가 = 15:30 동시호가(논문 TAQ 의 첫/마지막 5분 표본과 시각은 다르다)."
     },
     {
-      "axis": "네트워크 추정기",
-      "paper": "Quasi-Bayesian Local-Likelihood TVP-VAR, N=496, 일별 갱신",
-      "ours": "750거래일 롤링 창 ridge-VAR(p=2). λ 는 그 창 안에서 GCV 최소점(격자 = max(d^2)*10^seq(-8,1,length=30), 창마다 독립). 잔차공분산은 그 창의 표본공분산.",
-      "why": "N=496 일별 TVP-VAR 은 본 하네스 예산에서 실행 불가. ridge = QBLL 의 Normal 사전의 축소판(가우시안 사전)이고 λ 를 창 안 GCV 로 뽑아 전 표본 최적화를 피한다."
+      "axis": "수익 정의 — 결측 처리",
+      "paper": "없음",
+      "ours": "Open 또는 Close 가 결측·0 이면 그날 R_t = NA. 값 대체 0건. NET(d) 구성 포트폴리오에서는 그 종목이 그날 비중에서 빠지고 잔여 비중으로 재정규화, β 회귀에서는 그 관측이 창에서 빠진다.",
+      "why": "상수 채움은 팩터에 인공 평균회귀를 넣는다. RAWDATA 의 Open 커버리지는 이 세션에서 실측하지 못했다(실행 권한 차단) — 초기 연도 Open 결측이 크면 R_t 부재로 개시가 늦춰지며 그것이 러너 로그(PORTFOLIO 시작일)에 드러난다."
     },
     {
-      "axis": "네트워크 단면 크기",
-      "paper": "S&P500 구성 496종 전부",
-      "ours": "신호일 자격 종목(멤버십∧유동성∧창 전구간 RV 관측) 중 t−1 ADV20 상위 150종 상한. 최소 40종.",
-      "why": "계산량(H·N^3)과 VAR 조건수(k=2N+1=301 vs T=748). 상한 초과 시 선택 기준은 t−1 유동성 하나 — 성과 정보 미사용."
+      "axis": "초과수익 / 시장 통제 변수",
+      "paper": "식(17) 의 R_{i,t} = 'excess return', MKT_t = Ken French 시장 초과수익(일별, 종가-종가)",
+      "ours": "R_i = 원 일중수익(무위험 미차감) · MKT = KOSPI200 종가-종가 수익(BM_DT$BM_Ret, 무위험 미차감). 즉 LHS 는 일중 구간, MKT 는 종가-종가 구간.",
+      "why": "엔진에 주입되는 패널은 RAWDATA·BM_DT 뿐이고 KR 무위험 시계열이 없다. MKT 구간은 논문 문자 그대로(Ken French = 종가-종가) 를 따랐고, 논문 자체가 일중 R_t 와 종가-종가 MKT 를 한 회귀에 넣는 구조다. 절편이 평균을 흡수하나 r_f 의 시변분은 남는다 — 크기 판단은 감사 몫."
+    },
+    {
+      "axis": "데이터 원천 — RV",
+      "paper": "5분 간격 일중 가격으로 RV_t = sqrt(SUM (p_{t,i}−p_{t,i−1})^2) (표준편차 척도)",
+      "ours": "일별 고저범위 Parkinson(1980): RV_t = sqrt( (log(High/Low))^2 / (4 log 2) ) — 같은 표준편차 척도.",
+      "why": "일중 패널 미보유. 일별 범위 변동성은 이 문헌 계열(Diebold–Yilmaz 2014 변동성 연결성)의 표준 대체 추정량이고 저장소에도 이미 있다(factor_db_daily_phase6.R D37). 둘 다 일중 구간(오버나이트 배제) 추정량이다."
+    },
+    {
+      "axis": "RV 변환",
+      "paper": "VAR 에 RV 를 어떤 변환으로 넣는지 미명시(v1/v2 전문에 '로그' 문장 0건)",
+      "ours": "레벨(sd 척도) 그대로 투입.",
+      "why": "부재는 논문 값이 아니라 우리 결정이다(감사 note 반영). 로그를 쓰는 인접 문헌(BK 2018 은 로그 RV)과 다르다."
+    },
+    {
+      "axis": "네트워크 추정기 — 커널 방향 (PIT)",
+      "paper": "QBLL: 'a kernel weighting function that provides larger weights to observations that surround the period whose coefficient and covariance matrices are of interest' — u 전후 양측 관측에 가중(스무딩)",
+      "ours": "후행(one-sided) 750거래일 롤링 창. u 이후 관측은 어떤 가중으로도 쓰지 않는다.",
+      "why": "양측 커널은 시점 u 의 네트워크에 u 이후 데이터를 넣는 미래참조라 PIT C1 위반. 이 변경은 편의가 아니라 규칙이 강제한 것."
+    },
+    {
+      "axis": "네트워크 추정기 — 모형",
+      "paper": "Quasi-Bayesian Local-Likelihood TVP-VAR, N=496, 일별 갱신, conjugate prior",
+      "ours": "750거래일 창 ridge-VAR(p=2). λ 는 그 창 안에서 GCV 최소점(격자 = max(d^2)·10^seq(−8,1,length=30), 창마다 독립). 잔차공분산은 그 창의 표본공분산.",
+      "why": "N=496 일별 TVP-VAR 은 본 하네스 예산에서 실행 불가. ridge = 가우시안 사전의 사후 최빈값(QBLL 의 Normal 사전 축소판)이고 λ 를 창 안 GCV 로 뽑아 전 표본 최적화를 피한다."
+    },
+    {
+      "axis": "네트워크 단면 크기 · 중앙값 계산 모집단",
+      "paper": "S&P500 구성 496종 전부 — 중앙값 주가도 전 단면",
+      "ours": "신호일 자격 종목(멤버십∧유동성∧창 전구간 RV 관측) 중 t−1 ADV20 상위 150종 상한(최소 40종). ★small/big 을 가르는 중앙값 주가는 이 150종 안에서 계산된다(전 자격 종목의 중앙값이 아님).",
+      "why": "계산량(H·N^3)과 VAR 조건수(k=2N+1=301 vs T=748). 상한 초과 시 선택 기준은 t−1 유동성 하나 — 성과 정보 미사용. 중앙값을 단면 안에서 잡아야 small/big 이 75/75 로 갈려 논문의 '절반 분할' 구조가 유지된다."
     },
     {
       "axis": "연결성·팩터 정렬 주기",
-      "paper": "매일 재추정·매일 재정렬",
-      "ours": "월말 거래일에 재추정·재정렬. 네 포트폴리오의 일별 수익은 그대로 산출(비중은 월중 고정 = 일별 리밸런싱, drift 미반영).",
-      "why": "월 250여 회 추정으로도 시변 네트워크는 보존되고, β 회귀에 필요한 NET(d) 일별 시계열은 유지된다."
+      "paper": "매일 재추정·매일 재정렬('each day we sort … daily rebalancing')",
+      "ours": "월말 거래일에 재추정·재정렬. 네 포트폴리오의 일별 수익은 그 다음 달의 매일 산출(비중은 그 달 안 고정 — 시그널일 시총 비중, drift 미반영).",
+      "why": "월 250여 회 추정으로도 시변 네트워크는 보존되고 β 회귀에 필요한 NET(d) 일별 시계열은 유지된다. 실행 예산(월별 ≈ 수 분, 일별 ≈ 시간 단위)."
+    },
+    {
+      "axis": "실패월 처리 — NET(d) 부재",
+      "paper": "없음(전 기간 균형 패널·추정 실패 없음)",
+      "ours": "어떤 월말에 네트워크가 미산출(단면<40 · 커버리지<40 · VAR 실패 · small/big 미완성)이면 그 **다음 달 전부** NET(d) 가 부재(NA) 다. 날짜→시그널 사상은 '직전 달 월말' 하나로 고정돼 이월이 구조적으로 불가능하다. 러너 로그에 skip 사유별 개수 + 구간 내 부재일 수를 출력한다.",
+      "why": "앞 판 감사 지적. 실패를 조용히 채우지 않는다. 부재일은 β 창의 유효관측에서 빠지므로 아래 '창 길이 정의' 의 하한과 결합된다. ★최종 5분위 포트폴리오는 그 월말에도 발행된다(β 는 과거 NET(d) 로 계산 가능) — 부재의 영향은 NET(d) 일별 시계열에만 있다."
+    },
+    {
+      "axis": "창 길이 정의 — β",
+      "paper": "3-year rolling regressions (일별 이동)",
+      "ours": "달력 창 (d − 3년, d] (Feb 29 는 Feb 28 로 사상) 안의 유효 관측(R_i·MKT·NET(d) 모두 유한)만으로 OLS. 유효 관측 ≥ 504(≈ 3년 창의 2/3) 인 종목-월만 β 발행. 월말 시그널일에만 계산(일별 이동값 중 월말 값과 동일).",
+      "why": "달력 3년이 논문 표현에 가장 가깝다. 하한 504 는 우리 수치 — 결측(실패월·거래정지·상장 초기)이 창을 비웠을 때 소수 관측 β 를 막는다."
+    },
+    {
+      "axis": "최종 포트폴리오 미발행 달",
+      "paper": "없음",
+      "ours": "어떤 월말에 정렬 후보가 50 미만이면 PORTFOLIO 에 그 달 행이 없다. 러너(replication_harness)는 다음 발행까지 직전 포트폴리오를 보유한다(러너 규약).",
+      "why": "NET(d) 부재와 달리 최종 포트폴리오의 공백은 러너가 보유 연장으로 처리한다 — 엔진이 아니라 러너의 규약이라 여기 신고한다."
     },
     {
       "axis": "유니버스 / 유동성",
       "paper": "S&P500 (유동성 필터 없음)",
-      "ours": "K200 ∪ KQ150 (날짜별 PIT 시변 멤버십) + adv20 ≥ 2e8 KRW (t−1). 네트워크 단면·NET 정렬·최종 5분위 정렬 세 지점 모두 동일 자격 술어.",
+      "ours": "K200 ∪ KQ150 (날짜별 PIT 시변 멤버십) + adv20 ≥ 2e8 KRW (t−1, 20일 전부 관측 필요). 네트워크 단면·NET 정렬·최종 5분위 정렬 세 지점 모두 동일 자격 술어. 패널 중복행(Ticker,Date) 은 첫 행만 사용.",
       "why": "지시된 축(유니버스 치환 + 유동성 하한)."
     },
     {
-      "axis": "시장 통제 변수",
-      "paper": "MKT = 시장 프리미엄(초과수익)",
-      "ours": "MKT = KOSPI200 수익률(BM_DT$BM_Ret). 무위험 차감 없음.",
-      "why": "엔진에 주입되는 패널은 RAWDATA·BM_DT 뿐이고 KR 무위험 시계열이 없다. 절편이 평균을 흡수하므로 β^NET 에 미치는 영향은 β^MKT 경유로 제한되나, 크기 판단은 감사 몫이라 신고한다."
-    },
-    {
       "axis": "지평 선택",
-      "paper": "단기(1일~1주)·장기(1주 초과) 둘 다 보고",
-      "ours": "장기 대역 하나만 산출·정렬.",
-      "why": "초록 헤드라인이 장기(1sd 당 −7.66% vs 단기 −6.71%). 두 칸을 다 재고 고르면 selection 이 생긴다."
+      "paper": "d ∈ {S, L, A} — 단기(1일~1주)·장기(1주 초과)·집계(전 지평) 셋 다 보고",
+      "ours": "장기 대역 L 하나만 산출·정렬.",
+      "why": "초록 헤드라인이 장기(v1: 2sd 당 −14.73% vs 단기 −12.96%). 세 칸을 다 재고 고르면 selection 이 생긴다."
     },
     {
       "axis": "가중 방식 칸",
-      "paper": "value-weighted 와 equal-weighted 둘 다 보고",
+      "paper": "value-weighted(Table 6) 와 equal-weighted(Table 7) 둘 다 보고",
       "ours": "value-weighted(시총, RAWDATA$Size) 한 칸.",
-      "why": "NET(d) 팩터 구성 포트폴리오가 논문에서 가치가중이라 정렬 판도 같은 칸으로 맞췄다."
-    },
-    {
-      "axis": "헤지 다리 방향",
-      "paper": "long = 최고 20% 로딩, short = 최저 20% (그리고 그 스프레드가 음(−)이라고 보고)",
-      "ours": "long = 최저 20% 로딩, short = 최고 20%. 정렬·분위·가중은 논문 그대로이고 다리 부호만 반대.",
-      "why": "논문 초록이 방향을 명시한다 — 'Stocks with high sensitivities to dynamic network risk earn lower returns' · 장기 로딩 1sd 증가 = 연 −7.66%. 논문 표기대로 Q5−Q1 을 내면 논문 주장이 KR 에서 성립할수록 성과가 음이 되어 측정이 뒤집힌다. 데이터에서 사후로 고른 부호가 아니라 논문 문장에서 온 사전 부호이므로 C13(사후 부호 반전) 사안이 아니고, 엔진도 β 에 −1 을 곱하지 않고 최저 분위를 롱 다리로 고를 뿐이다."
+      "why": "NET(d) 팩터 구성 포트폴리오가 논문에서 가치가중이라 정렬 판도 같은 칸으로 맞췄다. EW 칸 미측정."
     },
     {
       "axis": "H 칸 선택",
@@ -98,40 +161,34 @@
       "why": "기준 칸. 나머지 두 칸은 미측정."
     },
     {
-      "axis": "주 단위 이산화",
-      "paper": "'1 day to 1 week' / 'greater than 1-week'",
-      "ours": "1주 = 5거래일 → 대역 경계 주파수 wc = 2π/5. 장기 = (0, wc], 단기 = (wc, π].",
-      "why": "KRX 주 5거래일. 논문이 거래일 수를 명시하지 않아 이산화는 우리 결정."
-    },
-    {
-      "axis": "창 길이 정의",
-      "paper": "3-year rolling regressions (달력 3년)",
-      "ours": "종목별 직전 756 **유효 관측**(frollsum align='right'). 거래정지·결측 수익일은 창에서 빠지므로 달력 길이가 종목마다 다를 수 있다.",
-      "why": "패널 결측을 채우지 않고(nafill/locf 0건) 관측 수로 창을 정의하는 편이 PIT 상 안전하다."
+      "axis": "주 단위 이산화 — 대역 경계",
+      "paper": "'1 day to 1 week' / 'greater than 1-week' (fn 13: 대역 선택은 subjective, 수치 없음)",
+      "ours": "1주 = 5거래일 → 저자 본인 소프트웨어(frequencyConnectedness) 관행 '경계 = π/d' 에 맞춰 wc = π/5. 장기 = (0, π/5], 단기 = (π/5, π]. 물리적 주기(2π/ω)로는 장기 = 주기 10거래일 초과이고, 주기 5거래일 기준(2π/5)이면 경계가 두 배 높다(앞 판이 그 사상).",
+      "why": "논문이 수치를 안 줘 우리 결정이며, 저자 관행이 가용한 최선의 근거다. 이 경계는 민감도 항목이다."
     },
     {
       "axis": "대역 적분 방식",
       "paper": "주파수 적분(수치 구적)",
-      "ours": "해석적 Toeplitz 가중 — INT_0^wc cos(w·l) dw = sin(wc·l)/l 을 닫힌 형태로 넣어 SUM_{h,m} C[h,m] A_h A_m 로 계산.",
+      "ours": "해석적 Toeplitz 가중 — ∫_0^wc cos(ω·l) dω = sin(wc·l)/l 을 닫힌 형태로 넣어 SUM_{h,m} C[h,m] A_h A_m 로 계산. 대칭 대역 (−wc,−a)∪(a,wc) 는 (0,wc) 의 2배라 분자·분모 비율은 동일.",
       "why": "구적 오차 없이 '장기 + 단기 = 전대역 GFEVD' 가 정확히 성립한다. 근사가 아니라 같은 적분의 폐형이다."
     },
     {
       "axis": "수치 가드 — Parkinson 분산 바닥",
       "paper": "없음",
-      "ours": "sigma^2 를 1e-8 로 하한(= 일별 sigma ≥ 1bp). High==Low(상하한가·무거래) 인 날이 log(0) 로 죽는 것 방지.",
-      "why": "0 분산 날은 VAR 에 로그 없이 들어가지만 하한 자체는 우리가 넣은 것이라 신고."
+      "ours": "sigma^2 를 1e-8 로 하한(= 일별 sigma ≥ 1bp). High==Low(상하한가 직행·무거래) 인 날이 log(1)=0 → RV 0 이 되는 것을 막는다.",
+      "why": "0 분산 날은 VAR 에 그대로 들어가지만 하한 자체는 우리가 넣은 것이라 신고. 같은 날 R_t = log(Close/Open) 은 0 (논문 정의와 일치)."
     },
     {
       "axis": "수치 가드 — 잔차공분산 지터",
       "paper": "없음",
-      "ours": "Sigma <- Sigma + I * (1e-6 * mean(diag(Sigma))).",
-      "why": "GFEVD 가 sigma_kk 로 나누므로 대각이 0 에 붙으면 발산한다."
+      "ours": "Sigma <- Sigma + I · (1e-6 · mean(diag(Sigma))).",
+      "why": "GFEVD 가 σ_kk 로 나누므로 대각이 0 에 붙으면 발산한다."
     },
     {
       "axis": "수치 가드 — VAR 안정성",
       "paper": "없음(QBLL 사전이 안정성 담당)",
-      "ours": "VMA 재귀 중 max|Psi_h| > 1e6 또는 비유한이면 λ 를 격자에서 6칸 올려 재추정(최대 4회). 그래도 실패면 그 달은 네트워크 미산출(포트폴리오 미발행).",
-      "why": "발산한 VMA 의 연결성은 의미가 없다. 실패를 조용히 0 으로 채우지 않고 그 달을 비운다."
+      "ours": "VMA 재귀 중 max|Ψ_h| > 1e6 또는 비유한이면 λ 를 격자에서 6칸 올려 재추정(최대 4회). 그래도 실패면 그 월말은 네트워크 미산출 → 다음 달 NET(d) 부재(위 '실패월 처리' — 이번 판은 코드가 실제로 그렇게 동작한다).",
+      "why": "발산한 VMA 의 연결성은 의미가 없다."
     },
     {
       "axis": "수치 가드 — 대역 분자 클램프",
@@ -142,7 +199,7 @@
     {
       "axis": "수치 가드 — β 공선성",
       "paper": "없음",
-      "ours": "2x2 정규방정식 det > 1e-10 * xmm * xff 이고 xmm>0, xff>0 일 때만 β^NET 발행. 아니면 NA(그 종목-달 미정렬).",
+      "ours": "2x2 정규방정식 det > 1e-10 · xmm · xff 이고 xmm>0, xff>0 일 때만 β^NET 발행. 아니면 NA(그 종목-달 미정렬).",
       "why": "MKT 와 NET(d) 가 창 안에서 거의 공선이면 β 가 폭발한다."
     },
     {
@@ -154,42 +211,51 @@
     {
       "axis": "최소 종목수 요건",
       "paper": "없음",
-      "ours": "네트워크 단면 ≥ 40 · to/from 포트폴리오 각 ≥ 3 · 최종 5분위 정렬 후보 ≥ 50(분위당 ≥ 2). 미달이면 그 달 미발행.",
+      "ours": "네트워크 단면 ≥ 40 · small/big 각 그룹 ≥ 6 · to/from 포트폴리오 각 ≥ 3 · 최종 5분위 정렬 후보 ≥ 50(분위당 ≥ 2). 미달이면 그 달 미발행(네트워크 쪽은 NET(d) 부재, 정렬 쪽은 PORTFOLIO 공백).",
       "why": "얇은 단면의 VW 포트폴리오는 1~2종목 포트폴리오가 되어 팩터가 개별종목 노이즈가 된다."
     },
     {
-      "axis": "결측 수익 처리",
-      "paper": "없음",
-      "ours": "NET(d) 구성 포트폴리오의 일별 수익 = sum(w*Ret)/sum(w) — 그날 수익이 없는 종목(상폐·거래정지)은 비중에서 빠지고 잔여 비중으로 재정규화. 값 대체(0 채움·LOCF) 0건.",
-      "why": "상수 채움은 팩터에 인공 평균회귀를 넣는다."
+      "axis": "중앙값 동률 처리",
+      "paper": "'above and below the day's median price level' (동률 규칙 없음)",
+      "ours": "Close < 중앙값 = small, Close ≥ 중앙값 = big.",
+      "why": "동률(홀수 N 의 중앙 종목)은 big 으로 간다 — 우리 규칙."
     },
     {
       "axis": "표본 기간",
-      "paper": "2009-07-10 ~ 2018-08-31 (1년 데이터 적립 후)",
-      "ours": "2005-01-01 이후 전기간(하네스 start_date). 단 첫 포트폴리오는 워밍업 소진 후 — VAR 창 750거래일 + β 창 756 관측 ≈ 6년치 선행 데이터가 필요하므로 RAWDATA 시작 시점이 실제 개시일을 정한다.",
+      "paper": "데이터 2005-07-05 ~ 2018-08-31 · 정렬 개시 2009-07-10 (≈ 4년 = 3년 롤링 β + 워밍업)",
+      "ours": "2005-01-01 이후 전기간(하네스 start_date). 첫 포트폴리오는 워밍업 소진 후 — VAR 창 750거래일 + NET(d) 유효관측 ≥ 504 ≈ 5년치 선행 데이터가 필요하므로 RAWDATA 시작 시점(과 Open 커버리지)이 실제 개시일을 정한다.",
       "why": "lockbox 폐지(v10) — 가용 데이터 전기간 사용."
+    },
+    {
+      "axis": "최종 포트폴리오 수익 측정",
+      "paper": "Table 6/7 의 5분위·헤지 수익(어떤 일별 수익으로 계산했는지 미명시 — 'excess return' 표현으로 보아 CRSP 종가-종가)",
+      "ours": "러너(replication_harness) 가 RAWDATA$Ret(종가-종가 단순수익)로 보유 수익을 계산한다. 엔진의 일중 R_t 는 팩터·β 산출에만 쓰인다.",
+      "why": "측정은 호출자 계약(엔진 소관 밖). 논문의 포트폴리오 수익도 일중 구간이라는 근거는 없다."
     },
     {
       "axis": "난수·앙상블",
       "paper": "해당 없음",
-      "ours": "난수 0건(set.seed 불필요) · 앙상블 0건 · 초기값 임의 선택 0건. VMA 초기값은 Psi_0 = I, Psi_{-1} = 0 (정의).",
+      "ours": "난수 0건(set.seed 불필요) · 앙상블 0건 · 초기값 임의 선택 0건. VMA 초기값은 Ψ_0 = I, Ψ_{−1} = 0 (정의).",
       "why": "재현성 축 신고 — 숨은 확률적 선택이 없다는 진술."
     }
   ],
 
   "not_changed_but_worth_flagging": [
-    "논문은 realized volatility 를 레벨로 VAR 에 넣는다(로그 변환 문장 없음) — 우리도 레벨. 로그를 쓰는 인접 문헌과 다르지만 논문 표기를 따랐다.",
     "논문의 'median price level' 은 시총이 아니라 주가다. small = 저가주. 우리도 Close 중앙값으로 갈랐다(가중만 시총).",
-    "'to' 포트폴리오 = net-directional 상위 30%(순전달자), 'from' = 하위 30%(순수신자). 논문이 net-directional 하나로 정렬하고 양끝을 to/from 으로 명명한 그대로."
+    "'to' 포트폴리오 = net-directional 상위 30%(순전달자), 'from' = 하위 30%(순수신자). 논문이 net-directional 하나로 정렬하고 양끝을 to/from 으로 명명한 그대로.",
+    "식(6)(7) 의 100× 와 분모 SUM_{j,k} θ~(u,∞) 를 그대로 계산에 넣었다 — 하루 안에서 상수라 순위에는 영향이 없지만 문자 그대로 옮겼다.",
+    "헤지 다리 = 논문 그대로(최고 20% 롱 / 최저 20% 숏). 논문이 이 스프레드를 음(−)으로 보고하므로 측정 결과가 음이면 논문 주장의 KR 재현이고, 양이면 논문과 반대다 — 부호 자체가 판정 정보다.",
+    "논문 R_t 는 5분 로그가격 차분의 합이라 텔레스코핑으로 첫/마지막 가격만 남는다 — 5분 패널이 없어도 R_t 자체는 근사가 아니라 정확 재현이다(가격 표본 시각 차이는 changed_checklist '로그가격 해석' 참조)."
   ],
 
   "pit_notes": {
-    "signal_date": "월말 거래일 d. 하네스가 get_execution_date(d) = 익일에 집행하므로 d 는 t−1.",
-    "windows": "VAR 창 = date_all[(pd−749):pd] · β 창 = 종목별 직전 756 유효관측(align='right') · ADV20 = shift(frollmean(...),1L). 전부 우측정렬·종점 d.",
-    "factor_series": "NET(d) 일별 수익은 신호일 d 의 비중을 d **초과** 날에만 귀속(findInterval(tau−0.5, sig)). 동월 누출 불가.",
+    "signal_date": "월말 거래일 d. 하네스가 get_execution_date(d) = 익월 첫 거래일에 집행하므로 d 는 t−1.",
+    "windows": "VAR 창 = date_all[(pd−749):pd] · β 창 = (d−3y, d] 안 유효관측 · ADV20 = shift(frollmean(...),1L). 전부 우측정렬·종점 d.",
+    "factor_series": "NET(d) 일별 수익은 그 날이 속한 달의 **직전 달 월말** 비중 × 당일 일중수익. 비중 확정일 < 수익일. 실패월은 부재(NA) — 이월 경로 없음.",
+    "kernel_direction": "논문 QBLL 양측 커널(미래참조)을 후행 창으로 대체 — changed_checklist '커널 방향'.",
     "cross_sectional_stats": "중앙값 주가·30/70 백분위·5분위 절단점은 전부 한 날짜 안의 횡단면 통계 — 시계열 미래참조 아님.",
     "no_full_sample": "전 표본 mean/sd/cov/scale/quantile 0건. ridge λ 도 창 안 GCV 라 창마다 다르다.",
-    "not_used": "Factor DB 미접근(C14/C15 무관) · 재무 패널 미사용(C4 무관) · 매크로 미사용(C11 무관) · 오버레이 0건(C5 무관) · shift(-N)/lead()/수동 미래 인덱싱 0건."
+    "not_used": "Factor DB 미접근(C14/C15 무관) · 재무 패널 미사용(C4 무관) · 매크로 미사용(C11 무관) · 오버레이 0건(C5 무관) · shift(-N)/lead()/수동 미래 인덱싱 0건 · RAWDATA$Ret 미사용."
   },
 
   "engine_contract": {
@@ -198,6 +264,8 @@
     "short_gross": 1.0,
     "weighting_within_leg": "value-weighted (RAWDATA$Size)",
     "expected_n_max": "분위당 유니버스의 20% — 고정 축 25종을 넘는다(논문 5분위 정렬의 정의상). engine_direct 라 러너가 자르지 않는다.",
-    "dependencies": ["data.table"]
+    "inputs_used": ["Date", "Ticker", "Open", "High", "Low", "Close", "Vol", "Size", "K200", "KQ150", "BM_DT$BM_Ret"],
+    "dependencies": ["data.table"],
+    "runtime_note": "월별 네트워크 추정 ≈ 1초/월(N≤150, H=100) — 전 구간 수 분. 이 세션은 실행 권한 차단으로 엔진을 돌리지 못했다(문법·논리는 정독 검토만)."
   }
 }
