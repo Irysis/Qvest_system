@@ -1,40 +1,48 @@
 {
-  "fidelity": "faithful",
+  "fidelity": "adapted",
 
-  "fidelity_label_basis": "판정 순서 1단계(논문 그대로 신호·종목수·비중·리밸)로 구현했다. 신호(직전 J개월 '과거 평균수익' 오름차순 10분위 · 형성과 보유 사이 1개월 스킵) · 종목수(데실 = 횡단면의 1/10 × 2 다리) · 다리(패자 데실 롱 / 승자 데실 숏 = CSCON) · 보유·리밸(K=1 · 매월 초 재구성 · 비중첩 buy-and-hold) 이 전부 논문 명시값이고, 논문의 기전을 빼거나 바꾼 곳이 없다. 유니버스 = K200∪KQ150(지시 축) + adv20(t−1) ≥ 2e8(지시 축). 논문이 침묵하는 곳(데실 내 비중 · N 이 10 의 배수가 아닐 때의 분할 · 동률 · 결측 월 처리 · 월말가 규약 · 배당 조정)은 규약을 정해 changed 에 전부 적었다 — 감사가 이 규약을 '변경' 으로 보면 adapted 로 재분류하면 되고, 구현은 그대로다. ★논문이 1차 설계에서 J 6칸(K=1)·확장에서 121칸(J×K)을 보고하므로 이 엔진은 그중 J=1·K=1 한 칸이다(changed(2) — 성과를 보고 고른 값이 아니다).",
+  "fidelity_label_basis": "구조는 논문 그대로다 — 신호(직전 J개월 '과거 평균수익' 오름차순 10분위 · 형성과 보유 사이 1개월 스킵) · 다리(패자 데실 롱 / 승자 데실 숏 = CSCON) · 종목수(데실 = 횡단면의 1/10 × 2 다리) · 보유·리밸(K=1 · 매월 초 재구성 · 비중첩 buy-and-hold) 전부 논문 명시값이고, 유니버스 교체(K200∪KQ150) 외 어떤 스크린도 없다(1판의 유동성 스크린은 제거했다 — changed(2)). 그런데도 faithful 이 아니라 adapted 로 적는 이유는 하나다: 논문의 순위변수 입력은 RESSET 의 배당·분할 조정 월간 총수익인데, 이 저장소의 가격 배관은 분할 조정 수정주가뿐이라 순위변수가 배당 미조정 가격수익률이 된다(changed(6) — 1판 감사 signal 축 verdict=adapted 를 수용하고 데이터층에서 확정했다). J=1 에서는 순위변수가 한 달치라 그 차이가 희석되지 않으므로, 이 라운드의 등급을 논문 기전의 깨끗한 판정으로 읽지 말라는 뜻에서 라벨을 보수 쪽으로 잡았다. 기전만 옮긴 이식이 아니라 데이터층 한계 하나를 뺀 충실구현이다. 논문이 침묵하는 곳(데실 내 비중 · N 이 10 의 배수가 아닐 때의 분할 · 동률 · 결측 월 · 월말가 규약)은 규약을 정해 changed 에 전부 적었다. 칸 = J=1·K=1 — changed(3) 에 선택 규칙과 논문 내 위상을 정직하게 적고 1판의 그릇된 근거(위험조정 생존·t 최고)를 철회했다.",
 
-  "kept": "§2 방법론: 'for the current month t, individual stocks are ranked according to their historical performance during the previous J months. The winner refers to the decile group with the highest past average return and the loser is the decile group with the lowest past average return.' → 직전 J개월 월수익의 산술평균으로 오름차순 10분위, 그룹 1 = 패자, 그룹 10 = 승자. 'By longing the loser (winner) and shorting the winner (loser), the CSCON (CSMOM) portfolio is constructed at the beginning of each month during the whole sample period.' → CSCON = 패자 데실 롱 / 승자 데실 숏, 매월 초 구성(우리 시간축: 월말 시그널 → 익월 첫 거래일 집행). 'To avoid the biased results, we follow the common approach to skip one month between estimation period and the holding period.' → 형성 = 달 m−J .. m−1, 달 m 스킵, 보유 = 달 m+1. 'we consider the buy-and-hold return series of portfolios constructed during the same period. To be specific, K-month buy-and-hold return is obtained by longing or shorting the portfolio formed at the month t and then held for K months.' (Ref. [25] Galariotis·Holmes·Ma 2007 의 비중첩 방식) → K=1 이므로 매월 재구성·중첩 없음. 1차 설계 'six kinds of CSCON portfolios with different estimation periods J belonging to {1, 12, 24, 36, 48, 60} month(s), while the holding period K is fixed to 1 month' → 이 엔진 = J=1·K=1 칸. 'Statistically significant positive (negative) return for CSCON portfolios indicates significant CSCON (CSMOM) effect.' → 방향 정의(양의 CSCON 수익 = 반전). 데이터 'monthly data from the RESSET database, including the dividend-adjusted and split-adjusted monthly returns for all A-share individual stocks' (SHSE·SZSE, 1990-12 ~ 2015-06) → 월간 수익 · 월간 격자. 거래비용 언급 없음(gross). 논문 보고(Table 2, CSCON 월평균 수익): 1990~2014 J=1 0.008(t 1.91) · J=12 0.004(0.80) · J=24 0.009(1.51) · J=36 0.020(2.64) · J=48 0.013(2.50) · J=60 0.015(2.46) / 1997~2014 J=1 0.008(t 3.04) · J=12 0.004(0.88) · J=24 0.010(1.98) · J=36 0.014(2.72) · J=48 0.016(2.79) · J=60 0.017(3.04) / CAPM α(1990~2014) J=1 0.008 · FF3 α J=1 0.009 (J ≥ 24 의 위험조정 수익은 'substantially smaller and become statistically insignificant').",
+  "kept": "§2 Methodology(2-source 축자 일치): 'for the current month t, individual stocks are ranked according to their historical performance during the previous J months. The winner refers to the decile group with the highest past average return and the loser is the decile group with the lowest past average return.' → 직전 J개월 월수익의 산술평균으로 오름차순 10분위, 그룹 1 = 패자, 그룹 10 = 승자. 'By longing the loser (winner) and shorting the winner (loser), the CSCON (CSMOM) portfolio is constructed at the beginning of each month during the whole sample period.' → CSCON = 패자 데실 롱 / 승자 데실 숏, 매월 초 구성(우리 시간축: 월말 시그널 → 익월 첫 거래일 집행). 'To avoid the biased results, we follow the common approach to skip one month between estimation period and the holding period [21,33].' → 형성 = 달 m−J .. m−1, 달 m 스킵, 보유 = 달 m+1(이 문장은 §2 본문의 일반 규정 — J=1 에도 적용). 'we follow the more practical method from Ref. [25] to obtain the buy-and-hold return series rather than exactly follow the process from Ref. [21,22] … K-month buy-and-hold return is obtained by longing or shorting the portfolio formed at the month t and then held for K months.' → K=1 이므로 매월 재구성·중첩 없음. §4.1 1차 설계 'we consider six kinds of CSCON portfolios with different estimation periods J belonging to {1,12,24,36,48,60} month(s), while the holding period K is fixed to 1 month' → 이 엔진 = J=1·K=1 칸. 'Statistically significant positive (negative) return for CSCON portfolios indicates significant CSCON (CSMOM) effect.' → 방향 정의(양의 CSCON 수익 = 반전). §3 Data sets 'we retrieve the monthly data from the RESSET database, including the dividend-adjusted and split-adjusted monthly returns for all A-share individual stocks' → 월간 수익 · 월간 격자 · 전 종목(선별 규칙 없음). 거래비용 서술 없음(gross). 논문 보고(Table 2, CSCON 월평균 수익, Newey-West t): 1990~2014 J=1 0.008(1.91) · J=12 0.004(0.80) · J=24 0.009(1.51) · J=36 0.020(2.64)** · J=48 0.013(2.50)* · J=60 0.015(2.46)* / 1997~2014 J=1 0.008(3.04)** · J=12 0.004(0.88) · J=24 0.010(1.98)* · J=36 0.014(2.72)** · J=48 0.016(2.79)** · J=60 0.017(3.04)**. Table 3(1990~2014, K=1) J=1: CAPM α 0.008(1.48) · FF3 α 0.009(1.66) — 둘 다 별표 없음.",
+
+  "kept_summary": "직전 J개월 과거 평균수익 오름차순 10분위 → 패자 데실 롱 / 승자 데실 숏(CSCON) · 형성-보유 사이 1개월 스킵 · K=1 매월 재구성 · 1차 설계 J=1 칸 · 데실 내 규약 외 논문 명시값 전부 그대로.",
 
   "changed": [
-    "(1) [유니버스 — 지시 축] 논문 = 중국 A주 전 종목(SHSE 1,097 · SZSE 1,757 종, 2015-06 기준, 필터 언급 없음) → K200∪KQ150 개별 종목(시그널일 d 에 RAWDATA 행이 있고 K200|KQ150 플래그가 참 — 러너 .apply_universe(run_paper_replication.R:224~235)와 같은 술어를 엔진이 먼저 적용해 러너 필터는 0행 제거) + adv20(t−1) ≥ 2e8 KRW(ADV20_L1 = shift(frollmean(Close×Vol, 20), 1) by Ticker, C10 · 논문에 유동성 필터 없음). 부수 효과: 횡단면 ≈150~340 이라 데실이 15~34종, 두 다리 합 30~68종 — 고정 축 25 초과는 논문 데실 정의상이며 engine_direct 라 러너가 자르지 않는다(러너가 초과 사실을 로그에 남긴다).",
-    "(2) [선택한 칸 — 논문이 여러 설정을 보고] 1차 설계 6칸(J ∈ {1,12,24,36,48,60}, K=1)과 확장 121칸(J,K ∈ {1,6,…,60}) 중 **J=1 · K=1** 하나만 구현·측정. 근거(성과를 보고 고른 값이 아님): ① 트리아지 후보 라벨 '단기반전' 과 일치 ② 1차 설계의 첫 칸이자 가장 짧은 형성창 ③ 논문 자신의 서술 — 위험조정 후 J ≥ 24 의 수익은 '실질적으로 작아지고 유의성을 잃는다' 고 했고 J=1 은 FF3 α 0.009 가 원수익 0.008 보다 작지 않다 — 즉 논문의 주장이 위험조정을 견디는 칸 ④ 1997~2014 표본에서 t 3.04 로 J=60 과 함께 최고 유의. J=12~60 · K>1 은 미측정(강화 레인 probe · 엔진 상수 .J 로 교체 가능, K>1 은 비중첩 buy-and-hold 재구성이 필요해 이 엔진 밖). ★J=1 에도 스킵 1개월을 그대로 적용했다(논문의 스킵 문장은 J 무관 일반 규정) — 따라서 시그널 = 달 m−1 의 월수익, 보유 = 달 m+1.",
-    "(3) [데실 내 비중 · 다리 합 — 논문 미명시] 논문은 비중 방법을 어디에도 적지 않는다('decile group' · 'longing the loser and shorting the winner' 뿐). 구현 = 데실 내 동일가중(EW), 롱 Σ=+1 · 숏 Σ=−1(달러중립 · 총노출 2.0) — CSCON 수익 = R_패자 − R_승자 가 하네스 결합 GL·L − GS·S(replication_harness.R:105, GL=GS=1)와 정확히 같다. 엔진이 매 리밸일 다리 합을 1e-9 로 검산해 어긋나면 중단. 시가총액가중은 미측정 대안.",
-    "(4) [순위 변수의 산식 · 결측 월 — 논문 '과거 평균수익' 의 구체화] 순위 변수 = 형성창 J개월 월수익의 산술평균(colMeans). J=1 에서는 그 한 달의 월수익과 동일. 월수익 R[m] = P[m]/P[m−1] − 1, P[m] = 그 달력월의 마지막 관측 종가(연속 두 달의 월말 종가가 다 있어야 정의 · 채우지 않음). 논문은 결측 월 처리를 말하지 않는다 → 우리 규약 = **완전 창 요건**(형성창의 J개 월수익이 전부 유한해야 순위 대상, 아니면 그 달 순위 제외 — 건수는 로그 '이력부족 제외' 로 출력). '가용 월만의 평균' 은 미측정 대안. 누적수익 대신 산술평균을 쓴 것은 논문 표현('past average return') 그대로.",
-    "(5) [월말가 · 수익률의 정체] 논문 = RESSET 의 배당·분할 조정 월간 수익. 구현 = 저장소 수정주가(build_cache.R, 분할 조정) 월말 종가 비율 → 배당 재투자 미반영(배당 조정 여부를 이 엔진은 단정하지 않는다 — 우리 Close 가 배당 조정을 담고 있지 않다면 논문과 다르다). 월말 종가 = 그 달력월 안의 마지막 관측 종가(월 말미에 거래정지면 그 이전의 마지막 종가 — PIT 유효하되 stale). 한 달 내 관측이 없으면 그 달 P 결측. 수정주가 아티팩트(분할 미조정 잔재)는 값을 바꾸지 않는다 — 데이터 층(rawdata_sanitize.R) 소관.",
-    "(6) [분할 규약 · 동률 · 정의역 — 논문 미명시] N 이 10 의 배수가 아닐 때 그룹 = ceiling(rank × 10 / N)(그룹 크기 차 ≤ 1, 잔여 미배정 0). 동률 = (평균수익, 종목코드) 결정론 정렬(재현성용, 선택 규칙 아님). 횡단면 N ≥ 10 = '10 그룹' 이 성립하는 정의역(스크린 아님 · 그 외 최소 종목수·커버리지·가격·상장기간 하한 없음 — 논문에도 없다). N < 10 인 달은 미발행(건수 로그).",
-    "(7) [시간 격자 · 스킵의 구현] 시그널 d = 각 달력월 m 의 마지막 거래일(RAWDATA 전 종목 통합). 형성 행 = 월수익 행 (i−SKIP−J+1) .. (i−SKIP), i = 달 m 의 행 → 달 m−J .. m−1(달 m 스킵). 집행 = 달 m+1 첫 거래일(러너 get_execution_date — backtest_harness.R:316: 시그널 달의 다음 달 첫 거래일). 보유 1개월, 매월 전량 재구성(K=1 비중첩). 하네스는 월내 drift 를 Return.portfolio 로 처리하고 매 리밸일 목표비중으로 재설정 — 논문의 1개월 buy-and-hold 와 동일. RAWDATA 의 마지막 달력월은 진행 중(부분월)으로 보고 시그널에서 제외(집행일이 없어 러너도 건너뛴다).",
-    "(8) [표본기간] 논문 1990-12 ~ 2015-06(Table 2 는 1990~2014 · 1997~2014 두 판). 구현 = 엔진은 가용 전 구간을 내고 러너가 2005-01-01 이후로 절단(run_paper_replication.R:252) — 첫 행 = 2005-01 월말 시그널(집행 2005-02 첫 거래일)이라 2005년 1월 보유는 측정에 없다. 워밍업 = 형성창 J+SKIP 개월(J=1: 2개월 — 기간 선택 아님).",
-    "(9) [데이터 위생 — 전수] 종가 유한·>0 행만 · (Ticker,Date) 중복은 첫 행(건수 출력) · Vol 결측일 = 거래대금 결측 → 그 20관측 창의 adv20 결측 → 그 기간 부적격(보수 방향, 0 치환 아님) · 월 인덱스가 비연속이면 중단. winsorize·clip·LOCF·값 치환·난수 0건(엔진은 결정론 — seed 없음).",
-    "(10) [비용 — 병기값의 정체] 논문은 거래비용을 두지 않는다 → commission_paper = null → 러너가 0bps(gross) 병기판을 authoritative_remeasure.json replication.paper_basis 에 적는다(그 값은 이 구현의 무비용 재실행이지 논문 수치가 아니다). 등급 = 15bps 순비용 판(Σ|Δw| 기준 — 매월 두 데실을 전량 교체하는 구성이라 회전율이 크다 · 총노출 2.0). 논문 Table 2 는 월평균 수익(t)·CAPM/FF3 α — 러너 CAGR/SR 과 직접 비교 불가(다리 정의·비용·시장 차이).",
-    "(11) [FACTORS 병행 산출 — 방향 규약] 논문 산출 형태는 포트폴리오지만 전 적격 종목의 순위 변수를 FACTORS(Date, Ticker, Score)로도 낸다(러너 IC·FMB·FF 회귀 진단 + factors_panel 동결 사본). Score = −(직전 J개월 평균 월수익) — 논문이 '가장 낮은 평균수익 데실' 을 롱하므로 낮은 평균수익 = 높은 Score(CSCON 방향). 이것은 신호의 경제적 방향 정의이지 IC 기반 부호 조작이 아니다(fe_lowvol.R 'Score = -vol' 규약 동일 · C13 은 팩터 DB Z_Score_Aligned 의 수동 반전을 겨냥). 엔진의 데실은 원 평균수익 오름차순으로 만든다(논문의 정렬 그대로) — Score 상위 데실 = 패자 데실 = 롱, 동치. 측정(WEIGHTS)은 engine_direct 로 PORTFOLIO 만 쓴다.",
-    "(12) [미구현 — 논문의 시변 분석과 시장조건 회귀] 논문 제목의 'wax and wane' = 5년 이동창(12개월 전진) 으로 CSCON 수익의 시변을 그리고, 그 수익을 시장상태 추세·시장 변동성·유동성·거시 불확실성에 회귀한 서술적 발견('The periods with upward trend of market state, higher market volatility and liquidity, lower macroeconomics uncertainty are related to higher contrarian profitability'). 조건부 규칙·문턱·배분식을 논문이 주지 않으므로 **구성 규칙으로 옮기지 않았다**(옮기면 지어내기 · 오버레이는 C5 규율). 강화 레인 probe: 네 변수로 국면조건부 노출(evidence = paper). CAPM·FF3 α 자체도 판정 산출이 아니라 진단(러너 팩터분석)에 맡긴다.",
-    "(13) [원문 접근 · 실행] arxiv.org/html/1707.05552v1 은 2017 논문이라 HTML 렌더 없음 → arXiv PDF 를 r.jina.ai 텍스트 프록시로 이 세션에서 4회 독립 질의(방법론·데이터 축자 / Table 2 수치·Ref [25]·비중 문장 유무 / 121칸 결과·순위 변수 어휘·스킵 인덱싱·필터 유무 / 초록·저자)해 읽었고 kept 의 인용은 그 추출문이다(단일 소스 · 2-source 대조 불가 · 프록시 1회는 전문 축자 인용을 거부해 수치·짧은 문장으로 좁혀 재질의). ★이 세션은 R 실행이 승인 차단이라 엔진은 미실행 제출 — 정적 검토(괄호 균형 · sprintf 인자 수 23/23 · 탐지기 패턴 대조 · JSON 따옴표)만 했다. 러너 로그의 '월간 종가 패널 …' 줄과 최종 'faithful(셀 J=1 …)' 요약(리밸 개월 · N 범위 · 롱/숏 종목수 · 형성 평균수익 중앙 패자<승자)으로 확인할 것."
+    "(1) [유니버스 — 지시 축] 논문 = 중국 A주 전 종목(Table 1: SHSE 1,097 · SZSE 1,757 종, 2015-06 기준 · §3 선별 규칙 없음) → K200∪KQ150 개별 종목: 시그널일 d 에 RAWDATA 행이 있고 (K200 == TRUE | KQ150 == TRUE) 인 종목 — 러너 .apply_universe(run_paper_replication.R:224~235)와 같은 술어를 엔진이 먼저 적용해 러너 필터는 0행 제거. 데실 브레이크포인트는 이 유니버스 안에서 잡는다(논문은 전 A주 통합 — 유니버스 교체의 직접 귀결). 부수 효과: 횡단면 ≈150~350 이라 데실이 15~35종, 두 다리 합 30~70종 — 고정 축 25 초과는 논문 데실 정의상이며 engine_direct 라 러너가 자르지 않는다(러너가 초과 사실을 로그에 남긴다). has_short = true.",
+    "(2) [유동성 스크린 — 제거 · 1판 감사 지적 수용] 논문은 유동성·거래대금·최소관측 스크린을 어디에도 두지 않는다(§3 'all A-share individual stocks' · 배제 규칙 서술 없음 — 2-source 확인). 1판 엔진은 adv20(t−1) ≥ 2e8 KRW 를 걸고 그것을 '지시된 고정 축'으로 표기했는데, 1계층 SOT(.claude/rules/lean-loop.md 축 2층 표 '충실구현 라운드' 행)는 '유동성 필터 = 논문 우선(paper_faithful)' 이고 LIQ 2e8 은 CLAUDE.md·pit.md 에서 '실투형(강화부터)' 단계 전용이다 — 즉 이 단계에 그 축을 적용할 권위가 없었다. ★이 재구현 프롬프트의 축 절에도 템플릿 문장 '유동성 하한 adv20 ≥ 2e8 은 t-1 로 적용' 이 남아 있어 SOT·감사 지적과 충돌한다 — 논문 원문 + SOT + 이 재구현을 부른 감사 판정 쪽으로 해소했다: **엔진에 유동성 스크린 없음**, 러너도 걸지 않는다(run_paper_replication.R:205 LiqPass 미적용 · strategy_spec liquidity_filter='paper_faithful'). 귀결: 엔진은 Vol 열을 읽지 않는다 · 저유동 종목이 논문처럼 횡단면에 남는다 · 15bps 비용 모델은 그대로(비용이 유동성을 대신 벌하지는 않는다 — 측정 한계로 기록). 유동성 축은 강화 레인(실투형)의 축이다. 이 결정이 부당하다고 판단되면 그 판단 주체는 도훈이다 — 여기서는 충돌을 숨기지 않고 적는다.",
+    "(3) [선택한 칸 — 정정] 논문은 1차 설계 6칸(J ∈ {1,12,24,36,48,60}, K=1)과 확장 121칸(J,K ∈ {1,6,…,60})을 보고하고, 이 엔진은 **J=1 · K=1** 한 칸만 구현·측정한다. 선택 규칙(성과 아님 · 착수 전 고정): 트리아지 후보 라벨 '단기반전' = 논문 자신의 용어 'short-term CSCON effect'(§4.1: 'indicating the presence of both the short-term and long-term CSCON effects in China') = 가장 짧은 형성창 J=1. ★1판 근거 철회: ③ 'J=1 은 위험조정을 견디는 칸' 은 틀렸다 — Table 3 J=1 CAPM α 0.008 (t 1.48) · FF3 α 0.009 (t 1.66) 모두 별표 없음(5% 비유의). 논문의 기준은 크기가 아니라 유의성이고 그 기준으로 J=1 은 위험조정 후 유의하지 않다. ④ '1997~2014 t 3.04 로 최고 유의' 는 성과에 의한 선택 진술이라 선택 근거에서 뺀다(아래는 논문 보고값으로만 적는다). 선택한 칸의 논문 내 위상(정직): 원수익 0.008/월 t 1.91(1990~2014 · 별표 없음) · 0.008 t 3.04**(1997~2014). 논문의 가장 강한 원수익 칸은 J=36(0.020, t 2.64**, 1990~2014)과 J=60(0.017, t 3.04**, 1997~2014)이고, 논문의 위험조정 강조는 CAPM 하 J≥36('The risk-adjusted returns are positive and statistical significant for the CSCON portfolios with longer estimation periods J≥36' — Table 3 CAPM α J=36 0.017(2.56)* · J=48 0.013(2.48)* · J=60 0.015(2.55)*)이며 FF3 하에서는 J≥24 전부 비유의('For larger estimation periods (J≥24), the risk-adjusted returns are substantially smaller and become statistically insignificant' — FF3 α J=24 0.003(0.48) · J=36 0.003(0.52) · J=48 0.005(1.07) · J=60 0.008(1.47)). 즉 논문 전체에서 위험조정을 견디는 칸은 CAPM 하 J≥36 뿐이고 J=1 은 아니다. J=12~60 · K>1 은 미측정 — 엔진 상수 .J 로 교체 가능(강화 레인 probe · evidence=paper), K>1 은 비중첩 buy-and-hold 재구성이 필요해 이 엔진 밖. 스킵 1개월은 J=1 에도 그대로(§2 스킵 문장은 J 무관 일반 규정) — 시그널 = 달 m−1 의 월수익, 보유 = 달 m+1.",
+    "(4) [데실 내 비중 · 다리 합 — 논문 미명시] 논문은 데실 내 비중 방법을 적지 않는다. 'equally-weighted' 는 §2 3문단에 1회 등장하며 Ref [21,22] 의 중첩 포트폴리오 간 평균을 가리키고 논문은 그 방식을 따르지 않는다('Instead, we consider the buy-and-hold return series') — 데실 비중 규정이 아니다. 구현 = 데실 내 동일가중(EW), 롱 Σ=+1 · 숏 Σ=−1(달러중립 · 총노출 2.0). 근거: 논문이 '따른다' 고 한 공통 방법(Ref [21,22,29,31,32,33] — Jegadeesh·Titman 계열)의 데실 포트폴리오가 동일가중이다. CSCON 수익 = R_패자 − R_승자 가 하네스 결합 GL·L − GS·S(replication_harness.R:95~105, GL=GS=1)와 같다. 엔진이 매 리밸일 다리 합을 1e-9 로 검산해 어긋나면 중단. 시가총액가중은 미측정 대안.",
+    "(5) [순위 변수의 산식 · 결측 월 · 월말가 — 논문 '과거 평균수익' 의 구체화] 순위 변수 = 형성창 J개월 월수익의 산술평균(colMeans) — J=1 에서는 그 한 달의 월수익과 동일(누적/산술 구분 무의미). 월수익 R[m] = P[m]/P[m−1] − 1, P[m] = 그 달력월 안의 마지막 관측 종가(월 말미에 거래정지면 그 이전의 마지막 종가 — PIT 유효하되 stale · 한 달 내 관측이 없으면 그 달 P 결측 · 채우지 않음). 논문은 결측 월 처리를 말하지 않는다 → 우리 규약 = 완전 창 요건(형성창의 J개 월수익이 전부 유한해야 순위 대상, 아니면 그 달 순위 제외 — 건수는 로그 '이력부족 제외' 로 출력). '가용 월만의 평균' 은 미측정 대안.",
+    "(6) [수익률의 정체 — 배당 미조정 · 확정 · 라벨 사유] 논문 = RESSET 의 배당·분할 조정 월간 총수익. 구현 = 저장소 수정주가(분할·유상증자 조정) 월말 종가 비율 → 현금배당 미반영. 이 세션에서 데이터층을 직접 확인했다: 02_Infrastructure 전역에 배당락일·ex-dividend·현금배당 조정·개별종목 총수익 패널이 없고(grep 0건 — 'KOSPI200_total_return' 은 벤치마크 id 라벨일 뿐), 배당 필드는 DART 재무패널의 연간 현금흐름 합계(data_collector_dart.R:492·565 Dividends)뿐이라 배당락 시점을 주지 않는다 → 순위변수 = 총수익 − 배당수익률. 영향(방향 있음): 배당락은 가격수익률을 낮추기만 하므로 고배당 종목이 배당락 달에 패자 데실(롱 다리) 쪽으로 밀린다 — KR 은 12월 결산 배당락이 12월 말에 몰려 1월 말 시그널(매년 1회)에 집중되고, 분기배당 종목은 3·6·9월 말에도 축소판으로 반복된다. J=1 은 순위변수가 한 달치라 J≥12 보다 오염 비중이 크다. 배당락일 없이 DPS 로 총수익을 재구성하면 시점을 지어내는 것이라 하지 않았다 — data_gap 에 필요 데이터를 적었다(이 라운드는 산출 디렉터리 밖 쓰기 금지라 큐 적재는 Q-Lead 몫). 손익 측도 하네스 전체가 가격수익률이다(이 엔진 고유의 문제가 아니라 배관의 한계). ★이 항목이 라벨을 faithful 이 아닌 adapted 로 잡은 유일한 사유다.",
+    "(7) [분할 규약 · 동률 · 정의역 — 논문 미명시] N 이 10 의 배수가 아닐 때 그룹 = ceiling(rank × 10 / N)(그룹 크기 차 ≤ 1, 잔여 미배정 0 · 예: N=185 → 패자 18 / 승자 19). 동률 = (평균수익, 종목코드) 결정론 정렬(재현성용, 선택 규칙 아님). 횡단면 N ≥ 10 = '10 그룹' 이 성립하는 정의역(스크린 아님 · 그 외 최소 종목수·커버리지·가격·상장기간 하한 없음 — 논문에도 없다). N < 10 인 달은 미발행(건수 로그).",
+    "(8) [시간 격자 · 스킵의 구현] 시그널 d = 각 달력월 m 의 마지막 거래일(RAWDATA 전 종목 통합). 형성 행 = 월수익 행 (i−SKIP−J+1) .. (i−SKIP), i = 달 m 의 행 → 달 m−J .. m−1(달 m 스킵). 집행 = 달 m+1 첫 거래일(러너 get_execution_date — backtest_harness.R:316~323: 시그널 달의 다음 달 1일 이후 첫 거래일). 보유 1개월, 매월 전량 재구성(K=1 비중첩). 하네스는 월내 drift 를 처리하고 매 리밸일 목표비중으로 재설정 — 논문의 1개월 buy-and-hold 와 동일. RAWDATA 의 마지막 달력월은 진행 중(부분월)으로 보고 시그널에서 제외(집행일이 없다).",
+    "(9) [표본기간 · 워밍업] 논문 1990-12 ~ 2014-12(Table 2 는 1990~2014 · 1997~2014 두 판 · 다른 거래소는 2015-03 까지). 구현 = 엔진은 가용 전 구간을 내고 러너가 2005-01-01 이후로 절단(run_paper_replication.R:252) — 첫 행 = 2005-01 월말 시그널(집행 2005-02 첫 거래일)이라 2005년 1월 보유는 측정에 없다. 워밍업 = 형성창 J+SKIP 개월(J=1: 2개월 — 기간 선택 아님 · 건수 로그 '워밍업 스킵').",
+    "(10) [데이터 위생 — 전수] 종가 유한·>0 행만 · (Ticker,Date) 중복은 첫 행(건수 출력) · Vol 미사용 · 월 인덱스가 비연속이면 중단. winsorize·clip·LOCF·값 치환·난수 0건(엔진은 결정론 — seed 없음). 수정주가 아티팩트(분할 미조정 잔재)는 값을 바꾸지 않는다 — 데이터 층(rawdata_sanitize.R) 소관.",
+    "(11) [비용 — 병기값의 정체] 논문은 거래비용을 두지 않는다(bid-ask spread·비동시거래·유동성 문장은 스킵 1개월 채택의 근거이지 비용 계상이 아님) → commission_paper = null → 러너가 0bps(gross) 병기판을 authoritative_remeasure.json replication.paper_basis 에 적는다(그 값은 이 구현의 무비용 재실행이지 논문 수치가 아니다). 등급 = 15bps 순비용 판(Σ|Δw| 기준 — 매월 두 데실을 전량 교체하는 구성이라 회전율이 크다 · 총노출 2.0). 논문 Table 2 는 월평균 수익(t)·CAPM/FF3 α — 러너 CAGR/SR 과 직접 비교 불가(다리 정의·비용·시장 차이).",
+    "(12) [FACTORS 병행 산출 — 방향 규약] 논문 산출 형태는 포트폴리오지만 전 순위 대상 종목의 순위 변수를 FACTORS(Date, Ticker, Score)로도 낸다(러너 IC·FMB·FF 회귀 진단 + factors_panel 동결 사본). Score = −(직전 J개월 평균 월수익) — 논문이 '가장 낮은 평균수익 데실' 을 롱하므로 낮은 평균수익 = 높은 Score(CSCON 방향). 신호의 경제적 방향 정의이지 IC 기반 부호 조작이 아니다(C13 은 팩터 DB Z_Score_Aligned 의 수동 반전을 겨냥). 엔진의 데실은 원 평균수익 오름차순으로 만든다(논문의 정렬 그대로) — Score 상위 데실 = 패자 데실 = 롱, 동치. 측정(WEIGHTS)은 engine_direct 로 PORTFOLIO 만 쓴다.",
+    "(13) [미구현 — 논문의 시변 분석과 시장조건 회귀] 논문 제목의 'wax and wane' = 5년 이동창(12개월 전진: 'we set the value of a as 12 months and M as 60 months')으로 CSCON 수익의 시변을 그리고 CAPM/FF3 α 의 시변을 보이며, 시장상태(직전 36개월 시장수익 부호) · 시장 변동성(AR(1)-GJR-GARCH(1,1) 조건부 분산) · 유동성(Amihud 비유동성 중앙값 분할) · 거시 불확실성(동행지수 AR(1)-GARCH(1,1) 조건부 분산)의 고·저 국면별 성과와 더미 포함 FF3 회귀(Table 4·5)를 보고한다. 조건부 배분 규칙·문턱은 논문이 주지 않으므로 구성 규칙으로 옮기지 않았다(옮기면 지어내기 · 오버레이는 C5 규율). 강화 레인 probe: 네 변수로 국면조건부 노출(evidence = paper). CAPM·FF3 α 자체도 판정 산출이 아니라 진단(러너 팩터분석)에 맡긴다.",
+    "(14) [원문 접근 — 정정 · 실행 상태] 1판은 'arxiv.org/html/1707.05552v1 은 HTML 렌더 없음' 이라고 선언했는데 사실이 아니다. 이 세션은 그 주소의 완전한 LaTeXML 렌더(초록 · §2 Methodology 전문 · §3 Data sets 전문 · Table 1 · Table 2 12칸 · Table 3 · §4.2/4.3 정의 · Conclusion)를 직접 읽었고, r.jina.ai 의 PDF 텍스트 프록시로 같은 항목을 독립 재질의했다 — 두 소스가 인용 문장과 수치(Table 2 12칸 · Table 3 J=1 CAPM α 0.008(1.48) · FF3 α 0.009(1.66))에서 전부 일치한다(AX-008 2-source 성립). 프록시 1회는 긴 문단의 축자 재현을 거부해 수치·짧은 문장으로 좁혀 재질의했다. ★이 세션은 R 실행이 승인 차단이라 엔진은 미실행 제출 — 정적 검토(괄호 균형 · sprintf 인자 수 · 탐지기·구조검사 패턴 대조 · JSON 파싱)만 했다. 러너 로그의 '월간 종가 패널 …' 줄과 최종 'adapted(구조 = 논문 그대로 …)' 요약(리밸 개월 · N 범위 · 롱/숏 종목수 · 형성 평균수익 중앙 패자<승자)으로 확인할 것."
   ],
 
-  "paper_original_form": "중국 A주 전 종목(SHSE+SZSE, RESSET 배당·분할 조정 월간 수익, 1990-12~2015-06)을 매월 초 직전 J개월 과거 평균수익으로 10분위 → 패자 데실 롱 / 승자 데실 숏 = CSCON(승자 롱/패자 숏 = CSMOM), 형성-보유 사이 1개월 스킵, K개월 비중첩 buy-and-hold(Ref [25]). 1차 설계 J ∈ {1,12,24,36,48,60}·K=1(Table 2: 1990~2014 에서 J ≥ 36 유의 · 1997~2014 에서 J=1 과 J ≥ 24 유의, J=1 0.8%/월 t 3.04 · J=60 1.7%/월 t 3.04), 확장 121칸 J,K ∈ {1,6,…,60}. CAPM·FF3 로 위험조정(J ≥ 24 α 는 유의성 상실 · J=1 α 0.009). 5년 이동창(12개월 전진)으로 CSCON 수익의 시변('wax and wane')을 보이고, 거래소별(SHSE/SZSE) 국면 차이(1994~97 SHSE 모멘텀·SZSE 반전, 2001 이후 양쪽 반전·2005 전후 약화)를 기술, 시장상태 추세·변동성·유동성·거시 불확실성과의 관계를 회귀 — 적응적 시장 가설(AMH) 해석. 거래비용 없음. 트레이딩 규칙(국면 조건부 배분)은 제시하지 않는다.",
+  "changed_summary": "유니버스 K200∪KQ150(지시 축) · 유동성 스크린 없음(1판 제거) · 순위변수 = 배당 미조정 가격수익률(데이터층 한계 → adapted) · 나머지는 논문 침묵 지점의 규약(데실 EW · ceiling 분할 · 완전 창 · N≥10 정의역)과 칸 선택(J=1·K=1, 단기반전 라벨 규칙).",
+
+  "paper_original_form": "중국 A주 전 종목(SHSE+SZSE, RESSET 배당·분할 조정 월간 수익, 1990-12~2014-12)을 매월 초 직전 J개월 과거 평균수익으로 10분위 → 패자 데실 롱 / 승자 데실 숏 = CSCON(승자 롱/패자 숏 = CSMOM), 형성-보유 사이 1개월 스킵, K개월 비중첩 buy-and-hold(Ref [25]). 1차 설계 J ∈ {1,12,24,36,48,60}·K=1(Table 2: 1990~2014 에서 J ≥ 36 유의 · 1997~2014 에서 J=1 과 J ≥ 24 유의 — '단기·장기 CSCON 효과 공존'), 확장 121칸 J,K ∈ {1,6,…,60}. CAPM·FF3 위험조정(Table 3: CAPM α 는 J ≥ 36 유의 · FF3 α 는 J ≥ 24 비유의 · J=1 α 는 두 모형 모두 비유의). 5년 이동창(12개월 전진)으로 CSCON 수익·α·팩터 로딩의 시변('wax and wane')을 보이고 다른 10개 거래소(KSE 포함)로 확장, 시장상태 추세·변동성·유동성·거시 불확실성 고·저 국면별 성과(Table 4)와 더미 포함 FF3(Table 5)로 시장조건 관계를 보고 — 적응적 시장 가설(AMH) 해석. 거래비용 없음. 트레이딩 규칙(국면 조건부 배분)은 제시하지 않는다.",
 
   "portfolio_spec": {
     "construction": "engine_direct",
     "weighting": "ew",
     "rebalance": "monthly",
     "cell": "CSCON J=1 · K=1 · skip=1 (paper primary design J in {1,12,24,36,48,60}, K=1)",
+    "J": 1,
+    "K": 1,
+    "skip_months": 1,
     "n_groups": 10,
     "long_leg": "group 1 = lowest past J-month average monthly return (loser decile), EW, sum +1",
     "short_leg": "group 10 = highest past J-month average monthly return (winner decile), EW, sum -1",
     "holding_months": 1,
     "overlap": "none (K=1; paper uses non-overlapping buy-and-hold per Ref [25])",
-    "membership_filter": "applied in-engine at each signal date with the runner's predicate (RAWDATA row on the date AND K200|KQ150 flag) + adv20(t-1) >= 2e8",
-    "note": "engine_direct: Weight is the paper's decile long/short. n_max = 2 deciles of a 150-340 cross-section (30-68 names) > fixed axis 25 by construction; has_short = true — declared in changed(1)(3)."
+    "universe_filter": "in-engine at each signal date with the runner's predicate (RAWDATA row on the date AND K200|KQ150 flag). No liquidity, price, listing-age or coverage screen — the paper has none (changed(2)).",
+    "note": "engine_direct: Weight is the paper's decile long/short. n_max = 2 deciles of a ~150-350 cross-section (30-70 names) > fixed axis 25 by construction; has_short = true — declared in changed(1)(4)."
   },
 
   "commission_paper": null,
@@ -44,13 +52,16 @@
     "authors": "Huai-Long Shi, Wei-Xing Zhou (East China University of Science and Technology)",
     "arxiv_id": "1707.05552",
     "url": "https://arxiv.org/abs/1707.05552",
-    "fulltext_paths": ["https://r.jina.ai/https://arxiv.org/pdf/1707.05552"],
-    "version_read": "arXiv PDF text via r.jina.ai proxy, four targeted extractions this session (single text source)",
-    "note": "arxiv.org/html/1707.05552v1 has no HTML rendering (2017 paper). Table 2 values and method sentences as extracted; one proxy call refused verbatim table reproduction, re-asked as numeric values + short sentences."
+    "fulltext_paths": [
+      "https://arxiv.org/html/1707.05552v1",
+      "https://r.jina.ai/https://arxiv.org/pdf/1707.05552"
+    ],
+    "version_read": "arxiv.org/html/1707.05552v1 full LaTeXML render (abstract, §2 full, §3 full, Table 1, Table 2 all cells, Table 3, §4.2/4.3 definitions, Conclusion) + r.jina.ai PDF text proxy as independent second source — all quoted sentences and numbers agree (2-source).",
+    "note": "Round-1 claim that the HTML render does not exist was wrong and is retracted (changed(14)). One proxy query refused long verbatim reproduction; re-asked as numbers and short sentences."
   },
 
   "paper_values_used_unchanged": {
-    "ranking_variable": "past average return over the previous J months (arithmetic mean of monthly returns)",
+    "ranking_variable": "past average return over the previous J months (arithmetic mean of monthly returns; at J=1 the single month)",
     "grouping": "decile groups; winner = highest decile, loser = lowest decile",
     "legs": "CSCON = long loser, short winner",
     "formation_timing": "constructed at the beginning of each month; skip one month between estimation period and holding period",
@@ -59,30 +70,52 @@
     "skip_months": 1,
     "holding": "K-month buy-and-hold, non-overlapping (Ref [25]); K=1 → monthly reconstruction",
     "costs": "none stated (gross)",
-    "paper_reported_cell": "J=1,K=1 CSCON: 0.008/month, t 1.91 (1990-2014) · 0.008/month, t 3.04 (1997-2014) · CAPM alpha 0.008 · FF3 alpha 0.009 (1990-2014)"
+    "paper_reported_cell": "J=1,K=1 CSCON: raw 0.008/month t 1.91 (1990-2014, no star) · 0.008/month t 3.04** (1997-2014) · CAPM alpha 0.008 (t 1.48, no star) · FF3 alpha 0.009 (t 1.66, no star) (Table 3, 1990-2014)",
+    "paper_table2_raw_K1": {
+      "1990-2014": { "J1": "0.008 (1.91)", "J12": "0.004 (0.80)", "J24": "0.009 (1.51)", "J36": "0.020 (2.64)**", "J48": "0.013 (2.50)*", "J60": "0.015 (2.46)*" },
+      "1997-2014": { "J1": "0.008 (3.04)**", "J12": "0.004 (0.88)", "J24": "0.010 (1.98)*", "J36": "0.014 (2.72)**", "J48": "0.016 (2.79)**", "J60": "0.017 (3.04)**" }
+    },
+    "paper_table3_alpha_K1_1990_2014": {
+      "CAPM": { "J1": "0.008 (1.48)", "J12": "0.004 (0.72)", "J24": "0.007 (1.35)", "J36": "0.017 (2.56)*", "J48": "0.013 (2.48)*", "J60": "0.015 (2.55)*" },
+      "FF3":  { "J1": "0.009 (1.66)", "J12": "0.008 (1.33)", "J24": "0.003 (0.48)", "J36": "0.003 (0.52)", "J48": "0.005 (1.07)", "J60": "0.008 (1.47)" }
+    }
   },
 
-  "changed_checklist": [
-    { "axis": "값 하한·상한·커버리지", "paper": "없음(전 A주 · 필터 언급 없음)", "ours": "횡단면 N ≥ 10(10 그룹 정의역) · 완전 창 요건(J개 월수익 전부 유한) · 커버리지 비율·최소 거래일·가격·상장기간 하한 없음", "why": "changed(4)(6)" },
-    { "axis": "수치 가드", "paper": "없음", "ours": "없음(winsorize·clip·치환 0건). 종가 유한·>0 행만", "why": "changed(9)" },
-    { "axis": "결측 처리", "paper": "미명시", "ours": "결측 월 = 순위 제외(채우지 않음) · Vol 결측 = adv 결측(부적격) · LOCF 0건", "why": "changed(4)(5)(9)" },
-    { "axis": "난수·재현", "paper": "해당 없음", "ours": "결정론(seed 없음) · 동률 = 종목코드", "why": "changed(6)(9)" },
-    { "axis": "창·워밍업", "paper": "J=1 · 스킵 1", "ours": "동일. 워밍업 = J+SKIP 개월. 마지막 부분월 시그널 제외", "why": "changed(7)(8)" },
-    { "axis": "여러 설정 중 선택", "paper": "J 6칸(K=1) + 121칸(J×K)", "ours": "J=1 · K=1 하나", "why": "changed(2)" },
-    { "axis": "수식 근사", "paper": "'past average return'", "ours": "산술평균(colMeans) · 월수익 = 월말 종가 비율(배당 미반영 가능)", "why": "changed(4)(5)" },
-    { "axis": "비중·다리", "paper": "미명시", "ours": "데실 EW · 롱 Σ+1 / 숏 Σ−1 · 총노출 2.0", "why": "changed(3)" },
-    { "axis": "유니버스·유동성", "paper": "중국 A주 전 종목 · 필터 없음", "ours": "K200∪KQ150 PIT(러너 술어와 동일) + adv20(t−1) ≥ 2e8", "why": "changed(1)" },
-    { "axis": "리밸·보유", "paper": "매월 초 구성 · K=1 비중첩", "ours": "월말 시그널 → 익월 첫 거래일 집행 · 매월 전량 재구성 · 하네스 월내 drift", "why": "changed(7)" },
-    { "axis": "비용", "paper": "없음", "ours": "commission_paper=null → 0bps 병기 + 15bps 등급(Σ|Δw|)", "why": "changed(10)" },
-    { "axis": "미구현 분석", "paper": "5년 이동창 시변 · 시장조건 회귀 · CAPM/FF3 α", "ours": "구성 규칙 아님 → 미구현(진단·강화 probe)", "why": "changed(12)" }
+  "audit_round1_response": [
+    { "finding": "[universe] 유동성필터를 충실구현 지시축으로 오기재", "verdict_accepted": true, "action": "adv20(t−1) ≥ 2e8 스크린 제거 — 엔진은 Vol 을 읽지 않는다. 유니버스 교체 외 스크린 0. 프롬프트 템플릿 문장과의 충돌은 changed(2) 에 명시.", "where": "engine.R §1 적격 집합 · FIDELITY changed(2) · changed_checklist '유니버스·유동성'" },
+    { "finding": "[undeclared] J=1 칸 선택 근거가 논문 t-통계와 반대", "verdict_accepted": true, "action": "근거 ③(위험조정 생존)·④(t 최고) 철회. 선택 규칙 = 트리아지 라벨 '단기반전' = 논문 용어 'short-term CSCON effect' = 최단 형성창(성과 아님). Table 3 α t 값(1.48 · 1.66, 별표 없음)과 논문 내 위상(가장 강한 칸은 J=36·J=60, 위험조정 생존은 CAPM 하 J≥36 뿐)을 정직하게 병기.", "where": "FIDELITY changed(3) · paper_values_used_unchanged.paper_reported_cell/paper_table3_alpha_K1_1990_2014" },
+    { "finding": "[undeclared] 없다고 선언한 원문 경로가 실제로는 열린다", "verdict_accepted": true, "action": "HTML 렌더를 직접 읽고 jina 프록시로 독립 재질의 — 2-source 일치 확인. 1판 선언 철회.", "where": "FIDELITY changed(14) · source_paper.fulltext_paths/version_read" },
+    { "finding": "[undeclared] 유동성 스크린을 '지시 축' 으로 분류", "verdict_accepted": true, "action": "스크린 자체를 제거했으므로 분류 문제도 소멸. 측정 산출물의 liquidity_filter='paper_faithful' 이 이제 엔진 내부와도 일치한다.", "where": "engine.R(스크린 없음) · FIDELITY changed(2)" },
+    { "finding": "[signal] 순위변수 입력 = 배당 미조정 가격수익률", "verdict_accepted": true, "action": "데이터층 재확인(배당락·총수익 패널 부재)으로 '미조정' 확정. 영향 방향·집중 시점(1월 말 시그널 · 분기배당 3/6/9)을 적고, 이 항목을 사유로 라벨을 adapted 로 잡았다. 필요 데이터는 data_gap 에.", "where": "FIDELITY fidelity_label_basis · changed(6) · data_gap" }
   ],
+
+  "changed_checklist": [
+    { "axis": "값 하한·상한·커버리지", "paper": "없음(전 A주 · 선별 규칙 없음)", "ours": "횡단면 N ≥ 10(10 그룹 정의역) · 완전 창 요건(J개 월수익 전부 유한) · 커버리지 비율·최소 거래일·가격·상장기간 하한 없음", "why": "changed(5)(7)" },
+    { "axis": "수치 가드", "paper": "없음", "ours": "없음(winsorize·clip·치환 0건). 종가 유한·>0 행만", "why": "changed(10)" },
+    { "axis": "결측 처리", "paper": "미명시", "ours": "결측 월 = 순위 제외(채우지 않음) · LOCF 0건", "why": "changed(5)(10)" },
+    { "axis": "난수·재현", "paper": "해당 없음", "ours": "결정론(seed 없음) · 동률 = 종목코드", "why": "changed(7)(10)" },
+    { "axis": "창·워밍업", "paper": "J=1 · 스킵 1", "ours": "동일. 워밍업 = J+SKIP 개월. 마지막 부분월 시그널 제외", "why": "changed(8)(9)" },
+    { "axis": "여러 설정 중 선택", "paper": "J 6칸(K=1) + 121칸(J×K)", "ours": "J=1 · K=1 하나 — 규칙 = '단기반전' 라벨(성과 아님) · 논문 내 위상 병기", "why": "changed(3)" },
+    { "axis": "수식 근사", "paper": "'past average return' · 배당·분할 조정 총수익", "ours": "산술평균(colMeans) · 월수익 = 수정주가 월말 종가 비율 = 배당 미조정 가격수익률(확정)", "why": "changed(5)(6)" },
+    { "axis": "비중·다리", "paper": "미명시", "ours": "데실 EW · 롱 Σ+1 / 숏 Σ−1 · 총노출 2.0", "why": "changed(4)" },
+    { "axis": "유니버스·유동성", "paper": "중국 A주 전 종목 · 필터 없음", "ours": "K200∪KQ150 PIT(러너 술어와 동일) · **유동성 스크린 없음**(1판 adv20 ≥ 2e8 제거)", "why": "changed(1)(2)" },
+    { "axis": "리밸·보유", "paper": "매월 초 구성 · K=1 비중첩", "ours": "월말 시그널 → 익월 첫 거래일 집행 · 매월 전량 재구성 · 하네스 월내 drift", "why": "changed(8)" },
+    { "axis": "비용", "paper": "없음", "ours": "commission_paper=null → 0bps 병기 + 15bps 등급(Σ|Δw|)", "why": "changed(11)" },
+    { "axis": "미구현 분석", "paper": "5년 이동창 시변 · 시장조건 국면·회귀 · CAPM/FF3 α", "ours": "구성 규칙 아님 → 미구현(진단·강화 probe)", "why": "changed(13)" }
+  ],
+
+  "data_gap": {
+    "needed": "개별종목 현금배당 조정 총수익 패널 — 배당락일(ex-dividend date) + 사건별 DPS, 또는 배당 재투자 수익률 시계열(KR 전 상장종목, 2004~).",
+    "why": "논문 순위변수·손익이 배당 조정 총수익. 현재 배관은 분할 조정 수정주가뿐이라 J=1 반전의 순위변수가 배당락 달(1월 말 시그널 · 분기배당 3/6/9)에 방향성 오염을 받는다.",
+    "not_done_here": "산출 디렉터리 밖 쓰기 금지 — data_pipeline_queue.json 적재는 Q-Lead 가 한다. DART 연간 배당총액으로 배당락 시점을 가정해 재구성하는 것은 지어내기라 하지 않았다."
+  },
 
   "pit_notes": {
     "signal_date": "달 m 의 마지막 거래일 d. 러너 집행 = 달 m+1 첫 거래일 → 모든 창 종점 ≤ 달 m−1 말 < d (스킵 1개월이 t−1 보다 한 달 더 보수적).",
     "formation": "월수익 행 (i−SKIP−J+1)..(i−SKIP), i = 달 m 의 행 — 행 i 이후 접근 0건. shift(−N)·lead·수동 미래 인덱싱 0건.",
     "cross_sectional_stats": "순위 = 각 시그널일 횡단면(그룹 = ceiling(rank×10/N)). 시계열 전 표본 통계 0건(C1).",
-    "liquidity": "adv20 = shift(frollmean(Close×Vol, 20), 1) by Ticker (C10, 시그널일 제외).",
-    "membership": "시그널일 d 의 RAWDATA 행 K200|KQ150 플래그(C6) — 러너 .apply_universe 와 같은 술어라 러너 필터는 0행 제거.",
+    "liquidity": "스크린 없음(논문 우선). C10 대상 코드 없음 — frollmean·Vol 미사용.",
+    "membership": "시그널일 d 의 RAWDATA 행 (K200 == TRUE | KQ150 == TRUE)(C6) — 러너 .apply_universe 와 같은 술어라 러너 필터는 0행 제거.",
     "sign": "부호 조작 0건(C13 토큰 없음). FACTORS Score = −평균수익 은 논문의 롱 다리 정의(패자 = 롱)를 방향으로 옮긴 것 · 데실 자체는 원값 오름차순.",
     "not_used": "재무 패널(C4 무관) · 팩터 DB(C14/C15 무관) · 오버레이(C5/C9 무관) · 외부 매크로(C11 무관) · 난수."
   },
@@ -93,9 +126,10 @@
     "short_gross": "1.0 exactly per rebalance (asserted 1e-9)",
     "net": "0 by construction (dollar-neutral)",
     "rows": "매 완결 달력월 마지막 거래일 1행 집합 · 러너가 Date ≥ 2005-01-01 절단",
-    "expected_n_max": "2 × ceil(N/10) ≈ 30~68 (N ≈ 150~340). 고정 축 25 초과는 논문 데실 정의상 — engine_direct 라 러너가 자르지 않는다",
+    "expected_n_max": "2 × ceil(N/10) ≈ 30~70 (N ≈ 150~350; 유동성 스크린 제거로 1판보다 N 이 약간 커질 수 있다). 고정 축 25 초과는 논문 데실 정의상 — engine_direct 라 러너가 자르지 않는다",
+    "inputs_read": "RAWDATA: Date · Ticker · Close · K200 · KQ150 (Vol 미사용)",
     "dependencies": ["data.table"],
-    "external_input": "없음 (RAWDATA 가격·거래량·멤버십만)",
+    "external_input": "없음",
     "runtime_note": "월별 행렬 슬라이스 + 정렬 — 수 초. 이 세션은 R 실행이 차단돼 미실행 제출 — 러너 로그 '월간 종가 패널 … 시그널 월말 %d개' 와 최종 요약(리밸 개월 · N · 롱/숏 종목수 · 패자/승자 형성 평균수익 중앙)으로 확인."
   }
 }

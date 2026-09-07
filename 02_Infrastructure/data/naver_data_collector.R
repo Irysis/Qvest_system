@@ -647,7 +647,10 @@ naver_backfill_range <- function(start, end, dry_run = TRUE, cfg = naver_collect
   cmp <- merge(sized[, .(Date, Ticker, Open, High, Low, Close, Vol, Size, Ret,
                          no_trade, size_source)],
                old_win, by = c("Date", "Ticker"), all = TRUE)
-  cmp[, close_changed := !(is.finite(Close) & is.finite(old_Close) & abs(Close - old_Close) < 1e-6)]
+  # ★'바뀌었다' 와 '한쪽에 없다' 를 섞지 않는다 — 부분 티커 실행에서 미수집 행이
+  #   전부 '변경' 으로 세어져 보고서가 두 가지를 한 숫자로 말하게 된다.
+  #   한쪽 부재는 n_old_only / n_new_only 가 따로 센다.
+  cmp[, close_changed := is.finite(Close) & is.finite(old_Close) & abs(Close - old_Close) >= 1e-6]
 
   by_date <- cmp[, .(n = .N,
                      n_old_only = sum(is.na(Close)), n_new_only = sum(is.na(old_Close)),

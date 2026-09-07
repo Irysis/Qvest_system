@@ -68,6 +68,18 @@ if (!length(miss)) ok("ast_load", paste(length(got), "심볼 재도출"))  else
   bad("ast_load", sprintf("AST 에서 못 찾음: %s", paste(miss, collapse = ", ")))
 if (length(miss)) { cat(sprintf("TOTAL: %d pass / %d fail / 0 skipped\n", PASS, FAIL)); quit(status = 1) }
 
+# ── 픽스처 실재 확인 — 없는 픽스처는 '통과'도 '실패'도 아니라 **미측정**이다.
+#   ★.gitignore 의 `*.html` 이 원주가 대조군 픽스처를 삼켰던 자리다(2026-09-07). 그래서
+#   확장자를 .html.txt 로 두고, 여기서 존재를 먼저 재서 신선한 클론에서 조용히 죽지 않게 한다.
+FIX_REQ <- c("sisejson_005930_2018split.txt", "sisejson_032860_seam.txt",
+             "sisejson_305090_limitdown.txt", "sisejson_empty.txt",
+             "sise_day_005930_2018split.html.txt")
+fix_missing <- FIX_REQ[!file.exists(file.path(FIXD, FIX_REQ))]
+if (!length(fix_missing)) ok("fixtures_present", sprintf("%d종 실재", length(FIX_REQ))) else {
+  bad("fixtures_present", sprintf("부재: %s", paste(fix_missing, collapse = ", ")))
+  cat(sprintf("TOTAL: %d pass / %d fail / 0 skipped\n", PASS, FAIL)); quit(status = 1)
+}
+
 CFG_STUB <- list(no_trade_ohl_policy = "fill_from_close", request_sleep_sec = 0,
                  request_jitter_sec = 0, max_failure_rate = 0.02, workers = 1L,
                  max_retries = 0L, retry_backoff_base_sec = 0, request_timeout_sec = 5,
@@ -103,7 +115,7 @@ rd_bytes <- function(f) {
   p <- file.path(FIXD, f)
   rawToChar(readBin(p, "raw", n = file.info(p)$size))
 }
-raw_html <- rd_bytes("sise_day_005930_2018split.html")
+raw_html <- rd_bytes("sise_day_005930_2018split.html.txt")
 if (grepl("2,650,000", raw_html, fixed = TRUE, useBytes = TRUE) &&
     !grepl("2,650,000", rd_bytes("sisejson_005930_2018split.txt"), fixed = TRUE, useBytes = TRUE)) {
   ok("unadjusted_counterexample", "sise_day 픽스처엔 2,650,000 이 있고 siseJson 엔 없다")

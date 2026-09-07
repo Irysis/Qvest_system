@@ -171,6 +171,25 @@ incremental_ohlcvs <- function() {
 
   # 기존 RAWDATA에서 증분 구간의 임시 데이터 제거
   update_dates <- unique(all_long$Date)
+
+  ## ★조정기준 역행 차단 (2026-09-07) — xlsx 수출본은 **원가**이고 naver 는 **수정주가**다.
+  ##   이 교체는 날짜만 보고 덮으므로, 08-31 이후를 포함한 OHLCVS_update.xlsx 가 한 번 들어오면
+  ##   수정주가 구간이 통째로 원가로 되돌아간다. 그 되돌림은 조용하다 — 행 수도 날짜도 맞으니
+  ##   어느 계기도 안 운다. 실측 근거: 삼성 2018-05-04 50:1 분할 전날 종가가 일별시세 2,650,000(원가)
+  ##   vs siseJson 53,000(수정) — 두 원천은 같은 양이 아니다.
+  ##   ⇒ naver 원천 행이 있는 날짜는 이 경로로 덮지 않는다. 정말 되돌리려면 그 의도를 명시해야 한다
+  ##     (env QVEST_ALLOW_BASIS_REGRESSION=1). 부재는 거부이지 통과가 아니다.
+  .adj_dates <- if ("source" %in% names(raw)) unique(raw[source == "naver", Date]) else as.Date(character(0))
+  .clash <- intersect(as.character(update_dates), as.character(.adj_dates))
+  if (length(.clash) && !identical(Sys.getenv("QVEST_ALLOW_BASIS_REGRESSION", "0"), "1")) {
+    stop(sprintf(paste0("[incr_ohlcvs] 조정기준 역행 차단: xlsx(원가)가 naver(수정주가) 구간 %d일을 덮으려 한다 ",
+                        "(%s%s). 의도한 되돌림이면 QVEST_ALLOW_BASIS_REGRESSION=1 로 다시 부르고, ",
+                        "아니면 xlsx 범위를 그 날짜 앞까지로 줄여라."),
+                 length(.clash), paste(head(sort(.clash), 3), collapse = ", "),
+                 if (length(.clash) > 3) " 외" else ""))
+  }
+  if (length(.clash)) cat(sprintf("  ★조정기준 역행을 명시 허용으로 진행: %d일\n", length(.clash)))
+
   n_replaced <- raw[Date %in% update_dates, .N]
   raw <- raw[!Date %in% update_dates]
   cat(sprintf("  기존 데이터 교체: %s rows (날짜 %d일)\n",
