@@ -302,13 +302,30 @@ krx_merge_rawdata <- function() {
   for (col in setdiff(rawdata_cols, names(new_rows))) {
     new_rows[, (col) := NA]
   }
+  # ★NA-fill 루프가 source 를 NA 로 채우고 지나갈 수 있다(위 태그가 조건부라서).
+  #   라벨 NA 는 우선순위 판정에서 '모른다' = stop 이고, 그러면 일일 배관이 죽는다.
+  #   이 writer 가 만든 행의 출처는 아는 값이므로 여기서 되찍는다(추측이 아니라 사실).
+  if (nrow(new_rows)) new_rows[is.na(source) | !nzchar(as.character(source)), source := "krx_api"]
   setcolorder(new_rows, rawdata_cols)
 
   # Append to existing RAWDATA
   # ignore.attr=TRUE: 무신규 데이터일(주말/휴장, new 0 tickers) 컬럼 class-attr 불일치로
   # rbindlist halt 나던 것 방지 (값은 동일 날짜형, attr만 상이; 아래 unique/setorder가 정합). 2026-06-13
   combined <- rbind(old_raw, new_rows, fill = TRUE, ignore.attr = TRUE)
-  combined <- unique(combined, by = c("Date", "Ticker"))
+  # ── 원천 우선순위 경유 (2026-09-07 도훈 지시) ─────────────────────────────
+  #   구판은 `unique(combined, by=c("Date","Ticker"))` 였다. unique() 는 **첫 행**을
+  #   남기므로 old_raw 가 이기는데, 그건 규칙이 아니라 rbind 인자 순서라는 우연이다.
+  #   순서를 한 줄 바꾸면 판정이 조용히 뒤집힌다. 승패는 정본이 정한다:
+  #   06_Registry/rawdata_source_priority.json (krx_api = 퇴역 임시 레인 = 최하위).
+  #   ★빈 자리(gap 메우기)는 incumbent 가 없으므로 그대로 채워진다 — 이 경로의 본래 목적.
+  if (!exists("rawdata_priority_dedup")) source(file.path(DATA_DIR, "rawdata_source_priority.R"))
+  .ded <- rawdata_priority_dedup(combined, context = "krx_merge/rawdata")
+  if (.ded$n_dropped > 0L) {
+    cat(sprintf("[krx_merge] 우선순위 중복 해소: %s행 제거\n",
+                format(.ded$n_dropped, big.mark = ",")))
+    print(.ded$dropped_by)
+  }
+  combined <- .ded$dt
   setorder(combined, Date, Ticker)
 
   # [fix 2026-06-17] Windows arrow mmap(error 1224): read_parquet(RAWDATA_CACHE) mmap

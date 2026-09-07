@@ -266,7 +266,10 @@ if (!length(contract)) {
   produced <- c("Date", "Ticker", "source", get("NAVER_VALUE_COLS", envir = SBX))
   # 값 축은 이 writer 가 산출, 나머지(Name/Market/Sector/BM_Ret)는 **승계**로 충족된다.
   inherited <- setdiff(contract, produced)
-  synth <- data.table(Date = as.Date("2026-08-31"), Ticker = "A000001", source = NA_character_)
+  # ★2026-09-07 저녁: 갱신은 이제 **원천 우선순위**를 경유한다(퀀티 정본 · naver 보충).
+  #   source 가 NA 면 '출처 미상 = 판정 불가' 로 정지한다 — 이 축이 재는 건 스키마 계약이지
+  #   우선순위가 아니므로, 이 writer 자신의 레인(naver)을 incumbent 로 둔다.
+  synth <- data.table(Date = as.Date("2026-08-31"), Ticker = "A000001", source = "naver")
   for (cc in contract) if (!cc %in% names(synth)) synth[, (cc) := NA_real_]
   upd_cols <- c("Date", "Ticker", get("NAVER_VALUE_COLS", envir = SBX))
   applied <- get(".naver_apply_update", envir = SBX)(synth, synth[, ..upd_cols])
@@ -282,6 +285,11 @@ if (!length(contract)) {
 #──────────────────────────────────────────────────────────────────────────────
 # ⑦ 값 갱신이 **승계 축**을 보존한다 (삭제 후 append 가 아니다)
 #──────────────────────────────────────────────────────────────────────────────
+# ★2026-09-07 저녁 재구성: 갱신이 **원천 우선순위**를 경유하게 됐다(퀀티 정본 · naver 보충).
+#   구판 픽스처는 incumbent 를 전부 quantiwise_update 로 두고 naver 가 덮기를 기대했는데,
+#   그 기대가 이제 도훈 설계와 반대다. 이 축이 재는 것은 승계(K200/Sector 생존)이므로
+#   **갱신 가능한 레인(A000001=naver)** 위에서 재고, 옆 칸(A000002=quantiwise_update)을
+#   보존 대조군으로 같이 둔다 — 한 픽스처에서 두 명제가 갈린다.
 raw_syn <- data.table(
   Date = rep(as.Date(c("2026-08-28", "2026-08-31")), each = 2),
   Ticker = rep(c("A000001", "A000002"), 2),
@@ -290,26 +298,31 @@ raw_syn <- data.table(
   Market = "KOSPI", AdminStock = 0, TradingHalt = 0, UnfaithfulDisc = 0,
   BM_Ret = 0.01,
   Open = 1, High = 1, Low = 1, Close = c(100, 200, 110, 210), Vol = 10, Size = 1e9,
-  Ret = 0, source = "quantiwise_update")
+  Ret = 0, source = c("naver", "quantiwise_update", "naver", "quantiwise_update"))
 upd_syn <- data.table(Date = as.Date("2026-08-31"), Ticker = c("A000001", "A000002", "A000003"),
                       Open = c(105, 205, 5), High = c(115, 215, 6), Low = c(95, 195, 4),
                       Close = c(112, 212, 5.5), Vol = c(11, 21, 3), Size = c(2e9, 3e9, 4e8),
                       Ret = c(0.02, 0.01, NA_real_))
 ap <- get(".naver_apply_update", envir = SBX)(raw_syn, upd_syn)
 d <- ap$dt
-keep_ok <- nrow(d) == 5L && ap$n_updated == 2L && ap$n_appended == 1L &&
+keep_ok <- nrow(d) == 5L && ap$n_updated == 1L && ap$n_appended == 1L &&
+  identical(ap$n_skipped, 1L) &&
   identical(d[Date == as.Date("2026-08-31") & Ticker == "A000001"]$K200, 1) &&
   identical(d[Date == as.Date("2026-08-31") & Ticker == "A000001"]$Sector, "반도체") &&
   identical(d[Date == as.Date("2026-08-31") & Ticker == "A000001"]$Close, 112) &&
   identical(d[Date == as.Date("2026-08-28") & Ticker == "A000001"]$Close, 100) &&   # 창 밖 불변
   identical(d[Date == as.Date("2026-08-31") & Ticker == "A000001"]$source, "naver") &&
-  identical(d[Date == as.Date("2026-08-28") & Ticker == "A000001"]$source, "quantiwise_update")
+  # ★보존 대조군 — 상위 원천(quantiwise_update)은 값도 라벨도 안 바뀐다
+  identical(d[Date == as.Date("2026-08-31") & Ticker == "A000002"]$Close, 210) &&
+  identical(d[Date == as.Date("2026-08-31") & Ticker == "A000002"]$source, "quantiwise_update")
 if (keep_ok) {
   ok("update_preserves_inherited_axes",
-     sprintf("갱신 %d · 추가 %d · K200/Sector/BM_Ret 보존 · 창 밖 불변", ap$n_updated, ap$n_appended))
+     sprintf("갱신 %d · 스킵 %d(상위 원천 보존) · 추가 %d · K200/Sector/BM_Ret 보존 · 창 밖 불변",
+             ap$n_updated, ap$n_skipped, ap$n_appended))
 } else {
   bad("update_preserves_inherited_axes",
-      sprintf("n=%d upd=%d add=%d K200=%s Close31=%s Close28=%s", nrow(d), ap$n_updated, ap$n_appended,
+      sprintf("n=%d upd=%d skip=%d add=%d K200=%s Close31=%s Close28=%s", nrow(d),
+              ap$n_updated, ap$n_skipped, ap$n_appended,
               paste(d[Date == as.Date("2026-08-31") & Ticker == "A000001"]$K200, collapse = ""),
               paste(d[Date == as.Date("2026-08-31") & Ticker == "A000001"]$Close, collapse = ""),
               paste(d[Date == as.Date("2026-08-28") & Ticker == "A000001"]$Close, collapse = "")))

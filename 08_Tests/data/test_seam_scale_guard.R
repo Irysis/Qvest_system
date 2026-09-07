@@ -351,6 +351,10 @@ if (is.null(blk_i)) {
   e <- new.env(parent = globalenv())
   assign("raw", copy(fx), envir = e)
   assign("update_dates", DU, envir = e)
+  # ★2026-09-07 저녁: 블록이 경계를 `source` 전환점 차집합에서 **재도출**하게 바뀌었다.
+  #   교체 전 source 지도(.src_before)는 이 블록 앞에서 만들어지므로 픽스처가 공급한다.
+  #   안 주면 블록은 fail-safe 로 min(update_dates) 에 후퇴하고 그 후퇴가 초록으로 보인다.
+  assign(".src_before", copy(fx)[, .(Date, source)], envir = e)
   assign("DATA_DIR", file.path(PROJ, "02_Infrastructure/data"), envir = e)
   sc_calls <- 0L
   assign("seam_write_sidecar", function(rep, label, ...) {
@@ -365,13 +369,18 @@ if (is.null(blk_i)) {
     # ★같은 블록에서 처분 호출만 지운 변이는 오염이 살아남아야 한다 — 이 축이
     #   "블록이 돈다" 를 재고 있는지(아니면 그냥 초록인지) 자기 실증한다.
     mut <- local({
-      txt <- gsub("raw <- seam_apply_actions(raw, seam_rep)", "invisible(seam_rep)",
-                  blk_i, fixed = TRUE)
+      # ★변이는 **이름을 적어 지우지 않는다** — 처분 함수 자체를 무력화한다.
+      #   구판은 소스 문자열 `raw <- seam_apply_actions(raw, seam_rep)` 를 치환했는데,
+      #   러너가 다중 이음매 루프로 바뀌자 그 문자열이 사라져 변이가 조용히 no-op 이 됐다
+      #   (소스 텍스트 단정은 리팩터가 옮기는 좌표를 못박는다 — 2026-09-05 카드).
+      #   소비 지점(함수 이름)을 가리면 러너가 어떻게 바뀌어도 변이가 성립한다.
       em <- new.env(parent = globalenv())
       assign("raw", copy(fx), envir = em); assign("update_dates", DU, envir = em)
+      assign(".src_before", copy(fx)[, .(Date, source)], envir = em)
       assign("DATA_DIR", file.path(PROJ, "02_Infrastructure/data"), envir = em)
       assign("seam_write_sidecar", function(...) "", envir = em)
-      tryCatch({ eval(parse(text = txt), envir = em)
+      assign("seam_apply_actions", function(dt, rep) dt, envir = em)
+      tryCatch({ eval(parse(text = blk_i), envir = em)
         dm <- get("raw", envir = em)
         abs(dm[Ticker == "SPLIT5" & Date == SEAM, Ret] - (502.5 / 102 - 1)) < 1e-12
       }, error = function(z) FALSE)

@@ -29,16 +29,9 @@ source(file.path(DATA_DIR, "seam_scale_guard.R"))
 
 SEAM_REPAIR_RAWDATA <- file.path(CACHE_DIR, "rawdata.parquet")
 
-#' 이음매 재도출 — source 열의 지배 소스가 바뀌는 거래일.
-seam_detect <- function(dt) {
-  cnt <- dt[!is.na(source), .N, by = .(Date, source)]
-  setorder(cnt, Date, -N)
-  dom <- cnt[, .(src = source[1]), by = Date]
-  setorder(dom, Date)
-  dom[, prev := shift(src)]
-  out <- dom[!is.na(prev) & src != prev, .(seam_date = Date, from = prev, to = src)]
-  out
-}
+# ★seam_detect() 는 2026-09-07 에 **가드 정본(seam_scale_guard.R)으로 이관**했다.
+#   소비자가 셋(이 도구 · incremental_update_file 의 덮어쓰기 후 재검사 · 우선순위 배관)이라
+#   한쪽에만 두면 다음 사람이 또 한쪽만 고친다. 위 source() 로 이미 들어와 있다.
 
 #' 무인 루프 킬스위치 재도출 (진술이 아니라 파일에서).
 seam_autoloop_enabled <- function(root = PROJECT_ROOT) {

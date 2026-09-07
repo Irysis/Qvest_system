@@ -66,8 +66,31 @@ incremental_rawdata <- function() {
 
     api_only <- old_raw[Date > xlsx_max]
     if (nrow(api_only) > 0) {
+      # ── 원천 라벨 복구 ────────────────────────────────────────────────────
+      #   build_cache.R 은 base xlsx 를 그대로 세우고 `source` 를 찍지 않는다(라벨은
+      #   rawdata_sanitize.R Step 7 이 나중에 "quantiwise" 로 채운다). 라벨 없이 병합하면
+      #   우선순위를 판정할 축이 없다 — 여기서 같은 기본값으로 복구한다(관측이 아니라
+      #   **선언된 출처**라는 사실을 라벨에 남긴다).
+      if (!"source" %in% names(new_raw)) new_raw[, source := "quantiwise"]
+      if (!"source" %in% names(api_only)) api_only[, source := NA_character_]
       combined <- rbindlist(list(new_raw, api_only), use.names = TRUE, fill = TRUE)
-      combined <- unique(combined, by = c("Date", "Ticker"))
+      # ── 원천 우선순위 경유 (2026-09-07 도훈 지시) ─────────────────────────
+      #   구판은 unique(by=c("Date","Ticker")) — new_raw 를 먼저 놓았으니 xlsx 가 이겼다.
+      #   결과는 같아도 근거가 rbind 인자 순서라는 우연이었다. 승패는 정본이 정한다.
+      #   (api_only 는 정의상 Date > xlsx_max 라 겹침이 0인 것이 정상 — 겹치면 그게 신호다)
+      if (!exists("rawdata_priority_dedup")) {
+        # DATA_DIR 은 config.R 산출이지만 이 파일의 로드 분기가 조건부라 부재할 수 있다 —
+        # 없으면 루트에서 재도출한다(침묵 낙하 금지: 둘 다 없으면 아래 source 가 fail-loud).
+        .ddir <- if (exists("DATA_DIR")) DATA_DIR else file.path(PROJECT_ROOT, "02_Infrastructure/data")
+        source(file.path(.ddir, "rawdata_source_priority.R"))
+      }
+      .ded <- rawdata_priority_dedup(combined, context = "incremental_rawdata")
+      if (.ded$n_dropped > 0L) {
+        cat(sprintf("[incr] 우선순위 중복 해소: %d행 제거 (xlsx_max=%s 너머에 겹침 존재)\n",
+                    .ded$n_dropped, xlsx_max))
+        print(.ded$dropped_by)
+      }
+      combined <- .ded$dt
       setorder(combined, Date, Ticker)
       # [fix 2026-06-17] Windows arrow mmap(error 1224) — read_parquet(RAWDATA_CACHE) mmap
       # 해제 후 temp-rename (동일 경로 read→write halt 회피, krx_build_rawdata 동일 패턴)

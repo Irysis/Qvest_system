@@ -57,6 +57,9 @@ if (!exists("is_trading_day")) {
              e$message)))
 }
 
+# 원천 우선순위 정본 리졸버 — 이 배관의 병합 지점이 **설정을 경유**한다(부재 = stop).
+if (!exists("rawdata_priority_decide")) source(file.path(DATA_DIR, "rawdata_source_priority.R"))
+
 NAVER_CACHE_DIR <- file.path(PROJECT_ROOT, ".cache", "naver")
 if (!dir.exists(NAVER_CACHE_DIR)) dir.create(NAVER_CACHE_DIR, recursive = TRUE)
 
@@ -340,7 +343,7 @@ naver_collect_adjusted <- function(codes, start, end, cfg = naver_collector_conf
 
   codes <- tryCatch({
     links <- html %>% html_nodes("a.tltle") %>% html_attr("href")
-    vapply(regmatches(links, regexpr("[0-9]{6}", links)), function(x) x, "")
+    vapply(regmatches(links, regexpr("[0-9]{6}", links, perl = TRUE)), function(x) x, "")
   }, error = function(e) character(0))
 
   tbl <- as.data.table(tbl)
@@ -378,7 +381,7 @@ naver_collect_adjusted <- function(codes, start, end, cfg = naver_collector_conf
   html <- read_html(txt)
   paging <- html %>% html_nodes("td.pgRR a") %>% html_attr("href")
   if (length(paging) > 0) {
-    m <- regmatches(paging[1], regexpr("page=[0-9]+", paging[1]))
+    m <- regmatches(paging[1], regexpr("page=[0-9]+", paging[1], perl = TRUE))
     if (length(m)) as.integer(sub("page=", "", m, fixed = TRUE)) else 1L
   } else 1L
 }
@@ -560,27 +563,57 @@ NAVER_VALUE_COLS <- c("Open", "High", "Low", "Close", "Vol", "Size", "Ret")
 #' Sector_Lv2·AdminStock·TradingHalt·UnfaithfulDisc·Name·Market·Sector·BM_Ret)은
 #' 손대지 않고 그대로 승계한다. 삭제 후 append 하면 그 축이 세대마다 리셋된다
 #' (승계 목록에서 빠진 축은 없는 축이 된다 — 그 병을 여기서 구조적으로 막는다).
-#' @return list(dt=, n_updated=, n_appended=, preserved_cols=)
-.naver_apply_update <- function(raw, upd, value_cols = NAVER_VALUE_COLS) {
+#' ★★원천 우선순위 (2026-09-07 도훈 지시 — 역전 차단 지점)
+#'   구판은 (Date,Ticker) 가 맞으면 **incumbent 의 source 를 보지 않고** 값을 덮고 라벨을
+#'   'naver' 로 찍었다. 재수집 범위에 퀀티 구간이 한 번 들어가면 정본이 보충 레인에
+#'   **조용히** 진다 — 행 수도 날짜도 맞으니 어느 계기도 안 운다. 이 자리가 그 역전을
+#'   막는 곳이다. 판정은 06_Registry/rawdata_source_priority.json 이 낸다(부재 = stop).
+#'   지는 행은 값·라벨을 **둘 다** 건드리지 않고 보존하며, 몇 행이 왜 스킵됐는지 남긴다.
+#'
+#' @return list(dt=, n_updated=, n_appended=, n_skipped=, decisions=, preserved_cols=)
+.naver_apply_update <- function(raw, upd, value_cols = NAVER_VALUE_COLS,
+                                incoming_source = "naver", cfg_pri = NULL) {
   stopifnot(is.data.table(raw), is.data.table(upd))
+  if (!exists("rawdata_priority_decide")) {
+    # ★DATA_DIR 은 config.R 산출이라 이 함수를 **격리 환경에 꺼내 돌리는 검사**에는 없다.
+    #   라이브러리 위치 때문에 계약 검사가 죽으면 그건 계약의 실패가 아니라 배선의 실패다.
+    .ddir <- if (exists("DATA_DIR")) DATA_DIR else {
+      .rt <- if (exists("PROJECT_ROOT")) PROJECT_ROOT else
+        gsub("\\\\", "/", Sys.getenv("QM_ROOT", unset = ""))
+      file.path(.rt, "02_Infrastructure/data")
+    }
+    source(file.path(.ddir, "rawdata_source_priority.R"))
+  }
+  if (is.null(cfg_pri)) cfg_pri <- rawdata_priority_config()
   raw <- copy(raw); upd <- copy(upd)
   raw[, Date := as.Date(Date)]; upd[, Date := as.Date(Date)]
   before_cols <- names(raw)
+  if (!"source" %in% names(raw))
+    stop("[naver_apply_update] rawdata 에 source 열이 없다 — 우선순위를 판정할 축이 없다. ",
+         "라벨 없는 패널을 덮으면 무엇이 무엇을 이겼는지 영원히 못 재도출한다.")
   kr <- paste0(as.character(raw$Date), "|", raw$Ticker)
   ku <- paste0(as.character(upd$Date), "|", upd$Ticker)
   pos <- match(kr, ku)
   hit <- which(!is.na(pos))
+
+  dec <- rawdata_priority_decide(raw$source[hit], incoming_source, cfg = cfg_pri,
+                                 context = "naver_apply_update", has_incumbent = TRUE)
+  allow <- dec$allow %in% TRUE
+  skipped <- hit[!allow]
+  hit <- hit[allow]
+
   for (cc in intersect(value_cols, names(upd)))
     set(raw, i = hit, j = cc, value = upd[[cc]][pos[hit]])
-  if ("source" %in% names(raw)) set(raw, i = hit, j = "source", value = "naver")
+  set(raw, i = hit, j = "source", value = incoming_source)
   add <- upd[!ku %in% kr]
   n_add <- nrow(add)
   if (n_add) {
-    if (!"source" %in% names(add)) add[, source := "naver"]
+    if (!"source" %in% names(add)) add[, source := incoming_source]
     raw <- rbind(raw, add, fill = TRUE)
   }
   setorder(raw, Date, Ticker)
-  list(dt = raw, n_updated = length(hit), n_appended = n_add,
+  list(dt = raw, n_updated = length(hit), n_appended = n_add, n_skipped = length(skipped),
+       decisions = dec[, .N, by = .(decision, incumbent_source, incoming_source)],
        preserved_cols = setdiff(before_cols, c(value_cols, "source")))
 }
 
@@ -636,6 +669,20 @@ naver_backfill_range <- function(start, end, dry_run = TRUE, cfg = naver_collect
   }
   sized <- .naver_resolve_size(new_win, size_pool, cfg)
 
+  # ── 원천 우선순위 미리보기 ────────────────────────────────────────────────
+  #   dry-run 에서도 보여야 한다 — 실쓰기에서만 판정하면 "덮을 것인가" 를 미리 못 본다.
+  #   창(update 날짜) 안에서만 잰다: 창 밖 행은 (Date,Ticker) 가 맞을 수 없다.
+  .pri_cfg <- rawdata_priority_config()
+  if (!"source" %in% names(raw))
+    stop("[naver_backfill] rawdata 에 source 열이 없다 — 우선순위를 판정할 축이 없다")
+  .rawwin <- raw[Date %in% unique(sized$Date), .(Date, Ticker, source)]
+  .ku_prev <- paste0(as.character(sized$Date), "|", sized$Ticker)
+  .kw_prev <- paste0(as.character(.rawwin$Date), "|", .rawwin$Ticker)
+  .hit_prev <- which(.kw_prev %in% .ku_prev)
+  pri_dec <- rawdata_priority_decide(.rawwin$source[.hit_prev], "naver", cfg = .pri_cfg,
+                                     context = "naver_backfill", has_incumbent = TRUE)
+  rawdata_priority_print(pri_dec, "naver_backfill")
+
   # ── 이음매 검증 ──
   anch <- win_old[Date == anchor_date, .(Ticker, Close)]
   first_day <- min(sized$Date)
@@ -684,6 +731,9 @@ naver_backfill_range <- function(start, end, dry_run = TRUE, cfg = naver_collect
     failures = if (nrow(got$failures)) head(got$failures, 200) else NULL,
     size_source_counts = as.list(setNames(sized[, .N, by = size_source]$N,
                                           sized[, .N, by = size_source]$size_source)),
+    priority_config_path = as.character(.pri_cfg$config_path),
+    priority_decisions = pri_dec[, .N, by = .(decision, incumbent_source, incoming_source)],
+    priority_n_skipped = sum(!(pri_dec$allow %in% TRUE)),
     no_trade_rows = sum(sized$no_trade, na.rm = TRUE),
     ohl_absent_rows = sum(sized$ohl_absent, na.rm = TRUE),
     by_date = by_date,
@@ -720,7 +770,20 @@ naver_backfill_range <- function(start, end, dry_run = TRUE, cfg = naver_collect
                  got$failure_rate, as.numeric(cfg$max_failure_rate)))
 
   upd <- sized[, .(Date, Ticker, Open, High, Low, Close, Vol, Size, Ret)]
-  applied <- .naver_apply_update(raw, upd)
+  applied <- .naver_apply_update(raw, upd, cfg_pri = .pri_cfg)
+  if (applied$n_skipped > 0L) {
+    cat(sprintf("[naver_backfill] ★우선순위 보존: %s행 미갱신 — 상위 원천을 덮지 않는다\n",
+                format(applied$n_skipped, big.mark = ",")))
+    print(applied$decisions)
+  }
+  cat(sprintf("[naver_backfill] [rawdata_priority] 사이드카: %s\n",
+              rawdata_priority_sidecar(list(
+                merge_point = "naver_data_collector.R::.naver_apply_update",
+                incoming_source = "naver",
+                start = as.character(start), end = as.character(end),
+                n_updated = applied$n_updated, n_appended = applied$n_appended,
+                n_skipped = applied$n_skipped, decisions = applied$decisions),
+                label = "naver_backfill", cfg = .pri_cfg)))
   # ★허가 검사는 **기존 행 재작성**에만 건다. 일상 전진(신규 거래일 append)까지 막으면
   #   무인 루프가 켜져 있는 동안 daily_refresh 가 매일 죽는다 — 고치려는 병보다 큰 병이다.
   #   재작성은 다르다: 소비 중인 패널의 과거 행을 바꾸는 것이라 루프가 읽는 도중에

@@ -111,9 +111,11 @@ if (length(detect_size_scale_break(osc_fx, min_jumps = 10L)) > 0)
 cat("── ③ source 스탬프 계약 ───────────────────────────────────────────────\n")
 NAVF <- "02_Infrastructure/data/naver_data_collector.R"
 f <- readLines(NAVF, warn = FALSE)
-if (any(grepl('source := "naver"', f, fixed = TRUE)))
-  ok("naver 수집기가 source 를 스탬프한다") else
-  ng("naver 수집기가 source 를 스탬프한다", "source := \"naver\"", "부재")
+# ★2026-09-07 저녁 표적 이설(두 번째): 구판은 소스에 `source := "naver"` 라는 **문자열이
+#   있는가**를 봤다. 갱신이 원천 우선순위를 경유하게 되며 스탬프가 `set(raw, j="source",
+#   value = incoming_source)` 로 바뀌자 의도는 그대로인데 검사만 빨개졌다 —
+#   바로 아래 주석이 경고하던 그 병(소스 텍스트 단정)을 이 줄이 다시 밟고 있었다.
+#   ⇒ 이름이 아니라 **행동**을 잰다: 새 행이 붙을 때 라벨이 찍히는가. (아래 블록에서 함께)
 
 # ★2026-09-07 표적 이설: 구판은 `rawdata_cols` 열 목록에 '"Ret", "source"' 라는
 #   **문자열이 있는가**를 봤다. 수집 경로가 수정주가로 교체되며 그 select 목록 자체가
@@ -134,21 +136,38 @@ if (is.null(.fd)) {
   ng("rawdata 갱신이 source 를 보존/스탬프한다", ".naver_apply_update", "AST 에 없음")
 } else {
   .e <- new.env(parent = globalenv()); eval(.fd, envir = .e)
+  # ★incumbent 를 이 writer 자신의 레인(naver)으로 둔다 — 갱신은 이제 원천 우선순위를
+  #   경유하고, 상위 원천(quantiwise*)은 **덮이지 않는 것이 정상**이라 그 위에서는
+  #   스탬프 축이 아예 실행되지 않는다(재고 싶은 명제가 안 도는 픽스처는 미측정이다).
+  #   T3 는 신규 행 — 라벨이 없던 자리에 찍히는가를 함께 잰다.
   .syn <- data.table(Date = as.Date("2026-08-31"), Ticker = c("T1", "T2"),
                      Close = c(10, 20), Vol = c(1, 2), Open = 1, High = 1, Low = 1,
-                     Size = 1e9, Ret = 0, K200 = c(1, 0), source = "quantiwise_update")
+                     Size = 1e9, Ret = 0, K200 = c(1, 0), source = "naver")
   .vc <- eval(.pick(NAVF, "NAVER_VALUE_COLS")[[3]])     # 값 축도 재도출(목록 재기입 금지)
+  .upd <- rbind(.syn[, .(Date, Ticker, Close = c(11, 21), Vol, Open, High, Low, Size, Ret)],
+                data.table(Date = as.Date("2026-08-31"), Ticker = "T3", Close = 33, Vol = 3,
+                           Open = 3, High = 3, Low = 3, Size = 1e9, Ret = 0))
   .err <- ""
-  .out <- tryCatch(get(".naver_apply_update", envir = .e)(
-    .syn, .syn[, .(Date, Ticker, Close = c(11, 21), Vol, Open, High, Low, Size, Ret)],
-    value_cols = .vc)$dt,
-    error = function(z) { .err <<- conditionMessage(z); NULL })
+  .ap <- tryCatch(get(".naver_apply_update", envir = .e)(.syn, .upd, value_cols = .vc),
+                  error = function(z) { .err <<- conditionMessage(z); NULL })
+  .out <- if (is.null(.ap)) NULL else .ap$dt
   if (!is.null(.out) && "source" %in% names(.out) && all(.out$source == "naver") &&
       "K200" %in% names(.out) && identical(.out[Ticker == "T1"]$K200, 1) &&
-      identical(.out[Ticker == "T1"]$Close, 11))
-    ok("rawdata 갱신이 source 를 보존/스탬프한다(+승계열 K200 생존)") else
-    ng("rawdata 갱신이 source 를 보존/스탬프한다", 'source=="naver" & K200 보존',
+      identical(.out[Ticker == "T1"]$Close, 11) && identical(.out[Ticker == "T3"]$Close, 33))
+    ok("rawdata 갱신이 source 를 보존/스탬프한다(+승계열 K200 생존 · 신규행 라벨)") else
+    ng("rawdata 갱신이 source 를 보존/스탬프한다", 'source=="naver" & K200 보존 & 신규행 스탬프',
        if (is.null(.out)) paste("실행 실패:", .err) else paste(names(.out), collapse = ","))
+  # 위반 주입 — 상위 원천은 덮이면 안 된다(스탬프 축이 무차별이 아님을 실증)
+  .syn2 <- copy(.syn)[Ticker == "T2", source := "quantiwise_update"]
+  .ap2 <- tryCatch(get(".naver_apply_update", envir = .e)(
+                     .syn2, .upd, value_cols = .vc), error = function(z) NULL)
+  if (!is.null(.ap2) && identical(.ap2$n_skipped, 1L) &&
+      identical(.ap2$dt[Ticker == "T2"]$source, "quantiwise_update") &&
+      identical(.ap2$dt[Ticker == "T2"]$Close, 20))
+    ok("스탬프가 무차별이 아니다 — 상위 원천은 값도 라벨도 안 바뀐다") else
+    ng("스탬프가 무차별이다", "T2(quantiwise_update) 보존",
+       if (is.null(.ap2)) "실행 실패" else sprintf("skip=%s src=%s close=%s", .ap2$n_skipped,
+         paste(.ap2$dt[Ticker == "T2"]$source), paste(.ap2$dt[Ticker == "T2"]$Close)))
 }
 if (any(grepl("* 1e8", f, fixed = TRUE)))
   ok("Size 단위가 1e8 (억원 -> 원)") else

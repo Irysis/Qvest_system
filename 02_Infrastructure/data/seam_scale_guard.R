@@ -237,6 +237,49 @@ seam_scan_report <- function(dt, dates, cfg = seam_guard_config()) {
                    "SEAM_SCAN_SESSIONS", "rescale_ret_enabled", "config_path")])
 }
 
+#' 이음매 재도출 — `source` 열의 지배 소스가 바뀌는 거래일.
+#'
+#' ★날짜를 박지 않는다. 경계는 증분 수출·덮어쓰기마다 **이동한다** — 퀀티 수출본이
+#'   naver 구간을 부분만 덮으면 경계가 그만큼 뒤로 밀린다(예: qw ~08-28 · naver 08-31~09-04
+#'   에 qw_update 08-31~09-02 가 들어오면 전환점은 08-31 이 아니라 09-03 이다).
+#'   날짜를 박은 국소 수리는 원리적으로 못 버틴다(벤치 배관이 07-27 을 고치고 08-09 에
+#'   07-29 로 재발한 전례).
+#'
+#' ★2026-09-07: seam_scale_repair.R 에만 있던 것을 **가드 정본으로 올렸다**. 덮어쓰기
+#'   직후 경계를 재도출해야 하는 소비자가 셋(repair · incremental_update_file · naver)이라
+#'   한쪽에만 두면 다음 사람이 또 한쪽만 고친다.
+#'
+#' @return data.table(seam_date, from, to) — 없으면 0행
+seam_detect <- function(dt) {
+  stopifnot(is.data.table(dt))
+  if (!all(c("Date", "source") %in% names(dt)) || !nrow(dt))
+    return(data.table(seam_date = as.Date(character(0)), from = character(0), to = character(0)))
+  cnt <- dt[!is.na(source), .N, by = .(Date, source)]
+  if (!nrow(cnt))
+    return(data.table(seam_date = as.Date(character(0)), from = character(0), to = character(0)))
+  setorder(cnt, Date, -N)
+  dom <- cnt[, .(src = source[1]), by = Date]
+  setorder(dom, Date)
+  dom[, prev := shift(src)]
+  dom[!is.na(prev) & src != prev, .(seam_date = as.Date(Date), from = prev, to = src)]
+}
+
+#' 교체 **전/후** 이음매의 차집합 — 새로 생겼거나 이동했거나 라벨이 바뀐 경계만.
+#'
+#' 매 증분마다 1990년대 이음매까지 다시 재면 일일 배관이 못 버틴다. 반대로 '이번에
+#' 만진 날짜' 로 범위를 잡으면 **이동한 경계**(만진 날짜 밖에 생긴다)를 놓친다.
+#' 그래서 범위가 아니라 **차집합**으로 잡는다.
+#'
+#' @return data.table(seam_date, from, to) — after 에만 있는(또는 라벨이 달라진) 경계
+seam_detect_changed <- function(before, after) {
+  b <- seam_detect(before); a <- seam_detect(after)
+  if (!nrow(a)) return(a)
+  if (!nrow(b)) return(a)
+  kb <- paste0(as.character(b$seam_date), "|", b$from, "|", b$to)
+  ka <- paste0(as.character(a$seam_date), "|", a$from, "|", a$to)
+  a[!ka %in% kb]
+}
+
 #' 이음매 첫날 + 뒤 SEAM_SCAN_SESSIONS 세션의 거래일 목록.
 seam_scan_dates <- function(dt, seam_date, cfg = seam_guard_config()) {
   seam_date <- as.Date(seam_date)
@@ -336,4 +379,4 @@ seam_report_print <- function(rep, label = "") {
   invisible(rep)
 }
 
-cat("[seam_scale_guard] Loaded. seam_scale_report() / seam_apply_actions() / seam_write_sidecar()\n")
+cat("[seam_scale_guard] Loaded. seam_scale_report() / seam_detect() / seam_detect_changed() / seam_apply_actions() / seam_write_sidecar()\n")

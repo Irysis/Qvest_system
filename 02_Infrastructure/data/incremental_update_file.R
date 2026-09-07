@@ -16,12 +16,14 @@
 #          두 수출본은 수정주가 조정기준이 달라 이어붙이면 분할 비율이 하루 수익률이 된다.
 #       ③ 원장/라벨 축: rawdata 의 `source` 는 지우지 않는다 — 라벨이 **이음매의 지도**다.
 #
-#   ⚠ 열린 위험(오케스트레이터 판단 필요): daily_refresh.sh 가 이 모듈을 **매일** 부른다.
-#     2026-08-31 이후를 덮는 새 OHLCVS_update.xlsx 가 들어오면 이 함수는
-#     `raw <- raw[!Date %in% update_dates]` 로 **naver 수정주가 구간을 통째로 교체**한다.
-#     그게 옳은 경우(퀀티와이즈 재수출로 전 구간 일관)와 사고인 경우(부분 수출본이
-#     naver 구간을 원주가로 덮어씀)가 **코드에서 구분되지 않는다**. 지시 없이 라우팅을
-#     바꾸지 않았으므로 이 줄이 그 사실의 기록이다.
+#   ▸ **원천 우선순위 (도훈 지시 2026-09-07 — 위 열린 위험의 처분)**:
+#     "퀀티와이즈가 있으면 최우선, 네이버는 최신 보충. 퀀티가 업데이트되면 네이버 데이터를
+#      퀀티 기준으로 바꿔라." + 후속 확인('분할 종목이 5배 달라지는데?')에 "퀀티 그대로 덮기".
+#     ⇒ naver 구간을 덮는 것은 **사고가 아니라 정상 경로**다. 판정은 코드가 아니라
+#        `06_Registry/rawdata_source_priority.json` 이 낸다(부재 = stop).
+#     ⇒ 막을 것은 덮기가 아니라 **"덮은 뒤 새 경계에서 조정기준 단절을 아무도 안 보는 상태"** 다.
+#        그래서 교체 직후 `source` 전환점에서 이음매를 **재도출**해(날짜를 박지 않는다)
+#        seam_scan_report 를 돌린다 — 퀀티가 부분만 덮으면 경계가 그만큼 이동한다.
 #
 # 사용법:
 #   source("02_Infrastructure/incremental_update_file.R")
@@ -37,6 +39,8 @@ suppressPackageStartupMessages({
 
 if (!exists("PROJECT_ROOT")) source(file.path(dirname(dirname(sys.frame(1)$ofile %||% ".")), "config.R"))
 if (!exists("is_trading_day")) source(file.path(DATA_DIR, "trading_calendar.R"))
+# 원천 우선순위 정본 리졸버 — 병합 지점이 **설정을 경유**한다(부재 = stop, 하드코딩 금지)
+if (!exists("rawdata_priority_decide")) source(file.path(DATA_DIR, "rawdata_source_priority.R"))
 
 UPDATE_DIR <- file.path(PROJECT_ROOT, "03_Universe", "Update_File")
 LAST_PROCESSED_FILE <- file.path(CACHE_DIR, "update_file_last_processed.rds")
@@ -172,28 +176,45 @@ incremental_ohlcvs <- function() {
   # 기존 RAWDATA에서 증분 구간의 임시 데이터 제거
   update_dates <- unique(all_long$Date)
 
-  ## ★조정기준 역행 차단 (2026-09-07) — xlsx 수출본은 **원가**이고 naver 는 **수정주가**다.
-  ##   이 교체는 날짜만 보고 덮으므로, 08-31 이후를 포함한 OHLCVS_update.xlsx 가 한 번 들어오면
-  ##   수정주가 구간이 통째로 원가로 되돌아간다. 그 되돌림은 조용하다 — 행 수도 날짜도 맞으니
-  ##   어느 계기도 안 운다. 실측 근거: 삼성 2018-05-04 50:1 분할 전날 종가가 일별시세 2,650,000(원가)
-  ##   vs siseJson 53,000(수정) — 두 원천은 같은 양이 아니다.
-  ##   ⇒ naver 원천 행이 있는 날짜는 이 경로로 덮지 않는다. 정말 되돌리려면 그 의도를 명시해야 한다
-  ##     (env QVEST_ALLOW_BASIS_REGRESSION=1). 부재는 거부이지 통과가 아니다.
-  .adj_dates <- if ("source" %in% names(raw)) unique(raw[source == "naver", Date]) else as.Date(character(0))
-  .clash <- intersect(as.character(update_dates), as.character(.adj_dates))
-  if (length(.clash) && !identical(Sys.getenv("QVEST_ALLOW_BASIS_REGRESSION", "0"), "1")) {
-    stop(sprintf(paste0("[incr_ohlcvs] 조정기준 역행 차단: xlsx(원가)가 naver(수정주가) 구간 %d일을 덮으려 한다 ",
-                        "(%s%s). 의도한 되돌림이면 QVEST_ALLOW_BASIS_REGRESSION=1 로 다시 부르고, ",
-                        "아니면 xlsx 범위를 그 날짜 앞까지로 줄여라."),
-                 length(.clash), paste(head(sort(.clash), 3), collapse = ", "),
-                 if (length(.clash) > 3) " 외" else ""))
-  }
-  if (length(.clash)) cat(sprintf("  ★조정기준 역행을 명시 허용으로 진행: %d일\n", length(.clash)))
+  ## ★원천 우선순위 경유 (2026-09-07 도훈 지시 — **가드 방향 전환**) ─────────────
+  ##  구판(같은 날 아침): "xlsx 가 naver 구간을 덮으면 stop, QVEST_ALLOW_BASIS_REGRESSION=1
+  ##    로만 통과". 그 차단은 도훈 설계와 **반대**였다 — 퀀티가 정본이고, 퀀티가 덮는 것이
+  ##    정상 경로다("퀀티 그대로 덮기").
+  ##  신판: 누가 이기는지는 코드가 아니라 06_Registry/rawdata_source_priority.json 이 정한다.
+  ##    ⇒ 이 경로의 incoming 은 항상 "quantiwise_update". 그보다 rank 가 낮은(=우선순위가
+  ##       높은) 원천의 행은 **덮지 않고 보존**한다. 현행 표에서는 그런 원천이 없으므로
+  ##       전량 교체가 정상 동작이고, 표를 바꾸면 판정이 따라 움직인다(설정 경유 실증).
+  ##    ⇒ 막을 것은 덮기가 아니라 덮은 **뒤** 새 경계를 아무도 안 보는 상태다 —
+  ##       Ret 재계산 다음 블록에서 이음매를 재도출해 재검사한다.
+  .rsp_cfg <- rawdata_priority_config()
+  if (!"source" %in% names(raw))
+    stop("[incr_ohlcvs] rawdata 에 source 열이 없다 — 우선순위를 판정할 축이 없다(라벨이 이음매의 지도다)")
+  .in_win <- raw$Date %in% update_dates
+  .dec <- rawdata_priority_decide(raw$source[.in_win], "quantiwise_update",
+                                  cfg = .rsp_cfg, context = "incr_ohlcvs",
+                                  has_incumbent = TRUE)
+  rawdata_priority_print(.dec, "incr_ohlcvs")
+  .replace <- logical(nrow(raw)); .replace[which(.in_win)] <- .dec$allow %in% TRUE
+  n_replaced  <- sum(.replace)
+  n_preserved <- sum(.in_win) - n_replaced
 
-  n_replaced <- raw[Date %in% update_dates, .N]
-  raw <- raw[!Date %in% update_dates]
-  cat(sprintf("  기존 데이터 교체: %s rows (날짜 %d일)\n",
-              format(n_replaced, big.mark = ","), length(update_dates)))
+  ## ★경계 재도출용 스냅샷 — 교체 **전** 의 source 지도. 날짜를 박지 않고 차집합으로 잡는다.
+  .src_before <- raw[, .(Date, source)]
+
+  raw <- raw[!.replace]
+  cat(sprintf("  기존 데이터 교체: %s rows (날짜 %d일) · 우선순위로 보존 %s rows\n",
+              format(n_replaced, big.mark = ","), length(update_dates),
+              format(n_preserved, big.mark = ",")))
+  .pri_side <- tryCatch(rawdata_priority_sidecar(list(
+      merge_point = "incremental_update_file.R::incremental_ohlcvs",
+      incoming_source = "quantiwise_update",
+      update_dates = as.character(sort(update_dates)),
+      n_rows_in_window = sum(.in_win), n_replaced = n_replaced, n_preserved = n_preserved,
+      decisions = .dec[, .N, by = .(decision, incumbent_source, incoming_source)]),
+      label = "incr_ohlcvs", cfg = .rsp_cfg),
+    error = function(e) { cat(sprintf("  ⚠ [rawdata_priority] 사이드카 실패: %s\n",
+                                      conditionMessage(e))); NA_character_ })
+  if (!is.na(.pri_side)) cat(sprintf("  [rawdata_priority] 사이드카: %s\n", .pri_side))
 
   # Append
   # 컬럼 맞추기
@@ -206,42 +227,87 @@ incremental_ohlcvs <- function() {
   common_cols <- intersect(names(raw), names(all_long))
   raw <- rbind(raw[, ..common_cols], all_long[, ..common_cols], fill = TRUE)
 
-  # ── [guard 2026-09-07 도훈 승인 A안] 레벨 연속성 ────────────────────────────
-  # 위 L124 가드는 **날짜 커버리지 구멍만** 본다. base 수출본(quantiwise)과 증분
-  # 수출본(quantiwise_update)은 **수정주가 조정기준이 다르고**, 그 이음매를 아래
-  # `Close / shift(Close)` 로 가로지르면 분할·액면 비율이 그대로 하루 수익률이 된다.
-  #   실측 2026-03-30: 2,548종 중 275종(10.8%)이 |Ret| > 0.35, 최대 +7,863%.
+  # ── 우선순위 중복 해소 (교체 창 안) ─────────────────────────────────────────
+  #   위 판정에서 **보존된** 행이 있으면 all_long 의 같은 (Date,Ticker) 와 중복이 된다.
+  #   승자는 rank 가 정한다 — `unique()` 가 첫 행을 남긴다는 구현 사실에 얹지 않는다
+  #   (그건 규칙이 아니라 우연이고, 행 순서가 바뀌면 판정이 뒤집힌다).
+  .win_idx <- raw$Date %in% update_dates
+  if (any(.win_idx)) {
+    .ded <- rawdata_priority_dedup(raw[.win_idx], .rsp_cfg, context = "incr_ohlcvs/window")
+    if (.ded$n_dropped > 0L) {
+      cat(sprintf("  [rawdata_priority] 창 내 중복 %s행 해소 — 승자 rank 우선\n",
+                  format(.ded$n_dropped, big.mark = ",")))
+      print(.ded$dropped_by)
+      raw <- rbind(raw[!.win_idx], .ded$dt, fill = TRUE)
+    }
+  }
+
+  # ── [guard 2026-09-07 도훈 승인 A안 · 같은 날 방향 전환] 레벨 연속성 ────────
+  # 위 커버리지 가드는 **날짜 구멍만** 본다. base 수출본(quantiwise)과 증분 수출본
+  # (quantiwise_update), 그리고 naver 수정주가는 **조정기준이 서로 다르고**, 그 이음매를
+  # 아래 `Close / shift(Close)` 로 가로지르면 분할·액면 비율이 그대로 하루 수익률이 된다.
+  #   실측 2026-03-30: 2,548종 중 275종(10.8pct)이 |Ret| > 0.35, 최대 +7,863pct.
   #   배율이 5x·2x·10x·0.2x 로 군집(분할 지문)하고 인접일(03-27/03-31)은 0건.
-  # 벤치 배관(naver_benchmark_update.py)은 같은 병을 2026-08-09 에 canonical scale +
-  # 앵커 후퇴 + SEAM_MAX_RET 로 이미 고쳤다 — 그 어휘를 그대로 이식한다.
   # ★판정은 Ret 재계산 **앞**에서, Close 만 보고 낸다(오염된 Ret 을 근거로 삼지 않는다).
-  seam_date <- min(update_dates)
-  seam_rep <- tryCatch({
+  #
+  # ★★경계를 날짜로 박지 않는다 (2026-09-07 방향 전환의 핵심).
+  #   퀀티가 naver 구간을 **부분만** 덮으면 경계가 그만큼 이동한다:
+  #     before  qw ~08-28 | naver 08-31~09-04           → 전환점 08-31
+  #     after   qw ~09-02(08-31~09-02 덮음) | naver 09-03~09-04 → 전환점 **09-03**
+  #   `min(update_dates)`(=08-31) 만 재면 이동한 경계 09-03 을 통째로 놓친다.
+  #   그래서 교체 전/후 `source` 지도의 **차집합**으로 재도출하고, 예전 커버리지를 잃지
+  #   않도록 min(update_dates) 를 항상 함께 훑는다(바닥은 유지, 이동분은 추가).
+  seam_seeds <- tryCatch({
     source(file.path(DATA_DIR, "seam_scale_guard.R"))
-    # 하루가 아니라 창 — 이음매 당일 값이 직전 수출본의 정지값 그대로여서 단절이
-    # 하루 뒤에 나타나는 종목이 있다(SEAM_SCAN_SESSIONS 주석 참조).
-    seam_scan_report(raw, seam_scan_dates(raw, seam_date))
+    .chg <- seam_detect_changed(.src_before, raw)
+    if (nrow(.chg)) {
+      for (i in seq_len(nrow(.chg)))
+        cat(sprintf("  [seam_guard] 경계 신설/이동: %s (%s -> %s)\n",
+                    as.character(.chg$seam_date[i]), .chg$from[i], .chg$to[i]))
+    } else cat("  [seam_guard] source 전환점 변화 없음 — min(update_dates) 만 훑는다\n")
+    sort(unique(c(as.Date(min(update_dates)), as.Date(.chg$seam_date))))
   }, error = function(e) {
-    cat(sprintf("  ⛔ [seam_guard] 판정 실패 (%s) — fail-closed 로 진행\n", conditionMessage(e)))
-    NULL
+    cat(sprintf("  ⛔ [seam_guard] 경계 재도출 실패 (%s) — min(update_dates) 로 후퇴\n",
+                conditionMessage(e)))
+    as.Date(min(update_dates))
   })
+
+  # ★for 는 Date 벡터를 numeric 으로 떨어뜨린다 — 인덱스로 돈다.
+  seam_reps <- list(); seam_failed <- as.Date(character(0))
+  for (k in seq_along(seam_seeds)) {
+    sd_ <- seam_seeds[k]
+    r <- tryCatch(seam_scan_report(raw, seam_scan_dates(raw, sd_)),
+                  error = function(e) {
+                    cat(sprintf("  ⛔ [seam_guard] 이음매 %s 판정 실패 (%s) — fail-closed\n",
+                                as.character(sd_), conditionMessage(e)))
+                    NULL })
+    if (is.null(r)) {
+      w <- tryCatch(seam_scan_dates(raw, sd_), error = function(e) sd_)
+      seam_failed <- c(seam_failed, as.Date(w))
+    } else seam_reps[[as.character(sd_)]] <- r
+  }
 
   # Ret 재계산
   setorder(raw, Ticker, Date)
   raw[, Ret := Close / shift(Close) - 1, by = Ticker]
 
-  if (!is.null(seam_rep)) {
-    raw <- seam_apply_actions(raw, seam_rep)
-    seam_report_print(seam_rep, "quantiwise_update")
-    cat(sprintf("  [seam_guard] 사이드카: %s\n",
-                seam_write_sidecar(seam_rep, "quantiwise_update")))
-  } else {
-    # ★fail-closed 는 배관이 아니라 **측정**에 건다: 이음매 하루 Ret 전량 NA.
-    #   가드가 못 돌았는데 조용히 통과시키면 그것이 이 계통의 재발 기전이다.
-    raw[Date == seam_date, Ret := NA_real_]
-    cat(sprintf("  [seam_guard] 이음매 %s Ret 전량 NA 처리 (미측정 — 조용한 통과 금지)\n",
-                seam_date))
+  for (nm in names(seam_reps)) {
+    rp <- seam_reps[[nm]]
+    raw <- seam_apply_actions(raw, rp)
+    lbl <- sprintf("qwupdate_seam_%s", gsub("-", "", nm))
+    seam_report_print(rp, lbl)
+    cat(sprintf("  [seam_guard] 사이드카: %s\n", seam_write_sidecar(rp, lbl)))
   }
+  if (length(seam_failed)) {
+    # ★fail-closed 는 배관이 아니라 **측정**에 건다: 못 잰 경계의 창 전체 Ret NA.
+    #   가드가 못 돌았는데 조용히 통과시키면 그것이 이 계통의 재발 기전이다.
+    seam_failed <- sort(unique(seam_failed))
+    raw[Date %in% seam_failed, Ret := NA_real_]
+    cat(sprintf("  [seam_guard] 미측정 경계 %d일 Ret 전량 NA (%s) — 조용한 통과 금지\n",
+                length(seam_failed), paste(as.character(head(seam_failed, 6)), collapse = ", ")))
+  }
+  if (!length(seam_reps) && !length(seam_failed))
+    cat("  ⚠ [seam_guard] 판정도 실패도 없다 — 재검사가 실제로 돌았는지 확인 필요\n")
 
   # BM_Ret 매핑
   bm <- as.data.table(read_parquet(file.path(CACHE_DIR, "benchmark.parquet")))
