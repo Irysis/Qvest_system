@@ -1,0 +1,13 @@
+{
+  "axis": "universe",
+  "verdict": "misdeclared",
+  "undeclared_changes": [
+    "[유동성필터를 충실구현 지시축으로 오기재] 논문은 A주 전 종목에 필터를 두지 않는데(§3 Data sets), engine.R:47 은 adv20(t−1) ≥ 2e8 KRW 유동성 문턱을 '(b) 지시된 고정 축'으로 표기하고 FIDELITY.json changed(1)·changed_checklist 도 이를 '지시 축'으로 선언한다. 그러나 이 저장소의 1계층 SOT(`.claude/rules/lean-loop.md` 축 2층 표, 충실구현 라운드 행)는 '유동성 필터 = 논문 우선(paper_faithful)'이라고 명시한다 — 즉 이 단계에서 유동성 필터를 추가하는 것 자체가 지시축이 아니라 규정 위반이다. LIQ 2e8 은 pit.md '종목수+유동성(실투용)' 절 소속으로, CLAUDE.md·lean-loop.md 축 2층 표 모두 이 문턱을 '실투형(강화부터)' 단계 전용으로 배정하고 충실구현 단계에는 배정하지 않는다. 즉 존재 자체는 declared 되어 있으나(changed(1)), 그 권위 근거('지시 축')가 사실과 다르다 — 이 라운드에 적용할 근거가 없는 축을 적용해놓고 마치 지시받은 것처럼 서술했다."
+  ],
+  "signal_mismatch": [],
+  "counterexample": "K200 또는 KQ150 편입 종목이지만 20일 평균거래대금이 2e8 KRW 미만인 종목 X 가 어느 시그널일 d 에 존재한다고 하자. 논문 규칙(전 A주·필터 없음 → paper_faithful 해석 시 유동성 배제 없음)이라면 X 는 그 달 10분위 랭킹 모집단에 포함돼야 하나, 이 엔진(.el 필터 engine.R:92, ADV20_L1 < .LIQ)은 X 를 그 시그널일에 부적격 처리해 아예 랭킹·포트폴리오에서 제외한다. 저유동성 종목은 소형·극단수익 종목에 몰려 있어 이 배제는 특히 승자/패자 데실의 극단 꼬리를 체계적으로 솎아내고, N 이 줄어 그룹 경계(ceiling(rank×10/N))가 이동해 패자/승자 데실 구성 자체가 논문 규칙 적용 시와 달라진다.",
+  "evidence": "논문 §3 Data sets: 'we retrieve the monthly data from the RESSET database, including the dividend-adjusted and split-adjusted monthly returns for all A-share individual stocks' — 유동성·거래대금 필터 언급 전무(arxiv.org/html/1707.05552v1 확인, ST/금융주/신규상장/가격하한 등 어떤 선별 규칙도 없음). 대조: `.claude/rules/lean-loop.md` 축 2층 표 '충실구현 라운드(최초)' 행 — '유동성 필터 = 논문 우선(paper_faithful)'. `02_Infrastructure`(pit.md) '종목수 + 유동성 (실투용)' 절 — LIQ_THRESHOLD=2e8 은 '실투용' 절 소속, CLAUDE.md 축 2층 표에서도 이 문턱은 '실투형(강화부터)' 행에만 등장. engine.R:47 `.LIQ <- 2e8 # (b) adv20(t−1) ≥ 2e8 KRW` 을 '(b) 지시된 고정 축'으로 표기, FIDELITY.json changed(1)·changed_checklist('유니버스·유동성' 행) 도 '(지시 축)'으로 선언.",
+  "confidence": "high",
+  "checked": "거래소/유니버스 범위(SHSE+SZSE 전 A주 vs K200∪KQ150 — 지시축 예외로 통과), ST/금융주/신규상장/가격하한 등 개별 선별 규칙(논문·구현 모두 없음, 일치), 유동성 필터(논문 없음 vs 구현 adv20(t−1)≥2e8 — 존재는 declared 되었으나 '지시 축'이라는 권위 근거가 lean-loop.md 충실구현 행의 'paper_faithful' 규정과 모순), 멤버십 판정 술어(K200|KQ150 플래그, 시그널일 당일 행) 자체는 이 축의 판정 대상이 아니라 별도(PIT/타이밍) 축 소관으로 note 처리.",
+  "note": "이 발견은 논문-대-구현 괴리 자체(그건 declared)가 아니라, 그 괴리를 정당화하는 서술('지시된 고정 축')이 이 저장소의 1계층 SOT(lean-loop.md 충실구현 행 paper_faithful 규정)와 충돌한다는 것이다 — declared 이되 근거가 사실과 다르므로 misdeclared 로 분류했다. 멤버십 플래그(K200/KQ150)의 PIT 정확성 자체는 다른 축(타이밍) 소관이라 여기서 판정하지 않았다."
+}

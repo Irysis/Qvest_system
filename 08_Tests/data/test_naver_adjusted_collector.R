@@ -97,8 +97,15 @@ if (length(pre) == 1L && abs(pre - 53000) < 1e-6) {
 
 # 원주가 대조군: 같은 날짜가 sise_day 페이지에서는 2,650,000 이다 (엔드포인트 선택이
 # 장식이 아니라 하중을 진다는 실증 — 이게 없으면 ①은 자기 자신만 확인한다)
-raw_html <- rd("sise_day_005930_2018split.html")
-if (grepl("2,650,000", raw_html, fixed = TRUE) && !grepl("2,650,000", rd("sisejson_005930_2018split.txt"), fixed = TRUE)) {
+# ★픽스처는 EUC-KR 바이트다 — 문자로 읽으면 로케일에서 죽는다. 찾는 것은 ASCII 숫자라
+#   바이트로 훑는다(계기가 잴 것을 안 재고 재기 쉬운 것을 잰다).
+rd_bytes <- function(f) {
+  p <- file.path(FIXD, f)
+  rawToChar(readBin(p, "raw", n = file.info(p)$size))
+}
+raw_html <- rd_bytes("sise_day_005930_2018split.html")
+if (grepl("2,650,000", raw_html, fixed = TRUE, useBytes = TRUE) &&
+    !grepl("2,650,000", rd_bytes("sisejson_005930_2018split.txt"), fixed = TRUE, useBytes = TRUE)) {
   ok("unadjusted_counterexample", "sise_day 픽스처엔 2,650,000 이 있고 siseJson 엔 없다")
 } else {
   bad("unadjusted_counterexample", "두 원천의 갈림이 픽스처에서 재현되지 않는다")
