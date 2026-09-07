@@ -1,4 +1,28 @@
-# 다음 세션 인계 — 2026-09-07 (밤사이: 2404 충실 재구현 F → 4논문 combo 계보 promo1 · 아침: 하네스 수리 4갈래 + 루프 일시정지)
+# 다음 세션 인계 — 2026-09-07 (하네스 수리 7갈래 커밋 68f2367b7 · 무인 루프 재개 09:14 · combo promo1 B2 완결)
+
+## 2026-09-07 09:20 — 수리 착지 · 재개 (커밋 68f2367b7)
+
+**수리 7갈래**(전부 양방향 검사 · 상세는 커밋 메시지):
+① 재개가 완료된 워커 결과를 지우고 재측정 → `rf_spec_sig.R::rf_result_reusable` + 러너 가드(16/16)
+② claim pid 재사용(죽은 12816 을 Windows 가 Widgets 에 재사용) → owner.json 에 프로세스 시작시각(16/16)
+③ 감사 레인 침묵 4종 — ROOT 정규화 · 병합 실패 exit 3 · 감사는 킬스위치 독립 · `audit_required` 처분 + **감사 없이 entry 개설·소비 불가**(27/19/40)
+④ 재구현 대기열 소비자 신설 `rf_reimplement_queue.R` + next_paper §1.8(33/33) — 2006.04639 가 다음 무활성 tick 에 재구현된다
+⑤ **CDaR_LP 90분 초과의 원인은 arm 이 아니라 솔버** — cccp 밀집 IPM ~T³(T=252 월 30초 × 260회 = 130분). lpSolve 사슬로 0.106초,
+   목적값 |Δ| ≤2.1e-08(실창 34개월). ★이 arm 은 **완주 이력 0건** — 09-05 디스패처 번역 수리가 처음 돌게 하자 뒤의 결함이 드러났다(15/15 · 계약 64/64)
+⑥ `rf_reopen_attempt` 신설 — terminal 은 켜는 어휘만 있고 끄는 어휘가 없어 원인이 제거돼도 칸이 영영 미측정이었다(14/14)
+⑦ 편입 드리프트 21건 등재 + 부팅 Queue 가 entry 예산(30)을 읽는다 + knowledge_index 재빌드(낙후 14건 해소)
+
+**재개**: config `enabled=true`(09:07) → 09:14 tick. **되살린 B2_10(CDaR_LP)이 5분에 측정** — Grade C · PORT_t 0.942 · Calmar 0.254
+(수리 전 90분 초과 ×2). B2 블록 최고는 B2_9 1.518 로 불변이지만 **답이 생겼다**. B2 L-code·기전 재발행 · B3 설계 4칸 · 텔레그램 발송 · B3 진행 중.
+
+**남은 배터리 빨강(전부 사전 존재 — 다음 세션이 무뎌지지 않게 출처 명시)**:
+- `r_portability` 8 — baseline 낙후. `reinforce_auto_parallel.R`(금칙1 system2 env=) · 퇴역 `reinforce_auto_run.R`(금칙2) ·
+  금칙6 regmatches 4파일(`rf_spec_sig.R`·`test_replication_harness.R`·`test_rf_block_design_schema.R`·`test_rf_skill_reflects_runtime.R`) ·
+  `baseline_not_shrunk`(test_cert_rules.R). 전부 HEAD 에 이미 있던 것 — **상시 빨강은 상시 침묵**이라 baseline 갱신 여부는 도훈 판단.
+- 등록부 데이터 4 — `emission_guard` F3(registry 없는 기준선 4항) · `emission_identity_axes` N5/Z2(C15 죽은 배출) · `label_eligibility_gate` G3 · `rf_overlay_arms`(행동 축 cross_sectional 하나) · `rf_block_design` D3(축 형태) · `rf_lane_parity` ②(09-05 이설된 좌표 단정)
+- **UNMEASURED 7** — `test_rp_commission_basis`·`test_rp_count_paper`·`test_rp_telegram_relaxed`·`test_rf_summarize_once`·`test_rf_jlog_isolation`·`test_rf_carry_degrade` 등이
+  배터리에서 exit 0 인데 요약 JSON 을 안 낸다(단독 실행은 초록). **통과가 아니라 미측정** — 커버리지 구멍, 미조사.
+- 칩 3건: `rf_weight_arms`/`rf_combination_launch` jlog 싱크 하드코딩 · `test_weight_catalog.R` 가 운영 카탈로그를 재생성 · `test_rf_weight_arms_explore` E1 이 운영 원장에 묶임(shrinkage 가 실제로 측정되자 빨감).
 
 ## 2026-09-07 아침 (Q · 도훈 "수리 진행해주고 리서치 재개해줘")
 
