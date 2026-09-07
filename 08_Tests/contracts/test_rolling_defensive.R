@@ -146,7 +146,10 @@ bsrc <- paste(readLines(bmp, warn = FALSE), collapse = "
 ##   아무도 안 불렀고(자격 술어 2개 병존), 게다가 catalog 에 defensive_score 가 0건이라
 ##   그 사본은 전 이력 미발화였다. 이제 묻는 것은 "**계약을 경유하는가**" 다.
 ##   런타임 재도출(sentinel 주입)은 08_Tests/regime/test_l2_pool_admission.R §E 가 한다.
-if (grepl("l2_admit(", bsrc, fixed = TRUE) && !grepl(".defensive_ok", bsrc, fixed = TRUE))
+##   ★사본 부재는 **주석을 걷어낸 코드**에서 물어야 한다 — 주석이 그 이름을 설명하면
+##     원문 grep 은 사본이 살아 있다고 오판한다(2026-09-07 실측: 이 검사가 그렇게 빨갰다).
+.bcode0 <- paste(sub("#.*$", "", readLines(bmp, warn = FALSE)), collapse = "\n")
+if (grepl("l2_admit(", .bcode0, fixed = TRUE) && !grepl(".defensive_ok", .bcode0, fixed = TRUE))
   ok("J1 풀 빌더가 계약 술어를 경유(l2_admit → ds_pool_eligible) · 자체 사본 없음") else
   ng("J1 미배선/사본 잔존", "산출만 하고 소비 없음 = 이 저장소의 상습병")
 if (grepl("defensive_specialist", bsrc, fixed = TRUE))

@@ -1,0 +1,87 @@
+{
+  "verdict": "misdeclared",
+  "undeclared_changes": [
+    "[universe] FIDELITY.json changed_checklist['유니버스 / 유동성'].why 는 adv20 >= 2e8 KRW 유동성 하한을 '지시된 축(유니버스 치환 + 유동성 하한)' 이라 적었다. 그러나 이 실행은 충실구현(replication/ 산출물·long-short 양다리·n_max 25 초과를 스스로 신고·Σw=1 아님·long_gross=short_gross=1.0)이고, 프로젝트 정본 lean-loop.md §축 2층 표는 '충실구현 라운드(최초)' 단계의 유동성 필터를 명시적으로 '논문 우선(paper_faithful)' 로 못박는다. LIQ 2e8 은 같은 표에서 '실투형(강화부터)' 행에만 있는 축이다. 논문(2006.04639)은 유동성/가격 필터를 전혀 명시하지 않으므로 'paper_faithful' 규칙을 그대로 적용하면 이 라운드에는 유동성 필터가 없어야 한다. engine.R:99,118-120,158-161 은 20일 평균 거래대금 t-1 >= 2e8 을 신호일·네트워크 단면·최종 5분위 정렬 세 지점 모두에 강제 적용한다 — 충실구현 단계에 실투형 전용 축 하나만 선별 적용하고 그것을 '지시됨' 이라 선언한 것은 사실과 다르다(실투형의 나머지 축 n_max·long-only·Σw=1 은 명시적으로 미적용이라고 같은 파일이 신고하고 있어 '실투형 전환' 도 아니다)."
+  ],
+  "signal_mismatch": [],
+  "evidence": "[signal] arxiv.org/html/2006.04639v1 전문 + v2 대조. 식(4) [θ(u,d)]_{j,k}=σ_kk^{-1}∫_a^b|[Ψ(u)e^{-iω}Σ(u)]_{j,k}|²dω / ∫_{-π}^{π}[{Ψ(u)e^{-iω}}Σ(u){Ψ(u)e^{+iω}}']_{j,j}dω 및 정규화 [θ~(u,d)]_{j,k}=[θ(u,d)]_{j,k}/Σ_{k=1}^{N}[θ(u,∞)]_{j,k} → engine.R:244-254 와 일치(A_h=Ψ_hΣ · σ_kk 는 열 k 로 나눔 sweep(...,2L,sk) · den_j=Σ_h(Ψ_hΣΨ_h')_{jj} 는 전대역 · rn=rowSums(θ(u,∞)) 로 행정규화 · tot_norm=Σ_{j,k}θ~(u,∞)=N). 식(6) C_{j←•}=100×Σ_{k≠j}[θ~(u,d)]_{j,k}/Σ_{j,k}[θ~(u,∞)]_{j,k} → engine.R:257 rowSums−diag; 식(7) C_{j→•}=100×Σ_{k≠j}[θ~(u,d)]_{k,j}/… → engine.R:258 colSums−diag; Fig.4 캡션 'Net-directional connectedness is the difference between to connectedness and from connectedness C(u,d)_{j→•}−C(u,d)_{j←•}' → engine.R:259 out<-to_j-from_j. §3.1.1 'to denotes portfolios using assets that are the strongest shock propagators' / 'from denotes portfolios using assets that are most receptive to shocks' + 'admit stocks above (below) the 70th (30th) percentile' + 'C(u,d)_{j→•}−C(u,d)_{j←•}>0(<0) … transmits (receives)' → engine.R:299-307 (hi=NETj>q70→to_ · lo=NETj<q30→from_) 부호 정합. 식(8)(v2 식16) NET(d)_t=(from^small+to^small)/2−(from^big+to^big)/2 → engine.R:340 동일. §3.1.1 'sort … above and below the day's median price level and define these as small and big' → engine.R:293-294. 식(17) R_{i,t}=β_0i+β_i^MKT·MKT_t+β_i^NET(d)·NET(d)_t+ε (우변 통제 = MKT 하나, v1·v2 동일 확인) → engine.R:399-408 2회귀자 정규방정식 폐형 b_f=(xmm·yfr−xmf·ymr)/(xmm·xff−xmf²). §5.2 '3-year rolling window, and moving forward … day-by-day' + 'From July 10, 2009 we sort stocks into quintiles from the estimates of β_i^NET(d)' + 'Portfolios are rebalanced monthly' → engine.R:378-385(창 (d−3y,d]) · 423-427(kq=floor(n×0.20)). §5.2 'a hedge portfolio that takes a long position in the portfolio containing assets with the highest 20% loadings, and a short position in … the lowest 20% loadings' → engine.R:426-432 (setorder ascending → md[1:kq]=최저=short(음의 비중) · md[(n−kq+1):n]=최고=long) — **부호 정합**. 초록 'stocks with high sensitivities to dynamic network risk earn lower returns' + §5.2 'stocks whose returns load more positively on horizon specific network risk earn lower returns' → 논문이 이 스프레드를 음(−)으로 보고하므로 KR 측정이 음이어도 부호 반전이 아님. §3 p=2 · §2 H=100 → engine.R:83-84. §3.1/Fig.3 'short-term as 1 day-1 week and long-term as horizons as 1 week-∞' + fn13 '대역 선택은 subjective' — **수치 경계 없음**(engine wc=π/5 는 논문값이 아니라 선언된 우리 결정). §Data R_t=Σ_{i=1}^{D}(p_{t,i}−p_{t,i−1}) · RV_t=sqrt(Σ(p_{t,i}−p_{t,i−1})²) · 5분 간격 → 텔레스코핑 = 일중 구간(engine.R:132 log(Close/Open)) 정합. RV 의 로그변환·표준화·winsorize·de-meaning 문장은 v1 전문에 **부재**(4종 별도 조회로 확인) → 엔진의 레벨 투입은 논문 위반이 아니고 FIDELITY 가 이미 '우리 결정' 으로 이동시켜 놓음. / [timing] §3.1.1('each day we sort S&P500 stocks above and below the day's median price level ... conditional on size, we sort on horizon specific net-directional connectedness') · §5.2('daily 3-year rolling window ... moving forward through the sample on a day-by-day basis' + 'From July 10, 2009 we sort stocks into quintiles from the estimates of βNET(d) on that day. We rebalance portfolios monthly during each year') · fn 13('short-term as 1 day-1 week and long-term as horizons > 1 week' — 경계 수치 미제시, subjective) · 표본: 네트워크 데이터 2005-07-05~2018-08-31, 정렬 개시 2009-07-10. / [universe] 논문 원문(arxiv.org/html/2006.04639v1) 전체에 유동성·가격·거래량 하한, 금융주 제외, 상장거래소 제한에 대한 문장이 없음(WebFetch 재확인, N=496/500 차이도 설명 없음) · 프로젝트 정본 CLAUDE.md 및 .claude/rules/lean-loop.md §'축 2층(v10)' 표: '충실구현 라운드(최초) | 논문 그대로 ... 유동성 필터 = 논문 우선(paper_faithful)' vs '실투형(강화부터) | ... LIQ 2e8'. engine.R:99 (.LIQ_MIN <- 2e8), :118-120 (.adv 계산), :158-161 (.ELG 필터), FIDELITY.json changed_checklist 항목 '유니버스 / 유동성'. / [portfolio] arxiv.org/html/2006.04639v1 — §3.1.1(Factor creation): 'Each day we sort S&P500 stocks above and below the day's median price level and define these as small and big stocks.' / 'Then, conditional on size, we sort on horizon specific net-directional connectedness and create value-weighted to and from portfolios.' / 'These portfolios admit stocks above (below) the 70th (30th) percentile of each respective day's horizon specific net-directional connectedness distribution.' / 'We then take an average of the to and from portfolios and then a long-short position in the respective small and big portfolios.' + 식(8) NET(d)_t = [(from^small + to^small)/2] - [(from^big + to^big)/2]. §5.2(Portfolio sorts): 'From July 10, 2009 we sort stocks into quintiles from the estimates of beta^NET(d)_i on that day. We rebalance portfolios monthly during each year.' / 'a hedge portfolio that takes a long position in the portfolio containing assets with the highest 20% loadings, and a short position in the portfolio containing assets with the lowest 20% loadings.' / 'We examine value-weighted portfolios in Table 6 and equal-weighted portfolios in Table 7.' Table 6 캡션: 'We create value-weighted portfolios by sorting stocks into quintiles based on daily realized horizon specific network risk betas; short-term in Panel A and long-term in Panel B. ... Portfolios are rebalanced monthly.' Table 7 캡션은 동일 문장의 equal-weighted 판. §3: '496 stocks with p=2 lags on our T=3278 days of data'. — 대응 코드: engine.R:87(.QUINT=0.20) · :293-294(중앙값 주가 small/big) · :299-307(30/70 조건부 정렬 + Size 가치가중 to/from 4포트) · :340(식 8) · :420-433(.mk_leg: 5분위 kq=floor(0.20n), 최고 beta 롱 / 최저 beta 숏, VW, 롱 Σw=+1 · 숏 Σw=-1) · :435-437(월별 발행). / [cost] arxiv.org/html/2006.04639v1 전문(Data·Methodology·§5.2 Cross-sectional pricing·Table 6 VW·Table 7 EW·Table 8 캡션 포함) 대조 — transaction cost/commission/market impact/round-trip/net of fees 등 어떤 표현도 없음. 등급용 15bps(run_paper_replication.R:315,331 transaction_cost_bps=15)는 CLAUDE.md·pit.md 의 저장소 공통 축(v2.4 delta)이며, 이 축의 검토 지시문 자체가 '15bps 판은 규약이지 변경이 아니다'로 전제하고 있다. / [undeclared] arxiv.org/html/2006.04639v1 전문 대조. §Data(\"R_t=SUM(p_{t,i}-p_{t,i-1})\" · \"RV_t=SUM(p_{t,i}-p_{t,i-1})^2\" · 5분 · \"N=496 stocks with p=2 lags\" · \"T=3278 days\" · 2005-07-05~2018-08-31) · §2(\"we set our truncation horizon H=100; results are qualitatively similar for H in {50,100,200}\" · QBLL \"a kernel weighting function that provides larger weights to observations that surround the period\") · 식(4)(6)(7) 원형 · §3.1.1(\"each day we sort S&P500 stocks above and below the day's median price level\" · \"conditional on size, we sort on horizon specific net-directional connectedness and create value-weighted to and from portfolios\" · \"above (below) the 70th (30th) percentile\") · 식(8) NET(d)=(from_small+to_small)/2-(from_big+to_big)/2 · §5.2 식(17) R_i,t=b0+bMKT*MKT_t+bNET(d)*NET(d)_t+e (통제 = 시장 하나) · \"3-year rolling window, and moving forward through the sample on a day-by-day basis\" · \"From July 10, 2009 we sort stocks into quintiles\" · \"We rebalance portfolios monthly\" · \"long position in the portfolio containing assets with the highest 20% loadings, and a short position in ... the lowest 20%\" · Table 6 캡션 value-weighted / Table 7 equal-weighted · fn13 대역 경계 subjective(수치 없음) · fn20 FF5 추가통제는 '유사'. 거래비용·턴오버·winsorize·최소관측 요건 = 원문 0건.",
+  "confidence": "medium",
+  "note": "축 팬아웃 6개(판독형 opus 3 · 대조형 sonnet 3) — 발견 1건. adapted/adapted/misdeclared/adapted/faithful/adapted",
+  "mode": "fanout",
+  "axis_verdicts": [
+    {
+      "axis": "signal",
+      "required": true,
+      "model": "opus",
+      "verdict": "adapted",
+      "admissible": true,
+      "reason": "",
+      "confidence": "high",
+      "checked": "식(4) GFEVD 분자·분모·σ_kk 배치 / 정규화 θ~ 행합 / 식(6)(7) row·col 방향과 100×·분모 N / net=to−from 부호 / to↔70th·from↔30th 사상 / 조건부 이중정렬(size 우선·그룹 내 백분위) / median price small-big 방향 / 식(8)(16) 팩터 부호 / 식(17) 우변 통제 수 / β 폐형 해 대수 / 3년 창 종점(d−3y,d] / 5분위 kq=floor(0.2n) / 헤지 다리 롱=최고β·숏=최저β(코드 + 산출물 04_holdings 2012-06-01 롱 59 : 숏 59 동수 확인) / p=2·H=100 / 대역 저주파=장기 사상과 Toeplitz ∫_0^wc cos(ωl)dω=sin(wc·l)/l 폐형 및 장기+단기=전대역 스케일 정합 / VMA 재귀 Ψ_h=Φ1Ψ_{h−1}+Φ2Ψ_{h−2}·Ψ_0=I / 지연행렬 정렬(lag1·lag2) / RV·R_t 정의 / 표준화·winsorize·로그변환 부재 확인",
+      "counterexample": "구성함(2건, 둘 다 FIDELITY 에 선언된 축이라 지적 항목으로는 올리지 않음). ①대역 경계: 논문은 장기를 '1 week-∞'(fn13 '수치는 subjective') 로만 정의한다. 주기 2π/ω 로 읽으면 장기 = ω∈(0, 2π/5], 엔진은 wc=π/5 = ω∈(0, π/5](주기 10거래일 초과). 따라서 5~10거래일 주기 대역에 연결성이 몰린 종목 j — 예: j 가 그 대역에서만 강한 순전달자이고 ω<π/5 에서는 to≈from — 는 논문-문자 사상에서 NETj 가 70th 초과라 to_small/to_big 바스켓에 들어가지만, 엔진에서는 NETj≈0 이라 30~70 중간대로 떨어져 **두 바스켓 모두에서 배제**된다. 같은 날 같은 데이터에서 j 의 NETj 값과 바스켓 소속이 갈리고, 그 결과 식(16) 네 바스켓 수익 → NET(d)_t → 식(17) β^NET → 최종 5분위 정렬까지 전부 다른 값이 된다. ②RV 입력: Parkinson 은 (High,Low) 만 쓰므로 일중 경로에 불변이다. 같은 High·Low 를 갖지만 하나는 단조 추세, 다른 하나는 고가↔저가 왕복을 반복한 두 날은 엔진에서 .rv 가 정확히 같은 값(engine.R:126)이나 논문의 5분 RV_t=sqrt(Σ(p_i−p_{i−1})^2) 는 왕복일 쪽이 배수로 크다. RV 패널이 VAR 입력 전부이므로 그 종목의 Ψ_h·Σ 가 달라지고 NETj 가 달라진다. 즉 논문의 신호와 다른 값을 내는 상황은 실재하며, 두 경우 모두 changed_checklist('주 단위 이산화 — 대역 경계' · '데이터 원천 — RV')에 선언돼 있다.",
+      "n_findings": 0
+    },
+    {
+      "axis": "timing",
+      "required": false,
+      "model": "sonnet",
+      "verdict": "adapted",
+      "admissible": true,
+      "reason": "",
+      "confidence": "high",
+      "checked": "네트워크/NET(d) 재추정 주기(일별 vs 월별) · 베타 3년 롤링창 정의(달력 3년, 유효관측 하한) · 5분위 정렬·리밸 주기(월간) · 밴드 경계(1주=π/5 이산화) · VAR lag p=2·H=100 · 표본 개시일(2009-07-10) 대비 구현 개시 로직 — 전부 engine.R 코드와 FIDELITY.json changed_checklist/paper_values_used_unchanged 대조.",
+      "counterexample": "구성 못 했다. 논문 원문(§3.1.1: NET(d) 팩터는 'each day we sort ... conditional on size' — 일별 재정렬) 대비 engine.R:271-317 은 월말 거래일에만 네트워크·NET(d) 4포트폴리오를 재추정/재정렬하고 그 비중을 다음 달 전체에 고정 적용한다(engine.R:322-330, 특히 328행 주석 '비중은 그 달 안 고정 — 시그널일 시총 비중, drift 미반영'). 이는 논문과 다른 값을 내지만, FIDELITY.json changed_checklist '연결성·팩터 정렬 주기'(114-120행) 항목에 정확히 '논문: 매일 재추정·매일 재정렬 / 우리: 월말 거래일에 재추정·재정렬'로 선언돼 있고 그 다음 달 적용 지연(비중 확정일 < 수익일)도 pit_notes.factor_series 에 다시 명시돼 있다. 선언과 실제 코드 동작이 일치하므로 misdeclared 로 세울 반례가 없다.",
+      "n_findings": 0
+    },
+    {
+      "axis": "universe",
+      "required": false,
+      "model": "sonnet",
+      "verdict": "misdeclared",
+      "admissible": true,
+      "reason": "",
+      "confidence": "high",
+      "checked": "유니버스 치환(K200∪KQ150, 허용됨) · 유동성 필터 존재/문턱(adv20>=2e8, t-1) · 가격/시총 정합성 필터(Close>0, Size>0 — 논문 무관) · 네트워크 단면 상한 150·하한 40 및 그 산출근거(계산량) · 최소 정렬후보 50 · 금융주/거래소 제외 여부(양쪽 다 없음) · 중복행(Ticker,Date) 처리 · 충실구현 단계 축 정의(lean-loop.md) 대비 실제 적용 축 정합성",
+      "counterexample": "신호일(월말) 기준 K200 또는 KQ150 멤버이고 시가총액·가격 정상이나 20일 평균 거래대금이 2e8 KRW 미만인 종목 A 가 있다고 하자. 논문 그대로(선별 규칙 없음) 구현이면 A 는 네트워크 단면·NET(d) 정렬·최종 β^NET 5분위 정렬 전부에 후보로 들어간다. 현재 engine.R 은 .adv < .LIQ_MIN 조건에서 .ELG 자체에 A 를 포함시키지 않으므로(engine.R:158-161) A 는 세 단계 모두에서 배제된다 — 논문 규칙대로라면 존재했을 A 의 편입이 이 구현에서는 원천적으로 불가능하다. 이는 특정 날짜의 실제 데이터 없이도 필터 조건식만으로 구성 가능한 반례다.",
+      "n_findings": 1
+    },
+    {
+      "axis": "portfolio",
+      "required": true,
+      "model": "opus",
+      "verdict": "adapted",
+      "admissible": true,
+      "reason": "",
+      "confidence": "high",
+      "checked": "롱숏 여부·다리 방향(§5.2 최고 20% 롱/최저 20% 숏 vs engine.R:426-432) · 분위 폭 20%(kq=floor(0.20n), 실현 66~136종을 n=165·340 에서 역산 검증) · 양다리 동수(음비중 15,214 = 전체 30,428 의 정확히 절반) · 다리별 총노출 ±1.000(2005-02-01 36+36 손검산) · 가치가중 여부와 Size=시가총액 확인 · NET(d) 구성 포트 4종(중앙값 주가 small/big × 30/70 조건부, VW, (from+to)/2 스프레드=식 8) · 러너 절단 부재(engine_direct 경로 · n_max 136 · 10_audit.csv holdings_cap) · 고정 축(long-only·≤25종) 충돌의 선언 소재.",
+      "counterexample": "구성하지 못했다. 이 축에서 구현이 논문과 다른 값을 내는 상황을 산출물에서 찾지 못했다. 반례를 겨눈 3지점 전부 논문 형태와 일치한다. ①레그 구성: 04_holdings.csv 30,428행 중 음(-)비중이 정확히 15,214행 = 절반 → 모든 리밸일에서 롱·숏 종목수가 같다(engine.R:423 kq 가 양다리 공용이라 구조적으로 동수). 2005-02-01 블록(04_holdings.csv:2~73)을 손으로 검산하면 롱 36종 Σw = +1.000, 숏 36종 Σw = -1.000 — 논문 §5.2 헤지(최고 20% 로딩 롱 / 최저 20% 롱숏 각 1배)와 같은 형태다. ②분위 폭: 10_audit.csv:20 이 '리밸일별 distinct ticker 66~136종 (260 리밸일)' 을 기록하는데 66 = 2*floor(165*0.20), 136 = 2*floor(340*0.20) 로 kq = floor(n*0.20)(engine.R:423, .QUINT=0.20 engine.R:87)에서 정확히 재도출된다 — 두 층이 각자 상위 N 을 자르는 곱셈 패턴(축 힌트)의 흔적이 없다. ③러너 절단 부재: run_paper_replication.R:283-292 의 engine_direct 분기는 PORTFOLIO 를 그대로 반환하고 고정 축 25종 초과를 cat 로 드러내기만 한다(자르지 않는다). 01_strategy_spec.json n_max=136 · has_short=true 가 그 결과다. ④가중: engine.R:430-432 가 Size 로 비율 배분(VW)하고, RAWDATA$Size = 시가총액이라는 것은 러너 자신의 vw 분기(run_paper_replication.R:85-93)와 저장소 관행(factor_engine_altman_z.R:36 '시총: RAWDATA$Size (월말, MarketCap)')이 확인한다 — 2005-02-01 롱 상위가 A000660 0.187·A004940 0.186·A003550 0.112, 숏 상위가 A015760 0.123·A005490 0.112·A017670 0.102 로 대형주 편중이 VW 와 정합이다. 논문 대비 남는 유일한 수치 격차는 다리당 종목수(논문 496/5 ≈ 99 vs 구현 33~68)인데, 이는 비율(20%)이 같은 채 유니버스가 S&P500 → K200∪KQ150 로 바뀐 결과이므로 허용된 축 교체의 귀결이지 이 축의 변경이 아니다.",
+      "n_findings": 0
+    },
+    {
+      "axis": "cost",
+      "required": false,
+      "model": "sonnet",
+      "verdict": "faithful",
+      "admissible": true,
+      "reason": "",
+      "confidence": "high",
+      "checked": "engine.R(비용 로직 0건 — 엔진은 PORTFOLIO만 산출, 비용은 하네스 소관) · run_paper_replication.R:180,303-313,425(commission_paper 기본값·이중 시뮬레이션·논문기준 로그) · replication_harness.R:19-21,38-39,107-119(비용모델 Σ|Δw|×commission, 리밸일 1회) · FIDELITY.json:12(commission_paper:null) · authoritative_remeasure.json(commission_paper_bps:0, paper_basis, grade_basis_note) · 논문 원문 전체(비용 언급 유무)",
+      "counterexample": "구성 못 했다. 논문 원문(arxiv.org/html/2006.04639v1, §Data·§2·§3·§5.2·Table 6/7/8 전체)에 거래비용·수수료·시장충격·왕복 언급이 0건이라 '논문 비용'이라는 비교 대상 자체가 없다. 구현은 이를 gross(0bps)로 정확히 반영했다(commission_paper=null→comm_paper=0, run_paper_replication.R:180,304 · FIDELITY.json:12 'commission_paper: null'). authoritative_remeasure.json의 paper_basis(CAGR 4.26%·SR 0.178·MDD 73.5%)는 comm_paper=0bps 판이고, 이는 논문이 비용을 전혀 언급하지 않는 것과 정합적이다 — 논문 비용으로 계산됐어야 할 값을 우리 쪽에 유리한 값으로 대체한 지점이 없다.",
+      "n_findings": 0
+    },
+    {
+      "axis": "undeclared",
+      "required": true,
+      "model": "opus",
+      "verdict": "adapted",
+      "admissible": true,
+      "reason": "",
+      "confidence": "high",
+      "checked": "코드→논문 방향 전수: 상수 26종(.P_LAG/.H_TRUNC/.PCT_LO/.PCT_HI/.QUINT/.BETA_YRS/.C_SCALE = 논문 확인 · .WEEK_D/.WC/.VAR_WIN/.N_NET_MAX/.N_NET_MIN/.PORT_MIN/.MIN_SORT/.BETA_MIN_OBS/.LIQ_MIN/.ADV_WIN/.RV_FLOOR/.SIG_JIT/.PSI_CAP/.LAM_STEP/.LAM_TRY/lam_grid/det 1e-10/kq>=2/2*.PORT_MIN = changed_checklist 등재), 분기·skip 사유 5종(skip_universe/coverage/var/ports + PORTFOLIO 미발행), 데이터 변환 5종(.tv/.adv/.rv/.rid/.M_RV), 사상 2종(.mdt$SigDate 직전달 월말 · .ELG 자격술어 3지점 동일), GFEVD 재도출(식4 분자 sigma_kk^-1 sweep margin 2 · 분모 den_j 행별 · 식6 rowSums-diag · 식7 colSums-diag · tot_norm=N · 장기+단기=전대역 정확 성립 확인), VMA 재귀(Psi_0=I·Phi1/Phi2 전치 방향 · Bc 블록 lag 순서), beta 창(findInterval (d-3y,d] · 누적합 차분 · 2회귀자 정규방정식), .mk_leg 다리 방향(hi=최고 beta=long). 역방향(선언→코드) 전수: changed_checklist 29항 + paper_values_used_unchanged 17항 + audit_response 5건 전부 코드 대조 — 미이행 선언 0건. 하네스 측 BM_Ret = KOSPI200 종가-종가(krx_build_rawdata.R:124,223) · Vol = ACC_TRDVOL(주식수) · Size = MKTCAP 확인.",
+      "counterexample": "구성하지 못했다. 코드에서 출발해 (a) 상수 26종 전부 (b) 제어흐름 분기 전부 (c) 데이터 변환 전부를 열거하고 각각을 '논문 문장' 또는 'FIDELITY.changed_checklist 항목'에 사상했는데, 어느 쪽에도 닿지 않는 항목이 남지 않았다. 판정을 갈랐을 후보 3건은 전부 실측으로 무효화됐다: ①`.RD <- .RD[Ticker %in% .evm]`(ever-member 축소, changed_checklist 부재) — 선택은 전부 날짜별 `.ELG`(engine.R:158)를 통과하고 `.RET`·`.M_RV` 소비자도 `.ELG` 하위라 행동상 불활성. 게다가 engine.R:63 에 명시돼 있다. ②`.net_long` 의 `sweep(Xl,2,colMeans(Xl),'-')`(engine.R:186-187, 절편 = 미신고) — 논문 TVP-VAR 도 절편을 갖는 표준형이라 변경이 아니다. ③`S0 <- crossprod(E)/max(1, nn - dfl)`(engine.R:214, 유효자유도 분모 = 미신고) — 식(4)의 θ 는 Σ→cΣ 에 불변이다(분자 c²/σ_kk=c · 분모 c → 비율 1). 스칼라 배는 NET 값을 한 자리도 바꾸지 못한다.",
+      "n_findings": 0
+    }
+  ],
+  "flags": [],
+  "merged_at": "2026-09-07T10:35:21+0900"
+}

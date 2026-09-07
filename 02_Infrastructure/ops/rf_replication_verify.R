@@ -377,6 +377,46 @@ if (.resc_ok) jlog("base_gate_bypass_rescued", port_t = .base_pt,
 if (is.finite(.base_pt) && .base_pt < .min_pt && !.resc_ok) {
   jlog("base_below_threshold", port_t = .base_pt, threshold = .min_pt,
        note = "기저 알파가 음수 — 강화 생략하고 다음 논문으로 이월(측정·기록은 남는다)")
+
+  # ── ★방어형 병렬 경로 — 소비 **전에** 판정한다 (도훈 승인 2026-09-07) ────────
+  #   왜: 이 게이트는 **전기간** PORT_t 하나로 논문을 영구 소비(ledger_consumed)하는데,
+  #   방어형의 값어치는 전기간 평균이 아니라 **벤치가 실제로 마이너스를 낸 국면**에서 난다.
+  #   AX-001 이 금지하는 "전기간 기준 방어형 평가" 를 게이트가 하고 있었다.
+  #   실측 2026-09-07: 이 분기로 버려진 14건 중 **11건이 계약 기준 방어형**이었다
+  #   (하락월 t 9.95 · 8.63 · 6.38 · 6.23 · 5.47 · 3.72 …).
+  #   ⇒ 방어형이면 버리지 말고 **2계층 풀 후보로 모듈 등재**한 뒤 소비한다.
+  #     1계층 강화는 여전히 생략한다(현행 유지) — "값어치는 조합 안에서 나온다"(reinforce SKILL).
+  #   ★부재를 거짓으로 읽지 않는다: defensive_score 미산출은 `dscore_absent` 사유로 남는다.
+  #   ★판정은 계약 술어(ds_pool_eligible) 가 낸다 — 여기에 사본을 두지 않는다.
+  .adm_note <- ""
+  tryCatch({
+    .rmm <- new.env(parent = globalenv())     # 전역 %||% 오염 방지 — 격리 적재
+    sys.source(file.path(ROOT, "02_Infrastructure/contracts/register_measured_module.R"), envir = .rmm)
+    .adm <- .rmm$rmm_admission(.rmm$rmm_read_auth(dirname(ar)))
+    .adm_note <- .rmm$rmm_gate_note(.adm)
+    if (isTRUE(.adm$eligible)) {
+      .reg <- .rmm$rmm_register_measured(
+        dirname(ar), origin_mode = "replication_skipped_base",
+        meta = list(skipped_base_port_t = .base_pt, base_min_port_t = .min_pt,
+                    paper_key = as.character(PKEY %||% ""), fidelity = .fidelity,
+                    admitted_by = "base_below_threshold defensive route (도훈 2026-09-07)"))
+      jlog(if (identical(as.character(.adm$route)[1], "defensive_specialist"))
+             "defensive_admitted" else "pool_admitted",
+           route = as.character(.adm$route)[1], grade = as.character(.adm$grade)[1],
+           down_n = .adm$n_down, down_t = .adm$down_t, down_excess = .adm$down_excess,
+           deep_excess = .adm$deep_excess, convex = isTRUE(.adm$convex),
+           registered = isTRUE(.reg$registered), strategy_id = .reg$strategy_id,
+           code = .reg$code, port_t = .base_pt,
+           note = "기저 음수여도 2계층 풀 후보로 등재 — 1계층 강화는 생략(현행 유지)")
+    } else {
+      jlog("defensive_not_admitted", code = as.character(.adm$code)[1],
+           grade = as.character(.adm$grade)[1], has_dscore = isTRUE(.adm$has_dscore),
+           reason = substr(as.character(.adm$reason)[1], 1, 200),
+           note = "부재(dscore_absent)와 거짓(not_defensive)은 다르다 — 한 칸에 합치지 않는다")
+    }
+  }, error = function(e) jlog("defensive_admit_failed", err = conditionMessage(e),
+       note = "★등재 경로 실패 — 소비는 그대로 진행한다(측정·기록은 남는다)"))
+
   # ★원장에 **소비 기록**을 남긴다. 안 남기면 rf_next_paper_pick 이 원장 paper_key 로
   #   소비를 판단하므로 같은 논문을 영원히 다시 집는다 — 8분마다 LLM 에이전트가 재실행된다.
   #   실사고 2026-08-31: 2608.23944 를 19:14~20:34 사이 **5회** 반복 구현했다.
@@ -424,6 +464,9 @@ if (is.finite(.base_pt) && .base_pt < .min_pt && !.resc_ok) {
                        "측정 결과는 기록에 남아 다음 라운드가 참조합니다")),
         list(type = "bullet", emoji = "➡️", heading = "다음",
              items = c("처분: 자본 배정 없음 · 강화 미개시",
+                       # ★방어형이면 버리지 않고 2계층 풀 후보로 등재했다는 사실을 1줄로 남긴다.
+                       if (length(.adm_note) == 1L && nzchar(.adm_note))
+                         paste0("2계층 풀: ", substr(.adm_note, 1, 110)) else NULL,
                        "큐 다음 논문으로 이월합니다"))),
                          charts = rf_perf_charts(dirname(ar)))
     # ★[팩터 분석] — FF3/FF5/Carhart 알파 + Fama-MacBeth. 산출물이 있을 때만 보낸다.

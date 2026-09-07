@@ -438,6 +438,32 @@ run_paper_replication <- function(strategy_name, strategy_idea, factor_engine_pa
              auto_unbox = TRUE, pretty = TRUE, digits = 6, na = "null")
   cat(sprintf("[replication] 권위 등급 = %s (15bps 판 · %s)\n", grade, integrity))
 
+  # ---- 7-c. 2계층 모듈 풀 등재 (2026-09-07 신설 이음매) ----------------------
+  #   ★없던 것: 이 러너는 bt_result.rds + authoritative_remeasure.json 만 남기고
+  #     `register_module()` 을 **한 번도 부르지 않았다**. 그래서 v10 생산 631 런
+  #     (essence B 54 · defensive TRUE 407)이 module_catalog 에 들어갈 경로가 없었고
+  #     카탈로그는 2026-08-24 이후 정지했다. "1계층이 B 이상을 못 만든다" 가 아니라
+  #     **만든 것이 풀로 못 갔다**. 이 한 줄이 충실구현·결합·강화 셀 세 레인을 동시에
+  #     잇는다 — 셋 다 이 함수를 경유하기 때문이다(rf_cell_worker.R:32 · rf_replication_verify.R:369).
+  #   ★재측정 없음 — 방금 쓴 산출물을 읽어 옮길 뿐이고, 등재 자격은 소비자의 계약
+  #     술어(ds_pool_eligible → essence ∈ {A,B} ∨ 방어형)가 낸다. 자격 미달은 등재하지
+  #     않는다(카탈로그 폭주 방지). 실패는 저널에 사유가 남는다 — 조용한 실패 없음.
+  #   kill switch: QVEST_RP_REGISTER=0
+  if (!identical(Sys.getenv("QVEST_RP_REGISTER", "1"), "0")) tryCatch({
+    .rmm_env <- new.env(parent = globalenv())     # 전역 %||% 오염 방지 — 격리 적재
+    sys.source(file.path(.RP_INFRA, "contracts", "register_measured_module.R"), envir = .rmm_env)
+    .reg <- .rmm_env$rmm_register_measured(
+      OUT_DIR, sim_result = sim_grade, origin_mode = "replication",
+      meta = list(strategy_idea = strategy_idea, strategy_name = strategy_name,
+                  source_paper_url = .sp_url,
+                  paper_key = as.character(source_paper$paper_key %||% NA_character_),
+                  fidelity_lane = if (isTRUE(weights_engine_direct)) "engine_direct" else
+                                  (portfolio_spec$construction %||% "top_n_long")))
+    cat(sprintf("[replication] 모듈 등재: %s (%s)\n",
+                if (isTRUE(.reg$registered)) "OK" else "미등재", .reg$code))
+  }, error = function(e)
+    cat("[replication] 모듈 등재 실패(비치명 — 저널에 사유):", conditionMessage(e), "\n"))
+
   # ---- 8. Charts (2차트 — 알파서칭 양식) ----
   tryCatch(generate_charts(sim_grade, OUT_DIR, strategy_name),
            error = function(e) cat("[replication] 차트 실패(비치명):", conditionMessage(e), "\n"))

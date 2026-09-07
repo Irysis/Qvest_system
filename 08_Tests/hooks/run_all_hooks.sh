@@ -1333,7 +1333,23 @@ SUITES=(
   "08_Tests/reinforcement/test_rf_promote_child_exists.R"
   "08_Tests/reinforcement/test_rf_resume_cell_by_code.R"
   "08_Tests/reinforcement/test_rf_resume_reuse_result.R"
+  # 2026-09-07: 원인이 수리로 제거된 terminal 칸을 되살리는 writer(rf_reopen_attempt) — 사유 필수·이력 누적·측정된 칸 거부
+  "08_Tests/reinforcement/test_rf_reopen_attempt.R"
   "08_Tests/reinforcement/test_rf_weight_arms_explore.R"
+  # 2026-09-07 — 2계층 풀 자격 술어. 방어형 경로가 "배선됐다"고 기록된 뒤에도 catalog 275건 중
+  #   defensive_score 보유 0건이었고(등재기가 값을 안 실음), 풀 조립부는 계약 ds_pool_eligible 대신
+  #   자체 사본 .defensive_ok 를 들고 있었으며 등급 floor 는 essence 가 아니라 **발행 시점 grade** 를
+  #   읽었다. 기존 검사는 소스 문자열만 봐서 전부 초록. 이 검사는 합성 카탈로그로 술어를 **실구동**하고
+  #   sentinel 주입으로 계약 경유를 런타임 재도출한다(부재≠거짓 집계 · kill switch 양방향 포함).
+  "08_Tests/regime/test_l2_pool_admission.R"
+  # 2026-09-07 — 생산 레인 → 2계층 풀 **등재 이음매**. 위 술어가 고쳐진 뒤에도 카탈로그가
+  #   2026-08-24 이후 정지해 있던 이유: run_paper_replication.R 이 bt_result.rds 만 남기고
+  #   register_module 을 **한 번도 안 불렀다**(631 런 중 essence B 54 · defensive TRUE 407 이
+  #   진입 경로 없음). 같은 날 base_below_threshold 게이트는 전기간 PORT_t 하나로 논문을 영구
+  #   소비했고 그렇게 버려진 14건 중 11건이 계약 기준 방어형이었다(AX-001 위반).
+  #   ★1급 축은 "붙였다"가 아니라 **"부른다"** — 러너 두 곳의 블록을 소스에서 잘라 실제로 eval 하고
+  #   (좌표 아닌 의미 앵커로 찾는다), 위반 주입으로 검출력을 실증한다. 부재≠거짓 사유 분리 포함.
+  "08_Tests/contracts/test_module_admission_seam.R"
 )
 
 

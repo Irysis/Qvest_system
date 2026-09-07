@@ -1,0 +1,109 @@
+{
+  "fidelity": "faithful",
+
+  "fidelity_label_basis": "프롬프트 판정 순서 1단계(논문 그대로 신호·종목수·비중·리밸)에 해당한다고 판단했다. 신호(20입력 = 직전 10분기 가격 변화율 + 10분기 이익 변화율, 횡단면 순위로 변환 · 단일 은닉층 역전파 신경망 · 다중 초기화 집계 · 무작위 학습/검증 분할로 반복수 최적화 · 직전 10분기 학습 · 표적 = 다음 분기 가격 변화율 · 예측 내림차순 순위) · 종목수(T100/B100 = 논문 30개 포트폴리오 중 H100 칸) · 다리(T 롱 / B 숏) · 보유(1분기) · 리밸(월간 시작점 3개 평균 = 매월 1/3 교체) · 이익 30% 무작위 제거까지 논문값이다. 유일한 설계 변경 = 유니버스 K200∪KQ150. ★단 이 논문은 신경망의 세부(은닉 유닛 수 · 학습률 · 반복 상한 · 초기화 횟수 · 검증 비율 · GA 탐색 범위 · '순위를 0 중심으로 스케일'한 범위 · 다리 내 비중 · 이익 변화율의 분모 규약)를 **주지 않는다**. 이 값들은 아래 changed 에 전부 우리 상수로 적었다. 또 §3.4 의 'recurrence' 는 원문이 무엇인지 정의하지 않아 §6.2 의 데이터 수준 재귀(과거 산출 = 미래 입력)로 읽었고 순환 구조는 구현하지 않았다(changed 11). 감사자가 이 미명시 상수·독법을 '유니버스 외 변경'으로 세어 adapted 로 판정한다면 다투지 않는다 — 라벨보다 선언의 완전성이 우선이다.",
+
+  "kept": "논문 전부. §3.2 'Inputs to the network consist of the ten preceding quarterly percent price and earnings changes (not accumulated) transformed as ranks' + Abstract 'converted to a relative rank scaled around zero' → 20입력 = 가격 변화율 10분기 + 이익 변화율 10분기(각 분기 단독, 누적 아님), 각 열을 시점별 횡단면 순위로. 'Outputs are the predicted next quarter's percentage price changes' → 표적 = 다음 분기 가격 변화율(원값). 'All ~1452 stocks are then ranked in descending order by the ANN's predicted percentage price change' → 예측 내림차순. §3.2 T10…T100 / B10…B100 / H = T 롱 + B 숏 → H100 칸 구현(상위 100 롱 · 하위 100 숏). §3.2 '30% of the earnings figures are removed at random before ranking' → 이익 열마다 30% 무작위 제거 후 순위. §3.4 'simple back propagation network with a single hidden layer' → 단일 은닉층(tanh)·선형 출력 MLP, 전배치 역전파(경사하강+모멘텀). 'The results of multiple initializations are aggregated to obtain a final ranking' → 초기화 5회 예측 평균으로 최종 순위. 'Exact net architecture ... optimized independently on each new data set ... extremely tight constraints ... minimal searching' → 은닉 유닛 {4,8,16} 을 매 학습 시점 검증으로 선택. §3.5 'Training and testing sets are selected a-priori at random for optimization of training iterations' → 학습 표본을 무작위 80/20 분할, 검증 MSE 최소 에폭에서 조기종료. 'Under-fitting is greatly preferred to over fitting' → 검증 MSE 최소 ×1.02 안에 드는 가장 작은 은닉 수 채택. 'freshly trained on (ten quarters of) data that is out of the (one quarter) prediction sample' → 매 시그널마다 직전 10분기 표본으로 새로 학습(표적이 시그널일까지 실현된 분기만). Abstract 'all portfolios are held fixed for one quarter' + §4.1.1 'Once a month ... predict and rank-order' · 'results are averaged over all three possible monthly starting points in a quarter' → 매 월말 트랜치 형성, 1분기 보유, 3개 트랜치 1/3 평균. 논문 보고(비용 미포함, 무위험 6% 가정, 1994Q4~2001Q4 29분기): H100 연 16.7%(초과 10.7%), T100 롱 19.6%, H10 초과 50.2%, Table 1 H10~H100 초과 50.2/18.1/19.2/13.2/11.3/10.9/8.7/11.0/11.5/10.7%, Jensen α 0.2~0.4(α = 0.25·CD^−0.35, r² 0.94), H10 외 Sharpe 는 S&P500 이하.",
+
+  "changed": [
+    "(1) [유니버스 — 유일한 설계 변경] 논문 Value Line 고정 1452종(미국, 분기별 실제 순위 대상 ≈1443~1452) → K200∪KQ150 개별 종목(날짜별 PIT 시변 멤버십, engine.R MEM) + adv20(t−1) ≥ 2e8 KRW(ADV20_L1 = shift(frollmean(Close×Vol, 20), 1)). 지시 축. 순위(입력 변환)의 횡단면 = 그 시점의 적격 집합(논문 = 그 분기에 순위 가능한 전 종목). 부수 효과: 횡단면이 ≈150~350 이라 T100/B100 이 논문(상위 6.9%)보다 훨씬 두꺼운 꼬리(상위 ≈30~50%)가 된다 — (2)의 칸 선택과 함께 읽을 것.",
+    "(2) [선택한 칸 — 논문이 30개 포트폴리오를 보고] H100(T100 롱 / B100 숏) 하나만 구현·측정. 선택 근거: §4.1.1 이 'the fully hedged T100+B100 = H100 equity portfolio' 를 헤드라인 문장으로 쓰고 VL 시스템(Rank 1 = T100 / Rank 5 = B100)과의 정면 비교 칸이며, 순위 꼬리 잡음에 가장 덜 의존한다. H10~H90·롱온리 T·숏온리 B 는 미측정(강화 레인 probe). ★다리 크기 규칙: 논문 100종 고정이나 적격 N < 200 이면 두 다리가 겹치므로 k = min(100, floor(N/2)) 로 잘라 다리 중첩을 막았다(engine.R kl/ks) — K200 단독 시기(2005~2010-01)에 구속될 수 있는 우리 규칙. 논문은 N≈1450 이라 이 상황이 없다. 실현 k 는 러너 로그 'L%d/S%d' 로 출력.",
+    "(3) [다리 내 비중 · 헤지 정의 — 논문 미명시] 다리 내 등가중(1/k), 롱 Σ=+1 · 숏 Σ=−1(달러중립). 논문은 비중 방법을 어디에도 적지 않고 벤치마크를 '(unweighted) VL universe' 라 부르며, 헤지 수익의 산식(T−B · 금융비용 · 노출)도 적지 않는다. 하네스 결합 = GL·L − GS·S(replication_harness.R:105).",
+    "(4) [보유·리밸 표현 — 3개 월간 사이클 평균 → 중첩 트랜치] 논문은 분기 보유 시뮬레이션을 월간 시작점 3개로 돌려 '결과를 평균'했다. 구현 = 매 월말 새 트랜치(H100) 형성 · 각 트랜치 3개월 보유 · 최근 3개 트랜치를 1/3 씩 합산한 집계 비중을 월말 행으로 발행(engine.R parts/agg). 이는 세 사이클의 월간 단순수익 평균과 같은 거래 가능 포트폴리오이나, 논문이 '누적 곡선을 평균'했다면 복리 경로가 다르다. 트랜치가 빠진 달(미발행)은 남은 트랜치 평균. 부수 효과(하네스): (a) 매월 목표비중으로 재설정되므로 트랜치 내부 drift 가 월 단위로 되돌려진다(논문 = 1분기 고정 보유) (b) 비용 = 월별 Σ|Δ목표비중|×15bps(≈ 매월 1/3 교체, 논문의 분기 비용 발생과 정합) (c) 러너가 매 행 날짜의 멤버십으로 다시 거른다(run_paper_replication.R .apply_universe) — 형성 후 멤버십을 잃은 종목은 그 달부터 빠지고 하네스가 잔여 비중을 재정규화한다.",
+    "(5) [이익의 정체 — VL 분기 EPS → KR 분기 순이익/주식수] 논문 '(original) earnings reports' = Value Line 분기 EPS. 구현 = QuantiWise 분기 재무 패널(.cache/fundamental_xlsx.parquet)의 (PretaxIncome − TaxExpense) / ISSD(보통주 수정 기말 발행주식수) — 저장소 표준 NetIncome 파생식(xlsx_factor_calculator.R:136)과 동일 분자에 주식수를 나눠 EPS 로 맞췄다. ISSD 가 없거나 0 이하인 분기의 EPS 는 결측. ★패널 값은 최신 확정치(재작성 반영)라 논문의 '원래 보고치만 사용' 과 다르다 — 이 저장소에 원보고 vintage 패널이 없다(신고). 변화율 = (E_q − E_{q−1}) / |E_{q−1}| : 연속 회계분기(Period_Date 간격 3개월)만, 분모 0 = 결측. '분기별·누적 아님' 을 직전 분기 대비 순차 변화율로 읽었다(전년동기 대비 y/y 독법은 4분기를 누적하는 셈이라 채택하지 않음 — 미측정 대안). 음수 분모는 절대값으로 방향을 보존(VL 관행·논문 모두 미명시).",
+    "(6) [이익 가용성 — 논문 규칙의 PIT 치환] 논문: '최근 열은 그 사이클에서 가용 불가면 입력에서 제외' + '원보고가 실제 가용했던 주·월에만'. 구현: 분기 변화율의 가용일 AVAIL = max(Factor_Date_q, Factor_Date_{q−1}), Factor_Date = 패널 생산자의 PIT 가용일(Q1~Q3 분기말+45일 · Q4 익년 3/31, parse_fundamental_xlsx.R:205 — pit.md C4 정합). 시점 d 입력 = AVAIL ≤ d 인 최근 10개 분기(종목별, engine.R .earn_mat). 사이클 단위 일괄 제외가 아니라 종목별 가용일 판정 — 논문 규칙의 상위 호환.",
+    "(7) [30% 무작위 제거 — 논문값 유지 · 우리 seed] 논문 §3.2 그대로 이익 입력 열마다 유한값의 30%(반올림)를 무작위 결측으로 바꾼 뒤 순위(engine.R .build_inputs). 학습·예측 입력 모두에 적용(논문은 시뮬레이션 입력 전체에 적용한 것으로 읽음). 난수 = set.seed(20080616 + 월 인덱스) → 결정론적. 제거된 값·원래 결측은 순위 후 0(중립)으로 들어간다((8)).",
+    "(8) [순위 스케일 · 결측 인코딩 — 논문 범위 미명시] 각 입력 열을 시점 횡단면에서 평균 순위(동률 = 평균) → 2(r−1)/(m−1) − 1 ∈ [−1, 1] 로 사상. 논문은 'relative rank scaled around zero' 만 말하고 범위를 주지 않는다. 결측 입력(이익 미가용·제거·가격 이력 부족)은 0(중심) — 논문은 결측 인코딩을 적지 않는다. 종목 커버리지 요건은 두지 않았다(입력이 전부 0 이어도 예측·순위 대상).",
+    "(9) [가격 변화율의 정의] 분기 변화율 = 월말 수정종가 비율 P[m]/P[m−3] − 1, 사이클 월에 정렬(k번째 입력 = P[m−3(k−1)]/P[m−3k] − 1, k=1..10). 월말 종가 = 그 달 종목의 마지막 관측 종가. 배당 제외(VL 가격 변화와 같음). 종가 = 저장소 수정주가(build_cache.R '수정주가') — KRX 백필 구간의 분할 미조정 잔재(rawdata_sanitize.R SUSPECT 라벨)가 남아 있을 수 있어 (10)의 절단을 뒀다. 두 월말 종가가 다 있어야 변화율이 정의되고, 없으면 결측(채우지 않음).",
+    "(10) [표적 처리 — 표준화 + 절단(우리 것)] 표적 = 다음 분기 가격 변화율 원값(논문). 학습 시 학습 분할의 평균·SD 로 표준화(순위 불변인 아핀 변환 · 학습 분할 내부 통계만) 하고 **±5 SD 로 절단**했다(engine.R .Y_CLIP). 절단은 논문에 없다 — 사유: (9)의 분할 미조정 잔재(2×·5×·10× 점프)가 MSE 학습을 지배하는 것을 막기 위한 데이터 위생. 논문 데이터는 '전수 오류 검사, 알려진 오류 0' 이었다. 예측값(Score)은 표준화 단위 그대로(순위만 쓴다).",
+    "(11) [신경망 — 논문 미명시 세부 전수] (a) 구조: 20입력 → 은닉 h(tanh) → 1 선형 출력. (b) 'recurrence': 원문이 정의하지 않음. §6.2 'every other input is itself an earlier period's change in price ... that was itself once an output' 을 근거로 데이터 수준 재귀로 읽고 **순환(Elman/Jordan) 구조는 구현하지 않았다** — 논문이 순환층을 뜻했다면 이는 구조 변경이다(감사 판단 항목). (c) 학습 = 전배치 역전파(경사하강) + 모멘텀, 학습률 0.01 · 모멘텀 0.9 · 손실 = MSE · 최대 300 에폭. (d) 초기화 = U(−1/√fan_in, +1/√fan_in), 출력 편향 0. (e) 은닉 유닛 후보 {4, 8, 16} — 논문 GA 의 '극도로 좁은 제약 하 최소 탐색' 을 3값 검증 선택으로 대체(GA 자체는 구현하지 않음). (f) 초기화 횟수 K=5 (논문 횟수 미명시), 집계 = 선택 은닉 크기의 K 헤드가 각자 최적 에폭에서 낸 예측의 평균. (g) 구현 기법: K×|HID| = 15 네트워크를 블록 대각 W2(마스크 M2)로 한 행렬 연산에 묶어 동시 학습 — 헤드 간 가중치 공유·상호작용 0 이라 독립 학습과 수학적으로 동일(속도 목적).",
+    "(12) [반복수 최적화 · under-fitting 선호의 수치화] 학습 표본을 무작위 80/20 으로 분할(논문: 'selected a-priori at random', 비율 미명시), 헤드별 검증 MSE 가 20 에폭 연속 무개선이면 정지, 최적 에폭의 예측 사용(재학습 없음). 은닉 크기 선택 = 초기화 평균 검증 MSE 가 최소 ×(1+0.02) 안에 드는 가장 작은 크기('Under-fitting is greatly preferred' 의 우리 수치화 — 0.02 는 우리 상수). 검증 분할은 표본(종목-분기) 단위 무작위라 같은 분기의 표본이 양쪽에 있다(논문 방식 그대로).",
+    "(13) [학습 표본의 구성] 시그널 월 m 의 학습 분기 = m−3k (k=1..10)의 월말 시점 s 마다 그 시점 적격 종목의 입력 X(s)(s 시점 순위·s 시점 가용 이익)과 표적 y(s) = P[s+3]/P[s] − 1. k=1 의 표적은 m 월말 종가로 끝난다(시그널일 종가 = t−1). 표적이 없는 종목(s+3 전 상폐 등)은 학습에서 빠진다(논문도 미실현 표적은 학습 불가). 학습 표본 하한 100(우리 상수) 미달 월은 미발행·출력. 검증 개선 헤드가 하나도 없거나 예측 비유한이면 그 월 미발행·출력(침묵 스킵 없음, 계수 출력).",
+    "(14) [시간 격자 · 첫 발행] 시그널 = 각 달 마지막 거래일(RAWDATA), 집행 = 익월 첫 거래일(러너). RAWDATA 마지막 달력월은 부분월로 보고 제외(ff5_kr_tracker 선례). 트랜치는 2004-11 월말부터 형성(2005-01 집계에 3개 트랜치가 차게), 발행 행은 Date ≥ 2005-01-01 — 첫 행 2005-01-31 시그널(집행 2005-02-01)이라 2005년 1월 보유는 측정에 없다(러너 start_date 제약, 2404.08129 changed(7) 동일).",
+    "(15) [난수·재현] 이익 제거 seed = 20080616 + 월 인덱스(월말마다 1회 고정 → 같은 시점 입력은 어느 시그널의 학습에 쓰여도 동일 실현), 학습 seed = 20080616 + 1000 + 월 인덱스(검증 분할·초기화). 논문은 seed 를 말하지 않는다.",
+    "(16) [비용 — 병기값의 정체] 논문은 비용을 수치로 두지 않는다(§4.1.1 'trading costs are not included' · 소형 H 는 분기 거래라 'relatively moderate' · Abstract 'not eroded by trading costs' 는 주장이지 수치가 아님). commission_paper = null → 러너가 0bps(gross) 병기판을 돌려 authoritative_remeasure.json replication.paper_basis 에 적는다 — 그 값은 **이 구현의 무비용 재실행**이지 논문 수치가 아니다(논문 수치는 kept 참조). 등급 = 15bps 순비용 판. 논문의 초과수익은 무위험 6% 가정 차감치라 러너의 CAGR 과 직접 비교 불가(병기 시 주의).",
+    "(17) [데이터 위생] 종가 유한·>0 행만 · (Ticker,Date) 중복은 첫 행(건수 출력) · Vol 결측일은 거래대금 NA → 그 20일 창의 adv20 NA 라 그 기간 부적격(보수 방향) · 월 인덱스가 비연속이면 중단 · 예측 동률은 종목코드 오름차순으로 결정(논문 미명시). LOCF·winsorize(표적 절단 (10) 제외)·값 치환 0건.",
+    "(18) [FACTORS 병행 산출] 논문 산출 형태는 포트폴리오지만 전 적격 종목의 예측값을 FACTORS(Date, Ticker, Score)로도 낸다 — 러너의 팩터 분석(IC·FMB·FF 회귀)과 factors_panel 동결 사본용. 측정(WEIGHTS)은 portfolio_spec engine_direct 로 PORTFOLIO 만 쓴다. Score = 표준화 단위 예측 평균(높을수록 상위).",
+    "(19) [원문 접근 — 단일 소스] arxiv.org/html/0806.2606v1 은 404(2008 논문, HTML 렌더 없음), 로컬 PDF(01_Literature/.../MCP_0806_2606.pdf)와 WebFetch 저장 PDF 는 이 세션에서 렌더 불가(poppler 부재 · R 실행 승인 차단). 전문은 arxiv PDF 를 r.jina.ai 텍스트 프록시로 4회 독립 질의(초록·§1·§2 · §3.1~3.2 축자 · §3.3~3.5 문장별 · §4·§6·표)해 읽었고 kept 의 인용은 그 추출문이다. NBER/SSRN 판본 없음 → 2-source 대조 불가(1-source 신고). 이 세션은 R 을 한 번도 실행하지 못했다 — 스키마는 생산 코드(build_cache.R · parse_fundamental_xlsx.R · parse_universe_support.R · krx_build_rawdata.R)에서 재도출했고 엔진은 미실행 상태로 제출한다. 러너 로그의 '이익 패널' · '입력 행렬' · 월별 'valMSE' 줄로 확인할 것."
+  ],
+
+  "paper_original_form": "미국 Value Line 유니버스(고정 1452종) 신경망 순위 논문. 직전 10분기 가격 변화율·이익 변화율(순위 변환) 20입력 → 단일 은닉층 역전파 ANN(GA 로 구조 미세 조정, 다중 초기화 집계, 10분기 학습, 1분기 예측) → 예측 내림차순 → 누적 데실 T10…T100 롱 / B10…B100 숏 / H10…H100 롱숏(30개 포트폴리오), 1분기 보유, 월간 시작점 3개 평균, 1994Q4~2001Q4 29분기, 비용 미포함·무위험 6% 가정. 보고: H100 연 16.7%(초과 10.7%), T100 19.6%, H10 초과 50.2%, MGL(직전 분기 순위 마팅게일)·VL 시스템·S&P500 대비 우위, Jensen α 0.2~0.4 (CD 멱법칙), H10 외 Sharpe 는 S&P 이하, 순위 반전(안티퍼시스턴스) 분기 다수. ★논문에 '수식'은 없고(β·α 정의 외) 절차 서술만 있다 — 신경망 세부는 미명시.",
+
+  "portfolio_spec": {
+    "construction": "engine_direct",
+    "weighting": "ew",
+    "rebalance": "monthly_rows__each_tranche_held_one_quarter__three_monthly_start_cycles_averaged",
+    "cell": "H100 = T100 long / B100 short (paper's 30 portfolios: T/B/H 10..100)",
+    "leg_size_rule": "k = min(100, floor(N/2)) per leg, EW 1/k; binds only when eligible N < 200 (declared changed 2)",
+    "long_leg": "top 100 by aggregated ANN-predicted next-quarter price change, EW, sum +1",
+    "short_leg": "bottom 100 by aggregated ANN-predicted next-quarter price change, EW, sum -1",
+    "holding_months": 3,
+    "tranches": 3,
+    "signal_inputs": "10 quarterly price changes + 10 quarterly EPS changes, cross-sectional rank in [-1,1], 30% of earnings figures randomly removed before ranking (paper)",
+    "training_window": "10 quarters immediately preceding the signal month, retrained every month",
+    "note": "engine_direct: weights are the paper's. n_max ~ 2 x 100 (aggregate of 3 tranches can hold up to ~2x(100..200) distinct names) > fixed axis 25 by construction; has_short = true — declared in changed(2)."
+  },
+
+  "commission_paper": null,
+
+  "source_paper": {
+    "title": "Anomalous Returns in a Neural Network Equity-Ranking Predictor",
+    "authors": "J.B. Satinover, D. Sornette",
+    "arxiv_id": "0806.2606",
+    "version_read": "v1 (2008-06-16), 36 pages — arXiv PDF text via r.jina.ai proxy (four independent targeted extractions)",
+    "url": "https://arxiv.org/abs/0806.2606",
+    "fulltext_paths": ["https://r.jina.ai/https://arxiv.org/pdf/0806.2606"],
+    "note": "arxiv.org/html/0806.2606v1 returns 404 (pre-2023 paper, no HTML rendering). Local PDF 01_Literature/Alpha_Search_Recharge/20260830/mcp_arxiv/MCP_0806_2606.pdf could not be rendered in this session (poppler absent; Rscript blocked). Single text source."
+  },
+
+  "paper_values_used_unchanged": {
+    "inputs": "ten preceding quarterly percent price changes + ten preceding quarterly percent earnings changes (by quarter, not accumulated), converted to relative rank scaled around zero",
+    "n_input_lags": 10,
+    "earnings_random_removal": 0.30,
+    "output": "predicted next quarter's percentage price change; stocks ranked in descending order",
+    "network": "back propagation network with a single hidden layer; multiple initializations aggregated; architecture optimized per data set under tight constraints (single hidden layer, no variable deletion, minimal searching)",
+    "training": "ten quarters of data out of the one-quarter prediction sample; train/test split at random for optimization of training iterations; under-fitting preferred",
+    "portfolios": "cumulative deciles T10..T100 (top) / B10..B100 (bottom) / H = T long + B short; cell implemented = H100",
+    "holding": "held fixed for one quarter; predictions once a month; results averaged over the three monthly starting points",
+    "paper_reported": "H100 16.7% p.a. (10.7% excess of 6% rf), T100 19.6%, H10 50.2% excess, Table 1 H10..H100 excess 50.2/18.1/19.2/13.2/11.3/10.9/8.7/11.0/11.5/10.7%, Jensen alpha 0.2-0.4, 29 quarters 1994Q4-2001Q4, gross of costs"
+  },
+
+  "changed_checklist": [
+    { "axis": "값 하한·상한·커버리지", "paper": "없음(VL 1452 고정, 가용 종목 전부 순위)", "ours": "학습 표본 ≥ 100(월) · 적격 N ≥ 2 · 다리 k ≤ floor(N/2) · 종목 커버리지 요건 없음", "why": "changed(2)(13)" },
+    { "axis": "수치 가드", "paper": "없음", "ours": "표적 표준화 후 ±5 SD 절단 · EPS 분모 0 = NA · ISSD ≤ 0 = NA · 분모 절대값", "why": "changed(5)(10) — 절단은 데이터 위생(분할 잔재)" },
+    { "axis": "결측 처리", "paper": "가용 불가 열 제외 + 30% 무작위 제거(결측 인코딩 미명시)", "ours": "PIT 가용일 판정 + 30% 제거 · 결측 = 순위 후 0(중립) · LOCF 0건", "why": "changed(6)(7)(8)" },
+    { "axis": "난수·초기값·재현", "paper": "multiple initializations(횟수 미명시), 무작위 분할(비율 미명시)", "ours": "K=5 · U(±1/√fan_in) · 80/20 · seed 20080616+월 인덱스", "why": "changed(11)(12)(15)" },
+    { "axis": "창·워밍업", "paper": "학습 10분기(6~20 둔감, 중앙 부근) · 입력 10분기", "ours": "동일(10·10). 첫 트랜치 2004-11, 첫 발행 2005-01-31 시그널", "why": "changed(14)" },
+    { "axis": "여러 설정 중 선택", "paper": "T/B/H 10..100 30개 보고", "ours": "H100 하나", "why": "changed(2)" },
+    { "axis": "수식 근사·구현 치환", "paper": "GA 구조 최적화 · 역전파(세부 미명시) · 'recurrence' 미정의", "ours": "은닉 {4,8,16} 검증 선택 · 전배치 GD+모멘텀(0.01/0.9, ≤300 에폭, patience 20) · 순환 구조 미구현 · under-fit 허용 2% · 블록 대각 동시 학습", "why": "changed(11)(12)" },
+    { "axis": "리밸·보유 표현", "paper": "분기 고정 보유 · 월간 시작점 3개 평균", "ours": "중첩 트랜치 3개 1/3 · 월말 행 · 하네스 월별 목표비중 재설정·비용 Σ|Δw|", "why": "changed(4)" },
+    { "axis": "유니버스·유동성", "paper": "VL 1452 고정, 필터 없음", "ours": "K200∪KQ150 PIT + adv20(t−1) ≥ 2e8", "why": "changed(1)" },
+    { "axis": "이익 정의", "paper": "VL 분기 EPS 원보고", "ours": "(세전이익−법인세)/수정주식수 최신치 · 순차 q/q · |분모|", "why": "changed(5)" },
+    { "axis": "비중·헤지", "paper": "미명시('unweighted' 유니버스)", "ours": "다리 EW · Σ±1 달러중립", "why": "changed(3)" },
+    { "axis": "비용", "paper": "미포함(수치 없음)", "ours": "commission_paper=null → 0bps 병기 + 15bps 등급", "why": "changed(16)" }
+  ],
+
+  "pit_notes": {
+    "signal_date": "월 마지막 거래일 d. 러너 집행 = 익월 첫 거래일 → 모든 창 종점 t−1.",
+    "price_inputs": "QC[i], QC[i−3], …, QC[i−27] — i = 시그널 월 행. i 초과 행 접근 0건 (표적은 학습 시점 s ≤ i−3 의 QC[s+3] ≤ QC[i]).",
+    "earnings": "AVAIL = max(Factor_Date_q, Factor_Date_{q−1}) ≤ 시점 d 인 분기만 (C4: Q1~Q3 +45일 · Q4 익년 3/31, 패널 생산자 규약). 종목별 판정.",
+    "cross_sectional_stats": "순위 = 각 시점 횡단면 · 표적 표준화 = 학습 분할 내부 평균·SD (C1: 전 표본 통계 0건).",
+    "liquidity": "adv20 = shift(frollmean(Close×Vol, 20), 1) by Ticker (C10, t−1).",
+    "membership": "각 시점(학습 시점 s · 시그널 d)의 K200/KQ150 플래그 (C6). 집계 행은 러너가 다시 그 날짜 멤버십으로 거른다.",
+    "sign": "부호 조작 0건 (C13). 순위 방향 = 예측값 내림차순(논문 정의).",
+    "randomness": "set.seed 고정 (이익 제거·분할·초기화) — 재현 가능.",
+    "not_used": "Factor DB 미접근(C14/C15 무관) · 오버레이 0건(C5 무관) · shift(−N)/lead/수동 미래 인덱싱 0건 · 전 표본 최적화 0건."
+  },
+
+  "engine_contract": {
+    "output": "PORTFOLIO(Date, Ticker, Weight, Leg) + FACTORS(Date, Ticker, Score)",
+    "long_gross": "≈1.0 (3 트랜치 평균; 트랜치 간 상쇄로 소폭 미달 가능)",
+    "short_gross": "≈1.0",
+    "net": "0 (달러중립, 검산 1e-9)",
+    "rows": "매 월말(마지막 거래일) 1행 집합. Date ≥ 2005-01-01 만 발행.",
+    "expected_n_max": "집계 보유 최대 ≈ 2×k×(트랜치 간 비중복분) — 200~400종 가능. 고정 축 25 초과는 논문 정의상. engine_direct 라 러너가 자르지 않는다.",
+    "dependencies": ["data.table", "arrow"],
+    "external_input": ".cache/fundamental_xlsx.parquet (Ticker, Item ∈ {PretaxIncome, TaxExpense, ISSD}, Value, Period_Date, Factor_Date) — 부재 시 중단",
+    "runtime_note": "월별 학습 15 네트워크(블록 대각 동시) ≤300 에폭 × ≈262개월 — 예상 10~30분. 이 세션은 R 실행이 차단돼 미실행 제출 — 러너 로그의 '이익 패널 … 가용일' · '입력 행렬 %d개월' · 월별 'valMSE h4/h8/h16 … → h=' 줄과 최종 'faithful:' 요약으로 확인."
+  }
+}

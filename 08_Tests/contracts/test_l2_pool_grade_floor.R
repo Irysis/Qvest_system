@@ -53,7 +53,11 @@ if (fl %in% c("A", "B")) {
 # ③ 빌더 배선 (부활 방지 — 텍스트)
 bd <- paste(readLines("02_Infrastructure/regime/build_module_performance.R",
                       warn = FALSE, encoding = "UTF-8"), collapse = "\n")
-for (tok in c("QVEST_L2_GRADE_FLOOR", ".floor_ok", ".floor_excluded")) {
+## ★2026-09-07 재조준: 구 토큰 `.floor_ok`(빌더 사설 술어)는 계약 함수 `l2_admit()`
+##   경유로 대체됐다(l2_pool_admission.R — 술어를 소비자의 함수 하나로 모은 수리).
+##   이름이 옮겨졌을 뿐 의도는 그대로이므로 **현행 소비 지점**을 겨눈다. 죽은 표적에
+##   빨강을 남기면 그 자리는 검사되지 않는 커버리지 구멍이 된다.
+for (tok in c("QVEST_L2_GRADE_FLOOR", "l2_admit", ".floor_excluded")) {
   if (grepl(tok, bd, fixed = TRUE)) ok(sprintf("③ 빌더에 %s 실재", tok)) else
     ng(sprintf("③ 빌더에 %s 부재 — floor 가 걷힘", tok))
 }
