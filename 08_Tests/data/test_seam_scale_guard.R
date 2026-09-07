@@ -308,16 +308,23 @@ calls_in_fn <- function(path, fn_name) {
   }
   unique(found)
 }
+# ★2026-09-07 표적 이설: naver 배관의 가드 소비자가 naver_merge_rawdata →
+#   .naver_seam_verify 로 바뀌었다(수집 경로가 수정주가 siseJson 으로 교체되며 구
+#   병합기가 사라짐). 이름을 적어 둔 검사는 리팩터가 옮기는 좌표를 못박는다 —
+#   그래서 **진입점에서 사슬을 재도출**한다: backfill → seam_verify → 가드 원어.
+NAVSRC <- file.path(PROJ, "02_Infrastructure/data/naver_data_collector.R")
 c_incr <- calls_in_fn(file.path(PROJ, "02_Infrastructure/data/incremental_update_file.R"), "incremental_ohlcvs")
-c_nav  <- calls_in_fn(file.path(PROJ, "02_Infrastructure/data/naver_data_collector.R"), "naver_merge_rawdata")
+c_entry <- calls_in_fn(NAVSRC, "naver_backfill_range")
+c_nav  <- calls_in_fn(NAVSRC, ".naver_seam_verify")
 need_i <- c("seam_scan_report", "seam_apply_actions", "seam_write_sidecar")
 need_n <- c("seam_classify_pair", "seam_action_for")
 mi <- setdiff(need_i, c_incr); mn <- setdiff(need_n, c_nav)
-if (!length(mi) && !length(mn)) {
-  ok("both_pipes_call_guard", "incremental_ohlcvs · naver_merge_rawdata 둘 다 가드를 호출")
+reached <- ".naver_seam_verify" %in% c_entry
+if (!length(mi) && !length(mn) && reached) {
+  ok("both_pipes_call_guard", "incremental_ohlcvs · naver_backfill_range→.naver_seam_verify 둘 다 가드 도달")
 } else {
-  bad("both_pipes_call_guard", sprintf("미호출 — incremental:{%s} naver:{%s}",
-      paste(mi, collapse = ","), paste(mn, collapse = ",")))
+  bad("both_pipes_call_guard", sprintf("미호출 — incremental:{%s} naver:{%s} entry_reaches=%s",
+      paste(mi, collapse = ","), paste(mn, collapse = ","), reached))
 }
 
 # ── ⑩⑪ 배관 블록 **실구동** — "붙였다" 가 아니라 "돈다" 를 잰다 ────────────────
@@ -378,32 +385,52 @@ if (is.null(blk_i)) {
   }
 }
 
-# ⑪ naver_merge_rawdata 의 가드 구간 (first_match 위 처분)
-blk_n <- cut_block(file.path(PROJ, "02_Infrastructure/data/naver_data_collector.R"),
-                   "[guard 2026-09-07", "new_rows[Date == first_day,")
-if (is.null(blk_n)) {
-  bad("naver_block_runs", "가드 블록을 의미 앵커로 못 찾음 (제거됐거나 앵커 소실)")
+# ⑪ naver 배관의 가드 소비자 **실구동** — 함수를 AST 로 뽑아 합성 픽스처 위에서 돌린다.
+#   ★2026-09-07 재작성: 소스 텍스트 앵커(cut_block) 대신 **정의 자체를 재도출**한다.
+#   새 경로는 첫 naver 일의 직전 종가도 naver 에서 받으므로 Ret 이 **측정값**이다 —
+#   가드는 그 값을 덮지 않고 대조한다(seam_mode=verify). 그래서 이 축이 재는 명제는
+#   "가드가 Ret 을 고쳤나" 가 아니라 "가드가 판정을 내고 측정값과의 일치를 남기나" 다.
+extract_fn <- function(path, fn_name) {
+  ex <- parse(path)
+  for (i in seq_along(ex)) {
+    e <- ex[[i]]
+    if (is.call(e) && length(e) >= 3 && as.character(e[[1]]) %in% c("<-", "=") &&
+        identical(as.character(e[[2]]), fn_name)) return(e)
+  }
+  NULL
+}
+fdef <- extract_fn(NAVSRC, ".naver_seam_verify")
+if (is.null(fdef)) {
+  bad("naver_block_runs", ".naver_seam_verify 정의를 AST 에서 못 찾음 (제거됐거나 개명)")
 } else {
   e2 <- new.env(parent = globalenv())
-  fm <- data.table(Ticker  = c("NORM", "SPLIT5", "ODD", "NEWLIST"),
-                   Close   = c(103, 502.5, 245, 50),
-                   Prev_Close = c(102, 102, 102, NA_real_))
-  fm[, Ret := Close / Prev_Close - 1]
-  assign("first_match", fm, envir = e2)
-  assign("first_day", SEAM, envir = e2)
   assign("DATA_DIR", file.path(PROJ, "02_Infrastructure/data"), envir = e2)
-  r2 <- tryCatch({ eval(parse(text = blk_n), envir = e2); "ok" },
+  # 설정 의존을 격리 — 운영 설정을 빌리지 않는다
+  assign("naver_collector_config", function(...) list(seam_verify_tol = 1e-6), envir = e2)
+  eval(fdef, envir = e2)
+  fn <- get(".naver_seam_verify", envir = e2)
+  # 픽스처: 정상 · x5 분할(측정 Ret 이 implied 와 일치) · 정수배 아닌 급등 · 앵커 부재
+  first <- data.table(
+    Ticker = c("NORM", "SPLIT5", "ODD", "NEWLIST"),
+    Close  = c(103, 502.5, 245, 50),
+    Ret    = c(103 / 102 - 1, 502.5 / 102 / 5 - 1, 245 / 102 - 1, NA_real_))
+  r2 <- tryCatch(fn(c(102, 102, 102, NA_real_), first$Ticker, first),
                  error = function(z) conditionMessage(z))
-  f2 <- get("first_match", envir = e2)
-  gv <- function(tk) f2[Ticker == tk, Ret]
-  if (identical(r2, "ok") && is.na(gv("ODD")) && is.na(gv("NEWLIST")) &&
-      abs(gv("SPLIT5") - (502.5 / 102 / 5 - 1)) < 1e-12 &&
-      abs(gv("NORM") - (103 / 102 - 1)) < 1e-12) {
-    ok("naver_block_runs", "블록 실행 → block/rescale 이 first_match$Ret 에 정확히 도달")
+  if (!is.data.table(r2)) {
+    bad("naver_block_runs", sprintf("실행 실패: %s", substr(paste(r2, collapse = " "), 1, 80)))
   } else {
-    bad("naver_block_runs",
-        sprintf("err=%s ODD=%s NEWLIST=%s SPLIT5=%s NORM=%s", substr(r2, 1, 60),
-                gv("ODD"), gv("NEWLIST"), gv("SPLIT5"), gv("NORM")))
+    gv <- function(tk, col) r2[Ticker == tk][[col]][1]
+    cond <- identical(gv("NORM", "verdict"), "on_scale") &&
+      identical(gv("SPLIT5", "verdict"), "adjustment_basis_break") &&
+      isTRUE(gv("SPLIT5", "agrees")) &&                       # 가드 추정 == 내부 측정
+      identical(gv("SPLIT5", "action"), "rescale_ret") &&
+      identical(gv("ODD", "verdict"), "unattributed_jump") &&
+      identical(gv("NEWLIST", "verdict"), "no_anchor")
+    if (cond) ok("naver_block_runs",
+                 "판정 4종 + 분할 칸에서 가드 implied_ret == naver 내부 측정 Ret (양성 대조)")
+    else bad("naver_block_runs", sprintf("NORM=%s SPLIT5=%s/%s ODD=%s NEWLIST=%s",
+             gv("NORM", "verdict"), gv("SPLIT5", "verdict"), gv("SPLIT5", "agrees"),
+             gv("ODD", "verdict"), gv("NEWLIST", "verdict")))
   }
 }
 

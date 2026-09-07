@@ -1,0 +1,11 @@
+{
+  "axis": "cost",
+  "verdict": "faithful",
+  "undeclared_changes": [],
+  "signal_mismatch": [],
+  "counterexample": "구성 못 함 — paper_basis(comm_paper=0bps)가 논문의 무비용 가정과 실제로 일치하고(run_paper_replication.R:304-313), 15bps 등급판은 별도 필드로 병기돼 두 값이 혼동될 여지가 없다(authoritative_remeasure.json: commission_paper_bps=0 · paper_basis.cagr=-0.03077 vs contract.cagr=-0.092, 15bps 판). 논문에 유리하게 기운 지점(paper_basis 쪽 비용을 실제보다 낮게 잡거나, 15bps 판을 부풀려 등급을 유리하게 하는 방향)을 찾지 못했다.",
+  "evidence": "arxiv.org/pdf/1707.05552 (r.jina.ai 프록시 재질의, 이 세션 독립 확인): 거래비용은 어디에도 bps·%로 명시되지 않는다. 'bid-ask spread, non-synchronous trading as well as the lack of liquidity would enlarge the CSMOM and CSCON effects. To avoid the biased results, we follow the common approach to skip one month between estimation period and the holding period' — 이 문장은 거래비용 계상이 아니라 스킵-1개월 채택의 근거 서술이다. 포트폴리오 구성·청산 실행 가정도 'the portfolio formed at the month t and then held for K months'(Ref [25] buy-and-hold) 뿐, 체결가·집행일 규약은 없다.",
+  "confidence": "high",
+  "checked": "engine.R(비용 로직 없음, 러너 위임) · FIDELITY.json changed(10)·paper_values_used_unchanged.costs · run_paper_replication.R:180,304-334(comm_paper <- commission_paper %||% 0 · sim_paper vs sim_grade 이중 시뮬레이션 · transaction_cost_bps=15 grade run) · replication_harness.R:19-21,107-120(Σ|Δw_target|×commission 비용 모델, 첫 리밸=Σ|w|) · authoritative_remeasure.json.replication(commission_paper_bps=0, paper_basis, grade_basis_note) · 논문 원문(비용 수치 부재 확인)",
+  "note": "논문이 비용을 전혀 명시하지 않아 이 축은 '논문 값과의 불일치'를 구성할 표적이 없다 — paper_basis(0bps)·grade(15bps) 이중 시뮬레이션 구조가 FIDELITY.changed(10)에 정직하게 선언돼 있고 실제 코드 흐름과 일치한다."
+}
