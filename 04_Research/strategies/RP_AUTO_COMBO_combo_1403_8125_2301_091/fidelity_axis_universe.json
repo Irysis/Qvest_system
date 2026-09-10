@@ -1,0 +1,11 @@
+{
+  "axis": "universe",
+  "verdict": "adapted",
+  "undeclared_changes": [],
+  "signal_mismatch": [],
+  "counterexample": "engine.R:424-436 — 코호트 월 f 의 적격집합 elig(MEM & adv20≥2e8, 그 달 시점)은 곧바로 intersect(elig, names(lam)) 로 한 번 더 걸러진다. lam 은 가장 최근 반년 HFL 재추정일(6월·12월 말, engine.R:297)의 적격집합(.HELIG, engine.R:298-299)에서만 뽑힌 종목이다. 따라서 반년 재추정 이후 새로 K200∪KQ150 에 편입되거나 유동성 요건을 새로 충족한 종목은 그 달 f 시점 PIT 기준으로는 적격이어도 다음 반년 재추정 전까지 코호트 후보에서 배제된다(engine.R:435 'lam(통제) 없는 종목은 제외'). 논문 B 의 171 시험자산은 저자 인용 균형 패널(Ken French FF25×2·CRSP 미국채·Datastream 국제채/상품·Nucera-Sarno-Zinna FX)이라 이런 진입·이탈에 의한 표본 배제 개념 자체가 없다 — 균형 패널에는 신규 편입이 없다. 이 배제 효과는 FIDELITY.changed(6) 이 '신규 편입 종목은 통제를 걸 수 없으므로 그 달 후보에서 제외된다'로 정확히 선언하고 있어 misdeclared 는 아니다.",
+  "evidence": "arxiv.org/pdf/2404.08129 (r.jina.ai 텍스트 프록시 — arxiv.org/html/2404.08129v1 은 이론부만 반환하고 §2/§4 데이터 문단·§5.7·Table 8 이 없음을 이번 세션에서도 재확인, WebFetch 검색 결과 '171'·'test assets'·'CRSP' 등 키워드 0건) §4 데이터 문단(프록시 추출): 'We use data for a range of primary asset classes: equities, bonds, commodities, and currencies' — 171 자산 = 주식 포트폴리오 53(FF 1993 25 size×value + FF 2015 25 size×OP, Ken French library) + 미국채 11(CRSP maturity-sorted government bond portfolios) + 국제채 40(Refinitiv Datastream Government Bond Indices) + 상품 21(Datastream spot price indices) + 통화 46(Nucera, Sarno, Zinna 2024 portfolios); 표본 1988-01~2017-12. 원문에 상장거래소·가격 하한·유동성·금융주 제외 같은 종목 단위 선별 규칙 자체가 없다(자산이 이미 구성된 지수/포트폴리오이므로 개별 종목 필터 개념이 논문에 존재하지 않는다) — 이는 부모 엔진 RP_AUTO_2404_08129/fidelity_axis_universe.json(verdict=adapted, confidence=high)의 독립 대조 결과와 일치한다.",
+  "confidence": "high",
+  "checked": "engine.R:63-79(고정 축 상수 .LIQ=2e8·.TMIN_I=12) · engine.R:211-224(.rd MEM=K200|KQ150, ADV20_L1=shift(t-1)) · engine.R:292-333(.HELIG=HFL 재추정 패널의 적격집합) · engine.R:421-436(월별 코호트 elig ∩ names(lam)) vs 원문 §4 데이터 문단(자산군 구성·필터 언급 유무) · FIDELITY.json kept/changed(6)(7) 및 부모 RP_AUTO_2404_08129 FIDELITY.changed(1)(2)·changed_checklist '유니버스·유동성' 행과의 정합",
+  "note": "[B] 축 자체(K200∪KQ150 개별종목 치환)는 지시 축이라 판정 대상이 아니다. 그 위에 얹힌 adv20≥2e8·TMIN_I=12·반년 lambda 이월에 따른 신규편입 배제는 전부 FIDELITY.changed(6)(7)에 정직하게 선언돼 있고 원문에도 대응 규칙이 없어(선별 개념 자체 부재) misdeclared 근거를 못 찾았다."
+}
