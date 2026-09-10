@@ -1,11 +1,13 @@
 {
   "axis": "cost",
-  "verdict": "faithful",
-  "undeclared_changes": [],
+  "verdict": "adapted",
+  "undeclared_changes": [
+    "[A·B 비용 '명시' 표현이 원문과 다르다] FIDELITY.json changed(15)는 'A·B는 gross 명시'라고 적었으나, 1403.8125·2404.08129 원문 어디에도 gross/net/transaction cost/commission 관련 문장이 없다(본문·표 각주·방법론 전부 무언급) - C(2301.09173, 비용 언급 없음으로 정확히 신고)와 실질적으로 같은 상태인데 A·B만 '명시'로 과장 서술했다."
+  ],
   "signal_mismatch": [],
-  "counterexample": "구성하지 못함 — 논문 기준(paper_basis) 병기값이 실제로 0bps 로 계산됐는지(comm_paper <- commission_paper %||% 0, run_paper_replication.R:304)와 authoritative_remeasure.json 의 commission_paper_bps=0 이 일치해, 15bps 판 대비 유리하게 기운 지점을 찾지 못했다.",
-  "evidence": "[A] arxiv.org/html/1403.8125v1: 본문에 'transaction cost [19]' 참고문헌 인용 1건뿐, 자체 수익률(KOSPI200 월평균 1.433%)의 gross/net 여부는 명시하지 않음(비용 공제 언급 자체가 없음 — 결과적으로 gross와 동치). [B] arxiv.org/html/2404.08129v1: 본 세션에서 fetch한 발췌본에 5.7절(거래 설계)·비용 관련 문구가 포함되지 않아 직접 대조 불가 — 단, 본 결합은 B 의 P5/P1 거래 다리를 쓰지 않고 lambda 를 통제 변수로만 소비하므로(engine.R:427-431, FIDELITY.changed(1)) B 자체의 비용 관행은 이 결합의 실행 비용 축에 인과적으로 관여하지 않는다.",
+  "counterexample": "구성 못 했다 - paper_basis(0bps)와 essence(15bps) 두 판 모두 run_paper_replication.R:304-313의 comm_paper <- commission_paper %||% 0 및 고정 0.0015 grading 경로로, engine.R/FIDELITY.json이 값을 조작할 여지가 없는 러너 공통 로직이다. commission_paper=NULL(엔진이 비용 미지정)은 '논문 무명시 -> gross(0)' 러너 규약(같은 파일 180행 주석)과 일치하고, A·B가 실제로는 비용을 '명시'하지 않고 그냥 침묵한다는 점을 감안해도 두 경우(명시적 gross vs 침묵) 모두 결론(0bps 채택)은 동일해 구현에 유리하게 기운 지점을 못 찾았다.",
+  "evidence": "1403.8125 원문 전문(arxiv.org/html/1403.8125v1, 방법론·Table 2-9) - 거래비용/gross/net 언급 0건. 2404.08129 원문 전문(arxiv.org/html/2404.08129v1 + r.jina.ai/https://arxiv.org/pdf/2404.08129, 5.7절 포함) - transaction cost/trading cost/bps/net/gross 언급 0건, 월 0.69%·SR 0.15만 보고. FIDELITY.json changed(15) 대조.",
   "confidence": "medium",
-  "checked": "FIDELITY.changed(15) 선언(세 논문 모두 비용 미공제 → commission_paper=null→0bps 병기, 등급 15bps) vs run_paper_replication.R:180,304-334(comm_paper<-commission_paper%||%0; sim_paper 는 comm_paper 로, sim_grade 는 항상 0.0015 로 별도 시뮬레이션; build_bt_result 는 transaction_cost_bps=15 고정) vs authoritative_remeasure.json(commission_paper_bps:0, paper_basis.{cagr,sharpe,mdd}, grade_basis_note='15bps 순비용 판') — 세 지점이 정합. 15bps 대 0bps 차이 자체는 저장소 SOT 규약(CLAUDE.md '축 2층' 15bps v2.4 delta)이지 이 구현이 만든 변경이 아니며, 논문 기준 병기값이 실제로 논문쪽 비용(0)으로 산출됐다는 점만 이 축의 판정 대상이다 — 그 점은 코드·산출물 모두 일치한다.",
-  "note": "[A] 를 'gross 명시'(FIDELITY (15))라 적었지만 원문 대조 결과 A 는 비용을 gross 라 명시한 문장이 없고 단지 비용 공제 언급 자체가 없다 — 결론(0bps 취급)은 같으므로 계산에 영향 없는 서술 정밀도 문제로만 note 에 남긴다(undeclared_changes 로 올리지 않음). [B] 5.7 절 원문은 이 세션의 fetch 범위에 없어 B 자신의 비용 관행은 unverifiable 이나, 본 결합이 B 를 통제로만 쓰는 구조상 이 축의 반증에 필요하지 않다."
+  "checked": "FIDELITY.json(15) 비용 선언 vs engine.R(비용 미처리 - 42행 '러너가 부과') vs run_paper_replication.R(comm_paper %||% 0 / 고정 0.0015 이중 시뮬레이션, 304-313행) vs authoritative_remeasure.json(commission_paper_bps=0, paper_basis, grade_basis_note) vs 1403.8125·2404.08129 원문 비용 언급 여부",
+  "note": "이 결함은 축소된 서술 정확도 문제이지 실제 bps 값이나 등급에 영향을 주지 않는다 - 두 논문 모두 비용을 다루지 않으므로 0bps 채택 결론은 '명시' 여부와 무관하게 같다. 축 밖: authoritative_remeasure.json의 replication.fidelity 필드('universe 치환만 - 그 외 논문 그대로')는 러너가 모든 충실구현에 박아 넣는 고정 문자열로 보이며, 이 콤보 엔진의 실제 changed(1)~(18) 항목들과 어긋난다(다른 검증자 축 - undeclared/universe 참고)."
 }

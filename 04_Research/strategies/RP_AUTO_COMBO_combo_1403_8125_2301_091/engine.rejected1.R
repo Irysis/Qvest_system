@@ -300,21 +300,17 @@ cat(sprintf("[COMBO/B] 월간 초과수익 패널 %d개월 (%s ~ %s) x %d종 (rf
 setkey(.HELIG, Date)
 .lam <- list()          # key = MI(문자) -> named numeric lam
 .n_hfl <- 0L
-# ★스킵은 전부 센다 (2026-09-10 감사 지적 수리 — 1판은 여기 3곳이 무계수 침묵 스킵이었고
-#   FIDELITY 는 "스킵 2종" 이라 단정했다). 특히 :noelig/:few 가 발화하면 그 반기 적합이
-#   사라지고 직전 lam 이 12개월 이상 이월돼 "반년 재추정" 선언이 조용히 깨진다.
-.nskip_win <- 0L; .nskip_noelig <- 0L; .nskip_few <- 0L
 for (k in seq_len(nrow(.HF))) {
   mi_f <- .HF$MI[k]; d_f <- .HF$MEnd[k]
   ip <- match(mi_f, .MIs)
-  if (is.na(ip) || ip < .T0) { .nskip_win <- .nskip_win + 1L; next }
+  if (is.na(ip) || ip < .T0) next
   tk <- .HELIG[.(d_f), Ticker, nomatch = 0L]
   ci <- match(tk, .TK); okc <- !is.na(ci); ci <- ci[okc]; tk <- tk[okc]
-  if (!length(ci)) { .nskip_noelig <- .nskip_noelig + 1L; next }
+  if (!length(ci)) next
   Rm  <- .RM[seq_len(ip), ci, drop = FALSE]      # 확장창: 창 종점 = 형성월 (C1)
   Msk <- is.finite(Rm)
   ki  <- colSums(Msk) >= .TMIN_I
-  if (sum(ki) < (.K + 2L)) { .nskip_few <- .nskip_few + 1L; next }
+  if (sum(ki) < (.K + 2L)) next
   Rm <- Rm[, ki, drop = FALSE]; Msk <- Msk[, ki, drop = FALSE]; tk <- tk[ki]
   kt <- rowSums(Msk) >= 1L                       # 관측 0 인 달은 phi_t 미정의 -> 제외
   Rm <- Rm[kt, , drop = FALSE]; Msk <- Msk[kt, , drop = FALSE]
@@ -345,12 +341,6 @@ if (!inherits(.DD$Date, "Date")) .DD[, Date := as.Date(Date)]
 .MEC <- .DD[, .(me = max(Date)), by = ymi]
 .MON2 <- .DD[, .(mret = if (sum(is.finite(rr)) >= 1L) prod(1 + rr[is.finite(rr)]) - 1 else NA_real_),
              by = .(Ticker, ymi)]
-# ★산업 분류 치환 — 논문 [C] 는 Fama-French **49** 산업 포트폴리오다. 이 저장소에 FF49 는
-#   없고 RAWDATA$Sector_Lv2 를 최근접 아날로그로 쓴다. 고유값 = **48종**(2026-09-10 재도출:
-#   rawdata.parquet 의 distinct Sector_Lv2 = 48). ⚠저장소 주석 두 곳이 Sector_Lv2 를
-#   "WI26 중분류" 로 적어 두었으나(parse_universe_support.R:10 · apply_universe_mapping.R:58)
-#   그 라벨은 낙후한 것이다 — 26 분할인 열은 Sector_Lv2 가 아니라 Sector(distinct 26)다.
-#   nf>=10 필터 통과 후 실제 산업수는 엔진이 출력한다(1판 실측 중앙값 38).
 .EOM <- .DD[Date %in% .MEC$me, .(Ticker, ymi, size_end = Size, ind = Sector_Lv2)]
 .EOM <- unique(.EOM, by = c("Ticker", "ymi"))
 .MON2 <- merge(.MON2, .EOM, by = c("Ticker", "ymi"))
@@ -381,16 +371,10 @@ if (length(.fr) >= .CID_BURN) {
 .GRID <- .SS[, .(ymi = seq.int(min(ymi), max(ymi))), by = Ticker]
 .SS <- merge(.GRID, .SS, by = c("Ticker", "ymi"), all.x = TRUE)
 .SS <- merge(.SS, .CIDT[, .(ymi, u)], by = "ymi", all.x = TRUE)
-# ★[C] Eq.3 은 "two years of monthly **excess** returns" 다 — 종속변수에서 rf 를 뺀다.
-#   1판(engine.rejected1.R:375)은 원수익을 썼고 그 사실을 선언하지도 않았다(감사 지적).
-#   [B] 용으로 이미 만든 .rfm 을 그대로 쓴다. rf 가 없는 달은 초과수익 미정의라 창에서 빠진다.
-#   CID 자체(Eq.1)는 |r_ind - r_mkt| 라 rf 가 상쇄되므로 손대지 않는다.
-.SS <- merge(.SS, .rfm[, .(ymi = MI, RF)], by = "ymi", all.x = TRUE)
-.SS[, mret_x := mret - RF]
 setorder(.SS, Ticker, ymi)
-.SS[, ok := as.integer(is.finite(mret_x) & is.finite(u))]
-.SS[, `:=`(p_ru = fifelse(ok == 1L, mret_x * u, 0), p_r = fifelse(ok == 1L, mret_x, 0),
-           p_uu = fifelse(ok == 1L, u * u, 0),      p_u = fifelse(ok == 1L, u, 0))]
+.SS[, ok := as.integer(is.finite(mret) & is.finite(u))]
+.SS[, `:=`(p_ru = fifelse(ok == 1L, mret * u, 0), p_r = fifelse(ok == 1L, mret, 0),
+           p_uu = fifelse(ok == 1L, u * u, 0),    p_u = fifelse(ok == 1L, u, 0))]
 .SS[, `:=`(n_ok = frollsum(ok, .CID_WIN), Sxy = frollsum(p_ru, .CID_WIN),
            Sy = frollsum(p_r, .CID_WIN), Sxx = frollsum(p_uu, .CID_WIN),
            Sx = frollsum(p_u, .CID_WIN)), by = Ticker]
@@ -415,8 +399,6 @@ cat(sprintf("[COMBO/C] CID %d개월 (u 유효 %d) · 산업수 중앙값 %.0f ·
 .cohorts  <- vector("list", length(.me_dates))
 .diag     <- vector("list", length(.me_dates))
 .nskip_lam <- 0L; .nskip_n <- 0L
-.nskip_wd <- 0L; .nskip_elig <- 0L; .nskip_wdrow <- 0L   # ★무계수 스킵 3곳 계수화(감사 수리)
-.n_ew <- 0L; .n_imp <- 0L; .lam_gap_max <- 0L            # EW 폴백 발화 · beta 결측 대치 · lam 이월 최대개월
 
 for (k in seq_along(.me_dates)) {
   if (k <= .FORM_M) next
@@ -424,19 +406,18 @@ for (k in seq_along(.me_dates)) {
   lm_i <- .lam_mi[.lam_mi <= mi_f]                       # 가장 최근 반년 적합만 (<= f)
   if (!length(lm_i)) { .nskip_lam <- .nskip_lam + 1L; next }
   lam  <- .lam[[as.character(max(lm_i))]]
-  .lam_gap_max <- max(.lam_gap_max, mi_f - max(lm_i))    # 반년(<=6) 초과면 적합이 빠진 것
 
   w0     <- .me_dates[k - .FORM_M]
   wdates <- .all_dates[.all_dates > w0 & .all_dates <= f]
-  if (!length(wdates)) { .nskip_wd <- .nskip_wd + 1L; next }
+  if (!length(wdates)) next
 
   rf0  <- .rd[.(f), .(Ticker, MEM, ADV20_L1), nomatch = 0L]
   elig <- rf0[MEM & is.finite(ADV20_L1) & ADV20_L1 >= .LIQ, Ticker]
   elig <- intersect(elig, names(lam))                    # lam(통제) 없는 종목은 제외
-  if (!length(elig)) { .nskip_elig <- .nskip_elig + 1L; next }
+  if (!length(elig)) next
 
   wd <- .rd[.(wdates), .(Date, Ticker, Close), nomatch = 0L][Ticker %chin% elig]
-  if (!nrow(wd)) { .nskip_wdrow <- .nskip_wdrow + 1L; next }
+  if (!nrow(wd)) next
   setorder(wd, Ticker, Date)
   st <- wd[, .mdd_stats(Close), by = Ticker]
   st[, cm := .W[1] * RI + .W[2] * RII + .W[3] * RIII]    # [A] CM = C - MDD
@@ -453,24 +434,15 @@ for (k in seq_along(.me_dates)) {
   sel <- st[seq_len(min(.SEL_N, nrow(st)))]
 
   # ---- [C] 비중: 논문 사전선언 방향(high beta_CID = low E[r]) -> -beta 랭크 선형비중 --
-  #   ★동값은 **같은 비중**을 받아야 한다 (2026-09-10 감사 지적 수리).
-  #     1판은 ties.method="first" 라 동값을 sel 의 행 순서로 깼는데 sel 은 [A] CM 잔차
-  #     내림차순이라, 결측 대치로 생긴 동값·winsorize 로 잘린 동값이 전부 **A 의 점수 순서**로
-  #     비중을 받았다(결측 1건이면 대치 종목이 원본보다 항상 한 계단 위). 비중 축은 C 인데
-  #     실제로는 A 가 실렸다. ties.method="average" 는 동값에 같은 순위 = 같은 비중을 준다.
-  #   ★전원 결측이면 평균순위가 전부 (n+1)/2 라 자동으로 등가중이 된다 — 1판의 rep(0,·) +
-  #     "first" 조합은 EW 가 아니라 (0.4,0.3,0.2,0.1) 을 냈다(선언과 코드가 달랐던 지점).
-  n_s <- nrow(sel)
-  bs  <- .BW[.(mi_f, sel$Ticker), beta_w]
-  if (!any(is.finite(bs))) {
-    wgt <- rep(1 / n_s, n_s)                              # 전원 결측 = 등가중
-    .n_ew <- .n_ew + 1L
+  bs <- .BW[.(mi_f, sel$Ticker), beta_w]
+  if (all(!is.finite(bs))) {
+    bs <- rep(0, nrow(sel))
   } else {
-    .n_imp <- .n_imp + sum(!is.finite(bs))
-    bs[!is.finite(bs)] <- stats::median(bs, na.rm = TRUE)  # 결측 = 그 달 코호트 중앙값(중립)
-    rk  <- rank(bs, ties.method = "average")               # 1 = 최저 beta = 최선호 · 동값 = 동비중
-    wgt <- (n_s + 1 - rk); wgt <- wgt / sum(wgt)
+    bs[!is.finite(bs)] <- stats::median(bs, na.rm = TRUE) # 결측 = 그 달 코호트 중앙값(중립)
   }
+  n_s <- nrow(sel)
+  rk  <- rank(bs, ties.method = "first")                  # 1 = 최저 beta = 최선호
+  wgt <- (n_s + 1 - rk); wgt <- wgt / sum(wgt)
 
   .cohorts[[k]] <- data.table(Ticker = sel$Ticker, w = wgt)
   .diag[[k]] <- data.table(f = f, N = nrow(st), n_sel = n_s,
@@ -506,16 +478,11 @@ setorder(PORTFOLIO, Date, -Weight)
 .pm <- PORTFOLIO[, .(n = .N, sw = sum(Weight)), by = Date]
 .dg <- rbindlist(Filter(Negate(is.null), .diag), use.names = TRUE)
 cat(sprintf(paste0("[COMBO] PORTFOLIO %s행 · %d개월 %s~%s · 월평균 %.1f종(최대 %d) · sum(w) %.4f~%.4f\n",
-                   "[COMBO] 통제 R2(CM~시브 lam) 중앙값 %.4f · 적격 N 중앙값 %.0f · lam 이월 최대 %d개월(반년 규약 6)\n",
-                   "[COMBO] 스킵 전수 — HFL[창<120 %d · 적격0 %d · 적합종목<6 %d] ",
-                   "코호트[lam미보유 %d · 창날짜0 %d · 적격0 %d · 창행0 %d · 횡단면<10 %d]\n",
-                   "[COMBO] 비중 — EW 폴백 %d월 · beta 결측 대치 %d건 · 총경과 %.1f분\n"),
+                   "[COMBO] 통제 R2(CM~시브 lam) 중앙값 %.4f · 적격 N 중앙값 %.0f · ",
+                   "lam 미보유 스킵 %d월 · 횡단면 부족 %d월 · 총경과 %.1f분\n"),
             format(nrow(PORTFOLIO), big.mark = ","), uniqueN(PORTFOLIO$Date),
             as.character(min(PORTFOLIO$Date)), as.character(max(PORTFOLIO$Date)),
             mean(.pm$n), max(.pm$n), min(.pm$sw), max(.pm$sw),
             stats::median(.dg$r2_ctrl, na.rm = TRUE), stats::median(.dg$N, na.rm = TRUE),
-            .lam_gap_max,
-            .nskip_win, .nskip_noelig, .nskip_few,
-            .nskip_lam, .nskip_wd, .nskip_elig, .nskip_wdrow, .nskip_n,
-            .n_ew, .n_imp,
+            .nskip_lam, .nskip_n,
             as.numeric(difftime(Sys.time(), .t0, units = "mins"))))
