@@ -41,6 +41,59 @@ TITLE <- Sys.getenv("RP_TITLE"); PKEY <- Sys.getenv("RP_KEY")
 #   같은 계약이 재고 같은 게이트가 막는다. 그게 이 재사용의 요점이다.
 IS_COMBO <- identical(Sys.getenv("RP_IS_COMBO", "0"), "1")
 COUNT_PAPER <- !identical(Sys.getenv("RP_COUNT_PAPER", "1"), "0")
+
+# ★텔레그램 '대상:' 줄 — 결합 제목이 잘려 재료가 사라지던 것 수리 (도훈 지적 2026-09-10) ────
+#   결합 요청의 RP_TITLE 은 "결합: <제목1> + <제목2> + <제목3>" 연접이라 171자였고,
+#   호출부가 전부 substr(TITLE, 1, 52~78) 로 선잘라 **2·3번째 논문이 통째로 사라졌다**.
+#   ⚠원인이 발신기 상한이 아니다: tg_agent_brief 는 relaxed=TRUE 에서 BULLET_ITEM_MAX(80자)
+#     가드를 면제한다(telegram_notify.R:1367-1374 "영어 논문 제목 허용"). 이 파일의 모든
+#     브리핑이 relaxed=TRUE 이므로 자를 이유가 처음부터 없었다 — 방어적 선절단이 정보를 지웠다.
+#   ⇒ 결합이면 재료 한 편당 한 줄로 편다(각 줄은 짧아 모바일 한 줄에 들어간다).
+#     단독이면 넉넉한 상한을 쓰되 **잘렸으면 '…' 로 보이게** 한다(구판은 말없이 잘랐다).
+.tg_clip <- function(x, cap) {
+  x <- gsub("[\r\n]+", " ", as.character(x %||% ""))
+  if (nchar(x) <= cap) x else paste0(substr(x, 1L, cap - 1L), "…")
+}
+#   ⚠키-제목 짝은 **연접 제목을 쪼개서 만들지 않는다**. paper_key 는 키를 정렬해 붙이고
+#     (combo:1403.8125+2301.09173+2404.08129) 제목은 combo.papers 순서로 이어 붙이는데
+#     둘이 서로 다른 순서다 — 위치로 짝지으면 1403.8125 에 2404.08129 의 제목이 붙는다
+#     (드라이런 2026-09-10 실측). 잘림보다 나쁜 오귀속이라, 짝은 요청 파일의
+#     combo.papers(key+title 쌍)에서만 읽고, 없으면 키만 낸다.
+# 반환 = character vector (items 안에서 c() 로 펼쳐진다). suffix 는 첫 줄 꼬리에 붙는다.
+.tg_combo_papers <- function() tryCatch({
+  d <- fromJSON(file.path(ROOT, "06_Registry/replication_request.json"), simplifyVector = FALSE)
+  ps <- (d$combo %||% list())$papers %||% list()
+  if (!length(ps)) return(NULL)
+  data.frame(key   = vapply(ps, function(p) as.character(p$key   %||% ""), character(1L)),
+             title = vapply(ps, function(p) as.character(p$title %||% ""), character(1L)),
+             stringsAsFactors = FALSE)
+}, error = function(e) NULL)
+
+# 차트 캡션처럼 **한 줄만** 받는 자리용 압축 라벨 — 결합이면 키를 전부 남긴다
+# (제목 연접을 60자로 자르면 재료 2·3편이 사라지지만, 키는 3편이라야 42자다).
+.tg_target_label <- function(title, pkey, cap = 60L) {
+  keys <- if (grepl("^combo:", pkey %||% ""))
+    trimws(strsplit(sub("^combo:", "", pkey), "+", fixed = TRUE)[[1]]) else character(0)
+  keys <- keys[nzchar(keys)]
+  if (length(keys) >= 2L)
+    .tg_clip(sprintf("결합 %d편: %s", length(keys), paste(keys, collapse = " / ")), cap)
+  else .tg_clip(title, cap)
+}
+
+.tg_target_items <- function(title, pkey, suffix = "", cap = 78L) {
+  keys <- if (grepl("^combo:", pkey %||% ""))
+    trimws(strsplit(sub("^combo:", "", pkey), "+", fixed = TRUE)[[1]]) else character(0)
+  keys <- keys[nzchar(keys)]
+  if (length(keys) < 2L) return(sprintf("대상: %s%s", .tg_clip(title, cap), suffix))
+  pp <- .tg_combo_papers()
+  lines <- if (!is.null(pp) && nrow(pp) == length(keys) && all(nzchar(pp$key)))
+    vapply(seq_len(nrow(pp)), function(i)
+      if (nzchar(pp$title[i]))
+        sprintf("  · %s — %s", pp$key[i], .tg_clip(pp$title[i], cap - nchar(pp$key[i]) - 6L))
+      else sprintf("  · %s", pp$key[i]), character(1L))
+  else sprintf("  · %s", keys)          # 짝을 확신할 수 없으면 키만 (지어내지 않는다)
+  c(sprintf("대상: 결합 %d편%s", length(keys), suffix), lines)
+}
 REQ   <- file.path(ROOT, "06_Registry/replication_request.json")
 # ★성과 요약 kv·차트 = 예전 알파 서칭 포맷(도훈 지시 2026-08-30).
 #   ★수치를 재계산하지 않는다 — 계약 산출물에서 읽기만 한다(손계산 금지).
@@ -63,7 +116,7 @@ fail <- function(why, detail = "") {
       lock_scope = sprintf("rf_replication_fail_%s", PKEY %||% "unknown"),
       sections = list(
         list(type = "bullet", emoji = "\U0001F3AF", heading = "현재 리서치 상황",
-             items = c("단계: 1계층 충실구현 — 무인 시도", sprintf("대상: %s", substr(TITLE, 1, 60)),
+             items = c("단계: 1계층 충실구현 — 무인 시도", .tg_target_items(TITLE, PKEY),
                        "위치: 검증 게이트에서 차단 — 원장 미개설", sprintf("직전 판정: %s", why))),
         list(type = "summary", emoji = "\U0001F4CC",
              body = sprintf("무인 충실구현이 검증을 통과하지 못했습니다 — 사유 %s", why)),
@@ -281,7 +334,7 @@ if (identical(.disp$action, "audit_required")) {
       sections = list(
         list(type = "bullet", emoji = "\U0001F50D", heading = "현재 리서치 상황",
              items = c("단계: 1계층 무인 충실구현 — 적대적 충실도 감사",
-                       sprintf("대상: %s", substr(TITLE, 1, 60)),
+                       .tg_target_items(TITLE, PKEY),
                        sprintf("판정: 감사 미실행 · 스폰 %d회 전부 산출 없음", as.integer(.gate$spawns)),
                        "처분: 개설 보류 — 감사 없이는 소비도 entry 개설도 하지 않는다")),
         list(type = "summary", emoji = "\U0001F4CC",
@@ -318,7 +371,7 @@ if (identical(.disp$action, "reimplement")) {
       sections = list(
         list(type = "bullet", emoji = "\U0001F50D", heading = "현재 리서치 상황",
              items = c("단계: 1계층 무인 충실구현 — 적대적 충실도 감사",
-                       sprintf("대상: %s (측정 등급 %s)", substr(TITLE, 1, 52), G),
+                       .tg_target_items(TITLE, PKEY, suffix = sprintf(" (측정 등급 %s)", G)),
                        "처분: 소비 보류 + 자동 재구현 1회 — 논문을 잘못된 이유로 버리지 않는다")),
         ## ★summary 는 [20,100]자 헤드라인 계약이고 relaxed 로도 안 풀린다 — 500자 지적을 여기 넣어
         ##   오늘 3/3 유실됐다(13:56·16:16·17:28). 지적은 text 섹션(relaxed 면 길이 면제)으로.
@@ -452,7 +505,7 @@ if (is.finite(.base_pt) && .base_pt < .min_pt && !.resc_ok) {
       sections = list(
         list(type = "bullet", emoji = "🎯", heading = "현재 리서치 상황",
              items = c("단계: 1계층 충실구현 — 무인 완주",
-                       substr(sprintf("대상: %s", TITLE), 1, 78),
+                       .tg_target_items(TITLE, PKEY),
                        sprintf("위치: 검증 통과 · 기저 다중검정 t값 %.3f", .base_pt),
                        sprintf("직전 판정: 등급 %s · 충실도 %s", G,
                                if (identical(.fidelity, "adapted")) "착안(변형)" else "충실"))),
@@ -477,7 +530,7 @@ if (is.finite(.base_pt) && .base_pt < .min_pt && !.resc_ok) {
     #   정본 = telegram_notify.R::tg_pass_analysis (구 알파 서칭과 동일 함수 — 재구현 아님).
     if (file.exists(file.path(dirname(ar), "analysis_multifactor.csv")) ||
         file.exists(file.path(dirname(ar), "analysis_fmb_summary.csv")))
-      tryCatch(tg_pass_analysis(substr(TITLE, 1, 60), dirname(ar)),
+      tryCatch(tg_pass_analysis(.tg_target_label(TITLE, PKEY), dirname(ar)),
                error = function(e) jlog("factor_tg_failed", err = conditionMessage(e)))
     else jlog("factor_analysis_absent", dir = dirname(ar),
               note = "FF/FMB 산출물 없음 — FACTORS 부재이거나 분석 실패") },
@@ -551,7 +604,7 @@ tryCatch({ suppressMessages(source(file.path(ROOT, "02_Infrastructure/telegram/t
     sections = list(
       list(type = "bullet", emoji = "\U0001F3AF", heading = "현재 리서치 상황",
            items = c("단계: 1계층 충실구현 — 무인 완주",
-                     sprintf("대상: %s", substr(TITLE, 1, 58)),
+                     .tg_target_items(TITLE, PKEY),
                      sprintf("위치: 검증 4관문 통과 · 강화 원장 개설 %s", substr(BID, 1, 30)),
                      sprintf("직전 판정: 기저 등급 %s · 충실도 %s", G,
                              if (identical(.fidelity, "adapted")) "착안(변형)" else "충실"))),
@@ -573,7 +626,7 @@ tryCatch({ suppressMessages(source(file.path(ROOT, "02_Infrastructure/telegram/t
     #   정본 = telegram_notify.R::tg_pass_analysis (구 알파 서칭과 동일 함수 — 재구현 아님).
     if (file.exists(file.path(dirname(ar), "analysis_multifactor.csv")) ||
         file.exists(file.path(dirname(ar), "analysis_fmb_summary.csv")))
-      tryCatch(tg_pass_analysis(substr(TITLE, 1, 60), dirname(ar)),
+      tryCatch(tg_pass_analysis(.tg_target_label(TITLE, PKEY), dirname(ar)),
                error = function(e) jlog("factor_tg_failed", err = conditionMessage(e)))
     else jlog("factor_analysis_absent", dir = dirname(ar),
               note = "FF/FMB 산출물 없음 — FACTORS 부재이거나 분석 실패") },
