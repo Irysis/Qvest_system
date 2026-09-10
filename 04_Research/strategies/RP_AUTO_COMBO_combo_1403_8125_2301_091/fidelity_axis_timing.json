@@ -1,0 +1,11 @@
+{
+  "axis": "timing",
+  "verdict": "adapted",
+  "undeclared_changes": [],
+  "signal_mismatch": [],
+  "counterexample": "논문 §5.7 자체 거래설계는 예측수익 5분위(P1~P5) 포트폴리오를 형성해 '다음 6개월' 수익을 계산 — 즉 K=6개월 보유·반년(semi-annual) 리밸이다. 구현은 이 P5/P1 포트폴리오·보유·리밸 규칙을 전혀 쓰지 않는다 — B 는 오직 [A]의 매월 코호트(engine.R:403-453)에서 CM 을 회귀하는 통제 변수(lambda)로만 쓰이고, 그 lambda 는 반년(6월·12월, .HFL_MON)에만 재추정되지만 코호트 자체는 [A]의 J-T 월간 오버래핑(FORM_M=6/HOLD=6, engine.R:459-473)을 따라 매월 재형성·매월 리밸된다. 예: 7월 형성 코호트와 8월 형성 코호트는 같은(6월 재추정) lambda 를 쓰면서도 서로 다른 월간 포트폴리오로 별도 산출된다 — 논문이라면 이 두 시점은 같은 반년 보유 구간 안에서 포트폴리오가 아예 바뀌지 않아야 한다.",
+  "evidence": "arXiv:2404.08129v1 §5.7 Predictability: \"we sort assets in five portfolios, and compute the equally-weighted average portfolio return in the following six months\" / \"rebalancing at a semi-annual frequency\" / \"we estimate the model on all 171 assets and the first 120 months of data\" / \"we repeat the procedure expanding the estimation window by 6 months each time until the end of the sample (i.e., we repeat the procedure 40 times)\".",
+  "confidence": "high",
+  "checked": "T0=120(engine.R:69)·HFL_MON=c(6,12) 6개월 확장·반년 재추정(engine.R:70,297-323) 수치를 §5.7 원문(120개월 초기창·6개월 확장·반년 재추정 40회)과 대조 — 일치. B 자신의 P5/P1 6개월 보유·반년 리밸 트레이딩 규칙 채택 여부 확인 — 미채택, [A]의 월간 J-T 오버래핑(FORM_M=6/HOLD=6, 매월 리밸)으로 대체. FIDELITY.changed(1)(3)(6) 의 선언 문구와 대조.",
+  "note": "B 의 추정창 스케줄(120개월·6개월 확장·반년 재추정)은 원문 수치와 정확히 일치하고 정직히 선언됐다. 반면 B 고유의 J/K/리밸 축(6개월 보유·반년 리밸 P5/P1)은 통제 용도로 쓰였을 뿐 포트폴리오 축으로는 전혀 구현되지 않았는데, 이 대체는 FIDELITY.changed(1)(3)에 명시돼 있어 misdeclared 가 아니라 adapted 다."
+}
