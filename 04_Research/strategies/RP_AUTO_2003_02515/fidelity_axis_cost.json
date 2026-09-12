@@ -1,0 +1,11 @@
+{
+  "axis": "cost",
+  "verdict": "adapted",
+  "undeclared_changes": [],
+  "signal_mismatch": [],
+  "counterexample": "구성하지 못했다. 논문이 거래비용·왕복 여부·시장충격을 전혀 언급하지 않으므로(전문 재질의 확인) '논문 비용'이라는 비교 기준 자체가 없다. 구현은 이를 commission_paper=null로 정직하게 반영해 병기값(paper_basis)을 0bps로 계산했고, 15bps 순비용판은 별도로 라벨된 등급전용 산출이다(authoritative_remeasure.json: commission_paper_bps=0, paper_basis.cagr=0.272387/sharpe=1.030205/mdd=0.31232 vs contract 15bps 판 cagr=0.215/sharpe=0.931/mdd=0.351 — 0bps 값이 15bps 값보다 전부 유리한 방향으로 갈리는데 이건 병기값이 논문(무비용) 조건을 그대로 따른 결과이지, 병기값을 논문보다 유리하게 왜곡한 것이 아니다). 비용모델(replication_harness.R:19-21,107-118 Σ|Δw_target|×commission, weight_delta_approx)은 이 저장소의 전 충실구현 러너가 공유하는 고정 계산이라 이 엔진에만 유리하게 조정된 지점이 없다.",
+  "evidence": "r.jina.ai PDF 텍스트 프록시 전문 재질의(transaction cost/trading cost/turnover/execution cost/bid-ask spread/slippage/rebalancing cost 키워드) — 'No mention found'. FIDELITY.json changed(18) 'commission_paper = null(논문 비용 무명시 → gross 병기)' 및 source_paper.version_read 의 NOT STATED 목록(거래비용 포함)과 일치.",
+  "confidence": "high",
+  "checked": "논문 전문(거래비용·왕복·시장충격 언급 여부) 재질의 · FIDELITY.json changed(18)/commission_paper 필드 · engine.R(비용 관련 코드 없음 — 비용은 러너 소관) · run_paper_replication.R:303-334(comm_paper=commission_paper %||% 0 → 0bps paper_basis / 15bps grade basis 이중 시뮬레이션, transaction_cost_bps=15/slippage_bps=0 는 전 충실구현 공통 상수) · replication_harness.R:19-21,38-39,107-119(Σ|Δw_target|×commission 비용모델, 전 엔진 공유) · authoritative_remeasure.json(commission_paper_bps=0, paper_basis vs contract 15bps 판 수치 대조).",
+  "note": "이 축에서 발견 없음 — 병기값(paper_basis)의 0bps는 논문이 비용을 아예 규정하지 않은 데 대한 정직한 반영이고, 등급 산출의 15bps는 별도로 명시된 저장소 규약(v10 SOT)이라 병기값을 부풀리는 방향으로 쓰이지 않았다."
+}
