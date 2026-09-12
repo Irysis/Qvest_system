@@ -1,0 +1,20 @@
+{
+  "axis": "undeclared",
+  "verdict": "adapted",
+
+  "undeclared_changes": [],
+  "signal_mismatch": [],
+
+  "counterexample": "구성 못 했다. 이 축의 반례는 '코드가 하는 일 중 논문에도 changed 에도 근거가 없는 동작' 이어야 하는데, engine.R 의 모든 규칙 분기(임계·가드·결측 규약·난수·선택·검산)를 FIDELITY.changed 18항과 1:1 로 대조한 결과 대응 항목이 없는 분기를 찾지 못했다. 후보 3건을 검토했으나 전부 반례가 되지 못했다: ①engine.R:115 sqrt(pmax(m2 − m1*m1, 0) ...) 의 분산 바닥은 changed(10)(a)~(f) 어디에도 없는 수치 가드지만, 30개 로그수익이 전부 0(장기 거래정지 · 상수 종가)인 경우 m2 − m1² 은 정확히 0 이라 절단이 발동하지 않고, 발동 조건인 부동소수 상쇄에서도 참값이 ≈0 이므로 논문의 VOLATILITY_30D 대응물과 수학적으로 다른 값을 내지 못한다. ②engine.R:191 .a1 의 V = Value[1] 은 같은 (Ticker, Item, 회계연도)에 DART 행이 둘 이상일 때 파케이 행 순서로 값을 고르는 미신고 동률 규칙이다(같은 집계가 FD 는 max(Factor_Date) 로 최신을 택하므로 다중 행을 전제한 코드다). 다만 R 실행이 이 세션에서 승인 차단이라 .cache/fundamental_merged.parquet 에 실제 중복 행이 있는지 확인하지 못했고, 중복이 0 이면 no-op 이다 — 발동 여부 미확인이라 발견으로 세지 않는다. ③engine.R:205 .FAV 의 FD = max(FD) by (Ticker, yv) 는 회계연도 값 9종 중 가장 늦은 항목의 가용일로 그 해 회계 특성 7종 전부를 묶는다(Bloomberg 필드가 항목별로 독립 갱신되는 것과 다르다). 그러나 engine.R:210 이 FD_lag 를 익년 3/31 로 다시 pmax 하고 두 원천의 Q4 Factor_Date 는 그보다 이르므로(pit.md C4: xlsx 경로 Q4 ≈ 익년 2/14 · DART 경로는 익년 3/31 고정) 실사용 구간에서 바닥이 지배해 항목 간 max 가 거의 발동하지 않는다.",
+
+  "evidence": "원문 = arxiv.org/html/2011.05381v3(§4.1·§3.3·Fig.2 캡션 직접 회수) + 1판 감사 evidence 블록(prompt.txt:94)의 v1·v3 독립 조회 축자 — Table 1 캡션(Bloomberg 필드 10종 in order + EQY_DPS ÷ lagged PX_LAST + lagged 12M ÷ lagged 1M − 1) · Table 1 mom 행 표제 '12-1M momentum' · §3.1 'firms listed in the US between January 2000 and June 2020' 과 균등화 문장 · §2.2 단체 정의 · §2.3 'randomly choosing (with replacement) N assets' · §2.4 식(9) F1/F2 · 식(11) E[w]=a/σ · Prop.2 식(15) · §3.2 'In the case of the linear policy (F1), the updated θ has to be adjusted so that the a_n lie in the intervals discussed in Section B' · Table 3 부트스트랩 열 step 0~10 · §4.1 N=100 · γ=1 · 기울기 최대절댓값 정규화 · Fig.2 캡션(η 0.1 · E 500 · bounds [0.2,1.6] · θ_k 초기 1 · seed 42) · Appendix B(N=100 에서 a−=0.02 · a+=1.6). 코드 측 대조 = engine.R 전문(477행) 전 분기. 산출물 측 = 10_audit.csv:20(리밸 260일 · distinct ticker 99~100) · 06_metrics.csv:25(Average_N_Holdings 99.996) · 04_holdings.csv(25,999행 = 260×100 − 1) · 01_strategy_spec.json:12(n_max 100) — changed(18)·portfolio_spec.n_holdings·engine_contract.expected_n_max 의 '100 · 후보 < 100 인 달만 그보다 작다' 선언과 실현값이 일치한다(99 인 달 정확히 1건).",
+
+  "confidence": "high",
+
+  "checked": "engine.R 전 규칙 분기를 changed 18항과 1:1 대조 — 유니버스 술어(95)·중복 제거(102-106)·vol 창(112-115)·Wilder RSI(119-133)·시장 월말·부분월 제외(136-141)·월간 종가 패널(144-152)·회계 병합/분기 4개 요건/DART 우선/티커 정규화/익년 3-31 lag/기수 노후 2년(166-235)·Dirichlet 표집과 언더플로 치환(245-250)·식(15) 기울기(251-254)·양성 대조 4종(257-301)·특성 12종 정의와 분모 조건(331-347)·완전 사례와 .MIN_ELIG(348-359)·2005-01 발행 시작(361)·후보 3조건과 비복원 100 풀(367-375)·θ 매월 초기화·E 500 복원추출·최대절댓값 정규화 갱신(378-388)·풀 한정 a/σ 배분과 softmax 안정화(393-397)·FACTORS 진단 패널(408-409)·산출 검산 5종(435-443). 추가로 engine.rejected1.R 대비 2판 변경분(배분 모집단·mom 방향·후보 X_t 요건·n>100 검산·겹침/θ 부호 진단)이 전부 changed(4)(5)(6)(13)(17)(18) 에 서술돼 있는지 확인했고, 반대 방향(선언은 있는데 코드에 없음)도 changed(10)(a)~(f)·(11) 양성 대조 4종·(13) 검산 5종·(16) 진단 패널·engine_contract.dependencies(stats::filter 예외 포함)로 역대조했다.",
+
+  "_항목 서술 규약": "★모든 항목은 대괄호 **한 줄 요약**으로 시작한다 - 12~30자 · 그 항목만 읽고도 무엇이 어긋났는지 아는 문장 · 원문 인용이나 파일:행을 요약에 넣지 마라(뒤 본문에 적는다). 이 요약이 통지에 그대로 실리고 본문은 안 실린다 - 요약이 없으면 사람은 잘린 원문 조각을 받는다. 예: '[숏 레그 그로스 익스포저 24% 미달]' · '[유니버스 탈락분 비중 재분배 없음]' · '[은닉층 순환 구조 미구현]'. ★용어는 그 분야의 정통 표기를 쓴다 - 임의 한글 조어를 만들지 말고, 원문 용어가 영문이면 통용 표기를 그대로(gross exposure · long/short leg · winsorize · lookback), 우리 지표는 정본 표기를 그대로(PORT_t · Calmar · MDD · OOS retention). 뜻이 통해도 조어면 읽는 사람이 두 번 해석한다.",
+  "_배열 규약": "undeclared_changes·signal_mismatch 는 **발견만** 담는다. 없으면 빈 배열 [] 로 두고 '불일치 없음' 같은 비발견을 항목으로 넣지 마라 - 근거 게이트가 배열 길이로 선다.",
+
+  "note": "이 축은 빈손이다 — 미신고 변경 0건. 잔여 불확실 1건: engine.R:191 의 Value[1] 동률 규칙은 회계 패널에 (Ticker, Item, 회계연도) 중복 행이 실재할 때만 발동하는데, 이 세션은 R·python 실행이 승인 차단이라 파케이를 열어 중복 유무를 확인하지 못했다. 축 밖 관찰 1줄: §4.1 이 a_n 경계 [0.2, 1.6] 를 정책 구분 없이 '고정' 파라미터로 열거하는 반면 changed(3)(10) 은 §3.2 를 근거로 F1 전용이라 선언했다 — 선언 자체는 존재하므로 이 축의 발견은 아니고 signal/portfolio 축의 판단 사항이다."
+}
