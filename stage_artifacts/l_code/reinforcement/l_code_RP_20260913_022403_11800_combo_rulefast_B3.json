@@ -17,11 +17,41 @@
   "calmar": 0.157,
   "oos_retention": -2.251,
   "portfolio_alpha_t": -0.612,
-  "next_probes": [
-    "다음 격자 축 B5(risk_overlay) — 이 블록 승자 위에서 측정",
-    "B3_15(최고 -0.612)는 B4 조합 후보로 고정 · B3_12(최저 -0.639)는 축 역작동 여부를 조합 LOO 로 분리"
-  ],
+  "next_probes": ["다음 격자 축 B5(risk_overlay) — 이 블록 승자 위에서 측정", "B3_15(최고 -0.612)는 B4 조합 후보로 고정 · B3_12(최저 -0.639)는 축 역작동 여부를 조합 LOO 로 분리"],
   "next_probe": "다음 격자 축 B5(risk_overlay) — 이 블록 승자 위에서 측정 | B3_15(최고 -0.612)는 B4 조합 후보로 고정 · B3_12(최저 -0.639)는 축 역작동 여부를 조합 LOO 로 분리",
   "source_paper": "https://arxiv.org/abs/2404.08129",
-  "record_type": "performance"
+  "record_type": "performance",
+  "mechanism": "판정: 유니버스·횡단면 제약 축은 MDD를 못 움직이면서 PORT_t의 부호를 뒤집었다 — 이 블록 두 처치 모두 기저 B2_10(C03_EPS_Chg_3m · score_tilt · K200∪KQ150, PORT_t 0.845 · MDD 0.627) 대비 PORT_t가 음수다. B3_12(K200 단독) PORT_t -0.639 · CAGR 0.091 · MDD 0.647, B3_15(섹터 중립 Sector_Lv2) PORT_t -0.612 · CAGR 0.095 · MDD 0.604 로, 절단 방식이 서로 무관한 두 처치가 PORT_t 폭 0.027 · CAGR 폭 0.004 안에 들어왔다(실측 — 표의 세 행 중 B3_15는 동일값 중복이라 실제 처치는 2종이다). 공통점은 하나다: 둘 다 C03_EPS_Chg_3m 랭킹이 쓰는 횡단면 폭을 잘라낸다 — 한쪽은 KQ150 멤버십을 제거해서, 다른 쪽은 선정을 섹터 안으로 가둬서. 즉 B2_10의 PORT_t 0.845는 K200 내부 랭킹에서도 섹터 내부 랭킹에서도 재현되지 않는다(실측). 그것이 KQ150 구간에서 오는지 유니버스 결합의 폭 자체에서 오는지는 미결이며, 가르는 유일한 칸 B3_11(KQ150 단독)이 설계됐으나 실측되지 않았다. B2 처방은 절반 미집행·절반 반증이다: 유니버스 효과를 minvar 기저에서 분리하라는 지시가 집행되지 않아(실제 기저는 score_tilt) 유니버스 효과와 비중 방법이 섞여 있고, 'B2_9 hrp의 MDD 0.573이 섹터 집중 완화로 재현되는가'는 아니오다 — 섹터 중립 B3_15의 MDD는 0.604에 그치면서 PORT_t를 1.457 잃었다. hrp가 내린 낙폭은 섹터 집중이 아니라 공분산 구조에서 온 것이다(정황). 17칸 누적으로 MDD 0.544~0.661 · Calmar 최고 0.281(B2_8)은 이 블록에서도 유지됐다 — 팩터·비중·유니버스·오버레이 네 축 전부에서 MDD 범위가 같다.",
+  "mechanism_by": "llm:block_end",
+  "mechanism_at": "2026-09-13T03:48:56+0900",
+  "prior_lessons_used": ["B1", "B2", "B5"],
+  "next_block_actions": [
+    {
+      "action": "B5 오버레이 칸을 3칸으로 줄이고, 전부 종목축 차등(cross_sectional)만 쓰되 랭킹 축을 결정하는 변수가 서로 다른 arm으로만 채운다 — csd_idio_tilt · multivar_channel_tilt · vol_term_structure_risk_split_tilt.",
+      "why": "B3_12·B3_15가 보여준 것은 이 전략의 PORT_t가 횡단면 폭에 걸려 있다는 것이다. 총노출을 균일하게 깎는 처치는 그 폭을 건드리지 않는 대신 B5 4칸에서 Calmar 0.238~0.259로 모였고, 남은 미측정 질문은 '어느 종목을 깎는가'의 결정 변수뿐이다.",
+      "expect": "세 칸의 Calmar가 다시 0.24~0.26에 모이면 오버레이 축은 결정 변수와 무관하게 상한이 관측된 것이고, 한 칸이라도 B2_8의 Calmar 0.281을 넘으면 랭킹 축 결정 변수가 실제 레버라는 증거가 된다."
+    },
+    {
+      "action": "csd_idio_tilt를 B3 기전의 직접 반증 칸으로 배치한다 — 특이변동 기여 큰 보유를 깎는 처치가 PORT_t를 B5_18(dbeta_tilt_rank) 0.449보다 더 잃는지 본다.",
+      "why": "B3_12·B3_15는 횡단면 폭을 줄이는 두 경로가 모두 PORT_t를 음수로 보냈다. 특이변동 상위 종목을 깎는 것은 같은 폭을 종목축에서 줄이는 세 번째 경로다.",
+      "expect": "기전이 맞으면 csd_idio_tilt의 PORT_t는 0.449 아래로 내려가면서 MDD는 0.54~0.66 범위를 못 벗어난다. 반대로 PORT_t가 B5_17의 0.790 근처로 유지되면 B3의 PORT_t 붕괴는 특이변동 노출이 아니라 멤버십·섹터 제약 고유의 효과이므로 기전 서술을 좁혀야 한다."
+    },
+    {
+      "action": "B5 보고에 각 칸의 횡단면 평균 노출(1-g/2)과 기저 B2_10(PORT_t 0.845 · MDD 0.627) 대비 ΔPORT_t·ΔMDD를 열로 남기고, Calmar는 B2_8의 0.281을 대조선으로 병기한다.",
+      "why": "B5 직전 판에서 네 칸의 상태 정의가 전부 달랐는데 Calmar 폭이 0.021이었다 — 개입 강도가 실제로 얼마나 실렸는지를 기록하지 않으면 '처치가 약했다'와 '축이 상한이다'가 구분되지 않는다.",
+      "expect": "평균 노출이 0.9 이상인데 ΔMDD가 -2%p 미만이면 처치 미전달이고, 평균 노출 0.7대에서도 ΔMDD가 -6%p에서 멈추면 앞서 두 독립 경로(B2_8 -6.2%p · B5_18 -6.0%p)와 같은 자리에서 세 번째로 멈춘 것이다."
+    },
+    {
+      "action": "B3_11(KQ150 단독)은 B5에서 다루지 않고 별도 강화 시도 단위로 원장에 올린다.",
+      "why": "B3의 미결(PORT_t 0.845가 KQ150 구간에서 오는가, 유니버스 결합 폭에서 오는가)은 오버레이 칸으로 갈리지 않는다 — 근거가 이 블록 카탈로그 밖에 있다.",
+      "expect": "B5 3칸 중 어느 것도 이 질문에 답하지 않는다는 것을 사전에 고정해, B5 결과를 유니버스 해석에 전용하지 않게 한다."
+    }
+  ],
+  "next_block_actions_by": "llm:block_end",
+  "avoid": ["스칼라 총노출 축소 계열 전부(vol_median · vol_ewma · vol_har · dd_brake_q · dd_recovery · vol_x_dd · vol_x_turb · turbulence · ml_tail_gate · ts_mom_sign) — 상태 정의가 완전히 다른 B5 4칸이 Calmar 0.238~0.259(폭 0.021)로 모였고, 비(ratio)형 상태를 총노출로 소비한 B5_19의 Calmar 0.247도 횡단면 tilt 3칸 한가운데였다. 소비 지점을 총노출로 두는 한 결과가 갈리지 않는 것이 실측됐다.", "이미 측정된 B5 arm 재시도(dbeta_tilt_rank · holdlvl_syscrowd_tilt · ml_dual_forecast_tilt · xs_vol_gap_corr_brake) — 같은 기저(B2_10)에서 네 칸이 이미 돌았다. 재측정은 칸만 쓴다.", "유니버스·섹터 절단 계열 재시도 — B3_12 PORT_t -0.639 · B3_15 -0.612로 두 경로 모두 부호가 반전됐고, 이 축에서 남은 질문(B3_11)은 B5 카탈로그로 못 가른다.", "섹터 중립을 MDD 레버로 재사용하는 것 — B3_15의 MDD 0.604는 B2_9 hrp의 0.573에 못 미치면서 PORT_t를 1.457 잃었다. 범주형 제약으로 공분산 기반 낙폭 완화를 대신할 수 없다는 것이 실측됐다.", "CDaR_LP·CVaR_LP 경로형 목적함수 및 generated_shrinkage_lift 4종 — B2 결론 유지. 네 축 17칸에서 MDD가 0.544~0.661을 못 벗어났고 두 독립 경로가 -6%p에서 멈췄다.", "고정 축(long-only · Σw=1 · 완전투자 · 25종) 완화를 레버로 제시하는 것 — 상한의 소재를 기록하는 것과 축을 푸는 것은 다르다."],
+  "next_block_design_for": "B5",
+  "next_block_design_n": 3,
+  "prior_action_status": "ignored",
+  "prior_action_detail": "설계 3건 중 0건 집행 (설계: B3_12,B3_11,B3_15 / 실측: index,sector_neutral)",
+  "mechanism_confidence": "medium"
 }
