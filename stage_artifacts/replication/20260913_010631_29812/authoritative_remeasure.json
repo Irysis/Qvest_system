@@ -1,0 +1,120 @@
+{
+  "status": "OK",
+  "strategy_id": "RP_20260913_010631_29812",
+  "strategy_name": "RF_PAR_B3_15_",
+  "remeasured_at": "2026-09-13T01:12:10+0900",
+  "run_id": "20260913_010631_29812",
+  "bt_result_path": "C:/Users/99922/OneDrive/Quant_Module_Moltbot/stage_artifacts/replication/20260913_010631_29812/bt_result.rds",
+  "metric_type": "backtested",
+  "essence_grade": "C",
+  "grade_basis": "replication_chain",
+  "essence": {
+    "net_sharpe": 0.498,
+    "net_ir": -0.139,
+    "portfolio_alpha_t_nw_lag3": -0.66,
+    "oos_retention": -2.577,
+    "dsr": null,
+    "mdd": 0.574,
+    "calmar": 0.158,
+    "cagr": 0.091,
+    "drawdown_profile": {
+      "severe45_count": 15,
+      "severe55_count": 2,
+      "severe45_total_periods": 64,
+      "severe45_max_periods": 17,
+      "severe45_period_frac": 0.012,
+      "catastrophic_mdd_threshold": 0.7,
+      "severe45_hard_count": 15,
+      "severe55_hard_count": 6,
+      "severe45_period_hard_frac": 0.25,
+      "severe45_max_hard_periods": 252,
+      "tail_review": false,
+      "structural_hard_fail": true
+    }
+  },
+  "hard_fail": false,
+  "structural_drawdown": true,
+  "selection_type": "chain",
+  "dsr_gate_applied": false,
+  "grade_base": "F",
+  "recent_regime_rescued": true,
+  "recent_regime_label": "recent_regime",
+  "rolling_grade": {
+    "status": "ok",
+    "n_points": 225,
+    "window_months": 36,
+    "pass_life": 0.1333,
+    "pass_recent": 0.9167,
+    "current": {
+      "ym": "2026-09",
+      "sharpe": 0.973603,
+      "cagr": 0.28674,
+      "mdd": 0.185271,
+      "calmar": 1.547679,
+      "pass": true
+    },
+    "prior_recoveries": 5,
+    "current_run": 10,
+    "span": ["2008-01", "2026-09"]
+  },
+  "defensive_score": {
+    "status": "ok",
+    "defensive": true,
+    "down": {
+      "n": 110,
+      "excess": 0.008752,
+      "hit": 0.563636,
+      "t": 2.782346,
+      "capture": 0.795553
+    },
+    "mid": {
+      "n": 30,
+      "excess": 0.005615,
+      "hit": 0.433333,
+      "t": 0.92411,
+      "capture": 0.941262
+    },
+    "deep": {
+      "n": 10,
+      "excess": 0.008542,
+      "hit": 0.5,
+      "t": 0.591416,
+      "capture": 0.943588
+    },
+    "up": {
+      "n": 150,
+      "excess": -0.009406,
+      "hit": 0.413333,
+      "t": -2.618332,
+      "capture": 0.811948
+    },
+    "reason": "하락월 110개: 초과 +0.88%/월 (t 2.78 · 적중 56%) · 벤치-10% 이하 10개: 초과 +0.85%/월 · 상승월 초과 -0.94%/월"
+  },
+  "reasons": "non-positive alpha (PORT_t<=0 또는 net_IR<=0); recent_regime 구제(F->C): 전기간 F 이나 롤링 36개월 기준 최근 12점 중 92% 가 절대문턱 통과 (현재 SR 0.97 · CAGR 28.7% · MDD 18.5% · Calmar 1.55). 생애 충족 13%. ★과거 회복→재붕괴 5회 — 이번 회복이 처음이 아니다; structural_drawdown(판정 아님 — 라우팅 근거): MDD 57.4%, 45%+ episodes=15/15, 55%+ episodes=2/6, 수중 표본비 0.01/0.25",
+  "replication": {
+    "source_paper": {
+      "url": "https://arxiv.org/abs/2011.05381",
+      "title": "Dirichlet policies for reinforced factor portfolios",
+      "paper_key": "2011.05381"
+    },
+    "commission_paper_bps": 15,
+    "paper_basis": {
+      "cagr": 0.090268,
+      "sharpe": 0.404548,
+      "mdd": 0.57434,
+      "n_months": 260
+    },
+    "grade_basis_note": "등급은 15bps 순비용 판 (essence 문턱 15bps 보정 — gross 등급은 인플레)",
+    "fidelity": "universe 치환(K200∪KQ150)만 — 그 외 논문 그대로 (v10 완전 충실구현)",
+    "benchmark_note": "long_vs_long_bm",
+    "n_max": 25,
+    "has_short": false
+  },
+  "contract": {
+    "integrity_status": "OK",
+    "cagr": 0.091,
+    "sharpe": 0.498,
+    "mdd": 0.574,
+    "calmar": 0.158
+  }
+}

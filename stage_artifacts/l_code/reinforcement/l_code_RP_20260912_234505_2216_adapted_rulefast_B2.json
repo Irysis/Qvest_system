@@ -17,11 +17,41 @@
   "calmar": 0.248,
   "oos_retention": -0.73,
   "portfolio_alpha_t": 0.61,
-  "next_probes": [
-    "다음 격자 축 B3(universe) — 이 블록 승자 위에서 측정",
-    "B2_9(최고 0.610)는 B4 조합 후보로 고정 · B2_8(최저 -0.548)는 축 역작동 여부를 조합 LOO 로 분리"
-  ],
+  "next_probes": ["다음 격자 축 B3(universe) — 이 블록 승자 위에서 측정", "B2_9(최고 0.610)는 B4 조합 후보로 고정 · B2_8(최저 -0.548)는 축 역작동 여부를 조합 LOO 로 분리"],
   "next_probe": "다음 격자 축 B3(universe) — 이 블록 승자 위에서 측정 | B2_9(최고 0.610)는 B4 조합 후보로 고정 · B2_8(최저 -0.548)는 축 역작동 여부를 조합 LOO 로 분리",
   "source_paper": "https://arxiv.org/abs/2011.05381",
-  "record_type": "performance"
+  "record_type": "performance",
+  "mechanism": "판정: B2 의 비중 축은 Calmar 불변 축(iso-Calmar)이다 — MDD 와 CAGR 을 거의 비례로 옮기므로 Calmar 가 안 움직이고, 대신 PORT_t 만 크게 갈린다. B2_8 을 뺀 5칸에서 MDD 0.469~0.537 · CAGR 0.123~0.133 · Calmar 0.245~0.266(폭 0.021)인데 PORT_t 는 0.134→0.610 으로 4.5배 벌어진다(실측). 칸은 목적함수 계열로 묶이고 순서가 있다: 공분산 최소화 계열(B2_6 minvar MDD 0.469·PORT_t 0.134, B2_10 nco MDD 0.494·PORT_t 0.152)이 MDD 최저·PORT_t 최저, 변동성·꼬리 계열(B2_7 ivol MDD 0.517·PORT_t 0.597, B2_9 cvar MDD 0.537·PORT_t 0.610)이 그 반대편이며, 대조 B2_11 score_tilt(MDD 0.531·PORT_t 0.446)는 ivol/cvar 범위 안에 들어온다. B2_9 cvar 는 B2_7 ivol 과 MDD 차 0.020 · PORT_t 차 0.013 뿐이라, long-only Σw=1 · ≤25종에서 CVaR 은 개별 변동성과 별도 축이 아니다(정황). 앞 블록 처방 3건은 반증됐다 — ①비중은 재배분뿐이라 MDD 를 못 옮긴다고 적었으나 같은 팩터 기저에서 블록 내 MDD 폭이 0.210 이고 CAGR 은 0.123~0.133 로 붙어 있어 MDD 감소를 수익으로 산 것이 아니다, ②drawdown 경로를 목적함수에 직접 넣은 B2_8 CDaR_LP 가 PORT_t -0.548 · MDD 0.679 · CAGR 0.088 로 세 축 전부 최악이다, ③nco 가 minvar 과 두 축 모두에서 겹쳐 집중도는 독립 축이 아니었다. B2_8 의 실패가 추정오차로 인한 코너해인지 경로 목적함수 자체의 오설정인지는 이 블록만으로 안 갈린다 — 칸별 유효종목수와 turnover 가 필요하고 그 값은 B2 산출물에 없다(미결). 집행 로그의 '설계 0건 집행' 은 라벨 접두(lean:/qepm:) 대조 실패다 — 처치 6종은 설계와 1:1 로 들어왔다.",
+  "mechanism_by": "llm:block_end",
+  "mechanism_at": "2026-09-13T01:02:37+0900",
+  "prior_lessons_used": "B1",
+  "next_block_actions": [
+    {
+      "action": "B3_15 섹터 중립을 돌려, B2_6 minvar 의 MDD 0.469 가 섹터 집중에서 온 것인지 선정 측에서 재현한다 — 종목수와 총노출을 유지한 채 공통 섹터 노출만 제거한다.",
+      "why": "B2 의 순서는 공분산 억제 강도에 따라 MDD 와 PORT_t 가 동시에 내려간 것이다(minvar 0.469/0.134 대 cvar 0.537/0.610). 같은 공통위험을 비중이 아닌 선정에서 제거하면 MDD 감소와 PORT_t 손실을 분리할 수 있다.",
+      "expect": "섹터 집중이 원인이면 MDD 0.47~0.49 를 PORT_t 0.55 이상과 함께 얻어 Calmar 가 0.245~0.266 범위를 위로 이탈한다(≥0.28). Calmar 가 다시 그 범위에 떨어지면 불변성은 비중 축의 성질이 아니라 이 팩터 기저의 성질이다."
+    },
+    {
+      "action": "B3_14 대형주(시총 상위 1/3) 를 돌려, 기저에 든 S01_Size 가 CAGR 원천인지 MDD 원천인지 가른다.",
+      "why": "B2 5칸에서 CAGR 이 0.123~0.133 으로 고정된 채 MDD 만 0.068 움직였다 — 즉 CAGR 은 비중이 아니라 선정 유니버스가 정한다. 기저가 S01_Size 를 싣고 있으므로 유니버스를 크기로 자르는 것이 CAGR 축을 직접 건드리는 첫 처치다.",
+      "expect": "size 가 CAGR 원천이면 CAGR <0.10 인데 MDD 는 0.45~0.50 에 머물러 Calmar 가 0.22 아래로 떨어진다. CAGR 과 MDD 가 같은 비율로 내려가면 Calmar 불변성은 유니버스 축에서도 유지된다."
+    },
+    {
+      "action": "B3_13 소형주(시총 하위 1/3) 를 B3_14 와 한 쌍으로 돌린다 — 단독 실행 금지(대조가 없으면 해석 불가).",
+      "why": "크기 축의 비례성 여부는 양끝 대비로만 갈린다. B2 가 준 기준선은 유니버스 K200∪KQ150 에서 Calmar 0.245~0.266 이다.",
+      "expect": "CAGR >0.16 과 MDD >0.60 이 함께 나오면 크기 축도 비례 축이고, 남은 지렛대는 B5 오버레이와 B4 결합뿐이다. CAGR 만 오르고 MDD 가 0.55 이하면 크기 축이 비비례 축이다."
+    },
+    {
+      "action": "예산을 명시 배분한다 — 25칸 중 16칸 소비(B1 10 + B2 6), 남은 9칸을 B3 3칸 · B5 4칸 · B4 2칸으로 쓴다.",
+      "why": "B2 가 비중 축의 Calmar 범위를 0.245~0.266 으로 닫았으므로 남은 칸은 아직 안 닫힌 축(유니버스·오버레이·결합)에 몰아야 한다.",
+      "expect": "B3 를 3칸으로 끊으면 B5 에 4칸이 남아, 오버레이를 총노출 스칼라 1종이 아니라 소비 지점이 다른 3~4종으로 실측할 수 있다."
+    }
+  ],
+  "next_block_actions_by": "llm:block_end",
+  "avoid": ["공분산 추정만 바꾼 변형(gen:lean_score_tilt__shr_sample · __shr_ledoit_wolf · __shr_gerber_rmt · gen:qepm_MVO__shr_lw_nls) 을 이후 블록에서 쓰지 말 것 — B2 가 목적함수 계열 순서를 이미 실측했고 Calmar 는 5칸 전부 0.245~0.266 에 들어왔다. 추정기 교체는 같은 계열 안에서 움직이므로 그 범위를 나갈 수 없다(벽 확인).", "B2_8 CDaR_LP 및 drawdown 경로를 목적함수에 넣는 다른 변형을 위험 통제 수단으로 재시도하지 말 것 — PORT_t -0.548 · MDD 0.679 · CAGR 0.088 로 세 축 전부 블록 최악이었다. 재시도하려면 원인 진단(유효종목수·turnover) 이 먼저이고, 그 값은 이 격자 밖에서 재야 한다.", "펀더멘털·성장·accrual 계열 팩터를 여섯 번째로 더 쌓는 처치 금지 — B1_1~B1_5 단조 적층과 B1_6 asset_growth_aligned(MDD 0.695) 가 이미 벽을 확인했다(B1 계승).", "B3 에서 B3_11 KOSDAQ150 단독 · B3_12 KOSPI200 단독에 칸을 쓰지 말 것 — 지수 멤버십은 크기·유동성·섹터 구성이 섞인 교락 축이고, B3_13/B3_14 시총 삼분위 쌍이 같은 질문을 크기 축만으로 깨끗하게 묻는다. 예산 9칸 상황에서 교락 축에 2칸은 낭비다.", "B5 에서 총노출 스칼라만 건드리는 오버레이를 여러 칸에 나눠 담지 말 것 — 스칼라 축소는 MDD 와 CAGR 을 구조적으로 비례 이동시키므로 B2 가 닫은 Calmar 0.245~0.266 범위 안에 그대로 떨어진다. 라벨이 달라도 소비 지점이 같으면 같은 칸이다."],
+  "next_block_design_for": "B3",
+  "next_block_design_n": 3,
+  "prior_action_status": "ignored",
+  "prior_action_detail": "설계 6건 중 0건 집행 (설계: lean:minvar,lean:ivol,qepm:CDaR_LP,lean:cvar,lean:nco,lean:score_tilt / 실측: )",
+  "mechanism_confidence": "medium"
 }
