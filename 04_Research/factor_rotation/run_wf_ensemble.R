@@ -31,6 +31,17 @@ MIN_IS_MONTHS <- 60L; MIN_MODULES <- 3L; RCMA_REFIT_MONTHS <- 12L   # RCMA 멤�
 #   진단(2026-06-05): breadth≥10 첫 달 = 200203, ≥15 = 200307, full ~78모듈 = 2005-06+.
 MIN_BREADTH_OOS <- 10L   # OOS 평가 시작 = 그 달 가용 모듈 ≥ 이 값인 첫 달 (근거: avail_by_m 진단)
 
+# ── ★2026-09-12 (2계층 FR_003 라운드) 최소 파라미터화 — 기본값은 전부 구동작 보존 ───────────
+#   왜: 러너가 fr_id 를 "FR_001" 로 못박고 있어 새 리서치 1단위를 돌리면 이전 등재를 덮는다.
+#       또 대조군(arm_C)·PIT 스트레스(arm_S)를 같은 러너로 돌리려면 등재를 꺼야 한다.
+#   원칙: 하나도 기본값을 바꾸지 않는다(FR_RUN_ID 미설정 = FR_001, 등재 ON, 추가지연 0).
+FR_RUN_ID   <- Sys.getenv("FR_RUN_ID", "FR_001")                      # 등재/산출 파일 식별자
+FR_REGISTER <- !identical(Sys.getenv("FR_REGISTER", "1"), "0")        # 0 = 레지스트리 등재 생략(대조·스트레스 arm)
+FR_ARM_TAG  <- Sys.getenv("FR_ARM_TAG", "")                            # 진단 산출물 라벨
+# 국면신호 추가 지연(개월). 0 = 기본(전월말 Category). 1 = lag-1 스트레스(전전월말) — C5 동월누출 판별.
+FR_EXTRA_REGIME_LAG <- suppressWarnings(as.integer(Sys.getenv("FR_EXTRA_REGIME_LAG", "0"))); if (is.na(FR_EXTRA_REGIME_LAG)) FR_EXTRA_REGIME_LAG <- 0L
+FR_DIAG_DIR <- Sys.getenv("FR_DIAG_DIR", "")                           # 비면 진단 덤프 생략
+
 # 1. 모듈 풀 + 일간 수익 매트릭스 -----------------------------------------------
 MP <- fromJSON(file.path(PROJ,"06_Registry/module_performance.json"), simplifyVector=FALSE)
 mod_ids <- names(MP$modules)
@@ -71,8 +82,25 @@ cat(sprintf("[1b] breadth gate: OOS 시작 = %s (그 달 모듈 %d개 ≥ MIN_BR
 RG <- as.data.table(read_parquet(file.path(PROJ,".cache/unified_regime_signal_daily.parquet")))[!is.na(Category), .(Date=as.Date(Date), Category)]
 me <- RM[, .(me_date=max(Date)), by=ym]; setorder(me, me_date)
 mreg <- merge(me, RG, by.x="me_date", by.y="Date", all.x=TRUE)
-setorder(mreg, me_date); mreg[, regime_lag := shift(Category, 1L)]    # 어제(전월말) 국면 → 이번달 적용
+setorder(mreg, me_date)
+mreg[, regime_lag := shift(Category, 1L + FR_EXTRA_REGIME_LAG)]       # 어제(전월말) 국면 → 이번달 적용 (+추가지연 = lag 스트레스)
+mreg[, sig_cutoff := shift(me_date, 1L + FR_EXTRA_REGIME_LAG)]        # ★C5: 이 배분이 실제로 본 마지막 날짜
 mreg[is.na(regime_lag), regime_lag := "NEUTRAL"]
+# ── ★C5 오버레이 신호 타이밍 HARD 검사 (pit.md §오버레이 신호 타이밍) ────────────────
+#   컷오프(신호가 본 마지막 날) < 홀딩월 첫 거래일 이어야 한다. 홀딩월 = 수익이 벌리는 달 = ym.
+local({
+  src <- file.path(PROJ, "02_Infrastructure/validation/overlay_pit_guard.R")
+  if (!file.exists(src)) stop("[C5] overlay_pit_guard.R 부재 — 관문 없이 국면 오버레이를 돌릴 수 없음")
+  source(src, local = TRUE)
+  ok <- !is.na(mreg$sig_cutoff)
+  ## ym 은 "YYYYMM" — overlay_signal_cutoff 는 "YYYY-MM" 을 기대한다(paste0(ym,"-01")).
+  hold_start <- overlay_signal_cutoff(sub("^(\\d{4})(\\d{2})$", "\\1-\\2", mreg$ym[ok]))   # 홀딩월 1일
+  if (any(is.na(hold_start))) stop("[C5] 홀딩월 시작일 파싱 실패 — ym 포맷 확인")
+  assert_overlay_pit(as.Date(mreg$sig_cutoff[ok]), hold_start, label = "FR regime dispatch")
+  cat(sprintf("[C5] assert_overlay_pit PASS — n=%d 월, extra_lag=%d, 최대 컷오프-홀딩월시작 간격 %d일\n",
+              sum(ok), FR_EXTRA_REGIME_LAG,
+              as.integer(max(hold_start - as.Date(mreg$sig_cutoff[ok])))))
+})
 # ★ Track1-B proactive dispatch (env FR_REGIME_SOURCE=forecast): contemporaneous regime_lag 대신
 #   regime_forecaster의 *다음국면 예측*을 dispatch에 사용(reactive→proactive). 예측 NA 월은 regime_lag fallback.
 #   forecaster beats_baseline=TRUE 일 때만 의미(아니면 과적합). baseline(category)은 default — FR_001 불변.
@@ -93,6 +121,15 @@ if(REGIME_SOURCE == "forecast"){
 #    weights는 월초(첫 거래일)에 적용·월중 frozen → Return.portfolio가 monthly rebalance로 합성.
 months <- mreg$ym
 W_rows <- list(); wlog <- list()           # W_rows: rebalance-date별 모듈 weight (Return.portfolio 입력)
+diaglog <- list(); admlog <- list()        # ★MC1/MC2 진단 로그
+## 방어형 경로로 편입된 모듈 id (module_performance.json 의 admission_route 라벨 — 자체 판정 아님)
+DEFENSIVE_IDS <- names(Filter(function(x) identical(as.character(x$admission_route %||% ""),
+                                                    "defensive_specialist"), MP$modules))
+cat(sprintf("[pool] 풀 %d · 방어형 경로 편입 %d · grade_floor %d · legacy %d\n",
+            length(MP$modules), length(DEFENSIVE_IDS),
+            sum(vapply(MP$modules, function(x) identical(as.character(x$admission_route %||% ""), "grade_floor"), logical(1))),
+            length(MP$modules) - length(DEFENSIVE_IDS) -
+              sum(vapply(MP$modules, function(x) identical(as.character(x$admission_route %||% ""), "grade_floor"), logical(1)))))
 adm_cache <- NULL; adm_cache_asof <- NULL   # WF RCMA 멤버십 캐시(연 1회 갱신)
 months_used <- character(0)
 for(i in seq_along(months)){
@@ -123,8 +160,19 @@ for(i in seq_along(months)){
   regime_ir <- setNames(sapply(avail, function(s){ x<-ISr[reg_lag==reg_now][[s]]; x<-x[is.finite(x)]; if(length(x)<20||sd(x)==0) 0 else mean(x)/sd(x)*sqrt(252) }), avail)
   n_reg     <- setNames(sapply(avail, function(s) sum(is.finite(ISr[reg_lag==reg_now][[s]]))/21), avail)
   vols      <- setNames(sapply(avail, function(s){ x<-ISr[[s]]; x<-x[is.finite(x)]; sd(tail(x,252)) }), avail)
-  w <- compute_regime_module_weights(regime_ir, vols, n_reg)
+  w <- suppressWarnings(compute_regime_module_weights(regime_ir, vols, n_reg))
   wlog[[m]] <- data.table(ym=m, regime=reg_now, t(w))
+  ## ★MC1/MC2 조작 확인 로그(2026-09-12): 처치가 어느 채널로 전달됐는지 사후에 재도출 가능하게.
+  ##   R54 교훈 — 헤드라인만 보고 '국면층 기각' 이라 쓸 뻔했으나 그 셀엔 처치가 전달된 적이 없었다.
+  .fd <- fr_weight_expressiveness(w)
+  diaglog[[m]] <- data.table(ym = m, regime = reg_now,
+    n_avail = length(avail), n_adm_union = length(admitted_union),
+    n_adm_regime = if (is.null(adm_L)) NA_integer_ else length(adm_L),
+    retention = .fd$retention %||% NA_real_, intended_dev = .fd$intended_dev %||% NA_real_,
+    actual_dev = .fd$actual_dev %||% NA_real_, dev_from_ew = .fd$dev_from_ew %||% NA_real_,
+    w_max = max(w), w_defensive = sum(w[intersect(names(w), DEFENSIVE_IDS)]),
+    n_defensive_avail = length(intersect(avail, DEFENSIVE_IDS)))
+  admlog[[m]] <- list(ym = m, regime = reg_now, admitted = as.character(avail))
   months_used <- c(months_used, m)
   # rebalance 행: 이번달 첫 거래일에 weight 적용 (월중 frozen은 Return.portfolio가 처리)
   rb_date <- RM[ym==m, min(Date)]
@@ -191,14 +239,17 @@ sim_result <- list(
   DAILY_NAV_DT  = data.table(Date=mdates, NAV=nav_net, NAV_gross=nav_gross),  # ★ 월간 NAV (frequency 정합)
   strategy_xts  = ED_xts, bm_xts = bm_xts,                                    # strategy_xts/bm_xts는 일간 — contract가 apply.monthly로 집계
   HOLDINGS_LOG  = list(), PORTFOLIO_LOG = data.table(Exec_Date=as.Date(Wdt$Date)))  # ★ rb_dates 미정의 fix: rebalance 날짜 = W_rows 집계행(Wdt)의 Date
-spec <- list(strategy_name=if(REGIME_SOURCE=="forecast") "FR_001_fc_proactive_rotation" else "FR_001_regime_rotation",
+FR_ID    <- if(REGIME_SOURCE=="forecast") paste0(FR_RUN_ID, "_fc") else FR_RUN_ID
+if (nzchar(FR_ARM_TAG)) FR_ID <- paste0(FR_ID, "_", FR_ARM_TAG)
+OUT_JSON <- paste0(FR_ID, "_result.json"); OUT_RDS <- paste0(FR_ID, "_bt_result.rds")
+spec <- list(strategy_name=paste0(FR_ID, if(REGIME_SOURCE=="forecast") "_fc_proactive_rotation" else "_regime_rotation"),
              signal="regime-conditional module rotation",
              module_pool=all_used_mods,
              regime_source=if(REGIME_SOURCE=="forecast") "regime_forecaster predicted-next-regime (proactive, PIT trailing-only)" else "unified_regime_signal_daily Category (t-1)",
              weighting="module_dispatcher rp+IR shrink (λ/τ/k0 fixed); Return.portfolio monthly rebalance",
              rebalance="monthly",
              lookahead_prevention="regime t-1 lag; module frozen; IS-only weights; walk-forward RCMA admission (compute_rcma asof=prior month-end, annual refit); Return.portfolio (no self-synthesis)")
-bt <- build_bt_result(sim_result, spec, run_id="FR_001", strategy_id="FR_001", strategy_version="v2",
+bt <- build_bt_result(sim_result, spec, run_id=FR_ID, strategy_id=FR_ID, strategy_version="v2",
         benchmark_id="KOSPI200", benchmark_name="KOSPI 200", transaction_cost_bps=15, slippage_bps=0,
         risk_free_rate=0, frequency="monthly", annualization_factor=12, universe_id="KR_modules",
         code_version="run_wf_ensemble_v3_breadthgate_oosguard", created_by_agent="dispatch-orchestrator")
@@ -232,10 +283,7 @@ ew_sr <- if(is.null(ew_rp)) NA_real_ else {
   ewm <- apply.monthly(xts(ewd$r, order.by=ewd$Date), Return.cumulative); sr(as.numeric(ewm)) }
 
 dir.create(file.path(PROJ,"04_Research/factor_rotation/output"), showWarnings=FALSE, recursive=TRUE)
-# ★ A/B 출력 게이트: forecast 변형은 별도 파일·등재 생략(FR_001 baseline 보존). category=권위 FR_001.
-FR_ID    <- if(REGIME_SOURCE=="forecast") "FR_001_fc" else "FR_001"
-OUT_JSON <- if(REGIME_SOURCE=="forecast") "FR_001_fc_result.json" else "FR_001_result.json"
-OUT_RDS  <- if(REGIME_SOURCE=="forecast") "FR_001_fc_bt_result.rds" else "FR_001_bt_result.rds"
+# ★ A/B 출력 게이트: forecast 변형·대조 arm 은 별도 파일·등재 생략(baseline 보존). FR_ID/OUT_* 는 위에서 확정.
 fr <- list(fr_id=FR_ID, grade=es$grade, metric_type=es$metric_type, essence=es$essence,
   n_modules=length(all_used_mods), module_pool=all_used_mods, n_months=n, n_trials_cumulative=N_TRIALS,
   oos_retention=if(is.finite(oos_ret)) round(oos_ret,3) else NA_real_, oos_retention_status=oos_ret_label,
@@ -252,11 +300,46 @@ fr <- list(fr_id=FR_ID, grade=es$grade, metric_type=es$metric_type, essence=es$e
 write_json(fr, file.path(PROJ,"04_Research/factor_rotation/output", OUT_JSON), auto_unbox=TRUE, pretty=TRUE, na="null", digits=4)
 saveRDS(bt, file.path(PROJ,"04_Research/factor_rotation/output", OUT_RDS))
 # FR 운용체계 레지스트리 등재 (실측-only; metric_type=backtested 아니면 거부). forecast 변형은 A/B 실험 → 등재 생략.
-if(REGIME_SOURCE != "forecast"){
+if(REGIME_SOURCE != "forecast" && FR_REGISTER){
   tryCatch({ source(file.path(CD, "factor_rotation_registry.R"))
-    register_fr_result(fr, regime_engine_version="unified_regime_signal_daily Category(t-1) + walk-forward RCMA") },
+    register_fr_result(fr, regime_engine_version=sprintf("unified_regime_signal_daily Category(t-%d) + walk-forward RCMA", 1L+FR_EXTRA_REGIME_LAG)) },
     error=function(e) cat("[run_wf_ensemble] FR registry 생략:", conditionMessage(e), "\n"))
-} else cat("[run_wf_ensemble] forecast A/B 변형 — FR registry 등재 생략(baseline FR_001 보존)\n")
+} else cat("[run_wf_ensemble] 등재 생략 —", if(REGIME_SOURCE=="forecast") "forecast A/B 변형" else "FR_REGISTER=0 (대조/스트레스 arm)", "\n")
+
+# ── ★진단 덤프 (MC1/MC2/MC3 재도출용). FR_DIAG_DIR 미설정이면 생략 ─────────────────
+if (nzchar(FR_DIAG_DIR)) {
+  dir.create(FR_DIAG_DIR, showWarnings=FALSE, recursive=TRUE)
+  DG <- rbindlist(diaglog, fill=TRUE)
+  fwrite(DG, file.path(FR_DIAG_DIR, paste0(FR_ID, "_dispatch_diag.csv")))
+  saveRDS(admlog, file.path(FR_DIAG_DIR, paste0(FR_ID, "_admitted_by_month.rds")))
+  ## 국면별 admitted 집합 Jaccard (MC1) — 같은 해 안에서 국면만 다른 달끼리 비교되도록 연도 통제.
+  .jac <- function(a,b){ u<-length(union(a,b)); if(u==0) NA_real_ else length(intersect(a,b))/u }
+  am <- rbindlist(lapply(admlog, function(x) data.table(ym=x$ym, regime=x$regime, k=paste(sort(x$admitted), collapse="|"))))
+  am[, yr := substr(ym,1,4)]
+  pairs <- list()
+  for (y in unique(am$yr)) { s <- am[yr==y]; if (uniqueN(s$regime) < 2L) next
+    rg <- unique(s$regime)
+    for (i in seq_along(rg)) for (j in seq_along(rg)) if (i<j) {
+      a <- strsplit(s[regime==rg[i]][1]$k, "\\|")[[1]]; b <- strsplit(s[regime==rg[j]][1]$k, "\\|")[[1]]
+      pairs[[length(pairs)+1]] <- data.table(yr=y, r1=rg[i], r2=rg[j], jaccard=.jac(a,b)) } }
+  JP <- if (length(pairs)) rbindlist(pairs) else data.table()
+  if (nrow(JP)) fwrite(JP, file.path(FR_DIAG_DIR, paste0(FR_ID, "_regime_jaccard.csv")))
+  mc <- list(fr_id=FR_ID, arm=FR_ARM_TAG, extra_regime_lag=FR_EXTRA_REGIME_LAG,
+    n_pool=length(MP$modules), n_defensive_pool=length(DEFENSIVE_IDS),
+    MC1_membership=list(n_pairs=nrow(JP), jaccard_median=if(nrow(JP)) round(median(JP$jaccard, na.rm=TRUE),4) else NA,
+                        jaccard_min=if(nrow(JP)) round(min(JP$jaccard, na.rm=TRUE),4) else NA,
+                        delivered=if(nrow(JP)) (median(JP$jaccard, na.rm=TRUE) < 0.9) else NA),
+    MC2_weights=list(retention_median=round(median(DG$retention, na.rm=TRUE),4),
+                     retention_p90=round(as.numeric(quantile(DG$retention, .9, na.rm=TRUE)),4),
+                     n_avail_median=median(DG$n_avail, na.rm=TRUE),
+                     delivered=isTRUE(median(DG$retention, na.rm=TRUE) >= 0.25)),
+    MC3_defensive=as.list(DG[, .(w_def_mean=round(mean(w_defensive, na.rm=TRUE),4),
+                                 n_months=.N), by=regime]))
+  write_json(mc, file.path(FR_DIAG_DIR, paste0(FR_ID, "_manipulation_check.json")), auto_unbox=TRUE, pretty=TRUE, na="null", digits=4)
+  cat(sprintf("[MC] retention median=%.3f (n_avail median=%.0f) · Jaccard median=%s · 방어형 비중 국면별 기록 → %s\n",
+              median(DG$retention, na.rm=TRUE), median(DG$n_avail, na.rm=TRUE),
+              if(nrow(JP)) sprintf("%.3f", median(JP$jaccard, na.rm=TRUE)) else "NA", FR_DIAG_DIR))
+}
 # ── FR L-code 발행 (2026-07-04 G-mode-wiring — FR 모드 emit 1지점, 레지스트리 등재 직후) ──
 #   es 객체 스코프 내 실측치만 전달(metric_type=backtested). fail-soft — emit 실패가 러너를 죽이지 않음.
 #   forecast A/B 변형도 strategy_id=FR_ID로 구분 적립 (실험 교훈도 지식 — 레지스트리 미등재와 별개).
@@ -300,7 +383,7 @@ tryCatch({
       n_modules = length(all_used_mods), n_trials = N_TRIALS))
 }, error=function(e) cat("[run_wf_ensemble] FR L-code emit 생략(fail-soft):", conditionMessage(e), "\n"))
 
-cat("\n==== FR_001 (regime rotation 앙상블) — 실측 [v3: Return.portfolio + WF RCMA + breadth gate + oos guard] ====\n")
+cat(sprintf("\n==== %s (regime rotation 앙상블) — 실측 [v3: Return.portfolio + WF RCMA + breadth gate + oos guard] ====\n", FR_ID))
 cat(sprintf("grade=%s  net_Sharpe=%.3f  PORT_t=%.3f  DSR=%s  Calmar=%.2f  CAGR=%.1f%%  MDD=%.1f%%\n",
   es$grade, es$essence$net_sharpe%||%NA, es$essence$portfolio_alpha_t_nw_lag3%||%NA,
   as.character(round(es$essence$dsr,3)), es$essence$calmar%||%NA, (es$essence$cagr%||%NA)*100, (es$essence$mdd%||%NA)*100))

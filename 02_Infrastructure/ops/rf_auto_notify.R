@@ -269,37 +269,95 @@ rf_notify_charts <- function(tab, outdir) {
 #   있었다. 그 논문은 전날 소진된 직전 대상이고, 그 뒤 모든 블록 텔레그램이 틀린 대상을
 #   보고했다. 무인 배선은 다 있었는데 이 한 줄만 논문을 따라오지 않았다.
 #   출처 = 충실구현 산출물의 source_paper(계약이 쓴 값). 없으면 paper_key → base_id 순.
-.rf_target_label <- function(E) {
+# ★결합(논문 2편 이상)은 제목 연접이 171자까지 간다 — 선절단하면 재료 2·3편이 **말없이**
+#   사라진다(2026-09-12 실측: 58자 컷이 3편 중 2편을 지웠다). 그래서 결합이면 제목 대신
+#   키를 낸다(3편이라야 42자). ⚠키-제목 짝은 연접 제목을 쪼개서 만들지 않는다 — paper_key
+#   는 키를 정렬해 잇고 제목은 combo.papers 입력 순서로 잇는다. 위치로 짝지으면 오귀속이다
+#   (2026-09-10 드라이런). 짝은 쌍을 든 원본(entry$combo$papers)에서만 읽는다.
+.rf_root_entry <- function(E) {
+  if (is.null(E$parent)) return(E)
+  led <- tryCatch(fromJSON(file.path(ROOT, "06_Registry/reinforce_ledger_l1.json"),
+                           simplifyVector = FALSE), error = function(e) NULL)
+  cur <- E; guard <- 0L
+  while (!is.null(led) && !is.null(cur$parent) && guard < 8L) {
+    guard <- guard + 1L
+    pid <- cur$parent$base_id %||% ""
+    nx <- Filter(function(x) identical(x$base_id, pid), led$entries)
+    if (!length(nx)) break
+    cur <- nx[[1]]
+  }
+  cur
+}
+
+# paper_key 가 combo: 접두면 키만이라도 있다 — 짝이 깨졌을 때의 정직한 폴백.
+.rf_combo_keys <- function(E) {
+  pk <- as.character(E$paper_key %||% "")
+  if (!grepl("^combo:", pk)) return(character(0))
+  k <- trimws(strsplit(sub("^combo:", "", pk), "+", fixed = TRUE)[[1]])
+  k[nzchar(k)]
+}
+
+.rf_combo_papers <- function(E) {
+  ps <- (E$combo %||% list())$papers %||% list()
+  if (length(ps) < 2L) {
+    k <- .rf_combo_keys(E)
+    if (length(k) < 2L) return(NULL)
+    return(data.frame(key = k, title = rep("", length(k)), stringsAsFactors = FALSE))
+  }
+  k <- vapply(ps, function(p) as.character(p$key   %||% ""), character(1L))
+  t <- vapply(ps, function(p) as.character(p$title %||% ""), character(1L))
+  # 짝을 확신할 수 없으면 짝을 지어내지 않고 키만 낸다 — 잘림보다 오귀속이 나쁘다.
+  if (!all(nzchar(k))) {
+    kk <- .rf_combo_keys(E)
+    if (length(kk) < 2L) return(NULL)
+    return(data.frame(key = kk, title = rep("", length(kk)), stringsAsFactors = FALSE))
+  }
+  data.frame(key = k, title = t, stringsAsFactors = FALSE)
+}
+
+# 잘렸으면 잘렸다고 보이게 한다 — 구판은 말없이 잘랐다.
+.rf_clip <- function(x, cap) {
+  x <- gsub("[\r\n]+", " ", as.character(x %||% ""))
+  if (nchar(x) <= cap) x else paste0(substr(x, 1L, max(1L, cap - 1L)), "\u2026")
+}
+
+# 한 줄만 받는 자리(메시지 제목·팡파레 헤드라인)용 압축 라벨.
+.rf_target_label <- function(E, cap = 58L) {
+  R0  <- .rf_root_entry(E)
+  pp  <- .rf_combo_papers(R0)
   ttl <- NULL
-  # ★승격 entry 의 base_artifacts 는 **부모의 승자 셀** 산출물이다. 그 안의 source_paper 는
-  #   그 셀의 근거 논문(예: 유니버스 셀이면 Hong-Lim-Stein)이지 이 전략의 기저 논문이 아니다.
-  #   2026-08-31 적발: 승격 1대 텔레그램이 대상을 B3_11 의 근거 논문으로 보고했다.
-  #   그래서 사슬을 거슬러 **parent 가 없는 최초 entry** 의 산출물을 본다.
-  ba <- E$base_artifacts %||% ""
-  if (!is.null(E$parent)) {
-    led <- tryCatch(fromJSON(file.path(ROOT, "06_Registry/reinforce_ledger_l1.json"),
-                             simplifyVector = FALSE), error = function(e) NULL)
-    cur <- E; guard <- 0L
-    while (!is.null(led) && !is.null(cur$parent) && guard < 8L) {
-      guard <- guard + 1L
-      pid <- cur$parent$base_id %||% ""
-      nx <- Filter(function(x) identical(x$base_id, pid), led$entries)
-      if (!length(nx)) break
-      cur <- nx[[1]]
+  if (!is.null(pp)) {
+    ttl <- sprintf("\uacb0\ud569 %d\ud3b8: %s", nrow(pp), paste(pp$key, collapse = " / "))
+    if (nchar(ttl) > cap) ttl <- sprintf("\uacb0\ud569 %d\ud3b8", nrow(pp))
+  } else {
+    ba <- R0$base_artifacts %||% ""
+    ap <- file.path(ba, "authoritative_remeasure.json")
+    if (nzchar(ba) && file.exists(ap)) {
+      o <- tryCatch(fromJSON(ap, simplifyVector = FALSE), error = function(e) NULL)
+      ttl <- o$replication$source_paper$title %||% NULL
     }
-    if (nzchar(cur$base_artifacts %||% "")) ba <- cur$base_artifacts
+    if (is.null(ttl) || !nzchar(ttl)) ttl <- E$paper_key %||% E$base_id %||% "?"
+    ttl <- .rf_clip(ttl, cap)
   }
-  ap <- file.path(ba, "authoritative_remeasure.json")
-  if (nzchar(ba) && file.exists(ap)) {
-    o <- tryCatch(fromJSON(ap, simplifyVector = FALSE), error = function(e) NULL)
-    ttl <- o$replication$source_paper$title %||% NULL
-  }
-  if (is.null(ttl) || !nzchar(ttl)) ttl <- E$paper_key %||% E$base_id %||% "?"
-  ttl <- substr(as.character(ttl), 1, 58)
   # 승격 사슬이면 그 사실이 대상의 일부다 — 같은 논문이라도 다른 기저다
   if (!is.null(E$parent))
-    ttl <- sprintf("%s [승격 %s대]", ttl, as.character(E$parent$depth %||% 1L))
+    ttl <- sprintf("%s [\uc2b9\uaca9 %s\ub300]", ttl, as.character(E$parent$depth %||% 1L))
   ttl
+}
+
+# 불릿 자리용(브리핑은 relaxed=TRUE 라 80자 상한이 면제된다 — telegram_notify.R:1367-1374).
+#   결합이면 재료 한 편당 한 줄로 편다. 각 줄은 짧아 모바일 한 줄에 들어간다.
+.rf_target_items <- function(E, suffix = "", cap = 78L) {
+  pp <- .rf_combo_papers(.rf_root_entry(E))
+  if (is.null(pp)) return(sprintf("\ub300\uc0c1: %s%s", .rf_target_label(E), suffix))
+  pmark <- if (!is.null(E$parent))
+    sprintf(" [\uc2b9\uaca9 %s\ub300]", as.character(E$parent$depth %||% 1L)) else ""
+  c(sprintf("\ub300\uc0c1: \uacb0\ud569 %d\ud3b8%s%s", nrow(pp), pmark, suffix),
+    vapply(seq_len(nrow(pp)), function(i)
+      if (nzchar(pp$title[i]))
+        sprintf("  \u00b7 %s \u2014 %s", pp$key[i],
+                .rf_clip(pp$title[i], cap - nchar(pp$key[i]) - 6L))
+      else sprintf("  \u00b7 %s", pp$key[i]), character(1L)))
 }
 
 # 미결 칸은 essence 가 없어 cell_code 를 못 읽는다 — 격자 순서(n)로 되찾는다.
@@ -574,7 +632,7 @@ rf_auto_notify <- function(base_id, n, kind = "block") {
   secs <- list(
     list(type = "bullet", emoji = "\U0001F3AF", heading = "현재 리서치 상황",
          items = c("단계: 1계층 강화 프로세스 — 무인 규칙 러너",
-                   sprintf("대상: %s · 기저 등급 %s", .rf_target_label(S$entry), S$entry$base_grade %||% "F"),
+                   .rf_target_items(S$entry, suffix = sprintf(" · 기저 등급 %s", S$entry$base_grade %||% "F")),
                    sprintf("위치: %d/%d 칸 소진 · 측정 완료 %d건", S$used, S$maxa, nrow(tab)),
                    sprintf("등급 분포: A %d · B %d · C %d · F %d",
                            gcnt[["A"]], gcnt[["B"]], gcnt[["C"]], gcnt[["F"]]))),
@@ -621,7 +679,7 @@ rf_auto_notify <- function(base_id, n, kind = "block") {
                    .cb  <- if (!is.null(cy)) suppressWarnings(as.numeric(EN$parent$best_port_t %||% NA)) else NA_real_
                    # 제목은 58자까지 오는데 접미(승격 n대)까지 붙으면 80자를 넘어 꼬리가 잘린다.
                    # 이 줄은 "무엇 위에 얹었나" 만 말하면 되므로 제목을 더 짧게 자른다.
-                   it <- .cut(sprintf("기저: %s 의 충실구현 신호", substr(.rf_target_label(EN), 1, 56)))
+                   it <- .cut(sprintf("기저: %s 의 충실구현 신호", .rf_target_label(EN, cap = 56L)))
                    # 승계 구성 + 기준선. 최초 entry 는 승계가 없다 — 그 사실을 적는다.
                    if (!is.null(cy)) {
                      .fs <- paste(vapply(cy$factors %||% list(), .rf_f2, character(1)), collapse = " + ")

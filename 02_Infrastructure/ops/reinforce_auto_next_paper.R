@@ -79,7 +79,8 @@ if (length(ex)) {
                  base_grade = E$base_grade,
                  cell_code = E$attempts[[i]]$essence$cell_code %||% NA_character_,
                  spec      = E$attempts[[i]]$essence$spec %||% NA_character_,
-                 artifacts = E$attempts[[i]]$artifacts %||% NA_character_)
+                 artifacts = E$attempts[[i]]$artifacts %||% NA_character_,
+                 entry     = E)   # ★결합 재료명을 내려면 entry 가 필요하다(base_id 만으로는 논문이 안 보인다)
   }
   .already <- rf_is_summarized(E)
   if (!.already) {
@@ -279,6 +280,10 @@ jlog("replication_requested", path = REQ)
 
 tryCatch({
   suppressMessages(source(file.path(ROOT, "02_Infrastructure/telegram/telegram_notify.R")))
+  # ★결합 entry 는 base_id 만 내면 재료 논문명이 전부 사라진다 — 라벨 정본을 빌려 한 편씩 펜다.
+  suppressMessages(source(file.path(ROOT, "02_Infrastructure/ops/rf_auto_notify.R")))
+  .tgt <- tryCatch(.rf_target_items(best$entry, suffix = sprintf(" · 강화 %d회 소진", MAXA)),
+                   error = function(e) sprintf("대상: %s 소진(%d회)", best$base_id %||% "직전 논문", MAXA))
   tg_agent_brief(agent = "AlphaSearch", relaxed = TRUE, glossary = FALSE, decode_jargon = FALSE, decode_mode = "off",
     # ★lock_scope 를 논문별로 준다 — 기본 scope 는 "agent + 표제 40자"인데 이 표제가
     #   고정이라 서로 다른 논문의 이월이 30분 창 안에서 한 건으로 뭉갰다(2026-08-30 실측:
@@ -289,7 +294,7 @@ tryCatch({
     sections = list(
       list(type = "bullet", emoji = "\U0001F3AF", heading = "현재 리서치 상황",
            items = c("단계: 1계층 강화 프로세스 — 무인 러너",
-                     sprintf("대상: %s 소진(%d회)", best$base_id %||% "직전 논문", MAXA),
+                     .tgt,
                      sprintf("위치: 논문 큐 대기 %d편 · 다음 1편 선정 완료", n_pending),
                      sprintf("직전 판정: 최고 등급 %s · 다중검정 t값 %.3f",
                              best$grade %||% "NA", best$port_t %||% NA_real_))),

@@ -123,7 +123,7 @@ rf_round_review <- function(entry, promo = NULL, root = Sys.getenv("QM_ROOT", ge
     r <- tg_agent_brief(agent = "AlphaSearch",
       lock_scope = sprintf("rf_round_review_%s", entry$base_id),
       title = sprintf("[1계층·라운드 종료] %s — %d칸 · 최고 %s",
-                      substr(.rf_target_label(entry), 1, 40), nrow(D), best$grade),
+                      .rf_target_label(entry, cap = 48L), nrow(D), best$grade),
       sections = secs, relaxed = TRUE, glossary = FALSE,
       decode_jargon = FALSE, decode_mode = "off")
     isTRUE(r$ok %||% TRUE)

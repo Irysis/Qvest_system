@@ -39,7 +39,9 @@ rf_grade_fanfare <- function(base_id, grade, code, es = list(), n = NA, maxa = N
                              if (is.finite(v)) sprintf(paste0("%.", d, "f"), v) else "—" }
   .pc <- function(k) { v <- suppressWarnings(as.numeric(es[[k]] %||% NA))
                        if (is.finite(v)) sprintf("%.1f%%", 100 * v) else "—" }
-  ttl <- substr(as.character(title %||% ""), 1, 54)
+  # 잘렸으면 잘렸다고 보이게 한다 — 구판은 말없이 잘랐다(2026-09-12).
+  ttl <- as.character(title %||% "")
+  if (nchar(ttl) > 54L) ttl <- paste0(substr(ttl, 1L, 53L), "…")
   pos <- if (is.finite(suppressWarnings(as.numeric(n)))) sprintf("%s/%s칸", n, maxa) else ""
   from <- if (nzchar(as.character(base_grade %||% ""))) sprintf("기저 %s 에서", base_grade) else ""
 

@@ -1,0 +1,841 @@
+{
+  "schema_version": "v3.1",
+  "generated": "2026-09-07",
+  "generated_by": "2계층 전략 로테이션 (build_module_performance.R — 계약 floor + v10 grade floor)",
+  "regime_source": "unified_regime_signal_daily.parquet Category (t-1 lag PIT)",
+  "regimes": ["RISK_ON", "NEUTRAL", "CAUTION", "CRISIS", "RISK_OFF"],
+  "metric_type": "backtested_realized (sim_result NAV, 실측-only)",
+  "grade_floor": "B",
+  "n_floor_excluded": 96,
+  "n_defensive_admitted": 0,
+  "defensive_route": true,
+  "note": "입력 2단 게이트(v10 2026-08-29 도훈): ①계약 floor = module_catalog fr_eligible=true(contract_pass+backtested+frozen+hash/build_version, legacy QEPM grade-A 이관 예외) ②grade floor = essence grade B 이상(QVEST_L2_GRADE_FLOOR, OFF=진단). module_hash는 실제 md5 대조(불일치=skip+quarantine, CAP-P1-2). 배치 심사=RCMA.",
+  "n_modules": 15,
+  "modules": {
+    "STR_944_oc_sue": {
+      "source_strategy_id": "STR_944_oc_sue",
+      "grade": "A",
+      "role": "diversifier",
+      "origin_mode": "qepm",
+      "trust_status": "legacy_qepm_grade_a",
+      "freq": "daily",
+      "sim_result_path": "04_Research/strategies/STR_944_oc_sue/sim_result.rds",
+      "full_sharpe": 1.579,
+      "full_ir": 0.304,
+      "n_days": 4792,
+      "date_range": ["2002-03-05", "2026-03-20"],
+      "per_regime": {
+        "RISK_ON": {
+          "n_days": 3197,
+          "n_months": 152.2,
+          "sharpe": 1.467,
+          "ir": 0.908,
+          "mdd": 0.214,
+          "mean_ann": 0.1713
+        },
+        "NEUTRAL": {
+          "n_days": 696,
+          "n_months": 33.1,
+          "sharpe": 1.982,
+          "ir": -1.177,
+          "mdd": 0.112,
+          "mean_ann": 0.2574
+        },
+        "CAUTION": {
+          "n_days": 450,
+          "n_months": 21.4,
+          "sharpe": 1.589,
+          "ir": 0.561,
+          "mdd": 0.133,
+          "mean_ann": 0.2069
+        },
+        "CRISIS": {
+          "n_days": 435,
+          "n_months": 20.7,
+          "sharpe": 1.7,
+          "ir": -0.044,
+          "mdd": 0.058,
+          "mean_ann": 0.2063
+        },
+        "RISK_OFF": {
+          "n_days": 14,
+          "n_months": 0.7,
+          "sharpe": null,
+          "ir": null,
+          "mdd": 0.01,
+          "mean_ann": 0.0944
+        }
+      }
+    },
+    "STR_943_oc_eps_chg": {
+      "source_strategy_id": "STR_943_oc_eps_chg",
+      "grade": "A",
+      "role": "diversifier",
+      "origin_mode": "qepm",
+      "trust_status": "legacy_qepm_grade_a",
+      "freq": "daily",
+      "sim_result_path": "04_Research/strategies/STR_943_oc_eps_chg/sim_result.rds",
+      "full_sharpe": 1.626,
+      "full_ir": 0.411,
+      "n_days": 4792,
+      "date_range": ["2002-03-05", "2026-03-20"],
+      "per_regime": {
+        "RISK_ON": {
+          "n_days": 3197,
+          "n_months": 152.2,
+          "sharpe": 1.518,
+          "ir": 1.056,
+          "mdd": 0.18,
+          "mean_ann": 0.1859
+        },
+        "NEUTRAL": {
+          "n_days": 696,
+          "n_months": 33.1,
+          "sharpe": 2.067,
+          "ir": -0.951,
+          "mdd": 0.111,
+          "mean_ann": 0.2905
+        },
+        "CAUTION": {
+          "n_days": 450,
+          "n_months": 21.4,
+          "sharpe": 1.436,
+          "ir": 0.529,
+          "mdd": 0.144,
+          "mean_ann": 0.1984
+        },
+        "CRISIS": {
+          "n_days": 435,
+          "n_months": 20.7,
+          "sharpe": 1.837,
+          "ir": 0.054,
+          "mdd": 0.076,
+          "mean_ann": 0.2415
+        },
+        "RISK_OFF": {
+          "n_days": 14,
+          "n_months": 0.7,
+          "sharpe": null,
+          "ir": null,
+          "mdd": 0.008,
+          "mean_ann": 0.1621
+        }
+      }
+    },
+    "STR_1435_5sleeve_dd620_repair": {
+      "source_strategy_id": "STR_1435_5sleeve_dd620_repair",
+      "grade": "A",
+      "role": "diversifier",
+      "origin_mode": "qepm",
+      "trust_status": "legacy_qepm_grade_a",
+      "freq": "daily",
+      "sim_result_path": "04_Research/strategies/STR_1435_5sleeve_dd620_repair/sim_result.rds",
+      "full_sharpe": 1.687,
+      "full_ir": 0.856,
+      "n_days": 4531,
+      "date_range": ["2003-07-03", "2026-03-25"],
+      "per_regime": {
+        "RISK_ON": {
+          "n_days": 3197,
+          "n_months": 152.2,
+          "sharpe": 1.635,
+          "ir": 1.329,
+          "mdd": 0.229,
+          "mean_ann": 0.2556
+        },
+        "NEUTRAL": {
+          "n_days": 678,
+          "n_months": 32.3,
+          "sharpe": 2.38,
+          "ir": 0.169,
+          "mdd": 0.162,
+          "mean_ann": 0.423
+        },
+        "CAUTION": {
+          "n_days": 344,
+          "n_months": 16.4,
+          "sharpe": 2.337,
+          "ir": 1.724,
+          "mdd": 0.071,
+          "mean_ann": 0.4574
+        },
+        "CRISIS": {
+          "n_days": 298,
+          "n_months": 14.2,
+          "sharpe": 0.397,
+          "ir": -0.427,
+          "mdd": 0.132,
+          "mean_ann": 0.0923
+        },
+        "RISK_OFF": {
+          "n_days": 14,
+          "n_months": 0.7,
+          "sharpe": null,
+          "ir": null,
+          "mdd": 0.016,
+          "mean_ann": 0.0819
+        }
+      }
+    },
+    "STR_1439_1047_to_fix": {
+      "source_strategy_id": "STR_1439_1047_to_fix",
+      "grade": "A",
+      "role": "defensive",
+      "origin_mode": "qepm",
+      "trust_status": "legacy_qepm_grade_a",
+      "freq": "daily",
+      "sim_result_path": "04_Research/strategies/STR_1439_1047_to_fix/sim_result.rds",
+      "full_sharpe": 1.766,
+      "full_ir": 0.402,
+      "n_days": 4527,
+      "date_range": ["2003-07-03", "2026-03-20"],
+      "per_regime": {
+        "RISK_ON": {
+          "n_days": 3197,
+          "n_months": 152.2,
+          "sharpe": 1.634,
+          "ir": 1.044,
+          "mdd": 0.187,
+          "mean_ann": 0.18
+        },
+        "NEUTRAL": {
+          "n_days": 678,
+          "n_months": 32.3,
+          "sharpe": 2.328,
+          "ir": -0.769,
+          "mdd": 0.088,
+          "mean_ann": 0.2795
+        },
+        "CAUTION": {
+          "n_days": 344,
+          "n_months": 16.4,
+          "sharpe": 1.99,
+          "ir": 0.682,
+          "mdd": 0.089,
+          "mean_ann": 0.2491
+        },
+        "CRISIS": {
+          "n_days": 294,
+          "n_months": 14,
+          "sharpe": 1.548,
+          "ir": -0.267,
+          "mdd": 0.058,
+          "mean_ann": 0.1847
+        },
+        "RISK_OFF": {
+          "n_days": 14,
+          "n_months": 0.7,
+          "sharpe": null,
+          "ir": null,
+          "mdd": 0.01,
+          "mean_ann": 0.0887
+        }
+      }
+    },
+    "STR_1393_esbr_sue_adaptive": {
+      "source_strategy_id": "STR_1393_esbr_sue_adaptive",
+      "grade": "A",
+      "role": "diversifier",
+      "origin_mode": "qepm",
+      "trust_status": "legacy_qepm_grade_a",
+      "freq": "daily",
+      "sim_result_path": "04_Research/strategies/STR_1393_esbr_sue_adaptive/sim_result.rds",
+      "full_sharpe": 1.212,
+      "full_ir": 0.625,
+      "n_days": 4203,
+      "date_range": ["2005-03-03", "2026-03-24"],
+      "per_regime": {
+        "RISK_ON": {
+          "n_days": 3057,
+          "n_months": 145.6,
+          "sharpe": 1.103,
+          "ir": 0.99,
+          "mdd": 0.244,
+          "mean_ann": 0.1652
+        },
+        "NEUTRAL": {
+          "n_days": 550,
+          "n_months": 26.2,
+          "sharpe": 2.162,
+          "ir": 0.298,
+          "mdd": 0.159,
+          "mean_ann": 0.4238
+        },
+        "CAUTION": {
+          "n_days": 314,
+          "n_months": 15,
+          "sharpe": 0.95,
+          "ir": 0.925,
+          "mdd": 0.163,
+          "mean_ann": 0.1982
+        },
+        "CRISIS": {
+          "n_days": 268,
+          "n_months": 12.8,
+          "sharpe": 0.982,
+          "ir": -0.069,
+          "mdd": 0.146,
+          "mean_ann": 0.2476
+        },
+        "RISK_OFF": {
+          "n_days": 14,
+          "n_months": 0.7,
+          "sharpe": null,
+          "ir": null,
+          "mdd": 0.029,
+          "mean_ann": -0.1988
+        }
+      }
+    },
+    "STR_1028_gerber_dcc_hrp": {
+      "source_strategy_id": "STR_1028_gerber_dcc_hrp",
+      "grade": "A",
+      "role": "diversifier",
+      "origin_mode": "qepm",
+      "trust_status": "legacy_qepm_grade_a",
+      "freq": "daily",
+      "sim_result_path": "04_Research/strategies/STR_1028_gerber_dcc_hrp/sim_result.rds",
+      "full_sharpe": 1.583,
+      "full_ir": 0.333,
+      "n_days": 4527,
+      "date_range": ["2003-07-03", "2026-03-20"],
+      "per_regime": {
+        "RISK_ON": {
+          "n_days": 3197,
+          "n_months": 152.2,
+          "sharpe": 1.443,
+          "ir": 0.8,
+          "mdd": 0.23,
+          "mean_ann": 0.1714
+        },
+        "NEUTRAL": {
+          "n_days": 678,
+          "n_months": 32.3,
+          "sharpe": 2.423,
+          "ir": -0.531,
+          "mdd": 0.097,
+          "mean_ann": 0.304
+        },
+        "CAUTION": {
+          "n_days": 344,
+          "n_months": 16.4,
+          "sharpe": 1.493,
+          "ir": 0.575,
+          "mdd": 0.132,
+          "mean_ann": 0.2366
+        },
+        "CRISIS": {
+          "n_days": 294,
+          "n_months": 14,
+          "sharpe": 1.303,
+          "ir": -0.342,
+          "mdd": 0.068,
+          "mean_ann": 0.1523
+        },
+        "RISK_OFF": {
+          "n_days": 14,
+          "n_months": 0.7,
+          "sharpe": null,
+          "ir": null,
+          "mdd": 0.011,
+          "mean_ann": 0.11
+        }
+      }
+    },
+    "STR_1033_nco": {
+      "source_strategy_id": "STR_1033_nco",
+      "grade": "A",
+      "role": "diversifier",
+      "origin_mode": "qepm",
+      "trust_status": "legacy_qepm_grade_a",
+      "freq": "daily",
+      "sim_result_path": "04_Research/strategies/STR_1033_nco/sim_result.rds",
+      "full_sharpe": 1.703,
+      "full_ir": 0.435,
+      "n_days": 4528,
+      "date_range": ["2003-07-03", "2026-03-21"],
+      "per_regime": {
+        "RISK_ON": {
+          "n_days": 3197,
+          "n_months": 152.2,
+          "sharpe": 1.577,
+          "ir": 0.934,
+          "mdd": 0.225,
+          "mean_ann": 0.1921
+        },
+        "NEUTRAL": {
+          "n_days": 678,
+          "n_months": 32.3,
+          "sharpe": 2.562,
+          "ir": -0.382,
+          "mdd": 0.102,
+          "mean_ann": 0.3278
+        },
+        "CAUTION": {
+          "n_days": 344,
+          "n_months": 16.4,
+          "sharpe": 1.663,
+          "ir": 0.655,
+          "mdd": 0.127,
+          "mean_ann": 0.2548
+        },
+        "CRISIS": {
+          "n_days": 295,
+          "n_months": 14,
+          "sharpe": 1.193,
+          "ir": -0.348,
+          "mdd": 0.071,
+          "mean_ann": 0.1498
+        },
+        "RISK_OFF": {
+          "n_days": 14,
+          "n_months": 0.7,
+          "sharpe": null,
+          "ir": null,
+          "mdd": 0.011,
+          "mean_ann": -0.0147
+        }
+      }
+    },
+    "STR_1571_bayesian_bl_c11fix": {
+      "source_strategy_id": "STR_1571_bayesian_bl_c11fix",
+      "grade": "A",
+      "role": "diversifier",
+      "origin_mode": "qepm",
+      "trust_status": "legacy_qepm_grade_a",
+      "freq": "daily",
+      "sim_result_path": "04_Research/strategies/STR_1571_bayesian_bl_c11fix/sim_result.rds",
+      "full_sharpe": 1.542,
+      "full_ir": 0.503,
+      "n_days": 4534,
+      "date_range": ["2003-07-03", "2026-03-28"],
+      "per_regime": {
+        "RISK_ON": {
+          "n_days": 3197,
+          "n_months": 152.2,
+          "sharpe": 1.411,
+          "ir": 0.887,
+          "mdd": 0.206,
+          "mean_ann": 0.1967
+        },
+        "NEUTRAL": {
+          "n_days": 678,
+          "n_months": 32.3,
+          "sharpe": 2.552,
+          "ir": -0.121,
+          "mdd": 0.103,
+          "mean_ann": 0.3748
+        },
+        "CAUTION": {
+          "n_days": 344,
+          "n_months": 16.4,
+          "sharpe": 0.845,
+          "ir": 0.187,
+          "mdd": 0.164,
+          "mean_ann": 0.1606
+        },
+        "CRISIS": {
+          "n_days": 301,
+          "n_months": 14.3,
+          "sharpe": 1.772,
+          "ir": 0.067,
+          "mdd": 0.08,
+          "mean_ann": 0.2555
+        },
+        "RISK_OFF": {
+          "n_days": 14,
+          "n_months": 0.7,
+          "sharpe": null,
+          "ir": null,
+          "mdd": 0.013,
+          "mean_ann": -0.031
+        }
+      }
+    },
+    "STR_1469_cons4f_5sleeve": {
+      "source_strategy_id": "STR_1469_cons4f_5sleeve",
+      "grade": "A",
+      "role": "diversifier",
+      "origin_mode": "qepm",
+      "trust_status": "legacy_qepm_grade_a",
+      "freq": "daily",
+      "sim_result_path": "04_Research/strategies/STR_1469_cons4f_5sleeve/sim_result.rds",
+      "full_sharpe": 1.303,
+      "full_ir": 0.487,
+      "n_days": 4121,
+      "date_range": ["2005-08-03", "2026-03-28"],
+      "per_regime": {
+        "RISK_ON": {
+          "n_days": 2975,
+          "n_months": 141.7,
+          "sharpe": 1.288,
+          "ir": 0.985,
+          "mdd": 0.33,
+          "mean_ann": 0.196
+        },
+        "NEUTRAL": {
+          "n_days": 546,
+          "n_months": 26,
+          "sharpe": 1.974,
+          "ir": -0.395,
+          "mdd": 0.171,
+          "mean_ann": 0.3225
+        },
+        "CAUTION": {
+          "n_days": 314,
+          "n_months": 15,
+          "sharpe": 1.191,
+          "ir": 0.545,
+          "mdd": 0.087,
+          "mean_ann": 0.1874
+        },
+        "CRISIS": {
+          "n_days": 272,
+          "n_months": 13,
+          "sharpe": 0.56,
+          "ir": -0.375,
+          "mdd": 0.139,
+          "mean_ann": 0.1175
+        },
+        "RISK_OFF": {
+          "n_days": 14,
+          "n_months": 0.7,
+          "sharpe": null,
+          "ir": null,
+          "mdd": 0.009,
+          "mean_ann": 0.0119
+        }
+      }
+    },
+    "STR_1562_gerber_dcc_hrp_c11fix": {
+      "source_strategy_id": "STR_1562_gerber_dcc_hrp_c11fix",
+      "grade": "A",
+      "role": "diversifier",
+      "origin_mode": "qepm",
+      "trust_status": "legacy_qepm_grade_a",
+      "freq": "daily",
+      "sim_result_path": "04_Research/strategies/STR_1562_gerber_dcc_hrp_c11fix/sim_result.rds",
+      "full_sharpe": 1.595,
+      "full_ir": 0.401,
+      "n_days": 4534,
+      "date_range": ["2003-07-03", "2026-03-28"],
+      "per_regime": {
+        "RISK_ON": {
+          "n_days": 3197,
+          "n_months": 152.2,
+          "sharpe": 1.54,
+          "ir": 0.842,
+          "mdd": 0.199,
+          "mean_ann": 0.1745
+        },
+        "NEUTRAL": {
+          "n_days": 678,
+          "n_months": 32.3,
+          "sharpe": 2.448,
+          "ir": -0.449,
+          "mdd": 0.134,
+          "mean_ann": 0.3194
+        },
+        "CAUTION": {
+          "n_days": 344,
+          "n_months": 16.4,
+          "sharpe": 1.465,
+          "ir": 0.721,
+          "mdd": 0.161,
+          "mean_ann": 0.2775
+        },
+        "CRISIS": {
+          "n_days": 301,
+          "n_months": 14.3,
+          "sharpe": 1.018,
+          "ir": -0.19,
+          "mdd": 0.096,
+          "mean_ann": 0.1577
+        },
+        "RISK_OFF": {
+          "n_days": 14,
+          "n_months": 0.7,
+          "sharpe": null,
+          "ir": null,
+          "mdd": 0.025,
+          "mean_ann": -0.312
+        }
+      }
+    },
+    "STR_1555_score_blend_3factor": {
+      "source_strategy_id": "STR_1555_score_blend_3factor",
+      "grade": "A",
+      "role": "diversifier",
+      "origin_mode": "qepm",
+      "trust_status": "legacy_qepm_grade_a",
+      "freq": "daily",
+      "sim_result_path": "04_Research/strategies/STR_1555_score_blend_3factor/sim_result.rds",
+      "full_sharpe": 1.269,
+      "full_ir": 1.049,
+      "n_days": 4219,
+      "date_range": ["2005-02-03", "2026-03-28"],
+      "per_regime": {
+        "RISK_ON": {
+          "n_days": 3069,
+          "n_months": 146.1,
+          "sharpe": 1.373,
+          "ir": 1.266,
+          "mdd": 0.238,
+          "mean_ann": 0.2106
+        },
+        "NEUTRAL": {
+          "n_days": 550,
+          "n_months": 26.2,
+          "sharpe": 1.849,
+          "ir": -0.008,
+          "mdd": 0.252,
+          "mean_ann": 0.3863
+        },
+        "CAUTION": {
+          "n_days": 314,
+          "n_months": 15,
+          "sharpe": 0.942,
+          "ir": 1.248,
+          "mdd": 0.164,
+          "mean_ann": 0.2291
+        },
+        "CRISIS": {
+          "n_days": 272,
+          "n_months": 13,
+          "sharpe": 1.242,
+          "ir": 1.359,
+          "mdd": 0.398,
+          "mean_ann": 0.5596
+        },
+        "RISK_OFF": {
+          "n_days": 14,
+          "n_months": 0.7,
+          "sharpe": null,
+          "ir": null,
+          "mdd": 0.05,
+          "mean_ann": -0.1351
+        }
+      }
+    },
+    "STR_1550_consensus_core_alpha": {
+      "source_strategy_id": "STR_1550_consensus_core_alpha",
+      "grade": "A",
+      "role": "diversifier",
+      "origin_mode": "qepm",
+      "trust_status": "legacy_qepm_grade_a",
+      "freq": "daily",
+      "sim_result_path": "04_Research/strategies/STR_1550_consensus_core_alpha/sim_result.rds",
+      "full_sharpe": 1.329,
+      "full_ir": 1.266,
+      "n_days": 4218,
+      "date_range": ["2005-02-03", "2026-03-27"],
+      "per_regime": {
+        "RISK_ON": {
+          "n_days": 3069,
+          "n_months": 146.1,
+          "sharpe": 1.464,
+          "ir": 1.449,
+          "mdd": 0.268,
+          "mean_ann": 0.2485
+        },
+        "NEUTRAL": {
+          "n_days": 550,
+          "n_months": 26.2,
+          "sharpe": 1.84,
+          "ir": 0.273,
+          "mdd": 0.223,
+          "mean_ann": 0.4251
+        },
+        "CAUTION": {
+          "n_days": 314,
+          "n_months": 15,
+          "sharpe": 1.004,
+          "ir": 1.465,
+          "mdd": 0.217,
+          "mean_ann": 0.2776
+        },
+        "CRISIS": {
+          "n_days": 271,
+          "n_months": 12.9,
+          "sharpe": 1.191,
+          "ir": 1.571,
+          "mdd": 0.368,
+          "mean_ann": 0.5649
+        },
+        "RISK_OFF": {
+          "n_days": 14,
+          "n_months": 0.7,
+          "sharpe": null,
+          "ir": null,
+          "mdd": 0.051,
+          "mean_ann": -0.1302
+        }
+      }
+    },
+    "STR_AS_20260612_154914_1055315": {
+      "source_strategy_id": "STR_AS_20260612_154914_1055315",
+      "grade": "B",
+      "role": null,
+      "origin_mode": "alpha_search",
+      "trust_status": "contract_fr_eligible",
+      "freq": "daily",
+      "sim_result_path": "04_Research/strategies/STR_AS_20260612_154914_1055315/sim_result.rds",
+      "full_sharpe": 0.933,
+      "full_ir": 0.579,
+      "n_days": 5266,
+      "date_range": ["2005-02-03", "2026-06-11"],
+      "per_regime": {
+        "RISK_ON": {
+          "n_days": 3794,
+          "n_months": 180.7,
+          "sharpe": 1.143,
+          "ir": 1.038,
+          "mdd": 0.295,
+          "mean_ann": 0.1955
+        },
+        "NEUTRAL": {
+          "n_days": 688,
+          "n_months": 32.8,
+          "sharpe": 0.941,
+          "ir": -0.32,
+          "mdd": 0.327,
+          "mean_ann": 0.2095
+        },
+        "CAUTION": {
+          "n_days": 400,
+          "n_months": 19,
+          "sharpe": 0.533,
+          "ir": 0.798,
+          "mdd": 0.244,
+          "mean_ann": 0.1525
+        },
+        "CRISIS": {
+          "n_days": 370,
+          "n_months": 17.6,
+          "sharpe": 0.828,
+          "ir": -1.132,
+          "mdd": 0.309,
+          "mean_ann": 0.3614
+        },
+        "RISK_OFF": {
+          "n_days": 14,
+          "n_months": 0.7,
+          "sharpe": null,
+          "ir": null,
+          "mdd": 0.048,
+          "mean_ann": -0.839
+        }
+      }
+    },
+    "STR_AS_20260612_161342_1312338": {
+      "source_strategy_id": "STR_AS_20260612_161342_1312338",
+      "grade": "B",
+      "role": null,
+      "origin_mode": "alpha_search",
+      "trust_status": "contract_fr_eligible",
+      "freq": "daily",
+      "sim_result_path": "04_Research/strategies/STR_AS_20260612_161342_1312338/sim_result.rds",
+      "full_sharpe": 0.803,
+      "full_ir": 0.521,
+      "n_days": 5266,
+      "date_range": ["2005-02-03", "2026-06-11"],
+      "per_regime": {
+        "RISK_ON": {
+          "n_days": 3794,
+          "n_months": 180.7,
+          "sharpe": 0.711,
+          "ir": 0.554,
+          "mdd": 0.419,
+          "mean_ann": 0.1253
+        },
+        "NEUTRAL": {
+          "n_days": 688,
+          "n_months": 32.8,
+          "sharpe": 1.345,
+          "ir": 0.591,
+          "mdd": 0.317,
+          "mean_ann": 0.3213
+        },
+        "CAUTION": {
+          "n_days": 400,
+          "n_months": 19,
+          "sharpe": 0.713,
+          "ir": 1.307,
+          "mdd": 0.226,
+          "mean_ann": 0.2126
+        },
+        "CRISIS": {
+          "n_days": 370,
+          "n_months": 17.6,
+          "sharpe": 1.171,
+          "ir": -0.102,
+          "mdd": 0.372,
+          "mean_ann": 0.5849
+        },
+        "RISK_OFF": {
+          "n_days": 14,
+          "n_months": 0.7,
+          "sharpe": null,
+          "ir": null,
+          "mdd": 0.077,
+          "mean_ann": -0.7585
+        }
+      }
+    },
+    "STR_AS_20260709_074129_30048": {
+      "source_strategy_id": "STR_AS_20260709_074129_30048",
+      "grade": "B",
+      "role": null,
+      "origin_mode": "alpha_search",
+      "trust_status": "contract_fr_eligible",
+      "freq": "daily",
+      "sim_result_path": "04_Research/strategies/STR_AS_20260709_074129_30048/sim_result.rds",
+      "full_sharpe": 0.873,
+      "full_ir": 0.588,
+      "n_days": 5261,
+      "date_range": ["2005-02-03", "2026-07-08"],
+      "per_regime": {
+        "RISK_ON": {
+          "n_days": 3794,
+          "n_months": 180.7,
+          "sharpe": 0.796,
+          "ir": 0.598,
+          "mdd": 0.572,
+          "mean_ann": 0.1571
+        },
+        "NEUTRAL": {
+          "n_days": 687,
+          "n_months": 32.7,
+          "sharpe": 1.544,
+          "ir": 0.805,
+          "mdd": 0.365,
+          "mean_ann": 0.4037
+        },
+        "CAUTION": {
+          "n_days": 400,
+          "n_months": 19,
+          "sharpe": 0.717,
+          "ir": 0.807,
+          "mdd": 0.253,
+          "mean_ann": 0.2274
+        },
+        "CRISIS": {
+          "n_days": 366,
+          "n_months": 17.4,
+          "sharpe": 1.1,
+          "ir": 0.365,
+          "mdd": 0.427,
+          "mean_ann": 0.6177
+        },
+        "RISK_OFF": {
+          "n_days": 14,
+          "n_months": 0.7,
+          "sharpe": null,
+          "ir": null,
+          "mdd": 0.074,
+          "mean_ann": -0.0017
+        }
+      }
+    }
+  }
+}

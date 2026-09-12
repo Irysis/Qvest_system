@@ -1,0 +1,66 @@
+{
+  "fr_id": "FR_003",
+  "prereg_at": "2026-09-12",
+  "layer": 2,
+  "unit": "로테이션 규칙 1개 = {국면엔진 사양 + 배분규칙 사양 + run_wf_ensemble WF 실측 1회}",
+  "title": "방어형 경로 최초 발화 — 하락월 볼록성 슬리브를 국면조건부 모듈 풀에 편입했을 때 Calmar 구속이 풀리는가",
+
+  "why_now": "module_performance.json(2026-09-07) 은 n_defensive_admitted=0 이었다. defensive_score 는 그 뒤(2026-09-07T10:31 backfill)에 204/296 모듈에 채워졌고, 오늘 재조립하면 방어형 94건이 처음으로 풀에 들어온다. FR_001(12모듈·2026-06-13)·FR_002(85모듈·2026-08-09) 어느 쪽도 이 입력을 소비한 적이 없다. SKILL §4 는 '천장은 입력(직교 슬리브)이 결정' 이라고 적어 두었는데, 그 입력 축이 처음으로 바뀐다.",
+
+  "regime_engine_spec": {
+    "source": ".cache/unified_regime_signal_daily.parquet Category",
+    "states": ["RISK_ON","NEUTRAL","CAUTION","CRISIS","RISK_OFF"],
+    "engine": "3-layer cascade (MSM Crisis_Prob → FRED MRS → KTRI/VEA) + BCS overlay — 인컴번트, 이 라운드에서 변경 없음",
+    "pit": "t-1 lag. 홀딩월 m 의 배분은 m-1 월말 거래일의 Category 만 사용(컷오프 < 홀딩월 첫 거래일). C5 assert_overlay_pit HARD.",
+    "root_papers": [
+      "Shu, Yu & Mulvey (2024) Downside Risk Reduction Using Regime-Switching Signals — https://arxiv.org/abs/2402.05272 (거래지연·비용 포함 실측 규약, 국면신호를 방향이 아니라 하방위험 축으로 소비)",
+      "Shu & Mulvey (2024) Dynamic Factor Allocation Leveraging Regime-Switching Signals — https://arxiv.org/abs/2410.14841 (슬리브별 국면추론을 배분에 접속, EW 를 정직 벤치로)"
+    ]
+  },
+
+  "allocation_spec": {
+    "rule": "module_dispatcher::compute_regime_module_weights — rp(inverse-vol) 앵커 λ=0.5 + 국면조건부 실현IR λ=0.5, shrink n/(n+k0), softmax τ, cap, renorm",
+    "params_frozen": {"lambda_rp":0.5,"lambda_ir":0.5,"tau":0.6,"k0":36,"w_cap":0.25},
+    "params_provenance": "인컴번트 고정값 — 이 라운드에서 튜닝하지 않는다(R54 가 τ 재캘리브를 권했으나, 튜닝은 선택연산자를 여는 것이라 이번 처치 축과 교란된다). 재캘리브는 별도 강화 시도로.",
+    "root_papers": [
+      "DeMiguel, Garlappi & Uppal (2009) Optimal Versus Naive Diversification, RFS 22(5) 1915-1953 — https://doi.org/10.1093/rfs/hhm075 (추정오차가 최적화 이득을 상쇄 ⇒ 나이브 앵커에 절반 가중, EW 를 동일 자산집합 기준선으로)",
+      "Jorion (1986) Bayes-Stein Estimation for Portfolio Analysis, JFQA 21(3) 279-292 — https://doi.org/10.2307/2331042 (표본이 작을수록 0 으로 강하게 축소 = n/(n+k0) 형태의 뿌리)"
+    ],
+    "admission": "RCMA 6기준 (regime_module_admission.R) — walk-forward, asof=직전 월말, 연 1회 refit. rare_mode OFF(v2.0/v2.1 기각 교훈 유지)."
+  },
+
+  "treatment": {
+    "axis": "모듈 풀 구성 — 방어형 경로(QVEST_L2_DEFENSIVE_ROUTE=TRUE) 최초 발화",
+    "arm_T": "grade floor B ∪ defensive_specialist ∪ legacy_qepm → 112 모듈 (등재 대상 = FR_003)",
+    "arm_C": "grade floor B ∪ legacy_qepm 만 (QVEST_L2_DEFENSIVE_ROUTE=OFF) → 18 모듈 (대조군 — 결과와 무관하게 등재하지 않는다)",
+    "arm_S": "arm_T 에 국면신호 1개월 추가 지연(lag+1) — PIT 스트레스",
+    "registered_arm_declared_in_advance": "arm_T. arm_C 가 이기더라도 FR_003 = arm_T 로 등재한다(사후 argmax 금지).",
+    "root_paper": "Ang, Chen & Xing (2006) Downside Risk, RFS 19(4) 1191-1239 — https://doi.org/10.1093/rfs/hhj035 (실현 하락구간 성과는 전기간 알파와 구분되는 별도 차원 ⇒ 등급 floor 와 병렬인 풀 자격 축의 근거)"
+  },
+
+  "hypothesis": "1계층 B 계열의 구속 축은 위기 동조 낙폭(Calmar)이다. 하락월에서 볼록한 초과수익을 실증한 방어형 모듈을 같은 국면조건부 배분규칙 아래 풀에 넣으면, 총노출을 줄이지 않고 멤버십 교체만으로 Calmar 가 오른다.",
+
+  "manipulation_checks_prereg": [
+    "MC1 (멤버십 채널): RCMA admitted 집합이 국면 간 실제로 갈리는가 — 국면쌍 Jaccard 중앙값 < 0.9 여야 처치 전달. 아니면 국면 축은 '미결'.",
+    "MC2 (가중 채널): dispatcher retention(fr_diag) 월별 중앙값. < 0.25 이면 softmax 압축으로 국면신호 소실 = 가중 채널 미전달, '국면조건부' 라벨 금지(R54).",
+    "MC3 (처치 전달): 방어형 모듈의 합산 비중이 CRISIS/RISK_OFF 에서 RISK_ON 대비 실제로 커지는가. 안 커지면 방어형은 국면조건부가 아니라 상시 편입으로만 작동한 것 — 그대로 적는다."
+  ],
+
+  "falsification_prereg": [
+    "F1 (베타 트랩): arm_T 의 Calmar/MDD 우위가 포트 시장베타 하락으로 설명되면(β_T < β_C 이고 β 통제 후 잔차 알파 소멸) 이건 배합이 아니라 노출 스칼라 축소다 → 처치 기각. 실측 근거 = FR_002 교훈 3(국면조건부 순위 vs 베타 spearman -0.975/+0.985).",
+    "F2 (분모 혼동): 풀 내부 EW 대비 우위(edge_vs_ew)를 벤치 대비 자격(PORT_t)으로 전이 인용하지 않는다. 둘 다 따로 적는다(FR_002 교훈 1).",
+    "F3 (OOS): oos_retention < 0.5 이면 선별 우위가 최근 구간에서 소멸한 것 — FR_001(-0.146)/FR_002(-0.702) 계보 반복으로 기록.",
+    "F4 (PIT): arm_S(lag+1) 대비 arm_T 성과가 붕괴하면 동월 누출 의심 → 결과 무효 처리."
+  ],
+
+  "known_negatives_differentiated": {
+    "DFA_R54 (F)": "n=21 에서 배분규칙이 정적 rp 로 붕괴 — 이번엔 n=112 라 더 심할 것이 예상된다. 차별점: 처치를 가중 채널이 아니라 **풀 멤버십 채널**에 걸었다. 붕괴해도 처치는 전달된다. MC2 로 가중 채널 상태를 별도 기록.",
+    "RAMP_REGIME_NAIVE_FAIL (F, AX-RAMP-006)": "경제 선험룰 국면틸트 금지. 차별점: 방어형 판정은 선험 라벨이 아니라 **실현 하락월 초과수익 t/적중률**(defensive_score.json) — 데이터 구동.",
+    "RAMP_SHUMULVEY_25STOCK_FAIL (F)": "인덱스배분 엣지가 25종목에서 소멸. 차별점: 우리 자산은 인덱스가 아니라 이미 25종 제약을 통과한 전략 NAV 다(변환 단계 없음).",
+    "FR_002 (C)": "무조건부 trailing 선별, 등급미달 85 풀. 차별점: ①국면조건부 RCMA 복원 ②풀 자격이 무등급 스크랩이 아니라 등급 floor ∥ 실증 방어형 ③베타 트랩을 사전 반증조건으로 명시."
+  },
+
+  "measurement_chain": "run_wf_ensemble.R → build_bt_result(metric_type=backtested) → audit_bt_result → essence_score → register_fr_result → emit_fr_lcode(mode=strategy_rotation)",
+  "grade_source": "authoritative = essence_score 산출값만 인용. 손계산 금지.",
+  "gates": {"PORT_t":2.95,"oos_retention":0.7,"Calmar":0.64,"DSR":"sweep 시 0.5","edge_vs_ew":">0","TO":"<=11.0"}
+}

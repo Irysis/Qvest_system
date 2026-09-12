@@ -1,0 +1,1103 @@
+{
+  "schema_version": "v3.1",
+  "generated": "2026-09-12",
+  "generated_by": "2계층 전략 로테이션 (build_module_performance.R — 계약 floor + v10 grade floor)",
+  "regime_source": "unified_regime_signal_daily.parquet Category (t-1 lag PIT)",
+  "regimes": ["RISK_ON", "NEUTRAL", "CAUTION", "CRISIS", "RISK_OFF"],
+  "metric_type": "backtested_realized (sim_result NAV, 실측-only)",
+  "grade_floor": "B",
+  "n_floor_excluded": 114,
+  "n_defensive_admitted": 0,
+  "defensive_route": false,
+  "admission_codes": {
+    "contract_floor": 176,
+    "grade_floor": 6,
+    "route_off": 114
+  },
+  "admission_predicate": "02_Infrastructure/contracts/defensive_score.R::ds_pool_eligible (l2_pool_admission.R::l2_admit 경유)",
+  "grade_axis": "essence_grade > meta.essence_grade > grade(발행 시점 폴백)",
+  "note": "입력 2단 게이트(v10 2026-08-29 도훈): ①계약 floor = module_catalog fr_eligible=true(contract_pass+backtested+frozen+hash/build_version, legacy QEPM grade-A 이관 예외) ②grade floor = essence grade B 이상(QVEST_L2_GRADE_FLOOR, OFF=진단) ∥ 방어형 병렬 경로(QVEST_L2_DEFENSIVE_ROUTE). module_hash는 실제 md5 대조(불일치=skip+quarantine, CAP-P1-2). 배치 심사=RCMA. ★2026-09-07: 자격 술어를 계약(ds_pool_eligible)으로 단일화하고 등급 축을 essence 로 정정.",
+  "n_modules": 18,
+  "modules": {
+    "STR_944_oc_sue": {
+      "source_strategy_id": "STR_944_oc_sue",
+      "grade": "A",
+      "role": "diversifier",
+      "origin_mode": "qepm",
+      "trust_status": "legacy_qepm_grade_a",
+      "admission_route": null,
+      "admission_code": null,
+      "admission_reason": null,
+      "grade_emit": null,
+      "grade_source": null,
+      "freq": "daily",
+      "sim_result_path": "04_Research/strategies/STR_944_oc_sue/sim_result.rds",
+      "full_sharpe": 1.579,
+      "full_ir": 0.304,
+      "n_days": 4792,
+      "date_range": ["2002-03-05", "2026-03-20"],
+      "per_regime": {
+        "RISK_ON": {
+          "n_days": 3195,
+          "n_months": 152.1,
+          "sharpe": 1.46,
+          "ir": 0.903,
+          "mdd": 0.214,
+          "mean_ann": 0.1705
+        },
+        "NEUTRAL": {
+          "n_days": 698,
+          "n_months": 33.2,
+          "sharpe": 2.008,
+          "ir": -1.157,
+          "mdd": 0.112,
+          "mean_ann": 0.2607
+        },
+        "CAUTION": {
+          "n_days": 450,
+          "n_months": 21.4,
+          "sharpe": 1.589,
+          "ir": 0.561,
+          "mdd": 0.133,
+          "mean_ann": 0.2069
+        },
+        "CRISIS": {
+          "n_days": 435,
+          "n_months": 20.7,
+          "sharpe": 1.7,
+          "ir": -0.044,
+          "mdd": 0.058,
+          "mean_ann": 0.2063
+        },
+        "RISK_OFF": {
+          "n_days": 14,
+          "n_months": 0.7,
+          "sharpe": null,
+          "ir": null,
+          "mdd": 0.01,
+          "mean_ann": 0.0944
+        }
+      }
+    },
+    "STR_943_oc_eps_chg": {
+      "source_strategy_id": "STR_943_oc_eps_chg",
+      "grade": "A",
+      "role": "diversifier",
+      "origin_mode": "qepm",
+      "trust_status": "legacy_qepm_grade_a",
+      "admission_route": null,
+      "admission_code": null,
+      "admission_reason": null,
+      "grade_emit": null,
+      "grade_source": null,
+      "freq": "daily",
+      "sim_result_path": "04_Research/strategies/STR_943_oc_eps_chg/sim_result.rds",
+      "full_sharpe": 1.626,
+      "full_ir": 0.411,
+      "n_days": 4792,
+      "date_range": ["2002-03-05", "2026-03-20"],
+      "per_regime": {
+        "RISK_ON": {
+          "n_days": 3195,
+          "n_months": 152.1,
+          "sharpe": 1.521,
+          "ir": 1.061,
+          "mdd": 0.18,
+          "mean_ann": 0.1863
+        },
+        "NEUTRAL": {
+          "n_days": 698,
+          "n_months": 33.2,
+          "sharpe": 2.055,
+          "ir": -0.967,
+          "mdd": 0.111,
+          "mean_ann": 0.2884
+        },
+        "CAUTION": {
+          "n_days": 450,
+          "n_months": 21.4,
+          "sharpe": 1.436,
+          "ir": 0.529,
+          "mdd": 0.144,
+          "mean_ann": 0.1984
+        },
+        "CRISIS": {
+          "n_days": 435,
+          "n_months": 20.7,
+          "sharpe": 1.837,
+          "ir": 0.054,
+          "mdd": 0.076,
+          "mean_ann": 0.2415
+        },
+        "RISK_OFF": {
+          "n_days": 14,
+          "n_months": 0.7,
+          "sharpe": null,
+          "ir": null,
+          "mdd": 0.008,
+          "mean_ann": 0.1621
+        }
+      }
+    },
+    "STR_1435_5sleeve_dd620_repair": {
+      "source_strategy_id": "STR_1435_5sleeve_dd620_repair",
+      "grade": "A",
+      "role": "diversifier",
+      "origin_mode": "qepm",
+      "trust_status": "legacy_qepm_grade_a",
+      "admission_route": null,
+      "admission_code": null,
+      "admission_reason": null,
+      "grade_emit": null,
+      "grade_source": null,
+      "freq": "daily",
+      "sim_result_path": "04_Research/strategies/STR_1435_5sleeve_dd620_repair/sim_result.rds",
+      "full_sharpe": 1.687,
+      "full_ir": 0.856,
+      "n_days": 4531,
+      "date_range": ["2003-07-03", "2026-03-25"],
+      "per_regime": {
+        "RISK_ON": {
+          "n_days": 3195,
+          "n_months": 152.1,
+          "sharpe": 1.632,
+          "ir": 1.328,
+          "mdd": 0.229,
+          "mean_ann": 0.2552
+        },
+        "NEUTRAL": {
+          "n_days": 680,
+          "n_months": 32.4,
+          "sharpe": 2.391,
+          "ir": 0.176,
+          "mdd": 0.162,
+          "mean_ann": 0.4243
+        },
+        "CAUTION": {
+          "n_days": 344,
+          "n_months": 16.4,
+          "sharpe": 2.337,
+          "ir": 1.724,
+          "mdd": 0.071,
+          "mean_ann": 0.4574
+        },
+        "CRISIS": {
+          "n_days": 298,
+          "n_months": 14.2,
+          "sharpe": 0.397,
+          "ir": -0.427,
+          "mdd": 0.132,
+          "mean_ann": 0.0923
+        },
+        "RISK_OFF": {
+          "n_days": 14,
+          "n_months": 0.7,
+          "sharpe": null,
+          "ir": null,
+          "mdd": 0.016,
+          "mean_ann": 0.0819
+        }
+      }
+    },
+    "STR_1439_1047_to_fix": {
+      "source_strategy_id": "STR_1439_1047_to_fix",
+      "grade": "A",
+      "role": "defensive",
+      "origin_mode": "qepm",
+      "trust_status": "legacy_qepm_grade_a",
+      "admission_route": null,
+      "admission_code": null,
+      "admission_reason": null,
+      "grade_emit": null,
+      "grade_source": null,
+      "freq": "daily",
+      "sim_result_path": "04_Research/strategies/STR_1439_1047_to_fix/sim_result.rds",
+      "full_sharpe": 1.766,
+      "full_ir": 0.402,
+      "n_days": 4527,
+      "date_range": ["2003-07-03", "2026-03-20"],
+      "per_regime": {
+        "RISK_ON": {
+          "n_days": 3195,
+          "n_months": 152.1,
+          "sharpe": 1.634,
+          "ir": 1.047,
+          "mdd": 0.187,
+          "mean_ann": 0.18
+        },
+        "NEUTRAL": {
+          "n_days": 680,
+          "n_months": 32.4,
+          "sharpe": 2.327,
+          "ir": -0.775,
+          "mdd": 0.088,
+          "mean_ann": 0.279
+        },
+        "CAUTION": {
+          "n_days": 344,
+          "n_months": 16.4,
+          "sharpe": 1.99,
+          "ir": 0.682,
+          "mdd": 0.089,
+          "mean_ann": 0.2491
+        },
+        "CRISIS": {
+          "n_days": 294,
+          "n_months": 14,
+          "sharpe": 1.548,
+          "ir": -0.267,
+          "mdd": 0.058,
+          "mean_ann": 0.1847
+        },
+        "RISK_OFF": {
+          "n_days": 14,
+          "n_months": 0.7,
+          "sharpe": null,
+          "ir": null,
+          "mdd": 0.01,
+          "mean_ann": 0.0887
+        }
+      }
+    },
+    "STR_1393_esbr_sue_adaptive": {
+      "source_strategy_id": "STR_1393_esbr_sue_adaptive",
+      "grade": "A",
+      "role": "diversifier",
+      "origin_mode": "qepm",
+      "trust_status": "legacy_qepm_grade_a",
+      "admission_route": null,
+      "admission_code": null,
+      "admission_reason": null,
+      "grade_emit": null,
+      "grade_source": null,
+      "freq": "daily",
+      "sim_result_path": "04_Research/strategies/STR_1393_esbr_sue_adaptive/sim_result.rds",
+      "full_sharpe": 1.212,
+      "full_ir": 0.625,
+      "n_days": 4203,
+      "date_range": ["2005-03-03", "2026-03-24"],
+      "per_regime": {
+        "RISK_ON": {
+          "n_days": 3055,
+          "n_months": 145.5,
+          "sharpe": 1.104,
+          "ir": 0.993,
+          "mdd": 0.244,
+          "mean_ann": 0.1652
+        },
+        "NEUTRAL": {
+          "n_days": 552,
+          "n_months": 26.3,
+          "sharpe": 2.16,
+          "ir": 0.285,
+          "mdd": 0.159,
+          "mean_ann": 0.4225
+        },
+        "CAUTION": {
+          "n_days": 314,
+          "n_months": 15,
+          "sharpe": 0.95,
+          "ir": 0.925,
+          "mdd": 0.163,
+          "mean_ann": 0.1982
+        },
+        "CRISIS": {
+          "n_days": 268,
+          "n_months": 12.8,
+          "sharpe": 0.982,
+          "ir": -0.069,
+          "mdd": 0.146,
+          "mean_ann": 0.2476
+        },
+        "RISK_OFF": {
+          "n_days": 14,
+          "n_months": 0.7,
+          "sharpe": null,
+          "ir": null,
+          "mdd": 0.029,
+          "mean_ann": -0.1988
+        }
+      }
+    },
+    "STR_1028_gerber_dcc_hrp": {
+      "source_strategy_id": "STR_1028_gerber_dcc_hrp",
+      "grade": "A",
+      "role": "diversifier",
+      "origin_mode": "qepm",
+      "trust_status": "legacy_qepm_grade_a",
+      "admission_route": null,
+      "admission_code": null,
+      "admission_reason": null,
+      "grade_emit": null,
+      "grade_source": null,
+      "freq": "daily",
+      "sim_result_path": "04_Research/strategies/STR_1028_gerber_dcc_hrp/sim_result.rds",
+      "full_sharpe": 1.583,
+      "full_ir": 0.333,
+      "n_days": 4527,
+      "date_range": ["2003-07-03", "2026-03-20"],
+      "per_regime": {
+        "RISK_ON": {
+          "n_days": 3195,
+          "n_months": 152.1,
+          "sharpe": 1.443,
+          "ir": 0.802,
+          "mdd": 0.23,
+          "mean_ann": 0.1715
+        },
+        "NEUTRAL": {
+          "n_days": 680,
+          "n_months": 32.4,
+          "sharpe": 2.422,
+          "ir": -0.537,
+          "mdd": 0.097,
+          "mean_ann": 0.3035
+        },
+        "CAUTION": {
+          "n_days": 344,
+          "n_months": 16.4,
+          "sharpe": 1.493,
+          "ir": 0.575,
+          "mdd": 0.132,
+          "mean_ann": 0.2366
+        },
+        "CRISIS": {
+          "n_days": 294,
+          "n_months": 14,
+          "sharpe": 1.303,
+          "ir": -0.342,
+          "mdd": 0.068,
+          "mean_ann": 0.1523
+        },
+        "RISK_OFF": {
+          "n_days": 14,
+          "n_months": 0.7,
+          "sharpe": null,
+          "ir": null,
+          "mdd": 0.011,
+          "mean_ann": 0.11
+        }
+      }
+    },
+    "STR_1033_nco": {
+      "source_strategy_id": "STR_1033_nco",
+      "grade": "A",
+      "role": "diversifier",
+      "origin_mode": "qepm",
+      "trust_status": "legacy_qepm_grade_a",
+      "admission_route": null,
+      "admission_code": null,
+      "admission_reason": null,
+      "grade_emit": null,
+      "grade_source": null,
+      "freq": "daily",
+      "sim_result_path": "04_Research/strategies/STR_1033_nco/sim_result.rds",
+      "full_sharpe": 1.703,
+      "full_ir": 0.435,
+      "n_days": 4528,
+      "date_range": ["2003-07-03", "2026-03-21"],
+      "per_regime": {
+        "RISK_ON": {
+          "n_days": 3195,
+          "n_months": 152.1,
+          "sharpe": 1.575,
+          "ir": 0.934,
+          "mdd": 0.225,
+          "mean_ann": 0.1919
+        },
+        "NEUTRAL": {
+          "n_days": 680,
+          "n_months": 32.4,
+          "sharpe": 2.569,
+          "ir": -0.382,
+          "mdd": 0.102,
+          "mean_ann": 0.3282
+        },
+        "CAUTION": {
+          "n_days": 344,
+          "n_months": 16.4,
+          "sharpe": 1.663,
+          "ir": 0.655,
+          "mdd": 0.127,
+          "mean_ann": 0.2548
+        },
+        "CRISIS": {
+          "n_days": 295,
+          "n_months": 14,
+          "sharpe": 1.193,
+          "ir": -0.348,
+          "mdd": 0.071,
+          "mean_ann": 0.1498
+        },
+        "RISK_OFF": {
+          "n_days": 14,
+          "n_months": 0.7,
+          "sharpe": null,
+          "ir": null,
+          "mdd": 0.011,
+          "mean_ann": -0.0147
+        }
+      }
+    },
+    "STR_1571_bayesian_bl_c11fix": {
+      "source_strategy_id": "STR_1571_bayesian_bl_c11fix",
+      "grade": "A",
+      "role": "diversifier",
+      "origin_mode": "qepm",
+      "trust_status": "legacy_qepm_grade_a",
+      "admission_route": null,
+      "admission_code": null,
+      "admission_reason": null,
+      "grade_emit": null,
+      "grade_source": null,
+      "freq": "daily",
+      "sim_result_path": "04_Research/strategies/STR_1571_bayesian_bl_c11fix/sim_result.rds",
+      "full_sharpe": 1.542,
+      "full_ir": 0.503,
+      "n_days": 4534,
+      "date_range": ["2003-07-03", "2026-03-28"],
+      "per_regime": {
+        "RISK_ON": {
+          "n_days": 3195,
+          "n_months": 152.1,
+          "sharpe": 1.405,
+          "ir": 0.883,
+          "mdd": 0.206,
+          "mean_ann": 0.1959
+        },
+        "NEUTRAL": {
+          "n_days": 680,
+          "n_months": 32.4,
+          "sharpe": 2.576,
+          "ir": -0.105,
+          "mdd": 0.103,
+          "mean_ann": 0.3779
+        },
+        "CAUTION": {
+          "n_days": 344,
+          "n_months": 16.4,
+          "sharpe": 0.845,
+          "ir": 0.187,
+          "mdd": 0.164,
+          "mean_ann": 0.1606
+        },
+        "CRISIS": {
+          "n_days": 301,
+          "n_months": 14.3,
+          "sharpe": 1.772,
+          "ir": 0.067,
+          "mdd": 0.08,
+          "mean_ann": 0.2555
+        },
+        "RISK_OFF": {
+          "n_days": 14,
+          "n_months": 0.7,
+          "sharpe": null,
+          "ir": null,
+          "mdd": 0.013,
+          "mean_ann": -0.031
+        }
+      }
+    },
+    "STR_1469_cons4f_5sleeve": {
+      "source_strategy_id": "STR_1469_cons4f_5sleeve",
+      "grade": "A",
+      "role": "diversifier",
+      "origin_mode": "qepm",
+      "trust_status": "legacy_qepm_grade_a",
+      "admission_route": null,
+      "admission_code": null,
+      "admission_reason": null,
+      "grade_emit": null,
+      "grade_source": null,
+      "freq": "daily",
+      "sim_result_path": "04_Research/strategies/STR_1469_cons4f_5sleeve/sim_result.rds",
+      "full_sharpe": 1.303,
+      "full_ir": 0.487,
+      "n_days": 4121,
+      "date_range": ["2005-08-03", "2026-03-28"],
+      "per_regime": {
+        "RISK_ON": {
+          "n_days": 2973,
+          "n_months": 141.6,
+          "sharpe": 1.284,
+          "ir": 0.983,
+          "mdd": 0.33,
+          "mean_ann": 0.1955
+        },
+        "NEUTRAL": {
+          "n_days": 548,
+          "n_months": 26.1,
+          "sharpe": 1.989,
+          "ir": -0.387,
+          "mdd": 0.171,
+          "mean_ann": 0.3244
+        },
+        "CAUTION": {
+          "n_days": 314,
+          "n_months": 15,
+          "sharpe": 1.191,
+          "ir": 0.545,
+          "mdd": 0.087,
+          "mean_ann": 0.1874
+        },
+        "CRISIS": {
+          "n_days": 272,
+          "n_months": 13,
+          "sharpe": 0.56,
+          "ir": -0.375,
+          "mdd": 0.139,
+          "mean_ann": 0.1175
+        },
+        "RISK_OFF": {
+          "n_days": 14,
+          "n_months": 0.7,
+          "sharpe": null,
+          "ir": null,
+          "mdd": 0.009,
+          "mean_ann": 0.0119
+        }
+      }
+    },
+    "STR_1562_gerber_dcc_hrp_c11fix": {
+      "source_strategy_id": "STR_1562_gerber_dcc_hrp_c11fix",
+      "grade": "A",
+      "role": "diversifier",
+      "origin_mode": "qepm",
+      "trust_status": "legacy_qepm_grade_a",
+      "admission_route": null,
+      "admission_code": null,
+      "admission_reason": null,
+      "grade_emit": null,
+      "grade_source": null,
+      "freq": "daily",
+      "sim_result_path": "04_Research/strategies/STR_1562_gerber_dcc_hrp_c11fix/sim_result.rds",
+      "full_sharpe": 1.595,
+      "full_ir": 0.401,
+      "n_days": 4534,
+      "date_range": ["2003-07-03", "2026-03-28"],
+      "per_regime": {
+        "RISK_ON": {
+          "n_days": 3195,
+          "n_months": 152.1,
+          "sharpe": 1.54,
+          "ir": 0.844,
+          "mdd": 0.199,
+          "mean_ann": 0.1745
+        },
+        "NEUTRAL": {
+          "n_days": 680,
+          "n_months": 32.4,
+          "sharpe": 2.447,
+          "ir": -0.455,
+          "mdd": 0.134,
+          "mean_ann": 0.3188
+        },
+        "CAUTION": {
+          "n_days": 344,
+          "n_months": 16.4,
+          "sharpe": 1.465,
+          "ir": 0.721,
+          "mdd": 0.161,
+          "mean_ann": 0.2775
+        },
+        "CRISIS": {
+          "n_days": 301,
+          "n_months": 14.3,
+          "sharpe": 1.018,
+          "ir": -0.19,
+          "mdd": 0.096,
+          "mean_ann": 0.1577
+        },
+        "RISK_OFF": {
+          "n_days": 14,
+          "n_months": 0.7,
+          "sharpe": null,
+          "ir": null,
+          "mdd": 0.025,
+          "mean_ann": -0.312
+        }
+      }
+    },
+    "STR_1555_score_blend_3factor": {
+      "source_strategy_id": "STR_1555_score_blend_3factor",
+      "grade": "A",
+      "role": "diversifier",
+      "origin_mode": "qepm",
+      "trust_status": "legacy_qepm_grade_a",
+      "admission_route": null,
+      "admission_code": null,
+      "admission_reason": null,
+      "grade_emit": null,
+      "grade_source": null,
+      "freq": "daily",
+      "sim_result_path": "04_Research/strategies/STR_1555_score_blend_3factor/sim_result.rds",
+      "full_sharpe": 1.269,
+      "full_ir": 1.049,
+      "n_days": 4219,
+      "date_range": ["2005-02-03", "2026-03-28"],
+      "per_regime": {
+        "RISK_ON": {
+          "n_days": 3067,
+          "n_months": 146,
+          "sharpe": 1.37,
+          "ir": 1.264,
+          "mdd": 0.238,
+          "mean_ann": 0.2102
+        },
+        "NEUTRAL": {
+          "n_days": 552,
+          "n_months": 26.3,
+          "sharpe": 1.86,
+          "ir": 0.003,
+          "mdd": 0.252,
+          "mean_ann": 0.3881
+        },
+        "CAUTION": {
+          "n_days": 314,
+          "n_months": 15,
+          "sharpe": 0.942,
+          "ir": 1.248,
+          "mdd": 0.164,
+          "mean_ann": 0.2291
+        },
+        "CRISIS": {
+          "n_days": 272,
+          "n_months": 13,
+          "sharpe": 1.242,
+          "ir": 1.359,
+          "mdd": 0.398,
+          "mean_ann": 0.5596
+        },
+        "RISK_OFF": {
+          "n_days": 14,
+          "n_months": 0.7,
+          "sharpe": null,
+          "ir": null,
+          "mdd": 0.05,
+          "mean_ann": -0.1351
+        }
+      }
+    },
+    "STR_1550_consensus_core_alpha": {
+      "source_strategy_id": "STR_1550_consensus_core_alpha",
+      "grade": "A",
+      "role": "diversifier",
+      "origin_mode": "qepm",
+      "trust_status": "legacy_qepm_grade_a",
+      "admission_route": null,
+      "admission_code": null,
+      "admission_reason": null,
+      "grade_emit": null,
+      "grade_source": null,
+      "freq": "daily",
+      "sim_result_path": "04_Research/strategies/STR_1550_consensus_core_alpha/sim_result.rds",
+      "full_sharpe": 1.329,
+      "full_ir": 1.266,
+      "n_days": 4218,
+      "date_range": ["2005-02-03", "2026-03-27"],
+      "per_regime": {
+        "RISK_ON": {
+          "n_days": 3067,
+          "n_months": 146,
+          "sharpe": 1.464,
+          "ir": 1.451,
+          "mdd": 0.268,
+          "mean_ann": 0.2486
+        },
+        "NEUTRAL": {
+          "n_days": 552,
+          "n_months": 26.3,
+          "sharpe": 1.839,
+          "ir": 0.262,
+          "mdd": 0.223,
+          "mean_ann": 0.424
+        },
+        "CAUTION": {
+          "n_days": 314,
+          "n_months": 15,
+          "sharpe": 1.004,
+          "ir": 1.465,
+          "mdd": 0.217,
+          "mean_ann": 0.2776
+        },
+        "CRISIS": {
+          "n_days": 271,
+          "n_months": 12.9,
+          "sharpe": 1.191,
+          "ir": 1.571,
+          "mdd": 0.368,
+          "mean_ann": 0.5649
+        },
+        "RISK_OFF": {
+          "n_days": 14,
+          "n_months": 0.7,
+          "sharpe": null,
+          "ir": null,
+          "mdd": 0.051,
+          "mean_ann": -0.1302
+        }
+      }
+    },
+    "STR_AS_20260612_124658_77279": {
+      "source_strategy_id": "STR_AS_20260612_124658_77279",
+      "grade": "B",
+      "role": null,
+      "origin_mode": "alpha_search",
+      "trust_status": "contract_fr_eligible",
+      "admission_route": "grade_floor",
+      "admission_code": "grade_floor",
+      "admission_reason": "essence 등급 B — 등급 floor(B) 통과",
+      "grade_emit": "F",
+      "grade_source": "entry",
+      "freq": "daily",
+      "sim_result_path": "04_Research/strategies/STR_AS_20260612_124658_77279/sim_result.rds",
+      "full_sharpe": 0.841,
+      "full_ir": 0.479,
+      "n_days": 5266,
+      "date_range": ["2005-02-03", "2026-06-11"],
+      "per_regime": {
+        "RISK_ON": {
+          "n_days": 3792,
+          "n_months": 180.6,
+          "sharpe": 0.903,
+          "ir": 0.676,
+          "mdd": 0.471,
+          "mean_ann": 0.2101
+        },
+        "NEUTRAL": {
+          "n_days": 690,
+          "n_months": 32.9,
+          "sharpe": 1.226,
+          "ir": 0.442,
+          "mdd": 0.254,
+          "mean_ann": 0.3693
+        },
+        "CAUTION": {
+          "n_days": 400,
+          "n_months": 19,
+          "sharpe": -0.69,
+          "ir": -0.987,
+          "mdd": 0.469,
+          "mean_ann": -0.2164
+        },
+        "CRISIS": {
+          "n_days": 370,
+          "n_months": 17.6,
+          "sharpe": 1.304,
+          "ir": 0.442,
+          "mdd": 0.425,
+          "mean_ann": 0.8307
+        },
+        "RISK_OFF": {
+          "n_days": 14,
+          "n_months": 0.7,
+          "sharpe": null,
+          "ir": null,
+          "mdd": 0.03,
+          "mean_ann": 2.525
+        }
+      }
+    },
+    "STR_AS_20260612_132740_321995": {
+      "source_strategy_id": "STR_AS_20260612_132740_321995",
+      "grade": "B",
+      "role": null,
+      "origin_mode": "alpha_search",
+      "trust_status": "contract_fr_eligible",
+      "admission_route": "grade_floor",
+      "admission_code": "grade_floor",
+      "admission_reason": "essence 등급 B — 등급 floor(B) 통과",
+      "grade_emit": "F",
+      "grade_source": "entry",
+      "freq": "daily",
+      "sim_result_path": "04_Research/strategies/STR_AS_20260612_132740_321995/sim_result.rds",
+      "full_sharpe": 0.817,
+      "full_ir": 0.501,
+      "n_days": 5266,
+      "date_range": ["2005-02-03", "2026-06-11"],
+      "per_regime": {
+        "RISK_ON": {
+          "n_days": 3792,
+          "n_months": 180.6,
+          "sharpe": 0.944,
+          "ir": 0.893,
+          "mdd": 0.306,
+          "mean_ann": 0.1619
+        },
+        "NEUTRAL": {
+          "n_days": 690,
+          "n_months": 32.9,
+          "sharpe": 1.247,
+          "ir": 0.331,
+          "mdd": 0.285,
+          "mean_ann": 0.2909
+        },
+        "CAUTION": {
+          "n_days": 400,
+          "n_months": 19,
+          "sharpe": 0.061,
+          "ir": -0.254,
+          "mdd": 0.315,
+          "mean_ann": 0.0175
+        },
+        "CRISIS": {
+          "n_days": 370,
+          "n_months": 17.6,
+          "sharpe": 0.827,
+          "ir": -1.04,
+          "mdd": 0.391,
+          "mean_ann": 0.4
+        },
+        "RISK_OFF": {
+          "n_days": 14,
+          "n_months": 0.7,
+          "sharpe": null,
+          "ir": null,
+          "mdd": 0.049,
+          "mean_ann": 0.2629
+        }
+      }
+    },
+    "STR_AS_20260612_143809_686286": {
+      "source_strategy_id": "STR_AS_20260612_143809_686286",
+      "grade": "B",
+      "role": null,
+      "origin_mode": "alpha_search",
+      "trust_status": "contract_fr_eligible",
+      "admission_route": "grade_floor",
+      "admission_code": "grade_floor",
+      "admission_reason": "essence 등급 B — 등급 floor(B) 통과",
+      "grade_emit": "F",
+      "grade_source": "entry",
+      "freq": "daily",
+      "sim_result_path": "04_Research/strategies/STR_AS_20260612_143809_686286/sim_result.rds",
+      "full_sharpe": 0.772,
+      "full_ir": 0.503,
+      "n_days": 5266,
+      "date_range": ["2005-02-03", "2026-06-11"],
+      "per_regime": {
+        "RISK_ON": {
+          "n_days": 3792,
+          "n_months": 180.6,
+          "sharpe": 0.709,
+          "ir": 0.565,
+          "mdd": 0.402,
+          "mean_ann": 0.1504
+        },
+        "NEUTRAL": {
+          "n_days": 690,
+          "n_months": 32.9,
+          "sharpe": 1.328,
+          "ir": 0.717,
+          "mdd": 0.355,
+          "mean_ann": 0.3632
+        },
+        "CAUTION": {
+          "n_days": 400,
+          "n_months": 19,
+          "sharpe": 0.375,
+          "ir": 0.422,
+          "mdd": 0.304,
+          "mean_ann": 0.1188
+        },
+        "CRISIS": {
+          "n_days": 370,
+          "n_months": 17.6,
+          "sharpe": 1.068,
+          "ir": -0.034,
+          "mdd": 0.384,
+          "mean_ann": 0.596
+        },
+        "RISK_OFF": {
+          "n_days": 14,
+          "n_months": 0.7,
+          "sharpe": null,
+          "ir": null,
+          "mdd": 0.065,
+          "mean_ann": 0.3477
+        }
+      }
+    },
+    "STR_AS_20260612_154914_1055315": {
+      "source_strategy_id": "STR_AS_20260612_154914_1055315",
+      "grade": "B",
+      "role": null,
+      "origin_mode": "alpha_search",
+      "trust_status": "contract_fr_eligible",
+      "admission_route": "grade_floor",
+      "admission_code": "grade_floor",
+      "admission_reason": "essence 등급 B — 등급 floor(B) 통과",
+      "grade_emit": "B",
+      "grade_source": "entry",
+      "freq": "daily",
+      "sim_result_path": "04_Research/strategies/STR_AS_20260612_154914_1055315/sim_result.rds",
+      "full_sharpe": 0.933,
+      "full_ir": 0.579,
+      "n_days": 5266,
+      "date_range": ["2005-02-03", "2026-06-11"],
+      "per_regime": {
+        "RISK_ON": {
+          "n_days": 3792,
+          "n_months": 180.6,
+          "sharpe": 1.143,
+          "ir": 1.04,
+          "mdd": 0.295,
+          "mean_ann": 0.1956
+        },
+        "NEUTRAL": {
+          "n_days": 690,
+          "n_months": 32.9,
+          "sharpe": 0.94,
+          "ir": -0.326,
+          "mdd": 0.327,
+          "mean_ann": 0.2091
+        },
+        "CAUTION": {
+          "n_days": 400,
+          "n_months": 19,
+          "sharpe": 0.533,
+          "ir": 0.798,
+          "mdd": 0.244,
+          "mean_ann": 0.1525
+        },
+        "CRISIS": {
+          "n_days": 370,
+          "n_months": 17.6,
+          "sharpe": 0.828,
+          "ir": -1.132,
+          "mdd": 0.309,
+          "mean_ann": 0.3614
+        },
+        "RISK_OFF": {
+          "n_days": 14,
+          "n_months": 0.7,
+          "sharpe": null,
+          "ir": null,
+          "mdd": 0.048,
+          "mean_ann": -0.839
+        }
+      }
+    },
+    "STR_AS_20260612_161342_1312338": {
+      "source_strategy_id": "STR_AS_20260612_161342_1312338",
+      "grade": "B",
+      "role": null,
+      "origin_mode": "alpha_search",
+      "trust_status": "contract_fr_eligible",
+      "admission_route": "grade_floor",
+      "admission_code": "grade_floor",
+      "admission_reason": "essence 등급 B — 등급 floor(B) 통과",
+      "grade_emit": "B",
+      "grade_source": "entry",
+      "freq": "daily",
+      "sim_result_path": "04_Research/strategies/STR_AS_20260612_161342_1312338/sim_result.rds",
+      "full_sharpe": 0.803,
+      "full_ir": 0.521,
+      "n_days": 5266,
+      "date_range": ["2005-02-03", "2026-06-11"],
+      "per_regime": {
+        "RISK_ON": {
+          "n_days": 3792,
+          "n_months": 180.6,
+          "sharpe": 0.71,
+          "ir": 0.555,
+          "mdd": 0.419,
+          "mean_ann": 0.1253
+        },
+        "NEUTRAL": {
+          "n_days": 690,
+          "n_months": 32.9,
+          "sharpe": 1.346,
+          "ir": 0.588,
+          "mdd": 0.317,
+          "mean_ann": 0.321
+        },
+        "CAUTION": {
+          "n_days": 400,
+          "n_months": 19,
+          "sharpe": 0.713,
+          "ir": 1.307,
+          "mdd": 0.226,
+          "mean_ann": 0.2126
+        },
+        "CRISIS": {
+          "n_days": 370,
+          "n_months": 17.6,
+          "sharpe": 1.171,
+          "ir": -0.102,
+          "mdd": 0.372,
+          "mean_ann": 0.5849
+        },
+        "RISK_OFF": {
+          "n_days": 14,
+          "n_months": 0.7,
+          "sharpe": null,
+          "ir": null,
+          "mdd": 0.077,
+          "mean_ann": -0.7585
+        }
+      }
+    },
+    "STR_AS_20260709_074129_30048": {
+      "source_strategy_id": "STR_AS_20260709_074129_30048",
+      "grade": "B",
+      "role": null,
+      "origin_mode": "alpha_search",
+      "trust_status": "contract_fr_eligible",
+      "admission_route": "grade_floor",
+      "admission_code": "grade_floor",
+      "admission_reason": "essence 등급 B — 등급 floor(B) 통과",
+      "grade_emit": "B",
+      "grade_source": "entry",
+      "freq": "daily",
+      "sim_result_path": "04_Research/strategies/STR_AS_20260709_074129_30048/sim_result.rds",
+      "full_sharpe": 0.873,
+      "full_ir": 0.588,
+      "n_days": 5261,
+      "date_range": ["2005-02-03", "2026-07-08"],
+      "per_regime": {
+        "RISK_ON": {
+          "n_days": 3792,
+          "n_months": 180.6,
+          "sharpe": 0.799,
+          "ir": 0.603,
+          "mdd": 0.572,
+          "mean_ann": 0.1577
+        },
+        "NEUTRAL": {
+          "n_days": 689,
+          "n_months": 32.8,
+          "sharpe": 1.532,
+          "ir": 0.78,
+          "mdd": 0.365,
+          "mean_ann": 0.4
+        },
+        "CAUTION": {
+          "n_days": 400,
+          "n_months": 19,
+          "sharpe": 0.717,
+          "ir": 0.807,
+          "mdd": 0.253,
+          "mean_ann": 0.2274
+        },
+        "CRISIS": {
+          "n_days": 366,
+          "n_months": 17.4,
+          "sharpe": 1.1,
+          "ir": 0.365,
+          "mdd": 0.427,
+          "mean_ann": 0.6177
+        },
+        "RISK_OFF": {
+          "n_days": 14,
+          "n_months": 0.7,
+          "sharpe": null,
+          "ir": null,
+          "mdd": 0.074,
+          "mean_ann": -0.0017
+        }
+      }
+    }
+  }
+}
