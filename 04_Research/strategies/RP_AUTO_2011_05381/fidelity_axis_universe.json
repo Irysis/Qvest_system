@@ -1,0 +1,11 @@
+{
+  "axis": "universe",
+  "verdict": "adapted",
+  "undeclared_changes": [],
+  "signal_mismatch": [],
+  "counterexample": "구성 못 했다. 논문 §3.1(v1·v3 독립 조회 2회 일치)은 '미국 상장 firms, 2000-01~2020-06, Bloomberg' 외에 거래소 지정·가격 하한·시가총액 하한·유동성 필터·금융주 제외·상장폐지 처리·생존편향 서술을 어디에도 담지 않는다(Table 1·§4.1 Section D 언급도 Dirichlet 폼의 점근 성질이지 유니버스 구성과 무관). 엔진도 K200∪KQ150 멤버십(지시된 유일한 허용 변경) 외에 논문에 없는 실질적 스크린(유동성 ADV·가격 하한·거래소·금융주 제외)을 추가하지 않는다 — .apply_universe(러너)와 MEM 술어(엔진)가 동일 predicate 이고 유동성 스크린 코드는 존재하지 않는다(liq 는 특성으로만 소비). 남는 차이(완전사례 12특성·MIN_ELIG=20·Size>0 hygiene)는 전부 changed(6)(8)(13)에 선언돼 있어 misdeclared 반례를 만들 수 없었다.",
+  "evidence": "§3.1 'The dataset comprises firms listed in the US between January 2000 and June 2020 downloaded from Bloomberg.' 'Observations are sampled at a monthly frequency.' — 두 차례 독립 WebFetch(v1, v3)가 거래소·가격·시총·유동성·금융주 제외·상장폐지·생존편향 키워드 전부 '언급 없음'으로 일치. §4.1 'Section D'는 Dirichlet 파라미터의 점근 거동(대형 포트폴리오 문제)이지 유니버스 필터가 아님.",
+  "confidence": "high",
+  "checked": "논문 §3.1 유니버스 서술 전문 2회 재확인 · 거래소/가격하한/시총하한/유동성/금융주제외/상장폐지/생존편향 키워드 검색 · engine.R:93-96(Close>0 hygiene) · engine.R:326(MEM & Size>0 · MIN_ELIG=20) · run_paper_replication.R:205,223-235(.apply_universe predicate) · 01_strategy_spec.json(universe=K200_KQ150, liquidity_filter=paper_faithful, n_max=100) · FIDELITY changed(1)(2)(6)(8)(13) 및 changed_checklist 대조",
+  "note": "FIDELITY.changed(13)은 '월말 행은 Size > 0 만 구성종목으로'라고 정확히 선언하는데, 같은 파일의 changed_checklist '값 하한·상한·커버리지' 행은 '유동성·가격·시총 스크린 없음'이라고 적어 자기모순이다(둘 다 내 축 안). 실질 영향은 미미하다 — Close>0이 이미 상류에서 강제돼 Size≤0은 사실상 데이터 오류 케이스에만 발화하는 위생 가드이지 논문 대비 실질적 시총 필터가 아니며, 사실 자체는 changed(13)에 disclosure 돼 있어 misdeclared로 올리지 않았다. 유동성 스크린 부재(축 (2))는 논문·구현 양쪽 다 없음으로 일치 — 이 축에서는 faithful 방향의 확인."
+}
