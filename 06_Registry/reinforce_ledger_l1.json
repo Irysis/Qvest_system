@@ -29589,7 +29589,7 @@
       "target_grade": "A",
       "measurement_axis": "n_max_25",
       "axis_valid": true,
-      "attempts_used": 19,
+      "attempts_used": 23,
       "attempts": [
         {
           "n": 1,
@@ -30455,6 +30455,226 @@
           "lessons": "[B3_13] Grade C · 구속 port_t(0.133/2.95)·calmar(0.161/0.64)·sharpe(0.502/0.80)·cagr(0.105/0.16)·oos(-1.222/0.70) (5조건 중 0 충족) · carry 대비 MDD 0.531→0.651(+22.6%) · CAGR 0.130→0.105(-19.2%) → 양쪽 다 악화",
           "opened_at": "2026-09-13T01:06:22+0900",
           "closed_at": "2026-09-13T01:12:28+0900"
+        },
+        {
+          "n": 20,
+          "date": "20260913",
+          "cell_code": "B5_16",
+          "idea": "[무인 병렬 B5_16] 낙폭 스칼라 브레이크(대조) — B5/risk_overlay · factor2=none · weighting=ew · universe=k200_kq150",
+          "keyword_axis": "risk_overlay",
+          "root_papers": [
+            {
+              "method": "LLM 설계(블록 전이) · dd_brake_q · 후보가 아니라 대조다. dbeta_tilt_rank 와 같은 낙폭 확장창 경험분포에서 강도를 뽑되 총노출에 균일 적용해, 다음 세 칸의 이득이 횡단면 차등에서 오는지 평균노출 축소에서 오는지 가르는 기준선을 세운다.",
+              "url": "https://arxiv.org/abs/2011.05381"
+            },
+            {
+              "url": "https://arxiv.org/abs/2011.05381",
+              "title": "Dirichlet policies for reinforced factor portfolios",
+              "paper_key": "2011.05381"
+            },
+            {
+              "title": "Banz (1981), The Relationship Between Return and Market Value of Common Stocks, JFE 9(1)",
+              "url": "https://www.sciencedirect.com/science/article/abs/pii/0304405X81900180"
+            },
+            {
+              "title": "Fama & French (1992), The Cross-Section of Expected Stock Returns, JF 47(2)",
+              "url": "https://onlinelibrary.wiley.com/doi/10.1111/j.1540-6261.1992.tb04398.x"
+            },
+            {
+              "title": "Ang, Hodrick, Xing & Zhang (2006), The Cross-Section of Volatility and Expected Returns, JF 61(1)",
+              "url": "https://onlinelibrary.wiley.com/doi/10.1111/j.1540-6261.2006.00836.x"
+            },
+            {
+              "title": "Chan, Jegadeesh & Lakonishok (1996), Momentum Strategies, JF 51(5)",
+              "url": "https://onlinelibrary.wiley.com/doi/10.1111/j.1540-6261.1996.tb05222.x"
+            }
+          ],
+          "wt_id": null,
+          "evidence": "paper",
+          "unmapped_families": [],
+          "axiom_injected": true,
+          "grade": "F",
+          "essence": {
+            "cell_code": "B5_16",
+            "block": "B5",
+            "port_t": -0.539,
+            "net_sharpe": 0.564,
+            "cagr": 0.096,
+            "mdd": 0.452,
+            "calmar": 0.212,
+            "oos_retention": -2.611,
+            "spec": "C:/Users/99922/OneDrive/Quant_Module_Moltbot/.cache/rf_parallel/spec_B5_16__RP_20260912_234505_2216_adapted_rulefast.json",
+            "source": "authoritative_remeasure.json"
+          },
+          "artifacts": "C:/Users/99922/OneDrive/Quant_Module_Moltbot/stage_artifacts/replication/20260913_011814_33688",
+          "lessons": "[B5_16] Grade F · 구속 port_t(-0.539/2.95)·calmar(0.212/0.64)·sharpe(0.564/0.80)·cagr(0.096/0.16)·oos(-2.611/0.70) (5조건 중 0 충족) · carry 대비 MDD 0.651→0.452(-30.6%) · CAGR 0.105→0.096(-8.6%) → 위험을 더 줄였다(부분 비대칭)",
+          "opened_at": "2026-09-13T01:17:34+0900",
+          "closed_at": "2026-09-13T01:23:38+0900"
+        },
+        {
+          "n": 21,
+          "date": "20260913",
+          "cell_code": "B5_17",
+          "idea": "[무인 병렬 B5_17] 낙폭 국면 x 하방베타 순위 차등 — B5/risk_overlay · factor2=none · weighting=ew · universe=k200_kq150",
+          "keyword_axis": "risk_overlay",
+          "root_papers": [
+            {
+              "method": "LLM 설계(블록 전이) · dbeta_tilt_rank · dd_brake_q 와 상태 추정기가 같고 적용만 종목축으로 갈린다. B3_15 가 선정 단계 횡단면 제거의 대가(PORT_t -0.660)를 보였으므로, 같은 횡단면 정보를 선정이 아닌 노출 단계에서 쓸 때 신호가 보존되는지 이 한 쌍이 직접 묻는다.",
+              "url": "https://arxiv.org/abs/2011.05381"
+            },
+            {
+              "url": "https://arxiv.org/abs/2011.05381",
+              "title": "Dirichlet policies for reinforced factor portfolios",
+              "paper_key": "2011.05381"
+            },
+            {
+              "title": "Banz (1981), The Relationship Between Return and Market Value of Common Stocks, JFE 9(1)",
+              "url": "https://www.sciencedirect.com/science/article/abs/pii/0304405X81900180"
+            },
+            {
+              "title": "Fama & French (1992), The Cross-Section of Expected Stock Returns, JF 47(2)",
+              "url": "https://onlinelibrary.wiley.com/doi/10.1111/j.1540-6261.1992.tb04398.x"
+            },
+            {
+              "title": "Ang, Hodrick, Xing & Zhang (2006), The Cross-Section of Volatility and Expected Returns, JF 61(1)",
+              "url": "https://onlinelibrary.wiley.com/doi/10.1111/j.1540-6261.2006.00836.x"
+            },
+            {
+              "title": "Chan, Jegadeesh & Lakonishok (1996), Momentum Strategies, JF 51(5)",
+              "url": "https://onlinelibrary.wiley.com/doi/10.1111/j.1540-6261.1996.tb05222.x"
+            }
+          ],
+          "wt_id": null,
+          "evidence": "paper",
+          "unmapped_families": [],
+          "axiom_injected": true,
+          "grade": "F",
+          "essence": {
+            "cell_code": "B5_17",
+            "block": "B5",
+            "port_t": -0.052,
+            "net_sharpe": 0.609,
+            "cagr": 0.113,
+            "mdd": 0.469,
+            "calmar": 0.242,
+            "oos_retention": -1.639,
+            "spec": "C:/Users/99922/OneDrive/Quant_Module_Moltbot/.cache/rf_parallel/spec_B5_17__RP_20260912_234505_2216_adapted_rulefast.json",
+            "source": "authoritative_remeasure.json"
+          },
+          "artifacts": "C:/Users/99922/OneDrive/Quant_Module_Moltbot/stage_artifacts/replication/20260913_011814_25244",
+          "lessons": "[B5_17] Grade F · 구속 port_t(-0.052/2.95)·calmar(0.242/0.64)·sharpe(0.609/0.80)·cagr(0.113/0.16)·oos(-1.639/0.70) (5조건 중 0 충족) · carry 대비 MDD 0.651→0.469(-28.0%) · CAGR 0.105→0.113(+7.6%) → 위험만 줄었다(비대칭 성공)",
+          "opened_at": "2026-09-13T01:17:44+0900",
+          "closed_at": "2026-09-13T01:23:39+0900"
+        },
+        {
+          "n": 22,
+          "date": "20260913",
+          "cell_code": "B5_18",
+          "idea": "[무인 병렬 B5_18] 보유 체계위험 비중 기반 차등 — B5/risk_overlay · factor2=none · weighting=ew · universe=k200_kq150",
+          "keyword_axis": "risk_overlay",
+          "root_papers": [
+            {
+              "method": "LLM 설계(블록 전이) · holdlvl_syscrowd_tilt · B1 의 적층 다섯 팩터가 공유한 drawdown 축이 시장 공통성분이라면, 강도를 보유 bcorr^2 중앙값으로 잡고 시장에 투영된 하방 기여 순위로 깎는 이 칸이 MDD 를 움직여야 한다. 상태를 시장 시계열이 아니라 보유에서 읽는 유일한 칸이다.",
+              "url": "https://arxiv.org/abs/2011.05381"
+            },
+            {
+              "url": "https://arxiv.org/abs/2011.05381",
+              "title": "Dirichlet policies for reinforced factor portfolios",
+              "paper_key": "2011.05381"
+            },
+            {
+              "title": "Banz (1981), The Relationship Between Return and Market Value of Common Stocks, JFE 9(1)",
+              "url": "https://www.sciencedirect.com/science/article/abs/pii/0304405X81900180"
+            },
+            {
+              "title": "Fama & French (1992), The Cross-Section of Expected Stock Returns, JF 47(2)",
+              "url": "https://onlinelibrary.wiley.com/doi/10.1111/j.1540-6261.1992.tb04398.x"
+            },
+            {
+              "title": "Ang, Hodrick, Xing & Zhang (2006), The Cross-Section of Volatility and Expected Returns, JF 61(1)",
+              "url": "https://onlinelibrary.wiley.com/doi/10.1111/j.1540-6261.2006.00836.x"
+            },
+            {
+              "title": "Chan, Jegadeesh & Lakonishok (1996), Momentum Strategies, JF 51(5)",
+              "url": "https://onlinelibrary.wiley.com/doi/10.1111/j.1540-6261.1996.tb05222.x"
+            }
+          ],
+          "wt_id": null,
+          "evidence": "paper",
+          "unmapped_families": [],
+          "axiom_injected": true,
+          "grade": "C",
+          "essence": {
+            "cell_code": "B5_18",
+            "block": "B5",
+            "port_t": 0.236,
+            "net_sharpe": 0.61,
+            "cagr": 0.121,
+            "mdd": 0.523,
+            "calmar": 0.231,
+            "oos_retention": -1.094,
+            "spec": "C:/Users/99922/OneDrive/Quant_Module_Moltbot/.cache/rf_parallel/spec_B5_18__RP_20260912_234505_2216_adapted_rulefast.json",
+            "source": "authoritative_remeasure.json"
+          },
+          "artifacts": "C:/Users/99922/OneDrive/Quant_Module_Moltbot/stage_artifacts/replication/20260913_011814_12824",
+          "lessons": "[B5_18] Grade C · 구속 port_t(0.236/2.95)·calmar(0.231/0.64)·sharpe(0.610/0.80)·cagr(0.121/0.16)·oos(-1.094/0.70) (5조건 중 0 충족) · carry 대비 MDD 0.651→0.523(-19.7%) · CAGR 0.105→0.121(+15.2%) → 위험만 줄었다(비대칭 성공)",
+          "opened_at": "2026-09-13T01:17:48+0900",
+          "closed_at": "2026-09-13T01:23:39+0900"
+        },
+        {
+          "n": 23,
+          "date": "20260913",
+          "cell_code": "B5_19",
+          "idea": "[무인 병렬 B5_19] 횡단면분산 국면 x 특이변동 순위 차등 — B5/risk_overlay · factor2=none · weighting=ew · universe=k200_kq150",
+          "keyword_axis": "risk_overlay",
+          "root_papers": [
+            {
+              "method": "LLM 설계(블록 전이) · csd_idio_tilt · holdlvl_syscrowd_tilt 의 짝. 랭킹 축을 체계 기여 대신 특이변동 기여로 놓아, 공유 drawdown 축이 시장베타인지 종목 고유 손실인지를 두 칸 차이로 가른다. 단독 실행하면 해석 불가라 쌍으로만 쓴다(B2 교훈).",
+              "url": "https://arxiv.org/abs/2011.05381"
+            },
+            {
+              "url": "https://arxiv.org/abs/2011.05381",
+              "title": "Dirichlet policies for reinforced factor portfolios",
+              "paper_key": "2011.05381"
+            },
+            {
+              "title": "Banz (1981), The Relationship Between Return and Market Value of Common Stocks, JFE 9(1)",
+              "url": "https://www.sciencedirect.com/science/article/abs/pii/0304405X81900180"
+            },
+            {
+              "title": "Fama & French (1992), The Cross-Section of Expected Stock Returns, JF 47(2)",
+              "url": "https://onlinelibrary.wiley.com/doi/10.1111/j.1540-6261.1992.tb04398.x"
+            },
+            {
+              "title": "Ang, Hodrick, Xing & Zhang (2006), The Cross-Section of Volatility and Expected Returns, JF 61(1)",
+              "url": "https://onlinelibrary.wiley.com/doi/10.1111/j.1540-6261.2006.00836.x"
+            },
+            {
+              "title": "Chan, Jegadeesh & Lakonishok (1996), Momentum Strategies, JF 51(5)",
+              "url": "https://onlinelibrary.wiley.com/doi/10.1111/j.1540-6261.1996.tb05222.x"
+            }
+          ],
+          "wt_id": null,
+          "evidence": "paper",
+          "unmapped_families": [],
+          "axiom_injected": true,
+          "grade": "C",
+          "essence": {
+            "cell_code": "B5_19",
+            "block": "B5",
+            "port_t": 0.328,
+            "net_sharpe": 0.645,
+            "cagr": 0.126,
+            "mdd": 0.531,
+            "calmar": 0.238,
+            "oos_retention": -0.973,
+            "spec": "C:/Users/99922/OneDrive/Quant_Module_Moltbot/.cache/rf_parallel/spec_B5_19__RP_20260912_234505_2216_adapted_rulefast.json",
+            "source": "authoritative_remeasure.json"
+          },
+          "artifacts": "C:/Users/99922/OneDrive/Quant_Module_Moltbot/stage_artifacts/replication/20260913_011814_17144",
+          "lessons": "[B5_19] Grade C · 구속 port_t(0.328/2.95)·calmar(0.238/0.64)·sharpe(0.645/0.80)·cagr(0.126/0.16)·oos(-0.973/0.70) (5조건 중 0 충족) · carry 대비 MDD 0.651→0.531(-18.4%) · CAGR 0.105→0.126(+20.0%) → 위험만 줄었다(비대칭 성공)",
+          "opened_at": "2026-09-13T01:17:52+0900",
+          "closed_at": "2026-09-13T01:23:40+0900"
         }
       ],
       "judge": {
@@ -30656,7 +30876,7 @@
     ],
     "retro_note": "2026-09-04 소급: count_paper 키 부재로 1→4 (rf_replication_auto.sh C_COUNT 수리)"
   },
-  "last_updated": "2026-09-13T01:12:28+0900",
+  "last_updated": "2026-09-13T01:23:40+0900",
   "removed_entries": [
     {
       "removed_at": "2026-08-30T10:07:35+0900",

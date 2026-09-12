@@ -17,11 +17,36 @@
   "calmar": 0.161,
   "oos_retention": -1.222,
   "portfolio_alpha_t": 0.133,
-  "next_probes": [
-    "다음 격자 축 B5(risk_overlay) — 이 블록 승자 위에서 측정",
-    "B3_13(최고 0.133)는 B4 조합 후보로 고정 · B3_15(최저 -0.660)는 축 역작동 여부를 조합 LOO 로 분리"
-  ],
+  "next_probes": ["다음 격자 축 B5(risk_overlay) — 이 블록 승자 위에서 측정", "B3_13(최고 0.133)는 B4 조합 후보로 고정 · B3_15(최저 -0.660)는 축 역작동 여부를 조합 LOO 로 분리"],
   "next_probe": "다음 격자 축 B5(risk_overlay) — 이 블록 승자 위에서 측정 | B3_13(최고 0.133)는 B4 조합 후보로 고정 · B3_15(최저 -0.660)는 축 역작동 여부를 조합 LOO 로 분리",
   "source_paper": "https://arxiv.org/abs/2011.05381",
-  "record_type": "performance"
+  "record_type": "performance",
+  "mechanism": "판정: B3 의 유니버스 축은 Calmar 를 움직이지 못했다 — 세 칸 Calmar 0.158~0.183(폭 0.025)으로 B2 범위 0.245~0.266 과 B1_10 0.231 아래에 전부 떨어졌고 PORT_t 도 최고 0.133 으로 B2_9 의 0.610 에서 소멸했다. 다만 이 하락을 유니버스 탓으로 단정할 수 없다 — 세 칸 처치 문자열이 전부 '동일가중 1/25' 이라 B2 승자(cvar · MDD 0.537 · PORT_t 0.610)의 비중 축이 승계되지 않았다(실측). 유니버스 효과와 비중 리셋 효과는 이 블록만으로 안 갈린다. 가르려면 B2_9 비중 위에 같은 size_band 처치를 얹은 1칸이 필요하다. 갈리는 것은 둘이다. ①섹터 중립 B3_15 는 MDD 0.574 로 블록 최저이면서 PORT_t -0.660 으로 유일한 음수다 — 기저 4팩터의 횡단면 t 는 섹터 간 산포가 상당 부분 지고 있고, 선정 단계에서 섹터 노출을 제거하면 MDD 는 0.035(vs B3_14 0.609) 내려가는 대신 신호 부호가 반전된다. B2 처방 ①(minvar 의 MDD 0.469 가 섹터 집중에서 오는가)은 반증됐다 — 선정 측 섹터 중립으로 0.469 를 재현하지 못했다(0.574). ②크기 쌍은 대형 B3_14(MDD 0.609 · CAGR 0.112)가 소형 B3_13(MDD 0.651 · CAGR 0.105)을 두 축 모두에서 앞선다 — 기저 S01_Size 의 소형 기울기는 CAGR 원천이 아니라 MDD 원천이다(실측). PORT_t 는 반대(0.056 vs 0.133)이지만 둘 다 0 근처라 방향을 읽지 않는다(미결). 세 블록을 이어 붙이면 소비 지점이 나온다: B1 은 팩터 적층이 MDD 0.687~0.713 벽을 못 넘었고, B2 는 비중이 MDD 를 옮겨도 Calmar 는 0.245~0.266 에 고정됐으며, B3 은 선정 단계에서 횡단면 공통 노출을 제거하면 신호가 먼저 죽는다는 것을 보였다. 남은 통로는 선정을 건드리지 않고 보유 횡단면에서 노출을 차등하는 B5 오버레이다. 집행 로그의 'ignored · 설계 3건 중 0건 집행' 은 셀코드(B3_15)와 처치 id(sector_neutral · size_band)를 위치 대조한 계기 실패다 — 설계 3건은 1:1 로 집행됐다(B2 와 같은 증상).",
+  "mechanism_by": "llm:block_end",
+  "mechanism_at": "2026-09-13T01:15:41+0900",
+  "prior_lessons_used": ["B1", "B2"],
+  "next_block_actions": [
+    {
+      "action": "B5 에서 dd_brake_q(스칼라 총노출 축소)와 dbeta_tilt_rank(같은 낙폭 경험분포로 강도 g 를 잡고 하방베타 횡단면 순위로 차등)를 한 쌍으로 돌려, 개선분이 횡단면 차등에서 오는지 평균노출 1-g/2 의 약한 축소에서 오는지 분리한다.",
+      "why": "B3_15 가 선정 단계 횡단면 제거는 MDD 0.574 를 얻는 대가로 PORT_t 를 -0.660 으로 반전시킨다는 것을 보였다 — 소비 지점을 오버레이로 옮기되, 두 칸이 같은 상태 추정기를 써야 차등 효과가 식별된다.",
+      "expect": "차등판이 스칼라판과 같은 폭으로 MDD 를 낮추면서 CAGR 손실이 절반 이하면 횡단면 차등 축이 유효하다. 두 칸 Calmar 가 0.02 안에 붙으면 이 계열의 이득은 차등이 아니라 평균노출 수준일 뿐이다."
+    },
+    {
+      "action": "holdlvl_syscrowd_tilt 와 csd_idio_tilt 를 한 쌍으로 돌려, B1 이 관측한 '적층 팩터 다섯이 공유하는 drawdown 축'이 시장 공통성분인지 종목 특이성분인지 가른다.",
+      "why": "B1_1~B1_5 단조 적층에서 MDD 가 0.692~0.713 로 평탄했고 B3_15 의 섹터 중립도 MDD 를 0.574 까지밖에 못 내렸다 — 공유 축의 정체가 아직 미측정이다. 두 arm 은 상태를 보유 자체에서 읽고 랭킹 축만 체계(bcorr^2) 대 특이(ovol*sqrt(1-bcorr^2))로 갈라 놓는다.",
+      "expect": "체계 비중 기반 칸이 MDD 를 더 낮추면 공유 축은 시장베타이고, 특이변동 기반 칸이 더 낮추면 종목 고유 손실이다. 둘 다 MDD 를 못 움직이면 25종 등가중의 drawdown 은 보유 횡단면 특징으로 읽히지 않는다."
+    },
+    {
+      "action": "B4(결합 2칸) 설계 시 비중 축을 명시 승계하라 — 후보는 B1_10(PORT_t 0.611) · B2_9(PORT_t 0.610 · MDD 0.537) · B5 승자이며, 유니버스 제약은 결합 후보에서 뺀다.",
+      "why": "B3 세 칸이 동일가중 1/25 로 돌아 B2 승자의 비중이 승계되지 않았고, 그 결과 이 블록의 PORT_t 소멸이 유니버스 탓인지 비중 리셋 탓인지 봉쇄됐다. 같은 누락이 B4 에서 반복되면 결합 칸도 해석 불가로 남는다.",
+      "expect": "같은 팩터 기저에서 비중만 cvar 로 되돌린 칸이 PORT_t 를 0.1 대에서 0.6 대로 회복하면, B3 의 PORT_t 소멸은 유니버스가 아니라 비중 리셋이었다는 것이 사후 확정된다."
+    }
+  ],
+  "next_block_actions_by": "llm:block_end",
+  "avoid": ["유니버스 축에 칸을 더 쓰지 말 것 — 섹터 중립·시총 삼분위 세 칸 전부 Calmar 0.158~0.183(폭 0.025)에 들어왔다. 특히 선정 단계 섹터 중립 재시도 금지: B3_15 PORT_t -0.660 으로 신호가 먼저 죽는다(벽 확인).", "스칼라 총노출만 움직이는 arm 을 여러 칸에 나눠 담지 말 것 — vol_median · vol_ewma · vol_har · ts_mom_sign · turbulence · ml_tail_gate · vol_x_dd · vol_x_turb · xs_vol_gap_corr_brake 는 라벨이 달라도 소비 지점이 e=1-g 스칼라 하나로 같다. 이 격자 밖 50셀 실측에서 스칼라 축소는 MDD -10% 에 CAGR -23% 로 Calmar 중앙값 0.160 이었다. 대조 1칸(dd_brake_q)이면 족하다.", "ml_dual_forecast_tilt · multivar_channel_tilt · trend_horizon_split_tilt · vol_term_structure_risk_split_tilt 를 이번 블록에 쓰지 말 것 — 랭킹 축 자체를 회전시키는 합성 arm 이라 단일 채널(dbeta · bcorr^2 · 특이변동) 대조가 먼저 서지 않으면 결과가 해석 불가로 남는다. B1 의 '공분산 추정기 변형은 minvar 대 ivol 뒤에' 와 같은 순서 문제다.", "공분산 추정만 바꾼 변형(gen:lean_score_tilt__shr_* · gen:qepm_MVO__shr_lw_nls) 및 CDaR_LP 계열 재시도 금지 — B2 가 목적함수 계열 순서를 이미 실측했고 B2_8 은 PORT_t -0.548 · MDD 0.679 · CAGR 0.088 로 세 축 최악이었다(B1·B2 승계).", "펀더멘털·성장·accrual 계열을 여섯 번째로 더 쌓는 처치 금지 — B1_1~B1_5 적층과 B1_6(MDD 0.695)이 벽을 확인했다(B1 승계)."],
+  "next_block_design_for": "B5",
+  "next_block_design_n": 4,
+  "prior_action_status": "ignored",
+  "prior_action_detail": "설계 3건 중 0건 집행 (설계: B3_15,B3_14,B3_13 / 실측: sector_neutral,size_band)",
+  "mechanism_confidence": "medium"
 }
