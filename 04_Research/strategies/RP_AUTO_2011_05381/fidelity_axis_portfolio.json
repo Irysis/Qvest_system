@@ -1,0 +1,24 @@
+{
+  "axis": "portfolio",
+  "verdict": "misdeclared",
+
+  "undeclared_changes": [
+    "[보유 100종 고정 — 논문 자산수는 시변] Fig.3 캡션이 세로선 두 개를 그은 이유를 밝힌다: 'Because the number of assets changes through time (see Figure 1), we add two bounds on the plots' · 'The full vertical black line marks the minimum uniform allocation (1/N), which is reached in 2016. The dotted line shows the maximum 1/N weights, which are implemented in 2001.' 보유 종목수가 100 으로 고정이면 uniform allocation 은 항상 0.01 이라 연도별 최소·최대가 존재하지 않고 세로선은 하나면 족하다 — 두 경계와 Figure 1(월별 기업 수) 참조는 비중이 그려진 포트폴리오의 자산 수가 횡단면 크기를 따라 변한다는 저자 진술이다. 구현은 260 리밸일 전부에서 정확히 99~100종만 보유한다(10_audit.csv:20 holdings_cap '리밸일별 distinct ticker 99~100종 (260 리밸일)' · 04_holdings.csv 25,999행 = 259×100 + 99). FIDELITY 는 반대로 선언한다 — changed(5) '[★배분 모집단 = step 2 의 N = 100]' · paper_original_form '그 N = 100 종목의 월별 롱온리 포트폴리오' · paper_values_used_unchanged.portfolio 'long-only simplex weights on N = 100 names, monthly (§2.2, §4.1, Table 3)'. 근거로 든 §4.1 은 N 을 'N, the number of stocks that are integrated in the portfolio (used to compute the reward)' 로 정의해 보상 계산용 표본임을 괄호로 못박으며, Fig.3·§4.2 의 반대 증거는 FIDELITY 어디에도 없다.",
+
+    "[t+1 배분 범위 미명시를 확정으로 선언] 원문은 Table 3 step 8~9 'For date t+1, do: / allocate via average policy, Eq. (11)' 가 그 달 횡단면 전 종목을 덮는지 step 2 에서 뽑은 N 만 덮는지 말하지 않는다(원문 재질의 결과 NOT STATED). FIDELITY 의 NOT STATED 목록(source_paper.version_read)은 'N 종목 선택 모집단 · step 2 와 step 5 의 관계' 만 올리고 **배분 범위 자체**를 누락한 채, changed(5) 와 audit_response.1_portfolio_N100_allocation 에서 'Table 3 step 8~9 블록에 종목 선택 단계 없음' 을 근거로 확정 사실처럼 서술하고 대안 독법을 '폐기' 로 닫았다. 미명시 항목을 미명시로 남기지 않은 선언이다.",
+
+    "[단일 종목 비중 15.7% — 1/N 밴드 밖] §4.2 는 보고된 비중 분포를 'weights are not very dispersed and appear concentrated around their means, which implies that allocations are relatively close to the EW benchmark and do not make strong bets towards some assets' 로 서술하고, 이상치가 Fig.3 의 두 1/N 세로선 밖으로 거의 나가지 않는다고 적는다 — 그 밴드의 폭은 Figure 1 횡단면 최대/최소 기업 수의 비(약 2배)다. 구현의 실현 비중은 한 리밸일 안에서 335배로 벌어진다(2008-04-01: A010060 0.15698 · A002240 0.00046798 · uniform 0.01 대비 15.7배 ~ 0.047배). 비중 ≥ 0.1 인 보유가 77건(04_holdings.csv 전수). FIDELITY 는 비중식 a_n/σ(식 11) 만 선언하고 이 분산 이탈은 선언하지 않으며, engine_contract.runtime_note 의 '★기대 지문' 은 정반대를 예고한다 — 'N_eff/100 이 1 에 가깝고(1/N 근방) 상수항이 지배'."
+  ],
+
+  "signal_mismatch": [],
+
+  "counterexample": "2008-04-01 리밸일(04_holdings.csv 3,812~3,911행 · 정확히 100종 보유). 최대 비중 A010060 0.156980441621255, 최소 비중 A002240 0.000467984199907353 — 같은 날 안에서 335배 격차이고 uniform allocation 0.01 기준으로 15.7배 ~ 0.047배다. 논문 Fig.3 은 같은 양을 히스토그램으로 그리면서 두 세로선(연도별 1/N 의 최소·최대, 2016년 최소·2001년 최대)을 경계로 두고 §4.2 가 '거의 이상치 없음'·'strong bets 없음'이라 적는다. 그 밴드 폭은 Figure 1 의 기업 수 변동(≈2배)이 정하는 값이라, 위 하루치 보유만으로도 구현의 비중 분포는 논문이 보고한 분포와 두 자릿수 배율로 갈린다. 종목수 측면의 반례는 산출물 전체가 곧 반례다 — 260 리밸일 중 259일이 정확히 100종, 1일이 99종으로 시변이 없는 반면(10_audit.csv:20), 논문 Fig.3 캡션은 자산 수가 시간에 따라 변한다는 이유로 경계를 둘 그었다.",
+
+  "evidence": "Fig.3 캡션(자산 수 시변 → 경계 2개 · 최소 1/N 2016년 · 최대 1/N 2001년) · §4.2(비중 분산 작음 · EW 근방 · 세로선 밖 이상치 거의 없음 · 'the exponential policy (to the left) saturates the constant much more often') · §4.1(N 정의 괄호 '(used to compute the reward)' · 'The most obvious choice is N = 100' · 대형 포트폴리오 배제 문장) · Table 3 부트스트랩 열 step 0~10(step 2 'Randomly pick N assets' · step 8 'For date t+1, do:' · step 9 'allocate via average policy, Eq. (11)') · §2.2 행동공간 Δ = {Σ w_n = 1, w_n ≥ 0} · §2.4 식(11) E[w_n] = a_n/σ · Figure 1(월별 기업 수 시변). 접근 경로 = arxiv.org/html/2011.05381v1 및 v3 를 절 단위로 좁혀 5회 질의(장문 축자 요청은 거부됨 — 단문 인용만 회수). Fig.3 캡션 두 문장과 §4.2 문장은 v1·v3 독립 조회에서 동일하게 회수됐다.",
+
+  "confidence": "high",
+
+  "checked": "롱온리·레그 구성(04_holdings.csv 음수 비중 0건 · 0 비중 0건 · Leg 단일 'long' · strategy_spec has_short=false → §2.2 단체 제약과 일치, 이 항목은 충실) · 분위 절단 유무(논문에 decile/quintile/롱숏 구성 없음 · engine.R 에도 없음 — 일치) · 비중식(engine.R:395-396 exp(sc − max sc)/Σ = a_n/σ · 식 11 과 대수적으로 동일 — 일치) · 보유 종목수(engine.R:373 비복원 100 추출 · engine.R:436 n > 100 검산 · 실현 99~100종 × 260 리밸일) · 고정 축 ≤25 충돌의 선언 여부(changed(1)(5)(18) · portfolio_spec.n_holdings · engine_contract.expected_n_max · 01_strategy_spec.json n_max=100 · 10_audit.csv holdings_cap PASS '상한 비적용' — 충돌 자체는 정직하게 선언됨) · 2층 절단 누적(적격 완전사례 → 후보 X_{t−1}∩r_t∩X_t → 무작위 100)으로 실현 종목수가 곱해져 줄어드는지(줄지 않음 — 후보 중앙값 ≈150 에서 100 추출) · 실현 비중 분산(최대 0.157 · 최소 4.68e-4 · ≥0.1 보유 77건) · 월별 신규 편입 33~39종(analysis_holdings.csv).",
+
+  "note": "롱온리·레그·분위구성·비중식 자체는 논문과 일치한다. 갈리는 것은 '몇 종목에 그 식을 적용하는가' 하나이고, 그 하나가 비중 스케일 전체를 끌고 간다. ★축 밖 한 줄: §4.3 의 보고 회전율 9~10% 는 매월 보유 종목을 새로 뽑는 구조로는 나올 수 없는 값이다(실현 신규 편입 월 33~39종) — 타이밍/리밸 축 검증자가 볼 것."
+}
