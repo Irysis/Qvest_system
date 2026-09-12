@@ -3,9 +3,9 @@
   "dist_id": "DIST-GEN-151",
   "cluster_key": "cb44e6203f61",
   "candidate_id": "CAND_reinforcement_cb44e6203f61",
-  "status": "pending_5axis",
-  "statement_refined": null,
-  "retry_condition": null,
+  "status": "proposed",
+  "statement_refined": "B1(멀티팩터) 블록 52건 실측에서 A등급은 0건이고 블록 최고 다중검정 t 는 2.650(L-RF-20260905_225052 · 10칸), 블록 최고 Calmar 는 0.400(L-RF-20260904_124229 · 14칸)이다. 팩터 적층(1→5팩터)은 t 를 단조 개선하지 않는다 — 다수 블록에서 3~4팩터가 최고이고 5팩터에서 되레 하락한다(예: L-RF-20260902_213647 5팩터 t 0.036 · L-RF-20260913_003410 10칸 t 0.611). 낙폭은 축을 바꿔도 블록 내에서 40~80% 대역에 갇히고 대역 폭은 대개 4~12%p 에 불과하다. 즉 이 축에서 바뀌는 것은 신호 강도이지 위험 프로파일이 아니며, B1 단독으로는 Calmar 합격선(0.64)에 도달한 칸이 한 번도 없다.",
+  "retry_condition": "B1 블록 어느 칸이 Calmar>=0.5 를 내거나, 적층 깊이와 t 가 단조 관계를 보이는 블록이 2회 연속 나오면 재정제",
   "refined_at": null,
   "refined_by": null,
   "promoted_to_axiom": null,
@@ -158,5 +158,43 @@
     "oos_effect_vs_is": -0.36,
     "note": "L-code oos_retention 실값 52건 median (IS65/OOS35 활성SR retention) — oos_months 실값 무 → None 유지 — promote.R essence_score 경유 재확정"
   },
-  "cluster_members_count": 52
+  "cluster_members_count": 52,
+  "adversarial_verdict": {
+    "a_exaggeration": "PASS — 'A 0건 · Calmar 천장 0.40' 을 앞세우고 최고 t 를 성과로 과장하지 않는다. 다중검정 t 는 selection 보정 후 값임을 블록 요약 표기 그대로 인용.",
+    "b_evidence": "PASS — 52건 supporting L-RF 블록 요약의 t·Calmar·등급분포 실측 인용. 개별 칸 SR 은 대응 L-RP 기록에 있음. backtested 라벨 정확.",
+    "c_ax000": "PASS — 'B1 단독으로는 도달한 적 없다(관측)' 서술이고 '불가능' 이 아니다. 미탐색 방향(교차항·비선형 결합·비-return 특성)을 frontier 로.",
+    "d_firewall": "PASS — 실패를 고정 제약에 귀속하지 않고 완화를 제시하지 않는다. 팩터 축 교체는 격자가 정의한 시험 축.",
+    "e_frontier": "PASS — 교차항·비-return 데이터(수급 순매수대금)·분포 표적 등 envelope-안 미측정 축 제시."
+  },
+  "expiry": "2027-03-31",
+  "frontier": [
+    "적층(합산)이 아니라 교차항(factor_a x factor_b) 중심의 B1 변형 — 현 격자는 순차 합산이 지배적이다",
+    "비-return 패널(load_investor 거래주체별 순매수대금)을 B1 팩터 축으로 투입해 가격 파생 팩터군과의 직교성을 먼저 측정",
+    "표적을 평균이 아니라 분포(상방 꼬리 확률)로 바꾼 B1 칸 1개를 대조군으로 추가 — 미측정 축"
+  ],
+  "live_trigger": {
+    "type": "data",
+    "condition": "reinforce_program.json 의 B1 축 목록에 새 팩터 계열(회계 원값·컨센서스·수급)이 등재되면 재측정",
+    "monitored_source": "06_Registry/reinforce_program.json · 06_Registry/reinforce_ledger_l1.json"
+  },
+  "revival_spec": [
+    {
+      "signal_id": "wall_clock_date",
+      "condition": "x >= as.Date('2027-03-31')",
+      "from_trigger": "expiry",
+      "status": "active"
+    },
+    {
+      "signal_id": "registry_present",
+      "condition": "x == TRUE",
+      "from_trigger": "data",
+      "status": "pending"
+    }
+  ],
+  "constraint_firewall": {
+    "mode": "backstop_passed",
+    "checked_at": "2026-09-13"
+  },
+  "drafted_at": "2026-09-13T07:47:47+0900",
+  "drafted_by": "auto_distill"
 }

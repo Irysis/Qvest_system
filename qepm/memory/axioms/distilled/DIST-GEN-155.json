@@ -3,9 +3,9 @@
   "dist_id": "DIST-GEN-155",
   "cluster_key": "7ec4be115849",
   "candidate_id": "CAND_reinforcement_7ec4be115849",
-  "status": "pending_5axis",
-  "statement_refined": null,
-  "retry_condition": null,
+  "status": "proposed",
+  "statement_refined": "B5(리스크 오버레이)·B4(결합) 블록 48건 실측에서 오버레이의 유효 축은 총노출 스칼라가 아니라 횡단면 차등이다. 스칼라 총노출 축소형(vol_target · dd_brake_q · ml_tail_gate · HAR-RV)은 반복적으로 음수 또는 저 t 로 닫힌다(L-RF-20260830_203345 t -1.253 · L-RF-20260831_132029 -1.202 · L-RF-20260901_171829 -0.919). 반면 횡단면 차등형(csd_idio_tilt · holdlvl_syscrowd_tilt · 낙폭 x 하방베타 tilt)은 이 축에서 t=2 를 넘긴 유일한 계열이다(L-RF-20260905_230546 B5_18 t 2.485 등급 A0/B4/C1/F0 · L-RF-20260904_205939 B5_17 t 2.025). 그럼에도 A등급은 0건이고 블록 최고 Calmar 는 0.43 에 머문다. 이번 주 B5 블록은 t 0.33~1.75 로 후퇴했다(L-RF-20260913_012340 0.328 · L-RF-20260913_032839 0.790) — 기저가 약한 판 위에서는 차등형도 켜지지 않는다.",
+  "retry_condition": "횡단면 차등형만 별도 블록으로 5칸 이상 편성해 스칼라형과 분리 측정했을 때 Calmar 가 0.5 를 넘으면 재정제",
   "refined_at": null,
   "refined_by": null,
   "promoted_to_axiom": null,
@@ -151,5 +151,43 @@
     "oos_effect_vs_is": -0.398,
     "note": "L-code oos_retention 실값 48건 median (IS65/OOS35 활성SR retention) — oos_months 실값 무 → None 유지 — promote.R essence_score 경유 재확정"
   },
-  "cluster_members_count": 48
+  "cluster_members_count": 48,
+  "adversarial_verdict": {
+    "a_exaggeration": "PASS — 차등형 우위를 적으면서 'A 0건 · Calmar 0.43 천장 · 이번 주 후퇴' 를 같은 문장에 담았다. 계열 승리로 과장하지 않음.",
+    "b_evidence": "PASS — 48건 supporting L-RF 블록 요약의 t·등급분포 실측 인용. 스칼라형 음수 t 3건, 차등형 t>2 2건을 L-code 로 특정.",
+    "c_ax000": "PASS — 스칼라형 열위를 '이 봉투에서 반복 관측' 으로 적고 구조적 사망 선고를 피했다. 기저 강도 의존을 재시도 조건으로 남겼다.",
+    "d_firewall": "PASS — 오버레이는 envelope-안 레버다. 총노출 축소형의 실패를 Σw=1 이나 long-only 에 귀속하지 않고 '노출 스칼라 축이 정보를 담지 않는다' 로 서술.",
+    "e_frontier": "PASS — 차등형 심화·국면조건부 배합(2계층)·집계 슬리브를 frontier 로."
+  },
+  "expiry": "2027-03-31",
+  "frontier": [
+    "횡단면 차등형 5칸 전용 블록(csd_idio_tilt · dbeta_tilt · holdlvl_syscrowd_tilt · 낙폭x하방베타 · 이중예보 회전)으로 스칼라형과 분리 판정",
+    "차등형의 상태 판독을 시장 스칼라가 아니라 보유 포트폴리오 자체에서 읽는 변형(holdlvl 계열)의 기여를 leave-one-out 으로 분해",
+    "2계층 국면조건부 배합에서 같은 차등 축을 모듈 배합 가중으로 재사용 — FR_003 배분규칙이 축을 안 싣는다는 실측(r=0.9997)의 직접 표적"
+  ],
+  "live_trigger": {
+    "type": "regime",
+    "condition": "횡단면 분산(CSD) 상위 국면이 새로 관측되면 차등형 오버레이의 국면별 기여를 재측정 — 현 판정은 전기간 평균이다",
+    "monitored_source": "06_Registry/reinforce_ledger_l1.json · unified_regime_signal"
+  },
+  "revival_spec": [
+    {
+      "signal_id": "wall_clock_date",
+      "condition": "x >= as.Date('2027-03-31')",
+      "from_trigger": "expiry",
+      "status": "active"
+    },
+    {
+      "signal_id": "regime_category",
+      "condition": "x %in% c('CRISIS','CAUTION')",
+      "from_trigger": "regime",
+      "status": "active"
+    }
+  ],
+  "constraint_firewall": {
+    "mode": "backstop_passed",
+    "checked_at": "2026-09-13"
+  },
+  "drafted_at": "2026-09-13T07:47:48+0900",
+  "drafted_by": "auto_distill"
 }

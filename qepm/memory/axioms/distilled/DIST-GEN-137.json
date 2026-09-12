@@ -3,9 +3,9 @@
   "dist_id": "DIST-GEN-137",
   "cluster_key": "f81e39a77606",
   "candidate_id": "CAND_reinforcement_f81e39a77606",
-  "status": "pending_5axis",
-  "statement_refined": null,
-  "retry_condition": null,
+  "status": "proposed",
+  "statement_refined": "B1(멀티팩터) 블록 49건 슬라이스 실측 — 블록 최고 다중검정 t 2.650(L-RF-20260905_225052), 최고 Calmar 0.400(L-RF-20260904_124229), A등급 0건. 이 슬라이스의 구별되는 사실은 B1 과 직후 B2(비중방법) 블록의 대소 관계다: 49건 중 B2 요약이 '직전 최고 B1 대비 열위' 로 닫힌 블록이 다수이고(예: L-RF-20260902_215126 t -0.006 · L-RF-20260904_212507 t -0.127), B2 가 B1 을 넘긴 사례는 소수다(L-RF-20260905_213747 B2_10 t 2.749 > B1_5 2.265). 즉 비중방법 교체는 팩터 축이 이미 만든 t 를 대체로 보존하지 못하며, 넘기는 경우에도 Calmar 는 0.37 에 머문다. 본 후보는 DIST-GEN-113(46건)을 포함하고 DIST-GEN-151(52건)에 포함되는 같은 코퍼스의 슬라이스다 — R6_distinct 관점에서 셋은 하나로 통합되어야 한다.",
+  "retry_condition": "B2 가 직전 B1 최고 t 를 넘기는 블록이 3회 연속 나오면 '비중방법은 팩터 t 를 보존하지 못한다' 진술을 재정제. 또는 GEN-113/137/151 통합 결정이 내려지면 폐기 후 단일 공리로 재발행",
   "refined_at": null,
   "refined_by": null,
   "promoted_to_axiom": null,
@@ -152,5 +152,37 @@
     "oos_effect_vs_is": -0.345,
     "note": "L-code oos_retention 실값 49건 median (IS65/OOS35 활성SR retention) — oos_months 실값 무 → None 유지 — promote.R essence_score 경유 재확정"
   },
-  "cluster_members_count": 49
+  "cluster_members_count": 49,
+  "adversarial_verdict": {
+    "a_exaggeration": "PASS — 예외(B2_10 t 2.749)를 숨기지 않고 병기하며 그 경우에도 Calmar 0.37 임을 적었다.",
+    "b_evidence": "PASS — 인용한 블록 요약은 전부 supporting L-RF 기록의 '직전 최고 대비' 문구와 t 실측. 창작 없음.",
+    "c_ax000": "PASS — '대체로 보존하지 못한다(관측)' 이지 '비중 축은 죽었다' 가 아니다. 넘긴 사례를 재시도 근거로 남겼다.",
+    "d_firewall": "PASS — Σw=1·비중 축은 격자의 시험 축으로만 다루고 고정 제약 완화를 제시하지 않는다.",
+    "e_frontier": "PASS — 비중 축을 팩터 축과 결합 탐색하는 방향, 꼬리 목적함수 심화를 frontier 로."
+  },
+  "expiry": "2026-12-31",
+  "frontier": [
+    "B1 승자 팩터를 고정한 채 B2 를 5칸 이상 전수 측정해 비중 축 단독 기여를 분리(현 격자는 B1 승자 1개 위에서만 B2 를 돈다)",
+    "꼬리 목적함수(cvar · CDaR_LP)가 t 를 보존한 칸만 모아 Calmar 축 기여를 별도 판정",
+    "GEN-113/137/151 통합 — 포함 관계 슬라이스 3건을 단일 B1 공리로 승격 요청"
+  ],
+  "live_trigger": {
+    "type": "time",
+    "condition": "다음 4주 안에 B2 가 직전 B1 최고 t 를 넘긴 블록이 3회 이상 누적되면 재측정",
+    "monitored_source": "06_Registry/reinforce_ledger_l1.json · stage_artifacts/l_code/reinforcement/"
+  },
+  "revival_spec": [
+    {
+      "signal_id": "wall_clock_date",
+      "condition": "x >= as.Date('2026-12-31')",
+      "from_trigger": "expiry",
+      "status": "active"
+    }
+  ],
+  "constraint_firewall": {
+    "mode": "backstop_passed",
+    "checked_at": "2026-09-13"
+  },
+  "drafted_at": "2026-09-13T07:47:47+0900",
+  "drafted_by": "auto_distill"
 }

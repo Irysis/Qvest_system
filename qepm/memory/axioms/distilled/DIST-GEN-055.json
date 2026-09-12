@@ -3,9 +3,9 @@
   "dist_id": "DIST-GEN-055",
   "cluster_key": "07f712d503d4",
   "candidate_id": "CAND_reinforcement_07f712d503d4",
-  "status": "pending_5axis",
-  "statement_refined": null,
-  "retry_condition": null,
+  "status": "proposed",
+  "statement_refined": "B5(리스크 오버레이)·B4(결합) 블록 31건 슬라이스(2026-08-30 ~ 2026-09-05) 실측에서 B4 결합 블록은 직전 블록 최고 t 를 거의 넘기지 못한다 — 31건 중 B4 요약이 '직전 최고 대비 열위' 로 닫힌 사례가 지배적이고(L-RF-20260830_195606 · L-RF-20260902_221455 t -0.451 · L-RF-20260903_105750 t -0.354), 넘긴 경우에도 Calmar 는 0.43 을 넘지 못한다(L-RF-20260905_130617 B4_24 t 2.260 · Calmar 0.426). leave-one-out 분해에서 '유니버스 제외' 칸이 '전 요소 결합' 칸을 이기는 사례가 반복된다 — 요소를 모두 켜는 것이 최적이 아니라는 관측이다. A등급 0건.",
+  "retry_condition": "B4 전 요소 결합 칸이 같은 블록의 모든 LOO 칸을 t 와 Calmar 양쪽에서 이기는 블록이 2회 나오면 재정제",
   "refined_at": null,
   "refined_by": null,
   "promoted_to_axiom": null,
@@ -117,5 +117,37 @@
     "oos_effect_vs_is": -0.483,
     "note": "L-code oos_retention 실값 31건 median (IS65/OOS35 활성SR retention) — oos_months 실값 무 → None 유지 — promote.R essence_score 경유 재확정"
   },
-  "cluster_members_count": 31
+  "cluster_members_count": 31,
+  "adversarial_verdict": {
+    "a_exaggeration": "PASS — '넘긴 경우에도 Calmar 0.43 미만' 을 병기해 결합 축의 성과를 과장하지 않는다.",
+    "b_evidence": "PASS — 31건 supporting L-RF 요약의 '직전 최고 대비 열위' 문구와 t·Calmar 실측 인용. LOO 대소는 같은 블록 요약에서 확인.",
+    "c_ax000": "PASS — '모두 켜는 것이 최적이 아니다' 는 관측 서술이고 결합 축 폐기 선언이 아니다.",
+    "d_firewall": "PASS — LOO 의 '유니버스 제외' 는 격자가 정의한 시험 축 조작이지 고정 유니버스 완화 제안이 아니며, 승격 carry 가 유니버스를 고정 축으로 리셋한다는 규칙(2026-09-05)과 충돌하지 않는다.",
+    "e_frontier": "PASS — 상호작용 항 측정·부분 결합 탐색을 frontier 로."
+  },
+  "expiry": "2026-12-31",
+  "frontier": [
+    "B4 를 전 요소 곱집합이 아니라 2요소 상호작용 격자로 재편해 어느 쌍이 서로를 죽이는지 직접 측정",
+    "LOO 기여 분해를 t 뿐 아니라 Calmar·OOS retention 축에서도 산출 — 현재는 t 중심이라 위험 축 기여가 안 보인다",
+    "GEN-055 는 GEN-155(48) 에 포함되는 슬라이스 — 통합 권고"
+  ],
+  "live_trigger": {
+    "type": "time",
+    "condition": "다음 6주 안에 B4 전 요소 결합 칸이 모든 LOO 칸을 이기는 블록이 2회 누적되면 재측정",
+    "monitored_source": "06_Registry/reinforce_ledger_l1.json"
+  },
+  "revival_spec": [
+    {
+      "signal_id": "wall_clock_date",
+      "condition": "x >= as.Date('2026-12-31')",
+      "from_trigger": "expiry",
+      "status": "active"
+    }
+  ],
+  "constraint_firewall": {
+    "mode": "backstop_passed",
+    "checked_at": "2026-09-13"
+  },
+  "drafted_at": "2026-09-13T07:47:49+0900",
+  "drafted_by": "auto_distill"
 }

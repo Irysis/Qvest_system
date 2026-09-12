@@ -3,9 +3,9 @@
   "dist_id": "DIST-GEN-156",
   "cluster_key": "427ea6d399af",
   "candidate_id": "CAND_paper_replication_427ea6d399af",
-  "status": "pending_5axis",
-  "statement_refined": null,
-  "retry_condition": null,
+  "status": "proposed",
+  "statement_refined": "충실구현 러너가 L-code 에 찍는 성과 문장 '논문기준 SR a vs 15bps SR b' 는 비용 축의 두 판이 아니다. 731건 코퍼스에서 b>a 인 행이 다수인데, 같은 포트폴리오에 비용을 더해 SR 이 오를 수는 없다. 실측 대조 두 건이 기전을 특정한다: (1) commission_paper_bps=15 인 판에서는 두 시뮬레이션이 같은 비용이라 MDD 가 소수 6자리까지 일치(0.549402 vs 0.5494019)하는데 SR 만 0.529→0.602 로 갈린다(stage_artifacts/replication/20260913_033408_14596). (2) 0bps 판에서는 비용이 실재해 CAGR 이 0.114102→0.0917171 로 떨어지는데 SR 은 0.431→0.471 로 오른다(20260912_234505_2216). 원인은 paper_basis 가 월간 260관측이고 등급판 SR 은 06_metrics.csv:15 의 mean(ER)/sd(ER)*sqrt(252) 일간 5,331관측이라는 점 — 한 문장이 비용 축과 관측 빈도 축을 동시에 바꾸고 빈도 효과가 비용 효과를 자주 압도한다. 따라서 이 쌍의 대소는 비용 해석으로 읽을 수 없으며, 판정 인용은 등급판(일간) 한 축으로만 해야 한다.",
+  "retry_condition": "러너가 두 판의 SR 을 같은 관측 빈도로 재계산해 발행하면 재정제 — 그때 b<a 가 되는지(비용 효과 단독 크기)를 다시 측정한다. 부수: 이 후보의 family 라벨 overlay_regime 은 supporting 실체(paper_replication 재현)와 어긋나므로 재라벨 필요.",
   "refined_at": null,
   "refined_by": null,
   "promoted_to_axiom": null,
@@ -1525,5 +1525,43 @@
     "oos_effect_vs_is": -0.656,
     "note": "L-code oos_retention 실값 672건 median (IS65/OOS35 활성SR retention) — oos_months 실값 무 → None 유지 — promote.R essence_score 경유 재확정"
   },
-  "cluster_members_count": 731
+  "cluster_members_count": 731,
+  "adversarial_verdict": {
+    "a_exaggeration": "PASS — 성과 주장이 아니라 표기 결함 서술이고, '등급은 두 경우 모두 불변' 이라는 한계를 statement 안에 담았다. 낙관 헤드라인 없음.",
+    "b_evidence": "PASS — 두 런의 authoritative_remeasure.json(paper_basis n_months 260 · commission_paper_bps)과 06_metrics.csv:15(annualization 252 · observation_count 5331)에서 직접 인용. 손계산·재구성 없음. metric_type=backtested 정확(실측 산출물에서 도출).",
+    "c_ax000": "PASS — 계산 규약의 결함 특정이지 '이 측정은 불가능' 단정이 아니다. 재계산 후 재검 경로(retry_condition)를 열어 두었다.",
+    "d_firewall": "PASS — 고정 제약(종목수·유동성·long-only·Σw=1·유니버스·15bps)이나 PIT 에 실패를 귀속하지 않고 완화도 제시하지 않는다. 15bps 는 비용 '값' 이 아니라 '두 SR 이 같은 빈도로 계산되는가' 를 다룬다.",
+    "e_frontier": "PASS — 빈도 통일 재발행·회전율 기반 비용 귀속·비용 민감도 축을 프론티어로 제시(전부 계기 층 envelope-안 작업)."
+  },
+  "expiry": "2026-12-31",
+  "frontier": [
+    "paper_basis SR 을 등급판과 같은 일간 빈도로 재계산해 두 값의 차이를 비용 효과 단독으로 분리",
+    "06_metrics.csv 의 Annualized_Turnover 로 15bps 비용의 이론 CAGR 드래그를 계산해 실측 CAGR 차이와 대조 — 비용이 실제로 걸렸는지 런별 검산",
+    "L-code emit 템플릿에서 두 SR 의 빈도·비용 가정을 값 옆에 병기(예: 'SR 0.471(일·15bps) vs 0.431(월·0bps)')"
+  ],
+  "live_trigger": {
+    "type": "data",
+    "condition": "run_paper_replication.R 또는 essence_score.R 이 SR 계산 빈도/비용 가정을 변경해 재발행하면 본 공리 초안을 재측정",
+    "monitored_source": "02_Infrastructure/alpha_search/run_paper_replication.R · stage_artifacts/replication/<run_id>/06_metrics.csv"
+  },
+  "revival_spec": [
+    {
+      "signal_id": "wall_clock_date",
+      "condition": "x >= as.Date('2026-12-31')",
+      "from_trigger": "expiry",
+      "status": "active"
+    },
+    {
+      "signal_id": "infrastructure_present",
+      "condition": "x == TRUE",
+      "from_trigger": "data",
+      "status": "pending"
+    }
+  ],
+  "constraint_firewall": {
+    "mode": "backstop_passed",
+    "checked_at": "2026-09-13"
+  },
+  "drafted_at": "2026-09-13T07:47:43+0900",
+  "drafted_by": "auto_distill"
 }

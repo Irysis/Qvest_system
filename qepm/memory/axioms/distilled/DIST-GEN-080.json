@@ -3,9 +3,9 @@
   "dist_id": "DIST-GEN-080",
   "cluster_key": "7cd771e4f3bf",
   "candidate_id": "CAND_paper_replication_7cd771e4f3bf",
-  "status": "pending_5axis",
-  "statement_refined": null,
-  "retry_condition": null,
+  "status": "proposed",
+  "statement_refined": "526건 충실구현·강화 재현 실측(2026-08-29 JT1993 ~ 2026-09-13 결합 5편)에서 essence A 는 0건이고, B 는 논문 단독이 아니라 강화 격자에서만 나온다. 이번 주 최고 등급 B 의 15bps SR 은 0.98(B4_24 유니버스 제외 LOO · catalog 비중 · L-RP-20260906_212414), 최고 다중검정 t 는 2.071(B3_13 소형주 하위 1/3 · 15bps SR 0.77 · L-RP-20260912_174326)이다. 논문 단독 충실구현의 이번 주 최고는 C 이며(2011.05381 판2 net_SR 0.471 · 결합 5편 0.533), 2003.02515 판1 의 C(net_SR 0.931 · Calmar 0.614)는 감사가 misdeclared 로 판정한 구현 위의 값이라 논문 성과로 인용할 수 없다. 이 봉투 안에서 판정을 접는 축은 다중검정 t 가 아니라 Calmar 와 OOS retention 이다 — 블록 최고 Calmar 가 0.34 인데 낙폭 61~73% 대역에서는 합격선이 연복리 39~47% 를 요구한다.",
+  "retry_condition": "어느 재현·강화 칸이 Calmar>=0.5 와 t>2.0 을 동시에 내면 재정제 — 위험 축이 실제로 접히는지 OOS retention 과 함께 재측정",
   "refined_at": null,
   "refined_by": null,
   "promoted_to_axiom": null,
@@ -1115,5 +1115,43 @@
     "oos_effect_vs_is": -0.718,
     "note": "L-code oos_retention 실값 479건 median (IS65/OOS35 활성SR retention) — oos_months 실값 무 → None 유지 — promote.R essence_score 경유 재확정"
   },
-  "cluster_members_count": 526
+  "cluster_members_count": 526,
+  "adversarial_verdict": {
+    "a_exaggeration": "PASS — 'A 0건 · 천장 B · 인용 불가 C' 를 먼저 적고 최고치를 뒤에 놓았다. misdeclared 구현의 C 를 성과로 쓰지 않도록 명시.",
+    "b_evidence": "PASS — 인용한 등급·SR 은 전부 해당 L-RP 기록과 authoritative_remeasure.json::essence_grade. Calmar·낙폭 대역은 L-RF 블록 요약 실측. proxy 를 backtested 로 라벨한 항목 없음.",
+    "c_ax000": "PASS — '관측된 천장' 서술이고 구조적 불가능 단정이 아니다. 미탐색 방향(집계 슬리브·국면조건부 배합)을 frontier 로 열어 둔다.",
+    "d_firewall": "PASS — 실패를 종목수·유동성·long-only·유니버스·비용 제약에 귀속하지 않는다. 유니버스 K200∪KQ150 치환은 충실구현 계약이 허용한 유일 변경으로만 언급하고 완화 레버로 제시하지 않는다.",
+    "e_frontier": "PASS — 낙폭 축을 접는 envelope-안 레버(집계 방어 슬리브·횡단면 차등 오버레이·국면조건부 배합)를 제시."
+  },
+  "expiry": "2027-03-31",
+  "frontier": [
+    "블록 최고 t 를 낸 축(B3 소형 tercile · B4 유니버스 제외 LOO)의 수익을 고정 유니버스 위 국면조건부 tilt 로 재현해 t 가 남는지 측정",
+    "하락월 볼록 프로파일 모듈을 개별 자산이 아니라 합성 방어 슬리브 1개로 묶어 Calmar 축을 직접 겨냥(FR_003 교훈 1 경로 차단)",
+    "논문 단독 C 다수를 composite factor 로 결합해 얕은 조합의 천장을 재측정 — 적층 깊이가 아니라 결합 폭이 축"
+  ],
+  "live_trigger": {
+    "type": "regime",
+    "condition": "벤치 -10% 이하 급락월이 새로 발생해 방어형 계열의 실현 초과가 갱신되면 재측정 — 현 서술은 2005-02~2026-09 창의 실측이다",
+    "monitored_source": "stage_artifacts/replication/<run_id>/05_benchmark_returns.csv · authoritative_remeasure.json::defensive_score"
+  },
+  "revival_spec": [
+    {
+      "signal_id": "wall_clock_date",
+      "condition": "x >= as.Date('2027-03-31')",
+      "from_trigger": "expiry",
+      "status": "active"
+    },
+    {
+      "signal_id": "regime_category",
+      "condition": "x %in% c('CRISIS','CAUTION')",
+      "from_trigger": "regime",
+      "status": "active"
+    }
+  ],
+  "constraint_firewall": {
+    "mode": "backstop_passed",
+    "checked_at": "2026-09-13"
+  },
+  "drafted_at": "2026-09-13T07:47:46+0900",
+  "drafted_by": "auto_distill"
 }
