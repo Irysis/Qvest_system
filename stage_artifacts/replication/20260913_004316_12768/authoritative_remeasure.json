@@ -1,0 +1,120 @@
+{
+  "status": "OK",
+  "strategy_id": "RP_20260913_004316_12768",
+  "strategy_name": "RF_PAR_B2_7_ivol",
+  "remeasured_at": "2026-09-13T00:50:09+0900",
+  "run_id": "20260913_004316_12768",
+  "bt_result_path": "C:/Users/99922/OneDrive/Quant_Module_Moltbot/stage_artifacts/replication/20260913_004316_12768/bt_result.rds",
+  "metric_type": "backtested",
+  "essence_grade": "C",
+  "grade_basis": "replication_chain",
+  "essence": {
+    "net_sharpe": 0.644,
+    "net_ir": 0.132,
+    "portfolio_alpha_t_nw_lag3": 0.597,
+    "oos_retention": -0.721,
+    "dsr": null,
+    "mdd": 0.517,
+    "calmar": 0.256,
+    "cagr": 0.132,
+    "drawdown_profile": {
+      "severe45_count": 5,
+      "severe55_count": 0,
+      "severe45_total_periods": 17,
+      "severe45_max_periods": 6,
+      "severe45_period_frac": 0.0032,
+      "catastrophic_mdd_threshold": 0.7,
+      "severe45_hard_count": 15,
+      "severe55_hard_count": 6,
+      "severe45_period_hard_frac": 0.25,
+      "severe45_max_hard_periods": 252,
+      "tail_review": true,
+      "structural_hard_fail": false
+    }
+  },
+  "hard_fail": false,
+  "structural_drawdown": false,
+  "selection_type": "chain",
+  "dsr_gate_applied": false,
+  "grade_base": "C",
+  "recent_regime_rescued": false,
+  "recent_regime_label": null,
+  "rolling_grade": {
+    "status": "ok",
+    "n_points": 225,
+    "window_months": 36,
+    "pass_life": 0.2311,
+    "pass_recent": 0.8333,
+    "current": {
+      "ym": "2026-09",
+      "sharpe": 0.811733,
+      "cagr": 0.287652,
+      "mdd": 0.259955,
+      "calmar": 1.106544,
+      "pass": true
+    },
+    "prior_recoveries": 9,
+    "current_run": 1,
+    "span": ["2008-01", "2026-09"]
+  },
+  "defensive_score": {
+    "status": "ok",
+    "defensive": true,
+    "down": {
+      "n": 110,
+      "excess": 0.009894,
+      "hit": 0.609091,
+      "t": 2.807316,
+      "capture": 0.768868
+    },
+    "mid": {
+      "n": 30,
+      "excess": 0.00065,
+      "hit": 0.533333,
+      "t": 0.110249,
+      "capture": 0.993202
+    },
+    "deep": {
+      "n": 10,
+      "excess": 0.006521,
+      "hit": 0.5,
+      "t": 0.587233,
+      "capture": 0.956936
+    },
+    "up": {
+      "n": 150,
+      "excess": -0.004058,
+      "hit": 0.446667,
+      "t": -0.938533,
+      "capture": 0.918864
+    },
+    "reason": "하락월 110개: 초과 +0.99%/월 (t 2.81 · 적중 61%) · 벤치-10% 이하 10개: 초과 +0.65%/월 · 상승월 초과 -0.41%/월"
+  },
+  "reasons": "Ensemble: positive alpha이나 B 미달 (블렌드에서만 가치)",
+  "replication": {
+    "source_paper": {
+      "url": "https://arxiv.org/abs/2011.05381",
+      "title": "Dirichlet policies for reinforced factor portfolios",
+      "paper_key": "2011.05381"
+    },
+    "commission_paper_bps": 15,
+    "paper_basis": {
+      "cagr": 0.131542,
+      "sharpe": 0.516486,
+      "mdd": 0.517112,
+      "n_months": 260
+    },
+    "grade_basis_note": "등급은 15bps 순비용 판 (essence 문턱 15bps 보정 — gross 등급은 인플레)",
+    "fidelity": "universe 치환(K200∪KQ150)만 — 그 외 논문 그대로 (v10 완전 충실구현)",
+    "benchmark_note": "long_vs_long_bm",
+    "n_max": 25,
+    "has_short": false
+  },
+  "contract": {
+    "integrity_status": "OK",
+    "cagr": 0.132,
+    "sharpe": 0.644,
+    "mdd": 0.517,
+    "calmar": 0.256
+  }
+}

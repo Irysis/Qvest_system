@@ -17,11 +17,46 @@
   "calmar": 0.231,
   "oos_retention": -0.748,
   "portfolio_alpha_t": 0.611,
-  "next_probes": [
-    "다음 격자 축 B2(weighting) — 이 블록 승자 위에서 측정",
-    "B1_10(최고 0.611)는 B4 조합 후보로 고정 · B1_8(최저 -2.011)는 축 역작동 여부를 조합 LOO 로 분리"
-  ],
+  "next_probes": ["다음 격자 축 B2(weighting) — 이 블록 승자 위에서 측정", "B1_10(최고 0.611)는 B4 조합 후보로 고정 · B1_8(최저 -2.011)는 축 역작동 여부를 조합 LOO 로 분리"],
   "next_probe": "다음 격자 축 B2(weighting) — 이 블록 승자 위에서 측정 | B1_10(최고 0.611)는 B4 조합 후보로 고정 · B1_8(최저 -2.011)는 축 역작동 여부를 조합 LOO 로 분리",
   "source_paper": "https://arxiv.org/abs/2011.05381",
-  "record_type": "performance"
+  "record_type": "performance",
+  "mechanism": "이 블록에서 움직인 축은 PORT_t·CAGR 이고 MDD 는 움직이지 않았다. B1_1→B1_5 는 GR04_GPA_Growth 에 V19_Debt_to_Market·CR11_Idiosyncratic_Return·RE06_Beta_Asymmetry·AC20_Payables_Accruals 를 차례로 결합한 단조 적층인데, PORT_t 는 -0.432→-0.453→-0.094→-0.007→0.226 으로 올라가고 CAGR 0.084→0.107, Calmar 0.122→0.150 이 따라 온다. 그런데 같은 사다리의 MDD 는 0.692→0.687→0.697→0.701→0.713 으로 오히려 커진다. Calmar 개선은 전부 CAGR 쪽에서 나왔고, 팩터를 다섯 개 겹쳐도 drawdown 은 0.687~0.713 을 벗어나지 않는다. 적층된 다섯 팩터가 횡단면에서는 서로 정보를 보태지만 drawdown 노출에서는 같은 한 축을 공유한다는 뜻이다(실측). MDD 가 실제로 내려간 칸은 적층이 아니라 팩터 계열을 교체한 단일 축 칸뿐이다: B1_10 joint_sign_repair_4 가 MDD 0.562·Calmar 0.231·PORT_t 0.611, B1_8 turnover_aligned 가 MDD 0.579, B1_7 st_reversal 이 MDD 0.667. 반대로 펀더멘털·성장 계열의 단일 축 B1_6 asset_growth_aligned 는 MDD 0.695 로 적층 범위 안에 그대로 머문다. 회전율·단기 반전 계열은 drawdown 을 낮추고 성장·가치·accrual 계열은 낮추지 않는다 — 계열이 MDD 를 가른다(실측). 단 B1_8 은 MDD 0.579 를 CAGR 0.056 으로 샀고 B1_9 flow_kr_absent_axis 는 MDD 0.705·CAGR 0.050 으로 양쪽을 다 잃었으니, 회전율 계열이 drawdown 을 낮추는 기전이 저베타 구성인지 단순한 낮은 수익 수준인지는 이 블록만으로 안 갈린다(미결). 가르려면 칸별 시장 베타와 위기 구간 수익을 따로 내야 하고, 그 값은 B1 산출물에 없다.",
+  "mechanism_by": "llm:block_end",
+  "mechanism_at": "2026-09-13T00:36:25+0900",
+  "prior_lessons_used": [],
+  "next_block_actions": [
+    {
+      "action": "B2 에서 lean:minvar 와 lean:ivol 을 한 쌍으로 돌려, 공분산 비대각 항이 MDD 를 움직이는지 개별 변동성만으로 충분한지 분리한다.",
+      "why": "B1_1~B1_5 에서 횡단면 선정을 다섯 겹 쌓아도 MDD 가 0.687~0.713 에 묶였다 — 선정 축에 남은 drawdown 여지가 없으므로 다음 후보는 비중 산출의 공분산 소비 지점이다.",
+      "expect": "minvar 가 ivol 보다 MDD 를 유의하게 낮추면 비대각 항이 실린 것이고, 둘이 비슷하면 상관구조는 기여가 없으며 MDD 는 종목별 변동성 수준 하나로 요약된다."
+    },
+    {
+      "action": "qepm:CDaR_LP 를 돌려 drawdown 경로를 목적함수에 직접 넣는다.",
+      "why": "이 블록의 구속 축이 MDD 라는 것이 B1_1~B1_5 의 평탄한 MDD 로 실측됐다 — 구속 축을 대리 변수로 건드리는 대신 직접 최적화하는 칸이 먼저 필요하다.",
+      "expect": "CDaR_LP 가 B1_10 의 MDD 0.562 아래로 내려가면 drawdown 은 비중 단계에서 통제 가능한 양이다. CAGR 만 깎이고 MDD 가 0.687~0.713 에 남으면 drawdown 은 비중이 아니라 총노출 축(B5)의 문제로 넘긴다."
+    },
+    {
+      "action": "lean:cvar 를 CDaR_LP 와 같은 블록에 두어 수익 분포의 꼬리와 손실 경로를 갈라 본다.",
+      "why": "B1 에서 MDD 만 끈질기게 남았고 PORT_t 는 자유롭게 움직였다 — 월별 수익 꼬리가 문제인지 연속 손실의 누적 경로가 문제인지 아직 구분되지 않았다.",
+      "expect": "CVaR 쪽만 개선되고 MDD 가 그대로면 문제는 단발 꼬리가 아니라 연속성이며, 그러면 이후 처치는 시계열 축(오버레이)으로 옮겨야 한다."
+    },
+    {
+      "action": "lean:nco 를 돌려 MDD 가 집중도에서 오는지 본다.",
+      "why": "적층이 MDD 를 못 낮춘 기전 후보 중 하나는 다섯 팩터가 같은 클러스터의 종목을 반복해서 고른 것이다 — 이 가설은 비중 단계의 클러스터 분산으로만 검증된다.",
+      "expect": "nco 가 minvar 수준으로 MDD 를 낮추면 원인은 공통방향이 아니라 클러스터 집중이고, 전혀 안 움직이면 집중도 가설은 기각된다."
+    },
+    {
+      "action": "lean:score_tilt 1칸을 대조로 남긴다(score_blend 계열은 이 한 칸만).",
+      "why": "기전 주장이 '선정 축 강화로는 MDD 가 안 움직인다' 이므로, 점수 기반 tilt 가 MDD 를 낮추면 주장 자체가 반증된다.",
+      "expect": "score_tilt 의 MDD 가 0.687~0.713 안에 들어오면 위 기전이 확인되고, 이 범위 밖으로 내려가면 기전을 철회하고 선정 강도 축을 다시 연다."
+    }
+  ],
+  "next_block_actions_by": "llm:block_end",
+  "avoid": ["score_blend 계열을 2칸 이상 쓰지 말 것(lean:score_pure · lean:rank_tilt · lean:softmax_tilt · lean:winsor_tilt · lean:nco_score_tilt) — 전부 B1_1~B1_5 가 이미 쓸어본 선정 축 강화와 같은 소비 지점이고, 그 축에서 MDD 는 0.687~0.713 으로 평탄했다. 대조 1칸으로 족하다.", "gen:lean_score_tilt__shr_sample · gen:lean_score_tilt__shr_ledoit_wolf · gen:lean_score_tilt__shr_gerber_rmt · gen:qepm_MVO__shr_lw_nls 는 이번 블록에서 쓰지 말 것 — 공분산 추정만 바꾼 변형이라, minvar 대 ivol 이 비대각 항의 기여를 먼저 실측한 뒤에야 해석 가능하다. 순서가 뒤집히면 네 칸이 전부 해석 불가로 남는다.", "펀더멘털·성장·accrual 계열 팩터를 여섯 번째로 더 쌓는 처치는 이후 블록에서도 쓰지 말 것 — B1_1~B1_5 의 단조 적층이 MDD 에 대해 벽을 확인했고 B1_6 asset_growth_aligned(MDD 0.695)도 같은 범위에 떨어졌다.", "long-only Σw=1 비중 방법이 총노출을 줄일 것으로 기대하지 말 것 — 재배분만 가능하다. B2 에서 MDD 가 안 내려가도 그것은 위험 통제 실패가 아니라 소비 지점이 B5 오버레이라는 뜻이다."],
+  "next_block_design_for": "B2",
+  "next_block_design_n": 6,
+  "prior_action_status": "no_design",
+  "prior_action_detail": "그 블록에 설계가 없었다(규칙 선정)",
+  "mechanism_confidence": "medium"
 }
