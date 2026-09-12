@@ -17,11 +17,34 @@
   "calmar": 0.238,
   "oos_retention": -0.973,
   "portfolio_alpha_t": 0.328,
-  "next_probes": [
-    "다음 격자 축 B4(combination) — 이 블록 승자 위에서 측정",
-    "B5_19(최고 0.328)는 B4 조합 후보로 고정 · B5_16(최저 -0.539)는 축 역작동 여부를 조합 LOO 로 분리"
-  ],
+  "next_probes": ["다음 격자 축 B4(combination) — 이 블록 승자 위에서 측정", "B5_19(최고 0.328)는 B4 조합 후보로 고정 · B5_16(최저 -0.539)는 축 역작동 여부를 조합 LOO 로 분리"],
   "next_probe": "다음 격자 축 B4(combination) — 이 블록 승자 위에서 측정 | B5_19(최고 0.328)는 B4 조합 후보로 고정 · B5_16(최저 -0.539)는 축 역작동 여부를 조합 LOO 로 분리",
   "source_paper": "https://arxiv.org/abs/2011.05381",
-  "record_type": "performance"
+  "record_type": "performance",
+  "mechanism": "판정: B5 오버레이도 Calmar 를 움직이지 못했다 — 네 칸 Calmar 0.212~0.242(폭 0.030)로 B2 범위 0.245~0.266 아래, B1_10 의 0.231 과 같은 수준이다. 대신 MDD 0.452~0.531 과 PORT_t -0.539~0.328 이 같은 순서로 단조 정렬된다(B5_16 MDD 0.452·PORT_t -0.539 → B5_17 MDD 0.469·PORT_t -0.052 → B5_18 MDD 0.523·PORT_t 0.236 → B5_19 MDD 0.531·PORT_t 0.328, CAGR 도 0.096→0.113→0.121→0.126 동반). MDD 감소분은 전부 CAGR·PORT_t 로 지불됐다(실측). B3 처방 ①은 갈렸다: dd_brake_q(B5_16)와 dbeta_tilt_rank(B5_17)의 MDD 차는 0.017 뿐인데 PORT_t 차는 0.487 이다 — MDD 하락은 횡단면 차등이 아니라 두 칸이 공유하는 낙폭 조건부 노출 강도에서 오고, PORT_t 부호 반전은 스칼라 형태에서만 온다(실측). 처방 ②는 안 갈렸다: holdlvl_syscrowd_tilt(B5_18)와 csd_idio_tilt(B5_19)는 MDD 차 0.008 · Calmar 차 0.007 로 사실상 동일하고 둘 다 MDD 0.52~0.53 에 머문다 — 시장 공통성분이든 종목 특이성분이든 B1 이 관측한 공유 낙폭 축을 제거하지 못했다(미결). 가르려면 칸별 평균 총노출·유효종목수·두 tilt 벡터 상관이 필요하고 B5 산출물에 없다. 세 블록을 이으면 MDD 는 0.687~0.713(B1) → 0.469~0.537(B2) → 0.452(B5) 로 실제로 내려갔는데 Calmar 는 0.21~0.27 을 벗어난 적이 없다 — 구속은 MDD 수준이 아니라 CAGR 대 MDD 교환 기울기이고, 선정·비중·오버레이 세 소비 지점이 같은 기울기로 거래된다.",
+  "mechanism_by": "llm:block_end",
+  "mechanism_at": "2026-09-13T01:25:50+0900",
+  "prior_lessons_used": ["B1", "B2", "B3"],
+  "next_block_actions": [
+    {
+      "action": "B4 LOO 의 오버레이 항은 B5_19(csd_idio_tilt)로 고정하고 B5_16(dd_brake_q)은 멤버에서 제외한다",
+      "why": "B5_16 은 MDD 0.452 를 PORT_t -0.539 로 샀고, 같은 낙폭 강도를 횡단면으로 쓴 B5_17 이 MDD 0.469(차 0.017)에서 PORT_t 를 -0.052 로 회수했다 — 스칼라 형태만 부호를 반전시킨다",
+      "expect": "오버레이 항을 LOO 로 빼도 MDD 가 0.52 위에서 0.01 이내로만 움직이면 오버레이 기여는 노출 강도 축이 아니라 종목 차등 축으로 귀속된다. 반대로 MDD 가 0.05 이상 올라가면 B5_19 도 실은 노출 축소분으로 MDD 를 산 것이다"
+    },
+    {
+      "action": "B4 결합 멤버에 비중 축을 명시 승계한다 — B2_9(cvar · MDD 0.537 · PORT_t 0.610)를 기저 비중으로 고정하고 동일가중 1/25 로 리셋되지 않게 처치 문자열에 박는다",
+      "why": "B3 세 칸이 전부 '동일가중 1/25' 로 내려가 유니버스 효과와 비중 리셋이 교락됐고, B5 네 칸도 같은 동일가중 위에서 측정됐다 — 오버레이 기여가 비중 축 부재 위에서 잰 값이다",
+      "expect": "같은 오버레이를 B2_9 비중 위에 얹었을 때 MDD 가 B5 의 0.523~0.531 대신 0.537 근방에 붙고 PORT_t 가 0.6 대로 복귀하면 오버레이와 비중은 같은 축을 공유한다(가산 아님). 두 축이 독립이면 PORT_t 가 0.610 을 넘는 칸이 처음 나온다"
+    },
+    {
+      "action": "B4 산출물에 칸별 진단 3종(평균 총노출 · 유효종목수 · turnover)을 함께 기록한다",
+      "why": "이 격자의 미결 2건(B2_8 CDaR_LP 의 세 축 최악이 추정오차 코너해인지 목적함수 오설정인지 · B5_18 대 B5_19 의 공통성분 대 특이성분)이 전부 이 값들을 요구하는데 B2·B5 산출물에 없다. 근거가 이 격자 밖에 있다는 뜻이므로 다음 블록에서 값을 남기는 것 자체가 처치다",
+      "expect": "오버레이 칸의 평균 총노출이 1 에 가깝다면 B5_16 의 MDD 0.452 는 노출 축소가 아니라 종목 구성에서 온 것으로 재귀속되고, 0.8 이하라면 낙폭 조건부 타이밍이 KR 반등 구간을 잘라낸 것으로 확정된다"
+    }
+  ],
+  "next_block_actions_by": "llm:block_end",
+  "avoid": ["스칼라 총노출만 움직이는 arm 을 다시 쓰지 말 것(dd_brake_q · vol_median · vol_ewma · vol_har · ts_mom_sign · turbulence · ml_tail_gate · vol_x_dd · vol_x_turb · xs_vol_gap_corr_brake) — B5_16 이 MDD 0.452(블록 최저)를 PORT_t -0.539(블록 최저)로 샀고 Calmar 0.212 로 오히려 블록 최저다. 벽 확인", "시장 공통성분 대 종목 특이성분 구분에 칸을 더 쓰지 말 것 — B5_18·B5_19 가 MDD 차 0.008 · Calmar 차 0.007 로 이 해상도에서 구분 불가다. 진단값(평균 총노출·tilt 벡터 상관) 없이 재시도하면 같은 미결이 반복된다", "유니버스 축 재시도 금지 — B3 세 칸 Calmar 0.158~0.183, 특히 선정 단계 섹터 중립은 B3_15 PORT_t -0.660 으로 신호 부호가 반전됐다(B3 승계)", "공분산 추정기만 바꾼 변형(gen:lean_score_tilt__shr_* · gen:qepm_MVO__shr_lw_nls) 및 CDaR_LP 계열 재시도 금지 — B2_8 이 PORT_t -0.548 · MDD 0.679 · CAGR 0.088 로 세 축 최악(B1·B2 승계)", "펀더멘털·성장·accrual 계열을 여섯 번째로 더 쌓는 처치 금지 — B1_1~B1_5 단조 적층 MDD 0.687~0.713 과 B1_6(MDD 0.695)이 벽을 확인했다(B1 승계)", "B4 는 LOO 계약이므로 부분집합을 임의로 흔들지 말 것 — 멤버를 바꾸면 위 귀속이 깨진다"],
+  "prior_action_status": "executed",
+  "prior_action_detail": "설계 4건 중 4건 집행 (설계: dd_brake_q,dbeta_tilt_rank,holdlvl_syscrowd_tilt,csd_idio_tilt / 실측: dd_brake_q,dbeta_tilt_rank,holdlvl_syscrowd_tilt,csd_idio_tilt)",
+  "mechanism_confidence": "medium"
 }
