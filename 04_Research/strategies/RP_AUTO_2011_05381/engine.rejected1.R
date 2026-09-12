@@ -1,23 +1,11 @@
 # =============================================================================
-# engine.R — RP_AUTO_2011_05381  (2판 · 2026-09-12 — 1판 적대적 충실도 감사 misdeclared 수리판)
+# engine.R — RP_AUTO_2011_05381  (1판 · 2026-09-12)
 # Eric André · Guillaume Coqueret, "Dirichlet policies for reinforced factor portfolios"
 #   arXiv:2011.05381 (v1 2020-11-10 · v3 2021-06-25)  https://arxiv.org/abs/2011.05381
-#   본문 = arxiv.org/html/2011.05381v3 (2판: Table 3 두 열 전 행 · §3.3 · §4.1 · §4.3 회전율 식 재질의) + 1판 감사 evidence
+#   본문 = r.jina.ai PDF 텍스트 프록시(2020년 논문 · arxiv html 렌더 없음) — 절 단위 질의 8회 (FIDELITY source_paper)
 #
 # ★라벨(adapted)·변경 전수 신고·러너 사양의 정본 = FIDELITY.json. 이 주석은 아무것도 결정하지 않는다.
 #   코드 옆 ★changed(n) 표식 = FIDELITY.json changed 의 항목 번호.
-#
-# 1판 → 2판 (감사 지적 → 원문 복귀):
-#   [A] 배분 모집단: 1판 = 그 달 적격 횡단면 전 종목(실현 133~267종) → 2판 = Table 3 step 2 에서 뽑은 N = 100 종목.
-#       §4.1 'N, the number of stocks that are integrated in the portfolio (used to compute the reward)' ·
-#       'Larger portfolios impose stringent constraints on the Dirichlet parameters, making the approach impractical'.
-#       Table 3 step 8 'For date t+1, do:' 블록 안에 종목 선택 단계가 없고, 연대기 열은 같은 구조로 뽑은 N 을
-#       'For next 12 months' 보유한다 → t+1 보유 = step 2 의 N.                                   (FIDELITY changed(5))
-#   [B] mom: 1판 = Table 1 캡션 축자 P_{t−12}/P_{t−1} − 1(= 표제 항목의 정확한 역순위) → 2판 = Table 1 행 표제
-#       '12-1M momentum'(Jegadeesh–Titman 1993 · Asness et al. 2013) = P_{t−1}/P_{t−12} − 1.
-#       논문 내부 불일치(표제 vs 캡션) — 양쪽 원문을 FIDELITY changed(6) 에 인용.
-#   [C] 'θ_mom 부호가 흡수한다' 주장 철회 — θ 는 매월 1 로 재초기화(Table 3 step 3)되므로 월별 부호 분포를 로그로 낸다(진단).
-#   [D] 보유 종목수 선언 = 실현값(N = 100 · 후보 < 100 인 달은 전부 보유 · 건수 로그).
 #
 # 논문의 기전(§2·§3 축자 요지 — 전문은 FIDELITY kept):
 #   상태 X_t = 종목별 특성 벡터 [1, x^(1..K)] (x^(0) = 1 상수 · 특성 12종은 매월 횡단면에서 [−0.5, 0.5] 균등분포로 변환),
@@ -26,17 +14,16 @@
 #   정책 기울기(식 15) ∇_θ ln π(w|X,θ) = Σ_n (ψ(σ) − ψ(a_n) + ln w_n) ∇a_n,  σ = Σ_n a_n,  F2: ∇a_n = a_n x_n,
 #   REINFORCE(Table 2) θ ← θ + η γ^t G ∇ln π,  G = Σ_{k>t} γ^{k−t−1} R_k,  기울기는 최대 절댓값으로 나눈다(§4.1),
 #   프로토콜(Table 3 · 부트스트랩 열): 매월 t — ①직전 달 데이터 추출 ②N 종목 무작위 선택 ③θ 초기화
-#     ④에피소드 i = 1..E: N 종목 복원추출 → 행동(w 표집)·보상 → 식(13) 갱신 ⑤t+1 = 그 N 종목에 평균 정책 E[w_n] = a_n/σ (식 11).
+#     ④에피소드 i = 1..E: N 종목 복원추출 → 행동(w 표집)·보상 → 식(13) 갱신 ⑤t+1 = 평균 정책 E[w_n] = a_n/σ (식 11) 로 배분.
 #   셀 = Fig.2 파라미터(η 0.1 · E 500 · θ_k 초기값 1 · seed 42) · N 100(§4.1) · γ 1(§4.1) · F2 · 부트스트랩(§5.4 유일한 강건 결론).
 #
-# 산출: PORTFOLIO(Date, Ticker, Weight, Leg) — Weight = a_n/σ (롱온리 · Σw = 1 · 그 달 step 2 풀 N = 100 종목)
-#       FACTORS(Date, Ticker, Score)          — Score = x_t'θ_t = ln a_n (적격 전 종목 · IC 진단 전용 · 보유의 상위집합)
+# 산출: PORTFOLIO(Date, Ticker, Weight, Leg) — Weight = a_n/σ (롱온리 · Σw = 1 · 그 달 적격 횡단면 전 종목)
+#       FACTORS(Date, Ticker, Score)          — Score = x_n'θ = ln a_n (그 달 비중의 단조 변환 · IC/FMB 진단용)
 #
 # PIT(C1~C15) 구조 보장: 시그널 d_t = 달 t 의 마지막 거래일(시장 통합). d_t 의 코드 접근 = X_{t−1}(달 t−1 월말 행·창) ·
 #   r_t = P_t/P_{t−1} − 1 (d_t 에 실현) · X_t(d_t 당일 행 + d_t 이하 창). 회계 항목 = FD_lag(= max(패널 Factor_Date,
 #   익년 3/31)) ≤ d 인 최신 회계연도만 roll join(C4). 전 표본 통계 0건(균등화 = 그 달 횡단면만 · vol/rsi = 종목별 과거 창) ·
 #   팩터 DB 미사용(C13/C15 대상 코드 없음) · 유동성 스크린 없음(C10 대상 코드 없음) · 집행 = 익월 첫 거래일(러너 get_execution_date).
-#   θ 는 매월 새로 초기화 — 달 사이 이월 상태 없음. 난수 = seed 42 결정론.
 # =============================================================================
 
 suppressWarnings(suppressMessages({
@@ -54,18 +41,18 @@ if (!all(.REQ %in% names(RAWDATA)))
 # =============================================================================
 # 0. 상수 — 논문 명시값(Fig.2 캡션 · §4.1 · Table 1) + 논문이 침묵한 규약(전부 FIDELITY.json changed 신고)
 # =============================================================================
-.N_ASSETS   <- 100L                    # §4.1 'N, the number of stocks that are integrated in the portfolio' · 'The most obvious choice is N = 100'
+.N_ASSETS   <- 100L                    # §4.1 'The most obvious choice is N = 100'
 .N_EPIS     <- 500L                    # Fig.2 캡션 'the number of episodes E = 500'
 .ETA        <- 0.1                     # Fig.2 캡션 'the learning rate η = 0.1'
-.GAMMA      <- 1                       # §4.1 'we set γ = 1' (부트스트랩 = 에피소드 길이 1 이라 무관)
+.GAMMA      <- 1                       # §4.1 'we set γ = 1' (에피소드 길이 1 이라 무관)
 .THETA0     <- 1                       # Fig.2 캡션 'the initial value for all θ_k is 1'
 .SEED       <- 42L                     # Fig.2 캡션 'the random seed in 42'                          ★changed(11)
 .VOL_WIN    <- 30L                     # Table 1 vol = VOLATILITY_30D (과거 30 거래일)
 .RSI_WIN    <- 30L                     # Table 1 rsi = RSI_30D
-.MOM_LONG   <- 12L                     # Table 1 mom = '12-1M momentum' (래그 12 · 래그 1 월말 종가)   ★changed(6)
+.MOM_LONG   <- 12L                     # Table 1 mom = 'lagged 12 month value divided by lagged one month value, minus one'
 .MOM_SHORT  <- 1L
 .OUT_START  <- as.Date("2005-01-01")   # 고정 축(기간 2005-01-01~) — 이 날 이후 시그널만 발행
-.MIN_ELIG   <- 20L                     # ★changed(8)  적격 횡단면·풀 후보 하한(미만이면 그 달 발행 없음)
+.MIN_ELIG   <- 20L                     # ★changed(8)  학습·배분 횡단면 하한(미만이면 그 달 발행 없음)
 .FY_MAX_AGE <- 2L                      # ★changed(7)  최신 회계연도가 year(d) − 2 보다 오래되면 결측 취급
 .SEED_CHK   <- 20201110L               # ★changed(11) 양성 대조 시드 = 논문 v1 게재일(임의 상수)
 .FEATS <- c("cap", "pb", "de", "vol", "prof", "inv", "eps", "liq", "rsi", "pe", "dy", "mom")   # Table 1 순서
@@ -302,9 +289,7 @@ local({
 .GUARD$n0 <- 0L                                    # 검산 중 발생분은 세지 않는다
 
 # =============================================================================
-# 4. 월별 루프 — Table 3 부트스트랩 열 그대로:
-#    (1) X_t   (2) step 1~2: 직전 달 (X_{t−1}, r_t) → N = 100 종목 무작위 선택(풀) → step 3~7: θ 초기화 · E 에피소드
-#    (3) step 8~9: t+1 = **그 풀 N 종목**에 평균 정책 E[w_n] = a_n/σ (식 11) · 특성 = X_t                     ★changed(4)(5)
+# 4. 월별 루프 — Table 3 부트스트랩 열 그대로: (1) X_t · (2) 직전 달 (X_{t−1}, r_t) 로 REINFORCE · (3) t+1 배분 = a/σ
 # =============================================================================
 .J <- nrow(.me)
 .X  <- vector("list", .J)
@@ -315,21 +300,21 @@ if (is.na(.j_out)) stop(sprintf("%s %s 이후 월말 0 — RAWDATA 날짜 범위
 .j_start <- max(.j0, .j_out - 1L)                                            # 첫 발행월의 학습 재료(X_{t−1}) 한 달 전부터
 .rows_p <- list(); .rows_f <- list(); .dg <- list(); .TH <- list()
 .na_acc <- setNames(numeric(.K), .FEATS); .na_n <- 0L
-.n_skip_x <- 0L; .n_skip_tr <- 0L; .n_skip_w <- 0L; .n_short_pool <- 0L
-.prev_w <- NULL; .prev_pool <- NULL
+.n_skip_x <- 0L; .n_skip_tr <- 0L; .n_skip_w <- 0L
+.prev_w <- NULL
 set.seed(.SEED)                                                              # Fig.2 'random seed 42' — 루프 직전 1회   ★changed(11)
 .t_loop <- Sys.time()
 for (j in .j_start:.J) {
   mi <- .me$MI[j]; d <- .me$MEnd[j]; im <- match(mi, .MIs)
 
-  # (1) X_t — d 당일 구성종목 · 12 특성 전부 유한(완전 사례) · 그 집합(적격 횡단면 전체) 안에서 균등화        ★changed(6)(8)
+  # (1) X_t — d 당일 구성종목 · 12 특성 전부 유한(완전 사례) · 그 집합 안에서 균등화                          ★changed(6)(8)
   mr <- .ME_ROWS[.(mi), nomatch = NULL][MEM == TRUE & is.finite(Size) & Size > 0]
-  n_mem <- nrow(mr); n_elig <- 0L
+  n_mem <- nrow(mr)
   if (n_mem > 0L) {
     tk  <- mr$Ticker
     ac  <- .acct_at(tk, d)
-    P1  <- .P[im - .MOM_SHORT, tk]                                           # P_{t−1} = 직전 달 마지막 관측 종가
-    P12 <- .P[im - .MOM_LONG, tk]                                            # P_{t−12}
+    P1  <- .P[im - .MOM_SHORT, tk]
+    P12 <- .P[im - .MOM_LONG, tk]
     sh  <- mr$Size / mr$Close                                                 # 조정 기준 발행주식수(d 시점)
     Fm <- data.table(
       Ticker = tk,
@@ -344,7 +329,7 @@ for (j in .j_start:.J) {
       rsi  = mr$rsi,
       pe   = fifelse(is.finite(ac$NI) & ac$NI > 0, mr$Size / ac$NI, NA_real_),
       dy   = fifelse(is.finite(ac$DIV) & is.finite(P1) & P1 > 0, (ac$DIV / sh) / P1, NA_real_),
-      mom  = fifelse(is.finite(P1) & is.finite(P12) & P12 > 0, P1 / P12 - 1, NA_real_))   # ★changed(6) 12-1M momentum = P_{t−1}/P_{t−12} − 1 (Table 1 행 표제 · J–T 1993 · Asness 2013). 캡션 축자 P_{t−12}/P_{t−1} − 1 은 이것의 정확한 역순위 — 1판이 그쪽을 택했다
+      mom  = fifelse(is.finite(P1) & is.finite(P12) & P1 > 0, P12 / P1 - 1, NA_real_))   # Table 1 문구 축자(FIDELITY changed(6))
     Fv <- as.matrix(Fm[, .FEATS, with = FALSE])
     okf <- is.finite(Fv)
     if (d >= .OUT_START) { .na_acc <- .na_acc + colSums(!okf); .na_n <- .na_n + n_mem }
@@ -357,65 +342,57 @@ for (j in .j_start:.J) {
       dimnames(Xj) <- list(tk[ok], c("cst", .FEATS))
       .X[[j]] <- Xj
     } else .n_skip_x <- .n_skip_x + 1L
-  } else .n_skip_x <- .n_skip_x + 1L
-  if (d < .OUT_START) next                                                   # 발행 전 달 = X 만 쌓는다(θ 는 매월 초기화 · 이월 상태 없음) ★changed(12)
+  } else { n_elig <- 0L; .n_skip_x <- .n_skip_x + 1L }
 
-  # (2) step 1~2 — 직전 달 데이터: X_{t−1} 과 d 에 실현된 r_t. 후보 = X_{t−1} 행 ∩ r_t 유한 ∩ X_t 행(t+1 에 보유 가능한 종목)
-  #     step 2 'Randomly pick N assets' = 후보에서 N = 100 비복원 추출 → 풀(= 학습 모집단 = t+1 보유 종목)                ★changed(4)(5)
-  #     step 3 'Initialize θ' (매월) → step 4~7: 에피소드마다 풀에서 N 복원추출 → w 표집 → 보상 → 식(13) 갱신
-  th <- NULL; pool_tk <- NULL; n_prev <- 0L; n_cand <- 0L; n_pool <- 0L
-  if (j > 1L && !is.null(.X[[j - 1L]]) && !is.null(.X[[j]]) && im > 1L) {
-    Xp  <- .X[[j - 1L]]; tkp <- rownames(Xp); n_prev <- length(tkp)
+  # (2) 학습 — 직전 달 X_{t−1} 과 d 에 실현된 r_t 만. Table 3: N 종목 선택 → θ 초기화 → E 에피소드(N 복원추출 → 표집 → 보상 → 식 13)
+  th <- NULL; n_train <- 0L; n_pool <- 0L
+  if (j > 1L && !is.null(.X[[j - 1L]]) && im > 1L) {
+    Xp  <- .X[[j - 1L]]; tkp <- rownames(Xp)
     rtr <- .P[im, tkp] / .P[im - 1L, tkp] - 1                                # d 에 확정된 직전월→이번월 수익(학습 보상)
-    cand <- tkp[is.finite(rtr) & (tkp %in% rownames(.X[[j]]))]
-    n_cand <- length(cand)
-    if (n_cand >= .MIN_ELIG) {
-      pool_tk <- if (n_cand > .N_ASSETS) cand[sample.int(n_cand, .N_ASSETS, replace = FALSE)] else cand   # step 2
-      n_pool  <- length(pool_tk)
-      if (n_pool < .N_ASSETS) .n_short_pool <- .n_short_pool + 1L
-      Xtr <- Xp[pool_tk, , drop = FALSE]                                     # X_{t−1} · 풀 행만
-      rtp <- rtr[match(pool_tk, tkp)]                                        # r_t · 풀 행만
-      th  <- rep(.THETA0, .K + 1L)                                           # step 3 'Initialize θ' (매월 · Fig.2 θ_k = 1)
-      for (i in seq_len(.N_EPIS)) {                                          # step 4 'For i = 1,…episodes'
-        idx <- sample.int(n_pool, .N_ASSETS, replace = TRUE)                 # step 5 · §3.3 'randomly choosing (with replacement) N assets'
-        Xi  <- Xtr[idx, , drop = FALSE]
+    okr <- is.finite(rtr)
+    if (sum(okr) >= .MIN_ELIG) {
+      Xp <- Xp[okr, , drop = FALSE]; rtr <- rtr[okr]; n_train <- nrow(Xp)
+      pool <- sample.int(n_train, min(.N_ASSETS, n_train), replace = FALSE)  # Table 3 step 2 'Randomly pick N assets'  ★changed(4)
+      n_pool <- length(pool)
+      th <- rep(.THETA0, .K + 1L)                                            # Table 3 step 3 'Initialize θ' (매월)
+      for (i in seq_len(.N_EPIS)) {
+        idx <- pool[sample.int(n_pool, .N_ASSETS, replace = TRUE)]           # step 5 'randomly choosing (with replacement) N assets'
+        Xi  <- Xp[idx, , drop = FALSE]
         a   <- exp(as.vector(Xi %*% th))                                     # 식(9) F2
-        w   <- .rdirichlet(a)                                                # step 6 행동 A_s ~ π_θ
-        Rr  <- sum(w * rtp[idx])                                             # 보상 R = ρ = w' r (에피소드 길이 1 → G = R)
+        w   <- .rdirichlet(a)                                                # 행동 A_s ~ π_θ
+        Rr  <- sum(w * rtr[idx])                                             # 보상 R = ρ = w' r (에피소드 길이 1 → G = R)
         g   <- .grad_lnpi(Xi, a, w)                                          # 식(15)
         mg  <- max(abs(g))
-        if (is.finite(mg) && mg > 0) th <- th + .ETA * .GAMMA * Rr * (g / mg)   # step 7 · 식(13) · Table 2 · §4.1 최대절댓값 정규화
+        if (is.finite(mg) && mg > 0) th <- th + .ETA * .GAMMA * Rr * (g / mg)   # 식(13) · Table 2 step 5 · §4.1 최대절댓값 정규화
       }
     } else .n_skip_tr <- .n_skip_tr + 1L
   } else .n_skip_tr <- .n_skip_tr + 1L
 
-  # (3) step 8~9 — 'For date t+1: allocate via average policy, Eq. (11)' = 풀 N 종목에 w_n = a_n/σ · a_n = exp(x_{t,n}'θ)   ★changed(5)(10)
-  if (!is.null(th)) {
-    Xj <- .X[[j]][pool_tk, , drop = FALSE]                                   # X_t · 풀 행만 (균등화는 적격 전체 위에서 이미 끝났다)
+  # (3) 배분 — 식(11) E[w_n] = a_n/σ 를 d 당일 적격 횡단면 전 종목에 (θ 는 이번 달 학습값)                     ★changed(5)(10)
+  if (!is.null(th) && !is.null(.X[[j]]) && d >= .OUT_START) {
+    Xj <- .X[[j]]
     sc <- as.vector(Xj %*% th)
     ea <- exp(sc - max(sc)); w <- ea / sum(ea)                               # = a/σ (오버플로 안전 · 값 동일)
     if (all(is.finite(w)) && all(w > 0)) {
-      cur <- setNames(w, pool_tk)
+      tkj <- rownames(Xj)
+      cur <- setNames(w, tkj)
       to  <- if (is.null(.prev_w)) sum(abs(cur)) else {
         u <- union(names(.prev_w), names(cur))
         a1 <- cur[u];     a1[is.na(a1)] <- 0
         b1 <- .prev_w[u]; b1[is.na(b1)] <- 0
         sum(abs(a1 - b1))
       }
-      ovl <- if (is.null(.prev_pool)) NA_integer_ else length(intersect(.prev_pool, pool_tk))
-      .prev_w <- cur; .prev_pool <- pool_tk
-      .rows_p[[length(.rows_p) + 1L]] <- data.table(Date = d, Ticker = pool_tk, Weight = w, Leg = "long")
-      scf <- as.vector(.X[[j]] %*% th)                                       # 진단 패널: 적격 전 종목의 x_t'θ_t (보유의 상위집합) ★changed(16)
-      .rows_f[[length(.rows_f) + 1L]] <- data.table(Date = d, Ticker = rownames(.X[[j]]), Score = scf)
+      .prev_w <- cur
+      .rows_p[[length(.rows_p) + 1L]] <- data.table(Date = d, Ticker = tkj, Weight = w, Leg = "long")
+      .rows_f[[length(.rows_f) + 1L]] <- data.table(Date = d, Ticker = tkj, Score = sc)
       .TH[[length(.TH) + 1L]] <- th
       .dg[[length(.dg) + 1L]] <- data.table(
-        Date = d, n_mem = n_mem, n_elig = n_elig, n_prev = n_prev, n_cand = n_cand, n_pool = n_pool,
-        sigma = sum(exp(sc)), w_max = max(w), w_min = min(w), n_eff = 1 / sum(w * w), ovl = ovl, to = to, th0 = th[1L])
+        Date = d, n_mem = n_mem, n_elig = n_elig, n_train = n_train, n_pool = n_pool,
+        sigma = sum(exp(sc)), w_max = max(w), n_eff = 1 / sum(w * w), to = to, th0 = th[1L])
       if (length(.rows_p) %% 12L == 0L) {
-        o <- order(-abs(th[-1L] - .THETA0))[1:3]
-        cat(sprintf("%s   %s · 구성 %d · 적격 %d · 후보 %d · 풀 %d · σ %.1f · w_max %.4f · w_min %.4f · N_eff %.1f · 겹침 %s · Σ|Δw| %.3f · θ0 %.3f · |θ−1| 상위: %s · 경과 %.1f분\n",
-                    .TAG, as.character(d), n_mem, n_elig, n_cand, n_pool, sum(exp(sc)), max(w), min(w), 1 / sum(w * w),
-                    if (is.na(ovl)) "-" else as.character(ovl), to, th[1L],
+        o <- order(-abs(th[-1L]))[1:3]
+        cat(sprintf("%s   %s · 구성 %d · 적격 %d · 학습 %d(풀 %d) · σ %.1f · w_max %.4f · N_eff %.1f · Σ|Δw| %.3f · θ0 %.3f · |θ| 상위: %s · 경과 %.1f분\n",
+                    .TAG, as.character(d), n_mem, n_elig, n_train, n_pool, sum(exp(sc)), max(w), 1 / sum(w * w), to, th[1L],
                     paste(sprintf("%s %+.3f", .FEATS[o], th[-1L][o]), collapse = " "),
                     as.numeric(difftime(Sys.time(), .t_loop, units = "mins"))))
       }
@@ -432,45 +409,36 @@ PORTFOLIO <- rbindlist(.rows_p, use.names = TRUE)
 FACTORS   <- rbindlist(.rows_f, use.names = TRUE)
 setorder(PORTFOLIO, Date, Ticker)
 setorder(FACTORS, Date, Ticker)
-.chk <- PORTFOLIO[, .(s = sum(Weight), mn = min(Weight), n = .N), by = Date]
-.bad <- .chk[abs(s - 1) > 1e-9 | mn <= 0 | n > .N_ASSETS]
+.chk <- PORTFOLIO[, .(s = sum(Weight), mn = min(Weight)), by = Date]
+.bad <- .chk[abs(s - 1) > 1e-9 | mn <= 0]
 if (nrow(.bad) > 0L)
-  stop(sprintf("%s 비중 검산 실패 %d건 (예: %s Σw %.9f · min %.3e · n %d)", .TAG, nrow(.bad), as.character(.bad$Date[1L]), .bad$s[1L], .bad$mn[1L], .bad$n[1L]))
+  stop(sprintf("%s 비중 검산 실패 %d건 (예: %s Σw %.9f · min %.3e)", .TAG, nrow(.bad), as.character(.bad$Date[1L]), .bad$s[1L], .bad$mn[1L]))
 if (anyDuplicated(PORTFOLIO, by = c("Date", "Ticker")) > 0L) stop(sprintf("%s PORTFOLIO (Date,Ticker) 중복", .TAG))
 if (anyDuplicated(FACTORS, by = c("Date", "Ticker")) > 0L)   stop(sprintf("%s FACTORS (Date,Ticker) 중복", .TAG))
 if (!all(is.finite(FACTORS$Score))) stop(sprintf("%s FACTORS Score 비유한값 %d건", .TAG, sum(!is.finite(FACTORS$Score))))
-.pf_in_fx <- merge(PORTFOLIO[, .(Date, Ticker)], FACTORS[, .(Date, Ticker, Score)], by = c("Date", "Ticker"))
-if (nrow(.pf_in_fx) != nrow(PORTFOLIO)) stop(sprintf("%s 보유 종목이 진단 패널의 부분집합이 아님", .TAG))
 
 .DG  <- rbindlist(.dg, use.names = TRUE)
 .THM <- do.call(rbind, .TH)
 colnames(.THM) <- c("cst", .FEATS)
 .th_mean <- colMeans(.THM); .th_sd <- apply(.THM, 2L, function(z) sqrt(mean((z - mean(z))^2)))
-.th_neg  <- colMeans(.THM < 0)                                               # θ_k < 0 인 달의 비율(진단 — 부호 '흡수' 주장 없음) ★changed(17)
 .na_txt <- if (.na_n > 0L) paste(sprintf("%s %.0f%%", .FEATS, 100 * .na_acc / .na_n), collapse = " · ") else "n/a"
 .mins <- as.numeric(difftime(Sys.time(), .t0, units = "mins"))
-cat(sprintf("%s adapted(기전 = 논문 그대로: Dirichlet 정책 a = exp(Xθ)(F2 · 식 9) · REINFORCE(Table 2 · 식 13/15 · 최대절댓값 정규화) · 부트스트랩 시퀀스(Table 3: 매월 직전 달 (X_{t−1}, r_t) · step 2 N %d 비복원 풀 → E %d 에피소드 풀 복원추출 · θ_k 초기 %g · η %.2f · γ %g · seed %d) · step 8~9 배분 = 그 풀 N 종목에 a/σ(식 11) 롱온리 · 특성 12종 Table 1 KR 대응물 → 그 달 적격 횡단면 균등화 [−0.5, 0.5] · mom = 12-1M(행 표제)): 유니버스 K200∪KQ150 · 유동성 스크린 없음 · 팩터 DB 미사용 · 회계 = 연간(익년 3/31 lag)\n",
+cat(sprintf("%s adapted(기전 = 논문 그대로: Dirichlet 정책 a = exp(Xθ)(F2 · 식 9) · REINFORCE(Table 2 · 식 13/15 · 최대절댓값 정규화) · 부트스트랩 시퀀스(Table 3: 매월 직전 달 (X_{t−1}, r_t) · N %d 풀 → E %d 에피소드 복원추출 · θ_k 초기 %g · η %.2f · γ %g · seed %d) · 배분 = a/σ(식 11) 롱온리 적격 전 종목 · 특성 12종 Table 1 KR 대응물 → 그 달 횡단면 균등화 [−0.5, 0.5]): 유니버스 K200∪KQ150 · 유동성 스크린 없음 · 팩터 DB 미사용 · 회계 = 연간(익년 3/31 lag)\n",
             .TAG, .N_ASSETS, .N_EPIS, .THETA0, .ETA, .GAMMA, .SEED))
-cat(sprintf("  발행 %d개월 (%s ~ %s) · 적격 부족(<%d) 달 %d · 학습 불가 달 %d · 비유한 비중 달 %d · 풀 < %d 달 %d · 구성 %d~%d(중앙 %d) · 적격 %d~%d(중앙 %d) · 후보 %d~%d(중앙 %d) · 보유 %d~%d(중앙 %d · 논문 N = %d · 고정 축 25 초과는 논문 N 정의상 · engine_direct 라 러너가 자르지 않는다)\n",
+cat(sprintf("  발행 %d개월 (%s ~ %s) · 적격 부족(<%d) 달 %d · 학습 불가 달 %d · 비유한 비중 달 %d · 구성 %d~%d(중앙 %d) · 적격 %d~%d(중앙 %d) · 학습 표본 %d~%d · 보유 N = 적격 전 종목(고정 축 25 초과는 논문 배분 정의상 · engine_direct 라 러너가 자르지 않는다)\n",
             nrow(.DG), as.character(min(.DG$Date)), as.character(max(.DG$Date)), .MIN_ELIG, .n_skip_x, .n_skip_tr, .n_skip_w,
-            .N_ASSETS, .n_short_pool,
             min(.DG$n_mem), max(.DG$n_mem), as.integer(median(.DG$n_mem)),
-            min(.DG$n_elig), max(.DG$n_elig), as.integer(median(.DG$n_elig)),
-            min(.DG$n_cand), max(.DG$n_cand), as.integer(median(.DG$n_cand)),
-            min(.DG$n_pool), max(.DG$n_pool), as.integer(median(.DG$n_pool)), .N_ASSETS))
+            min(.DG$n_elig), max(.DG$n_elig), as.integer(median(.DG$n_elig)), min(.DG$n_train), max(.DG$n_train)))
 cat(sprintf("  발행월 구성종목 특성 결측률(완전 사례 배제 원인 · 순위 전): %s\n", .na_txt))
-cat(sprintf("  σ = Σa %.1f~%.1f(중앙 %.1f) · w_max %.4f~%.4f · w_min %.4f~%.4f · N_eff %.1f~%.1f(중앙 %.1f · 1/N 대비 %.2f) · 연속 달 풀 겹침 평균 %.1f종 · 월간 Σ|Δw| 평균 %.3f(첫 달 제외) · rgamma 언더플로 치환 %d건\n",
-            min(.DG$sigma), max(.DG$sigma), median(.DG$sigma), min(.DG$w_max), max(.DG$w_max), min(.DG$w_min), max(.DG$w_min),
-            min(.DG$n_eff), max(.DG$n_eff), median(.DG$n_eff), median(.DG$n_eff / .DG$n_pool),
-            if (nrow(.DG) > 1L) mean(.DG$ovl[-1L]) else NA_real_,
+cat(sprintf("  σ = Σa %.1f~%.1f(중앙 %.1f) · w_max %.4f~%.4f · N_eff %.1f~%.1f(중앙 %.1f · 1/N 대비 %.2f) · 월간 Σ|Δw| 평균 %.3f(첫 달 제외) · rgamma 언더플로 치환 %d건\n",
+            min(.DG$sigma), max(.DG$sigma), median(.DG$sigma), min(.DG$w_max), max(.DG$w_max),
+            min(.DG$n_eff), max(.DG$n_eff), median(.DG$n_eff), median(.DG$n_eff / .DG$n_elig),
             if (nrow(.DG) > 1L) mean(.DG$to[-1L]) else NA_real_, .GUARD$n0))
 cat(sprintf("  θ 월별 평균±표준편차(Fig.2 대응 · 학습 통계이지 성과 아님): %s\n",
             paste(sprintf("%s %+.3f±%.3f", colnames(.THM), .th_mean, .th_sd), collapse = " · ")))
-cat(sprintf("  θ_k < 0 인 달 비율(초기값 +1 에서 한 달 학습이 부호를 뒤집은 빈도 — 진단 · 주장 아님): %s\n",
-            paste(sprintf("%s %.0f%%", colnames(.THM), 100 * .th_neg), collapse = " · ")))
-cat(sprintf("  PORTFOLIO %d행 · FACTORS %d행(진단 · 적격 전 종목) · %.1f분 · 러너 사양 = FIDELITY 파일 portfolio_spec(engine_direct) · commission_paper = null(논문 성과 = gross → 병기)\n",
+cat(sprintf("  PORTFOLIO %d행 · FACTORS %d행 · %.1f분 · 러너 사양 = FIDELITY 파일 portfolio_spec(engine_direct) · commission_paper = null(논문 성과 = gross → 병기)\n",
             nrow(PORTFOLIO), nrow(FACTORS), .mins))
 
-rm(.P, .ME_ROWS, .FYK, .X, .pf_in_fx); gc(verbose = FALSE)
+rm(.P, .ME_ROWS, .FYK, .X); gc(verbose = FALSE)
 PORTFOLIO <- PORTFOLIO[, .(Date, Ticker, Weight, Leg)]
 FACTORS   <- FACTORS[, .(Date, Ticker, Score)]

@@ -1,0 +1,92 @@
+{
+  "verdict": "misdeclared",
+  "undeclared_changes": [
+    "[portfolio] [논문 N=100 보유를 전 횡단면 배분으로 바꿈] 논문 §4.1 = 'N, the number of stocks that are integrated in the portfolio (used to compute the reward) ... The most obvious choice is N=100', Table 3 부트스트랩 열 = step 2 'Randomly pick N assets'(에피소드 루프 step 4 보다 앞) → step 8 'For date t+1, do:' → step 9 'allocate via average policy, Eq. (11)' 로 t+1 블록 안에 새 종목 선택 단계가 없다 — 즉 배분 모집단은 step 2 에서 뽑힌 N=100 이다. 구현은 N=100 을 학습 풀에만 쓰고(engine.R:355 pool = min(100, n_train) 비복원 · engine.R:359 그 풀에서 100 복원추출) 배분은 그 달 완전 사례 적격 횡단면 전 종목에 한다(engine.R:372-378 Xj = .X[[j]] · rownames = ok 필터 통과 전 종목). 실현 = 리밸일별 distinct ticker 133~267종 · 260 리밸일(10_audit.csv:20) · 01_strategy_spec.json:12 n_max = 267. FIDELITY changed(5)(FIDELITY.json:15)는 이 차이를 '본문이 말하지 않는 모집단의 해석' 으로 선언하지만, 본문은 §4.1 에서 N 을 포트폴리오 보유 종목수로 명시하고 'it is impossible to consider very large portfolios because of the asymptotic behavior of the functions required in the Dirichlet forms' · 'Larger portfolios impose stringent constraints on the Dirichlet parameters, making the approach impractical' 로 대형 포트폴리오를 배제한다 — 선언의 전제(본문 침묵)가 사실과 다르다. ★구현의 독법을 논문에 그대로 적용하면 논문 포트폴리오가 월별 1,600~2,800종(FIDELITY changed(1) 자신의 서술)이 되어 위 두 문장과 직접 충돌한다.",
+    "[portfolio] [선언된 보유 종목수 범위가 실현값과 어긋남] FIDELITY portfolio_spec.n_holdings(FIDELITY.json:56) · engine_contract.expected_n_max(FIDELITY.json:147) · changed(1)(FIDELITY.json:11) 전부 '≈150~350' 으로 선언. 실현 = 133~267(10_audit.csv:20 · 01_strategy_spec.json:12) — 하한이 선언 범위 밖이고 상한은 선언 상한의 76%. 부차 항목이나 선언된 수치라 기록한다."
+  ],
+  "signal_mismatch": [
+    "[signal] [mom 부호 반전 — 논문 표제 항목의 정확한 역순위] Table 1 의 mom 행 표제는 '12-1M momentum' 이고 그 행의 인용 문헌은 Jegadeesh and Titman (1993); Asness et al. (2013) 인데, 같은 표의 캡션 마지막 문장은 'Momentum is also computed via the closing price (lagged 12 month value divided by lagged one month value, minus one)' 로 P_{t−12}/P_{t−1} − 1 을 지시한다 — 논문 자체가 표제(모멘텀)와 캡션(역수 비율)에서 어긋나 있다. engine.R:332 는 캡션 축자 쪽을 택해 mom = P12/P1 − 1 을 계산하고, 가격이 양수인 한 x ↦ 1/(1+x) − 1 이 강한 감소함수이므로 이 값은 통상 12-1 모멘텀의 횡단면 순위를 정확히 뒤집는다. FIDELITY changed(6)·feature_definitions.mom·changed_summary 는 이 계산과 '통상 12-1 모멘텀의 정확한 역순위' 라는 귀결을 명시적으로 신고하므로 misdeclared 가 아니다. 다만 논문 쪽 근거로는 캡션 문구만 인용하고 같은 행의 표제 '12-1M momentum' 과 Jegadeesh–Titman 인용을 적지 않아, 논문이 이 축에서 일의적인 것처럼 읽힌다 — 하류 소비자가 '부호가 논문대로다' 로 결론 내릴 수 있는 자리이므로 이 축의 지적으로 남긴다.",
+    "[signal] [부호 흡수 주장 미검증 — θ 매월 재초기화] FIDELITY changed(6) 은 'θ_mom 의 부호가 이를 흡수한다 — 남는 차이는 θ0 = 1 초기값의 방향뿐' 이라고 적었다. 이 주장이 성립하려면 그 달의 학습이 θ_mom 을 +1 에서 음수로 되돌려야 한다. 원문에서 확인되는 두 사실이 이를 약화시킨다: ①Table 3 부트스트랩 열 step 3 'Initialize θ' 가 'For every date t = 2,…,T−1' 아래에 있고 Fig.2 캡션이 'the initial value for all θk is 1' 이라, 흡수는 한 번이 아니라 매 발행월 새로 달성돼야 한다(engine.R:357 이 그대로 매월 재초기화) ②§4.2 는 지수 정책이 'saturates the constant much more often' 하고 'allocations are relatively close to the EW benchmark' 라고 보고해 특성 계수가 멀리 가지 않음을 시사한다. ②는 양날이다 — 흡수가 안 된다는 쪽과, 안 돼도 배분 영향이 감쇠된다는 쪽을 동시에 가리킨다. 실제 θ_mom 의 월별 부호는 engine.R:437 의 'θ 월별 평균±표준편차' 로그로만 판별되는데 그 로그가 stage_artifacts/replication/20260912_230403_4140 에 없고 이 세션은 R 실행이 승인 차단이라 재도출하지 못했다. 주장의 반증이 아니라 미검증으로 기록한다.",
+    "[portfolio] [N 의 정의를 학습 크기로 바꿔 인용] 논문 §4.1 원문 = 'N, the number of stocks that are integrated in the portfolio (used to compute the reward)'. FIDELITY changed(5)(FIDELITY.json:15)는 이를 'N = 100 은 §4.1 이 \"보상 계산에 들어가는 종목 수\" 로 정의한 학습 크기다' 로 인용해 주절('integrated in the portfolio')을 빼고 괄호 안 수식구만 남겼다 — 그 결과 포트폴리오 크기를 규정하는 문장이 학습 전용 파라미터를 규정하는 문장으로 바뀐다. 이 인용이 133~267종 배분의 유일한 원문 근거다. 같은 절의 대형 포트폴리오 배제 두 문장은 changed(5) 어디에도 나오지 않는다(FIDELITY kept(FIDELITY.json:6)에는 'Larger portfolios impose stringent constraints on the Dirichlet parameters' 가 kept = 논문에서 지킨 것으로 올라가 있다)."
+  ],
+  "evidence": "[signal] arxiv.org/html/2011.05381v1 과 v3 전문(두 판 독립 조회 · 동일). Table 1 행 'mom | 12-1M momentum | Jegadeesh and Titman (1993); Asness et al. (2013)'. Table 1 캡션 'List of predictors and associated academic references. The Bloomberg fields are, in order, CUR_MKT_CAP, PX_TO_BOOK_RATIO, TOT_DEBT_TO_TOT_EQY, VOLATILITY_30D, PROF_MARGIN, ASSET_GROWTH, IS_EPS, PX_VOLUME, RSI_30D, PE_RATIO. The dividend yield is evaluated as EQY_DPS divided by the lagged value of the closing price field PX_LAST. Momentum is also computed via the closing price (lagged 12 month value divided by lagged one month value, minus one).' §3.1 'The features (predictors) are cross-sectionally processed so that for a fixed t and given predictor j, x_t^(j) is uniformly distributed (over the [−0.5,0.5] interval) across firms.' §2.4 식(9) a_t = X_tθ_t (F1) / exp(X_tθ_t) (F2) · 'The second form of the policy is slightly more complex but remains always valid' · 식(11) E[w_{t,n}] = a_{t,n}/σ_t. Prop.2 식(15) '∇ln π(w_t|X_t,θ_t) = Σ_n (ψ(σ_t) − ψ(a_{t,n}) + ln w_{t,n})∇a_{t,n}' 이고 ∇a_{t,n} = x_{t,n}(F1) / exp(x_{t,n}θ_t)x_{t,n}(F2). §4.1 'To simplify scale issues, the gradient in the update is divided by the maximum absolute value of gradient values' · 'The most obvious choice is N=100' · 'Thus we set γ=1'. Fig.2 캡션 'the learning rate η=0.1, the number of episodes E=500, the bounds for the a_n are [0.2,1.6], the initial value for all θk is 1. Finally, the random seed in 42.' §4.2 'the exponential policy (to the left) saturates the constant much more often' · 'allocations are relatively close to the EW benchmark'. Table 3 부트스트랩 열 step 3 'Initialize θ'. ※방향 판별에 쓸 원문 근거를 추가로 찾았으나 없음 — 논문은 어떤 특성의 고값이 고수익을 예측하는지 진술하지 않고, §5.2 의 횡단면 베타 논평도 시가총액에만 있고 모멘텀에는 없다. / [timing] §3.3 'Bootstrapped sequences do not require much depth. They can be performed every month. The number of episodes is E and their length is one' (T=1, 매월). §3.3/Table 3 부트스트랩 열: '0 For every date t=2,…,T−1: 1 Extract data from previous month ... 3 Initialize θ ... 8 For date t+1, do: 9 allocate via average policy, Eq.(11) 10 store realized returns' — 대비 §3.3/Table 3 연대기 열(길이 12 에피소드 · 매년 1월). §2.4 식(9)(11) a_t=X_tθ_t, E[w]=a/σ. / [universe] arxiv.org/html/2011.05381v1 §3.1 원문(WebFetch 재질의 2회): 'The dataset comprises firms listed in the US between January 2000 and June 2020 downloaded from Bloomberg. The number of firms through time is depicted in Figure 1. ... We restrict our analysis to these twelve indicators...' — 상장거래소·가격·시총·유동성·금융주 제외·결측 규칙 문장 0건. Figure 1 캡션 = 'Number of firms in the sample, through time'(자연 변동만 시사). / [portfolio] arxiv.org/html/2011.05381v3 — §2.2 'Δ={(w1,…,wN)∈ℝN:∑wn=1 and wn≥0}' + 'The restriction to positive weights is realistic since most asset managers have long-only constraints'(롱온리 · 구현 일치) · §2.3 'Each action at month s (As) consists in randomly choosing (with replacement) N assets and sampling their portfolio weights according to the current policy π𝜽' · 식(11) E_π[w_{t,n}|X_t,θ_t] = a_{t,n}/σ_t (σ_t = Σ_{n=1}^{N} a_{t,n} · 구현 engine.R:375 softmax = a/σ 로 대수적 동일) · §4.1 'N, the number of stocks that are integrated in the portfolio (used to compute the reward). As discussed in Section D, it is impossible to consider very large portfolios because of the asymptotic behavior of the functions required in the Dirichlet forms. The most obvious choice is N=100. Larger portfolios impose stringent constraints on the Dirichlet parameters, making the approach impractical.' · Table 3(캡션 'Macro view of backtest stages') 부트스트랩 열 전 행: 0 For every date t=2,…,T−1, do: / 1 Extract data from previous month / 2 Randomly pick N assets / 3 Initialize θ / 4 For i=1,… episodes, do / 5 Sample N stocks randomly / 6 Generate action and reward / 7 Update θ via (13) / 8 For date t+1, do: / 9 allocate via average policy, Eq. (11) / 10 store realized returns. / [cost] §4.3(PDF 텍스트 프록시, r.jina.ai/https://arxiv.org/pdf/2011.05381v3): 'the Dirichlet policies have turnovers around 9%-10% ... capitalization-weighted portfolios oscillate around 20%' · 'a 50 basis point fee per unit of turnover, will be 5 basis points per month ... compared to the roughly 110 basis points of monthly returns' — Fig.4 의 보고 성과는 이 5bps 를 차감하지 않은 gross 값이라는 것이 프록시 요약의 명시적 결론. 같은 프록시 재질의: REINFORCE 보상(식 3 R_t = ρ_{t+1}, 식 4 미분 샤프)은 비용 항이 없고, 논문이 별도로 'unreported results' 로 회전율 페널티 보상을 시도했다가 포기했다고 명시(학습 보상에 비용 미포함을 저자가 직접 확인). / [undeclared] arxiv.org/html/2011.05381v1 로 전문 회수(2020년 논문이지만 html 렌더 존재). 이 축의 판정 기준 = 아래 절들에 근거가 없고 changed 에도 없는 코드 동작의 유무. Table 1 — cst + 특성 12종과 Bloomberg 필드(CUR_MKT_CAP · PX_TO_BOOK_RATIO · TOT_DEBT_TO_TOT_EQY · VOLATILITY_30D · PROF_MARGIN · ASSET_GROWTH · IS_EPS · PX_VOLUME · RSI_30D · PE_RATIO · EQY_DPS ÷ lagged PX_LAST · lagged 12M ÷ lagged 1M − 1), 장명 열은 mom 을 '12-1M momentum' 으로 적는다. §3.1 — 'The dataset comprises firms listed in the US between January 2000 and June 2020 downloaded from Bloomberg' · 'The features (predictors) are cross-sectionally processed so that for a fixed t and given predictor j, x^(j)_t is uniformly distributed (over the [-0.5,0.5] interval) across firms'. Table 3 두 열 step 0~10 — 부트스트랩 열 = 직전 달 데이터 추출 · N 종목 무작위 선택 · θ 초기화 · E 에피소드(N 종목 복원추출 → 행동·보상 생성 → θ 갱신) · date t+1 에 평균 정책으로 배분 · 실현 수익 저장. §2.4 — F1 은 'may violate the condition that a_{t,n} > 0', F2 는 항상 유효. §3.2 — 'In the case of the linear policy (F1), the updated θ has to be adjusted so that the a_n lie in the intervals discussed in Section B in the Appendix' (사영·경계는 F1 전용이라 F2 구현이 경계를 안 걸어도 논문 근거가 있다 — changed(3) 주장 확인). Fig.2 캡션 — η = 0.1 · E = 500 · bounds [0.2, 1.6] · 선형(오른쪽) 대 지수(왼쪽) 패널. Appendix B — N = 100 에서 a− = 0.02 · a+ = 1.6.",
+  "confidence": "medium",
+  "note": "축 팬아웃 6개(판독형 opus 3 · 대조형 sonnet 3) — 발견 5건. adapted/adapted/adapted/misdeclared/faithful/adapted",
+  "mode": "fanout",
+  "axis_verdicts": [
+    {
+      "axis": "signal",
+      "required": true,
+      "model": "opus",
+      "verdict": "adapted",
+      "admissible": true,
+      "reason": "",
+      "confidence": "high",
+      "checked": "특성 12종 전수(cap·pb·de·vol·prof·inv·eps·liq·rsi·pe·dy·mom)를 Table 1 캡션의 Bloomberg 필드 10종 + dy/mom 산식과 대조하고 각 대응물의 단조 방향까지 확인 · 룩백 창과 종점(vol = 직전 30 거래일 로그수익 sd, engine.R:99-102 — VOLATILITY_30D 의 30 거래일 정의와 일치, 연율화 상수 생략은 순위 불변 · rsi = Wilder 30, engine.R:106-120 + engine.R:281-285 고정입력 양성대조 · mom = 래그 1 과 12 월말 종가, 창 길이 11개월은 12-1M 과 일치하고 방향만 반전 · 회계 7종 = FD_lag ≤ d roll join) · 표준화(engine.R:231 frank(ties='average')/n − 0.5 vs §3.1 [−0.5,0.5] 균등화 · 지지집합이 (−0.5+1/n, 0.5] 로 비대칭이나 공통 가산이라 a/σ 에 영향 0 · 동값을 행 순서로 깨지 않음 · 상수항 x^(0)=1 미변환) · 정책 a = exp(Xθ)(engine.R:361 vs 식 9 F2) · 배분 E[w] = a/σ(engine.R:375 vs 식 11 · softmax 안정화는 대수적 동일) · 스코어 기울기 부호와 형태 ψ(σ) − ψ(a_n) + ln w_n 및 ∇a_n = a_n x_n(engine.R:238-241 vs 식 15) · 상승 갱신 부호 + 최대절댓값 정규화(engine.R:366 vs Table 2 · §4.1) · 특성 열 순서와 이름 대응(engine.R:58 · 319-333 · 339 — 이름 선택이라 위치 짝짓기 오귀속 없음) · NI 폴백 PretaxIncome − TaxExpense 의 부호(build_fundamental_derived.R:83 · xlsx_factor_calculator.R:136 · compute_value.R:115 의 저장소 공통 규약과 일치 · EffectiveTaxRate 정의가 TaxExpense 양수 저장을 함의)",
+      "counterexample": "구성함. 같은 달 t 의 적격 횡단면에 두 종목 A, B 가 있고 A 는 P_{t−12} = 10,000 · P_{t−1} = 20,000(통상 12-1 모멘텀 +100%), B 는 P_{t−12} = 20,000 · P_{t−1} = 10,000(통상 −50%) 이라 하자. engine.R:332 는 mom_A = 10,000/20,000 − 1 = −0.5, mom_B = 20,000/10,000 − 1 = +1.0 을 내므로, engine.R:231·339 의 균등화 뒤 B 가 mom 축에서 A 위에 온다 — Table 1 이 표제로 지명한 12-1M momentum(Jegadeesh–Titman) 이라면 A 가 B 위다. 반전은 근사가 아니라 정확하다: 동값이 없는 크기 n 횡단면에서 오름차순 순위 i 의 균등화 값이 i/n − 0.5 이므로 구현값 = −(통상값) + 1/n 이고, 1/n 은 전 종목 공통 가산이라 w = a/σ 에는 영향이 없다(순수한 부호 반전). 귀결: Fig.2 캡션대로 θ_mom 이 매월 +1 에서 출발하면 engine.R:361·375 의 a_n = exp(x_n'θ) 가 B 에 더 큰 Dirichlet 농도와 더 큰 비중을 주며, 이는 논문이 지명한 특성이 지시하는 방향의 반대다. 두 종목의 비중 순서가 갈리는 달은 통상 12-1 모멘텀 순위가 뒤바뀐 모든 쌍이므로 매 발행월 전 횡단면에서 발생한다.",
+      "n_findings": 2
+    },
+    {
+      "axis": "timing",
+      "required": false,
+      "model": "sonnet",
+      "verdict": "adapted",
+      "admissible": true,
+      "reason": "",
+      "confidence": "high",
+      "checked": "리밸 주기(월간) · 보유기간(1개월·매월 전량 재구성·overlap 없음) · 스킵기간(포트폴리오 레벨 없음) · 학습창(직전 1개월 데이터로 θ 학습 후 이번 달 X 로 배분 — Table 3 t↔t+1 시퀀스) · θ 초기화 주기(매월 재초기화, θ0=1) · 부트스트랩 대 연대기(T=12) 셀 선택을 engine.R:307-401 및 Table 3 문구와 대조",
+      "counterexample": "구성 못 함 — 이 축에서 발견된 유일한 편차(부트스트랩 학습방식 선택)는 FIDELITY.changed(3)에 논문의 격자 전체(부트스트랩 vs 연대기)와 함께 명시돼 있고, 선택된 셀(부트스트랩) 내부에서는 리밸·보유·스킵·학습창이 Table 3 프로토콜과 수치로 일치해 반례를 만들 수 없었다.",
+      "n_findings": 0
+    },
+    {
+      "axis": "universe",
+      "required": false,
+      "model": "sonnet",
+      "verdict": "adapted",
+      "admissible": true,
+      "reason": "",
+      "confidence": "high",
+      "checked": "논문 §3.1 원문(WebFetch html v1, 2회 독립 재질의) vs engine.R:80-94(종가 유한·>0), :82(MEM = K200|KQ150), :311(Size 유한·>0), :334-345(12특성 완전 사례 + MIN_ELIG=20) vs FIDELITY changed(1)(2)(8) 및 portfolio_spec.universe_filter · run_paper_replication.R:224-235(.apply_universe 러너측 predicate 동일성) · analysis_liquidity.csv(사후 진단 — 매달 ~10% '비유동' 태그되나 엔진이 이를 필터로 쓰지 않음을 확인)",
+      "counterexample": "구성할 수 없었다. 논문 §3.1(WebFetch로 원문 재확인)은 '1600~2800개 US 상장기업, Bloomberg' 외에 상장거래소 요건·가격 하한·시총 하한·유동성 하한·금융주 제외·결측 처리 규칙을 전혀 언급하지 않는다 — 그래서 코드가 이 축에서 논문 대비 '더 두거나 덜 둔' 스크린을 반례로 세울 원문 대조점 자체가 없다. 유일한 실질 차이(완전 사례 요구 → 매달 ~10~30% 종목 탈락)는 FIDELITY.changed(8)에 이미 선언돼 있고 engine.R:310-345 코드와 정확히 일치한다.",
+      "n_findings": 0
+    },
+    {
+      "axis": "portfolio",
+      "required": true,
+      "model": "opus",
+      "verdict": "misdeclared",
+      "admissible": true,
+      "reason": "",
+      "confidence": "high",
+      "checked": "롱온리/롱숏(§2.2 단체 · 구현 Leg='long' 단일 · has_short=false · 01_strategy_spec.json:13) · 분위 절단 유무(논문·구현 모두 없음) · 비중 방법(식 11 a/σ vs engine.R:375 exp(s−max s)/Σ — 대수적 동일 · Σw=1 검산 engine.R:412-415) · 평균 정책의 의미(θ 평균이 아니라 Dirichlet 평균 — 구현 최종 θ_E 사용, 논문 일치) · 보유 종목수(§4.1 N=100 + Table 3 step 2/8/9 구조 vs engine.R:355 학습 풀 100 / engine.R:372-378 적격 전 종목 배분 · 실현 133~267) · 2층 상위 N 절단에 의한 곱셈 축소(engine_direct · 10_audit.csv:20 'replication profile — 상한 비적용' 이라 없음) · 고정 축 25 초과의 선언 유무(changed(1)(5)·portfolio_spec 에 선언 있음) · 선언 범위 대 실현값 대조.",
+      "counterexample": "2005-02-01 리밸일: 04_holdings.csv 의 해당 날짜 행 = 151행(Grep count) — 즉 151종 보유, 비중 ≈ 1/151 근방(Dirichlet 평균 정책이 1/N 근방에 머무는 것은 논문 결론). 논문 프로토콜대로면 같은 날 보유는 Table 3 step 2 에서 뽑힌 N = 100 종이고 비중은 ≈ 1/100 근방이다. 260 리밸일 전부에서 갈린다(실현 133~267 · 100 인 날 0일). 귀결: ①종목당 비중이 약 100/n_elig 배로 희석 ②실현 N_eff(1/Σw²)가 논문 상한 100 을 항상 초과 ③선택 단계(step 2 무작위 추출)가 배분에서 사라져 월별 구성 변동이 '무작위 100 재추출' 이 아니라 '적격 집합의 편입·탈락' 으로 바뀐다 — 회전율·분산·소형주 편입 경로가 전부 달라진다. 반대 방향 반례(구현이 100종을 내는 달)는 산출물에 없다.",
+      "n_findings": 3
+    },
+    {
+      "axis": "cost",
+      "required": false,
+      "model": "sonnet",
+      "verdict": "faithful",
+      "admissible": true,
+      "reason": "",
+      "confidence": "medium",
+      "checked": "①논문 성과가 net 인지 gross 인지(§4.3 turnover/fee 문장) ②50bps/회전율 언급이 보고 성과에 실제 적용됐는지 ③학습 보상(식 3/4)에 비용 항이 있는지 ④FIDELITY.json commission_paper=null 선언과 run_paper_replication.R 의 comm_paper 처리(180·304행) 일치 여부 ⑤authoritative_remeasure.json 의 paper_basis(0bps)·grade_basis(15bps) 분리 기록",
+      "counterexample": "구성하지 못했다. 논문 성과(Fig.4·§4.3)는 gross 이고 학습 보상(식 3/4, ρ_{t+1}=w_t'r_{t+1})도 비용 미포함이며, engine.R의 학습 보상(Rr <- sum(w * rtr[idx]), line 363)과 러너의 paper-basis 시뮬레이션(commission_paper=null → comm_paper=0, run_paper_replication.R:180·304)이 둘 다 이를 그대로 재현한다. authoritative_remeasure.json 에 paper_basis(commission_paper_bps=0, CAGR 7.74%·SR 0.321)와 grade_basis(15bps)가 분리 기록돼 있어, 논문 기준 병기값이 15bps 로 오염될 지점이 없다.",
+      "n_findings": 0
+    },
+    {
+      "axis": "undeclared",
+      "required": true,
+      "model": "opus",
+      "verdict": "adapted",
+      "admissible": true,
+      "reason": "",
+      "confidence": "high",
+      "checked": "engine.R 전 444행의 변환·선택을 전수 열거해 changed(1)~(15) 에 사상 — 유니버스 술어(82) · 일간 vol/rsi(97~120) · 시장 월말 격자·부분월 배제(122~128) · 월간 종가 패널(130~139) · 월말 당일 행(141~147) · 회계 병합·DART 대 XLSX 시간단위·C4 익년 3/31 floor·stale 2년·티커 정규화(153~224) · 균등화·Dirichlet 표집·식(15) 기울기(231~242) · 양성 대조 4종(244~288) · 루프 경계 .j0/.j_out/.j_start(294~306) · 특성 12종 구성(310~343) · 풀 비복원 100 과 에피소드 복원 100(355·359) · 보상·최대절댓값 정규화 갱신(361~366) · 배분 softmax = a/σ(371~378) · 비중 검산(412~418) · 상수 13종(44~58). 역방향(신고했는데 하지 않은 변경)도 changed(4)(6)(9)(10)(11)(12)(13) 을 코드로 되짚어 대조 — 특히 양성 대조 (b) 의 폐형 ∇E[R] = Σ_i r_i (a_i/σ)(x_i − x̄) 와 (d) RSI 고정 입력 4종의 기대값을 손으로 재도출해 선언과 일치함을 확인. 선언이 인용한 외부 사실 3건(회계 패널 중복 제거 · Vol 열 정체 · 러너 스크린 부재)은 원천 파일에서 재도출.",
+      "counterexample": "구성하지 못했다. engine.R 444행의 데이터 변환·모델링 선택을 전수 열거해 changed(1)~(15) 에 사상했고, 대응이 없는 항목이 남지 않았다. 후보 3건은 외부 사실 확인으로 소멸했다 — ①.a1 의 Value[1](engine.R:177-178)과 .a2 의 nq == .N(engine.R:179-181, '행 수 = 분기 수' 가정)은 임의 행 선택·분기 이중계산 경로로 보였으나, fundamental_merged.parquet 이 (Ticker, Period, Item) 단위로 중복 제거돼 저장된다(parse_fundamental_xlsx.R:362-368 `merged[rank == 1]`) — 조 단위 중복이 없으므로 Value[1] 은 유일값이고 nq 는 분기 수와 같다. ②liq = Vol(engine.R:328)이 Bloomberg PX_VOLUME(주식수)이 아니라 거래대금 축일 가능성은, RAWDATA Vol = 수정거래량이고 거래대금은 Close*Vol 로 따로 계산된다는 배관(krx_arrow_pipeline.R:9 'Sheet5: 수정거래량(Volume)' · basis_break_scan.R:217 `.tv = Close * Vol`)으로 소멸. ③유동성 스크린이 러너에 은닉돼 changed(2) 선언을 뒤집을 가능성은, run_paper_replication.R:205('LiqPass 미적용 — 논문 유니버스 필터 우선')과 .apply_universe(같은 파일 224-235)가 engine.R:82 의 MEM 술어와 동일한 (K200 == TRUE | KQ150 == TRUE) 뿐이라는 점으로 소멸.",
+      "n_findings": 0
+    }
+  ],
+  "flags": [],
+  "merged_at": "2026-09-12T23:22:41+0900"
+}
