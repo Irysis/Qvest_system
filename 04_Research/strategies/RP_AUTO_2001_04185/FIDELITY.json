@@ -1,0 +1,134 @@
+{
+  "fidelity": "adapted",
+
+  "fidelity_label_basis": "논문(Volpati·Benzaquen·Eisler·Mastromatteo·Tóth·Bouchaud 2020, arXiv:2001.04185)은 종목선택 전략을 제안하는 논문이 아니라 **크라우딩 진단** 논문이다: FF/모멘텀 신호를 EMA 로 늦춘 '가설적 팩터 투자자'의 기대 주문흐름 Δπ(식 2)와, CFM 체결 데이터의 체결부호·거래량·호가잔량 불균형(식 3·4·7) 및 Ancerno 메타오더 불균형(식 8)의 상관을 슬로잉 시간척도 D 의 함수로 잰다. 논문이 전략으로 **정의**해 준 유일한 객체 = §II.A 의 가설적 투자자 포지션 과정 — s_{i,t}(과거수익 순위) → π_{i,t} = A Σ_{t'≤t} s_{i,t'} exp(−(t−t')/D)(식 1). 이 엔진은 그 과정을 그대로 전략으로 이식했다(모멘텀 칸 · Fig.1 의 D = 3개월). faithful 이 아니라 adapted 인 이유: ① 논문의 원래 산출(크라우딩 상관)은 체결부호·호가잔량·메타오더 데이터가 KR 인프라에 없어 재현 불가하고 대리로 짓지 않았다 — 대신 KRX 거래주체 순매수대금(Ancerno 의 자연 대응)으로 **진단 전용** 재현(changed(9) · 산출물 무영향) ② 모멘텀 룩백·순위 척도·A·단일 D 는 논문이 인용문헌에 위임하거나 스캔한 값이라 우리가 칸을 골랐다(changed(2)(3)(4) — 전부 논문 본문·인용문헌·Fig.1 캡션에서 온 값이지 데이터로 고른 값이 아니다) ③ 하네스가 월간 집행이라 논문의 일간 리밸 대신 월말 스냅샷만 체결된다(changed(5)). 지어낸 수치는 없다 — 21거래일/월 환산과 A = 1−exp(−1/D) 정규화가 우리 규약의 전부이며 둘 다 신고돼 있다.",
+
+  "kept": "§II.A 축자: 'We use standard Fama-French (FF) factors [1, 15], extended to Momentum [14, 19], defined on the components of the Russell 3000 index in a period spanning from January 1995 to December 2018. Since rebalancing these FF portfolios is costly, we expect investors to slow down the bare signal to trade less aggressively. A conceptually sound [17] model that assumes quadratic trading costs leads to an exponential slowing down of the signal. More formally, let us denote by s_{i,t} the signal followed by an investor, giving the ideal holding of stock i on the close of day t. For example, s_{i,t} would be the ranking of stocks according to their past returns in the case of the Momentum factor. The actual holdings π_{i,t} of the investor is then given by an Exponential Moving Average (EMA): π_{i,t} = A Σ_{t'≤t} s_{i,t'} exp(−(t−t')/D) (1). The factor A sets the overall risk of the portfolio, whereas the slowing down time scale D is chosen as to provide a good compromise between performance and trading costs. The theoretically expected order flow from the strategy on day t is thus given by Δπ_{i,t} = π_{i,t} − π_{i,t−1} (2). This framework is summarized in Figure 1.' Fig.1 캡션: 'The slowing down procedure implemented in this paper. (Top panel) The original signal s_{i,t}, corresponding to ideal position before trading costs are considered. (Middle panel) The slowed down signal π_{i,t} with slowing down timescale D = 3 months, corresponding to the desired position when transaction costs are taken into account. (Bottom panel) The expected order flow Δπ_{i,t}, submitted by the investor who is targeting the position π_{i,t}.' Fig.3 캡션: 'Conditional correlations of all imbalances with slowed down momentum. (Top panel) Average correlation of market-wide trade imbalances and of book imbalance, with the Momentum trading signal slowed down with different timescales D, on the x axis. (Middle panel) Average correlation between metaorder imbalances and the Momentum trading signal, slowed down with different timescales D (Bottom panel) Average correlations between the daily close to close price returns and the Momentum trading signal, slowed down with different timescales D. The latter correlation displays a qualitatively similar behaviour, but it is 10 times smaller (∼ 0.2%) than the correlation between imbalances and trading signal.' 본문: 'with absolute maxima ≳ 1% for D around 3–4 months' · 'This timescale is of the same order of magnitude as the autocorrelation time of the momentum signal, and thus quite reasonable.' · 'both metaorder and metaorder volume imbalance show a clear positive correlation with the Momentum trading signal, with a similar time scale D around 4–6 months' · 'we compute the maximal imbalance/signal correlation computed every year, found for D ∈ (2, 4) months for market-wide data and D ∈ (3, 6) months for metaorder data' · 'It should be compared with the correlation between the slowed down position π_t and the returns, which by definition gives the average profit of the strategy, and is found to be ≈ 0.1%.' · 'Assuming a quadratic cost model gives a trading cost equal to one half of the instantaneous impact.' · 'These numbers therefore suggest that Momentum has become only marginally profitable: this is a crowded trade, for which co-impact has driven profits to zero. Let us stress that this is not the case for other implementations of Momentum that are, according to the same measure, distinctively less crowded and therefore still profitable (at least at the time of writing).' · 'market-wide data that we collect up to 2018 reveals a clear upward drift since 2012, possibly related to the increase of the popularity of factor strategies.' · Fig.5 캡션(HML·SMB): 'Because these factors have a significantly longer intrinsic time scale, the signal is weaker and shifted to larger values of D.' · 'This is expected, given that the longer holding period of these strategies induces a much smaller rebalancing activity.' · 결론: 'our results, particularly significant for Momentum, show that such a strategy is indeed crowded, resulting in rather poor profitability.' 식(8): 'I^meta_{i,t} = Σ_{m∈t} ε^meta_{i,m} / Σ_{m∈t} |ε^meta_{i,m}|, where ε^meta_{i,m} is the sign of metaorder m on stock i'. 유의 대역: 'obtained by reshuffling the time series (in blocks of 6 months in order to preserve the autocorrelation structure) and calculating the standard deviation of the obtained correlations over 200 reshuffled samples'. 집계: 'averaged over all the stocks in our dataset'.",
+
+  "kept_summary": "가설적 모멘텀 팩터 투자자의 포지션 과정 그대로 — 일간 과거수익 횡단면 순위 s → 식(1) EMA 슬로잉(D = 3개월, Fig.1) → 보유 ∝ π (양쪽 다리 · 지수 전 구성종목) · 기대 주문흐름 Δπ = 식(2). 크라우딩 측정(불균형 vs Δπ 상관 · D 스캔 · 종목별 상관 평균 · 연도별 최대)은 KRX 거래주체 순매수대금으로 진단 전용 재현.",
+
+  "changed": [
+    "(1) [유니버스 — 지시 축] 논문 = Russell 3000 구성종목(1995-01~2018-12). 구현 = K200∪KQ150: 시그널일 t 에 RAWDATA 행이 있고 (K200 == TRUE | KQ150 == TRUE) 인 종목(러너 .apply_universe 와 같은 술어를 엔진이 먼저 적용). 신호 s 는 **그날 구성종목 가운데 12-1개월 수익이 정의된 종목**에만 있고 그 밖(비구성 · 신규상장 12개월 미만 · 끝점 결측일)은 s = 0(이상적 보유 없음) — 식(1)에 s = 0 을 넣으면 π 는 exp(−1/D) 로 감쇠한다(논문은 지수 이탈 종목의 처리를 말하지 않는다 · NOT STATED). 발행 행은 그날 구성종목만이라 지수를 떠난 종목의 잔여 π 는 다음 월말에 전량 청산된다(러너 merge 가 비구성 행을 버리므로 어차피 같다 — 지수적 unwind 대신 즉시 청산 · 신고). 횡단면 ≈150~355종. KQ150 플래그는 2010-02 이후 시변, 그 이전은 누적 편입 명부(memory 2026-08-22: 미래참조 아님 · 창 caveat). 시총·유동성·가격·상장연수 스크린 0건.",
+    "(2) [모멘텀 신호 정의 — 논문이 인용문헌에 위임한 값] 논문 §II.A 는 's_{i,t} would be the ranking of stocks according to their past returns' 와 'standard Fama-French (FF) factors [1, 15], extended to Momentum [14, 19]'([14] Carhart 1997 · [19] Jegadeesh-Titman 1993)만 말한다 — 룩백·스킵·수익 정의는 논문에 없다(NOT STATED). 구현 = Carhart(1997) PR1YR = FF 'prior (2-12)' 관용: 종가 P[t−21] / P[t−252] − 1(최근 1개월을 건너뛴 11개월 수익), **거래일 격자**(21거래일/월 · 252/년)로 매 거래일 갱신(논문 s 는 일간). JT(1993)의 6-6 등 다른 (J,K) 칸은 택하지 않았다(어느 칸: 12-1). 수익 = 수정주가 비율(현금배당 미포함 — 데이터 층 · data_gap) · 두 끝점 모두 그날 관측된 종가여야 하며 LOCF·보간·채움 0건(끝점 결측 = 그날 순위 밖 = s 0).",
+    "(3) [D — 논문이 스캔한 값 가운데 하나를 고정] 논문은 D 를 x 축으로 스캔하고(Fig.3: 상관 최대 D≈3~4개월(시장 체결) · 4~6개월(메타오더) · Fig.4: 연도별 최대가 D∈(2,4)·(3,6)개월) 'D is chosen as to provide a good compromise between performance and trading costs' 라고만 한다(단일 권장값 NOT STATED). 구현 = **Fig.1 캡션의 예시값 D = 3 months** 그대로 → 63거래일(21거래일/월 환산 · 신고). 성과로 고르지 않았고(C12 무관), §7 진단의 D 격자는 보고용이며 전략의 D 로 되먹임되지 않는다.",
+    "(4) [순위 정규화 · A — 논문 미명시] 'ranking' 의 척도(1..N / [−1,1] / z)와 A 의 값은 논문에 없다('The factor A sets the overall risk of the portfolio' · NOT STATED). 구현 = frank(ties.method='average') − (n+1)/2 로 중심화 → 양(+)쪽 합 1 로 스케일(Σ_{s>0} s = 1 = Σ_{s<0}|s| · 홀수 n 의 중앙 종목 = 0 · 전원 동률이면 양쪽이 비어 그날 s = 0). A = 1 − exp(−1/D) → π 는 과거 s 의 정상상태 이득 1 EMA(= 일간 s 의 지수가중 평균). **A 는 상수**(논문 그대로)라 실현 다리 총노출 GL·GS 는 1 보다 작고 시변한다(부호 전환·순위 변동이 상쇄) — 매일 총노출을 1 로 재정규화하지 않았다(논문에 없는 규칙). 하네스(replication_harness.R:95-105)는 다리별 실현 총노출을 그대로 곱하므로 **부분 투자 상태로 측정**된다(로그 '다리 총노출 GL/GS'). 엔진 내 양성 대조: 고정 입력 3종(동률 · 퇴화 · 단조 6종)에서 순위 신호를, 달력 마지막 날 가장 활동적인 종목에서 재귀 π 와 식(1) 명시합의 일치(1e-9)를 검산 — 실패 = 중단.",
+    "(5) [리밸·집행 — 하네스 제약] 논문 = 일간 포지션 π_t · 일간 기대 주문흐름 Δπ_t(식 2). 하네스(replication_harness.R:84 get_execution_date = **익월 첫 거래일** · 보유 = 다음 시그널 집행 전날까지)는 월간 집행이라 일간 행을 내도 각 달의 마지막 시그널일만 살아남는다(hold_pool 이 빈 날은 skip). 구현 = π 는 **매 거래일** 식(1)로 갱신하되 **달력월 마지막 거래일의 스냅샷만 발행** → 익월 첫 거래일 집행 · 1개월 보유. 월중 Δπ 는 체결되지 않는다(신고 — 논문의 일간 리밸과 다르다; 일간 행을 냈어도 하네스가 같은 월말 행만 쓰므로 측정은 동일). 첫날 π_0 = 0(달력 첫 거래일 · 1990) — 2005-01 첫 발행까지 D 의 60배 이상 지나 초기화 효과 0.",
+    "(6) [시간 격자 · 달력] 시장 거래일 달력 = RAWDATA 에 유한 종가가 하나라도 있는 날(전 종목 통합 · 1998 이전 토요장 포함 → 그 구간의 252/21 창은 달력일로 더 짧다 · 2005 이후 무관). 월말 = 각 달력월의 마지막 거래일. RAWDATA 의 마지막 달력월은 부분월일 수 있어 제외(선례 규약). 발행 = 2005-01 이후 월말.",
+    "(7) [종목수·비중·다리 — 논문 형태 그대로 · 고정 축 초과] 논문의 가설적 투자자는 지수 전 구성종목을 π 에 비례해 보유(중심화 순위라 양쪽 다리). 구현 = 그날 구성종목 중 π ≠ 0 전부 → 보유 N ≈ 150~355 > 고정 축 25(engine_direct 라 러너가 자르지 않는다 · 감사 E-5 에 남는다) · has_short = TRUE · 달러중립은 근사(GL ≈ GS · 강제하지 않음 · 로그). 강화 레인(롱온리 · ≤25종)이 축을 바꾼다.",
+    "(8) [데이터 위생 — 전수] 종가 유한·>0 행만 · Ticker 문자열 강제 · (Ticker,Date) 중복은 첫 행(건수 출력) · 값 치환·winsorize·clip·LOCF 0건 · Vol 열은 §7 진단의 거래대금 분모(Vol×Close)에만 읽는다(스크린 아님 · 없으면 value 변형만 생략). 원천 이음매 결함(memory 2026-09-07: 이어붙인 날 ×5·×2 점프)은 걸러내지 않고 |12-1 모멘텀| 극단 5건을 로그로 드러낸다.",
+    "(9) [크라우딩 측정 — 논문의 원래 산출을 진단 전용으로 재현 · 산출물 무영향] 논문 = CFM 체결 데이터(체결부호 ε · 거래량 · 5초 호가잔량 스냅샷 · 미국 ~1,600종 2011-01~2018-05)의 I^trade·I^volume·I^book(식 3·4·7)과 Ancerno 메타오더 I^meta(식 8 · 1999-01~2014-12)를 Δπ 와 상관 · 6개월 블록 재표집 200회로 유의 대역. KR 인프라에 체결부호·호가잔량·메타오더 식별은 없다 — **대리로 짓지 않았다**(일간 수익 부호로 체결부호를 흉내내지 않음). 있는 것 = KRX 거래주체별 일간 **순매수대금**(load_investor('wide') → .cache/investor_stock/investor_wide.parquet: Foreign·Institutional·Individual · 기타법인은 수량 단위라 제외) = 기관 메타오더 불균형의 자연 대응(Ancerno 도 기관 투자자 체결). 구현(engine.R §7 · tryCatch 격리 · 산출물 확정 후 실행): I_sign = sign(순매수대금)(식 8 형 · 그룹당 하루 한 부호) · I_value = 순매수대금 / (Vol×Close)(식 4 형 · KRW/KRW · Close×Vol 은 거래대금 근사) · Δπ^{(D)} = 식(2) 를 D 격자 {5,10,21,42,63,84,126,189,252,504}거래일로 · 구성일·유한 쌍만 · 종목별 시계열 피어슨 상관의 단순평균(논문 'averaged over all the stocks') ± 횡단면 SE(논문의 블록 재표집 대역이 **아니다** · 시계열 자기상관 미보정 · 신고) + 풀링 상관 병기 · 연도별 argmax_D |상관|(Fig.4 형 · Institutional sign · 보고용이지 선택 아님). 창 = 수급 패널 기간 ∩ 달력. 패널에 없는 (Date,Ticker) = NA(제외 · 0 아님). 로더·파일 부재 시 한 줄 남기고 생략. **수익-신호 상관(Fig.3 하단 · '전략 평균 이익 ≈0.1%')은 성과 수치라 계산하지 않는다** — 계약 소관.",
+    "(10) [비용] 논문은 bps 를 두지 않는다('Assuming a quadratic cost model gives a trading cost equal to one half of the instantaneous impact' — 충격 모형이지 명시 왕복비용이 아님) → commission_paper = null → 러너가 0bps(gross) 병기판 + 15bps 등급판(Σ|Δw| 월간 · 총노출 ≈ GL+GS). 논문의 '이익 ≈ 비용' 주장은 미국 체결 데이터의 크라우딩 상관과 충격 모형에서 나온 것이라 러너 성과와 직접 비교 불가.",
+    "(11) [미구현 — 논문의 다른 구성요소] ① HML·SMB 늦춘 신호(Fig.5): 모멘텀 칸만 구현(논문의 주 결과 · 'particularly significant for Momentum'). HML 은 장부가(FF 6월 갱신 관용)가 RAWDATA 에 없고(load_valuation 의 PBR 은 다른 계보 · 미검증), SMB 는 Size 로 가능하나 별도 전략이라 넣지 않았다 — 강화 probe 후보(evidence = paper). ② I^trade·I^volume·I^book(데이터 없음). ③ Fig.2 지연 불균형-수익 상관·자기상관. ④ 블록 재표집 유의 대역. ⑤ 정확한 Ancerno 메타오더 식별(주문 단위) — 순매수대금은 일간 순합이다."
+  ],
+
+  "changed_summary": "유니버스 K200∪KQ150(지시 축) · 모멘텀 = Carhart/FF 12-1개월(거래일 252/21 · 논문 위임값) · D = 3개월 = 63거래일(Fig.1 예시값 · 논문 스캔) · 순위 중심화·다리 합 1 · A = 1−exp(−1/D)(상수 · 총노출 < 1 시변) · 월말 스냅샷 집행(하네스 월간) · 전 유니버스 롱숏(N ≈ 150~355 · 고정 축 초과) · 유동성 스크린 없음 · 배당 미포함 · 크라우딩 측정 = KRX 거래주체 순매수대금으로 진단 전용 재현(산출물 무영향) · HML/SMB·체결부호·호가 불균형 미구현.",
+
+  "paper_original_form": "크라우딩 진단 논문(포트폴리오 성과표 없음). Russell 3000(1995-01~2018-12) 위 FF/모멘텀 신호 s 를 EMA(식 1, D 스캔)로 늦춘 가설적 투자자의 기대 주문흐름 Δπ(식 2)와 ① CFM 익명 체결 데이터(미국 ~1,600종 · 2011-01~2018-05)의 체결부호 불균형 I^trade(식 3) · 거래량 불균형 I^volume(식 4) · 호가잔량 불균형 I^book(식 7, 5초 스냅샷 평균) ② Ancerno 메타오더 불균형 I^meta(식 8 · 1999-01~2014-12 · 일 거래량의 ~10%)의 상관을 종목별로 재서 평균, D 의 함수로 표시(Fig.3) · 6개월 블록 재표집 200회 유의 대역. 결과: 모멘텀에서 절대 최대 ≳1%(시장 체결 D≈3~4개월 — 체결부호는 음(−), 호가잔량·메타오더는 양(+): 패시브 지정가 체결로 해석) · 메타오더 D≈4~6개월 · 수익-신호 상관은 10배 작은 ≈0.2%(Fig.3 하단) · π 와 수익의 상관(전략 평균 이익) ≈0.1% · 2차 비용 모형(비용 = 순간 충격의 절반) → '모멘텀은 한계적으로만 수익적 · crowded' · 시장 체결 상관은 2012 이후 상승 추세, 메타오더 상관은 1999~2014 안정(Fig.4) · HML/SMB 는 약하고 더 큰 D 로 이동, 메타오더 상관은 겨우 유의하며 반대 방향(Fig.5). 종목수·비중·거래비용 bps·룩백·A·단일 D 규정 없음.",
+
+  "portfolio_spec": {
+    "construction": "engine_direct",
+    "weighting": "paper",
+    "rebalance": "monthly",
+    "cell": "Momentum (§II.A · Fig.1 D = 3 months) · signal = daily 12-1 month past-return cross-sectional rank (Carhart 1997 / FF prior 2-12) · position = eq.(1) EMA with λ = exp(−1/63), A = 1−λ · holdings ∝ π over all index constituents · month-end snapshot executed next month (harness)",
+    "long_leg": "all constituents with π > 0, Weight = π (sum GL < 1, time-varying — constant A per paper)",
+    "short_leg": "all constituents with π < 0, Weight = π (sum −GS, |GS| < 1)",
+    "holding_months": 1,
+    "overlap": "none at the execution grid (π itself is an EMA of daily signals, so consecutive month-end targets overlap heavily — turnover Σ|Δw| logged)",
+    "universe_filter": "in-engine at each signal date with the runner's predicate (RAWDATA row on the date AND K200|KQ150 flag). No liquidity, price, size, listing-age screen — changed(1). Non-members get s = 0 (π decays) and are not emitted.",
+    "note": "engine_direct: Weight is the paper's slowed position π. n_max ≈ 150~355 (whole cross-section) > fixed axis 25 by construction; has_short = true — declared in changed(7). FACTORS (Score = same π at month-end, members only) is emitted alongside for IC/FMB diagnostics, the factors_panel freeze and the reinforcement lane. weighting = 'paper' means signal-proportional EMA position (not ew/vw)."
+  },
+
+  "commission_paper": null,
+
+  "source_paper": {
+    "title": "Zooming In on Equity Factor Crowding",
+    "authors": "Valerio Volpati, Michael Benzaquen, Zoltán Eisler, Iacopo Mastromatteo, Bence Tóth, Jean-Philippe Bouchaud (Capital Fund Management / École polytechnique) — 저자 줄은 구현자 기억(프록시 텍스트에서 저자 줄을 별도 회수하지 않았다 · 확인 요망)",
+    "arxiv_id": "2001.04185",
+    "url": "https://arxiv.org/abs/2001.04185",
+    "fulltext_paths": [
+      "https://r.jina.ai/https://arxiv.org/pdf/2001.04185",
+      "https://arxiv.org/abs/2001.04185"
+    ],
+    "version_read": "1판(2026-09-12): arxiv html 렌더 없음(2020 논문) → r.jina.ai PDF 텍스트 프록시 절별 6회 — ① 요약·정의·결과 개관 ② 신호·EMA 정의(§II.A 축자 · 식 1·2 · 'ranking' 문장 · A/D 문장) ③ 수익성·결론·시간추세 문장 축자 ④ 유니버스·수익 정의·불균형 식 3~8·상관 집계·블록 재표집 축자 ⑤ 참고문헌 21건 전수([14] Carhart 1997 · [19] Jegadeesh-Titman 1993 · [15] FF 1992 · [1] Ang 2014 · [17] Gârleanu-Pedersen 2013) ⑥ Fig.1~5 캡션 축자 + D 수치 문장 전수. 절 제목: I Introduction · II Data and Metrics(A Equity Factor Data · B Market Microstructure Data · C Metaorder Data) · III Return-Imbalance Correlations · IV Dynamical Correlations · V Conclusions. NOT STATED(독립 재질의로 확인): 모멘텀 룩백·스킵·수익 정의 · 순위 척도 · A 값 · 단일 D · 지수 이탈 종목 처리 · 거래비용 bps · 종목수·비중 규정 · 포트폴리오 성과표.",
+    "note": "긴 축자 요청은 요약으로 돌아올 수 있어 절 하나·질문 열 개 단위로 좁혀 물었다(메모리 reference-arxiv-full-text-via-html-endpoint 규약). §II 는 전문 축자 회수, §III·IV 는 문장 단위 회수."
+  },
+
+  "paper_values_used_unchanged": {
+    "position_process": "eq.(1) π_{i,t} = A Σ_{t'≤t} s_{i,t'} exp(−(t−t')/D) — implemented as the exact recursion π_t = exp(−1/D)·π_{t−1} + A·s_t (positive control in engine: recursion vs explicit sum ≤ 1e-9)",
+    "expected_order_flow": "eq.(2) Δπ_{i,t} = π_{i,t} − π_{i,t−1} — used in the diagnostic block only (§7)",
+    "signal_form": "s_{i,t} = ranking of stocks according to their past returns, daily, on the close of day t (§II.A) — cross-sectional rank of a trailing past return, updated every trading day",
+    "D": "3 months (Fig.1 caption) → 63 trading days",
+    "universe_form": "index constituents (Russell 3000 → K200∪KQ150, PIT flags)",
+    "holdings_form": "ideal holding ∝ signal, actual holding ∝ π; centered ranking ⇒ long and short sides",
+    "crowding_metric_form": "per-stock correlation of a daily flow imbalance with Δπ^{(D)}, averaged over stocks, shown as a function of D; yearly maximum over D (Fig.4)",
+    "paper_reported": {
+      "momentum_market_flow": "|corr| max ≳ 1% at D ≈ 3–4 months (trade imbalance negative, book imbalance positive); yearly max at D ∈ (2,4) months; upward drift since 2012",
+      "momentum_metaorders": "positive corr ≈ 1% at D ≈ 4–6 months; yearly max at D ∈ (3,6) months; stable 1999–2014",
+      "return_signal": "≈ 0.2% (Fig.3 bottom, 10× smaller than flow-signal); corr(π, returns) ≈ 0.1% = average profit",
+      "cost_model": "quadratic → cost = ½ × instantaneous impact → 'Momentum has become only marginally profitable'",
+      "hml_smb": "weaker, shifted to larger D; metaorder corr barely significant and opposite sign"
+    }
+  },
+
+  "changed_checklist": [
+    { "axis": "값 하한·상한·커버리지", "paper": "없음(지수 구성종목 전부 · 신호 정의된 종목)", "ours": "12-1 수익의 두 끝점 관측 필요(정의역 · 스크린 아님) · 순위 대상 ≥ 2 종(순위 정의역) · 시총·유동성·가격·상장연수 스크린 0건 · 값 절단 0건", "why": "changed(1)(2)(4)" },
+    { "axis": "수치 가드", "paper": "없음", "ours": "전원 동률(양쪽 합 0)이면 그날 s = 0 · 종가 유한·>0 행만 · 진단에서 비유한 쌍 제외 — 그 외 가드·바닥·상한 0건", "why": "changed(4)(8)(9)" },
+    { "axis": "결측 처리", "paper": "없음", "ours": "끝점 결측·비구성 = s 0(π 감쇠) · LOCF·보간·채움 0건 · 수급 패널 부재 (Date,Ticker) = NA", "why": "changed(1)(2)(9)" },
+    { "axis": "난수·재현", "paper": "블록 재표집 200회(유의 대역)", "ours": "난수 0건 · 결정론 · 재표집 대역 미구현(횡단면 SE 로 대체 · 신고) · 양성 대조 2종(순위 신호 고정 입력 · 식(1) 명시합 vs 재귀)", "why": "changed(4)(9)(11)" },
+    { "axis": "창·워밍업", "paper": "EMA Σ_{t'≤t}(무한 과거) · 룩백 미명시", "ours": "π_0 = 0 at 1990 달력 첫날(2005 첫 발행까지 D 의 60배 이상) · 룩백 252/21 거래일 · 달력 = RAWDATA 유한 종가일(토요장 포함)", "why": "changed(2)(5)(6)" },
+    { "axis": "여러 설정 중 선택", "paper": "D 스캔(2일~500일+) · 모멘텀/HML/SMB · Fig.1 예시 D = 3개월", "ours": "모멘텀 칸 · D = 3개월(Fig.1) 고정 · 룩백 = Carhart 12-1(JT 6-6 아님) · 진단 D 격자 10점은 보고용", "why": "changed(2)(3)(11)" },
+    { "axis": "수식 근사", "paper": "식(1) 연속 지수합", "ours": "정확한 재귀(근사 아님 · 검산) · 달 → 거래일 환산 21/월 · A = 1−exp(−1/D) · I_value 분모 Close×Vol(거래대금 근사)", "why": "changed(3)(4)(9)" },
+    { "axis": "비중·다리", "paper": "보유 ∝ π · A 상수(위험 척도) · 양쪽 다리", "ours": "Weight = π 그대로 · 다리별 총노출 = 실현값(< 1 · 시변 · 재정규화 없음) · 달러중립 근사", "why": "changed(4)(7)" },
+    { "axis": "유니버스·유동성", "paper": "Russell 3000 구성종목 · 유동성 스크린 없음", "ours": "K200∪KQ150 PIT(러너 술어) · 스크린 없음 · 이탈 종목 즉시 청산(러너 merge)", "why": "changed(1)" },
+    { "axis": "리밸·보유", "paper": "일간 π · 일간 Δπ", "ours": "π 일간 갱신 · 월말 스냅샷 발행 → 익월 첫 거래일 집행 · 1개월 보유(하네스 제약)", "why": "changed(5)(6)" },
+    { "axis": "비용", "paper": "bps 없음(2차 충격 모형)", "ours": "commission_paper = null → 0bps 병기 + 15bps 등급(Σ|Δw|)", "why": "changed(10)" },
+    { "axis": "미구현·진단", "paper": "체결부호·거래량·호가·메타오더 불균형 상관 · HML/SMB · Fig.2 · 블록 재표집", "ours": "메타오더 대응만 진단 전용(KRX 거래주체 순매수대금 · sign/value 두 형) · 나머지 미구현 · 수익-신호 상관은 성과라 미계산", "why": "changed(9)(11)" }
+  ],
+
+  "diagnostic_only": {
+    "what": "engine.R §7 .crowding_diag(): 논문 Fig.3(불균형 vs Δπ^{(D)} 상관 · D 격자)·Fig.4(연도별 argmax_D) 형의 표를 로그로만 낸다.",
+    "inputs": "load_investor('wide') = .cache/investor_stock/investor_wide.parquet (Date, Ticker, Foreign, Institutional, Individual — 순매수대금 KRW) · 엔진 내부 S 행렬(일간 신호) · M(구성일 마스크) · Vol×Close(거래대금).",
+    "outputs_touched": "없음 — PORTFOLIO/FACTORS 확정 뒤 실행되고, 값이 어떤 변수로도 되돌아가지 않는다. 실패·부재 시 로그 한 줄 후 생략(tryCatch).",
+    "how_to_read": "행 = D(거래일 · 개월) · 열 = 거래주체×형(sign = 식 8 형 · value = 식 4 형) · 셀 = 종목별 상관 평균 % ± 횡단면 SE (풀링 %) n = 종목 수. 논문(미국) 비교 기준: 메타오더 +≈1% @ D 4~6개월(기관이 모멘텀 기대 주문흐름과 같은 방향 = crowded) · 체결부호 −≈1% @ 3~4개월. 양(+)의 Institutional/Foreign 상관이 D 3~6개월에서 최대면 KR 에서도 기관·외국인 흐름이 모멘텀 투자자의 기대 주문흐름과 정렬돼 있다는 뜻(co-impact 비용 함의). SE 는 논문의 6개월 블록 재표집 대역이 아니므로 유의성은 보수적으로 읽을 것.",
+    "why_here": "논문의 기여가 이 측정이다. 인프라에 실재하는 수급 패널로 재현 가능해 '데이터 부재 = 포기 사유 아님' 원칙과 '인프라 내 모든 데이터 적극 활용' 지시에 따라 넣었다 — 단 전략 산출에는 개입시키지 않았다(지어내기와 이식의 경계)."
+  },
+
+  "data_gap": {
+    "needed": [
+      "체결 단위 데이터(체결가 vs 직전 호가중간값 → 체결부호 ε · 체결량) — 식(3) I^trade · 식(4) I^volume 의 정확 재현",
+      "호가잔량 스냅샷(최우선 매수·매도 잔량, 일중 주기) — 식(5)~(7) I^book",
+      "거래주체별 매수·매도 **분리** 대금(현재 순매수만) — (buy−sell)/(buy+sell) 로 [−1,1] 유계 불균형 구성",
+      "기관 주문(메타오더) 단위 식별 — 식(8) I^meta 의 정확 대응(현재는 일간 순합)",
+      "개별종목 현금배당 조정 총수익 — 모멘텀 과거수익의 배당 포함",
+      "장부가(FF 6월 갱신 관용) — HML 늦춘 신호(Fig.5) 재현"
+    ],
+    "why": "논문의 원래 산출(크라우딩 상관)의 네 불균형 중 셋은 일중 체결·호가 데이터가 필요하고, 넷째(메타오더)는 KRX 거래주체 순매수대금이 자연 대응이라 그것만 진단으로 재현했다.",
+    "not_done_here": "산출 디렉터리 밖 쓰기 금지 — data_pipeline_queue.json 적재는 Q-Lead/도훈 소관."
+  },
+
+  "pit_notes": {
+    "signal_date": "매 거래일 t: s_t 는 종가 P[t−21], P[t−252] 만 읽는다(창 종점 t−21 < t · 당일·미래 종가 무접근). π_t = λπ_{t−1} + A s_t (과거만). 발행 = 달력월 마지막 거래일 t 의 π_t · 러너 집행 = 익월 첫 거래일.",
+    "cross_sectional_stats": "순위 = 그날 구성종목 횡단면만(C1). 시계열 전 표본 통계 = 산출 경로에 0건. 진단(§7)의 상관은 전 창 기술통계이지만 산출물에 소비되지 않는다(사후 · 격리).",
+    "membership": "t 당일 RAWDATA 행의 (K200 == TRUE | KQ150 == TRUE)(C6) — 러너 .apply_universe 와 같은 술어라 러너 필터는 0행 제거.",
+    "factor_db": "미사용 — C13(부호 정렬)·C15(파케이 직접 로드)·C14(IC 접근)·C17/C18 대상 코드 없음.",
+    "liquidity": "스크린 없음(논문 우선). C10 대상 코드 없음 — Vol 은 진단의 분모로만 읽고 산출물과 무관.",
+    "overlay": "없음 — C5/C9 무관. D 는 신호 슬로잉(논문 식 1)이지 리스크 오버레이가 아니다.",
+    "not_used": "재무 패널(C4 무관) · 외부 매크로(C11 무관) · rf 시계열 · BM_DT · 난수.",
+    "detector_note": "detect_lookahead 의 R 패턴(음수 shift · lead( · scale( · 전 표본 sd*sqrt · quantile/ecdf · fwd_ret 정렬 · frollmean 거래대금 · YM 동월 · 재무 merge · today/Sys.Date · C12/C13/C16 어휘)에 해당하는 코드 줄이 없음을 grep 으로 확인했다 — 통과는 근거가 아니며 구조(위 signal_date)가 근거다."
+  },
+
+  "engine_contract": {
+    "output": "PORTFOLIO(Date, Ticker, Weight, Leg) + FACTORS(Date, Ticker, Score)",
+    "long_gross": "GL = Σ_{π>0} π < 1, time-varying (constant A — declared changed(4); range logged)",
+    "short_gross": "GS = Σ_{π<0} |π| < 1, time-varying (logged)",
+    "net": "≈ 0 (GL ≈ GS by symmetry of the centered ranking; not enforced)",
+    "rows": "2005-01 이후 완결 달력월의 마지막 거래일 1행 집합 · 행 = 그날 구성종목 ∧ π ≠ 0",
+    "expected_n_max": "≈ 그날 구성종목 수(150~355). 고정 축 25 초과는 논문 정의상(전 유니버스 보유) — engine_direct 라 러너가 자르지 않는다",
+    "inputs_read": "RAWDATA: Date · Ticker · Close · K200 · KQ150 · Vol(있으면 · 진단 전용). BM_DT 미독. 팩터 DB 미독. 진단 전용 외부 입력 = load_investor('wide')(하네스 함수 · 부재 시 생략).",
+    "dependencies": ["data.table"],
+    "dependencies_note": "그 외는 base/stats. 엔진은 :: 를 쓰지 않는다. arrow 는 하네스가 이미 attach 하고 load_investor 가 내부에서 쓴다(엔진이 직접 호출하지 않음).",
+    "external_input": "없음(산출 경로) · 진단 경로만 수급 패널(있으면)",
+    "runtime_note": "행렬 9,300거래일 × ~900종(K200∪KQ150 이력 종목) · 일간 순위 루프 9,300회 · EMA 재귀 9,300회 · 월말 발행 ~260회 → 산출 경로 1~2분 추정. 진단(§7) = 수급 패널 로드 + D 격자 10 × (EMA 재귀 + 열별 상관 6쌍 + 연도별) → 1~3분 추정 · 메모리 피크 ~1GB(RAWDATA 별도). 이 세션은 R 실행 차단(자율 세션 PowerShell 승인 대기 — 메모리 기록과 동일)이라 미실행 제출 — 러너 로그의 '검산 통과' · 'adapted(기전 = …)' 요약 · '발행 %d개월' · '다리 총노출' · '|12-1 모멘텀| 극단 5건' · '크라우딩 진단' 표로 확인할 것.",
+    "verification_this_session": "정적 검증만: 전문 재독 · 코드 줄 괄호/중괄호/대괄호 개수 균형 · sprintf 지정자/인자 수 대조(전 cat·stop 줄) · lookahead_detector(C1~C18) 및 rf_replication_verify ③ 구조 검사 패턴 grep(음수 shift · lead( · scale( · read_parquet/open_dataset+factor_db · NEGATE/FLIP · best/sharpe · fwd_ret 류 · 재무+merge · today/Sys.Date · frollmean · quantile/ecdf — 코드 줄 전부 부재) · 패키지 스캔(library(data.table) 하나 · :: 0건) · JSON 파싱."
+  }
+}
