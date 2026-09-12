@@ -1,0 +1,13 @@
+{
+  "axis": "cost",
+  "verdict": "adapted",
+  "undeclared_changes": [],
+  "signal_mismatch": [
+    "[월별 순회전율이 논문의 일별 Δπ 매매활동을 과소대표]"
+  ],
+  "counterexample": "논문 §II.A 식(2) Δπ_{i,t}=π_{i,t}−π_{i,t−1} 는 '매일' 정의되는 기대 주문흐름이고, 이 크기 자체가 논문의 유일한 실증 대상(체결부호·호가·메타오더 불균형과 상관을 재는 변수)이다. 구현의 비용은 engine.R 이 아니라 replication_harness.R:19-21·107-118 의 하네스 규약(월간 실행 1회 · Σ|Δw_target| × commission)로 부과되며, Δw_target 은 '이번 달 발행 월말 π' 와 '지난달 발행 월말 π' 두 스냅샷의 차이만 본다. 반례: 한 종목의 s_{i,t} 가 그 달 안에서 상위→하위→상위로 반전해 π_t 가 3회 방향을 바꾸면(이 반전이 정확히 논문이 Δπ 로 재는 크라우딩 신호다), 일별로 누적한 Σ_t|Δπ_t| 는 크지만 월말-월말 순변화 |π_month_end − π_prev_month_end| 는 0에 가까울 수 있다 — 이 경우 하네스는 그 종목에 사실상 비용을 부과하지 않는다. 즉 15bps 등급판은 논문이 정의한 바로 그 Δπ 활동량이 아니라 그 활동량의 월간 순감분만 과금해, 진짣 일간 집행 대비 비용을 구조적으로 낮게 잡는다(성과에 유리한 방향).",
+  "evidence": "§II.A 축자: 'The theoretically expected order flow from the strategy on day t is thus given by Δπ_{i,t}=π_{i,t}−π_{i,t−1} (2)' 및 'Since rebalancing these FF portfolios is costly, we expect investors to slow down the bare signal... A conceptually sound model that assumes quadratic trading costs leads to an exponential slowing down of the signal.' — 논문은 비용을 π_t 의 일별 변화(Δπ)에 매긴다는 전제로 D 를 설계했다. 구현측 근거: replication_harness.R:19-21('비용 모델: 리밸일 레그별 Σ|Δw_target| × commission... 월중 drift 대비 target 차이의 근사임을 manifest 에 라벨') 및 :107-118 · engine.R changed(5)('π 는 매 거래일 식(1)로 갱신하되 달력월 마지막 거래일의 스냅샷만 발행... 월중 Δπ 는 체결되지 않는다').",
+  "confidence": "medium",
+  "checked": "commission_paper 값(null→0bps)과 15bps 등급판의 산출 경로(run_paper_replication.R:180,304-313,331) · run_replication_simulation 의 비용 공식(replication_harness.R:19-21,107-118, Σ|Δw_target|×commission, weight_delta_approx 라벨) · build_bt_result 의 transaction_cost_bps=15 가 재과금이 아니라 manifest 라벨(중복 과금 없음, backtest_result_contract.R:714-764) · authoritative_remeasure.json 의 paper_basis(0bps)·grade_basis(15bps) 필드 · FIDELITY.json changed(5)(10) 의 선언 대비 논문 식(1)(2) 및 §II.A 비용 서술",
+  "note": "changed(5)는 '일간 대신 월말 스냅샷 집행'을 신고하며 '측정은 동일'이라 적었는데, 이는 포트폴리오 비중 발행 값의 동일성이지 회전율 기반 비용 근사의 동일성이 아니다 — 이 구분이 changed(10)(비용 절)에는 연결돼 있지 않다. 다만 이 근사(weight_delta_approx)는 이 하네스의 전 리서치 공통 관행으로 이미 라벨돼 있어(replication_harness.R:19-21) 이 논문 한정의 은닉된 선택은 아니다."
+}
