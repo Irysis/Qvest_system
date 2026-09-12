@@ -17,11 +17,41 @@
   "calmar": 0.292,
   "oos_retention": 2.782,
   "portfolio_alpha_t": 1.748,
-  "next_probes": [
-    "다음 격자 축 B5(risk_overlay) — 이 블록 승자 위에서 측정",
-    "B1_1(최고 1.748)는 B4 조합 후보로 고정 · B1_4(최저 1.562)는 축 역작동 여부를 조합 LOO 로 분리"
-  ],
+  "next_probes": ["다음 격자 축 B5(risk_overlay) — 이 블록 승자 위에서 측정", "B1_1(최고 1.748)는 B4 조합 후보로 고정 · B1_4(최저 1.562)는 축 역작동 여부를 조합 LOO 로 분리"],
   "next_probe": "다음 격자 축 B5(risk_overlay) — 이 블록 승자 위에서 측정 | B1_1(최고 1.748)는 B4 조합 후보로 고정 · B1_4(최저 1.562)는 축 역작동 여부를 조합 LOO 로 분리",
   "source_paper": "https://arxiv.org/abs/2404.08129",
-  "record_type": "performance"
+  "record_type": "performance",
+  "mechanism": "이 블록은 팩터 축에 대해 아무것도 가르지 못했다 — 실제로 측정된 것은 기저 엔진의 소비 지점이다. B1_1·B1_2·B1_3·B1_5 가 PORT_t 1.748 · CAGR 0.213 · Calmar 0.292 · MDD 0.731 로 전부 동일하고, 결정적으로 factor2=none 인 B1_6 도 같은 네 값을 낸다. 둘째 팩터가 IdioVol(B1_1)·B/M(B1_2)·Coverage(B1_3)·Estimate_Dispersion_Proxy(B1_5) 무엇이든, 혹은 아예 없든 결과가 불변이면 그 축은 처치가 전달되지 않은 no-op 이다. 기저 combo(1403.8125+2301.09173+2404.08129)가 종목·비중을 직접 배출하므로 선정이 이미 확정되어 있고, 팩터 점수가 닿는 통로는 결합 시 inner join 결측뿐이다. 유일하게 갈린 B1_4(Q26_RnD_Intensity)는 PORT_t 1.748→1.562 · CAGR 0.213→0.193 · MDD 0.731→0.692 로 아래로 갈렸다 — R&D 강도가 정보를 실었다면 상방이 나타나야 하는데 PORT_t 가 내려갔으니, 신호가 아니라 결측으로 보유가 탈락한 흔적으로 읽는 편이 정합적이다(미결 — 칸별 보유 종목수와 팩터 결측률을 찍어야 갈린다). 구속 축은 위험이다: CAGR 0.213 은 서 있는데 MDD 0.731 이라 Calmar 0.292 에 머문다. 그리고 여섯 칸 전부가 carry 로 ts_mom_sign(시장 12개월 누적수익 부호 음이면 전량 현금) 스칼라 총노출 오버레이를 이미 달고 있는 상태에서 MDD 0.731 이다 — 스칼라 총노출 축은 이 기저에서 켜져 있고도 낙폭을 줄이지 못했다(실측, 단 ts_mom_sign 단일 arm 에 한정). 따라서 다음 블록 B5 에서 시험할 것은 위험 상태의 새 정의가 아니라 위험 처치의 소비 지점이다: 기저가 확정하지 않은 채널, 즉 보유 종목별 노출 차등.",
+  "mechanism_by": "llm:block_end",
+  "mechanism_at": "2026-09-12T18:16:39+0900",
+  "prior_lessons_used": [],
+  "next_block_actions": [
+    {
+      "action": "B5 를 cross_sectional tilt 계열 5칸으로만 채운다 — 총노출 스칼라를 건드리는 arm 은 한 칸도 쓰지 않는다.",
+      "why": "B1_6(factor2=none)이 B1_1/2/3/5 와 동일값을 낸 것은 기저가 선정·비중을 확정해 선정 채널이 닫혔다는 뜻이다. 닫힌 채널 대신 기저가 남겨둔 채널(보유별 노출)에 처치를 실어야 처치가 전달된다.",
+      "expect": "맞으면 B5 칸들이 서로 다른 Calmar·MDD 를 낸다. 다섯 칸이 또 동일값으로 붙으면 닫힌 채널은 선정이 아니라 비중 자체이고, 그 경우 B2(비중방법론)도 죽은 축이며 살아있는 축은 B3/B4 결합뿐이다 — 이 판별이 B5 의 1차 산출물이다."
+    },
+    {
+      "action": "trend_horizon_split_tilt 를 반드시 한 칸에 넣어 carry 의 ts_mom_sign 과 통제 비교를 만든다 — 상태 정보(시장 후행수익)는 같게 두고 소비 지점만 총노출→보유별 순위로 바꾼다.",
+      "why": "ts_mom_sign 을 달고도 MDD 0.731 인 것이 이 블록의 실측이다. 상태가 무용한 것인지 소비 지점이 잘못된 것인지는 같은 상태를 다른 지점에서 소비해 봐야 갈린다.",
+      "expect": "소비 지점 가설이 맞으면 같은 추세 정보로 MDD 0.731 아래 · Calmar 0.292 위가 나온다. 이 칸도 MDD 0.73 근처면 추세 상태 자체에 정보가 없는 것이고, 남은 B5 칸의 판정도 상태축(변동성·낙폭·횡단면분산) 쪽으로 귀속된다."
+    },
+    {
+      "action": "ranking 축을 달리 회전시키는 arm 을 분산 배치한다 — 하방베타·시장상관(holdlvl_syscrowd_tilt), 특이변동(csd_idio_tilt), 학습 이중 예보(ml_dual_forecast_tilt), 다변량 채널 배합(multivar_channel_tilt) 네 종.",
+      "why": "구속 축이 MDD 0.731 이고 기저가 등가중 다팩터 결합인데, 낙폭이 체계 공통성분에서 오는지 종목 특이성분에서 오는지 이 블록은 구분하지 못한다. 랭킹 축을 갈라 넣으면 그 구분이 칸 간 차이로 나온다.",
+      "expect": "체계 성분이 원인이면 하방베타·시장상관 기반 칸(holdlvl_syscrowd_tilt)이 MDD 를 가장 줄이고, 특이 성분이 원인이면 csd_idio_tilt 가 앞선다. 네 칸이 서로 구분되지 않으면 보유 수가 적어 순위 해상도가 부족한 것이므로 보유 종목수 분포를 먼저 찍어야 한다."
+    },
+    {
+      "action": "B5 산출물에서 칸별 월평균 보유 종목수와 둘째 팩터 결측률을 함께 기록한다(새 측정 축 추가, 처치 아님).",
+      "why": "B1_4 가 아래로 갈린 원인을 신호와 결측 중 하나로 귀속하려면 보유 수·결측률이 필요하다. 이 블록 산출물에는 그 두 값이 없어 현재 미결이다.",
+      "expect": "B1_4 의 보유 수가 다른 칸보다 적으면 결측 탈락으로 확정되고, 이후 블록에서 팩터 결합은 결측 대치 규약이 정해질 때까지 처치로 세지 않는다."
+    }
+  ],
+  "next_block_actions_by": "llm:block_end",
+  "avoid": ["총노출 스칼라 축소 arm 전부(vol_median·vol_ewma·vol_har·dd_brake_q·dd_recovery·ts_mom_sign·ml_tail_gate·turbulence·vol_x_dd·vol_x_turb) — 이 기저는 이미 ts_mom_sign 스칼라 오버레이를 켠 상태로 MDD 0.731 이고, 스칼라 대칭 축소가 MDD 대비 상방을 더 잃는다는 근거는 이 블록 밖 B5 50셀 실측(Calmar 중앙값 0.160)에 있다. 같은 소비 지점에 칸을 더 쓰면 판별력이 없다.", "이후 블록에서 둘째 팩터 추가를 처치로 재시도하는 것 — 선정 채널이 닫혀 있는 한 B1 에서처럼 no-op 이거나 결측 효과만 측정된다. 기저가 FACTORS 를 내도록 바꾸거나 결측 대치를 규약화하기 전에는 팩터 축에 칸을 쓰지 않는다.", "dbeta_tilt_rank — cross_sectional 계열이지만 랭킹 축이 하방베타 한 열로 고정돼 holdlvl_syscrowd_tilt 의 축과 겹친다. 겹치는 두 칸보다 랭킹 축이 다른 한 칸이 낫다."],
+  "next_block_design_for": "B5",
+  "next_block_design_n": 5,
+  "prior_action_status": "no_design",
+  "prior_action_detail": "그 블록에 설계가 없었다(규칙 선정)",
+  "mechanism_confidence": "high"
 }
