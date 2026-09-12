@@ -30948,7 +30948,7 @@
       "target_grade": "A",
       "measurement_axis": "n_max_25",
       "axis_valid": true,
-      "attempts_used": 13,
+      "attempts_used": 17,
       "attempts": [
         {
           "n": 1,
@@ -31416,8 +31416,10 @@
           "grade": "NA (등급 미발행 — 병렬 실행 실패)",
           "lessons": "B3_11 실패: [rf_cell_engine] arm lean:score_tilt 커버리지 77.0% (<80%) — 침묵 부분측정 금지",
           "opened_at": "2026-09-13T03:01:45+0900",
-          "closed_at": "2026-09-13T03:06:55+0900",
-          "fail_count": 1
+          "closed_at": "2026-09-13T03:16:49+0900",
+          "fail_count": 2,
+          "terminal": true,
+          "terminal_reason": "일시 실패 2회 연속 — 재시도 상한 2 도달: [rf_cell_engine] arm lean:score_tilt 커버리지 77.0% (<80%) — 침묵 부분측정 금지"
         },
         {
           "n": 13,
@@ -31457,6 +31459,178 @@
           "lessons": "[B3_15] Grade C · 구속 port_t(-0.612/2.95)·calmar(0.157/0.64)·sharpe(0.566/0.80)·cagr(0.095/0.16)·oos(-2.251/0.70) (5조건 중 0 충족) · carry 대비 MDD 0.627→0.604(-3.7%) · CAGR 0.153→0.095(-37.9%) → 위험보다 수익을 더 잃었다(대칭 축소의 전형)",
           "opened_at": "2026-09-13T03:01:50+0900",
           "closed_at": "2026-09-13T03:06:55+0900"
+        },
+        {
+          "n": 14,
+          "date": "20260913",
+          "cell_code": "B5_16",
+          "idea": "[무인 병렬 B5_16] 보유 체계위험 비중 tilt — B5/risk_overlay · factor2=none · weighting=catalog · universe=k200_kq150",
+          "keyword_axis": "risk_overlay",
+          "root_papers": [
+            {
+              "method": "LLM 설계(블록 전이) · holdlvl_syscrowd_tilt · 11칸 전부 MDD 0.544~0.661이라는 사실이 구속 축을 공통 노출로 지목한다. 그 공통 노출(bcorr² 횡단면 중앙값)을 상태로 직접 읽고, 분산 불가능한 하방 기여가 큰 종목만 차등 축소해 총노출 축을 거치지 않고 낙폭에 닿는지 잰다.",
+              "url": "https://arxiv.org/abs/2404.08129"
+            },
+            {
+              "url": "https://arxiv.org/abs/2404.08129",
+              "title": "결합: One Factor to Bind the Cross-Section of Returns + Maximum drawdown, recovery, and momentum + Pinchuk (2023) Labor Income Risk and the Cross-Section of Expected Returns + Uncovering a factor-based expected return conditioning structure with Regression Trees jointly for many stocks + Dirichlet policies for reinforced factor portfolios",
+              "paper_key": "combo:1403.8125+2007.08115+2011.05381+2301.09173+2404.08129"
+            },
+            {
+              "title": "Chan, Jegadeesh & Lakonishok (1996), Momentum Strategies, JF 51(5)",
+              "url": "https://onlinelibrary.wiley.com/doi/10.1111/j.1540-6261.1996.tb05222.x"
+            }
+          ],
+          "wt_id": null,
+          "evidence": "paper",
+          "unmapped_families": [],
+          "axiom_injected": true,
+          "grade": "C",
+          "essence": {
+            "cell_code": "B5_16",
+            "block": "B5",
+            "port_t": 0.603,
+            "net_sharpe": 0.79,
+            "cagr": 0.145,
+            "mdd": 0.61,
+            "calmar": 0.238,
+            "oos_retention": -0.825,
+            "spec": "C:/Users/99922/OneDrive/Quant_Module_Moltbot/.cache/rf_parallel/spec_B5_16__RP_20260913_022403_11800_combo_rulefast.json",
+            "source": "authoritative_remeasure.json"
+          },
+          "artifacts": "C:/Users/99922/OneDrive/Quant_Module_Moltbot/stage_artifacts/replication/20260913_032301_14936",
+          "lessons": "[B5_16] Grade C · 구속 port_t(0.603/2.95)·calmar(0.238/0.64)·sharpe(0.790/0.80)·cagr(0.145/0.16)·oos(-0.825/0.70) (5조건 중 0 충족) · carry 대비 MDD 0.604→0.610(+1.0%) · CAGR 0.095→0.145(+52.6%) → 수익만 늘었다(위험 축 미개입)",
+          "opened_at": "2026-09-13T03:22:32+0900",
+          "closed_at": "2026-09-13T03:28:37+0900"
+        },
+        {
+          "n": 15,
+          "date": "20260913",
+          "cell_code": "B5_17",
+          "idea": "[무인 병렬 B5_17] 이중 예보 랭킹축 회전 — B5/risk_overlay · factor2=none · weighting=catalog · universe=k200_kq150",
+          "keyword_axis": "risk_overlay",
+          "root_papers": [
+            {
+              "method": "LLM 설계(블록 전이) · ml_dual_forecast_tilt · B3_12(멤버십 제한)와 B3_15(섹터 중립)가 서로 다른 처치로 PORT_t를 -0.639/-0.612로 같이 보냈다 — 횡단면 상단을 건드리면 초과수익이 사라진다는 뜻이다. 그렇다면 노출을 균일하게 깎는 대신 그 달의 랭킹 축 자체를 체계/특이 예보 비율로 회전시키는 처치가 PORT_t를 보존하면서 낙폭에 닿는 유일한 후보다.",
+              "url": "https://arxiv.org/abs/2404.08129"
+            },
+            {
+              "url": "https://arxiv.org/abs/2404.08129",
+              "title": "결합: One Factor to Bind the Cross-Section of Returns + Maximum drawdown, recovery, and momentum + Pinchuk (2023) Labor Income Risk and the Cross-Section of Expected Returns + Uncovering a factor-based expected return conditioning structure with Regression Trees jointly for many stocks + Dirichlet policies for reinforced factor portfolios",
+              "paper_key": "combo:1403.8125+2007.08115+2011.05381+2301.09173+2404.08129"
+            },
+            {
+              "title": "Chan, Jegadeesh & Lakonishok (1996), Momentum Strategies, JF 51(5)",
+              "url": "https://onlinelibrary.wiley.com/doi/10.1111/j.1540-6261.1996.tb05222.x"
+            }
+          ],
+          "wt_id": null,
+          "evidence": "paper",
+          "unmapped_families": [],
+          "axiom_injected": true,
+          "grade": "C",
+          "essence": {
+            "cell_code": "B5_17",
+            "block": "B5",
+            "port_t": 0.79,
+            "net_sharpe": 0.822,
+            "cagr": 0.154,
+            "mdd": 0.593,
+            "calmar": 0.259,
+            "oos_retention": -0.714,
+            "spec": "C:/Users/99922/OneDrive/Quant_Module_Moltbot/.cache/rf_parallel/spec_B5_17__RP_20260913_022403_11800_combo_rulefast.json",
+            "source": "authoritative_remeasure.json"
+          },
+          "artifacts": "C:/Users/99922/OneDrive/Quant_Module_Moltbot/stage_artifacts/replication/20260913_032301_8748",
+          "lessons": "[B5_17] Grade C · 구속 port_t(0.790/2.95)·calmar(0.259/0.64)·cagr(0.154/0.16)·oos(-0.714/0.70) (5조건 중 1 충족) · carry 대비 MDD 0.604→0.593(-1.8%) · CAGR 0.095→0.154(+62.1%) → 위험만 줄었다(비대칭 성공)",
+          "opened_at": "2026-09-13T03:22:43+0900",
+          "closed_at": "2026-09-13T03:28:37+0900"
+        },
+        {
+          "n": 16,
+          "date": "20260913",
+          "cell_code": "B5_18",
+          "idea": "[무인 병렬 B5_18] 하방베타 순위 tilt(기준칸) — B5/risk_overlay · factor2=none · weighting=catalog · universe=k200_kq150",
+          "keyword_axis": "risk_overlay",
+          "root_papers": [
+            {
+              "method": "LLM 설계(블록 전이) · dbeta_tilt_rank · cross_sectional 축의 최소 구현. B1에서 팩터를 더 쌓자 PORT_t가 0.791→0.125로 내려간 전례가 있으므로, 위 두 정교한 칸이 이 기준칸을 넘는지로 추가 기계장치의 값을 판정한다.",
+              "url": "https://arxiv.org/abs/2404.08129"
+            },
+            {
+              "url": "https://arxiv.org/abs/2404.08129",
+              "title": "결합: One Factor to Bind the Cross-Section of Returns + Maximum drawdown, recovery, and momentum + Pinchuk (2023) Labor Income Risk and the Cross-Section of Expected Returns + Uncovering a factor-based expected return conditioning structure with Regression Trees jointly for many stocks + Dirichlet policies for reinforced factor portfolios",
+              "paper_key": "combo:1403.8125+2007.08115+2011.05381+2301.09173+2404.08129"
+            },
+            {
+              "title": "Chan, Jegadeesh & Lakonishok (1996), Momentum Strategies, JF 51(5)",
+              "url": "https://onlinelibrary.wiley.com/doi/10.1111/j.1540-6261.1996.tb05222.x"
+            }
+          ],
+          "wt_id": null,
+          "evidence": "paper",
+          "unmapped_families": [],
+          "axiom_injected": true,
+          "grade": "C",
+          "essence": {
+            "cell_code": "B5_18",
+            "block": "B5",
+            "port_t": 0.449,
+            "net_sharpe": 0.797,
+            "cagr": 0.141,
+            "mdd": 0.567,
+            "calmar": 0.248,
+            "oos_retention": -1.065,
+            "spec": "C:/Users/99922/OneDrive/Quant_Module_Moltbot/.cache/rf_parallel/spec_B5_18__RP_20260913_022403_11800_combo_rulefast.json",
+            "source": "authoritative_remeasure.json"
+          },
+          "artifacts": "C:/Users/99922/OneDrive/Quant_Module_Moltbot/stage_artifacts/replication/20260913_032301_17064",
+          "lessons": "[B5_18] Grade C · 구속 port_t(0.449/2.95)·calmar(0.248/0.64)·sharpe(0.797/0.80)·cagr(0.141/0.16)·oos(-1.065/0.70) (5조건 중 0 충족) · carry 대비 MDD 0.604→0.567(-6.1%) · CAGR 0.095→0.141(+48.4%) → 위험만 줄었다(비대칭 성공)",
+          "opened_at": "2026-09-13T03:22:47+0900",
+          "closed_at": "2026-09-13T03:28:38+0900"
+        },
+        {
+          "n": 17,
+          "date": "20260913",
+          "cell_code": "B5_19",
+          "idea": "[무인 병렬 B5_19] 내재 평균상관 비(ratio) 브레이크 — B5/risk_overlay · factor2=none · weighting=catalog · universe=k200_kq150",
+          "keyword_axis": "risk_overlay",
+          "root_papers": [
+            {
+              "method": "LLM 설계(블록 전이) · xs_vol_gap_corr_brake · B1~B3 11칸에서 변동성·팩터·비중·유니버스를 다 바꿔도 MDD가 0.544~0.661에 갇혔다. 아직 한 번도 안 쓴 상태 변수는 수준이 아니라 비 — log(xs)-log(rv)가 주는 내재 평균상관이다. 낙폭 하한이 상관 국면의 함수인지 아닌지를 가르는 칸.",
+              "url": "https://arxiv.org/abs/2404.08129"
+            },
+            {
+              "url": "https://arxiv.org/abs/2404.08129",
+              "title": "결합: One Factor to Bind the Cross-Section of Returns + Maximum drawdown, recovery, and momentum + Pinchuk (2023) Labor Income Risk and the Cross-Section of Expected Returns + Uncovering a factor-based expected return conditioning structure with Regression Trees jointly for many stocks + Dirichlet policies for reinforced factor portfolios",
+              "paper_key": "combo:1403.8125+2007.08115+2011.05381+2301.09173+2404.08129"
+            },
+            {
+              "title": "Chan, Jegadeesh & Lakonishok (1996), Momentum Strategies, JF 51(5)",
+              "url": "https://onlinelibrary.wiley.com/doi/10.1111/j.1540-6261.1996.tb05222.x"
+            }
+          ],
+          "wt_id": null,
+          "evidence": "paper",
+          "unmapped_families": [],
+          "axiom_injected": true,
+          "grade": "C",
+          "essence": {
+            "cell_code": "B5_19",
+            "block": "B5",
+            "port_t": 0.765,
+            "net_sharpe": 0.815,
+            "cagr": 0.152,
+            "mdd": 0.618,
+            "calmar": 0.247,
+            "oos_retention": -0.756,
+            "spec": "C:/Users/99922/OneDrive/Quant_Module_Moltbot/.cache/rf_parallel/spec_B5_19__RP_20260913_022403_11800_combo_rulefast.json",
+            "source": "authoritative_remeasure.json"
+          },
+          "artifacts": "C:/Users/99922/OneDrive/Quant_Module_Moltbot/stage_artifacts/replication/20260913_032301_29412",
+          "lessons": "[B5_19] Grade C · 구속 port_t(0.765/2.95)·calmar(0.247/0.64)·cagr(0.152/0.16)·oos(-0.756/0.70) (5조건 중 1 충족) · carry 대비 MDD 0.604→0.618(+2.3%) · CAGR 0.095→0.152(+60.0%) → 수익만 늘었다(위험 축 미개입)",
+          "opened_at": "2026-09-13T03:22:51+0900",
+          "closed_at": "2026-09-13T03:28:38+0900"
         }
       ],
       "judge": {
@@ -31766,7 +31940,7 @@
     ],
     "retro_note": "2026-09-04 소급: count_paper 키 부재로 1→4 (rf_replication_auto.sh C_COUNT 수리)"
   },
-  "last_updated": "2026-09-13T03:06:55+0900",
+  "last_updated": "2026-09-13T03:28:38+0900",
   "removed_entries": [
     {
       "removed_at": "2026-08-30T10:07:35+0900",
