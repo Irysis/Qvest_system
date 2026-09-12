@@ -1,0 +1,94 @@
+{
+  "verdict": "misdeclared",
+  "undeclared_changes": [
+    "[signal] [논문 No.19~33 식 미제공 선언이 허위] 논문 §3.1 은 Table 1 직후 'The following are definitions of factors No.19-33.' 에 이어 No.19~33 전 항목의 식을 본문에 명시한다(Table 1 자체는 No./Factor 2열뿐이라 표만 보면 식이 없어 보인다). FIDELITY 는 이 식의 부재를 4개 항목의 대체 정의 근거로 반복 선언한다 — feature_definitions.note '논문은 어느 항목에도 식을 주지 않는다' · changed(9) 'No.33 … 논문에 식이 없어 LSZ(2008) 정의를 택했다' · feature_definitions.x32 'chosen because the paper gives no formula' · source_paper.version_read 가 'No.19~33 의 식' 을 NOT STATED 목록에 올림. 전제가 사실과 다르므로 그 위에 세운 changed(8)(9) 의 정당화가 성립하지 않는다.",
+    "[signal] [논문 월말 산출 규정을 미명시로 선언] 논문 §3.1: 'No. 19-33 are calculated on a monthly basis (at the end of month).' FIDELITY changed(8) 은 '논문은 재무 주기 … 를 말하지 않는다(NOT STATED)' 로, source_paper.version_read 는 '재무 데이터 주기' 를 NOT STATED 목록에 올린다. 논문이 명시한 규정이다.",
+    "[signal] [회계 팩터를 월말 아닌 일별로 산출] 논문은 No.19~33 을 월말에 1회 산출한다. engine.R:348 은 회계 패널을 일별 패널 .P 의 (Ticker, Date) 전 행에 roll join 하고, engine.R:351~355 의 No.19~23 은 분모로 그날의 RAWDATA Size(일별 시가총액)를 쓴다. 학습집합은 s ∈ [u−1004, u−5] 의 일별 횡단면(engine.R:263)이므로, 논문이 월 중 고정해 두는 밸류에이션 비율이 구현에서는 매 거래일 갱신된다. 예측일(월말) 행은 일치하고 학습 행 1,000일분이 갈린다. changed 어디에도 없다."
+  ],
+  "signal_mismatch": [
+    "[signal] [No.27 부호 반전 · 정의 상이] 논문 §3.1 No.27 = '-(Changes in Current Assets and Liabilities -Depreciation)/Total Assets' — 선두 음수 부호가 붙은 운전자본 기준 accruals. engine.R:332-333 은 f_acc = (NetIncome − OperatingCF)/TotalAssets 로, 현금흐름표 기준 accruals 를 **양(+)** 으로 낸다. 두 양은 Sloan(1996) 이래 ΔWC − Dep ≈ NI − CFO 로 근사 동일하므로 구현값 ≈ −(논문값) 이다. engine.R:372 의 횡단면 순위 재척도를 거치면 이 팩터가 DNN 에 들어가는 순서가 논문과 역순이 된다.",
+    "[signal] [No.25 분자가 영업이익 아닌 당기순이익] 논문 §3.1 No.25 = 'Net Operating Profits/Total Assets'. engine.R:330 f_roa = .sdiv(NetIncome, TotalAssets) → engine.R:356 x25. Table 1 의 이름 'Return on Asset' 을 교과서 ROA(당기순이익/총자산)로 읽었으나 논문 식의 분자는 영업이익이다. OperatingProfit 은 이미 .FLOW_ITEMS(engine.R:283)로 적재돼 engine.R:326 의 NOPAT 계산에 쓰이고 있다 — 분자가 패널에 있는데 쓰이지 않았다.",
+    "[signal] [No.26 분모에서 현금성자산 차감] 논문 §3.1 No.26 = 'Net Operating Profits After Tax/(Debt + Net Assets)'. engine.R:328 invcap = TotalEquity + ShortTermBorr + LongTermBorr − CashAndEquiv. 분자 NOPAT = OperatingProfit × (1 − TaxExpense/PretaxIncome) 은 논문 표현과 정합하나, 분모의 **− CashAndEquiv** 는 논문 식에 대응항이 없다(FIDELITY 는 'DART 파이프라인 정의 그대로' 로만 적고 논문 식과의 차이를 신고하지 않는다).",
+    "[signal] [No.33 논문 식 대신 LSZ 정의 사용] 논문 §3.1 No.33 = 'Change Rate of Payments for acquisition of Tangible Fixed Assets from the previous period/Total Assets' — 유형자산 취득 지급액의 전기 대비 변화율을 총자산으로 나눈 값. engine.R:338-340 f_ita = ((TangibleAssets − TAN_prev) + (Inventory − INV_prev))/TA_prev 로 Lyandres-Sun-Zhang(2008) 의 (ΔPP&E + Δ재고)/총자산_{FY−1} 을 쓴다. 재고 항목이 논문 식에 없고, 변화율이 아니라 증감액이며, 원천도 현금흐름표 취득 지급액이 아닌 재무상태표 잔액이다. changed(9) 는 이 선택을 '논문에 식이 없어' 로 정당화하는데 그 전제가 틀렸다 — 원천 부재(설비투자 항목 없음)가 실제 사유라면 data_gap 으로 신고했어야 할 항목이다."
+  ],
+  "evidence": "[signal] arXiv:2002.06975 §3.1 Dataset — Table 1(No./Factor 2열) 직후 본문: 'No. 19-33 are calculated on a monthly basis (at the end of month). The following are definitions of factors No.19-33.' 이어지는 정의 목록 축자: No.25 = 'Net Operating Profits/Total Assets' · No.26 = 'Net Operating Profits After Tax/(Debt + Net Assets)' · No.27 = '-(Changes in Current Assets and Liabilities -Depreciation)/Total Assets' · No.33 = 'Change Rate of Payments for acquisition of Tangible Fixed Assets from the previous period/Total Assets'. 전문 경로 = r.jina.ai PDF 프록시(arxiv.org/html/2002.06975v1 은 404 — 2020년 판 HTML 렌더 없음). 표현이 서로 다른 3회 질의(Table 1 전 행 축자 · 'monthly basis' 구문 검색 · No.25/26/27/33 개별 축자)에서 동일 문자열로 회수됐다. §3.2 표적·전처리 문장은 FIDELITY.kept 인용과 일치: 'y_{i,t+5} is defined as p^c_{i,t+5}/p^o_{i,t+1} − 1' · 'ranking each input value in ascending order by stock universe at each day and then dividing by the maximum rank value' · 'Similar rescaling is done for output values'. / [timing] Section 3.2: 'The output value is defined by the next 5 day's stock return, y_{i,t+5}' · 'We define 5 days ahead stock return as output value to align with the portfolio construction method' / Section 3.3: 'We train the model by using the latest 1,000 sets of training data' · 'This procedure is extended to using the latest N = 1,000 days' / Section 3.4: 'The prediction models are updated every five business days' · 'We rebalance one of five portfolios hold 20% every business day' (r.jina.ai PDF 프록시로 확인, arxiv.org/html/2002.06975v1 은 404 — 2020년 논문이라 html 렌더 없음). / [universe] kept 절 원문 축자: 'We prepare dataset for TOPIX500 Index constituents. The TOPIX500 Index comprises the large and mid-cap segments of the Japanese stock market.' + 전처리 절 'rescaling is performed so that each input value is maximally 1 … by ranking each input value in ascending order by stock universe at each day' — 이 두 문장 밖에 유니버스 관련 서술이 전혀 없다. r.jina.ai 재질의(이 세션)로 재확인: 'The document provides no information about exclusion criteria such as financial firms, delisted stocks, newly-listed stocks, missing data thresholds, minimum price requirements, liquidity filters, listing history requirements, or survivorship bias handling.' 논문은 필터를 두지 않는다 — 즉 '필터 없음'이 논문의 실제 규칙이다. / [portfolio] arxiv 2002.06975 전문(html/…v1 은 404 — 2023 이전 판이라 r.jina.ai/https://arxiv.org/pdf/2002.06975 프록시로 절을 좁혀 2회 회수) 포트폴리오 절 축자: '(i) the long portfolio strategy, and (ii) the long-short portfolio strategy' · '(i) The long portfolio strategy … buys the top quintile (i.e., one-fifth) scores of the stocks with equal weight' · '(ii) … not only buys the top quintile scores of the stocks but also sells the bottom quintile' · 'We consider an equally-weighted portfolio' · 'We rebalance one of five portfolios hold 20% every business day.' · 'R^L_t = 1/|L_t| Σ y_{i,t}' · 'R^S_t = 1/|S_t| Σ y_{i,t}' · 'R^{LS}_t = R^L_t − R^S_t' · 'α_t = R^L_t − 1/|U_t| Σ y_{i,t}' · 롱숏의 성격 = '… because of its market neutral position'. 유니버스 = 'We prepare dataset for TOPIX500 Index constituents'(구성종목 수는 본문 미명시 — 지수명이 근거). 종목수 절대값·결측종목 배제·다리별 개별 EW 명시는 NOT STATED(프록시 재질의로 확인). 코드 대조: engine.R:65 .QUINT=5L · :811 nq = N %/% .QUINT(floor) · :813-815 상위/하위 nq · :816 롱·숏 교차 stop · :819 Weight = c(rep(1/nq,nq), rep(-1/nq,nq)) · :820 Leg long/short · :827-830 다리 총노출 gL=gS=1 검산(1e-9) · :812 N < 10 또는 nq < 2 인 달 미발행. 5분위 모집단 = 그날 적격 유니버스 전체임을 재도출: engine.R:177 MEM = (K200|KQ150) · :281 .P = MEM 행 전부(특성 완비 요구 없음) · :136-137 결측 = 0.5 대치(종목 미탈락) · 파이썬 :584 m_pr = (di == pred_i) 로 그날 패널 전 종목 예측 · :805 FACTORS = 유한 Score 전부. 산출물: 10_audit.csv holdings_cap '상한 비적용(v10 충실구현) · 리밸일별 distinct ticker 78~140종(260 리밸일)' · 06_metrics.csv Average_N_Holdings 124.45 · 01_strategy_spec.json n_max 140 · has_short true · weight_method ew. / [cost] r.jina.ai PDF 프록시 축자 확인: 논문은 'A portfolio with a high turnover rate will have more transaction costs than with a portfolio with a lower rate.' 로 회전율-비용 관계만 개념적으로 언급하고, TN 정의('one-way portfolio turnover ... average percentage of stocks traded in each period')만 줄 뿐, bps·왕복 여부·시장충격·Table 3/4 수치의 gross/net 여부를 명시하는 문장은 없다(NOT STATED) — FIDELITY.json changed(13) 'commission_paper = null → 0bps 병기 + 15bps 등급' 및 kept '거래비용 서술 없음(NOT STATED)' 서술과 일치. / [undeclared] 원문: arxiv.org/html/2002.06975v1 은 HTTP 404(2020년 논문 · HTML 렌더 없음) → r.jina.ai/https://arxiv.org/pdf/2002.06975 로 회수. 이 축에 필요한 근거 = '논문이 무엇을 말하지 않는가'. 축자 회수: 전처리 'For data preprocessing, rescaling is performed so that each input value is maximally 1 (minimum ~0) by ranking each input value in ascending order by stock universe at each day and then dividing by the maximum rank value.' · 표적 'Note that y_{i,t+5} is defined as p^c_{i,t+5}/p^o_{i,t+1} - 1 due to practical tradability.' · 학습 'This procedure is extended to using the latest N = 1,000 days rather than the most recent set of training data.' + 'The prediction models are updated every five business days.' · 리밸 'We rebalance one of five portfolios hold 20% every business day.' · 비용 'A portfolio with a high turnover rate will have more transaction costs than with a portfolio with a lower rate.'(회전율만 보고 · 비용 부과 없음 = changed(13) 정합). ★핵심: 종목 제외·스크린·결측 처리에 해당하는 문장 = NOT FOUND — 따라서 코드의 결측 0.5 대치(engine.R:136)·Close>0 필터(:175)·Open<=0 센티널(:180)·(Ticker,Date) 중복 제거(:183)·N<10 월 미발행(:812)·컨센서스 7일/회계 456일 캐리(:242,:348)는 전부 '논문에 근거 없음' 이며, 그래서 선언 의무 대상인데 각각 changed(10)(12)(16)(7)(8) 에 있다. Table 1/Table 2/유니버스(TOPIX500)/기간(2013-01-04~2018-01-04)/5분위 EW 롱숏도 프록시로 확인했고 FIDELITY kept 블록의 인용과 항목별로 일치했다.",
+  "confidence": "medium",
+  "note": "축 팬아웃 6개(판독형 opus 3 · 대조형 sonnet 3) — 발견 7건. misdeclared/adapted/faithful/adapted/adapted/adapted",
+  "mode": "fanout",
+  "axis_verdicts": [
+    {
+      "axis": "signal",
+      "required": true,
+      "model": "opus",
+      "verdict": "misdeclared",
+      "admissible": true,
+      "reason": "",
+      "confidence": "high",
+      "checked": "표적 식(engine.R:210-214 Close_{s+5}/Open_{s+1} − 1 = §3.2 식 · 양성 대조 engine.R:156-161 재도출) · 전처리(engine.R:135-139 오름차순 frank/max(rank) · winsorize·clip·z 0건 = §3.2) · 표적의 동일 재척도(engine.R:374) · 부호 방향(engine.R:813 상위 Score 롱 = §3.4 top quintile long · 실측 IC +0.0682 · FMB Score λ t=+4.43 으로 반전 없음 확인) · 룩백 창 No.1~8 k ∈ {1,2,3,5,10,20,40,60}(engine.R:58,201) · No.9~12 60일/5·10·20일(engine.R:59-60,203-206) · No.13~18 5·10·20일 전망 변화(engine.R:61,244-245) · 창 종점 = t(당일 종가 포함 = 논문 종가 시점 규약) · 거래대금 Vol×Close 의 기준 불변성(basis_break_scan.R:43-44 '거래대금은 기준 불변' 으로 FIDELITY 의 미검증 전제가 실제로는 성립 — 지적 아님) · No.19~33 논문 식 15행 전수 대조(19~24·28~32 일치 · 25·26·27·33 불일치) · 회계 팩터 산출 주기(월말 vs 일별).",
+      "counterexample": "No.27(부호) — 같은 날 횡단면에 A(NetIncome 100 · OperatingCF 20 · TotalAssets 1,000)와 B(NetIncome 20 · OperatingCF 100 · TotalAssets 1,000)가 있다고 하자. 논문 식 −(ΔWC − Dep)/TA ≈ −(NI − CFO)/TA 로는 A = −0.08, B = +0.08 이라 B 가 상위 순위(저 accruals)다. engine.R:332-333 은 A = +0.08, B = −0.08 을 내고 engine.R:372 의 .rank01 이 A 를 1.0, B 를 1/n 에 놓는다 — 동률이 없으면 전 종목에 대해 rank_engine = (n + 1 − rank_paper)/n, 즉 이 특성의 입력 순서가 매일 논문과 역전된다. No.25 — 자산처분이익으로 NetIncome 100 > OperatingProfit 80 인 지주회사형 종목(TotalAssets 1,000): 논문 0.080 vs 구현 0.100 이라 영업수익성이 같고 비영업손익만 다른 종목 사이에서 순위가 갈린다. No.26 — TotalEquity 500 · 차입금 200 · 현금성자산 300 · NOPAT 70 인 현금 과다 종목: 논문 분모 700 → 0.100, 구현 분모 400 → 0.175. KR 대형주에 흔한 순현금 구조일수록 구현이 체계적으로 상위로 민다. 셋 다 회계 원값만으로 재현되는 결정론적 차이이며 DNN 학습 이전 단계에서 갈린다.",
+      "n_findings": 7
+    },
+    {
+      "axis": "timing",
+      "required": false,
+      "model": "sonnet",
+      "verdict": "adapted",
+      "admissible": true,
+      "reason": "",
+      "confidence": "high",
+      "checked": "학습창 1,000거래일(engine.R:63 .N_TRAIN · §6 smin_i=u-HORIZON-(N_TRAIN-1)) vs 논문 'latest N=1,000 days' 일치 · 모델 갱신 5영업일 격자(engine.R:64 .UPD_EVERY · §6 .grid5) vs 논문 'updated every five business days' 일치 · 표적 horizon 5거래일(engine.R:62 .HORIZON · §4 lab_end = Close/shift(Open,4)-1, 양성 대조로 s→s+5·시가 s+1 정렬 검산) vs 논문 y_{t+5}=p^c_{t+5}/p^o_{t+1}-1 일치 · 리밸/보유 = 월간·1개월(engine.R §10 월말 1행만 발행 · replication_harness.R:84-91) vs 논문 일간 5트랜치 교대·트랜치당 5일 보유 — 불일치(FIDELITY.json changed(3)·portfolio_spec.holding_months/overlap 에 선언) · 갱신 격자 위상(앵커 2001-01-01, engine.R:67 .ANCHOR)은 논문 미명시 항목으로 changed(3)에 신고됨.",
+      "counterexample": "논문(Section 3.4, r.jina.ai 프록시 축자): 'We rebalance one of five portfolios hold 20% every business day' — 5개 트랜치(각 20%)를 하루 하나씩 교대 리밸런싱하고 각 트랜치는 5영업일 보유, 예측 모델도 5영업일마다 갱신(Section 3.4 'The prediction models are updated every five business days'). 임의의 한 달을 잡으면 논문 설계에서는 그 달 안에 트랜치별로 ~4회의 매수/청산 주기(각 5거래일)가 돈다. 구현(engine.R:255-268 스케줄 · 리밸=monthly)은 그 달의 마지막 거래일 1행만 발행하고(replication_harness.R:84-91 exec_date = 익월 첫 거래일 · hold_pool = 다음 시그널 집행 전날까지) 다음 달 시그널까지 통째로 보유 — 보유기간이 논문의 5거래일에서 ~21거래일(월간)로 ≈4배 길어지고, 논문의 일간 교대 리밸런싱(연 ~250회)이 월 1회(연 12회)로 축소된다. 5일 뒤 수익을 표적으로 학습한 모델(engine.R:210·508-540 fit_predict)의 예측 점수를 그대로 1개월 보유에 쓰므로, 예측이 담는 정보의 유효 수명(5거래일)과 실제 포지션 유지 기간(1개월)이 어긋난다 — 이는 FIDELITY.json changed(3)·portfolio_spec.overlap 에 정직하게 선언돼 있다(하네스가 월간 집행이라 재현 불가라는 사유와 함께).",
+      "n_findings": 0
+    },
+    {
+      "axis": "universe",
+      "required": false,
+      "model": "sonnet",
+      "verdict": "faithful",
+      "admissible": true,
+      "reason": "",
+      "confidence": "high",
+      "checked": "engine.R:172-196(§3 격자·MEM 술어) 대 논문 '데이터'·'전처리' 절 축자 — 상장거래소 제한(TOPIX500=TSE 구성 vs K200∪KQ150=KOSPI+KOSDAQ, 지시된 허용 교체) · 시총 하한(양쪽 다 없음, 지수 구성 자체가 암묵적 하한) · 가격 하한(양쪽 다 없음 — Close>0 은 위생 가드) · 유동성 필터(양쪽 다 없음) · 금융주 제외(양쪽 다 없음 — FIDELITY changed(8)이 금융업 결측 처리만 명시) · 상장연수 요구(양쪽 다 없음) · survivorship(양쪽 다 논문 침묵 · 구현은 PIT 멤버십 플래그로 시변 처리 — changed(1) 기정 신고).",
+      "counterexample": "구성 못 했다. 논문(TOPIX500 구성종목)과 구현(K200∪KQ150 PIT 멤버십)은 유니버스 정의 자체가 허용된 교체 축이라 이 축의 '위반'은 그 위에 얹힌 추가 필터에서만 나올 수 있는데, 원문과 구현 모두 추가 필터(시총·유동성·가격·상장거래소·금융주 제외)가 없다 — 양쪽이 같은 '무필터' 상태라 값이 갈리는 구체적 시나리오를 만들 수 없다. engine.R:175 의 `Close >= 0(finite) & Close > 0` 는 데이터 위생(0/음수 가격 센티널 제거)이지 경제적 가격 스크린이 아니어서 반례로 세우지 않았다.",
+      "n_findings": 0
+    },
+    {
+      "axis": "portfolio",
+      "required": true,
+      "model": "opus",
+      "verdict": "adapted",
+      "admissible": true,
+      "reason": "",
+      "confidence": "high",
+      "checked": "다리 구성(롱숏 (ii) 채택 · 롱온리 (i) 미측정) · 분위 개수(5) · 분위 모집단(적격 유니버스 전체 — 결측종목 미탈락 재도출) · 정수화(floor(N/5)) · 다리별 종목수 대칭(실측 40/40 · 69/69) · 다리 내 EW 와 총노출(±1/nq · gL=gS=1 · 달러중립) · 실현 종목수(78~140 · 평균 124.45) · 고정 축 충돌 2건(has_short=true · n_max 140 > 25)의 선언 여부 · 러너 2층 절단 부재 · 논문 5트랜치 20% 교대의 선언 여부",
+      "counterexample": "이 축에서 '선언 없는 불일치' 반례는 구성하지 못했다. 논문과 값이 갈리는 지점 자체는 하나 있고 그것은 선언돼 있다 — 논문 §포트폴리오는 'We rebalance one of five portfolios hold 20% every business day' 로 5개 트랜치(각 20%)를 하루 하나씩 교대 리밸런싱하고 'we calculate R^L_t and R^{LS}_t for each of the five portfolios and use their average' 로 그 평균을 보고하므로, 논문의 임의 시점 보유는 최대 5개 형성일의 상위 5분위 합집합(다리당 최대 ≈5×100종 · 종목당 ≈0.2/100 = 0.002)이다. 구현은 단일 트랜치를 100%로 든다 — 실측 2026-09-01 롱 69종 × +1/69 = +0.0144927536231884 (04_holdings.csv · 138행 = 롱 69 + 숏 69). 같은 다리 총노출(1.0)에서 종목수는 최대 5배 적고 종목당 비중은 최대 5배 크다. 이 차이는 FIDELITY.changed(3)·(14) · portfolio_spec.overlap · changed_checklist '리밸·보유' 네 곳에 트랜치 20% 기전까지 명시돼 있어 adapted 항목이지 미선언이 아니다. 2층 절단(상위 N 을 두 층이 각각 잘라 실현 종목수가 곱해져 줄어드는 형태)은 부재를 실측으로 배제했다: 러너가 engine_direct 분기로 PORTFOLIO 를 그대로 통과시키고(run_paper_replication.R:283-292 · 01_strategy_spec.json construction=engine_direct) .apply_universe(:224-235)는 엔진과 동일 술어의 inner join 이라 0행을 지운다 — 2005-02-01 은 80행 = 2×40 에 비중이 정확히 ±0.025 = ±1/40, 2026-09-01 은 138행 = 2×69 에 정확히 ±1/69 로, 한 행이라도 탈락했다면 행수가 비중 분모의 정확한 2배로 떨어지지 않는다.",
+      "n_findings": 0
+    },
+    {
+      "axis": "cost",
+      "required": false,
+      "model": "sonnet",
+      "verdict": "adapted",
+      "admissible": true,
+      "reason": "",
+      "confidence": "high",
+      "checked": "engine.R·FIDELITY.json 내 비용 관련 코드/서술 부재 확인(엔진은 PORTFOLIO Weight만 내고 비용은 하네스가 적용) · run_paper_replication.R:180,303-331,425-479 의 이중 시뮬레이션(commission_paper=NULL→0bps '논문 기준' vs 0.0015 '15bps 등급') 로직 대조 · authoritative_remeasure.json의 commission_paper_bps=0 · paper_basis{cagr 0.149·sharpe 0.941·mdd 0.340} 이 changed(13)의 선언과 정합하는지 대조 · 논문 원문(r.jina.ai PDF 프록시)에서 transaction cost/commission/market impact/slippage/round-trip/net·gross 언급 전수 검색.",
+      "counterexample": "구성 못 했다. paper_basis(0bps)·15bps 등급판 모두 changed(13)에 선언돼 있고, 두 값 다 논문 Table 3/4 수치와 직접 비교 불가함도 changed(13)이 명시한다 — 병기값이 논문보다 유리하게 기울도록 비용을 낮춰 잡은 지점을 찾지 못했다.",
+      "n_findings": 0
+    },
+    {
+      "axis": "undeclared",
+      "required": true,
+      "model": "opus",
+      "verdict": "adapted",
+      "admissible": true,
+      "reason": "",
+      "confidence": "medium",
+      "checked": "engine.R 전 구간 코드→선언 역대조 — §0 상수 15종(.RET_K/.TV_*/.CONS_K/.HORIZON/.N_TRAIN/.UPD_EVERY/.QUINT/.START/.ANCHOR/.GRID_FROM/.CONS_ROLL/.FUND_ROLL/.MIN_N/.SEED_BASE/.SIB_*) · §1 루트·venv·작업본·48h 정리 · §2 .rank01/.sdiv/.chg/.nz + 양성 대조 6검산 · §3 격자·MEM 술어·Close>0·Open 센티널·중복 제거 · §4 x01~x12 정의와 frollmean(align 기본 right)·표적 Close[s+5]/Open[s+1] 정렬 · §5 컨센서스 roll=7 · §6 스케줄(월말 pred_i · 5영업일 격자 앵커 · smax=u-5 · smin=u-1004 · smin>=1 탈락 · seed) · §7 회계 원값 15항목·XLSX 4분기 합산 형식 판별·DART 우선·NI 대치·usable FY+1 3/31·roll=456·ROIC/accruals/LSZ 정의 14종 · §8 by=Date 순위 재척도(특성=적격집합 · 표적=표적유한 부분집합) · §9-a 1판 재사용 게이트·CIM 프로브·150분 대기 · §9-b 파이썬 DNN5(HIDDEN/DROPOUT/EPOCHS/BATCH/LR/BN_EPS/BN_MOMENTUM/trunc_normal a=-2sd,b=2sd/bias 0/Linear-BN-ReLU-Dropout/randperm/idx<2 skip/eval 예측/cache_key 구성/legacy_lookup 조건) · §10 floor(N/5)·동률 종목코드·±1/nq·총노출 검산 1e-9·발행 스킵. 외부 대조: parse_fundamental_xlsx.R(KR_EN_MAP 항목 15종 실재 · NetIncome 부재 · DART Period 형식 · merged 중복 제거) · data_collector_dart.R(NetIncome/Dividends/TangibleAssets/Inventory 태그 실재) · run_paper_replication.R:205,224-235(LiqPass 미적용 · .apply_universe 술어 동일) · 산출물 04_holdings.csv(가중치 ±0.025 = 1/40 · 총노출 2.0) · 10_audit.csv(260 리밸일 = 2005-01~2026-08 전월 · 78~140종) · _work/dnn_rolling.py(1판) vs .PY_SRC(2판) fit_predict 축자 대조.",
+      "counterexample": "구성하지 못했다. 코드에서 출발해 engine.R 857행 전체(R 451행 + .PY_SRC 파이썬 320행)의 수치 경로를 항목별로 열거하고 각각을 changed(1)~(16)·changed_checklist·feature_definitions·engine_contract 에 대조했으나, 논문에도 자기신고에도 근거가 없는 동작을 찾지 못했다. 유력 가설 6건을 세워 전부 증거로 죽였다: ① engine.R:316 dcast(Ticker+FY~Item) 이 (Ticker,FY,Item) 중복을 만나면 data.table 이 fun.aggregate=length 로 침묵 대체해 회계 특성 14종이 전부 건수로 바뀐다 — 그러나 원천 fundamental_merged 가 parse_fundamental_xlsx.R:359~369 에서 이미 (Ticker,Period,Item) 중복을 DART 우선으로 제거하고, .fl 은 unique(by=Ticker,FY,Item)·.bs 는 MM==12 단일행이라 중복 0 → 발화 불가. ② DART Period 가 'YYYY'(4자)면 engine.R:298 substr(Period,5,6) 이 NA → DART 행 전량 침묵 탈락 — 그러나 parse_fundamental_xlsx.R:336 이 Period=paste0(bsns_year,'12') 로 쓴다 → 정상. ③ changed(8) 은 NI=세전−법인세 대치를 'XLSX 구간' 으로 한정하는데 engine.R:319 의 조건은 출처가 아니라 !is.finite(NetIncome) — 그러나 data_collector_dart.R:456·531 에 NetIncome 태그가 있어 두 조건이 일치. ④ RAWDATA$Vol 이 거래대금이면 engine.R:202 의 dv=Vol*Close 가 값×가격이 되어 No.9~12 가 다른 양이 된다 — 그러나 저장소 관용구가 TradingValue=Close*Vol(dpl_c2_quality_features.R:37 · build_alphasearch_feature_panel.R:26 · universe_expanded_v2.R:205) 이라 Vol=주식수 거래량. ⑤ 이 판이 재사용한 1판 예측이 다른 알고리즘 산출이면 changed(15) 의 '비트 동일' 선언이 거짓 — 그러나 _work/dnn_rolling.py(1판) 52~82행과 engine.R 508~540(2판)의 fit_predict·DNN.linear·randperm 이 cpu 경로에서 문자 그대로 동일. ⑥ changed(2) 의 '러너도 유동성 스크린을 걸지 않는다' 가 거짓 — 그러나 run_paper_replication.R:205 주석·:224~235 .apply_universe 가 K200|KQ150 술어만 적용하고 LiqPass 를 호출하지 않는다.",
+      "n_findings": 0
+    }
+  ],
+  "flags": [],
+  "merged_at": "2026-09-13T08:43:38+0900"
+}
