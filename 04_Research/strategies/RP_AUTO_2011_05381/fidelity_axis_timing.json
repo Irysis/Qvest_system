@@ -1,0 +1,11 @@
+{
+  "axis": "timing",
+  "verdict": "adapted",
+  "undeclared_changes": [],
+  "signal_mismatch": [],
+  "counterexample": "구성 못 함 — 이 축에서 발견된 유일한 편차(부트스트랩 학습방식 선택)는 FIDELITY.changed(3)에 논문의 격자 전체(부트스트랩 vs 연대기)와 함께 명시돼 있고, 선택된 셀(부트스트랩) 내부에서는 리밸·보유·스킵·학습창이 Table 3 프로토콜과 수치로 일치해 반례를 만들 수 없었다.",
+  "evidence": "§3.3 'Bootstrapped sequences do not require much depth. They can be performed every month. The number of episodes is E and their length is one' (T=1, 매월). §3.3/Table 3 부트스트랩 열: '0 For every date t=2,…,T−1: 1 Extract data from previous month ... 3 Initialize θ ... 8 For date t+1, do: 9 allocate via average policy, Eq.(11) 10 store realized returns' — 대비 §3.3/Table 3 연대기 열(길이 12 에피소드 · 매년 1월). §2.4 식(9)(11) a_t=X_tθ_t, E[w]=a/σ.",
+  "confidence": "high",
+  "checked": "리밸 주기(월간) · 보유기간(1개월·매월 전량 재구성·overlap 없음) · 스킵기간(포트폴리오 레벨 없음) · 학습창(직전 1개월 데이터로 θ 학습 후 이번 달 X 로 배분 — Table 3 t↔t+1 시퀀스) · θ 초기화 주기(매월 재초기화, θ0=1) · 부트스트랩 대 연대기(T=12) 셀 선택을 engine.R:307-401 및 Table 3 문구와 대조",
+  "note": "특성 mom(P_{t−12}/P_{t−1}−1, '통상 12-1 모멘텀의 역순위')의 형성창 문구 자체는 신호/특성 정의 축 소관이며 이미 changed(6)에 선언돼 있어 내 축(포트폴리오 리밸/보유/스킵)에서는 별도로 다루지 않았다."
+}
