@@ -1,0 +1,11 @@
+{
+  "axis": "universe",
+  "verdict": "faithful",
+  "undeclared_changes": [],
+  "signal_mismatch": [],
+  "counterexample": "구성 못 했다. 논문 §II.A 는 'components of the Russell 3000 index' 외에 유동성·가격·시총·상장주식종류·금융주 제외 등 어떤 선별규칙도 명시하지 않는다(독립 재질의로 재확인 — arxiv.org/abs 초록·r.jina.ai 프록시 전문 모두 필터 문장 0건). 구현(engine.R:74 `.rd[, MEM := (K200 == TRUE | KQ150 == TRUE) %in% TRUE]`)도 K200∪KQ150 PIT 멤버십 술어 외에는 유동성·가격·시총·상장연수·업종 스크린을 두지 않는다 — 러너 `.apply_universe`(run_paper_replication.R:224-235)와 같은 술어라 이중 필터링도 없다(멱등 merge). engine.R:70 의 `is.finite(Close) & Close > 0` 은 결측·오류 행 제거를 위한 데이터 위생(changed(8) 로 별도 신고)이지 경제적 선별이 아니다. analysis_liquidity.csv 는 유동성 미달 비중이 진단으로만 기록돼 있고(각 월 약 10%) 실제 보유(N_Holdings)에서 빠지지 않았음을 실측으로 보여준다 — 필터가 적용되지 않았다는 선언과 일치.",
+  "evidence": "§II.A: 'We use standard Fama-French (FF) factors [1, 15], extended to Momentum [14, 19], defined on the components of the Russell 3000 index in a period spanning from January 1995 to December 2018.' — 이 한 문장이 유니버스 정의의 전부이며, 그 뒤로 가격 하한·유동성·시총·금융주 제외·상장연수 등의 조건문은 §II(A/B/C) 전체에 없음(2회 독립 프록시 재질의로 확인 — 'no filtering criteria specified', 'no mentions of financial stock exclusion, REIT, minimum price, minimum market cap, minimum listing days, common-stock-only, ADR, dual-class exclusion 등').",
+  "confidence": "high",
+  "checked": "논문 §II.A 유니버스 정의 문장 원문 대조(2회 독립 프록시 질의) · engine.R:68-96 멤버십·데이터위생 필터 코드 · run_paper_replication.R:205,223-235 러너의 liquidity_filter='paper_faithful' 선언 및 .apply_universe 술어 일치 여부 · 01_strategy_spec.json(universe=K200_KQ150, liquidity_filter=paper_faithful, n_max=350) · analysis_liquidity.csv 실측(유동성 미달 종목이 보유에서 빠지지 않음을 확인)",
+  "note": "지시된 대로 K200∪KQ150 유니버스 치환은 변경으로 세지 않았다. 이 축에서 findings 0건 — FIDELITY.json changed(1)·(8) 의 '스크린 0건' 선언이 논문 원문·코드·실측 세 곳 모두와 일치한다."
+}
