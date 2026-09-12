@@ -1,0 +1,86 @@
+{
+  "verdict": "adapted",
+  "undeclared_changes": [],
+  "signal_mismatch": [],
+  "evidence": "[timing] [A] arxiv.org/html/1403.8125v1 §3.2: \"Based on given selection rules during 6 months (weeks) of estimation period, assets in market universes are sorted in ascending order.\" · \"The portfolio is constructed at the beginning of every month, i.e. it is the overlapping portfolio.\" · \"After 6 months (weeks) of the holding period, each basket is liquidated.\" (본 세션 WebFetch 재확인: 논문은 J=K=6개월 고정 하나만 보고하며 스킵/랙 기간 언급이 없다 — Table 2~7 전부 '6/6' 표기) / [universe] [A] arxiv.org/html/1403.8125v1 — 'The KOSPI 200 is a stock benchmark index ... 200 stocks in South Korea.' 'Historical price information and component-roster are downloaded from Korea Exchange. The period from January 2003 to December 2012.' 가격 하한·유동성·재무업종 제외·상장폐지 처리·survivorship 언급 0건. [B] r.jina.ai/https://arxiv.org/pdf/2007.08115 — '5 major US corporations: IBM, KO, BK, PG, GOOG' 'demonstration purposes and not for statistical inference' — 선별 기준·필터 언급 0건. / [portfolio] 논문 §5.7 Predictability + Table 8 (arXiv v1 기준 번호 · PDF 판에서는 §6.7 로 매겨진다). 이 축 관련 축자 인용 전부: 'we use the model predicted returns to sort assets in five portfolios, and compute the equally-weighted average portfolio return in the following six months.' · 'In each period, the first four portfolios contain 34 assets each, and the last portfolio contains the remaining 35 assets.' · 'Portfolio 1 groups the assets with, each period, the lowest predicted returns by the HFL model. Portfolio 5 groups the assets with, each period, the highest predicted returns by the HFL model.' · 'a zero-cost long-short strategy, wherein assets with the highest predicted returns are bought while those with the lowest predicted returns are sold short' · 'we repeat the procedure expanding the estimation window by 6 months each time until the end of the sample' · 초기창 '120 months of data'. ★추출 경로 주의: 지시된 arxiv.org/html/2404.08129v1 은 LaTeXML 변환이 실증 절을 떨어뜨려 2회 독립 질의에서 portfolio/quintile/short 포함 문장을 하나도 내지 않았다 — 이 엔드포인트만 읽으면 이 축은 unverifiable 이 된다. 전문은 ar5iv.labs.arxiv.org/html/2404.08129 과 r.jina.ai/https://arxiv.org/pdf/2404.08129 두 경로에서 독립으로 회수했고 두 판의 인용문이 자구까지 동일하다. 3번째 대조원 = 같은 논문의 충실구현 감사 04_Research/strategies/RP_AUTO_2404_08129/fidelity_axis_portfolio.json(NBER w32365 PDF 프록시 경로)이 같은 문장·같은 Table 8 값을 인용한다. 산술 검산 2건으로 추출 타당성을 자체 확인했다: 4x34 + 35 = 171 (논문 'The All sample includes 171 assets' 와 정합) · Table 8 P5 0.769 − P1 0.079 = 0.690 ≈ 보고된 롱숏 0.689 (Table 8 의 롱숏이 EW 다리의 P5−P1 임이 수치로 닫힌다). 구현 측 근거: engine.R:89·353·401·412·433 · FIDELITY.changed ③(1)·③(4) · FIDELITY.portfolio_spec · 01_strategy_spec.json(construction top_n_long · weight_method ew · rebalance monthly · n_max 25 · has_short false) · 04_holdings.csv(0.04 6,500행 · 음수비중 0행) · 10_audit.csv holdings_cap · analysis_holdings.csv 259행. / [cost] [A] arxiv.org/html/1403.8125v1 원문 — 거래비용/왕복비용/시장충격/bps/commission 명시적 정의·공제 서술 없음(서론의 선행연구 인용 1건 제외, Table 3 수익률은 비용 처리 미서술 = gross 로 해석). [B] arxiv.org/abs/2007.08115 — 포트폴리오·비용 서술 자체 없음. 구현 대조: FIDELITY.json L34 commission_paper=null, L23 paper_original_form '거래비용 미공제(gross)', run_paper_replication.R:180,304-309(comm_paper <- commission_paper %||% 0 · sim_grade 는 항상 0.0015), authoritative_remeasure.json replication.commission_paper_bps=0 vs contract.cagr/sharpe/mdd(15bps net) vs 00_manifest.json transaction_cost_bps=15.",
+  "confidence": "medium",
+  "note": "축 팬아웃 6개(판독형 opus 3 · 대조형 sonnet 3) — 발견 0건. unverifiable/adapted/adapted/adapted/faithful/unverifiable",
+  "mode": "fanout",
+  "axis_verdicts": [
+    {
+      "axis": "signal",
+      "required": true,
+      "model": "opus",
+      "verdict": "unverifiable",
+      "admissible": false,
+      "reason": "축 미산출(레인 실패·타임아웃)",
+      "confidence": "",
+      "checked": "",
+      "counterexample": ""
+    },
+    {
+      "axis": "timing",
+      "required": false,
+      "model": "sonnet",
+      "verdict": "adapted",
+      "admissible": true,
+      "reason": "",
+      "confidence": "high",
+      "checked": "engine.R:126(.FORM_M=6L)·358-360(w0=.me_dates[k-.FORM_M], wd_m 창) 을 [A] §3.2 '6 months of estimation period' 와 대조(형성창 길이 일치) · FIDELITY.json portfolio_spec(rebalance=monthly, top_n=25) 을 [A] 'overlapping portfolio' + 'After 6 months ... liquidated' 서술과 대조(보유기간·리밸 주기 불일치) · 스킵 기간 유무(양쪽 모두 없음, 불일치 아님) · [B] .T_WIN=1259L 을 'The sample comprises 1259 daily returns' 와 대조(수치 일치, [B] 는 J/K/리밸 개념 자체가 없음).",
+      "counterexample": "논문 [A]: t월 형성창(6개월)에서 승자 데실에 든 종목은 t월 바스켓으로 편입되어 이후 5개월간(=6개월 보유) 그 바스켓에 그대로 남고, t+1~t+5월의 매월 새 형성으로 만들어지는 다른 바스켓과 겹쳐(overlapping) 함께 보유된다 — 즉 t월 편입 종목이 t+1월에 CM 순위 하위로 떨어져도 청산되지 않는다('After 6 months of the holding period, each basket is liquidated'). 구현: engine.R 은 FACTORS(Date=f, Ticker, Score=CM) 를 매월 산출하고 러너 portfolio_spec(rebalance='monthly', top_n=25)이 매월 top-25 CM 순위로 재구성한다 — t월 top-25 에 든 종목이 t+1월 형성에서 CM 순위 26위 밖으로 밀리면 즉시 매도된다. 두 메커니즘은 같은 CM 스코어를 쓰더라도 회전율·보유기간·바스켓 평균화 구조가 다른 값을 낸다(6개월 오버래핑 평균 vs 매월 완전 재구성).",
+      "n_findings": 0
+    },
+    {
+      "axis": "universe",
+      "required": false,
+      "model": "sonnet",
+      "verdict": "adapted",
+      "admissible": true,
+      "reason": "",
+      "confidence": "high",
+      "checked": "[A] §데이터(KOSPI200/S&P500 정의·기간·필터 유무) · [B] 표본 5종 선정 근거 유무 · engine.R:257-311(K200/KQ150 PIT 플래그 · adv20(t-1) 하한 2e8 · Close>0 위생 · 재무업종 제외 유무) · FIDELITY.changed ③(12)(13) 및 constants(.LIQ·.LIQ_WIN) 대조 · 01_strategy_spec.json(universe=K200_KQ150) 대조",
+      "counterexample": "구성하지 못했다 — 유니버스·유동성·재무업종제외 축에서 코드가 논문과 다른 지점(K200∪KQ150 교체·adv20(t-1)≥2e8 유동성 하한)은 전부 FIDELITY.changed ③(12)·constants(.LIQ/.LIQ_WIN)에 '지시된 고정 축(양 논문에 없음)'으로 선언돼 있고, 이 저장소 규약(lean-loop.md 축 2층 — 강화 프로세스 = 실투형 LIQ 2e8)과도 정합한다. 미선언 필터·미선언 제외는 발견하지 못했다.",
+      "n_findings": 0
+    },
+    {
+      "axis": "portfolio",
+      "required": true,
+      "model": "opus",
+      "verdict": "adapted",
+      "admissible": true,
+      "reason": "",
+      "confidence": "high",
+      "checked": "분위 개수(논문 5분위 대 구현 분위 없음) · 분위 폭 규칙(34/34/34/34/35 = 4x34+35 = 171 대 구현 top-25 단일 절단) · 다리 구성(P5 롱 + P1 숏 zero-cost 대 구현 롱온리 · 04_holdings.csv 음수비중 0행 · has_short false) · 다리 내 비중방법(EW 대 EW — 이 한 항목만 동일) · 실현 종목수(논문 다리당 34~35 대 구현 260/260 리밸일 전원 25종 · 0.04 = 1/25 6,500행) · 보유기간/리밸(6개월 보유 + 반년 재추정 대 월간) · 초기 추정창 120개월 · 이중 절단의 곱 효과(엔진 두 층은 스크린이고 top-N 절단은 러너 1곳 — 실현 25종 붕괴 0달) · 엔진 내 [H] 포트폴리오 코드 실재 여부(495행 전수 · 분위·숏 코드 0건) · 고정 축(long-only·≤25종) 충돌의 선언 유무(changed ③(1)·③(4)·paper_original_form 3곳).",
+      "counterexample": "이 축의 괴리는 크지만 **선언되지 않은** 괴리는 구성하지 못했다 — 시도와 결과를 적는다. (1) 괴리 자체는 전면적이다: 논문 §5.7 은 171 자산을 예측수익으로 5분위 정렬해 각 분위 EW 로 잡고(34/34/34/34/35) P5 롱 · P1 숏의 zero-cost 롱숏을 6개월 보유하며 반년마다 재추정한다. 구현은 25종 롱온리 EW 월간이다. 실현값 대조: 04_holdings.csv 는 target_weight = actual_weight = 0.04 인 행이 정확히 6,500행이고 그 밖의 비중값이 0행이다(6,500 / 25 = 260 리밸일 · 0.04 = 1/25 = 다리 내 EW · Σw = 1). 음수 비중·'Short' 문자열은 전 파일 0건 — 숏 다리가 존재하지 않는다. 10_audit.csv holdings_cap 도 '리밸일별 distinct ticker 25~25종 (260 리밸일)' 로 같은 값을 낸다. 즉 논문의 34~35종 × 2다리(≈69종 그로스, 6개월 보유)와 구현의 25종 × 1다리(월간)는 어느 리밸일에서도 일치하지 않는다. (2) 그러나 이 괴리는 전부 선언돼 있다: FIDELITY.changed ③(1) 이 §5.7 사양을 '첫 120개월 확장창 · 예측수익 5분위 EW · P5 롱/P1 숏 · 6개월 보유 · 반년 재추정 · the first four portfolios contain 34 assets each, and the last portfolio contains the remaining 35 assets' 로 축자 인용까지 열거한 뒤 '어느 것도 구현하지 않는다' 로 못박고, ③(4) 가 산출 형태 = 고정 축 top-25 롱온리 EW 월간임을 선언하며, paper_original_form 이 [H] 원형을 같은 값으로 다시 적는다. 대조한 항목(분위 수 5 · 34/35 폭 · EW · P5롱/P1숏 · 6개월 보유 · 반년 재추정 · 120개월 초기창) 일곱 중 선언이 원문과 어긋나는 것은 0건이다. (3) 엔진에 [H] 코드가 실재하지 않음을 재도출했다: engine.R 495행 전수에 HFL 식(1)·SVD 초기값·경사하강·다항 K=4·예측수익·분위 절단·숏 다리가 없다. FACTORS(Date,Ticker,Score=CM) 한 종류만 배출하고(engine.R:412·433) 분위·다리 코드가 없으므로 '미사용' 선언은 코드가 하는 일과 일치한다. (4) 이중 절단의 곱 효과(두 층이 각자 상위 N 을 잘라 실현 종목수가 줄어드는 형태)는 없다: 엔진의 두 층(engine.R:353 멤버십∧adv20 · engine.R:401 [B] 급락일 자격)은 둘 다 **스크린**이지 상위 N 절단이 아니고, top-N 절단은 러너 한 곳뿐이다(engine.R:89 주석 · portfolio_spec top_n 25). 실측도 260/260 리밸일 전부 25종으로 한 달도 25 미만으로 내려가지 않았다 — analysis_holdings.csv 의 Turnover_Rate 가 259행 전부 N_New/25 로 닫힌다(0.08 = 2/25 … 0.72 = 18/25). 자격 스크린이 발행 종목을 25 아래로 줄인 달은 측정구간에 없다.",
+      "n_findings": 0
+    },
+    {
+      "axis": "cost",
+      "required": false,
+      "model": "sonnet",
+      "verdict": "faithful",
+      "admissible": true,
+      "reason": "",
+      "confidence": "high",
+      "checked": "[A] 원문의 거래비용 언급 유무(WebFetch 직접 대조) · FIDELITY.json commission_paper 선언 vs authoritative_remeasure.json commission_paper_bps 실측값 vs 00_manifest.json/06_metrics.csv 의 15bps 등급용 net 수치 · [B] 비용 관련성 여부(해당 없음 확인)",
+      "counterexample": "구성하지 못했다 — 논문 [A](1403.8125)는 거래비용을 전혀 명시·공제하지 않으며(WebFetch 원문 대조: transaction cost 언급은 서론의 선행연구 인용 1건뿐, Table 3 수익률에 비용 처리 서술 없음), FIDELITY.json 은 이를 '거래비용 미공제(gross)'로 정직히 선언하고 commission_paper=null 로 남겼다. 러너(run_paper_replication.R:180,304-309)는 commission_paper가 NULL이면 comm_paper<-0으로 gross 시뮬레이션을 병기값(paper_basis, authoritative_remeasure.json replication.commission_paper_bps=0 · cagr 0.12369/sharpe 0.452369/mdd 0.668731)으로 남기고, 등급용 계약 수치(essence.cagr 0.108/sharpe 0.533/mdd 0.691/calmar 0.157, 06_metrics.csv return_type=net)는 별도로 15bps(00_manifest.json transaction_cost_bps=15)로 계산한다. 즉 병기값은 논문 비용가정(0bps)으로, 등급값은 저장소 SOT(15bps)로 각각 올바른 축에서 계산되어 있어 비용 축에서 논문 대비 유리하게 기운 지점을 못 찾았다. [B](2007.08115)는 포트폴리오·비용 개념이 아예 없어 이 축 자체가 해당 없다.",
+      "n_findings": 0
+    },
+    {
+      "axis": "undeclared",
+      "required": true,
+      "model": "opus",
+      "verdict": "unverifiable",
+      "admissible": false,
+      "reason": "축 미산출(레인 실패·타임아웃)",
+      "confidence": "",
+      "checked": "",
+      "counterexample": ""
+    }
+  ],
+  "flags": [
+    "required 축 1/3 만 원문 확인 — 나머지는 판정 근거가 없다",
+    "불채택 축 2건(근거 없는 기각 또는 미산출)"
+  ],
+  "merged_at": "2026-09-13T02:34:29+0900"
+}
