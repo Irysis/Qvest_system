@@ -1,0 +1,13 @@
+{
+  "axis": "cost",
+  "verdict": "misdeclared",
+  "undeclared_changes": [
+    "[논문은 비용을 언급하는데 '서술 없음'으로 기재] FIDELITY.json kept 필드와 changed(13)이 '거래비용 서술 없음(NOT STATED)'이라 하지만, 논문 Introduction 에 turnover-비용 인과 문장이 명시돼 있다 — FIDELITY 는 이를 반영하지 않았다."
+  ],
+  "signal_mismatch": [],
+  "counterexample": "직접적인 수치 반례는 구성하지 못했다 — commission_paper=null → paper_basis(0bps)가 실제로 paper 의 gross-return 관행과 일치하므로 계산 자체는 틀리지 않는다. 다만 반례에 가까운 지점: 논문은 '내가 비용을 빼지 않은 이유는 TN(회전율)을 대신 보고해 독자가 비용 민감도를 스스로 판단하게 하려는 것'이라는 취지를 Introduction 에서 명시적으로 밝히는데(DNN5 롱숏 TN 108.07% vs RR2 95.36% — 비교군마다 회전율이 다르다), FIDELITY 는 이 문장의 존재 자체를 부정하고(changed(14)에서 TN 을 '미구현'으로만 처리) 우리 15bps 등급판이 이 turnover 차이를 반영해 각 후보를 상대적으로 어떻게 재배열하는지 논하지 않는다 — 논문이 원하는 '회전율로 비용을 가늠하라'는 독법 자체가 병기에서 빠졌다.",
+  "evidence": "arxiv.org/html/2002.06975v1 을 프록시(r.jina.ai)로 2회 축자 조회 — 두 조회 모두 동일 문장을 확인: 'In addition, the portfolio turnover rate is calculated and compared in order to consider the impact of transaction costs. A portfolio with a high turnover rate will have more transaction costs than with a portfolio with a lower rate.' (Introduction 절 — 1차 조회는 §3.1 부근으로 오짚었으나 재질의로 Introduction 로 정정·재확인). Table 3/4 자체 수치(Alpha/IR/AR/R-R/MaxDD)에는 비용 차감 표기가 없다(gross) — 이 점은 FIDELITY 의 실제 처리(comm_paper=0 → paper_basis)와 부합한다.",
+  "confidence": "medium",
+  "checked": "commission_paper=null 처리 경로(run_paper_replication.R:180,304-313: comm_paper=0 → paper_basis, 0.0015 → sim_grade) · authoritative_remeasure.json 의 paper_basis(gross, cagr 14.9%/SR 0.94/MDD 33.9%) vs essence(15bps, cagr 9.4%/SR 0.71/MDD 46.5%) 대조 · build_bt_result 의 transaction_cost_bps=15 가 메타데이터일 뿐 이중 차감이 아님(backtest_result_contract.R) 확인 · 논문 원문에서 turnover/transaction cost 서술 유무 재질의 2회.",
+  "note": "본 계산(0bps 병기 + 15bps 등급)의 수치 경로 자체는 문제 없다 — 문제는 FIDELITY 서술이 논문의 비용 관련 문장 존재를 '없음'으로 잘못 적었다는 점. 실행 격자(월간 재구성)로 인한 회전율 차이는 changed(3)에서 이미 논의되어 이 축의 중복 지적은 피했다."
+}

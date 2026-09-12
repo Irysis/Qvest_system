@@ -1,0 +1,11 @@
+{
+  "axis": "timing",
+  "verdict": "adapted",
+  "undeclared_changes": [],
+  "signal_mismatch": [],
+  "counterexample": "구성 못 했다 — 반례를 만들려면 코드가 논문값(HORIZON=5, N_TRAIN=1000, UPD_EVERY=5)과 다른 상수를 쓰거나 모델 갱신 시점 u 선택이 t 를 넘는 경우가 있어야 하는데, engine.R:62-64(HORIZON=5L·N_TRAIN=1000L·UPD_EVERY=5L)와 :261-264(u <- max(.grid5[.grid5<=di]))가 논문 수치·PIT 조건 모두를 만족한다. 유일한 실질 괴리(월간 집행 vs 논문의 일간 5트랜치 교대·5일 보유)는 FIDELITY.changed(3)이 정확한 코드 경로(replication_harness.R get_execution_date)를 지목해 선언하고 있어 misdeclared 근거가 없다.",
+  "evidence": "Section 3.2(Problem Formulation): 'The output value is defined by the next 5 day's stock return, y_{i,t+5}' · 'This procedure is extended to using the latest N = 1,000 days'. Section 3.3(Prediction Models): 'We train the model by using the latest 1,000 sets of training data.' Section 3.4(Portfolio Construction Framework): 'The prediction models are updated every five business days.' · 'We rebalance one of five portfolios hold 20% every business day.' (r.jina.ai PDF 프록시, 절 지정 질의로 확인 — arxiv.org/html/2002.06975v1 은 404).",
+  "confidence": "high",
+  "checked": "HORIZON(5일 표적)·N_TRAIN(1000일 학습창)·UPD_EVERY(5영업일 갱신 격자) 상수를 논문 원문과 대조(engine.R:62-64) · 갱신 격자 산출과 t 이하 마지막 갱신점 선택(engine.R:259-264, u<=di) · 학습창 [u-1004,u-5] 산출식과 diag 재단언(engine.R:263, :793) · 표적 정렬 양성 대조(engine.R:151-165, s→s+5·시가 s+1 폐형 검산) · 월말 시그널만 발행(engine.R:255-258)과 하네스 집행일 함수 get_execution_date=익월 첫 거래일(backtest_harness.R:316-324, replication_harness.R:84-90 보유창)을 코드로 확인 · FIDELITY.changed(3)(5)·portfolio_spec.overlap·changed_checklist '리밸·보유' 행이 이 괴리를 정확한 메커니즘(5트랜치 일간 교대·5일 보유 vs 월말 스냅샷 1행→익월 첫 거래일 집행·1개월 보유)으로 선언했는지 대조.",
+  "note": "논문 수치 축(J 없음·K=5일·스킵 없음·갱신 5영업일)은 코드에 정확히 이식됐고, 유일한 시간축 괴리(월간 집행이 일간 5트랜치 교대·5일 보유를 대체)는 원인(하네스가 월간 집행만 지원)까지 정직하게 선언돼 있어 adapted 로 판정한다."
+}
