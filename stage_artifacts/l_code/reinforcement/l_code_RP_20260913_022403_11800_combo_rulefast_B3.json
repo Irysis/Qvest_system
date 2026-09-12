@@ -1,9 +1,9 @@
 {
-  "l_code": "L-RF-20260913_030656",
+  "l_code": "L-RF-20260913_033842",
   "strategy_id": "RP_20260913_022403_11800_combo_rulefast_B3",
   "grade": "C",
   "core_reference": "",
-  "lesson_text": "[B3 universe] 2칸 실측 — 최고 B3_15 다중검정t -0.612 · 칼마 0.157 · 등급 A0/B0/C1/F1. 직전 최고 B2_10(0.845) 대비 열위 — 이 축은 기준선을 못 넘었다. 칼마 최고 0.16 — 낙폭 60% 하에서 합격선은 연복리 39% 를 요구",
+  "lesson_text": "[B3 universe] 3칸 실측 — 최고 B3_15 다중검정t -0.612 · 칼마 0.157 · 등급 A0/B0/C2/F1. 직전 최고 B2_10(0.845) 대비 열위 — 이 축은 기준선을 못 넘었다. 칼마 최고 0.16 — 낙폭 60% 하에서 합격선은 연복리 39% 를 요구",
   "tags": ["reinforcement", "rule_grid", "b3"],
   "created_at": "2026-09-13",
   "research_mode": "reinforcement",
@@ -17,46 +17,11 @@
   "calmar": 0.157,
   "oos_retention": -2.251,
   "portfolio_alpha_t": -0.612,
-  "next_probes": ["다음 격자 축 B5(risk_overlay) — 이 블록 승자 위에서 측정", "B3_15(최고 -0.612)는 B4 조합 후보로 고정 · B3_12(최저 -0.639)는 축 역작동 여부를 조합 LOO 로 분리"],
+  "next_probes": [
+    "다음 격자 축 B5(risk_overlay) — 이 블록 승자 위에서 측정",
+    "B3_15(최고 -0.612)는 B4 조합 후보로 고정 · B3_12(최저 -0.639)는 축 역작동 여부를 조합 LOO 로 분리"
+  ],
   "next_probe": "다음 격자 축 B5(risk_overlay) — 이 블록 승자 위에서 측정 | B3_15(최고 -0.612)는 B4 조합 후보로 고정 · B3_12(최저 -0.639)는 축 역작동 여부를 조합 LOO 로 분리",
   "source_paper": "https://arxiv.org/abs/2404.08129",
-  "record_type": "performance",
-  "mechanism": "판정: 유니버스 축은 MDD를 움직이지 못했고, 대신 B2_10(score_tilt)이 만든 PORT_t 0.845를 서로 다른 두 방식으로 똑같이 지웠다. B3_12(K200 단독) PORT_t -0.639 · MDD 0.647, B3_15(섹터 중립 Sector_Lv2) PORT_t -0.612 · MDD 0.604 — 멤버십 제한과 섹터 내 중립화는 다른 처치인데 PORT_t 격차가 0.027에 그친다. 공통점은 하나다: 둘 다 score_tilt가 가중을 싣던 횡단면 상단을 잘라낸다(실측). 어느 쪽이 기전인지는 이 블록만으로 안 갈린다 — 설계한 B3_11(KQ150 단독)이 집행되지 않아 '신호가 KQ150 횡단면에 있었나' 대 'score_tilt 우위 자체가 상단 집중에서 온 것이라 어떤 분산 제약에도 무너지나'를 분리할 짝이 없다(미결). 가르려면 같은 score_tilt 기저 위 KQ150 단독 1칸이 필요하고, 그건 B5로는 못 간다. 앞 블록 처방은 반증이 아니라 미집행이다 — 기저 비중을 B2_8(minvar)로 고정해 유니버스 효과만 분리하라고 적었는데 실측 2칸 모두 score_tilt 기저로 돌았다(정황: B2와 같은 접두 대조 실패). MDD 쪽은 확정적이다: 11칸 전부 0.544~0.661이고 B3_12의 0.647은 B1 범위 상단에 그대로 있다. 팩터·비중·유니버스 세 축을 전부 교체하는 동안 낙폭 폭은 11.7%p에 갇혔다. long-only · Σw=1 · 완전투자에서 남은 레버는 노출 층(B5)뿐인데, 이 계보의 기저 PORT_t가 음수라 스칼라 총노출 축소는 초과수익의 부호를 못 바꾸고 크기만 줄인다 — B5는 '얼마나 깎느냐'가 아니라 '어느 종목을 깎느냐'의 축으로만 써야 한다.",
-  "mechanism_by": "llm:block_end",
-  "mechanism_at": "2026-09-13T03:09:34+0900",
-  "prior_lessons_used": ["B1", "B2"],
-  "next_block_actions": [
-    {
-      "action": "B5를 cross_sectional tilt 3칸 + 비(ratio)형 상태 1칸으로 구성하고, 스칼라 총노출 축소 단독 arm은 한 칸도 배정하지 않는다.",
-      "why": "B3_12/B3_15의 PORT_t가 -0.639/-0.612로 음수인 기저 위에서는 노출 e를 곱하는 처치가 초과수익 부호를 못 바꾼다. 게다가 카탈로그가 인용한 B5 50셀 실측에서 스칼라 축소는 MDD -10% 대비 CAGR -23%로 상방을 더 잃었다(근거는 이 블록 밖).",
-      "expect": "cross_sectional 칸의 Calmar가 그 50셀 중앙값 0.160을 넘고, 동시에 횡단면 평균 노출 1-g/2가 스칼라판 1-g보다 CAGR을 덜 깎는다. 넘지 못하면 노출 층 전체가 벽이고 남은 레버는 B4(결합)뿐이다."
-    },
-    {
-      "action": "holdlvl_syscrowd_tilt로 상태를 시장 시계열이 아니라 보유 자체의 체계위험 비중(bcorr² 횡단면 중앙값)에서 읽는 칸을 1개 둔다.",
-      "why": "11칸 전부 MDD 0.544~0.661이라는 것은 구속 축이 횡단면 선정도 비중도 유니버스도 아닌 공통 노출이라는 뜻이다. 그 공통 노출을 직접 측정해 개입 강도로 삼는 유일한 arm이다.",
-      "expect": "MDD가 처음으로 0.544(B2_8 minvar 최저) 아래로 내려간다. 이 칸도 0.544~0.661 안에 남으면 25종 long-only 완전투자 책의 낙폭은 국면 게이팅으로 못 내린다는 뜻이다."
-    },
-    {
-      "action": "dbeta_tilt_rank를 cross_sectional 기준칸으로 같이 돌려, ml_dual_forecast_tilt·holdlvl_syscrowd_tilt의 추가 기계장치가 값을 하는지 대조한다.",
-      "why": "B1에서 팩터를 더 쌓자 PORT_t가 0.791→0.125로 내려간 전례가 있다. 복잡도가 늘 이득이 아니므로 같은 축의 최소 구현을 기준선으로 둬야 한다.",
-      "expect": "두 정교한 칸이 dbeta_tilt_rank의 Calmar를 못 넘으면 랭킹 축 회전·다채널 매핑은 이 표본에서 잡음이다."
-    },
-    {
-      "action": "xs_vol_gap_corr_brake 1칸으로 상태를 수준이 아닌 비(log(xs)-log(rv) = 내재 평균상관)로 읽는다.",
-      "why": "B1~B3 11칸에서 변하지 않은 것이 낙폭이고, 그 낙폭이 상관 국면의 함수인지 아닌지는 아직 한 번도 측정되지 않았다. 변동성 수준 축과 겹치지 않는 유일한 상태 변수다.",
-      "expect": "상관 분위가 낮은(=한 덩어리로 움직이는) 달에만 노출이 줄면서 MDD가 0.60 아래로 내려간다. 여기서도 0.544~0.661이면 낙폭은 상관 국면으로 타이밍 불가다."
-    },
-    {
-      "action": "B4(결합) 진입 시 B2_10(원 유니버스 · score_tilt · PORT_t 0.845)을 계보로 보존하고, B3 승자(B3_15)를 자동 carry 기저로 쓰지 않는다.",
-      "why": "B3 2칸 모두 PORT_t가 음수라 이 유니버스 처치는 초과수익을 없앤 처치다. 블록 승자 carry 규칙이 음수 PORT_t 기저를 뒤 블록 전체에 실어버린다.",
-      "expect": "B4에서 PORT_t 상단이 0.845 근처에서 다시 출발한다. carry를 그대로 두면 B4 전 칸이 -0.6 대에서 시작해 결합 효과가 측정 불가가 된다."
-    }
-  ],
-  "next_block_actions_by": "llm:block_end",
-  "avoid": ["스칼라 총노출 축소 단독 arm(vol_median·vol_ewma·vol_har·dd_brake_q·dd_recovery·ts_mom_sign) — 벽이 확인된 축이다. 카탈로그가 인용한 B5 50셀 실측에서 MDD -10% 대비 CAGR -23%, Calmar 중앙값 0.160으로 전 블록 최악이었고, 기저 PORT_t -0.612/-0.639가 음수인 이 계보에서는 e를 곱해도 부호가 안 바뀐다.", "vol_x_dd·vol_x_turb 곱셈 combo — 스칼라 둘의 곱도 스칼라다. 총노출 축이라는 같은 벽에 칸을 두 번 쓰는 것이다.", "turbulence·ml_tail_gate 등 다변량 상태를 스칼라 강도 하나로 뭉치는 arm — 상태 추정을 정교화해도 소비 지점이 총노출이면 위 벽과 같은 자리에 떨어진다. 다변량 정보는 multivar_channel_tilt처럼 종목축으로 소비될 때만 의미가 있는데, 그건 이번 4칸에서 ml_dual_forecast_tilt가 같은 질문을 더 직접 묻는다.", "유니버스 축 재시도 — 이 격자의 B3는 끝났고 K200 단독과 섹터 중립이 PORT_t를 같은 자리(-0.62 부근)로 보냈다. 남은 유니버스 질문(B3_11 KQ150 단독)은 B5로는 못 가른다 — 필요하면 B3 재개 또는 B4 결합 설계에서 다뤄야 한다.", "CDaR_LP·CVaR_LP 경로형 목적함수 재시도 — B2_6에서 MDD 0.596으로 minvar 0.544에 못 미치면서 PORT_t 0.295로 무너졌다. B2 결론 유지.", "generated_shrinkage_lift 4종 — 유니버스 축까지 바꿔도 MDD가 0.544~0.661을 못 벗어났으므로 공분산 추정 정밀화로 밀 여지는 더 줄었다. 계속 유보."],
-  "next_block_design_for": "B5",
-  "next_block_design_n": 4,
-  "prior_action_status": "ignored",
-  "prior_action_detail": "설계 3건 중 0건 집행 (설계: B3_12,B3_11,B3_15 / 실측: index,sector_neutral)",
-  "mechanism_confidence": "medium"
+  "record_type": "performance"
 }

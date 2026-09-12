@@ -17,11 +17,34 @@
   "calmar": 0.259,
   "oos_retention": -0.714,
   "portfolio_alpha_t": 0.79,
-  "next_probes": [
-    "다음 격자 축 B4(combination) — 이 블록 승자 위에서 측정",
-    "B5_17(최고 0.790)는 B4 조합 후보로 고정 · B5_18(최저 0.449)는 축 역작동 여부를 조합 LOO 로 분리"
-  ],
+  "next_probes": ["다음 격자 축 B4(combination) — 이 블록 승자 위에서 측정", "B5_17(최고 0.790)는 B4 조합 후보로 고정 · B5_18(최저 0.449)는 축 역작동 여부를 조합 LOO 로 분리"],
   "next_probe": "다음 격자 축 B4(combination) — 이 블록 승자 위에서 측정 | B5_17(최고 0.790)는 B4 조합 후보로 고정 · B5_18(최저 0.449)는 축 역작동 여부를 조합 LOO 로 분리",
   "source_paper": "https://arxiv.org/abs/2404.08129",
-  "record_type": "performance"
+  "record_type": "performance",
+  "mechanism": "판정: 오버레이 축은 MDD를 최대 6.0%p 내렸지만 PORT_t는 네 칸 전부에서 깎았고, 상태 추정기가 무엇이든 Calmar는 0.238~0.259(폭 0.021)로 이 격자에서 가장 좁게 모였다. 네 칸 모두 B2_10과 같은 기저(C03_EPS_Chg_3m · score_tilt · K200∪KQ150)에서 돌았다 — B3_15를 carry 기저로 쓰지 말라는 B3 처방은 집행됐다(실측). 그 기저 PORT_t 0.845 · MDD 0.627 대비 B5_17(ml_dual_forecast_tilt) 0.790/0.593, B5_19(xs_vol_gap_corr_brake) 0.765/0.618, B5_16(holdlvl_syscrowd_tilt) 0.603/0.610, B5_18(dbeta_tilt_rank) 0.449/0.567이다. 갈린 선은 '종목축이냐 총노출이냐'가 아니었다 — B3 처방은 횡단면 tilt 3칸이 스칼라형 1칸을 이길 것을 전제했는데, 비(ratio)형 상태를 총노출로 소비한 B5_19의 Calmar 0.247이 tilt 3칸(0.238 · 0.259 · 0.248) 한가운데 떨어졌다. 이 대목에서 그 처방은 반증됐다(실측). 실제로 갈린 것은 tilt가 무엇을 표적하는가다: 낙폭베타를 직접 표적한 B5_18이 MDD 0.567로 4칸 최저인 동시에 PORT_t 0.449로 최저다 — 공통 노출을 실제로 줄이지만 교환비가 고정돼 Calmar는 0.248로 제자리다. B2_8(minvar) MDD 0.544의 -6.2%p와 B5_18의 -6.0%p는 추정 경로(2차 적률 기반 재배분 vs 낙폭베타 랭크 tilt)가 전혀 다른데 같은 자리에서 멈춘다 — long-only · Σw=1 · 완전투자 · 25종 상한에서 횡단면 재배분으로 제거되는 시장 동조 낙폭의 상한이 6%p 부근이라는 정황이 서로 독립인 두 경로로 확인됐다. 15칸(B1 5 · B2 4 · B3 2 · B5 4) 전체 MDD 0.544~0.661 · Calmar 최고 0.281(B2_8)이고 B5는 그 최고치를 못 넘었다. B5_16이 B5_17에 PORT_t·MDD 양쪽에서 열위인 것(상태를 보유의 체계위험 비중에서 읽는 쪽이 예측 기반 tilt보다 나쁘다)은 단일 쌍이라 미결 — 같은 기저에서 두 상태 정의를 tilt 강도만 맞춰 재측정해야 갈린다.",
+  "mechanism_by": "llm:block_end",
+  "mechanism_at": "2026-09-13T03:31:43+0900",
+  "prior_lessons_used": ["B1", "B2", "B3"],
+  "next_block_actions": [
+    {
+      "action": "B4 LOO 산출물에 오버레이 성분(대표 B5_17)의 한계 PORT_t·한계 MDD 기여를 별도 열로 기록하게 한다 — 부분집합 구성은 계약대로 두고 보고 형식만 요구한다.",
+      "why": "B5 4칸이 전부 기저 PORT_t 0.845 아래(0.449~0.790)로 내려갔으므로 오버레이의 한계기여가 PORT_t에서 음수일 가능성이 실측상 유력하다.",
+      "expect": "오버레이를 뺀 LOO 칸이 PORT_t 0.8 이상이면서 MDD 0.60~0.63에 머물면 오버레이는 PORT_t 비용이고 MDD 기여는 6%p 미만으로 귀속된다. 반대로 제거 시 MDD가 0.63을 넘어가면 B5_18 계열의 낙폭베타 tilt가 실제로 기여한 것이다."
+    },
+    {
+      "action": "B4 보고에 각 LOO 칸의 Calmar를 B2_8(0.281) 기준선과 함께 병기하게 한다 — 15칸 최고치가 여전히 B2_8이고 이후 6칸이 그것을 못 넘었다는 사실을 결합 판정의 대조선으로 고정한다.",
+      "why": "B2 이후 B3·B5 6칸이 PORT_t를 -0.639~0.790까지 훑는 동안 Calmar 최고는 갱신되지 않았다. 결합이 값을 하는지 여부는 PORT_t가 아니라 이 선을 넘느냐로만 갈린다.",
+      "expect": "LOO 어느 칸도 Calmar 0.281을 못 넘으면 이 격자의 상한은 비중 축 단독에서 이미 관측된 것이고, 결합은 축들의 가산성을 주지 않는다는 결론이 선다."
+    },
+    {
+      "action": "minvar 기저(B2_8) 위에 낙폭베타 tilt(B5_18)를 얹는 가산성 검정은 이 격자에서 요청하지 않는다 — B4는 LOO 계약이고 B5는 score_tilt 기저로만 돌았으므로, 별도 강화 시도 단위로 원장에 올린다.",
+      "why": "-6.2%p(공분산 재배분)와 -6.0%p(낙폭베타 tilt)가 서로 다른 경로로 같은 자리에서 멈췄다. 두 감쇠가 가산적인지 같은 제약에 막힌 같은 감쇠인지는 이 격자 안에서 측정된 적이 없다.",
+      "expect": "결합 MDD가 0.544 아래로 내려가면 두 경로는 독립 성분이다. 0.54~0.57에 남으면 둘은 같은 제약(long-only · Σw=1 · 완전투자)에 막힌 동일 감쇠이며, 이 계보에서 MDD 축은 소진된 것으로 기록한다."
+    }
+  ],
+  "next_block_actions_by": "llm:block_end",
+  "avoid": ["오버레이 상태 추정기를 더 정교화하는 칸(다른 ML 예측기·다른 crowding 척도·다변량 국면 분류기) — B5 4칸은 상태 정의가 서로 완전히 다른데(보유의 체계위험 비중 중앙값 · ML dual forecast · 낙폭베타 랭크 · 내재 평균상관 비) Calmar가 0.238~0.259, 폭 0.021에 모였다. 추정기 정체성이 결과를 안 가른다는 것이 4칸으로 실측됐다.", "스칼라 총노출 축소 계열 재시도(vol_median·vol_ewma·vol_har·dd_brake_q·vol_x_dd 등) — B3 avoid 유지. 더해서 B5_19(비형 상태를 총노출로 소비)의 Calmar 0.247이 횡단면 tilt 3칸 한가운데였으므로, 소비 지점을 총노출로 바꿔도 같은 자리에 떨어진다.", "CDaR_LP·CVaR_LP 경로형 목적함수 재시도 — B2_6에서 MDD 0.596으로 minvar 0.544에 못 미치면서 PORT_t 0.295로 무너졌다. B2 결론 유지.", "generated_shrinkage_lift 4종(shr_sample·shr_ledoit_wolf·shr_gerber_rmt·shr_lw_nls) — 팩터·비중·유니버스·오버레이 네 축 15칸에서 MDD가 0.544~0.661을 못 벗어났고 두 독립 경로가 -6%p에서 멈췄다. 공분산 추정 정밀화로 밀 여지는 B2 시점보다 더 줄었다.", "유니버스 축 재시도 — B3는 끝났고 남은 질문(B3_11 KQ150 단독)은 B4 LOO로 못 가른다. 근거가 이 격자 밖이므로 재개하려면 별도 강화 시도여야 한다.", "고정 축(long-only · Σw=1 · 완전투자 · 25종) 완화를 레버로 제시하는 것 — 상한의 소재를 기록하는 것과 축을 푸는 것은 다르다. 남은 여지는 조건-안 레버(횡단면 오버레이 표적 재정의 · 비대칭 표적)로만 다룬다."],
+  "prior_action_status": "executed",
+  "prior_action_detail": "설계 4건 중 4건 집행 (설계: holdlvl_syscrowd_tilt,ml_dual_forecast_tilt,dbeta_tilt_rank,xs_vol_gap_corr_brake / 실측: holdlvl_syscrowd_tilt,ml_dual_forecast_tilt,dbeta_tilt_rank,xs_vol_gap_corr_brake)",
+  "mechanism_confidence": "medium"
 }
