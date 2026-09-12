@@ -270,6 +270,25 @@ PANEL <- PANEL[is.finite(Score)]
   x[, .r := seq_len(.N), by = .(Date, Sector)]
   x[order(Date, .r, -Score)][, head(.SD, n), by = Date][, .r := NULL][]
 }
+# ── 5a. 선정 축 유효성 — ★후보 수가 n_max 이하면 랭킹이 멤버십을 못 바꾼다 ────────
+#   기저 엔진이 PORTFOLIO 를 내면 .base_sig 가 보유 종목에만 정의돼(rf_cell_engine:91-94)
+#   패널이 그만큼 좁아진다. 그 위에 팩터를 얹으면 선정이 **항상 전수**라 처치가 포트폴리오에
+#   닿지 않는다. 2026-09-12 실측(결합 기저 중앙 14종/일): B1 9칸 중 6칸이 일별 순수익 3629일
+#   전수 비트 동일 — 서로 다른 다섯 팩터를 얹었는데 포트폴리오가 한 번도 안 움직였다.
+#   팩터가 닿은 유일한 통로는 inner join 의 커버리지 결손이었고, 그래서 "이긴" 칸(B1_5)의
+#   우위는 SUE 의 신호가 아니라 SUE 의 결측 패턴이었다. 침묵 무처치를 등급으로 발행하지 않는다.
+#   ⚠유니버스 축(B3)은 후보 집합 자체를 갈아치우므로 좁아도 처치가 전달된다 — 막지 않는다.
+#     그래서 문턱은 블록 이름이 아니라 **팩터가 붙었는가(.tags)** 로 건다.
+.cand_med <- stats::median(PANEL[, .N, by = Date]$N)
+if (is.finite(.cand_med) && .cand_med <= .N_MAX) {
+  .degen <- sprintf("기저 후보 중앙 %.0f종/일 <= n_max %d — 랭킹이 멤버십을 못 바꾼다",
+                    .cand_med, .N_MAX)
+  if (length(.tags))
+    stop("[rf_cell_engine] ", .degen, " · 팩터 축 무처치 — 침묵 무처치 측정 금지")
+  cat(sprintf("[rf_cell_engine] WARN %s (선정 전수 — 이 칸은 비중/오버레이 축만 잰다)
+", .degen))
+}
+
 SEL <- if (identical(.univ$kind, "sector_neutral")) {
   .sector_neutral_pick(PANEL, .N_MAX)
 } else {
