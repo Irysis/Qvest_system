@@ -1,0 +1,132 @@
+{
+  "schema_version": "distilled_v1",
+  "dist_id": "DIST-FR-003",
+  "cluster_key": "2eb6deb74276",
+  "candidate_id": "CAND_strategy_rotation_2eb6deb74276",
+  "status": "pending_5axis",
+  "statement_refined": null,
+  "retry_condition": null,
+  "refined_at": null,
+  "refined_by": null,
+  "promoted_to_axiom": null,
+  "created_at": "2026-09-12T08:19:47+00:00",
+  "updated_at": "2026-09-12T08:19:47+00:00",
+  "research_mode": "strategy_rotation",
+  "metric_type": "backtested",
+  "type": "empirical",
+  "polarity": "negative",
+  "statement_draft": "[실증 실패 규칙 초안] family=ml_complexity, tags=T,O,A, supporting=3건 L-code. (promote.R 5축 검증에서 범위·메커니즘·OOS 확정 필요)",
+  "supporting_l_codes": [
+    "L-FR-20260912_170811",
+    "L-FR-20260912_170855",
+    "L-FR-20260912_171234"
+  ],
+  "scope_draft": {
+    "market": "KR",
+    "factor_family": "ml_complexity",
+    "regime": null,
+    "construction_types": null
+  },
+  "evidence_draft": {
+    "independent_l_codes": 3,
+    "independent_strategies": 3,
+    "strategies": [
+      "FR_003",
+      "FR_003_armC_flooronly",
+      "FR_003_armS_lag1"
+    ],
+    "effect_direction_consistency": null,
+    "note": "evidence_draft — promote.R 5축 검증에서 hurdle_result/grade_a_catalog 교차검증으로 확정",
+    "n_eff_signatures": 1,
+    "independent_constructions": 1,
+    "constructions": [
+      "regime_rotation"
+    ],
+    "metric_types": [
+      "backtested"
+    ]
+  },
+  "falsification_draft": {
+    "attempts": [
+      {
+        "test": "OOS retention (essence 3-split, 과적합 반증)",
+        "result": "falsified",
+        "effect_retained": -0.535,
+        "detail": "retention -0.535 (gate 0.7, 하한 0.5)"
+      },
+      {
+        "test": "EW baseline 대비 edge (placebo proxy)",
+        "result": "diagnostic",
+        "effect_retained": null,
+        "detail": "net_SR 0.819 vs EW 0.722 (edge +0.097) — 유의검정 아님(진단)"
+      },
+      {
+        "test": "OOS retention (essence 3-split, 과적합 반증)",
+        "result": "falsified",
+        "effect_retained": 0.014,
+        "detail": "retention 0.014 (gate 0.7, 하한 0.5)"
+      },
+      {
+        "test": "EW baseline 대비 edge (placebo proxy)",
+        "result": "diagnostic",
+        "effect_retained": null,
+        "detail": "net_SR 1.076 vs EW 1.056 (edge +0.020) — 유의검정 아님(진단)"
+      },
+      {
+        "test": "F1 베타 트랩 (국면조건부 우위가 노출 축소인가)",
+        "result": "not_applicable",
+        "effect_retained": 0.594,
+        "detail": "처치 베타 0.594 > 대조 0.549 — 노출이 오히려 늘었다. 우위가 아니라 열세이므로 베타 설명이 성립하지 않는다."
+      },
+      {
+        "test": "F2 분모 혼동 (풀 내부 EW 대비 우위를 벤치 대비 자격으로 전이하지 않기)",
+        "result": "survived",
+        "effect_retained": 0.103,
+        "detail": "edge_vs_ew +0.103(처치) vs +0.020(대조). 그러나 PORT_t 0.853 vs 1.667 — 두 분모를 분리 보고."
+      },
+      {
+        "test": "F3 OOS retention >= 0.5",
+        "result": "falsified",
+        "effect_retained": -0.521,
+        "detail": "처치 -0.521 · 대조 +0.014. 4/4 라운드 미달 — 이 계층의 1차 적수."
+      },
+      {
+        "test": "F4 PIT lag+1 스트레스 (동월 누출)",
+        "result": "survived",
+        "effect_retained": 0.819,
+        "detail": "arm_S net_SR 0.819 vs base 0.825 (-0.7%) · PORT_t 0.836 vs 0.853. 붕괴 없음 = 누출 지문 없음."
+      },
+      {
+        "test": "MC1 멤버십 채널 전달 (국면쌍 Jaccard 중앙값 < 0.9)",
+        "result": "falsified",
+        "effect_retained": 0.9744,
+        "detail": "중앙값 0.974(최소 0.077) — 국면별 admitted 집합이 대부분 동일. 국면 멤버십 채널 미전달."
+      },
+      {
+        "test": "MC2 가중 채널 전달 (retention >= 0.25)",
+        "result": "survived_but_uninformative",
+        "effect_retained": 1.7299,
+        "detail": "retention 1.73 통과. 그러나 처치 축 전달량은 0(교훈 3) — 이 계기는 축 전달을 재지 않는다."
+      },
+      {
+        "test": "MC3 처치 전달 (방어형 비중이 위기에서 커지는가)",
+        "result": "falsified",
+        "effect_retained": 0.3947,
+        "detail": "RISK_ON 0.585 > CRISIS 0.395 > RISK_OFF 0.294 — 방향 역전. 전달은 됐으나 부호가 반대."
+      }
+    ],
+    "note": "L-code 기록 반증 시도 실값 집계"
+  },
+  "mechanism_draft": {
+    "economic_explanation": "1계층 B 계열의 구속 축이 위기 동조 낙폭이라면, 하락월 볼록성을 실증한 방어형 모듈을 같은 국면조건부 배분규칙 아래 풀에 넣어 총노출을 줄이지 않고 멤버십 교체만으로 Calmar 를 올릴 수 있다 — 기각. 실제 기전은 반대였다: 개별 인증 방어성은 준-균등 다수 보유에서 idio 성분이 분산으로 상쇄돼 사라지고, RCMA 소표본 floor 가 희소국면에서 방어형을 먼저 탈락시켜 방어 슬리브가 위기에 가장 얇아진다. (멤버 가설 3건 — promote.R에서 일치성 재검증)",
+    "mechanism_type": "unknown",
+    "causal_plausibility": null
+  },
+  "oos_validation_draft": {
+    "oos_months": null,
+    "oos_effect_vs_is": -0.521,
+    "note": "L-code oos_retention 실값 3건 median (IS65/OOS35 활성SR retention) — oos_months 실값 무 → None 유지 — promote.R essence_score 경유 재확정"
+  },
+  "cluster_members_count": 3,
+  "expiry": "2026-12-11"
+}

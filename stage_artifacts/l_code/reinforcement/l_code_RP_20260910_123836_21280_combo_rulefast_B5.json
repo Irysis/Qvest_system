@@ -17,11 +17,41 @@
   "calmar": 0.292,
   "oos_retention": 2.782,
   "portfolio_alpha_t": 1.748,
-  "next_probes": [
-    "다음 격자 축 B2(weighting) — 이 블록 승자 위에서 측정",
-    "B5_20(최고 1.748)는 B4 조합 후보로 고정 · B5_16(최저 0.151)는 축 역작동 여부를 조합 LOO 로 분리"
-  ],
+  "next_probes": ["다음 격자 축 B2(weighting) — 이 블록 승자 위에서 측정", "B5_20(최고 1.748)는 B4 조합 후보로 고정 · B5_16(최저 0.151)는 축 역작동 여부를 조합 LOO 로 분리"],
   "next_probe": "다음 격자 축 B2(weighting) — 이 블록 승자 위에서 측정 | B5_20(최고 1.748)는 B4 조합 후보로 고정 · B5_16(최저 0.151)는 축 역작동 여부를 조합 LOO 로 분리",
   "source_paper": "https://arxiv.org/abs/2404.08129",
-  "record_type": "performance"
+  "record_type": "performance",
+  "mechanism": "판정: 오버레이 축은 이 기저에 실제로 전달됐고(B1 과 달리 5칸 전부 MDD 가 기저 B1_5 의 0.727 에서 이동해 0.590~0.731 에 분포), 칸을 가른 것은 소비 지점이 아니라 상태 변수다. 실측: 같은 낙폭 상태를 총노출 스칼라로 소비한 B5_16(PORT_t 0.151 · CAGR 0.102 · MDD 0.623)과 종목별 순위로 소비한 B5_17(PORT_t 0.565 · CAGR 0.127 · MDD 0.669)이 소비 지점이 다른데도 둘 다 기저 PORT_t 1.275 아래로 크게 내려갔다 — B1 말미의 '소비 지점이 문제' 가설은 이 쌍으로 반증된다. 낙폭 상태 자체가 이 기저에서 타이밍 정보를 주지 않는다: B5_16 은 MDD 를 10.4%p 낮추는 대가로 CAGR 을 0.179→0.102 로 깎아, 앞 블록이 이 블록 밖 카탈로그 근거로 피하라던 대칭 축소의 손익비와 같은 방향이다(스칼라 앵커 한 칸을 남긴 판단은 지지됨). 살아남은 두 칸은 서로 다른 축을 움직였다. B5_20(총노출·추세부호)은 CAGR 0.179→0.213 · PORT_t 1.748 로 수익 쪽만 올리고 MDD 는 0.731 로 기저와 같다. B5_19(종목별·다변량)는 MDD 를 0.727→0.590 으로 13.7%p 내리고 CAGR 은 0.161 만 내놨다 — 이 블록에서 MDD 와 CAGR 의 교환비가 유일하게 불리하지 않은 칸이다. 수익 쪽 개선은 총노출 추세에서, 낙폭 개선은 종목별 다변량 tilt 에서만 나왔고 한 칸이 둘을 동시에 하지는 못했다. B5_18(상태를 그 달 보유 자체에서 읽은 혼잡도)은 PORT_t 1.133 · MDD 0.706 으로 기저 근방에 머물렀다 — 상태의 독법을 보유로 바꾸는 것만으로는 갈리지 않는다. 미결: B5_19 의 MDD 개선이 다변량 신호 때문인지 tilt 가 만든 종목별 비중 분산 자체 때문인지는 이 블록으로 안 갈린다. 동일가중 1/25 를 고정한 채 얹은 tilt 와 비중방법론 자체를 분리해야 갈리고, 그것이 B2 가 재야 할 것이다.",
+  "mechanism_by": "llm:block_end",
+  "mechanism_at": "2026-09-12T17:19:08+0900",
+  "prior_lessons_used": "B1",
+  "next_block_actions": [
+    {
+      "action": "B2 에서 covariance 기반 비중(lean:minvar)을 동일가중 1/25 대신 쓰고, 같은 블록에 lean:score_pure 를 나란히 둔다",
+      "why": "B5_19 가 종목별 비중 분산만으로 MDD 0.727→0.590 을 냈는지, 다변량 신호가 필요했는지가 미결이다. minvar 는 신호 없이 비중 분산만 주고, score_pure 는 신호만으로 집중시킨다",
+      "expect": "minvar 가 MDD 0.60 대로 내려가면 B5_19 의 개선은 비중 분산 효과이고 다변량 신호는 불필요하다. minvar 가 MDD 0.72 대에 머물면 개선은 신호 쪽이다. 두 칸이 동일가중과 세 자리까지 같은 값을 내면 비중 축이 전달되지 않은 것이므로(B1 factor2 와 같은 병) 즉시 보유·비중 배출을 대조한다"
+    },
+    {
+      "action": "위험의 정의를 경로(qepm:CDaR_LP)와 분포 꼬리(qepm:CVaR_LP)로 갈라 각각 한 칸씩 배정한다",
+      "why": "B5_16·B5_17 은 낙폭 경로 상태를 '신호'로 쓰면 실패함을 보였을 뿐, 낙폭을 비중 최적화의 제약으로 쓰는 경로는 한 번도 측정되지 않았다. 두 칸은 상태 신호가 아니라 제약으로 같은 양을 겨냥한다",
+      "expect": "CDaR_LP 가 CAGR 0.16 이상을 유지하며 MDD 0.59 이하로 가면 낙폭은 신호 축이 아니라 제약 축이다. 둘 다 CAGR 0.10 대로 주저앉으면 B5_16 과 같은 대칭 축소이고, 이 기저의 낙폭은 비중 축에서도 비용 없이 닿지 않는다"
+    },
+    {
+      "action": "lean:hrp 한 칸으로 추정오차 경로를 분리한다",
+      "why": "이 기저는 월 보유 종목수가 n_max 25 에 못 미치는 구간이 있어 표본 covariance 의 추정오차가 minvar·LP 계열 결과를 지배할 수 있다. hrp 는 같은 covariance 를 쓰되 역행렬을 쓰지 않는다",
+      "expect": "minvar 는 실패하는데 hrp 가 MDD 를 내리면 병목은 위험 축이 아니라 covariance 추정오차다. 둘이 같은 방향이면 추정오차는 원인이 아니다"
+    },
+    {
+      "action": "B2 전 칸에서 월별 비중 벡터의 Herfindahl 지수와 기저 대비 보유 중복률을 함께 기록한다",
+      "why": "B1 여덟 칸이 값까지 동일했던 전달 실패를 성과로는 구분할 수 없었다. B5 는 값이 갈려 전달이 확인됐지만, 비중 축은 같은 25종 안에서 돌기 때문에 다시 전달 여부가 관건이다",
+      "expect": "Herfindahl 이 칸마다 다르면 처치는 전달됐고 성과 차이는 축의 성질이다. 동일가중과 같으면 성과 해석 자체를 보류한다"
+    }
+  ],
+  "next_block_actions_by": "llm:block_end",
+  "avoid": ["score-blend 계열(lean:score_tilt · lean:softmax_tilt · lean:winsor_tilt · lean:rank_tilt · lean:nco_score_tilt · gen:lean_score_tilt__shr_* 3종)에 칸을 쓰지 말 것 — 전부 같은 score 벡터의 단조 재가중이라 강도만 다르고, B5 의 vol_* 회피와 같은 이유다. 수익 쪽 개선은 B5_20 이 총노출 추세에서 냈고 score 재정렬에서 나오지 않았다. score 축 대표는 lean:score_pure 한 칸으로 족하다", "낙폭 상태를 다시 총노출 스칼라나 종목별 순위 '신호' 로 소비하는 처치를 B2 에 섞지 말 것 — B5_16·B5_17 이 소비 지점 양쪽에서 같이 내려갔고, 이 축은 이 기저에서 벽이 확인됐다", "gen:* shrinkage 4종을 한 블록에 둘 이상 쓰지 말 것 — 추정오차 경로는 lean:hrp 와 lean:minvar 의 대조로 먼저 갈린다. shrinkage 는 그 대조가 추정오차를 지목한 뒤에 쓸 축이다", "B5_19·B5_20 의 결합(낙폭 개선 + 수익 개선)을 B2 에서 시도하지 말 것 — 결합은 B4 의 축이고, B2 에서 섞으면 비중 축의 전달 여부와 결합 효과가 분리되지 않는다"],
+  "next_block_design_for": "B2",
+  "next_block_design_n": 5,
+  "prior_action_status": "executed",
+  "prior_action_detail": "설계 5건 중 5건 집행 (설계: dd_brake_q,dbeta_tilt_rank,holdlvl_syscrowd_tilt,multivar_channel_tilt,ts_mom_sign / 실측: dd_brake_q,dbeta_tilt_rank,holdlvl_syscrowd_tilt,multivar_channel_tilt,ts_mom_sign)",
+  "mechanism_confidence": "medium"
 }
