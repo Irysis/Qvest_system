@@ -1,0 +1,11 @@
+{
+  "axis": "cost",
+  "verdict": "faithful",
+  "undeclared_changes": [],
+  "signal_mismatch": [],
+  "counterexample": "구성하지 못했다. 논문 성과(Fig.4·§4.3)는 gross 이고 학습 보상(식 3/4, ρ_{t+1}=w_t'r_{t+1})도 비용 미포함이며, engine.R의 학습 보상(Rr <- sum(w * rtr[idx]), line 363)과 러너의 paper-basis 시뮬레이션(commission_paper=null → comm_paper=0, run_paper_replication.R:180·304)이 둘 다 이를 그대로 재현한다. authoritative_remeasure.json 에 paper_basis(commission_paper_bps=0, CAGR 7.74%·SR 0.321)와 grade_basis(15bps)가 분리 기록돼 있어, 논문 기준 병기값이 15bps 로 오염될 지점이 없다.",
+  "evidence": "§4.3(PDF 텍스트 프록시, r.jina.ai/https://arxiv.org/pdf/2011.05381v3): 'the Dirichlet policies have turnovers around 9%-10% ... capitalization-weighted portfolios oscillate around 20%' · 'a 50 basis point fee per unit of turnover, will be 5 basis points per month ... compared to the roughly 110 basis points of monthly returns' — Fig.4 의 보고 성과는 이 5bps 를 차감하지 않은 gross 값이라는 것이 프록시 요약의 명시적 결론. 같은 프록시 재질의: REINFORCE 보상(식 3 R_t = ρ_{t+1}, 식 4 미분 샤프)은 비용 항이 없고, 논문이 별도로 'unreported results' 로 회전율 페널티 보상을 시도했다가 포기했다고 명시(학습 보상에 비용 미포함을 저자가 직접 확인).",
+  "confidence": "medium",
+  "checked": "①논문 성과가 net 인지 gross 인지(§4.3 turnover/fee 문장) ②50bps/회전율 언급이 보고 성과에 실제 적용됐는지 ③학습 보상(식 3/4)에 비용 항이 있는지 ④FIDELITY.json commission_paper=null 선언과 run_paper_replication.R 의 comm_paper 처리(180·304행) 일치 여부 ⑤authoritative_remeasure.json 의 paper_basis(0bps)·grade_basis(15bps) 분리 기록",
+  "note": "arxiv html(v1)에는 비용 관련 문단이 없어(2020년 논문이라 html 렌더 자체가 없음) PDF 텍스트 프록시(v3)로만 확인했다 — 원문 절 번호를 직접 대조하지 못해 confidence를 medium 으로 낮춘다. 15bps 등급 판은 논문 값과 다르지만 이 axis 의 판정 기준(병기값이 논문 비용으로 계산됐는가)에서 병기값(paper_basis)은 0bps 로 정확히 분리돼 있다."
+}
