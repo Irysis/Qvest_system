@@ -1,0 +1,18 @@
+{
+  "axis": "portfolio",
+  "verdict": "adapted",
+
+  "undeclared_changes": [],
+
+  "signal_mismatch": [],
+
+  "counterexample": "이 축에서 반례를 구성하지 못했다. 논문이 포트폴리오 구성을 규정하지 않으므로 '논문과 다른 값을 내는 상황'을 정의할 기준선 자체가 없다. 대신 구현이 실제로 무엇을 보유하는지는 산출물에서 전수 확인했고, 전부 선언과 일치했다: 04_holdings.csv 80,346행(리밸 260회) 중 음(−) 비중 39,730행 = 숏 레그 실재(has_short 선언 일치). 2013-07-01 단면 = 341종(롱 168 · 숏 173)으로 다리 균형, 같은 날 비중은 −0.01022 / −0.01163 / −0.01063 / −0.01095 로 종목마다 달라 EW·VW 가 아니라 신호비례(π)임이 드러난다 — n=341 의 중심화 순위 상한 170/Σ(1..170)=0.01170 과 관측 최대 |0.01163| 이 일치. 10_audit.csv holdings_cap 행 = '리밸일별 distinct ticker 197~350종'. 고정 축 25 초과와 롱숏은 FIDELITY.changed(7)·portfolio_spec(construction=engine_direct · long_leg/short_leg)에 선언돼 있고 01_strategy_spec.json(n_max 350 · has_short true)·감사행에도 남는다. 고정 축 이탈이 '조용히' 일어난 흔적은 없다.",
+
+  "evidence": "arxiv.org/html/2001.04185v1 전문 · §II.A(Equity Factor Data): 'We use standard Fama-French (FF) factors, extended to Momentum, defined on the components of the Russell 3000 index in a period spanning from January 1995 to December 2018.' · 'let us denote by s_{i,t} the signal followed by an investor, giving the ideal holding of stock i on the close of day t' · 's_{i,t} would be the ranking of stocks according to their past returns in the case of the Momentum factor' · 식(1) π_{i,t} = A Σ_{t'≤t} s_{i,t'} exp(−(t−t')/D) · 식(2) 뒤 'The factor A sets the overall risk of the portfolio, whereas the slowing down time scale D is chosen as to provide a good compromise between performance and trading costs.' · §IV.A(Momentum): 'The same analysis with different slowing down mechanisms, or using the long (or short) only component of Momentum yields qualitatively similar results in all cases.' ← 롱온리·숏온리를 Momentum 의 '성분(component)'이라 부르므로 본 신호는 양쪽 다리를 가진다. §II.B: 'about 1,600 US stocks'(CFM 미시구조 표본 — 팩터 신호 표본이 아니다). 독립 재질의 4회 결과 다음은 전부 NOT STATED: 분위·데실·상하위 백분위·2×3 size sort 등 분류 규정 / EW·VW·시가총액가중 등 비중 규정 / 보유 종목수 / 롱숏·달러중립·zero-cost 명시 / s 의 부호·중심화 규약. 즉 이 축에서 논문이 준 것은 '보유 ∝ 순위의 EMA' 하나뿐이다.",
+
+  "confidence": "high",
+
+  "checked": "논문 §II.A 신호·보유 정의와 §IV.A 'long (or short) only component' 문장 대 engine.R:112-138(.rank_signal 중심화 rank−(n+1)/2 · 양(+)쪽 합 1 정규화 · 동률 average)·143-148(π=λπ+A·s)·171-189(월말 π≠0 전수 발행 · Leg=sign) · portfolio_spec(engine_direct/paper/long_leg/short_leg)·changed(4)(7) 대 실산출 04_holdings.csv(80,346행 · 음수 39,730 · 2013-07-01 341종=롱168/숏173 · 비중 분산)·10_audit.csv holdings_cap(197~350종)·01_strategy_spec.json(n_max 350 · has_short true) · 2층 절단 여부 = run_paper_replication.R:283-295(engine_direct 는 자르지 않고 초과만 로그) + :324(n_max 는 관측값 sim_grade$diagnostics$n_max 이지 상한이 아님) + replication_harness.R:38-52(n_max 캡 없음)·55-73(GL=Σ|w| 롱 · GS=Σ|w| 숏)·105(Rg=GL·Lr−GS·Sr 로 숏 레그 실제 차감)로 곱셈 절단·숏 소실 없음 확인.",
+
+  "note": "이 축의 세 항목(다리·종목수·비중)을 논문은 전혀 규정하지 않는다 — 'standard FF factors' 언급이 있으나 2×3 VW sort 나 30/70 분위 문장은 없고, 논문이 준 유일한 조작적 정의는 s = 과거수익 횡단면 순위 · 보유 = 그 EMA 다. 구현은 그 정의를 그대로 따르고(전 구성종목 · 신호비례 · 양쪽 다리), 고정 축(롱온리 ≤25종) 이탈은 changed(4)(7)에 명시돼 있어 adapted. 한계: 전문 접근이 요약형 fetcher 라 축자 재현은 못 받았다(저작권 거절) — 다만 동일 질문 독립 4회 + 구현자의 별도 경로(jina 프록시) 인용이 같은 NOT STATED 로 수렴했다. ★축 밖 1줄: replication_harness.R:57·65-68 은 보유기간 수익이 없는 종목을 뺀 뒤 잔존 종목으로 비중을 재정규화하면서 레그 총노출 GL/GS 는 탈락분 포함 원값을 쓴다 — 탈락분 노출이 잔존 종목으로 재분배된다(논문 무관·전 충실구현 공통, 이 축의 발견으로 세지 않음)."
+}
