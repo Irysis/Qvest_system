@@ -1,0 +1,13 @@
+{
+  "axis": "universe",
+  "verdict": "misdeclared",
+  "undeclared_changes": [
+    "[투자가능집합 필터 적용 범위를 'NOT STATED'로 오기재] FIDELITY.json changed(1)은 '논문 §5.4 가 훈련 집합을 투자가능 집합으로 한정했는지는 원문이 말하지 않는다(NOT STATED)'라고 적었으나, §5.4 원문은 '동일 종목 집합이 다음 리밸까지 유지된다(the same set of stocks are carried forward until the next rebalance)'는 문장과 함께, §5.2/5.3 에서 이미 학습된 모델(전체 유니버스로 학습)을 재사용하고 그 예측을 투자가능 집합으로 필터링만 하는 절차로 서술된다 — 재학습이 아니다. 즉 원문은 '훈련 집합은 한정되지 않는다'는 답을 실질적으로 준다. 구현은 특성 순위·표적 winsorize/표준화·학습·검증·데실 전부를 K200∪KQ150 으로 한정해, 논문의 어느 실험(§5.2 전체표본·§5.4 투자가능집합)에도 없는 '학습 단계부터 한정된 횡단면'을 만든다."
+  ],
+  "signal_mismatch": [],
+  "counterexample": "어느 달 RAWDATA 전체(KOSPI+KOSDAQ)에 800종목이 있고 그중 300종목만 K200∪KQ150 이라고 하자. 논문 §5.4 절차를 그대로 따르면: 특성 횡단면 순위·표적 winsorize/표준화·신경망 학습·검증은 800종목 전체에서 계산되고, 투자가능 집합(K200∪KQ150 상당) 필터는 최종 데실 구성 단계에서만 300종목으로 적용된다. 이 구현은 800종목 중 300종목만 애초에 순위·학습·검증에 들어가므로, 특성 순위 값(min-max·분포)·표적 winsorize 경계·신경망이 학습하는 손실 표면이 전부 달라진다 — 같은 종목이라도 순위 스케일이 다르게 나온다. FIDELITY.json 은 이 차이를 '논문이 침묵해서 유니버스 교체의 직접 귀결로 한정했다'고 정당화하지만, 원문은 침묵하지 않는다(학습은 전체표본, 필터는 선택 단계에서만).",
+  "evidence": "§5.4 'Investable simulation' (arxiv.org/html/2003.02515v4): 'At the end of every June, we calculate breakpoint based on the 5-th percentile of NYSE listed stocks and exclude stocks with market capitalization below this value. Once rebalanced, the same set of stocks are carried forward until the next rebalance.' — 이 문장과 Table 6 서술 맥락은 §5.2/5.3 에서 전체 유니버스(NYSE/AMEX/NASDAQ, §4.2 'all stocks listed in NYSE, AMEX, and NASDAQ… average number of stocks exceeds 5,200')로 이미 학습된 모델의 예측을 투자가능 집합(평균 2,600종목, NYSE 시총 5분위 초과분)으로 필터링하는 절차이지, 신경망을 투자가능 집합만으로 재학습하는 절차가 아니다.",
+  "confidence": "medium",
+  "checked": "유니버스 범위(§4.2 전체표본 vs §5.4 투자가능집합) · 시총 5분위 배제 규칙의 적용 단계(학습 vs 포트폴리오 선택) · 유동성/가격/최소관측/금융주 배제 여부(원문에 없음, 구현도 없음 — 일치) · K200∪KQ150 유니버스 교체 자체의 허용 여부(고정 축이라 대조 대상 아님) · engine.R .rd[, MEM := ...]·.build_X()·.rank11()·.std_target() 이 순위·표적 통계를 MEM(K200|KQ150) 집합 안에서만 계산하는지",
+  "note": "학습 단계 유니버스 한정이 결과에 실질적으로 미치는 영향의 크기(순위 스케일·표적 winsorize 경계 이동 폭)는 특성/신호 축 소관이라 여기서는 판정하지 않는다 — 발견만 남긴다."
+}
