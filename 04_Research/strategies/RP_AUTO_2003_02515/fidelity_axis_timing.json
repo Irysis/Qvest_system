@@ -1,0 +1,11 @@
+{
+  "axis": "timing",
+  "verdict": "faithful",
+  "undeclared_changes": [],
+  "signal_mismatch": [],
+  "counterexample": "반례를 구성하지 못했다. 논문(§3.2 Algorithm 1)은 매월 온라인으로 t−2 데이터로 학습·t−1 데이터로 조기중단 검증 후 t 시점 특성으로 t+1 수익을 예측하는 구조이며, 전통적 J(형성)/K(보유) 그리드나 스킵월 개념이 없다(§5.2 'form decile portfolios based on predicted returns over the next month' · §5.4 'forward one month stock returns'). engine.R:611-729 의 월별 루프를 대조하면 Xtr=.Xs[[j-2]]/ytr=.Ys[[j-2]](= X_{t-2}, r_{t-2}), Xva=.Xs[[j-1]]/yva=.Ys[[j-1]](= X_{t-1}, r_{t-1}), 예측은 X_j(= X_t) 로 Algorithm 1 을 정확히 축자 이식했다(engine.R:663-680). 산출물 04_holdings.csv 실측: 2005-02-01 리밸(41종 롱숏) → 다음 리밸 2005-03-02 — 월 1회 재구성, 보유 1개월, 스킵 없음. 이는 논문의 '익월 예측' 구조와 정확히 일치하고 FIDELITY.json changed(14)·portfolio_spec(rebalance=monthly, holding_months=1, overlap=none)의 선언과도 일치한다.",
+  "evidence": "arxiv.org/html/2003.02515v1 §3.2 Algorithm 1(θ*_{t-1} ← EarlyStopping(θ*_{t-2}, X_{t-2}, r_{t-2}, X_{t-1}, r_{t-1}) → 예측 r̂_t) · §5.2 'form decile portfolios based on predicted returns over the next month' · §5.4 'forward one month stock returns over Treasury-bill rates' — 논문에 별도 (J,K) 표·스킵월 서술 없음(웹 조회로도 미확인)",
+  "confidence": "high",
+  "checked": "engine.R 611-729 월별 온라인 루프(t-2 학습/t-1 검증/t 예측)의 인덱스 정합 · portfolio_spec.rebalance/holding_months/overlap 선언 · 04_holdings.csv 실측 리밸 간격(2005-02-01→2005-03-02, 월 1회) · 01_strategy_spec.json rebalance=monthly",
+  "note": "이 논문은 J/K 그리드형 모멘텀 설계가 아니라 매월 갱신 온라인 학습·1개월 선행수익 예측 구조라 전통적 형성/보유 기간 비교 대상이 없다. changed(13)(워밍업 학습:검증 18:12 비율 이식)은 하이퍼파라미터 선택 창이지 포트폴리오 형성/보유 축이 아니므로 본 축 판정에 포함하지 않았다."
+}
