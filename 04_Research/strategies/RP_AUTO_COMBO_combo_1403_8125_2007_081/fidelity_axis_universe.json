@@ -1,0 +1,11 @@
+{
+  "axis": "universe",
+  "verdict": "adapted",
+  "undeclared_changes": [],
+  "signal_mismatch": [],
+  "counterexample": "구성하지 못했다 — 유니버스·유동성·재무업종제외 축에서 코드가 논문과 다른 지점(K200∪KQ150 교체·adv20(t-1)≥2e8 유동성 하한)은 전부 FIDELITY.changed ③(12)·constants(.LIQ/.LIQ_WIN)에 '지시된 고정 축(양 논문에 없음)'으로 선언돼 있고, 이 저장소 규약(lean-loop.md 축 2층 — 강화 프로세스 = 실투형 LIQ 2e8)과도 정합한다. 미선언 필터·미선언 제외는 발견하지 못했다.",
+  "evidence": "[A] arxiv.org/html/1403.8125v1 — 'The KOSPI 200 is a stock benchmark index ... 200 stocks in South Korea.' 'Historical price information and component-roster are downloaded from Korea Exchange. The period from January 2003 to December 2012.' 가격 하한·유동성·재무업종 제외·상장폐지 처리·survivorship 언급 0건. [B] r.jina.ai/https://arxiv.org/pdf/2007.08115 — '5 major US corporations: IBM, KO, BK, PG, GOOG' 'demonstration purposes and not for statistical inference' — 선별 기준·필터 언급 0건.",
+  "confidence": "high",
+  "checked": "[A] §데이터(KOSPI200/S&P500 정의·기간·필터 유무) · [B] 표본 5종 선정 근거 유무 · engine.R:257-311(K200/KQ150 PIT 플래그 · adv20(t-1) 하한 2e8 · Close>0 위생 · 재무업종 제외 유무) · FIDELITY.changed ③(12)(13) 및 constants(.LIQ·.LIQ_WIN) 대조 · 01_strategy_spec.json(universe=K200_KQ150) 대조",
+  "note": "01_strategy_spec.json:11 의 liquidity_filter 필드가 'paper_faithful' 로 찍혀 있으나 실제 엔진은 adv20(t-1)≥2e8 하드 필터를 건다 — 두 논문 모두 유동성 필터가 없으므로 'paper_faithful'이라는 이름 자체가 오도적이다. 다만 이 필드는 FIDELITY.json(대조 대상 자기신고)이 아니라 러너 스펙 파일의 템플릿 라벨이고, FIDELITY.json 은 이 필터를 정확히 '지시된 고정 축'으로 선언하므로 misdeclared 로 세우지 않는다(기존 카드 project-replication-prompt-template-liquidity-line-conflicts-with-sot-20260907 와 같은 패턴 — SOT 편)."
+}
