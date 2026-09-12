@@ -1,0 +1,80 @@
+#!/usr/bin/env Rscript
+suppressPackageStartupMessages({ library(jsonlite) })
+PROJ <- Sys.getenv("CLAUDE_PROJECT_DIR", "C:/Users/99922/OneDrive/Quant_Module_Moltbot"); setwd(PROJ)
+source(file.path(PROJ, "02_Infrastructure/axiom/lcode_emit.R"))
+source(file.path(PROJ, "02_Infrastructure/reinforcement/reinforce_ledger.R"))
+
+les <- paste0(
+"FR_003 (2계층 전략 로테이션) — 방어형 경로 최초 발화. 풀 15→115(방어형 97 · essence B floor 6 · legacy QEPM-A 12), ",
+"국면엔진·배분규칙은 인컴번트 고정(unified_regime_signal Category t-1 · rp+IR shrink λ.5/τ.6/k0 36 · RCMA WF). ",
+"계약 실측(essence): net_SR 0.825 · PORT_t(NW3) 0.853 · Calmar 0.399 · CAGR 12.6% · MDD 31.5% · DSR 0.065 · oos_retention -0.521 → grade C. ",
+"대조 arm_C(방어형 경로 OFF · 18모듈)는 net_SR 1.076 · PORT_t 1.667 · Calmar 0.692 · MDD 22.6% · oos_retention 0.014 — 처치가 전 축에서 열세다. ",
+"대응표본(같은 213월) -0.192%/월 NW3 t -2.054 p 0.041 = 무승부가 아니라 유의한 손실. ",
+"★교훈 1 (이 라운드 최대 수확 — 개별 방어성은 합산되지 않는다): 심도별 월평균 초과수익이 벤치 -10% 이하 6개월에서 ",
+"대조 +5.63% → 처치 +3.82%, 전체 하락월 90개에서 +2.40% → +2.03%(적중 0.800→0.744). ",
+"방어형 97건은 *개별적으로* 하락월 초과 t>=1.5 를 통과한 모듈인데, 그것들을 ~40개 준-균등으로 담자 각자의 방어 성분(idio)이 ",
+"분산으로 상쇄되고 공통 성분만 남았다. 포트 베타도 0.549→0.594 로 **올랐다** — 노출 축소가 아니므로 베타 트랩(F1)으로 설명되지 않는다. ",
+"방어성은 모듈 단위의 한계 속성이지 가산 속성이 아니다. ",
+"★교훈 2 (배분규칙이 처치 축을 아예 안 싣는다): 방어형 합산비중 w_def 와 풀 내 방어형 두수비중의 상관 r=0.9997, 비율 0.96~1.00. ",
+"즉 dispatcher 는 방어/비방어를 구분하는 정보를 0 만큼 싣고 headcount 만 반영한다. w_max 0.03~0.12 = 사실상 EW. ",
+"★교훈 3 (retention 진단이 통과하는데 축은 안 실린다): R54 가 만든 fr_diag retention 은 1.73(문턱 0.25 통과)이지만 그것은 ",
+"'rp 앵커에서 벗어났나' 를 잴 뿐 '내가 심은 축을 싣고 있나' 는 안 잰다. 표현력 진단을 처치 전달 증거로 인용하면 안 된다. ",
+"★교훈 4 (역전의 기전 = RCMA 소표본 floor): 방어형 두수비중이 RISK_ON 0.586 > NEUTRAL 0.485 > CAUTION 0.431 > CRISIS 0.403 > RISK_OFF 0.294 로 ",
+"가설과 정반대다. 원인은 RCMA 기준 ② n_months>=12 in-regime — 희소국면에서 방어형이 먼저 탈락한다. 방어형 슬리브가 가장 얇아지는 국면이 위기다. ",
+"덧붙여 가용 풀 자체가 2020~2022(코로나·2022 약세장)에 n_avail 12~16 으로 붕괴한다 — 검증에 가장 중요한 구간이 가장 얇다. ",
+"★교훈 5 (측정 정합 결함 수리 — 침묵 실패): 계약이 period_returns 와 benchmark_returns 를 **정확 날짜**로 merge 하는데 벤치 일간계열에 구멍이 있어 ",
+"월말 라벨이 어긋난 달이 통째로 빠졌다. 실측 216월 중 교집합 110월 = 표본 49% 소실. 라벨 정렬(값 불변) 후 213월. ",
+"수리 전후: PORT_t 0.537→0.853(T) · 0.887→1.667(C), oos_retention -1.016→-0.521(T) · -0.570→+0.014(C). 등급은 둘 다 C 로 불변. ",
+"FR_001/FR_002 도 같은 지문(date_range 2008-07-31..2026-02-27 · n_months 110대) — 계보 전체가 반쪽 표본 위에 있었다. ",
+"★PIT: C5 assert_overlay_pit HARD PASS(컷오프-홀딩월시작 간격 최대 4일). lag+1 스트레스 arm_S = net_SR 0.819 / PORT_t 0.836 로 base 와 사실상 동일 ",
+"→ 동월 누출 없음. 동시에 국면신호를 한 달 더 늦춰도 성과가 안 변한다 = 국면 축의 기여가 사실상 0 이라는 뜻이기도 하다. ",
+"★분모 구분(FR_002 교훈 1 준수): 풀 내부 EW 대비 edge 는 처치가 더 크다(+0.103 vs +0.020) — 그러나 그 풀의 EW 자체가 SR 1.056→0.722 로 나쁘다. ",
+"'풀 안에서 더 잘 골랐다' 를 '시장 대비 자격' 으로 전이 인용하지 않는다.")
+
+np <- list(
+"방어형을 멤버십이 아니라 **집계 단위**로 바꾼다 — 97개를 개별 자산으로 풀지 말고 하나의 합성 방어 슬리브로 먼저 묶고(내부 가중 = defensive_score down$t), 그 슬리브 1개와 B+ 슬리브를 2~3자산으로 배분. 예측: idio 방어 성분이 분산으로 상쇄되는 경로(교훈 1)가 닫히고 벤치 -10% 이하 초과가 대조 +5.63% 이상으로 회복되면 성립, 아니면 방어형 축 자체를 접는다.",
+"RCMA ②n_months>=12 in-regime floor 를 희소국면에 한해 stress-pool(CRISIS∪RISK_OFF∪CAUTION) 합산 증거로 대체했을 때 CRISIS 방어형 두수비중이 0.403 에서 오르는지 **처치 전달만** 먼저 확인한다 — rare_mode v2.1 기각은 성과 근거였고 지금 필요한 것은 전달 확인이다(R54 조작확인 교훈). 전달 확인 뒤에만 성과 판정.",
+"배분규칙에 방어형 축을 실을 지점을 만든다 — dispatcher 는 국면조건부 IR 만 본다. defensive_score down$t 를 IR 과 병렬 축으로 넣었을 때 w_def/두수비중 비율이 현재 0.96~1.00(무정보)에서 벗어나는지. 벗어나지 않으면 배분 층이 아니라 자산 정의 층의 문제다.",
+"IS→OOS 전이가 4라운드 연속 적수다(FR_001 -0.146 · FR_002 -0.702 · arm_C +0.014 · arm_T -0.521). 축소추정(경험적 베이즈/James-Stein, Jorion 1986)으로 국면조건부 IR 추정 분산을 줄였을 때 oos_retention 이 0.5 를 넘는지 — 예측기가 아니라 추정 분산이 표적(FR_002 next_probe 1 계승).")
+
+fals <- list(
+ list(test="F1 베타 트랩 (국면조건부 우위가 노출 축소인가)", result="not_applicable",
+      effect_retained=0.594, detail="처치 베타 0.594 > 대조 0.549 — 노출이 오히려 늘었다. 우위가 아니라 열세이므로 베타 설명이 성립하지 않는다."),
+ list(test="F2 분모 혼동 (풀 내부 EW 대비 우위를 벤치 대비 자격으로 전이하지 않기)", result="survived",
+      effect_retained=0.103, detail="edge_vs_ew +0.103(처치) vs +0.020(대조). 그러나 PORT_t 0.853 vs 1.667 — 두 분모를 분리 보고."),
+ list(test="F3 OOS retention >= 0.5", result="falsified", effect_retained=-0.521,
+      detail="처치 -0.521 · 대조 +0.014. 4/4 라운드 미달 — 이 계층의 1차 적수."),
+ list(test="F4 PIT lag+1 스트레스 (동월 누출)", result="survived", effect_retained=0.819,
+      detail="arm_S net_SR 0.819 vs base 0.825 (-0.7%) · PORT_t 0.836 vs 0.853. 붕괴 없음 = 누출 지문 없음."),
+ list(test="MC1 멤버십 채널 전달 (국면쌍 Jaccard 중앙값 < 0.9)", result="falsified", effect_retained=0.9744,
+      detail="중앙값 0.974(최소 0.077) — 국면별 admitted 집합이 대부분 동일. 국면 멤버십 채널 미전달."),
+ list(test="MC2 가중 채널 전달 (retention >= 0.25)", result="survived_but_uninformative", effect_retained=1.7299,
+      detail="retention 1.73 통과. 그러나 처치 축 전달량은 0(교훈 3) — 이 계기는 축 전달을 재지 않는다."),
+ list(test="MC3 처치 전달 (방어형 비중이 위기에서 커지는가)", result="falsified", effect_retained=0.3947,
+      detail="RISK_ON 0.585 > CRISIS 0.395 > RISK_OFF 0.294 — 방향 역전. 전달은 됐으나 부호가 반대."))
+
+r <- emit_fr_lcode(
+  strategy_id = "FR_003", grade = "C", lesson_text = les,
+  track = "factor_rotation", construction_type = "regime_rotation",
+  mechanism_hypothesis = paste0(
+    "1계층 B 계열의 구속 축이 위기 동조 낙폭이라면, 하락월 볼록성을 실증한 방어형 모듈을 같은 국면조건부 배분규칙 아래 ",
+    "풀에 넣어 총노출을 줄이지 않고 멤버십 교체만으로 Calmar 를 올릴 수 있다 — 기각. 실제 기전은 반대였다: ",
+    "개별 인증 방어성은 준-균등 다수 보유에서 idio 성분이 분산으로 상쇄돼 사라지고, RCMA 소표본 floor 가 희소국면에서 ",
+    "방어형을 먼저 탈락시켜 방어 슬리브가 위기에 가장 얇아진다."),
+  core_reference = "04_Research/factor_rotation/output/FR_003/prereg_FR_003.json · run_wf_ensemble.R (arm_T/arm_C/arm_S)",
+  portfolio_alpha_t = 0.853, oos_retention = -0.521,
+  falsification_attempts = fals, next_probe = np, selection_type = "chain",
+  metrics = list(cagr_pct = 12.6, sharpe = 0.825, mdd_pct = 31.5, calmar = 0.399, dsr = 0.065,
+                 ew_baseline_sr = 0.722, edge_vs_ew = 0.103, n_modules = 89, n_trials = 94,
+                 paired_vs_control_pct_m = -0.1919, paired_t_nw3 = -2.054, paired_p = 0.0412,
+                 beta_treat = 0.594, beta_control = 0.549,
+                 deep_excess_treat_pct = 3.82, deep_excess_control_pct = 5.63))
+cat("[lcode] ", r$l_code %||% "?", " next_probes=", length(r$next_probes %||% list()), "\n")
+
+## ── L2 강화 원장 open (A 미달 → 강화 착수) ─────────────────────────────────────
+rf_open_entry(2L, base_id = "FR_003", base_grade = "C",
+  paper_key = "shu-mulvey-2410.14841 | shu-yu-mulvey-2402.05272",
+  paper_id = "arXiv:2410.14841",
+  base_artifacts = "04_Research/factor_rotation/output/FR_003/",
+  engine_path = "04_Research/factor_rotation/run_wf_ensemble.R",
+  count_paper = FALSE)

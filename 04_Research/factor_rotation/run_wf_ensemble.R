@@ -223,7 +223,29 @@ cat(sprintf("[3] ensemble OOS daily=%d months=%d (%s..%s) | 총 turnover(연환�
 ED_xts  <- xts(port_dt$r_net,   order.by=port_dt$Date)
 EDg_xts <- xts(port_dt$r_gross, order.by=port_dt$Date)
 if(is.null(bmref)) stop("benchmark 부재")
-bmref_oos <- bmref[Date %in% port_dt$Date]; setorder(bmref_oos, Date)
+bmref_oos <- copy(bmref[Date %in% port_dt$Date]); setorder(bmref_oos, Date)
+## ★2026-09-12 측정 정합 수리 (침묵 실패) — 라벨 정렬만, 값 불변.
+##   증상: contract 는 period_returns 와 benchmark_returns 를 **정확 날짜**로 merge 한다
+##         (essence_score / 본 러너의 MM 둘 다). 그런데 두 월간 계열의 월말 라벨은
+##         apply.monthly 가 각자의 마지막 관측일로 찍으므로, 벤치 일간 계열에 구멍이 있는 달은
+##         라벨이 하루 어긋나 그 달이 통째로 빠진다.
+##   실측(2026-09-12 arm_C): pr 216월 · br 213월인데 교집합 **110월** — 표본 49%가 조용히 소실.
+##         PORT_t·net_IR·oos_retention 이 전부 그 반쪽 위에서 계산되고 있었다(FR_001/FR_002 동일 지문:
+##         둘 다 date_range 2008-07-31..2026-02-27 · n_months 110대).
+##   수리: 각 달의 **마지막 벤치 관측 날짜**를 같은 달 전략 월말 날짜로 옮긴다. bmref_oos 의 날짜는
+##         이미 port_dt$Date 의 부분집합이므로 이동은 항상 같은 달 안에서 뒤로만 일어나고,
+##         월간 복리값은 바뀌지 않는다(미래참조 없음 — 수익 값은 손대지 않는다).
+local({
+  .pm <- port_dt[, .(pm = max(Date)), by = .(ym = format(Date, "%Y%m"))]
+  .bd <- data.table(Date = bmref_oos$Date, ym = format(bmref_oos$Date, "%Y%m"))
+  .bd[, is_last := Date == max(Date), by = ym]
+  .bd <- merge(.bd, .pm, by = "ym", all.x = TRUE); setorder(.bd, Date)
+  nd <- .bd$Date; sel <- .bd$is_last & !is.na(.bd$pm); nd[sel] <- .bd$pm[sel]
+  if (anyDuplicated(nd)) stop("[bm align] 라벨 정렬 후 중복 날짜 — 가정(bm ⊆ port) 위반")
+  n_moved <<- sum(nd != .bd$Date)
+  bmref_oos[, Date := nd]
+})
+cat(sprintf("[bm align] 월말 라벨 정렬: %d개 관측일 이동(값 불변) — 정확날짜 merge 로 인한 월 소실 방지\n", n_moved))
 bm_xts <- xts(bmref_oos$bm, order.by=bmref_oos$Date)
 # ★ FIX (CAGR/Calmar 정합, 2026-06-05): frequency="monthly" 선언 → DAILY_NAV_DT도 *월간* 그래뉼래리티여야 함.
 #   contract build_metrics의 CAGR = (final/init)^(annualization_factor/length(nav)) − 1. 일간 NAV(7336행)에
