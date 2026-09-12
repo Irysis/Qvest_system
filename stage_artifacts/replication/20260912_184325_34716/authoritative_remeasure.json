@@ -1,0 +1,120 @@
+{
+  "status": "OK",
+  "strategy_id": "RP_20260912_184325_34716",
+  "strategy_name": "RF_PAR_B3_14_13",
+  "remeasured_at": "2026-09-12T18:47:16+0900",
+  "run_id": "20260912_184325_34716",
+  "bt_result_path": "C:/Users/99922/OneDrive/Quant_Module_Moltbot/stage_artifacts/replication/20260912_184325_34716/bt_result.rds",
+  "metric_type": "backtested",
+  "essence_grade": "C",
+  "grade_basis": "replication_chain",
+  "essence": {
+    "net_sharpe": 0.606,
+    "net_ir": 0.381,
+    "portfolio_alpha_t_nw_lag3": 1.48,
+    "oos_retention": 1.325,
+    "dsr": null,
+    "mdd": 0.61,
+    "calmar": 0.306,
+    "cagr": 0.186,
+    "drawdown_profile": {
+      "severe45_count": 54,
+      "severe55_count": 9,
+      "severe45_total_periods": 507,
+      "severe45_max_periods": 131,
+      "severe45_period_frac": 0.1421,
+      "catastrophic_mdd_threshold": 0.7,
+      "severe45_hard_count": 15,
+      "severe55_hard_count": 6,
+      "severe45_period_hard_frac": 0.25,
+      "severe45_max_hard_periods": 252,
+      "tail_review": false,
+      "structural_hard_fail": true
+    }
+  },
+  "hard_fail": false,
+  "structural_drawdown": true,
+  "selection_type": "chain",
+  "dsr_gate_applied": false,
+  "grade_base": "C",
+  "recent_regime_rescued": false,
+  "recent_regime_label": null,
+  "rolling_grade": {
+    "status": "ok",
+    "n_points": 140,
+    "window_months": 36,
+    "pass_life": 0.1357,
+    "pass_recent": 0.6667,
+    "current": {
+      "ym": "2026-09",
+      "sharpe": 0.898014,
+      "cagr": 0.475973,
+      "mdd": 0.423528,
+      "calmar": 1.123827,
+      "pass": true
+    },
+    "prior_recoveries": 9,
+    "current_run": 1,
+    "span": ["2015-02", "2026-09"]
+  },
+  "defensive_score": {
+    "status": "ok",
+    "defensive": false,
+    "down": {
+      "n": 76,
+      "excess": 0.003502,
+      "hit": 0.486842,
+      "t": 0.296296,
+      "capture": 0.911376
+    },
+    "mid": {
+      "n": 15,
+      "excess": -0.06097,
+      "hit": 0.333333,
+      "t": -2.693809,
+      "capture": 1.57415
+    },
+    "deep": {
+      "n": 6,
+      "excess": -0.072695,
+      "hit": 0.333333,
+      "t": -1.891779,
+      "capture": 1.464619
+    },
+    "up": {
+      "n": 99,
+      "excess": 0.02036,
+      "hit": 0.525253,
+      "t": 1.707619,
+      "capture": 1.417783
+    },
+    "reason": "하락월 76개: 초과 +0.35%/월 (t 0.30 · 적중 49%) · 벤치-10% 이하 6개: 초과 -7.27%/월 · 상승월 초과 +2.04%/월"
+  },
+  "reasons": "Ensemble: positive alpha이나 B 미달 (블렌드에서만 가치); structural_drawdown(판정 아님 — 라우팅 근거): MDD 61.0%, 45%+ episodes=54/15, 55%+ episodes=9/6, 수중 표본비 0.14/0.25",
+  "replication": {
+    "source_paper": {
+      "url": "https://arxiv.org/abs/2404.08129",
+      "title": "결합: One Factor to Bind the Cross-Section of Returns + Maximum drawdown, recovery, and momentum + Pinchuk (2023) Labor Income Risk and the Cross-Section of Expected Returns",
+      "paper_key": "combo:1403.8125+2301.09173+2404.08129"
+    },
+    "commission_paper_bps": 15,
+    "paper_basis": {
+      "cagr": 0.186654,
+      "sharpe": 0.365656,
+      "mdd": 0.610232,
+      "n_months": 175
+    },
+    "grade_basis_note": "등급은 15bps 순비용 판 (essence 문턱 15bps 보정 — gross 등급은 인플레)",
+    "fidelity": "universe 치환(K200∪KQ150)만 — 그 외 논문 그대로 (v10 완전 충실구현)",
+    "benchmark_note": "long_vs_long_bm",
+    "n_max": 6,
+    "has_short": false
+  },
+  "contract": {
+    "integrity_status": "OK",
+    "cagr": 0.186,
+    "sharpe": 0.606,
+    "mdd": 0.61,
+    "calmar": 0.306
+  }
+}

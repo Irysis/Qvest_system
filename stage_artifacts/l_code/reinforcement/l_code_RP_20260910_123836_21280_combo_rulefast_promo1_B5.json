@@ -17,11 +17,41 @@
   "calmar": 0.305,
   "oos_retention": 2.071,
   "portfolio_alpha_t": 1.716,
-  "next_probes": [
-    "다음 격자 축 B2(weighting) — 이 블록 승자 위에서 측정",
-    "B5_16(최고 1.716)는 B4 조합 후보로 고정 · B5_20(최저 1.491)는 축 역작동 여부를 조합 LOO 로 분리"
-  ],
+  "next_probes": ["다음 격자 축 B2(weighting) — 이 블록 승자 위에서 측정", "B5_16(최고 1.716)는 B4 조합 후보로 고정 · B5_20(최저 1.491)는 축 역작동 여부를 조합 LOO 로 분리"],
   "next_probe": "다음 격자 축 B2(weighting) — 이 블록 승자 위에서 측정 | B5_16(최고 1.716)는 B4 조합 후보로 고정 · B5_20(최저 1.491)는 축 역작동 여부를 조합 LOO 로 분리",
   "source_paper": "https://arxiv.org/abs/2404.08129",
-  "record_type": "performance"
+  "record_type": "performance",
+  "mechanism": "판정: 횡단면 tilt 채널은 처치가 전달된다 — 다만 전달된 효과는 MDD 소폭 감축과 PORT_t 감소를 맞바꾸는 한 방향뿐이고 낙폭 하한은 깨지지 않았다. B1 에서 둘째 팩터를 무엇으로 바꿔도(심지어 factor2=none 이어도) PORT_t 1.748 이 불변이던 것과 달리 B5 다섯 칸은 전부 갈렸다(PORT_t 1.491~1.716 · MDD 0.652~0.708 · Calmar 0.281~0.315). 이는 B1 의 no-op 이 위험 축의 실패가 아니라 소비 지점의 문제였다는 앞 블록 처방을 실측으로 지지한다. 그러나 처방이 기대한 크기는 나오지 않았다: 다섯 칸 모두 B1_1 대비 PORT_t 가 내려가고(−0.032~−0.257) MDD 도 내려가(−0.023~−0.079) Calmar 는 baseline 0.292 주변 ±0.023 안에서만 움직인다. 설계한 통제 비교는 집행됐고 읽힌다 — B5_16 은 carry 와 같은 상태정보(시장 후행수익)를 보유 종목별 순위로 한 번 더 소비했고 PORT_t 1.716 · MDD 0.688 · Calmar 0.305 로 개선 폭이 작다. 랭킹 축별 서열은 특이변동(B5_18 Calmar 0.315) ≈ 다변량 채널(B5_19 0.314) > B5_16 0.305 > baseline 0.292 > 학습 이중예보(B5_20 0.287) > 시장상관·하방베타(B5_17 0.281). 양극단이 기전을 말한다: B5_20 은 블록 최저 PORT_t 1.491 로 낙폭 감축 대비 신호 손실이 가장 컸고, B5_17 은 MDD 0.708 로 블록 최고이면서 PORT_t 1.562 라 열위 지배다 — 위험도 덜 줄이고 수익만 잃었다. 기전 해석(정황): 기저 combo 가 종목과 비중을 직접 배출하므로 tilt 는 이미 확정된 보유 종목 집합 안의 재가중 연산자에 불과하다. 낙폭이 보유 종목 간 동조에서 나온다면 집합 안 재가중으로는 MDD 를 못 민다 — B1·B5 11칸 전부에서 MDD 최저가 0.652 다. 미결: 재가중이 닿지 못하는 것이 종목 간 동조인지 총노출 수준인지는 한 열 랭킹이 아니라 공분산 비대각 정보를 쓰는 연산자를 넣어야 갈린다.",
+  "mechanism_by": "llm:block_end",
+  "mechanism_at": "2026-09-12T18:26:25+0900",
+  "prior_lessons_used": "B1",
+  "next_block_actions": [
+    {
+      "action": "B2 에 lean:minvar(전체 공분산)와 lean:ivol(대각 변동성만)을 같은 블록에 넣어 재가중이 MDD 를 미는 통로를 분리한다.",
+      "why": "B5 다섯 칸은 전부 한 열 랭킹 tilt 라 종목 간 동조 정보를 쓰는 연산자가 한 칸도 없었고, 그 상태에서 MDD 하한이 0.652 였다.",
+      "expect": "minvar 의 MDD 가 ivol 보다 뚜렷이 낮으면 낙폭은 공분산 구조로 접근 가능하다. 두 칸 MDD 가 0.652~0.708 대에 같이 붙으면 재가중 채널 자체가 상한이고 다음 칸은 선정 또는 총노출로 가야 한다."
+    },
+    {
+      "action": "qepm:CDaR_LP 를 한 칸 배치해 목적함수가 경로 낙폭인 연산자를 직접 시험한다.",
+      "why": "구속 축은 MDD 인데 B1·B5 어느 칸도 낙폭을 목적함수로 둔 적이 없다 — 전부 랭킹 tilt 또는 총노출 스칼라였다.",
+      "expect": "CDaR_LP 가 B5 최저 MDD 0.652 를 밑돌면 낙폭은 재가중으로 접근 가능한 양이다. 0.652 를 못 밑돌면 낙폭은 보유 종목 집합 수준에서 결정되며 비중 축에 칸을 더 쓸 이유가 없다."
+    },
+    {
+      "action": "lean:hrp 를 minvar 옆에 두어 공분산 정보 부재와 공분산 추정오차를 분리한다.",
+      "why": "보유 25종 이하에서 표본공분산 역행렬은 추정오차가 크다 — minvar 단독 결과로는 '정보가 없다'와 '추정이 무너졌다'를 구분할 수 없다.",
+      "expect": "hrp 가 minvar 보다 MDD·Calmar 모두 우위면 원인은 추정오차다. 둘이 같은 수준이면 이 기저의 공분산 구조에 쓸 정보가 없다는 쪽이다."
+    },
+    {
+      "action": "lean:score_tilt 를 한 칸 넣어 C01_SUE+D01_IdioVol 점수를 비중 채널로 소비시킨다.",
+      "why": "B1 에서 팩터 점수는 선정에 닿지 못해 no-op 이었는데, B5 는 비중 채널이면 처치가 전달된다는 것을 실측했다. 점수에 정보가 있는지는 비중 채널에서만 갈린다.",
+      "expect": "score_tilt 가 동일가중 대비 PORT_t 를 올리면 팩터 점수에는 정보가 있었고 막혀 있던 것은 선정 채널뿐이다. 내려가면 이 기저에서 그 점수는 무정보이며 이후 어떤 블록에서도 팩터 축에 칸을 쓰지 않는다."
+    }
+  ],
+  "next_block_actions_by": "llm:block_end",
+  "avoid": ["횡단면 tilt arm 추가 — B5 다섯 칸이 Calmar 0.281~0.315 로 baseline 0.292 주변 ±0.023 에 갇혔고 MDD 하한이 0.652 다. 같은 소비 지점에 칸을 더 써도 판별력이 없다.", "총노출 스칼라 축소 arm 전부 — carry ts_mom_sign 이 켜진 상태로 B1 MDD 0.731, B5 0.652~0.708 이다. 이 축은 두 블록에서 벽이 확인됐다.", "하방베타·시장상관 계열 랭킹 축 재시도 — B5_17 이 열위 지배다(MDD 0.708 블록 최고 · PORT_t 1.562). 이 축은 낙폭을 줄이지도 못하면서 수익만 깎았다.", "generated_shrinkage_lift 4종(shr_gerber_rmt·shr_ledoit_wolf·shr_sample·qepm_MVO__shr_lw_nls)을 같은 블록에 몰아넣기 — 공분산 채널이 전달되는지 자체가 미확인인데 추정기 선택이라는 2차 축에 4칸을 쓰는 것이다. minvar/ivol 로 채널이 전달됨을 먼저 확인한 뒤에만 스윕할 것.", "둘째 팩터 추가를 처치로 재시도 — B1 avoid 계승. 선정 채널이 닫힌 한 no-op 이거나 결측 효과만 측정된다. 단 score_tilt 는 팩터 추가가 아니라 비중 연산자이므로 이 금지에 해당하지 않는다.", "ml_dual_forecast 계열 학습 기반 arm 재시도 — B5_20 PORT_t 1.491 로 블록 최저이며 MDD 0.687 은 중간이다. 낙폭 감축 단위당 신호 손실이 이 블록에서 가장 컸다."],
+  "next_block_design_for": "B2",
+  "next_block_design_n": 5,
+  "prior_action_status": "executed",
+  "prior_action_detail": "설계 5건 중 5건 집행 (설계: trend_horizon_split_tilt,holdlvl_syscrowd_tilt,csd_idio_tilt,multivar_channel_tilt,ml_dual_forecast_tilt / 실측: ts_mom_sign,trend_horizon_split_tilt,holdlvl_syscrowd_tilt,csd_idio_tilt,multivar_channel_tilt,ml_dual_forecast_tilt)",
+  "mechanism_confidence": "medium"
 }
