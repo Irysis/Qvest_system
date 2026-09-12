@@ -1,0 +1,11 @@
+{
+  "axis": "timing",
+  "verdict": "adapted",
+  "undeclared_changes": [],
+  "signal_mismatch": [],
+  "counterexample": "구성 못 했다. 논문 §II.A 는 모멘텀 신호 s_{i,t} 의 형성기간(J)·스킵기간·리밸런싱 주기를 수치로 규정하지 않는다 — 'ranking of stocks according to their past returns' 와 인용문헌 [14](Carhart 1997)·[19](Jegadeesh-Titman 1993) 위임뿐이며, r.jina.ai 프록시로 전문(§I~V, Fig.1~5 캡션 포함)을 두 차례 독립 조회해 '12-month', '11-month', '1-month skip', 'monthly rebalanc', 'trading day', '252', '21' 등 형성/보유/리밸 수치 표현을 전수 검색했으나 발견되지 않았다 — Formation/Holding Period 는 명시적으로 미기재. 논문이 유일하게 수치를 주는 지점은 EMA 슬로잉 D 뿐이고(Fig.1 캡션 'D = 3 months' · 본문 D 3–4개월/2–4개월/4–6개월/3–6개월은 전부 상관관계 스캔 결과이지 전략 채택값 지정이 아니다), 이는 engine.R:53(.D_MONTHS=3L)·:55(.D_DAYS=63)로 정확히 일치한다. 코드가 고른 J=252거래일(12개월)·스킵=21거래일(1개월)·D=63거래일·월간 실행(get_execution_date=익월 첫 거래일, backtest_harness.R:313-322 확인)·보유 1개월은 전부 FIDELITY.changed(2)(3)(5)와 portfolio_spec(rebalance='monthly', holding_months=1)에 선언돼 있고, 10_audit.csv(rebalance_path_executed: 260 rebalance dates · t_plus_1_cadence_consistency PASS · frequency_cadence_consistency PASS)가 실제 산출물에서 월간 260회 리밸을 확인해 선언과 측정이 일치한다. 논문 자체 숫자가 없으므로 '코드가 논문과 다른 숫자를 낸다'는 반례를 구성할 수 없다 — 있는 건 '논문이 위임한 자유도를 코드가 특정 관용값으로 고정했다'는, 이미 선언된 사실뿐이다.",
+  "evidence": "§II.A: \"s_{i,t} would be the ranking of stocks according to their past returns in the case of the Momentum factor\" (룩백·스킵 미기재) · \"We use standard Fama-French (FF) factors [1, 15], extended to Momentum [14, 19]\"(수치 위임) · Fig.1 캡션: \"The slowed down signal π_{i,t} with slowing down timescale D = 3 months\" · 본문: \"absolute maxima ≳ 1% for D around 3–4 months\" · \"D ∈ (2, 4) months for market-wide data and D ∈ (3, 6) months for metaorder data\"(전부 D-스캔 결과 인용이지 전략 채택값 아님) · 본문 전체에 리밸런싱 주기·형성기간 수치 표현 부재(2회 독립 축자 조회로 확인).",
+  "confidence": "high",
+  "checked": "논문 §II.A·Fig.1 캡션·본문 D 관련 전 문장(2회 독립 r.jina.ai 조회로 재확인) vs engine.R .MOM_LONG(252)·.MOM_SKIP(21)·.D_MONTHS(3)·.D_DAYS(63)·λ·A, backtest_harness.R get_execution_date 정의(익월 첫 거래일), FIDELITY.json changed(2)(3)(5)·portfolio_spec.rebalance/holding_months, 10_audit.csv 의 rebalance_path_executed(260회)·t_plus_1_cadence_consistency·frequency_cadence_consistency 실측값 대조.",
+  "note": "이 축은 논문이 수치를 주지 않는 축이라 'faithful' 판정 자체가 성립하지 않는다 — 코드의 관용값 선택(Carhart 12-1·D=3개월·월간 집행)은 전부 FIDELITY 에 정직히 신고돼 있고 산출물(10_audit.csv)과도 일치해 misdeclared 근거가 없다."
+}
