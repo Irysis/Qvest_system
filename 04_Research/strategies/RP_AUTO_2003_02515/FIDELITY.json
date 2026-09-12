@@ -1,0 +1,142 @@
+{
+  "fidelity": "adapted",
+
+  "revision": {
+    "round": 1,
+    "written_at": "2026-09-12 (무인 충실구현 1판)",
+    "verification_this_session": "R 실행이 승인 차단(Rscript parse 시도 1회 거부 — 메모리 기록과 동일)이라 정적 검증만 했다: 전문 2회 재독 · 괄호/중괄호/대괄호 매치 수 균형(PowerShell Select-String -AllMatches) · sprintf 지정자/인자 수 대조 · lookahead_detector(C1~C17) 및 rf_replication_verify ③ 구조 검사 패턴 grep(음수 shift · lead( · scale( · read_parquet/open_dataset · NEGATE/FLIP · best/sharpe · fwd_ret 류 · annual/quarterly/fiscal/재무+merge · Sys.Date · expand.grid · IC…Date…<=…sig — 전부 부재, sign() 2건은 오탐) · JSON 파싱. ★런타임 양성 대조가 엔진 안에 있다: 로드 직후 .grad_check() 가 해석적 역전파를 중심차분과 대조해 상대오차 99백분위 > 1e-4 면 중단한다 — 역전파 결함이 조용한 F 로 흘러가지 않는다."
+  },
+
+  "fidelity_label_basis": "기전은 논문 그대로다 — §3.2 Algorithm 1(온라인 조기중단 OES)·Algorithm 2(EarlyStopping)를 축자로 옮겼고, Table 3 의 명시값(은닉 32-16-8 · ReLU/Linear · MSE · ADAM · L1 {1e-5,1e-4,1e-3} · η {0.001,0.01} · batch 1,000 · patience 5 · tolerance 0.001 · batch normalization · 앙상블 10 평균)과 §5.1 의 전처리(횡단면 순위→[−1,1] · 결측 median) · §5.4 의 표적(월별 1%/99% winsorize 후 횡단면 표준화) · §5.2 의 십분위 P10−P1 스프레드를 그대로 쓴다. 하이퍼파라미터도 논문처럼 초기 구간에서 검증 MSE 최소로 1회만 고른다. 그런데도 faithful 이 아니라 adapted 인 이유는 **입력 특성 집합이 논문의 데이터셋(Gu et al. 2020: 94 기업특성 + 74 SIC 산업더미 + 8 거시지표 상호작용 = 920)이 아니라 이 저장소의 월간 팩터 DB(커버리지 ≥5% 팩터 전부, 수백 개) + KR 업종 더미**이고, 거시 상호작용항은 없기 때문이다(changed(4)(6)(16)). 논문 §5.3 의 중요 특성 상위 10(idiovol·mvel1·dolvol·retvol·beta·mom12m·betasq·mom6m·ill·maxret)은 전부 가격·거래량 기반이라 KR 팩터 DB 가 같은 종류의 정보를 담지만, 항목 대응을 만들지는 않았다(대응표를 지어내지 않기 위해). 그 외 논문이 침묵하는 곳(ADAM 계수 · BN 배치 · 초기화 · 최대 반복 · 데실 비중 · 결측 월)은 Keras 기본값 또는 우리 고정 축 규약으로 채우고 전부 changed 에 적었다. 워밍업(1957~1986 30년)이 KR 에서는 2002-08~2004-12 29개월로 줄어드는 것도 데이터 층의 한계다(changed(13)). 즉 기전 이식이지 파라미터를 지어낸 것이 아니다.",
+
+  "kept": "§2.1 'Jt(θt) = 1/n Σ (rt,i − Fi)²' · 'rt,i = (pt+1,i + dt+1,i)/pt,i − 1' (다음 기간 수익이 표적). §3.1 'we propose to restrict the admissible weight set to the path formed from θ*t−1 and extending along the gradient vector −∇t−1' · 'τ*t−2 = arg min τ′≥0 Jt−1[θ*t−2 − η τ′ Σ ∇Jt−2(θ*t−2,k)]'. §3.2 Algorithm 1: 'θ*0 initialized randomly · for t = 2..T: τ′, θ*t−1 ← EarlyStopping(θ*t−2, Xt−2, rt−2, Xt−1, rt−1) · τt−1 ← τ̄ + τ′ (running mean) · θ ← θ*t−1 · for i = 1..⌊τt−1 + 0.5⌋: θ ← θ − η ∇̂Jt−1(θ) · θt ← θ · Predict r̂t ← F(Xt; θt)'. Algorithm 2: 'θbest ← θ; Jbest ← J(rtest, F(Xtest; θ)); for k = 1..T: θ ← θ − η ∇̂J(rtrain, F(Xtrain; θ)); J′ ← J(rtest, F(Xtest; θ)); if J′ < Jbest then τbest ← k; θbest ← θ; if J′ did not improve by at least ε then q ← q+1; if q ≥ Q break else q ← 0 · return τbest, θbest'. 'stochastic gradient ∇̂t−1 instead of the full gradient'. §5.1 'each feature has been appropriately lagged … and is cross-sectionally ranked and scaled to [−1, 1]' · Table 3 'Fill median' · 'Hidden layers 32-16-8 · Activation H: ReLU / O: Linear · Batch size OES 1,000 · L1 penalty {1e−5, 1e−4, 1e−3} · Early stopping patience 5 · Tolerance 0.001 · Learning rate η {0.001, 0.01} · Optimizer ADAM · Loss MSE · Batch normalization Yes · Ensemble Average over 10' · 'An ensemble of 10 networks is used, where each prediction rt,i is the average prediction of 10 networks' · 'Hyperparameter tuning is only performed once on this period … lowest monthly average MSE over 1975-1986 as the best configuration' · 'Excess returns over risk-free rate are calculated as forward one month stock returns over Treasury-bill rates'. §5.4 'we also winsorize excess returns at 1% and 99% for each month (separately). Winsorized returns are then standardized by subtracting the cross-sectional mean and dividing by cross-sectional standard deviation' · 'At the end of every June, we calculate breakpoint based on the 5-th percentile of NYSE listed stocks and exclude stocks with market capitalization below this value'. §5.2 'form decile portfolios based on predicted returns over the next month' · 'P10-1 is P10 less P1 showing the return spread between the best decile relative to the worst decile' · 'SR = 12 × E[Pt] / √(12 × Var[Pt]), Pt = difference between average realized monthly returns of decile 10 and decile 1 at t, sorted on predicted returns'. 논문 보고(§5.2·5.4): 전체 집합 IC OES 4.58% vs 확장창 DNN 3.82% · P10−1 실현 월수익 DNN 2.39% / OES 2.41% · SR DNN 1.63 / OES 0.83 · 평균 R² OES −12.14% / DNN −9.68% ; 투자가능 집합(Table 6) IC OES 6.05% / DNN 5.74% / 앙상블 6.29% · SR OES 0.82 / 앙상블 0.96 · OES-DNN 월별 상관 35.9%.",
+
+  "kept_summary": "OES = 매 기간 (직전-직전 기간 학습, 직전 기간 검증) 조기중단으로 τ* 를 얻고 그 평균 ⌊τ̄+0.5⌋ 스텝을 직전 기간 손실로 더 밟은 가중치로 이번 기간을 예측 · 32-16-8 ReLU + BN + ADAM + L1 · patience 5 / tol 0.001 · batch 1,000 · 앙상블 10 평균 · 격자 {η 2}×{L1 3} 초기 구간 1회 선택 · 특성 = 횡단면 순위 [−1,1] + 산업 더미 · 표적 = 익월 수익 월별 winsorize→표준화 · 십분위 P10 롱 − P1 숏.",
+
+  "changed": [
+    "(1) [유니버스 — 지시 축] 논문 = NYSE/AMEX/NASDAQ 전 종목(§5.1, 1957~2016) · §5.4 투자가능 집합 = 매년 6월 말 NYSE 시총 5분위 미만 제외 후 다음 6월까지 고정. 구현 = K200∪KQ150 개별 종목: 시그널일 d 에 RAWDATA 행이 있고 (K200 == TRUE | KQ150 == TRUE) 인 종목(러너 .apply_universe 와 같은 술어를 엔진이 먼저 적용). **학습·검증·예측·데실 전부 이 유니버스 안에서** 한다 — 논문 §5.4 가 훈련 집합을 투자가능 집합으로 한정했는지는 원문이 말하지 않는다(PDF 프록시 'NOT STATED'); 유니버스 교체의 직접 귀결로 한정했다. NYSE 5분위 소형주 배제는 K200∪KQ150 자체가 대형·중형주라 유니버스 교체에 흡수된다(별도 시총 스크린 없음). 횡단면 ≈150~350 → 데실 15~35종, 두 다리 합 30~70종 — 고정 축 25 초과는 논문 데실 정의상이며 engine_direct 라 러너가 자르지 않는다(러너가 초과 사실을 로그에 남긴다). has_short = true.",
+    "(2) [유동성 스크린 — 없음] 논문은 유동성·거래대금·가격·최소관측 스크린을 두지 않는다(§5.4 의 시총 5분위 배제뿐). 이 프롬프트의 축 절 '유동성 하한 adv20 ≥ 2e8 은 t-1 로 적용' 은 1계층 SOT(lean-loop.md 축 2층 표 '충실구현 라운드' 행 = 유동성 필터 논문 우선 paper_faithful)와 충돌하며, 같은 충돌을 1707.05552 감사(2026-09-07)가 '지시 축 오기재' 로 지적했다 → **엔진에 유동성 스크린 없음** · Vol 열을 읽지 않는다 · 러너도 걸지 않는다(run_paper_replication.R:205 LiqPass 미적용). 유동성 축은 강화 레인(실투형)의 축이다.",
+    "(3) [수익률의 정체 — 배당 미조정 · 상장폐지 쌍 제거] 논문 표적 rt,i = (pt+1 + dt+1)/pt − 1 (CRSP 배당 포함 총수익). 구현 = 저장소 수정주가(분할·유상증자 조정) 월말 종가 비율 P[d_j]/P[d_{j−1}] − 1 → 현금배당 미반영(1707.05552 2·3판 감사와 같은 데이터층 한계 — 배당락일·개별종목 총수익 패널 부재, data_gap 참조). 월말 종가 = 그 달력월 안의 마지막 관측 종가(거래정지면 stale · 채우지 않음). 다음 달 종가가 없는 종목(상장폐지·거래 없음)은 그 기간의 학습 쌍에서 제외한다(상장폐지 수익률을 지어내지 않는다 — 논문은 'unless the stock ceases to exist' 만 말한다). 표적 자체는 §5.4 규약(winsorize→표준화)이라 방향성 영향은 순위 변수(1707 케이스)보다 작지만 신고한다.",
+    "(4) [입력 특성 — 논문 920 특성 → KR 팩터 DB] 논문 = Gu et al.(2020) 94 기업특성(Green et al. 2017) + 74 SIC 2자리 산업더미 + 94×8 거시지표(Welch-Goyal 2008) 상호작용 = 920. 구현 = 월간 팩터 DB 를 **load_month_factors(d, coverage_min = 0.05)** 경유(C15)로 읽어 **Z_Score_Aligned 만**(C13) 소비 → 그 달 유니버스 안에서 팩터별 횡단면 순위 → [−1,1]: x = 2·(rank−1)/(n−1) − 1, 동률 = 평균 순위(frank ties.method='average'), 결측·비유한 = 0(논문 'Fill median' 의 순위 공간 등가 — 정확히는 순위 후 0 삽입이고 논문은 median 삽입 후 순위인지 순위 후 median 인지 미명시). ★특성 목록은 **워밍업 구간(OOS 시작 전) 유효 월들의 팩터명 합집합으로 1회 고정** — 이후 새로 생긴 팩터는 입력에 들어가지 않고(망 입력 차원 고정), 어떤 달에 없는 팩터는 0 으로 들어간다. Z_Score_Aligned 의 부호는 커넥터가 Usable_Date ≤ d 확장창 IC(36개월 burn-in · registry 폴백)로 정렬한 것이라 **부호가 시간에 따라 뒤집힐 수 있다** — 신경망은 고정 부호에 불변이지만 중간 뒤집힘에는 불변이 아니다(가중치가 이월되므로). 뒤집힘은 burn-in 후 드물다고 보고 보정하지 않았다(미측정 · 신고). 커넥터 dedup = FALSE(기본): alias 팩터가 중복 열로 들어갈 수 있다(망에는 무해 · 신고). 거시지표 상호작용항은 **없음**(KR Welch-Goyal 8 지표를 짓지 않았다 — data_gap). 논문 §5.3 상위 10 특성은 전부 가격·거래량 기반이라 KR 팩터 DB 에 동종 정보가 있지만 항목 대응표는 만들지 않았다.",
+    "(5) [커버리지 요건] 팩터 DB 커넥터 기본값 coverage_min = 0.05(팩터 DB 전 종목 대비 5% 미만 커버 팩터 제외 — 우리 유니버스 기준이 아니다). 논문은 특성 커버리지 요건을 두지 않는다(920 전부 사용). 종목 요건 = 그 달 팩터 행이 하나라도 있는 유니버스 종목(팩터 전무 종목은 그 달 특성 행렬에서 빠진다 — 건수는 N 으로 드러난다).",
+    "(6) [산업 더미 — SIC 74 → KR 업종 슬롯 64] 논문 = 74 SIC 2자리 더미(0/1). 구현 = RAWDATA 의 Sector 열(apply_universe_mapping.R: Layer 1 KRX SECT_TP_NM → Layer 2 QuantiWise WI26 대분류 Sector_Lv1 이 있으면 덮어씀 · (Ticker, Date) roll join = 그 날 이전 최신 분류 = PIT 근사)을 시그널일 d 의 행에서 읽어 0/1 더미로 넣는다. 더미 슬롯 64개는 **업종 라벨의 첫 등장 순으로 배정**(PIT · 입력 차원 고정 · 라벨 목록을 전 표본에서 미리 뽑지 않는다) · 64 초과 업종은 더미 없음(건수 로그 '초과') · Sector NA(지원 패널 시작 전 행 등) = 전부 0. 분류 체계 변경(KRX→WI26)이 시계열 중간에 있으면 같은 종목의 더미가 옮겨간다 — 보정하지 않았다(신고). Sector 열이 없으면 더미 전부 0 으로 진행하고 로그에 남긴다.",
+    "(7) [표적 — 무위험수익률 상쇄 · winsorize 규약] 논문 = T-bill 초과수익을 월별 1%/99% winsorize 후 횡단면 표준화(§5.4). 구현 = **원수익**에 같은 처리. 대수적으로 동일하다: 한 달 안에서 rf 는 상수이므로 winsorize(r − rf) = winsorize(r) − rf 이고 표준화 (x − mean(x))/sd(x) 에서 상수가 소거된다 → KR rf 시계열을 소비하지 않았다. 분위 = quantile type 7(R 기본) · 표준화는 sd > 0 · 유한 수익 ≥ 10 종(십분위 정의역) 일 때만, 아니면 그 기간은 학습 쌍 없음(갭 — changed(17)).",
+    "(8) [포트폴리오 — 데실 내 비중·분할·동률 — 논문 미명시] 논문은 데실 내 동일가중/시총가중을 말하지 않는다(PDF 프록시 'NOT STATED'). 구현 = 데실 내 **동일가중**(우리 고정 축 EW · Gu et al. 2020 계열의 기본 표) · 롱 Σ=+1(상위 데실 = 예측수익 최고) / 숏 Σ=−1(하위 데실) · 달러중립 · 총노출 2.0 — P10−P1 스프레드는 하네스 결합 GL·L − GS·S(GL=GS=1)와 같다. N 이 10 의 배수가 아닐 때 그룹 = ceiling(rank × 10 / N)(그룹 크기 차 ≤ 1 · 잔여 1종은 상위(롱) 데실 쪽에 붙어 절단점이 ≤0.3%p 비대칭 — 1707 케이스와 같은 규약, 방향만 반대). 동률 = (Score, 종목코드) 결정론 정렬. 횡단면 N ≥ 10 = 십분위 정의역(스크린 아님). 매월 전량 재구성(논문 월간 리밸). 매 리밸일 다리 합 1e-9 검산.",
+    "(9) [최대 반복 · 발산 가드 — 논문 미명시] Algorithm 2 의 반복 상한 T 는 논문에 없다(PDF 프록시 'NOT STATED') → ES_MAX = 100 스텝 상한(patience 5·tol 0.001 로 보통 그 전에 멈춘다 · 도달 여부는 로그 'ES 스텝 평균'). 수치 가드: (a) 검증 손실이 비유한이면 조기중단 루프 종료(직전 최소 유지) (b) 출발점 검증 손실이 비유한이면 Inf 로 두어 첫 유한 스텝을 최소로 (c) ⌊τ̄+0.5⌋ 스텝 학습 중 θ 가 비유한이 되면 직전 유한 상태로 되돌리고 중단 (d) 앙상블 평균은 그 달 유한 예측을 낸 망만으로(건수 로그 '발산 망-월') — 전부 비유한이면 그 달 예측 없음. 논문에 없는 방어 코드 — 발화 건수가 로그에 남는다.",
+    "(10) [ADAM · L1 · 조기중단 판정의 세부 — 논문 미명시] ADAM β1 0.9 · β2 0.999 · ε 1e-7(Keras 기본값) · **모멘트 상태는 학습 호출마다 초기화**(Algorithm 2 의 EarlyStopping 1회 · Algorithm 1 의 ⌊τ̄+0.5⌋ 스텝 1회 — 논문은 상태 이월 여부를 말하지 않는다 'NOT STATED'). L1 = λ·Σ|W| 를 4개 커널(Dense 가중치)에만(편향·BN γ/β 제외 — Keras kernel_regularizer 관용). 조기중단의 J(test) = 순수 MSE(정규화항 제외 — Algorithm 2 축자). 'did not improve by at least ε' = (직전까지의 최소 J − 이번 J) < ε 이면 q++ (Keras EarlyStopping min_delta 관용 · 최소 갱신은 ε 무관 J′ < Jbest). τ′ = 최소 J(test) 를 낸 스텝 번호(개선이 없으면 0 · 그 경우 θ* 는 출발점 그대로). 한 스텝 = 미니배치 1개 ADAM 갱신 — n ≤ 1,000 이므로 KR 에서는 항상 전량 배치(n > 1,000 이면 비복원 임의 1,000 — 실행 안 됨).",
+    "(11) [Batch normalization 세부 — 논문 'Yes' 뿐] 은닉층마다 Linear → BN → ReLU(Gu et al. 2020 / Ioffe-Szegedy 표준 배치). 학습 모드 = 배치 평균·편향분산(biased)으로 정규화, 이동평균 momentum 0.99 · ε 1e-3(Keras 기본값) 갱신 · 추론(검증 손실·예측) = 이동평균 통계. 이동평균 통계는 θ* 사슬과 함께 기간을 넘어 이월된다. BN 이 있는 은닉층의 Dense 편향은 생략(BN β 가 흡수 — 표현력 동일).",
+    "(12) [초기화 · 난수 · 재현 · 양성 대조] 초기화 = Glorot uniform(Keras Dense 기본 · 논문 'initialized randomly' 만) · BN γ=1 β=0 · 출력 편향 0. 앙상블 시드 = 2003 + 1..10(임의 상수) · **같은 10개 시드를 6개 격자에 공통으로 써** 격자 비교가 시드에 대해 짝지어진다. 기울기 검산 시드 20200305(논문 v1 게재일 — 임의 상수), 합성 문제(m=7, n=9, L1 1e-3) 에서 해석적 역전파 vs 중심차분(h=1e-5) 상대오차 99백분위 ≤ 1e-4 요구(|W| ≤ 1e-3 인 L1 항은 비교 제외 — 절대값 꺾임) · 실패 시 엔진 중단. 재현 = 결정론(시드 고정 · 미니배치 표본추출은 KR 에서 실행 안 됨).",
+    "(13) [워밍업 · 하이퍼파라미터 선택 창 — 논문 30년 → 29개월] 논문 = 1957~1974 학습 18년 + 1975~1986 검증 12년에서 격자를 1회 고르고 1987~2016 30년을 OOS 로 쓴다. 구현 = 워밍업 = **2002-08(.FDB_MIN — 월간 팩터 DB 재무의존 팩터 가용 시작, qvest_v8_1_sot.md 데이터 가용성 표 · 형제 엔진 9종의 .fdb_min 과 동일 상수) ~ 2004-12** 의 유효 월(팩터 패널 있음 ∧ 유니버스 종목 ≥ 10). 분할 = 앞 floor(18/30 × n) 월 학습 / 나머지 검증(비율만 이식). 선택 통계 = 격자별 **앙상블 10 평균 예측**의 월별 MSE(표준화 표적 대비)를 검증 월에서 평균, 최소 격자(동률 = 격자 순 lr 오름차순·L1 오름차순). 6 격자 × 10 시드 = 60 망이 워밍업을 전부 온라인으로 통과하고, OOS 첫 달(2005-01 월말)에 선택된 격자의 10 망만 **가중치·BN 통계·τ̄ 를 그대로 이월**해 계속 돈다(나머지 50 망 폐기). 워밍업 유효 월이 12 미만이면 OOS 시작을 유효 12개월이 될 때까지 뒤로 민다(로그 '★워밍업 유효 월이 … 이전에 %d개뿐' — 이 폴백이 실행되면 측정 기간이 줄어든 것이다). 워밍업 예측은 발행하지 않는다(러너 절단 2005-01-01 이전 = 미발행 · 이후로 밀렸으면 그만큼 미발행). 팩터 DB 이전 월(2002-07 이전)은 시도하지 않는다. 일간 팩터 DB(1990~)를 쓰면 워밍업을 15년으로 늘릴 수 있으나 월간 정본 경로(C15 월간 = load_month_factors)를 벗어나므로 하지 않았다(강화 probe 후보).",
+    "(14) [시간 격자 · 집행] 시그널 d_j = 각 달력월의 마지막 거래일(RAWDATA 전 종목 통합) · RAWDATA 의 마지막 달력월은 부분월로 보고 제외. 기간 j 의 특성 X_j = d_j 의 팩터 DB(as-of ≤ d_j 검증 · 요청 월과 다른 달 파일로 대체되면 그 달 결측), 표적 r_j = P[d_{j+1}]/P[d_j] − 1 은 d_{j+1} 에 실현되어 그때부터만 읽힌다. d_j 의 Algorithm 1 = EarlyStopping(θ*, X_{j−2}, r_{j−2}, X_{j−1}, r_{j−1}) → τ̄ → J_{j−1} 스텝 → F(X_j). 집행 = 달 j+1 첫 거래일(러너 get_execution_date) → 보유 1개월 · 논문의 월말 예측 → 익월 보유와 같다(논문은 월말가 기준, 하네스는 익월 첫 거래일 집행 — 하네스 규약).",
+    "(15) [데이터 위생 — 전수] 종가 유한·>0 행만 · (Ticker,Date) 중복은 첫 행(건수 출력) · 월 인덱스 비연속이면 중단 · Z_Score_Aligned 비유한 행 제거 · (Ticker,Factor_Name) 중복 행은 첫 행. 값 치환·LOCF 0건(결측 팩터 = 순위 0 은 논문 규약).",
+    "(16) [미구현 — 논문의 다른 구성요소] ① 확장창 재학습 DNN 기준선(§5.2 비교군 · Table 3 batch 10,000 · 매년 12월 재적합) ② OES+DNN 표준화 예측 평균 '앙상블'(§5.4 Table 6 — 투자가능 집합에서 IC·SR 최고였던 칸) ③ 특성 중요도 FI = 1 − R²(§5.3) ④ 시뮬레이션 연구(§4) ⑤ 거시지표 상호작용(§5.1). 이 엔진 = **OES 단독**(논문의 기여). ②는 ①이 있어야 하므로 함께 미구현 — 강화 probe 후보(evidence = paper).",
+    "(17) [갭 처리 — 논문에 없음] 특성 X_j 가 없는 달(팩터 DB 결측·유니버스 < 10) = 그 달 예측·발행 없음(하네스는 직전 포트폴리오를 다음 시그널까지 보유한다 — 러너 규약). 학습 쌍(X_{j−2}, r_{j−2}) 또는 검증 쌍(X_{j−1}, r_{j−1}) 이 없는 달 = θ* 갱신·τ̄ 갱신 없이 **현재 θ* 로 예측**(추가 스텝 0). 건수는 로그 '갭(학습 불가) 달' · '예측 없는 달'. 워밍업 첫 두 달은 정의상 학습 불가(τ̄ 표본 없음 → 예측은 초기 가중치 — 선택 통계에는 검증 월만 들어가므로 영향 없음).",
+    "(18) [비용 — 병기값의 정체] 논문은 거래비용을 두지 않는다(PDF 프록시: transaction cost 서술 없음) → commission_paper = null → 러너가 0bps(gross) 병기판을 authoritative_remeasure.json replication.paper_basis 에 적는다. 등급 = 15bps 순비용 판(Σ|Δw| 기준 — 매월 두 데실 전량 재구성이라 회전율이 크다 · 총노출 2.0). 논문 성과(IC·P10−1·SR·R²)는 미국·1987~2016·전 종목 십분위라 러너 CAGR/SR 과 직접 비교 불가."
+  ],
+
+  "changed_summary": "유니버스 K200∪KQ150(지시 축 · 논문 §5.4 소형주 배제는 흡수) · 유동성 스크린 없음 · 입력 = KR 월간 팩터 DB Z_Score_Aligned 전부(순위 [−1,1] · 워밍업 합집합으로 고정) + 업종 슬롯 64(첫 등장 배정) · 거시 상호작용 없음 · 표적 = 배당 미조정 월수익(rf 상쇄 증명) · 워밍업 2002-08~2004-12 29개월에서 격자 6 × 앙상블 10 = 60 망 온라인 후 검증 MSE 최소 격자 1회 선택 → 10 망 이월 · Keras 기본값(ADAM·BN·Glorot) · ES 상한 100 + 발산 가드 · 데실 EW ceiling 분할 · OES 단독(DNN 기준선·OES+DNN 앙상블 미구현).",
+
+  "paper_original_form": "미국 전 상장주(NYSE/AMEX/NASDAQ, CRSP 월간, 1957-03~2016-12)에 Gu et al.(2020) 920 특성(94 기업특성 + 74 SIC 더미 + 8 거시 상호작용, 횡단면 순위 [−1,1])으로 다음 달 T-bill 초과수익을 예측하는 3층 32-16-8 ReLU 신경망을, 매달 '직전-직전 달 학습 · 직전 달 검증' 조기중단으로 얻은 스텝 수의 누적 평균만큼 직전 달 손실로 더 학습(온라인 조기중단 OES)해 예측 — 10망 앙상블 평균. 1957~1986 에서 격자(η 2 × L1 3)를 검증 MSE 로 1회 선택, 1987~2016 OOS. 확장창 매년 재학습 DNN(Gu et al. 방식)과 비교: IC 4.58% vs 3.82%(R² 는 둘 다 음수) · 예측수익 십분위 P10−P1 월 스프레드 2.41% vs 2.39% · SR 0.83 vs 1.63(전체 집합 — OES 의 SR 은 오히려 낮다). §5.3 특성 중요도 시변(idiovol·mvel1·dolvol·retvol·beta·mom12m 등 상위, 산업더미가 스트레스 국면에서 부상). §5.4 투자가능 집합(NYSE 시총 5분위 미만 제외 · 표적 winsorize→표준화): IC OES 6.05% / DNN 5.74% / 두 방법 표준화 예측 평균 앙상블 6.29% · SR OES 0.82 / 앙상블 0.96 · OES-DNN 상관 35.9%. 비중 방법·거래비용 미명시. 시뮬레이션(§4: 시변 tanh 생성모형)에서 OES R² 49.64% vs 확장창 DNN −8.26%, 학습 시간 1/7.",
+
+  "portfolio_spec": {
+    "construction": "engine_direct",
+    "weighting": "ew",
+    "rebalance": "monthly",
+    "cell": "OES (Algorithm 1·2) · Table 3 OES column · 격자 {η 0.001, 0.01} × {L1 1e-5, 1e-4, 1e-3} 워밍업 1회 선택 · 앙상블 10 · 십분위 P10−P1",
+    "n_groups": 10,
+    "long_leg": "group 10 = highest ensemble-mean predicted (standardized) next-month return, EW, sum +1",
+    "short_leg": "group 1 = lowest predicted return, EW, sum -1",
+    "holding_months": 1,
+    "overlap": "none (monthly full reconstruction)",
+    "universe_filter": "in-engine at each signal date with the runner's predicate (RAWDATA row on the date AND K200|KQ150 flag) ∧ at least one factor row that month. No liquidity, price, size, listing-age or coverage screen — changed(1)(2)(5).",
+    "note": "engine_direct: Weight is the paper's decile long/short. n_max = 2 deciles of a ~150-350 cross-section (30-70 names) > fixed axis 25 by construction; has_short = true — declared in changed(1)(8). FACTORS (ensemble-mean prediction for every universe stock with features) is emitted alongside for IC/FMB diagnostics and the factors_panel freeze."
+  },
+
+  "commission_paper": null,
+
+  "source_paper": {
+    "title": "Time-varying neural network for stock return prediction",
+    "authors": "Steven Y. K. Wong (UTS), Jennifer Chan (USyd), Lamiae Azizi (USyd), Richard Y. D. Xu (UTS)",
+    "arxiv_id": "2003.02515",
+    "url": "https://arxiv.org/abs/2003.02515",
+    "fulltext_paths": [
+      "https://r.jina.ai/https://arxiv.org/pdf/2003.02515",
+      "https://arxiv.org/abs/2003.02515"
+    ],
+    "version_read": "2026-09-12: arxiv abs(초록·저자·v1 2020-03-05 / v4 2021-01-22 · 35 pages 9 figures) + PDF 텍스트 프록시(r.jina.ai) 절별 질의 6회 — §2.1 정의 · §3.1 제한 최적점 · §3.2 Algorithm 1/2 축자 · §5.1 데이터·Table 3 전 행·초기 분할·1회 튜닝 문장 · §5.2 Table 5 데실 20칸 + P10−1 · IC/SR/R² 정의 · §5.3 상위 10 특성 · §5.4 투자가능 집합 문장·Table 6 수치 · §4 시뮬레이션 생성모형 · 결론. 미명시로 확인된 항목(NOT STATED): 최대 반복 T · ADAM 상태 이월 · BN 세부 · 초기화 · §5.4 훈련 집합 범위 · 데실 비중 · τ̄ 전형값 · 최종 선택 격자 · 거래비용. 2023 이전 논문이라 arxiv html 렌더 없음 — 2-source 는 abs(메타) + PDF 프록시(본문)로, 본문 축자는 단일 프록시 소스다(감사가 같은 경로로 재질의 가능).",
+    "note": "긴 축자 요청은 거부될 수 있어 절 하나·질문 열 개 단위로 좁혀 물었다(메모리 reference-arxiv-full-text-via-html-endpoint 규약)."
+  },
+
+  "paper_values_used_unchanged": {
+    "architecture": "hidden 32-16-8, ReLU hidden, linear output (Table 3)",
+    "loss_optimizer": "MSE, ADAM (Table 3)",
+    "l1_grid": [1e-5, 1e-4, 1e-3],
+    "lr_grid": [0.001, 0.01],
+    "batch_size_oes": 1000,
+    "early_stopping": "patience 5, tolerance 0.001 (Table 3); Algorithm 2 semantics",
+    "batch_norm": "Yes (Table 3)",
+    "ensemble": "average over 10 networks (Table 3, §5.1)",
+    "hyperparameter_selection": "once, on the initial period, lowest monthly average validation MSE (§5.1) — window ratio 18:12 transported",
+    "oes_update_rule": "Algorithm 1: train on J_{t-2} / validate on J_{t-1} early stopping → running-mean τ̄ → ⌊τ̄+0.5⌋ steps on J_{t-1} → predict X_t",
+    "features_preprocessing": "cross-sectional rank scaled to [-1, 1]; missing = median (Table 3) → 0 after ranking",
+    "target": "forward one-month (excess) return; investable set: winsorize 1%/99% per month then cross-sectional standardization (§5.4)",
+    "portfolio": "deciles sorted on predicted next-month return; P10-1 spread; monthly (§5.2)",
+    "paper_reported": {
+      "full_set": "IC OES 4.58% vs DNN 3.82%; P10-1 realized 2.41% vs 2.39%/month; SR OES 0.83 vs DNN 1.63; mean R² OES -12.14% vs DNN -9.68%",
+      "table5_realized_deciles_pct": { "DNN": [-0.47, 0.15, 0.54, 0.64, 0.73, 0.78, 0.85, 0.96, 1.26, 1.92], "OES": [-0.50, 0.03, 0.27, 0.48, 0.67, 0.85, 1.04, 1.18, 1.42, 1.91] },
+      "investable_set_table6": "IC OES 6.05% / DNN 5.74% / ensemble(OES+DNN standardized mean) 6.29%; SR OES 0.82 / ensemble 0.96; OES-DNN monthly correlation 35.9%",
+      "top10_features_sec53": ["idiovol", "mvel1", "dolvol", "retvol", "beta", "mom12m", "betasq", "mom6m", "ill", "maxret"]
+    }
+  },
+
+  "changed_checklist": [
+    { "axis": "값 하한·상한·커버리지", "paper": "특성 커버리지 요건 없음(920 전부) · NYSE 시총 5분위 미만 제외(§5.4)", "ours": "커넥터 coverage_min 0.05(DB 전 종목 기준) · 유니버스 종목 ≥ 10 / 유한 수익 ≥ 10(십분위 정의역) · 팩터 행 ≥ 1 · 시총·유동성·가격 스크린 없음(유니버스가 흡수)", "why": "changed(1)(2)(5)(7)(8)" },
+    { "axis": "수치 가드", "paper": "winsorize 1%/99%(§5.4) 외 없음", "ours": "동일 winsorize(type 7) + sd>0 요건 · ES 상한 100 · 비유한 손실/θ 가드 · 발산 망 제외", "why": "changed(7)(9)" },
+    { "axis": "결측 처리", "paper": "Fill median(Table 3)", "ours": "순위 후 0 삽입(중앙값 등가) · 다음 달 종가 없는 종목 = 학습 쌍 제외 · 팩터 DB 결측 달 = 예측 없음 · LOCF 0건", "why": "changed(3)(4)(17)" },
+    { "axis": "난수·재현", "paper": "'initialized randomly' · 앙상블 10", "ours": "Glorot uniform · 시드 2003+1..10(격자 공통) · 검산 시드 20200305 · 결정론", "why": "changed(12)" },
+    { "axis": "창·워밍업", "paper": "학습 18년 / 검증 12년 / OOS 30년", "ours": "워밍업 2002-08~2004-12(29개월 · 비율 18:12) / OOS 2005-01~ · 12개월 미만이면 OOS 시작 후퇴", "why": "changed(13)" },
+    { "axis": "여러 설정 중 선택", "paper": "격자 6(η 2 × L1 3) 1회 선택 · OES vs DNN vs 앙상블", "ours": "같은 격자 6 을 워밍업 검증 MSE 로 1회 선택(앙상블 예측 기준) · OES 단독(DNN·OES+DNN 앙상블 미구현)", "why": "changed(13)(16)" },
+    { "axis": "수식 근사", "paper": "Algorithm 1/2 · MSE · ADAM · BN", "ours": "축자 구현 · ADAM/BN 세부는 Keras 기본값 · ε 판정은 최소 대비 · J(test) 순수 MSE · rf 상쇄로 원수익 사용", "why": "changed(7)(10)(11)" },
+    { "axis": "비중·다리", "paper": "십분위 P10−P1(비중 미명시)", "ours": "데실 EW · 롱 Σ+1 / 숏 Σ−1 · ceiling 분할(잔여 → 상위/롱 쪽) · 동률 종목코드", "why": "changed(8)" },
+    { "axis": "유니버스·유동성", "paper": "미국 전 종목 · §5.4 소형주 배제", "ours": "K200∪KQ150 PIT(러너 술어) · 학습도 이 유니버스 · 유동성 스크린 없음", "why": "changed(1)(2)" },
+    { "axis": "입력 특성", "paper": "94 특성 + 74 SIC + 8 거시 상호작용 = 920", "ours": "KR 월간 팩터 DB 전부(Z_Score_Aligned · 워밍업 합집합 고정) + 업종 슬롯 64 · 거시 상호작용 없음", "why": "changed(4)(6)" },
+    { "axis": "리밸·보유", "paper": "월간 · 다음 달 수익", "ours": "월말 시그널 → 익월 첫 거래일 집행 · 매월 전량 재구성", "why": "changed(14)" },
+    { "axis": "비용", "paper": "없음", "ours": "commission_paper=null → 0bps 병기 + 15bps 등급(Σ|Δw|)", "why": "changed(18)" },
+    { "axis": "미구현 분석", "paper": "DNN 기준선 · OES+DNN 앙상블 · 특성 중요도 · 시뮬레이션", "ours": "미구현(강화 probe · 진단)", "why": "changed(16)" }
+  ],
+
+  "data_gap": {
+    "needed": [
+      "개별종목 현금배당 조정 총수익 패널(배당락일 + DPS 또는 배당 재투자 수익률, KR 전 상장종목 2002~) — 논문 표적 rt,i 가 배당 포함 총수익",
+      "KR Welch-Goyal 8 거시지표(배당수익률·이익수익률·B/M·순발행·단기금리·기간스프레드·신용스프레드·실현분산) 월간 시계열 — 논문 94×8 상호작용항",
+      "업종 분류 이력(WI26 지원 패널 시작 전 구간의 PIT 산업 코드) — 논문 SIC 더미의 KR 등가를 전 구간 동일 체계로"
+    ],
+    "why": "논문의 세 입력층(총수익 표적 · 거시 상호작용 · 산업 더미) 중 첫째·둘째가 이 저장소 배관에 없고 셋째는 구간에 따라 체계가 바뀐다.",
+    "not_done_here": "산출 디렉터리 밖 쓰기 금지 — data_pipeline_queue.json 적재는 Q-Lead 가 한다. KR rf 는 표적 표준화에서 소거되므로 필요 없다(changed(7))."
+  },
+
+  "pit_notes": {
+    "signal_date": "달 j 의 마지막 거래일 d_j. 러너 집행 = 달 j+1 첫 거래일 → 이 달 코드가 읽는 것 = X_{j−2}, X_{j−1}, X_j(팩터 as-of ≤ d_j 검증) 와 r_{j−2}, r_{j−1}(각각 d_{j−1}, d_j 에 실현). r_j 는 d_{j+1} 에야 계산된다(루프 구조).",
+    "factor_db": "load_month_factors(d) 경유(C15) · Z_Score_Aligned 만(C13 · 수동 반전 0건) · attr factor_db_asof_date > d 면 중단, 요청 월과 다른 달이면 결측 처리(낡은 패널을 이 달 값으로 쓰지 않음). 커넥터 방향정렬 = Usable_Date ≤ d 확장창(C14).",
+    "cross_sectional_stats": "순위·winsorize·표준화 = 각 달 횡단면만. 시계열 전 표본 통계 0건(C1). 특성 목록·업종 슬롯·하이퍼파라미터 = OOS 시작 전 정보 또는 첫 등장 시점 정보로만 고정.",
+    "hyperparameters": "격자 선택 = 워밍업(2005-01-01 이전) 검증 월 MSE 만 · OOS 성과 무참조(C12 해당 없음).",
+    "liquidity": "스크린 없음(논문 우선). C10 대상 코드 없음 — Vol 미독.",
+    "membership": "d_j 당일 RAWDATA 행의 (K200 == TRUE | KQ150 == TRUE)(C6) — 러너 .apply_universe 와 같은 술어라 러너 필터는 0행 제거.",
+    "sector": "d_j 행의 Sector(roll join = 그 날 이전 최신 분류) · 슬롯은 첫 등장 순 배정 — 미래 라벨 목록 미사용.",
+    "not_used": "재무 패널 직접 접근(C4 무관 — 팩터 DB 빌더가 lag 적용) · 오버레이(C5/C9 무관) · 외부 매크로(C11 무관) · rf 시계열."
+  },
+
+  "engine_contract": {
+    "output": "PORTFOLIO(Date, Ticker, Weight, Leg) + FACTORS(Date, Ticker, Score)",
+    "long_gross": "1.0 exactly per rebalance (asserted 1e-9)",
+    "short_gross": "1.0 exactly per rebalance (asserted 1e-9)",
+    "net": "0 by construction (dollar-neutral)",
+    "rows": "OOS 월말(2005-01 이후 · 워밍업 부족 시 후퇴) 1행 집합 · 특성 없는 달은 행 없음",
+    "expected_n_max": "2 × ceil(N/10) ≈ 30~70 (N ≈ 150~350). 고정 축 25 초과는 논문 데실 정의상 — engine_direct 라 러너가 자르지 않는다",
+    "inputs_read": "RAWDATA: Date · Ticker · Close · K200 · KQ150 · Sector(있으면) — Vol·Size·Ret 미독. BM_DT 미독. 팩터 DB = load_month_factors(d, coverage_min = 0.05).",
+    "dependencies": ["data.table"],
+    "dependencies_note": "factor_db_connector.R 이 arrow · dplyr · jsonlite 를 자체 로드한다(이미 설치). 엔진은 :: 를 쓰지 않는다.",
+    "external_input": "없음(난수는 시드 고정)",
+    "runtime_note": "순수 R 행렬 연산. 추정: 워밍업 60 망 × 29개월 + OOS 10 망 × ~260개월 · 망-월당 조기중단 ~10~40 스텝 + τ̄ 스텝 · 스텝당 n×m×32 곱 2~3회(참조 BLAS ≈ 10~30ms) → 총 20~60분(BLAS·ES 스텝 수에 좌우). 12개월마다 진행 로그(N · 롱/숏 · ES 스텝 · τ̄ · 경과). 이 세션은 R 실행 차단이라 미실행 제출 — 러너 로그의 '기울기 검산 통과' · '워밍업 %d개월 유효' · '격자 %d: … ← 선택' · 최종 'adapted(기전 = …)' 요약 줄로 확인할 것."
+  }
+}
