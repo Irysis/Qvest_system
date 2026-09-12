@@ -3,9 +3,9 @@
   "verdict": "adapted",
   "undeclared_changes": [],
   "signal_mismatch": [],
-  "counterexample": "구성 못 함 — engine.R 에 거래비용·집행가정 관련 코드가 전혀 없다(grep 'commission|cost|bps|turnover|TN' 매치 0). 비용은 엔진이 아니라 러너 계약이 FIDELITY.json 의 commission_paper=null 값을 읽어 적용한다(changed(13)). 측정 산출물(authoritative_remeasure.json:100,107)도 commission_paper_bps=0 · grade_basis_note='등급은 15bps 순비용 판(gross 등급은 인플레)' 로 정합적이다.",
-  "evidence": "논문 전문(kept 절)에 'Note: no explicit statement on transaction costs' — kept 필드에 'we calculate the one-way portfolio turnover (TN)' 문장만 있고 비용(bps·왕복·시장충격) 서술은 없음(NOT STATED, FIDELITY.json:24 kept 절 '거래비용 서술 없음(NOT STATED)'). Table 3/4 원문 값(paper_values_used_unchanged.paper_reported)은 비용 미포함 수치를 그대로 인용만 하고 우리 15bps 판과 재계산·병합하지 않는다(changed(13): '논문 성과 … 는 러너 CAGR/SR 과 직접 비교 불가').",
+  "counterexample": "구성 못 했다. paper_basis(0bps)·15bps 등급판 모두 changed(13)에 선언돼 있고, 두 값 다 논문 Table 3/4 수치와 직접 비교 불가함도 changed(13)이 명시한다 — 병기값이 논문보다 유리하게 기울도록 비용을 낮춰 잡은 지점을 찾지 못했다.",
+  "evidence": "r.jina.ai PDF 프록시 축자 확인: 논문은 'A portfolio with a high turnover rate will have more transaction costs than with a portfolio with a lower rate.' 로 회전율-비용 관계만 개념적으로 언급하고, TN 정의('one-way portfolio turnover ... average percentage of stocks traded in each period')만 줄 뿐, bps·왕복 여부·시장충격·Table 3/4 수치의 gross/net 여부를 명시하는 문장은 없다(NOT STATED) — FIDELITY.json changed(13) 'commission_paper = null → 0bps 병기 + 15bps 등급' 및 kept '거래비용 서술 없음(NOT STATED)' 서술과 일치.",
   "confidence": "high",
-  "checked": "engine.R 전문에서 commission/cost/bps/turnover/TN 코드 매치 0건(비용 로직이 엔진 밖 러너 계약에 있음을 구조로 확인) · FIDELITY.json commission_paper=null 및 changed(13) 서술 대조 · authoritative_remeasure.json 의 commission_paper_bps=0·grade_basis_note 대조 · kept 절의 논문 원문 발췌에 비용 서술 부재 확인.",
-  "note": "논문이 비용을 명시하지 않으므로 이 축의 유일한 쟁점은 '논문 기준 성과 병기값이 논문 비용으로 계산됐는가' 인데, 병기값은 원문 Table 3/4 수치를 그대로 인용만 하고 재계산하지 않으며 비교불가를 명시했다 — 대조형 축 자체가 성립하지 않는 축(논문 비용 없음)이라 misdeclared 소지 없음. adapted 인 것은 SOT 규약(15bps 순비용 판)에 따른 정당한 절차상 채택."
+  "checked": "engine.R·FIDELITY.json 내 비용 관련 코드/서술 부재 확인(엔진은 PORTFOLIO Weight만 내고 비용은 하네스가 적용) · run_paper_replication.R:180,303-331,425-479 의 이중 시뮬레이션(commission_paper=NULL→0bps '논문 기준' vs 0.0015 '15bps 등급') 로직 대조 · authoritative_remeasure.json의 commission_paper_bps=0 · paper_basis{cagr 0.149·sharpe 0.941·mdd 0.340} 이 changed(13)의 선언과 정합하는지 대조 · 논문 원문(r.jina.ai PDF 프록시)에서 transaction cost/commission/market impact/slippage/round-trip/net·gross 언급 전수 검색.",
+  "note": "paper_basis 필드명이 '논문 기준'을 함의하지만 실제로는 우리 엔진을 0bps로 돌린 값이지 논문 Table 3/4 원 보고치가 아니다 — 이 비교불가성은 changed(13)이 이미 신고했고, 유니버스·기간·집행격자 차이(다른 축 소관)까지 겹쳐 있어 비용 축 단독 결함은 아니다."
 }

@@ -1,0 +1,11 @@
+{
+  "axis": "universe",
+  "verdict": "faithful",
+  "undeclared_changes": [],
+  "signal_mismatch": [],
+  "counterexample": "구성 못 했다. 논문(TOPIX500 구성종목)과 구현(K200∪KQ150 PIT 멤버십)은 유니버스 정의 자체가 허용된 교체 축이라 이 축의 '위반'은 그 위에 얹힌 추가 필터에서만 나올 수 있는데, 원문과 구현 모두 추가 필터(시총·유동성·가격·상장거래소·금융주 제외)가 없다 — 양쪽이 같은 '무필터' 상태라 값이 갈리는 구체적 시나리오를 만들 수 없다. engine.R:175 의 `Close >= 0(finite) & Close > 0` 는 데이터 위생(0/음수 가격 센티널 제거)이지 경제적 가격 스크린이 아니어서 반례로 세우지 않았다.",
+  "evidence": "kept 절 원문 축자: 'We prepare dataset for TOPIX500 Index constituents. The TOPIX500 Index comprises the large and mid-cap segments of the Japanese stock market.' + 전처리 절 'rescaling is performed so that each input value is maximally 1 … by ranking each input value in ascending order by stock universe at each day' — 이 두 문장 밖에 유니버스 관련 서술이 전혀 없다. r.jina.ai 재질의(이 세션)로 재확인: 'The document provides no information about exclusion criteria such as financial firms, delisted stocks, newly-listed stocks, missing data thresholds, minimum price requirements, liquidity filters, listing history requirements, or survivorship bias handling.' 논문은 필터를 두지 않는다 — 즉 '필터 없음'이 논문의 실제 규칙이다.",
+  "confidence": "high",
+  "checked": "engine.R:172-196(§3 격자·MEM 술어) 대 논문 '데이터'·'전처리' 절 축자 — 상장거래소 제한(TOPIX500=TSE 구성 vs K200∪KQ150=KOSPI+KOSDAQ, 지시된 허용 교체) · 시총 하한(양쪽 다 없음, 지수 구성 자체가 암묵적 하한) · 가격 하한(양쪽 다 없음 — Close>0 은 위생 가드) · 유동성 필터(양쪽 다 없음) · 금융주 제외(양쪽 다 없음 — FIDELITY changed(8)이 금융업 결측 처리만 명시) · 상장연수 요구(양쪽 다 없음) · survivorship(양쪽 다 논문 침묵 · 구현은 PIT 멤버십 플래그로 시변 처리 — changed(1) 기정 신고).",
+  "note": "FIDELITY changed(2)가 '유동성 스크린 없음'을 changed 항목으로 올린 것 자체가 사실은 논문과 일치(둘 다 무필터)라 엄밀히는 changed 목록에 넣을 필요가 없는 과잉신고다 — misdeclared 는 아니고 오히려 보수적. n_max 초과(60~142종)는 포트폴리오 축(changed(11))이지 유니버스 필터 축이 아니라 이 파일에 담지 않았다."
+}
