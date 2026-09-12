@@ -1,0 +1,154 @@
+{
+  "fidelity": "adapted",
+
+  "fidelity_label_basis": "기전은 논문 그대로다 — Dirichlet 정책 a_t = exp(X_t θ_t)(F2 · 식 9), 정책 기울기 폐형 ∇ln π = Σ_n (ψ(σ) − ψ(a_n) + ln w_n) ∇a_n(식 15), REINFORCE(Table 2 · 식 13 · 기울기 최대절댓값 정규화 §4.1), 부트스트랩 시퀀스 프로토콜(Table 3: 매월 직전 달 데이터 → N 종목 선택 → θ 초기화 → E 에피소드(복원추출 → 표집 → 수익 보상 → 갱신) → 익월 평균 정책 a/σ 배분(식 11)), Fig.2 캡션의 파라미터(η 0.1 · E 500 · θ_k 초기 1 · seed 42) · N 100(§4.1) · γ 1(§4.1) · Table 1 의 특성 12종 + 상수 · §3.1 횡단면 균등화 [−0.5, 0.5] 를 그대로 옮겼다. faithful 이 아니라 adapted 인 이유: ①특성의 원천이 Bloomberg 필드가 아니라 KRX 가격·거래량·시총 패널 + DART/QuantiWise 회계 패널의 대응물이고, 그중 회계 항목 7종(pb·de·prof·inv·eps·pe·dy)은 분기 갱신 trailing 값이 아니라 **연간 회계연도 값(익년 3/31 사용 가능 · C4)** 이라 최대 15개월 낡다(changed(6)(7)) ②논문이 침묵한 결측 처리·OOS 배분 모집단·Table 3 의 두 표본추출 단계를 해석해 고정했다(changed(4)(5)(8)) ③논문이 여러 설정을 보고하는데 한 칸(부트스트랩 × F2 × η 0.1 × E 500 × seed 42)만 구현했다(changed(3)) ④학습 표본의 수익이 배당 미포함 수정주가 비율이다(changed(9)). 파라미터는 지어내지 않았다 — 논문값 아니면 고정 축·인프라 규약이고 전부 changed 에 있다.",
+
+  "kept": "§2.1 'At time t ∈ {0,1,...,T}, asset n is described by a (K+1)-dimensional vector (x_{t,n})^T = [x^(0)_{t,n},...,x^(K)_{t,n}]' · 'x^(0)_{t,n} = 1 is an indicator that is kept fixed through the cross-section' · 'r_{t,n} = (p_{t,n} + d_{t,n})/p_{t−1,n} − 1' · 'ρ_{t+1} := w_t^T r_{t+1} is the return of her portfolio between t and t+1'. §2.2–2.3 action = w ∈ Δ = {Σ w_n = 1, w_n ≥ 0} · 'Each action at month s (A_s) consists in randomly choosing (with replacement) N assets and sampling their portfolio weights according to the current policy π_θ'. §2.4 식(7) f(w|a) = (1/B(a)) Π w_n^{a_n−1} · 식(9) a_t = X_t θ_t (F1) / e^{X_t θ_t} (F2) · 'The first form ... may violate the condition that a_{t,n} > 0 ... The second form of the policy is slightly more complex but remains always valid' · 식(11) E_π[w_{t,n}|X_t,θ_t] = a_{t,n}/σ_t. §2.5 식(13) θ_{t+1} = θ_t + η ∇̂J(θ_t) · 식(14) 정책기울기 정리 · Proposition 2 식(15) ∇ ln π(w_t|X_t,θ_t) = Σ_n (z(σ_t) − z(a_{t,n}) + ln w_{t,n}) ∇a_{t,n} (z = digamma). §3.1 'firms listed in the US between January 2000 and June 2020 downloaded from Bloomberg' · Table 1 (cap CUR_MKT_CAP · pb PX_TO_BOOK_RATIO · de TOT_DEBT_TO_TOT_EQY · vol VOLATILITY_30D · prof PROF_MARGIN · inv ASSET_GROWTH · eps IS_EPS · liq PX_VOLUME · rsi RSI_30D · pe PE_RATIO · dy EQY_DPS divided by the lagged value of PX_LAST · mom lagged 12 month value divided by lagged one month value, minus one) · 'cross-sectionally processed so that for a fixed t and given predictor j, x^(j)_t is uniformly distributed (over the [−0.5,0.5] interval) across firms'. §3.2 Table 2 REINFORCE: 'For i = 1,2,... episodes: Generate sequence S_0,A_0,R_1,...,R_T; For t = 0..T−1: G ← Σ_{k=t+1}^T γ^{k−t−1} R_k; θ ← θ + η γ^t G ∇log π_θ' · 'In the case of the linear policy (F1), the updated θ has to be adjusted so that the a_n lie in the intervals discussed in Section D' · §4.1 'To simplify scale issues, the gradient in the update is divided by the maximum absolute value of gradient values' · 'The most obvious choice is N = 100. Larger portfolios impose stringent constraints on the Dirichlet parameters' · 'For bootstrap learning, this parameter is irrelevant ... Thus we set γ = 1'. §3.3 'Bootstrapped sequences do not require much depth. They can be performed every month. The number of episodes is E and their length is one' · 'Bootstrapped sequences can only work with simple return rewards' · Table 3 부트스트랩 열: '0 For every date t = 2,…,T−1, do: 1 Extract data from previous month 2 Randomly pick N assets 3 Initialize θ 4 For i = 1,…episodes, do 5 Sample N stocks randomly 6 Generate action and reward 7 Update θ via (13) 8 For date t+1, do: 9 allocate via average policy, Eq. (11) 10 store realized returns'. Fig.2 캡션 'the learning rate η = 0.1, the number of episodes E = 500, the bounds for the a_n are [0.2, 1.6], the initial value for all θ_k is 1. Finally, the random seed in 42'. §5.4 'One only robust conclusion is that bootstrap sequences perform better than sequential ones' · 'Almost all bootstrap configurations surpass the EW benchmark'. §4.3 'average returns are scattered between 1.08% and 1.2%, so that the difference with the uniform allocation (1.14%) is not significant' · 'p-values between 0.82 and 0.998' · 'turnovers around 9%-10%' · '50 basis point fee per unit of turnover, will be 5 basis points per month'. 결론 'RL portfolios remain in the vicinity of uniform allocations'.",
+
+  "kept_summary": "매월: 직전 달 특성 X_{t−1}(상수 + 12 특성 균등화)과 이번 달 실현 수익 r_t 로, N=100 풀에서 복원추출한 종목에 Dirichlet(exp(Xθ)) 비중을 표집해 보상 = 포트폴리오 수익, 폐형 스코어(식 15)를 최대절댓값으로 정규화해 θ ← θ + η R ∇ln π 를 E=500 회(θ 는 매월 1 로 초기화) → 이번 달 특성 X_t 로 a/σ 를 적격 전 종목에 배분(롱온리 Σw=1). η 0.1 · γ 1 · seed 42.",
+
+  "changed": [
+    "(1) [유니버스 — 지시 축] 논문 = 미국 상장 전 종목(Bloomberg · 2000-01~2020-06 · 월별 1,600~2,800개). 구현 = K200∪KQ150 개별 종목: 시그널일 d 에 RAWDATA 행이 있고 (K200 == TRUE | KQ150 == TRUE) 인 종목(러너 .apply_universe 와 같은 술어를 엔진이 먼저 적용) · 발행 2005-01 이후. 학습 횡단면·배분 횡단면 전부 이 유니버스 안이다. 배분은 적격 전 종목(횡단면 ≈150~350) 이라 보유 종목수가 고정 축 25 를 넘는다 — 논문 배분 정의(식 11 · 식 7 의 단체 위 비중)상이며 engine_direct 라 러너가 자르지 않는다. 롱온리 · Σw = 1 · has_short = false. 멤버십 플래그의 정체: QuantiWise universe_support K200/KQ150 을 (Ticker, Date) roll join 한 것 — KQ150 은 2010-02 이후 시변, 그 이전은 누적 편입 명부(memory 2026-08-22: 미래참조 아님, 창 caveat).",
+    "(2) [유동성 스크린 — 없음] 논문은 유동성·거래대금·가격·시총 스크린을 두지 않는다. 프롬프트 축 절의 'adv20 ≥ 2e8 t-1 적용' 은 1계층 SOT(lean-loop.md '유동성 필터 = 논문 우선 paper_faithful')와 충돌하며 같은 충돌을 1707.05552 감사(2026-09-07)가 지시 축 오기재로 지적했다 → 엔진에 스크린 없음 · 러너도 걸지 않는다(run_paper_replication.R:205). Vol 열은 스크린이 아니라 특성 liq(PX_VOLUME 대응) 로만 읽는다.",
+    "(3) [셀 선택 — 논문이 여러 설정을 보고] 논문 격자 = 학습 방식 {부트스트랩, 연대기(길이 12)} × 정책 {F1 선형, F2 지수} × η {0.01, 0.1} × E {100, 500, 1000} × seed {42, 43} × 보상 {수익(부트스트랩), 미분 샤프(연대기)}. 구현 = **부트스트랩 × F2 × η 0.1 × E 500 × seed 42 × N 100 × θ_k 초기 1 × γ 1 × 수익 보상** 한 칸. 근거: η·E·θ0·seed 는 Fig.2 캡션의 기준 파라미터 · 부트스트랩은 §5.4 가 '유일한 강건 결론'으로 우위를 둔 방식이자 지어낼 파라미터가 없는 방식(연대기는 미분 샤프의 κ 값이 본문에 없다 — 지어내지 않았다) · F2 는 §2.4 가 '항상 유효' 라 한 형태이며 §3.2 의 사영(식 10)·경계 [a−, a+] 가 F1 에만 적용되므로 논문 자체의 불일치(본문·부록 D a− = 0.02 vs 세 캡션 [0.2, 1.6])를 피한다. 미구현 = 연대기 시퀀스(T=12) · 미분 샤프 보상(식 4) · F1 + 사영(식 10) · η 0.01 · E 100/1000 · seed 43 (changed(15)).",
+    "(4) [Table 3 의 두 표본추출 단계 해석] step 2 'Randomly pick N assets' 와 step 5 'Sample N stocks randomly' 의 관계를 본문이 설명하지 않는다. 구현 = step 2: 그 달 학습 표본(직전 달 적격 집합 ∩ 이번 달 수익 유한)에서 N=100 종목을 **비복원**으로 뽑아 풀로 고정(표본이 100 미만이면 전부) · step 5: 매 에피소드 그 풀에서 N=100 을 **복원**추출(§2.3 'randomly choosing (with replacement) N assets' — 중복 종목은 별도 비중을 받는다). 대안 독법(풀 없이 매 에피소드 전 횡단면에서 복원추출)은 쓰지 않았다. 풀 크기가 100 미만인 달은 로그 '풀' 값으로 드러난다.",
+    "(5) [OOS 배분 모집단] step 9 'allocate via average policy, Eq. (11)' 의 모집단을 본문이 말하지 않는다. 구현 = **시그널일 d 의 적격 횡단면 전 종목**(N_t 시변)에 w_n = a_n/σ. 근거: §4.3 회전율 식이 시변 N_t 로 정규화되고, 매월 100 종목을 새로 뽑으면 부트스트랩 방식의 월 회전율이 100% 에 가까워 '9%–10%' 와 양립하지 않으며, N=100 은 §4.1 이 '보상 계산에 들어가는 종목 수' 로 정의한 학습 크기다. 대안 독법(N=100 무작위 부분집합 보유)은 쓰지 않았다.",
+    "(6) [특성 12종 — Bloomberg 필드 → KR 대응물 (전부 시그널일 d 이하 정보)] cap = d 당일 Size(시가총액 KRW) · pb = Size / TotalEquity(자본총계 · 비지배지분 포함 — Bloomberg 는 보통주 자본) · de = (ShortTermBorr + LongTermBorr) / TotalEquity(한쪽만 있으면 다른 쪽 0 · 둘 다 없으면 결측 · 자본 ≤ 0 결측) · vol = 종목 연속 30 행의 로그수익 표준편차(30개 전부 유한해야 · 연율화 상수 생략 = 순위 불변 · 거래정지로 행이 건너뛰면 그 로그수익은 다일 수익이다) · prof = NI / Revenue(Revenue > 0) · inv = TotalAssets_y / TotalAssets_{y−1} − 1(연속 기수만) · eps = NI / (Size/Close on d)(d 시점 조정기준 발행주식수 — Bloomberg IS_EPS 는 보고 EPS) · liq = d 당일 Vol(주식수 거래량 · Bloomberg PX_VOLUME 월간 조회 = 그 날 거래량) · rsi = Wilder RSI(30) — 첫 30 일간 가격변화의 단순평균으로 시드 후 (29/30) 지수평활을 종목 이력 전체에 재귀 적용, AD = 0 이면 100 · 둘 다 0 이면 50 · pe = Size / NI 이고 NI ≤ 0 이면 결측(Bloomberg PE_RATIO 도 음수 이익엔 N/A) · dy = (|Dividends| / 주식수_d) / P_{t−1}(현금흐름표 배당금지급액 = 그 회계연도에 지급된 현금배당 — Bloomberg EQY_DPS(선언 DPS) 보다 약 1년 늦다 · 배당 행 없음 = 0 · P_{t−1} = 직전 달 마지막 관측 종가) · **mom = P_{t−12} / P_{t−1} − 1 — Table 1 문구 '(lagged 12 month value) divided by (lagged one month value), minus one' 을 축자로 구현(3회 독립 재질의 동일). 이는 통상 12-1 모멘텀 P_{t−1}/P_{t−12} − 1 의 단조감소 변환이라 균등화 뒤에는 정확히 역순위이며, θ_mom 의 부호가 이를 흡수한다 — 남는 차이는 θ0 = 1 초기값의 방향(초기 정책이 저모멘텀 쪽으로 기운다)뿐이다. 통상 정의는 쓰지 않았다(신고).** NI = NetIncome, 없으면 PretaxIncome − TaxExpense(XLSX 원천에 당기순이익 시트가 없다 — 2505.16336 엔진과 같은 규약). 전부 그 달 완전 사례 집합 안에서 frank(ties = average)/n − 0.5 로 균등화.",
+    "(7) [회계 패널 · 시차 (C4)] 논문 = Bloomberg 필드(공시마다 갱신되는 최신·trailing 값). 구현 = .cache/fundamental_merged.parquet(DART 연간 2015~ + QuantiWise XLSX 분기 1998~ 병합 · 2505.16336 엔진과 같은 원천)에서 **회계연도 단위 값만**: 손익 = DART 1년치 행 또는 XLSX 4개 분기 합(4개 다 있어야) · 상태 = YYYY12 잔액(DART 우선). 사용 가능일 FD_lag = max(패널 Factor_Date, (회계연도+1)-03-31) — 패널이 2026-07-25 수리로 이미 Q4 → 익년 3/31 을 담고 있지만 엔진이 C4 연간 규칙을 다시 강제한다(방어 코드 · 신고). 시그널일 d 에는 FD_lag ≤ d 인 최신 기수를 roll join 한다. 그래서 회계 특성 7종은 매년 4월에만 갱신되고 Bloomberg 대비 최대 ~15개월 낡다. 최신 기수가 year(d) − 2 보다 오래되면 결측 취급(보고 중단 기업의 잔존값 차단 · 우리 규약). 모든 기수를 12월 결산으로 본다(비12월 결산 기업의 Period 의미 미보정). 티커 표기 'A005930' 형은 RAWDATA 표기('005930')와 겹침이 커지는 쪽으로 정규화.",
+    "(8) [적격 = 완전 사례 · 하한] 논문은 결측 처리를 말하지 않는다(월별 기업 수 1,600~2,800 변동 → 완전 사례 사용으로 읽힌다). 구현 = 구성종목 중 **12 특성이 전부 유한한 종목만** 그 달 횡단면에 들어간다(대치 없음). 귀결: 적자 기업(pe 미정의) · 자본잠식 기업 · 회계 행 없는/분기 4개 미만 기업 · 30 로그수익 미만/31 가격 미만 종목 · P_{t−12} 또는 P_{t−1} 없는 종목 · d 당일 Size 또는 Vol 결측 종목이 그 달 빠진다 — 이는 신호 스크린이 아니라 Bloomberg 필드 의미(N/A)를 그대로 옮긴 결과이나 유니버스를 줄이는 방향이므로 신고한다(발행월 특성별 결측률을 로그로 출력). 균등화 모집단 = 이 완전 사례 집합. 적격 < 20(.MIN_ELIG) 이면 그 달 X 없음 · 학습 표본 < 20 이면 그 달 학습·발행 없음(러너는 직전 포트폴리오를 다음 시그널까지 보유한다).",
+    "(9) [학습 보상의 수익] 논문 r_t = (p_t + d_t)/p_{t−1} − 1(배당 포함 총수익). 구현 = 월간 종가 패널(그 달력월 안 종목의 마지막 관측 수정주가) 비율 P_t/P_{t−1} − 1 — 현금배당 미포함(data_gap). 직전 달 적격 집합 중 r_t 가 유한하지 않은 종목(상장폐지·그 달 행 없음)은 학습 표본에서 제외하고, X_{t−1} 의 균등화 순위는 제외 후 다시 계산하지 않는다(신고).",
+    "(10) [수치 가드 — 논문에 없음] (a) Dirichlet 표집 = 정규화 감마: rgamma 가 정확히 0 을 내면(작은 a_n 언더플로) .Machine$double.xmin 으로 치환 후 정규화(건수 로그 'rgamma 언더플로 치환') (b) 기울기 최대절댓값이 0 또는 비유한이면 그 에피소드 갱신 생략 (c) 배분 비중 = exp(s − max s)/Σ — a/σ 와 값이 같고 오버플로만 막는다 (d) vol 창은 30개 전부 유한할 때만 (e) 분모 조건(자본 > 0 · 매출 > 0 · 이익 > 0 · P_{t−1} > 0)은 changed(6) 대로 (f) 배분 비중이 비유한이거나 0 인 달(θ 발산)은 발행하지 않는다(건수 로그 '비유한 비중 달'). 값 치환·winsorize·clip·LOCF 0건.",
+    "(11) [난수 · 재현 · 양성 대조] set.seed(42) 를 월별 루프 직전 1회(Fig.2 'random seed in 42' — 저자 코드의 난수열 자체는 재현 불가). 검산 시드 20201110(논문 v1 게재일 · 임의 상수)로 루프 전에 4종 양성 대조를 돌리고 실패하면 중단: (a) 식(15) 해석 기울기 vs Dirichlet 로그밀도(lgamma 폐형)의 중심차분(상대오차 ≤ 1e-5) (b) 정책기울기 항등식 E[R ∇ln π] = ∇_θ E[R] — 20,000 표본 몬테카를로(상수 기준선 R − R̄ 로 분산 축소 · E[∇ln π] = 0 이라 항등식 불변) vs 폐형 Σ_i r_i (a_i/σ)(x_i − x̄_a)(최대 성분 허용오차 20% + 0.01 · 표집기와 스코어를 동시에 잰다) + 같은 표본에서 표집기 평균 E[w] = a/σ(식 11 · 허용 1e-3) (c) 균등화 고정 입력 (3,1,2,2) → (0.5, −0.25, 0.125, 0.125) (d) RSI(30) 고정 입력: 단조 상승 31 가격 → 100 · 이어서 1 하락 → 100 − 100/30 · 상수 가격 → 50 · 30 가격 이하 → 전부 NA.",
+    "(12) [시간 격자 · 집행] 시그널 d_t = 각 달력월의 마지막 거래일(RAWDATA 전 종목 통합) · RAWDATA 의 마지막 달력월은 부분월로 보고 제외 · 발행 = d_t ≥ 2005-01-01 · 첫 발행월의 학습 재료를 위해 그 한 달 전부터 X 를 만든다. d_t 의 학습 = (X_{t−1}, r_t) 만(둘 다 d_t 이전 실현) · θ 는 매월 1 로 초기화(Table 3 step 3) · 집행 = 달 t+1 첫 거래일(러너 get_execution_date · Table 3 'For date t+1 ... allocate') · 보유 1개월 · 매월 전량 재구성. 논문 프로토콜 't = 2,…,T−1' 과 같은 정렬이다.",
+    "(13) [데이터 위생 — 전수] 종가 유한·>0 행만 · Close/Vol/Size numeric 강제 · (Ticker,Date) 중복은 첫 행(건수 출력) · 월말 행은 Size > 0 만 구성종목으로 · 월 인덱스 비연속이면 중단 · 완결 월 36개 미만이면 중단 · 회계 패널 티커 교집합 0 이면 중단.",
+    "(14) [비용 — 병기값의 정체] 논문 Fig.4 의 수익·샤프는 gross 다. §4.3 의 '50 basis point fee per unit of turnover → 5 basis points per month' 는 회전율 민감도 언급이지 보고 성과에 적용된 비용이 아니다 → commission_paper = null → 러너가 0bps(gross) 병기판을 만든다. 등급 = 15bps 순비용 판(Σ|Δw| — 적격 전 종목 보유라 회전율은 낮은 편이나 편입·탈락과 a/σ 변화가 실린다).",
+    "(15) [미구현 — 논문의 다른 구성요소] 연대기 시퀀스(Table 3 왼쪽 열 · T = 12 · 매년 1월 학습) · 미분 샤프 보상(식 4 · κ 미명시) · 선형 정책 F1 + 사영(식 10 · 경계 a− = 0.02/0.2 · a+ = 1.6) · 특성 가격결정력 PAC(§2.6 · §5.1) · 장난감 팩터 모형(§5.2) · 횡단면 베타(§5.3) · Fig.4 격자(η/E/seed) · 1/N 벤치마크 대조(러너 벤치는 KOSPI200)."
+  ],
+
+  "changed_summary": "유니버스 K200∪KQ150(지시 축) · 유동성 스크린 없음 · 한 칸(부트스트랩 × F2 × η 0.1 × E 500 × seed 42 · N 100 · θ0 1 · γ 1) · Table 3 step 2 = 비복원 풀 100 / step 5 = 복원추출 · OOS 배분 = 적격 전 종목 a/σ · 특성 12종 = KRX/DART/QuantiWise 대응물(회계 7종은 연간 · 익년 3/31 lag · 최대 15개월 낡음) · mom = Table 1 문구 축자(역순위) · 완전 사례만 · 학습 수익 배당 미포함 · 수치 가드 3건 · 양성 대조 4종.",
+
+  "feature_definitions": {
+    "source": "Table 1 of the paper (Bloomberg field names) → KR panels: RAWDATA(Close 수정주가 · Vol 주식수 · Size 시가총액 KRW · K200/KQ150) + .cache/fundamental_merged.parquet(DART annual 2015~ + QuantiWise XLSX quarterly 1998~). All values as of signal date d (row on d, windows ending on d, accounting FY with FD_lag ≤ d).",
+    "cap":  { "paper": "CUR_MKT_CAP", "ours": "Size on d" },
+    "pb":   { "paper": "PX_TO_BOOK_RATIO", "ours": "Size_d / TotalEquity_FY (TotalEquity > 0 else NA)" },
+    "de":   { "paper": "TOT_DEBT_TO_TOT_EQY", "ours": "(ShortTermBorr + LongTermBorr)_FY / TotalEquity_FY (one side NA → 0; both NA → NA; equity ≤ 0 → NA)" },
+    "vol":  { "paper": "VOLATILITY_30D", "ours": "sd of the stock's last 30 daily log returns ending d (all 30 finite, else NA; no annualisation)" },
+    "prof": { "paper": "PROF_MARGIN", "ours": "NI_FY / Revenue_FY (Revenue > 0 else NA); NI = NetIncome or PretaxIncome − TaxExpense" },
+    "inv":  { "paper": "ASSET_GROWTH", "ours": "TotalAssets_FY / TotalAssets_{FY−1} − 1 (consecutive FY only, prior > 0)" },
+    "eps":  { "paper": "IS_EPS", "ours": "NI_FY / (Size_d / Close_d)" },
+    "liq":  { "paper": "PX_VOLUME", "ours": "Vol (share volume) on d" },
+    "rsi":  { "paper": "RSI_30D", "ours": "Wilder RSI, period 30, on daily closes up to d (seed = simple mean of first 30 changes; AD = 0 → 100; AU = AD = 0 → 50)" },
+    "pe":   { "paper": "PE_RATIO", "ours": "Size_d / NI_FY (NI > 0 else NA → firm excluded that month)" },
+    "dy":   { "paper": "EQY_DPS divided by the lagged value of PX_LAST", "ours": "(|Dividends_FY| / (Size_d/Close_d)) / P_{t−1}; Dividends row absent → 0" },
+    "mom":  { "paper": "lagged 12 month value divided by lagged one month value, minus one", "ours": "P_{t−12} / P_{t−1} − 1 on month-end closes (literal; = reversed rank of conventional 12-1 momentum after uniformisation — declared in changed(6))" },
+    "preprocessing": "each month, within the complete-case eligible set: frank(v, ties = average) / n − 0.5 ∈ (−0.5, 0.5]; constant x^(0) = 1 not transformed"
+  },
+
+  "paper_original_form": "미국 상장 전 종목(Bloomberg · 2000-01~2020-06 · 월별 1,600~2,800개 · 특성 12종 + 상수, 횡단면 균등화 [−0.5, 0.5])에 대해 Dirichlet 정책(a = Xθ 또는 exp(Xθ))으로 비중을 표집하는 강화학습 에이전트를 REINFORCE 로 학습(폐형 정책 기울기 식 15 · 기울기 최대절댓값 정규화 · η {0.01, 0.1} · E {100, 500, 1000} · N = 100 · θ0 = 1 · seed {42, 43}), 두 프로토콜(부트스트랩: 매월 직전 달로 길이 1 에피소드 · 연대기: 매년 1월 직전 12개월로 길이 12 에피소드, 미분 샤프 보상)로 월별 롱온리 포트폴리오(E[w] = a/σ)를 만들어 1/N 과 비교 — 월평균 수익 1.08~1.20% vs 1/N 1.14%, 샤프 0.20~0.225, t-검정 p 0.82~0.998(유의차 없음), 회전율 9~10%/월, 결론 = RL 포트폴리오가 균등배분 근방에 머물며 전통 특성의 가격결정력이 약하다(연대기 학습에서 상수항의 헤게모니). 논문의 최종 산출은 이 비교 통계와 파라미터 궤적(Fig.2~4)이지만, 산출 그 자체가 매매 가능한 월별 롱온리 비중이라 그대로 구현 대상이다.",
+
+  "portfolio_spec": {
+    "construction": "engine_direct",
+    "weighting": "paper",
+    "rebalance": "monthly",
+    "cell": "bootstrap sequences × exponential policy F2 × η 0.1 × E 500 × seed 42 × N 100 × θ0 = 1 × γ 1 × return reward (Fig.2 parameter set; §5.4 preferred scheme)",
+    "long_only": true,
+    "weights": "w_n = a_n / σ, a_n = exp(x_n'θ) over all eligible names on the signal date (Eq. 11); Σw = 1 asserted 1e-9; every w > 0",
+    "n_holdings": "full eligible cross-section on the signal date (≈150~350) — exceeds the fixed axis 25 by construction (declared changed(1)(5)); engine_direct so the runner does not truncate",
+    "holding_months": 1,
+    "overlap": "none (monthly full reconstruction)",
+    "universe_filter": "in-engine on each signal date with the runner's predicate (RAWDATA row on the date AND K200|KQ150 flag) AND all 12 characteristics finite — changed(1)(8). No liquidity, price, size or listing-age screen (changed(2)).",
+    "note": "FACTORS (Score = x'θ = ln a for every eligible name) is emitted alongside for IC/FMB diagnostics and the factors_panel freeze; it is a monotone transform of the month's weight."
+  },
+
+  "commission_paper": null,
+  "commission_paper_note": "Reported performance (Fig.4, §4.3) is gross of costs. The '50 bps per unit of turnover → ≈5 bps/month' remark in §4.3 is a sensitivity aside, not a cost applied to the reported figures → null (runner gross basis). Grade basis = 15 bps.",
+
+  "source_paper": {
+    "title": "Dirichlet policies for reinforced factor portfolios",
+    "authors": "Eric André, Guillaume Coqueret",
+    "arxiv_id": "2011.05381",
+    "url": "https://arxiv.org/abs/2011.05381",
+    "versions": "v1 2020-11-10 · v2 2020-11-12 · v3 2021-06-25 (read: v3 via PDF text proxy)",
+    "fulltext_paths": [
+      "https://r.jina.ai/https://arxiv.org/pdf/2011.05381v3",
+      "https://r.jina.ai/https://arxiv.org/pdf/2011.05381",
+      "https://arxiv.org/abs/2011.05381"
+    ],
+    "version_read": "1판(2026-09-12): arxiv abs + PDF 텍스트 프록시 절별 8회 — 초록 · §2.1 정의(x, r, ρ, 상수) · §2.2–2.3 행동·복원추출 문장 · §2.4 식(7)(9)(11) + F1/F2 유효성 문장 · §2.5 식(13)(14)(15) · §3.1 데이터·Table 1 전 행(mom 문구 3회 독립 재질의 동일) · §3.2 Table 2 REINFORCE 전 단계 · 사영(식 10)이 F1 전용이라는 문장 · 경계값(본문·부록 D 0.02/1.6 vs Fig.2·3·6 캡션 [0.2, 1.6]) · 기울기 정규화 · γ = 1 · §3.3 부트스트랩/연대기 문단 + Table 3 두 열 전 행 · §4.1 자유도(N 100 · η · E · seed) · §4.2 Fig.2 캡션 축자 · §4.3 성과 수치·회전율·50bps 문장 · §5.4 비교 결론 · 결론. 미명시로 확인된 항목(NOT STATED): 미분 샤프 κ 값 · μ̂/σ̂ 초기값 · 결측 처리 · OOS 배분 모집단 · Table 3 step 2 와 step 5 의 관계 · 1/N 벤치마크의 모집단 · 기준(default) 정책 형태. ★프록시 요약기가 인용을 125~300자로 자르는 탓에 Table 1 정의 문구는 세 번의 독립 질의로 교차 확인했다(arxiv html 렌더는 2020년 논문이라 없음).",
+    "note": "긴 축자 요청은 잘리므로 절 하나·질문 열 개 단위로 좁혀 물었다(메모리 reference-arxiv-full-text-via-html-endpoint 규약). 이 세션은 curl/Invoke-WebRequest 가 승인 대기로 막혀 전문 파일을 로컬에 두지 못했다."
+  },
+
+  "paper_values_used_unchanged": {
+    "policy": "Dirichlet with a_t = exp(X_t θ_t) — F2 (Eq. 9)",
+    "expected_weight": "E[w_n] = a_n / σ (Eq. 11)",
+    "score_function": "∇ ln π = Σ_n (ψ(σ) − ψ(a_n) + ln w_n) a_n x_n (Eq. 15 with ∇a_n = a_n x_n)",
+    "update": "θ ← θ + η γ^t G ∇ln π (Table 2 / Eq. 13), gradient divided by its maximum absolute value (§4.1); episode length 1 → G = R_1 = w'r",
+    "eta": 0.1,
+    "episodes": 500,
+    "n_assets_per_action": 100,
+    "theta_init": 1,
+    "gamma": 1,
+    "seed": 42,
+    "learning_scheme": "bootstrap sequences: every month, learn from the previous month only, allocate next month (Table 3 right column); reward = portfolio return",
+    "features": "Table 1 twelve characteristics + constant; cross-sectional uniformisation to [−0.5, 0.5] each month (§3.1)",
+    "portfolio": "long-only simplex weights, monthly (§2.2, Table 3)",
+    "paper_reported": {
+      "avg_monthly_return_rl": "1.08%–1.20%",
+      "avg_monthly_return_1N": "1.14%",
+      "sharpe_monthly": "0.200–0.225",
+      "t_test_vs_1N_pvalues": "0.82–0.998",
+      "turnover_monthly": "≈9%–10% (cap-weighted ≈20%)",
+      "cost_remark": "50 bps per unit turnover → ≈5 bps/month",
+      "conclusion": "RL portfolios stay in the vicinity of 1/N; bootstrap > chronological (§5.4)"
+    }
+  },
+
+  "changed_checklist": [
+    { "axis": "값 하한·상한·커버리지", "paper": "없음(특성 균등화 · N = 100 · 경계 [a−, a+] 는 F1 전용)", "ours": "완전 사례(12 특성 유한) · 적격 ≥ 20 · 학습 표본 ≥ 20 · vol 창 30 전부 유한 · rsi 31 가격 이상 · 회계 4분기 전부 · 기수 연속 · 최신 기수 ≥ year(d) − 2 · 유동성·가격·시총 스크린 없음", "why": "changed(6)(7)(8)" },
+    { "axis": "수치 가드", "paper": "기울기 최대절댓값 정규화(§4.1)", "ours": "동일 정규화 + rgamma 0 치환 · max|g| 0/비유한 시 생략 · 배분 softmax 안정화(값 동일) · 분모 양수 조건", "why": "changed(10)" },
+    { "axis": "결측 처리", "paper": "미명시", "ours": "대치 없음 — 결측 특성 있는 종목 그 달 제외 · 배당 행 없음 = 0 · r_t 결측 = 학습 표본 제외", "why": "changed(6)(8)(9)" },
+    { "axis": "난수·재현", "paper": "seed 42(Fig.2) · 43", "ours": "set.seed(42) 루프 전 1회 · 검산 시드 20201110 · 양성 대조 4종 · 결정론", "why": "changed(11)" },
+    { "axis": "창·워밍업", "paper": "vol 30일 · rsi 30일 · mom 12-1 · 학습 = 직전 1개월", "ours": "동일 창 · 워밍업 없음(θ 매월 초기화) · 첫 발행 2005-01 시그널(학습 재료 2004-12)", "why": "changed(12)" },
+    { "axis": "여러 설정 중 선택", "paper": "2 방식 × 2 정책 × 2 η × 3 E × 2 seed", "ours": "부트스트랩 × F2 × 0.1 × 500 × 42 한 칸", "why": "changed(3)" },
+    { "axis": "수식 근사", "paper": "식(7)(9)(11)(13)(15)", "ours": "축자 · 표집 = 정규화 감마(정확 표집) · 배분 = exp(s − max s)/Σ (대수적으로 a/σ 와 동일)", "why": "changed(10)" },
+    { "axis": "비중·다리", "paper": "단체 위 비중 · 롱온리 · E[w] = a/σ", "ours": "동일 · 적격 전 종목 · Σw = 1 검산", "why": "changed(5)" },
+    { "axis": "유니버스·유동성", "paper": "미국 상장 전 종목 · 스크린 없음", "ours": "K200∪KQ150 PIT · 완전 사례 · 스크린 없음", "why": "changed(1)(2)(8)" },
+    { "axis": "입력 특성", "paper": "Bloomberg 12 필드(분기 갱신 trailing)", "ours": "KRX/DART/QuantiWise 대응물 · 회계 7종은 연간(익년 3/31) · mom 문구 축자", "why": "changed(6)(7)" },
+    { "axis": "리밸·보유", "paper": "월간 · t+1 배분", "ours": "월말 시그널 → 익월 첫 거래일 집행 · 매월 전량 재구성", "why": "changed(12)" },
+    { "axis": "비용", "paper": "gross(50bps/회전율 단위 = 민감도 언급)", "ours": "commission_paper = null → 0bps 병기 + 15bps 등급", "why": "changed(14)" },
+    { "axis": "미구현 분석", "paper": "연대기 · 미분 샤프 · F1 사영 · PAC · 장난감 모형 · 횡단면 베타", "ours": "미구현", "why": "changed(15)" }
+  ],
+
+  "data_gap": {
+    "needed": [
+      "분기 갱신 trailing 12M 회계 특성(순이익·매출·부채·자본·총자산·DPS·EPS)을 공시 가능일(분기 +45일 · 연간 익년 3/31)로 정렬한 PIT 패널 — 현재는 회계연도 값만 써서 Bloomberg 대비 최대 15개월 낡다(changed(7)). fundamental_xlsx_ttm.parquet 이 후보이나 DART 기간(2015~)의 Q4 분기값이 병합 규약상 비어 TTM 이 끊긴다",
+      "개별종목 현금배당 조정 총수익(배당락일 + DPS) — 논문 학습 보상 r_t 가 배당 포함 총수익(changed(9)) · 선언 DPS 기준 배당수익률(dy)",
+      "보고 EPS(기본 주당순이익) 패널 — 현재 eps = NI / (Size/Close on d) 근사(changed(6))"
+    ],
+    "why": "논문 특성의 원천(Bloomberg trailing 필드·총수익)이 이 엔진이 정본 경로로 읽을 수 있는 배관에 없다. 있는 것(연간 회계 · 수정주가)으로 옮기고 낡음을 신고했다.",
+    "not_done_here": "산출 디렉터리 밖 쓰기 금지 — data_pipeline_queue.json 적재는 Q-Lead/도훈 소관."
+  },
+
+  "pit_notes": {
+    "signal_date": "달 t 의 마지막 거래일 d_t. 러너 집행 = 달 t+1 첫 거래일 → d_t 에 코드가 읽는 것 = X_{t−1}(달 t−1 월말 행·창) · r_t = P_t/P_{t−1} − 1(d_t 에 실현) · X_t(d_t 당일 행 + d_t 이하 창 + FD_lag ≤ d_t 회계). r_{t+1} 은 어디서도 읽히지 않는다(루프 구조 · 음수 shift 0건).",
+    "features": "cap/liq/Size/Close = d 당일 행 · vol = 종목 직전 30 로그수익(끝 = d) · rsi = 종목 이력 ≤ d 재귀 · mom = 월간 종가 P_{t−12}, P_{t−1} · 회계 = roll join FD_lag ≤ d (C4: 연간 = 익년 3/31) · 균등화 = 그 달 완전 사례 횡단면만(C1) · 시계열 전 표본 통계 0건.",
+    "learning": "θ 는 매월 새로 초기화되어 (X_{t−1}, r_t) 로만 학습된다 — 과거 달의 학습 결과도, 미래 달의 수익도 들어가지 않는다. 난수 = seed 42 결정론.",
+    "factor_db": "미사용 — C13/C15/C14/C17/C18 대상 코드 없음.",
+    "liquidity": "스크린 없음(논문 우선). C10 대상 코드 없음 — Vol 은 특성 liq 로만 읽고 그 값은 d 당일 행이다(집행은 익월).",
+    "membership": "d 당일 RAWDATA 행의 (K200 == TRUE | KQ150 == TRUE)(C6) — 러너 .apply_universe 와 같은 술어라 러너 필터는 0행 제거.",
+    "not_used": "오버레이(C5/C9 무관) · 외부 매크로(C11 무관) · rf 시계열 · BM_DT · Sector."
+  },
+
+  "engine_contract": {
+    "output": "PORTFOLIO(Date, Ticker, Weight, Leg = 'long') + FACTORS(Date, Ticker, Score)",
+    "long_gross": "1.0 exactly per rebalance (asserted 1e-9) · every Weight > 0",
+    "short_gross": "0 (long-only by construction — Dirichlet simplex)",
+    "rows": "발행 월말(2005-01 이후 · 마지막 부분월 제외) 1행 집합 = 그 달 적격 전 종목 · 적격 < 20 또는 학습 표본 < 20 인 달은 행 없음",
+    "expected_n_max": "≈150~350 (적격 횡단면 크기). 고정 축 25 초과는 논문 배분 정의상 — engine_direct 라 러너가 자르지 않는다",
+    "inputs_read": "RAWDATA: Date · Ticker · Close · Vol · Size · K200 · KQ150. 회계: PROJECT_ROOT/.cache/fundamental_merged.parquet (Ticker · Period · Factor_Date · Item · Value · Source — read_parquet col_select). BM_DT 미독. 팩터 DB 미독.",
+    "dependencies": ["data.table", "arrow"],
+    "dependencies_note": "그 외는 base/stats(stats::filter 는 RSI 재귀 · digamma/lgamma/rgamma 는 base). 엔진은 이 둘 외에 :: 를 쓰지 않는다.",
+    "external_input": "없음(난수는 시드 고정)",
+    "runtime_note": "일간 특성 = 종목별 frollmean 2회 + RSI 재귀 필터 1회(수 초). 회계 패널 = long 파케이 1회 로드·집계(수 초). 월별 루프 = 약 260개월 × 500 에피소드 × (N 100 × 13) 행렬 연산 ≈ 수 초~1분. 양성 대조 (b) 는 100 × 20,000 행렬 3개(≈16MB 씩). 전체 5분 안 추정. 12개월마다 진행 로그. 이 세션은 R 실행이 승인 차단이라 미실행 제출 — 러너 로그의 '검산 통과' · '회계 패널: 원천 …' · 12개월 진행 줄(σ · w_max · N_eff · |θ| 상위) · 'adapted(기전 = …)' 요약 · '특성 결측률' · 'θ 월별 평균±sd' 줄로 확인할 것. ★기대 지문: 논문대로면 N_eff/n_elig 가 1 에 가깝고(1/N 근방) θ 의 특성 계수 평균이 0 근방·상수항이 지배한다. 회계 결측률(pb·de·prof·inv·eps·pe·dy)이 높으면 완전 사례 적격이 얇아진다 — 로그로 드러난다."
+  }
+}

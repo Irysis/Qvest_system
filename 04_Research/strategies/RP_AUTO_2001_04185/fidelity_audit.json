@@ -1,0 +1,89 @@
+{
+  "verdict": "adapted",
+  "undeclared_changes": [],
+  "signal_mismatch": [
+    "[signal] [배당 제외 가격수익으로 순위] 논문 §II.A 는 모멘텀 정의를 인용 [14]·[19] 에 위임하고(전문 참고문헌 실측: [14] M. M. Carhart, 'On persistence in mutual fund performance', J. Finance 52(1):57-82, 1997 · [19] Jegadeesh-Titman 1993), Carhart PR1YR 은 배당 포함 총수익 위에서 정의된다. engine.R:108-109 는 수정주가 비율 P[t-21]/P[t-252]-1 만 계산해 현금배당을 뺀다 — 고배당 계열(은행·통신·우선주)이 횡단면에서 체계적으로 아래로 밀린다. FIDELITY changed(2)('수익 = 수정주가 비율(현금배당 미포함)') + data_gap('개별종목 현금배당 조정 총수익')에 선언 → misdeclared 아님.",
+    "[signal] [D 3개월을 63거래일로 환산] 논문이 주는 D 는 Fig.1 캡션의 'The slowed down signal π_{i,t} with slowing down timescale D = 3 months' 뿐이고, 식(1) 의 지수 인자 exp(-(t-t')/D) 에서 일↔월 환산 규약은 전문 어디에도 없다(독립 재질의 3회 NOT STATED). engine.R:53-56 은 21거래일/월 → D = 63거래일 · λ = exp(-1/63) 로 고정했다. 달력일 환산(≈91)이면 같은 '3개월'이 1.44배 느린 EMA 가 되어 부호 전환 종목의 다리 배정이 갈린다. FIDELITY changed(3) 에 선언 → misdeclared 아님.",
+    "[cost] [월별 순회전율이 논문의 일별 Δπ 매매활동을 과소대표]"
+  ],
+  "evidence": "[signal] arXiv:2001.04185v1 전문(https://arxiv.org/html/2001.04185v1 — 2020년 논문이지만 HTML 렌더 존재, 실측 회수). §II.A 'Equity Factor Data': 식(1) π_{i,t} = A Σ_{t'≤t} s_{i,t'} exp(-(t-t')/D) · 식(2) Δπ_{i,t} = π_{i,t} - π_{i,t-1} · 's_{i,t} the signal followed by an investor, giving the ideal holding of stock i on the close of day t' · 'For example, s_{i,t} would be the ranking of stocks according to their past returns in the case of the Momentum factor' · 'The factor A sets the overall risk of the portfolio, whereas the slowing down time scale D is chosen as to provide a good compromise between performance and trading costs' · 'We use standard Fama-French (FF) factors, extended to Momentum, defined on the components of the Russell 3000 index'. Fig.1 캡션 'D = 3 months'. §IV.1 'D around 3-4 months' · 'the autocorrelation time of the momentum signal'. 참고문헌 축자 회수: [1] Ang 2014 · [14] Carhart 1997 · [15] Fama-French 1992 · [17] Gârleanu-Pedersen 2013 · [19] Jegadeesh-Titman 1993 — FIDELITY version_read 의 인용 매핑과 일치. ★전문 3회 독립 재질의에서 모두 NOT STATED: 모멘텀 룩백 창·스킵 여부 · 순위 척도(1..N / [-1,1] / z / winsorize) · A 의 값 · 단일 권장 D · 일↔월 환산 · 배당 포함 여부 · 달러중립·총노출 규정 · s 의 수식(문장 외 수식 없음 — '수식 있는가' 질문에 명시적 No). / [timing] §II.A: \"s_{i,t} would be the ranking of stocks according to their past returns in the case of the Momentum factor\" (룩백·스킵 미기재) · \"We use standard Fama-French (FF) factors [1, 15], extended to Momentum [14, 19]\"(수치 위임) · Fig.1 캡션: \"The slowed down signal π_{i,t} with slowing down timescale D = 3 months\" · 본문: \"absolute maxima ≳ 1% for D around 3–4 months\" · \"D ∈ (2, 4) months for market-wide data and D ∈ (3, 6) months for metaorder data\"(전부 D-스캔 결과 인용이지 전략 채택값 아님) · 본문 전체에 리밸런싱 주기·형성기간 수치 표현 부재(2회 독립 축자 조회로 확인). / [universe] §II.A: 'We use standard Fama-French (FF) factors [1, 15], extended to Momentum [14, 19], defined on the components of the Russell 3000 index in a period spanning from January 1995 to December 2018.' — 이 한 문장이 유니버스 정의의 전부이며, 그 뒤로 가격 하한·유동성·시총·금융주 제외·상장연수 등의 조건문은 §II(A/B/C) 전체에 없음(2회 독립 프록시 재질의로 확인 — 'no filtering criteria specified', 'no mentions of financial stock exclusion, REIT, minimum price, minimum market cap, minimum listing days, common-stock-only, ADR, dual-class exclusion 등'). / [portfolio] arxiv.org/html/2001.04185v1 전문 · §II.A(Equity Factor Data): 'We use standard Fama-French (FF) factors, extended to Momentum, defined on the components of the Russell 3000 index in a period spanning from January 1995 to December 2018.' · 'let us denote by s_{i,t} the signal followed by an investor, giving the ideal holding of stock i on the close of day t' · 's_{i,t} would be the ranking of stocks according to their past returns in the case of the Momentum factor' · 식(1) π_{i,t} = A Σ_{t'≤t} s_{i,t'} exp(−(t−t')/D) · 식(2) 뒤 'The factor A sets the overall risk of the portfolio, whereas the slowing down time scale D is chosen as to provide a good compromise between performance and trading costs.' · §IV.A(Momentum): 'The same analysis with different slowing down mechanisms, or using the long (or short) only component of Momentum yields qualitatively similar results in all cases.' ← 롱온리·숏온리를 Momentum 의 '성분(component)'이라 부르므로 본 신호는 양쪽 다리를 가진다. §II.B: 'about 1,600 US stocks'(CFM 미시구조 표본 — 팩터 신호 표본이 아니다). 독립 재질의 4회 결과 다음은 전부 NOT STATED: 분위·데실·상하위 백분위·2×3 size sort 등 분류 규정 / EW·VW·시가총액가중 등 비중 규정 / 보유 종목수 / 롱숏·달러중립·zero-cost 명시 / s 의 부호·중심화 규약. 즉 이 축에서 논문이 준 것은 '보유 ∝ 순위의 EMA' 하나뿐이다. / [cost] §II.A 축자: 'The theoretically expected order flow from the strategy on day t is thus given by Δπ_{i,t}=π_{i,t}−π_{i,t−1} (2)' 및 'Since rebalancing these FF portfolios is costly, we expect investors to slow down the bare signal... A conceptually sound model that assumes quadratic trading costs leads to an exponential slowing down of the signal.' — 논문은 비용을 π_t 의 일별 변화(Δπ)에 매긴다는 전제로 D 를 설계했다. 구현측 근거: replication_harness.R:19-21('비용 모델: 리밸일 레그별 Σ|Δw_target| × commission... 월중 drift 대비 target 차이의 근사임을 manifest 에 라벨') 및 :107-118 · engine.R changed(5)('π 는 매 거래일 식(1)로 갱신하되 달력월 마지막 거래일의 스냅샷만 발행... 월중 Δπ 는 체결되지 않는다'). / [undeclared] 논문 전문은 arxiv.org/html/2001.04185v1 에서 회수했다(렌더 실재 — 아래 note 참조). 대조한 원문 위치: §II.A(가설적 투자자 · 식 1 π_{i,t} = A Σ_{t'≤t} s_{i,t'} exp(−(t−t')/D) · 식 2 Δπ_{i,t} = π_{i,t} − π_{i,t−1} · 'standard Fama-French (FF) factors, extended to Momentum, defined on the components of the Russell 3000 index in a period spanning from January 1995 to December 2018' · 's_{i,t} would be the ranking of stocks according to their past returns' · 'The factor A sets the overall risk of the portfolio, whereas the slowing down time scale D is chosen as to provide a good compromise between performance and trading costs'), Fig.1 캡션('slowing down timescale D = 3 months'), §II.B(식 3 I^trade · 식 4 I^volume · 식 5~7 I^book · CFM ~1,600 US stocks 2011-01~2018-05), §II.C(식 8 I^meta · Ancerno 1999-01~2014-12), §III(Fig.2 지연 상관·자기상관), §IV.1(Fig.3 · 'absolute maxima ≳1% for D around 3–4 months' · 메타오더 'D around 4–6 months' · 'corr(π_t, returns) ≈ 0.1%' · 'Assuming a quadratic cost model gives a trading cost equal to one half of the instantaneous impact' · Fig.4 연도별 최대 D∈(2,4)·(3,6)개월 · 블록 6개월 재표집 200회 유의 대역), §IV.2(Fig.5 HML·SMB), §V(결론). 논문이 **정하지 않는다**는 것을 독립 재질의로 확인한 항목(내 축의 '논문에 근거 없음' 판정의 근거): 모멘텀 룩백 기간 · s 의 정규화/표준화 · A 의 값 · 횡단면 중심화 · 달러중립 · 보유 종목수 · bps 거래비용. 구현 측 대조 좌표: engine.R:53-62(상수) · 68-99(패널→행렬) · 105-109(모멘텀) · 115-138(순위 신호) · 143-157(식 1 재귀 + 양성 대조) · 163-189(월말 발행) · 194-228(조립·로그) · 231-324(진단). 산출물 교차확인: 01_strategy_spec.json(engine_direct · weight_method paper · n_max 350 · has_short true · liquidity_filter paper_faithful) · 00_manifest.json(2005-02-01~2026-09-11 · month_end_signal_t_plus_1 · 15bps) · 10_audit.csv(260 리밸 · 리밸일별 197~350종 · holdings_cap 상한 비적용) · 04_holdings.csv(음수 target_weight 39,730행 = 숏 다리 실재).",
+  "confidence": "medium",
+  "note": "축 팬아웃 6개(판독형 opus 3 · 대조형 sonnet 3) — 발견 3건. adapted/adapted/faithful/adapted/adapted/adapted",
+  "mode": "fanout",
+  "axis_verdicts": [
+    {
+      "axis": "signal",
+      "required": true,
+      "model": "opus",
+      "verdict": "adapted",
+      "admissible": true,
+      "reason": "",
+      "confidence": "high",
+      "checked": "식(1) 재귀 전개 대수 검산(engine.R:145-148 π_t = λπ_{t-1} + A s_t = A Σ_{k≥0} exp(-k/D) s_{t-k} — 식(1) 과 항별 일치, 엔진 내 양성 대조 engine.R:149-157 도 같은 것을 잰다) · 룩백 인덱싱 축자 검산(engine.R:107-109 세 행 벡터 길이 전부 nT-252, 원소별로 numerator = t-21 · denominator = t-252 → MOM[t] = P[t-21]/P[t-252]-1, 선언 changed(2) 와 일치 · 오프바이원 없음) · 창 종점 t-21 < t(당일 종가 무접근) · 12-1 창과 월간 집행의 합성(창 종점 ≈ 보유월 H-2 월말 = FF prior(2-12) 규약과 동일 · 이중 스킵 아님) · 부호 사슬 전수(frank 오름차순 → 고수익 = 상위 rank → 양수 s → Leg='long' engine.R:188 → 하네스 replication_harness.R:55·105 가 Weight<0 을 숏 다리로 잡아 GL·Lr - GS·Sr 로 결합 — 반전 지점 0 · 산출물 analysis_report.md IC +0.0089 · FMB λ +0.00077 로 부호 도치 지문 없음) · 표준화(engine.R:115-121 frank ties='average' - (n+1)/2 → 양쪽 합으로 나눔 ⇒ Σ_{s>0}=1=Σ_{s<0}|s| · Σ_i s = 0 이므로 Σ_i π = 0 · Σ|π| ≤ 2 ⇒ GL ≤ 1, FIDELITY changed(4) 의 'GL·GS < 1' 성립) · 표준화 산출물 대조(04_holdings.csv 2005-02-01 최대 비중 0.00886 ≈ 2/n at n≈220 — 중심화 순위의 이론 상한 2(n-1)/n² 과 정합, 러너 재정규화 흔적 없음) · winsorize·clip·LOCF·값 치환 0건 · 정의역(끝점 결측 · 상장 252거래일 미만 · 비구성 = s 0, 그날 순위 대상 n<2 면 전량 0) · 동률 처리(ties='average' — 행 순서로 안 깬다) · FACTORS Score = 발행 월말 π 동일값(engine.R:187-188) · 원값 기준(RAWDATA Close 가 수정주가라는 선언을 06_Registry/rawdata_source_priority.json 으로 재도출 — 살아있는 두 레인 quantiwise·naver 전부 adjusted, unadjusted 인 krx_api 는 퇴역·보유 0행).",
+      "counterexample": "구성 예 2건(실측 아님 — 이 세션은 R 실행이 승인 대기로 막혀 특정 종목·날짜 대조를 못 했다). ① 배당: 어느 월말 시그널일에 A(고배당 은행형)와 B(무배당)의 P[t-21]/P[t-252]-1 이 둘 다 정확히 +20.0% 라고 하자. 논문이 위임한 Carhart PR1YR(총수익)에서는 A = +26%(창 안 배당수익률 6%p), B = +20% 로 A 가 위에 온다. engine.R:108-109 는 둘을 +20.0% 동률로 접고 .rank_signal(engine.R:117, ties.method='average')이 같은 s 를 준다 — 두 종목이 중앙값 부근이면 논문 정의에서 롱이던 A 가 구현에서 숏으로 넘어간다. 방향이 무작위가 아니라 배당수익률에 정렬된 체계적 차이다. ② D 환산: 순위가 하위에서 상위로 뒤집힌 종목의 π 는 λ = exp(-1/63) 에서 뒤집힘 후 약 44거래일(반감기)에 0 을 지나지만 λ = exp(-1/91) 에서는 약 63거래일에 지난다. 그 사이에 월말 스냅샷(engine.R:164)이 끼면 같은 종목·같은 날이 반대 다리로 발행된다. ③ 논문 본문의 축자 문장('s_{i,t} would be the ranking of stocks according to their past returns')만으로는 룩백 종점을 t 로 읽을 수도 있는데, 그 경우 최근 1개월에 급락한 11개월 승자(예: 창 시작 10,000 → t-21 20,000 → t 9,000)는 구현에서 +100% 로 최상위 롱, 문자 그대로 읽으면 -10% 로 중하위가 된다. 다만 논문이 모멘텀 정의를 [14] Carhart 에 명시적으로 위임했고 Carhart PR1YR 이 '11개월 · 1개월 지연' 이므로, 이 세 번째는 구현이 논문의 인용 사슬을 따른 결과이지 이탈로 보기 어렵다(FIDELITY changed(2) 에 선언).",
+      "n_findings": 2
+    },
+    {
+      "axis": "timing",
+      "required": false,
+      "model": "sonnet",
+      "verdict": "adapted",
+      "admissible": true,
+      "reason": "",
+      "confidence": "high",
+      "checked": "논문 §II.A·Fig.1 캡션·본문 D 관련 전 문장(2회 독립 r.jina.ai 조회로 재확인) vs engine.R .MOM_LONG(252)·.MOM_SKIP(21)·.D_MONTHS(3)·.D_DAYS(63)·λ·A, backtest_harness.R get_execution_date 정의(익월 첫 거래일), FIDELITY.json changed(2)(3)(5)·portfolio_spec.rebalance/holding_months, 10_audit.csv 의 rebalance_path_executed(260회)·t_plus_1_cadence_consistency·frequency_cadence_consistency 실측값 대조.",
+      "counterexample": "구성 못 했다. 논문 §II.A 는 모멘텀 신호 s_{i,t} 의 형성기간(J)·스킵기간·리밸런싱 주기를 수치로 규정하지 않는다 — 'ranking of stocks according to their past returns' 와 인용문헌 [14](Carhart 1997)·[19](Jegadeesh-Titman 1993) 위임뿐이며, r.jina.ai 프록시로 전문(§I~V, Fig.1~5 캡션 포함)을 두 차례 독립 조회해 '12-month', '11-month', '1-month skip', 'monthly rebalanc', 'trading day', '252', '21' 등 형성/보유/리밸 수치 표현을 전수 검색했으나 발견되지 않았다 — Formation/Holding Period 는 명시적으로 미기재. 논문이 유일하게 수치를 주는 지점은 EMA 슬로잉 D 뿐이고(Fig.1 캡션 'D = 3 months' · 본문 D 3–4개월/2–4개월/4–6개월/3–6개월은 전부 상관관계 스캔 결과이지 전략 채택값 지정이 아니다), 이는 engine.R:53(.D_MONTHS=3L)·:55(.D_DAYS=63)로 정확히 일치한다. 코드가 고른 J=252거래일(12개월)·스킵=21거래일(1개월)·D=63거래일·월간 실행(get_execution_date=익월 첫 거래일, backtest_harness.R:313-322 확인)·보유 1개월은 전부 FIDELITY.changed(2)(3)(5)와 portfolio_spec(rebalance='monthly', holding_months=1)에 선언돼 있고, 10_audit.csv(rebalance_path_executed: 260 rebalance dates · t_plus_1_cadence_consistency PASS · frequency_cadence_consistency PASS)가 실제 산출물에서 월간 260회 리밸을 확인해 선언과 측정이 일치한다. 논문 자체 숫자가 없으므로 '코드가 논문과 다른 숫자를 낸다'는 반례를 구성할 수 없다 — 있는 건 '논문이 위임한 자유도를 코드가 특정 관용값으로 고정했다'는, 이미 선언된 사실뿐이다.",
+      "n_findings": 0
+    },
+    {
+      "axis": "universe",
+      "required": false,
+      "model": "sonnet",
+      "verdict": "faithful",
+      "admissible": true,
+      "reason": "",
+      "confidence": "high",
+      "checked": "논문 §II.A 유니버스 정의 문장 원문 대조(2회 독립 프록시 질의) · engine.R:68-96 멤버십·데이터위생 필터 코드 · run_paper_replication.R:205,223-235 러너의 liquidity_filter='paper_faithful' 선언 및 .apply_universe 술어 일치 여부 · 01_strategy_spec.json(universe=K200_KQ150, liquidity_filter=paper_faithful, n_max=350) · analysis_liquidity.csv 실측(유동성 미달 종목이 보유에서 빠지지 않음을 확인)",
+      "counterexample": "구성 못 했다. 논문 §II.A 는 'components of the Russell 3000 index' 외에 유동성·가격·시총·상장주식종류·금융주 제외 등 어떤 선별규칙도 명시하지 않는다(독립 재질의로 재확인 — arxiv.org/abs 초록·r.jina.ai 프록시 전문 모두 필터 문장 0건). 구현(engine.R:74 `.rd[, MEM := (K200 == TRUE | KQ150 == TRUE) %in% TRUE]`)도 K200∪KQ150 PIT 멤버십 술어 외에는 유동성·가격·시총·상장연수·업종 스크린을 두지 않는다 — 러너 `.apply_universe`(run_paper_replication.R:224-235)와 같은 술어라 이중 필터링도 없다(멱등 merge). engine.R:70 의 `is.finite(Close) & Close > 0` 은 결측·오류 행 제거를 위한 데이터 위생(changed(8) 로 별도 신고)이지 경제적 선별이 아니다. analysis_liquidity.csv 는 유동성 미달 비중이 진단으로만 기록돼 있고(각 월 약 10%) 실제 보유(N_Holdings)에서 빠지지 않았음을 실측으로 보여준다 — 필터가 적용되지 않았다는 선언과 일치.",
+      "n_findings": 0
+    },
+    {
+      "axis": "portfolio",
+      "required": true,
+      "model": "opus",
+      "verdict": "adapted",
+      "admissible": true,
+      "reason": "",
+      "confidence": "high",
+      "checked": "논문 §II.A 신호·보유 정의와 §IV.A 'long (or short) only component' 문장 대 engine.R:112-138(.rank_signal 중심화 rank−(n+1)/2 · 양(+)쪽 합 1 정규화 · 동률 average)·143-148(π=λπ+A·s)·171-189(월말 π≠0 전수 발행 · Leg=sign) · portfolio_spec(engine_direct/paper/long_leg/short_leg)·changed(4)(7) 대 실산출 04_holdings.csv(80,346행 · 음수 39,730 · 2013-07-01 341종=롱168/숏173 · 비중 분산)·10_audit.csv holdings_cap(197~350종)·01_strategy_spec.json(n_max 350 · has_short true) · 2층 절단 여부 = run_paper_replication.R:283-295(engine_direct 는 자르지 않고 초과만 로그) + :324(n_max 는 관측값 sim_grade$diagnostics$n_max 이지 상한이 아님) + replication_harness.R:38-52(n_max 캡 없음)·55-73(GL=Σ|w| 롱 · GS=Σ|w| 숏)·105(Rg=GL·Lr−GS·Sr 로 숏 레그 실제 차감)로 곱셈 절단·숏 소실 없음 확인.",
+      "counterexample": "이 축에서 반례를 구성하지 못했다. 논문이 포트폴리오 구성을 규정하지 않으므로 '논문과 다른 값을 내는 상황'을 정의할 기준선 자체가 없다. 대신 구현이 실제로 무엇을 보유하는지는 산출물에서 전수 확인했고, 전부 선언과 일치했다: 04_holdings.csv 80,346행(리밸 260회) 중 음(−) 비중 39,730행 = 숏 레그 실재(has_short 선언 일치). 2013-07-01 단면 = 341종(롱 168 · 숏 173)으로 다리 균형, 같은 날 비중은 −0.01022 / −0.01163 / −0.01063 / −0.01095 로 종목마다 달라 EW·VW 가 아니라 신호비례(π)임이 드러난다 — n=341 의 중심화 순위 상한 170/Σ(1..170)=0.01170 과 관측 최대 |0.01163| 이 일치. 10_audit.csv holdings_cap 행 = '리밸일별 distinct ticker 197~350종'. 고정 축 25 초과와 롱숏은 FIDELITY.changed(7)·portfolio_spec(construction=engine_direct · long_leg/short_leg)에 선언돼 있고 01_strategy_spec.json(n_max 350 · has_short true)·감사행에도 남는다. 고정 축 이탈이 '조용히' 일어난 흔적은 없다.",
+      "n_findings": 0
+    },
+    {
+      "axis": "cost",
+      "required": false,
+      "model": "sonnet",
+      "verdict": "adapted",
+      "admissible": true,
+      "reason": "",
+      "confidence": "medium",
+      "checked": "commission_paper 값(null→0bps)과 15bps 등급판의 산출 경로(run_paper_replication.R:180,304-313,331) · run_replication_simulation 의 비용 공식(replication_harness.R:19-21,107-118, Σ|Δw_target|×commission, weight_delta_approx 라벨) · build_bt_result 의 transaction_cost_bps=15 가 재과금이 아니라 manifest 라벨(중복 과금 없음, backtest_result_contract.R:714-764) · authoritative_remeasure.json 의 paper_basis(0bps)·grade_basis(15bps) 필드 · FIDELITY.json changed(5)(10) 의 선언 대비 논문 식(1)(2) 및 §II.A 비용 서술",
+      "counterexample": "논문 §II.A 식(2) Δπ_{i,t}=π_{i,t}−π_{i,t−1} 는 '매일' 정의되는 기대 주문흐름이고, 이 크기 자체가 논문의 유일한 실증 대상(체결부호·호가·메타오더 불균형과 상관을 재는 변수)이다. 구현의 비용은 engine.R 이 아니라 replication_harness.R:19-21·107-118 의 하네스 규약(월간 실행 1회 · Σ|Δw_target| × commission)로 부과되며, Δw_target 은 '이번 달 발행 월말 π' 와 '지난달 발행 월말 π' 두 스냅샷의 차이만 본다. 반례: 한 종목의 s_{i,t} 가 그 달 안에서 상위→하위→상위로 반전해 π_t 가 3회 방향을 바꾸면(이 반전이 정확히 논문이 Δπ 로 재는 크라우딩 신호다), 일별로 누적한 Σ_t|Δπ_t| 는 크지만 월말-월말 순변화 |π_month_end − π_prev_month_end| 는 0에 가까울 수 있다 — 이 경우 하네스는 그 종목에 사실상 비용을 부과하지 않는다. 즉 15bps 등급판은 논문이 정의한 바로 그 Δπ 활동량이 아니라 그 활동량의 월간 순감분만 과금해, 진짣 일간 집행 대비 비용을 구조적으로 낮게 잡는다(성과에 유리한 방향).",
+      "n_findings": 1
+    },
+    {
+      "axis": "undeclared",
+      "required": true,
+      "model": "opus",
+      "verdict": "adapted",
+      "admissible": true,
+      "reason": "",
+      "confidence": "high",
+      "checked": "engine.R 의 산출물 영향 줄 전수를 논문 원문/changed 항목에 1:1 사상 — 상수(D 63일·A=1−λ·252/21·2005-01-01·진단 D 격자) · 데이터 위생(종가 유한>0 · 중복 첫 행 · 달력 구성 · 이력 구성종목 열 제한) · 모멘텀 인덱스 산술 재검산 · 순위 중심화/다리 합 1/동률·퇴화 폴백 · 식(1) 재귀↔명시합 동치 · 월말 선정과 마지막 부분월 제외 · 발행 술어(멤버십 ∧ π≠0) · Weight 부호와 Leg 라벨 · §7 진단의 산출물 격리(`.diag_res` 미소비) · 외부 입력 전수(RAWDATA 5열 + Vol, BM_DT 미독, 팩터 DB 미독, load_investor 진단 전용) · 숨은 변환 부재 grep(winsor/clip/pmin/pmax/quantile/ecdf/scale/shift/lag/lead/set.seed/`::` 0건) · changed(1)~(11) 의 외부 행위 주장 2건을 러너·하네스 소스에서 역검증. R 미실행(정적 대조 + 산출물 교차확인).",
+      "counterexample": "구성하지 못했다. 산출물에 영향을 주는 엔진 코드 줄을 전수로 열거하고 각 줄을 논문 원문 또는 FIDELITY.changed 항목에 사상(寫像)했는데, 논문에도 changed 에도 근거가 없는 잔여 항목이 0건이었다. 시도한 반례 후보와 각각이 착지한 선언 항목: ① 논문은 s_t 를 매일 갱신해 π_t 를 매일 보유(식 1·2 · Fig.1)하는데 engine.R:163-189 는 달력월 마지막 거래일 스냅샷만 발행한다 → changed(5) 에 명시 선언(월중 Δπ 미체결). ② 논문 표본은 Russell 3000 1995-01~2018-12(§II.A 축자)인데 구현은 K200∪KQ150 · engine.R:60 `.OUT_START = 2005-01-01` 이후 월말만 발행(실측 2005-02-01~2026-09-11 · 260 리밸) → 유니버스는 changed(1), 발행 시작은 changed(6) 말미('발행 = 2005-01 이후 월말'), 논문 기간은 changed(1)·paper_original_form 에 각각 기재. 게다가 2005-01-01 은 러너 기본값(run_paper_replication.R:181 `start_date = \"2005-01-01\"`)이라 엔진 고유 변경이 아니다. ③ 논문은 'ranking' 의 척도와 A 값을 정하지 않는데(§II.A · 재질의로 부재 확인) engine.R:115-121 은 중심화 순위를 다리 합 1 로 스케일하고 engine.R:57 은 A = 1−exp(−1/63) 로 고정한다 → changed(4) 에 수식까지 선언, 그 귀결인 '다리 총노출 GL·GS < 1 · 시변 · 재정규화 없음' 과 하네스가 그 실현값을 그대로 곱한다는 사실(replication_harness.R:95-105 에서 `GL·Lr − GS·Sr` 로 확인)까지 선언. ④ 논문은 모멘텀 룩백을 말하지 않는데 engine.R:58-59·106-109 는 P[t−21]/P[t−252]−1 (Carhart prior 2-12)을 쓴다 → changed(2) 에 식 그대로 선언(인덱스 산술 재검산: 목표행 t 에 대해 분자행 t−21 · 분모행 t−252, off-by-one 없음). ⑤ 코드에만 있고 논문에 없는 위생·가드(종가 유한·>0 · (Ticker,Date) 중복 첫 행 · 순위 대상 <2 종이면 s=0 · 전원 동률이면 s=0 · π≠0 행만 발행) → changed(8) 과 changed_checklist '수치 가드'·'결측 처리' 에 전수 선언. ⑥ 논문에 없는 §7 크라우딩 진단 블록(engine.R:231-324) → changed(9) 에 선언되고, 코드 구조상 tryCatch 로 격리된 채 PORTFOLIO/FACTORS 확정 이후에 실행되며 어떤 값도 산출 변수로 되돌아가지 않음을 확인했다(`.diag_res` 는 어디서도 소비되지 않는다). 반대 방향(하지도 않은 변경의 신고)도 찾지 못했다 — changed(1)~(11) 의 행위 주장 전부에 대응 코드 줄이 실재하고, 외부 주장 2건(러너 .apply_universe 술어 동일 · 하네스가 다리 총노출을 곱함)은 run_paper_replication.R:224-235 와 replication_harness.R:65-68·95-105 에서 각각 사실로 확인했다.",
+      "n_findings": 0
+    }
+  ],
+  "flags": [],
+  "merged_at": "2026-09-12T22:22:04+0900"
+}
