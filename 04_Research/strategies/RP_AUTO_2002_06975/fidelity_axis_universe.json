@@ -3,9 +3,9 @@
   "verdict": "faithful",
   "undeclared_changes": [],
   "signal_mismatch": [],
-  "counterexample": "구성 못 했다. 논문(TOPIX500 구성종목)과 구현(K200∪KQ150 PIT 멤버십)은 유니버스 정의 자체가 허용된 교체 축이라 이 축의 '위반'은 그 위에 얹힌 추가 필터에서만 나올 수 있는데, 원문과 구현 모두 추가 필터(시총·유동성·가격·상장거래소·금융주 제외)가 없다 — 양쪽이 같은 '무필터' 상태라 값이 갈리는 구체적 시나리오를 만들 수 없다. engine.R:175 의 `Close >= 0(finite) & Close > 0` 는 데이터 위생(0/음수 가격 센티널 제거)이지 경제적 가격 스크린이 아니어서 반례로 세우지 않았다.",
-  "evidence": "kept 절 원문 축자: 'We prepare dataset for TOPIX500 Index constituents. The TOPIX500 Index comprises the large and mid-cap segments of the Japanese stock market.' + 전처리 절 'rescaling is performed so that each input value is maximally 1 … by ranking each input value in ascending order by stock universe at each day' — 이 두 문장 밖에 유니버스 관련 서술이 전혀 없다. r.jina.ai 재질의(이 세션)로 재확인: 'The document provides no information about exclusion criteria such as financial firms, delisted stocks, newly-listed stocks, missing data thresholds, minimum price requirements, liquidity filters, listing history requirements, or survivorship bias handling.' 논문은 필터를 두지 않는다 — 즉 '필터 없음'이 논문의 실제 규칙이다.",
-  "confidence": "high",
-  "checked": "engine.R:172-196(§3 격자·MEM 술어) 대 논문 '데이터'·'전처리' 절 축자 — 상장거래소 제한(TOPIX500=TSE 구성 vs K200∪KQ150=KOSPI+KOSDAQ, 지시된 허용 교체) · 시총 하한(양쪽 다 없음, 지수 구성 자체가 암묵적 하한) · 가격 하한(양쪽 다 없음 — Close>0 은 위생 가드) · 유동성 필터(양쪽 다 없음) · 금융주 제외(양쪽 다 없음 — FIDELITY changed(8)이 금융업 결측 처리만 명시) · 상장연수 요구(양쪽 다 없음) · survivorship(양쪽 다 논문 침묵 · 구현은 PIT 멤버십 플래그로 시변 처리 — changed(1) 기정 신고).",
-  "note": "FIDELITY changed(2)가 '유동성 스크린 없음'을 changed 항목으로 올린 것 자체가 사실은 논문과 일치(둘 다 무필터)라 엄밀히는 changed 목록에 넣을 필요가 없는 과잉신고다 — misdeclared 는 아니고 오히려 보수적. n_max 초과(60~142종)는 포트폴리오 축(changed(11))이지 유니버스 필터 축이 아니라 이 파일에 담지 않았다."
+  "counterexample": "구성 못 했다. 논문은 유동성·가격·시가총액·상장연수·업종(금융주 등) 필터를 전문 어디에도 명시하지 않으며(전문 전수 검색: financial firm/bank/REIT/exclude/screen/minimum/delisted/IPO/continuously/survivorship/missing value/coverage — 전부 미등장), 구현도 유니버스(K200∪KQ150, PIT 시변 플래그) 위에 그런 필터를 얹지 않는다(engine.R:186-213 — MEM = K200==TRUE|KQ150==TRUE, Close 유한·>0 만 기초 데이터 위생으로 요구). 두 쪽 다 '스크린 없음' 이라 값이 갈리는 반례를 만들 수 없다.",
+  "evidence": "§2(Data) 'We prepare dataset for TOPIX500 Index constituents. The TOPIX500 Index comprises the large and mid-cap segments of the Japanese stock market.' — 이 문장 외 유니버스 구성·필터에 관한 서술 없음. 전문 전수 검색(용어 12종)에서 filter/exclude/screen/financial/bank/REIT/delisted/IPO/survivorship/missing/coverage 전부 미검출.",
+  "confidence": "medium",
+  "checked": "engine.R §3(186-213: 유니버스 구성 MEM 플래그·mem_tk·CJ 격자) 대 논문 데이터 절(TOPIX500 구성종목 서술) · 유동성/가격/시총/상장연수/업종 제외 여부(전문 전수 검색으로 부재 확인) · FIDELITY.changed(1)(2)(9)의 유니버스·유동성 선언 대조",
+  "note": "★medium인 이유: r.jina.ai 프록시 3회(초록·PDF 전문 절 질의·전 용어 전수검색)로 교차확인했으나 PDF→텍스트 변환 손실 가능성은 배제 못 한다. changed(1)의 KQ150 2010-02 이전 누적 명부(초기 학습집합이 실제 그날 멤버십보다 넓을 수 있음)는 유니버스 교체 자체의 데이터 품질 caveat이지 '필터 불일치'가 아니라 이 축 판정에서 제외했다(이미 changed에 선언·타 세션 기존 조사 결론과 정합)."
 }
