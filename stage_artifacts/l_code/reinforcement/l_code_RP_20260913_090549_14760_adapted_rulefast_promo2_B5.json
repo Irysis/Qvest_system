@@ -17,11 +17,41 @@
   "calmar": 0.478,
   "oos_retention": -0.201,
   "portfolio_alpha_t": 3.257,
-  "next_probes": [
-    "다음 격자 축 B2(weighting) — 이 블록 승자 위에서 측정",
-    "B5_20(최고 3.257)는 B4 조합 후보로 고정 · B5_16(최저 2.709)는 축 역작동 여부를 조합 LOO 로 분리"
-  ],
+  "next_probes": ["다음 격자 축 B2(weighting) — 이 블록 승자 위에서 측정", "B5_20(최고 3.257)는 B4 조합 후보로 고정 · B5_16(최저 2.709)는 축 역작동 여부를 조합 LOO 로 분리"],
   "next_probe": "다음 격자 축 B2(weighting) — 이 블록 승자 위에서 측정 | B5_20(최고 3.257)는 B4 조합 후보로 고정 · B5_16(최저 2.709)는 축 역작동 여부를 조합 LOO 로 분리",
   "source_paper": "https://arxiv.org/abs/2002.06975",
-  "record_type": "performance"
+  "record_type": "performance",
+  "mechanism": "판정: 횡단면 tilt 축은 B1 의 팩터 축과 똑같이 수익만 움직였고 MDD 는 움직이지 않았다 — 앞 블록 처방의 절반은 반증됐다. 다섯 칸에서 PORT_t 는 2.709(B5_16)~3.257(B5_20) 로 0.548 벌어지고 Calmar 도 0.457(B5_16)~0.500(B5_19) 로 갈렸는데, MDD 는 0.494(B5_17·B5_19)~0.520(B5_20) 로 폭 0.026 에 그쳤다 — B1 의 MDD 폭 0.082 보다 오히려 좁다. 설계 5건(dbeta_tilt_rank · csd_idio_tilt · holdlvl_syscrowd_tilt · ml_dual_forecast_tilt · xs_vol_gap_corr_brake)이 전부 집행됐으므로 미집행 알리바이는 없다. Calmar 폭 0.043 은 거의 전부 CAGR 0.232~0.248 에서 왔고 위험 축에서 온 기여는 없다. ★칸별 귀속은 하지 않았다 — 표의 처치 문자열이 '오버' 에서 절단돼 있어 설계 목록과 셀 코드를 위치로 짝지으면 오귀속이다(미결: 원장에서 칸별 오버레이 라벨을 붙여야 갈린다). 지지된 처방: 스칼라 총노출 축소를 피하라 — 카탈로그 B5 50셀의 대칭 축소가 Calmar 중앙값 0.160 이었던 것에 비해 이 블록은 0.457~0.500 으로 상방을 잃지 않았다(근거의 비교항은 이 블록 밖이다). 반증된 처방: 횡단면 차등 축소가 MDD 를 낮춘다는 기대 — 상태 열과 깎는 열을 분리한 칸(2축 교차)도, 학습 예보로 랭킹 축을 회전시킨 칸도, 내재 평균상관을 상태로 쓴 칸도 같은 MDD 0.494~0.520 범위에 들어왔다. 기전 가설(정황): long-only · Σw=1 · ≤25종 구성에서 횡단면 재배분은 총노출을 바꿀 수 없고, K200∪KQ150 대형주 25종 안의 베타·하방베타 분산이 작아 재배분으로 옮길 수 있는 포트폴리오 베타 폭 자체가 작다. 이는 '낙폭이 종목 선택이 아니라 보유 전체에 공통인 시장 성분에서 온다' 는 B1 정황과 합쳐져 두 축 13칸의 MDD 0.494~0.588 불변성을 설명한다(귀속은 여전히 미측정). 가르는 측정: 다섯 칸의 실현 포트폴리오 베타 스프레드 — 0.1 미만이면 tilt 에 레버 자체가 없었던 것이고, 충분히 벌어졌는데도 MDD 가 같으면 하방베타·특이변동 순위가 낙폭 시점에 예측력이 없는 것이다. 남은 축은 비중 산출 스킴(B2) 과 유니버스 구성(B3) 이다.",
+  "mechanism_by": "llm:block_end",
+  "mechanism_at": "2026-09-13T14:38:48+0900",
+  "prior_lessons_used": ["B1", "B5"],
+  "next_block_actions": [
+    {
+      "action": "B2 에서 비중 스킴을 incumbent lean_score_tilt(score-blend) 에서 떼고 목적함수가 위험인 방법으로 스팬을 벌린다 — qepm:CDaR_LP(낙폭 목적) · lean:minvar(분산 최소) · lean:hrp(Σ 역행렬 없는 강건 분산) · qepm:CVaR_LP(수익분포 꼬리) 4칸.",
+      "why": "B5 가 '보유 안에서 누구를 깎는지' 를 바꿔도 MDD 폭이 0.026 임을 보였다. 남은 질문은 '어떤 비중 방법으로도 안 움직이는가' 이고, 그건 tilt 가 아니라 목적함수를 바꿔야 답이 나온다.",
+      "expect": "CDaR_LP·minvar 까지 MDD 0.494~0.520 범위 안에 들어오면 MDD 는 비중으로 주소 지정 불가로 확정되고 남은 레버는 B3(유니버스) 하나다. 반대로 CDaR_LP 가 MDD 0.45 아래로 내려가면 위험 축은 살아 있고, 그때 CAGR 희생분 대비 Calmar 로 다시 잰다."
+    },
+    {
+      "action": "Σ 추정기만 바꾸는 대조칸 1개를 둔다 — 스킴은 incumbent lean_score_tilt 로 고정하고 shrinkage 를 ledoit_wolf → gerber_rmt 로 교체(gen:lean_score_tilt__shr_gerber_rmt).",
+      "why": "위 4칸이 전부 Σ 추정에 의존한다. 4칸이 실패했을 때 그게 스킴/제약 탓인지 추정 잡음 탓인지 갈리지 않으면 B2 전체가 미결로 끝난다.",
+      "expect": "이 칸의 MDD 가 B5 범위(0.494~0.520) 안이면 추정기는 제약이 아니며, 위험목적 4칸의 결과는 스킴·제약으로 귀속된다. 이 칸만 MDD 가 벌어지면 B5 의 불변성 일부가 추정 잡음이었다는 뜻이다."
+    },
+    {
+      "action": "B2 착수 전에 원장에서 B5_16~B5_20 각 칸의 오버레이 라벨과 실현 포트폴리오 베타(및 보유 베타 횡단면 표준편차)를 회수해 붙인다 — 셀 소모 없는 판독 작업.",
+      "why": "표의 처치 문자열 절단으로 칸별 귀속이 미결이고, 위치 짝짓기는 오귀속이다. tilt 무레버 가설의 판별량이 바로 이 베타 스프레드다.",
+      "expect": "베타 스프레드 0.1 미만이면 '횡단면 재배분이 총노출을 못 바꾼다' 가 실측으로 확정되어 B3·B4 에서 같은 형태의 축을 다시 세우지 않게 된다."
+    },
+    {
+      "action": "B2 가 MDD 불변으로 끝나면 B3(유니버스)에서 대형주 집중도와 KQ150 비중을 시험 축으로 벌린다 — B4(결합) 전에 B3 를 소모한다.",
+      "why": "B1(선정)·B5(횡단면 재배분)·B2(비중 산출) 세 축이 모두 보유 집합 안에서의 조작이다. 셋 다 MDD 를 못 옮기면 남는 설명은 보유 집합 자체의 공통 시장 성분이고, 그건 유니버스에서만 바뀐다.",
+      "expect": "유니버스 구성 변경으로 MDD 가 0.494~0.520 밖으로 나가면 낙폭의 원천이 시장 성분이라는 정황이 실측으로 바뀐다. 여기서도 안 움직이면 이 격자 안에 MDD 레버가 없다는 결론이 근거를 갖는다."
+    }
+  ],
+  "next_block_actions_by": "llm:block_end",
+  "avoid": ["score-blend 계열에 B2 칸을 쓰지 말 것(lean:score_tilt · lean:softmax_tilt · lean:winsor_tilt · lean:rank_tilt · lean:score_pure · lean:nco_score_tilt) — B5 다섯 칸이 이미 incumbent lean_score_tilt 위의 횡단면 재배분이었고 MDD 폭 0.026 이었다. 스코어를 어떤 모양으로 기울이든 같은 형태를 다시 재는 것이다.", "횡단면 위험 오버레이를 B2 칸에 또 섞지 말 것 — 하방베타 순위·특이변동 순위·보유수준 체계노출·학습 예보 회전·내재 평균상관 다섯 설계가 전부 집행되고도 MDD 0.494~0.520 에 갇혔다. 이 축은 벽이 확인됐다.", "Σ 기반 변동성 목적 방법을 3종 이상 쓰지 말 것(lean:nco · lean:riskparity · lean:factor_rp · lean:ivol 추가) — minvar·hrp 두 칸이면 '분산을 목적으로 삼으면 MDD 가 움직이는가' 의 스팬은 확보된다. 나머지는 같은 계열 중복이고, B1 에서 이미 복합 스크린 계열이 PORT_t 폭 0.400 으로 분산이 작았던 것과 같은 낭비다.", "스칼라 총노출 축소 계열로 회귀하지 말 것 — 근거는 이 블록 밖(카탈로그 B5 50셀, 대칭 축소 Calmar 중앙값 0.160). B5 가 상방을 보존(CAGR 0.232~0.248)했으므로 되돌릴 이유가 없다.", "발생액 계열(AC18_Accrual_Quality · AC10_Pct_Accruals) 복구를 B2 칸에 섞지 말 것 — B1_5 의 원인 판별은 커버리지·결측 실측이지 비중 방법론이 아니다."],
+  "next_block_design_for": "B2",
+  "next_block_design_n": 5,
+  "prior_action_status": "executed",
+  "prior_action_detail": "설계 5건 중 5건 집행 (설계: dbeta_tilt_rank,csd_idio_tilt,holdlvl_syscrowd_tilt,ml_dual_forecast_tilt,xs_vol_gap_corr_brake / 실측: dbeta_tilt_rank,csd_idio_tilt,holdlvl_syscrowd_tilt,ml_dual_forecast_tilt,xs_vol_gap_corr_brake)",
+  "mechanism_confidence": "medium"
 }
