@@ -17,11 +17,46 @@
   "calmar": 0.483,
   "oos_retention": -0.274,
   "portfolio_alpha_t": 2.806,
-  "next_probes": [
-    "다음 격자 축 B2(weighting) — 이 블록 승자 위에서 측정",
-    "B5_20(최고 2.806)는 B4 조합 후보로 고정 · B5_16(최저 2.226)는 축 역작동 여부를 조합 LOO 로 분리"
-  ],
+  "next_probes": ["다음 격자 축 B2(weighting) — 이 블록 승자 위에서 측정", "B5_20(최고 2.806)는 B4 조합 후보로 고정 · B5_16(최저 2.226)는 축 역작동 여부를 조합 LOO 로 분리"],
   "next_probe": "다음 격자 축 B2(weighting) — 이 블록 승자 위에서 측정 | B5_20(최고 2.806)는 B4 조합 후보로 고정 · B5_16(최저 2.226)는 축 역작동 여부를 조합 LOO 로 분리",
   "source_paper": "https://arxiv.org/abs/2002.06975",
-  "record_type": "performance"
+  "record_type": "performance",
+  "mechanism": "판정: 이 블록은 앞 블록(B1)의 처방을 지지한다 — 횡단면 tilt 는 B1 이 끝내 닿지 못한 MDD 축을 실제로 움직였다. 5칸의 처치 문자열(M01+M08+V02+V10+CR08+AC02+C12_Est)이 전부 동일하므로 이 블록의 분산은 전적으로 overlay arm 5종(설계 5건·집행 5건)에서 나왔다. 실측: B1 의 MDD 는 0.479~0.530(폭 0.051)에 갇혀 있었고 Calmar 최고가 0.504 였는데, B5 는 MDD 0.354~0.479(폭 0.125)로 범위가 2.4배 넓어졌고 B5_19 가 MDD 0.354 · Calmar 0.609 를 냈다. 더 중요한 것은 서열 구조의 반전이다. B1 에서 Calmar 서열은 CAGR 서열의 사본이었으나 B5 에서는 역전됐다 — PORT_t 최고 B5_20(2.806 · CAGR 0.231)이 MDD 0.479 로 Calmar 최저(0.483)이고, PORT_t 하위권 B5_19(2.334 · CAGR 0.216)가 Calmar 최고다. 구속 축이 CAGR 에서 MDD 로 넘어갔다는 뜻이고, 이는 총노출 스칼라 축소가 아니라 보유 내 비중 재배분이 MDD 의 실제 소비 지점이라는 앞 블록 가설의 직접 확증이다. 다만 arm 4종은 서로 다른 처치인데도 같은 교환관계 위에 놓였다: B5_16(PORT_t 2.226 · MDD 0.424) → B5_17(2.524 · 0.434) → B5_18(2.629 · 0.440) → B5_20(2.806 · 0.479) 로 PORT_t 와 MDD 가 동시 단조 증가한다. 이 관계에서 벗어난 칸은 B5_19 하나뿐이며(같은 교환율이면 PORT_t 2.334 에 대응하는 MDD 는 약 0.43 이어야 한다), 그 한 칸이 이 블록의 유일한 실질 정보다. 미결 두 건: (1) 원장 처치 문자열이 C12_Est 에서 잘려 셀↔arm 매핑(dbeta_tilt_rank · csd_idio_tilt · holdlvl_syscrowd_tilt · multivar_channel_tilt · ml_dual_forecast_tilt)을 특정할 수 없다 — B5_19 가 랭킹축 고정 계열인지 국면 회전 계열인지 갈리려면 원장 attempt 행의 arm id 를 읽어야 한다. (2) n=1 이므로 MDD 0.354 가 arm 효과인지 경로 인공물인지 미결이며, 가르는 방법은 그 arm 의 개입 강도 g 를 스윕해 MDD 가 단조 반응하는지 보는 것이다. CAGR 측면도 기록해 둔다: B5 의 CAGR 은 0.212~0.231 로 B1 최고 0.242 에 못 미치지만 폭은 0.019 로 B1(0.052)의 1/3 이다 — tilt 는 CAGR 을 일정량 깎되 그 손실은 arm 간에 거의 구분되지 않고, arm 간 차이는 MDD 에만 실린다.",
+  "mechanism_by": "llm:block_end",
+  "mechanism_at": "2026-09-13T21:31:49+0900",
+  "prior_lessons_used": ["B1", "B5"],
+  "next_block_actions": [
+    {
+      "action": "B2(비중방법론)를 목적함수 축으로 쪼갠다 — 낙폭 경로 목적(qepm:CDaR_LP) · 단기간 꼬리손실 목적(qepm:CVaR_LP) · 순수 분산 최소화(lean:minvar)를 같은 블록에 나란히 두어, B5_19 의 MDD 0.354 가 경로 의존 효과인지 꼬리 효과인지 단순 분산 효과인지 분리한다.",
+      "why": "B5 에서 구속 축이 CAGR 에서 MDD 로 넘어갔고(B5_20 PORT_t 최고·Calmar 최저 vs B5_19 PORT_t 하위·Calmar 최고), MDD 가 보유 내 비중 재배분으로 움직인다는 것이 확인됐다. 그렇다면 비중을 정하는 목적함수 자체를 낙폭으로 바꾼 칸이 가장 직접적인 시험이다.",
+      "expect": "CDaR_LP 가 minvar 대비 MDD 를 추가로 낮추면 MDD 는 경로 의존 축이고 분산 대리로는 못 잡는다. CDaR_LP ≈ CVaR_LP ≈ minvar 이면 B5_19 의 0.354 는 목적함수가 아니라 그 arm 고유의 상태 읽기에서 나온 것이며, 그때는 B4 결합에서 B5_19 arm 을 반드시 이월해야 한다."
+    },
+    {
+      "action": "공분산 추정오차 축을 한 칸으로 통제한다 — lean:hrp 를 lean:minvar 와 같은 블록에 배치해 전역 최적화(minvar) 대비 군집 기반 배분(hrp)의 차이를 읽는다.",
+      "why": "보유 25종 · 월간 리밸 조건에서 minvar 의 공분산 역행렬은 추정오차에 민감하다. 위 처치 1 의 결론이 '분산 축은 안 먹힌다' 로 나올 때, 그것이 축의 실패인지 추정의 실패인지 이 칸 없이는 갈리지 않는다.",
+      "expect": "hrp > minvar 이면 실패 원인은 축이 아니라 추정오차이고 다음은 shrinkage 계열로 간다. hrp ≈ minvar 이면 추정오차는 원인이 아니며 분산 축 자체가 MDD 에 닿지 않는 것으로 정리된다."
+    },
+    {
+      "action": "신호 서열을 보존한 채 공분산만 주입하는 칸을 1칸 배정한다 — gen:lean_score_tilt__shr_ledoit_wolf (score tilt + Ledoit-Wolf shrinkage).",
+      "why": "B5 의 기전은 '랭킹을 버리지 않고 비중만 재배분하면 MDD 가 움직인다' 였다. 순수 위험 목적함수(CDaR/CVaR/minvar)는 신호 서열을 사실상 폐기하므로 CAGR 손실이 크게 나올 수 있고, 그 경우 B5 의 CAGR 0.212~0.231 대역을 지키면서 MDD 만 내리는 경로가 이 칸 하나에만 남는다.",
+      "expect": "이 칸의 CAGR 이 순수 위험 목적함수 칸들보다 높으면서 MDD 가 B1 범위(0.479~0.530) 아래로 내려가면, MDD 축과 신호 축은 분리 가능하다. CAGR 이 함께 0.21 아래로 내려가면 비중 재배분의 MDD 이득은 신호 파괴의 부산물이다."
+    },
+    {
+      "action": "B2 승자 선정 기준을 PORT_t 가 아니라 Calmar 로 사전 고정한다.",
+      "why": "B5_20 이 반례다 — PORT_t 2.806 으로 블록 최고인데 MDD 0.479 때문에 Calmar 0.483 으로 블록 최저다. PORT_t 로 고르면 B4 결합에 MDD 가 가장 나쁜 칸을 이월하게 된다.",
+      "expect": "선정 기준을 바꾸면 B4 로 이월되는 후보가 B5_20 계열에서 B5_19 계열로 바뀐다. 두 기준이 같은 칸을 고르면 B2 에서는 교환관계가 해소된 것이므로 그 자체가 결과다."
+    },
+    {
+      "action": "원장 attempt 행에서 B5_16~B5_20 의 arm id 를 읽어 셀↔arm 매핑을 확정하고 기록한다(측정 칸 소모 없음).",
+      "why": "이 블록의 유일한 실질 정보는 B5_19 한 칸인데 그 칸이 어떤 arm 인지 모르면 B4 결합에 무엇을 이월할지 정할 수 없다. 격자에 남은 블록은 B2·B3·B4 뿐이고 강도 스윕 축은 그중 어디에도 없다 — B5_19 arm 의 재시험 경로는 B4 결합 한 곳뿐이다.",
+      "expect": "매핑이 확정되면 B5_19 가 고정 랭킹축 계열(dbeta_tilt_rank·csd_idio_tilt)인지 국면 회전 계열(multivar_channel_tilt·ml_dual_forecast_tilt)인지 보유 상태 읽기(holdlvl_syscrowd_tilt)인지가 갈리고, B4 이월 대상이 하나로 좁혀진다."
+    }
+  ],
+  "next_block_actions_by": "llm:block_end",
+  "avoid": ["팩터 항목 수를 늘리는 처치 — B1 에서 PORT_t 3.133→2.199→2.064 로 희석이 확인됐고, B5 에서 팩터 집합을 고정한 채 arm 만 바꿔 MDD 폭 0.125 를 얻었다. 개수 축은 이미 벽이다.", "총노출을 균일하게 깎는 스칼라 축소 계열 — B5 는 횡단면 재배분이 MDD 에 닿는다는 것을 보였지 스칼라 축소를 복권시키지 않았다. B5 에서 CAGR 폭이 0.019 로 좁았다는 사실은 대칭 축소가 Calmar 를 올릴 여지가 없다는 B1 결론을 그대로 유지시킨다(보강 근거는 이 블록 밖: 카탈로그 B5 50셀 실측 MDD -10% 대비 CAGR -23%).", "score_blend 계열 변형을 여러 칸에 배치하는 것(lean:score_pure · lean:score_tilt · lean:softmax_tilt · lean:winsor_tilt · lean:rank_tilt) — 전부 같은 랭킹의 단조 변환이고, 그 랭킹 축의 MDD 는 B1 에서 0.479~0.530 으로 이미 측정됐다. 이 계열은 shrinkage 결합 1칸(gen:lean_score_tilt__shr_ledoit_wolf)으로 대표시키고 나머지 칸은 쓰지 않는다.", "B5 결과를 arm 계열별 결론으로 쓰는 것 — 셀↔arm 매핑이 미확정이다. 매핑 없이 '어느 계열이 유효' 라고 적으면 B4 결합에 잘못된 arm 이 이월된다."],
+  "next_block_design_for": "B2",
+  "next_block_design_n": 5,
+  "prior_action_status": "executed",
+  "prior_action_detail": "설계 5건 중 5건 집행 (설계: dbeta_tilt_rank,csd_idio_tilt,holdlvl_syscrowd_tilt,multivar_channel_tilt,ml_dual_forecast_tilt / 실측: dbeta_tilt_rank,csd_idio_tilt,holdlvl_syscrowd_tilt,multivar_channel_tilt,ml_dual_forecast_tilt)",
+  "mechanism_confidence": "medium"
 }
