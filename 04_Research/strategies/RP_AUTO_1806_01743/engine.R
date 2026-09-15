@@ -1,5 +1,5 @@
 # =============================================================================
-# engine.R — RP_AUTO_1806_01743  (2판 · 2026-09-15 — 1판이 측정 단계에서 자체 양성 대조(DNN 기울기 검산)로 중단 → 재구현)
+# engine.R — RP_AUTO_1806_01743  (3판 · 2026-09-15 — 1판 = 자체 DNN 기울기 검산 중단 · 2판 = 자체 AUC 검산 중단 → 재구현)
 # XingYu Fu · JinHong Du · YiFeng Guo · MingWen Liu · Tao Dong · XiuWen Duan,
 #   "A Machine Learning Framework for Stock Selection"  arXiv:1806.01743 (2018-06)
 #   https://arxiv.org/abs/1806.01743 — 본문 = r.jina.ai PDF 텍스트 프록시(2018 논문 · arxiv html 렌더 없음)
@@ -13,6 +13,12 @@
 #   검산 지점이 병적이었다. 2판 검산: n=64 · 특성 24 · 편향·감마 무작위 지점 · BN 열 분산 ≥ 0.05 · |Z1|,|Z2| ≥ 1e-4(ReLU 꺾임
 #   여유) 인 시드를 골라 h=1e-6 중심차분 · 벡터 노름 상대오차 ≤ 1e-5 ∧ 성분 상대오차(바닥 = 최대 기울기의 1e-3) ≤ 1e-3.
 #   모델·학습 경로는 1판과 동일 — 바뀐 것은 검산 설계와 메모리 경로(§4 종목별 월말 추출)·§3 격자 시작·롤링 창 커버리지 규약뿐이다.
+# ★2판 중단 원인(재도출): 2판 §2 의 AUC 검산 픽스처 — 점수 (0.9, 0.8, 0.7, 0.2, 0.1) · 라벨 (1,1,0,0,0) — 는 양성 둘(0.9 · 0.8)이 음성
+#   셋(0.7 · 0.2 · 0.1)을 전부 이기므로 Mann–Whitney AUC = 6/6 = 1 인데, 기대값을 5/6 으로 손계산해 두었다. .auc(순위식)는 옳았고
+#   기대값이 틀렸다 — 1판과 같은 종류의 병(계기 자체의 조건)이다. 3판 검산: 손계산 상수 하나에 기대지 않고 **독립 계산(양·음 쌍 전수
+#   비교 · 동률 0.5)** 과 대조하며, 손으로 유도한 픽스처 4건(완전 분리 1 · 5/6 · 전 동률 1/2 · 완전 역전 0)은 유도 과정을 코드 옆에 적는다.
+#   모델·학습·데이터 경로는 2판과 동일(무변경). ★2판 러너 실행이 §2 의 DNN·LR 기울기 검산과 학습 양성 대조를 통과했음은 실패 지점
+#   (그 뒤 줄에서 죽었다)이 증명한다 — §3 이후 데이터 경로는 1·2판 모두 미실행이라 3판에서 정적으로 재대조했다(FIDELITY revision).
 #
 # 논문 기전(그대로): 종목 i 의 t 시점 특성벡터 X_i(t)(244 토큰 = 124 고유 이름 · Uqer 팩터 라이브러리 · 부록)에
 #   [t+1, t+f] 구간의 return-to-volatility ratio y_i(t,f) 를 붙이고, 각 t 의 횡단면에서 상위 Q% = 1 · 하위 Q% = 0 ·
@@ -263,7 +269,7 @@ local({
   }
   e_dnn <- .gc_compare(an, num)
   if (!all(is.finite(e_dnn)) || e_dnn[["norm"]] > .GC_TOL_NORM || e_dnn[["max"]] > .GC_TOL_MAX)
-    stop(sprintf("%s DNN 기울기 검산 실패 — 노름 상대오차 %.3g (허용 %.0e) · 성분 최대 %.3g (허용 %.0e) · 파라미터 %d (역전파 결함) — 중단",
+    stop(sprintf("%s DNN 기울기 검산 불일치 — 노름 상대오차 %.3g (허용 %.0e) · 성분 최대 %.3g (허용 %.0e) · 파라미터 %d — 원인 귀속 없음(검산 지점 조건화부터 볼 것) — 중단",
                  .TAG, e_dnn[["norm"]], .GC_TOL_NORM, e_dnn[["max"]], .GC_TOL_MAX, length(an)))
   # LR(softmax 회귀) 기울기 검산 — 같은 규약
   ml <- .lr_new(p, .SEED_BASE + 3L); ml$P$b <- rnorm(2L, 0, 0.3)
@@ -279,7 +285,7 @@ local({
   }
   e_lr <- .gc_compare(an2, num2)
   if (!all(is.finite(e_lr)) || e_lr[["norm"]] > .GC_TOL_NORM || e_lr[["max"]] > .GC_TOL_MAX)
-    stop(sprintf("%s LR 기울기 검산 실패 — 노름 상대오차 %.3g · 성분 최대 %.3g", .TAG, e_lr[["norm"]], e_lr[["max"]]))
+    stop(sprintf("%s LR 기울기 검산 불일치 — 노름 상대오차 %.3g · 성분 최대 %.3g — 원인 귀속 없음", .TAG, e_lr[["norm"]], e_lr[["max"]]))
   # 학습 양성 대조 — 선형 분리 가능한 합성 표본을 LR·DNN 이 학습하는지 (검산 전용 설정 — 60 epoch · DNN η 1e-2. 본 학습은 §0 논문값)
   set.seed(.SEED_BASE + 1L)
   ns <- 800L; w <- rnorm(p)
@@ -289,15 +295,34 @@ local({
   fd2 <- .sgd_fit(.dnn_new(p, 5L), Xs, ys, "dnn", 1e-2, .DNN_DECAY, .DNN_MOM, 60L, .DNN_BATCH, .DNN_L2, 12L)
   a_lr <- .auc(.nn_predict(fl2, Xt, "lr"), yt); a_dnn <- .auc(.nn_predict(fd2, Xt, "dnn"), yt)
   if (!(is.finite(a_lr) && a_lr > 0.9) || !(is.finite(a_dnn) && a_dnn > 0.75))
-    stop(sprintf("%s 학습 양성 대조 실패 — LR AUC %.3f · DNN AUC %.3f (학습 루프 결함)", .TAG, a_lr, a_dnn))
-  a1 <- .auc(c(0.9, 0.8, 0.7, 0.2, 0.1), c(1L, 1L, 0L, 0L, 0L))
-  if (!isTRUE(all.equal(a1, 5 / 6))) stop(sprintf("%s AUC 검산 실패", .TAG))
+    stop(sprintf("%s 학습 양성 대조 문턱 미달 — LR AUC %.3f (> 0.9) · DNN AUC %.3f (> 0.75) — 원인 귀속 없음", .TAG, a_lr, a_dnn))
+  # AUC 검산(★3판 재설계 — 2판 중단 원인): 순위식 .auc 를 독립 계산(양·음 쌍 전수 비교 · 동률 = 0.5)과 대조한다. 두 식은 평균순위
+  #   규약 아래 항등(Σ_pos r_i = n1(n1+1)/2 + n1·n0·AUC_pair). 손 유도 픽스처의 기대값은 유도 과정과 함께 적는다 — 2판은 픽스처
+  #   (0.9,0.8,0.7,0.2,0.1)/(1,1,0,0,0) 의 기대값을 5/6 으로 잘못 손계산했다(실제 = 양성 2 × 음성 3 = 6쌍 전부 승 = 1).
+  .auc_pairs <- function(score, y) { sp <- score[y == 1L]; sn <- score[y == 0L]
+                                     mean(outer(sp, sn, function(a, b) (a > b) + 0.5 * (a == b))) }
+  set.seed(.SEED_BASE + 2L)
+  .sc_rand <- round(runif(200L), 1); .y_rand <- as.integer(runif(200L) > 0.5)                       # 동률 다수 포함 무작위(기대값 = 쌍비교)
+  .auc_cases <- list(
+    list(s = c(0.9, 0.8, 0.7, 0.2, 0.1), y = c(1L, 1L, 0L, 0L, 0L), e = 1),      # 완전 분리: 0.9·0.8 > {0.7,0.2,0.1} → 6/6 쌍 승 = 1
+    list(s = c(0.9, 0.6, 0.7, 0.2, 0.1), y = c(1L, 1L, 0L, 0L, 0L), e = 5 / 6),  # 0.9 > {0.7,0.2,0.1} 3승 · 0.6 > {0.2,0.1} 2승 · 0.6 < 0.7 1패 → 5/6
+    list(s = c(0.5, 0.5, 0.5, 0.5), y = c(1L, 0L, 1L, 0L), e = 0.5),             # 전 동률: 4쌍 × 0.5 → 1/2
+    list(s = c(0.1, 0.2, 0.7, 0.8, 0.9), y = c(1L, 1L, 0L, 0L, 0L), e = 0),      # 완전 역전: 0.1·0.2 < {0.7,0.8,0.9} → 0/6 = 0
+    list(s = .sc_rand, y = .y_rand, e = NA_real_))
+  for (k_ in seq_along(.auc_cases)) {
+    cs_ <- .auc_cases[[k_]]
+    a_rank <- .auc(cs_$s, cs_$y); a_pair <- .auc_pairs(cs_$s, cs_$y)
+    if (!is.finite(a_rank) || !is.finite(a_pair) || !isTRUE(all.equal(a_rank, a_pair)) ||
+        (is.finite(cs_$e) && !isTRUE(all.equal(a_rank, cs_$e))))
+      stop(sprintf("%s AUC 검산 불일치(픽스처 %d) — 순위식 %.4f · 쌍비교 %.4f · 손유도 기대 %s — 원인 귀속 없음", .TAG, k_, a_rank, a_pair,
+                   if (is.finite(cs_$e)) sprintf("%.4f", cs_$e) else "(없음 · 쌍비교만)"))
+  }
   if (!isTRUE(all.equal(.gro(c(10, -6, 0), c(8, 4, 5)), c(0.25, -2.5, -1)))) stop(sprintf("%s 증가율 검산 실패", .TAG))
   # 창 5 · 유효 ≥ 4: i=5 [1,NA,3,4,5] → 13 · i=6 [NA,3,4,5,NA] 유효 3 → NA · i=7 [3,4,5,NA,7] → 19 · i=8 → 24 · i=9 → 29 · i=10 → 34
   fs <- .fsum_ok(c(1, NA, 3, 4, 5, NA, 7, 8, 9, 10), 5L)
   if (!isTRUE(all.equal(fs, c(NA, NA, NA, NA, 13, NA, 19, 24, 29, 34)))) stop(sprintf("%s 롤링 창 커버리지 검산 실패", .TAG))
-  cat(sprintf("%s 양성 대조 통과 — DNN 기울기(시드 %d · 파라미터 %d · 노름 %.2e · 성분 최대 %.2e) · LR 기울기(노름 %.2e · 성분 최대 %.2e) · 학습 AUC LR %.3f / DNN %.3f · AUC · 증가율 · 롤링 창\n",
-              .TAG, pick$seed, length(an), e_dnn[["norm"]], e_dnn[["max"]], e_lr[["norm"]], e_lr[["max"]], a_lr, a_dnn))
+  cat(sprintf("%s 양성 대조 통과 — DNN 기울기(시드 %d · 파라미터 %d · 노름 %.2e · 성분 최대 %.2e) · LR 기울기(노름 %.2e · 성분 최대 %.2e) · 학습 AUC LR %.3f / DNN %.3f · AUC(순위식 = 쌍비교 · 픽스처 %d) · 증가율 · 롤링 창\n",
+              .TAG, pick$seed, length(an), e_dnn[["norm"]], e_dnn[["max"]], e_lr[["norm"]], e_lr[["max"]], a_lr, a_dnn, length(.auc_cases)))
 })
 
 # =============================================================================
