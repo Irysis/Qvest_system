@@ -100,9 +100,24 @@ if [ -d "$CLAIM" ]; then
     CDEAD=1
   fi
   # owner 표식이 아예 없으면 구판이 만든 claim 이다 — 나이 기준만 적용한다
-  if [ "$CDEAD" = "1" ] || [ "$CAGE" -ge 2 ]; then
+  ## ★살아 있는 소유자는 2시간에 회수하지 않는다 (2026-09-15 도훈 승인 수리).
+  ##   구판은 `CDEAD=1 || CAGE>=2` 라 소유자가 살아 있어도 2시간이면 claim 을 지우고 같은 논문 에이전트를
+  ##   다시 불렀다("LLM ~10분 + 검증 ~6분" 전제). 롤링 DNN(2002.06975 · 260개월 ≈ 2.5h)이 그 창을 넘자
+  ##   09-13 에 1판·2판·3판이 동시에 살아 감사 셋이 경합했고(misdeclared ×2 → adapted 가 마지막 기록),
+  ##   misdeclared 판이 소비돼 방어형 모듈 2건이 풀에 등록됐다. 3판 verify 는 다음 논문 요청까지 done 으로 덮었다.
+  ##   ⇒ 회수 = 소유자 사망(나이 무관 즉시) ∨ 나이 ≥ claim_stale_hours — 강화 러너(rf_claim.R)와 같은 config 값.
+  ##     매달린 실행이 루프를 영구 차단하지 않도록 나이 상한은 남기되, 생존 소유자를 회수할 때는 alive=1 로 보이게 한다.
+  CSTALE=$("$PY" -c "
+import io,json
+try:
+    v=float(json.loads(io.open(r'$CFG','rb').read().decode('utf-8')).get('claim_stale_hours',6))
+    print(int(v) if v>=1 else 6)
+except Exception: print(6)" 2>/dev/null | tr -d '\r')   # Windows 파이썬 print 의 CR — 남기면 아래 숫자 검사가 늘 6 으로 떨어진다
+  case "$CSTALE" in ''|*[!0-9]*) CSTALE=6;; esac
+  if [ "$CDEAD" = "1" ] || [ "$CAGE" -ge "$CSTALE" ]; then
     rm -rf "$CLAIM" 2>/dev/null
-    jl claim_stale_reclaim "age_h=$CAGE dead=$CDEAD"
+    # 필드는 인자 하나에 하나 — 구판은 "age_h=.. dead=.." 한 인자라 age_h 값에 뒤가 뭉쳐 기계 판독이 안 됐다
+    jl claim_stale_reclaim "age_h=$CAGE" "dead=$CDEAD" "stale_h=$CSTALE" "alive=$(( 1 - CDEAD ))"
   fi
 fi
 

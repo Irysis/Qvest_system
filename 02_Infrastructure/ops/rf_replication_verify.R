@@ -589,12 +589,18 @@ if (IS_COMBO) tryCatch({
   }
 }, error = function(e) jlog("combo_meta_failed", err = conditionMessage(e)))
 
-d <- tryCatch(fromJSON(REQ, simplifyVector = FALSE), error = function(e) list())
-d$status <- "done"; d$base_id <- BID; d$grade <- G; d$artifacts <- dirname(ar)
-d$fidelity <- .fidelity; d$fidelity_detail <- .fid
-d$fidelity_audit <- .aud; d$implementation_suspect <- isTRUE(.aud_suspect)
-d$completed_at <- format(Sys.time(), "%Y-%m-%dT%H:%M:%S%z")
-write(toJSON(d, auto_unbox = TRUE, pretty = TRUE, null = "null"), REQ)
+# ★요청 종결은 소유 대조 뒤에만 쓴다 (2026-09-15 도훈 승인 수리 — rf_request_guard.R 머리 주석).
+#   구판은 지금의 요청 파일을 키 대조 없이 done 으로 덮었다 — 늦게 끝난 구 실행이 다음 논문 요청을 닫았다
+#   (09-13: 2002.06975 3판이 1806.01743 요청을 done·C 로 덮음). 측정·원장 기록은 위에서 이미 이 실행 키로 남았다.
+source(file.path(ROOT, "02_Infrastructure/ops/rf_request_guard.R"))
+.own <- rf_request_mark_done(REQ, PKEY, list(
+  base_id = BID, grade = G, artifacts = dirname(ar),
+  fidelity = .fidelity, fidelity_detail = .fid,
+  fidelity_audit = .aud, implementation_suspect = isTRUE(.aud_suspect)))
+if (!isTRUE(.own$written))
+  jlog("request_done_skipped_retargeted", run_key = .own$run_key, req_key = .own$req_key,
+       base_id = BID, grade = G,
+       note = "요청이 다른 논문으로 바뀌었다 — 이 실행 결과로 남의 요청을 닫지 않는다(요청 상태는 현 소유 실행이 쓴다)")
 
 tryCatch({ suppressMessages(source(file.path(ROOT, "02_Infrastructure/telegram/telegram_notify.R")))
   tg_agent_brief(agent = "AlphaSearch", relaxed = TRUE, glossary = FALSE, decode_jargon = FALSE, decode_mode = "off",

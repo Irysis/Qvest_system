@@ -2763,19 +2763,22 @@
     "STR_AS_20260824_015039_37032": {
       "strategy_id": "STR_AS_20260824_015039_37032",
       "grade": "B",
-      "role": null,
+      "role": {},
       "origin_mode": "alpha_search",
       "sim_result_path": "stage_artifacts/module_quarantine/STR_AS_20260824_015039_37032/sim_result.rds",
       "n_days": 5314,
-      "date_range": ["2005-02-03", "2026-08-21"],
+      "date_range": [
+        "2005-02-03",
+        "2026-08-21"
+      ],
       "registered_at": "2026-08-24T01:56:35+09:00",
       "metric_type": "proxy",
       "fr_eligible": false,
       "frozen": false,
-      "source_contract_id": null,
+      "source_contract_id": {},
       "module_hash": "b7c7eef6bee829276ad3a534b9a4a8d4",
-      "build_version": null,
-      "cost_model_version": null,
+      "build_version": {},
+      "cost_model_version": {},
       "bt_result_path": "stage_artifacts/reinforce_ladder/STR_AS_20260612_135316_470429/rung2_ivol_on_compamihudptvintermediatetop25/20260824_015039_37032/bt_result.rds",
       "contract": {
         "policy": "v8.1_fr_input_floor",
@@ -2792,14 +2795,205 @@
         "screen_pass": false,
         "structural_dd": false,
         "f_grade_reasons": [],
-        "fmt_codes": ["FMT-01", "FMT-07"],
+        "fmt_codes": [
+          "FMT-01",
+          "FMT-07"
+        ],
         "bt_result_path": "stage_artifacts/reinforce_ladder/STR_AS_20260612_135316_470429/rung2_ivol_on_compamihudptvintermediatetop25/20260824_015039_37032/bt_result.rds",
         "bt_contract_status": "OK"
       }
+    },
+    "RP_20260913_081417_22276": {
+      "strategy_id": "RP_20260913_081417_22276",
+      "grade": "F",
+      "grade_basis": "essence_score(authoritative_remeasure.json)",
+      "essence_grade": "F",
+      "defensive_score": {
+        "status": "ok",
+        "defensive": true,
+        "n_months": {},
+        "down": {
+          "n": 110,
+          "excess": 0.0535,
+          "hit": 0.8364,
+          "t": 8.3415,
+          "capture": -0.2487
+        },
+        "deep": {
+          "n": 10,
+          "excess": 0.1733,
+          "hit": 0.9,
+          "t": 4.7017,
+          "capture": -0.1443
+        },
+        "mid": {
+          "n": 30,
+          "excess": 0.115,
+          "hit": 0.9667,
+          "t": 7.5978,
+          "capture": -0.2031
+        },
+        "up": {
+          "n": 150,
+          "excess": -0.0434,
+          "hit": 0.22,
+          "t": -7.0459,
+          "capture": 0.1326
+        },
+        "reason": "하락월 110개: 초과 +5.35%/월 (t 8.34 · 적중 84%) · 벤치-10% 이하 10개: 초과 +17.33%/월 · 상승월 초과 -4.34%/월",
+        "source": "authoritative_remeasure"
+      },
+      "role": {},
+      "origin_mode": "replication",
+      "sim_result_path": "04_Research/strategies/RP_20260913_081417_22276/sim_result.rds",
+      "n_days": 5331,
+      "date_range": [
+        "2005-02-01",
+        "2026-09-11"
+      ],
+      "registered_at": "2026-09-15T22:38:26+09:00",
+      "metric_type": "backtested",
+      "fr_eligible": false,
+      "frozen": true,
+      "source_contract_id": "20260913_081417_22276",
+      "module_hash": "e6dc3186c5214667645cc1a736f1febc",
+      "build_version": "run_paper_replication_v10",
+      "cost_model_version": "unlabeled_pre_v24",
+      "bt_result_path": "stage_artifacts/replication/20260913_081417_22276/bt_result.rds",
+      "contract": {
+        "policy": "v8.1_fr_input_floor",
+        "contract_pass": true,
+        "eligibility_reason": "FR_ELIGIBLE"
+      },
+      "meta": {
+        "strategy_idea": "[무인 충실구현] Cross-sectional Stock Price Prediction using Deep Learning for Actual Investment Management",
+        "strategy_name": "RP_AUTO_200206975",
+        "source_paper_url": "https://arxiv.org/abs/2002.06975",
+        "paper_key": "2002.06975",
+        "fidelity_lane": "engine_direct",
+        "registered_by": "register_measured_module",
+        "admission_route": "defensive_specialist",
+        "admission_reason": "등급 F 이나 방어형 자격 — 하락월 110개: 초과 +5.35%/월 (t 8.34 · 적중 84%) · 벤치-10% 이하 10개: 초과 +17.33%/월 · 상승월 초과 -4.34%/월",
+        "artifacts_dir": "stage_artifacts/replication/20260913_081417_22276",
+        "essence_grade": "F"
+      },
+      "quarantined": true,
+      "quarantine_reason": "fidelity_misdeclared_consumed_via_concurrent_audit_race",
+      "revoked": {
+        "at": "2026-09-15T22:38:26+09:00",
+        "by": "Q — 도훈 승인 2026-09-15 /qvest 1계층 세션",
+        "from_registry": "module_catalog",
+        "catalog_registered_at": "2026-09-13T08:29:59+09:00",
+        "module_basis": "1판 산출물. 08:35:31 DUP_MODULE_HASH BLOCK — 2판(063033_21524) 등록 시도의 sim_result 해시가 이 행과 동일(e6dc3186c5214667645cc1a736f1febc) = 같은 수치 경로. 3판 FIDELITY revision 기록 '2판(수치 경로 = 1판)이 감사 signal 축에서 misdeclared' 와 정합",
+        "evidence": {
+          "log": ".cache/reinforce_auto_log.jsonl (2026-09-13)",
+          "audit_misdeclared": [
+            "2026-09-13T08:43:39+0900 fidelity_audit_verdict=misdeclared undeclared=3 mismatch=4 action=reimplement",
+            "2026-09-13T08:44:37+0900 fidelity_audit_verdict=misdeclared undeclared=3 mismatch=4 action=reimplement"
+          ],
+          "audit_race": "2026-09-13T08:48:05+0900 동시 실행 감사가 adapted 를 내 마지막 기록이 이김 → 08:48:07 defensive_admitted(063033_21524) → ledger_consumed",
+          "valid_lineage": "RP_20260913_090549_14760 (3판 재구현 · 감사 adapted 10:28:57 · 강화 사슬 기저) — 유효, 이번 해제 대상 아님",
+          "root_cause": "rf_replication_auto.sh 생존 소유자 2h 회수 → 1·2·3판 동시 실행 → 감사 경합 (2026-09-15 수리)"
+        }
+      }
+    },
+    "RP_20260913_063033_21524": {
+      "strategy_id": "RP_20260913_063033_21524",
+      "grade": "F",
+      "grade_basis": "essence_score(authoritative_remeasure.json)",
+      "essence_grade": "F",
+      "defensive_score": {
+        "status": "ok",
+        "defensive": true,
+        "n_months": {},
+        "down": {
+          "n": 110,
+          "excess": 0.0535,
+          "hit": 0.8364,
+          "t": 8.3415,
+          "capture": -0.2487
+        },
+        "deep": {
+          "n": 10,
+          "excess": 0.1733,
+          "hit": 0.9,
+          "t": 4.7017,
+          "capture": -0.1443
+        },
+        "mid": {
+          "n": 30,
+          "excess": 0.115,
+          "hit": 0.9667,
+          "t": 7.5978,
+          "capture": -0.2031
+        },
+        "up": {
+          "n": 150,
+          "excess": -0.0434,
+          "hit": 0.22,
+          "t": -7.0459,
+          "capture": 0.1326
+        },
+        "reason": "하락월 110개: 초과 +5.35%/월 (t 8.34 · 적중 84%) · 벤치-10% 이하 10개: 초과 +17.33%/월 · 상승월 초과 -4.34%/월",
+        "source": "authoritative_remeasure"
+      },
+      "role": {},
+      "origin_mode": "replication_skipped_base",
+      "sim_result_path": "04_Research/strategies/RP_20260913_063033_21524/sim_result.rds",
+      "n_days": 5331,
+      "date_range": [
+        "2005-02-01",
+        "2026-09-11"
+      ],
+      "registered_at": "2026-09-15T22:38:26+09:00",
+      "metric_type": "backtested",
+      "fr_eligible": false,
+      "frozen": true,
+      "source_contract_id": "20260913_063033_21524",
+      "module_hash": "8c61a5fbacb4f6227a5a51bd06129ad6",
+      "build_version": "run_paper_replication_v10",
+      "cost_model_version": "unlabeled_pre_v24",
+      "bt_result_path": "stage_artifacts/replication/20260913_063033_21524/bt_result.rds",
+      "contract": {
+        "policy": "v8.1_fr_input_floor",
+        "contract_pass": true,
+        "eligibility_reason": "FR_ELIGIBLE"
+      },
+      "meta": {
+        "skipped_base_port_t": -0.534,
+        "base_min_port_t": 0,
+        "paper_key": "2002.06975",
+        "fidelity": "adapted",
+        "admitted_by": "base_below_threshold defensive route (도훈 2026-09-07)",
+        "registered_by": "register_measured_module",
+        "admission_route": "defensive_specialist",
+        "admission_reason": "등급 F 이나 방어형 자격 — 하락월 110개: 초과 +5.35%/월 (t 8.34 · 적중 84%) · 벤치-10% 이하 10개: 초과 +17.33%/월 · 상승월 초과 -4.34%/월",
+        "artifacts_dir": "stage_artifacts/replication/20260913_063033_21524",
+        "essence_grade": "F"
+      },
+      "quarantined": true,
+      "quarantine_reason": "fidelity_misdeclared_consumed_via_concurrent_audit_race",
+      "revoked": {
+        "at": "2026-09-15T22:38:26+09:00",
+        "by": "Q — 도훈 승인 2026-09-15 /qvest 1계층 세션",
+        "from_registry": "module_catalog",
+        "catalog_registered_at": "2026-09-13T08:48:06+09:00",
+        "module_basis": "2판 산출물 그 자체가 감사 대상. 08:35:35 verified(F · PORT_t -0.534 · artifacts 20260913_063033_21524) → 08:35:36 delegate_fanout → 08:43:39 misdeclared(reimplement · 소비 보류). 08:48:05 동시 감사 adapted 가 마지막 기록으로 이겨 08:48:07 이 행이 등록됨",
+        "evidence": {
+          "log": ".cache/reinforce_auto_log.jsonl (2026-09-13)",
+          "audit_misdeclared": [
+            "2026-09-13T08:43:39+0900 fidelity_audit_verdict=misdeclared undeclared=3 mismatch=4 action=reimplement",
+            "2026-09-13T08:44:37+0900 fidelity_audit_verdict=misdeclared undeclared=3 mismatch=4 action=reimplement"
+          ],
+          "audit_race": "2026-09-13T08:48:05+0900 동시 실행 감사가 adapted 를 내 마지막 기록이 이김 → 08:48:07 defensive_admitted(063033_21524) → ledger_consumed",
+          "valid_lineage": "RP_20260913_090549_14760 (3판 재구현 · 감사 adapted 10:28:57 · 강화 사슬 기저) — 유효, 이번 해제 대상 아님",
+          "root_cause": "rf_replication_auto.sh 생존 소유자 2h 회수 → 1·2·3판 동시 실행 → 감사 경합 (2026-09-15 수리)"
+        }
+      }
     }
   },
-  "last_updated": "2026-08-24T01:56:35+09:00",
-  "n_modules": 65,
+  "last_updated": "2026-09-15T22:38:26+09:00",
+  "n_modules": 67,
   "superseded": {
     "STR_AS_20260613_094148_265194": {
       "strategy_id": "STR_AS_20260613_094148_265194",

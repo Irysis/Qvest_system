@@ -872,10 +872,11 @@ _mkreq(){ printf '%s\n' '{"requested_at":"2026-01-01T00:00:00+0900","source":"te
 #   halt_disabled 로 멈추고, 그 실패가 "회수 결함" 으로 보인다(2026-09-05 실측: 도훈이 루프를
 #   정지시킨 상태에서 이 절이 빨개졌다). 검사는 자기 전제를 소유해야 한다.
 _RPCFG="$_RPD/config.json"
-_mkcfg(){ "$PY" -c "import io,json,os;src=os.path.join(os.environ['QM_ROOT'],'06_Registry','reinforce_auto_config.json');d=json.loads(io.open(src,'rb').read().decode('utf-8'));d['enabled']=True;io.open(r'$_RPCFG','w',encoding='utf-8',newline='').write(json.dumps(d,ensure_ascii=False))"; }
+_mkcfg(){ "$PY" -c "import io,json,os;src=os.path.join(os.environ['QM_ROOT'],'06_Registry','reinforce_auto_config.json');d=json.loads(io.open(src,'rb').read().decode('utf-8'));d['enabled']=True;s=os.environ.get('_RP_STALE','');d.update({'claim_stale_hours':int(s)} if s else {});io.open(r'$_RPCFG','w',encoding='utf-8',newline='').write(json.dumps(d,ensure_ascii=False))"; }
+# _RP_SCRIPT = 구판 대조(돌연변이) 실행용 — 기본은 운영 스크립트
 _rprun(){ _mkcfg; QVEST_RP_REQUEST="$_RPD/req.json" QVEST_RP_CLAIM="$_RPD/claim" QVEST_RP_JLOG="$_RPD/jlog.jsonl" \
           QVEST_RF_CONFIG="$_RPCFG" \
-          QVEST_RP_ALLOW_CONCURRENT=1 bash 02_Infrastructure/ops/rf_replication_auto.sh >/dev/null 2>&1; }
+          QVEST_RP_ALLOW_CONCURRENT=1 bash "${_RP_SCRIPT:-02_Infrastructure/ops/rf_replication_auto.sh}" >/dev/null 2>&1; }
 _st(){ "$PY" -c "
 import io,json
 print(json.loads(io.open(r'$_RPD/req.json','rb').read().decode('utf-8')).get('status'))" 2>/dev/null; }
@@ -893,6 +894,25 @@ if [ "$(_st)" = "in_progress" ] && [ -d "$_RPD/claim" ]; then
   ok "동시 실행 방지선 생존 — 살아있는 소유자 claim 은 회수하지 않는다"
 else
   ng "동시 실행 방지선" "살아있는 claim 을 빼앗았다 (status=$(_st))"
+fi
+# ★(2)는 나이 0 claim 만 재서 **2시간 경로를 한 번도 안 밟았다** — 구판(CAGE>=2 면 생존 무관 회수)이 통과했다.
+#   실사고 2026-09-13: 롤링 DNN 이 2h 를 넘자 생존 소유자 claim 이 회수돼 1·2·3판 동시 실행 → 감사 경합 →
+#   misdeclared 판 소비·풀 등록. 나이는 claim 디렉터리 mtime 으로 주입한다(소유자 표식을 먼저 쓰고 touch).
+_mkclaim_aged(){ rm -rf "$_RPD/claim"; mkdir -p "$_RPD/claim"; echo $$ > "$_RPD/claim/owner"
+                 cat /proc/$$/winpid > "$_RPD/claim/owner_win" 2>/dev/null; touch -d "$1 hours ago" "$_RPD/claim"; }
+# (3) 위반 주입: 살아있는 소유자(Windows pid 정본) + 나이 3h < stale 6h → 회수하면 안 된다
+: > "$_RPD/jlog.jsonl"; _mkreq; _mkclaim_aged 3; export _RP_STALE=6; _rprun; unset _RP_STALE
+if [ "$(_st)" = "in_progress" ] && [ -d "$_RPD/claim" ] && ! grep -q claim_stale_reclaim "$_RPD/jlog.jsonl"; then
+  ok "생존 소유자 3h claim 유지 — 2시간 회수 없음(stale 6h 전)"
+else
+  ng "생존 소유자 나이 경로" "3h 생존 claim 을 빼앗았다 (status=$(_st))"
+fi
+# (4) 양성 대조: 생존 소유자라도 나이 ≥ stale 이면 회수 — 매달린 실행이 루프를 영구 차단하지 않는다
+: > "$_RPD/jlog.jsonl"; _mkreq; _mkclaim_aged 7; export _RP_STALE=6; _rprun; unset _RP_STALE
+if [ "$(_st)" = "pending" ] && grep -q '"stale_h": "6"' "$_RPD/jlog.jsonl" && grep -q '"alive": "1"' "$_RPD/jlog.jsonl"; then
+  ok "stale 상한 생존 — 7h ≥ 6h 생존 claim 회수(alive=1 표식)"
+else
+  ng "stale 상한" "7h 생존 claim 미회수 또는 표식 없음 (status=$(_st))"
 fi
 rm -rf "$_RPD"
 
