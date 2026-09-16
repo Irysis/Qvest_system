@@ -1,5 +1,5 @@
 # =============================================================================
-# engine.R — RP_AUTO_1806_01743  (3판 · 2026-09-15 — 1판 = 자체 DNN 기울기 검산 중단 · 2판 = 자체 AUC 검산 중단 → 재구현)
+# engine.R — RP_AUTO_1806_01743  (4판 · 2026-09-17 — 코드 무변경 · 3판(2026-09-15)은 미측정 · 1판 = 자체 DNN 기울기 검산 중단 · 2판 = 자체 AUC 검산 중단)
 # XingYu Fu · JinHong Du · YiFeng Guo · MingWen Liu · Tao Dong · XiuWen Duan,
 #   "A Machine Learning Framework for Stock Selection"  arXiv:1806.01743 (2018-06)
 #   https://arxiv.org/abs/1806.01743 — 본문 = r.jina.ai PDF 텍스트 프록시(2018 논문 · arxiv html 렌더 없음)
@@ -19,6 +19,14 @@
 #   비교 · 동률 0.5)** 과 대조하며, 손으로 유도한 픽스처 4건(완전 분리 1 · 5/6 · 전 동률 1/2 · 완전 역전 0)은 유도 과정을 코드 옆에 적는다.
 #   모델·학습·데이터 경로는 2판과 동일(무변경). ★2판 러너 실행이 §2 의 DNN·LR 기울기 검산과 학습 양성 대조를 통과했음은 실패 지점
 #   (그 뒤 줄에서 죽었다)이 증명한다 — §3 이후 데이터 경로는 1·2판 모두 미실행이라 3판에서 정적으로 재대조했다(FIDELITY revision).
+# ★4판(2026-09-17 · 코드 무변경 — 이 머리말만): 3판 엔진은 **한 번도 측정되지 않았다**. 구조화 로그(.cache/reinforce_auto_log.jsonl)의 순서:
+#   09-15 22:46 start → 22:58/23:00 engine.R·FIDELITY.json 기록 → 23:02 agent_done rc=1 + halt_env_failure(model_quota_exhausted · CLI 가
+#   한도 문구를 찍고 종료 · 측정 호출 없음) → 23:34 재기동도 같은 결과 → 09-16 레인 무실행 → 09-17 08:21 재기동. 요청 원장의
+#   failure_detail("AUC 검산 실패")은 2판 22:41 측정분의 낡은 값이고 3판이 이미 수리했다(2판→3판 git diff = §2 검산 블록·메시지·머리말뿐).
+#   4판 세션은 §2 검산을 다시 손검산(픽스처 4건을 순위식·쌍비교 양쪽으로 재유도 · 항등식 · 롤링 창 픽스처)하고, sprintf 지정자/인자 수 전수 ·
+#   lookahead_detector C1~C18 + 검증기 ③ 패턴 전수(주석 포함 줄 단위) · 의존 스캐너 토큰(data.table·arrow·ranger·TTR·dplyr · parallel 은 base) ·
+#   회계 패널(Item 27종 = DART 수집기·XLSX 매핑 양쪽 존재 · Period YYYYMM · Source DART/XLSX) · 컨센서스(eps_1y·revenue_fy1·sue 열) ·
+#   러너 사양 소비(.rp_build_weights: n_long 25 · n_max 25 · ew) 를 정적으로 재대조했다 — 코드는 한 줄도 바꾸지 않았다.
 #
 # 논문 기전(그대로): 종목 i 의 t 시점 특성벡터 X_i(t)(244 토큰 = 124 고유 이름 · Uqer 팩터 라이브러리 · 부록)에
 #   [t+1, t+f] 구간의 return-to-volatility ratio y_i(t,f) 를 붙이고, 각 t 의 횡단면에서 상위 Q% = 1 · 하위 Q% = 0 ·
