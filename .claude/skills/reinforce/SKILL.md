@@ -48,7 +48,7 @@ v10 의 "무인 파이프라인은 수집까지만" 경계가 **해제**됐다. 
 | 누적 | 러너 `block_accumulate` | B2·B3·B5 는 **직전까지 최고 구성**을 바닥으로(자기 축만 교체) · B4 = 이 entry 승자 결합 + LOO |
 | 승격 | `02_Infrastructure/reinforcement/rf_promote.R` | 소진 시 최고 ≥ B ∧ 부모 최고 PORT_t 초과 ∧ 깊이 ≤ 3 → 승자 구성 carry(팩터·비중·유니버스·오버레이)로 새 25칸 · `count_paper=FALSE` |
 | 구제 | `02_Infrastructure/contracts/rolling_grade.R` · `defensive_score.R` | 36M 롤링 창 최근 통과율 ≥ 0.5(롤링점 ≥ 24) → F→C 구제(회복→붕괴 이력 경고) · 벤치 하락월 기준 방어형 → 2계층 풀 `defensive_specialist` |
-| 양립·강등 | `02_Infrastructure/reinforcement/rf_arm_compat.R` | arm×유니버스 커버리지 장부 · 승계 비중이 시험 축이 아닌 블록에서 불가면 EW 강등(`rac_degrade_plan`, B2/B4 제외) |
+| 양립·강등 | `02_Infrastructure/reinforcement/rf_arm_compat.R` | arm×유니버스 커버리지 장부 — **신뢰 분모 기록만 차단**(엔진 표식 `[basis=sel_dates]`·`[basis=held_rows]` · 09-13 이전 행은 이력) · 실패 arm 에만 귀속 · 승계 비중이 불가면 EW 강등(`rac_degrade_plan` — B2 자기 축만 제외 · B4 는 강등 + `carry_degraded.loo_equivalent`) · 판정 `rac_gate` 를 **등록·재개 두 경로**가 공용(`rac_gate_apply`) |
 | 회피 집행 | 러너 (`avoid_enforced` / `avoid_noted`) | 기전 `avoid` 중 **측정 무효 사유**만 건너뜀 · 성과 사유는 기록 후 실행(AX-000) · 부모 사슬 walk |
 | 결합 | `02_Infrastructure/ops/rf_combination_launch.R` | 재료 풀 → 설계 요청(`replication_request.json` combo) → 충실구현 레인이 LLM 결합 엔진을 1회 측정 → `_combo_rulefast` entry → 같은 격자 · 희석 판정 기록 |
 | 텔레그램 | `rf_auto_notify.R` · `rf_block_insights.R` · `rf_grade_fanfare.R` · `rf_round_review.R` | 블록 본문(+`이번 배치에서 알게 된 것` 요약) · 후속 전체판 · B/A 팬파레 · 라운드 종료 리뷰(궤적·LOO·벽) |
@@ -120,7 +120,13 @@ overlay_propose **high**. 정본 = `reinforce_auto_config.json::llm.lanes`(문�
    MDD 를 거의 안 움직인다 — 그 축을 먼저 돌면 출하되지 않는 구성을 최적화한다). 직전 블록 기전이 `next_block_design` 으로 다음
    블록을 지목하면 그것이 우선(`mechanism_pref`). 실측 09-04: 4 entry 전부 `B1>B5>B2>B3>B4`.
 2. **블록 누적** — B2·B3·B5 는 직전까지 최고 구성을 바닥으로 자기 축만 바꾼다. 승계 arm 이 그 블록의 유니버스에서 불가(커버리지 < 80%)면
-   시험 축이 아닌 승계 비중만 EW 로 강등해 측정한다(`rac_degrade_plan` · B2/B4 는 그대로 판정). 미측정 칸은 절약이 아니라 헌법 위반이다.
+   시험 축이 아닌 승계 비중만 EW 로 강등해 측정한다(`rac_degrade_plan` · B2 는 그대로 판정). 미측정 칸은 절약이 아니라 헌법 위반이다.
+   ★B4(결합)도 강등한다(09-13) — 막힌 비중 축 하나만 EW 로 바꾸고 B1·B3·B5 는 유지, 구성이 '−비중' LOO 칸과 같아지면
+   `carry_degraded.loo_equivalent` 로 동치를 남긴다(측정된 중복 > 죽은 칸). 차선 arm 대체·유니버스 제약은 기각(사유 = `rf_arm_compat.R` 주석).
+   ★재개 경로도 같은 관문(`rac_gate_apply`)을 지난다 — 첫 조우 조합에서 엔진이 끊은 칸은 ③이 장부에 적고 다음 재개에서 강등돼 측정된다.
+   ★커버리지 분모 = **선정이 비지 않은 시그널일**(09-13 수리). 유니버스·기저 신호가 아직 없는 달은 EW 도 보유 0 이라 arm 결손이 아니다 —
+   구 분모는 KQ150(멤버십 2010-01-29~ · 지지 상한 77.0%) 위 비중 arm 7종을 전부 막았다(통과 0 · 같은 arm 은 다른 유니버스에서 전부 통과). 문턱 80% = 엔진 리터럴(등록부 아님 · 근거 논문
+   없음 · 도입 커밋 90b7f5d1c · 교정 기록 없음) — 설계 휴리스틱이며 재보정은 도훈 권한.
 3. **기전 → 설계 → 집행 대조** — 블록 L-code 에 LLM 기전(`mechanism`)·처방(`next_block_actions`)·회피(`avoid`)·다음 블록 설계가
    실린다. 회피는 **측정 무효 사유**(편의·누출·PIT)만 집행하고 성과 사유는 기록만 한다(AX-000). 앞 블록 처방의 집행 여부는
    `rfbd_action_status` 가 재도출한다(executed/partial/ignored/no_design). 기전이 빈 블록은 다음 tick 에 백필(상한 2회).
@@ -140,6 +146,11 @@ overlay_propose **high**. 정본 = `reinforce_auto_config.json::llm.lanes`(문�
 `test_rf_carry_degrade.R` · `test_rf_jlog_isolation.R` · `test_rf_summarize_once.R` · `08_Tests/ops/test_rp_count_paper.R`):
 승격 B1 설계가 argv 상한에서 두 세대 연속 미기동 · 승격 carry 에 오버레이 누락 · 승계 비중이 소형주에서 불가 → 미측정 ·
 기전 6/15 빈 채 재시도 없음 · `count_paper` 키 부재 = "세지 말라" · 검사 픽스처가 운영 로그 오염 · 미리보기가 실제 발송.
+
+★2026-09-13 실사고(재발 방지 검사 = `08_Tests/reinforcement/test_rf_arm_coverage_basis.R` · `test_rf_carry_degrade.R`):
+2002.06975 promo3 B4_21/22/25 가 lean:hrp × KQ150 "커버리지 76.6%" 로 통째 미측정 — 원인 셋이 겹쳤다. ①분모가 지지구간을 arm 결손으로
+셈(KQ150 상한 77.0%) ②B4 강등 제외 ③재개 경로가 장부를 안 읽음. 같은 병으로 결합 엔진 entry 에서 B2 다섯 arm 이 59.0~63.6% 로 함께
+죽었고, 그때 남은 `CVaR_LP × k200_kq150` 기록이 2002.06975 세 세대의 B2 칸(promo1 B2_7 · promo2 B2_9 · promo3 B2_7)을 등록 시점에 닫았다.
 
 ## 시도 1회의 절차 (원장 writer = `02_Infrastructure/reinforcement/reinforce_ledger.R`)
 

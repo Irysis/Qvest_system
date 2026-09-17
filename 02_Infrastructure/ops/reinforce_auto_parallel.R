@@ -442,6 +442,23 @@ w5 <- .winner_of("B5", "calmar")
         .wbest_spec <- tryCatch(fromJSON(.sp0, simplifyVector = FALSE), error = function(e) NULL)
     } } }
 
+# ── ★arm × 유니버스 양립성 관문 — 등록·재개 **두 경로가 같은 함수** (2026-09-13) ──────────
+#   실사고 2002.06975 promo3: B4_21/22/25 의 lean:hrp × KQ150 은 첫 조우라 등록 시점 장부에 기록이 없었다.
+#   엔진이 커버리지로 끊은 뒤 **재개 경로는 장부를 안 읽고** 같은 spec 을 다시 돌려 두 번째 실패 = terminal
+#   로 닫힐 참이었다. 강등 규칙이 있어도 재개가 안 부르면 첫 조우 칸에는 출구가 없다(이월 경로가 둘이면
+#   표식도 둘이 같아야 한다). 판정·기록 순서의 정본은 rf_arm_compat::rac_gate_apply — 여기는 부작용을 주입만 한다.
+#   @return "run" | "closed"   (강등이면 spec 파일을 고쳐 쓰고 carry_degraded 를 로그에 남긴다)
+.rac_gate_apply <- function(spec, sp, CELL, n, path) {
+  ok <- tryCatch({ suppressMessages(source(file.path(ROOT, "02_Infrastructure/reinforcement/rf_arm_compat.R"), local = TRUE))
+                   TRUE },
+                 error = function(e) { jlog("arm_compat_gate_failed", code = CELL$code, path = path,
+                                            err = conditionMessage(e)); FALSE })
+  if (!ok) return("run")   # 관문 고장은 차단 사유가 아니다 — 엔진 가드가 최종선이다(구판 거동과 동일)
+  rac_gate_apply(spec, sp, CELL, n, path, cells = cells, root = ROOT,
+                 record_fn = function(n, ...) rf_record_result(1L, BID, n, ..., root = ROOT),
+                 log_fn = jlog)
+}
+
 # ── ①-0 재개 검사: 등록됐으나 essence 없는 칸이 있으면 **그 칸부터 다시 실행**한다 ──
 #   병렬은 등록 → 실행 순서라 실행이 실패하면 칸이 측정 없이 소비된다.
 #   재개가 없으면 무인 상태에서 실패 1회 = 칸 영구 소실 (2026-08-30 실사고).
@@ -461,6 +478,9 @@ if (length(pending)) {
     sp <- file.path(WDIR, sprintf("spec_%s__%s.json", CELL$code, substr(BID, 1, 48)))
     if (!file.exists(sp)) sp <- file.path(WDIR, sprintf("spec_%s.json", CELL$code))
     if (!file.exists(sp)) { jlog("resume_skip_no_spec", n = a$n, code = CELL$code); next }
+    ## ★재개도 양립성 관문을 지난다 (2026-09-13) — 첫 조우 커버리지 실패는 ③이 장부에 적은 뒤 여기서 강등된다.
+    .rsp <- tryCatch(fromJSON(sp, simplifyVector = FALSE), error = function(e) NULL)
+    if (!is.null(.rsp) && identical(.rac_gate_apply(.rsp, sp, CELL, as.integer(a$n), "resume"), "closed")) next
     jobs[[length(jobs) + 1L]] <- list(n = as.integer(a$n), code = CELL$code, spec = sp,
       name = sprintf("RF_PAR_%s_%s", CELL$code, gsub("[^A-Za-z0-9]", "", CELL$label)),
       out = file.path(WDIR, sprintf("result_%s.json", CELL$code)),
@@ -816,34 +836,11 @@ if (!length(jobs)) for (CELL in batch) {
   #   (3칸 × 2회). 같은 조합은 몇 번을 돌려도 같은 자리에서 죽는다.
   #   ⇒ 이미 막힌 적 있는 조합이면 스폰하지 않고 미결로 닫는다. 판정 근거는 **실행 기록**
   #     뿐이고 추정하지 않는다 — 첫 조합은 여전히 한 번 태운다(정직한 비용).
-  .rac <- tryCatch({ suppressMessages(source(file.path(ROOT, "02_Infrastructure/reinforcement/rf_arm_compat.R"), local = TRUE))
-                     rac_blocked(SPEC, ROOT) }, error = function(e) NULL)
-  ## ★승계 비중이 이 유니버스에서 불가면 칸을 닫지 않고 EW 로 강등해 측정한다 (2026-09-04).
-  ##   판정 = rf_arm_compat::rac_degrade_plan (순수 함수 — 시험 축이 비중/결합이면 강등 없음).
-  if (!is.null(.rac)) {
-    .dp <- tryCatch({ suppressMessages(source(file.path(ROOT, "02_Infrastructure/reinforcement/rf_arm_compat.R"), local = TRUE))
-                      rac_degrade_plan(SPEC, CELL$block, .rac) }, error = function(e) list(degrade = FALSE))
-    if (isTRUE(.dp$degrade)) {
-      .rac2 <- tryCatch(rac_blocked(.dp$spec, ROOT), error = function(e) NULL)
-      if (is.null(.rac2)) {
-        SPEC <- .dp$spec
-        write(toJSON(SPEC, auto_unbox = TRUE, pretty = TRUE, null = "null"), sp)
-        jlog("carry_degraded", n = att$n, code = CELL$code, own_axis = .dp$own_axis,
-             from = .dp$arm, to = "ew",
-             note = "승계 비중이 이 유니버스에서 불가 — EW 로 강등해 측정한다(시험 축 보존 · 블록 내 비교는 비중이 다름을 spec.carry_degraded 로 명시)")
-        .rac <- NULL
-      } else .rac <- .rac2
-    }
-  }
-  if (!is.null(.rac)) {
-    rf_record_result(1L, BID, att$n, grade = "NA (미결 — arm×유니버스 양립 불가)",
-      lessons = sprintf("%s: %s", CELL$code, .rac), terminal = TRUE,
-      terminal_reason = sprintf("양립성 장부 차단 — %s", .rac), root = ROOT)
-    jlog("cell_arm_incompatible", n = att$n, code = CELL$code, why = .rac,
-         note = "앞서 커버리지로 막힌 조합 — 백테 전에 닫는다(재시도 소각 방지)")
-    unlink(sp, force = TRUE)
-    next
-  }
+  ## ★승계 비중이 이 유니버스에서 불가면 칸을 닫지 않고 EW 로 강등해 측정한다 (2026-09-04 · B4 포함 2026-09-13).
+  ##   판정 = rf_arm_compat::rac_gate (차단 → rac_degrade_plan → 강등 spec 재검사). 재개 경로와 같은 헬퍼다.
+  ##   ⚠강등은 위 중복 판정 **뒤**에 일어난다 — B4 전결합이 강등되면 같은 배치의 '−비중' 칸과 같은 구성이
+  ##     되어 두 칸 모두 측정된다(의도: 죽은 칸보다 측정된 중복 · loo_equivalent 가 동치를 명시한다).
+  if (identical(.rac_gate_apply(SPEC, sp, CELL, att$n, "register"), "closed")) next
   jobs[[length(jobs) + 1L]] <- list(n = as.integer(att$n), code = CELL$code, spec = sp,
     name = sprintf("RF_PAR_%s_%s", CELL$code, gsub("[^A-Za-z0-9]", "", CELL$label)),
     out = file.path(WDIR, sprintf("result_%s.json", CELL$code)))
@@ -963,6 +960,12 @@ for (j in jobs) {
     rf_lesson_text(j$code, R$grade, es, carry_es = .carry_es, root = ROOT)
   }, error = function(e) sprintf("[%s] Grade %s (기전 서술 생성 실패: %s)",
                                  j$code, R$grade, conditionMessage(e)))
+  ## ★강등 표식을 원장 교훈 머리에도 (2026-09-13) — spec.carry_degraded 에만 있으면 원장·텔레그램 독자는
+  ##   "전 요소 결합(4축)" 이 실제로는 비중을 EW 로 바꿔 잰 칸인 줄 모른다. 조용한 통과 금지.
+  .cdg <- tryCatch(fromJSON(j$spec, simplifyVector = FALSE)$carry_degraded, error = function(e) NULL)
+  if (is.list(.cdg)) .lsn <- tryCatch({
+    suppressMessages(source(file.path(ROOT, "02_Infrastructure/reinforcement/rf_arm_compat.R"), local = TRUE))
+    paste(rac_degrade_note(.cdg), .lsn) }, error = function(e) .lsn)
   rf_record_result(1L, BID, j$n, grade = R$grade, essence = es, artifacts = R$artifacts,
     lessons = .lsn, root = ROOT)
   # ★고정 축 사후 검증 — 공리를 주입하는 대신 산출물에서 재도출해 확인한다

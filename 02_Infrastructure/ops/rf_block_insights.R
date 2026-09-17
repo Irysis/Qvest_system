@@ -205,8 +205,11 @@ rf_block_insights <- function(S, blk, root, parent_S = NULL) {
     l7 <- c(l7, sprintf("미측정 %s — %s", as.character(a$cell_code), .bi_esc(rs)))
   }
   for (cd in inblk$code) { sp <- .bi_spec(root, base_id, cd)
-    if (!is.null(sp$carry_degraded)) l7 <- c(l7, sprintf("%s: 승계 비중 %s 이 이 유니버스에서 불가 — EW 로 강등해 측정 (블록 내 비교 시 비중이 다름)",
-                                                         cd, .bi_esc(as.character(sp$carry_degraded$from %||% "?")))) }
+    if (!is.null(sp$carry_degraded)) {
+      .eq <- as.character(sp$carry_degraded$loo_equivalent %||% "")[1]   # B4 강등(2026-09-13) — '−비중' 칸과 동치면 명시
+      l7 <- c(l7, sprintf("%s: 승계 비중 %s 이 이 유니버스에서 불가 — EW 로 강등해 측정 (블록 내 비교 시 비중이 다름)%s",
+                          cd, .bi_esc(as.character(sp$carry_degraded$from %||% "?")),
+                          if (!is.na(.eq) && nzchar(.eq)) sprintf(" · 구성 = %s(−비중 칸)과 동일", .bi_esc(.eq)) else "")) } }
   if (length(l7)) parts[["미측정·강등"]] <- l7
 
   ## ── 8. 승격 사슬 (부모가 있을 때) ──

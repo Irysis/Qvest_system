@@ -361,12 +361,31 @@ if (identical(.wt$kind, "ew")) {
         stop(sprintf("[rf_cell_engine] arm %s 산출이 전 시점 EW 와 동일 — 처치 미전달(조용한 폴백). 측정 무효.", .cid))
       if (.nEW > .nOK)
         stop(sprintf("[rf_cell_engine] arm %s: EW 폴백 %d / 차별화 %d — 과반 미전달. 측정 무효.", .cid, .nEW, .nOK))
-      .cov <- length(unique(W$Date)) / max(1L, length(.sig_dates))
+      # ★커버리지 분모 = **선정이 비지 않은 시그널일** (2026-09-13 수리).
+      #   구판 분모는 전 시그널일(.sig_dates)이라 유니버스·기저 신호가 아직 없는 달까지 arm 결손으로 셌다.
+      #   그 달은 비중 방법과 무관하게 보유가 0 이다(EW 도 똑같이 빈다) — 부분측정이 아니라 지지구간이다.
+      #   실측: KQ150 멤버십 첫 날 2010-01-29 → 시그널일 261 중 201 = **지지 상한 77.0%** 라 index:KQ150 위
+      #   비중 arm 7종이 전부 76.6~77.0% 로 막혔고(같은 arm 은 다른 유니버스에서 전부 통과), 기저 신호가 늦게
+      #   서는 결합 엔진 entry 에선 B2 다섯 arm 이 59.0~63.6% 로 함께 죽었다. 그 기록이 장부를 타고 다른 논문의
+      #   B2_7(CVaR_LP)·B4 결합 칸까지 닫았다.
+      #   ★가드의 대상은 그대로다 — 선정이 있는 달에 arm 이 비중을 못 낸 비율. 1종 선정일(arm 루프는 2종 미만을
+      #     건너뛴다)도 분모에 남는다: EW 는 그 1종을 보유하므로 거기서의 결손은 진짜 결손이다.
+      #   ★[basis=sel_dates] 토큰은 장부(rf_arm_compat.R)가 이 분모의 기록만 차단 근거로 믿는 표식이다 — 지우지 말 것.
+      # ★문턱 0.8 출처: 엔진 리터럴 — 등록부 값 아님(reinforce_program.json·reinforce_auto_config.json·
+      #   constraint_defaults.json 무관) · 근거 논문 없음 · 교정 기록 없음. 도입 = 90b7f5d1c(2026-08-30, catalog
+      #   분기 신설 시 "침묵 부분측정 금지"). 설계 휴리스틱이며 재보정은 도훈 권한 — 이 수리는 값을 바꾸지 않는다.
+      #   (KQ150 사고는 값의 문제가 아니었다: 분모가 틀리면 75% 로 내려도 2011년 이후 유니버스에서 또 막힌다.)
+      .sel_dates <- unique(SEL$Date)
+      .n_try <- length(.sel_dates)
+      .n_hit <- length(unique(W$Date[W$Date %in% .sel_dates]))
+      .cov <- .n_hit / max(1L, .n_try)
+      .sup <- .n_try / max(1L, length(.sig_dates))
       if (.cov < 0.8)
-        stop(sprintf("[rf_cell_engine] arm %s 커버리지 %.1f%% (<80%%) — 침묵 부분측정 금지", .cid, 100 * .cov))
-      cat(sprintf("[rf_cell_engine] catalog %s | 차별화 %d · EW폴백 %d · 커버리지 %.1f%%
+        stop(sprintf("[rf_cell_engine] arm %s 커버리지 %.1f%% (<80%%) [basis=sel_dates %d/%d] — 침묵 부분측정 금지",
+                     .cid, 100 * .cov, .n_hit, .n_try))
+      cat(sprintf("[rf_cell_engine] catalog %s | 차별화 %d · EW폴백 %d · 커버리지 %.1f%% (선정일 %d/%d) · 유니버스 지지 %.1f%% (빈 시그널일 %d — 비중 무관)
 ",
-                  .cid, .nOK, .nEW, 100 * .cov))
+                  .cid, .nOK, .nEW, 100 * .cov, .n_hit, .n_try, 100 * .sup, length(.sig_dates) - .n_try))
       W
     },
     stop("[rf_cell_engine] weighting.kind 미지원: ", .wt$kind))
@@ -724,9 +743,11 @@ if (!identical(.ov_kind, "none")) {
 
   if (.VEC) {
     PORTFOLIO <- merge(PORTFOLIO, .EX, by = c("Date", "Ticker"), all.x = TRUE)
+    # ★분모 = 보유 행(PORTFOLIO) — 빈 달은 행이 없어 지지구간 착시가 원리상 없다. [basis=held_rows] 는 장부 신뢰 표식.
+    #   문턱 0.80 출처: 엔진 리터럴(도입 100314c30 · 2026-09-03 벡터 arm 신설) · 등록부 값 아님 · 근거 논문 없음.
     .cov <- mean(!is.na(PORTFOLIO$oe))
     if (!is.finite(.cov) || .cov < 0.8)
-      stop(sprintf("[rf_cell_engine] overlay %s 종목 커버리지 %.2f < 0.80 — arm 이 보유를 못 덮었다.",
+      stop(sprintf("[rf_cell_engine] overlay %s 종목 커버리지 %.2f < 0.80 [basis=held_rows] — arm 이 보유를 못 덮었다.",
                    .ov_kind, .cov))
     PORTFOLIO[is.na(oe), oe := 1]              # arm 이 지목하지 않은 종목 = 무개입
   } else {
