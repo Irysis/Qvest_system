@@ -1,0 +1,85 @@
+{
+  "verdict": "adapted",
+  "undeclared_changes": [],
+  "signal_mismatch": [],
+  "evidence": "[signal] §III(라벨 절) 'We use feature vector Xi(t) ... up to the tth trading day' · 'assign the return-to-volatility ratio yi(t,f) ... during trading period [t+1, t+f]' · 'which is exactly the basic idea of Sharpe Ratio'(식 미인쇄) · 'For each t under consideration, we obtain a set of feature vectors {Xi(t)|i ∈ {1,...,M}} ... We rank stocks with respect to their return-to-volatility ratios'(→ 같은 t 안 횡단면 순위) · 'Label the top Q percent as positive, i.e. yi(t,f) := 1' · 'Label the bottom Q percent as negative, i.e. yi(t,f) := 0' · 'Discard the samples in the middle.' · 'To avoid data overlapping, at most ⌊2QTM/(100(1+f))⌋ samples can be labeled.' · §V.B 'we use its output, which is a vector of scalers ranging from zero to one, to construct portfolio' · 부록 244 토큰(=124 고유 이름) = 이름만. 원문 경로 = r.jina.ai/https://arxiv.org/pdf/1806.01743 (arxiv.org/html/1806.01743v1 = HTTP 404 · 2018년 논문). 판별형 재질의 결과: (1) rv 식 NOT PRESENT (2) 횡단면 순위 PRESENT (3) normalize/standardize/winsorize/missing NOT PRESENT (4) Q NOT PRESENT (5) f NOT PRESENT (6) 특성 룩백 NOT PRESENT (7) 부록 정의 NOT PRESENT. / [timing] §II.A 'we assign the return-to-volatility ratio yi(t, f) to Xi(t) assessing the performance of the ith stock during trading period [t+1, t+f]' (f 의 값 NOT STATED) · 'The training dataset is constructed from Chinese stock data ranging from 2012.08.08 to 2013.02.01 and the testing dataset is constructed from 2013.02.04 to 2013.03.08.'(단일 분할 · 재학습 언급 없음) · §V.B 'we use its output … to construct portfolio and trade it in historical market' + Fig.5~7 캡션(2015.11.30·2017.06.21·2018.01.18 시작)만 있고 종목수·비중·리밸 주기 텍스트 없음. / [universe] 논문 전문 인용(§ Abstract·Data 서술 전체): 'The effectiveness of the stock selection strategy is validated in Chinese stock market in both statistical and practical aspects.' / 'The training dataset is constructed from Chinese stock data ranging from 2012.08.08 to 2013.02.01 and the testing dataset is constructed from 2013.02.04 to 2013.03.08.' / 'Say there are M stock candidates and T days historical stock data.' — 이 세 문장이 유니버스에 관해 논문이 말하는 전부이며, 필터·종목수·거래소·제외 규칙은 어디에도 없다(jina 프록시로 전 키워드 재검색 0건 확인). / [portfolio] 원문(https://r.jina.ai/https://arxiv.org/pdf/1806.01743 — html/1806.01743v1 은 404 · 2018 논문). §V.B 'Portfolio Analysis' 축자 전문(3문장 · 두 번의 독립 질의에서 동일하게 회수): 'There is a setback of our statistical evaluation procedure, i.e. only the stocks in the Q percent tail and head are included in the test sets, which means we only test our model in the unequivocal test samples. Therefore, a more close-to-reality evaluation is needed. To this end, for each model, we use its output, which is a vector of scalers ranging from zero to one, to construct portfolio and trade it in historical market competing with the market average. Fig. 5., Fig. 6., and Fig. 7. demonstrate the back test results showing that our stock selection strategy can construct profitable portfolios conquering the market average.' 그 뒤 = 캡션 'Fig. 5. Portfolio Management starts from 2015.11.30' · 'Fig. 6. … 2017.06.21' · 'Fig. 7. … 2018.01.18' → ACKNOWLEDGMENT(Conclusion 절 없음). 초록 4) 'The portfolios constructed by our models outperform market average in back tests.' §V.A 의 'radical / risk-neutral' 서술은 Table VI 의 Precision·Recall 대비에서 나오며('For both LR and DNN models, their Recall scores are notably higher than their Precision scores … RF is more likely to be a risk-neutral investment model') 포트폴리오 구성 규칙이 아니다 — 이 축의 값이 §V.A 에 숨어 있을 가능성을 이 인용으로 배제했다. 구현: engine.R:56~57 주석(산출 = FACTORS(Date,Ticker,Score) · 'PORTFOLIO 없음') · engine.R:842 P <- .F[Date == d](그날 K200∪KQ150 적격 횡단면 전부) · engine.R:873 .rows_f <- data.table(Date=d, Ticker=P$Ticker, Score=s_stack)(상위 N 절단 0건 — 엔진은 자르지 않는다) · engine.R:843 nrow(P) < .MIN_CS_N(20) 이면 발행 없음. 선언: FIDELITY changed(10) '논문 §V.B 는 … 종목수·비중·리밸·롱/숏을 인쇄하지 않는다(NOT STATED) … 러너 top_n_long · n_long 25 · EW · 월간 … 롱온리 · has_short = false · n_max 25' · portfolio_spec(124~134행) · paper_values_used_unchanged.portfolio 158행 'construction not printed'. 산출물: 01_strategy_spec.json:7~13 · 04_holdings.csv(6500행 전수 0.04) · 10_audit.csv:20 holdings_cap. / [cost] 논문 전문(로컬 PDF) §V.B 전체 + Acknowledgment 사이 어디에도 cost/commission/fee/slippage 서술 없음(원문 전 페이지 확인). Table V/VI(§V.A 통계지표)·Fig.5~7(§V.B, 자산가치곡선)도 비용 서술 없음. / [undeclared] 원문(arxiv html 404 → r.jina.ai PDF 프록시 2회 독립 판독 · 2026-09-17): 부록은 244 토큰(=124 고유 이름)을 **이름만** 인쇄하고 정의·창이 없다. 판별형 질의 회수 = 전처리/정규화/winsorize/결측 처리 'NOT PRESENT' · return-to-volatility 식 'NOT PRESENT' · Q·f 수치 'NOT PRESENT' · Train-1/Train-2/Validation 비율 'NOT PRESENT' · 포트폴리오 구성(종목수·비중·리밸·롱숏) 'NOT PRESENT' · 거래비용 'NOT PRESENT' · 유니버스/스크린 'NOT PRESENT'(본문은 'M stock candidates' 만) · 재학습 규칙 'NOT PRESENT' · 데이터 제공자(Uqer 등) 'NOT PRESENT' · M·T 수치 'NOT PRESENT' · '시장평균' 정의 'NOT PRESENT' · 동일비중 'NOT PRESENT' · Fig.1 은 캡션 'Fig. 1. Data Split' 뿐. 논문이 인쇄하는 것 = 라벨 3단계('Label the top Q percent as positive … bottom Q percent as negative … Discard the samples in the middle') · 비중첩 상한 ⌊2QTM/(100(1+f))⌋ · Table I(LR η 1e-2 · decay 1e-6 · 20 epoch · momentum 0.9) · Table II(100 trees · depth 4 · min split 2 · min impurity 1e-7) · Table III/IV(n→⌊n/2⌋ ReLU Dropout→⌊n/4⌋ ReLU BN→2 Softmax · L2 0.01 · η 1e-3 · decay 1e-6 · batch 128 · 20 epoch) · Stacking 3분할(DNN = Train-1∪Train-2 · RF = Train-2 · 메타 LR = Validation) · GA 114 특성 · §V.B 포트폴리오 서술. 이 다섯 묶음은 engine.R §0(84~98행) · §9(840~882행)에 그대로 있고, 논문이 침묵하는 나머지는 전부 changed(1)~(14)에 선언돼 있어 이 축에서 남는 것이 없다.",
+  "confidence": "medium",
+  "note": "축 팬아웃 6개(판독형 opus 3 · 대조형 sonnet 3) — 발견 0건. adapted/adapted/faithful/adapted/faithful/adapted",
+  "mode": "fanout",
+  "axis_verdicts": [
+    {
+      "axis": "signal",
+      "required": true,
+      "model": "opus",
+      "verdict": "adapted",
+      "admissible": true,
+      "reason": "",
+      "confidence": "high",
+      "checked": "부호 사슬 전 구간(engine.R:786 rv = mu/sdv → :798 frank(-rv) 로 rv 내림차순 → :799 상위 k = 1 · 하위 k = 0 · 가운데 NA → .dnn_bwd:212/.lr_bwd:229 Y = cbind(1-y, y) → .nn_predict:253 prob[,2] = P(y=1) → .rf_pred:830 predictions[,'1'] → :869 s_stack → :873/:914 Score 무변환 → 러너 top_n_long 25 = 고득점 롱) · 라벨 해상도(:801 by = Date · :794 i-절 is.finite(rv) 이므로 N = 그 날 표적 유한 적격 종목 수 · k = floor(N·25/100) · N ≥ 20 · k ≤ N/4 라 1/0 겹침 불가 · 전원 동률이면 전량 폐기) · 표적 창 종점(:787 MI_sig = MI−1 로 시그널 달 j 의 표적 = 달 j+1 = [t+1, t+f] · :446 .LB 는 MI < .MI_LAST 라 부분월 제외 · :786 nn ≥ 10 ∧ sdv > 0) · 룩백 창 42종 전수와 FIDELITY feature_definitions 대조(MA/EMA 5·10·20·60·120 · VOL 5~240 · DAVOL k/120 · REVS 5·10·20 · RSI 14 · MFI 14 · PSY 12 · WVAD 24 · MAWVAD 6 · DHILO 60(유효 ≥ 30 · :430~434 i ≥ 60) · RSTR12 252 / RSTR24 504 · HBETA·HSIGMA·DDNBT·DDNCR·DDNSR 252(유효 ≥ 126 · 하락일 ≥ 42) · DVRAT q=10 · CMRA 21×12 · 5년 평균 QI·QI−4·…·QI−16 5점 · 회계 TTM 연속 4분기 · 컨센서스 개정 20/60 거래일) · 창 종점이 전부 t 포함 우측정렬임(frollmean/frollsum/TTR::EMA·RSI 기본 · :478 rows = seq(di−251, di) · :620 .lk(col,k) = QI−k · :749~750 Date_l20/l60 = .CAL[di−k]) · 표준화(:814~826 .prep — 학습표본 6 횡단면에서 특성별 1/99% winsorize 산출 → 학습·예측 양쪽에 적용 → 학습표본 mean/sd 로 z → 비유한·죽은 특성 0 · 전 표본 통계 0건) · 수식 전수 대조(engine.R:641~692 회계 51종 · :713~726 시총결합 12종 · :766~773 컨센서스 8종 · :402~442 일간 38종 · :499~509 DVRAT/CMRA)와 feature_definitions 선언식 일치 확인(5판 EBITToTOR 복귀분 :652 = .sdiv(PretaxIncome + InterestExp, Revenue) 포함 · 성분 0 대치 grep 0건).",
+      "counterexample": "논문 대비 다른 값을 내는 상황은 구성하지 못했다 — 논문이 이 축에서 값을 결정하는 서술을 하나도 인쇄하지 않기 때문이다(프록시 독립 재판독: return-to-volatility 식 NOT PRESENT · Q NOT PRESENT · f NOT PRESENT · 특성 룩백 길이 NOT PRESENT · 정규화/표준화/결측 어휘 NOT PRESENT(BN 문장만 히트) · 부록은 이름만). 구성 가능한 것은 '논문이 똑같이 허용하는 다른 독법과 갈리는 지점'뿐이고 둘 다 확인했다. ① 일당 척도 vs 창 누적: 2008-10 같은 고변동 달에 A(유효 21일 · 일평균 +0.02% · 일 sd 0.2% → rv 0.100)와 B(유효 21일 · 일평균 +0.30% · 일 sd 3.0% → rv 0.100)가 engine.R:786 에서 동률인데, 창 누적수익/일간 sd 독법(≈ f·mean/sd)에서도 동률이라 순위가 갈리는 것은 유효일수가 다른 종목뿐이다(거래정지로 nn=10~20 인 종목) — 이 갈림은 FIDELITY changed(2) 5판 단락에 이미 명시돼 있어 발견이 아니다. ② 무위험이자율 차감 독법: 'basic idea of Sharpe Ratio' 를 (mean − rf)/sd 로 읽으면 rf = 0.012%/일(≈3%/년)에서 위 A는 0.040 · B는 0.096 으로 역전된다. 그러나 논문 용어는 'return-to-volatility ratio'(초록·§III)로 rf 항이 없고 engine.R:786 은 그 축자 정의를 그대로 계산하므로 논문 근거가 없는 갈림이며, 선언식(changed(2) '일간수익의 평균 ÷ 표준편차')이 계산을 완전히 결정하므로 미신고 선택도 아니다.",
+      "n_findings": 0
+    },
+    {
+      "axis": "timing",
+      "required": false,
+      "model": "sonnet",
+      "verdict": "adapted",
+      "admissible": true,
+      "reason": "",
+      "confidence": "high",
+      "checked": "target 창 정의(§8, 스킵=0 · f=보유월 거래일 · MIN_LABEL_DAYS=10) · 재학습 롤링창(§9, K_CS=6 · 최소 3 횡단면 게이트) · Train-1/Train-2/Validation 3분할 규칙(시간순 3등분) · portfolio_spec.rebalance=monthly/top_n=25 vs FIDELITY changed(2)(3)(10) 및 source_paper.note 의 NOT STATED 목록 대조",
+      "counterexample": "구성 못 했다. 논문이 J(형성기간)·K(보유기간)·스킵·리밸 주기를 수치로 인쇄하지 않아(§II.A '[t+1, t+f]' 의 f NOT STATED · 학습기간 2012.08.08~2013.02.01 단일 분할, 재학습 규칙 서술 없음 · 포트폴리오 리밸런싱 규칙은 Fig.5~7 그림 캡션뿐) 대조할 논문측 숫자 자체가 없다. 구현이 채운 값(f=보유월 거래일 · 월간 리밸 · 스킵 0 · 재학습창 6 횡단면 · 3분할 시간순 3등분)은 engine.R:787(MI_sig=MI-1, 스킵 0으로 다음 달력월 바로 표적) · engine.R:844(.K_CS=6L, cs=j-6..j-1) · engine.R:847(n_cs<3 게이트) · engine.R:849(시간순 3등분)에서 FIDELITY.changed(2)(3)(10)·portfolio_spec 의 서술과 숫자까지 정확히 일치했다.",
+      "n_findings": 0
+    },
+    {
+      "axis": "universe",
+      "required": false,
+      "model": "sonnet",
+      "verdict": "faithful",
+      "admissible": true,
+      "reason": "",
+      "confidence": "high",
+      "checked": "engine.R §3(348-395행) MEM 술어(K200==TRUE|KQ150==TRUE, 날짜별) · Close 유한>0 외 가격/거래량/시총/상장연수/금융주 필터 부재 · line 791 .F <- .F[MEM==TRUE] 로 학습·라벨링·예측 전 구간이 그 시점 멤버십만 사용(PIT 정합, 과거 한 번이라도 멤버였던 종목의 비멤버 시점 행이 새지 않음) · FIDELITY changed(1)·portfolio_spec.universe_filter·kept 선언과 코드 대조 · 논문 전문에서 유니버스·필터 관련 문장 유무를 3회 별도 질의로 확인(전무)",
+      "counterexample": "구성하지 못했다. 논문 전문(jina PDF 프록시)에 유니버스·필터 관련 서술이 전무하다(중국 주식시장이라는 언급 외 종목수·거래소·ST·가격·유동성·금융주·상장연수 어느 것도 텍스트에 없음 — 'ST/delist/financial/bank/exclude/suspend/listed/exchange/Shanghai/Shenzhen/price limit/liquidity/volume' 키워드 전수 검색 0건). 구현은 그 위에 K200∪KQ150(허용된 교체) 하나만 얹고 그 밖의 스크린(유동성·가격·시총·상장연수·금융주 제외)을 추가하지 않았다고 명시적으로 선언한다(changed(1) '유동성·시총·가격·상장연수 스크린 0건') — 코드 대조(engine.R:352 Close 유한·>0 만 · §3 MEM 술어 = K200==TRUE|KQ150==TRUE, 러너 .apply_universe 와 동일)도 그 선언과 일치한다. 논문에 있고 구현에 없는 필터, 또는 구현에 있고 논문에 없는 필터 둘 다 열거할 근거가 없다 — 비교 대상 자체가 논문 쪽에 없다.",
+      "n_findings": 0
+    },
+    {
+      "axis": "portfolio",
+      "required": true,
+      "model": "opus",
+      "verdict": "adapted",
+      "admissible": true,
+      "reason": "",
+      "confidence": "high",
+      "checked": "①논문 §V.B·초록·§I·§V.A 축자 회수로 포트폴리오 규칙 인쇄 여부 ②long/short·equally/value-weight·weighting·rebalance·position·buy/sell/hold·transaction 단어-존재 판별형 질의(전부 NOT PRESENT) ③숫자+stocks 형태의 종목수 언급(0건) ④§V.B~문서 끝 구간 축자로 절 truncation 배제 ⑤engine.R 발행 경로의 상위 N 절단 유무(엔진 0단 · 러너 1단 — 2층 곱 절단 부재) ⑥04_holdings.csv 6500행 전수의 비중값·부호·Σw ⑦리밸일별 실현 종목수(260일 전부 25 · 10_audit.csv 교차확인) ⑧01_strategy_spec.json 의 construction/weight_method/rebalance/n_max/has_short 대 changed(10)·portfolio_spec 선언 대조 ⑨논문 라벨이 양꼬리(top/bottom Q%)인데 구현이 롱온리인 점의 선언 유무",
+      "counterexample": "구성하지 못했다 — 그리고 그 실패는 정보다. 반례가 성립하려면 논문이 포트폴리오 규칙을 어떤 형태로든 인쇄해야 하는데, 원문 전체에서 'long' · 'short' · 'position' · 'buy' · 'sell' · 'hold' · 'equally' · 'equal-weight' · 'value-weight' · 'weighting' · 'rebalance' · 'benchmark' · 'transaction' 이 전부 NOT PRESENT 이고(r.jina.ai 프록시 단어-존재 판별형 질의 · 부재 어휘를 명시 회수), 숫자가 붙은 'stocks' 도 0건이다. 포트폴리오를 언급하는 곳은 세 지점뿐 — 초록('The portfolios constructed by our models outperform market average in back tests'), §I 서론('portfolio management [2], which distributes fund into the assets to optimize the risk-profit profile'), §V.B 3문장. §V.B 는 '모델 출력(0~1) 벡터로 포트폴리오를 구성해 시장평균과 겨루며 과거 시장에서 거래한다' 와 'Fig.5~7 이 백테스트 결과를 보여준다' 로 끝나고 곧장 그림 캡션 3개 + ACKNOWLEDGMENT 로 넘어간다(Conclusion 절 없음). 즉 이 축에는 구현이 갈릴 수 있는 논문 값 자체가 존재하지 않는다. 반대 방향으로 반례를 시도해도 실패한다 — 선언(changed(10) · portfolio_spec)이 예고한 값과 실현 산출물이 전부 일치하기 때문이다: 04_holdings.csv 6500행 = 260 리밸일 × 정확히 25종, 6500행 전부 target_weight = actual_weight = 0.04 = 1/25(Σw = 1.00 · 음수 비중 0건 · leg 분해 열 자체가 없음), 10_audit.csv holdings_cap 행이 독립적으로 '리밸일별 distinct ticker 25~25종 (260 리밸일)' 을 찍었고 01_strategy_spec.json 은 construction=top_n_long · weight_method=ew · rebalance=monthly · n_max=25 · has_short=false 다. 실현 종목수가 25 미만으로 내려간 달은 260개월 중 0개월 — 선언된 상한이 매달 정확히 포화됐다.",
+      "n_findings": 0
+    },
+    {
+      "axis": "cost",
+      "required": false,
+      "model": "sonnet",
+      "verdict": "faithful",
+      "admissible": true,
+      "reason": "",
+      "confidence": "high",
+      "checked": "논문 로컬 PDF 전문(6p) 전수 열람으로 cost/commission/fee/slippage/turnover-cost 어휘 부재 확인 · FIDELITY changed(11)·commission_paper·portfolio_spec 대조 · 00_manifest.json(transaction_cost_bps 15·slippage_bps 0) · authoritative_remeasure.json(commission_paper_bps 0·paper_basis vs 15bps net metrics) · 06_metrics.csv 15bps net 수치 대조",
+      "counterexample": "구성 못 했다. 논문 원문(로컬 PDF 01_Literature/Alpha_Search_Recharge/20260830/mcp_arxiv/MCP_1806_01743.pdf, 전 6페이지 — Abstract·§I~§V·Acknowledgment·References·Appendix 전수 열람)에 commission/transaction cost/slippage/fee/turnover cost 어휘가 한 곳도 없다. §V.B(Portfolio Analysis)는 '모델 출력(0~1)으로 포트폴리오를 만들어 시장평균과 경쟁시켜 거래한다'는 문장과 Fig.5~7(자산가치 곡선, 100000 기준)만 제공하고 수치화된 CAGR/Sharpe/MDD 도 비용 가정도 인쇄하지 않는다. FIDELITY.commission_paper=null 은 이 공백과 일치한다. 러너 산출물(00_manifest.json: transaction_cost_bps=15 · authoritative_remeasure.json: commission_paper_bps=0 · paper_basis={cagr:0.0736, sharpe:0.278, mdd:0.598} vs 15bps net metrics={cagr:0.0393, sharpe:0.277, mdd:0.610})은 '0bps 병기(paper_basis) + 15bps 등급판' 서술과 정확히 대응한다. 15bps 등급판이 논문(비용 무주장)보다 구현에 유리하게 기운 지점은 없다 — 오히려 0bps 병기판 대비 CAGR 을 거의 반토막(7.36%→3.93%) 내는 보수적 방향이다.",
+      "n_findings": 0
+    },
+    {
+      "axis": "undeclared",
+      "required": true,
+      "model": "opus",
+      "verdict": "adapted",
+      "admissible": true,
+      "reason": "",
+      "confidence": "high",
+      "checked": "engine.R 915행 전수(§0 상수 → §2 양성 대조 → §3 일간 패널 → §4 기술 특성 38 → §5 회귀 특성 7 → §6 회계 53 + 시총 12 → §7 컨센서스 9 → §8 표적·라벨 → §9 월별 학습 → §10 조립)를 코드→선언 방향으로 대조: ① .FEATS 112 이름을 부록 124 고유 이름과 대조(전원 부록 소속 · 제외 12 = changed(4) 목록과 일치 · 날조 이름 0) ② 112 특성의 코드 식 ↔ feature_definitions 전수 대조(불일치 0 · EBITToTOR 는 5판 선언식 복귀 확인 · .sdiv 가 성분 NA 전파) ③ 모델 하이퍼파라미터 ↔ Table I·II·III·IV 대조(전 항목 일치 · min impurity 1e-7 미적용은 changed(8) 선언) ④ 미신고 상수 사냥 — .START/.GRID_FROM/.Q_PCT/.K_CS/.MIN_LABEL_DAYS/.MIN_CS_N/.WINSOR/.SEED_BASE/.ROLL_MIN_FRAC/.FUND_CARRY/.CONS_CARRY/.SUE_CARRY/.REV_LAG_D·G/.MIN5/.VR_Q/.CMRA_BLK/.W_* · 360일 회전일수 · nL≥126 · 하락일≥42 · DHILO≥30 · 4분기합/Q4>3 판별 · revenue_fy1 10^k 배수 · detectCores()−1 전부 changed 또는 feature_definitions 에 존재 ⑤ 0 대치·마스크 전수 grep(416·417·463·499·628·823행) ⑥ 부작용 grep(write/saveRDS/dir.create/system2/source/Sys.setenv/options = 0건 · read_parquet·open_dataset 2곳만 · changed(14)·engine_contract 와 일치) ⑦ 4판(engine.rejected1.R) ↔ 5판 GNU diff -U0 전수 ⑧ 원문 판별형 질의 2회(위 evidence).",
+      "counterexample": "구성하지 못했다. 코드에서 출발해 915행 전수를 훑고 논문·changed 어느 쪽에도 근거가 없는 동작을 찾았으나 0건이다. 값을 가르는 상황 하나는 찾았다 — §5 engine.R:499 `L[!Lok] <- 0` 이 252일 창의 결측일 로그수익을 0 으로 채우고 그 0 이 v1 = var(L)(분모 251 고정 · 마스크 없음)과 cumsum 에 실제 관측으로 들어간다. 게이트는 nL >= 126 뿐이라 252일 중 126일이 결측인 종목(신규 상장·장기 거래정지 · K200/KQ150 신규 편입 첫 해)도 통과하고, 그 종목의 DVRAT·CMRA 는 절반이 인공 0 인 계열 위에서 계산된다(v1 이 ≈ nL/251 배로 축소 · vq 는 다른 배율로 축소 → 비율이 예측 불가 방향으로 왜곡). 그러나 이 동작은 changed(5) 'DVRAT/CMRA = 창 안 결측일 수익 0' 과 feature_definitions DVRAT 'missing days = 0 return' 에 **선언돼 있다** — 따라서 undeclared 가 아니라 adapted 다. 4판→5판 실제 변경분도 GNU diff(-U0)로 대조했고 헝크 6개(표제·머리말 주석 11행·주석 3행·engine.R:652 EBITToTOR 1행)가 what_changed_vs_rev4 와 정확히 일치했다 — 선언되지 않은 코드 변경 0건.",
+      "n_findings": 0
+    }
+  ],
+  "flags": [],
+  "merged_at": "2026-09-17T10:18:33+0900"
+}
