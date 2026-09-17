@@ -1,0 +1,11 @@
+{
+  "axis": "universe",
+  "verdict": "faithful",
+  "undeclared_changes": [],
+  "signal_mismatch": [],
+  "counterexample": "구성하지 못했다. 논문 전문(jina PDF 프록시)에 유니버스·필터 관련 서술이 전무하다(중국 주식시장이라는 언급 외 종목수·거래소·ST·가격·유동성·금융주·상장연수 어느 것도 텍스트에 없음 — 'ST/delist/financial/bank/exclude/suspend/listed/exchange/Shanghai/Shenzhen/price limit/liquidity/volume' 키워드 전수 검색 0건). 구현은 그 위에 K200∪KQ150(허용된 교체) 하나만 얹고 그 밖의 스크린(유동성·가격·시총·상장연수·금융주 제외)을 추가하지 않았다고 명시적으로 선언한다(changed(1) '유동성·시총·가격·상장연수 스크린 0건') — 코드 대조(engine.R:352 Close 유한·>0 만 · §3 MEM 술어 = K200==TRUE|KQ150==TRUE, 러너 .apply_universe 와 동일)도 그 선언과 일치한다. 논문에 있고 구현에 없는 필터, 또는 구현에 있고 논문에 없는 필터 둘 다 열거할 근거가 없다 — 비교 대상 자체가 논문 쪽에 없다.",
+  "evidence": "논문 전문 인용(§ Abstract·Data 서술 전체): 'The effectiveness of the stock selection strategy is validated in Chinese stock market in both statistical and practical aspects.' / 'The training dataset is constructed from Chinese stock data ranging from 2012.08.08 to 2013.02.01 and the testing dataset is constructed from 2013.02.04 to 2013.03.08.' / 'Say there are M stock candidates and T days historical stock data.' — 이 세 문장이 유니버스에 관해 논문이 말하는 전부이며, 필터·종목수·거래소·제외 규칙은 어디에도 없다(jina 프록시로 전 키워드 재검색 0건 확인).",
+  "confidence": "high",
+  "checked": "engine.R §3(348-395행) MEM 술어(K200==TRUE|KQ150==TRUE, 날짜별) · Close 유한>0 외 가격/거래량/시총/상장연수/금융주 필터 부재 · line 791 .F <- .F[MEM==TRUE] 로 학습·라벨링·예측 전 구간이 그 시점 멤버십만 사용(PIT 정합, 과거 한 번이라도 멤버였던 종목의 비멤버 시점 행이 새지 않음) · FIDELITY changed(1)·portfolio_spec.universe_filter·kept 선언과 코드 대조 · 논문 전문에서 유니버스·필터 관련 문장 유무를 3회 별도 질의로 확인(전무)",
+  "note": "이 축은 '허용된 교체'와 '논문의 완전한 침묵'이 겹치는 드문 경우다 — 판정할 불일치가 구조적으로 존재하지 않는다. changed(1) 의 KQ150 2010-02 이전 누적편입 명부 caveat 는 유니버스 축이지만 별도 카드(메모리 2026-08-22)로 기존 검토됨 — 이 감사에서 재확인은 안 함(범위 밖)."
+}
