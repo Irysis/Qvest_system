@@ -1,0 +1,12 @@
+{
+  "axis": "cost",
+  "verdict": "faithful",
+  "undeclared_changes": [],
+  "signal_mismatch": [],
+  "counterexample": "구성 못 했다. 논문 원문(로컬 PDF 01_Literature/Alpha_Search_Recharge/20260830/mcp_arxiv/MCP_1806_01743.pdf, 전 6페이지 — Abstract·§I~§V·Acknowledgment·References·Appendix 전수 열람)에 commission/transaction cost/slippage/fee/turnover cost 어휘가 한 곳도 없다. §V.B(Portfolio Analysis)는 '모델 출력(0~1)으로 포트폴리오를 만들어 시장평균과 경쟁시켜 거래한다'는 문장과 Fig.5~7(자산가치 곡선, 100000 기준)만 제공하고 수치화된 CAGR/Sharpe/MDD 도 비용 가정도 인쇄하지 않는다. FIDELITY.commission_paper=null 은 이 공백과 일치한다. 러너 산출물(00_manifest.json: transaction_cost_bps=15 · authoritative_remeasure.json: commission_paper_bps=0 · paper_basis={cagr:0.0736, sharpe:0.278, mdd:0.598} vs 15bps net metrics={cagr:0.0393, sharpe:0.277, mdd:0.610})은 '0bps 병기(paper_basis) + 15bps 등급판' 서술과 정확히 대응한다. 15bps 등급판이 논문(비용 무주장)보다 구현에 유리하게 기운 지점은 없다 — 오히려 0bps 병기판 대비 CAGR 을 거의 반토막(7.36%→3.93%) 내는 보수적 방향이다."
+  ,
+  "evidence": "논문 전문(로컬 PDF) §V.B 전체 + Acknowledgment 사이 어디에도 cost/commission/fee/slippage 서술 없음(원문 전 페이지 확인). Table V/VI(§V.A 통계지표)·Fig.5~7(§V.B, 자산가치곡선)도 비용 서술 없음.",
+  "confidence": "high",
+  "checked": "논문 로컬 PDF 전문(6p) 전수 열람으로 cost/commission/fee/slippage/turnover-cost 어휘 부재 확인 · FIDELITY changed(11)·commission_paper·portfolio_spec 대조 · 00_manifest.json(transaction_cost_bps 15·slippage_bps 0) · authoritative_remeasure.json(commission_paper_bps 0·paper_basis vs 15bps net metrics) · 06_metrics.csv 15bps net 수치 대조",
+  "note": "cost_model_version='unlabeled_pre_v24' · integrity_status='WARNING'(00_manifest.json)이 눈에 띄나 이는 이 축(논문 대비 비용 선언)과 무관한 하네스 내부 라벨링으로 보인다 — 다른 축 검증자가 볼 사안일 수 있어 한 줄만 남긴다."
+}
