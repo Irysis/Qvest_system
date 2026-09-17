@@ -1,0 +1,18 @@
+{
+  "axis": "portfolio",
+  "verdict": "adapted",
+
+  "undeclared_changes": [],
+
+  "signal_mismatch": [],
+
+  "counterexample": "논문과 갈리는 지점은 산출물에서 재현된다. 2005-01-31 시그널(analysis_ic.csv 2행: N_stocks 182)에서 [A] 전략 (i) 은 'top quintile (i.e., one-fifth)' = 36종을 각 1/36 EW 로 보유해야 하는데, 04_holdings.csv 의 2005-02-01 집행은 25종 × target_weight 0.04 다(파일 전체 6,500행 = 260 리밸일 × 25종 · 전 행이 ',0.04,0.04,' — Grep count 6500/6500 일치 · 10_audit.csv:20 'distinct ticker 25~25종 (260 리밸일)'). 즉 매월 5분위의 약 69%(25/36)만 보유하고 나머지는 [B] CM 하위로 잘라낸다. 그러나 이 차이는 FIDELITY.changed ③(5) 에 '[A] 전략 (i) 는 5분위 전원(≈30~71종) EW 롱 … → 25종 상한은 [B] 의 2단 정렬로 채우고' 로 선언돼 있고, portfolio_spec(top_n_long·ew·monthly·n_max 25·has_short false)이 01_strategy_spec.json 의 실측 사양과 문자 일치한다. **선언 없이 갈리는 지점은 구성하지 못했다.** 2단 절단이 실현 종목수를 곱해 줄이는 형태(풀 floor(N/5) < 25)도 성립하지 않는다 — analysis_ic.csv 260개월 전체에서 N_stocks 최소 170(2006-07-31)·최대 351 이라 floor(N/5) ≥ 34 > 25 이고, 정규식 대조(N_stocks ≤ 124 인 달) 0건이었다. 따라서 보유 25종은 전 기간 [A] 5분위 안에서 나온다(engine.R:902 사전식 3계층이 5분위 밖 Score ≤ 1 < 1.5 로 묶는다).",
+
+  "evidence": "[A] arXiv:2002.06975 §3.4 — 'we consider two investment strategies … Namely, (i) the long portfolio strategy, and (ii) the long-short portfolio strategy.' · 'We consider an equally-weighted portfolio, which is simple yet sometimes outperforms more sophisticated alternatives.' · '(i) The long portfolio strategy considered here buys the top quintile (i.e., one-fifth) scores of the stocks with equal weight aiming to outperform the average return of all the stocks.' · '(ii) The long-short portfolio strategy not only buys the top quintile scores of the stocks but also sells the bottom quintile scores of the stocks.' · 'we will hold all five portfolios equally. We rebalance one of five portfolios hold 20% every business day.' · 유니버스 'dataset for TOPIX500 Index constituents' · 종목수 절대값·시총가중 언급 0건. ★arxiv.org/html/2002.06975v1 은 HTTP 404(2020 논문) → r.jina.ai/https://arxiv.org/pdf/2002.06975 로 2회 판독, 두 회 축자 일치. [B] arXiv:1403.8125 §3.2(arxiv.org/html/1403.8125v1 본 축 직접 판독) — 'In the cases of the S&P 500 and KOSPI 200 universes, numbers of groups are 10' · 'The winner group is at long (short) position and the loser group is at short (long) position.' · 'Each group is constructed as an equal-weighted portfolio.' · 'Based on given selection rules during 6 months (weeks) of estimation period' · 'After 6 months (weeks) of the holding period, each basket is liquidated.' · 'The portfolio is constructed at the beginning of every month, i.e. it is the overlapping portfolio.'",
+
+  "confidence": "high",
+
+  "checked": "① 롱/숏 레그: [A] 전략 (ii) 롱숏 미구현 · [B] 승자롱/패자숏 미구현 → 실측 has_short=false · 04_holdings.csv 6,500행 전부 양(+) 0.04 · 음수·Leg 열 0건 (선언 = changed ③(5)) ② 분위: [A] 'top quintile' = engine.R:892·895 nq <- N %/% 5 · q := seq_len(.N) <= nq (floor 정수화 = source_paper.note 'NOT STATED' 로 신고) · [B] 10분위 그룹 미구현(CM 을 그룹이 아니라 풀 안 순서로 소비 — 선언) ③ 종목수: 논문 5분위 전원(≈34~70종 · TOPIX500 이면 ≈100) vs 실현 25종 고정(260/260 리밸일 · 10_audit.csv holdings_cap) — 선언 ④ 비중: 양 논문 'equal weight'/'equal-weighted portfolio' vs 실현 target_weight=actual_weight=0.04=1/25 · Σw=1.00 · 상한·틸트 0건 → 불변 ⑤ 2층 절단 곱셈 붕괴: 풀 floor(N/5)=34~70 ≥ 25 (N 170~351 · N ≤ 124 인 달 0건) → 실현 25종은 전 기간 5분위 내부 ⑥ 집행 단위: [A] 5포트폴리오 각 20% 일별 교대 · [B] 6개월 오버래핑 → 단일 월간 1바스켓(선언 ③(5)) ⑦ 선언 대조: FIDELITY portfolio_spec ↔ 01_strategy_spec.json 문자 일치(construction top_n_long · weight_method ew · rebalance monthly · n_max 25 · has_short false)",
+
+  "note": "이 축에서 논문과 갈리는 항목은 4건(롱숏 레그 미구현 · 5분위 전원→25종 · 5트랜치/오버래핑 집행 폐기 · [B] 10분위 그룹 폐기)이고 전부 FIDELITY.changed ③(5) 에 명시돼 있다 — 비중 방법(EW)은 양 논문과 동일하다. 축 밖 한 줄: 10_audit.csv 의 PIT WARN 4건(C1~C15 명시 reference 부재 · survivorship_bias_control 부재 · c15_factor_db_load_path · lookahead_detector_self_scan)은 PIT 축 검증자 소관이다."
+}
