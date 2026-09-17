@@ -96,14 +96,16 @@ ar_entries_df <- function(led, att = NULL) {
     sub <- if (nrow(att)) att[att$base_id == bid, , drop = FALSE] else att
     ms  <- if (nrow(sub)) sub[sub$measured, , drop = FALSE] else sub
     bi  <- if (nrow(ms)) which.max(ms$port_t) else integer(0)
-    kind <- if (grepl("_combo", bid)) "combo"
-            else if (!is.null(E$parent)) "promo"
+    kind <- if (!is.null(E$parent)) "promo"
+            else if (grepl("_combo", bid)) "combo"
             else if (grepl("rescued", bid)) "rescued" else "root"
     rows[[length(rows) + 1L]] <- data.frame(
       base_id      = bid,
       status       = .ar_chr(E$status),
       kind         = kind,
       base_grade   = .ar_chr(E$base_grade),
+      base_artifacts = .ar_chr(E$base_artifacts),
+      combo_lineage  = grepl("_combo", bid),
       paper_key    = .ar_chr(E$paper_key),
       parent_id    = .ar_chr(E$parent$base_id),
       parent_depth = as.integer(E$parent$depth %||% 0L),
