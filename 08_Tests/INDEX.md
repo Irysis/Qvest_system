@@ -1,6 +1,6 @@
 # 08_Tests INDEX
 
-> 자동 생성 2026-09-17 08:47 — 큐레이션 원본: `06_Registry/index_descriptions.json` (role/status/category 수동 보완처) · 재생성: `Rscript 02_Infrastructure/tools/build_artifact_index.R` (daily_refresh 말미 자동). 본 파일 직접 수정 금지 — 재생성 시 덮어씀.
+> 자동 생성 2026-09-18 07:40 — 큐레이션 원본: `06_Registry/index_descriptions.json` (role/status/category 수동 보완처) · 재생성: `Rscript 02_Infrastructure/tools/build_artifact_index.R` (daily_refresh 말미 자동). 본 파일 직접 수정 금지 — 재생성 시 덮어씀.
 
 ## 계약 (4)
 
@@ -48,8 +48,8 @@
 | `fixtures` | (미분류 — index_descriptions.json에 추가하세요) | - | 2026-09-07 | 16KB |
 | `lib` | (미분류 — index_descriptions.json에 추가하세요) | - | 2026-08-02 | 6KB |
 | `methods` | (미분류 — index_descriptions.json에 추가하세요) | - | 2026-08-13 | 21KB |
-| `ops` | (미분류 — index_descriptions.json에 추가하세요) | - | 2026-09-15 | 611KB |
-| `reinforcement` | (미분류 — index_descriptions.json에 추가하세요) | - | 2026-09-07 | 423KB |
+| `ops` | (미분류 — index_descriptions.json에 추가하세요) | - | 2026-09-17 | 681KB |
+| `reinforcement` | (미분류 — index_descriptions.json에 추가하세요) | - | 2026-09-17 | 700KB |
 | `validation` | (미분류 — index_descriptions.json에 추가하세요) | - | 2026-07-26 | 20KB |
 | `worktask` | (미분류 — index_descriptions.json에 추가하세요) | - | 2026-09-03 | 31KB |
 
