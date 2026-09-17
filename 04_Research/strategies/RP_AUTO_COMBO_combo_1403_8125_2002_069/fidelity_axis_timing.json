@@ -1,0 +1,11 @@
+{
+  "axis": "timing",
+  "verdict": "adapted",
+  "undeclared_changes": [],
+  "signal_mismatch": [],
+  "counterexample": "[A] Abe-Nakagawa: 신호는 종가 시점에 나오고 익일 시가 진입, 5영업일(K) 뒤 종가 청산 — 5개 트랜치를 하루씩 교대(daily rotation)해 어느 한 트랜치 보유기간도 5거래일을 넘지 않는다('We rebalance one of five portfolios hold 20% every business day.' / 'we will hold all five portfolios equally.'). 구현은 월말 DNN 5분위 소속을 그대로 '풀'로 쓰되 실제 보유기간은 월간(약 21거래일)이다 — 예: 어느 종목이 월초 DNN 5일 예측으로 5분위에 들었지만 그 5일 신호가 이미 반전된 뒤(거래일 +10)에도 월말까지 그대로 보유된다. [B] Choi-Choi-Kang: 형성창 6개월 → 보유 6개월, 매월 새 코호트가 겹쳐(overlapping) 6개 코호트 평균으로 헤드라인 수치(Table 3)가 난다('After 6 months (weeks) of the holding period, each basket is liquidated. The portfolio is constructed at the beginning of every month, i.e. it is the overlapping portfolio.'). 구현은 형성창(6개월)은 논문 그대로 (me[k-6], f] 로 계산하지만(engine.R:840-855) 보유는 1개월로 청산 후 재형성한다(portfolio_spec.rebalance=monthly) — 6개월 오버래핑 평균 구조가 없어 코호트 간 스무딩 효과가 사라진다.",
+  "evidence": "[A] r.jina.ai/https://arxiv.org/pdf/2002.06975 — 'The prediction models are updated every five business days.' / 'We rebalance one of five portfolios hold 20% every business day.' / 'we will hold all five portfolios equally.' / 'we build a portfolio with information available at the time of market closing and invest at the time of market opening the next day.' (스킵 없음 — 종가 다음날 시가 즉시 진입) · [B] arxiv.org/html/1403.8125v1 §3.2 — 'Based on given selection rules during 6 months (weeks) of estimation period...' / 'After 6 months (weeks) of the holding period, each basket is liquidated. The portfolio is constructed at the beginning of every month, i.e. it is the overlapping portfolio.' (스킵기간 언급 없음 — 형성창 종료 직후 즉시 보유 시작) — 이 세션 WebFetch 2회로 직접 재확인.",
+  "confidence": "high",
+  "checked": "[A] 보유 5영업일·일간 5트랜치 교대(원문) vs 구현 월간 보유(고정축) — FIDELITY changed③(5)에 선언 · [A] 모델 갱신 5영업일 그리드·앵커(3판 승계, 이 판에서 불변) · [B] 형성창 6개월 산술 — engine.R:840-855 (me[k-6],f] 이 원문 '6 months of estimation period' 과 수치 일치 · [B] 보유 6개월→1개월(고정축)·오버래핑 코호트 평균 없음 — FIDELITY changed③(5)(7)에 선언 · 두 논문 모두 형성-보유 사이 스킵 기간 언급 없음(원문 확인) — 구현도 스킵 0(신호일 종가 → 익 거래일 진입, C2·C3 창∩보유월=∅) — 일치.",
+  "note": "K(보유기간)는 [A][B] 둘 다 논문값(5일/6개월)에서 고정축 월간으로 바뀌었지만 FIDELITY changed③(5)(7)·portfolio_spec 이 정확한 수치와 함께 정직하게 선언한다. J(형성창)는 [B]만 해당하며 6개월 그대로 구현. 스킵 기간은 두 논문 모두 원문에 없고 구현도 스킵 0으로 일치 — 불일치 없음."
+}

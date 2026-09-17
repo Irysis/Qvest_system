@@ -1,0 +1,11 @@
+{
+  "axis": "cost",
+  "verdict": "adapted",
+  "undeclared_changes": [],
+  "signal_mismatch": [],
+  "counterexample": "구성하지 못했다 — 두 논문 모두 거래비용 수치를 명시하지 않아(본 세션 직접 재확인, 아래 evidence) '논문 비용 대비 유리하게 기울었다'고 지목할 기준값 자체가 없다. engine.R 은 FACTORS 만 내고 비용을 전혀 계산하지 않으며(§4~§11 grep — bps·commission·cost 문자열 0건), 15bps 는 러너(00_manifest.json transaction_cost_bps=15)가 모든 충실구현에 공통 적용하는 고정 축이지 이 엔진이 유리하게 설정한 값이 아니다. FIDELITY 가 인용한 paper_reported(A: Alpha 5.11%·IR 1.70 / B: KOSPI CM W-L 1.4330%)는 changed 필드와 paper_original_form 에서 문맥 인용으로만 쓰이고, 06_metrics.csv 의 실측치(Sharpe 0.976·CAGR 22.2%)와 나란히 '같은 비용 기준의 비교'로 제시되지 않는다 — 두 수치 계열이 섞여 인용된 지점 0건.",
+  "evidence": "[A] r.jina.ai PDF 프록시(2002.06975) 본 세션 재확인 — 'A portfolio with a high turnover rate will have more transaction costs than with a portfolio with a lower rate.' / 'In addition, the portfolio turnover rate is calculated and compared in order to consider the impact of transaction costs.' / TN(one-way turnover) 정의만 있고 실제 수수료 bps·차감 여부(gross/net) 명시 없음. [B] arxiv.org/html/1403.8125v1 본 세션 재확인 — 거래비용·수수료·슬리피지 언급 전무, Table 3 수익률의 gross/net 여부 미명시. FIDELITY.json commission_paper=null·note 'NOT STATED(두 논문 공통): 거래비용'·changed ①⑥ '비용 서술은 turnover 문장뿐(NOT STATED)' / [B] '비용 서술 없음(gross)' 과 위 재확인 결과가 일치.",
+  "confidence": "high",
+  "checked": "engine.R 전체(§0~§11)에서 bps/commission/cost/slippage 관련 계산 부재 확인 · 00_manifest.json transaction_cost_bps=15·slippage_bps=0 이 이 전략 전용이 아닌 러너 공통 고정 축인지 확인 · FIDELITY.json commission_paper·paper_reported·note 필드와 [A][B] 원문(재요청)의 비용 서술 대조 · changed 필드에서 paper_reported 수치가 15bps 실측치와 병치·혼동되는 지점이 있는지 탐색(0건)",
+  "note": "두 재료 논문 모두 거래비용을 명시하지 않아(A: turnover 언급뿐, B: 전무) 이 축은 '논문 비용 대비 어느 쪽으로 기울었는가'를 판정할 수 없는 구조다. FIDELITY 는 이를 commission_paper=null 로 정직하게 비워두었고 15bps 는 전 충실구현 공통 규약(고정 축)이지 이 조합만의 완화가 아니다 — adapted(선언된 대체)이지 misdeclared 아니다."
+}

@@ -1,0 +1,11 @@
+{
+  "axis": "universe",
+  "verdict": "adapted",
+  "undeclared_changes": [],
+  "signal_mismatch": [],
+  "counterexample": "어느 시그널월 f 에서 K200∪KQ150 당일 멤버 350종 중 300종만 adv20(f-1) ≥ 2e8 을 통과한다고 하면, [A] 논문의 'top quintile of the stocks'(유니버스 전체 기준)를 그대로 따를 경우 풀 = floor(350/5) = 70종이어야 하지만, engine.R:890-895(tk <- .ELIG[...]; md <- md[Ticker %chin% tk]; nq <- N %/% .QUINT)는 유동성 통과 300종 안에서만 floor(300/5) = 60종을 풀로 잡는다 — 유동성 하위 50종은 DNN 점수가 아무리 높아도 풀 진입이 원천 차단된다. 이는 FIDELITY.changed ③(6)이 '고정 축 adv20(f−1) ≥ 2e8 은 포트폴리오 형성(풀 정의·FACTORS 행)에만 건다'로 명시적으로 신고한 차이이므로 misdeclared 는 아니다.",
+  "evidence": "[A] 2002.06975 전문(r.jina.ai 프록시, 본 세션 fetch): 유니버스 서술은 'We prepare dataset for TOPIX500 Index constituents. The TOPIX500 Index comprises the large and mid-cap segments of the Japanese stock market.' 뿐이고, 상장폐지·가격하한·유동성 필터·업종 제외·survivorship 언급 0건(데이터원 문장 'we acquire necessary data from Factset, WorldScope, Thomson Reuters, I/B/E/S' 뿐). [B] 1403.8125 전문(arxiv.org/html/1403.8125v1, 본 세션 fetch): 유니버스 서술은 'The KOSPI 200 is a stock benchmark index that is the value-weighted and sector-diversified index with 200 stocks in South Korea stock markets.' + 'Historical price information and component-roster are downloaded from Korea Exchange. The period from January 2003 to December 2012 is considered.' 뿐이고 마찬가지로 가격하한·유동성·업종제외·상장폐지 처리·survivorship 서술 0건.",
+  "confidence": "high",
+  "checked": "[A]·[B] 원문 전문에서 유니버스 정의·선별 규칙 서술 전수 확인(둘 다 지수 구성종목 외 필터 0건) · engine.R §3 멤버십 정의(K200∪KQ150 · CJ 크로스조인 · PIT 시변 플래그) · §4/§10/§11 유동성 필터(adv20_l1 ≥ 2e8) 적용 지점(풀 정의·FACTORS 행에만, DNN 패널 학습에는 미적용) 코드-선언 일치 여부 · FIDELITY.changed ③(6)·(11) 신고 내용과 engine.R:837(.ELIG)·:890-895(tk 필터→nq 계산) 대조.",
+  "note": "두 논문 모두 유니버스=지수 구성종목 외 어떤 선별 규칙도 명시하지 않는다. 코드가 얹은 유일한 필터(유동성 adv20≥2e8)는 두 논문 어디에도 없지만 FIDELITY.changed에 정직하게 신고돼 있고, 적용 지점(풀 정의에만·DNN 학습 패널에는 미적용)도 코드와 정확히 일치한다 — misdeclared 근거를 원문에서 찾지 못했다."
+}
