@@ -376,10 +376,13 @@ if grep -q "authoritative_remeasure" 02_Infrastructure/ops/rf_replication_verify
   ok "등급 출처 = 계약 산출물"; else ng "등급 출처 불명"; fi
 # ★PIT 구조 검사 존재 (정적 CLEAN 만 믿지 않는다)
 # ★환경 실패(인증 만료)와 리서치 실패를 구분하는가 — 뭉뚱그리면 엉뚱한 판단을 부른다
-if grep -q "halt_auth_expired" 02_Infrastructure/ops/rf_replication_auto.sh; then
+#   ★표적 이설(2026-09-17): 구 표적 halt_auth_expired 는 09-07 환경 실패 통합(halt_env_failure kind=…)
+#   이후 레인에 없다 — 이 항목과 아래 두 항목은 그날부터 **죽은 표적에 빨강**을 내며 실제 분기를 안 재고 있었다.
+if grep -q 'ENV_FAIL="claude_auth_expired"' 02_Infrastructure/ops/rf_replication_auto.sh \
+   && grep -q "jl halt_env_failure" 02_Infrastructure/ops/rf_replication_auto.sh; then
   ok "인증 만료 분기 존재(리서치 실패와 구분)"; else ng "환경 실패 미구분"; fi
 # ★인증 만료 시 pending 을 유지하는가 — failed 로 바꾸면 재인증해도 재시도가 안 된다
-if sed -n '/halt_auth_expired/,/^fi$/p' 02_Infrastructure/ops/rf_replication_auto.sh | grep -q "status'\]='pending'"; then
+if sed -n '/jl halt_env_failure/,/^fi$/p' 02_Infrastructure/ops/rf_replication_auto.sh | grep -q 'd\["status"\] = "pending"'; then
   ok "인증 만료 → pending 유지(자동 재시도 가능)"; else ng "인증 만료 시 pending 미유지"; fi
 if grep -q "pit_structural" 02_Infrastructure/ops/rf_replication_verify.R; then
   ok "PIT 구조 검사 존재"; else ng "PIT 구조 검사 없음"; fi
@@ -426,8 +429,13 @@ if [ -f 06_Registry/replication_skiplist.json ] \
 
 echo "=== 13. LLM 모델·노력수준 명시 ==="
 # ★미지정이면 CLI 기본값에 의존한다 — 무인이라 아무도 눈치채지 못한다(도훈 지적 2026-08-30)
+#   ★충실구현 레인은 2026-09-17 부터 실행기 rf_llm_env.sh::rf_llm_agent_run 을 거친다(Fable 한도 → opus/max 폴백).
+#     플래그는 실행기에 있으므로 "레인이 실행기를 부르고 실행기가 두 플래그를 싣는가" 로 소비자에서 잰다.
 for f in 02_Infrastructure/ops/rf_replication_auto.sh 02_Infrastructure/ops/rf_grid_propose.sh; do
-  if grep -q -- "--model" "$f" && grep -q -- "--effort" "$f"; then
+  if grep -q "rf_llm_agent_run " "$f"; then
+    if sed -n '/^rf_llm_agent_run()/,/^}/p' 02_Infrastructure/ops/rf_llm_env.sh | grep -q -- '--model "\$LLM_MODEL" --effort "\$LLM_EFFORT"'; then
+      ok "model/effort 명시: $(basename $f) (실행기 경유)"; else ng "model/effort 미지정: $(basename $f)" "실행기가 --model/--effort 를 안 싣는다"; fi
+  elif grep -q -- "--model" "$f" && grep -q -- "--effort" "$f"; then
     ok "model/effort 명시: $(basename $f)"; else ng "model/effort 미지정: $(basename $f)"; fi
 done
 if "$PY" -c "
@@ -444,7 +452,7 @@ if "$PY" -c "import ast,io; ast.parse(io.open('02_Infrastructure/ops/rf_cycle_ti
 if grep -q "in_progress" 02_Infrastructure/ops/rf_replication_auto.sh; then
   ok "요청 상태 전이(pending→in_progress) 존재"; else ng "상태 전이 없음 — 중복 LLM 호출 위험"; fi
 # ★인증 실패는 pending 으로 되돌아가야 재인증 후 자동 재시도된다
-if sed -n '/halt_auth_expired/,/^fi$/p' 02_Infrastructure/ops/rf_replication_auto.sh | grep -q "pending"; then
+if sed -n '/jl halt_env_failure/,/^fi$/p' 02_Infrastructure/ops/rf_replication_auto.sh | grep -q "pending"; then
   ok "인증 실패 → pending 복원"; else ng "인증 실패 후 재시도 불가"; fi
 
 echo "=== 15. 기저 신호 캐시 ==="

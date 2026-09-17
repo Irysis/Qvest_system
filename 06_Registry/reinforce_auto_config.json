@@ -73,11 +73,17 @@
     ],
     "rationale": "★2026-09-04 도훈 결정 — 모델 claude-fable-5-1 · 노력수준은 **레인마다 다르게**. 하나로 정하면 손해다: 레인마다 한 번 실패의 대가가 다르다. 실측(9월 로그): replication 은 28회 착수에 재구현 10회이고 한 번 실패가 에이전트 12분 + 측정 + 팬아웃 6축을 다시 태운다 -> max. b1_design/lcode_mechanism/overlay_propose 는 단발이고 폴백·probe 가 뒤에 있어 실패가 싸다 -> high. fidelity_audit 은 팬아웃으로 축이 좁아져(6축 각자 논문 한 절) 요구 깊이가 줄었다 -> xhigh. ★구 근거(2026-08-29 '최고 산출이 전부 깊은 opus 단일 에이전트에서 나왔다')는 사실 기록으로 남지만 Fable 5.1 이 이 레인에 붙기 전 관측이다 — 재보는 것이 맞다. 설정이 중앙화돼 있어 한 줄씩 되돌릴 수 있다.",
     "consumed_by": "02_Infrastructure/ops/rf_llm_env.sh::rf_llm_resolve — 다섯 레인(replication·overlay_propose·b1_design·fidelity_audit·cleaner_distill)이 여기서 읽는다. ★2026-09-04 이전에는 이 블록을 **읽는 코드가 0건**이었고 각 레인이 자기 기본값(:-opus/:-max)을 들고 있었다 — 정책을 적어 둔 문서를 아무도 소비하지 않는 상태였다.",
+    "fable_limit_fallback": {
+      "model": "opus",
+      "effort": "max",
+      "note": "★도훈 지시 2026-09-17 \"fable 한도 소진하면 opus 5 최대 effort 로 진행\". Fable 계열로 해석된 레인에만 붙는다(rf_llm_env.sh::rf_llm_resolve → LLM_FALLBACK_MODEL/EFFORT). 집행 = rf_llm_agent_run 두 겹: ①claude --fallback-model(CLI 내부 과부하·사용불가 전환 — 한도 소진 포함 여부는 CLI 문서에 없음) ②이번 실행 출력의 한도 문구 감지 → 폴백 모델로 처음부터 1회 재실행(보장선). 폴백까지 한도면 구판처럼 환경 실패(재시도 예산 미소모·쿨다운). 배선 레인 = replication(현행 유일한 Fable 레인). 끄기 = 환경변수 QVEST_LLM_FALLBACK=off. ★model 은 별칭 'opus' — CLI 가 최신 Opus 로 푼다(2.1.261 실측 claude-opus-5)."
+    },
+    "model_alias_policy": "★도훈 지시 2026-09-17 \"opus, fable 모두 다른 명령 없이도 항상 최신 모델\". 모델은 ID(claude-fable-5-1 등)가 아니라 별칭(fable/opus/sonnet)으로 적는다 — CLI 가 그날의 최신으로 푼다. 실측(CLI 2.1.261 · --output-format json modelUsage): fable→claude-fable-5-1 · opus→claude-opus-5. 스케줄러 세션도 같은 CLI 2.1.261(transcript version 필드). 검사 = 08_Tests/ops/test_rf_llm_fallback.sh(ID 고정 재발 차단).",
     "lanes": {
       "replication": {
-        "model": "claude-fable-5-1",
+        "model": "fable",
         "effort": "max",
-        "note": "★도훈 지시 2026-09-05 17:1x — 충실구현 레인을 Fable 5.1/max 로(npm 전역 CLI 2.1.170→최신 업데이트 후 claude -p 실응답 FABLE_OK 로 검증). 다른 레인은 opus 유지. ★첫 Fable 착수는 engine.R 실물 생성까지 확인(어제 롤백 교훈: rc=0 인데 산출물 0)."
+        "note": "★도훈 지시 2026-09-05 17:1x — 충실구현 레인을 Fable 5.1/max 로(npm 전역 CLI 2.1.170→최신 업데이트 후 claude -p 실응답 FABLE_OK 로 검증). 다른 레인은 opus 유지. ★첫 Fable 착수는 engine.R 실물 생성까지 확인(어제 롤백 교훈: rc=0 인데 산출물 0). ★2026-09-17: ID claude-fable-5-1 → 별칭 fable(항상 최신 Fable) + 한도 시 opus/max 폴백(llm.fable_limit_fallback)."
       },
       "fidelity_audit": {
         "model": "opus",

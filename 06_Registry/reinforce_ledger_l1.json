@@ -36716,7 +36716,7 @@
       "target_grade": "A",
       "measurement_axis": "n_max_25",
       "axis_valid": true,
-      "attempts_used": 18,
+      "attempts_used": 19,
       "attempts": [
         {
           "n": 1,
@@ -37297,10 +37297,10 @@
           "evidence": "paper",
           "unmapped_families": [],
           "axiom_injected": true,
-          "grade": "NA (미결 — arm×유니버스 양립 불가)",
-          "lessons": "B2_7: weight:qepm:CVaR_LP × k200_kq150 — 앞서 커버리지로 막힌 조합(B2_9, [rf_cell_engine] arm qepm:CVaR_LP 커버리지 63.6% (<80%) — 침묵 부분측정 금지)",
+          "grade": "B",
+          "lessons": "[B2_7] Grade B · 구속 calmar(0.382/0.64)·oos(-0.129/0.70) (5조건 중 3 충족) · carry 대비 MDD 0.569→0.586(+3.0%) · CAGR 0.177→0.224(+26.6%) → 수익만 늘었다(위험 축 미개입)",
           "opened_at": "2026-09-17T18:43:20+0900",
-          "closed_at": "2026-09-17T18:43:22+0900",
+          "closed_at": "2026-09-17T19:07:39+0900",
           "fail_count": 0,
           "terminal": false,
           "reopened": [
@@ -37311,7 +37311,20 @@
               "was_fail_count": 1,
               "prev_terminal_reason": "양립성 장부 차단 — weight:qepm:CVaR_LP × k200_kq150 — 앞서 커버리지로 막힌 조합(B2_9, [rf_cell_engine] arm qepm:CVaR_LP 커버리지 63.6% (<80%) — 침묵 부분측정 금지)"
             }
-          ]
+          ],
+          "essence": {
+            "cell_code": "B2_7",
+            "block": "B2",
+            "port_t": 3.066,
+            "net_sharpe": 1.016,
+            "cagr": 0.224,
+            "mdd": 0.586,
+            "calmar": 0.382,
+            "oos_retention": -0.129,
+            "spec": "C:/Users/99922/OneDrive/Quant_Module_Moltbot/.cache/rf_parallel/spec_B2_7__RP_20260917_105807_22632_combo_rulefast.json",
+            "source": "authoritative_remeasure.json"
+          },
+          "artifacts": "C:/Users/99922/OneDrive/Quant_Module_Moltbot/stage_artifacts/replication/20260917_185844_11220"
         },
         {
           "n": 16,
@@ -37429,6 +37442,45 @@
           "lessons": "[B2_10] Grade C · 구속 port_t(1.416/2.95)·calmar(0.311/0.64)·oos(-0.496/0.70) (5조건 중 2 충족) · carry 대비 MDD 0.477→0.569(+19.3%) · CAGR 0.203→0.177(-12.8%) → 양쪽 다 악화",
           "opened_at": "2026-09-17T18:43:53+0900",
           "closed_at": "2026-09-17T18:55:33+0900"
+        },
+        {
+          "n": 19,
+          "date": "20260917",
+          "cell_code": "B2_11",
+          "idea": "[무인 병렬 B2_11] 공분산 미사용 최소개입 대조 — B2/weighting · factor2=none · weighting=catalog · universe=k200_kq150",
+          "keyword_axis": "weighting",
+          "root_papers": [
+            {
+              "url": "https://arxiv.org/abs/2002.06975",
+              "title": "결합: Cross-sectional Stock Price Prediction using Deep Learning for Actual Investment Management + One Factor to Bind the Cross-Section of Returns + Maximum drawdown, recovery, and momentum + Pinchuk (2023) Labor Income Risk and the Cross-Section of Expected Returns + Uncovering a factor-based expected return conditioning structure with Regression Trees jointly for many stocks + Dirichlet policies for reinforced factor portfolios",
+              "paper_key": "combo:1403.8125+2002.06975+2007.08115+2011.05381+2301.09173+2404.08129"
+            },
+            {
+              "title": "Chan, Jegadeesh & Lakonishok (1996), Momentum Strategies, JF 51(5)",
+              "url": "https://onlinelibrary.wiley.com/doi/10.1111/j.1540-6261.1996.tb05222.x"
+            }
+          ],
+          "wt_id": null,
+          "evidence": "paper",
+          "unmapped_families": [],
+          "axiom_injected": true,
+          "grade": "B",
+          "essence": {
+            "cell_code": "B2_11",
+            "block": "B2",
+            "port_t": 2.647,
+            "net_sharpe": 0.996,
+            "cagr": 0.213,
+            "mdd": 0.601,
+            "calmar": 0.354,
+            "oos_retention": -0.142,
+            "spec": "C:/Users/99922/OneDrive/Quant_Module_Moltbot/.cache/rf_parallel/spec_B2_11__RP_20260917_105807_22632_combo_rulefast.json",
+            "source": "authoritative_remeasure.json"
+          },
+          "artifacts": "C:/Users/99922/OneDrive/Quant_Module_Moltbot/stage_artifacts/replication/20260917_191521_20796",
+          "lessons": "[B2_11] Grade B · 구속 port_t(2.647/2.95)·calmar(0.354/0.64)·oos(-0.142/0.70) (5조건 중 2 충족) · carry 대비 MDD 0.569→0.601(+5.6%) · CAGR 0.177→0.213(+20.3%) → 수익만 늘었다(위험 축 미개입)",
+          "opened_at": "2026-09-17T19:14:50+0900",
+          "closed_at": "2026-09-17T19:19:57+0900"
         }
       ],
       "judge": {
@@ -37793,7 +37845,7 @@
     ],
     "retro_note": "2026-09-04 소급: count_paper 키 부재로 1→4 (rf_replication_auto.sh C_COUNT 수리)"
   },
-  "last_updated": "2026-09-17T18:56:06+0900",
+  "last_updated": "2026-09-17T19:19:57+0900",
   "removed_entries": [
     {
       "removed_at": "2026-08-30T10:07:35+0900",

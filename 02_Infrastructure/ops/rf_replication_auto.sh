@@ -533,19 +533,39 @@ $AXB"; fi
 rf_llm_resolve replication "${QVEST_RP_MODEL:-}" "${QVEST_RP_EFFORT:-}"
 RP_MODEL="$LLM_MODEL"
 RP_EFFORT="$LLM_EFFORT"
-jl model_selected "model=$RP_MODEL" "effort=$RP_EFFORT"
+jl model_selected "model=$RP_MODEL" "effort=$RP_EFFORT" "fallback=${LLM_FALLBACK_MODEL:-none}/${LLM_FALLBACK_EFFORT:-none}"
 # ★프롬프트는 stdin 으로 (2026-09-04): argv 로 넘기면 Windows 인자 상한(32K)에 걸려 에이전트가 안 뜰다 — 승격 entry B1 설계 재료 41KB 실사고.
 PF="$WDIR/prompt.txt"
 printf %s "$PROMPT" > "$PF"
-timeout 3000 claude -p < "$PF" \
-  --model "$RP_MODEL" --effort "$RP_EFFORT" \
+# ★Fable 한도 → Opus 최신·max 폴백 (도훈 지시 2026-09-17 · 정본 rf_llm_env.sh::rf_llm_agent_run).
+#   한도는 실행 **도중**에도 걸린다 — 그때 반쯤 쓴 engine.R/FIDELITY.json 위에서 폴백이 이어 쓰면 두 모델의
+#   합작이 측정된다. 그래서 1차 실행 전 상태를 떠 두고, 폴백 직전에 1차가 바꾼 파일은 _limit_partial/ 로
+#   치운 뒤 전 상태로 되돌린다(같은 요청의 재실행이 되게). 치운 파일은 지우지 않는다 — 사후 대조용.
+SNAP="$WDIR/.pre_agent_snapshot"
+rm -rf "$SNAP"; mkdir -p "$SNAP"
+for _f in engine.R FIDELITY.json ABORT.txt; do [ -f "$WDIR/$_f" ] && cp -p "$WDIR/$_f" "$SNAP/$_f"; done
+rf_llm_before_fallback() {
+  local part="$WDIR/_limit_partial/$(date +%Y%m%d_%H%M%S)" f moved=""
+  for f in engine.R FIDELITY.json ABORT.txt; do
+    if [ -f "$WDIR/$f" ] && ! cmp -s "$WDIR/$f" "$SNAP/$f" 2>/dev/null; then
+      mkdir -p "$part"; mv -f "$WDIR/$f" "$part/$f"; moved="$moved $f"
+    fi
+    if [ -f "$SNAP/$f" ] && [ ! -f "$WDIR/$f" ]; then cp -p "$SNAP/$f" "$WDIR/$f"; fi
+  done
+  jl model_fallback "from=$RP_MODEL" "to=$LLM_FALLBACK_MODEL" "effort=$LLM_FALLBACK_EFFORT" \
+    "why=limit_in_run_output" "moved_aside=${moved:- none}"
+}
+RUN_OUT="$WDIR/.agent_run.out"
+rf_llm_agent_run "$PF" "$RUN_OUT" 3000 \
   --permission-mode acceptEdits \
   --allowed-tools "Read,Write,Edit,Glob,Grep,WebFetch,WebSearch" \
   --disallowed-tools "Bash,Agent" \
-  --add-dir "$WDIR" \
-  >> "$LOG" 2>&1
-RC=$?
-jl agent_done "rc=$RC"
+  --add-dir "$WDIR"
+RC=$LLM_RC
+[ -f "$RUN_OUT.primary" ] && cat "$RUN_OUT.primary" >> "$LOG"
+cat "$RUN_OUT" >> "$LOG" 2>/dev/null
+rm -rf "$SNAP"
+jl agent_done "rc=$RC" "model=$LLM_USED_MODEL" "effort=$LLM_USED_EFFORT" "fell_back=$LLM_FELL_BACK"
 
 if [ -f "$WDIR/ABORT.txt" ]; then
   jl aborted_by_agent "reason=$(head -c 120 "$WDIR/ABORT.txt" | tr '\n' ' ')"
@@ -566,10 +586,14 @@ fi
 # ★같은 날 발견한 두 번째 결함: 알림 블록이 한 번도 나간 적이 없다. 구판은 따옴표 헤레독(quoted delimiter)이라 $ROOT 가 안 풀렸고(리터럴 경로), 문자열 안에 생짜 개행이 있어
 #   파이썬이 파싱에서 죽었다 — 2>/dev/null || true 가 그 죽음을 삼켰다.
 #   ⇒ ROOT 를 argv 로 넘기고 개행은 \n 으로 쓴다(같은 계통 재발 방지 = 검사 B절).
+# ★판정 대상 = **이번 실행의 최종 출력**(2026-09-17). 구판은 그날 로그($LOG) 전체를 grep 해서, 같은 날 앞선
+#   실행의 한도·인증 문구가 뒤의 멀쩡한 실행을 환경 실패로 덮었다(1806.01743 3판 측정 0회의 한 원인).
+#   폴백이 생긴 뒤로는 더 치명적이다 — 1차의 한도 문구가 로그에 남아 폴백 성공을 매번 무효로 만든다.
+#   폴백까지 한도면 최종 출력에 문구가 남아 여기서 잡힌다(재시도 예산 미소모 · 쿨다운 — 구판 거동 유지).
 ENV_FAIL=""
-if grep -qiE "OAuth access token has expired|Failed to authenticate|API Error: 401|Invalid API key" "$LOG" 2>/dev/null; then
+if grep -qiE "OAuth access token has expired|Failed to authenticate|API Error: 401|Invalid API key" "$RUN_OUT" 2>/dev/null; then
   ENV_FAIL="claude_auth_expired"
-elif grep -qiE "(reached|hit) your [A-Za-z0-9 .-]*limit|(session|usage) limit|manage usage credits|rate_limit_error|API Error: 429|resets [0-9]+(:[0-9]+)?(am|pm)" "$LOG" 2>/dev/null; then
+elif rf_llm_limit_hit "$RUN_OUT"; then
   ENV_FAIL="model_quota_exhausted"
 fi
 if [ -n "$ENV_FAIL" ]; then
