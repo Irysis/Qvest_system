@@ -1,0 +1,11 @@
+{
+  "axis": "timing",
+  "verdict": "adapted",
+  "undeclared_changes": [],
+  "signal_mismatch": [],
+  "counterexample": "구성 못 했다. 논문은 f(holding window length)·Q(percentile)·Train-1/Train-2/Validation 분할 비율·포트폴리오 리밸런싱 빈도·재학습 규칙 중 어느 것도 수치로 인쇄하지 않는다(WebFetch로 원문 재질의해 NOT STATED 확인). 구현은 이 모든 빈칸을 고정 축(f=보유월 거래일·Q=25·월말마다 최근 6 실현 횡단면 재학습·시간순 3등분·월간 EW 25종 롱온리·익월 첫 거래일 집행)으로 채웠고, FIDELITY.json changed(2)(3)(10)과 changed_checklist의 '창·워밍업'·'리밸·보유' 행에 이 사실을 명시적으로 신고했다. engine.R 833행(cs = MEnd[j-6..j-1])·838행(3등분)·776행(MI_sig = MI-1, 스킵 없이 익월 수익을 표적으로)·01_strategy_spec.json(rebalance=monthly, t+1 실행)을 대조한 결과 선언과 코드가 일치해 반례를 만들 수 없었다.",
+  "evidence": "arxiv.org/pdf/1806.01743 (r.jina.ai 프록시) 재질의 결과 — Section V.A: 'The training dataset is constructed from Chinese stock data ranging from 2012.08.08 to 2013.02.01 and the testing dataset is constructed from 2013.02.04 to 2013.03.08.'(단일 분할, 재학습 규칙 없음) · Section II: 'yi(t,f) ... during trading period [t+1, t+f], where f is the length of the forward window'(f 수치 미인쇄) · 'at most ⌊2QTM/(100(1+f))⌋ samples can be labeled'(Q·f 모두 변수로만 등장, 값 없음) · Section IV.D: Train-1/Train-2/Validation 정의 문장은 있으나 분할 비율은 Fig.1('Data Split') 캡션이 'Fig. 1. Data Split' 한 줄뿐이라 텍스트로 회수되지 않음 · Section V.B: 포트폴리오 관리 절은 'we use its output ... to construct portfolio and trade it in historical market competing with the market average'만 있고 리밸런싱 빈도·보유기간 언급 없음(재질의 응답: 'Not explicitly stated').",
+  "confidence": "high",
+  "checked": "논문 원문(단일 train/test 기간·f 정의·Fig.1 분할 캡션·§V.B 포트폴리오 절)을 r.jina.ai 프록시로 직접 재질의해 NOT STATED 항목을 확인 → FIDELITY.json changed(2)(3)(10) 신고 내용과 대조 → engine.R §8~9(표적 MI_sig, K_CS=6 롤링 학습창, 시간순 3등분)·01_strategy_spec.json(rebalance monthly, t+1 실행)이 그 신고와 일치하는지 코드 줄 단위로 확인.",
+  "note": "내 축은 아니지만 스쳐가며 발견: 같은 실행의 authoritative_remeasure.json::replication.fidelity 필드가 'universe 치환(K200∪KQ150)만 — 그 외 논문 그대로'라고 적어, 논문이 명시하지 않는 리밸·보유·재학습 축을 전부 지어낸 사실을 가린다 — FIDELITY.json 자체는 정직하지만 이 하류 요약은 그와 배치된다(다른 논문에도 나타나는 정형 문구로 보여 이 전략 고유 결함인지는 미확인)."
+}

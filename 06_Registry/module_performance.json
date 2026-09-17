@@ -1,17 +1,17 @@
 {
   "schema_version": "v3.1",
-  "generated": "2026-09-15",
+  "generated": "2026-09-17",
   "generated_by": "2계층 전략 로테이션 (build_module_performance.R — 계약 floor + v10 grade floor)",
   "regime_source": "unified_regime_signal_daily.parquet Category (t-1 lag PIT)",
   "regimes": ["RISK_ON", "NEUTRAL", "CAUTION", "CRISIS", "RISK_OFF"],
   "metric_type": "backtested_realized (sim_result NAV, 실측-only)",
   "grade_floor": "B",
   "n_floor_excluded": 20,
-  "n_defensive_admitted": 190,
+  "n_defensive_admitted": 188,
   "defensive_route": true,
   "admission_codes": {
     "contract_floor": 176,
-    "defensive_specialist": 190,
+    "defensive_specialist": 188,
     "dscore_absent": 9,
     "dscore_not_ok": 4,
     "grade_floor": 73,
@@ -20,7 +20,7 @@
   "admission_predicate": "02_Infrastructure/contracts/defensive_score.R::ds_pool_eligible (l2_pool_admission.R::l2_admit 경유)",
   "grade_axis": "essence_grade > meta.essence_grade > grade(발행 시점 폴백)",
   "note": "입력 2단 게이트(v10 2026-08-29 도훈): ①계약 floor = module_catalog fr_eligible=true(contract_pass+backtested+frozen+hash/build_version, legacy QEPM grade-A 이관 예외) ②grade floor = essence grade B 이상(QVEST_L2_GRADE_FLOOR, OFF=진단) ∥ 방어형 병렬 경로(QVEST_L2_DEFENSIVE_ROUTE). module_hash는 실제 md5 대조(불일치=skip+quarantine, CAP-P1-2). 배치 심사=RCMA. ★2026-09-07: 자격 술어를 계약(ds_pool_eligible)으로 단일화하고 등급 축을 essence 로 정정.",
-  "n_modules": 275,
+  "n_modules": 273,
   "modules": {
     "STR_944_oc_sue": {
       "source_strategy_id": "STR_944_oc_sue",
@@ -10519,126 +10519,6 @@
           "ir": null,
           "mdd": 0.043,
           "mean_ann": -0.393
-        }
-      }
-    },
-    "RP_20260913_081417_22276": {
-      "source_strategy_id": "RP_20260913_081417_22276",
-      "grade": "F",
-      "role": null,
-      "origin_mode": "replication",
-      "trust_status": "contract_fr_eligible",
-      "admission_route": "defensive_specialist",
-      "admission_code": "defensive_specialist",
-      "admission_reason": "등급 F 이나 방어형 자격 — 하락월 110개: 초과 +5.35%/월 (t 8.34 · 적중 84%) · 벤치-10% 이하 10개: 초과 +17.33%/월 · 상승월 초과 -4.34%/월",
-      "grade_emit": "F",
-      "grade_source": "entry",
-      "freq": "daily",
-      "sim_result_path": "04_Research/strategies/RP_20260913_081417_22276/sim_result.rds",
-      "full_sharpe": 0.709,
-      "full_ir": -0.112,
-      "n_days": 5331,
-      "date_range": ["2005-02-01", "2026-09-11"],
-      "per_regime": {
-        "RISK_ON": {
-          "n_days": 3796,
-          "n_months": 180.8,
-          "sharpe": 0.246,
-          "ir": -0.184,
-          "mdd": 0.491,
-          "mean_ann": 0.0298
-        },
-        "NEUTRAL": {
-          "n_days": 687,
-          "n_months": 32.7,
-          "sharpe": 1.988,
-          "ir": 0.004,
-          "mdd": 0.145,
-          "mean_ann": 0.2729
-        },
-        "CAUTION": {
-          "n_days": 400,
-          "n_months": 19,
-          "sharpe": 1.292,
-          "ir": 0.436,
-          "mdd": 0.143,
-          "mean_ann": 0.2157
-        },
-        "CRISIS": {
-          "n_days": 434,
-          "n_months": 20.7,
-          "sharpe": 1.206,
-          "ir": -0.396,
-          "mdd": 0.28,
-          "mean_ann": 0.2914
-        },
-        "RISK_OFF": {
-          "n_days": 14,
-          "n_months": 0.7,
-          "sharpe": null,
-          "ir": null,
-          "mdd": 0.022,
-          "mean_ann": 1.4045
-        }
-      }
-    },
-    "RP_20260913_063033_21524": {
-      "source_strategy_id": "RP_20260913_063033_21524",
-      "grade": "F",
-      "role": null,
-      "origin_mode": "replication_skipped_base",
-      "trust_status": "contract_fr_eligible",
-      "admission_route": "defensive_specialist",
-      "admission_code": "defensive_specialist",
-      "admission_reason": "등급 F 이나 방어형 자격 — 하락월 110개: 초과 +5.35%/월 (t 8.34 · 적중 84%) · 벤치-10% 이하 10개: 초과 +17.33%/월 · 상승월 초과 -4.34%/월",
-      "grade_emit": "F",
-      "grade_source": "entry",
-      "freq": "daily",
-      "sim_result_path": "04_Research/strategies/RP_20260913_063033_21524/sim_result.rds",
-      "full_sharpe": 0.709,
-      "full_ir": -0.112,
-      "n_days": 5331,
-      "date_range": ["2005-02-01", "2026-09-11"],
-      "per_regime": {
-        "RISK_ON": {
-          "n_days": 3796,
-          "n_months": 180.8,
-          "sharpe": 0.246,
-          "ir": -0.184,
-          "mdd": 0.491,
-          "mean_ann": 0.0298
-        },
-        "NEUTRAL": {
-          "n_days": 687,
-          "n_months": 32.7,
-          "sharpe": 1.988,
-          "ir": 0.004,
-          "mdd": 0.145,
-          "mean_ann": 0.2729
-        },
-        "CAUTION": {
-          "n_days": 400,
-          "n_months": 19,
-          "sharpe": 1.292,
-          "ir": 0.436,
-          "mdd": 0.143,
-          "mean_ann": 0.2157
-        },
-        "CRISIS": {
-          "n_days": 434,
-          "n_months": 20.7,
-          "sharpe": 1.206,
-          "ir": -0.396,
-          "mdd": 0.28,
-          "mean_ann": 0.2914
-        },
-        "RISK_OFF": {
-          "n_days": 14,
-          "n_months": 0.7,
-          "sharpe": null,
-          "ir": null,
-          "mdd": 0.022,
-          "mean_ann": 1.4045
         }
       }
     },
