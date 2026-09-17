@@ -39,17 +39,11 @@ except Exception: print(False)" 2>/dev/null || echo False)
 [ "$ENABLED" = "True" ] || { jl halt_disabled; exit 0; }
 
 # 하루 1건 — 원장에서 오늘 방출 수를 센다(별도 카운터를 만들지 않는다)
-N_TODAY=$("$PY" -c "
-import io,json,datetime
-d=datetime.date.today().isoformat(); n=0
-try:
-    for ln in io.open(r'$LEDG',encoding='utf-8'):
-        ln=ln.strip()
-        if not ln: continue
-        r=json.loads(ln)
-        if r.get('record_type')=='arm_emission' and str(r.get('emitted_at','')).startswith(d): n+=1
-except FileNotFoundError: pass
-print(n)" 2>/dev/null || echo 0)
+# ★v10.4 2026-09-17: **레인 몫만** 센다 — source 가 overlay_propose 이거나 필드가 없는(구판) 기록.
+#   세션 수동 등재·B5 설계 레인의 방출은 자기 source 를 달고 실리므로 이 레인의 하루 예산을 먹지 않는다.
+#   세는 코드는 rf_overlay_ledger_count.py 한 벌 — 검사가 같은 파일을 태운다(인라인 사본 금지).
+N_TODAY=$("$PY" "$ROOT/02_Infrastructure/ops/rf_overlay_ledger_count.py" "$LEDG" 2>/dev/null | tr -d '\r' || echo 0)
+[ -n "$N_TODAY" ] || N_TODAY=0
 CAP="${QVEST_OV_DAILY_CAP:-1}"
 [ "$N_TODAY" -lt "$CAP" ] || { jl halt_daily_cap "n=$N_TODAY" "cap=$CAP"; exit 0; }
 
@@ -143,7 +137,8 @@ rm -f "$LOG.this"
 
 # ★반드시 스크립트 파일로 부른다 — 여러 줄 `Rscript -e` 는 Windows 에서 rc=139 로 죽는다.
 #   실측(2026-09-03): 이 자리에서 죽었고, 인프라 오류인데 아래 정리가 arm 을 지워버렸다.
-Rscript "$ROOT/02_Infrastructure/ops/rf_overlay_admit_cli.R" "$KIND" "$ACT" "$ST" "$RP_MODEL" 1 >> "$LOG" 2>&1
+#   6번째 인자 = 방출 출처(source). 이 레인의 방출만 일간 상한에 든다 — 명시해 둔다(기본값에 기대지 않는다).
+Rscript "$ROOT/02_Infrastructure/ops/rf_overlay_admit_cli.R" "$KIND" "$ACT" "$ST" "$RP_MODEL" 1 overlay_propose >> "$LOG" 2>&1
 ARC=$?
 if [ "$ARC" -eq 0 ]; then
   jl admitted "kind=$KIND" "action=$ACT" "state=$ST"

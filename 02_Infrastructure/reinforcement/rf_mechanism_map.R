@@ -17,6 +17,11 @@
 suppressPackageStartupMessages({ library(data.table); library(jsonlite) })
 `%||%` <- function(a, b) if (is.null(a) || length(a) == 0L) b else a
 .RFM_ROOT <- function() Sys.getenv("QM_ROOT", "C:/Users/99922/OneDrive/Quant_Module_Moltbot")
+# ★층 정규화(.ov_own_layers)·상주 칸(rfbd_standing_picks)은 정본에서 (2026-09-17). 이미 적재된 환경(러너·notify)이면 건너뛴다.
+if (!exists(".ov_own_layers", mode = "function"))
+  source(file.path(.RFM_ROOT(), "02_Infrastructure/reinforcement/rf_spec_sig.R"), local = TRUE)
+if (!exists("rfbd_standing_picks", mode = "function"))
+  invisible(capture.output(source(file.path(.RFM_ROOT(), "02_Infrastructure/reinforcement/rf_block_design.R"), local = TRUE)))
 
 RFM_ACTIONS <- c("scalar_exposure", "cross_sectional")
 RFM_STATES  <- c("vol", "drawdown", "multivar", "ml", "trend", "dispersion", "holding_level")
@@ -50,25 +55,45 @@ rf_mechanism_map <- function(root = .RFM_ROOT(), k_saturate = 3L) {
     data.table(arm_id = as.character(a$id %||% ""), kind = as.character(a$kind %||% ""),
                action = z$action, state = z$state)
   }), fill = TRUE)
+  # ★상주 arm(program standing_cells · pg2_risk_overlay_v1)은 지도에서 뺀다 — 측정 수·카탈로그 수 둘 다 (2026-09-17).
+  #   상주 칸은 탐색 축이 아니라 매 세대 도는 고정 칸이다. 측정에 세면 그 (action,state) 칸이 세대 수만큼 "충분히
+  #   쟀다" 로 포화되고, 카탈로그에 세면 생성기가 그 칸에 arm 이 있다고 읽는다 — 둘 다 표적 선택을 왜곡한다.
+  standing <- tryCatch(rfbd_standing_picks(root), error = function(e) character(0))
+  if (nrow(ax) && length(standing)) ax <- ax[!(arm_id %in% standing)]
 
-  # 측정 결과 — 원장의 B5 시도에서 spec 을 열어 arm_id 를 얻고 essence$calmar 를 붙인다.
+  # 측정 결과 — 원장의 B5 시도에서 spec 을 열어 **이 칸의 몫인 층 전부**를 얻고 층마다 essence$calmar 를 붙인다.
+  # ★층 단위 (2026-09-17): 구판은 s$overlay$arm_id 하나만 읽어 스택(리스트)이면 NULL → 측정이 통째로 빠졌다.
+  #   칸의 몫 = overlay_cell(정본) > overlay − entry carry > 전부(.ov_own_layers). carry 층은 부모가 이미 잰 것이라 안 센다.
   led_p <- file.path(root, "06_Registry/reinforce_ledger_l1.json")
   meas <- data.table(arm_id = character(), calmar = numeric())
+  .id_of <- function(o) {   # arm_id 없는 층은 kind 로 카탈로그 id 를 되찾는다 — 그것도 없으면 kind 자체(축 기본값으로 떨어진다)
+    aid <- as.character(o$arm_id %||% "")
+    if (nzchar(aid)) return(aid)
+    knd <- as.character(o$kind %||% "")
+    if (nzchar(knd) && nrow(ax)) { h <- ax[kind == knd]; if (nrow(h)) return(h$arm_id[1]) }
+    knd
+  }
   if (file.exists(led_p)) {
     led <- tryCatch(fromJSON(led_p, simplifyVector = FALSE), error = function(e) NULL)
     if (!is.null(led)) {
       rows <- list()
-      for (e in led$entries %||% list()) for (a in e$attempts %||% list()) {
-        es <- a$essence; if (!is.list(es)) next
-        cc <- as.character(es$cell_code %||% "")
-        if (!startsWith(cc, "B5_")) next
-        sp <- as.character(es$spec %||% "")
-        aid <- if (nzchar(sp) && file.exists(sp)) {
+      for (e in led$entries %||% list()) {
+        carry_ov <- (e$carry %||% list())$overlay
+        for (a in e$attempts %||% list()) {
+          es <- a$essence; if (!is.list(es)) next
+          cc <- as.character(es$cell_code %||% "")
+          if (!startsWith(cc, "B5_")) next
+          sp <- as.character(es$spec %||% "")
+          if (!nzchar(sp) || !file.exists(sp)) next
           s <- tryCatch(fromJSON(sp, simplifyVector = FALSE), error = function(z) NULL)
-          if (is.null(s)) "" else as.character(s$overlay$arm_id %||% "")
-        } else ""
-        rows[[length(rows) + 1L]] <- data.table(
-          arm_id = aid, calmar = suppressWarnings(as.numeric(es$calmar %||% NA)))
+          if (is.null(s)) next
+          for (o in .ov_own_layers(s, carry = carry_ov)) {
+            aid <- .id_of(o)
+            if (!nzchar(aid) || aid %in% standing) next
+            rows[[length(rows) + 1L]] <- data.table(
+              arm_id = aid, calmar = suppressWarnings(as.numeric(es$calmar %||% NA)))
+          }
+        }
       }
       if (length(rows)) meas <- rbindlist(rows, fill = TRUE)
     }

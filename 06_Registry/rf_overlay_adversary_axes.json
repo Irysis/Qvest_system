@@ -1,0 +1,51 @@
+{
+  "schema_note": "오버레이 arm **G1 적대적 설계시점 감사**의 축 정본 (v10.4 2026-09-17). 축을 셸·프롬프트에 박지 않는다 — 러너(rf_overlay_audit.sh)·병합기(rf_overlay_audit_merge.R)·검사(test_rf_overlay_audit.sh) 전부 이 파일에서 축을 센다. 충실도 감사 팬아웃(rf_fidelity_axes.json)과 같은 형태이고 이유도 같다: 단일 감사자는 분류한다.",
+  "why": "probe(overlay_probe.R) 는 기계 검사 5+1 종(계약·측정누출·리터럴·달력·fwd 섭동·처치)이고, 합성 픽스처 위에서만 돈다. 설계자가 낸 arm 이 (a) 픽스처에선 안 켜지고 실데이터에서만 켜지는 논리 (b) 상태에 의존하지 않는 출력을 타이밍처럼 포장한 것 (c) 활성 arm 과 라벨만 다른 중복 — 이 셋은 기계가 못 잰다. 그래서 등재 전에 설계자와 **다른 모델**이 코드를 읽고 반례를 만든다. 판정은 병합기(R·결정론)가 근거를 재도출해서 내린다 — 진술은 증거가 아니다.",
+  "model_policy": "설계자(B5 설계 레인)는 fable 이므로 감사자는 반드시 다른 계열(opus)이어야 한다 — 같은 모델이 자기 설계를 감사하면 같은 맹점을 공유한다. 레인 기본값 = reinforce_auto_config.json llm.lanes.overlay_audit(opus/xhigh) · 축별 model/effort 가 그 위를 덮는다 · 환경변수 QVEST_OA_MODEL/QVEST_OA_EFFORT 가 최우선(검사·일회성 실험용). 모델은 별칭(opus)으로 적는다 — ID 고정 금지(test_rf_llm_fallback.sh E 절 규약).",
+  "evidence_rule": "leak·probe_evasion·full_sample·degenerate 는 evidence 가 `<kind>.R:<행> <그 행의 코드 인용>` 형식이어야 하고, 병합기가 파일을 다시 읽어 **그 행에 그 인용이 실재할 때만** 채택한다. 실재하지 않는 근거는 무시하고 ignored_findings 에 남긴다(잡음 차단). duplicate 는 duplicate_of 가 **활성** 카탈로그 id 일 때만 채택한다. 축의 verdict 문자열 자체는 판정에 쓰지 않는다 — 채택된 발견만 판정을 끈다.",
+  "required_note": "required=true 인 축이 미산출·파손이면 종합 판정은 unavailable 이고 호출자는 등재하면 안 된다(재실행 대상). 채택된 발견이 하나라도 있으면 reject 가 unavailable 보다 우선한다 — 거부는 확정 정보이고 미산출은 재실행 사유다.",
+  "output_schema": {
+    "axis": "<축 id>",
+    "verdict": "pass | reject",
+    "findings": [
+      {
+        "type": "leak | probe_evasion | degenerate | full_sample | duplicate",
+        "evidence": "<kind>.R:<행> <그 행의 코드 인용 그대로>   (duplicate 는 생략 가능)",
+        "explanation": "왜 위반인지 1~3문장",
+        "duplicate_of": "<활성 카탈로그 id 또는 null>"
+      }
+    ]
+  },
+  "axes": [
+    {
+      "id": "leak",
+      "required": true,
+      "model": "opus",
+      "effort": "xhigh",
+      "title": "룩어헤드 사냥꾼 — 신호가 홀딩월 시작 전 정보만 쓰는가",
+      "finding_types": ["leak", "probe_evasion"],
+      "focus": "이 arm 이 신호일 t 에 **알 수 없었던 것**을 읽는 지점을 찾아라. ① H$fwd 의 t 행(익월 수익 = 미실현) 또는 t+1 이상의 어떤 행 — 직접 색인이든 shift/lead/tail/rev/전체 열 통계(mean(H$fwd)·ecdf(H$fwd)·quantile(H$fwd))든 전부 누출이다. ② H 행 색인의 off-by-one — H 는 t 행까지만 존재하지만 `H[t + 1]`·`nrow(H)` 기반 뒤에서 세기·`seq_len(t)` 밖 접근이 있는지. ③ 외부 파일·데이터 읽기(parquet·rds·csv·팩터 DB) — 컷오프가 홀딩월 시작일(ctx$date 의 익월 1일) **이전**으로 엄격히 걸려 있는가(C5·C11). 컷오프 없이 파일을 통째로 읽고 연월로 조인하면 그 행이 언제 알려진 정보인지 증명되지 않는다. 팩터 DB 는 load_month_factors() 단일 경유(C15)여야 한다. ④ 달력·날짜 특정 조건 — 특정 연도·연월·인덱스 창에 매인 분기(probe 의 정적 스캔이 놓친 형태 포함: 변수에 담아 우회, 문자열 조립, 숫자 날짜). ⑤ probe 회피 — probe 는 2006-01-31 기점 240개월 합성 픽스처(종목 T001~T025 · n_obs 3000 · 위기 2구간 주입)로 돈다. 합성 날짜·합성 종목명·합성 관측수에서는 무개입(e=1)이고 실데이터에서만 켜지는 조건이 있으면 그것이 probe_evasion 이다(예: ctx$hold$Ticker 가 6자리 숫자일 때만, n_obs 가 3000 이 아닐 때만, Date 가 월말일 때만). ⑥ ctx 를 통한 미래 참조 — ctx$hold 는 그 달 보유의 **확장창** 상태다. 거기서 미래 멤버십·미래 가격·미래 보유 변화를 읽는 경로가 있는가.",
+      "counterexample": "누출을 주장하려면 **행 번호와 그 행의 코드**를 인용하라. 그 행의 값이 t 시점에 알 수 없었던 이유를 한 문장으로 적어라. 인용이 파일에 실재하지 않으면 병합기가 그 발견을 버린다."
+    },
+    {
+      "id": "degenerate",
+      "required": true,
+      "model": "opus",
+      "effort": "xhigh",
+      "title": "위장 비타이밍 — 출력이 상태에 의존하는가, 문턱이 확장창에서 오는가",
+      "finding_types": ["degenerate", "full_sample"],
+      "focus": "이 arm 의 출력 e 가 **상태 함수가 아닌** 지점을 찾아라. ① 사실상 상수·상시 현금·정적 디레버리지 — 분기가 있어도 모든 현실적 입력에서 같은 값으로 떨어지거나(예: 조건이 서로 배타적이라 항상 한 가지), 시간·횡단면 어느 축에서도 변하지 않는 출력을 타이밍처럼 포장한 것. ② 전표본 문턱(full_sample) — quantile/median/ecdf/sd 를 **t 행 너머**(H 전체가 아니라 다른 원천의 전 기간, 또는 ctx$hold 에서 파생된 전 기간 통계)에서 계산하거나, 한 번 계산해 캐시한 값을 모든 t 에 재사용(첫 호출이 t 가 크면 그 뒤 호출이 미래 통계를 물려받는다). H 는 t 행까지만 오므로 H 위의 통계는 정상이다 — 문제는 H 밖에서 온 전기간 통계다. ③ 재라벨된 베타 헤지 — ctx$hold$beta 로 노출을 1/beta 나 (1-beta) 로 깎는 것은 시장 베타 중립화이지 위험 타이밍이 아니다. 상태 원천이 시장 상태(H)나 보유 상태(hold)의 **시간 변동**인지, 아니면 고정 특성인지 가려라. ④ 상태 미의존 — H 도 ctx$hold 도 실제로는 출력에 안 실리는 경로(읽기만 하고 버림 · 항상 같은 분기로 감 · e 가 t 와 무관한 파라미터 산술).",
+      "counterexample": "퇴화를 주장하려면 **행 번호와 그 행의 코드**를 인용하고, 어떤 입력에서 출력이 상태와 무관해지는지 구체적 값으로 적어라(예: 'dd 가 0~0.8 어디든 g 는 항상 0 — 27행의 조건이 28행의 반환을 절대 못 바꾼다'). 인용이 파일에 실재하지 않으면 병합기가 버린다."
+    },
+    {
+      "id": "duplicate",
+      "required": true,
+      "model": "opus",
+      "effort": "xhigh",
+      "title": "행동 중복 — 활성 카탈로그 arm 과 라벨만 다른가",
+      "finding_types": ["duplicate"],
+      "focus": "이 arm 의 **행동**(action 축: 총노출 스칼라 vs 종목별 차등)과 **상태 원천**(무엇을 읽어 반응하는가)과 **결정 규칙**(상태 → 노출 사상)을 활성 카탈로그 arm 각각과 대조하라. 같은 action 축 · 같은 상태 원천 · 단조 변환까지 같은 결정 규칙이면 중복이다 — 상수를 바꾸거나(중앙값→60분위) 순위를 백분위로 바꾸거나 이름·주석·basis 문장을 바꾼 것은 다른 arm 이 아니다. ★라벨의 다양성은 행동의 다양성이 아니다(2026-09-03 실측: 오버레이 10 arm 이 전부 총노출 스칼라 축소 하나였다). 반대로 상태 원천이 같아도 **소비 지점에서 갈리는 축**(스칼라 vs 종목별 · 깊이 vs 지속성 · 시장 vs 보유)이 다르면 중복이 아니다. 대조 대상 = 아래 활성 카탈로그 목록. 각 항목의 .R 파일을 열어 결정 규칙을 실제로 읽어라 — basis 문장만 비교하지 마라.",
+      "counterexample": "중복을 주장하려면 duplicate_of 에 **활성 카탈로그 id 를 정확히** 적고, 두 arm 의 (상태 원천, 결정 규칙, action 축)이 어떻게 같은지 explanation 에 대응시켜 적어라. 퇴역 arm 이나 목록에 없는 id 를 적으면 병합기가 버린다."
+    }
+  ]
+}

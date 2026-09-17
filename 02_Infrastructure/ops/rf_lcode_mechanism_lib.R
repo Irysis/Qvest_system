@@ -129,6 +129,9 @@ lcm_materials <- function(base_id, block_id, out_p) {
                              as.character(.nb0$src %||% "?")))
   if (!is.na(.nxt) && .nxt %in% RFBD_BLOCKS) {
     .cat <- rfbd_catalog(.nxt, ROOT)
+    ## ★상주 arm 은 목록에서 뺀다 (2026-09-17 · WP-R) — 상주 칸(B5_31)이 매 세대 잰다 · 설계에 넣으면 rfbd_verify 가 기각한다
+    if (identical(.nxt, "B5")) { .std <- tryCatch(rfbd_standing_picks(ROOT), error = function(e) character(0))
+      .cat <- Filter(function(x) !(as.character(x$id) %in% .std), .cat) }
     L <- c(L, "", sprintf("## 다음 블록 = %s — 여기서 무엇을 시험할지 **네가 정한다**", .nxt),
            .ordline,
            sprintf("고를 수 있는 항목 %d종 (여기 있는 id 만 쓸 수 있다):", length(.cat)))
@@ -204,7 +207,22 @@ lcm_merge <- function(base_id, block_id, mech_p) {
   if (!is.null(.nd) && length(.nd$cells %||% list())) {
     suppressMessages(source(file.path(ROOT, "02_Infrastructure/reinforcement/rf_block_design.R"), local = TRUE))
     .nb <- as.character(.nd$block %||% "")[1]
-    .vv <- if (!(.nb %in% RFBD_BLOCKS)) sprintf("설계 대상 블록이 아니다: %s", .nb)
+    ## ★H6 재개 방지 (2026-09-17 · WP-R): 이 entry 에 B5 시도가 **하나라도** 있으면 기전 경로의 B5 설계는 거부한다 —
+    ##   측정을 보고 B5 를 다시 짜는 것은 사후 선택이다. 재설계는 별도 레인(rf_b5_design.sh · source="b5_design_lane")만
+    ##   열 수 있고 그 레인은 이 함수를 거치지 않는다(측정된 칸을 앞에 두고 새 칸을 덧붙인다). 기전·처방·avoid 는 그대로 남는다.
+    .b5_measured <- identical(.nb, "B5") && isTRUE(tryCatch({
+      .led5 <- fromJSON(file.path(ROOT, "06_Registry/reinforce_ledger_l1.json"), simplifyVector = FALSE)
+      .e5 <- Filter(function(x) identical(x$base_id, base_id), .led5$entries %||% list())
+      length(.e5) > 0L && any(vapply(.e5[[1]]$attempts %||% list(), function(a) {
+        cc <- as.character(a$cell_code %||% "")[1]
+        if (is.na(cc) || !nzchar(cc)) cc <- as.character(a$essence$cell_code %||% "")[1]
+        isTRUE(startsWith(cc, "B5_")) }, logical(1))) },
+      error = function(e) FALSE))
+    if (isTRUE(.b5_measured))
+      .mx_log("b5_design_refused_post_measure", base_id = base_id, block = .nb,
+              note = "B5 시도가 이미 있다 — 기전 경로의 B5 재설계 거부(재설계 = rf_b5_design 레인 전용 · 사후 선택 차단)")
+    .vv <- if (isTRUE(.b5_measured)) "b5_design_refused_post_measure"
+           else if (!(.nb %in% RFBD_BLOCKS)) sprintf("설계 대상 블록이 아니다: %s", .nb)
            else rfbd_verify(.nd, .nb, ROOT)
     if (isTRUE(.vv)) {
       dir.create(dirname(rfbd_path(ROOT, base_id, .nb)), recursive = TRUE, showWarnings = FALSE)

@@ -37,6 +37,9 @@ mkdir -p "$(dirname "$LOG")"
   #   자체 claim·게이트·검증을 갖고 있어 조건이 없으면 즉시 종료한다. 실패하면 러너가
   #   규칙 선정으로 돌므로 루프가 서지 않는다.
   bash "$ROOT/02_Infrastructure/ops/rf_b1_design.sh"
+  # ★B5 설계 레인 (2026-09-17 · WP-R 선배선) — 스택 설계·재설계 라운드(원장 b5_redesign)는 별도 레인이 연다.
+  #   레인 파일은 후속 패키지가 만든다 — 없으면 건너뛴다(레인 부재 = 러너가 규칙 선정·기존 설계로 돈다).
+  [ -f "$ROOT/02_Infrastructure/ops/rf_b5_design.sh" ] && bash "$ROOT/02_Infrastructure/ops/rf_b5_design.sh"
   # ★러너 단일화 (2026-09-05 도훈 지시 "분기 제거 — parallel 로 단일화").
   #   구판은 config 의 mode 로 두 러너를 갈랐다. 그런데 v10.4 의 핵심 3종
   #   (B1 LLM 설계 · 블록 전이 설계 · entry 예산 상향 = 25 + max(0, B1칸 − 5))이

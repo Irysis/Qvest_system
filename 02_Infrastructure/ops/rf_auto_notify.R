@@ -208,21 +208,35 @@ rf_notify_charts <- function(tab, outdir) {
 .RF_OV_ST  <- c(drawdown = "낙폭", vol = "변동성", multivar = "다변량", ml = "학습",
                 trend = "추세", dispersion = "분산", holding_level = "종목상태")
 # 오버레이 축 — B5 다섯 칸을 가르는 유일한 값이다. 이게 없으면 순위 네 줄이 같은 문장이 된다.
-#' 오버레이 서술. 층 리스트(v10.2 중첩)를 받으면 층마다 축약해 " + " 로 잇는다.
+#' 오버레이 서술. 층 리스트(v10.2 중첩)를 받으면 층마다 축약해 " × " 로 잇는다(스택 = 노출의 곱).
 #' ★구판은 단수 객체만 봤다 — 리스트가 오면 o$kind 가 NULL 이라 NA 를 돌려주고
 #'   오버레이 축이 서술에서 통째로 사라졌다(B5 네 칸이 같은 문장으로 보이던 병의 재발 경로).
+#' ★2026-09-17: 층 정규화는 정본(.ov_layers — 중첩 평탄화)이고 구분자는 " × " 다. " + " 는 팩터 결합의 구분자라
+#'   순위 줄에서 팩터 목록과 스택이 같은 모양으로 보였다.
+.RF_OV_SEP <- " × "
 .rf_ov <- function(o) {
-  if (is.null(o)) return(NA_character_)
-  if (is.null(o$kind)) {
-    L <- Filter(function(z) is.list(z) && !is.null(z$kind), o)
-    if (!length(L)) return(NA_character_)
-    v <- vapply(L, function(z) .rf_ov1(z) %||% NA_character_, character(1))
-    v <- v[!is.na(v)]
-    if (!length(v)) return(NA_character_)
-    v[-1] <- sub("^오버레이 ", "", v[-1])   # 접두는 한 번만 — 층은 " + " 로 잇는다
-    return(paste(v, collapse = " + "))
-  }
-  .rf_ov1(o)
+  L <- .ov_layers(o)
+  if (!length(L)) return(NA_character_)
+  v <- vapply(L, function(z) .rf_ov1(z) %||% NA_character_, character(1))
+  v <- v[!is.na(v)]
+  if (!length(v)) return(NA_character_)
+  v[-1] <- sub("^오버레이 ", "", v[-1])   # 접두는 한 번만 — 층은 " × " 로 잇는다
+  paste(v, collapse = .RF_OV_SEP)
+}
+#' 서술 문자열 → 층 서술 벡터(접두 제거). NA·빈 문자열은 character(0).
+.rf_ov_split <- function(s) {
+  s <- as.character(s %||% NA_character_)[1]
+  if (is.na(s) || !nzchar(s)) return(character(0))
+  s <- sub("^오버레이 ", "", s)
+  v <- trimws(strsplit(s, .RF_OV_SEP, fixed = TRUE)[[1]]); v[nzchar(v)]
+}
+#' 이 칸의 **자기 층**만 — base(승계 스택 또는 블록 공통 접두)에 있는 층을 뺀다. 남는 게 없으면 NA.
+#'   ★순위 줄이 스택 전체를 적으면 앞의 승계 층이 자리를 다 먹고 정작 갈리는 마지막 층이 잘린다 —
+#'     B5 네 칸이 같은 문장으로 보이던 병의 스택판. 갈리는 값만 남기면 자를 이유가 없다.
+.rf_ov_own <- function(ov, base) {
+  a <- .rf_ov_split(ov); b <- .rf_ov_split(base)
+  d <- a[!(a %in% b)]
+  if (!length(d)) NA_character_ else paste0("오버레이 ", paste(d, collapse = .RF_OV_SEP))
 }
 .rf_ov1 <- function(o) {
   if (is.null(o) || identical(as.character(o$kind %||% "none"), "none")) return(NA_character_)
@@ -404,34 +418,63 @@ rf_cell_desc <- function(base_id = NULL) {
     }
   }
   out <- list()
-  for (b in g$blocks) for (cl in b$cells) {
-    # ★spec 경로는 2026-08-31 부터 entry 별이다(구판 고정 이름은 다음 entry 가 덮어써
-    #   부모 스펙을 소실시켰다). 이 entry 것을 먼저 찾고, 없으면 구 이름으로 떨어진다.
-    sp <- NULL
+  # ★spec 경로는 2026-08-31 부터 entry 별이다(구판 고정 이름은 다음 entry 가 덮어써
+  #   부모 스펙을 소실시켰다). 이 entry 것을 먼저 찾고, 없으면 구 이름으로 떨어진다.
+  .spec_of <- function(code) {
     .cands <- character(0)
     if (!is.null(base_id) && nzchar(base_id)) .cands <- c(.cands,
-      file.path(ROOT, ".cache/rf_parallel", sprintf("spec_%s__%s.json", cl$code, substr(base_id, 1, 48))),
-      file.path(ROOT, ".cache",             sprintf("rf_cell_spec_%s__%s.json", cl$code, substr(base_id, 1, 48))))
+      file.path(ROOT, ".cache/rf_parallel", sprintf("spec_%s__%s.json", code, substr(base_id, 1, 48))),
+      file.path(ROOT, ".cache",             sprintf("rf_cell_spec_%s__%s.json", code, substr(base_id, 1, 48))))
     .cands <- c(.cands,
-      file.path(ROOT, ".cache/rf_parallel", sprintf("spec_%s.json", cl$code)),
-      file.path(ROOT, ".cache",             sprintf("rf_cell_spec_%s.json", cl$code)))
-    for (f in .cands) {
-      if (file.exists(f)) { sp <- tryCatch(fromJSON(f, simplifyVector = FALSE), error = function(e) NULL); break }
-    }
+      file.path(ROOT, ".cache/rf_parallel", sprintf("spec_%s.json", code)),
+      file.path(ROOT, ".cache",             sprintf("rf_cell_spec_%s.json", code)))
+    for (f in .cands) if (file.exists(f)) return(tryCatch(fromJSON(f, simplifyVector = FALSE), error = function(e) NULL))
+    NULL
+  }
+  # 한 칸의 서술 — 스펙 파일 우선, 없으면 칸 정의(격자·설계·상주)에서 조립.
+  .desc <- function(sp, cl, blk) {
     # 승계 entry 의 스펙은 factor2 가 아니라 factors(복수)를 쓴다 — 그쪽이 정본이다.
     f2 <- if (!is.null(sp) && length(sp$factors))
             paste(vapply(sp$factors, .rf_f2, character(1)), collapse = "+")
           else if (!is.null(sp)) sp$factor2
-          else (cl$factor2 %||% (if (b$id %in% c("B2","B3")) .b1f2 else NULL))
+          else (cl$factor2 %||% (if (blk %in% c("B2", "B3", "B5")) .b1f2 else NULL))
     wt <- if (!is.null(sp)) sp$weighting else (cl$weighting %||% list(kind = "ew"))
     un <- if (!is.null(sp)) sp$universe  else (cl$universe  %||% list(kind = "k200_kq150"))
     .f2txt <- if (is.character(f2)) f2 else .rf_f2(f2)
     # ★오버레이는 있을 때만 4번째 축으로 붙인다 — B1~B3 문장은 3축 그대로다(하위호환).
     ov <- if (!is.null(sp)) sp$overlay else cl$overlay
     .ovtxt <- .rf_ov(ov)
-    out[[cl$code]] <- if (is.na(.ovtxt))
-      sprintf("%s | %s | %s", .f2txt, .rf_wt(wt), .rf_un(un)) else
+    if (is.na(.ovtxt)) sprintf("%s | %s | %s", .f2txt, .rf_wt(wt), .rf_un(un)) else
       sprintf("%s | %s | %s | %s", .f2txt, .rf_wt(wt), .rf_un(un), .ovtxt)
+  }
+  for (b in g$blocks) for (cl in b$cells) out[[cl$code]] <- .desc(.spec_of(cl$code), cl, b$id)
+  ## ★격자 밖 코드 (2026-09-17). 설계 칸(B2_11+ · B5_21+ …)과 상주 칸(B5_31)은 blocks[].cells 에 없어 순위 줄이
+  ##   "격자 밖" 으로 나왔다 — 정작 그 블록의 처치가 서술에서 사라진다. ①이 entry 의 설계 파일 ②상주 칸
+  ##   ③이 entry 의 스펙 파일이 있는 코드 순으로 채운다(스펙이 있으면 스펙이 정본 · 설계 칸이 격자 코드와 겹치면 설계).
+  if (!is.null(base_id) && nzchar(base_id)) {
+    if (!exists("rfbd_cells", mode = "function"))
+      tryCatch(invisible(capture.output(suppressMessages(
+        source(file.path(ROOT, "02_Infrastructure/reinforcement/rf_block_design.R"), local = TRUE)))), error = function(e) NULL)
+    if (exists("rfbd_cells", mode = "function")) {
+      for (blk in c("B2", "B3", "B5")) for (cl in tryCatch(rfbd_cells(ROOT, base_id, blk), error = function(e) NULL) %||% list()) {
+        cd <- as.character(cl$code %||% ""); if (!nzchar(cd)) next
+        ## 설계 칸이 격자 코드(B5_16..20)와 겹치면 **설계가 이긴다** — 격자의 B5/B2 cells 는 스냅샷이지 정본이 아니다.
+        ##   실행된 칸은 스펙(.spec_of)이 정본이고, 미실행 칸은 설계가 그 코드의 내용이다.
+        out[[cd]] <- .desc(.spec_of(cd), cl, blk)
+      }
+      for (sc in tryCatch(rfbd_standing_cells(ROOT), error = function(e) list())) {
+        cd <- as.character(sc$code %||% ""); pk <- as.character(sc$overlay_pick %||% ""); if (!nzchar(cd)) next
+        knd <- tryCatch({ d <- fromJSON(file.path(ROOT, "06_Registry/overlay_catalog.json"), simplifyVector = FALSE)
+          h <- Filter(function(a) identical(as.character(a$id %||% ""), pk), d$arms %||% list())
+          if (length(h)) as.character(h[[1]]$kind %||% pk) else pk }, error = function(e) pk)
+        cl <- list(code = cd, overlay = if (nzchar(pk)) list(kind = knd, arm_id = pk) else NULL)
+        out[[cd]] <- .desc(.spec_of(cd), cl, as.character(sc$block %||% "B5"))
+      }
+    }
+    .fs <- list.files(file.path(ROOT, ".cache/rf_parallel"),
+                      pattern = sprintf("^spec_B[0-9]+_[0-9]+__%s\\.json$", gsub("([][{}()+*^$|\\\\?.])", "\\\\\\1", substr(base_id, 1, 48))))
+    for (f in .fs) { cd <- sub("^spec_(B[0-9]+_[0-9]+)__.*$", "\\1", f)
+      if (is.null(out[[cd]])) { sp <- .spec_of(cd); if (!is.null(sp)) out[[cd]] <- .desc(sp, list(), sub("_.*$", "", cd)) } }
   }
   out
 }
@@ -739,6 +782,11 @@ rf_auto_notify <- function(base_id, n, kind = "block") {
                      else character(0)
                    .wt_same <- length(.prs) >= 2L && .allsame(2L)
                    .un_same <- length(.prs) >= 2L && .allsame(3L)
+                   # ★블록 공통 오버레이 접두 (2026-09-17 스택). carry 가 없어도 같은 블록의 스택 칸들이 공유하는
+                   #   앞 층(설계가 같은 바닥 위에 다른 층을 얹은 경우)은 구분에 기여하지 않는다. 2칸 이상이 오버레이를
+                   #   가질 때만 계산한다 — 1칸이면 공통분이 그 칸 전부가 되어 스스로를 지운다.
+                   .ovs <- Filter(Negate(is.null), lapply(.prs, function(p) if (length(p) == 4L) .rf_ov_split(p[4]) else NULL))
+                   .blkov <- if (length(.ovs) >= 2L) paste(Reduce(intersect, .ovs), collapse = .RF_OV_SEP) else ""
                    #' 팩터 추가분을 48자 안에서 **구분되게** 적는다. 누적형이면 항목을 다 쓰면
                    #' 또 앞이 겹치므로, 앞머리에 개수를 세우고 마지막(가장 최근 추가)을 붙인다.
                    .addtxt <- function(add) {
@@ -766,20 +814,27 @@ rf_auto_notify <- function(base_id, n, kind = "block") {
                             else character(0)
                      fs  <- trimws(strsplit(pr[1], "+", fixed = TRUE)[[1]])
                      ch  <- .addtxt(setdiff(fs, union(cfs, .blkcom)))
+                     # ★오버레이는 **이 칸의 자기 층**만 적는다 (2026-09-17 스택). 승계 스택(carry) 또는 블록 공통
+                     #   접두를 뺀 나머지가 이 칸을 가르는 값이다. 스택 전체를 적으면 앞 층이 자리를 먹고 마지막
+                     #   층(갈리는 값)이 잘린다. carry 없이 공통분을 빼서 아무것도 안 남는 칸(= 바닥만 있는 칸)은 전체를 적는다.
+                     .ovown <- NA_character_
                      if (!is.null(cy)) {
                        if (!identical(pr[2], .rf_wt(cy$weighting))) ch <- c(ch, pr[2])
                        if (!identical(pr[3], .rf_un(cy$universe)))  ch <- c(ch, pr[3])
                        .cov <- .rf_ov(cy$overlay)
-                       if (!is.na(.ov4) && !identical(.ov4, .cov)) ch <- c(ch, .ov4)
+                       if (!is.na(.ov4)) .ovown <- .rf_ov_own(.ov4, .cov)
                      } else {
                        # carry 가 없으면 블록 안에서 **갈리는** 축만 적는다 —
                        # 모든 칸이 공유하는 값은 매 줄에 써봐야 구분에 기여하지 않는다.
                        if (!.wt_same) ch <- c(ch, pr[2])
                        if (!.un_same) ch <- c(ch, pr[3])
-                       if (!is.na(.ov4)) ch <- c(ch, .ov4)
+                       if (!is.na(.ov4)) { .ovown <- .rf_ov_own(.ov4, .blkov); if (is.na(.ovown)) .ovown <- .ov4 }
                      }
+                     if (!is.na(.ovown)) ch <- c(ch, .ovown)
                      if (!length(ch)) return(if (is.null(cy)) "이 블록의 공통 기저" else "승계와 동일")
-                     substr(paste(ch, collapse = " · "), 1, 48)
+                     .s <- paste(ch, collapse = " · ")
+                     # 48자 컷은 가독성용이다 — 오버레이 층이 실렸으면 자르지 않는다(마지막 층이 곧 구분자).
+                     if (!is.na(.ovown)) .s else substr(.s, 1, 48)
                    }
                    # ★칸별 미달 폭은 적지 않는다(도훈 2026-08-31). 기준선은 위에 한 번 서 있고
                    #   각 칸의 t 가 옆에 있으니 차이는 읽는 사람이 본다 — 줄마다 반복하면 소음이다.

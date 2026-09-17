@@ -141,6 +141,37 @@ sp_ov1 <- list(weighting = list(kind = "ew"), overlay = list(kind = "vol_scale")
 e8 <- tryCatch({ length(rac_pairs(sp_ov1)) }, error = function(e) conditionMessage(e))
 if (identical(e8, 0L)) ok("E8 arm_id 없는 단수 오버레이 — 던지지 않고 쌍 0(구판은 `$` 오류를 러너가 '차단 없음' 으로 삼켰다)") else
   ng("E8 단수 오버레이", as.character(e8))
+## ★E9~E12 스택 귀속 (2026-09-17 · WP-Z). 신판 엔진 메시지 = 실패한 층 **하나**의 arm_id(없으면 kind) 단일 토큰.
+##   귀속은 그 층에만 — 스택 [A×B] 에서 B 가 못 덮었는데 A 까지 적으면 무관한 층이 그 유니버스에서 영구 차단된다.
+## (직접 대입 — modifyList 는 이름 없는 층 리스트를 병합해 단층 그대로 남긴다)
+SPEC_ST <- SPEC_B4_21
+SPEC_ST$overlay <- list(list(kind = "ts_mom_gate", arm_id = "ts_mom_sign"),
+                        list(kind = "gen_20260907_002324", arm_id = "multivar_channel_tilt"))
+MSG_NEW <- function(nm) sprintf("[rf_cell_engine] overlay %s 종목 커버리지 0.55 < 0.80 [basis=held_rows] — arm 이 보유를 못 덮었다.", nm)
+pc9 <- rac_parse_coverage(MSG_NEW("multivar_channel_tilt"))
+if (identical(pc9$kind, "overlay") && identical(pc9$id, "multivar_channel_tilt") && identical(pc9$basis, "held_rows") &&
+    identical(.rac_attribute(SPEC_ST, pc9), "overlay:multivar_channel_tilt"))
+  ok("E9 신판(arm_id 단일 토큰) → 그 층(2층)만 귀속 · 1층 ts_mom_sign 무기록") else
+  ng("E9 신판 귀속", paste(.rac_attribute(SPEC_ST, pc9), collapse = ","))
+pc10 <- rac_parse_coverage(MSG_NEW("ts_mom_gate"))
+if (identical(.rac_attribute(SPEC_ST, pc10), "overlay:ts_mom_sign"))
+  ok("E10 신판(kind 단일 토큰 — arm_id 없는 층의 이름) → kind 가 맞는 층(1층)만 귀속") else
+  ng("E10 kind 토큰 귀속", paste(.rac_attribute(SPEC_ST, pc10), collapse = ","))
+pc11 <- rac_parse_coverage(MSG_NEW("ts_mom_gate+gen_20260907_002324"))
+if (setequal(.rac_attribute(SPEC_ST, pc11), c("overlay:ts_mom_sign", "overlay:multivar_channel_tilt")))
+  ok("E11 구판('+' 로 이은 kind) → 이은 층 전부 귀속(하위호환)") else
+  ng("E11 구판 귀속", paste(.rac_attribute(SPEC_ST, pc11), collapse = ","))
+tmpS <- mk_root()
+nS <- rec_fail(SPEC_ST, MSG_NEW("multivar_channel_tilt"), tmpS, cell = "B5_17")
+SS <- fromJSON(file.path(tmpS, "06_Registry/rf_arm_compat.json"), simplifyVector = FALSE)$entries
+if (identical(as.integer(nS), 1L) && identical(vapply(SS, function(e) e$arm, character(1)), "overlay:multivar_channel_tilt") &&
+    identical(SS[[1]]$basis, "held_rows"))
+  ok("E12 장부에는 실패한 층의 쌍 하나만 — 1층 ts_mom_sign × KQ150 는 무기록(차단 안 됨)") else
+  ng("E12 장부 귀속", paste(vapply(SS, function(e) e$arm, character(1)), collapse = ","))
+if (identical(.rac_attribute(SPEC_ST, rac_parse_coverage(MSG_NEW("no_such_layer"))), character(0)))
+  ok("E13 지목한 이름이 스택에 없으면 character(0) — 지어내지 않는다") else ng("E13 없는 층 귀속")
+if (length(rac_pairs(list(weighting = list(kind = "ew"), overlay = list(list(list(kind = "a", arm_id = "a1")), list(kind = "b", arm_id = "b1"))))) == 2L)
+  ok("E14 중첩 스택(list(list(A), B))도 쌍 2개 — 정본 .ov_layers 평탄화") else ng("E14 중첩 평탄화")
 
 cat("\n=== G. 관문 rac_gate — 등록·재개 공용 판정 ===\n")
 tmpG <- mk_root()

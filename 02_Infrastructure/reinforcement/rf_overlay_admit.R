@@ -25,8 +25,15 @@ rfa_append_ledger <- function(rec, root = .RFA_ROOT()) {
 #' @param target list(action, state) — 이 방출이 겨눈 칸
 #' @param n_siblings 한 요청에서 방출된 arm 수. ★selection_type 은 여기서 **구조적으로** 나온다.
 #'   LLM 이 선언하지 못한다 — k>1 이면 사후 argmax 가 sweep 이 되고 DSR 게이트에 누적된다.
+#' @param source 방출 출처 (v10.4 2026-09-17). 기본 "overlay_propose"(일간 arm 레인). 세션 수동 등재·B5 설계 레인 등
+#'   레인 밖 방출은 자기 이름을 단다 — 원장 기록과 카탈로그 항목 양쪽에 `source` 로 남는다.
+#'   ★왜: 일간 상한(rf_overlay_propose.sh)이 원장에서 "오늘 방출 수" 를 세는데, 출처가 안 남으면
+#'   남의 방출이 레인의 하루 예산을 먹는다(같은 날 세션 등재 1건 → 레인 halt_daily_cap). 구판 기록(필드 부재)은 레인 몫으로 센다.
 rf_overlay_admit <- function(kind, target = NULL, n_siblings = 1L,
-                             generator_model = NA_character_, root = .RFA_ROOT()) {
+                             generator_model = NA_character_, root = .RFA_ROOT(),
+                             source = "overlay_propose") {
+  source <- as.character(source %||% "overlay_propose")[1]
+  if (is.na(source) || !nzchar(source)) source <- "overlay_propose"
   suppressMessages(source(file.path(root, "02_Infrastructure/reinforcement/overlay_probe.R"),
                           local = TRUE))
   pr <- try(overlay_probe_arm(kind, root), silent = TRUE)
@@ -44,7 +51,7 @@ rf_overlay_admit <- function(kind, target = NULL, n_siblings = 1L,
               emitted_at = format(Sys.time(), "%Y-%m-%dT%H:%M:%S%z"),
               target_cell = list(action = as.character(target$action %||% NA),
                                  state  = as.character(target$state  %||% NA)),
-              generator_model = generator_model,
+              generator_model = generator_model, source = source,
               family = fam, est_cost_min = as.numeric(meta$est_cost_min %||% 8),
               probe = list(ok = isTRUE(pr$ok), reason = as.character(pr$reason %||% NA),
                            axis = as.character(pr$axis %||% NA),
@@ -73,12 +80,13 @@ rf_overlay_admit <- function(kind, target = NULL, n_siblings = 1L,
     id = arm_id, kind = kind, family = fam, basis = basis,
     status = "active", est_cost_min = as.numeric(meta$est_cost_min %||% 8),
     action = as.character(pr$axis %||% "scalar_exposure"),
-    state = as.character(target$state %||% meta$state %||% "multivar"))
+    state = as.character(target$state %||% meta$state %||% "multivar"),
+    source = source)
   if (is.null(cd$families[[fam]]))
     cd$families[[fam]] <- as.character(meta$family_doc %||% paste0(fam, " — 생성 arm 이 신설한 계열"))
   write(toJSON(cd, auto_unbox = TRUE, pretty = TRUE, null = "null"), cp)
-  cat(sprintf("[rf_overlay_admit] %s ADMIT — %s (%s · %s)\n", kind, arm_id, fam, pr$axis))
-  invisible(list(ok = TRUE, kind = kind, arm_id = arm_id, ledger = TRUE))
+  cat(sprintf("[rf_overlay_admit] %s ADMIT — %s (%s · %s · source=%s)\n", kind, arm_id, fam, pr$axis, source))
+  invisible(list(ok = TRUE, kind = kind, arm_id = arm_id, ledger = TRUE, source = source))
 }
 
-cat("[rf_overlay_admit.R] Loaded — rf_overlay_admit(kind, target, n_siblings)\n")
+cat("[rf_overlay_admit.R] Loaded — rf_overlay_admit(kind, target, n_siblings, generator_model, root, source)\n")

@@ -51,6 +51,72 @@ overlay_probe_fixture <- function(n_month = 240L, n_ticker = 25L, seed = 2026090
   list(M = M, hold = hold)
 }
 
+#' 달력 리터럴 스캔 (v10.4 2026-09-17) — 주석 걷어낸 소스에서 특정 연·월·날짜·인덱스 창에 매인 논리를 찾는다
+#'
+#' ★규칙의 경계 (오탐을 낮추는 쪽으로 그었다 — 포맷 문자열 "%Y-%m" · "%Y-%m-01" · paste0(ym, "-01") 은 통과):
+#'   ① 연-월(-일) 문자열 리터럴          "2018-01" · '2020-03-31' · "201801" · "2018/01"
+#'   ② 날짜 생성자에 문자열 리터럴          as.Date("...") · as.IDate("...") · as.POSIXct("...") · ymd("...")
+#'   ③ 숫자 인자 날짜 생성자               ISOdate(2008, ...) · make_date(2008, ...)
+#'   ④ format(..., "%Y") 을 연도와 비교     format(d, "%Y") == "2008" · as.integer(format(d, "%Y")) >= 2008 · %in% c("2008", …)
+#'   ⑤ year() 을 연도와 비교               year(ctx$date) >= 2018
+#'   ⑥ 날짜 객체를 리터럴과 직접 비교        ctx$date >= 17532 · H$Date[t] > "2018-01-01" · Date == 17532
+#'   ⑦ 맨 연도 문자열 비교·접두 검사          x == "2008" · startsWith(x, "2008") · grepl("^2008", x)
+#'   ⑧ 월 인덱스 창                        t == 150 · t %in% 146:153 · t >= 146 & t <= 153 · t > 100 · between(t, …) · H$i[t] == 150
+#'      (워밍업 가드 `t < 24L` 한 방향·두 자리는 통과 — 세 자리 이상은 8년+ 라 워밍업이 아니다. 표본 하한은 n_min 에서 온다)
+#'   ⑨ 오염 변수 — year()/format(%Y)/as.Date/ctx$date/H$Date 에서 대입된 이름을 연도 리터럴과 비교하면 같은 위반
+#' @return data.table(rule, snippet) — 0행이면 통과
+.OP_CAL_RULES <- c(
+  ym_string          = "[\"'](19|20)[0-9]{2}([-/.]?(0[1-9]|1[0-2])([-/.]?(0[1-9]|[12][0-9]|3[01]))?)[\"']",
+  date_ctor_literal  = "\\b(as\\.I?Date|as\\.POSIX[cl]t|strptime|ymd|ydm|mdy|dmy|as_date)\\(\\s*[\"'][^\"'\\n]*[0-9]{4}[^\"'\\n]*[\"']",
+  date_ctor_numeric  = "\\b(ISOdate|ISOdatetime|make_date|make_datetime)\\(\\s*(19|20)[0-9]{2}L?\\b",
+  format_year_cmp    = "format\\((?:[^()]|\\([^()]*\\))*%Y(?:[^()]|\\([^()]*\\))*\\)\\s*\\)?\\s*(==|!=|>=|<=|>|<|%in%)\\s*c?\\(?\\s*[\"']?(19|20)[0-9]{2}L?\\b",
+  format_year_cmp_rev= "[\"']?(19|20)[0-9]{2}[\"']?\\s*(==|!=|>=|<=|>|<)\\s*(as\\.(integer|numeric)\\()?\\s*format\\((?:[^()]|\\([^()]*\\))*%Y",
+  year_fn_cmp        = "\\b(year|isoyear)\\((?:[^()]|\\([^()]*\\))*\\)\\s*\\)?\\s*(==|!=|>=|<=|>|<|%in%)\\s*c?\\(?\\s*[\"']?(19|20)[0-9]{2}L?\\b",
+  year_fn_cmp_rev    = "[\"']?(19|20)[0-9]{2}[\"']?\\s*(==|!=|>=|<=|>|<)\\s*(as\\.(integer|numeric)\\()?\\s*(year|isoyear)\\(",
+  date_obj_cmp       = "(ctx\\$date|H\\$Date|\\$Date|\\bDate|Sys\\.Date\\(\\))(\\[[^]]*\\])?\\s*\\)?\\s*(==|!=|>=|<=|>|<|%in%)\\s*c?\\(?\\s*([\"'][0-9]|[0-9]{4,})",
+  date_obj_cmp_rev   = "([\"'][0-9][^\"'\\n]*[\"']|\\b[0-9]{4,}L?)\\s*(==|!=|>=|<=|>|<)\\s*(as\\.(integer|numeric)\\()?\\s*(ctx\\$date|H\\$Date|Sys\\.Date\\(\\))",
+  bare_year_str_cmp  = "(==|!=|>=|<=|>|<|%in%)\\s*c?\\(?\\s*[\"'](19|20)[0-9]{2}[\"']",
+  bare_year_prefix   = "\\b(startsWith|endsWith|grepl|grep|regexpr|str_detect|substr|substring)\\([^)\\n]*[\"']\\^?(19|20)[0-9]{2}L?\\b",
+  t_index_eq         = "\\bt\\s*(==|!=|%in%)\\s*c?\\(?\\s*[0-9]",
+  t_index_window     = "\\bt\\s*[<>]=?\\s*[0-9]+L?\\s*\\)?\\s*(&&?|\\|\\|?)\\s*\\(?\\s*\\bt\\s*[<>]=?\\s*[0-9]",
+  t_index_large      = "\\bt\\s*[<>]=?\\s*[0-9]{3,}L?\\b",
+  t_index_large_rev  = "\\b[0-9]{3,}L?\\s*[<>]=?\\s*t\\b",
+  t_between          = "\\bbetween\\(\\s*t\\s*,\\s*[0-9]",
+  H_i_cmp            = "H\\$i(\\[[^]]*\\])?\\s*(==|!=|>=|<=|>|<|%in%)\\s*c?\\(?\\s*[0-9]")
+
+.op_cal_tainted <- function(src) {
+  ln <- strsplit(src, "\n", fixed = TRUE)[[1]]
+  m  <- regmatches(ln, regexec("^\\s*([A-Za-z._][A-Za-z0-9._]*)\\s*(<-|=)\\s*(.+)$", ln, perl = TRUE))
+  nm <- character(0)
+  for (x in m) if (length(x) == 4L &&
+                   grepl("\\b(year|isoyear)\\(|%Y|as\\.I?Date\\(|as\\.POSIX|ctx\\$date|\\$Date\\b|Sys\\.Date\\(", x[4], perl = TRUE))
+    nm <- c(nm, x[2])
+  unique(nm)
+}
+
+overlay_probe_calendar_scan <- function(src) {
+  if (!grepl("\n", src, fixed = TRUE) && file.exists(src)) src <- .op_src_nc(src)   # 경로를 주면 주석을 걷어 읽는다
+  .snip <- function(rx) {
+    h <- regmatches(src, regexpr(rx, src, perl = TRUE))
+    h <- gsub("[[:space:]]+", " ", h); if (nchar(h) > 70L) h <- paste0(substr(h, 1, 67), "...")
+    h
+  }
+  out <- data.table(rule = character(), snippet = character())
+  for (nm in names(.OP_CAL_RULES)) {
+    rx <- .OP_CAL_RULES[[nm]]
+    if (grepl(rx, src, perl = TRUE)) out <- rbind(out, data.table(rule = nm, snippet = .snip(rx)))
+  }
+  # ⑨ 오염 변수 — 날짜에서 파생된 이름을 연도 리터럴과 비교
+  for (v in .op_cal_tainted(src)) {
+    ve <- gsub(".", "\\.", v, fixed = TRUE)          # R 식별자는 . 만 정규식 특수문자다
+    rxs <- c(sprintf("(?<![A-Za-z0-9._$])%s\\s*(==|!=|>=|<=|>|<|%%in%%)\\s*c?\\(?\\s*[\"']?(19|20)[0-9]{2}L?\\b", ve),
+             sprintf("[\"']?(19|20)[0-9]{2}[\"']?\\s*(==|!=|>=|<=|>|<)\\s*(?<![A-Za-z0-9._$])%s\\b", ve))
+    for (rx in rxs) if (grepl(rx, src, perl = TRUE)) {
+      out <- rbind(out, data.table(rule = sprintf("tainted_var(%s)", v), snippet = .snip(rx))); break }
+  }
+  out
+}
+
 overlay_probe_arm <- function(kind, root = .OP_ROOT()) {
   chk <- data.table(check = character(), status = character(), detail = character())
   add <- function(c_, s_, d_ = "") chk <<- rbind(chk, data.table(check = c_, status = s_, detail = d_))
@@ -99,6 +165,15 @@ overlay_probe_arm <- function(kind, root = .OP_ROOT()) {
   if (length(hit)) { add("literal", "FAIL", paste(hit, collapse = " | "))
                      return(bad("임의 상수 문턱 — 특징을 리터럴과 직접 비교했다")) }
   add("literal", "PASS", "리터럴 문턱 0")
+
+  # ── ③b 달력 리터럴 (v10.4 2026-09-17 · 6번째 검사) — 특정 연·월·인덱스 창에 매인 논리
+  #   ★왜 별도 검사인가: 합성 픽스처(2006-01 기점 240개월)는 실제 달력과 어긋나므로
+  #     "2008년 이후만" · "t가 146~153이면" 같은 논리는 픽스처에서 **안 켜지고** ④⑤를 통과한 뒤
+  #     실데이터에서만 켜진다 — probe 를 비껴가는 형태다. 특정 날짜를 아는 것 자체가 사후 지식이다.
+  cal <- overlay_probe_calendar_scan(src)
+  if (nrow(cal)) { add("calendar", "FAIL", paste(sprintf("%s: %s", cal$rule, cal$snippet), collapse = " | "))
+                   return(bad("달력 리터럴 — 특정 연·월·인덱스 창에 매인 논리(합성 날짜에선 안 켜지고 실데이터에서만 켜진다)")) }
+  add("calendar", "PASS", "달력 리터럴 0")
 
   fx <- overlay_probe_fixture()
   M <- fx$M; hold <- fx$hold; N <- nrow(M)

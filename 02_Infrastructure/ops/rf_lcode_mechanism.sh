@@ -49,6 +49,23 @@ Rscript "$ROOT/02_Infrastructure/ops/rf_lcode_mechanism_lib.R" materials "$BID" 
 
 . "$ROOT/02_Infrastructure/ops/rf_axiom_brief.sh"
 AXB="$(rf_axiom_brief)"
+# ★B5 스택 설계 계약 (2026-09-17 · WP-R): 층 상한 = config b5_design.max_layers(부재 3 · rf_block_design.R 과 같은 기본값) ·
+#   상주 arm(program standing_cells.overlay_pick)은 제안 금지 — 둘 다 정본에서 읽어 프롬프트에 싣는다(하드코딩 금지).
+B5MAXL=$("$PY" -c "
+import io,json
+try:
+    c=json.loads(io.open(r'$CFG','rb').read().decode('utf-8')); v=int((c.get('b5_design') or {}).get('max_layers') or 3)
+    print(v if v>=1 else 3)
+except Exception: print(3)" 2>/dev/null)
+[ -n "$B5MAXL" ] || B5MAXL=3
+B5STAND=$("$PY" -c "
+import io,json
+try:
+    g=json.loads(io.open(r'$ROOT/06_Registry/reinforce_program.json','rb').read().decode('utf-8'))
+    s=sorted({str(x.get('overlay_pick','')) for x in (g.get('standing_cells') or []) if x.get('overlay_pick')})
+    print(', '.join(s) if s else '(없음)')
+except Exception: print('(없음)')" 2>/dev/null)
+[ -n "$B5STAND" ] || B5STAND="(없음)"
 
 PROMPT="이 강화 블록의 **기전**을 한 문단으로 써라. 수치는 이미 규칙이 적었다 — 너는 **왜**를 쓴다.
 
@@ -114,6 +131,11 @@ $(cat "$MAT")
 - 칸끼리 같은 항목을 고르지 마라(칸 낭비).
 - 몇 칸을 쓸지는 네가 정한다. 벽이 확인된 축이면 **적게 쓰는 것도 설계다**.
 - 카탈로그가 안 주어졌으면(그 블록은 계약이거나 마지막 블록) 이 키를 **빼라**.
+- **B5(오버레이)만** 한 칸에 \`picks: [id, id]\` 스택을 허용한다 — 최대 ${B5MAXL}층(config b5_design.max_layers). 엔진이 층 노출을
+  곱으로 합성하므로 순서는 무의미하고([A,B] = [B,A]) 스택 안 같은 id·같은 kind 는 기각된다. 다른 블록은 \`pick\` 하나뿐이다.
+- 상주 arm(${B5STAND})은 **설계에 넣지 마라** — 상주 칸(B5_31)이 매 세대 이미 잰다. 넣으면 설계 전체가 기각된다.
+- B5 설계는 **이 entry 에 B5 시도가 아직 없을 때만** 받는다 — 측정을 본 뒤 B5 를 다시 짜는 것은 사후 선택이라 거부된다
+  (재설계는 별도 레인이 연다). 이미 B5 를 쟀다면 next_block_design 을 내지 말고 처방(next_block_actions)만 적어라.
 
 ## 산출 (이것만)
 \`${OUT}\` :
@@ -126,7 +148,8 @@ $(cat "$MAT")
   \"avoid\": [\"다음 블록에서 쓰지 말 것 + 그 이유(벽이 확인된 축)\"],
   \"next_block_design\": {
      \"block\": \"다음 블록 id (위 재료가 카탈로그를 준 경우에만. 아니면 이 키를 통째로 빼라)\",
-     \"cells\": [{\"pick\": \"카탈로그 id\", \"label\": \"짧은 이름\", \"why\": \"이 기전에서 왜 이걸 시험하는가\"}]
+     \"cells\": [{\"pick\": \"카탈로그 id\", \"label\": \"짧은 이름\", \"why\": \"이 기전에서 왜 이걸 시험하는가\"},
+               {\"picks\": [\"id1\", \"id2\"], \"label\": \"B5 전용 스택(≤${B5MAXL}층)\", \"why\": \"두 층을 곱으로 겹치는 이유\"}]
   },
   \"prior_lessons_used\": [\"참고한 앞선 블록 id\"],
   \"confidence\": \"high|medium|low\"

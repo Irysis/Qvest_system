@@ -31,6 +31,15 @@
 suppressPackageStartupMessages({ library(jsonlite) })
 `%||%` <- function(a, b) if (is.null(a) || length(a) == 0L) b else a
 
+# ★층 정규화는 정본(rf_spec_sig.R::.ov_layers) 하나만 쓴다 (2026-09-17). 구판은 이 파일 안 두 곳이 단수/리스트
+#   판정을 각자 인라인으로 했고, 스택 설계가 중첩 리스트를 내면 그 두 곳이 서로 다르게 틀릴 자리였다.
+#   러너 안에서는 이미 적재돼 있고, 단독 source(검사)면 여기서 적재한다.
+if (!exists(".ov_layers", mode = "function"))
+  source(file.path(Sys.getenv("QM_ROOT", "C:/Users/99922/OneDrive/Quant_Module_Moltbot"),
+                   "02_Infrastructure/reinforcement/rf_spec_sig.R"), local = TRUE)
+# arm_id 없는 단수 오버레이(list(kind="vol_scale"))도 층이다 — .ov_layers 는 kind 로 단수를 판정한다.
+.rac_layers <- function(ov) .ov_layers(ov)
+
 .rac_path <- function(root) file.path(root, "06_Registry/rf_arm_compat.json")
 
 .rac_load <- function(root) {
@@ -61,11 +70,10 @@ rac_pairs <- function(spec) {
     aid <- as.character(wa$arm %||% wa$id %||% wa$catalog_id %||% "")
     if (nzchar(aid)) out[[length(out) + 1L]] <- list(arm = paste0("weight:", aid), universe = ukey)
   }
-  ovs <- spec$overlay
   # ★단수 객체 판정은 kind 로도 한다 (2026-09-13) — arm_id 없는 단수 오버레이(list(kind="vol_scale"))를 층 리스트로
   #   오인해 필드 문자열을 순회하면 `$` 가 원자 벡터에서 던지고, 러너의 tryCatch 가 그걸 "차단 없음" 으로 삼킨다.
-  ovl <- if (is.null(ovs)) list() else if (!is.null(ovs$arm_id) || !is.null(ovs$kind)) list(ovs) else ovs
-  for (o in ovl) { if (!is.list(o)) next
+  #   (2026-09-17: 정본 .ov_layers 로 — 중첩 스택도 평탄화된다)
+  for (o in .rac_layers(spec$overlay)) {
     aid <- as.character(o$arm_id %||% "")
     if (nzchar(aid)) out[[length(out) + 1L]] <- list(arm = paste0("overlay:", aid), universe = ukey) }
   out
@@ -76,7 +84,9 @@ rac_pairs <- function(spec) {
 RAC_TRUSTED_BASES <- c("sel_dates", "held_rows")
 
 #' 엔진 커버리지 실패 사유에서 분모 표식과 실패 arm 을 읽는다 — 워커→러너 채널은 오류 문자열 하나뿐이다.
-#' @return list(basis = <표식 | "legacy">, kind = "weight" | "overlay" | NA, id = <catalog_id | overlay kind 라벨> | NA)
+#' @return list(basis = <표식 | "legacy">, kind = "weight" | "overlay" | NA, id = <catalog_id | overlay 이름> | NA)
+#'   overlay 의 id 는 두 형식이다: 신판(2026-09-17 엔진) = **실패한 층 하나**의 arm_id(없으면 kind) 단일 토큰 ·
+#'   구판 = 스택 전 층의 kind 를 "+" 로 이은 것. 귀속(.rac_attribute)이 둘을 가른다.
 rac_parse_coverage <- function(detail) {
   d <- as.character(detail %||% "")[1]
   if (is.na(d)) d <- ""
@@ -100,15 +110,19 @@ rac_parse_coverage <- function(detail) {
     if (!(pc$id %in% as.character(unlist(list(wa$arm, wa$id, wa$catalog_id))))) return(character(0))
     return(paste0("weight:", as.character(wa$arm %||% wa$id %||% wa$catalog_id)))
   }
-  kinds <- strsplit(pc$id, "+", fixed = TRUE)[[1]]      # 엔진 라벨 = 층 kind 를 "+" 로 이은 것
-  ovs <- spec$overlay
-  ovl <- if (is.null(ovs)) list() else if (!is.null(ovs$arm_id) || !is.null(ovs$kind)) list(ovs) else ovs
+  ## ★귀속은 **이름이 가리키는 층 하나**에만 (2026-09-17). 신판 엔진 메시지는 실패한 층의 arm_id(없으면 kind)를
+  ##   단일 토큰으로 싣는다 — 스택 [A×B] 에서 B 가 못 덮었으면 B 의 쌍만 적는다. A 까지 적으면 무관한 층이
+  ##   그 유니버스에서 영구 차단된다(09-13 비중 arm 실패가 오버레이를 막던 것과 같은 오귀속).
+  ##   구판 메시지("kindA+kindB")는 "+" 로 쪼개 각 토큰을 kind 로 맞춘다 — 그 시절엔 어느 층인지 채널에 없었다.
+  toks <- strsplit(pc$id, "+", fixed = TRUE)[[1]]
+  toks <- toks[nzchar(toks)]
   ids <- character(0)
-  for (o in ovl) if (is.list(o) && as.character(o$kind %||% "") %in% kinds) {
-    aid <- as.character(o$arm_id %||% "")
+  for (o in .rac_layers(spec$overlay)) {
+    aid <- as.character(o$arm_id %||% ""); knd <- as.character(o$kind %||% "")
+    if (!(aid %in% toks) && !(knd %in% toks)) next
     if (nzchar(aid)) ids <- c(ids, paste0("overlay:", aid))
   }
-  ids
+  unique(ids)
 }
 
 #' 실행 결과를 장부에 남긴다. status = "ok" | "coverage_fail"

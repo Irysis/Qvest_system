@@ -91,6 +91,18 @@ if (length(cs) == 1L) {
        paste(sort(f_de), collapse = ","), paste(sort(f_ok), collapse = ",")))
 } else ng("B2 설계 셀 산출 실패", as.character(length(cs)))
 
+## ★스택 설계(2026-09-17) — 층마다 정상 경로와 같은 필드를 낸다. 한 층이라도 kind 가 빠지면 엔진이 그 층에서 죽는다.
+.act5 <- Filter(function(x) identical(x$status %||% "active", "active"), cm5)
+if (length(.act5) >= 2L) {
+  write(toJSON(list(block = "B5", rationale = "검사 픽스처", cells = list(list(picks = list(.act5[[1]]$id, .act5[[2]]$id), label = "st", why = "w"))),
+               auto_unbox = TRUE), dp)
+  cst <- Filter(Negate(is.null), rfbd_cells(ROOT, TB, "B5"))
+  Lst <- if (length(cst)) cst[[1]]$overlay else NULL
+  if (!is.null(Lst) && is.null(Lst$kind) && length(Lst) == 2L && all(vapply(Lst, function(z) setequal(names(z), f_ok), logical(1))))
+    ok(sprintf("B3 스택 설계 경로 — 층 2개 각각 정상 경로 필드(%s)", paste(sort(f_ok), collapse = ","))) else
+    ng("B3 스택 층 필드", if (is.null(Lst)) "셀 없음" else paste(vapply(Lst, function(z) paste(names(z), collapse = "/"), character(1)), collapse = " | "))
+} else cat("  SKIP B3 active arm 2종 미만\n")
+
 cat("\n=== C. kind 가 실재 arm 으로 해석되는가 ===\n")
 esrc <- paste(readLines("02_Infrastructure/reinforcement/rf_cell_engine.R", warn = FALSE), collapse = "\n")
 .bi <- regmatches(esrc, regexpr('\\.OV_BUILTIN <- c\\([^)]*\\)', esrc))

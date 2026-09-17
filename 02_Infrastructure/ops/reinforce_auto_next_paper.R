@@ -80,6 +80,8 @@ if (length(ex)) {
                  cell_code = E$attempts[[i]]$essence$cell_code %||% NA_character_,
                  spec      = E$attempts[[i]]$essence$spec %||% NA_character_,
                  artifacts = E$attempts[[i]]$artifacts %||% NA_character_,
+                 ## ★적대검증 표식도 싣는다 (2026-09-17 · G2): rf_promote_carry 가 verdict≠pass 인 승자의 자기 층을 물려주지 않는다
+                 adversary = E$attempts[[i]]$adversary,
                  entry     = E)   # ★결합 재료명을 내려면 entry 가 필요하다(base_id 만으로는 논문이 안 보인다)
   }
   .already <- rf_is_summarized(E)
@@ -132,7 +134,16 @@ if (length(ex)) {
       ##   승자가 B5/B4 칸이면 위험 통제가 세대마다 리셋된다(승계 목록에서 빠진 축은 없는 축이 된다).
       ## ★유니버스는 carry 하지 않는다 — 고정 축(K200∪KQ150)으로 리셋 (도훈 결정 2026-09-05 · 정본 rf_promote_carry).
       ##   승자가 B3 칸이면 ws$universe 는 시험 축이라 그대로 물려주면 다음 세대가 고정 축 밖에서 돈다(promo2 n=17 실사고).
-      carry <- rf_promote_carry(ws, cf, best, sp)
+      ## ★2026-09-17 (WP-Z/WP-R): 층 상한(config b5_design.max_layers) · 상주 arm 제외 · 적대검증 탈락 층 제외는 rf_promote_carry 가
+      ##   cfg·부모 carry·best$adversary 로 판정한다 — 버린 층은 overlay_dropped 로 돌아오고 여기서 로그로 드러낸다(조용한 소실 금지).
+      carry <- rf_promote_carry(ws, cf, best, sp, cfg = CFG, root = ROOT,
+                                parent_carry = (E2$carry %||% list())$overlay)
+      if (length(carry$overlay_dropped))
+        jlog("carry_overlay_dropped", base_id = E2$base_id, cell = best$cell_code %||% "NA",
+             dropped = paste(vapply(carry$overlay_dropped, function(d)
+               sprintf("%s(%s)", as.character(d$arm_id %||% d$kind %||% "?"), as.character(d$why %||% "")), character(1)),
+               collapse = ","),
+             note = "승격 carry 에서 뺀 오버레이 층 — 상한/상주/적대검증(정본 rf_promote_carry)")
       nid <- PD$new_base_id
       rf_open_entry(1L, nid, base_grade = best$grade,
                     paper_key = E2$paper_key %||% "", paper_id = E2$paper_id %||% "",

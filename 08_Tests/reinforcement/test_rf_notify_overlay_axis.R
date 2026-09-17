@@ -66,6 +66,43 @@ if (is.null(.bid)) {
        substr(unlist(b5)[1], 1, 70))
 }
 
+# ── ⑦ 스택 서술 (2026-09-17 WP-Z) — 층을 " × " 로 잇고 어느 층도 잃지 않는다 ─────
+LA <- list(kind = "ts_mom_gate", arm_id = "ts_mom_sign"); LB <- list(kind = "dbeta_tilt", arm_id = "dbeta_tilt_rank")
+LC <- list(kind = "gen_20260903_133452", arm_id = "csd_idio_tilt")
+st <- .rf_ov(list(LA, LB, LC))
+if (!is.na(st) && length(strsplit(st, " × ", fixed = TRUE)[[1]]) == 3L && all(vapply(c("ts_mom_sign", "dbeta_tilt_rank", "csd_idio_tilt"), function(k) grepl(k, st, fixed = TRUE), logical(1))) &&
+    startsWith(st, "오버레이 ") && length(gregexpr("오버레이", st)[[1]]) == 1L)
+  ok(sprintf("⑦ 3층 스택 → \"a × b × c\" · 접두 한 번 (%s)", substr(st, 1, 60))) else ng("⑦ 스택 서술", as.character(st))
+if (identical(.rf_ov(list(list(LA), list(LB, LC))), st)) ok("⑦ 중첩 리스트도 같은 서술(정본 .ov_layers 평탄화)") else ng("⑦ 중첩 서술", as.character(.rf_ov(list(list(LA), list(LB, LC)))))
+if (identical(.rf_ov(list(LA)), .rf_ov(LA))) ok("⑦ 1원소 리스트 = 단수 객체 서술") else ng("⑦ 1원소 리스트")
+
+# ── ⑧ 자기 층만 남기기 — 순위 줄의 구분자는 마지막 층이다 ───────────────────
+own <- .rf_ov_own(st, .rf_ov(LA))
+if (identical(own, .rf_ov(list(LB, LC)))) ok("⑧ 승계(LA)를 빼면 LB × LC 만 남는다") else ng("⑧ 자기 층", as.character(own))
+if (is.na(.rf_ov_own(.rf_ov(LA), .rf_ov(LA)))) ok("⑧ 승계와 같으면 NA(순위 줄에 오버레이 안 붙는다 — 구판과 같다)") else ng("⑧ 동일 스택이 NA 가 아니다")
+if (identical(.rf_ov_own(st, ""), st) && identical(.rf_ov_own(st, NA_character_), st)) ok("⑧ 기준이 없으면 전부(접두 포함)") else ng("⑧ 빈 기준", as.character(.rf_ov_own(st, "")))
+if (identical(.rf_ov_own(.rf_ov(list(LA, LB)), .rf_ov(list(LA, LC))), .rf_ov(LB))) ok("⑧ 집합 차 — 순서·기준 스택의 다른 층에 무관") else ng("⑧ 집합 차")
+
+# ── ⑨ 격자 밖 코드 — 설계 칸(B5_16..)·상주 칸(B5_31)이 서술에 있다 ───────────
+suppressMessages(source("02_Infrastructure/reinforcement/rf_block_design.R"))
+TB9 <- sprintf("TEST_NOTIFY_OV_%d", Sys.getpid())
+c5 <- rfbd_catalog("B5", ROOT); a5 <- vapply(c5, function(x) x$id, character(1)); k5 <- vapply(c5, function(x) x$kind, character(1))
+if (length(a5) >= 3L) {
+  dp9 <- rfbd_path(ROOT, TB9, "B5"); dir.create(dirname(dp9), recursive = TRUE, showWarnings = FALSE)
+  write(toJSON(list(block = "B5", cells = list(list(picks = list(a5[1], a5[2]), label = "st", why = "w"),
+                                               list(pick = a5[3], label = "one", why = "w"))), auto_unbox = TRUE, null = "null"), dp9)
+  d9 <- tryCatch(rf_cell_desc(TB9), error = function(e) list())
+  unlink(c(dp9, paste0(dp9, ".bak")), force = TRUE)
+  if (all(c("B5_16", "B5_17") %in% names(d9)) && grepl(" × ", d9[["B5_16"]], fixed = TRUE) &&
+      grepl(a5[1], d9[["B5_16"]], fixed = TRUE) && grepl(a5[2], d9[["B5_16"]], fixed = TRUE) && grepl(a5[3], d9[["B5_17"]], fixed = TRUE))
+    ok("⑨ 설계 칸 B5_16(스택 a × b)·B5_17 이 서술에 있다 — '격자 밖' 아님") else
+    ng("⑨ 설계 칸 서술", paste(names(d9)[grepl("^B5_", names(d9))], collapse = ","))
+  sc <- rfbd_standing_cells(ROOT)
+  if (length(sc)) { cd <- sc[[1]]$code; pk <- sc[[1]]$overlay_pick
+    if (!is.null(d9[[cd]]) && grepl(pk, d9[[cd]], fixed = TRUE)) ok(sprintf("⑨ 상주 칸 %s 서술에 %s", cd, pk)) else ng(sprintf("⑨ 상주 칸 %s 서술 없음", cd), as.character(d9[[cd]] %||% "NULL"))
+  } else ng("⑨ 격자 standing_cells 부재")
+} else cat("  SKIP ⑨ B5 active arm 3종 미만\n")
+
 cat("", fill = TRUE)
 cat(sprintf("합계: 통과 %d · 실패 %d", PASS, FAIL), fill = TRUE)
 cat(sprintf('{"test":"rf_notify_overlay_axis","pass":%d,"fail":%d,"total":%d}', PASS, FAIL, PASS + FAIL), fill = TRUE)

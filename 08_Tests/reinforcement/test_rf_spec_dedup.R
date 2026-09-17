@@ -94,6 +94,49 @@ cat("=== 4. 팩터 순서 무관 ===\n")
 if (identical(.spec_sig(mk(f = list(AMI, BM))), .spec_sig(mk(f = list(BM, AMI)))))
   ok("순서만 다른 같은 집합 → 중복") else ng("순서가 다르면 다른 칸으로 샌다")
 
+cat("=== 4b. 오버레이 스택 — 순서 무관 · 단층 서명 불변 (2026-09-17 WP-Z) ===\n")
+OA <- list(kind = "dd_brake", arm_id = "dd_brake_q"); OB <- list(kind = "dbeta_tilt", arm_id = "dbeta_tilt_rank")
+OC <- list(kind = "ts_mom_gate", arm_id = "ts_mom_sign")
+if (identical(.spec_sig(mk(ov = list(OA, OB))), .spec_sig(mk(ov = list(OB, OA)))))
+  ok("스택 [A,B] ≡ [B,A] — 곱 합성이라 순서는 측정에 안 들어간다") else ng("스택 순서가 다른 칸으로 샌다")
+if (identical(.spec_sig(mk(ov = list(OA, OB, OC))), .spec_sig(mk(ov = list(OC, OA, OB)))))
+  ok("3층도 순서 무관") else ng("3층 순서")
+if (!identical(.spec_sig(mk(ov = list(OA, OB))), .spec_sig(mk(ov = list(OA, OC)))))
+  ok("층 하나가 다르면 다른 칸(음성 대조)") else ng("다른 스택을 중복으로 봤다")
+if (!identical(.spec_sig(mk(ov = list(OA, OB))), .spec_sig(mk(ov = OA))))
+  ok("[A,B] 와 단층 A 는 다른 칸") else ng("스택과 단층이 같은 서명")
+## 구판 서명(정렬 없음)을 그대로 재현해 픽스처의 판별력을 잰다(돌연변이 통제) + 단층 문자열 불변을 대조한다
+.old_sig <- function(sp) paste(c(
+  paste(.fkeys(.rp_all_factors(sp)), collapse = "+"), as.character(sp$base_weight %||% "ew"),
+  as.character(toJSON(sp$weighting %||% list(kind = "ew"), auto_unbox = TRUE)),
+  as.character(toJSON(sp$universe  %||% list(kind = "k200_kq150"), auto_unbox = TRUE)),
+  as.character(toJSON(sp$overlay   %||% list(), auto_unbox = TRUE)),
+  as.character(sp$base_signal$path %||% sp$base_signal$kind %||% "")), collapse = "|")
+if (!identical(.old_sig(mk(ov = list(OA, OB))), .old_sig(mk(ov = list(OB, OA)))))
+  ok("돌연변이 통제 — 정렬을 되돌리면(구판) [A,B]≠[B,A] 로 갈린다: 위 검사가 결함을 가른다") else ng("픽스처 판별력 없음")
+for (o in list(NULL, OA, list(kind = "none"), list(OA)))
+  if (!identical(.spec_sig(mk(ov = o)), .old_sig(mk(ov = o)))) { ng("단층/NULL 서명이 구판과 다르다 — 기존 측정이 되살아난다", toJSON(o %||% list(), auto_unbox = TRUE)); break }
+ok("단층·NULL·none·1원소 리스트 서명 = 구판 문자열과 비트 동일")
+## 실제 스펙 파일 — 단층은 구판과 동일, 2층 이상은 뒤집어도 동일
+.spd <- file.path(ROOT, ".cache/rf_parallel")
+.fs <- if (dir.exists(.spd)) utils::head(sort(list.files(.spd, pattern = "^spec_B[0-9]+_[0-9]+__.*\\.json$", full.names = TRUE), decreasing = TRUE), 400L) else character(0)
+n1 <- 0L; n2 <- 0L; bad1 <- character(0); bad2 <- character(0)
+for (f in .fs) {
+  s <- tryCatch(fromJSON(f, simplifyVector = FALSE), error = function(e) NULL); if (is.null(s)) next
+  L <- .ov_layers(s$overlay)
+  if (length(L) <= 1L) { n1 <- n1 + 1L; if (!identical(.spec_sig(s), .old_sig(s))) bad1 <- c(bad1, basename(f)) }
+  else { n2 <- n2 + 1L; s2 <- s; s2$overlay <- rev(L); if (!identical(.spec_sig(s), .spec_sig(s2))) bad2 <- c(bad2, basename(f)) }
+}
+if (n1 > 0L && !length(bad1)) ok(sprintf("실제 단층 스펙 %d건 서명 비트 동일(구판 대비)", n1)) else ng("실제 단층 스펙 서명 변경", paste(utils::head(bad1, 3), collapse = ","))
+if (n2 == 0L) cat("  --- 실제 2층 이상 스펙 없음 — 뒤집기 대조 생략\n") else if (!length(bad2)) ok(sprintf("실제 스택 스펙 %d건 — 층을 뒤집어도 같은 서명", n2)) else ng("실제 스택 스펙 순서 의존", paste(utils::head(bad2, 3), collapse = ","))
+if (length(.ov_layers(list(list(OA), list(OB, OC)))) == 3L && length(.ov_layers(list(kind = "x"))) == 1L && !length(.ov_layers("x")))
+  ok(".ov_layers 중첩 평탄화 — list(list(A), list(B,C)) → 3층 · 단수 1층 · 비리스트 0층") else ng(".ov_layers 평탄화")
+oc <- .ov_own_layers(list(overlay = list(OC, OA, OB)), carry = OC)
+if (length(oc) == 2L && identical(oc[[1]]$arm_id, "dd_brake_q")) ok(".ov_own_layers = overlay − carry") else ng(".ov_own_layers", as.character(length(oc)))
+oc2 <- .ov_own_layers(list(overlay = list(OC, OA, OB), overlay_cell = OB), carry = OC)
+if (length(oc2) == 1L && identical(oc2[[1]]$arm_id, "dbeta_tilt_rank")) ok(".ov_own_layers 는 overlay_cell 을 정본으로") else ng("overlay_cell 우선")
+if (length(.ov_own_layers(list(overlay = list(OC, OA)), carry = NULL)) == 2L) ok(".ov_own_layers carry 불명 → 전부(보수)") else ng("carry 불명 폴백")
+
 cat("=== 5. 러너 배선 ===\n")
 body <- paste(sub("#.*$", "", src), collapse = "\n")
 for (nm in c(".seen_sig", "cell_duplicate_spec")) {

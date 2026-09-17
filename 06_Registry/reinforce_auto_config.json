@@ -1,6 +1,7 @@
 {
   "schema": "reinforce_auto_config_v1",
-  "enabled": true,
+  "enabled": false,
+  "paused_reason": "★2026-09-17 19:58 도훈 지시 \"리서치 잠시 멈추고 점검해봐\" — 오버레이를 써도 MDD 가 안 줄어드는 원인(전략↔현금 비중 조절 오버레이 사용 여부) 점검. 재개 = enabled 를 true 로.",
   "combination": {
     "enabled": true,
     "note": "★도훈 지시 2026-09-04 — 결합은 rank-Z 평균 blend 가 아니라 **LLM 이 두 논문을 읽고 설계한 전략(기저)**에서 출발한다. 그 기저를 충실구현 1회로 측정해 base_grade 를 얻고, base_min_port_t 가드를 통과한 뒤에야 강화 25칸을 열어야 한다. 그 레인이 서기 전까지 구판 blend 착수를 정지한다 — 정지 중에는 호출자가 다음 논문 충실구현으로 정상 이월한다.",
@@ -101,6 +102,11 @@
       "overlay_propose": {
         "model": "opus",
         "effort": "high"
+      },
+      "overlay_audit": {
+        "model": "opus",
+        "effort": "xhigh",
+        "note": "★2026-09-17 G1 적대적 설계시점 감사(rf_overlay_audit.sh · 축 정본 06_Registry/rf_overlay_adversary_axes.json). 설계자(B5 레인)가 fable 이므로 감사자는 다른 계열(opus)이어야 한다 — 같은 모델이 자기 설계를 감사하면 같은 맹점을 공유한다. 축별 model/effort 가 이 값을 덮고, 환경변수 QVEST_OA_MODEL/QVEST_OA_EFFORT 가 최우선. 병합은 R(rf_overlay_audit_merge.R · 결정론)이 근거를 재도출해 판정한다."
       },
       "cleaner_distill": {
         "model": "opus",

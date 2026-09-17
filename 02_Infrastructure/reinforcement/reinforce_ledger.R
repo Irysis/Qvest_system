@@ -536,6 +536,64 @@ rf_lessons_digest <- function(layer, base_id, n_last = 5L, root = .rf_root()) {
          character(1))
 }
 
+#' 오버레이 적대 반증 기록 (G2 · 2026-09-17) — attempts[[j]]$adversary 만 쓴다
+#'
+#' ★왜 필요한가: B5 칸이 바닥보다 Calmar 를 올렸다는 사실만으로 블록 승자·승격 carry·Grade A 후보로
+#'   소비됐다. 반증(lag-1 · strict-PIT · 노출 짝지은 placebo · 정적 등가)을 거친 칸만 소비하려면
+#'   그 판정이 **원장 attempt 안**에 있어야 소비자(.winner_of · rf_promote · grade_a 큐)가 읽는다.
+#' ★경계(AX-008): essence·grade 는 건드리지 않는다 — 이 writer 는 `adversary` 필드 하나만 세운다.
+#'   verdict ∈ pass / fail / error / not_candidate. pass 가 아니면 소비 보류이지 등급 변경이 아니다.
+#' ★쓰기 직전 재적재(read-modify-write 최소 창) + .rf_write 원자 쓰기. attempt 부재는 거부한다.
+#'   직전 기록이 있으면 verdict·at 만 history 로 누적한다(덮어써도 이력은 남는다).
+#' @param adversary rf_overlay_adversary.R 이 만든 레코드(list · schema rf_overlay_adversary_v1)
+rf_record_adversary <- function(layer, base_id, n, adversary, root = .rf_root()) {
+  if (!is.list(adversary) || !nzchar(as.character(adversary$verdict %||% "")))
+    stop("[reinforce_ledger] adversary 레코드에 verdict 가 없다 — 판정 없는 표식은 쓰지 않는다")
+  obj <- rf_load(layer, root)
+  i <- .rf_find(obj, base_id)
+  if (is.na(i)) stop(sprintf("[reinforce_ledger] entry 부재: %s", base_id))
+  e <- obj$entries[[i]]
+  j <- which(vapply(e$attempts, function(a) identical(as.integer(a$n), as.integer(n)), logical(1)))
+  if (!length(j)) stop(sprintf("[reinforce_ledger] attempt n=%s 부재 (%s)", n, base_id))
+  j <- j[1]
+  prev <- e$attempts[[j]]$adversary
+  hist <- if (is.list(prev)) c(prev$history %||% list(),
+                               list(list(at = as.character(prev$at %||% ""), verdict = as.character(prev$verdict %||% ""))))
+          else list()
+  adversary$history <- hist
+  adversary$recorded_at <- format(Sys.time(), "%Y-%m-%dT%H:%M:%S%z")
+  e$attempts[[j]]$adversary <- adversary
+  obj$entries[[i]] <- e
+  .rf_write(obj, layer, root)
+  cat(sprintf("[reinforce_ledger] adversary n=%s (%s) → %s%s\n", n, e$attempts[[j]]$cell_code %||% "?",
+              as.character(adversary$verdict), if (length(hist)) sprintf(" (이력 %d)", length(hist)) else ""))
+  invisible(e$attempts[[j]])
+}
+
+#' B5 재설계 라운드 표식 (WP-R · 2026-09-17 · B5 설계 레인 계약) — entry$b5_redesign 필드만 **병합**한다
+#'
+#' 계약 필드: active(logical) · round(integer · 2 = 첫 재설계) · at · cells_added · base_design_cells.
+#'   레인(rf_b5_design)이 연다(active=TRUE · 새 칸을 설계 뒤에 덧붙인다 — 코드 안정) · 러너가 B5 경계(재설계 배치 완료 +
+#'   적대검증)에서 닫는다(active=FALSE · closed_at · closed_by). 러너는 active·cells_added·base_design_cells 만 읽는다
+#'   (rf_runner_gates.R::rf_b5_redesign_active / rf_b5_design_counts).
+#' ★경계(AX-008): 등급·시도·carry 는 건드리지 않는다 — 이 writer 는 b5_redesign 하나만 세운다. 부재 필드는 그대로 둔다.
+rf_record_b5_redesign <- function(layer, base_id, fields, root = .rf_root()) {
+  if (!is.list(fields) || !length(fields) || is.null(names(fields)) || any(!nzchar(names(fields))))
+    stop("[reinforce_ledger] b5_redesign 은 이름 있는 필드 목록이 필요하다(active/round/at/cells_added/base_design_cells)")
+  obj <- rf_load(layer, root)
+  i <- .rf_find(obj, base_id)
+  if (is.na(i)) stop(sprintf("[reinforce_ledger] entry 부재: %s", base_id))
+  cur <- obj$entries[[i]]$b5_redesign
+  if (!is.list(cur)) cur <- list()
+  for (k in names(fields)) cur[[k]] <- fields[[k]]
+  cur$updated_at <- format(Sys.time(), "%Y-%m-%dT%H:%M:%S%z")
+  obj$entries[[i]]$b5_redesign <- cur
+  .rf_write(obj, layer, root)
+  cat(sprintf("[reinforce_ledger] b5_redesign %s: active=%s round=%s cells_added=%s\n", base_id,
+              as.character(cur$active %||% NA), as.character(cur$round %||% NA), as.character(cur$cells_added %||% NA)))
+  invisible(cur)
+}
+
 `%||%` <- function(a, b) if (is.null(a) || length(a) == 0L || (length(a) == 1L && is.na(a))) b else a
 
-cat("[reinforce_ledger.R] Loaded (v10) — rf_open_entry / rf_append_attempt(★L1 25회 게이트·서술 의무 · root_papers 선택) / rf_record_result / rf_park_entry(조기 중단·사유 필수) / rf_record_judge / rf_record_combination_review / rf_lessons_digest\n")
+cat("[reinforce_ledger.R] Loaded (v10) — rf_open_entry / rf_append_attempt(★L1 25회 게이트·서술 의무 · root_papers 선택) / rf_record_result / rf_park_entry(조기 중단·사유 필수) / rf_record_judge / rf_record_combination_review / rf_lessons_digest / rf_record_adversary(G2 오버레이 반증 표식) / rf_record_b5_redesign(B5 재설계 라운드 표식)\n")

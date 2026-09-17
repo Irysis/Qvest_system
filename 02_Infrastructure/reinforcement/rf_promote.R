@@ -10,6 +10,13 @@
 # 계약: 부작용 없음 — 원장·파일을 쓰지 않는다. 판정만 돌려준다.
 #==============================================================================
 `%||%` <- function(a, b) if (is.null(a) || length(a) == 0L) b else a
+.RFP_ROOT <- function() Sys.getenv("QM_ROOT", "C:/Users/99922/OneDrive/Quant_Module_Moltbot")
+# ★층 정규화·상주 칸 읽기는 정본 하나만 (2026-09-17): rf_spec_sig.R(.ov_layers/.ov_key) · rf_block_design.R(rfbd_standing_picks/rfbd_max_layers).
+#   러너 안에서는 이미 적재돼 있고, 단독 source(검사·next_paper)면 여기서 적재한다. 읽기뿐 — 이 파일은 여전히 쓰지 않는다.
+if (!exists(".ov_layers", mode = "function"))
+  source(file.path(.RFP_ROOT(), "02_Infrastructure/reinforcement/rf_spec_sig.R"), local = TRUE)
+if (!exists("rfbd_standing_picks", mode = "function"))
+  invisible(capture.output(source(file.path(.RFP_ROOT(), "02_Infrastructure/reinforcement/rf_block_design.R"), local = TRUE)))
 
 # 등급 사다리 — min="B" 면 {A,B}, min="A" 면 {A}. essence enum 밖 값은 승격 불가.
 .rf_promote_grades <- function(min_grade = "B") {
@@ -59,11 +66,64 @@ rf_promote_decide <- function(entry, best, cfg = list(), existing_ids = NULL) {
 #'   승자가 B3 칸이면 ws$universe 는 그 블록의 시험 축(예: KQ150 단독 · NAV 2010-02~)이라 그대로 물려주면
 #'   다음 세대 25칸이 전부 고정 축 밖에서 돌고, 창이 다른 PORT_t(2.567 vs 2005~ 칸)가 기저가 된다(실사고 promo2 n=17).
 #'   승자의 유니버스는 provenance(universe_reset_from)로만 남긴다.
-#' @param ws 승자 스펙(list) · cf 팩터 목록 · best 승자 attempt 요약 · sp 스펙 경로
-rf_promote_carry <- function(ws, cf, best, sp) {
-  list(factors = cf %||% list(), weighting = ws$weighting,
-       universe = list(kind = "k200_kq150"),
-       universe_reset_from = ws$universe,
-       overlay = ws$overlay,
-       source_cell = best$cell_code %||% "NA", source_spec = sp)
+#' ★오버레이 carry 규칙 3종 (2026-09-17 · WP-Z 스택 설계):
+#'   ① 상한 — 물려주는 층 수 ≤ max_layers(config b5_design.max_layers · 부재 시 3). 넘치면 **가장 오래된 carry 층부터**
+#'      버린다. 스택 순서는 .ov_stack(carry, own) 이라 앞이 조상, 끝이 이 칸의 몫이다 — 최근 것이 곧 이 승자를 만든 처치다.
+#'   ② 상주 제외 — program standing_cells 의 overlay_pick(pg2_risk_overlay_v1)은 물려주지 않는다. 상주 칸은 다음 세대에서도
+#'      B5 마다 자기 코드로 다시 돌므로, carry 에 실으면 같은 노출을 두 번 곱한다(이중 축소).
+#'   ③ 적대검증 — 승자 attempt 에 adversary$verdict 가 **있고** "pass" 가 아니면 그 attempt 의 **자기 층**(overlay_cell ·
+#'      없으면 overlay − 부모 carry · 그것도 없으면 B5 칸의 마지막 층)은 물려주지 않는다. 검증에 진 처치를 다음 세대의
+#'      바닥으로 깔지 않는다. verdict 가 없는 구 attempt 는 구판 거동 그대로(전부 승계).
+#'   ★어느 규칙도 안 걸리면 overlay 는 **입력 그대로**(단수 객체·리스트 형태 불변 — carry 서명이 바뀌지 않는다).
+#'   버린 층은 overlay_dropped 에 {kind, arm_id, why} 로 남긴다(조용한 소실 금지 · 러너 로그가 읽는다).
+#' @param ws 승자 스펙(list) · cf 팩터 목록 · best 승자 attempt 요약(grade·port_t·spec·cell_code · 선택 adversary) · sp 스펙 경로
+#' @param cfg reinforce_auto_config(list) — b5_design$max_layers 를 읽는다(없으면 config 파일 → 3)
+#' @param root 저장소 루트(상주 칸·config 읽기) · parent_carry 부모 entry 의 carry$overlay(자기 층 판별 정밀도용 · 선택)
+rf_promote_carry <- function(ws, cf, best, sp, cfg = list(), root = .RFP_ROOT(), parent_carry = NULL) {
+  ov <- .rfp_carry_overlay(ws, best, cfg, root, parent_carry)
+  out <- list(factors = cf %||% list(), weighting = ws$weighting,
+              universe = list(kind = "k200_kq150"),
+              universe_reset_from = ws$universe,
+              overlay = ov$overlay,
+              source_cell = best$cell_code %||% "NA", source_spec = sp)
+  if (length(ov$dropped)) out$overlay_dropped <- ov$dropped
+  out
+}
+
+#' 승자 attempt 의 **자기 층** 키 — overlay_cell(정본) > overlay − 부모 carry > B5 칸이면 마지막 층 > 없음(보수)
+.rfp_own_keys <- function(ws, best, parent_carry = NULL) {
+  if (!is.null(ws$overlay_cell)) return(vapply(.ov_layers(ws$overlay_cell), .ov_key, character(1)))
+  keys <- vapply(.ov_layers(ws$overlay), .ov_key, character(1))
+  if (!length(keys)) return(character(0))
+  if (!is.null(parent_carry)) return(setdiff(keys, vapply(.ov_layers(parent_carry), .ov_key, character(1))))
+  if (startsWith(as.character(best$cell_code %||% ""), "B5_")) return(keys[length(keys)])
+  character(0)   # B1~B4 승자의 오버레이는 승계분(또는 B5 승자의 것)이지 이 칸의 처치가 아니다 — 판별 불가면 안 버린다
+}
+
+.rfp_carry_overlay <- function(ws, best, cfg = list(), root = .RFP_ROOT(), parent_carry = NULL) {
+  L <- .ov_layers(ws$overlay)
+  if (!length(L)) return(list(overlay = ws$overlay, dropped = list()))
+  keys <- vapply(L, .ov_key, character(1))
+  aids <- vapply(L, function(z) as.character(z$arm_id %||% ""), character(1))
+  why  <- rep("", length(L))
+  ## ③ 적대검증 — verdict 가 있고 pass 가 아닐 때만. 구 attempt(verdict 없음)는 손대지 않는다.
+  verdict <- as.character((best$adversary %||% list())$verdict %||% "")[1]
+  if (nzchar(verdict) && !identical(verdict, "pass")) {
+    own <- .rfp_own_keys(ws, best, parent_carry)
+    why[keys %in% own] <- paste0("adversary:", verdict)
+  }
+  ## ② 상주 arm 은 물려주지 않는다
+  st <- tryCatch(rfbd_standing_picks(root), error = function(e) character(0))
+  why[why == "" & nzchar(aids) & aids %in% st] <- "standing"
+  ## ① 상한 — 남은 층이 상한을 넘으면 앞(가장 오래된 carry)부터 버린다
+  maxl <- suppressWarnings(as.integer((cfg$b5_design %||% list())$max_layers %||% NA_integer_))[1]
+  if (is.na(maxl) || maxl < 1L) maxl <- tryCatch(rfbd_max_layers(root), error = function(e) 3L)
+  keep <- which(why == "")
+  if (length(keep) > maxl) why[utils::head(keep, length(keep) - maxl)] <- sprintf("cap:%d", maxl)
+  if (all(why == "")) return(list(overlay = ws$overlay, dropped = list()))   # 입력 그대로 — 형태·서명 불변
+  kept <- L[why == ""]
+  dropped <- lapply(which(why != ""), function(i) list(kind = as.character(L[[i]]$kind %||% ""),
+                                                        arm_id = aids[i], why = why[i]))
+  list(overlay = if (!length(kept)) NULL else if (length(kept) == 1L) kept[[1]] else kept,
+       dropped = dropped)
 }

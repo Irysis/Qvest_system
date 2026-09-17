@@ -63,4 +63,28 @@ old <- vapply(Filter(function(x) !identical(as.character(x$status %||% ""), "ret
               function(x) as.character(x$catalog_id %||% ""), character(1))
 if (INC %in% old) ok("P5 구 술어(!= retracted)는 실사고 id 를 포함 → 검사가 결함을 가른다") else
   ng("P5 픽스처가 구 술어에서도 안 잡힌다", "실사고 entry 가 카탈로그에서 사라졌나")
+
+cat("=== 5. B5 술어 일치 — 설계 검증기 == 규칙 픽커(active) (2026-09-17) ===\n")
+## 실사고 계열: B2 와 같은 병이 B5 에도 있었다 — rfbd_catalog("B5") 는 status 를 안 읽어 retired arm 이 설계를 통과했다.
+##   규칙 픽커(rf_overlay_arms.R:46)는 active 만 뽑는다. 같은 질문에 술어가 둘이면 안 된다.
+if (!ld("02_Infrastructure/ops/rf_overlay_arms.R")) .done()
+v5 <- vapply(rfbd_catalog("B5", ROOT), function(x) as.character(x$id), character(1))
+A5 <- rf_overlay_catalog(ROOT); p5 <- if (is.null(A5)) character(0) else A5[status == "active"]$id
+if (length(v5) && setequal(v5, p5)) ok(sprintf("P6 B5 검증기 %d == 픽커 active %d", length(v5), length(p5))) else
+  ng("P6 B5 두 목록이 다르다", sprintf("검증기만: %s | 픽커만: %s", paste(setdiff(v5, p5), collapse = ","), paste(setdiff(p5, v5), collapse = ",")))
+## retired 주입 — 격리 root 에 카탈로그 사본을 두고 한 arm 을 retired 로 바꾼다
+TMP <- file.path(tempdir(), sprintf("rfbd_par_%d", Sys.getpid()))
+dir.create(file.path(TMP, "06_Registry"), recursive = TRUE, showWarnings = FALSE)
+file.copy(file.path(ROOT, "06_Registry/reinforce_program.json"), file.path(TMP, "06_Registry/reinforce_program.json"))
+cat5 <- fromJSON(file.path(ROOT, "06_Registry/overlay_catalog.json"), simplifyVector = FALSE)
+RETID <- cat5$arms[[1]]$id; cat5$arms[[1]]$status <- "retired"
+write(toJSON(cat5, auto_unbox = TRUE, pretty = TRUE, null = "null"), file.path(TMP, "06_Registry/overlay_catalog.json"))
+v5t <- vapply(rfbd_catalog("B5", TMP), function(x) as.character(x$id), character(1))
+if (!(RETID %in% v5t) && length(v5t) == length(cat5$arms) - 1L) ok(sprintf("P7 retired 로 바꾼 %s 가 검증기 목록에서 빠진다", RETID)) else ng("P7 retired 가 목록에 남는다")
+r7 <- rfbd_verify(list(block = "B5", cells = list(list(pick = RETID, label = "r", why = "w"))), "B5", TMP)
+if (is.character(r7) && grepl("retired", r7, fixed = TRUE)) ok(paste0("P8 rfbd_verify 기각: ", r7)) else ng("P8 retired 설계가 통과한다", as.character(r7))
+r8 <- rfbd_verify(list(block = "B5", cells = list(list(pick = cat5$arms[[2]]$id, label = "a", why = "w"))), "B5", TMP)
+if (isTRUE(r8)) ok("P9 양성 대조 — active arm 설계는 통과") else ng("P9 active 를 거부한다", as.character(r8))
+if (RETID %in% vapply(cat5$arms, function(a) a$id, character(1))) ok("P10 돌연변이 통제 — 구 술어(status 무시)면 retired id 가 목록에 있었다") else ng("P10 판별력")
+unlink(TMP, recursive = TRUE, force = TRUE)
 .done()

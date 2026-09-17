@@ -77,6 +77,48 @@ p <- rf_write_mechanism_map()
 if (file.exists(p) && length(jsonlite::fromJSON(p, simplifyVector = FALSE)$cells) == nrow(mp))
   ok("⑧ 지도 파일 기록") else ng("⑧ 지도 파일 기록 실패", as.character(p))
 
+# ⑨ ★스택 칸은 층마다 센다 · 상주 arm 은 안 센다 (2026-09-17 WP-Z) — 격리 root 합성 픽스처
+TMP <- file.path(tempdir(), sprintf("rfm_stack_%d", Sys.getpid()))
+dir.create(file.path(TMP, "06_Registry"), recursive = TRUE, showWarnings = FALSE)
+dir.create(file.path(TMP, "specs"), showWarnings = FALSE)
+J <- function(x) jsonlite::toJSON(x, auto_unbox = TRUE, pretty = TRUE, null = "null")
+write(J(list(schema = "overlay_catalog_v1", arms = list(
+  list(id = "X", kind = "kx", family = "cross_sectional", status = "active", action = "cross_sectional", state = "drawdown"),
+  list(id = "Y", kind = "ky", family = "cross_sectional", status = "active", action = "cross_sectional", state = "trend"),
+  list(id = "Z", kind = "kz", family = "vol_target",      status = "active", action = "scalar_exposure", state = "vol"),
+  list(id = "pg2_risk_overlay_v1", kind = "pg2_risk_overlay", family = "book_spec", status = "active", action = "scalar_exposure", state = "multivar")))),
+  file.path(TMP, "06_Registry/overlay_catalog.json"))
+write(J(list(schema = "reinforce_program_v1", blocks = list(),
+             standing_cells = list(list(code = "B5_31", block = "B5", label = "상주", overlay_pick = "pg2_risk_overlay_v1")))),
+      file.path(TMP, "06_Registry/reinforce_program.json"))
+LZ <- list(kind = "kz", arm_id = "Z"); LX <- list(kind = "kx", arm_id = "X"); LY <- list(kind = "ky", arm_id = "Y")
+LS <- list(kind = "pg2_risk_overlay", arm_id = "pg2_risk_overlay_v1")
+sp1 <- file.path(TMP, "specs/s1.json"); write(J(list(overlay = list(LZ, LX, LY), overlay_cell = list(LX, LY))), sp1)   # carry Z + 자기 층 X×Y
+sp2 <- file.path(TMP, "specs/s2.json"); write(J(list(overlay = list(LZ, LS))), sp2)                                   # 상주 칸: carry Z + 상주
+sp3 <- file.path(TMP, "specs/s3.json"); write(J(list(overlay = list(LZ, LX))), sp3)                                   # overlay_cell 없음 → overlay − carry = X
+write(J(list(entries = list(list(base_id = "T", carry = list(overlay = LZ), attempts = list(
+  list(n = 1, essence = list(cell_code = "B5_16", calmar = 0.5, spec = sp1)),
+  list(n = 2, essence = list(cell_code = "B5_31", calmar = 0.9, spec = sp2)),
+  list(n = 3, essence = list(cell_code = "B5_17", calmar = 0.3, spec = sp3))))))),
+  file.path(TMP, "06_Registry/reinforce_ledger_l1.json"))
+mt <- rf_mechanism_map(TMP)
+g <- function(a, s, col) mt[action == a & state == s][[col]]
+if (identical(g("cross_sectional", "drawdown", "n_measured"), 2L) && identical(g("cross_sectional", "trend", "n_measured"), 1L))
+  ok("⑨ 스택 칸 [X×Y] 는 X·Y 칸에 각각 1 — 층마다 센다 (X 는 s3 까지 2)") else
+  ng("⑨ 층 단위 집계", sprintf("drawdown=%s trend=%s", g("cross_sectional", "drawdown", "n_measured"), g("cross_sectional", "trend", "n_measured")))
+if (identical(g("scalar_exposure", "vol", "n_measured"), 0L)) ok("⑨ carry 층 Z 는 자기 층이 아니라 안 센다") else ng("⑨ carry 층이 세졌다", as.character(g("scalar_exposure", "vol", "n_measured")))
+if (identical(g("scalar_exposure", "multivar", "n_measured"), 0L) && identical(g("scalar_exposure", "multivar", "n_arms_catalog"), 0L))
+  ok("⑨ 상주 arm(pg2_risk_overlay_v1)은 측정·카탈로그 수에서 제외") else
+  ng("⑨ 상주 제외", sprintf("meas=%s cat=%s", g("scalar_exposure", "multivar", "n_measured"), g("scalar_exposure", "multivar", "n_arms_catalog")))
+if (identical(g("scalar_exposure", "vol", "n_arms_catalog"), 1L)) ok("⑨ 상주가 아닌 카탈로그 arm 은 그대로 센다") else ng("⑨ 카탈로그 수")
+if (isTRUE(abs(g("cross_sectional", "drawdown", "best_calmar") - 0.5) < 1e-9)) ok("⑨ best_calmar 는 그 층이 실린 칸의 essence 값") else ng("⑨ best_calmar")
+# 돌연변이 통제 — 구판(s$overlay$arm_id 하나)은 스택(리스트)에서 NULL 을 내 X·Y 를 0 으로 셌다
+old_aid <- as.character(jsonlite::fromJSON(sp1, simplifyVector = FALSE)$overlay$arm_id %||% "")
+if (!nzchar(old_aid)) ok("⑨ 돌연변이 통제 — 구판 s$overlay$arm_id 는 스택에서 빈 문자열 → 측정 소실(픽스처가 결함을 가른다)") else ng("⑨ 픽스처 판별력 없음")
+brief_t <- rf_target_brief(TMP)
+if (!any(vapply(leak, function(k) grepl(k, tolower(brief_t), fixed = TRUE), logical(1)))) ok("⑨ 격리 root 축약본도 성과 누출 0") else ng("⑨ 축약본 누출")
+unlink(TMP, recursive = TRUE, force = TRUE)
+
 cat("", fill = TRUE)
 cat(sprintf("합계: 통과 %d · 실패 %d", PASS, FAIL), fill = TRUE)
 cat(sprintf('{"test":"rf_mechanism_map","pass":%d,"fail":%d,"total":%d}', PASS, FAIL, PASS + FAIL), fill = TRUE)

@@ -514,7 +514,12 @@ run_paper_replication <- function(strategy_name, strategy_idea, factor_engine_pa
       if (nzchar(si)) sprintf("논문 가설(충실구현 대상 — 검증 전 진술): %s", si) else NULL
     }
   }
-  lc <- tryCatch({
+  # ★L-code 억제 스위치 (2026-09-17 · G2 적대 재실행): rf_overlay_adversary 의 T1/T2 재실행은 측정 산출물만 필요하다 —
+  #   같은 칸의 교훈이 두 번 적립되면 hypothesis_index 가 오염된다. QVEST_RP_NO_LCODE=1 은 그 재실행 경로만 켠다
+  #   (기본 0 = 구판 거동 그대로). 스위치를 읽는다는 사실 자체를 적대검증 모듈이 소스에서 재도출해 재실행 허용 조건으로 쓴다.
+  lc <- if (identical(Sys.getenv("QVEST_RP_NO_LCODE", "0"), "1")) {
+    cat("[replication] L-code 발행 억제 (QVEST_RP_NO_LCODE=1 — 적대 재실행 · 교훈 이중 적립 방지)\n"); NULL
+  } else tryCatch({
     emit_lcode(mode = "paper_replication", strategy_id = strategy_id, grade = grade,
                lesson_text = sprintf("%s 충실구현: 등급 %s. 논문기준 SR %.2f vs 15bps SR %.2f. %s",
                                      strategy_name, grade %||% "NA", paper_sum$sharpe,

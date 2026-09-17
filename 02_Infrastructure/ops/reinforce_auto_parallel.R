@@ -159,19 +159,61 @@ if (length(.b1_design)) {
   cells <- c(lapply(.b1_design, function(c) { c$block <- "B1"; c$axis <- "multifactor"; c }), .rest)
   jlog("b1_design_applied", base_id = BID, cells = length(.b1_design),
        note = "설계 칸으로 B1 교체 — 칸 수는 설계가 정한다")
-  # ★총예산을 설계에 맞춰 늘린다 (도훈 2026-09-04). B1 이 기본 5칸보다 더 쓰면 그만큼
-  #   entry 상한을 올려, 뒤 블록(B5·B2·B3·B4)이 잘리지 않게 한다. 한 번만 쓰고 이후 불변.
-  .want <- as.integer(led$max_attempts %||% 25L) + max(0L, length(.b1_design) - 5L)
-  if (is.null(E$max_attempts) || as.integer(E$max_attempts) != .want) {
-    ok_b <- tryCatch({ rf_record_entry_budget(1L, BID, .want,
-              sprintf("B1 설계 %d칸(기본 5) — 뒤 블록이 잘리지 않도록 총예산 %d -> %d",
-                      length(.b1_design), as.integer(led$max_attempts %||% 25L), .want),
-              root = ROOT); TRUE },
-            error = function(e) { jlog("entry_budget_failed", err = conditionMessage(e)); FALSE })
-    if (isTRUE(ok_b)) { MAXA <- .want
-      jlog("entry_budget_raised", base_id = BID, max_attempts = .want, b1_cells = length(.b1_design)) }
-  } else MAXA <- as.integer(E$max_attempts)
 }
+
+# ── ★상주 칸 (WP-R · 도훈 지시 2026-09-17 · 격자 정본 reinforce_program.json::standing_cells) ────────
+#   BOOK_0001 PG2 오버레이의 동결 사양(pg2_risk_overlay_v1)을 **매 세대 B5 마다** 자기 코드(B5_31)로 한 번 잰다 —
+#   설계·규칙 선정·회피 목록과 무관한 대조 칸이다. 판정은 rf_runner_gates.R::rf_standing_decision (순수 함수):
+#   (a) 그 코드의 시도가 이미 있으면 항상 얹는다(재개·승자 해석이 **코드로** 칸을 찾는다 — 없으면 그 칸을 잃는다)
+#   (b) B5 시도가 아직 없고 ∧ arm 이 카탈로그 active ∧ carry 에 없으면 얹는다
+#   (c) 재설계 라운드(E$b5_redesign.active · B5 설계 레인이 쓴다)가 열려 있고 그 코드의 시도가 없으면 얹는다.
+#   그 밖은 standing_cell_skipped 로 사유를 남긴다(조용한 통과 없음). B5 의 **첫 칸**에 넣어 첫 B5 배치에서 돈다.
+#   예산은 아래 재도출식이 +1 로 센다(격자 25 밖의 칸이다).
+suppressMessages(source(file.path(ROOT, "02_Infrastructure/reinforcement/rf_runner_gates.R"), local = TRUE))
+.n_standing_inserted <- 0L
+.redesign_on <- rf_b5_redesign_active(E)
+for (.sc in tryCatch(rfbd_standing_cells(ROOT),
+                     error = function(e) { jlog("standing_cells_load_failed", err = conditionMessage(e)); list() })) {
+  if (!identical(as.character(.sc$block %||% "B5"), "B5")) {
+    jlog("standing_cell_skipped", code = as.character(.sc$code %||% ""), reason = "block_not_b5"); next }
+  .dec <- rf_standing_decision(.sc, E$attempts, carry_overlay = E$carry$overlay,
+                               catalog = tryCatch(.rfbd_b5_raw(ROOT), error = function(e) list()),
+                               redesign_active = .redesign_on)
+  if (!isTRUE(.dec$insert)) {
+    jlog("standing_cell_skipped", code = as.character(.sc$code), arm = as.character(.sc$overlay_pick %||% ""),
+         reason = .dec$reason); next }
+  .cellS <- rf_standing_cell(.sc, .dec$kind, basis = .dec$basis)
+  .kB5 <- which(vapply(cells, function(c) identical(as.character(c$block %||% ""), "B5"), logical(1)))
+  cells <- if (length(.kB5)) append(cells, list(.cellS), after = .kB5[1] - 1L) else c(cells, list(.cellS))
+  .n_standing_inserted <- .n_standing_inserted + 1L
+  jlog("standing_cell_inserted", base_id = BID, code = .cellS$code, arm = .cellS$overlay$arm_id,
+       kind = .cellS$overlay$kind, reason = .dec$reason, redesign = .redesign_on,
+       note = "상주 칸 — B5 첫 칸으로 삽입(설계·규칙 선정과 무관 · 승격 carry 제외)")
+}
+
+# ── ★entry 예산 — **매 tick 재도출** (도훈 2026-09-04 · 2026-09-17 "예산 상한은 신경쓰지말고 반영") ────────
+#   자동 = 기본(원장 max_attempts) + B1 설계 초과 + B5 설계 초과 + 상주 삽입 + 재설계 추가(E$b5_redesign.cells_added).
+#   구판은 B1 설계가 있을 때만 셌다 — B5 설계가 7칸이거나 상주 칸이 얹히면 그만큼 뒤 블록(B4 결합)이 잘렸다.
+#   실제 상한 = max(자동, 수동): 수동 상향은 덮지 않고(구판은 매 tick 되돌려 써 추가 칸이 1개만 돌았다),
+#   자동은 자동식 위로 못 올린다. 바뀔 때만 원장에 쓴다. 산식 정본 = rf_runner_gates.R::rf_budget_auto/rf_budget_want.
+.nB1d <- length(.b1_design)
+.b5c  <- rf_b5_design_counts(length(.blk_design[["B5"]] %||% list()), E)
+.slot_of <- function(id) { for (b in PROG$blocks) if (identical(b$id, id)) return(as.integer(b$n %||% length(b$cells))); 5L }
+.auto <- rf_budget_auto(led$max_attempts %||% 25L, .nB1d, .b5c$n_base, .n_standing_inserted, .b5c$n_redesign,
+                        slot_b1 = .slot_of("B1"), slot_b5 = .slot_of("B5"))
+.want <- rf_budget_want(.auto, E$max_attempts)
+.cur  <- as.integer(E$max_attempts %||% led$max_attempts %||% 25L)
+if (.want != .cur) {
+  ok_b <- tryCatch({ rf_record_entry_budget(1L, BID, .want,
+            sprintf("예산 재도출 %d -> %d = 기본 %d + B1 설계 초과 %d(설계 %d칸) + B5 설계 초과 %d(설계 %d칸) + 상주 %d + 재설계 추가 %d — 뒤 블록이 잘리지 않도록",
+                    .cur, .want, as.integer(led$max_attempts %||% 25L), max(0L, .nB1d - .slot_of("B1")), .nB1d,
+                    max(0L, .b5c$n_base - .slot_of("B5")), .b5c$n_design, .n_standing_inserted, .b5c$n_redesign),
+            root = ROOT); TRUE },
+          error = function(e) { jlog("entry_budget_failed", err = conditionMessage(e)); FALSE })
+  if (isTRUE(ok_b)) { MAXA <- .want
+    jlog("entry_budget_raised", base_id = BID, max_attempts = .want, auto = .auto, b1_cells = .nB1d,
+         b5_cells = .b5c$n_design, standing = .n_standing_inserted, redesign = .b5c$n_redesign) }
+} else MAXA <- .cur
 
 # ★미측정(등록만 된) 칸 — **소진 판정보다 먼저** 본다. 등록됐는데 실행이 실패한 칸을
 #   exhausted 로 넘기면 그 칸이 영구 소실된다(2026-08-30 실사고: 워커 4개 미기동으로 17~20 이 빈 채 소비).
@@ -321,18 +363,24 @@ if (length(batch) && identical(first$block, "B5") && is.null(.blk_design[["B5"]]
     })),
     # ★carry 에 이미 깔린 팔도 제외한다 — 같은 팔을 또 뽑으면 .ov_stack 이 중복을 지워
     #   그 칸이 무처치로 닫힌다(측정 0으로 칸 하나 소각).
-    .arm_ids(E$carry$overlay)))
+    .arm_ids(E$carry$overlay),
+    # ★상주 arm 도 뺀다 (2026-09-17 · WP-R) — 상주 칸(B5_31)이 자기 코드로 매 세대 이미 잰다(같은 팔 두 번 = 칸 소각).
+    tryCatch(rfbd_standing_picks(ROOT), error = function(e) character(0))))
   .done_arms <- .done_arms[nzchar(.done_arms)]
-  .pk <- tryCatch({ suppressMessages(source(file.path(ROOT, "02_Infrastructure/ops/rf_overlay_arms.R")))
-                    rf_pick_overlay_arms(length(batch), exclude = .done_arms %||% character(0), root = ROOT) },
+  # ★상주 칸은 자리를 내주지 않는다 — 픽커는 **비상주 슬롯만** 채운다(정본 rf_runner_gates.R::rf_batch_open_slots).
+  .slots <- rf_batch_open_slots(batch)
+  .pk <- if (!length(.slots)) NULL else
+         tryCatch({ suppressMessages(source(file.path(ROOT, "02_Infrastructure/ops/rf_overlay_arms.R")))
+                    rf_pick_overlay_arms(length(.slots), exclude = .done_arms %||% character(0), root = ROOT) },
                   error = function(e) { jlog("overlay_pick_failed", err = conditionMessage(e)); NULL })
   if (!is.null(.pk) && length(.pk$cells)) {
-    for (j in seq_along(batch)) if (j <= length(.pk$cells)) {
-      .c <- .pk$cells[[j]]; .c$code <- batch[[j]]$code; .c$block <- "B5"; .c$axis <- "risk_overlay"
-      batch[[j]] <- .c
+    for (j in seq_along(.slots)) if (j <= length(.pk$cells)) {
+      .c <- .pk$cells[[j]]; .c$code <- batch[[.slots[j]]]$code; .c$block <- "B5"; .c$axis <- "risk_overlay"
+      batch[[.slots[j]]] <- .c
     }
     jlog("overlay_arms_picked", ids = paste(.pk$picked_ids, collapse = ","),
-         excluded = paste(.done_arms %||% character(0), collapse = ","))
+         excluded = paste(.done_arms %||% character(0), collapse = ","),
+         standing_slots = length(batch) - length(.slots))
   }
 }
 # ★B2(비중) 칸도 등록부에서 뽑는다 (2026-09-03). B1·B5 와 같은 형태 —
@@ -369,10 +417,20 @@ if (length(batch) && identical(first$block, "B2") && is.null(.blk_design[["B2"]]
   if (is.list(es) && !is.null(es[[key]])) as.numeric(es[[key]]) else NA_real_ }
 .cell_by_code <- function(cd) { k <- which(vapply(cells, function(c) identical(c$code, cd), logical(1)))
   if (length(k)) cells[[k[1]]] else NULL }
-.winner_of <- function(bid, by = "port_t") {
+.winner_of <- function(bid, by = "port_t", gate = NULL) {
   idx <- which(vapply(cells, function(c) identical(c$block, bid), logical(1)))
   cand <- Filter(function(a) { if (is.null(a$essence)) return(FALSE); cd <- a$essence$cell_code
     if (!is.null(cd) && nzchar(cd)) startsWith(cd, paste0(bid, "_")) else (a$n %in% idx) }, E$attempts)
+  # ★소비 술어 (2026-09-17 · 적대검증 G2): 게이트가 있으면 통과한 시도만 승자 후보다 — verdict 부재(구 attempt)·pass 만.
+  #   fail/error/not_candidate 는 등급 불변 · **소비만 보류**(블록 승자·B4 바닥·carry 에서 제외). 제외는 로그로 드러낸다.
+  if (!is.null(gate) && length(cand)) {
+    .keep <- vapply(cand, gate, logical(1))
+    for (a in cand[!.keep])
+      jlog("winner_excluded_adversary", block = bid, n = a$n, code = a$essence$cell_code %||% "",
+           verdict = as.character((a$adversary %||% list())$verdict %||% ""),
+           note = "적대검증 pass 아님 — 블록 승자·B4 바닥에서 제외(등급 불변 · 소비 보류)")
+    cand <- cand[.keep]
+  }
   if (!length(cand)) return(NULL)
   v <- vapply(cand, function(a) .metric(a, by), numeric(1)); if (all(is.na(v))) return(NULL)
   w <- cand[[which.max(replace(v, !is.finite(v), -Inf))]]; cd <- w$essence$cell_code
@@ -417,8 +475,10 @@ w2 <- .winner_of("B2", "port_t"); w3 <- .winner_of("B3", "calmar")
 # ★B5 승자의 오버레이 — .winner_of 가 이미 승자의 spec 을 돌려주므로 그 안의 overlay 를 쓴다.
 #   (격자 B5 cells 는 스냅샷이라 실제로 돈 arm 과 다를 수 있다 — 승자 기준 = calmar,
 #    오버레이의 목적이 낙폭이기 때문이다. 격자 B5.select_winner_by 와 정합.)
-w5 <- .winner_of("B5", "calmar")
-.w5_overlay <- w5$overlay
+#   ★적대검증 게이트 (2026-09-17 · G2): pass 또는 verdict 부재(구 attempt)만 승자 후보. 전부 탈락이면 w5=NULL —
+#     B4 의 'B5 포함' 칸은 carry 오버레이(부모 위험통제)만 깐다(승자 없음 ≠ 부모 통제 해제 · LOO 대조 보존).
+w5 <- .winner_of("B5", "calmar", gate = rf_adversary_ok)
+.w5_overlay <- if (!is.null(w5)) w5$overlay else E$carry$overlay
 
 # 승자의 팩터 축을 집합으로 정규화 — 등록부 셀은 factors(복수), 구 격자 셀은 factor2(단수)
 .win_factors <- function(w) {
@@ -432,14 +492,17 @@ w5 <- .winner_of("B5", "calmar")
 #   격자 셀은 자기가 바꾼 축만 들고 있으므로(예: B3_12 는 universe 만) 승자의 **실제 스펙 파일**을
 #   읽어 그대로 깐다 — 그래야 "그 전략에 오버레이를 얹었을 때" 를 재는 것이 된다.
 .wbest_spec <- NULL
+.wbest_code <- NA_character_   # ★바닥 attempt 의 코드 — B5 스펙 floor_code(적대검증 바닥 식별 1순위 · 2026-09-17)
 { .cd0 <- Filter(function(a) !is.null(a$essence), E$attempts)
   if (length(.cd0)) {
     .v0 <- vapply(.cd0, function(a) .metric(a, "port_t"), numeric(1))
     if (!all(is.na(.v0))) {
       .w0 <- .cd0[[which.max(replace(.v0, !is.finite(.v0), -Inf))]]
       .sp0 <- .w0$essence$spec
-      if (!is.null(.sp0) && nzchar(.sp0) && file.exists(.sp0))
+      if (!is.null(.sp0) && nzchar(.sp0) && file.exists(.sp0)) {
         .wbest_spec <- tryCatch(fromJSON(.sp0, simplifyVector = FALSE), error = function(e) NULL)
+        if (!is.null(.wbest_spec)) .wbest_code <- .rf_attempt_code(.w0, cells)
+      }
     } } }
 
 # ── ★arm × 유니버스 양립성 관문 — 등록·재개 **두 경로가 같은 함수** (2026-09-13) ──────────
@@ -567,7 +630,7 @@ if (!length(jobs)) for (CELL in batch) {
     SPEC$factor2 <- NULL; SPEC$factor3 <- NULL
     jlog("b4_axes", code = CELL$code, use = paste(use, collapse = "+"),
          f = length(SPEC$factors %||% list()), w = SPEC$weighting$kind %||% "?",
-         u = SPEC$universe$kind %||% "?", ov = SPEC$overlay$arm_id %||% "none")
+         u = SPEC$universe$kind %||% "?", ov = rf_ov_txt(SPEC$overlay))   # ★스택도 전 층을 적는다(구판은 리스트면 "none")
   }
   # ── ★승격 entry 의 carry 병합 (도훈 지시 2026-08-30 "B등급 이상 추가 강화") ──
   #   승격은 B+ 를 낸 승자 구성을 **기저로 물려받아** 그 위에서 25칸을 다시 탐색한다.
@@ -608,9 +671,19 @@ if (!length(jobs)) for (CELL in batch) {
     #   구판은 덮어쓰기라 부모가 낙폭을 30% 깎아 승격됐어도 자식 B5 는 그 30% 를 버리고
     #   처음부터 다시 깎았다. 노출은 곱으로 합성된다(rf_cell_engine .ov_compose).
     SPEC$overlay <- .ov_stack(E$carry$overlay, CELL$overlay)
+    # ★자기 층·바닥 표식 (2026-09-17 · 적대검증 G2 소비): overlay_cell = 이 칸이 **직접 얹은** 층(엔진 층별 처치 가드 ·
+    #   기전 지도·승격 carry·적대검증의 '자기 층' 정본) · floor_code = 이 칸이 깔린 바닥 attempt 의 코드(적대검증 바닥
+    #   식별 1순위 · 서명 대조는 2순위). 둘 다 부기 필드다 — .spec_sig 는 factors/base_weight/weighting/universe/overlay/
+    #   base_signal 만 접으므로 서명 불변(test_rf_runner_standing_adversary.R 이 실제 스펙으로 대조한다).
+    SPEC$overlay_cell <- CELL$overlay
+    if (!is.na(.wbest_code)) SPEC$floor_code <- .wbest_code
     SPEC$overlay_basis <- CELL$basis %||% ""
     if (!is.null(.base_paper)) SPEC$root_paper <- .base_paper
   }
+  # ★B1~B3 는 자기 층이 없다 — 오버레이는 전부 승계분(carry · block_accumulate 바닥)이다. 빈 리스트로 **명시**해
+  #   하류(.ov_own_layers 의 'overlay − carry' 폴백)가 바닥의 B5 층을 이 칸의 처치로 오귀속하지 않게 한다.
+  #   엔진은 overlay_cell 이 비면 층별 처치 가드를 승계 층에 걸지 않는다(합성 가드는 그대로 · rf_cell_engine .OV_OWN).
+  if (CELL$block %in% c("B1", "B2", "B3")) SPEC$overlay_cell <- list()
   # ★무처치 판정은 **조립이 끝난 뒤** 한다. 구판은 carry 병합 블록 안에서 쟀는데,
   #   B5(오버레이)는 그 뒤에 overlay 를 붙이므로 판정 시점엔 팩터·비중·유니버스가 carry 와
   #   같아 전부 "무처치" 로 닫혔다 — 정작 처치인 오버레이가 아직 없을 때 판정한 것이다.
@@ -654,10 +727,11 @@ if (!length(jobs)) for (CELL in batch) {
     x <- suppressWarnings(as.character(x))
     if (!length(x) || is.na(x[[1L]]) || !nzchar(x[[1L]])) alt else x[[1L]]
   }
-  SPEC$idea <- sprintf("[무인 병렬 %s] %s — %s/%s · factor2=%s · weighting=%s · universe=%s",
+  SPEC$idea <- sprintf("[무인 병렬 %s] %s — %s/%s · factor2=%s · weighting=%s · universe=%s · overlay=%s",
                        .s1(CELL$code), .s1(CELL$label), .s1(CELL$block), .s1(CELL$axis),
                        .s1(SPEC$factor2$id %||% SPEC$factor2$kind, "none"),
-                       .s1(SPEC$weighting$kind, "ew"), .s1(SPEC$universe$kind, "k200_kq150"))
+                       .s1(SPEC$weighting$kind, "ew"), .s1(SPEC$universe$kind, "k200_kq150"),
+                       .s1(rf_ov_txt(SPEC$overlay), "none"))   # ★오버레이 스택(a × b) — 원장 서술에 전 층이 남는다(2026-09-17)
   # ★지식 주입(착수 전 의무) — hypothesis_index 죽은 선례 + 직전 교훈. 차단 아님, 기록.
   SPEC <- tryCatch({ source(file.path(ROOT, "02_Infrastructure/ops/rf_preflight.R"))
                      rf_preflight(SPEC, BID) },
@@ -740,6 +814,13 @@ if (!length(jobs)) for (CELL in batch) {
     }
     hit
   }, error = function(e) NULL)
+  ## ★상주 칸은 회피 목록으로 건너뛰지 않는다 (2026-09-17 · WP-R) — 매 세대 재는 대조 칸이라 기전이 '쓰지 말 것' 이라
+  ##   적어도 측정은 남긴다(AX-000: 사실 기록이지 금지 목록 아님). 무시했다는 사실은 로그로 드러낸다.
+  if (!is.null(.avoid_hit) && isTRUE(CELL$standing)) {
+    jlog("avoid_exempt_standing", n = att$n, code = CELL$code, why = substr(.avoid_hit, 1, 130),
+         note = "상주 칸 — 회피 지정을 무시하고 측정한다(대조 칸은 매 세대 잰다)")
+    .avoid_hit <- NULL
+  }
   if (!is.null(.avoid_hit)) {
     rf_record_result(1L, BID, att$n, grade = "NA (미결 — 기전 회피: 측정 무효 사유)",
       lessons = sprintf("%s: 기전이 측정 무효 사유로 회피 지정 — %s",
@@ -808,9 +889,9 @@ if (!length(jobs)) for (CELL in batch) {
     rf_record_result(1L, BID, att$n, grade = "NA (미결 — 기존 칸과 동일 스펙)",
       lessons = sprintf("%s: 스펙 서명이 %s 과 동일 — 같은 포트폴리오를 다시 재지 않는다", CELL$code, .dup),
       terminal = TRUE,
-      terminal_reason = sprintf("스펙 중복(%s 와 동일) — factors=%s weighting=%s universe=%s",
+      terminal_reason = sprintf("스펙 중복(%s 와 동일) — factors=%s weighting=%s universe=%s overlay=%s",
         .dup, paste(.fkeys(SPEC$factors), collapse = "+"),
-        SPEC$weighting$kind %||% "?", SPEC$universe$kind %||% "?"),
+        SPEC$weighting$kind %||% "?", SPEC$universe$kind %||% "?", rf_ov_txt(SPEC$overlay)),
       root = ROOT)
     jlog("cell_duplicate_spec", n = att$n, code = CELL$code, same_as = .dup,
          note = "기존 칸과 스펙 동일 — 미결 종결(실행 안 함)")
@@ -823,8 +904,9 @@ if (!length(jobs)) for (CELL in batch) {
     rf_record_result(1L, BID, att$n, grade = "NA (미결 — carry 와 동일·처치 미전달)",
       lessons = sprintf("%s: 중복 제거 후 구성이 carry 와 동일 — 같은 포트폴리오에 다른 이름을 붙이지 않는다", CELL$code),
       terminal = TRUE,
-      terminal_reason = sprintf("무처치(carry 동일) — factors=%s weighting=%s universe=%s",
-        paste(.fkeys(SPEC$factors), collapse = "+"), SPEC$weighting$kind %||% "?", SPEC$universe$kind %||% "?"),
+      terminal_reason = sprintf("무처치(carry 동일) — factors=%s weighting=%s universe=%s overlay=%s",
+        paste(.fkeys(SPEC$factors), collapse = "+"), SPEC$weighting$kind %||% "?", SPEC$universe$kind %||% "?",
+        rf_ov_txt(SPEC$overlay)),
       root = ROOT)
     jlog("cell_no_treatment", n = att$n, code = CELL$code,
          note = "carry 와 동일 — 미결 종결(실행 안 함)")
@@ -904,6 +986,42 @@ repeat {
   a <- Filter(function(x) identical(as.integer(x$n), as.integer(n)), e$attempts)
   if (!length(a)) 0L else as.integer(a[[1]]$fail_count %||% 0L)
 }
+## ── ★Grade A 발행 1함수 (2026-09-17 · 보류/해제 두 경로가 같은 코드를 쓴다) ──────────────────────────────
+##   judge_request + grade_a_queue + 팡파레 + 텔레그램. 구판은 수집 루프 인라인이었는데 적대검증 보류(아래)가
+##   블록 경계에서 같은 발행을 다시 해야 해서 함수로 뺐다 — 발행 경로가 둘이면 표식도 둘이 같아야 한다.
+.grade_a_enqueue <- function(n, code, artifacts, essence) {
+  jr <- file.path(ROOT, "qepm/mailbox/judge_request.json")
+  dir.create(dirname(jr), recursive = TRUE, showWarnings = FALSE)
+  write(toJSON(list(requested_at = format(Sys.time(), "%Y-%m-%dT%H:%M:%S%z"), source = "reinforce_auto_parallel",
+                    base_id = BID, attempt = n, cell = code, artifacts = artifacts, grade = "A"),
+               auto_unbox = TRUE, pretty = TRUE), jr)
+  # ★Grade A 는 **리서치를 멈추지 않는다** (도훈 지시 2026-08-30 "A등급 달성하더라도 리서치가 이어지게").
+  #   구판은 enabled=false 로 전 루프를 세웠는데, 그건 **리서치 루프**와 **BOOK 등재 관문**을 뒤섞은 것이다.
+  #   후보 하나가 A 를 찍었다고 나머지 칸·다음 논문이 설 이유가 없다. A 는 큐에 쌓이고 루프는 계속 돈다.
+  #   ★불변: BOOK 등재는 여전히 Judge(PIT) + 도훈 confirm 을 거친다 — 자동 등재는 없다(헌법).
+  .aq <- file.path(ROOT, "06_Registry/grade_a_queue.json")
+  .q <- if (file.exists(.aq)) tryCatch(fromJSON(.aq, simplifyVector = FALSE), error = function(e) NULL) else NULL
+  if (is.null(.q) || is.null(.q$entries)) .q <- list(schema = "grade_a_queue_v1",
+    note = "essence Grade A 후보 대기열. Judge(PIT) 검증 + 도훈 confirm 후 BOOK 등재. 러너는 여기 쌓기만 하고 멈추지 않는다.",
+    entries = list())
+  .q$entries[[length(.q$entries) + 1L]] <- list(
+    queued_at = format(Sys.time(), "%Y-%m-%dT%H:%M:%S%z"), base_id = BID, attempt = n,
+    cell = code, artifacts = artifacts, grade = "A", status = "awaiting_judge")
+  write(toJSON(.q, auto_unbox = TRUE, pretty = TRUE, null = "null"), .aq)
+  jlog("grade_a_queued", n = n, code = code, note = "루프 계속 — Judge/BOOK 만 confirm 대기")
+  tryCatch({ source(file.path(ROOT, "02_Infrastructure/ops/rf_auto_notify.R"))
+             ## ★A 는 즉시 경로에서도 팡파레를 앞세운다 (중복은 마커가 막는다)
+             tryCatch({ source(file.path(ROOT, "02_Infrastructure/ops/rf_grade_fanfare.R"))
+                        .EA <- rf_load(1L, ROOT); .iA <- .rf_find(.EA, BID)
+                        if (!is.na(.iA)) rf_grade_fanfare(BID, "A", code,
+                          essence %||% list(), n = n, maxa = MAXA,
+                          title = .rf_target_label(.EA$entries[[.iA]]),
+                          base_grade = .EA$entries[[.iA]]$base_grade %||% "", root = ROOT) },
+                      error = function(e) jlog("grade_fanfare_failed", err = conditionMessage(e)))
+             rf_auto_notify(BID, n, kind = "grade_a") }, error = function(e) jlog("telegram_failed", err = conditionMessage(e)))
+  invisible(TRUE)
+}
+.held_a <- list()   # ★적대검증 보류 중인 A (이 tick) — 블록 경계에서 verdict 로 풀거나 막는다
 nb <- 0L
 for (j in jobs) {
   if (!file.exists(j$out)) {
@@ -985,35 +1103,15 @@ for (j in jobs) {
        port_t = es$port_t, calmar = es$calmar, axes_ok = .vf$ok, artifacts = R$artifacts)
   nb <- nb + 1L
   if (identical(R$grade, "A")) {
-    jr <- file.path(ROOT, "qepm/mailbox/judge_request.json")
-    dir.create(dirname(jr), recursive = TRUE, showWarnings = FALSE)
-    write(toJSON(list(requested_at = format(Sys.time(), "%Y-%m-%dT%H:%M:%S%z"), source = "reinforce_auto_parallel",
-                      base_id = BID, attempt = j$n, cell = j$code, artifacts = R$artifacts, grade = "A"),
-                 auto_unbox = TRUE, pretty = TRUE), jr)
-  # ★Grade A 는 **리서치를 멈추지 않는다** (도훈 지시 2026-08-30 "A등급 달성하더라도 리서치가 이어지게").
-  #   구판은 enabled=false 로 전 루프를 세웠는데, 그건 **리서치 루프**와 **BOOK 등재 관문**을 뒤섞은 것이다.
-  #   후보 하나가 A 를 찍었다고 나머지 칸·다음 논문이 설 이유가 없다. A 는 큐에 쌓이고 루프는 계속 돈다.
-  #   ★불변: BOOK 등재는 여전히 Judge(PIT) + 도훈 confirm 을 거친다 — 자동 등재는 없다(헌법).
-  .aq <- file.path(ROOT, "06_Registry/grade_a_queue.json")
-  .q <- if (file.exists(.aq)) tryCatch(fromJSON(.aq, simplifyVector = FALSE), error = function(e) NULL) else NULL
-  if (is.null(.q) || is.null(.q$entries)) .q <- list(schema = "grade_a_queue_v1",
-    note = "essence Grade A 후보 대기열. Judge(PIT) 검증 + 도훈 confirm 후 BOOK 등재. 러너는 여기 쌓기만 하고 멈추지 않는다.",
-    entries = list())
-  .q$entries[[length(.q$entries) + 1L]] <- list(
-    queued_at = format(Sys.time(), "%Y-%m-%dT%H:%M:%S%z"), base_id = BID, attempt = j$n,
-    cell = j$code, artifacts = R$artifacts, grade = "A", status = "awaiting_judge")
-  write(toJSON(.q, auto_unbox = TRUE, pretty = TRUE, null = "null"), .aq)
-    jlog("grade_a_queued", n = j$n, code = j$code, note = "루프 계속 — Judge/BOOK 만 confirm 대기")
-    tryCatch({ source(file.path(ROOT, "02_Infrastructure/ops/rf_auto_notify.R"))
-               ## ★A 는 즉시 경로에서도 팡파레를 앞세운다 (중복은 마커가 막는다)
-               tryCatch({ source(file.path(ROOT, "02_Infrastructure/ops/rf_grade_fanfare.R"))
-                          .EA <- rf_load(1L, ROOT); .iA <- .rf_find(.EA, BID)
-                          if (!is.na(.iA)) rf_grade_fanfare(BID, "A", j$code,
-                            j$essence %||% list(), n = j$n, maxa = MAXA,
-                            title = .rf_target_label(.EA$entries[[.iA]]),
-                            base_grade = .EA$entries[[.iA]]$base_grade %||% "", root = ROOT) },
-                        error = function(e) jlog("grade_fanfare_failed", err = conditionMessage(e)))
-               rf_auto_notify(BID, j$n, kind = "grade_a") }, error = function(e) jlog("telegram_failed", err = conditionMessage(e)))
+    # ★적대검증 보류 (2026-09-17 · G2): 자기 오버레이 층을 가진 B5 칸의 A 는 반증(lag-1 · strict-PIT · 노출 짝지은
+    #   placebo · 정적 등가)을 지나야 Judge 큐에 오른다 — 동월 누출로 낸 A 를 Judge 앞에 세우지 않는다.
+    #   보류 = 등급 불변 · 발행만 미룸(정본 rf_runner_gates.R::rf_grade_a_hold). 블록 경계(아래)에서 verdict 로 푼다.
+    .spA <- tryCatch(fromJSON(j$spec, simplifyVector = FALSE), error = function(e) NULL)
+    if (rf_grade_a_hold(j$code, .spA, E$carry$overlay)) {
+      .held_a[[length(.held_a) + 1L]] <- list(n = j$n, code = j$code, artifacts = R$artifacts, essence = es)
+      jlog("grade_a_hold_adversary", n = j$n, code = j$code,
+           note = "B5 자기 층 A — 적대검증 pass 전엔 judge_request·grade_a_queue 미발행(등급 불변)")
+    } else .grade_a_enqueue(j$n, j$code, R$artifacts, es)
   }
 }
 
@@ -1039,6 +1137,45 @@ u2 <- as.integer(E2$attempts_used %||% 0L)
   .fr2 <- .rf_free_cells(cells, E2$attempts %||% list())
   sum(vapply(cells[.fr2], function(c) identical(as.character(c$block %||% ""), .blk_now), logical(1)))
 } else 0L
+
+# ── ★B5 적대 반증 (G2 · 2026-09-17) — B5 블록이 닫혔거나 보류된 A 가 있으면 L-code **앞에서** 돈다 ─────────
+#   pass 만 블록 승자·carry·Grade A 후보로 소비된다(rf_overlay_adversary.R 소비자 규약 · 표식은 원장 attempt$adversary).
+#   실패는 러너를 세우지 않는다(adversary_failed 로 남긴다). 보류된 A 는 A 를 낸 순간 entry 가 graduated 로 바뀌어
+#   다음 tick 이 이 entry 를 다시 안 보므로 **같은 tick 안에서** 풀어야 한다 — 그래서 블록 미완이어도 보류 A 가 있으면 돈다.
+.adv_ran <- FALSE
+if (nb > 0L && ((identical(.blk_now, "B5") && .blk_left == 0L) || length(.held_a))) {
+  .adv <- tryCatch({
+    suppressMessages(source(file.path(ROOT, "02_Infrastructure/reinforcement/rf_overlay_adversary.R"), local = TRUE))
+    rf_overlay_adversary_run(BID, "B5", 1L, root = ROOT)
+  }, error = function(e) { jlog("adversary_failed", base_id = BID, block = "B5", err = conditionMessage(e)); NULL })
+  if (!is.null(.adv)) { .adv_ran <- TRUE
+    jlog("adversary_done", base_id = BID, block = "B5", n = NROW(.adv),
+         verdicts = if (NROW(.adv)) paste(sprintf("%s=%s", .adv$code, .adv$verdict), collapse = ",") else "",
+         held_a = length(.held_a)) }
+  # 보류된 A — verdict 는 **원장에서 다시 읽는다**(러너 지역 목록은 n·산출물만 든다). pass → 발행 · 그 밖 → 막힘(등급 불변).
+  if (length(.held_a)) {
+    .EH <- tryCatch(rf_load(1L, ROOT), error = function(e) NULL); .iH <- if (!is.null(.EH)) .rf_find(.EH, BID) else NA
+    for (h in .held_a) {
+      .aH <- if (!is.na(.iH)) Filter(function(a) identical(as.integer(a$n), as.integer(h$n)), .EH$entries[[.iH]]$attempts %||% list()) else list()
+      .vH <- if (length(.aH)) as.character((.aH[[1]]$adversary %||% list())$verdict %||% "")[1] else ""
+      if (identical(.vH, "pass")) {
+        jlog("grade_a_released", n = h$n, code = h$code, verdict = .vH, note = "적대검증 pass — judge_request·grade_a_queue 발행")
+        .grade_a_enqueue(h$n, h$code, h$artifacts, h$essence)
+      } else if (.vH %in% c("fail", "error", "not_candidate")) {
+        jlog("grade_a_adversary_blocked", n = h$n, code = h$code, verdict = .vH,
+             note = "적대검증 미통과 — Judge 큐 미발행(등급 불변 · 소비 보류). 수리·재측정 후 재검증")
+      } else jlog("grade_a_hold_unresolved", n = h$n, code = h$code, adversary_ran = .adv_ran,
+                  note = "verdict 없음(적대검증 미완) — 발행 보류 유지. 수동: rf_overlay_adversary_run 후 grade_a 발행")
+    }
+  }
+  # ★재설계 라운드 종료 표식 (B5 설계 레인 계약) — 재설계 배치가 다 돌고 적대검증까지 지나면 러너가 닫는다.
+  if (.redesign_on && identical(.blk_now, "B5") && .blk_left == 0L)
+    tryCatch({ rf_record_b5_redesign(1L, BID, list(active = FALSE, closed_at = format(Sys.time(), "%Y-%m-%dT%H:%M:%S%z"),
+                                                   closed_by = "reinforce_auto_parallel:b5_boundary", adversary_ran = .adv_ran),
+                                     root = ROOT)
+               jlog("b5_redesign_closed", base_id = BID, adversary_ran = .adv_ran) },
+             error = function(e) jlog("b5_redesign_close_failed", base_id = BID, err = conditionMessage(e)))
+}
 if (nb > 0L && (.blk_left == 0L || u2 >= MAXA)) {
   # ★순서 (2026-09-04): L-code -> 기전 -> **텔레그램**.
   #   구판은 텔레그램이 먼저라 기전·처방이 메시지에 영원히 못 들어갔다 — 도훈이 받는 보고에

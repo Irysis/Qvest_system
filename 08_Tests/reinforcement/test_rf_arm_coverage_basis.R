@@ -184,9 +184,11 @@ for (nm in c("rD1", "rD2")) {
 OVS <- base_spec(overlay = list(kind = "stub_partial", arm_id = "stub_partial_x"))
 rF <- run_cell(OVS, bm = BMF)
 pcF <- if (is.null(rF$err)) NULL else rac_parse_coverage(rF$err)
+## ★2026-09-17 계약: 엔진은 **실패한 층 하나**를 arm_id(없으면 kind)로 단일 토큰으로 싣는다 — 구판은 스택 kind 를 "+" 로 이었다.
+##   파서는 그 토큰을 id 로 읽고, 귀속(.rac_attribute)이 arm_id 또는 kind 로 그 층에만 맞춘다.
 if (!is.null(pcF) && grepl("종목 커버리지", rF$err, fixed = TRUE) && identical(pcF$basis, "held_rows") &&
-    identical(pcF$kind, "overlay") && identical(pcF$id, "stub_partial"))
-  ok("F 오버레이 가드 문자열 → basis=held_rows · overlay kind stub_partial") else
+    identical(pcF$kind, "overlay") && pcF$id %in% c("stub_partial_x", "stub_partial"))
+  ok(sprintf("F 오버레이 가드 문자열 → basis=held_rows · overlay 이름 %s (신판 = arm_id · 구판 = kind)", pcF$id)) else
   ng("F 오버레이 가드 채널", rF$err %||% "오류 없음(가드 미발화)")
 if (!is.null(pcF) && identical(.rac_attribute(OVS, pcF), "overlay:stub_partial_x"))
   ok("F 오버레이 실패는 그 층의 arm_id 로 귀속된다") else ng("F 오버레이 귀속", "arm_id 매핑 실패")

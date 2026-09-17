@@ -413,29 +413,39 @@ if (identical(.wt$kind, "ew")) {
 #   승격 사슬에서 부모의 오버레이 위에 자식의 오버레이가 얹히는 형태를 담기 위한 것.
 #   팩터는 이미 세대를 거쳐 누적되는데(.dedup_factors) 오버레이만 매번 교체였다.
 .ov <- SPEC$overlay
-.OV_LIST <- if (is.null(.ov)) list() else
-            if (!is.null(.ov$kind)) list(.ov) else                 # 단수 객체
-            Filter(function(z) is.list(z) && !is.null(z$kind), .ov) # 리스트
-.OV_LIST <- Filter(function(z) !identical(as.character(z$kind %||% "none"), "none"), .OV_LIST)
+.ov_layers_of <- function(x) if (is.null(x)) list() else
+                              if (!is.null(x$kind)) list(x) else                 # 단수 객체
+                              Filter(function(z) is.list(z) && !is.null(z$kind), x) # 리스트
+.OV_LIST <- Filter(function(z) !identical(as.character(z$kind %||% "none"), "none"), .ov_layers_of(.ov))
 .OV_KINDS <- vapply(.OV_LIST, function(z) as.character(z$kind), character(1))
 .OV_LABEL <- if (!length(.OV_KINDS)) "none" else paste(.OV_KINDS, collapse = "+")
 .ov_kind  <- .OV_LABEL
-
-# 층별 노출 합성 — 곱. 한 층이 안 지목한 종목은 그 층에서 무개입(1)이다.
-.ov_compose <- function(a, b) {
-  if (is.null(a)) return(b)
-  if (is.null(b)) return(a)
-  ta <- is.data.frame(a); tb <- is.data.frame(b)
-  .cl <- function(x) pmax(0, pmin(1, x))
-  if (!ta && !tb) return(.cl(as.numeric(a)[1] * as.numeric(b)[1]))
-  if (ta && !tb) { z <- as.data.table(a); z[, e := .cl(e * as.numeric(b)[1])]; return(z[, .(Ticker, e)]) }
-  if (!ta && tb) { z <- as.data.table(b); z[, e := .cl(e * as.numeric(a)[1])]; return(z[, .(Ticker, e)]) }
-  za <- as.data.table(a)[, .(Ticker = as.character(Ticker), ea = e)]
-  zb <- as.data.table(b)[, .(Ticker = as.character(Ticker), eb = e)]
-  m  <- merge(za, zb, by = "Ticker", all = TRUE)
-  m[is.na(ea), ea := 1][is.na(eb), eb := 1]
-  m[, .(Ticker, e = .cl(ea * eb))]
-}
+# 층 이름 = arm_id(있으면) · 없으면 kind. **단일 토큰**이다 — 층별 메시지(커버리지·처치)는 이 이름만 싣고
+#   '+' 로 잇지 않는다(장부·러너가 문자열을 파싱한다). 합성 라벨(.OV_LABEL)은 합성 결과 판정·로그 전용.
+.OV_NAMES <- vapply(.OV_LIST, function(z) {
+  a <- as.character(z$arm_id %||% ""); if (length(a) == 1L && nzchar(a)) a else as.character(z$kind) }, character(1))
+# ── ★층 합성 재설계 (v10.5 2026-09-17) ───────────────────────────────────────
+#   구판(.ov_compose 곱 + 합성값에 축소 1회)의 결함 넷 — 전부 "합성 결과만 본다" 에서 나왔다:
+#     D1 스칼라 층이 벡터 층의 표에 **있는 행만** 곱했다. 표에 없는 보유 종목·빈 표를 낸 달·비유한 행은
+#        전부 노출 1 로 끝나 스칼라 층의 현금 축소가 그 종목·그 달에서 조용히 사라졌다.
+#     D2 커버리지를 벡터 표들의 합집합에 한 번 재서 어느 층이 못 덮었는지 이름이 안 남았다.
+#     D3 처치 가드가 합성값만 봐서 항상 1 인 층이 산 층 뒤에 숨어 유령 처치로 통과했다.
+#     D4 n_min 이 층 중 최댓값 하나라 한 층의 거동이 이웃 층에 따라 달라졌다.
+#   현행: 날짜마다 **보유 전 종목** 위에서 층별 노출을 만든 뒤(스칼라 층 = 전 종목 같은 값 · 벡터 층 = 표의 값,
+#   미지목 보유 = 1, 비유한 = 1) 층마다 자기 n_min 으로 축소를 마치고 곱한다(클립 [0,1]). 스칼라 층의 축소는 그래서
+#   **항상 모든 보유에** 닿는다(빈 표 달 포함). 커버리지·처치 판정은 층 단위로 이름을 붙여 낸다.
+#   ★단층 스펙은 구판과 비트 동일(같은 식·같은 n_min). ★중첩 스펙 9건(2026-09-03~09-16 원장의 B5 중첩·승격 사슬
+#     carry 중첩)은 구판 합성값을 재현하지 않는다 — 그 값들은 위 결함 위의 측정이었다(재측정 대상 · 되살리지 말 것).
+.ov_key <- function(z) paste0(as.character(z$kind %||% ""), "~", as.character(z$arm_id %||% ""))  # rf_spec_sig.R .ov_stack 동일성
+# 자기 층: overlay_cell = 이 칸이 **직접 얹은** 층(단수·리스트). 없으면 overlay 전 층이 자기 층(하위호환).
+#   승격 사슬의 carry 층은 부모의 측정에서 이미 처치가 확인된 층이라 층별 처치 가드를 다시 걸지 않는다(합성 가드는 그대로).
+.OVC_LIST <- if (is.null(SPEC$overlay_cell)) NULL else
+             Filter(function(z) !identical(as.character(z$kind %||% "none"), "none"), .ov_layers_of(SPEC$overlay_cell))
+.OV_OWN <- if (is.null(.OVC_LIST)) rep(TRUE, length(.OV_LIST)) else
+           vapply(.OV_LIST, .ov_key, character(1)) %in% vapply(.OVC_LIST, .ov_key, character(1))
+if (length(.OVC_LIST) && !any(.OV_OWN))
+  stop("[rf_cell_engine] overlay_cell 의 층이 overlay 에 없다 — 스펙 불일치(자기 층 없이 층별 처치를 판정할 수 없다): ",
+       paste(vapply(.OVC_LIST, .ov_key, character(1)), collapse = ", "))
 if (!identical(.ov_kind, "none")) {
   if (!exists("BM_DT")) stop("[rf_cell_engine] overlay 는 BM_DT 를 요구한다(호출자 env)")
   suppressMessages(source(file.path(.RF_ROOT, "02_Infrastructure/validation/overlay_pit_guard.R")))
@@ -514,10 +524,11 @@ if (!identical(.ov_kind, "none")) {
     .fn
   })
 
-  # 워밍업 표본 하한은 **층 중 최댓값** — 가장 늦게 서는 층이 전체를 정한다.
-  .n_min <- max(vapply(.OV_KINDS, function(k) switch(k,
-    "har_vol" = 48L, "ml_tail_gate" = 48L, "turbulence" = 36L, "ewma_vol" = 36L, 24L),
-    integer(1)), 24L)
+  # ★워밍업 표본 하한은 **층마다 자기 것** (v10.5 2026-09-17 · D4 수리). 구판은 층 중 최댓값 하나를 전 층의
+  #   ctx$n_min 으로 넘기고 축소도 합성값에 한 번 걸었다 — 같은 arm 이 단독일 때 24, har_vol 옆에 있을 때 48 을
+  #   받아 거동이 이웃에 따라 달라졌다. 층은 자기 하한으로 자기 축소를 마친 뒤 곱해진다. 단층 = 구판과 같은 값.
+  .n_min_of <- function(k) switch(k, "har_vol" = 48L, "ml_tail_gate" = 48L, "turbulence" = 36L, "ewma_vol" = 36L, 24L)
+  .OV_NMIN <- vapply(.OV_KINDS, .n_min_of, integer(1))
   # ── ★종목 수준 상태 (v10.2 2026-09-03 · Phase 0-c) ──────────────────────────
   #   누적합 기반 확장창 통계. 각 신호일 d 에서 d 까지의 모든 관측만 쓴다(홀딩월은 익월이라 교집합 0).
   #   beta/dbeta 는 (n·Sxy − Sx·Sy)/(n·Syy − Sy²) 형태로 O(n) 에 나온다.
@@ -560,19 +571,38 @@ if (!identical(.ov_kind, "none")) {
   }
 
   .n_floor <- 12L                              # 이 아래로는 표본이라 부르지 않는다
+  .nL <- length(.OV_LIST)
+  # ── ★적대검증 옵션 (v10.5 2026-09-17) — 기본 OFF · OFF 면 비트 동일 ─────────────
+  #   overlay_shift(정수 ≥0): 노출을 shift 개월 **앞선** 신호일에서 계산된 값으로 적용한다(lag 스트레스 —
+  #     pit.md C5 "lag1 스트레스: 신호 shift(1) 적용판이 base 대비 붕괴하면 동월 누출 의심"의 엔진 구현).
+  #   overlay_strict(논리): 파일 arm 에 ctx$strict 로 전달 — arm 이 더 엄격한 컷오프를 택할 수 있게 하는 신호.
+  .STRICT <- isTRUE(SPEC$overlay_strict)
+  .SHIFT  <- suppressWarnings(as.integer(SPEC$overlay_shift %||% 0L))
+  if (length(.SHIFT) != 1L || is.na(.SHIFT) || .SHIFT < 0L)
+    stop("[rf_cell_engine] overlay_shift 는 0 이상의 정수여야 한다: ", paste(SPEC$overlay_shift, collapse = ","))
+  if (.SHIFT > 0L || .STRICT)
+    cat(sprintf("[rf_cell_engine] ★적대검증 옵션 ON — overlay_shift=%d(노출을 %d개월 앞선 신호일 값으로 적용) · overlay_strict=%s(전 arm ctx$strict)",
+                .SHIFT, .SHIFT, if (.STRICT) "TRUE" else "FALSE"), fill = TRUE)
+  # 층별 기록 — 층 단위 판정(커버리지·처치)은 합성값이 아니라 여기서 낸다.
+  .scal   <- rep(1, .N)                        # 그 달 스칼라 층들의 곱(축소 후·클립). shift 에서 앞선 달 미보유 종목의 성분
+  .L_MEAN <- matrix(NA_real_, .N, .nL)         # 층별 · 그 달 보유 위 평균 노출(스칼라 층 = 그 값)
+  .L_MIN  <- matrix(NA_real_, .N, .nL)         # 층별 · 최소 노출 (항상 1 판정)
+  .L_XSD  <- matrix(NA_real_, .N, .nL)         # 층별 · 횡단면 sd (벡터 층의 비대칭 전달)
+  .L_COVH <- integer(.nL); .L_COVN <- integer(.nL); .L_TABM <- integer(.nL)   # 벡터 층 커버리지 분모·분자·표를 낸 달 수
+  .held_of <- function(d) if (exists("PORTFOLIO")) PORTFOLIO[Date == d, unique(as.character(Ticker))] else character(0)
   for (t in seq_len(.N)) {
     if (t < .n_floor) next
     H <- .M[seq_len(t)]                        # ★확장창 = d 까지. 미래 행 접근 없음
     v_now <- H$rv60[t]
     tgt   <- stats::median(H$rv60, na.rm = TRUE)          # 목표 = 자기 이력 중앙 변동성
-    .e_acc <- NULL
+    .lay <- vector("list", .nL)                # 층별 축소 후 산출 — 스칼라 또는 data.table(Ticker, oe)
     for (.oi in seq_along(.OV_LIST)) {
     # ★층별로 .ov_kind/.OV_FN 을 갈아끼운다 — 아래 사슬 본문은 구판 그대로다(회귀 0).
     .ov_kind <- .OV_KINDS[.oi]
     .OV_FN   <- .OV_FNS[[.oi]]
     e <- 1
     .ov_ctx <- if (is.null(.OV_FN)) NULL else list(
-      t = t, date = .M$Date[t], v_now = v_now, tgt = tgt, n_min = .n_min,
+      t = t, date = .M$Date[t], v_now = v_now, tgt = tgt, n_min = .OV_NMIN[.oi], strict = .STRICT,
       hold = if (!is.null(.HOLD)) .HOLD[J(.M$Date[t]), nomatch = 0L] else NULL)
     if (identical(.ov_kind, "vol_scale")) {
       e <- if (is.finite(v_now) && v_now > 0 && is.finite(tgt)) min(1, tgt / v_now) else 1
@@ -683,29 +713,77 @@ if (!identical(.ov_kind, "none")) {
       # 파일 기반 arm — 스칼라 e 또는 data.table(Ticker, e) 를 돌려줄 수 있다.
       e <- .OV_FN(H, t, .ov_ctx)
     } else stop("[rf_cell_engine] overlay.kind 미지원: ", .ov_kind)
-    .e_acc <- .ov_compose(.e_acc, e)
-    }
-    .ov_kind <- .OV_LABEL                      # 층 루프가 갈아끼운 것을 되돌린다(로그·판정용)
-    e <- if (is.null(.e_acc)) 1 else .e_acc
-    .w <- min(1, t / .n_min)                   # 표본 축소 가중 — 절벽 없음
+    # ── 층별 축소 (자기 n_min) — 곱하기 **전**에 층 단위로 끝낸다. 식은 구판과 같다(단층 비트 동일).
+    .w <- min(1, t / .OV_NMIN[.oi])            # 표본 축소 가중 — 절벽 없음
     if (is.data.frame(e)) {
       # ★횡단면 비대칭 arm — 종목별 노출. 축소 가중은 종목마다 동일하게 적용한다.
       .ex <- as.data.table(e)
       if (!all(c("Ticker", "e") %in% names(.ex)))
-        stop("[rf_cell_engine] arm 반환표에 Ticker/e 열이 없다: ", .ov_kind)
+        stop("[rf_cell_engine] arm 반환표에 Ticker/e 열이 없다: ", .OV_NAMES[.oi])
       .ex[, oe := vapply(1 - .w * (1 - vapply(e, .clip, numeric(1))), .clip, numeric(1))]
-      .ex <- .ex[is.finite(oe), .(Ticker = as.character(Ticker), oe)]
-      if (nrow(.ex)) {
-        .expo_x[[t]] <- .ex
-        .expo[t] <- mean(.ex$oe)               # 요약·로그용 대표값(판정은 아래 두 축을 함께 본다)
-      }
+      .ex <- .ex[is.finite(oe), .(Ticker = as.character(Ticker), oe)]   # 비유한 행 = 그 층이 값을 못 낸 종목 → 미지목(1)
+      .lay[[.oi]] <- if (nrow(.ex)) .ex else 1                         # 빈 표 = 그 달 그 층 무개입(스칼라 1)
     } else {
-      .expo[t] <- .clip(1 - .w * (1 - .clip(e)))
+      .lay[[.oi]] <- .clip(1 - .w * (1 - .clip(e)))
+    }
+    }
+    .ov_kind <- .OV_LABEL                      # 층 루프가 갈아끼운 것을 되돌린다(로그·판정용)
+    # ── 합성 = **보유 전 종목** 위에서 층별 노출의 곱 (v10.5 · D1 수리) ──────────
+    #   스칼라 층 = 보유 전 종목에 같은 값 · 벡터 층 = 표의 값, 미지목 보유 = 1. 곱한 뒤 [0,1] 클립.
+    #   구판은 벡터 층의 표에 있는 행만 곱해 표 밖 보유·빈 표 달에서 스칼라 층의 현금 축소가 사라졌다.
+    .is_tab <- vapply(.lay, is.data.frame, logical(1))
+    .sv <- vapply(seq_len(.nL), function(i) if (.is_tab[i]) NA_real_ else as.numeric(.lay[[i]]), numeric(1))
+    .scal[t] <- .clip(prod(.sv[!.is_tab]))     # 스칼라 층만의 곱 (prod(numeric(0)) = 1)
+    .tk <- if (any(.is_tab)) .held_of(.M$Date[t]) else character(0)
+    if (!length(.tk)) {
+      # 표를 낸 층이 없는 달(전 층 스칼라) 또는 보유가 없는 달 — 스칼라 곱 하나가 그 달의 노출이다
+      .expo[t] <- .scal[t]
+      .L_MEAN[t, ] <- .sv; .L_MIN[t, ] <- .sv; .L_XSD[t, !.is_tab] <- 0
+    } else {
+      .oe <- rep(1, length(.tk))
+      for (i in seq_len(.nL)) {
+        if (.is_tab[i]) {
+          .tb <- .lay[[i]]
+          .vi <- .tb$oe[match(.tk, .tb$Ticker)]
+          .hit <- !is.na(.vi)
+          .L_COVH[i] <- .L_COVH[i] + length(.tk); .L_COVN[i] <- .L_COVN[i] + sum(.hit); .L_TABM[i] <- .L_TABM[i] + 1L
+          .vi[!.hit] <- 1                                                # 벡터 층의 미지목 보유 = 그 층은 무개입
+          .L_XSD[t, i] <- if (length(.vi) >= 2L) stats::sd(.vi) else 0
+        } else {
+          .vi <- rep(.sv[i], length(.tk))
+          .L_XSD[t, i] <- 0
+        }
+        .L_MEAN[t, i] <- mean(.vi); .L_MIN[t, i] <- min(.vi)
+        .oe <- .oe * .vi
+      }
+      .expo_x[[t]] <- data.table(Ticker = .tk, oe = pmax(0, pmin(1, .oe)))
+      .expo[t] <- mean(.expo_x[[t]]$oe)        # 요약·로그용 대표값(판정은 층별·합성 두 층에서 본다)
     }
   }
 
   if (!exists("PORTFOLIO")) {                  # EW 셀은 FACTORS 만 있으므로 여기서 비중을 만든다
     PORTFOLIO <- SEL[, .(Ticker, Weight = 1 / .N), by = Date][, .(Date, Ticker, Weight, Leg = "LONG")]
+  }
+  # ── ★overlay_shift — 노출 경로를 shift 개월 지연해 적용 (v10.5 · 기본 0 = 이 블록 미실행) ────
+  #   t 의 보유에 **t−shift 신호일에서 계산된** 노출을 건다. 스칼라 달이면 그 값을 보유 전 종목에, 종목별 달이면
+  #   양쪽에 보유된 종목은 그 종목의 값, t−shift 에 없던 종목은 그 달의 스칼라 성분(.scal)만. 앞선 달이 없으면 1.
+  #   PIT 는 더 엄격해질 뿐이다(신호일이 더 앞선다) — assert_overlay_pit 는 아래에서 그대로 통과한다.
+  if (.SHIFT > 0L) {
+    .expo0 <- .expo; .expo_x0 <- .expo_x
+    .expo <- rep(1, .N); .expo_x <- vector("list", .N)
+    for (t in seq_len(.N)) {
+      s <- t - .SHIFT
+      if (s < 1L) next                                      # 앞선 달이 없다 → 1(무개입)
+      if (is.null(.expo_x0[[s]])) { .expo[t] <- .expo0[s]; next }   # 스칼라 달 → 그 값(아래 펼치기에서 보유 전 종목)
+      .tk <- .held_of(.M$Date[t])
+      if (!length(.tk)) { .expo[t] <- .expo0[s]; next }
+      .vi <- .expo_x0[[s]]$oe[match(.tk, .expo_x0[[s]]$Ticker)]
+      .vi[is.na(.vi)] <- .scal[s]                           # t−shift 에 보유하지 않던 종목 = 그 달 스칼라 성분만
+      .expo_x[[t]] <- data.table(Ticker = .tk, oe = .vi)
+      .expo[t] <- mean(.vi)
+    }
+    cat(sprintf("[rf_cell_engine] overlay_shift=%d 적용 — 노출 경로 %d개월 지연(앞선 달 없는 %d개월은 1 · lag 스트레스판)",
+                .SHIFT, .SHIFT, min(.SHIFT, .N)), fill = TRUE)
   }
   # ★벡터 여부는 arm 이 실제로 종목표를 냈는가로 정한다(선언이 아니라 산출로).
   .VEC <- any(!vapply(.expo_x, is.null, logical(1)))
@@ -729,6 +807,42 @@ if (!identical(.ov_kind, "none")) {
            character(1)))
   assert_overlay_pit(.M$Date, .hs, label = paste0("rf_cell:", .ov_kind))
 
+  # ── ★층별 판정 (v10.5 2026-09-17 · D2·D3 수리) — 합성 결과만 보면 죽은 층이 산 층 뒤에 숨는다 ──
+  #   ① 벡터 층 커버리지: 층마다 분모 = **그 층이 표를 낸 달의 보유 행**, 분자 = 그 표가 덮은 보유 행.
+  #      실패 문자열은 그 층 이름 **하나만** 싣는다 — 장부(rf_arm_compat.R)·러너가 `overlay <이름> ` 과
+  #      `[basis=held_rows]` 를 파싱해 그 arm 만 차단한다. 구판은 합집합에 한 번 재고 '+' 라벨을 실었다.
+  #      문턱 0.80 출처: 엔진 리터럴(도입 100314c30 · 2026-09-03 벡터 arm 신설) · 등록부 값 아님 · 근거 논문 없음.
+  #      표를 한 달도 안 낸 층(스칼라만)은 커버리지 대상이 아니다. 빈 표·비유한 행은 '표 없음' 으로 센다(구판과 같은 분자).
+  for (.oi in seq_len(.nL)) {
+    if (.L_TABM[.oi] == 0L || .L_COVH[.oi] == 0L) next
+    .lcov <- .L_COVN[.oi] / .L_COVH[.oi]
+    if (!is.finite(.lcov) || .lcov < 0.8)
+      stop(sprintf("[rf_cell_engine] overlay %s 종목 커버리지 %.2f < 0.80 [basis=held_rows] — arm 이 보유를 못 덮었다.",
+                   .OV_NAMES[.oi], .lcov))
+  }
+  #   ② 자기 층 처치(overlay_cell 의 층 · 없으면 전 층): 축소 후 · t >= 12 달만. 항상 1 이면 그 층은 아무것도 안 했고,
+  #      시간축 상수이면서 (벡터 층은) 횡단면 변동도 없으면 켜지지 않은 층이다. 어느 쪽이든 그 층의 측정은 무효 —
+  #      산 층과 곱해진 합성값이 살아 있어도 그렇다(유령 처치 금지). 토큰 "처치 미전달"·"측정 무효" 는 러너의
+  #      결정론 실패 패턴(reinforce_auto_parallel.R `측정 무효|처치 미전달`)이다 — 바꾸지 말 것.
+  .tt <- if (.N >= .n_floor) seq.int(.n_floor, .N) else integer(0)
+  for (.oi in which(.OV_OWN)) {
+    .lmin <- .L_MIN[.tt, .oi];  .lmin <- .lmin[is.finite(.lmin)]
+    .lmn  <- .L_MEAN[.tt, .oi]; .lmn  <- .lmn[is.finite(.lmn)]
+    .lxs  <- .L_XSD[.tt, .oi];  .lxs  <- .lxs[is.finite(.lxs)]
+    if (!length(.lmin) || min(.lmin) >= 1 - 1e-12)
+      stop(sprintf("[rf_cell_engine] overlay 층 %s 처치 미전달(항상 1) — 측정 무효", .OV_NAMES[.oi]))
+    .ltv <- if (length(.lmn) >= 2L) stats::sd(.lmn) else NA_real_
+    if (length(.lmn) >= 2L && (!is.finite(.ltv) || .ltv < 1e-12) && (!length(.lxs) || max(.lxs) < 1e-12))
+      stop(sprintf("[rf_cell_engine] overlay 층 %s 상수 노출 — 처치 미전달 · 측정 무효", .OV_NAMES[.oi]))
+  }
+  if (.nL > 1L)
+    cat(sprintf("[rf_cell_engine] overlay 층별 | %s", paste(sprintf("%s%s n_min %d 평균노출 %.3f 최소 %.3f 횡단면sd %.3f",
+                .OV_NAMES, ifelse(.OV_OWN, "(자기)", "(carry)"), .OV_NMIN,
+                vapply(seq_len(.nL), function(i) mean(.L_MEAN[.tt, i], na.rm = TRUE), numeric(1)),
+                vapply(seq_len(.nL), function(i) suppressWarnings(min(.L_MIN[.tt, i], na.rm = TRUE)), numeric(1)),
+                vapply(seq_len(.nL), function(i) { v <- .L_XSD[.tt, i]; v <- v[is.finite(v)]; if (length(v)) max(v) else 0 }, numeric(1))),
+                collapse = " · ")), fill = TRUE)
+
   # ★처치 확인 — 2축이다. 시간축 변동이 없어도 **횡단면 변동**이 있으면 처치는 전달된 것이다.
   #   스칼라 arm 은 .x_var == 0 이라 구판 조건(sd<1e-12 || mean>=1-1e-12)과 정확히 동치로 떨어진다.
   .t_var <- stats::sd(.expo, na.rm = TRUE)
@@ -743,13 +857,9 @@ if (!identical(.ov_kind, "none")) {
 
   if (.VEC) {
     PORTFOLIO <- merge(PORTFOLIO, .EX, by = c("Date", "Ticker"), all.x = TRUE)
-    # ★분모 = 보유 행(PORTFOLIO) — 빈 달은 행이 없어 지지구간 착시가 원리상 없다. [basis=held_rows] 는 장부 신뢰 표식.
-    #   문턱 0.80 출처: 엔진 리터럴(도입 100314c30 · 2026-09-03 벡터 arm 신설) · 등록부 값 아님 · 근거 논문 없음.
-    .cov <- mean(!is.na(PORTFOLIO$oe))
-    if (!is.finite(.cov) || .cov < 0.8)
-      stop(sprintf("[rf_cell_engine] overlay %s 종목 커버리지 %.2f < 0.80 [basis=held_rows] — arm 이 보유를 못 덮었다.",
-                   .ov_kind, .cov))
-    PORTFOLIO[is.na(oe), oe := 1]              # arm 이 지목하지 않은 종목 = 무개입
+    # ★구판의 합집합 커버리지 가드(여기)는 위 층별 가드로 대체됐다(v10.5). 종목표는 이미 보유 전 종목 위에 있으므로
+    #   남는 NA 는 .M(BM 범위) 밖 신호일의 보유뿐이다 — 무개입(1).
+    PORTFOLIO[is.na(oe), oe := 1]
   } else {
     PORTFOLIO <- merge(PORTFOLIO, .EX, by = "Date")
   }

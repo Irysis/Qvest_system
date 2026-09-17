@@ -6,7 +6,7 @@
 #   만들 참이었다. 서명이 갈리는 순간 "같은 포트폴리오" 판정이 소비자마다 달라진다.
 #   본문은 러너에서 **그대로 옮겼다** — 거동 변경 0.
 #
-# 제공: .rf_attempt_code / .rf_taken_codes / .rf_free_cells / .fkey / .fkeys / .dedup_factors / .same_axis / .rp_all_factors / .spec_sig / .ov_layers / .ov_stack / .ov_arm_ids
+# 제공: .rf_attempt_code / .rf_taken_codes / .rf_free_cells / .fkey / .fkeys / .dedup_factors / .same_axis / .rp_all_factors / .spec_sig / .ov_layers / .ov_key / .ov_canon / .ov_stack / .ov_own_layers / .ov_arm_ids
 # 요구: jsonlite(toJSON) · %||%
 #==============================================================================
 suppressPackageStartupMessages(library(jsonlite))
@@ -25,10 +25,27 @@ if (!exists("%||%")) `%||%` <- function(a, b) if (is.null(a) || length(a) == 0L)
 # 오버레이는 단수 객체 · 층 리스트 · NULL 세 형태로 온다. 이 둘이 그 셋을 정규화한다.
 # ★단층이면 **구판 단수 형태 그대로** 돌려준다 — 시그니처(toJSON)가 바뀌면 기존 측정이
 #   전부 미측정으로 되살아나 격자가 같은 칸을 다시 태운다.
+# ★2026-09-17 (설계 스택 · WP-Z): 중첩 리스트를 **끝까지 평탄화**한다. 설계 칸이 층 리스트를 내고
+#   그 위에 carry 리스트가 또 얹히면 list(list(A), list(B, C)) 꼴이 생기는데, 구판은 한 겹만 벗겨
+#   안쪽 리스트를 "kind 없는 층" 으로 버렸다 — 스택의 층이 침묵 소실되는 경로. kind 없는 원소는
+#   여전히 층이 아니다(구판과 같다).
 .ov_layers <- function(x) {
-  if (is.null(x)) return(list())
+  if (is.null(x) || !is.list(x)) return(list())
   if (!is.null(x$kind)) return(list(x))
-  Filter(function(z) is.list(z) && !is.null(z$kind), x)
+  out <- list()
+  for (z in x) if (is.list(z)) out <- c(out, .ov_layers(z))
+  out
+}
+# 층의 동일성 키 — 스택 정렬·중복 제거·귀속이 전부 이 키 하나를 쓴다.
+.ov_key <- function(z) paste0(as.character(z$kind %||% ""), "~", as.character(z$arm_id %||% ""))
+#' 서명용 정규형 — **2층 이상일 때만** 층 순서를 키로 정렬한다 ([A,B] ≡ [B,A]).
+#'   단층은 입력을 **그대로** 돌려준다(서명 문자열 비트 동일 — 기존 측정이 되살아나지 않는다).
+#'   왜 순서 무관인가: 엔진 .ov_compose 는 층 노출을 **곱**으로 합성하므로 순서가 측정에 안 들어간다.
+#'   같은 집합을 순서만 바꿔 두 번 재는 것은 같은 포트폴리오를 두 번 재는 것이다.
+.ov_canon <- function(ov) {
+  L <- .ov_layers(ov)
+  if (length(L) <= 1L) return(ov)
+  L[order(vapply(L, .ov_key, character(1)))]
 }
 #' 오버레이(단수·리스트·NULL)에서 arm_id 를 전부 뽑는다. 제외 목록의 정본.
 .ov_arm_ids <- function(ov) {
@@ -41,8 +58,19 @@ if (!exists("%||%")) `%||%` <- function(a, b) if (is.null(a) || length(a) == 0L)
   L <- Filter(function(z) !identical(as.character(z$kind %||% "none"), "none"), L)
   if (!length(L)) return(NULL)
   # 같은 arm 을 두 번 얹지 않는다(부모가 깔아둔 것을 자식이 또 곱하면 이중 축소).
-  L <- L[!duplicated(vapply(L, function(z) paste0(z$kind, "~", z$arm_id %||% ""), character(1)))]
+  L <- L[!duplicated(vapply(L, .ov_key, character(1)))]
   if (length(L) == 1L) L[[1]] else L
+}
+#' 스택에서 **carry 층을 뺀 이 칸의 몫** — overlay_cell(정본) > overlay − carry > 전부(carry 불명).
+#'   ★"전부" 폴백은 보수적이다: carry 를 알 수 없으면 층을 버리지 않는다(소실보다 과대가 낫다 —
+#'     과대는 기전 지도의 칸 하나를 더 세는 것이고, 소실은 그 칸의 측정이 없던 일이 된다).
+#' @param sp 스펙(list) · carry 그 entry 의 carry$overlay(NULL 이면 불명)
+.ov_own_layers <- function(sp, carry = NULL) {
+  if (!is.null(sp$overlay_cell)) return(.ov_layers(sp$overlay_cell))
+  L <- .ov_layers(sp$overlay)
+  if (is.null(carry) || !length(L)) return(L)
+  ck <- vapply(.ov_layers(carry), .ov_key, character(1))
+  L[!(vapply(L, .ov_key, character(1)) %in% ck)]
 }
 
 .same_axis <- function(a, b) identical(as.character(toJSON(a %||% list(), auto_unbox = TRUE)),
@@ -70,7 +98,8 @@ if (!exists("%||%")) `%||%` <- function(a, b) if (is.null(a) || length(a) == 0L)
   as.character(sp$base_weight %||% "ew"),
   as.character(toJSON(sp$weighting %||% list(kind = "ew"),          auto_unbox = TRUE)),
   as.character(toJSON(sp$universe  %||% list(kind = "k200_kq150"),  auto_unbox = TRUE)),
-  as.character(toJSON(sp$overlay   %||% list(),                     auto_unbox = TRUE)),
+  # ★2층 이상만 순서를 정렬한다(.ov_canon) — 단층·NULL 은 구판과 비트 동일한 문자열이다.
+  as.character(toJSON(.ov_canon(sp$overlay) %||% list(),            auto_unbox = TRUE)),
   as.character(sp$base_signal$path %||% sp$base_signal$kind %||% "")), collapse = "|")
 
 # ── ★격자 커서 — 자리를 차지한 셀 코드 집합 (2026-09-04 신설) ────────────────

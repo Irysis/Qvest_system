@@ -71,6 +71,20 @@ rf_block_insights <- function(S, blk, root, parent_S = NULL) {
   if (!nrow(fin_blk)) return(parts)
   desc <- tryCatch(rf_cell_desc(base_id), error = function(e) list())
   dtxt <- function(cd) as.character(desc[[cd]] %||% "")
+  ## ★B5 스택 — 칸의 정체는 **자기 층**이다 (2026-09-17). 스펙의 overlay 는 승계 스택 위에 이 칸의 층을 얹은 것이라
+  ##   서술의 4번째 축이 "승계 × 자기" 로 나온다. 승계(또는 블록 공통 접두)를 빼지 않으면 상주 칸(B5_31)과 설계 칸이
+  ##   같은 바닥을 공유한다는 이유로 "두 칸이 같다" 로 읽히고, 군집 절의 처치 수도 부풀거나 접힌다.
+  if (identical(blk, "B5") && exists(".rf_ov_split", mode = "function")) {
+    ovs <- lapply(inblk$code, function(cd) { p <- .bi_parts(dtxt(cd)); if (nzchar(p[4])) .rf_ov_split(p[4]) else NULL })
+    names(ovs) <- inblk$code; have <- Filter(Negate(is.null), ovs)
+    cov <- tryCatch(if (!is.null(E$carry$overlay)) .rf_ov_split(.rf_ov(E$carry$overlay)) else character(0), error = function(e) character(0))
+    base <- if (length(cov)) cov else if (length(have) >= 2L) Reduce(intersect, have) else character(0)
+    for (cd in names(have)) {
+      own <- have[[cd]][!(have[[cd]] %in% base)]; if (!length(own)) own <- have[[cd]]   # 바닥만 있는 칸은 그 바닥이 정체다
+      p <- .bi_parts(dtxt(cd)); p[4] <- paste0("오버레이 ", paste(own, collapse = " × "))
+      desc[[cd]] <- paste(p, collapse = " | ")
+    }
+  }
 
   ## ── 기저(직전 최고): 이 블록 앞 칸들의 최고, 첫 블록이면 부모 승자 ──
   prior <- tab[n < min(inblk$n) & is.finite(port_t)]
@@ -188,8 +202,9 @@ rf_block_insights <- function(S, blk, root, parent_S = NULL) {
   if (length(l5)) parts[["경계까지"]] <- l5
 
   ## ── 6. 앞 처방 대비 (설계가 있었던 블록만) ──
+  ## 칸 단위 대조(2026-09-17) — carry 를 넘겨 B5 실행 스펙에서 승계 층을 빼고 이 칸의 스택만 설계와 맞춘다.
   st <- tryCatch({ suppressMessages(source(file.path(root, "02_Infrastructure/reinforcement/rf_block_design.R"), local = TRUE))
-                   rfbd_action_status(root, base_id, blk, E$attempts) }, error = function(e) NULL)
+                   rfbd_action_status(root, base_id, blk, E$attempts, carry = (E$carry %||% list())$overlay) }, error = function(e) NULL)
   if (!is.null(st) && !identical(as.character(st$status %||% "no_design"), "no_design")) {
     verdict <- if (!is.null(base)) (if (best$port_t > base$port_t + 1e-9) "지지(기저를 넘었다)" else "반증(기저를 못 넘었다)") else "대조 기저 없음"
     parts[["앞 처방 대비"]] <- c(sprintf("집행 %s — %s", as.character(st$status), .bi_esc(as.character(st$detail %||% ""))),
