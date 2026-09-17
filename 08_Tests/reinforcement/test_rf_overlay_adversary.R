@@ -122,8 +122,14 @@ s0 <- .adv_strip_own(spec0, own)
 fl_spec <- spec0; fl_spec$overlay <- NULL; fl_spec$overlay_basis <- NULL
 if (length(own) == 1L && is.null(s0$overlay) && "overlay" %in% names(s0) && identical(.adv_norm_sig(s0), .adv_norm_sig(fl_spec)))
   ok("E5 자기 층 제거 후 서명 == 바닥 서명 (overlay_basis 부분 일치 회피)") else ng("E5 서명 불일치", paste(.adv_norm_sig(s0), "|", .adv_norm_sig(fl_spec)))
+## ★2026-09-17 (WP-R) 소비자를 따라 옮김: 구판 E6 은 "`$overlay <- NULL` 이면 .spec_sig 가 overlay_basis 를 집어 서명이 어긋난다" 는
+##   **함정의 존재**를 단언했다. .spec_sig 가 [[ ]] 정확 일치로 바뀐 뒤 함정은 서명 쪽에서 닫혔다 — 이제는 두 가지를 같이 잰다:
+##   ① R 의 `$` 부분 일치 자체는 그대로다(bad$overlay 가 overlay_basis 를 집는다 — 픽스처가 함정을 여전히 품고 있다는 판별력)
+##   ② 그런데도 서명은 바닥과 같다(.spec_sig 가 그 함정을 안 밟는다).
 bad <- spec0; bad$overlay <- NULL
-if (!identical(.spec_sig(bad), .spec_sig(fl_spec))) ok("E6 대조 — `$overlay <- NULL` 은 overlay_basis 를 집어 서명이 어긋난다(회피 이유 실증)") else ng("E6 부분 일치 함정이 재현되지 않는다")
+if (identical(bad$overlay, spec0$overlay_basis) && identical(.spec_sig(bad), .spec_sig(fl_spec)))
+  ok("E6 대조 — `$overlay <- NULL` 뒤 `$` 는 여전히 overlay_basis 를 집지만(부분 일치) .spec_sig 는 정확 일치라 서명이 안 어긋난다") else
+  ng("E6 부분 일치", sprintf("$overlay=%s · sig_equal=%s", paste(format(bad$overlay), collapse = ""), identical(.spec_sig(bad), .spec_sig(fl_spec))))
 carry <- list(kind = "vol_scale", arm_id = "vol_median")
 stacked <- spec0; stacked$overlay <- .ov_stack(carry, spec0$overlay)
 own2 <- .adv_own_layers(stacked, carry)

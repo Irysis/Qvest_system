@@ -46,19 +46,7 @@ rf_overlay_admit <- function(kind, target = NULL, n_siblings = 1L,
   fam    <- as.character(meta$family %||% (if (identical(pr$axis, "cross_sectional")) "cross_sectional" else "multivar"))
   basis  <- as.character(meta$basis %||% "")
 
-  tfid <- sprintf("OAF_%s_%s", format(Sys.time(), "%Y%m%d%H%M%S"), kind)
-  rec <- list(record_type = "arm_emission", arm_id = arm_id, kind = kind,
-              emitted_at = format(Sys.time(), "%Y-%m-%dT%H:%M:%S%z"),
-              target_cell = list(action = as.character(target$action %||% NA),
-                                 state  = as.character(target$state  %||% NA)),
-              generator_model = generator_model, source = source,
-              family = fam, est_cost_min = as.numeric(meta$est_cost_min %||% 8),
-              probe = list(ok = isTRUE(pr$ok), reason = as.character(pr$reason %||% NA),
-                           axis = as.character(pr$axis %||% NA),
-                           x_var = suppressWarnings(as.numeric(pr$x_var %||% NA))),
-              emission_is_pre_measurement = TRUE,
-              trial_family_id = tfid, n_siblings = as.integer(n_siblings),
-              selection_type = if (n_siblings > 1L) "sweep_candidate_family" else "chain")
+  rec <- .rfa_emission_record(kind, target, n_siblings, generator_model, source, meta, pr)
   rfa_append_ledger(rec, root)
 
   if (!isTRUE(pr$ok)) {
@@ -89,4 +77,44 @@ rf_overlay_admit <- function(kind, target = NULL, n_siblings = 1L,
   invisible(list(ok = TRUE, kind = kind, arm_id = arm_id, ledger = TRUE, source = source))
 }
 
-cat("[rf_overlay_admit.R] Loaded — rf_overlay_admit(kind, target, n_siblings, generator_model, root, source)\n")
+#' 방출 원장 레코드 — 등재 경로(rf_overlay_admit)와 기록 전용 경로(rf_overlay_record_emission)가 **같은 형태**를 쓴다 (WP-C 2026-09-17).
+#'   두 벌이면 한쪽만 고쳐지고 집계기(rf_overlay_ledger_count.py)가 한쪽을 못 센다.
+.rfa_emission_record <- function(kind, target, n_siblings, generator_model, source, meta, pr) {
+  arm_id <- as.character(meta$id %||% paste0(kind, "_v1"))
+  fam    <- as.character(meta$family %||% (if (identical(pr$axis, "cross_sectional")) "cross_sectional" else "multivar"))
+  tfid <- sprintf("OAF_%s_%s", format(Sys.time(), "%Y%m%d%H%M%S"), kind)
+  list(record_type = "arm_emission", arm_id = arm_id, kind = kind,
+       emitted_at = format(Sys.time(), "%Y-%m-%dT%H:%M:%S%z"),
+       target_cell = list(action = as.character(target$action %||% NA),
+                          state  = as.character(target$state  %||% NA)),
+       generator_model = generator_model, source = source,
+       family = fam, est_cost_min = as.numeric(meta$est_cost_min %||% 8),
+       probe = list(ok = isTRUE(pr$ok), reason = as.character(pr$reason %||% NA),
+                    axis = as.character(pr$axis %||% NA),
+                    x_var = suppressWarnings(as.numeric(pr$x_var %||% NA))),
+       emission_is_pre_measurement = TRUE,
+       trial_family_id = tfid, n_siblings = as.integer(n_siblings),
+       selection_type = if (n_siblings > 1L) "sweep_candidate_family" else "chain")
+}
+
+#' 방출 **기록 전용** — 등재 전(probe 실패·G1 감사 거부·할당 초과·compose_only·미신고 파일) 에 버려지는 arm 도 원장에 남긴다.
+#'   (WP-C 2026-09-17 · B5 설계 레인의 방출 정직성 H7). 카탈로그는 건드리지 않는다. 등재 경로가 이미 기록한 arm 에는 부르지 않는다
+#'   (등재 CLI 는 probe 를 스스로 돌리고 기록한다 — 두 번 적으면 일간 상한이 그 arm 을 두 번 센다).
+#' @param stage 어디서 버려졌나: probe / audit / audit_unavailable / quota / compose_only / undeclared / duplicate_id / missing_file
+#' @param probe overlay_probe_arm 결과(있으면 그대로 싣는다). NULL 이면 ok=FALSE · reason 만.
+rf_overlay_record_emission <- function(kind, target = NULL, n_siblings = 1L, generator_model = NA_character_,
+                                       root = .RFA_ROOT(), source = "b5_design", stage = "probe", reason = "", probe = NULL) {
+  source <- as.character(source %||% "b5_design")[1]; if (is.na(source) || !nzchar(source)) source <- "b5_design"
+  mp <- file.path(root, "02_Infrastructure/reinforcement/overlay_arms", paste0(kind, ".arm.json"))
+  meta <- if (file.exists(mp)) tryCatch(fromJSON(mp, simplifyVector = FALSE), error = function(e) list()) else list()
+  pr <- if (is.list(probe)) probe else list(ok = FALSE, reason = as.character(reason), axis = NA, x_var = NA)
+  rec <- .rfa_emission_record(kind, target %||% list(), max(1L, as.integer(n_siblings %||% 1L)), generator_model, source, meta, pr)
+  rec$admitted <- FALSE
+  rec$rejected_stage <- as.character(stage)
+  rec$reject_reason <- as.character(reason %||% "")
+  rfa_append_ledger(rec, root)
+  cat(sprintf("[rf_overlay_admit] %s RECORDED(admitted=false · %s) — %s\n", kind, stage, substr(as.character(reason %||% ""), 1, 120)))
+  invisible(rec)
+}
+
+cat("[rf_overlay_admit.R] Loaded — rf_overlay_admit(kind, target, n_siblings, generator_model, root, source) / rf_overlay_record_emission(기록 전용 · admitted=false)\n")

@@ -9,9 +9,10 @@
 #
 # 규칙(판단이 아니라 규칙):
 #   ① 이미 측정한 팔은 제외 — 같은 것을 두 번 재지 않는다
-#   ② 계열당 1개 — 한 계열에서 여러 개 뽑으면 같은 축을 반복 측정한다(B2 실측 교훈)
-#   ③ 구속 축 우선 — 지금 막고 있는 것이 낙폭이므로 drawdown/combo 계열을 앞세운다
-#   ④ 그래도 자리가 남으면 계열 안에서 비용 낮은 순
+#   ② 기전 좌표(action, state)당 1개 — 같은 좌표를 두 번 재면 같은 축을 반복 측정한다(B2 실측 교훈 · 09-03 계열→좌표)
+#   ③ 행동 축 라운드로빈 — 축마다 i번째 칸을 돌아가며 뽑는다. 한 축이 자리를 다 채우지 못한다(09-17)
+#   ④ 라운드 안에서는 횡단면 먼저 · 구속 축(drawdown) 먼저 · 비용 낮은 순
+#   ⑤ 그래도 자리가 남으면 비용 낮은 순
 #
 # 사용: rf_pick_overlay_arms(n = 5, exclude = <이미 측정한 id>) -> list(cells = [...])
 #==============================================================================
@@ -59,9 +60,16 @@ rf_pick_overlay_arms <- function(n = 5L, exclude = character(0), root = .RFO_ROO
   aprio <- c("cross_sectional" = 0, "scalar_exposure" = 10)
   sprio <- c("drawdown" = 1, "multivar" = 2, "dispersion" = 3, "holding_level" = 4,
              "ml" = 5, "vol" = 6, "trend" = 7)
-  picked[, .prio := as.numeric(aprio[action]) + as.numeric(sprio[state])]
-  picked[is.na(.prio), .prio := 99]
-  setorderv(picked, c(".prio", "est_cost_min"), c(1L, 1L), na.last = TRUE)
+  # ★행동 축 라운드로빈 (2026-09-17). 구판은 .prio = aprio + sprio 한 줄로 세웠는데 행동 간격(10)이 상태 폭(1~7)보다
+  #   커서 그 줄은 사실상 '횡단면 칸을 다 쓴 뒤에야 스칼라' 였다. 생성 레인이 미측정 칸을 찾아 횡단면 열을 채우자
+  #   (09-07 multivar_channel_tilt 로 5칸째) 다섯 칸이 전부 횡단면이 됐다 — state 라벨은 다섯이 달랐는데 행동은 하나.
+  #   그래서 순위를 **행동 축 안에서** 매기고 라운드마다 축별 1칸씩 뽑는다. 위 우선순위는 라운드 안의 순서로만 남는다.
+  #   등록부가 한 열로 자라도 두 축이 다 남아 있으면 배치가 둘 다 잰다(제외로 한 축만 남으면 그 축으로 채운다).
+  picked[, `:=`(.ap = as.numeric(aprio[action]), .sp = as.numeric(sprio[state]))]
+  picked[is.na(.ap), .ap := 99][is.na(.sp), .sp := 99]
+  setorderv(picked, c("action", ".sp", "est_cost_min"), c(1L, 1L, 1L), na.last = TRUE)
+  picked[, .round := seq_len(.N), by = action]
+  setorderv(picked, c(".round", ".ap", "action"), c(1L, 1L, 1L), na.last = TRUE)
   picked <- head(picked, n)
   # 계열 수가 n 보다 적으면 남은 자리는 계열 2순위로 채운다(측정 예산을 비우지 않는다)
   if (nrow(picked) < n) {

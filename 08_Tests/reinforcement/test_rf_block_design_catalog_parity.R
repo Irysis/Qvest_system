@@ -77,13 +77,18 @@ TMP <- file.path(tempdir(), sprintf("rfbd_par_%d", Sys.getpid()))
 dir.create(file.path(TMP, "06_Registry"), recursive = TRUE, showWarnings = FALSE)
 file.copy(file.path(ROOT, "06_Registry/reinforce_program.json"), file.path(TMP, "06_Registry/reinforce_program.json"))
 cat5 <- fromJSON(file.path(ROOT, "06_Registry/overlay_catalog.json"), simplifyVector = FALSE)
-RETID <- cat5$arms[[1]]$id; cat5$arms[[1]]$status <- "retired"
+## ★운영 카탈로그의 **active 인 arm** 을 골라 주입한다 (2026-09-17). 구판은 arms[[1]] 을 retired 로 바꾸고 "전체 − 1" 을 기대했다 —
+##   운영 카탈로그에 이미 retired arm 이 하나라도 생기면(09-17 uw_erosion_dbeta_v1) 목록 길이가 "active − 1" 이라 거짓 FAIL 이 났다.
+##   기대값은 입력에서 재도출한다: 주입 전 active 수 − 1.
+.st5 <- vapply(cat5$arms, function(a) as.character(a$status %||% "active"), character(1))
+.ia5 <- which(.st5 == "active")
+RETID <- cat5$arms[[.ia5[1]]]$id; cat5$arms[[.ia5[1]]]$status <- "retired"
 write(toJSON(cat5, auto_unbox = TRUE, pretty = TRUE, null = "null"), file.path(TMP, "06_Registry/overlay_catalog.json"))
 v5t <- vapply(rfbd_catalog("B5", TMP), function(x) as.character(x$id), character(1))
-if (!(RETID %in% v5t) && length(v5t) == length(cat5$arms) - 1L) ok(sprintf("P7 retired 로 바꾼 %s 가 검증기 목록에서 빠진다", RETID)) else ng("P7 retired 가 목록에 남는다")
+if (!(RETID %in% v5t) && length(v5t) == length(.ia5) - 1L) ok(sprintf("P7 retired 로 바꾼 %s 가 검증기 목록에서 빠진다(active %d → %d)", RETID, length(.ia5), length(v5t))) else ng("P7 retired 가 목록에 남는다", sprintf("active %d · 목록 %d", length(.ia5), length(v5t)))
 r7 <- rfbd_verify(list(block = "B5", cells = list(list(pick = RETID, label = "r", why = "w"))), "B5", TMP)
 if (is.character(r7) && grepl("retired", r7, fixed = TRUE)) ok(paste0("P8 rfbd_verify 기각: ", r7)) else ng("P8 retired 설계가 통과한다", as.character(r7))
-r8 <- rfbd_verify(list(block = "B5", cells = list(list(pick = cat5$arms[[2]]$id, label = "a", why = "w"))), "B5", TMP)
+r8 <- rfbd_verify(list(block = "B5", cells = list(list(pick = cat5$arms[[.ia5[2]]]$id, label = "a", why = "w"))), "B5", TMP)
 if (isTRUE(r8)) ok("P9 양성 대조 — active arm 설계는 통과") else ng("P9 active 를 거부한다", as.character(r8))
 if (RETID %in% vapply(cat5$arms, function(a) a$id, character(1))) ok("P10 돌연변이 통제 — 구 술어(status 무시)면 retired id 가 목록에 있었다") else ng("P10 판별력")
 unlink(TMP, recursive = TRUE, force = TRUE)

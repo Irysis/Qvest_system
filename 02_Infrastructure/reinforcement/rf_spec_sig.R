@@ -99,7 +99,13 @@ if (!exists("%||%")) `%||%` <- function(a, b) if (is.null(a) || length(a) == 0L)
   as.character(toJSON(sp$weighting %||% list(kind = "ew"),          auto_unbox = TRUE)),
   as.character(toJSON(sp$universe  %||% list(kind = "k200_kq150"),  auto_unbox = TRUE)),
   # ★2층 이상만 순서를 정렬한다(.ov_canon) — 단층·NULL 은 구판과 비트 동일한 문자열이다.
-  as.character(toJSON(.ov_canon(sp$overlay) %||% list(),            auto_unbox = TRUE)),
+  # ★overlay 는 **정확한 이름**으로 읽는다 ([[ ]] · 2026-09-17 WP-R). `sp$overlay` 는 부분 일치라 overlay 키가 없는 스펙
+  #   (실측 801 중 497 — B1~B4)에 overlay_shift=0 이나 overlay_strict=FALSE **하나만** 얹혀도 그 값을 오버레이로 읽어
+  #   서명이 바뀌었다(탐침: 필드 하나씩 얹으면 304/801 만 동일 · 넷을 한꺼번에 얹으면 이름이 모호해져 NULL 로 떨어져
+  #   우연히 동일 — 그래서 묶음 대조는 이 결함을 못 봤다). 부기 필드(overlay_cell·overlay_shift·overlay_strict·floor_code)는
+  #   측정 축이 아니다 — 서명에 들어가면 같은 포트폴리오가 다른 칸이 된다. overlay_* 접두 형제가 있는 필드는 overlay 하나라
+  #   이 줄만 바꿨다. 기존 801 서명은 이 변경 전후 비트 동일(실측).
+  as.character(toJSON(.ov_canon(sp[["overlay"]]) %||% list(),       auto_unbox = TRUE)),
   as.character(sp$base_signal$path %||% sp$base_signal$kind %||% "")), collapse = "|")
 
 # ── ★격자 커서 — 자리를 차지한 셀 코드 집합 (2026-09-04 신설) ────────────────

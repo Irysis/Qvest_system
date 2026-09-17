@@ -594,6 +594,43 @@ rf_record_b5_redesign <- function(layer, base_id, fields, root = .rf_root()) {
   invisible(cur)
 }
 
+#' B5 설계 레인 **라운드 기록** (WP-C · 2026-09-17 도훈 지시 "매 강화 사이클마다 LLM 이 오버레이를 자체 설계") — entry$b5_design$rounds 에 누적
+#'
+#' 계약 레코드: {round, at, source:"b5_design_lane", n_cells, new_arms_admitted, new_arms_rejected, compose_only, fallback}
+#'   + 레인이 덧붙이는 필드(new_arm_ids · fallback_reason · n_total_cells · design_path — 가드 H3 정체 판정과 사후 대조용).
+#'   round 1 = entry 당 자동 설계(가드 H1 이 이 기록으로 "이미 설계됨" 을 센다) · round ≥ 2 = 수동 재설계.
+#'   fields$redesign = list(cells_added, base_design_cells) 가 있으면 rf_record_b5_redesign 으로 **같은 원장 안의**
+#'   b5_redesign 표식(active=TRUE)을 함께 연다 — 러너 계약(rf_runner_gates.R::rf_b5_design_counts)이 그것을 읽는다.
+#' ★경계(AX-008): 등급·시도·carry 는 건드리지 않는다. 폴백 라운드(fallback=TRUE)도 기록한다 — 시도한 설계는 숨기지 않는다
+#'   (환경 실패(auth·한도)는 라운드가 아니라 레인 이벤트로만 남는다 — 그때는 재시도가 정당하다).
+rf_record_b5_design <- function(layer, base_id, fields, root = .rf_root()) {
+  if (!is.list(fields) || is.null(fields$round))
+    stop("[reinforce_ledger] b5_design 라운드 기록은 round 필수")
+  obj <- rf_load(layer, root)
+  i <- .rf_find(obj, base_id)
+  if (is.na(i)) stop(sprintf("[reinforce_ledger] entry 부재: %s", base_id))
+  e <- obj$entries[[i]]
+  rec <- list(round = as.integer(fields$round), at = format(Sys.time(), "%Y-%m-%dT%H:%M:%S%z"), source = "b5_design_lane",
+              n_cells = as.integer(fields$n_cells %||% 0L),
+              new_arms_admitted = as.integer(fields$new_arms_admitted %||% 0L),
+              new_arms_rejected = as.integer(fields$new_arms_rejected %||% 0L),
+              compose_only = isTRUE(fields$compose_only), fallback = isTRUE(fields$fallback))
+  extra <- fields[setdiff(names(fields), c(names(rec), "redesign"))]
+  for (k in names(extra)) rec[[k]] <- extra[[k]]
+  bd <- e$b5_design; if (!is.list(bd)) bd <- list()
+  bd$rounds <- c(if (is.list(bd$rounds)) bd$rounds else list(), list(rec))
+  e$b5_design <- bd
+  obj$entries[[i]] <- e
+  .rf_write(obj, layer, root)
+  cat(sprintf("[reinforce_ledger] b5_design 라운드 %d 기록 %s: cells=%d arms +%d/-%d compose_only=%s fallback=%s\n",
+              rec$round, base_id, rec$n_cells, rec$new_arms_admitted, rec$new_arms_rejected, rec$compose_only, rec$fallback))
+  if (is.list(fields$redesign))
+    rf_record_b5_redesign(layer, base_id, list(active = TRUE, round = rec$round, at = rec$at,
+                                               cells_added = as.integer(fields$redesign$cells_added %||% 0L),
+                                               base_design_cells = as.integer(fields$redesign$base_design_cells %||% 0L)), root = root)
+  invisible(rec)
+}
+
 `%||%` <- function(a, b) if (is.null(a) || length(a) == 0L || (length(a) == 1L && is.na(a))) b else a
 
 cat("[reinforce_ledger.R] Loaded (v10) — rf_open_entry / rf_append_attempt(★L1 25회 게이트·서술 의무 · root_papers 선택) / rf_record_result / rf_park_entry(조기 중단·사유 필수) / rf_record_judge / rf_record_combination_review / rf_lessons_digest / rf_record_adversary(G2 오버레이 반증 표식) / rf_record_b5_redesign(B5 재설계 라운드 표식)\n")

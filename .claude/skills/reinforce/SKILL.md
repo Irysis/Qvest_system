@@ -25,11 +25,12 @@ LLM 주도 심층 리서치이며, "후속 연구까지 포함하여 인뎁스 �
 
 v10 의 "무인 파이프라인은 수집까지만" 경계가 **해제**됐다. 강화는 사람 지시 없이 돈다.
 
-★**규칙 개시 위에 LLM 이 닿는 지점 4곳** (2026-09-04 현행 — 구판 "루프에 LLM 없음" 서술 폐기):
+★**규칙 개시 위에 LLM 이 닿는 지점 6곳** (2026-09-17 현행 — 구판 "루프에 LLM 없음" 서술 폐기):
 ① **B1 설계** — 블록 진입 시 entry 당 1회(`rf_b1_design.sh` → `rf_b1_design_lib::b1_verify` 가 등록부 실재성·중복·칸 수 ≤15 를
    재도출로 검증, 실패 = 규칙 선정 폴백 `rf_factor_arms.R`). ② **블록 기전 + 다음 블록 설계** — 블록 종료 시 1회
    (`rf_lcode_mechanism.sh` → `next_block_design` 이 있으면 다음 블록의 셀 목록이 된다, `rf_block_design.R` 검증). ③ **충실도 감사**
    6축 팬아웃(`rf_fidelity_fanout.sh` · `06_Registry/rf_fidelity_axes.json` · 병합 `rf_fidelity_merge.R` 결정론). ④ **arm 생성**(§0.2).
+   ⑤ **B5 오버레이 자체 설계**(2026-09-17 도훈 지시 — 아래 표 · §0.3 ⑧) ⑥ **G1 적대 감사**(새 arm 마다 · 설계자와 다른 모델).
    ★LLM 은 **제안**만 한다 — 등재·집행·판정은 전부 R 이 재도출로 검증한 뒤에만 일어나고, 셀 엔진은 하나이며 러너는 코드를 생성하지 않는다.
    ★프롬프트는 **stdin**(`printf %s "$PROMPT" > "$PF"; claude -p < "$PF"`) — argv 는 Windows 32K 에서 조용히 죽는다(승격 entry 실사고).
 
@@ -52,7 +53,12 @@ v10 의 "무인 파이프라인은 수집까지만" 경계가 **해제**됐다. 
 | 회피 집행 | 러너 (`avoid_enforced` / `avoid_noted`) | 기전 `avoid` 중 **측정 무효 사유**만 건너뜀 · 성과 사유는 기록 후 실행(AX-000) · 부모 사슬 walk |
 | 결합 | `02_Infrastructure/ops/rf_combination_launch.R` | 재료 풀 → 설계 요청(`replication_request.json` combo) → 충실구현 레인이 LLM 결합 엔진을 1회 측정 → `_combo_rulefast` entry → 같은 격자 · 희석 판정 기록 |
 | 텔레그램 | `rf_auto_notify.R` · `rf_block_insights.R` · `rf_grade_fanfare.R` · `rf_round_review.R` | 블록 본문(+`이번 배치에서 알게 된 것` 요약) · 후속 전체판 · B/A 팬파레 · 라운드 종료 리뷰(궤적·LOO·벽) |
-| LLM 레인 | `02_Infrastructure/ops/rf_llm_env.sh` · config `llm.lanes` | 모델 = `llm.model`(opus · fable-5-1 은 CLI 차단 기록) · 노력 replication max / fidelity_audit xhigh / b1_design·lcode_mechanism·overlay_propose high |
+| B5 설계 | `02_Infrastructure/ops/rf_b5_design.sh` + `rf_b5_design_lib.R` · config `b5_design` | tick 에서 러너 앞 · B5 진입 직전 entry 당 1회(러너가 순서를 아직 안 적었으면 `rf_block_order_decide` 로 예측) · 수동 `--redesign <BID>`(측정 칸 뒤에 덧붙임 · 원장 `b5_redesign`). 재료 = 측정표·바닥 낙폭 해부(날짜 제거)·arm 성과 이력(B5 칸만)·앞선 논문 B5 교훈·증류·기전 지도. 산출 = `.cache/rf_block_design/<BID>_B5.json`(source=`b5_design_lane`) + 원장 `b5_design.rounds` · 실패 = 폴백 라운드 기록(기존 설계 보존) |
+| 스택 | `rf_block_design.R`(`picks`) · 엔진 `.ov_compose` | B5 칸만 `picks: [id, …]` ≤ `b5_design.max_layers`(3) — 층 노출을 **종목별 곱**으로 합성 · 같은 kind 두 층·같은 스택 두 칸·이미 잰 스택 금지 · 엔트리 총 ≤15칸(B5_16..B5_30) |
+| 상주 칸 | `reinforce_program.json::standing_cells` · `rf_runner_gates.R` | **B5_31 = `pg2_risk_overlay_v1`**(BOOK PG2 사양) 을 매 세대 B5 에서 따로 잰다 — 설계·규칙·회피와 무관한 대조 칸 · 설계에 넣으면 검증이 뺀다 · 승격 carry 제외 |
+| G1 감사 | `ops/rf_overlay_audit.sh` · `06_Registry/rf_overlay_adversary_axes.json` · 병합 `rf_overlay_audit_merge.R` | 새 arm 등재 **전** 3축(leak·degenerate·duplicate) · 설계자(fable)와 다른 계열(opus/xhigh) · 판정은 R 이 근거를 파일에서 재도출(행 인용 실재 · 활성 id) · reject/unavailable = 등재 금지 + 파일 삭제 + 방출 원장 admitted=false |
+| G2 반증 | `reinforcement/rf_overlay_adversary.R` · config `overlay_adversary` | 측정 **뒤** B5 경계에서 T1 lag-1 · T2 strict-PIT A/B · T3 노출 짝지은 블록 순열 placebo · T3b 횡단면 placebo · T4 정적 등가 · **verdict=pass 만 소비**(블록 승자·carry·Grade A 발행). fail = **소비 보류 · 등급 불변**(원장 `attempt.adversary`) |
+| LLM 레인 | `02_Infrastructure/ops/rf_llm_env.sh` · config `llm.lanes` | 모델은 별칭(fable/opus = 항상 최신) · replication **fable/max** · b5_design **fable/max** · overlay_audit opus/xhigh · fidelity_audit opus/xhigh · b1_design·lcode_mechanism·overlay_propose·cleaner_distill opus/high. ★Fable 한도 → `llm.fable_limit_fallback`(opus/max)로 처음부터 1회 재실행(직전 훅이 1차 산출 정리) · 판정은 **이번 실행 출력**만 |
 
 **자동 정지 지점 2곳** — 무인이 넘으면 안 되는 선:
 1. **충실구현 필요** → 논문 원문 판독(롱숏·종목수·비중·리밸 복제)은 규칙으로 환원되지 않는다.
@@ -89,7 +95,7 @@ overlay_propose **high**. 정본 = `reinforce_auto_config.json::llm.lanes`(문�
 | B1 (1~5) | 멀티팩터 | **블록 진입 시 LLM 설계 1회**(`rf_b1_design.sh` — 칸 수·팩터 수·조합 방식을 설계가 정하고, 등록부 331종 안에서 `b1_verify` 가 실재성·중복·≤15칸을 검증) · 실패 = 규칙 선정 폴백(깊이 1~5 · IC 시계열 상관 최소 사슬 · 계열 라운드로빈, `rf_factor_arms.R`) · 승격 entry 는 carry 팩터 위에 얹는다 | 없음 — 즉시 |
 | B2 (6~10) | 비중방법론 | B1 최고 PORT_t 컴포짓 위에서 `weight_catalog.json` 계열당 1종(`rf_weight_arms.R` — 낙폭 축 계열 우선) ★직전 블록 기전의 `next_block_design` 이 있으면 그 셀 목록 · 바닥 = 직전까지 최고 구성(block_accumulate) | B1 착지 |
 | B3 (11~15) | 유니버스 | B1 최고 컴포짓 + EW 로 **적용 유니버스 교체**: 시장별(KOSPI 전수/KOSDAQ 전수)·시가총액별(소형/대형)·섹터 중립 ★기전 설계 우선 · 바닥 = 직전까지 최고 구성 · 승계 비중 불가 시 EW 강등 | B1 착지 |
-| B5 (16~20) | 리스크 오버레이 | B1 최고 컴포짓 + EW 위에 `overlay_catalog.json` 계열당 1종(`rf_overlay_arms.R` — 낙폭/combo 계열 우선) · 승자 = Calmar ★기전 설계 우선 · 오버레이는 carry 위에 중첩(`.ov_stack`) · 순서 규칙이 Calmar 미달이면 2번째로 당긴다 | B1 착지 |
+| B5 (16~20) | 리스크 오버레이 | 직전까지 최고 구성 위에 ★**LLM 설계 레인**(`rf_b5_design.sh` · 스택 칸 + 새 arm) > 기전 설계 > 규칙(`rf_overlay_arms.R` 계열당 1종) · 상주 칸 B5_31 은 별도 · 승자 = Calmar ∧ G2 pass · 오버레이는 carry 위에 중첩(`.ov_stack`) · 순서 규칙이 Calmar 미달이면 2번째로 당긴다 | B1 착지 |
 | B4 (21~25) | 조합 | B1·B2·B3·B5 승자의 **4축 전체 결합 1칸 + 축별 leave-one-out 4칸** | B1~B3·B5 착지 |
 
 **규율 — 폐기된 것과 불변인 것**:
@@ -141,6 +147,20 @@ overlay_propose **high**. 정본 = `reinforce_auto_config.json::llm.lanes`(문�
 7. **텔레그램** — 블록마다 본문(순위·궤적·LLM 기전·`이번 배치에서 알게 된 것` 요약) + 후속 전체판(판정·갈린 처치·위험·수익 교환·
    군집/단조·경계까지(롤링 창·방어형)·앞 처방 대비·미측정/강등·승격 사슬 — `rf_block_insights.R`, 규칙 기반) · B/A 팬파레 · 라운드
    종료 리뷰(블록별 궤적 · LOO · 무엇이 벽이었나). 계약은 `relaxed` · 미리보기는 `QVEST_TG_DRY_RUN=1`.
+8. **B5 오버레이 자체 설계 사이클** (2026-09-17 도훈 지시 "매 강화 사이클마다 LLM 이 … 오버레이를 자체 설계" + "한 칸에 여러 오버레이 중첩"
+   + "오버레이층만 무한대로 탐색하는 버그 방지" + "오버레이 적대적 검증부") — 설계(`rf_b5_design.sh` · fable/max) → 새 arm 마다
+   probe(6검사 · 달력 리터럴 포함) → **G1** 감사(opus · 근거 재도출) → 등재(source=`b5_design`) → 설계 검증·쓰기 → 러너 측정(설계 칸 + 상주 B5_31)
+   → B5 경계 **G2** 반증 → pass 칸만 소비. ★러너는 B1 뒤 **같은 호출에서** 순서를 적고 B5 를 열기 때문에 레인은 기록된 순서를 기다리지 않고
+   같은 규칙으로 예측해 발화한다(안 그러면 영영 발화하지 못한다). 기전 설계 백업은 `.cache/rf_b5_design/<BID>/` 에 둔다(`rf_block_design/` 의
+   최신 파일 이름이 순서 규칙의 입력이다). ★세션이 arm 을 손으로 설계·등재하지 않는다 — 09-17 수작업 arm `uw_erosion_dbeta_v1` 은 retired(파일·원장 보존).
+   **가드 H1~H8**(판정마다 jlog `overlay_guard_<name>`): H1 entry 당 자동 1회 · 수동 재설계 ≤ `guards.max_redesign_rounds`(1) · 비활성 entry 거부 ·
+   H2 사이클당 새 arm ≤ `max_new_arms`(3) ∧ 하루 source=b5_design 방출 ≤ `guards.daily_arm_cap`(6 · 집계 실패 = 0) · H3 **arm 을 낸** 최근
+   `stagnation_window`(2) 라운드의 arm 이 G2 pass B5 칸에 한 번도 못 들면 compose_only(배합 라운드로 창을 비우는 교대 우회 차단) ·
+   H4 활성 생성 arm > `max_active_generated`(40) → compose_only · H5 라운드 ≤ `max_cells`(8) · ≥ `min_cells`(3) · 층 ≤ 3 · 총 ≤15 ·
+   H6 상주·중복·이미 잰 스택·같은 kind 두 층 제외(active 만) · H7 등재 전 거부 arm 도 방출 원장 admitted=false(probe/audit/quota/compose_only/
+   undeclared/lane_budget) · H8 폴백 무성 금지(설계 부재·시간초과도 fallback 라운드로 기록 — 환경 실패(auth·한도)만 미기록 재시도).
+   레인 안전: 기존 arm 파일 수정·삭제는 백업에서 복원(`arm_existing_tampered`) · 파일 연산은 검증된 kind 로만 · 다른 레인 산출(gen_<시각>·prompt_gen_*) 불가침 ·
+   레인 시간 예산 `QVEST_B5_LANE_BUDGET_SEC`(5400 · 스케줄 태스크 상한 2h). 검사 = `08_Tests/ops/test_rf_b5_design.sh` · `08_Tests/reinforcement/test_rf_b5_design_lib.R`.
 
 ★2026-09-04 실사고 목록(재발 방지 검사 = `08_Tests/reinforcement/test_rf_lane_parity.R` · `test_rf_block_insights.R` ·
 `test_rf_carry_degrade.R` · `test_rf_jlog_isolation.R` · `test_rf_summarize_once.R` · `08_Tests/ops/test_rp_count_paper.R`):

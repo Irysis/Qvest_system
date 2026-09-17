@@ -10,7 +10,11 @@
   인라인 사본을 검사에 복제하면 정본과 갈린다(이 저장소의 반복 결함).
 
 사용: python rf_overlay_ledger_count.py <ledger.jsonl> [YYYY-MM-DD] [source,source,...]
-  날짜 기본 = 오늘(로컬) · source 집합 기본 = overlay_propose. 필드 부재 기록은 항상 레인 몫이다.
+  날짜 기본 = 오늘(로컬) · source 집합 기본 = overlay_propose.
+  필드 부재(구판) 기록은 **overlay_propose 몫**이다 — source 집합에 overlay_propose 가 있을 때만 센다.
+  ★2026-09-17 (B5 설계 레인 H2): 구판은 부재 기록을 어떤 집합으로 세든 포함했다. 그래서 b5_design 몫만 세는 일간 상한이
+    그날 세션이 손으로 등재한 구판 기록(uw_erosion_dbeta_v1 · source 없음)까지 자기 예산으로 먹었다. 부재 = source 가 생기기
+    전의 일간 레인 방출이므로 그 레인 이름이 집합에 있을 때만 그 몫이다(기본 호출·overlay_propose 포함 집합은 거동 불변).
 출력: 정수 한 줄 (원장 부재·손상 줄은 0 으로 센다 — 상한 판정이 인프라 오류로 레인을 죽이지 않게)
 """
 import io
@@ -36,7 +40,10 @@ def count_lane_emissions(ledger, day=None, sources=("overlay_propose",)):
             if not str(r.get("emitted_at", "")).startswith(day):
                 continue
             src = r.get("source")
-            if src is None or src == "" or src in sources:   # 부재 = 구판 legacy = 레인 몫
+            if src is None or src == "":                     # 부재 = 구판 legacy = overlay_propose 레인 몫
+                if "overlay_propose" in sources:
+                    n += 1
+            elif src in sources:
                 n += 1
     except FileNotFoundError:
         pass

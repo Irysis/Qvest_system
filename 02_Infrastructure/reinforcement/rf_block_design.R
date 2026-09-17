@@ -160,6 +160,12 @@ rfbd_verify <- function(design, block, root, max_cells = 15L) {
     key <- rfbd_stack_key(ids)
     if (key %in% seen_keys) return(sprintf("cell %d: 앞 칸과 같은 항목(%s) — 칸 낭비", i, key))
     if (key %in% standing_keys) return(sprintf("cell %d: 상주 칸과 같은 스택(%s) — 상주가 매 세대 이미 잰다", i, key))
+    ## ★상주 arm 을 **포함한** 스택도 금지 (2026-09-17 · 규칙 통일). 기전·설계 레인 프롬프트는 "설계는 상주 arm 을
+    ##   쓰지 않는다" 고 적는데 검증은 단독 동일 스택만 막아 어긋났다. 허용하면 "PG2 × X" 가 승자가 돼도
+    ##   rf_promote_carry 가 상주 arm 을 carry 에서 빼 X 만 넘긴다 — 잰 것과 물려준 것이 달라진다. 상주는 따로 잰다.
+    if (is_b5 && length(standing_keys) && any(ids %in% rfbd_standing_picks(root)))
+      return(sprintf("cell %d: 상주 arm(%s)을 포함한 스택 — 상주는 B5_31 에서 따로 재며 carry 로 승계되지 않는다",
+                     i, paste(intersect(ids, rfbd_standing_picks(root)), collapse = ",")))
     seen_keys <- c(seen_keys, key)
     if (!nzchar(as.character(ce$label %||% ""))) return(sprintf("cell %d: label 없음", i))
   }

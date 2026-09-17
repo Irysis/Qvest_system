@@ -494,6 +494,19 @@ w5 <- .winner_of("B5", "calmar", gate = rf_adversary_ok)
 .wbest_spec <- NULL
 .wbest_code <- NA_character_   # ★바닥 attempt 의 코드 — B5 스펙 floor_code(적대검증 바닥 식별 1순위 · 2026-09-17)
 { .cd0 <- Filter(function(a) !is.null(a$essence), E$attempts)
+  # ★바닥도 적대검증 판정을 따른다 (2026-09-17 · WP-R 사후 지적). 판정 fail/error/not_candidate 인 B5 칸이
+  #   PORT_t 최고면 그 오버레이가 뒤 블록(B2·B3)의 바닥으로 **승계**돼 소비 보류가 새어 나갔다 — 승자·carry·A 후보만
+  #   막고 누적 바닥은 안 막은 비대칭. 판정 필드가 없는 시도(구 entry · B5 밖 칸)는 그대로 후보다(rf_adversary_ok).
+  .cd0_all <- .cd0
+  .cd0 <- Filter(rf_adversary_ok, .cd0)
+  if (length(.cd0_all) > length(.cd0)) {
+    .va <- vapply(.cd0_all, function(a) .metric(a, "port_t"), numeric(1))
+    .ba <- .cd0_all[[which.max(replace(.va, !is.finite(.va), -Inf))]]
+    if (!rf_adversary_ok(.ba))
+      jlog("floor_excluded_adversary", base_id = BID, n = .ba$n, code = .ba$essence$cell_code %||% "",
+           verdict = as.character((.ba$adversary %||% list())$verdict %||% ""),
+           note = "PORT_t 최고였지만 적대검증 미통과 — 누적 바닥에서 제외(오버레이 승계 차단)")
+  }
   if (length(.cd0)) {
     .v0 <- vapply(.cd0, function(a) .metric(a, "port_t"), numeric(1))
     if (!all(is.na(.v0))) {
@@ -602,7 +615,9 @@ if (!length(jobs)) for (CELL in batch) {
     if (is.null(SPEC$factors) || !length(SPEC$factors)) SPEC$factors <- .wbest_spec$factors
     if (!identical(.own, "weighting") && !is.null(.wbest_spec$weighting)) SPEC$weighting <- .wbest_spec$weighting
     if (!identical(.own, "universe")  && !is.null(.wbest_spec$universe))  SPEC$universe  <- .wbest_spec$universe
-    if (!identical(.own, "overlay")   && !is.null(.wbest_spec$overlay))   SPEC$overlay   <- .wbest_spec$overlay
+    # ★overlay 는 정확 일치로 읽는다 (2026-09-17 WP-R) — 바닥이 B1~B3 칸이면 스펙에 overlay 키가 없고 overlay_cell=[] 만
+    #   있어 `$overlay` 가 부분 일치로 그 빈 리스트를 집는다(서명은 같지만 B2/B3 스펙에 "overlay": [] 가 새로 박힌다).
+    if (!identical(.own, "overlay")   && !is.null(.wbest_spec[["overlay"]])) SPEC$overlay <- .wbest_spec[["overlay"]]
     jlog("block_accumulate", code = CELL$code, own_axis = .own %||% "-",
          w = (SPEC$weighting$kind %||% "?"), u = (SPEC$universe$kind %||% "?"),
          ov = length(.ov_layers(SPEC$overlay)),

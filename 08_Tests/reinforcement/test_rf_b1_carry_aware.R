@@ -80,8 +80,19 @@ if (grepl("뒤 블록이 잘리지 않는다", sh, fixed = TRUE)) ok("C 넓혀�
 if (grepl("승계 절이 있으면", sh, fixed = TRUE) && grepl("미측정으로 닫힌다", sh, fixed = TRUE)) ok("C 승계 중복의 대가 명시") else ng("C 승계 규칙 없음")
 
 cat("\n=== D. 예산 식이 코드와 문서에서 같은가 (재도출) ===\n")
-pr <- paste(readLines(file.path(ROOT, "02_Infrastructure/ops/reinforce_auto_parallel.R"), warn = FALSE, encoding = "UTF-8"), collapse = "\n")
-if (grepl("max(0L, length(.b1_design) - 5L)", pr, fixed = TRUE)) ok("D 러너 예산식 = 25 + max(0, n−5)") else ng("D 러너 예산식이 바뀌었다 — 프롬프트 문구도 함께 고칠 것")
+## ★2026-09-17 (WP-R) 소비자를 따라 옮김: 러너 예산은 인라인 `max(0L, length(.b1_design) - 5L)` 이 아니라 매 tick
+##   정본 rf_runner_gates.R::rf_budget_auto 로 재도출된다(B1 초과 + B5 설계 초과 + 상주 + 재설계 추가 — B1 몫은 그대로).
+##   그래서 ①러너가 B1 설계 칸 수와 격자 B1 슬롯을 정본 함수에 넘기는지 ②정본 함수의 B1 몫이 프롬프트 문구
+##   "총예산 = 25 + max(0, 칸수 − 5)" 와 같은지(n=0..15 실행 대조) ③문구의 5 가 격자 blocks[B1].n 인지 잰다.
+pr <- paste(sub("#.*$", "", readLines(file.path(ROOT, "02_Infrastructure/ops/reinforce_auto_parallel.R"), warn = FALSE, encoding = "UTF-8")), collapse = "\n")
+suppressMessages(invisible(capture.output(source(file.path(ROOT, "02_Infrastructure/reinforcement/rf_runner_gates.R"), local = TRUE))))
+.prog <- fromJSON(file.path(ROOT, "06_Registry/reinforce_program.json"), simplifyVector = FALSE)
+.b1n <- { v <- NA_integer_; for (b in .prog$blocks) if (identical(b$id, "B1")) v <- as.integer(b$n %||% length(b$cells)); v }
+.same <- all(vapply(0:15, function(n) rf_budget_auto(25L, n, 0L, 0L, 0L, slot_b1 = .b1n) == 25L + max(0L, n - 5L), logical(1)))
+if (grepl(".nB1d <- length(.b1_design)", pr, fixed = TRUE) && grepl("rf_budget_auto(led$max_attempts %||% 25L, .nB1d,", pr, fixed = TRUE) &&
+    grepl('slot_b1 = .slot_of("B1")', pr, fixed = TRUE) && identical(.b1n, 5L) && isTRUE(.same))
+  ok("D 러너 예산 B1 몫 = rf_budget_auto(25, n, …, slot_b1 = 격자 B1 5칸) = 25 + max(0, n−5) — 프롬프트 문구와 실행 대조 일치(n=0..15)") else
+  ng("D 러너 예산식이 바뀌었다 — 프롬프트 문구도 함께 고칠 것", sprintf("slot_b1=%s same=%s", .b1n, .same))
 sk <- paste(readLines(file.path(ROOT, ".claude/skills/reinforce/SKILL.md"), warn = FALSE, encoding = "UTF-8"), collapse = "\n")
 if (grepl("25 + max(0, B1 설계 칸수 − 5)", sk, fixed = TRUE)) ok("D SKILL 에 같은 식") else ng("D SKILL 미기재")
 

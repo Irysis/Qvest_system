@@ -26,16 +26,26 @@ PASS <- 0L; FAIL <- 0L
 ok <- function(m) { PASS <<- PASS + 1L; writeLines(paste("  OK   ", m)) }
 ng <- function(m, d = "") { FAIL <<- FAIL + 1L; writeLines(paste("  FAIL ", m, "—", d)) }
 
-# ── 픽스처 — 종목 30 · 평일 2003-06~2006-12 ──────────────────────────────────
+AXES <- list(long_only = TRUE, n_max = 25L, universe = "K200_KQ150",
+             start_date = "2005-01-01", commission_bps = 15L, liq_adv20_min = 2e8)
+
+# ── 픽스처 — 종목 50 · 평일 2003-06~2016-12 ──────────────────────────────────
 #   mom_12_1 은 252일, sigma60 은 60일 창이 필요하다. start_date(2005-01-01) 앞에
 #   1년 반을 둬서 시그널일이 창 부족으로 전멸하지 않게 한다.
 #   Close*Vol 은 유동성 하한 2e8 을 항상 넘도록 잡는다 — 이 검사의 대상은 배관이지
 #   선별 경제학이 아니다.
-make_fixture <- function(idx_n = 20L) {
+#   ★지수 멤버 수 > n_max (2026-09-17 수리): 엔진 5a 가드(09-13 a82898255)는 기저 후보 중앙이 n_max 이하인
+#   칸에 팩터가 붙으면 멈춘다. 구 픽스처(30종 중 멤버 20)가 그 가드에 걸려 팩터를 붙인 항목(A2~A5·A8·A9·B2)이
+#   전부 가드 문자열로 죽었다 — 09-13 이후 이 스모크는 엔진 실행이 아니라 가드 하나만 재고 있었다.
+#   가드는 옳다. 고칠 곳은 픽스처이고, 가드는 A10~A12 가 좁은 픽스처로 따로 잰다.
+#   추첨 순서가 (Ticker, Date) 라 종목을 늘려도 T001~T030 의 가격 경로는 구판과 같다.
+IDX_N <- AXES$n_max + 15L          # 지수 멤버 40 — 랭킹이 시그널일마다 15종을 떨어뜨릴 수 있다
+N_TK  <- IDX_N + 10L               # 종목 50 — 비멤버 10 = all_listed 가 넓힐 대상
+make_fixture <- function(idx_n, n_tk = N_TK) {
   set.seed(20260830L)
   d <- seq(as.Date("2003-06-02"), as.Date("2016-12-30"), by = "day")   # 오버레이 확장창(60개월) 확보
   d <- d[as.integer(format(d, "%w")) %in% 1:5]
-  tk <- sprintf("T%03d", 1:30)
+  tk <- sprintf("T%03d", seq_len(n_tk))
   x <- CJ(Ticker = tk, Date = d)
   setorder(x, Ticker, Date)
   x[, .r := rnorm(.N, 0.0002, 0.012)]
@@ -49,8 +59,9 @@ make_fixture <- function(idx_n = 20L) {
   x[, Sector_Lv2 := paste0("S", (as.integer(sub("T", "", Ticker, fixed = TRUE)) %% 5L) + 1L)]
   x[]
 }
-FIX <- make_fixture(20L)          # 30종 중 20종만 지수 멤버
-FIX_ALL <- make_fixture(30L)      # 전 종목이 지수 멤버 = 넓힐 대상 없음
+FIX        <- make_fixture(IDX_N)        # 50종 중 40종만 지수 멤버 — 후보 40 > n_max 25
+FIX_ALL    <- make_fixture(N_TK)         # 전 종목이 지수 멤버 = 넓힐 대상 없음
+FIX_NARROW <- make_fixture(AXES$n_max)   # 후보 = n_max (경계 — 가드는 <= 라 발화해야 한다) · FIX 와 멤버 수만 다르다
 # BM = 횡단면 평균 수익(시장 대용). 오버레이 신호의 입력이다.
 BMF <- { .t <- copy(FIX); setorder(.t, Ticker, Date)
          .t[, r := Close / shift(Close, 1L) - 1, by = Ticker]      # ★티커 안에서 shift
@@ -58,8 +69,6 @@ BMF <- { .t <- copy(FIX); setorder(.t, Ticker, Date)
 # 변동성이 상수인 BM — 오버레이가 개입할 근거가 없는 판(위반 주입용)
 BMF_FLAT <- copy(BMF)[, BM_Ret := 0.0003]
 
-AXES <- list(long_only = TRUE, n_max = 25L, universe = "K200_KQ150",
-             start_date = "2005-01-01", commission_bps = 15L, liq_adv20_min = 2e8)
 PX <- list(kind = "price", id = "lowvol60")   # 오프라인 자기완결 팩터(DB 미접촉)
 
 # 스펙을 파일로 굽고 엔진을 격리 env 에서 평가한다.
@@ -87,16 +96,16 @@ base_spec <- function(...) modifyList(list(
 writeLines("=== A. 양성 대조 — 엔진이 실제로 산출물을 만드는가 ===")
 
 # A1. 팩터 없음(kind="none") = 기저 신호 단독 — B4 LOO '팩터 제외' 가 타는 경로
-r <- run_cell(base_spec(factor2 = list(kind = "none")))
-if (is.null(r$err) && identical(r$out, "FACTORS")) {
-  n <- nrow(get("FACTORS", envir = r$env))
+r1 <- run_cell(base_spec(factor2 = list(kind = "none")))
+if (is.null(r1$err) && identical(r1$out, "FACTORS")) {
+  n <- nrow(get("FACTORS", envir = r1$env))
   if (n > 0L) ok(paste0("factor none(기저 단독) → FACTORS ", n, "행")) else ng("factor none", "0행")
-} else ng("factor none", r$err %||% "산출물 없음")
+} else ng("factor none", r1$err %||% "산출물 없음")
 
-# A2. 1팩터 — B1 블록이 타는 경로(구 factor2 키 하위호환)
-r <- run_cell(base_spec(factor2 = PX))
-if (is.null(r$err) && identical(r$out, "FACTORS")) ok("1팩터(factor2 하위호환) → FACTORS") else
-  ng("1팩터", r$err %||% "산출물 없음")
+# A2. 1팩터 — B1 블록이 타는 경로(구 factor2 키 하위호환). r1·r2 는 A10 이 멤버십 비교에 다시 쓴다
+r2 <- run_cell(base_spec(factor2 = PX))
+if (is.null(r2$err) && identical(r2$out, "FACTORS")) ok("1팩터(factor2 하위호환) → FACTORS") else
+  ng("1팩터", r2$err %||% "산출물 없음")
 
 # A3. 3팩터 N-ary — 2026-08-30 리팩터가 연 경로(B4_20). 여기가 오늘 결함의 진원지다
 r <- run_cell(base_spec(factors = list(PX, PX, PX)))
@@ -159,10 +168,46 @@ if (is.null(r8$err) && identical(r8$out, "PORTFOLIO")) {
   }
 } else ng("오버레이 정상 경로", r8$err %||% "PORTFOLIO 없음")
 
+#   ★"overlay" 까지 본다 — 앞선 가드가 같은 토큰으로 먼저 죽이면 오버레이 가드를 안 재고도 초록이 된다
+#     (09-13~09-17 이 항목은 5a 가드에 선점당해 죽어 있었다).
 r9 <- run_cell(base_spec(factor2 = PX, overlay = list(kind = "vol_scale")), bm = BMF_FLAT)
-if (!is.null(r9$err) && grepl("처치 미전달", r9$err)) {
+if (!is.null(r9$err) && grepl("overlay", r9$err, fixed = TRUE) && grepl("처치 미전달", r9$err, fixed = TRUE)) {
   ok("변동성이 상수인 시장에서는 개입 근거가 없어 실패로 끊는다(위반 주입)")
-} else ng("오버레이 미전달 가드 미작동", "상시 노출 1 을 측정으로 기록한다")
+} else ng("오버레이 미전달 가드 미작동", r9$err %||% "상시 노출 1 을 측정으로 기록한다")
+
+# A10~A12. 선정 축 유효성 가드 (양방향) — rf_cell_engine 5a. 기저 후보 중앙이 n_max 이하면 선정이 전수라
+#   팩터 랭킹이 보유를 못 바꾼다(2026-09-12 실측: 결합 기저 14종/일 위 B1 9칸 중 6칸이 일별 수익 비트 동일).
+#   통제 = FIX 와 FIX_NARROW 는 지수 멤버 수만 다르다(가격 경로·유동성 동일). 후보 수는 픽스처 의도가 아니라
+#   엔진이 실제로 잰 값(.cand_med)을 읽는다.
+# A10. 양성 — 후보 > n_max 면 팩터가 실제로 멤버십을 바꾼다(A1 기저 단독 vs A2 1팩터)
+if (is.null(r1$err) && is.null(r2$err)) {
+  cm2 <- get0(".cand_med", envir = r2$env, inherits = FALSE) %||% NA_real_
+  mem <- function(env) get("FACTORS", envir = env)[, .(k = paste(sort(Ticker), collapse = ",")), by = Date]
+  M <- merge(mem(r1$env), mem(r2$env), by = "Date")
+  nd <- sum(M$k.x != M$k.y)
+  if (is.finite(cm2) && cm2 > AXES$n_max && nd > 0L)
+    ok(sprintf("후보 중앙 %.0f > n_max %d — 팩터가 보유를 바꾼다(시그널일 %d/%d)", cm2, AXES$n_max, nd, nrow(M)))
+  else ng("선정 축 양성 대조", sprintf("후보 중앙 %s · 보유 차이 시그널일 %d/%d — 팩터 축 처치 미전달",
+                                       format(cm2), nd, nrow(M)))
+} else ng("선정 축 양성 대조", "A1/A2 실행 실패 — 위 항목 참조")
+
+# A11. 위반 주입 — 후보 = n_max 인 픽스처에 팩터를 붙이면 반드시 멈춘다
+r11 <- run_cell(base_spec(factor2 = PX), fixture = FIX_NARROW)
+if (!is.null(r11$err) && grepl("랭킹이 멤버십을 못 바꾼다", r11$err, fixed = TRUE)) {
+  ok(sprintf("후보 중앙 %s <= n_max %d 에 팩터를 붙이면 실패로 끊는다(위반 주입)",
+             format(get0(".cand_med", envir = r11$env, inherits = FALSE) %||% NA), AXES$n_max))
+} else ng("선정 축 가드 미작동", r11$err %||% "선정 전수인데 팩터 칸이 측정을 냈다 — 침묵 무처치")
+
+# A12. 가드 범위 — 같은 좁은 후보라도 팩터가 없으면 멈추지 않는다. 비중·유니버스·오버레이 칸은 선정이 전수여도
+#   처치가 전달된다(엔진 5a 의 ⚠) — 거기까지 막으면 과잉 차단이다. 대신 WARN 으로 선정 전수를 알려야 한다.
+lg12 <- capture.output(r12 <- run_cell(base_spec(factor2 = list(kind = "none")), fixture = FIX_NARROW))
+if (is.null(r12$err) && identical(r12$out, "FACTORS")) {
+  n12 <- get("FACTORS", envir = r12$env)[, .N, by = Date]$N
+  warned <- any(grepl("WARN", lg12, fixed = TRUE) & grepl("랭킹이 멤버십을 못 바꾼다", lg12, fixed = TRUE))
+  if (warned && all(n12 == AXES$n_max))
+    ok(sprintf("팩터 없는 좁은 칸은 통과 + WARN (선정 전수 %d종/일)", AXES$n_max))
+  else ng("가드 범위", sprintf("WARN %s · 날짜별 보유 %s", warned, paste(range(n12), collapse = "~")))
+} else ng("가드 과잉 차단", r12$err %||% "산출물 없음")
 
 writeLines("=== B. 위반 주입 — 같은 결함을 심으면 반드시 잡히는가 ===")
 
