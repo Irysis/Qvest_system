@@ -56,14 +56,28 @@ PS_DRIVER = Path(__file__).resolve().with_name('qw_excel_refresh.ps1')
 RC_UPDATED, RC_FAILED, RC_NO_CHANGE, RC_NO_PRECONDITION = 0, 1, 2, 3
 
 
+def _status_path_for(dest: Path) -> Path:
+    """상태 파일은 **대상별**이다. 벤치 정본은 기존 이름(게이트·daily_refresh 가 읽는다).
+    ★초판은 대상과 무관하게 한 파일에 썼다 — Update_File 을 --status-only 로 한 번 보자
+      벤치 상태가 그 파일 기록으로 덮였다(2026-09-18 실측). 읽는 쪽은 벤치라고 믿는다."""
+    if Path(dest).resolve() == DEST.resolve():
+        return STATUS_PATH
+    return STATUS_PATH.with_name(f'quantiwise_fetch_status__{Path(dest).stem}.json')
+
+
+_STATUS_TARGET = {'path': STATUS_PATH}
+
+
 def _write_status(payload: dict) -> None:
     """상태 사이드카 — 로그는 흘러가지만 파일은 남는다(게이트 축 D 가 읽을 수 있다)."""
+    STATUS_PATH_ = _STATUS_TARGET['path']
+    payload = dict(payload, target=str(_STATUS_TARGET.get('dest', DEST)))
     try:
-        STATUS_PATH.parent.mkdir(parents=True, exist_ok=True)
-        tmp = str(STATUS_PATH) + f'.tmp{os.getpid()}'
+        STATUS_PATH_.parent.mkdir(parents=True, exist_ok=True)
+        tmp = str(STATUS_PATH_) + f'.tmp{os.getpid()}'
         with open(tmp, 'w', encoding='utf-8') as fh:
             json.dump(payload, fh, ensure_ascii=False, indent=2)
-        os.replace(tmp, str(STATUS_PATH))
+        os.replace(tmp, str(STATUS_PATH_))
     except Exception:
         pass
 
@@ -173,7 +187,7 @@ def _fetch_impl(workdir: Path, timeout_sec: int, visible: bool,
             detail = json.loads(jout.read_text(encoding='utf-8-sig'))
         except Exception:
             pass
-    _fetch_impl.last_detail = detail          # main 이 상태 JSON 에 싣는다
+    _LAST_DRIVER['detail'] = detail           # main 이 상태 JSON 에 싣는다
 
     rc = proc.returncode
     msg = str(detail.get('message') or (proc.stderr or '').strip() or f'rc={rc}')
@@ -188,7 +202,9 @@ def _fetch_impl(workdir: Path, timeout_sec: int, visible: bool,
     return out
 
 
-_fetch_impl.last_detail = {}
+# 드라이버 상세는 모듈 상태로 둔다 — 함수 속성에 두면 _fetch_impl 을 갈아끼운 순간(검사·래핑)
+# main 이 AttributeError 로 죽는다(2026-09-18 검사가 잡음).
+_LAST_DRIVER: dict = {'detail': {}}
 
 
 def main() -> int:
@@ -204,6 +220,8 @@ def main() -> int:
                     help='엑셀 창을 띄운 채 돌린다(사람이 지켜볼 때·진단용)')
     args = ap.parse_args()
     dest = Path(args.dest)
+    _STATUS_TARGET['path'] = _status_path_for(dest)
+    _STATUS_TARGET['dest'] = dest
 
     before = _describe(dest)
     print(f'[quantiwise_fetch] 정본 = {dest}')
@@ -224,7 +242,7 @@ def main() -> int:
         _write_status({'schema': 'quantiwise_fetch_status_v1', 'result': 'no_precondition',
                        'at': datetime.now().isoformat(timespec='seconds'),
                        'message': str(e), 'before': before,
-                       'driver': _fetch_impl.last_detail,
+                       'driver': _LAST_DRIVER['detail'],
                        '_note': ('호출부는 이것을 stale 신고로 처리한다 — '
                                  '조용히 Naver 로 때우지 않는다')})
         return 3
@@ -233,14 +251,14 @@ def main() -> int:
         _write_status({'schema': 'quantiwise_fetch_status_v1', 'result': 'failed',
                        'at': datetime.now().isoformat(timespec='seconds'),
                        'message': f'{e.__class__.__name__}: {e}', 'before': before,
-                       'driver': _fetch_impl.last_detail})
+                       'driver': _LAST_DRIVER['detail']})
         return 1
 
     if got is None:
         print('  받을 것이 없음(원격이 우리 것과 같음) — 미변경')
         _write_status({'schema': 'quantiwise_fetch_status_v1', 'result': 'no_change',
                        'at': datetime.now().isoformat(timespec='seconds'), 'before': before,
-                       'driver': _fetch_impl.last_detail})
+                       'driver': _LAST_DRIVER['detail']})
         return 2
 
     # ── 교체 전 검증: 읽히는가 · 행이 줄지 않았는가 · 더 최신인가 ──────────────
@@ -250,14 +268,14 @@ def main() -> int:
         _write_status({'schema': 'quantiwise_fetch_status_v1', 'result': 'rejected_unreadable',
                        'at': datetime.now().isoformat(timespec='seconds'),
                        'before': before, 'candidate': cand,
-                       'driver': _fetch_impl.last_detail})
+                       'driver': _LAST_DRIVER['detail']})
         return 1
     if before.get('rows') and cand['rows'] < before['rows']:
         print(f'  ★행 축소 ({before["rows"]}→{cand["rows"]}) — 교체하지 않음')
         _write_status({'schema': 'quantiwise_fetch_status_v1', 'result': 'rejected_shrink',
                        'at': datetime.now().isoformat(timespec='seconds'),
                        'before': before, 'candidate': cand,
-                       'driver': _fetch_impl.last_detail})
+                       'driver': _LAST_DRIVER['detail']})
         return 1
     # 드라이버가 '갱신됨' 이라 해도 지평선이 안 늘었으면 교체하지 않는다(무의미한 mtime 갱신 금지).
     if (before.get('date_max') and cand.get('date_max')
@@ -266,7 +284,7 @@ def main() -> int:
         _write_status({'schema': 'quantiwise_fetch_status_v1', 'result': 'no_change',
                        'at': datetime.now().isoformat(timespec='seconds'),
                        'before': before, 'candidate': cand,
-                       'driver': _fetch_impl.last_detail})
+                       'driver': _LAST_DRIVER['detail']})
         return 2
 
     # 원자적 교체 (대상을 열지 않는다 — Windows 매핑 거부/절단 회피)
@@ -276,11 +294,4 @@ def main() -> int:
     after = _describe(dest)
     print(f'  교체 완료: rows={after.get("rows")} date_max={after.get("date_max")}')
     _write_status({'schema': 'quantiwise_fetch_status_v1', 'result': 'updated',
-                   'at': datetime.now().isoformat(timespec='seconds'),
-                   'before': before, 'after': after,
-                   'driver': _fetch_impl.last_detail})
-    return 0
-
-
-if __name__ == '__main__':
-    sys.exit(main())
+                   'at': datetime.now().isoforma

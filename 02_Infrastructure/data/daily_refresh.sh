@@ -215,7 +215,7 @@ if [ -n "$QVENV_PY" ]; then
        ( cd "$INFRA" && "$QVENV_PY" data/build_index_cache.py ) || _bm_rc=$? ;;
     2) echo "  정본 xlsx 변경 없음 (원격 == 우리 것)" ;;
     3) echo "  ※정본 수급 전제 부재 — .cache/quantiwise_fetch_status.json 참조"
-       "$QVENV_PY" -c "import json,sys;d=json.load(open(r'$BASE/.cache/quantiwise_fetch_status.json',encoding='utf-8'));print('   사유:', d.get('message','?')[:160])" 2>/dev/null || true
+       "$QVENV_PY" -c "import json,sys;d=json.load(open(r'$BASE/.cache/quantiwise_fetch_status.json',encoding='utf-8'));print('   사유:', str(d.get('message') or d.get('result') or '?')[:160])" 2>/dev/null || true
        echo "   (퀀티 단말에 로그인하면 다음 tick 부터 자동으로 정본이 들어온다. 아래 축 D 가 정체 일수를 신고한다)" ;;
     *) echo "!! 정본 수급 실패 rc=$_qw_rc — 기존 xlsx 유지"; _bm_rc=$_qw_rc ;;
   esac
