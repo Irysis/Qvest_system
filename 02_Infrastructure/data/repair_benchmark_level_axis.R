@@ -1,5 +1,33 @@
 #!/usr/bin/env Rscript
 #==============================================================================
+# ★RETIRED 2026-09-18 — 상수 나눗셈 재척도기 (구 축 → 지수 레벨, 현행 구간 한정)
+#
+# 이 스크립트는 `.cache/benchmark.parquet` 이 **리베이스 체인**(공표 코스피200 × 8.83)이던
+# 시절의 일회성 수리기다. 2026-09-18 축 정규화로 그 전제가 사라졌다:
+#   BM_Close = 공표 코스피200 지수 종가(포인트) 그대로. 배율 개념 없음.
+# ★이 스크립트는 "측정된 배수 하나로 전 구간을 나눈다" 는 전제 위에 서 있었다. 그 전제는
+#   1999년 이전에 성립하지 않는다(배수가 주 단위 계단). 정본 재구축기는 원천에서
+#   날짜별로 값을 가져오므로 그 한계가 없다 — 그래서 이 쪽이 퇴역한다.
+#
+# 대체 경로(정본): `python 02_Infrastructure/data/rebuild_benchmark_canonical.py --write`
+#   (원천 우선순위 03_Universe/Benchmark_price.xlsx > .cache/krx/kospi_index > 구 체인 환산,
+#    manifest = .cache/benchmark_axis.json, 백업 = *.bak_axis_migration_<ts>)
+#
+# ★파일은 남긴다(사료). 실행만 막는다 — 호출부는 2026-09-18 기준 0곳이다.
+#   되살리려면 이 블록을 지우는 것이 아니라, 왜 새 축에서 필요한지를 먼저 적을 것.
+#==============================================================================
+if (!("--i-know-this-is-retired" %in% commandArgs(trailingOnly = TRUE))) {
+  cat("[RETIRED] 이 수리기는 2026-09-18 축 정규화로 퇴역했습니다.
+")
+  cat("  대체: python 02_Infrastructure/data/rebuild_benchmark_canonical.py --write
+")
+  cat("  (구 축(8.83배 체인)으로 되돌리는 동작이라 새 축에서 실행하면 정본을 파괴합니다.)
+")
+  quit(status = 2L)
+}
+
+
+#==============================================================================
 # repair_benchmark_level_axis.R — 벤치마크 레벨 축 재척도 (기본 dry-run)
 #
 # 대상: .cache/benchmark.parquet::BM_Close

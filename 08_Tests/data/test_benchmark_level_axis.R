@@ -1,17 +1,23 @@
 # test_benchmark_level_axis.R — 벤치마크 레벨 축 위반 주입 검사 (2026-09-07 신설)
 #
+# ★2026-09-18 축 정규화에 맞춰 개정. 규약이 바뀌었다:
+#     BM_Close = **공표 코스피200 지수 종가(포인트) 그대로**. 배율 개념 없음.
+#   따라서 재는 것도 둘이 됐다 — ①정합(값이 같은가) ②이음매(하루 사이 비율 계단).
+#   구판 축 C 는 체인 축(8.83배) 위에서 |배수-1|<=0.01 을 요구했으므로 **원리적으로
+#   통과 불가**였다(09-07 신설 이후 매일 FAIL). 상시 빨강은 상시 침묵이다.
+#
 # 지키는 것: `.cache/benchmark.parquet::BM_Close` 가 공표 코스피200 **레벨**에서
 #   떨어져 나갔을 때 그것이 **드러나는가**. 2026-07~09 에는 안 드러났다 —
 #   BM_Close 가 지수의 8.834448배 위에 있었는데 하루 사이 배수 점프가 0건이라
-#   "연속이면 정상" 으로 보였고, 이 불변식을 적어 둔 가드(build_cache.R:47)는
+#   "연속이면 정상" 으로 보였고, 이 불변식을 적어 둔 가드(build_cache.R)는
 #   ① daily_refresh 가 부르지 않는 찬 경로에 있었고
 #   ② 바로 앞 build_index_cache.py 가 같은 프로세스에서 방금 쓴 자기 산출물을
 #      비교하는 동어반복이라 구조적으로 통과했다.
 #
 # ★핵심은 가드가 **진짜 위반에 빨개지는가**이다. 주입 없이 초록은 무의미하다.
 # ★그리고 이 검사는 **운영 상태를 빌리지 않는다** — 판정 절은 전부 tempdir 픽스처이고,
-#   실데이터 절(L)은 "지금 어긋나 있다" 가 아니라 "가드 판정이 실측 배수와 일치한다" 를
-#   재므로 수리가 적용돼도 깨지지 않는다.
+#   실데이터 절(L)은 "지금 어긋나 있다" 가 아니라 "가드 판정이 실측값과 일치한다" 를
+#   재므로 재구축 전후 어느 쪽에서도 성립한다.
 #
 # 실행: Rscript 08_Tests/data/test_benchmark_level_axis.R
 
@@ -29,6 +35,7 @@ chk <- function(name, cond, detail = "") {
   else { FAIL <<- FAIL + 1L; cat(sprintf("  FAIL  %s %s\n", name, detail)) }
 }
 skip <- function(name, why) { SKIP <<- SKIP + 1L; cat(sprintf("  SKIP  %s (%s)\n", name, why)) }
+`%||%` <- function(a, b) if (is.null(a) || (length(a) == 1L && is.na(a))) b else a
 
 stopifnot(file.exists(LVL), file.exists(GATE))
 source(LVL)
@@ -63,7 +70,8 @@ run_gate <- function(bm_path, ref_path = NULL, today = as.Date("2026-07-30"),
   list(status = as.integer(st), out = paste(out, collapse = "\n"))
 }
 
-TOL <- 0.01
+TOL <- 1e-4          # 새 축 문턱(manifest::tolerance). 구판 0.01 은 8.83배만 잡았다
+SEAM <- 1e-4         # 이음매 문턱(manifest::seam_tolerance)
 
 cat("=== 양성 대조 (가드가 정상 데이터를 막지 않는다) ===\n")
 f0 <- mk_fixture()
@@ -91,6 +99,30 @@ v2 <- bench_level_axis_check(f2$bm, f2$ref, tol = TOL)
 chk("I5 축소 방향도 잡힌다", identical(v2$status, "violation"), sprintf("(status=%s)", v2$status))
 g2 <- run_gate(wr(f2$bm, "bm_inj2.parquet"), rp0)
 chk("I6 게이트 exit 1", g2$status == 1L, sprintf("(status=%d)", g2$status))
+
+cat("\n=== 위반 주입 INJ-3 — **이음매**(정합 축만으로는 못 잡는 하루짜리 계단) ===\n")
+# ★이것이 실제로 재발한 형태다: 2025-01-02 에 비율이 8.800942 → 8.834448 로 한 칸 움직였고
+#   (배수비 1.0038), 레벨은 연속이라 "연속이면 정상" 으로 보였다. 정합 축만 재면 이 구간의
+#   중앙값 배수가 1 근처인 파일에서도 계단을 놓친다 — 그래서 이음매 축이 따로 필요하다.
+mk_seam <- function(n = 60L, at = 40L, jump = 1.0038, seed = 7L) {
+  f <- mk_fixture(n = n, seed = seed)
+  f$bm[at:n, BM_Close := BM_Close * jump]        # 뒤쪽 구간만 한 칸 밀어 올린다
+  f
+}
+f3 <- mk_seam()
+v3 <- bench_level_axis_check(f3$bm, f3$ref, tol = TOL, seam_tol = SEAM)
+chk("I7 이음매 → status violation", identical(v3$status, "violation"), sprintf("(status=%s)", v3$status))
+chk("I8 실패 축에 seam 이 명시됨", grepl("seam", v3$failed_axis %||% "", fixed = TRUE),
+    sprintf("(failed_axis=%s)", v3$failed_axis))
+chk("I9 계단 날짜를 특정한다", identical(v3$worst_seam_date, f3$bm$Date[40L]),
+    sprintf("(worst_seam_date=%s, 기대 %s)", format(v3$worst_seam_date), format(f3$bm$Date[40L])))
+g3 <- run_gate(wr(f3$bm, "bm_inj3.parquet"), rp0 <- wr(f3$ref, "ref3.parquet"))
+chk("I10 게이트 exit 1", g3$status == 1L, sprintf("(status=%d)", g3$status))
+rp0 <- wr(f0$ref, "ref.parquet")   # ★기본 참조 복원 (뒤 절이 f0 기준이다)
+# ★음성 대조: 정합 축만 재면(이음매 문턱을 크게) 이 계단은 **통과한다** — 축이 둘인 이유
+v3b <- bench_level_axis_check(f3$bm, f3$ref, tol = 0.01, seam_tol = 0.5)
+chk("I11 이음매 축을 끄면 같은 파일이 통과 (축 분리의 필요성 실증)",
+    identical(v3b$status, "ok"), sprintf("(status=%s)", v3b$status))
 
 cat("\n=== 경계 (문턱이 실제로 그 자리에 있는가) ===\n")
 # ★정확히 1+TOL 로 잡지 않는다 — (1+0.01)-1 = 0.010000000000000009 로 IEEE 배정도에서
@@ -187,19 +219,21 @@ cat("\n=== 소비자 표면 고정 (새 소비자가 분류 없이 들어오는 
 #   함정을 피한다(픽스처는 소비자가 아니다). 기록과 소비를 가르는 지점이 여기다.
 PINNED <- c(
   "02_Infrastructure/alpha_search/factor_engine_pindex_2606_08569.R",
+  "02_Infrastructure/data/benchmark_axis.py",
   "02_Infrastructure/data/benchmark_currency_gate.R",
   "02_Infrastructure/data/benchmark_level_axis.R",
   "02_Infrastructure/data/build_cache.R",
   "02_Infrastructure/data/build_index_cache.py",
   "02_Infrastructure/data/cache_registry.json",
+  "02_Infrastructure/data/daily_refresh.sh",
   "02_Infrastructure/data/krx_build_rawdata.R",
   "02_Infrastructure/data/naver_benchmark_update.py",
   "02_Infrastructure/data/naver_data_collector.R",
   "02_Infrastructure/data/rawdata_sanitize.R",
+  "02_Infrastructure/data/rebuild_benchmark_canonical.py",
   "02_Infrastructure/data/repair_benchmark_level_axis.R",
   "02_Infrastructure/data/repair_benchmark_scale_break_20260727.R",
   "02_Infrastructure/data/repair_rawdata_bmret_from_benchmark.R",
-  "02_Infrastructure/data/seam_guard_config.json",
   "02_Infrastructure/docs/rules/data_table_shift_convention.md",
   "02_Infrastructure/ml_pipeline/dpl_regime_export.py",
   "02_Infrastructure/ops/morning_briefing.sh",
@@ -214,12 +248,14 @@ PINNED <- c(
   "02_Infrastructure/regime/regime_hmm.R",
   "02_Infrastructure/regime/regime_jump_model.R",
   "02_Infrastructure/regime/regime_vrp.R",
+  "02_Infrastructure/reinforcement/overlay_arms/pg2_risk_overlay.R",
   "02_Infrastructure/reports/index_factor_beta.R",
   "02_Infrastructure/sanity_checks/bear_date_audit.R",
   "02_Infrastructure/validation/benchmark_source_parity.R",
   "02_Infrastructure/validation/judge_oos_helper.R",
   "02_Infrastructure/validation/pit_enforcement.R",
   "04_Research/strategies/RP_AUTO_2007_08115/engine.R",
+  "04_Research/strategies/RP_AUTO_COMBO_combo_1403_8125_2007_081/engine.R",
   "04_Research/strategies/RP_AUTO_COMBO_combo_1403_8125_2007_081/engine.rejected1.R",
   "04_Research/strategies/RP_AUTO_COMBO_combo_2007_08115_2301_09/engine.R",
   "04_Research/strategies/STR_1697_WT009_MEGA05_FF5v2/run_all.R",
@@ -245,12 +281,16 @@ PINNED <- c(
   "05_Production/4.Statistical-Technical/4-1.Samsara_Protocol/Step_2_Nirvana_Calc.R",
   "05_Production/4.Statistical-Technical/4-1.Samsara_Protocol/Step_4_Placebo_Test.R"
 )
-# 2026-09-07 실측 분류: 계산이 **절대 레벨**에 의존하는 소비자는 아래 9건뿐이고,
-# 나머지는 전부 비율(체인·z·drawdown·rebase-to-1) 또는 표시용이다.
+# 2026-09-18 실측 분류: 계산이 **절대 레벨**에 의존하는 소비자. 나머지는 전부
+# 비율(체인·z·drawdown·rebase-to-1) 또는 표시용이다.
+#   ★z-score·drawdown-from-running-max·MA 교차는 전부 비율이라 축 이전에 불변이다 —
+#     "레벨을 만진다" 와 "레벨에 의존한다" 는 다른 명제다.
 ABS_LEVEL <- c(
+  "02_Infrastructure/data/benchmark_axis.py",                   # 정합/이음매 판정 정본(Python)
+  "02_Infrastructure/data/rebuild_benchmark_canonical.py",      # 정본 재구축기
   "02_Infrastructure/data/build_cache.R",                       # tail 대 tail 등식(writer 자기검사)
-  "02_Infrastructure/data/build_index_cache.py",                # 100 < last200 < 5000 밴드
-  "02_Infrastructure/data/naver_benchmark_update.py",           # canonical scale + anchor_close
+  "02_Infrastructure/data/build_index_cache.py",                # 100 < last200 < 5000 밴드 + writer
+  "02_Infrastructure/data/naver_benchmark_update.py",           # 트립와이어(겹치는 날 레벨 대조)
   "02_Infrastructure/data/krx_build_rawdata.R",                 # 타 소스 레벨과의 비
   "02_Infrastructure/data/naver_data_collector.R",              # 종합지수 레벨을 BM_Close 로 기록
   "02_Infrastructure/regime/ktri_v3_builder.R",                 # 레벨을 IKS200 이름으로 CSV 수출
@@ -294,23 +334,45 @@ if (!file.exists(BM_REAL)) {
   ref <- bench_level_reference(ROOT)
   cfg <- bench_level_config(ROOT)
   lv  <- bench_level_axis_check(bmr, ref, tol = cfg$BENCH_LEVEL_TOL,
+                                seam_tol = cfg$BENCH_LEVEL_SEAM_TOL,
                                 min_sessions = cfg$BENCH_LEVEL_MIN_SESSIONS,
                                 window_sessions = cfg$BENCH_LEVEL_WINDOW_SESSIONS)
   cat(sprintf("  실측: status=%s  detail=%s\n", lv$status, lv$detail))
   if (identical(lv$status, "no_measure")) {
     skip("L1 실데이터 판정 일치", lv$detail)
   } else {
-    expect <- if (abs(lv$scale - 1) <= cfg$BENCH_LEVEL_TOL) "ok" else "violation"
-    chk("L1 게이트 판정이 실측 배수와 일치 (수리해도 안 깨진다)",
-        identical(lv$status, expect), sprintf("(status=%s expect=%s)", lv$status, expect))
-    # 재척도가 실데이터에서도 BM_Ret 을 안 건드린다 (운영 파일에 쓰지 않는다 — 메모리 상 사본)
+    # ★상태-불가지: "지금 어긋나 있다" 가 아니라 **판정이 실측값과 맞물리는가**를 잰다.
+    #   두 축을 모두 통과해야 ok 다 — 정합만 보면 이음매가 있는 파일에서 오판한다.
+    ok_dev  <- isTRUE(lv$max_dev <= cfg$BENCH_LEVEL_TOL)
+    ok_seam <- !is.finite(lv$max_seam) || isTRUE(lv$max_seam <= cfg$BENCH_LEVEL_SEAM_TOL)
+    expect <- if (ok_dev && ok_seam) "ok" else "violation"
+    chk("L1 게이트 판정이 실측값과 일치 (재구축 전후 어느 쪽에서도 성립)",
+        identical(lv$status, expect),
+        sprintf("(status=%s expect=%s dev=%.3e seam=%.3e)",
+                lv$status, expect, lv$max_dev, lv$max_seam))
+    # 재척도(진단 보조)가 실데이터에서도 BM_Ret 을 안 건드린다 — 운영 파일에 쓰지 않는다.
     rs <- bench_level_rescale(copy(bmr), if (is.finite(lv$scale)) lv$scale else 1)
     chk("L2 실데이터 재척도 후 BM_Ret 비트 동일", identical(rs$BM_Ret, bmr$BM_Ret), "")
-    chk("L3 실데이터 재척도 후 축 정합",
-        identical(bench_level_axis_check(rs, ref, tol = cfg$BENCH_LEVEL_TOL,
-                                         min_sessions = cfg$BENCH_LEVEL_MIN_SESSIONS,
-                                         window_sessions = cfg$BENCH_LEVEL_WINDOW_SESSIONS)$status,
-                  "ok"), "")
+    # ★L3: 재척도는 **정합 축만** 고친다(이음매는 상수배로 안 없어진다). 그것을 못박는다.
+    lv3 <- bench_level_axis_check(rs, ref, tol = cfg$BENCH_LEVEL_TOL,
+                                  seam_tol = cfg$BENCH_LEVEL_SEAM_TOL,
+                                  min_sessions = cfg$BENCH_LEVEL_MIN_SESSIONS,
+                                  window_sessions = cfg$BENCH_LEVEL_WINDOW_SESSIONS)
+    chk("L3 상수 재척도로 정합 편차는 줄지만 이음매는 그대로 (재구축이 필요한 이유)",
+        isTRUE(lv3$max_dev <= max(lv$max_dev, cfg$BENCH_LEVEL_TOL)) &&
+          isTRUE(all.equal(lv3$max_seam, lv$max_seam)),
+        sprintf("(dev %.3e→%.3e, seam %.3e→%.3e)",
+                lv$max_dev, lv3$max_dev, lv$max_seam, lv3$max_seam))
+    # ★manifest 가 배율을 선언하지 않는다 — 승계 가능한 배율은 재발의 씨앗이었다.
+    mfp <- file.path(ROOT, ".cache/benchmark_axis.json")
+    if (!file.exists(mfp)) {
+      skip("L4 manifest 규약", "manifest 부재 (재구축 전)")
+    } else {
+      mj <- jsonlite::fromJSON(mfp, simplifyVector = TRUE)
+      chk("L4 manifest: unit=index_points 이고 scale 필드가 없다",
+          identical(as.character(mj$unit), "index_points") && is.null(mj$scale),
+          sprintf("(unit=%s scale=%s)", mj$unit, if (is.null(mj$scale)) "없음" else mj$scale))
+    }
   }
 }
 

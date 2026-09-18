@@ -53,6 +53,9 @@ IDX_DT <- as.data.table(read_parquet(file.path(CACHE_DIR, "indices.parquet")))
 #   가드는 두 달 넘게 한 번도 발화하지 않았다. 잡는 축은 소비면 상시 가드(축 C):
 #     02_Infrastructure/data/benchmark_currency_gate.R  (daily_refresh.sh:211)
 #   그것이 쓰는 판정 정본과 같은 함수를 여기서도 쓴다(구현 하나, 소비 둘).
+# ★2026-09-18 축 정규화 후: 이 등식은 **이제 참이어야 하는 명제**다(구판 체인 축에서는
+#   원리적으로 거짓이었다 — BM_Close 가 지수의 8.83배였다). 다만 여전히 writer 자기검사이고,
+#   방어선은 축 C(benchmark_currency_gate.R)다. 규약 정본 = .cache/benchmark_axis.json.
 if (abs(tail(BM_DT$BM_Close, 1) - tail(IDX_DT$kospi200, 1)) > 1e-6)
   stop("[build_cache] benchmark sanity FAIL: benchmark.parquet != kospi200 (코스피 전체 오선택 의심)")
 local({

@@ -50,6 +50,8 @@ wp1_events <- function(ent, att) {
       pbest       = pbest, base_port_t = P$base_port_t, start_uniform = start_u,
       child_best  = k$best_port_t,
       payoff      = k$best_port_t - bp_rec,
+      margin_cur  = bp_rec - pbest,
+      margin_uni  = bp_rec - start_u,
       subtree_n   = length(desc),
       subtree_cells   = sum(ent$n_cells[di], na.rm = TRUE),
       subtree_minutes = sum(ent$minutes[di], na.rm = TRUE),
@@ -86,13 +88,29 @@ wp1_sweep <- function(ent, att, margins = c(0, 0.10, 0.25, 0.50, 0.75),
     keep   <- att[!(att$base_id %in% rm_ids), , drop = FALSE]
     pb     <- if (any(keep$measured)) max(keep$port_t[keep$measured], na.rm = TRUE) else NA_real_
     ci     <- ent$base_id %in% rm_ids
+    lost   <- att[att$base_id %in% rm_ids, , drop = FALSE]
+    # 계보 손실 — 막힌 가지가 낸 최고와, 그 계보에서 살아남은 최고의 차
+    lin_loss <- 0
+    for (rid in rm_ids) {
+      lr <- ar_lineage_root(ent, rid)
+      fam <- c(lr, ar_descendants(ent, lr))
+      cut_best  <- suppressWarnings(max(att$port_t[att$base_id %in% intersect(fam, rm_ids) & att$measured], na.rm = TRUE))
+      keep_best <- suppressWarnings(max(att$port_t[att$base_id %in% setdiff(fam, rm_ids) & att$measured], na.rm = TRUE))
+      if (is.finite(cut_best) && is.finite(keep_best) && cut_best > keep_best)
+        lin_loss <- max(lin_loss, cut_best - keep_best)
+    }
     out[[length(out) + 1L]] <- data.frame(
       rule = rule, margin = m,
       n_blocked_entries = length(rm_ids),
       cells_saved   = sum(ent$n_cells[ci], na.rm = TRUE),
+      pct_all_cells = 100 * sum(ent$n_cells[ci], na.rm = TRUE) / nrow(att),
+      pct_promo_cells = 100 * sum(ent$n_cells[ci], na.rm = TRUE) /
+                        max(1, sum(ent$n_cells[ent$kind == "promo"], na.rm = TRUE)),
       minutes_saved = sum(ent$minutes[ci], na.rm = TRUE),
       program_best  = pb,
       best_loss     = prog_best_all - pb,
+      lineage_loss  = lin_loss,
+      modules_B_lost = sum(lost$measured & lost$grade %in% "B", na.rm = TRUE),
       stringsAsFactors = FALSE)
   }
   list(events = ev, sweep = do.call(rbind, out), program_best = prog_best_all)

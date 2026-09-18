@@ -176,11 +176,29 @@ fi
 cd "$INFRA"
 
 # ──────────────────────────────────────────────────────────────────────────────
-# [1pre] Benchmark (KOSPI200) chart-API 단일 SOT — v8.0 fix (c) 2026-05-29
-#   naver_kospi200_close() live 현재가+Sys.Date() 경로 폐기 (장중 phantom 방지).
-#   benchmark.parquet은 여기서만 갱신 → 아래 [1] naver merge가 실제 종가로 BM_Ret lookup.
+# [1pre] Benchmark (코스피200) — **정본 xlsx 중심** 체인
+#
+# ★2026-09-18 전면 재배선 (도훈 "공표값 인터넷에서 받지말고 우리 인프라 내에서").
+#   정본 = 03_Universe/Benchmark_price.xlsx (QuantiWise IKS200) → build_index_cache.py.
+#   그 경로는 **생 지수 포인트 그대로** benchmark.parquet / indices.parquet 을 만든다.
+#
+#   구판은 정본이 멈춘 것을 못 본 채 Naver 로 매일 때웠고, 그 때움이 옛 리베이스 체인
+#   (지수 × 8.83) 위에 값을 얹으면서 배수를 매번 **추정**해야 했다. 추정이 미끄러진 날의
+#   하루 수익률이 배수비를 통째로 삼킨다 — 07-27 · 07-29 · 2025-01-02 이 전부 같은 병이다.
+#   indices.parquet 이 2026-06-30 에 멈춘 것도 같은 원인(그 xlsx 가 마지막 입력).
+#
+#   새 순서:
+#     ① quantiwise_fetch.py    — 정본 수급. **이 PC 안의 퀀티 단말 + 엑셀 애드인**으로
+#        Benchmark_price.xlsx 의 Refresh 를 눌러 받아온다(qw_excel_refresh.ps1).
+#        rc=3 = 전제 부재(단말 로그인 창·애드인 미등록) — 사람이 로그인해야 하는 상태
+#     ② 새 xlsx 가 있으면       — build_index_cache.py 로 benchmark+indices 재생성
+#     ③ 없으면                  — **조용히 넘어가지 않는다**: Naver 는 항등 이어붙이기로
+#        캘린더만 잇고(배율 추정 없음·트립와이어 통과 필수), 정본 정체는 경보
+#        (.cache/benchmark_axis_alert.json) + 게이트 축 D 가 "정본 xlsx 미갱신 N일" 로 신고한다.
+#     ※Naver 를 아예 막으려면 QVEST_BENCH_NO_NAVER_FALLBACK=1 (그러면 거래일 캘린더가
+#       멈추고 축 B 가 7일 뒤 잡는다 — 그 교환을 알고 고를 것).
 # ──────────────────────────────────────────────────────────────────────────────
-echo "[1pre/7] Benchmark (KOSPI200 chart-API)..."
+echo "[1pre/7] Benchmark (정본 QuantiWise xlsx → 코스피200 포인트)..."
 # Python 체인 (v8.1.1): venv 우선 → QVEST_PY env → 시스템 Python312 fallback
 QVENV_PY=""
 for _c in "$BASE/.venv_qvest_ml/Scripts/python.exe" "$BASE/.venv_qvest_ml/bin/python" "/home/quant/.venvs/qvest_ml/bin/python" \
@@ -189,19 +207,43 @@ for _c in "$BASE/.venv_qvest_ml/Scripts/python.exe" "$BASE/.venv_qvest_ml/bin/py
 done
 _bm_rc=0
 if [ -n "$QVENV_PY" ]; then
-  ( cd "$INFRA" && "$QVENV_PY" data/naver_benchmark_update.py --start_date "$(date -d '10 days ago' +%Y-%m-%d)" )     || _bm_rc=$?
+  # ① 정본 수급
+  _qw_rc=0
+  ( cd "$INFRA" && "$QVENV_PY" data/quantiwise_fetch.py ) || _qw_rc=$?
+  case "$_qw_rc" in
+    0) echo "  ★정본 xlsx 갱신됨 — benchmark/indices 재생성"
+       ( cd "$INFRA" && "$QVENV_PY" data/build_index_cache.py ) || _bm_rc=$? ;;
+    2) echo "  정본 xlsx 변경 없음 (원격 == 우리 것)" ;;
+    3) echo "  ※정본 수급 전제 부재 — .cache/quantiwise_fetch_status.json 참조"
+       "$QVENV_PY" -c "import json,sys;d=json.load(open(r'$BASE/.cache/quantiwise_fetch_status.json',encoding='utf-8'));print('   사유:', d.get('message','?')[:160])" 2>/dev/null || true
+       echo "   (퀀티 단말에 로그인하면 다음 tick 부터 자동으로 정본이 들어온다. 아래 축 D 가 정체 일수를 신고한다)" ;;
+    *) echo "!! 정본 수급 실패 rc=$_qw_rc — 기존 xlsx 유지"; _bm_rc=$_qw_rc ;;
+  esac
+
+  # ③ 정본이 새로 안 들어왔으면: Naver 는 **검증**이 기본, 이어붙이기는 캘린더 유지용.
+  if [ "$_qw_rc" != "0" ]; then
+    if [ "${QVEST_BENCH_NO_NAVER_FALLBACK:-0}" = "1" ]; then
+      ( cd "$INFRA" && "$QVENV_PY" data/naver_benchmark_update.py ) || _bm_rc=$?
+    else
+      ( cd "$INFRA" && "$QVENV_PY" data/naver_benchmark_update.py --append ) || _bm_rc=$?
+    fi
+  fi
   if [ "$_bm_rc" -ne 0 ]; then
-    echo "  benchmark chart-API update FAILED rc=$_bm_rc (기존 cache 유지)"
+    echo "  benchmark 갱신 FAILED rc=$_bm_rc (기존 cache 유지 — 트립와이어는 캐시를 손대지 않는다)"
   fi
 else
   _bm_rc=127
-  echo "  python 미발견 - benchmark chart-API update skipped (기존 cache 유지)"
+  echo "  python 미발견 - benchmark 갱신 skipped (기존 cache 유지)"
 fi
 
 # --- BMG-01 거래일 지평선 게이트 (2026-08-20 신설) ---------------------------
-#   위 갱신기는 .cache/benchmark.parquet 의 **유일한 writer** 이고(그 스크립트 L64 가
-#   스스로 "저장 단일점"이라 선언), trading_calendar.R 은 RAWDATA 자기참조의 순환오염을
-#   끊으려고 **그 파일만을** 거래일 권위로 삼는다(L45/L137).
+#   trading_calendar.R 은 RAWDATA 자기참조의 순환오염을 끊으려고 .cache/benchmark.parquet
+#   **하나만을** 거래일 권위로 삼는다(L45/L137). ★2026-09-18 정정: 그 파일의 writer 는
+#   하나가 아니라 셋이다 — build_index_cache.py(정본 xlsx 경로) · naver_benchmark_update.py
+#   (항등 이어붙이기) · rebuild_benchmark_canonical.py(축 재구축). 구 주석의 "유일 writer"
+#   서술이 바로 그 착각이었다: 축을 선언하지 않은 채 writer 가 여럿이면 파이프라인이
+#   bistable 해져 마지막에 쓴 쪽의 축이 굳는다. 지금은 **셋 다 같은 축**(지수 포인트)을
+#   쓰고, 그 규약이 .cache/benchmark_axis.json 에 선언돼 있다.
 #   ★그래서 이 스텝의 실패를 삼키면 결손이 **사라진다**: 캘린더가 얼고 -> Naver 는
 #   "already >= target", KRX 는 "gap 0 days" 를 **정직하게** 보고하며 리프레시는
 #   "실패 0" 으로 마감한다. 실측 2026-08-14~20: 거래일 3일(08-18/19/20)이 비었는데
@@ -211,10 +253,18 @@ fi
 #   ★2026-09-07 축 C 추가 — **레벨 축 정합**(BM_Close 대 공표 코스피200 레벨).
 #     실측 사건: BM_Close 가 지수의 8.834448배 위에 있었는데 하루 사이 배수 점프가
 #     0건이라 "연속이면 정상" 으로 보였고 두 달 넘게 안 걸렸다. 같은 불변식을 적어 둔
-#     가드(build_cache.R:47)는 ①이 체인이 부르지 않는 찬 경로에 있고 ②방금 자기가 쓴
+#     가드(build_cache.R)는 ①이 체인이 부르지 않는 찬 경로에 있고 ②방금 자기가 쓴
 #     산출물을 비교하는 동어반복이라 발화할 수 없었다. 축 C 는 그 불변식을 **소비면에서
-#     · 상시 경로에서 · 독립 소스(.cache/krx/kospi_index)로** 잰다.
-#     검사: 08_Tests/data/test_benchmark_level_axis.R (양방향 주입 30/30)
+#     · 상시 경로에서 · 독립 소스로** 잰다.
+#   ★2026-09-18 자기정정 — 그 축 C 는 **한 번도 통과한 적이 없다**(09-07 신설 이후 매일
+#     FAIL). 체인 축 위에서 |배수-1|<=0.01 을 요구했으니 원리적으로 통과 불가였고,
+#     상시 빨강은 상시 침묵이라 진짜 이음매를 가렸다. 파일을 축에 맞춘 뒤
+#     (rebuild_benchmark_canonical.py) 이 검사는 참이 될 수 있는 명제가 됐다.
+#     그리고 **이음매 축**(연속 공통일 사이 비율 변화)을 더했다 — 정합만 재면 통짜 이탈만
+#     잡고 실제로 재발한 하루짜리 계단은 놓친다.
+#   ★2026-09-18 축 D 추가 — **정본 xlsx 신선도**(WARN). 정본이 멈춘 것을 아무도 못 본 것이
+#     모든 재발의 온상이었다. 소비면(.cache/indices.parquet 의 max Date)에서 센다.
+#     검사: 08_Tests/data/test_benchmark_level_axis.R · test_benchmark_axis_rebuild.R
 if ! "$RSCRIPT" --no-save "$INFRA/data/benchmark_currency_gate.R" --updater-rc "$_bm_rc"; then
   DR_FAILED+=("benchmark_currency(rc=$_bm_rc)")
   echo "!! [1pre] ★거래일 지평선 이상 - 하류 gap 판정이 무의미해진다 (위 [bm-gate] 사유 참조)"

@@ -119,7 +119,10 @@ for _c in "$BASE/.venv_qvest_ml/Scripts/python.exe" "$BASE/.venv_qvest_ml/bin/py
   [ -x "$_c" ] && P2_PY="$_c" && break
 done
 if [[ -x "$P2_PY" && -d "$P2_BF_DIR" ]]; then
-  # 6_pre. Naver benchmark patch (KOSPI200 종가 자동 최신화, 도훈 mandate 2026-05-28)
+  # 6_pre. 벤치 **교차검증**(KOSPI200) — 도훈 mandate 2026-05-28, 2026-09-18 역할 변경.
+  #   ★구판은 여기서도 benchmark.parquet 을 썼다(두 번째 writer). 축 정규화 후 갱신기의
+  #     기본 모드는 **검증만**이고, 쓰기는 daily_refresh 의 [1pre] 한 곳으로 모았다 —
+  #     브리핑이 데이터를 바꾸면 "브리핑을 봤더니 값이 달라져 있다" 가 된다.
   cd "$BASE"
   "$P2_PY" 02_Infrastructure/data/naver_benchmark_update.py --start_date $(date -d "7 days ago" +%Y-%m-%d) 2>&1 | tail -5 || true
   cd "$P2_BF_DIR"

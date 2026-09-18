@@ -92,35 +92,46 @@ if (!file.exists(BM_PATH)) {
   }
 }
 
-# ── 축 C: 레벨 축 정합 (하드) ─────────────────────────────────────────────────
+# ── 축 C: 레벨 축 정합 + 이음매 (하드) ────────────────────────────────────────
 #
-# 왜 여기인가 (실측 2026-09-07):
-#   `.cache/benchmark.parquet::BM_Close` 가 공표 코스피200 레벨의 **8.834448배** 위에
-#   있었다(BM_Ret 은 결백 — 코스피200과 일치). 두 달 넘게 아무 검사에도 안 걸렸다.
-#   이 불변식을 적어 둔 가드는 **이미 있었다**: build_cache.R:47
-#     `abs(tail(BM_DT$BM_Close,1) - tail(IDX_DT$kospi200,1)) > 1e-6 → stop`
-#   그 가드가 안 발화한 이유는 두 겹이다.
-#     ① **찬 경로다.** build_cache.R 은 OHLCVS.xlsx(890MB) 전체 재빌드 스크립트이고
-#        daily_refresh.sh 는 그것을 부르지 않는다([0a] incremental_cache_update.R /
-#        [1pre] naver_benchmark_update.py / [2] krx_build_rawdata.R 뿐).
-#     ② **동어반복이다.** 그 줄은 바로 앞에서 build_index_cache.py 가 **같은 프로세스에서
-#        같은 xlsx 컬럼으로** 방금 쓴 두 파일을 비교한다(`bm["BM_Close"] = df["kospi200"]`).
-#        구조적으로 거의 언제나 통과한다 — 쓴 직후의 자기 산출물을 검사하지, 그 뒤
-#        다른 writer 가 파일을 어떻게 바꿔 놓았는지는 **볼 수 없는 자리**에 있다.
+# 규약(2026-09-18 정규화): `BM_Close` = **공표 코스피200 지수 종가(포인트) 그대로**.
+#   배율 개념 없음. 잴 것은 둘이다 — ①값이 같은가 ②그 같음이 하루 사이 계단을 안 타는가.
+#
+# 왜 여기인가 (실측 2026-09-07 · 수리 2026-09-18):
+#   `BM_Close` 가 지수의 **8.834448배** 위에 있었다(BM_Ret 은 결백). 두 달 넘게 안 걸렸다.
+#   같은 불변식을 적어 둔 가드는 이미 있었다(build_cache.R) — 안 발화한 이유는 두 겹:
+#     ① **찬 경로다.** build_cache.R 은 전체 재빌드 스크립트이고 daily_refresh 가 안 부른다.
+#     ② **동어반복이다.** 바로 앞 build_index_cache.py 가 같은 프로세스에서 방금 쓴
+#        자기 산출물을 비교한다 — 그 뒤 다른 writer 가 파일을 어떻게 바꾸는지는 못 본다.
 #   ⇒ 축 C 는 같은 불변식을 **소비면에서 · 상시 경로에서 · 독립 소스로** 잰다.
-#      판정 정본은 benchmark_level_axis.R 하나(build_cache.R 도 같은 함수를 쓴다).
 #
-# ★부재는 '정상' 이 아니다: 참조 지수를 못 구하거나 공통 세션이 부족하면 no_measure 로
-#   남기고 fails 에 올리지 않는다. 조용히 초록을 내는 것과 다르다(로그에 명시된다).
+# ★2026-09-18 자기정정 — 구 축 C 는 **원리적으로 통과할 수 없었다**. 체인 축(8.83배) 위에서
+#   |배수-1|<=0.01 을 요구했으므로 신설(09-07) 이후 매일 FAIL 이었다. 상시 오탐 = 상시 침묵
+#   이라 진짜 이음매를 가린다. 파일을 축에 맞춘 뒤(rebuild_benchmark_canonical.py) 이 검사는
+#   참이 될 수 있는 명제가 됐다. 그리고 **이음매 축을 더했다** — 정합만 재면 "전 구간이
+#   똑같이 어긋난" 경우만 잡고 정확히 재발했던 하루짜리 계단은 놓친다.
+#
+# ★부재는 '정상' 이 아니다: 참조를 못 구하거나 공통 세션이 부족하면 no_measure 로 남기고
+#   fails 에 올리지 않는다. 조용히 초록을 내는 것과 다르다(로그에 명시된다).
+# ★축 정본(benchmark_level_axis.R)은 축 C·D 가 함께 쓰므로 블록 **밖**에서 한 번만 싣는다.
+#   (구판은 C 블록 안에서 source 했는데, D 를 더하면서 C 를 건너뛴 경로에서 lcfg 가
+#    없어 죽는다 — 앞 절의 잔재를 전제로 삼은 절은 앞 절을 끄면 죽는다.)
+LVL_SRC <- file.path(ROOT, "02_Infrastructure/data/benchmark_level_axis.R")
+LVL_OK  <- file.exists(LVL_SRC)
+if (LVL_OK) source(LVL_SRC)
+lcfg <- if (LVL_OK) bench_level_config(ROOT) else
+  list(BENCH_LEVEL_AXIS = "index_points", BENCH_LEVEL_TOL = 1e-4,
+       BENCH_LEVEL_SEAM_TOL = 1e-4, BENCH_LEVEL_MIN_SESSIONS = 5L,
+       BENCH_LEVEL_WINDOW_SESSIONS = 0L, BENCH_CANONICAL_MAX_LAG_DAYS = 10L)
+
 if (!"--no-level" %in% args && file.exists(BM_PATH)) {
-  LVL_SRC <- file.path(ROOT, "02_Infrastructure/data/benchmark_level_axis.R")
-  if (!file.exists(LVL_SRC)) {
+  if (!LVL_OK) {
     say("   [bm-gate][C] 레벨 축 정본 부재 — 미측정 (%s)\n", LVL_SRC)
   } else {
-    source(LVL_SRC)
-    lcfg <- bench_level_config(ROOT)
     ltol <- suppressWarnings(as.numeric(getarg("--level-tol", as.character(lcfg$BENCH_LEVEL_TOL))))
     if (!is.finite(ltol) || ltol <= 0) ltol <- as.numeric(lcfg$BENCH_LEVEL_TOL)
+    lseam <- suppressWarnings(as.numeric(getarg("--seam-tol", as.character(lcfg$BENCH_LEVEL_SEAM_TOL))))
+    if (!is.finite(lseam) || lseam <= 0) lseam <- as.numeric(lcfg$BENCH_LEVEL_SEAM_TOL)
 
     bm_lvl <- tryCatch(as.data.table(read_parquet(BM_PATH)), error = function(e) NULL)
     ref_path <- getarg("--ref-path", NULL)          # 테스트용 주입 경로 (Date + ref_close)
@@ -135,20 +146,48 @@ if (!"--no-level" %in% args && file.exists(BM_PATH)) {
       }
     } else bench_level_reference(ROOT)
 
-    lv <- bench_level_axis_check(bm_lvl, ref, tol = ltol,
+    lv <- bench_level_axis_check(bm_lvl, ref, tol = ltol, seam_tol = lseam,
                                  min_sessions = lcfg$BENCH_LEVEL_MIN_SESSIONS,
                                  window_sessions = lcfg$BENCH_LEVEL_WINDOW_SESSIONS)
     if (identical(lv$status, "violation")) {
-      fails <- c(fails, sprintf("C:레벨 축 이탈(배수=%.6f)", lv$scale))
+      # ★어느 축이 얼마나 어긋났는지를 사유에 적는다 — "C 실패" 만으로는 수리가 안 된다.
+      fails <- c(fails, sprintf("C:%s(편차=%.3e 이음매=%.3e)",
+                                lv$failed_axis, lv$max_dev,
+                                if (is.finite(lv$max_seam)) lv$max_seam else 0))
       say("!! [bm-gate][C] ★%s\n", lv$detail)
-      say("   축 정본 = seam_guard_config.json::BENCH_LEVEL_AXIS ('%s'). 수리 = repair_benchmark_level_axis.R\n",
+      say("   축 정본 = .cache/benchmark_axis.json::unit ('%s'). 수리 = rebuild_benchmark_canonical.py --write\n",
           lcfg$BENCH_LEVEL_AXIS)
-      say("   ※BM_Ret 은 스케일 불변이라 재척도로 한 값도 바뀌지 않는다 — 어긋난 것은 레벨뿐이다.\n")
+      say("   ※BM_Ret 은 스케일 불변이다 — 레벨만 어긋났다면 재구축이 수익률을 바꾸지 않는다(이음매 날짜 제외).\n")
     } else if (identical(lv$status, "no_measure")) {
       say("   [bm-gate][C] 미측정 — %s\n", lv$detail)
     } else {
       say("   [bm-gate][C] 레벨 축 정합 — %s\n", lv$detail)
     }
+  }
+}
+
+# ── 축 D: 정본(QuantiWise xlsx) 신선도 (WARN 축) ──────────────────────────────
+#
+# ★왜 (도훈 2026-09-18): 모든 재발의 온상은 **정본이 멈춘 것을 아무도 못 본 것**이었다.
+#   `03_Universe/Benchmark_price.xlsx` 가 07-01 이후 안 들어오는 사이, 일일 배관은
+#   조용히 Naver 로 때우며 옛 체인 위에 값을 얹었다. 그래서 indices.parquet 은 06-30 에
+#   멈췄는데 benchmark.parquet 은 매일 '최신' 이었다 — B축(정체)은 초록, 결함은 진행.
+#   축 D 는 그 침묵을 깬다: 정본이 며칠째 안 들어왔는지를 **소비면에서** 센다.
+# ★WARN 축인 이유: 정본 미갱신은 그 자체로 데이터 오류가 아니다(축 C 가 값을 지킨다).
+#   하드로 걸면 xlsx 수급이 끊긴 기간 내내 리프레시가 통째로 빨개진다. 다만 **보이게** 한다.
+if (!"--no-canonical" %in% args && LVL_OK && exists("bench_canonical_freshness")) {
+  CMAX <- suppressWarnings(as.integer(getarg("--canonical-max-lag-days", NA_character_)))
+  if (is.na(CMAX)) CMAX <- as.integer(lcfg$BENCH_CANONICAL_MAX_LAG_DAYS)
+  cf <- tryCatch(bench_canonical_freshness(ROOT, TODAY), error = function(e) NULL)
+  if (is.null(cf) || identical(cf$status, "no_measure")) {
+    say("   [bm-gate][D] 정본 신선도 미측정 — %s\n", if (is.null(cf)) "판독 실패" else cf$detail)
+  } else if (is.finite(cf$lag_days) && cf$lag_days > CMAX) {
+    say("!! [bm-gate][D] ★정본 xlsx 미갱신 %d일 (문턱 %d) — %s\n", cf$lag_days, CMAX, cf$detail)
+    say("   정본 = 03_Universe/Benchmark_price.xlsx → build_index_cache.py. 수급 경로 = quantiwise_fetch.py\n")
+    say("   ※Naver 로 때우면 축은 유지되지만 정본은 계속 멈춰 있다 — 때움은 경보를 남긴다(.cache/benchmark_axis_alert.json).\n")
+    say("   ※이 축은 WARN 이다(리프레시를 실패시키지 않는다). 그러나 **보이지 않게 두지 않는다**.\n")
+  } else {
+    say("   [bm-gate][D] 정본 신선도 — %s\n", cf$detail)
   }
 }
 

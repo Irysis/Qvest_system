@@ -1,4 +1,31 @@
 #!/usr/bin/env Rscript
+#==============================================================================
+# ★RETIRED 2026-09-18 — 구 리베이스 체인 전용 이음매 수리기 (07-27 국소 수리)
+#
+# 이 스크립트는 `.cache/benchmark.parquet` 이 **리베이스 체인**(공표 코스피200 × 8.83)이던
+# 시절의 일회성 수리기다. 2026-09-18 축 정규화로 그 전제가 사라졌다:
+#   BM_Close = 공표 코스피200 지수 종가(포인트) 그대로. 배율 개념 없음.
+# ★이 스크립트는 마지막 정상 종가(구 8.834배 앵커) 위에 BM_Ret 을 재체인한다 —
+#   새 축에서 실행하면 벤치를 다시 8.83배로 밀어올려 정본을 조용히 파괴한다.
+#
+# 대체 경로(정본): `python 02_Infrastructure/data/rebuild_benchmark_canonical.py --write`
+#   (원천 우선순위 03_Universe/Benchmark_price.xlsx > .cache/krx/kospi_index > 구 체인 환산,
+#    manifest = .cache/benchmark_axis.json, 백업 = *.bak_axis_migration_<ts>)
+#
+# ★파일은 남긴다(사료). 실행만 막는다 — 호출부는 2026-09-18 기준 0곳이다.
+#   되살리려면 이 블록을 지우는 것이 아니라, 왜 새 축에서 필요한지를 먼저 적을 것.
+#==============================================================================
+if (!("--i-know-this-is-retired" %in% commandArgs(trailingOnly = TRUE))) {
+  cat("[RETIRED] 이 수리기는 2026-09-18 축 정규화로 퇴역했습니다.
+")
+  cat("  대체: python 02_Infrastructure/data/rebuild_benchmark_canonical.py --write
+")
+  cat("  (구 축(8.83배 체인)으로 되돌리는 동작이라 새 축에서 실행하면 정본을 파괴합니다.)
+")
+  quit(status = 2L)
+}
+
+
 # repair_benchmark_scale_break_20260727.R — benchmark.parquet 2026-07-27 스케일 단절 국소 수리
 #
 # ██ SUPERSEDED 2026-08-09 — 실행하지 말 것 (도훈 적발 "어제 고쳤는데 왜이러냐 또?") ██

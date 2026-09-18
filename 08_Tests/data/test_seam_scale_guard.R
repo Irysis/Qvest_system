@@ -253,44 +253,85 @@ if (grepl("설정 부재", miss, fixed = TRUE)) {
 bad("missing_config_stops", sprintf("결과: %s", substr(miss, 1, 60)))
 }
 
-# ── ⑥ 벤치 경로와 어휘 일치 (재도출) ─────────────────────────────────────────
+# ── ⑥ 축 분리 — 벤치 배관은 이 설정을 더 이상 쓰지 않는다 (2026-09-18 개정) ──
+#
+# ★왜 뒤집혔나: 2026-09-07 에는 두 배관(벤치·종목)이 같은 상수를 공유하는 것이 옳았다 —
+#   둘 다 "배율을 추정해 이음매를 판정" 하는 같은 일을 했기 때문이다. 2026-09-18 축
+#   정규화로 벤치는 **배율 개념 자체를 버렸다**(BM_Close = 공표 지수 포인트 그대로).
+#   더는 같은 일이 아니므로 같은 상수를 공유하면 오히려 오독을 만든다("벤치에도 배율이
+#   있구나"). 그래서 이 절은 '공유' 가 아니라 **'분리됐는가'** 를 잰다.
+#   ★문자열 존재가 아니라 **모듈 표면**에서 재도출한다(이름이 살아 있으면 경로도 산다).
+#   ★2026-09-18 2차 정정 — 판정을 **텍스트 스캔에서 AST 로** 옮겼다.
+#     초판은 주석이 아닌 줄에서 이름을 찾았는데, 파이썬 **독스트링은 주석이 아니라 문자열**이다.
+#     그래서 "이 설정 의존을 끊었다" 고 적어 둔 이력 한 줄이 '의존 있음' 으로 읽혔다
+#     (실측 09-18: 분리는 끝났는데 검사만 빨강). 서술을 의존으로 세면 기록이 벌점이 된다 —
+#     그러면 아무도 왜 끊었는지 안 적는다. 이제 **쓰이는 자리**만 센다: 독스트링이 아닌
+#     문자열 상수 + 그 이름의 식별자/속성 참조.
 bench <- readLines(BENCH, warn = FALSE)
-py_reads_cfg <- any(grepl("seam_guard_config.json", bench, fixed = TRUE))
-# 벤치가 실제로 **같은 값**을 얻는가 — 문자열이 아니라 실행으로 재도출
 py <- Sys.getenv("QVEST_PY", unset = "")
 pyx <- file.path(PROJ, ".venv_qvest_ml/Scripts/python.exe")
 py <- if (file.exists(pyx)) pyx else py
-py_vals <- NULL
+# AST 기준 '이 설정을 쓰는 자리' 세기 — 파일 하나를 받아 개수만 돌려준다(돌연변이에도 쓴다).
+py_cfg_uses <- function(path) {
+  if (!nzchar(py) || !file.exists(py)) return(NA_integer_)
+  code <- paste0(
+    "import sys,ast;p=sys.argv[1];t=ast.parse(open(p,encoding='utf-8').read());",
+    "docs={ast.get_docstring(n,clean=False) for n in ast.walk(t) ",
+    "if isinstance(n,(ast.Module,ast.FunctionDef,ast.AsyncFunctionDef,ast.ClassDef))};",
+    "u=[c for c in ast.walk(t) if isinstance(c,ast.Constant) and isinstance(c.value,str) ",
+    "and 'seam_guard_config' in c.value and c.value not in docs];",
+    "n=[c for c in ast.walk(t) if isinstance(c,(ast.Name,ast.Attribute)) ",
+    "and 'seam_guard_config' in ast.dump(c)];print(len(u)+len(n))")
+  o <- suppressWarnings(system2(py, c("-c", shQuote(code), shQuote(path)),
+                                stdout = TRUE, stderr = TRUE))
+  st <- attr(o, "status"); if (is.null(st)) st <- 0L
+  if (st != 0L) return(NA_integer_)
+  suppressWarnings(as.integer(trimws(tail(o, 1))))
+}
+cfg_uses <- py_cfg_uses(BENCH)
+py_reads_cfg <- is.na(cfg_uses) || cfg_uses > 0L
+
+# 양성 대조 — 진짜 의존을 주입한 사본은 반드시 잡혀야 한다(안 잡히면 이 절은 상시 초록이다).
+mutp <- file.path(TMPD, "naver_benchmark_update_mut.py")
+writeLines(c(bench, "", "_CFG_PATH = 'seam_guard_config.json'", "_CFG = open(_CFG_PATH)"), mutp)
+mut_uses <- py_cfg_uses(mutp)
+if (!is.na(mut_uses) && mut_uses >= 1L) {
+  ok("bench_axis_separated_probe_live", sprintf("의존 주입 사본에서 %d자리 검출", mut_uses))
+} else {
+  bad("bench_axis_separated_probe_live",
+      sprintf("주입해도 0 — 이 절의 판정기가 죽어 있다 (mut=%s)", mut_uses))
+}
+
+py_surface <- NULL
 if (nzchar(py) && file.exists(py)) {
   code <- paste0("import sys;sys.path.insert(0,'02_Infrastructure/data');",
-                 "import naver_benchmark_update as m;",
-                 "print(m.SEAM_MAX_RET, m.SCALE_TOL, m.SCALE_LOOKBACK_DAYS)")
+                 "import naver_benchmark_update as m, benchmark_axis as b;",
+                 "dead=[n for n in ('SEAM_MAX_RET','SCALE_TOL','SCALE_LOOKBACK_DAYS',",
+                 "'patch_benchmark_parquet') if hasattr(m,n)];",
+                 "print(len(dead), int(hasattr(m,'tripwire')), b.AXIS_UNIT)")
   o <- suppressWarnings(system2(py, c("-c", shQuote(code)), stdout = TRUE, stderr = TRUE))
   st <- attr(o, "status"); if (is.null(st)) st <- 0L
-  if (st == 0L) py_vals <- as.numeric(strsplit(trimws(tail(o, 1)), " +")[[1]])
+  if (st == 0L) py_surface <- strsplit(trimws(tail(o, 1)), " +")[[1]]
 }
-if (py_reads_cfg && !is.null(py_vals) && length(py_vals) == 3 &&
-    isTRUE(all.equal(py_vals[1], as.numeric(cfg$SEAM_MAX_RET))) &&
-    isTRUE(all.equal(py_vals[2], as.numeric(cfg$SCALE_TOL))) &&
-    isTRUE(all.equal(py_vals[3], as.numeric(cfg$SCALE_LOOKBACK_DAYS)))) {
-  ok("bench_shares_constants", sprintf("py SEAM_MAX_RET=%.4g == R %.4g (같은 정본 파일)",
-                                       py_vals[1], as.numeric(cfg$SEAM_MAX_RET)))
+if (!is.null(py_surface) && length(py_surface) == 3 &&
+    py_surface[1] == "0" && py_surface[2] == "1" &&
+    py_surface[3] == "index_points" && !py_reads_cfg) {
+  ok("bench_axis_separated",
+     sprintf("벤치에 구 배율 상수 0개 · tripwire 배선 · 축=%s · 이 설정 사용처 %s (AST)", py_surface[3], cfg_uses))
 } else {
-  bad("bench_shares_constants",
-      sprintf("벤치가 정본을 안 읽거나 값이 갈림 (reads_cfg=%s py=%s) — 한쪽만 고쳐지는 자리",
-              py_reads_cfg, paste(py_vals, collapse = "/")))
+  bad("bench_axis_separated",
+      sprintf("분리 미완 (AST 사용처=%s surface=%s) — 벤치에 배율 개념이 되살아났는지 확인",
+              cfg_uses, paste(py_surface, collapse = "/")))
 }
-# 판정 어휘: 벤치의 이름이 R 쪽에도 살아 있는가
+# 종목 배관은 **여전히** 이 설정을 정본으로 쓴다 — 분리가 한쪽을 깨지 않았는지 확인.
 gsrc <- paste(readLines(GUARD, warn = FALSE), collapse = "\n")
-vocab <- c("canonical_scale", "anchor_date", "anchor_close", "SEAM_MAX_RET",
-           "SCALE_TOL", "SCALE_LOOKBACK_DAYS")
-missing_vocab <- vocab[!vapply(vocab, function(v)
-  grepl(v, gsrc, fixed = TRUE) && any(grepl(v, bench, fixed = TRUE)), logical(1))]
-if (!length(missing_vocab)) {
-  ok("shared_vocabulary", paste(vocab, collapse = " "))
+vocab <- c("canonical_scale", "anchor_date", "SEAM_MAX_RET", "SCALE_TOL")
+missing_vocab <- vocab[!vapply(vocab, function(v) grepl(v, gsrc, fixed = TRUE), logical(1))]
+if (!length(missing_vocab) && grepl("seam_guard_config", gsrc, fixed = TRUE)) {
+  ok("stock_pipeline_intact", paste(vocab, collapse = " "))
 } else {
-bad("shared_vocabulary", sprintf("두 배관에 공통으로 없는 이름: %s",
-                                      paste(missing_vocab, collapse = ", ")))
+  bad("stock_pipeline_intact",
+      sprintf("종목 배관이 정본을 잃었다 (없는 이름: %s)", paste(missing_vocab, collapse = ", ")))
 }
 
 # ── ⑦ 배관 도달 — **부르는가** (AST 재도출, 소스 좌표·grep 아님) ─────────────

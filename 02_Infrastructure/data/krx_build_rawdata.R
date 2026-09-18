@@ -243,6 +243,11 @@ krx_merge_rawdata <- function() {
     #   RAWDATA + benchmark.parquet(line 234 rbind) 양쪽 오염. NA 처리로 전파 차단
     #   (→ 하단 sentinel 0 폴백 + canonical benchmark 재동기화가 정정).
     #   근원 사고: 2026-07-01 BM_Ret 5.39 (last_bm_close가 구 IKS001 스케일).
+    # ★2026-09-18 축 정규화 후: 이 가드가 **상시 발화하던 원인이 사라졌다**. 여기서 쓰는
+    #   BM_Close 는 KRX CLSPRC_IDX(생 포인트)인데 저장된 last_bm_close 가 8.83배 체인이라
+    #   첫날 BM_Ret 이 항상 ~-88.7% 로 나왔고 → NA → 하단 sentinel 0 으로 굳었다
+    #   (= KRX 로 메운 날의 벤치 수익률이 조용히 0 이 됐다). 두 쪽이 같은 축이 된 지금은
+    #   그 비율이 진짜 수익률이므로 가드는 본래 표적(오심볼·기준단절)만 잡는다.
     n_insane <- sum(abs(bm_new$BM_Ret) > 0.30, na.rm = TRUE)
     if (n_insane > 0) {
       cat(sprintf("[krx_merge][GUARD] |BM_Ret|>0.30 이상치 %d건 (스케일 불일치 의심, 값: %s) → NA 처리, benchmark 전파 차단\n",
@@ -256,6 +261,9 @@ krx_merge_rawdata <- function() {
     if ("BM_Ret.old" %in% names(new_rows)) new_rows[, BM_Ret.old := NULL]
 
     # Update benchmark cache
+    # ★2026-09-18: provenance 열을 채운다 — 안 채우면 fill=TRUE 가 조용히 NA 를 넣는다.
+    #   (KRX CLSPRC_IDX = 공표 코스피200 포인트. 축은 정본 xlsx 와 같다.)
+    if ("BM_Src" %in% names(old_bm)) bm_new[, BM_Src := "krx_kospi200"]
     old_bm_ext <- rbind(old_bm, bm_new[!is.na(BM_Ret)], fill = TRUE)
     old_bm_ext <- unique(old_bm_ext, by = "Date")
     setorder(old_bm_ext, Date)

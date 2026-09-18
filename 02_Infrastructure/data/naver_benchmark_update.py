@@ -1,347 +1,268 @@
-"""
-naver_benchmark_update.py — benchmark.parquet 정확한 Naver chart API 기반 갱신
+# -*- coding: utf-8 -*-
+"""naver_benchmark_update.py — 벤치마크 **교차검증기**(기본) + 항등 이어붙이기(옵션)
 
-도훈 mandate 2026-05-27:
-- benchmark.parquet의 Date label mislabel bug 발견 (5/27 row가 사실 5/26 데이터)
-- xlsx (QuantiWise) 5/15까지만 가용, 그 이후는 mislabel
-- Solution: Naver chart API (https://api.finance.naver.com/siseJson.naver) 직접 사용
+★2026-09-18 축 정규화 — 배율 추정·리베이스 경로 폐기(도훈 "데이터 정확하게 쌓는데 배율이 뭔 상관?").
+★2026-09-18 역할 변경 — Naver 는 **정본이 아니다**. 정본은 `03_Universe/Benchmark_price.xlsx`
+  (QuantiWise IKS200 → build_index_cache.py). 이 스크립트의 기본 모드는 **검증만**이고
+  파일을 쓰지 않는다. 쓰는 것은 `--append` 를 명시했을 때뿐이며, 그때도 정본이 멈춰
+  있다는 사실을 **경보로 남긴다** — 조용히 때우는 것이 모든 재발의 온상이었다.
 
-Cron 통합:
-- daily_refresh.sh에 추가 step (build_cache.R 후 또는 별도)
-- 매일 0:03 KST 실행, latest KOSPI 종합 종가 patch
+─── 폐기된 것과 그 이유 ──────────────────────────────────────────────────────
+  구 구현은 benchmark.parquet 이 **리베이스 체인**(지수 × 8.83)이라서, 생 KPI200 을 붙이기
+  전에 "이 파일이 쓰던 배수" 를 median 으로 추정해 되돌려야 했다(SCALE_LOOKBACK_DAYS ·
+  SCALE_TOL · 앵커 후퇴 · 재체인). 추정이 한 번 미끄러지면 그날 하루 수익률이 배수비를
+  통째로 삼킨다 — 07-27 · 07-29 · 2025-01-02 이 전부 같은 병이다. 축을 지수 포인트로
+  정규화하면서 **추정할 것이 사라졌다**: 붙이기는 순수 이어붙이기다.
+  seam_guard_config.json 의존도 끊었다(벤치 몫은 benchmark_axis.py 로 이관).
 
-Source 우선순위 (도훈 mandate 2026-05-27):
-1. Naver chart API (한국 데이터)
-2. yfinance (차선)
-3. QuantiWise xlsx (영업일 판단만)
+사용:
+  python naver_benchmark_update.py                         # 교차검증만 (기본 · 쓰기 없음)
+  python naver_benchmark_update.py --append                # 항등 이어붙이기 (정본 정체 시 임시)
+  [--start_date YYYY-MM-DD] [--end_date YYYY-MM-DD] [--no-backup] [--quiet]
+종료코드: 0=정상 / 1=트립와이어 차단(캐시 미변경) / 2=판정 불가(원천 부재 등)
 """
 from __future__ import annotations
+
 import argparse
 import ast
-import gc
 import shutil
-import time
-from pathlib import Path
+import sys
 from datetime import datetime
+from pathlib import Path
 
 import pandas as pd
-import pyarrow as pa
-import pyarrow.parquet as pq
 import requests
 
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+import benchmark_axis as BA          # noqa: E402  (축 규약 단일 정본)
 
-import os
-PROJECT_ROOT = Path(os.environ.get('CLAUDE_PROJECT_DIR') or os.environ.get('QM_ROOT') or Path(__file__).resolve().parents[2])
-BM_PATH = PROJECT_ROOT / '.cache' / 'benchmark.parquet'
+BM_PATH = BA.BM_PATH
 NAVER_API = "https://api.finance.naver.com/siseJson.naver"
 
 
-def fetch_naver_kospi(start_yyyymmdd: str, end_yyyymmdd: str, symbol: str = 'KOSPI') -> pd.DataFrame:
-    """Fetch KOSPI 종합 (or KPI200) daily Close from Naver chart API.
-
-    Args:
-        start_yyyymmdd: 'YYYYMMDD' format
-        end_yyyymmdd: 'YYYYMMDD' format
-        symbol: 'KOSPI' (코스피 종합) | 'KPI200' (코스피 200) | 'KOSDAQ'
-
-    Returns:
-        DataFrame with Date, Close (BM_Close), BM_Ret columns
-    """
-    url = f"{NAVER_API}?symbol={symbol}&requestType=1&startTime={start_yyyymmdd}&endTime={end_yyyymmdd}&timeframe=day"
+def fetch_naver_kospi(start_yyyymmdd: str, end_yyyymmdd: str, symbol: str = 'KPI200') -> pd.DataFrame:
+    """Naver chart API 에서 일별 종가를 받는다. 반환 DataFrame(Date, Close)."""
+    url = (f"{NAVER_API}?symbol={symbol}&requestType=1&startTime={start_yyyymmdd}"
+           f"&endTime={end_yyyymmdd}&timeframe=day")
     headers = {'User-Agent': 'Mozilla/5.0 (Linux; rv:109.0) Gecko/20100101'}
     resp = requests.get(url, headers=headers, timeout=15)
     resp.raise_for_status()
-    raw = resp.text.strip()
-    arr = ast.literal_eval(raw)
+    arr = ast.literal_eval(resp.text.strip())
     df = pd.DataFrame(arr[1:], columns=arr[0])
-    df = df.rename(columns={'날짜': 'Date', '시가': 'Open', '고가': 'High',
-                            '저가': 'Low', '종가': 'Close', '거래량': 'Volume'})
+    df = df.rename(columns={'날짜': 'Date', '종가': 'Close'})
     df['Date'] = pd.to_datetime(df['Date'].astype(str), format='%Y%m%d')
     df = df[['Date', 'Close']].sort_values('Date').reset_index(drop=True)
     df['Close'] = df['Close'].astype(float)
     return df
 
 
-def _write_bm_parquet(df: pd.DataFrame, path) -> None:
-    """benchmark.parquet 저장 단일점 — Date를 date32(day)로 정규화해 기록.
+# ── 트립와이어 ────────────────────────────────────────────────────────────────
+def tripwire(existing: pd.DataFrame, incoming: pd.DataFrame, mf: dict) -> list:
+    """붙이기 **전에** 건다. 하나라도 걸리면 쓰지 않는다 — 캐시는 손대지 않는다.
 
-    ★2026-07-18 도훈 mandate (writer 단일점 수리):
-      기존 df.to_parquet(...)은 Date를 datetime64(=timestamp[ns], R에서 POSIXct
-      09:00:00)로 저장했는데, build_index_cache.py는 date32(R에서 Date class)로 저장한다.
-      두 writer가 번갈아 쓰면서 벤치 Date 타입이 실행 순서에 따라 바뀌었고,
-      Date-class를 기대하는 소비자가 벤치를 Date로 재조인하면 "Ops.POSIXt vs Ops.Date"
-      불일치로 조인이 조용히 all-NA가 됐다(fdb_daily phase7 베타 파생 팩터 ~54개 전멸 사건).
-      → build_index_cache.py `_write_parquet`와 동일하게 date32로 통일한다.
-      combined 컬럼은 [Date, BM_Close, BM_Ret]로 고정(patch_benchmark_parquet 참조).
+    ★배율을 추정하지 않으므로 검사는 "같은 축인가" 하나로 단순해진다:
+      T1 겹치는 날의 레벨이 일치하는가            (|new/old - 1| <= tol)
+      T2 그 일치가 하루 사이 계단을 타지 않는가    (이음매 = 축이 갈린 자리의 지문)
+      T3 이어붙인 경계의 하루 수익률이 상한 안인가 (레벨 단절은 큰 수익률로 드러난다)
+      T4 받아온 시리즈가 정말 그 지수인가          (일간 수익률 정체 대조)
     """
-    d = pd.to_datetime(df['Date']).dt.date  # datetime64/Timestamp → python date → date32
-    table = pa.table({
-        'Date': pa.array(d, type=pa.date32()),
-        'BM_Close': pa.array(df['BM_Close'].astype('float64')),
-        'BM_Ret': pa.array(df['BM_Ret'].astype('float64')),
-    })
-    _atomic_write_table(table, str(path))
+    fails = []
+    tol = mf['tolerance']
+    seam_tol = mf['seam_tolerance']
+    mx = mf['max_abs_daily_return']
 
+    ov = existing.merge(incoming.rename(columns={'Close': 'nv'})[['Date', 'nv']],
+                        on='Date', how='inner')
+    ov = ov[(ov['nv'] > 0) & ov['BM_Close'].notna()].sort_values('Date').reset_index(drop=True)
+    if len(ov) < 5:
+        fails.append(f"T0 겹치는 날짜 {len(ov)}개 (<5) — "
+                     f"검증 불가하므로 붙이지 않는다")
+        return fails
 
-# ── 원자적 교체 (2026-08-30 신설) ──────────────────────────────────────────────
-REPLACE_RETRIES = 8          # atomic_json.R / atomic_parquet.R 과 동일 규약
-REPLACE_SLEEP_INIT = 0.02
-REPLACE_SLEEP_CAP = 0.25
+    ratio = ov['BM_Close'] / ov['nv']
+    dev = float((ratio - 1.0).abs().max())
+    if dev > tol:
+        i = (ratio - 1.0).abs().idxmax()
+        fails.append(f"T1 캕 불일치: |신/구-1| 최대 {dev:.3e} > {tol:g} "
+                     f"(@{ov['Date'].iloc[i].date()}, 기존 {ov['BM_Close'].iloc[i]:.2f} vs "
+                     f"naver {ov['nv'].iloc[i]:.2f})")
+    seam = (ratio / ratio.shift(1) - 1.0).abs()
+    if seam.notna().any():
+        ms = float(seam.max())
+        if ms > seam_tol:
+            fails.append(f"T2 이음매: 공통일 비율이 하루 사이 "
+                         f"{ms:.3e} 변화 > {seam_tol:g} (@{ov['Date'].iloc[seam.idxmax()].date()})")
 
+    tail = incoming[incoming['Date'] > existing['Date'].max()]
+    if len(tail):
+        anchor = float(existing['BM_Close'].iloc[-1])
+        joined = pd.concat([pd.Series([anchor]), tail['Close']], ignore_index=True)
+        rets = joined.pct_change().iloc[1:]
+        worst = float(rets.abs().max())
+        if worst > mx:
+            fails.append(f"T3 경계 수익률 max|ret|={worst:.4f} > {mx:g} "
+                         f"(레벨 단절 의심)")
 
-def _atomic_write_table(table: 'pa.Table', path: str) -> None:
-    """tmp 에 쓴 뒤 os.replace 로 교체한다 — 대상 파일을 **열지 않는다**.
+    nvr = incoming.copy()
+    nvr['nret'] = nvr['Close'].pct_change()
+    idc = existing.merge(nvr[['Date', 'nret']], on='Date', how='inner')
+    idc = idc[idc['nret'].notna() & idc['BM_Ret'].notna()]
+    if len(idc) >= 20:
+        agree = float(((idc['nret'] - idc['BM_Ret']).abs() < 1e-6).mean())
+        if agree < 0.90:
+            fails.append(f"T4 정체 불일치: 일간수익률이 "
+                         f"{agree:.1%}만 일치 (기준 90%, n={len(idc)}) — "
+                         f"symbol=KPI200 확인")
 
-    ★왜 (2026-08-29 23:32 실사고 + 2026-08-30 실측):
-      구 구현은 `pq.write_table(table, path)` 로 **정본 경로에 직접** 썼다. 두 가지가 깨진다.
-
-      [측정 1] **제자리 쓰기는 조용히 자른다.** 쓰기 도중 죽으면 파일은 남는데 내용이
-        절단된다 — 실측 9,017행 → 500행, 그리고 그 결과물은 **정상적으로 읽힌다**.
-        소비자는 오류가 아니라 짧은 벤치 시리즈를 본다(= 침묵 실패, 이 저장소의 반복 병).
-        같은 죽음에서 tmp 경유는 원본 9,017행 불변.
-
-      [측정 2] **대상이 매핑돼 있으면 열리지 않는다.** 다른 프로세스가 이 파일을 mmap 한
-        채면 Windows 가 `error 1224 (ERROR_USER_MAPPED_FILE)` 로 거부한다 — 2026-08-29
-        23:27 [1pre] 가 정확히 이 오류로 죽었다. tmp→replace 는 대상을 열지 않으므로
-        쓰기 자체는 성공하고, 마지막 교체만 재시도하면 된다.
-        (※같은 실측에서 이 프로세스 자신의 `pd.read_parquet` 은 매핑을 남기지 않았다 —
-          매핑 보유자는 외부다. 그래도 우리 쪽 참조를 먼저 놓아 조건을 줄인다.)
-
-    ★copy 폴백을 쓰지 않는다: replace 가 실패하는 유일한 실전 사유가 "소비자가 점유 중"인데
-      그 순간이 정확히 copy 가 파일을 제자리에서 찢는 순간이다.
-      근거 카드: reference-windows-atomic-write-copy-fallback-is-the-tear
-    ★선삭제도 하지 않는다: os.replace 는 대상이 있어도 덮어쓰므로 이득이 0이고,
-      삭제~교체 사이에 **파일 부재 창**을 만든다(같은 사고의 R 측 기전).
-
-    실패 시 원본은 **손대지 않은 채** 남고 tmp 가 보존된다 — 페이로드 회수 가능.
-    """
-    tmp = path + f'.tmp{os.getpid()}'
-    pq.write_table(table, tmp)
-
-    # "썼다" 와 "읽을 수 있는 것을 썼다" 는 다른 명제다 — promote 전에 되읽어 행 수를 본다.
-    n_tmp = pq.read_metadata(tmp).num_rows
-    if n_tmp != table.num_rows:
-        os.remove(tmp)
-        raise RuntimeError(f'[naver_benchmark] tmp 검증 실패 — 정본 미갱신 '
-                           f'(기대 {table.num_rows}행, 실측 {n_tmp}행)')
-
-    gc.collect()   # 우리 쪽 arrow 참조를 먼저 놓는다(교체 거부 조건 축소)
-    last = None
-    for i in range(REPLACE_RETRIES):
+    # T5 — **붙일 값 자체**를 독립 원천(정본 xlsx · KRX)과 대조한다.
+    #   ★왜 따로 필요한가(2026-09-18 자기 검사에서 적발): T1·T2 는 **겹치는 날**만 본다.
+    #     단절이 정확히 이어붙임 경계에서 시작하면(= 새로 붙는 날만 다른 축) 겹침이 0 이라
+    #     구조적으로 보이지 않는다. 그리고 그것이 바로 재발했던 형태다 — 호출부가
+    #     `10 days ago` 라 이음매가 매일 하루씩 전진했다.
+    #   ★독립 원천이 그 날을 못 덮으면 **그 날은 검증되지 않은 것**이지 통과한 것이 아니다.
+    #     그 경우는 게이트 축 C 가 나중에(원천이 도착하면) 잡는다 — 여기서 초록을 만들지 않는다.
+    if len(tail):
         try:
-            os.replace(tmp, path)
-            return
-        except OSError as e:      # PermissionError(WinError 5) / WinError 1224 계열
-            last = e
-            time.sleep(min(REPLACE_SLEEP_CAP, REPLACE_SLEEP_INIT * 2 ** i))
-    raise RuntimeError(
-        f'[naver_benchmark] 원자적 교체 실패 (replace {REPLACE_RETRIES}회) — '
-        f'정본 미갱신(원본 보존): {path}' + chr(10) +
-        f'  기록분은 {tmp} 에 보존됨. 대개 소비자가 대상 핸들/매핑을 점유 중이다. 최종 오류: {last}')
+            ref = BA.canonical_reference()
+        except Exception:
+            ref = None
+        if ref is not None and len(ref):
+            xr = tail.merge(ref.rename(columns={'ref_close': 'rc'})[['Date', 'rc']],
+                            on='Date', how='inner')
+            xr = xr[xr['rc'] > 0]
+            if len(xr):
+                dv = float((xr['Close'] / xr['rc'] - 1.0).abs().max())
+                if dv > tol:
+                    i = (xr['Close'] / xr['rc'] - 1.0).abs().idxmax()
+                    fails.append(f"T5 붙일 값이 독립 원천과 "
+                                 f"다름: 최대 {dv:.3e} > {tol:g} "
+                                 f"(@{xr['Date'].loc[i].date()}, naver {xr['Close'].loc[i]:.2f} vs "
+                                 f"정본 {xr['rc'].loc[i]:.2f})")
+    return fails
 
 
-# ── 이음매 상수 = seam_guard_config.json 단일 정본 (2026-09-07 도훈 승인 A안) ──────
-#   같은 병(수출본 조정기준 단절)이 종목 배관에도 있어 그쪽에 가드를 이식하면서
-#   상수를 두 곳에 적으면 다음 사람이 또 한쪽만 고친다 → 파일 하나로 합쳤다.
-#   ★폴백은 남긴다: 이 스크립트는 daily_refresh 0:03 배관이라 설정 부재로 죽으면 안 된다.
-#     (R 정본 seam_scale_guard.R 은 반대로 설정 부재 = stop — 그쪽은 신규 코드라
-#      하드코딩 문턱이 되살아나는 것을 막는 쪽이 옳다.)
-SEAM_GUARD_CONFIG = PROJECT_ROOT / '02_Infrastructure' / 'data' / 'seam_guard_config.json'
-_SEAM_FALLBACK = {
-    'SCALE_LOOKBACK_DAYS': 150,   # naver 재조회 여유 — canonical 스케일 추정 + 앵커 후퇴용
-    'SCALE_TOL': 1e-6,            # 스케일 일치 판정 허용오차 (상대)
-    'SEAM_MAX_RET': 0.35,         # 이음매 하루 수익률 상한 (2026-07-31 실측 +19.98% 통과, 스케일 단절 -89% 차단)
-}
-
-
-def _load_seam_consts() -> dict:
-    import json
-    try:
-        with open(SEAM_GUARD_CONFIG, encoding='utf-8') as fh:
-            cfg = json.load(fh)
-        return {k: type(v)(cfg[k]) for k, v in _SEAM_FALLBACK.items()}
-    except Exception as e:                       # 부재/파손 — 침묵하지 않고 폴백을 알린다
-        print(f'  ⚠ [seam_guard] 설정 미적용({e.__class__.__name__}) — 파일 내 폴백값 사용: '
-              f'{SEAM_GUARD_CONFIG}')
-        return dict(_SEAM_FALLBACK)
-
-
-_SEAM = _load_seam_consts()
-SCALE_LOOKBACK_DAYS = _SEAM['SCALE_LOOKBACK_DAYS']
-SCALE_TOL = _SEAM['SCALE_TOL']
-SEAM_MAX_RET = _SEAM['SEAM_MAX_RET']
-
-
-def patch_benchmark_parquet(start_date: str = '2026-04-01',
-                              end_date: str | None = None,
-                              backup: bool = True) -> dict:
-    """Patch benchmark.parquet with Naver-verified KOSPI200 (KPI200) data.
-
-    Replaces existing rows from start_date onward.
-    2026-07-02 도훈 mandate: symbol 'KOSPI'(코스피 종합) → 'KPI200'(코스피200) 정정.
-    북 벤치는 코스피200이어야 함 (기존 종합은 버그, IKS200과 스케일 6.75× 불일치).
-
-    ★2026-08-09 수리 — **레벨 접합 → 수익률 접합** (도훈 적발 "어제 고쳤는데 또"):
-      구 구현은 `bm_pre`(리베이스 체인 스케일)와 `naver_post`(생 KPI200 레벨)를
-      **레벨로 이어붙인 뒤** 전체에 `pct_change()`를 걸었다. 두 구간의 스케일이
-      상수배(실측 8.834×)만큼 다르므로 **경계 하루의 수익률이 스케일비를 그대로 삼킨다**
-      — 2026-07-29 에 -89.38% (참값 -6.185%). 그리고 호출부가
-      `--start_date "$(date -d '10 days ago')"`(daily_refresh.sh:122 / morning_briefing.sh:124)
-      이므로 **이음매가 매일 하루씩 전진한다** → 날짜를 박은 국소 수리는 원리적으로 못 버틴다
-      (08-08 repair_benchmark_scale_break_20260727.R 이 07-27 을 고쳤으나 08-09 에 07-29 로 재발).
-
-      수리: 접합을 **수익률에서** 한다. 수익률은 스케일 불변이므로 이음매가 생길 수 없다.
-        1. canonical 스케일 = 겹치는 최근 구간의 median(BM_Close / naver_Close) — 오염 구간이
-           소수여도 median 이 흡수한다(실측: 150일 중 오염 8일 → median 불변 8.834).
-        2. 앵커 = 그 스케일과 일치하는 **마지막** 날짜. 직전 구간이 오염돼 있으면 자동으로
-           그 앞까지 후퇴한다 = **기존 이음매도 같은 경로로 치유**된다(별도 수리 스크립트 불요).
-        3. 앵커 다음날부터 BM_Ret := naver 수익률, BM_Close := 앵커종가 × cumprod(1+ret).
-           앵커 이전 행은 한 값도 건드리지 않는다.
-    """
+def run(start_date: str | None, end_date: str | None, do_append: bool,
+        backup: bool = True, quiet: bool = False) -> int:
+    say = (lambda *a: None) if quiet else print
+    mf = BA.read_manifest()
     if end_date is None:
         end_date = datetime.now().strftime('%Y-%m-%d')
+    if start_date is None:
+        start_date = (pd.to_datetime(end_date) - pd.Timedelta(days=60)).strftime('%Y-%m-%d')
 
-    cutoff = pd.to_datetime(start_date)
-    # ★스케일 추정·앵커 후퇴를 위해 cutoff 보다 넉넉히 앞에서부터 조회 (호출 1회, 비용 동일)
-    fetch_from = cutoff - pd.Timedelta(days=SCALE_LOOKBACK_DAYS)
-    start_yyyymmdd = fetch_from.strftime('%Y%m%d')
-    end_yyyymmdd = pd.to_datetime(end_date).strftime('%Y%m%d')
-    print(f'[naver_benchmark_update] Fetching {start_yyyymmdd} ~ {end_yyyymmdd} from Naver '
-          f'(cutoff={cutoff.date()}, lookback={SCALE_LOOKBACK_DAYS}d)...')
-    naver = fetch_naver_kospi(start_yyyymmdd, end_yyyymmdd, symbol='KPI200')  # ★코스피200 (구 'KOSPI' 종합 버그)
-    print(f'  Naver returned {len(naver)} rows (KPI200/코스피200), latest={naver.Date.max().date()}')
-
-    # sanity 가드 ①: 코스피 종합(수천대) 오심볼 회귀 차단 — **생 naver 레벨**에서 검사한다.
-    #   (구 구현은 재척도 후 combined 에서 검사했는데, 수익률 접합 후 그 값은 정당하게 수천대다.)
-    naver_max = float(naver.Close.max())
-    if naver_max > 3000:
-        raise RuntimeError(f"[naver_benchmark] 벤치 sanity FAIL: naver 최근 {naver_max:.0f} — "
-                           f"코스피200 아닌 코스피 종합 의심 (symbol=KPI200 확인)")
+    if not BM_PATH.exists():
+        say(f'[naver_benchmark] 대상 부재 — {BM_PATH}')
+        return 2
 
     bm = pd.read_parquet(BM_PATH)
     bm['Date'] = pd.to_datetime(bm['Date'])
     bm = bm.sort_values('Date').reset_index(drop=True)
-    n0, cols0 = len(bm), list(bm.columns)
 
-    # ── canonical 스케일 + 앵커 결정 ────────────────────────────────────────────
-    ov = bm.merge(naver.rename(columns={'Close': 'nv'})[['Date', 'nv']], on='Date', how='inner')
-    ov = ov[(ov.nv > 0) & ov.BM_Close.notna()]
-    if len(ov) < 20:
-        raise RuntimeError(f"[naver_benchmark] 스케일 추정 불가: 겹치는 날짜 {len(ov)}개 (<20) — 중단")
-    ov['ratio'] = ov.BM_Close / ov.nv
-    canon = float(ov.ratio.median())
+    s = pd.to_datetime(start_date).strftime('%Y%m%d')
+    e = pd.to_datetime(end_date).strftime('%Y%m%d')
+    say(f'[naver_benchmark] Naver KPI200 {s} ~ {e} 조회 (모드='
+        f'{"append" if do_append else "verify"})...')
+    try:
+        naver = fetch_naver_kospi(s, e, symbol='KPI200')
+    except Exception as ex:
+        say(f'  ★조회 실패({ex.__class__.__name__}: {ex}) — '
+            f'캐시 미변경')
+        BA.write_alert('naver_fetch_failed', f'Naver 조회 실패: {ex}')
+        return 2
+    say(f'  Naver {len(naver)}행, 최신={naver.Date.max().date()}')
 
-    # sanity 가드 ②: **정체 검사** — 받아온 시리즈가 정말 이 파일이 쓰던 그 지수인가.
-    #   ①의 >3000 은 레벨 크기 휴리스틱이라 지수가 낮은 국면에서 오심볼을 놓친다(위반 주입 INJ-2 적발).
-    #   수익률은 스케일 불변이므로, cutoff 이전 겹치는 날의 **저장된 BM_Ret 과 일치하는지**로
-    #   심볼 정체를 직접 검사한다. 종합↔200 은 일간 수익률이 갈리므로(실측 07-28: -11.553% vs
-    #   -10.837%) 즉시 발화한다. 기존 이음매 1~2일은 허용치(90%)가 흡수한다.
-    nvr = naver.copy()
-    nvr['nret'] = nvr.Close.pct_change()
-    idc = bm.merge(nvr[['Date', 'nret']], on='Date', how='inner')
-    idc = idc[(idc.Date < cutoff) & idc.nret.notna() & idc.BM_Ret.notna()]
-    if len(idc) >= 20:
-        agree = float(((idc.nret - idc.BM_Ret).abs() < 1e-6).mean())
-        if agree < 0.90:
-            raise RuntimeError(
-                f"[naver_benchmark] 벤치 sanity FAIL(정체): 받아온 시리즈의 일간수익률이 "
-                f"기존 BM_Ret 과 {agree:.1%}만 일치 (cutoff 이전 {len(idc)}일 대조, 기준 90%). "
-                f"symbol=KPI200 이 맞는지 / benchmark.parquet 이 다른 지수로 만들어졌는지 확인.")
-    else:
-        agree = float('nan')
-        print(f'  ⚠ 정체 검사 생략 — cutoff 이전 대조 가능일 {len(idc)}개 (<20)')
+    # 심볼 sanity: 코스피 종합(수천대) 오심볼 회귀 차단 — **생 naver 레벨**에서 검사.
+    if float(naver['Close'].max()) > 3000:
+        msg = (f"symbol sanity FAIL: naver 최대 {float(naver['Close'].max()):.0f} — "
+               f"코스피200 아닌 종합 의심")
+        say(f'  ★{msg}')
+        BA.write_alert('naver_symbol_sanity', msg)
+        return 1
 
-    ok = ov[(ov.ratio / canon - 1.0).abs() < SCALE_TOL]
-    pre_ok = ok[ok.Date < cutoff]
-    if len(pre_ok) == 0:
-        raise RuntimeError(f"[naver_benchmark] cutoff({cutoff.date()}) 이전에 스케일 {canon:.4f} "
-                           f"정합 앵커 없음 — 중단 (lookback 확대 필요)")
-    anchor_date = pre_ok.Date.max()
-    anchor_close = float(bm.loc[bm.Date == anchor_date, 'BM_Close'].iloc[0])
-    # ★앵커 **이후로 실제 스케일을 이탈한** 행만 센다. 재체인 대상 전부를 세면 정상 입력에서도
-    #   "치유했다"고 보고해 오염 유무를 구분 못 한다(위반 주입 POS-1 적발).
-    n_offscale = int(((ov.Date > anchor_date) & ((ov.ratio / canon - 1.0).abs() >= SCALE_TOL)).sum())
-    print(f'  canonical scale = {canon:.6f}× (n_ok={len(ok)}/{len(ov)})  '
-          f'anchor = {anchor_date.date()} @ {anchor_close:.3f}')
-    if n_offscale:
-        print(f'  ★기존 이음매 감지 — {anchor_date.date()} 이후 {n_offscale}행이 스케일 이탈, 재체인으로 치유')
+    fails = tripwire(bm, naver, mf)
+    if fails:
+        say('  ★트립와이어 발화 — 캐시를 손대지 않았습니다:')
+        for f in fails:
+            say(f'    - {f}')
+        BA.write_alert('benchmark_tripwire', '; '.join(fails),
+                       {'mode': 'append' if do_append else 'verify',
+                        'bm_max': bm['Date'].max().strftime('%Y-%m-%d')})
+        return 1
+    say('  트립와이어 통과 — Naver 와 캐시가 같은 축 위에 있다')
 
-    # ── 수익률 접합: 앵커 다음날부터 naver 수익률로 재체인 ──────────────────────
-    nv = naver[naver.Date >= anchor_date].sort_values('Date').reset_index(drop=True).copy()
-    nv['ret'] = nv.Close.pct_change()
-    tail = nv[nv.Date > anchor_date].copy()
-    if len(tail) == 0:
-        raise RuntimeError(f"[naver_benchmark] 앵커({anchor_date.date()}) 이후 naver 행 없음 — 중단")
-    tail['BM_Ret'] = tail['ret'].astype('float64')
-    tail['BM_Close'] = anchor_close * (1.0 + tail['ret']).cumprod()
+    if not do_append:
+        BA.clear_alert()
+        say('  [verify] 기본 모드는 검증만 한다 — '
+            '쓰기는 --append 명시 시에만.')
+        return 0
 
-    head = bm[bm.Date <= anchor_date][['Date', 'BM_Close', 'BM_Ret']].copy()
-    combined = pd.concat([head, tail[['Date', 'BM_Close', 'BM_Ret']]], ignore_index=True)
-    combined = combined.drop_duplicates(subset='Date', keep='last').sort_values('Date').reset_index(drop=True)
+    # ── 항등 이어붙이기 (배율 없음 — 생 KPI200 포인트 그대로) ────────────────
+    tail = naver[naver['Date'] > bm['Date'].max()].copy()
+    if not len(tail):
+        say('  새 거래일 없음 — 미변경')
+        return 0
+    add = pd.DataFrame({'Date': tail['Date'].values,
+                        'BM_Close': tail['Close'].astype('float64').values,
+                        'BM_Src': 'naver_kpi200'})
+    keep = bm.copy()
+    if 'BM_Src' not in keep.columns:
+        keep['BM_Src'] = 'legacy_unlabeled'
+    combined = pd.concat([keep[['Date', 'BM_Close', 'BM_Src']], add], ignore_index=True)
+    combined = combined.drop_duplicates('Date', keep='first').sort_values('Date').reset_index(drop=True)
+    ret = combined['BM_Close'] / combined['BM_Close'].shift(1) - 1.0
+    ret.iloc[0] = float(bm['BM_Ret'].iloc[0]) if pd.notna(bm['BM_Ret'].iloc[0]) else 0.0
+    combined['BM_Ret'] = ret.astype('float64')
+    combined = combined[['Date', 'BM_Close', 'BM_Ret', 'BM_Src']]
 
-    # ── 가드: 하나라도 어긋나면 쓰지 않는다 ─────────────────────────────────────
-    seam_ret = float(tail.BM_Ret.iloc[0])
-    worst_ret = float(tail.BM_Ret.abs().max())
-    if worst_ret > SEAM_MAX_RET:
-        raise RuntimeError(f"[naver_benchmark] 이음매 가드 FAIL: 갱신구간 max|ret|={worst_ret:.4f} "
-                           f"> {SEAM_MAX_RET} (스케일 단절 의심, seam_ret={seam_ret:.4f})")
-    # 앵커 이전은 완전 불변
-    h0 = bm[bm.Date <= anchor_date].reset_index(drop=True)
-    h1 = combined[combined.Date <= anchor_date].reset_index(drop=True)
-    if not (len(h0) == len(h1)
-            and h0.BM_Close.equals(h1.BM_Close)
-            and h0.BM_Ret.fillna(-9e9).equals(h1.BM_Ret.fillna(-9e9))):
-        raise RuntimeError("[naver_benchmark] 가드 FAIL: 앵커 이전 구간이 변경됨 — 중단")
-    # 내부 정합: BM_Ret == BM_Close 전일대비 (갱신구간)
-    chk = combined[combined.Date >= anchor_date].reset_index(drop=True)
-    rec = chk.BM_Close.pct_change().iloc[1:]
-    if float((rec - chk.BM_Ret.iloc[1:]).abs().max()) > 1e-9:
-        raise RuntimeError("[naver_benchmark] 가드 FAIL: 갱신구간 BM_Ret ↔ BM_Close 불일치 — 중단")
-    # 스케일 연속성: 갱신구간이 canonical 스케일 위에 있다
-    ck = combined.merge(naver.rename(columns={'Close': 'nv'})[['Date', 'nv']], on='Date', how='inner')
-    ck = ck[ck.Date > anchor_date]
-    if len(ck) and float((ck.BM_Close / ck.nv / canon - 1.0).abs().max()) > 1e-6:
-        raise RuntimeError("[naver_benchmark] 가드 FAIL: 갱신구간 스케일이 canonical 이탈 — 중단")
-    if len(combined) < n0 or list(combined.columns) != cols0:
-        raise RuntimeError(f"[naver_benchmark] 가드 FAIL: 행/열 축소 ({n0}→{len(combined)}) — 중단")
+    # 사후 가드: 앵커 이전 완전 불변 + 행 축소 금지
+    h0 = bm[bm['Date'] <= bm['Date'].max()].reset_index(drop=True)
+    h1 = combined[combined['Date'] <= bm['Date'].max()].reset_index(drop=True)
+    if not (len(h0) == len(h1) and h0['BM_Close'].equals(h1['BM_Close'])):
+        say('  ★가드 FAIL: 기존 구간이 변경됨 — 중단')
+        BA.write_alert('benchmark_append_guard', '기존 구간 변경 감지')
+        return 1
+    if len(combined) < len(bm):
+        say(f'  ★가드 FAIL: 행 축소 ({len(bm)}→{len(combined)}) — 중단')
+        return 1
 
     if backup:
         ts = datetime.now().strftime('%Y%m%d_%H%M%S')
-        backup_path = BM_PATH.with_suffix(f'.parquet.bak_naver_patch_{ts}')
-        shutil.copy(BM_PATH, backup_path)
-        print(f'  Backup: {backup_path.name}')
+        bak = BM_PATH.with_name(BM_PATH.name + f'.bak_naver_patch_{ts}')
+        shutil.copy(BM_PATH, bak)
+        say(f'  Backup: {bak.name}')
+        gone = BA.prune_backups('benchmark.parquet.bak_naver_patch_*')
+        if gone:
+            say(f'  오래된 백업 {len(gone)}개 정리 '
+                f'(최근 {BA.BACKUP_KEEP}개 보존)')
 
-    _write_bm_parquet(combined, BM_PATH)  # ★date32 정규화 (build_index_cache와 통일, POSIXct 회귀 차단)
-
-    return {
-        'anchor_date': anchor_date.strftime('%Y-%m-%d'),
-        'anchor_close': anchor_close,
-        'canonical_scale': canon,
-        'identity_agreement': agree,
-        'healed_offscale_rows': n_offscale,
-        'rechained_rows': len(tail),
-        'seam_ret': seam_ret,
-        'total_rows': len(combined),
-        'latest_date': combined.Date.max().strftime('%Y-%m-%d'),
-        'naver_latest': naver.Date.max().strftime('%Y-%m-%d'),
-        'naver_latest_close': float(naver.Close.iloc[-1]),
-    }
+    BA.write_benchmark_parquet(combined, BM_PATH)
+    say(f'  항등 이어붙임 {len(add)}행 — 총 {len(combined)}행, '
+        f'최신 {combined.Date.max().date()} @ {combined.BM_Close.iloc[-1]:.2f}')
+    # ★정본이 아니다 — 때웠다는 사실을 남긴다. 조용한 때우기가 재발의 온상이었다.
+    BA.write_alert('canonical_stale_patched',
+                   '정본 xlsx 미갱신 상태에서 Naver 로 '
+                   '임시 이어붙였음 — Benchmark_price.xlsx 갱신 필요',
+                   {'appended_rows': int(len(add)),
+                    'latest': combined.Date.max().strftime('%Y-%m-%d')})
+    return 0
 
 
-def main():
-    parser = argparse.ArgumentParser()
-    parser.add_argument('--start_date', type=str, default='2026-04-01',
-                        help='Patch from this date onward (default 2026-04-01)')
-    parser.add_argument('--end_date', type=str, default=None,
-                        help='Patch until this date (default today)')
-    parser.add_argument('--no-backup', action='store_true', help='Skip backup creation')
-    args = parser.parse_args()
-
-    result = patch_benchmark_parquet(args.start_date, args.end_date, backup=not args.no_backup)
-    print(f'\nPatch complete:')
-    for k, v in result.items():
-        print(f'  {k}: {v}')
+def main() -> int:
+    p = argparse.ArgumentParser()
+    p.add_argument('--start_date', type=str, default=None)
+    p.add_argument('--end_date', type=str, default=None)
+    p.add_argument('--append', action='store_true',
+                   help='항등 이어붙이기(정본 xlsx 정체 시 임시 때우기 — 경보를 남긴다)')
+    p.add_argument('--verify', action='store_true', help='(기본값) 검증만 — 쓰기 없음')
+    p.add_argument('--no-backup', action='store_true')
+    p.add_argument('--quiet', action='store_true')
+    a = p.parse_args()
+    if a.append and a.verify:
+        print('[naver_benchmark] --append 와 --verify 를 동시에 줄 수 없다')
+        return 2
+    return run(a.start_date, a.end_date, do_append=a.append,
+               backup=not a.no_backup, quiet=a.quiet)
 
 
 if __name__ == '__main__':
-    main()
+    sys.exit(main())
