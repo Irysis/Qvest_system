@@ -17,11 +17,41 @@
   "calmar": 0.385,
   "oos_retention": -0.118,
   "portfolio_alpha_t": 3.069,
-  "next_probes": [
-    "다음 격자 축 B2(weighting) — 이 블록 승자 위에서 측정",
-    "B5_17(최고 3.069)는 B4 조합 후보로 고정 · B5_28(최저 1.333)는 축 역작동 여부를 조합 LOO 로 분리"
-  ],
+  "next_probes": ["다음 격자 축 B2(weighting) — 이 블록 승자 위에서 측정", "B5_17(최고 3.069)는 B4 조합 후보로 고정 · B5_28(최저 1.333)는 축 역작동 여부를 조합 LOO 로 분리"],
   "next_probe": "다음 격자 축 B2(weighting) — 이 블록 승자 위에서 측정 | B5_17(최고 3.069)는 B4 조합 후보로 고정 · B5_28(최저 1.333)는 축 역작동 여부를 조합 LOO 로 분리",
   "source_paper": "https://arxiv.org/abs/2002.06975",
-  "record_type": "performance"
+  "record_type": "performance",
+  "mechanism": "판정: B5 14칸은 거의 한 직선 위에 있다 — MDD 0.446~0.584(폭 0.138)와 PORT_t 1.333~3.069(폭 1.736)이 같은 방향으로 움직여 Calmar 는 0.350~0.429(폭 0.079)에 머문다. 오버레이가 한 일의 대부분은 노출 축소이고, 그 축소가 CAGR 을 거의 비례로 가져갔다는 뜻이다. 계열 라벨(총노출 vs 종목별)은 결과를 가르지 못한다 — 총노출 B5_18 Calmar 0.377 이 종목별 B5_21 0.362 보다 높다. 비례선에서 위로 벗어난 칸은 랭킹 축이 회전하는 multivar_channel_tilt 뿐이다: B5_20 MDD 0.477·CAGR 0.203·Calmar 0.425, 스택 B5_27 MDD 0.459·CAGR 0.197·Calmar 0.429. 아래로 벗어난 칸은 조건부 총노출 축소 B5_16(Calmar 0.350)이다 — B1 처방이 중심에 뒀던 '보유 구성에 조건부인 총노출 축소'는 반증됐고, 대조군으로 넣었던 랭킹 회전 칸이 이 블록 최고 Calmar 를 냈다. 스택은 층 노출을 곱으로 합성하므로 손실이 누적된다: 스택 6칸 전부 PORT_t 가 구성 층의 최대보다 낮고(B5_27 2.062 < B5_20 2.279 < B5_19 3.001), MDD 이득은 포화한다(B5_27 0.459 vs B5_20 0.477, 0.018). vol_term_structure_risk_split_tilt 가 들어간 스택 셋은 전부 구성 층 최대보다 낮다(B5_23 0.356 · B5_24 0.375 · B5_28 0.401). 설계 13건이 13건 집행됐으므로 이건 미집행이 아니라 가설이 틀린 자리다. 미결 둘: (1) 이 블록에 무오버레이 대조 칸이 없어 '오버레이가 기저를 넘는가'는 블록 안에서 안 갈린다 — 0.385 대조는 세대 밖이다. (2) multivar 의 비례선 이탈이 국면 타이밍인지 보유 구성 변화의 부산물인지는 turnover · 평균 유효 종목수 · 하락월 한정 노출 없이는 안 갈린다(다섯 블록 연속 미기록).",
+  "mechanism_by": "llm:block_end",
+  "mechanism_at": "2026-09-19T02:46:12+0900",
+  "prior_lessons_used": ["B1", "B2", "B3", "B4"],
+  "next_block_actions": [
+    {
+      "action": "B2 에서 공분산 추정 품질 축을 버리고 유효 종목수(집중도) 축을 양 끝까지 스윕한다 — 동일가중 1/25 기저 위에 score_pure(최대 집중) · softmax_tilt(중간) · entropy(최대 분산) 3칸.",
+      "why": "B5 에서 비례선을 위로 벗어난 유일한 칸 B5_20/B5_27 이 랭킹 축 회전, 즉 위험이 어느 종목에 실리는가를 바꾼 칸이었다. 비중 축에서 그에 대응하는 양은 공분산 추정 품질이 아니라 집중도다.",
+      "expect": "집중도가 Calmar 를 움직이면 세 칸의 Calmar 폭이 B5 단일층 폭 0.350~0.425 에 준하게 벌어지고 순서가 단조로 나온다. 세 칸이 Calmar 0.38 부근 0.03 안에 몰리면 비중 축은 집중도로도 비례선을 못 벗어난다는 뜻이고, 그 경우 이 격자에서 Calmar 레버는 오버레이의 랭킹 회전 하나뿐이다."
+    },
+    {
+      "action": "B5_17 xs_vol_risk_share_equalize(오버레이 층, Calmar 0.385 · MDD 0.584)와 같은 개념을 비중 층에서 ivol 1칸으로 반복 측정한다.",
+      "why": "B2·B3·B4 를 관통한 미결은 처치의 표적이 아니라 소비 지점이었다. 역변동성 위험지분 균등화는 지금 두 지점에서 잴 수 있는 유일한 개념이다.",
+      "expect": "소비 지점이 무관하면 ivol 칸이 B5_17 과 MDD 0.58 대·Calmar 0.385 부근에서 겹친다. 비중 층에서 MDD 가 0.55 아래로 내려오면 오버레이 층 구현이 전달되지 않은 것이므로 B5_17 결과를 축의 실패로 읽어서는 안 된다."
+    },
+    {
+      "action": "2차 모멘트 밖을 표적하는 칸 2개(higher_moment · PreferenceRobustDistortion)를 배치한다.",
+      "why": "비례선 위 14칸은 분산·꼬리 크기를 줄이면 상방도 같이 준다는 관계를 보여준다. 이 관계를 깨려면 손실 분포의 형태를 비대칭으로 재가중하는 표적이 필요하고, 그건 분산 최소화 계열에는 없는 축이다.",
+      "expect": "두 칸 중 하나라도 Calmar 0.43 을 넘으면 비대칭 표적이 비례선을 깨는 축임이 실측된다. 둘 다 MDD 0.50~0.58 · Calmar 0.35~0.39 로 나오면 목적함수 변경만으로는 못 깬다는 뜻이고 다음 레버는 보유 구성 쪽에 남는다."
+    },
+    {
+      "action": "B2 6칸 전부에 평균 유효 종목수 · turnover · 시장 하락월 한정 평균 노출을 부수 기록한다(처치 불변, 기록만 추가).",
+      "why": "B2·B3·B4·B5 다섯 블록에서 같은 요청이 미집행이라 개입 강도 통제가 계속 불가능하고, multivar 이탈의 원인 분리도 이 세 값에 걸려 있다.",
+      "expect": "기록되면 Calmar 차이를 유효 종목수에 회귀해 집중도 효과와 종목 선택 효과를 분리할 수 있다. 또 미기록이면 이 격자에서 그 분리는 영구 미결로 남는다."
+    }
+  ],
+  "next_block_actions_by": "llm:block_end",
+  "avoid": ["공분산 추정기 계열(gen:lean_score_tilt__shr_*, gen:qepm_MVO__shr_lw_nls, qepm:MVO, lean:minvar, lean:hrp, lean:nco, lean:riskparity, lean:factor_rp, lean:resampled, lean:robust_mv) — 직전 세대 B2 6칸에서 MDD 폭 0.037, 그리고 구조 추정 B2_9(PORT_t 2.624·Calmar 0.353)가 공분산 미사용 대조 B2_11(2.647·0.354)과 구분되지 않았다. 추정 품질이 결과에 실리지 않는다는 벽이 실측됐다.", "qepm:CVaR_LP · qepm:CDaR_LP · lean:cvar · lean:omega 등 2차/꼬리 최소화 목적함수를 다시 배치하는 것 — B2_6 CDaR_LP 가 낙폭을 직접 표적하고도 MDD 0.569 로 대조와 구분되지 않으면서 PORT_t 1.362 를 내줬고, B4 에서 CVaR_LP 는 PORT_t 0.395 를 깎았다. 이 블록의 비례선은 그 결과와 같은 관계다.", "총노출 스칼라 축소와 그 조건부 변형을 다른 강도로 재시도하는 것 — B5_16 Calmar 0.350 이 이 블록 최저다. 조건부로 만들어도 비례선 아래로 간다는 것이 이번에 실측됐다.", "vol_term_structure_risk_split_tilt 를 다른 층과 다시 겹치는 것 — B5_23 0.356 · B5_24 0.375 · B5_28 0.401 로 이 층이 들어간 스택 셋 모두 구성 층 최대보다 낮았다. 단독 B5_21 0.362 도 단일층 최저권이다.", "오버레이 스택을 3층으로 늘리는 것 — 2층 6칸에서 PORT_t 는 예외 없이 구성 층 최대 아래이고 MDD 이득은 B5_27 기준 0.018 에 그쳤다. 층을 더 곱하면 손실만 누적된다.", "팩터 교체(B1)·유니버스(B3) 축으로 되돌아가는 것 — MDD 폭 0.067·0.032 로 상한이 이미 관측됐고 이 블록은 그 판정을 바꾸는 자료를 내지 않았다.", "섹터 중립(Sector_Lv2)을 어떤 형태로든 되살리는 것 — 단독 −1.778, 결합 −1.817 로 두 조건에서 같은 크기의 PORT_t 손실이 재현됐다."],
+  "next_block_design_for": "B2",
+  "next_block_design_n": 6,
+  "prior_action_status": "executed",
+  "prior_action_detail": "설계 13건 중 13건 집행 (설계: book_risk_budget_brake,xs_vol_risk_share_equalize,xs_vol_gap_corr_brake,trend_persist_tilt,multivar_channel_tilt,vol_term_structure_risk_split_tilt,erosion_grind_idio_tilt,erosion_grind_idio_tilt+vol_term_structure_risk_split_tilt,trend_persist_tilt+vol_term_structure_risk_split_tilt,trend_persist_tilt+xs_vol_gap_corr_brake,erosion_grind_idio_tilt+multivar_channel_tilt,multivar_channel_tilt+trend_persist_tilt,multivar_channel_tilt+vol_term_structure_risk_split_tilt / 실측: book_risk_budget_brake,xs_vol_risk_share_equalize,xs_vol_gap_corr_brake,trend_persist_tilt,multivar_channel_tilt,pg2_risk_overlay_v1,vol_term_structure_risk_split_tilt,erosion_grind_idio_tilt,erosion_grind_idio_tilt+vol_term_structure_risk_split_tilt,trend_persist_tilt+vol_term_structure_risk_split_tilt,trend_persist_tilt+xs_vol_gap_corr_brake,erosion_grind_idio_tilt+multivar_channel_tilt,multivar_channel_tilt+trend_persist_tilt,multivar_channel_tilt+vol_term_structure_risk_split_tilt)",
+  "mechanism_confidence": "medium"
 }
