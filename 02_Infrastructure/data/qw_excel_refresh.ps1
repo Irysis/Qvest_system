@@ -34,6 +34,7 @@ qw_excel_refresh.ps1 — QuantiWise 정본 xlsx 를 **우리 인프라 안에서
 param(
   [Parameter(Mandatory = $true)][string]$Source,
   [Parameter(Mandatory = $true)][string]$Out,
+  [ValidateSet('Sheet','Book')][string]$Scope = 'Sheet',   # ★질의 시트가 여럿인 통합문서(Update_File 계열)는 Book
   [int]$TimeoutSec = 1800,
   [switch]$Visible,
   [string]$JsonOut = ''
@@ -194,7 +195,15 @@ try {
   # --- (4) Refresh 발화 ------------------------------------------------------
   $fired = $false
   try {
-    if ($ws.Hyperlinks.Count -ge 1) {
+    if ($Scope -eq 'Book') {
+      # 통합문서 전체 — 리본 'Refresh Book'(QW7menu m_8200)이 부르는 진입점을 그대로 쓴다.
+      $broker = New-Object -ComObject qwMain.QBroker
+      $miss = [System.Reflection.Missing]::Value
+      $broker.Run([int16]8200, $xl, $miss, $miss, $miss, $miss)
+      $fired = $true; $result.method = 'qbroker_run_8200'
+      Say 'Refresh 발화 = qwMain.QBroker.Run(8200) — 통합문서 전체'
+    }
+    elseif ($ws.Hyperlinks.Count -ge 1) {
       $ws.Activate() | Out-Null
       $ws.Hyperlinks.Item(1).Follow()
       $fired = $true; $result.method = 'hyperlink_follow'

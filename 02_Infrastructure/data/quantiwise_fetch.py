@@ -68,8 +68,49 @@ def _write_status(payload: dict) -> None:
         pass
 
 
+def _describe_generic(path: Path) -> dict:
+    """벤치 외 퀀티 질의서(예: 03_Universe/Update_File/*_update.xlsx)의 지문.
+
+    ★이 파일들도 **같은 질의서**다 — A1 이 'Refresh' 하이퍼링크이고 B5/B6 이 Period(From/To).
+      다만 시트가 여럿이라 갱신 범위가 Book 이고, 지수 파서로는 못 읽는다.
+      그래서 여기서는 **첫 시트 A열의 마지막 날짜**만 본다(교체 판정에 필요한 최소량).
+    """
+    d = {'path': str(path), 'exists': path.exists(), 'kind': 'generic'}
+    if not path.exists():
+        return d
+    st = path.stat()
+    d['size_bytes'] = int(st.st_size)
+    d['mtime'] = datetime.fromtimestamp(st.st_mtime).isoformat(timespec='seconds')
+    try:
+        import openpyxl
+        wb = openpyxl.load_workbook(path, read_only=True, data_only=True)
+        try:
+            ws = wb.worksheets[0]
+            last, n = None, 0
+            for (v,) in ws.iter_rows(min_col=1, max_col=1, values_only=True):
+                if v is None:
+                    continue
+                try:
+                    dt = datetime.fromisoformat(str(v)[:19])
+                except ValueError:
+                    continue
+                n += 1
+                if last is None or dt > last:
+                    last = dt
+        finally:
+            wb.close()
+        d['rows'] = n
+        if last is not None:
+            d['date_max'] = last.strftime('%Y-%m-%d')
+    except Exception as e:
+        d['read_error'] = f'{e.__class__.__name__}: {e}'
+    return d
+
+
 def _describe(path: Path) -> dict:
     """정본 파일의 소비면 지문 — mtime · 크기 · (읽을 수 있으면) 행수·최신일."""
+    if Path(path).resolve() != DEST.resolve():
+        return _describe_generic(Path(path))     # 벤치가 아니면 지수 파서를 쓰지 않는다
     d = {'path': str(path), 'exists': path.exists()}
     if not path.exists():
         return d
@@ -89,7 +130,8 @@ def _describe(path: Path) -> dict:
     return d
 
 
-def _fetch_impl(workdir: Path, timeout_sec: int, visible: bool) -> Path | None:
+def _fetch_impl(workdir: Path, timeout_sec: int, visible: bool,
+                target: Path = DEST, scope: str = 'sheet') -> Path | None:
     """실제 수급 — 퀀티 단말 + 엑셀 애드인으로 정본 시트를 다시 받아온다.
 
     계약:
@@ -104,7 +146,7 @@ def _fetch_impl(workdir: Path, timeout_sec: int, visible: bool) -> Path | None:
     if os.name != 'nt':
         raise NotImplementedError('퀀티 단말 경로는 Windows 전용이다(이 호스트는 아니다)')
 
-    out = workdir / 'Benchmark_price.new.xlsx'
+    out = workdir / (target.stem + '.new' + target.suffix)
     jout = workdir / 'refresh_result.json'
     for p in (out, jout):
         try:
@@ -113,8 +155,8 @@ def _fetch_impl(workdir: Path, timeout_sec: int, visible: bool) -> Path | None:
             pass
 
     cmd = ['powershell', '-NoProfile', '-ExecutionPolicy', 'Bypass', '-File', str(PS_DRIVER),
-           '-Source', str(DEST), '-Out', str(out), '-TimeoutSec', str(int(timeout_sec)),
-           '-JsonOut', str(jout)]
+           '-Source', str(target), '-Out', str(out), '-TimeoutSec', str(int(timeout_sec)),
+           '-Scope', scope.capitalize(), '-JsonOut', str(jout)]
     if visible:
         cmd.append('-Visible')
 
@@ -156,6 +198,8 @@ def main() -> int:
                     help='수급하지 않고 현재 정본의 지문만 기록·출력한다')
     ap.add_argument('--timeout-sec', type=int, default=1800,
                     help='시트 Refresh 완료 대기 상한(기본 1800초)')
+    ap.add_argument('--scope', choices=['sheet', 'book'], default='sheet',
+                    help="갱신 범위. 질의 시트가 여럿인 통합문서(Update_File 계열)는 book")
     ap.add_argument('--visible', action='store_true',
                     help='엑셀 창을 띄운 채 돌린다(사람이 지켜볼 때·진단용)')
     args = ap.parse_args()
@@ -174,7 +218,7 @@ def main() -> int:
     workdir = PROJECT_ROOT / '.cache' / '_qw_fetch'
     workdir.mkdir(parents=True, exist_ok=True)
     try:
-        got = _fetch_impl(workdir, args.timeout_sec, args.visible)
+        got = _fetch_impl(workdir, args.timeout_sec, args.visible, dest, args.scope)
     except NotImplementedError as e:
         print(f'  ★전제 부재 — {e}')
         _write_status({'schema': 'quantiwise_fetch_status_v1', 'result': 'no_precondition',
