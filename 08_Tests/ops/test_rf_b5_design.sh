@@ -32,7 +32,8 @@ ok(){ printf '  OK   %s\n' "$1"; PASS=$((PASS+1)); }
 ng(){ printf '  FAIL %s — %s\n' "$1" "${2:-}"; FAIL=$((FAIL+1)); }
 T="$ROOT/.cache/_test_rf_b5_design.$$"; SB="$T/root"
 rm -rf "$T"; mkdir -p "$T"
-trap 'rm -rf "$T"' EXIT
+# S12 실물 잠금 픽스처(08_Tests/lib/dir_hold.R)가 남았으면 먼저 내보낸다 — 붙잡힌 디렉터리는 rm -rf 로 안 지워진다
+trap '[ -s "$T/hold.ready" ] && { : > "$T/hold.stop"; sleep 0.5; }; rm -rf "$T"' EXIT
 LANE="${QVEST_B5_TEST_LANE:-$ROOT/02_Infrastructure/ops/rf_b5_design.sh}"   # 돌연변이 검사용 재지정(사본은 저장소 밖 · QVEST_B5_CODE_ROOT 동반)
 ADIR="$SB/02_Infrastructure/reinforcement/overlay_arms"
 BID="T_E1"
@@ -85,6 +86,9 @@ elif what == 'ledger':
     if variant == 'b5attempted': atts.append(att(6, 'B5_16', 2.0))
     e1 = {'base_id': 'T_E1', 'status': 'active', 'base_grade': 'C', 'base_artifacts': '', 'attempts_used': len(atts), 'attempts': atts,
           'block_order': ['B1', 'B5', 'B2', 'B3', 'B4']}
+    if variant == 'designed':   # 라운드 1 기록 → 자동 실행은 H1 거부(claim 획득 → 가드 → 해제만 도는 최단 경로 · S12)
+        e1['b5_design'] = {'rounds': [{'round': 1, 'at': '2026-09-18T23:53:00+0900', 'source': 'b5_design_lane', 'n_cells': 3,
+                                       'new_arms_admitted': 0, 'new_arms_rejected': 0, 'compose_only': False, 'fallback': False, 'new_arm_ids': []}]}
     ents = []
     if variant == 'stagnation':
         for k, day in (('X1', '01'), ('X2', '02')):
@@ -472,6 +476,60 @@ reset_sb base 0; "$PY" "$T/mk.py" config "$SB" 1 0
 QVEST_B5_IGNORE_PAUSE=1 run_lane redesign --redesign "$BID"
 [ "$LANE_RC" = 0 ] && [ "$(ncalls)" = 0 ] && grep -q '"event": "halt_disabled"' "$JL" \
   && ok "S11c [위반] b5_design.enabled=false 는 IGNORE_PAUSE 로도 못 넘는다" || ng "S11c" "rc=$LANE_RC calls=$(ncalls)"
+
+#── S12. claim 해제 판정 = 사실 (실물 잠금 · 2026-09-19) ─────────────────────────────
+echo "=== S12. claim 해제 — 표식이 남으면 정보 · 표식도 못 쓰면 실패 ==="
+# 2026-09-18 23:53 실측: 정상 완주가 claim_release_failed 로 찍혔다 — unlink 이 owner.json 만 지우고 디렉터리를 남겼지만
+#   released.json 은 남았다(다음 실행이 즉시 제자리 인수 = 운영상 해제). 경로 = 획득 → H1 거부 → 해제(LLM 호출 0 · 최단).
+#   잠금은 실물(다른 프로세스의 작업 디렉터리 — 08_Tests/lib/dir_hold.R). 표식 쓰기 실패만 코드 루트 사본
+#   (QVEST_B5_CODE_ROOT)의 rf_claim.R 끝에 rf_claim_write_marker 재정의를 덧붙여 주입한다(운영 코드 무접촉).
+CLM="$SB/.cache/rf_b5_design.claim"; H_READY="$T/hold.ready"; H_STOP="$T/hold.stop"
+REL_FIX='{"released_at":"fixture","by_pid":1}'   # 앞 실행이 남긴 표식 = 잠긴 claim 에 제자리로 들어가는 입구
+hold_start(){ rm -f "$H_READY" "$H_STOP"; mkdir -p "$1"
+  Rscript "$ROOT/08_Tests/lib/dir_hold.R" "$1" "$H_READY" "$H_STOP" 180 >/dev/null 2>&1 &
+  for _ in $(seq 1 100); do [ -s "$H_READY" ] && return 0; sleep 0.2; done; return 1; }
+hold_stop(){ : > "$H_STOP"
+  for _ in $(seq 1 50); do rm -rf "$1" 2>/dev/null; [ -d "$1" ] || break; sleep 0.2; done
+  if [ -d "$1" ] && [ -s "$H_READY" ]; then local hp; hp=$(tr -d '\r\n' < "$H_READY")
+    tasklist //FI "PID eq $hp" //FI "IMAGENAME eq Rscript.exe" //NH 2>/dev/null | grep -q "$hp" && taskkill //F //PID "$hp" >/dev/null 2>&1
+    sleep 0.5; rm -rf "$1" 2>/dev/null; fi
+  rm -f "$H_READY" "$H_STOP"; [ ! -d "$1" ]; }
+b5log_has(){ cat "$SB"/.cache/scheduler_logs/b5_design_*.log 2>/dev/null | tr -d '\r' | grep -qF "$1"; }
+s12_state(){ echo "rc=$LANE_RC refused=$(evc b5_design_refused) claimed=$(evc halt_claimed) marker=$(evc claim_release_marker) failed=$(evc claim_release_failed) calls=$(ncalls) dir=[$(ls -A "$CLM" 2>&1 | tr '\n' ' ')]"; }
+reset_sb designed 0
+run_lane normal
+if [ "$LANE_RC" = 0 ] && [ "$(evc b5_design_refused)" = 1 ] && [ ! -d "$CLM" ] && [ "$(evc claim_release_marker)" = 0 ] \
+   && [ "$(evc claim_release_failed)" = 0 ] && [ "$(ncalls)" = 0 ]; then
+  ok "S12a 잠금 없음 — 획득·H1 거부·해제 → 디렉터리 제거 · 해제 이벤트 0 · LLM 호출 0"
+else ng "S12a" "$(s12_state)"; fi
+if hold_start "$CLM"; then
+  printf '%s' "$REL_FIX" > "$CLM/released.json"
+  run_lane normal
+  if [ "$LANE_RC" = 0 ] && [ "$(evc halt_claimed)" = 0 ] && [ "$(evc b5_design_refused)" = 2 ] && [ "$(evc claim_release_marker)" = 1 ] \
+     && [ "$(evc claim_release_failed)" = 0 ] && b5log_has "release: marker_left"; then
+    ok "S12b ★실물 잠금 → 해제 marker_left(rc 0) → claim_release_marker(정보) · claim_release_failed 0"
+  else ng "S12b 표식이 남았는데 실패로 찍거나 무기록" "$(s12_state)"; fi
+  [ -d "$CLM" ] && [ -f "$CLM/released.json" ] && [ ! -f "$CLM/owner.json" ] \
+    && ok "S12c 사실: 디렉터리 존치 · released.json 있음 · owner.json 없음(09-18 23:53 실측 모양)" || ng "S12c 잠금 모양" "$(s12_state)"
+  run_lane normal
+  [ "$LANE_RC" = 0 ] && [ "$(evc halt_claimed)" = 0 ] && [ "$(evc b5_design_refused)" = 3 ] && [ "$(evc claim_release_marker)" = 2 ] \
+    && ok "S12d 다음 실행 — b5_claim_acquire 가 표식을 보고 나이 무관 즉시 제자리 인수(halt_claimed 0)" || ng "S12d 표식을 남겼는데 다음 실행이 막혔다" "$(s12_state)"
+  # 음성 대조 — 코드 루트 사본(ops · reinforcement 최상위 통째 · 손으로 고르지 않는다)의 rf_claim.R 만 돌연변이
+  CODE2="$T/code"; mkdir -p "$CODE2/02_Infrastructure/ops" "$CODE2/02_Infrastructure/reinforcement"
+  cp "$ROOT"/02_Infrastructure/ops/*.R "$ROOT"/02_Infrastructure/ops/*.sh "$ROOT"/02_Infrastructure/ops/*.py "$CODE2/02_Infrastructure/ops/" 2>/dev/null
+  cp "$ROOT"/02_Infrastructure/reinforcement/*.R "$CODE2/02_Infrastructure/reinforcement/" 2>/dev/null
+  printf '\nrf_claim_write_marker <- function(claim) "injected: marker write blocked (S12)"\n' >> "$CODE2/02_Infrastructure/ops/rf_claim.R"
+  QVEST_B5_CODE_ROOT="$CODE2" run_lane normal
+  if [ "$LANE_RC" = 0 ] && [ "$(evc b5_design_refused)" = 4 ] && [ "$(evc claim_release_failed)" = 1 ] && [ "$(evc claim_release_marker)" = 2 ] \
+     && grep -E '"event": *"claim_release_failed"' "$JL" | grep -F '"rc": "1"' | grep -qF 'unlink_failed | injected: marker write blocked (S12)'; then
+    ok "S12e ★[위반] 잠금 + 표식 쓰기 차단(코드 루트 사본 돌연변이) → claim_release_failed(reason=unlink_failed | 원인 · rc 1)"
+  else ng "S12e 진짜 해제 실패를 못 잡는다" "$(s12_state)"; fi
+  [ -d "$CLM" ] && [ ! -f "$CLM/released.json" ] && ok "S12f 사실: 디렉터리 존치 · 표식 없음" || ng "S12f 상태" "$(s12_state)"
+  run_lane normal   # 원본 코드 — 표식 없이 갓 비워진 claim 은 빈 고아 60초 유예로 즉시 인수 불가
+  [ "$LANE_RC" = 0 ] && [ "$(evc halt_claimed)" = 1 ] && [ "$(evc b5_design_refused)" = 4 ] \
+    && ok "S12g 표식 없는 잔존 claim → 다음 실행 halt_claimed — 그래서 이것만 실패로 남긴다" || ng "S12g" "$(s12_state)"
+else ng "S12 잠금 픽스처 준비 실패 — S12b~g 판정 없음" "08_Tests/lib/dir_hold.R ready 미기록"; fi
+hold_stop "$CLM" && ok "S12h 잠금 해제 · claim 정리" || ng "S12h 잠금 픽스처가 안 풀린다" "$CLM"
 
 #── Z. 격리 ─────────────────────────────────────────────────────────────────────
 echo "=== Z. 격리 ==="

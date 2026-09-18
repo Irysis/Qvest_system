@@ -85,37 +85,53 @@ def _write_status(payload: dict) -> None:
 def _describe_generic(path: Path) -> dict:
     """벤치 외 퀀티 질의서(예: 03_Universe/Update_File/*_update.xlsx)의 지문.
 
-    ★이 파일들도 **같은 질의서**다 — A1 이 'Refresh' 하이퍼링크이고 B5/B6 이 Period(From/To).
-      다만 시트가 여럿이라 갱신 범위가 Book 이고, 지수 파서로는 못 읽는다.
-      그래서 여기서는 **첫 시트 A열의 마지막 날짜**만 본다(교체 판정에 필요한 최소량).
+    ★이 파일들도 **같은 질의서**다 — 시트마다 A1 이 'Refresh' 하이퍼링크이고 B5/B6 이 Period(From/To).
+      다만 시트가 여럿(Consensus 12 · Investor 4 질의 시트)이라 갱신 범위가 Book 이고, 지수 파서로는 못 읽는다.
+    ★크다: 시트당 ~2,450만 셀(A1:NTP9368). openpyxl 로 훑으면 분 단위라 **zip 스트림 + 정규식**으로
+      첫 시트 A열의 날짜만 센다. 날짜는 엑셀 일련번호(46227 = 2026-07-25)로 들어 있다.
     """
+    import re
+    import zipfile
+    from datetime import timedelta
     d = {'path': str(path), 'exists': path.exists(), 'kind': 'generic'}
     if not path.exists():
         return d
     st = path.stat()
     d['size_bytes'] = int(st.st_size)
     d['mtime'] = datetime.fromtimestamp(st.st_mtime).isoformat(timespec='seconds')
+    pat = re.compile(rb'<c r="A(\d+)"([^>]*?)(?:/>|>(?:<f>[^<]*</f>)?<v>([^<]*)</v>)')
     try:
-        import openpyxl
-        wb = openpyxl.load_workbook(path, read_only=True, data_only=True)
-        try:
-            ws = wb.worksheets[0]
-            last, n = None, 0
-            for (v,) in ws.iter_rows(min_col=1, max_col=1, values_only=True):
-                if v is None:
-                    continue
-                try:
-                    dt = datetime.fromisoformat(str(v)[:19])
-                except ValueError:
-                    continue
-                n += 1
-                if last is None or dt > last:
-                    last = dt
-        finally:
-            wb.close()
+        with zipfile.ZipFile(path) as z:
+            wbx = z.read('xl/workbook.xml').decode('utf-8', 'ignore')
+            d['sheets'] = re.findall(r'<sheet [^>]*name="([^"]+)"', wbx)
+            last, n, buf = None, 0, b''
+            with z.open('xl/worksheets/sheet1.xml') as f:
+                while True:
+                    chunk = f.read(8 << 20)
+                    if chunk:
+                        buf += chunk
+                        cut = buf.rfind(b'</row>')
+                        if cut < 0:
+                            continue
+                        part, buf = buf[:cut], buf[cut:]
+                    else:
+                        part, buf = buf, b''
+                    for m in pat.finditer(part):
+                        attrs, v = m.group(2), m.group(3)
+                        if v is None or b't="s"' in attrs or b't="str"' in attrs:
+                            continue
+                        try:
+                            x = float(v)
+                        except ValueError:
+                            continue
+                        if 20000 < x < 80000:            # 1954~2119 — 날짜 일련번호 범위
+                            n += 1
+                            last = x if last is None or x > last else last
+                    if not chunk:
+                        break
         d['rows'] = n
         if last is not None:
-            d['date_max'] = last.strftime('%Y-%m-%d')
+            d['date_max'] = (datetime(1899, 12, 30) + timedelta(days=int(last))).strftime('%Y-%m-%d')
     except Exception as e:
         d['read_error'] = f'{e.__class__.__name__}: {e}'
     return d
@@ -175,9 +191,21 @@ def _fetch_impl(workdir: Path, timeout_sec: int, visible: bool,
         cmd.append('-Visible')
 
     print(f'  드라이버 실행: {PS_DRIVER.name} (timeout {timeout_sec}s)')
+    n_sheets = 1
+    if scope == 'book':
+        try:
+            import re as _re
+            import zipfile as _zf
+            with _zf.ZipFile(target) as _z:
+                n_sheets = max(1, len(_re.findall(r'<sheet ', _z.read('xl/workbook.xml').decode('utf-8', 'ignore'))))
+        except Exception:
+            n_sheets = 20
+    # 시트당 timeout + 열기·저장 여유(큰 통합문서는 각각 수 분)
+    total_timeout = timeout_sec * n_sheets + 3600
+    print(f'  (범위={scope} · 시트 {n_sheets} · 전체 대기 상한 {total_timeout // 60}분)')
     proc = subprocess.run(cmd, capture_output=True, text=True,
                           encoding='utf-8', errors='replace',
-                          timeout=timeout_sec + 300)
+                          timeout=total_timeout)
     for line in (proc.stdout or '').splitlines():
         if line.strip():
             print(f'    {line.rstrip()}')
@@ -294,4 +322,11 @@ def main() -> int:
     after = _describe(dest)
     print(f'  교체 완료: rows={after.get("rows")} date_max={after.get("date_max")}')
     _write_status({'schema': 'quantiwise_fetch_status_v1', 'result': 'updated',
-                   'at': datetime.now().isoforma
+                   'at': datetime.now().isoformat(timespec='seconds'),
+                   'before': before, 'after': after,
+                   'driver': _LAST_DRIVER['detail']})
+    return 0
+
+
+if __name__ == '__main__':
+    sys.exit(main())

@@ -1,13 +1,13 @@
 # 02_Infrastructure INDEX
 
-> 자동 생성 2026-09-18 07:40 — 큐레이션 원본: `06_Registry/index_descriptions.json` (role/status/category 수동 보완처) · 재생성: `Rscript 02_Infrastructure/tools/build_artifact_index.R` (daily_refresh 말미 자동). 본 파일 직접 수정 금지 — 재생성 시 덮어씀.
+> 자동 생성 2026-09-19 00:41 — 큐레이션 원본: `06_Registry/index_descriptions.json` (role/status/category 수동 보완처) · 재생성: `Rscript 02_Infrastructure/tools/build_artifact_index.R` (daily_refresh 말미 자동). 본 파일 직접 수정 금지 — 재생성 시 덮어씀.
 
 ## 데이터 (3)
 
 | 항목 | 정체 | status | 최근 | 크기 |
 |---|---|---|---|---|
 | `F1. QT_to_xts.r` | 퀀티와이즈 엑셀 시계열을 xts로 변환하는 헬퍼 함수 2종(QT_to_xts / QT_to_xts_macro) — 데이터 인제스트 빌더들의 공용 유틸 | active | 2026-06-07 | 643B |
-| `data/` | 데이터 인제스트/캐시 계층 42건 — build_cache.R·build_index_cache.py·daily_refresh.sh·퀀티와이즈 파서(RAWDATA/benchmark parquet 생산) | active | 2026-09-07 | 10.5MB |
+| `data/` | 데이터 인제스트/캐시 계층 42건 — build_cache.R·build_index_cache.py·daily_refresh.sh·퀀티와이즈 파서(RAWDATA/benchmark parquet 생산) | active | 2026-09-18 | 10.7MB |
 | `factor_db/` | Factor DB 계층 43건 — 월간 373팩터 + 일간 팩터 빌더·load_month_factors(C15 유일 진입점)·registry | active | 2026-09-17 | 2.3MB |
 
 ## 백테스트 (3)
@@ -130,7 +130,7 @@
 | 항목 | 정체 | status | 최근 | 크기 |
 |---|---|---|---|---|
 | `monitoring/` | 라이브 페이퍼트래킹 — noLayer4 일별 마킹(mark_nolayer4_daily.R)·월간(run_nolayer4_monthly.sh)·holdout 대조(monitor_nolayer4_paper.R). 구 faithtrend 스크립트+.bak = deprecated rollback 보존 | active | 2026-09-02 | 60KB |
-| `ops/` | 운영 계층 54건 — bootstrap.sh(/qvest 진입)·cleanup.sh·scheduler/(.bat 태스크)·헬스체크·paper router | active | 2026-09-17 | 2.6MB |
+| `ops/` | 운영 계층 54건 — bootstrap.sh(/qvest 진입)·cleanup.sh·scheduler/(.bat 태스크)·헬스체크·paper router | active | 2026-09-18 | 2.6MB |
 | `telegram/` | 텔레그램 계층 4건 — telegram_notify.R(발송)·telegram_listener.py·telegram_commands.R·start_listener.sh (qvest-telegram SOT의 구현체) | active | 2026-09-05 | 231KB |
 | `tools/` | 운영 도구 16건 — build_artifact_index.R·paper_recharge_daily.R(논문 수집)·debate_helpers 등 | active | 2026-09-02 | 343KB |
 
@@ -191,7 +191,7 @@
 | `ast` | (미분류 — index_descriptions.json에 추가하세요) | - | 2026-08-02 | 187KB |
 | `book` | (미분류 — index_descriptions.json에 추가하세요) | - | 2026-08-30 | 41KB |
 | `methods` | (미분류 — index_descriptions.json에 추가하세요) | - | 2026-08-29 | 210KB |
-| `reinforcement` | (미분류 — index_descriptions.json에 추가하세요) | - | 2026-09-17 | 411KB |
+| `reinforcement` | (미분류 — index_descriptions.json에 추가하세요) | - | 2026-09-18 | 433KB |
 | `replication` | (미분류 — index_descriptions.json에 추가하세요) | - | 2026-08-29 | 8KB |
 | `utils` | (미분류 — index_descriptions.json에 추가하세요) | - | 2026-08-30 | 13KB |
 

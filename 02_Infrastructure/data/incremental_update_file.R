@@ -60,6 +60,10 @@ detect_update_changes <- function() {
   if (!dir.exists(UPDATE_DIR)) return(list(changed = character(0)))
 
   update_files <- list.files(UPDATE_DIR, pattern = "\\.xlsx$", full.names = TRUE)
+  # ★엑셀 소유자 잠금 파일(~$Name.xlsx)은 데이터가 아니다 (2026-09-19 실사고):
+  #   퀀티 갱신기가 Consensus_update.xlsx 를 연 사이 '~$Consensus_update.xlsx' 가 새 파일로 잡혀
+  #   grepl("Consensus") 가 참 → **아직 갱신 중인 옛 파일**로 컨센서스 적재가 돌았다.
+  update_files <- update_files[!startsWith(basename(update_files), "~$")]
   if (length(update_files) == 0) return(list(changed = character(0)))
 
   last <- .get_last_processed()
@@ -366,42 +370,74 @@ incremental_consensus <- function() {
   tryCatch({
     consensus_build_cache(force = TRUE)
 
-    # 각 metric의 증분만 기존 캐시에 append
-    tmp_files <- list.files(tmp_dir, pattern = "\\.parquet$", full.names = TRUE)
-    for (tf in tmp_files) {
-      metric <- basename(tf)
-      orig_file <- file.path(cons_cache_dir, metric)
-
-      tmp_dt <- as.data.table(read_parquet(tf))
-      new_rows <- tmp_dt[Date > base_max]
-
-      if (nrow(new_rows) > 0 && file.exists(orig_file)) {
-        orig_dt <- as.data.table(read_parquet(orig_file))
-        # 겹치는 날짜 제거 후 append
-        orig_dt <- orig_dt[!Date %in% unique(new_rows$Date)]
-        combined <- rbind(orig_dt, new_rows, fill = TRUE)
-        setorder(combined, Date)
-        # [2026-06-17 fix] Windows arrow mmap-on-write 잠금(error 1224) 회피:
-        #   read_parquet(orig)의 mmap을 rm+gc로 해제 후, temp 파일에 쓰고 rename으로 원자 교체.
-        rm(orig_dt); gc()
-        .tmp_out <- paste0(orig_file, ".tmp")
-        write_parquet(combined, .tmp_out)
-        if (file.exists(orig_file)) file.remove(orig_file)
-        file.rename(.tmp_out, orig_file)
-        cat(sprintf("  %s: +%d rows (max: %s)\n", metric, nrow(new_rows), max(combined$Date)))
-      }
-    }
+    .consensus_append_increment(tmp_dir, cons_cache_dir, base_max)
 
     # 임시 디렉토리 정리
     unlink(tmp_dir, recursive = TRUE)
     cat("[incr_consensus] 증분 완료.\n")
   }, error = function(e) {
-    cat(sprintf("[incr_consensus] 오류: %s\n", e$message))
     unlink(tmp_dir, recursive = TRUE)
+    # ★fail-closed (2026-09-19): 구판은 여기서 cat 만 하고 삼켰다 — 그러면 incremental_update_all 이
+    #   이 파일의 mtime 을 '처리됨' 으로 기록해 **다시는 재시도하지 않는다**(수급·유니버스 적재기는
+    #   이미 stop 전파다 — 컨센서스만 달랐다).
+    stop(sprintf("[incr_consensus] 오류: %s", conditionMessage(e)), call. = FALSE)
   }, finally = {
     CONSENSUS_CACHE <<- old_cache
     CONSENSUS_XLSX <<- old_xlsx
   })
+  invisible(TRUE)
+}
+
+# ─── 컨센서스 증분 붙이기 (파싱 산출 → 기존 캐시) ─────────────────────────────
+#' 파서가 tmp_dir 에 쓴 parquet 중 **Date 가 있는 메트릭**만 base_max 이후 행을 붙인다.
+#' ★2026-09-19 수리: 파서는 `ticker_map.parquet`(Ticker·Name, Date 없음)도 쓴다. 구판 루프는 그 파일에서
+#'   `tmp_dt[Date > base_max]` 로 죽었고, 그 뒤 알파벳 순서의 메트릭은 **붙지 못했다** — 지금까지 12종이
+#'   전부 'ti' 보다 앞(… target_price < ticker_map)이라 운 좋게 피했을 뿐, 매 적재마다 '오류' 가 찍혔다.
+#'   ticker_map 은 증분이 아니라 **합집합**(새 상장 종목 이름을 잃지 않게)으로 갱신한다.
+#' @return 붙인 메트릭별 행 수(named integer)
+.consensus_append_increment <- function(tmp_dir, cons_cache_dir, base_max) {
+  tmp_files <- list.files(tmp_dir, pattern = "\\.parquet$", full.names = TRUE)
+  added <- integer(0)
+  .atomic_write <- function(dt, dest) {
+    # [2026-06-17 fix] Windows arrow mmap-on-write 잠금(error 1224) 회피: temp 에 쓰고 rename.
+    .tmp_out <- paste0(dest, ".tmp")
+    write_parquet(dt, .tmp_out)
+    if (file.exists(dest)) file.remove(dest)
+    file.rename(.tmp_out, dest)
+  }
+  for (tf in tmp_files) {
+    metric <- basename(tf)
+    orig_file <- file.path(cons_cache_dir, metric)
+    tmp_dt <- as.data.table(read_parquet(tf))
+
+    if (identical(metric, "ticker_map.parquet")) {
+      if (all(c("Ticker", "Name") %in% names(tmp_dt))) {
+        old_map <- if (file.exists(orig_file)) as.data.table(read_parquet(orig_file)) else tmp_dt[0]
+        merged <- unique(rbind(tmp_dt, old_map[!Ticker %in% tmp_dt$Ticker], fill = TRUE), by = "Ticker")
+        rm(old_map); gc()
+        .atomic_write(merged, orig_file)
+        cat(sprintf("  %s: 종목명 합집합 %d종\n", metric, nrow(merged)))
+      }
+      next
+    }
+    if (!"Date" %in% names(tmp_dt)) {
+      cat(sprintf("  %s: Date 열 없음 — 증분 대상 아님(건너뜀)\n", metric))
+      next
+    }
+    new_rows <- tmp_dt[Date > base_max]
+    if (nrow(new_rows) > 0 && file.exists(orig_file)) {
+      orig_dt <- as.data.table(read_parquet(orig_file))
+      # 겹치는 날짜 제거 후 append
+      orig_dt <- orig_dt[!Date %in% unique(new_rows$Date)]
+      combined <- rbind(orig_dt, new_rows, fill = TRUE)
+      setorder(combined, Date)
+      rm(orig_dt); gc()
+      .atomic_write(combined, orig_file)
+      added[[metric]] <- nrow(new_rows)
+      cat(sprintf("  %s: +%d rows (max: %s)\n", metric, nrow(new_rows), max(combined$Date)))
+    }
+  }
+  invisible(added)
 }
 
 # ─── Investor_Act 증분 ───────────────────────────────────────────────────────

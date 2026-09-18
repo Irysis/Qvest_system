@@ -507,6 +507,9 @@ invisible(0L)
 
 rc <- tryCatch(main(), error = function(e) { jlog("fatal", err = conditionMessage(e)); 1L })
 .rel <- if (.CLAIM_HELD) list(ok = TRUE, reason = "inherited") else rf_claim_release(CLAIM)
-if (!isTRUE(.rel$ok)) jlog("claim_release_failed", reason = .rel$reason,
-     note = "고아 claim 이 남았다 — owner.json 의 pid 가 죽으면 다음 tick 이 즉시 회수한다")
+# ★표식이 남은 해제는 실패가 아니다(2026-09-19 · 병렬 러너와 동형) — 다음 tick 이 released.json 을 보고 즉시 인수한다.
+if (identical(.rel$reason, "marker_left")) jlog("claim_release_marker", reason = .rel$reason,
+     note = "디렉터리는 못 지웠지만 해제 표식을 남겼다 — 다음 tick 이 즉시 제자리 인수한다(정보)")
+if (!isTRUE(.rel$ok)) jlog("claim_release_failed", reason = .rel$reason, err = .rel$err %||% "",
+     note = "디렉터리도 표식도 남았다 — owner.json 의 pid 가 죽으면(빈 고아면 60초 뒤) 다음 tick 이 회수한다")
 quit(status = if (is.numeric(rc)) as.integer(rc) else 0L)

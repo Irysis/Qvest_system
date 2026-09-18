@@ -53,6 +53,7 @@
 #   Rscript rf_b5_design_lib.R record_emission <kind> <action> <state> <model> <n_siblings> <stage> [reason]
 #   Rscript rf_b5_design_lib.R verify <base_id> <lane_design.json> <round> <compose_only 0|1> <admitted_csv|-> <rejected_csv|->
 #   Rscript rf_b5_design_lib.R claim <claim_dir> <owner_pid> <stale_hours> / release <claim_dir>
+#                                                                         → release: 마지막 줄 "release: <reason>[ | <err>]" · 0 인수 가능(marker_left 포함) · 1 실패
 #   Rscript rf_b5_design_lib.R outcomes <out.csv>
 #==============================================================================
 suppressPackageStartupMessages({ library(data.table); library(jsonlite) })
@@ -886,7 +887,9 @@ if (!interactive() && identical(sys.nframe(), 0L)) {
     } else if (cmd == "claim") {
       r <- b5_claim_acquire(a[2], a[3], as.numeric(if (length(a) >= 4L) a[4] else 6))
       cat(sprintf("claim: %s | %s\n", r$reason, r$note)); quit(status = if (isTRUE(r$ok)) 0L else 1L)
-    } else if (cmd == "release") { r <- rf_claim_release(a[2]); cat(sprintf("release: %s\n", r$reason)); quit(status = if (isTRUE(r$ok)) 0L else 1L)
+    } else if (cmd == "release") {   # 마지막 줄 "release: <reason>[ | <err>]" · rc 0 = 다음 실행이 즉시 인수 가능(marker_left 포함 · 레인이 사유로 정보 이벤트를 가른다)
+      r <- rf_claim_release(a[2]); e <- gsub("[\r\n|]+", " ", .chr(r$err %||% ""))
+      cat(sprintf("release: %s%s\n", r$reason, if (nzchar(e)) paste0(" | ", e) else "")); quit(status = if (isTRUE(r$ok)) 0L else 1L)
     } else if (cmd == "outcomes") { O <- rf_overlay_outcomes(ROOT); fwrite(O, a[2]); cat(sprintf("outcomes: %d arms -> %s\n", nrow(O), a[2])) }
   } else if (nzchar(cmd)) stop("[b5_design] 알 수 없는 명령: ", cmd)
 }

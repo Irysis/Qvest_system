@@ -178,86 +178,108 @@ try {
   }
   if (-not $connected) { Finish 3 'addin_not_connected' '엑셀이 Quantiwise 애드인을 올리지 못했다' }
 
+  Say "통합문서 여는 중 (큰 파일은 수 분) — $work"
   $wb = $xl.Workbooks.Open($work, 0, $false)   # UpdateLinks=0 · ReadOnly=false
-  $ws = $wb.Worksheets.Item(1)
+  Say ("열림 — 시트 {0}개" -f $wb.Worksheets.Count)
 
-  function SheetState {
-    $lr = [int]$ws.Cells($ws.Rows.Count, 1).End(-4162).Row   # xlUp
-    @{ stamp     = [string]$ws.Range('B1').Text
-       period_to = [string]$ws.Range('B6').Text
+  # --- 시트 단위 상태·판정 (Sheet/Book 공용) ----------------------------------
+  #   ★Book 범위를 초판처럼 '첫 시트 스탬프 + 20초 안정' 으로 재면, 첫 시트가 끝나는 순간
+  #     나머지 11개 시트가 도는 중인데 완료로 읽는다. 그래서 **시트마다** 발화·완료를 잰다.
+  function SheetStateOf($sh) {
+    $lr = [int]$sh.Cells($sh.Rows.Count, 1).End(-4162).Row   # xlUp
+    @{ name      = [string]$sh.Name
+       stamp     = [string]$sh.Range('B1').Text
+       period_to = [string]$sh.Range('B6').Text
        last_row  = $lr
-       last_date = [string]$ws.Cells($lr, 1).Text }          # ★지평선 = A열 마지막 날짜
+       last_date = [string]$sh.Cells($lr, 1).Text }          # ★지평선 = A열 마지막 날짜
   }
-  $before = SheetState
-  $result.before = $before
-  Say "갱신 전: $($before.stamp) · Period(To)=$($before.period_to) · 마지막행=$($before.last_row) · 마지막일=$($before.last_date)"
-
-  # --- (4) Refresh 발화 ------------------------------------------------------
-  $fired = $false
-  try {
-    if ($Scope -eq 'Book') {
-      # 통합문서 전체 — 리본 'Refresh Book'(QW7menu m_8200)이 부르는 진입점을 그대로 쓴다.
-      $broker = New-Object -ComObject qwMain.QBroker
-      $miss = [System.Reflection.Missing]::Value
-      $broker.Run([int16]8200, $xl, $miss, $miss, $miss, $miss)
-      $fired = $true; $result.method = 'qbroker_run_8200'
-      Say 'Refresh 발화 = qwMain.QBroker.Run(8200) — 통합문서 전체'
+  function IsQuerySheet($sh) {
+    try {
+      if ($sh.Hyperlinks.Count -lt 1) { return $false }
+      $h = $sh.Hyperlinks.Item(1)
+      return ((([string]$h.ScreenTip) -match 'Quantiwise') -or (([string]$h.TextToDisplay) -match 'Refresh'))
+    } catch { return $false }
+  }
+  function RefreshSheet($sh, [int]$tmo) {
+    $b = SheetStateOf $sh
+    Say ("[{0}] 갱신 전: {1} · Period(To)={2} · 마지막일={3}" -f $b.name, $b.stamp, $b.period_to, $b.last_date)
+    $sh.Activate() | Out-Null
+    $sh.Hyperlinks.Item(1).Follow()
+    $dl = (Get-Date).AddSeconds($tmo); $chg = $null; $sig0 = "$($b.stamp)|$($b.last_row)"; $st = 0
+    while ((Get-Date) -lt $dl) {
+      Start-Sleep -Seconds 5
+      $c = SheetStateOf $sh
+      $sig = "$($c.stamp)|$($c.last_row)"
+      if ($sig -ne $sig0) { $chg = Get-Date; $sig0 = $sig; $st = 0 } elseif ($chg) { $st += 5 }
+      if ($chg -and $st -ge 20) { break }
     }
-    elseif ($ws.Hyperlinks.Count -ge 1) {
-      $ws.Activate() | Out-Null
-      $ws.Hyperlinks.Item(1).Follow()
-      $fired = $true; $result.method = 'hyperlink_follow'
-      Say 'Refresh 발화 = A1 하이퍼링크 Follow'
-    }
-  } catch { Say "하이퍼링크 경로 실패: $($_.Exception.Message)" }
+    $a = SheetStateOf $sh
+    # ★판정은 **지평선**으로 한다. B1 스탬프는 '응답이 왔다' 는 뜻이지 '새 값이 왔다' 가 아니다
+    #   (세션이 없으면 애드인은 캐시를 되돌리며 스탬프만 새로 찍는다 — 실측 09-18 23:13).
+    $adv = -not ($a.last_date -eq $b.last_date -and $a.last_row -le $b.last_row)
+    $note = ''; if (-not $chg) { $note = ' (응답 없음)' }
+    Say ("[{0}] 갱신 후: {1} · Period(To)={2} · 마지막일={3} · 전진={4}{5}" -f $a.name, $a.stamp, $a.period_to, $a.last_date, $adv, $note)
+    return @{ name = $a.name; before = $b; after = $a; responded = [bool]$chg; advanced = [bool]$adv }
+  }
 
-  if (-not $fired) {
+  # --- (4) 대상 시트 ------------------------------------------------------------
+  $targets = @()
+  foreach ($sh in $wb.Worksheets) { if (IsQuerySheet $sh) { $targets += $sh } }
+  if ($Scope -ne 'Book' -and $targets.Count -gt 1) { $targets = @($targets[0]) }
+  Say ("범위={0} · 질의 시트 {1}개 / 전체 {2}" -f $Scope, $targets.Count, $wb.Worksheets.Count)
+
+  if ($targets.Count -eq 0) {
+    # 하이퍼링크가 없는 질의서 — 리본이 부르는 진입점(QW7menu m_8200 Book / m_8100 Sheet)으로 폴백.
+    $ws = $wb.Worksheets.Item(1)
+    $b0 = SheetStateOf $ws
+    $fired = $false
     foreach ($mid in 8200, 8100) {
       try {
         $broker = New-Object -ComObject qwMain.QBroker
         $miss = [System.Reflection.Missing]::Value
         $broker.Run([int16]$mid, $xl, $miss, $miss, $miss, $miss)
-        $fired = $true; $result.method = "qbroker_run_$mid"
-        Say "Refresh 발화 = qwMain.QBroker.Run($mid)"
+        $fired = $true; $result.method = "qbroker_run_$mid"; Say "Refresh 발화 = qwMain.QBroker.Run($mid)"
         break
       } catch { Say "QBroker.Run($mid) 실패: $($_.Exception.Message)" }
     }
+    if (-not $fired) { Finish 1 'refresh_not_fired' 'Refresh 를 발화시키지 못했다(하이퍼링크 없음 · QBroker 실패)' }
+    Start-Sleep -Seconds ([Math]::Min($TimeoutSec, 120))
+    $a0 = SheetStateOf $ws
+    $result.before = $b0; $result.after = $a0
+    if ($a0.last_date -eq $b0.last_date -and $a0.last_row -le $b0.last_row) {
+      $wb.Close($false) | Out-Null; $wb = $null
+      Finish 2 'no_change' "지평선 불변($($a0.last_date)) — 폴백 경로"
+    }
+    $wb.Save(); $wb.Close($false) | Out-Null; $wb = $null
+    Finish 0 'updated' "갱신 완료(폴백) ($($b0.last_date) -> $($a0.last_date))"
   }
-  if (-not $fired) { Finish 1 'refresh_not_fired' 'Refresh 를 발화시키지 못했다(두 경로 모두 실패)' }
 
-  # --- (5) 완료 대기 — 지문이 바뀐 뒤 **멈출 때까지** ------------------------
-  $deadline = (Get-Date).AddSeconds($TimeoutSec)
-  $changedAt = $null; $lastSig = "$($before.stamp)|$($before.last_row)"; $stableFor = 0
-  while ((Get-Date) -lt $deadline) {
-    Start-Sleep -Seconds 5
-    $cur = SheetState
-    $sig = "$($cur.stamp)|$($cur.last_row)"
-    if ($sig -ne $lastSig) {
-      $changedAt = Get-Date; $lastSig = $sig; $stableFor = 0
-      Say "진행: $($cur.stamp) 마지막행=$($cur.last_row)"
-    } elseif ($changedAt) { $stableFor += 5 }
-    if ($changedAt -and $stableFor -ge 20) { break }
+  # --- (5) 시트마다 발화 → 완료 → 판정 ------------------------------------------
+  $result.method = 'hyperlink_follow'
+  $res = @(); $k = 0
+  foreach ($sh in $targets) {
+    $k++
+    Say ("--- 시트 {0}/{1}" -f $k, $targets.Count)
+    $res += ,(RefreshSheet $sh $TimeoutSec)
   }
-  $after = SheetState
-  $result.after = $after
+  $result.before = $res[0].before; $result.after = $res[0].after
+  $result.sheets = @($res | ForEach-Object { @{ name = $_.name; before = $_.before.last_date; after = $_.after.last_date;
+                                               responded = $_.responded; advanced = $_.advanced } })
+  $adv = @($res | Where-Object { $_.advanced })
+  $lag = @($res | Where-Object { -not $_.advanced } | ForEach-Object { $_.name })
 
-  if (-not $changedAt) {
+  if ($adv.Count -eq 0) {
     $wb.Close($false) | Out-Null; $wb = $null
-    Finish 2 'no_change' "타임아웃/무변화 — 시트가 그대로다($($after.stamp)). 원격에 새 값이 없거나 세션이 안 붙었다"
+    Finish 2 'no_change' ("지평선 불변 — 시트 {0}개 전부 그대로다. 세션이 없거나(로그인 창·인증 만료) 원격에 새 값이 없다." -f $res.Count)
   }
-
-  Say "갱신 후: $($after.stamp) · Period(To)=$($after.period_to) · 마지막행=$($after.last_row) · 마지막일=$($after.last_date)"
-
-  # ★판정은 **지평선**으로 한다. B1 스탬프는 '응답이 왔다' 는 뜻이지 '새 값이 왔다' 가 아니다.
-  #   (세션이 없으면 애드인은 캐시를 되돌리며 스탬프만 새로 찍는다 — 실측 09-18 23:13)
-  if ($after.last_date -eq $before.last_date -and $after.last_row -le $before.last_row) {
-    $wb.Close($false) | Out-Null; $wb = $null
-    Finish 2 'no_change' ("지평선 불변($($after.last_date)) — 스탬프만 갱신됐다. " +
-      "세션이 없거나(로그인 창·인증 만료) 원격에 새 값이 없다.")
-  }
+  Say ("저장 중 — 전진 시트 {0}/{1}" -f $adv.Count, $res.Count)
   $wb.Save()
   $wb.Close($false) | Out-Null; $wb = $null
-  Finish 0 'updated' "갱신 완료 ($($before.last_date) -> $($after.last_date) · $($before.last_row) -> $($after.last_row) 행)"
+  $span = "$($res[0].before.last_date) -> $($res[0].after.last_date)"
+  if ($lag.Count -gt 0) {
+    Finish 0 'partial' ("부분 갱신 — 전진 {0}/{1} ({2}) · 미전진: {3}" -f $adv.Count, $res.Count, $span, ($lag -join ', '))
+  }
+  Finish 0 'updated' ("갱신 완료 — 시트 {0}/{1} 전진 ({2})" -f $adv.Count, $res.Count, $span)
 }
 catch {
   $msg = $_.Exception.Message

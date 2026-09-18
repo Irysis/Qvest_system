@@ -17,6 +17,10 @@
 #          그 프로세스의 **시작시각이 기록과 다르면 죽은 owner** 로 본다(pid 재사용 = 남의 프로세스).
 #          기록에 proc_start 가 없으면(구판 claim) 종전 규칙 그대로 · 시작시각 조회 실패 = 모른다 = 살아있다.
 #     ③ 해제 실패는 조용히 넘기지 않는다(claim_release_failed)
+#        ★실패의 정의 = **디렉터리가 남았고 해제 표식도 없다** (2026-09-19). 디렉터리를 못 지워도 표식이 남았으면
+#          다음 실행이 즉시 제자리 인수한다 = 운영상 해제됨(marker_left · 정보 이벤트 claim_release_marker).
+#          구판은 표식을 남기고도 unlink_failed 를 돌려줘 정상 완주가 매번 실패로 찍혔다(병렬 러너 09-13~17 19건 ·
+#          B5 레인 09-18 23:53) — 상시 오탐은 진짜 해제 실패(표식도 못 씀)를 가린다.
 #   시간 문턱(stale_hours)은 owner.json 을 못 읽는 구판 claim 을 위한 폴백으로 남는다.
 #
 # ★pid 를 모르면 "살아있다" 로 본다 — 살아있는 배치의 mutex 를 빼앗는 것이 반대 실수보다 나쁘다.
@@ -158,7 +162,20 @@ rf_claim_acquire <- function(claim, stale_hours = 6) {
   list(ok = TRUE, reason = "acquired", age_h = NA_real_, owner_pid = Sys.getpid(), note = note)
 }
 
-#' @return list(ok, reason)  — 실패해도 예외를 던지지 않는다(호출자가 로그로 남긴다)
+#' 해제 표식(released.json) 쓰기. 획득 쪽(rf_claim_acquire · b5_claim_acquire · cleaner_distill_lib 게이트)은
+#'   이 파일의 **존재**만 본다. @return TRUE 또는 오류 메시지 — 판정은 호출자가 파일 존재로 다시 잰다.
+#'   (검사는 이 함수를 덮어 '표식 쓰기까지 막힌' 경우를 주입한다 — test_rf_claim.R · test_reinforce_auto.sh 3d · test_rf_b5_design.sh S12)
+rf_claim_write_marker <- function(claim) {
+  tryCatch({ writeLines(jsonlite::toJSON(list(
+      released_at = format(Sys.time(), "%Y-%m-%dT%H:%M:%S%z"), by_pid = Sys.getpid()),
+      auto_unbox = TRUE), file.path(claim, "released.json")); TRUE },
+    error = function(e) conditionMessage(e))
+}
+
+#' @return list(ok, reason[, err])  — 실패해도 예외를 던지지 않는다(호출자가 로그로 남긴다)
+#'   reason: absent | removed | removed_retry | marker_left(ok · 디렉터리는 남았지만 표식이 있다) |
+#'           removed_late(ok · 표식은 못 썼는데 그 사이 디렉터리가 사라졌다) | unlink_failed(실패 · 디렉터리도 표식도 그대로)
+#'   ★ok 는 "다음 실행이 즉시 인수할 수 있는가" 다 — 디렉터리 부재 ∨ 표식 존재. 쓰기 호출의 성패가 아니라 **남은 상태**로 잰다.
 rf_claim_release <- function(claim) {
   if (!dir.exists(claim)) return(list(ok = TRUE, reason = "absent"))
   unlink(claim, recursive = TRUE)
@@ -168,8 +185,8 @@ rf_claim_release <- function(claim) {
   # ★디렉터리를 못 지웠다면 **해제 표식**을 남긴다. unlink 이 owner.json 만 지우고
   #   디렉터리를 남기는 경우가 실재하고(2026-08-30), 그러면 후속 실행이 소유자를 못 읽어
   #   6시간 폴백으로 떨어진다. 표식이 있으면 다음 실행이 즉시 회수한다.
-  tryCatch(writeLines(jsonlite::toJSON(list(
-      released_at = format(Sys.time(), "%Y-%m-%dT%H:%M:%S%z"), by_pid = Sys.getpid()),
-      auto_unbox = TRUE), file.path(claim, "released.json")), error = function(e) NULL)
-  list(ok = FALSE, reason = "unlink_failed")
+  w <- rf_claim_write_marker(claim)
+  if (file.exists(file.path(claim, "released.json"))) return(list(ok = TRUE, reason = "marker_left"))
+  if (!dir.exists(claim)) return(list(ok = TRUE, reason = "removed_late"))
+  list(ok = FALSE, reason = "unlink_failed", err = if (is.character(w)) w[1] else "표식 쓰기 후 파일 부재")
 }

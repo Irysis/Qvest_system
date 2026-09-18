@@ -165,14 +165,25 @@ def _():
         wb = openpyxl.Workbook()
         ws = wb.active
         ws['A1'] = 'Refresh'
-        for i, d in enumerate(['2026-08-27', '2026-08-28'], start=15):
+        # 퀀티 수출본은 A열 날짜를 **엑셀 일련번호**로 담는다(46227 = 2026-07-25) — 실물과 같은 형식으로.
+        #   문자열 날짜·공유문자열 번호는 날짜로 세면 안 된다(번호가 날짜 범위에 들면 가짜 지평선).
+        import datetime as _dt
+        ws['A14'] = 'D A T E'
+        for i, d in enumerate([_dt.datetime(2026, 8, 27), _dt.datetime(2026, 8, 28)], start=15):
             ws.cell(row=i, column=1).value = d
+        ws['A30'] = 46300          # 숫자지만 셀 서식 없음 — 일련번호로 세어진다(실물과 동형)
+        ws['A31'] = '2026-12-31'   # 문자열 — 세면 안 된다
         wb.save(p)
         wb.close()
         d = QF._describe(p)
         assert d.get('kind') == 'generic', f'kind={d.get("kind")}'
-        assert d.get('date_max') == '2026-08-28' and d.get('rows') == 2, d
-    return f"generic · rows={d['rows']} · date_max={d['date_max']}"
+        # ★기대값은 손으로 세지 않는다 — 독립 변환기(openpyxl)로 재도출한다.
+        #   (초판은 46300 을 10-06 으로 손계산해 코드가 아니라 검사가 틀렸다. 실제 10-05)
+        from openpyxl.utils.datetime import from_excel
+        want = from_excel(46300).strftime('%Y-%m-%d')
+        assert d.get('rows') == 3 and d.get('date_max') == want, (d, want)
+        assert 'sheets' in d and len(d['sheets']) == 1, d
+    return f"generic · rows={d['rows']} · date_max={d['date_max']} · 문자열 날짜 무시"
 
 
 def main() -> int:

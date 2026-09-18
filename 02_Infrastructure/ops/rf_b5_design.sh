@@ -134,7 +134,17 @@ CL_OUT=$(tr -d '\r' < "$CL_TMP" | tail -1); rm -f "$CL_TMP"
 ARM_BACKUP=""
 cleanup() {
   [ -n "$ARM_BACKUP" ] && rm -rf "$ARM_BACKUP" 2>/dev/null
-  Rscript "$LIB" release "$CLAIM" >>"$LOG" 2>&1 || jl claim_release_failed "base_id=$BID"
+  # ★rc 0 = 다음 실행이 즉시 인수할 수 있다(디렉터리 부재 ∨ 해제 표식). 표식만 남은 해제(marker_left)는 정보 이벤트다 —
+  #   2026-09-18 23:53 정상 완주가 claim_release_failed 로 찍혔다(상시 오탐은 진짜 실패를 가린다). 실패 = 디렉터리도 표식도 그대로.
+  local rel rrc
+  rel=$(Rscript "$LIB" release "$CLAIM" 2>>"$LOG"); rrc=$?
+  rel=$(printf '%s\n' "$rel" | tr -d '\r' | grep '^release:' | tail -1)
+  printf '%s\n' "${rel:-release: (출력 없음)}" >> "$LOG"
+  if [ "$rrc" -ne 0 ]; then jl claim_release_failed "base_id=$BID" "reason=${rel#release: }" "rc=$rrc"
+  elif [ "${rel#release: }" = "marker_left" ]; then
+    jl claim_release_marker "base_id=$BID" "reason=marker_left" "note=디렉터리는 못 지웠지만 해제 표식을 남겼다 — 다음 실행이 즉시 제자리 인수한다(정보)"
+  fi
+  return 0
 }
 trap cleanup EXIT
 

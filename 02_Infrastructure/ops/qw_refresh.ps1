@@ -196,8 +196,22 @@ function Refresh-One($f,$target) {
     Start-Sleep -Seconds 6
     if (-not (QW-Alive)) { Write-Host "[$($f.name)] session kicked"; $result="kicked" }
     else {
-      $b6 = "$($wb.Worksheets.Item(1).Range('B6').Value2)"
-      $ok = $b6 -match "\[$target\]"
+      # Completion = EVERY query sheet's resolved Period(To) (B6 bracket) >= target.
+      #   (2026-09-19 fix) old check = sheet1 bracket == target. After midnight / before RAWDATA
+      #   is appended, CPD-1TD resolves one day past target (e.g. [20260918] vs 20260917) and the
+      #   old check looped 'target not reached' forever. It also ignored sheets 2..N of multi-sheet
+      #   books (Consensus 12, Investor 4) - a sheet that failed mid-book was never seen.
+      $b6 = ""; $ok = $true; $nq = 0
+      foreach ($ws2 in $wb.Worksheets) {
+        if ("$($ws2.Range('A6').Value2)" -like "Period*To*") {
+          $nq++
+          $t6 = "$($ws2.Range('B6').Value2)"
+          if (-not $b6) { $b6 = $t6 }
+          if ($t6 -match '\[(\d{8})\]') { if ([long]$Matches[1] -lt [long]$target) { $ok = $false; Write-Host "[$($f.name)] sheet '$($ws2.Name)' To=$t6 < $target" } }
+          else { $ok = $false; Write-Host "[$($f.name)] sheet '$($ws2.Name)' To unresolved: $t6" }
+        }
+      }
+      if ($nq -eq 0) { $ok = $false }
       $wb.Save()
       $b1 = "$($wb.Worksheets.Item(1).Range('B1').Value2)"
       if ($ok) { Write-Host "[$($f.name)] OK -> $b6 / $b1"; $result="ok" }

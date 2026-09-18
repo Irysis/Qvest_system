@@ -51,6 +51,8 @@ SBX="$ROOTF/.cache/_test_rf_sandbox"
 SBX_LOG="$SBX/.cache/reinforce_auto_log.jsonl"
 CLAIM_UNIT="$ROOTF/.cache/_test_rf_claim_unit"
 FIXPID_F="$ROOTF/.cache/_test_rf_fixture.pid"
+# 3d 실물 잠금 픽스처(08_Tests/lib/dir_hold.R) — 붙잡은 프로세스가 스스로 끝나기 전에 restore 가 내보낸다
+HOLD_READY="$ROOTF/.cache/_test_rf_hold.ready"; HOLD_STOP="$ROOTF/.cache/_test_rf_hold.stop"
 
 sbx_build(){
   rm -rf "$SBX"
@@ -112,7 +114,19 @@ p=r'$SBX_LOG';n=int(sys.argv[1]);off=int(sys.argv[2])
 d=(datetime.date.today()-datetime.timedelta(days=off)).strftime('%Y-%m-%d')
 io.open(p,'w',encoding='utf-8').write(''.join(json.dumps({'ts':d+'T10:00:00+0900','event':'cell_done','src':'fixture'})+'\n' for _ in range(n)))" "$1" "$2"; }
 BAK="$(mktemp)"; cp "$CFG" "$BAK" 2>/dev/null   # 사본의 사본 — 공유 설정 무접촉
-restore(){ [ -s "$BAK" ] && cp "$BAK" "$CFG"; rm -f "$BAK" "$CFG"; rm -rf "$CLAIM" "$CLAIM_UNIT"
+# $1 = 붙잡을 디렉터리. 다른 프로세스가 그 디렉터리를 작업 디렉터리로 쥐면 Windows 가 삭제를 거부한다(unlink 은 안의 파일만 지운다).
+hold_start(){ rm -f "$HOLD_READY" "$HOLD_STOP"; mkdir -p "$1"
+  Rscript "$ROOTF/08_Tests/lib/dir_hold.R" "$1" "$HOLD_READY" "$HOLD_STOP" 300 >/dev/null 2>&1 &
+  for _ in $(seq 1 100); do [ -s "$HOLD_READY" ] && return 0; sleep 0.2; done; return 1; }
+# $1 = 붙잡은 디렉터리. 정중히 내보내고(stop 파일) 지워질 때까지 기다린다. 안 나가면 그 pid 가 **Rscript 일 때만** 강제 종료.
+hold_stop(){ : > "$HOLD_STOP"
+  for _ in $(seq 1 50); do rm -rf "$1" 2>/dev/null; [ -d "$1" ] || break; sleep 0.2; done
+  if [ -d "$1" ] && [ -s "$HOLD_READY" ]; then local hp; hp=$(tr -d '\r\n' < "$HOLD_READY")
+    tasklist //FI "PID eq $hp" //FI "IMAGENAME eq Rscript.exe" //NH 2>/dev/null | grep -q "$hp" && taskkill //F //PID "$hp" >/dev/null 2>&1
+    sleep 0.5; rm -rf "$1" 2>/dev/null; fi
+  rm -f "$HOLD_READY" "$HOLD_STOP"; [ ! -d "$1" ]; }
+restore(){ [ -s "$HOLD_READY" ] && hold_stop "$CLAIM"
+           [ -s "$BAK" ] && cp "$BAK" "$CFG"; rm -f "$BAK" "$CFG"; rm -rf "$CLAIM" "$CLAIM_UNIT"
            # 배경 픽스처(살아있는 소유자 pid)가 남았으면 **Windows pid** 로 정리한다 — bash kill 은 MSYS pid 를 본다
            [ -s "$FIXPID_F" ] && taskkill //F //PID "$(cat "$FIXPID_F")" >/dev/null 2>&1
            rm -f "$FIXPID_F"; rm -rf "$SBX"; unset QVEST_RF_CONFIG QVEST_RF_CLAIM; return 0; }
@@ -251,6 +265,64 @@ if sed 's/#.*$//' "$TICKPRB" | grep -q "reinforce_auto_run.R"; then ok "tick 검
 else ng "tick 검사기가 위반 주입에도 미발화 — 죽은 검사"; fi
 rm -f "$TICKPRB"
 cp "$BAK" "$CFG" 2>/dev/null   # 이후 절이 원본 설정을 보게 되돌린다
+
+echo "=== 3d. 해제 판정 = 사실 — 표식이 남으면 정보 · 표식도 못 쓰면 실패 (양방향 · 러너 2종 · 실물 잠금) ==="
+# 2026-09-19: unlink 이 owner.json 만 지우고 디렉터리를 남겨도 해제 표식(released.json)이 남으면 다음 tick 이
+#   즉시 제자리 인수한다 = 운영상 해제됨. 구판은 그걸 claim_release_failed 로 찍었다(병렬 09-13~17 19건 · B5 09-18 23:53)
+#   — 상시 오탐은 진짜 실패(표식도 못 씀)를 가린다. 잠금은 실물(08_Tests/lib/dir_hold.R), 표식 쓰기 실패만 샌드박스
+#   rf_claim.R 사본 끝에 rf_claim_write_marker 재정의를 덧붙여 주입한다(돌연변이 · 끝에 원본과 cmp 로 원복 대조).
+REL_FIX='{"released_at":"fixture","by_pid":1}'   # 앞 실행이 남긴 표식 = 러너가 잠긴 claim 에 제자리로 들어가는 입구
+rf_seq(){ env -u QVEST_RF_CLAIM_HELD QVEST_RF_ALLOW_SEQ=1 QM_ROOT="$SBX" CLAUDE_PROJECT_DIR="$SBX" R_ENVIRON_USER="$SBX/empty.Renviron" \
+            QVEST_RF_CONFIG="$CFG" QVEST_RF_CLAIM="$CLAIM" timeout 120 Rscript "$ROOTF/02_Infrastructure/ops/reinforce_auto_run.R" 2>&1; }
+evs(){ printf '%s' "$1" | grep -oE 'halt_[a-z_]*|claim_[a-z_]* [a-z]+=[^ ]*' | head -4 | tr '\n' ' '; }
+cfg_set 1 9999; sbx_log_set 0 0; rm -rf "$CLAIM"
+# (a) 정상 — 잠금 없음: 디렉터리가 지워지고 해제 이벤트는 0 (아래 두 이벤트가 잠금 없이도 나면 판정이 아니라 상수다)
+OUT=$(rf_run)
+if printf '%s' "$OUT" | grep -q "halt_no_active_entry" && [ ! -d "$CLAIM" ] && ! printf '%s' "$OUT" | grep -q "claim_release_"; then
+  ok "(a) 잠금 없음 → 디렉터리 제거 · claim_release_* 이벤트 0 (병렬 러너)"
+else ng "(a) 정상 해제" "dir=$([ -d "$CLAIM" ] && echo 남음 || echo 없음) $(evs "$OUT")"; fi
+if hold_start "$CLAIM"; then
+  printf '%s' "$REL_FIX" > "$CLAIM/released.json"
+  # (b) 실물 잠금 → 해제 = marker_left → 정보 이벤트만
+  OUT=$(rf_run)
+  if printf '%s' "$OUT" | grep -q "claim_release_marker reason=marker_left" && ! printf '%s' "$OUT" | grep -q "claim_release_failed"; then
+    ok "(b) 잠긴 claim · 표식 남김 → claim_release_marker(정보) · claim_release_failed 0 (병렬 러너)"
+  else ng "(b) 표식이 남았는데 실패로 찍거나 무기록" "$(evs "$OUT")"; fi
+  if [ -d "$CLAIM" ] && [ -f "$CLAIM/released.json" ] && [ ! -f "$CLAIM/owner.json" ]; then
+    ok "(b) 사실: 디렉터리 존치 · released.json 있음 · owner.json 없음(09-18 23:53 실측 모양)"
+  else ng "(b) 잠금 모양이 실사고와 다르다" "$(ls -A "$CLAIM" 2>&1 | tr '\n' ' ')"; fi
+  # (b) 다음 tick — 표식을 보고 나이 무관 즉시 제자리 인수
+  OUT=$(rf_run)
+  if printf '%s' "$OUT" | grep -q "claim_stale_reclaim note=해제 표식" && printf '%s' "$OUT" | grep -q "halt_no_active_entry" \
+     && ! printf '%s' "$OUT" | grep -q "halt_claimed"; then
+    ok "(b) 다음 실행이 표식을 보고 즉시 제자리 인수 → main 도달"
+  else ng "(b) 표식을 남겼는데 다음 실행이 막혔다" "$(evs "$OUT")"; fi
+  # (b) 퇴역 러너도 같은 소비자 — 디버깅 탈출구로만 도는 경로지만 코드가 갈라지면 한쪽에만 오탐이 남는다
+  OUT=$(rf_seq)
+  if printf '%s' "$OUT" | grep -q "claim_release_marker reason=marker_left" && ! printf '%s' "$OUT" | grep -q "claim_release_failed"; then
+    ok "(b) 퇴역 러너(ALLOW_SEQ) — 표식 남김 → claim_release_marker(정보)"
+  else ng "(b) 퇴역 러너 판정" "$(evs "$OUT")"; fi
+  # (c) 음성 대조 — 표식 쓰기까지 막히면 claim_release_failed 가 실제로 난다(러너 2종)
+  RFC_S="$SBX/02_Infrastructure/ops/rf_claim.R"; cp "$RFC_S" "$SBX/rf_claim.R.orig"
+  printf '\nrf_claim_write_marker <- function(claim) "injected: marker write blocked (test 3d)"\n' >> "$RFC_S"
+  OUT=$(rf_run)
+  if printf '%s' "$OUT" | grep -q "claim_release_failed reason=unlink_failed" && ! printf '%s' "$OUT" | grep -q "claim_release_marker" \
+     && grep '"event":"claim_release_failed"' "$SBX_LOG" | tail -1 | grep -q 'injected: marker write blocked'; then
+    ok "(c) [위반] 잠금 + 표식 쓰기 차단 → claim_release_failed(reason=unlink_failed · err 에 원인) (병렬 러너)"
+  else ng "(c) 진짜 해제 실패를 못 잡는다" "$(evs "$OUT")"; fi
+  if [ -d "$CLAIM" ] && [ ! -f "$CLAIM/released.json" ]; then ok "(c) 사실: 디렉터리 존치 · 표식 없음(= 다음 실행 즉시 인수 불가)"
+  else ng "(c) 상태" "$(ls -A "$CLAIM" 2>&1 | tr '\n' ' ')"; fi
+  printf '%s' "$REL_FIX" > "$CLAIM/released.json"   # 퇴역 러너의 입구(표식 없이 갓 비워진 claim 은 빈 고아 60초 유예로 막힌다)
+  OUT=$(rf_seq)
+  if printf '%s' "$OUT" | grep -q "claim_release_failed reason=unlink_failed" && ! printf '%s' "$OUT" | grep -q "claim_release_marker"; then
+    ok "(c) [위반] 퇴역 러너 — 표식 쓰기 차단 → claim_release_failed"
+  else ng "(c) 퇴역 러너 판정" "$(evs "$OUT")"; fi
+  cp "$SBX/rf_claim.R.orig" "$RFC_S"; rm -f "$SBX/rf_claim.R.orig"
+  if cmp -s "$ROOTF/02_Infrastructure/ops/rf_claim.R" "$RFC_S"; then ok "돌연변이 원복 — 샌드박스 rf_claim.R = 원본"
+  else ng "돌연변이가 남았다 — 이후 절이 주입된 사본을 잰다"; fi
+else ng "잠금 픽스처 준비 실패 — (b)(c) 판정 없음" "08_Tests/lib/dir_hold.R ready 미기록"; fi
+if hold_stop "$CLAIM"; then ok "잠금 해제 · claim 정리"; else ng "잠금 픽스처가 안 풀린다" "$CLAIM"; fi
+cp "$BAK" "$CFG" 2>/dev/null
 
 echo "=== 4. 프로그램 격자 무결성 ==="
 "$PY" - <<'PYEOF'
