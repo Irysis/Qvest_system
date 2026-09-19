@@ -17,11 +17,46 @@
   "calmar": 0.474,
   "oos_retention": -0.021,
   "portfolio_alpha_t": 3.297,
-  "next_probes": [
-    "다음 격자 축 B2(weighting) — 이 블록 승자 위에서 측정",
-    "B5_17(최고 3.297)는 B4 조합 후보로 고정 · B5_31(최저 2.143)는 축 역작동 여부를 조합 LOO 로 분리"
-  ],
+  "next_probes": ["다음 격자 축 B2(weighting) — 이 블록 승자 위에서 측정", "B5_17(최고 3.297)는 B4 조합 후보로 고정 · B5_31(최저 2.143)는 축 역작동 여부를 조합 LOO 로 분리"],
   "next_probe": "다음 격자 축 B2(weighting) — 이 블록 승자 위에서 측정 | B5_17(최고 3.297)는 B4 조합 후보로 고정 · B5_31(최저 2.143)는 축 역작동 여부를 조합 LOO 로 분리",
   "source_paper": "https://arxiv.org/abs/2002.06975",
-  "record_type": "performance"
+  "record_type": "performance",
+  "mechanism": "판정: B1 에서 어떤 선정 축을 써도 0.551~0.607 에 고정이던 MDD 가 오버레이 소비 지점에서 처음 움직였다(B5 범위 MDD 0.450~0.579) — B1 의 '소비 지점' 진단은 지지된다. 다만 칸을 가른 것은 어떤 상태변수를 읽는가가 아니라 노출 축소를 몇 단계로 나누는가였다. 같은 추세 신호를 읽는 3칸이 단계 수 순으로 정렬한다: 부호 판독 B5_16 MDD 0.557·Calmar 0.401, run-length B5_17 MDD 0.511·Calmar 0.474, 단계형 B5_18 MDD 0.450·Calmar 0.516. MDD 는 단조인데 PORT_t 는 2.920→3.297→2.717 로 비단조다 — 단계를 늘려 얻은 MDD 는 노출을 더 줄여서 산 것이고 그 대가가 PORT_t 에 찍힌다. 상태변수를 시장에서 보유 구성으로 바꾼 B5_21(book_convexity_brake)은 PORT_t 3.165 를 지켰지만 MDD 0.507·Calmar 0.459 로 B1_1 의 Calmar 0.457 과 같다 — B1 처방은 PORT_t 보존 면에서만 지지되고 MDD 면에서는 반증됐다. 상주 스칼라 B5_31 은 PORT_t 2.143·CAGR 0.212·MDD 0.463·Calmar 0.458 로 B5_18(2.717·0.232·0.450·0.516)에 네 지표 모두 열위 — 스칼라 축소 회피 처방은 지지된다. 2층 스택 B5_22(ts_mom_sign×csd_idio_tilt)는 단층 B5_16 대비 MDD 0.557→0.579·PORT_t 2.920→2.446 로 양방 악화, 블록 최악 Calmar 0.362 — 곱 합성이 감쇠를 더하지 않는다. 대가는 일관된다: MDD 하위 3칸(B5_18·B5_19·B5_31)의 PORT_t 가 하위권이고 CAGR 폭이 0.210~0.242 로 좁아 Calmar 상한이 0.516 에서 멎는다. 미결 ①이 MDD 감소가 타이밍인가 단순 평균 총노출 축소인가 — 칸별 실현 평균 총노출을 MDD 감소폭에 회귀해야 갈린다. 미결 ②B1 이 남긴 'D04 를 tilt 소비 지점에서' 는 이번 설계에 포함되지 않아 여전히 미측정이다.",
+  "mechanism_by": "llm:block_end",
+  "mechanism_at": "2026-09-19T23:11:12+0900",
+  "prior_lessons_used": "B1",
+  "next_block_actions": [
+    {
+      "action": "B2 전 칸을 Σw=1·총노출 무변경으로 고정하고 비중 방법만 교체해 MDD 를 잰다(노출을 건드리는 arm 은 한 칸도 쓰지 않는다).",
+      "why": "B5 의 MDD 감소분이 전부 노출 축소와 동반됐고(B5_18 MDD 0.450 에 PORT_t 2.717, B5_31 MDD 0.463 에 PORT_t 2.143), 노출을 고정한 대조가 이 블록에 없었다.",
+      "expect": "총노출 불변에서 MDD < 0.50 이면서 CAGR ≥ 0.232 인 칸이 나오면 PORT_t 대가는 위험통제의 성질이 아니라 스칼라 축소의 성질이다. 전 칸이 MDD ≥ 0.52 면 25종 long-only 의 MDD 는 비중으로 안 열리고 노출 축소가 유일 통로다."
+    },
+    {
+      "action": "qepm:CDaR_LP 로 낙폭 경로 자체를 목적함수에 넣어 B5_18(MDD 0.450·Calmar 0.516)과 대조한다.",
+      "why": "B5 에서 경로를 단계로 읽은 arm(B5_18 단계형)이 시점 부호로 읽은 arm(B5_16)을 MDD 0.450 대 0.557 로 이겼다 — 경로 정보가 위험 축을 움직인다는 방향이 비중 축에서도 전달되는지가 다음 갈림이다.",
+      "expect": "CDaR_LP 가 MDD ≤ 0.450 을 CAGR ≥ 0.232 에서 내면 경로 목적은 소비 지점을 넘어 전달된다. MDD 0.52 이상이면 경로 정보는 노출 스케일에서만 작동한다."
+    },
+    {
+      "action": "lean:riskparity 로 B1 이 처방했으나 B5 설계에 오르지 못한 '등가 위험 지분' 을 비중 소비 지점에서 집행한다.",
+      "why": "B1 진단은 MDD 가 개별 종목 특성이 아니라 보유 전체의 동조에서 온다는 것이었고, 동일가중 1/25 가 만드는 위험 지분 불균등은 아직 한 번도 직접 처치된 적이 없다.",
+      "expect": "riskparity 가 score_tilt 대비 MDD 를 0.03 이상 낮추면 불균등이 실재 원인이다. 차이가 0.01 미만이면 동조는 지분 배분이 아니라 유니버스 수준에서 결정된다."
+    },
+    {
+      "action": "lean:score_tilt → gen:lean_score_tilt__shr_sample → gen:lean_score_tilt__shr_ledoit_wolf 3점 사다리를 같은 블록에 걸어 공분산 도입 효과와 추정 잡음을 분리한다.",
+      "why": "B5 의 모든 개선이 노출 축소와 얽혀 있어 '위험 추정을 쓰면 나아지는가' 가 한 번도 단독으로 측정되지 않았다. 25종·월간에서 표본 공분산은 거의 특이하므로 추정기 자체가 교란 후보다.",
+      "expect": "LW − sample 간격이 score_tilt − sample 간격보다 크면 지금 병목은 방법이 아니라 추정 잡음이다. 세 칸이 PORT_t 폭 0.2 안에 모이면 공분산 도입 자체가 이 구성에서 무효다."
+    },
+    {
+      "action": "lean:minvar(점수 전량 폐기)와 lean:hrp / lean:nco_score_tilt(군집 배분, 점수 폐기 vs 보존) 3칸으로 MDD 하한과 신호 파괴량을 동시에 가격화한다.",
+      "why": "B5 는 MDD 를 살 때 PORT_t 를 얼마에 파는지의 교환비만 보여줬고(최저 MDD 칸이 최저 PORT_t 권역), 비중 축에서 그 교환비의 극단값이 없다.",
+      "expect": "minvar 의 MDD 가 0.45 를 못 깨면 이 구성의 MDD 하한은 비중과 무관하다. hrp 와 nco_score_tilt 의 MDD 가 같고 PORT_t 만 갈리면 이득은 군집 배분에서 오고 손실은 점수 폐기에서 온다."
+    }
+  ],
+  "next_block_actions_by": "llm:block_end",
+  "avoid": ["부호·스칼라형 총노출 축소 arm 을 다시 재는 것 — B5_16(MDD 0.557·Calmar 0.401)이 B1_1 의 MDD 0.552 대비 낙폭을 전혀 못 줄이면서 PORT_t 만 3.592→2.920 으로 깎았고, 상주 칸 B5_31 이 매 세대 같은 기준선을 이미 잰다.", "두 층을 곱으로 겹치는 스택을 더 시도하는 것 — B5_22 가 단층 B5_16 대비 MDD 0.557→0.579·PORT_t 2.920→2.446 로 양방 악화하며 블록 최악 Calmar 0.362 를 냈다. 층을 더해도 감쇠가 더해지지 않는다.", "추세 상태 판독기를 또 바꿔 재는 것 — B5_16/B5_17/B5_18 이 단계 수에 따른 순서를 이미 확정했고 종목별 판독(B5_19 MDD 0.453 · B5_20 MDD 0.507)도 그 안에 들어온다. 게다가 이 entry 는 B5 를 이미 측정해 재설계가 거부된다.", "수준·적재형 위험 팩터(D04_Downside_Beta · RE07_Crisis_Beta · D01_IdioVol)를 선정 축으로 재투입하는 것 — B1 에서 벽이 확인됐다(세 칸 모두 C, MDD 0.579~0.607).", "B2 칸을 총노출을 조정하는 arm 에 쓰는 것 — B2 의 유일한 식별력은 Σw=1 고정에서 나오고, 노출을 섞으면 B5 와 같은 교란으로 되돌아간다.", "★근거가 이 블록 밖인 항목: B1 이 남긴 미결(D04 를 tilt 소비 지점에서 소비)은 이번 설계에 포함되지 않아 B5 로는 못 가른다 — 비중 축의 공분산 기반 arm 이 베타를 간접적으로만 담으므로 B2 로도 직접 답이 안 나온다. 별도 재설계 레인이 필요하다."],
+  "next_block_design_for": "B2",
+  "next_block_design_n": 8,
+  "prior_action_status": "executed",
+  "prior_action_detail": "설계 7건 중 7건 집행 (설계: ts_mom_sign,trend_run_gate,trend_ladder_gate,ladder_idio_conc_tilt,trend_horizon_split_tilt,book_convexity_brake,csd_idio_tilt+ts_mom_sign / 실측: pg2_risk_overlay_v1,ts_mom_sign,trend_run_gate,trend_ladder_gate,ladder_idio_conc_tilt,trend_horizon_split_tilt,book_convexity_brake,csd_idio_tilt+ts_mom_sign)",
+  "mechanism_confidence": "medium"
 }
