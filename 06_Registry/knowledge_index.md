@@ -1,6 +1,6 @@
 # Knowledge Index — 순차 뷰 (안정 ID 불변 · 활성 집합 1..N 자동)
 
-생성: 2026-09-17T20:00:50+0900 · `build_knowledge_index.R` · **안정 ID(AX-003/L-132/DIST-*)는 provenance 앵커 = 영구 불변**. 순번(#)은 현재 활성 집합의 위치일 뿐 — 증류/강등되면 뷰에서 자동 제외되어 항상 1..N 연속(구멍 없음). 빠진 것도 아카이브+검색+부활로 보존.
+생성: 2026-09-19T22:04:01+0900 · `build_knowledge_index.R` · **안정 ID(AX-003/L-132/DIST-*)는 provenance 앵커 = 영구 불변**. 순번(#)은 현재 활성 집합의 위치일 뿐 — 증류/강등되면 뷰에서 자동 제외되어 항상 1..N 연속(구멍 없음). 빠진 것도 아카이브+검색+부활로 보존.
 
 ## Active Law (4)
 
@@ -38,7 +38,7 @@
 | 21 | DIST-RAMP-014 | conditional | 지수-비중 최적화 계열(Black-Litterman / 팩터 모멘텀 배분)을 KR 배포 형태인 top-25 횡단면으로 변환하면 엣지가 남지 않는다 — 손실 지점은 신호 부재가 아니… | 31 |
 | 22 | DIST-RAMP-026 | negative | 자동-탐색지도 · family=factor_timing_allocation, tags=DFA,factor_momentum,deployment_form, supporting=5건 L… | 5 |
 
-## L-code 코퍼스 — 모드별 순차 (총 1570 · 글로벌 연속 #)
+## L-code 코퍼스 — 모드별 순차 (총 1590 · 글로벌 연속 #)
 
 안정 ID(L-...)는 불변. 아래 #는 활성 코퍼스 내 위치(모드 그룹 · 글로벌 연속).
 
@@ -1288,400 +1288,420 @@
 | 1204 | L-RP-20260917_195239 | overlay_regime | C | RF_PAR_B4_25_LOO3 충실구현: 등급 C. 논문기준 SR 0.69 vs 15bps SR 0.75. [무인 병렬 B4_25] 오버레이 제외(LOO) = … |
 | 1205 | L-RP-20260917_195245 | ? | C | RF_PAR_B4_21_4 충실구현: 등급 C. 논문기준 SR 0.76 vs 15bps SR 0.81. [무인 병렬 B4_21] 전 요소 결합(4축) — B4/c… |
 | 1206 | L-RP-20260917_195250 | ? | B | RF_PAR_B4_24_LOO 충실구현: 등급 B. 논문기준 SR 1.02 vs 15bps SR 1.06. [무인 병렬 B4_24] 유니버스 제외(LOO) — B… |
+| 1207 | L-RP-20260919_001828 | overlay_regime | C | RF_PAR_B5_23_ 충실구현: 등급 C. 논문기준 SR 0.99 vs 15bps SR 1.10. [무인 병렬 B5_23] 침식 층 × 급락 층 — 형태 분할… |
+| 1208 | L-RP-20260919_001828 | overlay_regime | B | RF_PAR_B5_21_ 충실구현: 등급 B. 논문기준 SR 0.98 vs 15bps SR 1.06. [무인 병렬 B5_21] 변동성 기간구조 종목축 — 급락 층… |
+| 1209 | L-RP-20260919_001828 | momentum | C | RF_PAR_B5_24_ 충실구현: 등급 C. 논문기준 SR 0.99 vs 15bps SR 1.07. [무인 병렬 B5_24] 지속성×베타 층 × 급락 층 — B… |
+| 1210 | L-RP-20260919_001830 | overlay_regime | B | RF_PAR_B5_22_arm 충실구현: 등급 B. 논문기준 SR 0.92 vs 15bps SR 1.00. [무인 병렬 B5_22] 침식 형태 × 잔차축 — 새 … |
+| 1211 | L-RP-20260919_001954 | overlay_regime | C | RF_PAR_B5_31_PG2 충실구현: 등급 C. 논문기준 SR 0.91 vs 15bps SR 1.02. [무인 병렬 B5_31] PG2 리스크 오버레이 상주 … |
+| 1212 | L-RP-20260919_023223 | momentum | B | RF_PAR_B5_25_ 충실구현: 등급 B. 논문기준 SR 0.97 vs 15bps SR 1.03. [무인 병렬 B5_25] 지속성 종목축 × 내재상관 스칼라 … |
+| 1213 | L-RP-20260919_023223 | overlay_regime | C | RF_PAR_B5_28_ 충실구현: 등급 C. 논문기준 SR 0.99 vs 15bps SR 1.07. [무인 병렬 B5_28] 다변량 채널 × 급락 층 — B5/… |
+| 1214 | L-RP-20260919_023223 | overlay_regime | C | RF_PAR_B5_26_ 충실구현: 등급 C. 논문기준 SR 0.97 vs 15bps SR 1.03. [무인 병렬 B5_26] 침식 층 × 다변량 채널 — 최고 … |
+| 1215 | L-RP-20260919_023224 | momentum | B | RF_PAR_B5_27_ 충실구현: 등급 B. 논문기준 SR 0.98 vs 15bps SR 1.03. [무인 병렬 B5_27] 지속성×베타 층 × 다변량 채널 —… |
+| 1216 | L-RP-20260919_025915 | overlay_regime | C | RF_PAR_B1_2_ivollevel 충실구현: 등급 C. 논문기준 SR 0.88 vs 15bps SR 0.91. [무인 병렬 B1_2] ivol_level —… |
+| 1217 | L-RP-20260919_025921 | overlay_regime | C | RF_PAR_B1_3_downsidebeta 충실구현: 등급 C. 논문기준 SR 0.87 vs 15bps SR 0.93. [무인 병렬 B1_3] downside_… |
+| 1218 | L-RP-20260919_025923 | overlay_regime | B | RF_PAR_B1_4_lefttailbeta 충실구현: 등급 B. 논문기준 SR 0.89 vs 15bps SR 0.94. [무인 병렬 B1_4] left_tail… |
+| 1219 | L-RP-20260919_025924 | overlay_regime | B | RF_PAR_B1_1_mom121control 충실구현: 등급 B. 논문기준 SR 1.02 vs 15bps SR 1.04. [무인 병렬 B1_1] mom_12_1… |
+| 1220 | L-RP-20260919_025925 | overlay_regime | B | RF_PAR_B1_5_crashskewncskew 충실구현: 등급 B. 논문기준 SR 0.92 vs 15bps SR 0.97. [무인 병렬 B1_5] crash_… |
+| 1221 | L-RP-20260919_031051 | overlay_regime | C | RF_PAR_B1_9_crisisconditionalbeta 충실구현: 등급 C. 논문기준 SR 0.89 vs 15bps SR 0.95. [무인 병렬 B1_9] … |
+| 1222 | L-RP-20260919_031053 | overlay_regime | B | RF_PAR_B1_6_ddpathulcer 충실구현: 등급 B. 논문기준 SR 1.00 vs 15bps SR 1.02. [무인 병렬 B1_6] dd_path_ul… |
+| 1223 | L-RP-20260919_031054 | overlay_regime | B | RF_PAR_B1_7_dddepthonly 충실구현: 등급 B. 논문기준 SR 1.01 vs 15bps SR 1.02. [무인 병렬 B1_7] dd_depth_o… |
+| 1224 | L-RP-20260919_031056 | overlay_regime | B | RF_PAR_B1_8_volasymmetry 충실구현: 등급 B. 논문기준 SR 0.93 vs 15bps SR 0.98. [무인 병렬 B1_8] vol_asymm… |
+| 1225 | L-RP-20260919_031119 | overlay_regime | B | RF_PAR_B1_10_composemomxdbeta 충실구현: 등급 B. 논문기준 SR 1.06 vs 15bps SR 1.09. [무인 병렬 B1_10] com… |
 
 ### qepm_legacy
 
 | # | L-code | family | grade | 요지 |
 |---|--------|--------|-------|------|
-| 1207 | L-130 | quality_earnings | A | DFA(Dynamic Factor Allocation)는 MRS 국면별 방어팩터(Q07/Q03/D29) 블렌딩으로 Base MDD를 48.2%에서 30.2%로 축… |
-| 1208 | L-131 | behavioral | F | 개인투자자 순매수 contrarian(역발상) 3MA 시그널은 한국시장에서 alpha source 부재. SR 0.157, MDD 65.6%, IR -0.283.… |
-| 1209 | L-132 | value | F | V02 EP(Earnings/Price) 단독 diversifier는 CAGR -1.71%, SR -0.265로 완전 실패. Turnover 3.3%는 시그널이 … |
-| 1210 | L-133 | quality_profitability | F | Cash-Based Profitability Quality(CBPQ)은 MDD 94.0%, SR -0.232로 치명적 실패. Ball et al.(2016)의 현… |
-| 1211 | L-134 | quality_profitability | F | Growth Stability Composite Diversifier는 OOS retention -0.001(IS SR 0.60 → OOS SR 0.00)로 전형… |
-| 1212 | L-135 | value | F | Sector Neutral Accrual은 OOS retention 0.12(IS 0.575→OOS 0.071)로 과적합. MDD 64.7%. Sloan(1996… |
-| 1213 | L-136 | defense | C | D25(Accounting Beta)+Q07(Earnings Stability) defense는 MDD 10.2%로 방어 목적에는 부합하나 CAGR 2.59%로 … |
-| 1214 | L-137 | quality_earnings | F | Piotroski+RetAutocorr는 score 45.4(hard fail 없으면 Grade A급)에 OOS retention 0.89, stress 3/3,… |
-| 1215 | L-138 | quality_earnings | F | EV Accrual Quality Defense는 defense 역할로 설계했으나 stress 0/3 outperform으로 방어 기능 완전 부재. MDD 67.… |
-| 1216 | L-139 | quality_profitability | C | Profitability Fortress는 IS에서 SR 1.044이지만 OOS retention 0.24 + recent 3Y SR 0.135로 심각한 alph… |
-| 1217 | L-140 | quality_profitability | F | LowBeta 3F(VDplus/Diversifier 두 버전 모두)는 OOS에서 alpha 완전 소멸(retention -0.35/-0.02). Recent 3… |
-| 1218 | L-141 | quality_earnings | A | Axiom 승격 시 scope 제한 필수 교훈. v1 승격(AX-004/005 weighted 0.89) 완료했으나 Q-Lead가 scope 과광 우려 제기 → … |
-| 1219 | L-142 | infra_process | A | Grade A 34건 catalog recheck 결과: hurdle-level JUDGE_PASS_A 25건 + JUDGE_PASS_LOWER 2건 + JUDG… |
-| 1220 | L-1469 | consensus | B | STR_1469 Consensus 4F(C19+C13+C10+C04) 5-Sleeve 조합은 PIT clean(G0), OOS retention 0.77(G2),… |
-| 1221 | L-1469-b | consensus | Archive | STR_1469 Consensus 4F(C19+C13+C10+C04) 5-Sleeve 재검증 결과: PIT clean(G0 PASS, 자동검출 0건, DD/VT … |
-| 1222 | L-148 | infra_process | A | NO_JUDGE sweep v2 (34건 전수 PIT C1-C15 + hurdle 재검증) 결과 3-way 분류: PASS 11 / AMBIGUOUS_PIT_MI… |
-| 1223 | L-1549 | consensus | C | D01_IdioVol(50%)+D02_Beta(30%)+Q07_EarningsStability(20%) 섹터중립 가중 RankCombo는 한국시장에서 S1 순수 … |
-| 1224 | L-1550 | consensus | A | C19_Composite_Earnings 단독 팩터가 한국시장 Core Alpha로 최적. S1 순수 SR 1.001, CAGR 22.69% (KOSPI 대폭 초… |
-| 1225 | L-1551 | defense | B | D01_IdioVol 단독 Defense sleeve: S1 SR 0.449, MDD 53.7%. DD 8/22 overlay로 MDD 31.9% 제어(Grade… |
-| 1226 | L-1555 | consensus | A | C19(60%)+V14(20%)+D01(20%) Score Blend + DD 8/22 + Regime v7.1 = V7 최적 Core Alpha. SR 1.07… |
-| 1227 | L-1555-b | ml_complexity | A | C19(60%)+V14(20%)+D01(20%) Score Blend + Risk Parity + DD 8/22 + Regime v7.1 = V7 최종 Core … |
-| 1228 | L-1555-c | defense | B | DD Brake 파라미터 tightening (8/22→6/20)은 수확체감 법칙에 걸린다. STR_1555에서 DD_START를 8→6%, DD_FULL을 22… |
-| 1229 | L-1570 | consensus | B | STR_1570은 C19(50%)+L22(30%)+D01(20%) 3팩터 블렌드에 DD 8/22 + Regime 오버레이를 적용한 전략이다. L22(수익률 자기상… |
-| 1230 | L-1571 | behavioral | B | STR_1571은 STR_1555 M9(C19+V14+D01)에 L22를 4th factor로 추가한 실험이다. 가중치 C19(40%)+V14(25%)+D01(1… |
-| 1231 | L-1576 | quality_earnings | F | CF_to_Accrual_Ratio(AC21_CF_to_Accrual_Ratio) 단일 팩터 순수 백테스트 결과 SR 0.572, CAGR 12.8%, MDD 5… |
-| 1232 | L-1577 | quality | F | Earnings_Growth(GR02_Earnings_Growth) 단일 팩터 MDD 59.5%로 Hard Fail. SR 0.509, CAGR 12.9%. Gr… |
-| 1233 | L-1578 | defense | F | Kurtosis(D44_Kurtosis) 단일 팩터 MDD 66.9%로 최악 수준. SR 0.350, CAGR 7.8%. 꼬리 위험 기반 방어 팩터로 기대했으나 … |
-| 1234 | L-1579 | quality_earnings | F | Earnings_Stability(Q07_Earnings_Stability) Quality 계열 단일 팩터 MDD 62.7% Hard Fail. SR 0.332,… |
-| 1235 | L-1580 | behavioral | F | Volume_Price_Divergence(CR08_Volume_Price_Divergence) MDD 59.5% + Turnover 904% 이중 Hard Fa… |
-| 1236 | L-1581 | overlay_regime | F | Book_Leverage(R18_Book_Leverage) Risk 계열 단일 팩터 MDD 55.8% Hard Fail. SR 0.338, CAGR 7.4%. 저… |
-| 1237 | L-160 | signal_portfolio_translation_failure | F | H_1682 Distress(Q25) + Calmar(R16) 60/40 composite signal 품질 IC 0.2207 / ICIR 1.879 / FM t… |
-| 1238 | L-1608 | momentum | F | D22_Tracking_Error standalone diversifier는 MDD 51.2%로 hard fail. Good-regime IC 0.086으로 상승… |
-| 1239 | L-1609 | flow_supply | F | L40_VWAP_Spread standalone diversifier는 높은 profile ICIR(0.826)에도 불구하고 실제 IR -0.015(음수)로 초과… |
-| 1240 | L-160A | behavioral | INFRASTRUCTURE | 2-party flow divergence 또는 cross-channel difference 가설 설계 시 수식 수준 algebraic identity 사전 검증… |
-| 1241 | L-161 | momentum | F | H_1688 Residual Momentum Carhart 1997 + Blitz-Huij-Martens 2011 정통 설계 구현에도 Grade F (MDD 86… |
-| 1242 | L-161A | infra_process | ? | Codex Critic Bash script (run_codex_critic.sh)가 codex-companion 응답 실패 시 S0 Debate 5인 합의 프로… |
-| 1243 | L-162 | momentum | ? | 2-factor linear z-score blend (50/50)은 표준편차 불균형 시 dominant factor 단일 수렴 구조적 위험. H_1687 Q25… |
-| 1244 | L-1621 | quality_earnings | C | STR_1621은 Regime-Conditional AllWeather 전략으로, C19+V14(core) / D01+D44(defense) 2-sleeve 구조… |
-| 1245 | L-1622 | quality_profitability | C | STR_1622는 C19+V14+Q01+D01+M25 5팩터 IC-weighted blend로, expanding 12M rolling IC 기반 shrinkag… |
-| 1246 | L-1623 | defense | A | Bayesian Black-Litterman 5-sleeve 앙상블(Defense/IndMom/Consensus/ConsGate/TPGap)에 C11 FRED t… |
-| 1247 | L-1624 | defense | F | Q17_ROIC와 D43_Skewness의 EW 블렌드는 defense 역할을 기대했으나 MDD 59.7%로 hard fail 하였다. Skewness 팩터는 한… |
-| 1248 | L-1625 | quality_earnings | F | AC22_Accrual_Volatility와 Q28_Cash_Conversion의 EW 블렌드는 MDD 64.8%로 hard fail이지만 Score 49.2, … |
-| 1249 | L-162A | infra_process | ? | Forge v2 STR_1684 factor_engine.R 실행 중 'Date.x/Date.y merge 충돌' 에러 발견. 원인: data.table rbin… |
-| 1250 | L-163 | quality_earnings | ? | Defense family composite 구성 시 각 factor의 stress_icir × weight 곱이 -0.05 이하로 떨어지면 조건부 차단. L-1… |
-| 1251 | L-165 | signal_portfolio_translation_failure | F | Multi-Source Defense Anchor (M08+C19+Q07+R16 4-axis regime-smoothed composite)는 signal lev… |
-| 1252 | L-166 | signal_portfolio_translation_failure | F | STR_1687 (H_1693 Q07 sector-neutral defense) AX-005 EXCLUSION clause 3개(sector-neutralizat… |
-| 1253 | L-167 | infra_process | INFRASTRUCTURE_PROCESS | Forge self-check process는 PIT 위반(C1~C15) 및 s0_record 명세 전달 실패를 체계적으로 탐지하지 못하는 구조적 한계를 4건 누… |
-| 1254 | L-1682 | defense | F | STR_1682 Option A 4-regressor 잔차화(log_mcap + R12 + SUE + beta_24m) 시도는 3중 인프라/프로세스 실패로 Gra… |
-| 1255 | L-170 | industry_momentum_residualized_core_secondary_fail | F | STR_1692 H_1692 v2 industry momentum residualized (M18) Core_Secondary **post-L168-fix 첫 정… |
-| 1256 | L-572 | quality_earnings | B | Bayesian Shrinkage GARP: ICIR 기반 팩터 가중을 Bayesian shrinkage(w_post = (1-lambda)*w_ICIR + la… |
-| 1257 | L-578 | liquidity | F | L15_Turnover_252d(Ibbotson 2013) standalone은 SR 0.506, stress 3/4(EuDebt만 실패). IC 0.037 안정… |
-| 1258 | L-579 | ? | F | R01_VaR_95는 IC 0.042(배치 2위), pos_rate 67.9%(최고)로 팩터 자체는 유효하나, FF alpha가 강하게 음수(t=-1.15~-1.… |
-| 1259 | L-590 | defense | B | C19(Composite Earnings) 60% + L22(Ret Autocorr) 40% Score Blend: 음의 팩터 상관(-0.108)을 활용한 블렌드… |
-| 1260 | L-591 | consensus | B | L22_Ret_Autocorr(Lo & MacKinlay 1990 variance ratio 기반)은 standalone SR 0.397, MDD 64%로 단독 … |
-| 1261 | L-601 | quality_earnings | B | Aggressive DD brake (5/15, min_exp 0.35) on D01+Q07 delivers strong crisis protection (str… |
-| 1262 | L-602 | quality_earnings | B | Baltussen et al. (2018) vol-of-vol premium and Dichev & Tang (2009) earnings stability pre… |
-| 1263 | L-603 | consensus | B | Expanding-window ICIR-based dynamic factor weighting (Arnott et al. 2019 'Alice in Factorl… |
-| 1264 | L-604 | quality_earnings | B | S5 M1 mutation tightened DD brake from 15/35 to 10/25 on D41_VolVol + Q07_EarningsStabilit… |
-| 1265 | L-605 | overlay_regime | B | Adaptive IC-weighted factor rotation with expanding-window ICIR and 2-month lag is PIT-cle… |
-| 1266 | L-606 | overlay_regime | B | Aggressive DD brake (5%/15%, min_exp=35%) on adaptive IC-weighted rotation: MDD compressed… |
-| 1267 | L-607 | behavioral | B | R10_Cokurtosis as bottom-10% exclusion gate + C19_Composite_Earnings scoring yields SR 0.1… |
-| 1268 | L-609 | quality_earnings | B | D41(Vol-of-Vol) + Q07(Earnings_Stability) 2-factor blend with VT 18% + DD 7/22 overlay fai… |
-| 1269 | L-610 | overlay_regime | B | DD-only overlay (10/30, min_exp=25%) on adaptive ICIR-weighted rotation is the weakest S5 … |
-| 1270 | L-611 | quality_earnings | B | DD 7/22 overlay on IndMom+QualityGate(Q07 top 80%) fails to improve risk-adjusted returns.… |
-| 1271 | L-612 | infra_process | C | CR04_Ownership_Concentration (Shleifer & Vishny 1986 large shareholders, Edmans 2009 block… |
-| 1272 | L-613 | overlay_regime | C | DD 7/22 brake on weak-alpha cokurtosis strategy destroys more value than it protects. SR d… |
-| 1273 | L-614 | quality_earnings | C | DD 7/22 overlay on weak alpha composite (D01_IdioVol + Q07_EarningsStability + C01_SUE, pa… |
-| 1274 | L-615 | ? | C | CVaR95 (Acerbi & Tasche 2002 expected shortfall, Bali et al 2009 tail risk pricing) standa… |
-| 1275 | L-616 | dividend | C | Bid-ask proxy (Amihud & Mendelson 1986) + payout ratio (Fama & French 1993 HML adjacent, P… |
-| 1276 | L-617 | quality_earnings | C | Aggressive DD brake (5/15, min_exp=0.35) on weak base signal (IndMom+Q07 gate, FMB t=1.35)… |
-| 1277 | L-620 | momentum | F | CR06(DTC Proxy) + V16(Tobin's Q) contrarian-value 조합 실패. DeBondt & Thaler(1985) contrarian… |
-| 1278 | L-621 | quality_earnings | F | V04(Forward PER)+Q13(Financial Leverage) 2-factor 조합은 Piotroski(2000) 가치함정 회피 + Novy-Marx(… |
-| 1279 | L-622 | defense | C | CR08 Volume-Price Divergence (Lou & Polk 2022 crowding, Llorente et al 2002 informed tradi… |
-| 1280 | L-623 | behavioral | C | Flow reversal (Coval & Stafford 2007 fire sales, Lou 2012 flow-driven returns) applied as … |
-| 1281 | L-627 | low_vol | B | Inverse-volatility weighting on BM+ESBR value-earnings synergy strategy degraded all metri… |
-| 1282 | L-628 | overlay_regime | B | DD brake tightening (10/25 vs 15/35) on BM+ESBR synergy strategy yields poor trade-off: on… |
-| 1283 | L-629 | overlay_regime | C | Risk Parity (Maillard et al. 2010 ERC) on 30 Korean stocks with 120-day Ledoit-Wolf covari… |
-| 1284 | L-630 | overlay_regime | B | MRS threshold tightening (15/30 → 12/25) on regime_engine_daily v2.0 worsened MDD from 34.… |
-| 1285 | L-631 | defense | C | When the underlying 2-factor blend has cross-factor correlation of 0.943 (CR08 Volume-Pric… |
-| 1286 | L-632 | defense | C | Removing VT and using only DD brake (10/25) on a weak base signal (SR 0.633) produces the … |
-| 1287 | L-633 | defense | C | VT 15% + DD 8/20 is the tightest overlay in the STR_1422 family, achieving the best MDD (2… |
-| 1288 | L-634 | INV01_FlowReversal | C | Flow reversal signal produces ~3200% annual turnover regardless of DD overlay parameters. … |
-| 1289 | L-635 | INV01_FlowReversal | C | Tighter buffer zone (keep=40, entry=20) on flow reversal signal actually increased turnove… |
-| 1290 | L-643 | defense | B | STR_791 orthogonal residual scoring concept is sound (cross-sectional regression removes D… |
-| 1291 | L-646 | defense | F | Adaptive VT (VIX-regime dynamic vol target) uses same-month VIX to set VT level — this is … |
-| 1292 | L-647 | momentum | B | Foreign investor flow momentum as a regime-conditional alpha source in Korean equities is … |
-| 1293 | L-650 | momentum | ? | STR_794 Soft MRS + Quality Gate: Gate 0 REJECT. Uses deprecated old MRS (FRED_REGIME_CACHE… |
-| 1294 | L-718 | overlay_regime | B | M25_Earnings_Mom_Streak showed OOS>1.8 in 5 base strategies but combined with V24_Residual… |
-| 1295 | L-719 | quality | B | Gentle DD (15/35) vs tight DD (10/25) outcome depends on base alpha strength. STR_1527 M25… |
-| 1296 | L-720 | quality | ? | Q17_ROIC + Q23_Sustainable_Growth: ICIR 1.27 (highest 2-factor combo in scan) but portfoli… |
-| 1297 | L-721 | momentum | ? | STR_1502 R03_CVaR_95 + DD 6/20: MDD 52.7%->30.4% (-42%), SR 0.554->0.598 (+8%), CAGR 9.49%… |
-| 1298 | L-722 | infra_process | ? | STR_1506 CR04_Ownership_Concentration + DD 6/20: Hurdle scored B/42.5 (MDD 31.9%, stress 3… |
-| 1299 | L-723 | behavioral | A | STR_887 v7.1 rebuild proves old MRS contamination was SUPPRESSING alpha, not inflating it.… |
-| 1300 | L-731 | infra_process | ? | Applying shift(n=1L, type='lag') to FRED-derived monthly signals (fred_exposure, n_sig) to… |
-| 1301 | L-750 | ml_complexity | B | STR_1047(TO 3702%)의 턴오버를 국면전환 스무딩(max 10%p/month)으로 154%로 대폭 감축하는 데 성공했으나, 수익률 블렌드 구조(4개 하… |
-| 1302 | L-761 | oc_eps_chg | A | STR_943 OC+EpsChg composite achieves Grade A (52.2, SR 1.312, CAGR 17.1%, MDD 22.1%) but C… |
-| 1303 | L-767 | consensus | C | Defense Core Alpha (D01 IVol 50% + D02 Beta 30% + Q07 EarnStab 20%) — PIT 완전 준수 상태에서 ICIR … |
-| 1304 | L-768 | defense_idiovol | C | D01_IdioVol as standalone defense sleeve fails MDD hard gate (53.7% > 45%) despite statist… |
-| 1305 | L-795 | defense | A | C11 수정(FRED 동월 접근 -> t-1월 접근)이 성과를 개선한 사례. STR_1028 대비 SR 1.300->1.333, OOS 0.906->1.09 향상… |
-| 1306 | L-799 | technical_price | F | CR08_Volume_Price_Divergence standalone F (MDD 61%, TO 999%, SR 0.427, FMB t=0.152). Facto… |
-| 1307 | L-802 | defense | B | C19(Composite Earnings) 60% + L22(Ret Autocorr) 40% blend에 DD 8/22 + Regime v7.1 overlay를 … |
-| 1308 | L-812 | defense | B | C19+L22+D01 3F blend (50/30/20) with DD 8/22 + Regime overlay yields SR 0.793, CAGR 11.53%… |
-| 1309 | L-813 | defense | B | C19+V14+D01+L22 4F blend (40/25/15/20) with DD 8/22 + Regime yields SR 0.756, CAGR 11.24%,… |
-| 1310 | L-814 | consensus | B | C19+L22 (60/40) with DD 12/28 wider brake yields SR 0.867, CAGR 15.29%, MDD 31.83%. Compar… |
-| 1311 | L-QPM-20260606-001 | momentum | F | KR long-only 단일+multi-sleeve+국면 overlay로 SR 2.5 돌파 실패 (full QEPM 5-agent alpha/risk/optimi… |
-| 1312 | L-QPM-20260607-001 | infra_process | ? | KR long-only SR 2.5 목표는 현 universe(KOSPI200∪KQ150)·제약(max25 / 15bps / TO<=11 / no-short / … |
-| 1313 | L-QPM-20260704_114303 | ml_complexity | F | KR 300팩터 월간 ML 랭킹 베이스라인(Session 57): XGBoost walk-forward OOS IC 0.0669/ICIR 0.7206(2008-0… |
-| 1314 | L-QPM-20260705_102041 | overlay_regime | F | DIST-QPM-003 frontier(b) '국면조건부 quality activation' 실측 반증(FALSIFIED). regime-conditional(s… |
-| 1315 | L-QPM-20260705_105130 | defense | F | cross-family regime-conditional composite (value/multi-axis-quality/residual-momentum/tail… |
-| 1316 | L-QPM-20260705_110752 | quality_earnings | F | DIST-QPM-003 frontier(a) 'multi-axis quality를 multi-sleeve Q07 성분으로 배치'(AX-004 EXCLUSION e… |
-| 1317 | L-QPM-20260705_180719 | quality | F | WT-D20260705_002 QEPM 자율발굴 CLEAN_NEGATIVE — SR-gap(+0.602) residual-orthogonal sleeve는 fac… |
-| 1318 | L-QPM-20260705_192441 | unknown | F | WT-D20260705_008 QEPM 자율발굴 CLEAN_NEGATIVE — 조건부 교집합(AND-gate conjunctive intersection) 선택은… |
-| 1319 | L-QPM-20260706_081232 | size | F | WT-P20260706_001 (deployment, forge-authoritative) DE-RATE — mega-cap 앵커 구성은 자본급 배포성 구성 레버… |
-| 1320 | L-QPM-20260706_083113 | overlay_regime | F | KR long-only 20종 book(STR_1715, K200 union KQ150): mega-cap 앵커 구성(top-2 by size 20pct-cap … |
-| 1321 | L-QPM-20260706_095231 | flow_supply | F | WT-D20260706_009 QEPM 자율발굴 CLEAN_NEGATIVE — Net Share Issuance(Daniel-Titman 2006·Pontiff-… |
-| 1322 | L-QPM-20260706_102132 | value | F | WT-D20260706_013 QEPM 자율발굴 CLEAN_NEGATIVE — Intangible-adjusted value(Peters-Taylor 2017, … |
-| 1323 | L-QPM-20260718_101841 | infra_process | ? | Cleaner 증류 2-pass 중복실행 방지 = cleaner_pending.json에 distill_status(pending/in_progress/done)… |
-| 1324 | L-QPM-20260718_190624 | risk_sigma_method | B | FQ-057 method-frontier 1호 아크(R1→NP3→NP4→P1, 2026-07-18, pin fq057_20260718_171024) 수렴 — (1… |
-| 1325 | L-QPM-20260718_201043 | drawdown_aware_construction | C | FQ-058 method-frontier(2026-07-18, round fq058_20260718_191740, pin 상속 fq057): drawdown-aw… |
-| 1326 | L-QPM-20260820_PROXY_CHECKER_INSTALL | infra_process | ? | 2026-08-20 계기(檢査器) 층 교체 라운드 — 대리 지표 4종을 내용 기반으로 바꾸고, 그 과정에서 '계기가 산다'는 것의 조건 세 가지를 실측으로 분리했… |
-| 1327 | L-QPM-20260821_R11_RETRY_PREVENTION_DIAGNOSIS | infra_process | ? | Axiom 루프 ⑪(재탕 방지 벌점) 진단 — **'죽은 검사기'가 아니라 '현행 파이프라인이 재지 않는 것을 요구하는 검사'** 였다. 진단이 두 번 뒤집혔고 … |
-| 1328 | L-QPM-20260822_005809 | ml_complexity | C | Lane C 선형 분위회귀 음성 대조 — 판정 PARTIAL(음성 대조 미확립). P1: ML vs 선형 3쌍 paired 전부 UNDERPOWERED(MDE 6… |
-| 1329 | L-QPM-20260822_010303 | ? | B | 해상도 사다리(F1 top-50→F2 top-100→F3L 전브레드스 스코어-수준)가 mean-blind 관문으로 MDE 를 7.5%p→1.22%p 로 낮춰(di… |
-| 1330 | L-QPM-20260822_AXIOM_AUDIT_TEST_ISOLATION | infra_process | ? | Axiom 엔진 설계 전수점검(16 agent · 63 요소 · 48 발견) + P0/P1 수리 라운드. 가장 깊은 결함은 엔진이 아니라 **엔진을 검사하는 배터… |
+| 1226 | L-130 | quality_earnings | A | DFA(Dynamic Factor Allocation)는 MRS 국면별 방어팩터(Q07/Q03/D29) 블렌딩으로 Base MDD를 48.2%에서 30.2%로 축… |
+| 1227 | L-131 | behavioral | F | 개인투자자 순매수 contrarian(역발상) 3MA 시그널은 한국시장에서 alpha source 부재. SR 0.157, MDD 65.6%, IR -0.283.… |
+| 1228 | L-132 | value | F | V02 EP(Earnings/Price) 단독 diversifier는 CAGR -1.71%, SR -0.265로 완전 실패. Turnover 3.3%는 시그널이 … |
+| 1229 | L-133 | quality_profitability | F | Cash-Based Profitability Quality(CBPQ)은 MDD 94.0%, SR -0.232로 치명적 실패. Ball et al.(2016)의 현… |
+| 1230 | L-134 | quality_profitability | F | Growth Stability Composite Diversifier는 OOS retention -0.001(IS SR 0.60 → OOS SR 0.00)로 전형… |
+| 1231 | L-135 | value | F | Sector Neutral Accrual은 OOS retention 0.12(IS 0.575→OOS 0.071)로 과적합. MDD 64.7%. Sloan(1996… |
+| 1232 | L-136 | defense | C | D25(Accounting Beta)+Q07(Earnings Stability) defense는 MDD 10.2%로 방어 목적에는 부합하나 CAGR 2.59%로 … |
+| 1233 | L-137 | quality_earnings | F | Piotroski+RetAutocorr는 score 45.4(hard fail 없으면 Grade A급)에 OOS retention 0.89, stress 3/3,… |
+| 1234 | L-138 | quality_earnings | F | EV Accrual Quality Defense는 defense 역할로 설계했으나 stress 0/3 outperform으로 방어 기능 완전 부재. MDD 67.… |
+| 1235 | L-139 | quality_profitability | C | Profitability Fortress는 IS에서 SR 1.044이지만 OOS retention 0.24 + recent 3Y SR 0.135로 심각한 alph… |
+| 1236 | L-140 | quality_profitability | F | LowBeta 3F(VDplus/Diversifier 두 버전 모두)는 OOS에서 alpha 완전 소멸(retention -0.35/-0.02). Recent 3… |
+| 1237 | L-141 | quality_earnings | A | Axiom 승격 시 scope 제한 필수 교훈. v1 승격(AX-004/005 weighted 0.89) 완료했으나 Q-Lead가 scope 과광 우려 제기 → … |
+| 1238 | L-142 | infra_process | A | Grade A 34건 catalog recheck 결과: hurdle-level JUDGE_PASS_A 25건 + JUDGE_PASS_LOWER 2건 + JUDG… |
+| 1239 | L-1469 | consensus | B | STR_1469 Consensus 4F(C19+C13+C10+C04) 5-Sleeve 조합은 PIT clean(G0), OOS retention 0.77(G2),… |
+| 1240 | L-1469-b | consensus | Archive | STR_1469 Consensus 4F(C19+C13+C10+C04) 5-Sleeve 재검증 결과: PIT clean(G0 PASS, 자동검출 0건, DD/VT … |
+| 1241 | L-148 | infra_process | A | NO_JUDGE sweep v2 (34건 전수 PIT C1-C15 + hurdle 재검증) 결과 3-way 분류: PASS 11 / AMBIGUOUS_PIT_MI… |
+| 1242 | L-1549 | consensus | C | D01_IdioVol(50%)+D02_Beta(30%)+Q07_EarningsStability(20%) 섹터중립 가중 RankCombo는 한국시장에서 S1 순수 … |
+| 1243 | L-1550 | consensus | A | C19_Composite_Earnings 단독 팩터가 한국시장 Core Alpha로 최적. S1 순수 SR 1.001, CAGR 22.69% (KOSPI 대폭 초… |
+| 1244 | L-1551 | defense | B | D01_IdioVol 단독 Defense sleeve: S1 SR 0.449, MDD 53.7%. DD 8/22 overlay로 MDD 31.9% 제어(Grade… |
+| 1245 | L-1555 | consensus | A | C19(60%)+V14(20%)+D01(20%) Score Blend + DD 8/22 + Regime v7.1 = V7 최적 Core Alpha. SR 1.07… |
+| 1246 | L-1555-b | ml_complexity | A | C19(60%)+V14(20%)+D01(20%) Score Blend + Risk Parity + DD 8/22 + Regime v7.1 = V7 최종 Core … |
+| 1247 | L-1555-c | defense | B | DD Brake 파라미터 tightening (8/22→6/20)은 수확체감 법칙에 걸린다. STR_1555에서 DD_START를 8→6%, DD_FULL을 22… |
+| 1248 | L-1570 | consensus | B | STR_1570은 C19(50%)+L22(30%)+D01(20%) 3팩터 블렌드에 DD 8/22 + Regime 오버레이를 적용한 전략이다. L22(수익률 자기상… |
+| 1249 | L-1571 | behavioral | B | STR_1571은 STR_1555 M9(C19+V14+D01)에 L22를 4th factor로 추가한 실험이다. 가중치 C19(40%)+V14(25%)+D01(1… |
+| 1250 | L-1576 | quality_earnings | F | CF_to_Accrual_Ratio(AC21_CF_to_Accrual_Ratio) 단일 팩터 순수 백테스트 결과 SR 0.572, CAGR 12.8%, MDD 5… |
+| 1251 | L-1577 | quality | F | Earnings_Growth(GR02_Earnings_Growth) 단일 팩터 MDD 59.5%로 Hard Fail. SR 0.509, CAGR 12.9%. Gr… |
+| 1252 | L-1578 | defense | F | Kurtosis(D44_Kurtosis) 단일 팩터 MDD 66.9%로 최악 수준. SR 0.350, CAGR 7.8%. 꼬리 위험 기반 방어 팩터로 기대했으나 … |
+| 1253 | L-1579 | quality_earnings | F | Earnings_Stability(Q07_Earnings_Stability) Quality 계열 단일 팩터 MDD 62.7% Hard Fail. SR 0.332,… |
+| 1254 | L-1580 | behavioral | F | Volume_Price_Divergence(CR08_Volume_Price_Divergence) MDD 59.5% + Turnover 904% 이중 Hard Fa… |
+| 1255 | L-1581 | overlay_regime | F | Book_Leverage(R18_Book_Leverage) Risk 계열 단일 팩터 MDD 55.8% Hard Fail. SR 0.338, CAGR 7.4%. 저… |
+| 1256 | L-160 | signal_portfolio_translation_failure | F | H_1682 Distress(Q25) + Calmar(R16) 60/40 composite signal 품질 IC 0.2207 / ICIR 1.879 / FM t… |
+| 1257 | L-1608 | momentum | F | D22_Tracking_Error standalone diversifier는 MDD 51.2%로 hard fail. Good-regime IC 0.086으로 상승… |
+| 1258 | L-1609 | flow_supply | F | L40_VWAP_Spread standalone diversifier는 높은 profile ICIR(0.826)에도 불구하고 실제 IR -0.015(음수)로 초과… |
+| 1259 | L-160A | behavioral | INFRASTRUCTURE | 2-party flow divergence 또는 cross-channel difference 가설 설계 시 수식 수준 algebraic identity 사전 검증… |
+| 1260 | L-161 | momentum | F | H_1688 Residual Momentum Carhart 1997 + Blitz-Huij-Martens 2011 정통 설계 구현에도 Grade F (MDD 86… |
+| 1261 | L-161A | infra_process | ? | Codex Critic Bash script (run_codex_critic.sh)가 codex-companion 응답 실패 시 S0 Debate 5인 합의 프로… |
+| 1262 | L-162 | momentum | ? | 2-factor linear z-score blend (50/50)은 표준편차 불균형 시 dominant factor 단일 수렴 구조적 위험. H_1687 Q25… |
+| 1263 | L-1621 | quality_earnings | C | STR_1621은 Regime-Conditional AllWeather 전략으로, C19+V14(core) / D01+D44(defense) 2-sleeve 구조… |
+| 1264 | L-1622 | quality_profitability | C | STR_1622는 C19+V14+Q01+D01+M25 5팩터 IC-weighted blend로, expanding 12M rolling IC 기반 shrinkag… |
+| 1265 | L-1623 | defense | A | Bayesian Black-Litterman 5-sleeve 앙상블(Defense/IndMom/Consensus/ConsGate/TPGap)에 C11 FRED t… |
+| 1266 | L-1624 | defense | F | Q17_ROIC와 D43_Skewness의 EW 블렌드는 defense 역할을 기대했으나 MDD 59.7%로 hard fail 하였다. Skewness 팩터는 한… |
+| 1267 | L-1625 | quality_earnings | F | AC22_Accrual_Volatility와 Q28_Cash_Conversion의 EW 블렌드는 MDD 64.8%로 hard fail이지만 Score 49.2, … |
+| 1268 | L-162A | infra_process | ? | Forge v2 STR_1684 factor_engine.R 실행 중 'Date.x/Date.y merge 충돌' 에러 발견. 원인: data.table rbin… |
+| 1269 | L-163 | quality_earnings | ? | Defense family composite 구성 시 각 factor의 stress_icir × weight 곱이 -0.05 이하로 떨어지면 조건부 차단. L-1… |
+| 1270 | L-165 | signal_portfolio_translation_failure | F | Multi-Source Defense Anchor (M08+C19+Q07+R16 4-axis regime-smoothed composite)는 signal lev… |
+| 1271 | L-166 | signal_portfolio_translation_failure | F | STR_1687 (H_1693 Q07 sector-neutral defense) AX-005 EXCLUSION clause 3개(sector-neutralizat… |
+| 1272 | L-167 | infra_process | INFRASTRUCTURE_PROCESS | Forge self-check process는 PIT 위반(C1~C15) 및 s0_record 명세 전달 실패를 체계적으로 탐지하지 못하는 구조적 한계를 4건 누… |
+| 1273 | L-1682 | defense | F | STR_1682 Option A 4-regressor 잔차화(log_mcap + R12 + SUE + beta_24m) 시도는 3중 인프라/프로세스 실패로 Gra… |
+| 1274 | L-170 | industry_momentum_residualized_core_secondary_fail | F | STR_1692 H_1692 v2 industry momentum residualized (M18) Core_Secondary **post-L168-fix 첫 정… |
+| 1275 | L-572 | quality_earnings | B | Bayesian Shrinkage GARP: ICIR 기반 팩터 가중을 Bayesian shrinkage(w_post = (1-lambda)*w_ICIR + la… |
+| 1276 | L-578 | liquidity | F | L15_Turnover_252d(Ibbotson 2013) standalone은 SR 0.506, stress 3/4(EuDebt만 실패). IC 0.037 안정… |
+| 1277 | L-579 | ? | F | R01_VaR_95는 IC 0.042(배치 2위), pos_rate 67.9%(최고)로 팩터 자체는 유효하나, FF alpha가 강하게 음수(t=-1.15~-1.… |
+| 1278 | L-590 | defense | B | C19(Composite Earnings) 60% + L22(Ret Autocorr) 40% Score Blend: 음의 팩터 상관(-0.108)을 활용한 블렌드… |
+| 1279 | L-591 | consensus | B | L22_Ret_Autocorr(Lo & MacKinlay 1990 variance ratio 기반)은 standalone SR 0.397, MDD 64%로 단독 … |
+| 1280 | L-601 | quality_earnings | B | Aggressive DD brake (5/15, min_exp 0.35) on D01+Q07 delivers strong crisis protection (str… |
+| 1281 | L-602 | quality_earnings | B | Baltussen et al. (2018) vol-of-vol premium and Dichev & Tang (2009) earnings stability pre… |
+| 1282 | L-603 | consensus | B | Expanding-window ICIR-based dynamic factor weighting (Arnott et al. 2019 'Alice in Factorl… |
+| 1283 | L-604 | quality_earnings | B | S5 M1 mutation tightened DD brake from 15/35 to 10/25 on D41_VolVol + Q07_EarningsStabilit… |
+| 1284 | L-605 | overlay_regime | B | Adaptive IC-weighted factor rotation with expanding-window ICIR and 2-month lag is PIT-cle… |
+| 1285 | L-606 | overlay_regime | B | Aggressive DD brake (5%/15%, min_exp=35%) on adaptive IC-weighted rotation: MDD compressed… |
+| 1286 | L-607 | behavioral | B | R10_Cokurtosis as bottom-10% exclusion gate + C19_Composite_Earnings scoring yields SR 0.1… |
+| 1287 | L-609 | quality_earnings | B | D41(Vol-of-Vol) + Q07(Earnings_Stability) 2-factor blend with VT 18% + DD 7/22 overlay fai… |
+| 1288 | L-610 | overlay_regime | B | DD-only overlay (10/30, min_exp=25%) on adaptive ICIR-weighted rotation is the weakest S5 … |
+| 1289 | L-611 | quality_earnings | B | DD 7/22 overlay on IndMom+QualityGate(Q07 top 80%) fails to improve risk-adjusted returns.… |
+| 1290 | L-612 | infra_process | C | CR04_Ownership_Concentration (Shleifer & Vishny 1986 large shareholders, Edmans 2009 block… |
+| 1291 | L-613 | overlay_regime | C | DD 7/22 brake on weak-alpha cokurtosis strategy destroys more value than it protects. SR d… |
+| 1292 | L-614 | quality_earnings | C | DD 7/22 overlay on weak alpha composite (D01_IdioVol + Q07_EarningsStability + C01_SUE, pa… |
+| 1293 | L-615 | ? | C | CVaR95 (Acerbi & Tasche 2002 expected shortfall, Bali et al 2009 tail risk pricing) standa… |
+| 1294 | L-616 | dividend | C | Bid-ask proxy (Amihud & Mendelson 1986) + payout ratio (Fama & French 1993 HML adjacent, P… |
+| 1295 | L-617 | quality_earnings | C | Aggressive DD brake (5/15, min_exp=0.35) on weak base signal (IndMom+Q07 gate, FMB t=1.35)… |
+| 1296 | L-620 | momentum | F | CR06(DTC Proxy) + V16(Tobin's Q) contrarian-value 조합 실패. DeBondt & Thaler(1985) contrarian… |
+| 1297 | L-621 | quality_earnings | F | V04(Forward PER)+Q13(Financial Leverage) 2-factor 조합은 Piotroski(2000) 가치함정 회피 + Novy-Marx(… |
+| 1298 | L-622 | defense | C | CR08 Volume-Price Divergence (Lou & Polk 2022 crowding, Llorente et al 2002 informed tradi… |
+| 1299 | L-623 | behavioral | C | Flow reversal (Coval & Stafford 2007 fire sales, Lou 2012 flow-driven returns) applied as … |
+| 1300 | L-627 | low_vol | B | Inverse-volatility weighting on BM+ESBR value-earnings synergy strategy degraded all metri… |
+| 1301 | L-628 | overlay_regime | B | DD brake tightening (10/25 vs 15/35) on BM+ESBR synergy strategy yields poor trade-off: on… |
+| 1302 | L-629 | overlay_regime | C | Risk Parity (Maillard et al. 2010 ERC) on 30 Korean stocks with 120-day Ledoit-Wolf covari… |
+| 1303 | L-630 | overlay_regime | B | MRS threshold tightening (15/30 → 12/25) on regime_engine_daily v2.0 worsened MDD from 34.… |
+| 1304 | L-631 | defense | C | When the underlying 2-factor blend has cross-factor correlation of 0.943 (CR08 Volume-Pric… |
+| 1305 | L-632 | defense | C | Removing VT and using only DD brake (10/25) on a weak base signal (SR 0.633) produces the … |
+| 1306 | L-633 | defense | C | VT 15% + DD 8/20 is the tightest overlay in the STR_1422 family, achieving the best MDD (2… |
+| 1307 | L-634 | INV01_FlowReversal | C | Flow reversal signal produces ~3200% annual turnover regardless of DD overlay parameters. … |
+| 1308 | L-635 | INV01_FlowReversal | C | Tighter buffer zone (keep=40, entry=20) on flow reversal signal actually increased turnove… |
+| 1309 | L-643 | defense | B | STR_791 orthogonal residual scoring concept is sound (cross-sectional regression removes D… |
+| 1310 | L-646 | defense | F | Adaptive VT (VIX-regime dynamic vol target) uses same-month VIX to set VT level — this is … |
+| 1311 | L-647 | momentum | B | Foreign investor flow momentum as a regime-conditional alpha source in Korean equities is … |
+| 1312 | L-650 | momentum | ? | STR_794 Soft MRS + Quality Gate: Gate 0 REJECT. Uses deprecated old MRS (FRED_REGIME_CACHE… |
+| 1313 | L-718 | overlay_regime | B | M25_Earnings_Mom_Streak showed OOS>1.8 in 5 base strategies but combined with V24_Residual… |
+| 1314 | L-719 | quality | B | Gentle DD (15/35) vs tight DD (10/25) outcome depends on base alpha strength. STR_1527 M25… |
+| 1315 | L-720 | quality | ? | Q17_ROIC + Q23_Sustainable_Growth: ICIR 1.27 (highest 2-factor combo in scan) but portfoli… |
+| 1316 | L-721 | momentum | ? | STR_1502 R03_CVaR_95 + DD 6/20: MDD 52.7%->30.4% (-42%), SR 0.554->0.598 (+8%), CAGR 9.49%… |
+| 1317 | L-722 | infra_process | ? | STR_1506 CR04_Ownership_Concentration + DD 6/20: Hurdle scored B/42.5 (MDD 31.9%, stress 3… |
+| 1318 | L-723 | behavioral | A | STR_887 v7.1 rebuild proves old MRS contamination was SUPPRESSING alpha, not inflating it.… |
+| 1319 | L-731 | infra_process | ? | Applying shift(n=1L, type='lag') to FRED-derived monthly signals (fred_exposure, n_sig) to… |
+| 1320 | L-750 | ml_complexity | B | STR_1047(TO 3702%)의 턴오버를 국면전환 스무딩(max 10%p/month)으로 154%로 대폭 감축하는 데 성공했으나, 수익률 블렌드 구조(4개 하… |
+| 1321 | L-761 | oc_eps_chg | A | STR_943 OC+EpsChg composite achieves Grade A (52.2, SR 1.312, CAGR 17.1%, MDD 22.1%) but C… |
+| 1322 | L-767 | consensus | C | Defense Core Alpha (D01 IVol 50% + D02 Beta 30% + Q07 EarnStab 20%) — PIT 완전 준수 상태에서 ICIR … |
+| 1323 | L-768 | defense_idiovol | C | D01_IdioVol as standalone defense sleeve fails MDD hard gate (53.7% > 45%) despite statist… |
+| 1324 | L-795 | defense | A | C11 수정(FRED 동월 접근 -> t-1월 접근)이 성과를 개선한 사례. STR_1028 대비 SR 1.300->1.333, OOS 0.906->1.09 향상… |
+| 1325 | L-799 | technical_price | F | CR08_Volume_Price_Divergence standalone F (MDD 61%, TO 999%, SR 0.427, FMB t=0.152). Facto… |
+| 1326 | L-802 | defense | B | C19(Composite Earnings) 60% + L22(Ret Autocorr) 40% blend에 DD 8/22 + Regime v7.1 overlay를 … |
+| 1327 | L-812 | defense | B | C19+L22+D01 3F blend (50/30/20) with DD 8/22 + Regime overlay yields SR 0.793, CAGR 11.53%… |
+| 1328 | L-813 | defense | B | C19+V14+D01+L22 4F blend (40/25/15/20) with DD 8/22 + Regime yields SR 0.756, CAGR 11.24%,… |
+| 1329 | L-814 | consensus | B | C19+L22 (60/40) with DD 12/28 wider brake yields SR 0.867, CAGR 15.29%, MDD 31.83%. Compar… |
+| 1330 | L-QPM-20260606-001 | momentum | F | KR long-only 단일+multi-sleeve+국면 overlay로 SR 2.5 돌파 실패 (full QEPM 5-agent alpha/risk/optimi… |
+| 1331 | L-QPM-20260607-001 | infra_process | ? | KR long-only SR 2.5 목표는 현 universe(KOSPI200∪KQ150)·제약(max25 / 15bps / TO<=11 / no-short / … |
+| 1332 | L-QPM-20260704_114303 | ml_complexity | F | KR 300팩터 월간 ML 랭킹 베이스라인(Session 57): XGBoost walk-forward OOS IC 0.0669/ICIR 0.7206(2008-0… |
+| 1333 | L-QPM-20260705_102041 | overlay_regime | F | DIST-QPM-003 frontier(b) '국면조건부 quality activation' 실측 반증(FALSIFIED). regime-conditional(s… |
+| 1334 | L-QPM-20260705_105130 | defense | F | cross-family regime-conditional composite (value/multi-axis-quality/residual-momentum/tail… |
+| 1335 | L-QPM-20260705_110752 | quality_earnings | F | DIST-QPM-003 frontier(a) 'multi-axis quality를 multi-sleeve Q07 성분으로 배치'(AX-004 EXCLUSION e… |
+| 1336 | L-QPM-20260705_180719 | quality | F | WT-D20260705_002 QEPM 자율발굴 CLEAN_NEGATIVE — SR-gap(+0.602) residual-orthogonal sleeve는 fac… |
+| 1337 | L-QPM-20260705_192441 | unknown | F | WT-D20260705_008 QEPM 자율발굴 CLEAN_NEGATIVE — 조건부 교집합(AND-gate conjunctive intersection) 선택은… |
+| 1338 | L-QPM-20260706_081232 | size | F | WT-P20260706_001 (deployment, forge-authoritative) DE-RATE — mega-cap 앵커 구성은 자본급 배포성 구성 레버… |
+| 1339 | L-QPM-20260706_083113 | overlay_regime | F | KR long-only 20종 book(STR_1715, K200 union KQ150): mega-cap 앵커 구성(top-2 by size 20pct-cap … |
+| 1340 | L-QPM-20260706_095231 | flow_supply | F | WT-D20260706_009 QEPM 자율발굴 CLEAN_NEGATIVE — Net Share Issuance(Daniel-Titman 2006·Pontiff-… |
+| 1341 | L-QPM-20260706_102132 | value | F | WT-D20260706_013 QEPM 자율발굴 CLEAN_NEGATIVE — Intangible-adjusted value(Peters-Taylor 2017, … |
+| 1342 | L-QPM-20260718_101841 | infra_process | ? | Cleaner 증류 2-pass 중복실행 방지 = cleaner_pending.json에 distill_status(pending/in_progress/done)… |
+| 1343 | L-QPM-20260718_190624 | risk_sigma_method | B | FQ-057 method-frontier 1호 아크(R1→NP3→NP4→P1, 2026-07-18, pin fq057_20260718_171024) 수렴 — (1… |
+| 1344 | L-QPM-20260718_201043 | drawdown_aware_construction | C | FQ-058 method-frontier(2026-07-18, round fq058_20260718_191740, pin 상속 fq057): drawdown-aw… |
+| 1345 | L-QPM-20260820_PROXY_CHECKER_INSTALL | infra_process | ? | 2026-08-20 계기(檢査器) 층 교체 라운드 — 대리 지표 4종을 내용 기반으로 바꾸고, 그 과정에서 '계기가 산다'는 것의 조건 세 가지를 실측으로 분리했… |
+| 1346 | L-QPM-20260821_R11_RETRY_PREVENTION_DIAGNOSIS | infra_process | ? | Axiom 루프 ⑪(재탕 방지 벌점) 진단 — **'죽은 검사기'가 아니라 '현행 파이프라인이 재지 않는 것을 요구하는 검사'** 였다. 진단이 두 번 뒤집혔고 … |
+| 1347 | L-QPM-20260822_005809 | ml_complexity | C | Lane C 선형 분위회귀 음성 대조 — 판정 PARTIAL(음성 대조 미확립). P1: ML vs 선형 3쌍 paired 전부 UNDERPOWERED(MDE 6… |
+| 1348 | L-QPM-20260822_010303 | ? | B | 해상도 사다리(F1 top-50→F2 top-100→F3L 전브레드스 스코어-수준)가 mean-blind 관문으로 MDE 를 7.5%p→1.22%p 로 낮춰(di… |
+| 1349 | L-QPM-20260822_AXIOM_AUDIT_TEST_ISOLATION | infra_process | ? | Axiom 엔진 설계 전수점검(16 agent · 63 요소 · 48 발견) + P0/P1 수리 라운드. 가장 깊은 결함은 엔진이 아니라 **엔진을 검사하는 배터… |
 
 ### QPM
 
 | # | L-code | family | grade | 요지 |
 |---|--------|--------|-------|------|
-| 1331 | L-AR-20260809_214500 | momentum | F | ★**'재빌드로 해금된 신규 재료 4종'은 실제로 0종이었다.** 2026-08-09 factor_db 전면 재빌드(440개월)가 C10_SUE_Persisten… |
-| 1332 | L-AR-20260813_R31R33 | measurement_form | N/A_panel_statistic | ★이 라운드가 확립한 것 = '평균 표적은 꼬리에 속고 순위·중앙값 표적은 안 속는다' 가 **factor DB 전반의 측정 가능한 성질**이라는 것. 세 층에서… |
-| 1333 | L-AR-20260813_WT002 | overlay_regime | N/A_mechanism_gate_fail | ★판정 F1_FAIL — 기전 관문에서 기각, 성과 미산출(미달이 아니라 미측정). 하방 꼬리월 AUC: 신규 꼬리표적 0.7143 < MSM 상태-baselin… |
-| 1334 | L-AR-20260813_WT003 | overlay_regime | N/A_mechanism_gate_fail | ★VT2 PASS / **VT2b REJECT** — VT4(성과) 미착수. VT1 예측 링크 실재(spearman(sigma_hat, 홀딩월 실현vol) **0… |
-| 1335 | L-AR-20260813_WT005 | measurement_form | C | ★2단 라운드. **1차(깊이 20%)** paired NW3 t **+0.4930** < 문턱 2.0 = NOT_SUPPORTED. 자기 적발한 최강 비판 = … |
+| 1350 | L-AR-20260809_214500 | momentum | F | ★**'재빌드로 해금된 신규 재료 4종'은 실제로 0종이었다.** 2026-08-09 factor_db 전면 재빌드(440개월)가 C10_SUE_Persisten… |
+| 1351 | L-AR-20260813_R31R33 | measurement_form | N/A_panel_statistic | ★이 라운드가 확립한 것 = '평균 표적은 꼬리에 속고 순위·중앙값 표적은 안 속는다' 가 **factor DB 전반의 측정 가능한 성질**이라는 것. 세 층에서… |
+| 1352 | L-AR-20260813_WT002 | overlay_regime | N/A_mechanism_gate_fail | ★판정 F1_FAIL — 기전 관문에서 기각, 성과 미산출(미달이 아니라 미측정). 하방 꼬리월 AUC: 신규 꼬리표적 0.7143 < MSM 상태-baselin… |
+| 1353 | L-AR-20260813_WT003 | overlay_regime | N/A_mechanism_gate_fail | ★VT2 PASS / **VT2b REJECT** — VT4(성과) 미착수. VT1 예측 링크 실재(spearman(sigma_hat, 홀딩월 실현vol) **0… |
+| 1354 | L-AR-20260813_WT005 | measurement_form | C | ★2단 라운드. **1차(깊이 20%)** paired NW3 t **+0.4930** < 문턱 2.0 = NOT_SUPPORTED. 자기 적발한 최강 비판 = … |
 
 ### ramp
 
 | # | L-code | family | grade | 요지 |
 |---|--------|--------|-------|------|
-| 1336 | L-RAMP-20260618_131316 | overlay_regime | F | [failure-ledger/INV-7] 순진한 국면틸트(CAUTION/CRISIS서 방어군 1.5x·공격군 0.5x 고정룰) 역효과: net_sr −0.151 … |
-| 1337 | L-RAMP-20260618_131316B | infra_process | C | factor_db 316 전수 sweep + 풀 479 PCA: standalone long-only PORT_t>1 인 단일팩터 0/316. 직교성은 gross… |
-| 1338 | L-RAMP-20260618_131316C | infra_process | B | 11 직교 약신호군 EW 조합 + 회전제어(13.1→7.8x) → long-only net_sr +0.083(양수), port_t +0.21. 개별군 전부 음수(… |
-| 1339 | L-RAMP-20260618_131800 | infra_process | B | Gate6 iteration: 최고=M0_smooth net_sr=+0.083 port_t=+0.21 TO=7.8 (기준 M0_EW −0.04). 회전제어=핵심레… |
-| 1340 | L-RAMP-20260618_134000 | value | C | regime-cash 오버레이(CRISIS 0.3/CAUTION 0.6)를 M_regime_dd에 얹으니 net_sr +0.110→−0.105 악화. 원인=측정창… |
-| 1341 | L-RAMP-20260618_140528 | ? | B | Round1 고레버리지: best=H3_regdd_conviction net_sr=+0.110 port_t=+0.26 oos=-1.067 (직전 +0.110). … |
-| 1342 | L-RAMP-20260618_142650 | overlay_regime | A | ★유의 달성: RAMP M-code(11직교군+데이터구동 regime, top-25 long-only net) port_t(NW)=2.39 vs EW-univer… |
-| 1343 | L-RAMP-20260618_175207 | infra_process | A | Graduation 시도: best=M_regdd port_t=3.66 oos_reten=0.15 calmar=0.37 DSR=3.24 (vs EW-uni). 게… |
-| 1344 | L-RAMP-20260619_070753 | overlay_regime | B | 가이드북 Gate6-8 정식구현(역할 M0-M4 + drift 플래그 + 인베스터 레짐배분). Gate9: INVESTOR OOS active IR -0.192 … |
-| 1345 | L-RAMP-20260619_081702 | overlay_regime | B | 팩터군 보강(2005-2026 전체 316팩터). equal-weight 316=희석 붕괴(pt 0.82) → IC-가중 composite가 해소: oos_ret… |
-| 1346 | L-RAMP-20260619_103729 | overlay_regime | A | 미배선 Absorption Ratio(Kritzman 2010, 횡단면 상관 top15 고유값 분산비=시장동조화) 엔진을 RAMP에 배선. 헌법 §3.5 정합 s… |
-| 1347 | L-RAMP-20260619_105903 | ? | A | 자율 자가발전: AR-soft 배선 위 {AR/AR+MSM}×{monthly/quarterly} 4변형. best=AR+MSM_quarterly pt_capwt … |
-| 1348 | L-RAMP-20260619_132312 | momentum | A | 국면엔진 리서치풀 14개(인프라7:Cascade/AR/MSM/MRS9/Jump/Forecaster/hard4 + 신규리서치4:Trend/RealizedVol/Dr… |
-| 1349 | L-RAMP-20260619_135237 | overlay_regime | B | 제약완화(도훈): active-only 제약 풀고 Gate8 soft 타이밍(Cascade Category 노출스케줄 1.0/0.7/0.4, 헌법 Σa≤1 허용·… |
-| 1350 | L-RAMP-20260619_140656 | ml_complexity | B | 국면엔진 강화 3종 전부 Cascade 단독(pt 2.85) 미달: 순진앙상블 2.61·스마트앙상블(트레일링IR가중) 2.65·multi-axis 경제분업 2.7… |
-| 1351 | L-RAMP-20260619_141402 | momentum | B | 새 국면엔진 설계(최신페이퍼 Shu-Mulvey 2024 arXiv 2410.14841 per-factor Sparse Jump Model): 각 군 IC시계열에… |
-| 1352 | L-RAMP-20260619_144257 | low_vol | B | Shu-Mulvey 2024(arXiv 2410.14841) 충실구현(도훈 '모든 제약 해지'). 7 롱온리 스타일팩터 인덱스(Market+Value/Size/M… |
-| 1353 | L-RAMP-20260619_150531 | overlay_regime | B | Shu-Mulvey 옵션1(인덱스 2003~확장, 2008 GFC 테스트포함)+옵션2(per-factor λ/κ CV튜닝, online filter는 월간 las… |
-| 1354 | L-RAMP-20260619_151835 | overlay_regime | C | ★정정: 앞선 'Shu-Mulvey 조건부졸업 oos 0.52'는 sweep-부풀림 아티팩트였음. 도훈 '더 튜닝할 여지?'에 답해 논문 본래 메커니즘(rolli… |
-| 1355 | L-RAMP-20260619_152736 | ml_complexity | A | ★★최종 정정(도훈 '파라미터 튜닝 적절했다' 2회 + '맘대로 마감 마라'): 직전 de-bias 'screen-tier' 결론은 내 오판이었다. grid-en… |
-| 1356 | L-RAMP-20260619_173504 | overlay_regime | F | ★중대발견(도훈 '25종목 제약 넣어서 진행'): RAMP_02(Shu-Mulvey)는 25종목 제약에서 엣지 소멸=배포불가. BL 21팩터 인덱스비중→횡단면 종… |
-| 1357 | L-RAMP-20260619_180008 | ml_complexity | C | 도훈 'direction 1,2 해보고 대안도': 25종목 RAMP_01 강화 시도, 둘 다 천장확인. ★Direction1(Shu-Mulvey 국면방법을 RAM… |
-| 1358 | L-RAMP-20260619_193015 | overlay_regime | F | 도훈 'DPL 해보고 RAMP_02 로직 돌파법 최대추론'. 추론: RAMP_02 엣지=broad base 작은tilt timing, 25종목=집중 → compo… |
-| 1359 | L-RAMP-20260620_103109 | momentum | B | ★새 접근 성공(도훈 '기존 틀말고 새 접근'): 25종목서 OOS 양수+calmar 통과하는 첫 배포가능 전략. ★결정적 발견(alpha OOS probe): … |
-| 1360 | L-RAMP-20260620_104415 | momentum | B | ★도훈 교정 검증(국면조건부 다차원 블렌딩 > 정적 모멘텀-중심): 내 'momentum이 유일 생존알파' 프레임은 *무조건부 OOS*만 본 좁은 시각. Valu… |
-| 1361 | L-RAMP-20260620_132802 | overlay_regime | C | 도훈 'FWL+국면엔진 개발진행'. ★내 'FWL이 최대 미사용 레버' 단언 측정이 반박(과신 정정). blanket FWL(전팩터 size중립화)=Size팩터(… |
-| 1362 | L-RAMP-20260620_161507 | momentum | A | ★도훈 goal 달성: 정직 실측으로 현 Book 초과 포트 발굴. 8-구성요소 grid(3024 config, 공유캐시 병렬) 탐색→robust 승자 selec… |
-| 1363 | L-RAMP-20260620_171915 | overlay_regime | A | 도훈 옵션2(Book을 factor로 흡수 재최적화, 25종목준수). ★전제정정: 직전 '31종목 결합 Book초과'는 25종목 위반(book20∪sleeve25… |
-| 1364 | L-RAMP-20260620_184509 | momentum | F | ★중대 PIT 정정: 옵션2 book-흡수 '25종목 beat'(book_momcons pt 3.05)와 construction(book_base 6.73)은 L… |
-| 1365 | L-RAMP-20260620_184815 | momentum | A | ★PIT-클린 25종목 Book 돌파 회복(구성요소 g=cap-weight 강화, look-ahead 제거 후). book score(shift0 PIT-veri… |
-| 1366 | L-RAMP-20260620_185554 | momentum | A | ★8-구성요소 전수 강화 종합(도훈 goal '25종목 BOOK 성과돌파', PIT-클린). 각 레버 결과: z(raw best, FWL refuted)·R국면(… |
-| 1367 | L-RAMP-20260705_184828 | overlay_regime | B | RAMP R1 잔차-직교 sleeve 스태킹 실측 — DIST-RAMP-006 '미검증' 프론티어 측정(프레임: canonical top-25 EW long-on… |
-| 1368 | L-RAMP-20260705_191446 | infra_process | B | RAMP R2 Track A top-N 민감도(N∈{15,20,25}, 15bps 고정, envelope-안) — R1 음성 재확인. N축소가 IS PORT_t … |
-| 1369 | L-RAMP-20260705_191446_02 | ml_complexity | B | RAMP R2 Track B 국면조건부 lightgbm 앙상블(11 직교 sleeve + regime soft-membership → forward return,… |
-| 1370 | L-RAMP-20260711_152314 | value | B | RAMP R3 — 지정 재도전 경로 2개(A tail 방어 sleeve / B V02_EP EW-가중 sleeve)를 국면-IC 가중 base(M_regdd, o… |
-| 1371 | L-RAMP-20260711_181539 | ml_complexity | F | RAMP R4 Boruta 팩터-존 축소 배분(정적 arm S) VALIDATED_NEGATIVE(config-scoped): rolling 학습창(36/60m,… |
-| 1372 | L-RAMP-20260711_184155 | ml_complexity | F | RAMP R5(Branch B): 선별-규율 계열(Boruta shadow-null + Stability Selection[glmnet LASSO compleme… |
-| 1373 | L-RAMP-20260711_200226 | ? | C | RAMP R6: 선별 기질을 relevance(R4/R5)에서 realized-PORT_t(trailing 배포권 실측 성과)로 교체 = R5 부활신호 발화. 결… |
-| 1374 | L-RAMP-20260712_161537 | infra_process | C | RAMP R7 (FQ-015, R6 잔존 frontier ②): 선별 라벨 basis 교체 실험 — trailing 선별 라벨을 cap-w active NW-t(… |
-| 1375 | L-RAMP-20260712_175852 | infra_process | C | RAMP R8 (FQ-016) = R7 종결의 판정 절차 보완(re-sweep 아님, n_trials family=20 불변). R7이 R6-best Ppure_… |
-| 1376 | L-RAMP-20260713_084821 | infra_process | C | RAMP R10 (FQ-023, 도훈 '비중 결정 통계적 고도화 적용해봤니'): P-pure(W36_K20) 동일가중(종목 EW × 팩터 EW)을 알파/점수-비례… |
-| 1377 | L-RAMP-20260713_093129 | ? | C | RAMP R11 (FQ-024, 도훈 'P-pure 더 발전시켜봐'): P-pure(W36_K20)의 바인딩 실패=oos·post-2017 감쇠 추적을 세 독립 … |
-| 1378 | L-RAMP-20260713_100638 | ? | C | RAMP R12 (FQ-025, 도훈 mandate — R11 next_probe 수렴점 소비 '퇴출 빠르게·진입 엄격하게'): P-pure(W36_K20) 감쇠… |
-| 1379 | L-RAMP-20260713_102944 | ? | F | RAMP R13 (FQ-026) = R12 메타진단 축전환 소비: construction 4축(비중2.930·vintage2.895·신선도2.852·비대칭퇴출2.… |
-| 1380 | L-RAMP-20260713_110343 | ? | F | RAMP R14 퇴출 결합(FQ-027): R12 F-1(순위 퇴출·cap-w 2.937)과 R13 D-2(감쇠 퇴출·oos+0.045) 트리거를 AND/OR 결… |
-| 1381 | L-RAMP-20260713_112544 | ? | F | RAMP R15 충원(fill) 규율 축(FQ-028, R14 next_probe 1순위 소비): 퇴출 트리거를 챔피언 F-1(순위-단독)에 고정하고 빈 슬롯 충… |
-| 1382 | L-RAMP-20260713_211037 | momentum | B | ★RAMP_03C(book+mom6 cap-weight) 단일 config 재현 = DEMOTED(재현 실패). FQ-018 감사의 A급 원장 유일 명목 HARD… |
-| 1383 | L-RAMP-20260713_213904 | infra_process | F | ★RAMP_03C EW/score-tilt variant book-marginal ΔIR 진단(#65 next_probe 2 소비) = blend 기여 없음, c… |
-| 1384 | L-RAMP-20260715_004100 | flow_supply | F | RAMP R9 insider 확장 패널 × PORT_t-정렬 선별 (FQ-019, 선별-규율 아크 R4~R15 잔존 frontier ① 소비 — 비-수익 subs… |
-| 1385 | L-RAMP-20260715_015734 | flow_supply | C | insider 소비면 전환(R9 next_probe P1): 선별/필터 3면(R9 pool-선별·A net-seller exclusion paired t=-0.0… |
-| 1386 | L-RAMP-20260715_022534 | low_vol | C | insider net-buy 클러스터(INS02 z>=+1.0) monitoring tripwire 배선 + 북-레벨 de-risk 진단(R33 P1 소비). 북… |
-| 1387 | L-RAMP-20260715_040901 | overlay_regime | B | insider net-buy SAFE 청산-타이밍 대칭검정 (R38/FQ-052, R34 P3/R37 P1 소비). SAFE 진입 정보성(R33/R34 확립)이 … |
-| 1388 | L-RAMP-20260715_043643 | flow_supply | B | [monitoring 배선] R39 FQ-053 insider SAFE_FADING 상태전이 tripwire 실배선 (R38 P2 소비, wiring 태스크·새 … |
-| 1389 | L-RAMP-20260715_053646 | flow_supply | B | [monitoring 배선 refine] R41 FQ-053 insider SAFE_FADING horizon-bounded 실배선 (R40 P1 소비, wiri… |
-| 1390 | L-RAMP-20260715_055418 | flow_supply | B | [monitoring 배선 — live OOS 추적] R42 FQ-053 P2 insider SAFE/SAFE_FADING live 발화 종목 익월 실현위험 OO… |
-| 1391 | L-RAMP-20260715_070019 | infra_process | B | [데이터무결성 방화벽 배선] R44 FQ-054 R1+R4 — R43 적발 'canonical 입력단 Ret winsorize 방화벽 부재'(물리불가 Ret 통과… |
-| 1392 | L-RAMP-20260715_072549 | infra_process | B | [데이터무결성 근원진단] R45 FQ-054 P3 — R44가 남긴 'stored Ret vs recompute max|Δ|=4.86(non-universe mi… |
-| 1393 | L-RAMP-20260715_075509 | infra_process | B | [데이터무결성 배선정련] R46 FQ-054 P2+P3 — R45 근원 지식(date-gap 불일치=Close 시계열 구멍 span recompute 스퓨리어스·… |
-| 1394 | L-RAMP-20260717_195731 | infra_process | B | [데이터무결성 근원수리] R47 R46-P1 — R46 tripwire가 특정한 218 source-seam Close 구멍을 KRX 백필로 실수리. ★rawda… |
-| 1395 | L-RAMP-20260802_204804 | flow_supply | C | insider INS_MAGQ3 보조 tripwire 증분 = 기각. 그러나 본 과제보다 큰 관측가능성 결함(R43-F1)을 적발·수리했다. ① 증분 판정 UND… |
-| 1396 | L-RAMP-20260820_212848 | low_vol | F | FQ-239 P0-2 (도훈 mandate 2026-08-20 자본졸업 루프 착수 게이트). run_ramp_shumulvey.R bt()(:179-199)와 _… |
-| 1397 | L-RAMP-20260820_221500 | low_vol | C | FQ-239 (도훈 mandate 자본졸업 루프, prereg smv_v5_prereg_20260820, pin smv_r2_20260820). 보정 회계(월말 … |
-| 1398 | L-RAMP-20260821_073500 | low_vol | F | FQ-239 라운드 2 (도훈 지시 2026-08-21 '피처·오버레이·하네스 튜닝'). prereg smv_v6_prereg_20260821 (34셀 전수, a… |
-| 1399 | L-RAMP-20260821_080500 | low_vol | C | FQ-239 R3 자동 사이클 (도훈 2026-08-21). prereg smv_v7_prereg_20260821 (측정-전 기록 + amendment_2 측정-… |
-| 1400 | L-RAMP-20260821_103000 | low_vol | B | FQ-239 감사·설계게이트 아크 (도훈 감사 사양 발행 2026-08-21). [독립성] v5 작성자 Q-Lead는 §0 규칙상 감사 배제 — 사양 원문 보존(… |
-| 1401 | L-RAMP-20260822_020000 | momentum | B | FQ-239 R7~R8 (도훈 2026-08-22 '발전 가이드대로 팩터 모멘텀에서 발전'). prereg dfa_v9_prereg_20260822 + 측정-전 … |
-| 1402 | L-RAMP-20260822_040000 | momentum | B | FQ-239 R10~R13 (도훈 '모멘텀 후속 연구' + '문헌 반영 발전 라운드'). prereg dfa_v11/v12 + 측정-전 amendment. [R1… |
-| 1403 | L-RAMP-20260822_120000 | momentum | F | FQ-239 R14 + 독립 적대검증(6-agent 워크플로우) 결과 §15~17 핵심 주장 2건 철회. [철회 1 — oos] A5E oos 0.706 통과는 … |
-| 1404 | L-RAMP-20260822_134500 | factor_timing_allocation | F | DFA_RegimeSignals R18~R20: 감쇠 기전 분해가 구속 게이트를 신호층에서 배포 형태층으로 옮겼다. R18 3분해(broad-21, 완결월 247… |
-| 1405 | L-RAMP-20260822_140701 | factor_timing_allocation | F | DFA_RegimeSignals R21~R22: 변동성 상승의 귀속이 두 개의 가중-규칙 축을 사전에 배제했고, 남은 하나를 측정해 기각했다. R21 2x2 반사… |
-| 1406 | L-RAMP-20260822_144529 | factor_timing_allocation | F | DFA_RegimeSignals R23~R25: 게이트 계층 순서가 틀렸음이 드러났고, 동시에 이전 라운드의 축 폐쇄 선언 하나가 철회됐다. [R23 — 노출 축… |
-| 1407 | L-RAMP-20260822_173112 | factor_timing_allocation | F | DFA_RegimeSignals 아크 측정 종료(R35~R45). 구성 축 6회 · 노출 축 4회 · 신호 선택 1회 전수 측정 후 판정 3건이 확정됐다. [판정… |
-| 1408 | L-RAMP-20260822_184930 | factor_timing_allocation | F | FR Track2 배분 규칙(compute_regime_module_weights)은 모듈 수가 많으면 정적 risk-parity 로 붕괴한다. 21 팩터지수 적… |
+| 1355 | L-RAMP-20260618_131316 | overlay_regime | F | [failure-ledger/INV-7] 순진한 국면틸트(CAUTION/CRISIS서 방어군 1.5x·공격군 0.5x 고정룰) 역효과: net_sr −0.151 … |
+| 1356 | L-RAMP-20260618_131316B | infra_process | C | factor_db 316 전수 sweep + 풀 479 PCA: standalone long-only PORT_t>1 인 단일팩터 0/316. 직교성은 gross… |
+| 1357 | L-RAMP-20260618_131316C | infra_process | B | 11 직교 약신호군 EW 조합 + 회전제어(13.1→7.8x) → long-only net_sr +0.083(양수), port_t +0.21. 개별군 전부 음수(… |
+| 1358 | L-RAMP-20260618_131800 | infra_process | B | Gate6 iteration: 최고=M0_smooth net_sr=+0.083 port_t=+0.21 TO=7.8 (기준 M0_EW −0.04). 회전제어=핵심레… |
+| 1359 | L-RAMP-20260618_134000 | value | C | regime-cash 오버레이(CRISIS 0.3/CAUTION 0.6)를 M_regime_dd에 얹으니 net_sr +0.110→−0.105 악화. 원인=측정창… |
+| 1360 | L-RAMP-20260618_140528 | ? | B | Round1 고레버리지: best=H3_regdd_conviction net_sr=+0.110 port_t=+0.26 oos=-1.067 (직전 +0.110). … |
+| 1361 | L-RAMP-20260618_142650 | overlay_regime | A | ★유의 달성: RAMP M-code(11직교군+데이터구동 regime, top-25 long-only net) port_t(NW)=2.39 vs EW-univer… |
+| 1362 | L-RAMP-20260618_175207 | infra_process | A | Graduation 시도: best=M_regdd port_t=3.66 oos_reten=0.15 calmar=0.37 DSR=3.24 (vs EW-uni). 게… |
+| 1363 | L-RAMP-20260619_070753 | overlay_regime | B | 가이드북 Gate6-8 정식구현(역할 M0-M4 + drift 플래그 + 인베스터 레짐배분). Gate9: INVESTOR OOS active IR -0.192 … |
+| 1364 | L-RAMP-20260619_081702 | overlay_regime | B | 팩터군 보강(2005-2026 전체 316팩터). equal-weight 316=희석 붕괴(pt 0.82) → IC-가중 composite가 해소: oos_ret… |
+| 1365 | L-RAMP-20260619_103729 | overlay_regime | A | 미배선 Absorption Ratio(Kritzman 2010, 횡단면 상관 top15 고유값 분산비=시장동조화) 엔진을 RAMP에 배선. 헌법 §3.5 정합 s… |
+| 1366 | L-RAMP-20260619_105903 | ? | A | 자율 자가발전: AR-soft 배선 위 {AR/AR+MSM}×{monthly/quarterly} 4변형. best=AR+MSM_quarterly pt_capwt … |
+| 1367 | L-RAMP-20260619_132312 | momentum | A | 국면엔진 리서치풀 14개(인프라7:Cascade/AR/MSM/MRS9/Jump/Forecaster/hard4 + 신규리서치4:Trend/RealizedVol/Dr… |
+| 1368 | L-RAMP-20260619_135237 | overlay_regime | B | 제약완화(도훈): active-only 제약 풀고 Gate8 soft 타이밍(Cascade Category 노출스케줄 1.0/0.7/0.4, 헌법 Σa≤1 허용·… |
+| 1369 | L-RAMP-20260619_140656 | ml_complexity | B | 국면엔진 강화 3종 전부 Cascade 단독(pt 2.85) 미달: 순진앙상블 2.61·스마트앙상블(트레일링IR가중) 2.65·multi-axis 경제분업 2.7… |
+| 1370 | L-RAMP-20260619_141402 | momentum | B | 새 국면엔진 설계(최신페이퍼 Shu-Mulvey 2024 arXiv 2410.14841 per-factor Sparse Jump Model): 각 군 IC시계열에… |
+| 1371 | L-RAMP-20260619_144257 | low_vol | B | Shu-Mulvey 2024(arXiv 2410.14841) 충실구현(도훈 '모든 제약 해지'). 7 롱온리 스타일팩터 인덱스(Market+Value/Size/M… |
+| 1372 | L-RAMP-20260619_150531 | overlay_regime | B | Shu-Mulvey 옵션1(인덱스 2003~확장, 2008 GFC 테스트포함)+옵션2(per-factor λ/κ CV튜닝, online filter는 월간 las… |
+| 1373 | L-RAMP-20260619_151835 | overlay_regime | C | ★정정: 앞선 'Shu-Mulvey 조건부졸업 oos 0.52'는 sweep-부풀림 아티팩트였음. 도훈 '더 튜닝할 여지?'에 답해 논문 본래 메커니즘(rolli… |
+| 1374 | L-RAMP-20260619_152736 | ml_complexity | A | ★★최종 정정(도훈 '파라미터 튜닝 적절했다' 2회 + '맘대로 마감 마라'): 직전 de-bias 'screen-tier' 결론은 내 오판이었다. grid-en… |
+| 1375 | L-RAMP-20260619_173504 | overlay_regime | F | ★중대발견(도훈 '25종목 제약 넣어서 진행'): RAMP_02(Shu-Mulvey)는 25종목 제약에서 엣지 소멸=배포불가. BL 21팩터 인덱스비중→횡단면 종… |
+| 1376 | L-RAMP-20260619_180008 | ml_complexity | C | 도훈 'direction 1,2 해보고 대안도': 25종목 RAMP_01 강화 시도, 둘 다 천장확인. ★Direction1(Shu-Mulvey 국면방법을 RAM… |
+| 1377 | L-RAMP-20260619_193015 | overlay_regime | F | 도훈 'DPL 해보고 RAMP_02 로직 돌파법 최대추론'. 추론: RAMP_02 엣지=broad base 작은tilt timing, 25종목=집중 → compo… |
+| 1378 | L-RAMP-20260620_103109 | momentum | B | ★새 접근 성공(도훈 '기존 틀말고 새 접근'): 25종목서 OOS 양수+calmar 통과하는 첫 배포가능 전략. ★결정적 발견(alpha OOS probe): … |
+| 1379 | L-RAMP-20260620_104415 | momentum | B | ★도훈 교정 검증(국면조건부 다차원 블렌딩 > 정적 모멘텀-중심): 내 'momentum이 유일 생존알파' 프레임은 *무조건부 OOS*만 본 좁은 시각. Valu… |
+| 1380 | L-RAMP-20260620_132802 | overlay_regime | C | 도훈 'FWL+국면엔진 개발진행'. ★내 'FWL이 최대 미사용 레버' 단언 측정이 반박(과신 정정). blanket FWL(전팩터 size중립화)=Size팩터(… |
+| 1381 | L-RAMP-20260620_161507 | momentum | A | ★도훈 goal 달성: 정직 실측으로 현 Book 초과 포트 발굴. 8-구성요소 grid(3024 config, 공유캐시 병렬) 탐색→robust 승자 selec… |
+| 1382 | L-RAMP-20260620_171915 | overlay_regime | A | 도훈 옵션2(Book을 factor로 흡수 재최적화, 25종목준수). ★전제정정: 직전 '31종목 결합 Book초과'는 25종목 위반(book20∪sleeve25… |
+| 1383 | L-RAMP-20260620_184509 | momentum | F | ★중대 PIT 정정: 옵션2 book-흡수 '25종목 beat'(book_momcons pt 3.05)와 construction(book_base 6.73)은 L… |
+| 1384 | L-RAMP-20260620_184815 | momentum | A | ★PIT-클린 25종목 Book 돌파 회복(구성요소 g=cap-weight 강화, look-ahead 제거 후). book score(shift0 PIT-veri… |
+| 1385 | L-RAMP-20260620_185554 | momentum | A | ★8-구성요소 전수 강화 종합(도훈 goal '25종목 BOOK 성과돌파', PIT-클린). 각 레버 결과: z(raw best, FWL refuted)·R국면(… |
+| 1386 | L-RAMP-20260705_184828 | overlay_regime | B | RAMP R1 잔차-직교 sleeve 스태킹 실측 — DIST-RAMP-006 '미검증' 프론티어 측정(프레임: canonical top-25 EW long-on… |
+| 1387 | L-RAMP-20260705_191446 | infra_process | B | RAMP R2 Track A top-N 민감도(N∈{15,20,25}, 15bps 고정, envelope-안) — R1 음성 재확인. N축소가 IS PORT_t … |
+| 1388 | L-RAMP-20260705_191446_02 | ml_complexity | B | RAMP R2 Track B 국면조건부 lightgbm 앙상블(11 직교 sleeve + regime soft-membership → forward return,… |
+| 1389 | L-RAMP-20260711_152314 | value | B | RAMP R3 — 지정 재도전 경로 2개(A tail 방어 sleeve / B V02_EP EW-가중 sleeve)를 국면-IC 가중 base(M_regdd, o… |
+| 1390 | L-RAMP-20260711_181539 | ml_complexity | F | RAMP R4 Boruta 팩터-존 축소 배분(정적 arm S) VALIDATED_NEGATIVE(config-scoped): rolling 학습창(36/60m,… |
+| 1391 | L-RAMP-20260711_184155 | ml_complexity | F | RAMP R5(Branch B): 선별-규율 계열(Boruta shadow-null + Stability Selection[glmnet LASSO compleme… |
+| 1392 | L-RAMP-20260711_200226 | ? | C | RAMP R6: 선별 기질을 relevance(R4/R5)에서 realized-PORT_t(trailing 배포권 실측 성과)로 교체 = R5 부활신호 발화. 결… |
+| 1393 | L-RAMP-20260712_161537 | infra_process | C | RAMP R7 (FQ-015, R6 잔존 frontier ②): 선별 라벨 basis 교체 실험 — trailing 선별 라벨을 cap-w active NW-t(… |
+| 1394 | L-RAMP-20260712_175852 | infra_process | C | RAMP R8 (FQ-016) = R7 종결의 판정 절차 보완(re-sweep 아님, n_trials family=20 불변). R7이 R6-best Ppure_… |
+| 1395 | L-RAMP-20260713_084821 | infra_process | C | RAMP R10 (FQ-023, 도훈 '비중 결정 통계적 고도화 적용해봤니'): P-pure(W36_K20) 동일가중(종목 EW × 팩터 EW)을 알파/점수-비례… |
+| 1396 | L-RAMP-20260713_093129 | ? | C | RAMP R11 (FQ-024, 도훈 'P-pure 더 발전시켜봐'): P-pure(W36_K20)의 바인딩 실패=oos·post-2017 감쇠 추적을 세 독립 … |
+| 1397 | L-RAMP-20260713_100638 | ? | C | RAMP R12 (FQ-025, 도훈 mandate — R11 next_probe 수렴점 소비 '퇴출 빠르게·진입 엄격하게'): P-pure(W36_K20) 감쇠… |
+| 1398 | L-RAMP-20260713_102944 | ? | F | RAMP R13 (FQ-026) = R12 메타진단 축전환 소비: construction 4축(비중2.930·vintage2.895·신선도2.852·비대칭퇴출2.… |
+| 1399 | L-RAMP-20260713_110343 | ? | F | RAMP R14 퇴출 결합(FQ-027): R12 F-1(순위 퇴출·cap-w 2.937)과 R13 D-2(감쇠 퇴출·oos+0.045) 트리거를 AND/OR 결… |
+| 1400 | L-RAMP-20260713_112544 | ? | F | RAMP R15 충원(fill) 규율 축(FQ-028, R14 next_probe 1순위 소비): 퇴출 트리거를 챔피언 F-1(순위-단독)에 고정하고 빈 슬롯 충… |
+| 1401 | L-RAMP-20260713_211037 | momentum | B | ★RAMP_03C(book+mom6 cap-weight) 단일 config 재현 = DEMOTED(재현 실패). FQ-018 감사의 A급 원장 유일 명목 HARD… |
+| 1402 | L-RAMP-20260713_213904 | infra_process | F | ★RAMP_03C EW/score-tilt variant book-marginal ΔIR 진단(#65 next_probe 2 소비) = blend 기여 없음, c… |
+| 1403 | L-RAMP-20260715_004100 | flow_supply | F | RAMP R9 insider 확장 패널 × PORT_t-정렬 선별 (FQ-019, 선별-규율 아크 R4~R15 잔존 frontier ① 소비 — 비-수익 subs… |
+| 1404 | L-RAMP-20260715_015734 | flow_supply | C | insider 소비면 전환(R9 next_probe P1): 선별/필터 3면(R9 pool-선별·A net-seller exclusion paired t=-0.0… |
+| 1405 | L-RAMP-20260715_022534 | low_vol | C | insider net-buy 클러스터(INS02 z>=+1.0) monitoring tripwire 배선 + 북-레벨 de-risk 진단(R33 P1 소비). 북… |
+| 1406 | L-RAMP-20260715_040901 | overlay_regime | B | insider net-buy SAFE 청산-타이밍 대칭검정 (R38/FQ-052, R34 P3/R37 P1 소비). SAFE 진입 정보성(R33/R34 확립)이 … |
+| 1407 | L-RAMP-20260715_043643 | flow_supply | B | [monitoring 배선] R39 FQ-053 insider SAFE_FADING 상태전이 tripwire 실배선 (R38 P2 소비, wiring 태스크·새 … |
+| 1408 | L-RAMP-20260715_053646 | flow_supply | B | [monitoring 배선 refine] R41 FQ-053 insider SAFE_FADING horizon-bounded 실배선 (R40 P1 소비, wiri… |
+| 1409 | L-RAMP-20260715_055418 | flow_supply | B | [monitoring 배선 — live OOS 추적] R42 FQ-053 P2 insider SAFE/SAFE_FADING live 발화 종목 익월 실현위험 OO… |
+| 1410 | L-RAMP-20260715_070019 | infra_process | B | [데이터무결성 방화벽 배선] R44 FQ-054 R1+R4 — R43 적발 'canonical 입력단 Ret winsorize 방화벽 부재'(물리불가 Ret 통과… |
+| 1411 | L-RAMP-20260715_072549 | infra_process | B | [데이터무결성 근원진단] R45 FQ-054 P3 — R44가 남긴 'stored Ret vs recompute max|Δ|=4.86(non-universe mi… |
+| 1412 | L-RAMP-20260715_075509 | infra_process | B | [데이터무결성 배선정련] R46 FQ-054 P2+P3 — R45 근원 지식(date-gap 불일치=Close 시계열 구멍 span recompute 스퓨리어스·… |
+| 1413 | L-RAMP-20260717_195731 | infra_process | B | [데이터무결성 근원수리] R47 R46-P1 — R46 tripwire가 특정한 218 source-seam Close 구멍을 KRX 백필로 실수리. ★rawda… |
+| 1414 | L-RAMP-20260802_204804 | flow_supply | C | insider INS_MAGQ3 보조 tripwire 증분 = 기각. 그러나 본 과제보다 큰 관측가능성 결함(R43-F1)을 적발·수리했다. ① 증분 판정 UND… |
+| 1415 | L-RAMP-20260820_212848 | low_vol | F | FQ-239 P0-2 (도훈 mandate 2026-08-20 자본졸업 루프 착수 게이트). run_ramp_shumulvey.R bt()(:179-199)와 _… |
+| 1416 | L-RAMP-20260820_221500 | low_vol | C | FQ-239 (도훈 mandate 자본졸업 루프, prereg smv_v5_prereg_20260820, pin smv_r2_20260820). 보정 회계(월말 … |
+| 1417 | L-RAMP-20260821_073500 | low_vol | F | FQ-239 라운드 2 (도훈 지시 2026-08-21 '피처·오버레이·하네스 튜닝'). prereg smv_v6_prereg_20260821 (34셀 전수, a… |
+| 1418 | L-RAMP-20260821_080500 | low_vol | C | FQ-239 R3 자동 사이클 (도훈 2026-08-21). prereg smv_v7_prereg_20260821 (측정-전 기록 + amendment_2 측정-… |
+| 1419 | L-RAMP-20260821_103000 | low_vol | B | FQ-239 감사·설계게이트 아크 (도훈 감사 사양 발행 2026-08-21). [독립성] v5 작성자 Q-Lead는 §0 규칙상 감사 배제 — 사양 원문 보존(… |
+| 1420 | L-RAMP-20260822_020000 | momentum | B | FQ-239 R7~R8 (도훈 2026-08-22 '발전 가이드대로 팩터 모멘텀에서 발전'). prereg dfa_v9_prereg_20260822 + 측정-전 … |
+| 1421 | L-RAMP-20260822_040000 | momentum | B | FQ-239 R10~R13 (도훈 '모멘텀 후속 연구' + '문헌 반영 발전 라운드'). prereg dfa_v11/v12 + 측정-전 amendment. [R1… |
+| 1422 | L-RAMP-20260822_120000 | momentum | F | FQ-239 R14 + 독립 적대검증(6-agent 워크플로우) 결과 §15~17 핵심 주장 2건 철회. [철회 1 — oos] A5E oos 0.706 통과는 … |
+| 1423 | L-RAMP-20260822_134500 | factor_timing_allocation | F | DFA_RegimeSignals R18~R20: 감쇠 기전 분해가 구속 게이트를 신호층에서 배포 형태층으로 옮겼다. R18 3분해(broad-21, 완결월 247… |
+| 1424 | L-RAMP-20260822_140701 | factor_timing_allocation | F | DFA_RegimeSignals R21~R22: 변동성 상승의 귀속이 두 개의 가중-규칙 축을 사전에 배제했고, 남은 하나를 측정해 기각했다. R21 2x2 반사… |
+| 1425 | L-RAMP-20260822_144529 | factor_timing_allocation | F | DFA_RegimeSignals R23~R25: 게이트 계층 순서가 틀렸음이 드러났고, 동시에 이전 라운드의 축 폐쇄 선언 하나가 철회됐다. [R23 — 노출 축… |
+| 1426 | L-RAMP-20260822_173112 | factor_timing_allocation | F | DFA_RegimeSignals 아크 측정 종료(R35~R45). 구성 축 6회 · 노출 축 4회 · 신호 선택 1회 전수 측정 후 판정 3건이 확정됐다. [판정… |
+| 1427 | L-RAMP-20260822_184930 | factor_timing_allocation | F | FR Track2 배분 규칙(compute_regime_module_weights)은 모듈 수가 많으면 정적 risk-parity 로 붕괴한다. 21 팩터지수 적… |
 
 ### regime_research
 
 | # | L-code | family | grade | 요지 |
 |---|--------|--------|-------|------|
-| 1409 | L-RR-20260704_114303 | value | F | KR book(STR_1715_AR_on_M4_R05_overlay_PG2) 인버스 ETF(-1x 114800/-2x 252670) 헤지 슬리브 전면 REJECT… |
+| 1428 | L-RR-20260704_114303 | value | F | KR book(STR_1715_AR_on_M4_R05_overlay_PG2) 인버스 ETF(-1x 114800/-2x 252670) 헤지 슬리브 전면 REJECT… |
 
 ### reinforcement
 
 | # | L-code | family | grade | 요지 |
 |---|--------|--------|-------|------|
-| 1410 | L-RF-20260829_142955 | momentum | ? | CJL1996 의 핵심 주장 'neither momentum strategy subsumes the other'(가격모멘텀·이익 서프라이즈 상호 비포섭)는 KR … |
-| 1411 | L-RF-20260829_152717 | momentum | ? | 기저 F 의 귀속은 '숏 레그' 도 '집중 형태' 도 아니라 **신호**다. 4셀 직교 분해(신호·보유·EW·비용 전셀 6-6 고정, 259월): 축 A(숏 레그… |
-| 1412 | L-RF-20260829_163417 | momentum | ? | LS2000 모멘텀 생애주기는 KR 승자 사이드에서 성립하지 않는다 — 사전등록 1급·2급 동시 기각, 처분 reject. 1급(승자 데실 내부 회전율 층화 스프… |
-| 1413 | L-RF-20260829_190619 | value_momentum | C | AMP2013 value-momentum 결합의 KR 이식 — **essence C**(권위, forge). 5조건 전부 미달: PORT_t 0.646(<2.95… |
-| 1414 | L-RF-20260829_193556 | momentum | C | EL2022 팩터 모멘텀의 KR 검정 — essence C (0/5). PORT_t 1.002 · OOS retention -0.780(분할 -0.484/-0.7… |
-| 1415 | L-RF-20260829_193556_02 | momentum | C | GH2004 52주 신고가 근접도의 KR 검정 — essence C (0/5). PORT_t 0.6364 · OOS -0.693(분할 -0.561/-0.693/-… |
-| 1416 | L-RF-20260829_195704 | momentum | C | DM2016/BSC2015 모멘텀 크래시 관리의 KR 적용 — essence C (0/5). PORT_t 0.7547 · OOS -0.660 · SR 0.5699… |
-| 1417 | L-RF-20260829_224532 | momentum | ? | ★착수 전 검정력 게이트가 처음으로 발화해 라운드를 중단시켰다 — 측정 예산을 쓰기 전에. DGW2014 frog-in-the-pan(일별 축 정보 회수)을 8/… |
-| 1418 | L-RF-20260830_182834 | ? | B | [B1 multifactor] 5칸 실측 — 최고 B1_5 다중검정t 2.241 · 칼마 0.320 · 등급 A0/B1/C2/F2. 칼마 최고 0.32 — 낙폭 … |
-| 1419 | L-RF-20260830_182834_02 | ? | C | [B2 weighting] 5칸 실측 — 최고 B2_7 다중검정t 0.569 · 칼마 0.214 · 등급 A0/B0/C1/F4. 직전 최고 B1_5(2.241) … |
-| 1420 | L-RF-20260830_184746 | ? | B | [B3 universe] 5칸 실측 — 최고 B3_12 다중검정t 2.630 · 칼마 0.338 · 등급 A0/B2/C3/F0. 직전 최고 B1_5(2.241) … |
-| 1421 | L-RF-20260830_195606 | ? | B | [B4 combination] 5칸 실측 — 최고 B4_18 다중검정t 2.630 · 칼마 0.338 · 등급 A0/B1/C2/F2. 직전 최고 B3_12(2.6… |
-| 1422 | L-RF-20260830_203345 | overlay_regime | F | [B5 risk_overlay] 5칸 실측 — 최고 B5_24 다중검정t -1.253 · 칼마 0.141 · 등급 A0/B0/C0/F5. 직전 최고 B3_12(2… |
-| 1423 | L-RF-20260830_233034 | ? | B | [B1 multifactor] 5칸 실측 — 최고 B1_5 다중검정t 2.251 · 칼마 0.305 · 등급 A0/B1/C3/F1. 낙폭이 축을 바꿔도 60~68… |
-| 1424 | L-RF-20260830_235334 | ? | F | [B2 weighting] 5칸 실측 — 최고 B2_7 다중검정t -0.090 · 칼마 0.185 · 등급 A0/B0/C0/F5. 직전 최고 B1_5(2.251)… |
-| 1425 | L-RF-20260831_001629 | ? | B | [B3 universe] 4칸 실측 — 최고 B3_12 다중검정t 2.251 · 칼마 0.305 · 등급 A0/B1/C3/F0. 직전 최고 B1_5(2.251) … |
-| 1426 | L-RF-20260831_082400 | ? | B | [B4 combination] 5칸 실측 — 최고 B4_18 다중검정t 2.251 · 칼마 0.305 · 등급 A0/B1/C2/F2. 직전 최고 B1_5(2.25… |
-| 1427 | L-RF-20260831_093256 | ? | C | [B1 multifactor] 4칸 실측 — 최고 B1_1 다중검정t 0.814 · 칼마 0.194 · 등급 A0/B0/C3/F1. 칼마 최고 0.19 — 낙폭 … |
-| 1428 | L-RF-20260831_103953 | ? | F | [B2 weighting] 5칸 실측 — 최고 B2_7 다중검정t -0.562 · 칼마 0.161 · 등급 A0/B0/C0/F5. 직전 최고 B1_1(0.814)… |
-| 1429 | L-RF-20260831_105459 | ? | C | [B3 universe] 4칸 실측 — 최고 B3_14 다중검정t 1.750 · 칼마 0.273 · 등급 A0/B0/C4/F0. 직전 최고 B1_1(0.814) … |
-| 1430 | L-RF-20260831_114822 | ? | C | [B4 combination] 5칸 실측 — 최고 B4_19 다중검정t 1.064 · 칼마 0.259 · 등급 A0/B0/C2/F3. 직전 최고 B3_14(1.7… |
-| 1431 | L-RF-20260831_132029 | overlay_regime | F | [B5 risk_overlay] 5칸 실측 — 최고 B5_24 다중검정t -1.202 · 칼마 0.138 · 등급 A0/B0/C0/F5. 직전 최고 B3_14(1… |
-| 1432 | L-RF-20260831_174413 | ? | C | [B1 multifactor] 5칸 실측 — 최고 B1_5 다중검정t 1.074 · 칼마 0.141 · 등급 A0/B0/C2/F3. 칼마 최고 0.14 — 낙폭 … |
-| 1433 | L-RF-20260831_180129 | ? | C | [B2 weighting] 5칸 실측 — 최고 B2_8 다중검정t 1.073 · 칼마 0.230 · 등급 A0/B0/C4/F1. 직전 최고 B1_5(1.074) … |
-| 1434 | L-RF-20260831_181652 | ? | C | [B3 universe] 5칸 실측 — 최고 B3_14 다중검정t 1.191 · 칼마 0.181 · 등급 A0/B0/C5/F0. 직전 최고 B1_5(1.074) … |
-| 1435 | L-RF-20260831_183600 | ? | C | [B4 combination] 3칸 실측 — 최고 B4_16 다중검정t 0.310 · 칼마 0.198 · 등급 A0/B0/C2/F1. 직전 최고 B3_14(1.1… |
-| 1436 | L-RF-20260831_190237 | overlay_regime | F | [B5 risk_overlay] 5칸 실측 — 최고 B5_24 다중검정t -0.098 · 칼마 0.175 · 등급 A0/B0/C0/F5. 직전 최고 B3_14(1… |
-| 1437 | L-RF-20260831_205809 | ? | C | [B1 multifactor] 5칸 실측 — 최고 B1_5 다중검정t 1.813 · 칼마 0.259 · 등급 A0/B0/C3/F2. 칼마 최고 0.26 — 낙폭 … |
-| 1438 | L-RF-20260831_211842 | ? | C | [B2 weighting] 5칸 실측 — 최고 B2_7 다중검정t 1.725 · 칼마 0.304 · 등급 A0/B0/C4/F1. 직전 최고 B1_5(1.813) … |
-| 1439 | L-RF-20260831_213406 | ? | C | [B3 universe] 5칸 실측 — 최고 B3_11 다중검정t 1.697 · 칼마 0.325 · 등급 A0/B0/C4/F1. 직전 최고 B1_5(1.813) … |
-| 1440 | L-RF-20260831_222134 | overlay_regime | C | [B5 risk_overlay] 5칸 실측 — 최고 B5_24 다중검정t 1.014 · 칼마 0.251 · 등급 A0/B0/C3/F2. 직전 최고 B1_5(1.8… |
-| 1441 | L-RF-20260901_152722 | ? | C | [B1 multifactor] 5칸 실측 — 최고 B1_4 다중검정t 1.103 · 칼마 0.218 · 등급 A0/B0/C4/F1. 칼마 최고 0.22 — 낙폭 … |
-| 1442 | L-RF-20260901_162704 | ? | F | [B2 weighting] 5칸 실측 — 최고 B2_7 다중검정t -0.636 · 칼마 0.160 · 등급 A0/B0/C0/F5. 직전 최고 B1_4(1.103)… |
-| 1443 | L-RF-20260901_165529 | ? | C | [B3 universe] 5칸 실측 — 최고 B3_11 다중검정t 0.654 · 칼마 0.163 · 등급 A0/B0/C3/F2. 직전 최고 B1_4(1.103) … |
-| 1444 | L-RF-20260901_171829 | overlay_regime | F | [B5 risk_overlay] 5칸 실측 — 최고 B5_19 다중검정t -0.919 · 칼마 0.136 · 등급 A0/B0/C0/F5. 직전 최고 B1_4(1.… |
-| 1445 | L-RF-20260902_135628 | ? | C | [B1 multifactor] 5칸 실측 — 최고 B1_4 다중검정t 0.911 · 칼마 0.288 · 등급 A0/B0/C3/F2. 낙폭이 축을 바꿔도 53~63… |
-| 1446 | L-RF-20260902_143033 | ? | C | [B2 weighting] 5칸 실측 — 최고 B2_7 다중검정t 0.882 · 칼마 0.270 · 등급 A0/B0/C5/F0. 직전 최고 B1_4(0.911) … |
-| 1447 | L-RF-20260902_145143 | ? | C | [B3 universe] 5칸 실측 — 최고 B3_13 다중검정t 1.170 · 칼마 0.293 · 등급 A0/B0/C3/F2. 직전 최고 B1_4(0.911) … |
-| 1448 | L-RF-20260902_184933 | overlay_regime | C | [B5 risk_overlay] 5칸 실측 — 최고 B5_19 다중검정t 1.071 · 칼마 0.274 · 등급 A0/B0/C5/F0. 직전 최고 B3_13(1.… |
-| 1449 | L-RF-20260902_191232 | ? | C | [B4 combination] 4칸 실측 — 최고 B4_25 다중검정t 1.228 · 칼마 0.311 · 등급 A0/B0/C2/F2. 직전 최고 B3_13(1.1… |
-| 1450 | L-RF-20260902_193325 | ? | C | [B1 multifactor] 5칸 실측 — 최고 B1_4 다중검정t 0.862 · 칼마 0.232 · 등급 A0/B0/C4/F1. 낙폭이 축을 바꿔도 56~60… |
-| 1451 | L-RF-20260902_194620 | ? | C | [B2 weighting] 5칸 실측 — 최고 B2_7 다중검정t 0.666 · 칼마 0.217 · 등급 A0/B0/C5/F0. 직전 최고 B1_4(0.862) … |
-| 1452 | L-RF-20260902_200354 | ? | C | [B3 universe] 5칸 실측 — 최고 B3_13 다중검정t 1.081 · 칼마 0.241 · 등급 A0/B0/C3/F2. 직전 최고 B1_4(0.862) … |
-| 1453 | L-RF-20260902_201645 | overlay_regime | C | [B5 risk_overlay] 5칸 실측 — 최고 B5_19 다중검정t 0.681 · 칼마 0.225 · 등급 A0/B0/C3/F2. 직전 최고 B3_13(1.… |
-| 1454 | L-RF-20260902_203350 | ? | C | [B4 combination] 2칸 실측 — 최고 B4_23 다중검정t 0.680 · 칼마 0.246 · 등급 A0/B0/C2/F0. 직전 최고 B3_13(1.0… |
-| 1455 | L-RF-20260902_213647 | ? | C | [B1 multifactor] 5칸 실측 — 최고 B1_1 다중검정t 0.036 · 칼마 0.215 · 등급 A0/B0/C1/F4. 낙폭이 축을 바꿔도 51~61… |
-| 1456 | L-RF-20260902_215126 | ? | F | [B2 weighting] 5칸 실측 — 최고 B2_7 다중검정t -0.006 · 칼마 0.213 · 등급 A0/B0/C0/F5. 직전 최고 B1_1(0.036)… |
-| 1457 | L-RF-20260902_215952 | ? | C | [B3 universe] 5칸 실측 — 최고 B3_11 다중검정t 1.410 · 칼마 0.331 · 등급 A0/B0/C3/F2. 직전 최고 B1_1(0.036) … |
-| 1458 | L-RF-20260902_220612 | overlay_regime | C | [B5 risk_overlay] 5칸 실측 — 최고 B5_19 다중검정t 0.997 · 칼마 0.309 · 등급 A0/B0/C5/F0. 직전 최고 B3_11(1.… |
-| 1459 | L-RF-20260902_221455 | ? | F | [B4 combination] 1칸 실측 — 최고 B4_24 다중검정t -0.451 · 칼마 0.213 · 등급 A0/B0/C0/F1. 직전 최고 B3_11(1.… |
-| 1460 | L-RF-20260903_083313 | ? | C | [B1 multifactor] 5칸 실측 — 최고 B1_4 다중검정t 0.764 · 칼마 0.169 · 등급 A0/B0/C5/F0. 낙폭이 축을 바꿔도 67~71… |
-| 1461 | L-RF-20260903_084433 | ? | C | [B2 weighting] 5칸 실측 — 최고 B2_7 다중검정t 0.789 · 칼마 0.170 · 등급 A0/B0/C4/F1. 직전 최고 B1_4(0.764) … |
-| 1462 | L-RF-20260903_085940 | ? | C | [B3 universe] 5칸 실측 — 최고 B3_11 다중검정t 1.110 · 칼마 0.266 · 등급 A0/B0/C3/F2. 직전 최고 B2_7(0.789) … |
-| 1463 | L-RF-20260903_091456 | overlay_regime | C | [B5 risk_overlay] 5칸 실측 — 최고 B5_19 다중검정t 0.738 · 칼마 0.244 · 등급 A0/B0/C3/F2. 직전 최고 B3_11(1.… |
-| 1464 | L-RF-20260903_092946 | ? | C | [B4 combination] 1칸 실측 — 최고 B4_24 다중검정t 0.406 · 칼마 0.152 · 등급 A0/B0/C1/F0. 직전 최고 B3_11(1.1… |
-| 1465 | L-RF-20260903_101512 | ? | C | [B1 multifactor] 5칸 실측 — 최고 B1_4 다중검정t 0.177 · 칼마 0.153 · 등급 A0/B0/C1/F4. 낙폭이 축을 바꿔도 64~67… |
-| 1466 | L-RF-20260903_102611 | ? | C | [B2 weighting] 5칸 실측 — 최고 B2_6 다중검정t 0.134 · 칼마 0.158 · 등급 A0/B0/C3/F2. 직전 최고 B1_4(0.177) … |
-| 1467 | L-RF-20260903_104110 | ? | C | [B3 universe] 5칸 실측 — 최고 B3_12 다중검정t 0.324 · 칼마 0.162 · 등급 A0/B0/C1/F4. 직전 최고 B1_4(0.177) … |
-| 1468 | L-RF-20260903_104831 | overlay_regime | F | [B5 risk_overlay] 5칸 실측 — 최고 B5_19 다중검정t -0.117 · 칼마 0.148 · 등급 A0/B0/C0/F5. 직전 최고 B3_12(0… |
-| 1469 | L-RF-20260903_105750 | ? | F | [B4 combination] 5칸 실측 — 최고 B4_24 다중검정t -0.354 · 칼마 0.143 · 등급 A0/B0/C0/F5. 직전 최고 B3_12(0.… |
-| 1470 | L-RF-20260903_152756 | ? | C | [B1 multifactor] 5칸 실측 — 최고 B1_5 다중검정t 1.578 · 칼마 0.275 · 등급 A0/B0/C5/F0. 낙폭이 축을 바꿔도 57~65… |
-| 1471 | L-RF-20260903_153707 | ? | C | [B2 weighting] 5칸 실측 — 최고 B2_6 다중검정t 0.967 · 칼마 0.231 · 등급 A0/B0/C5/F0. 직전 최고 B1_5(1.578) … |
-| 1472 | L-RF-20260903_154442 | ? | C | [B3 universe] 5칸 실측 — 최고 B3_13 다중검정t 1.275 · 칼마 0.260 · 등급 A0/B0/C4/F1. 직전 최고 B1_5(1.578) … |
-| 1473 | L-RF-20260903_155118 | overlay_regime | C | [B5 risk_overlay] 5칸 실측 — 최고 B5_20 다중검정t 0.716 · 칼마 0.212 · 등급 A0/B0/C2/F3. 직전 최고 B1_5(1.5… |
-| 1474 | L-RF-20260903_160050 | ? | C | [B4 combination] 5칸 실측 — 최고 B4_25 다중검정t 1.077 · 칼마 0.250 · 등급 A0/B0/C3/F2. 직전 최고 B1_5(1.57… |
-| 1475 | L-RF-20260903_215344 | ? | C | [B1 multifactor] 5칸 실측 — 최고 B1_2 다중검정t 0.754 · 칼마 0.159 · 등급 A0/B0/C5/F0. 낙폭이 축을 바꿔도 67~74… |
-| 1476 | L-RF-20260904_081651 | ? | C | [B2 weighting] 5칸 실측 — 최고 B2_6 다중검정t 0.766 · 칼마 0.158 · 등급 A0/B0/C5/F0. 직전 최고 B1_2(0.754) … |
-| 1477 | L-RF-20260904_082522 | ? | C | [B3 universe] 5칸 실측 — 최고 B3_11 다중검정t 0.314 · 칼마 0.137 · 등급 A0/B0/C3/F2. 직전 최고 B2_6(0.766) … |
-| 1478 | L-RF-20260904_083345 | overlay_regime | C | [B5 risk_overlay] 5칸 실측 — 최고 B5_17 다중검정t 0.605 · 칼마 0.180 · 등급 A0/B0/C2/F3. 직전 최고 B2_6(0.7… |
-| 1479 | L-RF-20260904_084213 | ? | F | [B4 combination] 4칸 실측 — 최고 B4_22 다중검정t -0.044 · 칼마 0.155 · 등급 A0/B0/C0/F4. 직전 최고 B2_6(0.7… |
-| 1480 | L-RF-20260904_122401 | overlay_regime | C | [B5 risk_overlay] 5칸 실측 — 최고 B5_17 다중검정t 1.163 · 칼마 0.402 · 등급 A0/B0/C3/F2. 직전 최고 B1_4(1.4… |
-| 1481 | L-RF-20260904_123854 | ? | C | [B2 weighting] 5칸 실측 — 최고 B2_7 다중검정t 1.472 · 칼마 0.410 · 등급 A0/B0/C5/F0. 직전 최고 B1_4(1.454) … |
-| 1482 | L-RF-20260904_124229 | ? | C | [B1 multifactor] 14칸 실측 — 최고 B1_4 다중검정t 1.454 · 칼마 0.400 · 등급 A0/B0/C10/F4. 칼마 최고 0.40 — 낙… |
-| 1483 | L-RF-20260904_124816 | ? | C | [B3 universe] 5칸 실측 — 최고 B3_11 다중검정t 1.147 · 칼마 0.319 · 등급 A0/B0/C4/F1. 직전 최고 B2_7(1.472) … |
-| 1484 | L-RF-20260904_125641 | ? | C | [B4 combination] 2칸 실측 — 최고 B4_24 다중검정t 1.167 · 칼마 0.417 · 등급 A0/B0/C2/F0. 직전 최고 B2_7(1.47… |
-| 1485 | L-RF-20260904_182647 | ? | C | [B1 multifactor] 15칸 실측 — 최고 B1_10 다중검정t 1.951 · 칼마 0.319 · 등급 A0/B0/C14/F1. 낙폭이 축을 바꿔도 55… |
-| 1486 | L-RF-20260904_193643 | overlay_regime | C | [B5 risk_overlay] 6칸 실측 — 최고 B5_18 다중검정t 1.971 · 칼마 0.357 · 등급 A0/B0/C6/F0. 직전 최고 B1_10(1.… |
-| 1487 | L-RF-20260904_194435 | ? | B | [B2 weighting] 5칸 실측 — 최고 B2_6 다중검정t 2.109 · 칼마 0.388 · 등급 A0/B3/C2/F0. 직전 최고 B5_18(1.971)… |
-| 1488 | L-RF-20260904_200044 | ? | C | [B3 universe] 4칸 실측 — 최고 B3_11 다중검정t 1.584 · 칼마 0.317 · 등급 A0/B0/C4/F0. 직전 최고 B2_6(2.109) … |
-| 1489 | L-RF-20260904_201605 | ? | C | [B4 combination] 3칸 실측 — 최고 B4_25 다중검정t 1.719 · 칼마 0.301 · 등급 A0/B0/C3/F0. 직전 최고 B2_6(2.10… |
-| 1490 | L-RF-20260904_204419 | ? | B | [B1 multifactor] 5칸 실측 — 최고 B1_2 다중검정t 2.171 · 칼마 0.351 · 등급 A0/B3/C2/F0. 낙폭이 축을 바꿔도 55~60… |
-| 1491 | L-RF-20260904_205939 | overlay_regime | B | [B5 risk_overlay] 5칸 실측 — 최고 B5_17 다중검정t 2.025 · 칼마 0.372 · 등급 A0/B1/C4/F0. 직전 최고 B1_2(2.1… |
-| 1492 | L-RF-20260904_212507 | ? | C | [B2 weighting] 5칸 실측 — 최고 B2_7 다중검정t -0.127 · 칼마 0.181 · 등급 A0/B0/C5/F0. 직전 최고 B1_2(2.171)… |
-| 1493 | L-RF-20260904_213903 | ? | C | [B3 universe] 4칸 실측 — 최고 B3_13 다중검정t 1.886 · 칼마 0.325 · 등급 A0/B0/C4/F0. 직전 최고 B1_2(2.171) … |
-| 1494 | L-RF-20260904_220226 | ? | B | [B4 combination] 5칸 실측 — 최고 B4_25 다중검정t 2.009 · 칼마 0.335 · 등급 A0/B1/C4/F0. 직전 최고 B1_2(2.17… |
-| 1495 | L-RF-20260904_223318 | ? | B | [B1 multifactor] 5칸 실측 — 최고 B1_1 다중검정t 2.280 · 칼마 0.364 · 등급 A0/B1/C4/F0. 낙폭이 축을 바꿔도 57~61… |
-| 1496 | L-RF-20260905_090856 | overlay_regime | C | [B5 risk_overlay] 5칸 실측 — 최고 B5_17 다중검정t 1.966 · 칼마 0.398 · 등급 A0/B0/C5/F0. 직전 최고 B1_1(2.2… |
-| 1497 | L-RF-20260905_093424 | ? | C | [B2 weighting] 3칸 실측 — 최고 B2_8 다중검정t 1.989 · 칼마 0.379 · 등급 A0/B0/C3/F0. 직전 최고 B1_1(2.280) … |
-| 1498 | L-RF-20260905_102006 | ? | B | [B3 universe] 4칸 실측 — 최고 B3_12 다중검정t 2.567 · 칼마 0.499 · 등급 A0/B1/C3/F0. 직전 최고 B1_1(2.280) … |
-| 1499 | L-RF-20260905_104629 | ? | C | [B4 combination] 3칸 실측 — 최고 B4_23 다중검정t 1.209 · 칼마 0.400 · 등급 A0/B0/C3/F0. 직전 최고 B3_12(2.5… |
-| 1500 | L-RF-20260905_113751 | ? | B | [B1 multifactor] 9칸 실측 — 최고 B1_3 다중검정t 2.553 · 칼마 0.389 · 등급 A0/B6/C3/F0. 낙폭이 축을 바꿔도 56~63… |
-| 1501 | L-RF-20260905_115930 | overlay_regime | B | [B5 risk_overlay] 6칸 실측 — 최고 B5_21 다중검정t 2.327 · 칼마 0.373 · 등급 A0/B3/C3/F0. 직전 최고 B1_3(2.5… |
-| 1502 | L-RF-20260905_123245 | ? | B | [B2 weighting] 6칸 실측 — 최고 B2_10 다중검정t 2.526 · 칼마 0.389 · 등급 A0/B3/C3/F0. 직전 최고 B1_3(2.553)… |
-| 1503 | L-RF-20260905_124845 | ? | C | [B3 universe] 3칸 실측 — 최고 B3_15 다중검정t 1.743 · 칼마 0.287 · 등급 A0/B0/C3/F0. 직전 최고 B1_3(2.553) … |
-| 1504 | L-RF-20260905_130617 | ? | B | [B4 combination] 5칸 실측 — 최고 B4_24 다중검정t 2.260 · 칼마 0.426 · 등급 A0/B1/C4/F0. 직전 최고 B1_3(2.55… |
-| 1505 | L-RF-20260905_192114 | ? | C | [B1 multifactor] 9칸 실측 — 최고 B1_2 다중검정t 1.567 · 칼마 0.266 · 등급 A0/B0/C9/F0. 낙폭이 축을 바꿔도 60~69… |
-| 1506 | L-RF-20260905_193559 | overlay_regime | C | [B5 risk_overlay] 5칸 실측 — 최고 B5_20 다중검정t 1.582 · 칼마 0.290 · 등급 A0/B0/C5/F0. 직전 최고 B1_2(1.5… |
-| 1507 | L-RF-20260905_195232 | ? | C | [B2 weighting] 5칸 실측 — 최고 B2_7 다중검정t 1.441 · 칼마 0.290 · 등급 A0/B0/C5/F0. 직전 최고 B5_20(1.582)… |
-| 1508 | L-RF-20260905_200635 | ? | C | [B3 universe] 4칸 실측 — 최고 B3_13 다중검정t 1.588 · 칼마 0.311 · 등급 A0/B0/C4/F0. 직전 최고 B5_20(1.582)… |
-| 1509 | L-RF-20260905_201528 | ? | B | [B4 combination] 3칸 실측 — 최고 B4_25 다중검정t 2.128 · 칼마 0.355 · 등급 A0/B1/C2/F0. 직전 최고 B3_13(1.5… |
-| 1510 | L-RF-20260905_210445 | ? | B | [B1 multifactor] 8칸 실측 — 최고 B1_5 다중검정t 2.265 · 칼마 0.344 · 등급 A0/B2/C6/F0. 낙폭이 축을 바꿔도 55~66… |
-| 1511 | L-RF-20260905_212102 | overlay_regime | C | [B5 risk_overlay] 4칸 실측 — 최고 B5_19 다중검정t 1.929 · 칼마 0.351 · 등급 A0/B0/C4/F0. 직전 최고 B1_5(2.2… |
-| 1512 | L-RF-20260905_213747 | ? | B | [B2 weighting] 5칸 실측 — 최고 B2_10 다중검정t 2.749 · 칼마 0.366 · 등급 A0/B2/C3/F0. 직전 최고 B1_5(2.265)… |
-| 1513 | L-RF-20260905_215306 | ? | C | [B3 universe] 4칸 실측 — 최고 B3_13 다중검정t 1.334 · 칼마 0.269 · 등급 A0/B0/C4/F0. 직전 최고 B2_10(2.749)… |
-| 1514 | L-RF-20260905_220844 | ? | C | [B4 combination] 5칸 실측 — 최고 B4_25 다중검정t 1.811 · 칼마 0.283 · 등급 A0/B0/C5/F0. 직전 최고 B2_10(2.7… |
-| 1515 | L-RF-20260905_225052 | ? | B | [B1 multifactor] 10칸 실측 — 최고 B1_1 다중검정t 2.650 · 칼마 0.362 · 등급 A0/B6/C4/F0. 낙폭이 축을 바꿔도 63~7… |
-| 1516 | L-RF-20260905_230546 | overlay_regime | B | [B5 risk_overlay] 5칸 실측 — 최고 B5_18 다중검정t 2.485 · 칼마 0.388 · 등급 A0/B4/C1/F0. 직전 최고 B1_1(2.6… |
-| 1517 | L-RF-20260906_191608 | ? | B | [B2 weighting] 4칸 실측 — 최고 B2_10 다중검정t 2.107 · 칼마 0.344 · 등급 A0/B1/C3/F0. 직전 최고 B1_1(2.650)… |
-| 1518 | L-RF-20260906_210805 | ? | B | [B3 universe] 4칸 실측 — 최고 B3_13 다중검정t 2.093 · 칼마 0.305 · 등급 A0/B1/C3/F0. 직전 최고 B1_1(2.650) … |
-| 1519 | L-RF-20260906_212419 | ? | B | [B4 combination] 5칸 실측 — 최고 B4_24 다중검정t 2.031 · 칼마 0.391 · 등급 A0/B1/C4/F0. 직전 최고 B1_1(2.65… |
-| 1520 | L-RF-20260907_005001 | ? | C | [B1 multifactor] 9칸 실측 — 최고 B1_4 다중검정t 1.585 · 칼마 0.299 · 등급 A0/B0/C8/F1. 낙폭이 축을 바꿔도 51~63… |
-| 1521 | L-RF-20260907_010439 | overlay_regime | C | [B5 risk_overlay] 5칸 실측 — 최고 B5_20 다중검정t 1.564 · 칼마 0.299 · 등급 A0/B0/C5/F0. 직전 최고 B1_4(1.5… |
-| 1522 | L-RF-20260907_041652 | ? | C | [B2 weighting] 5칸 실측 — 최고 B2_6 다중검정t 1.794 · 칼마 0.323 · 등급 A0/B0/C5/F0. 직전 최고 B1_4(1.585) … |
-| 1523 | L-RF-20260907_044020 | ? | B | [B3 universe] 5칸 실측 — 최고 B3_13 다중검정t 2.162 · 칼마 0.349 · 등급 A0/B2/C2/F1. 직전 최고 B2_6(1.794) … |
-| 1524 | L-RF-20260907_050717 | ? | C | [B1 multifactor] 8칸 실측 — 최고 B1_8 다중검정t 1.636 · 칼마 0.315 · 등급 A0/B0/C8/F0. 낙폭이 축을 바꿔도 55~62… |
-| 1525 | L-RF-20260907_052805 | overlay_regime | C | [B5 risk_overlay] 6칸 실측 — 최고 B5_19 다중검정t 1.397 · 칼마 0.315 · 등급 A0/B0/C6/F0. 직전 최고 B1_8(1.6… |
-| 1526 | L-RF-20260907_091341 | ? | C | [B2 weighting] 5칸 실측 — 최고 B2_9 다중검정t 1.518 · 칼마 0.313 · 등급 A0/B0/C5/F0. 직전 최고 B1_8(1.636) … |
-| 1527 | L-RF-20260907_092836 | ? | C | [B3 universe] 4칸 실측 — 최고 B3_13 다중검정t 1.635 · 칼마 0.313 · 등급 A0/B0/C4/F0. 직전 최고 B1_8(1.636) … |
-| 1528 | L-RF-20260907_094000 | ? | C | [B4 combination] 5칸 실측 — 최고 B4_22 다중검정t 1.807 · 칼마 0.408 · 등급 A0/B0/C5/F0. 직전 최고 B1_8(1.63… |
-| 1529 | L-RF-20260912_170118 | ? | C | [B1 multifactor] 9칸 실측 — 최고 B1_5 다중검정t 1.275 · 칼마 0.246 · 등급 A0/B0/C9/F0. 낙폭이 축을 바꿔도 66~73… |
-| 1530 | L-RF-20260912_171557 | overlay_regime | C | [B5 risk_overlay] 5칸 실측 — 최고 B5_20 다중검정t 1.748 · 칼마 0.292 · 등급 A0/B0/C5/F0. 직전 최고 B1_5(1.2… |
-| 1531 | L-RF-20260912_174349 | ? | B | [B3 universe] 5칸 실측 — 최고 B3_13 다중검정t 2.071 · 칼마 0.340 · 등급 A0/B2/C3/F0. 직전 최고 B5_20(1.748)… |
-| 1532 | L-RF-20260912_175312 | ? | C | [B4 combination] 2칸 실측 — 최고 B4_25 다중검정t 1.726 · 칼마 0.267 · 등급 A0/B0/C2/F0. 직전 최고 B3_13(2.0… |
-| 1533 | L-RF-20260912_181435 | ? | C | [B1 multifactor] 6칸 실측 — 최고 B1_1 다중검정t 1.748 · 칼마 0.292 · 등급 A0/B0/C6/F0. 낙폭이 축을 바꿔도 69~73… |
-| 1534 | L-RF-20260912_182320 | overlay_regime | C | [B5 risk_overlay] 5칸 실측 — 최고 B5_16 다중검정t 1.716 · 칼마 0.305 · 등급 A0/B0/C5/F0. 직전 최고 B1_1(1.7… |
-| 1535 | L-RF-20260912_185911 | ? | B | [B3 universe] 6칸 실측 — 최고 B3_13 다중검정t 2.071 · 칼마 0.340 · 등급 A0/B3/C3/F0. 직전 최고 B4_21(2.002)… |
-| 1536 | L-RF-20260913_003410 | ? | C | [B1 multifactor] 10칸 실측 — 최고 B1_10 다중검정t 0.611 · 칼마 0.231 · 등급 A0/B0/C8/F2. 칼마 최고 0.23 — 낙… |
-| 1537 | L-RF-20260913_005935 | ? | C | [B2 weighting] 6칸 실측 — 최고 B2_9 다중검정t 0.610 · 칼마 0.248 · 등급 A0/B0/C6/F0. 직전 최고 B1_10(0.611)… |
-| 1538 | L-RF-20260913_011229 | ? | C | [B3 universe] 3칸 실측 — 최고 B3_13 다중검정t 0.133 · 칼마 0.161 · 등급 A0/B0/C3/F0. 직전 최고 B1_10(0.611)… |
-| 1539 | L-RF-20260913_012340 | overlay_regime | C | [B5 risk_overlay] 4칸 실측 — 최고 B5_19 다중검정t 0.328 · 칼마 0.238 · 등급 A0/B0/C2/F2. 직전 최고 B1_10(0.… |
-| 1540 | L-RF-20260913_013827 | ? | C | [B4 combination] 5칸 실측 — 최고 B4_24 다중검정t -0.062 · 칼마 0.253 · 등급 A0/B0/C5/F0. 직전 최고 B1_10(0.… |
-| 1541 | L-RF-20260913_024342 | ? | C | [B1 multifactor] 5칸 실측 — 최고 B1_1 다중검정t 0.791 · 칼마 0.244 · 등급 A0/B0/C5/F0. 낙폭이 축을 바꿔도 61~66… |
-| 1542 | L-RF-20260913_025653 | ? | C | [B2 weighting] 4칸 실측 — 최고 B2_10 다중검정t 0.845 · 칼마 0.245 · 등급 A0/B0/C4/F0. 직전 최고 B1_1(0.791)… |
-| 1543 | L-RF-20260913_032839 | overlay_regime | C | [B5 risk_overlay] 4칸 실측 — 최고 B5_17 다중검정t 0.790 · 칼마 0.259 · 등급 A0/B0/C4/F0. 직전 최고 B2_10(0.… |
-| 1544 | L-RF-20260913_033842 | ? | C | [B3 universe] 3칸 실측 — 최고 B3_15 다중검정t -0.612 · 칼마 0.157 · 등급 A0/B0/C2/F1. 직전 최고 B2_10(0.845… |
-| 1545 | L-RF-20260913_105813 | ? | B | [B1 multifactor] 9칸 실측 — 최고 B1_3 다중검정t 2.743 · 칼마 0.412 · 등급 A0/B3/C6/F0. 낙폭이 축을 바꿔도 53~62… |
-| 1546 | L-RF-20260913_111221 | overlay_regime | B | [B5 risk_overlay] 5칸 실측 — 최고 B5_20 다중검정t 2.519 · 칼마 0.438 · 등급 A0/B4/C1/F0. 직전 최고 B1_3(2.7… |
-| 1547 | L-RF-20260913_113608 | ? | B | [B2 weighting] 6칸 실측 — 최고 B2_11 다중검정t 2.823 · 칼마 0.412 · 등급 A0/B5/C1/F0. 직전 최고 B1_3(2.743)… |
-| 1548 | L-RF-20260913_120820 | ? | C | [B3 universe] 3칸 실측 — 최고 B3_12 다중검정t 1.848 · 칼마 0.306 · 등급 A0/B0/C3/F0. 직전 최고 B2_11(2.823)… |
-| 1549 | L-RF-20260913_124105 | ? | B | [B1 multifactor] 8칸 실측 — 최고 B1_1 다중검정t 3.032 · 칼마 0.470 · 등급 A0/B5/C3/F0. 낙폭이 축을 바꿔도 46~60… |
-| 1550 | L-RF-20260913_125802 | overlay_regime | B | [B5 risk_overlay] 5칸 실측 — 최고 B5_20 다중검정t 2.800 · 칼마 0.478 · 등급 A0/B5/C0/F0. 직전 최고 B1_1(3.0… |
-| 1551 | L-RF-20260913_131326 | ? | B | [B2 weighting] 4칸 실측 — 최고 B2_10 다중검정t 3.092 · 칼마 0.486 · 등급 A0/B3/C1/F0. 직전 최고 B1_1(3.032)… |
-| 1552 | L-RF-20260913_132841 | ? | B | [B3 universe] 4칸 실측 — 최고 B3_14 다중검정t 2.338 · 칼마 0.354 · 등급 A0/B1/C3/F0. 직전 최고 B2_10(3.092)… |
-| 1553 | L-RF-20260913_134050 | ? | B | [B4 combination] 5칸 실측 — 최고 B4_25 다중검정t 2.414 · 칼마 0.357 · 등급 A0/B2/C3/F0. 직전 최고 B2_10(3.0… |
-| 1554 | L-RF-20260913_141813 | ? | B | [B1 multifactor] 8칸 실측 — 최고 B1_2 다중검정t 3.589 · 칼마 0.477 · 등급 A0/B7/C1/F0. 낙폭이 축을 바꿔도 51~59… |
-| 1555 | L-RF-20260913_143429 | overlay_regime | B | [B5 risk_overlay] 5칸 실측 — 최고 B5_20 다중검정t 3.257 · 칼마 0.478 · 등급 A0/B5/C0/F0. 직전 최고 B1_2(3.5… |
-| 1556 | L-RF-20260913_145007 | ? | B | [B2 weighting] 4칸 실측 — 최고 B2_10 다중검정t 3.513 · 칼마 0.468 · 등급 A0/B4/C0/F0. 직전 최고 B1_2(3.589)… |
-| 1557 | L-RF-20260913_150543 | ? | B | [B3 universe] 3칸 실측 — 최고 B3_12 다중검정t 2.374 · 칼마 0.367 · 등급 A0/B1/C2/F0. 직전 최고 B1_2(3.589) … |
-| 1558 | L-RF-20260913_205827 | ? | B | [B4 combination] 5칸 실측 — 최고 B4_24 다중검정t 3.130 · 칼마 0.488 · 등급 A0/B4/C1/F0. 직전 최고 B1_2(3.58… |
-| 1559 | L-RF-20260913_212800 | overlay_regime | B | [B5 risk_overlay] 5칸 실측 — 최고 B5_20 다중검정t 2.806 · 칼마 0.483 · 등급 A0/B5/C0/F0. 직전 최고 B1_3(3.1… |
-| 1560 | L-RF-20260913_214207 | ? | B | [B1 multifactor] 6칸 실측 — 최고 B1_3 다중검정t 3.133 · 칼마 0.504 · 등급 A0/B6/C0/F0. 직전 최고 B5_20(2.80… |
-| 1561 | L-RF-20260913_220034 | ? | C | [B3 universe] 5칸 실측 — 최고 B3_12 다중검정t 1.903 · 칼마 0.352 · 등급 A0/B0/C5/F0. 직전 최고 B1_3(3.133) … |
-| 1562 | L-RF-20260913_221408 | ? | C | [B4 combination] 2칸 실측 — 최고 B4_24 다중검정t 1.627 · 칼마 0.482 · 등급 A0/B0/C2/F0. 직전 최고 B1_3(3.13… |
-| 1563 | L-RF-20260917_120507 | ? | B | [B1 multifactor] 8칸 실측 — 최고 B1_5 다중검정t 3.202 · 칼마 0.385 · 등급 A0/B5/C3/F0. 낙폭이 축을 바꿔도 54~61… |
-| 1564 | L-RF-20260917_122104 | overlay_regime | B | [B5 risk_overlay] 5칸 실측 — 최고 B5_17 다중검정t 3.069 · 칼마 0.385 · 등급 A0/B4/C1/F0. 직전 최고 B1_5(3.2… |
-| 1565 | L-RF-20260917_191958 | ? | B | [B2 weighting] 6칸 실측 — 최고 B2_7 다중검정t 3.066 · 칼마 0.382 · 등급 A0/B4/C2/F0. 직전 최고 B1_5(3.202) … |
-| 1566 | L-RF-20260917_193646 | ? | C | [B3 universe] 3칸 실측 — 최고 B3_14 다중검정t 1.728 · 칼마 0.278 · 등급 A0/B0/C3/F0. 직전 최고 B1_5(3.202) … |
-| 1567 | L-RF-20260917_195304 | ? | B | [B4 combination] 5칸 실측 — 최고 B4_24 다중검정t 2.159 · 칼마 0.426 · 등급 A0/B1/C4/F0. 직전 최고 B1_5(3.20… |
+| 1429 | L-RF-20260829_142955 | momentum | ? | CJL1996 의 핵심 주장 'neither momentum strategy subsumes the other'(가격모멘텀·이익 서프라이즈 상호 비포섭)는 KR … |
+| 1430 | L-RF-20260829_152717 | momentum | ? | 기저 F 의 귀속은 '숏 레그' 도 '집중 형태' 도 아니라 **신호**다. 4셀 직교 분해(신호·보유·EW·비용 전셀 6-6 고정, 259월): 축 A(숏 레그… |
+| 1431 | L-RF-20260829_163417 | momentum | ? | LS2000 모멘텀 생애주기는 KR 승자 사이드에서 성립하지 않는다 — 사전등록 1급·2급 동시 기각, 처분 reject. 1급(승자 데실 내부 회전율 층화 스프… |
+| 1432 | L-RF-20260829_190619 | value_momentum | C | AMP2013 value-momentum 결합의 KR 이식 — **essence C**(권위, forge). 5조건 전부 미달: PORT_t 0.646(<2.95… |
+| 1433 | L-RF-20260829_193556 | momentum | C | EL2022 팩터 모멘텀의 KR 검정 — essence C (0/5). PORT_t 1.002 · OOS retention -0.780(분할 -0.484/-0.7… |
+| 1434 | L-RF-20260829_193556_02 | momentum | C | GH2004 52주 신고가 근접도의 KR 검정 — essence C (0/5). PORT_t 0.6364 · OOS -0.693(분할 -0.561/-0.693/-… |
+| 1435 | L-RF-20260829_195704 | momentum | C | DM2016/BSC2015 모멘텀 크래시 관리의 KR 적용 — essence C (0/5). PORT_t 0.7547 · OOS -0.660 · SR 0.5699… |
+| 1436 | L-RF-20260829_224532 | momentum | ? | ★착수 전 검정력 게이트가 처음으로 발화해 라운드를 중단시켰다 — 측정 예산을 쓰기 전에. DGW2014 frog-in-the-pan(일별 축 정보 회수)을 8/… |
+| 1437 | L-RF-20260830_182834 | ? | B | [B1 multifactor] 5칸 실측 — 최고 B1_5 다중검정t 2.241 · 칼마 0.320 · 등급 A0/B1/C2/F2. 칼마 최고 0.32 — 낙폭 … |
+| 1438 | L-RF-20260830_182834_02 | ? | C | [B2 weighting] 5칸 실측 — 최고 B2_7 다중검정t 0.569 · 칼마 0.214 · 등급 A0/B0/C1/F4. 직전 최고 B1_5(2.241) … |
+| 1439 | L-RF-20260830_184746 | ? | B | [B3 universe] 5칸 실측 — 최고 B3_12 다중검정t 2.630 · 칼마 0.338 · 등급 A0/B2/C3/F0. 직전 최고 B1_5(2.241) … |
+| 1440 | L-RF-20260830_195606 | ? | B | [B4 combination] 5칸 실측 — 최고 B4_18 다중검정t 2.630 · 칼마 0.338 · 등급 A0/B1/C2/F2. 직전 최고 B3_12(2.6… |
+| 1441 | L-RF-20260830_203345 | overlay_regime | F | [B5 risk_overlay] 5칸 실측 — 최고 B5_24 다중검정t -1.253 · 칼마 0.141 · 등급 A0/B0/C0/F5. 직전 최고 B3_12(2… |
+| 1442 | L-RF-20260830_233034 | ? | B | [B1 multifactor] 5칸 실측 — 최고 B1_5 다중검정t 2.251 · 칼마 0.305 · 등급 A0/B1/C3/F1. 낙폭이 축을 바꿔도 60~68… |
+| 1443 | L-RF-20260830_235334 | ? | F | [B2 weighting] 5칸 실측 — 최고 B2_7 다중검정t -0.090 · 칼마 0.185 · 등급 A0/B0/C0/F5. 직전 최고 B1_5(2.251)… |
+| 1444 | L-RF-20260831_001629 | ? | B | [B3 universe] 4칸 실측 — 최고 B3_12 다중검정t 2.251 · 칼마 0.305 · 등급 A0/B1/C3/F0. 직전 최고 B1_5(2.251) … |
+| 1445 | L-RF-20260831_082400 | ? | B | [B4 combination] 5칸 실측 — 최고 B4_18 다중검정t 2.251 · 칼마 0.305 · 등급 A0/B1/C2/F2. 직전 최고 B1_5(2.25… |
+| 1446 | L-RF-20260831_093256 | ? | C | [B1 multifactor] 4칸 실측 — 최고 B1_1 다중검정t 0.814 · 칼마 0.194 · 등급 A0/B0/C3/F1. 칼마 최고 0.19 — 낙폭 … |
+| 1447 | L-RF-20260831_103953 | ? | F | [B2 weighting] 5칸 실측 — 최고 B2_7 다중검정t -0.562 · 칼마 0.161 · 등급 A0/B0/C0/F5. 직전 최고 B1_1(0.814)… |
+| 1448 | L-RF-20260831_105459 | ? | C | [B3 universe] 4칸 실측 — 최고 B3_14 다중검정t 1.750 · 칼마 0.273 · 등급 A0/B0/C4/F0. 직전 최고 B1_1(0.814) … |
+| 1449 | L-RF-20260831_114822 | ? | C | [B4 combination] 5칸 실측 — 최고 B4_19 다중검정t 1.064 · 칼마 0.259 · 등급 A0/B0/C2/F3. 직전 최고 B3_14(1.7… |
+| 1450 | L-RF-20260831_132029 | overlay_regime | F | [B5 risk_overlay] 5칸 실측 — 최고 B5_24 다중검정t -1.202 · 칼마 0.138 · 등급 A0/B0/C0/F5. 직전 최고 B3_14(1… |
+| 1451 | L-RF-20260831_174413 | ? | C | [B1 multifactor] 5칸 실측 — 최고 B1_5 다중검정t 1.074 · 칼마 0.141 · 등급 A0/B0/C2/F3. 칼마 최고 0.14 — 낙폭 … |
+| 1452 | L-RF-20260831_180129 | ? | C | [B2 weighting] 5칸 실측 — 최고 B2_8 다중검정t 1.073 · 칼마 0.230 · 등급 A0/B0/C4/F1. 직전 최고 B1_5(1.074) … |
+| 1453 | L-RF-20260831_181652 | ? | C | [B3 universe] 5칸 실측 — 최고 B3_14 다중검정t 1.191 · 칼마 0.181 · 등급 A0/B0/C5/F0. 직전 최고 B1_5(1.074) … |
+| 1454 | L-RF-20260831_183600 | ? | C | [B4 combination] 3칸 실측 — 최고 B4_16 다중검정t 0.310 · 칼마 0.198 · 등급 A0/B0/C2/F1. 직전 최고 B3_14(1.1… |
+| 1455 | L-RF-20260831_190237 | overlay_regime | F | [B5 risk_overlay] 5칸 실측 — 최고 B5_24 다중검정t -0.098 · 칼마 0.175 · 등급 A0/B0/C0/F5. 직전 최고 B3_14(1… |
+| 1456 | L-RF-20260831_205809 | ? | C | [B1 multifactor] 5칸 실측 — 최고 B1_5 다중검정t 1.813 · 칼마 0.259 · 등급 A0/B0/C3/F2. 칼마 최고 0.26 — 낙폭 … |
+| 1457 | L-RF-20260831_211842 | ? | C | [B2 weighting] 5칸 실측 — 최고 B2_7 다중검정t 1.725 · 칼마 0.304 · 등급 A0/B0/C4/F1. 직전 최고 B1_5(1.813) … |
+| 1458 | L-RF-20260831_213406 | ? | C | [B3 universe] 5칸 실측 — 최고 B3_11 다중검정t 1.697 · 칼마 0.325 · 등급 A0/B0/C4/F1. 직전 최고 B1_5(1.813) … |
+| 1459 | L-RF-20260831_222134 | overlay_regime | C | [B5 risk_overlay] 5칸 실측 — 최고 B5_24 다중검정t 1.014 · 칼마 0.251 · 등급 A0/B0/C3/F2. 직전 최고 B1_5(1.8… |
+| 1460 | L-RF-20260901_152722 | ? | C | [B1 multifactor] 5칸 실측 — 최고 B1_4 다중검정t 1.103 · 칼마 0.218 · 등급 A0/B0/C4/F1. 칼마 최고 0.22 — 낙폭 … |
+| 1461 | L-RF-20260901_162704 | ? | F | [B2 weighting] 5칸 실측 — 최고 B2_7 다중검정t -0.636 · 칼마 0.160 · 등급 A0/B0/C0/F5. 직전 최고 B1_4(1.103)… |
+| 1462 | L-RF-20260901_165529 | ? | C | [B3 universe] 5칸 실측 — 최고 B3_11 다중검정t 0.654 · 칼마 0.163 · 등급 A0/B0/C3/F2. 직전 최고 B1_4(1.103) … |
+| 1463 | L-RF-20260901_171829 | overlay_regime | F | [B5 risk_overlay] 5칸 실측 — 최고 B5_19 다중검정t -0.919 · 칼마 0.136 · 등급 A0/B0/C0/F5. 직전 최고 B1_4(1.… |
+| 1464 | L-RF-20260902_135628 | ? | C | [B1 multifactor] 5칸 실측 — 최고 B1_4 다중검정t 0.911 · 칼마 0.288 · 등급 A0/B0/C3/F2. 낙폭이 축을 바꿔도 53~63… |
+| 1465 | L-RF-20260902_143033 | ? | C | [B2 weighting] 5칸 실측 — 최고 B2_7 다중검정t 0.882 · 칼마 0.270 · 등급 A0/B0/C5/F0. 직전 최고 B1_4(0.911) … |
+| 1466 | L-RF-20260902_145143 | ? | C | [B3 universe] 5칸 실측 — 최고 B3_13 다중검정t 1.170 · 칼마 0.293 · 등급 A0/B0/C3/F2. 직전 최고 B1_4(0.911) … |
+| 1467 | L-RF-20260902_184933 | overlay_regime | C | [B5 risk_overlay] 5칸 실측 — 최고 B5_19 다중검정t 1.071 · 칼마 0.274 · 등급 A0/B0/C5/F0. 직전 최고 B3_13(1.… |
+| 1468 | L-RF-20260902_191232 | ? | C | [B4 combination] 4칸 실측 — 최고 B4_25 다중검정t 1.228 · 칼마 0.311 · 등급 A0/B0/C2/F2. 직전 최고 B3_13(1.1… |
+| 1469 | L-RF-20260902_193325 | ? | C | [B1 multifactor] 5칸 실측 — 최고 B1_4 다중검정t 0.862 · 칼마 0.232 · 등급 A0/B0/C4/F1. 낙폭이 축을 바꿔도 56~60… |
+| 1470 | L-RF-20260902_194620 | ? | C | [B2 weighting] 5칸 실측 — 최고 B2_7 다중검정t 0.666 · 칼마 0.217 · 등급 A0/B0/C5/F0. 직전 최고 B1_4(0.862) … |
+| 1471 | L-RF-20260902_200354 | ? | C | [B3 universe] 5칸 실측 — 최고 B3_13 다중검정t 1.081 · 칼마 0.241 · 등급 A0/B0/C3/F2. 직전 최고 B1_4(0.862) … |
+| 1472 | L-RF-20260902_201645 | overlay_regime | C | [B5 risk_overlay] 5칸 실측 — 최고 B5_19 다중검정t 0.681 · 칼마 0.225 · 등급 A0/B0/C3/F2. 직전 최고 B3_13(1.… |
+| 1473 | L-RF-20260902_203350 | ? | C | [B4 combination] 2칸 실측 — 최고 B4_23 다중검정t 0.680 · 칼마 0.246 · 등급 A0/B0/C2/F0. 직전 최고 B3_13(1.0… |
+| 1474 | L-RF-20260902_213647 | ? | C | [B1 multifactor] 5칸 실측 — 최고 B1_1 다중검정t 0.036 · 칼마 0.215 · 등급 A0/B0/C1/F4. 낙폭이 축을 바꿔도 51~61… |
+| 1475 | L-RF-20260902_215126 | ? | F | [B2 weighting] 5칸 실측 — 최고 B2_7 다중검정t -0.006 · 칼마 0.213 · 등급 A0/B0/C0/F5. 직전 최고 B1_1(0.036)… |
+| 1476 | L-RF-20260902_215952 | ? | C | [B3 universe] 5칸 실측 — 최고 B3_11 다중검정t 1.410 · 칼마 0.331 · 등급 A0/B0/C3/F2. 직전 최고 B1_1(0.036) … |
+| 1477 | L-RF-20260902_220612 | overlay_regime | C | [B5 risk_overlay] 5칸 실측 — 최고 B5_19 다중검정t 0.997 · 칼마 0.309 · 등급 A0/B0/C5/F0. 직전 최고 B3_11(1.… |
+| 1478 | L-RF-20260902_221455 | ? | F | [B4 combination] 1칸 실측 — 최고 B4_24 다중검정t -0.451 · 칼마 0.213 · 등급 A0/B0/C0/F1. 직전 최고 B3_11(1.… |
+| 1479 | L-RF-20260903_083313 | ? | C | [B1 multifactor] 5칸 실측 — 최고 B1_4 다중검정t 0.764 · 칼마 0.169 · 등급 A0/B0/C5/F0. 낙폭이 축을 바꿔도 67~71… |
+| 1480 | L-RF-20260903_084433 | ? | C | [B2 weighting] 5칸 실측 — 최고 B2_7 다중검정t 0.789 · 칼마 0.170 · 등급 A0/B0/C4/F1. 직전 최고 B1_4(0.764) … |
+| 1481 | L-RF-20260903_085940 | ? | C | [B3 universe] 5칸 실측 — 최고 B3_11 다중검정t 1.110 · 칼마 0.266 · 등급 A0/B0/C3/F2. 직전 최고 B2_7(0.789) … |
+| 1482 | L-RF-20260903_091456 | overlay_regime | C | [B5 risk_overlay] 5칸 실측 — 최고 B5_19 다중검정t 0.738 · 칼마 0.244 · 등급 A0/B0/C3/F2. 직전 최고 B3_11(1.… |
+| 1483 | L-RF-20260903_092946 | ? | C | [B4 combination] 1칸 실측 — 최고 B4_24 다중검정t 0.406 · 칼마 0.152 · 등급 A0/B0/C1/F0. 직전 최고 B3_11(1.1… |
+| 1484 | L-RF-20260903_101512 | ? | C | [B1 multifactor] 5칸 실측 — 최고 B1_4 다중검정t 0.177 · 칼마 0.153 · 등급 A0/B0/C1/F4. 낙폭이 축을 바꿔도 64~67… |
+| 1485 | L-RF-20260903_102611 | ? | C | [B2 weighting] 5칸 실측 — 최고 B2_6 다중검정t 0.134 · 칼마 0.158 · 등급 A0/B0/C3/F2. 직전 최고 B1_4(0.177) … |
+| 1486 | L-RF-20260903_104110 | ? | C | [B3 universe] 5칸 실측 — 최고 B3_12 다중검정t 0.324 · 칼마 0.162 · 등급 A0/B0/C1/F4. 직전 최고 B1_4(0.177) … |
+| 1487 | L-RF-20260903_104831 | overlay_regime | F | [B5 risk_overlay] 5칸 실측 — 최고 B5_19 다중검정t -0.117 · 칼마 0.148 · 등급 A0/B0/C0/F5. 직전 최고 B3_12(0… |
+| 1488 | L-RF-20260903_105750 | ? | F | [B4 combination] 5칸 실측 — 최고 B4_24 다중검정t -0.354 · 칼마 0.143 · 등급 A0/B0/C0/F5. 직전 최고 B3_12(0.… |
+| 1489 | L-RF-20260903_152756 | ? | C | [B1 multifactor] 5칸 실측 — 최고 B1_5 다중검정t 1.578 · 칼마 0.275 · 등급 A0/B0/C5/F0. 낙폭이 축을 바꿔도 57~65… |
+| 1490 | L-RF-20260903_153707 | ? | C | [B2 weighting] 5칸 실측 — 최고 B2_6 다중검정t 0.967 · 칼마 0.231 · 등급 A0/B0/C5/F0. 직전 최고 B1_5(1.578) … |
+| 1491 | L-RF-20260903_154442 | ? | C | [B3 universe] 5칸 실측 — 최고 B3_13 다중검정t 1.275 · 칼마 0.260 · 등급 A0/B0/C4/F1. 직전 최고 B1_5(1.578) … |
+| 1492 | L-RF-20260903_155118 | overlay_regime | C | [B5 risk_overlay] 5칸 실측 — 최고 B5_20 다중검정t 0.716 · 칼마 0.212 · 등급 A0/B0/C2/F3. 직전 최고 B1_5(1.5… |
+| 1493 | L-RF-20260903_160050 | ? | C | [B4 combination] 5칸 실측 — 최고 B4_25 다중검정t 1.077 · 칼마 0.250 · 등급 A0/B0/C3/F2. 직전 최고 B1_5(1.57… |
+| 1494 | L-RF-20260903_215344 | ? | C | [B1 multifactor] 5칸 실측 — 최고 B1_2 다중검정t 0.754 · 칼마 0.159 · 등급 A0/B0/C5/F0. 낙폭이 축을 바꿔도 67~74… |
+| 1495 | L-RF-20260904_081651 | ? | C | [B2 weighting] 5칸 실측 — 최고 B2_6 다중검정t 0.766 · 칼마 0.158 · 등급 A0/B0/C5/F0. 직전 최고 B1_2(0.754) … |
+| 1496 | L-RF-20260904_082522 | ? | C | [B3 universe] 5칸 실측 — 최고 B3_11 다중검정t 0.314 · 칼마 0.137 · 등급 A0/B0/C3/F2. 직전 최고 B2_6(0.766) … |
+| 1497 | L-RF-20260904_083345 | overlay_regime | C | [B5 risk_overlay] 5칸 실측 — 최고 B5_17 다중검정t 0.605 · 칼마 0.180 · 등급 A0/B0/C2/F3. 직전 최고 B2_6(0.7… |
+| 1498 | L-RF-20260904_084213 | ? | F | [B4 combination] 4칸 실측 — 최고 B4_22 다중검정t -0.044 · 칼마 0.155 · 등급 A0/B0/C0/F4. 직전 최고 B2_6(0.7… |
+| 1499 | L-RF-20260904_122401 | overlay_regime | C | [B5 risk_overlay] 5칸 실측 — 최고 B5_17 다중검정t 1.163 · 칼마 0.402 · 등급 A0/B0/C3/F2. 직전 최고 B1_4(1.4… |
+| 1500 | L-RF-20260904_123854 | ? | C | [B2 weighting] 5칸 실측 — 최고 B2_7 다중검정t 1.472 · 칼마 0.410 · 등급 A0/B0/C5/F0. 직전 최고 B1_4(1.454) … |
+| 1501 | L-RF-20260904_124229 | ? | C | [B1 multifactor] 14칸 실측 — 최고 B1_4 다중검정t 1.454 · 칼마 0.400 · 등급 A0/B0/C10/F4. 칼마 최고 0.40 — 낙… |
+| 1502 | L-RF-20260904_124816 | ? | C | [B3 universe] 5칸 실측 — 최고 B3_11 다중검정t 1.147 · 칼마 0.319 · 등급 A0/B0/C4/F1. 직전 최고 B2_7(1.472) … |
+| 1503 | L-RF-20260904_125641 | ? | C | [B4 combination] 2칸 실측 — 최고 B4_24 다중검정t 1.167 · 칼마 0.417 · 등급 A0/B0/C2/F0. 직전 최고 B2_7(1.47… |
+| 1504 | L-RF-20260904_182647 | ? | C | [B1 multifactor] 15칸 실측 — 최고 B1_10 다중검정t 1.951 · 칼마 0.319 · 등급 A0/B0/C14/F1. 낙폭이 축을 바꿔도 55… |
+| 1505 | L-RF-20260904_193643 | overlay_regime | C | [B5 risk_overlay] 6칸 실측 — 최고 B5_18 다중검정t 1.971 · 칼마 0.357 · 등급 A0/B0/C6/F0. 직전 최고 B1_10(1.… |
+| 1506 | L-RF-20260904_194435 | ? | B | [B2 weighting] 5칸 실측 — 최고 B2_6 다중검정t 2.109 · 칼마 0.388 · 등급 A0/B3/C2/F0. 직전 최고 B5_18(1.971)… |
+| 1507 | L-RF-20260904_200044 | ? | C | [B3 universe] 4칸 실측 — 최고 B3_11 다중검정t 1.584 · 칼마 0.317 · 등급 A0/B0/C4/F0. 직전 최고 B2_6(2.109) … |
+| 1508 | L-RF-20260904_201605 | ? | C | [B4 combination] 3칸 실측 — 최고 B4_25 다중검정t 1.719 · 칼마 0.301 · 등급 A0/B0/C3/F0. 직전 최고 B2_6(2.10… |
+| 1509 | L-RF-20260904_204419 | ? | B | [B1 multifactor] 5칸 실측 — 최고 B1_2 다중검정t 2.171 · 칼마 0.351 · 등급 A0/B3/C2/F0. 낙폭이 축을 바꿔도 55~60… |
+| 1510 | L-RF-20260904_205939 | overlay_regime | B | [B5 risk_overlay] 5칸 실측 — 최고 B5_17 다중검정t 2.025 · 칼마 0.372 · 등급 A0/B1/C4/F0. 직전 최고 B1_2(2.1… |
+| 1511 | L-RF-20260904_212507 | ? | C | [B2 weighting] 5칸 실측 — 최고 B2_7 다중검정t -0.127 · 칼마 0.181 · 등급 A0/B0/C5/F0. 직전 최고 B1_2(2.171)… |
+| 1512 | L-RF-20260904_213903 | ? | C | [B3 universe] 4칸 실측 — 최고 B3_13 다중검정t 1.886 · 칼마 0.325 · 등급 A0/B0/C4/F0. 직전 최고 B1_2(2.171) … |
+| 1513 | L-RF-20260904_220226 | ? | B | [B4 combination] 5칸 실측 — 최고 B4_25 다중검정t 2.009 · 칼마 0.335 · 등급 A0/B1/C4/F0. 직전 최고 B1_2(2.17… |
+| 1514 | L-RF-20260904_223318 | ? | B | [B1 multifactor] 5칸 실측 — 최고 B1_1 다중검정t 2.280 · 칼마 0.364 · 등급 A0/B1/C4/F0. 낙폭이 축을 바꿔도 57~61… |
+| 1515 | L-RF-20260905_090856 | overlay_regime | C | [B5 risk_overlay] 5칸 실측 — 최고 B5_17 다중검정t 1.966 · 칼마 0.398 · 등급 A0/B0/C5/F0. 직전 최고 B1_1(2.2… |
+| 1516 | L-RF-20260905_093424 | ? | C | [B2 weighting] 3칸 실측 — 최고 B2_8 다중검정t 1.989 · 칼마 0.379 · 등급 A0/B0/C3/F0. 직전 최고 B1_1(2.280) … |
+| 1517 | L-RF-20260905_102006 | ? | B | [B3 universe] 4칸 실측 — 최고 B3_12 다중검정t 2.567 · 칼마 0.499 · 등급 A0/B1/C3/F0. 직전 최고 B1_1(2.280) … |
+| 1518 | L-RF-20260905_104629 | ? | C | [B4 combination] 3칸 실측 — 최고 B4_23 다중검정t 1.209 · 칼마 0.400 · 등급 A0/B0/C3/F0. 직전 최고 B3_12(2.5… |
+| 1519 | L-RF-20260905_113751 | ? | B | [B1 multifactor] 9칸 실측 — 최고 B1_3 다중검정t 2.553 · 칼마 0.389 · 등급 A0/B6/C3/F0. 낙폭이 축을 바꿔도 56~63… |
+| 1520 | L-RF-20260905_115930 | overlay_regime | B | [B5 risk_overlay] 6칸 실측 — 최고 B5_21 다중검정t 2.327 · 칼마 0.373 · 등급 A0/B3/C3/F0. 직전 최고 B1_3(2.5… |
+| 1521 | L-RF-20260905_123245 | ? | B | [B2 weighting] 6칸 실측 — 최고 B2_10 다중검정t 2.526 · 칼마 0.389 · 등급 A0/B3/C3/F0. 직전 최고 B1_3(2.553)… |
+| 1522 | L-RF-20260905_124845 | ? | C | [B3 universe] 3칸 실측 — 최고 B3_15 다중검정t 1.743 · 칼마 0.287 · 등급 A0/B0/C3/F0. 직전 최고 B1_3(2.553) … |
+| 1523 | L-RF-20260905_130617 | ? | B | [B4 combination] 5칸 실측 — 최고 B4_24 다중검정t 2.260 · 칼마 0.426 · 등급 A0/B1/C4/F0. 직전 최고 B1_3(2.55… |
+| 1524 | L-RF-20260905_192114 | ? | C | [B1 multifactor] 9칸 실측 — 최고 B1_2 다중검정t 1.567 · 칼마 0.266 · 등급 A0/B0/C9/F0. 낙폭이 축을 바꿔도 60~69… |
+| 1525 | L-RF-20260905_193559 | overlay_regime | C | [B5 risk_overlay] 5칸 실측 — 최고 B5_20 다중검정t 1.582 · 칼마 0.290 · 등급 A0/B0/C5/F0. 직전 최고 B1_2(1.5… |
+| 1526 | L-RF-20260905_195232 | ? | C | [B2 weighting] 5칸 실측 — 최고 B2_7 다중검정t 1.441 · 칼마 0.290 · 등급 A0/B0/C5/F0. 직전 최고 B5_20(1.582)… |
+| 1527 | L-RF-20260905_200635 | ? | C | [B3 universe] 4칸 실측 — 최고 B3_13 다중검정t 1.588 · 칼마 0.311 · 등급 A0/B0/C4/F0. 직전 최고 B5_20(1.582)… |
+| 1528 | L-RF-20260905_201528 | ? | B | [B4 combination] 3칸 실측 — 최고 B4_25 다중검정t 2.128 · 칼마 0.355 · 등급 A0/B1/C2/F0. 직전 최고 B3_13(1.5… |
+| 1529 | L-RF-20260905_210445 | ? | B | [B1 multifactor] 8칸 실측 — 최고 B1_5 다중검정t 2.265 · 칼마 0.344 · 등급 A0/B2/C6/F0. 낙폭이 축을 바꿔도 55~66… |
+| 1530 | L-RF-20260905_212102 | overlay_regime | C | [B5 risk_overlay] 4칸 실측 — 최고 B5_19 다중검정t 1.929 · 칼마 0.351 · 등급 A0/B0/C4/F0. 직전 최고 B1_5(2.2… |
+| 1531 | L-RF-20260905_213747 | ? | B | [B2 weighting] 5칸 실측 — 최고 B2_10 다중검정t 2.749 · 칼마 0.366 · 등급 A0/B2/C3/F0. 직전 최고 B1_5(2.265)… |
+| 1532 | L-RF-20260905_215306 | ? | C | [B3 universe] 4칸 실측 — 최고 B3_13 다중검정t 1.334 · 칼마 0.269 · 등급 A0/B0/C4/F0. 직전 최고 B2_10(2.749)… |
+| 1533 | L-RF-20260905_220844 | ? | C | [B4 combination] 5칸 실측 — 최고 B4_25 다중검정t 1.811 · 칼마 0.283 · 등급 A0/B0/C5/F0. 직전 최고 B2_10(2.7… |
+| 1534 | L-RF-20260905_225052 | ? | B | [B1 multifactor] 10칸 실측 — 최고 B1_1 다중검정t 2.650 · 칼마 0.362 · 등급 A0/B6/C4/F0. 낙폭이 축을 바꿔도 63~7… |
+| 1535 | L-RF-20260905_230546 | overlay_regime | B | [B5 risk_overlay] 5칸 실측 — 최고 B5_18 다중검정t 2.485 · 칼마 0.388 · 등급 A0/B4/C1/F0. 직전 최고 B1_1(2.6… |
+| 1536 | L-RF-20260906_191608 | ? | B | [B2 weighting] 4칸 실측 — 최고 B2_10 다중검정t 2.107 · 칼마 0.344 · 등급 A0/B1/C3/F0. 직전 최고 B1_1(2.650)… |
+| 1537 | L-RF-20260906_210805 | ? | B | [B3 universe] 4칸 실측 — 최고 B3_13 다중검정t 2.093 · 칼마 0.305 · 등급 A0/B1/C3/F0. 직전 최고 B1_1(2.650) … |
+| 1538 | L-RF-20260906_212419 | ? | B | [B4 combination] 5칸 실측 — 최고 B4_24 다중검정t 2.031 · 칼마 0.391 · 등급 A0/B1/C4/F0. 직전 최고 B1_1(2.65… |
+| 1539 | L-RF-20260907_005001 | ? | C | [B1 multifactor] 9칸 실측 — 최고 B1_4 다중검정t 1.585 · 칼마 0.299 · 등급 A0/B0/C8/F1. 낙폭이 축을 바꿔도 51~63… |
+| 1540 | L-RF-20260907_010439 | overlay_regime | C | [B5 risk_overlay] 5칸 실측 — 최고 B5_20 다중검정t 1.564 · 칼마 0.299 · 등급 A0/B0/C5/F0. 직전 최고 B1_4(1.5… |
+| 1541 | L-RF-20260907_041652 | ? | C | [B2 weighting] 5칸 실측 — 최고 B2_6 다중검정t 1.794 · 칼마 0.323 · 등급 A0/B0/C5/F0. 직전 최고 B1_4(1.585) … |
+| 1542 | L-RF-20260907_044020 | ? | B | [B3 universe] 5칸 실측 — 최고 B3_13 다중검정t 2.162 · 칼마 0.349 · 등급 A0/B2/C2/F1. 직전 최고 B2_6(1.794) … |
+| 1543 | L-RF-20260907_050717 | ? | C | [B1 multifactor] 8칸 실측 — 최고 B1_8 다중검정t 1.636 · 칼마 0.315 · 등급 A0/B0/C8/F0. 낙폭이 축을 바꿔도 55~62… |
+| 1544 | L-RF-20260907_052805 | overlay_regime | C | [B5 risk_overlay] 6칸 실측 — 최고 B5_19 다중검정t 1.397 · 칼마 0.315 · 등급 A0/B0/C6/F0. 직전 최고 B1_8(1.6… |
+| 1545 | L-RF-20260907_091341 | ? | C | [B2 weighting] 5칸 실측 — 최고 B2_9 다중검정t 1.518 · 칼마 0.313 · 등급 A0/B0/C5/F0. 직전 최고 B1_8(1.636) … |
+| 1546 | L-RF-20260907_092836 | ? | C | [B3 universe] 4칸 실측 — 최고 B3_13 다중검정t 1.635 · 칼마 0.313 · 등급 A0/B0/C4/F0. 직전 최고 B1_8(1.636) … |
+| 1547 | L-RF-20260907_094000 | ? | C | [B4 combination] 5칸 실측 — 최고 B4_22 다중검정t 1.807 · 칼마 0.408 · 등급 A0/B0/C5/F0. 직전 최고 B1_8(1.63… |
+| 1548 | L-RF-20260912_170118 | ? | C | [B1 multifactor] 9칸 실측 — 최고 B1_5 다중검정t 1.275 · 칼마 0.246 · 등급 A0/B0/C9/F0. 낙폭이 축을 바꿔도 66~73… |
+| 1549 | L-RF-20260912_171557 | overlay_regime | C | [B5 risk_overlay] 5칸 실측 — 최고 B5_20 다중검정t 1.748 · 칼마 0.292 · 등급 A0/B0/C5/F0. 직전 최고 B1_5(1.2… |
+| 1550 | L-RF-20260912_174349 | ? | B | [B3 universe] 5칸 실측 — 최고 B3_13 다중검정t 2.071 · 칼마 0.340 · 등급 A0/B2/C3/F0. 직전 최고 B5_20(1.748)… |
+| 1551 | L-RF-20260912_175312 | ? | C | [B4 combination] 2칸 실측 — 최고 B4_25 다중검정t 1.726 · 칼마 0.267 · 등급 A0/B0/C2/F0. 직전 최고 B3_13(2.0… |
+| 1552 | L-RF-20260912_181435 | ? | C | [B1 multifactor] 6칸 실측 — 최고 B1_1 다중검정t 1.748 · 칼마 0.292 · 등급 A0/B0/C6/F0. 낙폭이 축을 바꿔도 69~73… |
+| 1553 | L-RF-20260912_182320 | overlay_regime | C | [B5 risk_overlay] 5칸 실측 — 최고 B5_16 다중검정t 1.716 · 칼마 0.305 · 등급 A0/B0/C5/F0. 직전 최고 B1_1(1.7… |
+| 1554 | L-RF-20260912_185911 | ? | B | [B3 universe] 6칸 실측 — 최고 B3_13 다중검정t 2.071 · 칼마 0.340 · 등급 A0/B3/C3/F0. 직전 최고 B4_21(2.002)… |
+| 1555 | L-RF-20260913_003410 | ? | C | [B1 multifactor] 10칸 실측 — 최고 B1_10 다중검정t 0.611 · 칼마 0.231 · 등급 A0/B0/C8/F2. 칼마 최고 0.23 — 낙… |
+| 1556 | L-RF-20260913_005935 | ? | C | [B2 weighting] 6칸 실측 — 최고 B2_9 다중검정t 0.610 · 칼마 0.248 · 등급 A0/B0/C6/F0. 직전 최고 B1_10(0.611)… |
+| 1557 | L-RF-20260913_011229 | ? | C | [B3 universe] 3칸 실측 — 최고 B3_13 다중검정t 0.133 · 칼마 0.161 · 등급 A0/B0/C3/F0. 직전 최고 B1_10(0.611)… |
+| 1558 | L-RF-20260913_012340 | overlay_regime | C | [B5 risk_overlay] 4칸 실측 — 최고 B5_19 다중검정t 0.328 · 칼마 0.238 · 등급 A0/B0/C2/F2. 직전 최고 B1_10(0.… |
+| 1559 | L-RF-20260913_013827 | ? | C | [B4 combination] 5칸 실측 — 최고 B4_24 다중검정t -0.062 · 칼마 0.253 · 등급 A0/B0/C5/F0. 직전 최고 B1_10(0.… |
+| 1560 | L-RF-20260913_024342 | ? | C | [B1 multifactor] 5칸 실측 — 최고 B1_1 다중검정t 0.791 · 칼마 0.244 · 등급 A0/B0/C5/F0. 낙폭이 축을 바꿔도 61~66… |
+| 1561 | L-RF-20260913_025653 | ? | C | [B2 weighting] 4칸 실측 — 최고 B2_10 다중검정t 0.845 · 칼마 0.245 · 등급 A0/B0/C4/F0. 직전 최고 B1_1(0.791)… |
+| 1562 | L-RF-20260913_032839 | overlay_regime | C | [B5 risk_overlay] 4칸 실측 — 최고 B5_17 다중검정t 0.790 · 칼마 0.259 · 등급 A0/B0/C4/F0. 직전 최고 B2_10(0.… |
+| 1563 | L-RF-20260913_033842 | ? | C | [B3 universe] 3칸 실측 — 최고 B3_15 다중검정t -0.612 · 칼마 0.157 · 등급 A0/B0/C2/F1. 직전 최고 B2_10(0.845… |
+| 1564 | L-RF-20260913_105813 | ? | B | [B1 multifactor] 9칸 실측 — 최고 B1_3 다중검정t 2.743 · 칼마 0.412 · 등급 A0/B3/C6/F0. 낙폭이 축을 바꿔도 53~62… |
+| 1565 | L-RF-20260913_111221 | overlay_regime | B | [B5 risk_overlay] 5칸 실측 — 최고 B5_20 다중검정t 2.519 · 칼마 0.438 · 등급 A0/B4/C1/F0. 직전 최고 B1_3(2.7… |
+| 1566 | L-RF-20260913_113608 | ? | B | [B2 weighting] 6칸 실측 — 최고 B2_11 다중검정t 2.823 · 칼마 0.412 · 등급 A0/B5/C1/F0. 직전 최고 B1_3(2.743)… |
+| 1567 | L-RF-20260913_120820 | ? | C | [B3 universe] 3칸 실측 — 최고 B3_12 다중검정t 1.848 · 칼마 0.306 · 등급 A0/B0/C3/F0. 직전 최고 B2_11(2.823)… |
+| 1568 | L-RF-20260913_124105 | ? | B | [B1 multifactor] 8칸 실측 — 최고 B1_1 다중검정t 3.032 · 칼마 0.470 · 등급 A0/B5/C3/F0. 낙폭이 축을 바꿔도 46~60… |
+| 1569 | L-RF-20260913_125802 | overlay_regime | B | [B5 risk_overlay] 5칸 실측 — 최고 B5_20 다중검정t 2.800 · 칼마 0.478 · 등급 A0/B5/C0/F0. 직전 최고 B1_1(3.0… |
+| 1570 | L-RF-20260913_131326 | ? | B | [B2 weighting] 4칸 실측 — 최고 B2_10 다중검정t 3.092 · 칼마 0.486 · 등급 A0/B3/C1/F0. 직전 최고 B1_1(3.032)… |
+| 1571 | L-RF-20260913_132841 | ? | B | [B3 universe] 4칸 실측 — 최고 B3_14 다중검정t 2.338 · 칼마 0.354 · 등급 A0/B1/C3/F0. 직전 최고 B2_10(3.092)… |
+| 1572 | L-RF-20260913_134050 | ? | B | [B4 combination] 5칸 실측 — 최고 B4_25 다중검정t 2.414 · 칼마 0.357 · 등급 A0/B2/C3/F0. 직전 최고 B2_10(3.0… |
+| 1573 | L-RF-20260913_141813 | ? | B | [B1 multifactor] 8칸 실측 — 최고 B1_2 다중검정t 3.589 · 칼마 0.477 · 등급 A0/B7/C1/F0. 낙폭이 축을 바꿔도 51~59… |
+| 1574 | L-RF-20260913_143429 | overlay_regime | B | [B5 risk_overlay] 5칸 실측 — 최고 B5_20 다중검정t 3.257 · 칼마 0.478 · 등급 A0/B5/C0/F0. 직전 최고 B1_2(3.5… |
+| 1575 | L-RF-20260913_145007 | ? | B | [B2 weighting] 4칸 실측 — 최고 B2_10 다중검정t 3.513 · 칼마 0.468 · 등급 A0/B4/C0/F0. 직전 최고 B1_2(3.589)… |
+| 1576 | L-RF-20260913_150543 | ? | B | [B3 universe] 3칸 실측 — 최고 B3_12 다중검정t 2.374 · 칼마 0.367 · 등급 A0/B1/C2/F0. 직전 최고 B1_2(3.589) … |
+| 1577 | L-RF-20260913_205827 | ? | B | [B4 combination] 5칸 실측 — 최고 B4_24 다중검정t 3.130 · 칼마 0.488 · 등급 A0/B4/C1/F0. 직전 최고 B1_2(3.58… |
+| 1578 | L-RF-20260913_212800 | overlay_regime | B | [B5 risk_overlay] 5칸 실측 — 최고 B5_20 다중검정t 2.806 · 칼마 0.483 · 등급 A0/B5/C0/F0. 직전 최고 B1_3(3.1… |
+| 1579 | L-RF-20260913_214207 | ? | B | [B1 multifactor] 6칸 실측 — 최고 B1_3 다중검정t 3.133 · 칼마 0.504 · 등급 A0/B6/C0/F0. 직전 최고 B5_20(2.80… |
+| 1580 | L-RF-20260913_220034 | ? | C | [B3 universe] 5칸 실측 — 최고 B3_12 다중검정t 1.903 · 칼마 0.352 · 등급 A0/B0/C5/F0. 직전 최고 B1_3(3.133) … |
+| 1581 | L-RF-20260913_221408 | ? | C | [B4 combination] 2칸 실측 — 최고 B4_24 다중검정t 1.627 · 칼마 0.482 · 등급 A0/B0/C2/F0. 직전 최고 B1_3(3.13… |
+| 1582 | L-RF-20260917_120507 | ? | B | [B1 multifactor] 8칸 실측 — 최고 B1_5 다중검정t 3.202 · 칼마 0.385 · 등급 A0/B5/C3/F0. 낙폭이 축을 바꿔도 54~61… |
+| 1583 | L-RF-20260917_191958 | ? | B | [B2 weighting] 6칸 실측 — 최고 B2_7 다중검정t 3.066 · 칼마 0.382 · 등급 A0/B4/C2/F0. 직전 최고 B1_5(3.202) … |
+| 1584 | L-RF-20260917_193646 | ? | C | [B3 universe] 3칸 실측 — 최고 B3_14 다중검정t 1.728 · 칼마 0.278 · 등급 A0/B0/C3/F0. 직전 최고 B1_5(3.202) … |
+| 1585 | L-RF-20260917_195304 | ? | B | [B4 combination] 5칸 실측 — 최고 B4_24 다중검정t 2.159 · 칼마 0.426 · 등급 A0/B1/C4/F0. 직전 최고 B1_5(3.20… |
+| 1586 | L-RF-20260919_024247 | overlay_regime | B | [B5 risk_overlay] 14칸 실측 — 최고 B5_17 다중검정t 3.069 · 칼마 0.385 · 등급 A0/B8/C6/F0. 직전 최고 B1_5(3.… |
+| 1587 | L-RF-20260919_031143 | ? | B | [B1 multifactor] 10칸 실측 — 최고 B1_1 다중검정t 3.592 · 칼마 0.457 · 등급 A0/B7/C3/F0. 낙폭이 축을 바꿔도 55~6… |
 
 ### strategy_rotation
 
 | # | L-code | family | grade | 요지 |
 |---|--------|--------|-------|------|
-| 1568 | L-FR-20260912_170811 | ml_complexity | C | FR_003_armS_lag1 regime rotation 앙상블 실측(essence C): net_SR=0.819 PORT_t(NW lag-3)=0.84 DSR… |
-| 1569 | L-FR-20260912_170855 | ml_complexity | C | FR_003_armC_flooronly regime rotation 앙상블 실측(essence C): net_SR=1.076 PORT_t(NW lag-3)=1.6… |
-| 1570 | L-FR-20260912_171234 | ml_complexity | C | FR_003 (2계층 전략 로테이션) — 방어형 경로 최초 발화. 풀 15→115(방어형 97 · essence B floor 6 · legacy QEPM-A 1… |
+| 1588 | L-FR-20260912_170811 | ml_complexity | C | FR_003_armS_lag1 regime rotation 앙상블 실측(essence C): net_SR=0.819 PORT_t(NW lag-3)=0.84 DSR… |
+| 1589 | L-FR-20260912_170855 | ml_complexity | C | FR_003_armC_flooronly regime rotation 앙상블 실측(essence C): net_SR=1.076 PORT_t(NW lag-3)=1.6… |
+| 1590 | L-FR-20260912_171234 | ml_complexity | C | FR_003 (2계층 전략 로테이션) — 방어형 경로 최초 발화. 풀 15→115(방어형 97 · essence B floor 6 · legacy QEPM-A 1… |
 
 ## 강등/아카이브 (뷰 제외 · 참조 영구 보존, 4)
 
