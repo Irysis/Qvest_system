@@ -1,6 +1,6 @@
 # 08_Tests INDEX
 
-> 자동 생성 2026-09-19 00:41 — 큐레이션 원본: `06_Registry/index_descriptions.json` (role/status/category 수동 보완처) · 재생성: `Rscript 02_Infrastructure/tools/build_artifact_index.R` (daily_refresh 말미 자동). 본 파일 직접 수정 금지 — 재생성 시 덮어씀.
+> 자동 생성 2026-09-20 00:16 — 큐레이션 원본: `06_Registry/index_descriptions.json` (role/status/category 수동 보완처) · 재생성: `Rscript 02_Infrastructure/tools/build_artifact_index.R` (daily_refresh 말미 자동). 본 파일 직접 수정 금지 — 재생성 시 덮어씀.
 
 ## 계약 (4)
 
@@ -44,7 +44,7 @@
 | `axiom` | (미분류 — index_descriptions.json에 추가하세요) | - | 2026-08-23 | 41KB |
 | `book` | (미분류 — index_descriptions.json에 추가하세요) | - | 2026-09-02 | 29KB |
 | `contracts` | (미분류 — index_descriptions.json에 추가하세요) | - | 2026-09-07 | 293KB |
-| `data` | (미분류 — index_descriptions.json에 추가하세요) | - | 2026-09-18 | 354KB |
+| `data` | (미분류 — index_descriptions.json에 추가하세요) | - | 2026-09-18 | 366KB |
 | `fixtures` | (미분류 — index_descriptions.json에 추가하세요) | - | 2026-09-07 | 16KB |
 | `lib` | (미분류 — index_descriptions.json에 추가하세요) | - | 2026-09-18 | 8KB |
 | `methods` | (미분류 — index_descriptions.json에 추가하세요) | - | 2026-08-13 | 21KB |

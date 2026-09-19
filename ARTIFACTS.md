@@ -1,6 +1,6 @@
 # Qvest 산출물 지도 (ARTIFACTS.md)
 
-> 자동 생성 2026-09-19 00:41:18 — 기계가독 원본: `06_Registry/artifact_index.json` · 재생성: `Rscript 02_Infrastructure/tools/build_artifact_index.R` (daily_refresh 말미 자동)
+> 자동 생성 2026-09-20 00:16:08 — 기계가독 원본: `06_Registry/artifact_index.json` · 재생성: `Rscript 02_Infrastructure/tools/build_artifact_index.R` (daily_refresh 말미 자동)
 
 **저장 4원칙**: ① `stage_artifacts/<mode>/<run_id>/` 실험 런(불변·이동금지) ② `outputs/<pipeline>/` canonical 데이터(최신본만) ③ `06_Registry/` 기계가독 상태·큐·인덱스 ④ `04_Research/<topic>/` 사람용 보고서
 
@@ -8,10 +8,10 @@
 
 | 존 | 무엇 | 규모 | 크기 | 최근 활동 | 대표 진입점 |
 |---|---|---|---|---|---|
-| `stage_artifacts/` | 실험 런 원본 (WT·legacy S0~S7·L-code·agent 산출) | 1084항목 / 54,204파일 | 15.9GB | 2026-09-18 (`l_code`) | `reports/` + 최근 WT 디렉토리 |
-| `outputs/` | 파이프라인 canonical 데이터 (최신본) | 5항목 / 442파일 | 1.7GB | 2026-09-18 (`regime`) | `outputs/ramp/` (RAMP 순수팩터·팩터군 parquet) |
-| `06_Registry/` | 기계가독 상태·큐·인덱스 (JSON) | 172항목 / 419파일 | 72.7MB | 2026-09-18 (`ast_structure_log.jsonl`) | `module_catalog.json` / `hypothesis_index.json` |
-| `04_Research/` | 사람용 리서치 보고서·분석 (토픽별) | 36항목 / 8,266파일 | 3.5GB | 2026-09-18 (`meta`) | `01_reports/` / `pg2_forensics/` |
+| `stage_artifacts/` | 실험 런 원본 (WT·legacy S0~S7·L-code·agent 산출) | 1084항목 / 55,144파일 | 16.3GB | 2026-09-19 (`l_code`) | `reports/` + 최근 WT 디렉토리 |
+| `outputs/` | 파이프라인 canonical 데이터 (최신본) | 5항목 / 443파일 | 1.7GB | 2026-09-19 (`regime`) | `outputs/ramp/` (RAMP 순수팩터·팩터군 parquet) |
+| `06_Registry/` | 기계가독 상태·큐·인덱스 (JSON) | 173항목 / 422파일 | 73.8MB | 2026-09-19 (`ast_structure_log.jsonl`) | `module_catalog.json` / `hypothesis_index.json` |
+| `04_Research/` | 사람용 리서치 보고서·분석 (토픽별) | 36항목 / 8,344파일 | 4.1GB | 2026-09-19 (`01_reports`) | `01_reports/` / `pg2_forensics/` |
 | `qepm/mailbox/worktask/` | QEPM WT 핸드오프 mailbox (불변 기록) | 299 WT | - | 2026-08-29 (`WT-R20260829_013`) | 최근 WT의 `output/` |
 
 `stage_artifacts` mode 구성: legacy_stage_S0_S7 439 · worktask_run 310 · other 198 · agent_artifact 61 · l_code 39 · pg2 17 · ramp 8 · alpha_search 5 · report 4 · axiom 3

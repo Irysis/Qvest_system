@@ -1,6 +1,6 @@
 # 02_Infrastructure INDEX
 
-> 자동 생성 2026-09-19 00:41 — 큐레이션 원본: `06_Registry/index_descriptions.json` (role/status/category 수동 보완처) · 재생성: `Rscript 02_Infrastructure/tools/build_artifact_index.R` (daily_refresh 말미 자동). 본 파일 직접 수정 금지 — 재생성 시 덮어씀.
+> 자동 생성 2026-09-20 00:16 — 큐레이션 원본: `06_Registry/index_descriptions.json` (role/status/category 수동 보완처) · 재생성: `Rscript 02_Infrastructure/tools/build_artifact_index.R` (daily_refresh 말미 자동). 본 파일 직접 수정 금지 — 재생성 시 덮어씀.
 
 ## 데이터 (3)
 
@@ -110,7 +110,7 @@
 | 항목 | 정체 | status | 최근 | 크기 |
 |---|---|---|---|---|
 | `judge/` | judge_lockbox_harness.R 단일 — ★v10 2026-08-29 RETIRED(lockbox 제도 폐지, 진입점 제거·호출자 0). v10 Judge 는 PIT 전담(essence Grade A 후 스폰)이고 검증 계약은 judge_verdict_v2 · 08_Tests/worktask/test_judge_verdict_v2.R | retired | 2026-08-29 | 12KB |
-| `prompts/` | agent spawn init 프롬프트 9건 — _shared_prefix.md(axiom derived cache) + alpha/risk/optimizer/forge/judge_init.md 등. 퇴역 5건(governor/execution/monitoring/qlead_init · qlead_spawn_template)은 _retired_v10/ (v10 2026-09-03) | active | 2026-09-17 | 212KB |
+| `prompts/` | agent spawn init 프롬프트 9건 — _shared_prefix.md(axiom derived cache) + alpha/risk/optimizer/forge/judge_init.md 등. 퇴역 5건(governor/execution/monitoring/qlead_init · qlead_spawn_template)은 _retired_v10/ (v10 2026-09-03) | active | 2026-09-18 | 212KB |
 | `worktask/` | WT 계약 계층 — common_charter.md·cert_rules.R·constraint_defaults.json(graduation severity)·run_all_template.R(현행 forge 템플릿)·lineage_utils | active | 2026-09-02 | 309KB |
 
 ## 메모리 (1)
@@ -191,7 +191,7 @@
 | `ast` | (미분류 — index_descriptions.json에 추가하세요) | - | 2026-08-02 | 187KB |
 | `book` | (미분류 — index_descriptions.json에 추가하세요) | - | 2026-08-30 | 41KB |
 | `methods` | (미분류 — index_descriptions.json에 추가하세요) | - | 2026-08-29 | 210KB |
-| `reinforcement` | (미분류 — index_descriptions.json에 추가하세요) | - | 2026-09-18 | 433KB |
+| `reinforcement` | (미분류 — index_descriptions.json에 추가하세요) | - | 2026-09-19 | 469KB |
 | `replication` | (미분류 — index_descriptions.json에 추가하세요) | - | 2026-08-29 | 8KB |
 | `utils` | (미분류 — index_descriptions.json에 추가하세요) | - | 2026-08-30 | 13KB |
 
