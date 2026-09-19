@@ -3,9 +3,9 @@
   "dist_id": "DIST-GEN-133",
   "cluster_key": "c1ccf8bd32d3",
   "candidate_id": "CAND_reinforcement_c1ccf8bd32d3",
-  "status": "pending_5axis",
-  "statement_refined": null,
-  "retry_condition": null,
+  "status": "proposed",
+  "statement_refined": "B3(유니버스) 블록 요약 25건 — 이 군집의 관측 창(2026-08-30 ~ 09-12)에서 B3 블록의 칸 수는 3~5칸이고 A등급은 0건, 블록 최고 Calmar 는 0.137~0.499 다. 칸 수가 3~4칸인 블록과 5칸인 블록의 최고 t 분포가 겹친다 — 이 축에 칸을 더 쓰는 것이 블록 최고값을 끌어올린다는 근거가 이 창 안에 없다. 유니버스 축의 예산을 늘리는 대신 같은 예산을 다른 축(비중 소비 지점·오버레이 tilt)으로 돌리는 것이 이 관측과 정합한다. 이 군집은 DIST-GEN-165(28) ⊂ DIST-GEN-205(32) 의 최고령 부분집합이므로(25 ⊂ 28 ⊂ 32) 세 카드는 하나로 통합하고 GEN-205 를 정본으로 둔다.",
+  "retry_condition": "B3 블록을 6칸 이상으로 늘린 회차가 나오면 칸 수와 블록 최고 t 의 관계를 직접 재측정한다. 칸 수가 최고값을 끌어올리면 이 예산 권고는 철회된다.",
   "refined_at": null,
   "refined_by": null,
   "promoted_to_axiom": null,
@@ -104,5 +104,37 @@
     "oos_effect_vs_is": -0.452,
     "note": "L-code oos_retention 실값 25건 median (IS65/OOS35 활성SR retention) — oos_months 실값 무 → None 유지 — promote.R essence_score 경유 재확정"
   },
-  "cluster_members_count": 25
+  "cluster_members_count": 25,
+  "adversarial_verdict": {
+    "a_exaggeration": "Calmar 0.499 를 성과로 쓰지 않고 상한으로만 적었고, A등급 0건을 같은 문장에 넣었다. 예산 권고도 '이 창 안에 근거가 없다'는 범위 한정으로 적었다.",
+    "b_evidence": "25건 요약 각각에 칸 수(3~5)·블록 최고 t·최고 Calmar 가 실측으로 있어 분포 겹침이 카드 밖 재구성 없이 확인된다. 전부 backtested 기록. 다만 '칸 수가 최고값을 못 올린다'는 n=25 의 관측이므로 인과가 아니라 방향 가설로 적었다.",
+    "c_ax000": "3~4회 실패로 축을 닫지 않는다 — 6칸 이상 회차를 명시적 반증 조건으로 남겼고, 결론도 '축 폐기'가 아니라 '예산 재배분'이다.",
+    "d_firewall": "고정 제약·PIT 어디에도 실패를 귀속하지 않고 완화도 제시하지 않는다. 대안 예산처는 전부 봉투-안 레버(비중 소비 지점·오버레이 tilt)다.",
+    "e_frontier": "미탐색 인접 3건 + live_trigger + expiry 명시. 3중 포함 관계와 통합 권고를 진술에 명시해 R6_distinct 위험을 먼저 신고했다."
+  },
+  "expiry": "2027-03-19",
+  "frontier": [
+    "B3 블록을 6칸 이상으로 늘린 회차 1건을 확보해 칸 수와 블록 최고 t 의 관계를 직접 잰다",
+    "B3 칸에서 아낀 예산을 비중 집중도 스윕으로 돌린 대조 트리를 리플레이로 구성한다(백테스트 0회)",
+    "B3 칸의 처치가 실제로 전달됐는지 실현 유니버스 크기·평균 시총으로 재도출해, '칸을 썼는데 처치가 안 실린' 칸이 분포 겹침의 원인인지 가른다"
+  ],
+  "live_trigger": {
+    "type": "time",
+    "condition": "B3 블록이 6칸 이상으로 설계된 회차가 발생하면 칸 수-최고값 관계를 재측정",
+    "monitored_source": "06_Registry/reinforce_program.json · stage_artifacts/l_code/reinforcement/*_B3.json"
+  },
+  "revival_spec": [
+    {
+      "signal_id": "wall_clock_date",
+      "condition": "x >= as.Date('2027-03-19')",
+      "from_trigger": "expiry",
+      "status": "active"
+    }
+  ],
+  "constraint_firewall": {
+    "mode": "backstop_passed",
+    "checked_at": "2026-09-19"
+  },
+  "drafted_at": "2026-09-19T22:25:56+0900",
+  "drafted_by": "auto_distill"
 }

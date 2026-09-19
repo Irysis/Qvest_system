@@ -3,9 +3,9 @@
   "dist_id": "DIST-GEN-189",
   "cluster_key": "351224f9c73c",
   "candidate_id": "CAND_reinforcement_351224f9c73c",
-  "status": "pending_5axis",
-  "statement_refined": null,
-  "retry_condition": null,
+  "status": "proposed",
+  "statement_refined": "B1 블록 요약 59건을 시간순으로 놓으면 블록 최고 PORT_t 는 2026-08-30 의 2.241 에서 2026-09-13 의 3.589 로 올랐지만, 같은 구간의 블록 최고 Calmar 는 0.32 → 0.48 에 머물렀고 A등급은 끝까지 0건이다. t 상승분은 새 팩터가 아니라 승격 사슬(carry)에서 온다 — 부모 구성 위에 다음 격자를 얹는 구조라 신호 축은 누적되는 반면, carry 객체에 overlay 줄이 없어(원장 carry.overlay = null) 위험 축은 매 세대 리셋된다. 따라서 세대 간 t 상승을 '위험 축도 함께 개선되고 있다'로 읽으면 안 된다. 이 군집은 DIST-GEN-211(supporting 62)의 시점 부분집합이므로(59 ⊂ 62) 두 카드는 하나로 통합하고 GEN-211 을 정본으로 두는 것이 맞다.",
+  "retry_condition": "승격 carry 가 overlay/비중 축까지 승계하도록 바뀐 뒤 같은 세대 비교를 재실행해, 블록 최고 Calmar 가 세대에 따라 단조 상승하는지 본다.",
   "refined_at": null,
   "refined_by": null,
   "promoted_to_axiom": null,
@@ -172,5 +172,37 @@
     "oos_effect_vs_is": -0.239,
     "note": "L-code oos_retention 실값 59건 median (IS65/OOS35 활성SR retention) — oos_months 실값 무 → None 유지 — promote.R essence_score 경유 재확정"
   },
-  "cluster_members_count": 59
+  "cluster_members_count": 59,
+  "adversarial_verdict": {
+    "a_exaggeration": "t 3.589 를 성과 주장으로 쓰지 않고 '위험 축은 따라오지 않았다'는 대비로만 인용했다. A등급 0건·Calmar 상한을 같은 문장에 넣어 낙관을 차단했다.",
+    "b_evidence": "59건 블록 요약의 최고 t·Calmar 가 각 L-RF 파일에 실측으로 있고, carry.overlay = null 은 06_Registry/reinforce_ledger_l1.json 의 carry 객체에서 직접 읽힌다(예: :40074~40092). 시계열 상관 자체는 아직 산출하지 않았으므로 '대부분이 carry 에서 왔다'는 기전 가설로 적었고 frontier 에 산출 항목을 남겼다.",
+    "c_ax000": "축을 닫지 않는다 — carry 에 overlay 를 넣는 경로와 무승격 대조 트리를 미탐색으로 열어 두었다.",
+    "d_firewall": "고정 제약·PIT 를 원인으로 귀속하지 않고 완화도 제시하지 않는다. 지적 대상은 승계 규칙(코드 안의 결정 규칙)이지 배포 제약이 아니다.",
+    "e_frontier": "미탐색 인접 3건 + live_trigger + expiry 명시. 포함 관계와 통합 권고를 진술에 명시해 R6_distinct 위험을 먼저 신고했다."
+  },
+  "expiry": "2027-03-19",
+  "frontier": [
+    "carry 목록에 overlay 축을 넣은 승격 1대를 측정해 위험 축 누적이 가능한지 확인한다",
+    "세대별 (블록 최고 t, 블록 최고 Calmar) 쌍의 상관을 직접 산출한다 — 현재 판정은 시계열 눈대중이다",
+    "승격 없이 같은 예산을 한 세대에 몰아 쓴 대조 트리를 리플레이로 재구성한다(백테스트 0회)"
+  ],
+  "live_trigger": {
+    "type": "time",
+    "condition": "다음 승격 사슬이 종료될 때 블록 최고 Calmar 가 0.55 이상으로 올라오면 재검토",
+    "monitored_source": "06_Registry/reinforce_ledger_l1.json::attempts[].essence"
+  },
+  "revival_spec": [
+    {
+      "signal_id": "wall_clock_date",
+      "condition": "x >= as.Date('2027-03-19')",
+      "from_trigger": "expiry",
+      "status": "active"
+    }
+  ],
+  "constraint_firewall": {
+    "mode": "backstop_passed",
+    "checked_at": "2026-09-19"
+  },
+  "drafted_at": "2026-09-19T22:25:47+0900",
+  "drafted_by": "auto_distill"
 }

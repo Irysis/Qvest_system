@@ -3,9 +3,9 @@
   "dist_id": "DIST-GEN-211",
   "cluster_key": "ca986de6d711",
   "candidate_id": "CAND_reinforcement_ca986de6d711",
-  "status": "pending_5axis",
-  "statement_refined": null,
-  "retry_condition": null,
+  "status": "proposed",
+  "statement_refined": "B1(멀티팩터 선정) 블록 요약 62건 전수에서 essence Grade A 는 0건이다. 블록 최고 PORT_t 는 0.04~3.59 로 크게 갈리는데 같은 블록 안의 MDD 대역 폭은 2.9~13.7%p 에 갇히고, 블록 최고 Calmar 는 0.14~0.50 구간을 한 번도 벗어나지 않았다. 그 결과 B1 에서 Calmar 는 사실상 CAGR 의 단조변환이 된다 — 팩터 교체는 신호의 t 를 사는 축이지 낙폭을 사는 축이 아니다. 2026-09-19 의 10칸 블록이 통제까지 붙였다: 수익 축 단독(C03_EPS_Chg_3m+M01_Mom_12_1)이 PORT_t 3.592 로 최고이면서 MDD 0.552 로 최저 권역이고, 거기에 하방베타(D04_Downside_Beta)를 더한 칸은 PORT_t 3.072 · MDD 0.570 · Calmar 0.419 로 네 지표가 동시에 악화됐다. 이 판정은 25종 long-only 동일가중 봉투 안에서 '선정 축'에 국한되며, 같은 변수를 tilt·비중 소비 지점에서 쓰는 경로는 이 군집이 잰 바 없다.",
+  "retry_condition": "같은 위험 변수(D04_Downside_Beta·D01_IdioVol)를 선정이 아닌 비중·tilt 소비 지점에 배치한 블록이 MDD 대역 폭을 15%p 넘게 벌리거나 블록 최고 Calmar 를 0.55 이상으로 올리면, 이 진술의 범위(선정 축 한정)가 확정되거나 반증된다.",
   "refined_at": null,
   "refined_by": null,
   "promoted_to_axiom": null,
@@ -178,5 +178,43 @@
     "oos_effect_vs_is": -0.214,
     "note": "L-code oos_retention 실값 62건 median (IS65/OOS35 활성SR retention) — oos_months 실값 무 → None 유지 — promote.R essence_score 경유 재확정"
   },
-  "cluster_members_count": 62
+  "cluster_members_count": 62,
+  "adversarial_verdict": {
+    "a_exaggeration": "A등급 0건·Calmar 상한 0.50 을 먼저 적어 낙관을 차단했고, 최고 t 3.592 도 '등급이 열렸다'가 아니라 '낙폭 축은 안 움직였다'는 문맥에서만 인용했다. 재현·OOS 미해결은 진술 안에 남아 있다.",
+    "b_evidence": "supporting 62건의 블록 요약이 전부 '등급 A0'·'낙폭이 축을 바꿔도 X~Y% 대역에 갇힘' 문장을 실측으로 담고 있고, 통제 칸(B1_1 대 B1_10)의 네 지표는 원장 reinforce_ledger_l1.json 의 essence 블록과 L-RF-20260919_031143 기전에서 재도출된다. 전부 metric_type=backtested 기록이며 proxy 혼입 없음.",
+    "c_ax000": "'팩터 축은 죽었다'로 닫지 않는다 — 형상형/수준형 계열 분리, 소비 지점 이동, 집중도 축을 frontier 로 열어 두고 미해결을 명시했다.",
+    "d_firewall": "실패를 25종·long-only·동일가중에 귀속하지 않는다. 봉투를 명시한 것은 '이 판정이 성립하는 범위'를 적기 위함이고(envelope-상대 서술), 완화 레버(종목수 확대·숏 허용 등)는 제시하지 않는다. 제안된 레버는 전부 봉투-안(비중 소비 지점·overlay tilt·집중도)이다.",
+    "e_frontier": "미탐색 인접 3건 + live_trigger + expiry 명시."
+  },
+  "expiry": "2027-03-19",
+  "frontier": [
+    "같은 위험 변수(D04_Downside_Beta·D01_IdioVol)를 B2 비중 층과 B5 tilt 층에서 반복 측정해 소비 지점 효과를 분리한다",
+    "경로·꼬리 형상형 팩터(D51_Ulcer_Index·R13_NCSKEW·D58_Vol_Asymmetry)만으로 선정 축을 구성 — 형상형 5종이 전부 B, 수준·적재형 3종이 전부 C 로 갈린 실측 위에서",
+    "유효 종목수(집중도)를 양 끝까지 스윕해 MDD 대역이 선정이 아니라 집중도에 반응하는지 확인한다"
+  ],
+  "live_trigger": {
+    "type": "regime",
+    "condition": "신규 B1 블록에서 블록 내 MDD 폭이 15%p 를 넘거나 블록 최고 Calmar 가 0.55 를 넘으면 재검토",
+    "monitored_source": "06_Registry/reinforce_ledger_l1.json · stage_artifacts/l_code/reinforcement/*_B1.json"
+  },
+  "revival_spec": [
+    {
+      "signal_id": "wall_clock_date",
+      "condition": "x >= as.Date('2027-03-19')",
+      "from_trigger": "expiry",
+      "status": "active"
+    },
+    {
+      "signal_id": "regime_category",
+      "condition": "x %in% c('CRISIS','CAUTION')",
+      "from_trigger": "regime",
+      "status": "active"
+    }
+  ],
+  "constraint_firewall": {
+    "mode": "backstop_passed",
+    "checked_at": "2026-09-19"
+  },
+  "drafted_at": "2026-09-19T22:25:45+0900",
+  "drafted_by": "auto_distill"
 }

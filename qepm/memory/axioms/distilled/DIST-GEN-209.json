@@ -3,9 +3,9 @@
   "dist_id": "DIST-GEN-209",
   "cluster_key": "517952e72db9",
   "candidate_id": "CAND_reinforcement_517952e72db9",
-  "status": "pending_5axis",
-  "statement_refined": null,
-  "retry_condition": null,
+  "status": "proposed",
+  "statement_refined": "리스크 오버레이(B5)·결합(B4) 블록 요약 57건에서 블록 최고 t 가 직전 최고(대개 B1)를 넘은 경우는 소수이고 A등급은 0건이다. 가장 최근이자 가장 큰 블록(2026-09-19 · 14칸)이 기전을 특정했다: MDD 0.446~0.584(폭 0.138)와 PORT_t 1.333~3.069(폭 1.736)이 같은 방향으로 움직여 Calmar 는 0.350~0.429(폭 0.079)에 갇힌다. 오버레이가 한 일의 대부분은 노출 축소이고 그 축소가 CAGR 을 거의 비례로 가져간다. 계열 라벨(총노출 vs 종목별)은 결과를 가르지 못하고(총노출 0.377 > 종목별 0.362), 2층 스택 6칸은 전부 PORT_t 가 구성 층 최대보다 낮아 손실이 누적된다. 비례선을 위로 벗어난 유일한 칸(랭킹 축 회전)은 사후 적대검증에서 노출 짝지은 원형블록 순열 귀무를 못 넘었고(T3 p 0.0945 · T3b p 0.2786) lag-1 에서 오버레이 없는 바닥 아래로 내려갔다(Calmar 0.379 < 바닥 0.385). 즉 이 축에서 지금까지 관측된 Calmar 개선은 전부 노출 축소 또는 단일 에피소드 귀속으로 환원된다(T5 share_largest = 1). 본 군집은 DIST-GEN-207(supporting 57)과 한 레코드 차이의 같은 모집단이므로 통합 시 본 카드를 정본으로 둔다.",
+  "retry_condition": "2차 모멘트 밖을 표적하는 목적함수(higher_moment·PreferenceRobustDistortion)나 집중도 축이 Calmar 0.43 을 넘으면서 적대검증 T1/T3/T3b 를 함께 통과하면 비례선 판정이 갈린다.",
   "refined_at": null,
   "refined_by": null,
   "promoted_to_axiom": null,
@@ -169,5 +169,44 @@
     "oos_effect_vs_is": -0.363,
     "note": "L-code oos_retention 실값 57건 median (IS65/OOS35 활성SR retention) — oos_months 실값 무 → None 유지 — promote.R essence_score 경유 재확정"
   },
-  "cluster_members_count": 57
+  "cluster_members_count": 57,
+  "adversarial_verdict": {
+    "a_exaggeration": "블록 최고 Calmar 0.429 를 성과로 적지 않고, 그 칸이 적대검증 3건 중 3건 실패했다는 사실과 함께만 인용했다. 게이트(0.64)와 재현(lag-1·순열)을 진술 안에 넣어 낙관을 차단했다.",
+    "b_evidence": "14칸 측정표와 비례선은 L-RF-20260919_024247(l_code_RP_20260917_105807_22632_combo_rulefast_B5.json)에 실측으로 있고, 적대검증 수치는 06_Registry/reinforce_ledger_l1.json 의 attempts[].adversary(:37531~37653 · :39097 · :39350)에서 재도출된다. 전부 backtested 기록이고 T1 은 엔진 재실행판이다. proxy 혼입 없음.",
+    "c_ax000": "'오버레이 축은 죽었다'로 닫지 않는다. 설계 13/13 집행이라 미집행이 아니라는 점까지 적되, 2차 모멘트 밖 표적·집중도·개입 강도 통제·무오버레이 대조 4건을 미탐색으로 열어 두었다.",
+    "d_firewall": "총노출·집중도 조정은 전부 봉투-안 레버(overlay·비중)이며 25종·long-only·Σw=1·유니버스·15bps 어디에도 실패를 귀속하지 않고 완화를 제시하지 않는다. '이 봉투 안에서 이 경로는 비례선'이라는 envelope-상대 서술이다.",
+    "e_frontier": "미탐색 인접 4건 + live_trigger(적대검증 pass 감시) + expiry 명시."
+  },
+  "expiry": "2027-03-19",
+  "frontier": [
+    "2차 모멘트 밖을 표적하는 비중 2칸(higher_moment · PreferenceRobustDistortion) — 분산·꼬리 크기 축소가 상방을 같이 가져가는 관계를 깨는 유일한 형태",
+    "유효 종목수(집중도) 3칸 스윕(score_pure · softmax_tilt · entropy) — 비례선 이탈 칸이 '위험이 어느 종목에 실리는가'를 바꾼 칸이었다는 관측 위에서",
+    "B5 칸마다 평균 유효 종목수·turnover·하락월 한정 평균 노출을 부수 기록해 개입 강도를 통제한다(다섯 블록 연속 미기록)",
+    "같은 블록 안에 무오버레이 대조 칸을 배치한다 — 현재 0.385 대조는 세대 밖이라 '오버레이가 기저를 넘는가'가 블록 안에서 안 갈린다"
+  ],
+  "live_trigger": {
+    "type": "spread",
+    "condition": "어느 B5 칸이 Calmar 0.43 초과와 적대검증 verdict=pass 를 동시에 내면 즉시 재검토",
+    "monitored_source": "06_Registry/reinforce_ledger_l1.json::attempts[].adversary · stage_artifacts/l_code/reinforcement/*_B5.json"
+  },
+  "revival_spec": [
+    {
+      "signal_id": "wall_clock_date",
+      "condition": "x >= as.Date('2027-03-19')",
+      "from_trigger": "expiry",
+      "status": "active"
+    },
+    {
+      "signal_id": "value_quality_spread",
+      "condition": "x >= 0.90",
+      "from_trigger": "spread",
+      "status": "active"
+    }
+  ],
+  "constraint_firewall": {
+    "mode": "backstop_passed",
+    "checked_at": "2026-09-19"
+  },
+  "drafted_at": "2026-09-19T22:25:49+0900",
+  "drafted_by": "auto_distill"
 }

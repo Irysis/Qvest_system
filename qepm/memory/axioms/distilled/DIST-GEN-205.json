@@ -3,9 +3,9 @@
   "dist_id": "DIST-GEN-205",
   "cluster_key": "2265931d870e",
   "candidate_id": "CAND_reinforcement_2265931d870e",
-  "status": "pending_5axis",
-  "statement_refined": null,
-  "retry_condition": null,
+  "status": "proposed",
+  "statement_refined": "유니버스(B3) 축의 블록 최고 t 에는 관측 상한이 있다. 32개 B3 블록 요약에서 관측된 최고값은 2.630 이고, 직전 최고 t 가 2.5 이상이던 7개 블록에서는 전진이 0건이다. B3 가 직전 최고를 넘은 경우는 직전 최고가 낮았던 블록(0.04~2.28)에 몰려 있다 — 유니버스 교체는 약한 기저를 조금 올리는 축이지 강한 기저를 더 올리는 축이 아니다. 동시에 B3 블록의 MDD 대역 폭은 9.0~14.5%p 로 다른 축보다 넓은데 그 폭이 Calmar 로 전환되지 않는다(블록 최고 Calmar 0.14~0.50, A등급 0건). ★B3 는 격자 내부의 시험 축이며 승격 carry 는 유니버스를 고정 축(K200∪KQ150)으로 리셋하므로, 이 블록의 t 우위는 다음 세대로 승계되지 않는다 — B3 값은 그 블록 안에서만 읽는다.",
+  "retry_condition": "직전 최고 t 가 2.5 이상인 상태에서 B3 블록이 전진하면 상한 관측이 깨진다. 또는 B3 우위 칸의 효과를 고정 유니버스 안의 tilt 로 번역해 같은 t 우위가 재현되면, 이 축의 정보가 유니버스가 아니라 노출에 있었음이 확정된다.",
   "refined_at": null,
   "refined_by": null,
   "promoted_to_axiom": null,
@@ -118,5 +118,43 @@
     "oos_effect_vs_is": -0.337,
     "note": "L-code oos_retention 실값 32건 median (IS65/OOS35 활성SR retention) — oos_months 실값 무 → None 유지 — promote.R essence_score 경유 재확정"
   },
-  "cluster_members_count": 32
+  "cluster_members_count": 32,
+  "adversarial_verdict": {
+    "a_exaggeration": "B3 최고 2.630 을 성과로 쓰지 않고 상한으로만 인용했고, 승계되지 않는다는 제약을 같은 문장에 넣었다. A등급 0건·Calmar 상한 0.50 을 함께 적어 낙관을 차단했다.",
+    "b_evidence": "32건 블록 요약이 '직전 최고 X 대비 전진/열위' 문장을 실측으로 담고 있어 전진/열위 판정과 직전 최고 값이 카드 밖 재구성 없이 세어진다. MDD 대역 폭과 Calmar 상한도 같은 문장에서 나온다. 전부 backtested 기록이며 손계산 등급 없음.",
+    "c_ax000": "'유니버스 축은 죽었다'로 닫지 않는다 — 조건부 배치(직전 최고가 낮은 블록에만), 고정 유니버스 안 tilt 번역, 크기 노출 분리를 미탐색으로 열어 두었다.",
+    "d_firewall": "B3 는 격자 안 시험 축이고 배포 유니버스는 K200∪KQ150 고정이라는 점을 진술에 박았다. 실패를 유니버스 제약에 귀속하지 않고 '전종목 허용'류 완화도 제시하지 않는다 — 제안 레버는 고정 유니버스 안의 tilt·기록 추가다.",
+    "e_frontier": "미탐색 인접 3건 + live_trigger(상한 파괴 감시) + expiry 명시."
+  },
+  "expiry": "2027-03-19",
+  "frontier": [
+    "B3 우위 칸(소형 tercile·섹터중립)의 효과를 고정 유니버스 안에서 재현 가능한 tilt 로 번역해 측정한다 — 유니버스를 바꾸지 않고 같은 노출을 만드는 경로",
+    "B3 블록마다 실현 평균 시총·유효 종목수를 부수 기록해 t 우위가 크기 노출인지 신호인지 분리한다",
+    "직전 최고가 낮은 블록에만 B3 를 배치하는 조건부 블록 순서를 검토한다(현행 적응 순서는 Calmar 미달만 본다)"
+  ],
+  "live_trigger": {
+    "type": "spread",
+    "condition": "어느 B3 블록이 직전 최고 t ≥ 2.5 인 상태에서 전진하거나 블록 최고 t 가 2.630 을 넘으면 상한 관측이 깨진다",
+    "monitored_source": "stage_artifacts/l_code/reinforcement/*_B3.json"
+  },
+  "revival_spec": [
+    {
+      "signal_id": "wall_clock_date",
+      "condition": "x >= as.Date('2027-03-19')",
+      "from_trigger": "expiry",
+      "status": "active"
+    },
+    {
+      "signal_id": "value_quality_spread",
+      "condition": "x >= 0.90",
+      "from_trigger": "spread",
+      "status": "active"
+    }
+  ],
+  "constraint_firewall": {
+    "mode": "backstop_passed",
+    "checked_at": "2026-09-19"
+  },
+  "drafted_at": "2026-09-19T22:25:53+0900",
+  "drafted_by": "auto_distill"
 }

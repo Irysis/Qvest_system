@@ -1,10 +1,10 @@
 {
   "schema_version": "distilled_knowledge_v1",
-  "generated_at": "2026-09-19T13:03:06+00:00",
+  "generated_at": "2026-09-19T22:25:57+0900",
   "note": "Axiom 엔진 ②Distilled 계층 통합 인덱스. lifecycle: pending_5axis→[자동초안+적대검증]→proposed→[도훈 배치승인]→distilled→promoted|expired. INV-6(2026-07-04 재정의: 무인 활성화 금지): 주입/truths 소비는 status=distilled만 — proposed·pending_5axis 초안 텍스트 주입 금지(안전속성 보존).",
   "n_entries": 365,
   "n_distilled": 22,
-  "n_proposed": 24,
+  "n_proposed": 32,
   "entries": [
     {
       "dist_id": "DIST-AR-001",
@@ -38825,16 +38825,40 @@
       "type": "empirical",
       "polarity": "mixed",
       "metric_type": "backtested",
-      "status": "pending_5axis",
-      "statement_refined": null,
+      "status": "proposed",
+      "statement_refined": "B3(유니버스) 블록 요약 25건 — 이 군집의 관측 창(2026-08-30 ~ 09-12)에서 B3 블록의 칸 수는 3~5칸이고 A등급은 0건, 블록 최고 Calmar 는 0.137~0.499 다. 칸 수가 3~4칸인 블록과 5칸인 블록의 최고 t 분포가 겹친다 — 이 축에 칸을 더 쓰는 것이 블록 최고값을 끌어올린다는 근거가 이 창 안에 없다. 유니버스 축의 예산을 늘리는 대신 같은 예산을 다른 축(비중 소비 지점·오버레이 tilt)으로 돌리는 것이 이 관측과 정합한다. 이 군집은 DIST-GEN-165(28) ⊂ DIST-GEN-205(32) 의 최고령 부분집합이므로(25 ⊂ 28 ⊂ 32) 세 카드는 하나로 통합하고 GEN-205 를 정본으로 둔다.",
       "statement_draft": "[실증 혼재(방향불명) 규칙 초안] family=unknown, tags=reinforcement,rule_grid,b3, supporting=25건 L-code. (promote.R 5축 검증에서 범위·메커니즘·OOS 확정 필요)",
-      "retry_condition": null,
-      "adversarial_verdict": null,
-      "expiry": null,
-      "frontier": [],
-      "live_trigger": [],
-      "revival_spec": [],
-      "constraint_firewall": null,
+      "retry_condition": "B3 블록을 6칸 이상으로 늘린 회차가 나오면 칸 수와 블록 최고 t 의 관계를 직접 재측정한다. 칸 수가 최고값을 끌어올리면 이 예산 권고는 철회된다.",
+      "adversarial_verdict": {
+        "a_exaggeration": "Calmar 0.499 를 성과로 쓰지 않고 상한으로만 적었고, A등급 0건을 같은 문장에 넣었다. 예산 권고도 '이 창 안에 근거가 없다'는 범위 한정으로 적었다.",
+        "b_evidence": "25건 요약 각각에 칸 수(3~5)·블록 최고 t·최고 Calmar 가 실측으로 있어 분포 겹침이 카드 밖 재구성 없이 확인된다. 전부 backtested 기록. 다만 '칸 수가 최고값을 못 올린다'는 n=25 의 관측이므로 인과가 아니라 방향 가설로 적었다.",
+        "c_ax000": "3~4회 실패로 축을 닫지 않는다 — 6칸 이상 회차를 명시적 반증 조건으로 남겼고, 결론도 '축 폐기'가 아니라 '예산 재배분'이다.",
+        "d_firewall": "고정 제약·PIT 어디에도 실패를 귀속하지 않고 완화도 제시하지 않는다. 대안 예산처는 전부 봉투-안 레버(비중 소비 지점·오버레이 tilt)다.",
+        "e_frontier": "미탐색 인접 3건 + live_trigger + expiry 명시. 3중 포함 관계와 통합 권고를 진술에 명시해 R6_distinct 위험을 먼저 신고했다."
+      },
+      "expiry": "2027-03-19",
+      "frontier": [
+        "B3 블록을 6칸 이상으로 늘린 회차 1건을 확보해 칸 수와 블록 최고 t 의 관계를 직접 잰다",
+        "B3 칸에서 아낀 예산을 비중 집중도 스윕으로 돌린 대조 트리를 리플레이로 구성한다(백테스트 0회)",
+        "B3 칸의 처치가 실제로 전달됐는지 실현 유니버스 크기·평균 시총으로 재도출해, '칸을 썼는데 처치가 안 실린' 칸이 분포 겹침의 원인인지 가른다"
+      ],
+      "live_trigger": {
+        "type": "time",
+        "condition": "B3 블록이 6칸 이상으로 설계된 회차가 발생하면 칸 수-최고값 관계를 재측정",
+        "monitored_source": "06_Registry/reinforce_program.json · stage_artifacts/l_code/reinforcement/*_B3.json"
+      },
+      "revival_spec": [
+        {
+          "signal_id": "wall_clock_date",
+          "condition": "x >= as.Date('2027-03-19')",
+          "from_trigger": "expiry",
+          "status": "active"
+        }
+      ],
+      "constraint_firewall": {
+        "mode": "backstop_passed",
+        "checked_at": "2026-09-19"
+      },
       "supporting_l_codes": [
         "L-RF-20260830_184746",
         "L-RF-20260831_001629",
@@ -38868,7 +38892,7 @@
       "promoted_to_axiom": null,
       "created_at": "2026-09-12T09:50:21+00:00",
       "refined_at": null,
-      "drafted_at": null,
+      "drafted_at": "2026-09-19T22:25:56+0900",
       "approved_at": null,
       "source_file": "DIST-GEN-133.json"
     },
@@ -52087,16 +52111,46 @@
       "type": "empirical",
       "polarity": "mixed",
       "metric_type": "backtested",
-      "status": "pending_5axis",
-      "statement_refined": null,
+      "status": "proposed",
+      "statement_refined": "B3(유니버스) 블록 요약 28건에서 '표본외 유지율 최고'가 기록된 블록은 예외 없이 '전 칸 합격 구간 밖'으로 닫힌다(관측 최고 +0.33 · 최저 −1.00 · 문턱 0.70). 유니버스 교체는 표본외 유지율을 문턱 위로 올린 적이 한 번도 없다 — 같은 블록에서 t 와 MDD 는 움직이는데 OOS 축만 이 처치에 반응하지 않는다. Grade A 5조건 중 이 축이 닫혀 있으면 나머지 넷을 채워도 등급이 열리지 않으므로, B3 는 등급 레버가 아니라 진단 축으로 읽는 것이 맞다. 이 군집은 DIST-GEN-205(supporting 32)의 시점 부분집합이므로(28 ⊂ 32) 통합 시 GEN-205 를 정본으로 둔다.",
       "statement_draft": "[실증 혼재(방향불명) 규칙 초안] family=unknown, tags=reinforcement,rule_grid,b3, supporting=28건 L-code. (promote.R 5축 검증에서 범위·메커니즘·OOS 확정 필요)",
-      "retry_condition": null,
-      "adversarial_verdict": null,
-      "expiry": null,
-      "frontier": [],
-      "live_trigger": [],
-      "revival_spec": [],
-      "constraint_firewall": null,
+      "retry_condition": "어느 B3 블록이 표본외 유지율 최고를 0.70 이상으로 올리면 이 진술이 반증된다. 또는 OOS 분할 규약(anchored IS/OOS)이 바뀌면 같은 코퍼스를 재채점해 판정을 다시 낸다.",
+      "adversarial_verdict": {
+        "a_exaggeration": "+0.33 을 성과로 쓰지 않고 문턱 0.70 대비 위치로만 적었다. '등급 레버가 아니다'라는 결론은 게이트 조건을 직접 인용해 도출했다.",
+        "b_evidence": "28건 요약 중 OOS 문구가 기록된 블록마다 '표본외 유지율 최고 X — n칸 전부 합격 구간 밖' 문장이 실측으로 있고, 최고 +0.33(L-RF-20260902_145143)·최저 −1.00(L-RF-20260904_082522)이 카드 밖 재구성 없이 읽힌다. 문턱 0.70 은 constraint_defaults.json::tier_graduation 정본. 전부 backtested.",
+        "c_ax000": "OOS 축을 영구 폐쇄로 단정하지 않는다 — 반증 조건(0.70 돌파)과 규약 변경 시 재채점을 명시해 미해결로 열어 두었다.",
+        "d_firewall": "고정 제약·PIT 를 원인으로 귀속하지 않는다. OOS retention 은 측정 규율이지 배포 제약이 아니며 완화를 제시하지 않는다.",
+        "e_frontier": "미탐색 인접 3건 + live_trigger + expiry 명시. 포함 관계와 통합 권고를 진술에 명시했다."
+      },
+      "expiry": "2027-03-19",
+      "frontier": [
+        "OOS retention 이 실제로 반응하는 축이 무엇인지 코퍼스 전수에서 블록 타입별 OOS 최고값 분포로 먼저 좁힌다(측정 칸 소모 0)",
+        "B3 칸의 IS/OOS 분할 경계에서 유니버스 멤버십 변동량을 기록해 OOS 열화가 처치가 아니라 멤버십 이동의 부산물인지 가른다",
+        "OOS 축이 열리는 블록 타입(있다면)을 찾아 그 축을 먼저 배치하는 블록 순서를 검토한다"
+      ],
+      "live_trigger": {
+        "type": "spread",
+        "condition": "어느 B3 블록의 표본외 유지율 최고가 0.70 이상이 되면 반증 성립",
+        "monitored_source": "stage_artifacts/l_code/reinforcement/*_B3.json::oos_retention"
+      },
+      "revival_spec": [
+        {
+          "signal_id": "wall_clock_date",
+          "condition": "x >= as.Date('2027-03-19')",
+          "from_trigger": "expiry",
+          "status": "active"
+        },
+        {
+          "signal_id": "value_quality_spread",
+          "condition": "x >= 0.90",
+          "from_trigger": "spread",
+          "status": "active"
+        }
+      ],
+      "constraint_firewall": {
+        "mode": "backstop_passed",
+        "checked_at": "2026-09-19"
+      },
       "supporting_l_codes": [
         "L-RF-20260830_184746",
         "L-RF-20260831_001629",
@@ -52133,7 +52187,7 @@
       "promoted_to_axiom": null,
       "created_at": "2026-09-13T02:49:24+00:00",
       "refined_at": null,
-      "drafted_at": null,
+      "drafted_at": "2026-09-19T22:25:55+0900",
       "approved_at": null,
       "source_file": "DIST-GEN-165.json"
     },
@@ -62816,16 +62870,40 @@
       "type": "empirical",
       "polarity": "mixed",
       "metric_type": "backtested",
-      "status": "pending_5axis",
-      "statement_refined": null,
+      "status": "proposed",
+      "statement_refined": "B1 블록 요약 59건을 시간순으로 놓으면 블록 최고 PORT_t 는 2026-08-30 의 2.241 에서 2026-09-13 의 3.589 로 올랐지만, 같은 구간의 블록 최고 Calmar 는 0.32 → 0.48 에 머물렀고 A등급은 끝까지 0건이다. t 상승분은 새 팩터가 아니라 승격 사슬(carry)에서 온다 — 부모 구성 위에 다음 격자를 얹는 구조라 신호 축은 누적되는 반면, carry 객체에 overlay 줄이 없어(원장 carry.overlay = null) 위험 축은 매 세대 리셋된다. 따라서 세대 간 t 상승을 '위험 축도 함께 개선되고 있다'로 읽으면 안 된다. 이 군집은 DIST-GEN-211(supporting 62)의 시점 부분집합이므로(59 ⊂ 62) 두 카드는 하나로 통합하고 GEN-211 을 정본으로 두는 것이 맞다.",
       "statement_draft": "[실증 혼재(방향불명) 규칙 초안] family=unknown, tags=reinforcement,rule_grid,b1, supporting=59건 L-code. (promote.R 5축 검증에서 범위·메커니즘·OOS 확정 필요)",
-      "retry_condition": null,
-      "adversarial_verdict": null,
-      "expiry": null,
-      "frontier": [],
-      "live_trigger": [],
-      "revival_spec": [],
-      "constraint_firewall": null,
+      "retry_condition": "승격 carry 가 overlay/비중 축까지 승계하도록 바뀐 뒤 같은 세대 비교를 재실행해, 블록 최고 Calmar 가 세대에 따라 단조 상승하는지 본다.",
+      "adversarial_verdict": {
+        "a_exaggeration": "t 3.589 를 성과 주장으로 쓰지 않고 '위험 축은 따라오지 않았다'는 대비로만 인용했다. A등급 0건·Calmar 상한을 같은 문장에 넣어 낙관을 차단했다.",
+        "b_evidence": "59건 블록 요약의 최고 t·Calmar 가 각 L-RF 파일에 실측으로 있고, carry.overlay = null 은 06_Registry/reinforce_ledger_l1.json 의 carry 객체에서 직접 읽힌다(예: :40074~40092). 시계열 상관 자체는 아직 산출하지 않았으므로 '대부분이 carry 에서 왔다'는 기전 가설로 적었고 frontier 에 산출 항목을 남겼다.",
+        "c_ax000": "축을 닫지 않는다 — carry 에 overlay 를 넣는 경로와 무승격 대조 트리를 미탐색으로 열어 두었다.",
+        "d_firewall": "고정 제약·PIT 를 원인으로 귀속하지 않고 완화도 제시하지 않는다. 지적 대상은 승계 규칙(코드 안의 결정 규칙)이지 배포 제약이 아니다.",
+        "e_frontier": "미탐색 인접 3건 + live_trigger + expiry 명시. 포함 관계와 통합 권고를 진술에 명시해 R6_distinct 위험을 먼저 신고했다."
+      },
+      "expiry": "2027-03-19",
+      "frontier": [
+        "carry 목록에 overlay 축을 넣은 승격 1대를 측정해 위험 축 누적이 가능한지 확인한다",
+        "세대별 (블록 최고 t, 블록 최고 Calmar) 쌍의 상관을 직접 산출한다 — 현재 판정은 시계열 눈대중이다",
+        "승격 없이 같은 예산을 한 세대에 몰아 쓴 대조 트리를 리플레이로 재구성한다(백테스트 0회)"
+      ],
+      "live_trigger": {
+        "type": "time",
+        "condition": "다음 승격 사슬이 종료될 때 블록 최고 Calmar 가 0.55 이상으로 올라오면 재검토",
+        "monitored_source": "06_Registry/reinforce_ledger_l1.json::attempts[].essence"
+      },
+      "revival_spec": [
+        {
+          "signal_id": "wall_clock_date",
+          "condition": "x >= as.Date('2027-03-19')",
+          "from_trigger": "expiry",
+          "status": "active"
+        }
+      ],
+      "constraint_firewall": {
+        "mode": "backstop_passed",
+        "checked_at": "2026-09-19"
+      },
       "supporting_l_codes": [
         "L-RF-20260830_182834",
         "L-RF-20260830_182834_02",
@@ -62893,7 +62971,7 @@
       "promoted_to_axiom": null,
       "created_at": "2026-09-13T12:17:50+00:00",
       "refined_at": null,
-      "drafted_at": null,
+      "drafted_at": "2026-09-19T22:25:47+0900",
       "approved_at": null,
       "source_file": "DIST-GEN-189.json"
     },
@@ -70426,16 +70504,46 @@
       "type": "empirical",
       "polarity": "mixed",
       "metric_type": "backtested",
-      "status": "pending_5axis",
-      "statement_refined": null,
+      "status": "proposed",
+      "statement_refined": "유니버스(B3) 축의 블록 최고 t 에는 관측 상한이 있다. 32개 B3 블록 요약에서 관측된 최고값은 2.630 이고, 직전 최고 t 가 2.5 이상이던 7개 블록에서는 전진이 0건이다. B3 가 직전 최고를 넘은 경우는 직전 최고가 낮았던 블록(0.04~2.28)에 몰려 있다 — 유니버스 교체는 약한 기저를 조금 올리는 축이지 강한 기저를 더 올리는 축이 아니다. 동시에 B3 블록의 MDD 대역 폭은 9.0~14.5%p 로 다른 축보다 넓은데 그 폭이 Calmar 로 전환되지 않는다(블록 최고 Calmar 0.14~0.50, A등급 0건). ★B3 는 격자 내부의 시험 축이며 승격 carry 는 유니버스를 고정 축(K200∪KQ150)으로 리셋하므로, 이 블록의 t 우위는 다음 세대로 승계되지 않는다 — B3 값은 그 블록 안에서만 읽는다.",
       "statement_draft": "[실증 혼재(방향불명) 규칙 초안] family=unknown, tags=reinforcement,rule_grid,b3, supporting=32건 L-code. (promote.R 5축 검증에서 범위·메커니즘·OOS 확정 필요)",
-      "retry_condition": null,
-      "adversarial_verdict": null,
-      "expiry": null,
-      "frontier": [],
-      "live_trigger": [],
-      "revival_spec": [],
-      "constraint_firewall": null,
+      "retry_condition": "직전 최고 t 가 2.5 이상인 상태에서 B3 블록이 전진하면 상한 관측이 깨진다. 또는 B3 우위 칸의 효과를 고정 유니버스 안의 tilt 로 번역해 같은 t 우위가 재현되면, 이 축의 정보가 유니버스가 아니라 노출에 있었음이 확정된다.",
+      "adversarial_verdict": {
+        "a_exaggeration": "B3 최고 2.630 을 성과로 쓰지 않고 상한으로만 인용했고, 승계되지 않는다는 제약을 같은 문장에 넣었다. A등급 0건·Calmar 상한 0.50 을 함께 적어 낙관을 차단했다.",
+        "b_evidence": "32건 블록 요약이 '직전 최고 X 대비 전진/열위' 문장을 실측으로 담고 있어 전진/열위 판정과 직전 최고 값이 카드 밖 재구성 없이 세어진다. MDD 대역 폭과 Calmar 상한도 같은 문장에서 나온다. 전부 backtested 기록이며 손계산 등급 없음.",
+        "c_ax000": "'유니버스 축은 죽었다'로 닫지 않는다 — 조건부 배치(직전 최고가 낮은 블록에만), 고정 유니버스 안 tilt 번역, 크기 노출 분리를 미탐색으로 열어 두었다.",
+        "d_firewall": "B3 는 격자 안 시험 축이고 배포 유니버스는 K200∪KQ150 고정이라는 점을 진술에 박았다. 실패를 유니버스 제약에 귀속하지 않고 '전종목 허용'류 완화도 제시하지 않는다 — 제안 레버는 고정 유니버스 안의 tilt·기록 추가다.",
+        "e_frontier": "미탐색 인접 3건 + live_trigger(상한 파괴 감시) + expiry 명시."
+      },
+      "expiry": "2027-03-19",
+      "frontier": [
+        "B3 우위 칸(소형 tercile·섹터중립)의 효과를 고정 유니버스 안에서 재현 가능한 tilt 로 번역해 측정한다 — 유니버스를 바꾸지 않고 같은 노출을 만드는 경로",
+        "B3 블록마다 실현 평균 시총·유효 종목수를 부수 기록해 t 우위가 크기 노출인지 신호인지 분리한다",
+        "직전 최고가 낮은 블록에만 B3 를 배치하는 조건부 블록 순서를 검토한다(현행 적응 순서는 Calmar 미달만 본다)"
+      ],
+      "live_trigger": {
+        "type": "spread",
+        "condition": "어느 B3 블록이 직전 최고 t ≥ 2.5 인 상태에서 전진하거나 블록 최고 t 가 2.630 을 넘으면 상한 관측이 깨진다",
+        "monitored_source": "stage_artifacts/l_code/reinforcement/*_B3.json"
+      },
+      "revival_spec": [
+        {
+          "signal_id": "wall_clock_date",
+          "condition": "x >= as.Date('2027-03-19')",
+          "from_trigger": "expiry",
+          "status": "active"
+        },
+        {
+          "signal_id": "value_quality_spread",
+          "condition": "x >= 0.90",
+          "from_trigger": "spread",
+          "status": "active"
+        }
+      ],
+      "constraint_firewall": {
+        "mode": "backstop_passed",
+        "checked_at": "2026-09-19"
+      },
       "supporting_l_codes": [
         "L-RF-20260830_184746",
         "L-RF-20260831_001629",
@@ -70476,7 +70584,7 @@
       "promoted_to_axiom": null,
       "created_at": "2026-09-17T10:40:32+00:00",
       "refined_at": null,
-      "drafted_at": null,
+      "drafted_at": "2026-09-19T22:25:53+0900",
       "approved_at": null,
       "source_file": "DIST-GEN-205.json"
     },
@@ -71378,16 +71486,46 @@
       "type": "empirical",
       "polarity": "mixed",
       "metric_type": "backtested",
-      "status": "pending_5axis",
-      "statement_refined": null,
+      "status": "proposed",
+      "statement_refined": "결합(B4) 축은 프론티어를 밖으로 밀지 못하고 통째로 아래로 옮긴다. 57건의 B5/B4 블록 요약에서 B4 가 직전 최고를 넘은 경우는 드물고, 가장 잘 해부된 2026-09-13 B4 2칸이 교환율을 실측했다: MDD 는 B5_19 의 0.354 에서 B4_23 의 0.348 로 0.006 내려갔을 뿐인데 같은 구간에서 CAGR 은 0.216→0.151, PORT_t 는 2.334→0.841 로 내려갔다. 위험 처치는 MDD 에서 포화하고 CAGR·PORT_t 비용만 누적된다 — 결합 최고 Calmar 0.482 가 부모 두 칸(B1_3 0.504 · B5_19 0.609) 어느 쪽에도 미달한 이유가 이것이다. 따라서 '결합이 Calmar 를 올리는 축'이라는 기대는 반증되며, 결합 칸을 다음 세대의 기저(carry)로 삼을 근거도 서지 않는다. 다만 두 칸의 처치 문자열이 동일하게 잘려 있어 어느 LOO 항이 빠진 칸인지는 미확정이고, 그 확정은 원장 attempt 의 arm id 를 읽으면 측정 칸 소모 없이 된다. 본 군집은 DIST-GEN-209(supporting 57)와 한 레코드 차이의 같은 모집단이므로 통합 시 GEN-209 를 정본으로 두고 본 카드의 B4 교환율 실측만 흡수한다.",
       "statement_draft": "[실증 혼재(방향불명) 규칙 초안] family=overlay_regime, tags=reinforcement,rule_grid,b5, supporting=57건 L-code. (promote.R 5축 검증에서 범위·메커니즘·OOS 확정 필요)",
-      "retry_condition": null,
-      "adversarial_verdict": null,
-      "expiry": null,
-      "frontier": [],
-      "live_trigger": [],
-      "revival_spec": [],
-      "constraint_firewall": null,
+      "retry_condition": "결합 부분집합(arm id)이 확정된 뒤 같은 LOO 대조쌍을 재구성해, PORT_t 손실이 결합 자체에서 왔는지 순손실 축의 이월에서 왔는지 가른다.",
+      "adversarial_verdict": {
+        "a_exaggeration": "Calmar 0.482 를 성과로 쓰지 않고 부모 두 칸 미달이라는 비교 안에서만 인용했다. 게이트 0.64 대비 위치와 미확정 항(arm id)을 진술에 남겨 낙관을 차단했다.",
+        "b_evidence": "교환율 수치는 L-RF-20260913_221408(l_code_..._promo3_B4.json) 의 mechanism 절에 실측으로 있고, 부모 두 칸(B1_3 0.504 · B5_19 0.609)은 같은 계보의 L-RF-20260913_214207·212800 에서 재도출된다. 전부 backtested 기록. '결합이 PORT_t 를 1.5 깎았다'는 해석은 두 칸이 LOO 대조쌍일 때만 성립하므로 진술에서 미확정으로 표시했다.",
+        "c_ax000": "2칸 관측으로 축을 닫지 않는다 — arm id 확정과 단일 arm 강도 스윕을 미탐색으로 열어 두고, 결합 축의 사망 선고 대신 '기저로 삼을 근거가 서지 않는다'는 범위 한정 서술로 적었다.",
+        "d_firewall": "고정 제약·PIT 어디에도 실패를 귀속하지 않고 완화를 제시하지 않는다. 제안 레버는 봉투-안(단일 overlay arm 강도 · LOO 부분집합 확정)이다.",
+        "e_frontier": "미탐색 인접 3건 + live_trigger + expiry 명시. 포함/중복 관계와 통합 권고를 진술에 명시했다."
+      },
+      "expiry": "2027-03-19",
+      "frontier": [
+        "원장 attempt 행에서 B4 두 칸의 arm id 와 결합 부분집합(LOO 제외항)을 읽어 셀↔부분집합 매핑을 확정한다(측정 칸 소모 0)",
+        "승격·이월 기저를 결합 칸이 아니라 단일 최고 overlay 칸으로 고정하고 그 arm 의 개입 강도 g 를 0.3/0.5/0.7 로 스윕해 MDD 감소량과 PORT_t 파괴량을 분리한다",
+        "MDD 하한이 처치 포화인지 특정 구간 낙폭인지 가른다 — 전표본 MDD 대신 롤링 36M Calmar 와 2008~2012 구간 기여를 분해해 기록한다"
+      ],
+      "live_trigger": {
+        "type": "spread",
+        "condition": "어느 B4 결합 칸이 부모 최고 Calmar 와 부모 최고 PORT_t 를 동시에 넘으면 반증 성립",
+        "monitored_source": "stage_artifacts/l_code/reinforcement/*_B4.json · 06_Registry/reinforce_ledger_l1.json::attempts[].essence"
+      },
+      "revival_spec": [
+        {
+          "signal_id": "wall_clock_date",
+          "condition": "x >= as.Date('2027-03-19')",
+          "from_trigger": "expiry",
+          "status": "active"
+        },
+        {
+          "signal_id": "value_quality_spread",
+          "condition": "x >= 0.90",
+          "from_trigger": "spread",
+          "status": "active"
+        }
+      ],
+      "constraint_firewall": {
+        "mode": "backstop_passed",
+        "checked_at": "2026-09-19"
+      },
       "supporting_l_codes": [
         "L-RF-20260830_195606",
         "L-RF-20260830_203345",
@@ -71453,7 +71591,7 @@
       "promoted_to_axiom": null,
       "created_at": "2026-09-17T10:56:38+00:00",
       "refined_at": null,
-      "drafted_at": null,
+      "drafted_at": "2026-09-19T22:25:51+0900",
       "approved_at": null,
       "source_file": "DIST-GEN-207.json"
     },
@@ -72364,16 +72502,47 @@
       "type": "empirical",
       "polarity": "mixed",
       "metric_type": "backtested",
-      "status": "pending_5axis",
-      "statement_refined": null,
+      "status": "proposed",
+      "statement_refined": "리스크 오버레이(B5)·결합(B4) 블록 요약 57건에서 블록 최고 t 가 직전 최고(대개 B1)를 넘은 경우는 소수이고 A등급은 0건이다. 가장 최근이자 가장 큰 블록(2026-09-19 · 14칸)이 기전을 특정했다: MDD 0.446~0.584(폭 0.138)와 PORT_t 1.333~3.069(폭 1.736)이 같은 방향으로 움직여 Calmar 는 0.350~0.429(폭 0.079)에 갇힌다. 오버레이가 한 일의 대부분은 노출 축소이고 그 축소가 CAGR 을 거의 비례로 가져간다. 계열 라벨(총노출 vs 종목별)은 결과를 가르지 못하고(총노출 0.377 > 종목별 0.362), 2층 스택 6칸은 전부 PORT_t 가 구성 층 최대보다 낮아 손실이 누적된다. 비례선을 위로 벗어난 유일한 칸(랭킹 축 회전)은 사후 적대검증에서 노출 짝지은 원형블록 순열 귀무를 못 넘었고(T3 p 0.0945 · T3b p 0.2786) lag-1 에서 오버레이 없는 바닥 아래로 내려갔다(Calmar 0.379 < 바닥 0.385). 즉 이 축에서 지금까지 관측된 Calmar 개선은 전부 노출 축소 또는 단일 에피소드 귀속으로 환원된다(T5 share_largest = 1). 본 군집은 DIST-GEN-207(supporting 57)과 한 레코드 차이의 같은 모집단이므로 통합 시 본 카드를 정본으로 둔다.",
       "statement_draft": "[실증 혼재(방향불명) 규칙 초안] family=overlay_regime, tags=reinforcement,rule_grid,b5, supporting=57건 L-code. (promote.R 5축 검증에서 범위·메커니즘·OOS 확정 필요)",
-      "retry_condition": null,
-      "adversarial_verdict": null,
-      "expiry": null,
-      "frontier": [],
-      "live_trigger": [],
-      "revival_spec": [],
-      "constraint_firewall": null,
+      "retry_condition": "2차 모멘트 밖을 표적하는 목적함수(higher_moment·PreferenceRobustDistortion)나 집중도 축이 Calmar 0.43 을 넘으면서 적대검증 T1/T3/T3b 를 함께 통과하면 비례선 판정이 갈린다.",
+      "adversarial_verdict": {
+        "a_exaggeration": "블록 최고 Calmar 0.429 를 성과로 적지 않고, 그 칸이 적대검증 3건 중 3건 실패했다는 사실과 함께만 인용했다. 게이트(0.64)와 재현(lag-1·순열)을 진술 안에 넣어 낙관을 차단했다.",
+        "b_evidence": "14칸 측정표와 비례선은 L-RF-20260919_024247(l_code_RP_20260917_105807_22632_combo_rulefast_B5.json)에 실측으로 있고, 적대검증 수치는 06_Registry/reinforce_ledger_l1.json 의 attempts[].adversary(:37531~37653 · :39097 · :39350)에서 재도출된다. 전부 backtested 기록이고 T1 은 엔진 재실행판이다. proxy 혼입 없음.",
+        "c_ax000": "'오버레이 축은 죽었다'로 닫지 않는다. 설계 13/13 집행이라 미집행이 아니라는 점까지 적되, 2차 모멘트 밖 표적·집중도·개입 강도 통제·무오버레이 대조 4건을 미탐색으로 열어 두었다.",
+        "d_firewall": "총노출·집중도 조정은 전부 봉투-안 레버(overlay·비중)이며 25종·long-only·Σw=1·유니버스·15bps 어디에도 실패를 귀속하지 않고 완화를 제시하지 않는다. '이 봉투 안에서 이 경로는 비례선'이라는 envelope-상대 서술이다.",
+        "e_frontier": "미탐색 인접 4건 + live_trigger(적대검증 pass 감시) + expiry 명시."
+      },
+      "expiry": "2027-03-19",
+      "frontier": [
+        "2차 모멘트 밖을 표적하는 비중 2칸(higher_moment · PreferenceRobustDistortion) — 분산·꼬리 크기 축소가 상방을 같이 가져가는 관계를 깨는 유일한 형태",
+        "유효 종목수(집중도) 3칸 스윕(score_pure · softmax_tilt · entropy) — 비례선 이탈 칸이 '위험이 어느 종목에 실리는가'를 바꾼 칸이었다는 관측 위에서",
+        "B5 칸마다 평균 유효 종목수·turnover·하락월 한정 평균 노출을 부수 기록해 개입 강도를 통제한다(다섯 블록 연속 미기록)",
+        "같은 블록 안에 무오버레이 대조 칸을 배치한다 — 현재 0.385 대조는 세대 밖이라 '오버레이가 기저를 넘는가'가 블록 안에서 안 갈린다"
+      ],
+      "live_trigger": {
+        "type": "spread",
+        "condition": "어느 B5 칸이 Calmar 0.43 초과와 적대검증 verdict=pass 를 동시에 내면 즉시 재검토",
+        "monitored_source": "06_Registry/reinforce_ledger_l1.json::attempts[].adversary · stage_artifacts/l_code/reinforcement/*_B5.json"
+      },
+      "revival_spec": [
+        {
+          "signal_id": "wall_clock_date",
+          "condition": "x >= as.Date('2027-03-19')",
+          "from_trigger": "expiry",
+          "status": "active"
+        },
+        {
+          "signal_id": "value_quality_spread",
+          "condition": "x >= 0.90",
+          "from_trigger": "spread",
+          "status": "active"
+        }
+      ],
+      "constraint_firewall": {
+        "mode": "backstop_passed",
+        "checked_at": "2026-09-19"
+      },
       "supporting_l_codes": [
         "L-RF-20260830_195606",
         "L-RF-20260830_203345",
@@ -72439,7 +72608,7 @@
       "promoted_to_axiom": null,
       "created_at": "2026-09-18T17:46:38+00:00",
       "refined_at": null,
-      "drafted_at": null,
+      "drafted_at": "2026-09-19T22:25:49+0900",
       "approved_at": null,
       "source_file": "DIST-GEN-209.json"
     },
@@ -72450,16 +72619,46 @@
       "type": "methodological",
       "polarity": "mixed",
       "metric_type": "backtested",
-      "status": "pending_5axis",
-      "statement_refined": null,
+      "status": "proposed",
+      "statement_refined": "충실구현·강화 칸 L-code 881건이 찍는 성과 문장 '논문기준 SR a vs 15bps SR b' 는 비용 축의 두 판이 아니다. paper_basis 는 월간 관측(n≈260)에서, 등급판 SR 은 일간 관측(n≈5,300)에서 계산되므로 한 문장 안에서 비용 축과 관측 빈도 축이 함께 바뀐다. 그래서 코퍼스 전반에 b>a 인 행이 다수인데(같은 포트폴리오에 비용을 더해 SR 이 오를 수는 없다), 이 쌍의 대소를 '비용을 넣었더니 좋아졌다'로 읽으면 안 된다. 인용 규칙: 등급·성과는 authoritative_remeasure.json 의 essence_grade·essence.net_sharpe(15bps 일간판)만 쓰고 paper_basis 는 논문 대조용 병기로만 쓴다. 부수로, 이 군집의 family=overlay_regime 라벨은 자동 파생이며 실제 코퍼스 범위(충실구현 + 격자 전 블록)와 어긋난다 — 라벨을 범위 근거로 인용하지 않는다.",
       "statement_draft": "[방법론 혼재(방향불명) 규칙 초안] family=overlay_regime, tags=P,A,E, supporting=881건 L-code. (promote.R 5축 검증에서 범위·메커니즘·OOS 확정 필요)",
-      "retry_condition": null,
-      "adversarial_verdict": null,
-      "expiry": null,
-      "frontier": [],
-      "live_trigger": [],
-      "revival_spec": [],
-      "constraint_firewall": null,
+      "retry_condition": "러너가 paper_basis 와 등급판을 같은 관측 빈도로 병기하거나 L-code 성과 문장에 관측수 n 을 함께 찍도록 바뀌면, 같은 코퍼스에서 b−a 의 부호 분포를 재측정해 이 경고의 해제 여부를 판정한다.",
+      "adversarial_verdict": {
+        "a_exaggeration": "성과 주장을 하지 않는다 — 측정 표기 규약 진술이고 인용 가능한 값을 좁히는(보수적) 방향이다. 게이트·재현·deflate 를 우회하는 낙관 서술 없음.",
+        "b_evidence": "supporting 881건의 제시 행 다수에서 b ≥ a 가 직접 읽힌다(예: RF_AUTO_B4_16 논문기준 0.27 vs 15bps 0.45 · RF_PAR_B1_5_Amihud 0.54 vs 0.69). 빈도 축 기전은 2026-W37 digest §4 가 두 런(20260913_033408_14596 · 20260912_234505_2216)의 paper_basis.n_months 260 대 06_metrics.csv 일간 5,331 관측으로 실측했다. 원 L-code 의 metric_type=backtested 는 그 런의 성과 라벨이고, 본 진술 자체는 측정 표기 규약이므로 proxy 를 backtested 로 승격시키지 않는다.",
+        "c_ax000": "3~4회 실패로 한계를 단정하지 않는다. 표기 결함 진술이며 수리 경로(n 병기 · 동일 빈도 병기)를 frontier 에 남겨 미해결로 열어 둔다.",
+        "d_firewall": "고정 제약(25종·유동성 2e8·long-only·Σw=1·K200∪KQ150·15bps)이나 PIT 를 실패 원인으로 귀속하지 않고 완화도 제시하지 않는다. 15bps 는 고정 축으로 전제될 뿐이며, 오히려 15bps 등급판만 인용하라는 더 보수적인 방향이다.",
+        "e_frontier": "미탐색 인접 3건 + live_trigger(러너 포맷 변경 감시) + expiry 명시."
+      },
+      "expiry": "2027-03-19",
+      "frontier": [
+        "L-code 성과 문장에 관측수 n 을 함께 찍어 두 판의 빈도 차이를 표면화한다(러너 1줄 · 측정 칸 소모 0)",
+        "같은 런에서 월간판 SR 과 일간판 SR 을 동시 산출해 빈도 효과의 크기를 직접 잰다",
+        "코퍼스 881건에서 b−a 를 회전율·비용률에 회귀해 빈도 효과와 비용 효과를 분리한다"
+      ],
+      "live_trigger": {
+        "type": "data",
+        "condition": "L-RP 성과 문장 포맷이 바뀌거나 authoritative_remeasure.json 의 paper_basis 에 관측 빈도 필드가 추가되면 재측정",
+        "monitored_source": "02_Infrastructure/alpha_search/run_paper_replication.R · stage_artifacts/l_code/paper_replication/*.json"
+      },
+      "revival_spec": [
+        {
+          "signal_id": "wall_clock_date",
+          "condition": "x >= as.Date('2027-03-19')",
+          "from_trigger": "expiry",
+          "status": "active"
+        },
+        {
+          "signal_id": "infrastructure_present",
+          "condition": "x == TRUE",
+          "from_trigger": "data",
+          "status": "pending"
+        }
+      ],
+      "constraint_firewall": {
+        "mode": "backstop_passed",
+        "checked_at": "2026-09-19"
+      },
       "supporting_l_codes": [
         "L-RP-20260829_122633",
         "L-RP-20260830_085437",
@@ -73349,7 +73548,7 @@
       "promoted_to_axiom": null,
       "created_at": "2026-09-18T18:15:20+00:00",
       "refined_at": null,
-      "drafted_at": null,
+      "drafted_at": "2026-09-19T22:25:42+0900",
       "approved_at": null,
       "source_file": "DIST-GEN-210.json"
     },
@@ -73360,16 +73559,46 @@
       "type": "empirical",
       "polarity": "mixed",
       "metric_type": "backtested",
-      "status": "pending_5axis",
-      "statement_refined": null,
+      "status": "proposed",
+      "statement_refined": "B1(멀티팩터 선정) 블록 요약 62건 전수에서 essence Grade A 는 0건이다. 블록 최고 PORT_t 는 0.04~3.59 로 크게 갈리는데 같은 블록 안의 MDD 대역 폭은 2.9~13.7%p 에 갇히고, 블록 최고 Calmar 는 0.14~0.50 구간을 한 번도 벗어나지 않았다. 그 결과 B1 에서 Calmar 는 사실상 CAGR 의 단조변환이 된다 — 팩터 교체는 신호의 t 를 사는 축이지 낙폭을 사는 축이 아니다. 2026-09-19 의 10칸 블록이 통제까지 붙였다: 수익 축 단독(C03_EPS_Chg_3m+M01_Mom_12_1)이 PORT_t 3.592 로 최고이면서 MDD 0.552 로 최저 권역이고, 거기에 하방베타(D04_Downside_Beta)를 더한 칸은 PORT_t 3.072 · MDD 0.570 · Calmar 0.419 로 네 지표가 동시에 악화됐다. 이 판정은 25종 long-only 동일가중 봉투 안에서 '선정 축'에 국한되며, 같은 변수를 tilt·비중 소비 지점에서 쓰는 경로는 이 군집이 잰 바 없다.",
       "statement_draft": "[실증 혼재(방향불명) 규칙 초안] family=unknown, tags=reinforcement,rule_grid,b1, supporting=62건 L-code. (promote.R 5축 검증에서 범위·메커니즘·OOS 확정 필요)",
-      "retry_condition": null,
-      "adversarial_verdict": null,
-      "expiry": null,
-      "frontier": [],
-      "live_trigger": [],
-      "revival_spec": [],
-      "constraint_firewall": null,
+      "retry_condition": "같은 위험 변수(D04_Downside_Beta·D01_IdioVol)를 선정이 아닌 비중·tilt 소비 지점에 배치한 블록이 MDD 대역 폭을 15%p 넘게 벌리거나 블록 최고 Calmar 를 0.55 이상으로 올리면, 이 진술의 범위(선정 축 한정)가 확정되거나 반증된다.",
+      "adversarial_verdict": {
+        "a_exaggeration": "A등급 0건·Calmar 상한 0.50 을 먼저 적어 낙관을 차단했고, 최고 t 3.592 도 '등급이 열렸다'가 아니라 '낙폭 축은 안 움직였다'는 문맥에서만 인용했다. 재현·OOS 미해결은 진술 안에 남아 있다.",
+        "b_evidence": "supporting 62건의 블록 요약이 전부 '등급 A0'·'낙폭이 축을 바꿔도 X~Y% 대역에 갇힘' 문장을 실측으로 담고 있고, 통제 칸(B1_1 대 B1_10)의 네 지표는 원장 reinforce_ledger_l1.json 의 essence 블록과 L-RF-20260919_031143 기전에서 재도출된다. 전부 metric_type=backtested 기록이며 proxy 혼입 없음.",
+        "c_ax000": "'팩터 축은 죽었다'로 닫지 않는다 — 형상형/수준형 계열 분리, 소비 지점 이동, 집중도 축을 frontier 로 열어 두고 미해결을 명시했다.",
+        "d_firewall": "실패를 25종·long-only·동일가중에 귀속하지 않는다. 봉투를 명시한 것은 '이 판정이 성립하는 범위'를 적기 위함이고(envelope-상대 서술), 완화 레버(종목수 확대·숏 허용 등)는 제시하지 않는다. 제안된 레버는 전부 봉투-안(비중 소비 지점·overlay tilt·집중도)이다.",
+        "e_frontier": "미탐색 인접 3건 + live_trigger + expiry 명시."
+      },
+      "expiry": "2027-03-19",
+      "frontier": [
+        "같은 위험 변수(D04_Downside_Beta·D01_IdioVol)를 B2 비중 층과 B5 tilt 층에서 반복 측정해 소비 지점 효과를 분리한다",
+        "경로·꼬리 형상형 팩터(D51_Ulcer_Index·R13_NCSKEW·D58_Vol_Asymmetry)만으로 선정 축을 구성 — 형상형 5종이 전부 B, 수준·적재형 3종이 전부 C 로 갈린 실측 위에서",
+        "유효 종목수(집중도)를 양 끝까지 스윕해 MDD 대역이 선정이 아니라 집중도에 반응하는지 확인한다"
+      ],
+      "live_trigger": {
+        "type": "regime",
+        "condition": "신규 B1 블록에서 블록 내 MDD 폭이 15%p 를 넘거나 블록 최고 Calmar 가 0.55 를 넘으면 재검토",
+        "monitored_source": "06_Registry/reinforce_ledger_l1.json · stage_artifacts/l_code/reinforcement/*_B1.json"
+      },
+      "revival_spec": [
+        {
+          "signal_id": "wall_clock_date",
+          "condition": "x >= as.Date('2027-03-19')",
+          "from_trigger": "expiry",
+          "status": "active"
+        },
+        {
+          "signal_id": "regime_category",
+          "condition": "x %in% c('CRISIS','CAUTION')",
+          "from_trigger": "regime",
+          "status": "active"
+        }
+      ],
+      "constraint_firewall": {
+        "mode": "backstop_passed",
+        "checked_at": "2026-09-19"
+      },
       "supporting_l_codes": [
         "L-RF-20260830_182834",
         "L-RF-20260830_182834_02",
@@ -73440,7 +73669,7 @@
       "promoted_to_axiom": null,
       "created_at": "2026-09-18T18:15:20+00:00",
       "refined_at": null,
-      "drafted_at": null,
+      "drafted_at": "2026-09-19T22:25:45+0900",
       "approved_at": null,
       "source_file": "DIST-GEN-211.json"
     },
