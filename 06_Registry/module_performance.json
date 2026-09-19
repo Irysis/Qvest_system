@@ -1,26 +1,26 @@
 {
   "schema_version": "v3.1",
-  "generated": "2026-09-19",
+  "generated": "2026-09-20",
   "generated_by": "2계층 전략 로테이션 (build_module_performance.R — 계약 floor + v10 grade floor)",
   "regime_source": "unified_regime_signal_daily.parquet Category (t-1 lag PIT)",
   "regimes": ["RISK_ON", "NEUTRAL", "CAUTION", "CRISIS", "RISK_OFF"],
   "metric_type": "backtested_realized (sim_result NAV, 실측-only)",
   "grade_floor": "B",
   "n_floor_excluded": 20,
-  "n_defensive_admitted": 204,
+  "n_defensive_admitted": 213,
   "defensive_route": true,
   "admission_codes": {
     "contract_floor": 176,
-    "defensive_specialist": 204,
+    "defensive_specialist": 213,
     "dscore_absent": 9,
     "dscore_not_ok": 4,
-    "grade_floor": 90,
+    "grade_floor": 117,
     "not_defensive": 7
   },
   "admission_predicate": "02_Infrastructure/contracts/defensive_score.R::ds_pool_eligible (l2_pool_admission.R::l2_admit 경유)",
   "grade_axis": "essence_grade > meta.essence_grade > grade(발행 시점 폴백)",
   "note": "입력 2단 게이트(v10 2026-08-29 도훈): ①계약 floor = module_catalog fr_eligible=true(contract_pass+backtested+frozen+hash/build_version, legacy QEPM grade-A 이관 예외) ②grade floor = essence grade B 이상(QVEST_L2_GRADE_FLOOR, OFF=진단) ∥ 방어형 병렬 경로(QVEST_L2_DEFENSIVE_ROUTE). module_hash는 실제 md5 대조(불일치=skip+quarantine, CAP-P1-2). 배치 심사=RCMA. ★2026-09-07: 자격 술어를 계약(ds_pool_eligible)으로 단일화하고 등급 축을 essence 로 정정.",
-  "n_modules": 306,
+  "n_modules": 342,
   "modules": {
     "STR_944_oc_sue": {
       "source_strategy_id": "STR_944_oc_sue",
@@ -18379,6 +18379,2166 @@
           "ir": null,
           "mdd": 0.025,
           "mean_ann": 0.1804
+        }
+      }
+    },
+    "RP_20260919_022411_12752": {
+      "source_strategy_id": "RP_20260919_022411_12752",
+      "grade": "B",
+      "role": null,
+      "origin_mode": "replication",
+      "trust_status": "contract_fr_eligible",
+      "admission_route": "grade_floor",
+      "admission_code": "grade_floor",
+      "admission_reason": "essence 등급 B — 등급 floor(B) 통과",
+      "grade_emit": "B",
+      "grade_source": "entry",
+      "freq": "daily",
+      "sim_result_path": "04_Research/strategies/RP_20260919_022411_12752/sim_result.rds",
+      "full_sharpe": 1.031,
+      "full_ir": 0.568,
+      "n_days": 5336,
+      "date_range": ["2005-02-01", "2026-09-18"],
+      "per_regime": {
+        "RISK_ON": {
+          "n_days": 3796,
+          "n_months": 180.8,
+          "sharpe": 0.956,
+          "ir": 0.737,
+          "mdd": 0.52,
+          "mean_ann": 0.1556
+        },
+        "NEUTRAL": {
+          "n_days": 687,
+          "n_months": 32.7,
+          "sharpe": 1.617,
+          "ir": 0.559,
+          "mdd": 0.29,
+          "mean_ann": 0.3388
+        },
+        "CAUTION": {
+          "n_days": 400,
+          "n_months": 19,
+          "sharpe": 1.024,
+          "ir": 1.436,
+          "mdd": 0.17,
+          "mean_ann": 0.2722
+        },
+        "CRISIS": {
+          "n_days": 439,
+          "n_months": 20.9,
+          "sharpe": 1.195,
+          "ir": -0.201,
+          "mdd": 0.286,
+          "mean_ann": 0.4821
+        },
+        "RISK_OFF": {
+          "n_days": 14,
+          "n_months": 0.7,
+          "sharpe": null,
+          "ir": null,
+          "mdd": 0.048,
+          "mean_ann": 0.2195
+        }
+      }
+    },
+    "RP_20260919_022412_13444": {
+      "source_strategy_id": "RP_20260919_022412_13444",
+      "grade": "C",
+      "role": null,
+      "origin_mode": "replication",
+      "trust_status": "contract_fr_eligible",
+      "admission_route": "defensive_specialist",
+      "admission_code": "defensive_specialist",
+      "admission_reason": "등급 C 이나 방어형 자격 — 하락월 110개: 초과 +2.38%/월 (t 7.95 · 적중 83%) · 벤치-10% 이하 10개: 초과 +6.16%/월 · 상승월 초과 -0.99%/월",
+      "grade_emit": "C",
+      "grade_source": "entry",
+      "freq": "daily",
+      "sim_result_path": "04_Research/strategies/RP_20260919_022412_13444/sim_result.rds",
+      "full_sharpe": 1.035,
+      "full_ir": 0.356,
+      "n_days": 5336,
+      "date_range": ["2005-02-01", "2026-09-18"],
+      "per_regime": {
+        "RISK_ON": {
+          "n_days": 3796,
+          "n_months": 180.8,
+          "sharpe": 1.027,
+          "ir": 0.651,
+          "mdd": 0.43,
+          "mean_ann": 0.1393
+        },
+        "NEUTRAL": {
+          "n_days": 687,
+          "n_months": 32.7,
+          "sharpe": 1.568,
+          "ir": 0.124,
+          "mdd": 0.229,
+          "mean_ann": 0.2861
+        },
+        "CAUTION": {
+          "n_days": 400,
+          "n_months": 19,
+          "sharpe": 0.972,
+          "ir": 0.828,
+          "mdd": 0.136,
+          "mean_ann": 0.2036
+        },
+        "CRISIS": {
+          "n_days": 439,
+          "n_months": 20.9,
+          "sharpe": 1.073,
+          "ir": -0.481,
+          "mdd": 0.246,
+          "mean_ann": 0.3877
+        },
+        "RISK_OFF": {
+          "n_days": 14,
+          "n_months": 0.7,
+          "sharpe": null,
+          "ir": null,
+          "mdd": 0.031,
+          "mean_ann": 0.1984
+        }
+      }
+    },
+    "RP_20260919_022411_4236": {
+      "source_strategy_id": "RP_20260919_022411_4236",
+      "grade": "C",
+      "role": null,
+      "origin_mode": "replication",
+      "trust_status": "contract_fr_eligible",
+      "admission_route": "defensive_specialist",
+      "admission_code": "defensive_specialist",
+      "admission_reason": "등급 C 이나 방어형 자격 — 하락월 110개: 초과 +2.48%/월 (t 6.51 · 적중 77%) · 벤치-10% 이하 10개: 초과 +7.79%/월 · 상승월 초과 -1.13%/월",
+      "grade_emit": "C",
+      "grade_source": "entry",
+      "freq": "daily",
+      "sim_result_path": "04_Research/strategies/RP_20260919_022411_4236/sim_result.rds",
+      "full_sharpe": 1.07,
+      "full_ir": 0.277,
+      "n_days": 5336,
+      "date_range": ["2005-02-01", "2026-09-18"],
+      "per_regime": {
+        "RISK_ON": {
+          "n_days": 3796,
+          "n_months": 180.8,
+          "sharpe": 0.997,
+          "ir": 0.737,
+          "mdd": 0.493,
+          "mean_ann": 0.154
+        },
+        "NEUTRAL": {
+          "n_days": 687,
+          "n_months": 32.7,
+          "sharpe": 1.624,
+          "ir": 0.119,
+          "mdd": 0.212,
+          "mean_ann": 0.2864
+        },
+        "CAUTION": {
+          "n_days": 400,
+          "n_months": 19,
+          "sharpe": 0.748,
+          "ir": 0.347,
+          "mdd": 0.157,
+          "mean_ann": 0.1347
+        },
+        "CRISIS": {
+          "n_days": 439,
+          "n_months": 20.9,
+          "sharpe": 1.155,
+          "ir": -0.697,
+          "mdd": 0.152,
+          "mean_ann": 0.2619
+        },
+        "RISK_OFF": {
+          "n_days": 14,
+          "n_months": 0.7,
+          "sharpe": null,
+          "ir": null,
+          "mdd": 0.018,
+          "mean_ann": -0.0317
+        }
+      }
+    },
+    "RP_20260919_022412_31064": {
+      "source_strategy_id": "RP_20260919_022412_31064",
+      "grade": "B",
+      "role": null,
+      "origin_mode": "replication",
+      "trust_status": "contract_fr_eligible",
+      "admission_route": "grade_floor",
+      "admission_code": "grade_floor",
+      "admission_reason": "essence 등급 B — 등급 floor(B) 통과",
+      "grade_emit": "B",
+      "grade_source": "entry",
+      "freq": "daily",
+      "sim_result_path": "04_Research/strategies/RP_20260919_022412_31064/sim_result.rds",
+      "full_sharpe": 1.032,
+      "full_ir": 0.445,
+      "n_days": 5336,
+      "date_range": ["2005-02-01", "2026-09-18"],
+      "per_regime": {
+        "RISK_ON": {
+          "n_days": 3796,
+          "n_months": 180.8,
+          "sharpe": 1.006,
+          "ir": 0.746,
+          "mdd": 0.48,
+          "mean_ann": 0.155
+        },
+        "NEUTRAL": {
+          "n_days": 687,
+          "n_months": 32.7,
+          "sharpe": 1.631,
+          "ir": 0.326,
+          "mdd": 0.248,
+          "mean_ann": 0.3116
+        },
+        "CAUTION": {
+          "n_days": 400,
+          "n_months": 19,
+          "sharpe": 0.845,
+          "ir": 0.788,
+          "mdd": 0.161,
+          "mean_ann": 0.1922
+        },
+        "CRISIS": {
+          "n_days": 439,
+          "n_months": 20.9,
+          "sharpe": 1.078,
+          "ir": -0.449,
+          "mdd": 0.246,
+          "mean_ann": 0.3993
+        },
+        "RISK_OFF": {
+          "n_days": 14,
+          "n_months": 0.7,
+          "sharpe": null,
+          "ir": null,
+          "mdd": 0.031,
+          "mean_ann": 0.1609
+        }
+      }
+    },
+    "RP_20260919_025321_4076": {
+      "source_strategy_id": "RP_20260919_025321_4076",
+      "grade": "C",
+      "role": null,
+      "origin_mode": "replication",
+      "trust_status": "contract_fr_eligible",
+      "admission_route": "defensive_specialist",
+      "admission_code": "defensive_specialist",
+      "admission_reason": "등급 C 이나 방어형 자격 — 하락월 110개: 초과 +1.76%/월 (t 5.49 · 적중 68%) · 벤치-10% 이하 10개: 초과 +3.70%/월 · 상승월 초과 -0.51%/월",
+      "grade_emit": "C",
+      "grade_source": "entry",
+      "freq": "daily",
+      "sim_result_path": "04_Research/strategies/RP_20260919_025321_4076/sim_result.rds",
+      "full_sharpe": 0.913,
+      "full_ir": 0.392,
+      "n_days": 5336,
+      "date_range": ["2005-02-01", "2026-09-18"],
+      "per_regime": {
+        "RISK_ON": {
+          "n_days": 3796,
+          "n_months": 180.8,
+          "sharpe": 0.9,
+          "ir": 0.679,
+          "mdd": 0.471,
+          "mean_ann": 0.1371
+        },
+        "NEUTRAL": {
+          "n_days": 687,
+          "n_months": 32.7,
+          "sharpe": 1.381,
+          "ir": 0.192,
+          "mdd": 0.25,
+          "mean_ann": 0.2932
+        },
+        "CAUTION": {
+          "n_days": 400,
+          "n_months": 19,
+          "sharpe": 0.822,
+          "ir": 1.035,
+          "mdd": 0.17,
+          "mean_ann": 0.2158
+        },
+        "CRISIS": {
+          "n_days": 439,
+          "n_months": 20.9,
+          "sharpe": 1.042,
+          "ir": -0.339,
+          "mdd": 0.301,
+          "mean_ann": 0.4317
+        },
+        "RISK_OFF": {
+          "n_days": 14,
+          "n_months": 0.7,
+          "sharpe": null,
+          "ir": null,
+          "mdd": 0.059,
+          "mean_ann": -0.0748
+        }
+      }
+    },
+    "RP_20260919_025321_24392": {
+      "source_strategy_id": "RP_20260919_025321_24392",
+      "grade": "C",
+      "role": null,
+      "origin_mode": "replication",
+      "trust_status": "contract_fr_eligible",
+      "admission_route": "defensive_specialist",
+      "admission_code": "defensive_specialist",
+      "admission_reason": "등급 C 이나 방어형 자격 — 하락월 110개: 초과 +2.19%/월 (t 5.77 · 적중 73%) · 벤치-10% 이하 10개: 초과 +4.30%/월 · 상승월 초과 -0.80%/월",
+      "grade_emit": "C",
+      "grade_source": "entry",
+      "freq": "daily",
+      "sim_result_path": "04_Research/strategies/RP_20260919_025321_24392/sim_result.rds",
+      "full_sharpe": 0.926,
+      "full_ir": 0.353,
+      "n_days": 5336,
+      "date_range": ["2005-02-01", "2026-09-18"],
+      "per_regime": {
+        "RISK_ON": {
+          "n_days": 3796,
+          "n_months": 180.8,
+          "sharpe": 0.941,
+          "ir": 0.656,
+          "mdd": 0.534,
+          "mean_ann": 0.1473
+        },
+        "NEUTRAL": {
+          "n_days": 687,
+          "n_months": 32.7,
+          "sharpe": 1.381,
+          "ir": 0.158,
+          "mdd": 0.239,
+          "mean_ann": 0.2915
+        },
+        "CAUTION": {
+          "n_days": 400,
+          "n_months": 19,
+          "sharpe": 0.863,
+          "ir": 1.002,
+          "mdd": 0.189,
+          "mean_ann": 0.2191
+        },
+        "CRISIS": {
+          "n_days": 439,
+          "n_months": 20.9,
+          "sharpe": 0.893,
+          "ir": -0.532,
+          "mdd": 0.307,
+          "mean_ann": 0.3529
+        },
+        "RISK_OFF": {
+          "n_days": 14,
+          "n_months": 0.7,
+          "sharpe": null,
+          "ir": null,
+          "mdd": 0.054,
+          "mean_ann": -0.0599
+        }
+      }
+    },
+    "RP_20260919_025321_9432": {
+      "source_strategy_id": "RP_20260919_025321_9432",
+      "grade": "B",
+      "role": null,
+      "origin_mode": "replication",
+      "trust_status": "contract_fr_eligible",
+      "admission_route": "grade_floor",
+      "admission_code": "grade_floor",
+      "admission_reason": "essence 등급 B — 등급 floor(B) 통과",
+      "grade_emit": "B",
+      "grade_source": "entry",
+      "freq": "daily",
+      "sim_result_path": "04_Research/strategies/RP_20260919_025321_9432/sim_result.rds",
+      "full_sharpe": 0.941,
+      "full_ir": 0.53,
+      "n_days": 5336,
+      "date_range": ["2005-02-01", "2026-09-18"],
+      "per_regime": {
+        "RISK_ON": {
+          "n_days": 3796,
+          "n_months": 180.8,
+          "sharpe": 0.918,
+          "ir": 0.722,
+          "mdd": 0.558,
+          "mean_ann": 0.1559
+        },
+        "NEUTRAL": {
+          "n_days": 687,
+          "n_months": 32.7,
+          "sharpe": 1.26,
+          "ir": 0.16,
+          "mdd": 0.324,
+          "mean_ann": 0.2916
+        },
+        "CAUTION": {
+          "n_days": 400,
+          "n_months": 19,
+          "sharpe": 0.86,
+          "ir": 1.195,
+          "mdd": 0.208,
+          "mean_ann": 0.2564
+        },
+        "CRISIS": {
+          "n_days": 439,
+          "n_months": 20.9,
+          "sharpe": 1.209,
+          "ir": 0.006,
+          "mdd": 0.295,
+          "mean_ann": 0.5461
+        },
+        "RISK_OFF": {
+          "n_days": 14,
+          "n_months": 0.7,
+          "sharpe": null,
+          "ir": null,
+          "mdd": 0.064,
+          "mean_ann": 0.1011
+        }
+      }
+    },
+    "RP_20260919_025321_15152": {
+      "source_strategy_id": "RP_20260919_025321_15152",
+      "grade": "B",
+      "role": null,
+      "origin_mode": "replication",
+      "trust_status": "contract_fr_eligible",
+      "admission_route": "grade_floor",
+      "admission_code": "grade_floor",
+      "admission_reason": "essence 등급 B — 등급 floor(B) 통과",
+      "grade_emit": "B",
+      "grade_source": "entry",
+      "freq": "daily",
+      "sim_result_path": "04_Research/strategies/RP_20260919_025321_15152/sim_result.rds",
+      "full_sharpe": 1.044,
+      "full_ir": 0.787,
+      "n_days": 5336,
+      "date_range": ["2005-02-01", "2026-09-18"],
+      "per_regime": {
+        "RISK_ON": {
+          "n_days": 3796,
+          "n_months": 180.8,
+          "sharpe": 1.039,
+          "ir": 0.923,
+          "mdd": 0.505,
+          "mean_ann": 0.1926
+        },
+        "NEUTRAL": {
+          "n_days": 687,
+          "n_months": 32.7,
+          "sharpe": 1.553,
+          "ir": 0.826,
+          "mdd": 0.318,
+          "mean_ann": 0.381
+        },
+        "CAUTION": {
+          "n_days": 400,
+          "n_months": 19,
+          "sharpe": 0.875,
+          "ir": 1.347,
+          "mdd": 0.243,
+          "mean_ann": 0.2744
+        },
+        "CRISIS": {
+          "n_days": 439,
+          "n_months": 20.9,
+          "sharpe": 1.192,
+          "ir": 0.13,
+          "mdd": 0.298,
+          "mean_ann": 0.5825
+        },
+        "RISK_OFF": {
+          "n_days": 14,
+          "n_months": 0.7,
+          "sharpe": null,
+          "ir": null,
+          "mdd": 0.047,
+          "mean_ann": -0.001
+        }
+      }
+    },
+    "RP_20260919_025321_12924": {
+      "source_strategy_id": "RP_20260919_025321_12924",
+      "grade": "B",
+      "role": null,
+      "origin_mode": "replication",
+      "trust_status": "contract_fr_eligible",
+      "admission_route": "grade_floor",
+      "admission_code": "grade_floor",
+      "admission_reason": "essence 등급 B — 등급 floor(B) 통과",
+      "grade_emit": "B",
+      "grade_source": "entry",
+      "freq": "daily",
+      "sim_result_path": "04_Research/strategies/RP_20260919_025321_12924/sim_result.rds",
+      "full_sharpe": 0.967,
+      "full_ir": 0.591,
+      "n_days": 5336,
+      "date_range": ["2005-02-01", "2026-09-18"],
+      "per_regime": {
+        "RISK_ON": {
+          "n_days": 3796,
+          "n_months": 180.8,
+          "sharpe": 0.847,
+          "ir": 0.649,
+          "mdd": 0.579,
+          "mean_ann": 0.1514
+        },
+        "NEUTRAL": {
+          "n_days": 687,
+          "n_months": 32.7,
+          "sharpe": 1.498,
+          "ir": 0.658,
+          "mdd": 0.305,
+          "mean_ann": 0.361
+        },
+        "CAUTION": {
+          "n_days": 400,
+          "n_months": 19,
+          "sharpe": 1.036,
+          "ir": 1.565,
+          "mdd": 0.207,
+          "mean_ann": 0.3038
+        },
+        "CRISIS": {
+          "n_days": 439,
+          "n_months": 20.9,
+          "sharpe": 1.274,
+          "ir": 0.123,
+          "mdd": 0.358,
+          "mean_ann": 0.5848
+        },
+        "RISK_OFF": {
+          "n_days": 14,
+          "n_months": 0.7,
+          "sharpe": null,
+          "ir": null,
+          "mdd": 0.071,
+          "mean_ann": 0.192
+        }
+      }
+    },
+    "RP_20260919_030507_14132": {
+      "source_strategy_id": "RP_20260919_030507_14132",
+      "grade": "C",
+      "role": null,
+      "origin_mode": "replication",
+      "trust_status": "contract_fr_eligible",
+      "admission_route": "defensive_specialist",
+      "admission_code": "defensive_specialist",
+      "admission_reason": "등급 C 이나 방어형 자격 — 하락월 110개: 초과 +2.42%/월 (t 6.20 · 적중 77%) · 벤치-10% 이하 10개: 초과 +4.42%/월 · 상승월 초과 -0.94%/월",
+      "grade_emit": "C",
+      "grade_source": "entry",
+      "freq": "daily",
+      "sim_result_path": "04_Research/strategies/RP_20260919_030507_14132/sim_result.rds",
+      "full_sharpe": 0.948,
+      "full_ir": 0.351,
+      "n_days": 5336,
+      "date_range": ["2005-02-01", "2026-09-18"],
+      "per_regime": {
+        "RISK_ON": {
+          "n_days": 3796,
+          "n_months": 180.8,
+          "sharpe": 0.964,
+          "ir": 0.649,
+          "mdd": 0.582,
+          "mean_ann": 0.1493
+        },
+        "NEUTRAL": {
+          "n_days": 687,
+          "n_months": 32.7,
+          "sharpe": 1.538,
+          "ir": 0.35,
+          "mdd": 0.224,
+          "mean_ann": 0.3169
+        },
+        "CAUTION": {
+          "n_days": 400,
+          "n_months": 19,
+          "sharpe": 0.832,
+          "ir": 0.922,
+          "mdd": 0.159,
+          "mean_ann": 0.2111
+        },
+        "CRISIS": {
+          "n_days": 439,
+          "n_months": 20.9,
+          "sharpe": 0.861,
+          "ir": -0.564,
+          "mdd": 0.3,
+          "mean_ann": 0.3324
+        },
+        "RISK_OFF": {
+          "n_days": 14,
+          "n_months": 0.7,
+          "sharpe": null,
+          "ir": null,
+          "mdd": 0.048,
+          "mean_ann": -0.372
+        }
+      }
+    },
+    "RP_20260919_030507_33288": {
+      "source_strategy_id": "RP_20260919_030507_33288",
+      "grade": "B",
+      "role": null,
+      "origin_mode": "replication",
+      "trust_status": "contract_fr_eligible",
+      "admission_route": "grade_floor",
+      "admission_code": "grade_floor",
+      "admission_reason": "essence 등급 B — 등급 floor(B) 통과",
+      "grade_emit": "B",
+      "grade_source": "entry",
+      "freq": "daily",
+      "sim_result_path": "04_Research/strategies/RP_20260919_030507_33288/sim_result.rds",
+      "full_sharpe": 1.022,
+      "full_ir": 0.631,
+      "n_days": 5336,
+      "date_range": ["2005-02-01", "2026-09-18"],
+      "per_regime": {
+        "RISK_ON": {
+          "n_days": 3796,
+          "n_months": 180.8,
+          "sharpe": 1.088,
+          "ir": 0.945,
+          "mdd": 0.478,
+          "mean_ann": 0.1795
+        },
+        "NEUTRAL": {
+          "n_days": 687,
+          "n_months": 32.7,
+          "sharpe": 1.565,
+          "ir": 0.614,
+          "mdd": 0.297,
+          "mean_ann": 0.3458
+        },
+        "CAUTION": {
+          "n_days": 400,
+          "n_months": 19,
+          "sharpe": 0.792,
+          "ir": 1.06,
+          "mdd": 0.203,
+          "mean_ann": 0.2188
+        },
+        "CRISIS": {
+          "n_days": 439,
+          "n_months": 20.9,
+          "sharpe": 0.954,
+          "ir": -0.406,
+          "mdd": 0.3,
+          "mean_ann": 0.4212
+        },
+        "RISK_OFF": {
+          "n_days": 14,
+          "n_months": 0.7,
+          "sharpe": null,
+          "ir": null,
+          "mdd": 0.058,
+          "mean_ann": -0.0722
+        }
+      }
+    },
+    "RP_20260919_030507_30484": {
+      "source_strategy_id": "RP_20260919_030507_30484",
+      "grade": "B",
+      "role": null,
+      "origin_mode": "replication",
+      "trust_status": "contract_fr_eligible",
+      "admission_route": "grade_floor",
+      "admission_code": "grade_floor",
+      "admission_reason": "essence 등급 B — 등급 floor(B) 통과",
+      "grade_emit": "B",
+      "grade_source": "entry",
+      "freq": "daily",
+      "sim_result_path": "04_Research/strategies/RP_20260919_030507_30484/sim_result.rds",
+      "full_sharpe": 1.022,
+      "full_ir": 0.578,
+      "n_days": 5336,
+      "date_range": ["2005-02-01", "2026-09-18"],
+      "per_regime": {
+        "RISK_ON": {
+          "n_days": 3796,
+          "n_months": 180.8,
+          "sharpe": 1.08,
+          "ir": 0.913,
+          "mdd": 0.493,
+          "mean_ann": 0.173
+        },
+        "NEUTRAL": {
+          "n_days": 687,
+          "n_months": 32.7,
+          "sharpe": 1.578,
+          "ir": 0.545,
+          "mdd": 0.275,
+          "mean_ann": 0.3375
+        },
+        "CAUTION": {
+          "n_days": 400,
+          "n_months": 19,
+          "sharpe": 0.789,
+          "ir": 0.956,
+          "mdd": 0.186,
+          "mean_ann": 0.2077
+        },
+        "CRISIS": {
+          "n_days": 439,
+          "n_months": 20.9,
+          "sharpe": 0.974,
+          "ir": -0.397,
+          "mdd": 0.3,
+          "mean_ann": 0.4175
+        },
+        "RISK_OFF": {
+          "n_days": 14,
+          "n_months": 0.7,
+          "sharpe": null,
+          "ir": null,
+          "mdd": 0.055,
+          "mean_ann": -0.0903
+        }
+      }
+    },
+    "RP_20260919_030507_6028": {
+      "source_strategy_id": "RP_20260919_030507_6028",
+      "grade": "B",
+      "role": null,
+      "origin_mode": "replication",
+      "trust_status": "contract_fr_eligible",
+      "admission_route": "grade_floor",
+      "admission_code": "grade_floor",
+      "admission_reason": "essence 등급 B — 등급 floor(B) 통과",
+      "grade_emit": "B",
+      "grade_source": "entry",
+      "freq": "daily",
+      "sim_result_path": "04_Research/strategies/RP_20260919_030507_6028/sim_result.rds",
+      "full_sharpe": 0.978,
+      "full_ir": 0.582,
+      "n_days": 5336,
+      "date_range": ["2005-02-01", "2026-09-18"],
+      "per_regime": {
+        "RISK_ON": {
+          "n_days": 3796,
+          "n_months": 180.8,
+          "sharpe": 0.919,
+          "ir": 0.745,
+          "mdd": 0.451,
+          "mean_ann": 0.1503
+        },
+        "NEUTRAL": {
+          "n_days": 687,
+          "n_months": 32.7,
+          "sharpe": 1.684,
+          "ir": 0.928,
+          "mdd": 0.282,
+          "mean_ann": 0.3802
+        },
+        "CAUTION": {
+          "n_days": 400,
+          "n_months": 19,
+          "sharpe": 0.704,
+          "ir": 0.936,
+          "mdd": 0.233,
+          "mean_ann": 0.2038
+        },
+        "CRISIS": {
+          "n_days": 439,
+          "n_months": 20.9,
+          "sharpe": 1.204,
+          "ir": 0.036,
+          "mdd": 0.364,
+          "mean_ann": 0.5567
+        },
+        "RISK_OFF": {
+          "n_days": 14,
+          "n_months": 0.7,
+          "sharpe": null,
+          "ir": null,
+          "mdd": 0.067,
+          "mean_ann": 0.5372
+        }
+      }
+    },
+    "RP_20260919_030507_27236": {
+      "source_strategy_id": "RP_20260919_030507_27236",
+      "grade": "B",
+      "role": null,
+      "origin_mode": "replication",
+      "trust_status": "contract_fr_eligible",
+      "admission_route": "grade_floor",
+      "admission_code": "grade_floor",
+      "admission_reason": "essence 등급 B — 등급 floor(B) 통과",
+      "grade_emit": "B",
+      "grade_source": "entry",
+      "freq": "daily",
+      "sim_result_path": "04_Research/strategies/RP_20260919_030507_27236/sim_result.rds",
+      "full_sharpe": 1.088,
+      "full_ir": 0.68,
+      "n_days": 5336,
+      "date_range": ["2005-02-01", "2026-09-18"],
+      "per_regime": {
+        "RISK_ON": {
+          "n_days": 3796,
+          "n_months": 180.8,
+          "sharpe": 1.171,
+          "ir": 1.002,
+          "mdd": 0.459,
+          "mean_ann": 0.1975
+        },
+        "NEUTRAL": {
+          "n_days": 687,
+          "n_months": 32.7,
+          "sharpe": 1.541,
+          "ir": 0.552,
+          "mdd": 0.277,
+          "mean_ann": 0.3416
+        },
+        "CAUTION": {
+          "n_days": 400,
+          "n_months": 19,
+          "sharpe": 1.039,
+          "ir": 1.48,
+          "mdd": 0.181,
+          "mean_ann": 0.2924
+        },
+        "CRISIS": {
+          "n_days": 439,
+          "n_months": 20.9,
+          "sharpe": 0.914,
+          "ir": -0.477,
+          "mdd": 0.289,
+          "mean_ann": 0.3911
+        },
+        "RISK_OFF": {
+          "n_days": 14,
+          "n_months": 0.7,
+          "sharpe": null,
+          "ir": null,
+          "mdd": 0.051,
+          "mean_ann": -0.2773
+        }
+      }
+    },
+    "RP_20260919_223831_28272": {
+      "source_strategy_id": "RP_20260919_223831_28272",
+      "grade": "B",
+      "role": null,
+      "origin_mode": "replication",
+      "trust_status": "contract_fr_eligible",
+      "admission_route": "grade_floor",
+      "admission_code": "grade_floor",
+      "admission_reason": "essence 등급 B — 등급 floor(B) 통과",
+      "grade_emit": "B",
+      "grade_source": "entry",
+      "freq": "daily",
+      "sim_result_path": "04_Research/strategies/RP_20260919_223831_28272/sim_result.rds",
+      "full_sharpe": 0.946,
+      "full_ir": 0.644,
+      "n_days": 5336,
+      "date_range": ["2005-02-01", "2026-09-18"],
+      "per_regime": {
+        "RISK_ON": {
+          "n_days": 3796,
+          "n_months": 180.8,
+          "sharpe": 1.006,
+          "ir": 0.886,
+          "mdd": 0.416,
+          "mean_ann": 0.1859
+        },
+        "NEUTRAL": {
+          "n_days": 687,
+          "n_months": 32.7,
+          "sharpe": 1.298,
+          "ir": 0.288,
+          "mdd": 0.319,
+          "mean_ann": 0.3091
+        },
+        "CAUTION": {
+          "n_days": 400,
+          "n_months": 19,
+          "sharpe": 0.704,
+          "ir": 0.955,
+          "mdd": 0.285,
+          "mean_ann": 0.2163
+        },
+        "CRISIS": {
+          "n_days": 439,
+          "n_months": 20.9,
+          "sharpe": 1.066,
+          "ir": -0.03,
+          "mdd": 0.372,
+          "mean_ann": 0.5354
+        },
+        "RISK_OFF": {
+          "n_days": 14,
+          "n_months": 0.7,
+          "sharpe": null,
+          "ir": null,
+          "mdd": 0.05,
+          "mean_ann": -0.3954
+        }
+      }
+    },
+    "RP_20260919_223831_24644": {
+      "source_strategy_id": "RP_20260919_223831_24644",
+      "grade": "B",
+      "role": null,
+      "origin_mode": "replication",
+      "trust_status": "contract_fr_eligible",
+      "admission_route": "grade_floor",
+      "admission_code": "grade_floor",
+      "admission_reason": "essence 등급 B — 등급 floor(B) 통과",
+      "grade_emit": "B",
+      "grade_source": "entry",
+      "freq": "daily",
+      "sim_result_path": "04_Research/strategies/RP_20260919_223831_24644/sim_result.rds",
+      "full_sharpe": 1.044,
+      "full_ir": 0.723,
+      "n_days": 5336,
+      "date_range": ["2005-02-01", "2026-09-18"],
+      "per_regime": {
+        "RISK_ON": {
+          "n_days": 3796,
+          "n_months": 180.8,
+          "sharpe": 1.066,
+          "ir": 0.866,
+          "mdd": 0.439,
+          "mean_ann": 0.1836
+        },
+        "NEUTRAL": {
+          "n_days": 687,
+          "n_months": 32.7,
+          "sharpe": 1.572,
+          "ir": 0.616,
+          "mdd": 0.318,
+          "mean_ann": 0.3523
+        },
+        "CAUTION": {
+          "n_days": 400,
+          "n_months": 19,
+          "sharpe": 0.871,
+          "ir": 1.317,
+          "mdd": 0.228,
+          "mean_ann": 0.2696
+        },
+        "CRISIS": {
+          "n_days": 439,
+          "n_months": 20.9,
+          "sharpe": 1.189,
+          "ir": 0.123,
+          "mdd": 0.298,
+          "mean_ann": 0.5805
+        },
+        "RISK_OFF": {
+          "n_days": 14,
+          "n_months": 0.7,
+          "sharpe": null,
+          "ir": null,
+          "mdd": 0.047,
+          "mean_ann": -0.001
+        }
+      }
+    },
+    "RP_20260919_223831_13688": {
+      "source_strategy_id": "RP_20260919_223831_13688",
+      "grade": "B",
+      "role": null,
+      "origin_mode": "replication",
+      "trust_status": "contract_fr_eligible",
+      "admission_route": "grade_floor",
+      "admission_code": "grade_floor",
+      "admission_reason": "essence 등급 B — 등급 floor(B) 통과",
+      "grade_emit": "B",
+      "grade_source": "entry",
+      "freq": "daily",
+      "sim_result_path": "04_Research/strategies/RP_20260919_223831_13688/sim_result.rds",
+      "full_sharpe": 1.149,
+      "full_ir": 0.59,
+      "n_days": 5336,
+      "date_range": ["2005-02-01", "2026-09-18"],
+      "per_regime": {
+        "RISK_ON": {
+          "n_days": 3796,
+          "n_months": 180.8,
+          "sharpe": 1.176,
+          "ir": 0.95,
+          "mdd": 0.409,
+          "mean_ann": 0.1866
+        },
+        "NEUTRAL": {
+          "n_days": 687,
+          "n_months": 32.7,
+          "sharpe": 1.549,
+          "ir": 0.234,
+          "mdd": 0.214,
+          "mean_ann": 0.3026
+        },
+        "CAUTION": {
+          "n_days": 400,
+          "n_months": 19,
+          "sharpe": 0.82,
+          "ir": 0.815,
+          "mdd": 0.234,
+          "mean_ann": 0.2071
+        },
+        "CRISIS": {
+          "n_days": 439,
+          "n_months": 20.9,
+          "sharpe": 1.315,
+          "ir": -0.131,
+          "mdd": 0.251,
+          "mean_ann": 0.4965
+        },
+        "RISK_OFF": {
+          "n_days": 14,
+          "n_months": 0.7,
+          "sharpe": null,
+          "ir": null,
+          "mdd": 0.027,
+          "mean_ann": 0.0263
+        }
+      }
+    },
+    "RP_20260919_223831_14104": {
+      "source_strategy_id": "RP_20260919_223831_14104",
+      "grade": "B",
+      "role": null,
+      "origin_mode": "replication",
+      "trust_status": "contract_fr_eligible",
+      "admission_route": "grade_floor",
+      "admission_code": "grade_floor",
+      "admission_reason": "essence 등급 B — 등급 floor(B) 통과",
+      "grade_emit": "B",
+      "grade_source": "entry",
+      "freq": "daily",
+      "sim_result_path": "04_Research/strategies/RP_20260919_223831_14104/sim_result.rds",
+      "full_sharpe": 1.138,
+      "full_ir": 0.563,
+      "n_days": 5336,
+      "date_range": ["2005-02-01", "2026-09-18"],
+      "per_regime": {
+        "RISK_ON": {
+          "n_days": 3796,
+          "n_months": 180.8,
+          "sharpe": 1.169,
+          "ir": 0.931,
+          "mdd": 0.407,
+          "mean_ann": 0.184
+        },
+        "NEUTRAL": {
+          "n_days": 687,
+          "n_months": 32.7,
+          "sharpe": 1.538,
+          "ir": 0.203,
+          "mdd": 0.205,
+          "mean_ann": 0.2987
+        },
+        "CAUTION": {
+          "n_days": 400,
+          "n_months": 19,
+          "sharpe": 0.83,
+          "ir": 0.805,
+          "mdd": 0.235,
+          "mean_ann": 0.2078
+        },
+        "CRISIS": {
+          "n_days": 439,
+          "n_months": 20.9,
+          "sharpe": 1.273,
+          "ir": -0.18,
+          "mdd": 0.251,
+          "mean_ann": 0.478
+        },
+        "RISK_OFF": {
+          "n_days": 14,
+          "n_months": 0.7,
+          "sharpe": null,
+          "ir": null,
+          "mdd": 0.026,
+          "mean_ann": -0.0051
+        }
+      }
+    },
+    "RP_20260919_223831_9344": {
+      "source_strategy_id": "RP_20260919_223831_9344",
+      "grade": "B",
+      "role": null,
+      "origin_mode": "replication",
+      "trust_status": "contract_fr_eligible",
+      "admission_route": "grade_floor",
+      "admission_code": "grade_floor",
+      "admission_reason": "essence 등급 B — 등급 floor(B) 통과",
+      "grade_emit": "B",
+      "grade_source": "entry",
+      "freq": "daily",
+      "sim_result_path": "04_Research/strategies/RP_20260919_223831_9344/sim_result.rds",
+      "full_sharpe": 1.096,
+      "full_ir": 0.457,
+      "n_days": 5336,
+      "date_range": ["2005-02-01", "2026-09-18"],
+      "per_regime": {
+        "RISK_ON": {
+          "n_days": 3796,
+          "n_months": 180.8,
+          "sharpe": 1.111,
+          "ir": 0.939,
+          "mdd": 0.485,
+          "mean_ann": 0.1893
+        },
+        "NEUTRAL": {
+          "n_days": 687,
+          "n_months": 32.7,
+          "sharpe": 1.459,
+          "ir": 0.212,
+          "mdd": 0.295,
+          "mean_ann": 0.2986
+        },
+        "CAUTION": {
+          "n_days": 400,
+          "n_months": 19,
+          "sharpe": 0.627,
+          "ir": 0.581,
+          "mdd": 0.224,
+          "mean_ann": 0.1635
+        },
+        "CRISIS": {
+          "n_days": 439,
+          "n_months": 20.9,
+          "sharpe": 1.165,
+          "ir": -0.592,
+          "mdd": 0.156,
+          "mean_ann": 0.3053
+        },
+        "RISK_OFF": {
+          "n_days": 14,
+          "n_months": 0.7,
+          "sharpe": null,
+          "ir": null,
+          "mdd": 0.017,
+          "mean_ann": -0.0832
+        }
+      }
+    },
+    "RP_20260919_225155_25308": {
+      "source_strategy_id": "RP_20260919_225155_25308",
+      "grade": "B",
+      "role": null,
+      "origin_mode": "replication",
+      "trust_status": "contract_fr_eligible",
+      "admission_route": "grade_floor",
+      "admission_code": "grade_floor",
+      "admission_reason": "essence 등급 B — 등급 floor(B) 통과",
+      "grade_emit": "B",
+      "grade_source": "entry",
+      "freq": "daily",
+      "sim_result_path": "04_Research/strategies/RP_20260919_225155_25308/sim_result.rds",
+      "full_sharpe": 0.972,
+      "full_ir": 0.527,
+      "n_days": 5336,
+      "date_range": ["2005-02-01", "2026-09-18"],
+      "per_regime": {
+        "RISK_ON": {
+          "n_days": 3796,
+          "n_months": 180.8,
+          "sharpe": 1.048,
+          "ir": 0.917,
+          "mdd": 0.387,
+          "mean_ann": 0.1871
+        },
+        "NEUTRAL": {
+          "n_days": 687,
+          "n_months": 32.7,
+          "sharpe": 1.236,
+          "ir": 0.088,
+          "mdd": 0.309,
+          "mean_ann": 0.2821
+        },
+        "CAUTION": {
+          "n_days": 400,
+          "n_months": 19,
+          "sharpe": 0.581,
+          "ir": 0.63,
+          "mdd": 0.304,
+          "mean_ann": 0.1658
+        },
+        "CRISIS": {
+          "n_days": 439,
+          "n_months": 20.9,
+          "sharpe": 1.025,
+          "ir": -0.425,
+          "mdd": 0.37,
+          "mean_ann": 0.4058
+        },
+        "RISK_OFF": {
+          "n_days": 14,
+          "n_months": 0.7,
+          "sharpe": null,
+          "ir": null,
+          "mdd": 0.05,
+          "mean_ann": -0.284
+        }
+      }
+    },
+    "RP_20260919_225155_35504": {
+      "source_strategy_id": "RP_20260919_225155_35504",
+      "grade": "B",
+      "role": null,
+      "origin_mode": "replication",
+      "trust_status": "contract_fr_eligible",
+      "admission_route": "grade_floor",
+      "admission_code": "grade_floor",
+      "admission_reason": "essence 등급 B — 등급 floor(B) 통과",
+      "grade_emit": "B",
+      "grade_source": "entry",
+      "freq": "daily",
+      "sim_result_path": "04_Research/strategies/RP_20260919_225155_35504/sim_result.rds",
+      "full_sharpe": 1.051,
+      "full_ir": 0.691,
+      "n_days": 5336,
+      "date_range": ["2005-02-01", "2026-09-18"],
+      "per_regime": {
+        "RISK_ON": {
+          "n_days": 3796,
+          "n_months": 180.8,
+          "sharpe": 1.073,
+          "ir": 0.89,
+          "mdd": 0.456,
+          "mean_ann": 0.1772
+        },
+        "NEUTRAL": {
+          "n_days": 687,
+          "n_months": 32.7,
+          "sharpe": 1.507,
+          "ir": 0.541,
+          "mdd": 0.297,
+          "mean_ann": 0.3377
+        },
+        "CAUTION": {
+          "n_days": 400,
+          "n_months": 19,
+          "sharpe": 0.938,
+          "ir": 1.381,
+          "mdd": 0.214,
+          "mean_ann": 0.2701
+        },
+        "CRISIS": {
+          "n_days": 439,
+          "n_months": 20.9,
+          "sharpe": 1.165,
+          "ir": -0.047,
+          "mdd": 0.272,
+          "mean_ann": 0.5304
+        },
+        "RISK_OFF": {
+          "n_days": 14,
+          "n_months": 0.7,
+          "sharpe": null,
+          "ir": null,
+          "mdd": 0.043,
+          "mean_ann": 0.0011
+        }
+      }
+    },
+    "RP_20260919_225155_33328": {
+      "source_strategy_id": "RP_20260919_225155_33328",
+      "grade": "B",
+      "role": null,
+      "origin_mode": "replication",
+      "trust_status": "contract_fr_eligible",
+      "admission_route": "grade_floor",
+      "admission_code": "grade_floor",
+      "admission_reason": "essence 등급 B — 등급 floor(B) 통과",
+      "grade_emit": "B",
+      "grade_source": "entry",
+      "freq": "daily",
+      "sim_result_path": "04_Research/strategies/RP_20260919_225155_33328/sim_result.rds",
+      "full_sharpe": 1.11,
+      "full_ir": 0.705,
+      "n_days": 5336,
+      "date_range": ["2005-02-01", "2026-09-18"],
+      "per_regime": {
+        "RISK_ON": {
+          "n_days": 3796,
+          "n_months": 180.8,
+          "sharpe": 1.101,
+          "ir": 0.934,
+          "mdd": 0.468,
+          "mean_ann": 0.1875
+        },
+        "NEUTRAL": {
+          "n_days": 687,
+          "n_months": 32.7,
+          "sharpe": 1.579,
+          "ir": 0.541,
+          "mdd": 0.268,
+          "mean_ann": 0.3391
+        },
+        "CAUTION": {
+          "n_days": 400,
+          "n_months": 19,
+          "sharpe": 0.912,
+          "ir": 1.228,
+          "mdd": 0.195,
+          "mean_ann": 0.2526
+        },
+        "CRISIS": {
+          "n_days": 439,
+          "n_months": 20.9,
+          "sharpe": 1.294,
+          "ir": -0.008,
+          "mdd": 0.251,
+          "mean_ann": 0.5415
+        },
+        "RISK_OFF": {
+          "n_days": 14,
+          "n_months": 0.7,
+          "sharpe": null,
+          "ir": null,
+          "mdd": 0.035,
+          "mean_ann": -0.0501
+        }
+      }
+    },
+    "RP_20260919_231509_34080": {
+      "source_strategy_id": "RP_20260919_231509_34080",
+      "grade": "B",
+      "role": null,
+      "origin_mode": "replication",
+      "trust_status": "contract_fr_eligible",
+      "admission_route": "grade_floor",
+      "admission_code": "grade_floor",
+      "admission_reason": "essence 등급 B — 등급 floor(B) 통과",
+      "grade_emit": "B",
+      "grade_source": "entry",
+      "freq": "daily",
+      "sim_result_path": "04_Research/strategies/RP_20260919_231509_34080/sim_result.rds",
+      "full_sharpe": 1.068,
+      "full_ir": 0.695,
+      "n_days": 5336,
+      "date_range": ["2005-02-01", "2026-09-18"],
+      "per_regime": {
+        "RISK_ON": {
+          "n_days": 3796,
+          "n_months": 180.8,
+          "sharpe": 1.081,
+          "ir": 0.925,
+          "mdd": 0.541,
+          "mean_ann": 0.1876
+        },
+        "NEUTRAL": {
+          "n_days": 687,
+          "n_months": 32.7,
+          "sharpe": 1.651,
+          "ir": 0.816,
+          "mdd": 0.266,
+          "mean_ann": 0.3795
+        },
+        "CAUTION": {
+          "n_days": 400,
+          "n_months": 19,
+          "sharpe": 0.931,
+          "ir": 1.301,
+          "mdd": 0.21,
+          "mean_ann": 0.2726
+        },
+        "CRISIS": {
+          "n_days": 439,
+          "n_months": 20.9,
+          "sharpe": 1.066,
+          "ir": -0.238,
+          "mdd": 0.262,
+          "mean_ann": 0.4686
+        },
+        "RISK_OFF": {
+          "n_days": 14,
+          "n_months": 0.7,
+          "sharpe": null,
+          "ir": null,
+          "mdd": 0.034,
+          "mean_ann": -0.2913
+        }
+      }
+    },
+    "RP_20260919_231509_26996": {
+      "source_strategy_id": "RP_20260919_231509_26996",
+      "grade": "B",
+      "role": null,
+      "origin_mode": "replication",
+      "trust_status": "contract_fr_eligible",
+      "admission_route": "grade_floor",
+      "admission_code": "grade_floor",
+      "admission_reason": "essence 등급 B — 등급 floor(B) 통과",
+      "grade_emit": "B",
+      "grade_source": "entry",
+      "freq": "daily",
+      "sim_result_path": "04_Research/strategies/RP_20260919_231509_26996/sim_result.rds",
+      "full_sharpe": 1.032,
+      "full_ir": 0.657,
+      "n_days": 5336,
+      "date_range": ["2005-02-01", "2026-09-18"],
+      "per_regime": {
+        "RISK_ON": {
+          "n_days": 3796,
+          "n_months": 180.8,
+          "sharpe": 1.047,
+          "ir": 0.884,
+          "mdd": 0.502,
+          "mean_ann": 0.1806
+        },
+        "NEUTRAL": {
+          "n_days": 687,
+          "n_months": 32.7,
+          "sharpe": 1.547,
+          "ir": 0.608,
+          "mdd": 0.274,
+          "mean_ann": 0.3477
+        },
+        "CAUTION": {
+          "n_days": 400,
+          "n_months": 19,
+          "sharpe": 0.869,
+          "ir": 1.237,
+          "mdd": 0.231,
+          "mean_ann": 0.2522
+        },
+        "CRISIS": {
+          "n_days": 439,
+          "n_months": 20.9,
+          "sharpe": 1.107,
+          "ir": -0.164,
+          "mdd": 0.278,
+          "mean_ann": 0.4934
+        },
+        "RISK_OFF": {
+          "n_days": 14,
+          "n_months": 0.7,
+          "sharpe": null,
+          "ir": null,
+          "mdd": 0.034,
+          "mean_ann": -0.2916
+        }
+      }
+    },
+    "RP_20260919_231509_26292": {
+      "source_strategy_id": "RP_20260919_231509_26292",
+      "grade": "B",
+      "role": null,
+      "origin_mode": "replication",
+      "trust_status": "contract_fr_eligible",
+      "admission_route": "grade_floor",
+      "admission_code": "grade_floor",
+      "admission_reason": "essence 등급 B — 등급 floor(B) 통과",
+      "grade_emit": "B",
+      "grade_source": "entry",
+      "freq": "daily",
+      "sim_result_path": "04_Research/strategies/RP_20260919_231509_26292/sim_result.rds",
+      "full_sharpe": 1.045,
+      "full_ir": 0.435,
+      "n_days": 5336,
+      "date_range": ["2005-02-01", "2026-09-18"],
+      "per_regime": {
+        "RISK_ON": {
+          "n_days": 3796,
+          "n_months": 180.8,
+          "sharpe": 1.087,
+          "ir": 0.805,
+          "mdd": 0.452,
+          "mean_ann": 0.1708
+        },
+        "NEUTRAL": {
+          "n_days": 687,
+          "n_months": 32.7,
+          "sharpe": 1.624,
+          "ir": 0.393,
+          "mdd": 0.197,
+          "mean_ann": 0.3295
+        },
+        "CAUTION": {
+          "n_days": 400,
+          "n_months": 19,
+          "sharpe": 0.98,
+          "ir": 0.963,
+          "mdd": 0.165,
+          "mean_ann": 0.2458
+        },
+        "CRISIS": {
+          "n_days": 439,
+          "n_months": 20.9,
+          "sharpe": 0.838,
+          "ir": -0.61,
+          "mdd": 0.256,
+          "mean_ann": 0.3101
+        },
+        "RISK_OFF": {
+          "n_days": 14,
+          "n_months": 0.7,
+          "sharpe": null,
+          "ir": null,
+          "mdd": 0.034,
+          "mean_ann": -0.6602
+        }
+      }
+    },
+    "RP_20260919_231509_28264": {
+      "source_strategy_id": "RP_20260919_231509_28264",
+      "grade": "B",
+      "role": null,
+      "origin_mode": "replication",
+      "trust_status": "contract_fr_eligible",
+      "admission_route": "grade_floor",
+      "admission_code": "grade_floor",
+      "admission_reason": "essence 등급 B — 등급 floor(B) 통과",
+      "grade_emit": "B",
+      "grade_source": "entry",
+      "freq": "daily",
+      "sim_result_path": "04_Research/strategies/RP_20260919_231509_28264/sim_result.rds",
+      "full_sharpe": 1.044,
+      "full_ir": 0.578,
+      "n_days": 5336,
+      "date_range": ["2005-02-01", "2026-09-18"],
+      "per_regime": {
+        "RISK_ON": {
+          "n_days": 3796,
+          "n_months": 180.8,
+          "sharpe": 1.086,
+          "ir": 0.896,
+          "mdd": 0.477,
+          "mean_ann": 0.176
+        },
+        "NEUTRAL": {
+          "n_days": 687,
+          "n_months": 32.7,
+          "sharpe": 1.53,
+          "ir": 0.459,
+          "mdd": 0.23,
+          "mean_ann": 0.3292
+        },
+        "CAUTION": {
+          "n_days": 400,
+          "n_months": 19,
+          "sharpe": 0.87,
+          "ir": 1.11,
+          "mdd": 0.215,
+          "mean_ann": 0.2377
+        },
+        "CRISIS": {
+          "n_days": 439,
+          "n_months": 20.9,
+          "sharpe": 1.055,
+          "ir": -0.321,
+          "mdd": 0.272,
+          "mean_ann": 0.4373
+        },
+        "RISK_OFF": {
+          "n_days": 14,
+          "n_months": 0.7,
+          "sharpe": null,
+          "ir": null,
+          "mdd": 0.031,
+          "mean_ann": -0.4613
+        }
+      }
+    },
+    "RP_20260919_231509_6264": {
+      "source_strategy_id": "RP_20260919_231509_6264",
+      "grade": "C",
+      "role": null,
+      "origin_mode": "replication",
+      "trust_status": "contract_fr_eligible",
+      "admission_route": "defensive_specialist",
+      "admission_code": "defensive_specialist",
+      "admission_reason": "등급 C 이나 방어형 자격 — 하락월 110개: 초과 +2.25%/월 (t 5.88 · 적중 70%) · 벤치-10% 이하 10개: 초과 +5.03%/월 · 상승월 초과 -0.88%/월",
+      "grade_emit": "C",
+      "grade_source": "entry",
+      "freq": "daily",
+      "sim_result_path": "04_Research/strategies/RP_20260919_231509_6264/sim_result.rds",
+      "full_sharpe": 0.822,
+      "full_ir": 0.305,
+      "n_days": 5336,
+      "date_range": ["2005-02-01", "2026-09-18"],
+      "per_regime": {
+        "RISK_ON": {
+          "n_days": 3796,
+          "n_months": 180.8,
+          "sharpe": 0.808,
+          "ir": 0.509,
+          "mdd": 0.632,
+          "mean_ann": 0.1481
+        },
+        "NEUTRAL": {
+          "n_days": 687,
+          "n_months": 32.7,
+          "sharpe": 1.181,
+          "ir": 0.048,
+          "mdd": 0.26,
+          "mean_ann": 0.2796
+        },
+        "CAUTION": {
+          "n_days": 400,
+          "n_months": 19,
+          "sharpe": 0.96,
+          "ir": 0.988,
+          "mdd": 0.218,
+          "mean_ann": 0.2748
+        },
+        "CRISIS": {
+          "n_days": 439,
+          "n_months": 20.9,
+          "sharpe": 0.754,
+          "ir": -0.662,
+          "mdd": 0.295,
+          "mean_ann": 0.3252
+        },
+        "RISK_OFF": {
+          "n_days": 14,
+          "n_months": 0.7,
+          "sharpe": null,
+          "ir": null,
+          "mdd": 0.042,
+          "mean_ann": -0.0232
+        }
+      }
+    },
+    "RP_20260919_232328_25804": {
+      "source_strategy_id": "RP_20260919_232328_25804",
+      "grade": "B",
+      "role": null,
+      "origin_mode": "replication",
+      "trust_status": "contract_fr_eligible",
+      "admission_route": "grade_floor",
+      "admission_code": "grade_floor",
+      "admission_reason": "essence 등급 B — 등급 floor(B) 통과",
+      "grade_emit": "B",
+      "grade_source": "entry",
+      "freq": "daily",
+      "sim_result_path": "04_Research/strategies/RP_20260919_232328_25804/sim_result.rds",
+      "full_sharpe": 1.078,
+      "full_ir": 0.726,
+      "n_days": 5336,
+      "date_range": ["2005-02-01", "2026-09-18"],
+      "per_regime": {
+        "RISK_ON": {
+          "n_days": 3796,
+          "n_months": 180.8,
+          "sharpe": 1.091,
+          "ir": 0.941,
+          "mdd": 0.521,
+          "mean_ann": 0.1897
+        },
+        "NEUTRAL": {
+          "n_days": 687,
+          "n_months": 32.7,
+          "sharpe": 1.664,
+          "ir": 0.841,
+          "mdd": 0.281,
+          "mean_ann": 0.3803
+        },
+        "CAUTION": {
+          "n_days": 400,
+          "n_months": 19,
+          "sharpe": 0.92,
+          "ir": 1.317,
+          "mdd": 0.218,
+          "mean_ann": 0.2705
+        },
+        "CRISIS": {
+          "n_days": 439,
+          "n_months": 20.9,
+          "sharpe": 1.105,
+          "ir": -0.17,
+          "mdd": 0.279,
+          "mean_ann": 0.4916
+        },
+        "RISK_OFF": {
+          "n_days": 14,
+          "n_months": 0.7,
+          "sharpe": null,
+          "ir": null,
+          "mdd": 0.036,
+          "mean_ann": -0.2909
+        }
+      }
+    },
+    "RP_20260919_232328_12176": {
+      "source_strategy_id": "RP_20260919_232328_12176",
+      "grade": "B",
+      "role": null,
+      "origin_mode": "replication",
+      "trust_status": "contract_fr_eligible",
+      "admission_route": "grade_floor",
+      "admission_code": "grade_floor",
+      "admission_reason": "essence 등급 B — 등급 floor(B) 통과",
+      "grade_emit": "B",
+      "grade_source": "entry",
+      "freq": "daily",
+      "sim_result_path": "04_Research/strategies/RP_20260919_232328_12176/sim_result.rds",
+      "full_sharpe": 1.077,
+      "full_ir": 0.728,
+      "n_days": 5336,
+      "date_range": ["2005-02-01", "2026-09-18"],
+      "per_regime": {
+        "RISK_ON": {
+          "n_days": 3796,
+          "n_months": 180.8,
+          "sharpe": 1.101,
+          "ir": 0.951,
+          "mdd": 0.522,
+          "mean_ann": 0.1907
+        },
+        "NEUTRAL": {
+          "n_days": 687,
+          "n_months": 32.7,
+          "sharpe": 1.644,
+          "ir": 0.79,
+          "mdd": 0.28,
+          "mean_ann": 0.3743
+        },
+        "CAUTION": {
+          "n_days": 400,
+          "n_months": 19,
+          "sharpe": 0.99,
+          "ir": 1.457,
+          "mdd": 0.202,
+          "mean_ann": 0.2913
+        },
+        "CRISIS": {
+          "n_days": 439,
+          "n_months": 20.9,
+          "sharpe": 1.055,
+          "ir": -0.237,
+          "mdd": 0.279,
+          "mean_ann": 0.4719
+        },
+        "RISK_OFF": {
+          "n_days": 14,
+          "n_months": 0.7,
+          "sharpe": null,
+          "ir": null,
+          "mdd": 0.037,
+          "mean_ann": -0.3654
+        }
+      }
+    },
+    "RP_20260919_232328_16740": {
+      "source_strategy_id": "RP_20260919_232328_16740",
+      "grade": "B",
+      "role": null,
+      "origin_mode": "replication",
+      "trust_status": "contract_fr_eligible",
+      "admission_route": "grade_floor",
+      "admission_code": "grade_floor",
+      "admission_reason": "essence 등급 B — 등급 floor(B) 통과",
+      "grade_emit": "B",
+      "grade_source": "entry",
+      "freq": "daily",
+      "sim_result_path": "04_Research/strategies/RP_20260919_232328_16740/sim_result.rds",
+      "full_sharpe": 1.077,
+      "full_ir": 0.748,
+      "n_days": 5336,
+      "date_range": ["2005-02-01", "2026-09-18"],
+      "per_regime": {
+        "RISK_ON": {
+          "n_days": 3796,
+          "n_months": 180.8,
+          "sharpe": 1.087,
+          "ir": 0.95,
+          "mdd": 0.535,
+          "mean_ann": 0.1935
+        },
+        "NEUTRAL": {
+          "n_days": 687,
+          "n_months": 32.7,
+          "sharpe": 1.685,
+          "ir": 0.922,
+          "mdd": 0.284,
+          "mean_ann": 0.3921
+        },
+        "CAUTION": {
+          "n_days": 400,
+          "n_months": 19,
+          "sharpe": 0.926,
+          "ir": 1.353,
+          "mdd": 0.212,
+          "mean_ann": 0.2789
+        },
+        "CRISIS": {
+          "n_days": 439,
+          "n_months": 20.9,
+          "sharpe": 1.079,
+          "ir": -0.186,
+          "mdd": 0.277,
+          "mean_ann": 0.4871
+        },
+        "RISK_OFF": {
+          "n_days": 14,
+          "n_months": 0.7,
+          "sharpe": null,
+          "ir": null,
+          "mdd": 0.037,
+          "mean_ann": -0.2644
+        }
+      }
+    },
+    "RP_20260919_233915_20128": {
+      "source_strategy_id": "RP_20260919_233915_20128",
+      "grade": "C",
+      "role": null,
+      "origin_mode": "replication",
+      "trust_status": "contract_fr_eligible",
+      "admission_route": "defensive_specialist",
+      "admission_code": "defensive_specialist",
+      "admission_reason": "등급 C 이나 방어형 자격 — 하락월 110개: 초과 +0.88%/월 (t 3.09 · 적중 62%) · 벤치-10% 이하 10개: 초과 +0.35%/월 · 상승월 초과 +0.14%/월",
+      "grade_emit": "C",
+      "grade_source": "entry",
+      "freq": "daily",
+      "sim_result_path": "04_Research/strategies/RP_20260919_233915_20128/sim_result.rds",
+      "full_sharpe": 0.783,
+      "full_ir": 0.426,
+      "n_days": 5336,
+      "date_range": ["2005-02-01", "2026-09-18"],
+      "per_regime": {
+        "RISK_ON": {
+          "n_days": 3796,
+          "n_months": 180.8,
+          "sharpe": 0.684,
+          "ir": 0.486,
+          "mdd": 0.492,
+          "mean_ann": 0.1194
+        },
+        "NEUTRAL": {
+          "n_days": 687,
+          "n_months": 32.7,
+          "sharpe": 1.513,
+          "ir": 0.751,
+          "mdd": 0.345,
+          "mean_ann": 0.358
+        },
+        "CAUTION": {
+          "n_days": 400,
+          "n_months": 19,
+          "sharpe": 0.778,
+          "ir": 1.294,
+          "mdd": 0.245,
+          "mean_ann": 0.2436
+        },
+        "CRISIS": {
+          "n_days": 439,
+          "n_months": 20.9,
+          "sharpe": 0.925,
+          "ir": -0.322,
+          "mdd": 0.312,
+          "mean_ann": 0.4609
+        },
+        "RISK_OFF": {
+          "n_days": 14,
+          "n_months": 0.7,
+          "sharpe": null,
+          "ir": null,
+          "mdd": 0.066,
+          "mean_ann": -0.0806
+        }
+      }
+    },
+    "RP_20260919_233915_28484": {
+      "source_strategy_id": "RP_20260919_233915_28484",
+      "grade": "B",
+      "role": null,
+      "origin_mode": "replication",
+      "trust_status": "contract_fr_eligible",
+      "admission_route": "grade_floor",
+      "admission_code": "grade_floor",
+      "admission_reason": "essence 등급 B — 등급 floor(B) 통과",
+      "grade_emit": "B",
+      "grade_source": "entry",
+      "freq": "daily",
+      "sim_result_path": "04_Research/strategies/RP_20260919_233915_28484/sim_result.rds",
+      "full_sharpe": 0.879,
+      "full_ir": 0.498,
+      "n_days": 5336,
+      "date_range": ["2005-02-01", "2026-09-18"],
+      "per_regime": {
+        "RISK_ON": {
+          "n_days": 3796,
+          "n_months": 180.8,
+          "sharpe": 0.879,
+          "ir": 0.706,
+          "mdd": 0.443,
+          "mean_ann": 0.1508
+        },
+        "NEUTRAL": {
+          "n_days": 687,
+          "n_months": 32.7,
+          "sharpe": 1.308,
+          "ir": 0.313,
+          "mdd": 0.318,
+          "mean_ann": 0.3106
+        },
+        "CAUTION": {
+          "n_days": 400,
+          "n_months": 19,
+          "sharpe": 0.773,
+          "ir": 1.129,
+          "mdd": 0.272,
+          "mean_ann": 0.2377
+        },
+        "CRISIS": {
+          "n_days": 439,
+          "n_months": 20.9,
+          "sharpe": 1,
+          "ir": -0.282,
+          "mdd": 0.298,
+          "mean_ann": 0.464
+        },
+        "RISK_OFF": {
+          "n_days": 14,
+          "n_months": 0.7,
+          "sharpe": null,
+          "ir": null,
+          "mdd": 0.047,
+          "mean_ann": -0.1659
+        }
+      }
+    },
+    "RP_20260919_233915_25804": {
+      "source_strategy_id": "RP_20260919_233915_25804",
+      "grade": "C",
+      "role": null,
+      "origin_mode": "replication",
+      "trust_status": "contract_fr_eligible",
+      "admission_route": "defensive_specialist",
+      "admission_code": "defensive_specialist",
+      "admission_reason": "등급 C 이나 방어형 자격 — 하락월 110개: 초과 +1.40%/월 (t 3.15 · 적중 63%) · 벤치-10% 이하 10개: 초과 +1.81%/월 · 상승월 초과 -0.37%/월",
+      "grade_emit": "C",
+      "grade_source": "entry",
+      "freq": "daily",
+      "sim_result_path": "04_Research/strategies/RP_20260919_233915_25804/sim_result.rds",
+      "full_sharpe": 0.718,
+      "full_ir": 0.247,
+      "n_days": 5336,
+      "date_range": ["2005-02-01", "2026-09-18"],
+      "per_regime": {
+        "RISK_ON": {
+          "n_days": 3796,
+          "n_months": 180.8,
+          "sharpe": 0.692,
+          "ir": 0.422,
+          "mdd": 0.672,
+          "mean_ann": 0.1303
+        },
+        "NEUTRAL": {
+          "n_days": 687,
+          "n_months": 32.7,
+          "sharpe": 1.38,
+          "ir": 0.458,
+          "mdd": 0.342,
+          "mean_ann": 0.3454
+        },
+        "CAUTION": {
+          "n_days": 400,
+          "n_months": 19,
+          "sharpe": 0.149,
+          "ir": -0.176,
+          "mdd": 0.251,
+          "mean_ann": 0.0426
+        },
+        "CRISIS": {
+          "n_days": 439,
+          "n_months": 20.9,
+          "sharpe": 0.847,
+          "ir": -0.284,
+          "mdd": 0.393,
+          "mean_ann": 0.4315
+        },
+        "RISK_OFF": {
+          "n_days": 14,
+          "n_months": 0.7,
+          "sharpe": null,
+          "ir": null,
+          "mdd": 0.043,
+          "mean_ann": 0.6415
+        }
+      }
+    },
+    "RP_20260919_233915_14668": {
+      "source_strategy_id": "RP_20260919_233915_14668",
+      "grade": "B",
+      "role": null,
+      "origin_mode": "replication",
+      "trust_status": "contract_fr_eligible",
+      "admission_route": "grade_floor",
+      "admission_code": "grade_floor",
+      "admission_reason": "essence 등급 B — 등급 floor(B) 통과",
+      "grade_emit": "B",
+      "grade_source": "entry",
+      "freq": "daily",
+      "sim_result_path": "04_Research/strategies/RP_20260919_233915_14668/sim_result.rds",
+      "full_sharpe": 0.891,
+      "full_ir": 0.476,
+      "n_days": 5336,
+      "date_range": ["2005-02-01", "2026-09-18"],
+      "per_regime": {
+        "RISK_ON": {
+          "n_days": 3796,
+          "n_months": 180.8,
+          "sharpe": 0.786,
+          "ir": 0.551,
+          "mdd": 0.453,
+          "mean_ann": 0.1328
+        },
+        "NEUTRAL": {
+          "n_days": 687,
+          "n_months": 32.7,
+          "sharpe": 1.717,
+          "ir": 0.925,
+          "mdd": 0.296,
+          "mean_ann": 0.3826
+        },
+        "CAUTION": {
+          "n_days": 400,
+          "n_months": 19,
+          "sharpe": 0.847,
+          "ir": 1.306,
+          "mdd": 0.173,
+          "mean_ann": 0.2389
+        },
+        "CRISIS": {
+          "n_days": 439,
+          "n_months": 20.9,
+          "sharpe": 1.043,
+          "ir": -0.191,
+          "mdd": 0.34,
+          "mean_ann": 0.4851
+        },
+        "RISK_OFF": {
+          "n_days": 14,
+          "n_months": 0.7,
+          "sharpe": null,
+          "ir": null,
+          "mdd": 0.059,
+          "mean_ann": -0.2485
+        }
+      }
+    },
+    "RP_20260919_235451_35412": {
+      "source_strategy_id": "RP_20260919_235451_35412",
+      "grade": "C",
+      "role": null,
+      "origin_mode": "replication",
+      "trust_status": "contract_fr_eligible",
+      "admission_route": "defensive_specialist",
+      "admission_code": "defensive_specialist",
+      "admission_reason": "등급 C 이나 방어형 자격 — 하락월 110개: 초과 +1.37%/월 (t 4.16 · 적중 65%) · 벤치-10% 이하 10개: 초과 +3.22%/월 · 상승월 초과 -0.21%/월",
+      "grade_emit": "C",
+      "grade_source": "entry",
+      "freq": "daily",
+      "sim_result_path": "04_Research/strategies/RP_20260919_235451_35412/sim_result.rds",
+      "full_sharpe": 0.86,
+      "full_ir": 0.368,
+      "n_days": 5336,
+      "date_range": ["2005-02-01", "2026-09-18"],
+      "per_regime": {
+        "RISK_ON": {
+          "n_days": 3796,
+          "n_months": 180.8,
+          "sharpe": 0.778,
+          "ir": 0.527,
+          "mdd": 0.497,
+          "mean_ann": 0.126
+        },
+        "NEUTRAL": {
+          "n_days": 687,
+          "n_months": 32.7,
+          "sharpe": 1.409,
+          "ir": 0.326,
+          "mdd": 0.291,
+          "mean_ann": 0.3116
+        },
+        "CAUTION": {
+          "n_days": 400,
+          "n_months": 19,
+          "sharpe": 0.931,
+          "ir": 1.33,
+          "mdd": 0.172,
+          "mean_ann": 0.2593
+        },
+        "CRISIS": {
+          "n_days": 439,
+          "n_months": 20.9,
+          "sharpe": 1.026,
+          "ir": -0.301,
+          "mdd": 0.311,
+          "mean_ann": 0.445
+        },
+        "RISK_OFF": {
+          "n_days": 14,
+          "n_months": 0.7,
+          "sharpe": null,
+          "ir": null,
+          "mdd": 0.054,
+          "mean_ann": -0.1547
+        }
+      }
+    },
+    "RP_20260919_235451_9224": {
+      "source_strategy_id": "RP_20260919_235451_9224",
+      "grade": "B",
+      "role": null,
+      "origin_mode": "replication",
+      "trust_status": "contract_fr_eligible",
+      "admission_route": "grade_floor",
+      "admission_code": "grade_floor",
+      "admission_reason": "essence 등급 B — 등급 floor(B) 통과",
+      "grade_emit": "B",
+      "grade_source": "entry",
+      "freq": "daily",
+      "sim_result_path": "04_Research/strategies/RP_20260919_235451_9224/sim_result.rds",
+      "full_sharpe": 0.933,
+      "full_ir": 0.504,
+      "n_days": 5336,
+      "date_range": ["2005-02-01", "2026-09-18"],
+      "per_regime": {
+        "RISK_ON": {
+          "n_days": 3796,
+          "n_months": 180.8,
+          "sharpe": 0.95,
+          "ir": 0.77,
+          "mdd": 0.445,
+          "mean_ann": 0.1584
+        },
+        "NEUTRAL": {
+          "n_days": 687,
+          "n_months": 32.7,
+          "sharpe": 1.429,
+          "ir": 0.43,
+          "mdd": 0.284,
+          "mean_ann": 0.3251
+        },
+        "CAUTION": {
+          "n_days": 400,
+          "n_months": 19,
+          "sharpe": 0.883,
+          "ir": 1.255,
+          "mdd": 0.221,
+          "mean_ann": 0.2613
+        },
+        "CRISIS": {
+          "n_days": 439,
+          "n_months": 20.9,
+          "sharpe": 0.923,
+          "ir": -0.465,
+          "mdd": 0.277,
+          "mean_ann": 0.401
+        },
+        "RISK_OFF": {
+          "n_days": 14,
+          "n_months": 0.7,
+          "sharpe": null,
+          "ir": null,
+          "mdd": 0.037,
+          "mean_ann": -0.4747
         }
       }
     }
