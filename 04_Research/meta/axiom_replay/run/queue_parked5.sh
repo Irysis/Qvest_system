@@ -86,8 +86,9 @@ for id in "${IDS[@]}"; do log "  대상 $id status=$(status_of "$id")"; done
 last=""; t0=$(date +%s); hb=$t0
 while :; do
   read -r EN ACT CLM AGE REQ <<<"$(state)"
-  cur="enabled=$EN active=$ACT claim=$CLM(${AGE}m) req=$REQ"
-  if [ "$cur" != "$last" ]; then log "상태 $cur"; last="$cur"; fi
+  key="enabled=$EN active=$ACT claim=$CLM req=$REQ"     # ★변화 감지 키에서 claim 나이는 뺀다 — 매분 바뀌어 로그가 1줄/분 (실측 07:33)
+  cur="$key claim_age=${AGE}m"
+  if [ "$key" != "$last" ]; then log "상태 $cur"; last="$key"; fi
   now=$(date +%s)
   if [ $((now-hb)) -ge "$HEARTBEAT_S" ]; then log "heartbeat $(( (now-t0)/3600 ))h 대기 중 · $cur"; hb=$now; fi
   if idle "$EN" "$ACT" "$CLM" "$AGE" "$REQ"; then
