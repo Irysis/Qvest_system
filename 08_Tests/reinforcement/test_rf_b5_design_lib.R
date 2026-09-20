@@ -75,7 +75,7 @@ spec <- function(name, overlay = NULL, overlay_cell = NULL, label = name) {
 att <- function(n, code, pt = 1, cagr = 0.2, mdd = 0.5, calmar = 0.4, sp = "", adv = NULL, art = NULL, measured = TRUE, terminal = FALSE) {
   a <- list(n = n, cell_code = code, idea = sprintf("[%s] fixture", code))
   if (measured) a$essence <- list(cell_code = code, block = sub("_.*$", "", code), port_t = pt, cagr = cagr, mdd = mdd, calmar = calmar, oos_retention = 0.5, spec = sp)
-  if (!is.null(adv)) a$adversary <- list(verdict = adv)
+  if (!is.null(adv)) a$adversary <- if (is.list(adv)) adv else list(verdict = adv)   # 문자열=판정만 · 리스트=전체 기록
   if (!is.null(art)) a$artifacts <- art
   if (terminal) { a$terminal <- TRUE; a$terminal_reason <- "fixture" }
   a }
@@ -260,7 +260,7 @@ chk(any(grepl("에피소드 1: 깊이 25.0%", txt, fixed = TRUE)) && any(grepl("
     "E9 바닥 낙폭 해부 — 최고 칸 산출물에서 깊이 25% · 같은 창 벤치 20% · 비 1.25", paste(txt[grepl("에피소드", txt)], collapse = " / "))
 chk(any(grepl("| B2_6 | B2 |", txt, fixed = TRUE) & grepl("(승계) arm_d", txt, fixed = TRUE)),
     "E10 측정표 — 비 B5 칸의 오버레이는 '(승계)' 로 표시(그 칸의 처치로 오귀속 금지)")
-chk(identical(names(res$sizes), c("axioms", "entry", "floor", "outcomes", "prior", "distilled", "catalog", "contract", "guard")) && all(res$sizes > 0L) &&
+chk(identical(names(res$sizes), c("axioms", "entry", "floor", "outcomes", "prior", "adv", "distilled", "catalog", "contract", "guard")) && all(res$sizes > 0L) &&
     file.exists(file.path(SB, "mat.txt.sizes.json")), "E11 절별 크기 산출 + sizes.json")
 chk(any(grepl("B5_31(pg2_risk_overlay_v1)", txt, fixed = TRUE)), "E12 상주 칸 서술은 격자 standing_cells 에서 재도출(코드·arm)")
 old_cap <- B5_MAT_CAP_CHARS; total0 <- sum(nchar(txt)); B5_MAT_CAP_CHARS <- total0 - 3000L
@@ -270,6 +270,44 @@ chk(res2$prior_dropped > 0L && sum(nchar(res2$text)) <= B5_MAT_CAP_CHARS && sum(
 B5_MAT_CAP_CHARS <- old_cap
 res3 <- b5_materials("T_MAT", SB, cfg, compose_only = TRUE, arm_quota = 0L, round = 2L)
 chk(any(grepl("compose_only = TRUE", res3$text, fixed = TRUE)) && any(grepl("새 arm 을 내지 마라", res3$text, fixed = TRUE)), "E14 가드 상태 절 — compose_only 면 새 arm 금지 문구")
+
+# ── E15~E17: (4b) G2 반증 상세 — 앞선 칸이 '어떤 검사에서' 죽었는지가 재료에 실리는가
+#   왜: verdict 만 주면 설계가 같은 죽음을 반복한다(실측 2026-09-19 — 22칸 연속 소비 보류, 사인 거의 전부 T3).
+adv_rec <- function(code, cell, floor, verdict, t3s = "fail", reason = "", layers = list(L2("arm_a", "kind_a"))) list(
+  schema = "rf_overlay_adversary_v1", recorded_at = "2026-09-19T22:56:15+0900", code = code, verdict = verdict, reason = reason,
+  own_layers = layers, cell = list(calmar = cell), floor = list(calmar = floor),
+  tests = list(T1 = list(status = "pass", calmar_shift = 0.48), T4 = list(status = "pass", const_calmar = 0.432),
+               T3 = list(status = t3s, obs_calmar = 0.505, placebo_q = 0.523, p_value = 0.0796),
+               T3b = list(status = "not_computed")))
+adv_atts <- c(b1_five(best_art = art), list(
+  att(6, "B5_18", pt = 2.7, calmar = 0.516, sp = spec("m_adv1", overlay = L2("arm_a", "kind_a")),
+      adv = adv_rec("B5_18", 0.516, 0.457, "fail")),
+  att(7, "B5_31", pt = 2.1, calmar = 0.458, sp = spec("m_adv2", overlay = L2("arm_b", "kind_b")),
+      adv = adv_rec("B5_31", 0.458, 0.457, "not_candidate", t3s = "not_computed", reason = "calmar_not_above_floor"))))
+write_ledger(list(entry("T_MAT", adv_atts, extra = list(carry = list(overlay = L2("arm_e", "kind_e"))))))
+res_adv <- b5_materials("T_MAT", SB, cfg, round = 1L)
+fa <- paste(res_adv$text, collapse = "\n")
+chk(grepl("## (4b)", fa, fixed = TRUE) && grepl("| B5_18 |", fa, fixed = TRUE) &&
+    grepl("fail obs 0.505 vs q 0.523 p 0.080", fa, fixed = TRUE) && grepl("pass const 0.432", fa, fixed = TRUE),
+    "E15 (4b) 반증 상세 — 칸·검사별 수치(T3 obs/q/p · T4 상수)가 재료에 실린다",
+    paste(res_adv$text[grepl("B5_18", res_adv$text)], collapse = " / "))
+chk(grepl("arm_a", fa, fixed = TRUE) && grepl("집계: 2칸 · pass 0 · fail 1 · not_candidate 1 · 실패 사인 T3 1건", fa, fixed = TRUE),
+    "E16 스택(arm_id)·집계 줄 — 사인 빈도까지 센다",
+    paste(res_adv$text[grepl("집계:", res_adv$text)], collapse = " / "))
+# 돌연변이: 절을 붙이는 줄을 지운 사본 → (4b) 가 사라져야 한다(= E15 가 결함을 잡는다)
+mut_src <- readLines(file.path(CODE, "02_Infrastructure/ops/rf_b5_design_lib.R"), warn = FALSE, encoding = "UTF-8")
+# ★fixed=TRUE — `sec$adv` 의 $ 는 정규식에서 행 끝이라 패턴이 영원히 안 맞는다(초판 실패)
+drop_i <- grepl("sec$adv <- .b5_adv_sec(root)", mut_src, fixed = TRUE)
+stopifnot(sum(drop_i) == 1L)
+mut_src <- mut_src[!drop_i]
+mp <- file.path(SB, "rf_b5_design_lib_mut.R"); writeLines(mut_src, mp, useBytes = TRUE)
+menv <- new.env(parent = globalenv())
+invisible(capture.output(suppressMessages(source(mp, local = menv, encoding = "UTF-8"))))
+res_mut <- menv$b5_materials("T_MAT", SB, cfg, round = 1L)
+chk(!any(grepl("## (4b)", res_mut$text, fixed = TRUE)) && identical(as.integer(res_mut$sizes[["adv"]]), 0L),
+    "E17 [돌연변이] 절 조립 줄 제거 → (4b) 부재·크기 0(= E15·E16 이 결함을 잡는다)",
+    sprintf("adv 크기=%s", res_mut$sizes[["adv"]]))
+write_ledger(list(entry("T_MAT", mat_atts, extra = list(carry = list(overlay = L2("arm_e", "kind_e"))))))
 
 cat("\n=== F. 낙폭 에피소드 ===\n")
 ep <- b5_drawdown_episodes(c(1, 1.1, 0.88, 0.99, 1.2, 1.0, 0.9, 1.3), seq(as.Date("2005-01-31"), by = "month", length.out = 8), bnav = c(1, 1, 1, 1, 1, 0.9, 0.8, 1))

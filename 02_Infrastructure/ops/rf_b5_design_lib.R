@@ -508,6 +508,73 @@ B5_DISTILL_KEYWORDS <- c("오버레이", "낙폭", "MDD", "국면", "현금", "o
   unique(keys)
 }
 
+# ── (4b) G2 사후 반증 상세 — 앞선 오버레이 칸이 **어떤 검사에서** 죽었나 ──────
+#' 설계자에게 verdict 만 주면 같은 죽음을 반복한다. 실측(2026-09-19, 결합 계보):
+#'   B5 칸 22개(결합 14 + promo1 8)가 연속으로 소비 보류됐고 사인은 거의 전부 T3 —
+#'   **노출을 짝지어 무작위로 재배치한 플라시보가 관측 Calmar 이상**이었다. 즉 "같은 빈도로
+#'   아무 때나 줄여도 같은 Calmar" 이고, 타이밍 기여는 0이었다. 그 사실이 재료에 없으면
+#'   설계는 계속 '개선처럼 보이는 것'을 만든다(T4 상수 등가만 넘고 T3 에서 죽는다).
+#' verdict·검사 수치는 원장 attempt$adversary(rf_record_adversary 기록)에서 **재도출**한다.
+.b5_adv_rows <- function(root = ROOT, max_rows = 24L) {
+  led <- .b5_ledger(root); if (is.null(led)) return(list())
+  rows <- list()
+  for (E in led$entries %||% list()) {
+    bid <- .chr(E$base_id %||% E$id)
+    for (a in E$attempts %||% list()) {
+      adv <- a$adversary
+      if (!is.list(adv) || !nzchar(.chr(adv$verdict))) next
+      tests <- if (is.list(adv$tests)) adv$tests else list()
+      g <- function(k) { v <- tests[[k]]; if (is.list(v)) v else list() }
+      t1 <- g("T1"); t3 <- g("T3"); t3b <- g("T3b"); t4 <- g("T4")
+      lay <- vapply(adv$own_layers %||% list(), function(o) .chr(o$arm_id %||% o$kind), character(1))
+      rows[[length(rows) + 1L]] <- list(
+        at = .chr(adv$recorded_at %||% adv$at), entry = bid,
+        code = .chr(adv$code %||% .rf_attempt_code(a)),
+        stack = if (length(lay)) paste(lay, collapse = " x ") else "-",
+        cell = .num(adv$cell$calmar), floor = .num(adv$floor$calmar),
+        verdict = .chr(adv$verdict), reason = .chr(adv$reason),
+        t1s = .chr(t1$status), t1v = .num(t1$calmar_shift),
+        t3s = .chr(t3$status), t3o = .num(t3$obs_calmar), t3q = .num(t3$placebo_q), t3p = .num(t3$p_value),
+        t3bs = .chr(t3b$status), t3bp = .num(t3b$p_value),
+        t4s = .chr(t4$status), t4c = .num(t4$const_calmar))
+    }
+  }
+  if (!length(rows)) return(list())
+  rows[order(vapply(rows, function(r) r$at, character(1)), decreasing = TRUE)][seq_len(min(length(rows), max_rows))]
+}
+
+.b5_adv_sec <- function(root = ROOT, max_rows = 24L) {
+  rows <- .b5_adv_rows(root, max_rows)
+  hdr <- c(sprintf("## (4b) G2 사후 반증 상세 — 앞선 오버레이 칸이 **어떤 검사에서** 죽었나 (최근 %d칸 · 전 entry)", as.integer(max_rows)),
+           "- 읽는 법: T3 = 노출을 짝지어 무작위로 재배치한 플라시보. obs <= q 면 **같은 노출을 아무 때나 줄여도 같은 Calmar** 라는 뜻 = 타이밍 기여 0.",
+           "- T4(상수 등가)만 넘고 T3 에서 죽는 것이 가장 흔한 형태다 — '개선이 있다' 와 '개선이 타이밍에서 왔다' 는 다른 명제.",
+           "- fail/not_candidate 는 등급이 아니라 **소비 보류**다. 이 사인을 피할 기전을 설계하라(칸을 재탕하지 말고 축을 바꿔라).")
+  if (!length(rows)) return(c(hdr, "(아직 반증 기록이 없다)"))
+  tab <- c("", "| entry | 코드 | 스택 | Calmar 셀/바닥 | T1 | T3 | T3b | T4 | 판정 |", "|---|---|---|---|---|---|---|---|---|")
+  for (r in rows) {
+    f_t1 <- if (nzchar(r$t1s)) sprintf("%s %s", r$t1s, .f3(r$t1v)) else "-"
+    f_t3 <- if (nzchar(r$t3s)) sprintf("%s obs %s vs q %s%s", r$t3s, .f3(r$t3o), .f3(r$t3q),
+                                       if (is.finite(r$t3p)) sprintf(" p %s", .f3(r$t3p)) else "") else "-"
+    f_t3b <- if (nzchar(r$t3bs)) sprintf("%s%s", r$t3bs, if (is.finite(r$t3bp)) sprintf(" p %s", .f3(r$t3bp)) else "") else "-"
+    f_t4 <- if (nzchar(r$t4s)) sprintf("%s const %s", r$t4s, .f3(r$t4c)) else "-"
+    tab <- c(tab, sprintf("| %s | %s | %s | %s/%s | %s | %s | %s | %s | %s%s |",
+                          # entry 는 접두 타임스탬프를 벗겨 **계보만** 남긴다(전부 같은 접두어라 30자 절단이면 구분이 사라진다)
+                          .cap(sub("^RP_[0-9]{8}_[0-9]{6}_[0-9]+_", "", r$entry), 30), r$code, .cap(r$stack, 42), .f3(r$cell), .f3(r$floor),
+                          f_t1, f_t3, f_t3b, f_t4, r$verdict,
+                          if (nzchar(r$reason)) sprintf("(%s)", .cap(r$reason, 26)) else ""))
+  }
+  vs <- vapply(rows, function(r) r$verdict, character(1))
+  killers <- unlist(lapply(rows, function(r) c(if (identical(r$t1s, "fail")) "T1" else NULL,
+                                               if (identical(r$t3s, "fail")) "T3" else NULL,
+                                               if (identical(r$t3bs, "fail")) "T3b" else NULL,
+                                               if (identical(r$t4s, "fail")) "T4" else NULL)))
+  kt <- if (length(killers)) table(killers) else integer(0)
+  ksum <- if (length(kt)) paste(sprintf("%s %d건", names(kt), as.integer(kt)), collapse = " · ") else "없음"
+  c(hdr, tab, "",
+    sprintf("- 집계: %d칸 · pass %d · fail %d · not_candidate %d · 실패 사인 %s",
+            length(rows), sum(vs == "pass"), sum(vs == "fail"), sum(vs == "not_candidate"), ksum))
+}
+
 b5_materials <- function(base_id, root = ROOT, cfg = b5_cfg(root), compose_only = FALSE, arm_quota = cfg$max_new_arms,
                          round = 1L, out_p = NULL) {
   E <- .b5_entry(root, base_id); if (is.null(E)) stop("[b5_design] entry 부재: ", base_id)
@@ -619,6 +686,7 @@ b5_materials <- function(base_id, root = ROOT, cfg = b5_cfg(root), compose_only 
   .prior_sec <- function(blocks) c(sprintf("## (4) 앞선 논문들의 B5 블록 교훈 (최근 %d entry) — 수치는 그 논문의 것 · **기전과 회피**만 옮겨 붙는다 · 금지 목록이 아니다(AX-000)", length(blocks)),
                                    if (length(blocks)) unlist(blocks) else "(없음)")
   sec$prior <- .prior_sec(prior_blocks)
+  sec$adv <- .b5_adv_sec(root)
   # (5) 증류 지식 ──────────────────────────────────────────────────────────
   L5 <- c("## (5) 증류 지식 (distilled · 키워드: 오버레이/낙폭/MDD/국면/현금/overlay/drawdown/regime · 상한 20)")
   rows5 <- tryCatch({
@@ -689,7 +757,7 @@ b5_materials <- function(base_id, root = ROOT, cfg = b5_cfg(root), compose_only 
     sprintf("- 라운드 %d · 설계 칸 ≤ %d · 유효 칸 ≥ %d · 층 ≤ %d · 새 arm kind = b5gen_<short>_%d", as.integer(round), cfg$max_cells, cfg$min_cells, cfg$max_layers, as.integer(round)),
     "- ★설계는 특정 시기(연·월·이름 붙은 위기)에 기대면 안 된다 — 이 재료의 날짜는 전부 지웠고(<date>/<yr>/<episode>), arm 의 달력 리터럴은 probe 가 거부한다.")
   # 조립 + 날짜 제거 + 총량 상한 ────────────────────────────────────────────
-  order <- c("axioms", "entry", "floor", "outcomes", "prior", "distilled", "catalog", "contract", "guard")
+  order <- c("axioms", "entry", "floor", "outcomes", "prior", "adv", "distilled", "catalog", "contract", "guard")
   .assemble <- function(S) b5_strip_dates(unlist(lapply(order, function(k) c(S[[k]], ""))))
   txt <- .assemble(sec)
   n_prior_dropped <- 0L
