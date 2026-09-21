@@ -1,7 +1,7 @@
 {
   "schema_version": "reinforce_ledger_v2",
   "layer": 1,
-  "max_attempts": 30,
+  "max_attempts": 35,
   "note": "v10 1계층 강화 원장 — QEPM(alpha→risk→optimizer→forge→등급) 기반, 논문당 최대 20회. root_papers 는 선택(2026-09-03 의무 해제) — 시도마다 evidence=paper/method/none 기록. 논문 3편마다 combination_review 의무.",
   "entries": [
     {
@@ -6091,7 +6091,7 @@
       "paper_id": "",
       "base_artifacts": "C:/Users/99922/OneDrive/Quant_Module_Moltbot/stage_artifacts/replication/20260921_100007_6876",
       "engine_path": "C:\\Users\\99922\\OneDrive\\Quant_Module_Moltbot/04_Research/strategies/RP_AUTO_COMBO_combo_1403_8125_2002_069/engine.R",
-      "status": "active",
+      "status": "exhausted",
       "target_grade": "A",
       "measurement_axis": "n_max_25",
       "axis_valid": true,
@@ -8427,7 +8427,8 @@
             "mechanism_backup": "C:/Users/99922/OneDrive/Quant_Module_Moltbot/.cache/rf_b5_design/RP_20260917_105807_22632_combo_rulefast_promo4/RP_20260917_105807_22632_combo_rulefast_promo4_B5.mech.json"
           }
         ]
-      }
+      },
+      "exhausted_at": "2026-09-21T16:28:05+0900"
     },
     {
       "base_id": "RP_20260831_204546_skipped_base",
@@ -8438,7 +8439,7 @@
       "engine_path": "C:\\Users\\99922\\OneDrive\\Quant_Module_Moltbot/04_Research/strategies/RP_AUTO_2608_23944/engine.R",
       "status": "active",
       "target_grade": "A",
-      "attempts_used": 24,
+      "attempts_used": 30,
       "attempts": [
         {
           "n": 1,
@@ -9435,6 +9436,264 @@
           "lessons": "[B3_15] Grade C · 구속 port_t(0.555/2.95)·calmar(0.247/0.64)·sharpe(0.652/0.80)·cagr(0.132/0.16)·oos(-0.667/0.70) (5조건 중 0 충족) · carry 대비 MDD 0.516→0.532(+3.1%) · CAGR 0.171→0.132(-22.8%) → 양쪽 다 악화",
           "opened_at": "2026-09-21T13:49:21+0900",
           "closed_at": "2026-09-21T13:56:34+0900"
+        },
+        {
+          "n": 25,
+          "date": "20260921",
+          "cell_code": "B6_32",
+          "idea": "[무인 병렬 B6_32] 격월(k=2 · 위상 0) — B6/execution_cadence · factor2=none · weighting=ew · universe=k200_kq150 · overlay=none",
+          "keyword_axis": "execution_cadence",
+          "root_papers": [
+            {
+              "url": "https://arxiv.org/abs/2608.23944",
+              "title": "Bulk Phase Transition and Edge Behavior in Temporally Correlated Random Matrices",
+              "paper_key": "2608.23944"
+            },
+            {
+              "title": "Chan, Jegadeesh & Lakonishok (1996), Momentum Strategies, JF 51(5)",
+              "url": "https://onlinelibrary.wiley.com/doi/10.1111/j.1540-6261.1996.tb05222.x"
+            },
+            {
+              "title": "Fama & French (1992), The Cross-Section of Expected Stock Returns, JF 47(2)",
+              "url": "https://onlinelibrary.wiley.com/doi/10.1111/j.1540-6261.1992.tb04398.x"
+            }
+          ],
+          "wt_id": null,
+          "evidence": "paper",
+          "unmapped_families": [],
+          "axiom_injected": true,
+          "grade": "C",
+          "essence": {
+            "cell_code": "B6_32",
+            "block": "B6",
+            "port_t": 1.674,
+            "net_sharpe": 0.785,
+            "cagr": 0.173,
+            "mdd": 0.549,
+            "calmar": 0.316,
+            "oos_retention": -0.32,
+            "spec": "C:/Users/99922/OneDrive/Quant_Module_Moltbot/.cache/rf_parallel/spec_B6_32__RP_20260831_204546_skipped_base.json",
+            "source": "authoritative_remeasure.json"
+          },
+          "artifacts": "C:/Users/99922/OneDrive/Quant_Module_Moltbot/stage_artifacts/replication/20260921_163652_9620",
+          "lessons": "[B6_32] Grade C · 구속 port_t(1.674/2.95)·calmar(0.316/0.64)·sharpe(0.785/0.80)·oos(-0.320/0.70) (5조건 중 1 충족) · carry 대비 MDD 0.532→0.549(+3.2%) · CAGR 0.132→0.173(+31.1%) → 수익만 늘었다(위험 축 미개입)",
+          "opened_at": "2026-09-21T16:36:15+0900",
+          "closed_at": "2026-09-21T16:42:01+0900"
+        },
+        {
+          "n": 26,
+          "date": "20260921",
+          "cell_code": "B6_33",
+          "idea": "[무인 병렬 B6_33] 격월(k=2 · 위상 1) — 위상 대조 — B6/execution_cadence · factor2=none · weighting=ew · universe=k200_kq150 · overlay=none",
+          "keyword_axis": "execution_cadence",
+          "root_papers": [
+            {
+              "url": "https://arxiv.org/abs/2608.23944",
+              "title": "Bulk Phase Transition and Edge Behavior in Temporally Correlated Random Matrices",
+              "paper_key": "2608.23944"
+            },
+            {
+              "title": "Chan, Jegadeesh & Lakonishok (1996), Momentum Strategies, JF 51(5)",
+              "url": "https://onlinelibrary.wiley.com/doi/10.1111/j.1540-6261.1996.tb05222.x"
+            },
+            {
+              "title": "Fama & French (1992), The Cross-Section of Expected Stock Returns, JF 47(2)",
+              "url": "https://onlinelibrary.wiley.com/doi/10.1111/j.1540-6261.1992.tb04398.x"
+            }
+          ],
+          "wt_id": null,
+          "evidence": "paper",
+          "unmapped_families": [],
+          "axiom_injected": true,
+          "grade": "C",
+          "essence": {
+            "cell_code": "B6_33",
+            "block": "B6",
+            "port_t": 1.792,
+            "net_sharpe": 0.783,
+            "cagr": 0.174,
+            "mdd": 0.577,
+            "calmar": 0.301,
+            "oos_retention": -0.175,
+            "spec": "C:/Users/99922/OneDrive/Quant_Module_Moltbot/.cache/rf_parallel/spec_B6_33__RP_20260831_204546_skipped_base.json",
+            "source": "authoritative_remeasure.json"
+          },
+          "artifacts": "C:/Users/99922/OneDrive/Quant_Module_Moltbot/stage_artifacts/replication/20260921_163652_14584",
+          "lessons": "[B6_33] Grade C · 구속 port_t(1.792/2.95)·calmar(0.301/0.64)·sharpe(0.783/0.80)·oos(-0.175/0.70) (5조건 중 1 충족) · carry 대비 MDD 0.532→0.577(+8.5%) · CAGR 0.132→0.174(+31.8%) → 수익만 늘었다(위험 축 미개입)",
+          "opened_at": "2026-09-21T16:36:23+0900",
+          "closed_at": "2026-09-21T16:42:02+0900"
+        },
+        {
+          "n": 27,
+          "date": "20260921",
+          "cell_code": "B6_34",
+          "idea": "[무인 병렬 B6_34] 분기(k=3 · 위상 0) — B6/execution_cadence · factor2=none · weighting=ew · universe=k200_kq150 · overlay=none",
+          "keyword_axis": "execution_cadence",
+          "root_papers": [
+            {
+              "url": "https://arxiv.org/abs/2608.23944",
+              "title": "Bulk Phase Transition and Edge Behavior in Temporally Correlated Random Matrices",
+              "paper_key": "2608.23944"
+            },
+            {
+              "title": "Chan, Jegadeesh & Lakonishok (1996), Momentum Strategies, JF 51(5)",
+              "url": "https://onlinelibrary.wiley.com/doi/10.1111/j.1540-6261.1996.tb05222.x"
+            },
+            {
+              "title": "Fama & French (1992), The Cross-Section of Expected Stock Returns, JF 47(2)",
+              "url": "https://onlinelibrary.wiley.com/doi/10.1111/j.1540-6261.1992.tb04398.x"
+            }
+          ],
+          "wt_id": null,
+          "evidence": "paper",
+          "unmapped_families": [],
+          "axiom_injected": true,
+          "grade": "C",
+          "essence": {
+            "cell_code": "B6_34",
+            "block": "B6",
+            "port_t": 1.673,
+            "net_sharpe": 0.774,
+            "cagr": 0.172,
+            "mdd": 0.522,
+            "calmar": 0.33,
+            "oos_retention": -0.301,
+            "spec": "C:/Users/99922/OneDrive/Quant_Module_Moltbot/.cache/rf_parallel/spec_B6_34__RP_20260831_204546_skipped_base.json",
+            "source": "authoritative_remeasure.json"
+          },
+          "artifacts": "C:/Users/99922/OneDrive/Quant_Module_Moltbot/stage_artifacts/replication/20260921_163652_28944",
+          "lessons": "[B6_34] Grade C · 구속 port_t(1.673/2.95)·calmar(0.330/0.64)·sharpe(0.774/0.80)·oos(-0.301/0.70) (5조건 중 1 충족) · carry 대비 MDD 0.532→0.522(-1.9%) · CAGR 0.132→0.172(+30.3%) → 위험만 줄었다(비대칭 성공)",
+          "opened_at": "2026-09-21T16:36:28+0900",
+          "closed_at": "2026-09-21T16:42:02+0900"
+        },
+        {
+          "n": 28,
+          "date": "20260921",
+          "cell_code": "B6_35",
+          "idea": "[무인 병렬 B6_35] 노트레이드 밴드(확장창 중앙값) — B6/execution_cadence · factor2=none · weighting=ew · universe=k200_kq150 · overlay=none",
+          "keyword_axis": "execution_cadence",
+          "root_papers": [
+            {
+              "url": "https://arxiv.org/abs/2608.23944",
+              "title": "Bulk Phase Transition and Edge Behavior in Temporally Correlated Random Matrices",
+              "paper_key": "2608.23944"
+            },
+            {
+              "title": "Chan, Jegadeesh & Lakonishok (1996), Momentum Strategies, JF 51(5)",
+              "url": "https://onlinelibrary.wiley.com/doi/10.1111/j.1540-6261.1996.tb05222.x"
+            },
+            {
+              "title": "Fama & French (1992), The Cross-Section of Expected Stock Returns, JF 47(2)",
+              "url": "https://onlinelibrary.wiley.com/doi/10.1111/j.1540-6261.1992.tb04398.x"
+            }
+          ],
+          "wt_id": null,
+          "evidence": "paper",
+          "unmapped_families": [],
+          "axiom_injected": true,
+          "grade": "C",
+          "essence": {
+            "cell_code": "B6_35",
+            "block": "B6",
+            "port_t": 1.894,
+            "net_sharpe": 0.814,
+            "cagr": 0.183,
+            "mdd": 0.573,
+            "calmar": 0.318,
+            "oos_retention": -0.257,
+            "spec": "C:/Users/99922/OneDrive/Quant_Module_Moltbot/.cache/rf_parallel/spec_B6_35__RP_20260831_204546_skipped_base.json",
+            "source": "authoritative_remeasure.json"
+          },
+          "artifacts": "C:/Users/99922/OneDrive/Quant_Module_Moltbot/stage_artifacts/replication/20260921_163652_3588",
+          "lessons": "[B6_35] Grade C · 구속 port_t(1.894/2.95)·calmar(0.318/0.64)·oos(-0.257/0.70) (5조건 중 2 충족) · carry 대비 MDD 0.532→0.573(+7.7%) · CAGR 0.132→0.183(+38.6%) → 수익만 늘었다(위험 축 미개입)",
+          "opened_at": "2026-09-21T16:36:33+0900",
+          "closed_at": "2026-09-21T16:42:03+0900"
+        },
+        {
+          "n": 29,
+          "date": "20260921",
+          "cell_code": "B6_36",
+          "idea": "[무인 병렬 B6_36] 랭크 버퍼(2×n_max 히스테리시스) — B6/execution_cadence · factor2=none · weighting=ew · universe=k200_kq150 · overlay=none",
+          "keyword_axis": "execution_cadence",
+          "root_papers": [
+            {
+              "url": "https://arxiv.org/abs/2608.23944",
+              "title": "Bulk Phase Transition and Edge Behavior in Temporally Correlated Random Matrices",
+              "paper_key": "2608.23944"
+            },
+            {
+              "title": "Chan, Jegadeesh & Lakonishok (1996), Momentum Strategies, JF 51(5)",
+              "url": "https://onlinelibrary.wiley.com/doi/10.1111/j.1540-6261.1996.tb05222.x"
+            },
+            {
+              "title": "Fama & French (1992), The Cross-Section of Expected Stock Returns, JF 47(2)",
+              "url": "https://onlinelibrary.wiley.com/doi/10.1111/j.1540-6261.1992.tb04398.x"
+            }
+          ],
+          "wt_id": null,
+          "evidence": "paper",
+          "unmapped_families": [],
+          "axiom_injected": true,
+          "grade": "C",
+          "essence": {
+            "cell_code": "B6_36",
+            "block": "B6",
+            "port_t": 1.726,
+            "net_sharpe": 0.789,
+            "cagr": 0.176,
+            "mdd": 0.575,
+            "calmar": 0.306,
+            "oos_retention": -0.251,
+            "spec": "C:/Users/99922/OneDrive/Quant_Module_Moltbot/.cache/rf_parallel/spec_B6_36__RP_20260831_204546_skipped_base.json",
+            "source": "authoritative_remeasure.json"
+          },
+          "artifacts": "C:/Users/99922/OneDrive/Quant_Module_Moltbot/stage_artifacts/replication/20260921_184516_12672",
+          "lessons": "[B6_36] Grade C · 구속 port_t(1.726/2.95)·calmar(0.306/0.64)·sharpe(0.789/0.80)·oos(-0.251/0.70) (5조건 중 1 충족) · carry 대비 MDD 0.573→0.575(+0.3%) · CAGR 0.183→0.176(-3.8%) → 양쪽 다 악화",
+          "opened_at": "2026-09-21T18:45:00+0900",
+          "closed_at": "2026-09-21T18:50:34+0900"
+        },
+        {
+          "n": 30,
+          "date": "20260921",
+          "cell_code": "B6_42",
+          "idea": "[무인 병렬 B6_42] 랭크 버퍼(3×n_max — 더 느슨한 히스테리시스) — B6/execution_cadence · factor2=none · weighting=ew · universe=k200_kq150 · overlay=none",
+          "keyword_axis": "execution_cadence",
+          "root_papers": [
+            {
+              "url": "https://arxiv.org/abs/2608.23944",
+              "title": "Bulk Phase Transition and Edge Behavior in Temporally Correlated Random Matrices",
+              "paper_key": "2608.23944"
+            },
+            {
+              "title": "Chan, Jegadeesh & Lakonishok (1996), Momentum Strategies, JF 51(5)",
+              "url": "https://onlinelibrary.wiley.com/doi/10.1111/j.1540-6261.1996.tb05222.x"
+            },
+            {
+              "title": "Fama & French (1992), The Cross-Section of Expected Stock Returns, JF 47(2)",
+              "url": "https://onlinelibrary.wiley.com/doi/10.1111/j.1540-6261.1992.tb04398.x"
+            }
+          ],
+          "wt_id": null,
+          "evidence": "paper",
+          "unmapped_families": [],
+          "axiom_injected": true,
+          "grade": "C",
+          "essence": {
+            "cell_code": "B6_42",
+            "block": "B6",
+            "port_t": 1.569,
+            "net_sharpe": 0.769,
+            "cagr": 0.17,
+            "mdd": 0.552,
+            "calmar": 0.307,
+            "oos_retention": -0.149,
+            "spec": "C:/Users/99922/OneDrive/Quant_Module_Moltbot/.cache/rf_parallel/spec_B6_42__RP_20260831_204546_skipped_base.json",
+            "source": "authoritative_remeasure.json"
+          },
+          "artifacts": "C:/Users/99922/OneDrive/Quant_Module_Moltbot/stage_artifacts/replication/20260921_184516_3392",
+          "lessons": "[B6_42] Grade C · 구속 port_t(1.569/2.95)·calmar(0.307/0.64)·sharpe(0.769/0.80)·oos(-0.149/0.70) (5조건 중 1 충족) · carry 대비 MDD 0.573→0.552(-3.7%) · CAGR 0.183→0.170(-7.1%) → 위험보다 수익을 더 잃었다(대칭 축소의 전형)",
+          "opened_at": "2026-09-21T18:45:06+0900",
+          "closed_at": "2026-09-21T18:50:35+0900"
         }
       ],
       "judge": {
@@ -9450,9 +9709,9 @@
       "axis_marked_at": "2026-09-01T17:15:18+0900",
       "unparked_at": "2026-09-21T12:36:58+0900",
       "unpark_reason": "도훈 지시 2026-09-18 — 기저 관문 반사실 측정(파킹분 기저 [-0.7,0] 고유 기저 4건). 루프 유휴 시점 투입(승격 사슬 미선점 · 루프 on/off 무변경). parked_reason 보존.",
-      "max_attempts": 36,
-      "max_attempts_reason": "예산 재도출 30 -> 36 = 기본 30 + B1 설계 초과 5(설계 10칸) + B5 설계 초과 0(설계 0칸) + 상주 1 + 재설계 추가 0 — 뒤 블록이 잘리지 않도록",
-      "max_attempts_at": "2026-09-21T12:47:10+0900",
+      "max_attempts": 41,
+      "max_attempts_reason": "예산 재도출 36 -> 41 = 기본 35 + B1 설계 초과 5(설계 10칸) + B5 설계 초과 0(설계 0칸) + 상주 1 + 재설계 추가 0 — 뒤 블록이 잘리지 않도록",
+      "max_attempts_at": "2026-09-21T18:44:03+0900",
       "block_order": [
         "B1",
         "B2",
@@ -50535,7 +50794,7 @@
     ],
     "retro_note": "2026-09-04 소급: count_paper 키 부재로 1→4 (rf_replication_auto.sh C_COUNT 수리)"
   },
-  "last_updated": "2026-09-21T16:19:46+0900",
+  "last_updated": "2026-09-21T18:50:35+0900",
   "removed_entries": [
     {
       "removed_at": "2026-08-30T10:07:35+0900",

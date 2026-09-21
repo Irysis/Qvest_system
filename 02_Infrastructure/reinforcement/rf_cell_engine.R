@@ -42,7 +42,9 @@ SPEC <- jsonlite::fromJSON(.rf_spec_path, simplifyVector = FALSE)
 #   없으면 두 함수 모두 입력을 그대로 돌려주므로 **기존 칸은 비트 동일**이다.
 #   ★`[[ ]]` 정확 일치로 읽는다(부분 일치가 다른 키를 집는 사고 이력 — WP-R 2026-09-17).
 suppressMessages(source(file.path(.RF_ROOT, "02_Infrastructure/reinforcement/rf_rebalance.R")))
+suppressMessages(source(file.path(.RF_ROOT, "02_Infrastructure/reinforcement/rf_sleeve.R")))
 .RB <- rf_rb_parse(SPEC[["rebalance"]])
+.SL <- rf_sl_parse(SPEC[["defense_sleeve"]])   # B7 구조적 방어 슬리브(없으면 NULL = 기존 경로)
 .LIQ_MIN <- as.numeric(.AX$liq_adv20_min %||% 2e8)
 .START   <- as.Date(.AX$start_date    %||% "2005-01-01")
 
@@ -304,6 +306,30 @@ SEL <- if (identical(.univ$kind, "sector_neutral")) {
 
 # B6 선정 규칙(rank_buffer) — 보유를 순위 버퍼 안에서 유지한다(규칙 없으면 SEL 그대로)
 SEL <- rf_rb_select(PANEL, SEL, .RB, .N_MAX)
+
+# ── B7 구조적 방어 슬리브 (도훈 지시 2026-09-21) ──────────────────────────────
+#   보유 n_max 종 중 k 종을 방어 팩터 상위로 교체한다. **총노출·종목수는 불변**이고
+#   바뀌는 건 '누구를 보유하는가' 뿐이다 — 타이밍 주장이 없으므로 T3 플라시보 대상이 아니다.
+#   ★B6 뒤에 둔다: 버퍼가 알파 순위의 연속성을 먼저 정하고, 그 다음 k 자리를 방어에 내준다.
+#   ★팩터 id 는 spec 에 박지 않는다 — 규칙(rf_sl_resolve)이 등록부의 측정 ic_bad 로 고른다.
+if (!is.null(.SL)) {
+  .sl_res <- rf_sl_resolve(.SL, .RF_ROOT)
+  .pdef <- .load_factor(list(kind = .SL$factor_kind %||% "db", id = .sl_res$id), ".zdef")  # db 면 C15 단일 경유
+  if (is.null(.pdef) || !nrow(.pdef))
+    stop(sprintf("[rf_cell_engine] 방어 팩터 %s 패널 부재 — 처치 불가", .sl_res$id))
+  .PANEL_D <- merge(PANEL, .pdef, by = c("Date", "Ticker"), all.x = TRUE)
+  .bcol <- NULL
+  if (identical(.SL$kind, "random_beta_matched")) {
+    .pb <- .load_factor(list(kind = .SL$factor_kind %||% "db", id = .SL$beta_factor), ".zbeta")
+    if (is.null(.pb) || !nrow(.pb))
+      stop(sprintf("[rf_cell_engine] 베타 팩터 %s 패널 부재 — 무신호 대조 불가", .SL$beta_factor))
+    .PANEL_D <- merge(.PANEL_D, .pb, by = c("Date", "Ticker"), all.x = TRUE)
+    .bcol <- ".zbeta"
+  }
+  .sl_before <- SEL
+  SEL <- rf_sl_select(.PANEL_D, SEL, .SL, .N_MAX, defcol = ".zdef", betacol = .bcol)
+  cat(sprintf("[rf_cell_engine] %s\n", rf_sl_report(.sl_before, SEL, .SL, .sl_res$id, .sl_res$basis)))
+}
 
 if (identical(.wt$kind, "ew")) {
   FACTORS <- SEL[, .(Date, Ticker, Score)]

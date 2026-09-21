@@ -28,10 +28,27 @@ if (isTRUE(a$adaptive) && !isTRUE(b$adaptive) && !isTRUE(c$adaptive) && !isTRUE(
   ok("① 진리표 4방향 — 수익 충족 ∧ 위험 미달 에서만 적응") else
   ng("① 적응 조건 오작동", sprintf("%s/%s/%s/%s", a$adaptive, b$adaptive, c$adaptive, d$adaptive))
 
-# ② 적응 시 위험 축이 2번째로 온다
-if (isTRUE(a$adaptive) && identical(a$order[2], RISK[1]))
-  ok(sprintf("② 적응 순서 — %s", paste(a$order, collapse = ">"))) else
-  ng("② 위험 축이 앞으로 안 왔다", paste(a$order, collapse = ">"))
+# ② 적응 시 **분모를 치는 축들**이 앞으로 온다 — 그리고 그 안에서 구조적 방어가 오버레이보다 먼저.
+#   ★2026-09-21 계약 변경: 구판은 "위험 축(risk_overlay)이 2번째" 였다. 그런데 오버레이는 137칸을
+#     태우고 적대검증 pass 0(fail 11 · not_candidate 31) — 우선 슬롯을 전멸 확인된 축이 독점하면
+#     "구속 축을 먼저 치라"는 규칙의 취지가 예산 낭비로 뒤집힌다. B7(structural_defense)은 같은
+#     분모를 치되 타이밍 주장이 없어 T3 플라시보 대상이 아니다. B5 는 빠지지 않고 뒤로만 간다.
+.axs  <- vapply(PROG$blocks, function(b) as.character(b$axis %||% ""), character(1))
+.ids  <- vapply(PROG$blocks, function(b) as.character(b$id %||% ""), character(1))
+.DEN  <- c(.ids[.axs == "structural_defense"], .ids[.axs == "risk_overlay"])   # 분모 축(기대 순서)
+.got  <- a$order[seq_along(.DEN) + 1L]
+if (isTRUE(a$adaptive) && identical(.got, .DEN))
+  ok(sprintf("② 적응 순서 — 분모 축 %s 가 B1 직후·그 순서로 (%s)",
+             paste(.DEN, collapse = ">"), paste(a$order, collapse = ">"))) else
+  ng("② 분모 축 배치가 계약과 다르다",
+     sprintf("기대 %s · 실제 %s", paste(.DEN, collapse = ">"), paste(a$order, collapse = ">")))
+
+# ②b [음성 대조] 구조적 방어가 **오버레이보다 뒤**면 실패여야 한다 — 검사가 순서를 실제로 재는가
+.d_i <- match(.ids[.axs == "structural_defense"][1], a$order)
+.r_i <- match(.ids[.axs == "risk_overlay"][1],       a$order)
+if (is.finite(.d_i) && is.finite(.r_i) && .d_i < .r_i)
+  ok(sprintf("②b 구조적 방어(%d번째)가 오버레이(%d번째)보다 앞", .d_i, .r_i)) else
+  ng("②b 전멸 확인된 축이 우선권을 되가져갔다", sprintf("defense %s · overlay %s", .d_i, .r_i))
 
 # ③ 결합 블록은 언제나 마지막 — 다른 축 승자를 조합하는 블록이라 순서가 고정이다
 if (identical(a$order[length(a$order)], COMB[1]) && identical(b$order[length(b$order)], COMB[1]))

@@ -107,6 +107,7 @@ rf_promote_carry <- function(ws, cf, best, sp, cfg = list(), root = .RFP_ROOT(),
   #    비용 구조가 유지된다. 빠뜨리면 세대마다 월간으로 되돌아간다 — overlay 사고와 동형)
   out <- list(factors = cf %||% list(), weighting = ws$weighting,
               rebalance = ws[["rebalance"]],
+              defense_sleeve = ws[["defense_sleeve"]],
               universe = list(kind = "k200_kq150"),
               universe_reset_from = ws$universe,
               overlay = ov$overlay,

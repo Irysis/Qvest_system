@@ -43,7 +43,11 @@ suppressPackageStartupMessages({ library(jsonlite) })
 #   격자에만 넣고 여기를 안 고치면 rf_append_attempt 가 그 블록의 등록을 **거부**해 루프가 멈춘다
 #   (배터리 "격자↔원장 계약" 이 그 상태를 잡는다 — 실제로 잡혔다).
 RF_KEYWORD_AXES_L1 <- c("multifactor", "weighting", "universe", "risk_overlay", "combination",
-                        "execution_cadence")
+                        "execution_cadence",
+                        # ★structural_defense(B7 · 2026-09-21 도훈 승인) — 선정 축의 구조적 방어.
+                        #   노출(B5)도 상대배분(B2)도 아닌 '무엇을 보유하는가'. 축이 허용목록에
+                        #   없으면 원장이 블록 등록을 거부해 칸이 한 번도 안 선다.
+                        "structural_defense")
 RF_KEYWORD_AXES_L2 <- c("regime_identification", "strategy_combination")
 RF_STATUS_ENUM <- c("active", "graduated", "exhausted", "superseded", "parked")
 
@@ -58,7 +62,7 @@ RF_STATUS_ENUM <- c("active", "graduated", "exhausted", "superseded", "parked")
     layer = as.integer(layer),
     # ★2026-09-21 도훈 승인 — B6(집행 주기) 축 신설로 격자가 6블록x5 = 30칸이 됐다.
     #   기반 예산이 25 에 머물면 새 축은 칸을 못 받고 굶는다(러너의 자동 상향은 설계 초과분만 더한다).
-    max_attempts = if (layer == 1L) 30L else NULL,   # NULL = 무한 (2계층)
+    max_attempts = if (layer == 1L) 35L else NULL,   # NULL = 무한 (2계층 · 7블록x5)
     note = if (layer == 1L)
       "v10 1계층 강화 원장 — QEPM(alpha→risk→optimizer→forge→등급) 기반, 논문당 최대 30회(격자 6블록×5). root_papers 는 선택(2026-09-03 의무 해제) — 시도마다 evidence=paper/method/none 기록. 논문 3편마다 combination_review 의무." else
       "v10 2계층 강화 원장 — 국면식별/전략결합 축, A등급까지 무한. 착수 시 직전 attempts 의 lessons 주입 의무.",

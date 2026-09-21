@@ -598,7 +598,9 @@ if (!length(jobs)) for (CELL in batch) {
                universe = CELL$universe %||% list(kind = "k200_kq150"),
                # ★B6(집행 주기) 칸의 규칙 — 빠지면 그 칸은 **조용한 무처치**가 된다
                #   (격자 셀의 rebalance 를 여기서 안 실으면 엔진은 월간 그대로 돈다)
-               rebalance = CELL[["rebalance"]])
+               rebalance = CELL[["rebalance"]],
+               # ★B7 방어 슬리브 — 안 실으면 엔진은 알파 단독으로 돈다(처치 미전달)
+               defense_sleeve = CELL[["defense_sleeve"]])
   # ── ★블록 누적 — 실행 순서를 따라간다 (도훈 지시 2026-09-04) ────────────────
   #   구판은 B2·B3 가 **B1 승자만** 물었다. 블록 순서가 고정(B1→B2→B3→B5→B4)일 때는
   #   맞았지만, 교훈 재귀가 순서를 적응시키면서(2026-09-04 B5 를 2번째로) 전제가 깨졌다.
@@ -615,7 +617,7 @@ if (!length(jobs)) for (CELL in batch) {
   #     매번 버렸다. 유니버스를 재려고 비중을 리셋하면 그건 통제가 아니라 누적 파괴다.
   if (!(CELL$block %in% c("B1", "B4")) && !is.null(.wbest_spec)) {
     .own <- switch(CELL$block, B2 = "weighting", B3 = "universe", B5 = "overlay",
-                   B6 = "rebalance", NA_character_)
+                   B6 = "rebalance", B7 = "defense_sleeve", NA_character_)
     if (is.null(SPEC$factors) || !length(SPEC$factors)) SPEC$factors <- .wbest_spec$factors
     if (!identical(.own, "weighting") && !is.null(.wbest_spec$weighting)) SPEC$weighting <- .wbest_spec$weighting
     if (!identical(.own, "universe")  && !is.null(.wbest_spec$universe))  SPEC$universe  <- .wbest_spec$universe
@@ -624,6 +626,7 @@ if (!length(jobs)) for (CELL in batch) {
     if (!identical(.own, "overlay")   && !is.null(.wbest_spec[["overlay"]])) SPEC$overlay <- .wbest_spec[["overlay"]]
     # ★B6(집행 주기)도 누적 축이다 — 빠지면 "승계 목록에서 빠진 축은 없는 축이 된다"(2026-09-05 교훈)
     if (!identical(.own, "rebalance") && !is.null(.wbest_spec[["rebalance"]])) SPEC$rebalance <- .wbest_spec[["rebalance"]]
+    if (!identical(.own, "defense_sleeve") && !is.null(.wbest_spec[["defense_sleeve"]])) SPEC$defense_sleeve <- .wbest_spec[["defense_sleeve"]]
     jlog("block_accumulate", code = CELL$code, own_axis = .own %||% "-",
          w = (SPEC$weighting$kind %||% "?"), u = (SPEC$universe$kind %||% "?"),
          ov = length(.ov_layers(SPEC$overlay)),
@@ -716,7 +719,8 @@ if (!length(jobs)) for (CELL in batch) {
       .same_axis(SPEC$weighting, E$carry$weighting %||% list(kind = "ew")) &&
       .same_axis(SPEC$universe,  E$carry$universe  %||% list(kind = "k200_kq150")) &&
       .same_axis(SPEC$overlay,   E$carry$overlay   %||% list()) &&
-      .same_axis(SPEC[["rebalance"]], E$carry[["rebalance"]] %||% list())
+      .same_axis(SPEC[["rebalance"]], E$carry[["rebalance"]] %||% list()) &&
+      .same_axis(SPEC[["defense_sleeve"]], E$carry[["defense_sleeve"]] %||% list())
   }
   # ★근거 논문 (2026-09-02 수리). 구판의 폴백 사슬(셀 논문 → B1 승자 논문)은
   #   ①B1 이 시드 계열 논문 하나만 붙이고(사슬이 접두 집합 → 4계열 컴포짓 5칸 전부 Amihud 2002)

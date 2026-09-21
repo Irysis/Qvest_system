@@ -111,7 +111,14 @@ rf_block_order_decide <- function(entry, prog, root = .RFL_ROOT()) {
   best <- ats[[which.max(v)]]$essence
   cg   <- suppressWarnings(as.numeric(best$cagr   %||% NA))
   cl   <- suppressWarnings(as.numeric(best$calmar %||% NA))
-  risk <- ids[axs == "risk_overlay"]; comb <- ids[axs == "combination"]
+  ## ★분모(낙폭)를 치는 축은 이제 둘이다 — **구조적 방어(B7)를 먼저**, 오버레이(B5)를 그 다음.
+  ##   왜 순서를 바꿨나(실측 2026-09-21): 오버레이는 137칸을 태우고 적대검증 **pass 0**
+  ##   (fail 11 · not_candidate 31) — 노출 타이밍 주장이 T3 노출-짝지은 플라시보를 한 번도 못 넘었다.
+  ##   구속 축을 먼저 치라는 이 규칙의 취지는 옳은데, 우선 슬롯을 **전멸이 확인된 축**이 독점하면
+  ##   그 취지가 예산 낭비로 뒤집힌다. B7 은 같은 분모를 치되 타이밍 주장이 없어 T3 대상이 아니다.
+  ##   ★B5 를 빼지는 않는다 — 순서만 뒤로 간다(측정은 그대로 남는다).
+  risk <- c(ids[axs == "structural_defense"], ids[axs == "risk_overlay"])
+  comb <- ids[axs == "combination"]
   if (length(risk) && is.finite(cg) && cg >= th$cagr && (!is.finite(cl) || cl < th$calmar)) {
     rest <- setdiff(ids[-1L], c(risk, comb))
     return(list(order = c(ids[1L], risk, rest, comb), adaptive = TRUE,

@@ -395,6 +395,38 @@ rE5 <- run_cell(base_spec(factor2 = PX))
 if (is.null(rE5$err) && identical(.port_of(rE5), .port_of(rE0)))
   ok("E7 규칙 없음 = 구판 산출과 비트 동일") else ng("E7 무규칙 경로가 달라졌다", rE5$err %||% "")
 
+# ── F. B7 구조적 방어 슬리브 (2026-09-21) ────────────────────────────────────
+#   ★엔진 경유 검사다. 단위검사(test_rf_sleeve.R)는 순수 함수만 본다 — 스펙이 엔진까지
+#     실제로 전달되는지는 여기서만 드러난다("선언 != 소비").
+#   방어 팩터는 픽스처의 오프라인 팩터(lowvol60)를 spec 에 고정해 쓴다(DB 미접촉).
+.SLV <- function(k = 5L, kind = "factor_topk")
+  list(kind = kind, k = k, factor_id = "lowvol60", factor_kind = "price")
+
+# F1 [양성] 슬리브가 엔진을 통과해 산출물을 만든다
+rF0 <- run_cell(base_spec(factor2 = list(kind = "none")))
+rF1 <- run_cell(base_spec(factor2 = list(kind = "none"), defense_sleeve = .SLV(5L)))
+if (is.null(rF1$err) && !is.na(rF1$out)) ok(sprintf("F1 방어 슬리브 k=5 → %s 산출", rF1$out)) else
+  ng("F1 슬리브가 엔진에서 죽는다", rF1$err %||% "산출 없음")
+
+# F2 종목수 불변 · F3 구성은 변함 — 이 둘이 B5(노출 축소)와 갈리는 지점이다
+if (is.null(rF1$err) && is.null(rF0$err)) {
+  .nn <- function(r) { P <- .port_of(r); if (is.null(P)) NA_integer_ else max(P[, .N, by = Date]$N) }
+  if (identical(.nn(rF1), .nn(rF0))) ok(sprintf("F2 보유 종목수 불변 (%s종 — 총노출 축소 아님)", .nn(rF1))) else
+    ng("F2 종목수가 바뀌었다", sprintf("%s vs %s", .nn(rF0), .nn(rF1)))
+  if (!identical(.port_of(rF1), .port_of(rF0))) ok("F3 보유 구성은 바뀌었다(처치 전달)") else
+    ng("F3 슬리브가 아무것도 안 바꿨다")
+}
+
+# F4 [불변] 슬리브가 없으면 기존 산출과 **비트 동일** (기존 칸 불변 보증)
+rF4 <- run_cell(base_spec(factor2 = PX))
+if (is.null(rF4$err) && identical(.port_of(rF4), .port_of(rE0)))
+  ok("F4 슬리브 없음 = 구판 산출과 비트 동일") else ng("F4 무슬리브 경로가 달라졌다", rF4$err %||% "")
+
+# F5 [양성 대조] k >= n_max 는 엔진이 멈춘다(알파 슬리브가 사라지는 칸)
+rF5 <- run_cell(base_spec(factor2 = list(kind = "none"), defense_sleeve = .SLV(as.integer(AXES$n_max))))
+if (!is.null(rF5$err) && grepl("n_max|알파 슬리브", rF5$err)) ok("F5 [양성 대조] k >= n_max → 엔진이 stop") else
+  ng("F5 퇴화를 통과시켰다", rF5$err %||% "오류 없음")
+
 writeLines("")
 writeLines(sprintf("합계: 통과 %d · 실패 %d", PASS, FAIL))
 cat(sprintf('{"test":"rf_cell_engine_smoke","pass":%d,"fail":%d,"total":%d}\n', PASS, FAIL, PASS + FAIL))
