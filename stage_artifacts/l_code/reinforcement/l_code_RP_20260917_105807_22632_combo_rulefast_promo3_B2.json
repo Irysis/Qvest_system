@@ -17,11 +17,36 @@
   "calmar": 0.476,
   "oos_retention": 0.026,
   "portfolio_alpha_t": 4.094,
-  "next_probes": [
-    "다음 격자 축 B3(universe) — 이 블록 승자 위에서 측정",
-    "B2_11(최고 4.094)는 B4 조합 후보로 고정 · B2_10(최저 2.138)는 축 역작동 여부를 조합 LOO 로 분리"
-  ],
+  "next_probes": ["다음 격자 축 B3(universe) — 이 블록 승자 위에서 측정", "B2_11(최고 4.094)는 B4 조합 후보로 고정 · B2_10(최저 2.138)는 축 역작동 여부를 조합 LOO 로 분리"],
   "next_probe": "다음 격자 축 B3(universe) — 이 블록 승자 위에서 측정 | B2_11(최고 4.094)는 B4 조합 후보로 고정 · B2_10(최저 2.138)는 축 역작동 여부를 조합 LOO 로 분리",
   "source_paper": "https://arxiv.org/abs/2002.06975",
-  "record_type": "performance"
+  "record_type": "performance",
+  "mechanism": "비중 방법론 축은 이 계보의 MDD에 닿지 않는다(실측). 8칸 MDD 0.542~0.567(폭 0.025)로 직전 B5의 0.443~0.549(폭 0.106) 대비 1/4이고, 위험을 목적함수에 직접 넣은 두 칸이 오히려 최악이다 — B2_10(CDaR_LP) MDD 0.559·B2_12(minvar) 0.567이 위험축을 전혀 쓰지 않는 대조군 B2_13(score_tilt) 0.556보다 높다. 칸은 세 계열로 나뉜다: ①score-비례 등가군 B2_13(PORT_t 4.057·CAGR 0.266·Calmar 0.478)·B2_11(CVaR_LP 4.094·0.476)·B2_6(ivol 4.041·0.474)·B2_7(riskparity 3.979·0.477) — Calmar 폭 0.004로 구분 불가 ②군집 계열 B2_8(hrp)·B2_9(nco) — MDD 0.547/0.542로 블록 최저를 만들었지만 CAGR 0.241(-0.025)을 지불해 Calmar 0.441/0.445 ③위험 최소화 계열 B2_10·B2_12 — CAGR 0.213/0.217, Calmar 0.381/0.383으로 최하위. 설계 8건은 8건 다 집행됐으므로 B5 처방이 틀린 것이다: '같은 처치를 오버레이가 아니라 비중 벡터로 집행'은 반증됐다 — ivol(B2_6)은 오버레이판 B5_20(CAGR 0.268·MDD 0.539·Calmar 0.496)을 재현하지 못했고 대조군 B2_13 이하다. '상관 구조냐 개별 변동성이냐'도 null이다(B2_6 대 B2_7: Calmar 0.003·MDD 0.003). 정황: MDD를 조금이라도 내린 유일한 계열(hrp·nco)은 종목 간 군집 구조를 읽고, B1에서 MDD를 움직인 두 칸도 보유 이름 구성을 바꾼 칸이었다. 미결: 낙폭이 '어떤 이름이 후보 집합에 있는가'의 함수인지는 B2로 못 가른다 — 후보 집합 자체를 바꾸는 B3에서만 갈린다.",
+  "mechanism_by": "llm:block_end",
+  "mechanism_at": "2026-09-21T11:45:16+0900",
+  "prior_lessons_used": ["B1", "B5"],
+  "next_block_actions": [
+    {
+      "action": "B3 5칸을 후보 집합 축에 전부 배정한다 — 지수 멤버십 절단(B3_11 KQ150 단독·B3_12 K200 단독) · 시총 3분위 절단(B3_13 소형·B3_14 대형) · 후보 수를 유지한 채 섹터 집중만 제거(B3_15).",
+      "why": "B2가 같은 보유 집합 위 비중 재배분으로는 MDD가 안 움직임을 8칸으로 실측했고(폭 0.025), MDD를 건드린 유일한 계열(B2_8·B2_9)과 B1에서 MDD를 움직인 두 칸이 전부 보유 구성 축이었다.",
+      "expect": "4개 절단 칸 중 하나라도 MDD가 0.542~0.567 범위를 벗어나면 낙폭은 후보 집합의 함수다. 5칸 전부가 그 범위 안이면 이 계보의 낙폭은 유니버스 축으로도 안 내려가고, 남은 후보는 B6(집행 주기)뿐이다."
+    },
+    {
+      "action": "B3_15(섹터 중립)를 breadth 교락이 없는 대조군으로 읽는다 — 절단 4칸은 후보 수가 줄어 breadth와 집합 정체성이 섞이지만 B3_15는 후보 수가 유지된다.",
+      "why": "B2에서 MDD를 유일하게 내린 축이 군집 구조(hrp·nco)였고, 섹터 중립은 비중이 아니라 후보 구조 단에서 같은 군집 집중을 제거하는 처치다.",
+      "expect": "B3_15만 MDD가 내려가면 낙폭은 섹터 동조에서 오고, 절단 4칸만 내려가면 breadth·유동성 축에서 온다. 둘 다 0.54~0.57이면 군집 가설은 비중·유니버스 양쪽에서 기각된다."
+    },
+    {
+      "action": "비중 방법을 B2_13(score_tilt)으로 고정하고 남은 블록(B3·B6·B4)에서 비중 arm을 더 쓰지 않는다.",
+      "why": "등가군 4칸에서 위험축을 하나도 안 쓴 B2_13이 Calmar 0.478로 상단이고, 위험축을 넣은 4칸은 동률(0.474~0.477)이거나 열위(0.381~0.445)다.",
+      "expect": "B4 칸을 전부 팩터·유니버스 조합에 배정할 수 있다. 틀렸다면 B3에서 유니버스가 바뀐 뒤 비중 축이 되살아나야 하는데, 그건 B3 결과로 사후 확인만 가능하고 이 블록으로는 못 가른다."
+    }
+  ],
+  "next_block_actions_by": "llm:block_end",
+  "avoid": ["비중 방법론 arm을 남은 블록(B3·B6·B4)에 다시 배치하는 것 — B2 8칸 Calmar 폭 0.037·MDD 폭 0.025이고 위험축 없는 B2_13(0.478)이 상단이다. 벽 확인.", "위험량을 목적함수에 직접 넣는 최적화(qepm:CDaR_LP·lean:minvar) 재사용 — B2_10 MDD 0.559·B2_12 0.567로 대조군 B2_13 0.556보다 나쁘면서 CAGR만 0.049~0.053 잃었다. 낙폭을 목적에 넣어도 낙폭이 안 내려간다.", "총노출 스칼라 배율 계열(vol_median·trend_run_gate 및 파생) — B5_16·B5_18·B5_21·B5_22 네 칸에서 CAGR 손실이 MDD 이득을 넘었다(근거는 B5, 이 블록 밖).", "B4에서 5번째 팩터를 더하는 것 · INV07_Retail_Contrarian을 기저로 끌고 가는 것 — 근거는 B1이고 이 블록 밖이다.", "B3_11(KQ150 단독) 결과를 2010-02 이전 구간으로 해석하는 것 — KQ150 멤버십 패널의 창이 2010-02부터다(근거는 이 블록 밖)."],
+  "next_block_design_for": "B3",
+  "next_block_design_n": 5,
+  "prior_action_status": "executed",
+  "prior_action_detail": "설계 8건 중 8건 집행 (설계: lean:ivol,lean:riskparity,lean:hrp,lean:nco,qepm:CDaR_LP,qepm:CVaR_LP,lean:minvar,lean:score_tilt / 실측: lean:ivol,lean:riskparity,lean:hrp,lean:nco,qepm:CDaR_LP,qepm:CVaR_LP,lean:minvar,lean:score_tilt)",
+  "mechanism_confidence": "high"
 }
