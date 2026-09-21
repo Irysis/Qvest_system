@@ -17,11 +17,46 @@
   "calmar": 0.351,
   "oos_retention": -0.556,
   "portfolio_alpha_t": 1.326,
-  "next_probes": [
-    "다음 격자 축 B2(weighting) — 이 블록 승자 위에서 측정",
-    "B5_18(최고 1.326)는 B4 조합 후보로 고정 · B5_23(최저 0.055)는 축 역작동 여부를 조합 LOO 로 분리"
-  ],
+  "next_probes": ["다음 격자 축 B2(weighting) — 이 블록 승자 위에서 측정", "B5_18(최고 1.326)는 B4 조합 후보로 고정 · B5_23(최저 0.055)는 축 역작동 여부를 조합 LOO 로 분리"],
   "next_probe": "다음 격자 축 B2(weighting) — 이 블록 승자 위에서 측정 | B5_18(최고 1.326)는 B4 조합 후보로 고정 · B5_23(최저 0.055)는 축 역작동 여부를 조합 LOO 로 분리",
   "source_paper": "https://arxiv.org/abs/2301.09173",
-  "record_type": "performance"
+  "record_type": "performance",
+  "mechanism": "판정: 위험 축은 총노출 스케일에서만 움직였다. B5 9칸의 MDD 0.409~0.583 은 B1 10칸(0.581~0.653)·B7 5칸(0.545~0.676)이 한 번도 벗어나지 못한 범위를 처음으로 아래로 벗어났고, Calmar 도 B5_31 0.386 으로 B1_6 0.290·B7_37 0.262 를 넘었다 — B7 이 남긴 미측정 소비 지점(총노출)이 켜졌다는 실측이다. 단 그 칸은 상주 arm 이다. 신설 8칸의 최고는 Calmar B5_18 0.351, MDD 최저는 B5_23 0.419 로 전부 B5_31 미만 — 설계 레인 8칸의 순증분은 0이다. 칸은 셋으로 갈린다. ① 스택 2칸 B5_22·B5_23 이 MDD 최저(0.423·0.419)이면서 PORT_t 최저(0.554·0.055) — 층을 곱으로 겹치면 노출 감축과 PORT_t 파괴가 같이 커진다. ② 중간군 B5_16~B5_19, MDD 0.457~0.478 · PORT_t 0.584~1.326. ③ B5_20(MDD 0.583)·B5_21(0.567)은 PORT_t 1.243·1.109 를 보존한 대신 B1 범위 안에 그대로 남아 위험 축을 전혀 사지 못했다. 즉 노출을 실제로 줄인 칸에서만 MDD 가 내려갔고, 그 양만큼 PORT_t·CAGR 가 나갔다(9칸 CAGR 0.126~0.168, 부모 B1_6 0.179 아래). 정황 하나: B5_31 은 MDD 0.619→0.409(-34%) 대비 CAGR 0.179→0.158(-12%) 로 비례 축소보다 유리하다. 미결 둘 — (1) 이 비대칭이 타이밍 기여인지 평균노출 하락인지는 노출을 맞춘 상수 등가와 순열 플라시보로만 갈린다(직전 22칸에서는 노출 짝지은 플라시보가 관측 Calmar 를 넘었다 — 이 블록 밖 근거). (2) 처치 문자열이 9칸 전부 동일해 어느 arm 이 어느 칸인지 원장에서 안 갈린다. B7 에서 낸 기록 처방이 집행되지 않았다.",
+  "mechanism_by": "llm:block_end",
+  "mechanism_at": "2026-09-21T22:10:14+0900",
+  "prior_lessons_used": ["B1", "B7"],
+  "next_block_actions": [
+    {
+      "action": "B2 에서 총노출·종목수를 부모와 동일하게(Σw=1, ≤25) 고정한 채 공분산과 낙폭경로를 비중에서 소비한다 — qepm:CDaR_LP · lean:minvar · lean:ivol 세 칸.",
+      "why": "B5 는 MDD 를 총노출 축소로만 샀고 CAGR 가 9칸 전부 0.126~0.168 로 부모 0.179 아래로 내려갔다. 노출을 안 줄이고 MDD 를 사는 소비 지점이 남아 있는지는 비중 축에서만 미측정이다(B1=점수 축, B7=보유 구성 축은 둘 다 0.545~0.676 범위를 못 벗어났다).",
+      "expect": "맞으면 MDD 가 0.545 아래로 내려가면서 CAGR 가 0.17 이상 유지된다. 틀리면 MDD 가 0.545~0.676 안에 남고, Σw=1 에서는 어떤 소비 지점에서도 위험 축을 못 산다는 B7 결론이 세 번째로 재현된다."
+    },
+    {
+      "action": "대각만 쓰는 lean:ivol 과 완전 공분산을 쓰는 lean:minvar · lean:hrp 를 같은 블록에 나란히 둔다.",
+      "why": "B5 의 MDD 감축은 전부 노출 스칼라에서 왔고 상관구조가 기여했다는 증거가 없다. 25종 롱온리에서 상관추정이 정보를 갖는지 자체가 미측정이다.",
+      "expect": "ivol 과 minvar 의 MDD 차이가 0.02 미만이면 상관추정은 이 유니버스에서 정보가 없다. minvar 만 내려가면 상관구조가 실린 것이고, hrp 가 minvar 보다 나으면 그 차이는 추정오차 몫이다."
+    },
+    {
+      "action": "qepm:CDaR_LP 와 qepm:CVaR_LP 를 짝으로 넣어 목적함수가 겨누는 양을 가른다.",
+      "why": "이 계보의 낙폭은 급락형이 아니라 침식형이다(고점→저점 25.8개월 — 블록 밖 근거). 월별 꼬리손실 목적은 침식 경로에 안 닿고 낙폭경로 목적만 닿아야 한다. B5_20·B5_21 이 PORT_t 를 보존하고도 MDD 0.583·0.567 에 남은 것이 같은 이야기다.",
+      "expect": "CDaR_LP 의 MDD 개선이 CVaR_LP 보다 크면 침식형 진단이 지지된다. 둘 다 MDD 0.545~0.676 안에 남으면 벽은 목적함수 선택이 아니라 소비 지점(Σw=1)이다."
+    },
+    {
+      "action": "lean:score_tilt 한 칸을 PORT_t 쪽 대조로 세운다(부모의 동일가중 1/25 이 기준선이므로 별도 칸을 쓰지 않는다).",
+      "why": "B1 에서 유일하게 켜진 축은 초과수익이었다. 비중을 점수로 기울이는 것이 그 축의 연장인지 새 축인지를 한 칸으로 가를 수 있다.",
+      "expect": "PORT_t 가 B1_6 1.704 위로 가면서 MDD 는 0.545~0.676 에 남으면 B2 도 초과수익 단일 축이고, 나머지 5칸의 위험 축 해석에서 점수 기울임을 분리해야 한다."
+    },
+    {
+      "action": "원장 처치 문자열에 칸별 비중 arm id 를 기록하게 한다 — 측정 칸 소모 0.",
+      "why": "B5 9칸이 동일 문자열로 기록돼 8개 arm 중 어느 것이 MDD 0.409~0.583 의 어느 지점을 만들었는지 귀속이 불가능했다. B7 에서 같은 처방을 냈고 집행되지 않았다.",
+      "expect": "B2 결과가 arm 별로 귀속되어 위 세 대조(대각 vs 완전 공분산, CDaR vs CVaR, 점수 기울임)가 실제로 갈린다. 안 되면 B2 도 B5 와 같은 미결로 끝난다."
+    }
+  ],
+  "next_block_actions_by": "llm:block_end",
+  "avoid": ["점수 축에 팩터를 더 넣어 Calmar 를 올리는 시도 — B1 에서 벽 확인. PORT_t 가 1.741 움직이는 동안 Calmar 폭 0.105 · MDD 폭 0.072.", "슬리브 자격 기준이나 k 를 바꿔 보유 구성 축을 재시험 — B7 5칸 전부 Calmar 0.262 이하, MDD 최저 개선의 가격이 PORT_t -59% 였다. 소비 지점이 같으면 같은 범위다.", "B5 오버레이 재설계 또는 스택 3층 확장 — 이 entry 는 B5 를 이미 측정해 재설계가 사후 선택이고, 2층 스택 두 칸(B5_22 PORT_t 0.554 · B5_23 0.055)이 블록 내 PORT_t 최저다. 층을 늘리면 MDD 보다 PORT_t 가 먼저 사라진다.", "gen:* shrinkage 4종을 같은 블록에 나란히 배치 — 같은 소비 지점에서 추정자만 다른 칸들이다. 비중 가족이 MDD 를 움직인다는 증거가 나오기 전에는 칸 낭비다.", "총노출을 다시 줄이는 설계를 B2 안에 섞는 것 — B5 가 이미 그 축을 9칸 쟀고, 섞으면 Σw=1 에서 비중이 위험을 사는지 여부가 노출 감축과 안 갈린다."],
+  "next_block_design_for": "B2",
+  "next_block_design_n": 6,
+  "prior_action_status": "executed",
+  "prior_action_detail": "설계 8건 중 8건 집행 (설계: trend_ladder_gate,ladder_idio_conc_tilt,trend_horizon_split_tilt,multivar_channel_tilt,csd_idio_tilt,book_convexity_brake,csd_idio_tilt+trend_ladder_gate,book_convexity_brake+ladder_idio_conc_tilt / 실측: pg2_risk_overlay_v1,trend_ladder_gate,ladder_idio_conc_tilt,trend_horizon_split_tilt,multivar_channel_tilt,csd_idio_tilt,book_convexity_brake,csd_idio_tilt+trend_ladder_gate,book_convexity_brake+ladder_idio_conc_tilt)",
+  "mechanism_confidence": "medium"
 }
