@@ -15,6 +15,19 @@
     "llm_advisory": false,
     "note": "리서치 디렉터 (2026-09-21 도훈 승인 플랜 Part 3). D0 = 진단·권고만(act=false) — ops/rf_director.R 이 아침 체인 [3/3] 과 수동 실행에서 .cache/rf_director_latest.json + 06_Registry/layer_bottleneck_map.md 를 쓴다. act=true 는 D3(실행기 배선) 뒤 도훈 결정. min_adversary_n = B5 오버레이 '사망' 판정에 필요한 최소 반증 arm 수 · max_units_per_day = 디렉터가 하루에 여는 연구 단위 상한 · episode_shape_months = 최심 낙폭 고점→저점 ≤N개월이면 급락형 라벨(서술용). 러너는 이 블록을 읽지 않는다."
   },
+  "l2_auto": {
+    "enabled": false,
+    "selection_type": "",
+    "decided_by": "",
+    "decided_at": "",
+    "arms": ["T", "S", "C"],
+    "arm_timeout_min": 40,
+    "min_free_gb": 6,
+    "fallback_max_modules": 200,
+    "stale_pool_days": 7,
+    "label_gate": "block",
+    "note": "2계층 무인 레인 (2026-09-21 플랜 Part 3 · D2). enabled=true + R1 결정(selection_type chain|sweep · decided_by · decided_at 도훈 기록) 전까지 레인은 halt. 요청 = 06_Registry/l2_unit_request.json(디렉터 D3 또는 수동). 실행 중 러너 claim 을 쥐어 L1 배치와 직렬화(≤75분/일). arms: T=π₀ 등재 · S=lag+1 PIT 스트레스 · C=floor-only 대조(방어형 제외, FR_MODULE_PERF 변형 풀). min_free_gb 미만이면 FR_MAX_MODULES=fallback 으로 잘린 풀(원장에 pool_truncated 표기)."
+  },
   "combination": {
     "enabled": true,
     "note": "★도훈 지시 2026-09-04 — 결합은 rank-Z 평균 blend 가 아니라 **LLM 이 두 논문을 읽고 설계한 전략(기저)**에서 출발한다. 그 기저를 충실구현 1회로 측정해 base_grade 를 얻고, base_min_port_t 가드를 통과한 뒤에야 강화 25칸을 열어야 한다. 그 레인이 서기 전까지 구판 blend 착수를 정지한다 — 정지 중에는 호출자가 다음 논문 충실구현으로 정상 이월한다.",

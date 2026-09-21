@@ -40,6 +40,10 @@ mkdir -p "$(dirname "$LOG")"
   # ★B5 설계 레인 (2026-09-17 · WP-R 선배선) — 스택 설계·재설계 라운드(원장 b5_redesign)는 별도 레인이 연다.
   #   레인 파일은 후속 패키지가 만든다 — 없으면 건너뛴다(레인 부재 = 러너가 규칙 선정·기존 설계로 돈다).
   [ -f "$ROOT/02_Infrastructure/ops/rf_b5_design.sh" ] && bash "$ROOT/02_Infrastructure/ops/rf_b5_design.sh"
+  # ★2계층 무인 레인 (2026-09-21 도훈 승인 플랜 Part 3 · D2) — 06_Registry/l2_unit_request.json 이 pending 이고
+  #   config l2_auto.enabled + R1(selection_type) 결정이 기록됐을 때만 발화한다. 드라이버(rf_l2_auto.R)가 러너 claim 을
+  #   쥐어 L1 배치와 직렬화한다(그동안 아래 러너는 halt_claimed · ≤75분/일). 레인 파일 부재/조건 미충족 = 즉시 종료.
+  [ -f "$ROOT/02_Infrastructure/ops/rf_l2_auto.sh" ] && bash "$ROOT/02_Infrastructure/ops/rf_l2_auto.sh"
   # ★러너 단일화 (2026-09-05 도훈 지시 "분기 제거 — parallel 로 단일화").
   #   구판은 config 의 mode 로 두 러너를 갈랐다. 그런데 v10.4 의 핵심 3종
   #   (B1 LLM 설계 · 블록 전이 설계 · entry 예산 상향 = 25 + max(0, B1칸 − 5))이

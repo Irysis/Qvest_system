@@ -59,7 +59,9 @@ STRESS_POOL <- c("CRISIS", "RISK_OFF", "CAUTION")
 # ── 모듈 per-regime active 일간 시계열 로드 (한 번만; asof는 함수에서 슬라이스) ──────
 # AL[[sid]] = data.table(Date, a=active daily, regime=t-1 lag). 무겁지 않게 캐시.
 .rcma_load <- function(proj = PROJ) {
-  MP <- fromJSON(file.path(proj,"06_Registry/module_performance.json"), simplifyVector=FALSE)
+  # ★2026-09-21 FR_MODULE_PERF(2계층 무인 레인 대조 arm) — 미설정 = 정본 경로(구동작). run_wf_ensemble.R 과 같은 env.
+  .mp_env <- Sys.getenv("FR_MODULE_PERF", "")
+  MP <- fromJSON(if (nzchar(.mp_env)) .mp_env else file.path(proj,"06_Registry/module_performance.json"), simplifyVector=FALSE)
   mod_ids <- names(MP$modules)
   RG <- as.data.table(read_parquet(file.path(proj,".cache/unified_regime_signal_daily.parquet")))[!is.na(Category), .(Date=as.Date(Date), Category)]
   setorder(RG,Date); RG[, regime:=shift(Category,1L)]; RG <- RG[!is.na(regime), .(Date,regime)]

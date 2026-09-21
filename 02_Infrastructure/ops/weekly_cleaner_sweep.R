@@ -649,6 +649,24 @@ run_step("axiom_weekly_cycle", {
   invisible(TRUE)
 })
 
+# [3.5b] 리서치 디렉터 방향 결정 주간 채점 (2026-09-21 도훈 승인 플랜 Part 3 · D4)
+#   rf_decisions.jsonl(kind=direction · 행동 실행분)에 실현 결과(L2 원장·결합 entry)를 붙여 Δbind·규칙 재현(양성)·항상-B5(음성)를 낸다.
+#   결과 붙은 행동 결정 < 8 이면 verdict=insufficient(보류 · NO-GO 아님). 산출 = review_log/direction_replay_<date>.{json,md}.
+#   DRY 는 --dry-run(쓰기 0). 자식 Rscript 라 실패해도 스윕은 계속(run_step fail-soft) — 마지막 줄만 pending 에 남긴다.
+direction_replay_summary <- NULL
+run_step("director_policy_replay", {
+  .dr <- file.path(root, "02_Infrastructure/axiom/replay/run_weekly_direction.R")
+  if (!file.exists(.dr)) { cat("[cleaner] direction_replay skip (스크립트 없음)\n"); direction_replay_summary <<- list(status = "absent") }
+  else {
+    .o <- suppressWarnings(system2("Rscript", c(shQuote(.dr), if (DRY) "--dry-run" else character(0)), stdout = TRUE, stderr = TRUE, timeout = 300))
+    .v <- grep("^\\[direction_replay\\] verdict=", .o, value = TRUE)
+    direction_replay_summary <<- list(status = if (length(.v)) "ran" else "no_verdict_line", verdict_line = if (length(.v)) .v[length(.v)] else NA_character_,
+                                      report = sprintf("qepm/memory/axioms/review_log/direction_replay_%s.md", format(Sys.Date(), "%Y%m%d")))
+    cat(sprintf("[cleaner] direction_replay: %s\n", if (length(.v)) .v[length(.v)] else "verdict 줄 없음 (fail-soft)"))
+  }
+  invisible(TRUE)
+})
+
 # [3.6] 지식 순차 인덱스 재생성 (2026-07-05 도훈 — "1부터 차례대로·증류돼도 구멍 없이")
 #   안정 ID 불변, 활성 집합(Law/Distilled/L-code)을 1..N 뷰로 갱신. blast radius 0.
 #   axiom 사이클 직후 실행 → 증류/강등 반영된 최신 활성 집합으로 재생성.
@@ -1001,6 +1019,7 @@ run_step("write_pending", {
     ),
     inventory     = inventory,
     axiom_candidates = axiom_candidates_summary,   # [3.5] 주간 axiom 사이클 후보 현황 (n_pending/failing_axis_histogram/near_miss)
+    direction_replay = direction_replay_summary,   # [3.5b] 디렉터 방향 결정 주간 채점 (verdict 줄 · 보고서 경로)
     continuity_firewall = continuity_review_summary,  # [3.7] 포기 원천차단 게이트 — 차단 이력 + pending 신어 후보(승격 대상)
     step_status   = step_status,
     status        = "awaiting_distill",

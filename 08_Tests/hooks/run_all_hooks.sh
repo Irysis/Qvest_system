@@ -1341,6 +1341,18 @@ SUITES=(
   # D1: 결정 기록 writer(append-only · chosen⊆후보 · essence 객체 거부) · 디렉터 1일 1회 기록 + [무인] 텔레그램 on_change
   "08_Tests/reinforcement/test_rf_record_decision.R"
   "08_Tests/ops/test_rf_director_tg.R"
+  # D2: 2계층 무인 레인 — 셸 게이트(disabled/not_due/R1 미결/gate_pass/tick 등록) · 드라이버 샌드박스 e2e(스텁 러너·빌더 ·
+  #   claim 직렬화 · MC1 라벨 금지 · floor-only 변형 풀) · 러너 env 4줄 기본값=구동작
+  "08_Tests/ops/test_rf_l2_auto.sh"
+  "08_Tests/ops/test_rf_l2_driver.R"
+  "08_Tests/ops/test_run_wf_env_defaults.R"
+  # D3: 디렉터 실행기(act=false 무행동 · L2 요청 발행/슬롯 busy · 지시 결합 --directed 적격/부적격/dry) · B5 재료 (2b) 컨텍스트 절
+  "08_Tests/ops/test_rf_director_actions.R"
+  "08_Tests/ops/test_rf_b5_materials_context.R"
+  # D4: 방향 결정 주간 채점(결과 귀속·Δbind·규칙 재현 양성 대조·insufficient 보류·dry 쓰기 0·Cleaner 배선)
+  "08_Tests/axiom/test_direction_replay.R"
+  # D5: 정책 상태기계(proposed→shadow→live 자동(도훈 ①)→강등→tombstone · 조건별 돌연변이 · 킬스위치 2종 · 되돌리기 동봉)
+  "08_Tests/axiom/test_policy_auto_live_rule.R"
   "08_Tests/ops/test_rf_prompt_quote_parity.R"
   # 2026-09-07 실사고: 프롬프트 예시의 "24%" 가 파이썬 포맷을 깨 계획 미생성 → 감사 3회 스폰 전부 halt_no_plan.
   #   따옴표 검사(quote_parity)의 사각이었다 — 포맷 문자를 본다(블록을 실제로 조립해 보고, 위반 주입으로 검출력 실증).

@@ -17,11 +17,51 @@
   "calmar": 0.496,
   "oos_retention": 0.057,
   "portfolio_alpha_t": 4.143,
-  "next_probes": [
-    "다음 격자 축 B2(weighting) — 이 블록 승자 위에서 측정",
-    "B5_20(최고 4.143)는 B4 조합 후보로 고정 · B5_21(최저 1.812)는 축 역작동 여부를 조합 LOO 로 분리"
-  ],
+  "next_probes": ["다음 격자 축 B2(weighting) — 이 블록 승자 위에서 측정", "B5_20(최고 4.143)는 B4 조합 후보로 고정 · B5_21(최저 1.812)는 축 역작동 여부를 조합 LOO 로 분리"],
   "next_probe": "다음 격자 축 B2(weighting) — 이 블록 승자 위에서 측정 | B5_20(최고 4.143)는 B4 조합 후보로 고정 · B5_21(최저 1.812)는 축 역작동 여부를 조합 LOO 로 분리",
   "source_paper": "https://arxiv.org/abs/2002.06975",
-  "record_type": "performance"
+  "record_type": "performance",
+  "mechanism": "이 블록에서 MDD 를 내린 것은 총노출 스칼라가 아니라 보유 안 위험배분이었고, 스칼라 축소는 MDD 보다 CAGR 을 더 크게 깎았다 — B1 이 남긴 미결(낙폭이 총노출로 줄어드는가 배분으로 줄어드는가)은 배분 쪽으로 갈렸다(실측). vol_median 을 얹은 칸이 전부 같은 방향이다: B5_17(trend_run_gate 단독, MDD 0.549 · CAGR 0.261 · Calmar 0.475)에 vol_median 을 더한 B5_16 은 MDD 0.458 로 -0.091 을 사는 대신 CAGR 0.211(상대 -19%)을 내 Calmar 0.461 로 내려갔고, B5_20(xs_vol_risk_share_equalize 단독, CAGR 0.268 · Calmar 0.496)에 스칼라 두 층을 얹은 B5_22 는 MDD 0.539→0.446 을 사면서 CAGR 0.207, Calmar 0.464 로 역시 내려갔다. vol_median 단독 B5_18 은 Calmar 0.435 로 상주 칸 B5_31(0.485) 아래다. 반대로 스칼라를 한 층도 쓰지 않은 종목별 2칸이 블록 상단을 잡았다 — B5_19(multivar_channel_tilt)는 스칼라 없이 MDD 0.443 으로 블록 최저를 만들면서 CAGR 0.246 을 지켜 Calmar 0.556, B5_20 은 PORT_t 4.143 · CAGR 0.268 로 블록 최고다. B1 에서 MDD 0.517~0.595(폭 0.078)로 고정돼 보이던 낙폭이 0.443 까지 내려간 것은 낙폭이 고정 축이 아니라 소비 지점의 함수였다는 뜻이고, 앞 블록 처방(스칼라는 대조군 1칸 · 나머지는 노출 예산 고정 배분층)은 지지됐다. 상태 원천이 겹치지 않는 2층 스택(B5_21 erosion_grind_idio_tilt+vol_median)은 반대로 반증됐다 — CAGR 0.194 · Calmar 0.414 로 둘 다 블록 최저이고 MDD 0.469 는 B5_19 보다 나쁘다. 같은 달 이중 축소가 났고 그 대가로 산 낙폭 개선이 없었다. 정황: B5_19 는 Calmar 를 PORT_t 로 지불했다(3.434 vs B5_20 4.143) — 배분층에서도 낙폭 값은 0 이 아니다. 미결: B5_19 · B5_20 은 둘 다 수익 시계열 상태를 읽어, 낙폭이 보유 구성의 함수인지 시장 국면의 함수인지는 여전히 안 갈린다. 시장 시계열을 한 열도 읽지 않는 보유단 처치를 같은 노출 예산에서 재야 갈린다(B5 재설계 레인 소관).",
+  "mechanism_by": "llm:block_end",
+  "mechanism_at": "2026-09-21T11:09:15+0900",
+  "prior_lessons_used": "B1",
+  "next_block_actions": [
+    {
+      "action": "B2 에서 역변동성 배분을 오버레이가 아니라 비중 벡터로 집행한다(lean:ivol) — 처치는 같고 소비 지점만 다르다.",
+      "why": "B5_20(xs_vol_risk_share_equalize)이 오버레이 층에서 PORT_t 4.143 · CAGR 0.268 을 냈고, 이 블록의 이득은 전부 보유 안 위험배분에서 나왔다.",
+      "expect": "맞으면 lean:ivol 이 동일가중 대비 CAGR 을 유지한 채 MDD 를 0.50 아래로 내린다. 오버레이에서만 되고 비중층에서 안 되면 이득의 원천은 배분이 아니라 오버레이의 시점 상태다."
+    },
+    {
+      "action": "상관을 쓰지 않는 배분(lean:ivol)과 쓰는 배분(lean:riskparity)을 같은 블록에 넣어 낙폭 감소가 개별 변동성에서 오는지 상관 구조에서 오는지 분리한다.",
+      "why": "B5_19(multivar_channel_tilt)는 다변량 상태로 MDD 0.443 을, B5_20 은 종목별 변동성만으로 CAGR 0.268 을 냈다 — 두 칸의 강점이 갈렸는데 원인 축이 겹쳐 있다.",
+      "expect": "riskparity 가 ivol 대비 MDD 만 더 내리면 낙폭은 상관 항에 붙어 있다. 두 칸이 같으면 상관 항은 이 25종 유니버스에서 기여가 없다."
+    },
+    {
+      "action": "낙폭을 목적함수에 직접 넣는 qepm:CDaR_LP 와 분포 꼬리만 보는 qepm:CVaR_LP 를 짝으로 배치한다.",
+      "why": "B5 의 MDD 개선은 전부 간접 경로(노출·tilt)였고, 낙폭을 직접 표적으로 삼은 칸이 이 계보에 아직 없다.",
+      "expect": "CDaR_LP 가 CVaR_LP 보다 MDD 를 유의하게 더 내리면 이 계보의 낙폭은 경로 의존이고, 둘이 같으면 단순 꼬리 두께다. 둘 다 CAGR 을 20% 넘게 깎으면 vol_median(B5_18)과 같은 실패이고 배분층도 면제가 아니다."
+    },
+    {
+      "action": "군집 배분 lean:hrp 와 잡음제거를 포함한 lean:nco 를 짝으로 넣는다.",
+      "why": "B1 상위 4칸이 전부 정보 반영 속도·군집 계열(Price_Delay · Momentum_Crowding · Idiosyncratic_Return)이었고, 그 구조가 비중층에서도 살아 있는지는 안 쟀다.",
+      "expect": "nco 가 hrp 를 넘으면 이득은 공분산 잡음제거이고, 둘이 같으면 군집 구조 자체다. 둘 다 동일가중 아래면 25종에서 군집 배분은 자유도가 부족하다."
+    },
+    {
+      "action": "위험축을 전혀 쓰지 않는 예산 고정 대조군으로 lean:score_tilt 를 1칸 둔다.",
+      "why": "B5 의 모든 칸이 위험 상태를 소비했다 — 스코어 집중만으로 PORT_t 가 어디까지 가는지의 기준선이 없다.",
+      "expect": "score_tilt 가 PORT_t 4.143(B5_20)을 넘으면 이 계보의 초과수익은 아직 선정 강도에 남아 있고, 못 넘으면 남은 여지는 위험 배분에만 있다."
+    },
+    {
+      "action": "lean:minvar 를 vol_median 의 배분층 등가물로 1칸 둔다.",
+      "why": "B5_18(vol_median 단독)은 총노출에서 분산을 줄여 Calmar 0.435 로 상주 칸 아래로 갔다 — 같은 목적을 노출 예산 고정 상태에서 하면 CAGR 이 지켜지는지가 이 블록의 핵심 주장의 극단 검증이다.",
+      "expect": "minvar 가 MDD 0.45 이하를 CAGR 0.22 이상에서 내면 '소비 지점' 가설이 극단에서도 성립한다. minvar 도 CAGR 0.20 아래로 가면 분산 축소 자체가 이 계보의 초과수익 원천을 깎는 것이고, 문제는 소비 지점이 아니라 분산 축이다."
+    }
+  ],
+  "next_block_actions_by": "llm:block_end",
+  "avoid": ["총노출 스칼라 배율 계열(vol_median · trend_run_gate · 그 파생)을 남은 블록(B3 · B6 · B4)에서 다시 배치하는 것 — B5_16 · B5_18 · B5_21 · B5_22 네 칸 전부 CAGR 손실이 MDD 이득보다 커 Calmar 가 스칼라 없는 B5_19(0.556) · B5_20(0.496) 아래로 내려갔다. 벽 확인.", "상태 원천이 다른 층을 2층 이상 겹치는 스택 — B5_21(erosion_grind_idio_tilt+vol_median)은 CAGR 0.194 · Calmar 0.414 로 블록 최저, B5_22(3층)도 단독 B5_20 아래다. 같은 달 이중 축소가 확인됐다.", "기대수익 벡터 추정을 요구하는 고전 평균-분산 계열(qepm:MVO · lean:robust_mv · lean:resampled · gen:qepm_MVO__shr_lw_nls · gen:qepm_MVO 파생 전부) — 이 블록의 이득은 전부 위험 배분 층에서 나왔고 기대수익 추정이 이 계보에서 상방을 냈다는 근거는 이 블록 밖에도 없다. 근거가 블록 밖이라는 점을 명시한다.", "B4(결합)에서 팩터를 하나 더 더하는 방향 — B1 에서 5번째 축을 더한 3칸이 전부 구성 요소 아래로 떨어져 희석으로만 작동했다(근거는 B1, 이 블록 밖).", "INV07_Retail_Contrarian 을 기저 구성으로 끌고 가는 것 — B1 에서 MDD 0.595 로 블록 최대."],
+  "next_block_design_for": "B2",
+  "next_block_design_n": 8,
+  "prior_action_status": "executed",
+  "prior_action_detail": "설계 7건 중 7건 집행 (설계: trend_run_gate+vol_median,trend_run_gate,vol_median,multivar_channel_tilt,xs_vol_risk_share_equalize,erosion_grind_idio_tilt+vol_median,trend_run_gate+vol_median+xs_vol_risk_share_equalize / 실측: pg2_risk_overlay_v1,trend_run_gate+vol_median,trend_run_gate,vol_median,multivar_channel_tilt,xs_vol_risk_share_equalize,erosion_grind_idio_tilt+vol_median,trend_run_gate+vol_median+xs_vol_risk_share_equalize)",
+  "mechanism_confidence": "medium"
 }

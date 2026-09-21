@@ -435,6 +435,13 @@ dir_record_decision <- function(out, cfg, root = DR_ROOT, LED = NULL) {
         root = root), error = function(e) { message("[rf_director] 결정 기록 실패: ", conditionMessage(e)); NULL })
   if (is.null(r)) list(recorded = FALSE, reason = "write_failed") else list(recorded = TRUE, decision_id = r$decision_id)
 }
+# 절 규약(tg_agent_brief): bullet 은 항목 ≥2 · 1개면 summary(body) · 0개면 절 생략 — 실측 2026-09-21
+.sec_list <- function(heading, items) {
+  items <- as.character(items); items <- items[!is.na(items) & nzchar(items)]
+  if (!length(items)) return(NULL)
+  if (length(items) >= 2L) list(type = "bullet", heading = heading, items = items)
+  else list(type = "summary", heading = heading, body = items[1])
+}
 dir_notify <- function(out, prev_sig, cfg, root = DR_ROOT, code_root = DR_CODE_ROOT) {
   changed <- !identical(out$signature, prev_sig); monday <- identical(format(Sys.Date(), "%u"), "1")
   why <- if (identical(cfg$telegram, "always")) "always" else if (identical(cfg$telegram, "off")) "" else if (changed) "changed" else if (monday) "monday_summary" else ""
@@ -449,19 +456,19 @@ dir_notify <- function(out, prev_sig, cfg, root = DR_ROOT, code_root = DR_CODE_R
       "최고 계보" = sprintf("%s (%s) PORT_t %s · Calmar %s · MDD %s · CAGR %s · OOS %s", .chr(b$sid), .chr(b$grade), .f3(b$port_t), .f3(b$calmar), .pct(b$mdd), .pct(b$cagr), .f2(b$oos_retention)),
       "A 까지" = sprintf("Calmar %s → %s (MDD %s 유지 시 CAGR %s 필요)", .f3(b$calmar), .f2(out$thresholds$calmar_min), .pct(b$mdd), .pct((b$gap %||% list())$cagr_needed_at_mdd)),
       "낙폭 구조" = sprintf("%s · 깊이 중앙 %s · 고점→저점 %s개월 · 벤치 대비 %s배", .chr(dd$shape), .pct(dd$depth_median), .chr(dd$m_peak_trough_median), .f2(dd$ratio_median)))),
-    list(type = "bullet", heading = "레버 건강", items = c(
+    .sec_list("레버 건강", c(
       sprintf("B5 오버레이: %s — 반증 pass %d / fail %d / 기타 %d (arm %d)", ov$status, ov$adv_pass, ov$adv_fail, ov$adv_other, ov$arms_measured),
       sprintf("블록순서 Calmar 규칙 발화 %d/%d entry", out$lever_health$block_order$entries_fired_calmar_rule, out$lever_health$block_order$entries),
       sprintf("2계층: %s · 최고 Calmar %s · 최고 PORT_t %s · 시도 %s회 · 풀 %s(직전 %s) · MC1 %s", paste(l2$grades, collapse = "/"), .f3(l2$best_calmar), .f3(l2$best_port_t),
               .chr(l2$attempts_used), .chr(l2$pool_n_now), .chr(l2$pool_n_at_last_run), if (isTRUE(l2$last_mc1_delivered)) "전달" else if (identical(l2$last_mc1_delivered, FALSE)) "미전달" else "?"),
       sprintf("결합: 요청 %s · 후보 %s · 최종 검토 %s", out$lever_health$combination$request_status, .chr(out$lever_health$combination$candidates_n), out$lever_health$combination$last_review_date))),
-    list(type = "bullet", heading = "풀 재고", items = c(
+    .sec_list("풀 재고", c(
       sprintf("모듈 %s = floor %s + 방어형 %s + legacy A %s", .chr(p$n_modules), .chr(p$grade_floor_n), .chr(p$defensive_n), .chr(p$legacy_a_n)),
       sprintf("방어형 깊은낙폭 초과 중앙 %s%%/월 · 음수 %s · 생존 %s · defensive_score 필드 %s", .f2(p$defensive_deep_dd_excess_median), .pct(p$defensive_deep_dd_negative_share), .chr(p$n_surviving_binding_class), .chr(p$defensive_score_field_present)))),
-    list(type = "bullet", heading = "오늘 행동 · 대안", items = c(
+    .sec_list("오늘 행동 · 대안", c(
       sprintf("권고 %s (%s) · 실행 %s — %s", act_label, r$rule, if (isTRUE(r$executed)) "예" else "아니오", .chr(r$execute_note)),
       vapply(r$alternatives, function(a) sprintf("대안 %s: %s", .chr(a$action), substr(.chr(a$why), 1, 110)), character(1)))),
-    if (length(r$proposals)) list(type = "bullet", heading = "도훈 제안", items = vapply(r$proposals, function(x) substr(.chr(x), 1, 200), character(1))) else NULL)
+    .sec_list("도훈 제안", vapply(r$proposals, function(x) substr(.chr(x), 1, 200), character(1))))
   secs <- Filter(Negate(is.null), secs)
   ok <- tryCatch({
     TG <- new.env(parent = globalenv())
@@ -473,6 +480,68 @@ dir_notify <- function(out, prev_sig, cfg, root = DR_ROOT, code_root = DR_CODE_R
     isTRUE(res$ok %||% TRUE)
   }, error = function(e) { message("[rf_director] 텔레그램 실패: ", conditionMessage(e)); FALSE })
   list(sent = ok, reason = why, dry_run = identical(Sys.getenv("QVEST_TG_DRY_RUN", ""), "1"))
+}
+
+# ── D3: 실행기 — director.act=true 일 때만 (a) 2계층 단위 요청 발행 (b) 지시 결합(결합 레인 --directed) (c) B5 컨텍스트 파일 ─────
+dir_context_json <- function(out) list(
+  as_of = out$as_of, binding = out$verdict$binding_condition, co_binding = out$verdict$co_binding,
+  program_best = list(port_t = out$program_best$port_t, calmar = out$program_best$calmar, mdd = out$program_best$mdd, cagr = out$program_best$cagr),
+  thresholds = list(calmar_min = out$thresholds$calmar_min, port_t_min = out$thresholds$port_t_min),
+  recurring_class = out$dd_episodes$recurring_class,
+  pool_inventory = list(defensive_n = out$pool_inventory$defensive_n, defensive_deep_dd_excess_median = out$pool_inventory$defensive_deep_dd_excess_median,
+                        defensive_deep_dd_negative_share = out$pool_inventory$defensive_deep_dd_negative_share, n_surviving_binding_class = out$pool_inventory$n_surviving_binding_class),
+  overlay = list(status = out$lever_health$overlay_B5$status, adv_pass = out$lever_health$overlay_B5$adv_pass,
+                 n_verdict = out$lever_health$overlay_B5$adv_pass + out$lever_health$overlay_B5$adv_fail + out$lever_health$overlay_B5$adv_other))
+# 지시 결합 재료 키: 프로그램 최고 계보의 논문들 + 깊은 낙폭 초과가 가장 큰 방어형 모듈의 논문 1편 (module_performance → module_catalog meta.paper_key)
+dir_directed_keys <- function(out, root = DR_ROOT) {
+  sid <- .chr(out$program_best$sid); bid <- sub(":.*$", "", sid)
+  led <- .rj(file.path(root, "06_Registry/reinforce_ledger_l1.json")); e <- Filter(function(x) identical(x$base_id, bid), led$entries %||% list())
+  pk <- if (length(e)) .chr(e[[1]]$paper_key) else ""
+  if (!nzchar(pk)) return(NULL)
+  lin_keys <- if (startsWith(pk, "combo:")) strsplit(sub("^combo:", "", pk), "+", fixed = TRUE)[[1]] else pk
+  mp <- .rj(file.path(root, "06_Registry/module_performance.json")); cat <- .rj(file.path(root, "06_Registry/module_catalog.json"))
+  num <- function(rs, pat) { x <- regmatches(rs, regexpr(pat, rs)); if (!length(x)) return(NA_real_); suppressWarnings(as.numeric(gsub("[^0-9.+-]", "", sub(pat, "\\1", x)))) }
+  cands <- list()
+  for (m in mp$modules %||% list()) if (identical(.chr(m$admission_route), "defensive_specialist")) {
+    d <- num(.chr(m$admission_reason), "벤치-10% 이하 [0-9]+개: 초과 ([+-][0-9.]+)%"); if (!is.finite(d) || d <= 0) next
+    cm <- (cat$modules %||% list())[[.chr(m$source_strategy_id)]]; key <- .chr(((cm %||% list())$meta %||% list())$paper_key)
+    if (!nzchar(key) || startsWith(key, "combo:") || key %in% lin_keys) next
+    cands[[length(cands) + 1L]] <- list(key = key, deep = d, sid = .chr(m$source_strategy_id)) }
+  if (!length(cands)) return(list(keys = lin_keys, defensive = NULL, note = "깊은 낙폭 초과 양수 방어형 중 논문 키 해석 가능한 모듈 없음"))
+  best <- cands[[which.max(vapply(cands, function(c) c$deep, numeric(1)))]]
+  list(keys = c(lin_keys, best$key), defensive = best, note = "")
+}
+dir_execute <- function(rec, out, cfg, root = DR_ROOT, code_root = DR_CODE_ROOT) {
+  rec$executed <- FALSE
+  if (!isTRUE(cfg$act)) { rec$execute_note <- "director.act=false — 권고만(D0/D1)"; return(rec) }
+  if (identical(rec$action, "open_l2_unit")) {
+    L2 <- new.env(parent = globalenv()); sys.source(file.path(code_root, "02_Infrastructure/ops/rf_l2_lib.R"), envir = L2)
+    cur <- L2$l2_request_read(root)
+    if (!is.null(cur) && .chr(cur$status) %in% c("pending", "in_progress")) { rec$execute_note <- sprintf("L2 요청 슬롯 %s — 발행 안 함", .chr(cur$status)); return(rec) }
+    u <- rec$unit
+    req <- L2$l2_request_new(base_id = .chr(u$base_id), idea = .chr(u$idea), keyword_axis = .chr(u$axis), arms = as.character(unlist(u$arms)),
+                             next_probe = c("T/S/C 결과로 배분기 hp(τ·k0·cap) 재캘리브 여부(풀 크기 기준)를 다음 attempt 로 사전 선언", "MC1 미전달이면 국면식별 축 설계 변경을 세션 과제로 제안"),
+                             root_papers = list(), requested_by = "rf_director", note = sprintf("director %s · %s", .chr(rec$rule), .chr(out$verdict$note)))
+    L2$l2_request_write(req, root)
+    rec$executed <- TRUE; rec$unit$request_path <- L2$l2_request_path(root); rec$execute_note <- "l2_unit_request.json pending 발행 — tick 의 rf_l2_auto 가 집는다"
+    return(rec)
+  }
+  if (identical(rec$action, "directed_combination")) {
+    dk <- dir_directed_keys(out, root)
+    if (is.null(dk) || is.null(dk$defensive)) { rec$execute_note <- sprintf("지시 결합 재료 해석 실패: %s", .chr((dk %||% list())$note %||% "최고 계보 paper_key 없음")); rec$unit$unreachable <- TRUE; return(rec) }
+    rec$unit$keys <- dk$keys; rec$unit$defensive_sid <- dk$defensive$sid; rec$unit$defensive_deep_excess <- dk$defensive$deep
+    old <- Sys.getenv("QVEST_RF_ROOT", unset = NA); Sys.setenv(QVEST_RF_ROOT = root); on.exit(if (is.na(old)) Sys.unsetenv("QVEST_RF_ROOT") else Sys.setenv(QVEST_RF_ROOT = old), add = TRUE)
+    o <- tryCatch(suppressWarnings(system2("Rscript", c(shQuote(file.path(code_root, "02_Infrastructure/ops/rf_combination_launch.R")), sprintf("--directed=%s", paste(dk$keys, collapse = ","))),
+                                           stdout = TRUE, stderr = TRUE, timeout = 180)), error = function(e) character(0))
+    ev <- grep("^\\[combo\\] ", o, value = TRUE); last_ev <- if (length(ev)) sub("^\\[combo\\] ([a-z_]+).*$", "\\1", ev[length(ev)]) else "no_output"
+    rq <- .rj(file.path(root, "06_Registry/replication_request.json"))
+    issued <- !is.null(rq) && identical(.chr(rq$status), "pending") && identical(.chr(rq$source), "rf_combination_launch") && identical(.chr(rq$combo$setkey), paste(sort(unique(dk$keys)), collapse = "+"))
+    rec$executed <- issued; rec$unit$launcher_event <- last_ev
+    rec$execute_note <- if (issued) sprintf("지시 결합 요청 발행 setkey=%s", .chr(rq$combo$setkey)) else sprintf("결합 레인 미발행: %s", last_ev)
+    if (!issued && identical(last_ev, "halt_directed_ineligible")) rec$unit$unreachable <- TRUE
+    return(rec)
+  }
+  rec$execute_note <- sprintf("행동 없음(%s)", .chr(rec$action)); rec
 }
 
 .write_atomic <- function(txt, path) {
@@ -519,9 +588,12 @@ dir_run <- function(root = DR_ROOT, code_root = DR_CODE_ROOT, dry = DR_DRY) {
   .js <- function(o) toJSON(o, auto_unbox = TRUE, null = "null", na = "null", digits = 6, pretty = TRUE)
   if (dry) { cat(.js(out), "\n"); cat("\n[rf_director] DRY — 쓰기 0\n") }
   else {
+    out$recommendation <- dir_execute(out$recommendation, out, cfg, root, code_root)     # D3 — act=false 면 권고만
     .write_atomic(.js(out), cache_p)
     .write_atomic(dir_map_md(out), file.path(root, "06_Registry/layer_bottleneck_map.md"))
-    cat(sprintf("[rf_director] wrote .cache/rf_director_latest.json + 06_Registry/layer_bottleneck_map.md (%.1fs)\n", out$runtime_s))
+    .write_atomic(.js(dir_context_json(out)), file.path(root, ".cache/rf_director_context.json"))   # D3 (c) — B5 재료가 읽는 숫자 컨텍스트(항상)
+    cat(sprintf("[rf_director] wrote .cache/rf_director_latest.json + 06_Registry/layer_bottleneck_map.md + rf_director_context.json (%.1fs) · executed=%s\n",
+                out$runtime_s, isTRUE(out$recommendation$executed)))
     # D1 — 결정 기록(같은 날 같은 서명이면 1회) · 텔레그램(무인/--notify 일 때만 · on_change)
     out$decision <- dir_record_decision(out, cfg, root)
     out$telegram <- if (DR_UNATT || "--notify" %in% ARGS) dir_notify(out, prev_sig, cfg, root, code_root) else list(sent = FALSE, reason = "manual_run")

@@ -575,6 +575,25 @@ B5_DISTILL_KEYWORDS <- c("오버레이", "낙폭", "MDD", "국면", "현금", "o
             length(rows), sum(vs == "pass"), sum(vs == "fail"), sum(vs == "not_candidate"), ksum))
 }
 
+# ── (2b) 프로그램 낙폭 구조 — 리서치 디렉터 컨텍스트 (2026-09-21 도훈 승인 플랜 Part 3 · D3 (c)) ──────────────
+#   .cache/rf_director_context.json(rf_director.R 이 매일 아침 씀)의 **숫자만** 옮긴다. 서사·지침 없음(Dream-RSI §5.1: 기록은
+#   시뮬레이터 산출로만 넘긴다). 날짜 없음 · 48h 초과·부재·파손 = 절 생략(설계는 종전과 동일). 검증부(b5_has_dates)가 그대로 적용된다.
+b5_director_context <- function(root = ROOT, max_age_h = 48) {
+  p <- file.path(root, ".cache/rf_director_context.json"); if (!file.exists(p)) return(character(0))
+  age <- suppressWarnings(as.numeric(difftime(Sys.time(), file.info(p)$mtime, units = "hours"))); if (!is.finite(age) || age > max_age_h) return(character(0))
+  d <- tryCatch(fromJSON(p, simplifyVector = FALSE), error = function(e) NULL); if (!is.list(d)) return(character(0))
+  rc <- d$recurring_class %||% list(); pi <- d$pool_inventory %||% list(); b <- d$program_best %||% list(); ov <- d$overlay %||% list(); th <- d$thresholds %||% list()
+  co <- as.character(unlist(d$co_binding %||% list()))
+  L <- c("## (2b) 프로그램 낙폭 구조 (리서치 디렉터 · 상위 계보 최심 에피소드 집계 · 날짜 없음 · 형태만)",
+         sprintf("- 구속 조건: %s%s · 프로그램 최고 PORT_t %s · Calmar %s · MDD %s · CAGR %s (A 문턱 Calmar %s)",
+                 .chr(d$binding), if (length(co)) paste0("+", paste(co, collapse = "+")) else "", .f3(b$port_t), .f3(b$calmar), .f3(b$mdd), .f3(b$cagr), .f3(th$calmar_min)),
+         sprintf("- 낙폭 형태: %s · 최심 깊이 중앙 %s · 고점→저점 중앙 %s개월 · 벤치 대비 비 중앙 %s · 공유 계보 %s (라벨 규칙: %s)",
+                 .chr(rc$shape), .f3(rc$depth_median), .f1(rc$m_peak_trough_median), .f3(rc$ratio_median), .chr(rc$n_lineages_sharing), .chr(rc$shape_rule)),
+         sprintf("- 풀 재고: 방어형 %s · 깊은 낙폭 초과 중앙 %s%%/월 · 음수 비율 %s · 오버레이 반증 pass %s/%s (%s)",
+                 .chr(pi$defensive_n), .f3(pi$defensive_deep_dd_excess_median), .f3(pi$defensive_deep_dd_negative_share), .chr(ov$adv_pass), .chr(ov$n_verdict), .chr(ov$status)))
+  b5_strip_dates(L)
+}
+
 b5_materials <- function(base_id, root = ROOT, cfg = b5_cfg(root), compose_only = FALSE, arm_quota = cfg$max_new_arms,
                          round = 1L, out_p = NULL) {
   E <- .b5_entry(root, base_id); if (is.null(E)) stop("[b5_design] entry 부재: ", base_id)
@@ -657,6 +676,7 @@ b5_materials <- function(base_id, root = ROOT, cfg = b5_cfg(root), compose_only 
   sec$entry <- L1
   # (2) 바닥 낙폭 해부 ───────────────────────────────────────────────────────
   sec$floor <- b5_floor_anatomy(E, root)
+  sec$director <- tryCatch(b5_director_context(root), error = function(e) character(0))   # D3 (c) · 부재/낡음/오류 = 생략
   # (3) arm 성과 이력 ───────────────────────────────────────────────────────
   O <- tryCatch(rf_overlay_outcomes(root), error = function(e) NULL)
   L3 <- c("## (3) arm 성과 이력 (전 entry B5 칸 · Δ = 그 칸 − 같은 entry B1 중앙값 · arm 별 중앙값 · ΔMDD<0 이 개선) — 상위 8 / 하위 8",
@@ -757,7 +777,7 @@ b5_materials <- function(base_id, root = ROOT, cfg = b5_cfg(root), compose_only 
     sprintf("- 라운드 %d · 설계 칸 ≤ %d · 유효 칸 ≥ %d · 층 ≤ %d · 새 arm kind = b5gen_<short>_%d", as.integer(round), cfg$max_cells, cfg$min_cells, cfg$max_layers, as.integer(round)),
     "- ★설계는 특정 시기(연·월·이름 붙은 위기)에 기대면 안 된다 — 이 재료의 날짜는 전부 지웠고(<date>/<yr>/<episode>), arm 의 달력 리터럴은 probe 가 거부한다.")
   # 조립 + 날짜 제거 + 총량 상한 ────────────────────────────────────────────
-  order <- c("axioms", "entry", "floor", "outcomes", "prior", "adv", "distilled", "catalog", "contract", "guard")
+  order <- c("axioms", "entry", "floor", "director", "outcomes", "prior", "adv", "distilled", "catalog", "contract", "guard")
   .assemble <- function(S) b5_strip_dates(unlist(lapply(order, function(k) c(S[[k]], ""))))
   txt <- .assemble(sec)
   n_prior_dropped <- 0L

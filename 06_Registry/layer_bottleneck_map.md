@@ -2,7 +2,7 @@
 
 | 계층 | 구속 조건 | 최고 계보 | 레버 상태 | 다음 행동 |
 |---|---|---|---|---|
-| 1계층 | calmar (5/5 계보) | RP_20260917_105807_22632_combo_rulefast_promo3:B1_3 · PORT_t 4.349 · Calmar 0.501 · MDD 55.1% · CAGR 27.6% | B5 오버레이 dead (반증 pass 0/35) · 블록순서 Calmar 규칙 발화 23/60 entry | open_l2_unit |
+| 1계층 | calmar (5/5 계보) | RP_20260917_105807_22632_combo_rulefast_promo3:B1_3 · PORT_t 4.349 · Calmar 0.501 · MDD 55.1% · CAGR 27.6% | B5 오버레이 dead (반증 pass 0/46) · 블록순서 Calmar 규칙 발화 23/60 entry | open_l2_unit |
 | 2계층 | FR FR_001/FR_002/FR_003 · 최고 Calmar 0.732 · 최고 PORT_t 1.296 | 시도 0회 · 풀 352(직전 실측 89) | 국면 채널 MC1 전달 아니오 | π₀ 재측정 T/S/C |
 | 풀 | 모듈 352 (floor 127 · 방어형 213 · legacy A 12) | 방어형 깊은낙폭 초과 중앙 2.57%/월 · 음수 비율 16.9% | defensive_score 필드 0/352 | 재고 → 지시 결합 재료(규칙 3) |
 

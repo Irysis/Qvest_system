@@ -38,6 +38,11 @@ ROOT <- { .r <- Sys.getenv("QVEST_RF_ROOT", "")
           if (nzchar(.r)) .r else Sys.getenv("QM_ROOT", "C:/Users/99922/OneDrive/Quant_Module_Moltbot") }
 setwd(ROOT)
 DRY  <- any(c("--dry-run", "--dry") %in% commandArgs(TRUE))
+# ★--directed=<key1,key2,...> (2026-09-21 도훈 승인 플랜 Part 3 · D3 (b)) — 리서치 디렉터의 지시 결합. **후보 선정만** 우회한다:
+#   재료는 적격 풀 P(양수 t · 비파킹 · 엔진 존재 · url 보유) 안에서만 고르고, 스킵리스트·요청 슬롯 busy·발행 형식은 그대로다.
+#   지시 재료가 P 밖이면 halt_directed_ineligible 로 물러난다 — 레인의 자격 규칙은 지시로 완화되지 않는다.
+DKEYS <- { .a <- grep("^--directed=", commandArgs(TRUE), value = TRUE)
+           if (length(.a)) { .k <- trimws(strsplit(sub("^--directed=", "", .a[1]), ",", fixed = TRUE)[[1]]); .k[nzchar(.k)] } else character(0) }
 LOG  <- file.path(ROOT, ".cache/reinforce_auto_log.jsonl")
 # ★로그 디렉터리 보장 — 러너 2종은 이미 하는데 여기만 없었다. 없으면 jlog 첫 줄에서 죽는다.
 dir.create(dirname(LOG), recursive = TRUE, showWarnings = FALSE)
@@ -172,6 +177,20 @@ if (length(.skip_keys)) jlog("skiplist_pairs", n = length(.skip_keys),
                              keys = paste(.skip_keys, collapse = ","))
 .ntry_of <- function(k) { if (is.null(.tried)) return(0L)
                           v <- .tried[k]; if (is.na(v)) 0L else as.integer(v) }
+if (length(DKEYS)) {
+  ## ── 지시 결합 (D3) — 열거·순위 없이 지시 재료로 top 을 만든다. 적격 풀 P 안에서만 · 논문 중복 금지 ──
+  sel <- Filter(function(x) any(x$keys %in% DKEYS), P)
+  cov <- unique(unlist(lapply(sel, function(x) x$keys)))
+  miss <- setdiff(DKEYS, cov)
+  if (length(miss) || length(sel) < 2L) {
+    jlog("halt_directed_ineligible", missing = paste(miss, collapse = ","), n_sel = length(sel), keys = paste(DKEYS, collapse = ","),
+         note = "지시 재료가 적격 풀(P)에 없다 — 양수 t·비파킹·엔진·url 규칙은 지시로 완화되지 않는다(디렉터는 unreachable 로 기록)")
+    quit(status = 0) }
+  if (anyDuplicated(unlist(lapply(sel, function(x) x$keys)))) { jlog("halt_directed_overlap", keys = paste(DKEYS, collapse = ","), note = "지시 재료끼리 논문이 겹친다"); quit(status = 0) }
+  top <- list(items = sel, k = length(sel), n_papers = length(cov), setkey = .setkey(sel), score = sum(vapply(sel, function(x) x$t, numeric(1))))
+  combos <- list(top); V <- sel
+  jlog("directed_pair", setkey = top$setkey, keys = paste(DKEYS, collapse = ","), n_items = top$k, n_papers = top$n_papers)
+} else {
 combos <- list()
 .rec <- function(start, cur) {
   if (length(cur) >= 2L) {
@@ -201,6 +220,7 @@ combos <- combos[order(.skipped, .ntry, -.scr)]
 jlog("combos_enumerated", n = length(combos), enum_items = length(V),
      untried = sum(.ntry == 0L), max_k = max(vapply(combos, function(x) x$k, integer(1))))
 top <- combos[[1]]
+}
 if (top$setkey %in% .skip_keys) {
   jlog("halt_all_pairs_skiplisted", setkey = top$setkey, n = length(combos),
        note = "남은 후보가 전부 스킵리스트 — 결합은 물러난다(다음 논문으로 이월). 철회 = status revoked")

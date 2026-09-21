@@ -1,6 +1,6 @@
 {
   "schema_version": "v7.2.1_memory_health",
-  "ran_at": "2026-09-21T08:10:29+0900",
+  "ran_at": "2026-09-21T11:38:00+0900",
   "hard_fails": [],
   "warnings": [
     {
@@ -9,7 +9,7 @@
     },
     {
       "check_id": "WARN_1_lcode_corpus_integrity",
-      "message": "중복 ID 99건(L-RP-20260830_201656,L-RP-20260830_203323,L-RP-20260830_235311,L-RP-20260831_001552,L-RP-20260831_093239,L-RP-20260831_103933) · 미수확 아티팩트 13건(l_code_RP_20260920_004347_12532.json,l_code_RP_20260920_004347_16232.json,l_code_RP_20260920_004347_21684.json,l_code_RP_20260920_004347_29156.json) — 코퍼스가 아티팩트를 충실히 반영하지 못함"
+      "message": "중복 ID 109건(L-RP-20260830_201656,L-RP-20260830_203323,L-RP-20260830_235311,L-RP-20260831_001552,L-RP-20260831_093239,L-RP-20260831_103933) · 미수확 아티팩트 5건(l_code_RP_20260921_111645_10788.json,l_code_RP_20260921_111645_13984.json,l_code_RP_20260921_111645_19768.json,l_code_RP_20260921_111645_24604.json) — 코퍼스가 아티팩트를 충실히 반영하지 못함"
     },
     {
       "check_id": "WARN_2_stale_candidate",
@@ -18,12 +18,20 @@
     {
       "check_id": "WARN_6_cache_core_stale",
       "message": ".cache/axiom_core.json STALE — missing: AX-AR-001,AX-AR-002,AX-AR-003,AX-AR-004,AX-AS-001,AX-AS-002,AX-AS-003,AX-JG-001,AX-QPM-001,AX-QPM-002,AX-QPM-003,AX-QPM-004,AX-QPM-005,AX-RAMP-001,AX-RAMP-002,AX-RAMP-003,AX-RAMP-004,AX-RAMP-005,AX-RAMP-006 (regenerate via bootstrap)"
+    },
+    {
+      "check_id": "WARN_10_knowledge_index_stale",
+      "message": "knowledge_index 낙후 — count_mismatch(corpus=1675, index=1620); missing_in_index=37  (검사: ops/knowledge_index_freshness.R · 복구: Rscript 02_Infrastructure/ops/build_knowledge_index.R)"
+    },
+    {
+      "check_id": "WARN_11_revival_flags_stale",
+      "message": "주입 사본이 정본보다 2.9h 뒤처짐 — DIST frontier 수정이 주입면에 미반영일 수 있음 (정본 09-21 11:09 > 사본 09-21 08:16). 복구: Rscript -e 'source(\"02_Infrastructure/ops/failure_revival_monitor.R\"); revival_monitor_run(write_flags=TRUE)'"
     }
   ],
   "infos": [],
   "summary": {
     "hard_fail_count": 0,
-    "warning_count": 4,
+    "warning_count": 6,
     "info_count": 0,
     "overall": "PASS"
   }

@@ -43,7 +43,10 @@ FR_EXTRA_REGIME_LAG <- suppressWarnings(as.integer(Sys.getenv("FR_EXTRA_REGIME_L
 FR_DIAG_DIR <- Sys.getenv("FR_DIAG_DIR", "")                           # 비면 진단 덤프 생략
 
 # 1. 모듈 풀 + 일간 수익 매트릭스 -----------------------------------------------
-MP <- fromJSON(file.path(PROJ,"06_Registry/module_performance.json"), simplifyVector=FALSE)
+# ★2026-09-21 (2계층 무인 레인 · 플랜 Part 3 D2) FR_MODULE_PERF — 대조 arm(floor-only)·잘린 풀을 **정본 파일을 바꿔치기하지 않고** 재는 통로.
+#   미설정 = 정본 경로(구동작). regime_module_admission.R::.rcma_load 도 같은 env 를 읽는다(두 경로가 같은 풀을 봐야 한다).
+FR_MODULE_PERF <- Sys.getenv("FR_MODULE_PERF", "")
+MP <- fromJSON(if (nzchar(FR_MODULE_PERF)) FR_MODULE_PERF else file.path(PROJ,"06_Registry/module_performance.json"), simplifyVector=FALSE)
 mod_ids <- names(MP$modules)
 # RCMA context (active 일간 시계열 1회 로드 — compute_rcma(asof)가 슬라이스). WF 멤버십 = PIT.
 RCMA_CTX <- tryCatch(.rcma_load(PROJ), error=function(e){ cat("[RCMA] load 실패:", conditionMessage(e), "\n"); NULL })
@@ -278,7 +281,10 @@ bt <- build_bt_result(sim_result, spec, run_id=FR_ID, strategy_id=FR_ID, strateg
 bt <- audit_bt_result(bt)
 # n_trials: 앙상블 = 다중검정 (모듈조합 + hyper) — 보수적 상향
 N_TRIALS <- length(all_used_mods) + 5L
-es <- essence_score(bt, n_trials_cumulative = N_TRIALS)
+# ★2026-09-21 (R1 · 플랜 Part 3 §6) FR_SELECTION_TYPE — 미설정 = 구동작(selection_type 미전달 → essence 의 legacy n_trials>1 = sweep 판정).
+#   "chain" 은 config l2_auto.selection_type 에 decided_by/at 과 함께 기록됐을 때만 레인이 넘긴다 — 여기서 기본값을 바꾸지 않는다.
+FR_SELECTION_TYPE <- Sys.getenv("FR_SELECTION_TYPE", "")
+es <- if (nzchar(FR_SELECTION_TYPE)) essence_score(bt, n_trials_cumulative = N_TRIALS, selection_type = FR_SELECTION_TYPE) else essence_score(bt, n_trials_cumulative = N_TRIALS)
 
 # 6. OOS retention + placebo (월간 active 시계열 = 계약 period_returns/benchmark_returns) ----
 PRm <- as.data.table(bt$period_returns)[, .(date, ret_net)]
@@ -396,7 +402,7 @@ tryCatch({
     portfolio_alpha_t = es$essence$portfolio_alpha_t_nw_lag3%||%NA,
     oos_retention = if(is.finite(oos_ret)) round(oos_ret,3) else NULL,
     falsification_attempts = if(length(.fr_fals)) .fr_fals else NULL,
-    selection_type = "chain",   # 단일 config 러너(baseline/forecast A/B) — sweep argmax-pick 아님 (§3)
+    selection_type = if (nzchar(FR_SELECTION_TYPE)) FR_SELECTION_TYPE else "chain",   # 단일 config 러너(baseline/forecast A/B) — sweep argmax-pick 아님 (§3). ★FR_SELECTION_TYPE 이 있으면 essence 와 같은 값(두 경로 불일치 해소 · 2026-09-21)
     metrics = list(
       cagr_pct = round((es$essence$cagr%||%NA)*100,2), sharpe = es$essence$net_sharpe%||%NA,
       mdd_pct = round(abs(es$essence$mdd%||%NA)*100,2),
