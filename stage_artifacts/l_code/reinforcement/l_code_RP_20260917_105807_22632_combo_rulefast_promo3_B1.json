@@ -17,11 +17,41 @@
   "calmar": 0.501,
   "oos_retention": 0.119,
   "portfolio_alpha_t": 4.349,
-  "next_probes": [
-    "다음 격자 축 B5(risk_overlay) — 이 블록 승자 위에서 측정",
-    "B1_3(최고 4.349)는 B4 조합 후보로 고정 · B1_2(최저 3.355)는 축 역작동 여부를 조합 LOO 로 분리"
-  ],
+  "next_probes": ["다음 격자 축 B5(risk_overlay) — 이 블록 승자 위에서 측정", "B1_3(최고 4.349)는 B4 조합 후보로 고정 · B1_2(최저 3.355)는 축 역작동 여부를 조합 LOO 로 분리"],
   "next_probe": "다음 격자 축 B5(risk_overlay) — 이 블록 승자 위에서 측정 | B1_3(최고 4.349)는 B4 조합 후보로 고정 · B1_2(최저 3.355)는 축 역작동 여부를 조합 LOO 로 분리",
   "source_paper": "https://arxiv.org/abs/2002.06975",
-  "record_type": "performance"
+  "record_type": "performance",
+  "mechanism": "이 블록의 팩터 선정 축은 초과수익만 움직였고 낙폭은 사실상 고정이다. 10칸 중 8칸의 MDD 가 0.539~0.560(폭 0.021)에 머무는 동안 PORT_t 는 3.355(B1_2)~4.349(B1_3), CAGR 은 0.241~0.276 으로 갈렸다. Calmar 순위는 CAGR 순위를 거의 그대로 따라가고(상위 B1_6 0.504 · B1_3 0.501 = CAGR 상위 두 칸), 어긋나는 칸은 둘뿐인데 둘 다 MDD 예외다 — B1_5(INV07_Retail_Contrarian)는 MDD 0.595 로 블록 최대라 CAGR 0.255 에도 Calmar 0.430 으로 최하위, B1_8(Amihud+INV13)은 MDD 0.517 로 최소지만 PORT_t 3.448 로 최저라 Calmar 0.467 에 그쳤다. 계열 순서는 실측으로 선다: 정보 반영 속도·군집 계열이 상위 4칸(B1_3 Price_Delay 4.349 · B1_6 Momentum_Crowding 4.142 · B1_7 Idiosyncratic_Return 4.061 · B1_1 Amihud 3.766), 거래주체 순매수와 회전율이 하위 3칸(B1_4 3.555 · B1_5 3.509 · B1_2 3.355). 5번째 팩터를 더한 3칸은 전부 구성 요소 사이나 아래로 떨어졌다(B1_8 3.448 < B1_4 3.555 < B1_1 3.766 · B1_9 3.797 < B1_6 4.142 · B1_10 3.609 < B1_6) — 팩터 동일가중 합성에서 5번째 축은 희석으로만 작동했고 상보성은 관측되지 않았다. 정황: MDD 를 실제로 움직인 두 칸(B1_5 · B1_8)은 둘 다 보유 이름 구성을 바꾼 칸이고 스코어 강도 축이 아니었다 — 이 계보의 낙폭은 무엇으로 고르느냐보다 그 달 보유가 하락장에서 지는 적재 구조에 붙어 있을 가능성이 크다. 미결: B1 만으로는 그 적재가 총노출 배율로 줄어드는지 보유 안 배분으로 줄어드는지 안 갈린다 — 같은 상태·같은 평균 노출 예산에서 스칼라와 횡단면을 짝지어 재야 갈린다.",
+  "mechanism_by": "llm:block_end",
+  "mechanism_at": "2026-09-21T10:25:42+0900",
+  "prior_lessons_used": [],
+  "next_block_actions": [
+    {
+      "action": "B5 에서 총노출 스칼라 축소는 대조군 1칸(trend_ladder_gate)으로만 쓰고, 나머지 칸은 평균 노출 예산을 유지한 채 보유 안 배분만 바꾸는 층(ladder_idio_conc_tilt · xs_vol_risk_share_equalize)에 배정한다.",
+      "why": "B1 에서 MDD 가 8/10칸 0.539~0.560 에 고정되고 Calmar 순위가 CAGR 순위를 따라갔다 — CAGR 을 MDD 보다 크게 깎는 처치는 Calmar 를 기계적으로 내린다. 스칼라는 판정 대상이 아니라 예산 대조군으로만 가치가 있다.",
+      "expect": "맞으면 예산이 같은 두 칸(trend_ladder_gate vs ladder_idio_conc_tilt)에서 Calmar 가 갈린다. 두 칸이 붙으면 배분 정보량이 0 이라는 뜻이고, 이 계보에서 횡단면 소비 지점은 더 볼 필요가 없다."
+    },
+    {
+      "action": "시장 시계열을 한 열도 읽지 않는 holding_level 층 2칸(book_convexity_brake · book_stress_vouch)을 넣어 낙폭이 보유 구성의 함수인지 시장 국면의 함수인지 가른다.",
+      "why": "MDD 를 움직인 유일한 두 칸 B1_5(0.595) · B1_8(0.517)이 모두 보유 이름 구성을 바꾼 칸이었다. 국면 상태를 읽지 않는 층이 반응하면 원인은 보유 쪽이다.",
+      "expect": "보유 구성 가설이 맞으면 book_convexity_brake 가 MDD 를 0.539~0.560 범위 밖으로 내린다. 두 칸 모두 노출 1 근처에서 무개입이면 이 책은 하락장 적재 비대칭·담보 결손이 없다는 뜻이고, 그때 낙폭은 국면 층의 몫으로 넘어간다."
+    },
+    {
+      "action": "B5 층 중 최소 한 칸은 상태 원천이 겹치지 않는 2층 스택으로 구성해(보유 불균형 × 침식 국면) 같은 달 이중 축소가 나는지 확인한다.",
+      "why": "B1 에서 Calmar 를 깎은 경로는 MDD 상승(B1_5)과 CAGR 하락(B1_8) 두 가지였다 — 층을 곱으로 겹칠 때 두 층이 같은 달에 동시에 켜지면 두 번째 경로(CAGR 손실)가 먼저 나타난다.",
+      "expect": "설계대로면 스택의 평균 노출이 단층 두 칸의 평균 노출 곱보다 높게(덜 깎이게) 유지된다. 그보다 낮으면 두 층이 같은 국면을 중복해서 읽는 것이고 스택 축은 접는다."
+    },
+    {
+      "action": "블록 순서상 마지막인 B4(결합)에서는 팩터를 더 더하는 방향 대신 상위 단독 구성 두 개(B1_3 Price_Delay · B1_6 Momentum_Crowding)를 그대로 후보로 들고 간다.",
+      "why": "B1_8 · B1_9 · B1_10 3칸이 전부 구성 요소 사이나 아래로 떨어졌다. 근거가 이 블록 안에 있고 다음 블록(B5)이 아니라 B4 에서 집행된다.",
+      "expect": "맞으면 5팩터 이상 구성이 4팩터 최고칸(PORT_t 4.349)을 못 넘는다. 넘으면 희석 해석이 틀린 것이고 결합 방식(동일가중이 아닌 배합)이 원인이다."
+    }
+  ],
+  "next_block_actions_by": "llm:block_end",
+  "avoid": ["vol_median · vol_ewma · vol_har · vol_x_dd · vol_x_turb · turbulence · ml_tail_gate — 시장 상태를 총노출 배율 하나로 옮기는 축. 이 블록에서 Calmar 는 CAGR 순위를 따라갔으므로 CAGR 을 MDD 보다 크게 깎는 처치는 Calmar 를 내린다. 카탈로그 dbeta_tilt_rank 설명에 적힌 선행 B5 50셀 실측(스칼라 축소가 MDD 대비 CAGR 을 더 크게 잃음)도 같은 방향이다.", "dd_brake_q · dd_recovery · ts_mom_sign — 낙폭 깊이 분위와 12개월 부호 축. 카탈로그 trend_persist_tilt 설명 기준 깊이 계열은 스칼라 25회 · 횡단면 18회로 이미 포화이고, ts_mom_sign 은 0/1 이진이라 예산 고정 짝의 대조군으로도 못 쓴다.", "dbeta_tilt_rank · csd_idio_tilt · holdlvl_syscrowd_tilt · trend_horizon_split_tilt · erosion 단독 배치 등 1−g·순위 선형 배분 계열(스택 안은 예외) — 평균 노출이 1−g/2 로 예산과 배분이 한 수치에 섞인다. 이번 블록이 남긴 미결(총노출이냐 배분이냐)을 원리적으로 못 가른다.", "pg2_risk_overlay_v1 — 상주 칸(B5_31)이 매 세대 이미 재므로 설계에 넣지 않는다.", "INV07_Retail_Contrarian 축을 다음 블록의 기저 구성으로 끌고 가는 것 — 블록 내에서 MDD 를 0.595 로 올린 유일한 처치이고 Calmar 0.430 으로 최하위다."],
+  "next_block_design_for": "B5",
+  "next_block_design_n": 6,
+  "prior_action_status": "no_design",
+  "prior_action_detail": "그 블록에 설계가 없었다(규칙 선정)",
+  "mechanism_confidence": "medium"
 }
