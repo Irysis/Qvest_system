@@ -27,7 +27,7 @@
 ```
 [무인] 수집(paper_recharge→dedup→트리아지→큐) + **강화**(격자+LLM설계·기전·승격 · SKILL §0.1·§0.3)
 [1계층] 충실구현(run_paper_replication — 논문 그대로·유니버스만 KR) → 권위 등급
-        → 미달: 강화 ≤25회(Skill reinforce — QEPM→등급, 논문 3편마다 결합 검토)
+        → 미달: 강화 ≤30회(Skill reinforce — QEPM→등급, 논문 3편마다 결합 검토)
         → A: Judge(PIT) → PASS → BOOK          (B 이상 = 2계층 풀 공급)
 [2계층] 로테이션(논문 온디맨드·B+ 풀 국면 배합·FR 등급) → 미달: 강화 무한 → A → Judge → BOOK
 [BOOK]  06_Registry/book/book_registry.json — A등급 등록·온디맨드 트래킹(/book)
@@ -39,7 +39,7 @@
 |---|---|
 | `/qvest` | 부팅 → 계층 질문 |
 | `/alpha-search` | 1계층 논문 1건 충실구현 |
-| `/reinforce`(Skill) | 강화 — L1 ≤25회(원장 l1) / L2 무한(원장 l2) |
+| `/reinforce`(Skill) | 강화 — L1 ≤30회(원장 l1 · 격자 6블록×5) / L2 무한(원장 l2) |
 | `/worktask` | QEPM 체인 수동 관리 (WT-R = 강화 타입) |
 | `/strategy-rotation <track>` | 2계층 — 전천후 모델 |
 | `/book` | BOOK 목록·트래킹 |
@@ -53,7 +53,7 @@
 | 공통 | **PIT C1~C15 절대**(`.claude/rules/pit.md`) · lockbox 폐지 — 가용 데이터 전기간 사용 |
 
 <!-- FRONTIER_AXES_START -->
-> ★고정 축 완화를 레버로 제시 금지(INV-7). 조건-안 레버만 프론티어 — 현행(v10): ① **비대칭 표적**(분포-표적 학습 · 일별 축 정보 회수 · 수리통계 구조 추정 — v8.4 방향 근거 retain) ② 강화 3축(멀티팩터·비중방법론·리스크오버레이) ③ screen-tier 재고 회수(overlay 큐) ④ 국면식별·전략결합(2계층).
+> ★고정 축 완화를 레버로 제시 금지(INV-7). 조건-안 레버만 프론티어 — 현행(v10): ① **비대칭 표적**(분포-표적 학습 · 일별 축 정보 회수 · 수리통계 구조 추정 — v8.4 방향 근거 retain) ② 강화 4축(멀티팩터·비중방법론·리스크오버레이·집행주기) ③ screen-tier 재고 회수(overlay 큐) ④ 국면식별·전략결합(2계층).
 ⚠①이 과거 ML 실패의 부활이 아님을 구분할 것: 과거 negative 는 ML 을 결합기·사이징·평균 예측기로 쓴 구성에서 나왔고, ①은 표적을 분포로 바꾸는 미측정 축이다.
 <!-- FRONTIER_AXES_END -->
 과거 negative 조회 = `hypothesis_index.R lookup <kw>`(사실 기록이지 금지 목록 아님 — 새 각도면 재시도 정당, AX-000).

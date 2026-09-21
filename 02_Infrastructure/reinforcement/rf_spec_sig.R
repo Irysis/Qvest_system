@@ -106,7 +106,12 @@ if (!exists("%||%")) `%||%` <- function(a, b) if (is.null(a) || length(a) == 0L)
   #   측정 축이 아니다 — 서명에 들어가면 같은 포트폴리오가 다른 칸이 된다. overlay_* 접두 형제가 있는 필드는 overlay 하나라
   #   이 줄만 바꿨다. 기존 801 서명은 이 변경 전후 비트 동일(실측).
   as.character(toJSON(.ov_canon(sp[["overlay"]]) %||% list(),       auto_unbox = TRUE)),
-  as.character(sp$base_signal$path %||% sp$base_signal$kind %||% "")), collapse = "|")
+  as.character(sp$base_signal$path %||% sp$base_signal$kind %||% ""),
+  # ★집행 주기(B6 · 2026-09-21)는 **있을 때만** 덧붙인다 — 없는 스펙(기존 전부)의 서명은
+  #   구판과 비트 동일하게 남는다(paste(c(...)) 가 NULL 을 버린다). 서명에 없으면 k=2 와 k=3
+  #   칸이 같은 칸으로 접혀 조용히 하나만 측정된다 — "승계 목록에서 빠진 축은 없는 축이 된다".
+  if (is.null(sp[["rebalance"]])) NULL else as.character(toJSON(sp[["rebalance"]], auto_unbox = TRUE))),
+  collapse = "|")
 
 # ── ★격자 커서 — 자리를 차지한 셀 코드 집합 (2026-09-04 신설) ────────────────
 # 구판 커서는 `cells[[attempts_used + 1L]]` — **개수**였다. 등록이 한 건 거부되면

@@ -82,6 +82,23 @@ rf_rb_turnover <- function(PORT) {
   mean(tv, na.rm = TRUE)
 }
 
+#' 총 회전량과 연환산 — ★interval 계열의 함정: 간격을 늘리면 **1회당 회전율은 오른다**
+#'   (드리프트가 쌓여 목표와의 간극이 커지므로). 비용은 '1회당 x 횟수' 라서 판정은 총량으로 한다.
+#'   실측(2026-09-21 스모크): 월간 144회 x 0.175 = 25.2 vs k=3 48회 x 0.285 = 13.7 → 46% 감소.
+rf_rb_turnover_total <- function(PORT) {
+  if (!is.data.table(PORT) || !nrow(PORT)) return(NA_real_)
+  n <- length(unique(PORT$Date))
+  if (n < 2L) return(NA_real_)
+  rf_rb_turnover(PORT) * (n - 1L)
+}
+rf_rb_turnover_annual <- function(PORT) {
+  if (!is.data.table(PORT) || !nrow(PORT)) return(NA_real_)
+  ds <- sort(unique(PORT$Date))
+  yrs <- as.numeric(difftime(ds[length(ds)], ds[1L], units = "days")) / 365.25
+  if (!is.finite(yrs) || yrs <= 0) return(NA_real_)
+  rf_rb_turnover_total(PORT) / yrs
+}
+
 #' 확장창 문턱 — 과거 거리들의 중앙값/분위. 표본이 min_hist 미만이면 NA(= 규칙 미발화)
 .rf_rb_thresh <- function(hist, rule) {
   if (length(hist) < rule$min_hist) return(NA_real_)
@@ -99,6 +116,14 @@ rf_rb_select <- function(PANEL, SEL, rule, n_max) {
   stopifnot(is.data.table(PANEL), all(c("Date", "Ticker", "Score") %in% names(PANEL)))
   n_max <- as.integer(n_max)
   keep_rank <- max(n_max + 1L, as.integer(ceiling(rule$mult * n_max)))
+  # ★퇴화 가드 (2026-09-21 실측): 후보군이 keep_rank 이하이면 보유가 **영원히 얼어붙는다**
+  #   (탐침: 후보 40종·mult 2 → 120개월 내내 같은 보유 1집합 · 회전 0.0000). 그건 '회전을 줄인
+  #   처치' 가 아니라 선정 축이 사라진 것이다 — 침묵 무처치 금지 원칙대로 여기서 멈춘다.
+  .n_cand <- stats::median(PANEL[is.finite(Score), .N, by = Date]$N)
+  if (is.finite(.n_cand) && .n_cand <= keep_rank)
+    stop(sprintf(paste("[rf_rebalance] rank_buffer 퇴화 — 후보 중앙 %.0f종 <= 버퍼 %d위",
+                       "(mult %.2f x n_max %d): 보유가 얼어붙어 선정 축이 사라진다"),
+                 .n_cand, keep_rank, rule$mult, n_max))
   P <- PANEL[is.finite(Score)][order(Date, -Score)]
   P[, .rk := seq_len(.N), by = Date]
   ds <- sort(unique(P$Date))
@@ -167,11 +192,13 @@ rf_rb_emit <- function(PORT, rule) {
 
 #' 한 줄 진단 — 칸 로그·원장에 남길 문자열(전후 회전율·리밸 횟수)
 rf_rb_report <- function(before, after, rule) {
-  sprintf("rebalance=%s | 리밸 %d→%d회 · 회전율 %.3f→%.3f",
+  sprintf("rebalance=%s | 리밸 %d→%d회 · 1회당 %.3f→%.3f · 총량 %.1f→%.1f · 연 %.2f→%.2f회전",
           rule$label %||% rule$kind,
           length(unique(before$Date)), length(unique(after$Date)),
-          rf_rb_turnover(before), rf_rb_turnover(after))
+          rf_rb_turnover(before), rf_rb_turnover(after),
+          rf_rb_turnover_total(before), rf_rb_turnover_total(after),
+          rf_rb_turnover_annual(before), rf_rb_turnover_annual(after))
 }
 
 if (identical(environment(), globalenv()) && !interactive())
-  cat("[rf_rebalance.R] Loaded — rf_rb_parse / rf_rb_select / rf_rb_emit / rf_rb_turnover / rf_rb_report\n")
+  cat("[rf_rebalance.R] Loaded — rf_rb_parse / rf_rb_select / rf_rb_emit / rf_rb_turnover(_total/_annual) / rf_rb_report\n")

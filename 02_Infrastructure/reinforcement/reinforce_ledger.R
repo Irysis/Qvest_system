@@ -39,7 +39,11 @@ suppressPackageStartupMessages({ library(jsonlite) })
 # ★universe 는 2026-08-30 도훈 지시로 격자 B3 가 리스크오버레이 → 유니버스로 바뀌면서 생겼다.
 #   그런데 이 목록은 안 따라와서 B3 5칸이 **등록 자체로 거부**됐고(append_failed → halt_no_jobs)
 #   루프가 10/20 에서 멈췄다. risk_overlay 는 격자 밖 경로에서 쓰이므로 존치한다.
-RF_KEYWORD_AXES_L1 <- c("multifactor", "weighting", "universe", "risk_overlay", "combination")
+# ★execution_cadence(B6 · 2026-09-21 도훈 승인) — 집행 주기·회전 통제 축.
+#   격자에만 넣고 여기를 안 고치면 rf_append_attempt 가 그 블록의 등록을 **거부**해 루프가 멈춘다
+#   (배터리 "격자↔원장 계약" 이 그 상태를 잡는다 — 실제로 잡혔다).
+RF_KEYWORD_AXES_L1 <- c("multifactor", "weighting", "universe", "risk_overlay", "combination",
+                        "execution_cadence")
 RF_KEYWORD_AXES_L2 <- c("regime_identification", "strategy_combination")
 RF_STATUS_ENUM <- c("active", "graduated", "exhausted", "superseded", "parked")
 
@@ -52,9 +56,11 @@ RF_STATUS_ENUM <- c("active", "graduated", "exhausted", "superseded", "parked")
   list(
     schema_version = "reinforce_ledger_v2",
     layer = as.integer(layer),
-    max_attempts = if (layer == 1L) 25L else NULL,   # NULL = 무한 (2계층)
+    # ★2026-09-21 도훈 승인 — B6(집행 주기) 축 신설로 격자가 6블록x5 = 30칸이 됐다.
+    #   기반 예산이 25 에 머물면 새 축은 칸을 못 받고 굶는다(러너의 자동 상향은 설계 초과분만 더한다).
+    max_attempts = if (layer == 1L) 30L else NULL,   # NULL = 무한 (2계층)
     note = if (layer == 1L)
-      "v10 1계층 강화 원장 — QEPM(alpha→risk→optimizer→forge→등급) 기반, 논문당 최대 25회(격자 5블록×5). root_papers 는 선택(2026-09-03 의무 해제) — 시도마다 evidence=paper/method/none 기록. 논문 3편마다 combination_review 의무." else
+      "v10 1계층 강화 원장 — QEPM(alpha→risk→optimizer→forge→등급) 기반, 논문당 최대 30회(격자 6블록×5). root_papers 는 선택(2026-09-03 의무 해제) — 시도마다 evidence=paper/method/none 기록. 논문 3편마다 combination_review 의무." else
       "v10 2계층 강화 원장 — 국면식별/전략결합 축, A등급까지 무한. 착수 시 직전 attempts 의 lessons 주입 의무.",
     entries = list(),
     combination_review = if (layer == 1L)
@@ -169,7 +175,7 @@ rf_open_entry <- function(layer, base_id, base_grade,
   invisible(entry)
 }
 
-#' 강화 시도 1회 사전 등록 — ★여기가 25회 게이트다 (1계층 — 값은 원장 max_attempts)
+#' 강화 시도 1회 사전 등록 — ★여기가 횟수 게이트다 (1계층 — 값은 **원장 max_attempts** · 현행 30)
 #' root_papers = list(list(url=..., claim=...), ...) — 선택. 비어도 거부하지 않고 evidence="none" 으로 기록한다.
 rf_append_attempt <- function(layer, base_id, idea, keyword_axis, root_papers,
                               wt_id = NULL, root = .rf_root(),
@@ -215,7 +221,7 @@ rf_append_attempt <- function(layer, base_id, idea, keyword_axis, root_papers,
   e <- obj$entries[[i]]
   if (!identical(e$status, "active"))
     stop(sprintf("[reinforce_ledger] entry status=%s — active 아님", e$status))
-  # ★25회 상한 (1계층만 — 원장 max_attempts)
+  # ★횟수 상한 (1계층만 — 원장 max_attempts · 격자 칸 수에서 온다)
 # ★entry 별 상한 (2026-09-04 도훈 지시). B1 이 설계에 따라 가변 길이가 되면서,
 #   전역 25 를 그대로 두면 B1 이 쓴 만큼 뒤 블록이 잘린다 — 실측: B1 14칸 -> B4(결합)가
 #   아예 못 돌았다. 각 블록 승자를 합치는 칸을 못 보면 그 entry 는 A 로 갈 길이 없다.
@@ -400,7 +406,7 @@ rf_reopen_attempt <- function(layer, base_id, n, reason, root = .rf_root()) {
   invisible(e$attempts[[j]])
 }
 
-#' 조기 중단(파킹) — 25회 소진 전에 도훈 결정으로 논문을 접을 때
+#' 조기 중단(파킹) — 상한 소진 전에 도훈 결정으로 논문을 접을 때
 #'
 #' ★왜 필요한가: status enum 은 active / exhausted(25회 소진) / graduated(Grade A) 뿐이라
 #' "25회를 다 쓰지 않았지만 도훈이 접기로 했다" 를 표현할 어휘가 없었다. active 로 남기면

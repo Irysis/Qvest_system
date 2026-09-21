@@ -36,6 +36,13 @@ SPEC <- jsonlite::fromJSON(.rf_spec_path, simplifyVector = FALSE)
 
 .AX <- SPEC$fixed_axes
 .N_MAX   <- as.integer(.AX$n_max      %||% 25L)
+
+# ── 집행 주기·회전 통제 (B6 축 · 2026-09-21) ─────────────────────────────────
+#   spec$rebalance 가 있으면 ①선정(rank_buffer) ②배출(interval·band·cap) 두 지점에서 적용한다.
+#   없으면 두 함수 모두 입력을 그대로 돌려주므로 **기존 칸은 비트 동일**이다.
+#   ★`[[ ]]` 정확 일치로 읽는다(부분 일치가 다른 키를 집는 사고 이력 — WP-R 2026-09-17).
+suppressMessages(source(file.path(.RF_ROOT, "02_Infrastructure/reinforcement/rf_rebalance.R")))
+.RB <- rf_rb_parse(SPEC[["rebalance"]])
 .LIQ_MIN <- as.numeric(.AX$liq_adv20_min %||% 2e8)
 .START   <- as.Date(.AX$start_date    %||% "2005-01-01")
 
@@ -294,6 +301,9 @@ SEL <- if (identical(.univ$kind, "sector_neutral")) {
 } else {
   PANEL[order(Date, -Score)][, head(.SD, .N_MAX), by = Date]
 }
+
+# B6 선정 규칙(rank_buffer) — 보유를 순위 버퍼 안에서 유지한다(규칙 없으면 SEL 그대로)
+SEL <- rf_rb_select(PANEL, SEL, .RB, .N_MAX)
 
 if (identical(.wt$kind, "ew")) {
   FACTORS <- SEL[, .(Date, Ticker, Score)]
@@ -875,6 +885,31 @@ if (!identical(.ov_kind, "none")) {
               mean(.expo, na.rm = TRUE), min(.expo, na.rm = TRUE),
               sum(.expo <= 1e-12, na.rm = TRUE), .N,
               if (.VEC) sprintf(" · 횡단면 sd 최대 %.3f", .x_var) else ""), fill = TRUE)
+}
+
+# ── B6 배출 규칙 — 리밸 시점을 정한다 (하네스는 배출 날짜를 리밸로 읽고 사이를 드리프트) ──
+if (!is.null(.RB) && !identical(.RB$kind, "rank_buffer")) {
+  if (!exists("PORTFOLIO")) {            # EW 셀은 FACTORS 만 있다 — 주기 통제는 비중이 있어야 한다
+    PORTFOLIO <- SEL[, .(Ticker, Weight = 1 / .N), by = Date][, .(Date, Ticker, Weight, Leg = "LONG")]
+  }
+  .rb_before <- copy(PORTFOLIO)
+  PORTFOLIO <- rf_rb_emit(PORTFOLIO, .RB)
+  .n_reb <- length(unique(PORTFOLIO$Date))
+  if (.n_reb < 24L)
+    stop(sprintf("[rf_cell_engine] rebalance %s 적용 후 리밸 %d회 — 측정 표본 부족(>=24 필요)", .RB$kind, .n_reb))
+  stopifnot(all(PORTFOLIO$Weight >= 0))
+  stopifnot(max(PORTFOLIO[, .(s = sum(Weight)), by = Date]$s) <= 1 + 1e-8)
+  # ★처치 미전달 가드 — 규칙을 걸었는데 총 회전량이 그대로면 그 칸은 아무것도 재지 않는다
+  .tt0 <- rf_rb_turnover_total(.rb_before); .tt1 <- rf_rb_turnover_total(PORTFOLIO)
+  if (is.finite(.tt0) && is.finite(.tt1) && .tt1 >= .tt0 - 1e-9)
+    stop(sprintf("[rf_cell_engine] rebalance %s 처치 미전달 — 총 회전량 %.2f → %.2f (줄지 않았다)",
+                 .RB$kind, .tt0, .tt1))
+  if (exists("FACTORS")) rm(FACTORS)
+  cat(sprintf("[rf_cell_engine] %s\n", rf_rb_report(.rb_before, PORTFOLIO, .RB)))
+} else if (!is.null(.RB)) {
+  cat(sprintf("[rf_cell_engine] rebalance=%s (선정 단계 규칙) · 회전율 %.3f\n", .RB$label,
+              rf_rb_turnover(if (exists("PORTFOLIO")) PORTFOLIO
+                             else SEL[, .(Ticker, Weight = 1 / .N), by = Date][, .(Date, Ticker, Weight)])))
 }
 
 # ★N-ary 리팩터(2026-08-30) 후 이 줄만 구 변수(.f2/.f3)를 참조해 전 셀이

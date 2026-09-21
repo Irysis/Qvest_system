@@ -81,7 +81,11 @@ rf_promote_decide <- function(entry, best, cfg = list(), existing_ids = NULL) {
 #' @param root 저장소 루트(상주 칸·config 읽기) · parent_carry 부모 entry 의 carry$overlay(자기 층 판별 정밀도용 · 선택)
 rf_promote_carry <- function(ws, cf, best, sp, cfg = list(), root = .RFP_ROOT(), parent_carry = NULL) {
   ov <- .rfp_carry_overlay(ws, best, cfg, root, parent_carry)
+  # ★집행 주기(B6)는 시험 축이자 **승계 축**이다 — 유니버스처럼 리셋하지 않는다.
+  #   (유니버스는 그 블록의 시험 축이라 리셋하지만, 주기는 다음 세대의 바닥 구성에 남아야
+  #    비용 구조가 유지된다. 빠뜨리면 세대마다 월간으로 되돌아간다 — overlay 사고와 동형)
   out <- list(factors = cf %||% list(), weighting = ws$weighting,
+              rebalance = ws[["rebalance"]],
               universe = list(kind = "k200_kq150"),
               universe_reset_from = ws$universe,
               overlay = ov$overlay,

@@ -320,6 +320,82 @@ if (is.null(rA$err) && identical(rA$out, "PORTFOLIO"))
   ok("D5 단수 객체 하위호환 — 구 스펙 무변경") else ng("D5 단수 형태가 깨졌다", rA$err %||% "")
 
 writeLines("")
+writeLines("=== E. 집행 주기·회전 통제 (B6 축 · 2026-09-21) ===")
+# 왜 여기서 재나: 규칙이 **엔진까지 도달해 실제로 배출을 바꾸는가**는 순수 함수 검사
+#   (test_rf_rebalance)로는 못 잰다. 스펙 키 하나가 빠지면 규칙은 조용히 무처치가 된다.
+.tot <- function(P) {                              # ★판정 지표 = **총 회전량**(1회당 x 횟수)
+  n <- length(unique(P$Date)); if (n < 2L) return(NA_real_); .to(P) * (n - 1L)
+}
+.to <- function(P) {                               # 한 방향 회전율 1회당(배출 시점 기준)
+  ds <- sort(unique(P$Date)); if (length(ds) < 2L) return(NA_real_)
+  prev <- P[Date == ds[1L], .(Ticker, w0 = Weight)]; tv <- numeric(0)
+  for (i in seq_along(ds)[-1L]) {
+    cur <- P[Date == ds[i], .(Ticker, w1 = Weight)]
+    m <- merge(prev, cur, by = "Ticker", all = TRUE); m[is.na(w0), w0 := 0]; m[is.na(w1), w1 := 0]
+    tv <- c(tv, 0.5 * sum(abs(m$w1 - m$w0))); prev <- cur[, .(Ticker, w0 = w1)]
+  }
+  mean(tv)
+}
+.port_of <- function(r) {
+  if (identical(r$out, "PORTFOLIO")) as.data.table(get("PORTFOLIO", envir = r$env))
+  else { F <- as.data.table(get("FACTORS", envir = r$env)); F[, .(Ticker, Weight = 1 / .N), by = Date] }
+}
+rE0 <- run_cell(base_spec(factor2 = PX))                                   # 기준 = 월간
+rE1 <- run_cell(base_spec(factor2 = PX, rebalance = list(kind = "interval", k = 3, phase = 0)))
+rE2 <- run_cell(base_spec(factor2 = PX, rebalance = list(kind = "rank_buffer", mult = 1.4)))
+rE3 <- run_cell(base_spec(factor2 = PX, rebalance = list(kind = "no_trade_band", stat = "expanding_median", min_hist = 12)))
+
+if (!is.null(rE0$err)) ng("E0 기준 칸", rE0$err) else ok("E0 기준 칸(월간) 산출")
+
+if (is.null(rE1$err) && identical(rE1$out, "PORTFOLIO")) {
+  P0 <- .port_of(rE0); P1 <- .port_of(rE1)
+  n0 <- length(unique(P0$Date)); n1 <- length(unique(P1$Date))
+  if (n1 > 0L && abs(n1 - ceiling(n0 / 3)) <= 1L)
+    ok(sprintf("E1 interval k=3 — 리밸 %d → %d회(1/3)", n0, n1)) else
+    ng("E1 interval k=3 리밸 횟수", sprintf("%d → %d", n0, n1))
+  # ★1회당 회전율은 **오른다**(드리프트가 쌓여 목표와의 간극이 커진다). 비용은 총량이다.
+  if (isTRUE(.tot(P1) < .tot(P0) * 0.8))
+    ok(sprintf("E2 interval 총 회전량 감소 %.1f → %.1f (1회당은 %.3f → %.3f 로 오른다)",
+               .tot(P0), .tot(P1), .to(P0), .to(P1))) else
+    ng("E2 interval 총 회전량", sprintf("%.1f → %.1f", .tot(P0), .tot(P1)))
+} else ng("E1 interval 실행", rE1$err %||% "산출물 없음")
+
+if (is.null(rE2$err)) {
+  P0 <- .port_of(rE0); P2 <- .port_of(rE2)
+  cnt <- P2[, .N, by = Date]
+  if (identical(length(unique(P2$Date)), length(unique(P0$Date))) && max(cnt$N) <= AXES$n_max)
+    ok(sprintf("E3 rank_buffer — 리밸 횟수 불변 · 보유 <= n_max(%d)", max(cnt$N))) else
+    ng("E3 rank_buffer 형태", sprintf("dates %d vs %d · max n %d", length(unique(P2$Date)), length(unique(P0$Date)), max(cnt$N)))
+  if (isTRUE(.tot(P2) < .tot(P0)) && isTRUE(.tot(P2) > 0))
+    ok(sprintf("E4 rank_buffer 총 회전량 감소 %.1f → %.1f (0 이 아니다 = 얼지 않았다)", .tot(P0), .tot(P2))) else
+    ng("E4 rank_buffer 회전량", sprintf("%.1f → %.1f", .tot(P0), .tot(P2)))
+} else ng("E3 rank_buffer 실행", rE2$err)
+
+if (is.null(rE3$err)) {
+  P0 <- .port_of(rE0); P3 <- .port_of(rE3)
+  if (length(unique(P3$Date)) < length(unique(P0$Date)))
+    ok(sprintf("E5 no_trade_band — 미체결 발생 %d → %d회", length(unique(P0$Date)), length(unique(P3$Date)))) else
+    ng("E5 band 미발화", sprintf("%d vs %d", length(unique(P0$Date)), length(unique(P3$Date))))
+} else ng("E5 band 실행", rE3$err)
+
+# E6 [위반 주입] 미지원 규칙은 **조용히 무시하지 않고** 죽는다 — 무처치 위장 금지
+rE4 <- run_cell(base_spec(factor2 = PX, rebalance = list(kind = "quarterly_ish")))
+if (!is.null(rE4$err) && grepl("미지원", rE4$err)) ok("E6 [위반] 미지원 kind → 엔진이 stop") else
+  ng("E6 미지원 kind 를 조용히 통과시켰다", rE4$err %||% "오류 없음")
+
+# E8 [양성 대조] 퇴화 가드 — 후보군이 버퍼 안에 다 들어가면 보유가 얼어붙는다.
+#   이 픽스처는 종목 50 = 2 x n_max(25) 라 mult=2 가 정확히 그 경우다(실측: 120개월 내내 같은 보유).
+#   '회전이 0 이 된 것' 을 개선으로 읽지 않도록 엔진이 멈춰야 한다.
+rE6 <- run_cell(base_spec(factor2 = PX, rebalance = list(kind = "rank_buffer", mult = 2)))
+if (!is.null(rE6$err) && grepl("퇴화", rE6$err)) ok("E8 [양성 대조] 버퍼 퇴화(보유 동결) → 엔진이 stop") else
+  ng("E8 퇴화를 통과시켰다", rE6$err %||% "오류 없음")
+
+# E7 규칙이 없으면 기존 경로와 **비트 동일** (기존 칸 불변 보증)
+rE5 <- run_cell(base_spec(factor2 = PX))
+if (is.null(rE5$err) && identical(.port_of(rE5), .port_of(rE0)))
+  ok("E7 규칙 없음 = 구판 산출과 비트 동일") else ng("E7 무규칙 경로가 달라졌다", rE5$err %||% "")
+
+writeLines("")
 writeLines(sprintf("합계: 통과 %d · 실패 %d", PASS, FAIL))
 cat(sprintf('{"test":"rf_cell_engine_smoke","pass":%d,"fail":%d,"total":%d}\n', PASS, FAIL, PASS + FAIL))
 if (FAIL > 0L) quit(status = 1L)

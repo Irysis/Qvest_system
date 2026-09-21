@@ -15,10 +15,10 @@ LLM 주도 심층 리서치이며, "후속 연구까지 포함하여 인뎁스 �
 
 | 계층 | 상한 | keyword_axis | 원장 |
 |---|---|---|---|
-| 1계층 | **논문당 최대 25회 = 격자 25칸(5블록×5)** (소진 → exhausted → 새 논문) | `multifactor` / `weighting` / `universe` / `risk_overlay` / `combination` | `06_Registry/reinforce_ledger_l1.json` |
+| 1계층 | **논문당 최대 30회 = 격자 30칸(6블록×5)** (소진 → exhausted → 새 논문) | `multifactor` / `weighting` / `universe` / `risk_overlay` / `combination` | `06_Registry/reinforce_ledger_l1.json` |
 | 2계층 | **무한** (A 달성까지 — 교훈 지속 주입) | `regime_identification` / `strategy_combination` | `06_Registry/reinforce_ledger_l2.json` |
 
-25회 제한의 목적 = **실패의 재생산 방지**(도훈). 같은 아이디어의 재탕이 아니라
+횟수 제한(현행 30)의 목적 = **실패의 재생산 방지**(도훈). 같은 아이디어의 재탕이 아니라
 매 시도가 새 논문 근거·새 축이어야 한다.
 
 ## §0.1 무인 실행 (도훈 지시 2026-08-30 "모든 작업을 무인화")
@@ -36,7 +36,7 @@ v10 의 "무인 파이프라인은 수집까지만" 경계가 **해제**됐다. 
 
 | 조각 | 파일 | 역할 |
 |---|---|---|
-| 격자 | `06_Registry/reinforce_program.json` | 25칸 정의(5블록×5 · 실행 순서 B1→B2→B3→B5→B4). **논문 독립** — 기저 신호만 논문에서 온다 |
+| 격자 | `06_Registry/reinforce_program.json` | 30칸 정의(6블록×5 · 실행 순서 B1→B2→B3→B6→B5→B4 · 적응 순서는 rf_block_order_decide). **논문 독립** — 기저 신호만 논문에서 온다 |
 | 엔진 | `02_Infrastructure/reinforcement/rf_cell_engine.R` | **단 하나**. 셀 스펙(JSON)을 읽어 FACTORS/PORTFOLIO 산출 |
 | 러너 | `02_Infrastructure/ops/reinforce_auto_parallel.R` (`mode=parallel` · 블록 5칸 병렬) | 1 tick = 1블록. 칸 결정 → 워커 실행 → 등급 → 원장 → 기전 → 텔레그램 → 누적 → 다음 블록. `reinforce_auto_run.R` 은 **퇴역**(2026-09-05 — v10.4 핵심 3종 미탑재로 분기 제거. 순차가 필요하면 `parallel_cells=1`) |
 | 이월 | `02_Infrastructure/ops/reinforce_auto_next_paper.R` | 25칸 소진 → exhausted → 큐 다음 논문 착수 요청 |
