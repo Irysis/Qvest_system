@@ -1,6 +1,6 @@
 ---
 name: reinforce
-description: 강화 프로세스 (v10) — A등급 미달 전략을 QEPM(alpha→risk→optimizer→forge→등급)으로 강화. 1계층 = 논문당 최대 25회 = 격자 5블록×5(멀티팩터/비중방법론/유니버스/리스크오버레이/결합) · 2계층 = 무한(국면식별/전략결합). 매 시도 = Axiom 주입 + L-code 발행(근거 논문은 2026-09-03 의무 해제 · evidence 로 기록만). A 달성 시 Judge(PIT) 호출. 원장 = reinforce_ledger_l1/l2.json.
+description: 강화 프로세스 (v10) — A등급 미달 전략을 QEPM(alpha→risk→optimizer→forge→등급)으로 강화. 1계층 = 논문당 최대 30회 = 격자 6블록×5(멀티팩터/비중방법론/유니버스/리스크오버레이/집행주기/결합) · 2계층 = 무한(국면식별/전략결합). 매 시도 = Axiom 주입 + L-code 발행(근거 논문은 2026-09-03 의무 해제 · evidence 로 기록만). A 달성 시 Judge(PIT) 호출. 원장 = reinforce_ledger_l1/l2.json.
 ---
 
 # 강화 프로세스 (v10 2026-08-29 — 기계 사다리 퇴역, QEPM 기반 재정의)
