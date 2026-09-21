@@ -1,6 +1,6 @@
 # Qvest 산출물 지도 (ARTIFACTS.md)
 
-> 자동 생성 2026-09-21 07:33:52 — 기계가독 원본: `06_Registry/artifact_index.json` · 재생성: `Rscript 02_Infrastructure/tools/build_artifact_index.R` (daily_refresh 말미 자동)
+> 자동 생성 2026-09-22 00:31:51 — 기계가독 원본: `06_Registry/artifact_index.json` · 재생성: `Rscript 02_Infrastructure/tools/build_artifact_index.R` (daily_refresh 말미 자동)
 
 **저장 4원칙**: ① `stage_artifacts/<mode>/<run_id>/` 실험 런(불변·이동금지) ② `outputs/<pipeline>/` canonical 데이터(최신본만) ③ `06_Registry/` 기계가독 상태·큐·인덱스 ④ `04_Research/<topic>/` 사람용 보고서
 
@@ -8,10 +8,10 @@
 
 | 존 | 무엇 | 규모 | 크기 | 최근 활동 | 대표 진입점 |
 |---|---|---|---|---|---|
-| `stage_artifacts/` | 실험 런 원본 (WT·legacy S0~S7·L-code·agent 산출) | 1084항목 / 55,437파일 | 16.4GB | 2026-09-20 (`dart_parser_build`) | `reports/` + 최근 WT 디렉토리 |
-| `outputs/` | 파이프라인 canonical 데이터 (최신본) | 5항목 / 444파일 | 1.7GB | 2026-09-20 (`regime`) | `outputs/ramp/` (RAMP 순수팩터·팩터군 parquet) |
-| `06_Registry/` | 기계가독 상태·큐·인덱스 (JSON) | 173항목 / 424파일 | 74.5MB | 2026-09-20 (`factor_evidence.json`) | `module_catalog.json` / `hypothesis_index.json` |
-| `04_Research/` | 사람용 리서치 보고서·분석 (토픽별) | 36항목 / 8,349파일 | 4.0GB | 2026-09-20 (`meta`) | `01_reports/` / `pg2_forensics/` |
+| `stage_artifacts/` | 실험 런 원본 (WT·legacy S0~S7·L-code·agent 산출) | 1084항목 / 60,001파일 | 17.9GB | 2026-09-21 (`l_code`) | `reports/` + 최근 WT 디렉토리 |
+| `outputs/` | 파이프라인 canonical 데이터 (최신본) | 5항목 / 448파일 | 1.7GB | 2026-09-21 (`regime`) | `outputs/ramp/` (RAMP 순수팩터·팩터군 parquet) |
+| `06_Registry/` | 기계가독 상태·큐·인덱스 (JSON) | 175항목 / 428파일 | 77.6MB | 2026-09-21 (`ast_structure_log.jsonl`) | `module_catalog.json` / `hypothesis_index.json` |
+| `04_Research/` | 사람용 리서치 보고서·분석 (토픽별) | 36항목 / 8,563파일 | 4.4GB | 2026-09-21 (`factor_rotation`) | `01_reports/` / `pg2_forensics/` |
 | `qepm/mailbox/worktask/` | QEPM WT 핸드오프 mailbox (불변 기록) | 299 WT | - | 2026-08-29 (`WT-R20260829_013`) | 최근 WT의 `output/` |
 
 `stage_artifacts` mode 구성: legacy_stage_S0_S7 439 · worktask_run 310 · other 198 · agent_artifact 61 · l_code 39 · pg2 17 · ramp 8 · alpha_search 5 · report 4 · axiom 3
