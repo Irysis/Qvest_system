@@ -17,11 +17,51 @@
   "calmar": 0.364,
   "oos_retention": -0.244,
   "portfolio_alpha_t": 2.305,
-  "next_probes": [
-    "다음 격자 축 B2(weighting) — 이 블록 승자 위에서 측정",
-    "B5_18(최고 2.305)는 B4 조합 후보로 고정 · B5_31(최저 1.236)는 축 역작동 여부를 조합 LOO 로 분리"
-  ],
+  "next_probes": ["다음 격자 축 B2(weighting) — 이 블록 승자 위에서 측정", "B5_18(최고 2.305)는 B4 조합 후보로 고정 · B5_31(최저 1.236)는 축 역작동 여부를 조합 LOO 로 분리"],
   "next_probe": "다음 격자 축 B2(weighting) — 이 블록 승자 위에서 측정 | B5_18(최고 2.305)는 B4 조합 후보로 고정 · B5_31(최저 1.236)는 축 역작동 여부를 조합 LOO 로 분리",
   "source_paper": "https://arxiv.org/abs/2003.02515",
-  "record_type": "performance"
+  "record_type": "performance",
+  "mechanism": "판정: B5 에서 Calmar 를 민 것은 위험 정보의 종류가 아니라 소비 지점이다. 같은 다변량 정보를 총노출로 소비한 상주 칸 B5_31(Calmar 0.363 · MDD 0.479 · PORT_t 1.236)보다, 종목별 tilt 로 소비한 B5_16(Calmar 0.417 · MDD 0.425 · PORT_t 1.398) · B5_17(Calmar 0.418 · MDD 0.429 · PORT_t 1.451)이 세 축 모두 우위이고 B1 최고 Calmar 0.339 도 넘는다 — Σw=1 을 유지한 채 포트폴리오 안에서 재배분하면 MDD 가 내려가도 CAGR 이 0.177~0.179 로 남는다. B7 에서 구속하던 축(MDD 를 내릴 때 함께 사라지는 CAGR)이 여기서 부분적으로 풀렸다. 정보원별로 갈린다: 분산 계열 B5_20(Calmar 0.327 · MDD 0.583) · B5_22(Calmar 0.290 · MDD 0.615)는 B1 최고 아래로 되돌아가 MDD 를 못 내렸고, 낙폭 계열 B5_18 은 PORT_t 2.305 · CAGR 0.209 로 블록 최고인데 MDD 0.573 이라 Calmar 0.364 에 그친다. 비지배 프론티어는 B5_18(PORT_t 축)과 B5_17(Calmar 축) 두 칸뿐이고 나머지 6칸은 둘 중 하나에 양축 열위다. 스택은 단조가 아니다 — B5_19(dd_recovery×multivar_channel_tilt)는 부모 B5_18(Calmar 0.364)·B5_16(0.417)보다 낮은 0.341 이고 MDD 가 0.425→0.517 로 되돌아가 tilt 의 MDD 이득이 지워졌다(B7 의 다층 금지 처방 지지). 반면 B5_21(Calmar 0.359)은 단층 부모 B5_20(0.327)보다 높아 그 처방을 반증하는데, 짝인 xs_vol_gap_corr_brake 단층 칸이 없어 귀속은 미결이다. 미결 둘: ① 개입 월 비율·평균 노출이 산출물에 없어 B5_16/B5_17 의 MDD 하락이 tilt 강도인지 개입 빈도인지 안 갈린다 ② B7 이 처방한 예산-정합 짝·개입밀도 축(trend_ladder_gate 계열)은 설계에 들어가지 않아 미측정으로 남는다.",
+  "mechanism_by": "llm:block_end",
+  "mechanism_at": "2026-09-22T01:41:56+0900",
+  "prior_lessons_used": ["B1", "B7"],
+  "next_block_actions": [
+    {
+      "action": "B2 에 minvar 를 넣어 동일가중 1/25 고정 축을 공분산 기반 비중으로 교체한다 — 팩터 집합·유니버스는 처치 열 그대로 V14_EBIT_EV 단독 유지.",
+      "why": "B1 미결(‘MDD 0.572 가 팩터 집합의 하한인지 동일가중의 하한인지 안 갈린다’)이 B5 로 좁혀졌다 — B5_16/B5_17 이 총노출을 안 줄이고 MDD 0.425~0.429 를 만들었으므로, 같은 재배분을 오버레이 없이 비중 단계에서 낼 수 있는지가 남은 질문이다.",
+      "expect": "minvar MDD 가 0.479(B5_31) 이하이고 CAGR 0.174 이상이면 MDD 이득의 출처는 동일가중이며 오버레이 없이 재현된다. MDD 가 0.572 이상에 머물면 하한은 팩터 집합·유니버스 쪽이고, MDD 축은 오버레이 소비 지점에서만 움직인다."
+    },
+    {
+      "action": "같은 score_tilt 엔진에 공분산 추정만 바꾼 대조쌍을 한 블록에 같이 넣는다 — gen:lean_score_tilt__shr_sample(대조) vs gen:lean_score_tilt__shr_ledoit_wolf(처치).",
+      "why": "B5_16·B5_17 은 둘 다 다변량 정보이고 Calmar 차이가 0.001(0.417 vs 0.418)로 분산이 거의 0 이다 — 다변량 구조가 먹힌 것인지 추정오차 통제가 먹힌 것인지 이 블록만으로는 안 갈린다.",
+      "expect": "두 칸 Calmar 차가 B5_16–B5_17 수준(0.001)이면 이득은 공분산 정보가 아니라 tilt 형태 자체다. LW 판만 MDD 가 0.50 아래로 내려가면 이득의 출처는 추정오차 통제이고, 그때는 B4 결합에서 추정기 축을 승계해야 한다."
+    },
+    {
+      "action": "qepm:CDaR_LP 로 낙폭 정보를 총노출이 아니라 비중 단계에서 소비한다.",
+      "why": "B5_18 은 낙폭 정보가 PORT_t 2.305 · CAGR 0.209 를 그대로 들고 오는 유일한 계열임을 보였지만 총노출 소비로는 MDD 0.573 을 못 내렸고, B5_16/B5_17 은 같은 정보 계열이 아님에도 종목별 소비에서 MDD 를 내렸다 — 소비 지점 가설의 직접 검정이다.",
+      "expect": "CDaR_LP 가 CAGR 0.19 이상을 유지하며 MDD 0.573 아래로 내려가면 B5_18 의 손실 출처는 낙폭 정보가 아니라 총노출 소비다. MDD 가 0.573 이상이면 낙폭 정보는 종목별로 변환되지 않으며 B5_18 경로는 노출 축 전용으로 확정된다."
+    },
+    {
+      "action": "lean:nco_score_tilt 로 alpha 순위를 유지한 채 군집 공분산 구조만 부과한다.",
+      "why": "B5_16·B5_17 은 MDD 를 얻는 대신 PORT_t 를 1.398·1.451 로 내줬다(B1_3 은 2.097). 이 PORT_t 손실이 다변량 방어의 본질적 비용인지, 오버레이가 신호 순위를 덮어써서 생긴 것인지 갈려야 B4 결합 설계가 선다.",
+      "expect": "PORT_t 가 1.7 이상이면서 MDD 가 0.50 이하로 나오면 PORT_t 손실은 오버레이 소비 지점의 인공물이고 다변량 방어는 비중 단계에서 더 싸게 산다. PORT_t 가 1.4 대에 머물면 손실은 본질적이다."
+    },
+    {
+      "action": "lean:hrp 를 역행렬 없는 대조로 함께 돌린다 — minvar 와 같은 정보(공분산), 다른 추정 민감도.",
+      "why": "B5 에서 같은 정보(다변량)가 소비 지점만 바꿔도 Calmar 0.363↔0.418 로 갈렸다. 비중 축에서도 같은 공분산 정보가 추정 방식에 따라 갈리는지 한 칸으로 확인해야 minvar 결과의 귀속이 선다.",
+      "expect": "minvar 와 hrp 의 Calmar 차가 0.03 이내면 결과는 추정 방식에 견고하다. 한쪽만 0.40 을 넘으면 이득은 공분산 정보가 아니라 특정 추정·집중도 경로이며, 그 칸의 실현 보유종목수로 재확인한다."
+    },
+    {
+      "action": "B2 전 칸의 산출물에 실현 보유종목수·최대 단일 비중·월 회전량을 수치로 기록한다.",
+      "why": "B5 기전의 두 미결 중 하나가 ‘개입 강도인지 빈도인지’였고, 비중 축은 그 대응량이 집중도·회전량이다. 이것이 없으면 B2 의 MDD 변화가 공분산 정보 때문인지 보유 집중도 축소 때문인지 다음 블록에서도 못 가른다.",
+      "expect": "기록되면 B6(집행 주기)이 총 회전량을 판정 축으로 쓸 때 B2 발 회전 증가분을 분리할 수 있다. 없으면 B2·B6 의 회전 효과가 섞여 두 블록 모두 귀속 불가로 남는다."
+    }
+  ],
+  "next_block_actions_by": "llm:block_end",
+  "avoid": ["분산(dispersion) 계열 위험 정보를 다시 여는 칸 — B5_20(Calmar 0.327 · MDD 0.583) · B5_22(Calmar 0.290 · MDD 0.615) 둘 다 B1 최고 Calmar 0.339 아래이고 MDD 를 전혀 못 내렸다. 벽 확인(오버레이 재설계 레인용 기록).", "단층 부모 없는 스택 — B5_21(Calmar 0.359)이 B5_20(0.327)을 넘었지만 짝인 xs_vol_gap_corr_brake 단층 칸이 없어 개선분을 두 층 중 어디에도 귀속시킬 수 없다. 스택을 열려면 각 층의 단층 칸을 같은 블록에 둘 것.", "B7 구조적 방어 슬리브를 다른 k·자격 기준으로 재시도하는 칸 — B7 5칸 전부 동일 고정 축 대조 B1_3(Calmar 0.320) 아래였고 프론티어가 서지 않았다. 벽 확인.", "팩터 개수를 4~5개로 늘리는 칸 — B1_9·B1_10·B1_11 이 B1_8 대비 PORT_t·Calmar 동시 열위로 단조였다. 또한 B2 는 비중 축이므로 팩터 집합을 동시에 흔들면 귀속이 깨진다(B1 처방 유지).", "score-blend 전용 변형(score_pure · softmax_tilt · winsor_tilt · rank_tilt)을 여러 칸에 쓰는 것 — 전부 alpha 순위의 단조 변환이라 공분산 축을 안 건드린다. 이 기전이 지목한 축(종목별 재배분의 위험 구조)을 못 시험한다. 이 블록에서는 shr_sample/shr_lw 대조쌍 2칸으로 충분하다.", "총노출 스칼라 대칭 축소 계열(vol_median · vol_ewma · vol_har · ts_mom_sign) — 근거는 이 블록 밖(카탈로그 인용 B5 50셀 실측)이지만, B5_31(총노출 소비, PORT_t 1.236 블록 최저)이 같은 방향을 재현했다."],
+  "next_block_design_for": "B2",
+  "next_block_design_n": 6,
+  "prior_action_status": "executed",
+  "prior_action_detail": "설계 7건 중 7건 집행 (설계: multivar_channel_tilt,multivar_book_whiten_tilt,dd_recovery,dd_recovery+multivar_channel_tilt,csd_idio_tilt,csd_idio_tilt+xs_vol_gap_corr_brake,erosion_grind_idio_tilt / 실측: pg2_risk_overlay_v1,multivar_channel_tilt,multivar_book_whiten_tilt,dd_recovery,dd_recovery+multivar_channel_tilt,csd_idio_tilt,csd_idio_tilt+xs_vol_gap_corr_brake,erosion_grind_idio_tilt)",
+  "mechanism_confidence": "medium"
 }
