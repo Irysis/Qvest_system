@@ -37731,7 +37731,7 @@
       "target_grade": "A",
       "measurement_axis": "n_max_25",
       "axis_valid": true,
-      "attempts_used": 16,
+      "attempts_used": 24,
       "attempts": [
         {
           "n": 1,
@@ -38380,6 +38380,1257 @@
           "lessons": "[B7_41] Grade C · 구속 port_t(0.833/2.95)·calmar(0.225/0.64)·sharpe(0.644/0.80)·cagr(0.142/0.16)·oos(-0.865/0.70) (5조건 중 0 충족) · carry 대비 MDD 0.618→0.634(+2.6%) · CAGR 0.179→0.142(-20.7%) → 양쪽 다 악화",
           "opened_at": "2026-09-22T00:42:30+0900",
           "closed_at": "2026-09-22T00:50:05+0900"
+        },
+        {
+          "n": 17,
+          "date": "20260922",
+          "cell_code": "B5_31",
+          "idea": "[무인 병렬 B5_31] PG2 리스크 오버레이 상주 — B5/risk_overlay · factor2=none · weighting=ew · universe=k200_kq150 · overlay=pg2_risk_overlay_v1",
+          "keyword_axis": "risk_overlay",
+          "root_papers": [
+            {
+              "method": "상주 칸(program standing_cells) · pg2_risk_overlay_v1 · BOOK_0001 PG2 리스크 오버레이(게이트×β_R05)를 동결 사양 그대로 무조건 적용 — 상수는 PG2 생산 사양 재사용. 총노출 e = gate × β_R05(GEN forward_weights_D3_M4gAE.R:170 invested). gate(GEN:129-131) = 0.70 if m4 발화(m4_panel_published weight_",
+              "url": "https://arxiv.org/abs/2003.02515"
+            },
+            {
+              "url": "https://arxiv.org/abs/2003.02515",
+              "title": "Time-varying neural network for stock return prediction",
+              "paper_key": "2003.02515"
+            },
+            {
+              "title": "Fama & French (1992), The Cross-Section of Expected Stock Returns, JF 47(2)",
+              "url": "https://onlinelibrary.wiley.com/doi/10.1111/j.1540-6261.1992.tb04398.x"
+            }
+          ],
+          "wt_id": null,
+          "evidence": "paper",
+          "unmapped_families": [],
+          "axiom_injected": true,
+          "grade": "C",
+          "essence": {
+            "cell_code": "B5_31",
+            "block": "B5",
+            "port_t": 1.236,
+            "net_sharpe": 0.906,
+            "cagr": 0.174,
+            "mdd": 0.479,
+            "calmar": 0.363,
+            "oos_retention": -0.672,
+            "spec": "C:/Users/99922/OneDrive/Quant_Module_Moltbot/.cache/rf_parallel/spec_B5_31__RP_20260912_212323_skipped_base.json",
+            "source": "authoritative_remeasure.json"
+          },
+          "artifacts": "C:/Users/99922/OneDrive/Quant_Module_Moltbot/stage_artifacts/replication/20260922_011120_19512",
+          "lessons": "[B5_31] Grade C · 구속 port_t(1.236/2.95)·calmar(0.363/0.64)·oos(-0.672/0.70) (5조건 중 2 충족) · carry 대비 MDD 0.634→0.479(-24.4%) · CAGR 0.142→0.174(+22.5%) → 위험만 줄었다(비대칭 성공)",
+          "opened_at": "2026-09-22T01:10:51+0900",
+          "closed_at": "2026-09-22T01:16:59+0900",
+          "adversary": {
+            "schema": "rf_overlay_adversary_v1",
+            "at": "2026-09-22T01:27:48+0900",
+            "base_id": "RP_20260912_212323_skipped_base",
+            "layer": 1,
+            "block": "B5",
+            "n": 17,
+            "code": "B5_31",
+            "dry_run": false,
+            "candidate": false,
+            "candidate_rank": null,
+            "cell": {
+              "calmar": 0.363,
+              "port_t": 1.236,
+              "mdd": 0.479,
+              "cagr": 0.174,
+              "grade": "C",
+              "artifacts": "C:/Users/99922/OneDrive/Quant_Module_Moltbot/stage_artifacts/replication/20260922_011120_19512",
+              "spec": "C:/Users/99922/OneDrive/Quant_Module_Moltbot/.cache/rf_parallel/spec_B5_31__RP_20260912_212323_skipped_base.json"
+            },
+            "floor": {
+              "code": "B1_3",
+              "n": 3,
+              "calmar": 0.32,
+              "port_t": 2.097,
+              "match": "floor_code",
+              "artifacts": "C:/Users/99922/OneDrive/Quant_Module_Moltbot/stage_artifacts/replication/20260921_234418_21980",
+              "spec": "C:/Users/99922/OneDrive/Quant_Module_Moltbot/.cache/rf_parallel/spec_B1_3__RP_20260912_212323_skipped_base.json"
+            },
+            "own_layers": [
+              {
+                "kind": "pg2_risk_overlay",
+                "arm_id": "pg2_risk_overlay_v1",
+                "family": "book_spec",
+                "external_data": false,
+                "vector_declared": false
+              }
+            ],
+            "engine_supports": {
+              "overlay_shift": true,
+              "overlay_strict": true
+            },
+            "rp_honors_lcode_switch": true,
+            "cfg": {
+              "alpha": 0.05,
+              "n_placebo": 200,
+              "max_candidates": 3,
+              "block_rule": "auto",
+              "cost_rate": 0.0015,
+              "seed": 20260917,
+              "reruns": "auto"
+            },
+            "tests": [],
+            "verdict": "not_candidate",
+            "analytic_verdict": null,
+            "reason": "beyond_max_candidates",
+            "json_path": "C:/Users/99922/OneDrive/Quant_Module_Moltbot/.cache/rf_overlay_adversary/RP_20260912_212323_skipped_base/B5_31/adversary.json",
+            "history": [],
+            "recorded_at": "2026-09-22T01:27:48+0900"
+          }
+        },
+        {
+          "n": 18,
+          "date": "20260922",
+          "cell_code": "B5_16",
+          "idea": "[무인 병렬 B5_16] 다변량 채널 틸트 — 기준(원순위 선정) — B5/risk_overlay · factor2=none · weighting=ew · universe=k200_kq150 · overlay=multivar_channel_tilt",
+          "keyword_axis": "risk_overlay",
+          "root_papers": [
+            {
+              "method": "LLM 설계(블록 전이) · multivar_channel_tilt · 설계 레인 arm 중 유일하게 T3 를 통과한 이력(타이밍 p 0.01)과 T3b 경계값(p 0.055)을 낸 종목별 기준 칸. 시장 결합 침식(에피소드 1·3)에서 4축 합성 강도의 타이밍이 블록 순열을 견디는지, 채널 원순위 선정이 가치 책에서 정보를 나르는지를 단독으로 잰다 — 칸 2·4 의 대조 기준.",
+              "url": "https://arxiv.org/abs/2003.02515"
+            },
+            {
+              "url": "https://arxiv.org/abs/2003.02515",
+              "title": "Time-varying neural network for stock return prediction",
+              "paper_key": "2003.02515"
+            },
+            {
+              "title": "Fama & French (1992), The Cross-Section of Expected Stock Returns, JF 47(2)",
+              "url": "https://onlinelibrary.wiley.com/doi/10.1111/j.1540-6261.1992.tb04398.x"
+            }
+          ],
+          "wt_id": null,
+          "evidence": "paper",
+          "unmapped_families": [],
+          "axiom_injected": true,
+          "grade": "C",
+          "essence": {
+            "cell_code": "B5_16",
+            "block": "B5",
+            "port_t": 1.398,
+            "net_sharpe": 0.903,
+            "cagr": 0.177,
+            "mdd": 0.425,
+            "calmar": 0.417,
+            "oos_retention": -0.611,
+            "spec": "C:/Users/99922/OneDrive/Quant_Module_Moltbot/.cache/rf_parallel/spec_B5_16__RP_20260912_212323_skipped_base.json",
+            "source": "authoritative_remeasure.json"
+          },
+          "artifacts": "C:/Users/99922/OneDrive/Quant_Module_Moltbot/stage_artifacts/replication/20260922_011120_23008",
+          "lessons": "[B5_16] Grade C · 구속 port_t(1.398/2.95)·calmar(0.417/0.64)·oos(-0.611/0.70) (5조건 중 2 충족) · carry 대비 MDD 0.634→0.425(-33.0%) · CAGR 0.142→0.177(+24.6%) → 위험만 줄었다(비대칭 성공)",
+          "opened_at": "2026-09-22T01:10:56+0900",
+          "closed_at": "2026-09-22T01:17:00+0900",
+          "adversary": {
+            "schema": "rf_overlay_adversary_v1",
+            "at": "2026-09-22T01:27:49+0900",
+            "base_id": "RP_20260912_212323_skipped_base",
+            "layer": 1,
+            "block": "B5",
+            "n": 18,
+            "code": "B5_16",
+            "dry_run": false,
+            "candidate": true,
+            "candidate_rank": 2,
+            "cell": {
+              "calmar": 0.417,
+              "port_t": 1.398,
+              "mdd": 0.425,
+              "cagr": 0.177,
+              "grade": "C",
+              "artifacts": "C:/Users/99922/OneDrive/Quant_Module_Moltbot/stage_artifacts/replication/20260922_011120_23008",
+              "spec": "C:/Users/99922/OneDrive/Quant_Module_Moltbot/.cache/rf_parallel/spec_B5_16__RP_20260912_212323_skipped_base.json"
+            },
+            "floor": {
+              "code": "B1_3",
+              "n": 3,
+              "calmar": 0.32,
+              "port_t": 2.097,
+              "match": "floor_code",
+              "artifacts": "C:/Users/99922/OneDrive/Quant_Module_Moltbot/stage_artifacts/replication/20260921_234418_21980",
+              "spec": "C:/Users/99922/OneDrive/Quant_Module_Moltbot/.cache/rf_parallel/spec_B1_3__RP_20260912_212323_skipped_base.json"
+            },
+            "own_layers": [
+              {
+                "kind": "gen_20260907_002324",
+                "arm_id": "multivar_channel_tilt",
+                "family": "cross_sectional",
+                "external_data": false,
+                "vector_declared": true
+              }
+            ],
+            "engine_supports": {
+              "overlay_shift": true,
+              "overlay_strict": true
+            },
+            "rp_honors_lcode_switch": true,
+            "cfg": {
+              "alpha": 0.05,
+              "n_placebo": 200,
+              "max_candidates": 3,
+              "block_rule": "auto",
+              "cost_rate": 0.0015,
+              "seed": 20260917,
+              "reruns": "auto"
+            },
+            "tests": {
+              "T3": {
+                "status": "pass",
+                "obs_calmar": 0.425094,
+                "obs_cagr": 0.181653,
+                "obs_mdd": 0.427323,
+                "placebo_q": 0.366418,
+                "placebo_mean": 0.30592,
+                "placebo_sd": 0.035678,
+                "placebo_n_finite": 200,
+                "p_value": 0.00995,
+                "alpha": 0.05,
+                "n_placebo": 200,
+                "block_len": 7,
+                "block_rule": "hhj1995_n^(1/3)",
+                "n_periods": 260,
+                "mean_E": 0.879076,
+                "sd_E": 0.154711,
+                "decision_rule": "obs_calmar > quantile(placebo_calmar, 1 - alpha)  [평균이 아니라 분위]"
+              },
+              "T4": {
+                "status": "pass",
+                "obs_calmar": 0.425094,
+                "const_calmar": 0.308462,
+                "const_cagr": 0.177947,
+                "const_mdd": 0.576885,
+                "mean_E": 0.879076,
+                "decision_rule": "obs_calmar > calmar(mean(E) * r_t, cost 0)"
+              },
+              "T5": {
+                "mdd_floor": 0.627181,
+                "mdd_cell": 0.427323,
+                "reduction_total": 0.199857,
+                "largest": {
+                  "peak": "2007-10-11",
+                  "trough": "2008-10-27",
+                  "recovered": true,
+                  "depth_floor": 0.627181,
+                  "depth_cell": 0.410665,
+                  "reduction": 0.216516
+                },
+                "share_largest": 1.083353,
+                "n_episodes": 166,
+                "episodes": [
+                  {
+                    "peak": "2007-10-11",
+                    "trough": "2008-10-27",
+                    "recovered": true,
+                    "depth_floor": 0.627181,
+                    "depth_cell": 0.410665,
+                    "reduction": 0.216516
+                  },
+                  {
+                    "peak": "2015-07-20",
+                    "trough": "2020-03-19",
+                    "recovered": true,
+                    "depth_floor": 0.539491,
+                    "depth_cell": 0.427323,
+                    "reduction": 0.112168
+                  },
+                  {
+                    "peak": "2021-05-11",
+                    "trough": "2022-10-13",
+                    "recovered": true,
+                    "depth_floor": 0.420631,
+                    "depth_cell": 0.411981,
+                    "reduction": 0.008651
+                  }
+                ],
+                "note": "share_largest = 바닥 최대 낙폭 에피소드 창 [peak,trough] 에서의 (바닥 깊이 − 셀 깊이) / (바닥 MDD − 셀 MDD). >1 = 그 에피소드 밖에서는 셀이 더 나빴다",
+                "cell_calmar_essence": 0.417,
+                "cell_calmar_approx": 0.425094
+              },
+              "T3b": {
+                "status": "fail",
+                "obs_calmar": 0.431483,
+                "obs_cagr": 0.173914,
+                "obs_mdd": 0.403061,
+                "placebo_q": 0.46539,
+                "placebo_mean": 0.454711,
+                "placebo_n_finite": 200,
+                "p_value": 1,
+                "alpha": 0.05,
+                "n_placebo": 200,
+                "n_periods": 260,
+                "n_rows": 6500,
+                "resolution": "monthly_period (보유기간 수익 Σ w_i e_i R_i,k − Σ|Δ(w e)|·cost · ann 12)",
+                "decision_rule": "obs_calmar > quantile(placebo_calmar, 1 - alpha) — 날짜 안 e_i 순열 · 총노출 짝맞춤",
+                "rawdata_coverage": 1
+              },
+              "T1": {
+                "applicable": true,
+                "status": "pass",
+                "calmar_shift": 0.348,
+                "floor_calmar": 0.32,
+                "port_t_shift": 1.747,
+                "artifacts": "C:/Users/99922/OneDrive/Quant_Module_Moltbot/stage_artifacts/replication/20260922_012841_21556",
+                "spec": "C:/Users/99922/OneDrive/Quant_Module_Moltbot/.cache/rf_overlay_adversary/RP_20260912_212323_skipped_base/B5_16/T1/spec.json",
+                "side_effects": {
+                  "env": {
+                    "QVEST_RP_REGISTER": "0",
+                    "QVEST_RP_NO_FACTOR_ANALYSIS": "1",
+                    "QVEST_RP_NO_LCODE": "1",
+                    "QVEST_NO_LEDGER_OPEN": "1",
+                    "QVEST_RF_ADVERSARY": "1",
+                    "QVEST_RP_JLOG": "C:/Users/99922/OneDrive/Quant_Module_Moltbot/.cache/rf_overlay_adversary/RP_20260912_212323_skipped_base/B5_16/T1/rmm_journal.jsonl"
+                  },
+                  "lcode_leak": [],
+                  "strategy_name": "ADV_T1_B5_16_RP_20260912_212323_skipped_base",
+                  "elapsed_sec": 228,
+                  "rc": 0
+                },
+                "decision_rule": "calmar(overlay_shift=1) > floor_calmar"
+              },
+              "T2": {
+                "applicable": false,
+                "status": "not_applicable",
+                "detail": "own layers 에 external_data=true arm 없음"
+              }
+            },
+            "verdict": "fail",
+            "analytic_verdict": "fail",
+            "reason": "failed: T3b",
+            "approximation": {
+              "returns": "floor 03_period_returns.csv ret_net",
+              "frequency": "daily",
+              "ann_factor": 252,
+              "exposure": "Σ target_weight(cell)/Σ target_weight(floor) per floor exec date",
+              "cost": "|ΔE_p| × 0.0015 at exec (first ΔE = 0)",
+              "missing_month_policy": "carry_forward_prev_holdings (harness semantics)",
+              "n_missing_cell_dates": 0,
+              "n_extra_cell_dates": 0,
+              "n_periods": 260,
+              "n_return_rows": 5336,
+              "floor_calmar_essence": 0.32,
+              "floor_calmar_approx": 0.31944,
+              "floor_approx_gap": -0.00056,
+              "floor_exposure_mean": 1,
+              "cell_exposure_mean": 0.879076,
+              "E_mean": 0.879076,
+              "E_min": 0.5,
+              "E_max": 1,
+              "n_full_cash": 0
+            },
+            "vector_observed": true,
+            "vector_dates_vary": 127,
+            "json_path": "C:/Users/99922/OneDrive/Quant_Module_Moltbot/.cache/rf_overlay_adversary/RP_20260912_212323_skipped_base/B5_16/adversary.json",
+            "history": [],
+            "recorded_at": "2026-09-22T01:31:46+0900"
+          }
+        },
+        {
+          "n": 19,
+          "date": "20260922",
+          "cell_code": "B5_17",
+          "idea": "[무인 병렬 B5_17] 다변량 × 보유 화이트닝 틸트 — 선정 기하 짝 — B5/risk_overlay · factor2=none · weighting=ew · universe=k200_kq150 · overlay=multivar_book_whiten_tilt",
+          "keyword_axis": "risk_overlay",
+          "root_papers": [
+            {
+              "method": "LLM 설계(블록 전이) · multivar_book_whiten_tilt · 상태 4축·강도 g·산출식(1 − g·r, 평균 1 − g/2)을 칸 1 과 동일하게 고정하고 보유측 채널 상관을 화이트닝한 선정만 다르다. 칸 2 − 칸 1 = 순수 '누구를 깎았나'(T3b 축) 이고, 기전 지도에서 유일하게 미포화인 cross_sectional/multivar 칸의 첫 측정이다.",
+              "url": "https://arxiv.org/abs/2003.02515"
+            },
+            {
+              "url": "https://arxiv.org/abs/2003.02515",
+              "title": "Time-varying neural network for stock return prediction",
+              "paper_key": "2003.02515"
+            },
+            {
+              "title": "Fama & French (1992), The Cross-Section of Expected Stock Returns, JF 47(2)",
+              "url": "https://onlinelibrary.wiley.com/doi/10.1111/j.1540-6261.1992.tb04398.x"
+            }
+          ],
+          "wt_id": null,
+          "evidence": "paper",
+          "unmapped_families": [],
+          "axiom_injected": true,
+          "grade": "C",
+          "essence": {
+            "cell_code": "B5_17",
+            "block": "B5",
+            "port_t": 1.451,
+            "net_sharpe": 0.912,
+            "cagr": 0.179,
+            "mdd": 0.429,
+            "calmar": 0.418,
+            "oos_retention": -0.583,
+            "spec": "C:/Users/99922/OneDrive/Quant_Module_Moltbot/.cache/rf_parallel/spec_B5_17__RP_20260912_212323_skipped_base.json",
+            "source": "authoritative_remeasure.json"
+          },
+          "artifacts": "C:/Users/99922/OneDrive/Quant_Module_Moltbot/stage_artifacts/replication/20260922_011120_3588",
+          "lessons": "[B5_17] Grade C · 구속 port_t(1.451/2.95)·calmar(0.418/0.64)·oos(-0.583/0.70) (5조건 중 2 충족) · carry 대비 MDD 0.634→0.429(-32.3%) · CAGR 0.142→0.179(+26.1%) → 위험만 줄었다(비대칭 성공)",
+          "opened_at": "2026-09-22T01:11:00+0900",
+          "closed_at": "2026-09-22T01:17:01+0900",
+          "adversary": {
+            "schema": "rf_overlay_adversary_v1",
+            "at": "2026-09-22T01:31:47+0900",
+            "base_id": "RP_20260912_212323_skipped_base",
+            "layer": 1,
+            "block": "B5",
+            "n": 19,
+            "code": "B5_17",
+            "dry_run": false,
+            "candidate": true,
+            "candidate_rank": 1,
+            "cell": {
+              "calmar": 0.418,
+              "port_t": 1.451,
+              "mdd": 0.429,
+              "cagr": 0.179,
+              "grade": "C",
+              "artifacts": "C:/Users/99922/OneDrive/Quant_Module_Moltbot/stage_artifacts/replication/20260922_011120_3588",
+              "spec": "C:/Users/99922/OneDrive/Quant_Module_Moltbot/.cache/rf_parallel/spec_B5_17__RP_20260912_212323_skipped_base.json"
+            },
+            "floor": {
+              "code": "B1_3",
+              "n": 3,
+              "calmar": 0.32,
+              "port_t": 2.097,
+              "match": "floor_code",
+              "artifacts": "C:/Users/99922/OneDrive/Quant_Module_Moltbot/stage_artifacts/replication/20260921_234418_21980",
+              "spec": "C:/Users/99922/OneDrive/Quant_Module_Moltbot/.cache/rf_parallel/spec_B1_3__RP_20260912_212323_skipped_base.json"
+            },
+            "own_layers": [
+              {
+                "kind": "gen_20260922_000207",
+                "arm_id": "multivar_book_whiten_tilt",
+                "family": "cross_sectional",
+                "external_data": false,
+                "vector_declared": true
+              }
+            ],
+            "engine_supports": {
+              "overlay_shift": true,
+              "overlay_strict": true
+            },
+            "rp_honors_lcode_switch": true,
+            "cfg": {
+              "alpha": 0.05,
+              "n_placebo": 200,
+              "max_candidates": 3,
+              "block_rule": "auto",
+              "cost_rate": 0.0015,
+              "seed": 20260917,
+              "reruns": "auto"
+            },
+            "tests": {
+              "T3": {
+                "status": "pass",
+                "obs_calmar": 0.425094,
+                "obs_cagr": 0.181653,
+                "obs_mdd": 0.427323,
+                "placebo_q": 0.366418,
+                "placebo_mean": 0.30592,
+                "placebo_sd": 0.035678,
+                "placebo_n_finite": 200,
+                "p_value": 0.00995,
+                "alpha": 0.05,
+                "n_placebo": 200,
+                "block_len": 7,
+                "block_rule": "hhj1995_n^(1/3)",
+                "n_periods": 260,
+                "mean_E": 0.879076,
+                "sd_E": 0.154711,
+                "decision_rule": "obs_calmar > quantile(placebo_calmar, 1 - alpha)  [평균이 아니라 분위]"
+              },
+              "T4": {
+                "status": "pass",
+                "obs_calmar": 0.425094,
+                "const_calmar": 0.308462,
+                "const_cagr": 0.177947,
+                "const_mdd": 0.576885,
+                "mean_E": 0.879076,
+                "decision_rule": "obs_calmar > calmar(mean(E) * r_t, cost 0)"
+              },
+              "T5": {
+                "mdd_floor": 0.627181,
+                "mdd_cell": 0.427323,
+                "reduction_total": 0.199857,
+                "largest": {
+                  "peak": "2007-10-11",
+                  "trough": "2008-10-27",
+                  "recovered": true,
+                  "depth_floor": 0.627181,
+                  "depth_cell": 0.410665,
+                  "reduction": 0.216516
+                },
+                "share_largest": 1.083353,
+                "n_episodes": 166,
+                "episodes": [
+                  {
+                    "peak": "2007-10-11",
+                    "trough": "2008-10-27",
+                    "recovered": true,
+                    "depth_floor": 0.627181,
+                    "depth_cell": 0.410665,
+                    "reduction": 0.216516
+                  },
+                  {
+                    "peak": "2015-07-20",
+                    "trough": "2020-03-19",
+                    "recovered": true,
+                    "depth_floor": 0.539491,
+                    "depth_cell": 0.427323,
+                    "reduction": 0.112168
+                  },
+                  {
+                    "peak": "2021-05-11",
+                    "trough": "2022-10-13",
+                    "recovered": true,
+                    "depth_floor": 0.420631,
+                    "depth_cell": 0.411981,
+                    "reduction": 0.008651
+                  }
+                ],
+                "note": "share_largest = 바닥 최대 낙폭 에피소드 창 [peak,trough] 에서의 (바닥 깊이 − 셀 깊이) / (바닥 MDD − 셀 MDD). >1 = 그 에피소드 밖에서는 셀이 더 나빴다",
+                "cell_calmar_essence": 0.418,
+                "cell_calmar_approx": 0.425094
+              },
+              "T3b": {
+                "status": "fail",
+                "obs_calmar": 0.438954,
+                "obs_cagr": 0.176076,
+                "obs_mdd": 0.401126,
+                "placebo_q": 0.466157,
+                "placebo_mean": 0.454789,
+                "placebo_n_finite": 200,
+                "p_value": 0.995025,
+                "alpha": 0.05,
+                "n_placebo": 200,
+                "n_periods": 260,
+                "n_rows": 6500,
+                "resolution": "monthly_period (보유기간 수익 Σ w_i e_i R_i,k − Σ|Δ(w e)|·cost · ann 12)",
+                "decision_rule": "obs_calmar > quantile(placebo_calmar, 1 - alpha) — 날짜 안 e_i 순열 · 총노출 짝맞춤",
+                "rawdata_coverage": 1
+              },
+              "T1": {
+                "applicable": true,
+                "status": "pass",
+                "calmar_shift": 0.34,
+                "floor_calmar": 0.32,
+                "port_t_shift": 1.762,
+                "artifacts": "C:/Users/99922/OneDrive/Quant_Module_Moltbot/stage_artifacts/replication/20260922_013202_31648",
+                "spec": "C:/Users/99922/OneDrive/Quant_Module_Moltbot/.cache/rf_overlay_adversary/RP_20260912_212323_skipped_base/B5_17/T1/spec.json",
+                "side_effects": {
+                  "env": {
+                    "QVEST_RP_REGISTER": "0",
+                    "QVEST_RP_NO_FACTOR_ANALYSIS": "1",
+                    "QVEST_RP_NO_LCODE": "1",
+                    "QVEST_NO_LEDGER_OPEN": "1",
+                    "QVEST_RF_ADVERSARY": "1",
+                    "QVEST_RP_JLOG": "C:/Users/99922/OneDrive/Quant_Module_Moltbot/.cache/rf_overlay_adversary/RP_20260912_212323_skipped_base/B5_17/T1/rmm_journal.jsonl"
+                  },
+                  "lcode_leak": [],
+                  "strategy_name": "ADV_T1_B5_17_RP_20260912_212323_skipped_base",
+                  "elapsed_sec": 193.2,
+                  "rc": 0
+                },
+                "decision_rule": "calmar(overlay_shift=1) > floor_calmar"
+              },
+              "T2": {
+                "applicable": false,
+                "status": "not_applicable",
+                "detail": "own layers 에 external_data=true arm 없음"
+              }
+            },
+            "verdict": "fail",
+            "analytic_verdict": "fail",
+            "reason": "failed: T3b",
+            "approximation": {
+              "returns": "floor 03_period_returns.csv ret_net",
+              "frequency": "daily",
+              "ann_factor": 252,
+              "exposure": "Σ target_weight(cell)/Σ target_weight(floor) per floor exec date",
+              "cost": "|ΔE_p| × 0.0015 at exec (first ΔE = 0)",
+              "missing_month_policy": "carry_forward_prev_holdings (harness semantics)",
+              "n_missing_cell_dates": 0,
+              "n_extra_cell_dates": 0,
+              "n_periods": 260,
+              "n_return_rows": 5336,
+              "floor_calmar_essence": 0.32,
+              "floor_calmar_approx": 0.31944,
+              "floor_approx_gap": -0.00056,
+              "floor_exposure_mean": 1,
+              "cell_exposure_mean": 0.879076,
+              "E_mean": 0.879076,
+              "E_min": 0.5,
+              "E_max": 1,
+              "n_full_cash": 0
+            },
+            "vector_observed": true,
+            "vector_dates_vary": 127,
+            "json_path": "C:/Users/99922/OneDrive/Quant_Module_Moltbot/.cache/rf_overlay_adversary/RP_20260912_212323_skipped_base/B5_17/adversary.json",
+            "history": [],
+            "recorded_at": "2026-09-22T01:35:06+0900"
+          }
+        },
+        {
+          "n": 20,
+          "date": "20260922",
+          "cell_code": "B5_18",
+          "idea": "[무인 병렬 B5_18] 낙폭×직전월 부호 이진 게이트 — 희소 스칼라 — B5/risk_overlay · factor2=none · weighting=ew · universe=k200_kq150 · overlay=dd_recovery",
+          "keyword_axis": "risk_overlay",
+          "root_papers": [
+            {
+              "method": "LLM 설계(블록 전이) · dd_recovery · 활성 arm 중 유일한 0/1 AND 게이트(벤치 낙폭이 확장창 중앙 위 ∧ 직전월 하락 → 전량 현금). 한 번도 G2 를 받지 않았고 스택된 적도 없으며 이력상 개선이 MDD 가 아니라 CAGR 에서 왔다. 희소·이진 노출은 블록 순열이 정렬을 실제로 파괴하는 형태라 확산형 게이트(T3 p 0.07~0.11 전멸)와 구조가 갈린다 — 조건부 1개월 지속",
+              "url": "https://arxiv.org/abs/2003.02515"
+            },
+            {
+              "url": "https://arxiv.org/abs/2003.02515",
+              "title": "Time-varying neural network for stock return prediction",
+              "paper_key": "2003.02515"
+            },
+            {
+              "title": "Fama & French (1992), The Cross-Section of Expected Stock Returns, JF 47(2)",
+              "url": "https://onlinelibrary.wiley.com/doi/10.1111/j.1540-6261.1992.tb04398.x"
+            }
+          ],
+          "wt_id": null,
+          "evidence": "paper",
+          "unmapped_families": [],
+          "axiom_injected": true,
+          "grade": "B",
+          "essence": {
+            "cell_code": "B5_18",
+            "block": "B5",
+            "port_t": 2.305,
+            "net_sharpe": 0.878,
+            "cagr": 0.209,
+            "mdd": 0.573,
+            "calmar": 0.364,
+            "oos_retention": -0.244,
+            "spec": "C:/Users/99922/OneDrive/Quant_Module_Moltbot/.cache/rf_parallel/spec_B5_18__RP_20260912_212323_skipped_base.json",
+            "source": "authoritative_remeasure.json"
+          },
+          "artifacts": "C:/Users/99922/OneDrive/Quant_Module_Moltbot/stage_artifacts/replication/20260922_011120_6980",
+          "lessons": "[B5_18] Grade B · 구속 port_t(2.305/2.95)·calmar(0.364/0.64)·oos(-0.244/0.70) (5조건 중 2 충족) · carry 대비 MDD 0.634→0.573(-9.6%) · CAGR 0.142→0.209(+47.2%) → 위험만 줄었다(비대칭 성공)",
+          "opened_at": "2026-09-22T01:11:04+0900",
+          "closed_at": "2026-09-22T01:17:02+0900",
+          "adversary": {
+            "schema": "rf_overlay_adversary_v1",
+            "at": "2026-09-22T01:35:07+0900",
+            "base_id": "RP_20260912_212323_skipped_base",
+            "layer": 1,
+            "block": "B5",
+            "n": 20,
+            "code": "B5_18",
+            "dry_run": false,
+            "candidate": true,
+            "candidate_rank": 3,
+            "cell": {
+              "calmar": 0.364,
+              "port_t": 2.305,
+              "mdd": 0.573,
+              "cagr": 0.209,
+              "grade": "B",
+              "artifacts": "C:/Users/99922/OneDrive/Quant_Module_Moltbot/stage_artifacts/replication/20260922_011120_6980",
+              "spec": "C:/Users/99922/OneDrive/Quant_Module_Moltbot/.cache/rf_parallel/spec_B5_18__RP_20260912_212323_skipped_base.json"
+            },
+            "floor": {
+              "code": "B1_3",
+              "n": 3,
+              "calmar": 0.32,
+              "port_t": 2.097,
+              "match": "floor_code",
+              "artifacts": "C:/Users/99922/OneDrive/Quant_Module_Moltbot/stage_artifacts/replication/20260921_234418_21980",
+              "spec": "C:/Users/99922/OneDrive/Quant_Module_Moltbot/.cache/rf_parallel/spec_B1_3__RP_20260912_212323_skipped_base.json"
+            },
+            "own_layers": [
+              {
+                "kind": "dd_recovery",
+                "arm_id": "dd_recovery",
+                "family": null,
+                "external_data": false,
+                "vector_declared": false
+              }
+            ],
+            "engine_supports": {
+              "overlay_shift": true,
+              "overlay_strict": true
+            },
+            "rp_honors_lcode_switch": true,
+            "cfg": {
+              "alpha": 0.05,
+              "n_placebo": 200,
+              "max_candidates": 3,
+              "block_rule": "auto",
+              "cost_rate": 0.0015,
+              "seed": 20260917,
+              "reruns": "auto"
+            },
+            "tests": {
+              "T3": {
+                "status": "fail",
+                "obs_calmar": 0.307203,
+                "obs_cagr": 0.192672,
+                "obs_mdd": 0.627181,
+                "placebo_q": 0.331548,
+                "placebo_mean": 0.315062,
+                "placebo_sd": 0.012645,
+                "placebo_n_finite": 200,
+                "p_value": 0.751244,
+                "alpha": 0.05,
+                "n_placebo": 200,
+                "block_len": 7,
+                "block_rule": "hhj1995_n^(1/3)",
+                "n_periods": 260,
+                "mean_E": 0.988462,
+                "sd_E": 0.093423,
+                "decision_rule": "obs_calmar > quantile(placebo_calmar, 1 - alpha)  [평균이 아니라 분위]"
+              },
+              "T4": {
+                "status": "fail",
+                "obs_calmar": 0.307203,
+                "const_calmar": 0.318394,
+                "const_cagr": 0.198238,
+                "const_mdd": 0.622618,
+                "mean_E": 0.988462,
+                "decision_rule": "obs_calmar > calmar(mean(E) * r_t, cost 0)"
+              },
+              "T5": {
+                "mdd_floor": 0.627181,
+                "mdd_cell": 0.627181,
+                "reduction_total": 0,
+                "largest": {
+                  "peak": "2007-10-11",
+                  "trough": "2008-10-27",
+                  "recovered": true,
+                  "depth_floor": 0.627181,
+                  "depth_cell": 0.627181,
+                  "reduction": 0
+                },
+                "share_largest": null,
+                "n_episodes": 166,
+                "episodes": [
+                  {
+                    "peak": "2007-10-11",
+                    "trough": "2008-10-27",
+                    "recovered": true,
+                    "depth_floor": 0.627181,
+                    "depth_cell": 0.627181,
+                    "reduction": 0
+                  },
+                  {
+                    "peak": "2015-07-20",
+                    "trough": "2020-03-19",
+                    "recovered": true,
+                    "depth_floor": 0.539491,
+                    "depth_cell": 0.539491,
+                    "reduction": 0
+                  },
+                  {
+                    "peak": "2021-05-11",
+                    "trough": "2022-10-13",
+                    "recovered": true,
+                    "depth_floor": 0.420631,
+                    "depth_cell": 0.420631,
+                    "reduction": 0
+                  }
+                ],
+                "note": "share_largest = 바닥 최대 낙폭 에피소드 창 [peak,trough] 에서의 (바닥 깊이 − 셀 깊이) / (바닥 MDD − 셀 MDD). >1 = 그 에피소드 밖에서는 셀이 더 나빴다",
+                "cell_calmar_essence": 0.364,
+                "cell_calmar_approx": 0.307203
+              },
+              "T3b": {
+                "status": "not_computed",
+                "reason": "scalar_exposure_only (날짜 안 e_i 산포 0)"
+              },
+              "T1": {
+                "applicable": true,
+                "status": "fail",
+                "calmar_shift": 0.305,
+                "floor_calmar": 0.32,
+                "port_t_shift": 1.454,
+                "artifacts": "C:/Users/99922/OneDrive/Quant_Module_Moltbot/stage_artifacts/replication/20260922_013515_6588",
+                "spec": "C:/Users/99922/OneDrive/Quant_Module_Moltbot/.cache/rf_overlay_adversary/RP_20260912_212323_skipped_base/B5_18/T1/spec.json",
+                "side_effects": {
+                  "env": {
+                    "QVEST_RP_REGISTER": "0",
+                    "QVEST_RP_NO_FACTOR_ANALYSIS": "1",
+                    "QVEST_RP_NO_LCODE": "1",
+                    "QVEST_NO_LEDGER_OPEN": "1",
+                    "QVEST_RF_ADVERSARY": "1",
+                    "QVEST_RP_JLOG": "C:/Users/99922/OneDrive/Quant_Module_Moltbot/.cache/rf_overlay_adversary/RP_20260912_212323_skipped_base/B5_18/T1/rmm_journal.jsonl"
+                  },
+                  "lcode_leak": [],
+                  "strategy_name": "ADV_T1_B5_18_RP_20260912_212323_skipped_base",
+                  "elapsed_sec": 169.7,
+                  "rc": 0
+                },
+                "decision_rule": "calmar(overlay_shift=1) > floor_calmar"
+              },
+              "T2": {
+                "applicable": false,
+                "status": "not_applicable",
+                "detail": "own layers 에 external_data=true arm 없음"
+              }
+            },
+            "verdict": "fail",
+            "analytic_verdict": "fail",
+            "reason": "failed: T1,T3,T4",
+            "approximation": {
+              "returns": "floor 03_period_returns.csv ret_net",
+              "frequency": "daily",
+              "ann_factor": 252,
+              "exposure": "Σ target_weight(cell)/Σ target_weight(floor) per floor exec date",
+              "cost": "|ΔE_p| × 0.0015 at exec (first ΔE = 0)",
+              "missing_month_policy": "carry_forward_prev_holdings (harness semantics)",
+              "n_missing_cell_dates": 83,
+              "n_extra_cell_dates": 0,
+              "n_periods": 260,
+              "n_return_rows": 5336,
+              "floor_calmar_essence": 0.32,
+              "floor_calmar_approx": 0.31944,
+              "floor_approx_gap": -0.00056,
+              "floor_exposure_mean": 1,
+              "cell_exposure_mean": 0.988462,
+              "E_mean": 0.988462,
+              "E_min": 0.083333,
+              "E_max": 1,
+              "n_full_cash": 0
+            },
+            "vector_observed": false,
+            "vector_dates_vary": 0,
+            "json_path": "C:/Users/99922/OneDrive/Quant_Module_Moltbot/.cache/rf_overlay_adversary/RP_20260912_212323_skipped_base/B5_18/adversary.json",
+            "history": [],
+            "recorded_at": "2026-09-22T01:37:57+0900"
+          }
+        },
+        {
+          "n": 21,
+          "date": "20260922",
+          "cell_code": "B5_19",
+          "idea": "[무인 병렬 B5_19] 이진 게이트 × 채널 틸트 — 소비 지점 분할 스택 — B5/risk_overlay · factor2=none · weighting=ew · universe=k200_kq150 · overlay=dd_recovery × multivar_channel_tilt",
+          "keyword_axis": "risk_overlay",
+          "root_papers": [
+            {
+              "method": "LLM 설계(블록 전이) · dd_recovery × multivar_channel_tilt · 스칼라×벡터 스택의 가장 날카로운 형태: 0/1 게이트는 달을 현금/틸트-단독으로 분할해 같은 달 부분 스칼라가 틸트 위에 곱해지는 이중 축소가 없다(앞선 실패 스택은 전부 부분 스칼라 층). 칸 1·3·바닥과 2×2 요인 — 상호작용 = C(4) − C(1) − C(3) + C(바닥). 두 단독의 최대 아래면 이중 축소 교훈이 이진 게이트까지 일반화된다.",
+              "url": "https://arxiv.org/abs/2003.02515"
+            },
+            {
+              "url": "https://arxiv.org/abs/2003.02515",
+              "title": "Time-varying neural network for stock return prediction",
+              "paper_key": "2003.02515"
+            },
+            {
+              "title": "Fama & French (1992), The Cross-Section of Expected Stock Returns, JF 47(2)",
+              "url": "https://onlinelibrary.wiley.com/doi/10.1111/j.1540-6261.1992.tb04398.x"
+            }
+          ],
+          "wt_id": null,
+          "evidence": "paper",
+          "unmapped_families": [],
+          "axiom_injected": true,
+          "grade": "C",
+          "essence": {
+            "cell_code": "B5_19",
+            "block": "B5",
+            "port_t": 1.521,
+            "net_sharpe": 0.829,
+            "cagr": 0.176,
+            "mdd": 0.517,
+            "calmar": 0.341,
+            "oos_retention": -0.492,
+            "spec": "C:/Users/99922/OneDrive/Quant_Module_Moltbot/.cache/rf_parallel/spec_B5_19__RP_20260912_212323_skipped_base.json",
+            "source": "authoritative_remeasure.json"
+          },
+          "artifacts": "C:/Users/99922/OneDrive/Quant_Module_Moltbot/stage_artifacts/replication/20260922_011120_23996",
+          "lessons": "[B5_19] Grade C · 구속 port_t(1.521/2.95)·calmar(0.341/0.64)·oos(-0.492/0.70) (5조건 중 2 충족) · carry 대비 MDD 0.634→0.517(-18.5%) · CAGR 0.142→0.176(+23.9%) → 위험만 줄었다(비대칭 성공)",
+          "opened_at": "2026-09-22T01:11:08+0900",
+          "closed_at": "2026-09-22T01:17:03+0900",
+          "adversary": {
+            "schema": "rf_overlay_adversary_v1",
+            "at": "2026-09-22T01:37:58+0900",
+            "base_id": "RP_20260912_212323_skipped_base",
+            "layer": 1,
+            "block": "B5",
+            "n": 21,
+            "code": "B5_19",
+            "dry_run": false,
+            "candidate": false,
+            "candidate_rank": null,
+            "cell": {
+              "calmar": 0.341,
+              "port_t": 1.521,
+              "mdd": 0.517,
+              "cagr": 0.176,
+              "grade": "C",
+              "artifacts": "C:/Users/99922/OneDrive/Quant_Module_Moltbot/stage_artifacts/replication/20260922_011120_23996",
+              "spec": "C:/Users/99922/OneDrive/Quant_Module_Moltbot/.cache/rf_parallel/spec_B5_19__RP_20260912_212323_skipped_base.json"
+            },
+            "floor": {
+              "code": "B1_3",
+              "n": 3,
+              "calmar": 0.32,
+              "port_t": 2.097,
+              "match": "floor_code",
+              "artifacts": "C:/Users/99922/OneDrive/Quant_Module_Moltbot/stage_artifacts/replication/20260921_234418_21980",
+              "spec": "C:/Users/99922/OneDrive/Quant_Module_Moltbot/.cache/rf_parallel/spec_B1_3__RP_20260912_212323_skipped_base.json"
+            },
+            "own_layers": [
+              {
+                "kind": "dd_recovery",
+                "arm_id": "dd_recovery",
+                "family": null,
+                "external_data": false,
+                "vector_declared": false
+              },
+              {
+                "kind": "gen_20260907_002324",
+                "arm_id": "multivar_channel_tilt",
+                "family": "cross_sectional",
+                "external_data": false,
+                "vector_declared": true
+              }
+            ],
+            "engine_supports": {
+              "overlay_shift": true,
+              "overlay_strict": true
+            },
+            "rp_honors_lcode_switch": true,
+            "cfg": {
+              "alpha": 0.05,
+              "n_placebo": 200,
+              "max_candidates": 3,
+              "block_rule": "auto",
+              "cost_rate": 0.0015,
+              "seed": 20260917,
+              "reruns": "auto"
+            },
+            "tests": [],
+            "verdict": "not_candidate",
+            "analytic_verdict": null,
+            "reason": "beyond_max_candidates",
+            "json_path": "C:/Users/99922/OneDrive/Quant_Module_Moltbot/.cache/rf_overlay_adversary/RP_20260912_212323_skipped_base/B5_19/adversary.json",
+            "history": [],
+            "recorded_at": "2026-09-22T01:37:58+0900"
+          }
+        },
+        {
+          "n": 22,
+          "date": "20260922",
+          "cell_code": "B5_20",
+          "idea": "[무인 병렬 B5_20] 횡단면분산 × 특이변동 틸트 — 출혈 표적 단독 — B5/risk_overlay · factor2=none · weighting=ew · universe=k200_kq150 · overlay=csd_idio_tilt",
+          "keyword_axis": "risk_overlay",
+          "root_papers": [
+            {
+              "method": "LLM 설계(블록 전이) · csd_idio_tilt · 에피소드 2(벤치 −19.9% 에 전략 −53.9%, 56개월)형 팩터 출혈은 시장이 조용한 채 종목 결과가 벌어지는 분산 국면이라 xs 가 자기 이력 중앙 위로 서고, 이 층은 그때 보유 안 고특이변동 이름(가치 함정 후보)에 축소를 몬다 — 벤치 낙폭·변동성 스칼라가 구조적으로 못 보는 에피소드에 닿는 유일한 시장 판독. 칸 6 의 단독 통제.",
+              "url": "https://arxiv.org/abs/2003.02515"
+            },
+            {
+              "url": "https://arxiv.org/abs/2003.02515",
+              "title": "Time-varying neural network for stock return prediction",
+              "paper_key": "2003.02515"
+            },
+            {
+              "title": "Fama & French (1992), The Cross-Section of Expected Stock Returns, JF 47(2)",
+              "url": "https://onlinelibrary.wiley.com/doi/10.1111/j.1540-6261.1992.tb04398.x"
+            }
+          ],
+          "wt_id": null,
+          "evidence": "paper",
+          "unmapped_families": [],
+          "axiom_injected": true,
+          "grade": "C",
+          "essence": {
+            "cell_code": "B5_20",
+            "block": "B5",
+            "port_t": 1.746,
+            "net_sharpe": 0.907,
+            "cagr": 0.191,
+            "mdd": 0.583,
+            "calmar": 0.327,
+            "oos_retention": -0.41,
+            "spec": "C:/Users/99922/OneDrive/Quant_Module_Moltbot/.cache/rf_parallel/spec_B5_20__RP_20260912_212323_skipped_base.json",
+            "source": "authoritative_remeasure.json"
+          },
+          "artifacts": "C:/Users/99922/OneDrive/Quant_Module_Moltbot/stage_artifacts/replication/20260922_012326_26384",
+          "lessons": "[B5_20] Grade C · 구속 port_t(1.746/2.95)·calmar(0.327/0.64)·oos(-0.410/0.70) (5조건 중 2 충족) · carry 대비 MDD 0.517→0.583(+12.8%) · CAGR 0.176→0.191(+8.5%) → 수익만 늘었다(위험 축 미개입)",
+          "opened_at": "2026-09-22T01:22:41+0900",
+          "closed_at": "2026-09-22T01:27:45+0900",
+          "adversary": {
+            "schema": "rf_overlay_adversary_v1",
+            "at": "2026-09-22T01:37:58+0900",
+            "base_id": "RP_20260912_212323_skipped_base",
+            "layer": 1,
+            "block": "B5",
+            "n": 22,
+            "code": "B5_20",
+            "dry_run": false,
+            "candidate": false,
+            "candidate_rank": null,
+            "cell": {
+              "calmar": 0.327,
+              "port_t": 1.746,
+              "mdd": 0.583,
+              "cagr": 0.191,
+              "grade": "C",
+              "artifacts": "C:/Users/99922/OneDrive/Quant_Module_Moltbot/stage_artifacts/replication/20260922_012326_26384",
+              "spec": "C:/Users/99922/OneDrive/Quant_Module_Moltbot/.cache/rf_parallel/spec_B5_20__RP_20260912_212323_skipped_base.json"
+            },
+            "floor": {
+              "code": "B5_18",
+              "n": 20,
+              "calmar": 0.364,
+              "port_t": 2.305,
+              "match": "floor_code",
+              "artifacts": "C:/Users/99922/OneDrive/Quant_Module_Moltbot/stage_artifacts/replication/20260922_011120_6980",
+              "spec": "C:/Users/99922/OneDrive/Quant_Module_Moltbot/.cache/rf_parallel/spec_B5_18__RP_20260912_212323_skipped_base.json"
+            },
+            "own_layers": [
+              {
+                "kind": "gen_20260903_133452",
+                "arm_id": "csd_idio_tilt",
+                "family": "cross_sectional",
+                "external_data": false,
+                "vector_declared": true
+              }
+            ],
+            "engine_supports": {
+              "overlay_shift": true,
+              "overlay_strict": true
+            },
+            "rp_honors_lcode_switch": true,
+            "cfg": {
+              "alpha": 0.05,
+              "n_placebo": 200,
+              "max_candidates": 3,
+              "block_rule": "auto",
+              "cost_rate": 0.0015,
+              "seed": 20260917,
+              "reruns": "auto"
+            },
+            "tests": [],
+            "verdict": "not_candidate",
+            "analytic_verdict": null,
+            "reason": "calmar_not_above_floor",
+            "json_path": "C:/Users/99922/OneDrive/Quant_Module_Moltbot/.cache/rf_overlay_adversary/RP_20260912_212323_skipped_base/B5_20/adversary.json",
+            "history": [],
+            "recorded_at": "2026-09-22T01:37:58+0900"
+          }
+        },
+        {
+          "n": 23,
+          "date": "20260922",
+          "cell_code": "B5_21",
+          "idea": "[무인 병렬 B5_21] 내재상관 브레이크 × 분산 틸트 — 국면 분할 스택 — B5/risk_overlay · factor2=none · weighting=ew · universe=k200_kq150 · overlay=xs_vol_gap_corr_brake × csd_idio_tilt",
+          "keyword_axis": "risk_overlay",
+          "root_papers": [
+            {
+              "method": "LLM 설계(블록 전이) · xs_vol_gap_corr_brake × csd_idio_tilt · 같은 원천(xs)을 상관 축의 반대편에서 읽는 두 층: 브레이크는 log xs − log rv 가 이력 중앙 아래(종목이 한 덩어리로 움직이는 시장 결합 국면 — 에피소드 1·3 형)일 때 책의 체계 몫만큼 총노출을 깎고, 틸트는 xs 가 중앙 위(분산 국면 — 에피소드 2 형)일 때 종목별로 깎는다. 동시 발화는 rv 가 xs 보다 빨리 오르는 급락에 국",
+              "url": "https://arxiv.org/abs/2003.02515"
+            },
+            {
+              "url": "https://arxiv.org/abs/2003.02515",
+              "title": "Time-varying neural network for stock return prediction",
+              "paper_key": "2003.02515"
+            },
+            {
+              "title": "Fama & French (1992), The Cross-Section of Expected Stock Returns, JF 47(2)",
+              "url": "https://onlinelibrary.wiley.com/doi/10.1111/j.1540-6261.1992.tb04398.x"
+            }
+          ],
+          "wt_id": null,
+          "evidence": "paper",
+          "unmapped_families": [],
+          "axiom_injected": true,
+          "grade": "C",
+          "essence": {
+            "cell_code": "B5_21",
+            "block": "B5",
+            "port_t": 1.602,
+            "net_sharpe": 0.949,
+            "cagr": 0.187,
+            "mdd": 0.523,
+            "calmar": 0.359,
+            "oos_retention": -0.476,
+            "spec": "C:/Users/99922/OneDrive/Quant_Module_Moltbot/.cache/rf_parallel/spec_B5_21__RP_20260912_212323_skipped_base.json",
+            "source": "authoritative_remeasure.json"
+          },
+          "artifacts": "C:/Users/99922/OneDrive/Quant_Module_Moltbot/stage_artifacts/replication/20260922_012326_23368",
+          "lessons": "[B5_21] Grade C · 구속 port_t(1.602/2.95)·calmar(0.359/0.64)·oos(-0.476/0.70) (5조건 중 2 충족) · carry 대비 MDD 0.517→0.523(+1.2%) · CAGR 0.176→0.187(+6.3%) → 수익만 늘었다(위험 축 미개입)",
+          "opened_at": "2026-09-22T01:22:53+0900",
+          "closed_at": "2026-09-22T01:27:46+0900",
+          "adversary": {
+            "schema": "rf_overlay_adversary_v1",
+            "at": "2026-09-22T01:37:59+0900",
+            "base_id": "RP_20260912_212323_skipped_base",
+            "layer": 1,
+            "block": "B5",
+            "n": 23,
+            "code": "B5_21",
+            "dry_run": false,
+            "candidate": false,
+            "candidate_rank": null,
+            "cell": {
+              "calmar": 0.359,
+              "port_t": 1.602,
+              "mdd": 0.523,
+              "cagr": 0.187,
+              "grade": "C",
+              "artifacts": "C:/Users/99922/OneDrive/Quant_Module_Moltbot/stage_artifacts/replication/20260922_012326_23368",
+              "spec": "C:/Users/99922/OneDrive/Quant_Module_Moltbot/.cache/rf_parallel/spec_B5_21__RP_20260912_212323_skipped_base.json"
+            },
+            "floor": {
+              "code": "B5_18",
+              "n": 20,
+              "calmar": 0.364,
+              "port_t": 2.305,
+              "match": "floor_code",
+              "artifacts": "C:/Users/99922/OneDrive/Quant_Module_Moltbot/stage_artifacts/replication/20260922_011120_6980",
+              "spec": "C:/Users/99922/OneDrive/Quant_Module_Moltbot/.cache/rf_parallel/spec_B5_18__RP_20260912_212323_skipped_base.json"
+            },
+            "own_layers": [
+              {
+                "kind": "gen_20260913_000156",
+                "arm_id": "xs_vol_gap_corr_brake",
+                "family": "dispersion",
+                "external_data": false,
+                "vector_declared": false
+              },
+              {
+                "kind": "gen_20260903_133452",
+                "arm_id": "csd_idio_tilt",
+                "family": "cross_sectional",
+                "external_data": false,
+                "vector_declared": true
+              }
+            ],
+            "engine_supports": {
+              "overlay_shift": true,
+              "overlay_strict": true
+            },
+            "rp_honors_lcode_switch": true,
+            "cfg": {
+              "alpha": 0.05,
+              "n_placebo": 200,
+              "max_candidates": 3,
+              "block_rule": "auto",
+              "cost_rate": 0.0015,
+              "seed": 20260917,
+              "reruns": "auto"
+            },
+            "tests": [],
+            "verdict": "not_candidate",
+            "analytic_verdict": null,
+            "reason": "calmar_not_above_floor",
+            "json_path": "C:/Users/99922/OneDrive/Quant_Module_Moltbot/.cache/rf_overlay_adversary/RP_20260912_212323_skipped_base/B5_21/adversary.json",
+            "history": [],
+            "recorded_at": "2026-09-22T01:37:59+0900"
+          }
+        },
+        {
+          "n": 24,
+          "date": "20260922",
+          "cell_code": "B5_22",
+          "idea": "[무인 병렬 B5_22] 침식 형태(지속×완만) 틸트 — 전문 arm 반증 — B5/risk_overlay · factor2=none · weighting=ew · universe=k200_kq150 · overlay=erosion_grind_idio_tilt",
+          "keyword_axis": "risk_overlay",
+          "root_papers": [
+            {
+              "method": "LLM 설계(블록 전이) · erosion_grind_idio_tilt · 침식 낙폭 전용으로 설계된 arm 을 침식 원형 바닥(3/3 에피소드 침식형 · 고점→저점 12.5/56/17.1개월)에서 단독 측정한다. 상태 = 벤치 하락월 지속성 × 저변동이라 변동성 층이 켜지는 달엔 스스로 물러난다. 여기서 바닥을 못 넘으면 arm 자신이 선언한 반증 조건이 충족된 것이고, 넘으면 지속성×완만함이 침식 판독기다 — 미포화 칸의 세 ",
+              "url": "https://arxiv.org/abs/2003.02515"
+            },
+            {
+              "url": "https://arxiv.org/abs/2003.02515",
+              "title": "Time-varying neural network for stock return prediction",
+              "paper_key": "2003.02515"
+            },
+            {
+              "title": "Fama & French (1992), The Cross-Section of Expected Stock Returns, JF 47(2)",
+              "url": "https://onlinelibrary.wiley.com/doi/10.1111/j.1540-6261.1992.tb04398.x"
+            }
+          ],
+          "wt_id": null,
+          "evidence": "paper",
+          "unmapped_families": [],
+          "axiom_injected": true,
+          "grade": "C",
+          "essence": {
+            "cell_code": "B5_22",
+            "block": "B5",
+            "port_t": 1.562,
+            "net_sharpe": 0.841,
+            "cagr": 0.178,
+            "mdd": 0.615,
+            "calmar": 0.29,
+            "oos_retention": -0.369,
+            "spec": "C:/Users/99922/OneDrive/Quant_Module_Moltbot/.cache/rf_parallel/spec_B5_22__RP_20260912_212323_skipped_base.json",
+            "source": "authoritative_remeasure.json"
+          },
+          "artifacts": "C:/Users/99922/OneDrive/Quant_Module_Moltbot/stage_artifacts/replication/20260922_012326_6412",
+          "lessons": "[B5_22] Grade C · 구속 port_t(1.562/2.95)·calmar(0.290/0.64)·oos(-0.369/0.70) (5조건 중 2 충족) · carry 대비 MDD 0.517→0.615(+19.0%) · CAGR 0.176→0.178(+1.1%) → 수익만 늘었다(위험 축 미개입)",
+          "opened_at": "2026-09-22T01:22:57+0900",
+          "closed_at": "2026-09-22T01:27:47+0900",
+          "adversary": {
+            "schema": "rf_overlay_adversary_v1",
+            "at": "2026-09-22T01:38:00+0900",
+            "base_id": "RP_20260912_212323_skipped_base",
+            "layer": 1,
+            "block": "B5",
+            "n": 24,
+            "code": "B5_22",
+            "dry_run": false,
+            "candidate": false,
+            "candidate_rank": null,
+            "cell": {
+              "calmar": 0.29,
+              "port_t": 1.562,
+              "mdd": 0.615,
+              "cagr": 0.178,
+              "grade": "C",
+              "artifacts": "C:/Users/99922/OneDrive/Quant_Module_Moltbot/stage_artifacts/replication/20260922_012326_6412",
+              "spec": "C:/Users/99922/OneDrive/Quant_Module_Moltbot/.cache/rf_parallel/spec_B5_22__RP_20260912_212323_skipped_base.json"
+            },
+            "floor": {
+              "code": "B5_18",
+              "n": 20,
+              "calmar": 0.364,
+              "port_t": 2.305,
+              "match": "floor_code",
+              "artifacts": "C:/Users/99922/OneDrive/Quant_Module_Moltbot/stage_artifacts/replication/20260922_011120_6980",
+              "spec": "C:/Users/99922/OneDrive/Quant_Module_Moltbot/.cache/rf_parallel/spec_B5_18__RP_20260912_212323_skipped_base.json"
+            },
+            "own_layers": [
+              {
+                "kind": "b5gen_erosion_grind_2",
+                "arm_id": "erosion_grind_idio_tilt",
+                "family": "cross_sectional",
+                "external_data": false,
+                "vector_declared": true
+              }
+            ],
+            "engine_supports": {
+              "overlay_shift": true,
+              "overlay_strict": true
+            },
+            "rp_honors_lcode_switch": true,
+            "cfg": {
+              "alpha": 0.05,
+              "n_placebo": 200,
+              "max_candidates": 3,
+              "block_rule": "auto",
+              "cost_rate": 0.0015,
+              "seed": 20260917,
+              "reruns": "auto"
+            },
+            "tests": [],
+            "verdict": "not_candidate",
+            "analytic_verdict": null,
+            "reason": "calmar_not_above_floor",
+            "json_path": "C:/Users/99922/OneDrive/Quant_Module_Moltbot/.cache/rf_overlay_adversary/RP_20260912_212323_skipped_base/B5_22/adversary.json",
+            "history": [],
+            "recorded_at": "2026-09-22T01:38:00+0900"
+          }
         }
       ],
       "judge": {
@@ -38392,9 +39643,9 @@
       "parked_at_attempt": 0,
       "unparked_at": "2026-09-21T12:37:00+0900",
       "unpark_reason": "도훈 지시 2026-09-18 — 기저 관문 반사실 측정(파킹분 기저 [-0.7,0] 고유 기저 4건). 루프 유휴 시점 투입(승격 사슬 미선점 · 루프 on/off 무변경). parked_reason 보존.",
-      "max_attempts": 42,
-      "max_attempts_reason": "예산 재도출 35 -> 42 = 기본 35 + B1 설계 초과 6(설계 11칸) + B5 설계 초과 0(설계 0칸) + 상주 1 + 재설계 추가 0 — 뒤 블록이 잘리지 않도록",
-      "max_attempts_at": "2026-09-21T23:42:38+0900",
+      "max_attempts": 44,
+      "max_attempts_reason": "예산 재도출 42 -> 44 = 기본 35 + B1 설계 초과 6(설계 11칸) + B5 설계 초과 2(설계 7칸) + 상주 1 + 재설계 추가 0 — 뒤 블록이 잘리지 않도록",
+      "max_attempts_at": "2026-09-22T01:09:47+0900",
       "block_order": [
         "B1",
         "B7",
@@ -38406,7 +39657,25 @@
       ],
       "block_order_reason": "CAGR 0.200 >= 0.16 충족 · Calmar 0.320 < 0.64 미달 → 위험 축(B7,B5)을 2번째로. 비중·유니버스는 MDD 를 거의 안 움직이므로 그 축을 먼저 돌면 출하되지 않는 구성을 최적화하게 된다.",
       "block_order_at": "2026-09-22T00:08:53+0900",
-      "search_adaptive": true
+      "search_adaptive": true,
+      "b5_design": {
+        "rounds": [
+          {
+            "round": 1,
+            "at": "2026-09-22T01:09:41+0900",
+            "source": "b5_design_lane",
+            "n_cells": 7,
+            "new_arms_admitted": 0,
+            "new_arms_rejected": 0,
+            "compose_only": true,
+            "fallback": false,
+            "new_arm_ids": [],
+            "n_total_cells": 7,
+            "design_path": "C:/Users/99922/OneDrive/Quant_Module_Moltbot/.cache/rf_block_design/RP_20260912_212323_skipped_base_B5.json",
+            "mechanism_backup": "C:/Users/99922/OneDrive/Quant_Module_Moltbot/.cache/rf_b5_design/RP_20260912_212323_skipped_base/RP_20260912_212323_skipped_base_B5.mech.json"
+          }
+        ]
+      }
     },
     {
       "base_id": "RP_20260912_222205_skipped_base",
@@ -56025,7 +57294,7 @@
     ],
     "retro_note": "2026-09-04 소급: count_paper 키 부재로 1→4 (rf_replication_auto.sh C_COUNT 수리)"
   },
-  "last_updated": "2026-09-22T00:50:05+0900",
+  "last_updated": "2026-09-22T01:38:00+0900",
   "removed_entries": [
     {
       "removed_at": "2026-08-30T10:07:35+0900",
