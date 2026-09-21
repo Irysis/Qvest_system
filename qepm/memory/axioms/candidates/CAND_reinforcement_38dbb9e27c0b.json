@@ -1,27 +1,21 @@
 {
-  "schema_version": "distilled_v1",
-  "dist_id": "DIST-QPM-029",
-  "cluster_key": "3fbe1bcf1422",
-  "candidate_id": "CAND_qepm_legacy_3fbe1bcf1422",
-  "status": "pending_5axis",
-  "statement_refined": null,
-  "retry_condition": null,
-  "refined_at": null,
-  "refined_by": null,
-  "promoted_to_axiom": null,
-  "created_at": "2026-07-26T08:52:22+00:00",
-  "updated_at": "2026-09-21T12:09:08+00:00",
-  "research_mode": "qepm_legacy",
-  "metric_type": "estimated",
+  "schema_version": "v54_ax_p0_mode",
+  "candidate_id": "CAND_reinforcement_38dbb9e27c0b",
+  "cluster_key": "38dbb9e27c0b",
+  "l_code_set_sha": "38dbb9e27c0bf3d0d1dea8bd22d20e7a511af1a7",
+  "cluster_label": "reinforcement_defense_negative",
+  "research_mode": "reinforcement",
+  "metric_type": "backtested",
   "type": "empirical",
   "polarity": "negative",
-  "statement_draft": "[실증 실패 규칙 초안] family=liquidity, tags=turnover,liquidity_premium,stress_3of4, supporting=1건 L-code. (promote.R 5축 검증에서 범위·메커니즘·OOS 확정 필요)",
+  "promotable": false,
+  "statement_draft": "[실증 실패 규칙 초안] family=defense, tags=reinforcement,rule_grid,b7, supporting=1건 L-code. (promote.R 5축 검증에서 범위·메커니즘·OOS 확정 필요)",
   "supporting_l_codes": [
-    "L-578"
+    "L-RF-20260921_210516"
   ],
   "scope_draft": {
     "market": "KR",
-    "factor_family": "liquidity",
+    "factor_family": "defense",
     "regime": null,
     "construction_types": null
   },
@@ -29,7 +23,7 @@
     "independent_l_codes": 1,
     "independent_strategies": 1,
     "strategies": [
-      "STR_1501_turnover_liquidity"
+      "RP_20260904_102326_skipped_base_B7"
     ],
     "effect_direction_consistency": null,
     "note": "evidence_draft — promote.R 5축 검증에서 hurdle_result/grade_a_catalog 교차검증으로 확정",
@@ -39,7 +33,7 @@
       "single_factor_long_only"
     ],
     "metric_types": [
-      "estimated"
+      "backtested"
     ]
   },
   "falsification_draft": {
@@ -53,9 +47,11 @@
   },
   "oos_validation_draft": {
     "oos_months": null,
-    "oos_effect_vs_is": null,
-    "note": "promote.R r4_regime_payoff / essence_score 경유 확정"
+    "oos_effect_vs_is": -0.619,
+    "note": "L-code oos_retention 실값 1건 median (IS65/OOS35 활성SR retention) — oos_months 실값 무 → None 유지 — promote.R essence_score 경유 재확정"
   },
   "cluster_members_count": 1,
-  "expiry": "2026-10-24"
+  "status": "pending_5axis",
+  "created_at": "2026-09-21T12:08:50+00:00",
+  "last_seen": "2026-09-21T12:08:50+00:00"
 }
