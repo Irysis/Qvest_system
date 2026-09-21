@@ -263,6 +263,15 @@ stage_result() {   # $1=표시명 $2=exit코드 $3=경보 컴포넌트명
     echo "      mrs_daily exit=$?"
   fi
 
+  # (2026-09-21 도훈 승인 플랜 Part 3 · D0) [3/3] 리서치 디렉터 — 프로그램 수준 진단. 측정 0 · 원장 쓰기 0 · 주말에도 돈다
+  #   (데이터 refresh 가 아니라 원장·카탈로그·레지스트리를 읽는다). 산출 = .cache/rf_director_latest.json(부팅 6번째 줄이 읽음)
+  #   + 06_Registry/layer_bottleneck_map.md. 실패는 stage_result 가 마커로 남긴다 — exit 0 위장 없음.
+  echo "[3/3] rf_director.R (리서치 디렉터 — 진단·권고 · 측정 0)"
+  mkdir -p "$BASE/.cache/scheduler_logs" 2>/dev/null
+  timeout 300 Rscript "$BASE/02_Infrastructure/ops/rf_director.R" --unattended \
+    >> "$BASE/.cache/scheduler_logs/rf_director_$(date +%Y%m%d).log" 2>&1
+  stage_result "rf_director" "$?" "rf_director"
+
   echo "================ morning_run done @ $(date) ================"
 } >> "$LOG" 2>&1
 # (2026-07-26 probe① 도훈 승인) 완주 마커 — lock은 '시작'만 증명한다(once-per-day 선점).

@@ -2,6 +2,19 @@
   "schema": "reinforce_auto_config_v1",
   "enabled": true,
   "paused_reason": "(해제) 2026-09-19 02:2x 재개 — 퀀티 Update_File 갱신·적재 완료(수급 +118,749행 · 컨센서스 12종 · 둘 다 09-18, 정본 신선도 감사 stale=0). 직전 일시정지 00:1x = 엑셀 메모리 확보용(B5 DNN 배치가 커밋 여유 1.1GB).",
+  "director": {
+    "enabled": true,
+    "act": false,
+    "max_units_per_day": 1,
+    "min_adversary_n": 10,
+    "top_k": 5,
+    "stale_pool_days": 7,
+    "stale_catalog_hours": 36,
+    "episode_shape_months": 6,
+    "telegram": "on_change",
+    "llm_advisory": false,
+    "note": "리서치 디렉터 (2026-09-21 도훈 승인 플랜 Part 3). D0 = 진단·권고만(act=false) — ops/rf_director.R 이 아침 체인 [3/3] 과 수동 실행에서 .cache/rf_director_latest.json + 06_Registry/layer_bottleneck_map.md 를 쓴다. act=true 는 D3(실행기 배선) 뒤 도훈 결정. min_adversary_n = B5 오버레이 '사망' 판정에 필요한 최소 반증 arm 수 · max_units_per_day = 디렉터가 하루에 여는 연구 단위 상한 · episode_shape_months = 최심 낙폭 고점→저점 ≤N개월이면 급락형 라벨(서술용). 러너는 이 블록을 읽지 않는다."
+  },
   "combination": {
     "enabled": true,
     "note": "★도훈 지시 2026-09-04 — 결합은 rank-Z 평균 blend 가 아니라 **LLM 이 두 논문을 읽고 설계한 전략(기저)**에서 출발한다. 그 기저를 충실구현 1회로 측정해 base_grade 를 얻고, base_min_port_t 가드를 통과한 뒤에야 강화 25칸을 열어야 한다. 그 레인이 서기 전까지 구판 blend 착수를 정지한다 — 정지 중에는 호출자가 다음 논문 충실구현으로 정상 이월한다.",

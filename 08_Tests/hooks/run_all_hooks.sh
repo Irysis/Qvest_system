@@ -1333,6 +1333,14 @@ SUITES=(
   #   (test_suite_enrollment 의 E2 가 21/276 으로 세고 있었다). 검사를 만들고 등재하지 않으면 다음 회귀를 못 잡는다 —
   #   빨강이 없는 게 아니라 재지 않은 것이다. 신설 시 등재까지가 한 단위.
   "08_Tests/ops/test_boot_lean_rf_budget.R"
+  # 2026-09-21 리서치 디렉터 (도훈 승인 플랜 Part 3 · D0): 진단 계약(essence 항등·규칙 양방향·날짜 0·샌드박스 e2e) ·
+  #   부팅 6번째 줄(캐시 읽기만 · stale 표식) · 아침 체인 [3/3] 배선(stage_result·순서·timeout)
+  "08_Tests/ops/test_rf_director_contract.R"
+  "08_Tests/ops/test_boot_lean_director_line.R"
+  "08_Tests/ops/test_morning_run_director_stage.sh"
+  # D1: 결정 기록 writer(append-only · chosen⊆후보 · essence 객체 거부) · 디렉터 1일 1회 기록 + [무인] 텔레그램 on_change
+  "08_Tests/reinforcement/test_rf_record_decision.R"
+  "08_Tests/ops/test_rf_director_tg.R"
   "08_Tests/ops/test_rf_prompt_quote_parity.R"
   # 2026-09-07 실사고: 프롬프트 예시의 "24%" 가 파이썬 포맷을 깨 계획 미생성 → 감사 3회 스폰 전부 halt_no_plan.
   #   따옴표 검사(quote_parity)의 사각이었다 — 포맷 문자를 본다(블록을 실제로 조립해 보고, 위반 주입으로 검출력 실증).

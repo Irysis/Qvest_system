@@ -542,6 +542,72 @@ rf_lessons_digest <- function(layer, base_id, n_last = 5L, root = .rf_root()) {
          character(1))
 }
 
+#' 결정 기록 (리서치 디렉터 · 2026-09-21 도훈 승인 플랜 Part 3 · D1) — 06_Registry/rf_decisions.jsonl 에 **한 줄 append**
+#'
+#' ★왜 필요한가: 루프의 37개 결정 중 대안을 남기는 것은 6개뿐이다(반증·설계 기각·arm 수락·carry 탈락·결합 후보·reopen).
+#'   순위 결정(배치·승자·바닥·승격·논문·결합)과 디렉터의 방향 결정은 이긴 선택만 남아 "다른 규칙이었으면" 을 되돌려
+#'   볼 수 없었다. 이 writer 는 결정 시점의 **후보 집합 + 순위 + 기각 사유 + 선택** 을 남긴다.
+#' ★홈이 원장이 아니라 형제 jsonl 인 이유: 원장은 전량 read-modify-write 라 연 ~10k 레코드가 매 tick 파싱을 느리게 한다.
+#'   소비자는 주간 리플레이·검사·디렉터뿐 — **러너 판정은 이 파일을 읽지 않는다**(선례 overlay_arm_ledger.jsonl).
+#' ★경계(AX-008): 후보/선택에 `essence`·`essence_grade`·`authoritative_remeasure` 키가 있으면 거부한다 —
+#'   결정 기록은 등급을 주장하는 자리가 아니다(등급 값을 피처로 옮기는 것은 허용, 등급 객체를 싣는 것은 금지).
+#' @param kind       RF_DECISION_KINDS 중 하나
+#' @param candidates list(list(id=, rank=, features=list(), reason=), ...) — rank 1 = 선택. 상한 초과분은 잘리고 n_candidates_total 만 남는다
+#' @param chosen     character(ids) 또는 list(ids=, units=, ...) — ids ⊆ candidates$id 여야 한다("none" 은 후보에 없어도 허용)
+#' @param rule       list(src=, sha=, knobs=list(...)) 또는 문자열 — 결정을 낸 규칙과 그 출처
+#' @param policy     list(policy_id=, policy_sha=, mode=) — 부재 = pi0/live
+#' @param shadow     list(policy_id=, choice=, agrees=) — 그림자 정책 판정(D4+) · 부재 = NULL
+RF_DECISION_KINDS <- c("direction", "batch", "block_order", "b1_factor_pick", "b5_overlay_pick", "b2_weight_pick",
+                       "block_winner", "floor", "budget", "promote", "combination", "b1_design_verify", "base_gate")
+rf_decisions_path <- function(root = .rf_root()) file.path(root, "06_Registry/rf_decisions.jsonl")
+rf_record_decision <- function(kind, base_id, candidates, chosen, rule, policy = NULL, scope = list(), shadow = NULL,
+                               root = .rf_root(), max_candidates = 40L, layer = 1L) {
+  if (!is.character(kind) || length(kind) != 1L || !(kind %in% RF_DECISION_KINDS))
+    stop(sprintf("[reinforce_ledger] decision kind 미등재: %s", paste(kind, collapse = ",")))
+  if (!is.list(candidates)) stop("[reinforce_ledger] candidates 는 list(list(id=...)) 여야 한다")
+  ids <- vapply(candidates, function(c) as.character((c %||% list())$id %||% ""), character(1))
+  if (length(candidates) && any(!nzchar(ids))) stop("[reinforce_ledger] 후보마다 id 가 있어야 한다")
+  .forbid <- c("essence", "essence_grade", "authoritative_remeasure")
+  .has_forbidden <- function(x) {
+    if (!is.list(x)) return(FALSE)
+    if (any(names(x) %in% .forbid)) return(TRUE)
+    any(vapply(x, .has_forbidden, logical(1)))
+  }
+  if (.has_forbidden(candidates) || .has_forbidden(if (is.list(chosen)) chosen else list()))
+    stop("[reinforce_ledger] 결정 기록에 essence/등급 객체를 싣지 않는다(AX-008 경계)")
+  ch <- if (is.character(chosen)) list(ids = as.list(chosen)) else if (is.list(chosen)) chosen else stop("[reinforce_ledger] chosen 형식")
+  ch_ids <- as.character(unlist(ch$ids %||% list()))
+  bad <- setdiff(ch_ids, c(ids, "none"))
+  if (length(bad)) stop(sprintf("[reinforce_ledger] chosen ⊄ candidates: %s", paste(bad, collapse = ",")))
+  n_total <- length(candidates)
+  if (n_total > max_candidates) candidates <- candidates[seq_len(max_candidates)]
+  rec <- list(schema = "rf_decision_v1",
+              decision_id = sprintf("%s_%s_%s", kind, substr(as.character(base_id %||% "program"), 1L, 24L), format(Sys.time(), "%Y%m%dT%H%M%S")),
+              kind = kind, at = format(Sys.time(), "%Y-%m-%dT%H:%M:%S%z"), layer = as.integer(layer),
+              scope = c(list(base_id = as.character(base_id %||% "program")), scope),
+              policy = policy %||% list(policy_id = "pi0", policy_sha = "", mode = "live"),
+              rule = if (is.character(rule)) list(src = rule) else rule,
+              candidates = candidates, chosen = ch, n_candidates_total = n_total, shadow = shadow)
+  p <- rf_decisions_path(root)
+  dir.create(dirname(p), recursive = TRUE, showWarnings = FALSE)
+  txt <- toJSON(rec, auto_unbox = TRUE, null = "null", na = "null", digits = 6)
+  chk <- tryCatch(fromJSON(txt, simplifyVector = FALSE), error = function(e) NULL)
+  if (is.null(chk) || !identical(chk$kind, kind)) stop("[reinforce_ledger] 결정 레코드 재파싱 실패 — 쓰지 않는다")
+  cat(txt, "\n", sep = "", file = p, append = TRUE)
+  invisible(rec)
+}
+#' 결정 기록 읽기 — kind·날짜 접두 필터 (파싱 실패 줄은 건너뛴다)
+rf_read_decisions <- function(root = .rf_root(), kind = NULL, day_prefix = NULL) {
+  p <- rf_decisions_path(root); if (!file.exists(p)) return(list())
+  L <- readLines(p, warn = FALSE, encoding = "UTF-8"); out <- list()
+  for (l in L) { if (!nzchar(trimws(l))) next
+    r <- tryCatch(fromJSON(l, simplifyVector = FALSE), error = function(e) NULL); if (is.null(r)) next
+    if (!is.null(kind) && !identical(r$kind, kind)) next
+    if (!is.null(day_prefix) && !startsWith(as.character(r$at %||% ""), day_prefix)) next
+    out[[length(out) + 1L]] <- r }
+  out
+}
+
 #' 오버레이 적대 반증 기록 (G2 · 2026-09-17) — attempts[[j]]$adversary 만 쓴다
 #'
 #' ★왜 필요한가: B5 칸이 바닥보다 Calmar 를 올렸다는 사실만으로 블록 승자·승격 carry·Grade A 후보로

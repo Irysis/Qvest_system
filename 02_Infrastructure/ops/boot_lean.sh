@@ -20,7 +20,7 @@ DG_AGE=$(( ( $(date +%s) - $(stat -c %Y "$DG" 2>/dev/null || echo 0) ) / 3600 ))
 if [ ! -f "$DG" ] || [ "$DG_AGE" -ge 6 ]; then
   bash "$PROJECT/02_Infrastructure/ops/alerts_digest_build.sh" >/dev/null 2>&1 || true
 fi
-PROJECT="$CLAUDE_PROJECT_DIR" PY="$CLAUDE_PROJECT_DIR/.venv_qvest_ml/Scripts/python.exe" "$PY" - <<'PYEOF' 2>/dev/null || printf 'Data: ?\nQueue: ?\nLast: ?\nBook: ?\nAlerts/Budget: ? (status 산출 실패 — venv python 확인)\n'
+PROJECT="$CLAUDE_PROJECT_DIR" PY="$CLAUDE_PROJECT_DIR/.venv_qvest_ml/Scripts/python.exe" "$PY" - <<'PYEOF' 2>/dev/null || printf 'Data: ?\nQueue: ?\nLast: ?\nBook: ?\nAlerts/Budget: ? (status 산출 실패 — venv python 확인)\nDirector: ?\n'
 import json,os,re,glob,time,subprocess,datetime as dt
 P=os.environ["PROJECT"]; PY=os.environ["PY"]; o=[]
 R=lambda *a: os.path.join(P,*a)
@@ -169,6 +169,17 @@ def CTX():
             u=(j.get("message") or {}).get("usage") or {}
             return sum(int(u.get(k) or 0) for k in ("input_tokens","cache_creation_input_tokens","cache_read_input_tokens"))
 o.append("Alerts/Budget: open %s · %s · built %s | CLAUDE.md %s · rules %s · hooks %s · ctx %s"%(op,today_txt,bt,BG(S(lambda: os.path.getsize(R("CLAUDE.md"))),8192),BG(rb,25600),BG(hk,13),BG(S(CTX),50000)))
+# ⑥ Director — 리서치 디렉터 판정 (2026-09-21 도훈 승인 플랜 Part 3 · D0). **읽기만** — 캐시는 아침 체인
+#   morning_run.sh [3/3] rf_director.R 이 쓴다(원장·카탈로그·레지스트리 진단 · 측정 0). 30h 초과·stale 표식이면 ★stale.
+#   부재면 '?' 와 원인 1줄(부팅 계약: R 0 · 수리 0 · 항상 진행). 검사: 08_Tests/ops/test_boot_lean_director_line.R (블록 패턴 추출).
+def DIRECTOR():
+    dj=J(".cache/rf_director_latest.json") or {}; da=AG(".cache/rf_director_latest.json")
+    if not dj: return "Director: ? (rf_director 미실행 — morning_run [3/3] 또는 Rscript 02_Infrastructure/ops/rf_director.R)"
+    bl=str(dj.get("boot_line") or "?")
+    if bl.startswith("Director:"): bl=bl[len("Director:"):].strip()
+    st=(" ★stale "+HH(da)) if (da is None or da>=30 or dj.get("stale")) else ""
+    return "Director: %s%s"%(bl,st)
+o.append(S(DIRECTOR,"Director: ?"))
 print("\n".join(o))
 PYEOF
 mkdir -p "$PROJECT/.cache" 2>/dev/null || true
