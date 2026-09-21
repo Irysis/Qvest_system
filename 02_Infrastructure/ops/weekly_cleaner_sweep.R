@@ -655,10 +655,11 @@ run_step("axiom_weekly_cycle", {
 #   DRY 는 --dry-run(쓰기 0). 자식 Rscript 라 실패해도 스윕은 계속(run_step fail-soft) — 마지막 줄만 pending 에 남긴다.
 direction_replay_summary <- NULL
 run_step("director_policy_replay", {
-  .dr <- file.path(root, "02_Infrastructure/axiom/replay/run_weekly_direction.R")
+  ## ★2026-09-21 도훈 지시: 채점은 일간(부팅 시점·아침 디렉터)이다 — 여기서는 --archive 로 주간 날짜 파일만 보존한다.
+  .dr <- file.path(root, "02_Infrastructure/axiom/replay/run_direction_score.R")
   if (!file.exists(.dr)) { cat("[cleaner] direction_replay skip (스크립트 없음)\n"); direction_replay_summary <<- list(status = "absent") }
   else {
-    .o <- suppressWarnings(system2("Rscript", c(shQuote(.dr), if (DRY) "--dry-run" else character(0)), stdout = TRUE, stderr = TRUE, timeout = 300))
+    .o <- suppressWarnings(system2("Rscript", c(shQuote(.dr), "--archive", if (DRY) "--dry-run" else character(0)), stdout = TRUE, stderr = TRUE, timeout = 300))
     .v <- grep("^\\[direction_replay\\] verdict=", .o, value = TRUE)
     direction_replay_summary <<- list(status = if (length(.v)) "ran" else "no_verdict_line", verdict_line = if (length(.v)) .v[length(.v)] else NA_character_,
                                       report = sprintf("qepm/memory/axioms/review_log/direction_replay_%s.md", format(Sys.Date(), "%Y%m%d")))

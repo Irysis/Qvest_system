@@ -62,5 +62,5 @@ if (any(grepl("o.append(S(DIRECTOR", L, fixed = TRUE))) ok("C o.append 가 DIREC
 if (any(grepl("Director: ?", L[grepl("printf", L)], fixed = TRUE))) ok("C 폴백 printf 에 Director: ? 존재") else ng("C 폴백에 Director 없음")
 if (!any(grepl("subprocess|os\\.system|popen|Popen", blk))) ok("C DIRECTOR 블록에 프로세스 실행 없음(읽기만)") else ng("C 블록이 프로세스를 실행한다")
 q <- readLines(file.path(ROOT, ".claude/commands/qvest.md"), encoding = "UTF-8", warn = FALSE)
-if (any(grepl("출력 6줄", q, fixed = TRUE)) && any(grepl("`Director:`", q, fixed = TRUE))) ok("C qvest.md 6줄 계약 + Director 불릿") else ng("C qvest.md 계약 미갱신")
+if (any(grepl("출력 7줄", q, fixed = TRUE)) && any(grepl("`Director:`", q, fixed = TRUE))) ok("C qvest.md 7줄 계약 + Director 불릿") else ng("C qvest.md 계약 미갱신")
 finish()

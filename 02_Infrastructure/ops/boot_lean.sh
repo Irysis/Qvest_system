@@ -20,7 +20,7 @@ DG_AGE=$(( ( $(date +%s) - $(stat -c %Y "$DG" 2>/dev/null || echo 0) ) / 3600 ))
 if [ ! -f "$DG" ] || [ "$DG_AGE" -ge 6 ]; then
   bash "$PROJECT/02_Infrastructure/ops/alerts_digest_build.sh" >/dev/null 2>&1 || true
 fi
-PROJECT="$CLAUDE_PROJECT_DIR" PY="$CLAUDE_PROJECT_DIR/.venv_qvest_ml/Scripts/python.exe" "$PY" - <<'PYEOF' 2>/dev/null || printf 'Data: ?\nQueue: ?\nLast: ?\nBook: ?\nAlerts/Budget: ? (status 산출 실패 — venv python 확인)\nDirector: ?\n'
+PROJECT="$CLAUDE_PROJECT_DIR" PY="$CLAUDE_PROJECT_DIR/.venv_qvest_ml/Scripts/python.exe" "$PY" - <<'PYEOF' 2>/dev/null || printf 'Data: ?\nQueue: ?\nLast: ?\nBook: ?\nAlerts/Budget: ? (status 산출 실패 — venv python 확인)\nDirector: ?\nRules: ?\n'
 import json,os,re,glob,time,subprocess,datetime as dt
 P=os.environ["PROJECT"]; PY=os.environ["PY"]; o=[]
 R=lambda *a: os.path.join(P,*a)
@@ -180,6 +180,17 @@ def DIRECTOR():
     st=(" ★stale "+HH(da)) if (da is None or da>=30 or dj.get("stale")) else ""
     return "Director: %s%s"%(bl,st)
 o.append(S(DIRECTOR,"Director: ?"))
+# ⑦ Rules — 방향 규칙 일간 채점 (도훈 2026-09-21 "데일리로 · Qvest 실행 시점에"). **읽기만** — 캐시는 /qvest 1a 단계에서 세션이
+#   run_direction_score.R --quiet 로 방금 쓰고, 아침 체인의 rf_director 도 매일 쓴다. 30h 초과면 ★stale. 부재면 '?' + 원인.
+#   검사: 08_Tests/ops/test_boot_lean_rules_line.R (블록 패턴 추출).
+def RULES():
+    rj=J(".cache/rf_direction_score_latest.json") or {}; ra=AG(".cache/rf_direction_score_latest.json")
+    if not rj: return "Rules: ? (run_direction_score 미실행 — /qvest 1a 또는 Rscript 02_Infrastructure/axiom/replay/run_direction_score.R --quiet)"
+    ln=str(rj.get("line") or "?")
+    if ln.startswith("Rules:"): ln=ln[len("Rules:"):].strip()
+    st=(" ★stale "+HH(ra)) if (ra is None or ra>=30) else ""
+    return "Rules: %s%s"%(ln,st)
+o.append(S(RULES,"Rules: ?"))
 print("\n".join(o))
 PYEOF
 mkdir -p "$PROJECT/.cache" 2>/dev/null || true

@@ -596,6 +596,12 @@ dir_run <- function(root = DR_ROOT, code_root = DR_CODE_ROOT, dry = DR_DRY) {
                 out$runtime_s, isTRUE(out$recommendation$executed)))
     # D1 — 결정 기록(같은 날 같은 서명이면 1회) · 텔레그램(무인/--notify 일 때만 · on_change)
     out$decision <- dir_record_decision(out, cfg, root)
+    # D4 일간 — 규칙 채점(도훈 2026-09-21 "데일리로"): 결정 기록 직후 채점기를 --quiet 로 1회. 실패는 캐시에 사유만(fail-soft)
+    out$rule_score <- tryCatch({
+      .o <- suppressWarnings(system2("Rscript", c(shQuote(file.path(code_root, "02_Infrastructure/axiom/replay/run_direction_score.R")), sprintf("--root=%s", root), "--quiet"), stdout = TRUE, stderr = TRUE, timeout = 120))
+      .v <- grep("^\\[direction_replay\\] verdict=", .o, value = TRUE); .l <- grep("^Rules:", .o, value = TRUE)
+      list(ran = length(.v) > 0L, verdict_line = if (length(.v)) .v[length(.v)] else NA_character_, line = if (length(.l)) .l[length(.l)] else NA_character_)
+    }, error = function(e) list(ran = FALSE, error = conditionMessage(e)))
     out$telegram <- if (DR_UNATT || "--notify" %in% ARGS) dir_notify(out, prev_sig, cfg, root, code_root) else list(sent = FALSE, reason = "manual_run")
     .write_atomic(.js(out), cache_p)
     cat(sprintf("[rf_director] decision %s · telegram %s\n", if (isTRUE(out$decision$recorded)) out$decision$decision_id else out$decision$reason,

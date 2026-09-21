@@ -1,20 +1,22 @@
 ---
 name: qvest
-description: "Qvest v10.4 부팅 — 상태 6줄 후 진행 계층 질문(1계층/2계층/BOOK) → 해당 레인 진입"
+description: "Qvest v10.4 부팅 — 규칙 채점 1회 + 상태 7줄 후 진행 계층 질문(1계층/2계층/BOOK) → 해당 레인 진입"
 disable-model-invocation: true
 user-invocable: true
 ---
 
-# /qvest — 부팅 6줄 → 계층 질문 → 레인 진입 (v10.4 2026-09-04 · 6번째 줄 2026-09-21)
+# /qvest — 규칙 채점 1회 → 부팅 7줄 → 계층 질문 → 레인 진입 (v10.4 2026-09-04 · 6·7번째 줄 2026-09-21)
 
-1. `bash 02_Infrastructure/ops/boot_lean.sh` (≈5초 · 테스트 0 · 수리 0 · 백그라운드 0 · Rscript 0). 출력 6줄:
+1a. **★Qvest 실행 시점 규칙 채점**(도훈 2026-09-21 "데일리로"): `Rscript 02_Infrastructure/axiom/replay/run_direction_score.R --quiet` (≈2초 · 원장·결정 기록 **읽기만** · 쓰기 = `.cache/rf_direction_score_latest.json` + `review_log/direction_replay_latest.md` 덮어쓰기). 출력 마지막 두 줄(`Rules:` · `[direction_replay] verdict=…`)만 확인하고 넘어간다. 실패해도 부팅은 계속한다(7번째 줄이 `?`/`★stale` 로 말한다).
+1b. `bash 02_Infrastructure/ops/boot_lean.sh` (≈5초 · 테스트 0 · 수리 0 · 백그라운드 0 · Rscript 0). 출력 7줄:
    - `Data:` — 키 캐시 4종 severity + 신선도 감사 나이(>36h면 `★audit stale`) + rawdata/benchmark mtime + K200/KQ150 멤버십 열(schema만). 결손 시에만 `→ daily_refresh` 조치.
    - `Queue:` — 미소비 논문 수(`alpha-pending`. 안 읽히면 `UNREPORTED` — **0으로 접지 않는다**) + frontier `open` 상위 2건 + ★v10 강화 원장 active(L1 · L2) + data-pipeline open 수.
    - `Last:` — 최신 **리서치 1단위** L-code(`[RP]` 충실구현 / `[RF]` 강화 / `[AS]` 사료 — 세 mode 중 최신) · 등급 · 나이 · `next_probe` 1항.
    - `Book:` — ★v10 BOOK 등록 수·최신 엔트리·트래킹일 (`06_Registry/book/book_registry.json` 정본. **쓰기 = writer 경유 + 도훈 confirm**).
    - `Alerts/Budget:` — 경보 digest + 예산 4종 `값/상한 ✓|✗`.
    - `Director:` — ★리서치 디렉터 판정(2026-09-21 플랜 Part 3): 어느 A 조건이 막는가(구속·공동 구속) · 최고 계보 · B5 오버레이 반증 생사 · 2계층 상태 · 권고. `.cache/rf_director_latest.json` 을 **읽기만** 한다(산출 = 아침 체인 `[3/3] rf_director.R` · 30h 초과면 `★stale`). 권고는 `director.act=false` 인 동안 **기록·표시만**이다.
-2. 6줄을 **그대로 1회 전재**. 해석·수리·후속 점검 금지. `Data`에 `?`/부재가 있으면 1줄 보고 후 도훈 판단 대기.
+   - `Rules:` — ★방향 규칙 일간 채점(도훈 2026-09-21): 판정(채점 보류/가능) · 결정/행동/결과 수(최소 8) · Δ단위·Δ프로그램 Calmar · 규칙 재현. `.cache/rf_direction_score_latest.json` 을 **읽기만**(1a 가 방금 썼다 · 30h 초과면 `★stale`).
+2. 7줄을 **그대로 1회 전재**. 해석·수리·후속 점검 금지. `Data`에 `?`/부재가 있으면 1줄 보고 후 도훈 판단 대기.
 3. **★진행 계층을 도훈에게 묻는다** (v10 규칙 "Qvest 실행 시 어떤 계층으로 진행할 것인지 사용자에게 물을 것") — AskUserQuestion. ★2026-09-21(플랜 Part 3 · D1): **첫 선택지 = `Director:` 줄의 권고 계층**(권고 `2계층 …` → ② 를 첫 선택지로, 사유 1줄 = 구속 조건; 권고 `없음`/`?`/`★stale` 이면 종전 순서). 도훈이 다른 계층을 고르면 그 사실을 남긴다: `Rscript -e 'source("02_Infrastructure/reinforcement/reinforce_ledger.R"); rf_record_decision("direction","program",list(list(id="director_recommendation",rank=1),list(id="human_override",rank=2)),"human_override",list(src="qvest.md 계층 질문"),scope=list(picked="<계층>"))'`. 질문 자체는 유지한다.
    - **① 1계층 — 팩터전략 리서치**: 큐 상단 논문의 충실구현(`run_paper_replication`) 또는 진행 중 강화(`Skill(reinforce)`, 원장 L1 active 우선). 룰 = `.claude/rules/lean-loop.md`.
    - **② 2계층 — 전략 로테이션 리서치**: `Skill(strategy-rotation)` — 논문 온디맨드 착수 → FR 단위 등급 → 강화 무한.
@@ -31,7 +33,7 @@ user-invocable: true
 
 | Command | 용도 |
 |---|---|
-| `/qvest` | 부팅 6줄 → 계층 질문 (본 문서) |
+| `/qvest` | 규칙 채점 1회 → 부팅 7줄 → 계층 질문 (본 문서) |
 | `/alpha-search` | 1계층 — 논문 1건 충실구현 검증 (기본 단위) |
 | `/reinforce` (Skill) | 강화 프로세스 — L1 ≤25회 / L2 무한 (QEPM 기반) |
 | `/worktask` | QEPM 체인 수동 관리 (alpha→risk→optimizer→forge→등급) |

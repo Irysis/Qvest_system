@@ -1353,6 +1353,8 @@ SUITES=(
   "08_Tests/axiom/test_direction_replay.R"
   # D5: 정책 상태기계(proposed→shadow→live 자동(도훈 ①)→강등→tombstone · 조건별 돌연변이 · 킬스위치 2종 · 되돌리기 동봉)
   "08_Tests/axiom/test_policy_auto_live_rule.R"
+  # 2026-09-21 도훈 "규칙 채점 데일리로 · Qvest 실행 시점에": 부팅 7번째 줄(Rules: 캐시 읽기만 · stale)
+  "08_Tests/ops/test_boot_lean_rules_line.R"
   "08_Tests/ops/test_rf_prompt_quote_parity.R"
   # 2026-09-07 실사고: 프롬프트 예시의 "24%" 가 파이썬 포맷을 깨 계획 미생성 → 감사 3회 스폰 전부 halt_no_plan.
   #   따옴표 검사(quote_parity)의 사각이었다 — 포맷 문자를 본다(블록을 실제로 조립해 보고, 위반 주입으로 검출력 실증).
