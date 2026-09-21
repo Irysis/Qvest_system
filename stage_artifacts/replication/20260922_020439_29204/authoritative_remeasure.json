@@ -1,0 +1,120 @@
+{
+  "status": "OK",
+  "strategy_id": "RP_20260922_020439_29204",
+  "strategy_name": "RF_PAR_B3_14_13",
+  "remeasured_at": "2026-09-22T02:09:22+0900",
+  "run_id": "20260922_020439_29204",
+  "bt_result_path": "C:/Users/99922/OneDrive/Quant_Module_Moltbot/stage_artifacts/replication/20260922_020439_29204/bt_result.rds",
+  "metric_type": "backtested",
+  "essence_grade": "C",
+  "grade_basis": "replication_chain",
+  "essence": {
+    "net_sharpe": 0.664,
+    "net_ir": 0.071,
+    "portfolio_alpha_t_nw_lag3": 0.351,
+    "oos_retention": -0.713,
+    "dsr": null,
+    "mdd": 0.493,
+    "calmar": 0.258,
+    "cagr": 0.127,
+    "drawdown_profile": {
+      "severe45_count": 4,
+      "severe55_count": 0,
+      "severe45_total_periods": 8,
+      "severe45_max_periods": 4,
+      "severe45_period_frac": 0.0015,
+      "catastrophic_mdd_threshold": 0.7,
+      "severe45_hard_count": 15,
+      "severe55_hard_count": 6,
+      "severe45_period_hard_frac": 0.25,
+      "severe45_max_hard_periods": 252,
+      "tail_review": true,
+      "structural_hard_fail": false
+    }
+  },
+  "hard_fail": false,
+  "structural_drawdown": false,
+  "selection_type": "chain",
+  "dsr_gate_applied": false,
+  "grade_base": "C",
+  "recent_regime_rescued": false,
+  "recent_regime_label": null,
+  "rolling_grade": {
+    "status": "ok",
+    "n_points": 225,
+    "window_months": 36,
+    "pass_life": 0.1156,
+    "pass_recent": 0.9167,
+    "current": {
+      "ym": "2026-09",
+      "sharpe": 1.166431,
+      "cagr": 0.324712,
+      "mdd": 0.169058,
+      "calmar": 1.920712,
+      "pass": true
+    },
+    "prior_recoveries": 3,
+    "current_run": 10,
+    "span": ["2008-01", "2026-09"]
+  },
+  "defensive_score": {
+    "status": "ok",
+    "defensive": true,
+    "down": {
+      "n": 110,
+      "excess": 0.008226,
+      "hit": 0.636364,
+      "t": 2.646723,
+      "capture": 0.807842
+    },
+    "mid": {
+      "n": 30,
+      "excess": 0.013752,
+      "hit": 0.666667,
+      "t": 1.476023,
+      "capture": 0.856146
+    },
+    "deep": {
+      "n": 10,
+      "excess": 0.03241,
+      "hit": 0.6,
+      "t": 1.22018,
+      "capture": 0.785954
+    },
+    "up": {
+      "n": 150,
+      "excess": -0.004689,
+      "hit": 0.473333,
+      "t": -1.409541,
+      "capture": 0.906459
+    },
+    "reason": "하락월 110개: 초과 +0.82%/월 (t 2.65 · 적중 64%) · 벤치-10% 이하 10개: 초과 +3.24%/월 · 상승월 초과 -0.47%/월"
+  },
+  "reasons": "Ensemble: positive alpha이나 B 미달 (블렌드에서만 가치)",
+  "replication": {
+    "source_paper": {
+      "url": "https://arxiv.org/abs/2003.02515",
+      "title": "Time-varying neural network for stock return prediction",
+      "paper_key": "2003.02515"
+    },
+    "commission_paper_bps": 15,
+    "paper_basis": {
+      "cagr": 0.126586,
+      "sharpe": 0.586279,
+      "mdd": 0.49271,
+      "n_months": 260
+    },
+    "grade_basis_note": "등급은 15bps 순비용 판 (essence 문턱 15bps 보정 — gross 등급은 인플레)",
+    "fidelity": "universe 치환(K200∪KQ150)만 — 그 외 논문 그대로 (v10 완전 충실구현)",
+    "benchmark_note": "long_vs_long_bm",
+    "n_max": 25,
+    "has_short": false
+  },
+  "contract": {
+    "integrity_status": "OK",
+    "cagr": 0.127,
+    "sharpe": 0.664,
+    "mdd": 0.493,
+    "calmar": 0.258
+  }
+}
