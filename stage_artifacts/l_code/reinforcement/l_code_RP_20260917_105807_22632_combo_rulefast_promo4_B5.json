@@ -17,11 +17,36 @@
   "calmar": 0.472,
   "oos_retention": -0.119,
   "portfolio_alpha_t": 3.488,
-  "next_probes": [
-    "다음 격자 축 B2(weighting) — 이 블록 승자 위에서 측정",
-    "B5_17(최고 3.488)는 B4 조합 후보로 고정 · B5_19(최저 2.101)는 축 역작동 여부를 조합 LOO 로 분리"
-  ],
+  "next_probes": ["다음 격자 축 B2(weighting) — 이 블록 승자 위에서 측정", "B5_17(최고 3.488)는 B4 조합 후보로 고정 · B5_19(최저 2.101)는 축 역작동 여부를 조합 LOO 로 분리"],
   "next_probe": "다음 격자 축 B2(weighting) — 이 블록 승자 위에서 측정 | B5_17(최고 3.488)는 B4 조합 후보로 고정 · B5_19(최저 2.101)는 축 역작동 여부를 조합 LOO 로 분리",
   "source_paper": "https://arxiv.org/abs/2002.06975",
-  "record_type": "performance"
+  "record_type": "performance",
+  "mechanism": "판정: 오버레이 축은 팩터 축이 못 움직인 MDD 를 실제로 움직였고(B1 10칸 0.541~0.568 → B5 5칸 0.390~0.522), 그 대가는 전액 PORT_t 로 지불됐다(B1 3.770~4.167 → 2.101~3.488). 이 블록의 MDD 순서 B5_19 0.390 < B5_18 0.449 < B5_16 0.476 < B5_31 0.481 < B5_17 0.522 는 PORT_t 역순 B5_17 3.488 > B5_16 2.914 > B5_31 2.520 > B5_18 2.335 > B5_19 2.101 과 정확히 반대로 정렬한다 — 5칸을 가른 것은 타이밍의 질이 아니라 총노출을 얼마나 깎았는가 하나뿐이다. 다만 교환비는 균일하지 않고 거기서 층의 kind 가 갈린다(셀↔arm 대응은 집행 목록 순서로 추정 — 정황). 상주 B5_31 대비, 횡단면 tilt 를 얹은 B5_19(multivar_channel_tilt+trend_ladder_gate)는 MDD −9.1%p 에 CAGR −1.1%p(0.224→0.213)로 Calmar 0.545(블록 최고)를 냈고, 노출 스칼라를 두 겹 쌓은 B5_18(ml_tail_gate+trend_ladder_gate)은 MDD −3.2%p 에 CAGR −0.6%p 지만 단층 B5_16(trend_ladder_gate · CAGR 0.239 · Calmar 0.503)보다 Calmar 가 낮다(0.485) — 두 게이트의 발동 구간이 겹쳐 MDD 는 한 번, CAGR 은 두 번 깎인다. tail 정보를 총노출 타이밍으로 쓴 B5_17(ml_tail_gate 단독)은 MDD 0.522 로 상주 0.481 보다 악화, 블록 최악이다. 앞 블록 처방 중 'kind 가 다른 2층만 쌓는다' 는 지지되고, '같은 kind 스택' 과 'tail 게이트' 는 반증됐다. 미결 셋: (1) B5_19 의 이득이 같은 노출 예산의 차등 배분에서 왔는지 tilt 가 동반한 추가 노출 축소에서 왔는지 — Σw=1 로 E 를 고정하고 배분만 바꾸는 B2 로만 갈린다. (2) OOS retention 은 이 블록 산출에 없어 미측정. (3) holding_level 2칸·erosion tilt 는 설계에 들어가지 않아 미집행이다.",
+  "mechanism_by": "llm:block_end",
+  "mechanism_at": "2026-09-21T15:18:09+0900",
+  "prior_lessons_used": ["B1", "B5"],
+  "next_block_actions": [
+    {
+      "action": "B2 5칸을 Σw=1 · long-only · ≤25종 고정 상태에서 횡단면 배분 방법만 바꿔 잰다(minvar · nco · CDaR_LP · cvar · nco_score_tilt). 총노출은 한 칸도 깎지 않는다.",
+      "why": "B5 는 MDD 를 0.390 까지 내렸지만 PORT_t 를 2.101 까지 지불했고, 5칸 전수에서 MDD 순서와 PORT_t 역순이 일치했다. 그 지불이 노출 축소의 대가인지 위험 통제 자체의 대가인지 갈라야 하며, E 를 건드리지 않는 축은 B2 뿐이다.",
+      "expect": "minvar·nco·CDaR_LP 중 하나라도 MDD 를 B1 하한 0.541 아래로 내리면서 PORT_t 3.0 이상을 유지하면, B5 의 PORT_t 붕괴는 노출 축소의 대가이지 위험 통제의 대가가 아니다. 5칸 전부 MDD 0.54 대에 머물면 반대로 MDD 는 노출 축에서만 내려간다는 뜻이고, 이후 칸은 전부 B5 재설계 레인으로 가야 한다."
+    },
+    {
+      "action": "tail 정보를 타이밍이 아니라 배분 지점에서 소비하는 칸 1개(lean:cvar)를 같은 블록에 둔다.",
+      "why": "B5_17 은 tail 신호를 총노출 게이트로 써서 MDD 0.522 로 상주 B5_31 0.481 보다 악화시켰다. 같은 정보가 소비 지점에 따라 부호를 바꾸는지는 이 블록만으로 안 갈린다.",
+      "expect": "lean:cvar 가 동일가중 1/25 대비 MDD 를 내리면 B5_17 의 실패는 tail 정보가 아니라 타이밍 소비 지점의 실패다. 여기서도 MDD 가 동일가중 수준이면 이 계보에서 tail 축 자체에 정보가 없다 — 그 경우 B4 결합에서 tail 계열을 후보로 올리지 않는다."
+    },
+    {
+      "action": "PORT_t 를 유지한 채 위험 구조만 얹는 혼합 1칸(lean:nco_score_tilt)을 순수 위험기반 칸(lean:nco)과 나란히 배치한다.",
+      "why": "B1 은 횡단면 신호 축이 PORT_t 만(폭 0.397) 움직인다고, B5 는 노출 축이 MDD 만 움직인다고 적는다. 두 축이 배분이라는 한 지점에서 합쳐질 때 가법적인지가 남은 B4 결합 블록의 전제다.",
+      "expect": "nco_score_tilt 의 PORT_t 가 score 계열 수준을 유지하면서 MDD 가 nco 수준까지 내려가면 두 축은 배분 지점에서 가법적이다. 둘 중 하나로 붕괴하면 배분 지점은 자유도가 하나뿐이고, B4 에서 신호·위험을 같은 비중식에 섞는 설계는 쓰지 않는다."
+    }
+  ],
+  "next_block_actions_by": "llm:block_end",
+  "avoid": ["같은 kind(총노출 스칼라) 2층 스택 — B5_18 이 단층 B5_16 대비 Calmar 0.485 < 0.503. 발동 구간이 겹쳐 MDD 는 한 번, CAGR 은 두 번 깎인다. 벽 확인됨.", "tail 신호를 총노출 게이트로 다시 쓰는 칸 — B5_17 MDD 0.522 로 상주 B5_31 0.481 보다 악화, 블록 최악. 배분 지점 재시험은 B2 lean:cvar 한 칸으로 족하다.", "score 집중형 비중에 여러 칸 배정(lean:score_pure · softmax_tilt · winsor_tilt · rank_tilt · gen:* score_tilt 변형) — B1 10칸에서 횡단면 신호 축은 MDD 폭 0.027 로 위험 축에 닿지 않았다. 이 계열은 nco_score_tilt 한 칸으로 대표한다.", "총노출 대칭 축소 스칼라 층(dd/vol 계열) — 근거는 이 블록 밖(카탈로그 선행 실측 MDD −10% 대비 CAGR −23%)이고 B5 에서 직접 재지 않았다. 다음 블록으로 못 가른다.", "팩터 1~2종 교체로 MDD 를 움직이려는 칸 — B1 10칸 전수에서 MDD 폭 0.027 · Calmar 폭 0.045. 벽 확인됨.", "B2 단계에서 회전·비용을 판정 축으로 쓰는 칸 — 위험기반 비중은 회전을 올리지만 그 비용 축은 남은 B6(집행 주기)의 소관이고, B2 에서 미리 깎으면 배분 효과와 비용 효과가 섞인다."],
+  "next_block_design_for": "B2",
+  "next_block_design_n": 5,
+  "prior_action_status": "executed",
+  "prior_action_detail": "설계 4건 중 4건 집행 (설계: trend_ladder_gate,ml_tail_gate,ml_tail_gate+trend_ladder_gate,multivar_channel_tilt+trend_ladder_gate / 실측: pg2_risk_overlay_v1,trend_ladder_gate,ml_tail_gate,ml_tail_gate+trend_ladder_gate,multivar_channel_tilt+trend_ladder_gate)",
+  "mechanism_confidence": "medium"
 }
