@@ -1,21 +1,15 @@
 {
-  "schema_version": "distilled_v1",
-  "dist_id": "DIST-GEN-207",
-  "cluster_key": "bfd7b713de45",
-  "candidate_id": "CAND_reinforcement_bfd7b713de45",
-  "status": "proposed",
-  "statement_refined": "결합(B4) 축은 프론티어를 밖으로 밀지 못하고 통째로 아래로 옮긴다. 57건의 B5/B4 블록 요약에서 B4 가 직전 최고를 넘은 경우는 드물고, 가장 잘 해부된 2026-09-13 B4 2칸이 교환율을 실측했다: MDD 는 B5_19 의 0.354 에서 B4_23 의 0.348 로 0.006 내려갔을 뿐인데 같은 구간에서 CAGR 은 0.216→0.151, PORT_t 는 2.334→0.841 로 내려갔다. 위험 처치는 MDD 에서 포화하고 CAGR·PORT_t 비용만 누적된다 — 결합 최고 Calmar 0.482 가 부모 두 칸(B1_3 0.504 · B5_19 0.609) 어느 쪽에도 미달한 이유가 이것이다. 따라서 '결합이 Calmar 를 올리는 축'이라는 기대는 반증되며, 결합 칸을 다음 세대의 기저(carry)로 삼을 근거도 서지 않는다. 다만 두 칸의 처치 문자열이 동일하게 잘려 있어 어느 LOO 항이 빠진 칸인지는 미확정이고, 그 확정은 원장 attempt 의 arm id 를 읽으면 측정 칸 소모 없이 된다. 본 군집은 DIST-GEN-209(supporting 57)와 한 레코드 차이의 같은 모집단이므로 통합 시 GEN-209 를 정본으로 두고 본 카드의 B4 교환율 실측만 흡수한다.",
-  "retry_condition": "결합 부분집합(arm id)이 확정된 뒤 같은 LOO 대조쌍을 재구성해, PORT_t 손실이 결합 자체에서 왔는지 순손실 축의 이월에서 왔는지 가른다.",
-  "refined_at": null,
-  "refined_by": null,
-  "promoted_to_axiom": null,
-  "created_at": "2026-09-17T10:56:38+00:00",
-  "updated_at": "2026-09-21T03:29:58+00:00",
+  "schema_version": "v54_ax_p0_mode",
+  "candidate_id": "CAND_reinforcement_2aaae0dab215",
+  "cluster_key": "2aaae0dab215",
+  "l_code_set_sha": "2aaae0dab215c7f2d153ba93bd6a771cfbb4910d",
+  "cluster_label": "reinforcement_overlay_regime_mixed",
   "research_mode": "reinforcement",
   "metric_type": "backtested",
   "type": "empirical",
   "polarity": "mixed",
-  "statement_draft": "[실증 혼재(방향불명) 규칙 초안] family=overlay_regime, tags=reinforcement,rule_grid,b5, supporting=57건 L-code. (promote.R 5축 검증에서 범위·메커니즘·OOS 확정 필요)",
+  "promotable": true,
+  "statement_draft": "[실증 혼재(방향불명) 규칙 초안] family=overlay_regime, tags=reinforcement,rule_grid,b5, supporting=62건 L-code. (promote.R 5축 검증에서 범위·메커니즘·OOS 확정 필요)",
   "supporting_l_codes": [
     "L-RF-20260830_195606",
     "L-RF-20260830_203345",
@@ -72,8 +66,13 @@
     "L-RF-20260913_205827",
     "L-RF-20260913_212800",
     "L-RF-20260913_221408",
-    "L-RF-20260917_122104",
-    "L-RF-20260917_195304"
+    "L-RF-20260917_195304",
+    "L-RF-20260919_024247",
+    "L-RF-20260919_230728",
+    "L-RF-20260921_081957",
+    "L-RF-20260921_092209",
+    "L-RF-20260921_110617",
+    "L-RF-20260921_122641"
   ],
   "scope_draft": {
     "market": "KR",
@@ -82,8 +81,8 @@
     "construction_types": null
   },
   "evidence_draft": {
-    "independent_l_codes": 57,
-    "independent_strategies": 57,
+    "independent_l_codes": 62,
+    "independent_strategies": 62,
     "strategies": [
       "RP_20260830_133919_6580_adapted_rulefast_B4",
       "RP_20260830_133919_6580_adapted_rulefast_B5",
@@ -141,7 +140,12 @@
       "RP_20260913_090549_14760_adapted_rulefast_promo3_B4",
       "RP_20260913_090549_14760_adapted_rulefast_promo3_B5",
       "RP_20260917_105807_22632_combo_rulefast_B4",
-      "RP_20260917_105807_22632_combo_rulefast_B5"
+      "RP_20260917_105807_22632_combo_rulefast_B5",
+      "RP_20260917_105807_22632_combo_rulefast_promo1_B5",
+      "RP_20260917_105807_22632_combo_rulefast_promo2_B4",
+      "RP_20260917_105807_22632_combo_rulefast_promo2_B5",
+      "RP_20260917_105807_22632_combo_rulefast_promo3_B4",
+      "RP_20260917_105807_22632_combo_rulefast_promo3_B5"
     ],
     "effect_direction_consistency": null,
     "note": "evidence_draft — promote.R 5축 검증에서 hurdle_result/grade_a_catalog 교차검증으로 확정",
@@ -166,46 +170,11 @@
   },
   "oos_validation_draft": {
     "oos_months": null,
-    "oos_effect_vs_is": -0.363,
-    "note": "L-code oos_retention 실값 57건 median (IS65/OOS35 활성SR retention) — oos_months 실값 무 → None 유지 — promote.R essence_score 경유 재확정"
+    "oos_effect_vs_is": -0.347,
+    "note": "L-code oos_retention 실값 62건 median (IS65/OOS35 활성SR retention) — oos_months 실값 무 → None 유지 — promote.R essence_score 경유 재확정"
   },
-  "cluster_members_count": 57,
-  "adversarial_verdict": {
-    "a_exaggeration": "Calmar 0.482 를 성과로 쓰지 않고 부모 두 칸 미달이라는 비교 안에서만 인용했다. 게이트 0.64 대비 위치와 미확정 항(arm id)을 진술에 남겨 낙관을 차단했다.",
-    "b_evidence": "교환율 수치는 L-RF-20260913_221408(l_code_..._promo3_B4.json) 의 mechanism 절에 실측으로 있고, 부모 두 칸(B1_3 0.504 · B5_19 0.609)은 같은 계보의 L-RF-20260913_214207·212800 에서 재도출된다. 전부 backtested 기록. '결합이 PORT_t 를 1.5 깎았다'는 해석은 두 칸이 LOO 대조쌍일 때만 성립하므로 진술에서 미확정으로 표시했다.",
-    "c_ax000": "2칸 관측으로 축을 닫지 않는다 — arm id 확정과 단일 arm 강도 스윕을 미탐색으로 열어 두고, 결합 축의 사망 선고 대신 '기저로 삼을 근거가 서지 않는다'는 범위 한정 서술로 적었다.",
-    "d_firewall": "고정 제약·PIT 어디에도 실패를 귀속하지 않고 완화를 제시하지 않는다. 제안 레버는 봉투-안(단일 overlay arm 강도 · LOO 부분집합 확정)이다.",
-    "e_frontier": "미탐색 인접 3건 + live_trigger + expiry 명시. 포함/중복 관계와 통합 권고를 진술에 명시했다."
-  },
-  "expiry": "2027-03-19",
-  "frontier": [
-    "원장 attempt 행에서 B4 두 칸의 arm id 와 결합 부분집합(LOO 제외항)을 읽어 셀↔부분집합 매핑을 확정한다(측정 칸 소모 0)",
-    "승격·이월 기저를 결합 칸이 아니라 단일 최고 overlay 칸으로 고정하고 그 arm 의 개입 강도 g 를 0.3/0.5/0.7 로 스윕해 MDD 감소량과 PORT_t 파괴량을 분리한다",
-    "MDD 하한이 처치 포화인지 특정 구간 낙폭인지 가른다 — 전표본 MDD 대신 롤링 36M Calmar 와 2008~2012 구간 기여를 분해해 기록한다"
-  ],
-  "live_trigger": {
-    "type": "spread",
-    "condition": "어느 B4 결합 칸이 부모 최고 Calmar 와 부모 최고 PORT_t 를 동시에 넘으면 반증 성립",
-    "monitored_source": "stage_artifacts/l_code/reinforcement/*_B4.json · 06_Registry/reinforce_ledger_l1.json::attempts[].essence"
-  },
-  "revival_spec": [
-    {
-      "signal_id": "wall_clock_date",
-      "condition": "x >= as.Date('2027-03-19')",
-      "from_trigger": "expiry",
-      "status": "active"
-    },
-    {
-      "signal_id": "value_quality_spread",
-      "condition": "x >= 0.90",
-      "from_trigger": "spread",
-      "status": "active"
-    }
-  ],
-  "constraint_firewall": {
-    "mode": "backstop_passed",
-    "checked_at": "2026-09-19"
-  },
-  "drafted_at": "2026-09-19T22:25:51+0900",
-  "drafted_by": "auto_distill"
+  "cluster_members_count": 62,
+  "status": "pending_5axis",
+  "created_at": "2026-09-21T03:29:43+00:00",
+  "last_seen": "2026-09-21T03:29:43+00:00"
 }

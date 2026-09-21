@@ -1,359 +1,2565 @@
 {
-  "requested_at": "2026-09-17T10:18:46+0900",
-  "source": "rf_combination_launch",
-  "reason": "논문 결합 — LLM 전략설계 후 충실구현 1회로 기저를 측정한다(도훈 지시 2026-09-04)",
-  "paper": {
-    "title": "결합: Cross-sectional Stock Price Prediction using Deep Learning for Actual Investment Management + One Factor to Bind the Cross-Section of Returns + Maximum drawdown, recovery, and momentum + Pinchuk (2023) Labor Income Risk and the Cross-Section of Expected Returns + Uncovering a factor-based expected return conditioning structure with Regression Trees jointly for many stocks + Dirichlet policies for reinforced factor portfolios",
-    "paper_title": "결합: Cross-sectional Stock Price Prediction using Deep Learning for Actual Investment Management + One Factor to Bind the Cross-Section of Returns + Maximum drawdown, recovery, and momentum + Pinchuk (2023) Labor Income Risk and the Cross-Section of Expected Returns + Uncovering a factor-based expected return conditioning structure with Regression Trees jointly for many stocks + Dirichlet policies for reinforced factor portfolios",
-    "url": "https://arxiv.org/abs/2002.06975",
-    "paper_key": "combo:1403.8125+2002.06975+2007.08115+2011.05381+2301.09173+2404.08129",
-    "source": "combination"
-  },
-  "combo": {
-    "setkey": "1403.8125+2002.06975+2007.08115+2011.05381+2301.09173+2404.08129",
-    "k_items": 6,
-    "n_papers": 6,
-    "papers": [
-      {
-        "key": "2002.06975",
-        "url": "https://arxiv.org/abs/2002.06975",
-        "title": "Cross-sectional Stock Price Prediction using Deep Learning for Actual Investment Management"
-      },
-      {
-        "key": "2404.08129",
-        "url": "https://arxiv.org/abs/2404.08129",
-        "title": "One Factor to Bind the Cross-Section of Returns"
-      },
-      {
-        "key": "1403.8125",
-        "url": "https://arxiv.org/abs/1403.8125",
-        "title": "Maximum drawdown, recovery, and momentum"
-      },
-      {
-        "key": "2301.09173",
-        "url": "https://arxiv.org/abs/2301.09173",
-        "title": "Pinchuk (2023) Labor Income Risk and the Cross-Section of Expected Returns"
-      },
-      {
-        "key": "2007.08115",
-        "url": "https://arxiv.org/abs/2007.08115",
-        "title": "Uncovering a factor-based expected return conditioning structure with Regression Trees jointly for many stocks"
-      },
-      {
-        "key": "2011.05381",
-        "url": "https://arxiv.org/abs/2011.05381",
-        "title": "Dirichlet policies for reinforced factor portfolios"
-      }
-    ],
-    "item_engines": [
-      {
-        "key": "2002.06975",
-        "engine": "C:\\Users\\99922\\OneDrive\\Quant_Module_Moltbot/04_Research/strategies/RP_AUTO_2002_06975/engine.R",
-        "t": 3.589
-      },
-      {
-        "key": "2404.08129",
-        "engine": "C:/Users/99922/OneDrive/Quant_Module_Moltbot/04_Research/strategies/RP_AUTO_2404_08129/engine.R",
-        "t": 2.749
-      },
-      {
-        "key": "1403.8125",
-        "engine": "04_Research/strategies/RP_AUTO_1403_8125/engine.R",
-        "t": 2.567
-      },
-      {
-        "key": "2301.09173",
-        "engine": "C:/Users/99922/OneDrive/Quant_Module_Moltbot/04_Research/strategies/RP_2301_09173_CID/engine.R",
-        "t": 1.228
-      },
-      {
-        "key": "2007.08115",
-        "engine": "C:\\Users\\99922\\OneDrive\\Quant_Module_Moltbot/04_Research/strategies/RP_AUTO_2007_08115/engine.R",
-        "t": 1.11
-      },
-      {
-        "key": "2011.05381",
-        "engine": "C:\\Users\\99922\\OneDrive\\Quant_Module_Moltbot/04_Research/strategies/RP_AUTO_2011_05381/engine.R",
-        "t": 0.611
-      }
-    ],
-    "parent_t": [
-      3.589,
-      2.749,
-      2.567,
-      1.228,
-      1.11,
-      0.611
-    ],
-    "best_parent_t": 3.589,
-    "tries_before": 0,
-    "axis": "n_max_25",
-    "dilution_test": "희석 판정 = 설계 기저 PORT_t vs 최고 재료 t 3.589 (같은 축). 기록만 하고 차단하지 않는다 — 격자는 기저 **위에** 쌓으므로 재료보다 낮은 기저에서도 강화가 뒤집을 수 있다.",
-    "count_paper": false
-  },
-  "status": "done",
-  "started_at": "2026-09-17T10:21:24+0900",
-  "base_id": "RP_20260917_105807_22632_combo_rulefast",
-  "grade": "B",
-  "artifacts": "C:/Users/99922/OneDrive/Quant_Module_Moltbot/stage_artifacts/replication/20260917_105807_22632",
-  "fidelity": "combination",
-  "fidelity_detail": {
-    "fidelity": "combination",
-    "revision": {
-      "round": 1,
-      "written_at": "2026-09-17 (1판 · 재료 6편 중 [A] 2002.06975 · [B] 1403.8125 두 편 사용 · 나머지 4편 코드 없음)",
-      "verification_this_session": "R·파이썬 실행은 이 세션에서 승인 차단(자율 세션 — 메모리 reference-autonomous-session-cannot-execute-r-static-verification-only)이라 정적 검증만 했다: 전문 재독 · sprintf 지정자/인자 수 손대조(§1 9/9 · §4 3/3 · §9 시작 7/7 · DNN 요약 15/15 · §10 CM 9/9 · §11 요약 29/29 · 반증 18/18 · 연도별 10/10) · 러너 구조 검사 ③ 패턴 grep(음수 shift · lead( · 팩터 DB 문자열 · NEGATE/FLIP_SIGN — 0건) · lookahead_detector C1~C16 어휘 grep(scale( · best_ · today · Sys.Date · quantile(x$ · sd()*sqrt · IC…Date…<=…sig — 코드 행 0건) · 괄호 계수(Select-String AllMatches: ( 1595 / ) 1588 · { 30 / } 30 · [ 467 / ] 474 — 차이 7 은 주석·로그 문자열의 구간 표기 7건 '(2, 3]' '(0, 1]' '(me[k−6], f]'×3 '(2,3]' '(0,1]' 과 정확히 일치) · 패키지 스캔(library data.table·arrow · :: dplyr·arrow) · R parse()·python ast 검사는 Monitor 도구도 승인 차단이라 미실행. 런타임 양성 대조 = [A] 6종(3판 그대로) + [B] 경로 3국면·CM=C−MDD 항등·정의역·단조 경로 4종 + 조립 규칙 2종(5분위 안 CM 순 > CM 결측 5분위 > 5분위 밖 DNN 순) + 파이썬 합성 순위 표적 Spearman > 0.8 + PIT 재단언(max_lab_i ≤ u_i ≤ pred_i · 창 1,000) + 입력 차원 31 단언. 미실행 제출 — 러너 로그의 '양성 대조 통과 — [A] … / [B] 경로 3국면' · '조립 검산 통과' · '[dnn] positive control' · '[dnn] done: … (trained n, cache n, sibling-cache n)' · '[B] CM: …' · 'combination: 풀 = [A] DNN5 상위 5분위 …' · '반증 … F1 … F4' 줄로 확인할 것. 형제 캐시(RP_AUTO_2002_06975/_work/cache · 520 항목)를 읽으면 DNN 학습이 생략된다 — 입력이 바뀌었으면 자기 캐시에 새로 학습한다(sibling-cache 0 · trained 260 으로 로그에 드러난다)."
-    },
-    "fidelity_label_basis": "여섯 논문을 합친 '논문 그대로의 포트폴리오'는 존재하지 않는다. [A] 는 DNN 5분위 롱(또는 롱숏) 일간 5트랜치, [B] 는 CM 10분위 롱숏 6개월 오버래핑이며 둘 다 25종 롱온리 월간이 아니다. 이 판은 [A] 의 포트폴리오 단위(상위 5분위)를 풀로, [B] 의 순위 규칙(CM = C − MDD)을 풀 안의 순서로 써서 고정 축(top-25 롱온리 EW 월간)의 보유를 정한다 — 두 논문의 산술은 각각 그대로(모형·특성·표적·학습·경로 정의·가중 (1,2,1))이고 결합 연산자는 순차 조건 정렬 하나다. 그래서 combination 이다.",
-    "kept": "[A] Abe-Nakagawa(2020, arXiv:2002.06975 · 전문 r.jina.ai/https://arxiv.org/pdf/2002.06975 · 본 세션 2026-09-17 직접 판독 + 3판 FIDELITY(2026-09-13 감사 통과)의 축자 인용 승계) 에서 — ①포트폴리오 단위 그대로: '(i) the long portfolio strategy, and (ii) the long-short portfolio strategy. We consider an equally-weighted portfolio' · '(i) The long portfolio strategy considered here buys the top quintile (i.e., one-fifth) scores of the stocks with equal weight' ②전처리 그대로: 'rescaling is performed so that each input value is maximally 1 (minimum ≈0) by ranking each input value in ascending order by stock universe at each day and then dividing by the maximum rank value' ③표적 그대로: 'The output value is defined by the next 5 day's stock return, y_{i,t+5} ∈ R. Note that y_{i,t+5} is defined as p^c_{i,t+5}/p^o_{i,t+1} − 1' · 'Similar rescaling is done for output values y_{i,t+5}, to convert to the cross-sectional stock returns.' ④학습 그대로: 'We train the model by using the latest 1,000 sets of training data.' · 'The prediction models are updated every five business days.' · Table 2 'DNN5 | 300-300-150-150-50 (50%-50%-30%-30%-10%) | 20' · ReLU · batch normalization · Adam · MSE · mini-batch 500 · tf.truncated_normal sd √(2/M) ⑤특성 그대로: Table 1 No.1~33(No.1~8 Return from previous day/2/3/5/10/20/40/60 days ago · No.9~12 Average trading value 60d, 5/10/20d ÷ 60d · No.13~18 Change in operating income forecast / target stock price forecast from 5/10/20 days ago · No.19~33 Book-value to Price · Earnings to Price · Dividend Yield · Sales to Price · Cashflow to Price · ROE · ROA · ROIC · Accruals · Total Asset Turnover · Current Ratio · Equity Ratio · Total Asset Growth · Capital Expenditure Growth · Investment to Asset) · 'No. 19-33 are calculated on a monthly basis (at the end of month).' + §3.1 인쇄 정의(3판 kept 수록) ⑥유니버스·기간·비용: 'We prepare dataset for TOPIX500 Index constituents.' · 'from 4th January 2013 to 4th January 2018' · 비용 서술은 'A portfolio with a high turnover rate will have more transaction costs than with a portfolio with a lower rate.' 뿐(NOT STATED) ⑦논문의 집행 규약(재현 안 됨 · changed ③(5)): 'We rebalance one of five portfolios hold 20% every business day.' · 'we will hold all five portfolios equally.' [B] Choi-Choi-Kang(2014, arXiv:1403.8125 · 전문 arxiv.org/html/1403.8125v1 · 본 세션 직접 판독 2회) 에서 — ①경로 정의 그대로: 'MDD=maxτ∈(0,T)(maxt∈(0,τ)(P(t)−P(τ)))' · 'R=R(t∗,T) where t∗ is the moment for the end of the maximum drawdown formation.' · 'C=RI+RII+RIII=PP−MDD+R where PP is the log-return during the pre-peak period.' ②규칙 그대로: Table 1 — C (1,1,1) · M (0,1,0) · R (0,0,1) · RM (0,1,1) · **CM (1,2,1) 'Cumulative return-MDD'** · CR (1,1,2) · CMR (1,2,2) → CM = R_I + 2R_II + R_III = C − MDD(단일 규칙 순위라 정규화 상수배는 순위 불변) ③창·방향 그대로: 'Based on given selection rules during 6 months (weeks) of estimation period, assets in market universes are sorted in ascending order.' · 'In this study, most criteria will be used in increasing order except for the maximum drawdown.'(→ R_II = −MDD 부호가 이를 자동 처리 · 수동 반전 0건) · 'The group 1 is for losers that exhibit the worst ranking scores and the last group is for the best performers in the selection rules.' · 'The winner group is at long (short) position and the loser group is at short (long) position.' · 'Each group is constructed as an equal-weighted portfolio.' ④논문의 포트폴리오 규약(재현 안 됨 · changed ③(5)): 'In the cases of the S&P 500 and KOSPI 200 universes, numbers of groups are 10 and three baskets are formed for U.S. sector ETFs.' · 'After 6 months (weeks) of the holding period, each basket is liquidated. The portfolio is constructed at the beginning of every month, i.e. it is the overlapping portfolio.' ⑤헤드라인 그대로(KOSPI 200 · 2003-01~2012-12 · 월간 Table 3): C 승자 1.6292%(σ 8.7334)/패자 0.2987/W−L 1.3305(6.8258) · CM 승자 1.7005%(σ 8.0623)/패자 0.2676(9.1117)/W−L 1.4330(7.0357) · 'In monthly scale, the maximum drawdown associated strategies outperform the traditional momentum strategy, i.e. smaller maximum drawdown gives stronger momentum.' · 'The risk measures for the portfolios indicate that the portfolios are less riskier than the benchmark strategy.' · 'Alternative portfolios are less riskier in many reward-risk measures such as Sharpe ratio, VaR, CVaR, and maximum drawdown.' ⑥비용 서술 없음(gross). ★한 문장으로: '[A] 는 짧은 지평(≤60일 특성 · 5일 표적)의 횡단면 순위 예측으로 5분위를 고르고, [B] 는 6개월 경로의 낙폭 기하가 모멘텀의 지속과 위험을 가른다고 한다 — 이 판은 [A] 의 5분위가 후보를, [B] 의 CM 이 그 안의 보유를 정한다.' [C] Polimenis(arXiv:2007.08115) · [D] Borri-Chetverikov-Liu-Tsyvinski(arXiv:2404.08129) · [E] Pinchuk(arXiv:2301.09173) · [F] André-Coqueret(arXiv:2011.05381) 은 이 엔진에 **코드가 없다**(changed ③ (1)~(4)).",
-    "kept_summary": "[A] Table 1 33(KR 31) 팩터 → 그날 유니버스 안 순위/최대순위 → DNN5(Table 2) → 5일 뒤 수익 순위 예측 → 전략 (i) 상위 5분위(EW). [B] 6개월 일별 로그가격 경로 → C · MDD · 3국면 → Table 1 CM = (1,2,1) = C − MDD → 오름차순 최상위 그룹이 승자(롱). 결합 = [A] 5분위(풀) → 풀 안 [B] CM 순위 → 고정 축 top-25 EW 월간.",
-    "changed": "① 무엇을 어떻게 결합했는가 — **[A] 가 풀을 정하고 [B] 가 풀 안의 순위를 정한다. 스코어 층에 평균·rank-Z·가중 블렌딩이 없다.** 매월 마지막 거래일 f 에서: (i) [A] — RP_AUTO_2002_06975/engine.R 3판(2026-09-13 감사 통과)과 같은 산술로 특성 31 · 순위 재척도 · DNN5(최신 1,000일 학습집합 · 5영업일 갱신 격자에서 f 이하 마지막 갱신점의 모델) 예측 점수를 f 의 K200∪KQ150 종목 전부에 낸다. 적격 = 멤버십(f) ∧ adv20(f−1) ≥ 2e8 ∧ 예측 보유. 풀 Q_f = 적격 횡단면에서 DNN 점수 상위 floor(N/5) — [A] 전략 (i) 의 'top quintile (i.e., one-fifth)' 그대로. (ii) [B] — 같은 f 에서 (me[k−6], f] 6개월 일별 종가 로그가격 경로의 CM = R_I + 2·R_II + R_III = C − MDD (Table 1 CM · 식(1)(2) 정의 · 미처리 경로). (iii) 산출 = FACTORS(Date = f, Ticker, Score) **적격 전원**, Score 3계층 사전식: Q_f ∧ CM 유한 → 2 + rank01(CM | Q_f) ∈ (2,3] / Q_f ∧ CM 결측 → 1.5 / Q_f 밖 → rank01(DNN | Q_f 밖) ∈ (0,1]. 러너가 top-25 롱온리 EW 월간(portfolio_spec) — 즉 보유 = **Q_f 안 CM 상위 25종**. \n\n  **풀 Q_f = { i : DNN_i ∈ 상위 floor(N/5) } · 보유 = argtop25_{i ∈ Q_f} CM_i · w = 1/25**\n\n결합 연산자는 순차 조건 정렬(풀 → 순위)이다. 두 신호의 산술 결합이 아니므로 척도 문제가 구조적으로 없고, 풀 밖 종목은 어떤 CM 값으로도 보유에 들어올 수 없다(2계층 사전식이 이를 보장 — 5분위 안 CM 유한 종목이 25 미만인 달만 예외 · F2 인쇄). 이것이 이 저장소의 결합 계보 — rank-Z 평균 5회(최고 0.766) · CM 계열 결합 1~4판(0.69~0.79 · [C] 급락일 자격판 0.071) — 와 다른 지점이다: 그 판들은 전부 **약한 신호끼리** 스코어를 산술로 섞거나 걸렀고, 이 판은 저장소에서 가장 강한 횡단면 예측기([A] 계보 PORT_t 2.7~3.6)를 풀의 정의에 그대로 두고, 그것이 보지 못하는 지평(6개월 경로 기하)을 풀 안의 순서로만 쓴다.\n\n② 왜 각 재료 단독보다 나을 것이라 보는가 (반증 가능) — 논지: **[A] 의 점수는 5일 표적·≤60일 입력의 짧은 지평 예측인데 하네스는 그것을 1개월 들고 간다. 그래서 5분위 소속(풀)은 정보이지만 5분위 안의 미세 순위는 잡음에 가깝다 — 논문 자신이 포트폴리오를 'top quintile' 로 정의하는 이유다. [B] 의 CM 은 [A] 가 담지 않는 중간 지평(6개월)의 지속성과 낙폭 기하를 담고, KOSPI 200 월간에서 단순 누적수익보다 강한 모멘텀과 낮은 위험을 냈다(Table 3 · 'smaller maximum drawdown gives stronger momentum'). 풀 안에서 미세 DNN 순위를 CM 으로 바꾸면 잃는 것(5분위 안 DNN 잔여 정보)보다 얻는 것(중간 지평 지속성 + 자기 경로 낙폭 회피)이 크다.** 근거(전부 저장소 실측): (a) [A] 계보의 강화 실측에서 DNN 위에 얹은 팩터 중 **12-1 모멘텀**(M01_Mom_12_1 · [A] 가 갖지 않은 지평)이 depth-0 B1 열 칸 중 최고(B1_3 PORT_t 2.743)였고, 유사 지평이 없는 팩터(idiovol 0.319 · maxret −0.500)는 무너졌다 — [A] 의 빈 자리는 **지평**이다. (b) [A] 계보의 구속 낙폭은 급락이 아니라 침식이다: promo2 B1_2 09_drawdowns.csv — 2018-01-29→2020-03-19 −54.3%(787일 · 벤치 −41.1%) · 2007-11-07→2008-10-29 −45.5%(벤치 −52.4%). 자기 경로가 이미 무너진 종목을 6개월 창의 MDD 로 벌하는 CM 은 정확히 이 침식형 낙폭을 겨냥한다(급락형은 [B] 가 약하다 — 아래 기전 판정). (c) [B] 단독 실측은 KR 에서 약하다(충실구현 F −0.639 · CM top-25 결합 0.69~0.79 · promo2 B3_12 2.567 은 KQ150 단독 유니버스) — 그래서 CM 을 유니버스 전체의 순위로 쓰지 않고 **강한 풀 안의 순위**로만 쓴다. (d) CM 은 단일 공통 팩터 적재와 직교한다(시브 통제 R² 0.0593 · 2026-09-10) — 풀 안 순서를 갈 여지가 있다(F3 가 잰다). ★반증 조건 — 비교는 같은 축(top-25 롱온리 EW · 월간 · K200∪KQ150 PIT 시변 · 2005-01-01~ · 15bps)에서만, 계약(authoritative_remeasure.json)이 판정한다. **비교군**: [A] 단독 선정(DNN 점수 top-25 · 비중만 다름) = depth-0 B2 칸 — B2_11 2.823(Calmar 0.412 · MDD 0.556) · B2_10 2.767 · B2_9 2.623 · B2_8 2.259 · B2_7 2.196 · B2_6 1.529(순수 EW 는 미측정 — 이 칸들이 가장 가깝다) / [A] + 12-1 모멘텀 rank-Z 블렌드(EW) = B1_3 2.743 · Calmar 0.412 · MDD 0.541 · OOS −0.028 / [A] 계보 최고 = promo2 B1_2 3.589(DNN 0.5 + DB 팩터 4종 + lean_score_tilt LW 비중 · Calmar 0.477 · MDD 0.543 · OOS −0.089 — 논문 단독이 아니라 강화 3세대 구성이므로 '단독' 문턱으로 쓰지 않는다 · 러너 희석 판정은 기록 전용) / [B] 단독 = 충실구현 −0.639 F · CM 결합 최고 0.788 · promo2 B3_12 2.567. **1급(설계 성립 · 두 재료 단독을 모두 넘는다)**: PORT_t > 2.823 ∧ MDD < 0.541 — 즉 2단 정렬이 [A] 단독 선정의 유의성을 넘고 [A]+모멘텀 블렌드의 낙폭 아래로 내려간다(둘 중 하나라도 미달이면 CM 은 풀 안에서 DNN 미세 순위보다 못한 것이고 이 결합은 접는다). **2급(등급)**: PORT_t ≥ 2.95 ∧ Calmar ≥ 0.64. **기전 판정(등급과 별개 · 09_drawdowns.csv)**: 2018-01~2020-03 에피소드 낙폭 < 0.463([A] 계보 최저 · promo3 B1_3) — 침식형 낙폭이 줄어야 CM 의 자기 경로 낙폭 회피가 포트폴리오에 전달된 것. 동시에 GFC 에피소드(2007-11~2008-10)가 0.479([A] 계보 최악) 를 넘으면 [B] 의 알려진 급락 동조(CM 결합 1·3·4판 GFC −42~−47 vs 벤치 −36)가 풀 안에서도 재현된 것 — 그때 다음 판은 급락일 조건부 통계([C])를 **풀 수준**에서 다시 잰다(이번 판이 [C] 를 뺀 이유는 ③(1)). ★엔진 F1(nested top-25 vs DNN top-25 겹침 중앙 ≥ 0.80)·F2(5분위 안 CM 유한 < 25 인 달 ≥ 50%)·F3(5분위 안 |rho(DNN,CM)| 중앙 ≥ 0.90)·F4(월 결번) 중 하나라도 FAIL 이면 등급과 무관하게 설계 실패다. ★정직한 한계: [A] 계보 37칸 전부 OOS retention 이 음수(−0.03~−0.72)이고 이 두 재료에는 그 축(2023~26 시총가중 벤치의 반도체 집중)을 겨냥한 기전이 없다 — OOS retention < 0.5 면 등급은 B 에서 멈춘다. 그 결과는 1급 주장을 반증하지 않으며 '이 재료 집합엔 OOS retention 레버가 없다' 는 발견으로 기록한다.\n\n③ 신고 체크리스트 — 논문에 없는데 넣은 것 / 논문과 다르게 한 것 / 쓰지 않은 재료 **전부**: (1) **[C] 2007.08115 미사용 — 코드 없음.** 실측: 같은 재료 집합의 4판(CM 순위 + 공동 depth=1 트리 왼쪽 잎(급락일) 시장 대비 초과 ≥ 0 자격 · RP_20260913_022403_11800) = C · PORT_t 0.071 · MDD 0.691 · Calmar 0.157 · GFC −45.13% vs 벤치 −36.48 · 2022 −30.85 vs −26.15 — 급락일 자격이 동조 낙폭을 자르지 못했다. 각색 단독(다수 잎 평균 스코어 · RP_20260903_081538_1520) 0.209 · β 1.15 · MDD 72.5%. 방금 실패한 자격을 풀 위에 다시 얹지 않는다(복귀 조건 = ② 의 GFC 기전 판정). (2) **[D] 2404.08129 미사용 — 코드 없음.** 충실구현(§5.7 그대로) F · PORT_t −2.326 · KR 패널의 단일 요인 = 시장(rho(φ̂, 시장초과) 중앙 +0.77) · CM ⊥ λ̂(시브 통제 R² 0.0593) · 잔차 설계 2판 0.788(F1 겹침 0.80 · IC −0.006) · §2 초기값은 균형 패널 전제라 상장·퇴출 패널에 결측 규칙 없이 못 세운다. (3) **[E] 2301.09173 미사용 — 코드 없음.** KR 실측 cor(CID 충격, 시장) +0.43 · β_CID 정렬 = 시장베타 정렬(역베타 회계) · 충실구현 F(−1.16) · 강화 최고 1.228 — 시장 노출 축이라 이 설계에 더할 것이 없다. (4) **[F] 2011.05381 미사용 — 코드 없음.** 논문 자신의 결론 'RL-based portfolios are very close to the equally-weighted (1/N) allocation.' · 'the difference with the uniform allocation … is not significant.' · 'characteristics used in the traditional asset pricing literature are relatively weakly priced.' · KR 각색 t 0.611 — 두 사용 논문이 어차피 EW 다. (5) **산출 형태 = 고정 축** top-25 롱온리 EW 월간(portfolio_spec top_n_long). [A] 전략 (i) 는 5분위 전원(≈30~71종) EW 롱이고 일간 5트랜치(각 20% · 5일 보유 교대) 집행이다 → 25종 상한은 [B] 의 2단 정렬로 채우고, 집행은 월말 시그널 → 익월 첫 거래일 → 1개월 보유(하네스 · 3판 changed(3)). [B] 는 10분위 롱숏 · 6개월 J-T 오버래핑 보유 → 롱온리 · 1개월 · 분위 그룹 없음(CM 을 그룹이 아니라 풀 안 순서로 소비). (6) **풀 = 스크린 적용 후 적격 집합의 floor(N/5)**: [A] 는 유동성 스크린이 없다(TOPIX500 구성만) → DNN 패널(학습·예측·순위 재척도)은 3판처럼 스크린 없이 유니버스 전체에서 만들고, **고정 축 adv20(f−1) ≥ 2e8 은 포트폴리오 형성(풀 정의·FACTORS 행)에만** 건다. adv20 은 거래일 격자 위 20거래일 평균 거래대금(Vol×Close · 거래 없는 날 = 0) 후 shift(1) — 다른 엔진(자기 관측행 기준 평균)과 다른 규약 · 신고. 5분위 정의역 N ≥ 10(3판과 동일). (7) **[B] 창 규약**: 형성창 = (me[k−6], f] · 격자 = RAWDATA 전 거래일(2000-06-01~) 의 달력월 마지막 거래일 · 경로 = 창 안 관측 종가의 일별 로그가격(기준점 = 창 첫 관측 종가) · n ≥ 2 정의역 · 커버리지 스크린 없음(진단만) · 절단·winsorize 0. [B] 원문이 창 내부 표본주기를 말하지 않아 일별(충실구현 판과 동일)로 읽었다. (8) **CM 결측 풀 종목**(상장 직후 등) = 1.5 계층 — CM 유한 풀 종목 전부의 아래, 풀 밖 전부의 위. 5분위 안 CM 유한 종목이 25 미만인 달은 러너 top-25 가 1.5 계층 → 풀 밖 DNN 순으로 채운다(건수 = F2). (9) **풀 밖 종목의 순서 = DNN rank01** — 보유에 닿지 않는 진단·강화용 순서(강화 레인의 팩터 축이 넓은 패널 위에서 살아 있도록 · 메모리 2026-09-12 'PORTFOLIO 를 내는 기저는 B1 축이 죽는다'). (10) **캐시 재사용**: 파이썬 학습 수치 경로·하이퍼파라미터·캐시 키(CODE_VERSION rev3 + 스펙 + 학습/예측 입력 바이트 + 종목 벡터)를 3판과 바이트 동일하게 유지하고, 3판 디렉터리(RP_AUTO_2002_06975/_work/cache)를 **읽기 전용**으로 순회한다. 같은 키 = 같은 입력에 같은 알고리즘 — 다시 계산하지 않을 뿐이며 PIT 와 무관하다. 쓰기는 이 디렉터리(_work/cache)에만. 입력이 바뀌면 키가 달라 자동 무효(로그 'trained n · sibling-cache n'). (11) **[A] 3판이 신고한 규약을 그대로 승계**(3판 FIDELITY changed(1)~(16) 정본): 특성 31(No.32·33 = 설비투자 지급액 data_gap) · No.19~31 논문 인쇄 식 · 월말 산출 + 그 달 안 캐리 · usable FY+1 3/31 · 회계 캐리 ≤ 456일 · 컨센서스 QuantiWise 영업이익 FY1·목표주가 캐리 ≤ 7일 · 결측 = 0.5 · 표적 시가 t+1 → 종가 t+5(Open 열 부재 시 종가 대체 · 로그) · 학습창 [u−1004, u−5] · 5영업일 격자 앵커 2001-01-01 · 격자 2000-06-01~ · TF 기본값(Adam lr 1e-3 · BN eps 1e-3 · momentum 0.01) · Linear→BN→ReLU→Dropout · 시드 20020697 + 월 인덱스 · 워커 = min(32, 논리 CPU−1) · 마지막 부분월 제외 · (Ticker,Date) 중복 첫 행. (12) **동값**: DNN 점수 동률 = 종목코드(결정론) · CM rank01 동률 = 평균 순위. (13) **데이터 가드**: is.finite(Close) ∧ Close > 0 · 거래량 결측 = 특성엔 결측(3판)·유동성엔 0 · 원천 이음매 극단값은 걸러내지 않고 건수 로그(순위 재척도라 유계). (14) **결정론**: 난수 = 파이썬 시드 고정 · R 난수 미사용 · set.seed 없음 · 반복 추정기·시작값 없음(CM 은 닫힌 형태). (15) **진단 전용 상수**: 25(top-25 겹침 n) · 5(순위상관 최소 쌍) · 0.80(F1) · 0.50(F2) · 0.90(F3). (16) **의존**: data.table · arrow · dplyr(arrow 데이터셋 필터 · 3판과 동일) + venv 파이썬(torch · pyarrow · pandas · numpy) 서브프로세스(r-portability: env= 미사용 · 셸 연산자 미사용 · exit status 검사). (17) **원문 접근**: [A] r.jina.ai PDF 프록시 본 세션 직접(전략 (i)(ii) · 5트랜치 · 학습집합 · 갱신 · 전처리 · 표적 · Table 1 전 33행 · Table 2 DNN5 · 비용 문장 · 유니버스 · 기간) + 3판 FIDELITY 축자(§3.1 인쇄 정의 · 월말 규정) 승계 · [B] arxiv.org/html/1403.8125v1 본 세션 직접 2회(식(1)(2) · 3국면 · Table 1 7규칙 · §3.2 정렬·그룹·EW·형성·보유·오버래핑·승자/패자 문장 · KOSPI 200 기간 · Table 3 C/CM · 결론 2문장 · 비용 부재) · [C] r.jina.ai PDF 본 세션 직접(초록 · depth=1 · SSE · joint · 자료 · mex 결론 · Table 2c · demonstration 문장 · 포트폴리오 부재 — 미사용 사유용) · [D] arxiv abs 본 세션 직접(초록) · [E] arxiv abs 본 세션 직접(초록) · [F] arxiv.org/html/2011.05381v3 본 세션 직접(초록 · 식 9/11 · Table 3 · 결론 3문장 · Table 1 · N=100). (18) **미실행 제출**: 이 세션은 R·파이썬을 실행하지 못했다(자율 세션 승인 차단) — revision.verification_this_session 의 정적 검증과 러너 로그 확인 줄 참조.",
-    "changed_supplements": ["③ 신고 체크리스트 (1)~(18) 의 구조화 사본이다 — 판정 정본은 changed 필드다.", "[C] 2007.08115 = 코드 없음. 같은 재료 집합 4판(CM 순위 + 급락일 잎 자격)이 C 0.071 · MDD 0.691 · GFC −45.13 vs −36.48 — 급락일 자격이 동조 낙폭을 못 잘랐다. 복귀 조건 = 이 판의 GFC 에피소드 > 0.479.", "[D] 2404.08129 = 코드 없음(충실구현 F −2.326 · KR 단일요인 = 시장 · CM ⊥ λ). [E] 2301.09173 = 코드 없음(β_CID = 역베타 · F). [F] 2011.05381 = 코드 없음(논문 자신: ≈1/N · not significant · KR 0.611).", "결합 연산자 = 순차 조건 정렬: 풀([A] DNN 상위 floor(N/5)) → 순위([B] CM = C − MDD 풀 안) → 3계층 사전식 Score (2,3] / 1.5 / (0,1]. 스코어 층 평균·가중·rank-Z 0건.", "산출 형태 = 고정 축 top-25 롱온리 EW 월간 — [A] 5분위 전원·일간 5트랜치 / [B] 10분위 롱숏·6개월 오버래핑 대체.", "풀 = 스크린(멤버십 f ∧ adv20(f−1) ≥ 2e8 ∧ 예측 보유) 후 적격의 floor(N/5). DNN 패널 자체는 3판처럼 스크린 없음. adv20 = 격자 위 20거래일 평균(거래 없는 날 0) 후 shift(1).", "[B] 창 = (me[k−6], f] · 일별 종가 로그가격 경로 미처리 · n ≥ 2 · 커버리지 스크린 없음. CM 결측 풀 종목 = 1.5 계층 · 5분위 안 CM 유한 < 25 인 달은 러너가 아래 계층으로 채운다(F2).", "캐시 재사용: 파이썬 수치 경로·키 3판과 바이트 동일 · 형제 디렉터리 읽기 전용 · 쓰기는 자기 캐시만 · 입력 변경 = 자동 무효.", "[A] 3판 신고 규약 전부 승계(특성 31 · 월말 회계 · usable 3/31 · 캐리 · 결측 0.5 · 학습창 · 격자 · TF 기본값 · 시드).", "결정론: R 난수 미사용 · 파이썬 시드 고정 · 동값 (DNN 종목코드 · CM 평균순위). 진단 전용 상수 25 · 5 · 0.80 · 0.50 · 0.90.", "의존 3종 + venv 파이썬 서브프로세스. 원문 접근 6편 전부 본 세션 직접([A] jina · [B] html v1 ×2 · [C] jina · [D][E] abs · [F] html v3). 미실행 제출 — 정적 검증만."],
-    "paper_original_form": "[A] Abe & Nakagawa (2020, arXiv:2002.06975): 일본 TOPIX500 구성종목(2013-01-04~2018-01-04)에서 매 영업일 종가 시점 33 팩터를 유니버스 안 순위/최대순위로 재척도하고 5일 뒤 수익(익일 시가→5일 뒤 종가)의 같은 재척도값을 DNN(6칸)·RF·릿지로 회귀, 최신 1,000일치로 학습해 5영업일마다 갱신, 예측 상위 5분위 EW 롱(전략 (i)) 및 롱숏(전략 (ii))을 5개 포트폴리오(각 20%)를 하루 하나씩 교대 리밸런싱해 평균. DNN5 롱 IR 1.70(alpha 5.11%) · 롱숏 R/R 1.77. 거래비용 미명시. [B] Choi, Choi & Kang (2014, arXiv:1403.8125): KOSPI 200(2003-01~2012-12)·S&P 500·미 섹터 ETF 에서 6개월(주간 축 6주) 형성창 로그가격 경로의 3국면 분해로 7 규칙(C/M/R/RM/CM/CR/CMR)을 만들어 오름차순 10 그룹(KOSPI 200·S&P 500) EW 로 나누고 승자 그룹 롱·패자 그룹 숏을 6개월 보유하는 오버래핑 포트폴리오. 월간 척도는 모멘텀이고 CM 이 최우수(KOSPI 200 W−L 월 1.4330%/σ 7.0357%). 거래비용 미공제. [C] Polimenis (2020, arXiv:2007.08115): US 대형주 5종 1,259 일간수익을 FF3 에 depth=1 회귀트리(solo·joint)로 적합한 서술적 진단 — 포트폴리오 없음. [D] Borri, Chetverikov, Liu & Tsyvinski (2024, arXiv:2404.08129): 171개 다중자산 균형 패널에 r_it = h(f_t λ_i) + ε_it 를 시브 추정 · §5.7 예측수익 5분위 P5−P1 반년 재추정 — 미사용. [E] Pinchuk (2023, arXiv:2301.09173): FF49 산업 VW 월수익 횡단면 분산 CID 의 AR 잔차 충격에 대한 24개월 β 로 5분위 VW 월간 정렬 · 고민감 −5.9%/년 — 미사용. [F] André & Coqueret (2021, arXiv:2011.05381): 12 특성 균등화 상태에 Dirichlet(exp(Xθ)) 정책을 REINFORCE 로 학습(부트스트랩: 매월 직전 달 · N=100) 후 평균 정책 a/σ 로 배분 · 자기 결론 ≈1/N — 미사용. → 여섯 논문을 합친 '논문 그대로의 포트폴리오'는 존재하지 않으므로 fidelity = combination 이고 포트폴리오 사양은 지시된 고정 축(top-25 롱온리 EW 월간)을 쓴다.",
-    "portfolio_spec": {
-      "construction": "top_n_long",
-      "weighting": "ew",
-      "rebalance": "monthly",
-      "top_n": 25,
-      "n_long": 25,
-      "n_max": 25,
-      "note": "FACTORS 만 낸다(PORTFOLIO 없음). Score 는 3계층 사전식이라 top-25 = [A] 5분위 안 [B] CM 상위 25종(5분위 안 CM 유한 < 25 인 달만 아래 계층으로 채움 · F2 인쇄). EW = [A]·[B] 둘 다 'equally-weighted'. has_short = false · n_max = 25."
-    },
-    "commission_paper": null,
-    "source_paper": {
-      "title": "결합: Cross-sectional Stock Price Prediction using Deep Learning for Actual Investment Management [A] + Maximum drawdown, recovery, and momentum [B]",
-      "arxiv_ids": ["2002.06975", "1403.8125"],
-      "url": "https://arxiv.org/abs/2002.06975",
-      "urls": {
-        "A_pool": "https://arxiv.org/abs/2002.06975",
-        "B_rank": "https://arxiv.org/abs/1403.8125",
-        "C_not_used": "https://arxiv.org/abs/2007.08115",
-        "D_not_used": "https://arxiv.org/abs/2404.08129",
-        "E_not_used": "https://arxiv.org/abs/2301.09173",
-        "F_not_used": "https://arxiv.org/abs/2011.05381"
-      },
-      "fulltext_paths": ["https://r.jina.ai/https://arxiv.org/pdf/2002.06975", "https://arxiv.org/html/1403.8125v1", "https://r.jina.ai/https://arxiv.org/pdf/2007.08115", "https://arxiv.org/abs/2404.08129", "https://arxiv.org/abs/2301.09173", "https://arxiv.org/html/2011.05381v3"],
-      "version_read": "[A] 본 세션(2026-09-17) r.jina.ai PDF 프록시 1회 — 전략 (i)(ii) 정의 · 'We rebalance one of five portfolios hold 20% every business day.' · 'hold all five portfolios equally' · 학습집합 1,000 · 5영업일 갱신 · 전처리 문장 · 표적 정의 · Table 2 DNN5 행 · 비용/회전율 문장 · TOPIX500 · 기간 · Table 1 33행 이름 전부 축자 회수. 프록시 요약기가 '(minimum ≈0)' 뒤의 'and then dividing by the maximum rank value' 를 잘랐으나 3판 FIDELITY(감사 통과)의 같은 문장 축자와 합쳐 채택. §3.1 인쇄 정의·월말 규정은 3판 kept 승계(3판 세션이 절별 재질의로 회수). [B] 본 세션 arxiv.org/html/1403.8125v1 2회 — 1회차: 식(1)(2)·R·C 분해 · Table 1 7규칙 가중 · §3.2 요지 · KOSPI 200 기간 · Table 3 C/CM 수치 · 결론 문장 · 비용 부재 / 2회차(판별형): §3.2 문장 8종 축자('sorted in ascending order' · 'except for the maximum drawdown' · 'numbers of groups are 10' · 'equal-weighted portfolio' · 'estimation period' · 'holding period'·'overlapping portfolio' · 'winner group … long (short)' · 'The group 1 is for losers') + 결론 2문장 축자 — 두 회 일치. [C] r.jina.ai PDF 1회(미사용 사유 인용용) · [D][E] arxiv abs 1회 · [F] html v3 1회.",
-      "note": "NOT STATED(두 논문 공통): 거래비용 · 창 내부 표본주기([B]) · 5분위 정수화([A]) · 결측 처리([A]) — 전부 changed ③ 에 규약으로 신고."
-    },
-    "paper_values_used_unchanged": {
-      "A_features": "Table 1 No.1-31 (31 of 33; No.32·No.33 data_gap — 3판 changed(9)); lookbacks 1/2/3/5/10/20/40/60 days; 5/10/20 vs 60-day trading value; 5/10/20-day forecast changes; No.19-31 printed definitions, month-end",
-      "A_preprocessing": "per-day cross-sectional ascending rank divided by the maximum rank, inputs and output alike",
-      "A_target": "5-day-ahead return p^c_{t+5}/p^o_{t+1} − 1, rank-rescaled",
-      "A_model": "DNN5 300-300-150-150-50, dropout 50-50-30-30-10%, ReLU, batch normalization, Adam, MSE, mini-batch 500, 20 epochs, trunc-normal sd sqrt(2/M); latest 1,000 sets; updated every five business days",
-      "A_portfolio_unit": "strategy (i): top quintile (one-fifth) of the scores, equal weight — used as the pool",
-      "B_path": "MDD = max drawdown of the log-price path (eq. 1/2); R = recovery from the trough; C = PP − MDD + R",
-      "B_rule": "Table 1 CM = (1,2,1) 'Cumulative return-MDD' = C − MDD; ascending sort, best performers = winners (long)",
-      "B_window": "6 months estimation period (monthly scale)",
-      "B_weighting": "each group equal-weighted",
-      "paper_reported": {
-        "A": "DNN5 long: Alpha 5.11%, TE 3.01%, IR 1.70, MaxDD -3.46%, TN 56.06% (TOPIX500, 2013-01-04 ~ 2018-01-04)",
-        "B": "KOSPI 200 monthly 6/6 (2003-01 ~ 2012-12): CM winner 1.7005%/σ 8.0623, loser 0.2676%, W−L 1.4330%/σ 7.0357; C W−L 1.3305%/σ 6.8258"
-      }
-    },
-    "_notes": {
-      "engine_output": "FACTORS(Date, Ticker, Score) — Date = 각 달력월 마지막 거래일(격자 = RAWDATA 거래일 · 마지막 부분월 제외) · 행 = 그날 적격(K200∪KQ150 플래그 ∧ adv20(t−1) ≥ 2e8) ∧ DNN 예측 보유 종목 전부 · Score 3계층 사전식(2,3] / 1.5 / (0,1]. 집행은 러너가 익 거래일. 방향 = [A] 점수 큰 값 롱 · [B] 오름차순 승자 롱(둘 다 논문 선언 · 사후 반전 0건 · C13).",
-      "combination_operator": "순차 조건 정렬(풀 → 순위). 풀 = [A] DNN 점수 상위 floor(N/5) · 순위 = [B] CM = C − MDD(6개월 일별 로그가격 경로) 풀 안 · 보유 = 러너 top-25 EW. 스코어 층 평균·rank-Z·가중 0건. CM 은 풀 밖에서 계산되더라도(진단용) 보유에 닿지 않는다.",
-      "why_this_is_not_a_sixth_variant_of_the_same_lever": "결합 계보 M1(rank-Z 평균 5회 · 최고 0.766) · CM 결합 1~4판(0.691 / 0.788 / 0.716 / 0.071)은 전부 약한 신호끼리 스코어를 산술로 섞거나(1~3판) 약한 순위 위에 자격을 걸었다(4판). 이 판은 저장소에서 가장 강한 횡단면 예측기([A])를 풀 정의에 그대로 두고, 그것이 갖지 않은 지평(6개월 경로 기하)을 풀 안 순서로만 쓴다. [A] 계보 강화 실측이 '빈 자리 = 지평' 을 가리켰다(12-1 모멘텀 B1_3 2.743 이 depth-0 B1 최고 · 지평 없는 팩터는 붕괴).",
-      "materials_not_in_score": {
-        "C_2007.08115": "코드 없음. 4판(CM + 급락일 잎 자격) C 0.071 · MDD 0.691 · GFC −45.13 vs −36.48 · 2022 −30.85 vs −26.15 · 각색 단독 0.209 β 1.15 — 자격이 동조 낙폭을 못 잘랐다. 복귀 조건 = 이 판 GFC 에피소드 > 0.479.",
-        "D_2404.08129": "코드 없음. 충실구현 F −2.326 · KR 단일요인 = 시장(rho +0.77 · R² 0.234) · CM ⊥ λ(R² 0.0593) · 잔차 2판 0.788(F1 0.80) · 균형 패널 결측 규칙 부재.",
-        "E_2301.09173": "코드 없음. cor(CID 충격, 시장) +0.43 · β_CID = 시장베타 · 충실구현 F(−1.16) · 강화 최고 1.228.",
-        "F_2011.05381": "코드 없음. 논문 자신 ≈1/N · not significant · 특성 weakly priced · KR 0.611 · 두 사용 논문이 EW."
-      },
-      "constants": [
+  "requested_at": "2026-09-21T12:36:08+0900",
+  "source": "reinforce_auto_next_paper",
+  "reason": "직전 논문 강화 38회 소진 — 큐 다음 논문 충실구현 대기",
+  "prev": {
+    "base_id": "RP_20260917_105807_22632_combo_rulefast_promo3",
+    "n": 3,
+    "port_t": 4.349,
+    "grade": "B",
+    "base_grade": "B",
+    "cell_code": "B1_3",
+    "spec": "C:/Users/99922/OneDrive/Quant_Module_Moltbot/.cache/rf_parallel/spec_B1_3__RP_20260917_105807_22632_combo_rulefast_promo3.json",
+    "artifacts": "C:/Users/99922/OneDrive/Quant_Module_Moltbot/stage_artifacts/replication/20260921_100007_6876",
+    "adversary": null,
+    "entry": {
+      "base_id": "RP_20260917_105807_22632_combo_rulefast_promo3",
+      "base_grade": "B",
+      "paper_key": "combo:1403.8125+2002.06975+2007.08115+2011.05381+2301.09173+2404.08129",
+      "paper_id": "",
+      "base_artifacts": "C:/Users/99922/OneDrive/Quant_Module_Moltbot/stage_artifacts/replication/20260920_002909_34572",
+      "engine_path": "C:\\Users\\99922\\OneDrive\\Quant_Module_Moltbot/04_Research/strategies/RP_AUTO_COMBO_combo_1403_8125_2002_069/engine.R",
+      "status": "exhausted",
+      "target_grade": "A",
+      "measurement_axis": "n_max_25",
+      "axis_valid": true,
+      "attempts_used": 38,
+      "attempts": [
         {
-          "name": ".QUINT",
-          "value": "5",
-          "source": "[A] 'top quintile (i.e., one-fifth)'",
-          "role": "풀 = floor(N/5)"
+          "n": 1,
+          "date": "20260921",
+          "cell_code": "B1_1",
+          "idea": "[무인 병렬 B1_1] liq_amihud — B1/multifactor · factor2=none · weighting=ew · universe=k200_kq150 · overlay=none",
+          "keyword_axis": "multifactor",
+          "root_papers": [
+            {
+              "url": "https://arxiv.org/abs/2002.06975",
+              "title": "결합: Cross-sectional Stock Price Prediction using Deep Learning for Actual Investment Management + One Factor to Bind the Cross-Section of Returns + Maximum drawdown, recovery, and momentum + Pinchuk (2023) Labor Income Risk and the Cross-Section of Expected Returns + Uncovering a factor-based expected return conditioning structure with Regression Trees jointly for many stocks + Dirichlet policies for reinforced factor portfolios",
+              "paper_key": "combo:1403.8125+2002.06975+2007.08115+2011.05381+2301.09173+2404.08129"
+            },
+            {
+              "title": "Chan, Jegadeesh & Lakonishok (1996), Momentum Strategies, JF 51(5)",
+              "url": "https://onlinelibrary.wiley.com/doi/10.1111/j.1540-6261.1996.tb05222.x"
+            },
+            {
+              "title": "Fama & French (1992), The Cross-Section of Expected Stock Returns, JF 47(2)",
+              "url": "https://onlinelibrary.wiley.com/doi/10.1111/j.1540-6261.1992.tb04398.x"
+            },
+            {
+              "title": "Amihud (2002), Illiquidity and Stock Returns, JFM 5(1)",
+              "url": "https://www.sciencedirect.com/science/article/pii/S1386418101000246"
+            }
+          ],
+          "wt_id": null,
+          "evidence": "paper",
+          "unmapped_families": [],
+          "axiom_injected": true,
+          "grade": "B",
+          "essence": {
+            "cell_code": "B1_1",
+            "block": "B1",
+            "port_t": 3.766,
+            "net_sharpe": 1.099,
+            "cagr": 0.258,
+            "mdd": 0.546,
+            "calmar": 0.473,
+            "oos_retention": -0.009,
+            "spec": "C:/Users/99922/OneDrive/Quant_Module_Moltbot/.cache/rf_parallel/spec_B1_1__RP_20260917_105807_22632_combo_rulefast_promo3.json",
+            "source": "authoritative_remeasure.json"
+          },
+          "artifacts": "C:/Users/99922/OneDrive/Quant_Module_Moltbot/stage_artifacts/replication/20260921_100007_15072",
+          "lessons": "[B1_1] Grade B · 구속 calmar(0.473/0.64)·oos(-0.009/0.70) (5조건 중 3 충족) · carry 없음(최초 칸)",
+          "opened_at": "2026-09-21T09:59:11+0900",
+          "closed_at": "2026-09-21T10:08:08+0900"
         },
         {
-          "name": ".W_CM",
-          "value": "(1, 2, 1)",
-          "source": "[B] Table 1 CM 'Cumulative return-MDD'",
-          "role": "순위 = C − MDD"
+          "n": 2,
+          "date": "20260921",
+          "cell_code": "B1_2",
+          "idea": "[무인 병렬 B1_2] liq_turnover_252 — B1/multifactor · factor2=none · weighting=ew · universe=k200_kq150 · overlay=none",
+          "keyword_axis": "multifactor",
+          "root_papers": [
+            {
+              "url": "https://arxiv.org/abs/2002.06975",
+              "title": "결합: Cross-sectional Stock Price Prediction using Deep Learning for Actual Investment Management + One Factor to Bind the Cross-Section of Returns + Maximum drawdown, recovery, and momentum + Pinchuk (2023) Labor Income Risk and the Cross-Section of Expected Returns + Uncovering a factor-based expected return conditioning structure with Regression Trees jointly for many stocks + Dirichlet policies for reinforced factor portfolios",
+              "paper_key": "combo:1403.8125+2002.06975+2007.08115+2011.05381+2301.09173+2404.08129"
+            },
+            {
+              "title": "Chan, Jegadeesh & Lakonishok (1996), Momentum Strategies, JF 51(5)",
+              "url": "https://onlinelibrary.wiley.com/doi/10.1111/j.1540-6261.1996.tb05222.x"
+            },
+            {
+              "title": "Fama & French (1992), The Cross-Section of Expected Stock Returns, JF 47(2)",
+              "url": "https://onlinelibrary.wiley.com/doi/10.1111/j.1540-6261.1992.tb04398.x"
+            },
+            {
+              "title": "Amihud (2002), Illiquidity and Stock Returns, JFM 5(1)",
+              "url": "https://www.sciencedirect.com/science/article/pii/S1386418101000246"
+            }
+          ],
+          "wt_id": null,
+          "evidence": "paper",
+          "unmapped_families": [],
+          "axiom_injected": true,
+          "grade": "B",
+          "essence": {
+            "cell_code": "B1_2",
+            "block": "B1",
+            "port_t": 3.355,
+            "net_sharpe": 1.136,
+            "cagr": 0.246,
+            "mdd": 0.539,
+            "calmar": 0.457,
+            "oos_retention": -0.133,
+            "spec": "C:/Users/99922/OneDrive/Quant_Module_Moltbot/.cache/rf_parallel/spec_B1_2__RP_20260917_105807_22632_combo_rulefast_promo3.json",
+            "source": "authoritative_remeasure.json"
+          },
+          "artifacts": "C:/Users/99922/OneDrive/Quant_Module_Moltbot/stage_artifacts/replication/20260921_100007_15668",
+          "lessons": "[B1_2] Grade B · 구속 calmar(0.457/0.64)·oos(-0.133/0.70) (5조건 중 3 충족) · carry 없음(최초 칸)",
+          "opened_at": "2026-09-21T09:59:22+0900",
+          "closed_at": "2026-09-21T10:08:09+0900"
         },
         {
-          "name": ".FORM_M",
-          "value": "6 (months)",
-          "source": "[B] §3.2 '6 months (weeks) of estimation period'",
-          "role": "[B] 창 = 월말 격자 6스텝"
+          "n": 3,
+          "date": "20260921",
+          "cell_code": "B1_3",
+          "idea": "[무인 병렬 B1_3] liq_price_delay — B1/multifactor · factor2=none · weighting=ew · universe=k200_kq150 · overlay=none",
+          "keyword_axis": "multifactor",
+          "root_papers": [
+            {
+              "url": "https://arxiv.org/abs/2002.06975",
+              "title": "결합: Cross-sectional Stock Price Prediction using Deep Learning for Actual Investment Management + One Factor to Bind the Cross-Section of Returns + Maximum drawdown, recovery, and momentum + Pinchuk (2023) Labor Income Risk and the Cross-Section of Expected Returns + Uncovering a factor-based expected return conditioning structure with Regression Trees jointly for many stocks + Dirichlet policies for reinforced factor portfolios",
+              "paper_key": "combo:1403.8125+2002.06975+2007.08115+2011.05381+2301.09173+2404.08129"
+            },
+            {
+              "title": "Chan, Jegadeesh & Lakonishok (1996), Momentum Strategies, JF 51(5)",
+              "url": "https://onlinelibrary.wiley.com/doi/10.1111/j.1540-6261.1996.tb05222.x"
+            },
+            {
+              "title": "Fama & French (1992), The Cross-Section of Expected Stock Returns, JF 47(2)",
+              "url": "https://onlinelibrary.wiley.com/doi/10.1111/j.1540-6261.1992.tb04398.x"
+            },
+            {
+              "title": "Amihud (2002), Illiquidity and Stock Returns, JFM 5(1)",
+              "url": "https://www.sciencedirect.com/science/article/pii/S1386418101000246"
+            }
+          ],
+          "wt_id": null,
+          "evidence": "paper",
+          "unmapped_families": [],
+          "axiom_injected": true,
+          "grade": "B",
+          "essence": {
+            "cell_code": "B1_3",
+            "block": "B1",
+            "port_t": 4.349,
+            "net_sharpe": 1.138,
+            "cagr": 0.276,
+            "mdd": 0.551,
+            "calmar": 0.501,
+            "oos_retention": 0.119,
+            "spec": "C:/Users/99922/OneDrive/Quant_Module_Moltbot/.cache/rf_parallel/spec_B1_3__RP_20260917_105807_22632_combo_rulefast_promo3.json",
+            "source": "authoritative_remeasure.json"
+          },
+          "artifacts": "C:/Users/99922/OneDrive/Quant_Module_Moltbot/stage_artifacts/replication/20260921_100007_6876",
+          "lessons": "[B1_3] Grade B · 구속 calmar(0.501/0.64)·oos(0.119/0.70) (5조건 중 3 충족) · carry 없음(최초 칸)",
+          "opened_at": "2026-09-21T09:59:27+0900",
+          "closed_at": "2026-09-21T10:08:09+0900"
         },
         {
-          "name": ".RET_K · .TV_LONG · .TV_SHORT · .CONS_K · .HORIZON · .N_TRAIN · .UPD_EVERY",
-          "value": "1/2/3/5/10/20/40/60 · 60 · 5/10/20 · 5/10/20 · 5 · 1000 · 5",
-          "source": "[A] Table 1 · 표적 · 학습집합 · 갱신 (3판 동일)",
-          "role": "특성·표적·학습"
+          "n": 4,
+          "date": "20260921",
+          "cell_code": "B1_4",
+          "idea": "[무인 병렬 B1_4] flow_foreign_resid_63 — B1/multifactor · factor2=none · weighting=ew · universe=k200_kq150 · overlay=none",
+          "keyword_axis": "multifactor",
+          "root_papers": [
+            {
+              "url": "https://arxiv.org/abs/2002.06975",
+              "title": "결합: Cross-sectional Stock Price Prediction using Deep Learning for Actual Investment Management + One Factor to Bind the Cross-Section of Returns + Maximum drawdown, recovery, and momentum + Pinchuk (2023) Labor Income Risk and the Cross-Section of Expected Returns + Uncovering a factor-based expected return conditioning structure with Regression Trees jointly for many stocks + Dirichlet policies for reinforced factor portfolios",
+              "paper_key": "combo:1403.8125+2002.06975+2007.08115+2011.05381+2301.09173+2404.08129"
+            },
+            {
+              "title": "Chan, Jegadeesh & Lakonishok (1996), Momentum Strategies, JF 51(5)",
+              "url": "https://onlinelibrary.wiley.com/doi/10.1111/j.1540-6261.1996.tb05222.x"
+            },
+            {
+              "title": "Fama & French (1992), The Cross-Section of Expected Stock Returns, JF 47(2)",
+              "url": "https://onlinelibrary.wiley.com/doi/10.1111/j.1540-6261.1992.tb04398.x"
+            }
+          ],
+          "wt_id": null,
+          "evidence": "paper",
+          "unmapped_families": "investor_flow",
+          "axiom_injected": true,
+          "grade": "B",
+          "essence": {
+            "cell_code": "B1_4",
+            "block": "B1",
+            "port_t": 3.555,
+            "net_sharpe": 1.088,
+            "cagr": 0.249,
+            "mdd": 0.552,
+            "calmar": 0.452,
+            "oos_retention": -0.095,
+            "spec": "C:/Users/99922/OneDrive/Quant_Module_Moltbot/.cache/rf_parallel/spec_B1_4__RP_20260917_105807_22632_combo_rulefast_promo3.json",
+            "source": "authoritative_remeasure.json"
+          },
+          "artifacts": "C:/Users/99922/OneDrive/Quant_Module_Moltbot/stage_artifacts/replication/20260921_100007_8868",
+          "lessons": "[B1_4] Grade B · 구속 calmar(0.452/0.64)·oos(-0.095/0.70) (5조건 중 3 충족) · carry 없음(최초 칸)",
+          "opened_at": "2026-09-21T09:59:31+0900",
+          "closed_at": "2026-09-21T10:08:10+0900"
         },
         {
-          "name": ".ANCHOR · .GRID_FROM · .CONS_ROLL · .FUND_ROLL · .MIN_N · .SEED_BASE · .N_WORKERS_CAP",
-          "value": "2001-01-01 · 2000-06-01 · 7 · 456 · 10 · 20020697 · 32",
-          "source": "[A] 3판 신고 규약 (③(11))",
-          "role": "격자·캐리·정의역·시드·워커"
+          "n": 5,
+          "date": "20260921",
+          "cell_code": "B1_5",
+          "idea": "[무인 병렬 B1_5] flow_retail_contra — B1/multifactor · factor2=none · weighting=ew · universe=k200_kq150 · overlay=none",
+          "keyword_axis": "multifactor",
+          "root_papers": [
+            {
+              "url": "https://arxiv.org/abs/2002.06975",
+              "title": "결합: Cross-sectional Stock Price Prediction using Deep Learning for Actual Investment Management + One Factor to Bind the Cross-Section of Returns + Maximum drawdown, recovery, and momentum + Pinchuk (2023) Labor Income Risk and the Cross-Section of Expected Returns + Uncovering a factor-based expected return conditioning structure with Regression Trees jointly for many stocks + Dirichlet policies for reinforced factor portfolios",
+              "paper_key": "combo:1403.8125+2002.06975+2007.08115+2011.05381+2301.09173+2404.08129"
+            },
+            {
+              "title": "Chan, Jegadeesh & Lakonishok (1996), Momentum Strategies, JF 51(5)",
+              "url": "https://onlinelibrary.wiley.com/doi/10.1111/j.1540-6261.1996.tb05222.x"
+            },
+            {
+              "title": "Fama & French (1992), The Cross-Section of Expected Stock Returns, JF 47(2)",
+              "url": "https://onlinelibrary.wiley.com/doi/10.1111/j.1540-6261.1992.tb04398.x"
+            }
+          ],
+          "wt_id": null,
+          "evidence": "paper",
+          "unmapped_families": "investor_flow",
+          "axiom_injected": true,
+          "grade": "B",
+          "essence": {
+            "cell_code": "B1_5",
+            "block": "B1",
+            "port_t": 3.509,
+            "net_sharpe": 1.11,
+            "cagr": 0.255,
+            "mdd": 0.595,
+            "calmar": 0.43,
+            "oos_retention": -0.092,
+            "spec": "C:/Users/99922/OneDrive/Quant_Module_Moltbot/.cache/rf_parallel/spec_B1_5__RP_20260917_105807_22632_combo_rulefast_promo3.json",
+            "source": "authoritative_remeasure.json"
+          },
+          "artifacts": "C:/Users/99922/OneDrive/Quant_Module_Moltbot/stage_artifacts/replication/20260921_100007_22676",
+          "lessons": "[B1_5] Grade B · 구속 calmar(0.430/0.64)·oos(-0.092/0.70) (5조건 중 3 충족) · carry 없음(최초 칸)",
+          "opened_at": "2026-09-21T09:59:36+0900",
+          "closed_at": "2026-09-21T10:08:11+0900"
         },
         {
-          "name": ".LIQ · .LIQ_WIN",
-          "value": "2e8 KRW · 20",
-          "source": "지시된 고정 축 (③(6))",
-          "role": "adv20(t−1) 하한 · 포트폴리오 형성에만"
+          "n": 6,
+          "date": "20260921",
+          "cell_code": "B1_6",
+          "idea": "[무인 병렬 B1_6] crowd_mom_crowding — B1/multifactor · factor2=none · weighting=ew · universe=k200_kq150 · overlay=none",
+          "keyword_axis": "multifactor",
+          "root_papers": [
+            {
+              "url": "https://arxiv.org/abs/2002.06975",
+              "title": "결합: Cross-sectional Stock Price Prediction using Deep Learning for Actual Investment Management + One Factor to Bind the Cross-Section of Returns + Maximum drawdown, recovery, and momentum + Pinchuk (2023) Labor Income Risk and the Cross-Section of Expected Returns + Uncovering a factor-based expected return conditioning structure with Regression Trees jointly for many stocks + Dirichlet policies for reinforced factor portfolios",
+              "paper_key": "combo:1403.8125+2002.06975+2007.08115+2011.05381+2301.09173+2404.08129"
+            },
+            {
+              "title": "Chan, Jegadeesh & Lakonishok (1996), Momentum Strategies, JF 51(5)",
+              "url": "https://onlinelibrary.wiley.com/doi/10.1111/j.1540-6261.1996.tb05222.x"
+            },
+            {
+              "title": "Fama & French (1992), The Cross-Section of Expected Stock Returns, JF 47(2)",
+              "url": "https://onlinelibrary.wiley.com/doi/10.1111/j.1540-6261.1992.tb04398.x"
+            }
+          ],
+          "wt_id": null,
+          "evidence": "paper",
+          "unmapped_families": "crowding",
+          "axiom_injected": true,
+          "grade": "B",
+          "essence": {
+            "cell_code": "B1_6",
+            "block": "B1",
+            "port_t": 4.142,
+            "net_sharpe": 1.172,
+            "cagr": 0.276,
+            "mdd": 0.548,
+            "calmar": 0.504,
+            "oos_retention": 0.058,
+            "spec": "C:/Users/99922/OneDrive/Quant_Module_Moltbot/.cache/rf_parallel/spec_B1_6__RP_20260917_105807_22632_combo_rulefast_promo3.json",
+            "source": "authoritative_remeasure.json"
+          },
+          "artifacts": "C:/Users/99922/OneDrive/Quant_Module_Moltbot/stage_artifacts/replication/20260921_101355_3700",
+          "lessons": "[B1_6] Grade B · 구속 calmar(0.504/0.64)·oos(0.058/0.70) (5조건 중 3 충족) · carry 대비 MDD 0.595→0.548(-7.9%) · CAGR 0.255→0.276(+8.2%) → 위험만 줄었다(비대칭 성공)",
+          "opened_at": "2026-09-21T10:13:01+0900",
+          "closed_at": "2026-09-21T10:21:38+0900"
         },
         {
-          "name": ".NTOP",
-          "value": "25",
-          "source": "지시된 고정 축",
-          "role": "러너 n_max · 겹침 진단 n"
+          "n": 7,
+          "date": "20260921",
+          "cell_code": "B1_7",
+          "idea": "[무인 병렬 B1_7] crowd_idio_resid — B1/multifactor · factor2=none · weighting=ew · universe=k200_kq150 · overlay=none",
+          "keyword_axis": "multifactor",
+          "root_papers": [
+            {
+              "url": "https://arxiv.org/abs/2002.06975",
+              "title": "결합: Cross-sectional Stock Price Prediction using Deep Learning for Actual Investment Management + One Factor to Bind the Cross-Section of Returns + Maximum drawdown, recovery, and momentum + Pinchuk (2023) Labor Income Risk and the Cross-Section of Expected Returns + Uncovering a factor-based expected return conditioning structure with Regression Trees jointly for many stocks + Dirichlet policies for reinforced factor portfolios",
+              "paper_key": "combo:1403.8125+2002.06975+2007.08115+2011.05381+2301.09173+2404.08129"
+            },
+            {
+              "title": "Chan, Jegadeesh & Lakonishok (1996), Momentum Strategies, JF 51(5)",
+              "url": "https://onlinelibrary.wiley.com/doi/10.1111/j.1540-6261.1996.tb05222.x"
+            },
+            {
+              "title": "Fama & French (1992), The Cross-Section of Expected Stock Returns, JF 47(2)",
+              "url": "https://onlinelibrary.wiley.com/doi/10.1111/j.1540-6261.1992.tb04398.x"
+            }
+          ],
+          "wt_id": null,
+          "evidence": "paper",
+          "unmapped_families": "crowding",
+          "axiom_injected": true,
+          "grade": "B",
+          "essence": {
+            "cell_code": "B1_7",
+            "block": "B1",
+            "port_t": 4.061,
+            "net_sharpe": 1.08,
+            "cagr": 0.262,
+            "mdd": 0.56,
+            "calmar": 0.468,
+            "oos_retention": 0.046,
+            "spec": "C:/Users/99922/OneDrive/Quant_Module_Moltbot/.cache/rf_parallel/spec_B1_7__RP_20260917_105807_22632_combo_rulefast_promo3.json",
+            "source": "authoritative_remeasure.json"
+          },
+          "artifacts": "C:/Users/99922/OneDrive/Quant_Module_Moltbot/stage_artifacts/replication/20260921_101355_2844",
+          "lessons": "[B1_7] Grade B · 구속 calmar(0.468/0.64)·oos(0.046/0.70) (5조건 중 3 충족) · carry 대비 MDD 0.595→0.560(-5.9%) · CAGR 0.255→0.262(+2.7%) → 위험만 줄었다(비대칭 성공)",
+          "opened_at": "2026-09-21T10:13:12+0900",
+          "closed_at": "2026-09-21T10:21:39+0900"
         },
         {
-          "name": "Score 계층 상수",
-          "value": "2 + rank01 / 1.5 / rank01",
-          "source": "구조 (③(8)(9))",
-          "role": "사전식 3계층 — 값 자체는 순서만 담는다"
+          "n": 8,
+          "date": "20260921",
+          "cell_code": "B1_8",
+          "idea": "[무인 병렬 B1_8] liq_x_flow — B1/multifactor · factor2=none · weighting=ew · universe=k200_kq150 · overlay=none",
+          "keyword_axis": "multifactor",
+          "root_papers": [
+            {
+              "url": "https://arxiv.org/abs/2002.06975",
+              "title": "결합: Cross-sectional Stock Price Prediction using Deep Learning for Actual Investment Management + One Factor to Bind the Cross-Section of Returns + Maximum drawdown, recovery, and momentum + Pinchuk (2023) Labor Income Risk and the Cross-Section of Expected Returns + Uncovering a factor-based expected return conditioning structure with Regression Trees jointly for many stocks + Dirichlet policies for reinforced factor portfolios",
+              "paper_key": "combo:1403.8125+2002.06975+2007.08115+2011.05381+2301.09173+2404.08129"
+            },
+            {
+              "title": "Chan, Jegadeesh & Lakonishok (1996), Momentum Strategies, JF 51(5)",
+              "url": "https://onlinelibrary.wiley.com/doi/10.1111/j.1540-6261.1996.tb05222.x"
+            },
+            {
+              "title": "Fama & French (1992), The Cross-Section of Expected Stock Returns, JF 47(2)",
+              "url": "https://onlinelibrary.wiley.com/doi/10.1111/j.1540-6261.1992.tb04398.x"
+            },
+            {
+              "title": "Amihud (2002), Illiquidity and Stock Returns, JFM 5(1)",
+              "url": "https://www.sciencedirect.com/science/article/pii/S1386418101000246"
+            }
+          ],
+          "wt_id": null,
+          "evidence": "paper",
+          "unmapped_families": "investor_flow",
+          "axiom_injected": true,
+          "grade": "B",
+          "essence": {
+            "cell_code": "B1_8",
+            "block": "B1",
+            "port_t": 3.448,
+            "net_sharpe": 1.051,
+            "cagr": 0.241,
+            "mdd": 0.517,
+            "calmar": 0.467,
+            "oos_retention": -0.072,
+            "spec": "C:/Users/99922/OneDrive/Quant_Module_Moltbot/.cache/rf_parallel/spec_B1_8__RP_20260917_105807_22632_combo_rulefast_promo3.json",
+            "source": "authoritative_remeasure.json"
+          },
+          "artifacts": "C:/Users/99922/OneDrive/Quant_Module_Moltbot/stage_artifacts/replication/20260921_101355_22436",
+          "lessons": "[B1_8] Grade B · 구속 calmar(0.467/0.64)·oos(-0.072/0.70) (5조건 중 3 충족) · carry 대비 MDD 0.595→0.517(-13.1%) · CAGR 0.255→0.241(-5.5%) → 위험을 더 줄였다(부분 비대칭)",
+          "opened_at": "2026-09-21T10:13:17+0900",
+          "closed_at": "2026-09-21T10:21:39+0900"
         },
         {
-          "name": ".DIAG_MIN · .OVL_MAX · .QCM_SHORT_MAX · .RHO_MAX",
-          "value": "5 · 0.80 · 0.50 · 0.90",
-          "source": "진단 전용 (③(15))",
-          "role": "F1~F3 판정 · 스코어 무관"
+          "n": 9,
+          "date": "20260921",
+          "cell_code": "B1_9",
+          "idea": "[무인 병렬 B1_9] liq_x_crowd — B1/multifactor · factor2=none · weighting=ew · universe=k200_kq150 · overlay=none",
+          "keyword_axis": "multifactor",
+          "root_papers": [
+            {
+              "url": "https://arxiv.org/abs/2002.06975",
+              "title": "결합: Cross-sectional Stock Price Prediction using Deep Learning for Actual Investment Management + One Factor to Bind the Cross-Section of Returns + Maximum drawdown, recovery, and momentum + Pinchuk (2023) Labor Income Risk and the Cross-Section of Expected Returns + Uncovering a factor-based expected return conditioning structure with Regression Trees jointly for many stocks + Dirichlet policies for reinforced factor portfolios",
+              "paper_key": "combo:1403.8125+2002.06975+2007.08115+2011.05381+2301.09173+2404.08129"
+            },
+            {
+              "title": "Chan, Jegadeesh & Lakonishok (1996), Momentum Strategies, JF 51(5)",
+              "url": "https://onlinelibrary.wiley.com/doi/10.1111/j.1540-6261.1996.tb05222.x"
+            },
+            {
+              "title": "Fama & French (1992), The Cross-Section of Expected Stock Returns, JF 47(2)",
+              "url": "https://onlinelibrary.wiley.com/doi/10.1111/j.1540-6261.1992.tb04398.x"
+            },
+            {
+              "title": "Amihud (2002), Illiquidity and Stock Returns, JFM 5(1)",
+              "url": "https://www.sciencedirect.com/science/article/pii/S1386418101000246"
+            }
+          ],
+          "wt_id": null,
+          "evidence": "paper",
+          "unmapped_families": "crowding",
+          "axiom_injected": true,
+          "grade": "B",
+          "essence": {
+            "cell_code": "B1_9",
+            "block": "B1",
+            "port_t": 3.797,
+            "net_sharpe": 1.112,
+            "cagr": 0.26,
+            "mdd": 0.549,
+            "calmar": 0.473,
+            "oos_retention": 0.043,
+            "spec": "C:/Users/99922/OneDrive/Quant_Module_Moltbot/.cache/rf_parallel/spec_B1_9__RP_20260917_105807_22632_combo_rulefast_promo3.json",
+            "source": "authoritative_remeasure.json"
+          },
+          "artifacts": "C:/Users/99922/OneDrive/Quant_Module_Moltbot/stage_artifacts/replication/20260921_101355_18584",
+          "lessons": "[B1_9] Grade B · 구속 calmar(0.473/0.64)·oos(0.043/0.70) (5조건 중 3 충족) · carry 대비 MDD 0.595→0.549(-7.7%) · CAGR 0.255→0.260(+2.0%) → 위험만 줄었다(비대칭 성공)",
+          "opened_at": "2026-09-21T10:13:21+0900",
+          "closed_at": "2026-09-21T10:21:40+0900"
         },
         {
-          "name": "shift lag",
-          "value": "1",
-          "source": "PIT C10",
-          "role": "adv20 종점 t−1"
+          "n": 10,
+          "date": "20260921",
+          "cell_code": "B1_10",
+          "idea": "[무인 병렬 B1_10] flow_x_crowd — B1/multifactor · factor2=none · weighting=ew · universe=k200_kq150 · overlay=none",
+          "keyword_axis": "multifactor",
+          "root_papers": [
+            {
+              "url": "https://arxiv.org/abs/2002.06975",
+              "title": "결합: Cross-sectional Stock Price Prediction using Deep Learning for Actual Investment Management + One Factor to Bind the Cross-Section of Returns + Maximum drawdown, recovery, and momentum + Pinchuk (2023) Labor Income Risk and the Cross-Section of Expected Returns + Uncovering a factor-based expected return conditioning structure with Regression Trees jointly for many stocks + Dirichlet policies for reinforced factor portfolios",
+              "paper_key": "combo:1403.8125+2002.06975+2007.08115+2011.05381+2301.09173+2404.08129"
+            },
+            {
+              "title": "Chan, Jegadeesh & Lakonishok (1996), Momentum Strategies, JF 51(5)",
+              "url": "https://onlinelibrary.wiley.com/doi/10.1111/j.1540-6261.1996.tb05222.x"
+            },
+            {
+              "title": "Fama & French (1992), The Cross-Section of Expected Stock Returns, JF 47(2)",
+              "url": "https://onlinelibrary.wiley.com/doi/10.1111/j.1540-6261.1992.tb04398.x"
+            }
+          ],
+          "wt_id": null,
+          "evidence": "paper",
+          "unmapped_families": [
+            "investor_flow",
+            "crowding"
+          ],
+          "axiom_injected": true,
+          "grade": "B",
+          "essence": {
+            "cell_code": "B1_10",
+            "block": "B1",
+            "port_t": 3.609,
+            "net_sharpe": 1.092,
+            "cagr": 0.25,
+            "mdd": 0.549,
+            "calmar": 0.455,
+            "oos_retention": -0.069,
+            "spec": "C:/Users/99922/OneDrive/Quant_Module_Moltbot/.cache/rf_parallel/spec_B1_10__RP_20260917_105807_22632_combo_rulefast_promo3.json",
+            "source": "authoritative_remeasure.json"
+          },
+          "artifacts": "C:/Users/99922/OneDrive/Quant_Module_Moltbot/stage_artifacts/replication/20260921_101355_31812",
+          "lessons": "[B1_10] Grade B · 구속 calmar(0.455/0.64)·oos(-0.069/0.70) (5조건 중 3 충족) · carry 대비 MDD 0.595→0.549(-7.7%) · CAGR 0.255→0.250(-2.0%) → 위험을 더 줄였다(부분 비대칭)",
+          "opened_at": "2026-09-21T10:13:26+0900",
+          "closed_at": "2026-09-21T10:21:41+0900"
         },
         {
-          "name": "경로 정의역",
-          "value": "n ≥ 2 관측",
-          "source": "정의역 (③(7))",
-          "role": "미만 = CM 결측 → 1.5 계층"
+          "n": 11,
+          "date": "20260921",
+          "cell_code": "B5_31",
+          "idea": "[무인 병렬 B5_31] PG2 리스크 오버레이 상주 — B5/risk_overlay · factor2=none · weighting=ew · universe=k200_kq150 · overlay=pg2_risk_overlay_v1",
+          "keyword_axis": "risk_overlay",
+          "root_papers": [
+            {
+              "method": "상주 칸(program standing_cells) · pg2_risk_overlay_v1 · BOOK_0001 PG2 리스크 오버레이(게이트×β_R05)를 동결 사양 그대로 무조건 적용 — 상수는 PG2 생산 사양 재사용. 총노출 e = gate × β_R05(GEN forward_weights_D3_M4gAE.R:170 invested). gate(GEN:129-131) = 0.70 if m4 발화(m4_panel_published weight_",
+              "url": "https://arxiv.org/abs/2002.06975"
+            },
+            {
+              "url": "https://arxiv.org/abs/2002.06975",
+              "title": "결합: Cross-sectional Stock Price Prediction using Deep Learning for Actual Investment Management + One Factor to Bind the Cross-Section of Returns + Maximum drawdown, recovery, and momentum + Pinchuk (2023) Labor Income Risk and the Cross-Section of Expected Returns + Uncovering a factor-based expected return conditioning structure with Regression Trees jointly for many stocks + Dirichlet policies for reinforced factor portfolios",
+              "paper_key": "combo:1403.8125+2002.06975+2007.08115+2011.05381+2301.09173+2404.08129"
+            },
+            {
+              "title": "Chan, Jegadeesh & Lakonishok (1996), Momentum Strategies, JF 51(5)",
+              "url": "https://onlinelibrary.wiley.com/doi/10.1111/j.1540-6261.1996.tb05222.x"
+            },
+            {
+              "title": "Fama & French (1992), The Cross-Section of Expected Stock Returns, JF 47(2)",
+              "url": "https://onlinelibrary.wiley.com/doi/10.1111/j.1540-6261.1992.tb04398.x"
+            },
+            {
+              "title": "Amihud (2002), Illiquidity and Stock Returns, JFM 5(1)",
+              "url": "https://www.sciencedirect.com/science/article/pii/S1386418101000246"
+            }
+          ],
+          "wt_id": null,
+          "evidence": "paper",
+          "unmapped_families": [],
+          "axiom_injected": true,
+          "grade": "B",
+          "essence": {
+            "cell_code": "B5_31",
+            "block": "B5",
+            "port_t": 2.567,
+            "net_sharpe": 1.175,
+            "cagr": 0.224,
+            "mdd": 0.463,
+            "calmar": 0.485,
+            "oos_retention": -0.215,
+            "spec": "C:/Users/99922/OneDrive/Quant_Module_Moltbot/.cache/rf_parallel/spec_B5_31__RP_20260917_105807_22632_combo_rulefast_promo3.json",
+            "source": "authoritative_remeasure.json"
+          },
+          "artifacts": "C:/Users/99922/OneDrive/Quant_Module_Moltbot/stage_artifacts/replication/20260921_104337_26560",
+          "lessons": "[B5_31] Grade B · 구속 port_t(2.567/2.95)·calmar(0.485/0.64)·oos(-0.215/0.70) (5조건 중 2 충족) · carry 대비 MDD 0.549→0.463(-15.7%) · CAGR 0.250→0.224(-10.4%) → 위험을 더 줄였다(부분 비대칭)",
+          "opened_at": "2026-09-21T10:42:28+0900",
+          "closed_at": "2026-09-21T10:50:56+0900",
+          "adversary": {
+            "schema": "rf_overlay_adversary_v1",
+            "at": "2026-09-21T11:00:56+0900",
+            "base_id": "RP_20260917_105807_22632_combo_rulefast_promo3",
+            "layer": 1,
+            "block": "B5",
+            "n": 11,
+            "code": "B5_31",
+            "dry_run": false,
+            "candidate": false,
+            "candidate_rank": null,
+            "cell": {
+              "calmar": 0.485,
+              "port_t": 2.567,
+              "mdd": 0.463,
+              "cagr": 0.224,
+              "grade": "B",
+              "artifacts": "C:/Users/99922/OneDrive/Quant_Module_Moltbot/stage_artifacts/replication/20260921_104337_26560",
+              "spec": "C:/Users/99922/OneDrive/Quant_Module_Moltbot/.cache/rf_parallel/spec_B5_31__RP_20260917_105807_22632_combo_rulefast_promo3.json"
+            },
+            "floor": {
+              "code": "B1_3",
+              "n": 3,
+              "calmar": 0.501,
+              "port_t": 4.349,
+              "match": "floor_code",
+              "artifacts": "C:/Users/99922/OneDrive/Quant_Module_Moltbot/stage_artifacts/replication/20260921_100007_6876",
+              "spec": "C:/Users/99922/OneDrive/Quant_Module_Moltbot/.cache/rf_parallel/spec_B1_3__RP_20260917_105807_22632_combo_rulefast_promo3.json"
+            },
+            "own_layers": [
+              {
+                "kind": "pg2_risk_overlay",
+                "arm_id": "pg2_risk_overlay_v1",
+                "family": "book_spec",
+                "external_data": false,
+                "vector_declared": false
+              }
+            ],
+            "engine_supports": {
+              "overlay_shift": true,
+              "overlay_strict": true
+            },
+            "rp_honors_lcode_switch": true,
+            "cfg": {
+              "alpha": 0.05,
+              "n_placebo": 200,
+              "max_candidates": 3,
+              "block_rule": "auto",
+              "cost_rate": 0.0015,
+              "seed": 20260917,
+              "reruns": "auto"
+            },
+            "tests": [],
+            "verdict": "not_candidate",
+            "analytic_verdict": null,
+            "reason": "calmar_not_above_floor",
+            "json_path": "C:/Users/99922/OneDrive/Quant_Module_Moltbot/.cache/rf_overlay_adversary/RP_20260917_105807_22632_combo_rulefast_promo3/B5_31/adversary.json",
+            "history": [],
+            "recorded_at": "2026-09-21T11:00:56+0900"
+          }
         },
         {
-          "name": "동값",
-          "value": "DNN 종목코드 · CM 평균 순위",
-          "source": "결정론 (③(12))",
-          "role": "재현성"
+          "n": 12,
+          "date": "20260921",
+          "cell_code": "B5_16",
+          "idea": "[무인 병렬 B5_16] 급락 스칼라 × 침식 스칼라 — 형태 전담 곱 — B5/risk_overlay · factor2=none · weighting=ew · universe=k200_kq150 · overlay=vol_median × trend_run_gate",
+          "keyword_axis": "risk_overlay",
+          "root_papers": [
+            {
+              "method": "LLM 설계(블록 전이) · vol_median × trend_run_gate · 두 에피소드를 각각 전담하는 스칼라 두 층의 곱. 예측: MDD 가 두 단독 칸 모두보다 낮고(에피소드 둘 다 잘림) 감축이 단독 감축의 합을 넘는다(MDD 가 최댓값이라 생기는 상호작용). 반증: PORT_t 가 두 단독 모두 아래이고 Calmar 가 단독 최고를 못 넘으면 합집합 빈도 비용이 상호작용을 삼킨 것. 두 층의 겹침은 급락 후반(run 이 자",
+              "url": "https://arxiv.org/abs/2002.06975"
+            },
+            {
+              "url": "https://arxiv.org/abs/2002.06975",
+              "title": "결합: Cross-sectional Stock Price Prediction using Deep Learning for Actual Investment Management + One Factor to Bind the Cross-Section of Returns + Maximum drawdown, recovery, and momentum + Pinchuk (2023) Labor Income Risk and the Cross-Section of Expected Returns + Uncovering a factor-based expected return conditioning structure with Regression Trees jointly for many stocks + Dirichlet policies for reinforced factor portfolios",
+              "paper_key": "combo:1403.8125+2002.06975+2007.08115+2011.05381+2301.09173+2404.08129"
+            },
+            {
+              "title": "Chan, Jegadeesh & Lakonishok (1996), Momentum Strategies, JF 51(5)",
+              "url": "https://onlinelibrary.wiley.com/doi/10.1111/j.1540-6261.1996.tb05222.x"
+            },
+            {
+              "title": "Fama & French (1992), The Cross-Section of Expected Stock Returns, JF 47(2)",
+              "url": "https://onlinelibrary.wiley.com/doi/10.1111/j.1540-6261.1992.tb04398.x"
+            },
+            {
+              "title": "Amihud (2002), Illiquidity and Stock Returns, JFM 5(1)",
+              "url": "https://www.sciencedirect.com/science/article/pii/S1386418101000246"
+            }
+          ],
+          "wt_id": null,
+          "evidence": "paper",
+          "unmapped_families": [],
+          "axiom_injected": true,
+          "grade": "B",
+          "essence": {
+            "cell_code": "B5_16",
+            "block": "B5",
+            "port_t": 2.201,
+            "net_sharpe": 1.16,
+            "cagr": 0.211,
+            "mdd": 0.458,
+            "calmar": 0.461,
+            "oos_retention": -0.315,
+            "spec": "C:/Users/99922/OneDrive/Quant_Module_Moltbot/.cache/rf_parallel/spec_B5_16__RP_20260917_105807_22632_combo_rulefast_promo3.json",
+            "source": "authoritative_remeasure.json"
+          },
+          "artifacts": "C:/Users/99922/OneDrive/Quant_Module_Moltbot/stage_artifacts/replication/20260921_104338_9756",
+          "lessons": "[B5_16] Grade B · 구속 port_t(2.201/2.95)·calmar(0.461/0.64)·oos(-0.315/0.70) (5조건 중 2 충족) · carry 대비 MDD 0.549→0.458(-16.6%) · CAGR 0.250→0.211(-15.6%) → 위험을 더 줄였다(부분 비대칭)",
+          "opened_at": "2026-09-21T10:42:43+0900",
+          "closed_at": "2026-09-21T10:50:57+0900",
+          "adversary": {
+            "schema": "rf_overlay_adversary_v1",
+            "at": "2026-09-21T11:00:57+0900",
+            "base_id": "RP_20260917_105807_22632_combo_rulefast_promo3",
+            "layer": 1,
+            "block": "B5",
+            "n": 12,
+            "code": "B5_16",
+            "dry_run": false,
+            "candidate": false,
+            "candidate_rank": null,
+            "cell": {
+              "calmar": 0.461,
+              "port_t": 2.201,
+              "mdd": 0.458,
+              "cagr": 0.211,
+              "grade": "B",
+              "artifacts": "C:/Users/99922/OneDrive/Quant_Module_Moltbot/stage_artifacts/replication/20260921_104338_9756",
+              "spec": "C:/Users/99922/OneDrive/Quant_Module_Moltbot/.cache/rf_parallel/spec_B5_16__RP_20260917_105807_22632_combo_rulefast_promo3.json"
+            },
+            "floor": {
+              "code": "B1_3",
+              "n": 3,
+              "calmar": 0.501,
+              "port_t": 4.349,
+              "match": "floor_code",
+              "artifacts": "C:/Users/99922/OneDrive/Quant_Module_Moltbot/stage_artifacts/replication/20260921_100007_6876",
+              "spec": "C:/Users/99922/OneDrive/Quant_Module_Moltbot/.cache/rf_parallel/spec_B1_3__RP_20260917_105807_22632_combo_rulefast_promo3.json"
+            },
+            "own_layers": [
+              {
+                "kind": "vol_scale",
+                "arm_id": "vol_median",
+                "family": null,
+                "external_data": false,
+                "vector_declared": false
+              },
+              {
+                "kind": "b5gen_trend_run_gate_1",
+                "arm_id": "trend_run_gate",
+                "family": "trend",
+                "external_data": false,
+                "vector_declared": false
+              }
+            ],
+            "engine_supports": {
+              "overlay_shift": true,
+              "overlay_strict": true
+            },
+            "rp_honors_lcode_switch": true,
+            "cfg": {
+              "alpha": 0.05,
+              "n_placebo": 200,
+              "max_candidates": 3,
+              "block_rule": "auto",
+              "cost_rate": 0.0015,
+              "seed": 20260917,
+              "reruns": "auto"
+            },
+            "tests": [],
+            "verdict": "not_candidate",
+            "analytic_verdict": null,
+            "reason": "calmar_not_above_floor",
+            "json_path": "C:/Users/99922/OneDrive/Quant_Module_Moltbot/.cache/rf_overlay_adversary/RP_20260917_105807_22632_combo_rulefast_promo3/B5_16/adversary.json",
+            "history": [],
+            "recorded_at": "2026-09-21T11:00:57+0900"
+          }
         },
         {
-          "name": "표시 배수",
-          "value": "100",
-          "source": "보고 형식",
-          "role": "% 인쇄 — 스코어 무관"
+          "n": 13,
+          "date": "20260921",
+          "cell_code": "B5_17",
+          "idea": "[무인 병렬 B5_17] 침식 전담 단독 — 요인 대조(추세 연속 길이) — B5/risk_overlay · factor2=none · weighting=ew · universe=k200_kq150 · overlay=trend_run_gate",
+          "keyword_axis": "risk_overlay",
+          "root_papers": [
+            {
+              "method": "LLM 설계(블록 전이) · trend_run_gate · 요인설계의 침식 변. 긴 추세 아래 구간에서만 켜지는 희소 층이라 침식 에피소드는 깎지만 급락(11.7개월)은 run 이 중앙을 넘는 후반만 닿는다. 예측: MDD 가 급락 에피소드 깊이에 그대로 남아 Calmar 는 바닥 근처 — 그것이 '한 형태만 읽으면 MDD 가 안 움직인다' 의 직접 증거다. 앞 세대(promo1) 단독 측정은 다른 기저(다른 팩터",
+              "url": "https://arxiv.org/abs/2002.06975"
+            },
+            {
+              "url": "https://arxiv.org/abs/2002.06975",
+              "title": "결합: Cross-sectional Stock Price Prediction using Deep Learning for Actual Investment Management + One Factor to Bind the Cross-Section of Returns + Maximum drawdown, recovery, and momentum + Pinchuk (2023) Labor Income Risk and the Cross-Section of Expected Returns + Uncovering a factor-based expected return conditioning structure with Regression Trees jointly for many stocks + Dirichlet policies for reinforced factor portfolios",
+              "paper_key": "combo:1403.8125+2002.06975+2007.08115+2011.05381+2301.09173+2404.08129"
+            },
+            {
+              "title": "Chan, Jegadeesh & Lakonishok (1996), Momentum Strategies, JF 51(5)",
+              "url": "https://onlinelibrary.wiley.com/doi/10.1111/j.1540-6261.1996.tb05222.x"
+            },
+            {
+              "title": "Fama & French (1992), The Cross-Section of Expected Stock Returns, JF 47(2)",
+              "url": "https://onlinelibrary.wiley.com/doi/10.1111/j.1540-6261.1992.tb04398.x"
+            },
+            {
+              "title": "Amihud (2002), Illiquidity and Stock Returns, JFM 5(1)",
+              "url": "https://www.sciencedirect.com/science/article/pii/S1386418101000246"
+            }
+          ],
+          "wt_id": null,
+          "evidence": "paper",
+          "unmapped_families": [],
+          "axiom_injected": true,
+          "grade": "B",
+          "essence": {
+            "cell_code": "B5_17",
+            "block": "B5",
+            "port_t": 3.873,
+            "net_sharpe": 1.123,
+            "cagr": 0.261,
+            "mdd": 0.549,
+            "calmar": 0.475,
+            "oos_retention": 0.061,
+            "spec": "C:/Users/99922/OneDrive/Quant_Module_Moltbot/.cache/rf_parallel/spec_B5_17__RP_20260917_105807_22632_combo_rulefast_promo3.json",
+            "source": "authoritative_remeasure.json"
+          },
+          "artifacts": "C:/Users/99922/OneDrive/Quant_Module_Moltbot/stage_artifacts/replication/20260921_104337_6672",
+          "lessons": "[B5_17] Grade B · 구속 calmar(0.475/0.64)·oos(0.061/0.70) (5조건 중 3 충족) · carry 대비 MDD 0.549→0.549(+0.0%) · CAGR 0.250→0.261(+4.4%) → 수익만 늘었다(위험 축 미개입)",
+          "opened_at": "2026-09-21T10:42:51+0900",
+          "closed_at": "2026-09-21T10:50:57+0900",
+          "adversary": {
+            "schema": "rf_overlay_adversary_v1",
+            "at": "2026-09-21T11:00:58+0900",
+            "base_id": "RP_20260917_105807_22632_combo_rulefast_promo3",
+            "layer": 1,
+            "block": "B5",
+            "n": 13,
+            "code": "B5_17",
+            "dry_run": false,
+            "candidate": false,
+            "candidate_rank": null,
+            "cell": {
+              "calmar": 0.475,
+              "port_t": 3.873,
+              "mdd": 0.549,
+              "cagr": 0.261,
+              "grade": "B",
+              "artifacts": "C:/Users/99922/OneDrive/Quant_Module_Moltbot/stage_artifacts/replication/20260921_104337_6672",
+              "spec": "C:/Users/99922/OneDrive/Quant_Module_Moltbot/.cache/rf_parallel/spec_B5_17__RP_20260917_105807_22632_combo_rulefast_promo3.json"
+            },
+            "floor": {
+              "code": "B1_3",
+              "n": 3,
+              "calmar": 0.501,
+              "port_t": 4.349,
+              "match": "floor_code",
+              "artifacts": "C:/Users/99922/OneDrive/Quant_Module_Moltbot/stage_artifacts/replication/20260921_100007_6876",
+              "spec": "C:/Users/99922/OneDrive/Quant_Module_Moltbot/.cache/rf_parallel/spec_B1_3__RP_20260917_105807_22632_combo_rulefast_promo3.json"
+            },
+            "own_layers": [
+              {
+                "kind": "b5gen_trend_run_gate_1",
+                "arm_id": "trend_run_gate",
+                "family": "trend",
+                "external_data": false,
+                "vector_declared": false
+              }
+            ],
+            "engine_supports": {
+              "overlay_shift": true,
+              "overlay_strict": true
+            },
+            "rp_honors_lcode_switch": true,
+            "cfg": {
+              "alpha": 0.05,
+              "n_placebo": 200,
+              "max_candidates": 3,
+              "block_rule": "auto",
+              "cost_rate": 0.0015,
+              "seed": 20260917,
+              "reruns": "auto"
+            },
+            "tests": [],
+            "verdict": "not_candidate",
+            "analytic_verdict": null,
+            "reason": "calmar_not_above_floor",
+            "json_path": "C:/Users/99922/OneDrive/Quant_Module_Moltbot/.cache/rf_overlay_adversary/RP_20260917_105807_22632_combo_rulefast_promo3/B5_17/adversary.json",
+            "history": [],
+            "recorded_at": "2026-09-21T11:00:58+0900"
+          }
+        },
+        {
+          "n": 14,
+          "date": "20260921",
+          "cell_code": "B5_18",
+          "idea": "[무인 병렬 B5_18] 급락 전담 단독 — 요인 대조(변동성 배율) — B5/risk_overlay · factor2=none · weighting=ew · universe=k200_kq150 · overlay=vol_median",
+          "keyword_axis": "risk_overlay",
+          "root_papers": [
+            {
+              "method": "LLM 설계(블록 전이) · vol_median · 요인설계의 급락 변. B1 회피 목록의 스칼라 변동성 계열이지만 스택의 한계 기여를 귀속하려면 같은 기저의 단독이 필요하다(회피 근거는 단독 Calmar 였고 이 칸의 목적은 상호작용 검정 — 이탈 근거 = 바닥 해부의 두 형태 동률). 예측: 급락형 에피소드는 깎이나 저변동 침식 에피소드가 남아 MDD 는 침식 깊이에 머문다. 깊이 계열 대신 변동성을 쓰",
+              "url": "https://arxiv.org/abs/2002.06975"
+            },
+            {
+              "url": "https://arxiv.org/abs/2002.06975",
+              "title": "결합: Cross-sectional Stock Price Prediction using Deep Learning for Actual Investment Management + One Factor to Bind the Cross-Section of Returns + Maximum drawdown, recovery, and momentum + Pinchuk (2023) Labor Income Risk and the Cross-Section of Expected Returns + Uncovering a factor-based expected return conditioning structure with Regression Trees jointly for many stocks + Dirichlet policies for reinforced factor portfolios",
+              "paper_key": "combo:1403.8125+2002.06975+2007.08115+2011.05381+2301.09173+2404.08129"
+            },
+            {
+              "title": "Chan, Jegadeesh & Lakonishok (1996), Momentum Strategies, JF 51(5)",
+              "url": "https://onlinelibrary.wiley.com/doi/10.1111/j.1540-6261.1996.tb05222.x"
+            },
+            {
+              "title": "Fama & French (1992), The Cross-Section of Expected Stock Returns, JF 47(2)",
+              "url": "https://onlinelibrary.wiley.com/doi/10.1111/j.1540-6261.1992.tb04398.x"
+            },
+            {
+              "title": "Amihud (2002), Illiquidity and Stock Returns, JFM 5(1)",
+              "url": "https://www.sciencedirect.com/science/article/pii/S1386418101000246"
+            }
+          ],
+          "wt_id": null,
+          "evidence": "paper",
+          "unmapped_families": [],
+          "axiom_injected": true,
+          "grade": "B",
+          "essence": {
+            "cell_code": "B5_18",
+            "block": "B5",
+            "port_t": 2.576,
+            "net_sharpe": 1.159,
+            "cagr": 0.223,
+            "mdd": 0.513,
+            "calmar": 0.435,
+            "oos_retention": -0.205,
+            "spec": "C:/Users/99922/OneDrive/Quant_Module_Moltbot/.cache/rf_parallel/spec_B5_18__RP_20260917_105807_22632_combo_rulefast_promo3.json",
+            "source": "authoritative_remeasure.json"
+          },
+          "artifacts": "C:/Users/99922/OneDrive/Quant_Module_Moltbot/stage_artifacts/replication/20260921_104337_24896",
+          "lessons": "[B5_18] Grade B · 구속 port_t(2.576/2.95)·calmar(0.435/0.64)·oos(-0.205/0.70) (5조건 중 2 충족) · carry 대비 MDD 0.549→0.513(-6.6%) · CAGR 0.250→0.223(-10.8%) → 위험보다 수익을 더 잃었다(대칭 축소의 전형)",
+          "opened_at": "2026-09-21T10:42:58+0900",
+          "closed_at": "2026-09-21T10:50:58+0900",
+          "adversary": {
+            "schema": "rf_overlay_adversary_v1",
+            "at": "2026-09-21T11:00:59+0900",
+            "base_id": "RP_20260917_105807_22632_combo_rulefast_promo3",
+            "layer": 1,
+            "block": "B5",
+            "n": 14,
+            "code": "B5_18",
+            "dry_run": false,
+            "candidate": false,
+            "candidate_rank": null,
+            "cell": {
+              "calmar": 0.435,
+              "port_t": 2.576,
+              "mdd": 0.513,
+              "cagr": 0.223,
+              "grade": "B",
+              "artifacts": "C:/Users/99922/OneDrive/Quant_Module_Moltbot/stage_artifacts/replication/20260921_104337_24896",
+              "spec": "C:/Users/99922/OneDrive/Quant_Module_Moltbot/.cache/rf_parallel/spec_B5_18__RP_20260917_105807_22632_combo_rulefast_promo3.json"
+            },
+            "floor": {
+              "code": "B1_3",
+              "n": 3,
+              "calmar": 0.501,
+              "port_t": 4.349,
+              "match": "floor_code",
+              "artifacts": "C:/Users/99922/OneDrive/Quant_Module_Moltbot/stage_artifacts/replication/20260921_100007_6876",
+              "spec": "C:/Users/99922/OneDrive/Quant_Module_Moltbot/.cache/rf_parallel/spec_B1_3__RP_20260917_105807_22632_combo_rulefast_promo3.json"
+            },
+            "own_layers": [
+              {
+                "kind": "vol_scale",
+                "arm_id": "vol_median",
+                "family": null,
+                "external_data": false,
+                "vector_declared": false
+              }
+            ],
+            "engine_supports": {
+              "overlay_shift": true,
+              "overlay_strict": true
+            },
+            "rp_honors_lcode_switch": true,
+            "cfg": {
+              "alpha": 0.05,
+              "n_placebo": 200,
+              "max_candidates": 3,
+              "block_rule": "auto",
+              "cost_rate": 0.0015,
+              "seed": 20260917,
+              "reruns": "auto"
+            },
+            "tests": [],
+            "verdict": "not_candidate",
+            "analytic_verdict": null,
+            "reason": "calmar_not_above_floor",
+            "json_path": "C:/Users/99922/OneDrive/Quant_Module_Moltbot/.cache/rf_overlay_adversary/RP_20260917_105807_22632_combo_rulefast_promo3/B5_18/adversary.json",
+            "history": [],
+            "recorded_at": "2026-09-21T11:00:59+0900"
+          }
+        },
+        {
+          "n": 15,
+          "date": "20260921",
+          "cell_code": "B5_19",
+          "idea": "[무인 병렬 B5_19] GLS 합성 상태 — 한 층이 두 형태를 본다 — B5/risk_overlay · factor2=none · weighting=ew · universe=k200_kq150 · overlay=multivar_channel_tilt",
+          "keyword_axis": "risk_overlay",
+          "root_papers": [
+            {
+              "method": "LLM 설계(블록 전이) · multivar_channel_tilt · 곱 대신 상태 안에서 결합: rv60(급락)·dd·−r252(침식)·xs 를 확장창 상관으로 화이트닝한 합성지수 하나로 두 형태를 읽고 축 기여도로 종목축을 회전한다. 기전 지도에서 유일하게 미포화인 칸(cross_sectional/multivar)이고 두 계보에서 유일하게 MDD–PORT_t 교환선 위로 벗어난 arm 인데 승격 기저(promo1~3)에서",
+              "url": "https://arxiv.org/abs/2002.06975"
+            },
+            {
+              "url": "https://arxiv.org/abs/2002.06975",
+              "title": "결합: Cross-sectional Stock Price Prediction using Deep Learning for Actual Investment Management + One Factor to Bind the Cross-Section of Returns + Maximum drawdown, recovery, and momentum + Pinchuk (2023) Labor Income Risk and the Cross-Section of Expected Returns + Uncovering a factor-based expected return conditioning structure with Regression Trees jointly for many stocks + Dirichlet policies for reinforced factor portfolios",
+              "paper_key": "combo:1403.8125+2002.06975+2007.08115+2011.05381+2301.09173+2404.08129"
+            },
+            {
+              "title": "Chan, Jegadeesh & Lakonishok (1996), Momentum Strategies, JF 51(5)",
+              "url": "https://onlinelibrary.wiley.com/doi/10.1111/j.1540-6261.1996.tb05222.x"
+            },
+            {
+              "title": "Fama & French (1992), The Cross-Section of Expected Stock Returns, JF 47(2)",
+              "url": "https://onlinelibrary.wiley.com/doi/10.1111/j.1540-6261.1992.tb04398.x"
+            },
+            {
+              "title": "Amihud (2002), Illiquidity and Stock Returns, JFM 5(1)",
+              "url": "https://www.sciencedirect.com/science/article/pii/S1386418101000246"
+            }
+          ],
+          "wt_id": null,
+          "evidence": "paper",
+          "unmapped_families": [],
+          "axiom_injected": true,
+          "grade": "B",
+          "essence": {
+            "cell_code": "B5_19",
+            "block": "B5",
+            "port_t": 3.434,
+            "net_sharpe": 1.211,
+            "cagr": 0.246,
+            "mdd": 0.443,
+            "calmar": 0.556,
+            "oos_retention": -0.024,
+            "spec": "C:/Users/99922/OneDrive/Quant_Module_Moltbot/.cache/rf_parallel/spec_B5_19__RP_20260917_105807_22632_combo_rulefast_promo3.json",
+            "source": "authoritative_remeasure.json"
+          },
+          "artifacts": "C:/Users/99922/OneDrive/Quant_Module_Moltbot/stage_artifacts/replication/20260921_104337_35052",
+          "lessons": "[B5_19] Grade B · 구속 calmar(0.556/0.64)·oos(-0.024/0.70) (5조건 중 3 충족) · carry 대비 MDD 0.549→0.443(-19.3%) · CAGR 0.250→0.246(-1.6%) → 위험을 더 줄였다(부분 비대칭)",
+          "opened_at": "2026-09-21T10:43:03+0900",
+          "closed_at": "2026-09-21T10:50:59+0900",
+          "adversary": {
+            "schema": "rf_overlay_adversary_v1",
+            "at": "2026-09-21T11:01:00+0900",
+            "base_id": "RP_20260917_105807_22632_combo_rulefast_promo3",
+            "layer": 1,
+            "block": "B5",
+            "n": 15,
+            "code": "B5_19",
+            "dry_run": false,
+            "candidate": true,
+            "candidate_rank": 1,
+            "cell": {
+              "calmar": 0.556,
+              "port_t": 3.434,
+              "mdd": 0.443,
+              "cagr": 0.246,
+              "grade": "B",
+              "artifacts": "C:/Users/99922/OneDrive/Quant_Module_Moltbot/stage_artifacts/replication/20260921_104337_35052",
+              "spec": "C:/Users/99922/OneDrive/Quant_Module_Moltbot/.cache/rf_parallel/spec_B5_19__RP_20260917_105807_22632_combo_rulefast_promo3.json"
+            },
+            "floor": {
+              "code": "B1_3",
+              "n": 3,
+              "calmar": 0.501,
+              "port_t": 4.349,
+              "match": "floor_code",
+              "artifacts": "C:/Users/99922/OneDrive/Quant_Module_Moltbot/stage_artifacts/replication/20260921_100007_6876",
+              "spec": "C:/Users/99922/OneDrive/Quant_Module_Moltbot/.cache/rf_parallel/spec_B1_3__RP_20260917_105807_22632_combo_rulefast_promo3.json"
+            },
+            "own_layers": [
+              {
+                "kind": "gen_20260907_002324",
+                "arm_id": "multivar_channel_tilt",
+                "family": "cross_sectional",
+                "external_data": false,
+                "vector_declared": true
+              }
+            ],
+            "engine_supports": {
+              "overlay_shift": true,
+              "overlay_strict": true
+            },
+            "rp_honors_lcode_switch": true,
+            "cfg": {
+              "alpha": 0.05,
+              "n_placebo": 200,
+              "max_candidates": 3,
+              "block_rule": "auto",
+              "cost_rate": 0.0015,
+              "seed": 20260917,
+              "reruns": "auto"
+            },
+            "tests": {
+              "T3": {
+                "status": "pass",
+                "obs_calmar": 0.5508,
+                "obs_cagr": 0.2449,
+                "obs_mdd": 0.4446,
+                "placebo_q": 0.5236,
+                "placebo_mean": 0.4541,
+                "placebo_sd": 0.0384,
+                "placebo_n_finite": 200,
+                "p_value": 0.0398,
+                "alpha": 0.05,
+                "n_placebo": 200,
+                "block_len": 7,
+                "block_rule": "hhj1995_n^(1/3)",
+                "n_periods": 260,
+                "mean_E": 0.8791,
+                "sd_E": 0.1547,
+                "decision_rule": "obs_calmar > quantile(placebo_calmar, 1 - alpha)  [평균이 아니라 분위]"
+              },
+              "T4": {
+                "status": "pass",
+                "obs_calmar": 0.5508,
+                "const_calmar": 0.4823,
+                "const_cagr": 0.2423,
+                "const_mdd": 0.5025,
+                "mean_E": 0.8791,
+                "decision_rule": "obs_calmar > calmar(mean(E) * r_t, cost 0)"
+              },
+              "T5": {
+                "mdd_floor": 0.551,
+                "mdd_cell": 0.4446,
+                "reduction_total": 0.1064,
+                "largest": {
+                  "peak": "2018-01-29",
+                  "trough": "2020-03-23",
+                  "recovered": true,
+                  "depth_floor": 0.551,
+                  "depth_cell": 0.4446,
+                  "reduction": 0.1064
+                },
+                "share_largest": 1,
+                "n_episodes": 257,
+                "episodes": [
+                  {
+                    "peak": "2018-01-29",
+                    "trough": "2020-03-23",
+                    "recovered": true,
+                    "depth_floor": 0.551,
+                    "depth_cell": 0.4446,
+                    "reduction": 0.1064
+                  },
+                  {
+                    "peak": "2007-11-06",
+                    "trough": "2008-10-27",
+                    "recovered": true,
+                    "depth_floor": 0.5491,
+                    "depth_cell": 0.3619,
+                    "reduction": 0.1872
+                  },
+                  {
+                    "peak": "2011-04-25",
+                    "trough": "2011-10-05",
+                    "recovered": true,
+                    "depth_floor": 0.3119,
+                    "depth_cell": 0.2469,
+                    "reduction": 0.065
+                  }
+                ],
+                "note": "share_largest = 바닥 최대 낙폭 에피소드 창 [peak,trough] 에서의 (바닥 깊이 − 셀 깊이) / (바닥 MDD − 셀 MDD). >1 = 그 에피소드 밖에서는 셀이 더 나빴다",
+                "cell_calmar_essence": 0.556,
+                "cell_calmar_approx": 0.5508
+              },
+              "T3b": {
+                "status": "fail",
+                "obs_calmar": 0.6725,
+                "obs_cagr": 0.2406,
+                "obs_mdd": 0.3577,
+                "placebo_q": 0.7023,
+                "placebo_mean": 0.6758,
+                "placebo_n_finite": 200,
+                "p_value": 0.597,
+                "alpha": 0.05,
+                "n_placebo": 200,
+                "n_periods": 260,
+                "n_rows": 6500,
+                "resolution": "monthly_period (보유기간 수익 Σ w_i e_i R_i,k − Σ|Δ(w e)|·cost · ann 12)",
+                "decision_rule": "obs_calmar > quantile(placebo_calmar, 1 - alpha) — 날짜 안 e_i 순열 · 총노출 짝맞춤",
+                "rawdata_coverage": 1
+              },
+              "T1": {
+                "applicable": true,
+                "status": "fail",
+                "calmar_shift": 0.5,
+                "floor_calmar": 0.501,
+                "port_t_shift": 4.191,
+                "artifacts": "C:/Users/99922/OneDrive/Quant_Module_Moltbot/stage_artifacts/replication/20260921_110146_20352",
+                "spec": "C:/Users/99922/OneDrive/Quant_Module_Moltbot/.cache/rf_overlay_adversary/RP_20260917_105807_22632_combo_rulefast_promo3/B5_19/T1/spec.json",
+                "side_effects": {
+                  "env": {
+                    "QVEST_RP_REGISTER": "0",
+                    "QVEST_RP_NO_FACTOR_ANALYSIS": "1",
+                    "QVEST_RP_NO_LCODE": "1",
+                    "QVEST_NO_LEDGER_OPEN": "1",
+                    "QVEST_RF_ADVERSARY": "1",
+                    "QVEST_RP_JLOG": "C:/Users/99922/OneDrive/Quant_Module_Moltbot/.cache/rf_overlay_adversary/RP_20260917_105807_22632_combo_rulefast_promo3/B5_19/T1/rmm_journal.jsonl"
+                  },
+                  "lcode_leak": [],
+                  "strategy_name": "ADV_T1_B5_19_RP_20260917_105807_22632_combo_rulefast_promo3",
+                  "elapsed_sec": 305.9,
+                  "rc": 0
+                },
+                "decision_rule": "calmar(overlay_shift=1) > floor_calmar"
+              },
+              "T2": {
+                "applicable": false,
+                "status": "not_applicable",
+                "detail": "own layers 에 external_data=true arm 없음"
+              }
+            },
+            "verdict": "fail",
+            "analytic_verdict": "fail",
+            "reason": "failed: T1,T3b",
+            "approximation": {
+              "returns": "floor 03_period_returns.csv ret_net",
+              "frequency": "daily",
+              "ann_factor": 252,
+              "exposure": "Σ target_weight(cell)/Σ target_weight(floor) per floor exec date",
+              "cost": "|ΔE_p| × 0.0015 at exec (first ΔE = 0)",
+              "missing_month_policy": "carry_forward_prev_holdings (harness semantics)",
+              "n_missing_cell_dates": 0,
+              "n_extra_cell_dates": 0,
+              "n_periods": 260,
+              "n_return_rows": 5336,
+              "floor_calmar_essence": 0.501,
+              "floor_calmar_approx": 0.5,
+              "floor_approx_gap": -0.001,
+              "floor_exposure_mean": 1,
+              "cell_exposure_mean": 0.8791,
+              "E_mean": 0.8791,
+              "E_min": 0.5,
+              "E_max": 1,
+              "n_full_cash": 0
+            },
+            "vector_observed": true,
+            "vector_dates_vary": 127,
+            "json_path": "C:/Users/99922/OneDrive/Quant_Module_Moltbot/.cache/rf_overlay_adversary/RP_20260917_105807_22632_combo_rulefast_promo3/B5_19/adversary.json",
+            "history": [],
+            "recorded_at": "2026-09-21T11:06:14+0900"
+          }
+        },
+        {
+          "n": 16,
+          "date": "20260921",
+          "cell_code": "B5_20",
+          "idea": "[무인 병렬 B5_20] 위험지분 균등화 — 타이밍 없는 배분 대조 — B5/risk_overlay · factor2=none · weighting=ew · universe=k200_kq150 · overlay=xs_vol_risk_share_equalize",
+          "keyword_axis": "risk_overlay",
+          "root_papers": [
+            {
+              "method": "LLM 설계(블록 전이) · xs_vol_risk_share_equalize · 상태가 켜고 끄는 층이 아니라 매달 보유 위험지분(시장항+잔차항)이 등가 몫을 넘는 이름만 깎는 배분 층. 타이밍 정보가 거의 없으므로 T3 는 사실상 무의미하고 T3b 가 유일한 판정 — 앞 세대 순위 tilt 5칸의 T3b p .57~.83 이 '상태 조건부 순위' 의 잡음인지 '횡단면 위험 정보' 자체의 부재인지를 가른다. 단독 이력 1건(타 entr",
+              "url": "https://arxiv.org/abs/2002.06975"
+            },
+            {
+              "url": "https://arxiv.org/abs/2002.06975",
+              "title": "결합: Cross-sectional Stock Price Prediction using Deep Learning for Actual Investment Management + One Factor to Bind the Cross-Section of Returns + Maximum drawdown, recovery, and momentum + Pinchuk (2023) Labor Income Risk and the Cross-Section of Expected Returns + Uncovering a factor-based expected return conditioning structure with Regression Trees jointly for many stocks + Dirichlet policies for reinforced factor portfolios",
+              "paper_key": "combo:1403.8125+2002.06975+2007.08115+2011.05381+2301.09173+2404.08129"
+            },
+            {
+              "title": "Chan, Jegadeesh & Lakonishok (1996), Momentum Strategies, JF 51(5)",
+              "url": "https://onlinelibrary.wiley.com/doi/10.1111/j.1540-6261.1996.tb05222.x"
+            },
+            {
+              "title": "Fama & French (1992), The Cross-Section of Expected Stock Returns, JF 47(2)",
+              "url": "https://onlinelibrary.wiley.com/doi/10.1111/j.1540-6261.1992.tb04398.x"
+            },
+            {
+              "title": "Amihud (2002), Illiquidity and Stock Returns, JFM 5(1)",
+              "url": "https://www.sciencedirect.com/science/article/pii/S1386418101000246"
+            }
+          ],
+          "wt_id": null,
+          "evidence": "paper",
+          "unmapped_families": [],
+          "axiom_injected": true,
+          "grade": "B",
+          "essence": {
+            "cell_code": "B5_20",
+            "block": "B5",
+            "port_t": 4.143,
+            "net_sharpe": 1.141,
+            "cagr": 0.268,
+            "mdd": 0.539,
+            "calmar": 0.496,
+            "oos_retention": 0.057,
+            "spec": "C:/Users/99922/OneDrive/Quant_Module_Moltbot/.cache/rf_parallel/spec_B5_20__RP_20260917_105807_22632_combo_rulefast_promo3.json",
+            "source": "authoritative_remeasure.json"
+          },
+          "artifacts": "C:/Users/99922/OneDrive/Quant_Module_Moltbot/stage_artifacts/replication/20260921_105410_10396",
+          "lessons": "[B5_20] Grade B · 구속 calmar(0.496/0.64)·oos(0.057/0.70) (5조건 중 3 충족) · carry 대비 MDD 0.443→0.539(+21.7%) · CAGR 0.246→0.268(+8.9%) → 수익만 늘었다(위험 축 미개입)",
+          "opened_at": "2026-09-21T10:53:07+0900",
+          "closed_at": "2026-09-21T11:00:54+0900",
+          "adversary": {
+            "schema": "rf_overlay_adversary_v1",
+            "at": "2026-09-21T11:06:15+0900",
+            "base_id": "RP_20260917_105807_22632_combo_rulefast_promo3",
+            "layer": 1,
+            "block": "B5",
+            "n": 16,
+            "code": "B5_20",
+            "dry_run": false,
+            "candidate": false,
+            "candidate_rank": null,
+            "cell": {
+              "calmar": 0.496,
+              "port_t": 4.143,
+              "mdd": 0.539,
+              "cagr": 0.268,
+              "grade": "B",
+              "artifacts": "C:/Users/99922/OneDrive/Quant_Module_Moltbot/stage_artifacts/replication/20260921_105410_10396",
+              "spec": "C:/Users/99922/OneDrive/Quant_Module_Moltbot/.cache/rf_parallel/spec_B5_20__RP_20260917_105807_22632_combo_rulefast_promo3.json"
+            },
+            "floor": {
+              "code": "B1_3",
+              "n": 3,
+              "calmar": 0.501,
+              "port_t": 4.349,
+              "match": "floor_code",
+              "artifacts": "C:/Users/99922/OneDrive/Quant_Module_Moltbot/stage_artifacts/replication/20260921_100007_6876",
+              "spec": "C:/Users/99922/OneDrive/Quant_Module_Moltbot/.cache/rf_parallel/spec_B1_3__RP_20260917_105807_22632_combo_rulefast_promo3.json"
+            },
+            "own_layers": [
+              {
+                "kind": "gen_20260917_091415",
+                "arm_id": "xs_vol_risk_share_equalize",
+                "family": "cross_sectional",
+                "external_data": false,
+                "vector_declared": true
+              }
+            ],
+            "engine_supports": {
+              "overlay_shift": true,
+              "overlay_strict": true
+            },
+            "rp_honors_lcode_switch": true,
+            "cfg": {
+              "alpha": 0.05,
+              "n_placebo": 200,
+              "max_candidates": 3,
+              "block_rule": "auto",
+              "cost_rate": 0.0015,
+              "seed": 20260917,
+              "reruns": "auto"
+            },
+            "tests": [],
+            "verdict": "not_candidate",
+            "analytic_verdict": null,
+            "reason": "calmar_not_above_floor",
+            "json_path": "C:/Users/99922/OneDrive/Quant_Module_Moltbot/.cache/rf_overlay_adversary/RP_20260917_105807_22632_combo_rulefast_promo3/B5_20/adversary.json",
+            "history": [],
+            "recorded_at": "2026-09-21T11:06:15+0900"
+          }
+        },
+        {
+          "n": 17,
+          "date": "20260921",
+          "cell_code": "B5_21",
+          "idea": "[무인 병렬 B5_21] 변동성 분할 스택 — 급락 스칼라 × 침식 잔차틸트 — B5/risk_overlay · factor2=none · weighting=ew · universe=k200_kq150 · overlay=vol_median × erosion_grind_idio_tilt",
+          "keyword_axis": "risk_overlay",
+          "root_papers": [
+            {
+              "method": "LLM 설계(블록 전이) · vol_median × erosion_grind_idio_tilt · erosion_grind 는 rv60 백분위가 중앙 위인 만큼 스스로 물러서도록 설계된 층이라 vol_median 이 켜지는 달에 꺼진다 — 곱이 이중 축소로 가지 않는 유일한 분할 짝인데 그 설계 의도(변동성 층과의 소비 구간 분할)는 실측된 적이 없다(앞 계보 스택 상대는 xs 변동성·multivar). 칸 1 과의 차이 = 침식 쪽 소비 지점(총노출 ",
+              "url": "https://arxiv.org/abs/2002.06975"
+            },
+            {
+              "url": "https://arxiv.org/abs/2002.06975",
+              "title": "결합: Cross-sectional Stock Price Prediction using Deep Learning for Actual Investment Management + One Factor to Bind the Cross-Section of Returns + Maximum drawdown, recovery, and momentum + Pinchuk (2023) Labor Income Risk and the Cross-Section of Expected Returns + Uncovering a factor-based expected return conditioning structure with Regression Trees jointly for many stocks + Dirichlet policies for reinforced factor portfolios",
+              "paper_key": "combo:1403.8125+2002.06975+2007.08115+2011.05381+2301.09173+2404.08129"
+            },
+            {
+              "title": "Chan, Jegadeesh & Lakonishok (1996), Momentum Strategies, JF 51(5)",
+              "url": "https://onlinelibrary.wiley.com/doi/10.1111/j.1540-6261.1996.tb05222.x"
+            },
+            {
+              "title": "Fama & French (1992), The Cross-Section of Expected Stock Returns, JF 47(2)",
+              "url": "https://onlinelibrary.wiley.com/doi/10.1111/j.1540-6261.1992.tb04398.x"
+            },
+            {
+              "title": "Amihud (2002), Illiquidity and Stock Returns, JFM 5(1)",
+              "url": "https://www.sciencedirect.com/science/article/pii/S1386418101000246"
+            }
+          ],
+          "wt_id": null,
+          "evidence": "paper",
+          "unmapped_families": [],
+          "axiom_injected": true,
+          "grade": "C",
+          "essence": {
+            "cell_code": "B5_21",
+            "block": "B5",
+            "port_t": 1.812,
+            "net_sharpe": 1.164,
+            "cagr": 0.194,
+            "mdd": 0.469,
+            "calmar": 0.414,
+            "oos_retention": -0.249,
+            "spec": "C:/Users/99922/OneDrive/Quant_Module_Moltbot/.cache/rf_parallel/spec_B5_21__RP_20260917_105807_22632_combo_rulefast_promo3.json",
+            "source": "authoritative_remeasure.json"
+          },
+          "artifacts": "C:/Users/99922/OneDrive/Quant_Module_Moltbot/stage_artifacts/replication/20260921_105410_1652",
+          "lessons": "[B5_21] Grade C · 구속 port_t(1.812/2.95)·calmar(0.414/0.64)·oos(-0.249/0.70) (5조건 중 2 충족) · carry 대비 MDD 0.443→0.469(+5.9%) · CAGR 0.246→0.194(-21.1%) → 양쪽 다 악화",
+          "opened_at": "2026-09-21T10:53:19+0900",
+          "closed_at": "2026-09-21T11:00:55+0900",
+          "adversary": {
+            "schema": "rf_overlay_adversary_v1",
+            "at": "2026-09-21T11:06:15+0900",
+            "base_id": "RP_20260917_105807_22632_combo_rulefast_promo3",
+            "layer": 1,
+            "block": "B5",
+            "n": 17,
+            "code": "B5_21",
+            "dry_run": false,
+            "candidate": false,
+            "candidate_rank": null,
+            "cell": {
+              "calmar": 0.414,
+              "port_t": 1.812,
+              "mdd": 0.469,
+              "cagr": 0.194,
+              "grade": "C",
+              "artifacts": "C:/Users/99922/OneDrive/Quant_Module_Moltbot/stage_artifacts/replication/20260921_105410_1652",
+              "spec": "C:/Users/99922/OneDrive/Quant_Module_Moltbot/.cache/rf_parallel/spec_B5_21__RP_20260917_105807_22632_combo_rulefast_promo3.json"
+            },
+            "floor": {
+              "code": "B1_3",
+              "n": 3,
+              "calmar": 0.501,
+              "port_t": 4.349,
+              "match": "floor_code",
+              "artifacts": "C:/Users/99922/OneDrive/Quant_Module_Moltbot/stage_artifacts/replication/20260921_100007_6876",
+              "spec": "C:/Users/99922/OneDrive/Quant_Module_Moltbot/.cache/rf_parallel/spec_B1_3__RP_20260917_105807_22632_combo_rulefast_promo3.json"
+            },
+            "own_layers": [
+              {
+                "kind": "vol_scale",
+                "arm_id": "vol_median",
+                "family": null,
+                "external_data": false,
+                "vector_declared": false
+              },
+              {
+                "kind": "b5gen_erosion_grind_2",
+                "arm_id": "erosion_grind_idio_tilt",
+                "family": "cross_sectional",
+                "external_data": false,
+                "vector_declared": true
+              }
+            ],
+            "engine_supports": {
+              "overlay_shift": true,
+              "overlay_strict": true
+            },
+            "rp_honors_lcode_switch": true,
+            "cfg": {
+              "alpha": 0.05,
+              "n_placebo": 200,
+              "max_candidates": 3,
+              "block_rule": "auto",
+              "cost_rate": 0.0015,
+              "seed": 20260917,
+              "reruns": "auto"
+            },
+            "tests": [],
+            "verdict": "not_candidate",
+            "analytic_verdict": null,
+            "reason": "calmar_not_above_floor",
+            "json_path": "C:/Users/99922/OneDrive/Quant_Module_Moltbot/.cache/rf_overlay_adversary/RP_20260917_105807_22632_combo_rulefast_promo3/B5_21/adversary.json",
+            "history": [],
+            "recorded_at": "2026-09-21T11:06:15+0900"
+          }
+        },
+        {
+          "n": 18,
+          "date": "20260921",
+          "cell_code": "B5_22",
+          "idea": "[무인 병렬 B5_22] 형태 전담 곱 × 위험지분 배분 — 3층 — B5/risk_overlay · factor2=none · weighting=ew · universe=k200_kq150 · overlay=vol_median × trend_run_gate × xs_vol_risk_share_equalize",
+          "keyword_axis": "risk_overlay",
+          "root_papers": [
+            {
+              "method": "LLM 설계(블록 전이) · vol_median × trend_run_gate × xs_vol_risk_share_equalize · 칸 1 의 타이밍 짝 위에 칸 5 의 무타이밍 배분 층을 얹는다 — 소비 지점이 다른 층의 결합이라는 이 축의 미측정 내용을 가장 분리 가능한 형태로: 타이밍은 스칼라 두 층에만, 종목 차등은 배분 층에만 있어 T3 와 T3b 가 서로 다른 층을 재판한다. 칸 1·칸 5 와의 차분이 각 층의 한계 기여. 반증: 다층 스택 전례처럼 PORT_t 만 잃고 MD",
+              "url": "https://arxiv.org/abs/2002.06975"
+            },
+            {
+              "url": "https://arxiv.org/abs/2002.06975",
+              "title": "결합: Cross-sectional Stock Price Prediction using Deep Learning for Actual Investment Management + One Factor to Bind the Cross-Section of Returns + Maximum drawdown, recovery, and momentum + Pinchuk (2023) Labor Income Risk and the Cross-Section of Expected Returns + Uncovering a factor-based expected return conditioning structure with Regression Trees jointly for many stocks + Dirichlet policies for reinforced factor portfolios",
+              "paper_key": "combo:1403.8125+2002.06975+2007.08115+2011.05381+2301.09173+2404.08129"
+            },
+            {
+              "title": "Chan, Jegadeesh & Lakonishok (1996), Momentum Strategies, JF 51(5)",
+              "url": "https://onlinelibrary.wiley.com/doi/10.1111/j.1540-6261.1996.tb05222.x"
+            },
+            {
+              "title": "Fama & French (1992), The Cross-Section of Expected Stock Returns, JF 47(2)",
+              "url": "https://onlinelibrary.wiley.com/doi/10.1111/j.1540-6261.1992.tb04398.x"
+            },
+            {
+              "title": "Amihud (2002), Illiquidity and Stock Returns, JFM 5(1)",
+              "url": "https://www.sciencedirect.com/science/article/pii/S1386418101000246"
+            }
+          ],
+          "wt_id": null,
+          "evidence": "paper",
+          "unmapped_families": [],
+          "axiom_injected": true,
+          "grade": "B",
+          "essence": {
+            "cell_code": "B5_22",
+            "block": "B5",
+            "port_t": 2.06,
+            "net_sharpe": 1.164,
+            "cagr": 0.207,
+            "mdd": 0.446,
+            "calmar": 0.464,
+            "oos_retention": -0.368,
+            "spec": "C:/Users/99922/OneDrive/Quant_Module_Moltbot/.cache/rf_parallel/spec_B5_22__RP_20260917_105807_22632_combo_rulefast_promo3.json",
+            "source": "authoritative_remeasure.json"
+          },
+          "artifacts": "C:/Users/99922/OneDrive/Quant_Module_Moltbot/stage_artifacts/replication/20260921_105410_11972",
+          "lessons": "[B5_22] Grade B · 구속 port_t(2.060/2.95)·calmar(0.464/0.64)·oos(-0.368/0.70) (5조건 중 2 충족) · carry 대비 MDD 0.443→0.446(+0.7%) · CAGR 0.246→0.207(-15.9%) → 양쪽 다 악화",
+          "opened_at": "2026-09-21T10:53:24+0900",
+          "closed_at": "2026-09-21T11:00:55+0900",
+          "adversary": {
+            "schema": "rf_overlay_adversary_v1",
+            "at": "2026-09-21T11:06:16+0900",
+            "base_id": "RP_20260917_105807_22632_combo_rulefast_promo3",
+            "layer": 1,
+            "block": "B5",
+            "n": 18,
+            "code": "B5_22",
+            "dry_run": false,
+            "candidate": false,
+            "candidate_rank": null,
+            "cell": {
+              "calmar": 0.464,
+              "port_t": 2.06,
+              "mdd": 0.446,
+              "cagr": 0.207,
+              "grade": "B",
+              "artifacts": "C:/Users/99922/OneDrive/Quant_Module_Moltbot/stage_artifacts/replication/20260921_105410_11972",
+              "spec": "C:/Users/99922/OneDrive/Quant_Module_Moltbot/.cache/rf_parallel/spec_B5_22__RP_20260917_105807_22632_combo_rulefast_promo3.json"
+            },
+            "floor": {
+              "code": "B1_3",
+              "n": 3,
+              "calmar": 0.501,
+              "port_t": 4.349,
+              "match": "floor_code",
+              "artifacts": "C:/Users/99922/OneDrive/Quant_Module_Moltbot/stage_artifacts/replication/20260921_100007_6876",
+              "spec": "C:/Users/99922/OneDrive/Quant_Module_Moltbot/.cache/rf_parallel/spec_B1_3__RP_20260917_105807_22632_combo_rulefast_promo3.json"
+            },
+            "own_layers": [
+              {
+                "kind": "vol_scale",
+                "arm_id": "vol_median",
+                "family": null,
+                "external_data": false,
+                "vector_declared": false
+              },
+              {
+                "kind": "b5gen_trend_run_gate_1",
+                "arm_id": "trend_run_gate",
+                "family": "trend",
+                "external_data": false,
+                "vector_declared": false
+              },
+              {
+                "kind": "gen_20260917_091415",
+                "arm_id": "xs_vol_risk_share_equalize",
+                "family": "cross_sectional",
+                "external_data": false,
+                "vector_declared": true
+              }
+            ],
+            "engine_supports": {
+              "overlay_shift": true,
+              "overlay_strict": true
+            },
+            "rp_honors_lcode_switch": true,
+            "cfg": {
+              "alpha": 0.05,
+              "n_placebo": 200,
+              "max_candidates": 3,
+              "block_rule": "auto",
+              "cost_rate": 0.0015,
+              "seed": 20260917,
+              "reruns": "auto"
+            },
+            "tests": [],
+            "verdict": "not_candidate",
+            "analytic_verdict": null,
+            "reason": "calmar_not_above_floor",
+            "json_path": "C:/Users/99922/OneDrive/Quant_Module_Moltbot/.cache/rf_overlay_adversary/RP_20260917_105807_22632_combo_rulefast_promo3/B5_22/adversary.json",
+            "history": [],
+            "recorded_at": "2026-09-21T11:06:16+0900"
+          }
+        },
+        {
+          "n": 19,
+          "date": "20260921",
+          "cell_code": "B2_6",
+          "idea": "[무인 병렬 B2_6] 역변동성 배분 — B2/weighting · factor2=none · weighting=catalog · universe=k200_kq150 · overlay=none",
+          "keyword_axis": "weighting",
+          "root_papers": [
+            {
+              "url": "https://arxiv.org/abs/2002.06975",
+              "title": "결합: Cross-sectional Stock Price Prediction using Deep Learning for Actual Investment Management + One Factor to Bind the Cross-Section of Returns + Maximum drawdown, recovery, and momentum + Pinchuk (2023) Labor Income Risk and the Cross-Section of Expected Returns + Uncovering a factor-based expected return conditioning structure with Regression Trees jointly for many stocks + Dirichlet policies for reinforced factor portfolios",
+              "paper_key": "combo:1403.8125+2002.06975+2007.08115+2011.05381+2301.09173+2404.08129"
+            },
+            {
+              "title": "Chan, Jegadeesh & Lakonishok (1996), Momentum Strategies, JF 51(5)",
+              "url": "https://onlinelibrary.wiley.com/doi/10.1111/j.1540-6261.1996.tb05222.x"
+            },
+            {
+              "title": "Fama & French (1992), The Cross-Section of Expected Stock Returns, JF 47(2)",
+              "url": "https://onlinelibrary.wiley.com/doi/10.1111/j.1540-6261.1992.tb04398.x"
+            },
+            {
+              "title": "Amihud (2002), Illiquidity and Stock Returns, JFM 5(1)",
+              "url": "https://www.sciencedirect.com/science/article/pii/S1386418101000246"
+            }
+          ],
+          "wt_id": null,
+          "evidence": "paper",
+          "unmapped_families": [],
+          "axiom_injected": true,
+          "grade": "B",
+          "essence": {
+            "cell_code": "B2_6",
+            "block": "B2",
+            "port_t": 4.041,
+            "net_sharpe": 1.147,
+            "cagr": 0.263,
+            "mdd": 0.555,
+            "calmar": 0.474,
+            "oos_retention": 0.047,
+            "spec": "C:/Users/99922/OneDrive/Quant_Module_Moltbot/.cache/rf_parallel/spec_B2_6__RP_20260917_105807_22632_combo_rulefast_promo3.json",
+            "source": "authoritative_remeasure.json"
+          },
+          "artifacts": "C:/Users/99922/OneDrive/Quant_Module_Moltbot/stage_artifacts/replication/20260921_111645_28304",
+          "lessons": "[B2_6] Grade B · 구속 calmar(0.474/0.64)·oos(0.047/0.70) (5조건 중 3 충족) · carry 대비 MDD 0.446→0.555(+24.4%) · CAGR 0.207→0.263(+27.1%) → 수익만 늘었다(위험 축 미개입)",
+          "opened_at": "2026-09-21T11:16:14+0900",
+          "closed_at": "2026-09-21T11:24:24+0900"
+        },
+        {
+          "n": 20,
+          "date": "20260921",
+          "cell_code": "B2_7",
+          "idea": "[무인 병렬 B2_7] ERC(상관 포함) — B2/weighting · factor2=none · weighting=catalog · universe=k200_kq150 · overlay=none",
+          "keyword_axis": "weighting",
+          "root_papers": [
+            {
+              "url": "https://arxiv.org/abs/2002.06975",
+              "title": "결합: Cross-sectional Stock Price Prediction using Deep Learning for Actual Investment Management + One Factor to Bind the Cross-Section of Returns + Maximum drawdown, recovery, and momentum + Pinchuk (2023) Labor Income Risk and the Cross-Section of Expected Returns + Uncovering a factor-based expected return conditioning structure with Regression Trees jointly for many stocks + Dirichlet policies for reinforced factor portfolios",
+              "paper_key": "combo:1403.8125+2002.06975+2007.08115+2011.05381+2301.09173+2404.08129"
+            },
+            {
+              "title": "Chan, Jegadeesh & Lakonishok (1996), Momentum Strategies, JF 51(5)",
+              "url": "https://onlinelibrary.wiley.com/doi/10.1111/j.1540-6261.1996.tb05222.x"
+            },
+            {
+              "title": "Fama & French (1992), The Cross-Section of Expected Stock Returns, JF 47(2)",
+              "url": "https://onlinelibrary.wiley.com/doi/10.1111/j.1540-6261.1992.tb04398.x"
+            },
+            {
+              "title": "Amihud (2002), Illiquidity and Stock Returns, JFM 5(1)",
+              "url": "https://www.sciencedirect.com/science/article/pii/S1386418101000246"
+            }
+          ],
+          "wt_id": null,
+          "evidence": "paper",
+          "unmapped_families": [],
+          "axiom_injected": true,
+          "grade": "B",
+          "essence": {
+            "cell_code": "B2_7",
+            "block": "B2",
+            "port_t": 3.979,
+            "net_sharpe": 1.175,
+            "cagr": 0.266,
+            "mdd": 0.558,
+            "calmar": 0.477,
+            "oos_retention": -0.001,
+            "spec": "C:/Users/99922/OneDrive/Quant_Module_Moltbot/.cache/rf_parallel/spec_B2_7__RP_20260917_105807_22632_combo_rulefast_promo3.json",
+            "source": "authoritative_remeasure.json"
+          },
+          "artifacts": "C:/Users/99922/OneDrive/Quant_Module_Moltbot/stage_artifacts/replication/20260921_111645_19768",
+          "lessons": "[B2_7] Grade B · 구속 calmar(0.477/0.64)·oos(-0.001/0.70) (5조건 중 3 충족) · carry 대비 MDD 0.446→0.558(+25.1%) · CAGR 0.207→0.266(+28.5%) → 수익만 늘었다(위험 축 미개입)",
+          "opened_at": "2026-09-21T11:16:19+0900",
+          "closed_at": "2026-09-21T11:24:25+0900"
+        },
+        {
+          "n": 21,
+          "date": "20260921",
+          "cell_code": "B2_8",
+          "idea": "[무인 병렬 B2_8] 군집 배분 — B2/weighting · factor2=none · weighting=catalog · universe=k200_kq150 · overlay=none",
+          "keyword_axis": "weighting",
+          "root_papers": [
+            {
+              "url": "https://arxiv.org/abs/2002.06975",
+              "title": "결합: Cross-sectional Stock Price Prediction using Deep Learning for Actual Investment Management + One Factor to Bind the Cross-Section of Returns + Maximum drawdown, recovery, and momentum + Pinchuk (2023) Labor Income Risk and the Cross-Section of Expected Returns + Uncovering a factor-based expected return conditioning structure with Regression Trees jointly for many stocks + Dirichlet policies for reinforced factor portfolios",
+              "paper_key": "combo:1403.8125+2002.06975+2007.08115+2011.05381+2301.09173+2404.08129"
+            },
+            {
+              "title": "Chan, Jegadeesh & Lakonishok (1996), Momentum Strategies, JF 51(5)",
+              "url": "https://onlinelibrary.wiley.com/doi/10.1111/j.1540-6261.1996.tb05222.x"
+            },
+            {
+              "title": "Fama & French (1992), The Cross-Section of Expected Stock Returns, JF 47(2)",
+              "url": "https://onlinelibrary.wiley.com/doi/10.1111/j.1540-6261.1992.tb04398.x"
+            },
+            {
+              "title": "Amihud (2002), Illiquidity and Stock Returns, JFM 5(1)",
+              "url": "https://www.sciencedirect.com/science/article/pii/S1386418101000246"
+            }
+          ],
+          "wt_id": null,
+          "evidence": "paper",
+          "unmapped_families": [],
+          "axiom_injected": true,
+          "grade": "B",
+          "essence": {
+            "cell_code": "B2_8",
+            "block": "B2",
+            "port_t": 3.308,
+            "net_sharpe": 1.144,
+            "cagr": 0.241,
+            "mdd": 0.547,
+            "calmar": 0.441,
+            "oos_retention": -0.071,
+            "spec": "C:/Users/99922/OneDrive/Quant_Module_Moltbot/.cache/rf_parallel/spec_B2_8__RP_20260917_105807_22632_combo_rulefast_promo3.json",
+            "source": "authoritative_remeasure.json"
+          },
+          "artifacts": "C:/Users/99922/OneDrive/Quant_Module_Moltbot/stage_artifacts/replication/20260921_111645_24604",
+          "lessons": "[B2_8] Grade B · 구속 calmar(0.441/0.64)·oos(-0.071/0.70) (5조건 중 3 충족) · carry 대비 MDD 0.446→0.547(+22.6%) · CAGR 0.207→0.241(+16.4%) → 수익만 늘었다(위험 축 미개입)",
+          "opened_at": "2026-09-21T11:16:24+0900",
+          "closed_at": "2026-09-21T11:24:26+0900"
+        },
+        {
+          "n": 22,
+          "date": "20260921",
+          "cell_code": "B2_9",
+          "idea": "[무인 병렬 B2_9] 잡음제거 군집 — B2/weighting · factor2=none · weighting=catalog · universe=k200_kq150 · overlay=none",
+          "keyword_axis": "weighting",
+          "root_papers": [
+            {
+              "url": "https://arxiv.org/abs/2002.06975",
+              "title": "결합: Cross-sectional Stock Price Prediction using Deep Learning for Actual Investment Management + One Factor to Bind the Cross-Section of Returns + Maximum drawdown, recovery, and momentum + Pinchuk (2023) Labor Income Risk and the Cross-Section of Expected Returns + Uncovering a factor-based expected return conditioning structure with Regression Trees jointly for many stocks + Dirichlet policies for reinforced factor portfolios",
+              "paper_key": "combo:1403.8125+2002.06975+2007.08115+2011.05381+2301.09173+2404.08129"
+            },
+            {
+              "title": "Chan, Jegadeesh & Lakonishok (1996), Momentum Strategies, JF 51(5)",
+              "url": "https://onlinelibrary.wiley.com/doi/10.1111/j.1540-6261.1996.tb05222.x"
+            },
+            {
+              "title": "Fama & French (1992), The Cross-Section of Expected Stock Returns, JF 47(2)",
+              "url": "https://onlinelibrary.wiley.com/doi/10.1111/j.1540-6261.1992.tb04398.x"
+            },
+            {
+              "title": "Amihud (2002), Illiquidity and Stock Returns, JFM 5(1)",
+              "url": "https://www.sciencedirect.com/science/article/pii/S1386418101000246"
+            }
+          ],
+          "wt_id": null,
+          "evidence": "paper",
+          "unmapped_families": [],
+          "axiom_injected": true,
+          "grade": "B",
+          "essence": {
+            "cell_code": "B2_9",
+            "block": "B2",
+            "port_t": 3.261,
+            "net_sharpe": 1.159,
+            "cagr": 0.241,
+            "mdd": 0.542,
+            "calmar": 0.445,
+            "oos_retention": -0.08,
+            "spec": "C:/Users/99922/OneDrive/Quant_Module_Moltbot/.cache/rf_parallel/spec_B2_9__RP_20260917_105807_22632_combo_rulefast_promo3.json",
+            "source": "authoritative_remeasure.json"
+          },
+          "artifacts": "C:/Users/99922/OneDrive/Quant_Module_Moltbot/stage_artifacts/replication/20260921_111645_13984",
+          "lessons": "[B2_9] Grade B · 구속 calmar(0.445/0.64)·oos(-0.080/0.70) (5조건 중 3 충족) · carry 대비 MDD 0.446→0.542(+21.5%) · CAGR 0.207→0.241(+16.4%) → 수익만 늘었다(위험 축 미개입)",
+          "opened_at": "2026-09-21T11:16:29+0900",
+          "closed_at": "2026-09-21T11:24:26+0900"
+        },
+        {
+          "n": 23,
+          "date": "20260921",
+          "cell_code": "B2_10",
+          "idea": "[무인 병렬 B2_10] 낙폭 직접 표적 — B2/weighting · factor2=none · weighting=catalog · universe=k200_kq150 · overlay=none",
+          "keyword_axis": "weighting",
+          "root_papers": [
+            {
+              "url": "https://arxiv.org/abs/2002.06975",
+              "title": "결합: Cross-sectional Stock Price Prediction using Deep Learning for Actual Investment Management + One Factor to Bind the Cross-Section of Returns + Maximum drawdown, recovery, and momentum + Pinchuk (2023) Labor Income Risk and the Cross-Section of Expected Returns + Uncovering a factor-based expected return conditioning structure with Regression Trees jointly for many stocks + Dirichlet policies for reinforced factor portfolios",
+              "paper_key": "combo:1403.8125+2002.06975+2007.08115+2011.05381+2301.09173+2404.08129"
+            },
+            {
+              "title": "Chan, Jegadeesh & Lakonishok (1996), Momentum Strategies, JF 51(5)",
+              "url": "https://onlinelibrary.wiley.com/doi/10.1111/j.1540-6261.1996.tb05222.x"
+            },
+            {
+              "title": "Fama & French (1992), The Cross-Section of Expected Stock Returns, JF 47(2)",
+              "url": "https://onlinelibrary.wiley.com/doi/10.1111/j.1540-6261.1992.tb04398.x"
+            },
+            {
+              "title": "Amihud (2002), Illiquidity and Stock Returns, JFM 5(1)",
+              "url": "https://www.sciencedirect.com/science/article/pii/S1386418101000246"
+            }
+          ],
+          "wt_id": null,
+          "evidence": "paper",
+          "unmapped_families": [],
+          "axiom_injected": true,
+          "grade": "B",
+          "essence": {
+            "cell_code": "B2_10",
+            "block": "B2",
+            "port_t": 2.138,
+            "net_sharpe": 0.962,
+            "cagr": 0.213,
+            "mdd": 0.559,
+            "calmar": 0.381,
+            "oos_retention": -0.425,
+            "spec": "C:/Users/99922/OneDrive/Quant_Module_Moltbot/.cache/rf_parallel/spec_B2_10__RP_20260917_105807_22632_combo_rulefast_promo3.json",
+            "source": "authoritative_remeasure.json"
+          },
+          "artifacts": "C:/Users/99922/OneDrive/Quant_Module_Moltbot/stage_artifacts/replication/20260921_111645_10788",
+          "lessons": "[B2_10] Grade B · 구속 port_t(2.138/2.95)·calmar(0.381/0.64)·oos(-0.425/0.70) (5조건 중 2 충족) · carry 대비 MDD 0.446→0.559(+25.3%) · CAGR 0.207→0.213(+2.9%) → 수익만 늘었다(위험 축 미개입)",
+          "opened_at": "2026-09-21T11:16:33+0900",
+          "closed_at": "2026-09-21T11:24:27+0900"
+        },
+        {
+          "n": 24,
+          "date": "20260921",
+          "cell_code": "B2_11",
+          "idea": "[무인 병렬 B2_11] 꼬리 표적 — B2/weighting · factor2=none · weighting=catalog · universe=k200_kq150 · overlay=none",
+          "keyword_axis": "weighting",
+          "root_papers": [
+            {
+              "url": "https://arxiv.org/abs/2002.06975",
+              "title": "결합: Cross-sectional Stock Price Prediction using Deep Learning for Actual Investment Management + One Factor to Bind the Cross-Section of Returns + Maximum drawdown, recovery, and momentum + Pinchuk (2023) Labor Income Risk and the Cross-Section of Expected Returns + Uncovering a factor-based expected return conditioning structure with Regression Trees jointly for many stocks + Dirichlet policies for reinforced factor portfolios",
+              "paper_key": "combo:1403.8125+2002.06975+2007.08115+2011.05381+2301.09173+2404.08129"
+            },
+            {
+              "title": "Chan, Jegadeesh & Lakonishok (1996), Momentum Strategies, JF 51(5)",
+              "url": "https://onlinelibrary.wiley.com/doi/10.1111/j.1540-6261.1996.tb05222.x"
+            },
+            {
+              "title": "Fama & French (1992), The Cross-Section of Expected Stock Returns, JF 47(2)",
+              "url": "https://onlinelibrary.wiley.com/doi/10.1111/j.1540-6261.1992.tb04398.x"
+            },
+            {
+              "title": "Amihud (2002), Illiquidity and Stock Returns, JFM 5(1)",
+              "url": "https://www.sciencedirect.com/science/article/pii/S1386418101000246"
+            }
+          ],
+          "wt_id": null,
+          "evidence": "paper",
+          "unmapped_families": [],
+          "axiom_injected": true,
+          "grade": "B",
+          "essence": {
+            "cell_code": "B2_11",
+            "block": "B2",
+            "port_t": 4.094,
+            "net_sharpe": 1.151,
+            "cagr": 0.265,
+            "mdd": 0.556,
+            "calmar": 0.476,
+            "oos_retention": 0.026,
+            "spec": "C:/Users/99922/OneDrive/Quant_Module_Moltbot/.cache/rf_parallel/spec_B2_11__RP_20260917_105807_22632_combo_rulefast_promo3.json",
+            "source": "authoritative_remeasure.json"
+          },
+          "artifacts": "C:/Users/99922/OneDrive/Quant_Module_Moltbot/stage_artifacts/replication/20260921_113555_6224",
+          "lessons": "[B2_11] Grade B · 구속 calmar(0.476/0.64)·oos(0.026/0.70) (5조건 중 3 충족) · carry 대비 MDD 0.559→0.556(-0.5%) · CAGR 0.213→0.265(+24.4%) → 위험만 줄었다(비대칭 성공)",
+          "opened_at": "2026-09-21T11:34:57+0900",
+          "closed_at": "2026-09-21T11:42:12+0900"
+        },
+        {
+          "n": 25,
+          "date": "20260921",
+          "cell_code": "B2_12",
+          "idea": "[무인 병렬 B2_12] 분산 최소(극단) — B2/weighting · factor2=none · weighting=catalog · universe=k200_kq150 · overlay=none",
+          "keyword_axis": "weighting",
+          "root_papers": [
+            {
+              "url": "https://arxiv.org/abs/2002.06975",
+              "title": "결합: Cross-sectional Stock Price Prediction using Deep Learning for Actual Investment Management + One Factor to Bind the Cross-Section of Returns + Maximum drawdown, recovery, and momentum + Pinchuk (2023) Labor Income Risk and the Cross-Section of Expected Returns + Uncovering a factor-based expected return conditioning structure with Regression Trees jointly for many stocks + Dirichlet policies for reinforced factor portfolios",
+              "paper_key": "combo:1403.8125+2002.06975+2007.08115+2011.05381+2301.09173+2404.08129"
+            },
+            {
+              "title": "Chan, Jegadeesh & Lakonishok (1996), Momentum Strategies, JF 51(5)",
+              "url": "https://onlinelibrary.wiley.com/doi/10.1111/j.1540-6261.1996.tb05222.x"
+            },
+            {
+              "title": "Fama & French (1992), The Cross-Section of Expected Stock Returns, JF 47(2)",
+              "url": "https://onlinelibrary.wiley.com/doi/10.1111/j.1540-6261.1992.tb04398.x"
+            },
+            {
+              "title": "Amihud (2002), Illiquidity and Stock Returns, JFM 5(1)",
+              "url": "https://www.sciencedirect.com/science/article/pii/S1386418101000246"
+            }
+          ],
+          "wt_id": null,
+          "evidence": "paper",
+          "unmapped_families": [],
+          "axiom_injected": true,
+          "grade": "B",
+          "essence": {
+            "cell_code": "B2_12",
+            "block": "B2",
+            "port_t": 2.32,
+            "net_sharpe": 1.105,
+            "cagr": 0.217,
+            "mdd": 0.567,
+            "calmar": 0.383,
+            "oos_retention": -0.177,
+            "spec": "C:/Users/99922/OneDrive/Quant_Module_Moltbot/.cache/rf_parallel/spec_B2_12__RP_20260917_105807_22632_combo_rulefast_promo3.json",
+            "source": "authoritative_remeasure.json"
+          },
+          "artifacts": "C:/Users/99922/OneDrive/Quant_Module_Moltbot/stage_artifacts/replication/20260921_113555_32568",
+          "lessons": "[B2_12] Grade B · 구속 port_t(2.320/2.95)·calmar(0.383/0.64)·oos(-0.177/0.70) (5조건 중 2 충족) · carry 대비 MDD 0.559→0.567(+1.4%) · CAGR 0.213→0.217(+1.9%) → 수익만 늘었다(위험 축 미개입)",
+          "opened_at": "2026-09-21T11:35:12+0900",
+          "closed_at": "2026-09-21T11:42:13+0900"
+        },
+        {
+          "n": 26,
+          "date": "20260921",
+          "cell_code": "B2_13",
+          "idea": "[무인 병렬 B2_13] 스코어 집중 대조군 — B2/weighting · factor2=none · weighting=catalog · universe=k200_kq150 · overlay=none",
+          "keyword_axis": "weighting",
+          "root_papers": [
+            {
+              "url": "https://arxiv.org/abs/2002.06975",
+              "title": "결합: Cross-sectional Stock Price Prediction using Deep Learning for Actual Investment Management + One Factor to Bind the Cross-Section of Returns + Maximum drawdown, recovery, and momentum + Pinchuk (2023) Labor Income Risk and the Cross-Section of Expected Returns + Uncovering a factor-based expected return conditioning structure with Regression Trees jointly for many stocks + Dirichlet policies for reinforced factor portfolios",
+              "paper_key": "combo:1403.8125+2002.06975+2007.08115+2011.05381+2301.09173+2404.08129"
+            },
+            {
+              "title": "Chan, Jegadeesh & Lakonishok (1996), Momentum Strategies, JF 51(5)",
+              "url": "https://onlinelibrary.wiley.com/doi/10.1111/j.1540-6261.1996.tb05222.x"
+            },
+            {
+              "title": "Fama & French (1992), The Cross-Section of Expected Stock Returns, JF 47(2)",
+              "url": "https://onlinelibrary.wiley.com/doi/10.1111/j.1540-6261.1992.tb04398.x"
+            },
+            {
+              "title": "Amihud (2002), Illiquidity and Stock Returns, JFM 5(1)",
+              "url": "https://www.sciencedirect.com/science/article/pii/S1386418101000246"
+            }
+          ],
+          "wt_id": null,
+          "evidence": "paper",
+          "unmapped_families": [],
+          "axiom_injected": true,
+          "grade": "B",
+          "essence": {
+            "cell_code": "B2_13",
+            "block": "B2",
+            "port_t": 4.057,
+            "net_sharpe": 1.178,
+            "cagr": 0.266,
+            "mdd": 0.556,
+            "calmar": 0.478,
+            "oos_retention": 0.078,
+            "spec": "C:/Users/99922/OneDrive/Quant_Module_Moltbot/.cache/rf_parallel/spec_B2_13__RP_20260917_105807_22632_combo_rulefast_promo3.json",
+            "source": "authoritative_remeasure.json"
+          },
+          "artifacts": "C:/Users/99922/OneDrive/Quant_Module_Moltbot/stage_artifacts/replication/20260921_113555_29880",
+          "lessons": "[B2_13] Grade B · 구속 calmar(0.478/0.64)·oos(0.078/0.70) (5조건 중 3 충족) · carry 대비 MDD 0.559→0.556(-0.5%) · CAGR 0.213→0.266(+24.9%) → 위험만 줄었다(비대칭 성공)",
+          "opened_at": "2026-09-21T11:35:23+0900",
+          "closed_at": "2026-09-21T11:42:14+0900"
+        },
+        {
+          "n": 27,
+          "date": "20260921",
+          "cell_code": "B3_15",
+          "idea": "[무인 병렬 B3_15] 섹터 중립 — B3/universe · factor2=none · weighting=ew · universe=sector_neutral · overlay=none",
+          "keyword_axis": "universe",
+          "root_papers": [
+            {
+              "url": "https://arxiv.org/abs/2002.06975",
+              "title": "결합: Cross-sectional Stock Price Prediction using Deep Learning for Actual Investment Management + One Factor to Bind the Cross-Section of Returns + Maximum drawdown, recovery, and momentum + Pinchuk (2023) Labor Income Risk and the Cross-Section of Expected Returns + Uncovering a factor-based expected return conditioning structure with Regression Trees jointly for many stocks + Dirichlet policies for reinforced factor portfolios",
+              "paper_key": "combo:1403.8125+2002.06975+2007.08115+2011.05381+2301.09173+2404.08129"
+            },
+            {
+              "title": "Chan, Jegadeesh & Lakonishok (1996), Momentum Strategies, JF 51(5)",
+              "url": "https://onlinelibrary.wiley.com/doi/10.1111/j.1540-6261.1996.tb05222.x"
+            },
+            {
+              "title": "Fama & French (1992), The Cross-Section of Expected Stock Returns, JF 47(2)",
+              "url": "https://onlinelibrary.wiley.com/doi/10.1111/j.1540-6261.1992.tb04398.x"
+            },
+            {
+              "title": "Amihud (2002), Illiquidity and Stock Returns, JFM 5(1)",
+              "url": "https://www.sciencedirect.com/science/article/pii/S1386418101000246"
+            }
+          ],
+          "wt_id": null,
+          "evidence": "paper",
+          "unmapped_families": [],
+          "axiom_injected": true,
+          "grade": "B",
+          "essence": {
+            "cell_code": "B3_15",
+            "block": "B3",
+            "port_t": 2.25,
+            "net_sharpe": 0.902,
+            "cagr": 0.192,
+            "mdd": 0.586,
+            "calmar": 0.328,
+            "oos_retention": -0.203,
+            "spec": "C:/Users/99922/OneDrive/Quant_Module_Moltbot/.cache/rf_parallel/spec_B3_15__RP_20260917_105807_22632_combo_rulefast_promo3.json",
+            "source": "authoritative_remeasure.json"
+          },
+          "artifacts": "C:/Users/99922/OneDrive/Quant_Module_Moltbot/stage_artifacts/replication/20260921_114939_26460",
+          "lessons": "[B3_15] Grade B · 구속 port_t(2.250/2.95)·calmar(0.328/0.64)·oos(-0.203/0.70) (5조건 중 2 충족) · carry 대비 MDD 0.556→0.586(+5.4%) · CAGR 0.266→0.192(-27.8%) → 양쪽 다 악화",
+          "opened_at": "2026-09-21T11:48:44+0900",
+          "closed_at": "2026-09-21T11:56:39+0900"
+        },
+        {
+          "n": 28,
+          "date": "20260921",
+          "cell_code": "B3_12",
+          "idea": "[무인 병렬 B3_12] K200 단독 — B3/universe · factor2=none · weighting=ew · universe=index · overlay=none",
+          "keyword_axis": "universe",
+          "root_papers": [
+            {
+              "url": "https://arxiv.org/abs/2002.06975",
+              "title": "결합: Cross-sectional Stock Price Prediction using Deep Learning for Actual Investment Management + One Factor to Bind the Cross-Section of Returns + Maximum drawdown, recovery, and momentum + Pinchuk (2023) Labor Income Risk and the Cross-Section of Expected Returns + Uncovering a factor-based expected return conditioning structure with Regression Trees jointly for many stocks + Dirichlet policies for reinforced factor portfolios",
+              "paper_key": "combo:1403.8125+2002.06975+2007.08115+2011.05381+2301.09173+2404.08129"
+            },
+            {
+              "title": "Chan, Jegadeesh & Lakonishok (1996), Momentum Strategies, JF 51(5)",
+              "url": "https://onlinelibrary.wiley.com/doi/10.1111/j.1540-6261.1996.tb05222.x"
+            },
+            {
+              "title": "Fama & French (1992), The Cross-Section of Expected Stock Returns, JF 47(2)",
+              "url": "https://onlinelibrary.wiley.com/doi/10.1111/j.1540-6261.1992.tb04398.x"
+            },
+            {
+              "title": "Amihud (2002), Illiquidity and Stock Returns, JFM 5(1)",
+              "url": "https://www.sciencedirect.com/science/article/pii/S1386418101000246"
+            }
+          ],
+          "wt_id": null,
+          "evidence": "paper",
+          "unmapped_families": [],
+          "axiom_injected": true,
+          "grade": "B",
+          "essence": {
+            "cell_code": "B3_12",
+            "block": "B3",
+            "port_t": 2.538,
+            "net_sharpe": 0.908,
+            "cagr": 0.201,
+            "mdd": 0.549,
+            "calmar": 0.366,
+            "oos_retention": -0.213,
+            "spec": "C:/Users/99922/OneDrive/Quant_Module_Moltbot/.cache/rf_parallel/spec_B3_12__RP_20260917_105807_22632_combo_rulefast_promo3.json",
+            "source": "authoritative_remeasure.json"
+          },
+          "artifacts": "C:/Users/99922/OneDrive/Quant_Module_Moltbot/stage_artifacts/replication/20260921_114939_23136",
+          "lessons": "[B3_12] Grade B · 구속 port_t(2.538/2.95)·calmar(0.366/0.64)·oos(-0.213/0.70) (5조건 중 2 충족) · carry 대비 MDD 0.556→0.549(-1.3%) · CAGR 0.266→0.201(-24.4%) → 위험보다 수익을 더 잃었다(대칭 축소의 전형)",
+          "opened_at": "2026-09-21T11:48:55+0900",
+          "closed_at": "2026-09-21T11:56:40+0900"
+        },
+        {
+          "n": 29,
+          "date": "20260921",
+          "cell_code": "B3_11",
+          "idea": "[무인 병렬 B3_11] KQ150 단독 — B3/universe · factor2=none · weighting=ew · universe=index · overlay=none",
+          "keyword_axis": "universe",
+          "root_papers": [
+            {
+              "url": "https://arxiv.org/abs/2002.06975",
+              "title": "결합: Cross-sectional Stock Price Prediction using Deep Learning for Actual Investment Management + One Factor to Bind the Cross-Section of Returns + Maximum drawdown, recovery, and momentum + Pinchuk (2023) Labor Income Risk and the Cross-Section of Expected Returns + Uncovering a factor-based expected return conditioning structure with Regression Trees jointly for many stocks + Dirichlet policies for reinforced factor portfolios",
+              "paper_key": "combo:1403.8125+2002.06975+2007.08115+2011.05381+2301.09173+2404.08129"
+            },
+            {
+              "title": "Chan, Jegadeesh & Lakonishok (1996), Momentum Strategies, JF 51(5)",
+              "url": "https://onlinelibrary.wiley.com/doi/10.1111/j.1540-6261.1996.tb05222.x"
+            },
+            {
+              "title": "Fama & French (1992), The Cross-Section of Expected Stock Returns, JF 47(2)",
+              "url": "https://onlinelibrary.wiley.com/doi/10.1111/j.1540-6261.1992.tb04398.x"
+            },
+            {
+              "title": "Amihud (2002), Illiquidity and Stock Returns, JFM 5(1)",
+              "url": "https://www.sciencedirect.com/science/article/pii/S1386418101000246"
+            }
+          ],
+          "wt_id": null,
+          "evidence": "paper",
+          "unmapped_families": [],
+          "axiom_injected": true,
+          "grade": "C",
+          "essence": {
+            "cell_code": "B3_11",
+            "block": "B3",
+            "port_t": 1.701,
+            "net_sharpe": 0.804,
+            "cagr": 0.192,
+            "mdd": 0.518,
+            "calmar": 0.371,
+            "oos_retention": -0.258,
+            "spec": "C:/Users/99922/OneDrive/Quant_Module_Moltbot/.cache/rf_parallel/spec_B3_11__RP_20260917_105807_22632_combo_rulefast_promo3.json",
+            "source": "authoritative_remeasure.json"
+          },
+          "artifacts": "C:/Users/99922/OneDrive/Quant_Module_Moltbot/stage_artifacts/replication/20260921_114939_8320",
+          "lessons": "[B3_11] Grade C · 구속 port_t(1.701/2.95)·calmar(0.371/0.64)·oos(-0.258/0.70) (5조건 중 2 충족) · carry 대비 MDD 0.556→0.518(-6.8%) · CAGR 0.266→0.192(-27.8%) → 위험보다 수익을 더 잃었다(대칭 축소의 전형)",
+          "opened_at": "2026-09-21T11:49:00+0900",
+          "closed_at": "2026-09-21T11:56:41+0900"
+        },
+        {
+          "n": 30,
+          "date": "20260921",
+          "cell_code": "B3_14",
+          "idea": "[무인 병렬 B3_14] 대형주 상위 1/3 — B3/universe · factor2=none · weighting=ew · universe=size_band · overlay=none",
+          "keyword_axis": "universe",
+          "root_papers": [
+            {
+              "url": "https://arxiv.org/abs/2002.06975",
+              "title": "결합: Cross-sectional Stock Price Prediction using Deep Learning for Actual Investment Management + One Factor to Bind the Cross-Section of Returns + Maximum drawdown, recovery, and momentum + Pinchuk (2023) Labor Income Risk and the Cross-Section of Expected Returns + Uncovering a factor-based expected return conditioning structure with Regression Trees jointly for many stocks + Dirichlet policies for reinforced factor portfolios",
+              "paper_key": "combo:1403.8125+2002.06975+2007.08115+2011.05381+2301.09173+2404.08129"
+            },
+            {
+              "title": "Chan, Jegadeesh & Lakonishok (1996), Momentum Strategies, JF 51(5)",
+              "url": "https://onlinelibrary.wiley.com/doi/10.1111/j.1540-6261.1996.tb05222.x"
+            },
+            {
+              "title": "Fama & French (1992), The Cross-Section of Expected Stock Returns, JF 47(2)",
+              "url": "https://onlinelibrary.wiley.com/doi/10.1111/j.1540-6261.1992.tb04398.x"
+            },
+            {
+              "title": "Amihud (2002), Illiquidity and Stock Returns, JFM 5(1)",
+              "url": "https://www.sciencedirect.com/science/article/pii/S1386418101000246"
+            }
+          ],
+          "wt_id": null,
+          "evidence": "paper",
+          "unmapped_families": [],
+          "axiom_injected": true,
+          "grade": "C",
+          "essence": {
+            "cell_code": "B3_14",
+            "block": "B3",
+            "port_t": 1.931,
+            "net_sharpe": 0.783,
+            "cagr": 0.168,
+            "mdd": 0.557,
+            "calmar": 0.302,
+            "oos_retention": -0.17,
+            "spec": "C:/Users/99922/OneDrive/Quant_Module_Moltbot/.cache/rf_parallel/spec_B3_14__RP_20260917_105807_22632_combo_rulefast_promo3.json",
+            "source": "authoritative_remeasure.json"
+          },
+          "artifacts": "C:/Users/99922/OneDrive/Quant_Module_Moltbot/stage_artifacts/replication/20260921_114939_29180",
+          "lessons": "[B3_14] Grade C · 구속 port_t(1.931/2.95)·calmar(0.302/0.64)·sharpe(0.783/0.80)·oos(-0.170/0.70) (5조건 중 1 충족) · carry 대비 MDD 0.556→0.557(+0.2%) · CAGR 0.266→0.168(-36.8%) → 양쪽 다 악화",
+          "opened_at": "2026-09-21T11:49:04+0900",
+          "closed_at": "2026-09-21T11:56:42+0900"
+        },
+        {
+          "n": 31,
+          "date": "20260921",
+          "cell_code": "B3_13",
+          "idea": "[무인 병렬 B3_13] 소형주 하위 1/3 — B3/universe · factor2=none · weighting=ew · universe=size_band · overlay=none",
+          "keyword_axis": "universe",
+          "root_papers": [
+            {
+              "url": "https://arxiv.org/abs/2002.06975",
+              "title": "결합: Cross-sectional Stock Price Prediction using Deep Learning for Actual Investment Management + One Factor to Bind the Cross-Section of Returns + Maximum drawdown, recovery, and momentum + Pinchuk (2023) Labor Income Risk and the Cross-Section of Expected Returns + Uncovering a factor-based expected return conditioning structure with Regression Trees jointly for many stocks + Dirichlet policies for reinforced factor portfolios",
+              "paper_key": "combo:1403.8125+2002.06975+2007.08115+2011.05381+2301.09173+2404.08129"
+            },
+            {
+              "title": "Chan, Jegadeesh & Lakonishok (1996), Momentum Strategies, JF 51(5)",
+              "url": "https://onlinelibrary.wiley.com/doi/10.1111/j.1540-6261.1996.tb05222.x"
+            },
+            {
+              "title": "Fama & French (1992), The Cross-Section of Expected Stock Returns, JF 47(2)",
+              "url": "https://onlinelibrary.wiley.com/doi/10.1111/j.1540-6261.1992.tb04398.x"
+            },
+            {
+              "title": "Amihud (2002), Illiquidity and Stock Returns, JFM 5(1)",
+              "url": "https://www.sciencedirect.com/science/article/pii/S1386418101000246"
+            }
+          ],
+          "wt_id": null,
+          "evidence": "paper",
+          "unmapped_families": [],
+          "axiom_injected": true,
+          "grade": "C",
+          "essence": {
+            "cell_code": "B3_13",
+            "block": "B3",
+            "port_t": 1.48,
+            "net_sharpe": 0.78,
+            "cagr": 0.176,
+            "mdd": 0.594,
+            "calmar": 0.297,
+            "oos_retention": -0.549,
+            "spec": "C:/Users/99922/OneDrive/Quant_Module_Moltbot/.cache/rf_parallel/spec_B3_13__RP_20260917_105807_22632_combo_rulefast_promo3.json",
+            "source": "authoritative_remeasure.json"
+          },
+          "artifacts": "C:/Users/99922/OneDrive/Quant_Module_Moltbot/stage_artifacts/replication/20260921_114939_29228",
+          "lessons": "[B3_13] Grade C · 구속 port_t(1.480/2.95)·calmar(0.297/0.64)·sharpe(0.780/0.80)·oos(-0.549/0.70) (5조건 중 1 충족) · carry 대비 MDD 0.556→0.594(+6.8%) · CAGR 0.266→0.176(-33.8%) → 양쪽 다 악화",
+          "opened_at": "2026-09-21T11:49:09+0900",
+          "closed_at": "2026-09-21T11:56:42+0900"
+        },
+        {
+          "n": 32,
+          "date": "20260921",
+          "cell_code": "B6_32",
+          "idea": "[무인 병렬 B6_32] 격월(k=2 · 위상 0) — B6/execution_cadence · factor2=none · weighting=ew · universe=k200_kq150 · overlay=none",
+          "keyword_axis": "execution_cadence",
+          "root_papers": [
+            {
+              "url": "https://arxiv.org/abs/2002.06975",
+              "title": "결합: Cross-sectional Stock Price Prediction using Deep Learning for Actual Investment Management + One Factor to Bind the Cross-Section of Returns + Maximum drawdown, recovery, and momentum + Pinchuk (2023) Labor Income Risk and the Cross-Section of Expected Returns + Uncovering a factor-based expected return conditioning structure with Regression Trees jointly for many stocks + Dirichlet policies for reinforced factor portfolios",
+              "paper_key": "combo:1403.8125+2002.06975+2007.08115+2011.05381+2301.09173+2404.08129"
+            },
+            {
+              "title": "Chan, Jegadeesh & Lakonishok (1996), Momentum Strategies, JF 51(5)",
+              "url": "https://onlinelibrary.wiley.com/doi/10.1111/j.1540-6261.1996.tb05222.x"
+            },
+            {
+              "title": "Fama & French (1992), The Cross-Section of Expected Stock Returns, JF 47(2)",
+              "url": "https://onlinelibrary.wiley.com/doi/10.1111/j.1540-6261.1992.tb04398.x"
+            },
+            {
+              "title": "Amihud (2002), Illiquidity and Stock Returns, JFM 5(1)",
+              "url": "https://www.sciencedirect.com/science/article/pii/S1386418101000246"
+            }
+          ],
+          "wt_id": null,
+          "evidence": "paper",
+          "unmapped_families": [],
+          "axiom_injected": true,
+          "grade": "B",
+          "essence": {
+            "cell_code": "B6_32",
+            "block": "B6",
+            "port_t": 3.246,
+            "net_sharpe": 0.977,
+            "cagr": 0.23,
+            "mdd": 0.569,
+            "calmar": 0.404,
+            "oos_retention": 0.055,
+            "spec": "C:/Users/99922/OneDrive/Quant_Module_Moltbot/.cache/rf_parallel/spec_B6_32__RP_20260917_105807_22632_combo_rulefast_promo3.json",
+            "source": "authoritative_remeasure.json"
+          },
+          "artifacts": "C:/Users/99922/OneDrive/Quant_Module_Moltbot/stage_artifacts/replication/20260921_120532_12912",
+          "lessons": "[B6_32] Grade B · 구속 calmar(0.404/0.64)·oos(0.055/0.70) (5조건 중 3 충족) · carry 대비 MDD 0.594→0.569(-4.2%) · CAGR 0.176→0.230(+30.7%) → 위험만 줄었다(비대칭 성공)",
+          "opened_at": "2026-09-21T12:04:44+0900",
+          "closed_at": "2026-09-21T12:12:22+0900"
+        },
+        {
+          "n": 33,
+          "date": "20260921",
+          "cell_code": "B6_33",
+          "idea": "[무인 병렬 B6_33] 격월(k=2 · 위상 1) — 위상 대조 — B6/execution_cadence · factor2=none · weighting=ew · universe=k200_kq150 · overlay=none",
+          "keyword_axis": "execution_cadence",
+          "root_papers": [
+            {
+              "url": "https://arxiv.org/abs/2002.06975",
+              "title": "결합: Cross-sectional Stock Price Prediction using Deep Learning for Actual Investment Management + One Factor to Bind the Cross-Section of Returns + Maximum drawdown, recovery, and momentum + Pinchuk (2023) Labor Income Risk and the Cross-Section of Expected Returns + Uncovering a factor-based expected return conditioning structure with Regression Trees jointly for many stocks + Dirichlet policies for reinforced factor portfolios",
+              "paper_key": "combo:1403.8125+2002.06975+2007.08115+2011.05381+2301.09173+2404.08129"
+            },
+            {
+              "title": "Chan, Jegadeesh & Lakonishok (1996), Momentum Strategies, JF 51(5)",
+              "url": "https://onlinelibrary.wiley.com/doi/10.1111/j.1540-6261.1996.tb05222.x"
+            },
+            {
+              "title": "Fama & French (1992), The Cross-Section of Expected Stock Returns, JF 47(2)",
+              "url": "https://onlinelibrary.wiley.com/doi/10.1111/j.1540-6261.1992.tb04398.x"
+            },
+            {
+              "title": "Amihud (2002), Illiquidity and Stock Returns, JFM 5(1)",
+              "url": "https://www.sciencedirect.com/science/article/pii/S1386418101000246"
+            }
+          ],
+          "wt_id": null,
+          "evidence": "paper",
+          "unmapped_families": [],
+          "axiom_injected": true,
+          "grade": "B",
+          "essence": {
+            "cell_code": "B6_33",
+            "block": "B6",
+            "port_t": 2.806,
+            "net_sharpe": 0.904,
+            "cagr": 0.206,
+            "mdd": 0.653,
+            "calmar": 0.315,
+            "oos_retention": -0.038,
+            "spec": "C:/Users/99922/OneDrive/Quant_Module_Moltbot/.cache/rf_parallel/spec_B6_33__RP_20260917_105807_22632_combo_rulefast_promo3.json",
+            "source": "authoritative_remeasure.json"
+          },
+          "artifacts": "C:/Users/99922/OneDrive/Quant_Module_Moltbot/stage_artifacts/replication/20260921_120533_3712",
+          "lessons": "[B6_33] Grade B · 구속 port_t(2.806/2.95)·calmar(0.315/0.64)·oos(-0.038/0.70) (5조건 중 2 충족) · carry 대비 MDD 0.594→0.653(+9.9%) · CAGR 0.176→0.206(+17.0%) → 수익만 늘었다(위험 축 미개입)",
+          "opened_at": "2026-09-21T12:04:57+0900",
+          "closed_at": "2026-09-21T12:12:23+0900"
+        },
+        {
+          "n": 34,
+          "date": "20260921",
+          "cell_code": "B6_34",
+          "idea": "[무인 병렬 B6_34] 분기(k=3 · 위상 0) — B6/execution_cadence · factor2=none · weighting=ew · universe=k200_kq150 · overlay=none",
+          "keyword_axis": "execution_cadence",
+          "root_papers": [
+            {
+              "url": "https://arxiv.org/abs/2002.06975",
+              "title": "결합: Cross-sectional Stock Price Prediction using Deep Learning for Actual Investment Management + One Factor to Bind the Cross-Section of Returns + Maximum drawdown, recovery, and momentum + Pinchuk (2023) Labor Income Risk and the Cross-Section of Expected Returns + Uncovering a factor-based expected return conditioning structure with Regression Trees jointly for many stocks + Dirichlet policies for reinforced factor portfolios",
+              "paper_key": "combo:1403.8125+2002.06975+2007.08115+2011.05381+2301.09173+2404.08129"
+            },
+            {
+              "title": "Chan, Jegadeesh & Lakonishok (1996), Momentum Strategies, JF 51(5)",
+              "url": "https://onlinelibrary.wiley.com/doi/10.1111/j.1540-6261.1996.tb05222.x"
+            },
+            {
+              "title": "Fama & French (1992), The Cross-Section of Expected Stock Returns, JF 47(2)",
+              "url": "https://onlinelibrary.wiley.com/doi/10.1111/j.1540-6261.1992.tb04398.x"
+            },
+            {
+              "title": "Amihud (2002), Illiquidity and Stock Returns, JFM 5(1)",
+              "url": "https://www.sciencedirect.com/science/article/pii/S1386418101000246"
+            }
+          ],
+          "wt_id": null,
+          "evidence": "paper",
+          "unmapped_families": [],
+          "axiom_injected": true,
+          "grade": "B",
+          "essence": {
+            "cell_code": "B6_34",
+            "block": "B6",
+            "port_t": 2.992,
+            "net_sharpe": 0.938,
+            "cagr": 0.218,
+            "mdd": 0.636,
+            "calmar": 0.343,
+            "oos_retention": 0.406,
+            "spec": "C:/Users/99922/OneDrive/Quant_Module_Moltbot/.cache/rf_parallel/spec_B6_34__RP_20260917_105807_22632_combo_rulefast_promo3.json",
+            "source": "authoritative_remeasure.json"
+          },
+          "artifacts": "C:/Users/99922/OneDrive/Quant_Module_Moltbot/stage_artifacts/replication/20260921_120533_16048",
+          "lessons": "[B6_34] Grade B · 구속 calmar(0.343/0.64)·oos(0.406/0.70) (5조건 중 3 충족) · carry 대비 MDD 0.594→0.636(+7.1%) · CAGR 0.176→0.218(+23.9%) → 수익만 늘었다(위험 축 미개입)",
+          "opened_at": "2026-09-21T12:05:02+0900",
+          "closed_at": "2026-09-21T12:12:24+0900"
+        },
+        {
+          "n": 35,
+          "date": "20260921",
+          "cell_code": "B6_35",
+          "idea": "[무인 병렬 B6_35] 노트레이드 밴드(확장창 중앙값) — B6/execution_cadence · factor2=none · weighting=ew · universe=k200_kq150 · overlay=none",
+          "keyword_axis": "execution_cadence",
+          "root_papers": [
+            {
+              "url": "https://arxiv.org/abs/2002.06975",
+              "title": "결합: Cross-sectional Stock Price Prediction using Deep Learning for Actual Investment Management + One Factor to Bind the Cross-Section of Returns + Maximum drawdown, recovery, and momentum + Pinchuk (2023) Labor Income Risk and the Cross-Section of Expected Returns + Uncovering a factor-based expected return conditioning structure with Regression Trees jointly for many stocks + Dirichlet policies for reinforced factor portfolios",
+              "paper_key": "combo:1403.8125+2002.06975+2007.08115+2011.05381+2301.09173+2404.08129"
+            },
+            {
+              "title": "Chan, Jegadeesh & Lakonishok (1996), Momentum Strategies, JF 51(5)",
+              "url": "https://onlinelibrary.wiley.com/doi/10.1111/j.1540-6261.1996.tb05222.x"
+            },
+            {
+              "title": "Fama & French (1992), The Cross-Section of Expected Stock Returns, JF 47(2)",
+              "url": "https://onlinelibrary.wiley.com/doi/10.1111/j.1540-6261.1992.tb04398.x"
+            },
+            {
+              "title": "Amihud (2002), Illiquidity and Stock Returns, JFM 5(1)",
+              "url": "https://www.sciencedirect.com/science/article/pii/S1386418101000246"
+            }
+          ],
+          "wt_id": null,
+          "evidence": "paper",
+          "unmapped_families": [],
+          "axiom_injected": true,
+          "grade": "B",
+          "essence": {
+            "cell_code": "B6_35",
+            "block": "B6",
+            "port_t": 3.144,
+            "net_sharpe": 0.973,
+            "cagr": 0.225,
+            "mdd": 0.633,
+            "calmar": 0.356,
+            "oos_retention": 0.053,
+            "spec": "C:/Users/99922/OneDrive/Quant_Module_Moltbot/.cache/rf_parallel/spec_B6_35__RP_20260917_105807_22632_combo_rulefast_promo3.json",
+            "source": "authoritative_remeasure.json"
+          },
+          "artifacts": "C:/Users/99922/OneDrive/Quant_Module_Moltbot/stage_artifacts/replication/20260921_120533_23384",
+          "lessons": "[B6_35] Grade B · 구속 calmar(0.356/0.64)·oos(0.053/0.70) (5조건 중 3 충족) · carry 대비 MDD 0.594→0.633(+6.6%) · CAGR 0.176→0.225(+27.8%) → 수익만 늘었다(위험 축 미개입)",
+          "opened_at": "2026-09-21T12:05:06+0900",
+          "closed_at": "2026-09-21T12:12:25+0900"
+        },
+        {
+          "n": 36,
+          "date": "20260921",
+          "cell_code": "B6_36",
+          "idea": "[무인 병렬 B6_36] 랭크 버퍼(2×n_max 히스테리시스) — B6/execution_cadence · factor2=none · weighting=ew · universe=k200_kq150 · overlay=none",
+          "keyword_axis": "execution_cadence",
+          "root_papers": [
+            {
+              "url": "https://arxiv.org/abs/2002.06975",
+              "title": "결합: Cross-sectional Stock Price Prediction using Deep Learning for Actual Investment Management + One Factor to Bind the Cross-Section of Returns + Maximum drawdown, recovery, and momentum + Pinchuk (2023) Labor Income Risk and the Cross-Section of Expected Returns + Uncovering a factor-based expected return conditioning structure with Regression Trees jointly for many stocks + Dirichlet policies for reinforced factor portfolios",
+              "paper_key": "combo:1403.8125+2002.06975+2007.08115+2011.05381+2301.09173+2404.08129"
+            },
+            {
+              "title": "Chan, Jegadeesh & Lakonishok (1996), Momentum Strategies, JF 51(5)",
+              "url": "https://onlinelibrary.wiley.com/doi/10.1111/j.1540-6261.1996.tb05222.x"
+            },
+            {
+              "title": "Fama & French (1992), The Cross-Section of Expected Stock Returns, JF 47(2)",
+              "url": "https://onlinelibrary.wiley.com/doi/10.1111/j.1540-6261.1992.tb04398.x"
+            },
+            {
+              "title": "Amihud (2002), Illiquidity and Stock Returns, JFM 5(1)",
+              "url": "https://www.sciencedirect.com/science/article/pii/S1386418101000246"
+            }
+          ],
+          "wt_id": null,
+          "evidence": "paper",
+          "unmapped_families": [],
+          "axiom_injected": true,
+          "grade": "B",
+          "essence": {
+            "cell_code": "B6_36",
+            "block": "B6",
+            "port_t": 4.089,
+            "net_sharpe": 1.098,
+            "cagr": 0.263,
+            "mdd": 0.563,
+            "calmar": 0.468,
+            "oos_retention": 0.077,
+            "spec": "C:/Users/99922/OneDrive/Quant_Module_Moltbot/.cache/rf_parallel/spec_B6_36__RP_20260917_105807_22632_combo_rulefast_promo3.json",
+            "source": "authoritative_remeasure.json"
+          },
+          "artifacts": "C:/Users/99922/OneDrive/Quant_Module_Moltbot/stage_artifacts/replication/20260921_120533_34900",
+          "lessons": "[B6_36] Grade B · 구속 calmar(0.468/0.64)·oos(0.077/0.70) (5조건 중 3 충족) · carry 대비 MDD 0.594→0.563(-5.2%) · CAGR 0.176→0.263(+49.4%) → 위험만 줄었다(비대칭 성공)",
+          "opened_at": "2026-09-21T12:05:11+0900",
+          "closed_at": "2026-09-21T12:12:25+0900"
+        },
+        {
+          "n": 37,
+          "date": "20260921",
+          "cell_code": "B4_21",
+          "idea": "[무인 병렬 B4_21] 전 요소 결합(4축) — B4/combination · factor2=none · weighting=catalog · universe=index · overlay=none",
+          "keyword_axis": "combination",
+          "root_papers": [
+            {
+              "url": "https://arxiv.org/abs/2002.06975",
+              "title": "결합: Cross-sectional Stock Price Prediction using Deep Learning for Actual Investment Management + One Factor to Bind the Cross-Section of Returns + Maximum drawdown, recovery, and momentum + Pinchuk (2023) Labor Income Risk and the Cross-Section of Expected Returns + Uncovering a factor-based expected return conditioning structure with Regression Trees jointly for many stocks + Dirichlet policies for reinforced factor portfolios",
+              "paper_key": "combo:1403.8125+2002.06975+2007.08115+2011.05381+2301.09173+2404.08129"
+            },
+            {
+              "title": "Chan, Jegadeesh & Lakonishok (1996), Momentum Strategies, JF 51(5)",
+              "url": "https://onlinelibrary.wiley.com/doi/10.1111/j.1540-6261.1996.tb05222.x"
+            },
+            {
+              "title": "Fama & French (1992), The Cross-Section of Expected Stock Returns, JF 47(2)",
+              "url": "https://onlinelibrary.wiley.com/doi/10.1111/j.1540-6261.1992.tb04398.x"
+            },
+            {
+              "title": "Amihud (2002), Illiquidity and Stock Returns, JFM 5(1)",
+              "url": "https://www.sciencedirect.com/science/article/pii/S1386418101000246"
+            }
+          ],
+          "wt_id": null,
+          "evidence": "paper",
+          "unmapped_families": [],
+          "axiom_injected": true,
+          "grade": "C",
+          "essence": {
+            "cell_code": "B4_21",
+            "block": "B4",
+            "port_t": 1.619,
+            "net_sharpe": 0.816,
+            "cagr": 0.188,
+            "mdd": 0.52,
+            "calmar": 0.362,
+            "oos_retention": -0.32,
+            "spec": "C:/Users/99922/OneDrive/Quant_Module_Moltbot/.cache/rf_parallel/spec_B4_21__RP_20260917_105807_22632_combo_rulefast_promo3.json",
+            "source": "authoritative_remeasure.json"
+          },
+          "artifacts": "C:/Users/99922/OneDrive/Quant_Module_Moltbot/stage_artifacts/replication/20260921_122140_34576",
+          "lessons": "[B4_21] Grade C · 구속 port_t(1.619/2.95)·calmar(0.362/0.64)·oos(-0.320/0.70) (5조건 중 2 충족) · carry 대비 MDD 0.563→0.520(-7.6%) · CAGR 0.263→0.188(-28.5%) → 위험보다 수익을 더 잃었다(대칭 축소의 전형)",
+          "opened_at": "2026-09-21T12:21:01+0900",
+          "closed_at": "2026-09-21T12:26:39+0900"
+        },
+        {
+          "n": 38,
+          "date": "20260921",
+          "cell_code": "B4_22",
+          "idea": "[무인 병렬 B4_22] 팩터 제외(LOO) — B4/combination · factor2=none · weighting=catalog · universe=index · overlay=none",
+          "keyword_axis": "combination",
+          "root_papers": [
+            {
+              "url": "https://arxiv.org/abs/2002.06975",
+              "title": "결합: Cross-sectional Stock Price Prediction using Deep Learning for Actual Investment Management + One Factor to Bind the Cross-Section of Returns + Maximum drawdown, recovery, and momentum + Pinchuk (2023) Labor Income Risk and the Cross-Section of Expected Returns + Uncovering a factor-based expected return conditioning structure with Regression Trees jointly for many stocks + Dirichlet policies for reinforced factor portfolios",
+              "paper_key": "combo:1403.8125+2002.06975+2007.08115+2011.05381+2301.09173+2404.08129"
+            },
+            {
+              "title": "Chan, Jegadeesh & Lakonishok (1996), Momentum Strategies, JF 51(5)",
+              "url": "https://onlinelibrary.wiley.com/doi/10.1111/j.1540-6261.1996.tb05222.x"
+            },
+            {
+              "title": "Fama & French (1992), The Cross-Section of Expected Stock Returns, JF 47(2)",
+              "url": "https://onlinelibrary.wiley.com/doi/10.1111/j.1540-6261.1992.tb04398.x"
+            }
+          ],
+          "wt_id": null,
+          "evidence": "paper",
+          "unmapped_families": [],
+          "axiom_injected": true,
+          "grade": "C",
+          "essence": {
+            "cell_code": "B4_22",
+            "block": "B4",
+            "port_t": 1.534,
+            "net_sharpe": 0.823,
+            "cagr": 0.187,
+            "mdd": 0.475,
+            "calmar": 0.393,
+            "oos_retention": -0.474,
+            "spec": "C:/Users/99922/OneDrive/Quant_Module_Moltbot/.cache/rf_parallel/spec_B4_22__RP_20260917_105807_22632_combo_rulefast_promo3.json",
+            "source": "authoritative_remeasure.json"
+          },
+          "artifacts": "C:/Users/99922/OneDrive/Quant_Module_Moltbot/stage_artifacts/replication/20260921_122140_15164",
+          "lessons": "[B4_22] Grade C · 구속 port_t(1.534/2.95)·calmar(0.393/0.64)·oos(-0.474/0.70) (5조건 중 2 충족) · carry 대비 MDD 0.563→0.475(-15.6%) · CAGR 0.263→0.187(-28.9%) → 위험보다 수익을 더 잃었다(대칭 축소의 전형)",
+          "opened_at": "2026-09-21T12:21:12+0900",
+          "closed_at": "2026-09-21T12:26:40+0900"
         }
       ],
-      "falsification_printed_by_engine": {
-        "F1_not_a_relabel_of_A": "형성일마다 nested top-25 vs DNN top-25 겹침 → 중앙 ≥ 0.80 이면 FAIL(2단 정렬이 이름을 못 바꿨다 = [A] 단독 선정의 재라벨)",
-        "F2_second_sort_active": "5분위 안 CM 유한 종목 < 25 인 달의 비율 ≥ 0.50 이면 FAIL(CM 이 고를 여지가 없는 달이 과반)",
-        "F3_second_sort_not_redundant": "5분위 안 rho(DNN, CM) 중앙 |·| ≥ 0.90 이면 FAIL(CM 이 DNN 의 재표현)",
-        "F4_no_month_dropout": "범위 = 스케줄 월 전부(학습창·고정 축 충족) · 결번 > 0 → FAIL",
-        "extra_diagnostics": "연도별 N·nq·n_q_cm·겹침·rho·nested 25 의 DNN 순위 중앙·창내 MDD6 중앙(nested/DNN top-25/전체) · C6·CM 중앙 대비 · 멤버십→유동성 통과 종목수 · panel_scores.parquet(Date, Ticker, Score, dnn, cm, q) 를 _work/run_*/ 에 남겨 DNN-only top-25 절제 측정이 가능하게 한다"
+      "judge": {
+        "spawned": false,
+        "verdict_path": null
       },
-      "falsification_judged_by_the_contract_not_the_engine": {
-        "axis": "top-25 롱온리 EW · 월간 · 15bps · K200∪KQ150(PIT 시변) · 2005-01-01~",
-        "comparator_A_only_selection": "06_Registry/reinforce_ledger_l1.json entry RP_20260913_090549_14760_adapted_rulefast (depth 0) B2 칸 = DNN 점수 top-25 선정 · 비중만 다름 — B2_11 PORT_t 2.823 · Calmar 0.412 · MDD 0.556 · OOS −0.087 / B2_10 2.767 · 0.401 · 0.567 / B2_9 2.623 / B2_8 2.259 / B2_7 2.196 / B2_6 1.529. 순수 EW 미측정.",
-        "comparator_A_plus_horizon_blend": "같은 entry B1_3 (DNN 0.5 + M01_Mom_12_1 0.5 · EW) PORT_t 2.743 · Calmar 0.412 · MDD 0.541 · OOS −0.028",
-        "comparator_lineage_best_not_standalone": "promo2 B1_2 PORT_t 3.589 · Calmar 0.477 · MDD 0.543 · OOS −0.089 (DNN 0.5 + Mom_12_1·Residual_Mom·EP·FCF_Yield + lean_score_tilt LW) — 강화 3세대 구성 · 단독 문턱 아님 · 러너 희석 판정은 기록 전용",
-        "comparator_B_only": "충실구현 RP_AUTO_1403_8125 PORT_t −0.639 F · CM top-25 결합 1~3판 0.691/0.788/0.716 C · promo2 B3_12 2.567(KQ150 단독 유니버스)",
-        "comparator_C_screen_on_CM": "RP_20260913_022403_11800 (4판) PORT_t 0.071 · MDD 0.691 · Calmar 0.157 · GFC −45.13 vs −36.48",
-        "prediction": "1급: PORT_t > 2.823 AND MDD < 0.541 (두 재료 단독 모두를 넘는다 — 하나라도 미달이면 결합 폐기). 2급: PORT_t ≥ 2.95 AND Calmar ≥ 0.64. 기전: 2018-01~2020-03 에피소드 < 0.463 ∧ GFC 2007-11~2008-10 ≤ 0.479 — 앞은 침식형 낙폭 회피의 전달, 뒤는 [B] 급락 동조의 부재. GFC > 0.479 이면 다음 판 = [C] 급락일 조건부를 풀 수준에서 재측정. OOS retention < 0.5 는 등급을 B 에 묶지만 1급 주장을 반증하지 않는다(이 재료 집합에 그 레버가 없다는 기록).",
-        "note": "이것은 예측이지 성과 선언이 아니다 — 등급·성과는 계약이 낸다."
+      "opened_at": "2026-09-21T09:48:05+0900",
+      "carry": {
+        "factors": [
+          {
+            "kind": "db",
+            "id": "C03_EPS_Chg_3m"
+          },
+          {
+            "kind": "db",
+            "id": "M01_Mom_12_1"
+          },
+          {
+            "kind": "db",
+            "id": "V14_EBIT_EV"
+          }
+        ],
+        "weighting": {
+          "kind": "ew"
+        },
+        "rebalance": null,
+        "universe": {
+          "kind": "k200_kq150"
+        },
+        "universe_reset_from": {
+          "kind": "k200_kq150"
+        },
+        "overlay": [],
+        "source_cell": "B1_2",
+        "source_spec": "C:/Users/99922/OneDrive/Quant_Module_Moltbot/.cache/rf_parallel/spec_B1_2__RP_20260917_105807_22632_combo_rulefast_promo2.json"
       },
-      "pit": "C1~C15 를 구조로 보장한다(엔진 헤더). [A] 블록 = 3판 그대로(시그널일 t 특성 = t 이하 · 학습 표적 = 갱신일 u 까지 실현 · 파이썬 단언 + R 재단언) · [B] 창 = (me[k−6], f] 종점 f 종가 · 집행 익 거래일 → 창 ∩ 보유월 = ∅(C2·C3) · adv20 = frollmean 후 shift(1)(C10) · 멤버십 = f 당일 플래그(C6) · 전 표본 통계 0건(순위·5분위·CM 전부 그날 횡단면·그 창 안 · C1) · 음수 shift·lead·미래 인덱싱 0건(C7) · 재무 usable FY+1 3/31(C4 · 3판) · 오버레이 없음(C5·C9) · 외부 매크로 없음(C11) · 부호 조작 0건(C13) · 팩터 DB 미접근(C15) · rawdata Market 열 미사용.",
-      "dependencies": ["data.table", "arrow", "dplyr"],
-      "python_subprocess": ".venv_qvest_ml/Scripts/python.exe (torch · pyarrow · pandas · numpy) — 스크립트 본문은 engine.R 안 문자열이며 매 실행 _work/run_*/dnn_rolling.py 로 써 넣는다. 캐시 = _work/cache(쓰기) + RP_AUTO_2002_06975/_work/cache(읽기 전용).",
-      "determinism": "R 난수 미사용 · set.seed 없음 · 파이썬 시드 = 20020697 + 월 인덱스(3판 동일) · 동값 (DNN 종목코드 · CM 평균 순위) · FACTORS 정렬 (Date, −Score, Ticker).",
-      "prior_measurements_on_this_material_set": {
-        "prompt_label_best_solo": "3.589 (2002.06975 promo2 B1_2 · 강화 3세대) · 2.749 (2404.08129 promo1 B2_10) · 2.567 (1403.8125 promo2 B3_12) · 1.228 (2301.09173) · 1.11 (2007.08115) · 0.611 (2011.05381) — 단독 문턱으로 쓰지 않는다",
-        "faithful_bases": "[A] 5분위 롱숏 engine_direct = C(PORT_t −0.28 · long_short_vs_long_bm · recent_regime 구제) · [B] 10-decile 롱숏 J-T = −0.639 F · [D] §5.7 = −2.326 F · [E] = −1.16 F · [C] 각색 = 0.209 C · [F] 각색 = 0.611 C",
-        "rankz_average_lineage": "5회 · 최고 0.766",
-        "cm_combination_editions": "1판 0.691 · 2판 0.788 · 3판 0.716 · 4판(+[C] 자격) 0.071",
-        "this_exact_material_set_tried": "0 (6편 집합) · [A] 는 어떤 결합에도 쓰인 적 없음",
-        "graduation_bar": "PORT_t ≥ 2.95 · OOS retention ≥ 0.70(0.5~0.7 조건부) · SR ≥ 0.8 · CAGR ≥ 0.16 · Calmar ≥ 0.64"
-      }
+      "parent": {
+        "base_id": "RP_20260917_105807_22632_combo_rulefast_promo2",
+        "depth": 3,
+        "cell": "B1_2",
+        "best_port_t": 3.806,
+        "promoted_at": "2026-09-21T09:48:05+0900"
+      },
+      "max_attempts": 38,
+      "max_attempts_reason": "예산 재도출 36 -> 38 = 기본 30 + B1 설계 초과 5(설계 10칸) + B5 설계 초과 2(설계 7칸) + 상주 1 + 재설계 추가 0 — 뒤 블록이 잘리지 않도록",
+      "max_attempts_at": "2026-09-21T10:41:30+0900",
+      "block_order": [
+        "B1",
+        "B5",
+        "B2",
+        "B3",
+        "B6",
+        "B4"
+      ],
+      "block_order_reason": "CAGR 0.276 >= 0.16 충족 · Calmar 0.501 < 0.64 미달 → 위험 축(B5)을 2번째로. 비중·유니버스는 MDD 를 거의 안 움직이므로 그 축을 먼저 돌면 출하되지 않는 구성을 최적화하게 된다.",
+      "block_order_at": "2026-09-21T10:12:06+0900",
+      "search_adaptive": true,
+      "b5_design": {
+        "rounds": [
+          {
+            "round": 1,
+            "at": "2026-09-21T10:41:24+0900",
+            "source": "b5_design_lane",
+            "n_cells": 7,
+            "new_arms_admitted": 0,
+            "new_arms_rejected": 0,
+            "compose_only": true,
+            "fallback": false,
+            "new_arm_ids": [],
+            "n_total_cells": 7,
+            "design_path": "C:/Users/99922/OneDrive/Quant_Module_Moltbot/.cache/rf_block_design/RP_20260917_105807_22632_combo_rulefast_promo3_B5.json",
+            "mechanism_backup": "C:/Users/99922/OneDrive/Quant_Module_Moltbot/.cache/rf_b5_design/RP_20260917_105807_22632_combo_rulefast_promo3/RP_20260917_105807_22632_combo_rulefast_promo3_B5.mech.json"
+          }
+        ]
+      },
+      "exhausted_at": "2026-09-21T12:36:05+0900"
     }
   },
-  "fidelity_audit": {
-    "verdict": "adapted",
-    "undeclared_changes": [],
-    "signal_mismatch": [],
-    "evidence": "[signal] [A] arXiv:2002.06975 — html/v1 은 404(2020 논문), 전문 = r.jina.ai/https://arxiv.org/pdf/2002.06975 본 세션 직접 2회 판독. Table 1 No.1~33 명칭 전부 + No.19~33 인쇄 정의 전부 회수(No.24 'Net Profits/Net Assets' · No.25 'Net Operating Profits/Total Assets' · No.26 'Net Operating Profits After Tax/(Debt + Net Assets)' · No.27 '-(Changes in Current Assets and Liabilities - Depreciation)/Total Assets' · No.31 'Change Rate of Total Assets from previous period' · No.32 'Change Rate of Capital Expenditure from previous period' · No.33 'Change Rate of Payments for acquisition of Tangible Fixed Assets from previous period/Total Assets'). 전처리 축자: 'For data preprocessing, rescaling is performed so that each input value is maximally 1 (minimum ~0) by ranking each input value in ascending order by stock universe at each day and then dividing by the maximum rank value.' 표적 축자: 'The output value is defined by the next 5 day's stock return, y_{i,t+5} in R. Note that y_{i,t+5} is defined as p^c_{i,t+5}/p^o_{i,t+1} - 1 due to practical tradability.' + 'Similar rescaling is done for output values y_{i,t+5}, to convert to the cross-sectional stock returns.' 학습 축자: 'This procedure is extended to using the latest N = 1,000 days ...' · 'The prediction models are updated every five business days.' Table 2 DNN5 행 = '300-300-150-150-50 (50%-50%-30%-30%-10%) | 20'. 하이퍼파라미터 축자: 'The mini-batch size is set to 500.' · 'We use the ReLU function [28] as the activation function, and Adam [29] for the optimization algorithm. Batch normalization [30] is applied to activation.' · 'we initialize to generate the network weights from TensorFlow's function \"tf.truncated_normal\" set to mean 0 and standard deviation sqrt(2/M)' · 'We use the mean squared error (MSE) as the loss function'. 전략 축자: '(i) The long portfolio strategy considered here buys the top quintile (i.e., one-fifth) scores of the stocks with equal weight ...'. 정보 시점 축자: 'we build a portfolio with information available at the time of market closing and invest at the time of market opening the next day.' [B] arXiv:1403.8125 — html/v1 본 세션 직접 1회. 식(1)(2) 'MDD = max_tau(max_t(P(t)-P(tau)))' · 'R = R(t*,T)' · 'C = R_I + R_II + R_III = PP - MDD + R'. Table 1 7규칙 전부 회수 — CM 행 = 'Cumulative return-MDD' (1,2,1). §3.2 '6 months (weeks) of estimation period' · ascending order(MDD 만 반대) · winner group = long · 'equal-weighted portfolio'. / [timing] [A] r.jina.ai/https://arxiv.org/pdf/2002.06975 — 'The prediction models are updated every five business days.' / 'We rebalance one of five portfolios hold 20% every business day.' / 'we will hold all five portfolios equally.' / 'we build a portfolio with information available at the time of market closing and invest at the time of market opening the next day.' (스킵 없음 — 종가 다음날 시가 즉시 진입) · [B] arxiv.org/html/1403.8125v1 §3.2 — 'Based on given selection rules during 6 months (weeks) of estimation period...' / 'After 6 months (weeks) of the holding period, each basket is liquidated. The portfolio is constructed at the beginning of every month, i.e. it is the overlapping portfolio.' (스킵기간 언급 없음 — 형성창 종료 직후 즉시 보유 시작) — 이 세션 WebFetch 2회로 직접 재확인. / [universe] [A] 2002.06975 전문(r.jina.ai 프록시, 본 세션 fetch): 유니버스 서술은 'We prepare dataset for TOPIX500 Index constituents. The TOPIX500 Index comprises the large and mid-cap segments of the Japanese stock market.' 뿐이고, 상장폐지·가격하한·유동성 필터·업종 제외·survivorship 언급 0건(데이터원 문장 'we acquire necessary data from Factset, WorldScope, Thomson Reuters, I/B/E/S' 뿐). [B] 1403.8125 전문(arxiv.org/html/1403.8125v1, 본 세션 fetch): 유니버스 서술은 'The KOSPI 200 is a stock benchmark index that is the value-weighted and sector-diversified index with 200 stocks in South Korea stock markets.' + 'Historical price information and component-roster are downloaded from Korea Exchange. The period from January 2003 to December 2012 is considered.' 뿐이고 마찬가지로 가격하한·유동성·업종제외·상장폐지 처리·survivorship 서술 0건. / [portfolio] [A] arXiv:2002.06975 §3.4 — 'we consider two investment strategies … Namely, (i) the long portfolio strategy, and (ii) the long-short portfolio strategy.' · 'We consider an equally-weighted portfolio, which is simple yet sometimes outperforms more sophisticated alternatives.' · '(i) The long portfolio strategy considered here buys the top quintile (i.e., one-fifth) scores of the stocks with equal weight aiming to outperform the average return of all the stocks.' · '(ii) The long-short portfolio strategy not only buys the top quintile scores of the stocks but also sells the bottom quintile scores of the stocks.' · 'we will hold all five portfolios equally. We rebalance one of five portfolios hold 20% every business day.' · 유니버스 'dataset for TOPIX500 Index constituents' · 종목수 절대값·시총가중 언급 0건. ★arxiv.org/html/2002.06975v1 은 HTTP 404(2020 논문) → r.jina.ai/https://arxiv.org/pdf/2002.06975 로 2회 판독, 두 회 축자 일치. [B] arXiv:1403.8125 §3.2(arxiv.org/html/1403.8125v1 본 축 직접 판독) — 'In the cases of the S&P 500 and KOSPI 200 universes, numbers of groups are 10' · 'The winner group is at long (short) position and the loser group is at short (long) position.' · 'Each group is constructed as an equal-weighted portfolio.' · 'Based on given selection rules during 6 months (weeks) of estimation period' · 'After 6 months (weeks) of the holding period, each basket is liquidated.' · 'The portfolio is constructed at the beginning of every month, i.e. it is the overlapping portfolio.' / [cost] [A] r.jina.ai PDF 프록시(2002.06975) 본 세션 재확인 — 'A portfolio with a high turnover rate will have more transaction costs than with a portfolio with a lower rate.' / 'In addition, the portfolio turnover rate is calculated and compared in order to consider the impact of transaction costs.' / TN(one-way turnover) 정의만 있고 실제 수수료 bps·차감 여부(gross/net) 명시 없음. [B] arxiv.org/html/1403.8125v1 본 세션 재확인 — 거래비용·수수료·슬리피지 언급 전무, Table 3 수익률의 gross/net 여부 미명시. FIDELITY.json commission_paper=null·note 'NOT STATED(두 논문 공통): 거래비용'·changed ①⑥ '비용 서술은 turnover 문장뿐(NOT STATED)' / [B] '비용 서술 없음(gross)' 과 위 재확인 결과가 일치. / [undeclared] [A] 2002.06975 — arxiv.org/html/2002.06975v1 은 HTTP 404(2020 논문 · html 렌더 없음) → r.jina.ai/https://arxiv.org/pdf/2002.06975 본 세션 직접 fetch: 전처리 'ranking each input value in ascending order by stock universe at each day and then dividing by the maximum rank value' · 표적 'the next 5 day's stock return' = 익일 시가 대비 5일 뒤 종가 · Table 1 33팩터(No.1~8 1/2/3/5/10/20/40/60일 전 대비 수익 · No.9~12 거래대금 60일 평균과 5/10/20일 비 · No.13~18 영업이익·목표주가 전망의 5/10/20일 변화 · No.19~33 회계) · Table 2 DNN5 = 300-300-150-150-50 / dropout 50-50-30-30-10% / 20 epoch · 'using the latest 1,000 sets of training data' · 'prediction models updated every five business days' · 전략 (i) 'buys the top quintile (i.e., one-fifth) scores of the stocks with equal weight' · 집행 'one of five portfolios hold 20% every business day' · 비용 = 'Portfolio turnover rate is calculated and compared in order to consider the impact of transaction costs'(공제 없음 · TN 은 별도 열) · 유니버스 TOPIX500 · 기간 2013-01-04~2018-01-04. [B] 1403.8125 — arxiv.org/html/1403.8125v1 본 세션 직접 fetch: 'MDD = max_τ∈(0,T)(max_t∈(0,τ)(P(t)−P(τ)))' · 'C = PP − MDD + R' · Table 1 7규칙(C/M/R/RM/CM/CR/CMR · CM = cumulative with MDD penalty) · §3.2 추정창 6개월 · 오름차순 정렬(MDD 만 반대) · 10분위(KOSPI 200·S&P 500) · equal-weighted · 승자 롱/패자 숏 · 보유 6개월 오버래핑 월간 재구성 · KOSPI 200 2003-01~2012-12. ★이 축의 핵심은 부재 확인이므로 같은 fetch 에서 두 논문 공통 NOT STATED 를 회수했다: 창 내부 표본주기(daily/weekly/monthly 명시 0) · 유동성 필터 · 최소 관측수 · 커버리지 요건 · winsorize·절단 · 거래비용 공제 · 결측 처리 · 분위 정수화. 즉 구현이 그 공백에 채워 넣은 규약(adv20(f−1) ≥ 2e8 을 풀 정의·FACTORS 행에만 · 일별 종가 로그가격 경로 · n ≥ 2 정의역 · 커버리지 스크린 없음 · 절단 0 · 결측 0.5 · floor(N/5) · 3계층 사전식 · top-25 롱온리 EW 월간 · 15bps)은 전부 논문이 말하지 않은 자리를 메운 선택이고, 그 전부가 changed ③(5)(6)(7)(8)(9)(11)(12)(13)(15)·portfolio_spec·_notes.constants 에 수치와 함께 들어 있다. 참고로 [A] 3판은 2026-09-13 fidelity_audit.json 에서 6축 0건 adapted 로 종결됐고(merged_at 2026-09-13T10:28:56), 이 판의 '3판 감사 통과' 서술은 사실이다.",
-    "confidence": "medium",
-    "axis_verdicts": [
-      {
-        "axis": "signal",
-        "required": true,
-        "model": "opus",
-        "verdict": "adapted",
-        "admissible": true,
-        "reason": "",
-        "confidence": "high",
-        "checked": "[A] Table 1 31개 입력의 식·룩백을 하나씩 코드 행과 대조(No.1~8 = engine.R:274 `Close/shift(Close,k)-1` · k = c(1,2,3,5,10,20,40,60) engine.R:78 / No.9~12 = engine.R:276-279 tv60 수준 + tv{5,10,20}/tv60 / No.13~18 = engine.R:320-321 `.chg(op|tp, {5,10,20})` / No.19~31 = engine.R:437-443 · 인쇄 정의 13개 전부 일치 · No.27 선행 마이너스 부호 engine.R:190 보존 · No.32·33 부재) · 표준화(engine.R:170-174 `.rank01` = 오름차순 frank(ties=average)/max(rank), 결측 0.5 · 랭킹 유니버스 = engine.R:467 `by = Date` on `.P` = 그날 K200∪KQ150 멤버 · winsorize·절단 0건) · 표적(engine.R:286-290 → 시그널일 s 에 Close[s+5]/Open[s+1]-1 · engine.R:216-220 자체 양성 대조가 폐형 `Close[6]/Open[2]-1` 과 lab_i=6 을 단언 · engine.R:469 표적도 날짜별 rank01) · 학습창·갱신 종점(engine.R:337-340 smax=u-5 · smin=u-1004 · 5영업일 격자 engine.R:336) · DNN5 구조·하이퍼(engine.R:509-515, 539-540 · HIDDEN·DROPOUT·EPOCHS·BATCH·ReLU·BN·Adam·MSE·trunc-normal sd sqrt(2/fan_in) 전부 논문값) · 부호(engine.R:894 `setorder(md, -dnn, Ticker)` + engine.R:895 top floor(N/5) = 전략 (i) 방향 · NEGATE_FACTORS/FLIP_SIGN/수동 반전 0건) · [B] CM(engine.R:195-204 `.path_stats` → RI=PP · RII=-MDD · RIII=R · engine.R:851 가중 (1,2,1) → C-MDD 항등 · engine.R:230-234 양성 대조가 항등 검산 · 창 engine.R:843-847 (me[k-6], f] 6개월 일별 종가 로그경로 · 종점 = 시그널일 f 종가 · 승자 = 큰 CM = 롱) · 조립 3계층 사전식(engine.R:899-902) · 결합 엔진 §0~§9 가 감사 통과 3판과 같은 산술인지 `diff -U0` 전수 확인(수치 경로 차이 0 — 차이는 주석·.TAG·경로·adv20 신설·.PX/.ME_ROWS 추출·캐시 읽기전용 순회뿐)",
-        "counterexample": "구성했다 — 그러나 셋 다 선언된 차이다. ①입력 결손: 2026-05 월말 설비투자를 크게 늘린 K200 종목. 논문 DNN 은 No.32 Capital Expenditure Growth Rate 와 No.33 Investment to Asset 을 입력 33 중 2로 받아 그 종목의 점수를 움직이지만, engine.R:94 `.FEATS <- sprintf(\"x%02d\", 1:31)` 는 그 두 축을 아예 넣지 않는다 → 같은 종목·같은 날 점수가 다르다(FIDELITY changed(11) · paper_values_used_unchanged.A_features '31 of 33' 로 선언). ②자기자본 잠식 종목: TotalEquity = −50bn · NetIncome = −30bn 인 월말. 논문 인쇄 식 No.24 'Net Profits/Net Assets' 는 +0.6 을 내 ROE 순위 상단에 놓이고 No.19 'Net Assets/Market Value' 는 음수로 하단에 놓이는데, engine.R:175 `.sdiv` 가 분모 > 0 만 허용해 둘 다 NA → engine.R:171 이 0.5(중앙) 로 대치한다 → 두 입력의 횡단면 순위가 논문과 반대 방향으로 갈린다(3판 FIDELITY changed_checklist '재무 분모 > 0' · '수치 가드' 로 선언 · 결합 changed(11) 이 3판 changed(1)~(16) 을 명시 승계). ③No.13~18 함수형: 같은 날 A 사 영업이익 FY1 컨센서스 100bn→110bn(Δ +10bn · Δ/|lag| +10%) vs B 사 1,000bn→1,020bn(Δ +20bn · +2%). engine.R:176-179 `.chg` 는 A 를 B 위로 놓고, Table 1 의 인쇄 명칭을 문자 그대로('Change in ...' — No.31 의 'Change Rate of ...' 와 대비) 차분으로 읽으면 순서가 뒤집힌다. 논문은 No.1~18 의 식을 인쇄하지 않아 이 자리는 NOT STATED 이고, 3판 changed_checklist '수식 근사' 행이 '전망 변화 = 차분/|lag|' 로 선언한다. ★부호가 갈리는 반례는 구성하지 못했다 — 방향 반전(NEGATE/FLIP_SIGN·수동 부호 조작)은 [A]·[B] 어느 쪽에도 0건이다.",
-        "n_findings": 0
-      },
-      {
-        "axis": "timing",
-        "required": false,
-        "model": "sonnet",
-        "verdict": "adapted",
-        "admissible": true,
-        "reason": "",
-        "confidence": "high",
-        "checked": "[A] 보유 5영업일·일간 5트랜치 교대(원문) vs 구현 월간 보유(고정축) — FIDELITY changed③(5)에 선언 · [A] 모델 갱신 5영업일 그리드·앵커(3판 승계, 이 판에서 불변) · [B] 형성창 6개월 산술 — engine.R:840-855 (me[k-6],f] 이 원문 '6 months of estimation period' 과 수치 일치 · [B] 보유 6개월→1개월(고정축)·오버래핑 코호트 평균 없음 — FIDELITY changed③(5)(7)에 선언 · 두 논문 모두 형성-보유 사이 스킵 기간 언급 없음(원문 확인) — 구현도 스킵 0(신호일 종가 → 익 거래일 진입, C2·C3 창∩보유월=∅) — 일치.",
-        "counterexample": "[A] Abe-Nakagawa: 신호는 종가 시점에 나오고 익일 시가 진입, 5영업일(K) 뒤 종가 청산 — 5개 트랜치를 하루씩 교대(daily rotation)해 어느 한 트랜치 보유기간도 5거래일을 넘지 않는다('We rebalance one of five portfolios hold 20% every business day.' / 'we will hold all five portfolios equally.'). 구현은 월말 DNN 5분위 소속을 그대로 '풀'로 쓰되 실제 보유기간은 월간(약 21거래일)이다 — 예: 어느 종목이 월초 DNN 5일 예측으로 5분위에 들었지만 그 5일 신호가 이미 반전된 뒤(거래일 +10)에도 월말까지 그대로 보유된다. [B] Choi-Choi-Kang: 형성창 6개월 → 보유 6개월, 매월 새 코호트가 겹쳐(overlapping) 6개 코호트 평균으로 헤드라인 수치(Table 3)가 난다('After 6 months (weeks) of the holding period, each basket is liquidated. The portfolio is constructed at the beginning of every month, i.e. it is the overlapping portfolio.'). 구현은 형성창(6개월)은 논문 그대로 (me[k-6], f] 로 계산하지만(engine.R:840-855) 보유는 1개월로 청산 후 재형성한다(portfolio_spec.rebalance=monthly) — 6개월 오버래핑 평균 구조가 없어 코호트 간 스무딩 효과가 사라진다.",
-        "n_findings": 0
-      },
-      {
-        "axis": "universe",
-        "required": false,
-        "model": "sonnet",
-        "verdict": "adapted",
-        "admissible": true,
-        "reason": "",
-        "confidence": "high",
-        "checked": "[A]·[B] 원문 전문에서 유니버스 정의·선별 규칙 서술 전수 확인(둘 다 지수 구성종목 외 필터 0건) · engine.R §3 멤버십 정의(K200∪KQ150 · CJ 크로스조인 · PIT 시변 플래그) · §4/§10/§11 유동성 필터(adv20_l1 ≥ 2e8) 적용 지점(풀 정의·FACTORS 행에만, DNN 패널 학습에는 미적용) 코드-선언 일치 여부 · FIDELITY.changed ③(6)·(11) 신고 내용과 engine.R:837(.ELIG)·:890-895(tk 필터→nq 계산) 대조.",
-        "counterexample": "어느 시그널월 f 에서 K200∪KQ150 당일 멤버 350종 중 300종만 adv20(f-1) ≥ 2e8 을 통과한다고 하면, [A] 논문의 'top quintile of the stocks'(유니버스 전체 기준)를 그대로 따를 경우 풀 = floor(350/5) = 70종이어야 하지만, engine.R:890-895(tk <- .ELIG[...]; md <- md[Ticker %chin% tk]; nq <- N %/% .QUINT)는 유동성 통과 300종 안에서만 floor(300/5) = 60종을 풀로 잡는다 — 유동성 하위 50종은 DNN 점수가 아무리 높아도 풀 진입이 원천 차단된다. 이는 FIDELITY.changed ③(6)이 '고정 축 adv20(f−1) ≥ 2e8 은 포트폴리오 형성(풀 정의·FACTORS 행)에만 건다'로 명시적으로 신고한 차이이므로 misdeclared 는 아니다.",
-        "n_findings": 0
-      },
-      {
-        "axis": "portfolio",
-        "required": true,
-        "model": "opus",
-        "verdict": "adapted",
-        "admissible": true,
-        "reason": "",
-        "confidence": "high",
-        "checked": "① 롱/숏 레그: [A] 전략 (ii) 롱숏 미구현 · [B] 승자롱/패자숏 미구현 → 실측 has_short=false · 04_holdings.csv 6,500행 전부 양(+) 0.04 · 음수·Leg 열 0건 (선언 = changed ③(5)) ② 분위: [A] 'top quintile' = engine.R:892·895 nq <- N %/% 5 · q := seq_len(.N) <= nq (floor 정수화 = source_paper.note 'NOT STATED' 로 신고) · [B] 10분위 그룹 미구현(CM 을 그룹이 아니라 풀 안 순서로 소비 — 선언) ③ 종목수: 논문 5분위 전원(≈34~70종 · TOPIX500 이면 ≈100) vs 실현 25종 고정(260/260 리밸일 · 10_audit.csv holdings_cap) — 선언 ④ 비중: 양 논문 'equal weight'/'equal-weighted portfolio' vs 실현 target_weight=actual_weight=0.04=1/25 · Σw=1.00 · 상한·틸트 0건 → 불변 ⑤ 2층 절단 곱셈 붕괴: 풀 floor(N/5)=34~70 ≥ 25 (N 170~351 · N ≤ 124 인 달 0건) → 실현 25종은 전 기간 5분위 내부 ⑥ 집행 단위: [A] 5포트폴리오 각 20% 일별 교대 · [B] 6개월 오버래핑 → 단일 월간 1바스켓(선언 ③(5)) ⑦ 선언 대조: FIDELITY portfolio_spec ↔ 01_strategy_spec.json 문자 일치(construction top_n_long · weight_method ew · rebalance monthly · n_max 25 · has_short false)",
-        "counterexample": "논문과 갈리는 지점은 산출물에서 재현된다. 2005-01-31 시그널(analysis_ic.csv 2행: N_stocks 182)에서 [A] 전략 (i) 은 'top quintile (i.e., one-fifth)' = 36종을 각 1/36 EW 로 보유해야 하는데, 04_holdings.csv 의 2005-02-01 집행은 25종 × target_weight 0.04 다(파일 전체 6,500행 = 260 리밸일 × 25종 · 전 행이 ',0.04,0.04,' — Grep count 6500/6500 일치 · 10_audit.csv:20 'distinct ticker 25~25종 (260 리밸일)'). 즉 매월 5분위의 약 69%(25/36)만 보유하고 나머지는 [B] CM 하위로 잘라낸다. 그러나 이 차이는 FIDELITY.changed ③(5) 에 '[A] 전략 (i) 는 5분위 전원(≈30~71종) EW 롱 … → 25종 상한은 [B] 의 2단 정렬로 채우고' 로 선언돼 있고, portfolio_spec(top_n_long·ew·monthly·n_max 25·has_short false)이 01_strategy_spec.json 의 실측 사양과 문자 일치한다. **선언 없이 갈리는 지점은 구성하지 못했다.** 2단 절단이 실현 종목수를 곱해 줄이는 형태(풀 floor(N/5) < 25)도 성립하지 않는다 — analysis_ic.csv 260개월 전체에서 N_stocks 최소 170(2006-07-31)·최대 351 이라 floor(N/5) ≥ 34 > 25 이고, 정규식 대조(N_stocks ≤ 124 인 달) 0건이었다. 따라서 보유 25종은 전 기간 [A] 5분위 안에서 나온다(engine.R:902 사전식 3계층이 5분위 밖 Score ≤ 1 < 1.5 로 묶는다).",
-        "n_findings": 0
-      },
-      {
-        "axis": "cost",
-        "required": false,
-        "model": "sonnet",
-        "verdict": "adapted",
-        "admissible": true,
-        "reason": "",
-        "confidence": "high",
-        "checked": "engine.R 전체(§0~§11)에서 bps/commission/cost/slippage 관련 계산 부재 확인 · 00_manifest.json transaction_cost_bps=15·slippage_bps=0 이 이 전략 전용이 아닌 러너 공통 고정 축인지 확인 · FIDELITY.json commission_paper·paper_reported·note 필드와 [A][B] 원문(재요청)의 비용 서술 대조 · changed 필드에서 paper_reported 수치가 15bps 실측치와 병치·혼동되는 지점이 있는지 탐색(0건)",
-        "counterexample": "구성하지 못했다 — 두 논문 모두 거래비용 수치를 명시하지 않아(본 세션 직접 재확인, 아래 evidence) '논문 비용 대비 유리하게 기울었다'고 지목할 기준값 자체가 없다. engine.R 은 FACTORS 만 내고 비용을 전혀 계산하지 않으며(§4~§11 grep — bps·commission·cost 문자열 0건), 15bps 는 러너(00_manifest.json transaction_cost_bps=15)가 모든 충실구현에 공통 적용하는 고정 축이지 이 엔진이 유리하게 설정한 값이 아니다. FIDELITY 가 인용한 paper_reported(A: Alpha 5.11%·IR 1.70 / B: KOSPI CM W-L 1.4330%)는 changed 필드와 paper_original_form 에서 문맥 인용으로만 쓰이고, 06_metrics.csv 의 실측치(Sharpe 0.976·CAGR 22.2%)와 나란히 '같은 비용 기준의 비교'로 제시되지 않는다 — 두 수치 계열이 섞여 인용된 지점 0건.",
-        "n_findings": 0
-      },
-      {
-        "axis": "undeclared",
-        "required": true,
-        "model": "opus",
-        "verdict": "adapted",
-        "admissible": true,
-        "reason": "",
-        "confidence": "medium",
-        "checked": "engine.R 988행 결정 단위 전수 → FIDELITY.changed ③(1)~(18)·changed_supplements 10행·_notes.constants 14행·_notes.pit·portfolio_spec 대조 · 3판 engine.R(:56-733)과 §0~§9 행 단위 대조로 '같은 산술' 주장 검증 · 파이썬 블록 전문 대조(수치 경로·캐시 키 동일 · 차이 = RO_DIRS·cache_read 순회·count_npz·main argv[4:]·로그) · [B] CM 함수를 감사 통과 충실구현(.mdd_stats)과 대조 · 선언이 내건 검증 가능한 부정문 7종 재확인(스코어층 평균·rank-Z·가중 0건 · 절단·winsorize 0건 · R 난수·set.seed 0건 · NEGATE/FLIP_SIGN 0건 · 팩터 DB·Market 열 미접근 · 오버레이·외부 매크로 0건 · 산출 디렉터리 밖 쓰기 0건) · 선언된 것의 역방향 확인(3계층 사전식·풀 = floor(N/5)·동값 규칙·F1~F4 임계와 방향·adv20 규약·(me[k−6],f] 창) · 측정 산출물 대조(01_strategy_spec.json n_max 25·ew·monthly·has_short=false · 10_audit.csv 260 리밸일 · 리밸일별 distinct 25~25종) · 원문 2편 본 세션 직접 fetch(부재 확인 8항목 포함) · 자율 세션이라 R·파이썬 미실행(정적 검증만).",
-        "counterexample": "구성하지 못했다. 코드에서 출발해 engine.R 988행을 결정 단위로 쪼개고(§0 상수 · §1 루트·캐시·실행별 작업본·읽기전용 형제 캐시 · §2 헬퍼 8 + 양성대조 12 · §3 격자 · §4 가격·거래대금·표적 + adv20(t−1) · §5 컨센서스 · §6 스케줄 · §7 회계 + .PX/.ME_ROWS 추출 · §8 순위재척도 · §9 파이썬 DNN · §10 [B] CM · §11 조립·진단·F1~F4) 각 결정이 ①두 논문 명시값 ②FIDELITY.changed ③(1)~(18)·changed_supplements·_notes.constants·_notes.pit ③배출값에 닿지 않는 가드·로그 중 어디에 속하는지 전수 대조했는데, 셋 중 어디에도 속하지 않는 항목이 나오지 않았다. 발산을 만들 만한 후보 7개를 개별로 팠으나 전부 무산됐다: ①'§0~§9 는 3판과 같은 산술'(engine.R:37-45 · changed③(11)) — RP_AUTO_2002_06975/engine.R:56-733 과 행 단위로 대조해 실제 차이가 신고된 곳(§1 .WD/.CD_RO · §4 끝 adv20 · §7 끝 .PX/.ME_ROWS + rm(.G) 위치 · §9 RO 디렉터리 순회 · §10·§11 신설 · 3판 §10 롱숏 PORTFOLIO 제거)뿐임을 확인 — 특성 31·순위재척도·표적·학습창·격자·시드·회계 규약은 문자 단위로 같다. ②형제 캐시 재사용이 산술을 바꾸는가 — 파이썬의 CODE_VERSION/HIDDEN/DROPOUT/EPOCHS/BATCH/LR/BN_EPS/BN_MOMENTUM·DNN·fit_predict·select·cache_key·synthetic_check 가 3판(:446-632)과 동일하고, 키가 X·y·Xp·tk·feats·(pred_i,u_i,smin_i,smax_i,seed)를 전부 물며(engine.R:621-631) 히트 시 tk 배열 동일성까지 재검사(:672)하므로 입력이 한 바이트라도 다르면 자기 캐시에 새로 학습한다 — 재사용은 계산 생략이지 값 치환이 아니다. 쓰기는 CACHE_DIR 뿐(:650-656), main 이 ro 목록에서 cd 를 배제(:715). ③은닉 절단·winsorize — pmin/pmax 는 .nopat 의 τ∈[0,1](:183) 하나뿐이고 .path_stats(:195-204)에는 절단·클립·winsorize 0건(감사 통과한 [B] 충실구현이 '원문에 그 요건이 전무'를 이유로 .DCAP 를 제거한 것과 같은 상태), trunc_normal_(:540)은 가중치 초기화이지 값 절단이 아니다. ④CM 함수가 이식 중 변질됐는가 — .path_stats(:195-204)는 감사 faithful 판정을 받은 RP_AUTO_1403_8125/engine.R:138-153 .mdd_stats 와 행 단위 동일(path=log(cl)−log(cl[1]) · dd=path−cummax(path) · ts=which.min(dd) · tp=which.max(path[1:ts]) · MDD=−dd[ts] · RII=−MDD), CM=1·RI+2·RII+1·RIII(:851)이 C−MDD 항등을 만족함을 엔진 자체 검산(:230-237)이 폐형으로 재단언. ⑤3계층 사전식이 풀 밖 종목을 보유로 새게 하는가 — (2,3] / 1.5 / (0,1] 이 전순서이고(:902) 엔진 검산(:867-884)이 두 방향(CM 유한·CM 결측)으로 재단언, 풀 밖 최댓값 1.0 < 1.5 라 5분위 안 후보가 25 미만인 달 외에는 구조적으로 불가능하며 그 달 수는 F2 가 센다(:908,:974). ⑥부호·방향 조작 — frank 오름차순(.rank01 :170-174) · order(-dnn)(:894,:911) · order(-Score)(:910,:931) 뿐이고 NEGATE/FLIP_SIGN·수동 반전 0건, 팩터 DB 접근 0건(C15). ⑦산출 디렉터리 밖 쓰기 — write_parquet·writeLines 는 전부 .RD/.CD(:476,:477,:789,:935,:936), unlink 은 자기 _work 의 48시간 초과 run_* 만(:143-149), 형제 캐시(:140)는 argv 로 넘겨 읽기만 한다.",
-        "n_findings": 0
-      }
-    ],
-    "note": "축 팬아웃 6개(판독형 opus 3 · 대조형 sonnet 3) — 발견 0건. adapted/adapted/adapted/adapted/adapted/adapted"
+  "paper": {
+    "title": "실용적 ML 주식 추천",
+    "paper_title": "A Practical Machine Learning Approach for Dynamic Stock Recommendation",
+    "url": "https://arxiv.org/abs/2511.12129",
+    "paper_key": "2511.12129",
+    "source": "arxiv",
+    "reason": "동적 ML 선택 — factor_db 가용",
+    "factor_name": "실용적 ML 주식 추천",
+    "factor_def": "Stock recommendation is vital to investment companies and investors. However, no single stock selection strategy will always win while analysts may not have enough time to check all S&P 500 stocks (th",
+    "kr_feasible": null,
+    "skipped_no_url": 0
   },
-  "implementation_suspect": false,
-  "completed_at": "2026-09-17T11:31:28+0900"
+  "status": "pending"
 }
