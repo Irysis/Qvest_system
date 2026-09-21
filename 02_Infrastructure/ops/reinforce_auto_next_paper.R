@@ -76,6 +76,10 @@ if (length(ex)) {
     i <- which.max(replace(pts, !is.finite(pts), -Inf))
     best <- list(base_id = E$base_id, n = E$attempts[[i]]$n,
                  port_t = pts[i], grade = E$attempts[[i]]$grade,
+                 ## ★게이트 축(Calmar) — 승격 연장 판정이 읽는다. 승자 셀은 PORT_t 최대로 고르므로
+                 ##   여기 실리는 Calmar 는 **그 승자 셀의** 값이다(entry 최대 Calmar 가 아니다).
+                 ##   물려주는 구성이 그 셀이니, 비교 대상도 그 셀이어야 축이 맞는다.
+                 calmar = tryCatch(as.numeric(E$attempts[[i]]$essence$calmar), error = function(e) NA_real_),
                  base_grade = E$base_grade,
                  cell_code = E$attempts[[i]]$essence$cell_code %||% NA_character_,
                  spec      = E$attempts[[i]]$essence$spec %||% NA_character_,
@@ -152,10 +156,12 @@ if (length(ex)) {
                     carry = carry,
                     parent = list(base_id = E2$base_id, depth = depth,
                                   cell = best$cell_code %||% "NA", best_port_t = best$port_t,
+                                  best_calmar = best$calmar %||% NA_real_,
                                   promoted_at = format(Sys.time(), "%Y-%m-%dT%H:%M:%S%z")),
                     count_paper = FALSE, root = ROOT)
       jlog("promoted", base_id = nid, parent = E2$base_id, depth = depth,
            cell = best$cell_code %||% "NA", grade = best$grade, port_t = best$port_t,
+           calmar = best$calmar %||% NA_real_, via = PD$reason %||% "ok",
            carry_factors = length(carry$factors))
       ## ★부모에 이월 표식 — 다음 논문 hand-off 와 같은 표식(rf_mark_handed_off). 이게 없으면 자식이 큐로
       ##   넘어간 뒤 부모가 "마지막 미이월 소진 entry" 로 다시 떠올라 매 tick 재승격한다(2026-09-05 실사고).

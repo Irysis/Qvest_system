@@ -26,6 +26,25 @@ if (!exists("rfbd_standing_picks", mode = "function"))
   lad[seq_len(i)]
 }
 
+#' 깊이 상한의 **조건부 연장** — 상한을 깊이가 아니라 게이트 축의 개선으로 옮긴다 (도훈 결정 2026-09-21).
+#'   사연·근거 수치는 reinforce_auto_config.json::promote_extend_note 가 정본이다(여기 숫자를 박지 않는다).
+#'   판정: 연장 스위치 ON ∧ 깊이 ≤ 하드 상한 ∧ **게이트 축이 부모 대비 min_delta 초과 개선**.
+#'   ★부모에 게이트 축 값이 없으면(구판 entry) 연장하지 않는다 — 확인 못 하는 것을 통과시키지 않는다.
+rf_promote_extend_ok <- function(entry, best, depth, cfg = list()) {
+  if (!isTRUE(cfg$promote_extend_on_gate_axis %||% FALSE)) return(list(ok = FALSE, reason = "depth_cap"))
+  hard <- suppressWarnings(as.integer(cfg$promote_max_depth_hard %||% 6L))
+  if (!is.finite(hard)) hard <- 6L
+  if (as.integer(depth) > hard) return(list(ok = FALSE, reason = "depth_cap_hard"))
+  axis <- as.character(cfg$promote_gate_axis %||% "calmar")
+  mind <- suppressWarnings(as.numeric(cfg$promote_extend_min_delta %||% 0))
+  if (!is.finite(mind)) mind <- 0
+  pv <- suppressWarnings(as.numeric((entry$parent %||% list())[[paste0("best_", axis)]] %||% NA_real_))
+  bv <- suppressWarnings(as.numeric(best[[axis]] %||% NA_real_))
+  if (!is.finite(pv) || !is.finite(bv)) return(list(ok = FALSE, reason = "gate_axis_unknown"))
+  if (!((bv - pv) > mind)) return(list(ok = FALSE, reason = "gate_axis_no_improvement"))
+  list(ok = TRUE, reason = "ok_extended", axis = axis, delta = bv - pv)
+}
+
 #' @param entry 소진된 원장 entry (parent 가 있으면 승격 사슬 중이다)
 #' @param best  그 entry 의 최고 셀 요약 (grade · port_t · spec · cell_code)
 #' @param cfg   reinforce_auto_config.json (promote_min_grade · promote_max_depth)
@@ -46,7 +65,9 @@ rf_promote_decide <- function(entry, best, cfg = list(), existing_ids = NULL) {
   if (is.null(best)) return(out(FALSE, "no_measured_cell"))
   if (!((best$grade %||% "") %in% .rf_promote_grades(cfg$promote_min_grade %||% "B")))
     return(out(FALSE, "grade_below_min"))
-  if (depth > maxd) return(out(FALSE, "depth_cap"))
+  ## ★깊이 상한은 더 이상 종점이 아니다 — 게이트 축이 개선 중이면 연장한다(위 rf_promote_extend_ok).
+  .ext <- if (depth > maxd) rf_promote_extend_ok(entry, best, depth, cfg) else list(ok = NA)
+  if (isFALSE(.ext$ok)) return(out(FALSE, .ext$reason))
 
   # ★부모를 못 넘은 승격은 같은 실패의 재생산이다 — 25회 상한이 존재하는 이유와 같다.
   pbest <- suppressWarnings(as.numeric(entry$parent$best_port_t %||% NA_real_))
@@ -58,7 +79,7 @@ rf_promote_decide <- function(entry, best, cfg = list(), existing_ids = NULL) {
   sp <- best$spec %||% NA_character_
   if (is.na(sp) || !nzchar(sp) || !file.exists(sp)) return(out(FALSE, "winner_spec_missing"))
 
-  out(TRUE, "ok")
+  out(TRUE, if (isTRUE(.ext$ok)) "ok_extended" else "ok")
 }
 
 #' 승격 carry 구성 — 승자 스펙에서 팩터·비중·오버레이만 물려주고 **유니버스는 고정 축으로 리셋**한다.

@@ -17,11 +17,41 @@
   "calmar": 0.349,
   "oos_retention": -0.434,
   "portfolio_alpha_t": 1.741,
-  "next_probes": [
-    "다음 격자 축 B3(universe) — 이 블록 승자 위에서 측정",
-    "B2_9(최고 1.741)는 B4 조합 후보로 고정 · B2_6(최저 0.189)는 축 역작동 여부를 조합 LOO 로 분리"
-  ],
+  "next_probes": ["다음 격자 축 B3(universe) — 이 블록 승자 위에서 측정", "B2_9(최고 1.741)는 B4 조합 후보로 고정 · B2_6(최저 0.189)는 축 역작동 여부를 조합 LOO 로 분리"],
   "next_probe": "다음 격자 축 B3(universe) — 이 블록 승자 위에서 측정 | B2_9(최고 1.741)는 B4 조합 후보로 고정 · B2_6(최저 0.189)는 축 역작동 여부를 조합 LOO 로 분리",
   "source_paper": "https://arxiv.org/abs/2608.23944",
-  "record_type": "performance"
+  "record_type": "performance",
+  "mechanism": "판정: 비중 축은 이 계보에서 닫혔다 — 9칸 전부가 동일가중 1/25 기저 B1_9(PORT_t 1.971 · Calmar 0.349 · MDD 0.533)를 넘지 못했고, 최고 B2_9 cvar 가 PORT_t 1.741 · Calmar 0.349 로 동률에 그친다. 순서가 뚜렷하다: 추정 공분산 구조로 weight 를 크게 재배치하는 방법일수록 PORT_t 가 무너지고(B2_6 minvar 0.189 · B2_13 maxdiv 0.452 · B2_8 CDaR_LP 0.589 · B2_7 hrp 0.848), 1/25 근방에 머무는 방법은 보존된다(B2_9 cvar 1.741 · B2_12 higher_moment 1.710 · B2_14 riskparity 1.472 · B2_10 score_tilt 1.460). 그 손실로 산 MDD 는 없다 — 9칸 MDD 는 0.511~0.540 으로 폭 2.9%p, 기저 0.533 대비 최대 개선이 B2_6 의 2.2%p 인데 그 칸이 PORT_t 의 90%를 잃었다. 결정적 실측은 B2_8 CDaR_LP 다: 낙폭을 직접 목적함수에 넣은 칸이 이 블록 MDD 최악(0.540)이다. 즉 25종 보유 구간의 추정 공분산·경로 구조에는 51~54% MDD 를 줄일 정보가 없다 — 이 낙폭은 공통요인 노출이며 비중 지점에서 닿지 않는다. B1 처방 두 건의 판정: ①'B1 은 비중 축이 미측정이니 B2 에서 재라' — 집행 9/9, 결과는 null(축이 존재하되 기여 0). ②'score_tilt·nco_score_tilt 로 3팩터 합성 순위의 상단 집중도를 회수하라' — 반증. B2_10 1.460 · B2_11 1.303 이 EW 1.971 미만이므로, 합성 점수는 상위 25종 **안의 순위**에는 정보가 없고 25종 **경계(선정 in/out)**에서만 갈린다. 따라서 남은 활축은 후보군 자체를 바꾸는 B3(유니버스)이고, 위험 정보의 미측정 소비 지점은 횡단면 선정(B1 에서 비유의)도 비중(B2 에서 null)도 아닌 B5 노출 스케일 하나만 남는다.",
+  "mechanism_by": "llm:block_end",
+  "mechanism_at": "2026-09-21T13:43:37+0900",
+  "prior_lessons_used": "B1",
+  "next_block_actions": [
+    {
+      "action": "B3 에서 신호를 B1_9(C03_EPS_Chg_3m+M01_Mom_12_1+V14_EBIT_EV) · 비중을 동일가중 1/25 로 고정한 채 유니버스만 5칸 교체한다(KQ150 단독 · K200 단독 · 소형 1/3 · 대형 1/3 · 섹터중립).",
+      "why": "B2 가 '합성 점수는 상위 25종 내부 순위가 아니라 25종 경계에서만 갈린다'를 보였다(B2_10 1.460 · B2_11 1.303 < EW 1.971). 경계를 정하는 것은 후보군이므로 다음 정보는 유니버스에서만 나온다.",
+      "expect": "5칸 중 하나라도 PORT_t > 1.971 이면 경계 가설 지지. 5칸 전부 1.971 미만이고 PORT_t 폭이 0.5 이하로 좁으면 경계도 활축이 아니며 상한은 신호 자체에 있다."
+    },
+    {
+      "action": "B3_11(KQ150 단독)과 B3_13(소형 1/3)을 같은 블록에 둬서 index membership 과 size 를 분리한다.",
+      "why": "rawdata Market 열이 KOSPI 로 날조돼 시장 구분이 불가하고 size 가 유일한 프록시다(저장소 실측). 두 칸이 같은 방향이면 구동축은 size, 갈리면 index membership·유동성이다.",
+      "expect": "두 칸 PORT_t 가 같은 부호·0.3 이내면 size 축. 0.8 이상 벌어지면 membership 축이고 그때는 유동성 하한이 아니라 편입 기준이 경계를 만든다."
+    },
+    {
+      "action": "B3_15(섹터중립)으로 V14_EBIT_EV+M01_Mom_12_1 합성이 섹터 배분인지 종목 선정인지 가른다.",
+      "why": "밸류·모멘텀 합성은 KR 에서 섹터 베팅으로 실현되기 쉽고, B2 가 낙폭을 공통요인 노출로 지목했다(CDaR_LP 가 MDD 를 못 줄임). 섹터가 공통요인의 주된 통로인지 여기서만 갈린다.",
+      "expect": "섹터중립에서 PORT_t 가 1.971 대비 크게 떨어지면 알파의 상당부가 섹터 배분이고, 그때 MDD 가 함께 0.51 아래로 내려가면 낙폭의 통로도 섹터다. PORT_t 유지 + MDD 불변이면 섹터는 통로가 아니다."
+    },
+    {
+      "action": "위험 통제 칸은 B5(노출 스케일)까지 유보하고 B3·B6 에서는 쓰지 않는다.",
+      "why": "같은 위험 정보가 횡단면 선정(B1 6칸 PORT_t −0.236~0.558)과 비중(B2 9칸 전부 EW 미만)에서 연달아 기여 0 이었다. 남은 소비 지점은 노출 스케일뿐이고, 근거는 이 블록 밖(B5 미측정)에 있다.",
+      "expect": "B5 에서도 MDD 가 0.51~0.54 범위를 못 벗어나면 이 계보의 낙폭은 어느 소비 지점에서도 통제 불가로 확정된다."
+    }
+  ],
+  "next_block_actions_by": "llm:block_end",
+  "avoid": ["공분산·꼬리 최적화 비중(minvar · maxdiv · CDaR_LP · hrp)을 이후 어느 블록에서도 재사용하지 말 것 — 4칸 PORT_t 0.189~0.848 이 전부 EW 1.971 미만이고, 대가로 얻은 MDD 개선은 최대 2.2%p(B2_6 0.511 vs 기저 0.533)다. 낙폭을 직접 최적화한 B2_8 이 오히려 MDD 0.540 으로 블록 최악이라 벽이 확인됐다.", "score_tilt 계열(B2_10 1.460 · B2_11 1.303)로 순위 집중도를 다시 회수하려 하지 말 것 — 상위 25종 내부 순위에 정보가 없다는 것이 이 블록의 실측이다.", "B3 에서 신호(B1_9)나 비중(EW 1/25)을 유니버스와 동시에 바꾸지 말 것 — B1 에서 MDD 가 신호에 종속돼 움직였고 B2 는 비중을 고정 해제했을 때 PORT_t 가 0.189~1.741 로 벌어졌다. 둘을 같이 움직이면 경계 가설이 귀속 불가가 된다.", "B1 의 수익률 분포·미시구조 계열(L19_Price_Delay · L22_Ret_Autocorr · CR11_Idiosyncratic_Return · D44_Kurtosis · R13_NCSKEW)을 선정 축으로 재시험하지 말 것 — 선정에서 비유의, 비중에서 null 로 두 소비 지점이 소진됐다."],
+  "next_block_design_for": "B3",
+  "next_block_design_n": 5,
+  "prior_action_status": "executed",
+  "prior_action_detail": "설계 9건 중 9건 집행 (설계: lean:minvar,lean:hrp,qepm:CDaR_LP,lean:cvar,lean:score_tilt,lean:nco_score_tilt,lean:higher_moment,lean:maxdiv,lean:riskparity / 실측: lean:minvar,lean:hrp,qepm:CDaR_LP,lean:cvar,lean:score_tilt,lean:nco_score_tilt,lean:higher_moment,lean:maxdiv,lean:riskparity)",
+  "mechanism_confidence": "high"
 }
