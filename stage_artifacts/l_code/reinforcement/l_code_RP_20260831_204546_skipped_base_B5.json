@@ -17,11 +17,39 @@
   "calmar": 0.374,
   "oos_retention": -0.438,
   "portfolio_alpha_t": 1.736,
-  "next_probes": [
-    "다음 격자 축 B4(combination) — 이 블록 승자 위에서 측정",
-    "B5_16(최고 1.736)는 B4 조합 후보로 고정 · B5_31(최저 0.908)는 축 역작동 여부를 조합 LOO 로 분리"
-  ],
+  "next_probes": ["다음 격자 축 B4(combination) — 이 블록 승자 위에서 측정", "B5_16(최고 1.736)는 B4 조합 후보로 고정 · B5_31(최저 0.908)는 축 역작동 여부를 조합 LOO 로 분리"],
   "next_probe": "다음 격자 축 B4(combination) — 이 블록 승자 위에서 측정 | B5_16(최고 1.736)는 B4 조합 후보로 고정 · B5_31(최저 0.908)는 축 역작동 여부를 조합 LOO 로 분리",
   "source_paper": "https://arxiv.org/abs/2608.23944",
-  "record_type": "performance"
+  "record_type": "performance",
+  "mechanism": "판정: 낙폭은 노출 스케일 지점에서만 닿았고, 그 안에서도 횡단면·종목별 구조를 읽는 arm 만 낙폭을 Calmar 로 바꿨다. B1~B3·B6 24칸이 MDD 0.511~0.640 을 못 벗어났는데 B5 는 B5_21 MDD 0.362 · B5_31 0.397 · B5_20 0.458 · B5_16/B5_18 0.482 로 네 칸이 그 아래다 — '남은 소비 지점은 노출 스케일 하나'라는 B2·B3·B6 처방은 지지됐다. 다만 단순 노출 축소는 아니다: B5_18 PORT_t 1.393 · MDD 0.482 와 B5_21 PORT_t 1.427 · MDD 0.362 는 PORT_t 가 0.034 차이인데 MDD 가 12.0%p 갈린다 — 얼마나 줄였나가 아니라 무엇을 읽고 줄였나가 MDD 를 가른다. 계열이 셋으로 갈린다. ①시계열 추세 상태 B5_17(trend_run_gate): MDD 0.533 으로 기저 B1_9 와 동일하고 Calmar 0.328 < 기저 0.349 — PORT_t 1.625 를 내고 아무것도 못 샀다. ②횡단면 분산 B5_16(xs_vol_gap_corr_brake): MDD 0.482 · Calmar 0.374 를 PORT_t 1.736(블록 최고)으로 샀다. ③종목별 tilt 는 균일하지 않다 — B5_21(multivar_channel_tilt) Calmar 0.479 · MDD 0.362 대 B5_19(erosion_grind_idio_tilt) Calmar 0.344 · MDD 0.511. 소비 지점이 같은데 갈렸으니 차이는 지점이 아니라 읽는 상태변수다. 스택 규칙도 실측됐다: 같은 kind 를 겹친 B5_18(총×총)은 MDD 가 0.482 로 B5_16 과 같은데 PORT_t 1.736→1.393 · Calmar 0.374→0.352 로 대가만 냈고, kind 를 가른 B5_20(총×종)은 MDD 0.482→0.458 을 사고 Calmar 0.372 로 거의 동률이다. 미결 둘: (a) B5_21 의 Calmar 0.479 가 arm 특이적인지 평균 총노출 축소 자체인지 이 블록으로 안 갈린다 — 칸별 실현 평균 총노출과 MDD 대조, 또는 노출 짝지은 통제가 있어야 갈린다(근거는 이 블록 밖). (b) 이 재료에 OOS retention 이 없다 — 선행 3블록 최고치가 −0.43 / −0.26 / −0.15 로 전부 음수였으므로, 산출물에서 B5_21 의 OOS retention 을 직접 읽기 전에는 이 칸을 결합 대표로 못박을 수 없다.",
+  "mechanism_by": "llm:block_end",
+  "mechanism_at": "2026-09-21T19:47:41+0900",
+  "prior_lessons_used": ["B1", "B2", "B3", "B6"],
+  "next_block_actions": [
+    {
+      "action": "B4 LOO 의 B5 대표를 PORT_t 최고(B5_16 1.736)가 아니라 Calmar 최고 B5_21(Calmar 0.479 · MDD 0.362)로 넣는다.",
+      "why": "이 계보에서 PORT_t 는 B1 축(B1_9 1.971)이 이미 최고값을 주고, B5 만이 24칸 MDD 범위 0.511~0.640 을 아래로 벗어난 축이다 — 두 축은 같은 정보를 싣지 않는다.",
+      "expect": "LOO 로 B5_21 층을 빼면 MDD 가 0.51 이상으로 복귀하고 Calmar 가 0.35 아래로 내려간다. 빼도 MDD 가 0.40 대에 머물면 B5_21 의 MDD 0.362 는 조합에 전달되지 않은 것이고, 그때 B5 대표는 조합에서 기여 0 으로 판정된다."
+    },
+    {
+      "action": "B4 결합 재료에서 B5_17(trend_run_gate)와 상주 칸 B5_31 을 제외한다.",
+      "why": "B5_17 은 MDD 0.533 으로 기저와 동일하고 Calmar 0.328 < 0.349 라 순수 열위이며, B5_31 은 Calmar 0.401 을 사는 대가로 PORT_t 가 0.908 로 블록 최저다. B1_10 에서 확인된 '비유의 축을 유의한 축에 더하면 순수 희석' 규칙이 그대로 적용된다.",
+      "expect": "제외가 옳다면 두 칸을 포함한 어떤 부분집합도 포함하지 않은 부분집합보다 PORT_t·Calmar 동시 열위로 나온다."
+    },
+    {
+      "action": "B4 LOO 판독을 PORT_t 단일 축이 아니라 PORT_t · CAGR · MDD · Calmar · OOS retention 다섯을 동시에 읽는 표로 낸다.",
+      "why": "B5 는 PORT_t 와 MDD 가 같은 방향으로 움직인 첫 블록이다(B1 에서는 역방향이었다). PORT_t 만 읽으면 B5 층의 기여가 전부 음으로 보인다.",
+      "expect": "B5 층 LOO 의 ΔPORT_t 는 음, ΔMDD 는 양(빼면 낙폭이 커짐)으로 부호가 갈린다. 두 부호가 같으면 B5 층은 노출만 줄인 것이고 결합에서 버려도 된다."
+    },
+    {
+      "action": "LOO 계약은 건드리지 않고, 사후 판독으로 산출물에서 B5_16·B5_18·B5_20·B5_21 의 실현 평균 총노출과 노출 분산을 꺼내 각 칸의 MDD 와 대조한다.",
+      "why": "네 칸의 MDD 가 0.482 / 0.482 / 0.458 / 0.362 로 갈리는데 PORT_t 는 1.736~1.393 으로 겹친다. 평균 총노출이 같은데 MDD 가 갈리면 arm 특이적, B5_21 만 노출이 낮으면 전부 노출 축소다. 근거가 이 블록 밖이라 B4 로는 못 가른다.",
+      "expect": "평균 총노출이 네 칸에서 비슷한데 B5_21 만 MDD 가 12.0%p 낮으면 multivar_channel_tilt 의 상태변수가 실제 처치이고, 노출이 단조로 낮은 순서가 MDD 순서와 일치하면 이 블록의 Calmar 개선은 전부 평균 노출 축소로 설명된다."
+    }
+  ],
+  "next_block_actions_by": "llm:block_end",
+  "avoid": ["시계열 추세·상태 게이트 계열(trend_run_gate 등) 추가 칸 — B5_17 이 MDD 0.533 으로 기저와 한 칸도 다르지 않고 Calmar 0.328 < 0.349 였다. 타이밍 상태는 이 계보에서 낙폭에 닿지 않는다.", "같은 kind 두 층 스택(총노출×총노출) — B5_18 이 B5_16 대비 MDD 동일(0.482)인데 PORT_t 1.736→1.393 · Calmar 0.374→0.352 로 대가만 냈다. 층을 곱해도 정보가 안 늘면 노출만 준다.", "상주 arm pg2_risk_overlay_v1 을 설계·결합 대표로 쓰기 — 상주 칸 B5_31 이 매 세대 이미 재고, PORT_t 0.908 로 블록 최저다.", "공분산·꼬리 최적화 비중(minvar · maxdiv · CDaR_LP · hrp)과 score_tilt 계열 — B2 9칸 PORT_t 0.189~1.741 전부 EW 1.971 미만, 낙폭을 직접 최적화한 B2_8 이 MDD 0.540 으로 블록 최악이었다.", "유니버스 부분집합(KQ150 단독 · K200 단독 · 시총 분위 · 섹터중립) — B3 5/5 전 칸 열위(최고 B3_11 1.329 < 1.971).", "집행 주기·no-trade buffer 추가 칸 — B6 6/6 CAGR 0.170~0.183 < 0.186 · Calmar 0.301~0.330 < 0.349, 게다가 칸별 파라미터가 기록에 없어 귀속 불가다.", "L19_Price_Delay · L22_Ret_Autocorr · CR11_Idiosyncratic_Return · D44_Kurtosis · R13_NCSKEW 를 선정 축으로 재시험 — B1 선정에서 비유의, B2 비중에서 null 로 두 소비 지점이 소진됐다.", "B4 에서 부분집합을 임의로 흔드는 설계 — LOO 계약이고, B1~B6 에서 신호·비중·유니버스·집행을 동시에 움직이면 귀속이 깨진다는 것이 반복 확인됐다."],
+  "prior_action_status": "executed",
+  "prior_action_detail": "설계 6건 중 6건 집행 (설계: xs_vol_gap_corr_brake,trend_run_gate,trend_run_gate+xs_vol_gap_corr_brake,erosion_grind_idio_tilt,erosion_grind_idio_tilt+xs_vol_gap_corr_brake,multivar_channel_tilt / 실측: pg2_risk_overlay_v1,xs_vol_gap_corr_brake,trend_run_gate,trend_run_gate+xs_vol_gap_corr_brake,erosion_grind_idio_tilt,erosion_grind_idio_tilt+xs_vol_gap_corr_brake,multivar_channel_tilt)",
+  "mechanism_confidence": "medium"
 }
