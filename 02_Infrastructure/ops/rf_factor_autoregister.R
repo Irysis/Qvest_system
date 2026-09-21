@@ -37,6 +37,39 @@ jlog <- function(event, ...) {
                     sep = "=", collapse = " ")))
 }
 
+#' 등록 브리핑 sections — ★발신기 계약: tg_agent_brief 에는 `body` 인자가 **없다**(sections 배열이다).
+#'   2026-09-21 수리: 구판이 body= 를 넘겨 매번 `사용되지 않은 인자 (body = ...)` 로 죽었다.
+#'   결과 — 이 레인의 **유일한 성공 등록**(2026-09-17 RP_combo_1403_8125…)이 그대로 침묵했다.
+#'   발화했는데 아무도 몰랐다는 것이 이 결함의 크기다(침묵 실패).
+#'   ★인라인으로 두지 않는 이유: 호출부 안에 있으면 드라이런 양성 대조를 걸 자리가 없다.
+#'   상한은 relaxed 없이도 통과하도록 잡는다(summary 20~100 · text 30~220 · bullet <=80 · 섹션 >=2 · >=400B).
+rf_fa_brief_sections <- function(fid, grade, n_rows, d_from, d_to, max_rho, worst, rho_max) {
+  .rho <- if (is.finite(max_rho %||% NA_real_)) sprintf("%.3f", max_rho) else "NA"
+  .nr  <- format(as.integer(n_rows), big.mark = ",")
+  list(
+    # ★SKILL.md 6.1 필수 4종(단계/대상/위치/직전 판정) — 없으면 발신기가 v8 WARN 을 낸다.
+    #   "지금 어디서 무엇을 돌고 있는지" 가 최상단에 없으면 무인 브리핑은 연속성을 잃는다.
+    list(type = "bullet", emoji = "\U0001F3AF", heading = "현재 리서치 상황",
+         items = c("단계: 1계층 충실구현 — 무인 팩터 등록 레인",
+                   substr(sprintf("대상: %s", fid), 1, 78),
+                   "위치: 팩터 DB 등재 완료 · B1 조합 후보 풀 편입 대기",
+                   substr(sprintf("직전 판정: 권위 등급 %s · 중복 max|rho| %s", grade, .rho), 1, 78))),
+    list(type = "summary", emoji = "\U0001F52D",
+         body = substr(sprintf("논문 충실구현 신호를 팩터 DB 에 등록했습니다 — 등급 %s · 패널 %s행.",
+                               grade, .nr), 1, 100)),
+    list(type = "bullet", emoji = "\U0001F4E6", heading = "등록 내역",
+         items = c(substr(sprintf("id: %s", fid), 1, 78),
+                   substr(sprintf("등급: %s (문턱 B) · 패널 %s행", grade, .nr), 1, 78),
+                   substr(sprintf("기간: %s ~ %s", d_from, d_to), 1, 78),
+                   substr(sprintf("중복 판정: max|rho| %s (%s) · 문턱 %s",
+                                  .rho, worst %||% "-", rho_max), 1, 78))),
+    list(type = "text", emoji = "\U0001F501", heading = "다음",
+         body = substr(sprintf(paste0("다음 논문의 B1 조합 후보 풀에 들어갑니다. IC 이력이 서야 후보가 ",
+                                      "되므로 야간 백필 tick 이 이어받습니다. 되돌리기 = ",
+                                      "remove_custom_factor(\"%s\", from_registry=TRUE)"), fid), 1, 220))
+  )
+}
+
 #' 신규 패널이 기존 팩터의 재구현인가 — 횡단면 rank 상관으로 판정
 #' ★"모멘텀 12-1 재구현"이 새 팩터로 등록되는 것을 막는다. 등록 **전에** 재야 의미가 있다.
 rf_panel_dedup <- function(PN, n_months = 6L, root = ROOT) {
@@ -154,13 +187,17 @@ main <- function(argv) {
 
   tryCatch({
     suppressMessages(source(file.path(ROOT, "02_Infrastructure/telegram/telegram_notify.R")))
-    tg_agent_brief(agent = "AlphaSearch",
-      title = sprintf("[1계층] 팩터 DB 자동등록 — %s (등급 %s)", fid, grade),
-      body = sprintf(paste0("논문 충실구현 신호를 팩터 DB 에 등록했습니다.\n",
-        "· id %s · 등급 %s · 패널 %d행(%s~%s)\n· 중복 판정 max|rho| %s (%s) · 문턱 %s\n",
-        "· 다음 논문의 B1 조합 후보로 들어갑니다. 되돌리기 = remove_custom_factor(\"%s\", from_registry=TRUE)"),
-        fid, grade, nrow(PN), as.character(min(PN$Date)), as.character(max(PN$Date)),
-        if (is.finite(DD$max_rho %||% NA)) round(DD$max_rho, 3) else "NA", DD$worst %||% "-", rho_max, fid))
+    .res <- tg_agent_brief(agent = "AlphaSearch", relaxed = TRUE,
+      lock_scope = sprintf("rf_factor_autoreg_%s", fid),
+      title = substr(sprintf("[1계층] 팩터 DB 자동등록 — %s (등급 %s)", fid, grade), 1, 120),
+      sections = rf_fa_brief_sections(
+        fid = fid, grade = grade, n_rows = nrow(PN),
+        d_from = as.character(min(PN$Date)), d_to = as.character(max(PN$Date)),
+        max_rho = DD$max_rho %||% NA_real_, worst = DD$worst, rho_max = rho_max))
+    # ★발신기가 list(ok=FALSE, error=…) 로 **조용히** 돌아오는 경로가 있다 — 그것도 실패다.
+    #   예외만 잡으면 이 레인은 또 발화한 줄 모른다.
+    if (!isTRUE((.res %||% list())$ok)) jlog("telegram_failed", err = (.res %||% list())$error %||% "ok!=TRUE")
+    else jlog("telegram_sent", id = fid, bytes = (.res %||% list())$bytes %||% NA)
   }, error = function(e) jlog("telegram_failed", err = conditionMessage(e)))
   0L
 }
