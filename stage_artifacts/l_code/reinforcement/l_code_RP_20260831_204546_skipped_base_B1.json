@@ -17,11 +17,41 @@
   "calmar": 0.349,
   "oos_retention": -0.297,
   "portfolio_alpha_t": 1.971,
-  "next_probes": [
-    "다음 격자 축 B2(weighting) — 이 블록 승자 위에서 측정",
-    "B1_9(최고 1.971)는 B4 조합 후보로 고정 · B1_5(최저 -0.236)는 축 역작동 여부를 조합 LOO 로 분리"
-  ],
+  "next_probes": ["다음 격자 축 B2(weighting) — 이 블록 승자 위에서 측정", "B1_9(최고 1.971)는 B4 조합 후보로 고정 · B1_5(최저 -0.236)는 축 역작동 여부를 조합 LOO 로 분리"],
   "next_probe": "다음 격자 축 B2(weighting) — 이 블록 승자 위에서 측정 | B1_9(최고 1.971)는 B4 조합 후보로 고정 · B1_5(최저 -0.236)는 축 역작동 여부를 조합 LOO 로 분리",
   "source_paper": "https://arxiv.org/abs/2608.23944",
-  "record_type": "performance"
+  "record_type": "performance",
+  "mechanism": "판정: 이 유니버스에서 부호와 크기를 유지한 축은 펀더멘털 revision·가격 모멘텀·밸류 세 계열뿐이고, 수익률 분포·미시구조 계열 6칸(B1_1 L19_Price_Delay PORT_t 0.338 · B1_2 L22_Ret_Autocorr 0.040 · B1_3 CR11_Idiosyncratic_Return 0.363 · B1_4 D24_Systematic_Risk_Prop 0.558 · B1_5 D44_Kurtosis −0.236 · B1_6 R13_NCSKEW 0.449)은 나란히 비유의였다 — PORT_t 폭이 −0.236~0.558 로 좁고 한 칸도 1을 넘지 못했다. 반면 B1_8 C03_EPS_Chg_3m PORT_t 1.470 · B1_7 M01_Mom_12_1 1.118, 그리고 두 축에 V14_EBIT_EV 를 더한 B1_9 가 PORT_t 1.971 · CAGR 0.186 · Calmar 0.349 · MDD 0.533 으로 이 블록 최고다. 결합의 규칙은 B1_9 와 B1_10 이 갈라 준다: 유의한 축끼리 결합하면 PORT_t 1.470→1.971 로 각각의 합 이상으로 올라가고(초가산), 비유의 축을 유의한 축에 결합하면 B1_10(L19+M01) PORT_t 1.099 < B1_7 단독 1.118 · Calmar 0.243 < 0.268 · MDD 0.588 > 0.566 으로 순수 희석이다. 즉 이 기저에서 결합은 구성원 각각이 유의할 때만 가산된다. 두 번째 실측: MDD 가 PORT_t 와 단조 역방향으로 움직인다(B1_3/B1_4 MDD 0.640 → B1_9 0.533). 이 블록에서 MDD 감소는 독립적인 위험 통제의 결과가 아니라 신호 품질의 부산물이고, 비중 방법은 전 10칸이 동일가중 1/25 로 고정이라 위험 축은 아예 미측정 상태다. 미결 한 줄: B1_9 의 초가산이 세 축의 낮은 상관에서 오는지 revision 축 단독의 강도에서 오는지는 이 블록으로 안 갈린다 — 세 축의 IC 상관과 2축 부분집합(C03+V14, M01+V14) 측정이 있어야 갈린다.",
+  "mechanism_by": "llm:block_end",
+  "mechanism_at": "2026-09-21T13:11:51+0900",
+  "prior_lessons_used": [],
+  "next_block_actions": [
+    {
+      "action": "B2 에서 기저 신호를 B1_9(C03_EPS_Chg_3m+M01_Mom_12_1+V14_EBIT_EV)로 고정한 뒤 비중 축만 교체한다 — 위험기반(minvar·hrp)·tail_aware(CDaR_LP·cvar)·score_blend(score_tilt·nco_score_tilt)·entropy(maxdiv)·risk_parity 를 각 1칸.",
+      "why": "MDD 0.640→0.533 이 팩터 교체만으로 따라 내려왔다는 것은 위험 축이 한 번도 독립적으로 처치되지 않았다는 뜻이다(전 칸 동일가중 1/25).",
+      "expect": "위험기반·tail_aware 칸이 B1_9 대비 MDD 0.533 을 내리면서 PORT_t 1.971 을 유지하면 위험 축은 비중 지점에서 살아 있다. 전 칸이 MDD 를 못 내리거나 내리는 만큼 PORT_t 를 잃으면 이 계보의 MDD 는 신호에 종속된 양이고 남은 레버는 팩터·집행 쪽이다."
+    },
+    {
+      "action": "lean:higher_moment 와 lean:minvar 을 같은 블록에 둬서 같은 위험 정보의 소비 지점을 가른다 — B1_5 D44_Kurtosis(PORT_t −0.236)·B1_4 D24_Systematic_Risk_Prop(0.558) 은 그 정보를 횡단면 선정에 썼고, B2 는 같은 고차/공분산 정보를 비중에만 쓴다.",
+      "why": "B1_4·B1_5 의 실패는 위험 특성 자체의 실패일 수도 있고 소비 지점(선정 vs 비중)의 문제일 수도 있는데, B1 은 선정 지점만 쟀다.",
+      "expect": "higher_moment·minvar 가 MDD 를 유의하게 내리면 B1_4·B1_5 의 비유의는 팩터의 실패가 아니라 소비 지점의 문제로 재분류된다. 둘 다 동일가중과 구분되지 않으면 위험 정보 자체가 이 유니버스에서 약하다."
+    },
+    {
+      "action": "score_tilt·nco_score_tilt 로 B1_9 순위 정보의 상단 집중도를 회수한다 — 현재 1/25 동일가중은 3팩터 합성 순위를 전량 버리고 있다.",
+      "why": "B1_9 가 단독 대비 초가산인데 그 강도가 비중에 반영되지 않는다. tilt 는 순위 강도를 비중으로 옮기는 유일한 축이다.",
+      "expect": "tilt 칸이 PORT_t 1.971 을 넘으면 순위 정보가 비중에서 아직 회수 가능하다. tilt 가 PORT_t 를 올리면서 MDD 0.533 을 함께 키우면 집중도와 낙폭의 교환비가 잡히고, 그 교환비는 B6 집행 주기 설계의 입력이 된다."
+    },
+    {
+      "action": "B4(결합)에서 후보 축의 자격 조건을 '단독 PORT_t > 1' 로 두고, B1_1~B1_6 계열은 결합 재료에서 제외한다.",
+      "why": "B1_10 이 L19(단독 0.338)를 M01(1.118)에 결합해 1.099 로 떨어뜨렸다 — 비유의 축은 결합에서 희석항으로만 작동했다.",
+      "expect": "이 규칙을 지킨 B4 칸이 전부 B1_9 PORT_t 1.971 이상이면 자격 조건이 맞다. 제외한 계열 중 하나가 다른 블록에서 조건부로 살아나면(예: 위험 축 처치 후) 규칙을 조건부로 완화한다."
+    }
+  ],
+  "next_block_actions_by": "llm:block_end",
+  "avoid": ["B1 에서 쟀던 수익률 분포·미시구조 계열(L19_Price_Delay · L22_Ret_Autocorr · CR11_Idiosyncratic_Return · D44_Kurtosis · R13_NCSKEW)을 횡단면 선정 축으로 다시 쓰지 말 것 — 6칸이 PORT_t −0.236~0.558 범위에 모두 들어갔고 분산이 작다. 벽은 이 계열이 아니라 '선정 지점에서의 이 계열'이며, 비중 지점 재시험은 B2 의 higher_moment·minvar 칸이 이미 담당한다.", "비유의 축을 유의한 축에 더하는 형태의 결합 칸을 쓰지 말 것 — B1_10 에서 PORT_t·Calmar·MDD 세 지표가 동시에 나빠졌다(1.118→1.099 · 0.268→0.243 · 0.566→0.588). 결합 칸은 단독으로 유의한 축끼리만 쓴다.", "B2 에서 기저 신호를 B1_9 이외로 바꾸지 말 것 — 신호와 비중을 동시에 움직이면 MDD 변화의 귀속이 불가능해진다(B1 에서 MDD 가 이미 신호에 종속돼 움직였다)."],
+  "next_block_design_for": "B2",
+  "next_block_design_n": 9,
+  "prior_action_status": "no_design",
+  "prior_action_detail": "그 블록에 설계가 없었다(규칙 선정)",
+  "mechanism_confidence": "medium"
 }

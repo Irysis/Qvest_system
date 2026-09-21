@@ -120,14 +120,41 @@ ok("단층·NULL·none·1원소 리스트 서명 = 구판 문자열과 비트 �
 ## 실제 스펙 파일 — 단층은 구판과 동일, 2층 이상은 뒤집어도 동일
 .spd <- file.path(ROOT, ".cache/rf_parallel")
 .fs <- if (dir.exists(.spd)) utils::head(sort(list.files(.spd, pattern = "^spec_B[0-9]+_[0-9]+__.*\\.json$", full.names = TRUE), decreasing = TRUE), 400L) else character(0)
-n1 <- 0L; n2 <- 0L; bad1 <- character(0); bad2 <- character(0)
+## ★2026-09-21 B6(집행 주기) 신설 반영 — .spec_sig 는 rebalance 가 **있을 때만** 덧붙인다.
+##   .old_sig 는 B6 이전 재현이라 그 필드를 모르므로 rebalance 를 단 칸은 당연히 달라진다.
+##   그 차이를 빨강으로 두면 배터리가 상시 오탐이 되고, 상시 오탐은 상시 침묵이 된다.
+##   축을 갈라 **셋 다 단정**한다:
+##     (a) rebalance 없는 칸 = 구판과 비트 동일  → 기존 측정이 되살아나지 않는다(원래 보장)
+##     (b) rebalance 있는 칸 = 구판과 **달라야** 한다 → 안 달라지면 규칙이 서명에 안 실린 것이다
+##     (c) 같은 entry 안의 B6 칸끼리 = 서로 달라야 한다 → k=2 · k=3 · band · buffer 가 한 칸으로
+##         뭉개지면 dedup 이 중복으로 쳐내거나 처치가 조용히 미전달된다.
+##         ★entry 를 넘어선 동일 서명은 정상이다(같은 스펙은 같은 칸) — 그래서 entry 안에서만 본다.
+n1 <- 0L; n2 <- 0L; nrb <- 0L; bad1 <- character(0); bad2 <- character(0)
+rb_unchanged <- character(0); rb_sigs <- character(0); rb_owner <- character(0)
 for (f in .fs) {
   s <- tryCatch(fromJSON(f, simplifyVector = FALSE), error = function(e) NULL); if (is.null(s)) next
   L <- .ov_layers(s$overlay)
-  if (length(L) <= 1L) { n1 <- n1 + 1L; if (!identical(.spec_sig(s), .old_sig(s))) bad1 <- c(bad1, basename(f)) }
-  else { n2 <- n2 + 1L; s2 <- s; s2$overlay <- rev(L); if (!identical(.spec_sig(s), .spec_sig(s2))) bad2 <- c(bad2, basename(f)) }
+  if (length(L) > 1L) {
+    n2 <- n2 + 1L; s2 <- s; s2$overlay <- rev(L)
+    if (!identical(.spec_sig(s), .spec_sig(s2))) bad2 <- c(bad2, basename(f))
+  } else if (!is.null(s[["rebalance"]])) {
+    nrb <- nrb + 1L
+    if (identical(.spec_sig(s), .old_sig(s))) rb_unchanged <- c(rb_unchanged, basename(f))
+    rb_sigs  <- c(rb_sigs,  .spec_sig(s))
+    rb_owner <- c(rb_owner, sub("\\.json$", "", sub("^spec_B[0-9]+_[0-9]+__", "", basename(f))))
+  } else {
+    n1 <- n1 + 1L
+    if (!identical(.spec_sig(s), .old_sig(s))) bad1 <- c(bad1, basename(f))
+  }
 }
-if (n1 > 0L && !length(bad1)) ok(sprintf("실제 단층 스펙 %d건 서명 비트 동일(구판 대비)", n1)) else ng("실제 단층 스펙 서명 변경", paste(utils::head(bad1, 3), collapse = ","))
+if (n1 > 0L && !length(bad1)) ok(sprintf("실제 단층 스펙 %d건 서명 비트 동일(구판 대비 · rebalance 없는 칸)", n1)) else ng("실제 단층 스펙 서명 변경", paste(utils::head(bad1, 3), collapse = ","))
+if (nrb == 0L) cat("  --- rebalance 스펙 없음 — B6 축 대조 생략\n") else {
+  if (!length(rb_unchanged)) ok(sprintf("B6 스펙 %d건 — rebalance 가 서명에 실린다(구판과 다르다)", nrb))
+  else ng("B6 rebalance 가 서명에 안 실린다 — 칸들이 뭉갠다", paste(utils::head(rb_unchanged, 3), collapse = ","))
+  .dup <- unlist(lapply(split(rb_sigs, rb_owner), function(z) if (anyDuplicated(z)) z[duplicated(z)] else character(0)))
+  if (!length(.dup)) ok(sprintf("B6 스펙 — entry %d곳 안에서 칸별 서명이 전부 갈린다", length(unique(rb_owner))))
+  else ng("같은 entry 안 B6 서명 충돌", sprintf("%d건", length(.dup)))
+}
 if (n2 == 0L) cat("  --- 실제 2층 이상 스펙 없음 — 뒤집기 대조 생략\n") else if (!length(bad2)) ok(sprintf("실제 스택 스펙 %d건 — 층을 뒤집어도 같은 서명", n2)) else ng("실제 스택 스펙 순서 의존", paste(utils::head(bad2, 3), collapse = ","))
 if (length(.ov_layers(list(list(OA), list(OB, OC)))) == 3L && length(.ov_layers(list(kind = "x"))) == 1L && !length(.ov_layers("x")))
   ok(".ov_layers 중첩 평탄화 — list(list(A), list(B,C)) → 3층 · 단수 1층 · 비리스트 0층") else ng(".ov_layers 평탄화")

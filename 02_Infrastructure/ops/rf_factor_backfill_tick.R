@@ -114,6 +114,58 @@ rf_backfill_candidates <- function(root = ROOT, min_ratio = 0.5) {
   D[, n_months_total := n_months][]
 }
 
+#' 축 사이드카가 소비면과 어긋났는가 — ★술어는 **소비자의 상태**여야 한다.
+#'   구판은 "이번 tick 이 백필을 했는가"(length(done))로 갱신을 걸었다. 그런데 자동등록 레인은
+#'   자기가 직접 backfill+IC 를 돌리므로 이 tick 의 done 에 절대 들어오지 않는다. 그래서
+#'   2026-09-17 등록분이 사이드카에 20일간 빠져 있었다(registry 370 vs 사이드카 369).
+#'   판정 축을 "registry 에 있는데 사이드카에 없는 id" 로 옮긴다 — 누가 채웠든 걸린다.
+#'   ★mtime 비교를 쓰지 않는 이유: 내용이 안 변해도 재생성이 mtime 을 밀어 상시 초록이 된다.
+rf_panel_axis_stale <- function(root = ROOT) {
+  reg_p <- file.path(root, ".cache/factor_db/factor_registry.json")
+  ax_p  <- file.path(root, "06_Registry/factor_panel_axis.json")
+  if (!file.exists(reg_p)) return(list(stale = FALSE, missing = character(0), reason = "registry 부재"))
+  if (!file.exists(ax_p))  return(list(stale = TRUE,  missing = character(0), reason = "사이드카 부재"))
+  reg <- tryCatch(fromJSON(reg_p, simplifyVector = FALSE), error = function(e) NULL)
+  ax  <- tryCatch(fromJSON(ax_p,  simplifyVector = FALSE), error = function(e) NULL)
+  if (is.null(reg) || is.null(ax)) return(list(stale = TRUE, missing = character(0), reason = "판독 불가"))
+  reg_ids <- names(reg[["factors"]] %||% reg)
+  ax_ids  <- names(ax[["factors"]]  %||% ax)
+  miss <- setdiff(reg_ids, ax_ids)
+  list(stale = length(miss) > 0L, missing = miss,
+       reason = sprintf("registry %d종 · 사이드카 %d종 · 미등재 %d",
+                        length(reg_ids), length(ax_ids), length(miss)))
+}
+
+#' 축 사이드카 재생성 (멱등)
+#' ★인터프리터 순서가 저장소 관례(QVEST_PY 우선)와 **반대**다 — 의도적이다.
+#'   classify_panel_axis.py 는 pandas 를 쓰는데 QVEST_PY(시스템 Python 3.12)에는 pandas 가 없다
+#'   (openpyxl 은 있어서 다른 호출부는 멀쩡하다). 그래서 venv 를 먼저 본다.
+#' ★system2 는 종료코드로 **예외를 던지지 않는다**. tryCatch(error=) 만 걸어두면 스크립트가
+#'   status 1 로 죽어도 조용히 지나간다 — 실제로 2026-09-01 이후 이 갱신은 낡은 게 아니라
+#'   줄곧 죽어 있었고 아무도 몰랐다. attr(out,"status") 를 반드시 본다.
+rf_panel_axis_py <- function(root = ROOT) {
+  cands <- c(file.path(root, ".venv_qvest_ml/Scripts/python.exe"), Sys.getenv("QVEST_PY", ""))
+  cands <- cands[nzchar(cands) & file.exists(cands)]
+  if (!length(cands)) "" else cands[1]
+}
+rf_panel_axis_refresh <- function(why, root = ROOT) {
+  py <- rf_panel_axis_py(root)
+  if (!nzchar(py)) { jlog("panel_axis_failed", why = why, err = "python 실행경로 미발견(venv/QVEST_PY)"); return(invisible(FALSE)) }
+  res <- tryCatch({
+    out <- system2(py, c(shQuote(file.path(root, "02_Infrastructure/factor_db/classify_panel_axis.py")), "--quiet"),
+                   wait = TRUE, stdout = TRUE, stderr = TRUE)
+    list(status = as.integer(attr(out, "status") %||% 0L), tail = paste(utils::tail(out, 2), collapse = " | "))
+  }, error = function(e) list(status = -1L, tail = conditionMessage(e)))
+  st <- rf_panel_axis_stale(root)
+  if (!identical(res$status, 0L) || length(st$missing)) {
+    jlog("panel_axis_failed", why = why, status = res$status, err = substr(res$tail, 1, 200),
+         still_missing = length(st$missing), after = st$reason)
+    return(invisible(FALSE))
+  }
+  jlog("panel_axis_refreshed", why = why, after = st$reason, py = basename(dirname(dirname(py))))
+  invisible(TRUE)
+}
+
 main <- function() {
   if (nzchar(Sys.getenv("QVEST_FDB_NO_BACKFILL", ""))) { jlog("halt_kill_switch"); return(0L) }
   budget <- suppressWarnings(as.numeric(Sys.getenv("QVEST_FDB_BACKFILL_BUDGET_MIN", "60")))
@@ -121,6 +173,13 @@ main <- function() {
 
   CAND <- tryCatch(rf_backfill_candidates(), error = function(e) {
     jlog("candidates_failed", err = conditionMessage(e)); NULL })
+  # ★사이드카 신선도는 백필 유무와 **독립**이다 — 조기 반환 앞에서 본다.
+  #   (구판은 이 return 뒤에 있어서, 백필할 게 없는 밤에는 영영 갱신되지 않았다)
+  .ax <- rf_panel_axis_stale()
+  if (isTRUE(.ax$stale)) {
+    jlog("panel_axis_stale", reason = .ax$reason, ids = paste(head(.ax$missing, 5), collapse = ","))
+    rf_panel_axis_refresh("stale_vs_registry")
+  }
   if (is.null(CAND) || !nrow(CAND)) { jlog("nothing_to_backfill"); return(0L) }
   jlog("candidates", n = nrow(CAND), total_months = CAND$n_months_total[1],
        ids = paste(head(CAND$id, 8), collapse = ","), budget_min = budget)
@@ -147,11 +206,8 @@ main <- function() {
     tryCatch({ compute_all_factor_ic_monthly()
                jlog("ic_refreshed", n = length(done), ids = paste(done, collapse = ",")) },
              error = function(e) jlog("ic_refresh_failed", err = conditionMessage(e)))
-    # 축 판정 사이드카도 새 배출을 반영해 다시 낸다(멱등)
-    tryCatch(system2(Sys.getenv("QVEST_PY", file.path(ROOT, ".venv_qvest_ml/Scripts/python.exe")),
-                     c(shQuote(file.path(ROOT, "02_Infrastructure/factor_db/classify_panel_axis.py")), "--quiet"),
-                     wait = TRUE, stdout = TRUE, stderr = TRUE),
-             error = function(e) jlog("panel_axis_failed", err = conditionMessage(e)))
+    # 축 판정 사이드카도 새 배출을 반영해 다시 낸다(멱등 · 위 신선도 경로와 같은 함수)
+    rf_panel_axis_refresh("backfilled")
   }
   jlog("tick_done", filled = length(done), elapsed_min = round(as.numeric(difftime(Sys.time(), t0, units = "mins")), 1))
   0L

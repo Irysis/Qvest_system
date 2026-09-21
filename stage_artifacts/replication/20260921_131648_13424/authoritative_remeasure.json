@@ -1,0 +1,120 @@
+{
+  "status": "OK",
+  "strategy_id": "RP_20260921_131648_13424",
+  "strategy_name": "RF_PAR_B2_7_hrp",
+  "remeasured_at": "2026-09-21T13:24:00+0900",
+  "run_id": "20260921_131648_13424",
+  "bt_result_path": "C:/Users/99922/OneDrive/Quant_Module_Moltbot/stage_artifacts/replication/20260921_131648_13424/bt_result.rds",
+  "metric_type": "backtested",
+  "essence_grade": "C",
+  "grade_basis": "replication_chain",
+  "essence": {
+    "net_sharpe": 0.798,
+    "net_ir": 0.179,
+    "portfolio_alpha_t_nw_lag3": 0.848,
+    "oos_retention": -0.807,
+    "dsr": null,
+    "mdd": 0.513,
+    "calmar": 0.293,
+    "cagr": 0.15,
+    "drawdown_profile": {
+      "severe45_count": 1,
+      "severe55_count": 0,
+      "severe45_total_periods": 5,
+      "severe45_max_periods": 5,
+      "severe45_period_frac": 0.0009,
+      "catastrophic_mdd_threshold": 0.7,
+      "severe45_hard_count": 15,
+      "severe55_hard_count": 6,
+      "severe45_period_hard_frac": 0.25,
+      "severe45_max_hard_periods": 252,
+      "tail_review": true,
+      "structural_hard_fail": false
+    }
+  },
+  "hard_fail": false,
+  "structural_drawdown": false,
+  "selection_type": "chain",
+  "dsr_gate_applied": false,
+  "grade_base": "C",
+  "recent_regime_rescued": false,
+  "recent_regime_label": null,
+  "rolling_grade": {
+    "status": "ok",
+    "n_points": 225,
+    "window_months": 36,
+    "pass_life": 0.2889,
+    "pass_recent": 0.5,
+    "current": {
+      "ym": "2026-09",
+      "sharpe": 0.78957,
+      "cagr": 0.185386,
+      "mdd": 0.182264,
+      "calmar": 1.017128,
+      "pass": false
+    },
+    "prior_recoveries": 5,
+    "current_run": 0,
+    "span": ["2008-01", "2026-09"]
+  },
+  "defensive_score": {
+    "status": "ok",
+    "defensive": true,
+    "down": {
+      "n": 110,
+      "excess": 0.015323,
+      "hit": 0.636364,
+      "t": 4.465208,
+      "capture": 0.642042
+    },
+    "mid": {
+      "n": 30,
+      "excess": 0.023522,
+      "hit": 0.7,
+      "t": 3.204035,
+      "capture": 0.75395
+    },
+    "deep": {
+      "n": 10,
+      "excess": 0.04262,
+      "hit": 0.7,
+      "t": 2.444896,
+      "capture": 0.718526
+    },
+    "up": {
+      "n": 150,
+      "excess": -0.006913,
+      "hit": 0.413333,
+      "t": -1.706981,
+      "capture": 0.86172
+    },
+    "reason": "하락월 110개: 초과 +1.53%/월 (t 4.47 · 적중 64%) · 벤치-10% 이하 10개: 초과 +4.26%/월 · 상승월 초과 -0.69%/월"
+  },
+  "reasons": "Ensemble: positive alpha이나 B 미달 (블렌드에서만 가치)",
+  "replication": {
+    "source_paper": {
+      "url": "https://arxiv.org/abs/2608.23944",
+      "title": "Bulk Phase Transition and Edge Behavior in Temporally Correlated Random Matrices",
+      "paper_key": "2608.23944"
+    },
+    "commission_paper_bps": 15,
+    "paper_basis": {
+      "cagr": 0.150042,
+      "sharpe": 0.703414,
+      "mdd": 0.51291,
+      "n_months": 260
+    },
+    "grade_basis_note": "등급은 15bps 순비용 판 (essence 문턱 15bps 보정 — gross 등급은 인플레)",
+    "fidelity": "universe 치환(K200∪KQ150)만 — 그 외 논문 그대로 (v10 완전 충실구현)",
+    "benchmark_note": "long_vs_long_bm",
+    "n_max": 25,
+    "has_short": false
+  },
+  "contract": {
+    "integrity_status": "OK",
+    "cagr": 0.15,
+    "sharpe": 0.798,
+    "mdd": 0.513,
+    "calmar": 0.293
+  }
+}
