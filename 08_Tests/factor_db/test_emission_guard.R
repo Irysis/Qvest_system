@@ -21,6 +21,8 @@
 #   F. 짝 계약   — 코드의 .CONSENSUS_DEPRECATED 와 registry lifecycle 이 일치하는가
 #                  + 기준선 파일이 수리된 팩터를 묻어버리지 않았는가
 #   G. 배선      — 빌더가 실제로 감시를 호출하고, write 전에 부르는가
+#   H. 지속 결손 — 회귀(R) 다음 달에도 이력 있는 결손이 WARN 으로 남는가 (Class P,
+#                  2026-09-24 DATA-INV13-ACC) + 돌연변이 2종(P 제거 · 이력 조건 제거)
 #
 # 단독 실행: Rscript 08_Tests/factor_db/test_emission_guard.R
 # 배터리   : 08_Tests/hooks/run_all_hooks.sh (SUITES 배열)
@@ -357,6 +359,147 @@ if (any(grepl("emission_guard.R", b, fixed = TRUE))) {
   ok("G3_guard_sourced", "emission_guard.R source 배선 존재")
 } else {
   bad("G3_guard_sourced", "source 누락")
+}
+
+#==============================================================================
+cat("\n=== H. 지속 결손(Class P) — 회귀 다음 달에도 경고가 남는가 ===\n")
+#==============================================================================
+# 실사고 형태(2026-09-24): INV13 3종이 202607 까지 산출 → 202608 회귀(Class R 경고) →
+#   202609 는 absent_streak=2 인데 verdict OK. 직전 빌드만 비교하는 R 은 결손 둘째 달부터
+#   원리적으로 침묵한다. 새 문턱은 없다: streak 1 = R, streak ≥2 ∧ 이력 있음 = P.
+P_F <- c("INV13_Foreign_Resid_Individual_126d", "INV13_Foreign_Resid_Individual_21d",
+         "INV13_Foreign_Resid_Individual_63d")
+LIVE <- "INV01_Foreign_NetBuy_20d"
+reg_p <- data.table(Factor_Name = c(P_F, LIVE, "NEVER_FACTOR"),
+                    category = "investor", status = "active")
+led_p <- rbindlist(list(
+  rbindlist(lapply(c("202606", "202607"), function(y)
+    data.table(ym = y, Factor_Name = c(P_F, LIVE), n_rows = 3000L))),
+  data.table(ym = "202608", Factor_Name = LIVE, n_rows = 3000L)))
+prod_live <- data.table(Factor_Name = LIVE, n_rows = 3000L, n_tickers = 3000L)
+# NEVER_FACTOR = 한 번도 산출된 적 없는 결측(vintage/미탑재) — 기준선 선언. P 대상이 아니다.
+bl_p <- data.table(Factor_Name = "NEVER_FACTOR", reason = "선언된 결측",
+                   diagnosed = TRUE, declared_ym = "202001")
+
+run_p <- function(chk, ym, ledger, produced = prod_live, baseline = bl_p)
+  chk(produced, reg_p, ledger, ym, baseline)
+
+# H0 대조: 결손 첫 달(202608)은 R 의 몫 — P 와 겹치지 않는다
+r0 <- run_p(factor_emission_check, "202608", led_p[ym < "202608"])
+if (setequal(r0$class_R_regression, P_F) && length(r0$class_P_persistent) == 0L &&
+    r0$verdict == "WARN") {
+  ok("H0_first_month_is_class_R", "결손 첫 달 = 회귀 3종 · 지속결손 0 (R/P 분리)")
+} else {
+  bad("H0_first_month_is_class_R", sprintf("R=%s P=%s verdict=%s",
+      paste(r0$class_R_regression, collapse = ","), paste(r0$class_P_persistent, collapse = ","), r0$verdict))
+}
+
+# H1 원 사고: 결손 둘째 달(202609) — 구판은 OK 였다
+r1 <- run_p(factor_emission_check, "202609", led_p)
+h1_pass <- function(r) identical(sort(as.character(r$class_P_persistent)), sort(P_F)) &&
+  length(r$class_R_regression) == 0L && r$verdict == "WARN" &&
+  any(grepl("지속 결손", r$warnings, fixed = TRUE))
+if (h1_pass(r1)) {
+  st <- r1$absent_streak[Factor_Name %in% P_F]
+  ok("H1_second_month_still_warn", sprintf("202609 지속결손 %d종(streak %s) → WARN",
+                                           length(r1$class_P_persistent),
+                                           paste(unique(st$consecutive_absent), collapse = ",")))
+} else {
+  bad("H1_second_month_still_warn", sprintf("★결손 둘째 달 침묵 — P=%s R=%s verdict=%s",
+      paste(r1$class_P_persistent, collapse = ","), paste(r1$class_R_regression, collapse = ","), r1$verdict))
+}
+
+# H2 복구 전까지 유지: 셋째 달(202610)도 WARN
+led_p3 <- rbindlist(list(led_p, data.table(ym = "202609", Factor_Name = LIVE, n_rows = 3000L)))
+r2 <- run_p(factor_emission_check, "202610", led_p3)
+if (setequal(r2$class_P_persistent, P_F) && r2$verdict == "WARN" &&
+    all(r2$absent_streak[Factor_Name %in% P_F]$consecutive_absent == 3L)) {
+  ok("H2_persists_until_recovery", "셋째 달(streak 3)에도 경고 유지")
+} else {
+  bad("H2_persists_until_recovery", sprintf("P=%s verdict=%s",
+      paste(r2$class_P_persistent, collapse = ","), r2$verdict))
+}
+
+# H3 오탐 없음: 복구된 달엔 침묵
+r3 <- run_p(factor_emission_check, "202609", led_p,
+            produced = data.table(Factor_Name = c(LIVE, P_F), n_rows = 3000L, n_tickers = 3000L))
+if (length(r3$class_P_persistent) == 0L && r3$verdict == "OK") {
+  ok("H3_recovered_is_silent", "복구되면 지속결손 0 · verdict OK")
+} else {
+  bad("H3_recovered_is_silent", sprintf("복구 후에도 발화: %s", paste(r3$warnings, collapse = " | ")))
+}
+
+# H4 래칫: 이력 있는 결손도 기준선 선언분은 억제하되 기록한다 (Class S 와 같은 규칙)
+bl_decl <- rbindlist(list(bl_p, data.table(Factor_Name = P_F[1], reason = "선언된 중단",
+                                           diagnosed = TRUE, declared_ym = "202609")))
+r4 <- run_p(factor_emission_check, "202609", led_p, baseline = bl_decl)
+if (identical(as.character(r4$class_P_declared), P_F[1]) &&
+    setequal(r4$class_P_persistent, P_F[-1])) {
+  ok("H4_baseline_ratchet", "선언 1종은 class_P_declared 로 기록 · 나머지 2종 경고")
+} else {
+  bad("H4_baseline_ratchet", sprintf("declared=%s P=%s",
+      paste(r4$class_P_declared, collapse = ","), paste(r4$class_P_persistent, collapse = ",")))
+}
+
+# H5 실제 기준선이 INV13 을 묻지 않는가 (F2 와 같은 계통의 인계철선)
+buried_p <- intersect(bl_real$Factor_Name, P_F)
+if (length(buried_p) == 0L) {
+  ok("H5_baseline_does_not_bury_inv13", "기준선에 INV13 없음")
+} else {
+  bad("H5_baseline_does_not_bury_inv13", sprintf("★INV13 이 기준선에 묻힘: %s", paste(buried_p, collapse = ",")))
+}
+
+# H6·H7 돌연변이 — H1 이 공허하지 않음을 실증. 가드 원문 한 줄을 바꿔 격리 env 에 로드.
+load_guard_mutant <- function(from, to) {
+  code <- readLines(GUARD_SRC, warn = FALSE)
+  i <- which(code == from)
+  if (length(i) != 1L) return(NULL)
+  code[i] <- to
+  tf <- tempfile(fileext = ".R"); on.exit(unlink(tf), add = TRUE)
+  writeLines(code, tf)
+  e <- new.env(parent = globalenv())
+  invisible(capture.output(suppressWarnings(suppressMessages(source(tf, local = e)))))
+  e
+}
+# H6: Class P 제거(= 구판 동작) → H1 이 red 가 되어야 한다
+m6 <- load_guard_mutant("    persistent <- sort(setdiff(p_all, baseline$Factor_Name))",
+                        "    persistent <- character(0)")
+if (is.null(m6)) {
+  bad("H6_mutant_no_class_P_detected", "돌연변이 지점 미발견 — 검출력 실증 불가")
+} else {
+  rm6 <- run_p(m6$factor_emission_check, "202609", led_p)
+  if (!h1_pass(rm6) && rm6$verdict == "OK") {
+    ok("H6_mutant_no_class_P_detected", "P 를 지운 가드는 202609 에 OK → H1 red (구판 재현)")
+  } else {
+    bad("H6_mutant_no_class_P_detected", sprintf("돌연변이가 여전히 통과 — verdict=%s", rm6$verdict))
+  }
+}
+# H7: '이력 있음' 조건 — 한 번도 난 적 없는 결측은 P 가 아니라 S(구조적 침묵)의 몫이다.
+#   기준선 없이 돌려 NEVER_FACTOR 가 S 로만 가고 P 로 새지 않는지(실물) → 조건을 지운
+#   돌연변이에선 P 로 새는지(검출력)를 짝으로 잰다.
+bl_empty <- bl_p[0L]
+p_excludes_never <- function(r) setequal(r$class_P_persistent, P_F) &&
+  !("NEVER_FACTOR" %in% r$class_P_persistent)
+r7 <- run_p(factor_emission_check, "202609", led_p, baseline = bl_empty)
+if (p_excludes_never(r7) && "NEVER_FACTOR" %in% r7$class_S_silent) {
+  ok("H7_history_condition", "이력 없는 결측은 S 로만 — P 는 이력 있는 3종뿐")
+} else {
+  bad("H7_history_condition", sprintf("P=%s S=%s", paste(r7$class_P_persistent, collapse = ","),
+                                      paste(r7$class_S_silent, collapse = ",")))
+}
+m7 <- load_guard_mutant(
+  "    p_all <- streak[consecutive_absent >= 2L & !is.na(last_seen_ym), Factor_Name]",
+  "    p_all <- streak[consecutive_absent >= 2L, Factor_Name]")
+if (is.null(m7)) {
+  bad("H7m_mutant_no_history_cond_detected", "돌연변이 지점 미발견 — 검출력 실증 불가")
+} else {
+  rm7 <- run_p(m7$factor_emission_check, "202609", led_p, baseline = bl_empty)
+  if (!p_excludes_never(rm7)) {
+    ok("H7m_mutant_no_history_cond_detected", "이력 조건을 지우면 NEVER_FACTOR 가 P 로 새어 H7 red")
+  } else {
+    bad("H7m_mutant_no_history_cond_detected", sprintf("과잉 경보 미검출 — P=%s",
+        paste(rm7$class_P_persistent, collapse = ",")))
+  }
 }
 
 cat(sprintf("\nTOTAL: %d pass / %d fail\n", PASS, FAIL))

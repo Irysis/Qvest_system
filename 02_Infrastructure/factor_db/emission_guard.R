@@ -19,6 +19,10 @@
 #        · Class S (구조적 침묵): active 인데 원장 전 구간 한 번도 배출된 적 없고
 #          선언된 기준선에도 없다. ★원 사고를 잡는 축은 이쪽이다 —
 #          C10 은 **한 번도** 난 적이 없어서 델타 감시로는 영원히 안 잡힌다.
+#        · Class P (지속 결손, 2026-09-24): 과거 산출 이력이 있는데 연속 결손 ≥2개월.
+#          Class R 은 직전 관측 빌드만 비교해 결손 둘째 달부터 침묵했다 — INV13 3종이
+#          202608 에 R 로 잡힌 뒤 202609 absent_streak=2 인데 verdict OK 였다.
+#          새 문턱 없음: streak 1 = R 의 몫, streak ≥2 ∧ 이력 있음 = P.
 #   ③ 기준선(baseline)은 래칫이다. 알려진 결측은 사유와 함께 선언하고, 사유가
 #      "미조사" 인 항목 수를 매 빌드 보고해 묻히지 않게 한다.
 #   ④ 순수 함수로 분리한다. 인라인 판정은 위반 주입 테스트를 걸 수 없고,
@@ -182,11 +186,33 @@ factor_emission_check <- function(produced, reg_meta, ledger, ym, baseline = NUL
     setorder(streak, -consecutive_absent, Factor_Name)
   }
 
+  # ── Class P: 지속 결손 (과거 산출 이력 ∧ 연속 결손 ≥2) — 2026-09-24 DATA-INV13-ACC ──
+  # ★streak 는 위에서 이미 기록 의무로 계산되고 있었는데 판정에 쓰이지 않았다(기록만 있고
+  #   결정이 없다). 결손 둘째 달부터 R 이 침묵하므로, 이력이 있는(= vintage 결측이 아니라
+  #   사라진) 팩터는 복구될 때까지 경고한다. 이력 없는 결측은 Class S·기준선의 몫이다.
+  #   기준선 선언분은 Class S 와 같은 래칫 규칙으로 억제하되 기록은 남긴다.
+  persistent <- character(0)
+  persistent_declared <- character(0)
+  if (nrow(streak) > 0L) {
+    p_all <- streak[consecutive_absent >= 2L & !is.na(last_seen_ym), Factor_Name]
+    p_all <- setdiff(p_all, regression)
+    persistent_declared <- sort(intersect(p_all, baseline$Factor_Name))
+    persistent <- sort(setdiff(p_all, baseline$Factor_Name))
+  }
+  if (length(persistent) > 0L) {
+    p_det <- streak[match(persistent, streak$Factor_Name)]
+    warnings <- c(warnings, sprintf(
+      "[emission_guard] %s — 지속 결손 %d종: 과거 산출 이력이 있는데 연속 결손 ≥2개월 (회귀 이후 미복구) → %s",
+      ym, length(persistent),
+      paste(sprintf("%s(연속 %d · 마지막 %s)", p_det$Factor_Name, p_det$consecutive_absent,
+                    p_det$last_seen_ym), collapse = ", ")))
+  }
+
   bl_undiag <- baseline[diagnosed == FALSE, Factor_Name]
 
   report <- list(
     guard          = "factor_emission_check",
-    version        = "1.0",
+    version        = "1.1",
     ym             = ym,
     prev_observed_ym = prev_ym,
     n_registry_active = length(active),
@@ -196,6 +222,8 @@ factor_emission_check <- function(produced, reg_meta, ledger, ym, baseline = NUL
     class_R_regression = regression,
     class_S_silent     = silent,
     class_S_suppressed = silent_suppressed_reason,
+    class_P_persistent = persistent,
+    class_P_declared   = persistent_declared,
     unregistered_produced = sort(unreg),
     baseline_declared  = nrow(baseline),
     baseline_undiagnosed = sort(bl_undiag),
@@ -499,9 +527,10 @@ factor_emission_guard <- function(result, ym, fdb_dir, registry_path,
 
     rep <- factor_emission_check(produced, reg_meta, ledger, ym, baseline)
 
-    cat(sprintf("  [emission_guard] %s: registry active %d · 산출 %d · 결측 %d (회귀 %d / 구조적침묵 %d) → %s\n",
+    cat(sprintf("  [emission_guard] %s: registry active %d · 산출 %d · 결측 %d (회귀 %d / 구조적침묵 %d / 지속결손 %d) → %s\n",
                 ym, rep$n_registry_active, rep$n_produced, rep$n_absent,
-                length(rep$class_R_regression), length(rep$class_S_silent), rep$verdict))
+                length(rep$class_R_regression), length(rep$class_S_silent),
+                length(rep$class_P_persistent), rep$verdict))
     if (length(rep$baseline_undiagnosed) > 0L) {
       cat(sprintf("  [emission_guard] 기준선 미조사 항목 %d종 (묻히지 않게 매 빌드 표시)\n",
                   length(rep$baseline_undiagnosed)))
@@ -562,4 +591,4 @@ factor_emission_guard <- function(result, ym, fdb_dir, registry_path,
   invisible(out)
 }
 
-cat("[factor_db] emission_guard.R loaded (v1.1 — 존재축 + 정체 3축 D/T/I)\n")
+cat("[factor_db] emission_guard.R loaded (v1.2 — 존재축 R/S/P + 정체 3축 D/T/I)\n")

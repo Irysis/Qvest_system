@@ -32,6 +32,8 @@
 #   INV12  Supply_Demand_Imbalance        rollmean((F+I-Ind)/(|F|+|I|+|Ind|), 20)
 #   INV13  Foreign_Resid_Individual_{n}d  residual_t(i) = z_F_t(i) - beta_t * z_I_t(i)
 #          beta_t = expanding-window no-intercept OLS (burn-in 60 months, C1 strict lag)
+#          ★2026-09-24: beta 누산기는 매 호출 sig 월 이전 월말들로부터 자체 계산한다
+#            (.inv13_beta_asof — 세션 메모리 누산기 폐기. 아래 INV13 블록 설명 참조)
 #          Variants: 21d / 63d / 126d lookback window for rolling z-score computation
 #          Reference: Choe-Kho-Stulz (2005 RFS), Fama-MacBeth (1973) orthogonalization
 #
@@ -46,6 +48,130 @@
 suppressPackageStartupMessages({
   library(data.table)
 })
+
+#------------------------------------------------------------------------------
+# INV13 expanding beta — 누산기 자체 계산 (2026-09-24 DATA-INV13-ACC · 도훈 결정 "수리+재빌드+가드 보강")
+#
+# 구판 결함: beta 누산기를 .fdb_env$INV13_BETA_ACC(세션 메모리)에서 읽고 없으면 0 에서
+#   시작했다. 일일 증분 빌드는 세션당 1~2개월만 빌드하므로 누산 월수가 60 에 못 닿아
+#   INV13 3종이 202608~ 영구 결손(tryCatch 가 삼켜 무경보). 반대로 60 을 넘긴 세션에서
+#   과거 달을 다시 빌드하면 **미래 달 증분이 beta 에 섞였다**(잠재 C1). 값이 세션 순서에
+#   의존했다.
+#
+# 규약 (구판 저장값에서 재도출 — 202606 저장 INV13 을 R²=1.0000·잔차 sd≈2e-15 로 재현):
+#   · 월말 ME_j = 빌더 거래일 달력(.fdb_env$trading_dates = RAWDATA 날짜 — build_factor_db_monthly
+#     가 sig 를 고르는 바로 그 달력)의 달별 마지막 거래일.
+#   · 월 j 증분 = Date < ME_j 인 종목별 마지막 행의 21일 순매수 합(외국인 F·개인 I) → 횡단면 z →
+#     dSxY = Σ z_F·z_I , dSxx = Σ z_I²  (유효 종목 ≥ 20 일 때만 1개월로 센다 — 구판 값 그대로).
+#   · sig 가 속한 달을 k 라 하면 beta_k = Σ_{j<k} dSxY / Σ_{j<k} dSxx (증분 월수 ≥ 60 일 때만 —
+#     구판 burn-in 그대로). = 구판 shift(1) 한 달 lag: sig 월 자신의 증분은 들어가지 않는다.
+#   ★달력은 투자자 패널 날짜가 아니라 빌더 달력이어야 한다 — 202412 월말이 RAWDATA 12-27 /
+#     투자자 12-30 으로 갈려, 투자자 달력은 beta 가 4e-4 어긋난다(2026-09-24 실측). 달력을 못
+#     구하면 대체하지 않고 INV13 을 내지 않는다(경고).
+# PIT(C1): 입력을 sig 월 첫날 m0 이전으로 잘라(as-of) 계산한다 → 모든 증분 데이터 < ME_j < m0 ≤ sig.
+# 캐시(.fdb_env$INV13_BETA_CACHE): 키 = sig 월 · as-of 패널 지문 · 달력 지문. 같은 키면 입력이
+#   같으므로 값이 같다(순수 메모이제이션 — 세션 순서 무관). 적중해도 '포함 증분이 전부 sig 월
+#   이전'을 다시 단정하고, 어긋나면 버리고 재계산한다.
+# 상설 검사: 08_Tests/factor_db/test_inv13_beta_asof.R
+#------------------------------------------------------------------------------
+.inv13_zs <- function(x) {
+  m <- mean(x, na.rm = TRUE); s <- sd(x, na.rm = TRUE)
+  if (is.na(s) || s < 1e-12) return(rep(NA_real_, length(x)))
+  (x - m) / s
+}
+
+# 빌더 거래일 달력. 빌더 밖 단독 실행이면 RAWDATA.parquet 의 Date 열(같은 달력)로 대체.
+.inv13_trading_dates <- function() {
+  if (exists(".fdb_env", envir = .GlobalEnv)) {
+    fe <- get(".fdb_env", envir = .GlobalEnv)
+    if (exists("trading_dates", envir = fe, inherits = FALSE) && length(fe$trading_dates) > 0L)
+      return(sort(unique(as.Date(fe$trading_dates))))
+  }
+  p <- if (exists("RAWDATA_CACHE")) RAWDATA_CACHE
+       else if (exists("CACHE_DIR")) file.path(CACHE_DIR, "RAWDATA.parquet")
+       else file.path(Sys.getenv("CLAUDE_PROJECT_DIR", Sys.getenv("QM_ROOT", "G:/Quant_Module_Moltbot")),
+                      ".cache", "RAWDATA.parquet")
+  if (!file.exists(p)) return(NULL)
+  sort(unique(as.Date(arrow::read_parquet(p, col_select = "Date", mmap = FALSE)$Date)))
+}
+
+# as-of 단정 — 포함된 증분의 월말이 전부 sig 월 첫날 이전인가 (sig 보다 앞선가)
+.inv13_asof_ok <- function(e, m0, sig_d) {
+  if (is.null(e) || !identical(as.Date(e$cut), as.Date(m0))) return(FALSE)
+  if (is.na(e$last_me)) return(e$n_months == 0L)
+  e$last_me < m0 && e$last_me < sig_d && e$ym_max < format(sig_d, "%Y%m")
+}
+
+# 캐시 키 — sig 월 · as-of 패널(x) 지문 · 달력(me) 지문
+.inv13_cache_key <- function(ym_k, x, me) {
+  paste(ym_k, nrow(x), uniqueN(x$Ticker),
+        sprintf("%.17g", sum(as.numeric(x$Date))),
+        sprintf("%.17g", sum(x$Foreign, na.rm = TRUE)),
+        sprintf("%.17g", sum(x$Individual, na.rm = TRUE)),
+        sum(is.na(x$Foreign)), sum(is.na(x$Individual)),
+        nrow(me), sprintf("%.17g", sum(as.numeric(me$me))), sep = "|")
+}
+
+#' @param inv  data.table(Ticker, Date, Foreign, Individual, ...) — 호출자가 이미 Date < sig 로 자른 패널
+#' @return list(beta, n_months, SxY, Sxx, last_me, ym_max, cut, sig_ym, cached)
+.inv13_beta_asof <- function(inv, sig_d, trading_dates = .inv13_trading_dates(),
+                             use_cache = TRUE) {
+  sig_d <- as.Date(sig_d)
+  m0    <- as.Date(format(sig_d, "%Y-%m-01"))   # as-of 컷: sig 월 첫날. 이 날 이후는 보지 않는다
+  ym_k  <- format(sig_d, "%Y%m")
+  if (is.null(trading_dates) || length(trading_dates) == 0L)
+    stop("INV13 월말 달력 미해결(.fdb_env$trading_dates·RAWDATA.parquet 부재) — 투자자 패널 달력으로 대체하지 않는다")
+  cal <- as.Date(trading_dates)
+  cal <- cal[!is.na(cal) & cal < m0]
+  me  <- data.table(Date = cal)[, .(me = max(Date)), by = .(ym = format(Date, "%Y%m"))][order(ym)]
+  x   <- inv[Date < m0, .(Ticker, Date, Foreign, Individual)]
+  out <- list(beta = NA_real_, n_months = 0L, SxY = 0, Sxx = 0, last_me = as.Date(NA),
+              ym_max = NA_character_, cut = m0, sig_ym = ym_k, cached = FALSE)
+  if (nrow(me) == 0L || nrow(x) == 0L) return(out)
+  setorder(x, Ticker, Date)                     # 지문(부동소수 합)이 입력 행 순서에 흔들리지 않게 먼저 정렬
+
+  fe <- if (isTRUE(use_cache) && exists(".fdb_env", envir = .GlobalEnv))
+          get(".fdb_env", envir = .GlobalEnv) else NULL
+  key <- .inv13_cache_key(ym_k, x, me)
+  if (!is.null(fe) && exists("INV13_BETA_CACHE", envir = fe, inherits = FALSE)) {
+    hit <- fe$INV13_BETA_CACHE[[key]]
+    if (!is.null(hit)) {
+      if (.inv13_asof_ok(hit, m0, sig_d)) { hit$cached <- TRUE; return(hit) }
+      warning(sprintf("[compute_investor] INV13 캐시 as-of 단정 위반(sig=%s · 캐시 last_me=%s) — 폐기 후 재계산",
+                      sig_d, format(hit$last_me)), call. = FALSE)
+    }
+  }
+
+  x[, `:=`(rf = frollsum(Foreign,    n = 21L, na.rm = TRUE, align = "right"),
+           ri = frollsum(Individual, n = 21L, na.rm = TRUE, align = "right")), by = Ticker]
+  x <- x[, .(Ticker, Date, rf, ri)]
+  setkey(x, Ticker, Date)
+  g <- CJ(Ticker = unique(x$Ticker), k = seq_len(nrow(me)))
+  g[, Date := me$me[k] - 1L]                    # Date <= ME_j - 1  ⇔  Date < ME_j
+  j <- x[g, on = .(Ticker, Date), roll = Inf, nomatch = 0L]
+  j <- j[!is.na(rf) & !is.na(ri)]
+  inc <- j[, if (.N < 20L) list(dSxY = NA_real_, dSxx = NA_real_) else {
+               zF <- .inv13_zs(rf); zI <- .inv13_zs(ri); ok <- !is.na(zF) & !is.na(zI)
+               list(dSxY = sum(zF[ok] * zI[ok]), dSxx = sum(zI[ok]^2))
+             }, by = k][order(k)]
+  inc <- inc[!is.na(dSxY)]
+  if (nrow(inc) > 0L) {
+    out$n_months <- nrow(inc)
+    out$SxY      <- sum(inc$dSxY)
+    out$Sxx      <- sum(inc$dSxx)
+    out$last_me  <- max(me$me[inc$k])
+    out$ym_max   <- max(me$ym[inc$k])
+  }
+  if (!.inv13_asof_ok(out, m0, sig_d))
+    stop(sprintf("INV13 as-of 단정 위반 — 증분 월말 %s 가 sig 월(%s) 이전이 아니다", format(out$last_me), ym_k))
+  out$beta <- if (out$n_months >= 60L && out$Sxx > 1e-10) out$SxY / out$Sxx else NA_real_
+  if (!is.null(fe)) {
+    if (!exists("INV13_BETA_CACHE", envir = fe, inherits = FALSE)) assign("INV13_BETA_CACHE", list(), envir = fe)
+    cc <- get("INV13_BETA_CACHE", envir = fe); cc[[key]] <- out
+    assign("INV13_BETA_CACHE", cc, envir = fe)
+  }
+  out
+}
 
 compute_investor <- function(RAWDATA, sig_date, FUND = NULL, CONSENSUS = NULL) {
 
@@ -294,15 +420,16 @@ compute_investor <- function(RAWDATA, sig_date, FUND = NULL, CONSENSUS = NULL) {
   # Reference: Choe-Kho-Stulz (2005), Fama-MacBeth (1973)
   inv13_results <- list()
 
-  # Load expanding beta accumulator from .fdb_env if available (builder-level cache)
-  inv13_beta_cache_key <- "INV13_BETA_ACC"
-  inv13_beta_acc <- if (exists(".fdb_env", envir=.GlobalEnv) &&
-                          exists(inv13_beta_cache_key,
-                                 envir=get(".fdb_env", envir=.GlobalEnv))) {
-    get(".fdb_env", envir=.GlobalEnv)[[inv13_beta_cache_key]]
-  } else {
-    list(SxY=0, Sxx=0, n_months=0L)
-  }
+  # ★2026-09-24 DATA-INV13-ACC — 구판은 beta 누산기를 .fdb_env$INV13_BETA_ACC(세션 메모리)에서
+  #   읽고 없으면 0 에서 시작했다(일일 빌드 = 영구 결손 · 60 초과 세션의 과거 달 재빌드 = 미래 달 증분
+  #   혼입). 이제 sig 월 이전 월말들로부터 매 호출 자체 계산한다 — 값은 세션 순서와 무관하다.
+  inv13_beta <- tryCatch(
+    .inv13_beta_asof(inv, sig_d),
+    error = function(e) {
+      warning(sprintf("[compute_investor] INV13 beta 산출 실패 — INV13 미배출 (sig=%s): %s",
+                      sig_d, conditionMessage(e)), call. = FALSE)
+      NULL
+    })
 
   # Compute cross-section z-scores at sig_date for each lookback window
   # Using full inv data (already filtered Date < sig_d)
@@ -356,21 +483,11 @@ compute_investor <- function(RAWDATA, sig_date, FUND = NULL, CONSENSUS = NULL) {
     inv_snap <- inv_snap[!is.na(z_F) & !is.na(z_I)]
     if (nrow(inv_snap) < 20L) return(NULL)
 
-    # Expanding beta (C1: uses only data strictly before sig_date)
-    # beta_t = shift(SxY/Sxx, 1) — we use builder-cached accumulator + lag
-    # At this call, inv13_beta_acc reflects data up to PREVIOUS month (shift=1)
-    SxY_cum <- inv13_beta_acc$SxY + sum(inv_snap$z_F * inv_snap$z_I, na.rm=TRUE)
-    Sxx_cum <- inv13_beta_acc$Sxx + sum(inv_snap$z_I^2, na.rm=TRUE)
-    n_cum   <- inv13_beta_acc$n_months + 1L
+    # Expanding beta (C1): .inv13_beta_asof() 가 sig 월 이전 월말 증분만으로 계산한 값.
+    #   한 달 lag — sig 월 자신의 증분은 포함하지 않는다(구판 shift(1) 규약과 동일).
+    beta_lagged <- if (!is.null(inv13_beta)) inv13_beta$beta else NA_real_
 
-    # Use LAGGED beta (beta from previous accumulation state) — C1 strict lag
-    beta_lagged <- if (inv13_beta_acc$n_months >= 60L && inv13_beta_acc$Sxx > 1e-10) {
-      inv13_beta_acc$SxY / inv13_beta_acc$Sxx
-    } else {
-      NA_real_  # burn-in: 60 months not yet reached
-    }
-
-    if (is.na(beta_lagged)) return(NULL)  # burn-in period
+    if (is.na(beta_lagged)) return(NULL)  # burn-in(증분 월수 < 60) 또는 beta 산출 실패(경고 발행됨)
 
     inv_snap[, residual := z_F - beta_lagged * z_I]
     inv_snap[, Raw_Value := residual]
@@ -386,44 +503,19 @@ compute_investor <- function(RAWDATA, sig_date, FUND = NULL, CONSENSUS = NULL) {
   for (lb_info in list(c(21L, "21d"), c(63L, "63d"), c(126L, "126d"))) {
     res13 <- tryCatch(
       inv13_compute_variant(as.integer(lb_info[1]), lb_info[2]),
-      error = function(e) NULL
+      error = function(e) {
+        warning(sprintf("[compute_investor] INV13_%s 산출 실패 (sig=%s): %s",
+                        lb_info[2], sig_d, conditionMessage(e)), call. = FALSE)
+        NULL
+      }
     )
     if (!is.null(res13) && nrow(res13) > 0L) {
       inv13_results[[lb_info[2]]] <- res13
     }
   }
 
-  # Update accumulator in .fdb_env for next month's call (C1: expanding window)
-  if (exists(".fdb_env", envir=.GlobalEnv)) {
-    # Compute current month's pooled z-scores for accumulator update (using 21d default)
-    inv_acc_snap <- tryCatch({
-      inv[, {
-        n <- .N
-        rf <- frollsum(Foreign,    n=21L, na.rm=TRUE, align="right")
-        ri <- frollsum(Individual, n=21L, na.rm=TRUE, align="right")
-        .(roll_F=rf[n], roll_I=ri[n])
-      }, by=Ticker]
-    }, error=function(e) NULL)
-
-    if (!is.null(inv_acc_snap)) {
-      inv_acc_snap <- inv_acc_snap[!is.na(roll_F) & !is.na(roll_I)]
-      if (nrow(inv_acc_snap) >= 20L) {
-        zscore_cs <- function(x) {
-          m <- mean(x,na.rm=TRUE); s <- sd(x,na.rm=TRUE)
-          if (is.na(s)||s<1e-12) return(rep(NA_real_,length(x))); (x-m)/s
-        }
-        inv_acc_snap[, z_F := zscore_cs(roll_F)]
-        inv_acc_snap[, z_I := zscore_cs(roll_I)]
-        inv_acc_snap <- inv_acc_snap[!is.na(z_F) & !is.na(z_I)]
-        new_SxY <- inv13_beta_acc$SxY + sum(inv_acc_snap$z_F * inv_acc_snap$z_I, na.rm=TRUE)
-        new_Sxx <- inv13_beta_acc$Sxx + sum(inv_acc_snap$z_I^2, na.rm=TRUE)
-        new_n   <- inv13_beta_acc$n_months + 1L
-        assign(inv13_beta_cache_key,
-               list(SxY=new_SxY, Sxx=new_Sxx, n_months=new_n),
-               envir=get(".fdb_env", envir=.GlobalEnv))
-      }
-    }
-  }
+  # (2026-09-24) 구판의 .fdb_env$INV13_BETA_ACC 갱신 블록 제거 — beta 누산기는 더 이상 세션 상태가
+  #   아니다(.inv13_beta_asof 가 매 호출 sig 이전 월말들로부터 계산). 빌드 순서가 값을 바꾸지 않는다.
 
   # ── Inf / NaN 방어 (INV13) ────────────────────────────────────────────────
   inv13_all <- if (length(inv13_results) > 0L) {
