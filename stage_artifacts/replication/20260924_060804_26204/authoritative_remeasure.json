@@ -1,0 +1,130 @@
+{
+  "status": "OK",
+  "strategy_id": "RP_20260924_060804_26204",
+  "strategy_name": "RF_PAR_B1_7_momresid",
+  "remeasured_at": "2026-09-24T06:12:11+0900",
+  "run_id": "20260924_060804_26204",
+  "bt_result_path": "C:/Users/99922/OneDrive/Quant_Module_Moltbot/stage_artifacts/replication/20260924_060804_26204/bt_result.rds",
+  "metric_type": "backtested",
+  "essence_grade": "C",
+  "grade_basis": "replication_sweep",
+  "essence": {
+    "net_sharpe": 0.768,
+    "net_ir": 0.414,
+    "portfolio_alpha_t_nw_lag3": 1.865,
+    "oos_retention": -0.038,
+    "dsr": 0.609,
+    "mdd": 0.584,
+    "calmar": 0.318,
+    "cagr": 0.186,
+    "drawdown_profile": {
+      "severe45_count": 6,
+      "severe55_count": 1,
+      "severe45_total_periods": 99,
+      "severe45_max_periods": 51,
+      "severe45_period_frac": 0.0187,
+      "catastrophic_mdd_threshold": 0.7,
+      "severe45_hard_count": 15,
+      "severe55_hard_count": 6,
+      "severe45_period_hard_frac": 0.25,
+      "severe45_max_hard_periods": 252,
+      "tail_review": true,
+      "structural_hard_fail": false
+    }
+  },
+  "hard_fail": false,
+  "structural_drawdown": false,
+  "selection_type": "sweep",
+  "dsr_gate_applied": true,
+  "n_trials_cumulative": 11,
+  "dsr": 0.609,
+  "measurement_regime": {
+    "n_trials_basis": "base1+lineage_measured(excl_inherited)+batch_size",
+    "family_root": "RP_20260924_052517_7308_adapted_rulefast",
+    "selection_type": "sweep",
+    "n_trials_cumulative": 11,
+    "exec_price": "close_d_legacy",
+    "harness_md5": "a7653c31dc17cf1c285103b073929de8"
+  },
+  "grade_base": "C",
+  "recent_regime_rescued": false,
+  "recent_regime_label": null,
+  "rolling_grade": {
+    "status": "ok",
+    "n_points": 223,
+    "window_months": 36,
+    "pass_life": 0.3004,
+    "pass_recent": 0.9167,
+    "current": {
+      "ym": "2026-09",
+      "sharpe": 0.992759,
+      "cagr": 0.339913,
+      "mdd": 0.27339,
+      "calmar": 1.243327,
+      "pass": true
+    },
+    "prior_recoveries": 11,
+    "current_run": 2,
+    "span": ["2008-03", "2026-09"]
+  },
+  "defensive_score": {
+    "status": "ok",
+    "defensive": false,
+    "down": {
+      "n": 109,
+      "excess": 0.005216,
+      "hit": 0.568807,
+      "t": 1.142997,
+      "capture": 0.878049
+    },
+    "mid": {
+      "n": 30,
+      "excess": -0.016077,
+      "hit": 0.333333,
+      "t": -1.842463,
+      "capture": 1.168174
+    },
+    "deep": {
+      "n": 10,
+      "excess": -0.010361,
+      "hit": 0.3,
+      "t": -0.488782,
+      "capture": 1.068425
+    },
+    "up": {
+      "n": 149,
+      "excess": 0.00756,
+      "hit": 0.550336,
+      "t": 1.492965,
+      "capture": 1.151182
+    },
+    "reason": "하락월 109개: 초과 +0.52%/월 (t 1.14 · 적중 57%) · 벤치-10% 이하 10개: 초과 -1.04%/월 · 상승월 초과 +0.76%/월"
+  },
+  "reasons": "Ensemble: positive alpha이나 B 미달 (블렌드에서만 가치)",
+  "replication": {
+    "source_paper": {
+      "url": "https://arxiv.org/abs/2202.05702",
+      "title": "Machine Learning for Stock Prediction Based on Fundamental Analysis",
+      "paper_key": "2202.05702"
+    },
+    "commission_paper_bps": 15,
+    "paper_basis": {
+      "cagr": 0.18687,
+      "sharpe": 0.645772,
+      "mdd": 0.583617,
+      "n_months": 258
+    },
+    "grade_basis_note": "등급은 15bps 순비용 판 (essence 문턱 15bps 보정 — gross 등급은 인플레)",
+    "fidelity": "universe 치환(K200∪KQ150)만 — 그 외 논문 그대로 (v10 완전 충실구현)",
+    "benchmark_note": "long_vs_long_bm",
+    "n_max": 25,
+    "has_short": false
+  },
+  "contract": {
+    "integrity_status": "OK",
+    "cagr": 0.186,
+    "sharpe": 0.768,
+    "mdd": 0.584,
+    "calmar": 0.318
+  }
+}
