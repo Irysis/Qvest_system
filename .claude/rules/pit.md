@@ -19,7 +19,7 @@
 
 | Code | 위반 패턴 |
 |---|---|
-| C1 | full-sample 통계 사용 (rolling/expanding window만) |
+| C1 | full-sample 통계 사용 (rolling/expanding window만). ★**평가 창 결과를 소비하는 자동 선정 규칙도 C1/C14 대상이다**(2026-09-23 도훈 확정 · D-E) — 팩터·arm·슬리브를 전기간 IC·ic_bad·상관으로 고르면 시점 t 보유를 미래 통계로 정한 것이다. 선정 통계는 as-of(`Usable_Date <= 결정 시점`)로만. 사람이 문헌 근거로 고르는 것은 해당 없음 |
 | C2 | same-day circular reference |
 | C3 | 같은 기간 집계 → 적용 |
 | C4 | 재무제표 lag 위반 (annual = **익년 3/31**, quarterly 45일+ / DART 분기 고정일 5/15·8/15·11/15 — 2026-07-25 도훈 확정, 현 구현(data_collector_dart.R:840) 정합. 구 표기 'annual 5월' 폐기. ⚠ xlsx 경로의 Q4 일률 +45d(≈익년 2/14)는 3/31 대비 공격적 — 수리 항목, AST v1.1 SOT §3 참조) |

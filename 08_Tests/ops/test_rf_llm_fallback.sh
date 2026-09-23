@@ -188,9 +188,16 @@ w=$(pin_check "$T/cfg_pinned.json" "$T/none.json" | tr -d '\r')
 printf '%s' "$w" | grep -q "llm.lanes.replication.model=claude-fable-5-1" \
   && ok "E2 [돌연변이] replication 을 ID 로 고정하면 검사가 잡는다" || ng "E2" "[$w]"
 unset QVEST_RF_CONFIG
-rf_llm_resolve replication "" ""
-[ "$LLM_MODEL/$LLM_FALLBACK_MODEL/$LLM_FALLBACK_EFFORT" = "fable/opus/max" ] \
-  && ok "E3 운영 설정 해석: replication = fable → 한도 시 opus/max" || ng "E3" "$LLM_MODEL/$LLM_FALLBACK_MODEL/$LLM_FALLBACK_EFFORT"
+## ★2026-09-23 도훈 지시 "무인실행에서 LLM 개입부 모두 opus max" — 구판 E3 는 운영 설정의 replication = fable 을 단정했다.
+##   정책이 바뀌었으므로 운영 설정 단정은 **전 레인 opus/max · opus 레인엔 폴백 미부착**으로 옮긴다.
+##   Fable 폴백 기제 자체는 위 C 절(합성 픽스처)이 계속 잰다 — 운영 상태를 빌리지 않는다.
+_e3_bad=""
+for _l in replication fidelity_audit b1_design lcode_mechanism overlay_propose overlay_audit b5_design cleaner_distill \
+          paper_router alpha_search_queue mode_queue_research factor_deep_recheck grid_propose; do
+  rf_llm_resolve "$_l" "" ""
+  [ "$LLM_MODEL/$LLM_EFFORT/${LLM_FALLBACK_MODEL:-none}" = "opus/max/none" ] || _e3_bad="$_e3_bad $_l=$LLM_MODEL/$LLM_EFFORT/${LLM_FALLBACK_MODEL:-none}"
+done
+[ -z "$_e3_bad" ] && ok "E3 운영 설정 해석: 13 레인 전부 opus/max · 폴백 미부착(opus 레인)" || ng "E3" "$_e3_bad"
 
 #── G. (선택) 실모델 별칭 확인 — RF_LLM_LIVE=1 일 때만. 한도를 조금 쓴다 ─────────────────────
 echo "=== G. 실모델 별칭 (RF_LLM_LIVE=1 일 때만) ==="

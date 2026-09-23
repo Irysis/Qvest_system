@@ -76,8 +76,12 @@ rank-Z 50:50 으로 결합**한 셀 5개를 돌려 어느 축이 붙는지 잰�
 - 백테스트 실행. 등급 언급. 없는 팩터 코드나 지어낸 논문 링크."
 
 # ★격자 제안도 깊이 문제 — 팩터 331종·죽은 구성 380건을 읽고 5종을 고르는 판단이다.
+# ★2026-09-23 도훈 지시 "무인 LLM 개입부 모두 opus max" — 설정 정본(llm.lanes.grid_propose) 경유.
+#   구판은 충실구현 레인 변수(QVEST_RP_MODEL/EFFORT)를 빌려 써서 그 레인을 바꾸면 이 레인도 따라 바뀌었다.
+. "$ROOT/02_Infrastructure/ops/rf_llm_env.sh"
+rf_llm_resolve grid_propose "${QVEST_GP_MODEL:-}" "${QVEST_GP_EFFORT:-}"
 timeout 1800 claude -p "$PROMPT" \
-  --model "${QVEST_RP_MODEL:-opus}" --effort "${QVEST_RP_EFFORT:-max}" \
+  --model "$LLM_MODEL" --effort "$LLM_EFFORT" \
   --permission-mode acceptEdits \
   --allowed-tools "Read,Write,Glob,Grep,Bash(Rscript*),WebFetch,WebSearch" \
   --disallowed-tools "Agent" \

@@ -130,6 +130,13 @@ if [ "${QVEST_MODE_QUEUE_DRYRUN:-0}" = "1" ]; then
 fi
 
 CLAUDE_BIN="$(command -v claude || echo /c/Users/99922/AppData/Roaming/npm/claude)"
+# ★모델·노력은 설정 정본(06_Registry/reinforce_auto_config.json::llm.lanes.mode_queue_research)에서 읽는다
+#   (2026-09-23 도훈 지시 "무인실행에서 LLM 개입부 모두 opus max"). 구판은 --model/--effort 없이
+#   CLI 기본값으로 돌아 레인 정책이 이 레인에 한 번도 닿지 않았다. 환경변수 QVEST_MQ_MODEL/QVEST_MQ_EFFORT 가 최우선.
+ROOT="${ROOT:-$BASE}"
+. "$BASE/02_Infrastructure/ops/rf_llm_env.sh"
+rf_llm_resolve mode_queue_research "${QVEST_MQ_MODEL:-}" "${QVEST_MQ_EFFORT:-}"
+LANE_LLM_ARGS=(--model "$LLM_MODEL" --effort "$LLM_EFFORT")
 [ -x "$CLAUDE_BIN" ] || { log "claude CLI 없음 — skip"; exit 0; }
 PF="$BASE/02_Infrastructure/ops/mode_queue_research_prompt.md"
 [ -f "$PF" ] || { log "prompt 없음 — skip"; exit 0; }
@@ -207,7 +214,7 @@ _run_claude(){
 #   안 넘기면 기본 4시간 창이 쓰여 직전 3.5시간의 남의 산출까지 자기 것으로 보고한다
 #   (오늘 여섯 번 겪은 "범위를 안 정하고 센다" 의 알림 판본).
 _NOTIFY_SINCE=$(date +%s)
-_run_claude "$CLAUDE_BIN" -p "$PROMPT_TEXT" --dangerously-skip-permissions >> "$LOG" 2>&1
+_run_claude "$CLAUDE_BIN" -p "$PROMPT_TEXT" "${LANE_LLM_ARGS[@]}" --dangerously-skip-permissions >> "$LOG" 2>&1
 rc=$?
 log "claude -p exit=$rc"
 
@@ -243,7 +250,7 @@ if [ "$rc" -ne 0 ]; then
   # spend_limit 폴백 (도훈 07-14 정책 / 07-24 승인 C8) — 한도는 외생변수이지 게이트가 아니다.
   if [ "$reason" = "spend_limit" ]; then
     log "spend_limit 감지 — --model opus 폴백 재시도"
-    _run_claude "$CLAUDE_BIN" -p "$PROMPT_TEXT" --model opus \
+    _run_claude "$CLAUDE_BIN" -p "$PROMPT_TEXT" --model opus --effort "$LLM_EFFORT" \
       --dangerously-skip-permissions >> "$LOG" 2>&1
     rc=$?; log "fallback(opus) exit=$rc"
     [ "$rc" -ne 0 ] && reason="spend_limit_fallback_exit_${rc}"
