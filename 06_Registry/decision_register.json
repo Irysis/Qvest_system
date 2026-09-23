@@ -1014,7 +1014,83 @@
       "registered_at": "2026-09-24T01:08:53+0900",
       "recorded_by": "Q session be2e88bf (도훈 채팅 응답 기록)",
       "evidence": "2026-09-24 세션 be2e88bf — 도훈 AskUserQuestion 응답(4문항 전부 권고안)"
+    },
+    {
+      "id": "DATA-INV13-ACC",
+      "title": "INV13 beta 누산기가 세션 메모리 전용 — 일일 빌드 결손 + 잠재 C1(과거 달 재빌드 시 미래 달 혼입)",
+      "status": "resolved",
+      "opened_at": "2026-09-24T01:17:02+0900",
+      "options": [
+        "수리 + 재빌드 + 가드 보강",
+        "수리 + 재빌드만",
+        "보류"
+      ],
+      "recommendation": "수리 + 재빌드 + 가드 보강",
+      "default_until_decided": "결손 지속",
+      "blocks": [
+        "item:factor_db_202608",
+        "item:factor_db_202609",
+        "item:emission_guard"
+      ],
+      "owner": "dohoon",
+      "source": "INV13·커버리지 진단 wf_103f6891-219 (2026-09-24)",
+      "decision": "승인 — 누산기 sig 이전 월말 자체 계산(202606 정확 재현 양성 대조) + 202608·202609 재빌드 + absent_streak≥2 WARN 유지",
+      "decided_by": "dohoon",
+      "decided_at": "2026-09-24T01:17:02+0900",
+      "note": "도훈 채팅 응답",
+      "registered_at": "2026-09-24T01:17:02+0900",
+      "recorded_by": "Q session be2e88bf (도훈 채팅 응답 기록)",
+      "evidence": "2026-09-24 세션 be2e88bf — 도훈 AskUserQuestion 응답(3문항 전부 권고안)"
+    },
+    {
+      "id": "DATA-INV-FRESHNESS",
+      "title": "compute_investor 종목별 마지막 행 무신선도 사용(1년+ 끊긴 약 930종이 INV09·11·13 횡단면에)",
+      "status": "resolved",
+      "opened_at": "2026-09-24T01:17:33+0900",
+      "options": [
+        "P0-05 재측정 때 함께",
+        "지금 수리 + 이력 재빌드",
+        "현행 유지"
+      ],
+      "recommendation": "P0-05 재측정 때 함께",
+      "default_until_decided": "현행",
+      "blocks": [
+        "item:P0-05_rebase"
+      ],
+      "owner": "dohoon",
+      "source": "INV13·커버리지 진단 wf_103f6891-219 (2026-09-24)",
+      "decision": "승인 — 신선도 창 정의·코드 준비, 이력 재빌드·재측정은 P0-05 rebase 에 편입",
+      "decided_by": "dohoon",
+      "decided_at": "2026-09-24T01:17:33+0900",
+      "note": "도훈 채팅 응답",
+      "registered_at": "2026-09-24T01:17:33+0900",
+      "recorded_by": "Q session be2e88bf (도훈 채팅 응답 기록)",
+      "evidence": "2026-09-24 세션 be2e88bf — 도훈 AskUserQuestion 응답(3문항 전부 권고안)"
+    },
+    {
+      "id": "DATA-FDB-202603-07-VINTAGE",
+      "title": "202603~202607 팩터 DB 에 현 RAWDATA 에 없는 임시 종목 222~248개 혼입(Z 스케일·절단 경계 차이)",
+      "status": "resolved",
+      "opened_at": "2026-09-24T01:17:33+0900",
+      "options": [
+        "P0-05 rebase 에 편입",
+        "지금 재빌드"
+      ],
+      "recommendation": "P0-05 rebase 에 편입",
+      "default_until_decided": "빈티지 표식만",
+      "blocks": [
+        "item:P0-05_rebase"
+      ],
+      "owner": "dohoon",
+      "source": "INV13·커버리지 진단 wf_103f6891-219 (2026-09-24)",
+      "decision": "승인 — INV13 수리 뒤 P0-05 rebase 때 재빌드, 그 전까지 표식만",
+      "decided_by": "dohoon",
+      "decided_at": "2026-09-24T01:17:33+0900",
+      "note": "도훈 채팅 응답",
+      "registered_at": "2026-09-24T01:17:33+0900",
+      "recorded_by": "Q session be2e88bf (도훈 채팅 응답 기록)",
+      "evidence": "2026-09-24 세션 be2e88bf — 도훈 AskUserQuestion 응답(3문항 전부 권고안)"
     }
   ],
-  "last_updated": "2026-09-24T01:08:53+0900"
+  "last_updated": "2026-09-24T01:17:33+0900"
 }
