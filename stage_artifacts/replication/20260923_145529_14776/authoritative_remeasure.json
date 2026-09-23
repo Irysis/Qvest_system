@@ -1,0 +1,120 @@
+{
+  "status": "OK",
+  "strategy_id": "RP_20260923_145529_14776",
+  "strategy_name": "RF_PAR_B2_9_",
+  "remeasured_at": "2026-09-23T15:11:40+0900",
+  "run_id": "20260923_145529_14776",
+  "bt_result_path": "C:/Users/99922/OneDrive/Quant_Module_Moltbot/stage_artifacts/replication/20260923_145529_14776/bt_result.rds",
+  "metric_type": "backtested",
+  "essence_grade": "B",
+  "grade_basis": "replication_chain",
+  "essence": {
+    "net_sharpe": 1.129,
+    "net_ir": 0.572,
+    "portfolio_alpha_t_nw_lag3": 2.637,
+    "oos_retention": -0.201,
+    "dsr": null,
+    "mdd": 0.548,
+    "calmar": 0.414,
+    "cagr": 0.227,
+    "drawdown_profile": {
+      "severe45_count": 2,
+      "severe55_count": 0,
+      "severe45_total_periods": 11,
+      "severe45_max_periods": 10,
+      "severe45_period_frac": 0.0021,
+      "catastrophic_mdd_threshold": 0.7,
+      "severe45_hard_count": 15,
+      "severe55_hard_count": 6,
+      "severe45_period_hard_frac": 0.25,
+      "severe45_max_hard_periods": 252,
+      "tail_review": true,
+      "structural_hard_fail": false
+    }
+  },
+  "hard_fail": false,
+  "structural_drawdown": false,
+  "selection_type": "chain",
+  "dsr_gate_applied": false,
+  "grade_base": "B",
+  "recent_regime_rescued": false,
+  "recent_regime_label": null,
+  "rolling_grade": {
+    "status": "ok",
+    "n_points": 225,
+    "window_months": 36,
+    "pass_life": 0.4978,
+    "pass_recent": 1,
+    "current": {
+      "ym": "2026-09",
+      "sharpe": 1.300516,
+      "cagr": 0.291209,
+      "mdd": 0.108341,
+      "calmar": 2.68789,
+      "pass": true
+    },
+    "prior_recoveries": 5,
+    "current_run": 13,
+    "span": ["2008-01", "2026-09"]
+  },
+  "defensive_score": {
+    "status": "ok",
+    "defensive": true,
+    "down": {
+      "n": 110,
+      "excess": 0.025523,
+      "hit": 0.763636,
+      "t": 6.734716,
+      "capture": 0.403761
+    },
+    "mid": {
+      "n": 30,
+      "excess": 0.033616,
+      "hit": 0.866667,
+      "t": 3.576356,
+      "capture": 0.648357
+    },
+    "deep": {
+      "n": 10,
+      "excess": 0.050947,
+      "hit": 0.8,
+      "t": 1.955648,
+      "capture": 0.663533
+    },
+    "up": {
+      "n": 150,
+      "excess": -0.005453,
+      "hit": 0.486667,
+      "t": -1.13588,
+      "capture": 0.891224
+    },
+    "reason": "하락월 110개: 초과 +2.55%/월 (t 6.73 · 적중 76%) · 벤치-10% 이하 10개: 초과 +5.09%/월 · 상승월 초과 -0.55%/월"
+  },
+  "reasons": "Component: PORT_t>=2.0 & net_IR>0.2; A 미달[OOS_ret -0.20<0.7(band fail),Calmar<0.64]",
+  "replication": {
+    "source_paper": {
+      "url": "https://arxiv.org/abs/2002.06975",
+      "title": "Cross-sectional Stock Price Prediction using Deep Learning for Actual Investment Management",
+      "paper_key": "2002.06975"
+    },
+    "commission_paper_bps": 15,
+    "paper_basis": {
+      "cagr": 0.227376,
+      "sharpe": 1.105797,
+      "mdd": 0.548371,
+      "n_months": 260
+    },
+    "grade_basis_note": "등급은 15bps 순비용 판 (essence 문턱 15bps 보정 — gross 등급은 인플레)",
+    "fidelity": "universe 치환(K200∪KQ150)만 — 그 외 논문 그대로 (v10 완전 충실구현)",
+    "benchmark_note": "long_vs_long_bm",
+    "n_max": 25,
+    "has_short": false
+  },
+  "contract": {
+    "integrity_status": "OK",
+    "cagr": 0.227,
+    "sharpe": 1.129,
+    "mdd": 0.548,
+    "calmar": 0.414
+  }
+}
