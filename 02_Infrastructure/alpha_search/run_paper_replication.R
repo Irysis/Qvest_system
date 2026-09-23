@@ -182,9 +182,22 @@ run_paper_replication <- function(strategy_name, strategy_idea, factor_engine_pa
                                   out_root = NULL,
                                   send_telegram = TRUE, tg_dry_run = FALSE,
                                   factor_analysis = TRUE,
-                                  mechanism_hypothesis = NULL) {   # L-code 기전 가설 — NULL 이면 논문 가설(strategy_idea)을 '검증 전 진술' 로 라벨
+                                  mechanism_hypothesis = NULL,   # L-code 기전 가설 — NULL 이면 논문 가설(strategy_idea)을 '검증 전 진술' 로 라벨
+                                  # ★시행 회계 (2026-09-23 · 강화 전수감사 D3-01 · 플랜 P0-01).
+                                  #   구판은 :338 에서 essence_score(n_trials=1, "chain") 을 **하드코딩**해, 격자 argmax·승격
+                                  #   사슬로 고르는 강화 셀 1,099/1,099 가 전부 chain(DSR 면제·DSR null)으로 채점됐다.
+                                  #   measurement-graduation §3 chain 자격 ②(변형 선택은 IS-only)를 강화 러너가 못 지키므로
+                                  #   강화 셀은 정의상 sweep 이다. 충실구현(논문 1안 · 선택 없음)은 기본값 그대로 chain/1 —
+                                  #   비트 동일. 강화 워커(rf_cell_worker.R)만 sweep + 계보 누적 시행수를 넘긴다.
+                                  selection_type = "chain",
+                                  n_trials_cumulative = 1L,
+                                  measurement_tags = NULL) {     # 호출자 부기(예: n_trials_basis) — auth$measurement_regime 에 실린다
   `%||%` <- function(a, b) if (is.null(a) || length(a) == 0L || (length(a) == 1L && is.na(a))) b else a
   stopifnot(file.exists(factor_engine_path))
+  selection_type <- match.arg(as.character(selection_type)[1], c("chain", "sweep"))
+  n_trials_cumulative <- suppressWarnings(as.integer(n_trials_cumulative)[1])
+  if (!is.finite(n_trials_cumulative) || n_trials_cumulative < 1L)
+    stop("[replication] n_trials_cumulative 는 1 이상의 정수여야 한다 — 시행 수를 모르면 기록 불가(추정 금지)")
   # 근거 논문 — 충실구현은 필수(논문을 재현하는 단계에서 논문을 뺄 수 없다),
   #   강화 레인은 2026-09-03 해제(도훈 지시). 호출자가 require_source_paper=FALSE 로 가른다.
   if (isTRUE(require_source_paper) &&
@@ -335,7 +348,7 @@ run_paper_replication <- function(strategy_name, strategy_idea, factor_engine_pa
   bt <- audit_bt_result(bt)
   saved <- tryCatch(save_bt_result(bt, OUT_DIR, save_xlsx = FALSE), error = function(e) {
     cat("[replication] save_bt_result 실패(비치명):", conditionMessage(e), "\n"); NULL })
-  es <- essence_score(bt, n_trials_cumulative = 1L, selection_type = "chain")
+  es <- essence_score(bt, n_trials_cumulative = n_trials_cumulative, selection_type = selection_type)
 
   # ---- 7-b. 팩터 회귀 분석 (FF3/FF5/Carhart 4F 알파 + Fama-MacBeth) ----
   #   ★도훈 지시 2026-08-30 — 예전 알파 서칭의 [팩터 분석] 메시지를 무인 경로에도.
@@ -407,10 +420,23 @@ run_paper_replication <- function(strategy_name, strategy_idea, factor_engine_pa
     remeasured_at = format(Sys.time(), "%Y-%m-%dT%H:%M:%S%z"),
     run_id = run_id, bt_result_path = file.path(OUT_DIR, "bt_result.rds"),
     metric_type = es$metric_type, essence_grade = grade,
-    grade_basis = "replication_chain",
+    grade_basis = paste0("replication_", selection_type),
     essence = es$essence, hard_fail = es$hard_fail,
     structural_drawdown = es$structural_drawdown,
     selection_type = es$selection_type, dsr_gate_applied = es$dsr_gate_applied,
+    ## ★시행 회계를 산출물에 싣는다 (2026-09-23 P0-01). 구판은 essence 가 돌려준 n_trials·dsr 을
+    ##   auth 에 옮기지 않아, 1,099 산출물 전부에서 n_trials_cumulative 필드 자체가 부재였다.
+    n_trials_cumulative = es$n_trials_cumulative, dsr = es$essence$dsr,
+    ## ★측정 규약 표식 — regime 이 다른 수치끼리 비교하지 않기 위한 키(플랜 P0-06 rebase 의 식별자).
+    ##   exec_price = 하네스의 **실제** 체결 규약. replication_harness.R 은 새 보유에 집행일 수익
+    ##   Close[exec]/Close[d]−1 을 붙이므로 사실상 시그널일 종가 체결이다(감사 D4-01, 코드 :58·:84-88).
+    ##   P0-04(close_t1 전환)가 인자화되면 그 인자를 그대로 싣는다 — 여기 리터럴은 현행 동작의 정직한 기록이다.
+    measurement_regime = c(list(
+      selection_type = selection_type, n_trials_cumulative = n_trials_cumulative,
+      exec_price = "close_d_legacy",
+      harness_md5 = tryCatch(unname(as.character(tools::md5sum(file.path(.RP_INFRA, "replication", "replication_harness.R")))),
+                             error = function(e) NA_character_)),
+      if (is.list(measurement_tags)) measurement_tags else NULL),
     ## ★essence_score 가 산출한 겼을 **떨어뜨리지 않는다** (도훈 2026-09-04).
     ##   이 쓰기는 반환 list 를 통째로 실지 않고 필드를 골라 쓴다. 그래서 새로
     ##   붙인 rolling_grade / defensive_score / grade_base 가 산출물에서 사라졌다 —
@@ -530,7 +556,7 @@ run_paper_replication <- function(strategy_name, strategy_idea, factor_engine_pa
                mechanism_hypothesis = lc_mechanism,     # Mechanism 축 — 논문 가설(검증 전) / 호출자
                oos_retention = es$essence$oos_retention,
                portfolio_alpha_t = es$essence$portfolio_alpha_t_nw_lag3,
-               selection_type = "chain",
+               selection_type = selection_type,   # ★리터럴 "chain" 이던 자리(2026-09-23 P0-01) — 채점과 같은 값을 적는다
                source_paper = .sp_url,
                next_probe = list("강화 프로세스 축 1 (멀티팩터/비중방법론/리스크오버레이 중 논문 후속연구가 가리키는 축)",
                                  "실투형 변환(long-only·≤25종·15bps) 시 신호 보존율 측정"))

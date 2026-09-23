@@ -179,7 +179,40 @@ def DIRECTOR():
     if bl.startswith("Director:"): bl=bl[len("Director:"):].strip()
     st=(" ★stale "+HH(da)) if (da is None or da>=30 or dj.get("stale")) else ""
     return "Director: %s%s"%(bl,st)
-o.append(S(DIRECTOR,"Director: ?"))
+# ⑥-b 대기 결정 — 결정 대기 레지스터 부기 (P3-07 · 2026-09-23 플랜 qvest-1-drifting-eclipse). **읽기만** — writer =
+#   reinforce_ledger.R::dr_open/dr_resolve(원자 쓰기 · owner 만 resolve). 새 줄을 만들지 않고 Director 줄 끝에 붙는다(부팅 줄 수 불변).
+#   ★왜: R1 → l2_auto.enabled → director.act 사슬이 2계층 A 경로·자기개선 채점기를 막는데 부팅 어디에도 안 보였다(감사 D7-04·D8-05).
+#   status=="open" 만 센다(resolved 를 세면 이미 끝난 결정이 최고령으로 떠 대기가 영원히 안 줄어든다).
+#   차단 = open 항목의 blocks "lane:" 을 막는 항목 수 내림차순(동률은 오래된 항목 순) 상위 3 + 나머지 수.
+#   읽기 실패는 0 으로 접지 않고 '?(<원인>)' — 빈 레지스터와 못 읽은 레지스터는 다른 사실이다. 부팅은 계속.
+#   검사: 08_Tests/ops/test_decision_register.R (블록 패턴 추출 · status 필터 제거/'?'→0 돌연변이 red).
+def DECISIONS():
+    import datetime as _dm
+    p=R("06_Registry","decision_register.json")
+    if not os.path.exists(p): return " · 대기결정 ?(레지스터 부재)"
+    try: d=json.load(io.open(p,encoding="utf-8-sig"))
+    except Exception as e: return " · 대기결정 ?(파손 JSON %s)"%type(e).__name__
+    if not isinstance(d,dict) or d.get("schema")!="decision_register_v1":
+        return " · 대기결정 ?(schema %s)"%(str(d.get("schema"))[:24] if isinstance(d,dict) else type(d).__name__)
+    it=d.get("items")
+    if not isinstance(it,list): return " · 대기결정 ?(items 형식)"
+    op=[x for x in it if isinstance(x,dict) and x.get("status")=="open"]
+    if not op: return " · 대기결정 0"
+    def _od(x):
+        try: return _dm.date.fromisoformat(str(x.get("opened_at") or "")[:10])
+        except Exception: return None
+    op.sort(key=lambda x:(_od(x) or _dm.date.max,str(x.get("id") or "")))
+    a0=_od(op[0]); ag="?" if a0 is None else str((_dm.date.today()-a0).days)
+    cnt={}
+    for x in op:
+        bl=x.get("blocks"); bl=[bl] if isinstance(bl,str) else (bl if isinstance(bl,list) else [])
+        for b in bl:
+            b=str(b)
+            if b.startswith("lane:") and b[5:].strip(): cnt[b[5:].strip()]=cnt.get(b[5:].strip(),0)+1
+    ln=sorted(cnt,key=lambda k:-cnt[k])
+    lanes=("·".join(ln[:3])+(" +%d"%(len(ln)-3) if len(ln)>3 else "")) if ln else "없음"
+    return " · 대기결정 %d · 최고령 %s(%sd) · 차단 %s"%(len(op),op[0].get("id") or "?",ag,lanes)
+o.append(S(DIRECTOR,"Director: ?")+S(DECISIONS," · 대기결정 ?(표시 예외)"))
 # ⑦ Rules — 방향 규칙 일간 채점 (도훈 2026-09-21 "데일리로 · Qvest 실행 시점에"). **읽기만** — 캐시는 /qvest 1a 단계에서 세션이
 #   run_direction_score.R --quiet 로 방금 쓰고, 아침 체인의 rf_director 도 매일 쓴다. 30h 초과면 ★stale. 부재면 '?' + 원인.
 #   검사: 08_Tests/ops/test_boot_lean_rules_line.R (블록 패턴 추출).

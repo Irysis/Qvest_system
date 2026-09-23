@@ -59,9 +59,16 @@ COUNT_PAPER <- !identical(Sys.getenv("RP_COUNT_PAPER", "1"), "0")
 #     둘이 서로 다른 순서다 — 위치로 짝지으면 1403.8125 에 2404.08129 의 제목이 붙는다
 #     (드라이런 2026-09-10 실측). 잘림보다 나쁜 오귀속이라, 짝은 요청 파일의
 #     combo.papers(key+title 쌍)에서만 읽고, 없으면 키만 낸다.
+#   ★짝 원본은 **가변 슬롯**이다(2026-09-13 검사 신설 중 실측) — 요청 파일은 다음 요청이 덮는다.
+#     구판은 편수만 맞춰 보고 짝을 믿어서, 같은 3편짜리 **다른** 결합이 슬롯에 있으면 남의 논문
+#     3편을 이 결합 아래에 냈다. 키 **집합**이 paper_key 의 키와 같을 때만 짝을 쓴다.
+#   ★cap 은 **줄 전체** 상한이다(접두 '대상: ' · '  · 키 — ' · suffix 포함). 구판은 제목 몫이라
+#     긴 단독 제목 줄이 82자(suffix 포함 92자)로 telegram_notify.R BULLET_ITEM_MAX(80)를 넘었다.
+#   짝 원본은 인자로 주입된다 — 검사(08_Tests/ops/test_rf_verify_tg_target.R)가 운영 슬롯을 빌리지 않게.
+#   ★main 착지 2026-09-23 — 이 수리는 09-13 worktree(amazing-faraday)에 미커밋으로만 있었다.
 # 반환 = character vector (items 안에서 c() 로 펼쳐진다). suffix 는 첫 줄 꼬리에 붙는다.
-.tg_combo_papers <- function() tryCatch({
-  d <- fromJSON(file.path(ROOT, "06_Registry/replication_request.json"), simplifyVector = FALSE)
+.tg_combo_papers <- function(req = file.path(ROOT, "06_Registry/replication_request.json")) tryCatch({
+  d <- fromJSON(req, simplifyVector = FALSE)
   ps <- (d$combo %||% list())$papers %||% list()
   if (!length(ps)) return(NULL)
   data.frame(key   = vapply(ps, function(p) as.character(p$key   %||% ""), character(1L)),
@@ -80,17 +87,24 @@ COUNT_PAPER <- !identical(Sys.getenv("RP_COUNT_PAPER", "1"), "0")
   else .tg_clip(title, cap)
 }
 
-.tg_target_items <- function(title, pkey, suffix = "", cap = 78L) {
+.tg_target_items <- function(title, pkey, suffix = "", cap = 78L, papers = .tg_combo_papers()) {
   keys <- if (grepl("^combo:", pkey %||% ""))
     trimws(strsplit(sub("^combo:", "", pkey), "+", fixed = TRUE)[[1]]) else character(0)
   keys <- keys[nzchar(keys)]
-  if (length(keys) < 2L) return(sprintf("대상: %s%s", .tg_clip(title, cap), suffix))
-  pp <- .tg_combo_papers()
-  lines <- if (!is.null(pp) && nrow(pp) == length(keys) && all(nzchar(pp$key)))
-    vapply(seq_len(nrow(pp)), function(i)
-      if (nzchar(pp$title[i]))
-        sprintf("  · %s — %s", pp$key[i], .tg_clip(pp$title[i], cap - nchar(pp$key[i]) - 6L))
-      else sprintf("  · %s", pp$key[i]), character(1L))
+  if (length(keys) < 2L) {
+    lead <- "대상: "
+    return(paste0(lead, .tg_clip(title, cap - nchar(lead) - nchar(suffix)), suffix))
+  }
+  pp <- papers
+  # 편수 일치는 짝의 증거가 아니다 — 중복 없는 키 **집합**이 이 결합의 키와 같을 때만 짝을 쓴다.
+  paired <- !is.null(pp) && nrow(pp) == length(keys) && !anyDuplicated(pp$key) && setequal(pp$key, keys)
+  lines <- if (paired)
+    vapply(seq_len(nrow(pp)), function(i) {
+      lead <- sprintf("  · %s", pp$key[i])
+      if (!nzchar(pp$title[i])) return(lead)
+      lead <- paste0(lead, " — ")
+      paste0(lead, .tg_clip(pp$title[i], cap - nchar(lead)))
+    }, character(1L))
   else sprintf("  · %s", keys)          # 짝을 확신할 수 없으면 키만 (지어내지 않는다)
   c(sprintf("대상: 결합 %d편%s", length(keys), suffix), lines)
 }

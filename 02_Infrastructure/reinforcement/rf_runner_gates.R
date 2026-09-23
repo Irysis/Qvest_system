@@ -115,5 +115,41 @@ rf_grade_a_hold <- function(code, spec, carry_overlay = NULL, attempt = NULL) {
 #' 오버레이 스택 표기 — arm id 를 " × " 로 잇는다(단층·NULL 호환 · 로그·idea·사유 문자열 공용)
 rf_ov_txt <- function(ov) { v <- .ov_arm_ids(ov); if (length(v)) paste(v, collapse = " \u00d7 ") else "none" }
 
+# ── 시행 회계 (2026-09-23 · 강화 전수감사 D3-01 · 플랜 P0-01) ─────────────────────────────
+#   구판은 강화 셀 전수를 chain·n_trials=1 로 채점했다(run_paper_replication.R 하드코딩 · 1,099/1,099 dsr=null).
+#   러너는 열거 격자에서 전기간 지표 argmax 로 승자·바닥·승격을 고른다 = sweep(measurement-graduation §3 chain ② 미충족).
+#   셀 spec 에 계보 누적 측정 시행수를 싣고 워커가 sweep 으로 넘긴다. 판정은 여기(순수), 부작용은 러너.
+
+#' 계보 id 사슬 — 이 entry + parent 사슬(승격 carry 는 부모 승자를 물려받으므로 부모의 선택이 이 칸의 선택 이력이다).
+#'   순환(자기 참조)·결손(부모 entry 부재)·깊이 가드. max_depth 는 폭주 방지선이지 연구 수치가 아니다(승격 깊이 상한보다 넉넉히).
+rf_lineage_ids <- function(entries, bid, max_depth = 20L) {
+  ids <- as.character(bid)[1]
+  cur <- Filter(function(x) identical(x$base_id, ids[1]), entries %||% list())
+  p <- if (length(cur)) as.character(cur[[1]]$parent$base_id %||% "")[1] else ""
+  while (!is.na(p) && nzchar(p) && !(p %in% ids) && length(ids) <= max_depth) {
+    ids <- c(ids, p)
+    pe <- Filter(function(x) identical(x$base_id, p), entries)
+    p <- if (length(pe)) as.character(pe[[1]]$parent$base_id %||% "")[1] else ""
+  }
+  ids
+}
+
+#' 계보 안 **측정된** 칸 수 — essence$port_t 가 유한 수치인 attempt 만 센다(미측정 NA 종결은 평가되지 않은 시행).
+rf_lineage_measured <- function(entries, ids) {
+  sum(vapply(Filter(function(x) x$base_id %in% ids, entries %||% list()), function(x)
+    sum(vapply(x$attempts %||% list(), function(a) {
+      v <- a$essence$port_t
+      is.numeric(v) && length(v) == 1L && is.finite(v)
+    }, logical(1))), numeric(1)))
+}
+
+#' 셀 spec 의 시행 회계 블록 — 등록 시점 값(도착 순서 의존). A 판정의 최종 가족 N 재산출은 A 서류(P1-04) 몫.
+#'   ★.spec_sig 는 명시 키만 보므로 이 블록은 서명을 바꾸지 않는다(rf_spec_sig.R).
+rf_selection_accounting <- function(ids, n_measured_prior, n_batch_reg) {
+  list(selection_type = "sweep", family_root = tail(ids, 1L), lineage = ids,
+       n_family_at_registration = as.integer(n_measured_prior + n_batch_reg),
+       n_trials_basis = "lineage_measured_cells_at_registration")
+}
+
 if (sys.nframe() == 0L)
-  cat("[rf_runner_gates.R] Loaded (WP-R) — rf_standing_decision / rf_budget_auto / rf_adversary_ok / rf_grade_a_hold / rf_ov_txt\n")
+  cat("[rf_runner_gates.R] Loaded (WP-R) — rf_standing_decision / rf_budget_auto / rf_adversary_ok / rf_grade_a_hold / rf_ov_txt / rf_lineage_ids / rf_lineage_measured / rf_selection_accounting\n")

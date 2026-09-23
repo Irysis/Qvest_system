@@ -574,6 +574,17 @@ for (.a in E$attempts) {
   .so <- tryCatch(fromJSON(.sp, simplifyVector = FALSE), error = function(z) NULL)
   if (!is.null(.so)) .seen_sig[[.spec_sig(.so)]] <- .a$essence$cell_code %||% paste0("n", .a$n)
 }
+## ── ★시행 회계 (2026-09-23 · 강화 전수감사 D3-01 · 플랜 P0-01) ─────────────────────
+##   구판은 모든 셀을 chain·n_trials=1 로 채점했다(run_paper_replication.R 하드코딩). 그러나 이 러너는 열거 격자에서
+##   전기간 지표 argmax 로 승자·바닥·승격을 고른다 = sweep. 셀마다 **계보 누적 측정 시행수**를 spec 에 싣고
+##   워커가 sweep 으로 넘긴다. 계보 = 이 entry + parent 사슬(승격 carry 가 부모 승자를 물려받으므로 부모의 선택도
+##   이 칸의 선택 이력이다). 측정된 칸(essence$port_t 수치)만 센다 — 미측정(NA 종결)은 평가되지 않은 시행이다.
+##   ★등록 시점 값이다(도착 순서 의존). A 판정의 최종 가족 N 재산출은 A 서류(플랜 P1-04)가 맡는다.
+##   ★.spec_sig 는 명시 키만 보므로 이 필드는 서명을 바꾸지 않는다(rf_spec_sig.R:95-117).
+##   판정 정본 = rf_runner_gates.R::rf_lineage_ids / rf_lineage_measured / rf_selection_accounting (순수 함수 · 검사 대상).
+.lineage_ids <- rf_lineage_ids(led$entries, BID)
+.n_measured_prior <- rf_lineage_measured(led$entries, .lineage_ids)
+.n_batch_reg <- 0L
 if (!length(jobs)) for (CELL in batch) {
   .no_treatment <- FALSE
   SPEC <- list(code = CELL$code, label = CELL$label, block = CELL$block,
@@ -859,6 +870,8 @@ if (!length(jobs)) for (CELL in batch) {
     next
   }
 
+  .n_batch_reg <- .n_batch_reg + 1L
+  SPEC$selection_accounting <- rf_selection_accounting(.lineage_ids, .n_measured_prior, .n_batch_reg)
   write(toJSON(SPEC, auto_unbox = TRUE, pretty = TRUE, null = "null"), sp)
   # ★중복 판정 — 배치 안 · entry 안 · **전 entry**(2026-09-03 확장) 세 층을 본다.
   #   먼저 온 칸 하나는 측정하고 나머지를 닫는다. 같은 포트폴리오에 다른 이름을 붙이지 않는다.

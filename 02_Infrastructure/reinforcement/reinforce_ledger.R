@@ -707,6 +707,187 @@ rf_record_b5_design <- function(layer, base_id, fields, root = .rf_root()) {
   invisible(rec)
 }
 
+# =============================================================================
+# 결정 대기 레지스터 (P3-07 · 2026-09-23 도훈 승인 플랜 qvest-1-drifting-eclipse) — dr_open / dr_resolve / dr_list
+# =============================================================================
+# ★왜: 도훈 결정 대기 항목(R1 → l2_auto.enabled → director.act 사슬 등)이 2계층 A 경로와 자기개선 채점기를
+#   막고 있었는데 부팅 어디에도 안 보였다(감사 D7-04·D8-05). 결정이 config 공란(`l2_auto.selection_type: ""`)·
+#   frontier `parked_reason`·플랜 표에 흩어져 있으면 "무엇이 무엇을 막는가"를 아무도 세지 않는다.
+#   저장소 1곳 + writer 3종 + 부팅 Director 줄 부기(boot_lean.sh::DECISIONS — 읽기만).
+# 파일: 06_Registry/decision_register.json
+#   {schema, items:[{id, title, status(open/resolved), opened_at, options, recommendation, default_until_decided,
+#                    blocks, owner, source, decision, decided_by, decided_at, note, registered_at[, opened_at_basis]}]}
+# 계약:
+#   · 쓰기 = 공용 정본 qvest_atomic_write_json(02_Infrastructure/utils/atomic_json.R — 선삭제 없음 · 유한 재시도 ·
+#     copy 폴백 없음). .rf_write 를 안 쓰는 이유: 원장 층 경로에 묶여 있고, 그 copy 폴백은 atomic_json.R
+#     [측정 2] 가 '소비자가 읽는 순간 파일을 찢는' 경로로 실증했다. 부팅이 매 세션 이 파일을 읽는다.
+#   · dr_resolve 는 decided_by == 항목 owner 일 때만 — 세션·무인 레인이 도훈 결정을 대신 적지 못하게.
+#   · resolved 재결정 거부 — 바꾸려면 새 항목(새 id)으로. 덮어쓰면 무엇을 언제 바꿨는지가 사라진다.
+#   · blocks 어휘 = "lane:<레인>"(부팅 '차단' 표기) · "decision:<다른 항목 id>"(사슬 — 등록 시 존재해야 함) ·
+#     "item:<작업 항목>". 접두 없는 자유 문자열은 거부한다(부팅이 무엇을 레인으로 셀지 모호해진다).
+#   · 소급 개시일(opened_at 지정)은 근거(opened_at_basis) 필수 — 최고령 표기가 추정이면 추정이라고 남긴다.
+#   · 읽기 실패(부재·파손 JSON·schema·파손 항목)는 **명시 오류** — 빈 목록으로 접지 않는다
+#     (못 읽은 레지스터 ≠ 대기 결정 0 · 빈결과=합격 병리).
+#   · 전 함수 root 인자로 격리 가능. 검사 = 08_Tests/ops/test_decision_register.R(부팅 표시 양성 대조·돌연변이 포함).
+DR_SCHEMA <- "decision_register_v1"
+DR_STATUS_ENUM <- c("open", "resolved")
+DR_BLOCK_KINDS <- c("lane", "decision", "item")
+dr_path <- function(root = .rf_root()) file.path(root, "06_Registry", "decision_register.json")
+.dr_now <- function() format(Sys.time(), "%Y-%m-%dT%H:%M:%S%z")
+.dr_str1 <- function(x, what, allow_empty = FALSE) {
+  if (!is.character(x) || length(x) != 1L || is.na(x))
+    stop(sprintf("[decision_register] %s 는 문자열 1개여야 한다", what), call. = FALSE)
+  x <- trimws(x)
+  if (!allow_empty && !nzchar(x)) stop(sprintf("[decision_register] %s 가 비었다", what), call. = FALSE)
+  x
+}
+.dr_chr <- function(x, what, min_n = 0L) {
+  if (is.list(x)) {
+    if (!all(vapply(x, function(v) is.character(v) && length(v) == 1L && !is.na(v), logical(1))))
+      stop(sprintf("[decision_register] %s 원소는 문자열이어야 한다", what), call. = FALSE)
+    x <- unlist(x, use.names = FALSE)
+  }
+  if (is.null(x)) x <- character(0)
+  if (!is.character(x) || anyNA(x)) stop(sprintf("[decision_register] %s 는 문자 벡터여야 한다", what), call. = FALSE)
+  x <- trimws(x)
+  if (any(!nzchar(x))) stop(sprintf("[decision_register] %s 에 빈 원소", what), call. = FALSE)
+  if (length(x) < min_n) stop(sprintf("[decision_register] %s 는 최소 %d개", what, min_n), call. = FALSE)
+  x
+}
+.dr_date_ok <- function(s) grepl("^[0-9]{4}-[0-9]{2}-[0-9]{2}", s) && !is.na(as.Date(substr(s, 1L, 10L), "%Y-%m-%d"))
+
+#' 레지스터 적재 — create=TRUE 는 writer(dr_open) 전용(부재 시 골격). 그 외 부재·파손은 명시 오류.
+dr_load <- function(root = .rf_root(), create = FALSE) {
+  p <- dr_path(root)
+  if (!file.exists(p)) {
+    if (isTRUE(create))
+      return(list(schema = DR_SCHEMA,
+                  note = "도훈 결정 대기 레지스터 (P3-07). writer = reinforce_ledger.R::dr_open/dr_resolve 만(owner 만 resolve · 재결정은 새 id). 부팅 Director 줄이 open 수·최고령·차단 레인을 읽는다.",
+                  items = list(), last_updated = ""))
+    stop(sprintf("[decision_register] 레지스터 부재: %s", p), call. = FALSE)
+  }
+  obj <- tryCatch(fromJSON(p, simplifyVector = FALSE),
+                  error = function(e) stop(sprintf("[decision_register] 파손 JSON: %s (%s)", p, conditionMessage(e)), call. = FALSE))
+  if (!is.list(obj) || !identical(obj$schema, DR_SCHEMA))
+    stop(sprintf("[decision_register] schema 불일치: %s (기대 %s)",
+                 if (is.list(obj)) as.character(obj$schema %||% "<없음>") else class(obj)[1], DR_SCHEMA), call. = FALSE)
+  if (!is.list(obj$items)) stop("[decision_register] items 가 배열이 아니다", call. = FALSE)
+  ids <- character(0)
+  for (k in seq_along(obj$items)) {
+    it <- obj$items[[k]]
+    if (!is.list(it) || !is.character(it$id) || length(it$id) != 1L || !nzchar(it$id) ||
+        !is.character(it$status) || length(it$status) != 1L || !(it$status %in% DR_STATUS_ENUM))
+      stop(sprintf("[decision_register] 파손 항목 #%d (id/status)", k), call. = FALSE)
+    ids <- c(ids, it$id)
+  }
+  if (anyDuplicated(ids)) stop(sprintf("[decision_register] 중복 id: %s", paste(unique(ids[duplicated(ids)]), collapse = ",")), call. = FALSE)
+  obj
+}
+
+.dr_write <- function(obj, root) {
+  obj$last_updated <- .dr_now()
+  txt <- toJSON(obj, auto_unbox = TRUE, pretty = TRUE, null = "null", na = "null", digits = 6)
+  chk <- tryCatch(fromJSON(txt, simplifyVector = FALSE), error = function(e) NULL)
+  if (is.null(chk) || !identical(chk$schema, DR_SCHEMA) || length(chk$items) != length(obj$items))
+    stop("[decision_register] 쓰기 직전 재파싱 검증 실패 — 정본 불변", call. = FALSE)
+  if (!exists("qvest_atomic_write_json", mode = "function")) {
+    # 코드 루트(.rf_root) ≠ 데이터 루트(root) — 격리 검사는 root 만 임시 디렉터리로 바꾼다.
+    src <- file.path(.rf_root(), "02_Infrastructure", "utils", "atomic_json.R")
+    if (!file.exists(src)) stop(sprintf("[decision_register] 원자 쓰기 정본 부재: %s", src), call. = FALSE)
+    source(src)
+  }
+  qvest_atomic_write_json(obj, dr_path(root), auto_unbox = TRUE, pretty = TRUE, null = "null", na = "null",
+                          digits = 6, tag = "decision_register")
+  invisible(dr_path(root))
+}
+
+#' 결정 대기 항목 등록
+#' @param options     선택지(문자 벡터 ≥1)
+#' @param blocks      "lane:" / "decision:" / "item:" 접두 문자 벡터(0개 허용). decision: 대상은 이미 등록돼 있어야 한다
+#' @param opened_at   NULL = 지금. 소급 지정 시 "YYYY-MM-DD…" + opened_at_basis(근거) 필수
+dr_open <- function(id, title, options, recommendation, default_until_decided, blocks,
+                    owner = "dohoon", source, root = .rf_root(), opened_at = NULL, opened_at_basis = NULL) {
+  id <- .dr_str1(id, "id")
+  if (!grepl("^[A-Za-z0-9][A-Za-z0-9_.-]*$", id))
+    stop(sprintf("[decision_register] id 형식(영숫자·_.-): %s", id), call. = FALSE)
+  title <- .dr_str1(title, "title")
+  opts  <- .dr_chr(options, "options", min_n = 1L)
+  rec   <- .dr_str1(recommendation, "recommendation", allow_empty = TRUE)
+  dflt  <- .dr_str1(default_until_decided, "default_until_decided")
+  bl    <- .dr_chr(blocks, "blocks")
+  owner <- .dr_str1(owner, "owner")
+  src   <- .dr_str1(source, "source")
+  bad <- bl[!grepl(sprintf("^(%s):[^[:space:]]", paste(DR_BLOCK_KINDS, collapse = "|")), bl)]
+  if (length(bad))
+    stop(sprintf("[decision_register] blocks 접두는 lane:/decision:/item: 뿐: %s", paste(bad, collapse = " | ")), call. = FALSE)
+  now <- .dr_now(); basis <- NULL
+  if (is.null(opened_at)) oa <- now else {
+    oa <- .dr_str1(opened_at, "opened_at")
+    if (!.dr_date_ok(oa)) stop(sprintf("[decision_register] opened_at 날짜 형식: %s", oa), call. = FALSE)
+    basis <- .dr_str1(opened_at_basis %||% "", "opened_at_basis(소급 개시일 근거)")
+  }
+  obj <- dr_load(root, create = TRUE)
+  ids <- vapply(obj$items, function(x) x$id, character(1))
+  if (id %in% ids) {
+    st <- obj$items[[match(id, ids)]]$status
+    stop(sprintf("[decision_register] 이미 있는 id: %s (status=%s) — 재결정·재상정은 새 id 로", id, st), call. = FALSE)
+  }
+  dec <- sub("^decision:", "", bl[startsWith(bl, "decision:")])
+  if (id %in% dec) stop("[decision_register] 자기 자신을 막을 수 없다", call. = FALSE)
+  miss <- setdiff(dec, ids)
+  if (length(miss))
+    stop(sprintf("[decision_register] blocks 의 decision 대상 미등록: %s (막히는 쪽을 먼저 등록)", paste(miss, collapse = ",")), call. = FALSE)
+  item <- list(id = id, title = title, status = "open", opened_at = oa, options = as.list(opts),
+               recommendation = rec, default_until_decided = dflt, blocks = as.list(bl), owner = owner,
+               source = src, decision = NULL, decided_by = NULL, decided_at = NULL, note = NULL, registered_at = now)
+  if (!is.null(basis)) item$opened_at_basis <- basis
+  obj$items[[length(obj$items) + 1L]] <- item
+  .dr_write(obj, root)
+  invisible(item)
+}
+
+#' 결정 기록 — decided_by 가 항목 owner 와 다르면 거부 · 이미 resolved 면 거부(새 항목으로)
+dr_resolve <- function(id, decision, decided_by, note = "", root = .rf_root(), decided_at = NULL) {
+  id <- .dr_str1(id, "id")
+  decision <- .dr_str1(decision, "decision")
+  decided_by <- .dr_str1(decided_by, "decided_by")
+  note <- .dr_str1(note %||% "", "note", allow_empty = TRUE)
+  da <- if (is.null(decided_at)) .dr_now() else {
+    d <- .dr_str1(decided_at, "decided_at")
+    if (!.dr_date_ok(d)) stop(sprintf("[decision_register] decided_at 날짜 형식: %s", d), call. = FALSE)
+    d
+  }
+  obj <- dr_load(root)
+  k <- which(vapply(obj$items, function(x) identical(x$id, id), logical(1)))
+  if (!length(k)) stop(sprintf("[decision_register] 항목 부재: %s", id), call. = FALSE)
+  it <- obj$items[[k]]
+  if (identical(it$status, "resolved"))
+    stop(sprintf("[decision_register] 재결정 거부: %s 는 %s 에 %s 가 결정(%s) — 바꾸려면 새 항목(dr_open)으로",
+                 id, as.character(it$decided_at %||% "?"), as.character(it$decided_by %||% "?"),
+                 as.character(it$decision %||% "?")), call. = FALSE)
+  own <- trimws(as.character(it$owner %||% ""))
+  if (!identical(decided_by, own))
+    stop(sprintf("[decision_register] owner 불일치 거부: %s 의 owner=%s · decided_by=%s", id, own, decided_by), call. = FALSE)
+  it$status <- "resolved"; it$decision <- decision; it$decided_by <- decided_by
+  it$decided_at <- da; it$note <- note
+  obj$items[[k]] <- it
+  .dr_write(obj, root)
+  invisible(it)
+}
+
+#' 목록 — status = "open"(기본) / "resolved" / "all". 오래된 순(opened_at → id). 부재·파손은 명시 오류.
+dr_list <- function(status = "open", root = .rf_root()) {
+  st <- .dr_str1(status, "status")
+  if (!(st %in% c(DR_STATUS_ENUM, "all"))) stop(sprintf("[decision_register] status: %s", st), call. = FALSE)
+  its <- dr_load(root)$items
+  if (st != "all") its <- Filter(function(x) identical(x$status, st), its)
+  if (length(its)) {
+    oa <- vapply(its, function(x) substr(as.character(x$opened_at %||% "9999-99-99"), 1L, 10L), character(1))
+    its <- its[order(oa, vapply(its, function(x) x$id, character(1)))]
+  }
+  its
+}
+
 `%||%` <- function(a, b) if (is.null(a) || length(a) == 0L || (length(a) == 1L && is.na(a))) b else a
 
 cat("[reinforce_ledger.R] Loaded (v10) — rf_open_entry / rf_append_attempt(★L1 25회 게이트·서술 의무 · root_papers 선택) / rf_record_result / rf_park_entry(조기 중단·사유 필수) / rf_record_judge / rf_record_combination_review / rf_lessons_digest / rf_record_adversary(G2 오버레이 반증 표식) / rf_record_b5_redesign(B5 재설계 라운드 표식)\n")

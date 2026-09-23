@@ -50,15 +50,35 @@ lcm_materials <- function(base_id, block_id, out_p) {
   if (!nrow(blk)) stop("[lcode_mech] 블록 칸 없음: ", block_id)
   E <- S$entry
   dsc <- tryCatch(rf_cell_desc(base_id), error = function(e) list())
-  ide <- setNames(vapply(E$attempts %||% list(),
-                         function(a) as.character(a$idea %||% "")[1], character(1)),
-                  vapply(E$attempts %||% list(),
-                         function(a) as.character(a$cell_code %||% (a$essence$cell_code %||% ""))[1], character(1)))
+  # ★키 공간을 **표와 같은 식**으로 잡는다 (2026-09-05). 구판은 등록 코드
+  #   (a$cell_code %||% a$essence$cell_code)로 키를 잡았는데 표(rf_notify_table)의 행 코드는
+  #   측정 코드(es$cell_code %||% n%02d)라 두 식이 갈렸다 — 실측 53/499 시도가 불일치였고,
+  #   그 중 8건은 실제로 표에 뜨는 칸이었다. 표의 행 코드가 아래 식에서 나오므로 같은 식으로
+  #   키를 잡으면 "표에 있는데 여기 없는 코드" 라는 부류 자체가 사라진다(생산자 통합이 아니라
+  #   **소비 지점 정렬** — rf_notify_table 의 코드 열을 바꾸면 블록 귀속·승자 판정·LOO 가 같이
+  #   움직인다. 그건 계기가 아니라 측정을 옮기는 일이다).
+  #   ★main 착지 2026-09-23 — 이 수리는 09-05 worktree(sharp-chebyshev)에만 있었고, 같은 날
+  #     커밋 6d0c2fc65 는 메시지로 이 수리를 주장했지만 diff 엔 다음 블록 리졸버만 실렸다.
+  .att <- E$attempts %||% list()
+  ide <- setNames(vapply(.att, function(a) as.character(a$idea %||% "")[1], character(1)),
+                  vapply(.att, function(a)
+                    as.character(a$essence$cell_code %||% sprintf("n%02d", a$n))[1], character(1)))
+  # ★[[ 로 읽지 않는다 — 이름 있는 **원자 벡터**의 [[ 는 없는 이름에 NULL 이 아니라
+  #   `subscript out of bounds` 를 던진다(list 는 NULL 을 돌려준다). %||% 는 NULL 만 받으므로
+  #   그 예외를 못 받고 materials 생성이 통째로 죽는다. 그리고 죽으면 rf_lcode_mechanism.sh 가
+  #   `materials_failed` 한 라벨로만 적고 exit 0 이라 — 크래시가 "재료 없음" 으로 위장된다.
+  #   list·원자벡터 어느 쪽이든 **없는 이름 = 없음(NULL)** 으로 떨어뜨린다.
+  #   검사 = 08_Tests/reinforcement/test_rf_materials_cell_lookup.R (양방향 · 위반 주입 포함).
+  .look1 <- function(m, cd) {
+    if (is.null(m) || !length(m) || !(cd %in% names(m))) return(NULL)
+    v <- m[[cd]]
+    if (is.null(v) || !length(v) || is.na(v[1])) NULL else as.character(v)[1]
+  }
   L <- c(sprintf("## 블록 %s — 측정 %d칸 (수치는 계약 산출물)", block_id, nrow(blk)),
          "code | grade | PORT_t | CAGR | Calmar | MDD | 처치")
   for (i in seq_len(nrow(blk))) {
     cd <- blk$code[i]
-    tr <- as.character(dsc[[cd]] %||% ide[[cd]] %||% "")
+    tr <- as.character(.look1(dsc, cd) %||% .look1(ide, cd) %||% "")
     L <- c(L, sprintf("%s | %s | %.3f | %.3f | %.3f | %.3f | %s",
                       cd, blk$grade[i], blk$port_t[i], blk$cagr[i], blk$calmar[i], blk$mdd[i],
                       substr(gsub("\\s+", " ", tr), 1, 110)))
