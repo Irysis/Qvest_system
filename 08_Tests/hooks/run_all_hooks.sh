@@ -1439,6 +1439,10 @@ SUITES=(
   "08_Tests/ops/test_rf_verify_tg_target.R"
   #   P3-07 결정 대기 레지스터 + 부팅 Director 줄 부기 — owner 거부 · 재결정 거부 · 파손=명시 오류 · 필터 돌연변이 red
   "08_Tests/ops/test_decision_register.R"
+  # 2026-09-23 도훈 지시 "무인실행에서 LLM 개입부 모두 opus max" — 호출부 재도출(모든 claude -p 가 모델·노력 명시) +
+  #   사본 위반 주입(인자 삭제 → 검거) + 새 배선 5 레인 해석기 경유. 폴백 검사(E3 = 13 레인 opus/max)도 함께 편입(미등록이었다).
+  "08_Tests/ops/test_llm_lane_wiring.sh"
+  "08_Tests/ops/test_rf_llm_fallback.sh"
 )
 
 
