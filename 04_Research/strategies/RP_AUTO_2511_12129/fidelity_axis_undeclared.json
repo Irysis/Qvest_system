@@ -1,0 +1,17 @@
+{
+  "axis": "undeclared",
+  "verdict": "adapted",
+
+  "undeclared_changes": [],
+  "signal_mismatch": [],
+
+  "counterexample": "구성하지 못했다. engine.R 648행 전수를 실행 문장 단위로 changed 45항과 1:1 대조했으나, 논문에도 changed 에도 근거가 없는 동작을 하나도 짚지 못했다. 수치 상수 24종(252·120·365·730·45·90·30·40·20·5·100·seq(0,50,0.5)·20251115·1e-6·1e-12·1e-8·1e-9·0.05·0.20·16·40·4·5군/50%·180)이 전부 논문 명시값이거나 changed 의 특정 항목에 귀속됐고, 필터·문턱·폴백·정규화 경로도 마찬가지다. 1판 감사가 잡았던 두 미신고 항목(결산월 필터 · 실효 개시일 날짜 추정)은 2판에서 각각 changed (7)·(43) 으로 닫혔고, 코드에 잔존하지 않는다(engine.R 에 month(PD) %in% c(3,6,9,12) 기반 행 삭제 없음 — 322행의 같은 표현은 offcal 판별용이고 삭제가 아니다). 유일한 미해소 후보는 note 의 'Other' 버킷인데, |Other| 를 산출물에서 잴 수 없어 반례로 세우지 못했다 — 코드 성질은 확정이지만 실현 여부가 미측정이라 발견으로 올리지 않는다.",
+
+  "evidence": "arxiv.org/html/2511.12129v1 — §II-A(거래일 = 분기말+2개월 = 3/1·6/1·9/1·12/1 · 학습 16~40분기 + 평가 1년), §II-B(유니버스 'all historical S&P 500 component stocks (about 1142 stocks)' · 'we split the dataset by the Global Industry Classification Standard (GICS) sectors' · 명시된 레코드 삭제 = 결측 규칙 + rdq>거래일 0.84% 둘뿐 · ★유동성·가격·시총·거래소·섹터 제외 스크린 부재를 §II-B 전문 대조로 재확인), Table I(재무비율 20종 — Revenue Growth/P-CF/EPS/Cash ratio/ROA/Enterprise multiple/ROE/EV-to-CFO/P-E/LT debt to total assets/P-S/Working capital ratio/Net profit margin/Debt to equity/Gross profit margin/Quick ratio/Operating margin/Days sales of inventory/P-B/Days payable outstanding), §II-C 식(1) r=ln(S_{T+f,i}/S_{T,i}) + 모형 5종, §II-D Step1~4('pick up top 20% stocks from each sector' · 'We finish these steps for all eleven GICS sectors' · Step 4 계수 육안 점검), §III-A 제약 전수('upper bound 5% and Lower bound 0%' · 'sum of weights=100%' · 'Take no leverage' · 'use 1 year historical daily return' · min-variance = 기대수익 0), §IV('we choose the min-variance as our portfolio allocation method', Sharpe 0.917 vs EW 0.887). ★표준화·winsorize·이상치 절단 규정은 원문에 없음을 확인(§II-C·§II-D 대조) — changed (20) 의 '일절 넣지 않았다' 와 코드(445행 비유한값→NA 외 변환 0건)가 일치. 저장소측 재도출: STR_1654_BCSNA/factor_engine.R:33-72(매핑표 28엔트리 일치 · '\\uccca\\uac15' 오탈자 실재 → engine.R:156 이 U+CCA0 으로 교정한 것 확인), parse_fundamental_xlsx.R:205-209(12월결산 → 익년 3/31 · 그 외 +45일 — changed (8) 인용 정확), parse_fundamental_xlsx.R:21-64 KR_EN_MAP(당기순이익 부재 확인 → changed (13) 참 · .ITEMS 15종 전부 존재 → 항목명 오기로 인한 침묵 전멸 없음), 01_strategy_spec.json(n_max=47 · liquidity_filter='paper_faithful' → changed (34)·(37) 정합), 10_audit.csv:4,20(86 리밸일 · 12~47종).",
+
+  "confidence": "medium",
+
+  "checked": "engine.R 90-648 전수 대조 — ①선언 정본(FIDELITY.changed 45항) 대 코드 동작 1:1 매핑 ②논문 미규정 상수·문턱·폴백 전수 귀속 ③1판 감사 7개 미신고 항목의 2판 잔존 여부(결산월 필터 제거 확인 · 개시일 날짜 단정 제거 확인) ④선언이 사실인지 역검(.FEAT 19종 = Table I 20종 − EPS · 동률 분해 순서 · 표본수 하한 40/16/20/4 · MSE argmin 우선순위 lm>ridge>stepwise>rf>gbm · QP dvec=0 · cap=max(0.05,1/N) · 1e-8 절단 후 재정규화 · 결측률 as-of 창 · 학습창 확장 후 롤링 · 평가창 인접 · 공분산 창 종점=시그널일 · 목표수익 전종목 가격패널) ⑤저장소 사실 주장 4건 재도출(WICS 매핑 출처·오탈자 · C4 달력 인용 줄 · KR_EN_MAP 당기순이익 부재 · .ITEMS 항목명 실재) ⑥논문 미언급 추가 동작 탐색(표준화·winsorize·섹터 제약·회전 제약·종목수 제약·벤치마크 개입 — 전부 0건).",
+
+  "note": "미해소 1건(측정 필요 · 발견으로 올리지 않음): 204-206행이 미매핑/NA 섹터를 'Other' 단일 버킷으로 모으는데, 516행 루프가 unique(cur_all$SEC) 를 돌아 Other 도 자체 5모형 적합 + ceiling(0.2×|Other|) 선정을 받는다 — 논문의 섹터 집합(eleven GICS)은 전수·실섹터라 대응물이 없고, changed (2) 는 버킷 생성만 적고 (3) 은 오히려 Other 를 커버리지 분모 밖(SEC != 'Other')으로 세어 비섹터로 취급한다. 또 223행 가드는 전 표본 평균이라 시점 국소적 매핑 공백(예: 앞 구간만 NA)을 탐지하지 못한다. 엔진이 218행에 .sec_n·.sec_cov 를 찍지만 그 stdout 이 산출물에 없어 |Other| 를 잴 수 없었다 — 로그 한 줄만 회수하면 즉결된다. / 축 밖 한 줄: 학습·평가 표본이 각 시점 K200∪KQ150 멤버 행으로 제한되는데(247·446행) changed (1) 은 유니버스 교체만 적고 적합 표본 범위는 언급하지 않는다 — universe 축 소관."
+}
