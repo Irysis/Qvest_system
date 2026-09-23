@@ -226,6 +226,110 @@
           "regex": "\\bD08_Tail_Beta\\b",
           "violation": "C1 (판정서 1-4)",
           "why": "일간 팩터 — 전 이력 꼬리베타 복제"
+        },
+        {
+          "regex": "fred_macro",
+          "violation": "V-07 · V-08",
+          "why": "FRED 원천 저장소 .cache/fred_macro.parquet · fred_macro_wide.parquet(VIX·StL_Fin_Stress·Chi_Fin_Cond·Init_Claims 열 · 매일 갱신) · AE 핀 fred_macro_wide_pin20260718wt006.parquet — 관측일 Date·최신 빈티지(ALFRED 미사용). 기존 \\bmacro_fred\\b 는 이 이름과 맞지 않았다. 앞 경계 없음 = load_fred_macro 류 함수명도 잡는다",
+          "added_at": "2026-09-24T05:28:38+0900",
+          "added_by": "C11 봉쇄 수리(적대 검증 F1 차단 결함 · wf_a429ee6d-8ec)",
+          "amend": "C11-F1"
+        },
+        {
+          "regex": "pg2_risk_overlay",
+          "violation": "V-02",
+          "why": "정지한 pg2 arm 자체 — source(overlay_arms/pg2_risk_overlay.R) 또는 overlay_expo_pg2_risk_overlay() 호출로 AE·m4 패널을 간접 소비(앞 경계 없음 = overlay_expo_ 접두 호출도 잡는다). 주석·basis 언급도 참조로 센다(보수적 · A6 규약)",
+          "added_at": "2026-09-24T05:28:38+0900",
+          "added_by": "C11 봉쇄 수리(적대 검증 F1 차단 결함 · wf_a429ee6d-8ec)",
+          "amend": "C11-F1"
+        },
+        {
+          "regex": "M4gAE",
+          "violation": "V-03 · V-04",
+          "why": "BOOK 생성기 02_Infrastructure/portfolio/forward_weights_D3_M4gAE.R · 05_Production forward_weights_R05_noLayer4_M4gAE.R — AE·m4 게이트",
+          "added_at": "2026-09-24T05:28:38+0900",
+          "added_by": "C11 봉쇄 수리(적대 검증 F1 차단 결함 · wf_a429ee6d-8ec)",
+          "amend": "C11-F1"
+        },
+        {
+          "regex": "WT[-_]D20260718_007",
+          "violation": "V-03",
+          "why": "AE 패널 디렉터리 stage_artifacts/WT_D20260718_007(ae_regime_signal_ext.parquet) — 미공표 STLFSI4/NFCI + 빈티지",
+          "added_at": "2026-09-24T05:28:38+0900",
+          "added_by": "C11 봉쇄 수리(적대 검증 F1 차단 결함 · wf_a429ee6d-8ec)",
+          "amend": "C11-F1"
+        },
+        {
+          "regex": "WT[-_]D20260430_001",
+          "violation": "V-04",
+          "why": "m4 산출 엔진 qepm/mailbox/worktask/WT-D20260430_001/stage_artifacts/factor_engine.R(:530-538 unified 월간 Regime_Score·FRED_MRS 결합) — pg2 arm.json spec_sources FE",
+          "added_at": "2026-09-24T05:28:38+0900",
+          "added_by": "C11 봉쇄 수리(적대 검증 F1 차단 결함 · wf_a429ee6d-8ec)",
+          "amend": "C11-F1"
+        },
+        {
+          "regex": "\\bae_regime_",
+          "violation": "V-03",
+          "why": "AE 생산자 전부(ae_regime_backfill·extend·monthly·signal) — 기존 (signal|backfill|extend) 를 넓힌다",
+          "added_at": "2026-09-24T05:28:38+0900",
+          "added_by": "C11 봉쇄 수리(적대 검증 F1 차단 결함 · wf_a429ee6d-8ec)",
+          "amend": "C11-F1"
+        },
+        {
+          "regex": "\\bregime_jump_daily\\b",
+          "violation": "V-10",
+          "why": ".cache/regime_jump_daily.parquet — regime_jump_model 산출(Bear_Prob·JM_State) · 입력 VIX_z(regime_daily_v2.VIX_z_smooth)가 lag 없는 값(regime_jump_model.R:150)",
+          "added_at": "2026-09-24T05:28:38+0900",
+          "added_by": "C11 봉쇄 수리(적대 검증 F1 차단 결함 · wf_a429ee6d-8ec)",
+          "amend": "C11-F1"
+        },
+        {
+          "regex": "\\bJM_State",
+          "violation": "V-10",
+          "why": "regime_jump_daily 의 국면 열(JM_State·JM_State_lag)",
+          "added_at": "2026-09-24T05:28:38+0900",
+          "added_by": "C11 봉쇄 수리(적대 검증 F1 차단 결함 · wf_a429ee6d-8ec)",
+          "amend": "C11-F1"
+        },
+        {
+          "regex": "\\bregime_current\\b",
+          "violation": "V-05",
+          "why": ".cache/regime_current.json — source = unified_regime_signal_daily.parquet(FRED_MRS·Category 같은 날짜 병합)",
+          "added_at": "2026-09-24T05:28:38+0900",
+          "added_by": "C11 봉쇄 수리(적대 검증 F1 차단 결함 · wf_a429ee6d-8ec)",
+          "amend": "C11-F1"
+        },
+        {
+          "regex": "\\bregime_forecast",
+          "violation": "V-10",
+          "why": "regime_forecaster(v1·v1tune·v2·v3·v4) 와 산출 .cache/regime_forecast_series*.parquet — 입력 regime_daily_v2(VIX_z_smooth 등)·unified Category",
+          "added_at": "2026-09-24T05:28:38+0900",
+          "added_by": "C11 봉쇄 수리(적대 검증 F1 차단 결함 · wf_a429ee6d-8ec)",
+          "amend": "C11-F1"
+        },
+        {
+          "regex": "\\bFRED_MRS\\b",
+          "violation": "V-05",
+          "why": "unified 국면 신호의 FRED 성분 열(같은 날짜 병합)",
+          "added_at": "2026-09-24T05:28:38+0900",
+          "added_by": "C11 봉쇄 수리(적대 검증 F1 차단 결함 · wf_a429ee6d-8ec)",
+          "amend": "C11-F1"
+        },
+        {
+          "regex": "module_performance",
+          "violation": "V-06",
+          "why": "06_Registry/module_performance.json · build_module_performance.R — unified Category 조건부 모듈 성과",
+          "added_at": "2026-09-24T05:28:38+0900",
+          "added_by": "C11 봉쇄 수리(적대 검증 F1 차단 결함 · wf_a429ee6d-8ec)",
+          "amend": "C11-F1"
+        },
+        {
+          "regex": "\\b(module_regime|regime_module)_admission\\b",
+          "violation": "V-06",
+          "why": "RCMA 입장 심사 regime_module_admission.R · 진단 06_Registry/module_regime_admission.json — unified Category",
+          "added_at": "2026-09-24T05:28:38+0900",
+          "added_by": "C11 봉쇄 수리(적대 검증 F1 차단 결함 · wf_a429ee6d-8ec)",
+          "amend": "C11-F1"
         }
       ],
       "overlay_arms": [
@@ -711,7 +815,18 @@
           "method": "원장 재도출(2026-09-24): 승격 entry 의 parent(base_id, cell) 가 오염 칸인지 · carry(factors·overlay)와 carry.source_spec 파일 내용에 MA01/MA02/D32/pg2 참조가 있는지 17 entry 전수 대조 — 0건. entry 안 후속 블록 상속(B4 결합 등)은 spec 스캔으로 이미 35칸에 포함(RP_20260904_102326_skipped_base B4_21..24)"
         },
         "unmeasured_pending_with_pg2": 0
-      }
+      },
+      "amendments": [
+        {
+          "id": "C11-F1",
+          "at": "2026-09-24T05:28:38+0900",
+          "by": "C11 봉쇄 수리(적대 검증 F1 차단 결함 · wf_a429ee6d-8ec)",
+          "what": "sources 정규식 13개 추가(각 항목 amend='C11-F1')",
+          "why": "적대 검증 F1(BLOCKING) — 생성 arm 등재 관문(rf_overlay_admit.R:28-31 → pitq_source_hits)이 실제 FRED 저장소(fred_macro*)·pg2 arm 파일 자체·BOOK 생성기(M4gAE)·AE/m4 산출 디렉터리·regime_jump_daily(JM_State)·regime_current.json·regime_forecast_series 를 못 잡아, 샌드박스 E2E 에서 fred_macro_wide(VIX)·pg2 source·JM_State 세 변형이 ADMIT 됐다. 무인 B5 설계·일간 arm 레인이 같은 관문을 쓴다(rf_b5_design_lib.R:965 · rf_overlay_admit_cli.R).",
+          "evidence": "scratchpad/c11_contain_verify_coverage/t_gate.R · 재현 검사 08_Tests/validation/test_pit_quarantine_c11.R L11~L13",
+          "revert": "sources 에서 amend == 'C11-F1' 항목 삭제 + 이 amendments 항목 삭제 (수리 직전 원본 = scratchpad/c11_contain/repair_20260924_052644/pit_quarantine.json)"
+        }
+      ]
     }
   ]
 }

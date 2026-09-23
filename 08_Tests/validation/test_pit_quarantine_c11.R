@@ -14,10 +14,14 @@
 #   F  팩터 풀(합성 픽스처 root) — 목록 부재=포함(대조) · active=제외 · released=복귀 · 파손=stop · 판독기 부재=stop ·
 #      시드 회전 전 구간에서 격리 팩터가 사슬에 안 들어온다
 #   A  등재 관문(합성 샌드박스) — 청정 arm 등재(대조) · 격리 패널 참조 arm 거부(원장 사유 기록·카탈로그 무변경) ·
-#      같은 arm 이 목록 released 면 등재(거부 원인이 격리임을 증명) · 대소문자 무시 · 단어 경계(compare_mrs 오탐 0) · 목록 파손=거부
+#      같은 arm 이 목록 released 면 등재(거부 원인이 격리임을 증명) · 대소문자 무시 · 단어 경계(compare_mrs 오탐 0) ·
+#      참조가 .arm.json(external_data)에만 있어도 거부(A9) · 목록 파손=거부
 #   L  운영 상태(격리 항목 status=active 일 때만 · 해제 후엔 SKIP — 해제 절차가 이 검사를 깨지 않게)
+#      L11~L13 = C11-F1 수리 재현(적대 검증 F1): 운영 목록이 우회 변형 15종(fred_macro*·pg2 파일·M4gAE·AE/m4 디렉터리·
+#      JM_State·regime_current·regime_forecast·FRED_MRS·RCMA)을 잡고 국내 패널·등재 arm 은 0 적중 · E2E REJECT 3 + 청정 ADMIT ·
+#      수리 정규식(amend C11-F1)을 뺀 목록 사본이면 red(데이터 돌연변이)
 #   M  돌연변이(자식 Rscript · PITQ_SRC_* = 변형 사본 · PITQ_CORE_ONLY=1 로 F/A 만) — 필터 줄 삭제 · 판독기 부재 fail-open ·
-#      파손 fail-open · status 필터 제거 · 대소문자 구분 · 등재 관문 제거 → red. 원본 사본(대조) → green.
+#      파손 fail-open · status 필터 제거 · 대소문자 구분 · 등재 관문 제거 · 관문이 .arm.json 을 안 읽음(M7) → red. 원본 사본(대조) → green.
 # 격리: F/A 는 tempdir 픽스처만 쓴다. L 은 운영 파일을 **읽기만** 한다(b1_verify 자식의 jlog 는 임시 파일).
 # env: PITQ_SRC_FACTOR_ARMS · PITQ_SRC_READER · PITQ_SRC_ADMIT (검사 대상 소스 · 기본 운영 파일) · PITQ_CORE_ONLY=1
 #==============================================================================
@@ -137,6 +141,14 @@ mk_arm("zzq_word", 'compare_mrs <- function(x) x  # RE_MRS 가 아니라 compare
 chk(!isTRUE(r$ok), "A6 주석 속 격리 열 이름(RE_MRS)도 참조로 센다(보수적)", as.character(r$reason %||% ""))
 mk_arm("zzq_word2", 'compare_mrs <- function(x) x'); r <- adm("zzq_word2")
 chk(isTRUE(r$ok) && in_cat("zzq_word2_v1"), "A7 단어 경계 — compare_mrs 는 \\bRE_MRS\\b 오탐 아님(등재)", as.character(r$reason %||% ""))
+## A9 (2026-09-24 C11-F1 수리) — 참조가 <kind>.arm.json 에만 있어도 거부. B5 설계 레인은 외부 패널을 arm.json 의
+##   external_data 로 신고한다 — 관문이 .R 만 읽으면 그 신고가 통과한다(적대 검증 2 X4 생존 돌연변이 · M7 이 잡는다).
+mk_arm("zzq_json")
+wj(list(id = "zzq_json_v1", family = "vol_target", state = "vol", basis = "fixture — 확장창 중앙 변동성 대비", est_cost_min = 1,
+        external_data = "06_Registry/m4_published/m4_panel_published.parquet (홀딩월 시작 전 컷오프)"),
+   file.path(ADIR, "zzq_json.arm.json")); r <- adm("zzq_json")
+chk(!isTRUE(r$ok) && grepl("m4_published", as.character(r$reason), fixed = TRUE) && !in_cat("zzq_json_v1"),
+    "A9 참조가 .arm.json(external_data)에만 있어도 거부 — 관문은 두 파일을 다 읽는다", as.character(r$reason %||% ""))
 writeLines("{ broken", QP(SB)); mk_arm("zzq_broken"); r <- adm("zzq_broken")
 chk(!isTRUE(r$ok) && grepl("판독 실패", as.character(r$reason)) && !in_cat("zzq_broken_v1"),
     "A8 목록 파손 → 청정 arm 도 거부(조용한 해제 금지)", as.character(r$reason %||% ""))
@@ -220,6 +232,63 @@ if (!CORE) {
     chk(!identical(as.integer(rc_bad), 0L) && any(grepl("design_rejected", jl) & grepl("D32_Beta_VIX", jl, fixed = TRUE)),
         "L10 b1_verify — D32_Beta_VIX 설계 기각(등록부에 없는 팩터)", sprintf("rc=%s", rc_bad))
     chk(identical(as.integer(rc_ok), 0L), sprintf("L10b 대조 — 풀 팩터(%s) 설계는 통과", ctl), sprintf("rc=%s", rc_ok))
+    # ── C11-F1 수리 재현 (적대 검증 1 F1 BLOCKING · 2026-09-24) ──────────────────
+    #   구 목록은 실제 FRED 저장소(fred_macro*)·pg2 arm 파일 자체·파생 국면 패널(regime_jump_daily 등)을 못 잡아
+    #   샌드박스 E2E 에서 우회 arm 3종이 ADMIT 됐다(scratchpad/c11_contain_verify_coverage/t_gate.R). 운영 목록으로 다시 잰다.
+    RE <- new.env(parent = globalenv()); invisible(capture.output(suppressMessages(sys.source(SRC_READ, envir = RE))))
+    BYP <- c(
+      fredwide_vix  = '.P <- file.path(Sys.getenv("QM_ROOT"), ".cache/fred_macro_wide.parquet"); .COL <- "VIX"',
+      fredwide_stl  = '.P <- file.path(Sys.getenv("QM_ROOT"), ".cache/fred_macro_wide.parquet"); .COL <- c("StL_Fin_Stress","Chi_Fin_Cond","Init_Claims")',
+      fredlong_nfci = '.P <- file.path(Sys.getenv("QM_ROOT"), ".cache/fred_macro.parquet"); .ID <- c("NFCI","STLFSI4","ICSA")',
+      fred_pin      = '.P <- file.path(Sys.getenv("QM_ROOT"), ".cache/fred_macro_wide_pin20260718wt006.parquet")',
+      jump_state    = '.P <- file.path(Sys.getenv("QM_ROOT"), ".cache/regime_jump_daily.parquet"); .COL <- "JM_State"',
+      regime_cur    = '.P <- file.path(Sys.getenv("QM_ROOT"), ".cache/regime_current.json")',
+      fcst_vix      = '.P <- file.path(Sys.getenv("QM_ROOT"), ".cache/regime_forecast_series_v1vix.parquet")',
+      src_pg2       = '.DEP <- file.path(Sys.getenv("QM_ROOT"), "02_Infrastructure/reinforcement/overlay_arms/pg2_risk_overlay.R")',
+      call_pg2      = 'e <- overlay_expo_pg2_risk_overlay(H, t, ctx)',
+      src_gen_m4gae = '.DEP <- file.path(Sys.getenv("QM_ROOT"), "02_Infrastructure/portfolio/forward_weights_D3_M4gAE.R")',
+      ae_monthly    = 'system2("python", "02_Infrastructure/regime/ae_regime_monthly.py")',
+      m4_engine     = 'source("qepm/mailbox/worktask/WT-D20260430_001/stage_artifacts/factor_engine.R")',
+      fred_mrs      = 'x <- u$FRED_MRS',
+      modperf       = 'mp <- jsonlite::fromJSON("06_Registry/module_performance.json")',
+      rcma          = 'source("02_Infrastructure/portfolio/regime_module_admission.R")')
+    CLN <- c(msm   = '.P <- file.path(Sys.getenv("QM_ROOT"), ".cache/msm_daily_latest.parquet")',
+             bench = '.P <- file.path(Sys.getenv("QM_ROOT"), ".cache/benchmark.parquet")',
+             raw   = '.P <- ".cache/rawdata.parquet"; v <- H$rv60[t]')
+    caught <- function(root) vapply(BYP, function(x) length(RE$pitq_source_hits(x, root)) > 0L, logical(1))
+    c_live <- tryCatch(caught(ROOT), error = function(e) setNames(rep(NA, length(BYP)), names(BYP)))
+    chk(all(c_live %in% TRUE),
+        sprintf("L11 재현 — 운영 목록이 우회 변형 %d종 전부를 잡는다(fred_macro*·pg2 파일·M4gAE·AE/m4 디렉터리·JM_State·regime_current·regime_forecast·FRED_MRS·RCMA)", length(BYP)),
+        paste(names(BYP)[!(c_live %in% TRUE)], collapse = ","))
+    # 대조: 국내 패널 + 등재된 운영 arm(pg2 제외 — 카탈로그 등재 kind 만 · 거부돼 남은 파일은 세지 않는다)은 0 적중
+    reg_kinds <- setdiff(unique(vapply(OC, function(a) as.character(a$kind %||% "")[1], character(1))), c("", "pg2_risk_overlay"))
+    armf <- file.path(ROOT, "02_Infrastructure/reinforcement/overlay_arms", c(paste0(reg_kinds, ".R"), paste0(reg_kinds, ".arm.json")))
+    armf <- armf[file.exists(armf)]
+    fp_cln <- names(CLN)[vapply(CLN, function(x) length(RE$pitq_source_hits(x, ROOT)) > 0L, logical(1))]
+    fp_arm <- basename(armf)[vapply(armf, function(f) length(RE$pitq_source_hits(readLines(f, warn = FALSE, encoding = "UTF-8"), ROOT)) > 0L, logical(1))]
+    chk(!length(fp_cln) && !length(fp_arm) && length(armf) >= 2L,
+        sprintf("L11b 대조 — 국내 패널(msm·benchmark·rawdata)과 등재 arm %d파일(pg2 제외)은 0 적중(과잉 봉쇄 없음)", length(armf)),
+        paste(c(fp_cln, fp_arm), collapse = ","))
+    # L12 E2E — 운영 목록 사본을 A 샌드박스에 깔고 검증자가 ADMIT 시킨 3변형을 다시 등재 시도
+    stopifnot(file.copy(file.path(ROOT, "06_Registry/pit_quarantine.json"), QP(SB), overwrite = TRUE))
+    e2e <- vapply(c("fredwide_vix", "src_pg2", "jump_state"), function(k) {
+      kd <- paste0("zzl_", k); mk_arm(kd, BYP[[k]]); r <- adm(kd)
+      !isTRUE(r$ok) && grepl("pit_quarantine", as.character(r$reason %||% "")) && !in_cat(paste0(kd, "_v1")) }, logical(1))
+    mk_arm("zzl_clean"); rcl <- adm("zzl_clean")
+    chk(all(e2e) && isTRUE(rcl$ok) && in_cat("zzl_clean_v1"),
+        "L12 E2E 재현 — 운영 목록으로 fred_macro_wide(VIX)·pg2 source·JM_State 변형 REJECT · 청정 대조 ADMIT",
+        paste(c(names(e2e)[!e2e], if (!isTRUE(rcl$ok)) paste("clean:", as.character(rcl$reason %||% ""))), collapse = ","))
+    # L13 돌연변이(데이터) — 수리 정규식(amend C11-F1)을 뺀 목록 사본이면 L11 이 red 여야 한다(검사가 수리를 실제로 잰다)
+    MR <- file.path(TMP0, "mut_list_root")
+    QM0 <- fromJSON(file.path(ROOT, "06_Registry/pit_quarantine.json"), simplifyVector = FALSE)
+    QM0$quarantines <- lapply(QM0$quarantines, function(x) {
+      x$sources <- Filter(function(s) !identical(s$amend, "C11-F1"), x$sources %||% list()); x })
+    wj(QM0, QP(MR))
+    c_mut <- tryCatch(caught(MR), error = function(e) setNames(rep(NA, length(BYP)), names(BYP)))
+    n_amend <- sum(vapply(q$sources, function(s) identical(s$amend, "C11-F1"), logical(1)))
+    chk(n_amend >= 1L && !all(c_mut %in% TRUE) && !any(c_mut[c("fredwide_vix", "src_pg2", "jump_state")] %in% TRUE),
+        sprintf("L13 돌연변이 — 수리 정규식(amend C11-F1 %d개)을 뺀 목록이면 우회 %d종이 다시 통과 → L11 red",
+                n_amend, sum(!(c_mut %in% TRUE))))
   }
 }
 
@@ -249,7 +318,8 @@ if (!CORE) {
     list("M3 목록 파손 fail-open(판독기)", "reader", SRC_READ, "  if (inherits(d, \"error\"))\n    stop(", "  if (inherits(d, \"error\")) return(list())\n  if (FALSE)\n    stop("),
     list("M4 status 필터 제거(판독기)", "reader", SRC_READ, "identical(as.character(.pitq_or(x$status, \"active\"))[1], \"active\")", "TRUE"),
     list("M5 대소문자 구분(판독기)", "reader", SRC_READ, "perl = TRUE, ignore.case = TRUE", "perl = TRUE, ignore.case = FALSE"),
-    list("M6 등재 관문 제거(rf_overlay_admit)", "admit", SRC_ADMIT, "  .qh <- .rfa_pitq_hits(kind, root)\n", "  .qh <- character(0)\n"))
+    list("M6 등재 관문 제거(rf_overlay_admit)", "admit", SRC_ADMIT, "  .qh <- .rfa_pitq_hits(kind, root)\n", "  .qh <- character(0)\n"),
+    list("M7 관문이 .arm.json 을 안 읽음(rf_overlay_admit)", "admit", SRC_ADMIT, "paste0(kind, c(\".R\", \".arm.json\"))", "paste0(kind, c(\".R\"))"))
   for (m in MUTS) {
     p <- mut(m[[3]], m[[4]], m[[5]], sub(" .*", "", m[[1]]))
     if (is.na(p)) { ng(m[[1]], "돌연변이 앵커 부재 — 검사가 소스를 못 따라간다"); next }
