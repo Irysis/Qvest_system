@@ -774,6 +774,11 @@ if (!force && file.exists(out_path)) {
 
   # Load base data (no-op if already loaded this session)
   .load_base_data()
+  # W-05 (2026-09-23): 데이터 경계 밖 라벨 거부. .pit_rawdata() 는 'on or before' 라
+  #   sig_d 가 RAWDATA 최신일보다 뒤면 과거 스냅샷을 미래 날짜로 라벨링한다
+  #   (factor_db_202608: 08-31 00:03 에 today 라벨로 빌드 → 08-28 데이터가 08-31 로 저장).
+  .data_max <- suppressWarnings(max(.fdb_env$RAWDATA$Date, na.rm = TRUE))
+  .fdb_assert_sig_within_data(sig_d, .data_max)
   # Preload compute modules once per session
   .preload_modules()
 
@@ -985,6 +990,9 @@ if (!force && file.exists(out_path)) {
                 file.size(out_path) / 1e6))
     # v54 Gate 13.1 — update build hash on every save
     .write_build_hash()
+    # W-05: 스냅샷이 어느 데이터 경계에서 만들어졌는지 기록 — 월 확정 판정의 정본.
+    .fdb_write_asof(ym_tag, sig_d, snap_date = as.Date(snap$Date[1]),
+                    data_asof = .data_max)
   }
 
   result
@@ -1408,15 +1416,16 @@ load_factor_db <- function(sig_date, factors = NULL, format = "wide",
 # 4. update_factor_db_daily() — Cron hook: compute current month if missing
 #==============================================================================
 
-#' Enumerate missing month tags between (last cached month + 1) and the month
-#' BEFORE as_of's month. P1 2026-06-10: gap-scan support — previously
-#' update_factor_db_daily() only built the current month, so any month the
-#' machine was off on month-end stayed missing forever.
-#' @param as_of Date. Reference "today" (default Sys.Date()).
+#' Enumerate missing month tags strictly between the last cached month and the
+#' month of `as_of`. P1 2026-06-10 gap-scan. ★W-05 (2026-09-23): 호출자는
+#' `as_of` 에 **RAWDATA 최신 거래일**을 넘긴다(구판은 Sys.Date() — 데이터가 없는
+#' 달을 '현재 달'로 오인했다).
+#' @param as_of Date. 데이터 경계(= RAWDATA 최신 거래일).
+#' @param fdb_dir 팩터 DB 디렉터리(검사 주입용).
 #' @return Character vector of YYYYMM tags needing backfill (possibly empty).
-.fdb_gap_months <- function(as_of = Sys.Date()) {
+.fdb_gap_months <- function(as_of = Sys.Date(), fdb_dir = FACTOR_DB_DIR) {
   cached_ym <- gsub("factor_db_(\\d{6})\\.parquet", "\\1",
-                    list.files(FACTOR_DB_DIR, "^factor_db_\\d{6}\\.parquet$"))
+                    list.files(fdb_dir, "^factor_db_\\d{6}\\.parquet$"))
   if (length(cached_ym) == 0L) return(character(0))
 
   last_first <- as.Date(paste0(max(cached_ym), "01"), format = "%Y%m%d")
@@ -1431,107 +1440,182 @@ load_factor_db <- function(sig_date, factors = NULL, format = "wide",
   setdiff(gap_yms, cached_ym)
 }
 
-#' Daily update hook for cron. Builds current month's factor DB if not cached.
-#' P1 2026-06-10:
-#'   1. Gap-scan: backfills all missing months (last cached month + 1 ~
-#'      previous month) using each month's last trading day from RAWDATA.
-#'   2. IC auto-refresh: compute_all_factor_ic_monthly() runs automatically
-#'      after a month-end build or any gap backfill (was manual-only).
-#' @export
-update_factor_db_daily <- function() {
-  today <- Sys.Date()
-  ym_tag <- format(today, "%Y%m")
-  fpath <- file.path(FACTOR_DB_DIR, paste0("factor_db_", ym_tag, ".parquet"))
+# ── W-05 (2026-09-23 도훈 승인 "상태 기준 게이트로 수리") ─────────────────────────
+# 월 스냅샷의 확정 여부를 **달력(today)이 아니라 데이터 상태**로 판정한다.
+#   사건: 구판은 build_sig <- today 였다. 스케줄(00:03)은 그날 종가가 RAWDATA 에 들어오기
+#   전이라, 말일 00:03 빌드가 전일 데이터를 말일 날짜로 라벨링했고(factor_db_202608 =
+#   08-31 라벨 · 08-28 데이터), 다음 날(익월 1일)은 ym 이 바뀌어 전월을 다시 보지 않았다 —
+#   전월 스냅샷이 영구히 미완으로 남는다. 같은 일이 09-30 00:03 · 10-01 00:03 에 예정돼 있었다.
+# 정본 = 사이드카 `<fdb_dir>/_asof/factor_db_<ym>.json`
+#   {sig_date, snap_date(실제 RAWDATA 행 날짜), data_asof(빌드 시점 RAWDATA 최신일), built_at}
+# 확정 조건(월 P) = RAWDATA 가 P 이후 달에 도달 ∧ 스냅샷 Date == P 의 마지막 RAWDATA 거래일
+#                  ∧ data_asof ≥ 그 날. 사이드카 부재 = 미확정(fail-closed — 1회 재빌드).
 
-  # If today is month-end or cache doesn't exist, rebuild
-  next_day <- today + 1L
-  is_month_end <- (format(today, "%m") != format(next_day, "%m"))
+.fdb_asof_path <- function(ym, fdb_dir = FACTOR_DB_DIR)
+  file.path(fdb_dir, "_asof", sprintf("factor_db_%s.json", ym))
 
-  # ── Gap-scan backfill (past missing months) ────────────────────────────────
-  gap_yms <- .fdb_gap_months(today)
-  n_backfilled <- 0L
-  if (length(gap_yms) > 0L) {
-    cat(sprintf("[update_factor_db_daily] Gap-scan: %d missing month(s): %s\n",
-                length(gap_yms), paste(gap_yms, collapse = ", ")))
-    .load_base_data()
-    trd_dates <- .fdb_env$trading_dates
-    trd_ym    <- format(trd_dates, "%Y%m")
-    for (ym in gap_yms) {
-      m_dates <- trd_dates[trd_ym == ym]
-      if (length(m_dates) == 0L) {
-        cat(sprintf("  [SKIP] %s: no trading days in RAWDATA\n", ym))
-        next
-      }
-      m_last <- max(m_dates)
-      cat(sprintf("  [BACKFILL] %s -> last trading day %s\n", ym, m_last))
-      tryCatch({
-        build_factor_db(m_last, save = TRUE)
-        n_backfilled <- n_backfilled + 1L
-      }, error = function(e) {
-        cat(sprintf("  [ERROR] %s: %s\n", ym, conditionMessage(e)))
-      })
-    }
+#' 사이드카 기록(원자 쓰기: tmp → rename).
+.fdb_write_asof <- function(ym, sig_date, snap_date, data_asof, fdb_dir = FACTOR_DB_DIR) {
+  p <- .fdb_asof_path(ym, fdb_dir)
+  dir.create(dirname(p), recursive = TRUE, showWarnings = FALSE)
+  rec <- list(ym = ym,
+              sig_date  = format(as.Date(sig_date)),
+              snap_date = format(as.Date(snap_date)),
+              data_asof = format(as.Date(data_asof)),
+              built_at  = format(Sys.time(), "%Y-%m-%dT%H:%M:%S%z"),
+              writer    = "factor_db_builder.R::build_factor_db")
+  tmp <- paste0(p, ".tmp", Sys.getpid())
+  jsonlite::write_json(rec, tmp, auto_unbox = TRUE, pretty = TRUE)
+  if (!file.rename(tmp, p)) {
+    unlink(p); if (!file.rename(tmp, p)) stop("[fdb_asof] 사이드카 쓰기 실패: ", p)
+  }
+  invisible(p)
+}
+
+#' 사이드카 판독 — 부재·파손 = NULL(미확정으로 접는다).
+.fdb_read_asof <- function(ym, fdb_dir = FACTOR_DB_DIR) {
+  p <- .fdb_asof_path(ym, fdb_dir)
+  if (!file.exists(p)) return(NULL)
+  r <- tryCatch(jsonlite::fromJSON(p), error = function(e) NULL)
+  if (is.null(r)) return(NULL)
+  d <- suppressWarnings(as.Date(if (is.null(r$data_asof)) NA_character_ else r$data_asof))
+  if (length(d) != 1L || is.na(d)) return(NULL)
+  r$data_asof <- d
+  r
+}
+
+#' 데이터 경계 밖 sig 거부 — build_factor_db 와 검사가 같은 술어를 쓴다.
+.fdb_assert_sig_within_data <- function(sig_d, data_max) {
+  sig_d <- as.Date(sig_d)
+  if (length(data_max) != 1L || !is.finite(as.numeric(data_max)))
+    stop("[build_factor_db] RAWDATA 최신일 판독 불가 — 데이터 경계 미확인 빌드 거부")
+  if (sig_d > as.Date(data_max))
+    stop(sprintf(paste0("[build_factor_db] sig_date %s > RAWDATA 최신일 %s — ",
+                        "데이터가 없는 날짜로 라벨링하는 빌드 거부 (W-05)"),
+                 format(sig_d), format(as.Date(data_max))))
+  invisible(TRUE)
+}
+
+#' 파일 스냅샷 Date(단일값) 판독 — 실패 = NA.
+.fdb_snap_date <- function(ym, fdb_dir = FACTOR_DB_DIR) {
+  fp <- file.path(fdb_dir, paste0("factor_db_", ym, ".parquet"))
+  if (!file.exists(fp)) return(as.Date(NA))
+  tryCatch(suppressWarnings(max(as.Date(as.data.table(
+    read_parquet(fp, col_select = "Date"))$Date), na.rm = TRUE)),
+    error = function(e) as.Date(NA))
+}
+
+#' 달력상 마지막 평일(공휴일은 모른다 — 공휴일로 끝나는 달은 익월 데이터 도착 시 확정된다).
+.fdb_last_weekday <- function(d) {
+  d <- as.Date(d)
+  nxt_first <- seq(as.Date(format(d, "%Y-%m-01")), by = "month", length.out = 2L)[2L]
+  x <- nxt_first - 1L
+  while (as.POSIXlt(x)$wday %in% c(0L, 6L)) x <- x - 1L
+  x
+}
+
+#' 순수 계획 함수 — 무엇을 어느 sig 로 (재)빌드할지. 부작용 없음(검사 대상).
+#' @param raw_dates RAWDATA 거래일 벡터(정본 = 데이터 상태).
+#' @param as_of 달력 today — **판정에 쓰지 않는다**. 데이터 지연 경고에만 쓴다.
+#' @return list(raw_d, plan = data.table(ym, sig, force, reason), ic_refresh, warn)
+.fdb_update_plan <- function(raw_dates, fdb_dir = FACTOR_DB_DIR, as_of = Sys.Date(),
+                             stale_days = 7L) {
+  raw_dates <- sort(unique(as.Date(raw_dates)))
+  raw_dates <- raw_dates[!is.na(raw_dates)]
+  if (!length(raw_dates)) stop("[update_factor_db_daily] RAWDATA 거래일 0 — 빌드 계획 불가")
+  raw_d <- max(raw_dates)
+  T_ym  <- format(raw_d, "%Y%m")
+  last_td <- function(ym) { m <- raw_dates[format(raw_dates, "%Y%m") == ym]
+                            if (length(m)) max(m) else as.Date(NA) }
+  plan <- list()
+  add  <- function(ym, sig, force, reason)
+    plan[[length(plan) + 1L]] <<- data.table(ym = ym, sig = as.Date(sig), force = force, reason = reason)
+
+  # ① gap: 마지막 캐시 달 ~ T 사이의 없는 달 → 그 달 마지막 거래일
+  for (ym in .fdb_gap_months(raw_d, fdb_dir)) {
+    s <- last_td(ym)
+    if (!is.na(s)) add(ym, s, FALSE, "gap") }
+
+  # ② 직전 달 확정(RAWDATA 가 T 에 들어왔으므로 P 는 완결) — 스냅샷·사이드카 대조
+  P_ym <- format(seq(as.Date(paste0(T_ym, "01"), format = "%Y%m%d"), by = "-1 month",
+                     length.out = 2L)[2L], "%Y%m")
+  P_td <- last_td(P_ym)
+  if (!is.na(P_td) && file.exists(file.path(fdb_dir, paste0("factor_db_", P_ym, ".parquet")))) {
+    sd <- .fdb_snap_date(P_ym, fdb_dir); ao <- .fdb_read_asof(P_ym, fdb_dir)
+    why <- if (is.na(sd) || sd != P_td) sprintf("finalize_snap(%s!=%s)", format(sd), format(P_td))
+           else if (is.null(ao)) "finalize_no_asof"
+           else if (ao$data_asof < P_td) sprintf("finalize_asof(%s<%s)", format(ao$data_asof), format(P_td))
+           else NA_character_
+    if (!is.na(why)) add(P_ym, P_td, TRUE, why)
   }
 
-  # ── Current month ───────────────────────────────────────────────────────────
-  # D2 2026-07-25: intra-month freshness. The current-month file is a single-
-  # sig_date snapshot; before this patch it froze at its first build date until
-  # month-end (measured: factor_db_202607 stuck at Date=2026-07-03 for ~3 weeks
-  # while RAWDATA ran to 2026-07-24 — silent staleness for load_month_factors
-  # consumers). Weekly cadence via staleness check (snapshot Date lags latest
-  # RAWDATA trading day > 7 calendar days -> force rebuild at that trading day),
-  # not a weekday gate: self-heals if a scheduled run is missed. Daily force
-  # was rejected as over-wiring: one build = ~2.3 min measured (2026-07-25,
-  # 135.4s) x ~21 trading days/month for consumers that read monthly snapshots.
-  rebuild_current <- !file.exists(fpath) || is_month_end
-  force_current   <- is_month_end
-  build_sig       <- today
-  if (!rebuild_current) {
-    stale_chk <- tryCatch({
-      snap_d <- max(as.Date(as.data.table(
-        read_parquet(fpath, col_select = "Date"))$Date), na.rm = TRUE)
-      raw_d  <- max(as.Date(as.data.table(
-        read_parquet(RAWDATA_CACHE, col_select = "Date"))$Date), na.rm = TRUE)
-      list(snap_d = snap_d, raw_d = raw_d)
-    }, error = function(e) NULL)
-    if (!is.null(stale_chk) &&
-        is.finite(as.numeric(stale_chk$raw_d - stale_chk$snap_d)) &&
-        as.integer(stale_chk$raw_d - stale_chk$snap_d) > 7L &&
-        format(stale_chk$raw_d, "%Y%m") == ym_tag) {
-      # Guard: only refresh when latest RAWDATA date is IN the current month —
-      # otherwise (RAWDATA itself stale) a rebuild buys nothing and a wrong
-      # ym could clobber a prior month-end snapshot.
-      cat(sprintf(paste0("[update_factor_db_daily] %s snapshot stale: ",
-                         "Date=%s vs RAWDATA max=%s (lag %d d > 7) — weekly refresh\n"),
-                  ym_tag, format(stale_chk$snap_d), format(stale_chk$raw_d),
-                  as.integer(stale_chk$raw_d - stale_chk$snap_d)))
-      rebuild_current <- TRUE
-      force_current   <- TRUE
-      build_sig       <- stale_chk$raw_d  # real trading day -> Date label = real sig_date
-    }
-  }
-  if (rebuild_current) {
-    cat(sprintf("[update_factor_db_daily] Building/updating %s (sig_date=%s)...\n",
-                ym_tag, format(build_sig)))
-    build_factor_db(build_sig, save = TRUE, force = force_current)
+  # ③ 진행 중인 달 T — sig 는 언제나 raw_d(데이터가 있는 날)
+  T_fp <- file.path(fdb_dir, paste0("factor_db_", T_ym, ".parquet"))
+  if (!file.exists(T_fp)) {
+    add(T_ym, raw_d, FALSE, "current_missing")
   } else {
-    cat(sprintf("[update_factor_db_daily] %s already cached & fresh. Skipping.\n", ym_tag))
+    sd <- .fdb_snap_date(T_ym, fdb_dir)
+    why <- if (is.na(sd)) "current_unreadable"
+           else if (sd > raw_d) sprintf("current_future_label(%s>%s)", format(sd), format(raw_d))
+           else if (!(sd %in% raw_dates)) sprintf("current_non_trading_label(%s)", format(sd))
+           else if (raw_d == .fdb_last_weekday(raw_d) && sd < raw_d) "current_month_final"
+           else if (as.integer(raw_d - sd) > stale_days) sprintf("current_stale(%dd)", as.integer(raw_d - sd))
+           else NA_character_
+    if (!is.na(why)) add(T_ym, raw_d, TRUE, why)
   }
+  plan <- if (length(plan)) rbindlist(plan) else
+    data.table(ym = character(0), sig = as.Date(character(0)), force = logical(0), reason = character(0))
+  ic <- any(plan$reason == "gap" | startsWith(plan$reason, "finalize") |
+            plan$reason == "current_month_final")
+  lag_d <- as.integer(as.Date(as_of) - raw_d)
+  list(raw_d = raw_d, plan = plan, ic_refresh = ic,
+       warn = if (is.finite(lag_d) && lag_d > 5L)
+         sprintf("RAWDATA 최신일 %s 가 오늘보다 %d일 뒤처짐 — 수집 단계 확인", format(raw_d), lag_d)
+       else NA_character_)
+}
 
-  # ── IC auto-refresh ─────────────────────────────────────────────────────────
-  # Month-end build per mandate; also after gap backfill (otherwise the IC
-  # parquet stays stale for the backfilled months until the next month-end).
-  if (is_month_end || n_backfilled > 0L) {
-    cat("[update_factor_db_daily] Refreshing monthly IC (factor_ic_monthly.parquet)...\n")
-    tryCatch(
-      compute_all_factor_ic_monthly(),
-      error = function(e) {
-        cat(sprintf("[update_factor_db_daily] WARN: IC refresh failed: %s\n",
-                    conditionMessage(e)))
-      }
-    )
+#' Daily update hook for cron — **상태 기준**(W-05 2026-09-23). 이름의 daily 는 호출 주기다
+#' (DB 는 월간). 판정은 RAWDATA 거래일·스냅샷 Date·사이드카 data_asof 만 본다.
+#'   1. gap-scan(P1 2026-06-10) — 경계는 RAWDATA 최신일.
+#'   2. 직전 달 확정 — 스냅샷이 그 달 마지막 거래일·그 데이터로 만들어졌는지.
+#'   3. 진행 중인 달 — sig = RAWDATA 최신일. 미래·비거래일 라벨 교정, 말일 확정,
+#'      주간 신선도(D2 2026-07-25: 스냅샷이 7일 넘게 뒤처지면 재빌드 — 1회 ~2.3분).
+#'   4. IC 재계산 — gap·확정 빌드가 있었을 때만.
+#' 결과 = `<fdb_dir>/_asof/_last_update.txt`(raw_ym · built) — daily_refresh [6a-gate] 가 읽는다.
+#' @param raw_dates,build_fn,ic_fn,fdb_dir,as_of 검사 주입용(운영 호출은 인자 없음).
+#' @export
+update_factor_db_daily <- function(raw_dates = NULL, build_fn = build_factor_db,
+                                   ic_fn = compute_all_factor_ic_monthly,
+                                   fdb_dir = FACTOR_DB_DIR, as_of = Sys.Date()) {
+  state_p <- file.path(fdb_dir, "_asof", "_last_update.txt")
+  dir.create(dirname(state_p), recursive = TRUE, showWarnings = FALSE)
+  unlink(state_p)   # 실패한 날이 어제의 결과를 오늘 것으로 보이게 하지 않도록
+  if (is.null(raw_dates))
+    raw_dates <- unique(as.Date(as.data.table(
+      read_parquet(RAWDATA_CACHE, col_select = "Date"))$Date))
+  pl <- .fdb_update_plan(raw_dates, fdb_dir = fdb_dir, as_of = as_of)
+  cat(sprintf("[update_factor_db_daily] 데이터 경계 raw_d=%s (today=%s) · 계획 %d건\n",
+              format(pl$raw_d), format(as.Date(as_of)), nrow(pl$plan)))
+  if (!is.na(pl$warn)) cat("[update_factor_db_daily][WARN] ", pl$warn, "\n", sep = "")
+  built <- character(0)
+  for (i in seq_len(nrow(pl$plan))) {
+    r <- pl$plan[i]
+    cat(sprintf("  [BUILD] %s sig=%s force=%s reason=%s\n", r$ym, format(r$sig), r$force, r$reason))
+    ok <- tryCatch({ build_fn(r$sig, save = TRUE, force = r$force); TRUE },
+                   error = function(e) {
+                     cat(sprintf("  [ERROR] %s: %s\n", r$ym, conditionMessage(e))); FALSE })
+    if (ok) built <- c(built, r$ym)
   }
-  invisible(NULL)
+  if (!nrow(pl$plan)) cat("[update_factor_db_daily] 모든 스냅샷이 데이터 상태와 정합 — 빌드 없음\n")
+
+  if (pl$ic_refresh && length(built)) {
+    cat("[update_factor_db_daily] Refreshing monthly IC (factor_ic_monthly.parquet)...\n")
+    tryCatch(ic_fn(), error = function(e)
+      cat(sprintf("[update_factor_db_daily] WARN: IC refresh failed: %s\n", conditionMessage(e))))
+  }
+  writeLines(c(sprintf("raw_ym=%s", format(pl$raw_d, "%Y%m")),
+               sprintf("built=%s", paste(unique(built), collapse = " "))), state_p)
+  invisible(list(raw_d = pl$raw_d, plan = pl$plan, built = built))
 }
 
 

@@ -819,7 +819,106 @@
       "registered_at": "2026-09-23T18:36:01+0900",
       "recorded_by": "Q session be2e88bf (도훈 채팅 응답 기록)",
       "evidence": "2026-09-23 세션 be2e88bf — 도훈 채팅 응답(AskUserQuestion 4문항 전부 권고안) · 근거 = Axiom 엔진 효용 전수감사 wf_d8ee80de-26d 판정서"
+    },
+    {
+      "id": "DATA-W05-MONTHEND",
+      "title": "월말·월초 팩터 DB 빌드의 build_sig=오늘 날짜 결함(W-05) — 09-30 00:03 빌드 전 수리",
+      "status": "resolved",
+      "opened_at": "2026-09-23T20:22:20+0900",
+      "options": [
+        "상태 기준 게이트로 수리",
+        "현행+수동 감시"
+      ],
+      "recommendation": "상태 기준 게이트로 수리",
+      "default_until_decided": "현행(09-30 덮어쓰기 위험)",
+      "blocks": [
+        "item:factor_db_202609",
+        "lane:daily_refresh"
+      ],
+      "owner": "dohoon",
+      "source": "데이터 배선도 감사 후속 · Size 수리 wf_2747d15b-aca (2026-09-23)",
+      "decision": "승인 — 상태 기준 게이트로 수리(build_sig=RAWDATA 실제 마지막 거래일 · 직전 완결월 재빌드 · Data_AsOf 기록)",
+      "decided_by": "dohoon",
+      "decided_at": "2026-09-23T20:22:20+0900",
+      "note": "도훈 채팅 응답",
+      "registered_at": "2026-09-23T20:22:20+0900",
+      "recorded_by": "Q session be2e88bf (도훈 채팅 응답 기록)",
+      "evidence": "2026-09-23 세션 be2e88bf — 도훈 AskUserQuestion 응답 · 근거 = Size 수리 워크플로 wf_2747d15b-aca 잔여 위험 W-05/W-09/PIT/연쇄"
+    },
+    {
+      "id": "DATA-W09-BMRET",
+      "title": "RAWDATA BM_Ret 09-07~ 결측·불일치 재동기화 + 일간 단일 writer(W-09)",
+      "status": "resolved",
+      "opened_at": "2026-09-23T20:22:20+0900",
+      "options": [
+        "재동기화 + 일간 writer 승인",
+        "보류"
+      ],
+      "recommendation": "재동기화 + 일간 writer 승인",
+      "default_until_decided": "BM_Ret 결측 유지(MA06 등 결손)",
+      "blocks": [
+        "item:factor_db_202609",
+        "item:factor_ic_monthly"
+      ],
+      "owner": "dohoon",
+      "source": "데이터 배선도 감사 후속 · Size 수리 wf_2747d15b-aca (2026-09-23)",
+      "decision": "승인 — 정본 benchmark 에서 재동기화(토요장 1990~98 제외) + 일간 단일 writer + 202609 재빌드 + factor_ic_monthly 재계산",
+      "decided_by": "dohoon",
+      "decided_at": "2026-09-23T20:22:20+0900",
+      "note": "도훈 채팅 응답",
+      "registered_at": "2026-09-23T20:22:20+0900",
+      "recorded_by": "Q session be2e88bf (도훈 채팅 응답 기록)",
+      "evidence": "2026-09-23 세션 be2e88bf — 도훈 AskUserQuestion 응답 · 근거 = Size 수리 워크플로 wf_2747d15b-aca 잔여 위험 W-05/W-09/PIT/연쇄"
+    },
+    {
+      "id": "DATA-SIZE-PIT",
+      "title": "복원 Size(09-07~22 재구성 주식수 = median(09-04,09-23)) PIT 엄격화",
+      "status": "resolved",
+      "opened_at": "2026-09-23T20:22:20+0900",
+      "options": [
+        "KRX 공식 대체",
+        "퀀티와이즈 데이터로 대체",
+        "현행 라벨"
+      ],
+      "recommendation": "KRX 공식 대체",
+      "default_until_decided": "재구성 값 + 라벨",
+      "blocks": [
+        "item:RAWDATA_Size_202609"
+      ],
+      "owner": "dohoon",
+      "source": "데이터 배선도 감사 후속 · Size 수리 wf_2747d15b-aca (2026-09-23)",
+      "decision": "퀀티와이즈 데이터로 대체(도훈 선택 — Q 권고 KRX 와 다름)",
+      "decided_by": "dohoon",
+      "decided_at": "2026-09-23T20:22:20+0900",
+      "note": "도훈 채팅 응답",
+      "registered_at": "2026-09-23T20:22:20+0900",
+      "recorded_by": "Q session be2e88bf (도훈 채팅 응답 기록)",
+      "evidence": "2026-09-23 세션 be2e88bf — 도훈 AskUserQuestion 응답 · 근거 = Size 수리 워크플로 wf_2747d15b-aca 잔여 위험 W-05/W-09/PIT/연쇄"
+    },
+    {
+      "id": "DATA-CASCADE-202609",
+      "title": "결손 9월 팩터 DB 를 읽은 강화 측정(09-18~09-23) 처리",
+      "status": "resolved",
+      "opened_at": "2026-09-23T20:22:20+0900",
+      "options": [
+        "목록화 + 표식만",
+        "즉시 재측정"
+      ],
+      "recommendation": "목록화 + 표식만",
+      "default_until_decided": "무표식",
+      "blocks": [
+        "item:reinforce_ledger_l1"
+      ],
+      "owner": "dohoon",
+      "source": "데이터 배선도 감사 후속 · Size 수리 wf_2747d15b-aca (2026-09-23)",
+      "decision": "승인 — 목록화 + 빈티지 표식만(재측정은 P0-05 rebase 에 흡수)",
+      "decided_by": "dohoon",
+      "decided_at": "2026-09-23T20:22:20+0900",
+      "note": "도훈 채팅 응답",
+      "registered_at": "2026-09-23T20:22:20+0900",
+      "recorded_by": "Q session be2e88bf (도훈 채팅 응답 기록)",
+      "evidence": "2026-09-23 세션 be2e88bf — 도훈 AskUserQuestion 응답 · 근거 = Size 수리 워크플로 wf_2747d15b-aca 잔여 위험 W-05/W-09/PIT/연쇄"
     }
   ],
-  "last_updated": "2026-09-23T18:36:01+0900"
+  "last_updated": "2026-09-23T20:22:20+0900"
 }

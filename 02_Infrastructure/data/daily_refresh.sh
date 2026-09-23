@@ -602,7 +602,14 @@ run_r '
 #   멈추지 않으므로 판정은 누군가 읽어야 경보가 된다 — 여기서 읽어 DR_FAILED 에 싣고,
 #   [7] 텔레그램 본문(DR_FAILED_SO_FAR)에 이름 상위 5개가 실린다.
 #   rc 0 = 회귀 0 · 3 = 회귀 N · 그 외 = 미측정(보고서 부재 등 — 정상으로 접지 않는다).
-_eg_ym="$(date +%Y%m)"
+#   ★W-05 (2026-09-23): 판독 대상 달 = [6a] 가 실제로 빌드한 달(`_asof/_last_update.txt`).
+#   구판 `date +%Y%m` 은 익월 1일에 전월 확정 빌드를 놓치고 빈 새 달을 읽었다.
+#   빌드가 없던 날 = 데이터 경계 달(raw_ym) 재판독 · 상태 파일 부재([6a] 실패) = 오늘 달.
+_eg_state="$BASE/.cache/factor_db/_asof/_last_update.txt"
+_eg_yms="$(sed -n 's/^built=//p' "$_eg_state" 2>/dev/null | tr -d '\r')"
+[ -n "${_eg_yms// /}" ] || _eg_yms="$(sed -n 's/^raw_ym=//p' "$_eg_state" 2>/dev/null | tr -d '\r')"
+[ -n "${_eg_yms// /}" ] || { _eg_yms="$(date +%Y%m)"; echo "!! [6a-gate] 빌드 상태 파일 부재 — 오늘 달($_eg_yms)로 판독"; }
+for _eg_ym in $_eg_yms; do
 _eg_out="$(QM_ROOT="$BASE" "$RSCRIPT" --no-save "$INFRA/factor_db/emission_report_gate.R" --ym "$_eg_ym" 2>&1)"
 _eg_rc=$?
 printf '%s\n' "$_eg_out"
@@ -612,10 +619,11 @@ case "$_eg_rc" in
   3) _eg_n="$(printf '%s' "$_eg_line" | sed -n 's/.* n=\([0-9]*\).*/\1/p')"
      _eg_top="$(printf '%s' "$_eg_line" | sed -n 's/.* top=\([^ ]*\).*/\1/p')"
      echo "!! [6a-gate] ★$_eg_ym 팩터 배출 회귀 ${_eg_n:-?}종 — ${_eg_top:-?}"
-     DR_FAILED+=("factor_emission_regress:${_eg_n:-?}(${_eg_top:-?})") ;;
-  *) echo "!! [6a-gate] 배출 판정 미측정(rc=$_eg_rc) — 정상으로 접지 않는다"
-     DR_FAILED+=("factor_emission_regress:unmeasured") ;;
+     DR_FAILED+=("factor_emission_regress:$_eg_ym:${_eg_n:-?}(${_eg_top:-?})") ;;
+  *) echo "!! [6a-gate] $_eg_ym 배출 판정 미측정(rc=$_eg_rc) — 정상으로 접지 않는다"
+     DR_FAILED+=("factor_emission_regress:$_eg_ym:unmeasured") ;;
 esac
+done
 
 echo "[6b/7] Daily Factor DB (fdb_daily) freshness + gated rebuild..."
 export QVEST_FDB_DAILY_AUTOREBUILD="${QVEST_FDB_DAILY_AUTOREBUILD:-0}"

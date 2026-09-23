@@ -1,19 +1,22 @@
 {
   "schema_version": "v54_ax_p0_mode",
-  "candidate_id": "CAND_strategy_rotation_2eb6deb74276",
-  "cluster_key": "2eb6deb74276",
-  "l_code_set_sha": "2eb6deb742765b7846ec360bebdaaa62cdb43f6d",
+  "candidate_id": "CAND_strategy_rotation_8a9dccba4ae7",
+  "cluster_key": "8a9dccba4ae7",
+  "l_code_set_sha": "8a9dccba4ae7340f47a426b5924ad51c27be78dd",
   "cluster_label": "strategy_rotation_ml_complexity_negative",
   "research_mode": "strategy_rotation",
   "metric_type": "backtested",
   "type": "empirical",
   "polarity": "negative",
   "promotable": true,
-  "statement_draft": "[실증 실패 규칙 초안] family=ml_complexity, tags=T,O,A, supporting=3건 L-code. (promote.R 5축 검증에서 범위·메커니즘·OOS 확정 필요)",
+  "statement_draft": "[실증 실패 규칙 초안] family=ml_complexity, tags=T,O,A, supporting=6건 L-code. (promote.R 5축 검증에서 범위·메커니즘·OOS 확정 필요)",
   "supporting_l_codes": [
     "L-FR-20260912_170811",
     "L-FR-20260912_170855",
-    "L-FR-20260912_171234"
+    "L-FR-20260912_171234",
+    "L-FR-20260923_180623",
+    "L-FR-20260923_182924",
+    "L-FR-20260923_184043"
   ],
   "scope_draft": {
     "market": "KR",
@@ -22,12 +25,15 @@
     "construction_types": null
   },
   "evidence_draft": {
-    "independent_l_codes": 3,
-    "independent_strategies": 3,
+    "independent_l_codes": 6,
+    "independent_strategies": 6,
     "strategies": [
       "FR_003",
       "FR_003_armC_flooronly",
-      "FR_003_armS_lag1"
+      "FR_003_armS_lag1",
+      "FR_003_n1",
+      "FR_003_n1_C_flooronly",
+      "FR_003_n1_S_lag1"
     ],
     "effect_direction_consistency": null,
     "note": "evidence_draft — promote.R 5축 검증에서 hurdle_result/grade_a_catalog 교차검증으로 확정",
@@ -107,22 +113,58 @@
         "result": "falsified",
         "effect_retained": 0.3947,
         "detail": "RISK_ON 0.585 > CRISIS 0.395 > RISK_OFF 0.294 — 방향 역전. 전달은 됐으나 부호가 반대."
+      },
+      {
+        "test": "OOS retention (essence 3-split, 과적합 반증)",
+        "result": "falsified",
+        "effect_retained": -0.41,
+        "detail": "retention -0.410 (gate 0.7, 하한 0.5)"
+      },
+      {
+        "test": "EW baseline 대비 edge (placebo proxy)",
+        "result": "diagnostic",
+        "effect_retained": null,
+        "detail": "net_SR 0.805 vs EW 0.848 (edge -0.043) — 유의검정 아님(진단)"
+      },
+      {
+        "test": "OOS retention (essence 3-split, 과적합 반증)",
+        "result": "falsified",
+        "effect_retained": -0.485,
+        "detail": "retention -0.485 (gate 0.7, 하한 0.5)"
+      },
+      {
+        "test": "EW baseline 대비 edge (placebo proxy)",
+        "result": "diagnostic",
+        "effect_retained": null,
+        "detail": "net_SR 0.796 vs EW 0.848 (edge -0.052) — 유의검정 아님(진단)"
+      },
+      {
+        "test": "OOS retention (essence 3-split, 과적합 반증)",
+        "result": "falsified",
+        "effect_retained": -0.181,
+        "detail": "retention -0.181 (gate 0.7, 하한 0.5)"
+      },
+      {
+        "test": "EW baseline 대비 edge (placebo proxy)",
+        "result": "diagnostic",
+        "effect_retained": null,
+        "detail": "net_SR 0.926 vs EW 0.958 (edge -0.032) — 유의검정 아님(진단)"
       }
     ],
     "note": "L-code 기록 반증 시도 실값 집계"
   },
   "mechanism_draft": {
-    "economic_explanation": "1계층 B 계열의 구속 축이 위기 동조 낙폭이라면, 하락월 볼록성을 실증한 방어형 모듈을 같은 국면조건부 배분규칙 아래 풀에 넣어 총노출을 줄이지 않고 멤버십 교체만으로 Calmar 를 올릴 수 있다 — 기각. 실제 기전은 반대였다: 개별 인증 방어성은 준-균등 다수 보유에서 idio 성분이 분산으로 상쇄돼 사라지고, RCMA 소표본 floor 가 희소국면에서 방어형을 먼저 탈락시켜 방어 슬리브가 위기에 가장 얇아진다. (멤버 가설 3건 — promote.R에서 일치성 재검증)",
+    "economic_explanation": "1계층 B 계열의 구속 축이 위기 동조 낙폭이라면, 하락월 볼록성을 실증한 방어형 모듈을 같은 국면조건부 배분규칙 아래 풀에 넣어 총노출을 줄이지 않고 멤버십 교체만으로 Calmar 를 올릴 수 있다 — 기각. 실제 기전은 반대였다: 개별 인증 방어성은 준-균등 다수 보유에서 idio 성분이 분산으로 상쇄돼 사라지고, RCMA 소표본 floor 가 희소국면에서 방어형을 먼저 탈락시켜 방어 슬리브가 위기에 가장 얇아진다. (멤버 가설 6건 — promote.R에서 일치성 재검증)",
     "mechanism_type": "unknown",
     "causal_plausibility": null
   },
   "oos_validation_draft": {
     "oos_months": null,
-    "oos_effect_vs_is": -0.521,
-    "note": "L-code oos_retention 실값 3건 median (IS65/OOS35 활성SR retention) — oos_months 실값 무 → None 유지 — promote.R essence_score 경유 재확정"
+    "oos_effect_vs_is": -0.448,
+    "note": "L-code oos_retention 실값 6건 median (IS65/OOS35 활성SR retention) — oos_months 실값 무 → None 유지 — promote.R essence_score 경유 재확정"
   },
-  "cluster_members_count": 3,
+  "cluster_members_count": 6,
   "status": "pending_5axis",
-  "created_at": "2026-09-12T08:19:39+00:00",
-  "last_seen": "2026-09-12T08:19:39+00:00"
+  "created_at": "2026-09-23T10:53:18+00:00",
+  "last_seen": "2026-09-23T10:53:18+00:00"
 }

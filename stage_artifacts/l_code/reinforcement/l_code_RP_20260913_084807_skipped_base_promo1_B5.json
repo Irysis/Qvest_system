@@ -17,11 +17,46 @@
   "calmar": 0.533,
   "oos_retention": -0.17,
   "portfolio_alpha_t": 3.298,
-  "next_probes": [
-    "다음 격자 축 B2(weighting) — 이 블록 승자 위에서 측정",
-    "B5_17(최고 3.298)는 B4 조합 후보로 고정 · B5_20(최저 1.828)는 축 역작동 여부를 조합 LOO 로 분리"
-  ],
+  "next_probes": ["다음 격자 축 B2(weighting) — 이 블록 승자 위에서 측정", "B5_17(최고 3.298)는 B4 조합 후보로 고정 · B5_20(최저 1.828)는 축 역작동 여부를 조합 LOO 로 분리"],
   "next_probe": "다음 격자 축 B2(weighting) — 이 블록 승자 위에서 측정 | B5_17(최고 3.298)는 B4 조합 후보로 고정 · B5_20(최저 1.828)는 축 역작동 여부를 조합 LOO 로 분리",
   "source_paper": "https://arxiv.org/abs/2002.06975",
-  "record_type": "performance"
+  "record_type": "performance",
+  "mechanism": "판정: 낙폭은 고정 축의 구조값이 아니었다 — B1(MDD 폭 0.103)·B7(0.055)에서 안 움직이던 MDD 가 B5 에서 0.287~0.615(폭 0.328)로 벌어졌고, 9칸은 처치 라벨(총노출/종목별)이 아니라 개입을 촉발하는 정보로 세 무리로 갈린다. ①Σ·상관 구조 기반 3칸 — B5_22(변동성 격차·상관 제동 × 한계 위험기여 tilt) MDD 0.287·Calmar 0.763, B5_18(한계 위험기여 tilt 단독) 0.311·0.727, B5_31(상주 다변량) 0.352·0.609 — 3블록 만에 처음 MDD 0.449 아래다. ②기저와 구별되지 않는 1칸 — B5_17(trend_persist_tilt) MDD 0.467 은 B1_1 과 같고(CAGR 0.249 vs 0.253) 추세·beta 순위가 세 번째 소비 지점에서도 낙폭에 전달되지 않았다. ③실현 낙폭 경로 기반 5칸 — dd_recovery 가 든 B5_16·19·20·21·23 은 Calmar 0.332~0.349(폭 0.017)·MDD 0.543~0.615 로, 단독(B5_16 MDD 0.615)에서 기저보다 낙폭이 컸고 곱으로 겹치면 상대 층의 개선이 남지 않는다(B5_18 Calmar 0.727→B5_20 0.349 · B5_17 0.533→B5_19 0.332). PORT_t 최하 두 칸도 dd_recovery 스택(B5_20 1.828·B5_21 1.910)이다. 교환 방향은 처음 뒤집혔다 — B1_1(MDD 0.467·CAGR 0.253) 대비 B5_22 는 MDD 상대 −38.5%·CAGR 상대 −13.4% 로 B7 슬리브(−3.9%/−12.6%)와 반대다. 처방 대조: 종목 차등을 한계 위험기여로 교체하라는 지시는 지지, 총노출 스칼라 1칸 제한은 미집행 — 설계 8건 중 5건이 이미 avoid 에 적힌 dd_recovery 였다. 미결: erosion_grind_idio_tilt 는 B5_21 에서 dd_recovery 와만 겹쳐 단독 효과가 안 갈린다 · 표에 OOS retention 이 없어 Calmar 0.763·0.727 의 표본외 유지는 원장 값으로만 갈린다.",
+  "mechanism_by": "llm:block_end",
+  "mechanism_at": "2026-09-23T19:53:01+0900",
+  "prior_lessons_used": ["B1", "B7"],
+  "next_block_actions": [
+    {
+      "action": "B2 에서 목적함수를 score_tilt 로 고정한 채 Σ 추정기만 가르는 3칸(shr_sample / shr_ledoit_wolf / shr_gerber_rmt)을 돌려 추정오차와 목적함수를 분리한다.",
+      "why": "B5 에서 MDD 를 움직인 세 칸(B5_22 0.287 · B5_18 0.311 · B5_31 0.352)이 모두 Σ·상관 구조를 쓴다. 그 개선이 목적함수 덕인지 Σ 추정 품질 덕인지 이 블록 재료로 안 갈린다.",
+      "expect": "세 칸 MDD 폭이 0.05 를 넘으면 구속은 Σ 추정이고 이후 칸을 추정기 스윕에 쓴다. 0.05 이하면 추정기는 레버가 아니며 남은 칸은 목적함수(riskparity·nco·minvar)로만 쓴다."
+    },
+    {
+      "action": "한계 위험기여 정보를 오버레이 tilt 가 아니라 비중 규칙 자체로 옮긴다 — lean:riskparity(전체 Σ 균등 한계기여)·lean:nco(군집 denoise 후 배분) 2칸.",
+      "why": "B5_18 은 entropy 비중 위에 얹은 사후 tilt 였는데 MDD 0.311·Calmar 0.727 을 냈다. 같은 정보를 배분 지점에서 쓰면 PORT_t 대가가 줄어드는지가 직접 시험 대상이다.",
+      "expect": "MDD ≤0.311 을 유지하면서 PORT_t 가 B5_22 의 2.355 를 넘으면 위험 통제의 소비 지점은 오버레이가 아니라 비중 축이다. PORT_t 가 2.355 아래면 PORT_t 대가는 소비 지점과 무관하고 이후 오버레이 재설계로 돌린다."
+    },
+    {
+      "action": "lean:ivol(대각 성분만)을 riskparity·nco(전체 Σ)와 같은 블록에 나란히 세워 변동성 정보와 상관 정보를 분리한다.",
+      "why": "B5_22 의 xs_vol_gap_corr_brake 는 횡단면 변동성 격차와 상관을 함께 쓴다 — 어느 쪽이 MDD 0.287 을 만들었는지 9칸으로 안 갈린다.",
+      "expect": "ivol 이 riskparity·nco 와 MDD 0.03 이내면 상관 정보 기여는 0 이고 이후 Σ 추정·군집 칸을 접는다. 0.03 초과로 벌어지면 상관 구조가 레버이고 B4 결합에서 그 축을 승계한다."
+    },
+    {
+      "action": "qepm:CDaR_LP 1칸으로 실현 낙폭 경로 정보를 배분 축(Σw=1 고정)에서 소비시켜, dd_recovery 의 실패가 정보 탓인지 총노출 소비 지점 탓인지 가른다.",
+      "why": "dd_recovery 5칸이 Calmar 0.332~0.349 로 붙어 있는데 그 arm 은 같은 정보를 총노출 스칼라로 소비했다. 정보와 소비 지점이 분리되지 않은 상태다.",
+      "expect": "CDaR_LP 가 MDD <0.45 면 낙폭 경로 정보는 유효하고 실패는 총노출 소비 지점의 것이다. MDD 가 0.54~0.62 대역이면 실현 낙폭 경로 정보 자체가 이 계보에서 안 쓰이는 것이고 B6·재설계 B5 에서 낙폭 트리거 계열을 전면 배제한다."
+    },
+    {
+      "action": "B2 착수 전에 원장에서 B5_18·B5_22 의 OOS retention 을 읽어 승계 기저 칸을 확정한다(PORT_t 최고 B5_17 3.298 과 Calmar 최고 B5_22 0.763 중 무엇을 B4 로 넘길지).",
+      "why": "이 블록 표에 OOS retention 이 없다. B1 최고 -0.15 · B7 최고 -0.29 로 두 블록 연속 음수였고, Calmar 를 산 오버레이가 표본외를 파는 패턴이 이 계보 밖에 기록돼 있다.",
+      "expect": "B5_22 의 OOS retention 이 B5_17 보다 낮으면 Calmar 0.763 은 표본내 현상이고 승계 칸은 B5_17 이 된다. 같거나 높으면 위험 축 개선이 실재하고 B2 는 그 축의 확장으로 읽는다."
+    }
+  ],
+  "next_block_actions_by": "llm:block_end",
+  "avoid": ["dd_recovery 및 실현 낙폭·변동성 수준을 총노출 스칼라로 옮기는 arm 전반에 칸을 또 쓰는 것 — B5 5칸 전부 Calmar 0.332~0.349·MDD 0.543~0.615 이고, 단독 B5_16 은 MDD 0.615 로 기저(0.467)보다 낙폭을 키웠다. 스택에 넣으면 상대 층의 개선까지 없앤다(B5_18 0.727→B5_20 0.349). B7 avoid 에 이미 이름이 적혀 있었는데 설계 8건 중 5건이 여기로 갔다 — 예산 과반을 기록된 벽에 쓴 것이 이 블록 최대 손실이다.", "trend_persist_tilt·dbeta_tilt_rank 등 추세·beta 순위를 종목 차등 축으로 다시 쓰는 것 — B5_17 의 MDD 0.467 은 B1_1 의 0.467 과 같고 CAGR 도 0.249 vs 0.253 이다. 횡단면(B1) · 보유 구성(B7) · 오버레이(B5) 세 소비 지점에서 연속으로 전달 0 이 확인됐다.", "lean:entropy 를 B2 칸으로 다시 쓰는 것 — B1·B7·B5 21칸 전부가 entropy 비중 위에서 측정됐다. 상주 기저를 재측정하는 것은 칸 낭비다.", "score_blend 계열(lean:score_tilt·softmax_tilt·winsor_tilt·rank_tilt·score_pure·nco_score_tilt)에 칸을 몰아주는 것 — 이들은 Σ 를 안 쓰고 점수 변환만 바꾼다. B5 가 가른 축은 위험 구조 정보이지 점수 변환이 아니다. 예외는 gen:lean_score_tilt__* 3칸뿐 — 거기선 score_tilt 가 고정 대조이고 갈리는 축이 Σ 추정기다.", "B2 칸을 팩터 축으로 쓰는 것(코어 팩터 추가·교체) — B1 7칸의 MDD 폭이 0.103 에 그쳤고 4팩터 확장은 B1_6(PORT_t 3.402→2.335·MDD 0.467→0.570) · B1_7(2.015→1.779) 둘 다 희석이었다. 코어는 M01_Mom_12_1+V10_FCF_Yield+M08_Residual_Mom 으로 고정한다."],
+  "next_block_design_for": "B2",
+  "next_block_design_n": 8,
+  "prior_action_status": "executed",
+  "prior_action_detail": "설계 8건 중 8건 집행 (설계: dd_recovery,trend_persist_tilt,multivar_marginal_risk_share_tilt,dd_recovery+trend_persist_tilt,dd_recovery+multivar_marginal_risk_share_tilt,dd_recovery+erosion_grind_idio_tilt,multivar_marginal_risk_share_tilt+xs_vol_gap_corr_brake,dd_recovery+xs_vol_gap_corr_brake / 실측: pg2_risk_overlay_v1,dd_recovery,trend_persist_tilt,multivar_marginal_risk_share_tilt,dd_recovery+trend_persist_tilt,dd_recovery+multivar_marginal_risk_share_tilt,dd_recovery+erosion_grind_idio_tilt,multivar_marginal_risk_share_tilt+xs_vol_gap_corr_brake,dd_recovery+xs_vol_gap_corr_brake)",
+  "mechanism_confidence": "medium"
 }

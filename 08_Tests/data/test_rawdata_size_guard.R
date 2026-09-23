@@ -344,12 +344,13 @@ if (!nzchar(BASH)) { bad("G_bash_available", "bash 부재 — 배선 실행 검�
   gz1 <- run_blocks(c(blk_sz, blk_eg), okpanel, character(0))
   chk("G1_positive_no_failures", !any(nzchar(gz1)), sprintf("DR_FAILED={%s}", paste(gz1, collapse = " ")))
   gz2 <- run_blocks(c(blk_sz, blk_eg), badpanel, c("V01_BM"))
-  chk("G2_injection_both_loaded", "rawdata_size_na" %in% gz2 && any(grepl("^factor_emission_regress:1\\(V01_BM\\)$", gz2)),
+  chk("G2_injection_both_loaded", "rawdata_size_na" %in% gz2 && any(grepl("^factor_emission_regress:[0-9]{6}:1\\(V01_BM\\)$", gz2)),
       sprintf("DR_FAILED={%s}", paste(gz2, collapse = " ")))
   mut_sz <- blk_sz[!grepl('DR_FAILED\\+=\\("rawdata_size_na"\\)', blk_sz)]
-  mut_eg <- blk_eg[!grepl('DR_FAILED\\+=\\("factor_emission_regress:\\$\\{', blk_eg)]
+  # W-05: 적재 문자열에 판독 달이 들어갔다(factor_emission_regress:<ym>:N(top))
+  mut_eg <- blk_eg[!grepl('DR_FAILED\\+=\\("factor_emission_regress:\\$_eg_ym:\\$\\{', blk_eg)]
   gz3 <- run_blocks(c(mut_sz, mut_eg), badpanel, c("V01_BM"))
-  chk("G3_mutant_wiring_removed_goes_silent", !("rawdata_size_na" %in% gz3) && !any(grepl("^factor_emission_regress:1", gz3)) &&
+  chk("G3_mutant_wiring_removed_goes_silent", !("rawdata_size_na" %in% gz3) && !any(grepl("^factor_emission_regress:[0-9]{6}:1", gz3)) &&
         length(mut_sz) < length(blk_sz) && length(mut_eg) < length(blk_eg),
       "적재 줄을 지우면 같은 주입이 침묵 — G2 가 배선 자체를 잰다는 증거")
 }
