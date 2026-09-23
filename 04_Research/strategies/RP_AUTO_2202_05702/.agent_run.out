@@ -1,64 +1,10 @@
-`engine.R` + `FIDELITY.json` written. 
+엔진과 FIDELITY 를 다시 썼습니다. 감사 지적 4건은 전부 논문 원문으로 되돌렸고, 되돌리며 새로 들어온 것은 `changed` 에 추가 신고했습니다.
 
-**구현**: 분기 회계지표의 연속관측 간 백분율 변화를 입력으로 Random Forest 가 **다음 분기 KOSPI200 대비 상대수익**을 회귀하고, 예측 상대수익 상위 **1/3** 을 동일가중으로 사는 분기 리밸 롱온리 포트폴리오(`PORTFOLIO` engine_direct + 진단용 `FACTORS` 동시 산출) — 학습집합은 매 분기 확장창이고 표준화·결측 대치 통계도 그 학습집합에서만 낸다.
+**구현**: 논문 **식 (5)**(Δx = (x_t−x_{t−1})/x_{t−1}×100% · **부호 있는 분모**)로 분기 회계지표를 추세제거 → **식 (6)** 학습집합 표준화·평균대치 → 논문 IV절 B항대로 **종목마다 RF 1개**(local learning · 그 종목 자기 과거만, 확장창)로 다음 분기 KOSPI200 대비 상대수익을 회귀 → 예측 상위 **1/3** 동일가중 분기 리밸(`PORTFOLIO` engine_direct + `FACTORS` 동시 산출).
 
-**fidelity = adapted**, 이유 둘: ① 논문의 21 특성 전체 목록(Table 8)이 PDF **이미지**라 텍스트로 존재하지 않아(stockpup 열 이름이 문서 전체에서 0건) 목록을 지어내야 하는 'RF 무선택' 칸을 포기하고 논문이 이름을 전부 인쇄한 칸(Table 3 top 6 + RF)을 골랐다 ② 그 6 중 **Capital Expenditure** 는 KR 원천에 설비투자 지급액 항목이 없어 `data_gap` 으로 제외(|InvestCF| 대리 기각) → 입력 5. 논문의 '인접 분기 평균 보간'은 미래참조라 쓰지 않았고, 고정 60/20/20 분할은 2005~ 전기간 시그널을 못 내므로 확장창으로 옮겼다 — 전부 `changed` 14항목에 신고했다.
-SessionEnd hook [DIR=${CLAUDE_PROJECT_DIR:-${QM_ROOT:-$PWD}}; bash "$DIR/02_Infrastructure/hooks/auto_commit_on_stop.sh" 2>>/tmp/auto_commit_on_stop.log || true] failed: Hook cancelled
-SessionEnd hook [DIR=${CLAUDE_PROJECT_DIR:-${QM_ROOT:-$PWD}}; bash "$DIR/02_Infrastructure/hooks/auto_push_on_stop.sh" 2>>/tmp/auto_push_on_stop.log || true] failed: Hook JSON output validation failed — hookSpecificOutput.hookEventName: expected one of "PreToolUse" | "UserPromptSubmit" | "UserPromptExpansion" | "SessionStart" | "Setup" | "PreModelSwitch" | …
+**1판과 달라진 곳**(전부 `audit_response`·`changed`):
+- 분모 |x| → 부호 있는 x_{t−1}, 양성 대조가 `.pch(3,−6) = −150 < 0` 을 단언해 회귀 차단. 비율 분모 가드도 `>0` → `≠0` 으로 최소화(음수 P/B·P/E·Book Value 통과).
+- 분기당 전 종목 pooled 적합(논문이 측정하고 **기각한** global learning) → 종목 루프 안에서만 적합. pooled 전용 상수 `.MIN_TR_ROW 200` 제거, 종목별 하한 12분기로 교체·신고(논문은 고정 53).
+- 추가 신고 1건: 회계 패널을 **2원천 병합**(xlsx 분기 + DART 분기, 이음매 한 칸 결측화). 1판처럼 `fundamental_merged` 만 읽으면 xlsx 분기가 2015년에 끝나 2016년부터 관측이 연 1회가 되고 회계 특성 4종이 전 기간 ~40% 구간에서 통째로 결측이 됩니다 — 1판이 그 침묵 실패를 안고 측정됐습니다. DART 분기 패널이 없으면 중단하지 않고 ⚠ 로그 + 연도별 커버리지를 찍습니다.
 
-The hook's output was: {
-  "hookSpecificOutput": {
-    "hookEventName": "SessionEnd",
-    "additionalContext": "[OK] [auto-push] main @ 1e718945a - 1 commits pushed."
-  }
-}
-
-Expected schema:
-{
-  "continue": "boolean (optional)",
-  "suppressOutput": "boolean (optional)",
-  "stopReason": "string (optional)",
-  "decision": "\"approve\" | \"block\" (optional)",
-  "reason": "string (optional)",
-  "systemMessage": "string (optional)",
-  "terminalSequence": "string (optional)",
-  "hookSpecificOutput": {
-    "for PreToolUse": {
-      "hookEventName": "\"PreToolUse\"",
-      "permissionDecision": "\"allow\" | \"deny\" | \"ask\" | \"defer\" (optional)",
-      "permissionDecisionReason": "string (optional)",
-      "updatedInput": "object (optional) - Modified tool input to use"
-    },
-    "for PermissionRequest": {
-      "hookEventName": "\"PermissionRequest\"",
-      "decision": {
-        "to allow": {
-          "behavior": "\"allow\"",
-          "updatedInput": "object (optional) - Modified tool input to use",
-          "updatedPermissions": "array (optional) - Permission updates"
-        },
-        "to deny": {
-          "behavior": "\"deny\"",
-          "message": "string (optional)",
-          "interrupt": "boolean (optional)"
-        }
-      }
-    },
-    "for UserPromptSubmit": {
-      "hookEventName": "\"UserPromptSubmit\"",
-      "additionalContext": "string (optional)"
-    },
-    "for PostToolUse": {
-      "hookEventName": "\"PostToolUse\"",
-      "additionalContext": "string (optional)"
-    },
-    "for PostToolBatch": {
-      "hookEventName": "\"PostToolBatch\"",
-      "additionalContext": "string (optional)"
-    },
-    "for Stop / SubagentStop": {
-      "hookEventName": "\"Stop\" | \"SubagentStop\"",
-      "additionalContext": "string (optional) - Feedback for the model; the conversation continues so the model can act on it"
-    }
-  }
-}
+측정은 러너 계약 몫이라 실행하지 않았고, R 실행이 막힌 세션이라 검증은 정적 검토 + 엔진 내 양성 대조 8종(식 (5) 값·**부호**·비율 가드·공시 가용일·상위 1/3 정수화·상대수익·TTM 항등·표준화 평균대치)과 매 적합 PIT 재단언으로 세웠습니다.

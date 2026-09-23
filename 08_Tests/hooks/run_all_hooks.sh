@@ -1495,6 +1495,11 @@ SUITES=(
   #   키 = 엔진 md5 · RAWDATA/benchmark mtime(초)+size · factor DB build_hash+월 파일 집계 · 메모리 패널 지문 · 전문 대조 — 양성 대조(무변경 적중)
   #   · 변경 6종 미스 · 엔진 경유(격리 루트) · 실행 중 도장 변경 저장 생략 — 돌연변이: 구판 키 함수·build_hash 생략판·구판 엔진 git blob red
   "08_Tests/reinforcement/test_rf_base_cache_key.R"
+  # 2026-09-24 PIT C11 봉쇄(안 A 0단계 · pit.md 위반 시 처리 1·2단계 · 06_Registry/pit_quarantine.json):
+  #   B1 후보 풀 격리(D32·MA01·MA02) · 생성 arm 격리 원천 참조 거부 · 목록 부재=0/파손=stop/released=복귀 — 양성 대조·위반 주입
+  #   · 운영 상태(격리 active 일 때만 · 해제 후 SKIP): pg2 arm suspended · 카탈로그 15모듈 FR 해제 · l2_auto 정지 · 원장 pit_c11 35+2 · b1_verify 기각
+  #   — 돌연변이 M1~M6(필터 줄·판독기 부재 fail-open·파손 fail-open·status 필터·대소문자·등재 관문) red
+  "08_Tests/validation/test_pit_quarantine_c11.R"
 )
 
 
