@@ -17,8 +17,9 @@
 #      같은 arm 이 목록 released 면 등재(거부 원인이 격리임을 증명) · 대소문자 무시 · 단어 경계(compare_mrs 오탐 0) ·
 #      참조가 .arm.json(external_data)에만 있어도 거부(A9) · 목록 파손=거부
 #   L  운영 상태(격리 항목 status=active 일 때만 · 해제 후엔 SKIP — 해제 절차가 이 검사를 깨지 않게)
-#      L11~L13 = C11-F1 수리 재현(적대 검증 F1): 운영 목록이 우회 변형 15종(fred_macro*·pg2 파일·M4gAE·AE/m4 디렉터리·
-#      JM_State·regime_current·regime_forecast·FRED_MRS·RCMA)을 잡고 국내 패널·등재 arm 은 0 적중 · E2E REJECT 3 + 청정 ADMIT ·
+#      L11~L13 = C11-F1 수리 재현(적대 검증 F1): 운영 목록이 우회 변형 21종(fred_macro*·pg2 파일·M4gAE·AE/m4 디렉터리·
+#      JM_State·regime_current·regime_forecast·FRED_MRS·RCMA · 엔진 globalenv 의 load_macro_regime/FRED_*_CACHE/
+#      REGIME_SIGNAL_CACHE · regime_signal.R · ctx macro provider)을 잡고 국내 패널·등재 arm 은 0 적중 · E2E REJECT 3 + 청정 ADMIT ·
 #      수리 정규식(amend C11-F1)을 뺀 목록 사본이면 red(데이터 돌연변이)
 #   M  돌연변이(자식 Rscript · PITQ_SRC_* = 변형 사본 · PITQ_CORE_ONLY=1 로 F/A 만) — 필터 줄 삭제 · 판독기 부재 fail-open ·
 #      파손 fail-open · status 필터 제거 · 대소문자 구분 · 등재 관문 제거 · 관문이 .arm.json 을 안 읽음(M7) → red. 원본 사본(대조) → green.
@@ -251,14 +252,22 @@ if (!CORE) {
       m4_engine     = 'source("qepm/mailbox/worktask/WT-D20260430_001/stage_artifacts/factor_engine.R")',
       fred_mrs      = 'x <- u$FRED_MRS',
       modperf       = 'mp <- jsonlite::fromJSON("06_Registry/module_performance.json")',
-      rcma          = 'source("02_Infrastructure/portfolio/regime_module_admission.R")')
+      rcma          = 'source("02_Infrastructure/portfolio/regime_module_admission.R")',
+      # 같은 계열 — 엔진 globalenv 에 이미 있는 이름(run_paper_replication.R:57-61 이 config.R·backtest_harness.R 전역 source ·
+      #   arm env 부모 = globalenv, rf_cell_engine.R:565)과 밑줄 결합 식별자: 파일명 없이 오염 패널에 닿는다
+      g_load_macro  = 'm <- load_macro_regime()',
+      g_fred_regime = 'm <- arrow::read_parquet(FRED_REGIME_CACHE)',
+      g_regime_sig  = 'u <- arrow::read_parquet(REGIME_SIGNAL_CACHE)',
+      src_regsig    = 'source(file.path(Sys.getenv("QM_ROOT"), "02_Infrastructure/regime/regime_signal.R")); u <- load_daily_regime_signal()',
+      ctx_macro     = 'source("02_Infrastructure/methods/ctx_providers.R"); x <- build_ctx_extras(ctx$date, NULL)$macro',
+      load_fred_d   = 'w <- load_fred_daily_wide()')
     CLN <- c(msm   = '.P <- file.path(Sys.getenv("QM_ROOT"), ".cache/msm_daily_latest.parquet")',
              bench = '.P <- file.path(Sys.getenv("QM_ROOT"), ".cache/benchmark.parquet")',
              raw   = '.P <- ".cache/rawdata.parquet"; v <- H$rv60[t]')
     caught <- function(root) vapply(BYP, function(x) length(RE$pitq_source_hits(x, root)) > 0L, logical(1))
     c_live <- tryCatch(caught(ROOT), error = function(e) setNames(rep(NA, length(BYP)), names(BYP)))
     chk(all(c_live %in% TRUE),
-        sprintf("L11 재현 — 운영 목록이 우회 변형 %d종 전부를 잡는다(fred_macro*·pg2 파일·M4gAE·AE/m4 디렉터리·JM_State·regime_current·regime_forecast·FRED_MRS·RCMA)", length(BYP)),
+        sprintf("L11 재현 — 운영 목록이 우회 변형 %d종 전부를 잡는다(fred_macro*·pg2 파일·M4gAE·AE/m4 디렉터리·JM_State·regime_current·regime_forecast·FRED_MRS·RCMA·전역 load_macro_regime/FRED_*_CACHE/REGIME_SIGNAL_CACHE·ctx macro)", length(BYP)),
         paste(names(BYP)[!(c_live %in% TRUE)], collapse = ","))
     # 대조: 국내 패널 + 등재된 운영 arm(pg2 제외 — 카탈로그 등재 kind 만 · 거부돼 남은 파일은 세지 않는다)은 0 적중
     reg_kinds <- setdiff(unique(vapply(OC, function(a) as.character(a$kind %||% "")[1], character(1))), c("", "pg2_risk_overlay"))
