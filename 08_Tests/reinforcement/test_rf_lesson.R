@@ -23,6 +23,15 @@ b <- rfl_binding(ES)
 if (b$n_met == 0L && grepl("port_t(", b$text, fixed = TRUE) && grepl("calmar(", b$text, fixed = TRUE))
   ok(sprintf("② 구속 축 특정 — %s", b$text)) else ng("② 구속 축 미특정", b$text)
 
+# ②b sweep 칸은 DSR 이 여섯째 A 조건 — 5조건을 넘고 DSR 로만 B 인 칸을 '전부 충족' 으로 적으면 구속 축이 숨는다(2026-09-23)
+ES_A5 <- list(port_t = 3.5, calmar = 0.7, net_sharpe = 1.2, cagr = 0.25, oos_retention = 0.9)
+b_ch <- rfl_binding(ES_A5)
+b_sw <- rfl_binding(c(ES_A5, list(selection_type = "sweep", dsr = 0.41)))
+b_sw_ok <- rfl_binding(c(ES_A5, list(selection_type = "sweep", dsr = 0.88)))
+if (grepl("전부 충족", b_ch$text) && grepl("dsr(0.410/0.50)", b_sw$text, fixed = TRUE) && grepl("6개 전부 충족", b_sw_ok$text))
+  ok(sprintf("②b sweep 칸 DSR 구속 표기 — chain: %s · sweep 탈락: %s · sweep 통과: %s", b_ch$text, b_sw$text, b_sw_ok$text)) else
+  ng("②b DSR 구속 축 미표기", paste(b_ch$text, "|", b_sw$text, "|", b_sw_ok$text))
+
 # ③ 대칭/비대칭 판정 — 이 저장소의 실측 구속축이 여기서 갈린다
 s_sym  <- rfl_shift(list(mdd = 0.53, cagr = 0.082), list(mdd = 0.586, cagr = 0.106))  # 위험↓ 수익 더↓
 s_asym <- rfl_shift(list(mdd = 0.50, cagr = 0.110), list(mdd = 0.586, cagr = 0.106))  # 위험↓ 수익↑

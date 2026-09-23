@@ -135,20 +135,27 @@ rf_lineage_ids <- function(entries, bid, max_depth = 20L) {
 }
 
 #' 계보 안 **측정된** 칸 수 — essence$port_t 가 유한 수치인 attempt 만 센다(미측정 NA 종결은 평가되지 않은 시행).
+#'   ★상속 칸(essence$inherited_from — 같은 스펙 결과를 물려받은 중복)은 새 시행이 아니다(2026-09-23 적대 리뷰 · 이중 계수 수리).
+#'     rf_auto_notify.R:53-56 이 등급 집계에서 같은 이유로 뺀다.
 rf_lineage_measured <- function(entries, ids) {
   sum(vapply(Filter(function(x) x$base_id %in% ids, entries %||% list()), function(x)
     sum(vapply(x$attempts %||% list(), function(a) {
       v <- a$essence$port_t
-      is.numeric(v) && length(v) == 1L && is.finite(v)
+      is.numeric(v) && length(v) == 1L && is.finite(v) && is.null(a$essence$inherited_from)
     }, logical(1))), numeric(1)))
 }
 
-#' 셀 spec 의 시행 회계 블록 — 등록 시점 값(도착 순서 의존). A 판정의 최종 가족 N 재산출은 A 서류(P1-04) 몫.
-#'   ★.spec_sig 는 명시 키만 보므로 이 블록은 서명을 바꾸지 않는다(rf_spec_sig.R).
-rf_selection_accounting <- function(ids, n_measured_prior, n_batch_reg) {
+#' 셀 spec 의 시행 회계 블록 — N = 기저 1 + 계보 선행 측정 칸 + 이번 배치 칸 수.
+#'   ★기저 1 (2026-09-23 적대 리뷰 2건 독립 지적): 구판은 부모 없는 새 계보(원장 62 중 45)의 첫 칸이 N=1 이 되어
+#'     essence 의 has_trials(n>1)가 거짓 → DSR NA → sweep 의 A 분기가 **조용히 도달 불가**였다. 충실구현 기저 측정은
+#'     이 가족이 실제로 본 1회 시행이므로 센다 → N ≥ 2.
+#'   ★배치 균일 (같은 지적): 한 배치의 칸은 동시에 측정되고 승자는 배치가 끝난 뒤 고른다 — 선택 시점의 가족 크기는
+#'     칸마다 같다. 구판은 등록 순서로 45..49 가 갈렸다. 배치 칸 수는 중복·무처치로 닫힐 칸까지 포함한다(보수적 과대).
+#'   A 판정의 최종 가족 N 재산출은 A 서류(P1-04) 몫. ★.spec_sig 는 명시 키만 보므로 이 블록은 서명을 바꾸지 않는다.
+rf_selection_accounting <- function(ids, n_measured_prior, n_batch) {
   list(selection_type = "sweep", family_root = tail(ids, 1L), lineage = ids,
-       n_family_at_registration = as.integer(n_measured_prior + n_batch_reg),
-       n_trials_basis = "lineage_measured_cells_at_registration")
+       n_family_at_registration = as.integer(1L + n_measured_prior + n_batch),
+       n_trials_basis = "base1+lineage_measured(excl_inherited)+batch_size")
 }
 
 if (sys.nframe() == 0L)

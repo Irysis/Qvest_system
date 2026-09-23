@@ -141,12 +141,31 @@ def tripwire(existing: pd.DataFrame, incoming: pd.DataFrame, mf: dict) -> list:
     return fails
 
 
+def confirmed_cutoff(now: datetime | None = None) -> pd.Timestamp:
+    """마지막 **확정** 세션의 상한 날짜 — 이 날짜 이하의 행만 종가로 믿는다.
+
+    ★2026-09-23 실사고: 절전 뒤 따라잡기 실행(14:21, 장중)이 `end_date = datetime.now()` 로
+      진행 중 봉 1120.74 를 09-23 종가로 붙였고, 국면·P3 로 번졌다(09-10 에도 같은 일 — 그땐 덮어쓰기로 자가 치유).
+      RAWDATA 경로에는 이미 가드가 있다 — `trading_calendar.R::last_confirmed_trading_day`(:311)의
+      '16시 이후에만 당일 확정' 규칙. 새 숫자를 만들지 않고 **그 규칙을 그대로** 옮긴다(두 벌이면 한쪽만 고쳐진다).
+      당일이 거래일인지는 Naver 가 그날 행을 주는지로 갈음한다(주말·휴장엔 행이 없다).
+    """
+    now = now or datetime.now()
+    today = pd.Timestamp(now.date())
+    return today if now.hour >= CONFIRM_HOUR else today - pd.Timedelta(days=1)
+
+
+# trading_calendar.R:311 과 같은 값 — 바꾸려면 두 곳을 함께(그리고 test_naver_benchmark_confirmed_cutoff.py 가 대조한다)
+CONFIRM_HOUR = 16
+
+
 def run(start_date: str | None, end_date: str | None, do_append: bool,
-        backup: bool = True, quiet: bool = False) -> int:
+        backup: bool = True, quiet: bool = False, now: datetime | None = None) -> int:
     say = (lambda *a: None) if quiet else print
     mf = BA.read_manifest()
+    cutoff = confirmed_cutoff(now)
     if end_date is None:
-        end_date = datetime.now().strftime('%Y-%m-%d')
+        end_date = cutoff.strftime('%Y-%m-%d')
     if start_date is None:
         start_date = (pd.to_datetime(end_date) - pd.Timedelta(days=60)).strftime('%Y-%m-%d')
 
@@ -170,6 +189,15 @@ def run(start_date: str | None, end_date: str | None, do_append: bool,
         BA.write_alert('naver_fetch_failed', f'Naver 조회 실패: {ex}')
         return 2
     say(f'  Naver {len(naver)}행, 최신={naver.Date.max().date()}')
+    # ★마감 가드 — 확정 상한 이후 행(진행 중 봉)은 검증에도 추가에도 쓰지 않는다(verify 비교값이 장중이면 판정도 오염).
+    _intraday = naver[naver['Date'] > cutoff]
+    if len(_intraday):
+        say(f'  ★마감 전 행 {len(_intraday)}개 제외(확정 상한 {cutoff.date()} · '
+            f'{CONFIRM_HOUR}시 규칙 = trading_calendar.R:311): {[str(x.date()) for x in _intraday["Date"]]}')
+        naver = naver[naver['Date'] <= cutoff].reset_index(drop=True)
+    if not len(naver):
+        say('  확정 행 없음 — 미변경')
+        return 0
 
     # 심볼 sanity: 코스피 종합(수천대) 오심볼 회귀 차단 — **생 naver 레벨**에서 검사.
     if float(naver['Close'].max()) > 3000:

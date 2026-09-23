@@ -33,6 +33,33 @@ suppressPackageStartupMessages({ library(jsonlite); library(data.table) })
 }
 `%||%` <- function(a, b) if (is.null(a) || length(a) == 0 || (length(a) == 1 && is.na(a))) b else a
 
+# ── 원자적 JSON 쓰기 (2026-09-23 — 수명주기 쓰기 경로용) ─────────────────────────
+# 정본 = 02_Infrastructure/utils/atomic_json.R::qvest_atomic_write_json (tmp→rename · 선삭제 없음 · 유한 재시도).
+#   사본을 만들지 않고 정본을 적재해 쓴다(그 파일 머리말: 사본 3벌이 같은 결함을 복제했다).
+#   적재 위치 = root → QM_ROOT → CLAUDE_PROJECT_DIR 순. 샌드박스 root 에는 utils/ 가 없으므로 코드 루트로 내려간다.
+#   못 찾으면 stop() — 조용히 비원자 쓰기로 강등하지 않는다.
+#   직렬화 인자는 이 파일의 기존 write_json 호출과 같다(pretty·auto_unbox·null="null" · digits 기본) — 형식 불변.
+.PX_ATOMIC <- new.env(parent = emptyenv())
+.px_write_json <- function(obj, path, root = NULL) {
+  fn <- .PX_ATOMIC$fn
+  if (is.null(fn)) {
+    cands <- unique(Filter(nzchar, c(if (!is.null(root)) as.character(root)[1] else "",
+                                     Sys.getenv("QM_ROOT", ""), Sys.getenv("CLAUDE_PROJECT_DIR", ""))))
+    src <- NA_character_
+    for (r in cands) {
+      p <- file.path(gsub("\\\\", "/", r), "02_Infrastructure", "utils", "atomic_json.R")
+      if (file.exists(p)) { src <- p; break }
+    }
+    if (is.na(src)) stop("[promote] atomic_json.R 를 찾지 못함 — 원자 쓰기 불가(비원자 강등 안 함): ",
+                         paste(cands, collapse = " | "))
+    e <- new.env(parent = globalenv())
+    sys.source(src, envir = e)
+    fn <- e$qvest_atomic_write_json
+    .PX_ATOMIC$fn <- fn
+  }
+  fn(obj, path, pretty = TRUE, auto_unbox = TRUE, null = "null", tag = "promote")
+}
+
 .MODE_PREFIX <- c(alpha_search = "AS", alpha_research = "AR", qepm_legacy = "QPM",
                   judge_gate = "JG", governor_admission = "GV",
                   strategy_rotation = "FR",  # v9.21 개명 (prefix 유지)
@@ -43,7 +70,15 @@ suppressPackageStartupMessages({ library(jsonlite); library(data.table) })
                   ##   lcode_emit.R:33 은 OVL 을 갖는데 이 맵이 빠뜨려서, OVL L-code 11건이
                   ##   승격 경로에서 GEN 폴백으로 떨어졌다 — 모드가 있는데 prefix 가 없으면
                   ##   그 계열은 조용히 다른 계급으로 집계된다.
-                  overlay_research = "OVL")  # 2026-07-03: RAMP 4번째 모드 (lcode_emit/.LCODE_MODE_PREFIX·lcode_schema와 정합)
+                  overlay_research = "OVL",  # 2026-07-03: RAMP 4번째 모드 (lcode_emit/.LCODE_MODE_PREFIX·lcode_schema와 정합)
+                  ## ★2026-09-23 (Axiom 전수감사 K2 · 도훈 AX-D1 단계 0-3): v10 두 모드가 여기에만 없었다.
+                  ##   lcode_emit.R::.LCODE_MODE_PREFIX 는 RP/RF 를 갖는데(v10 2026-08-29) 이 맵이 빠뜨려
+                  ##   메가후보(CAND_paper_replication_*)가 PASS 하면 AX-GEN-* 로 발급될 자리였다 — 08-24 OVL 과 같은 결함.
+                  ##   ★reinforcement_cell(재라벨 전용 역사 라벨)은 넣지 않는다: cluster_extractor._CAND_EXCLUDED_MODES 가
+                  ##     후보 생성에서 빼므로 승격 입력에 오지 않는다(lcode_schema.R LCODE_VALID_MODES 주석의 결정과 정합).
+                  ##     혹시 오면 promote_to_axiom 의 '.MODE_PREFIX 미등재 → GEN 폴백' WARN 이 그대로 드러낸다.
+                  paper_replication = "RP",  # v10 1계층 충실구현 (lcode_emit RP 와 정합)
+                  reinforcement = "RF")      # v10 강화 프로세스 (lcode_emit RF 와 정합)
 
 # crash-safe prefix 조회 — named vector `[[`는 missing name에 hard error라
 # `%||% "GEN"` 폴백이 실행되지 않던 결함(예: research_mode="qepm"/"global") 교정.
@@ -89,12 +124,16 @@ suppressPackageStartupMessages({ library(jsonlite); library(data.table) })
     skip_polarity           = c("unknown"), # 방향 미상은 사다리 대상 아님
     passed_rule             = "all_hurdles",# weighted 는 랭킹 전용(문턱 아님)
     # ── v9.1 커밋14 활성 상한 ─────────────────────────────────────────────
-    #   ★2026-08-30 문구 정정: 구 주석 "사람 승인이 사라지므로 필수" 는 오독을 부른다 —
-    #   **사람 승인은 사라지지 않았다**. promote.R 은 status="proposed" 까지만 쓰고
-    #   활성화는 approve_axiom(ids, approved_by="dohoon") 명시 호출로만 일어난다.
-    #   자동 경로(weekly_cleaner_sweep.R)는 그 함수를 **부르지 않고 안내만** 한다(833행).
-    #   훅도 status=="active" 만 주입한다. 2026-08-30 실측: mode-local 18건 전부 proposed,
-    #   active 0 — 관문이 실제로 작동 중이다. 상한은 승인 부재 대비가 아니라
+    #   ★2026-09-23 주석 정정(Axiom 전수감사 K20 · 도훈 AX-D1): 구 주석(2026-08-30)은
+    #   "promote.R 은 status=proposed 까지만 쓰고 활성화는 approve_axiom 명시 호출로만" 이라 적었으나
+    #   **코드는 그렇지 않았다** — .promote_to_active 가 REFINED ∧ .unattended_enabled() ∧ 상한 여유면
+    #   status="active" 를 무인으로 쓰고, 그 스위치 기본값이 '1'(ON)이었다. 실측: 09-01 월간 증류
+    #   (monthly_distill.R — dry_run 미지정)가 이 경로로 4건(AR-002·AR-004·RAMP-005·RAMP-006)을
+    #   approved_by=null · 무통보로 활성화했다.
+    #   ⇒ 현행(2026-09-23~): QVEST_AXIOM_UNATTENDED 기본 '0' = **무인 활성 OFF**. 이 파일의 어떤 경로도
+    #     (주간 스윕·월간 증류·수동 CLI) 명시적으로 '1' 을 주지 않는 한 status="active" 를 쓰지 않는다 —
+    #     승격 산출은 status="proposed" 이고, 활성화는 approve_axiom(ids, approved_by="dohoon") 로만 일어난다.
+    #   훅은 status=="active" 만 주입한다. 상한은 승인 부재 대비가 아니라
     #   **승인된 재고가 주입 렌더 상한(모드당 2·총 5줄)을 넘지 않게** 하는 장치다.
     #   초과 시 verdict = FAIL_CAP + 다이제스트 힌트. **자동 축출은 하지 않는다** —
     #   "무엇을 버릴지"는 사람이 정한다(deactivate_axiom / rollback_axiom).
@@ -615,7 +654,13 @@ promote_to_axiom <- function(candidate_path, threshold = 0.80, auto_inject = NUL
 }
 
 # ── v9.1 커밋16: 무인 활성화 kill switch (런타임 — 코드 변경 없이 초 단위 정지) ──
-.unattended_enabled <- function() identical(Sys.getenv("QVEST_AXIOM_UNATTENDED", "1"), "1")
+# ★2026-09-23 기본값 '1'→'0' (Axiom 전수감사 K2 · 도훈 AX-D1 단계 0-1 "무인 활성 동결").
+#   구 기본 ON 이라 스위치를 모르는 경로(월간 증류)가 그대로 무인 활성화를 했다. 이제 **켜려면 명시**해야 한다
+#   (QVEST_AXIOM_UNATTENDED=1). 이 술어가 정본이다 — 표시하는 쪽(weekly_cleaner_sweep.R ·
+#   morning_steps/axiom_approval_queue.R · ops/rf_axiom_activate.R)은 기본값을 따로 적지 말고 이 함수를 부른다
+#   (두 벌이면 한쪽만 바뀌어 'ON' 이라 표시하면서 실제로는 OFF 인 상태가 된다).
+#   검사: 08_Tests/axiom/test_axiom_freeze_retraction.R ⓑ(기본 OFF → active 0 · 양성 대조 =1 → active · 돌연변이 '1').
+.unattended_enabled <- function() identical(Sys.getenv("QVEST_AXIOM_UNATTENDED", "0"), "1")
 
 # ── v9.1 커밋14: 활성 상한 ──────────────────────────────────────────────────
 list_active_axioms <- function(mode = NULL, root = .px_root()) {
@@ -729,11 +774,11 @@ clear_tombstone <- function(cluster_key, reason, root = .px_root()) {
 }
 
 # v9.1 (2026-08-23 커밋13/14/16): 승격 산출물의 status 는 **정제 verdict 가 정한다**.
-#   REFINED ∧ QVEST_AXIOM_UNATTENDED=1 ∧ 상한 여유  → status="active"  (무인 활성화)
-#   그 외                                            → status="proposed" (HELD — 주입 안 됨)
-#   구 v9 는 전건 proposed + 도훈 1줄 confirm 이었다. E-1 이 그 승인을 **품질 게이트로 대체**한다:
-#   승인이 하던 일("이 문장이 대전제로 설 자격이 있는가")을 refine_statement.R 의 R0~R6 가 한다.
-#   되돌리기 = QVEST_AXIOM_UNATTENDED=0(초) · deactivate_axiom()(분) · rollback_axiom()(영구).
+#   REFINED ∧ QVEST_AXIOM_UNATTENDED=1(명시) ∧ 상한 여유  → status="active"  (무인 활성화 — 기본 OFF)
+#   그 외                                                  → status="proposed" (HELD — 주입 안 됨)
+#   ★2026-09-23 (도훈 AX-D1): 스위치 기본값이 '0' 이 됐다 — 명시하지 않는 한 두 번째 줄만 탄다.
+#   활성화는 approve_axiom(ids, approved_by="dohoon") 로만 일어나고, 정제 verdict(R0~R6)는 그 판단의 재료다.
+#   되돌리기 = deactivate_axiom()(분 — status 만 proposed) · rollback_axiom()(영구 — deprecated/ + tombstone).
 # ★멱등: 같은 cluster_key 의 공리가 이미 있으면 **새 파일을 만들지 않는다**. 없으면 매주 새
 #   번호가 발급돼 AX-AS-001..NNN 이 무한 증식한다. 단 기존 파일에 대해서도 **재정제는 돈다** —
 #   입력(corpus)이 바뀌면 HELD 가 REFINED 로 뒤집힐 수 있어야 "실패 = 영구 SKIP 없음"(AX-000)이
@@ -940,7 +985,7 @@ deactivate_axiom <- function(ids, reason, root = .px_root()) {
     ax$status <- "proposed"
     ax$deactivated_at <- format(Sys.time(), "%Y-%m-%dT%H:%M:%S%z")
     ax$deactivated_reason <- as.character(reason)[1]
-    write_json(ax, f, pretty = TRUE, auto_unbox = TRUE, null = "null")
+    .px_write_json(ax, f, root = root)   # 2026-09-23: 원자 쓰기(주입 훅이 같은 파일을 읽는다)
     .update_sot_map(id, as.character(ax$research_mode %||% "qepm_legacy")[1], ax, root = root)
     cat(sprintf("[deactivate] %s → status=proposed (주입면에서 제외) | 사유: %s\n", id, as.character(reason)[1]))
     out[[id]] <- list(status = "deactivated", path = f)
@@ -948,10 +993,11 @@ deactivate_axiom <- function(ids, reason, root = .px_root()) {
   invisible(out)
 }
 
-# ── 수동 승인 (v9.1: 상시 관문이 아니라 **예외 경로**) ───────────────────────
-# v9.1 커밋16 이후 활성화 정본은 refine_statement.R 의 R0~R6 다(무인). approve_axiom() 은
-#   ①롤백 후 재승인 ②HELD 를 사람이 판단해 수동 해제 ③QVEST_AXIOM_UNATTENDED=0 운용 중
-#   선별 활성화 — 이 세 경로로 **존치**한다. 삭제하면 되돌린 뒤 되돌아올 길이 없다.
+# ── 수동 승인 (2026-09-23~: **활성화의 정본 경로**) ─────────────────────────
+# v9.1 커밋16~2026-09-22 에는 활성화 정본이 refine_statement.R R0~R6(무인)이고 이 함수는 예외 경로였다.
+#   2026-09-23 도훈 AX-D1 로 무인 활성이 기본 OFF(QVEST_AXIOM_UNATTENDED=0)가 되면서 **이 함수가 정본**이다:
+#   ①proposed 공리의 활성화 ②롤백 후 재승인 ③HELD 를 사람이 판단해 수동 해제.
+#   삭제하면 되돌린 뒤 되돌아올 길이 없다.
 # proposed → active 전환 + sot_map 등재 + L-code 역링크(평생 1회 가드) 기록.
 # Usage: Rscript -e 'source("02_Infrastructure/axiom/promote.R"); approve_axiom(c("AX-AS-001"))'
 approve_axiom <- function(ids, approved_by = "dohoon", root = .px_root()) {
@@ -1037,7 +1083,7 @@ list_proposed_axioms <- function(root = .px_root()) {
     if (identical(as.character(sot$axioms[[i]]$status %||% ""), st)) return(invisible())
     sot$axioms[[i]]$status <- st
     sot$axioms[[i]]$sync_status <- sync
-    write_json(sot, sp, pretty = TRUE, auto_unbox = TRUE, null = "null")
+    .px_write_json(sot, sp, root = root)   # 2026-09-23: 원자 쓰기(HARD_3 이 읽는 정본)
     cat(sprintf("[promote] sot_map 갱신 %s → status=%s\n", ax_id, st))
     return(invisible())
   }
@@ -1049,7 +1095,7 @@ list_proposed_axioms <- function(root = .px_root()) {
     namespace = ns, axiom_class = axiom$axiom_class %||% "methodological",
     authority = "high", review_policy = "quarterly", enforcement_mode = "documented",
     sync_status = sync, cache_core_present = FALSE)
-  write_json(sot, sp, pretty = TRUE, auto_unbox = TRUE, null = "null")
+  .px_write_json(sot, sp, root = root)   # 2026-09-23: 원자 쓰기
   cat(sprintf("[promote] sot_map += %s (namespace=%s, status=%s)\n", ax_id, ns, st))
 }
 

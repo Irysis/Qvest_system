@@ -1443,6 +1443,15 @@ SUITES=(
   #   사본 위반 주입(인자 삭제 → 검거) + 새 배선 5 레인 해석기 경유. 폴백 검사(E3 = 13 레인 opus/max)도 함께 편입(미등록이었다).
   "08_Tests/ops/test_llm_lane_wiring.sh"
   "08_Tests/ops/test_rf_llm_fallback.sh"
+  #   P0-M3 셀 L-code 재라벨(1,106 → reinforcement_cell) — 원장 불변식 · enum · 소비자 샌드박스(harvester·positive_context·hypothesis_index) · 누출 가드 파스 재도출 + 돌연변이 4종
+  "08_Tests/axiom/test_lcode_cell_relabel.R"
+  # 2026-09-23 실사고(장중 catch-up 이 코스피200 진행 중 봉 1120.74 를 종가로 적재) — 네이버 벤치 마감 가드:
+  #   16:40 양성 · 14:25 차단 · 가드 끈 돌연변이 검거 · trading_calendar.R:311 규칙과 단일성 대조(운영 파일 무접촉)
+  "08_Tests/data/test_naver_benchmark_confirmed_cutoff.py"
+  # 2026-09-23 W-02(RAWDATA.Size 09-10~22 100% 결측 · factor_db_202609 V/S/L26 27종 0행) — Size 수리·경보:
+  #   디코더(UTF-8 재시도·명시 에러) · SPA 구조 변경 명시 에러 · API 정수 주식수 · 크기 앵커 복원(창 안만 = no_matching_day 돌연변이)
+  #   · fill_rate VALUE_FAIL(축 제거 돌연변이 PASS) · emission 게이트 · daily_refresh [1z]/[6a-gate] 실블록 실행(적재 줄 삭제 돌연변이 침묵)
+  "08_Tests/data/test_rawdata_size_guard.R"
 )
 
 

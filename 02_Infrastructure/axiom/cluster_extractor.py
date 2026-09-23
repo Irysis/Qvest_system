@@ -914,15 +914,25 @@ def build_distilled(cand_dir: str, dist_dir: str, index_path: str) -> tuple[int,
                 by_id[d["dist_id"]] = (f, d)
 
     # CAND 1회 파싱 (migration 계획 + main loop 공용)
+    # ★2026-09-23 (Axiom 전수감사 K4 · 도훈 AX-D2): build_candidates 와 **같은 제외 집합**(_CAND_EXCLUDED_MODES)을 적용한다.
+    #   build_candidates 만 막으면 디스크에 남은 기존 강화 CAND(16건 — 단계 1-3 이관 전까지 존치)가 매 사이클
+    #   DIST 초안을 계속 생성·갱신한다(증류가 꺼지지 않는다). 기존 강화 DIST 카드는 건드리지 않는다(갱신만 멈춤).
     cand_list: list = []
+    n_excluded_mode: dict = {}
     for cf in sorted(glob.glob(os.path.join(cand_dir, "CAND_*.json"))):
         cand = _load(cf)
         if not isinstance(cand, dict):
+            continue
+        _cm = cand.get("research_mode") or "unknown"
+        if _cm in _CAND_EXCLUDED_MODES:
+            n_excluded_mode[_cm] = n_excluded_mode.get(_cm, 0) + 1
             continue
         sup = cand.get("supporting_l_codes") or []
         if not sup:
             continue
         cand_list.append((cf, cand, frozenset(sup), _cluster_key(sup)))
+    for _m, _n in sorted(n_excluded_mode.items()):
+        print(f"  [exclude] distilled: research_mode={_m} CAND {_n}건 — DIST 초안 생성·갱신 제외(rf_lessons 일원화)")
 
     # ── forward-migration 선-패스 (엔진-갭 수리) ──
     n_migrated = n_consolidated = 0
@@ -1111,6 +1121,19 @@ def _singleton_cluster(lc: dict) -> dict:
     }
 
 
+# 후보(CAND)·증류(DIST) 생성에서 **빼는** research_mode — build_candidates 와 build_distilled 가 같은 집합을 쓴다.
+#   · reinforcement_cell (2026-09-23 P0-M3): 재라벨된 강화 셀 1,106건. 셀 교훈의 정본은 블록 L-code 다.
+#   · reinforcement      (2026-09-23 Axiom 전수감사 K4 · 도훈 AX-D2 '상하층 통합'): **강화 기억은 P3 rf_lessons 로
+#       일원화**한다. 이 엔진의 강화 클러스터 증류는 소비 0(강화 DIST 153장 중 distilled 0 · 후보 16건 자리표시자
+#       family=unknown)이었고, 같은 교훈이 블록 L-code(mechanism·avoid)·DIST-GEN·rf_lessons 세 곳에 흩어지는
+#       4번째 기억층이 된다(판정서 ⑥ — P3-02 '강화 증류 끔'의 실제 구현 지점). 강화 L-code 자체는 corpus 에 남고
+#       (hypothesis_index 조회·B1 재료 직통은 불변) **후보·증류만** 만들지 않는다.
+#       기존 강화 CAND 16건·DIST 초안의 이관/보관은 단계 1-3(rf_lessons 시드 이관) 소관 — 여기서 지우지 않는다.
+#   ★제외는 corpus 의 research_mode 필드 기준이다(디렉터리·id 접두 아님 — 재라벨이 필드를 정본으로 삼는다).
+#   검사: 08_Tests/axiom/test_axiom_freeze_retraction.R (샌드박스 cluster_extractor — 강화 CAND/DIST 0 · 비강화 유지 · 돌연변이).
+_CAND_EXCLUDED_MODES = frozenset({"reinforcement_cell", "reinforcement"})
+
+
 def build_candidates(corpus: dict, out_dir: str) -> list[str]:
     lcodes = corpus.get("lcodes", [])
     if not lcodes:
@@ -1122,6 +1145,15 @@ def build_candidates(corpus: dict, out_dir: str) -> list[str]:
     by_mode: dict = {}
     for lc in lcodes:
         by_mode.setdefault(lc.get("research_mode") or "unknown", []).append(lc)
+    # ★2026-09-23 (강화 전수감사 P0-M3 후속) — 재라벨된 강화 셀 L-code(reinforcement_cell · 1,106건)는 후보 생성에서 뺀다.
+    #   셀 교훈의 정본은 블록 L-code(mode=reinforcement)이고, 셀은 '충실구현' 으로 오발행됐던 역사 라벨이다.
+    #   넣으면 다음 증류가 CAND_reinforcement_cell_* 를 1,106건 규모로 만들어 Axiom 후보 큐를 잠근다(재라벨 보고 위험 5).
+    # ★2026-09-23 (Axiom 전수감사 K4 · 도훈 AX-D2) — reinforcement(블록 L-code)도 뺀다. 강화 기억은 rf_lessons(P3)로
+    #   일원화된다(_CAND_EXCLUDED_MODES 주석). build_distilled 가 같은 집합으로 기존 강화 CAND 를 DIST 로 올리지 않는다.
+    for _m in sorted(_CAND_EXCLUDED_MODES):
+        _dropped = by_mode.pop(_m, None)
+        if _dropped:
+            print(f"  [exclude] research_mode={_m}: {len(_dropped)} L-code — 후보 생성 제외(블록 L-code 가 정본)")
 
     new_cands: list = []
     for mode, mode_lcodes in by_mode.items():

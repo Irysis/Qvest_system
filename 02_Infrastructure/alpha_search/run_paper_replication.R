@@ -431,12 +431,13 @@ run_paper_replication <- function(strategy_name, strategy_idea, factor_engine_pa
     ##   exec_price = 하네스의 **실제** 체결 규약. replication_harness.R 은 새 보유에 집행일 수익
     ##   Close[exec]/Close[d]−1 을 붙이므로 사실상 시그널일 종가 체결이다(감사 D4-01, 코드 :58·:84-88).
     ##   P0-04(close_t1 전환)가 인자화되면 그 인자를 그대로 싣는다 — 여기 리터럴은 현행 동작의 정직한 기록이다.
-    measurement_regime = c(list(
+    ## ★태그는 기본 키를 덮지 못한다(2026-09-23 적대 리뷰 — c() 병합은 같은 이름을 두 번 싣는다 → JSON 중복 키).
+    ##   modifyList(태그, 기본) = 태그의 새 키만 추가되고 기본 키 값은 기본이 이긴다.
+    measurement_regime = utils::modifyList(if (is.list(measurement_tags)) measurement_tags else list(), list(
       selection_type = selection_type, n_trials_cumulative = n_trials_cumulative,
       exec_price = "close_d_legacy",
       harness_md5 = tryCatch(unname(as.character(tools::md5sum(file.path(.RP_INFRA, "replication", "replication_harness.R")))),
-                             error = function(e) NA_character_)),
-      if (is.list(measurement_tags)) measurement_tags else NULL),
+                             error = function(e) NA_character_))),
     ## ★essence_score 가 산출한 겼을 **떨어뜨리지 않는다** (도훈 2026-09-04).
     ##   이 쓰기는 반환 list 를 통째로 실지 않고 필드를 골라 쓴다. 그래서 새로
     ##   붙인 rolling_grade / defensive_score / grade_base 가 산출물에서 사라졌다 —

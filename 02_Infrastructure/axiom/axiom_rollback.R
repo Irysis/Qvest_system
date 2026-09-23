@@ -15,6 +15,27 @@ suppressPackageStartupMessages({ library(jsonlite) })
 }
 `%||%` <- function(a, b) if (is.null(a) || length(a) == 0 || (length(a) == 1 && is.na(a))) b else a
 
+# ── 원자적 JSON 쓰기 (2026-09-23) — 정본 = 02_Infrastructure/utils/atomic_json.R::qvest_atomic_write_json.
+#   promote.R::.px_write_json 과 같은 적재 규약(root → QM_ROOT → CLAUDE_PROJECT_DIR). 못 찾으면 stop()
+#   (비원자 강등 안 함). 직렬화 인자는 이 파일의 기존 write_json 호출과 같다 — 형식 불변.
+.RB_ATOMIC <- new.env(parent = emptyenv())
+.rb_write_json <- function(obj, path, root = NULL) {
+  fn <- .RB_ATOMIC$fn
+  if (is.null(fn)) {
+    cands <- unique(Filter(nzchar, c(if (!is.null(root)) as.character(root)[1] else "",
+                                     Sys.getenv("QM_ROOT", ""), Sys.getenv("CLAUDE_PROJECT_DIR", ""))))
+    src <- NA_character_
+    for (r in cands) {
+      p <- file.path(gsub("\\\\", "/", r), "02_Infrastructure", "utils", "atomic_json.R")
+      if (file.exists(p)) { src <- p; break }
+    }
+    if (is.na(src)) stop("[rollback] atomic_json.R 를 찾지 못함 — 원자 쓰기 불가: ", paste(cands, collapse = " | "))
+    e <- new.env(parent = globalenv()); sys.source(src, envir = e)
+    fn <- e$qvest_atomic_write_json; .RB_ATOMIC$fn <- fn
+  }
+  fn(obj, path, pretty = TRUE, auto_unbox = TRUE, null = "null", tag = "rollback")
+}
+
 # ### AX-ID 헤더 블록 + 마커 내 단일 줄 삭제
 .remove_axiom_block <- function(file_path, ax_id, apply) {
   if (!file.exists(file_path)) return(0L)
@@ -47,7 +68,13 @@ suppressPackageStartupMessages({ library(jsonlite) })
 # `reason` 은 **필수 인자**다 — 사유 없는 tombstone 은 해제 판단의 근거를 남기지 않는다.
 # `revive_condition` 은 INV-7 정신: 영구 금지가 아니라 **조건부 보류**임을 명시한다
 #   (해제 = promote.R::clear_tombstone(cluster_key, reason=)).
-rollback_axiom <- function(ax_id, apply = FALSE, reason, revive_condition = NULL) {
+# ── 2026-09-23 `release_backlinks` (기본 TRUE = 구 동작 불변) ─────────────────────
+#   FALSE 면 L-code 원장 파일(stage_artifacts/**/l_code_*.json)의 promoted_to_axiom 역링크를 **건드리지 않는다**.
+#   근거: Axiom 전수감사 판정서 ⑤ "폐기는 삭제가 아니다 — deprecated/ + tombstone, 근거 L-code(원장)는 건드리지 않는다"
+#   (도훈 AX-D3). 남는 역링크는 롤백된 공리 id 를 가리키는 **사료**이고, 그 공리는 deprecated/ + tombstone 으로
+#   추적된다(harvester 는 promoted 여부를 active/ 에서 재도출하므로 이 필드를 소비하지 않는다).
+#   deprecated 사본에 rollback_backlinks_released 를 남겨 어느 쪽이었는지 기록한다.
+rollback_axiom <- function(ax_id, apply = FALSE, reason, revive_condition = NULL, release_backlinks = TRUE) {
   if (missing(reason) || !nzchar(as.character(reason)[1]))
     stop("rollback_axiom: reason 필수 — usage: rollback_axiom(\"AX-AS-001\", apply=TRUE, reason=\"...\", revive_condition=NULL)")
   root <- .rb_root()
@@ -72,8 +99,10 @@ rollback_axiom <- function(ax_id, apply = FALSE, reason, revive_condition = NULL
     axiom$rolled_back_at <- format(Sys.time(), "%Y-%m-%d %H:%M:%S")
     axiom$rollback_reason <- as.character(reason)[1]
     if (!is.null(revive_condition)) axiom$revive_condition <- as.character(revive_condition)[1]
+    axiom$rollback_backlinks_released <- isTRUE(release_backlinks)
     dst <- file.path(dep_dir, sprintf("%s_rollback_%s.json", ax_id, format(Sys.Date(), "%Y%m%d")))
-    write_json(axiom, dst, pretty = TRUE, auto_unbox = TRUE, null = "null")
+    if (file.exists(dst)) stop(sprintf("[rollback] %s 이미 존재 — 같은 날 재롤백은 덮어쓰지 않는다(사료 보존)", dst))
+    .rb_write_json(axiom, dst, root = root)
     file.remove(ax_path)
     # ★tombstone = 이동과 **같은 트랜잭션**. 이 줄이 빠지면 다음 주 스윕이 같은 클러스터를
     #   새 번호로 재발급한다(무인 승격에서는 사람이 그걸 볼 기회조차 없다).
@@ -90,13 +119,15 @@ rollback_axiom <- function(ax_id, apply = FALSE, reason, revive_condition = NULL
         before <- length(sot$axioms)
         sot$axioms <- Filter(function(a) (a$axiom_id %||% "") != ax_id, sot$axioms)
         if (length(sot$axioms) < before) {
-          write_json(sot, sp, pretty = TRUE, auto_unbox = TRUE, null = "null")
+          .rb_write_json(sot, sp, root = root)
           cat(sprintf("  [rollback] sot_map -= %s\n", ax_id))
         }
       }
     }
-    # back-link 해제
-    for (lc in (axiom$supporting_l_codes %||% character(0))) {
+    # back-link 해제 (release_backlinks=FALSE 면 원장 L-code 무접촉 — 위 머리말 참조)
+    if (!isTRUE(release_backlinks))
+      cat(sprintf("  [rollback] %s: L-code 역링크 무접촉(release_backlinks=FALSE — 원장 불변)\n", ax_id))
+    for (lc in (if (isTRUE(release_backlinks)) axiom$supporting_l_codes %||% character(0) else character(0))) {
       lf <- list.files(file.path(root, "stage_artifacts"), pattern = "^l_code_.*\\.json$",
                        full.names = TRUE, recursive = TRUE)
       for (f in lf) { d <- tryCatch(fromJSON(f, simplifyVector = FALSE), error = function(e) NULL)
@@ -113,7 +144,8 @@ rollback_axiom <- function(ax_id, apply = FALSE, reason, revive_condition = NULL
   }
   invisible(list(ax_id = ax_id, lines_removed = total, applied = isTRUE(apply),
                  cluster_key = as.character(axiom$cluster_key %||% "")[1],
-                 reason = as.character(reason)[1]))
+                 reason = as.character(reason)[1],
+                 backlinks_released = isTRUE(release_backlinks)))
 }
 
 # tombstones.json append — promote.R::.tombstone_load 와 **같은 스키마**여야 한다
@@ -132,7 +164,7 @@ rollback_axiom <- function(ax_id, apply = FALSE, reason, revive_condition = NULL
     revive_condition = if (is.null(revive_condition)) NULL else as.character(revive_condition)[1],
     cleared = FALSE)
   d$updated_at <- format(Sys.time(), "%Y-%m-%dT%H:%M:%S%z")
-  write_json(d, p, pretty = TRUE, auto_unbox = TRUE, null = "null")
+  .rb_write_json(d, p, root = root)
   cat(sprintf("  [rollback] tombstone += %s (cluster_key=%s)%s\n", axiom_id,
               as.character(cluster_key %||% "?")[1],
               if (is.null(revive_condition)) "" else sprintf(" | 부활 조건: %s", revive_condition)))
@@ -147,7 +179,9 @@ if (!interactive() && length(commandArgs(trailingOnly = TRUE)) > 0) {
   .a <- .a[!startsWith(.a, "--")]
   if (!length(.reason) || !nzchar(.reason[1]))
     stop("usage: Rscript axiom_rollback.R <AX-ID> --reason=\"...\" [--revive=\"...\"] [--apply]")
+  .keep_bl <- "--keep-backlinks" %in% commandArgs(trailingOnly = TRUE)   # 2026-09-23: 원장 L-code 무접촉
   if (length(.a)) invisible(rollback_axiom(.a[1], apply = apply, reason = .reason[1],
-                                           revive_condition = if (length(.revive)) .revive[1] else NULL))
+                                           revive_condition = if (length(.revive)) .revive[1] else NULL,
+                                           release_backlinks = !.keep_bl))
 }
-cat("[axiom_rollback] Loaded. rollback_axiom(ax_id, apply=FALSE, reason=, revive_condition=NULL) — reason 필수\n")
+cat("[axiom_rollback] Loaded. rollback_axiom(ax_id, apply=FALSE, reason=, revive_condition=NULL, release_backlinks=TRUE) — reason 필수\n")

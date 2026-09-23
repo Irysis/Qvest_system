@@ -52,7 +52,9 @@ emit <- function() {
 ROOT <- NA_character_
 for (cand in c(file.path(.self, "..", ".."), Sys.getenv("QM_ROOT", ""))) {
   if (!nzchar(cand)) next
-  cand <- gsub("\\\\", "/", cand)
+  # 정규화를 검사보다 먼저(r-portability ③). '..' 를 접어 두지 않으면 긴 루트에서 파일 경로가 MAX_PATH(260)를
+  #   넘어 fromJSON 이 파일명 긴 것만 골라 실패한다(돌연변이 샌드박스에서 실측 — 파싱 실패로 위장).
+  cand <- normalizePath(cand, winslash = "/", mustWork = FALSE)
   if (file.exists(file.path(cand, .marker))) { ROOT <- cand; break }
   message(sprintf("[test_lcode_cell_relabel] 루트 후보 기각(marker 부재): %s", cand))
 }
@@ -81,8 +83,7 @@ invisible(reg.finalizer(globalenv(), function(e) unlink(SB, recursive = TRUE, fo
 .scan <- function(dir) {
   fs <- sort(list.files(dir, pattern = "^l_code_.*\\.json$", full.names = TRUE))
   rows <- lapply(fs, function(f) {
-    # 막 생성된 파일은 백신 실시간 검사가 잠깐 잠근다(돌연변이 실험에서 실측 — 사본 1172건 중 수백 건이
-    #   첫 읽기에서 실패했다가 곧 정상). 환경 실패를 판정으로 굳히지 않도록 짧게 3회까지 다시 읽는다.
+    # 일시적 파일 잠금(동기화·백신)에 한 번 실패한 것을 판정으로 굳히지 않도록 짧게 3회까지 다시 읽는다.
     d <- NULL
     for (k in 1:3) {
       d <- tryCatch(fromJSON(f, simplifyVector = FALSE), error = function(e) NULL)

@@ -13,6 +13,13 @@
   "_size_backfill_rule": "과거일 백필에는 그날의 시세페이지 스냅샷이 없다. 이때 Size 는 shares x Close 로 복원하되 **shares 가 창 안에서 안정일 때만** 쓴다(shares := Size/Close 를 검증된 날들에서 재도출해 상대편차 <= size_shares_tol). 불안정(유상증자·감자·병합)이면 복원하지 않고 NA + 사유를 남긴다 — 부재를 거짓으로 읽지 않는다.",
   "size_shares_tol": 0.02,
 
+  "size_api_endpoint": "https://m.stock.naver.com/api/stocks/marketValue",
+  "_size_api_endpoint": "★Size 정본 경로 (2026-09-23 W-02 수리). 구 size_endpoint(sise_market_sum.naver)는 stock.naver.com('Npay 증권' SPA)으로 302 되며 본문이 UTF-8 클라이언트 렌더링으로 바뀌어 table.type_2 가 사라졌다(재현: 스크래치 fetch 138,352 bytes · content-type 'text/html; charset=utf-8' · title 'Npay 증권' · table.type_2 0개). 09-12~09-23 매 실행이 EUC-KR 디코드 NA → read_html 예외로 죽은 원인이다. 같은 원천(네이버)의 모바일 JSON API 가 같은 양(시가총액)을 **원 단위 정수**로 준다: marketValueRaw / closePriceRaw 가 정확히 정수(실측 A005930 1,666,189,403,280,000 / 285,000 = 5,846,278,608) — 억원 반올림이 없고, 가격과 한 레코드라 발행주식수 직접 관측이 된다. 새 원천이 아니라 기존 원천의 경로 교체다(가격 소관은 여전히 price_endpoint 단독). 이 키가 없으면 수집기는 레거시 HTML 경로로 떨어지고, 그 경로는 구조 변경을 명시 에러로 낸다.",
+  "size_api_markets": ["KOSPI", "KOSDAQ"],
+  "_size_api_markets": "API 경로의 시장 식별자 = 레거시 sosok 0/1 과 같은 두 시장. 실측 2026-09-23 totalCount KOSDAQ 1,821.",
+  "size_api_page_size": 100,
+  "_size_api_page_size": "페이지당 행수. 실측 2026-09-23 pageSize=100 요청에 100행 응답. 페이지 수는 totalCount 로부터 재도출한다(상수 아님).",
+
   "request_sleep_sec": 0.12,
   "_request_sleep_sec": "요청 간 기본 대기(초). 워커당 적용된다 — 실효 요청률 = workers / (sleep + 왕복지연). 기본값에서 4워커 기준 약 10~14 req/s 로 과하게 두드리지 않는다.",
   "request_jitter_sec": 0.08,

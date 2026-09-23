@@ -1,45 +1,25 @@
 {
   "id": "AX-001",
-  "name": "Defense는 조건부 성과로 평가",
-  "text": "방어형 팩터를 전기간 SR/CAGR/MDD로 평가하면 Grade F. 위기 구간 alpha + Core 대비 MDD + bad/normal IC ratio로 평가.",
+  "name": "방어형 처분은 전기간 등급 단독 금지 — defensive_score 계약",
+  "text": "방어형 전략·팩터의 처분(기각·폐기)을 전기간 등급 단독으로 내리지 않는다. 방어형 판정 계약 = defensive_score(자격 기준은 무신호 대조 통과 후 확정).",
   "grade": "IMMUTABLE",
   "level": 0,
-  "enforcement": "Defense 전략 전기간 SR 기준 적용 금지",
+  "enforcement": "방어형 전략 기각·폐기 판정에 전기간 등급만 인용 금지 — 계약 defensive_score 산출을 병기",
   "versions": [
     {
-      "version": "v2",
-      "scope": "defense_factor (ticker-level low-beta/Q07/D25/composite)",
-      "axes": [
-        "crisis_alpha_event_count_3+",
-        "mdd_complement_vs_core",
-        "bad_normal_ic_ratio_1.5+"
-      ]
-    },
-    {
-      "version": "v2.1",
-      "amendment_id": "META-ALLOCATION-EXEMPT",
-      "effective": "2026-04-30",
-      "trigger": "WT-D20260430_001 first meta-allocation cycle + Judge S6 motion + Forge Forge ax001_v2 overall_pass=false + Q-Lead motion + 도훈 directive",
-      "l_code": "L-256",
-      "scope": "meta_allocation (weight schedule type — 종목 ranking 아닌 비중 overlay)",
-      "axes": [
-        "axis_1_crisis_alpha_conditional_overlay_firing_only",
-        "axis_2_mdd_complement_vs_core_3pp+",
-        "axis_3_crisis_regime_vol_reduction_bs_ci_upper_lt_1.0",
-        "axis_4_tail_risk_metrics_4_of_4_or_3_of_4"
-      ],
-      "verdict_rule": "3+ axis PASS = PASS_CONDITIONAL / 4 PASS = PASS / ≤2 = FAIL",
-      "application_rule": "Governor portfolio level decision 권한으로 적용. AX-002 process honesty: 현재 Judge verdict 변경 금지 (future amendment).",
-      "first_application": "WT-D20260430_001 (Governor reframe verdict 2026-04-30, L-257)",
-      "lawbook_ref": "00_Lawbook/Multi_Agent/ax001_v21_meta_allocation_amendment.md"
+      "version": "v3",
+      "effective": "2026-09-23",
+      "scope": "방어형 전략·팩터의 처분 판정(기각·폐기) 전반 — 층·모드 무관",
+      "rule": "방어형 전략·팩터의 처분(기각·폐기)을 전기간 등급 단독으로 내리지 않는다. 방어형 판정 계약 = defensive_score(자격 기준은 무신호 대조 통과 후 확정).",
+      "contract": "02_Infrastructure/contracts/defensive_score.R",
+      "qualification_threshold": "미확정 — 무신호 대조(no_signal_control) 통과 후 확정(K15: 방어형 판정률 93~98% 는 판별력 미검)"
     }
   ],
   "current_active_versions": [
-    "v2 (defense_factor scope)",
-    "v2.1 (meta_allocation scope)"
+    "v3 (방어형 처분 규칙 — defensive_score 계약)"
   ],
   "memory_id": "AX-001",
-  "canonical_statement": "방어형 팩터를 전기간 SR/CAGR/MDD로 평가하면 Grade F. 위기 구간 alpha + Core 대비 MDD + bad/normal IC ratio로 평가.",
+  "canonical_statement": "방어형 전략·팩터의 처분(기각·폐기)을 전기간 등급 단독으로 내리지 않는다. 방어형 판정 계약 = defensive_score(자격 기준은 무신호 대조 통과 후 확정).",
   "memory_kind": "axiom_active",
   "axiom_class": "methodological",
   "authority": "high",
@@ -79,5 +59,61 @@
     "semantics_changed": false,
     "report": "04_Research/01_reports/knowledge_provenance_audit_20260704.md",
     "note": "메타 기록 전용 — 공리 의미론(text/canonical_statement/grade/enforcement) 무변경 (감사 지시 ③)"
-  }
+  },
+  "statement": "방어형 전략·팩터의 처분(기각·폐기)을 전기간 등급 단독으로 내리지 않는다. 방어형 판정 계약 = defensive_score(자격 기준은 무신호 대조 통과 후 확정).",
+  "version": "v3",
+  "contract_ref": "02_Infrastructure/contracts/defensive_score.R",
+  "history": [
+    {
+      "name": "Defense는 조건부 성과로 평가",
+      "text": "방어형 팩터를 전기간 SR/CAGR/MDD로 평가하면 Grade F. 위기 구간 alpha + Core 대비 MDD + bad/normal IC ratio로 평가.",
+      "canonical_statement": "방어형 팩터를 전기간 SR/CAGR/MDD로 평가하면 Grade F. 위기 구간 alpha + Core 대비 MDD + bad/normal IC ratio로 평가.",
+      "enforcement": "Defense 전략 전기간 SR 기준 적용 금지",
+      "versions": [
+        {
+          "version": "v2",
+          "scope": "defense_factor (ticker-level low-beta/Q07/D25/composite)",
+          "axes": [
+            "crisis_alpha_event_count_3+",
+            "mdd_complement_vs_core",
+            "bad_normal_ic_ratio_1.5+"
+          ]
+        },
+        {
+          "version": "v2.1",
+          "amendment_id": "META-ALLOCATION-EXEMPT",
+          "effective": "2026-04-30",
+          "trigger": "WT-D20260430_001 first meta-allocation cycle + Judge S6 motion + Forge Forge ax001_v2 overall_pass=false + Q-Lead motion + 도훈 directive",
+          "l_code": "L-256",
+          "scope": "meta_allocation (weight schedule type — 종목 ranking 아닌 비중 overlay)",
+          "axes": [
+            "axis_1_crisis_alpha_conditional_overlay_firing_only",
+            "axis_2_mdd_complement_vs_core_3pp+",
+            "axis_3_crisis_regime_vol_reduction_bs_ci_upper_lt_1.0",
+            "axis_4_tail_risk_metrics_4_of_4_or_3_of_4"
+          ],
+          "verdict_rule": "3+ axis PASS = PASS_CONDITIONAL / 4 PASS = PASS / ≤2 = FAIL",
+          "application_rule": "Governor portfolio level decision 권한으로 적용. AX-002 process honesty: 현재 Judge verdict 변경 금지 (future amendment).",
+          "first_application": "WT-D20260430_001 (Governor reframe verdict 2026-04-30, L-257)",
+          "lawbook_ref": "00_Lawbook/Multi_Agent/ax001_v21_meta_allocation_amendment.md"
+        }
+      ],
+      "current_active_versions": [
+        "v2 (defense_factor scope)",
+        "v2.1 (meta_allocation scope)"
+      ],
+      "version": "v2 + v2.1 (META-ALLOCATION-EXEMPT)",
+      "superseded_at": "2026-09-23",
+      "superseded_by": "v3",
+      "status": "historical (사료 — 판정 근거로 인용 금지)",
+      "why_superseded": "Core·Governor(v2.1 application_rule) 대응물이 v10 에 없음 · 실제 판정은 hurdle_gate::ax001·방어형 병렬 경로·defensive_score 에서 이뤄져 문언과 갈라짐(K14) · L-256/257 레코드 부재"
+    }
+  ],
+  "approved_by": "dohoon",
+  "approved_at": "2026-09-23",
+  "decision_ref": "06_Registry/decision_register.json AX-D5-TEXT",
+  "amended_by": "Q session be2e88bf (AX-D5 이행)",
+  "amended_at": "2026-09-23T19:09:56+0900",
+  "amendment_basis": "Axiom 엔진 효용 전수감사 wf_d8ee80de-26d 판정서 ⑤·K14 (도훈 채팅 응답 — 권고안 채택)",
+  "note_v3": "enforcement_mode/enforcement_hook 는 이번 개정 범위 밖(무변경) — 08_Tests/hooks/test_ax001_defense_scope.R 가 그 의미론을 잰다. 판정서 K14 의 'block 오기' 지적은 별건."
 }

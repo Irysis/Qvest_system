@@ -323,23 +323,69 @@ naver_collect_adjusted <- function(codes, start, end, cfg = naver_collector_conf
 `%||%` <- function(a, b) if (is.null(a)) b else a
 
 #──────────────────────────────────────────────────────────────────────────────
-# 시세 페이지 — **Size(시가총액) 전용**. 가격으로 쓰지 않는다.
+# HTML 응답 디코더 — 선언 charset(Content-Type) → EUC-KR → UTF-8 순으로 시도하고,
+# 전부 실패하면 **명시 에러**(무엇을 시도했고 무엇이 왔는지)를 낸다.
+#
+# ★2026-09-23 실사고(W-02): finance.naver.com/sise/sise_market_sum.naver 가
+#   stock.naver.com('Npay 증권' SPA)으로 302 되면서 본문이 UTF-8 로 바뀌었다
+#   (재현: content-type 'text/html; charset=utf-8', iconv(from="EUC-KR") = NA).
+#   구판은 그 NA 를 그대로 read_html() 에 넘겨 "`x` must be a single string, not a
+#   character NA" 로 죽었고, 파이프라인은 Size 출처 분포만 보고 '장중 스냅샷 의심'
+#   이라고 **원인을 오귀속**했다(09-12·15·17·19·22·23 매 실행). 디코드 실패는
+#   디코드 실패라고 말해야 한다 — 부재를 다른 병으로 읽지 않는다.
+#──────────────────────────────────────────────────────────────────────────────
+.naver_decode_html <- function(raw, content_type = NULL, context = "naver") {
+  if (is.null(raw) || !length(raw))
+    stop(sprintf("[naver_decode] %s: 빈 응답 본문", context))
+  s <- rawToChar(raw)
+  ct <- tolower(paste(as.character(content_type %||% ""), collapse = " "))
+  declared <- if (grepl("charset=", ct, fixed = TRUE))
+    toupper(trimws(sub(".*charset=([^;[:space:]]+).*", "\\1", ct))) else NA_character_
+  cands <- unique(stats::na.omit(c(declared, "EUC-KR", "UTF-8")))
+  for (enc in cands) {
+    if (enc %in% c("UTF-8", "UTF8")) {
+      if (isTRUE(validUTF8(s))) { Encoding(s) <- "UTF-8"; return(s) }
+      next
+    }
+    x <- suppressWarnings(tryCatch(iconv(s, from = enc, to = "UTF-8"), error = function(e) NA_character_))
+    if (length(x) == 1L && !is.na(x)) return(x)
+  }
+  stop(sprintf(paste0("[naver_decode] %s: 응답 디코드 실패 — %s 어느 것으로도 유효한 문자열이 ",
+                      "아니다 (content-type='%s', %d bytes)"),
+               context, paste(cands, collapse = "/"), ct, length(raw)))
+}
+
+#──────────────────────────────────────────────────────────────────────────────
+# 시세 페이지(레거시 HTML) — **Size(시가총액) 전용**. 가격으로 쓰지 않는다.
 #
 # ★2026-09-07: 이 페이지의 Close 는 **원주가 + 장중 현재가**다. 구판이 이걸 종가로
 #   적재해 09-01 오각인 사고가 났다. 여기서 나오는 값에는 price_basis 스탬프를 박고
 #   병합기가 Close 로 쓰지 못하게 막는다(소관 분리 = 이음매 예방).
+# ★2026-09-23: 이 페이지는 SPA 로 교체돼 table.type_2 가 없다(재현 = 스크래치 페이지
+#   title 'Npay 증권', table.type_2 0개, a.tltle 0개). 정본 Size 경로는 이제
+#   size_api_endpoint(JSON)다 — 이 함수는 설정에 API 키가 없을 때의 레거시 경로로만
+#   남고, 구조가 다르면 NULL 이 아니라 **명시 에러**를 낸다(조용한 0행 금지).
 #──────────────────────────────────────────────────────────────────────────────
 .naver_sise_page <- function(sosok, page, cfg = naver_collector_config()) {
   url <- sprintf("%s?sosok=%d&page=%d", cfg$size_endpoint, sosok, page)
-  resp <- tryCatch(GET(url, add_headers(`User-Agent` = "Mozilla/5.0")), error = function(e) NULL)
-  if (is.null(resp) || status_code(resp) != 200) return(NULL)
+  resp <- tryCatch(GET(url, add_headers(`User-Agent` = "Mozilla/5.0"),
+                       timeout(as.numeric(cfg$request_timeout_sec))),
+                   error = function(e) structure(list(msg = conditionMessage(e)), class = "naver_neterr"))
+  if (inherits(resp, "naver_neterr"))
+    stop(sprintf("[naver_size] %s: 네트워크 실패 (%s)", url, resp$msg))
+  if (status_code(resp) != 200)
+    stop(sprintf("[naver_size] %s: HTTP %d", url, status_code(resp)))
 
-  txt <- iconv(rawToChar(content(resp, "raw")), from = "EUC-KR", to = "UTF-8")
+  txt <- .naver_decode_html(content(resp, "raw"), headers(resp)[["content-type"]], context = url)
   html <- read_html(txt)
 
-  tbl <- tryCatch(html %>% html_node("table.type_2") %>% html_table(fill = TRUE),
-                  error = function(e) NULL)
-  if (is.null(tbl)) return(NULL)
+  tnode <- html_node(html, "table.type_2")
+  if (inherits(tnode, "xml_missing"))
+    stop(sprintf(paste0("[naver_size] 페이지 구조 변경 — table.type_2 부재 (title='%s', final_url=%s). ",
+                        "레거시 HTML 경로는 죽었다: size_api_endpoint(JSON) 를 설정할 것"),
+                 trimws(html_text(html_node(html, "title"))), resp$url))
+  tbl <- tryCatch(html_table(tnode, fill = TRUE), error = function(e) NULL)
+  if (is.null(tbl)) stop(sprintf("[naver_size] %s: table.type_2 파싱 실패", url))
 
   codes <- tryCatch({
     links <- html %>% html_nodes("a.tltle") %>% html_attr("href")
@@ -375,10 +421,18 @@ naver_collect_adjusted <- function(codes, start, end, cfg = naver_collector_conf
 
 .naver_last_page <- function(sosok, cfg = naver_collector_config()) {
   url <- sprintf("%s?sosok=%d&page=1", cfg$size_endpoint, sosok)
-  resp <- tryCatch(GET(url, add_headers(`User-Agent` = "Mozilla/5.0")), error = function(e) NULL)
-  if (is.null(resp)) return(1L)
-  txt <- iconv(rawToChar(content(resp, "raw")), from = "EUC-KR", to = "UTF-8")
+  resp <- tryCatch(GET(url, add_headers(`User-Agent` = "Mozilla/5.0"),
+                       timeout(as.numeric(cfg$request_timeout_sec))),
+                   error = function(e) structure(list(msg = conditionMessage(e)), class = "naver_neterr"))
+  # ★구판은 네트워크 실패를 '1페이지' 로 읽었다 — 부재를 정상 값으로 바꾸는 자리다.
+  if (inherits(resp, "naver_neterr"))
+    stop(sprintf("[naver_size] %s: 네트워크 실패 (%s)", url, resp$msg))
+  if (status_code(resp) != 200) stop(sprintf("[naver_size] %s: HTTP %d", url, status_code(resp)))
+  txt <- .naver_decode_html(content(resp, "raw"), headers(resp)[["content-type"]], context = url)
   html <- read_html(txt)
+  if (inherits(html_node(html, "table.type_2"), "xml_missing"))
+    stop(sprintf("[naver_size] 페이지 구조 변경 — table.type_2 부재 (title='%s', final_url=%s)",
+                 trimws(html_text(html_node(html, "title"))), resp$url))
   paging <- html %>% html_nodes("td.pgRR a") %>% html_attr("href")
   if (length(paging) > 0) {
     m <- regmatches(paging[1], regexpr("page=[0-9]+", paging[1], perl = TRUE))
@@ -386,26 +440,149 @@ naver_collect_adjusted <- function(codes, start, end, cfg = naver_collector_conf
   } else 1L
 }
 
+#──────────────────────────────────────────────────────────────────────────────
+# 시가총액 JSON API — **Size 정본 경로 (2026-09-23 W-02 수리)**. 가격으로 쓰지 않는다.
+#
+# 응답(UTF-8 JSON): {stocks:[{itemCode, stockName, closePriceRaw, marketValueRaw,
+#   accumulatedTradingVolumeRaw, localTradedAt, stockEndType, ...}], totalCount, page, pageSize}
+# ★marketValueRaw 는 **원 단위 정수**다(레거시 페이지는 억원 반올림). 그래서
+#   shares = marketValueRaw / closePriceRaw 가 정확히 정수로 떨어진다 — 실측 2026-09-23
+#   A005930 1,666,189,403,280,000 / 285,000 = 5,846,278,608. 이 정수성이 '같은 레코드의
+#   시총과 가격' 이라는 증거이고, 그래서 가격 일치 없이도 **발행주식수 직접 관측**
+#   (shares_exact) 으로 쓸 수 있다 — 스냅샷 가격이 NXT 애프터마켓으로 확정 종가와
+#   어긋나도(실측 18:05 API 285,000 vs siseJson 285,500) 주식수는 흔들리지 않는다.
+# 순수 파서 — 네트워크 없음. 검사기가 고정 픽스처로 부른다.
+#──────────────────────────────────────────────────────────────────────────────
+.naver_empty_size_dt <- function() {
+  data.table(Ticker = character(0), Name = character(0), snap_close = numeric(0),
+             snap_vol = numeric(0), Size = numeric(0), Market = character(0),
+             snap_traded_at = character(0), stock_end_type = character(0),
+             snap_shares = numeric(0), shares_exact = logical(0))
+}
+
+.naver_parse_size_api <- function(txt, market) {
+  if (is.null(txt) || length(txt) != 1L || is.na(txt) || !nzchar(txt))
+    stop(sprintf("[naver_size_api] %s: 빈 응답", market))
+  js <- tryCatch(jsonlite::fromJSON(txt, simplifyVector = TRUE),
+                 error = function(e) stop(sprintf("[naver_size_api] %s: JSON 파싱 실패 (%s)",
+                                                  market, conditionMessage(e))))
+  if (!is.list(js) || !"stocks" %in% names(js))
+    stop(sprintf("[naver_size_api] %s: 응답 구조 변경 — 'stocks' 키 부재 (keys=%s)",
+                 market, paste(names(js), collapse = ",")))
+  total <- suppressWarnings(as.integer(js$totalCount %||% NA_integer_))
+  st <- js$stocks
+  if (is.null(st) || !NROW(st)) return(list(data = .naver_empty_size_dt(), total = total))
+  need <- c("itemCode", "closePriceRaw", "marketValueRaw")
+  miss <- setdiff(need, names(st))
+  if (length(miss))
+    stop(sprintf("[naver_size_api] %s: 응답 구조 변경 — 필드 부재 %s", market, paste(miss, collapse = ",")))
+  num <- function(x) suppressWarnings(as.numeric(gsub("[^0-9.-]", "", as.character(x))))
+  col <- function(nm) if (nm %in% names(st)) as.character(st[[nm]]) else rep(NA_character_, NROW(st))
+  dt <- data.table(
+    Ticker = paste0("A", as.character(st$itemCode)),
+    Name = col("stockName"),
+    snap_close = num(st$closePriceRaw),
+    snap_vol = num(col("accumulatedTradingVolumeRaw")),
+    Size = num(st$marketValueRaw),                  # 원(KRW) 단위 — 배율 곱 없음
+    Market = market,
+    snap_traded_at = col("localTradedAt"),
+    stock_end_type = col("stockEndType"))
+  dt[, snap_shares := fifelse(is.finite(Size) & is.finite(snap_close) & snap_close > 0,
+                              Size / snap_close, NA_real_)]
+  # 정수성 = 시총과 가격이 같은 레코드에서 왔다는 증거. 문턱은 부동소수 표현오차 한 줄뿐
+  # (2^53 미만 정수 나눗셈은 정확하다 — 1e-6 은 판정축이 아니라 표현 여유다).
+  dt[, shares_exact := is.finite(snap_shares) & abs(snap_shares - round(snap_shares)) < 1e-6]
+  list(data = dt, total = total)
+}
+
+.naver_size_api_page <- function(market, page, cfg = naver_collector_config()) {
+  url <- sprintf("%s/%s?page=%d&pageSize=%d", cfg$size_api_endpoint, market, as.integer(page),
+                 as.integer(cfg$size_api_page_size))
+  tries <- as.integer(cfg$max_retries) + 1L
+  last <- "unknown"
+  for (k in seq_len(tries)) {
+    resp <- tryCatch(GET(url, add_headers(`User-Agent` = "Mozilla/5.0"),
+                         timeout(as.numeric(cfg$request_timeout_sec))),
+                     error = function(e) structure(list(msg = conditionMessage(e)), class = "naver_neterr"))
+    if (inherits(resp, "naver_neterr")) {
+      last <- paste0("network_error: ", resp$msg)
+    } else {
+      sc <- status_code(resp)
+      if (sc == 200L) {
+        txt <- .naver_decode_html(content(resp, "raw"), headers(resp)[["content-type"]], context = url)
+        return(.naver_parse_size_api(txt, market))
+      }
+      if (sc >= 400L && sc < 500L && sc != 429L) stop(sprintf("[naver_size_api] %s: HTTP %d", url, sc))
+      last <- sprintf("http_%d", sc)
+    }
+    if (k < tries) Sys.sleep(as.numeric(cfg$retry_backoff_base_sec) * (2^(k - 1L)) +
+                               stats::runif(1, 0, as.numeric(cfg$request_jitter_sec)))
+  }
+  stop(sprintf("[naver_size_api] %s: 재시도 소진 (%s)", url, last))
+}
+
+.naver_collect_size_api <- function(cfg = naver_collector_config()) {
+  out <- list(); expected <- 0L
+  for (mkt in as.character(cfg$size_api_markets)) {
+    pg <- 1L; got <- 0L; total <- NA_integer_
+    repeat {
+      r <- .naver_size_api_page(mkt, pg, cfg)
+      if (is.na(total)) total <- r$total
+      if (!nrow(r$data)) break
+      out[[length(out) + 1L]] <- r$data
+      got <- got + nrow(r$data)
+      if (is.finite(total) && got >= total) break
+      pg <- pg + 1L
+      # 페이지 상한 = totalCount 로부터 재도출(무한루프 방지) — 상수를 박지 않는다
+      if (is.finite(total) && pg > ceiling(total / as.numeric(cfg$size_api_page_size)) + 1L) break
+      Sys.sleep(as.numeric(cfg$request_sleep_sec) + stats::runif(1, 0, as.numeric(cfg$request_jitter_sec)))
+    }
+    cat(sprintf("[naver_size] %s: %d/%s종 (%d페이지)\n", mkt, got,
+                if (is.finite(total)) format(total) else "?", pg))
+    if (is.finite(total) && got < total)
+      cat(sprintf("[naver_size][WARN] %s: 수집 %d < totalCount %d — 미수집 종목은 스냅샷 부재로 남는다\n",
+                  mkt, got, total))
+    expected <- expected + (if (is.finite(total)) total else 0L)
+  }
+  if (!length(out)) stop("[naver_size_api] 전 시장 0행 — 스냅샷 부재 (응답 구조/엔드포인트 확인)")
+  all_dt <- rbindlist(out, fill = TRUE)
+  attr(all_dt, "n_expected") <- expected
+  all_dt
+}
+
 #' 전종목 **시가총액 스냅샷** (구 naver_collect_all — 역할 축소).
 #' 반환 열: Ticker/Name/snap_close/snap_vol/Size/Market/Date/price_basis
+#'          (+ API 경로: snap_shares/shares_exact/snap_traded_at/size_basis)
+#' ★실패는 NULL 이 아니라 **stop(사유)** 이다 — 호출자가 '못 받음' 을 사유와 함께 찍게 한다.
 naver_collect_size_snapshot <- function(cfg = naver_collector_config()) {
   cat("[naver_size] 전종목 시가총액 스냅샷 수집...\n")
   t0 <- Sys.time()
-  results <- list()
-  for (sosok in c(0, 1)) {
-    mkt <- if (sosok == 0) "KOSPI" else "KOSDAQ"
-    last_page <- .naver_last_page(sosok, cfg)
-    cat(sprintf("[naver_size] %s: %d페이지\n", mkt, last_page))
-    for (pg in 1:last_page) {
-      dt <- tryCatch(.naver_sise_page(sosok, pg, cfg), error = function(e) NULL)
-      if (!is.null(dt) && nrow(dt) > 0) results[[length(results) + 1]] <- dt
-      Sys.sleep(0.3)
+  use_api <- !is.null(cfg$size_api_endpoint) && nzchar(as.character(cfg$size_api_endpoint))
+  if (use_api) {
+    all_dt <- .naver_collect_size_api(cfg)
+    .sb <- "api_marketValueRaw_krw"
+  } else {
+    results <- list(); errs <- character(0)
+    for (sosok in c(0, 1)) {
+      mkt <- if (sosok == 0) "KOSPI" else "KOSDAQ"
+      last_page <- tryCatch(.naver_last_page(sosok, cfg),
+                            error = function(e) { errs <<- c(errs, conditionMessage(e)); 0L })
+      cat(sprintf("[naver_size] %s: %d페이지\n", mkt, last_page))
+      for (pg in seq_len(last_page)) {
+        dt <- tryCatch(.naver_sise_page(sosok, pg, cfg),
+                       error = function(e) { errs <<- c(errs, conditionMessage(e)); NULL })
+        if (!is.null(dt) && nrow(dt) > 0) results[[length(results) + 1]] <- dt
+        Sys.sleep(0.3)
+      }
     }
+    if (length(results) == 0)
+      stop(sprintf("[naver_size] 레거시 HTML 수집 0행 — %s",
+                   if (length(errs)) errs[1] else "사유 미상(에러 없이 0행)"))
+    all_dt <- rbindlist(results, fill = TRUE)
+    .sb <- "legacy_html_eokwon_x1e8"
   }
-  if (length(results) == 0) { cat("[naver_size] 수집 실패\n"); return(NULL) }
-
-  all_dt <- rbindlist(results, fill = TRUE)
   all_dt <- all_dt[!is.na(Size) & Size > 0]
+  if (!nrow(all_dt)) stop("[naver_size] 유효 Size 0행 — 스냅샷 부재")
   if (exists("last_confirmed_trading_day")) {
     all_dt[, Date := last_confirmed_trading_day()]
   } else {
@@ -417,13 +594,19 @@ naver_collect_size_snapshot <- function(cfg = naver_collector_config()) {
   }
   # ★스탬프: 이 표의 가격은 원주가이며 장중값일 수 있다. 소비자가 Close 로 쓰면 안 된다.
   all_dt[, price_basis := "unadjusted_intraday_snapshot"]
+  all_dt[, size_basis := .sb]
+  all_dt[, snapshot_taken_at := format(Sys.time(), "%Y-%m-%dT%H:%M:%S%z")]
 
-  cat(sprintf("[naver_size] 완료: %d종목 | %.1f초\n", nrow(all_dt),
-              as.numeric(difftime(Sys.time(), t0, units = "secs"))))
+  n_exact <- if ("shares_exact" %in% names(all_dt)) sum(all_dt$shares_exact %in% TRUE) else 0L
+  cat(sprintf("[naver_size] 완료: %d종목 (주식수 정수 관측 %d) | 기준 %s | %.1f초\n", nrow(all_dt),
+              n_exact, .sb, as.numeric(difftime(Sys.time(), t0, units = "secs"))))
   out_dir <- file.path(NAVER_CACHE_DIR, "snapshot")
   if (!dir.exists(out_dir)) dir.create(out_dir, recursive = TRUE)
-  write_parquet(all_dt, file.path(out_dir, sprintf("size_snapshot_%s.parquet",
-                                                   format(Sys.Date(), "%Y%m%d"))))
+  fp <- file.path(out_dir, sprintf("size_snapshot_%s.parquet", format(Sys.Date(), "%Y%m%d")))
+  tmp <- paste0(fp, ".tmp", Sys.getpid())
+  write_parquet(all_dt, tmp)
+  if (file.exists(fp)) file.remove(fp)
+  file.rename(tmp, fp)
   invisible(all_dt)
 }
 
@@ -447,7 +630,7 @@ naver_quick_price <- function(code, n = 5) {
   if (is.null(resp) || status_code(resp) != 200) {
     cat(sprintf("[Naver] %s: fetch failed\n", code)); return(NULL)
   }
-  txt <- iconv(rawToChar(content(resp, "raw")), from = "EUC-KR", to = "UTF-8")
+  txt <- .naver_decode_html(content(resp, "raw"), headers(resp)[["content-type"]], context = url)
   tbl <- tryCatch(read_html(txt) %>% html_table(fill = TRUE), error = function(e) list())
   if (length(tbl) < 1) return(NULL)
   raw_tbl <- as.data.frame(tbl[[1]])
@@ -469,7 +652,10 @@ naver_kospi200_close <- function() {
   url <- "https://finance.naver.com/sise/sise_index.naver?code=KOSPI"
   resp <- tryCatch(GET(url, add_headers(`User-Agent` = "Mozilla/5.0")), error = function(e) NULL)
   if (is.null(resp) || status_code(resp) != 200) return(NULL)
-  txt <- iconv(rawToChar(content(resp, "raw")), from = "EUC-KR", to = "UTF-8")
+  txt <- tryCatch(.naver_decode_html(content(resp, "raw"), headers(resp)[["content-type"]], context = url),
+                  error = function(e) { cat(conditionMessage(e), "
+"); NA_character_ })
+  if (is.na(txt)) return(NULL)
   now_val <- tryCatch({
     read_html(txt) %>% html_node("#now_value") %>% html_text() %>%
       gsub("[^0-9.]", "", .) %>% as.numeric()
@@ -488,8 +674,18 @@ naver_kospi200_close <- function() {
 #      일치한 날들에서 shares_adj = Size / AdjClose 를 재도출해 중앙값을 곱해 복원한다.
 #   ③ shares 가 창 안에서 불안정하거나(유상증자·감자) 일치한 날이 하나도 없으면
 #      **NA + 사유**. 부재를 거짓으로 읽지 않는다.
+#
+# ★2026-09-23 확장(W-02 · 검증자 정정 반영) — 인자 둘:
+#   shares_obs  = data.table(Ticker, shares): **발행주식수 직접 관측**(API 스냅샷의
+#                 marketValueRaw/closePriceRaw 정수). 가격 일치 없이도 ② 의 표본에 든다.
+#   basis_block = data.table(Ticker, reason): 창 안에서 조정기준이 바뀐 종목(크기 앵커일의
+#                 저장 종가 ≠ 새 수정주가). 이 종목은 **복원 금지** — 사유를 달아 NA.
+#                 같은 날 스냅샷(①)은 기준 문제가 없으므로 막지 않는다.
+#   ★'창을 넓혀 앵커일 행을 넘겨야 한다' 는 호출자 몫이다(naver_backfill_range 의
+#     size_anchor) — 이 함수는 new_dt 와 (Date,Ticker) 가 겹치는 행만 짝짓는다.
 #──────────────────────────────────────────────────────────────────────────────
-.naver_resolve_size <- function(new_dt, old_window, cfg = naver_collector_config()) {
+.naver_resolve_size <- function(new_dt, old_window, cfg = naver_collector_config(),
+                                shares_obs = NULL, basis_block = NULL) {
   stopifnot(is.data.table(new_dt), all(c("Date", "Ticker", "Close") %in% names(new_dt)))
   tol <- as.numeric(cfg$size_shares_tol)
   key <- function(d, t) paste0(as.character(d), "|", t)
@@ -505,18 +701,29 @@ naver_kospi200_close <- function() {
   x[, price_agrees := is.finite(old_close) & is.finite(Close) & abs(old_close - Close) < 1e-6]
   x[, shares_adj := fifelse(price_agrees & is.finite(old_size) & Close > 0, old_size / Close, NA_real_)]
 
-  # ② 종목별 shares 안정성
-  st <- x[is.finite(shares_adj), .(sh_med = median(shares_adj), n_sh = .N,
-                                   sh_spread = if (.N > 1L) (max(shares_adj) / min(shares_adj) - 1) else 0),
-          by = Ticker]
+  # ② 종목별 shares 안정성 — 가격일치 관측 + 직접 관측(정수 주식수)
+  obs <- x[is.finite(shares_adj), .(Ticker, shares = shares_adj)]
+  if (!is.null(shares_obs) && nrow(shares_obs)) {
+    so <- as.data.table(shares_obs)[is.finite(shares) & shares > 0, .(Ticker, shares)]
+    obs <- rbindlist(list(obs, so), use.names = TRUE)
+  }
+  st <- obs[, .(sh_med = median(shares), n_sh = .N,
+                sh_spread = if (.N > 1L) (max(shares) / min(shares) - 1) else 0),
+            by = Ticker]
   x <- merge(x, st, by = "Ticker", all.x = TRUE, sort = FALSE)
   # ★shares_stable 은 **벡터**다 — isTRUE() 로 접으면 스칼라 FALSE 가 되어 전 행에
   #   같은 사유가 찍힌다(라벨이 사실을 덮는 자리).
   x[, shares_stable := !is.na(sh_spread) & is.finite(sh_spread) & sh_spread <= tol]
 
+  bb <- if (!is.null(basis_block) && nrow(basis_block))
+    unique(as.data.table(basis_block)[, .(Ticker, block_reason = as.character(reason))], by = "Ticker") else
+      data.table(Ticker = character(0), block_reason = character(0))
+  x <- merge(x, bb, by = "Ticker", all.x = TRUE, sort = FALSE)
+
   x[, Size := NA_real_]
   x[price_agrees & is.finite(old_size), `:=`(Size = old_size, size_source = "snapshot_same_day")]
-  x[is.na(Size) & shares_stable & is.finite(sh_med) & is.finite(Close),
+  x[is.na(Size) & is.na(size_source) & !is.na(block_reason), size_source := block_reason]
+  x[is.na(Size) & is.na(size_source) & shares_stable & is.finite(sh_med) & is.finite(Close),
     `:=`(Size = sh_med * Close, size_source = "reconstructed_shares_x_close")]
   x[is.na(Size) & is.na(size_source) & !shares_stable & !is.na(sh_spread),
     size_source := "unavailable_shares_unstable"]
@@ -571,8 +778,12 @@ NAVER_VALUE_COLS <- c("Open", "High", "Low", "Close", "Vol", "Size", "Ret")
 #'   지는 행은 값·라벨을 **둘 다** 건드리지 않고 보존하며, 몇 행이 왜 스킵됐는지 남긴다.
 #'
 #' @return list(dt=, n_updated=, n_appended=, n_skipped=, decisions=, preserved_cols=)
+#' ★set_source=FALSE (2026-09-23): **값 한 열만** 고치는 보수(예: Size 백필)는 행의 출처를
+#'   바꾸지 않는다 — 가격 열은 그대로 incumbent 의 것이므로 라벨을 새로 찍으면 이음매 지도가
+#'   거짓이 된다. 우선순위 판정(덮어도 되는가)은 그대로 거친다.
 .naver_apply_update <- function(raw, upd, value_cols = NAVER_VALUE_COLS,
-                                incoming_source = "naver", cfg_pri = NULL) {
+                                incoming_source = "naver", cfg_pri = NULL,
+                                set_source = TRUE) {
   stopifnot(is.data.table(raw), is.data.table(upd))
   if (!exists("rawdata_priority_decide")) {
     # ★DATA_DIR 은 config.R 산출이라 이 함수를 **격리 환경에 꺼내 돌리는 검사**에는 없다.
@@ -604,7 +815,7 @@ NAVER_VALUE_COLS <- c("Open", "High", "Low", "Close", "Vol", "Size", "Ret")
 
   for (cc in intersect(value_cols, names(upd)))
     set(raw, i = hit, j = cc, value = upd[[cc]][pos[hit]])
-  set(raw, i = hit, j = "source", value = incoming_source)
+  if (isTRUE(set_source)) set(raw, i = hit, j = "source", value = incoming_source)
   add <- upd[!ku %in% kr]
   n_add <- nrow(add)
   if (n_add) {
@@ -614,13 +825,39 @@ NAVER_VALUE_COLS <- c("Open", "High", "Low", "Close", "Vol", "Size", "Ret")
   setorder(raw, Date, Ticker)
   list(dt = raw, n_updated = length(hit), n_appended = n_add, n_skipped = length(skipped),
        decisions = dec[, .N, by = .(decision, incumbent_source, incoming_source)],
-       preserved_cols = setdiff(before_cols, c(value_cols, "source")))
+       preserved_cols = setdiff(before_cols, c(value_cols, if (isTRUE(set_source)) "source")))
+}
+
+#' 크기 앵커일 — start 이전에서 Size 채움률이 정상인 **마지막 날**.
+#' ★W-02 검증자 정정(2026-09-23): .naver_resolve_size 는 new_dt 와 (Date,Ticker) 가 겹치는
+#'   행만 짝짓는다. 직전 거래일(가격 앵커)의 Size 도 결측이면 창 안에 짝이 하나도 없어
+#'   복원이 원리적으로 불가능하다(09-10~22 100% 결측이 스스로 영속한 기전). 그래서 수집
+#'   창을 이 날까지 넓혀 그 행을 resolve 에 넘긴다. 채움률 문턱은 RAWDATA 값-무결성
+#'   선언(cache_registry.json::fill_rate) 하나에서 온다 — 경보와 앵커가 같은 문턱을 쓴다.
+#'   후퇴 한도 = seam_guard_config::SCALE_LOOKBACK_DAYS(앵커 후퇴 한도, 같은 뜻).
+.naver_size_anchor_date <- function(raw, start) {
+  if (!exists("rawdata_fill_spec")) source(file.path(DATA_DIR, "rawdata_fill_guard.R"))
+  if (!exists("seam_guard_config")) source(file.path(DATA_DIR, "seam_scale_guard.R"))
+  mx <- as.numeric(rawdata_fill_spec()$max_na_rate)
+  lb <- as.integer(seam_guard_config()$SCALE_LOOKBACK_DAYS)
+  cov <- raw[Date < start & Date >= start - lb, .(na_rate = mean(!is.finite(Size))), by = Date]
+  ok <- cov[na_rate <= mx]
+  if (!nrow(ok)) return(as.Date(NA))
+  max(ok$Date)
 }
 
 naver_backfill_range <- function(start, end, dry_run = TRUE, cfg = naver_collector_config(),
                                  tickers = NULL, out_dir = NULL, label = "naver_adjusted",
-                                 size_ref = NULL) {
+                                 size_ref = NULL, size_anchor = TRUE,
+                                 value_cols = NAVER_VALUE_COLS) {
   start <- as.Date(start); end <- as.Date(end)
+  value_cols <- unique(as.character(value_cols))
+  if (!length(value_cols) || !all(value_cols %in% NAVER_VALUE_COLS))
+    stop("[naver_backfill] value_cols 는 NAVER_VALUE_COLS 의 부분집합이어야 한다: ",
+         paste(value_cols, collapse = ","))
+  # ★Size 단독 보수 모드(2026-09-23 W-02): 가격 열·출처 라벨은 건드리지 않고 **결측 Size 만**
+  #   채운다. Size 는 RAWDATA 에 남는 Close 와 짝을 이룬다(Size/Close = shares).
+  size_only <- identical(value_cols, "Size")
   if (!file.exists(RAWDATA_CACHE)) stop("[naver_backfill] RAWDATA 부재: ", RAWDATA_CACHE)
   raw <- as.data.table(read_parquet(RAWDATA_CACHE))
   raw[, Date := as.Date(Date)]
@@ -628,18 +865,25 @@ naver_backfill_range <- function(start, end, dry_run = TRUE, cfg = naver_collect
   anchor_date <- suppressWarnings(max(raw[Date < start]$Date))
   if (!is.finite(as.numeric(anchor_date)))
     stop("[naver_backfill] 앵커 부재 — start 이전 데이터가 없다")
+  size_anchor_date <- if (isTRUE(size_anchor)) .naver_size_anchor_date(raw, start) else as.Date(NA)
+  has_sa <- is.finite(as.numeric(size_anchor_date))
+  fetch_from <- if (has_sa) min(anchor_date, size_anchor_date) else anchor_date
   win_old <- raw[Date >= anchor_date & Date <= end]
   if (is.null(tickers)) tickers <- sort(unique(win_old[Date >= start]$Ticker))
-  cat(sprintf("[naver_backfill] 구간 %s~%s · 앵커 %s · 대상 %d종\n",
-              start, end, anchor_date, length(tickers)))
+  cat(sprintf("[naver_backfill] 구간 %s~%s · 앵커 %s · 크기앵커 %s · 대상 %d종%s\n",
+              start, end, anchor_date, if (has_sa) as.character(size_anchor_date) else "없음",
+              length(tickers), if (size_only) " · Size 단독 보수" else ""))
 
-  got <- naver_collect_adjusted(tickers, anchor_date, end, cfg = cfg)
+  got <- naver_collect_adjusted(tickers, fetch_from, end, cfg = cfg)
   new <- got$data
   if (!nrow(new)) stop("[naver_backfill] 수집 결과 0행 — 병합 불가")
   setorder(new, Ticker, Date)
 
   # ── Ret: naver 내부에서 측정 (앵커일 포함 → 첫날 Ret 이 추정이 아니라 측정) ──
-  new[, Ret := Close / shift(Close) - 1, by = Ticker]
+  #   ★크기 앵커로 창을 넓혀도 Ret 의 기준은 가격 앵커다 — 앵커일에 행이 없는 종목의
+  #     첫날 Ret 이 여러 날 수익으로 부풀지 않게 가격 앵커 이후 행에서만 잰다.
+  new[, Ret := NA_real_]
+  new[Date >= anchor_date, Ret := Close / shift(Close) - 1, by = Ticker]
   n_anchor_seen <- new[Date == anchor_date, .N]
   new_win <- new[Date >= start & Date <= end]
   # 거래일 대조 — 캘린더에 없는 날은 싣지 않는다(phantom 세션 차단)
@@ -659,15 +903,67 @@ naver_backfill_range <- function(start, end, dry_run = TRUE, cfg = naver_collect
   #   둘 다 (Date,Ticker,Close,Size) 모양으로 맞춰 넘긴다. 채택 조건은 하나 —
   #   **그 참조의 가격이 새로 받은 수정주가와 일치할 때만** 같은 날·같은 기준임이 실증된다.
   size_pool <- win_old[Date >= start, .(Date, Ticker, Close, Size)]
+  resolve_in <- copy(new_win)
+  basis_block <- NULL
+  n_basis_block <- 0L
+  if (has_sa) {
+    # ── 크기 앵커(검증자 정정): 창을 마지막 정상 Size 날까지 넓혀 그 행을 resolve 에 넘긴다 ──
+    sa_old <- raw[Date == size_anchor_date, .(Date, Ticker, Close, Size)]
+    sa_new <- new[Date == size_anchor_date & Ticker %in% sa_old$Ticker]
+    if (size_anchor_date < start) {
+      size_pool <- rbindlist(list(sa_old[is.finite(Size)], size_pool), use.names = TRUE, fill = TRUE)
+      resolve_in <- rbindlist(list(sa_new[, intersect(names(new_win), names(sa_new)), with = FALSE],
+                                   resolve_in), use.names = TRUE, fill = TRUE)
+    }
+    # 기준 대조 — 앵커일 저장 종가 vs 지금 받은 수정주가. 다르면 그 사이 조정 사건이 있었다.
+    #   이음매 verdict 가 on_scale 이고 차이가 Size 허용오차(size_shares_tol) 안이면 통과,
+    #   아니면 **복원 금지 + 사유**(adjustment_basis_break 등 가드 어휘 그대로).
+    bj <- merge(sa_old[, .(Ticker, a_close = Close)], sa_new[, .(Ticker, n_close = Close)], by = "Ticker")
+    bj <- bj[is.finite(a_close) & is.finite(n_close) & a_close > 0 & n_close > 0 &
+               abs(a_close - n_close) >= 1e-6]
+    if (nrow(bj)) {
+      if (!exists("seam_classify_pair")) source(file.path(DATA_DIR, "seam_scale_guard.R"))
+      cls <- seam_classify_pair(bj$a_close, bj$n_close, gap = 1L)
+      bj[, verdict := cls$verdict]
+      bj[, rel := abs(a_close / n_close - 1)]
+      bj <- bj[verdict != "on_scale" | rel > as.numeric(cfg$size_shares_tol)]
+      bj[, reason := fifelse(verdict == "on_scale", "unavailable_anchor_close_disagrees",
+                             paste0("unavailable_", verdict))]
+      if (nrow(bj)) basis_block <- bj[, .(Ticker, reason)]
+      n_basis_block <- nrow(bj)
+    }
+  }
+  shares_obs <- NULL
   if (!is.null(size_ref) && nrow(size_ref)) {
     sr <- as.data.table(size_ref)
     cl <- if ("snap_close" %in% names(sr)) "snap_close" else "Close"
     size_pool <- rbindlist(list(size_pool,
                                 sr[, .(Date = as.Date(Date), Ticker, Close = get(cl), Size)]),
                            fill = TRUE)
-    size_pool <- unique(size_pool, by = c("Date", "Ticker"))
+    # 발행주식수 직접 관측 — API 경로의 정수 주식수만(레거시 억원 반올림 값은 제외)
+    if (all(c("snap_shares", "shares_exact") %in% names(sr)))
+      shares_obs <- sr[shares_exact %in% TRUE & Ticker %in% paste0("A", .naver_bare_code(tickers)),
+                       .(Ticker, shares = snap_shares)]
   }
-  sized <- .naver_resolve_size(new_win, size_pool, cfg)
+  size_pool <- unique(size_pool, by = c("Date", "Ticker"))
+
+  if (size_only) {
+    # 목표 행의 Close 를 **저장값**으로 둔다 — 새 수정주가와 Size 허용오차 안에서 같은 기준일
+    #   때만(09-17 미확정 종가 같은 소폭 차이는 통과, 조정기준 차이는 사유 NA).
+    st_close <- win_old[Date >= start, .(Date, Ticker, stored_close = Close)]
+    resolve_in <- merge(resolve_in, st_close, by = c("Date", "Ticker"), all.x = TRUE, sort = FALSE)
+    resolve_in[, close_mismatch := Date >= start &
+                 (!is.finite(stored_close) | !is.finite(Close) | stored_close <= 0 |
+                    abs(stored_close / Close - 1) > as.numeric(cfg$size_shares_tol))]
+    resolve_in[Date >= start & close_mismatch == FALSE, Close := stored_close]
+    resolve_in[close_mismatch == TRUE, Close := NA_real_]
+  }
+  sized_all <- .naver_resolve_size(resolve_in, size_pool, cfg,
+                                   shares_obs = shares_obs, basis_block = basis_block)
+  if (size_only)
+    sized_all[close_mismatch %in% TRUE & is.na(Size), size_source := "unavailable_close_basis_mismatch"]
+  sized <- sized_all[Date >= start & Date <= end]
+  setorder(sized, Date, Ticker)
 
   # ── 원천 우선순위 미리보기 ────────────────────────────────────────────────
   #   dry-run 에서도 보여야 한다 — 실쓰기에서만 판정하면 "덮을 것인가" 를 미리 못 본다.
@@ -731,6 +1027,13 @@ naver_backfill_range <- function(start, end, dry_run = TRUE, cfg = naver_collect
     failures = if (nrow(got$failures)) head(got$failures, 200) else NULL,
     size_source_counts = as.list(setNames(sized[, .N, by = size_source]$N,
                                           sized[, .N, by = size_source]$size_source)),
+    # ★W-02(2026-09-23): 크기 앵커·기준 차단·직접 관측 — Size 복원이 무엇에 기대었는지
+    size_only = size_only,
+    size_anchor_date = if (has_sa) as.character(size_anchor_date) else NA_character_,
+    size_basis_block_n = n_basis_block,
+    size_basis_block = if (!is.null(basis_block)) head(basis_block, 200) else NULL,
+    size_shares_obs_n = if (!is.null(shares_obs)) nrow(shares_obs) else 0L,
+    size_na_rate_by_date = sized[, .(n = .N, na_rate = mean(!is.finite(Size))), by = Date][order(Date)],
     priority_config_path = as.character(.pri_cfg$config_path),
     priority_decisions = pri_dec[, .N, by = .(decision, incumbent_source, incoming_source)],
     priority_n_skipped = sum(!(pri_dec$allow %in% TRUE)),
@@ -769,8 +1072,19 @@ naver_backfill_range <- function(start, end, dry_run = TRUE, cfg = naver_collect
     stop(sprintf("[naver_backfill] ⛔ 실패율 %.3f > 상한 %.3f — 병합 차단(부재를 정상으로 읽지 않는다)",
                  got$failure_rate, as.numeric(cfg$max_failure_rate)))
 
-  upd <- sized[, .(Date, Ticker, Open, High, Low, Close, Vol, Size, Ret)]
-  applied <- .naver_apply_update(raw, upd, cfg_pri = .pri_cfg)
+  if (size_only) {
+    # ★결측 Size 만 채운다 — 기존 값은 절대 바꾸지 않고, 행을 추가하지도 않는다.
+    old_sz <- win_old[Date >= start, .(Date, Ticker, old_Size = Size)]
+    upd <- merge(sized[is.finite(Size), .(Date, Ticker, Size)], old_sz, by = c("Date", "Ticker"))
+    upd <- upd[!is.finite(old_Size)][, old_Size := NULL]
+    applied <- .naver_apply_update(raw, upd, value_cols = "Size", cfg_pri = .pri_cfg,
+                                   set_source = FALSE)
+    if (applied$n_appended != 0L)
+      stop("[naver_backfill] ⛔ Size 단독 보수가 행을 추가하려 한다 — 차단(키 불일치)")
+  } else {
+    upd <- sized[, .(Date, Ticker, Open, High, Low, Close, Vol, Size, Ret)]
+    applied <- .naver_apply_update(raw, upd, cfg_pri = .pri_cfg)
+  }
   if (applied$n_skipped > 0L) {
     cat(sprintf("[naver_backfill] ★우선순위 보존: %s행 미갱신 — 상위 원천을 덮지 않는다\n",
                 format(applied$n_skipped, big.mark = ",")))
@@ -791,7 +1105,14 @@ naver_backfill_range <- function(start, end, dry_run = TRUE, cfg = naver_collect
   if (applied$n_updated > 0L) .naver_assert_write_allowed(applied$n_updated)
 
   bk <- file.path(CACHE_DIR, sprintf("rawdata_pre_naveradj_%s.parquet", format(Sys.Date(), "%Y%m%d")))
-  if (!file.exists(bk)) { file.copy(RAWDATA_CACHE, bk); cat(sprintf("[naver_backfill] 백업: %s\n", bk)) }
+  # ★과거 행 보수(Size 단독)는 그날 백업이 이미 있어도 **매번** 직전 상태를 따로 남긴다 —
+  #   같은 날 앞선 전진 쓰기의 백업은 이 보수의 직전 상태가 아니다.
+  if (size_only) bk <- paste0(RAWDATA_CACHE, ".bak_size_repair_", format(Sys.time(), "%Y%m%d_%H%M%S"))
+  if (!file.exists(bk)) {
+    if (!isTRUE(file.copy(RAWDATA_CACHE, bk)))
+      stop("[naver_backfill] ⛔ 백업 실패 — 쓰기 중단: ", bk)
+    cat(sprintf("[naver_backfill] 백업: %s\n", bk))
+  }
   raw <- applied$dt
   if (applied$n_appended) cat(sprintf("[naver_backfill] 신규 행 %d 추가\n", applied$n_appended))
   if (exists("qvest_atomic_write_parquet")) {
@@ -800,8 +1121,10 @@ naver_backfill_range <- function(start, end, dry_run = TRUE, cfg = naver_collect
     .tmp <- paste0(RAWDATA_CACHE, ".tmp"); write_parquet(raw, .tmp)
     if (file.exists(RAWDATA_CACHE)) file.remove(RAWDATA_CACHE); file.rename(.tmp, RAWDATA_CACHE)
   }
-  cat(sprintf("[naver_backfill] RAWDATA 갱신: %d행 교체 · total %d\n", applied$n_updated, nrow(raw)))
-  invisible(list(report = report, new = sized, cmp = cmp, seam = seam, path = fp))
+  cat(sprintf("[naver_backfill] RAWDATA 갱신: %d행 교체%s · total %d\n", applied$n_updated,
+              if (size_only) "(Size 열만)" else "", nrow(raw)))
+  invisible(list(report = report, new = sized, cmp = cmp, seam = seam, path = fp, backup = bk,
+                 n_updated = applied$n_updated))
 }
 
 #' RAWDATA **과거 행 재작성** 허가 — 무인 루프(Qvest_ReinforceAutoLoop)가 이 파일을
@@ -846,10 +1169,15 @@ naver_run_pipeline <- function(target_date = NULL, dry_run = FALSE, cfg = naver_
   }
   cat(sprintf("Last RAWDATA: %s | Target: %s\n", last_date, target))
 
-  # Size 는 시세 페이지 스냅샷에서만 온다(가격은 절대 여기서 안 온다 — 소관 분리).
+  # Size 는 시가총액 스냅샷에서만 온다(가격은 절대 여기서 안 온다 — 소관 분리).
+  #   ★실패 사유를 들고 다닌다 — 구판은 사유를 한 번 찍고 버린 뒤 아래 일치율 줄이
+  #     '장중 스냅샷 의심' 으로 원인을 오귀속했다(W-02, 09-12~09-23 매 실행).
+  snap_err <- NA_character_
   snap <- tryCatch(naver_collect_size_snapshot(cfg), error = function(e) {
-    cat(sprintf("[pipeline][WARN] Size 스냅샷 실패 (%s) — Size 는 미측정(NA)으로 남는다\n",
-                conditionMessage(e))); NULL })
+    snap_err <<- conditionMessage(e)
+    cat(sprintf("[pipeline][WARN] Size 스냅샷 실패 (%s) — 크기 앵커 주식수 복원만 시도한다\n",
+                snap_err)); NULL })
+  n_snap_all <- if (is.null(snap)) 0L else nrow(snap)
   if (!is.null(snap)) snap <- snap[Date == target]     # 다른 날 스냅샷은 이 날의 증거가 아니다
 
   # ★날짜는 응답 행이 스스로 들고 온다 — 구판의 '현재 화면을 target 으로 스탬프'
@@ -861,13 +1189,25 @@ naver_run_pipeline <- function(target_date = NULL, dry_run = FALSE, cfg = naver_
   # ★T+0 장중 스냅샷 검거: 스냅샷 가격이 그날 확정 종가와 널리 어긋나면 그 스냅샷은
   #   장중값이다(2026-09-01 사고의 지문 — 70종 표본 중 5종만 일치, 거래량이 종일의 55%).
   #   구판은 이 사실을 잴 자리가 아예 없었다. 이제는 Size 출처 분포가 그 계기다.
+  # ★2026-09-23(W-02): 스냅샷이 **없을 때** 일치율은 0% 가 되지만 그것은 장중 신호가 아니다.
+  #   원인을 가른다 — ①스냅샷 부재(수집 실패 사유 그대로) ②스냅샷은 있는데 가격 불일치.
   if (!is.null(res) && !is.null(res$report)) {
     sc <- res$report$size_source_counts
-    n_same <- as.numeric(sc[["snapshot_same_day"]] %||% 0)
     n_tot <- max(1, sum(unlist(sc)))
-    if (n_same / n_tot < 0.5)
-      cat(sprintf("[pipeline] ⚠ Size 스냅샷 일치율 %.1f%% — 장중 스냅샷 의심(종가 확정 후 재실행 권고)\n",
-                  100 * n_same / n_tot))
+    n_same <- as.numeric(sc[["snapshot_same_day"]] %||% 0)
+    n_rec  <- as.numeric(sc[["reconstructed_shares_x_close"]] %||% 0)
+    n_miss <- n_tot - n_same - n_rec
+    cat(sprintf("[pipeline] Size 출처: 같은날 스냅샷 %d · 주식수 복원 %d · 결측 %d (결측률 %.1f%%)\n",
+                as.integer(n_same), as.integer(n_rec), as.integer(n_miss), 100 * n_miss / n_tot))
+    if (is.null(snap) || !nrow(snap)) {
+      cat(sprintf("[pipeline] ⛔ Size 스냅샷 부재 — %s · 일치율 판정 대상 없음(장중 여부와 무관)\n",
+                  if (!is.na(snap_err)) paste0("수집 실패: ", snap_err) else
+                    sprintf("스냅샷 %d행 중 target %s 행 0", n_snap_all, as.character(target))))
+    } else if (n_same / n_tot < 0.5) {
+      cat(sprintf(paste0("[pipeline] ⚠ Size 스냅샷 가격 일치율 %.1f%% — 스냅샷 가격이 확정 종가와 ",
+                         "다르다(장중·애프터마켓 스냅샷 가능). 주식수 직접 관측 %d종으로 복원 시도\n"),
+                  100 * n_same / n_tot, as.integer(res$report$size_shares_obs_n %||% 0L)))
+    }
   }
   invisible(res)
 }

@@ -124,13 +124,20 @@ if [[ -x "$P2_PY" && -d "$P2_BF_DIR" ]]; then
   #     기본 모드는 **검증만**이고, 쓰기는 daily_refresh 의 [1pre] 한 곳으로 모았다 —
   #     브리핑이 데이터를 바꾸면 "브리핑을 봤더니 값이 달라져 있다" 가 된다.
   cd "$BASE"
-  "$P2_PY" 02_Infrastructure/data/naver_benchmark_update.py --start_date $(date -d "7 days ago" +%Y-%m-%d) 2>&1 | tail -5 || true
+  # ★2026-09-23 실사고: 구판은 `| tail -5 || true` 로 교차검증 rc 를 버렸다 — 트립와이어가 '1120.74(장중) vs 1123.59'
+  #   를 잡았는데도 [6a] 가 그 장중 벤치로 P3 추론을 진행했다. rc 를 보존하고 rc=1(트립와이어)이면 추론을 건너뛴다.
+  _BMV_LOG="/tmp/qm_bm_verify_$(date +%Y%m%d_%H%M%S).log"
+  "$P2_PY" 02_Infrastructure/data/naver_benchmark_update.py --start_date $(date -d "7 days ago" +%Y-%m-%d) > "$_BMV_LOG" 2>&1
+  _BMV_RC=$?
+  tail -5 "$_BMV_LOG"
   cd "$P2_BF_DIR"
   # 6a. daily inference (오늘 forecast 추가) — P3.
   # [2026-06-01 fix] 601 default(no --asof)는 ret_fwd-dropna로 마지막 행이 잘려 benchmark_max-1(1일 stale)을
   #   forecast → brief가 매일 1일 정체. benchmark 최신 종가일을 --asof로 명시(검증된 forecast-only 경로)해 재발 방지.
   ASOF_BM=$("$P2_PY" -c "import pandas as pd; print(pd.to_datetime(pd.read_parquet('$BASE/.cache/benchmark.parquet', columns=['Date'])['Date']).max().date())" 2>/dev/null)
-  if [[ -n "$ASOF_BM" ]]; then
+  if [[ "$_BMV_RC" == "1" ]]; then
+    echo "[6a] SKIP — 벤치 교차검증 트립와이어 발화(rc=1 · $_BMV_LOG) — 불일치 벤치로 P3 추론하지 않는다(전일 예측 유지)"
+  elif [[ -n "$ASOF_BM" ]]; then
     echo "[6a] 601 inference --asof $ASOF_BM (benchmark 최신 종가일)"
     "$P2_PY" scripts/601_daily_inference.py --model P3 --asof "$ASOF_BM" 2>&1 | tail -5
   else

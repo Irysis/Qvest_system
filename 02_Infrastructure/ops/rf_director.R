@@ -73,6 +73,7 @@ dir_thresholds <- function(root = DR_ROOT, code_root = DR_CODE_ROOT) {
   p <- suppressWarnings(E$.graduation_params(root = root))
   list(port_t_min = .num(p$port_t_min), calmar_min = .num(p$calmar_min), oos_min = .num(p$oos_min),
        oos_floor = .num(p$oos_floor), sharpe_min = .num(p$sharpe_min), cagr_min = .num(p$cagr_min),
+       dsr_min = .num(p$dsr_min),   # ★sweep 칸의 여섯째 A 조건(2026-09-23 P0-01)
        source = .chr(attr(p, "source") %||% "essence_score.R::.graduation_params"))
 }
 
@@ -99,7 +100,8 @@ dir_lineages_ledger <- function(led) {
       rows[[length(rows) + 1L]] <- data.table(
         lineage = lin, sid = sprintf("%s:%s", bid, .chr(a$cell_code %||% es$cell_code)), source = "reinforce_ledger_l1",
         grade = .chr(a$grade), port_t = pt, calmar = .num(es$calmar), cagr = .num(es$cagr), mdd = .num(es$mdd),
-        sharpe = .num(es$net_sharpe), oos_retention = .num(es$oos_retention), artifacts = .chr(a$artifacts))
+        sharpe = .num(es$net_sharpe), oos_retention = .num(es$oos_retention), artifacts = .chr(a$artifacts),
+        dsr = .num(es$dsr), selection_type = .chr(es$selection_type))
     }
   }
   if (!length(rows)) return(data.table())
@@ -146,6 +148,9 @@ dir_binding <- function(L, th) {
     if (!is.finite(r$sharpe) || r$sharpe < th$sharpe_min) fails <- c(fails, "sharpe")
     if (!is.finite(r$calmar) || r$calmar < th$calmar_min) fails <- c(fails, "calmar")
     if (!is.finite(r$oos_retention) || r$oos_retention < th$oos_min) fails <- c(fails, "oos_retention")
+    # ★sweep 채점 칸만 DSR 을 구속 축으로 센다(2026-09-23 P0-01 · 적대 리뷰 — 구판은 DSR 로만 B 인 계보를 '구속 없음' 으로 셌다)
+    if ("selection_type" %in% names(r) && identical(r$selection_type, "sweep") && is.finite(th$dsr_min %||% NA) &&
+        (!is.finite(r$dsr) || r$dsr < th$dsr_min)) fails <- c(fails, "dsr")
     list(sid = r$sid, lineage = r$lineage, source = r$source, grade = r$grade, port_t = r$port_t, calmar = r$calmar,
          cagr = r$cagr, mdd = r$mdd, sharpe = r$sharpe, oos_retention = r$oos_retention, binding = fails,
          gap = list(port_t = r$port_t - th$port_t_min, calmar = r$calmar - th$calmar_min,

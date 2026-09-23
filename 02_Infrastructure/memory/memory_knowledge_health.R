@@ -443,6 +443,16 @@ if (!file.exists(corpus_path)) {
   # 미수확: 디스크 아티팩트 중 코퍼스 source_file 집합에 없는 것 (superseded 제외)
   src <- vapply(entries, function(e) gsub("\\\\", "/", as.character(e$source_file %||% "")),
                 character(1))
+  # (2026-09-23 Axiom 전수감사 K3 · 도훈 AX-D4) 철회·PIT 무효 표식으로 **의도적으로** 수확에서 뺀 원천은
+  #   유실이 아니다 — harvester 가 corpus.invalidated_lcodes 에 기록한 것을 '반영됨'으로 센다(판정 재구현 금지).
+  #   ★이 파일의 %||% 는 스칼라 전용(nzchar 검사)이라 리스트에 쓰면 length>1 강제변환 오류 — is.null 로 직접 거른다.
+  inv_l <- corpus$invalidated_lcodes
+  if (is.null(inv_l)) inv_l <- list()
+  inv_src <- vapply(inv_l, function(e) {
+    s <- e$source_file
+    if (is.null(s) || !length(s)) "" else gsub("\\\\", "/", as.character(s)[1])
+  }, character(1))
+  src <- c(src, inv_src)
   art <- c(Sys.glob(file.path(PROJ_ROOT, "stage_artifacts/l_code_*.json")),
            Sys.glob(file.path(PROJ_ROOT, "stage_artifacts/l_code/*/l_code_*.json")),
            Sys.glob(file.path(PROJ_ROOT,

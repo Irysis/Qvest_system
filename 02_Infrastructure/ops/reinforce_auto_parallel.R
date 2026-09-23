@@ -584,7 +584,8 @@ for (.a in E$attempts) {
 ##   판정 정본 = rf_runner_gates.R::rf_lineage_ids / rf_lineage_measured / rf_selection_accounting (순수 함수 · 검사 대상).
 .lineage_ids <- rf_lineage_ids(led$entries, BID)
 .n_measured_prior <- rf_lineage_measured(led$entries, .lineage_ids)
-.n_batch_reg <- 0L
+## ★배치 균일 N (2026-09-23 적대 리뷰) — 한 배치의 칸은 같은 가족 크기로 채점한다(등록 순서 무관).
+.n_batch_size <- length(batch)
 if (!length(jobs)) for (CELL in batch) {
   .no_treatment <- FALSE
   SPEC <- list(code = CELL$code, label = CELL$label, block = CELL$block,
@@ -870,8 +871,7 @@ if (!length(jobs)) for (CELL in batch) {
     next
   }
 
-  .n_batch_reg <- .n_batch_reg + 1L
-  SPEC$selection_accounting <- rf_selection_accounting(.lineage_ids, .n_measured_prior, .n_batch_reg)
+  SPEC$selection_accounting <- rf_selection_accounting(.lineage_ids, .n_measured_prior, .n_batch_size)
   write(toJSON(SPEC, auto_unbox = TRUE, pretty = TRUE, null = "null"), sp)
   # ★중복 판정 — 배치 안 · entry 안 · **전 entry**(2026-09-03 확장) 세 층을 본다.
   #   먼저 온 칸 하나는 측정하고 나머지를 닫는다. 같은 포트폴리오에 다른 이름을 붙이지 않는다.

@@ -454,6 +454,16 @@ held_axioms <- list()        # 다이제스트 §정제보류(사유)
   e
 }
 
+# 무인 활성 스위치 표시 (2026-09-23 · 도훈 AX-D1): 정본 술어 promote.R::.unattended_enabled() 를 부른다.
+#   ★기본값을 여기 따로 적지 않는다 — 구판은 Sys.getenv(..., "1") 사본이라 promote.R 기본이 '0' 으로
+#     바뀌면 실제 OFF 인데 'ON' 으로 표시됐을 것이다(두 벌 술어). 적재 실패 = NA(미상)로 정직 표기.
+.axiom_unattended_on <- function(root) {
+  px <- tryCatch(.promote_env(root), error = function(e) NULL)
+  if (!is.null(px) && exists(".unattended_enabled", envir = px, mode = "function", inherits = FALSE))
+    return(isTRUE(px$.unattended_enabled()))
+  NA
+}
+
 # ---- promote 자식 프로세스 crash 판정 (2026-08-20 수리 — 대리 지표 → exit status 1급) ----
 # 구 로직은 crash 를 **stdout 에 [promote] ... PASS/FAIL 줄이 있었는가**로만 판정했다.
 #   ⇒ 자식이 exit≠0 으로 죽어도 그 전에 verdict 한 줄을 찍었으면 crash 0 으로 집계된다
@@ -875,7 +885,7 @@ run_step("axiom_candidates_summary", {
     activation_preview = activation_preview,    # pass ① dry-run 수집분
     n_new_active_planned = n_new_active_planned,
     weekly_activation_max = WEEKLY_ACTIVATION_MAX,
-    unattended = identical(Sys.getenv("QVEST_AXIOM_UNATTENDED", "1"), "1"),
+    unattended = .axiom_unattended_on(root),   # 2026-09-23: 정본 술어(기본 OFF) — NA = promote.R 적재 실패
     # v9: 음성 클러스터 자동 지도(INV-7 — 공리 아님, 검색면 전용) 결과 DIST id
     auto_mapped_negative = as.list(auto_mapped_negative),
     # crash 판정 2축(2026-08-20): exit status ≠0 **또는** verdict 줄 부재. 각 레코드 detected_by 참조.
@@ -905,7 +915,8 @@ run_step("axiom_candidates_summary", {
   cat(sprintf("[cleaner] 공리 활성 %d건 / 보류 %d건 (이번 주 활성 예정 %d/%d · 무인 %s)\n",
               length(activated_axioms), length(held_axioms), n_new_active_planned,
               WEEKLY_ACTIVATION_MAX,
-              if (identical(Sys.getenv("QVEST_AXIOM_UNATTENDED", "1"), "1")) "ON" else "OFF"))
+              { .u <- .axiom_unattended_on(root)
+                if (isTRUE(.u)) "ON" else if (identical(.u, FALSE)) "OFF" else "미상(promote.R 적재 실패)" }))
   if (length(activated_axioms))
     for (p in activated_axioms)
       cat(sprintf("[cleaner]   · [활성] %s (%s, L-code %d건) %s | 되돌리기: deactivate_axiom(c(\"%s\"), reason=)\n",

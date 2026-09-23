@@ -41,6 +41,8 @@ cat(sprintf("Ledger: Law %s · Distilled %s · L-code %s · archived %s (src=%s)
             ls_$law, ls_$distilled, ls_$lcode, ls_$archived, ls_$source))
 
 # 4. Axiom candidate scan (promote.R dry-scan, auto_inject=FALSE)
+#    ★2026-09-23 (도훈 AX-D1): monthly_distill.R 과 같은 결함 — 주석은 dry-scan 인데 dry_run 미지정(기본 FALSE)이라
+#      쓰기 경로였다. 스케줄은 _unregistered(수동 전용)지만 같은 이유로 dry_run = TRUE 로 맞춘다.
 tryCatch({
   source(file.path(PROJECT_ROOT, "02_Infrastructure/axiom/promote.R"))
   cand_dir <- file.path(PROJECT_ROOT, "qepm/memory/axioms/candidates")
@@ -48,7 +50,7 @@ tryCatch({
   cat(sprintf("Axiom candidates: %d\n", length(cands)))
   n_ready <- 0L
   for (cp in cands) {
-    r <- tryCatch(promote_to_axiom(cp, threshold = 0.80, auto_inject = FALSE),
+    r <- tryCatch(promote_to_axiom(cp, threshold = 0.80, auto_inject = FALSE, dry_run = TRUE),
                   error = function(e) NULL)
     if (!is.null(r)) {
       if (isTRUE(r$passed)) n_ready <- n_ready + 1L

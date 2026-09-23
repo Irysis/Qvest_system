@@ -775,6 +775,7 @@ build_hypothesis_index <- function(root = QM_ROOT, out_path = HI_INDEX_PATH,
               lcode_indexed = 0L, lcode_skipped = 0L,
               lcode_supplement_indexed = 0L, lcode_supplement_skipped_dup = 0L,
               lcode_supplement_parse_fail = 0L,
+              lcode_invalidated_excluded = 0L,   # 2026-09-23 철회 표식 제외(corpus.invalidated_lcodes)
               module_indexed = 0L, module_skipped = 0L,
               distilled_indexed = 0L, distilled_skipped = 0L,
               wt_inflight_indexed = 0L, wt_inflight_skipped_terminal = 0L,
@@ -818,6 +819,14 @@ build_hypothesis_index <- function(root = QM_ROOT, out_path = HI_INDEX_PATH,
               else as.POSIXct("1970-01-01", tz = "UTC")   # corpus 부재 → 전체 원본 스캔
   if (file.exists(lc_path)) {
     lc <- tryCatch(fromJSON(lc_path, simplifyVector = FALSE), error = function(e) NULL)
+    # ★2026-09-23 (Axiom 전수감사 K3 · 도훈 AX-D4): harvester 가 철회·PIT 무효 표식으로 **뺀** L-code
+    #   (corpus.invalidated_lcodes — 판정 = lcode_validity.py::lcode_invalidation)를 dedup 키에 먼저 넣는다.
+    #   안 넣으면 표식 파일이 수확 뒤에 다시 수정됐을 때(mtime > corpus) 아래 (b+) 보충 스캔이 원천을 직접 파싱해
+    #   **다시 색인**한다. 판정을 여기서 재구현하지 않는다 — harvester 산출을 소비만 한다.
+    for (iv in (lc$invalidated_lcodes %||% list())) {
+      k <- .hi_join(iv$l_code); if (nzchar(k)) lc_seen <- c(lc_seen, k)
+      cov$lcode_invalidated_excluded <- cov$lcode_invalidated_excluded + 1L
+    }
     for (e in (lc$lcodes %||% list())) {
       k <- .hi_join(e$l_code); if (nzchar(k)) lc_seen <- c(lc_seen, k)
       pe <- tryCatch(.hi_parse_lcode(e), error = function(err) {

@@ -13,8 +13,9 @@
 <!-- 따라서 본 블록은 이제 *참조 스텁*: ID·계층·polarity 인덱스만 남기고 본문은 훅 단일 출처로 통일. -->
 <!-- 문서-권위(hard-fail SOT)는 여전히 `.claude/rules/axioms.md` ↔ active/*.json (sot_map). -->
 활성 공리(본문 = 훅 주입, 여기선 인덱스만). **active Law 4건**:
-- **AX-000** [IMMUTABLE] · **AX-001 v2** [conditional-defense] · **AX-001 v2.1** [META-ALLOCATION-EXEMPT] · **AX-002** [IMMUTABLE]
-- **AX-008** [process] Verification Triangulation (Forge + Self-Adversarial + Architect 2/3)
+- **AX-000** [IMMUTABLE] · **AX-001 v3** [defensive-disposition — 전기간 등급 단독 처분 금지 · defensive_score 계약] · **AX-002** [IMMUTABLE]
+- **AX-008 v2.0** [process] 결정 수치는 계약 산출만 인용 · 독립 검증 = Judge
+- (2026-09-23 개정 — 도훈 AX-D5-TEXT. 구 AX-001 v2/v2.1 · AX-008 v1.1 '3-source 2/3' 는 각 JSON `history` 사료)
 
 **Distilled 강등(2026-07-05, INV-7 — Law 아닌 탐색지도)**: ~~AX-003 value~~ · ~~AX-004 quality~~ · ~~AX-005 defense~~ · ~~AX-007 translation-break~~ → DIST 카드/Ledger(`hypothesis_index` 검색·`revival_spec` 부활). active enforcement 대상 아님.
 

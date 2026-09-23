@@ -68,9 +68,14 @@ INJECT_LAST="$DIR/.cache/axiom_inject_last.json"
 shopt -s globstar 2>/dev/null  # mode-local(active/modes/**) 포함
 NEWEST=$(ls -t "$ACTIVE_DIR"/**/AX-*.json "$ACTIVE_DIR"/AX-*.json 2>/dev/null | head -1)
 SELF="${BASH_SOURCE[0]:-$0}"
+# (2026-09-23) rollback_axiom 은 파일을 active/ 에서 **빼기만** 하므로 NEWEST 가 새로워지지 않는다 — 삭제는 mtime 을
+#   남기지 않는다. 그러면 mode-local 캐시가 롤백된 공리를 계속 주입한다. rollback 이 같은 트랜잭션에서 쓰는
+#   tombstones.json 이 캐시보다 새로우면 재생성한다(Axiom 전수감사 0-5 의 주입면 도달 보장).
+TOMB="$DIR/qepm/memory/axioms/tombstones.json"
 if [ -n "$NEWEST" ] && { [ ! -f "$CACHE_BODY" ] || [ ! -f "$CACHE_ML" ] || \
       [ "$NEWEST" -nt "$CACHE_BODY" ] || [ "$SELF" -nt "$CACHE_BODY" ] || \
-      [ "$NEWEST" -nt "$CACHE_ML" ] || [ "$SELF" -nt "$CACHE_ML" ]; }; then
+      [ "$NEWEST" -nt "$CACHE_ML" ] || [ "$SELF" -nt "$CACHE_ML" ] || \
+      { [ -f "$TOMB" ] && [ "$TOMB" -nt "$CACHE_ML" ]; }; }; then
   "$QVEST_PY_BIN" -c "
 import json, os, glob
 lines = []
@@ -102,7 +107,10 @@ for f in sorted(_files):
                 _w = 0.0
             ml.append((-_w, str(axid), '%s\t  - %s: %s' % (_mode, axid, _txt)))
             continue
-        stmt = (ax.get('statement') or ax.get('text') or ax.get('name') or '')[:75]
+        # (2026-09-23 Axiom 전수감사 K11 · 판정서 단계 1-6) 전역 Law 는 **절단하지 않는다**.
+        #   구판 [:75] 가 AX-000 금지절 전체 · AX-001 조건 · AX-008 조작 조항을 잘라 주입했다.
+        #   공백만 한 줄로 접는다(아래 body_fixed 가 줄 단위로 읽으므로 개행이 섞이면 줄이 쪼개진다).
+        stmt = ' '.join(str(ax.get('statement') or ax.get('text') or ax.get('name') or '').split())
         tt = ax.get('type') or ax.get('grade') or 'IMMUTABLE'
         tp = ax.get('polarity') or ('axiom' if ax.get('grade')=='IMMUTABLE' else '?')
         lines.append(f'  - {axid} [{tt}/{tp}]: {stmt}')
@@ -268,10 +276,12 @@ except Exception:
 
 H_POS = '[현재 최고 연구-tier 전략 — 여기서 출발·결합할 것]'
 H_DIST = '[검증된 양성 지식]'
-# 공리 블록: 렌더 라인당 80자 상한 (고정부 — 절대 절단 대상 아님).
+# 공리 블록: 고정부 — 절대 절단 대상 아님.
+#   (2026-09-23 Axiom 전수감사 K11) 구판은 렌더 라인당 [:80] 상한이라 고정부가 사실상 절단됐다
+#   (AX-000 은 조기 한계 단정 금지절 전체가 소실). 전역 Law 4건은 전문 렌더 — 예산은 아래 사다리가 변동부에서 흡수한다.
 #   들여쓰기 재부여 = rd() 의 .strip() 이 캐시 첫 줄의 선행 공백만 먹어 정렬이 깨지던 것 수리.
 #   ★고정부 = 전역 Law 뿐. mode-local 은 아래 ml_lines(감축 tier)로 간다.
-body_fixed = chr(10).join(('  ' + ln.strip())[:80] for ln in body.splitlines() if ln.strip())
+body_fixed = chr(10).join('  ' + ln.strip() for ln in body.splitlines() if ln.strip())
 
 # ── mode-local 공리(감축 tier, 커밋2) ────────────────────────────────────────
 #   캐시 형식 = '<mode>\\t  - <AX-ID>: <statement_inject ≤70자>' 한 줄에 하나.

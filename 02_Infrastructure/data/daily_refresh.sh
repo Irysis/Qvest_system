@@ -290,6 +290,23 @@ run_r '
     cat(sprintf("[WARN] Naver RAWDATA NOT advanced (before=%s after=%s) — KRX fallback/self-heal 의존\n", before, after))
 '
 
+# ── [1z] RAWDATA 최근일 Size 채움률 경보 (2026-09-23 W-02 · 도훈 승인 처방 §3) ─────────
+#   사고: Naver 시총 스냅샷이 09-12 부터 매 실행 디코드 예외로 죽어 RAWDATA.Size 가
+#   09-10~22 100% 결측이었는데, 이 스텝은 "RAWDATA 전진" 만 봐서 매일 성공으로 끝났다.
+#   행이 붙는 것과 값이 차는 것은 다른 명제다. 판정·문턱은 rawdata_fill_guard.R +
+#   cache_registry.json::fill_rate(max_na_rate) 단일 정본 — 여기서 다시 구현하지 않는다.
+#   rc 0 = 정상 · 3 = 결측률 초과 · 그 외 = 미측정(정상으로 접지 않는다).
+_sz_out="$(QM_ROOT="$BASE" "$RSCRIPT" --no-save "$INFRA/data/rawdata_fill_guard.R" --cols Size 2>&1)"
+_sz_rc=$?
+printf '%s\n' "$_sz_out"
+case "$_sz_rc" in
+  0) echo "[1z] RAWDATA 최근일 Size 채움률 정상" ;;
+  3) echo "!! [1z] ★RAWDATA 최근일 Size 결측률 초과 — 규모·가치 팩터(V*·S*·L26)가 0행으로 빠진다"
+     DR_FAILED+=("rawdata_size_na") ;;
+  *) echo "!! [1z] Size 채움률 미측정(rc=$_sz_rc) — 정상으로 접지 않는다"
+     DR_FAILED+=("rawdata_size_na:unmeasured") ;;
+esac
+
 # ──────────────────────────────────────────────────────────────────────────────
 # [2] KRX gap-fill (FALLBACK — Naver 미처리 gap만 보충)
 #     KRX API는 T+1 lag 있으므로 Naver 이후 남은 gap만 채움.
@@ -578,6 +595,27 @@ run_r '
     }
   }, error = function(e) cat(sprintf("Factor DB update skipped: %s\n", e$message)))
 '
+
+# ── [6a-gate] 당월 배출 회귀 판독 (2026-09-23 W-02 · 도훈 승인 처방 §4) ────────────────
+#   emission_guard.R 는 회귀(직전 빌드에선 났는데 이번엔 0행)를 emission_report_{ym}.json 에
+#   정확히 적었지만 **읽는 코드가 0곳**이었다(202609 class_R=27 무보고). 빌드는 설계상
+#   멈추지 않으므로 판정은 누군가 읽어야 경보가 된다 — 여기서 읽어 DR_FAILED 에 싣고,
+#   [7] 텔레그램 본문(DR_FAILED_SO_FAR)에 이름 상위 5개가 실린다.
+#   rc 0 = 회귀 0 · 3 = 회귀 N · 그 외 = 미측정(보고서 부재 등 — 정상으로 접지 않는다).
+_eg_ym="$(date +%Y%m)"
+_eg_out="$(QM_ROOT="$BASE" "$RSCRIPT" --no-save "$INFRA/factor_db/emission_report_gate.R" --ym "$_eg_ym" 2>&1)"
+_eg_rc=$?
+printf '%s\n' "$_eg_out"
+_eg_line="$(printf '%s\n' "$_eg_out" | grep '^EMISSION_GATE ' | tail -1)"
+case "$_eg_rc" in
+  0) echo "[6a-gate] $_eg_ym 배출 회귀 0" ;;
+  3) _eg_n="$(printf '%s' "$_eg_line" | sed -n 's/.* n=\([0-9]*\).*/\1/p')"
+     _eg_top="$(printf '%s' "$_eg_line" | sed -n 's/.* top=\([^ ]*\).*/\1/p')"
+     echo "!! [6a-gate] ★$_eg_ym 팩터 배출 회귀 ${_eg_n:-?}종 — ${_eg_top:-?}"
+     DR_FAILED+=("factor_emission_regress:${_eg_n:-?}(${_eg_top:-?})") ;;
+  *) echo "!! [6a-gate] 배출 판정 미측정(rc=$_eg_rc) — 정상으로 접지 않는다"
+     DR_FAILED+=("factor_emission_regress:unmeasured") ;;
+esac
 
 echo "[6b/7] Daily Factor DB (fdb_daily) freshness + gated rebuild..."
 export QVEST_FDB_DAILY_AUTOREBUILD="${QVEST_FDB_DAILY_AUTOREBUILD:-0}"

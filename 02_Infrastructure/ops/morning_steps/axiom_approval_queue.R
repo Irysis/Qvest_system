@@ -101,7 +101,10 @@ suppressWarnings(suppressMessages(tryCatch({
 
     ax_active <- if (exists("list_active_axioms", envir = .pxe, mode = "function"))
       .pxe$list_active_axioms() else list()
-    .unatt <- identical(Sys.getenv("QVEST_AXIOM_UNATTENDED", "1"), "1")
+    # 2026-09-23 (도훈 AX-D1): 정본 술어를 부른다 — 구판 Sys.getenv(..., "1") 사본은 promote.R 기본이
+    #   '0' 으로 바뀐 뒤 실제 OFF 인데 ON 으로 표시했을 것이다(두 벌 술어).
+    .unatt <- exists(".unattended_enabled", envir = .pxe, mode = "function", inherits = FALSE) &&
+      isTRUE(.pxe$.unattended_enabled())
     if (!length(ax_active)) {
       cat(sprintf("\n[공리 활성 0건] — 무인 활성화 %s. 정제 게이트(R0~R6) 통과분 없음\n",
                   if (.unatt) "ON" else "OFF(QVEST_AXIOM_UNATTENDED=0)"))

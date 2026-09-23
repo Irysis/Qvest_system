@@ -48,8 +48,17 @@ if (identical(ids_c, c("X", "Y"))) ok("A3 순환 사슬은 끊긴다 (무한 루
 ids_m <- ge$rf_lineage_ids(list(list(base_id = "Z", parent = list(base_id = "GONE"), attempts = list())), "Z")
 if (identical(ids_m, c("Z", "GONE"))) ok("A4 결손 부모는 id 만 남기고 종료 (계수 0 기여)") else ng("A4 결손", paste(ids_m, collapse = ">"))
 sa <- ge$rf_selection_accounting(ids, 5, 3L)
-if (identical(sa$selection_type, "sweep") && identical(sa$n_family_at_registration, 8L) && identical(sa$family_root, "R"))
-  ok("A5 회계 블록: sweep · N = 선행 5 + 배치 3 = 8 · family_root = 최상위 조상") else ng("A5 회계", toJSON(sa, auto_unbox = TRUE))
+if (identical(sa$selection_type, "sweep") && identical(sa$n_family_at_registration, 9L) && identical(sa$family_root, "R"))
+  ok("A5 회계 블록: sweep · N = 기저 1 + 선행 5 + 배치 3 = 9 · family_root = 최상위 조상") else ng("A5 회계", toJSON(sa, auto_unbox = TRUE))
+## ★A5b 새 계보 첫 배치 (2026-09-23 적대 리뷰 2건 독립 지적): 구판은 부모 없는 entry 의 첫 칸이 N=1 → essence has_trials(n>1) 거짓
+##   → DSR NA → sweep A 도달 불가. 기저 1 을 세면 N ≥ 2 여야 한다. 배치 균일: 같은 배치 칸은 같은 N.
+sa0 <- ge$rf_selection_accounting(ge$rf_lineage_ids(list(list(base_id = "NEW", attempts = list())), "NEW"), 0, 5L)
+if (sa0$n_family_at_registration >= 2L && identical(sa0$n_family_at_registration, 6L))
+  ok("A5b 새 계보 첫 배치(선행 0 · 배치 5) → N = 6 ≥ 2 — DSR 산출 가능(조용한 A 차단 없음)") else ng("A5b 새 계보 N", sa0$n_family_at_registration)
+## ★A5c 상속 칸(inherited_from)은 새 시행이 아니다 — 계수에서 빠져야 한다
+ents_inh <- list(list(base_id = "Q", attempts = list(m(1.1), list(essence = list(port_t = 2.2, inherited_from = "Q:B1_1")))))
+if (identical(as.numeric(ge$rf_lineage_measured(ents_inh, "Q")), 1)) ok("A5c 상속 칸 제외 — 측정 1(상속 1 은 이중 계수 안 함)") else
+  ng("A5c 상속 칸 계수", ge$rf_lineage_measured(ents_inh, "Q"))
 ## 위반 주입 — 미측정을 세는 돌연변이는 A2 를 깨야 한다(계수 술어가 실제로 필터링함을 확인)
 mut <- ge$rf_lineage_measured; body(mut) <- quote(sum(vapply(Filter(function(x) x$base_id %in% ids, entries), function(x) length(x$attempts), numeric(1))))
 if (!identical(as.numeric(mut(ents, ids)), 5)) ok("A6 위반 주입: 미측정까지 세는 돌연변이는 5 가 아니다 (A2 가 판별력 있음)") else ng("A6 판별력 없음")

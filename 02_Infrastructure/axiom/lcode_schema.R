@@ -110,6 +110,42 @@ LCODE_MODE_ALIASES <- c("qepm" = "qepm_legacy",
 # selection_type — measurement-graduation §3 selection operator (construction과 별개 축)
 LCODE_VALID_SELECTION_TYPES <- c("chain", "sweep", "single")
 
+# ── 원천 철회 표식 (2026-09-23 · Axiom 전수감사 K3 · 도훈 AX-D4-PIT-RETRACT) ─────────────────────
+#   L-code 원천 파일에 **추가만** 하는 필드(원 필드 불변 — 철회는 삭제가 아니다, AX-000·INV-7).
+#     pit_invalid        logical  PIT 위반(C1~C15)으로 측정 자체 무효. 결론이 뒤에 재확인돼도 이 측정은 무효.
+#     retracted_by       chr      철회 근거 참조(정정 L-code id · 레지스트리 경로 · 보고서 절). pit_invalid=TRUE 면 필수.
+#     retracted_at       chr      철회가 확정된 날(표식을 단 날 아님).
+#     retraction_reason  chr      기전 1~2문장.
+#     retraction_decision_ref / retraction_marked_at / retraction_marked_by — 표식 행위의 감사 흔적.
+#   ★"소비해도 되는가" 판정 함수는 **하나**다: 02_Infrastructure/axiom/lcode_validity.py::lcode_invalidation.
+#     여기(R)에는 필드 **형식** 검증만 둔다(validate_lcode). R 소비자(P3 rf_lessons 적재 등)가 원천 파일을
+#     직접 읽어야 하면 아래 lcode_invalidation_check() 로 **같은 파이썬 함수**를 부른다 — R 로 판정 재구현 금지.
+#     corpus(.cache/lcode_corpus.json::lcodes)는 수확 단계(lcode_harvester.py)에서 이미 걸러져 있다.
+#   표식 writer = lcode_validity.py mark (백업 + 원자 쓰기 + CRLF 보존 + 되읽기 판정).
+LCODE_INVALIDATION_FIELDS <- c("pit_invalid", "retracted_by")          # 판정 필드(둘 중 하나면 소비 불가)
+LCODE_INVALIDATION_AUDIT_FIELDS <- c("retracted_at", "retraction_reason", "retraction_decision_ref",
+                                     "retraction_marked_at", "retraction_marked_by")
+LCODE_VALIDITY_PY <- "02_Infrastructure/axiom/lcode_validity.py"
+
+#' 원천 L-code 파일들의 철회 판정 — 단일 정본(lcode_validity.py::lcode_invalidation)을 CLI 로 부른다.
+#' @return data.frame(path, l_code, invalid, reason). invalid=NA = 읽지 못함(판정 불가 — 조용히 유효 처리 금지).
+lcode_invalidation_check <- function(paths, root = Sys.getenv("QM_ROOT", getwd()),
+                                     py = Sys.getenv("QVEST_PY", "")) {
+  if (!length(paths)) return(data.frame(path = character(0), l_code = character(0),
+                                        invalid = logical(0), reason = character(0)))
+  if (!nzchar(py)) py <- file.path(root, ".venv_qvest_ml", "Scripts", "python.exe")
+  script <- file.path(root, LCODE_VALIDITY_PY)
+  if (!file.exists(script)) stop("lcode_validity.py 부재 — 판정 불가: ", script)
+  had <- Sys.getenv("PYTHONUTF8", NA_character_); Sys.setenv(PYTHONUTF8 = "1")
+  out <- suppressWarnings(system2(py, c(shQuote(script), "check", shQuote(paths)), stdout = TRUE, stderr = FALSE))
+  if (is.na(had)) Sys.unsetenv("PYTHONUTF8") else Sys.setenv(PYTHONUTF8 = had)
+  st <- attr(out, "status")
+  if (!is.null(st) && st != 0) stop("lcode_validity.py check 실패(status=", st, ")")
+  r <- jsonlite::fromJSON(paste(out, collapse = "\n"), simplifyVector = TRUE)
+  data.frame(path = r$path, l_code = as.character(r$l_code), invalid = as.logical(r$invalid),
+             reason = as.character(r$reason), stringsAsFactors = FALSE)
+}
+
 # construction_type controlled vocab (r7 Independence 축; corpus 실측 값 + 스펙 확장 포함)
 LCODE_VALID_CONSTRUCTION_TYPES <- c(
   "momentum", "reversal", "value", "quality", "low_vol", "dividend", "size",
@@ -265,6 +301,16 @@ validate_lcode <- function(lcode, strict = FALSE) {
   if (nzchar(st) && !(st %in% LCODE_VALID_SELECTION_TYPES))
     warnings <- c(warnings, sprintf("selection_type='%s' 비표준 (허용: %s)", st, paste(LCODE_VALID_SELECTION_TYPES, collapse = "/")))
 
+  # 원천 철회 표식 형식 (2026-09-23 · 위 LCODE_INVALIDATION_FIELDS). 판정은 lcode_validity.py — 여기는 형식만.
+  pv <- lcode[["pit_invalid"]]
+  if (!is.null(pv) && !(is.logical(pv) && length(pv) == 1L && !is.na(pv)))
+    errors <- c(errors, "pit_invalid 는 논리값 1개(true/false)여야 한다 — 모호한 표식은 소비 판정을 흐린다")
+  rb <- lcode[["retracted_by"]]
+  if (!is.null(rb) && !(is.character(rb) && length(rb) == 1L && nzchar(trimws(rb))))
+    errors <- c(errors, "retracted_by 는 비지 않은 문자열 1개(철회 근거 참조)여야 한다")
+  if (isTRUE(pv) && is.null(rb))
+    errors <- c(errors, "pit_invalid=true 인데 retracted_by 부재 — 근거 없는 무효 표식은 기록이 아니다")
+
   # sanity bounds (v1과 동일 — 불변)
   .num <- function(x) { y <- suppressWarnings(as.numeric(x %||% NA)); if (length(y)) y[1] else NA_real_ }
   cagr <- .num(lcode$cagr_pct %||% lcode$cagr)
@@ -385,6 +431,18 @@ if (sys.nframe() == 0L && !interactive()) {
                          list(mechanism_hypothesis = "가설 '모멘텀 12-1 검증' — 검증 결과 지배 요인: ",
                               next_probes = list("a", "b"))))
 
+  # 9) [2026-09-23] 철회 표식 형식 — 정상 표식 valid / 모호 표식(문자열 'yes') error / 근거 없는 pit_invalid error
+  .base9 <- c(.base7, list(next_probes = list("a", "b")))
+  rt_ok  <- validate_lcode(c(.base9, list(pit_invalid = TRUE, retracted_by = "L-RAMP-20260820_212848",
+                                          retracted_at = "2026-08-20")))
+  rt_amb <- validate_lcode(c(.base9, list(pit_invalid = "yes", retracted_by = "x")))
+  rt_nob <- validate_lcode(c(.base9, list(pit_invalid = TRUE)))
+  rt_emp <- validate_lcode(c(.base9, list(retracted_by = "  ")))
+  stopifnot(isTRUE(rt_ok$valid), !isTRUE(rt_amb$valid), !isTRUE(rt_nob$valid), !isTRUE(rt_emp$valid),
+            identical(LCODE_INVALIDATION_FIELDS, c("pit_invalid", "retracted_by")))
+  cat(sprintf("[lcode_schema selftest 9] retraction ok=%s ambiguous=%s no_ref=%s empty_ref=%s\n",
+              rt_ok$valid, rt_amb$valid, rt_nob$valid, rt_emp$valid))
+
   cat(sprintf("[lcode_schema v3 selftest] full=%s/%s bad=%s legacy=%s/%s strict=%s norm5=%s(%s/%s) norm6=%s(rt=%s) np1=%s np2=%s npA=%s bp=%s\n",
     full$valid, full$promotion_ready, bad$valid, legacy$valid, legacy$promotion_ready,
     legacy_strict$valid, v5$valid, nz$lcode$grade, nz$lcode$selection_type, v6$valid, np$lcode$record_type,
@@ -404,5 +462,5 @@ if (sys.nframe() == 0L && !interactive()) {
             !isTRUE(bp$promotion_ready), "mechanism_hypothesis" %in% bp$missing_promotion_fields,
             # oos_retention 결측이 더 이상 WARN을 만들지 않는다(External 축 문구 제거)
             !any(grepl("External", np2$warnings)))
-  cat("  PASS (8 cases)\n")
+  cat("  PASS (9 cases)\n")
 }

@@ -22,7 +22,7 @@ setwd(ROOT); Sys.setenv(QM_ROOT = ROOT, CLAUDE_PROJECT_DIR = ROOT, RF_CELL_SPEC 
 Sys.setenv(QVEST_NO_LEDGER_OPEN = "1")
 # ★강화 셀은 '충실구현' L-code 를 발행하지 않는다 (2026-09-23 · 감사 D6-03 · 플랜 P0-M3).
 #   구판은 이 스위치가 없어 셀마다 run_paper_replication 이 mode="paper_replication" L-code 를 냈다 —
-#   셀 908건이 '충실구현' 교훈으로 적립돼 corpus 47%·hypothesis_index 33% 를 오염시켰다.
+#   셀 1,106건(재라벨 실측 · 감사 시점 908)이 '충실구현' 교훈으로 적립돼 corpus 47%·hypothesis_index 33% 를 오염시켰다.
 #   셀의 교훈은 블록 L-code(rf_block_lcode.R · mode=reinforcement)가 정본이다. 스위치 소비자 = run_paper_replication.R §10.
 Sys.setenv(QVEST_RP_NO_LCODE = "1")
 

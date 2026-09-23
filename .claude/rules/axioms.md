@@ -29,15 +29,16 @@ AX-code (Lv0) > PIT C1-C15 (Lv1) > L-code (Lv2) > Signals (Lv3)
 ## 2-Tier (v8.0)
 
 **★mode-local `AX-<MODE>-NNN` 은 본 파일에 열거하지 않는다** (2026-08-23 v9.1). 정본 = `qepm/memory/axioms/axiom_sot_map.json` + `qepm/memory/axioms/active/modes/**`. 이유: v9.1부터 mode-local 활성화가 **무인**(`refine_statement.R` R0~R6)이라 목록이 주 단위로 바뀐다 — 여기 적으면 이 파일이 즉시 낡고, `memory_knowledge_health.R` HARD_3(문서↔JSON 불일치)이 매주 발화한다. 현재 활성 목록은 `Rscript -e 'source("02_Infrastructure/axiom/promote.R"); list_active_axioms()'`. 아래 "Active Law (4)" 절은 **global tier 전용**이며 그 4건만 본 파일이 문서화한다.
+★2026-09-23 (도훈 `AX-D1-FREEZE`·`AX-D3-MODELOCAL`): **무인 활성 기본 OFF**(`QVEST_AXIOM_UNATTENDED` 기본 0 — 활성화 = `approve_axiom`) · mode-local 19건 전량 `deprecated/*_rollback_20260923.json` + `tombstones.json`(근거 L-code 무접촉). 현재 mode-local 활성 0건. 강화 기억은 P3 rf_lessons 로 일원화(AX-D2 — 4번째 기억층 금지).
 
 mode-local `AX-<MODE>-NNN` (`active/modes/<mode>/`, MODE=AS/AR/QPM/JG/GV/FR/RR/RAMP) + global `AX-NNN` (`active/`). negative 공리 = **Distilled 탐색지도**(INV-7, 재도전 대상 — Law 아님. 2026-07-05 AX-003/004/005/007 active→Distilled 강등, DIST 카드/Ledger 이관). Law 잔존 = process 규칙(polarity 없음, AX-000/001/002/008). 엔진 SOT: `02_Infrastructure/docs/rules/axiom-engine.md` (원전 r7 복원 + INV-1~7).
 
 ## Active Law (4) — AX-000/001/002/008
 
 - **AX-000** [IMMUTABLE]: 한계는 대개 법칙이 아니라 방법의 한계다. 모든 목표는 충분한 엄밀함·창의성·반복으로 달성 가능하다는 전제로 임한다. 소수(3~4회)의 실험 실패를 '구조적 한계'나 'dead-end'로 단정하는 것을 금지하며, 탐색은 가용한 모든 수단(개념 발산·다른 데이터원·다른 구조·ML·수리·물리)을 소진하거나 도훈이 중단을 지시할 때까지 계속한다. 실증·PIT·수리로 얻은 결과는 정직히 보고하되(성공 위장·추측 금지), 그 자체가 탐색 중단의 근거가 되지 않는다. (2026-06-21 개정 — 도훈 mandate: '포기 정당' 라이선스 절 삭제 + 조기-한계-단정 금지 명문화)
-- **AX-001 v2** [IMMUTABLE]: 방어형 팩터는 조건부 성과로 평가 (crisis_alpha + Core 대비 MDD 완화 + bad/normal IC ratio). 전기간 SR 기준 적용 금지. **(process 규칙 — polarity 없음, INV-7 Law 잔존)**
+- **AX-001 v3** [IMMUTABLE]: 방어형 전략·팩터의 처분(기각·폐기)을 전기간 등급 단독으로 내리지 않는다. 방어형 판정 계약 = defensive_score(자격 기준은 무신호 대조 통과 후 확정). **(process 규칙 — polarity 없음, INV-7 Law 잔존)** (2026-09-23 개정 — 도훈 `decision_register.json AX-D5-TEXT`. 구 v2 'crisis_alpha + Core 대비 MDD + bad/normal IC ratio' · v2.1 META-ALLOCATION-EXEMPT(Governor 적용)는 `AX-001.json::history` 사료 — 판정 근거로 인용 금지)
 - **AX-002** [IMMUTABLE]: 하네스 내 성과만 유효. 프로세스 우회 = 미래참조 = C1 위반 동급.
-- **AX-008** [process]: Verification Triangulation — Forge + Self-Adversarial(메인 세션 모델 자체 적대검증 — 모델 정본 = CLAUDE.md Active Version 절) + Architect 3-source 중 최소 2-source PASS 필수. (v8.2: Codex Round 제거 → Codex source를 self-adversarial로 치환, 3-source 2/3 불변) L-159/167/168.
+- **AX-008 v2.0** [process]: 결정에 영향을 주는 수치(등급·PORT_t·Calmar 등)는 R 계약 산출만 인용한다 — 손계산·재구성·추정 금지. 독립 검증 = Judge(PIT 전담, essence Grade A 확정 후). (2026-09-23 개정 — 도훈 `decision_register.json AX-D5-TEXT` · v10 코드 용례 정본화. 구 v1.1 'Verification Triangulation — Forge + Self-Adversarial + Architect 3-source 2/3'(L-159/167/168)는 `AX-008.json::history` 사료. global 공리 승격의 2-of-3 요건은 Law 문언에서 분리 — INV-5(`promote_global.R`)가 보유)
 
 ## Demoted → Distilled (2026-07-05, INV-7 — 도훈 지시)
 

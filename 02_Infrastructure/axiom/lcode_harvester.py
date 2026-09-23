@@ -39,8 +39,13 @@ Schema:
         "mtime": ISO8601,
         "promoted_to_axiom": str | null  (AX-XXX if already promoted)
       }
-    ]
+    ],
+    "n_invalidated": int,                 (2026-09-23) 철회·PIT 무효 표식으로 **수확에서 뺀** 건수
+    "invalidated_lcodes": [{"l_code", "source_file", "reason", "retracted_at"}]   (소비 필터의 감사 흔적)
   }
+
+★철회 필터 (2026-09-23 · Axiom 전수감사 K3 · 도훈 AX-D4): 원천 L-code 에 pit_invalid/retracted_by 표식이 있으면
+  lcodes 에 넣지 않는다. 판정 = lcode_validity.py::lcode_invalidation (단일 정본 — P3 rf_lessons 적재도 같은 함수).
 
 Usage: python3 lcode_harvester.py [--project-dir PATH]
 """
@@ -56,6 +61,11 @@ import re
 import sys
 import time
 from datetime import datetime, timezone
+
+# (2026-09-23) 철회 표식 단일 판정 함수 — 같은 디렉터리 모듈. 스크립트/임포트 어느 경로로 불려도 찾게 경로를 건다
+#   (migrate_candidates_v9.py 의 cluster_extractor 임포트와 같은 관례).
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from lcode_validity import lcode_invalidation  # noqa: E402
 
 RE_LCODE = re.compile(r"L-\d+")
 RE_STR = re.compile(r"STR_\d+[A-Za-z0-9_]*")
@@ -469,6 +479,7 @@ def harvest(project_dir: str) -> dict:
     id_first_file: dict[str, str] = {}  # v2: l_code ID 충돌 감지 (A1-F6)
     id_first_strategy: dict[str, str] = {}  # v3: 충돌 유형 판정용 (cross_strategy 여부)
     n_id_collisions = 0
+    invalidated: list[dict] = []  # (2026-09-23) 철회·PIT 무효 표식으로 뺀 L-code — 감사 흔적
 
     # Flat (back-compat) + mode-separated subdirectories (stage_artifacts/l_code/<mode>/)
     # + 전략트리 (2026-07-25 도훈 승인 — 스캔범위 확장).
@@ -500,6 +511,21 @@ def harvest(project_dir: str) -> dict:
             m = RE_LCODE.search(os.path.basename(p))
             l_code = m.group(0) if m else None
         if not l_code:
+            continue
+
+        # ── (2026-09-23) 철회 필터 — 수확 단계에서 뺀다(Axiom 전수감사 K3 · 도훈 AX-D4-PIT-RETRACT) ──
+        #   원천에 pit_invalid/retracted_by 표식이 있으면 corpus.lcodes 에 들이지 않는다 → CAND/DIST 증류·승격·
+        #   positive_context 최근교훈·hypothesis_index·knowledge_index 가 전부 corpus 를 거치므로 한 지점에서 막힌다.
+        #   ★판정 함수는 lcode_validity.lcode_invalidation 하나뿐이다(여기서 필드를 직접 보지 않는다 — 두 벌 금지).
+        #   뺀 것은 invalidated_lcodes 에 남긴다: "왜 corpus 에 없나"가 재구성 가능해야 한다(조용한 소실 금지).
+        _why_invalid = lcode_invalidation(data)
+        if _why_invalid:
+            invalidated.append({
+                "l_code": l_code,
+                "source_file": os.path.relpath(p, project_dir),
+                "reason": _why_invalid,
+                "retracted_at": data.get("retracted_at"),
+            })
             continue
 
         strategy_id = data.get("strategy_id", "")
@@ -647,6 +673,9 @@ def harvest(project_dir: str) -> dict:
         "record_type_distribution": _record_type_dist(lcodes),
         "n_id_collisions": n_id_collisions,
         "n_promoted": sum(1 for x in lcodes if x["promoted_to_axiom"]),
+        # (2026-09-23) 철회·PIT 무효 표식으로 수확에서 뺀 L-code (판정 = lcode_validity.lcode_invalidation)
+        "n_invalidated": len(invalidated),
+        "invalidated_lcodes": sorted(invalidated, key=lambda x: x["l_code"]),
         "lcodes": lcodes,
     }
 
@@ -1023,7 +1052,7 @@ def main() -> int:
 
     print(
         f"[lcode_harvester] {out}{dual_note} — n={corpus['n_lcodes']} "
-        f"promoted={corpus['n_promoted']} "
+        f"promoted={corpus['n_promoted']} invalidated(철회 표식 제외)={corpus['n_invalidated']} "
         f"families={corpus['family_distribution']} "
         f"grades={corpus['grade_distribution']}"
     )

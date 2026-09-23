@@ -404,6 +404,38 @@ cache_freshness_audit <- function(telegram_alert = TRUE,
       }
     }
 
+    # (d) fill_rate — 값 열 채움률 (2026-09-23 W-02). ★위 (b)(c) 는 .read_date_col 이
+    #   결측을 **먼저 지우고** 재므로 열이 100% 비어도 '위반 0' 이다 — Size 09-10~22 ·
+    #   BM_Ret 09-07~ 전량 결측이 VALUE_PASS 였던 자리. 여기서는 최근 n_dates 거래일의
+    #   열별 결측률(!is.finite)을 재고 max_na_rate 를 넘으면 위반. 판정 로직은
+    #   rawdata_fill_guard.R 순수 함수 하나 — daily_refresh [1] 경보와 같은 코드다.
+    if (!is.null(vc$fill_rate)) {
+      fr_res <- tryCatch({
+        if (!exists("rawdata_fill_rates"))
+          source(file.path(PROJECT_ROOT, "02_Infrastructure/data/rawdata_fill_guard.R"))
+        fspec <- rawdata_fill_spec_from(vc$fill_rate)
+        have <- intersect(fspec$cols, sch_names %||% character(0))
+        fdt <- as.data.table(read_parquet(cache_path,
+                                          col_select = tidyselect::all_of(c("Date", have))))
+        rawdata_fill_verdict(rawdata_fill_rates(fdt, fspec$cols, fspec$n_dates),
+                             fspec$max_na_rate)
+      }, error = function(e) list(status = "ERROR", error = conditionMessage(e)))
+      if (identical(fr_res$status, "ERROR")) {
+        viol <- c(viol, sprintf("fill_rate: 판독 실패 (%s)", fr_res$error))
+      } else {
+        vres$fill_rates <- fr_res$rates[, .(Date = as.character(Date), col, n, n_na,
+                                            na_rate = round(na_rate, 6), present)]
+        if (!identical(fr_res$status, "OK")) {
+          fv <- fr_res$violations
+          viol <- c(viol, sprintf("fill_rate: %s (max_na_rate=%s)",
+                                  paste(sprintf("%s@%s=%s", fv$col, as.character(fv$Date),
+                                                ifelse(fv$present, sprintf("%.4f", fv$na_rate), "열부재")),
+                                        collapse = ","),
+                                  format(fr_res$max_na_rate)))
+        }
+      }
+    }
+
     if (length(viol) > 0) {
       vres$status <- "VALUE_FAIL"; vres$severity <- "CRITICAL"
       vres$note <- paste(viol, collapse = " | ")

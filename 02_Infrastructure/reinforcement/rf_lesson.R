@@ -23,7 +23,8 @@ suppressPackageStartupMessages(library(jsonlite))
        oos    = num(g[["min_oos_retention"]],        0.70),
        sharpe = num(g[["grade_a_min_sharpe"]],       0.80),
        cagr   = num(g[["grade_a_min_cagr"]],         0.16),
-       calmar = num(g[["min_calmar"]],               0.64))
+       calmar = num(g[["min_calmar"]],               0.64),
+       dsr    = num(g[["min_deflated_sharpe_ratio"]], 0.50))
 }
 
 #' 5조건 중 막은 것들 — 값/문턱을 함께 낸다(어느 축이 얼마나 모자란지가 기전이다)
@@ -36,9 +37,13 @@ rfl_binding <- function(es, root = .RFL_ROOT()) {
     list(n = "sharpe", v = f("net_sharpe"),     t = th$sharpe),
     list(n = "cagr",   v = f("cagr"),           t = th$cagr),
     list(n = "oos",    v = f("oos_retention"),  t = th$oos))
+  # ★sweep 채점 칸은 DSR 이 A 의 여섯째 조건이다(2026-09-23 P0-01 · 적대 리뷰): 5조건을 다 넘고 DSR 로만 B 가 된 칸을
+  #   구판은 '5조건 전부 충족' 으로 적어 구속 축을 숨겼다. chain(충실구현)은 DSR 면제라 붙이지 않는다.
+  if (identical(as.character(es[["selection_type"]] %||% "")[1], "sweep"))
+    z[[length(z) + 1L]] <- list(n = "dsr", v = f("dsr"), t = th$dsr)
   miss <- Filter(function(x) !is.finite(x$v) || x$v < x$t, z)
   list(n_met = length(z) - length(miss),
-       text = if (!length(miss)) "5조건 전부 충족" else
+       text = if (!length(miss)) sprintf("A 조건 %d개 전부 충족", length(z)) else
          paste(vapply(miss, function(x)
            sprintf("%s(%s/%.2f)", x$n, if (is.finite(x$v)) sprintf("%.3f", x$v) else "NA", x$t),
            character(1)), collapse = "·"))

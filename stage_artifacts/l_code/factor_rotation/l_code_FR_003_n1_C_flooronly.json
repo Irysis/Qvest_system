@@ -1,0 +1,42 @@
+{
+  "l_code": "L-FR-20260923_184043",
+  "strategy_id": "FR_003_n1_C_flooronly",
+  "grade": "C",
+  "core_reference": "run_wf_ensemble.R (walk-forward RCMA + Return.portfolio)",
+  "lesson_text": "FR_003_n1_C_flooronly regime rotation 앙상블 실측(essence C): net_SR=0.926 PORT_t(NW lag-3)=1.97 DSR=0.262 Calmar=0.42 CAGR=17.3% MDD=41.3% | oos_retention=-0.181 | admitted pool 272모듈(RP_20260912_173947_34348,RP_20260912_173947_34744,RP_20260912_184325_33136,RP_20260912_184325_35516,RP_20260912_185620_11412,RP_20260913_103326_34276,RP_20260913_105154_14520,RP_20260913_105154_6836) | edge_vs_ew=-0.032 (EW baseline SR 0.958).",
+  "tags": "FACTOR_ROTATION",
+  "created_at": "2026-09-23",
+  "research_mode": "strategy_rotation",
+  "created_by": "emit:factor_rotation",
+  "metric_type": "backtested",
+  "construction_type": "regime_rotation",
+  "mechanism_hypothesis": "국면조건부 모듈 배분(RCMA admitted union + rp/IR shrink dispatcher) — 모듈별 약점 국면 회피로 앙상블 위험조정수익 개선 가설",
+  "lcode_schema_version": 3,
+  "cagr_pct": 17.3,
+  "sharpe": 0.926,
+  "mdd_pct": 41.3,
+  "calmar": 0.419,
+  "dsr": 0.262,
+  "ew_baseline_sr": 0.958,
+  "edge_vs_ew": -0.032,
+  "n_modules": 272,
+  "n_trials": 277,
+  "falsification_attempts": [
+    {
+      "test": "OOS retention (essence 3-split, 과적합 반증)",
+      "result": "falsified",
+      "effect_retained": -0.181,
+      "detail": "retention -0.181 (gate 0.7, 하한 0.5)"
+    },
+    {
+      "test": "EW baseline 대비 edge (placebo proxy)",
+      "result": "diagnostic",
+      "effect_retained": null,
+      "detail": "net_SR 0.926 vs EW 0.958 (edge -0.032) — 유의검정 아님(진단)"
+    }
+  ],
+  "oos_retention": -0.181,
+  "portfolio_alpha_t": 1.967,
+  "selection_type": "sweep",
+  "record_type": "performance"
+}

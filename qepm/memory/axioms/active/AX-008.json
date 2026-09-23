@@ -12,15 +12,15 @@
   },
   "axiom_id": "AX-008",
   "id": "AX-008",
-  "name": "Verification Triangulation",
+  "name": "결정 수치는 계약 산출만 인용 · 독립 검증 = Judge",
   "type": "process",
   "polarity": "positive",
   "grade": "VALIDATED_PROCESS",
   "level": 0,
-  "version": "v1.1",
-  "canonical_statement": "백테스트 결과·전략 admit·SR provenance 등 의사결정 영향 산출은 Forge + Self-Adversarial(메인 에이전트 Opus 4.8 자체 적대검증) + Architect 3-source 중 최소 2-source PASS가 필수다. Single-source PASS는 자기합리화 risk이며 admission 근거로 부적합. 2/3 미만 PASS 시 Q-Lead 직접 escalation 의무.",
-  "statement": "백테스트 결과·전략 admit·SR provenance 등 의사결정 영향 산출은 Forge + Self-Adversarial(메인 에이전트 Opus 4.8 자체 적대검증) + Architect 3-source 중 최소 2-source PASS가 필수다. Single-source PASS는 자기합리화 risk이며 admission 근거로 부적합. 2/3 미만 PASS 시 Q-Lead 직접 escalation 의무.",
-  "text": "백테스트 결과·전략 admit·SR provenance 등 의사결정 영향 산출은 Forge + Self-Adversarial(메인 에이전트 Opus 4.8 자체 적대검증) + Architect 3-source 중 최소 2-source PASS가 필수다. Single-source PASS는 자기합리화 risk이며 admission 근거로 부적합. 2/3 미만 PASS 시 Q-Lead 직접 escalation 의무.",
+  "version": "v2.0",
+  "canonical_statement": "결정에 영향을 주는 수치(등급·PORT_t·Calmar 등)는 R 계약 산출만 인용한다 — 손계산·재구성·추정 금지. 독립 검증 = Judge(PIT 전담, essence Grade A 확정 후).",
+  "statement": "결정에 영향을 주는 수치(등급·PORT_t·Calmar 등)는 R 계약 산출만 인용한다 — 손계산·재구성·추정 금지. 독립 검증 = Judge(PIT 전담, essence Grade A 확정 후).",
+  "text": "결정에 영향을 주는 수치(등급·PORT_t·Calmar 등)는 R 계약 산출만 인용한다 — 손계산·재구성·추정 금지. 독립 검증 = Judge(PIT 전담, essence Grade A 확정 후).",
   "supporting_l_codes": [
     "L-159",
     "L-167",
@@ -28,35 +28,34 @@
   ],
   "scope": {
     "market": "all",
-    "domain": "verification",
+    "domain": "measurement_citation",
     "applies_to_decisions": [
-      "backtest_admission",
-      "sr_provenance",
+      "grade_citation",
       "strategy_promotion",
-      "axiom_promotion"
+      "book_registration",
+      "reinforce_verdict",
+      "judge_verdict"
     ],
-    "verification_sources": [
-      "Forge",
-      "Self-Adversarial",
-      "Architect"
+    "contract_sources": [
+      "authoritative_remeasure.json::essence_grade",
+      "essence_score.R",
+      "reinforce_ledger (원장 기록값)",
+      "module_catalog / registry (기록값)"
     ],
-    "min_pass_threshold": "2 of 3"
+    "independent_verifier": "Judge (PIT 전담 — essence Grade A 확정 후 스폰)"
   },
   "applies_to": [
-    "Scout",
-    "Forge",
-    "Judge",
-    "Governor",
+    "모든 에이전트",
+    "무인 레인(설계·기전·충실도 감사·증류)",
     "Q-Lead",
-    "Risk Manager",
-    "Architect"
+    "Judge"
   ],
   "origin": "Session 67 Day 3+ L-159 (Codex empirical-first) + L-167 (Architect 진단) + L-168 (Forge re-execution). v7.2.1 (2026-05-02) JSON SOT materialize.",
   "l_code": "L-159 + L-167 + L-168",
-  "enforcement": "Discovery WT 및 deployment 전이 시 verification source 2/3 PASS 미달 → q_lead_approval 의무. v7.3에서 hook PreToolUse hard-block 검토.",
+  "enforcement": "판정 서술의 수치는 계약 산출물(authoritative_remeasure.json·essence_score·원장·레지스트리)만 인용 — 불일치 시 계약값이 정본. 에이전트는 등급을 짓거나 재계산하지 않는다(AX-008 v10 용례).",
   "note_v7_2_1": "JSON SOT materialization only. v7.2.1에서 신규 hard-block regex 도입 X. enforcement_mode=documented. v7.3에서 advisory→block 검토.",
   "created_at": "2026-04-21",
-  "updated_at": "2026-06-30",
+  "updated_at": "2026-09-23",
   "note_v8_2": "v8.2 (2026-06-30, 도훈 mandate): Codex Critic Round 제거(Opus 4.8 자체 적대검증으로 중복). verification source Codex→Self-Adversarial 치환, 3-source 2/3 구조·임계값 불변. 동기화: .claude/rules/axioms.md / _shared_prefix.md / state_transitions.json ax_008_sources.",
   "evidence_audit_20260704": {
     "audit_id": "knowledge_provenance_audit_20260704",
@@ -67,5 +66,63 @@
     "semantics_changed": false,
     "report": "04_Research/01_reports/knowledge_provenance_audit_20260704.md",
     "note": "메타 기록 전용 — 공리 의미론(text/canonical_statement/grade/enforcement) 무변경 (감사 지시 ③)"
-  }
+  },
+  "v10_usage_refs": [
+    "02_Infrastructure/ops/rf_director.R:11",
+    "02_Infrastructure/ops/rf_b1_design_lib.R:13",
+    "02_Infrastructure/ops/rf_lcode_mechanism_lib.R:197",
+    "02_Infrastructure/ops/rf_fidelity_audit_lib.R:16",
+    "02_Infrastructure/ops/rf_fidelity_audit.sh:13",
+    "02_Infrastructure/ops/rf_replication_auto.sh:12",
+    "02_Infrastructure/ops/cleaner_distill_run.sh:151",
+    "02_Infrastructure/axiom/replay/direction_world.R:8"
+  ],
+  "history": [
+    {
+      "name": "Verification Triangulation",
+      "version": "v1.1",
+      "canonical_statement": "백테스트 결과·전략 admit·SR provenance 등 의사결정 영향 산출은 Forge + Self-Adversarial(메인 에이전트 Opus 4.8 자체 적대검증) + Architect 3-source 중 최소 2-source PASS가 필수다. Single-source PASS는 자기합리화 risk이며 admission 근거로 부적합. 2/3 미만 PASS 시 Q-Lead 직접 escalation 의무.",
+      "statement": "백테스트 결과·전략 admit·SR provenance 등 의사결정 영향 산출은 Forge + Self-Adversarial(메인 에이전트 Opus 4.8 자체 적대검증) + Architect 3-source 중 최소 2-source PASS가 필수다. Single-source PASS는 자기합리화 risk이며 admission 근거로 부적합. 2/3 미만 PASS 시 Q-Lead 직접 escalation 의무.",
+      "text": "백테스트 결과·전략 admit·SR provenance 등 의사결정 영향 산출은 Forge + Self-Adversarial(메인 에이전트 Opus 4.8 자체 적대검증) + Architect 3-source 중 최소 2-source PASS가 필수다. Single-source PASS는 자기합리화 risk이며 admission 근거로 부적합. 2/3 미만 PASS 시 Q-Lead 직접 escalation 의무.",
+      "scope": {
+        "market": "all",
+        "domain": "verification",
+        "applies_to_decisions": [
+          "backtest_admission",
+          "sr_provenance",
+          "strategy_promotion",
+          "axiom_promotion"
+        ],
+        "verification_sources": [
+          "Forge",
+          "Self-Adversarial",
+          "Architect"
+        ],
+        "min_pass_threshold": "2 of 3"
+      },
+      "applies_to": [
+        "Scout",
+        "Forge",
+        "Judge",
+        "Governor",
+        "Q-Lead",
+        "Risk Manager",
+        "Architect"
+      ],
+      "enforcement": "Discovery WT 및 deployment 전이 시 verification source 2/3 PASS 미달 → q_lead_approval 의무. v7.3에서 hook PreToolUse hard-block 검토.",
+      "note_v7_2_1": "JSON SOT materialization only. v7.2.1에서 신규 hard-block regex 도입 X. enforcement_mode=documented. v7.3에서 advisory→block 검토.",
+      "note_v8_2": "v8.2 (2026-06-30, 도훈 mandate): Codex Critic Round 제거(Opus 4.8 자체 적대검증으로 중복). verification source Codex→Self-Adversarial 치환, 3-source 2/3 구조·임계값 불변. 동기화: .claude/rules/axioms.md / _shared_prefix.md / state_transitions.json ax_008_sources.",
+      "superseded_at": "2026-09-23",
+      "superseded_by": "v2.0",
+      "status": "historical (사료 — 판정 근거로 인용 금지)",
+      "why_superseded": "정문(3-source 2/3 · 'Opus 4.8' · Governor/Scout)과 v10 용례('결정 영향 수치는 계약 산출만 인용', 코드 11곳)가 갈라짐 · 무인 6레인에 실행 불가 지시로 주입됨 · L-168 레코드 부재(K14)",
+      "inv5_note": "global 공리 승격의 2-of-3 검증 요건은 Law 문언에서 분리 — promote_global.R(INV-5 :7·:55)가 그대로 보유(단계 2 전 휴면)"
+    }
+  ],
+  "approved_by": "dohoon",
+  "approved_at": "2026-09-23",
+  "decision_ref": "06_Registry/decision_register.json AX-D5-TEXT",
+  "amended_by": "Q session be2e88bf (AX-D5 이행)",
+  "amended_at": "2026-09-23T19:09:56+0900",
+  "amendment_basis": "Axiom 엔진 효용 전수감사 wf_d8ee80de-26d 판정서 ⑤·K14 (도훈 채팅 응답 — 권고안 채택)"
 }

@@ -847,7 +847,11 @@ dr_open <- function(id, title, options, recommendation, default_until_decided, b
 }
 
 #' 결정 기록 — decided_by 가 항목 owner 와 다르면 거부 · 이미 resolved 면 거부(새 항목으로)
-dr_resolve <- function(id, decision, decided_by, note = "", root = .rf_root(), decided_at = NULL) {
+## ★출처 필드 (2026-09-23 적대 리뷰): owner 대조는 **문자열 규약이지 인증이 아니다** — 어떤 세션도 decided_by="dohoon" 을 넘길 수 있다.
+##   그래서 누가 적었는지(recorded_by)와 결정의 근거(evidence — 채팅 응답·파일 경로 인용)를 함께 남겨
+##   세션이 대신 적은 결정과 도훈이 직접 적은 결정을 사후에 가를 수 있게 한다. 선택 인자(구 호출 호환).
+dr_resolve <- function(id, decision, decided_by, note = "", root = .rf_root(), decided_at = NULL,
+                       recorded_by = NULL, evidence = NULL) {
   id <- .dr_str1(id, "id")
   decision <- .dr_str1(decision, "decision")
   decided_by <- .dr_str1(decided_by, "decided_by")
@@ -870,6 +874,8 @@ dr_resolve <- function(id, decision, decided_by, note = "", root = .rf_root(), d
     stop(sprintf("[decision_register] owner 불일치 거부: %s 의 owner=%s · decided_by=%s", id, own, decided_by), call. = FALSE)
   it$status <- "resolved"; it$decision <- decision; it$decided_by <- decided_by
   it$decided_at <- da; it$note <- note
+  if (!is.null(recorded_by)) it$recorded_by <- .dr_str1(recorded_by, "recorded_by")
+  if (!is.null(evidence))    it$evidence    <- .dr_str1(evidence, "evidence")
   obj$items[[k]] <- it
   .dr_write(obj, root)
   invisible(it)

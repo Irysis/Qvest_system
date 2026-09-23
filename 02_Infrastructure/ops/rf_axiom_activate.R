@@ -38,6 +38,26 @@ jlog <- function(event, ...) {
 }
 CFG <- if (file.exists(CFG_P)) fromJSON(CFG_P, simplifyVector = FALSE) else list()
 if (!isTRUE(CFG$enabled %||% FALSE)) { jlog("halt_disabled"); quit(status = 0) }
+# ★2026-09-23 (도훈 AX-D1 '무인 활성 동결' · D-K-REV 'Qvest_AxiomActivate 퇴역'): 이 스크립트는 approve_axiom 을
+#   직접 부르는 **세 번째 무인 활성 경로**다(주간 스윕·월간 증류와 별개). 스케줄 퇴역은 도훈이 schtasks 로 하고,
+#   그와 무관하게 여기서도 정본 스위치 promote.R::.unattended_enabled()(기본 OFF)를 따른다 — OFF 면 아무것도 켜지 않는다.
+#   promote.R 적재 실패도 멈춘다(fail-closed: 스위치를 못 읽으면 켜지 않는 쪽).
+#   검사: 08_Tests/axiom/test_axiom_freeze_retraction.R ⓑ3(기본 → halt · 양성 대조 =1 → 활성 · 돌연변이 가드 제거).
+local({
+  had <- Sys.getenv("PROMOTE_SOURCED", NA_character_)
+  Sys.setenv(PROMOTE_SOURCED = "1")
+  px <- new.env(parent = globalenv())
+  ok <- tryCatch({ suppressMessages(sys.source(file.path(ROOT, "02_Infrastructure/axiom/promote.R"), envir = px)); TRUE },
+                 error = function(e) FALSE)
+  if (is.na(had)) Sys.unsetenv("PROMOTE_SOURCED") else Sys.setenv(PROMOTE_SOURCED = had)
+  on_ <- ok && exists(".unattended_enabled", envir = px, mode = "function", inherits = FALSE) &&
+    isTRUE(px$.unattended_enabled())
+  if (!on_) {
+    jlog("halt_unattended_off", promote_loaded = ok,
+         note = "QVEST_AXIOM_UNATTENDED!=1 (기본 OFF, 도훈 AX-D1) — 무인 활성화 없음. 활성화 = approve_axiom(ids, approved_by='dohoon')")
+    quit(status = 0)
+  }
+})
 MAX_MODE  <- as.integer(CFG$axiom_max_active_per_mode %||% 6L)
 MAX_TOTAL <- as.integer(CFG$axiom_max_active_total %||% 20L)
 
