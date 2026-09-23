@@ -14,6 +14,24 @@ suppressPackageStartupMessages({ library(data.table); library(jsonlite) })
 
 RFA_LEDGER <- "06_Registry/overlay_arm_ledger.jsonl"
 
+#' PIT 격리 원천 참조 검사 (2026-09-24 · C11 봉쇄) — 생성 arm(<kind>.R · <kind>.arm.json)이 참조하는 격리 원천 정규식.
+#'   정본 = <root>/06_Registry/pit_quarantine.json sources[].regex · 판독기 = 02_Infrastructure/validation/pit_quarantine.R
+#'   (데이터 루트 → 코드 루트 순). 목록 부재 = character(0). 목록은 있는데 판독기 부재·목록 파손 = 그 사실을 걸린 것으로
+#'   돌려준다 — 등재 거부로 넘어진다(조용한 해제 금지).
+.rfa_pitq_hits <- function(kind, root) {
+  rel <- "02_Infrastructure/validation/pit_quarantine.R"
+  lib <- c(file.path(root, rel), file.path(.RFA_ROOT(), rel)); lib <- lib[file.exists(lib)]
+  if (!length(lib)) {
+    if (file.exists(file.path(root, "06_Registry/pit_quarantine.json"))) return("판독기 부재(pit_quarantine.R)")
+    return(character(0))
+  }
+  ad <- file.path(root, "02_Infrastructure/reinforcement/overlay_arms")
+  fs <- file.path(ad, paste0(kind, c(".R", ".arm.json"))); fs <- fs[file.exists(fs)]
+  txt <- unlist(lapply(fs, function(f) readLines(f, warn = FALSE, encoding = "UTF-8")))
+  tryCatch({ en <- new.env(parent = globalenv()); sys.source(lib[1], envir = en); en$pitq_source_hits(txt, root) },
+           error = function(e) sprintf("격리 목록 판독 실패: %s", conditionMessage(e)))
+}
+
 rfa_append_ledger <- function(rec, root = .RFA_ROOT()) {
   p <- file.path(root, RFA_LEDGER)
   dir.create(dirname(p), recursive = TRUE, showWarnings = FALSE)
@@ -38,6 +56,15 @@ rf_overlay_admit <- function(kind, target = NULL, n_siblings = 1L,
                           local = TRUE))
   pr <- try(overlay_probe_arm(kind, root), silent = TRUE)
   if (inherits(pr, "try-error")) pr <- list(ok = FALSE, reason = as.character(pr))
+  ## ★PIT 격리 원천 참조 거부 (2026-09-24 · C11 봉쇄 · 06_Registry/pit_quarantine.json) — probe 가 통과해도 등재하지 않는다.
+  ##   pg2_risk_overlay 가 AE·m4 패널을 읽어 L1 15칸을 오염시켰고(판정서 V-02), 생성 레인 프롬프트가 그 파일을
+  ##   외부 패널 본보기로 가리킨다 — 같은 원천을 읽는 새 arm 을 방출 단계에서 막는다. 사유는 방출 원장 probe.reason 에 남는다.
+  .qh <- .rfa_pitq_hits(kind, root)
+  if (length(.qh)) {
+    pr$reason <- sprintf("pit_quarantine(C11) — 격리 원천 참조 %s%s", paste(.qh, collapse = " | "),
+                         if (isTRUE(pr$ok)) "" else sprintf(" · probe: %s", as.character(pr$reason %||% "")))
+    pr$ok <- FALSE
+  }
 
   # arm 메타 — LLM 이 낸 <kind>.arm.json. 없으면 최소값으로 채운다(등재는 R 판단).
   mp <- file.path(root, "02_Infrastructure/reinforcement/overlay_arms", paste0(kind, ".arm.json"))
