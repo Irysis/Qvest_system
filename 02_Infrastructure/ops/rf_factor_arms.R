@@ -11,6 +11,7 @@
 #
 # 규칙(판단이 아니라 정렬):
 #   ① 후보 풀 = 횡단면 팩터 ∩ IC 이력 보유 ∩ active   (축 판정 = factor_panel_axis.json)
+#      ∖ PIT 격리(06_Registry/pit_quarantine.json · 2026-09-24 C11 봉쇄 — B1 규칙 선정·설계 재료·b1_verify 공통)
 #   ② ★시드 회전 — 시드를 "최상위 1종"으로 박으면 그리디가 결정론이라 **전 논문이 같은
 #      사슬**을 받는다. 331종을 조사해 놓고 5종만 쓰고, 구판의 병("모든 논문이 같은 5팩터")을
 #      선정 규칙만 바꿔 재생산한다. 회전이 없으면 이 블록의 총 조합은 entry 수와 무관하게 5개다.
@@ -115,7 +116,24 @@ rf_root_papers_for <- function(spec_or_ids, base_paper = NULL, cell_paper = NULL
   list(papers = papers, families = fams, unmapped_families = unname(unmapped), unknown_ids = unknown)
 }
 
-#' 후보 풀 — 횡단면 ∩ IC 이력 ∩ active
+#' PIT 격리 팩터 id (2026-09-24 · C11 봉쇄 · pit.md '위반 시 처리' 1·2단계를 수리 전에 집행)
+#'   정본 = <root>/06_Registry/pit_quarantine.json · 판독기 = 02_Infrastructure/validation/pit_quarantine.R.
+#'   판독기는 데이터 루트 → 코드 루트 순으로 찾는다(검사 픽스처 root 에 코드가 없어도 된다).
+#'   ★목록이 있는데 판독기가 없거나 목록이 파손이면 stop — 격리를 조용히 건너뛰지 않는다
+#'     (러너는 factor_pick_failed 로 기록하고 격자 스냅샷 셀로 진행한다).
+.rff_pitq_ids <- function(root) {
+  rel <- "02_Infrastructure/validation/pit_quarantine.R"
+  lib <- c(file.path(root, rel), file.path(.RFF_ROOT, rel)); lib <- lib[file.exists(lib)]
+  if (!length(lib)) {
+    if (file.exists(file.path(root, "06_Registry/pit_quarantine.json")))
+      stop("[rf_factor_arms] pit_quarantine.json 은 있는데 판독기(pit_quarantine.R)가 없다 — 격리를 건너뛰지 않는다")
+    return(character(0))
+  }
+  en <- new.env(parent = globalenv()); sys.source(lib[1], envir = en)
+  en$pitq_factor_ids(root)
+}
+
+#' 후보 풀 — 횡단면 ∩ IC 이력 ∩ active ∖ PIT 격리
 rf_factor_pool <- function(root = .RFF_ROOT) {
   ev_p <- file.path(root, "06_Registry/factor_evidence.json")
   ax_p <- file.path(root, "06_Registry/factor_panel_axis.json")
@@ -147,6 +165,10 @@ rf_factor_pool <- function(root = .RFF_ROOT) {
     ax <- AX[[f]]$panel_axis %||% NA_character_
     is.na(ax) || identical(ax, "cross_sectional")
   }, logical(1))
+  # ★PIT 격리 (2026-09-24 · C11 봉쇄) — 격리 목록의 팩터는 후보에서 뺀다(등급·IC·등록부는 그대로).
+  #   D32_Beta_VIX · MA01/MA02 는 해외 계열을 관측일로 결합해 시점 오염(판정서 V-08·V-01) — 수리·재빌드 전까지 소비 금지.
+  pitq <- .rff_pitq_ids(root)
+  keep <- keep & !(ids %in% pitq)
 
   pool <- data.table(
     id = ids[keep],
@@ -159,6 +181,7 @@ rf_factor_pool <- function(root = .RFF_ROOT) {
          ax <- AX[[f]]$panel_axis %||% NA_character_
          !is.na(ax) && !identical(ax, "cross_sectional") }, ids),
        axis_available = length(AX) > 0L,
+       excluded_pit = intersect(ids, pitq),
        asof = as.character(max(IC$Date, na.rm = TRUE)))
 }
 
@@ -269,6 +292,7 @@ rf_pick_factor_sets <- function(n = 5L, exclude = character(0), seed_offset = 0L
   list(cells = cells, picked_ids = chosen, seed_id = seed_id, seed_offset = as.integer(seed_offset),
        n_available = nrow(pool), excluded_no_ic = P$excluded_no_ic,
        excluded_axis = P$excluded_axis, axis_available = P$axis_available,
+       excluded_pit = P$excluded_pit,
        max_rho = if (length(rho_tr)) max(rho_tr) else NA_real_, substrate_asof = P$asof)
 }
 

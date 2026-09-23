@@ -1,0 +1,469 @@
+{
+  "schema": "pit_quarantine_v1",
+  "note": "PIT 위반 격리 목록 — pit.md '위반 시 처리' 1단계(즉시 중단)·2단계(결과 무효)를 코드 수리·이력 재빌드 전에 집행한다. 소비자가 이 파일을 읽어 후보에서 뺀다(판독기 = 02_Infrastructure/validation/pit_quarantine.R). 원값은 각 항목 original 에 보존한다. 해제 = 항목 status 를 'released' 로(삭제 금지 · released_at·released_by·사유 기록). 등급·essence·원장 수치는 이 파일이 바꾸지 않는다.",
+  "reader": "02_Infrastructure/validation/pit_quarantine.R (pitq_factor_ids · pitq_source_regex · pitq_source_hits)",
+  "consumers": {
+    "factors": "02_Infrastructure/ops/rf_factor_arms.R::rf_factor_pool — B1 규칙 선정(rf_pick_factor_sets)·B1 설계 재료(rf_b1_design_lib::b1_materials)·설계 검증(b1_verify)이 같은 정본을 쓴다",
+    "sources": "02_Infrastructure/reinforcement/rf_overlay_admit.R::rf_overlay_admit — 생성 오버레이 arm(<kind>.R·<kind>.arm.json)이 격리 원천을 참조하면 등재 거부(방출 원장에 사유 기록)"
+  },
+  "fail_policy": "파일 부재 = 격리 0 · 파손/형식 불량 = stop(조용한 해제 금지). rf_factor_pool 실패 → 러너 factor_pick_failed → 격자 스냅샷 셀(오염 팩터 없음 확인 2026-09-24) · 등재 관문 실패 → 해당 arm REJECT",
+  "quarantines": [
+    {
+      "id": "PITQ-C11-20260924",
+      "code": "C11",
+      "flag": "pit_c11",
+      "reason": "pit_invalid:C11",
+      "status": "active",
+      "opened_at": "2026-09-24T04:44:20+0900",
+      "opened_by": "C11 봉쇄 워크플로 wf_a429ee6d-8ec (Q 오케스트레이션 · 판정서 안 A 0단계)",
+      "decision_ref": "06_Registry/decision_register.json#PIT-C11-REMEDIATION (status open · default_until_decided = 봉쇄)",
+      "judgment": "C:/Users/99922/AppData/Local/Temp/claude/C--Users-99922-OneDrive-Quant-Module-Moltbot/be2e88bf-6a4c-44e5-a6ff-6aae164c14ca/scratchpad/pit_c11_synth.md",
+      "judgment_summary": "FRED 등 해외 시계열을 미국 관측일(Date)로 한국 신호일에 결합 — 같은 날짜 병합 · 공표형 주간/월간 계열의 공표 전 사용 · 1행 lag 신호의 한국 종가→종가 적용 · 최신 빈티지 소급. 등급 도달: L1 최대 35칸(B5·C28·F2) · 2계층 B 풀 5모듈·FR_003 · BOOK_0001 AE·m4 게이트(BOOK 은 도훈 결정 — 이 목록 밖). A칸·충실구현 0.",
+      "factors": [
+        {
+          "id": "D32_Beta_VIX",
+          "violation": "V-08 (일간판 V-09)",
+          "evidence": "factor_db_builder.R:293-319(결합 :311-312) → compute_defense.R:472-493 — VIXCLS 미국 관측일을 한국 신호일에 같은 날짜로 결합, 결합 뒤 lag 없음. 202608 저장값 2550/2550 이 같은 날짜 판과 일치",
+          "consumption": "등급 소비 0(L1·L2 원장·카탈로그·BOOK) — B1 후보 풀 적격이라 봉쇄. 팩터 스크린 WT-D20260803_005/006 은 도훈 결정 대상(이 목록 밖)",
+          "original": {
+            "in_b1_pool": true,
+            "registry_lifecycle": "active",
+            "panel_axis": "cross_sectional",
+            "category": "defense",
+            "ic_screen_tier": "S3"
+          }
+        },
+        {
+          "id": "MA01_GDP_Sensitivity",
+          "violation": "V-01",
+          "evidence": "compute_regime.R:75-77(.macro_beta :332-374 · MA01 :412-415) — INDPRO·CPIAUCSL 신호월(M-01 라벨) 관측치를 공표 전에 사용(CPI +10~17일 · INDPRO 약 +15~20일). 202608 저장값 2503/2503 재현 · 공표분만 쓰면 202608·202003 산출 불가",
+          "consumption": "L1 20칸(C 18 · F 2) — RP_20260902_191247_combo 19칸 · RP_20260903_081538_1520_adapted_rulefast 1칸 (원장 표식 flag pit_c11)",
+          "original": {
+            "in_b1_pool": true,
+            "registry_lifecycle": "active",
+            "panel_axis": "cross_sectional",
+            "category": "regime",
+            "ic_screen_tier": "S3"
+          }
+        },
+        {
+          "id": "MA02_CPI_Sensitivity",
+          "violation": "V-01 (같은 경로 · compute_regime.R:75-77 .macro_beta)",
+          "evidence": "CPIAUCSL 신호월 관측치를 공표 전에 사용 — MA01 과 같은 .macro_beta 경로. 2022-08 코드판 vs 공표분판 Spearman 0.9049",
+          "consumption": "등급 소비 0 · 202607부터 결손(CPI 2025-10 부재 지목) — B1 후보 풀 적격이라 봉쇄",
+          "original": {
+            "in_b1_pool": true,
+            "registry_lifecycle": "active",
+            "panel_axis": "cross_sectional",
+            "category": "regime",
+            "ic_screen_tier": "S3"
+          }
+        }
+      ],
+      "factors_already_excluded": [
+        {
+          "id": "RE14_Inflation_YoY",
+          "violation": "V-13",
+          "excluded_by": "rf_factor_pool — IC 이력 부재 + 축 판정 비횡단면(2026-09-24 실측: pool=FALSE · no_ic=TRUE · axis_excl=TRUE). 커넥터도 Z NA·Coverage FALSE 로 거른다(판정서 1-2)"
+        },
+        {
+          "id": "MA07_BusinessCycle_Composite",
+          "violation": "V-13",
+          "excluded_by": "rf_factor_pool — IC 이력 부재 + 축 판정 비횡단면(2026-09-24 실측 동일)"
+        }
+      ],
+      "daily_fdb_columns": {
+        "columns": [
+          "D32_Beta_VIX",
+          "RE10_VIX_Pctile",
+          "RE11_VIX_Change_EWMA",
+          "RE13_Credit_Spread_Pctile",
+          "RE14_Inflation_YoY",
+          "RE_VIX_z",
+          "RE_MRS",
+          "RE_exposure",
+          "RE04_HighVol_Beta",
+          "RE05_LowVol_Beta",
+          "D08_Tail_Beta"
+        ],
+        "violation": "V-09 · V-10 · V-11 · V-12 (D08_Tail_Beta 는 C1 · 1-4)",
+        "unattended_consumers_found": [],
+        "search": "2026-09-24 grep: 소비 코드 = ml_pipeline/dpl_feature_builder.py(RE_MRS · DPL ML 특성) · ast/ast_compile.R(factor_db_daily 리프) — 둘 다 강화 tick 레인·Windows 스케줄 작업(Qvest_*)·아침 체인에서 호출부 0. 월간 RE04/RE05 는 국내 벤치 변동성 조건부라 C11 무관(compute_regime.R:199-212).",
+        "means": "무인 소비 경로가 없어 코드 격리는 하지 않았다. 생성 arm 이 이 열을 참조하면 sources 정규식이 등재를 거부한다(RE04/RE05 는 월간 청정판과 이름이 같아 정규식에서 제외)."
+      },
+      "sources": [
+        {
+          "regex": "\\bm4_published\\b",
+          "violation": "V-04",
+          "why": "m4 발행 패널(06_Registry/m4_published/m4_panel_published.parquet) — 월말 미공표 주간 STLFSI4·ICSA·NFCI"
+        },
+        {
+          "regex": "\\bm4_panel",
+          "violation": "V-04",
+          "why": "m4 패널 파일"
+        },
+        {
+          "regex": "\\bae_regime_(signal|backfill|extend)",
+          "violation": "V-03",
+          "why": "AE 패널(stage_artifacts/WT_D20260718_007/ae_regime_signal_ext.parquet) — 미공표 STLFSI4/NFCI + 빈티지"
+        },
+        {
+          "regex": "\\bregime_daily_v2\\b",
+          "violation": "V-10 · V-11",
+          "why": "regime_daily_v2 — VIX_z_smooth 같은 날짜 · 주간 축 공표 미반영"
+        },
+        {
+          "regex": "\\bregime_engine_daily\\b",
+          "violation": "V-10 · V-11",
+          "why": "regime_daily_v2 생산자"
+        },
+        {
+          "regex": "\\bunified_regime_signal",
+          "violation": "V-05",
+          "why": "unified_regime_signal_daily/monthly — FRED_MRS·Category 같은 날짜 병합"
+        },
+        {
+          "regex": "\\bbuild_regime_signal_table\\b",
+          "violation": "V-05",
+          "why": "unified 생산자(regime_signal.R:806-850)"
+        },
+        {
+          "regex": "\\bmacro_regime\\b",
+          "violation": "V-14",
+          "why": "macro_regime.parquet — 월말 US 종가·월내 주간값·같은 달 CPI"
+        },
+        {
+          "regex": "\\bmacro_fred\\b",
+          "violation": "V-07",
+          "why": "macro_fred.parquet — ALFRED 미사용 최신 빈티지"
+        },
+        {
+          "regex": "\\bdata_collector_fred\\b",
+          "violation": "V-07 · V-14",
+          "why": "FRED 수집기"
+        },
+        {
+          "regex": "\\bfred_robust\\b",
+          "violation": "V-07",
+          "why": "FRED 수집기(robust)"
+        },
+        {
+          "regex": "\\bVIXCLS\\b",
+          "violation": "V-08 · V-09 · V-10",
+          "why": "VIX 원계열"
+        },
+        {
+          "regex": "\\bbear_?prob",
+          "violation": "V-10",
+          "why": "Bear_Prob — regime_jump_model 입력 VIX_z 가 lag 없는 값"
+        },
+        {
+          "regex": "\\bregime_jump_model\\b",
+          "violation": "V-10",
+          "why": "Bear_Prob 생산자"
+        },
+        {
+          "regex": "\\bapply_regime_overlay\\b",
+          "violation": "V-06",
+          "why": "1행 lag MRS·Category 오버레이"
+        },
+        {
+          "regex": "\\bD32_Beta_VIX\\b",
+          "violation": "V-08 · V-09",
+          "why": "팩터"
+        },
+        {
+          "regex": "\\bMA01_GDP_Sensitivity\\b",
+          "violation": "V-01",
+          "why": "팩터"
+        },
+        {
+          "regex": "\\bMA02_CPI_Sensitivity\\b",
+          "violation": "V-01",
+          "why": "팩터"
+        },
+        {
+          "regex": "\\bRE14_Inflation_YoY\\b",
+          "violation": "V-12 · V-13",
+          "why": "팩터"
+        },
+        {
+          "regex": "\\bMA07_BusinessCycle_Composite\\b",
+          "violation": "V-13",
+          "why": "팩터"
+        },
+        {
+          "regex": "\\bRE10_VIX_Pctile\\b",
+          "violation": "V-12",
+          "why": "일간 팩터(C1 겸)"
+        },
+        {
+          "regex": "\\bRE11_VIX_Change_EWMA\\b",
+          "violation": "V-12",
+          "why": "일간 팩터"
+        },
+        {
+          "regex": "\\bRE13_Credit_Spread_Pctile\\b",
+          "violation": "V-12",
+          "why": "일간 팩터(C1 겸)"
+        },
+        {
+          "regex": "\\bRE_VIX_z\\b",
+          "violation": "V-10",
+          "why": "일간 팩터"
+        },
+        {
+          "regex": "\\bRE_MRS\\b",
+          "violation": "V-11",
+          "why": "일간 팩터"
+        },
+        {
+          "regex": "\\bRE_exposure\\b",
+          "violation": "V-11",
+          "why": "일간 팩터"
+        },
+        {
+          "regex": "\\bD08_Tail_Beta\\b",
+          "violation": "C1 (판정서 1-4)",
+          "why": "일간 팩터 — 전 이력 꼬리베타 복제"
+        }
+      ],
+      "overlay_arms": [
+        {
+          "id": "pg2_risk_overlay_v1",
+          "violation": "V-02 (입력 V-03 AE · V-04 m4 · V-07 빈티지)",
+          "evidence": "pg2_risk_overlay.R:90-91,155-173 — AE·m4 패널을 결정 시점에 읽음. assert_overlay_pit 는 날짜 라벨만 비교해 통과",
+          "means": "06_Registry/overlay_catalog.json status active→suspended(원값 status_before) — 규칙 픽커(rf_overlay_arms.R:47)·설계 카탈로그(rf_block_design.R:111)·상주 칸 판정(rf_runner_gates.R:48-51 arm_not_active) 셋 다 active 만 받는다",
+          "original": {
+            "status": "active"
+          },
+          "other_arms_scanned": "overlay_arms/*.R 전수 grep(2026-09-24) — 격리 원천 참조는 pg2_risk_overlay.R 뿐. 빌트인 10종(rf_cell_engine.R:557)은 국내 시장 상태 H 만 사용. weight_catalog 의 regime_tilt·regime_softmax·ic_tilt 는 degraded_wiring(비활성 · MRS 0 퇴화)"
+        }
+      ],
+      "modules": [
+        {
+          "strategy_id": "RP_20260919_000204_6980",
+          "grade": "C",
+          "ledger_cell": [
+            "RP_20260917_105807_22632_combo_rulefast",
+            28,
+            "B5_31",
+            "C"
+          ],
+          "original": {
+            "fr_eligible": true
+          },
+          "means": "module_catalog.json fr_eligible→false · contamination{reason pit_invalid:C11 · fr_eligible_before} · grade_contaminated(선례 어휘)"
+        },
+        {
+          "strategy_id": "RP_20260919_223831_9344",
+          "grade": "B",
+          "ledger_cell": [
+            "RP_20260917_105807_22632_combo_rulefast_promo1",
+            11,
+            "B5_31",
+            "B"
+          ],
+          "original": {
+            "fr_eligible": true
+          },
+          "means": "module_catalog.json fr_eligible→false · contamination{reason pit_invalid:C11 · fr_eligible_before} · grade_contaminated(선례 어휘)"
+        },
+        {
+          "strategy_id": "RP_20260921_074130_16308",
+          "grade": "B",
+          "ledger_cell": [
+            "RP_20260917_105807_22632_combo_rulefast_promo2",
+            11,
+            "B5_31",
+            "B"
+          ],
+          "original": {
+            "fr_eligible": true
+          },
+          "means": "module_catalog.json fr_eligible→false · contamination{reason pit_invalid:C11 · fr_eligible_before} · grade_contaminated(선례 어휘)"
+        },
+        {
+          "strategy_id": "RP_20260921_104337_26560",
+          "grade": "B",
+          "ledger_cell": [
+            "RP_20260917_105807_22632_combo_rulefast_promo3",
+            11,
+            "B5_31",
+            "B"
+          ],
+          "original": {
+            "fr_eligible": true
+          },
+          "means": "module_catalog.json fr_eligible→false · contamination{reason pit_invalid:C11 · fr_eligible_before} · grade_contaminated(선례 어휘)"
+        },
+        {
+          "strategy_id": "RP_20260921_145714_13072",
+          "grade": "B",
+          "ledger_cell": [
+            "RP_20260917_105807_22632_combo_rulefast_promo4",
+            11,
+            "B5_31",
+            "B"
+          ],
+          "original": {
+            "fr_eligible": true
+          },
+          "means": "module_catalog.json fr_eligible→false · contamination{reason pit_invalid:C11 · fr_eligible_before} · grade_contaminated(선례 어휘)"
+        },
+        {
+          "strategy_id": "RP_20260921_191620_3508",
+          "grade": "C",
+          "ledger_cell": [
+            "RP_20260831_204546_skipped_base",
+            31,
+            "B5_31",
+            "C"
+          ],
+          "original": {
+            "fr_eligible": true
+          },
+          "means": "module_catalog.json fr_eligible→false · contamination{reason pit_invalid:C11 · fr_eligible_before} · grade_contaminated(선례 어휘)"
+        },
+        {
+          "strategy_id": "RP_20260921_213028_14732",
+          "grade": "C",
+          "ledger_cell": [
+            "RP_20260904_102326_skipped_base",
+            16,
+            "B5_31",
+            "C"
+          ],
+          "original": {
+            "fr_eligible": true
+          },
+          "means": "module_catalog.json fr_eligible→false · contamination{reason pit_invalid:C11 · fr_eligible_before} · grade_contaminated(선례 어휘)"
+        },
+        {
+          "strategy_id": "RP_20260921_231732_21092",
+          "grade": "C",
+          "ledger_cell": [
+            "RP_20260904_102326_skipped_base",
+            41,
+            "B4_22",
+            "C"
+          ],
+          "original": {
+            "fr_eligible": true
+          },
+          "means": "module_catalog.json fr_eligible→false · contamination{reason pit_invalid:C11 · fr_eligible_before} · grade_contaminated(선례 어휘)"
+        },
+        {
+          "strategy_id": "RP_20260921_231732_28268",
+          "grade": "C",
+          "ledger_cell": [
+            "RP_20260904_102326_skipped_base",
+            40,
+            "B4_21",
+            "C"
+          ],
+          "original": {
+            "fr_eligible": true
+          },
+          "means": "module_catalog.json fr_eligible→false · contamination{reason pit_invalid:C11 · fr_eligible_before} · grade_contaminated(선례 어휘)"
+        },
+        {
+          "strategy_id": "RP_20260921_231732_28852",
+          "grade": "C",
+          "ledger_cell": [
+            "RP_20260904_102326_skipped_base",
+            42,
+            "B4_23",
+            "C"
+          ],
+          "original": {
+            "fr_eligible": true
+          },
+          "means": "module_catalog.json fr_eligible→false · contamination{reason pit_invalid:C11 · fr_eligible_before} · grade_contaminated(선례 어휘)"
+        },
+        {
+          "strategy_id": "RP_20260921_231732_6348",
+          "grade": "C",
+          "ledger_cell": [
+            "RP_20260904_102326_skipped_base",
+            43,
+            "B4_24",
+            "C"
+          ],
+          "original": {
+            "fr_eligible": true
+          },
+          "means": "module_catalog.json fr_eligible→false · contamination{reason pit_invalid:C11 · fr_eligible_before} · grade_contaminated(선례 어휘)"
+        },
+        {
+          "strategy_id": "RP_20260922_011120_19512",
+          "grade": "C",
+          "ledger_cell": [
+            "RP_20260912_212323_skipped_base",
+            17,
+            "B5_31",
+            "C"
+          ],
+          "original": {
+            "fr_eligible": true
+          },
+          "means": "module_catalog.json fr_eligible→false · contamination{reason pit_invalid:C11 · fr_eligible_before} · grade_contaminated(선례 어휘)"
+        },
+        {
+          "strategy_id": "RP_20260922_040113_21540",
+          "grade": "C",
+          "ledger_cell": [
+            "RP_20260913_084807_skipped_base",
+            16,
+            "B5_31",
+            "C"
+          ],
+          "original": {
+            "fr_eligible": true
+          },
+          "means": "module_catalog.json fr_eligible→false · contamination{reason pit_invalid:C11 · fr_eligible_before} · grade_contaminated(선례 어휘)"
+        },
+        {
+          "strategy_id": "RP_20260923_190423_24764",
+          "grade": "B",
+          "ledger_cell": [
+            "RP_20260913_084807_skipped_base_promo1",
+            13,
+            "B5_31",
+            "B"
+          ],
+          "original": {
+            "fr_eligible": true
+          },
+          "means": "module_catalog.json fr_eligible→false · contamination{reason pit_invalid:C11 · fr_eligible_before} · grade_contaminated(선례 어휘)"
+        },
+        {
+          "strategy_id": "RP_20260924_014942_19128",
+          "grade": "C",
+          "ledger_cell": [
+            "RP_20260923_230819_4212_adapted_rulefast",
+            25,
+            "B5_31",
+            "C"
+          ],
+          "original": {
+            "fr_eligible": true
+          },
+          "means": "module_catalog.json fr_eligible→false · contamination{reason pit_invalid:C11 · fr_eligible_before} · grade_contaminated(선례 어휘)"
+        }
+      ],
+      "lanes": [
+        {
+          "lane": "l2_auto",
+          "violation": "V-05 · V-06 (+ 풀에 V-02 모듈)",
+          "evidence": "run_wf_ensemble.R:85-91 — unified_regime_signal_daily Category(FRED_MRS 같은 날짜) 1행 lag 를 홀딩월 배분에 사용 · RCMA·module_performance 도 같은 라벨",
+          "means": "06_Registry/reinforce_auto_config.json l2_auto.enabled true→false (+ paused_* 기록) — rf_l2_auto.sh 게이트 halt_disabled · rf_l2_auto.R l2_cfg()$enabled FALSE",
+          "original": {
+            "enabled": true
+          }
+        }
+      ],
+      "not_in_scope": "BOOK_0001(AE·m4 게이트 · V-03/V-04) · 05_Production 4파일 · WT-D20260803_005/006 · FR_003 결과 파일 3개 · 레거시 STR · RAMP(ramp r15/r23/r24/r37/r38 — 스케줄 미등록·마지막 실행 2026-06-20) = 도훈 결정 대상(판정서 ⑥)"
+    }
+  ]
+}
