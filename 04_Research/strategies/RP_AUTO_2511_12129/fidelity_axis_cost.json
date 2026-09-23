@@ -1,0 +1,25 @@
+{
+  "axis": "cost",
+  "verdict": "misdeclared",
+
+  "undeclared_changes": [
+    "[체결가가 논문 거래일 하루 전 종가] 논문 §II-A 는 거래일을 03/01·06/01·09/01·12/01 로 못박고 식(1) 의 보유수익을 거래일 가격 S_T→S_{T+f} 로, 식(5) 의 비용을 '거래일 t 의 현재가 P_i' 로 매긴다. 구현은 시그널일 = 2/5/8/11월 마지막 거래일(engine.R:153), 집행일 = 익월 첫 거래일(backtest_harness.R:316-323)로 두었으나, replication_harness.R:58 이 보유창을 Date >= exec_date 로 잡아 **집행일 당일 일간수익까지 신규 보유에 붙인다**. RAWDATA$Ret 은 후행 정의(Close/shift(Close)-1 · build_cache.R:131)이므로 그 수익은 Close(03/01)/Close(2월 말일)-1 — 즉 실효 체결가는 논문 거래일보다 한 거래일 앞선 시그널일 종가다. 구 보유도 hold_pool < next_exec(:87)이라 직전월 말일 종가에서 끊기므로 매도도 같은 종가다. 러너 자신은 이를 authoritative_remeasure.json:44 measurement_regime.exec_price='close_d_legacy' 로, run_paper_replication.R:432 주석으로 '사실상 시그널일 종가 체결' 이라 기록해 두었다. 그런데 FIDELITY.changed 40항 어디에도 이 항목이 없고, 오히려 changed(36)이 '하네스가 익월 첫 거래일(3/1·6/1·9/1·12/1)에 집행하고 … 논문 거래일 규약·3개월 보유와 일치한다' 고 반대로 선언한다(engine.R:45-50 동일 문구). 선언이 사실과 다르다.",
+    "[비용 기준이 드리프트 전 목표비중] 논문 식(5) 는 Σ|S_{t,i} − S_{t−1,i}|·P_i×0.1% 이고 S_{t−1,i} 를 'the shares left at previous time t−1'(한 분기 보유로 드리프트된 실제 주식수)로 정의하며, §II-D Step 3 이 '이전 분기 보유 종목은 포트폴리오 비중에 맞춰 주식수를 조정한다' 고 명시해 드리프트 복원 거래에 비용을 매긴다. 구현이 타는 하네스는 replication_harness.R:107-116 에서 to_val = Σ|w_t^target − w_{t−1}^target| — **직전 목표비중 벡터**와의 차이만 쓰고 분기 중 드리프트 항이 없다(:160 cost_model='weight_delta_approx', 헤더 :19-21 이 근사임을 자인). 편차는 한 방향이다: 목표비중이 두 분기 연속 같은(예: 상한 max(0.05,1/N) 에 물린) 승계 종목은 논문이 드리프트 복원 거래를 과금하는데 구현은 0을 과금한다. FIDELITY.changed 에 비용 항목은 (40) '등급은 15bps 판·논문 0.001 은 병기판' 하나뿐이고 이 근사는 선언되지 않았다. ★엔진 결함이 아니라 하네스 층 규약이다."
+  ],
+
+  "signal_mismatch": [],
+
+  "counterexample": "① 체결 시점 — 첫 집행일 2005-06-01 에서 02_nav.csv:2 의 nav_gross 가 이미 0.99547(≠1)이다. 논문 규약대로 06/01 가격에 매수했다면 그 세션 수익은 신규 보유에 붙을 수 없어 nav_gross=1 이어야 한다. 즉 신규 선정분이 05/31 종가에 들어가 06/01 세션의 -0.45% 를 이미 먹었다(부호는 그날 시장 방향일 뿐이고, 요지는 귀속이다). 이 귀속이 86회 리밸(10_audit.csv rebalance_path_executed) 전부에서 반복된다 — 논문 규약이면 아직 보유하지 않은 포지션에 86세션의 가격변동이 실린다. 선정 규칙이 '예측 1분기 수익 상위 20%' 이므로, 그 순위에 당일 연속성이 조금이라도 있으면 그만큼이 무비용으로 회수된다. 크기는 백테 재실행 없이 단정할 수 없어 적지 않는다(측정 = 계약).\n② 비용 기준 — 5% 상한(N<20 이면 1/N)에 물린 승계 종목 A 가 분기 중 +30% 올라 드리프트 비중이 6.3% 가 되고 다음 분기 목표도 여전히 5% 인 경우, 논문 식(5)는 1.3%p 상당 주식수를 매도해 과금하지만 구현의 to_val 은 |0.05−0.05|=0 이라 과금이 없다. 06_metrics.csv:23 의 Average_Turnover 0.5667(리밸당, L1/2 기준)에는 이 복원 거래가 구조적으로 빠져 있다.",
+
+  "evidence": "arxiv.org/html/2511.12129v1 — §II-A Rolling Window Based Data Separation: 'we extend the trade date by two months lag beyond the standard quarter end date … Thus for the quarter between 04/01 and 06/30, our trade date is adjusted to 09/01 (same method for other three quarters)'. 식(1): r_{T+f,i} = ln(S_{T+f,i}/S_{T,i}) — 거래일 가격 기준 1분기 forward log-return. §III-B Transaction Costs 식(5): Σ_{i=1}^{n}|S_{t,i} − S_{t−1,i}|·P_i × 0.1%, 'S_{t,i} is the shares we need to buy or sell share based on the portfolio weights at current time t and S_{t−1,i} is the shares left at previous time t−1. P_i is the current stock price of stock i' + 'we consider our transaction cost to be 1/1000 of the value of that trade'. §II-D Implementation Step 3: 'As for the stocks owned at previous quarters … we just need to use the portfolio weights to adjust their shares'. 슬리피지·호가스프레드·시장충격 항목은 전문에 없다(0.1% 단일 가정).",
+
+  "confidence": "high",
+
+  "checked": "① 논문 비용률 0.001 vs 구현 — FIDELITY commission_paper=0.001 → run_paper_replication.R:317·319 comm_paper → authoritative_remeasure.json:108 commission_paper_bps=10 으로 병기판이 실제 논문 비용으로 재시뮬됐음 확인(정합) ② 왕복/편도 규약 — 식(5)는 매수·매도 양변 |ΔS|·P 를 모두 합산하는 편도 과금이고 하네스도 to_val=Σ|Δw| 를 반감 없이 commission 에 곱한다(replication_harness.R:118) — 2배/절반 오류 없음(프롬프트 템플릿의 '왕복비용' 표기에도 불구하고 결과는 논문과 동일 규약) ③ 시장충격·슬리피지 — 논문 무명시 / manifest slippage_bps=0(00_manifest.json:13) 정합 ④ 과금 시점·횟수 — 리밸 1회 과금(:118), 86회 = 분기 격자 정합, 초기 매수 Σ|w|=1 → 02_nav.csv:2 cum_cost 0.0015 (15bps 등급판) 정합 ⑤ 비용 분해 무결성 — 10_audit.csv cost_decomposition_consistency PASS(ret_gross − cost_ret == ret_net) ⑥ 비용 기준 시점(식5의 S_{t−1} 정의) vs to_val 의 목표비중 차분 ⑦ 실효 체결가(집행일 수익 귀속) vs 논문 거래일 ⑧ 등급판 15bps 는 규약이므로 불일치로 세지 않음",
+
+  "_항목 서술 규약": "★모든 항목은 대괄호 **한 줄 요약**으로 시작한다 - 12~30자 · 그 항목만 읽고도 무엇이 어긋났는지 아는 문장 · 원문 인용이나 파일:행을 요약에 넣지 마라(뒤 본문에 적는다). 이 요약이 통지에 그대로 실리고 본문은 안 실린다 - 요약이 없으면 사람은 잘린 원문 조각을 받는다. 예: '[숏 레그 그로스 익스포저 24% 미달]' · '[유니버스 탈락분 비중 재분배 없음]' · '[은닉층 순환 구조 미구현]'. ★용어는 그 분야의 정통 표기를 쓴다 - 임의 한글 조어를 만들지 말고, 원문 용어가 영문이면 통용 표기를 그대로(gross exposure · long/short leg · winsorize · lookback), 우리 지표는 정본 표기를 그대로(PORT_t · Calmar · MDD · OOS retention). 뜻이 통해도 조어면 읽는 사람이 두 번 해석한다.",
+
+  "_배열 규약": "undeclared_changes·signal_mismatch 는 **발견만** 담는다. 없으면 빈 배열 [] 로 두고 '불일치 없음' 같은 비발견을 항목으로 넣지 마라 - 근거 게이트가 배열 길이로 선다.",
+
+  "note": "비용률 축(10bps 병기 · 15bps 등급 · 슬리피지 0 · 편도 규약)은 논문과 정합했다 — 두 발견 모두 '얼마를 무는가'가 아니라 '언제·무엇에 무는가'(집행 가정) 쪽이고, 둘 다 하네스 층 동작이지 엔진 코드가 고른 값이 아니다. 다만 changed(36)이 하네스 동작을 근거로 '논문 거래일 규약과 정확히 일치' 를 적극 주장했으므로 선언 대조에서는 misdeclared 다. ★축 밖 note 1줄: 01_strategy_spec.json:9 rebalance='monthly' · 00_manifest.json:9 frequency='monthly' 는 실제 분기(86회) 집행과 어긋나는 러너 기본값 라벨이고(run_paper_replication.R:335), 00_manifest.json:14 cost_model_version='unlabeled_pre_v24' 도 하네스가 자칭하는 'weight_delta_approx' 라벨을 싣지 못했다 — 둘 다 라벨 결함이지 집행 자체의 차이는 아니다."
+}
