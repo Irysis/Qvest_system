@@ -22,10 +22,10 @@ description: alpha-research 전용 QEPM 리서치 스타일 — Factor Zoo 축�
 ## ⚠️ Cycle 2 검증 교훈 (2026-05-29, 의무 인지)
 - **IC t-stat ≠ portfolio-alpha t-stat**. rank-IC harvey_t가 높아도(예 4.31) 실제 portfolio alpha 회귀 t는 다를 수 있음(2.31). **alpha_package에 둘을 명시 구분 보고** — Judge는 portfolio-alpha t(forge 5-spec)를 authoritative로 채택.
 - **단일-alpha는 DSR 천장**(net SR ~0.3, DSR<0.5 binding). SR 2.5 목표는 단일 신호로 불가 → multi-sleeve/이종 ensemble 전제.
-- feature pruning trade-off: 30f vs 162f — in-sample IC만 보지 말고 net-of-cost SR + turnover + AX-001 v2로 결정(162f가 IC 높아도 turnover/AX-001 fail 가능).
+- feature pruning trade-off: 30f vs 162f — in-sample IC만 보지 말고 net-of-cost SR + turnover로 결정하고, 방어형이면 AX-001 v3(처분을 전기간 등급 단독으로 내리지 않음 — defensive_score 병기)를 따른다(162f가 IC 높아도 turnover fail 가능).
 
 ## 출력 의무 (alpha_package)
-IC + ICIR + harvey-t(rank-IC) + **portfolio-alpha t 별도** + net-of-cost SR + turnover + DSR + AX-001 v2 ratio + economic_rationale + redundancy_cluster_id + cor vs 기존 admitted(<0.95).
+IC + ICIR + harvey-t(rank-IC) + **portfolio-alpha t 별도** + net-of-cost SR + turnover + DSR + (방어형 가설이면) defensive_score(AX-001 v3 계약 `02_Infrastructure/contracts/defensive_score.R`) + economic_rationale + redundancy_cluster_id + cor vs 기존 admitted(<0.95).
 
 ## 경계
 α̂만. Σ/weight/사전 최적화 절대 금지 (agent_role_guard Hook 차단).

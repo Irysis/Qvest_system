@@ -42,7 +42,7 @@ tryCatch({
 #      promote_to_axiom() 을 dry_run 없이(기본 FALSE) 불러, 주간 2-pass 회로차단기를 거치지 않는 **쓰기 경로**였다.
 #      09-01 에 이 경로가 mode-local 4건을 무통보 활성화했다(monthly_distill.log). dry_run = TRUE 로 판정만 한다 —
 #      쓰기(proposed 발급·review_log·MAP)는 주간 스윕(weekly_cleaner_sweep.R 2-pass)만 한다.
-#      검사: 08_Tests/axiom/test_axiom_freeze_retraction.R ⓑ2(파스 트리 — dry_run 인자 = TRUE 리터럴 · 돌연변이 2종).
+#      검사: 08_Tests/axiom/test_axiom_unattended_freeze.R B2·M-B2(파스 트리 — dry_run 인자 = TRUE 리터럴 · 돌연변이 2종).
 tryCatch({
   source(file.path(PROJECT_ROOT, "02_Infrastructure/axiom/review.R"))
   review_all_active_axioms(apply = FALSE)

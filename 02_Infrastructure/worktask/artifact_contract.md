@@ -173,5 +173,5 @@ grep -rE 'optimizer_package|judge_package|governor_package' \
 - `02_Infrastructure/worktask/artifact_contract.json` (JSON SOT)
 - `02_Infrastructure/docs/qvest_v8_1_sot.md` + `02_Infrastructure/docs/qvest_modes_sot.md` (Active Path 의무 자산 위치)
 - `.claude/skills/qvest-worktask/SKILL.md` Section 2~5
-- AX-008 (Verification Triangulation: Forge + Self-Adversarial + Architect 2/3) — `.claude/rules/axioms.md`
+- AX-008 v2.0 (결정 수치는 R 계약 산출만 인용 · 독립 검증 = Judge — 2026-09-23 도훈 AX-D5, 구 v1.1 3자 교차검증 2-of-3 은 `AX-008.json::history` 사료) — `.claude/rules/axioms.md`
 - L-270 (Bayesian validation + drift evidence)

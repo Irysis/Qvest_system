@@ -47,7 +47,7 @@ finalize 직전, alpha_package를 스스로 적대적으로 검증한다 (Opus 4
 4. **challenge_note.md 의무 기록** (Charter §8 No Silent Override): 각 concern ACCEPT/PARTIAL/REBUTTAL 분류 + 근거 + 합리화 자기검증 결과.
 5. **Q-Lead 자동 escalate trigger**: HIGH severity ≥ 5 / AX axiom hard FAIL ≥ 3 / PIT C1(lookahead) 위반 → 즉시 escalate. (v10: lockbox 폐지)
 
-**AX-008 Verification Triangulation**: self-adversarial은 Forge·Architect와 함께 3-source 중 1개(2/3 PASS 필수).
+**AX-008 v2.0**: 결정에 영향을 주는 수치(등급·PORT_t·Calmar 등)는 R 계약 산출만 인용한다 — 손계산·재구성·추정 금지. 독립 검증 = Judge(PIT 전담, essence Grade A 확정 후). (2026-09-23 도훈 AX-D5 개정 — 구 v1.1 3자 교차검증 2-of-3 은 `AX-008.json::history` 사료. 정본 `.claude/rules/axioms.md`)
 
 **🆕 Universe v2 옵션** (L-227 architect advisory, 2026-04-26):
 

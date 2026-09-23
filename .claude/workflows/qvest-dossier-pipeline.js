@@ -24,7 +24,7 @@ const stageDir = `stage_artifacts/WT_${wt.replace(/-/g, '_')}_${tag}`
 const GUARD =
   `[전제] WT ${wt} candidate=${tag}. canonical handoff 이름 사용(alpha_package.json/risk_package.json/optimization_package.json/forge_package.json/judge_verdict.json — artifact-naming 정책).\n` +
   `제약: PIT C1~C15 strict (★v10 2026-08-29: lockbox 폐지 — 가용 데이터 전기간 사용, 반박 금지) / **long-only weights≥0 (도훈 mandate 2026-05-29 온리-롱 전용)** / max 25 names (도훈 mandate 20→25) / Σw=1 (v10: 비중 상한 폐지) / 유동성 2e8 / 15bps / **회전율 hard cap 11.0/yr** / 백테스트 자체합성 금지(PerformanceAnalytics/R-bridge).\n` +
-  `[AX 전제 — workflow agent hook 미발동, 명시] AX-002 PIT 정직(우회=미래참조) / AX-001 v2 crisis 조건부 / AX-008 Verification Triangulation / AX-000 입증된 한계 정직보고. 전문 .claude/rules/axioms.md.\n` +
+  `[AX 전제 — workflow agent hook 미발동, 명시] AX-002 PIT 정직(우회=미래참조) / AX-001 v3 방어형 처분은 전기간 등급 단독 금지(defensive_score 계약) / AX-008 v2.0 결정 수치는 R 계약 산출만 인용(손계산·재구성 금지 · 독립 검증 = Judge) / AX-000 입증된 한계 정직보고. 전문 .claude/rules/axioms.md.\n` +
   `[정체성] 최정상급 퀀트 — 최신 수리통계·ML 적극, 과적합·데이터 스누핑에 냉소적(실증 성과 폄하는 금지). 모든 수치 결정에 근거 논문 원문 링크 필수(quant-identity.md).\n` +
   `Self-Adversarial Challenge 의무: finalize 직전 약점 ≥3건 자가 제기 → ACCEPT/PARTIAL/REBUTTAL 분류 → challenge_note.md 기록 → final. No Silent Override — 제약 완화/도달불가/충돌은 infeasibility_report로 surface(침묵 default 금지).\n` +
   `완료 시 tg_agent_brief 텔레그램 brief(한글 컨텍스트 첫섹션, 핵심kv 정량결과만, 약어 한글풀이, tg_send 직접금지).`

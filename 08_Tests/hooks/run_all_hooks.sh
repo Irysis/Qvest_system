@@ -177,6 +177,11 @@ SUITES=(
   #   ★핵심 축은 Class S(구조적 침묵) — 전 구간 0행은 **델타 감시로는 원리적으로
   #    못 잡는다**(사라진 적이 없으니 델타가 없다). B4 가 돌연변이로 검출력을 실증.
   "08_Tests/factor_db/test_emission_guard.R"
+  # 2026-09-23 추가(W-05 · 도훈 승인 "상태 기준 게이트"): 월 팩터 DB 빌드가 달력(today)이
+  #   아니라 데이터 상태(RAWDATA 거래일·스냅샷 Date·사이드카 data_asof)로 판정되는가.
+  #   구판은 말일 00:03 에 데이터 없는 말일 라벨로 빌드하고 익월엔 전월을 다시 보지 않았다
+  #   (factor_db_202608 class_R 22). D 절이 HEAD 구판에 같은 시나리오를 걸어 검사력을 실증.
+  "08_Tests/factor_db/test_fdb_state_gate.R"
   # 2026-08-09 추가(FQ-210): emission_guard 정체 검사 3축(D 무분산 / T 동률 / I 중복).
   #   위 emission_guard 는 `n_rows > 0` 만 본다 — **존재**를 확인했을 뿐 **정체**를
   #   확인하지 않으므로 두 계통을 원리적으로 못 본다:

@@ -220,10 +220,10 @@ factor_engine 측정과 forge_realized 측정 동시 존재 시:
 Common Charter는 **AX-000 ~ AX-008** 공리 하위에 위치:
 
 - **AX-000** [IMMUTABLE]: 한계란 없다.
-- **AX-001 v2** [IMMUTABLE]: 방어형 팩터는 조건부 평가 (crisis_alpha + Core MDD 완화 + bad/normal IC ratio)
+- **AX-001 v3** [IMMUTABLE]: 방어형 전략·팩터의 처분(기각·폐기)을 전기간 등급 단독으로 내리지 않는다. 방어형 판정 계약 = defensive_score (2026-09-23 도훈 AX-D5 — 구 v2 crisis_alpha·Core MDD·bad/normal IC ratio 축과 v2.1 META-ALLOCATION-EXEMPT 는 `AX-001.json::history` 사료)
 - **AX-002** [IMMUTABLE]: 프로세스 우회 = 미래참조 = C1 위반 동급
 - **AX-003/004/005/007**: 실증/방법론 실패 규칙 (KR 특화)
-- **AX-008**: Verification Triangulation (Forge + Codex + Architect 3-source 중 2+ PASS)
+- **AX-008 v2.0**: 결정에 영향을 주는 수치(등급·PORT_t·Calmar 등)는 R 계약 산출만 인용 — 손계산·재구성·추정 금지. 독립 검증 = Judge(PIT 전담, essence Grade A 확정 후) (2026-09-23 도훈 AX-D5 — 구 v1.1 3자 교차검증 2-of-3 은 `AX-008.json::history` 사료)
 
 공리와 Charter 충돌 시 **AX 우선**. 위반 감지 시 즉시 중단 + Q-Lead 보고.
 
@@ -283,7 +283,7 @@ Common Charter는 **AX-000 ~ AX-008** 공리 하위에 위치:
 - **optimizer-research**: **P2 (cost-aware objective)** + P5 (crowding penalty) + (Phase 3) P4 Direct Policy
 - **forge**: P2 (net-of-cost backtest mandatory, gross vs net 양쪽)
 - **judge**: P1 (Factor Zoo gates) + P2 (net SR + cost_drag verify) + P5 (crowding audit) + P6 (Implementation Discipline)
-- **governor**: P6 (최종 admit 결정) + AX-001 v2 conditional defense
+- **governor**: P6 (최종 admit 결정) + AX-001 v3 방어형 처분 규칙(defensive_score) — *v10: governor 폐지·BOOK 승계(역할 매핑 사료)*
 - **monitoring**: **P7 (분기별 자동 Brinson + Carhart attribution)** + decay 감지
 
 상세: `02_Infrastructure/docs/qvest_research_philosophy.md` (Charter-level SOT 본문, v1.0 2026-05-14) + `02_Infrastructure/docs/rules/research_philosophy.md` (Q-Lead autoload reference) + L-321 ~ L-323 누적.
@@ -428,6 +428,8 @@ bt_result <- list(
 ---
 
 ### 14. Alpha Type Branching — multi-objective 8지표 평가 분기 (v1.6, 도훈 채택 2026-04-30)
+
+> ★2026-09-23 (도훈 AX-D5): 본 절의 `AX-001_v2`·`AX-001_v2.1` 축은 **사료** — 판정 근거로 인용 금지. 현행 = AX-001 v3(방어형 처분은 전기간 등급 단독 금지 · 판정 계약 `02_Infrastructure/contracts/defensive_score.R`). 본 절은 governor 시대(v10 폐지) 분기 기록으로 보존한다.
 
 **Trigger**: WT-D20260430_001 (첫 meta-allocation alpha admission cycle) Judge S6 verdict FAIL Grade C — AX-001 v2 (defense factor 용 axes) 가 meta-allocation alpha (weight schedule type)에 framework mismatch 발견. AX-001 v2.1 META-ALLOCATION-EXEMPT amendment (L-256, lawbook `ax001_v21_meta_allocation_amendment.md`) 후속 — Charter §11 본문 통합.
 

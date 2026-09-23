@@ -1497,12 +1497,15 @@ load_factor_db <- function(sig_date, factors = NULL, format = "wide",
 }
 
 #' 파일 스냅샷 Date(단일값) 판독 — 실패 = NA.
+#' ★mmap = FALSE: 판독 직후 같은 경로에 빌드가 쓴다. 매핑이 남아 있으면 Windows 가
+#'   쓰기를 거부한다(error 1224 — 검사에서 실측).
 .fdb_snap_date <- function(ym, fdb_dir = FACTOR_DB_DIR) {
   fp <- file.path(fdb_dir, paste0("factor_db_", ym, ".parquet"))
   if (!file.exists(fp)) return(as.Date(NA))
-  tryCatch(suppressWarnings(max(as.Date(as.data.table(
-    read_parquet(fp, col_select = "Date"))$Date), na.rm = TRUE)),
+  d <- tryCatch(suppressWarnings(max(as.Date(
+    read_parquet(fp, col_select = "Date", mmap = FALSE)$Date), na.rm = TRUE)),
     error = function(e) as.Date(NA))
+  if (!is.finite(as.numeric(d))) as.Date(NA) else d
 }
 
 #' 달력상 마지막 평일(공휴일은 모른다 — 공휴일로 끝나는 달은 익월 데이터 도착 시 확정된다).

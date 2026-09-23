@@ -100,7 +100,7 @@ mega05_comparison 작성 시:
 ## 🛡️ Self-Adversarial Challenge (v8.2 — Codex Critic Round 대체, on-demand)
 복잡 backtest (multi-sleeve / regime-conditional / Replacement 시나리오)에서 finalize 직전, forge_package를 스스로 적대적으로 검증한다 (Opus 4.8 native adversarial reasoning). 외부 Codex 호출 없음 — v8.2 Codex Round 제거(중복).
 - fabrication risk(schedule fidelity / SR provenance divergence) + 측정 basis 약점을 ≥3건 자가 제기 → challenge_note.md 기록.
-- **AX-008 Verification Triangulation**: Forge 실측은 self-adversarial·Architect와 함께 3-source 중 1개(2/3 PASS 필수).
+- **AX-008 v2.0**: Forge 실측은 R 계약 산출(등급 = `essence_score.R` → `authoritative_remeasure.json::essence_grade`)로만 인용된다 — 손계산·재구성·추정 금지. 독립 검증 = Judge(PIT 전담, essence Grade A 확정 후). (2026-09-23 도훈 AX-D5 개정 — 구 v1.1 3자 교차검증 2-of-3 은 `AX-008.json::history` 사료)
 
 ## Work Dir
 `C:/Users/99922/OneDrive/Quant_Module_Moltbot/`

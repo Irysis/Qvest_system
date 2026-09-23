@@ -15,7 +15,7 @@ description: risk-research 전용 QEPM 리서치 스타일 — Risk Model 고도
 - Stress: GFC/EuDebt/China2015/COVID/RateHike2022/KR_Bear. **book coverage <85% 구간은 UNRELIABLE 명시**(부분 상장 아티팩트 hard-fail 금지).
 
 ## ⚠️ Cycle 2 교훈
-- vol-centric alpha(idio-vol/realized-vol 신호)는 **crowding/idio-vol tilt 반드시 점검** → Forge AX-001 v2 crisis IC 재검 권고.
+- vol-centric alpha(idio-vol/realized-vol 신호)는 **crowding/idio-vol tilt 반드시 점검** → Forge 재측정 권고 · 방어형 판정이면 AX-001 v3 계약 defensive_score 병기(구 v2 crisis IC 축은 `AX-001.json::history` 사료).
 - as_of 단일 cross-section beta(예 1.09)는 아티팩트일 수 있음 — **walk-forward mean beta**로 판정(0.93). single-snapshot로 RF-R1 과대평가 금지.
 
 ## 출력 의무 (risk_package)

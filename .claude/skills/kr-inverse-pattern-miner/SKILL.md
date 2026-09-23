@@ -27,7 +27,7 @@ Rscript 02_Infrastructure/tools/hypothesis_index.R lookup <keyword>   # FAIL/KIL
 | 역전 유형 | 설명 | 예시 |
 |---|---|---|
 | **Direction Flip** | 동일 factor, 반대 방향 | 12M momentum 음의 IC → short-horizon reversal |
-| **Conditional Gate** | 동일 factor, 특정 국면에서만 | defense → CRISIS-only 노출 (AX-001 v2 조건부 평가 정합) |
+| **Conditional Gate** | 동일 factor, 특정 국면에서만 | defense → CRISIS-only 노출 (AX-001 v3 정합 — 방어형 처분은 전기간 등급 단독 금지 · defensive_score 병기) |
 | **Synthesis Pivot** | 실패 factor를 타 family와 결합 | low-beta 단독 실패 → low-beta + quality composite |
 
 ### Step 3: INV-7 재도전 규약 (필수 — 미충족 시 제안 금지)

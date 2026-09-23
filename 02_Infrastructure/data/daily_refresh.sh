@@ -353,6 +353,30 @@ run_r '
     error = function(e) cat(sprintf("Universe mapping skipped: %s\n", e$message)))
 '
 
+# ── [3b] RAWDATA BM_Ret 동기화 — 단일 writer (2026-09-23 W-09 · 도훈 승인) ─────────────
+#   사고: naver 일간 경로가 행을 append 하면서 BM_Ret 을 안 채워 2026-09-07~ 전량 결측이었고
+#   (factor_db_202609 MA06 소실 · C18 332→110행) 어느 스텝도 그것을 보고하지 않았다.
+#   정의·보호 날짜·상한 = data/rawdata_bm_ret_sync.R + rawdata_bm_ret_sync_config.json 단일 정본
+#   (여기서 다시 구현하지 않는다). RAWDATA 를 쓰는 [0b]/[1]/[2]/[3] 이 끝난 뒤 · [6a] 팩터 빌드 전.
+#   rc 0 = 정합 · 4 = 벤치 지연(그 날 NA 유지 — 추정 금지) · 3 = 위반(킬스위치 거부·벤치 결손 등)
+#   · 그 외 = 미측정(정상으로 접지 않는다). 검사: 08_Tests/data/test_rawdata_bm_ret_sync.R (배선 절)
+echo "[3b/7] RAWDATA BM_Ret 동기화 (정본 benchmark → 단일 writer)..."
+_bms_out="$(QM_ROOT="$BASE" "$RSCRIPT" --no-save "$INFRA/data/rawdata_bm_ret_sync.R" --apply 2>&1)"
+_bms_rc=$?
+printf '%s\n' "$_bms_out"
+_bms_line="$(printf '%s\n' "$_bms_out" | grep '^BM_RET_SYNC ' | tail -1)"
+_bms_lag="$(printf '%s' "$_bms_line" | sed -n 's/.* lag_dates=\([^ ]*\).*/\1/p')"
+_bms_viol="$(printf '%s' "$_bms_line" | sed -n 's/.* viol=\([^ ]*\).*/\1/p')"
+case "$_bms_rc" in
+  0) echo "[3b] RAWDATA BM_Ret 정합 — ${_bms_line:-?}" ;;
+  4) echo "!! [3b] ★벤치 지연 — RAWDATA BM_Ret NA 유지(추정 금지): ${_bms_lag:-?}"
+     DR_FAILED+=("rawdata_bm_ret:bench_lag(${_bms_lag:-?})") ;;
+  3) echo "!! [3b] ★RAWDATA BM_Ret 동기화 위반 — ${_bms_viol:-?}"
+     DR_FAILED+=("rawdata_bm_ret:violation(${_bms_viol:0:160})") ;;
+  *) echo "!! [3b] RAWDATA BM_Ret 동기화 미측정(rc=$_bms_rc) — 정상으로 접지 않는다"
+     DR_FAILED+=("rawdata_bm_ret:unmeasured(rc=$_bms_rc)") ;;
+esac
+
 # ──────────────────────────────────────────────────────────────────────────────
 # [4] Arrow / FRED / KTRI / Regime Signal
 # ──────────────────────────────────────────────────────────────────────────────

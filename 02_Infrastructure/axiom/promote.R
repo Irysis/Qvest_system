@@ -659,7 +659,7 @@ promote_to_axiom <- function(candidate_path, threshold = 0.80, auto_inject = NUL
 #   (QVEST_AXIOM_UNATTENDED=1). 이 술어가 정본이다 — 표시하는 쪽(weekly_cleaner_sweep.R ·
 #   morning_steps/axiom_approval_queue.R · ops/rf_axiom_activate.R)은 기본값을 따로 적지 말고 이 함수를 부른다
 #   (두 벌이면 한쪽만 바뀌어 'ON' 이라 표시하면서 실제로는 OFF 인 상태가 된다).
-#   검사: 08_Tests/axiom/test_axiom_freeze_retraction.R ⓑ(기본 OFF → active 0 · 양성 대조 =1 → active · 돌연변이 '1').
+#   검사: 08_Tests/axiom/test_axiom_unattended_freeze.R B0·B1·M-B1(기본 OFF → active 0 · 양성 대조 =1 → active · 돌연변이 '1').
 .unattended_enabled <- function() identical(Sys.getenv("QVEST_AXIOM_UNATTENDED", "0"), "1")
 
 # ── v9.1 커밋14: 활성 상한 ──────────────────────────────────────────────────

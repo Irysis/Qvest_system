@@ -7,7 +7,8 @@ allowed-tools: Read Grep Glob Bash(ls*) Bash(cat*) Bash(git*)
 
 > **페르소나 정본 = `02_Infrastructure/docs/rules/quant-identity.md`** — 최정상급 퀀트 · 냉소는 방법론(과적합·스누핑·시점오염)을 향한다(실증 성과 폄하 금지) · 모든 수치 결정 = 논문 뿌리(원문 링크)·하드코딩 금지.
 <!-- (2026-08-29 도훈 지시) QEPM 모델 라우팅 — **전 구간 Opus**. 가설설계 Fable 핀(2026-08-08 지시) 해제.
-     architect 는 AX-008 Verification Triangulation 3-source 중 1개 = 판정-critical.
+     architect 는 구 AX-008 v1.1(3자 교차검증 2-of-3)의 한 축이었다 — 2026-09-23 도훈 AX-D5 로 사료화(`AX-008.json::history`).
+     현행 AX-008 v2.0 = 결정 수치는 R 계약 산출만 인용 · 독립 검증 = Judge. 라우팅 근거는 위 '전 구간 Opus' 지시.
      `model: opus` = 세션 alias(현행 Opus 5). SOT: 02_Infrastructure/docs/rules/caching.md "모델 라우팅" 절. -->
 
 # Architect v1.0 — Qvest 시스템 아키텍처 설계자

@@ -1130,7 +1130,7 @@ def _singleton_cluster(lc: dict) -> dict:
 #       (hypothesis_index 조회·B1 재료 직통은 불변) **후보·증류만** 만들지 않는다.
 #       기존 강화 CAND 16건·DIST 초안의 이관/보관은 단계 1-3(rf_lessons 시드 이관) 소관 — 여기서 지우지 않는다.
 #   ★제외는 corpus 의 research_mode 필드 기준이다(디렉터리·id 접두 아님 — 재라벨이 필드를 정본으로 삼는다).
-#   검사: 08_Tests/axiom/test_axiom_freeze_retraction.R (샌드박스 cluster_extractor — 강화 CAND/DIST 0 · 비강화 유지 · 돌연변이).
+#   검사: 08_Tests/axiom/test_lcode_retraction_filter.py 축 C·M-C(샌드박스 cluster_extractor — 강화 CAND/DIST 0 · 비강화 유지 · 돌연변이).
 _CAND_EXCLUDED_MODES = frozenset({"reinforcement_cell", "reinforcement"})
 
 

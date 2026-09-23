@@ -147,7 +147,7 @@ Agent(subagent_type="optimizer-research", prompt="WT{id} Optimizer Research...")
 Agent(subagent_type="forge", prompt="WT{id} Integrate 3-agent packages → backtest")
   → run_all.R + backtest 통합 (Pure function 강제)
   → forge_package_draft.json → self-adversarial challenge → forge_package.json
-  → AX-008 Verification Triangulation: Forge + Self-Adversarial + Architect 2/3 PASS 의무
+  → AX-008 v2.0: 결정 수치는 R 계약 산출만 인용(등급 = Step 5 essence) · 독립 검증 = Judge(Grade A 후) — 구 v1.1 3자 교차검증 2-of-3 은 사료
 ```
 
 ### Step 5: 등급 평가 = QEPM 종점 (★v10)

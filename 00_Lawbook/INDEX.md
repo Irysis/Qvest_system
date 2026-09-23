@@ -104,7 +104,7 @@ SPEC_APPROVED → ALPHA_DONE → RISK_DONE → OPTIMIZER_DONE → FORGE_DONE
 ```
 1. Draft 작성 → 2. 메인 세션 모델 자체 적대검증 (모델 정본 = CLAUDE.md Active Version 절)
 3. challenge_note.md 의무 (ACCEPT/PARTIAL/REBUTTAL) → 4. Final
-- AX-008 3-source(Forge + Self-Adversarial + Architect) 중 2/3 PASS
+- AX-008 v2.0 — 결정 수치는 R 계약 산출만 인용 · 독립 검증 = Judge (2026-09-23 도훈 AX-D5 · 구 v1.1 3자 교차검증 2-of-3 은 `AX-008.json::history` 사료)
 - 구 codex_round_* 훅 폐지 (2026-06-30 도훈 mandate, 자산 archive: DEPRECATION.md)
 ```
 

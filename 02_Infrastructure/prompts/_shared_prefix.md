@@ -41,7 +41,7 @@
 - **optimizer-research**: **P2 (cost-aware objective)** + P5 (crowding penalty) + (Phase 3 후) P4 Direct Policy
 - **forge**: P2 (net-of-cost backtest, gross vs net 양쪽 산출)
 - **judge**: P1 (Factor Zoo gates) + P2 (net SR + cost_drag verify) + P5 (crowding audit) + Implementation Discipline (P6)
-- **governor**: P6 (Implementation Discipline 최종 admit 결정) + AX-001 v2 conditional defense
+- **governor**: P6 (Implementation Discipline 최종 admit 결정) + AX-001 v3 방어형 처분 규칙(defensive_score) — *v10: governor 폐지·BOOK 승계(역할 매핑 사료)*
 - **monitoring**: **P7 (분기별 자동 Brinson + Carhart attribution)** + decay 감지
 
 **Update mechanism**: 분기별 review (arxiv MCP + jina MCP 학술 검색) + trigger-based 보강 (paradigm shift / Codex 외부 발견 / 도훈 직접 mandate) + 5-step amendment 절차.

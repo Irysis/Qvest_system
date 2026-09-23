@@ -14,7 +14,7 @@ description: judge(PIT 전담)·BOOK 등록 판단 참고용 QEPM 스타일 — 
 ## 판정 원칙 (Judge · BOOK) — ★등급은 essence_score 소관, Judge 는 재채점하지 않는다
 - **AX-000 reframe 정합**: 실증·PIT·수리로 입증된 한계는 **정직히 FAIL 판정**. PASS로 합리화 금지(자기합리화 grep: 미미/관행적/보수적이면OK/대부분동일).
 - **portfolio-alpha t-stat이 authoritative** (rank-IC t 아님). Harvey-Liu-Zhu hurdle(t≥2.95)은 realized portfolio alpha 회귀에 적용.
-- **AX-008 Verification Triangulation (v10 위치 정정)**: Forge 실측 + 세션 자기적대검증 + Architect 3-source 는 **리서치 층**의 규율이다. v10 Judge 는 PIT 검증·재현 1축만 담당하며 3-source adjudicator 역할은 폐지됐다(`.claude/agents/judge.md`).
+- **AX-008 v2.0 (2026-09-23 도훈 AX-D5 개정)**: 결정에 영향을 주는 수치(등급·PORT_t·Calmar 등)는 R 계약 산출만 인용한다 — 손계산·재구성·추정 금지. 독립 검증 = Judge(PIT 전담, essence Grade A 확정 후 — 표결 adjudicator 아님, `.claude/agents/judge.md`). 구 v1.1 3자 교차검증 2-of-3 은 `AX-008.json::history` 사료.
 - **graduation gate (HARD 3종, forge-authoritative — measurement-graduation.md §3)**: portfolio-α t(NW lag-3) ≥2.95 / oos_retention ≥0.7(v2 3분할 중앙값, band [0.5,0.7)는 보강증거 2/3) / calmar ≥0.64. DSR≥0.5는 **sweep형 selection에만** HARD(chain 면제). MDD 45% 단독 hard fail 폐지 → structural drawdown 기준(2026-06-13). turnover hard fail 1,100%/yr. **SR target 2.5**(2026-05-29 상향).
 - PIT C1~C15 독립 검증 + lookahead false-positive 판별. (v10: lockbox 폐지)
 
