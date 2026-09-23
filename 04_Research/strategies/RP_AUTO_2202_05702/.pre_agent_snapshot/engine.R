@@ -1,9 +1,5 @@
 # =============================================================================
-# engine.R — RP_AUTO_2202_05702  (재구현 3판 · 1판은 engine.rejected1.R)
-#   3판 = 2판의 문법 수리 한 자리뿐. 2판은 §5 끝 로그 분기가 top-level `if (...) cat(...)` 다음 줄
-#   단독 `else` 여서 R 파서가 통째로 거부했고(407:1 '예기치 않은 else') 스크립트가 한 번도
-#   실행되지 못했다. 그 자리를 중괄호 if/else 로 고쳤다 — 그 분기는 changed(7) 의 2원천 병합
-#   상태를 알리는 로그이지 논문 구현이 아니므로, 신호·학습범위·포트폴리오·PIT 는 2판과 동일하다.
+# engine.R — RP_AUTO_2202_05702  (재구현 2판 · 1판은 engine.rejected1.R)
 # Yuxuan Huang · Luiz Fernando Capretz · Danny Ho,
 #   "Machine Learning for Stock Prediction Based on Fundamental Analysis"
 #   arXiv:2202.05702 (IEEE SSCI 2021) — https://arxiv.org/abs/2202.05702
@@ -405,12 +401,11 @@ if (file.exists(.dq_path)) {
   }
   rm(.dsq)
 } else .dq_note <- "파일 없음"
-if (is.null(.OBS_Q)) {
+if (is.null(.OBS_Q))
   cat(sprintf("%s ⚠ DART 분기 패널 %s — 2016년 이후 회계 관측이 연 1회가 되어 '연속 관측 간 변화'가 그 구간에서 결측이 된다(아래 연도별 커버리지 확인)\n",
               .TAG, .dq_note))
-} else {
+else
   cat(sprintf("%s DART 분기 패널 = %s\n", .TAG, .dq_note))
-}
 
 # ── 세 블록 합치기 (우선순위 dart_q > xlsx_q > dart_a) ───────────────────────
 .OBS <- rbindlist(list(.OBS_Q, .OBS_X, .OBS_D), use.names = TRUE, fill = TRUE)
