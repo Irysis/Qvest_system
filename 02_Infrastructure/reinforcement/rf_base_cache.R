@@ -21,6 +21,12 @@
 #   ⑤ 메모리 RAWDATA 내용 지문 — 워커가 파일을 읽은 **뒤** 파일이 교체되면 ②는 새 판본을 적는데
 #        메모리는 옛 판본이다(옛 신호가 새 키로 저장된다). 파일 도장만으로는 이 경합을 못 막는다.
 #   ⑥ nrow · 시작일 (구 키에 적혀 있었으나 절단으로 사라졌던 것)
+#   ⑦ 보조 데이터원 도장(2026-09-24 적대 검증 발견 1) — 기저 엔진이 RAWDATA 밖에서 **직접** 읽는 패널.
+#        오늘 적중 42건의 엔진(RP_AUTO_2002_06975)은 consensus/*.parquet · fundamental_merged.parquet 를
+#        읽는데 ①~⑥ 어디에도 없었다. daily [0b] 는 RAWDATA 를 먼저, consensus 를 나중에 쓰므로 그 사이
+#        시작한 셀이 옛 consensus 신호를 새 RAWDATA 키로 저장할 수 있었다.
+#        목록 = RP_AUTO_*/engine.R 가 file.path(root, ".cache", ...) 로 읽는 파일 전수(grep 2026-09-24).
+#        새 엔진이 다른 패널을 읽으면 여기에 더한다(빠뜨리면 그 패널 갱신이 캐시를 못 깬다).
 #
 # 저장 규약:
 #   · 실행 전후 파일 도장(②③④)이 다르면 저장하지 않는다 — 실행 중 재빌드 = 혼합 판본.
@@ -35,6 +41,9 @@
 suppressMessages(library(data.table))
 
 RF_BASE_CACHE_VERSION <- "rf_base_cache_v2"
+RF_BASE_CACHE_AUX_FILES <- c("fundamental_merged.parquet", "fundamental_xlsx.parquet",
+                             "ecos_bond_rates.parquet", "investor_wide.parquet")
+RF_BASE_CACHE_AUX_DIRS  <- c("consensus")
 
 # 문자열 md5 — R >= 4.5 는 bytes= 로, 그 이전은 임시 파일로.
 .rfbc_md5_str <- function(s) {
@@ -74,11 +83,31 @@ rf_base_cache_factor_db_stamp <- function(fdb_dir) {
   paste0("build_hash=", bh_txt, ";months=", months)
 }
 
-# 파일 도장 묶음(②③④) — 실행 전후 대조에도 같은 함수를 쓴다.
+# 보조 데이터원 도장(⑦) — cache_dir = RAWDATA 가 놓인 .cache. 파일은 개별 도장, 디렉터리는
+#   *.parquet 수·총크기·최신 mtime. 판독 실패 = NA(캐시 금지), 부재 = "absent"(정상).
+rf_base_cache_aux_stamp <- function(cache_dir) {
+  if (!length(cache_dir) || is.na(cache_dir) || !nzchar(cache_dir)) return(NA_character_)
+  fs <- vapply(RF_BASE_CACHE_AUX_FILES, function(f) rf_base_cache_file_stamp(file.path(cache_dir, f)), character(1))
+  ds <- vapply(RF_BASE_CACHE_AUX_DIRS, function(d) {
+    dd <- file.path(cache_dir, d)
+    if (!dir.exists(dd)) return("absent")
+    mf <- list.files(dd, pattern = "\\.parquet$", full.names = TRUE)
+    if (!length(mf)) return("0")
+    fi <- tryCatch(file.info(mf, extra_cols = FALSE), error = function(e) NULL)
+    if (is.null(fi) || anyNA(fi$size) || anyNA(fi$mtime)) return(NA_character_)
+    sprintf("%d:%.0f:%.3f", length(mf), sum(as.numeric(fi$size)), max(as.numeric(fi$mtime)))
+  }, character(1))
+  if (anyNA(c(fs, ds))) return(NA_character_)
+  paste(c(paste0(names(fs), "=", fs), paste0(names(ds), "/=", ds)), collapse = ";")
+}
+
+# 파일 도장 묶음(②③④⑦) — 실행 전후 대조에도 같은 함수를 쓴다.
 rf_base_cache_stamps <- function(rawdata_path, bench_path, factor_db_dir) {
   list(rawdata   = rf_base_cache_file_stamp(rawdata_path),
        bench     = rf_base_cache_file_stamp(bench_path),
-       factor_db = rf_base_cache_factor_db_stamp(factor_db_dir))
+       factor_db = rf_base_cache_factor_db_stamp(factor_db_dir),
+       aux       = rf_base_cache_aux_stamp(if (length(rawdata_path) && !is.na(rawdata_path))
+                                              dirname(rawdata_path) else NA_character_))
 }
 
 # 메모리 패널 내용 지문(⑤). 엔진 파생 열(이름이 '.' 으로 시작)은 제외한다.
@@ -120,6 +149,7 @@ rf_base_cache_key <- function(engine_md5, rawdata_path, bench_path, factor_db_di
                 "|rawdata=",    st$rawdata,
                 "|bench=",      st$bench,
                 "|factor_db=",  st$factor_db,
+                "|aux=",        st$aux,
                 "|data_fp=",    if (fp_ok) .rfbc_md5_str(data_fp) else "NA",
                 "|nrow=",       as.character(n_rows),
                 "|start=",      as.character(start))

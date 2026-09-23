@@ -181,6 +181,32 @@ saveRDS(data.table(a = 1), f10)
 l10b <- rf_base_cache_load(f10, k9c$key)
 if (is.null(l10b$obj)) ok("K10b 속성 키 없는 구판형 파일 → 미스") else ng("K10b", "구판형 파일 적중")
 
+# K11~K13 보조 데이터원(⑦, 2026-09-24) — 기저 엔진이 RAWDATA 밖에서 직접 읽는 패널이 바뀌면 미스,
+#   목록 밖 파일이 바뀌면 적중 유지. M-aux = ⑦ 을 뺀 판(도장 상수화)에서 K11·K12 가 red 여야 한다.
+aux_scen <- function(tag) {
+  r <- make_root(tag); DT <- copy(FIX); res <- list()
+  dir.create(file.path(r, ".cache", "consensus"), showWarnings = FALSE)
+  writeBin(as.raw(rep(5L, 200L)), file.path(r, ".cache", "consensus", "eps_1y.parquet"))
+  writeBin(as.raw(rep(6L, 200L)), file.path(r, ".cache", "fundamental_merged.parquet"))
+  k0 <- new_keyfun(r, DT)
+  writeBin(as.raw(rep(5L, 260L)), file.path(r, ".cache", "consensus", "eps_1y.parquet"))
+  res$K11_consensus <- !identical(new_keyfun(r, DT), k0); k1 <- new_keyfun(r, DT)
+  writeBin(as.raw(rep(6L, 230L)), file.path(r, ".cache", "fundamental_merged.parquet"))
+  res$K12_fundamental <- !identical(new_keyfun(r, DT), k1); k2 <- new_keyfun(r, DT)
+  writeBin(as.raw(rep(7L, 50L)), file.path(r, ".cache", "P3_daily.parquet"))
+  res$K13_unlisted_same <- identical(new_keyfun(r, DT), k2)
+  unlist(res)
+}
+SA <- aux_scen("K_aux")
+for (nm in names(SA)) if (isTRUE(SA[[nm]])) ok(paste("신판", nm)) else ng(paste("신판", nm), "기대와 다른 키 판정")
+.aux_orig <- rf_base_cache_aux_stamp
+rf_base_cache_aux_stamp <- function(cache_dir) "absent"          # 돌연변이: ⑦ 제거
+SAm <- aux_scen("M_aux")
+rf_base_cache_aux_stamp <- .aux_orig
+if (!isTRUE(SAm[["K11_consensus"]]) && !isTRUE(SAm[["K12_fundamental"]]))
+  ok("M-aux ⑦ 을 뺀 판에서 K11·K12 red — 검사가 보조 데이터원 누락을 잡는다") else
+  ng("M-aux", "⑦ 없이도 K11/K12 초록 — 검사가 누락을 못 잡는다")
+
 writeLines("=== M. 돌연변이 — 같은 시나리오를 구판·생략판 키에 걸면 red ===")
 SL <- scenarios(legacy_keyfun, "M_legacy")
 if (isTRUE(SL[["K1_same"]])) ok("M0 구판도 무변경엔 같은 키(대조가 퇴화 입력이 아님)") else ng("M0", "구판 K1 불일치 — 시나리오 자체 결함")

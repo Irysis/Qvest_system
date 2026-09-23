@@ -1,7 +1,7 @@
 #==============================================================================
 # test_ax001_defense_scope.R — AX-001(방어 조건부 평가) 차단 실효 + scope 판정 검사기
 #
-# 계약: qepm/memory/axioms/active/AX-001.json (IMMUTABLE, enforcement_mode=block)
+# 계약: qepm/memory/axioms/active/AX-001.json (IMMUTABLE, enforcement_mode=documented — 2026-09-24 AX-D9 정정, 구 block 은 history)
 #       .claude/rules/axioms.md "Hook 강제" 절 / measurement-graduation §1
 #
 # 배경 (2026-08-02 실측, WT-D20260802_004 alpha 라운드에서 적발):

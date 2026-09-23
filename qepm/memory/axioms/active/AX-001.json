@@ -24,9 +24,9 @@
   "axiom_class": "methodological",
   "authority": "high",
   "review_policy": "quarterly",
-  "enforcement_mode": "block",
+  "enforcement_mode": "documented",
   "enforcement_hook": {
-    "mode": "block",
+    "mode": "documented",
     "applies_to_files": [
       "(hurdle_result|s6_judge|s7_).*\\.json"
     ],
@@ -36,10 +36,9 @@
     ],
     "require": [
       "\"ax001_status\"\\s*:\\s*\"(CONDITIONAL_EVALUATED|NOT_IN_SCOPE)\"",
-      "crisis_alpha",
-      "bad_normal"
+      "defensive_score"
     ],
-    "reason": "Defense 전략을 전기간 SR/CAGR/MDD만으로 기각 판정 금지. 위기 구간 alpha + Core 대비 MDD + bad/normal IC ratio 조건부 평가 필수",
+    "reason": "방어형 전략·팩터의 처분(기각·폐기)을 전기간 등급 단독으로 내리지 않는다(AX-001 v3). 면제 = 생산자 조건부 판정(ax001_status CONDITIONAL_EVALUATED|NOT_IN_SCOPE) 또는 방어형 판정 계약 defensive_score 기재.",
     "semantics": "regex 전부 매치(AND) AND require 중 0개 존재 시 발화. ★패턴은 필드'명'이 아니라 분류'값'을 본다 — 구판은 defense를 필드명(statistical_defense/defense_metrics)이, stress를 채점항목명(score_breakdown.stress)이 각각 100% 충족시켜 hurdle_result 559/559에서 발화 불능이었다(2026-08-02 실측).",
     "backfilled": "2026-07-04 AXM-03 — legacy 하드코딩 패턴에서 도출, 신규 금지사항 없음. enforcement_mode block은 .claude/rules/axioms.md Hook 강제 절 + axiom_sot_map.json 기왕 문서화(일부 패턴 hard-block 실증)와 정렬",
     "repaired_20260802": {
@@ -107,6 +106,20 @@
       "superseded_by": "v3",
       "status": "historical (사료 — 판정 근거로 인용 금지)",
       "why_superseded": "Core·Governor(v2.1 application_rule) 대응물이 v10 에 없음 · 실제 판정은 hurdle_gate::ax001·방어형 병렬 경로·defensive_score 에서 이뤄져 문언과 갈라짐(K14) · L-256/257 레코드 부재"
+    },
+    {
+      "field_revision": "enforcement_v2_residue",
+      "enforcement_mode": "block",
+      "enforcement_hook_mode": "block",
+      "require": [
+        "\"ax001_status\"\\s*:\\s*\"(CONDITIONAL_EVALUATED|NOT_IN_SCOPE)\"",
+        "crisis_alpha",
+        "bad_normal"
+      ],
+      "reason": "Defense 전략을 전기간 SR/CAGR/MDD만으로 기각 판정 금지. 위기 구간 alpha + Core 대비 MDD + bad/normal IC ratio 조건부 평가 필수",
+      "superseded_at": "2026-09-24",
+      "superseded_by": "v3 enforcement 문언 (decision_register AX-D9-AX001-RESIDUE)",
+      "why_superseded": "v3 statement(2026-09-23 AX-D5-TEXT) 개정 때 enforcement 필드는 범위 밖으로 남았다. 'block' 은 axioms.md Hook 강제 절(documented · axiom_enforcement_hook.sh 등록 해제 2026-08-23)과 불일치한 오기였고, require·reason 의 crisis_alpha·bad_normal·'위기 구간 alpha + Core 대비 MDD + bad/normal IC ratio' 는 v2 판정 계약이다."
     }
   ],
   "approved_by": "dohoon",
@@ -115,5 +128,5 @@
   "amended_by": "Q session be2e88bf (AX-D5 이행)",
   "amended_at": "2026-09-23T19:09:56+0900",
   "amendment_basis": "Axiom 엔진 효용 전수감사 wf_d8ee80de-26d 판정서 ⑤·K14 (도훈 채팅 응답 — 권고안 채택)",
-  "note_v3": "enforcement_mode/enforcement_hook 는 이번 개정 범위 밖(무변경) — 08_Tests/hooks/test_ax001_defense_scope.R 가 그 의미론을 잰다. 판정서 K14 의 'block 오기' 지적은 별건."
+  "note_v3": "enforcement_mode/enforcement_hook 는 이번 개정 범위 밖(무변경) — 08_Tests/hooks/test_ax001_defense_scope.R 가 그 의미론을 잰다. 판정서 K14 의 'block 오기' 지적은 별건. ★2026-09-24 정정(도훈 AX-D9-AX001-RESIDUE): enforcement_mode·enforcement_hook.mode=documented · require 의 crisis_alpha·bad_normal → defensive_score · reason v3 문언. 구 값은 history[-1](field_revision=enforcement_v2_residue)."
 }
