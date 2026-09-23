@@ -1127,6 +1127,8 @@ SUITES=(
   "08_Tests/integration/test_v8_readiness_gate.R"
   "08_Tests/integration/test_wt_lifecycle_e2e.R"
   "08_Tests/hooks/test_hypothesis_precheck_gate.sh"
+  #   (2026-09-23 샌드박스 이관) 구판은 운영 루트에서 하베스터 실행·positive_context 삭제 후 훅 발화 → 운영 원장 hook_fired
+  #   · axiom_inject_last 열화 기록(HARD_10) · 축소 주입 창. 이제 쓰기 루트 = 샌드박스 · Z1~Z3 운영 무쓰기 단정 · ZM/ZN 검출기 양방향
   "08_Tests/hooks/test_inject_usage_ranking.sh"
   "08_Tests/hooks/test_weight_bound_basis.sh"
   # ── 2026-08-20 추가: 잔여 3건 — 편입 드리프트 0 달성 ──────────────────────
@@ -1461,6 +1463,10 @@ SUITES=(
   #   실물 수출본 형식 판독(코드 뒤 옛 선언 셀 무시) · 거부 8종(지평선 미달·구간 구멍·선언/측정 단위·구간 배율·채움률·잠금·보정 미측정)
   #   · 실행 = Size 만 교체(독립 열 대조) · 러너 설정 두 줄 토글·바이트 복원 · 재빌드는 러너 정지 중 · 돌연변이 4종(대조·지평선·정지·앵커)
   "08_Tests/data/test_rawdata_size_from_quantiwise.R"
+  # 2026-09-23 적대 검증 [높음] qw_refresh.ps1 무조건 저장 → [0b] 가 전진 없는 xlsx 를 적재해 naver 이음매 Ret 오염 — OHLCVS 적재 안전 관문:
+  #   7시트 날짜축 지평선 일치 ∧ 직전 적재(RAWDATA 퀀티 출처 max) 대비 전진 · 지평선 행 빈 값 시트 거부 · 거부 = RAWDATA 무접촉·처리 완료 미기록·끝 stop(DR_FAILED)
+  #   · 합성 실물 형식 xlsx · 양성 대조(통과 후 적재 경로 도달) · 돌연변이 6종 red
+  "08_Tests/data/test_ohlcvs_update_gate.R"
   # 2026-09-23 W-09(RAWDATA.BM_Ret 09-07~ 전량 결측 · 2025-01-02/2026-09-02 벤치 불일치 · MA06 소실) — 단일 writer:
   #   계획 분류(fill/overwrite/protected/bench_lag) · 쓰기 양성 대조(다른 열·행 순서 불변) · 오라클 위반 주입 3종
   #   · 쓰기기 돌연변이 4종(지연일 추정 채움·다른 열·보호 해제·동시 writer) · 킬스위치 · [3b] 실블록(적재 줄 삭제 = 침묵) · 옛 writer 경로 정리
@@ -1473,11 +1479,16 @@ SUITES=(
   #   철회 L-code 차단(P·H·C·S) + 강화 증류 끔 — 돌연변이 M-H·M-C
   "08_Tests/axiom/test_lcode_retraction_filter.py"
   #   주간 스윕 HOLD '주입 길이 > 1900' 판정 입력 = 헤더 변형 최악값(문턱 불변) — 스폰 순서 무관·운영 계측 무접촉 · 돌연변이 M-W1·M-W2
+  #   + [G] 게이트 배선(스윕 HOLD 블록을 파스 트리에서 꺼내 스텁 실행) — 돌연변이 MX1·MX5·MX6 red
   "08_Tests/axiom/test_cleaner_inject_len_worst.R"
   # 2026-09-23 도훈 결정 "결손된 9월 팩터 DB 를 읽은 강화 측정 = 목록화 + 표식만"(재측정은 P0-05 rebase 흡수) — rf_mark_vintage_batch:
   #   append-only(검사 자체 보호 투영·essence·grade 불변 · 텍스트는 last_updated 만) · 허용 키(essence/grade 주입 거부) · 멱등 · 배치 원자성
   #   · 직렬화 왕복 드리프트 거부 · 러너 claim 잠금 · CAS — 돌연변이 5종(잠금·가드+essence·멱등·키·CAS) red + 가드 유지 시 writer 자체 거부
   "08_Tests/reinforcement/test_rf_mark_vintage.R"
+  # 2026-09-23 강화 기저 신호 캐시 키 수리(구 키 = md5 + RAWDATA mtime 날짜 8자리 절단 → 같은 날 RAWDATA 수리·factor DB 재빌드 뒤 교정 전 신호 재사용):
+  #   키 = 엔진 md5 · RAWDATA/benchmark mtime(초)+size · factor DB build_hash+월 파일 집계 · 메모리 패널 지문 · 전문 대조 — 양성 대조(무변경 적중)
+  #   · 변경 6종 미스 · 엔진 경유(격리 루트) · 실행 중 도장 변경 저장 생략 — 돌연변이: 구판 키 함수·build_hash 생략판·구판 엔진 git blob red
+  "08_Tests/reinforcement/test_rf_base_cache_key.R"
 )
 
 

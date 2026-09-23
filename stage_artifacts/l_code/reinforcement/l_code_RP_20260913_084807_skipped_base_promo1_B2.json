@@ -17,11 +17,41 @@
   "calmar": 0.504,
   "oos_retention": -0.166,
   "portfolio_alpha_t": 3.294,
-  "next_probes": [
-    "다음 격자 축 B3(universe) — 이 블록 승자 위에서 측정",
-    "B2_9(최고 3.294)는 B4 조합 후보로 고정 · B2_12(최저 2.161)는 축 역작동 여부를 조합 LOO 로 분리"
-  ],
+  "next_probes": ["다음 격자 축 B3(universe) — 이 블록 승자 위에서 측정", "B2_9(최고 3.294)는 B4 조합 후보로 고정 · B2_12(최저 2.161)는 축 역작동 여부를 조합 LOO 로 분리"],
   "next_probe": "다음 격자 축 B3(universe) — 이 블록 승자 위에서 측정 | B2_9(최고 3.294)는 B4 조합 후보로 고정 · B2_12(최저 2.161)는 축 역작동 여부를 조합 LOO 로 분리",
   "source_paper": "https://arxiv.org/abs/2002.06975",
-  "record_type": "performance"
+  "record_type": "performance",
+  "mechanism": "판정: 배분 축에서 갈린 것은 목적함수이지 Σ 추정기가 아니고, 9칸 중 MDD 가 0.486 아래로 내려간 칸은 0이다. 실측 — 목적함수를 score_tilt 로 고정하고 추정기만 가른 B2_6(shr_sample) PORT_t 3.152·MDD 0.486, B2_7(ledoit_wolf) 3.169·0.495, B2_8(gerber_rmt) 3.105·0.494 는 PORT_t 폭 0.064·Calmar 폭 0.013 에 그친다. 반면 목적함수를 가른 칸의 PORT_t 폭은 1.133(2.161~3.294)으로 18배다 — 추정오차와 목적함수를 분리하라는 B5 처방은 집행됐고, 갈린 축은 목적함수다. 정렬은 추정 Σ 의 비대각을 소비하는 정도를 따른다: B2_9(ivol) 3.294·MDD 0.486 ≈ B2_10(riskparity) 3.242·0.486 > score_tilt 3칸 3.105~3.169 > B2_11(nco) 2.884·0.525 > B2_12(minvar) 2.161·0.529. 분산을 더 줄일수록 PORT_t 가 빠지고 MDD 는 오히려 올랐다 — 분산 최소화가 낙폭 최소화가 아니다. 변동성 정보와 상관 정보를 나란히 세우라는 처방도 집행됐고 반증됐다: 전체 Σ 를 쓰는 riskparity 와 대각만 쓰는 ivol 의 차는 PORT_t 0.052·Calmar 0.002·MDD 0.000 이다. 실현 낙폭 경로는 두 번째 소비 지점에서도 열위다 — B2_13(CDaR_LP) MDD 0.571·Calmar 0.378 로 블록 최악이고 총노출 지점 B5_16(MDD 0.615)과 방향이 같다. 지점을 바꿔도 결과가 같으므로 실패는 소비 지점이 아니라 정보에 귀속된다. 정황: 같은 한계 위험기여 정보가 오버레이 B5_18(MDD 0.311)·B5_22(0.287)에서는 낙폭을 내렸고 배분 규칙 B2_10(0.486)에서는 전혀 내리지 못했다 — Σw=1 이 총노출 축소를 만들지 못한다는 B3 판정을 배분 지점에서 재확인한 것이다. 미결: B5_18·B5_22 의 실현 평균 총노출이 이 표에 없어 이 귀속은 원장 값으로만 확정된다. 블록 상한 Calmar 0.506 은 B1_1 0.543·B6_36 0.537 아래다.",
+  "mechanism_by": "llm:block_end",
+  "mechanism_at": "2026-09-23T21:39:42+0900",
+  "prior_lessons_used": ["B1", "B3", "B5", "B6", "B7"],
+  "next_block_actions": [
+    {
+      "action": "B3 를 1칸(B3_15 섹터 중립)만 돌리고 남은 칸은 B4 결합으로 넘긴다. 대조 칸은 두지 않는다 — 승계 기저 B2_9(PORT_t 3.294·MDD 0.486)가 같은 계약으로 측정된 in-block 대조다.",
+      "why": "B2 목적함수 정렬에서 추정 Σ 의 비대각을 소비한 B2_11(2.884·MDD 0.525)·B2_12(2.161·0.529)가 열위였는데, 추정기 3칸(B2_6/7/8)의 폭이 PORT_t 0.064 라 원인이 추정오차가 아니다. B3_15 는 같은 공동움직임 제약을 추정 없이 관측 섹터 라벨로, 배분이 아니라 선정 지점에서 건다 — 이 판정의 유일한 반증 경로다. 나머지 4종(B3_11·B3_12·B3_13·B3_14)은 후보군을 좁히는 방향이고 부모 계보에서 PORT_t 1.207~2.321 로 전부 상주 합집합 아래였다.",
+      "expect": "B3_15 가 PORT_t 2.2~2.4·MDD 0.52~0.54 로 다시 들어오면 공동움직임 제약의 비용은 소비 지점(선정·배분)과 비중 규칙에 독립이고 유니버스 축은 닫힌다. PORT_t 3.1 이상이면 부모 계보의 B3 열위는 entropy 비중과의 상호작용이었다는 뜻이고, 그때만 이 축을 다시 연다."
+    },
+    {
+      "action": "승계 기저는 규칙 기본값 B2_9(ivol)로 고정하고 ivol 대 riskparity 분리에 칸을 쓰지 않는다.",
+      "why": "두 칸의 차는 PORT_t 0.052·Calmar 0.002·MDD 0.000 — 전체 Σ 의 상관 정보가 배분 지점에서 기여 0 이다. 칸으로 가를 크기가 아니다.",
+      "expect": "B3_15 가 ivol 위에서 부모 계보의 entropy 판(PORT_t 2.261·MDD 0.534)과 같은 대역에 들어오면 상관 정보 기여 0 이 선정 지점까지 확장된다."
+    },
+    {
+      "action": "칸 소모 0 읽기: 원장에서 B5_18·B5_22 의 실현 평균 총노출과 B2 9칸의 OOS retention 을 읽어 B3 판정표 머리에 싣는다.",
+      "why": "위 정황(구속하는 것은 정보가 아니라 Σw=1)은 노출 값 없이는 확정되지 않는다. 또 B4 로 넘길 비중 층은 PORT_t 0.052 차가 아니라 OOS retention 으로 갈려야 한다.",
+      "expect": "B5_18·B5_22 의 평균 총노출이 1 미만으로 확인되면 Σ 정보의 낙폭 효과는 노출 축소의 회계이고, 배분·선정 축에서 낙폭을 찾는 칸은 전부 닫힌다. 1 근처면 정보 귀속이 살아나고 B4 에서 한계 위험기여 tilt 를 다시 올릴 근거가 된다."
+    },
+    {
+      "action": "B4 결합 다리의 비중 층을 ivol 하나로 고정하고 score_tilt·nco·minvar·CDaR_LP 는 후보에서 뺀다. 판정표 머리에 구성원 Calmar 최대값(B1_1 0.543 · B6_36 0.537 · B5_17 0.533 · B2_10 0.506)을 먼저 적는다.",
+      "why": "B2 정렬이 비대각 소비량에 단조라 비중 층을 흔들면 결합 효과와 목적함수 효과가 섞인다. 단일 축 상한이 Calmar 0.54 대역에서 멈췄으므로 남은 여지는 결합뿐이다.",
+      "expect": "결합 Calmar 가 구성원 최대 0.543 을 넘으면 결합이 실제 축이고, 0.50~0.54 안에 머물면 이 격자의 단일 축 상한이 확인된 것이다."
+    }
+  ],
+  "next_block_actions_by": "llm:block_end",
+  "avoid": ["실현 낙폭 경로 정보(CDaR_LP·dd_recovery)를 세 번째 소비 지점(선정·결합)으로 올리는 것 — B2_13 MDD 0.571·Calmar 0.378 로 배분 지점에서 블록 최악이고, 총노출 지점 B5_16 은 MDD 0.615 였다. 두 지점 전부 열위이므로 벽은 소비 지점이 아니라 정보에 있다.", "추정 Σ 의 비대각을 소비해 위험 함수를 최소화하는 목적함수(minvar·nco)를 B3 승계나 B4 결합 다리의 비중 층으로 쓰는 것 — B2_12 PORT_t 2.161·MDD 0.529, B2_11 2.884·0.525. 분산을 줄이면 MDD 가 0.486→0.529 로 올랐다.", "Σ 추정기(shr_sample·shr_ledoit_wolf·shr_gerber_rmt)를 다시 가르는 칸 — B2_6/7/8 의 PORT_t 폭 0.064·Calmar 폭 0.013·MDD 폭 0.009. 이 설정에서 추정오차는 축이 아니다.", "유니버스를 좁히는 방향의 칸(B3_11 KOSDAQ150 단독 · B3_12 KOSPI200 단독 · B3_13 소형주 · B3_14 대형주) — 부모 계보 3칸이 PORT_t 1.207~2.321 로 전부 상주 합집합 아래였고 MDD 0.534~0.581 로 한 칸도 내려오지 않았다. 단방향 손실로 닫힌 방향이다.", "배분·선정 축에서 MDD 를 0.449 아래로 내리려는 시도 — B2 9칸 MDD 최저는 0.486 이고, Σw=1 아래 최저는 여전히 B7_39 0.449, 그 아래는 총노출을 바꾼 B5_18 0.311·B5_22 0.287 뿐이다.", "코어 팩터를 B3·B4 칸에서 교체·추가하는 것 — B1_6(PORT_t 3.402→2.335·MDD 0.467→0.570)·B1_7(2.015→1.779)로 4팩터 확장 희석이 확인됐다. 코어는 M01_Mom_12_1+V10_FCF_Yield+M08_Residual_Mom 고정."],
+  "next_block_design_for": "B3",
+  "next_block_design_n": 1,
+  "prior_action_status": "executed",
+  "prior_action_detail": "설계 8건 중 8건 집행 (설계: gen:lean_score_tilt__shr_sample,gen:lean_score_tilt__shr_ledoit_wolf,gen:lean_score_tilt__shr_gerber_rmt,lean:ivol,lean:riskparity,lean:nco,lean:minvar,qepm:CDaR_LP / 실측: gen:lean_score_tilt__shr_sample,gen:lean_score_tilt__shr_ledoit_wolf,gen:lean_score_tilt__shr_gerber_rmt,lean:ivol,lean:riskparity,lean:nco,lean:minvar,qepm:CDaR_LP)",
+  "mechanism_confidence": "high"
 }

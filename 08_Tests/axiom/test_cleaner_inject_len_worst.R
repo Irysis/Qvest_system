@@ -17,6 +17,14 @@
 #   W5 실측성: root 에서 positive_context.json 을 빼면 결과가 줄어든다(상수를 내는 계기가 아님)
 #   M-W1 돌연변이: 헤더 재도출을 기본 1종으로 축소한 사본 → W2 불일치(검출)
 #   M-W2 돌연변이: CLAUDE_PROJECT_DIR 원복 on.exit 제거 사본 → W4 원복 단정 실패(검출)
+#   [G] 게이트 배선(2026-09-23 적대검증 후속 — W 절은 헬퍼만 재서 호출부 돌연변이 3종이 초록이었다):
+#   G0 파스 트리에서 HOLD 블록(.inj_last 대입 ~ if (length(.reasons))) 추출 → 스텁 env 에서 그대로 eval
+#   G1 최악값 1950 · 마지막 기록 1441 → HOLD(사유·inject_len=최악값·대조값·쓰기 pass 비움)
+#   G2 최악값 1850 · 마지막 기록 1999 → HOLD 없음     G3 렌더 0건 → 마지막 기록 폴백(basis=last_spawn_record)
+#   G4 헬퍼 예외 → 폴백 · error 사유 보존             G5 헬퍼 1회 · 스윕 root 로 호출
+#   GP 양성 대조: crash 사유로 HOLD(스텁이 본문을 실제로 돈다)   G6 실함수 결합: 판정 입력 = 독립 렌더 최댓값
+#   MX1(.inj_len <- .inj_last) · MX5(우선순위 반전) · MX6(HOLD 조건이 .inj_last) 사본 → G1/G2 red(검출)
+#   ★게이트 동작·문턱(1900)은 불변 — 이 절은 판정 입력의 배선만 잰다(문턱 재보정 = 도훈 권한).
 #
 # 격리: 쓰기는 tempdir() 샌드박스에만. 운영 트리는 읽기만 한다. 텔레그램·원장·로그 쓰기 없음.
 # 실행: Rscript 08_Tests/axiom/test_cleaner_inject_len_worst.R
@@ -146,6 +154,126 @@ if (length(ri) != 1L) ng("M-W2 돌연변이 대상 줄 수 ≠ 1", as.character(
   cpd_m <- Sys.getenv("CLAUDE_PROJECT_DIR")
   .cpd_restore()
   chk("M-W2 원복 제거 사본 → CLAUDE_PROJECT_DIR 가 샌드박스로 남는다(검출 — W4 가 잡는다)", !identical(cpd_m, "SENTINEL_CPD"), cpd_m)
+}
+
+cat("\n[G] 게이트 배선 — 스윕 본문의 HOLD 블록을 스텁 환경에서 직접 실행(복제 아님)\n")
+# 근거(2026-09-23 적대검증): W 절은 .inj_len_worst 헬퍼만 잰다. 호출부를 되돌려도 초록이었다 —
+#   MX1 `.inj_len <- .inj_last` · MX5 우선순위 반전 · MX6 HOLD 조건이 .inj_last 를 읽음, 셋 다 통과.
+# 방법: 파스 트리에서 `.inj_last <- …` 대입을 담은 `{` 블록을 찾아, 그 대입부터 `if (length(.reasons)) …` 까지의
+#   문장열을 꺼내 스텁 env 에서 그대로 eval 한다(test_promote_crash_exit.R [7] 과 같은 관례 — 이름·구조로 찾고 줄 번호로 찾지 않는다).
+#   스텁 = .inj_len_worst(최악값·실패·예외를 주입) · px(활성 0 · 상한 20) · 계획 0 · crash 0 · root(가짜 마지막 기록).
+#   ★게이트 동작·문턱(1900)은 건드리지 않는다 — 문턱 재보정은 도훈 권한. 이 절은 **판정 입력이 무엇인가**만 잰다.
+.find_gate <- function(e) {
+  if (is.call(e)) {
+    if (identical(e[[1]], as.name("{"))) {
+      st <- as.list(e)[-1]
+      i0 <- which(vapply(st, function(s) is.call(s) && identical(s[[1]], as.name("<-")) &&
+                           identical(s[[2]], as.name(".inj_last")), logical(1)))
+      i1 <- which(vapply(st, function(s) is.call(s) && identical(s[[1]], as.name("if")) &&
+                           identical(paste(deparse(s[[2]]), collapse = ""), "length(.reasons)"), logical(1)))
+      if (length(i0) == 1L && length(i1) == 1L && i1 > i0) return(st[i0:i1])
+    }
+    for (i in seq_along(e)) {
+      s <- tryCatch(e[[i]], error = function(...) NULL)
+      if (!is.null(s)) { r <- .find_gate(s); if (!is.null(r)) return(r) }
+    }
+  }
+  NULL
+}
+.gate_of <- function(src_lines) {
+  ex <- parse(text = src_lines, keep.source = FALSE)
+  for (e in as.list(ex)) { g <- .find_gate(e); if (!is.null(g)) return(g) }
+  NULL
+}
+.gate_n <- 0L
+# worst: 헬퍼가 돌려줄 len(NA = 렌더 0건) · last: root 의 마지막 스폰 기록 len(NA = 파일 없음)
+# worst_fn: 헬퍼 대체 함수(NULL = 스텁) — G6 은 W0 에서 꺼낸 실함수를 넣는다
+.run_gate <- function(stmts, worst = NA_integer_, last = NA_integer_, worst_err = FALSE, pre_crash = 0L,
+                      root = NULL, worst_fn = NULL) {
+  .gate_n <<- .gate_n + 1L
+  if (is.null(root)) {
+    root <- file.path(SB0, sprintf("gate_%03d", .gate_n))
+    dir.create(file.path(root, ".cache"), recursive = TRUE)
+    if (!is.na(last)) writeLines(sprintf('{"at":"2026-09-23T19:25:31+09:00","len":%d,"agent":"stub"}', last),
+                                 file.path(root, ".cache/axiom_inject_last.json"))
+  }
+  calls <- character(0)
+  env <- new.env(parent = globalenv())
+  env$`%||%` <- `%||%`
+  env$root <- root
+  env$.inj_len_worst <- worst_fn %||% function(root, ...) {
+    calls <<- c(calls, root)
+    if (worst_err) stop("stub render fail")
+    list(len = worst, basis = if (is.finite(worst)) "worst_header_render(n=8)" else "unavailable",
+         by = list(stub = list(len = worst)))
+  }
+  env$px <- list(list_active_axioms = function(root) character(0),
+                 .TIER = list(mode_local = list(max_active_total = 20L)))
+  env$n_new_active_planned <- 0L; env$WEEKLY_ACTIVATION_MAX <- 3L; env$pre_crash <- as.integer(pre_crash)
+  env$activation_preview <- list(); env$activation_hold <- NULL
+  env$cands <- "CAND_stub.json"; env$dry_targets <- character(0)
+  log <- capture.output(for (s in stmts) eval(s, envir = env))
+  list(hold = env$activation_hold, reasons = unlist(env$activation_hold$reasons), inj_len = env$.inj_len,
+       basis = env$.inj_basis, cands = env$cands, calls = calls, root = root, log = log)
+}
+.inj_reason <- function(g) any(grepl("^주입 길이 [0-9]+ > 1900", g$reasons))
+# 시나리오 판정 — 원본과 돌연변이에 **같은 함수**를 건다(돌연변이 red = 이 함수가 FALSE 를 내는 것)
+.gate_checks <- function(stmts) {
+  g1 <- .run_gate(stmts, worst = 1950L, last = 1441L)   # 열화 기록이 마지막 · 최악값은 문턱 위
+  g2 <- .run_gate(stmts, worst = 1850L, last = 1999L)   # 고값 기록이 마지막 · 최악값은 문턱 아래
+  c(G1 = !is.null(g1$hold) && .inj_reason(g1) && identical(g1$hold$inject_len, 1950L) &&
+         identical(g1$hold$inject_len_last_spawn, 1441L) && identical(g1$cands, character(0)) &&
+         startsWith(as.character(g1$hold$inject_len_basis), "worst_header_render"),
+    G2 = is.null(g2$hold) && identical(g2$inj_len, 1850L) && startsWith(as.character(g2$basis), "worst_header_render"))
+}
+gate <- tryCatch(.gate_of(sweep_src), error = function(e) NULL)
+if (is.null(gate)) {
+  ng("G0 HOLD 블록 추출(.inj_last 대입 ~ if (length(.reasons)))", "구조가 바뀌었으면 이 검사를 갱신할 것")
+} else {
+  ok(sprintf("G0 HOLD 블록 추출 — 문장 %d개(.inj_last 대입 ~ if (length(.reasons)))", length(gate)))
+  gc0 <- .gate_checks(gate)
+  chk("G1 최악값 1950 · 마지막 기록 1441(열화) → HOLD · 사유 '주입 길이 1950 > 1900' · inject_len=최악값 · 대조값=1441 · 쓰기 pass 비움",
+      isTRUE(gc0[["G1"]]))
+  chk("G2 최악값 1850 · 마지막 기록 1999 → HOLD 없음(판정 입력 = 최악값 · 마지막 기록이 문턱을 넘겨도 무관)", isTRUE(gc0[["G2"]]))
+  g3 <- .run_gate(gate, worst = NA_integer_, last = 1950L)
+  chk("G3 최악값 렌더 0건 → 마지막 기록(1950)으로 폴백 · HOLD · basis=last_spawn_record(…)",
+      !is.null(g3$hold) && .inj_reason(g3) && identical(g3$inj_len, 1950L) && startsWith(g3$basis, "last_spawn_record("), g3$basis)
+  g4 <- .run_gate(gate, worst_err = TRUE, last = 1441L)
+  chk("G4 헬퍼 예외 → tryCatch 폴백(1441) · HOLD 없음 · basis 에 error 사유 보존",
+      is.null(g4$hold) && identical(g4$inj_len, 1441L) && grepl("error: stub render fail", g4$basis, fixed = TRUE), g4$basis)
+  g5 <- .run_gate(gate, worst = 1850L, last = 1441L)
+  chk("G5 게이트가 헬퍼를 정확히 1회 · 스윕 root 로 호출", identical(g5$calls, g5$root), paste(g5$calls, collapse = ","))
+  gp <- .run_gate(gate, worst = 1850L, last = 1441L, pre_crash = 1L)
+  chk("GP 양성 대조: 주입 길이 무관 사유(dry-run crash 1)로 HOLD — 스텁 실행이 게이트 본문을 실제로 돈다 · 주입 사유는 0",
+      !is.null(gp$hold) && any(grepl("dry-run crash 1", gp$reasons, fixed = TRUE)) && !.inj_reason(gp))
+  # G6 실함수 결합: W0 의 실 .inj_len_worst 를 꽂고 r1(마지막 기록 1441 열화)에서 — 판정 입력 = 독립 렌더 최댓값
+  .fake_last(r1, 1441L)
+  g6 <- .run_gate(gate, root = r1, worst_fn = fn)
+  chk("G6 실함수 결합: 게이트 판정 입력 = 독립 렌더 8변형 최댓값(마지막 기록 1441 무관)",
+      identical(g6$inj_len, max(ind)) && startsWith(g6$basis, "worst_header_render"),
+      sprintf("gate=%s indep=%s basis=%s", g6$inj_len, max(ind), g6$basis))
+
+  # ── 배선 돌연변이(적대검증이 초록으로 통과시킨 3종) — 사본 소스에서만. 운영 파일 무변경 ─────────────
+  #   ★대상 줄이 정확히 1줄이 아니면 FAIL(조용한 무력화 금지 — 리팩터로 줄이 바뀌었으면 돌연변이를 다시 설계할 것)
+  .mut_gate <- function(from, to) {
+    k <- which(sweep_src == from)
+    if (length(k) != 1L) return(NULL)
+    .gate_of(replace(sweep_src, k, to))
+  }
+  L_INPUT <- "    .inj_len <- if (is.finite(.inj_w$len)) .inj_w$len else .inj_last"
+  L_HOLD <- "      if (is.finite(.inj_len) && .inj_len > 1900L)"
+  muts <- list(
+    MX1 = list(from = L_INPUT, to = "    .inj_len <- .inj_last", what = "판정 입력을 마지막 스폰 기록으로 되돌림"),
+    MX5 = list(from = L_INPUT, to = "    .inj_len <- if (is.finite(.inj_last)) .inj_last else .inj_w$len", what = "우선순위 반전(마지막 기록 우선)"),
+    MX6 = list(from = L_HOLD, to = "      if (is.finite(.inj_last) && .inj_last > 1900L)", what = "HOLD 조건이 .inj_last 를 읽음"))
+  for (nm in names(muts)) {
+    m <- muts[[nm]]
+    gm <- .mut_gate(m$from, m$to)
+    if (is.null(gm)) { ng(sprintf("%s 돌연변이 대상 줄 수 ≠ 1 — 계기 재설계 필요", nm), as.character(sum(sweep_src == m$from))); next }
+    gcm <- .gate_checks(gm)
+    chk(sprintf("%s %s 사본 → G1/G2 중 red(검출: %s)", nm, m$what,
+                paste(names(gcm)[!gcm], collapse = "·")), !all(gcm), paste(names(gcm), gcm, collapse = " "))
+  }
 }
 
 cat("\n[info] 운영 입력 기준 현재 판정 입력(읽기 전용 사본)\n")

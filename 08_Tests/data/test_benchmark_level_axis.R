@@ -218,6 +218,8 @@ cat("\n=== 소비자 표면 고정 (새 소비자가 분류 없이 들어오는 
 # ★08_Tests 는 분모에서 뺀다 — 이 파일 자신이 후보가 되어 '자기 참조로 통과' 하는
 #   함정을 피한다(픽스처는 소비자가 아니다). 기록과 소비를 가르는 지점이 여기다.
 PINNED <- c(
+  # W-09(2026-09-23) 단일 BM_Ret writer 설정 — 정의 문자열에 BM_Close 비(BM_Close_d/직전-1)만 적는다(비율 · 절대 레벨 의존 아님)
+  "02_Infrastructure/data/rawdata_bm_ret_sync_config.json",
   "02_Infrastructure/alpha_search/factor_engine_pindex_2606_08569.R",
   "02_Infrastructure/data/benchmark_axis.py",
   "02_Infrastructure/data/benchmark_currency_gate.R",

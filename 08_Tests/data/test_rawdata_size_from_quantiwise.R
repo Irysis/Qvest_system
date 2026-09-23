@@ -13,6 +13,14 @@
 #   F 러너 토글 — 실제 설정 사본에서 두 줄만 바뀜 · director/l2_auto.enabled 불변 · 제3자 변경 시 미복원
 #   M 돌연변이  — 대조 무력화 → 다른 열 변경이 RAWDATA 에 도달(검사가 잡는다) · 지평선 게이트 제거 →
 #                 거부 소멸 · 러너 정지 생략 → 킬스위치 술어가 쓰기 차단 · 2칸 들여쓰기 앵커 완화 → fail-closed
+#   G 게이트 보강(2026-09-23 적대 검증) — layout(고아 열·시트 부재) · duplicate_keys(QW 코드·RAWDATA 키) ·
+#                 qw_nonpositive 를 **run() 경로에서** 거부로 확인 + 게이트별 돌연변이(해당 게이트 TRUE → 거부 소멸)
+#   H 내부 안전장치 — 백업 md5(백업 전 제3자 쓰기) · 계획 뒤 Size 재대조 · rename 후 md5(백업 복원) ·
+#                 일시정지 JSON 동치(같은 줄의 다른 키 소실) — 위반 주입 + 각 장치 돌연변이 red
+#   I 재빌드     — 기본 빌더 경로 ≠ 인자(사본 리허설) = 어떤 쓰기보다 먼저 거부 · 경로 같으면 기본 빌더 사용(가짜 전역 빌더) ·
+#                 빌더 안 이중 대조 · 재빌드 실패에도 보고서 APPLIED_FDB_FAILED + 러너 복원 — 돌연변이 2종 red
+#   ★기본 빌더 검사는 가짜 전역 build_factor_db/.load_base_data 를 먼저 심는다 — 실패해도 실제 factor_db_builder.R 를
+#     source 하지 않게(운영 factor_db 재빌드 경로를 검사가 여는 일이 없게).
 #
 # 운영 무접촉: 모든 픽스처는 tempdir() 아래. 실제 파일은 **읽기만**(naver_collector_config.json ·
 #   cache_registry.json · reinforce_auto_config.json 사본 원천). RAWDATA·러너 설정·factor_db 에 쓰지 않는다.
@@ -31,14 +39,14 @@ suppressPackageStartupMessages({
 }
 .sd <- .script_dir()
 PROJ <- ""
-for (.c in c(if (nzchar(.sd)) file.path(.sd, "..", "..") else "", Sys.getenv("QM_ROOT", ""),
-             Sys.getenv("CLAUDE_PROJECT_DIR", ""), getwd())) {
+for (.c in c(if (nzchar(.sd)) file.path(.sd, "..", "..") else "", Sys.getenv("CLAUDE_PROJECT_DIR", ""),
+             Sys.getenv("QM_ROOT", ""), getwd())) {
   .c <- gsub("\\\\", "/", .c)
   if (nzchar(.c) && file.exists(file.path(.c, .MARKER))) { PROJ <- normalizePath(.c, winslash = "/"); break }
 }
 if (!nzchar(PROJ)) stop("[test_qw_size] PROJECT_ROOT 해석 실패 — 표지 부재: ", .MARKER)
 PROJECT_ROOT <- PROJ
-SRC <- file.path(PROJ, .MARKER)
+SRC <- Sys.getenv("QWS_SRC", file.path(PROJ, .MARKER))   # QWS_SRC = 배포 전 스크래치 사본 검사용
 
 PASS <- 0L; FAIL <- 0L
 ok  <- function(n, m = "") { PASS <<- PASS + 1L; cat(sprintf("  PASS: %s - %s\n", n, m)) }
@@ -96,7 +104,7 @@ PRE <- copy(RAW0)[Date >= START & !(Ticker == "A000030" & Date == as.Date("2026-
 
 mk_xlsx <- function(path, qw = QW, dates = DATES, unit = "local", item = ITEM, unit_override = NULL,
                     item_override = NULL, orphan = FALSE, stale = TRUE, sheet = "Size", scale = 1,
-                    scale_window = 1) {
+                    scale_window = 1, dup_code = NULL) {
   wb <- createWorkbook()
   addWorksheet(wb, "Close"); addWorksheet(wb, sheet)
   hdr <- function(r, c, x) writeData(wb, sheet, x = x, startRow = r, startCol = c, colNames = FALSE)
@@ -109,7 +117,8 @@ mk_xlsx <- function(path, qw = QW, dates = DATES, unit = "local", item = ITEM, u
   if (!is.null(item_override)) items[item_override] <- "수정주가"
   n <- length(TK)
   wr <- function(r, lab, v) { hdr(r, 1, lab); writeData(wb, sheet, x = as.data.frame(t(v)), startRow = r, startCol = 2, colNames = FALSE) }
-  wr(8, "Code", TK); wr(9, "Name", paste0("N", TK)); hdr(10, 1, "Item Code"); hdr(10, 2, "S102100")
+  codes <- TK; if (!is.null(dup_code)) codes[dup_code] <- TK[1]
+  wr(8, "Code", codes); wr(9, "Name", paste0("N", TK)); hdr(10, 1, "Item Code"); hdr(10, 2, "S102100")
   wr(11, "Unit", units); hdr(12, 1, "Base Date"); wr(14, "D A T E", items)
   if (stale) {   # 실물처럼 코드 뒤 옛 선언 셀(코드 없음) — 판정은 코드 열에서만
     writeData(wb, sheet, x = as.data.frame(t(rep("local", 5))), startRow = 11, startCol = n + 2, colNames = FALSE)
@@ -355,5 +364,161 @@ M4 <- mut("'(?m)^  \"%s\": [^\\\\n]*$'", "'(?m)^ +\"%s\": [^\\\\n]*$'")
 fp4 <- mk_cfg(file.path(FX, "M4_cfg.json")); m40 <- md5(fp4)
 m4 <- errmsg(M4$qws_runner_pause(fp4, "x"))
 chk("M4 2칸 앵커 완화 → 중첩 enabled 까지 잡혀 fail-closed(설정 무접촉)", grepl("특정 못함", m4) && identical(md5(fp4), m40), m4)
+
+#------------------------------------------------------------------------------
+cat("\n[G] 게이트 보강 — run() 경로 거부 + 게이트별 돌연변이\n")
+g1 <- cr("G1", "layout", env_args = list(qw_args = list(orphan = TRUE)))
+chk("G1b 고아 열 거부 시 RAWDATA 무접촉 · 보고서 REFUSED", !is.null(g1$rep) && identical(md5(g1$e$raw), md5(file.path(g1$e$dir, "RAWDATA.parquet"))) &&
+      identical(fromJSON(g1$rep$path)$status, "REFUSED"))
+g2 <- cr("G2", "layout", env_args = list(qw_args = list(sheet = "Sz")))
+chk("G2b Size 시트 부재 → 계획 미산출(window_scale·qw_fill 도 거부)", !is.null(g2$rep) &&
+      all(c("window_scale", "qw_fill") %in% g2$rep$refused_gates))
+g3 <- cr("G3", "duplicate_keys", env_args = list(qw_args = list(dup_code = 4)))
+RAWD <- rbind(RAW0, RAW0[Date == START & Ticker == TK[3]])
+g4 <- cr("G4", "duplicate_keys", env_args = list(raw = RAWD))
+QWN <- copy(QW); QWN[Date == START & Ticker == TK[4], QW_Size := -5]
+g5 <- cr("G5", "qw_nonpositive", env_args = list(qw_args = list(qw = QWN)))
+QWZ <- copy(QW); QWZ[Date == END & Ticker == TK[6], QW_Size := 0]
+cr("G6", "qw_nonpositive", env_args = list(qw_args = list(qw = QWZ)))
+mg <- function(id, from, to, tag, gate, env_args) {
+  env <- mut(from, to); e <- do.call(mk_env, c(list(tag), env_args))
+  rep <- tryCatch({ env$rawdata_size_from_quantiwise(start = START, end = END, xlsx = e$xlsx, rawdata = e$raw, out_dir = e$out,
+                                                    runner_config = e$cfg, fdb_dir = e$fdb); NULL },
+                  qw_size_refused = function(c) c$report)
+  chk(sprintf("%s %s 게이트 TRUE 고정 → %s 거부 소멸(위 red 는 이 게이트 몫)", id, gate, gate),
+      is.null(rep) || !gate %in% rep$refused_gates, if (!is.null(rep)) paste(rep$refused_gates, collapse = ",") else "거부 없음")
+}
+mg("MG1", 'add("layout", !any(names(pr) == "layout"),', 'add("layout", TRUE,', "MG1", "layout",
+   list(qw_args = list(orphan = TRUE)))
+mg("MG2", 'add("duplicate_keys", !any(names(pr) == "duplicate_keys") && !anyDuplicated(win, by = c("Date", "Ticker")),',
+   'add("duplicate_keys", TRUE,', "MG2", "duplicate_keys", list(raw = RAWD))
+mg("MG3", 'add("qw_nonpositive", !any(names(pr) == "qw_nonpositive"),', 'add("qw_nonpositive", TRUE,', "MG3", "qw_nonpositive",
+   list(qw_args = list(qw = QWN)))
+
+#------------------------------------------------------------------------------
+cat("\n[H] 내부 안전장치 — 위반 주입 + 장치별 돌연변이\n")
+tp_vol <- function(path) function(stage) if (identical(stage, "before_backup")) {   # 백업 직전 제3자 쓰기(Vol)
+  z <- as.data.table(read_parquet(path, mmap = FALSE)); z[1L, Vol := Vol + 7]; write_parquet(z, path) }
+tp_size <- function(path) function(stage) if (identical(stage, "before_load")) {    # 백업 뒤·로드 전 계획 행 Size 변경
+  z <- as.data.table(read_parquet(path, mmap = FALSE)); z[Date == START & Ticker == TK[2], Size := Size + 1]; write_parquet(z, path) }
+tp_clobber <- function(path) function(stage) if (identical(stage, "after_rename")) { # rename 직후 파일이 다른 내용으로
+  z <- as.data.table(read_parquet(path, mmap = FALSE)); z[2L, Close := Close + 3]; write_parquet(z, path) }
+eh <- function(tag, hook_fn, fn = rawdata_size_from_quantiwise, env_args = list()) {
+  e <- do.call(mk_env, c(list(tag), env_args)); r0 <- md5(e$raw); c0 <- md5(e$cfg)
+  m <- errmsg(fn(start = START, end = END, xlsx = e$xlsx, rawdata = e$raw, out_dir = e$out, backup_dir = e$bak,
+                 runner_config = e$cfg, fdb_dir = e$fdb, dry_run = FALSE, .hook_stage = hook_fn(e$raw)))
+  z <- as.data.table(read_parquet(e$raw, mmap = FALSE))
+  list(e = e, m = m, r0 = r0, raw_same = identical(md5(e$raw), r0), cfg_same = identical(md5(e$cfg), c0), z = z)
+}
+h1 <- eh("H1", tp_vol)
+chk("H1 [위반] 백업 전 제3자 쓰기 → '백업 md5 불일치' 중단 · 제3자 판 보존 · 러너 복원",
+    grepl("백업 md5 불일치", h1$m) && identical(h1$z$Vol[1], RAW0$Vol[1] + 7) && h1$cfg_same, h1$m)
+h2 <- eh("H2", tp_size)
+chk("H2 [위반] 계획 뒤 계획 행 Size 변경 → '계획 뒤 RAWDATA Size' 중단 · 제3자 판 보존 · 러너 복원",
+    grepl("계획 뒤 RAWDATA Size", h2$m) && isTRUE(h2$z[Date == START & Ticker == TK[2]]$Size ==
+                                                  RAW0[Date == START & Ticker == TK[2]]$Size + 1) && h2$cfg_same, h2$m)
+h3 <- eh("H3", tp_clobber)
+chk("H3 [위반] rename 뒤 내용 불일치 → '교체 후 md5 불일치' · 백업으로 되돌림(원본 md5) · 러너 복원",
+    grepl("교체 후 md5 불일치", h3$m) && h3$raw_same && h3$cfg_same, h3$m)
+mk_cfg_extra <- function(path) {    # 최상위 paused_reason 줄에 다른 키가 같은 줄로 붙은 설정(유효 JSON)
+  mk_cfg(path); s <- rawToChar(readBin(path, "raw", file.info(path)$size)); Encoding(s) <- "bytes"
+  s <- sub('(?m)^  "paused_reason": [^\n]*$', '  "paused_reason": "x", "zz_probe": 1,', s, perl = TRUE, useBytes = TRUE)
+  con <- file(path, "wb"); writeBin(charToRaw(s), con); close(con); path
+}
+fh <- mk_cfg_extra(file.path(FX, "H4_cfg.json")); mh0 <- md5(fh)
+chk("H4a 픽스처: zz_probe 가 최상위 키로 읽힌다", identical(fromJSON(fh, simplifyVector = FALSE)$zz_probe, 1L))
+m4h <- errmsg(qws_runner_pause(fh, "x"))
+chk("H4 [위반] 두 줄 교체가 다른 키(zz_probe)를 지우면 '편집 검증 실패' · 설정 무접촉", grepl("편집 검증 실패", m4h) && identical(md5(fh), mh0), m4h)
+eh4 <- mk_env("H4r"); mk_cfg_extra(eh4$cfg); c4 <- md5(eh4$cfg); r4 <- md5(eh4$raw)
+m4r <- errmsg(run(eh4, dry_run = FALSE))
+chk("H4r run() 경로도 설정·RAWDATA 무접촉 중단", !is.na(m4r) && identical(md5(eh4$cfg), c4) && identical(md5(eh4$raw), r4), m4r)
+MH1 <- mut("if (!identical(.qws_md5(bk), fp0$md5)) stop(", "if (FALSE) stop(")
+x <- eh("MH1", tp_vol, fn = MH1$rawdata_size_from_quantiwise)
+chk("MH1 백업 md5 대조 제거 → H1 의 '백업 md5 불일치' 소멸(H1 red 는 이 장치 몫)", !grepl("백업 md5 불일치", x$m), x$m)
+MH2 <- mut("if (!identical(raw$Size[idx], chg$Size)) stop(", "if (FALSE) stop(")
+x <- eh("MH2", tp_size, fn = MH2$rawdata_size_from_quantiwise)
+chk("MH2 Size 재대조 제거 → H2 의 '계획 뒤 RAWDATA Size' 소멸", !grepl("계획 뒤 RAWDATA Size", x$m), x$m)
+MH3 <- mut("if (!identical(.qws_md5(rawdata), md5_tmp)) {", "if (FALSE) {")
+x <- eh("MH3", tp_clobber, fn = MH3$rawdata_size_from_quantiwise)
+chk("MH3 rename 후 md5 제거 → 불일치 파일이 남는다(백업 복원 없음)", is.na(x$m) && !x$raw_same &&
+      !identical(md5(x$e$raw), md5(file.path(x$e$bak, list.files(x$e$bak, pattern = "bak_size_qw_")[1]))), x$m)
+MH4 <- mut("if (!identical(j1$enabled, FALSE) || !identical(j0x, j1x))", "if (FALSE)")
+fm <- mk_cfg_extra(file.path(FX, "MH4_cfg.json")); fm0 <- md5(fm)
+st4 <- tryCatch(MH4$qws_runner_pause(fm, "x"), error = function(e) e)
+chk("MH4 JSON 동치 제거 → zz_probe 가 지워진 채 기록된다(H4 red 는 이 장치 몫)",
+    !inherits(st4, "error") && !identical(md5(fm), fm0) && is.null(fromJSON(fm, simplifyVector = FALSE)$zz_probe))
+
+#------------------------------------------------------------------------------
+cat("\n[I] 재빌드 — 기본 빌더 경로 · 실패 보고서\n")
+# ★안전: 실제 factor_db_builder.R 를 source 하지 않도록 가짜 전역 빌더를 먼저 심는다(exists 분기)
+fake_calls <- list()
+set_fake_builder <- function(rawdata_cache, fdb_dir, cache_dir = NULL) {
+  assign("build_factor_db", function(sig, save = TRUE, force = FALSE) {
+    fake_calls[[length(fake_calls) + 1L]] <<- list(sig = sig, save = save, force = force); invisible(TRUE) }, envir = globalenv())
+  assign(".load_base_data", function(force = FALSE) invisible(NULL), envir = globalenv())
+  assign("RAWDATA_CACHE", rawdata_cache, envir = globalenv()); assign("FACTOR_DB_DIR", fdb_dir, envir = globalenv())
+  if (!is.null(cache_dir)) assign("CACHE_DIR", cache_dir, envir = globalenv())
+}
+clr_fake_builder <- function() suppressWarnings(rm(list = intersect(c("build_factor_db", ".load_base_data", "RAWDATA_CACHE",
+                                                                      "FACTOR_DB_DIR", "CACHE_DIR"), ls(globalenv(), all.names = TRUE)),
+                                                   envir = globalenv()))
+chk("I0 경로 동일성: 대소문자·구분자 무시 · NA = 다름", .qws_same_path("C:/a/B.parquet", "c:\\a\\b.parquet") &&
+      !.qws_same_path("C:/a/B.parquet", "C:/a/C.parquet") && !.qws_same_path(NA_character_, "C:/a"))
+ELSE <- file.path(FX, "elsewhere"); dir.create(file.path(ELSE, "factor_db"), recursive = TRUE, showWarnings = FALSE)
+set_fake_builder(file.path(ELSE, "RAWDATA.parquet"), file.path(ELSE, "factor_db"))
+fake_calls <- list()
+ei1 <- mk_env("I1"); r1 <- md5(ei1$raw); c1 <- md5(ei1$cfg)
+m1i <- errmsg(run(ei1, dry_run = FALSE, rebuild_fdb = TRUE))
+chk("I1 [위반] 사본 경로 + 기본 빌더 → 쓰기 전 거부(RAWDATA·러너 무접촉 · 백업 폴더 없음 · 빌더 미호출)",
+    grepl("기본 빌더의 전역 경로와 다르다", m1i) && identical(md5(ei1$raw), r1) && identical(md5(ei1$cfg), c1) &&
+      !dir.exists(ei1$bak) && !length(fake_calls), m1i)
+chk("I1b dry-run 은 빌더 경로와 무관(거부 없음)", is.na(errmsg(run(ei1, dry_run = TRUE, rebuild_fdb = TRUE))))
+ei3 <- mk_env("I3")
+set_fake_builder(file.path(ei3$dir, "RAWDATA.parquet"), file.path(ei3$dir, "factor_db"), cache_dir = ei3$dir)
+fake_calls <- list(); c3 <- md5(ei3$cfg)
+res3 <- tryCatch(run(ei3, dry_run = FALSE, rebuild_fdb = TRUE), error = function(e) e)
+chk("I3 [양성] 경로가 전역과 같으면 기본 빌더 사용 — APPLIED · 가짜 빌더 1회(sig 09-10) · 러너 복원",
+    !inherits(res3, "error") && identical(res3$report$status, "APPLIED") && length(fake_calls) == 1L &&
+      identical(fake_calls[[1]]$sig, as.Date("2026-09-10")) && identical(md5(ei3$cfg), c3),
+    if (inherits(res3, "error")) conditionMessage(res3) else "")
+ei4 <- mk_env("I4")
+set_fake_builder(file.path(ei4$dir, "RAWDATA.parquet"), file.path(ELSE, "factor_db"), cache_dir = ei4$dir)
+fake_calls <- list(); c4i <- md5(ei4$cfg); r4i <- md5(ei4$raw)
+m4i <- errmsg(run(ei4, dry_run = FALSE, rebuild_fdb = TRUE))
+rp4 <- list.files(ei4$out, pattern = "^qw_size_apply_.*\\.json$", full.names = TRUE)
+j4 <- if (length(rp4)) fromJSON(rp4[1], simplifyVector = FALSE) else NULL
+chk("I4 [위반] 빌더 안 이중 대조(FACTOR_DB_DIR ≠ fdb_dir) → 빌더 미호출 · 재빌드 실패 보고서 APPLIED_FDB_FAILED",
+    grepl("재빌드 실패", m4i) && !length(fake_calls) && identical(j4$status, "APPLIED_FDB_FAILED") &&
+      grepl("전역 경로", j4$apply$fdb_error %||% ""), m4i)
+chk("I4b RAWDATA 는 교체됐고(보고서가 그 사실을 적는다) 러너는 복원 · 202609 = building",
+    !identical(md5(ei4$raw), r4i) && identical(md5(ei4$cfg), c4i) && identical(j4$apply$fdb$`202609`$status, "building") &&
+      isTRUE(j4$apply$runner_restore$byte_identical))
+clr_fake_builder()
+ei5 <- mk_env("I5"); c5 <- md5(ei5$cfg)
+m5i <- errmsg(run(ei5, dry_run = FALSE, rebuild_fdb = TRUE, .fdb_build = function(sig) stop("boom_fdb")))
+rp5 <- list.files(ei5$out, pattern = "^qw_size_apply_.*\\.json$", full.names = TRUE)
+j5 <- if (length(rp5)) fromJSON(rp5[1], simplifyVector = FALSE) else NULL
+chk("I5 [위반] 빌더 오류 → 보고서 APPLIED_FDB_FAILED(오류·RAWDATA 백업·진행 월) · 러너 복원 · 오류에 보고서 경로",
+    grepl("boom_fdb", m5i) && identical(j5$status, "APPLIED_FDB_FAILED") && grepl("boom_fdb", j5$apply$fdb_error %||% "") &&
+      file.exists(j5$apply$backup$path %||% "") && identical(md5(ei5$cfg), c5) &&
+      length(rp5) == 1L && grepl(basename(rp5[1]), m5i, fixed = TRUE), m5i)
+MI1 <- mut("fr <- tryCatch(.qws_rebuild_fdb(start, fdb_dir, backup_dir, builder, stamp, acc = acc), error = function(e) e)",
+           "fr <- .qws_rebuild_fdb(start, fdb_dir, backup_dir, builder, stamp, acc = acc)")
+em1 <- mk_env("MI1")
+invisible(errmsg(MI1$rawdata_size_from_quantiwise(start = START, end = END, xlsx = em1$xlsx, rawdata = em1$raw, out_dir = em1$out,
+                                                  backup_dir = em1$bak, runner_config = em1$cfg, fdb_dir = em1$fdb, dry_run = FALSE,
+                                                  rebuild_fdb = TRUE, .fdb_build = function(sig) stop("boom_fdb"))))
+chk("MI1 재빌드 오류 포착 제거 → 보고서 없음(I5 red 는 이 장치 몫)",
+    !length(list.files(em1$out, pattern = "^qw_size_apply_.*\\.json$")))
+set_fake_builder(file.path(ELSE, "RAWDATA.parquet"), file.path(ELSE, "factor_db"))   # 돌연변이가 빌더에 닿아도 가짜 + 이중 대조
+fake_calls <- list()
+MI2 <- mut("if (!.qws_same_path(rawdata, tg$rawdata) || !.qws_same_path(fdb_dir, tg$fdb_dir))", "if (FALSE)")
+em2 <- mk_env("MI2"); rm2 <- md5(em2$raw)
+mm2 <- errmsg(MI2$rawdata_size_from_quantiwise(start = START, end = END, xlsx = em2$xlsx, rawdata = em2$raw, out_dir = em2$out,
+                                               backup_dir = em2$bak, runner_config = em2$cfg, fdb_dir = em2$fdb, dry_run = FALSE,
+                                               rebuild_fdb = TRUE))
+chk("MI2 사전 경로 대조 제거 → RAWDATA 가 먼저 바뀐다(I1 red 는 이 대조 몫 · 이중 대조가 빌더는 막음)",
+    !identical(md5(em2$raw), rm2) && !length(fake_calls), mm2)
+clr_fake_builder()
 
 fin()

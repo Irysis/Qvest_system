@@ -32,7 +32,8 @@
 #   rawdata_sync_bm_ret()                        # dry-run (계획만)
 #   rawdata_sync_bm_ret(dry_run = FALSE)         # 결측 채움 + (킬스위치 해제 시) 불일치 정정
 #   rawdata_sync_bm_ret(dates = as.Date(c("2025-01-02","2026-09-02")), dry_run = FALSE)
-#   CLI: Rscript rawdata_bm_ret_sync.R [--apply] [--dates 2025-01-02,2026-09-02]
+#   CLI: Rscript rawdata_bm_ret_sync.R [--apply] [--allow-overwrite] [--dates 2025-01-02,2026-09-02]
+#        덮어쓰기 = --allow-overwrite ∧ 킬스위치 해제 둘 다(수동 정정 전용). 플래그 없으면 채움만.
 #        rc 0 = 정합 · 4 = 벤치 지연(NA 유지·경고) · 3 = 위반(거부/결손/광기값/쓰기검증 실패) · 1 = 오류
 #   검사: 08_Tests/data/test_rawdata_bm_ret_sync.R
 #==============================================================================
@@ -185,7 +186,7 @@ bm_ret_sync_plan <- function(cur, bench, cfg, dates = NULL, allow_overwrite = FA
   if (n_ow > 0L) {
     if (!isTRUE(allow_overwrite)) {
       p[action == "overwrite", `:=`(action = "refused_killswitch",
-                                    reason = "기존 유한값 변경 — 킬스위치(enabled=true) 가동 중")]
+                                    reason = "기존 유한값 변경 불허 — 킬스위치 가동 중 또는 --allow-overwrite 없음(무인 경로)")]
     } else if (n_ow > cfg$max_overwrite_per_run) {
       p[action == "overwrite", `:=`(action = "refused_cap",
                                     reason = sprintf("덮어쓰기 %d일 > 상한 %d — 벤치 축 이동 의심, 전부 거부",
@@ -291,7 +292,7 @@ rawdata_sync_bm_ret <- function(dates = NULL, dry_run = TRUE, raw_path = NULL, b
   rm(slim); gc(verbose = FALSE)
   cat(sprintf("[bm_ret_sync] mode=%s · 벤치 최신 %s · 덮어쓰기 %s\n",
               if (dry_run) "DRY-RUN" else "APPLY", format(max(bench$Date)),
-              if (allow_overwrite) "허용(킬스위치 해제)" else "거부(킬스위치 가동)"))
+              if (allow_overwrite) "허용(--allow-overwrite ∧ 킬스위치 해제)" else "거부(킬스위치 가동 또는 플래그 없음)"))
   .bms_say_plan(plan, tol = cfg$tolerance)
   rc <- bm_ret_plan_rc(plan)
   w <- plan[action %in% BM_RET_WRITE_ACTIONS]
@@ -408,11 +409,15 @@ bm_ret_status_line <- function(res) {
 if (sys.nframe() == 0L) {
   .args <- commandArgs(trailingOnly = TRUE)
   .apply <- "--apply" %in% .args
+  # ★덮어쓰기는 명시 플래그 + 킬스위치 해제 두 조건이 모두 있어야 한다(2026-09-23 적대 검증 발견 3).
+  #   구판은 킬스위치만 봤다 — 루프가 어떤 이유로든 꺼진 밤이면 무인 [3b] 가 과거 유한값을
+  #   사람 확인 없이 덮었다('루프 정지 = 과거 정정 승인' 결합). 무인 경로([3b])는 채움만 한다.
+  .allow_ow <- if ("--allow-overwrite" %in% .args) NULL else FALSE   # NULL = 킬스위치 판독
   .dates <- NULL
   .i <- which(.args == "--dates")
   if (length(.i) && length(.args) > .i[1]) .dates <- as.Date(strsplit(.args[.i[1] + 1L], ",")[[1]])
   .rc <- tryCatch({
-    .res <- rawdata_sync_bm_ret(dates = .dates, dry_run = !.apply)
+    .res <- rawdata_sync_bm_ret(dates = .dates, dry_run = !.apply, allow_overwrite = .allow_ow)
     cat(bm_ret_status_line(.res), "\n")
     .res$rc
   }, error = function(e) {

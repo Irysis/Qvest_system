@@ -25,6 +25,24 @@
 #        그래서 교체 직후 `source` 전환점에서 이음매를 **재도출**해(날짜를 박지 않는다)
 #        seam_scan_report 를 돌린다 — 퀀티가 부분만 덮으면 경계가 그만큼 이동한다.
 #
+#   ▸ **적재 안전 관문 (2026-09-23 · 적대 검증 [높음])** — `ohlcvs_update_gate()`:
+#     qw_refresh.ps1 은 목표일 도달 판정 **전에** $wb.Save() 하고 finally 에서 Close($true) 로 또 저장한다.
+#     ⇒ 갱신이 실패·중단돼도 xlsx mtime 이 바뀌고, 다음 [0b] 가 그 파일을 '변경' 으로 적재했다.
+#       지평선이 그대로(08-28)여도 아래 Ret 재계산(Close/shift(Close)-1)이 전 이력을 다시 계산해
+#       naver 이음매(08-31) Ret 을 조정기준 단절 그대로 되살린다(실측 1,715행 · A001470 +1,577%) —
+#       source 전환점이 안 움직이므로 seam 재검사도 그 경계를 훑지 않는다.
+#     관문(하나라도 실패 = 적재 거부 · RAWDATA 무접촉 · '처리 완료' 미기록 → 다음 정상 갱신 때 재시도):
+#       sheet_order        — 앞 6시트가 Open·High·Low·Close·Vol·Size 순서(적재 루프가 **번호로** 읽는다)
+#       sheet_read_error   — 시트 A열 판독 실패
+#       date_axis_missing  — 값 시트에 'D A T E' 날짜축이 없거나 날짜 0개
+#       horizon_mismatch   — 날짜축 시트(DATA_Key 처럼 날짜축 없는 시트는 제외)의 A열 마지막 날짜가 서로 다름
+#       prior_unmeasured   — 직전 적재 지평선(RAWDATA source ∈ quantiwise·quantiwise_update 의 max Date) 미측정
+#       not_advanced       — 공통 지평선 ≤ 직전 적재 지평선(전진 없음)
+#       horizon_row_empty  — (파싱 후) 지평선 날짜 행에 값이 0칸인 값 시트
+#     거부 시 incremental_update_all() 은 나머지 파일을 처리·기록한 뒤 **stop()** → Rscript rc≠0 →
+#     daily_refresh.sh run_r 이 DR_FAILED 에 싣는다(로그 표지 `[GATE_REFUSED]`). 판정 기록 = .cache/update_file_ohlcvs_gate.json
+#     qw_refresh.ps1(단말 드라이버)은 고치지 않는다 — 드라이버가 무엇을 저장하든 적재 쪽에서 막는다.
+#
 # 사용법:
 #   source("02_Infrastructure/incremental_update_file.R")
 #   result <- incremental_update_all()  # 전체 자동
@@ -44,6 +62,7 @@ if (!exists("rawdata_priority_decide")) source(file.path(DATA_DIR, "rawdata_sour
 
 UPDATE_DIR <- file.path(PROJECT_ROOT, "03_Universe", "Update_File")
 LAST_PROCESSED_FILE <- file.path(CACHE_DIR, "update_file_last_processed.rds")
+OHLCVS_GATE_RECORD  <- file.path(CACHE_DIR, "update_file_ohlcvs_gate.json")   # 관문 판정 기록(처리 상태 아님)
 
 # ─── Internal: 마지막 처리 시각 ──────────────────────────────────────────────
 .get_last_processed <- function() {
@@ -82,6 +101,125 @@ detect_update_changes <- function() {
   list(changed = changed, mtimes = current_mtimes)
 }
 
+# ─── OHLCVS 적재 안전 관문 (2026-09-23) — 머리 주석 ▸적재 안전 관문 참조 ─────────
+#   값 시트 목록 = 아래 적재 루프가 **번호로** 읽는 순서 그대로(루프도 이 상수를 쓴다 — 두 벌 금지).
+.OHLCVS_VAR_SHEETS <- c("Open", "High", "Low", "Close", "Vol", "Size")
+#   직전 적재 지평선의 출처 라벨 = 퀀티 수출본(base·증분). naver 는 퀀티 지평선이 아니다.
+.OHLCVS_QW_SOURCES <- c("quantiwise", "quantiwise_update")
+
+#' 시트별 A열 날짜축 지평선 — 'D A T E' 라벨 행 아래의 Excel serial 만 날짜로 센다.
+#'   (위쪽 머리 셀 'Refresh'=0 같은 숫자를 날짜로 세지 않는다: serial 0 = 1899-12-30)
+#' @return data.table(pos, sheet, date_axis, n_dates, horizon, last_row_date, err)
+ohlcvs_sheet_horizons <- function(xlsx) {
+  sh <- readxl::excel_sheets(xlsx)
+  rbindlist(lapply(seq_along(sh), function(i) {
+    a <- tryCatch(suppressWarnings(readxl::read_xlsx(xlsx, sheet = i, range = readxl::cell_cols("A:A"),
+                                                     col_names = FALSE, col_types = "text",
+                                                     .name_repair = "minimal")),
+                  error = function(e) e)
+    if (inherits(a, "error"))
+      return(data.table(pos = i, sheet = sh[i], date_axis = NA, n_dates = NA_integer_,
+                        horizon = as.Date(NA), last_row_date = as.Date(NA), err = conditionMessage(a)))
+    lab <- if (ncol(a)) trimws(as.character(a[[1]])) else character(0)
+    r <- which(lab == "D A T E")[1]
+    if (is.na(r))
+      return(data.table(pos = i, sheet = sh[i], date_axis = FALSE, n_dates = 0L,
+                        horizon = as.Date(NA), last_row_date = as.Date(NA), err = NA_character_))
+    d <- as.Date(suppressWarnings(as.numeric(lab[-seq_len(r)])), origin = "1899-12-30")
+    d <- d[!is.na(d)]
+    data.table(pos = i, sheet = sh[i], date_axis = TRUE, n_dates = length(d),
+               horizon = if (length(d)) max(d) else as.Date(NA),
+               last_row_date = if (length(d)) d[length(d)] else as.Date(NA), err = NA_character_)
+  }))
+}
+
+#' 직전 적재 지평선 = RAWDATA 에서 퀀티 출처 행의 max(Date). 판독 불가·0행 = NA(미측정 — 통과로 접지 않는다).
+.ohlcvs_prior_horizon <- function(rawdata_path, sources = .OHLCVS_QW_SOURCES) {
+  if (!file.exists(rawdata_path)) return(as.Date(NA))
+  r <- tryCatch(as.data.table(read_parquet(rawdata_path, col_select = c("Date", "source"), mmap = FALSE)),
+                error = function(e) NULL)
+  if (is.null(r) || !all(c("Date", "source") %in% names(r))) return(as.Date(NA))
+  d <- as.Date(r$Date[r$source %in% sources])
+  rm(r); gc(verbose = FALSE)
+  d <- d[!is.na(d)]
+  if (!length(d)) as.Date(NA) else max(d)
+}
+
+#' 관문 판정(순수 함수) — 전부 계산하고(조기 종료 없음) 사유를 이름 붙여 남긴다.
+#' @param hz  ohlcvs_sheet_horizons() 결과 · @param prior_horizon Date(NA 가능)
+#' @return list(ok, reasons = named character, horizon, prior_horizon, sheets = hz)
+ohlcvs_update_gate <- function(hz, prior_horizon, required = .OHLCVS_VAR_SHEETS) {
+  rs <- character(0)
+  add <- function(k, msg) rs[[k]] <<- msg
+  hz <- as.data.table(hz)
+  head_names <- hz$sheet[seq_len(min(nrow(hz), length(required)))]
+  if (!identical(head_names, required))
+    add("sheet_order", sprintf("앞 %d시트 = %s (요구 %s — 적재 루프가 번호로 읽는다)", length(required),
+                               paste(head_names, collapse = ","), paste(required, collapse = ",")))
+  if (any(!is.na(hz$err)))
+    add("sheet_read_error", paste(sprintf("%s: %s", hz$sheet[!is.na(hz$err)], hz$err[!is.na(hz$err)]), collapse = " | "))
+  req <- hz[sheet %in% required]
+  bad_axis <- req[!(date_axis %in% TRUE) | !(n_dates > 0L)]$sheet
+  bad_axis <- c(bad_axis, setdiff(required, hz$sheet))
+  if (length(bad_axis))
+    add("date_axis_missing", sprintf("값 시트 날짜축 없음/0일: %s", paste(unique(bad_axis), collapse = ",")))
+  ax <- hz[date_axis %in% TRUE & n_dates > 0L]
+  hzs <- unique(ax$horizon)
+  common <- if (length(hzs) == 1L) hzs else as.Date(NA)
+  if (length(hzs) != 1L)
+    add("horizon_mismatch", if (!length(hzs)) "날짜축 시트 0개" else
+      sprintf("시트별 지평선 불일치: %s", paste(sprintf("%s=%s", ax$sheet, format(ax$horizon)), collapse = ",")))
+  prior_horizon <- as.Date(prior_horizon)
+  if (length(prior_horizon) != 1L || is.na(prior_horizon)) {
+    add("prior_unmeasured", "직전 적재 지평선(RAWDATA 퀀티 출처 max Date) 미측정 — 전진 여부 판정 불가")
+  } else if (!is.na(common) && common <= prior_horizon) {
+    add("not_advanced", sprintf("공통 지평선 %s ≤ 직전 적재 %s — 갱신이 전진하지 않았다(실패·중단 저장 의심)",
+                                format(common), format(prior_horizon)))
+  }
+  list(ok = !length(rs), reasons = rs, horizon = common,
+       prior_horizon = if (length(prior_horizon) == 1L) prior_horizon else as.Date(NA), sheets = hz)
+}
+
+#' 파싱 후 보강 판정 — 지평선 날짜 행에 값이 0칸인 값 시트(날짜만 늘고 값이 빈 저장).
+.ohlcvs_horizon_fill_problems <- function(n_at_hz, horizon) {
+  z <- names(n_at_hz)[!(unlist(n_at_hz) > 0L)]
+  if (!length(z)) return(character(0))
+  c(horizon_row_empty = sprintf("지평선 %s 행이 비어 있는 시트: %s", format(horizon), paste(z, collapse = ",")))
+}
+
+.ohlcvs_gate_print <- function(g) {
+  sh <- g$sheets
+  cat(sprintf("  [gate] 시트 지평선: %s\n", paste(sprintf("%s=%s", sh$sheet,
+      ifelse(sh$date_axis %in% TRUE, format(sh$horizon), "날짜축없음")), collapse = " ")))
+  cat(sprintf("  [gate] 공통 지평선 %s · 직전 적재 %s → %s\n", format(g$horizon), format(g$prior_horizon),
+              if (isTRUE(g$ok)) "통과" else "거부"))
+}
+
+#' 판정 기록(처리 상태가 아니다 — 실패해도 적재 판정을 바꾸지 않는다).
+.ohlcvs_gate_record <- function(g, status, xlsx, path = OHLCVS_GATE_RECORD) {
+  tryCatch({
+    rec <- list(schema = "update_file_ohlcvs_gate_v1", at = format(Sys.time(), "%Y-%m-%dT%H:%M:%S%z"),
+                status = status, xlsx = xlsx,
+                xlsx_mtime = format(file.mtime(xlsx), "%Y-%m-%d %H:%M:%S"),
+                horizon = format(g$horizon), prior_horizon = format(g$prior_horizon),
+                reasons = as.list(g$reasons),
+                sheets = lapply(seq_len(nrow(g$sheets)), function(k) list(
+                  sheet = g$sheets$sheet[k], date_axis = g$sheets$date_axis[k],
+                  horizon = format(g$sheets$horizon[k]), n_dates = g$sheets$n_dates[k])))
+    tmp <- paste0(path, ".tmp", Sys.getpid())
+    writeLines(jsonlite::toJSON(rec, auto_unbox = TRUE, pretty = TRUE, na = "null", null = "null"), tmp, useBytes = TRUE)
+    if (!isTRUE(file.rename(tmp, path))) { suppressWarnings(file.remove(tmp)); stop("rename 실패") }
+    path
+  }, error = function(e) { cat(sprintf("  ⚠ [gate] 판정 기록 실패(판정 불변): %s\n", conditionMessage(e))); NA_character_ })
+}
+
+.ohlcvs_refuse <- function(g, xlsx) {
+  for (k in names(g$reasons)) cat(sprintf("  ⛔ [GATE_REFUSED] %s — %s\n", k, g$reasons[[k]]))
+  cat("[incr_ohlcvs] ⛔ [GATE_REFUSED] OHLCVS_update.xlsx 적재 거부 — RAWDATA 무접촉 · '처리 완료' 미기록(다음 정상 갱신 때 재시도)\n")
+  .ohlcvs_gate_record(g, "refused", xlsx)
+  invisible(list(refused = TRUE, reasons = g$reasons, horizon = g$horizon, prior_horizon = g$prior_horizon))
+}
+
 # ─── OHLCVS 증분 ── ★퇴역 표기(전진 용도) 2026-09-07 ─────────────────────────
 #   가격 전진 = naver_data_collector.R::naver_run_pipeline (수정주가 siseJson).
 #   이 함수는 **과거 재빌드 전용**으로 남는다. 아래 seam_scale_guard 블록은 그 재빌드가
@@ -96,6 +234,13 @@ incremental_ohlcvs <- function() {
   cat("[incr_ohlcvs] OHLCVS_update.xlsx 증분 처리...\n")
 
   RAWDATA_CACHE <- file.path(CACHE_DIR, "rawdata.parquet")
+
+  ## ★적재 안전 관문 (2026-09-23) — RAWDATA 를 읽기·쓰기 **전에** 판정한다. 거부 = 무접촉 반환.
+  .gate <- ohlcvs_update_gate(ohlcvs_sheet_horizons(ohlcvs_update),
+                              .ohlcvs_prior_horizon(RAWDATA_CACHE))
+  .ohlcvs_gate_print(.gate)
+  if (!isTRUE(.gate$ok)) return(.ohlcvs_refuse(.gate, ohlcvs_update))
+
   raw <- as.data.table(read_parquet(RAWDATA_CACHE))
 
   # base max date = OHLCVS.xlsx (base 파일)의 max date
@@ -107,8 +252,9 @@ incremental_ohlcvs <- function() {
 
   # Update xlsx 파싱 (6 시트) — QT_to_xts 우회, 직접 파싱
   # (QT_to_xts는 xts의 TZ 변환에서 1일 밀림 버그 발생)
-  var_names <- c("Open", "High", "Low", "Close", "Vol", "Size")
+  var_names <- .OHLCVS_VAR_SHEETS          # 관문이 순서를 확인한 목록과 같은 상수
   all_long <- NULL
+  n_at_hz <- setNames(integer(length(var_names)), var_names)   # 지평선 행 값 칸 수(관문 보강)
 
   for (i in seq_along(var_names)) {
     cat(sprintf("  Sheet %d/6: %s...\n", i, var_names[i]))
@@ -128,6 +274,7 @@ incremental_ohlcvs <- function() {
 
     long <- melt(vals, id.vars = "Date", variable.name = "Ticker",
                  value.name = var_names[i], variable.factor = FALSE)
+    n_at_hz[[var_names[i]]] <- sum(long$Date == .gate$horizon & !is.na(long[[var_names[i]]]), na.rm = TRUE)
     long <- long[!is.na(Date) & Date > base_max]
     rm(raw_df, vals); gc()
 
@@ -137,6 +284,15 @@ incremental_ohlcvs <- function() {
       all_long <- merge(all_long, long, by = c("Date", "Ticker"), all = TRUE)
     }
     rm(long); gc()
+  }
+
+  ## 관문 보강 — 지평선 날짜 행이 빈 값 시트가 있으면 거부(날짜만 늘고 값이 빈 저장 · 아직 RAWDATA 무수정)
+  .fp <- .ohlcvs_horizon_fill_problems(n_at_hz, .gate$horizon)
+  cat(sprintf("  [gate] 지평선 %s 행 값 칸: %s\n", format(.gate$horizon),
+              paste(sprintf("%s=%d", names(n_at_hz), as.integer(n_at_hz)), collapse = " ")))
+  if (length(.fp)) {
+    .gate$ok <- FALSE; .gate$reasons <- c(.gate$reasons, .fp)
+    return(.ohlcvs_refuse(.gate, ohlcvs_update))
   }
 
   if (is.null(all_long) || nrow(all_long) == 0) {
@@ -333,6 +489,7 @@ incremental_ohlcvs <- function() {
   cat(sprintf("[incr_ohlcvs] 완료: %s rows | %s ~ %s\n",
               format(nrow(raw), big.mark = ","),
               min(raw$Date), max(raw$Date)))
+  .ohlcvs_gate_record(.gate, "loaded", ohlcvs_update)
 
   invisible(list(dates_updated = update_dates, rows = nrow(all_long)))
 }
@@ -675,11 +832,12 @@ incremental_update_all <- function() {
 
   ohlcvs_result <- NULL
   qw_updated <- FALSE
+  ohlcvs_refused <- NULL
 
-  # OHLCVS
+  # OHLCVS — 관문 거부면 '처리 완료' 로 기록하지 않고(아래) 끝에서 stop → run_r rc≠0 → DR_FAILED
   if (any(grepl("OHLCVS", changes$changed))) {
     ohlcvs_result <- incremental_ohlcvs()
-    qw_updated <- TRUE
+    if (isTRUE(ohlcvs_result$refused)) ohlcvs_refused <- ohlcvs_result else qw_updated <- TRUE
   }
 
   # Consensus
@@ -698,8 +856,19 @@ incremental_update_all <- function() {
     incremental_universe_support()
   }
 
-  # 처리 완료 기록
-  .save_last_processed(changes$mtimes)
+  # 처리 완료 기록 — 관문이 거부한 OHLCVS 는 직전 기록을 그대로 둔다(없었으면 없는 채로) → 다음 실행이 재시도
+  mt_save <- changes$mtimes
+  if (!is.null(ohlcvs_refused)) {
+    prev_files <- .get_last_processed()$files
+    for (nm in names(mt_save)[grepl("OHLCVS", names(mt_save))]) mt_save[[nm]] <- prev_files[[nm]]
+  }
+  .save_last_processed(mt_save)
+
+  if (!is.null(ohlcvs_refused))
+    stop(sprintf(paste0("[incr_ohlcvs][GATE_REFUSED] OHLCVS_update.xlsx 적재 거부 — %s ",
+                        "(지평선 %s · 직전 적재 %s · 다른 파일은 처리됨 · OHLCVS 는 처리 완료 미기록)"),
+                 paste(names(ohlcvs_refused$reasons), collapse = ","),
+                 format(ohlcvs_refused$horizon), format(ohlcvs_refused$prior_horizon)), call. = FALSE)
 
   cat("\n=== Incremental Update 완료 ===\n")
   invisible(list(updated = TRUE, qw_updated = qw_updated, ohlcvs = ohlcvs_result))

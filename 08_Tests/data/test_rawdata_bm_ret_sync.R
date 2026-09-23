@@ -332,6 +332,26 @@ if (!nzchar(BASH) || !length(blk)) { bad("F_bash_or_block", "bash 또는 [3b] �
       any(e2e$drf == "rawdata_bm_ret:bench_lag(2026-09-07)") && all(Ae[Date == D("2026-09-04")]$BM_Ret == 0.0181057687) &&
         file.exists(file.path(root, ".cache", "rawdata_bm_ret_sync_last.json")),
       paste(c(e2e$drf, tail(e2e$out, 3)), collapse = " | "))
+  # F10/F11 — '루프 정지 = 과거 정정 승인' 결합 차단(2026-09-23 적대 검증 발견 3).
+  #   킬스위치가 내려간 밤에도 무인 [3b](--apply 만)는 과거 유한값을 덮지 않는다.
+  #   F11 = 같은 조건에서 --allow-overwrite 를 주면 덮는다 → F10 이 구별력을 가진다는 양성 대조.
+  root2 <- file.path(FX, "root_ks_down"); dir.create(file.path(root2, ".cache"), recursive = TRUE)
+  dir.create(file.path(root2, "06_Registry")); writeLines("fixture", file.path(root2, "CLAUDE.md"))
+  writeLines(toJSON(list(enabled = FALSE), auto_unbox = TRUE), file.path(root2, "06_Registry", "reinforce_auto_config.json"))
+  write_parquet(RAW0, file.path(root2, ".cache", "RAWDATA.parquet"))
+  write_parquet(bench_fx, file.path(root2, ".cache", "benchmark.parquet"))
+  e10 <- run_blk(blk, RSCRIPT, root2)
+  A10 <- rd(file.path(root2, ".cache", "RAWDATA.parquet"))
+  chk("F10_unattended_block_never_overwrites_even_with_killswitch_down",
+      all(A10[Date == D("2026-09-02")]$BM_Ret == -0.0382032921) &&
+        any(grepl("^rawdata_bm_ret:violation\\(.*2026-09-02:refused_killswitch", e10$drf)),
+      paste(c(e10$drf, tail(e10$out, 3)), collapse = " | "))
+  # ★system2(env=) 는 Windows 에서 무시된다 — 격리는 F10 과 같은 bash 하네스(QM_ROOT="$BASE")로.
+  o11 <- run_blk('QM_ROOT="$BASE" "$RSCRIPT" --no-save "$INFRA/data/rawdata_bm_ret_sync.R" --apply --allow-overwrite',
+                 RSCRIPT, root2)$out
+  A11 <- rd(file.path(root2, ".cache", "RAWDATA.parquet"))
+  chk("F11_explicit_flag_with_killswitch_down_overwrites",
+      all(A11[Date == D("2026-09-02")]$BM_Ret == -0.0407049196), paste(tail(o11, 3), collapse = " | "))
 }
 
 #──────────────────────────────────────────────────────────────────────────────

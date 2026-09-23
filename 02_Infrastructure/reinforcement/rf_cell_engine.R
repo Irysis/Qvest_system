@@ -71,27 +71,35 @@ if (identical(.base$kind, "mom_12_1")) {
   #   정규화해 평균한다. 척도가 다른 두 신호를 그대로 더하면 분산 큰 쪽이 결합을 지배하므로
   #   순위 정규화가 필수다(격자 B4 는 같은 논문 **안**의 축 결합이라 이것과 다른 층이다).
   #   PIT: 각 엔진이 자기 시점 규약을 지키고, 평균은 같은 시그널일 횡단면 안에서만 일어난다.
+  # ★기저 캐시 키 수리(2026-09-23) — 구 키는 substr(1,40) 절단으로 엔진 md5 + RAWDATA mtime **날짜 8자리**만
+  #   남아, 같은 날 RAWDATA 수리(Size 18:49 · BM_Ret 20:52)·factor DB 재빌드 뒤에도 교정 전 신호를 재사용했다.
+  #   키·적재·저장 규약 정본 = rf_base_cache.R — 파일 도장(mtime 초+size) · factor DB build_hash · 메모리 지문 ·
+  #   적중 시 키 전문 대조 · 실행 중 도장이 바뀌면 저장 생략 · tmp→rename.
+  suppressMessages(source(file.path(.RF_ROOT, "02_Infrastructure/reinforcement/rf_base_cache.R")))
+  .rf_dt_fp <- NULL   # 메모리 RAWDATA 지문 — 첫 기저 적재 때 한 번(기저 엔진이 DT 를 건드리기 전)
   .load_one <- function(.be) {
     if (is.null(.be) || !file.exists(.be))
       stop("[rf_cell_engine] base_signal path 부재: ", .be %||% "(NULL)")
     .cdir <- file.path(.RF_ROOT, ".cache", "rf_base_signal")
     dir.create(.cdir, recursive = TRUE, showWarnings = FALSE)
     .rawp <- file.path(.RF_ROOT, ".cache", "rawdata.parquet")
-    .key <- paste(tryCatch(unname(tools::md5sum(.be)), error = function(e) "nohash"),
-                  tryCatch(as.character(file.info(.rawp)$mtime), error = function(e) "nomtime"),
-                  nrow(DT), as.character(.START), sep = "_")
-    .key <- gsub("[^A-Za-z0-9]", "", .key)
-    .cpath <- file.path(.cdir, paste0("base_", substr(.key, 1, 40), ".rds"))
-    .b <- NULL
-    if (file.exists(.cpath)) {
-      .b <- tryCatch(readRDS(.cpath), error = function(e) NULL)
-      if (!is.null(.b)) cat(sprintf("[rf_cell_engine] 기저 캐시 적중 — %s (%d행)
-",
+    .eng_md5 <- tryCatch(unname(tools::md5sum(.be)), error = function(e) NA_character_)
+    if (is.null(.rf_dt_fp)) .rf_dt_fp <<- rf_base_data_fingerprint(DT)
+    .ck <- rf_base_cache_key(.eng_md5, rawdata_path = .rawp,
+                             bench_path = file.path(.RF_ROOT, ".cache", "benchmark.parquet"),
+                             factor_db_dir = file.path(.RF_ROOT, ".cache", "factor_db"),
+                             data_fp = .rf_dt_fp, n_rows = nrow(DT), start = .START)
+    .cpath <- file.path(.cdir, .ck$file)
+    .b <- NULL; .why <- "uncacheable"
+    if (isTRUE(.ck$cacheable)) {
+      .hit <- rf_base_cache_load(.cpath, .ck$key)
+      .b <- .hit$obj; .why <- .hit$why
+      if (!is.null(.b)) cat(sprintf("[rf_cell_engine] 기저 캐시 적중 — %s (%d행)\n",
                                     basename(.cpath), nrow(.b)))
     }
     if (is.null(.b)) {
-      cat("[rf_cell_engine] 기저 캐시 미스 — 엔진 실행:", basename(.be), "
-")
+      cat(sprintf("[rf_cell_engine] 기저 캐시 미스 — 엔진 실행: %s [%s · %s]\n",
+                  basename(.be), .why, basename(.cpath)))
       .env <- new.env(parent = globalenv())
       .env$RAWDATA <- DT; .env$BM_DT <- if (exists("BM_DT")) BM_DT else NULL
       sys.source(.be, envir = .env)
@@ -103,11 +111,15 @@ if (identical(.base$kind, "mom_12_1")) {
             } else stop("[rf_cell_engine] 기저 엔진이 FACTORS/PORTFOLIO 를 만들지 않았다: ", .be)
       .b <- .b[, .(Date, Ticker, .base_sig)]
       if (!nrow(.b)) stop("[rf_cell_engine] 기저 엔진 산출이 비었다: ", .be)
-      tryCatch(saveRDS(.b, .cpath), error = function(e)
-        cat("[rf_cell_engine] 캐시 저장 실패(비치명):", conditionMessage(e), "
-"))
+      .sv <- tryCatch(rf_base_cache_save(.b, .cpath, .ck),
+                      error = function(e) paste("error:", conditionMessage(e)))
+      if (startsWith(.sv, "error:"))
+        cat("[rf_cell_engine] 캐시 저장 실패(비치명):", .sv, "\n")
+      else if (!identical(.sv, "saved"))
+        cat("[rf_cell_engine] 기저 캐시 저장 생략:", .sv, "\n")
       rm(.env); gc(verbose = FALSE)
     }
+    data.table::setattr(.b, "rf_base_cache_key", NULL)
     .b
   }
   if (identical(.base$kind, "engine_blend")) {

@@ -901,8 +901,10 @@ dr_list <- function(status = "open", root = .rf_root()) {
 # ★왜: factor_db_202608(2026-08-31 00:27 빌드 — 08-28 데이터를 08-31 라벨로 · class_R 22종 결손)과
 #   factor_db_202609(Size 결측 → class_R 27종)가 교정 재빌드(09-23 18:53 / 18:56) 전까지 측정에 소비됐다.
 #   재측정은 P0-05 rebase 가 흡수한다. 여기서는 "어느 칸이 어느 빈티지를 먹었나" 를 **덧붙이기만** 한다.
-#   목록·판정 근거 = 06_Registry/vintage_cascade_20260923.json (판정: consumed / possible / not_consumed —
-#   표식 대상은 consumed·possible 뿐이다).
+#   목록·판정 근거 = 06_Registry/vintage_cascade_20260923.json (판정: consumed / consumed_absence / possible / not_consumed —
+#   표식 대상은 consumed·consumed_absence·possible 뿐이다).
+#   consumed_absence(v2 · 2026-09-23 적대 검증 수리) = 결손 팩터가 rf_cell_engine.R:237-243 inner merge 로 08-31 신호일을
+#   통째로 버려 9월 리밸을 잃은 채 8월 보유로 9월 수익을 실현한 소비. flag 는 같은 빈티지 flag, 사유는 evidence 의 reason=.
 # 계약:
 #   · append-only — attempt 의 `vintage_flags`(entry 의 기저 측정이면 `base_vintage_flags`)에 원소를 더할 뿐이다.
 #     essence·grade·artifacts·lessons 를 포함한 기존 필드는 한 비트도 바꾸지 않는다. 쓰기 직전
@@ -916,7 +918,7 @@ dr_list <- function(status = "open", root = .rf_root()) {
 #   · 원자 쓰기 = .rf_write(tmp+rename · 재파싱 검증) — 이 파일의 다른 원장 writer 와 같은 경로.
 #   · 배치가 한 단위 — 검증 실패가 하나라도 있으면 아무것도 쓰지 않는다.
 #   · 검사 = 08_Tests/reinforcement/test_rf_mark_vintage.R (합성 픽스처 · 운영 원장 무접촉 · 돌연변이 red).
-RF_VINTAGE_VERDICTS  <- c("consumed", "possible")
+RF_VINTAGE_VERDICTS  <- c("consumed", "consumed_absence", "possible")
 RF_VINTAGE_MARK_KEYS <- c("base_id", "attempt_key", "flag", "verdict", "evidence", "source")
 RF_VINTAGE_POLICY    <- "표식만 — 재측정 금지(P0-05 rebase 흡수) · 도훈 2026-09-23"
 
@@ -956,7 +958,7 @@ RF_VINTAGE_POLICY    <- "표식만 — 재측정 금지(P0-05 rebase 흡수) · 
 }
 
 #' 빈티지 표식 배치 writer
-#' @param marks list(list(base_id, attempt_key = n | "base", flag, verdict = consumed|possible, evidence, source?))
+#' @param marks list(list(base_id, attempt_key = n | "base", flag, verdict = consumed|consumed_absence|possible, evidence, source?))
 #' @param claim 잠금 claim 경로. NULL = QVEST_RF_CLAIM 또는 <root>/.cache/reinforce_auto.claim (러너와 같은 해석)
 #' @param backup_to / snapshot_after_to 선택 — 잠금 안에서 쓰기 전 원본 바이트 / 쓴 직후 바이트를 이 경로에 복사
 #'   (운영 호출의 전후 diff 증명용 — 잠금 밖에서 뜬 사본은 그 사이 러너 쓰기가 섞인다).

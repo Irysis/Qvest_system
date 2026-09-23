@@ -11,8 +11,10 @@
 #   P  양성 대조 — 표식이 붙고, 보호 투영·essence·grade 가 **검사 자체 구현**으로 불변, 텍스트는 last_updated 만 바뀜
 #   R  위반 주입 — 허용 밖 키(essence·grade) · 판정/flag/근거 불량 · 부재 entry·n · 미측정 · 배치 원자성
 #   L  잠금·CAS — 살아 있는 owner 가 쥔 claim 이면 거부 · 적재 후 외부 쓰기면 거부
+#   B  전후 사본·사후 검증(v2) — backup_to/snapshot_after_to 바이트 · 백업 부분 쓰기 주입 거부 · 쓰기 경로 결함 주입 → 복원
 #   M  돌연변이(자식 Rscript · RF_LEDGER_SRC=사본) — 잠금 제거 · 보호 가드 제거+essence 쓰기 · 멱등 제거 ·
-#      키 허용목록 제거 · CAS 제거 → 이 검사가 red 여야 한다. 원본 사본(대조)은 green 이어야 한다.
+#      키 허용목록 제거 · CAS 제거 · (v2) 사후 검증 제거 · 복원 제거 · backup_to 블록 제거 · 백업 검증 제거 ·
+#      consumed_absence 허용 제거 · 판정 허용목록 검사 제거 → 이 검사가 red 여야 한다. 원본 사본(대조)은 green 이어야 한다.
 #      + 가드 유지 상태의 essence 쓰기 주입 → writer 가 스스로 거부(보호 투영 불일치)해야 한다.
 # env: RF_LEDGER_SRC(검사 대상 소스 · 기본 운영 파일) · RF_VINTAGE_CORE_ONLY=1(자식 모드: P/R/L 만)
 #==============================================================================
@@ -112,7 +114,10 @@ if (identical(a2$vintage_flags[[1]]$verdict, "possible") && length(b0$base_vinta
 if (t_same(txt0, p)) ok("P4 보호 투영 불변(검사 자체 구현 — 표식·last_updated 제외 원장 전체 identical)") else ng("P4 보호 투영이 바뀌었다")
 if (ess_grade_same(txt0, p)) ok("P5 전 attempt essence·grade 비트 동일") else ng("P5 essence/grade 변경")
 rm_lines <- setdiff(norm_lines(txt0), norm_lines(paste(readLines(p, warn = FALSE, encoding = "UTF-8"), collapse = "\n")))
-if (length(rm_lines) == 1L && grepl('"last_updated"', rm_lines)) ok("P6 텍스트: 사라진 원래 줄 = last_updated 1줄뿐(append-only)") else
+# ★last_updated 는 초 단위(reinforce_ledger.R .rf_now) — 픽스처 생성과 표식이 같은 초에 끝나면 그 줄도
+#   안 바뀐다(적대 검증 실측: 8회 중 2회 red). 단정의 본체는 'last_updated 말고는 아무 원래 줄도 안 사라짐'.
+if (length(rm_lines) == 0L || (length(rm_lines) == 1L && grepl('"last_updated"', rm_lines)))
+  ok("P6 텍스트: 사라진 원래 줄 = 없음 또는 last_updated 1줄뿐(append-only)") else
   ng("P6 원래 줄이 사라졌다", paste(head(rm_lines, 3), collapse = " | "))
 m1 <- md5(p)
 res2 <- NULL; e <- err_of(res2 <- W(R, marks))
@@ -124,6 +129,13 @@ if (is.na(e) && identical(res3$n_new, 1L) && identical(res3$n_already, 1L) && le
   ok("P8 배치 안 중복 1회만 · 다른 flag 는 누적(v1+v2)") else ng("P8 배치 안 중복", e)
 cl <- file.path(R, ".cache", "reinforce_auto.claim")
 if (!dir.exists(cl) || file.exists(file.path(cl, "released.json"))) ok("P9 성공 후 claim 해제(디렉터리 부재 또는 해제 표식)") else ng("P9 claim 잔존")
+# P10 consumed_absence(v2 · 결손 팩터가 08-31 신호일을 버린 소비) — 표식 대상이다. not_consumed 거부는 R3 가 잰다
+R <- mk_fixture("ca"); p <- L1P(R)
+res <- NULL; e <- err_of(res <- W(R, list(mk("FIX_A", 1L, "zzfix_ca", verdict = "consumed_absence",
+                                              evidence = "reason=결손 팩터 X → 08-31 신호일 탈락 → 9월 리밸 상실"))))
+fca <- rf_load(1L, R)$entries[[1]]$attempts[[1]]$vintage_flags[[1]] %||% list()
+if (is.na(e) && identical(res$n_new, 1L) && identical(fca$verdict, "consumed_absence") && grepl("^reason=", fca$evidence %||% ""))
+  ok("P10 verdict consumed_absence 표식 수용 · reason= 근거 보존") else ng("P10 consumed_absence", if (is.na(e)) toJSON(fca, auto_unbox = TRUE) else e)
 
 cat("\n=== R 위반 주입 ===\n")
 R <- mk_fixture("r"); p <- L1P(R); m0 <- md5(p)
@@ -168,6 +180,40 @@ mh <- md5(p)
 if (!is.na(e) && grepl("동시 쓰기", e) && !identical(mh, m1) && !any(grepl("zzfix_cas", readLines(p, warn = FALSE))))
   ok("L3 CAS — 적재 후 외부 쓰기 → 덮어쓰지 않고 거부(외부 판 보존)") else ng("L3 CAS 미검출", e)
 
+# ── B 전후 사본 · 사후 검증 (2026-09-23 v2 — 적대 검증이 green 으로 통과시킨 돌연변이 2종을 잡는다:
+#    ①사후 검증·원본 복원 제거 ②backup_to 쓰기·검증 제거). 주입은 전역 재정의(writer 는 전역에서 이름을 찾는다)이고
+#    각 단정 직후 되돌린다.
+cat("\n=== B 전후 사본 · 사후 검증 ===\n")
+R <- mk_fixture("b"); p <- L1P(R); m0 <- md5(p)
+bk <- file.path(R, "bk_before.json"); sa <- file.path(R, "bk_after.json")
+res <- NULL; e <- err_of(res <- W(R, list(mk("FIX_A", 1L, "zzfix_b")), backup_to = bk, snapshot_after_to = sa))
+if (is.na(e) && file.exists(bk) && identical(md5(bk), m0) && identical(res$md5_before, m0) && !identical(md5(p), m0) &&
+    file.exists(sa) && identical(md5(sa), md5(p)) && identical(res$md5_after, md5(p)))
+  ok("B1 backup_to = 쓰기 전 원본 바이트(md5 일치) · snapshot_after_to = 쓴 직후 바이트") else
+  ng("B1 전후 사본", if (is.na(e)) sprintf("bk=%s(%s) sa=%s", file.exists(bk), if (file.exists(bk)) identical(md5(bk), m0) else NA, file.exists(sa)) else e)
+R <- mk_fixture("b2"); p <- L1P(R); m0 <- md5(p); bk2 <- file.path(R, "bk_trunc.json")
+.bk_target <- normalizePath(bk2, winslash = "/", mustWork = FALSE)
+writeBin <- function(object, con, ...) {            # 백업 경로에만 부분 쓰기(끝 7바이트 유실) 주입
+  if (is.character(con) && identical(normalizePath(con, winslash = "/", mustWork = FALSE), .bk_target))
+    object <- object[seq_len(max(0L, length(object) - 7L))]
+  base::writeBin(object, con, ...)
+}
+e <- tryCatch(err_of(W(R, list(mk("FIX_A", 1L, "zzfix_b2")), backup_to = bk2)),
+              finally = if (exists("writeBin", envir = globalenv(), inherits = FALSE)) rm("writeBin", envir = globalenv()))
+if (!is.na(e) && grepl("백업 검증 실패", e) && identical(md5(p), m0) && !exists("writeBin", envir = globalenv(), inherits = FALSE))
+  ok("B2 백업 부분 쓰기 주입 → 백업 검증이 거부 · 원장 불변") else ng("B2 백업 검증 미작동", e)
+R <- mk_fixture("b3"); p <- L1P(R); m0 <- md5(p)
+.rf_write_orig <- .rf_write
+.rf_write <- function(obj, layer, root = .rf_root()) {   # 쓰기 경로 결함 주입 — 보호 필드(essence)를 바꿔 쓴다
+  obj$entries[[1]]$attempts[[1]]$essence$port_t <- 0
+  .rf_write_orig(obj, layer, root)
+}
+e <- tryCatch(err_of(W(R, list(mk("FIX_A", 1L, "zzfix_b3")))), finally = assign(".rf_write", .rf_write_orig, envir = globalenv()))
+left <- file.exists(paste0(p, ".vintage_restore.tmp"))
+if (!is.na(e) && grepl("사후 검증 실패", e) && identical(md5(p), m0) && !left && identical(.rf_write, .rf_write_orig))
+  ok("B3 쓰기 경로 결함 주입 → 사후 검증이 잡고 원본 바이트 복원(md5 동일) · 복원 임시파일 잔존 0") else
+  ng("B3 사후 검증/복원", sprintf("err=%s md5_same=%s leftover=%s", e, identical(md5(p), m0), left))
+
 if (CORE) finish()
 
 cat("\n=== M 돌연변이 (자식 Rscript · 사본 소스) ===\n")
@@ -207,7 +253,21 @@ muts <- list(
                 c("if (is.null(back) || !.rf_vintage_same(back, orig))", "if (FALSE)", 1L))),
   list(tag = "noidem", d = "멱등(기존 flag 건너뛰기) 제거", s = list(c("n_already <- n_already + 1L; next }", "invisible(NULL) }", 2L))),
   list(tag = "nokeys", d = "키 허용목록 제거", s = list(c("if (length(extra))", "if (FALSE)", 1L))),
-  list(tag = "nocas", d = "CAS 제거", s = list(c("if (!identical(unname(tools::md5sum(p)), md5_0))", "if (FALSE)", 1L))))
+  list(tag = "nocas", d = "CAS 제거", s = list(c("if (!identical(unname(tools::md5sum(p)), md5_0))", "if (FALSE)", 1L))),
+  # v2 — 적대 검증이 green 으로 통과시킨 2종(+ 분해 2종)과 판정 허용목록 양방향
+  list(tag = "nopost", d = "사후 검증 제거(원장 재적재 대조 무력화)",
+       s = list(c("if (is.null(back) || !.rf_vintage_same(back, orig))", "if (FALSE)", 1L))),
+  list(tag = "norestore", d = "사후 검증 실패 시 원본 복원 제거",
+       s = list(c("tmp <- paste0(p, \".vintage_restore.tmp\"); writeBin(raw0, tmp)", "invisible(NULL)", 1L),
+                c("if (!suppressWarnings(file.rename(tmp, p))) { file.copy(tmp, p, overwrite = TRUE); unlink(tmp) }", "invisible(NULL)", 1L))),
+  list(tag = "nobackup", d = "backup_to 쓰기·검증 블록 제거",
+       s = list(c("if (!is.null(backup_to)) { writeBin(raw0, backup_to)", "if (FALSE) { writeBin(raw0, backup_to)", 1L))),
+  list(tag = "nobackupverify", d = "backup_to 검증만 제거",
+       s = list(c("if (!identical(unname(tools::md5sum(backup_to)), md5_0))", "if (FALSE)", 1L))),
+  list(tag = "noabsent", d = "판정 허용목록에서 consumed_absence 제거",
+       s = list(c("c(\"consumed\", \"consumed_absence\", \"possible\")", "c(\"consumed\", \"possible\")", 1L))),
+  list(tag = "widen", d = "판정 허용목록 검사 제거(not_consumed 표식 허용)",
+       s = list(c("if (!(s1(m$verdict) %in% RF_VINTAGE_VERDICTS))", "if (FALSE)", 1L))))
 for (mu in muts) {
   L2 <- src_txt; okk <- TRUE
   for (s in mu$s) { L2 <- subst(L2, s[1], s[2], as.integer(s[3])); if (is.null(L2)) { okk <- FALSE; break } }

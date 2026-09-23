@@ -46,12 +46,63 @@
 #   ④ tmp 기록 → **백업 대비 열별 identical() 대조**(Size 외 전 열 · Size 는 계획 행 밖 불변 · 계획 행 = QW 값)
 #      + 스키마 대조   ⑤ RAWDATA 가 그 사이 바뀌었으면 중단   ⑥ rename(선삭제 없음·유한 재시도)
 #   ⑦ (선택) factor_db 재빌드 — 스냅샷 Date ≥ start 인 월만, 백업 후   ⑧ 러너 복원 + 바이트 동일 확인
+#   ★⑦ 이 실패해도(RAWDATA 는 이미 교체됨) 보고서는 status=APPLIED_FDB_FAILED 로 남고 러너는 복원된다
+#     (보고서에 RAWDATA 백업·factor_db 월별 백업·실패 메시지 · 어느 달까지 재빌드됐는지). 그 뒤 stop.
+#   ★기본 빌더(factor_db_builder.R)는 **전역 경로**(RAWDATA_CACHE · CACHE_DIR/factor_db)만 읽고 쓴다.
+#     rawdata/fdb_dir 인자가 그 경로와 다르면(=사본 리허설) 기본 빌더는 **운영 factor_db 를 운영 RAWDATA 로**
+#     재빌드하게 된다 → rebuild_fdb=TRUE 인데 경로가 다르면 **어떤 쓰기보다도 먼저 거부**한다(러너·RAWDATA 무접촉).
+#     사본 리허설은 rebuild_fdb=FALSE 로 돌린다. 빌더 안에서도 source 직후 전역 경로를 다시 대조한다(이중).
+#
+# ★보고서 위치: out_dir 기본 = <rawdata 폴더>/rawdata_size_qw/ — 운영 기본값이면 **.cache/rawdata_size_qw/** 다.
+#   dry-run·거부(REFUSED)·중단(ABORTED)·적용(APPLIED) 전부 여기에 JSON 을 쓴다(RAWDATA·러너는 무접촉이어도).
+#   .cache 에 남기기 싫으면 out_dir 를 스크래치 경로로 준다. 사본 리허설(rawdata=사본)이면 사본 옆에 쓴다.
 #
 # 사용:
 #   source("02_Infrastructure/config.R"); source("02_Infrastructure/data/rawdata_size_from_quantiwise.R")
 #   r <- rawdata_size_from_quantiwise()                                   # dry-run (구간 = W-02 보수 보고서)
 #   r <- rawdata_size_from_quantiwise(dry_run = FALSE, rebuild_fdb = TRUE)
 # 검사: 08_Tests/data/test_rawdata_size_from_quantiwise.R
+#
+#==============================================================================
+# 도훈 실행 절차 (퀀티 단말에서 OHLCVS_update.xlsx 갱신 → 이 도구로 Size 교체) — 2026-09-23 개정
+#------------------------------------------------------------------------------
+# 0) 시간대: **낮 시간(09:00~22:00 KST) 권장.** Qvest_DailyRefresh 가 매일 00:03 에 돌고 그 [0b] 가
+#    Update_File 을 적재한다 — 갱신·저장·적재가 겹치면 반쯤 저장된 xlsx 를 읽는다. 23:00 이후엔 시작하지 않는다.
+#    같은 퀀티 계정의 다른 사용자가 로그인하면 세션이 끊긴다(qw_refresh.ps1 이 재로그인·재시도).
+# 1) 갱신 **전** 백업(mtime 보존 — Copy-Item 은 LastWriteTime 을 보존한다):
+#      $u = "C:\Users\99922\OneDrive\Quant_Module_Moltbot\03_Universe\Update_File\OHLCVS_update.xlsx"
+#      $b = "$u.bak_$(Get-Date -Format yyyyMMdd_HHmmss)"; Copy-Item $u $b
+#      (Get-Item $u).LastWriteTime; (Get-Item $b).LastWriteTime        # 두 값이 같아야 한다
+# 2) 갱신: powershell -ExecutionPolicy Bypass -File 02_Infrastructure\ops\qw_refresh.ps1 -Only OHLCVS
+#    ⚠ qw_refresh.ps1 은 목표일 도달 판정 **전에** 저장하고(Save) 종료 시 또 저장한다(Close($true)) —
+#      "OK" 줄 없이 끝나도 파일 mtime 은 바뀐다. **스탬프(B1 'Last Update')·mtime 은 성공 증거가 아니다.**
+# 3) 성공 판정 = **값 시트 6장(Open·High·Low·Close·Vol·Size) A열 마지막 날짜(지평선)가 전부 같고,
+#    직전 적재 지평선(RAWDATA source=quantiwise* 의 max Date, 현재 2026-08-28)보다 뒤**일 것.
+#    DATA_Key 시트는 날짜축이 없다(종목 목록) — 판정에서 뺀다. 확인(R, 읽기 전용):
+#      source("02_Infrastructure/config.R"); source("02_Infrastructure/data/incremental_update_file.R")
+#      g <- ohlcvs_update_gate(ohlcvs_sheet_horizons(file.path(UPDATE_DIR, "OHLCVS_update.xlsx")),
+#                              .ohlcvs_prior_horizon(file.path(CACHE_DIR, "rawdata.parquet")))
+#      .ohlcvs_gate_print(g); g$reasons                               # 통과 = reasons 비어 있음
+#    이 도구의 dry-run 이 Size 시트를 따로 재판정한다(horizon_short 등 10종).
+# 4) 실패(지평선 불일치·미전진·중단) 시: 1) 의 백업으로 되돌려도 되고 안 되돌려도 된다 —
+#    **daily_refresh [0b] 적재 관문(incremental_update_file.R::ohlcvs_update_gate)이 그런 파일을 거부한다**
+#    (RAWDATA 무접촉 · '처리 완료' 미기록 · DR_FAILED 에 r2(rc=1) · 로그 표지 [GATE_REFUSED]).
+#    되돌리면 거부 경보가 안 뜨고, 안 되돌리면 정상 갱신될 때까지 매일 거부 경보가 뜬다.
+#    되돌리기: Copy-Item $b $u -Force  (mtime 도 백업 시점으로 돌아간다 → [0b] 가 변경으로 안 본다)
+# 5) 중단(Ctrl+C·창 닫힘) 시 정리 — 감시 잡(QWDlg)과 엑셀 COM 이 남을 수 있다:
+#      # 감시 잡 = qw_refresh.ps1 의 Stop-DialogWatcher 와 같은 두 줄. Get-Job 은 **그 스크립트를 돌린 세션**의
+#      #   잡만 본다 — 같은 창에서 실행해야 한다(-File 로 띄운 창을 닫았으면 그 세션과 잡도 함께 끝난다).
+#      Get-Job -Name QWDlg -EA SilentlyContinue | Stop-Job -EA SilentlyContinue
+#      Get-Job -Name QWDlg -EA SilentlyContinue | Remove-Job -Force -EA SilentlyContinue
+#      Get-Process EXCEL -EA SilentlyContinue | Select Id,StartTime,MainWindowTitle  # 남은 엑셀 확인
+#      (다른 엑셀 작업이 없을 때만) Get-Process EXCEL | Stop-Process                 # 저장 안 된 통합문서 소실 주의
+#      Test-Path 'C:\Users\99922\OneDrive\Quant_Module_Moltbot\03_Universe\Update_File\~$OHLCVS_update.xlsx'
+#      #   True = 엑셀이 아직 파일을 잡고 있다(또는 비정상 종료 잔재 — 엑셀이 없으면 지워도 된다)
+#    그 뒤 3) 판정부터 다시(판정 실패면 4).
+# 6) 통과하면 이 도구: 먼저 dry-run(보고서 = .cache/rawdata_size_qw/qw_size_dryrun_*.json) →
+#    plan_counts·diff 확인 → rawdata_size_from_quantiwise(dry_run = FALSE, rebuild_fdb = TRUE).
+#    ⚠ 00:03 [0b] 가 같은 xlsx 로 incremental_ohlcvs() 를 돌려 base 이후 전 날짜·전 열을 퀀티 값으로 바꾼다
+#      (도훈 09-07 "퀀티 그대로 덮기"). 이 도구는 그 경로를 대체하지도 막지도 않는다(위 '이웃 경로').
 #==============================================================================
 suppressPackageStartupMessages({
   library(data.table)
@@ -441,9 +492,11 @@ qws_verify_file <- function(ref, cand, idx, new_vals) {
 #------------------------------------------------------------------------------
 # 7) factor_db 재빌드 — 스냅샷 Date ≥ start 인 월만(그 달 팩터가 구간 Size 를 읽는다)
 #------------------------------------------------------------------------------
-.qws_rebuild_fdb <- function(start, fdb_dir, backup_dir, builder, stamp) {
+#' @param acc  environment — 진행분을 acc$res 에 계속 적어 둔다(빌더가 도중에 죽어도 어느 달까지 됐는지 보고서에 남긴다)
+.qws_rebuild_fdb <- function(start, fdb_dir, backup_dir, builder, stamp, acc = NULL) {
   f <- list.files(fdb_dir, pattern = "^factor_db_\\d{6}\\.parquet$", full.names = TRUE)
   res <- list()
+  .note <- function() if (is.environment(acc)) acc$res <- res
   for (fp in sort(f)) {
     sd <- tryCatch(unique(as.Date(read_parquet(fp, col_select = "Date", mmap = FALSE)$Date)), error = function(e) NA)
     if (length(sd) != 1L || !is.finite(as.numeric(sd)) || sd < start) next
@@ -456,12 +509,28 @@ qws_verify_file <- function(ref, cand, idx, new_vals) {
     if (file.exists(side)) file.copy(side, file.path(bdir, basename(side)), overwrite = FALSE)
     gc(verbose = FALSE)
     t0 <- Sys.time()
+    res[[ym]] <- list(sig_date = format(sd), backup = bk, status = "building"); .note()
     builder(sd)
     sd2 <- tryCatch(unique(as.Date(read_parquet(fp, col_select = "Date", mmap = FALSE)$Date)), error = function(e) NA)
-    res[[ym]] <- list(sig_date = format(sd), backup = bk, rebuilt_label = paste(format(sd2), collapse = ","),
+    res[[ym]] <- list(sig_date = format(sd), backup = bk, status = "rebuilt", rebuilt_label = paste(format(sd2), collapse = ","),
                       label_kept = identical(sd2, sd), secs = round(as.numeric(difftime(Sys.time(), t0, units = "secs")), 1))
+    .note()
   }
   res
+}
+
+#' 경로 동일성(Windows 대소문자·구분자 무시). NA/길이 불일치 = 다름.
+.qws_same_path <- function(a, b) {
+  if (length(a) != 1L || length(b) != 1L || is.na(a) || is.na(b)) return(FALSE)
+  n <- function(p) tolower(gsub("\\\\", "/", normalizePath(p, winslash = "/", mustWork = FALSE)))
+  identical(n(a), n(b))
+}
+#' 기본 빌더(factor_db_builder.R)가 실제로 읽고 쓰는 경로 — 빌더는 인자를 받지 않고 전역만 쓴다:
+#'   RAWDATA = 전역 RAWDATA_CACHE(config.R:60 = CACHE_DIR/RAWDATA.parquet) · 출력 = CACHE_DIR/factor_db(factor_db_builder.R:67)
+.qws_default_builder_target <- function(root) {
+  cache <- if (exists("CACHE_DIR") && length(CACHE_DIR) == 1L && nzchar(CACHE_DIR)) CACHE_DIR else file.path(root, ".cache")
+  rd <- if (exists("RAWDATA_CACHE") && length(RAWDATA_CACHE) == 1L && nzchar(RAWDATA_CACHE)) RAWDATA_CACHE else file.path(cache, "RAWDATA.parquet")
+  list(rawdata = rd, fdb_dir = file.path(cache, "factor_db"))
 }
 
 #------------------------------------------------------------------------------
@@ -471,7 +540,9 @@ qws_verify_file <- function(ref, cand, idx, new_vals) {
 #' @param dry_run    TRUE(기본) = 계획·게이트·차이 분포만. RAWDATA·러너 설정 무접촉.
 #' @param on_qw_absent "na"(기본 — 복원값 제거, PIT 엄격) | "keep"
 #' @param rebuild_fdb 교체 후 factor_db 재빌드(스냅샷 Date ≥ start 인 월만) — 러너 정지 중 수행
-#' @param .inject, .hook_before_rename, .fdb_build  검사 전용 주입점(운영 호출에서 쓰지 말 것)
+#' @param out_dir    보고서 폴더. 기본 = <rawdata 폴더>/rawdata_size_qw (운영 = .cache/rawdata_size_qw — dry-run·거부도 쓴다)
+#' @param .inject, .hook_before_rename, .hook_stage, .fdb_build  검사 전용 주입점(운영 호출에서 쓰지 말 것)
+#'   .hook_stage(stage) — stage ∈ before_backup · before_load · after_rename (내부 안전장치 위반 주입용)
 rawdata_size_from_quantiwise <- function(start = NULL, end = NULL,
                                          xlsx = NULL, rawdata = NULL,
                                          dry_run = TRUE,
@@ -483,7 +554,8 @@ rawdata_size_from_quantiwise <- function(start = NULL, end = NULL,
                                          window_report = "auto",
                                          calib_min_equal = 0.999,
                                          scale_tol = NULL, max_na_rate = NULL,
-                                         .inject = NULL, .hook_before_rename = NULL, .fdb_build = NULL) {
+                                         .inject = NULL, .hook_before_rename = NULL, .fdb_build = NULL,
+                                         .hook_stage = NULL) {
   on_qw_absent <- match.arg(on_qw_absent)
   t_start <- Sys.time(); stamp <- format(t_start, "%Y%m%d_%H%M%S")
   root <- tryCatch(.qws_root(), error = function(e) NA_character_)
@@ -498,6 +570,17 @@ rawdata_size_from_quantiwise <- function(start = NULL, end = NULL,
   max_na_rate <- max_na_rate %||% .qws_max_na_rate(.need_root("max_na_rate"))
   if (identical(window_report, "auto")) window_report <- file.path(dirname(rawdata), "naver_recollect", "latest_apply_size_backfill.json")
   if (identical(pre_repair_backup, "auto")) pre_repair_backup <- .qws_latest_repair_backup(dirname(rawdata))
+  .stage <- function(s) if (is.function(.hook_stage)) .hook_stage(s)
+
+  # ── 기본 빌더 경로 대조 — 어떤 읽기·쓰기보다 먼저(사본 리허설이 운영 factor_db 를 재빌드하지 않게) ──
+  if (!isTRUE(dry_run) && isTRUE(rebuild_fdb) && !is.function(.fdb_build)) {
+    tg <- .qws_default_builder_target(root)
+    if (!.qws_same_path(rawdata, tg$rawdata) || !.qws_same_path(fdb_dir, tg$fdb_dir))
+      stop(sprintf(paste0("[qw_size] ⛔ rebuild_fdb=TRUE 인데 rawdata/fdb_dir 가 기본 빌더의 전역 경로와 다르다 ",
+                          "(rawdata %s ≠ %s · fdb_dir %s ≠ %s). 기본 빌더는 전역 경로만 쓰므로 **운영 factor_db 를 운영 RAWDATA 로** ",
+                          "재빌드하게 된다 — 사본 리허설은 rebuild_fdb=FALSE. 아무것도 쓰지 않았다"),
+                   rawdata, tg$rawdata, fdb_dir, tg$fdb_dir), call. = FALSE)
+  }
 
   # ── 구간 ──
   win_src <- "argument"
@@ -606,6 +689,7 @@ rawdata_size_from_quantiwise <- function(start = NULL, end = NULL,
     stop("[qw_size] ⛔ 킬스위치(reinforce_auto_config.json::enabled) 가 여전히 true — 과거 행 재작성 차단")
 
   # 백업
+  .stage("before_backup")
   dir.create(backup_dir, recursive = TRUE, showWarnings = FALSE)
   bk <- file.path(backup_dir, sprintf("%s.bak_size_qw_%s", basename(rawdata), stamp))
   if (!isTRUE(file.copy(rawdata, bk, overwrite = FALSE))) stop("[qw_size] ⛔ 백업 실패 — 쓰기 중단: ", bk)
@@ -614,6 +698,7 @@ rawdata_size_from_quantiwise <- function(start = NULL, end = NULL,
   cat(sprintf("[qw_size] 백업: %s\n", bk))
 
   # 전량 로드 → Size 만 교체
+  .stage("before_load")
   raw <- as.data.table(read_parquet(rawdata, mmap = FALSE))
   wi <- which(as.Date(raw$Date) >= start & as.Date(raw$Date) <= end)   # 키 문자열은 구간 안에서만 만든다(14M행 전량 금지)
   kr <- paste0(format(as.Date(raw$Date[wi])), "|", raw$Ticker[wi])
@@ -651,6 +736,7 @@ rawdata_size_from_quantiwise <- function(start = NULL, end = NULL,
     Sys.sleep(min(0.25, 0.02 * 2^(i - 1)))
   }
   if (!renamed) stop("[qw_size] ⛔ rename 실패(소비자가 RAWDATA 점유 중) — RAWDATA 미수정")
+  .stage("after_rename")
   if (!identical(.qws_md5(rawdata), md5_tmp)) {
     file.copy(bk, rawdata, overwrite = TRUE)
     stop("[qw_size] ⛔ 교체 후 md5 불일치 — 백업으로 되돌림")
@@ -664,12 +750,31 @@ rawdata_size_from_quantiwise <- function(start = NULL, end = NULL,
     builder <- .fdb_build %||% local({
       function(sig) {
         if (!exists("build_factor_db")) source(file.path(.need_root("factor_db"), "02_Infrastructure/factor_db/factor_db_builder.R"))
+        # 이중 대조 — 빌더가 **지금** 쓸 전역 경로가 인자와 같은가(사전 대조 뒤 전역이 바뀌었어도 잡는다)
+        if (!.qws_same_path(get0("RAWDATA_CACHE", ifnotfound = NA_character_), rawdata) ||
+            !.qws_same_path(get0("FACTOR_DB_DIR", ifnotfound = NA_character_), fdb_dir))
+          stop(sprintf("[qw_size] ⛔ 기본 빌더 전역 경로(RAWDATA_CACHE=%s · FACTOR_DB_DIR=%s)가 인자(%s · %s)와 다르다 — 재빌드 중단",
+                       get0("RAWDATA_CACHE", ifnotfound = "?"), get0("FACTOR_DB_DIR", ifnotfound = "?"), rawdata, fdb_dir))
         .load_base_data(force = TRUE)       # 세션에 옛 RAWDATA 가 실려 있으면 그걸로 빌드한다 — 강제 재적재
         build_factor_db(sig, save = TRUE, force = TRUE)
         invisible(TRUE)
       }
     })
-    apply_log$fdb <- .qws_rebuild_fdb(start, fdb_dir, backup_dir, builder, stamp)
+    acc <- new.env(parent = emptyenv()); acc$res <- list()
+    fr <- tryCatch(.qws_rebuild_fdb(start, fdb_dir, backup_dir, builder, stamp, acc = acc), error = function(e) e)
+    if (inherits(fr, "error")) {
+      # RAWDATA 는 이미 교체됐다 — 보고서를 남기고 러너를 복원한 뒤 멈춘다(보고서 없는 반쯤 적용 금지)
+      apply_log$fdb <- acc$res
+      apply_log$fdb_error <- conditionMessage(fr)
+      restored <- tryCatch(qws_runner_restore(rs), error = function(e) list(restored = FALSE, reason = conditionMessage(e)))
+      apply_log$runner_restore <- restored
+      report$status <- "APPLIED_FDB_FAILED"; report$apply <- apply_log
+      .qws_write_json(report, rp)
+      cat(sprintf("[qw_size] ⛔ factor_db 재빌드 실패(RAWDATA 는 교체됨) — 러너 복원: %s · 보고서: %s\n", restored$reason %||% "?", rp))
+      stop(sprintf("[qw_size] ⛔ RAWDATA Size 는 교체됐으나 factor_db 재빌드 실패: %s — 보고서 %s · RAWDATA 백업 %s",
+                   conditionMessage(fr), rp, bk), call. = FALSE)
+    }
+    apply_log$fdb <- fr
     cat(sprintf("[qw_size] factor_db 재빌드: %s\n", if (length(apply_log$fdb)) paste(names(apply_log$fdb), collapse = ",") else "대상 없음"))
   }
 
