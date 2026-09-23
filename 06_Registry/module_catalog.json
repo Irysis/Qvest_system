@@ -38489,7 +38489,7 @@
       ],
       "registered_at": "2026-09-19T00:19:49+09:00",
       "metric_type": "backtested",
-      "fr_eligible": true,
+      "fr_eligible": false,
       "frozen": true,
       "source_contract_id": "20260919_000204_6980",
       "module_hash": "2e39333c04f9ed89249d7d1e28ad9e8a",
@@ -38512,6 +38512,23 @@
         "admission_reason": "등급 C 이나 방어형 자격 — 하락월 111개: 초과 +2.03%/월 (t 5.64 · 적중 73%) · 벤치-10% 이하 10개: 초과 +5.41%/월 · 상승월 초과 -0.64%/월",
         "artifacts_dir": "stage_artifacts/replication/20260919_000204_6980",
         "essence_grade": "C"
+      },
+      "grade_contaminated": "C",
+      "contamination": {
+        "defect": "PIT C11 — pg2_risk_overlay_v1 오버레이 입력(AE 패널·m4 패널)이 미공표 해외(FRED) 주간·월간 계열과 최신 빈티지를 결정 시점에 사용",
+        "reason": "pit_invalid:C11",
+        "flag": "pit_c11",
+        "violation": "V-02 (입력 V-03 AE · V-04 m4 · V-07 빈티지)",
+        "evidence": "pg2_risk_overlay.R:90-91,155-173 ← ae_regime_backfill.py:63-83,231-258 · ae_regime_extend.py:32-47 (AE: STLFSI4/NFCI 미공표 주간) + data_collector_fred.R:269-277,380-432 → factor_engine.R:535-536 (m4: 월말 미공표 STLFSI4·ICSA·NFCI) · assert_overlay_pit 는 날짜 라벨만 비교해 통과(방어선 아님)",
+        "ledger_cell": "L1 RP_20260917_105807_22632_combo_rulefast n=28 B5_31 (grade C)",
+        "detected_at": "2026-09-24",
+        "marked_at": "2026-09-24T04:40:48+0900",
+        "fr_eligible_before": true,
+        "note": "등급·essence·sim_result·module_hash·contract 는 무변경(원값 보존). FR 풀 편입만 해제한다. 재측정판(판정서 ⑤ 안 B)이 정본이 되기 전까지 이 등급을 판정에 인용하지 않는다.",
+        "decision_ref": "06_Registry/decision_register.json#PIT-C11-REMEDIATION",
+        "quarantine_ref": "06_Registry/pit_quarantine.json#PITQ-C11-20260924",
+        "judgment": "C:/Users/99922/AppData/Local/Temp/claude/C--Users-99922-OneDrive-Quant-Module-Moltbot/be2e88bf-6a4c-44e5-a6ff-6aae164c14ca/scratchpad/pit_c11_synth.md",
+        "revert": "fr_eligible <- contamination$fr_eligible_before · grade_contaminated·contamination 삭제 (도훈 결정 후)"
       }
     },
     "RP_20260919_022411_12752": {
@@ -39914,7 +39931,7 @@
       ],
       "registered_at": "2026-09-19T22:47:57+09:00",
       "metric_type": "backtested",
-      "fr_eligible": true,
+      "fr_eligible": false,
       "frozen": true,
       "source_contract_id": "20260919_223831_9344",
       "module_hash": "979c1e6a00397faa48882c9b1ee29fb0",
@@ -39937,6 +39954,23 @@
         "admission_reason": "essence 등급 B — 등급 floor(B) 통과",
         "artifacts_dir": "stage_artifacts/replication/20260919_223831_9344",
         "essence_grade": "B"
+      },
+      "grade_contaminated": "B",
+      "contamination": {
+        "defect": "PIT C11 — pg2_risk_overlay_v1 오버레이 입력(AE 패널·m4 패널)이 미공표 해외(FRED) 주간·월간 계열과 최신 빈티지를 결정 시점에 사용",
+        "reason": "pit_invalid:C11",
+        "flag": "pit_c11",
+        "violation": "V-02 (입력 V-03 AE · V-04 m4 · V-07 빈티지)",
+        "evidence": "pg2_risk_overlay.R:90-91,155-173 ← ae_regime_backfill.py:63-83,231-258 · ae_regime_extend.py:32-47 (AE: STLFSI4/NFCI 미공표 주간) + data_collector_fred.R:269-277,380-432 → factor_engine.R:535-536 (m4: 월말 미공표 STLFSI4·ICSA·NFCI) · assert_overlay_pit 는 날짜 라벨만 비교해 통과(방어선 아님)",
+        "ledger_cell": "L1 RP_20260917_105807_22632_combo_rulefast_promo1 n=11 B5_31 (grade B)",
+        "detected_at": "2026-09-24",
+        "marked_at": "2026-09-24T04:40:48+0900",
+        "fr_eligible_before": true,
+        "note": "등급·essence·sim_result·module_hash·contract 는 무변경(원값 보존). FR 풀 편입만 해제한다. 재측정판(판정서 ⑤ 안 B)이 정본이 되기 전까지 이 등급을 판정에 인용하지 않는다.",
+        "decision_ref": "06_Registry/decision_register.json#PIT-C11-REMEDIATION",
+        "quarantine_ref": "06_Registry/pit_quarantine.json#PITQ-C11-20260924",
+        "judgment": "C:/Users/99922/AppData/Local/Temp/claude/C--Users-99922-OneDrive-Quant-Module-Moltbot/be2e88bf-6a4c-44e5-a6ff-6aae164c14ca/scratchpad/pit_c11_synth.md",
+        "revert": "fr_eligible <- contamination$fr_eligible_before · grade_contaminated·contamination 삭제 (도훈 결정 후)"
       }
     },
     "RP_20260919_225155_25308": {
@@ -42314,7 +42348,7 @@
       ],
       "registered_at": "2026-09-21T07:57:29+09:00",
       "metric_type": "backtested",
-      "fr_eligible": true,
+      "fr_eligible": false,
       "frozen": true,
       "source_contract_id": "20260921_074130_16308",
       "module_hash": "2a073c00892127ef1df481914ba377bf",
@@ -42337,6 +42371,23 @@
         "admission_reason": "essence 등급 B — 등급 floor(B) 통과",
         "artifacts_dir": "stage_artifacts/replication/20260921_074130_16308",
         "essence_grade": "B"
+      },
+      "grade_contaminated": "B",
+      "contamination": {
+        "defect": "PIT C11 — pg2_risk_overlay_v1 오버레이 입력(AE 패널·m4 패널)이 미공표 해외(FRED) 주간·월간 계열과 최신 빈티지를 결정 시점에 사용",
+        "reason": "pit_invalid:C11",
+        "flag": "pit_c11",
+        "violation": "V-02 (입력 V-03 AE · V-04 m4 · V-07 빈티지)",
+        "evidence": "pg2_risk_overlay.R:90-91,155-173 ← ae_regime_backfill.py:63-83,231-258 · ae_regime_extend.py:32-47 (AE: STLFSI4/NFCI 미공표 주간) + data_collector_fred.R:269-277,380-432 → factor_engine.R:535-536 (m4: 월말 미공표 STLFSI4·ICSA·NFCI) · assert_overlay_pit 는 날짜 라벨만 비교해 통과(방어선 아님)",
+        "ledger_cell": "L1 RP_20260917_105807_22632_combo_rulefast_promo2 n=11 B5_31 (grade B)",
+        "detected_at": "2026-09-24",
+        "marked_at": "2026-09-24T04:40:48+0900",
+        "fr_eligible_before": true,
+        "note": "등급·essence·sim_result·module_hash·contract 는 무변경(원값 보존). FR 풀 편입만 해제한다. 재측정판(판정서 ⑤ 안 B)이 정본이 되기 전까지 이 등급을 판정에 인용하지 않는다.",
+        "decision_ref": "06_Registry/decision_register.json#PIT-C11-REMEDIATION",
+        "quarantine_ref": "06_Registry/pit_quarantine.json#PITQ-C11-20260924",
+        "judgment": "C:/Users/99922/AppData/Local/Temp/claude/C--Users-99922-OneDrive-Quant-Module-Moltbot/be2e88bf-6a4c-44e5-a6ff-6aae164c14ca/scratchpad/pit_c11_synth.md",
+        "revert": "fr_eligible <- contamination$fr_eligible_before · grade_contaminated·contamination 삭제 (도훈 결정 후)"
       }
     },
     "RP_20260921_080505_19336": {
@@ -44864,7 +44915,7 @@
       ],
       "registered_at": "2026-09-21T10:50:50+09:00",
       "metric_type": "backtested",
-      "fr_eligible": true,
+      "fr_eligible": false,
       "frozen": true,
       "source_contract_id": "20260921_104337_26560",
       "module_hash": "e5ff3bea8702ba7d3fc9fd001076686b",
@@ -44887,6 +44938,23 @@
         "admission_reason": "essence 등급 B — 등급 floor(B) 통과",
         "artifacts_dir": "stage_artifacts/replication/20260921_104337_26560",
         "essence_grade": "B"
+      },
+      "grade_contaminated": "B",
+      "contamination": {
+        "defect": "PIT C11 — pg2_risk_overlay_v1 오버레이 입력(AE 패널·m4 패널)이 미공표 해외(FRED) 주간·월간 계열과 최신 빈티지를 결정 시점에 사용",
+        "reason": "pit_invalid:C11",
+        "flag": "pit_c11",
+        "violation": "V-02 (입력 V-03 AE · V-04 m4 · V-07 빈티지)",
+        "evidence": "pg2_risk_overlay.R:90-91,155-173 ← ae_regime_backfill.py:63-83,231-258 · ae_regime_extend.py:32-47 (AE: STLFSI4/NFCI 미공표 주간) + data_collector_fred.R:269-277,380-432 → factor_engine.R:535-536 (m4: 월말 미공표 STLFSI4·ICSA·NFCI) · assert_overlay_pit 는 날짜 라벨만 비교해 통과(방어선 아님)",
+        "ledger_cell": "L1 RP_20260917_105807_22632_combo_rulefast_promo3 n=11 B5_31 (grade B)",
+        "detected_at": "2026-09-24",
+        "marked_at": "2026-09-24T04:40:48+0900",
+        "fr_eligible_before": true,
+        "note": "등급·essence·sim_result·module_hash·contract 는 무변경(원값 보존). FR 풀 편입만 해제한다. 재측정판(판정서 ⑤ 안 B)이 정본이 되기 전까지 이 등급을 판정에 인용하지 않는다.",
+        "decision_ref": "06_Registry/decision_register.json#PIT-C11-REMEDIATION",
+        "quarantine_ref": "06_Registry/pit_quarantine.json#PITQ-C11-20260924",
+        "judgment": "C:/Users/99922/AppData/Local/Temp/claude/C--Users-99922-OneDrive-Quant-Module-Moltbot/be2e88bf-6a4c-44e5-a6ff-6aae164c14ca/scratchpad/pit_c11_synth.md",
+        "revert": "fr_eligible <- contamination$fr_eligible_before · grade_contaminated·contamination 삭제 (도훈 결정 후)"
       }
     },
     "RP_20260921_105410_11972": {
@@ -49214,7 +49282,7 @@
       ],
       "registered_at": "2026-09-21T15:04:24+09:00",
       "metric_type": "backtested",
-      "fr_eligible": true,
+      "fr_eligible": false,
       "frozen": true,
       "source_contract_id": "20260921_145714_13072",
       "module_hash": "41b15b2f12fe0d2f162862cd466473b0",
@@ -49237,6 +49305,23 @@
         "admission_reason": "essence 등급 B — 등급 floor(B) 통과",
         "artifacts_dir": "stage_artifacts/replication/20260921_145714_13072",
         "essence_grade": "B"
+      },
+      "grade_contaminated": "B",
+      "contamination": {
+        "defect": "PIT C11 — pg2_risk_overlay_v1 오버레이 입력(AE 패널·m4 패널)이 미공표 해외(FRED) 주간·월간 계열과 최신 빈티지를 결정 시점에 사용",
+        "reason": "pit_invalid:C11",
+        "flag": "pit_c11",
+        "violation": "V-02 (입력 V-03 AE · V-04 m4 · V-07 빈티지)",
+        "evidence": "pg2_risk_overlay.R:90-91,155-173 ← ae_regime_backfill.py:63-83,231-258 · ae_regime_extend.py:32-47 (AE: STLFSI4/NFCI 미공표 주간) + data_collector_fred.R:269-277,380-432 → factor_engine.R:535-536 (m4: 월말 미공표 STLFSI4·ICSA·NFCI) · assert_overlay_pit 는 날짜 라벨만 비교해 통과(방어선 아님)",
+        "ledger_cell": "L1 RP_20260917_105807_22632_combo_rulefast_promo4 n=11 B5_31 (grade B)",
+        "detected_at": "2026-09-24",
+        "marked_at": "2026-09-24T04:40:48+0900",
+        "fr_eligible_before": true,
+        "note": "등급·essence·sim_result·module_hash·contract 는 무변경(원값 보존). FR 풀 편입만 해제한다. 재측정판(판정서 ⑤ 안 B)이 정본이 되기 전까지 이 등급을 판정에 인용하지 않는다.",
+        "decision_ref": "06_Registry/decision_register.json#PIT-C11-REMEDIATION",
+        "quarantine_ref": "06_Registry/pit_quarantine.json#PITQ-C11-20260924",
+        "judgment": "C:/Users/99922/AppData/Local/Temp/claude/C--Users-99922-OneDrive-Quant-Module-Moltbot/be2e88bf-6a4c-44e5-a6ff-6aae164c14ca/scratchpad/pit_c11_synth.md",
+        "revert": "fr_eligible <- contamination$fr_eligible_before · grade_contaminated·contamination 삭제 (도훈 결정 후)"
       }
     },
     "RP_20260921_152534_8792": {
@@ -51164,7 +51249,7 @@
       ],
       "registered_at": "2026-09-21T19:22:54+09:00",
       "metric_type": "backtested",
-      "fr_eligible": true,
+      "fr_eligible": false,
       "frozen": true,
       "source_contract_id": "20260921_191620_3508",
       "module_hash": "11ba5a30867f540dfa11e71522341493",
@@ -51187,6 +51272,23 @@
         "admission_reason": "등급 C 이나 방어형 자격 — 하락월 110개: 초과 +1.66%/월 (t 4.37 · 적중 64%) · 벤치-10% 이하 10개: 초과 +5.76%/월 · 상승월 초과 -0.70%/월",
         "artifacts_dir": "stage_artifacts/replication/20260921_191620_3508",
         "essence_grade": "C"
+      },
+      "grade_contaminated": "C",
+      "contamination": {
+        "defect": "PIT C11 — pg2_risk_overlay_v1 오버레이 입력(AE 패널·m4 패널)이 미공표 해외(FRED) 주간·월간 계열과 최신 빈티지를 결정 시점에 사용",
+        "reason": "pit_invalid:C11",
+        "flag": "pit_c11",
+        "violation": "V-02 (입력 V-03 AE · V-04 m4 · V-07 빈티지)",
+        "evidence": "pg2_risk_overlay.R:90-91,155-173 ← ae_regime_backfill.py:63-83,231-258 · ae_regime_extend.py:32-47 (AE: STLFSI4/NFCI 미공표 주간) + data_collector_fred.R:269-277,380-432 → factor_engine.R:535-536 (m4: 월말 미공표 STLFSI4·ICSA·NFCI) · assert_overlay_pit 는 날짜 라벨만 비교해 통과(방어선 아님)",
+        "ledger_cell": "L1 RP_20260831_204546_skipped_base n=31 B5_31 (grade C)",
+        "detected_at": "2026-09-24",
+        "marked_at": "2026-09-24T04:40:48+0900",
+        "fr_eligible_before": true,
+        "note": "등급·essence·sim_result·module_hash·contract 는 무변경(원값 보존). FR 풀 편입만 해제한다. 재측정판(판정서 ⑤ 안 B)이 정본이 되기 전까지 이 등급을 판정에 인용하지 않는다.",
+        "decision_ref": "06_Registry/decision_register.json#PIT-C11-REMEDIATION",
+        "quarantine_ref": "06_Registry/pit_quarantine.json#PITQ-C11-20260924",
+        "judgment": "C:/Users/99922/AppData/Local/Temp/claude/C--Users-99922-OneDrive-Quant-Module-Moltbot/be2e88bf-6a4c-44e5-a6ff-6aae164c14ca/scratchpad/pit_c11_synth.md",
+        "revert": "fr_eligible <- contamination$fr_eligible_before · grade_contaminated·contamination 삭제 (도훈 결정 후)"
       }
     },
     "RP_20260921_192549_12716": {
@@ -52589,7 +52691,7 @@
       ],
       "registered_at": "2026-09-21T21:37:51+09:00",
       "metric_type": "backtested",
-      "fr_eligible": true,
+      "fr_eligible": false,
       "frozen": true,
       "source_contract_id": "20260921_213028_14732",
       "module_hash": "e0e42156bd025045c0da7c81a5da1bae",
@@ -52612,6 +52714,23 @@
         "admission_reason": "등급 C 이나 방어형 자격 — 하락월 110개: 초과 +1.77%/월 (t 5.06 · 적중 71%) · 벤치-10% 이하 10개: 초과 +5.93%/월 · 상승월 초과 -0.80%/월",
         "artifacts_dir": "stage_artifacts/replication/20260921_213028_14732",
         "essence_grade": "C"
+      },
+      "grade_contaminated": "C",
+      "contamination": {
+        "defect": "PIT C11 — pg2_risk_overlay_v1 오버레이 입력(AE 패널·m4 패널)이 미공표 해외(FRED) 주간·월간 계열과 최신 빈티지를 결정 시점에 사용",
+        "reason": "pit_invalid:C11",
+        "flag": "pit_c11",
+        "violation": "V-02 (입력 V-03 AE · V-04 m4 · V-07 빈티지)",
+        "evidence": "pg2_risk_overlay.R:90-91,155-173 ← ae_regime_backfill.py:63-83,231-258 · ae_regime_extend.py:32-47 (AE: STLFSI4/NFCI 미공표 주간) + data_collector_fred.R:269-277,380-432 → factor_engine.R:535-536 (m4: 월말 미공표 STLFSI4·ICSA·NFCI) · assert_overlay_pit 는 날짜 라벨만 비교해 통과(방어선 아님)",
+        "ledger_cell": "L1 RP_20260904_102326_skipped_base n=16 B5_31 (grade C)",
+        "detected_at": "2026-09-24",
+        "marked_at": "2026-09-24T04:40:48+0900",
+        "fr_eligible_before": true,
+        "note": "등급·essence·sim_result·module_hash·contract 는 무변경(원값 보존). FR 풀 편입만 해제한다. 재측정판(판정서 ⑤ 안 B)이 정본이 되기 전까지 이 등급을 판정에 인용하지 않는다.",
+        "decision_ref": "06_Registry/decision_register.json#PIT-C11-REMEDIATION",
+        "quarantine_ref": "06_Registry/pit_quarantine.json#PITQ-C11-20260924",
+        "judgment": "C:/Users/99922/AppData/Local/Temp/claude/C--Users-99922-OneDrive-Quant-Module-Moltbot/be2e88bf-6a4c-44e5-a6ff-6aae164c14ca/scratchpad/pit_c11_synth.md",
+        "revert": "fr_eligible <- contamination$fr_eligible_before · grade_contaminated·contamination 삭제 (도훈 결정 후)"
       }
     },
     "RP_20260921_214205_6828": {
@@ -54014,7 +54133,7 @@
       ],
       "registered_at": "2026-09-21T23:22:42+09:00",
       "metric_type": "backtested",
-      "fr_eligible": true,
+      "fr_eligible": false,
       "frozen": true,
       "source_contract_id": "20260921_231732_21092",
       "module_hash": "bc1fd091412235f576f33438f9a56c8e",
@@ -54037,6 +54156,23 @@
         "admission_reason": "등급 C 이나 방어형 자격 — 하락월 86개: 초과 +2.69%/월 (t 5.22 · 적중 65%) · 벤치-10% 이하 7개: 초과 +7.37%/월 · 상승월 초과 -1.68%/월",
         "artifacts_dir": "stage_artifacts/replication/20260921_231732_21092",
         "essence_grade": "C"
+      },
+      "grade_contaminated": "C",
+      "contamination": {
+        "defect": "PIT C11 — pg2_risk_overlay_v1 오버레이 입력(AE 패널·m4 패널)이 미공표 해외(FRED) 주간·월간 계열과 최신 빈티지를 결정 시점에 사용",
+        "reason": "pit_invalid:C11",
+        "flag": "pit_c11",
+        "violation": "V-02 (입력 V-03 AE · V-04 m4 · V-07 빈티지)",
+        "evidence": "pg2_risk_overlay.R:90-91,155-173 ← ae_regime_backfill.py:63-83,231-258 · ae_regime_extend.py:32-47 (AE: STLFSI4/NFCI 미공표 주간) + data_collector_fred.R:269-277,380-432 → factor_engine.R:535-536 (m4: 월말 미공표 STLFSI4·ICSA·NFCI) · assert_overlay_pit 는 날짜 라벨만 비교해 통과(방어선 아님)",
+        "ledger_cell": "L1 RP_20260904_102326_skipped_base n=41 B4_22 (grade C)",
+        "detected_at": "2026-09-24",
+        "marked_at": "2026-09-24T04:40:48+0900",
+        "fr_eligible_before": true,
+        "note": "등급·essence·sim_result·module_hash·contract 는 무변경(원값 보존). FR 풀 편입만 해제한다. 재측정판(판정서 ⑤ 안 B)이 정본이 되기 전까지 이 등급을 판정에 인용하지 않는다.",
+        "decision_ref": "06_Registry/decision_register.json#PIT-C11-REMEDIATION",
+        "quarantine_ref": "06_Registry/pit_quarantine.json#PITQ-C11-20260924",
+        "judgment": "C:/Users/99922/AppData/Local/Temp/claude/C--Users-99922-OneDrive-Quant-Module-Moltbot/be2e88bf-6a4c-44e5-a6ff-6aae164c14ca/scratchpad/pit_c11_synth.md",
+        "revert": "fr_eligible <- contamination$fr_eligible_before · grade_contaminated·contamination 삭제 (도훈 결정 후)"
       }
     },
     "RP_20260921_231732_25592": {
@@ -54164,7 +54300,7 @@
       ],
       "registered_at": "2026-09-21T23:24:30+09:00",
       "metric_type": "backtested",
-      "fr_eligible": true,
+      "fr_eligible": false,
       "frozen": true,
       "source_contract_id": "20260921_231732_28852",
       "module_hash": "35e9f096bb1a3c7fae01d4be32149015",
@@ -54187,6 +54323,23 @@
         "admission_reason": "등급 C 이나 방어형 자격 — 하락월 86개: 초과 +2.56%/월 (t 5.17 · 적중 67%) · 벤치-10% 이하 7개: 초과 +7.07%/월 · 상승월 초과 -1.62%/월",
         "artifacts_dir": "stage_artifacts/replication/20260921_231732_28852",
         "essence_grade": "C"
+      },
+      "grade_contaminated": "C",
+      "contamination": {
+        "defect": "PIT C11 — pg2_risk_overlay_v1 오버레이 입력(AE 패널·m4 패널)이 미공표 해외(FRED) 주간·월간 계열과 최신 빈티지를 결정 시점에 사용",
+        "reason": "pit_invalid:C11",
+        "flag": "pit_c11",
+        "violation": "V-02 (입력 V-03 AE · V-04 m4 · V-07 빈티지)",
+        "evidence": "pg2_risk_overlay.R:90-91,155-173 ← ae_regime_backfill.py:63-83,231-258 · ae_regime_extend.py:32-47 (AE: STLFSI4/NFCI 미공표 주간) + data_collector_fred.R:269-277,380-432 → factor_engine.R:535-536 (m4: 월말 미공표 STLFSI4·ICSA·NFCI) · assert_overlay_pit 는 날짜 라벨만 비교해 통과(방어선 아님)",
+        "ledger_cell": "L1 RP_20260904_102326_skipped_base n=42 B4_23 (grade C)",
+        "detected_at": "2026-09-24",
+        "marked_at": "2026-09-24T04:40:48+0900",
+        "fr_eligible_before": true,
+        "note": "등급·essence·sim_result·module_hash·contract 는 무변경(원값 보존). FR 풀 편입만 해제한다. 재측정판(판정서 ⑤ 안 B)이 정본이 되기 전까지 이 등급을 판정에 인용하지 않는다.",
+        "decision_ref": "06_Registry/decision_register.json#PIT-C11-REMEDIATION",
+        "quarantine_ref": "06_Registry/pit_quarantine.json#PITQ-C11-20260924",
+        "judgment": "C:/Users/99922/AppData/Local/Temp/claude/C--Users-99922-OneDrive-Quant-Module-Moltbot/be2e88bf-6a4c-44e5-a6ff-6aae164c14ca/scratchpad/pit_c11_synth.md",
+        "revert": "fr_eligible <- contamination$fr_eligible_before · grade_contaminated·contamination 삭제 (도훈 결정 후)"
       }
     },
     "RP_20260921_231732_28268": {
@@ -54239,7 +54392,7 @@
       ],
       "registered_at": "2026-09-21T23:24:52+09:00",
       "metric_type": "backtested",
-      "fr_eligible": true,
+      "fr_eligible": false,
       "frozen": true,
       "source_contract_id": "20260921_231732_28268",
       "module_hash": "265664fc3c345909f82f6f7612e50385",
@@ -54262,6 +54415,23 @@
         "admission_reason": "등급 C 이나 방어형 자격 — 하락월 86개: 초과 +2.54%/월 (t 5.11 · 적중 70%) · 벤치-10% 이하 7개: 초과 +6.33%/월 · 상승월 초과 -1.25%/월",
         "artifacts_dir": "stage_artifacts/replication/20260921_231732_28268",
         "essence_grade": "C"
+      },
+      "grade_contaminated": "C",
+      "contamination": {
+        "defect": "PIT C11 — pg2_risk_overlay_v1 오버레이 입력(AE 패널·m4 패널)이 미공표 해외(FRED) 주간·월간 계열과 최신 빈티지를 결정 시점에 사용",
+        "reason": "pit_invalid:C11",
+        "flag": "pit_c11",
+        "violation": "V-02 (입력 V-03 AE · V-04 m4 · V-07 빈티지)",
+        "evidence": "pg2_risk_overlay.R:90-91,155-173 ← ae_regime_backfill.py:63-83,231-258 · ae_regime_extend.py:32-47 (AE: STLFSI4/NFCI 미공표 주간) + data_collector_fred.R:269-277,380-432 → factor_engine.R:535-536 (m4: 월말 미공표 STLFSI4·ICSA·NFCI) · assert_overlay_pit 는 날짜 라벨만 비교해 통과(방어선 아님)",
+        "ledger_cell": "L1 RP_20260904_102326_skipped_base n=40 B4_21 (grade C)",
+        "detected_at": "2026-09-24",
+        "marked_at": "2026-09-24T04:40:48+0900",
+        "fr_eligible_before": true,
+        "note": "등급·essence·sim_result·module_hash·contract 는 무변경(원값 보존). FR 풀 편입만 해제한다. 재측정판(판정서 ⑤ 안 B)이 정본이 되기 전까지 이 등급을 판정에 인용하지 않는다.",
+        "decision_ref": "06_Registry/decision_register.json#PIT-C11-REMEDIATION",
+        "quarantine_ref": "06_Registry/pit_quarantine.json#PITQ-C11-20260924",
+        "judgment": "C:/Users/99922/AppData/Local/Temp/claude/C--Users-99922-OneDrive-Quant-Module-Moltbot/be2e88bf-6a4c-44e5-a6ff-6aae164c14ca/scratchpad/pit_c11_synth.md",
+        "revert": "fr_eligible <- contamination$fr_eligible_before · grade_contaminated·contamination 삭제 (도훈 결정 후)"
       }
     },
     "RP_20260921_231732_6348": {
@@ -54314,7 +54484,7 @@
       ],
       "registered_at": "2026-09-21T23:25:20+09:00",
       "metric_type": "backtested",
-      "fr_eligible": true,
+      "fr_eligible": false,
       "frozen": true,
       "source_contract_id": "20260921_231732_6348",
       "module_hash": "0de3daa7e83dc5de427fc81c148a9880",
@@ -54337,6 +54507,23 @@
         "admission_reason": "등급 C 이나 방어형 자격 — 하락월 110개: 초과 +1.56%/월 (t 4.62 · 적중 64%) · 벤치-10% 이하 10개: 초과 +4.97%/월 · 상승월 초과 -0.67%/월",
         "artifacts_dir": "stage_artifacts/replication/20260921_231732_6348",
         "essence_grade": "C"
+      },
+      "grade_contaminated": "C",
+      "contamination": {
+        "defect": "PIT C11 — pg2_risk_overlay_v1 오버레이 입력(AE 패널·m4 패널)이 미공표 해외(FRED) 주간·월간 계열과 최신 빈티지를 결정 시점에 사용",
+        "reason": "pit_invalid:C11",
+        "flag": "pit_c11",
+        "violation": "V-02 (입력 V-03 AE · V-04 m4 · V-07 빈티지)",
+        "evidence": "pg2_risk_overlay.R:90-91,155-173 ← ae_regime_backfill.py:63-83,231-258 · ae_regime_extend.py:32-47 (AE: STLFSI4/NFCI 미공표 주간) + data_collector_fred.R:269-277,380-432 → factor_engine.R:535-536 (m4: 월말 미공표 STLFSI4·ICSA·NFCI) · assert_overlay_pit 는 날짜 라벨만 비교해 통과(방어선 아님)",
+        "ledger_cell": "L1 RP_20260904_102326_skipped_base n=43 B4_24 (grade C)",
+        "detected_at": "2026-09-24",
+        "marked_at": "2026-09-24T04:40:48+0900",
+        "fr_eligible_before": true,
+        "note": "등급·essence·sim_result·module_hash·contract 는 무변경(원값 보존). FR 풀 편입만 해제한다. 재측정판(판정서 ⑤ 안 B)이 정본이 되기 전까지 이 등급을 판정에 인용하지 않는다.",
+        "decision_ref": "06_Registry/decision_register.json#PIT-C11-REMEDIATION",
+        "quarantine_ref": "06_Registry/pit_quarantine.json#PITQ-C11-20260924",
+        "judgment": "C:/Users/99922/AppData/Local/Temp/claude/C--Users-99922-OneDrive-Quant-Module-Moltbot/be2e88bf-6a4c-44e5-a6ff-6aae164c14ca/scratchpad/pit_c11_synth.md",
+        "revert": "fr_eligible <- contamination$fr_eligible_before · grade_contaminated·contamination 삭제 (도훈 결정 후)"
       }
     },
     "RP_20260921_234418_21980": {
@@ -55814,7 +56001,7 @@
       ],
       "registered_at": "2026-09-22T01:16:46+09:00",
       "metric_type": "backtested",
-      "fr_eligible": true,
+      "fr_eligible": false,
       "frozen": true,
       "source_contract_id": "20260922_011120_19512",
       "module_hash": "78f4b092118c4bf7566d625c8f03f1a8",
@@ -55837,6 +56024,23 @@
         "admission_reason": "등급 C 이나 방어형 자격 — 하락월 110개: 초과 +1.89%/월 (t 4.52 · 적중 66%) · 벤치-10% 이하 10개: 초과 +6.12%/월 · 상승월 초과 -0.65%/월",
         "artifacts_dir": "stage_artifacts/replication/20260922_011120_19512",
         "essence_grade": "C"
+      },
+      "grade_contaminated": "C",
+      "contamination": {
+        "defect": "PIT C11 — pg2_risk_overlay_v1 오버레이 입력(AE 패널·m4 패널)이 미공표 해외(FRED) 주간·월간 계열과 최신 빈티지를 결정 시점에 사용",
+        "reason": "pit_invalid:C11",
+        "flag": "pit_c11",
+        "violation": "V-02 (입력 V-03 AE · V-04 m4 · V-07 빈티지)",
+        "evidence": "pg2_risk_overlay.R:90-91,155-173 ← ae_regime_backfill.py:63-83,231-258 · ae_regime_extend.py:32-47 (AE: STLFSI4/NFCI 미공표 주간) + data_collector_fred.R:269-277,380-432 → factor_engine.R:535-536 (m4: 월말 미공표 STLFSI4·ICSA·NFCI) · assert_overlay_pit 는 날짜 라벨만 비교해 통과(방어선 아님)",
+        "ledger_cell": "L1 RP_20260912_212323_skipped_base n=17 B5_31 (grade C)",
+        "detected_at": "2026-09-24",
+        "marked_at": "2026-09-24T04:40:48+0900",
+        "fr_eligible_before": true,
+        "note": "등급·essence·sim_result·module_hash·contract 는 무변경(원값 보존). FR 풀 편입만 해제한다. 재측정판(판정서 ⑤ 안 B)이 정본이 되기 전까지 이 등급을 판정에 인용하지 않는다.",
+        "decision_ref": "06_Registry/decision_register.json#PIT-C11-REMEDIATION",
+        "quarantine_ref": "06_Registry/pit_quarantine.json#PITQ-C11-20260924",
+        "judgment": "C:/Users/99922/AppData/Local/Temp/claude/C--Users-99922-OneDrive-Quant-Module-Moltbot/be2e88bf-6a4c-44e5-a6ff-6aae164c14ca/scratchpad/pit_c11_synth.md",
+        "revert": "fr_eligible <- contamination$fr_eligible_before · grade_contaminated·contamination 삭제 (도훈 결정 후)"
       }
     },
     "RP_20260922_012326_26384": {
@@ -58814,7 +59018,7 @@
       ],
       "registered_at": "2026-09-22T04:07:04+09:00",
       "metric_type": "backtested",
-      "fr_eligible": true,
+      "fr_eligible": false,
       "frozen": true,
       "source_contract_id": "20260922_040113_21540",
       "module_hash": "f9090177c681832eca86b52fb7bc4c2f",
@@ -58837,6 +59041,23 @@
         "admission_reason": "등급 C 이나 방어형 자격 — 하락월 110개: 초과 +2.35%/월 (t 6.13 · 적중 75%) · 벤치-10% 이하 10개: 초과 +5.22%/월 · 상승월 초과 -0.67%/월",
         "artifacts_dir": "stage_artifacts/replication/20260922_040113_21540",
         "essence_grade": "C"
+      },
+      "grade_contaminated": "C",
+      "contamination": {
+        "defect": "PIT C11 — pg2_risk_overlay_v1 오버레이 입력(AE 패널·m4 패널)이 미공표 해외(FRED) 주간·월간 계열과 최신 빈티지를 결정 시점에 사용",
+        "reason": "pit_invalid:C11",
+        "flag": "pit_c11",
+        "violation": "V-02 (입력 V-03 AE · V-04 m4 · V-07 빈티지)",
+        "evidence": "pg2_risk_overlay.R:90-91,155-173 ← ae_regime_backfill.py:63-83,231-258 · ae_regime_extend.py:32-47 (AE: STLFSI4/NFCI 미공표 주간) + data_collector_fred.R:269-277,380-432 → factor_engine.R:535-536 (m4: 월말 미공표 STLFSI4·ICSA·NFCI) · assert_overlay_pit 는 날짜 라벨만 비교해 통과(방어선 아님)",
+        "ledger_cell": "L1 RP_20260913_084807_skipped_base n=16 B5_31 (grade C)",
+        "detected_at": "2026-09-24",
+        "marked_at": "2026-09-24T04:40:48+0900",
+        "fr_eligible_before": true,
+        "note": "등급·essence·sim_result·module_hash·contract 는 무변경(원값 보존). FR 풀 편입만 해제한다. 재측정판(판정서 ⑤ 안 B)이 정본이 되기 전까지 이 등급을 판정에 인용하지 않는다.",
+        "decision_ref": "06_Registry/decision_register.json#PIT-C11-REMEDIATION",
+        "quarantine_ref": "06_Registry/pit_quarantine.json#PITQ-C11-20260924",
+        "judgment": "C:/Users/99922/AppData/Local/Temp/claude/C--Users-99922-OneDrive-Quant-Module-Moltbot/be2e88bf-6a4c-44e5-a6ff-6aae164c14ca/scratchpad/pit_c11_synth.md",
+        "revert": "fr_eligible <- contamination$fr_eligible_before · grade_contaminated·contamination 삭제 (도훈 결정 후)"
       }
     },
     "RP_20260922_041154_13972": {
@@ -61814,7 +62035,7 @@
       ],
       "registered_at": "2026-09-23T19:13:26+09:00",
       "metric_type": "backtested",
-      "fr_eligible": true,
+      "fr_eligible": false,
       "frozen": true,
       "source_contract_id": "20260923_190423_24764",
       "module_hash": "4cb72edaaa25774714ea50eebe5a7af9",
@@ -61837,6 +62058,23 @@
         "admission_reason": "essence 등급 B — 등급 floor(B) 통과",
         "artifacts_dir": "stage_artifacts/replication/20260923_190423_24764",
         "essence_grade": "B"
+      },
+      "grade_contaminated": "B",
+      "contamination": {
+        "defect": "PIT C11 — pg2_risk_overlay_v1 오버레이 입력(AE 패널·m4 패널)이 미공표 해외(FRED) 주간·월간 계열과 최신 빈티지를 결정 시점에 사용",
+        "reason": "pit_invalid:C11",
+        "flag": "pit_c11",
+        "violation": "V-02 (입력 V-03 AE · V-04 m4 · V-07 빈티지)",
+        "evidence": "pg2_risk_overlay.R:90-91,155-173 ← ae_regime_backfill.py:63-83,231-258 · ae_regime_extend.py:32-47 (AE: STLFSI4/NFCI 미공표 주간) + data_collector_fred.R:269-277,380-432 → factor_engine.R:535-536 (m4: 월말 미공표 STLFSI4·ICSA·NFCI) · assert_overlay_pit 는 날짜 라벨만 비교해 통과(방어선 아님)",
+        "ledger_cell": "L1 RP_20260913_084807_skipped_base_promo1 n=13 B5_31 (grade B)",
+        "detected_at": "2026-09-24",
+        "marked_at": "2026-09-24T04:40:48+0900",
+        "fr_eligible_before": true,
+        "note": "등급·essence·sim_result·module_hash·contract 는 무변경(원값 보존). FR 풀 편입만 해제한다. 재측정판(판정서 ⑤ 안 B)이 정본이 되기 전까지 이 등급을 판정에 인용하지 않는다.",
+        "decision_ref": "06_Registry/decision_register.json#PIT-C11-REMEDIATION",
+        "quarantine_ref": "06_Registry/pit_quarantine.json#PITQ-C11-20260924",
+        "judgment": "C:/Users/99922/AppData/Local/Temp/claude/C--Users-99922-OneDrive-Quant-Module-Moltbot/be2e88bf-6a4c-44e5-a6ff-6aae164c14ca/scratchpad/pit_c11_synth.md",
+        "revert": "fr_eligible <- contamination$fr_eligible_before · grade_contaminated·contamination 삭제 (도훈 결정 후)"
       }
     },
     "RP_20260923_192053_29444": {
@@ -65714,7 +65952,7 @@
       ],
       "registered_at": "2026-09-24T01:55:52+09:00",
       "metric_type": "backtested",
-      "fr_eligible": true,
+      "fr_eligible": false,
       "frozen": true,
       "source_contract_id": "20260924_014942_19128",
       "module_hash": "b426ea3fb4bbc2b7a8c716aa3ac480ec",
@@ -65737,6 +65975,23 @@
         "admission_reason": "등급 C 이나 방어형 자격 — 하락월 107개: 초과 +1.92%/월 (t 3.75 · 적중 64%) · 벤치-10% 이하 10개: 초과 +4.43%/월 · 상승월 초과 -0.85%/월",
         "artifacts_dir": "stage_artifacts/replication/20260924_014942_19128",
         "essence_grade": "C"
+      },
+      "grade_contaminated": "C",
+      "contamination": {
+        "defect": "PIT C11 — pg2_risk_overlay_v1 오버레이 입력(AE 패널·m4 패널)이 미공표 해외(FRED) 주간·월간 계열과 최신 빈티지를 결정 시점에 사용",
+        "reason": "pit_invalid:C11",
+        "flag": "pit_c11",
+        "violation": "V-02 (입력 V-03 AE · V-04 m4 · V-07 빈티지)",
+        "evidence": "pg2_risk_overlay.R:90-91,155-173 ← ae_regime_backfill.py:63-83,231-258 · ae_regime_extend.py:32-47 (AE: STLFSI4/NFCI 미공표 주간) + data_collector_fred.R:269-277,380-432 → factor_engine.R:535-536 (m4: 월말 미공표 STLFSI4·ICSA·NFCI) · assert_overlay_pit 는 날짜 라벨만 비교해 통과(방어선 아님)",
+        "ledger_cell": "L1 RP_20260923_230819_4212_adapted_rulefast n=25 B5_31 (grade C)",
+        "detected_at": "2026-09-24",
+        "marked_at": "2026-09-24T04:40:48+0900",
+        "fr_eligible_before": true,
+        "note": "등급·essence·sim_result·module_hash·contract 는 무변경(원값 보존). FR 풀 편입만 해제한다. 재측정판(판정서 ⑤ 안 B)이 정본이 되기 전까지 이 등급을 판정에 인용하지 않는다.",
+        "decision_ref": "06_Registry/decision_register.json#PIT-C11-REMEDIATION",
+        "quarantine_ref": "06_Registry/pit_quarantine.json#PITQ-C11-20260924",
+        "judgment": "C:/Users/99922/AppData/Local/Temp/claude/C--Users-99922-OneDrive-Quant-Module-Moltbot/be2e88bf-6a4c-44e5-a6ff-6aae164c14ca/scratchpad/pit_c11_synth.md",
+        "revert": "fr_eligible <- contamination$fr_eligible_before · grade_contaminated·contamination 삭제 (도훈 결정 후)"
       }
     },
     "RP_20260924_020009_29216": {
@@ -66497,7 +66752,7 @@
       "defensive_score": {
         "status": "ok",
         "defensive": true,
-        "n_months": null,
+        "n_months": {},
         "down": {
           "n": 108,
           "excess": 0.0137,
@@ -66529,11 +66784,14 @@
         "reason": "하락월 108개: 초과 +1.37%/월 (t 2.95 · 적중 59%) · 벤치-10% 이하 10개: 초과 +1.13%/월 · 상승월 초과 -0.55%/월",
         "source": "authoritative_remeasure"
       },
-      "role": null,
+      "role": {},
       "origin_mode": "replication",
       "sim_result_path": "04_Research/strategies/RP_20260924_033952_16576/sim_result.rds",
       "n_days": 5259,
-      "date_range": ["2005-06-01", "2026-09-23"],
+      "date_range": [
+        "2005-06-01",
+        "2026-09-23"
+      ],
       "registered_at": "2026-09-24T03:42:54+09:00",
       "metric_type": "backtested",
       "fr_eligible": true,
@@ -66560,10 +66818,85 @@
         "artifacts_dir": "stage_artifacts/replication/20260924_033952_16576",
         "essence_grade": "C"
       }
+    },
+    "RP_20260924_043231_17572": {
+      "strategy_id": "RP_20260924_043231_17572",
+      "grade": "C",
+      "grade_basis": "essence_score(authoritative_remeasure.json)",
+      "essence_grade": "C",
+      "defensive_score": {
+        "status": "ok",
+        "defensive": true,
+        "n_months": {},
+        "down": {
+          "n": 109,
+          "excess": 0.0081,
+          "hit": 0.5963,
+          "t": 2.3798,
+          "capture": 0.8102
+        },
+        "deep": {
+          "n": 10,
+          "excess": 0.0143,
+          "hit": 0.5,
+          "t": 0.7039,
+          "capture": 0.9057
+        },
+        "mid": {
+          "n": 30,
+          "excess": 0.0041,
+          "hit": 0.4667,
+          "t": 0.5491,
+          "capture": 0.9574
+        },
+        "up": {
+          "n": 149,
+          "excess": -0.0049,
+          "hit": 0.4966,
+          "t": -1.1002,
+          "capture": 0.9028
+        },
+        "reason": "하락월 109개: 초과 +0.81%/월 (t 2.38 · 적중 60%) · 벤치-10% 이하 10개: 초과 +1.43%/월 · 상승월 초과 -0.49%/월",
+        "source": "authoritative_remeasure"
+      },
+      "role": {},
+      "origin_mode": "replication",
+      "sim_result_path": "04_Research/strategies/RP_20260924_043231_17572/sim_result.rds",
+      "n_days": 5300,
+      "date_range": [
+        "2005-04-01",
+        "2026-09-23"
+      ],
+      "registered_at": "2026-09-24T04:36:57+09:00",
+      "metric_type": "backtested",
+      "fr_eligible": true,
+      "frozen": true,
+      "source_contract_id": "20260924_043231_17572",
+      "module_hash": "73bef6e0499e889a5898555e3189d55c",
+      "build_version": "run_paper_replication_v10",
+      "cost_model_version": "unlabeled_pre_v24",
+      "bt_result_path": "stage_artifacts/replication/20260924_043231_17572/bt_result.rds",
+      "contract": {
+        "policy": "v8.1_fr_input_floor",
+        "contract_pass": true,
+        "eligibility_reason": "FR_ELIGIBLE"
+      },
+      "meta": {
+        "strategy_idea": "[무인 충실구현] Machine Learning for Stock Prediction Based on Fundamental Analysis",
+        "strategy_name": "RP_AUTO_220205702",
+        "source_paper_url": "https://arxiv.org/abs/2202.05702",
+        "paper_key": "2202.05702",
+        "fidelity_lane": "engine_direct",
+        "registered_by": "register_measured_module",
+        "admission_route": "defensive_specialist",
+        "admission_reason": "등급 C 이나 방어형 자격 — 하락월 109개: 초과 +0.81%/월 (t 2.38 · 적중 60%) · 벤치-10% 이하 10개: 초과 +1.43%/월 · 상승월 초과 -0.49%/월",
+        "artifacts_dir": "stage_artifacts/replication/20260924_043231_17572",
+        "essence_grade": "C"
+      }
     }
   },
-  "last_updated": "2026-09-24T03:42:54+09:00",
-  "n_modules": 864,
+  "last_updated": "2026-09-24T04:36:57+09:00",
+  "n_modules": 865,
   "essence_regrade": {
     "ref": "essence_regrade_20260824",
     "applied_at": "2026-08-24T19:27:59+0900",

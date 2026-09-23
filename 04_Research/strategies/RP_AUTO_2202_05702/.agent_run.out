@@ -3,3 +3,62 @@
 **구현**: 분기 회계지표의 연속관측 간 백분율 변화를 입력으로 Random Forest 가 **다음 분기 KOSPI200 대비 상대수익**을 회귀하고, 예측 상대수익 상위 **1/3** 을 동일가중으로 사는 분기 리밸 롱온리 포트폴리오(`PORTFOLIO` engine_direct + 진단용 `FACTORS` 동시 산출) — 학습집합은 매 분기 확장창이고 표준화·결측 대치 통계도 그 학습집합에서만 낸다.
 
 **fidelity = adapted**, 이유 둘: ① 논문의 21 특성 전체 목록(Table 8)이 PDF **이미지**라 텍스트로 존재하지 않아(stockpup 열 이름이 문서 전체에서 0건) 목록을 지어내야 하는 'RF 무선택' 칸을 포기하고 논문이 이름을 전부 인쇄한 칸(Table 3 top 6 + RF)을 골랐다 ② 그 6 중 **Capital Expenditure** 는 KR 원천에 설비투자 지급액 항목이 없어 `data_gap` 으로 제외(|InvestCF| 대리 기각) → 입력 5. 논문의 '인접 분기 평균 보간'은 미래참조라 쓰지 않았고, 고정 60/20/20 분할은 2005~ 전기간 시그널을 못 내므로 확장창으로 옮겼다 — 전부 `changed` 14항목에 신고했다.
+SessionEnd hook [DIR=${CLAUDE_PROJECT_DIR:-${QM_ROOT:-$PWD}}; bash "$DIR/02_Infrastructure/hooks/auto_commit_on_stop.sh" 2>>/tmp/auto_commit_on_stop.log || true] failed: Hook cancelled
+SessionEnd hook [DIR=${CLAUDE_PROJECT_DIR:-${QM_ROOT:-$PWD}}; bash "$DIR/02_Infrastructure/hooks/auto_push_on_stop.sh" 2>>/tmp/auto_push_on_stop.log || true] failed: Hook JSON output validation failed — hookSpecificOutput.hookEventName: expected one of "PreToolUse" | "UserPromptSubmit" | "UserPromptExpansion" | "SessionStart" | "Setup" | "PreModelSwitch" | …
+
+The hook's output was: {
+  "hookSpecificOutput": {
+    "hookEventName": "SessionEnd",
+    "additionalContext": "[OK] [auto-push] main @ 1e718945a - 1 commits pushed."
+  }
+}
+
+Expected schema:
+{
+  "continue": "boolean (optional)",
+  "suppressOutput": "boolean (optional)",
+  "stopReason": "string (optional)",
+  "decision": "\"approve\" | \"block\" (optional)",
+  "reason": "string (optional)",
+  "systemMessage": "string (optional)",
+  "terminalSequence": "string (optional)",
+  "hookSpecificOutput": {
+    "for PreToolUse": {
+      "hookEventName": "\"PreToolUse\"",
+      "permissionDecision": "\"allow\" | \"deny\" | \"ask\" | \"defer\" (optional)",
+      "permissionDecisionReason": "string (optional)",
+      "updatedInput": "object (optional) - Modified tool input to use"
+    },
+    "for PermissionRequest": {
+      "hookEventName": "\"PermissionRequest\"",
+      "decision": {
+        "to allow": {
+          "behavior": "\"allow\"",
+          "updatedInput": "object (optional) - Modified tool input to use",
+          "updatedPermissions": "array (optional) - Permission updates"
+        },
+        "to deny": {
+          "behavior": "\"deny\"",
+          "message": "string (optional)",
+          "interrupt": "boolean (optional)"
+        }
+      }
+    },
+    "for UserPromptSubmit": {
+      "hookEventName": "\"UserPromptSubmit\"",
+      "additionalContext": "string (optional)"
+    },
+    "for PostToolUse": {
+      "hookEventName": "\"PostToolUse\"",
+      "additionalContext": "string (optional)"
+    },
+    "for PostToolBatch": {
+      "hookEventName": "\"PostToolBatch\"",
+      "additionalContext": "string (optional)"
+    },
+    "for Stop / SubagentStop": {
+      "hookEventName": "\"Stop\" | \"SubagentStop\"",
+      "additionalContext": "string (optional) - Feedback for the model; the conversation continues so the model can act on it"
+    }
+  }
+}
