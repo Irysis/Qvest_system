@@ -1430,6 +1430,15 @@ SUITES=(
   #   검사는 **고정 픽스처만** 쓴다(네트워크 없음) + 운영 rawdata 를 빌리지 않는다.
   #   변이 3종(구판 파서 복원 · 삭제후append · 청크 증발)으로 검출력을 실증한다.
   "08_Tests/data/test_naver_adjusted_collector.R"
+
+  # 2026-09-23 강화 전수감사 재편 1세션 (플랜 ~/.claude/plans/qvest-1-drifting-eclipse.md) — 편입 누락 방지(신설 즉시 등록)
+  #   P0-01 시행 회계: 강화 셀 sweep + 계보 누적 측정 N 배선 · formals 계약 · 구판 하드코딩 돌연변이 red
+  "08_Tests/reinforcement/test_rf_selection_accounting.R"
+  #   P0-M4 worktree 고립 수리 이식: .look1(원자 벡터 [[ 폴백) · 키 집합 대조(setequal) — 수리 전 red 실증
+  "08_Tests/reinforcement/test_rf_materials_cell_lookup.R"
+  "08_Tests/ops/test_rf_verify_tg_target.R"
+  #   P3-07 결정 대기 레지스터 + 부팅 Director 줄 부기 — owner 거부 · 재결정 거부 · 파손=명시 오류 · 필터 돌연변이 red
+  "08_Tests/ops/test_decision_register.R"
 )
 
 

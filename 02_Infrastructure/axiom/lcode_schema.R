@@ -86,7 +86,15 @@ LCODE_VALID_MODES <- c("alpha_search", "alpha_research", "qepm_legacy",
                        "ramp",              # 2026-06-18: RAMP 자가발전 4번째 모드 (v9.21 모드 지위 퇴임 — 라벨은 존치)
                        "overlay_research",  # 2026-07-06: OVL 오버레이 자가발전 모드 (lcode_emit OVL prefix와 정합)
                        "paper_replication", # ★v10 2026-08-29: 1계층 충실구현 라운드 (prefix RP)
-                       "reinforcement")     # ★v10 2026-08-29: 강화 프로세스 (1계층 ≤20회 / 2계층 무한, prefix RF)
+                       "reinforcement",     # ★v10 2026-08-29: 강화 프로세스 (1계층 ≤20회 / 2계층 무한, prefix RF)
+                       ## ★2026-09-23 (플랜 P0-M3 · 감사 D6-03): **재라벨 전용 역사 라벨** — 발행 모드가 아니다.
+                       ##   강화 셀 1,106건이 run_paper_replication 경유로 mode=paper_replication '충실구현' L-code 로
+                       ##   오발행됐다(corpus 57%). 제자리 재라벨(relabeled_from 보존 · 삭제 없음)한 값이 이것이다.
+                       ##   enum 에 없으면 validate_lcode 가 정정된 기록을 '비표준'으로 뒤집는다(역사는 판정이 아니다).
+                       ##   신규 발행은 없다 — 워커가 QVEST_RP_NO_LCODE=1 로 막고, 셀 교훈 정본은 블록 L-code(reinforcement).
+                       ##   prefix 맵(lcode_emit/promote/cluster_extractor)에는 넣지 않는다 — paper_replication·reinforcement 와
+                       ##   같은 GEN 폴백(선행 부채)이며, id 는 원 L-RP-* 그대로 둔다(불투명 식별자).
+                       "reinforcement_cell")
 # research_mode normalize 규칙 (promote GEN 폴백 봉합, A2-F8②)
 ## ★v9.21 개명 (도훈 지시 2026-08-24 "팩터 로테이션은 전략 로테이션으로"):
 ##   `factor_rotation` → `strategy_rotation`. **이름이 코드 현실과 오히려 일치하게 된다** —

@@ -137,7 +137,10 @@ for (f in .fs) {
   if (length(L) > 1L) {
     n2 <- n2 + 1L; s2 <- s; s2$overlay <- rev(L)
     if (!identical(.spec_sig(s), .spec_sig(s2))) bad2 <- c(bad2, basename(f))
-  } else if (!is.null(s[["rebalance"]])) {
+  } else if (!is.null(s[["rebalance"]]) || !is.null(s[["defense_sleeve"]])) {
+    ## ★2026-09-23 — B7 defense_sleeve(2026-09-21)도 rebalance 와 같은 '있을 때만 서명에 붙는' 축이다.
+    ##   구판 .old_sig 는 그 필드를 모르므로 B7 칸은 당연히 달라진다 — 단층 비트 동일 단정에 넣으면
+    ##   배터리가 상시 오탐(09-21 이후 B7_41 3건 상시 빨강)이 되고, 상시 오탐은 상시 침묵이 된다.
     nrb <- nrb + 1L
     if (identical(.spec_sig(s), .old_sig(s))) rb_unchanged <- c(rb_unchanged, basename(f))
     rb_sigs  <- c(rb_sigs,  .spec_sig(s))

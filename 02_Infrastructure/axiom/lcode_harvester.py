@@ -907,8 +907,12 @@ def _pc_positive_dist(project_dir: str) -> list[str]:
 
 def _pc_recent_lessons(corpus: dict) -> list[str]:
     """최근 성과 L-code 3건 — mtime 내림차순. 다음 시도(next_probe 첫 항목)까지 한 줄에."""
+    # ★2026-09-23 (플랜 P0-M3 · 감사 D6-03): 재라벨된 강화 셀(reinforcement_cell)은 '최근 교훈'이 아니다 —
+    #   셀 1칸 측정의 보일러플레이트("<셀> 충실구현: 등급 X" + 고정 next_probe)라 주입면 3줄 중 1~2줄을 차지했다.
+    #   셀의 교훈 정본은 블록 L-code(reinforcement)다. corpus 에서는 지우지 않는다(조회·증류는 mode 로 구분).
     perf = [x for x in (corpus.get("lcodes") or [])
-            if isinstance(x, dict) and x.get("record_type") == "performance"]
+            if isinstance(x, dict) and x.get("record_type") == "performance"
+            and x.get("research_mode") != "reinforcement_cell"]
     perf.sort(key=lambda x: str(x.get("mtime") or ""), reverse=True)
     lines = []
     for x in perf[:PC_RECENT_N]:

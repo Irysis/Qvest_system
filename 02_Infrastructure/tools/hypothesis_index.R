@@ -297,7 +297,7 @@ FAMILY_PATTERNS <- list(
   km <- km[!vapply(km, is.null, logical(1))]
   fam <- e$family %||% NA_character_
   if (is.null(fam) || is.na(fam) || fam %in% c("unknown", "")) fam <- .hi_infer_family(text)
-  list(
+  out <- list(
     strategy_id = e$strategy_id %||% e$l_code,
     hypothesis_signature = .hi_signature(
       fam, .hi_infer_signal_group(text, title),
@@ -310,6 +310,14 @@ FAMILY_PATTERNS <- list(
     source_types = "lcode_corpus",
     date = substr(as.character(e$mtime %||% ""), 1, 10)
   )
+  # ★2026-09-23 (플랜 P0-M3 · 감사 D6-03): L-code 의 research_mode 를 행에 싣는다.
+  #   셀 L-code 는 strategy_id(RP_*)·l_code(L-RP-*) 가 충실구현과 **같은 모양**이라, 모드가 행에 없으면
+  #   재라벨(reinforcement_cell)을 해도 조회면에서 여전히 '충실구현 선례'로 읽힌다(구: 2746행 중 1106행).
+  #   없는 값은 지어내지 않는다 — 원천에 필드가 없으면 키를 만들지 않는다(추가 필드 · 기존 필드 불변).
+  rm_ <- e$research_mode
+  if (!is.null(rm_) && length(rm_) && !is.na(rm_[1]) && nzchar(as.character(rm_[1])))
+    out$research_mode <- as.character(rm_[1])
+  out
 }
 
 # (task#54-1 2026-07-13) 원본 L-code json → corpus-호환 엔트리 어댑터 (보충 스캔 전용).
@@ -752,6 +760,7 @@ HI_WT_TERMINAL_REGEX <- "TERMINAT|ABORT|ARCHIV|REJECT|KILL|FAIL|NEGATIVE|DEFERRE
     if (is.null(base$key_metrics[[k]])) base$key_metrics[[k]] <- add$key_metrics[[k]]
   }
   if (!nzchar(base$date %||% "") && nzchar(add$date %||% "")) base$date <- add$date
+  if (is.null(base$research_mode) && !is.null(add$research_mode)) base$research_mode <- add$research_mode  # P0-M3: 결측만 보충
   base
 }
 
@@ -1134,6 +1143,8 @@ HI_QUERY_ALIAS <- list(
     retry_policy = as.character(e$retry_policy %||% ""),
     date = e$date %||% "",
     source = paste(e$source_types %||% "", collapse = ","),
+    # P0-M3 (2026-09-23): 충실구현(paper_replication) vs 강화 셀(reinforcement_cell) 구분 — 맨 끝에 추가(이름 기반 소비자 불변)
+    research_mode = as.character(e$research_mode %||% ""),
     stringsAsFactors = FALSE
   )
 }
