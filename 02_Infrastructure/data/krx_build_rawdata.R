@@ -255,10 +255,10 @@ krx_merge_rawdata <- function() {
       bm_new[abs(BM_Ret) > 0.30, BM_Ret := NA_real_]
     }
 
-    # Join BM_Ret to new_rows
-    new_rows <- merge(new_rows, bm_new[, .(Date, BM_Ret)], by = "Date", all.x = TRUE,
-                      suffixes = c(".old", ""))
-    if ("BM_Ret.old" %in% names(new_rows)) new_rows[, BM_Ret.old := NULL]
+    # ★W-09(2026-09-23): RAWDATA::BM_Ret 은 여기서 **자체 계산해 조인하지 않는다**.
+    #   구판은 bm_new 수익률을 new_rows 에 직접 붙였다 — 벤치와 독립 경로라 2026-07 8일 ·
+    #   2026-09-02 불일치의 계통. 이 함수는 아래에서 KRX 종가를 **벤치에** 적재하고,
+    #   RAWDATA 값은 쓰기 직전 단일 writer(rawdata_bm_ret_sync_dt)가 그 벤치에서 채운다.
 
     # Update benchmark cache
     # ★2026-09-18: provenance 열을 채운다 — 안 채우면 fill=TRUE 가 조용히 NA 를 넣는다.
@@ -285,18 +285,15 @@ krx_merge_rawdata <- function() {
     cat(sprintf("[krx_merge] Benchmark updated: %s ~ %s\n",
                 min(old_bm_ext$Date), max(old_bm_ext$Date)))
   } else {
-    new_rows[, BM_Ret := NA_real_]
-    cat("[krx_merge] WARNING: No KOSPI 200 index data. BM_Ret = NA.\n")
+    cat("[krx_merge] WARNING: No KOSPI 200 index data — 벤치 미갱신. BM_Ret 은 단일 writer 가 벤치에서 채운다(없으면 NA).\n")
   }
 
-  # BM_Ret fallback: NA면 0 sentinel (날짜 전체 삭제 방지)
-  bm_na <- sum(is.na(new_rows$BM_Ret))
-  if (bm_na > 0) {
-    cat(sprintf("[krx_merge] BM_Ret NA: %d rows → sentinel 0 적용 (삭제 안 함)\n", bm_na))
-    new_rows[is.na(BM_Ret), BM_Ret := 0]
-  }
+  # ★W-09(2026-09-23): 0 센티널 폐기. 구판은 BM_Ret NA 를 **0 으로 위장**했다(07-28 폭락
+  #   -11.55% 가 0 으로 소실된 계통 — "그날 안 움직였다" 로 읽힌다). 결측은 결측으로 두고
+  #   값은 단일 writer 가 정본 벤치에서만 채운다. 행은 삭제하지 않는다(아래는 Ret NA 만 제거).
+  new_rows[, BM_Ret := NA_real_]
 
-  # Ret NA만 제거 (BM_Ret는 sentinel 처리했으므로 제거 안 함)
+  # Ret NA만 제거 (BM_Ret NA 행은 제거하지 않는다)
   new_rows <- new_rows[!is.na(Ret)]
 
   # 거래일 검증 gate
@@ -347,6 +344,12 @@ krx_merge_rawdata <- function() {
   }
   combined <- .ded$dt
   setorder(combined, Date, Ticker)
+
+  # ★W-09: 새로 적재한 날짜의 BM_Ret 을 단일 writer 로 채운다(정본 = 방금 갱신한 benchmark.parquet).
+  #   범위를 새 날짜로 한정한다 — 전 구간 정합은 daily_refresh [3b] 의 소관.
+  if (!exists("rawdata_bm_ret_sync_dt")) source(file.path(DATA_DIR, "rawdata_bm_ret_sync.R"))
+  combined <- rawdata_bm_ret_sync_dt(combined, dates = unique(new_rows$Date),
+                                     tag = "krx_merge/bm_ret")$dt
 
   # [fix 2026-06-17] Windows arrow mmap(error 1224): read_parquet(RAWDATA_CACHE) mmap
   # 해제 후 temp-rename. (구 직접 write_parquet은 동일 경로 mmap halt — benchmark와 동일)

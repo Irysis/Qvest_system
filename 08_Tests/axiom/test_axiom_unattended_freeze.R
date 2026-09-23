@@ -21,7 +21,11 @@
 #        돌연변이 M-H: 가드 제거 사본 → 표식 L-code 재색인(검출)
 #   I  주입 훅(1-6): 전역 Law 4건 전문 렌더 · len ≤2000 · 마커 3종 생존 · mode-local 0
 #        돌연변이 M-I: [:80] 절단 복원 사본 → AX-000 금지절 꼬리 소실(검출)
-#   D  D5 문언: AX-001 v3 · AX-008 v2.0 — 승인 필드 · 구판 history 보존 · axioms.md 문서 SOT 일치 · enforcement_hook 불변
+#   D  D5 문언: AX-001 v3 · AX-008 v2.0 — 승인 필드 · 구판 history 보존 · axioms.md 문서 SOT 일치 · enforcement_hook 의미론 생존
+#        (mode 값은 고정하지 않는다 — 'block 오기' 수정 여부는 도훈 결정. 양성 대조 = 고친 사본도 통과 · 돌연변이 M-D1~3)
+#        AX-008 최상위 = v2.0 기준만(구판 근거 필드는 history[0]) · 돌연변이 M-D4
+#        전파 가드(P): 주입면 문서(agents·skills·workflows·_shared_prefix·charter Axiom 절·artifact_contract·Lawbook INDEX)에
+#        구 문언(Triangulation·3-source·2/3 PASS·AX-001 v2·conditional defense 등) 0 — '사료/history' 포인터 줄만 허용 · 돌연변이 M-P
 #
 # 격리: 쓰기는 tempdir() 샌드박스에만. 운영 트리는 읽기만 한다(R·D·B4).
 # 실행: Rscript 08_Tests/axiom/test_axiom_unattended_freeze.R
@@ -400,10 +404,83 @@ for (a in list(a1, a8)) {
 chk("D AX-001 v3 · 구판 v2 문언(bad/normal IC ratio)·v2.1 은 history 사료로 보존",
     identical(a1$version, "v3") && grepl("bad/normal IC ratio", a1$history[[1]]$text %||% "", fixed = TRUE) &&
       any(vapply(a1$history[[1]]$versions %||% list(), function(v) identical(v$version, "v2.1"), logical(1))))
-chk("D AX-001 enforcement_hook 불변(test_ax001_defense_scope 의미론) — mode=block",
-    identical(a1$enforcement_hook$mode, "block") && identical(a1$enforcement_mode, "block"))
+# ★2026-09-23 수리(적대검증): 구 단정은 enforcement_mode == "block" 을 고정해, 판정서 K14 가 지적한 'block 오기'
+#   (axioms.md Hook 강제 절 = documented · axiom_enforcement_hook.sh 등록 해제)를 고치면 이 검사가 red 가 되는 구조였다
+#   — 오기를 계약으로 못박은 것. 이 축이 지키려던 의미는 'D5 문언 개정이 enforcement_hook 의미론
+#   (test_ax001_defense_scope.R [6] 이 소비하는 applies_to_files·regex·require)을 건드리지 않았다' 이다.
+#   mode 값은 enum 소속만 본다(오기 수정 여부 = 도훈 결정).
+.d_hook_ok <- function(a) {
+  eh <- a$enforcement_hook
+  modes <- c("documented", "advisory", "block")
+  is.list(eh) && length(unlist(eh$regex)) >= 1L && length(unlist(eh$require)) >= 1L &&
+    length(unlist(eh$applies_to_files)) >= 1L &&
+    isTRUE(as.character(a$enforcement_mode %||% "") %in% modes) &&
+    isTRUE(as.character(eh$mode %||% a$enforcement_mode %||% "") %in% modes)
+}
+chk("D AX-001 enforcement_hook 의미론 필드 생존(applies_to_files·regex·require) · mode ∈ enum — 값은 고정 안 함", .d_hook_ok(a1))
+a1_fix <- a1; a1_fix$enforcement_mode <- "documented"; a1_fix$enforcement_hook$mode <- "documented"
+chk("D 양성 대조: 'block 오기'를 documented 로 고친 사본도 통과(오기를 계약으로 못박지 않는다)", .d_hook_ok(a1_fix))
+a1_m <- a1; a1_m$enforcement_hook$regex <- NULL
+chk("M-D1 regex 제거 사본 → 실패(검출)", !.d_hook_ok(a1_m))
+a1_m <- a1; a1_m$enforcement_hook$require <- list()
+chk("M-D2 require 비움 사본 → 실패(검출)", !.d_hook_ok(a1_m))
+a1_m <- a1; a1_m$enforcement_mode <- "blokc"
+chk("M-D3 enum 밖 mode 사본 → 실패(검출)", !.d_hook_ok(a1_m))
 chk("D AX-008 v2.0 · 구판 3-source 2/3 문언은 history 사료로 보존",
     identical(a8$version, "v2.0") && grepl("2-source", a8$history[[1]]$statement %||% "", fixed = TRUE))
+# (2026-09-23 적대검증 후속) 최상위 = v2.0 기준만 — 구판 v1.1 근거 필드는 history[0] 으로 이관(값 보존).
+#   최상위에 L-159/167/168·v8.2 주석이 남으면 v2.0 문언의 근거로 오독되고, lcode_harvester._check_promoted 가
+#   그 L-code 를 AX-008 승격분으로 표식한다(최상위 supporting_l_codes 를 읽는다).
+.A8_LEGACY <- c("note_v8_2", "origin", "supporting_l_codes", "l_code", "evidence_audit_20260704")
+.d_a8_top_ok <- function(a) {
+  h <- a$history[[1]] %||% list()
+  !any(.A8_LEGACY %in% names(a)) && all(.A8_LEGACY %in% names(h)) &&
+    all(c("L-159", "L-167", "L-168") %in% unlist(h$supporting_l_codes))
+}
+chk("D AX-008 최상위 = v2.0 기준만 · 구판 근거 5필드는 history[0] 에 원값 보존(L-159/167/168)", .d_a8_top_ok(a8))
+a8_m <- a8; a8_m$supporting_l_codes <- a8$history[[1]]$supporting_l_codes
+chk("M-D4 최상위 supporting_l_codes 복원 사본 → 실패(검출)", !.d_a8_top_ok(a8_m))
+a8_m <- a8; a8_m$history[[1]]$origin <- NULL
+chk("M-D4b history[0] 원값 소실 사본 → 실패(검출)", !.d_a8_top_ok(a8_m))
+
+# ── P 전파 가드: 에이전트·워크플로가 읽는 문서면에 구 문언이 남지 않는다 ──────────────────────────────
+#   대상 = 주입면(에이전트 정의·스킬·워크플로 프롬프트·공용 prefix) + 계약 문서의 공리 절.
+#   허용 = 같은 줄에 '사료' 또는 'history' 가 있는 포인터 줄(개정 이력 설명). 사료 폴더(_retired·archive)·worktrees 는 대상 아님.
+.P_RE <- "Triangulation|3-source|2/3 PASS|crisis 조건부|conditional defense|AX-001 v2|v2\\.1 META"
+.p_scan <- function(files, sections = list()) {
+  hits <- character(0)
+  for (f in files) {
+    ln <- readLines(f, warn = FALSE, encoding = "UTF-8")
+    rng <- sections[[f]]
+    if (!is.null(rng)) {
+      s <- grep(rng[1], ln, fixed = TRUE)[1]
+      if (is.na(s)) { hits <- c(hits, paste0(basename(f), ": 절 머리 부재 ", rng[1])); next }
+      e <- which(seq_along(ln) > s & grepl(rng[2], ln, fixed = TRUE))[1]
+      ln <- ln[s:(if (is.na(e)) length(ln) else e)]
+    }
+    bad <- grepl(.P_RE, ln, perl = TRUE) & !grepl("사료|history", ln, perl = TRUE)
+    if (any(bad)) hits <- c(hits, paste0(basename(f), ":", which(bad)))
+  }
+  hits
+}
+.P_FILES <- c(Sys.glob(file.path(ROOT, ".claude/agents/*.md")), Sys.glob(file.path(ROOT, ".claude/skills/*/SKILL.md")),
+              Sys.glob(file.path(ROOT, ".claude/workflows/*.js")),
+              file.path(ROOT, c("02_Infrastructure/prompts/_shared_prefix.md", "02_Infrastructure/worktask/artifact_contract.md",
+                                "00_Lawbook/INDEX.md", "02_Infrastructure/worktask/common_charter.md")))
+.P_SEC <- stats::setNames(list(c("## Axiom 준수", "---")), file.path(ROOT, "02_Infrastructure/worktask/common_charter.md"))
+p_hits <- .p_scan(.P_FILES, .P_SEC)
+chk(sprintf("P 주입면 %d 파일 — 구 AX-001 v2/AX-008 v1.1 문언 0 (사료 포인터 줄만 허용)", length(.P_FILES)),
+    length(.P_FILES) >= 20L && !length(p_hits), paste(head(p_hits, 8), collapse = " ; "))
+.p_sb <- file.path(SB0, "p_guard"); dir.create(.p_sb)
+.p_src <- file.path(ROOT, ".claude/agents/alpha-research.md")
+.p_mut <- file.path(.p_sb, "alpha-research.md")
+writeLines(c(readLines(.p_src, warn = FALSE, encoding = "UTF-8"),
+             "**AX-008 Verification Triangulation**: self-adversarial은 Forge·Architect와 함께 3-source 중 1개(2/3 PASS 필수)."),
+           .p_mut, useBytes = TRUE)
+chk("M-P 구 문언 재주입 사본 → 검출(가드가 살아 있다)", length(.p_scan(.p_mut)) == 1L)
+.p_neg <- file.path(.p_sb, "pointer_only.md")
+writeLines("- (2026-09-23 개정 — 구 AX-001 v2 · AX-008 v1.1 '3-source 2/3' 는 각 JSON history 사료)", .p_neg, useBytes = TRUE)
+chk("P 음성 대조: 사료 포인터 줄은 위반으로 세지 않는다", length(.p_scan(.p_neg)) == 0L)
 axmd <- paste(readLines(file.path(ROOT, ".claude/rules/axioms.md"), warn = FALSE, encoding = "UTF-8"), collapse = "\n")
 chk("D axioms.md(문서 SOT)에 AX-001·AX-008 새 문언이 그대로 실림",
     grepl(a1$statement, axmd, fixed = TRUE) && grepl(a8$statement, axmd, fixed = TRUE))

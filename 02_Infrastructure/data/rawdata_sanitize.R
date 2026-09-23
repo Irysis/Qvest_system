@@ -371,9 +371,13 @@ sanitize_rawdata <- function(dry_run = FALSE) {
     bm[, BM_Ret := BM_Close / shift(BM_Close) - 1]
     bm <- bm[!is.na(BM_Ret)]
 
-    # RAWDATA에 BM_Ret 매핑
-    raw[, BM_Ret := NULL]
-    raw <- merge(raw, bm[, .(Date, BM_Ret)], by = "Date", all.x = TRUE)
+    # RAWDATA에 BM_Ret 매핑 — ★W-09(2026-09-23): 전열 재조인 대신 단일 writer 경유.
+    #   구판(`BM_Ret := NULL` + merge)은 보호 구간(1990~98 토요장 계열 · 2024-12-30)까지
+    #   덮고 열 순서를 바꿨다. 정의·보호·킬스위치 = data/rawdata_bm_ret_sync.R 하나.
+    if (!exists("rawdata_bm_ret_sync_dt")) source(file.path(DATA_DIR, "rawdata_bm_ret_sync.R"))
+    raw[, Date := as.Date(Date)]
+    raw <- rawdata_bm_ret_sync_dt(raw, bench = bm[, .(Date = as.Date(Date), BM_Ret)],
+                                  tag = "sanitize/bm_ret")$dt
 
     bm_na <- raw[is.na(BM_Ret), .N]
     if (bm_na > 0) cat(sprintf("  BM_Ret NA: %d rows (BM 데이터 없는 날짜)\n", bm_na))

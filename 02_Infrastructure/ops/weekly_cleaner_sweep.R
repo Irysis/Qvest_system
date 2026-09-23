@@ -464,6 +464,54 @@ held_axioms <- list()        # 다이제스트 §정제보류(사유)
   NA
 }
 
+# ── 주입 길이 판정 입력 안정화 (2026-09-23 · Axiom 동결 적대검증 후속) ──────────────────────────
+#   구판: 회로차단기의 '주입 길이 > 1900' 은 .cache/axiom_inject_last.json(마지막 Agent 스폰 1건)의 len 을 읽었다.
+#   그 값은 **마지막으로 스폰된 에이전트 종류**(훅 헤더 기본/forge/judge/book × WT-R 강화 라운드 여부)에 따라 같은
+#   주입면 상태에서도 수십 자씩 흔들려(09-23 실측 1,936~1,987 · 적대검증 시점 1,896~1,947) 스폰 순서가 문턱을 넘나들게
+#   했다. 또 positive_context 부재로 변동부가 빠진 **열화 기록**(09-23 19:25 len 1,441 · 마커 0/3)이 마지막이면 문턱을
+#   '통과'로 오판한다.
+#   수리 = 문턱(1,900)은 그대로, **입력만** 안정화: 운영 훅 자체를 임시 샌드박스에서 헤더 변형 전부 × {일반, 강화}로
+#   렌더해 **최댓값**을 쓴다. 헤더 목록은 훅 case 절에서 재도출한다(목록 하드코딩 금지 — 훅에 헤더가 늘면 따라온다).
+#   ★조립기를 R 로 재구현하지 않는다(훅 주석: 두 구현이 갈라지면 계약이 실제 주입면을 안 잰다).
+#   ★운영 .cache/axiom_inject_last.json 은 건드리지 않는다(HARD_10 의 유일 입력) — 쓰기는 샌드박스에만.
+#   실패(훅 부재·렌더 0건) = 호출부가 구 입력(마지막 스폰 기록)으로 폴백하고 basis 에 그 사실을 남긴다.
+#   검사: 08_Tests/axiom/test_cleaner_inject_len_worst.R (스폰 순서 무관 · 양성 대조 · 운영 계측 무접촉 · 돌연변이 2종).
+.inj_len_worst <- function(root, hook = file.path(root, "02_Infrastructure", "hooks", "axiom_context_inject.sh")) {
+  res <- list(len = NA_integer_, basis = "unavailable", by = list())
+  if (!file.exists(hook)) { res$basis <- "hook_missing"; return(res) }
+  src <- readLines(hook, warn = FALSE, encoding = "UTF-8")
+  m <- regmatches(src, regexpr("^\\s*\\*[A-Za-z0-9_-]+\\*\\)", src, perl = TRUE))
+  agents <- c(unique(gsub("^\\s*\\*|\\*\\)$", "", m, perl = TRUE)), "zz-default-header-probe")  # 마지막 = 기본 헤더
+  sb <- gsub("\\\\", "/", tempfile("inj_worst_"))
+  on.exit(unlink(sb, recursive = TRUE, force = TRUE), add = TRUE)
+  ax_sb <- file.path(sb, "qepm", "memory", "axioms")
+  dir.create(ax_sb, recursive = TRUE, showWarnings = FALSE)
+  dir.create(file.path(sb, ".cache"), showWarnings = FALSE)
+  file.copy(file.path(root, "qepm", "memory", "axioms", "active"), ax_sb, recursive = TRUE)
+  for (f in c("qepm/memory/axioms/tombstones.json", ".cache/positive_context.json", "CLAUDE.md"))
+    if (file.exists(file.path(root, f))) file.copy(file.path(root, f), file.path(sb, f))
+  old_cpd <- Sys.getenv("CLAUDE_PROJECT_DIR", NA_character_)
+  on.exit(if (is.na(old_cpd)) Sys.unsetenv("CLAUDE_PROJECT_DIR") else Sys.setenv(CLAUDE_PROJECT_DIR = old_cpd),
+          add = TRUE, after = FALSE)
+  Sys.setenv(CLAUDE_PROJECT_DIR = sb)
+  il <- file.path(sb, ".cache", "axiom_inject_last.json")
+  for (a in agents) for (rt in c("", "WT-R00000000_000")) {
+    unlink(il)
+    inp <- sprintf('{"tool_name":"Agent","tool_input":{"subagent_type":"%s","prompt":"%s"}}', a, rt)
+    invisible(tryCatch(suppressWarnings(system2("bash", shQuote(hook), stdout = TRUE, stderr = FALSE, input = inp)),
+                       error = function(e) character(0)))
+    rec <- tryCatch(fromJSON(il, simplifyVector = FALSE), error = function(e) NULL)
+    if (is.null(rec) || is.null(rec$len)) next
+    res$by[[paste0(a, if (nzchar(rt)) "+reinforce" else "")]] <-
+      list(len = as.integer(rec$len), pc_status = as.character(rec$pc_status %||% "?"))
+  }
+  if (length(res$by)) {
+    res$len <- max(vapply(res$by, function(z) z$len, integer(1)))
+    res$basis <- sprintf("worst_header_render(n=%d)", length(res$by))
+  }
+  res
+}
+
 # ---- promote 자식 프로세스 crash 판정 (2026-08-20 수리 — 대리 지표 → exit status 1급) ----
 # 구 로직은 crash 를 **stdout 에 [promote] ... PASS/FAIL 줄이 있었는가**로만 판정했다.
 #   ⇒ 자식이 exit≠0 으로 죽어도 그 전에 verdict 한 줄을 찍었으면 crash 0 으로 집계된다
@@ -579,10 +627,18 @@ run_step("axiom_weekly_cycle", {
       if (wa) n_new_active_planned <- n_new_active_planned + 1L
     }
     # ── pass ②: 회로차단기 ────────────────────────────────────────────────────
-    .inj_len <- tryCatch({
+    # 구 입력(마지막 스폰 1건) — 이제 폴백·대조 표시용. 판정 입력은 헤더 변형 최악값(.inj_len_worst).
+    .inj_last <- tryCatch({
       ij <- fromJSON(file.path(root, ".cache", "axiom_inject_last.json"), simplifyVector = FALSE)
       suppressWarnings(as.integer(ij$len))
     }, error = function(e) NA_integer_)
+    .inj_w <- tryCatch(.inj_len_worst(root), error = function(e)
+      list(len = NA_integer_, basis = paste0("error: ", conditionMessage(e)), by = list()))
+    .inj_len <- if (is.finite(.inj_w$len)) .inj_w$len else .inj_last
+    .inj_basis <- if (is.finite(.inj_w$len)) .inj_w$basis else
+      sprintf("last_spawn_record(최악값 렌더 실패: %s)", .inj_w$basis)
+    cat(sprintf("  | [axiom] 주입 길이 판정 입력 = %s (%s · 마지막 스폰 기록 %s)\n", as.character(.inj_len), .inj_basis,
+                as.character(.inj_last)))
     # 상한 초과는 dry-run verdict 문자열이 아니라 **현 활성 재고 + 이번 주 예정분**으로 잰다
     #   (dry-run 은 FAIL_CAP 을 찍지 않는다 — 그건 쓰기 시점 판정이다).
     .n_act_now <- tryCatch(length(px$list_active_axioms(root = root)), error = function(e) NA_integer_)
@@ -594,15 +650,23 @@ run_step("axiom_weekly_cycle", {
       if (isTRUE(.cap_breach)) "활성 상한 초과(FAIL_CAP)",
       if (pre_crash > 0L) sprintf("dry-run crash %d건", pre_crash),
       if (is.finite(.inj_len) && .inj_len > 1900L)
-        sprintf("주입 길이 %d > 1900 (2,000 예산 임박 — 활성화가 마커를 밀어낼 수 있음)", .inj_len))
+        sprintf("주입 길이 %d > 1900 (%s · 2,000 예산 임박 — 활성화가 마커를 밀어낼 수 있음)", .inj_len, .inj_basis))
     if (length(.reasons)) {
       activation_hold <- list(
         held_at = format(Sys.time(), "%Y-%m-%dT%H:%M:%S%z"),
         reasons = as.list(.reasons),
         n_new_active_planned = n_new_active_planned,
         weekly_activation_max = WEEKLY_ACTIVATION_MAX,
-        inject_len = .inj_len, dry_run_crash = pre_crash,
-        action = "이번 주 promote 쓰기 전면 중단 — 검토 후 재실행: bash 02_Infrastructure/ops/weekly_cleaner_sweep.sh (또는 QVEST_AXIOM_UNATTENDED=0 로 보류 유지)",
+        inject_len = .inj_len, inject_len_basis = .inj_basis, inject_len_by = .inj_w$by,
+        inject_len_last_spawn = .inj_last, dry_run_crash = pre_crash,
+        # (2026-09-23 정정) 구 문구 'bash …/weekly_cleaner_sweep.sh (또는 QVEST_AXIOM_UNATTENDED=0 로 보류 유지)' 는 둘 다 틀렸다 —
+        #   .sh 는 존재하지 않고(정본 = Rscript …/weekly_cleaner_sweep.R, bootstrap.sh 7일 게이트와 같은 호출), 스위치는
+        #   2026-09-23 부터 기본 0(OFF)이라 '0 으로 두면 보류'가 아니다: 0 이어도 이 HOLD 가 멈추는 promote 쓰기
+        #   (proposed 발급·review_log·MAP)는 재실행 시 그대로 돈다. 스위치가 막는 것은 활성화(status=active)뿐이다.
+        action = paste0("이번 주 promote 쓰기(proposed 발급·review_log·MAP) 전면 중단 — 사유 검토 후 재실행: ",
+                        "cd <QM_ROOT> && PYTHONUTF8=1 Rscript 02_Infrastructure/ops/weekly_cleaner_sweep.R ",
+                        "(★QVEST_AXIOM_UNATTENDED 는 이 HOLD 와 별개 — 기본 0=OFF 라 무인 활성은 이미 0건이고 ",
+                        "활성화는 approve_axiom(ids, approved_by='dohoon') 수동 경로뿐. 0 으로 둔다고 쓰기가 보류되지 않는다)"),
         preview = activation_preview)
       cat(sprintf("  | [axiom][ACTIVATION HOLD] 전면 중단 — %s\n", paste(.reasons, collapse = " · ")))
       cands <- character(0)   # 쓰기 pass 미실행 (본문 무변경 유지)
@@ -611,9 +675,9 @@ run_step("axiom_weekly_cycle", {
       .writers <- names(Filter(function(z) !is.na(z$verdict) && z$verdict %in% c("PASS", "MAP", "FAIL"),
                                activation_preview))
       cands <- cands[basename(cands) %in% .writers]
-      cat(sprintf("  | [axiom] 2-pass: dry-run %d건 → 쓰기 예고 %d건 재스폰 (신규 활성 예정 %d/%d · 주입 len=%s)\n",
+      cat(sprintf("  | [axiom] 2-pass: dry-run %d건 → 쓰기 예고 %d건 재스폰 (신규 활성 예정 %d/%d · 주입 len=%s · %s)\n",
                   length(dry_targets), length(cands), n_new_active_planned, WEEKLY_ACTIVATION_MAX,
-                  as.character(.inj_len)))
+                  as.character(.inj_len), .inj_basis))
     }
 
     for (cand in cands) {

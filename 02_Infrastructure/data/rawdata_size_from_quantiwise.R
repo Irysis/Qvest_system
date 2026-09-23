@@ -138,8 +138,9 @@ qws_read_qw_size <- function(xlsx, sheet = "Size", expected_unit = QWS_EXPECTED_
   meta$n_codes <- length(codes)
   ub <- which(is.na(units_all[cj]) | trimws(units_all[cj]) != expected_unit)
   ib <- which(is.na(items_all[cj]) | trimws(items_all[cj]) != expected_item)
-  meta$unit_values <- as.list(table(units_all[cj], useNA = "ifany"))
-  meta$item_values <- as.list(table(items_all[cj], useNA = "ifany"))
+  .tab <- function(x) { t <- table(x, useNA = "ifany"); n <- names(t); n[is.na(n)] <- "<NA>"; as.list(setNames(as.integer(t), n)) }
+  meta$unit_values <- .tab(units_all[cj])
+  meta$item_values <- .tab(items_all[cj])
   if (length(ub) || length(ib))
     probs <- c(probs, unit_declared = sprintf("선언 불일치 — Unit≠'%s' %d열 · 항목≠'%s' %d열 (예: %s)",
                                               expected_unit, length(ub), expected_item, length(ib),

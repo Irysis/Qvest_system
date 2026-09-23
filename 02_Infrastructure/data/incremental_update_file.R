@@ -320,8 +320,11 @@ incremental_ohlcvs <- function() {
   # RAWDATA.BM_Ret 14M행 전멸 후 write-back 위험. 양측 Date를 Date-class로 강제(build_cache/phase7 동일).
   bm[, Date := as.Date(Date)]
   raw[, Date := as.Date(Date)]
-  raw[, BM_Ret := NULL]
-  raw <- merge(raw, bm[, .(Date, BM_Ret)], by = "Date", all.x = TRUE)
+  # ★W-09(2026-09-23): 전열 재조인(`BM_Ret := NULL` + merge) 폐기 — 단일 writer 경유.
+  #   구판은 매 실행 BM_Ret 열 전체를 벤치로 갈아엎어 보호 구간(1990~98 토요장 계열 431일 ·
+  #   2024-12-30)까지 덮었다. 지금은 결측 채움 + (킬스위치 해제 시) 불일치 정정만 한다.
+  if (!exists("rawdata_bm_ret_sync_dt")) source(file.path(DATA_DIR, "rawdata_bm_ret_sync.R"))
+  raw <- rawdata_bm_ret_sync_dt(raw, bench = bm[, .(Date, BM_Ret)], tag = "incr_ohlcvs/bm_ret")$dt
 
   # 저장
   setorder(raw, Date, Ticker)

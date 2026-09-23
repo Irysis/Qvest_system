@@ -894,6 +894,182 @@ dr_list <- function(status = "open", root = .rf_root()) {
   its
 }
 
+
+# =============================================================================
+# 빈티지 표식 (2026-09-23 · 도훈 결정 "결손된 9월 팩터 DB 를 읽은 강화 측정 = 목록화 + 표식만")
+# =============================================================================
+# ★왜: factor_db_202608(2026-08-31 00:27 빌드 — 08-28 데이터를 08-31 라벨로 · class_R 22종 결손)과
+#   factor_db_202609(Size 결측 → class_R 27종)가 교정 재빌드(09-23 18:53 / 18:56) 전까지 측정에 소비됐다.
+#   재측정은 P0-05 rebase 가 흡수한다. 여기서는 "어느 칸이 어느 빈티지를 먹었나" 를 **덧붙이기만** 한다.
+#   목록·판정 근거 = 06_Registry/vintage_cascade_20260923.json (판정: consumed / possible / not_consumed —
+#   표식 대상은 consumed·possible 뿐이다).
+# 계약:
+#   · append-only — attempt 의 `vintage_flags`(entry 의 기저 측정이면 `base_vintage_flags`)에 원소를 더할 뿐이다.
+#     essence·grade·artifacts·lessons 를 포함한 기존 필드는 한 비트도 바꾸지 않는다. 쓰기 직전
+#     보호 투영(표식 필드·last_updated 를 뺀 원장 전체)을 **직렬화 왕복 후** 원본과 대조해 다르면 쓰지 않고,
+#     쓴 뒤 다시 읽어 대조해 다르면 원본 바이트로 되돌리고 멈춘다.
+#   · 표식 레코드 키는 허용목록(RF_VINTAGE_MARK_KEYS)만 — essence/grade 같은 키를 실어 보내면 거부한다.
+#   · 멱등 — 같은 flag 가 이미 있으면 건너뛴다(덮어쓰지 않는다. 판정을 바꾸려면 새 flag 이름).
+#   · 잠금 — 러너 claim(QVEST_RF_CLAIM · 기본 <root>/.cache/reinforce_auto.claim)을 rf_claim_acquire 로 잡고 쓴다.
+#     L2 레인도 원장 쓰기를 같은 claim 으로 직렬화한다(rf_l2_auto.R:47). 못 잡으면 wait_s 까지 재시도 후 거부.
+#     + CAS: 적재 시 md5 와 쓰기 직전 md5 가 다르면(claim 밖 writer) 쓰지 않는다.
+#   · 원자 쓰기 = .rf_write(tmp+rename · 재파싱 검증) — 이 파일의 다른 원장 writer 와 같은 경로.
+#   · 배치가 한 단위 — 검증 실패가 하나라도 있으면 아무것도 쓰지 않는다.
+#   · 검사 = 08_Tests/reinforcement/test_rf_mark_vintage.R (합성 픽스처 · 운영 원장 무접촉 · 돌연변이 red).
+RF_VINTAGE_VERDICTS  <- c("consumed", "possible")
+RF_VINTAGE_MARK_KEYS <- c("base_id", "attempt_key", "flag", "verdict", "evidence", "source")
+RF_VINTAGE_POLICY    <- "표식만 — 재측정 금지(P0-05 rebase 흡수) · 도훈 2026-09-23"
+
+#' 보호 투영 — 표식 필드와 last_updated 만 뺀 원장. 두 투영이 identical 이면 표식 밖 변경 0.
+.rf_vintage_protected <- function(obj) {
+  obj$last_updated <- NULL
+  obj$entries <- lapply(obj$entries, function(e) {
+    e$base_vintage_flags <- NULL
+    if (!is.null(e$attempts)) e$attempts <- lapply(e$attempts, function(a) { a$vintage_flags <- NULL; a })
+    e
+  })
+  obj
+}
+.rf_vintage_same <- function(a, b) identical(.rf_vintage_protected(a), .rf_vintage_protected(b))
+
+.rf_vintage_validate <- function(m, k) {
+  if (!is.list(m) || is.null(names(m)))
+    stop(sprintf("[reinforce_ledger] vintage 표식 #%d — 이름 있는 list 여야 한다", k), call. = FALSE)
+  extra <- setdiff(names(m), RF_VINTAGE_MARK_KEYS)
+  if (length(extra))
+    stop(sprintf("[reinforce_ledger] vintage 표식 #%d — 허용 밖 키 거부: %s (표식은 essence·grade 를 싣지 못한다)",
+                 k, paste(extra, collapse = ",")), call. = FALSE)
+  s1 <- function(x) { x <- suppressWarnings(as.character(x %||% "")); if (length(x) != 1L || is.na(x)) "" else trimws(x) }
+  if (!nzchar(s1(m$base_id))) stop(sprintf("[reinforce_ledger] vintage 표식 #%d — base_id 비었음", k), call. = FALSE)
+  ak <- s1(m$attempt_key)
+  if (!(identical(ak, "base") || grepl("^[0-9]+$", ak)))
+    stop(sprintf("[reinforce_ledger] vintage 표식 #%d — attempt_key 는 시도 번호 n 또는 \"base\": %s", k, ak), call. = FALSE)
+  if (!grepl("^[a-z0-9_]{3,64}$", s1(m$flag)))
+    stop(sprintf("[reinforce_ledger] vintage 표식 #%d — flag 는 [a-z0-9_]{3,64}: %s", k, s1(m$flag)), call. = FALSE)
+  if (!(s1(m$verdict) %in% RF_VINTAGE_VERDICTS))
+    stop(sprintf("[reinforce_ledger] vintage 표식 #%d — verdict 는 %s 만 표식한다(not_consumed 는 목록에만): %s",
+                 k, paste(RF_VINTAGE_VERDICTS, collapse = "/"), s1(m$verdict)), call. = FALSE)
+  if (!nzchar(s1(m$evidence)))
+    stop(sprintf("[reinforce_ledger] vintage 표식 #%d — evidence 필수(근거 없이 표식하지 않는다)", k), call. = FALSE)
+  list(base_id = s1(m$base_id), attempt_key = ak, flag = s1(m$flag), verdict = s1(m$verdict),
+       evidence = s1(m$evidence), source = s1(m$source))
+}
+
+#' 빈티지 표식 배치 writer
+#' @param marks list(list(base_id, attempt_key = n | "base", flag, verdict = consumed|possible, evidence, source?))
+#' @param claim 잠금 claim 경로. NULL = QVEST_RF_CLAIM 또는 <root>/.cache/reinforce_auto.claim (러너와 같은 해석)
+#' @param backup_to / snapshot_after_to 선택 — 잠금 안에서 쓰기 전 원본 바이트 / 쓴 직후 바이트를 이 경로에 복사
+#'   (운영 호출의 전후 diff 증명용 — 잠금 밖에서 뜬 사본은 그 사이 러너 쓰기가 섞인다).
+#' @param .pre_write_hook 검사 전용 — CAS 검사 직전에 불린다(외부 writer 주입). 운영 호출은 NULL.
+#' @return list(n_new, n_already, written, md5_before, md5_after)
+rf_mark_vintage_batch <- function(layer, marks, root = .rf_root(), claim = NULL,
+                                  wait_s = 900, poll_s = 5, policy = RF_VINTAGE_POLICY,
+                                  backup_to = NULL, snapshot_after_to = NULL,
+                                  .pre_write_hook = NULL) {
+  stopifnot(layer %in% c(1L, 2L))
+  if (!length(marks)) stop("[reinforce_ledger] vintage 표식 — marks 가 비었다", call. = FALSE)
+  M <- lapply(seq_along(marks), function(k) .rf_vintage_validate(marks[[k]], k))   # I/O 전 전수 검증
+
+  # ── 잠금: 러너 claim (전용 env 에 적재 — rf_claim.R 의 %||% 가 이 파일의 NA 인지 %||% 를 덮지 않게) ──
+  .cl <- new.env(parent = globalenv())
+  .lib <- c(file.path(root, "02_Infrastructure/ops/rf_claim.R"), file.path(.rf_root(), "02_Infrastructure/ops/rf_claim.R"))
+  .lib <- .lib[file.exists(.lib)]
+  if (!length(.lib)) stop("[reinforce_ledger] vintage 표식 — rf_claim.R 부재(잠금 없이 쓰지 않는다)", call. = FALSE)
+  sys.source(.lib[1], envir = .cl)
+  claim <- claim %||% { .e <- Sys.getenv("QVEST_RF_CLAIM", "")
+                        if (nzchar(.e)) .e else file.path(root, ".cache", "reinforce_auto.claim") }
+  dir.create(dirname(claim), recursive = TRUE, showWarnings = FALSE)
+  t0 <- Sys.time()
+  repeat {
+    ac <- .cl$rf_claim_acquire(claim, stale_hours = 6)
+    if (isTRUE(ac$ok)) break
+    if (as.numeric(difftime(Sys.time(), t0, units = "secs")) >= wait_s)
+      stop(sprintf("[reinforce_ledger] vintage 표식 — 원장 잠금(claim) 획득 실패(%s · owner_pid=%s · %.0f초 대기) — 아무것도 쓰지 않았다",
+                   ac$reason, as.character(ac$owner_pid %||% NA), wait_s), call. = FALSE)
+    Sys.sleep(poll_s)
+  }
+  on.exit(.cl$rf_claim_release(claim), add = TRUE)
+
+  # ── 적재 (CAS 기준 md5 + 원본 바이트) ─────────────────────────────────────────
+  p <- .rf_path(layer, root)
+  if (!file.exists(p)) stop("[reinforce_ledger] vintage 표식 — 원장 부재: ", p, call. = FALSE)
+  md5_0 <- unname(tools::md5sum(p))
+  raw0  <- readBin(p, "raw", file.info(p)$size)
+  if (!is.null(backup_to)) { writeBin(raw0, backup_to)
+    if (!identical(unname(tools::md5sum(backup_to)), md5_0))
+      stop("[reinforce_ledger] vintage 표식 — 쓰기 전 백업 검증 실패 — 쓰지 않는다: ", backup_to, call. = FALSE) }
+  orig  <- rf_load(layer, root)
+  obj   <- orig
+  now   <- format(Sys.time(), "%Y-%m-%dT%H:%M:%S%z")
+  n_new <- 0L; n_already <- 0L
+  for (m in M) {
+    i <- .rf_find(obj, m$base_id)
+    if (is.na(i)) stop(sprintf("[reinforce_ledger] vintage 표식 — entry 부재: %s", m$base_id), call. = FALSE)
+    rec <- list(flag = m$flag, verdict = m$verdict, evidence = m$evidence, source = m$source,
+                policy = policy, marked_at = now)
+    if (identical(m$attempt_key, "base")) {
+      fl <- obj$entries[[i]]$base_vintage_flags %||% list()
+      if (any(vapply(fl, function(x) identical(as.character(x$flag %||% ""), m$flag), logical(1)))) {
+        n_already <- n_already + 1L; next }
+      obj$entries[[i]]$base_vintage_flags <- c(fl, list(rec))
+    } else {
+      e <- obj$entries[[i]]
+      j <- which(vapply(e$attempts, function(a) identical(as.integer(a$n), as.integer(m$attempt_key)), logical(1)))
+      if (!length(j)) stop(sprintf("[reinforce_ledger] vintage 표식 — attempt n=%s 부재 (%s)", m$attempt_key, m$base_id), call. = FALSE)
+      j <- j[1]
+      if (is.null(e$attempts[[j]]$essence))
+        stop(sprintf("[reinforce_ledger] vintage 표식 — n=%s (%s) 는 미측정(essence 없음) — 측정 빈티지 표식 대상 아님",
+                     m$attempt_key, m$base_id), call. = FALSE)
+      fl <- e$attempts[[j]]$vintage_flags %||% list()
+      if (any(vapply(fl, function(x) identical(as.character(x$flag %||% ""), m$flag), logical(1)))) {
+        n_already <- n_already + 1L; next }
+      obj$entries[[i]]$attempts[[j]]$vintage_flags <- c(fl, list(rec))
+    }
+    n_new <- n_new + 1L
+  }
+  if (n_new == 0L)
+    return(invisible(list(n_new = 0L, n_already = n_already, written = FALSE, md5_before = md5_0, md5_after = md5_0)))
+
+  # ── 보호 투영 대조: 메모리 + 직렬화 왕복(.rf_write 와 같은 인자) ─────────────────
+  if (!.rf_vintage_same(obj, orig))
+    stop("[reinforce_ledger] vintage 표식 — 표식 밖 필드가 바뀌었다(essence·grade 포함 보호 투영 불일치) — 쓰지 않는다", call. = FALSE)
+  .rt <- fromJSON(toJSON(obj, auto_unbox = TRUE, pretty = TRUE, null = "null", na = "null", digits = 6),
+                  simplifyVector = FALSE)
+  if (!.rf_vintage_same(.rt, orig))
+    stop("[reinforce_ledger] vintage 표식 — 직렬화 왕복이 표식 밖 값을 바꾼다(숫자 자릿수 등) — 쓰지 않는다", call. = FALSE)
+
+  if (is.function(.pre_write_hook)) .pre_write_hook(p)
+  if (!identical(unname(tools::md5sum(p)), md5_0))
+    stop("[reinforce_ledger] vintage 표식 — 적재 후 원장이 바뀌었다(claim 밖 동시 쓰기) — 덮어쓰지 않는다. 재시도하라", call. = FALSE)
+  .rf_write(obj, layer, root)
+
+  # ── 사후 검증: 다시 읽어 보호 투영 대조 — 어긋나면 원본 바이트로 되돌리고 멈춘다 ─────
+  back <- tryCatch(rf_load(layer, root), error = function(e) NULL)
+  if (is.null(back) || !.rf_vintage_same(back, orig)) {
+    tmp <- paste0(p, ".vintage_restore.tmp"); writeBin(raw0, tmp)
+    if (!suppressWarnings(file.rename(tmp, p))) { file.copy(tmp, p, overwrite = TRUE); unlink(tmp) }
+    stop("[reinforce_ledger] vintage 표식 — 사후 검증 실패, 원본 바이트로 되돌렸다", call. = FALSE)
+  }
+  md5_1 <- unname(tools::md5sum(p))
+  if (!is.null(snapshot_after_to)) file.copy(p, snapshot_after_to, overwrite = TRUE)
+  cat(sprintf("[reinforce_ledger] vintage 표식 L%d: 신규 %d · 기존 %d (보호 투영 불변 확인)\n", layer, n_new, n_already))
+  invisible(list(n_new = n_new, n_already = n_already, written = TRUE, md5_before = md5_0, md5_after = md5_1))
+}
+
+#' 단건 wrapper — rf_mark_vintage(layer, base_id, attempt_key, flag, evidence, verdict)
+rf_mark_vintage <- function(layer, base_id, attempt_key, flag, evidence, verdict = "consumed",
+                            source = "", root = .rf_root(), ...) {
+  rf_mark_vintage_batch(layer, list(list(base_id = base_id, attempt_key = attempt_key, flag = flag,
+                                         verdict = verdict, evidence = evidence, source = source)),
+                        root = root, ...)
+}
+
+#' 소비자용 — 이 attempt(또는 entry 의 base 측정)에 flag 가 있는가. 없으면 FALSE.
+rf_has_vintage_flag <- function(x, flag) {
+  fl <- x$vintage_flags %||% x$base_vintage_flags %||% list()
+  any(vapply(fl, function(z) identical(as.character(z$flag %||% ""), as.character(flag)), logical(1)))
+}
+
 `%||%` <- function(a, b) if (is.null(a) || length(a) == 0L || (length(a) == 1L && is.na(a))) b else a
 
 cat("[reinforce_ledger.R] Loaded (v10) — rf_open_entry / rf_append_attempt(★L1 25회 게이트·서술 의무 · root_papers 선택) / rf_record_result / rf_park_entry(조기 중단·사유 필수) / rf_record_judge / rf_record_combination_review / rf_lessons_digest / rf_record_adversary(G2 오버레이 반증 표식) / rf_record_b5_redesign(B5 재설계 라운드 표식)\n")

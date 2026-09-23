@@ -1457,6 +1457,27 @@ SUITES=(
   #   디코더(UTF-8 재시도·명시 에러) · SPA 구조 변경 명시 에러 · API 정수 주식수 · 크기 앵커 복원(창 안만 = no_matching_day 돌연변이)
   #   · fill_rate VALUE_FAIL(축 제거 돌연변이 PASS) · emission 게이트 · daily_refresh [1z]/[6a-gate] 실블록 실행(적재 줄 삭제 돌연변이 침묵)
   "08_Tests/data/test_rawdata_size_guard.R"
+  # 2026-09-23 도훈 결정 "복원 Size 의 PIT 엄격화 = 퀀티와이즈 데이터로 대체" — rawdata_size_from_quantiwise.R:
+  #   실물 수출본 형식 판독(코드 뒤 옛 선언 셀 무시) · 거부 8종(지평선 미달·구간 구멍·선언/측정 단위·구간 배율·채움률·잠금·보정 미측정)
+  #   · 실행 = Size 만 교체(독립 열 대조) · 러너 설정 두 줄 토글·바이트 복원 · 재빌드는 러너 정지 중 · 돌연변이 4종(대조·지평선·정지·앵커)
+  "08_Tests/data/test_rawdata_size_from_quantiwise.R"
+  # 2026-09-23 W-09(RAWDATA.BM_Ret 09-07~ 전량 결측 · 2025-01-02/2026-09-02 벤치 불일치 · MA06 소실) — 단일 writer:
+  #   계획 분류(fill/overwrite/protected/bench_lag) · 쓰기 양성 대조(다른 열·행 순서 불변) · 오라클 위반 주입 3종
+  #   · 쓰기기 돌연변이 4종(지연일 추정 채움·다른 열·보호 해제·동시 writer) · 킬스위치 · [3b] 실블록(적재 줄 삭제 = 침묵) · 옛 writer 경로 정리
+  "08_Tests/data/test_rawdata_bm_ret_sync.R"
+  # 2026-09-23 Axiom 동결(도훈 AX-D1~D7) 검사 — 신설 당일 SUITES 미편입이던 2종 + 적대검증 후속 1종 편입:
+  #   무인 활성 0(B0~B4 · 자식 프로세스 격리 단정)·mode-local 처분(R, 읽기 전용)·보충 스캔 가드(H)·주입 훅(I)
+  #   ·D5 문언(D: enforcement_hook 의미론은 mode 값 고정 없이 · AX-008 최상위 v2.0 기준만)·전파 가드(P: 주입면 구 문언 0)
+  #   — 돌연변이 M-B1~3·M-H·M-I·M-D1~4·M-P
+  "08_Tests/axiom/test_axiom_unattended_freeze.R"
+  #   철회 L-code 차단(P·H·C·S) + 강화 증류 끔 — 돌연변이 M-H·M-C
+  "08_Tests/axiom/test_lcode_retraction_filter.py"
+  #   주간 스윕 HOLD '주입 길이 > 1900' 판정 입력 = 헤더 변형 최악값(문턱 불변) — 스폰 순서 무관·운영 계측 무접촉 · 돌연변이 M-W1·M-W2
+  "08_Tests/axiom/test_cleaner_inject_len_worst.R"
+  # 2026-09-23 도훈 결정 "결손된 9월 팩터 DB 를 읽은 강화 측정 = 목록화 + 표식만"(재측정은 P0-05 rebase 흡수) — rf_mark_vintage_batch:
+  #   append-only(검사 자체 보호 투영·essence·grade 불변 · 텍스트는 last_updated 만) · 허용 키(essence/grade 주입 거부) · 멱등 · 배치 원자성
+  #   · 직렬화 왕복 드리프트 거부 · 러너 claim 잠금 · CAS — 돌연변이 5종(잠금·가드+essence·멱등·키·CAS) red + 가드 유지 시 writer 자체 거부
+  "08_Tests/reinforcement/test_rf_mark_vintage.R"
 )
 
 

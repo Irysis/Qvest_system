@@ -9,7 +9,7 @@ build_index_cache.py — QuantiWise Benchmark_price.xlsx → 지수 캐시 (재�
                  Code 행을 명시적으로 매칭해 정확한 IKS200을 뽑고, sanity 가드로 재발 방지.
 
 사용: python 02_Infrastructure/data/build_index_cache.py [--update-rawdata] [--allow-grid-change]
-  --update-rawdata     : RAWDATA.parquet의 BM_Ret도 코스피200 기준으로 재생성(백업 후).
+  --update-rawdata     : RAWDATA.parquet의 BM_Ret 을 단일 writer(rawdata_bm_ret_sync.R --apply)로 동기화.
   --allow-grid-change  : benchmark.parquet 의 **날짜 격자 전면 교체**를 허용한다.
                          기본은 격자 보존(과거 삽입·기존 삭제 금지 · 전진만 반영) —
                          이 파일이 trading_calendar.R 의 거래일 권위이기 때문이다.
@@ -162,22 +162,18 @@ def main(update_rawdata=False, allow_grid_change=False):
     _write_parquet(bm, ["BM_Close", "BM_Ret", "BM_Src"], bmk)
     print(f"  benchmark.parquet 작성 (코스피200 포인트) — 최근 {bm['BM_Close'].iloc[-1]:,.1f}")
 
-    # 3) (옵션) RAWDATA.parquet BM_Ret 재생성
+    # 3) (옵션) RAWDATA.parquet BM_Ret 동기화 — ★W-09(2026-09-23): 단일 writer 위임.
+    #   구판은 여기서 BM_Ret 열 전체를 벤치로 갈아엎고 **BM_Ret NA 행을 삭제**했다(벤치 지연일의
+    #   전 종목 행이 사라진다) · 보호 구간(1990~98 토요장 계열 · 2024-12-30)까지 덮었다 · 비원자 쓰기.
+    #   정의·보호·킬스위치·원자 쓰기·사후검증은 rawdata_bm_ret_sync.R 하나가 진다.
     if update_rawdata:
-        raw_path = os.path.join(CACHE, "RAWDATA.parquet")
-        # (2026-07-04) 위와 동일 — 일회성 폐기-백업 무효화(마이그레이션 완료). 재백업은 QVEST_IKS_MIGRATION=1.
-        if os.environ.get("QVEST_IKS_MIGRATION") == "1":
-            raw_bak = os.path.join(CACHE, "rawdata_pre_kospi200bench_20260702.parquet")
-            if not os.path.exists(raw_bak):
-                shutil.copy(raw_path, raw_bak); print(f"  RAWDATA 백업: {os.path.basename(raw_bak)}")
-        raw = pq.read_table(raw_path).to_pandas()
-        raw["Date"] = pd.to_datetime(raw["Date"]).dt.date
-        bmr = bm[["Date", "BM_Ret"]].rename(columns={"BM_Ret": "BM_Ret_new"})
-        raw = raw.merge(bmr, on="Date", how="left")
-        raw["BM_Ret"] = raw["BM_Ret_new"]; raw = raw.drop(columns=["BM_Ret_new"])
-        raw = raw[raw["BM_Ret"].notna() & raw["Ret"].notna()]
-        pq.write_table(pa.Table.from_pandas(raw, preserve_index=False), raw_path)
-        print(f"  RAWDATA.parquet BM_Ret 재생성 (코스피200 기준) — {len(raw):,}행")
+        import subprocess
+        rscript = shutil.which("Rscript") or r"C:\Program Files\R\R-4.5.2\bin\Rscript.exe"
+        sync_r = os.path.join(os.path.dirname(os.path.abspath(__file__)), "rawdata_bm_ret_sync.R")
+        env = dict(os.environ, QM_ROOT=os.path.dirname(CACHE))
+        rc = subprocess.call([rscript, "--no-save", sync_r, "--apply"], env=env)
+        print(f"  RAWDATA BM_Ret 동기화 (단일 writer rawdata_bm_ret_sync.R) rc={rc} "
+              f"(0=정합 · 4=벤치 지연 NA 유지 · 3=위반 · 1=오류)")
 
     # 검증
     d2 = df.copy(); d2["ym"] = pd.to_datetime(d2["Date"]).dt.strftime("%Y-%m")
