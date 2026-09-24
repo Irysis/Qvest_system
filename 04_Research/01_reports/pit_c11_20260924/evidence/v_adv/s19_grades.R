@@ -1,0 +1,10 @@
+suppressMessages({library(jsonlite); library(data.table)})
+L <- readLines("C:/Users/99922/OneDrive/Quant_Module_Moltbot/06_Registry/reinforce_ledger_l1.json", warn=FALSE)
+specs <- readLines("ma01_specs.txt")
+out <- rbindlist(lapply(specs, function(s){
+  i <- grep(s, L, fixed=TRUE)
+  if (!length(i)) return(data.table(spec=s, n=0L, grade=NA_character_))
+  g <- sapply(i, function(k){ w <- L[max(1,k-40):k]; gg <- grep('"grade":', w, value=TRUE); if (length(gg)) { z <- tail(gg,1); m <- regmatches(z, regexpr("\"[A-F]\"", z)); if (length(m)) m else "?" } else NA })
+  data.table(spec=s, n=length(i), grade=paste(unique(g), collapse="/"))
+}))
+print(out)

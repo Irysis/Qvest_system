@@ -1119,7 +1119,7 @@
     {
       "id": "PIT-C11-REMEDIATION",
       "title": "PIT C11 — 해외(FRED) 시계열 가용시점 규약 부재(관측일 결합·같은 날짜 병합·1행 lag 신호의 종가→종가 적용·최신 vintage 소급). 등급 도달: L1 최대 35칸(B5·C28·F2) · 2계층 B 풀 5모듈·FR_003 · BOOK_0001 AE·m4 게이트. A칸·충실구현 0",
-      "status": "open",
+      "status": "resolved",
       "opened_at": "2026-09-24T04:21:29+0900",
       "options": [
         "안 B 후 안 C 순차",
@@ -1135,12 +1135,87 @@
       ],
       "owner": "dohoon",
       "source": "C11 범위 조사 wf_bf6f0d6d-9b8 판정서(scratchpad/pit_c11_synth.md) · 봉쇄 wf_a429ee6d-8ec",
-      "decision": null,
-      "decided_by": null,
-      "decided_at": null,
-      "note": null,
-      "registered_at": "2026-09-24T04:21:29+0900"
+      "decision": "승인 — 안 B(계열별 가용시점 층 + 표적 재빌드 + 오염 칸 재측정, 안 A 봉쇄 포함) 후 안 C(ALFRED as-of 빈티지) 순차",
+      "decided_by": "dohoon",
+      "decided_at": "2026-09-24T10:31:21+0900",
+      "note": "판정서 ⑥-3·4",
+      "registered_at": "2026-09-24T04:21:29+0900",
+      "recorded_by": "Q session be2e88bf (도훈 채팅 응답 기록)",
+      "evidence": "2026-09-24 10:3x 세션 be2e88bf — 도훈 채팅 '권고대로 진행해줘'(판정서 04_Research/01_reports/pit_c11_20260924/PIT_C11_verdict_20260924.md ⑥ 권고 일괄)"
+    },
+    {
+      "id": "PIT-C11-BOOK0001",
+      "title": "BOOK_0001 AE·m4 게이트 C11 오염 처리",
+      "status": "resolved",
+      "opened_at": "2026-09-24T10:31:21+0900",
+      "options": [
+        "표기 → 수리 뒤 재산출·Judge",
+        "트래킹 중지",
+        "등록 유지 + 표기만"
+      ],
+      "recommendation": "표기 → 수리 뒤 재산출·Judge",
+      "default_until_decided": "현행",
+      "blocks": [
+        "item:BOOK_0001"
+      ],
+      "owner": "dohoon",
+      "source": "PIT C11 판정서 ⑥ (04_Research/01_reports/pit_c11_20260924/)",
+      "decision": "승인 — 지금은 트래킹에 'C11 미해소 게이트' 표기, 시간축 수리 뒤 게이트 이력 재산출 → A 면 Judge 스폰. 05_Production 수정은 promote_to_production() 승인 때 별도",
+      "decided_by": "dohoon",
+      "decided_at": "2026-09-24T10:31:22+0900",
+      "note": "도훈 채팅 응답",
+      "registered_at": "2026-09-24T10:31:21+0900",
+      "recorded_by": "Q session be2e88bf (도훈 채팅 응답 기록)",
+      "evidence": "2026-09-24 10:3x 세션 be2e88bf — 도훈 채팅 '권고대로 진행해줘'(판정서 04_Research/01_reports/pit_c11_20260924/PIT_C11_verdict_20260924.md ⑥ 권고 일괄)"
+    },
+    {
+      "id": "PIT-C11-MA0102",
+      "title": "MA01_GDP_Sensitivity·MA02_CPI_Sensitivity — 현 명세(12개월·최소 12관측)로는 공표분만의 PIT 판 산출 불가",
+      "status": "resolved",
+      "opened_at": "2026-09-24T10:31:22+0900",
+      "options": [
+        "퇴역",
+        "PIT 명세로 재정의"
+      ],
+      "recommendation": "퇴역",
+      "default_until_decided": "격리",
+      "blocks": [
+        "item:factor_registry_MA01_MA02"
+      ],
+      "owner": "dohoon",
+      "source": "PIT C11 판정서 ⑥ (04_Research/01_reports/pit_c11_20260924/)",
+      "decision": "승인 — 퇴역(후보 풀 제외·레지스트리 lifecycle retired). 논문 근거 PIT 명세가 생기면 새 팩터로 재등록. MA01 20칸은 무효 유지",
+      "decided_by": "dohoon",
+      "decided_at": "2026-09-24T10:31:22+0900",
+      "note": "도훈 채팅 응답",
+      "registered_at": "2026-09-24T10:31:22+0900",
+      "recorded_by": "Q session be2e88bf (도훈 채팅 응답 기록)",
+      "evidence": "2026-09-24 10:3x 세션 be2e88bf — 도훈 채팅 '권고대로 진행해줘'(판정서 04_Research/01_reports/pit_c11_20260924/PIT_C11_verdict_20260924.md ⑥ 권고 일괄)"
+    },
+    {
+      "id": "PIT-C11-CONVENTIONS",
+      "title": "C11 부속 규약·결정 일괄(판정서 ⑥-1·2·8·9·10·11·12·13)",
+      "status": "resolved",
+      "opened_at": "2026-09-24T10:31:22+0900",
+      "options": [
+        "권고대로 일괄",
+        "항목별"
+      ],
+      "recommendation": "권고대로 일괄",
+      "default_until_decided": "봉쇄만",
+      "blocks": [
+        "item:fred_availability_rules"
+      ],
+      "owner": "dohoon",
+      "source": "PIT C11 판정서 ⑥ (04_Research/01_reports/pit_c11_20260924/)",
+      "decision": "승인 — ① DEXKOUS 대신 ECOS 731Y001 ② ICE OAS(HY·BBB) 한국 d+2 부터 ③ CPI 2025-10 결측은 날짜 기준 12개월 변화 ④ 방어선 수리(lookahead_detector 면제 삭제·pit_verify_fred_lag 실구현·C11 양성 대조 검사·레지스트리 선언 정정) ⑤ C1 동시 수리(D08·RE10·RE13, RE04 는 검증 후) ⑥ WT-D20260803_005/006 오염 정본 무효·제외판 정본 지정 ⑦ 등급 체계 밖 소비자(레거시 STR·ramp·DPL ML)는 표식만(05_Production 은 promote 경로) ⑧ P0-05·06 재측정 경로 비편입 — pit_invalid:C11 표식·epoch(measurement_regime 키) 공유",
+      "decided_by": "dohoon",
+      "decided_at": "2026-09-24T10:31:22+0900",
+      "note": "도훈 채팅 응답",
+      "registered_at": "2026-09-24T10:31:22+0900",
+      "recorded_by": "Q session be2e88bf (도훈 채팅 응답 기록)",
+      "evidence": "2026-09-24 10:3x 세션 be2e88bf — 도훈 채팅 '권고대로 진행해줘'(판정서 04_Research/01_reports/pit_c11_20260924/PIT_C11_verdict_20260924.md ⑥ 권고 일괄)"
     }
   ],
-  "last_updated": "2026-09-24T04:21:29+0900"
+  "last_updated": "2026-09-24T10:31:22+0900"
 }
