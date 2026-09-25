@@ -21,6 +21,11 @@
 #==============================================================================
 suppressPackageStartupMessages({ library(jsonlite); library(data.table) })
 if (!exists("%||%")) `%||%` <- function(a, b) if (is.null(a) || length(a) == 0L) b else a
+# v10.4 (2026-09-24) 로케일 가드 — C 로케일(LC_ALL=C.UTF-8 을 Windows R 이 못 세움)이면 nchar/substr 가 바이트 단위가 되어
+#   boot_line 이 한글 중간에서 잘리고(.cache/rf_director_latest.json 오프셋 13417) enc2utf8/jsonlite 가 최상위 비트를 지운다
+#   (layer_bottleneck_map.md '침식형' → 제어문자). Rscript 는 최상위 식을 하나씩 파싱하고 이 파일엔 섞인 리터럴이 0건이라
+#   이 한 줄로 이후 전부가 UTF-8 CTYPE 에서 돈다. 근본 수리는 Qvest_MorningReboot.bat(v10.4) — 이건 방어층.
+if (!isTRUE(l10n_info()[["UTF-8"]])) invisible(suppressWarnings(Sys.setlocale("LC_CTYPE", "English_United States.utf8")))
 
 ARGS <- commandArgs(trailingOnly = TRUE)
 .arg <- function(flag, default = NULL) {
@@ -370,7 +375,8 @@ dir_boot_line <- function(v, best, ov, l2, rec) {
                ov$status, ov$adv_pass, ov$adv_pass + ov$adv_fail + ov$adv_other,
                if (nzchar(l2$last_fr)) l2$last_fr else "-", if (length(l2$grades)) l2$grades[length(l2$grades)] else "-", .chr(l2$attempts_used %||% 0),
                switch(rec$action, open_l2_unit = "2계층 T/S/C", directed_combination = "지시결합", b5_context_only = "B5 컨텍스트", proposal = "제안", none = "없음", rec$action))
-  if (nchar(s, type = "chars") > 120L) s <- paste0(substr(s, 1L, 117L), "…")
+  if (isTRUE(nchar(s, type = "chars", allowNA = TRUE) > 120L)) s <- paste0(substr(s, 1L, 117L), "…")
+  if (!validUTF8(s)) s <- iconv(s, "UTF-8", "UTF-8", sub = "")   # 문자 경계 밖 절단의 마지막 방어(v10.4)
   s
 }
 
@@ -552,13 +558,23 @@ dir_execute <- function(rec, out, cfg, root = DR_ROOT, code_root = DR_CODE_ROOT)
 .write_atomic <- function(txt, path) {
   dir.create(dirname(path), recursive = TRUE, showWarnings = FALSE)
   tmp <- sprintf("%s.tmp.%d", path, Sys.getpid())
-  writeLines(enc2utf8(txt), tmp, useBytes = TRUE)
+  txt <- enc2utf8(txt)
+  if (!all(validUTF8(txt))) stop(sprintf("[rf_director] 쓰기 거부 — 유효하지 않은 UTF-8: %s (로케일 %s)", path, Sys.getlocale("LC_CTYPE")))
+  writeLines(txt, tmp, useBytes = TRUE)
   if (!file.rename(tmp, path)) { file.copy(tmp, path, overwrite = TRUE); unlink(tmp) }
   invisible(path)
 }
 
 dir_run <- function(root = DR_ROOT, code_root = DR_CODE_ROOT, dry = DR_DRY) {
   t0 <- Sys.time(); cfg <- dir_cfg(root)
+  # ★DIR-PHASE0 (2026-09-24 도훈 · decision_register DIR-PHASE0/DIR-ABSORB): director.enabled 실배선.
+  #   구판은 dir_cfg 가 enabled 를 읽기만 하고 소비자가 0 이라 끌 수 없는 스위치였다. false 면 계산·캐시·지도·결정 기록·
+  #   방향 채점·텔레그램 전부 0 으로 한 줄만 남기고 끝낸다(exit 0 — 동결은 실패가 아니다). 기존 캐시는 지우지 않는다(사료).
+  #   흡수 계획 = 플랜 qvest-1-drifting-eclipse '디렉터 흡수 반영'. 해제 = 도훈 결정으로 config 를 true 로.
+  if (!isTRUE(cfg$enabled)) {
+    cat("[rf_director] 동결 — director.enabled=false (DIR-PHASE0 · 흡수 대기) · 계산·쓰기·발송 0\n")
+    return(invisible(list(frozen = TRUE, reason = "director.enabled=false")))
+  }
   th  <- dir_thresholds(root, code_root)
   led <- .rj(file.path(root, "06_Registry/reinforce_ledger_l1.json")) %||% list(entries = list())
   cat <- .rj(file.path(root, "06_Registry/module_catalog.json")) %||% list(modules = list())

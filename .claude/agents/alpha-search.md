@@ -1,6 +1,6 @@
 ---
 name: alpha-search
-description: 1계층 알파 서칭 에이전트 (v10) — 논문 1편을 완전 충실구현(run_paper_replication · 롱숏·종목수·비중 논문 그대로, 유니버스만 K200∪KQ150)으로 검증하고 권위 등급(essence)을 산출, 2차트·성과요약을 [1계층] 표제로 텔레그램 발송. 미달 → 강화 원장 open / Grade A → judge_request 발행(Judge = PIT 전담). 의미있는 실패만 L-code 적립. QEPM 이행은 강화부터. WT-id 사용 금지.
+description: 1계층 알파 서칭 에이전트 (v10) — 논문 1편을 완전 충실구현(run_paper_replication · 롱숏·종목수·비중 논문 그대로, 유니버스만 K200∪KQ150)으로 검증하고 권위 등급(essence)을 산출, 2차트·성과요약을 [1계층] 표제로 텔레그램 발송. 미달 → 강화 원장 open / Grade A → 러너가 A 자격 관문 rf_a_eligibility(충실구현 어댑터 · P0-13)를 태워 통과 = 산출 judge_request.eligible.json(Judge(PIT 전담) 트리거) · 보류 = judge_request.held.json(사유 코드 · 트리거 아님) → [1계층] A 후보 보고. 의미있는 실패만 L-code 적립. QEPM 이행은 강화부터. WT-id 사용 금지.
 effort: high
 skills: [alpha-search, qvest-telegram]
 ---
@@ -14,7 +14,7 @@ skills: [alpha-search, qvest-telegram]
 ## 4-step
 1. **가설 intake** — 논문 URL이면 `mcp__arxiv__*`/`mcp__jina__*`로 핵심 시그널 추출. 가설 문장이면 그대로. `strategy_name`+`strategy_idea` 확정.
 2. **factor_engine.R 작성** — `02_Infrastructure/alpha_search/factor_engine_template.R` 복사 후 "팩터 정의" 블록 교체. **PIT 준수**(shift/rolling, 동일시점 참조 금지).
-3. **실행 (v10 충실구현)** — 전략 디렉터리로 `cd` 한 뒤 한 줄로:
+3. **실행 (v10 충실구현)** — **선확인**: `bash 02_Infrastructure/ops/refresh_barrier.sh status` 가 `state=free` 가 아니면 측정 보류(잠금 해제 후 재시도 · 러너는 배리어를 안 본다). 그 뒤 전략 디렉터리로 `cd` 한 뒤 한 줄로:
    `Rscript -e 'source("02_Infrastructure/alpha_search/run_paper_replication.R"); run_paper_replication(strategy_name=, strategy_idea=, factor_engine_path=, portfolio_spec=<논문값>, source_paper=list(url="..."))'`
    — 엔진은 `FACTORS(Date,Ticker,Score)` 또는 `PORTFOLIO(Date,Ticker,Weight[,Leg])` 형태 둘 다 허용. 유일한 축 변경 = 유니버스 K200∪KQ150(PIT 시변). 등급은 15bps 순비용 판(논문 명시값 병기).
    (`run_alpha_search()` 는 폐지가 아니라 **실투형 측정 도구**로 존치 — 강화·재측정 경로에서 쓴다.)
@@ -26,7 +26,7 @@ skills: [alpha-search, qvest-telegram]
 - 텔레그램: 2차트 + 전략아이디어 + 성과요약(스코어링 지표) 1회. `[팩터분석]`(FF3/FF5/Carhart·Fama-MacBeth)은 `deep=TRUE` 로 분석이 실제 돈 경우에만. 헤더 `🔭 AlphaSearch` 모드 배지.
 
 ## 금지 (Hook 오발동·SOT 위반 회피)
-- **충실구현 단계에서 QEPM 이행 금지**(강화부터 QEPM): Risk/Optimizer/Forge 미호출, WorkTask status 전이 없음, `*_package.json`/`*_verdict.json`/`*_draft.json` 산출 금지, certificate 의존 없음. ★**Judge 는 essence Grade A 확정 시에만** — 러너가 `judge_request.json` 을 발행하고 세션이 스폰한다(PIT 전담).
+- **충실구현 단계에서 QEPM 이행 금지**(강화부터 QEPM): Risk/Optimizer/Forge 미호출, WorkTask status 전이 없음, `*_package.json`/`*_verdict.json`/`*_draft.json` 산출 금지, certificate 의존 없음. ★**Judge 는 essence Grade A 확정 시에만** — 러너 §11 이 A 자격 관문(`rf_a_eligibility` · 충실구현 어댑터 · P0-13)을 태워 통과분만 산출물 `judge_request.eligible.json`(Judge 트리거)을 쓰고, 보류면 `judge_request.held.json`(사유 코드 · 트리거 아님)만 남긴다. 이 에이전트는 Judge 를 스폰하지 않는다 — A 는 `[1계층]` 후보(관문 결과 병기)로 보고만 한다 · 트리거 정본 = `.claude/agents/judge.md` §스폰 조건.
 - **WT-id(WT-D/WT-P…) 사용 금지**.
 - **텔레그램 직접 호출 금지** — `tg_agent_brief()`만(엔진이 처리).
 - **BOOK 등록 금지** — `06_Registry/book/book_registry.json` 은 writer(`02_Infrastructure/book/book_registry.R`) 경유 + Grade A ∧ Judge PIT PASS ∧ **도훈 confirm** 후에만(v10). legacy `book_state.json` 은 동결(book_write_guard 차단).

@@ -29,6 +29,29 @@
 #          없으면 hold_pool 이 다음 집행일까지 늘어난다. 첫 달부터 없으면 0.
 #   Calmar = (NAV_end)^(ann/n) − 1 / max(1 − NAV/cummax NAV) — backtest_result_contract.R:401-448 과 같은 식.
 #
+# ★집행 규약 (2026-09-24 · 플랜 P0-04 후속 · 결정 EXEC-PRICE). 하네스(replication_harness.R)가 exec_price 로 보유창을
+#   가른다 — close_d_legacy = [exec, next_exec)(새 보유가 집행일 수익을 가짐 · 비용 = 집행일 가산) · close_t1 =
+#   (exec, next_exec](집행일 수익은 **직전 보유**가 드리프트 비중으로 · 비용 = 새 보유 첫 날에 곱). 구판 해석 경로
+#   (.adv_period_index · .adv_holding_period_returns)는 legacy 창(집행일 ≤ 수익일 < 다음 집행일)을 **가정**했다 —
+#   close_t1 칸에 그대로 쓰면 집행일 수익을 새 노출 E_{p+1} 로 곱해 한 기간 어긋난 경로를 잰다.
+#   이제 칸의 규약을 **산출물에서** 읽는다(.adv_attempt_exec): 선언 = authoritative_remeasure.json::measurement_regime.exec_price
+#   (> 01_strategy_spec.json::exec_price) · 검산 = 산출 창(첫 수익일 = 첫 집행일 ⇒ 집행일 포함 창 · 첫 수익일 > 첫 집행일 ⇒
+#   (exec, …] 창). 선언이 없으면(P0-01 이전 산출) 산출 창에서 재도출한다 — 인자화 전 하네스는 legacy 뿐이었다.
+#   선언과 산출 창이 어긋나면 conflict. 원장 essence 에 규약 표식이 있으면(P0-06 rebase 이후) 그것과도 대조하고,
+#   원장 essence Calmar 가 산출물 Calmar 와 직렬화 오차(ADV_SER_TOL) 밖으로 다르면 conflict — 재측정이 essence 만 바꾸고
+#   attempt$artifacts 가 옛 산출물을 가리키는 경우(후보 판정과 해석 경로가 다른 측정)를 표식 없이도 막는다.
+#   ★규약이 다른 칸끼리는 비교하지 않는다: 셀과 바닥의 규약이 다르면(또는 open_t1 · 모순) 후보 판정(Calmar 비교)부터
+#   거부하고 verdict "error"(reason regime_*) — 소비 보류다(not_candidate 가 아니다: 기전의 음성 증거가 아니므로).
+#   규약을 판독할 수 없으면(산출물 부재) 행 단계는 구판 경로로 두고 검정 단계에서 다시 판독해 같지 않으면 멈춘다.
+#   T1/T2 재실행은 칸의 규약으로 **고정**한다 — 워커는 exec_price 를 넘기지 않으므로(설정 기본값을 쓴다) 자식 프로세스에
+#   QVEST_CONSTRAINT_DEFAULTS(replication_harness.R::rep_execution_config 의 명시 레버)로 execution.exec_price 만 바꾼
+#   사본을 가리킨다. 재실행 산출물의 실현 규약(measurement_regime.exec_price)이 칸과 다르면 그 검정은 error(비교 거부).
+#   legacy 칸은 legacy 로 — 해석 경로·재실행 모두 구판과 같은 창이다(비트 동일 · 검사 08_Tests/reinforcement/test_rf_adversary_exec_regime.R).
+#   ★rebase 칸(2026-09-24 · 통합 검증 I2): 산출물 = 원장 표식 measurement_regime$remeasure_path 의 디렉터리(P0-05 형제 판 — 03/04 CSV
+#   포함 · .adv_art_dir). 원장 essence 와 해석 경로가 같은 판이 되어 rebase 칸·rebase 된 바닥 위 B5 칸이 같은 규약으로 검정된다.
+#   ★바닥 출처(G-F1): 셀 스펙 floor_source 가 carry/none 이면 바닥 없음(not_candidate · floor_carry/floor_missing) · PORT_t 폴백 금지
+#   (floor_unidentified) — .adv_floor_of 머리 주석.
+#
 # ★블록 길이 규칙: np::b.star(Politis & White 2004 자동 블록 길이)가 설치돼 있으면 그것(원형 블록 BStar_CB),
 #   아니면 ceiling(n^(1/3)) — Hall, Horowitz & Jing (1995, Biometrika 82:561-574)의 n^{1/3} 비율.
 #   실측 2026-09-17: np 미설치 → HHJ 규칙 · n=259 개월 → b=7. 어느 규칙을 썼는지 기록에 남긴다.
@@ -46,6 +69,10 @@
 # 소비자 규약: attempt$adversary$verdict ∈ {pass, fail, error, not_candidate}. **pass 만** 블록 승자·carry·
 #       Grade A 후보로 쓴다. fail/error = 소비 보류(등급 불변). not_candidate = 바닥 Calmar 를 못 넘었거나
 #       자기 오버레이 층이 없어 검정 대상이 아니었던 칸(미검정 ≠ 실패). 표식 없음 = 아직 안 돌았다.
+#       ★deferred_refresh_lock (2026-09-24 · OPS-RUNNER-REFRESH-BARRIER 수리) = 리프레시 배리어로 검정이 멈춘 칸 —
+#       판정이 아니라 '다시 돌려라' 표식이다. pass 가 아니므로 소비 보류(rf_adversary_ok·rf_grade_a_hold·rf_promote 가
+#       이미 그렇게 읽는다)이고, 러너가 그 entry 를 다시 잡는 첫 tick 에 승자 해석보다 앞에서 재실행한다.
+#       ★표식 없이 멈추면 안 된다 — 표식 없음 = 구 attempt 호환으로 **소비 가능**이라 검증 없는 오버레이가 승자·바닥·carry 로 샌다.
 #
 # 제공: rf_overlay_adversary_run / adv_calmar_from_ret / adv_block_len / adv_circular_block_perm /
 #       adv_exposure_path / adv_t3_placebo / adv_t4_static / adv_t5_episode / adv_t3b_xs / .adv_make_variant_spec /
@@ -165,11 +192,19 @@ adv_circular_block_perm <- function(x, b) {
 }
 
 #' 노출 근사 경로 — r_t × E_{p(t)} − 집행일 |ΔE| × cost
-#' @param r 일간(또는 기간) 바닥 수익 · period_of 각 r 의 기간 인덱스(1..P) · E 기간별 노출 · exec_pos 각 기간의 집행 위치(r 의 인덱스)
-adv_exposure_path <- function(r, period_of, E, exec_pos, cost_rate) {
+#' @param r 일간(또는 기간) 바닥 수익 · period_of 각 r 의 기간 인덱스(1..P) · E 기간별 노출 · exec_pos 각 기간의 비용 기장 위치(r 의 인덱스)
+#' @param cost_booking "additive"(legacy — 집행일 행 가산 차감 Rn = R − c) | "multiplicative"(close_t1 — 새 보유 첫 날에
+#'   곱: Rn = (1 − c)(1 + R) − 1 · replication_harness.R 의 cost_booking 과 같은 기장). 기본값 = 구판 호출 호환.
+adv_exposure_path <- function(r, period_of, E, exec_pos, cost_rate, cost_booking = "additive") {
   E <- as.numeric(E); E[!is.finite(E)] <- 0
   out <- as.numeric(r) * E[period_of]
   dE <- c(0, abs(diff(E)))                          # 첫 기간 ΔE=0 — 초기 매수 비용은 바닥 r_t 에 이미 있다
+  if (identical(cost_booking, "multiplicative")) {
+    if (anyDuplicated(exec_pos)) stop("[rf_overlay_adversary] 곱 기장인데 두 기간이 같은 기장 위치를 가진다")
+    out[exec_pos] <- (1 - dE * cost_rate) * (1 + out[exec_pos]) - 1
+    return(out)
+  }
+  if (!identical(cost_booking, "additive")) stop("[rf_overlay_adversary] 미지 cost_booking: ", cost_booking)
   cost <- numeric(length(r)); cost[exec_pos] <- cost[exec_pos] + dE * cost_rate
   out - cost
 }
@@ -183,13 +218,13 @@ adv_exposure_path <- function(r, period_of, E, exec_pos, cost_rate) {
 
 #' T3 — 노출 짝지은 placebo. pass ⇔ obs > quantile(placebo, 1−alpha)
 adv_t3_placebo <- function(r, period_of, E, exec_pos, cost_rate, n_placebo = 200L, alpha = 0.05,
-                           seed = 20260917L, block_rule = "auto", ann = 252) {
+                           seed = 20260917L, block_rule = "auto", ann = 252, cost_booking = "additive") {
   bl <- adv_block_len(E, block_rule)
-  obs_ret <- adv_exposure_path(r, period_of, E, exec_pos, cost_rate)
+  obs_ret <- adv_exposure_path(r, period_of, E, exec_pos, cost_rate, cost_booking)
   obs <- adv_calmar_from_ret(obs_ret, ann)
   plc <- .adv_with_seed(seed, vapply(seq_len(n_placebo), function(k) {
     Ep <- adv_circular_block_perm(E, bl$b)
-    adv_calmar_from_ret(adv_exposure_path(r, period_of, Ep, exec_pos, cost_rate), ann)$calmar
+    adv_calmar_from_ret(adv_exposure_path(r, period_of, Ep, exec_pos, cost_rate, cost_booking), ann)$calmar
   }, numeric(1)))
   plc_ok <- plc[is.finite(plc)]
   q <- if (length(plc_ok)) as.numeric(stats::quantile(plc_ok, 1 - alpha, names = FALSE, type = 7)) else NA_real_
@@ -206,11 +241,11 @@ adv_t3_placebo <- function(r, period_of, E, exec_pos, cost_rate, n_placebo = 200
 }
 
 #' T4 — 정적 등가: 상수 노출 mean(E) · 비용 0. pass ⇔ obs > Calmar_const
-adv_t4_static <- function(r, period_of, E, exec_pos, cost_rate, obs_calmar = NULL, ann = 252) {
+adv_t4_static <- function(r, period_of, E, exec_pos, cost_rate, obs_calmar = NULL, ann = 252, cost_booking = "additive") {
   Ec <- mean(as.numeric(E), na.rm = TRUE)
   cst <- adv_calmar_from_ret(as.numeric(r) * Ec, ann)
   if (is.null(obs_calmar))
-    obs_calmar <- adv_calmar_from_ret(adv_exposure_path(r, period_of, E, exec_pos, cost_rate), ann)$calmar
+    obs_calmar <- adv_calmar_from_ret(adv_exposure_path(r, period_of, E, exec_pos, cost_rate, cost_booking), ann)$calmar
   pass <- is.finite(obs_calmar) && is.finite(cst$calmar) && obs_calmar > cst$calmar
   list(status = if (!is.finite(obs_calmar) || !is.finite(cst$calmar)) "error" else if (pass) "pass" else "fail",
        obs_calmar = obs_calmar, const_calmar = cst$calmar, const_cagr = cst$cagr, const_mdd = cst$mdd, mean_E = Ec,
@@ -318,6 +353,138 @@ adv_t3b_xs <- function(H, cost_rate, n_placebo = 200L, alpha = 0.05, seed = 2026
   x[, date := as.Date(date)]
   x[, .(date, ticker = as.character(ticker), w = as.numeric(target_weight))][is.finite(w)]
 }
+.adv_read_dates <- function(p) {
+  if (!file.exists(p)) return(NULL)
+  x <- tryCatch(fread(p, select = "date", showProgress = FALSE), error = function(e) NULL)
+  if (is.null(x) || !nrow(x)) return(NULL)
+  as.Date(x$date)
+}
+
+# ── 집행 규약 판독 (P0-04 후속 · 2026-09-24 — 머리 주석 ★집행 규약) ───────────────────────
+#   이 파일이 해석 경로를 가진 규약만 지원한다. open_t1 은 집행일 수익이 겹밤(직전 보유)·장중(새 보유)으로 갈려
+#   날짜당 노출 하나(E_p)로 표현할 수 없다 — 판독되면 unsupported 로 거부한다(민감도 전용 규약 · 러너는 쓰지 않는다).
+ADV_EXEC_SUPPORTED <- c("close_d_legacy", "close_t1")
+.adv_exec_window <- function(ep) switch(as.character(ep)[1], close_d_legacy = "[exec, next_exec)",
+                                         close_t1 = "(exec, next_exec]", NA_character_)
+.adv_exec_cost_booking <- function(ep) if (identical(ep, "close_t1")) "multiplicative" else "additive"
+
+#' 선언된 규약 — authoritative_remeasure.json::measurement_regime.exec_price > 01_strategy_spec.json::exec_price.
+#'   둘 다 있는데 다르면 conflict(선언끼리 모순).
+.adv_declared_exec <- function(art) {
+  rd1 <- function(f, get) { p <- file.path(art, f)
+    if (!nzchar(art) || !file.exists(p)) return(NA_character_)
+    j <- tryCatch(fromJSON(p, simplifyVector = FALSE), error = function(e) NULL)
+    v <- tryCatch(as.character(get(j) %||% "")[1], error = function(e) "")
+    if (length(v) && !is.na(v) && nzchar(v)) v else NA_character_ }
+  a <- rd1("authoritative_remeasure.json", function(j) (j$measurement_regime %||% list())$exec_price)
+  s <- rd1("01_strategy_spec.json", function(j) j$exec_price)
+  if (!is.na(a) && !is.na(s) && !identical(a, s))
+    return(list(value = NA_character_, source = sprintf("선언 모순: authoritative_remeasure %s ≠ 01_strategy_spec %s", a, s), conflict = TRUE))
+  if (!is.na(a)) return(list(value = a, source = "authoritative_remeasure.json::measurement_regime.exec_price", conflict = FALSE))
+  if (!is.na(s)) return(list(value = s, source = "01_strategy_spec.json::exec_price", conflict = FALSE))
+  list(value = NA_character_, source = "absent", conflict = FALSE)
+}
+
+#' 산출 창 — 첫 수익일과 첫 집행일(04_holdings date)의 관계. 선언이 아니라 **배출된 값**에서 읽는다.
+#'   exec_inclusive = 첫 집행일에 수익 행이 있다(새 보유가 집행일 수익을 가진다 — legacy)
+#'   exec_exclusive = 첫 수익 행이 첫 집행일 뒤 · 둘째 집행일 이하(첫 창 (exec_1, exec_2] — close_t1)
+#'   unknown = 그 밖(파일 부재 · 보유가 수익보다 늦게 시작 등 — 추정하지 않는다)
+.adv_derived_window <- function(ret_dates, exec_dates) {
+  rd <- sort(unique(as.Date(ret_dates))); ed <- sort(unique(as.Date(exec_dates)))
+  if (!length(rd) || !length(ed) || anyNA(rd[1]) || anyNA(ed[1])) return("unknown")
+  if (rd[1] == ed[1]) return("exec_inclusive")
+  if (rd[1] > ed[1] && (length(ed) < 2L || rd[1] <= ed[2])) return("exec_exclusive")
+  "unknown"
+}
+.adv_window_compatible <- function(ep, win) (identical(ep, "close_d_legacy") && identical(win, "exec_inclusive")) ||
+                                            (identical(ep, "close_t1") && identical(win, "exec_exclusive")) ||
+                                            (identical(ep, "open_t1") && identical(win, "exec_inclusive"))
+
+#' 산출물 하나의 규약 — 선언 + 산출 창 대조. ret_dates/exec_dates 를 주면 파일을 다시 안 읽는다.
+#' @return list(exec_price(NA 가능), status ∈ declared_verified/declared_only/derived/conflict/unknown, source, window)
+.adv_resolve_exec <- function(art, ret_dates = NULL, exec_dates = NULL) {
+  dec <- .adv_declared_exec(art)
+  if (is.null(ret_dates) && nzchar(art)) ret_dates <- .adv_read_dates(file.path(art, "03_period_returns.csv"))
+  if (is.null(exec_dates) && nzchar(art)) exec_dates <- .adv_read_dates(file.path(art, "04_holdings.csv"))
+  win <- .adv_derived_window(ret_dates, exec_dates)
+  mk <- function(ep, st, src) list(exec_price = ep, status = st, source = src, window = win)
+  if (isTRUE(dec$conflict)) return(mk(NA_character_, "conflict", dec$source))
+  if (!is.na(dec$value)) {
+    if (identical(win, "unknown")) return(mk(dec$value, "declared_only", paste0(dec$source, " (산출 창 판독 불가)")))
+    if (.adv_window_compatible(dec$value, win)) return(mk(dec$value, "declared_verified", paste0(dec$source, " + 산출 창 ", win)))
+    return(mk(NA_character_, "conflict", sprintf("선언 %s(%s) ≠ 산출 창 %s", dec$value, dec$source, win)))
+  }
+  if (identical(win, "exec_inclusive"))
+    return(mk("close_d_legacy", "derived", "선언 부재(P0-01 이전 산출) + 산출 창 exec_inclusive — 인자화(P0-04) 전 하네스의 유일 규약"))
+  if (identical(win, "exec_exclusive"))
+    return(mk("close_t1", "derived", "선언 부재 + 산출 창 exec_exclusive"))
+  mk(NA_character_, "unknown", "선언 부재 · 산출 창 판독 불가")
+}
+
+#' 원장 essence 의 규약 표식(있으면) — P0-06 rebase 가 essence 를 새 규약 값으로 바꾸고 표식을 남기는 자리들.
+#'   표식이 없으면 NA(구 attempt · 산출물이 정본).
+.adv_essence_exec <- function(a) {
+  es <- a$essence %||% list()
+  for (v in list(es$exec_price, (es$measurement_regime %||% list())$exec_price, (a$measurement_regime %||% list())$exec_price)) {
+    v <- tryCatch(as.character(v %||% "")[1], error = function(e) "")
+    if (length(v) && !is.na(v) && nzchar(v)) return(v)
+  }
+  NA_character_
+}
+
+#' 직렬화 허용오차 — 원장 essence(.rf_write · jsonlite digits=6)와 산출물 authoritative_remeasure.json(write_json digits=6)은
+#'   같은 수를 소수 6자리로 **각각** 반올림한다(각 ≤ 5e-7 → 합 ≤ 1e-6). 연구 수치가 아니라 두 직렬화의 산술 상한이다.
+#'   실측(2026-09-24 원장 사본): 측정 칸 1,228 전부 이 오차 안(불일치 0 · 산출물 부재 8).
+ADV_SER_TOL <- 1e-6
+.adv_artifact_calmar <- function(art) {
+  p <- file.path(art, "authoritative_remeasure.json")
+  if (!nzchar(art) || !file.exists(p)) return(NA_real_)
+  j <- tryCatch(fromJSON(p, simplifyVector = FALSE), error = function(e) NULL)
+  v <- suppressWarnings(as.numeric((j$essence %||% list())$calmar %||% NA)); if (length(v)) v[1] else NA_real_
+}
+
+#' attempt 의 규약 — 산출물 판독 + 원장 대조 2종(다르면 conflict: 등급 수치와 해석 경로가 다른 측정이다)
+#'   ① essence 규약 표식(있으면) ≠ 산출물 규약 ② essence Calmar ≠ 산출물 Calmar(직렬화 오차 밖) — ②는 표식이 없어도
+#'   잡는다: 재측정·rebase(P0-05/06)가 essence 만 바꾸고 attempt$artifacts 가 옛 산출물을 가리키면 후보 판정(essence)과
+#'   T3·T1(산출물 경로)이 다른 규약을 섞는다. 그때는 비교하지 않는다(fail-closed).
+.adv_attempt_exec <- function(a, art, ret_dates = NULL, exec_dates = NULL) {
+  has_art <- nzchar(art) && dir.exists(art)
+  rr <- if (has_art) .adv_resolve_exec(art, ret_dates, exec_dates) else
+          list(exec_price = NA_character_, status = "unknown", source = "산출물 디렉터리 부재", window = "unknown")
+  et <- .adv_essence_exec(a)
+  if (!is.na(et)) {
+    if (!is.na(rr$exec_price) && !identical(et, rr$exec_price)) {
+      rr$source <- sprintf("원장 essence 규약 %s ≠ 산출물 %s (%s)", et, rr$exec_price, rr$source)
+      rr$exec_price <- NA_character_; rr$status <- "conflict"
+    } else if (is.na(rr$exec_price) && !identical(rr$status, "conflict")) {
+      rr$exec_price <- et; rr$status <- "essence_only"; rr$source <- paste0("원장 essence 표식 (산출물: ", rr$source, ")")
+    }
+  }
+  ac <- if (has_art) .adv_artifact_calmar(art) else NA_real_
+  lc <- suppressWarnings(as.numeric((a$essence %||% list())$calmar %||% NA))[1]
+  if (!identical(rr$status, "conflict") && length(lc) && is.finite(ac) && is.finite(lc) && abs(ac - lc) > ADV_SER_TOL * max(1, abs(ac))) {
+    rr$source <- sprintf("원장 essence Calmar %.6f ≠ 산출물 Calmar %.6f — 등급 수치와 해석 경로가 다른 측정(재측정·rebase 뒤 산출물 경로 미갱신 등) (%s)",
+                         lc, ac, rr$source)
+    rr$exec_price <- NA_character_; rr$status <- "conflict"
+  }
+  rr
+}
+
+#' 셀·바닥 규약 쌍 — same 일 때만 같은 해석 경로·같은 Calmar 비교가 성립한다.
+#'   conflict > undetermined(한쪽 판독 불가) > unsupported > mismatch > same
+.adv_regime_pair <- function(cell, floor) {
+  st <- if (identical(cell$status, "conflict") || identical(floor$status, "conflict")) "conflict" else
+        if (is.na(cell$exec_price) || is.na(floor$exec_price)) "undetermined" else
+        if (!(cell$exec_price %in% ADV_EXEC_SUPPORTED) || !(floor$exec_price %in% ADV_EXEC_SUPPORTED)) "unsupported" else
+        if (!identical(cell$exec_price, floor$exec_price)) "mismatch" else "same"
+  list(status = st, exec_price = if (identical(st, "same")) cell$exec_price else NA_character_, cell = cell, floor = floor)
+}
+.adv_regime_detail <- function(rp) sprintf("regime_%s: cell=%s[%s] floor=%s[%s] — 규약이 다른(또는 판독 불가·미지원) 칸끼리 Calmar·수익 경로를 비교하지 않는다",
+                                           rp$status, rp$cell$exec_price %||% NA, rp$cell$source %||% "", rp$floor$exec_price %||% NA, rp$floor$source %||% "")
+.adv_regime_rec <- function(rp) list(status = rp$status, exec_price = rp$exec_price,
+                                     holding_window = .adv_exec_window(rp$exec_price),
+                                     cell = rp$cell[c("exec_price", "status", "window", "source")],
+                                     floor = rp$floor[c("exec_price", "status", "window", "source")])
 
 #' 바닥 vs 셀 정렬 — 기간 격자는 **바닥의 집행일**이다. 셀 결측 달은 carry-forward(하네스 의미론).
 .adv_align_exposure <- function(HF, HC) {
@@ -331,8 +498,16 @@ adv_t3b_xs <- function(H, cost_rate, n_placebo = 200L, alpha = 0.05, seed = 2026
        n_missing = sum(A$missing), n_extra_cell_dates = sum(!ec$date %in% ef$date))
 }
 
-#' 기간 색인 — 각 수익일이 어느 집행 기간에 속하나(집행일 ≤ day < 다음 집행일)
-.adv_period_index <- function(ret_dates, exec_dates) {
+#' 기간 색인 — 각 수익일이 어느 집행 기간에 속하나 · 각 기간의 비용 기장 위치
+#'   close_d_legacy : 집행일 ≤ day < 다음 집행일 · 기장 = 집행일(없으면 그 기간 첫 수익일) — 구판 그대로
+#'   close_t1       : 집행일 < day ≤ 다음 집행일 · 기장 = 그 기간 첫 수익일(= 새 보유 첫 날 · 하네스 cost_date)
+#'   기본값 = 구판 호출 호환(검사 픽스처). 운영 경로(.adv_run_tests)는 칸의 규약을 **항상 명시**한다.
+.adv_period_index <- function(ret_dates, exec_dates, exec_price = "close_d_legacy") {
+  if (identical(exec_price, "close_t1")) {
+    pid <- findInterval(ret_dates, exec_dates, left.open = TRUE)   # exec_k < day ≤ exec_{k+1} — 집행일 수익은 직전 보유
+    return(list(pid = pid, keep = pid >= 1L, exec_pos = match(seq_along(exec_dates), pid)))
+  }
+  if (!identical(exec_price, "close_d_legacy")) stop("[rf_overlay_adversary] 해석 경로가 없는 집행 규약: ", exec_price)
   pid <- findInterval(ret_dates, exec_dates)
   keep <- pid >= 1L
   exec_pos <- match(exec_dates, ret_dates)     # 집행일이 수익일 집합에 없으면 그 기간의 첫 수익일
@@ -358,15 +533,17 @@ adv_t3b_xs <- function(H, cost_rate, n_placebo = 200L, alpha = 0.05, seed = 2026
   R[Ticker %in% tickers & Date >= as.Date(from) & Date <= as.Date(to), .(Date, Ticker = as.character(Ticker), Ret = as.numeric(Ret))]
 }
 
-#' 바닥 보유의 보유기간 종목수익 — 하네스처럼 exec→hold_end 창에서 일간 Ret 복리(비유한 = 0)
-.adv_holding_period_returns <- function(HF, ret_dates, loader) {
+#' 바닥 보유의 보유기간 종목수익 — 하네스처럼 보유창에서 일간 Ret 복리(비유한 = 0)
+#'   창은 규약을 따른다(.adv_period_index 와 같은 경계): legacy [exec, next) · close_t1 (exec, next]
+.adv_holding_period_returns <- function(HF, ret_dates, loader, exec_price = "close_d_legacy") {
+  if (!(exec_price %in% ADV_EXEC_SUPPORTED)) stop("[rf_overlay_adversary] 해석 경로가 없는 집행 규약: ", exec_price)
   ex <- sort(unique(HF$date))
   last_day <- max(ret_dates)
   RAW <- loader(unique(HF$ticker), min(ex), last_day)
   if (!nrow(RAW)) stop("RAWDATA 에서 바닥 보유 종목의 수익이 0행")
   RAW[!is.finite(Ret), Ret := 0]
   RAW <- RAW[Date %in% ret_dates]                              # 하네스 거래일 집합
-  RAW[, pid := findInterval(Date, ex)]
+  RAW[, pid := findInterval(Date, ex, left.open = identical(exec_price, "close_t1"))]
   RAW <- RAW[pid >= 1L]
   HP <- RAW[, .(R = prod(1 + Ret) - 1), by = .(pid, ticker = Ticker)]
   HF2 <- copy(HF)[, pid := match(date, ex)]
@@ -394,21 +571,48 @@ adv_t3b_xs <- function(H, cost_rate, n_placebo = 200L, alpha = 0.05, seed = 2026
   .spec_sig(s)
 }
 #' T1/T2 재실행 스펙 — 원본은 건드리지 않는다(사본 반환). 표식은 idea/label/adversary 에.
-.adv_make_variant_spec <- function(spec, variant = c("T1", "T2")) {
+.adv_make_variant_spec <- function(spec, variant = c("T1", "T2"), exec_price = NULL) {
   variant <- match.arg(variant)
   v <- spec
   if (identical(variant, "T1")) v$overlay_shift <- 1L else v$overlay_strict <- TRUE
   v$adversary <- list(variant = variant, of_code = as.character(spec$code %||% ""), at = .adv_now(),
                       note = "적대 재실행 — 원장·모듈 풀·L-code 대상 아님")
+  # 기록만(소비자 없음) — 고정은 QVEST_CONSTRAINT_DEFAULTS 사본이 한다(.adv_rerun). 실현값은 재실행 산출물에서 대조한다.
+  if (!is.null(exec_price)) v$adversary$exec_price_pin <- as.character(exec_price)
   v$idea  <- sprintf("[ADVERSARY %s] %s", variant, as.character(spec$idea %||% spec$code %||% ""))
   v$label <- sprintf("[ADV %s] %s", variant, as.character(spec$label %||% spec$code %||% ""))
   v
 }
 
+# ── 재실행 규약 고정 (P0-04 후속 · 2026-09-24) ─────────────────────────────────────
+#   워커(rf_cell_worker.R)는 run_paper_replication 에 exec_price 를 넘기지 않는다 → 하네스가 설정 기본값을 쓴다.
+#   칸과 다른 규약으로 재실행하면 T1/T2 가 바닥 Calmar(칸 규약)와 다른 규약의 수치를 비교하게 된다.
+#   하네스의 명시 레버 QVEST_CONSTRAINT_DEFAULTS(rep_execution_config — 이 경로만 읽고 execution 블록만 쓴다)에
+#   execution.exec_price 만 바꾼 사본을 물린다. 원본 설정은 건드리지 않는다. 원본 경로 = 이미 레버가 서 있으면 그 파일
+#   (검사가 사본을 가리킨 경우) · 아니면 <root>/02_Infrastructure/worktask/constraint_defaults.json. 없으면 멈춘다.
+.adv_pin_exec_config <- function(root, exec_price, dir) {
+  if (!(as.character(exec_price)[1] %in% ADV_EXEC_SUPPORTED)) stop("고정할 수 없는 규약: ", exec_price)
+  src <- Sys.getenv("QVEST_CONSTRAINT_DEFAULTS", "")
+  if (!nzchar(src)) src <- file.path(root, "02_Infrastructure", "worktask", "constraint_defaults.json")
+  if (!file.exists(src)) stop("constraint_defaults.json 부재: ", src)
+  j <- fromJSON(src, simplifyVector = FALSE)
+  ex <- j$execution
+  if (!is.list(ex)) stop("execution 블록 부재 — 규약 고정 불가(기본값을 지어내지 않는다): ", src)
+  ex$exec_price <- as.character(exec_price)[1]
+  p <- file.path(dir, "cdef_exec_pin.json")   # 짧은 이름 — .cache/rf_overlay_adversary/<BID>/<code>/T1/ 아래라 Windows 경로 260자 여유
+  write(toJSON(list(execution = ex,
+                    `_pinned_by` = list(tool = "rf_overlay_adversary.R::.adv_pin_exec_config", from = src,
+                                        exec_price = ex$exec_price, at = .adv_now(),
+                                        note = "적대 재실행 전용 사본 — execution.exec_price 만 칸 규약으로 바꿨다(replication_harness.R 는 execution 블록만 읽는다)")),
+               auto_unbox = TRUE, pretty = TRUE, null = "null", digits = NA), p)
+  list(path = p, from = src, exec_price = ex$exec_price)
+}
+
 # ── 재실행 (워커 경유 · 부작용 격리) ──────────────────────────────────────────────
-.adv_rerun <- function(spec, variant, code, base_id, n, root, out_root, timeout_sec) {
+#' @param exec_price NULL = 고정 없음(설정 기본값 — 구판 호출 호환) · 규약 문자열 = 그 규약으로 고정하고 실현값을 돌려준다
+.adv_rerun <- function(spec, variant, code, base_id, n, root, out_root, timeout_sec, exec_price = NULL) {
   vdir <- file.path(out_root, variant); dir.create(vdir, recursive = TRUE, showWarnings = FALSE)
-  v <- .adv_make_variant_spec(spec, variant)
+  v <- .adv_make_variant_spec(spec, variant, exec_price)
   sp <- file.path(vdir, "spec.json")
   write(toJSON(v, auto_unbox = TRUE, pretty = TRUE, null = "null", digits = NA), sp)
   out <- file.path(vdir, "result.json"); lg <- file.path(vdir, "worker_log.txt")
@@ -419,6 +623,13 @@ adv_t3b_xs <- function(H, cost_rate, n_placebo = 200L, alpha = 0.05, seed = 2026
   env_set <- c(QVEST_RP_REGISTER = "0", QVEST_RP_NO_FACTOR_ANALYSIS = "1", QVEST_RP_NO_LCODE = "1",
                QVEST_NO_LEDGER_OPEN = "1", QVEST_RF_ADVERSARY = "1",
                QVEST_RP_JLOG = file.path(vdir, "rmm_journal.jsonl"), QM_ROOT = root, CLAUDE_PROJECT_DIR = root)
+  pin <- NULL
+  if (!is.null(exec_price)) {
+    pin <- tryCatch(.adv_pin_exec_config(root, exec_price, vdir), error = function(e) e)
+    if (inherits(pin, "error"))
+      return(list(status = "error", detail = paste0("exec_price 고정 실패 — 재실행하지 않는다: ", conditionMessage(pin)), spec = sp))
+    env_set <- c(env_set, QVEST_CONSTRAINT_DEFAULTS = pin$path)
+  }
   old <- Sys.getenv(names(env_set), unset = NA)
   do.call(Sys.setenv, as.list(env_set))
   on.exit({ for (k in names(env_set)) if (is.na(old[[k]])) Sys.unsetenv(k) else do.call(Sys.setenv, setNames(list(old[[k]]), k)) }, add = TRUE)
@@ -436,15 +647,34 @@ adv_t3b_xs <- function(H, cost_rate, n_placebo = 200L, alpha = 0.05, seed = 2026
                lcode_leak = as.character(leak), strategy_name = name,
                elapsed_sec = round(as.numeric(difftime(Sys.time(), t0, units = "secs")), 1), rc = rc)
   if (is.null(res)) return(list(status = "error", detail = sprintf("워커 산출 부재(rc=%s · 로그 %s)", rc, lg), spec = sp, side_effects = side))
+  # ★리프레시 배리어로 미측정 종료한 워커(deferred)는 실패 판정이 아니다 — 판정을 쓰지 않도록 위로 올린다(2026-09-24)
+  if (identical(as.character(res$deferred %||% ""), "refresh_lock"))
+    stop(sprintf("[refresh_barrier] %s 재실행 워커가 리프레시 잠금으로 미측정 종료 — %s", variant, as.character(res$err %||% "")))
   if (!isTRUE(res$ok)) return(list(status = "error", detail = as.character(res$err %||% "?"), spec = sp, side_effects = side))
-  list(status = "ok", spec = sp, result = out, artifacts = as.character(res$artifacts %||% ""),
-       essence = res$essence, grade_seen = as.character(res$grade %||% ""), side_effects = side)
+  rart <- as.character(res$artifacts %||% "")
+  list(status = "ok", spec = sp, result = out, artifacts = rart,
+       essence = res$essence, grade_seen = as.character(res$grade %||% ""), side_effects = side,
+       exec_price_requested = if (is.null(exec_price)) NA_character_ else as.character(exec_price)[1],
+       exec_price_realized = .adv_declared_exec(rart)$value,    # 재실행 산출물의 실현 규약(하네스가 실제로 쓴 값)
+       exec_pin = if (is.null(pin)) NULL else pin[c("path", "from")])
 }
 
 # ── 바닥 식별 ──────────────────────────────────────────────────────────────────
-#' @return list(attempt, match) · match ∈ floor_code / sig / port_t_fallback / NULL(없음)
+#' ★바닥 출처 (2026-09-24 수리 · 적대검증 G-F1): 러너가 셀 스펙에 floor_source 를 적는다(reinforce_auto_parallel.R —
+#'   "attempt" = entry 안 자격 칸(floor_code) · "carry" = P0-10 이 바닥을 carry 구성으로 고정 · "none" = 자격 칸 없음).
+#'   carry·none 바닥은 **이 entry 의 측정 칸이 아니다** — 대응하는 측정 산출물이 없어 T3/T4 의 r_t 도, T1/T2 의 비교 Calmar 도 없다.
+#'   구판은 floor_source 를 읽지 않고 서명 불일치 → PORT_t 최대 칸으로 폴백해, P0-10 이 배제한 바로 그 희석 칸(14760 promo3 B1_3
+#'   3.133)과 비교했다(pass 가 나면 승자·바닥·carry·A 로 샌다). 이제 carry·none 이면 바닥 없음(floor_carry/floor_missing ·
+#'   not_candidate — 미검정 · 소비 보류). PORT_t 폴백은 더 이상 바닥으로 쓰지 않는다(floor_unidentified — 짐작한 바닥 위의 pass 금지).
+#' @return list(attempt, match, refused) · match ∈ floor_code / sig / NULL · refused = 바닥 없음 사유(floor_carry · floor_missing ·
+#'   floor_unidentified) 또는 NULL
 .adv_floor_of <- function(a, spec, own, attempts, block, root, base_id) {
-  meas <- Filter(function(x) is.list(x$essence) && !is.null(x$essence$port_t) &&
+  fs <- as.character(spec$floor_source %||% "")[1]
+  if (identical(fs, "carry"))
+    return(list(attempt = NULL, match = "floor_source_carry", refused = "floor_carry",
+                carry_cell = as.character(spec$floor_carry_cell %||% "")[1]))
+  if (identical(fs, "none")) return(list(attempt = NULL, match = "floor_source_none", refused = "floor_missing"))
+  meas <- Filter(function(x) is.list(x[["essence"]]) && !is.null(x[["essence"]]$port_t) &&
                    suppressWarnings(as.integer(x$n)) < suppressWarnings(as.integer(a$n)), attempts)
   fc <- as.character(spec$floor_code %||% "")
   if (nzchar(fc)) {
@@ -460,11 +690,11 @@ adv_t3b_xs <- function(H, cost_rate, n_placebo = 200L, alpha = 0.05, seed = 2026
       return(list(attempt = hit[[which.max(replace(v, !is.finite(v), -Inf))]], match = "sig"))
     }
   }
-  # 서명 불일치 — 러너가 실제로 깐 바닥(.wbest_spec = 측정된 최고 port_t)으로 폴백하되 그 사실을 남긴다
+  # 서명 불일치 — 구판은 PORT_t 최대 칸으로 폴백했다. 러너의 바닥 규칙(규약·유니버스·창·적대검증 필터 · P0-10 carry 게이트)은
+  #   그 argmax 와 다르다 → 폴백 칸은 '러너가 깐 바닥' 이 아니라 짐작이다. 짐작한 바닥으로는 검정하지 않는다(G-F1).
   other <- Filter(function(x) !startsWith(as.character(.rf_attempt_code(x) %||% ""), paste0(block, "_")), meas)
-  if (!length(other)) return(list(attempt = NULL, match = NULL))
-  v <- vapply(other, function(x) suppressWarnings(as.numeric(x$essence$port_t)), numeric(1))
-  list(attempt = other[[which.max(replace(v, !is.finite(v), -Inf))]], match = "port_t_fallback")
+  if (!length(other)) return(list(attempt = NULL, match = NULL, refused = "floor_missing"))
+  list(attempt = NULL, match = "port_t_fallback_refused", refused = "floor_unidentified")
 }
 .adv_load_spec <- function(a, root, base_id) {
   p <- as.character(a$essence$spec %||% "")
@@ -480,7 +710,18 @@ adv_t3b_xs <- function(H, cost_rate, n_placebo = 200L, alpha = 0.05, seed = 2026
   if (!file.exists(p)) return(list())
   tryCatch(fromJSON(p, simplifyVector = FALSE), error = function(e) list())
 }
+#' 칸의 측정 산출물 디렉터리. ★rebase 된 칸(P0-06 · 원장 measurement_regime$remeasure_path)은 **그 형제 재측정 판 디렉터리**
+#'   (2026-09-24 수리 · 통합 검증 I2): 원장 essence 가 그 판의 값이므로 해석 경로(03_period_returns·04_holdings)도 같은 판에서 읽어야
+#'   한다. 구판은 attempt$artifacts(옛 규약 산출물)를 읽어 규약 판독이 conflict(원장 표식 close_t1 ≠ 산출물 legacy · Calmar 불일치)로
+#'   막혔다 — rebase 칸과 rebase 된 바닥 위의 B5 칸이 전부 error. 형제 판은 P0-05 가 03/04 CSV 까지 쓴다(remeasure_from_holdings.R).
+#'   형제 판 파일이 없으면 그 경로를 그대로 돌려준다(검정 단계가 '파일 부재' 로 멈춘다 — 옛 산출물로 조용히 되돌아가지 않는다).
 .adv_art_dir <- function(a, root) {
+  rp <- as.character(((if (is.list(a[["measurement_regime"]])) a[["measurement_regime"]] else list())$remeasure_path) %||% "")[1]
+  if (!is.na(rp) && nzchar(rp)) {
+    d <- dirname(gsub("\\", "/", rp, fixed = TRUE))
+    if (!grepl("^(/|[A-Za-z]:)", d)) d <- file.path(root, d)
+    return(d)
+  }
   ar <- as.character(a$artifacts %||% "")
   if (nzchar(ar) && !dir.exists(ar) && !grepl("^(/|[A-Za-z]:)", gsub("\\", "/", ar, fixed = TRUE)) &&
       dir.exists(file.path(root, ar))) ar <- file.path(root, ar)
@@ -501,8 +742,27 @@ rf_overlay_adversary_run <- function(base_id, block = "B5", layer = 1L, root = .
   empty <- data.table(code = character(0), n = integer(0), calmar = numeric(0), floor_code = character(0),
                       floor_calmar = numeric(0), candidate = logical(0), verdict = character(0), reason = character(0),
                       T1 = character(0), T2 = character(0), T3 = character(0), T3b = character(0), T4 = character(0),
-                      T5_share = numeric(0), json = character(0))
+                      T5_share = numeric(0), json = character(0), exec_regime = character(0))
   if (!isTRUE(CF$enabled)) { cat("[rf_overlay_adversary] overlay_adversary.enabled=false — 무동작\n"); return(empty) }
+  # ★리프레시 배리어 (도훈 결정 OPS-RUNNER-REFRESH-BARRIER · 2026-09-24) — 기본 로더는 .cache/RAWDATA.parquet 를 직접 읽고(T3b)
+  #   T1/T2 는 워커를 다시 띄운다. daily_refresh·아침 writer 잠금이 살아 있으면 셀 대기와 같은 상한(rb_cell_wait_s) 동안
+  #   기다리고, 그래도 막히면 검정을 하지 않고 멈춘다. 주입 로더(합성)·dry_run 은 대상 아님.
+  #   ★수리(2026-09-24 적대검증 3인 BLOCKING): 초판은 **아무 판정도 기록하지 않고** 멈췄다. 그런데 표식 없음 = 소비 가능
+  #   (rf_runner_gates.R::rf_adversary_ok 구 attempt 호환)이라 검증 안 된 B5 칸이 다음 tick 에 블록 승자·B4 바닥·승격 carry 로
+  #   소비됐다(fail-open). 이제 블록 칸 전부에 verdict "deferred_refresh_lock" 을 남기고 멈춘다(원장은 RAWDATA 가 아니다 —
+  #   잠금 중 읽기·쓰기 무해). 재실행은 러너가 한다(reinforce_auto_parallel.R 적대검증 연기분 재실행).
+  .rb_block <- NULL
+  if (is.null(rawdata_loader) && !isTRUE(dry_run)) {
+    .rbf <- file.path(root, "02_Infrastructure/ops/refresh_barrier.R")
+    if (!file.exists(.rbf)) .rbf <- "C:/Users/99922/OneDrive/Quant_Module_Moltbot/02_Infrastructure/ops/refresh_barrier.R"
+    .rbx <- new.env()
+    .rbw <- tryCatch({ sys.source(.rbf, envir = .rbx, keep.source = FALSE); .rbx$rb_wait(.rbx$rb_cell_wait_s(), root = root) },
+                     error = function(e) list(proceed = FALSE, waited_s = 0, status = list(state = "error", reason = conditionMessage(e))))
+    if (!isTRUE(.rbw$proceed))
+      .rb_block <- sprintf("[refresh_barrier] 적대검증 착수 대기 %s초 뒤에도 %s(lock=%s pid=%s reason=%s) — 검정 연기(deferred_refresh_lock 표식)",
+                           .rbw$waited_s, .rbw$status$state %||% "?", .rbw$status$lock %||% "", .rbw$status$pid %||% "",
+                           .rbw$status$reason %||% "")
+  }
   led <- rf_load(layer, root)
   i <- .rf_find(led, base_id)
   if (is.na(i)) stop("[rf_overlay_adversary] entry 부재: ", base_id)
@@ -511,11 +771,18 @@ rf_overlay_adversary_run <- function(base_id, block = "B5", layer = 1L, root = .
   pat <- paste0("^", block, "_[0-9]+$")
   blk <- Filter(function(a) { cd <- .rf_attempt_code(a); !is.na(cd) && grepl(pat, cd) }, atts)
   if (!length(blk)) { cat(sprintf("[rf_overlay_adversary] %s 블록 시도 없음 (%s)\n", block, base_id)); return(empty) }
+  if (!is.null(.rb_block)) {
+    .adv_mark_deferred(layer, base_id, block, blk, .rb_block, root)
+    stop(.rb_block)
+  }
   sup <- .adv_engine_supports(root); honors <- .adv_rp_honors_lcode_switch(root)
   out_base <- file.path(root, ".cache", "rf_overlay_adversary", base_id)
   loader <- rawdata_loader %||% .adv_default_rawdata_loader(root)
 
-  # ① 후보 판정 — 측정됨 ∧ 자기 오버레이 층 있음 ∧ calmar > 바닥 calmar → calmar 상위 max_candidates
+  # ① 후보 판정 — 측정됨 ∧ 자기 오버레이 층 있음 ∧ [셀·바닥 같은 집행 규약] ∧ calmar > 바닥 calmar → calmar 상위 max_candidates
+  #   ★규약 대조(P0-04 후속)는 바닥이 정해진 칸에서만 한다(앞 사유 칸은 산출물을 안 읽는다 — 구판 경로 그대로).
+  #   규약이 다르면(또는 모순·미지원) Calmar 비교 자체가 성립하지 않으므로 calmar 사유보다 **앞에서** 거부한다.
+  #   판독 불가(undetermined)는 여기서 거부하지 않는다 — 검정 단계가 실제 파일로 다시 판독하고 같지 않으면 멈춘다.
   rows <- lapply(blk, function(a) {
     cd <- .rf_attempt_code(a); n <- suppressWarnings(as.integer(a$n))
     measured <- is.list(a$essence) && !is.null(a$essence$port_t)
@@ -524,10 +791,14 @@ rf_overlay_adversary_run <- function(base_id, block = "B5", layer = 1L, root = .
     fl <- if (measured && !is.null(sp)) .adv_floor_of(a, sp, own, atts, block, root, base_id) else list(attempt = NULL, match = NULL)
     fcal <- if (!is.null(fl$attempt)) .adv_num(fl$attempt$essence$calmar) else NA_real_
     ccal <- if (measured) .adv_num(a$essence$calmar) else NA_real_
+    rp <- if (measured && !is.null(sp) && length(own) && !is.null(fl$attempt))
+            .adv_regime_pair(.adv_attempt_exec(a, .adv_art_dir(a, root)), .adv_attempt_exec(fl$attempt, .adv_art_dir(fl$attempt, root))) else NULL
     reason <- if (!measured) "unmeasured" else if (is.null(sp)) "spec_missing" else if (!length(own)) "no_own_overlay_layers" else
-              if (is.null(fl$attempt)) "floor_missing" else if (!is.finite(ccal) || !is.finite(fcal)) "calmar_missing" else
+              if (is.null(fl$attempt)) (fl$refused %||% "floor_missing") else
+              if (rp$status %in% c("conflict", "unsupported", "mismatch")) paste0("regime_", rp$status) else
+              if (!is.finite(ccal) || !is.finite(fcal)) "calmar_missing" else
               if (!(ccal > fcal)) "calmar_not_above_floor" else "candidate"
-    list(a = a, code = cd, n = n, spec = sp, own = own, floor = fl, floor_calmar = fcal, calmar = ccal, reason = reason)
+    list(a = a, code = cd, n = n, spec = sp, own = own, floor = fl, floor_calmar = fcal, calmar = ccal, reason = reason, regime = rp)
   })
   cand_idx <- which(vapply(rows, function(r) identical(r$reason, "candidate"), logical(1)))
   if (length(cand_idx)) {
@@ -538,7 +809,9 @@ rf_overlay_adversary_run <- function(base_id, block = "B5", layer = 1L, root = .
   }
 
   summ <- list()
-  for (r in rows) {
+  .rb_mid <- NULL   # 검정 도중 배리어 미측정 메시지 — 서면 이 칸 표식 뒤 남은 칸도 표식하고 멈춘다
+  for (ri in seq_along(rows)) {
+    r <- rows[[ri]]
     odir <- file.path(out_base, r$code); dir.create(odir, recursive = TRUE, showWarnings = FALSE)
     fa <- r$floor$attempt
     rec <- list(schema = "rf_overlay_adversary_v1", at = .adv_now(), base_id = base_id, layer = as.integer(layer),
@@ -558,11 +831,26 @@ rf_overlay_adversary_run <- function(base_id, block = "B5", layer = 1L, root = .
                 cfg = list(alpha = CF$alpha, n_placebo = CF$n_placebo, max_candidates = CF$max_candidates,
                            block_rule = CF$block_rule, cost_rate = CF$cost_rate, seed = CF$seed, reruns = reruns),
                 tests = list(), verdict = NA_character_, analytic_verdict = NA_character_, reason = "")
-    if (!identical(r$reason, "candidate")) {
+    if (!is.null(r$regime)) rec$exec_regime <- .adv_regime_rec(r$regime)
+    # 바닥 판별 경로(G-F1 · 2026-09-24) — floor_code / sig / floor_source_carry / floor_source_none / port_t_fallback_refused
+    rec$floor_resolution <- list(match = r$floor$match %||% NA_character_, refused = r$floor$refused %||% NA_character_,
+                                 floor_source = as.character((r$spec %||% list())$floor_source %||% NA)[1],
+                                 carry_cell = r$floor$carry_cell %||% NA_character_)
+    if (startsWith(r$reason, "regime_")) {
+      # ★규약 거부는 not_candidate 가 아니다 — '바닥을 못 넘었다(기전 음성)' 가 아니라 '비교가 성립하지 않는다'. 소비 보류(error).
+      rec$verdict <- "error"; rec$reason <- .adv_regime_detail(r$regime)
+    } else if (!identical(r$reason, "candidate")) {
       rec$verdict <- "not_candidate"; rec$reason <- r$reason
     } else {
       rec <- tryCatch(.adv_run_tests(rec, r, CF, sup, honors, reruns, root, odir, loader),
-                      error = function(e) { rec$verdict <- "error"; rec$reason <- paste0("tests_failed: ", conditionMessage(e)); rec })
+                      error = function(e) {
+                        # ★리프레시 배리어 미측정은 판정이 아니다 — verdict "error" 가 아니라 연기 표식을 남기고(아래 기록 경로 그대로)
+                        #   남은 칸도 표식한 뒤 호출자에게 올린다(2026-09-24 · 표식 없이 올리면 소비 가능으로 샌다 — 머리 주석)
+                        if (grepl("[refresh_barrier]", conditionMessage(e), fixed = TRUE)) {
+                          .rb_mid <<- conditionMessage(e)
+                          rec$verdict <- ADV_DEFERRED_VERDICT; rec$reason <- paste0("refresh_barrier: ", conditionMessage(e))
+                          rec$deferred <- TRUE; return(rec) }
+                        rec$verdict <- "error"; rec$reason <- paste0("tests_failed: ", conditionMessage(e)); rec })
     }
     rec$json_path <- file.path(odir, "adversary.json")
     write(toJSON(rec, auto_unbox = TRUE, pretty = TRUE, null = "null", na = "null", digits = 8), rec$json_path)
@@ -577,12 +865,37 @@ rf_overlay_adversary_run <- function(base_id, block = "B5", layer = 1L, root = .
       floor_code = if (is.null(fa)) NA_character_ else as.character(.rf_attempt_code(fa)), floor_calmar = r$floor_calmar,
       candidate = identical(r$reason, "candidate"), verdict = rec$verdict, reason = rec$reason,
       T1 = tst("T1"), T2 = tst("T2"), T3 = tst("T3"), T3b = tst("T3b"), T4 = tst("T4"),
-      T5_share = .adv_num((rec$tests$T5 %||% list())$share_largest), json = rec$json_path)
+      T5_share = .adv_num((rec$tests$T5 %||% list())$share_largest), json = rec$json_path,
+      exec_regime = if (is.null(rec$exec_regime)) NA_character_ else
+                      as.character(if (identical(rec$exec_regime$status, "same")) rec$exec_regime$exec_price else paste0("regime_", rec$exec_regime$status)))
     cat(sprintf("[rf_overlay_adversary] %s n=%s calmar %.3f vs floor %s %.3f → %s (%s)\n", r$code, r$n,
                 r$calmar %||% NA, if (is.null(fa)) "?" else .rf_attempt_code(fa), r$floor_calmar %||% NA,
                 rec$verdict, rec$reason))
+    if (!is.null(.rb_mid)) {
+      # 앞 칸들은 이번 실행의 판정이 이미 기록됐다(유지). 이 칸은 위에서 표식됐고, 남은 칸은 판정 없이 두면 소비 가능으로 샌다.
+      .rest <- if (ri < length(rows)) lapply(rows[(ri + 1L):length(rows)], function(z) z$a) else list()
+      if (!isTRUE(dry_run) && length(.rest)) .adv_mark_deferred(layer, base_id, block, .rest, .rb_mid, root)
+      stop(.rb_mid)
+    }
   }
   rbindlist(summ, use.names = TRUE)
+}
+
+# ── 리프레시 배리어 연기 표식 (2026-09-24 · OPS-RUNNER-REFRESH-BARRIER 수리) ──────────────────────────
+#   판정이 아니다 — 검정을 못 돈 칸에 '다시 돌려라'를 남긴다. pass 가 아니라 소비 보류이고(머리 주석 소비자 규약),
+#   러너가 이 verdict 를 보고 다음 tick 에 재실행한다. 기록 경로는 판정과 같은 writer(rf_record_adversary · 이력 보존).
+ADV_DEFERRED_VERDICT <- "deferred_refresh_lock"
+.adv_mark_deferred <- function(layer, base_id, block, attempts, why, root) {
+  for (a in attempts) {
+    n <- suppressWarnings(as.integer(a$n))
+    if (!length(n) || is.na(n)) next
+    rf_record_adversary(layer, base_id, n,
+      list(schema = "rf_overlay_adversary_v1", at = .adv_now(), base_id = base_id, layer = as.integer(layer),
+           block = block, n = n, code = as.character(.rf_attempt_code(a) %||% ""), dry_run = FALSE,
+           verdict = ADV_DEFERRED_VERDICT, deferred = TRUE, reason = paste0("refresh_barrier: ", as.character(why))),
+      root = root)
+  }
+  invisible(length(attempts))
 }
 
 # 후보 1칸의 검정 전부 — rec 를 채워 돌려준다(예외는 호출자가 error verdict 로 접는다)
@@ -593,9 +906,15 @@ rf_overlay_adversary_run <- function(base_id, block = "B5", layer = 1L, root = .
   if (!dir.exists(cart)) stop("셀 산출물 디렉터리 부재: ", cart)
   PR <- .adv_read_period_returns(fart)
   HF <- .adv_read_holdings(fart); HC <- .adv_read_holdings(cart)
+  # ★집행 규약 (P0-04 후속) — 실제로 읽은 파일로 다시 판독한다(행 단계 판독과 독립). 같지 않으면 검정하지 않는다.
+  rp <- .adv_regime_pair(.adv_attempt_exec(r$a, cart, .adv_read_dates(file.path(cart, "03_period_returns.csv")), HC$date),
+                         .adv_attempt_exec(fa, fart, PR$dt$date, HF$date))
+  rec$exec_regime <- .adv_regime_rec(rp)
+  if (!identical(rp$status, "same")) stop(.adv_regime_detail(rp))
+  EP <- rp$exec_price; CB <- .adv_exec_cost_booking(EP)
   al <- .adv_align_exposure(HF, HC); A <- al$A
   if (nrow(A) < CF$min_periods) stop(sprintf("기간 %d < min_periods %d", nrow(A), CF$min_periods))
-  px <- .adv_period_index(PR$dt$date, A$date)
+  px <- .adv_period_index(PR$dt$date, A$date, EP)
   r_d <- PR$dt$ret_net[px$keep]; pid <- px$pid[px$keep]
   exec_pos <- match(px$exec_pos, which(px$keep))
   if (anyNA(exec_pos)) stop("집행일을 수익일에 대응하지 못한 기간이 있다")
@@ -604,7 +923,9 @@ rf_overlay_adversary_run <- function(base_id, block = "B5", layer = 1L, root = .
   rec$approximation <- list(
     returns = "floor 03_period_returns.csv ret_net", frequency = PR$freq, ann_factor = PR$ann,
     exposure = "Σ target_weight(cell)/Σ target_weight(floor) per floor exec date",
-    cost = sprintf("|ΔE_p| × %.4f at exec (first ΔE = 0)", CF$cost_rate),
+    cost = if (identical(EP, "close_t1")) sprintf("(1 − |ΔE_p| × %.4f)(1 + r) − 1 at first holding day after exec (first ΔE = 0)", CF$cost_rate) else
+             sprintf("|ΔE_p| × %.4f at exec (first ΔE = 0)", CF$cost_rate),
+    exec_price = EP, holding_window = .adv_exec_window(EP), cost_booking = CB,
     missing_month_policy = "carry_forward_prev_holdings (harness semantics)", n_missing_cell_dates = al$n_missing,
     n_extra_cell_dates = al$n_extra_cell_dates, n_periods = nrow(A), n_return_rows = length(r_d),
     floor_calmar_essence = r$floor_calmar, floor_calmar_approx = floor_approx$calmar,
@@ -612,11 +933,11 @@ rf_overlay_adversary_run <- function(base_id, block = "B5", layer = 1L, root = .
     floor_exposure_mean = mean(A$Ef), cell_exposure_mean = mean(A$Ec), E_mean = mean(E), E_min = min(E), E_max = max(E),
     n_full_cash = sum(E <= 1e-12))
   # T3
-  t3 <- adv_t3_placebo(r_d, pid, E, exec_pos, CF$cost_rate, CF$n_placebo, CF$alpha, CF$seed, CF$block_rule, PR$ann)
+  t3 <- adv_t3_placebo(r_d, pid, E, exec_pos, CF$cost_rate, CF$n_placebo, CF$alpha, CF$seed, CF$block_rule, PR$ann, cost_booking = CB)
   obs_ret <- t3$obs_ret; t3$obs_ret <- NULL
   rec$tests$T3 <- t3
   # T4
-  rec$tests$T4 <- adv_t4_static(r_d, pid, E, exec_pos, CF$cost_rate, obs_calmar = t3$obs_calmar, PR$ann)
+  rec$tests$T4 <- adv_t4_static(r_d, pid, E, exec_pos, CF$cost_rate, obs_calmar = t3$obs_calmar, PR$ann, cost_booking = CB)
   # T5
   rec$tests$T5 <- adv_t5_episode(r_d, obs_ret, PR$dt$date[px$keep])
   rec$tests$T5$cell_calmar_essence <- r$calmar; rec$tests$T5$cell_calmar_approx <- t3$obs_calmar
@@ -625,7 +946,7 @@ rf_overlay_adversary_run <- function(base_id, block = "B5", layer = 1L, root = .
   rec$vector_observed <- isTRUE(vo$observed); rec$vector_dates_vary <- vo$n_dates_vary
   if (isTRUE(vo$observed)) {
     rec$tests$T3b <- tryCatch({
-      HP <- .adv_holding_period_returns(HF, PR$dt$date, loader)
+      HP <- .adv_holding_period_returns(HF, PR$dt$date, loader, EP)
       M <- vo$M[, .(date, ticker, e)]; M[, pid := match(date, sort(unique(HF$date)))]
       H <- merge(HP, M[, .(pid, ticker, e)], by = c("pid", "ticker"), all.x = TRUE)
       H[is.na(e), e := 0]
@@ -640,29 +961,38 @@ rf_overlay_adversary_run <- function(base_id, block = "B5", layer = 1L, root = .
            if (!isTRUE(sup$overlay_shift)) "skipped_engine_unsupported (rf_cell_engine.R 에 overlay_shift 없음)" else
            if (!honors && !isTRUE(CF$allow_lcode_leak) && !identical(reruns, "force"))
              "skipped_side_effect_guard (run_paper_replication.R 이 QVEST_RP_NO_LCODE 를 읽지 않는다 — L-code 누출)" else ""
+  # ★재실행 규약 대조 — 재실행 산출물의 실현 규약이 칸(=바닥) 규약과 다르면 floor_calmar 와 비교하지 않는다(error)
+  .rerun_regime_bad <- function(z) if (identical(as.character(z$exec_price_realized %||% NA)[1], EP)) NULL else
+    list(applicable = TRUE, status = "error",
+         detail = sprintf("regime_mismatch_rerun: 재실행 실현 규약 %s ≠ 칸 %s — 바닥 Calmar 와 비교 거부", as.character(z$exec_price_realized %||% NA)[1], EP),
+         exec_price = EP, exec_price_realized = z$exec_price_realized %||% NA, artifacts = z$artifacts, spec = z$spec, side_effects = z$side_effects)
   rec$tests$T1 <- if (nzchar(guard)) list(applicable = TRUE, status = "skipped", detail = guard) else {
-    z <- .adv_rerun(r$spec, "T1", r$code, rec$base_id, r$n, root, odir, CF$worker_timeout_sec)
-    if (!identical(z$status, "ok")) list(applicable = TRUE, status = "error", detail = z$detail, spec = z$spec, side_effects = z$side_effects) else {
+    z <- .adv_rerun(r$spec, "T1", r$code, rec$base_id, r$n, root, odir, CF$worker_timeout_sec, exec_price = EP)
+    if (!identical(z$status, "ok")) list(applicable = TRUE, status = "error", detail = z$detail, spec = z$spec, side_effects = z$side_effects) else
+    .rerun_regime_bad(z) %||% {
       cs <- .adv_num(z$essence$calmar)
       list(applicable = TRUE, status = if (is.finite(cs) && cs > r$floor_calmar) "pass" else "fail",
            calmar_shift = cs, floor_calmar = r$floor_calmar, port_t_shift = .adv_num(z$essence$port_t),
+           exec_price = EP, exec_price_realized = z$exec_price_realized, exec_pin = z$exec_pin,
            artifacts = z$artifacts, spec = z$spec, side_effects = z$side_effects,
-           decision_rule = "calmar(overlay_shift=1) > floor_calmar")
+           decision_rule = "calmar(overlay_shift=1) > floor_calmar  [같은 집행 규약]")
     }
   }
   if (!ext) rec$tests$T2 <- list(applicable = FALSE, status = "not_applicable", detail = "own layers 에 external_data=true arm 없음") else {
     g2 <- if (nzchar(guard)) guard else if (!isTRUE(sup$overlay_strict)) "skipped_engine_unsupported (overlay_strict 없음)" else ""
     rec$tests$T2 <- if (nzchar(g2)) list(applicable = TRUE, status = "skipped", detail = g2) else {
-      z <- .adv_rerun(r$spec, "T2", r$code, rec$base_id, r$n, root, odir, CF$worker_timeout_sec)
-      if (!identical(z$status, "ok")) list(applicable = TRUE, status = "error", detail = z$detail, spec = z$spec, side_effects = z$side_effects) else {
+      z <- .adv_rerun(r$spec, "T2", r$code, rec$base_id, r$n, root, odir, CF$worker_timeout_sec, exec_price = EP)
+      if (!identical(z$status, "ok")) list(applicable = TRUE, status = "error", detail = z$detail, spec = z$spec, side_effects = z$side_effects) else
+      .rerun_regime_bad(z) %||% {
         cs <- .adv_num(z$essence$calmar)
         suppressMessages(source(file.path(root, "02_Infrastructure/validation/overlay_pit_guard.R"), local = TRUE))
         ab <- overlay_lookahead_ab(r$calmar, cs, "Calmar")
         list(applicable = TRUE, status = if (is.finite(cs) && cs > r$floor_calmar) "pass" else "fail",
              calmar_strict = cs, calmar_current = r$calmar, floor_calmar = r$floor_calmar,
              inflation = ab$inflation, lookahead_suspected = isTRUE(ab$lookahead_suspected), message = ab$message,
+             exec_price = EP, exec_price_realized = z$exec_price_realized, exec_pin = z$exec_pin,
              artifacts = z$artifacts, spec = z$spec, side_effects = z$side_effects,
-             decision_rule = "calmar(overlay_strict) > floor_calmar; lookahead_suspected 면 하류는 strict 값을 쓴다")
+             decision_rule = "calmar(overlay_strict) > floor_calmar  [같은 집행 규약]; lookahead_suspected 면 하류는 strict 값을 쓴다")
       }
     }
   }

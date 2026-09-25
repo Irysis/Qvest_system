@@ -37,6 +37,19 @@
 #   조인은 전부 **연월**로 한다 — PG2 가 결정일 AS_OF(=hs)에 읽는 바로 그 행(m4 YM==홀딩월 · AE decision_date==hs ·
 #   국면 sig==hs · 팩터 DB 월==d 의 달).
 #
+# ★PIT C11 (2026-09-24 · 판정서 V-02 · 결정 PIT-C11-REMEDIATION 안 B 1단계) — 위 컷오프(전월 말·last_feat)는 **날짜
+#   라벨**이다. 해외(FRED) 정보를 담는 두 패널(m4·AE)은 라벨이 전월 말이어도 미국 월말 종가(한국 d 종가 뒤 세션)와
+#   공표 전 주간값(STLFSI4 +7일·NFCI +6일)을 담았다 — L1 은 신호일 d 종가에 체결하므로(close_d_legacy) 같은 날짜
+#   미국 월말 종가 218/223개월, STLFSI4 223/223 · NFCI 187/223 이 결정 시점에 미가용이었다(V3 s12_arm.R).
+#   assert_overlay_pit 는 라벨만 비교해 통과시켰다. 이제:
+#     · 두 패널은 C11 표식(c11_info_cutoff · c11_regime_key — 생산자: ae_pit_features.py · m4 factor_engine.R)을
+#       **요구**한다. 없으면 적재에서 stop — 수리 전 판 위에서 이 arm 을 재지 않는다(중립 강등도 하지 않는다:
+#       강등하면 'pg2 arm' 이라는 이름으로 다른 처치를 잰 칸이 생긴다).
+#     · 규칙 epoch(c11_regime_key)가 현행 기반(S0) 규칙과 다르면 stop(현행 규칙으로 재빌드).
+#     · 호출마다 해외 정보 컷오프 ≤ 신호일 d 를 HARD 로 건다(d 종가 결정 = 판정서 ② 형태 a). close_t1(익일 체결)
+#       에도 d 는 집행보다 이르므로 보수 방향이다. 국내 입력(국면 라벨·팩터 DB)의 홀딩월 가드는 그대로 둔다.
+#   ※아래 '오프라인 검증'(2026-09-17)은 라벨 컷오프 기준이라 C11 적합의 증거가 아니다.
+#
 # ★결손 처리 (사전등록 결정 5)
 #   어느 달이든 입력이 없으면 그 성분만 중립값(gate 1 · NORMAL · zlt FALSE)으로 두고 진단 카운터에 적는다.
 #   합성 픽스처(probe)의 가짜 종목은 팩터 DB 에 없으므로 z 결손 → zlt FALSE, 패널 커버리지 밖의 달은 중립값 —
@@ -93,12 +106,39 @@ suppressWarnings(suppressPackageStartupMessages({ library(data.table); library(a
   raw   = file.path(.PG2_ROOT, ".cache/rawdata.parquet"),     # ALPHA:19 → RAWDATA (Date·Ret 두 열만 읽는다)
   guard = file.path(.PG2_ROOT, "02_Infrastructure/validation/overlay_pit_guard.R"),
   fdc   = file.path(.PG2_ROOT, "02_Infrastructure/factor_db/factor_db_connector.R"),
+  fa    = file.path(.PG2_ROOT, "02_Infrastructure/data/fred_availability.R"),   # C11 기반(S0) — 규칙 epoch 판독
   cache = file.path(.PG2_ROOT, ".cache/pg2_overlay"))
 
 # ── PIT 가드 (정본 함수를 재구현하지 않는다) ──────────────────────────────────
 .PG2_GUARD_ENV <- new.env(parent = globalenv())
 source(.PG2_P$guard, local = .PG2_GUARD_ENV)
 .pg2_assert_pit <- .PG2_GUARD_ENV$assert_overlay_pit
+
+# ── ★C11 표식 계약 (2026-09-24) — 생산자와 같은 이름 · 규칙 epoch 는 기반(S0) 도우미에서만 읽는다 ──────
+.PG2_C11_COLS <- c("c11_info_cutoff", "c11_regime_key")
+.PG2_C11_KEY <- tryCatch({
+  .fa_env <- new.env(parent = globalenv())
+  source(.PG2_P$fa, local = .fa_env)
+  as.character(.fa_env$fred_avail_rules_meta()$regime_key)
+}, error = function(e) NA_character_)
+.pg2_c11_require <- function(x, label, exempt = rep(FALSE, nrow(x))) {
+  miss <- setdiff(.PG2_C11_COLS, names(x))
+  if (length(miss))
+    stop(sprintf(paste0("[pg2_risk_overlay] ★C11 미해소 패널(%s) — 표식 열 %s 없음(수리 전 판: 해외 특성 관측일 결합). ",
+                        "2단계 재빌드 전에는 이 arm 으로 재지 않는다(판정서 V-02 · PIT-C11-REMEDIATION)"),
+                 label, paste(miss, collapse = ",")))
+  if (is.na(.PG2_C11_KEY))
+    stop("[pg2_risk_overlay] ★C11 규칙 epoch 판독 불가 — ", .PG2_P$fa, " (기반 S0 도우미) 를 source 하지 못했다")
+  cut <- as.Date(x$c11_info_cutoff); key <- as.character(x$c11_regime_key)
+  chk <- !exempt
+  if (any(chk & is.na(cut)))
+    stop(sprintf("[pg2_risk_overlay] ★C11 미해소 행(%s) %d개 — c11_info_cutoff 결측", label, sum(chk & is.na(cut))))
+  if (any(chk & (is.na(key) | key != .PG2_C11_KEY)))
+    stop(sprintf(paste0("[pg2_risk_overlay] ★C11 규칙 epoch 불일치(%s) — 패널 '%s' vs 현행 '%s'. ",
+                        "현행 규칙(06_Registry/fred_availability_rules.json)으로 재빌드할 것"),
+                 label, key[chk][which(is.na(key[chk]) | key[chk] != .PG2_C11_KEY)[1]], .PG2_C11_KEY))
+  cut
+}
 
 # ── 진단 ─────────────────────────────────────────────────────────────────────
 .PG2_DIAG <- new.env(parent = emptyenv())
@@ -137,23 +177,31 @@ pg2_overlay_trace <- function() {
 
 # ── ① m4 패널 (GEN:91-93 · 130) ──────────────────────────────────────────────
 .pg2_load_m4 <- function() {
-  x <- .pg2_read_cols(.PG2_P$m4, c("Date", "YM", "weight_str1715"))
+  x <- .pg2_read_cols(.PG2_P$m4, c("Date", "YM", "weight_str1715", .PG2_C11_COLS, "c11_status"))
   if (is.null(x) || !nrow(x) || !"weight_str1715" %in% names(x)) return(NULL)
   if ("Date" %in% names(x)) x[, Date := as.Date(Date)]
   x[, ym := if ("YM" %in% names(x)) as.character(YM) else .pg2_ym(Date)]
   x <- x[!is.na(ym) & is.finite(weight_str1715)]
   if (!nrow(x)) return(NULL)
   x[, hs := as.Date(paste0(ym, "-01"))]       # 행 = 홀딩월
-  x[, cutoff := hs - 1L]                       # 정보 컷오프 = 전월 말 (FE lag 규약 · 파일 머리 참조)
+  x[, cutoff := hs - 1L]                       # 라벨 컷오프 = 전월 말 (FE lag 규약 · 파일 머리 참조)
   setorder(x, hs)
   x <- x[, .SD[.N], by = ym]                   # 연월당 1행 (발행본은 이미 유일 — 방어)
   .pg2_assert_pit(x$cutoff, x$hs, "pg2_risk_overlay:m4")
-  x[, .(ym, hs, cutoff, w = as.numeric(weight_str1715))]
+  # ★C11 — 해외 정보 컷오프는 생산자(factor_engine.R c11_regime_check)가 실은 표식으로만 안다.
+  #   c11_status: verified(컷오프 있음) · no_regime(국면 미사용 워밍업 행 — 해외 정보 없음) · unresolved(표식 없음 → 거부)
+  if (!"c11_status" %in% names(x))
+    stop("[pg2_risk_overlay] ★C11 미해소 패널(m4) — c11_status 열 없음(수리 전 판). 2단계 재빌드 전에는 이 arm 으로 재지 않는다")
+  if (any(x$c11_status == "unresolved" | is.na(x$c11_status)))
+    stop(sprintf("[pg2_risk_overlay] ★C11 미해소 행(m4) %d개 — 상류 unified 월간 표식 없음(판정서 V-04)",
+                 sum(x$c11_status == "unresolved" | is.na(x$c11_status))))
+  x[, c11_cut := .pg2_c11_require(x, "m4", exempt = x$c11_status == "no_regime")]
+  x[, .(ym, hs, cutoff, c11_cut, w = as.numeric(weight_str1715))]
 }
 
 # ── ② AE 패널 (GEN:96-127 · 131) ─────────────────────────────────────────────
 .pg2_load_ae <- function() {
-  x <- .pg2_read_cols(.PG2_P$ae, c("decision_date", "fire_seq", "last_feat_date"))
+  x <- .pg2_read_cols(.PG2_P$ae, c("decision_date", "fire_seq", "last_feat_date", .PG2_C11_COLS))
   if (is.null(x) || !nrow(x) || !all(c("decision_date", "fire_seq", "last_feat_date") %in% names(x))) return(NULL)
   x[, decision_date := as.Date(decision_date)]   # GEN:101 과 동일 변환
   x[, last_feat := as.Date(last_feat_date)]
@@ -170,7 +218,9 @@ pg2_overlay_trace <- function() {
   setorder(x, decision_date)
   x <- x[, .SD[.N], by = ym]
   .pg2_assert_pit(x$last_feat, x$hs, "pg2_risk_overlay:ae")
-  x[, .(ym, hs, cutoff = last_feat, fire = as.integer(fire_seq))]
+  # ★C11 — 표식(생산자 ae_pit_features.stamp) 요구. 해외 정보 컷오프 = max(last_feat, c11_info_cutoff)
+  x[, c11_cut := pmax(last_feat, .pg2_c11_require(x, "ae"))]
+  x[, .(ym, hs, cutoff = last_feat, c11_cut, fire = as.integer(fire_seq))]
 }
 
 # ── ③ 국면 라벨 (ALPHA:19-36 축자 재현 · 확장창 과거전용) ───────────────────
@@ -339,14 +389,18 @@ overlay_expo_pg2_risk_overlay <- function(H, t, ctx) {
   .pg2_diag_add("n_calls")
 
   # ① gate — GEN:129-131. m4 행·AE 행 = 홀딩월. 결손 성분은 발화하지 못한다(중립).
-  m4_fire <- NA; m4_cut <- as.Date(NA)
+  m4_fire <- NA; m4_cut <- as.Date(NA); m4_c11 <- as.Date(NA)
   if (!is.null(.PG2_M4)) { r <- .PG2_M4[ym == ym_h]
-    if (nrow(r) == 1L) { m4_fire <- r$w[1] < .PG2_M4_FIRE_LT; m4_cut <- r$cutoff[1] } }
+    if (nrow(r) == 1L) { m4_fire <- r$w[1] < .PG2_M4_FIRE_LT; m4_cut <- r$cutoff[1]; m4_c11 <- r$c11_cut[1] } }
   if (is.na(m4_fire)) .pg2_diag_add("n_m4_missing")
-  ae_fire <- NA; ae_cut <- as.Date(NA)
+  ae_fire <- NA; ae_cut <- as.Date(NA); ae_c11 <- as.Date(NA)
   if (!is.null(.PG2_AE)) { r <- .PG2_AE[ym == ym_h]
-    if (nrow(r) == 1L) { ae_fire <- r$fire[1] == .PG2_AE_FIRE; ae_cut <- r$cutoff[1] } }
+    if (nrow(r) == 1L) { ae_fire <- r$fire[1] == .PG2_AE_FIRE; ae_cut <- r$cutoff[1]; ae_c11 <- r$c11_cut[1] } }
   if (is.na(ae_fire)) .pg2_diag_add("n_ae_missing")
+  # ★C11 HARD — 해외 정보를 담은 두 패널 행의 정보 컷오프 ≤ 신호일 d (d 종가 결정 · 판정서 ② 형태 a).
+  #   라벨 가드(아래 ④ · 홀딩월 시작)보다 엄격하다: 홀딩월 1일 전이라도 d 종가 뒤에 가용해진 정보는 쓰지 못한다.
+  .c11 <- c(m4_c11, ae_c11); .c11 <- .c11[is.finite(.c11)]
+  if (length(.c11)) .pg2_assert_pit(.c11, rep(d, length(.c11)), "pg2_risk_overlay:c11")
   gate <- if (isTRUE(m4_fire) && isTRUE(ae_fire)) .PG2_GATE_DERISK else 1.0
 
   # ② 국면 — ALPHA:36 (sig == hs 인 행 · 없으면 NORMAL)

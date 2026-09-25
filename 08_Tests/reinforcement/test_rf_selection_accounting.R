@@ -127,8 +127,22 @@ if (!identical(mtxt, rtxt)) {
   mfx <- .fn_expr(tf, "run_paper_replication"); unlink(tf)
   if (!.essence_uses_args(mfx)) ok("C6 위반 주입: 구판 하드코딩 사본은 C5 에서 걸린다 (판별력 확인)") else ng("C6 판별력 없음")
 } else ng("C6 돌연변이 대상 줄을 못 찾음 — 수리 줄이 바뀌었나")
-if (any(grepl("measurement_regime", rtxt, fixed = TRUE)) && any(grepl('exec_price = "close_d_legacy"', rtxt, fixed = TRUE)))
-  ok("C7 auth 에 measurement_regime(현행 체결 규약 close_d_legacy 정직 기록) — P0-04 전환 전 regime 식별자") else ng("C7 measurement_regime 부재")
+## C7 (2026-09-24 P0-04 갱신): 하네스가 exec_price 를 인자화했으므로 measurement_regime.exec_price 는 **실현값**
+##   (sim_grade$diagnostics$exec_price — 하네스가 실제로 쓴 규약)이어야 한다. P0-01 의 리터럴 "close_d_legacy" 는
+##   인자화 전 현행 동작의 정직한 기록이었고, 인자화 뒤에 남으면 close_t1 측정에 legacy 라벨을 붙인다(라벨≠실현).
+.c7 <- function(txt) {
+  code <- txt[!grepl("^\\s*#", txt)]
+  any(grepl("measurement_regime", code, fixed = TRUE)) &&
+    any(grepl("exec_price = sim_grade$diagnostics$exec_price", code, fixed = TRUE)) &&
+    any(grepl("cost_model_version = sim_grade$cost_model_version", code, fixed = TRUE)) &&
+    !any(grepl('exec_price = "close_d_legacy"', code, fixed = TRUE))
+}
+if (.c7(rtxt)) ok("C7 auth measurement_regime.exec_price·cost_model_version = 하네스 실현값(리터럴 없음) — P0-04") else
+  ng("C7 measurement_regime 의 exec_price 가 실현값이 아니다(리터럴·부재)")
+## C7m 위반 주입 — P0-01 리터럴을 되살린 사본은 C7 에서 걸려야 한다(판별력)
+m7 <- sub("exec_price = sim_grade$diagnostics$exec_price", 'exec_price = "close_d_legacy"', rtxt, fixed = TRUE)
+if (!identical(m7, rtxt) && !.c7(m7)) ok("C7m 위반 주입: 리터럴 close_d_legacy 복원 사본은 C7 에서 걸린다") else
+  ng("C7m 판별력 없음(또는 대상 줄 부재)")
 
 cat("\n=== D. 원장 재도출 + 러너 배선 ===\n")
 rsrc <- readLines(RUNNER, warn = FALSE, encoding = "UTF-8"); rcode <- rsrc[!grepl("^\\s*#", rsrc)]

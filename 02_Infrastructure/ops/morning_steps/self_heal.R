@@ -58,12 +58,16 @@ if (msm_daily_stale || msm_hybrid_stale) {
 # build_regime_signal_table — MSM refit 후 또는 unified stale 시 monthly + daily 양쪽 재build
 unified_daily_stale <- is_stale(".cache/unified_regime_signal_daily.parquet", "Date", 1L)
 if (msm_refit_succeeded || unified_stale || unified_daily_stale) {
-  cat("  -> build_regime_signal_table() 재실행 (monthly + daily 양쪽)\n")
+  cat("  -> build_regime_signal_table() 재실행 (monthly + daily 양쪽) — 원장 경로\n")
+  # ★C11 원장 경로(2026-09-25): 재생성본은 후보로만 쓰고 라이브는 원장 병합만 쓴다(regime_append_only.R ·
+  #   fred_regime.R·daily_refresh 와 같은 함수). 구판은 여기서도 라이브를 원장 밖에서 덮었다(월요일마다 stale 판정 → 재빌드).
   tryCatch({
     source("02_Infrastructure/regime/regime_signal.R")
-    build_regime_signal_table()
-    build_regime_signal_table(daily = TRUE)
-    cat("  unified_regime_signal REBUILD PASS (monthly + daily)\n")
+    source("02_Infrastructure/regime/regime_append_only.R")
+    .rl_res <- regime_ledger_rebuild_publish(root = getwd())
+    .rl_ok <- vapply(.rl_res, function(r) r$status %in% c(0L, 1L), logical(1))
+    cat(sprintf("  unified_regime_signal REBUILD %s (monthly + daily · 원장 rc %s)\n",
+                if (all(.rl_ok)) "PASS" else "FAIL", paste(vapply(.rl_res, function(r) as.integer(r$status), 0L), collapse = "/")))
   }, error = function(e) {
     cat(sprintf("  unified_regime_signal REBUILD FAIL: %s\n", e$message))
   })

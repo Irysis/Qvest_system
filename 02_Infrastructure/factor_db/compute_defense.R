@@ -471,8 +471,16 @@ compute_defense <- function(RAWDATA, sig_date, FUND = NULL, CONSENSUS = NULL) {
 
   # --- D32: Beta VIX Sensitivity ---
   # DATA_NEEDED: VIX data (VKOSPI or ^VIX). Return NA if not in RAWDATA.
-  # Check if VIX or VKOSPI column exists
-  if ("VIX" %in% names(rd) || "VKOSPI" %in% names(rd)) {
+  # ★PIT C11 (2026-09-24 · 판정서 V-08): VIX 열은 빌더의 가용일 결합판만 받는다 — 표지 = 열 속성
+  #   c11_avail(factor_db_builder.R .fdb_vix_asof_join 의 규칙 regime_key). 한국 d 행 VIX = 미국 날짜 < d
+  #   인 최신값이라 회귀의 마지막 쌍(sig_d 수익 × sig_d 행 VIX 변화)도 sig_d 15:30 에 가용했다.
+  #   표지 없는 VIX 열 = 출처 미상(구판 같은 날짜 결합판일 수 있다) → D32 미산출(fail-closed).
+  #   VKOSPI 는 국내 지수라 해당 없음.
+  .vix_c11 <- if ("VIX" %in% names(rd)) attr(rd[["VIX"]], "c11_avail", exact = TRUE) else NULL
+  .vix_ok  <- is.character(.vix_c11) && length(.vix_c11) == 1L && !is.na(.vix_c11) && nzchar(.vix_c11)
+  if ("VIX" %in% names(rd) && !.vix_ok && !("VKOSPI" %in% names(rd)))
+    cat("  [compute_defense] !!! D32 거부 — VIX 열에 c11_avail 표지 없음(가용일 결합 미경유 · PIT C11 V-08)\n")
+  if (.vix_ok || "VKOSPI" %in% names(rd)) {
     vix_col <- if ("VKOSPI" %in% names(rd)) "VKOSPI" else "VIX"
     d32_results <- rbindlist(lapply(tickers, function(tk) {
       sub <- rd[.(tk)][!is.na(Ret) & !is.na(get(vix_col))]

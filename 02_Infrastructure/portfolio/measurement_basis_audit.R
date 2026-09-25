@@ -514,7 +514,17 @@ audit_book_measurement_coherence <- function(book_state_path,
 `%||%` <- function(a, b) if (!is.null(a) && length(a) > 0 && !all(is.na(a))) a else b
 
 # CLI entrypoint (Rscript 호출용)
-if (!interactive() && length(commandArgs(trailingOnly = TRUE)) > 0) {
+# ★(2026-09-25 수리 · Q19 형제) 구 가드 `length(commandArgs(trailingOnly = TRUE)) > 0` 은 "호출자 프로세스에 인자가 있는가"를 물었다 —
+#   인자를 받은 호출자(cert_backfill_audit.R --auto/--dry-run · wt_timeline.R --rebuild-active-book)가 이 파일을 source 하면
+#   본체가 돌아 args[1](예: "--dry-run")을 book_state 경로로 읽고 "Tier: BOOK_STATE_MISSING" 을 찍고 로그를 덮어썼다(샌드박스 실측).
+#   판정 = "Rscript 가 **이 파일**을 --file 로 실행했는가" ∧ 인자 ≥1(무인자 직접 실행은 구판처럼 무동작).
+#   가드 검사 = 08_Tests/portfolio/test_mba_main_guard.R
+.mba_is_cli_main <- function() {
+  if (interactive()) return(FALSE)
+  f <- sub("^--file=", "", grep("^--file=", commandArgs(trailingOnly = FALSE), value = TRUE))
+  length(f) >= 1L && identical(basename(gsub("\\\\", "/", f[1L])), "measurement_basis_audit.R")
+}
+if (.mba_is_cli_main() && length(commandArgs(trailingOnly = TRUE)) > 0) {
   args <- commandArgs(trailingOnly = TRUE)
   bs_path <- args[1]
   wt_root_arg <- if (length(args) >= 2) args[2] else "qepm/mailbox/worktask"

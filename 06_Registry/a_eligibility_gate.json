@@ -1,0 +1,48 @@
+{
+  "schema": "a_eligibility_gate_v1",
+  "description": "강화 러너 Grade A 자격 관문(P0-12 · 2026-09-24 도훈 승인 플랜 qvest-1-drifting-eclipse) — 보류 코드 on/off 정본. ★등급·문턱 밖: 보류는 등급을 바꾸지 않고 발행(qepm/mailbox/judge_request_<BID>_<n>.json · 06_Registry/grade_a_queue.json status=awaiting_judge · entry 졸업)만 미룬다. 보류 A 는 grade_a_queue 에 status='held:<코드+코드>' 로 남고 entry 는 active 로 계속 칸을 소비한다(rf_record_result(graduate=FALSE)). 판정 정본 = 02_Infrastructure/reinforcement/rf_runner_gates.R::rf_a_eligibility · 소비자 = 02_Infrastructure/ops/reinforce_auto_parallel.R(수집 · B5 경계 · tick 시작 재평가) · 02_Infrastructure/alpha_search/run_paper_replication.R §11(P0-13 · 충실구현 A — 강화 셀 제외 · 통과 = 산출 디렉터리 judge_request.eligible.json · 보류 = judge_request.held.json · 회계 요건 = accounting_fail.replication_required_selection_type).9개 코드가 전부 있고 active 가 논리값이어야 한다 — 파일 부재·파손·코드 불일치·타입 불량이면 관문은 gate_config 보류로 fail-closed(설정 오타가 보류를 조용히 끄지 못한다). 창 허용치는 여기 두지 않는다 — 02_Infrastructure/worktask/constraint_defaults.json::diagnostics.window_allowance_months(P0-02 정본 · 결정 D-C 12)를 읽는다. 검사 = 08_Tests/reinforcement/test_rf_a_eligibility.R · test_rf_runner_a_gate_e2e.R · 08_Tests/contracts/test_replication_a_gate.R(P0-13 충실구현).",
+  "decided_basis": "06_Registry/decision_register.json — EXEC-PRICE · D-B · D-C · D-D · PIT-C11-CONVENTIONS ⑧ (전부 resolved · 2026-09-23~24 도훈)",
+  "holds": {
+    "legacy_regime": {
+      "active": true,
+      "basis": "결정 EXEC-PRICE(close_t1) · 감사 D4-01(critical: 구 하네스 = 시그널일 종가 체결). 칸의 측정 규약(원장 rebase 표식 measurement_regime.regime → 산출물 auth measurement_regime.regime/exec_price · 부재 = P0-01 이전 판 close_d_legacy)이 현행 constraint_defaults.json::execution.exec_price 와 다르면 그 A 는 현행 규약의 A 가 아니다. 판독 불가 = 보류."
+    },
+    "adversary_unverified": {
+      "active": true,
+      "basis": "플랜 P0-11·P0-12(감사 D6-09·D3-06) — 기존 rf_grade_a_hold(자기 층 B5 · pass 없으면 보류)를 흡수하고 승계 층까지 넓힌다: 칸 스펙의 오버레이 층 중 자기 층이 아닌 층이 계보(entry + parent 사슬)의 어떤 적대검증 pass 레코드에도 없으면 보류. pit.md C5 오버레이 신호 타이밍 사고(BearProb)는 placebo/OOS/DSR 을 다 통과하고 lag-1·strict-PIT 반증만 잡았다."
+    },
+    "window_deviation": {
+      "active": true,
+      "basis": "결정 D-C(도훈 2026-09-23) 'effective_start 허용 = 기저 최장 룩백 12개월 · 초과 칸은 A 보류 + 바닥·carry 후보 제외'. 허용치 = constraint_defaults.json::diagnostics.window_allowance_months · 정의 = essence_score.R 진단 절(window_deviation_months). 판독 불가 = 보류."
+    },
+    "n_trials_missing": {
+      "active": true,
+      "basis": "플랜 P0-01 fail-closed(감사 D3-01) — 강화 셀은 sweep 이고 DSR N = 계보 누적 raw 시행수(결정 D-A). n_trials_cumulative 가 없거나 회계 없는 구 spec 재개(n_trials_basis=unknown_*)면 DSR 게이트가 실제로 선 A 인지 모른다."
+    },
+    "accounting_fail": {
+      "active": true,
+      "required_selection_type": "sweep",
+      "basis": "플랜 P0-01 · measurement-graduation §3(sweep 형 selection 은 DSR≥0.5 HARD). 강화 러너 셀은 열거 격자 argmax 로 선택되므로 sweep 이다(rf_cell_worker.R::.rf_sel_args). auth 판독 불가 · measurement_regime 부재 · selection_type≠sweep · sweep·N≥2 인데 DSR 부재 = 보류.",
+      "replication_required_selection_type": "chain",
+      "replication_basis": "플랜 P0-13(2026-09-25) — 충실구현 경로(run_paper_replication.R §11 · 강화 셀 제외 · 어댑터 .rp_a_gate_inputs)의 회계 요건. 충실구현 = 논문 1안·선택 없음 → chain/1(러너 기본값 selection_type=\"chain\"·n_trials_cumulative=1 — P0-01 · measurement-graduation §3 chain). 강화 요건(required_selection_type=sweep)을 빌리지 않는다 — 빌리면 모든 충실구현 A 가 보류된다. 결과를 본 뒤 바꾼 판(어드바이저 두 번째 측정부터 sweep 등)은 이 요건으로 보류된다(회계를 관문에 맞춰 바꾸지 않는다 — 발행 여부는 도훈 판단). 키 이름은 required_selection_type 으로 시작하지 않는다(rf_a_gate_config 의 $ 부분 일치가 이 값을 강화 요건으로 집지 않게). 부재·빈값 = 충실구현 관문 gate_config 보류(fail-closed). 검사 = 08_Tests/contracts/test_replication_a_gate.R."
+    },
+    "vintage_flag": {
+      "active": true,
+      "flags": ["*"],
+      "verdicts": ["consumed", "consumed_absence", "possible"],
+      "basis": "원장 attempt.vintage_flags(rf_mark_vintage_batch) — pit_c11(결정 PIT-C11-CONVENTIONS ⑧: 오염 선택은 보유 재측정으로 씻기지 않는다 · rebase 비편입) · fdb_202608_v1/fdb_inv13_absent/fdb_202609_rebuild_overlap(결정 DATA-CASCADE-202609 · DATA-INV13-ACC: 표식만 — 재측정은 P0-05 흡수). 표식 칸의 A 는 데이터 빈티지가 확정될 때까지 발행하지 않는다(수집 시점 새 칸은 표식이 없다 — 표식은 사후에 붙고 tick 시작 재평가가 읽는다)."
+    },
+    "sigma_w_lt_1": {
+      "active": false,
+      "basis": "결정 D-D(도훈 2026-09-23) 'Σw=1 은 위험자산 정규화로 해석 — 오버레이 현금(Σw≤1)과 양립'. 보류 비활성 — 라벨(rf_preflight_verify_axes labels)은 기록만(inactive 목록)."
+    },
+    "dossier_pending": {
+      "active": false,
+      "basis": "결정 D-B(도훈 2026-09-23) 'selection_audit 판정 규칙 … 가족 조정 P 는 보고만' · 플랜 비평 M9(서류 대기 보류는 모든 A 의 Judge 스폰을 무기한 막아 헌법 파이프라인을 바꾼다) — A 는 서류 대기로 보류하지 않는다(서류는 첨부만)."
+    },
+    "rule_pending": {
+      "active": false,
+      "basis": "결정 D-B · 플랜 비평 M9 — 판정 규칙 확정 대기로 A 를 보류하지 않는다."
+    }
+  }
+}

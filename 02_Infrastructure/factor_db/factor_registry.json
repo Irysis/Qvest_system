@@ -5600,12 +5600,12 @@
     "definition": "Beta with respect to VIX changes. Volatility sensitivity.",
     "direction": "higher_better",
     "data_source": "macro",
-    "lag_rule": "Date <= sig_d",
+    "lag_rule": "Date <= sig_d · VIX = 가용일 결합(미국 날짜 < 한국 날짜, 2026-09-24~)",
     "update_freq": "monthly",
     "availability": {
       "type": "regulatory",
       "rule": "C11_publication_lag",
-      "known_discrepancy": "실제 발표 lag(예: CPI 수주)는 코드에서 1일 근사로만 강제 — compute_regime.R:31-32 Date <= sig_d(월간 as-of)·:75-77 FRED sig_d-1. 선언(C11 publication lag) 대비 약한 강제 (ast_field_map_v0 FDB-B5)"
+      "known_discrepancy": "2026-09-24 정정 — 구 서술('compute_regime.R :75-77 FRED sig_d-1 로 1일 근사 강제')은 거짓(판정서 04_Research/01_reports/pit_c11_20260924/PIT_C11_verdict_20260924.md 1-5 반증): D32 는 compute_regime 을 타지 않는다. 경로 = factor_db_builder.R .load_base_data 의 VIX 결합 → compute_defense.R D32. 구판 = FRED VIXCLS 미국 관측일을 한국 날짜에 같은 날짜로 roll 결합(V-08: 한국 d 행에 미국 d 세션 — 회귀 마지막 쌍이 미래 정보, 202608 저장값 2550/2550 = 같은 날짜 판). 수리판(2026-09-24 코드) = S0 가용시점 층 fred_asof_join(VIXCLS, decision_close — 미국 날짜 < 한국 날짜, 규칙 06_Registry/fred_availability_rules.json) + 결합 자기검증 + 열 표지 c11_avail 없으면 D32 거부. ★정렬 이동: 마지막 쌍만이 아니라 전 쌍이 (한국 d 수익, 미국 d−1 VIX 변화)로 바뀐다 — 202608 재빌드 대조 횡단면 Spearman 0.010(저장판 대비). 저장 이력 factor_db 2005-01~2026-08 = 같은 날짜 판(오염) — 2단계 표적 재빌드 전까지 소비 금지(pit_quarantine PITQ-C11-20260924). 선언 rule C11_publication_lag 는 재빌드 전 저장 이력 때문에 유지."
     },
     "restatement_prone": true,
     "vintage_available": false,
@@ -13027,7 +13027,7 @@
     "availability": {
       "type": "regulatory",
       "rule": "C11_publication_lag",
-      "known_discrepancy": "실제 발표 lag(예: CPI 수주)는 코드에서 1일 근사로만 강제 — compute_regime.R:31-32 Date <= sig_d(월간 as-of)·:75-77 FRED sig_d-1. 선언(C11 publication lag) 대비 약한 강제 (ast_field_map_v0 FDB-B5)"
+      "known_discrepancy": "2026-09-24 현행화: compute_regime.R 공통 필터(:75-77 sig_d−1)를 계열별 가용일 필터(06_Registry/fred_availability_rules.json)로 교체. VIXCLS = 일간 미국 계열 — 규칙 '미국 날짜 < 한국 날짜'라 구판과 같은 결과(202608 원본·수리판 재빌드 비트 동일, 판정서 1-6 적합 판정과 합치). 잔여: 값은 최신 빈티지."
     },
     "restatement_prone": true,
     "vintage_available": false,
@@ -13070,7 +13070,7 @@
     "availability": {
       "type": "regulatory",
       "rule": "C11_publication_lag",
-      "known_discrepancy": "실제 발표 lag(예: CPI 수주)는 코드에서 1일 근사로만 강제 — compute_regime.R:31-32 Date <= sig_d(월간 as-of)·:75-77 FRED sig_d-1. 선언(C11 publication lag) 대비 약한 강제 (ast_field_map_v0 FDB-B5)"
+      "known_discrepancy": "2026-09-24 현행화: compute_regime.R 공통 필터(:75-77 sig_d−1)를 계열별 가용일 필터(06_Registry/fred_availability_rules.json)로 교체. VIXCLS = 일간 미국 계열 — 규칙 '미국 날짜 < 한국 날짜'라 구판과 같은 결과(202608 원본·수리판 재빌드 비트 동일, 판정서 1-6 적합 판정과 합치). 잔여: 값은 최신 빈티지."
     },
     "restatement_prone": true,
     "vintage_available": false,
@@ -13113,7 +13113,7 @@
     "availability": {
       "type": "regulatory",
       "rule": "C11_publication_lag",
-      "known_discrepancy": "실제 발표 lag(예: CPI 수주)는 코드에서 1일 근사로만 강제 — compute_regime.R:31-32 Date <= sig_d(월간 as-of)·:75-77 FRED sig_d-1. 선언(C11 publication lag) 대비 약한 강제 (ast_field_map_v0 FDB-B5)"
+      "known_discrepancy": "2026-09-24 현행화: compute_regime.R 공통 필터(:75-77 sig_d−1)를 계열별 가용일 필터(06_Registry/fred_availability_rules.json)로 교체. VIXCLS = 일간 미국 계열 — 규칙 '미국 날짜 < 한국 날짜'라 구판과 같은 결과(202608 원본·수리판 재빌드 비트 동일, 판정서 1-6 적합 판정과 합치). 잔여: 값은 최신 빈티지."
     },
     "restatement_prone": true,
     "vintage_available": false,
@@ -13156,7 +13156,7 @@
     "availability": {
       "type": "regulatory",
       "rule": "C11_publication_lag",
-      "known_discrepancy": "실제 발표 lag(예: CPI 수주)는 코드에서 1일 근사로만 강제 — compute_regime.R:31-32 Date <= sig_d(월간 as-of)·:75-77 FRED sig_d-1. 선언(C11 publication lag) 대비 약한 강제 (ast_field_map_v0 FDB-B5)"
+      "known_discrepancy": "2026-09-24 코드 수리: compute_regime.R 공통 필터(:75-77 sig_d−1)를 계열별 가용일 필터(06_Registry/fred_availability_rules.json)로 교체. BAMLH0A0HYM2 (ICE OAS) = 한국 d+2 영업일부터(decision_register PIT-C11-CONVENTIONS ② — 구판 −1일보다 1영업일 이상 늦다; 202608 값 변경). 잔여: FRED 가 ICE 이력을 3년 롤링 창으로만 제공(판정서 1-7) · 최신 빈티지. 저장 이력 2005-01~2026-09 = 구판 −1일 판 — 2단계 재빌드 대상. (일간 RE13 의 전표본 순위 C1 은 phase7 몫 — 판정서 V-12)"
     },
     "restatement_prone": true,
     "vintage_available": false,
@@ -13203,7 +13203,7 @@
     "availability": {
       "type": "regulatory",
       "rule": "C11_publication_lag",
-      "known_discrepancy": "실제 발표 lag(예: CPI 수주)는 코드에서 1일 근사로만 강제 — compute_regime.R:31-32 Date <= sig_d(월간 as-of)·:75-77 FRED sig_d-1. 선언(C11 publication lag) 대비 약한 강제 (ast_field_map_v0 FDB-B5)"
+      "known_discrepancy": "2026-09-24 코드 수리(판정서 04_Research/01_reports/pit_c11_20260924/PIT_C11_verdict_20260924.md V-13 · PIT-C11-CONVENTIONS ③): compute_regime.R 공통 필터(:75-77 sig_d−1 — 신호월 관측을 공표 전에 사용)를 계열별 가용일 필터로 교체 — CPIAUCSL(라벨 +48일 상한), 결정 = sig_d 한국 종가, 규칙 06_Registry/fred_availability_rules.json. YoY = 날짜 기준 12개월 변화(CPIAUCSL 2025-10 관측 부재 — 행 기준 shift(12)는 13개월 변화였다). 잔여: 고정 오프셋은 상한 임시판(ALFRED 실공표일 = 안 C)·값은 최신 빈티지(C1·C11 잔여). 저장 이력 factor_db 2005-01~2026-09 = 신호월 값(오염 · 소비 경로 없음 — Z NA·Coverage FALSE) — 2단계 재빌드 대상."
     },
     "restatement_prone": true,
     "vintage_available": false,
@@ -13288,7 +13288,7 @@
     "availability": {
       "type": "regulatory",
       "rule": "C11_publication_lag",
-      "known_discrepancy": "실제 발표 lag(예: CPI 수주)는 코드에서 1일 근사로만 강제 — compute_regime.R:31-32 Date <= sig_d(월간 as-of)·:75-77 FRED sig_d-1. 선언(C11 publication lag) 대비 약한 강제 (ast_field_map_v0 FDB-B5)"
+      "known_discrepancy": "2026-09-24 현행화: compute_regime.R 공통 필터(:75-77 sig_d−1)를 계열별 가용일 필터(06_Registry/fred_availability_rules.json)로 교체. SP500 = 일간 미국 계열 — 규칙 '미국 날짜 < 한국 날짜'라 구판과 같은 결과(202608 원본·수리판 재빌드 비트 동일, 판정서 1-6 적합 판정과 합치). 잔여: 값은 최신 빈티지."
     },
     "restatement_prone": true,
     "vintage_available": false,
@@ -13335,7 +13335,7 @@
     "availability": {
       "type": "regulatory",
       "rule": "C11_publication_lag",
-      "known_discrepancy": "실제 발표 lag(예: CPI 수주)는 코드에서 1일 근사로만 강제 — compute_regime.R:31-32 Date <= sig_d(월간 as-of)·:75-77 FRED sig_d-1. 선언(C11 publication lag) 대비 약한 강제 (ast_field_map_v0 FDB-B5)"
+      "known_discrepancy": "퇴역(2026-09-24 · PIT-C11-MA0102). 구 서술(1일 근사)은 산출 코드 기준으로 거짓이었다 — 실제로는 신호월 관측을 공표 전에 사용(판정서 V-01). 저장 이력은 오염판 — 소비 금지."
     },
     "restatement_prone": true,
     "vintage_available": false,
@@ -13358,13 +13358,15 @@
       "data_dependency": "macro"
     },
     "lifecycle": {
-      "status": "active",
+      "status": "retired",
       "research_stage": "S7",
       "mutation_count": 0,
       "added_date": "2026-03-24",
       "last_validated": {},
-      "deprecation_reason": {},
-      "mutation_parent": {}
+      "deprecation_reason": "PIT C11 위반으로 퇴역(판정서 04_Research/01_reports/pit_c11_20260924/PIT_C11_verdict_20260924.md V-01·⑥-5). compute_regime.R .macro_beta 가 INDPRO·CPIAUCSL 신호월(M-01 라벨) 관측을 공표(라벨 +38~54일) 전에 사용 — 월 회귀 약 12쌍 중 마지막 쌍이 미래 정보. 공표분만 쓰면 현 창(최근 12개월·최소 12관측)으로 202608·202003 산출 불가(n<12) → 창 재정의 대신 퇴역. MA01 = L1 20칸 오염(C 18·F 2 — 원장 pit_c11 표식). 산출 중지 = compute_regime.R(2026-09-24). 격리 06_Registry/pit_quarantine.json PITQ-C11-20260924 는 그대로(해제 아님). ★삭제 아님 — 등재 이력 보존, 이름 재사용 금지. 저장 이력(factor_db 2005-01~2026-09)은 오염판이다.",
+      "mutation_parent": {},
+      "retired_date": "2026-09-24",
+      "retirement_decision": "06_Registry/decision_register.json#PIT-C11-MA0102 (도훈 결정: 퇴역)"
     }
   },
   "MA02_CPI_Sensitivity": {
@@ -13378,7 +13380,7 @@
     "availability": {
       "type": "regulatory",
       "rule": "C11_publication_lag",
-      "known_discrepancy": "실제 발표 lag(예: CPI 수주)는 코드에서 1일 근사로만 강제 — compute_regime.R:31-32 Date <= sig_d(월간 as-of)·:75-77 FRED sig_d-1. 선언(C11 publication lag) 대비 약한 강제 (ast_field_map_v0 FDB-B5)"
+      "known_discrepancy": "퇴역(2026-09-24 · PIT-C11-MA0102). 구 서술(1일 근사)은 산출 코드 기준으로 거짓이었다 — 실제로는 신호월 관측을 공표 전에 사용(판정서 V-01). 저장 이력은 오염판 — 소비 금지."
     },
     "restatement_prone": true,
     "vintage_available": false,
@@ -13401,13 +13403,15 @@
       "data_dependency": "macro"
     },
     "lifecycle": {
-      "status": "active",
+      "status": "retired",
       "research_stage": "S7",
       "mutation_count": 0,
       "added_date": "2026-03-24",
       "last_validated": {},
-      "deprecation_reason": {},
-      "mutation_parent": {}
+      "deprecation_reason": "PIT C11 위반으로 퇴역(판정서 04_Research/01_reports/pit_c11_20260924/PIT_C11_verdict_20260924.md V-01·⑥-5). compute_regime.R .macro_beta 가 CPIAUCSL 신호월(M-01 라벨) 관측을 공표(라벨 +38~54일) 전에 사용 — 월 회귀 약 12쌍 중 마지막 쌍이 미래 정보. 공표분만 쓰면 현 창(최근 12개월·최소 12관측)으로 202608·202003 산출 불가(n<12) → 창 재정의 대신 퇴역. MA02 = 등급 소비 0 · 202607부터 결손(CPI 2025-10 관측 부재). 산출 중지 = compute_regime.R(2026-09-24). 격리 06_Registry/pit_quarantine.json PITQ-C11-20260924 는 그대로(해제 아님). ★삭제 아님 — 등재 이력 보존, 이름 재사용 금지. 저장 이력(factor_db 2005-01~2026-09)은 오염판이다.",
+      "mutation_parent": {},
+      "retired_date": "2026-09-24",
+      "retirement_decision": "06_Registry/decision_register.json#PIT-C11-MA0102 (도훈 결정: 퇴역)"
     }
   },
   "MA03_Rate_Sensitivity": {
@@ -13421,7 +13425,7 @@
     "availability": {
       "type": "regulatory",
       "rule": "C11_publication_lag",
-      "known_discrepancy": "실제 발표 lag(예: CPI 수주)는 코드에서 1일 근사로만 강제 — compute_regime.R:31-32 Date <= sig_d(월간 as-of)·:75-77 FRED sig_d-1. 선언(C11 publication lag) 대비 약한 강제 (ast_field_map_v0 FDB-B5)"
+      "known_discrepancy": "2026-09-24 현행화: compute_regime.R 공통 필터(:75-77 sig_d−1)를 계열별 가용일 필터(06_Registry/fred_availability_rules.json)로 교체. DGS10 = 일간 미국 계열 — 규칙 '미국 날짜 < 한국 날짜'라 구판과 같은 결과(202608 원본·수리판 재빌드 비트 동일, 판정서 1-6 적합 판정과 합치). 잔여: 값은 최신 빈티지."
     },
     "restatement_prone": true,
     "vintage_available": false,
@@ -13464,7 +13468,7 @@
     "availability": {
       "type": "regulatory",
       "rule": "C11_publication_lag",
-      "known_discrepancy": "실제 발표 lag(예: CPI 수주)는 코드에서 1일 근사로만 강제 — compute_regime.R:31-32 Date <= sig_d(월간 as-of)·:75-77 FRED sig_d-1. 선언(C11 publication lag) 대비 약한 강제 (ast_field_map_v0 FDB-B5)"
+      "known_discrepancy": "2026-09-24 현행화: compute_regime.R 공통 필터(:75-77 sig_d−1)를 계열별 가용일 필터(06_Registry/fred_availability_rules.json)로 교체. DGS10·DGS2 = 일간 미국 계열 — 규칙 '미국 날짜 < 한국 날짜'라 구판과 같은 결과(202608 원본·수리판 재빌드 비트 동일, 판정서 1-6 적합 판정과 합치). 잔여: 값은 최신 빈티지."
     },
     "restatement_prone": true,
     "vintage_available": false,
@@ -13507,7 +13511,7 @@
     "availability": {
       "type": "regulatory",
       "rule": "C11_publication_lag",
-      "known_discrepancy": "실제 발표 lag(예: CPI 수주)는 코드에서 1일 근사로만 강제 — compute_regime.R:31-32 Date <= sig_d(월간 as-of)·:75-77 FRED sig_d-1. 선언(C11 publication lag) 대비 약한 강제 (ast_field_map_v0 FDB-B5)"
+      "known_discrepancy": "2026-09-24 현행화: compute_regime.R 공통 필터(:75-77 sig_d−1)를 계열별 가용일 필터(06_Registry/fred_availability_rules.json)로 교체. DGS2 = 일간 미국 계열 — 규칙 '미국 날짜 < 한국 날짜'라 구판과 같은 결과(202608 원본·수리판 재빌드 비트 동일, 판정서 1-6 적합 판정과 합치). 잔여: 값은 최신 빈티지."
     },
     "restatement_prone": true,
     "vintage_available": false,
@@ -13550,7 +13554,7 @@
     "availability": {
       "type": "regulatory",
       "rule": "C11_publication_lag",
-      "known_discrepancy": "실제 발표 lag(예: CPI 수주)는 코드에서 1일 근사로만 강제 — compute_regime.R:31-32 Date <= sig_d(월간 as-of)·:75-77 FRED sig_d-1. 선언(C11 publication lag) 대비 약한 강제 (ast_field_map_v0 FDB-B5)"
+      "known_discrepancy": "2026-09-24 현행화: MA06 = 국내 벤치마크(BM_Ret) 1년 누적수익 — 해외(FRED) 계열 미사용이라 C11 해당 없음. 구 서술이 인용한 compute_regime.R :75-77(FRED sig_d−1 필터)은 이 팩터와 무관했고 그 줄은 계열별 가용일 필터로 교체됨. 선언 C11_publication_lag 는 data_source=macro 도메인 계약(registry_validate_availability.py) 때문에 유지."
     },
     "restatement_prone": true,
     "vintage_available": false,
@@ -13597,7 +13601,7 @@
     "availability": {
       "type": "regulatory",
       "rule": "C11_publication_lag",
-      "known_discrepancy": "실제 발표 lag(예: CPI 수주)는 코드에서 1일 근사로만 강제 — compute_regime.R:31-32 Date <= sig_d(월간 as-of)·:75-77 FRED sig_d-1. 선언(C11 publication lag) 대비 약한 강제 (ast_field_map_v0 FDB-B5)"
+      "known_discrepancy": "2026-09-24 코드 수리(판정서 04_Research/01_reports/pit_c11_20260924/PIT_C11_verdict_20260924.md V-13 · PIT-C11-CONVENTIONS ③): compute_regime.R 공통 필터(:75-77 sig_d−1 — 신호월 관측을 공표 전에 사용)를 계열별 가용일 필터로 교체 — INDPRO(라벨 +54일 상한)·CPIAUCSL(+48일 상한), 결정 = sig_d 한국 종가, 규칙 06_Registry/fred_availability_rules.json. YoY = 날짜 기준 12개월 변화(CPIAUCSL 2025-10 관측 부재 — 행 기준 shift(12)는 13개월 변화였다). 잔여: 고정 오프셋은 상한 임시판(ALFRED 실공표일 = 안 C)·값은 최신 빈티지(C1·C11 잔여). 저장 이력 factor_db 2005-01~2026-09 = 신호월 값(오염 · 소비 경로 없음 — Z NA·Coverage FALSE) — 2단계 재빌드 대상."
     },
     "restatement_prone": true,
     "vintage_available": false,
@@ -17984,11 +17988,12 @@
     "definition": "Cross-sectional z-score of VIX level.",
     "direction": "higher_better",
     "data_source": "macro_fred",
-    "lag_rule": "Date < sig_d (C11 macro publication lag)",
+    "lag_rule": "선언: Date < sig_d (C11) · as-built: 한국 d 행에 미국 d VIX(같은 날짜 — 판정서 V-10) · 수리 전",
     "update_freq": "daily",
     "availability": {
       "type": "fixed",
-      "rule": "-1d"
+      "rule": "-1d",
+      "known_discrepancy": "2026-09-24 신고 — 선언 '-1d' 는 as-built 와 불일치(판정서 04_Research/01_reports/pit_c11_20260924/PIT_C11_verdict_20260924.md 1-5 반증 · V-10): 일간 RE_VIX_z = regime_daily_v2.VIX_z_smooth(regime_engine_daily.R:257·:395-415 setnames 이름 충돌)가 한국 d 행에 미국 d VIX 를 싣는다 (lag0 일치 100%, lag1 0%, n=7,045). 필요 규약 = 06_Registry/fred_availability_rules.json VIXCLS — 결정형(판정서 ② (a)): 미국 날짜 < 한국 날짜 · 수익 곱셈형((b)): 미국 날짜 ≤ t−2. regime_engine_daily 수리 + 일간 fdb 재빌드 전까지 C11 미해소. ⚠ast_verify.py(:360-361)는 rule '-1d' 에서 이 신고를 읽지 않고 avail=t 로 통과시킨다 — 검증기 수리 필요(방어선 몫). 규칙 문자열 '-1d' 는 registry_validate_availability.py 도메인 계약(macro_fred) 때문에 유지 — 불일치는 이 필드가 신고한다."
     },
     "restatement_prone": true,
     "vintage_available": false,

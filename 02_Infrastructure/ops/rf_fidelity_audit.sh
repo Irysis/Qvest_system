@@ -163,14 +163,21 @@ jl start "paper=$PKEY" "wdir=$WDIR" "model=$FA_MODEL" "effort=$FA_EFFORT" "html=
 # ★프롬프트는 stdin 으로 (2026-09-04): argv 로 넘기면 Windows 인자 상한(32K)에 걸려 에이전트가 안 뜰다 — 승격 entry B1 설계 재료 41KB 실사고.
 PF="$WDIR/fidelity_prompt.txt"
 printf %s "$PROMPT" > "$PF"
-timeout 1800 claude -p < "$PF" \
-  --model "$FA_MODEL" --effort "$FA_EFFORT" \
+# ★무인 LLM 단일 진입(P0-M1 2026-09-24) — rf_llm_agent_run 이 AutoMem 차단·무인 표식을 싣고
+#   --model/--effort 는 위 rf_llm_resolve 값(LLM_MODEL=FA_MODEL · LLM_EFFORT=FA_EFFORT)을 쓴다.
+RUN_OUT="$(mktemp "${TMPDIR:-/tmp}/rf_fa_run.XXXXXX")"
+#   폴백 미탑재(LLM_FALLBACK_MODEL="" · 구판 동작 보존): 구판도 --fallback-model 없이 떴고 이 레인엔
+#   반쪽 산출물 청소 훅(rf_llm_before_fallback)이 없다 — 폴백 확대는 청소 훅과 함께 별도 결정.
+LLM_FALLBACK_MODEL="" rf_llm_agent_run "$PF" "$RUN_OUT" 1800 \
   --permission-mode acceptEdits \
   --allowed-tools "Read,Write,Glob,Grep,WebFetch,WebSearch" \
   --disallowed-tools "Bash,Agent,Edit" \
-  --add-dir "$WDIR" \
-  >> "$LOG" 2>&1
-jl agent_done "rc=$?"
+  --add-dir "$WDIR"
+ARC=$LLM_RC
+[ -f "$RUN_OUT.primary" ] && cat "$RUN_OUT.primary" >> "$LOG"
+cat "$RUN_OUT" >> "$LOG" 2>/dev/null
+rm -f "$RUN_OUT" "$RUN_OUT.primary"
+jl agent_done "rc=$ARC"
 
 if grep -qiE "OAuth access token has expired|Failed to authenticate|API Error: 401" "$LOG" 2>/dev/null; then
   jl halt_auth_expired "hint=claude 재인증 필요"; exit 2; fi

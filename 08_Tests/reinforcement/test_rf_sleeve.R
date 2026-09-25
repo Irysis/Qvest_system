@@ -4,7 +4,7 @@
 #
 # 이 검사가 지키는 불변식:
 #   ① k 는 정적이고 |SEL| = n_max 가 보존된다 (총노출·종목수 불변 = B5 와 갈리는 지점)
-#   ② 팩터 id 는 규칙이 고른다 — 등록부의 측정 ic_bad. 리터럴이 스며들면 잡는다.
+#   ② 팩터 id 는 규칙이 고른다 — as-of 약세장 IC(2026-09-24 P0-08 · 전기간 ic_bad 퇴역). 리터럴·전기간이 스며들면 잡는다.
 #   ③ **처치 미전달을 멈춘다** — 방어 k종이 이미 알파 안에 있으면 보유가 그대로다.
 #      그 칸을 통과시키면 '처치 없음'을 '처치 있음'으로 기록하게 된다.
 #   ④ 대조군 2칸(베타매칭 무작위 · 부호 반전)이 격자에 실제로 있다. 이게 없으면
@@ -108,22 +108,79 @@ chk(nrow(.got) > 0L && all(.got$.zbeta >= .got$lo & .got$.zbeta <= .got$hi),
 chk(grepl("베타", .err(rf_sl_select(PANEL, SEL0, RB, NMAX, ".zdef", betacol = NULL)) %||% ""),
     "C4 베타 컬럼 없이 무신호 대조를 돌리면 멈춘다(조용히 비매칭 금지)", "C4")
 
-# ── 규칙 해석 — 리터럴 금지 ─────────────────────────────────────────────────
+# ── 규칙 해석 — 리터럴 금지 · as-of (2026-09-24 P0-08: 구 ic_bad_rank 퇴역 → ic_bad_rank_asof) ──
+#   ★축을 옮겼으니 양성 대조도 옮긴다: 등록부의 저장 ic_bad(전기간)가 아니라 as-of 약세장 IC 로 순위가 정해져야 한다.
+#   픽스처: DA 는 as-of 이전 약세장에서 IC 가 높고 이후 낮다, DB 는 반대 — 전기간이면 DB, as-of 면 DA 가 1위.
+#   저장 ic_bad 는 **일부러 반대로**(DB 가 높게) 깔아 둔다 — 신판이 그 값을 읽으면 R1 이 빨개진다.
 .tmp <- file.path(tempdir(), paste0("sl_", paste(sample(letters, 6), collapse = "")))
 dir.create(file.path(.tmp, "06_Registry"), recursive = TRUE, showWarnings = FALSE)
 write(toJSON(list(factors = list(
-  DA = list(category = "defense", lifecycle_status = "active", ic_bad = 0.09, ic_good = 0.01),
-  DB = list(category = "defense", lifecycle_status = "active", ic_bad = 0.05, ic_good = 0.02),
+  DA = list(category = "defense", lifecycle_status = "active", ic_bad = 0.01, ic_good = 0.01),
+  DB = list(category = "defense", lifecycle_status = "active", ic_bad = 0.09, ic_good = 0.02),
   DX = list(category = "defense", lifecycle_status = "deprecated", ic_bad = 0.99, ic_good = 0.0),
   VV = list(category = "value",   lifecycle_status = "active", ic_bad = 0.90, ic_good = 0.5))),
   auto_unbox = TRUE), file.path(.tmp, "06_Registry/factor_evidence.json"))
-r1 <- rf_sl_resolve(RULE5, .tmp); r2 <- rf_sl_resolve(rf_sl_parse(list(kind="factor_topk", k=5, rank=2)), .tmp)
-chk(identical(r1$id, "DA") && identical(r2$id, "DB"),
-    sprintf("R1 ic_bad 내림차순 — 1위 %s · 2위 %s", r1$id, r2$id), "R1 순서 틀림", paste(r1$id, r2$id))
+.wprog <- function(root, cfg = list(bear_quantile = 0.3, min_bear_months = 4L, candidate_categories = c("defense", "risk"),
+                                    rank_key = "ic_bad", ic_path = "ic.parquet", bench_path = "bm.parquet",
+                                    bench_price_col = "BM_Close"), start = "2004-01-01")
+  write(toJSON(list(fixed_axes = list(start_date = start),
+                    blocks = list(list(id = "B7", selection_asof = cfg))), auto_unbox = TRUE, null = "null"),
+        file.path(root, "06_Registry/reinforce_program.json"))
+.wprog(.tmp)
+.me <- seq(as.Date("2000-02-01"), by = "month", length.out = 84L) - 1L          # 형성일 = 월말 2000-01..2006-12
+.ue <- seq(as.Date("2000-03-01"), by = "month", length.out = 84L) - 1L          # 가용일 = 다음 월말(보유월 말)
+.bm <- data.table(hm = format(.ue, "%Y-%m"), ret = ifelse(seq_along(.ue) %% 3L == 0L, -0.08, 0.02), hend = .ue)
+.bear <- .bm$ret < 0
+.ic <- rbindlist(lapply(c("DA", "DB", "DX", "VV"), function(f) data.table(
+  Factor_Name = f, Date = .me, Usable_Date = .ue,
+  IC = switch(f, DA = ifelse(.bear, ifelse(.ue <= as.Date("2003-12-31"), 0.20, -0.20), 0),
+                 DB = ifelse(.bear, ifelse(.ue <= as.Date("2003-12-31"), -0.10, 0.30), 0),
+                 DX = 0.9, VV = 0.9))))
+Sys.unsetenv("RF_CELL_SPEC")
+chk(grepl("퇴역", .err(rf_sl_parse(list(kind = "factor_topk", k = 5, select = "ic_bad_rank"))) %||% ""),
+    "R0 퇴역 select(ic_bad_rank · 전표본 C1) 는 파싱에서 멈춘다", "R0 퇴역 규칙이 통과했다")
+chk(is.na(.err(rf_sl_parse(list(kind = "factor_topk", k = 5, select = "ic_bad_rank", factor_id = "D22_Tracking_Error")))),
+    "R0b factor_id 고정이면 select 는 안 쓰이므로 통과(과거 칸 재현 경로)", "R0b 재현 경로가 막혔다")
+r1 <- rf_sl_resolve(RULE5, .tmp, IC = .ic, BM = .bm); r2 <- rf_sl_resolve(rf_sl_parse(list(kind="factor_topk", k=5, rank=2)), .tmp, IC = .ic, BM = .bm)
+chk(identical(r1$id, "DA") && identical(r2$id, "DB") && identical(r1$asof, "2004-01-01"),
+    sprintf("R1 as-of(격자 시작일 %s) 약세장 IC 내림차순 — 1위 %s · 2위 %s (저장 ic_bad 는 반대)", r1$asof, r1$id, r2$id),
+    "R1 순서 틀림(저장 전기간 ic_bad 를 읽었나)", paste(r1$id, r2$id, r1$asof))
+# ★R1b 대조(2026-09-25 R3 개정): 구판은 인자 as-of 2099 로 전기간을 흉내 냈다 — 상한 가드(결정 시점 = 셀·격자 시작일)가
+#   그 경로를 막으므로(R1c) 결정 시점 자체를 뒤로 민 격자(시작일 2007-01-01)로 같은 대조를 한다(as-of = 결정 시점 · 통과 경로).
+.tmp3 <- file.path(tempdir(), paste0("sl3_", paste(sample(letters, 6), collapse = "")))
+dir.create(file.path(.tmp3, "06_Registry"), recursive = TRUE, showWarnings = FALSE)
+file.copy(file.path(.tmp, "06_Registry/factor_evidence.json"), file.path(.tmp3, "06_Registry/factor_evidence.json"))
+.wprog(.tmp3, start = "2007-01-01")
+rF <- tryCatch(rf_sl_resolve(RULE5, .tmp3, IC = .ic, BM = .bm), error = function(e) list(id = paste("ERR", conditionMessage(e))))
+chk(identical(rF$id, "DB"), "R1b 대조 — 결정 시점(격자 시작일)을 표본 끝(2007-01)으로 두면 1위가 DB 로 바뀐다(as-of 가 실제로 먹는다)",
+    "R1b as-of 가 결과를 안 바꾼다", rF$id)
+# R1c~R1f (R3 · 2026-09-25) as-of 상한 가드 — 결정 시점(여기 = 격자 시작일 2004-01-01) 뒤·미래·NA 는 stop
+chk(grepl("미래", .err(rf_sl_resolve(RULE5, .tmp, asof = "2099-01-01", IC = .ic, BM = .bm)) %||% ""),
+    "R1c 인자 as-of 2099(구 R1b 경로) → stop(미래 · 전기간 선정 금지)", "R1c 미래 as-of 가 통과했다")
+chk(grepl("결정 시점", .err(rf_sl_resolve(RULE5, .tmp, asof = "2005-06-30", IC = .ic, BM = .bm)) %||% ""),
+    "R1d 인자 as-of 2005-06-30 > 결정 시점 2004-01-01 → stop", "R1d 결정 시점 뒤 as-of 가 통과했다")
+chk(grepl("결정 시점", .err(rf_sl_resolve(rf_sl_parse(list(kind = "factor_topk", k = 5, asof = "2006-12-31")), .tmp, IC = .ic, BM = .bm)) %||% ""),
+    "R1e 규칙 asof(셀 스펙 defense_sleeve.asof) 2006-12-31 > 결정 시점 → stop", "R1e 규칙 as-of 가 통과했다")
+chk(grepl("NA", .err(rf_sl_resolve(RULE5, .tmp, asof = NA, IC = .ic, BM = .bm)) %||% ""),
+    "R1f 인자 as-of NA → stop(구판은 조용히 기본값으로 갔다)", "R1f NA as-of 가 통과했다")
+rE <- tryCatch(rf_sl_resolve(RULE5, .tmp, asof = "2003-12-31", IC = .ic, BM = .bm), error = function(e) list(id = paste("ERR", conditionMessage(e))))
+chk(identical(rE$id, "DA") && identical(rE$asof_bound, "2004-01-01"),
+    "R1g [양성] 결정 시점보다 이른 as-of 2003-12-31 → 통과(1위 DA · 상한 = 격자 2004-01-01)", "R1g 이른 as-of 가 막혔거나 상한(asof_bound)이 안 실렸다",
+    paste(rE$id, rE$asof_bound))
 chk(!("DX" %in% c(r1$id, r2$id)) && !("VV" %in% c(r1$id, r2$id)),
     "R2 deprecated 와 비방어 계열은 후보에서 빠진다", "R2 자격 필터 미작동")
-chk(grepl("rank", .err(rf_sl_resolve(rf_sl_parse(list(kind="factor_topk", k=5, rank=99)), .tmp)) %||% ""),
+chk(grepl("rank", .err(rf_sl_resolve(rf_sl_parse(list(kind="factor_topk", k=5, rank=99)), .tmp, IC = .ic, BM = .bm)) %||% ""),
     "R3 rank 초과는 멈춘다", "R3")
+.tmp2 <- file.path(tempdir(), paste0("sl2_", paste(sample(letters, 6), collapse = "")))
+dir.create(file.path(.tmp2, "06_Registry"), recursive = TRUE, showWarnings = FALSE)
+file.copy(file.path(.tmp, "06_Registry/factor_evidence.json"), file.path(.tmp2, "06_Registry/factor_evidence.json"))
+write(toJSON(list(fixed_axes = list(start_date = "2004-01-01"), blocks = list(list(id = "B7"))), auto_unbox = TRUE),
+      file.path(.tmp2, "06_Registry/reinforce_program.json"))
+chk(grepl("selection_asof", .err(rf_sl_resolve(RULE5, .tmp2, IC = .ic, BM = .bm)) %||% ""),
+    "R4 격자에 B7.selection_asof 가 없으면 멈춘다(분위·표본을 코드에 박지 않는다)", "R4 설정 없이 돌았다")
+.wprog(.tmp2, start = NULL)
+chk(grepl("as-of 미해석", .err(rf_sl_resolve(RULE5, .tmp2, IC = .ic, BM = .bm)) %||% ""),
+    "R5 as-of 를 어디서도 못 정하면 멈춘다(전기간으로 계산하지 않는다 · C1)", "R5 as-of 없이 돌았다")
 
 # ── 서명 · 격자 · 배선 (재도출) ─────────────────────────────────────────────
 suppressMessages(source(file.path(ROOT, "02_Infrastructure/reinforcement/rf_spec_sig.R")))
@@ -172,4 +229,6 @@ chk(.has(NP, "defense_sleeve"),
     "G8 러너가 SPEC 에 defense_sleeve 를 싣는다(안 실으면 엔진은 알파 단독)", "G8 러너 미배선")
 
 cat(sprintf("\n== 결과: %d PASS / %d FAIL ==\n", .pass, .fail))
+# 배터리 요약 계약(run_all_hooks.sh — 요약 JSON 없으면 UNMEASURED) · 2026-09-25 SUITES 편입과 함께 추가
+cat(sprintf('{"test":"rf_sleeve","pass":%d,"fail":%d,"total":%d}\n', .pass, .fail, .pass + .fail))
 if (.fail > 0L) quit(status = 1L)

@@ -1,7 +1,7 @@
 export const meta = {
   name: 'qvest-dossier-pipeline',
-  description: 'QEPM 파이프라인 (v10) — 채택 alpha 1건을 risk→optimizer→forge 자동 진행 후 권위 등급(essence) 산출. Grade A 일 때만 Judge(PIT 전담) 스폰. BOOK 등록은 수동(도훈 confirm).',
-  whenToUse: '탐색(alpha fan-out) 또는 강화 프로세스에서 후보가 정해진 뒤, 그 후보를 등급 판정까지 자동으로 완주시킬 때. args={wt_id, candidate_tag, n_trials_cumulative, overlay_sr_basis, incumbent_note}. 전제: alpha_package.json(canonical)이 해당 WT mailbox에 승격되어 있어야 함.',
+  description: '[동결 — QEPM-R0-FREEZE 2026-09-25 · 실행 시 즉시 종료 · 해제 = decision_register 재상정] QEPM 파이프라인 (v10) — 채택 alpha 1건을 risk→optimizer→forge 자동 진행 후 권위 등급(essence) 산출. Grade A 일 때만 Judge(PIT 전담) 스폰. BOOK 등록은 수동(도훈 confirm).',
+  whenToUse: '★동결 중 — 쓰지 않는다(강화 = reinforce SKILL 의 셀 엔진+run_paper_replication · Judge 트리거 = judge.md). 구 용도: 탐색(alpha fan-out) 또는 강화 프로세스에서 후보가 정해진 뒤, 그 후보를 등급 판정까지 자동으로 완주시킬 때. args={wt_id, candidate_tag, n_trials_cumulative, overlay_sr_basis, incumbent_note}. 전제: alpha_package.json(canonical)이 해당 WT mailbox에 승격되어 있어야 함.',
   phases: [
     { title: 'Risk', detail: 'risk-research → Σ+tail+stress+crowding+style' },
     { title: 'Optimizer', detail: 'optimizer-research → weights (TO 11.0, long-only)' },
@@ -18,6 +18,18 @@ const nTrials = (args && args.n_trials_cumulative) || 1
 const overlaySR = (args && args.overlay_sr_basis) || false
 const incumbentNote = (args && args.incumbent_note) || 'STR_1715(consensus revision+Q07+M08+Q25+regime overlay) = BOOK 등록 1호(구 PG2).'
 const stageDir = `stage_artifacts/WT_${wt.replace(/-/g, '_')}_${tag}`
+
+// ★QEPM 동결 (도훈 결정 QEPM-R0-FREEZE · 2026-09-25 · 06_Registry/decision_register.json) ──────────────────
+//   WT 체인(/worktask·dossier·multi-track·forge) 동결 — 이 워크플로는 에이전트를 하나도 띄우지 않고 즉시 끝난다.
+//   이유(감사 wf_5a0aea67-884 Q01): 아래 Judge 단계는 forge 에이전트가 보고한 문자열 essence_grade 로 Judge 를 띄웠다 —
+//   authoritative_remeasure.json 재판독 · A 자격 관문(rf_a_eligibility) · 후보별 judge_request 가 모두 없는 관문 전 경로.
+//   현행 강화 = 규칙 기반 셀 엔진(rf_cell_engine.R) + run_paper_replication · Judge 트리거 = .claude/agents/judge.md §스폰 조건.
+//   해제 = decision_register 에 개정 결정 재상정(도훈) → 이 블록과 아래 JUDGE_FROZEN 을 함께 걷는다
+//   (검사 = 08_Tests/worktask/test_qepm_freeze_entrypoints.R — 둘 중 하나만 걷혀도 Judge 스폰은 0 이어야 한다).
+const QEPM_FREEZE = 'QEPM-R0-FREEZE'
+log(`QEPM 동결(${QEPM_FREEZE}) — qvest-dossier-pipeline 은 실행하지 않는다. 해제 = decision_register 재상정.`)
+return { wt_id: wt, candidate: tag, status: 'QEPM_FROZEN', decision: QEPM_FREEZE,
+  note: 'QEPM WT 체인 동결(2026-09-25 도훈) — risk/optimizer/forge/judge 스폰 0. 강화 = reinforce SKILL(셀 엔진+run_paper_replication) · Judge = judge.md 트리거로만.' }
 
 // 공통 가드 prefix — workflow agent엔 Agent-matcher hook(axiom_context_inject) 미발동 → AX 명시.
 // Write/Bash hook(constraint_enforcer / backtest_contract_audit)은 정상 발동.
@@ -89,8 +101,13 @@ const forge = await agent(
 if (!forge || forge.bt_audit_status === 'FAIL') return failDossier('Forge', forge)
 
 // ── Stage 4: Judge — ★v10: Grade A 일 때만 스폰 (PIT 전담 검증) ──
+// ★QEPM-R0-FREEZE(2026-09-25): 이 경로로는 Judge 를 띄우지 않는다 — forge 의 문자열 등급은 관문이 아니다(감사 Q01).
+//   위 동결 블록이 걷혀도 여기서 한 번 더 막는다. 해제 = decision_register 재상정 + 관문(권위 등급 재판독·rf_a_eligibility·후보별 요청) 이식 뒤.
+const JUDGE_FROZEN = true
 let judge = null
-if (forge.essence_grade === 'A') {
+if (JUDGE_FROZEN && forge.essence_grade === 'A') {
+  log(`QEPM 동결(QEPM-R0-FREEZE) — ${tag} Judge 미스폰(WT 경로 봉쇄). Judge 트리거 = judge.md §스폰 조건.`)
+} else if (forge.essence_grade === 'A') {
   phase('Judge')
   judge = await agent(
     `${GUARD}\njudge (v10 PIT 전담). Grade A 확정 전략의 PIT 검증만 수행 — 등급 재채점·자본 심사 금지.\n` +
@@ -126,5 +143,5 @@ return {
     ? `BOOK 등록 자격 충족(Grade A + PIT PASS). 도훈 confirm 후 register_book_entry 검토. escalation ${escalations.length}건 사전 검토 의무.`
     : (forge.essence_grade === 'A'
         ? `Grade A 이나 PIT 미통과 — 위반 수리 후 재측정·재검증(등급 무효 가능).`
-        : `Grade ${forge.essence_grade} — 강화 프로세스 대상(1계층 ≤20회 / 2계층 무한). 원장에 attempt 기록.`),
+        : `Grade ${forge.essence_grade} — 강화 프로세스 대상(1계층 상한 = 원장 max_attempts / 2계층 무한). 원장에 attempt 기록.`),
 }

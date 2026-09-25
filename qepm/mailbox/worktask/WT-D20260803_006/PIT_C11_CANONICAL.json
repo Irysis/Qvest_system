@@ -1,0 +1,31 @@
+{
+ "schema": "pit_c11_canonical_pointer/v1",
+ "wt_id": "WT-D20260803_006",
+ "purpose": "이 WT 의 결론 인용 정본을 지정한다. 원 산출물은 지우지도 고치지도 않았다 — 무효 표식과 정본 상태만 이 파일에 둔다.",
+ "contamination": {
+  "defect": "PIT C11 — 입력이 WT-D20260803_005 canonical_pool.rds(322종 canonical net-active 시계열)이고, 그 풀에 D32_Beta_VIX(V-08)·MA01·MA02(V-01)가 들어 있다. era 공통성분·자격 방향은 풀 전체에서 만든 값이라 오염 팩터가 구성 관측치로 섞였다(emit_all.R FSPEC: D32·MA01~MA04 가 lag_rule 'regulatory: C11_publication_lag' 로 소비됨)",
+  "reason": "pit_invalid:C11",
+  "flag": "pit_c11",
+  "violation": "V-08 · V-01 (WT-D20260803_005 상속)",
+  "judgment": "04_Research/01_reports/pit_c11_20260924/PIT_C11_verdict_20260924.md (③ 'WT·스크린' 행: WT-D20260803_005/006 이 D32 를 소비)",
+  "decision_ref": "06_Registry/decision_register.json#PIT-C11-CONVENTIONS (⑥ WT-D20260803_005/006 오염 정본 무효·제외판 정본 지정 — 도훈 2026-09-24)",
+  "quarantine_ref": "06_Registry/pit_quarantine.json#PITQ-C11-20260924",
+  "marked_at": "2026-09-24T12:20:00+0900",
+  "marked_by": "S6_defense (PIT C11 수리 1단계 · 판정서 ⑤-8 · 결정 ⑥)"
+ },
+ "invalidated": {
+  "what": "오염 풀 위의 era 측정 정본 전부 — 실시간 적중률 0.552 vs base 0.503(Δ+0.049, p=0.362) · 전환 국면 0.259 · 탐지 지연 24m/22m · arm 14종 대조 · 누출 arm 발화치 · verdict_summary 'FAIL(정보집합-scoped)'의 수치 근거",
+  "where": [
+   "qepm/mailbox/worktask/WT-D20260803_006/alpha_package.json (md5 5e40b3c63bc3cd00d4e595d76abf049a)",
+   "stage_artifacts/WT_D20260803_006/alpha_validation.json (md5 6bb1ad764d4f…)",
+   "stage_artifacts/WT_D20260803_006/era_results.rds (md5 138463401c32…)"
+  ]
+ },
+ "canonical": {
+  "status": "none_pending_remeasure",
+  "source": null,
+  "why": "WT-D20260803_005 와 달리 이 WT 는 C11 5종을 뺀 제외판을 산출한 적이 없다(stage_artifacts/WT_D20260803_006 에 제외판 없음 — 2026-09-24 파일 목록 확인). 이 단계(코드 수리)는 재측정을 하지 않으므로 제외판 정본을 지정할 수 없다. 정본이 생길 때까지 이 WT 의 수치는 결론 근거로 인용하지 않는다.",
+  "remeasure_spec": "WT-005 canonical_pool.rds 에서 D32_Beta_VIX·MA01·MA02(·보수적으로 MA03·MA04 — WT-005 제외판과 같은 집합)를 뺀 풀로 run_era_nowcast.R 을 다시 돌린 제외판 → 이 파일 canonical 에 등재(2·3단계 몫)"
+ },
+ "original_artifacts_preserved": true
+}

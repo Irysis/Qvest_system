@@ -7,6 +7,12 @@ skills: [qvest-risk-style]
 ---
 
 > **페르소나 정본 = `02_Infrastructure/docs/rules/quant-identity.md`** — 최정상급 퀀트 · 냉소는 방법론(과적합·스누핑·시점오염)을 향한다(실증 성과 폄하 금지) · 모든 수치 결정 = 논문 뿌리(원문 링크)·하드코딩 금지.
+
+> ★**어드바이저 모드**(QEPM-ADVISOR-MODE · 도훈 2026-09-25) · WT 체인 자체 경로는 동결(QEPM-R0-FREEZE) — 호출 = `/advisor`(정본 `.claude/skills/qvest-advisor/SKILL.md`). 이 모드에서 아래 WT 절차(request.json·alpha_package 선행·risk_package·covariance 산출)는 도메인 지식으로만 읽는다.
+> - **허용** = 위험 진단 자문만 — β·크라우딩(수급 `load_investor('wide')`)·국면 노출·낙폭 구조(침식형/급락형)·집중·꼬리 · 무신호 대조(`no_signal_control.R`) 필요 여부 · 무엇을 재야 하는지(진단 설계) · PIT 함정. 전략 성과·공분산 추정 실행은 측정이라 안 된다.
+> - **금지** = 자체 등급 · forge · Judge 스폰 · BOOK · 원장 쓰기(reinforce_ledger·grade_a_queue·judge_request) · WT·`qepm/mailbox/` 쓰기(`risk_package.json` 포함) · alpha 수정·비중 제안.
+> - **측정** = 정본 계약만 · Q 경유 · 도훈 승인 뒤 — `run_paper_replication`(시행 회계 `selection_type`·`n_trials_cumulative`·`measurement_tags`) → `authoritative_remeasure.json::essence_grade` 인용. A = `rf_a_eligibility` 관문 → Judge(PIT) → BOOK(도훈 confirm) 경로만.
+> - **산출** = `04_Research/advisor/<YYYYMMDD>_<slug>/risk.md` 1건 — 다른 경로 쓰기 금지.
 <!-- (2026-08-29 도훈 지시) QEPM 모델 라우팅 — **전 구간 Opus**. 가설설계 Fable 핀(2026-08-08 지시) 해제.
      `model: opus` = 세션 alias(현행 Opus 5). SOT: 02_Infrastructure/docs/rules/caching.md "모델 라우팅" 절. -->
 

@@ -48,17 +48,53 @@ suppressMessages({ library(data.table); library(jsonlite) })
   a
 }
 
+## ★루트 해석 — fail-closed (P0-14 · 2026-09-25 사고 재발 방지).
+##   사고: 2026-09-25 15:59 샌드박스 검사(QM_ROOT·CLAUDE_PROJECT_DIR = 샌드박스)에서 샌드박스에 04_Research 가 없자 구판이 후보를
+##   계속 내려가 getwd()·**운영 리터럴 경로**로 폴백했고, 04_Research/strategies/RP_FIX_* 4개를 운영에 썼다(4번째 샌드박스 오염).
+##   구판은 "설정한 루트가 요건을 못 채운다" 를 "다음 후보로 가라" 로 읽었다 — 명시 설정은 **의도**다. 의도한 루트가 못 쓰는
+##   상태면 다른 루트에 쓰는 게 아니라 멈춰야 한다.
+##   규칙:
+##     ⓪ QM_ROOT 가 설정돼 있는데 요건 미충족 → stop(PROJECT_ROOT 가 있어도 — config.R 은 이때 운영 리터럴로 PROJECT_ROOT 를 세운다 · 수리 2판).
+##     ① PROJECT_ROOT(세션 전역 · config.R 이 QM_ROOT 우선으로 정한다 · 검사가 샌드박스로 덮는다) — 있으면 그대로(구판과 같다).
+##     ② QM_ROOT 가 설정돼 있으면 **그것만**: 요건(02_Infrastructure·04_Research 디렉터리) 충족이면 사용, 아니면 stop.
+##        (QM_ROOT = 데이터 루트 정본 — CLAUDE.md Env · config.R "명시 override 최우선" · rf_runner_gates.R::.RFG_ROOT 와 같은 우선순위.
+##         구판은 CLAUDE_PROJECT_DIR 를 먼저 봤다 — 세션이 주입한 코드 디렉터리(운영)가 샌드박스 QM_ROOT 를 이겼다.)
+##     ③ QM_ROOT 가 없고 CLAUDE_PROJECT_DIR 가 설정돼 있으면 그것만(같은 규칙 — 요건 미충족 = stop).
+##     ④ 둘 다 없을 때만 구판 폴백(getwd() → 알려진 운영 경로).
+##   ★CLAUDE_PROJECT_DIR 가 QM_ROOT 와 다르면 QM_ROOT 를 쓰고 한 줄 알린다(워크트리 세션 = 코드 루트 ≠ 데이터 루트).
+.RM_ROOT_REQ <- c("02_Infrastructure", "04_Research")
 .RM_ROOT <- function() {
+  nrm <- function(p) normalizePath(p, winslash = "/", mustWork = FALSE)
+  okp <- function(p) all(dir.exists(file.path(p, .RM_ROOT_REQ)))
+  qm  <- Sys.getenv("QM_ROOT", unset = ""); cpd <- Sys.getenv("CLAUDE_PROJECT_DIR", unset = "")
+  # ★P0-14 수리 2판(적대검증 ① 우회): QM_ROOT 가 설정됐는데 요건 미충족이면 PROJECT_ROOT 가 있어도 멈춘다. config.R 은 QM_ROOT 경로가
+  #   없으면(오타 등) CLAUDE_PROJECT_DIR·**운영 리터럴**로 내려가 PROJECT_ROOT 를 세운다 — 구판 ① 은 그 값을 요건 검사 없이 돌려줘
+  #   샌드박스 의도(QM_ROOT)가 운영 쓰기로 바뀌었다(run_paper_replication·run_alpha_search 경로 = config.R 선 source).
+  #   검사·세션이 PROJECT_ROOT 를 직접 세우는 정상 경로(QM_ROOT = 요건 충족 루트)는 그대로다.
+  if (nzchar(qm) && !okp(nrm(qm)))
+    stop(sprintf(paste0("[register_module] QM_ROOT=%s 가 설정돼 있는데 루트 요건(%s)을 못 채운다 — PROJECT_ROOT(%s)·다른 루트로 ",
+                        "폴백하지 않는다(fail-closed · config.R 리터럴 폴백 차단)."),
+                 nrm(qm), paste(.RM_ROOT_REQ, collapse = "·"), if (exists("PROJECT_ROOT")) as.character(get("PROJECT_ROOT"))[1] else "없음"),
+         call. = FALSE)
   if (exists("PROJECT_ROOT")) return(get("PROJECT_ROOT"))
-  cand <- c(Sys.getenv("CLAUDE_PROJECT_DIR", unset = ""),
-            Sys.getenv("QM_ROOT", unset = ""),
-            getwd(),
+  set <- if (nzchar(qm)) c(QM_ROOT = qm) else if (nzchar(cpd)) c(CLAUDE_PROJECT_DIR = cpd) else character(0)
+  if (length(set)) {
+    p <- nrm(set[[1]])
+    if (!okp(p))
+      stop(sprintf(paste0("[register_module] %s=%s 가 설정돼 있는데 루트 요건(%s)을 못 채운다 — 다른 루트(운영 리터럴 포함)로 ",
+                          "폴백하지 않는다(fail-closed · 2026-09-25 샌드박스 오염 사고). 샌드박스면 %s 를 먼저 만들어라."),
+                   names(set)[1], p, paste(.RM_ROOT_REQ, collapse = "·"),
+                   paste(file.path(p, .RM_ROOT_REQ[!dir.exists(file.path(p, .RM_ROOT_REQ))]), collapse = ", ")), call. = FALSE)
+    if (identical(names(set)[1], "QM_ROOT") && nzchar(cpd) && !identical(tolower(nrm(cpd)), tolower(p)))
+      message(sprintf("[register_module] QM_ROOT(%s) 사용 — CLAUDE_PROJECT_DIR(%s)는 루트로 쓰지 않는다", p, nrm(cpd)))
+    return(p)
+  }
+  cand <- c(getwd(),
             "C:/Users/99922/OneDrive/Quant_Module_Moltbot",
             "/mnt/c/Users/99922/OneDrive/Quant_Module_Moltbot")
   for (p in cand[nzchar(cand)]) {
-    p <- normalizePath(p, winslash = "/", mustWork = FALSE)
-    if (dir.exists(file.path(p, "02_Infrastructure")) &&
-        dir.exists(file.path(p, "04_Research"))) return(p)
+    p <- nrm(p)
+    if (okp(p)) return(p)
   }
   stop("[register_module] project root not found. Set CLAUDE_PROJECT_DIR or QM_ROOT.")
 }

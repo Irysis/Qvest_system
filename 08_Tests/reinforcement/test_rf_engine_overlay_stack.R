@@ -16,6 +16,9 @@
 #   4 벡터 층별 커버리지    — 실패 문자열이 **그 층 하나**만 싣는다        (구판 '+' 라벨 · 신판 단일 토큰)
 #   5 층별 n_min            — 파일 arm 의 ctx$n_min 은 이웃과 무관하게 자기 것 (구판 48 · 신판 24)
 #   6 overlay_shift=1       — 노출 경로 1개월 지연 재현 · 미보유 종목은 스칼라 성분 · 누출 arm 의 t 행 정보가 사라진다
+#     ★P0-09(2026-09-24) 이후 6e/6f 재진술: 엔진이 t 행 fwd 를 NA 로 넘기므로 누출은 **원천에서** 지워진다 —
+#     무shift 판도 불변(신판) · 기준본(985d17aa1)에서만 흔들린다(구판 빨강). 대체값 없는 누출 arm 은 '처치 미전달' 로 선다.
+#     정본 검사 = test_rf_overlay_pit_mask.R
 #   7 overlay_strict        — 전 arm 에 ctx$strict 전달
 #   8 회귀                  — 단층 스펙 7종의 산출이 기준본(git 985d17aa1)과 비트 동일
 #
@@ -81,6 +84,12 @@ dir.create(file.path(STUB, "02_Infrastructure/validation"), recursive = TRUE, sh
 dir.create(file.path(STUB, "02_Infrastructure/reinforcement/overlay_arms"), recursive = TRUE, showWarnings = FALSE)
 invisible(file.copy(file.path(ROOT, "02_Infrastructure/validation/overlay_pit_guard.R"),
                     file.path(STUB, "02_Infrastructure/validation/overlay_pit_guard.R"), overwrite = TRUE))
+# ★픽스처 보강(2026-09-24 · P0-09) — 09-21 B6/B7 이후 엔진은 머리에서 rf_rebalance.R·rf_sleeve.R 을 source 한다.
+#   스텁 루트에 두 파일이 없어 '0 기저' 가 "cannot open the connection" 으로 죽고 전 항목이 돌지 않았다(09-21~).
+#   backtest_harness.R 은 엔진이 get_execution_date 정의만 parse 해 홀딩 시작을 잡는다(P0-09 assert 입력) — 없으면 달력만.
+for (.f in c("02_Infrastructure/reinforcement/rf_rebalance.R", "02_Infrastructure/reinforcement/rf_sleeve.R",
+             "02_Infrastructure/backtest_harness.R"))
+  if (!file.copy(file.path(ROOT, .f), file.path(STUB, .f), overwrite = TRUE)) stop("스텁 루트 사본 실패: ", .f)
 .arm <- function(kind, body) writeLines(body, file.path(STUB, "02_Infrastructure/reinforcement/overlay_arms", paste0(kind, ".R")))
 .arm("stub_scal", c(
   "# 살아 있는 스칼라 층(결정론 · 시험 전용) — 짝수 달 0.6 · 홀수 달 0.9",
@@ -119,6 +128,9 @@ invisible(file.copy(file.path(ROOT, "02_Infrastructure/validation/overlay_pit_gu
   "# ★시험 전용 위반 주입 — H$fwd[t] 는 t 행에서 아직 실현되지 않은 익월 수익이다(미래참조).",
   "#   실제 overlay_arms/ 에 절대 두지 말 것. 여기서는 overlay_shift 가 이 정보를 지우는지 재는 표적이다.",
   "overlay_expo_stub_leak <- function(H, t, ctx) { f <- H$fwd[t]; if (is.finite(f) && f < 0) 0.3 else 1 }"))
+.arm("stub_leak_fb", c(
+  "# ★시험 전용 위반 주입(P0-09) — fwd[t] 가 보이면 읽고, 안 보이면(NA) 살아 있는 대체 스칼라. 신판에선 대체값만 남는다.",
+  "overlay_expo_stub_leak_fb <- function(H, t, ctx) { f <- H$fwd[t]; if (is.finite(f)) { if (f < 0) 0.3 else 1 } else if (t %% 2L == 0L) 0.6 else 0.9 }"))
 
 AXES <- list(long_only = TRUE, n_max = 25L, universe = "K200_KQ150",
              start_date = "2005-01-01", commission_bps = 15L, liq_adv20_min = 2e8)
@@ -133,6 +145,7 @@ L_ONE   <- list(kind = "stub_one",           arm_id = "stub_one_x")
 L_PART  <- list(kind = "stub_partial",       arm_id = "stub_partial_x")
 L_SPY   <- list(kind = "stub_spy",           arm_id = "stub_spy_x")
 L_LEAK  <- list(kind = "stub_leak",          arm_id = "stub_leak_x")
+L_LEAKF <- list(kind = "stub_leak_fb",       arm_id = "stub_leak_fb_x")
 L_HAR   <- list(kind = "har_vol",            arm_id = "har_vol_q")
 
 # 엔진을 격리 env 에서 평가한다 — QM_ROOT 는 실행 동안만 지정 루트(스텁·정본)로 돌린다.
@@ -298,18 +311,31 @@ if (is.null(r10$err) && is.null(r10S$err) && is.null(r10SV$err) && is.null(r10SV
     ok(sprintf("6d 종목별 경로 — 양쪽 보유 종목은 t−1 의 그 종목 값 · t−1 미보유 %d행은 t−1 의 스칼라 성분 · 첫 달 1", n_new)) else
     ng("6d 종목별 shift 경로", sprintf("미보유 분기 %d행 · 최대 오차 %.3e", n_new, maxdiff(X$oe, X$expect)))
 } else ng("6d 회전 판 실행", paste(r10$err, r10S$err, r10SV$err, r10SVs$err))
-# 누출 arm: t 행의 fwd(익월 수익)를 읽는다. 무shift 판은 마지막 달 섭동에 t=N−1 노출이 흔들리고, shift 판은 흔들리지 않는다.
-rLn <- run_cell(base_spec(overlay = L_LEAK), bm = BM_NEG); rLp <- run_cell(base_spec(overlay = L_LEAK), bm = BM_POS)
-rLns <- run_cell(base_spec(overlay = L_LEAK, overlay_shift = 1L), bm = BM_NEG); rLps <- run_cell(base_spec(overlay = L_LEAK, overlay_shift = 1L), bm = BM_POS)
+# 누출 arm: t 행의 fwd(익월 수익)를 읽는다. ★P0-09(2026-09-24) 재진술 — 엔진이 t 행 fwd 를 NA 로 넘긴다.
+#   6e  대체값 없는 누출 arm(stub_leak) = NA 를 받아 항상 1 → 층별 가드 '처치 미전달' 정지(신판) · 기준본은 누출을 산출에 싣는다(구판 빨강)
+#   6e' 대체값 있는 누출 arm(stub_leak_fb) = 무shift 판도 마지막 달 섭동에 t=N−1 노출 불변(누출이 원천에서 사라졌다)
+#   6f  shift=1 판 = 전 구간 불변(앞선 판의 't=N 만 t−1 실현값을 따라 움직인다' 는 t−1 에서 fwd 를 읽던 구판의 거동이다)
+MSG_LEAK <- "[rf_cell_engine] overlay 층 stub_leak_x 처치 미전달(항상 1) — 측정 무효"
+rLk <- run_cell(base_spec(overlay = L_LEAK), bm = BM_NEG)
+if (!is.null(rLk$err) && identical(rLk$err, MSG_LEAK)) ok("6e 신판 — 대체값 없는 누출 arm 은 t 행 fwd 를 NA 로 받아 항상 1 → '처치 미전달' 정지(측정되지 않는다)") else
+  ng("6e 누출 arm 이 여전히 측정된다", rLk$err %||% "오류 없음")
+if (HAVE_OLD) {
+  rLno <- run_cell(base_spec(overlay = L_LEAK), bm = BM_NEG, engine = OLD); rLpo <- run_cell(base_spec(overlay = L_LEAK), bm = BM_POS, engine = OLD)
+  if (is.null(rLno$err) && is.null(rLpo$err) && abs(scal_of(rLno, HELD)[t == N_SIG - 1L]$oe - scal_of(rLpo, HELD)[t == N_SIG - 1L]$oe) > 0.5)
+    ok(sprintf("6e 구판 빨강 — 기준본은 같은 누출 arm 의 t=N−1 노출을 익월 섭동으로 %.2f→%.2f 바꾼다",
+               scal_of(rLno, HELD)[t == N_SIG - 1L]$oe, scal_of(rLpo, HELD)[t == N_SIG - 1L]$oe)) else
+    ng("6e 구판이 누출을 보이지 않는다", paste(rLno$err, rLpo$err))
+}
+rLn <- run_cell(base_spec(overlay = L_LEAKF), bm = BM_NEG); rLp <- run_cell(base_spec(overlay = L_LEAKF), bm = BM_POS)
+rLns <- run_cell(base_spec(overlay = L_LEAKF, overlay_shift = 1L), bm = BM_NEG); rLps <- run_cell(base_spec(overlay = L_LEAKF, overlay_shift = 1L), bm = BM_POS)
 if (is.null(rLn$err) && is.null(rLp$err) && is.null(rLns$err) && is.null(rLps$err)) {
   Ln <- scal_of(rLn, HELD); Lp <- scal_of(rLp, HELD); Lns <- scal_of(rLns, HELD); Lps <- scal_of(rLps, HELD)
-  leak_seen <- abs(Ln[t == N_SIG - 1L]$oe - Lp[t == N_SIG - 1L]$oe) > 0.5
-  if (leak_seen) ok(sprintf("6e 무shift 판 — 마지막 달 섭동만으로 t=N−1 노출이 %.2f→%.2f (t 행이 익월 정보를 쓴다 = 누출 가시화)", Ln[t == N_SIG - 1L]$oe, Lp[t == N_SIG - 1L]$oe)) else
-    ng("6e 누출 표적이 안 보인다", "스텁이 fwd 를 못 읽었다")
-  if (maxdiff(Lns[t <= N_SIG - 1L]$oe, Lps[t <= N_SIG - 1L]$oe) < 1e-12 && abs(Lns[t == N_SIG]$oe - Lps[t == N_SIG]$oe) > 0.5)
-    ok("6f shift=1 판 — t ≤ N−1 의 노출은 섭동에 불변(익월 정보 소거) · t=N 만 t−1 의 실현값을 따라 움직인다") else
-    ng("6f shift 판이 익월 정보를 지우지 못한다", sprintf("최대 차 %.3e", maxdiff(Lns[t <= N_SIG - 1L]$oe, Lps[t <= N_SIG - 1L]$oe)))
-} else ng("6e/6f 누출 판 실행", paste(rLn$err, rLp$err, rLns$err, rLps$err))
+  if (maxdiff(Ln$oe, Lp$oe) < 1e-12 && any(Ln[t >= 12L]$oe < 1 - 1e-9))
+    ok("6e' 무shift 판 — 대체값 누출 arm 의 노출 경로가 마지막 달 섭동에 전 구간 불변(t 행 익월 정보가 원천에서 사라졌다)") else
+    ng("6e' 무shift 판에 누출이 남았다", sprintf("최대 차 %.3e", maxdiff(Ln$oe, Lp$oe)))
+  if (maxdiff(Lns$oe, Lps$oe) < 1e-12) ok("6f shift=1 판 — 전 구간 불변") else
+    ng("6f shift 판이 섭동에 반응한다", sprintf("최대 차 %.3e", maxdiff(Lns$oe, Lps$oe)))
+} else ng("6e'/6f 누출 판 실행", paste(rLn$err, rLp$err, rLns$err, rLps$err))
 r6x <- run_cell(base_spec(overlay = L_SCAL, overlay_shift = -1L))
 if (!is.null(r6x$err) && grepl("overlay_shift", r6x$err, fixed = TRUE)) ok("6g 음수 shift 는 거부") else ng("6g 음수 shift 통과", r6x$err %||% "")
 

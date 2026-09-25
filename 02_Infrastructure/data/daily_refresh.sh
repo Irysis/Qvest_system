@@ -132,48 +132,9 @@ run_r '
   incremental_update_all()
 '
 
-# ── [0c] 적재 검증 — "돌렸다"가 아니라 "늘었나"를 잰다 ────────────────────────
-#   구판에는 이 축이 아예 없었다. Gate A 는 **다운로드**(qw_refresh_state.json)만,
-#   Gate B 는 팩터DB **앵커**만 보는데 그 앵커는 신선한 주가 축이 채운다 — 그래서
-#   컨센서스가 한 달 멈춰도 둘 다 초록이었다.
-#   ★판정을 여기서 다시 구현하지 않는다(도훈 지적 2026-08-30 "검사기를 굳이 왜 만드나").
-#     신선도 정본은 morning_steps/freshness_audit.R 하나뿐이고, 전략 소비 패널 5종
-#     (rawdata·consensus·investor_act·universe_support·fred_wide)을 거기 등재했다.
-#     여기서는 그 감사기를 **호출하고 판정을 읽을 뿐**이다. 같은 값을 두 곳에서 만들면
-#     반드시 갈라진다 — ensure_data_current.sh 헤더가 적어둔 그 원칙이다.
-#   ★fail-soft: daily_refresh 는 브리핑·수집 체인이라 여기서 중단하면 무관한 하류가
-#     다 죽는다. DR_FAILED 에 실려 종료코드·요약에 반영되고, **리밸 경로는
-#     book_rebalance_preflight.py 가 같은 축을 fail-closed 로 다시 잰다**.
-echo "[0c/7] 적재 신선도 검증 (정본 감사기 경유)..."
-cd "$BASE"
-QVEST_FRESHNESS_QUIET=1 QM_ROOT="$BASE" "$RSCRIPT" --no-save \
-  "$INFRA/ops/morning_steps/freshness_audit.R" \
-  || echo "[0c] 감사기 rc!=0 — 판정은 아래 JSON 으로 읽는다"
-_FA_JSON="$BASE/qepm/observability/morning_freshness_latest.json"
-_FA_PY="$BASE/.venv_qvest_ml/Scripts/python.exe"
-if [ -x "$_FA_PY" ]; then
-  _FA_ST="$("$_FA_PY" - "$_FA_JSON" <<'PYEOF' 2>/dev/null
-import io, json, sys
-try:
-    o = json.load(io.open(sys.argv[1], encoding="utf-8-sig"))
-except Exception:
-    print("UNREADABLE"); raise SystemExit
-s = o.get("stale_items") or []
-print("OK" if not s else "STALE:" + ",".join(map(str, s)))
-PYEOF
-)"
-  case "$_FA_ST" in
-    OK) echo "[0c] 전 소스 FRESH — 소비면이 최신 거래일에 도달" ;;
-    STALE:*) echo "[0c] ★적재 미달: ${_FA_ST#STALE:} — 하류가 낡은 축을 쓴다"
-             DR_FAILED+=("ingest_freshness") ;;
-    *) echo "[0c] 감사 판정 판독 불가 — 미측정(미달로 접지 않는다)"
-       DR_FAILED+=("ingest_freshness:unreadable") ;;
-  esac
-else
-  echo "[0c] venv python 부재 — 판정 판독 생략(미측정)"
-  DR_FAILED+=("ingest_freshness:no_python")
-fi
-cd "$INFRA"
+# ── [0c] 적재 검증은 [7/7] 직전으로 옮겼다 (v10.4 2026-09-24 — **적재 후** 측정). 아래 '[0c] 적재 검증' 블록 참조.
+#   이 자리(적재 전)에서 재면 [1pre] 벤치·[1] RAWDATA·[4/7] MSM·KTRI·국면이 아직 안 들어온 상태를 재서
+#   화요일 00:03 마다 benchmark lag 3>2 거짓 양성이 났다(09-15·09-22 실측 — 같은 실행의 [1pre] 가 곧 전진시켰다).
 
 # ──────────────────────────────────────────────────────────────────────────────
 # [1pre] Benchmark (코스피200) — **정본 xlsx 중심** 체인
@@ -265,8 +226,12 @@ fi
 #   ★2026-09-18 축 D 추가 — **정본 xlsx 신선도**(WARN). 정본이 멈춘 것을 아무도 못 본 것이
 #     모든 재발의 온상이었다. 소비면(.cache/indices.parquet 의 max Date)에서 센다.
 #     검사: 08_Tests/data/test_benchmark_level_axis.R · test_benchmark_axis_rebuild.R
-if ! "$RSCRIPT" --no-save "$INFRA/data/benchmark_currency_gate.R" --updater-rc "$_bm_rc"; then
-  DR_FAILED+=("benchmark_currency(rc=$_bm_rc)")
+# ★v10.4 (2026-09-24) 라벨의 rc 는 **게이트** 종료코드와 **갱신기** 종료코드를 나눠 적는다. 구판 `(rc=$_bm_rc)` 는
+#   갱신기 rc 만 적어 09-12~17 '(rc=0)' 인데 실패로 보이는 혼동을 만들었다(실제 실패 = 게이트 축 C).
+_bg_rc=0
+"$RSCRIPT" --no-save "$INFRA/data/benchmark_currency_gate.R" --updater-rc "$_bm_rc" || _bg_rc=$?
+if [ "$_bg_rc" -ne 0 ]; then
+  DR_FAILED+=("benchmark_currency(gate_rc=$_bg_rc,updater_rc=$_bm_rc)")
   echo "!! [1pre] ★거래일 지평선 이상 - 하류 gap 판정이 무의미해진다 (위 [bm-gate] 사유 참조)"
 fi
 
@@ -454,13 +419,18 @@ run_r '
 
 # build_regime_signal_table — MSM 갱신 후 호출 (monthly + daily 양쪽 rebuild)
 # 차트 (tg_regime_briefing)가 unified_regime_signal + _daily 양쪽 읽으므로 둘 다 재build
+# ★C11 원장 경로(2026-09-25 · 판정서 pit_c11_20260924 · 결정 PIT-C11-REMEDIATION): 재생성본은 후보
+#   (.cache/_regime_candidate/ — 라이브와 같은 basename)로만 쓴다. 라이브는 바로 아래 원장 병합(--from-candidate)만 쓴다.
+#   빌드 실패 = 후보 부재(fresh=TRUE 가 어제 후보를 지움) = 병합 없음 = 라이브 불변(fail-closed). 아침 fred_regime.R 도 같은 경로.
 cd "$INFRA"
 run_r '
   source("config.R")
   source("regime/regime_signal.R")
-  tryCatch(build_regime_signal_table(),               # monthly
+  source(file.path(FUNC_PATH, "regime", "regime_append_only.R"))
+  .cand <- regime_ledger_candidate_paths(PROJECT_ROOT, fresh = TRUE)
+  tryCatch(build_regime_signal_table(save_path = .cand$monthly),               # monthly
     error = function(e) cat(sprintf("Regime signal (monthly) skipped: %s\n", e$message)))
-  tryCatch(build_regime_signal_table(daily = TRUE),   # daily
+  tryCatch(build_regime_signal_table(daily = TRUE, save_path = .cand$daily),   # daily
     error = function(e) cat(sprintf("Regime signal (daily) skipped: %s\n", e$message)))
 '
 
@@ -473,14 +443,18 @@ run_r '
 #   ★진행 중인 구간(월간=당월, 일간=오늘)은 동결 대상이 아니다 — 매일 갱신이 정상이므로
 #     그것까지 막으면 정상 갱신을 재서술로 오탐한다. 검증 19/19.
 #   exit 1 = 동결 구간 재서술 시도(발행본 보존) → 경고만 하고 계속. 소비자는 안정된 이력을 본다.
+#   ★C11(2026-09-25): 입력 = 위 후보(--from-candidate) · 병합은 표식 열(avail_date·c11_regime_key)·파일 속성 보존 ·
+#   exit 3 = 발행 원장 epoch ≠ 후보 epoch(C11 이전 원장 · 규칙 키 변경) → 병합·기록 없음, 라이브 불변 — 재기준선
+#   (regime_append_only.R --republish, dry-run 기본 → --execute)은 사람이 한다. exit 2 = 후보 부재·판독 불가 → 라이브 불변.
 cd "$QM_ROOT" 2>/dev/null || cd "$INFRA/.."
 for _series in monthly daily; do
-  "$RSCRIPT" --no-save "$QM_ROOT/02_Infrastructure/regime/regime_append_only.R" --series "$_series" 2>&1
+  "$RSCRIPT" --no-save "$QM_ROOT/02_Infrastructure/regime/regime_append_only.R" --series "$_series" --root "$BASE" --from-candidate 2>&1
   _rc=$?
   case "$_rc" in
     0) echo "[regime-append/$_series] OK" ;;
     1) echo "!! [regime-append/$_series] 동결 구간 재서술 시도 검출 — 발행본 보존됨(상류 확인 필요)" ;;
-    *) echo "XX [regime-append/$_series] 게이트 실패(rc=$_rc) — 계열 신뢰 불가" ;;
+    3) echo "!! [regime-append/$_series] epoch 불일치 — 병합 없음·라이브 불변 · 재기준선 필요(regime_append_only.R --republish)" ;;
+    *) echo "XX [regime-append/$_series] 게이트 실패(rc=$_rc) — 라이브 불변 · 계열 신뢰 불가" ;;
   esac
 done
 cd "$INFRA"
@@ -772,11 +746,73 @@ else
   echo "  QVENV_PY 부재 — 비-return 리프레시 skip"
 fi
 
+DR_STALE_NAMES=""
+# ── [0c] 적재 검증 — "돌렸다"가 아니라 "늘었나"를 잰다 ────────────────────────
+#   구판에는 이 축이 아예 없었다. Gate A 는 **다운로드**(qw_refresh_state.json)만,
+#   Gate B 는 팩터DB **앵커**만 보는데 그 앵커는 신선한 주가 축이 채운다 — 그래서
+#   컨센서스가 한 달 멈춰도 둘 다 초록이었다.
+#   ★판정을 여기서 다시 구현하지 않는다(도훈 지적 2026-08-30 "검사기를 굳이 왜 만드나").
+#     신선도 정본은 morning_steps/freshness_audit.R 하나뿐이고, 전략 소비 패널 5종
+#     (rawdata·consensus·investor_act·universe_support·fred_wide)을 거기 등재했다.
+#     여기서는 그 감사기를 **호출하고 판정을 읽을 뿐**이다. 같은 값을 두 곳에서 만들면
+#     반드시 갈라진다 — ensure_data_current.sh 헤더가 적어둔 그 원칙이다.
+#   ★fail-soft: daily_refresh 는 브리핑·수집 체인이라 여기서 중단하면 무관한 하류가
+#     다 죽는다. DR_FAILED 에 실려 종료코드·요약에 반영되고, **리밸 경로는
+#     book_rebalance_preflight.py 가 같은 축을 fail-closed 로 다시 잰다**.
+#   ★v10.4 (2026-09-24) 두 가지를 고쳤다(문턱은 그대로):
+#     ① 측정 시점 = 적재 **후**. 원래 [0b] 직후(적재 전)에 있어 벤치·RAWDATA·MSM·KTRI·국면이 들어오기 전 상태를 쟀다.
+#        로그 접두어 [0c] 는 유지한다(소비자 grep 호환 — 스텝 번호가 아니라 이 검증의 이름이다).
+#     ② 하류 산출물 판정 제외(보고 줄은 유지). freshness_audit.R 이 role=downstream 으로 표시한 항목(p3_forecast —
+#        브리핑 [6a] 산출물, 리프레시가 고칠 수 없다)은 DR_FAILED 에 싣지 않는다. 목록 원천 = 감사기 JSON downstream_items
+#        하나(여기서 다시 적지 않는다). 키가 없는 구판 JSON 이면 종전대로 전부 판정(보수적). 선례: ensure_data_current.sh:128.
+#        실측 09-23·09-24: P3 최대일이 09-18 로 돌아간 것(09-22 PC 절전 · 09-23 장중 행 제거)이 DR exit 1 로 둔갑했다.
+echo "[0c/7] 적재 신선도 검증 (정본 감사기 경유 · 적재 후 측정)..."
+cd "$BASE"
+QVEST_FRESHNESS_QUIET=1 QM_ROOT="$BASE" "$RSCRIPT" --no-save \
+  "$INFRA/ops/morning_steps/freshness_audit.R" \
+  || echo "[0c] 감사기 rc!=0 — 판정은 아래 JSON 으로 읽는다"
+_FA_JSON="$BASE/qepm/observability/morning_freshness_latest.json"
+_FA_PY="$BASE/.venv_qvest_ml/Scripts/python.exe"
+if [ -x "$_FA_PY" ]; then
+  _FA_ST="$("$_FA_PY" - "$_FA_JSON" <<'PYEOF' 2>/dev/null
+import io, json, sys
+try:
+    o = json.load(io.open(sys.argv[1], encoding="utf-8-sig"))
+except Exception:
+    print("UNREADABLE"); raise SystemExit
+s = [str(x) for x in (o.get("stale_items") or [])]
+ds = o.get("downstream_items")
+ds = set([ds] if isinstance(ds, str) else [str(x) for x in ds]) if isinstance(ds, (list, str)) else set()
+act = [x for x in s if x.split("(", 1)[0] not in ds]
+exc = [x for x in s if x.split("(", 1)[0] in ds]
+names = " ".join(sorted(set(x.split("(", 1)[0] for x in act)))
+print(("OK" if not act else "STALE:" + ",".join(act)) + "|" + ",".join(exc) + "|" + names)
+PYEOF
+)"
+  _FA_ST="${_FA_ST%$'\r'}"
+  # 구분자 '|' — 탭은 IFS 공백류라 빈 칸이 접혀 필드가 밀린다(OK\t\tbenchmark → 제외목록=benchmark).
+  IFS='|' read -r _FA_V _FA_EXCL DR_STALE_NAMES <<< "$_FA_ST"
+  [ -n "${_FA_EXCL:-}" ] && echo "[0c] ※ 하류 산출물이라 판정 제외(보고만): $_FA_EXCL — 브리핑 [6a] 생산 · 사후 계기 p3_brief_send.R STALE-GATE / mrs_daily 재감사"
+  case "$_FA_V" in
+    OK) echo "[0c] 전 소스 FRESH — 소비면이 최신 거래일에 도달" ;;
+    STALE:*) echo "[0c] ★적재 미달: ${_FA_V#STALE:} — 하류가 낡은 축을 쓴다"
+             DR_FAILED+=("ingest_freshness") ;;
+    *) echo "[0c] 감사 판정 판독 불가 — 미측정(미달로 접지 않는다)"
+       DR_FAILED+=("ingest_freshness:unreadable") ;;
+  esac
+else
+  echo "[0c] venv python 부재 — 판정 판독 생략(미측정)"
+  DR_FAILED+=("ingest_freshness:no_python")
+fi
+cd "$INFRA"
+
 echo "[7/7] Telegram + NAV + Memory..."
 cd "$INFRA"
 # (2026-07-26 DR-01) 지금까지의 실패 스텝을 R 로 넘겨 본문에 병기 — "완료" 만 보내던
 #   구판은 스텝 절반이 죽어도 성공 통보였다. 이 시점까지의 누적을 쓴다(이후 [8][9]는 별도).
 export DR_FAILED_SO_FAR="$(dr_fail_summary)"
+# ★v10.4 (2026-09-24) [0c] 가 낸 적재 미달 항목명(숫자 없는 이름) — [7] 실패 서명의 재료(dr_fail_signature.R).
+export DR_STALE_NAMES="${DR_STALE_NAMES:-}"
 run_r '
   library(data.table)
   source("config.R")
@@ -785,10 +821,20 @@ run_r '
   last_d <- max(raw$Date)
   n_tickers <- uniqueN(raw[Date == last_d]$Ticker)
   .fails <- Sys.getenv("DR_FAILED_SO_FAR", "없음")
+  # ★v10.4 (2026-09-24) 실패 서명 게이트 — 같은 원인 반복은 무음 요약(푸시 없음 · 채팅엔 남음), 원인이 바뀌면 경보,
+  #   실패가 비면 해소 1회. 판정·상태 = data/dr_fail_signature.R (검사 08_Tests/data/test_dr_fail_signature.R).
+  #   게이트를 못 읽으면 종전 헤더로 그대로 보낸다(통보 자체는 절대 막지 않는다).
+  .sig_path <- file.path("..", ".cache", "dr_fail_signature.json")
+  .dec <- tryCatch({
+    source("data/dr_fail_signature.R")
+    dr_sig_decide(.fails, Sys.getenv("DR_STALE_NAMES", ""), dr_sig_read(.sig_path))
+  }, error = function(e) { cat("[7] 서명 게이트 판독 실패 — 종전 헤더로 발송:", conditionMessage(e), "\n"); NULL })
   # 최상위 if/else 는 반드시 중괄호로 묶는다 — R 은 줄바꿈에서 if 문을 닫아버려
   # 다음 줄의 else 가 고아가 된다("unexpected else"). 이 블록이 죽으면 일일 성공/실패
   # 통보 자체가 발송되지 않는다(2026-08-02 실측: DailyRefresh rc=1 의 단독 원인).
-  .hdr <- if (identical(.fails, "없음")) {
+  .hdr <- if (!is.null(.dec)) {
+    .dec$hdr
+  } else if (identical(.fails, "없음")) {
     "[Daily Refresh v2 완료]"
   } else {
     sprintf("[Daily Refresh v2 ★부분실패 — %s]", .fails)
@@ -796,9 +842,21 @@ run_r '
   msg <- sprintf("%s\nRAWDATA: %s까지 (%d tickers)\n총 %s rows",
                  .hdr, last_d, n_tickers, format(nrow(raw), big.mark=","))
   if (Sys.getenv("QVEST_REFRESH_TG", "0") == "1") {     # v8.1.1 telegram guard
-    tryCatch(tg_send(msg), error = function(e) cat("TG send failed:", e$message, "\n"))
+    # ★반환값을 읽는다(v10.4) — tg_send 는 HTTP 실패를 예외가 아니라 list(ok=FALSE) 로 돌려준다(TG-01).
+    #   구판은 값을 버려 발송 실패가 성공과 구분되지 않았다. 아래 한 줄이 task_health 자기보고 면제의 증거다
+    #   (scheduler_task_health.sh (C) — tg_sent=TRUE ∧ reported == Done 목록일 때만 DR exit_1 을 경보에서 뺀다).
+    #   mute 인자를 모르는 구판 모듈이면(되돌림 등) mute 없이 보낸다 — 인자 불일치가 통보 자체를 죽이면 안 된다.
+    .r <- tryCatch(if ("mute" %in% names(formals(tg_send))) tg_send(msg, mute = isTRUE(.dec$mute)) else tg_send(msg),
+                   error = function(e) { cat("TG send failed:", e$message, "\n"); list(ok = FALSE) })
+    .ok <- isTRUE(.r$ok)
+    if (.ok && !is.null(.dec)) {
+      tryCatch(dr_sig_commit(.sig_path, .dec$state),
+               error = function(e) cat("[7] 서명 상태 기록 실패:", conditionMessage(e), "\n"))
+    }
+    cat(sprintf("[7] tg_sent=%s reported=%s\n", if (.ok) "TRUE" else "FALSE", .fails))
   } else {
     cat("[tg guard] QVEST_REFRESH_TG=0 — 발송 skip. msg:\n", msg, "\n")
+    cat(sprintf("[7] tg_sent=SKIPPED reported=%s\n", .fails))
   }
 '
 
@@ -867,8 +925,17 @@ fi
 #   ★신선도 게이트를 일부러 두지 않는다: 이 저장소는 게이트가 영구-참이 되어 7주간
 #   같은 캐시를 재보고한 실사고가 있다(project-paper-dispatch-risk-optimizer-never-research).
 #   이 빌드는 멱등(재실행 209 동일)이고 수 분이므로 무조건 실행이 더 안전하다.
-"$RSCRIPT" --no-save "$INFRA/regime/build_module_performance.R" >/dev/null 2>&1 \
-  || echo "[warn] module_performance rebuild failed (fail-soft)"
+#   ★C11(2026-09-25): 출력을 /dev/null 로 버리지 않는다 — 국면 분할 성과(per_regime)의 C11 상태
+#   (avail_annotated = 산출 · withheld_legacy_panel = 보류 null)가 이 스텝에서만 보인다(구판은 전부 null 을 침묵).
+_bmp_log="/tmp/qm_module_performance_$(date +%Y%m%d).log"
+if "$RSCRIPT" --no-save "$INFRA/regime/build_module_performance.R" >"$_bmp_log" 2>&1; then
+  grep -a "★C11\|module_performance.json written\|편입 경로" "$_bmp_log" || true
+  grep -o '"per_regime_pit_c11": *"[a-z_]*"' "$BASE/06_Registry/module_performance.json" 2>/dev/null \
+    | sort | uniq -c | sed 's/^/[8.2] per_regime_pit_c11 /' || true
+else
+  echo "[warn] module_performance rebuild failed (fail-soft) — 로그 $_bmp_log"
+  tail -n 5 "$_bmp_log" 2>/dev/null || true
+fi
 
 # [9] 스위트 총계 수집 (2026-07-25) — 계측 사망은 '실패'가 아니라 '총계 감소'로 온다.
 #     여기서 매일 수집해야 bootstrap 의 --check 가 최신값을 비교한다(수동 수집 의존 제거).

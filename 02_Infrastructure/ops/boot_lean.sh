@@ -172,13 +172,30 @@ o.append("Alerts/Budget: open %s · %s · built %s | CLAUDE.md %s · rules %s ·
 # ⑥ Director — 리서치 디렉터 판정 (2026-09-21 도훈 승인 플랜 Part 3 · D0). **읽기만** — 캐시는 아침 체인
 #   morning_run.sh [3/3] rf_director.R 이 쓴다(원장·카탈로그·레지스트리 진단 · 측정 0). 30h 초과·stale 표식이면 ★stale.
 #   부재면 '?' 와 원인 1줄(부팅 계약: R 0 · 수리 0 · 항상 진행). 검사: 08_Tests/ops/test_boot_lean_director_line.R (블록 패턴 추출).
+#   ★부재와 파손은 다른 사실이다(v10.4 2026-09-24 · 칩 task_19342c25). 구판은 J() 가 UnicodeDecodeError 를 삼켜 둘 다
+#   '미실행'으로 찍었다 — 실측 09-24: MorningReboot.bat 의 LC_ALL=C.UTF-8 로 R 이 C 로케일에 떨어져 rf_director 가
+#   boot_line 을 바이트 단위로 잘라 '회'(ED 9A 8C) 중간에서 끊긴 캐시를 썼고(오프셋 13417), 실제로는 돌았는데 부팅은
+#   '미실행'이라 했다. 이제 바이트로 읽어 대체문자(U+FFFD)로 복원해 내용을 보여 주고 파손을 따로 표시한다.
+#   ★DIR-PHASE0 (2026-09-24 도훈): config director.enabled 가 **명시적 false** 면 캐시를 보이지 않는다 — 동결된 디렉터의
+#   마지막 캐시는 정정 전 수치(close_d_legacy · C11 오염 칸 포함)와 막힌 권고를 담고 있어 '현재 판정'처럼 보이면 해롭다.
+#   config 판독 불가는 '?' + 원인(동결로 접지 않는다). 키 부재·true 는 종전 경로(캐시 전재).
 def DIRECTOR():
-    dj=J(".cache/rf_director_latest.json") or {}; da=AG(".cache/rf_director_latest.json")
-    if not dj: return "Director: ? (rf_director 미실행 — morning_run [3/3] 또는 Rscript 02_Infrastructure/ops/rf_director.R)"
+    cf=S(lambda: json.load(io.open(R("06_Registry","reinforce_auto_config.json"),encoding="utf-8-sig")))
+    if not isinstance(cf,dict): return "Director: ? (reinforce_auto_config 판독 불가 — 동결 여부 미확인)"
+    dc=cf.get("director")
+    if isinstance(dc,dict) and dc.get("enabled") is False:
+        return "Director: 동결(흡수 대기 · DIR-ABSORB — 진단·기록은 P1-01·P3-01·P3-05·P3-07 로 이관)"
+    p=R(".cache","rf_director_latest.json"); da=AG(".cache/rf_director_latest.json")
+    if not os.path.exists(p): return "Director: ? (rf_director 미실행 — morning_run [3/3] 또는 Rscript 02_Infrastructure/ops/rf_director.R)"
+    raw=S(lambda: open(p,"rb").read(),b""); bad=False
+    try: txt=raw.decode("utf-8-sig")
+    except UnicodeDecodeError: txt=raw.decode("utf-8-sig","replace"); bad=True
+    dj=S(lambda: json.loads(txt))
+    if not isinstance(dj,dict) or not dj: return "Director: ? (캐시 파손 — %s · 다음 아침 체인이 재생성 · 즉시: Rscript 02_Infrastructure/ops/rf_director.R)"%("UTF-8 깨짐" if bad else "JSON 판독 불가")
     bl=str(dj.get("boot_line") or "?")
     if bl.startswith("Director:"): bl=bl[len("Director:"):].strip()
     st=(" ★stale "+HH(da)) if (da is None or da>=30 or dj.get("stale")) else ""
-    return "Director: %s%s"%(bl,st)
+    return "Director: %s%s%s"%(bl,st," ※캐시 UTF-8 파손(대체문자 표시 · 다음 체인이 재생성)" if bad else "")
 # ⑥-b 대기 결정 — 결정 대기 레지스터 부기 (P3-07 · 2026-09-23 플랜 qvest-1-drifting-eclipse). **읽기만** — writer =
 #   reinforce_ledger.R::dr_open/dr_resolve(원자 쓰기 · owner 만 resolve). 새 줄을 만들지 않고 Director 줄 끝에 붙는다(부팅 줄 수 불변).
 #   ★왜: R1 → l2_auto.enabled → director.act 사슬이 2계층 A 경로·자기개선 채점기를 막는데 부팅 어디에도 안 보였다(감사 D7-04·D8-05).
@@ -216,7 +233,13 @@ o.append(S(DIRECTOR,"Director: ?")+S(DECISIONS," · 대기결정 ?(표시 예외
 # ⑦ Rules — 방향 규칙 일간 채점 (도훈 2026-09-21 "데일리로 · Qvest 실행 시점에"). **읽기만** — 캐시는 /qvest 1a 단계에서 세션이
 #   run_direction_score.R --quiet 로 방금 쓰고, 아침 체인의 rf_director 도 매일 쓴다. 30h 초과면 ★stale. 부재면 '?' + 원인.
 #   검사: 08_Tests/ops/test_boot_lean_rules_line.R (블록 패턴 추출).
+#   ★DIR-DIRECTION-SCORE (2026-09-24 도훈 '폐기'): 채점기의 입력(결정·행동·결과)은 디렉터가 만든다. director.enabled 가
+#   명시적 false 면 낡은 채점 캐시를 전재하지 않고 폐기 표식만 — 줄 자체의 삭제는 흡수 Phase 2(부팅 줄 수 계약과 함께).
 def RULES():
+    cf=S(lambda: json.load(io.open(R("06_Registry","reinforce_auto_config.json"),encoding="utf-8-sig")))
+    dc=cf.get("director") if isinstance(cf,dict) else None
+    if isinstance(dc,dict) and dc.get("enabled") is False:
+        return "Rules: 폐기(DIR-DIRECTION-SCORE · 디렉터 동결로 입력 없음 — 줄 삭제 = 흡수 Phase 2)"
     rj=J(".cache/rf_direction_score_latest.json") or {}; ra=AG(".cache/rf_direction_score_latest.json")
     if not rj: return "Rules: ? (run_direction_score 미실행 — /qvest 1a 또는 Rscript 02_Infrastructure/axiom/replay/run_direction_score.R --quiet)"
     ln=str(rj.get("line") or "?")

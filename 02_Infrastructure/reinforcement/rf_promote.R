@@ -17,6 +17,47 @@ if (!exists(".ov_layers", mode = "function"))
   source(file.path(.RFP_ROOT(), "02_Infrastructure/reinforcement/rf_spec_sig.R"), local = TRUE)
 if (!exists("rfbd_standing_picks", mode = "function"))
   invisible(capture.output(source(file.path(.RFP_ROOT(), "02_Infrastructure/reinforcement/rf_block_design.R"), local = TRUE)))
+# ★후보 자격 술어는 러너와 같은 정본(rf_runner_gates.R · 2026-09-24 P0-12) — 승격 best 가 바닥·carry 와 다른 자로 고르면
+#   자식의 carry 기준선이 부모 바닥과 다른 규약·유니버스·창의 값이 된다(D2-08). 읽기뿐 — 이 파일은 여전히 쓰지 않는다.
+if (!exists("rf_candidate_facts", mode = "function"))
+  invisible(capture.output(source(file.path(.RFP_ROOT(), "02_Infrastructure/reinforcement/rf_runner_gates.R"), local = TRUE)))
+
+#' 승격 best 후보 자격 (P0-12 · D2-08 · D-C · 규약 혼합 가드 · P0-11 · 2026-09-24)
+#'   구판(reinforce_auto_next_paper.R)은 소진 entry 의 **전 칸** PORT_t 최대를 best 로 골랐다. B3 유니버스 처치 칸(KQ150 단독 ·
+#'   2010~ 창)이 best 가 되면 carry 는 유니버스를 k200_kq150 으로 리셋하는데(rf_promote_carry) 자식의 기준선(parent$best_port_t)은
+#'   그 처치 창의 값이 되어 부모-자식 비교가 재현 불가였다(D2-08). 창 이탈 칸(D-C)·규약이 다른 칸(P0-04 과도기)·자기 층이
+#'   미검증인 B5 칸(P0-11)도 같은 이유로 물려줄 승자가 아니다.
+#'   자격 = rf_candidate_facts(RF_ROLE_CHECKS$promote: 규약·유니버스 k200_kq150·창) ∧ rf_adversary_ok(carry 오버레이 기준 자기 층).
+#' @param E   소진 entry
+#' @param ctx rf_runner_ctx() 결과(현행 규약 · 창 규칙 · 캐시)
+#' @return list(i = 선택 attempt 인덱스(NA = 없음), reason, defer, n_measured, n_eligible, excluded = named character(칸 코드 → 사유))
+#'   defer = 자격 칸이 하나도 없는데 그 중 규약 판정 탈락이 있다 → 호출자는 이월(hand-off)하지 말고 rebase(P0-06)를 기다린다
+#'   (legacy 칸만 가진 entry 를 과도기에 넘겨 버리면 승격 사슬이 영구히 끊긴다 — 정지는 로그로 드러난다).
+rf_promote_best <- function(E, ctx) {
+  atts <- E$attempts %||% list()
+  pts <- vapply(atts, function(a) {
+    v <- tryCatch(suppressWarnings(as.numeric((a[["essence"]] %||% list())$port_t)), error = function(e) NA_real_)
+    if (length(v) != 1L) NA_real_ else v }, numeric(1))
+  meas <- which(is.finite(pts))
+  res <- function(i, reason, defer, n_ok, exc) list(i = i, reason = reason, defer = defer, n_measured = length(meas),
+                                                    n_eligible = as.integer(n_ok), excluded = exc)
+  if (!length(meas)) return(res(NA_integer_, "no_measured_cell", FALSE, 0L, character(0)))
+  cov <- (E$carry %||% list())$overlay
+  why <- vapply(meas, function(k) {
+    f <- rf_candidate_facts(atts[[k]], ctx, RF_ROLE_CHECKS$promote)$fail
+    if (length(f)) return(f[1])
+    st <- rf_adversary_status(atts[[k]], carry_overlay = cov)
+    if (isTRUE(st$ok)) "" else paste0("adversary:", st$status) }, character(1))
+  ok <- meas[!nzchar(why)]
+  exc <- why[nzchar(why)]
+  names(exc) <- vapply(atts[meas[nzchar(why)]], function(a)
+    .rfg_s1(tryCatch(.rf_attempt_code(a), error = function(e) NA_character_)), character(1))
+  if (!length(ok)) {
+    dfr <- any(startsWith(why, "regime_"))
+    return(res(NA_integer_, if (dfr) "regime_mismatch" else "no_eligible_cell", dfr, 0L, exc))
+  }
+  res(ok[which.max(pts[ok])], "ok", FALSE, length(ok), exc)
+}
 
 # 등급 사다리 — min="B" 면 {A,B}, min="A" 면 {A}. essence enum 밖 값은 승격 불가.
 .rf_promote_grades <- function(min_grade = "B") {

@@ -160,14 +160,20 @@ rf_llm_resolve cleaner_distill "${QVEST_CD_MODEL:-}" "${QVEST_CD_EFFORT:-}"
 TMO="${QVEST_CD_TIMEOUT:-2400}"
 jl "agent start week=$WEEK model=$LLM_MODEL effort=$LLM_EFFORT timeout=${TMO}s"
 printf %s "$PROMPT" > "$PF"
-timeout "$TMO" claude -p < "$PF" \
-  --model "$LLM_MODEL" --effort "$LLM_EFFORT" \
+# ★무인 LLM 단일 진입(P0-M1 2026-09-24) — rf_llm_agent_run 이 AutoMem 차단·무인 표식을 싣고
+#   --model/--effort 는 위 rf_llm_resolve 값을 쓴다. 출력은 이번 실행 파일 → 로그에 덧붙임.
+RUN_OUT="$(mktemp "${TMPDIR:-/tmp}/cleaner_run.XXXXXX")"
+#   폴백 미탑재(LLM_FALLBACK_MODEL="" · 구판 동작 보존): 구판도 --fallback-model 없이 떴고 이 레인엔
+#   반쪽 산출물 청소 훅(rf_llm_before_fallback)이 없다 — 폴백 확대는 청소 훅과 함께 별도 결정.
+LLM_FALLBACK_MODEL="" rf_llm_agent_run "$PF" "$RUN_OUT" "$TMO" \
   --permission-mode acceptEdits \
   --allowed-tools "Read,Write,Edit,Glob,Grep" \
   --disallowed-tools "Bash,Agent,WebFetch,WebSearch" \
-  --add-dir "$WDIR" \
-  >> "$LOG" 2>&1
-ARC=$?
+  --add-dir "$WDIR"
+ARC=$LLM_RC
+[ -f "$RUN_OUT.primary" ] && cat "$RUN_OUT.primary" >> "$LOG"
+cat "$RUN_OUT" >> "$LOG" 2>/dev/null
+rm -f "$RUN_OUT" "$RUN_OUT.primary"
 jl "agent done rc=$ARC"
 
 if grep -qiE "OAuth access token has expired|Failed to authenticate|API Error: 401" "$LOG" 2>/dev/null; then

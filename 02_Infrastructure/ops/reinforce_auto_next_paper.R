@@ -72,8 +72,29 @@ if (length(ex)) {
     v <- tryCatch(as.numeric(a$essence$port_t), error = function(e) NA_real_)
     if (length(v) != 1L) NA_real_ else v
   }, numeric(1))
-  if (any(is.finite(pts))) {
-    i <- which.max(replace(pts, !is.finite(pts), -Inf))
+  ## ★승격 best 는 **자격 칸** 중 PORT_t 최대 (P0-12 · D2-08 · D-C · 규약 혼합 가드 · P0-11 · 2026-09-24 · 정본 rf_promote.R::rf_promote_best).
+  ##   구판은 전 칸 최대라 B3 유니버스 처치 칸(KQ150 단독 · 2010~ 창)이 best 가 되면 carry 는 유니버스를 리셋하는데 자식 기준선은
+  ##   그 처치 창의 값이 됐다(D2-08). 자격 = 현행 규약 · k200_kq150 · 창 허용 안 · 적대검증(자기 층 B5 미검증 제외).
+  ##   ★자격 칸이 0 인데 규약 탈락이 섞여 있으면 **이월하지 않는다**(defer) — legacy 칸만 가진 entry 를 과도기(config close_t1 →
+  ##   rebase 전)에 넘기면 승격 사슬이 영구히 끊긴다. 요약·표식·이월 전부 rebase 뒤로 미룬다(정지는 로그로 드러난다).
+  suppressMessages(source(file.path(ROOT, "02_Infrastructure/reinforcement/rf_promote.R")))
+  .PCTX <- rf_runner_ctx(ROOT)
+  .PB <- tryCatch(rf_promote_best(E, .PCTX),
+                  error = function(e) list(i = NA_integer_, reason = paste0("best_error: ", conditionMessage(e)), defer = TRUE,
+                                           n_measured = NA_integer_, n_eligible = NA_integer_, excluded = character(0)))
+  if (length(.PB$excluded) && !isTRUE(rf_is_summarized(E)))   # 요약과 같은 1회 표식 아래(매 tick 반복 소음 금지)
+    jlog("promote_candidates_excluded", base_id = E$base_id, n_measured = .PB$n_measured, n_eligible = .PB$n_eligible,
+         regime_current = .PCTX$regime %||% NA_character_,
+         excluded = paste(utils::head(sprintf("%s=%s", names(.PB$excluded), .PB$excluded), 30L), collapse = ","),
+         note = "승격 best 후보 자격 미달 — 제외(등급 불변)")
+  if (isTRUE(.PB$defer)) {
+    jlog("promote_deferred_regime", base_id = E$base_id, reason = .PB$reason, regime_current = .PCTX$regime %||% NA_character_,
+         regime_why = .PCTX$regime_why %||% "",
+         note = "자격 칸 0 · 규약 불일치 칸 존재 — 요약·승격·이월을 rebase(P0-06) 뒤로 미룬다(혼합 비교 금지 · 사슬 보존)")
+    return(invisible(0L))
+  }
+  if (!is.na(.PB$i)) {
+    i <- .PB$i
     best <- list(base_id = E$base_id, n = E$attempts[[i]]$n,
                  port_t = pts[i], grade = E$attempts[[i]]$grade,
                  ## ★게이트 축(Calmar) — 승격 연장 판정이 읽는다. 승자 셀은 PORT_t 최대로 고르므로
@@ -111,7 +132,18 @@ if (length(ex)) {
   suppressMessages(source(file.path(ROOT, "02_Infrastructure/reinforcement/rf_promote.R")))
   ## ★자식 base_id 가 이미 원장에 있으면 승격은 끝난 사건 — child_exists (2026-09-05 실사고 promo2 재승격 반복)
   .ids  <- vapply(led$entries, function(z) as.character(z$base_id %||% ""), character(1))
-  PD    <- rf_promote_decide(E2, best, CFG, existing_ids = .ids)
+  ## ★부모 기준선이 비교 불가면(부모 승자 칸이 현행 규약이 아님 · 처치 유니버스 · 창 이탈 — rf_carry_base_info) 부모 대비 비교를
+  ##   **하지 않는다**(규약 혼합 가드 · D2-08). best_* 를 가린 사본으로 판정 → no_improvement 판정 생략 · 깊이 연장은 gate_axis_unknown
+  ##   (보수 — 모르는 기준선으로 연장하지 않는다). 러너 carry 게이트와 같은 규칙(기준선을 모르면 게이트 무발화 + 사유 로그).
+  .pbi <- tryCatch(rf_carry_base_info(E2, led$entries, .PCTX),
+                   error = function(e) list(value = NA_real_, why = paste0("error: ", conditionMessage(e))))
+  E2d <- E2
+  if (!is.null(E2$parent) && !(.pbi$why %in% c("ok", "no_carry"))) {
+    E2d$parent$best_port_t <- NULL; E2d$parent$best_calmar <- NULL
+    if (!isTRUE(.already)) jlog("promote_parent_baseline_unavailable", base_id = E2$base_id, why = .pbi$why,
+                                note = "부모 기준선 비교 불가 — 부모 대비 개선 판정 생략 · 깊이 연장 불가(보수)")
+  }
+  PD    <- rf_promote_decide(E2d, best, CFG, existing_ids = .ids)
   MAXD  <- as.integer(CFG$promote_max_depth %||% 3L)
   depth <- PD$depth
   sp    <- best$spec %||% NA_character_

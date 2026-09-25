@@ -80,13 +80,23 @@ rank-Z 50:50 으로 결합**한 셀 5개를 돌려 어느 축이 붙는지 잰�
 #   구판은 충실구현 레인 변수(QVEST_RP_MODEL/EFFORT)를 빌려 써서 그 레인을 바꾸면 이 레인도 따라 바뀌었다.
 . "$ROOT/02_Infrastructure/ops/rf_llm_env.sh"
 rf_llm_resolve grid_propose "${QVEST_GP_MODEL:-}" "${QVEST_GP_EFFORT:-}"
-timeout 1800 claude -p "$PROMPT" \
-  --model "$LLM_MODEL" --effort "$LLM_EFFORT" \
+# ★무인 LLM 단일 진입(P0-M1 2026-09-24) — rf_llm_agent_run 이 AutoMem 차단·무인 표식을 싣고
+#   --model/--effort 는 위 rf_llm_resolve 값을 쓴다. 프롬프트는 stdin 파일로(구판 argv 와 같은 내용 ·
+#   Windows 인자 상한 32K 회피는 덤).
+PF="$(mktemp "${TMPDIR:-/tmp}/rf_gp_prompt.XXXXXX")"
+printf %s "$PROMPT" > "$PF"
+RUN_OUT="$PF.out"
+#   폴백 미탑재(LLM_FALLBACK_MODEL="" · 구판 동작 보존): 구판도 --fallback-model 없이 떴고 이 레인엔
+#   반쪽 산출물 청소 훅(rf_llm_before_fallback)이 없다 — 폴백 확대는 청소 훅과 함께 별도 결정.
+LLM_FALLBACK_MODEL="" rf_llm_agent_run "$PF" "$RUN_OUT" 1800 \
   --permission-mode acceptEdits \
   --allowed-tools "Read,Write,Glob,Grep,Bash(Rscript*),WebFetch,WebSearch" \
-  --disallowed-tools "Agent" \
-  >> "$LOG" 2>&1
-jl agent_done "rc=$?"
+  --disallowed-tools "Agent"
+ARC=$LLM_RC
+[ -f "$RUN_OUT.primary" ] && cat "$RUN_OUT.primary" >> "$LOG"
+cat "$RUN_OUT" >> "$LOG" 2>/dev/null
+rm -f "$PF" "$RUN_OUT" "$RUN_OUT.primary"
+jl agent_done "rc=$ARC"
 
 [ -s "$OUT" ] || { jl no_proposal; exit 1; }
 QM_ROOT="$ROOT" Rscript "$ROOT/02_Infrastructure/ops/rf_grid_apply.R" >> "$LOG" 2>&1

@@ -30,6 +30,11 @@
 #   C13: not applicable (no Z_Score; weight schedule alpha)
 #   C14: not applicable (no Factor DB IC; using STR_1715 returns only)
 #   C15: not applicable (no Factor DB factor; using cached returns)
+#   C11: ★2026-09-24 정정(판정서 V-04). "t-1 lagged" 는 **라벨** 기준일 뿐이다 — M−1 월말 unified 행은
+#        미국 월말 종가·공표 전 주간값(STLFSI4·ICSA·NFCI)을 담아 보유 시작(행 Date) 시점에 미가용이었다
+#        (보유 시작 시점 미공표 월 STLFSI4 220·ICSA 183·NFCI 181 / 270). 이 엔진은 해외 계열을 직접 결합하지
+#        않으므로 상류 행의 정보 컷오프(c11_info_cutoff · 한국 거래일, 그 날 15:30 결정 기준)를 싣고 결정일과
+#        대조한다(c11_regime_check). 표식이 없으면 c11_status = "unresolved" 로 남긴다 — 상류 수리·재빌드는 2단계.
 #
 # Output:
 #   alpha_scores.parquet : Date × {weight_str1715, weight_cash, regime_score,
@@ -148,12 +153,92 @@ load_macro_regime <- function() {
   dt[, YM := format(Date, "%Y-%m")]
   setkey(dt, Date)
 
-  # Already monthly, last day of each month
-  # PIT: at sig_date t, use regime from prior month (t-1 lag)
-  cat(sprintf("[load_macro_regime] %d months: %s ~ %s\n",
-              nrow(dt), min(dt$Date), max(dt$Date)))
+  # 월 1행, Date = 월말 **라벨**. ★라벨 lag(t-1)은 정보 컷오프가 아니다(C11 · 판정서 V-04) —
+  #   행이 실제로 담은 해외 정보의 가용일은 상류가 싣는 c11_info_cutoff 로만 안다(없으면 NA = 미해소).
+  #   표식 판독 순서: ① 행 열(c11_info_cutoff·c11_regime_key — 행마다 명시 컷오프)
+  #                   ② 생산자 수리판 파일 스탬프(c11_avail_regime_key — R 속성·parquet 메타데이터·같은 이름 열.
+  #                      S2 factor_db_daily_pit.R::fdb_regime_c11_ok 와 같은 받는 자리) → 행이 자기 Date(라벨) 기준
+  #                      가용 정보만 담는다는 생산자 계약 → 컷오프 = 행 Date
+  #                   ③ 없음 → NA(미해소)
+  has_c11 <- all(c(C11_CUTOFF_COL, C11_KEY_COL) %in% names(dt))
+  # ★r1(표식 계약 통일 · 통합 검증 BLOCKING): 생산자 regime_signal 이 싣는 행 열 avail_date(Date 형 — 그 달 결정일 =
+  #   말일 이하 마지막 한국 거래일) + c11_regime_key 를 (가)와 같은 뜻(행별 명시 컷오프)으로 받는다.
+  has_avail <- !has_c11 && all(c("avail_date", C11_KEY_COL) %in% names(dt)) && inherits(dt[["avail_date"]], "Date")
+  fstamp <- if (has_c11 || has_avail) NULL else c11_file_stamp(signal_path, dt)
+  if (has_c11) {
+    dt[, reg_c11_cutoff := as.Date(get(C11_CUTOFF_COL))]
+    dt[, reg_c11_key := as.character(get(C11_KEY_COL))]
+  } else if (has_avail) {
+    dt[, reg_c11_cutoff := as.Date(avail_date)]
+    dt[, reg_c11_key := as.character(get(C11_KEY_COL))]
+  } else if (!is.null(fstamp)) {
+    dt[, reg_c11_key := fstamp]
+    dt[, reg_c11_cutoff := fifelse(is.na(reg_c11_key), as.Date(NA), Date)]
+  } else {
+    dt[, reg_c11_cutoff := as.Date(NA)]
+    dt[, reg_c11_key := NA_character_]
+  }
+  cat(sprintf("[load_macro_regime] %d months: %s ~ %s · C11 표식 %s\n",
+              nrow(dt), min(dt$Date), max(dt$Date),
+              if (has_c11) sprintf("행 열(%d/%d행)", sum(!is.na(dt$reg_c11_cutoff)), nrow(dt))
+              else if (has_avail) sprintf("행 열 avail_date(%d/%d행 · 생산자 표식 계약)", sum(!is.na(dt$reg_c11_cutoff)), nrow(dt))
+              else if (!is.null(fstamp)) sprintf("생산자 스탬프 %s(%d/%d행 · 컷오프 = 행 Date)",
+                                                 C11_FILE_STAMP_KEY, sum(!is.na(dt$reg_c11_cutoff)), nrow(dt))
+              else "★없음 — 상류 unified 월간이 수리 전 판(c11_status=unresolved)"))
   dt[, .(Date, YM, Regime_Score, Category, Cash_Pct, MSM_Crisis_Prob,
-         FRED_MRS, KTRI_Score, VEA_Score)]
+         FRED_MRS, KTRI_Score, VEA_Score, reg_c11_cutoff, reg_c11_key)]
+}
+
+#==============================================================================
+# 2b. ★PIT C11 대조 (2026-09-24 · 판정서 V-04 · 결정 PIT-C11-REMEDIATION 안 B 1단계)
+#    상류 unified 월간의 표식 계약(둘 중 하나):
+#      (가) 행 열 c11_info_cutoff(그 행의 해외 입력이 전부 가용해진 한국 날짜 · 그 날 15:30 결정 기준 · 판정서 ② 형태 a)
+#           + c11_regime_key(기반 S0 규칙 epoch = fred_avail_rules_meta()$regime_key)
+#      (나) 생산자 수리판 파일 스탬프 c11_avail_regime_key(R 속성·parquet 메타데이터·열 — S2/S3 규약) — 행이 자기
+#           Date 기준 가용 정보만 담는다는 생산자 계약이므로 컷오프 = 행 Date
+#    결정일 = 행 Date(STR_1715 보유 시작일 · forward 행 = PG2_AS_OF). 실제 집행(그 날 또는 그 뒤 첫 거래일
+#    종가)보다 이르거나 같으므로 보수 방향이다. 표식이 있는데 컷오프 > 결정일이면 **중단**(PIT 위반),
+#    표식이 없으면 c11_status = "unresolved" 로 남긴다(결정 PIT-C11-BOOK0001 '표기 → 수리 뒤 재산출').
+#==============================================================================
+C11_CUTOFF_COL <- "c11_info_cutoff"
+C11_KEY_COL    <- "c11_regime_key"
+C11_FILE_STAMP_KEY    <- "c11_avail_regime_key"   # 생산자 수리판 파일 스탬프(S2·S3 와 같은 이름)
+C11_FILE_STAMP_PREFIX <- "c11_avail:"             # = S0 fred_avail_rules_meta()$regime_key 형식
+
+# 생산자 파일 스탬프 판독 — 행별 키 벡터(열) 또는 전 행 공통 키(속성·메타데이터). 없거나 형식 불일치 = NULL.
+c11_file_stamp <- function(path, dt) {
+  .ok1 <- function(v) is.character(v) && length(v) == 1L && !is.na(v) && startsWith(v, C11_FILE_STAMP_PREFIX)
+  if (C11_FILE_STAMP_KEY %in% names(dt)) {
+    v <- as.character(dt[[C11_FILE_STAMP_KEY]])
+    v[!is.na(v) & !startsWith(v, C11_FILE_STAMP_PREFIX)] <- NA_character_
+    return(if (any(!is.na(v))) v else NULL)
+  }
+  tb <- tryCatch(arrow::read_parquet(path, as_data_frame = FALSE), error = function(e) NULL)
+  if (is.null(tb)) return(NULL)
+  for (v in list(tryCatch(tb$metadata$r$attributes[[C11_FILE_STAMP_KEY]], error = function(e) NULL),
+                 tryCatch(tb$metadata[[C11_FILE_STAMP_KEY]], error = function(e) NULL)))
+    if (.ok1(v)) return(rep(v, nrow(dt)))
+  NULL
+}
+
+c11_regime_check <- function(out) {
+  out[, c11_status := fifelse(is.na(Regime_Score_lag), "no_regime",
+                              fifelse(is.na(c11_info_cutoff), "unresolved", "verified"))]
+  bad <- out[c11_status == "verified" & c11_info_cutoff > Date]
+  if (nrow(bad)) {
+    stop(sprintf(paste0("[engine] ★C11 위반 — 국면 행의 해외 정보 컷오프가 결정일 뒤 %d/%d행 ",
+                        "(예: %s 행이 %s 에야 가용한 정보를 씀). 상류 unified 월간을 컷오프 기준으로 재산출할 것"),
+                 nrow(bad), nrow(out), as.character(bad$Date[1]), as.character(bad$c11_info_cutoff[1])))
+  }
+  n_un <- sum(out$c11_status == "unresolved")
+  if (n_un > 0L) {
+    cat(sprintf(paste0("[engine] ★C11 미해소 %d/%d행 — 상류 unified 월간에 c11_info_cutoff 표식 없음(수리 전 판). ",
+                       "m4 게이트는 C11 미해소로 표기된다(결정 PIT-C11-BOOK0001)\n"), n_un, nrow(out)))
+  } else {
+    cat(sprintf("[engine] C11 검증 — 국면 사용 %d행 전부 c11_info_cutoff <= 결정일\n",
+                sum(out$c11_status == "verified")))
+  }
+  out
 }
 
 #==============================================================================
@@ -528,14 +613,20 @@ run_engine <- function() {
   cat("\n[engine] === Stage 5: Merge regime + decay to monthly grid ===\n")
   # Merge by YM (month-end alignment)
   out <- merge(ret_dt, reg_dt[, .(YM, Regime_Score, Category, Cash_Pct,
-                                   MSM_Crisis_Prob, FRED_MRS, KTRI_Score, VEA_Score)],
+                                   MSM_Crisis_Prob, FRED_MRS, KTRI_Score, VEA_Score,
+                                   reg_c11_cutoff, reg_c11_key)],
                by = "YM", all.x = TRUE)
   setkey(out, Date)
 
-  # PIT lag: regime score at sig_date t = regime measured at month t-1 (already lagged)
+  # 라벨 lag: 행 t(보유 시작일)는 월 t-1 의 월말 라벨 행을 쓴다. ★이 lag 는 라벨 기준이다 — 그 행이 담은
+  #   해외 정보가 결정일에 가용했는지는 아래 c11_info_cutoff 대조로만 판정한다(C11 · 판정서 V-04).
   out[, Regime_Score_lag := shift(Regime_Score, 1L, type = "lag")]
   out[, Cash_Pct_lag := shift(Cash_Pct, 1L, type = "lag")]
   out[, MSM_Crisis_Prob_lag := shift(MSM_Crisis_Prob, 1L, type = "lag")]
+  # ★같은 shift 로 '실제로 쓴 행'의 표식을 끌어온다(값과 표식이 한 행에서 온다는 것을 구조로 보장)
+  out[, c11_info_cutoff := shift(reg_c11_cutoff, 1L, type = "lag")]
+  out[, c11_regime_key := shift(reg_c11_key, 1L, type = "lag")]
+  out <- c11_regime_check(out)
 
   cat("\n[engine] === Stage 6: Combine regime score + decay signal ===\n")
   # combined_regime ∈ [0, 1]: 1 = full risk-off (cash heavy)
@@ -718,7 +809,8 @@ run_engine <- function() {
                    "decay_rolling_sr_recent", "decay_rolling_sr_base",
                    "combined_regime", "conjunction_score",
                    "view_str", "view_confidence", "view_BL",
-                   "weight_str1715", "weight_cash", "confidence")
+                   "weight_str1715", "weight_cash", "confidence",
+                   "c11_info_cutoff", "c11_regime_key", "c11_status")   # ★C11 표식(2026-09-24)
   out_select <- out[, ..result_cols]
 
   cat(sprintf("\n[engine] === Output: %d monthly rows ===\n", nrow(out_select)))
@@ -973,7 +1065,17 @@ main <- function() {
     C9_overlay_engineering = "PASS — weight_str1715[t] = f(regime_t-1, decay_t-1, view_t-1)",
     C13_zscore_aligned = "N/A — no Z_Score; weight schedule alpha",
     C14_usable_date = "N/A — no Factor DB IC access",
-    C15_load_month_factors = "N/A — no Factor DB factor; STR_1715 returns + cached regime only"
+    C15_load_month_factors = "N/A — no Factor DB factor; STR_1715 returns + cached regime only",
+    # ★2026-09-24: 위 C5/C9 'regime[t-1]' 는 라벨 기준. 해외 정보 가용 여부는 이 항목이 말한다(판정서 V-04)
+    C11_overseas_availability = {
+      .n_un <- sum(out$c11_status == "unresolved"); .n_v <- sum(out$c11_status == "verified")
+      # r1(V5 BLOCKING): 가용일 PASS 는 빈티지 해소가 아니다 — 상류 unified 월간의 해외 층(StL_Fin_Stress·Chi_Fin_Cond 등 개정
+      #   계열)은 최신 빈티지(ALFRED 미수집)라 C1·C11 미해소 라벨을 함께 싣는다(판정서 ② 빈티지 · 안 B '라벨로 명시').
+      if (.n_un == 0L) sprintf(paste0("PASS_AVAIL · VINTAGE_UNRESOLVED — 국면 사용 %d행 전부 c11_info_cutoff <= 결정일(행 Date). ",
+                                      "값은 최신 빈티지(ALFRED 미수집) — C1·C11 미해소 라벨(판정서 ② 빈티지 · 안 C)"), .n_v)
+      else sprintf("UNRESOLVED — %d/%d행 상류 unified 월간에 c11_info_cutoff 표식 없음(판정서 V-04 · 2단계 재빌드)",
+                   .n_un, nrow(out))
+    }
   )
 
   # Save alpha_validation.json

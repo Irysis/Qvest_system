@@ -86,8 +86,11 @@ CHARTER_REF <- "v1.2 §10 (backfilled by cert_backfill_audit.R)"
 #   수리: 수리된 resolver(.lineage_anchor / .lineage_related — 토큰 경계 매칭)를
 #   재사용한다. 그 함수들은 08_Tests/portfolio/test_lineage_resolver.R(24 assert,
 #   위반 주입 5축)이 이미 지키고 있어 여기서 별도 사본을 만들지 않는다.
-#   ※ 형제 파일을 source 하면 CLI entrypoint 는 commandArgs(trailingOnly)>0 가드로
-#     발화하지 않는다(확인). 로드 실패 시엔 legacy 절단 root 로 폴백하되 로그를 남긴다.
+#   ※ (2026-09-25 정정) 구 주석 "형제 파일을 source 하면 CLI entrypoint 는 commandArgs(trailingOnly)>0 가드로
+#     발화하지 않는다(확인)" 는 **틀렸다** — 이 파일을 --auto/--dry-run 으로 실행하면 인자가 있어 형제 본체가 발화했다
+#     (샌드박스 실측: "Tier: BOOK_STATE_MISSING" + 형제 로그 덮어쓰기). 형제 가드를 --file 정체 판정으로 고쳤다
+#     (measurement_basis_audit.R::.mba_is_cli_main · 검사 08_Tests/portfolio/test_mba_main_guard.R).
+#     로드 실패 시엔 legacy 절단 root 로 폴백하되 로그를 남긴다.
 #──────────────────────────────────────────────────────────────────────────────
 .cba_load_resolver <- function() {
   if (exists(".lineage_related", inherits = TRUE)) return(TRUE)
@@ -737,7 +740,21 @@ parse_cli_args <- function(args) {
   res
 }
 
-if (!interactive() && length(commandArgs(trailingOnly = TRUE)) >= 0) {
+# ★(2026-09-25 Q19 · QEPM 감사 · 도훈 QEPM-IMMEDIATE-FIXES) 구 가드 `length(commandArgs(trailingOnly = TRUE)) >= 0`
+#   은 항상 참이었다 — 이 파일을 source 한 검사(08_Tests/integration/test_execution_path_unified.R)가 배터리마다
+#   --auto 본체를 돌려 운영 qepm/mailbox/governor/governance_log.json 에 RETROACTIVE_CERT_ISSUANCE 를 붙이고
+#   governance_log.json.bak.<ts> 를 남겼다(08-16~09-24 · 109개 · 처분은 도훈).
+#   판정 = "Rscript 가 **이 파일**을 --file 로 실행했는가" — source 하면 --file 은 호출자 스크립트다.
+#   `> 0`(인자 개수)만으로는 부족하다: 인자를 받는 호출자가 source 하면 참이 되고, 인자 없는
+#   `Rscript cert_backfill_audit.R`(Usage 상 --auto 기본)은 조용히 no-op 이 된다.
+#   함수만 쓰는 쪽은 QVEST_CERT_BACKFILL_NO_MAIN=1 로도 막는다(rf_director.R NO_MAIN 관례).
+#   가드 검사 = 08_Tests/ops/test_cert_backfill_main_guard.R (샌드박스 · 위반 주입 · 돌연변이).
+.cba_is_cli_main <- function() {
+  if (interactive() || identical(Sys.getenv("QVEST_CERT_BACKFILL_NO_MAIN"), "1")) return(FALSE)
+  f <- sub("^--file=", "", grep("^--file=", commandArgs(trailingOnly = FALSE), value = TRUE))
+  length(f) >= 1L && identical(basename(gsub("\\\\", "/", f[1L])), "cert_backfill_audit.R")
+}
+if (.cba_is_cli_main()) {
   args <- commandArgs(trailingOnly = TRUE)
   cli <- parse_cli_args(args)
   cat(sprintf("=== cert_backfill_audit.R Layer 2 ===\n"))

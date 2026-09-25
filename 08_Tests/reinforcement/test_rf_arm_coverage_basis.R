@@ -74,6 +74,10 @@ writeLines(c(
   "}"), file.path(STUB, "02_Infrastructure/portfolio/weight_catalog.R"))
 invisible(file.copy(file.path(ROOT, "02_Infrastructure/validation/overlay_pit_guard.R"),
                     file.path(STUB, "02_Infrastructure/validation/overlay_pit_guard.R"), overwrite = TRUE))
+# ★픽스처 보강(2026-09-24 · P0-09 곁가지) — 09-21 B6/B7 이후 엔진 머리가 rf_rebalance.R·rf_sleeve.R 을 source 한다.
+#   스텁 루트에 없어 B~F 전 칸이 "cannot open the connection" 으로 죽었다(09-21~ · test_rf_engine_overlay_stack.R 과 같은 원인).
+for (.f in c("02_Infrastructure/reinforcement/rf_rebalance.R", "02_Infrastructure/reinforcement/rf_sleeve.R"))
+  if (!file.copy(file.path(ROOT, .f), file.path(STUB, .f), overwrite = TRUE)) stop("스텁 루트 사본 실패: ", .f)
 writeLines(c(
   "# 보유 종목의 절반만 지목하는 벡터 arm — 오버레이 종목 커버리지 가드(held_rows)를 발화시킨다",
   "overlay_expo_stub_partial <- function(H, t, ctx) {",

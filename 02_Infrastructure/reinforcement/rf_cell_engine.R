@@ -49,6 +49,24 @@ suppressMessages(source(file.path(.RF_ROOT, "02_Infrastructure/reinforcement/rf_
 .START   <- as.Date(.AX$start_date    %||% "2005-01-01")
 
 stopifnot(is.data.table(RAWDATA))
+# ★리프레시 배리어 — RAWDATA 적재 **직후** 재판정 (도훈 결정 OPS-RUNNER-REFRESH-BARRIER · 2026-09-24).
+#   워커(rf_cell_worker.R)가 러너 호출 직전에 잠금을 봤지만, 그 판정과 load_rawdata 사이에 daily_refresh 가 잠금을
+#   잡을 수 있다([0a]/[0b] 는 시작 직후라 곧바로 RAWDATA 를 쓴다) — 그러면 방금 읽은 RAWDATA 가 쓰기 창의 것일 수 있다.
+#   워커가 켠 스위치(QVEST_RB_ENGINE_RECHECK=1)일 때만 본다 — 엔진 단독 검사·세션 호출은 비트 동일.
+#   held/error 면 계산하지 않고 멈춘다. 메시지 머리 "[refresh_barrier]" 를 워커가 보고 미측정 종료(deferred)로 접는다.
+#   ★메시지에 부모 러너의 구조적 판정 어휘(.structural 정규식)를 쓰지 않는다 — 쓰면 칸이 terminal 로 닫힌다.
+if (identical(Sys.getenv("QVEST_RB_ENGINE_RECHECK", ""), "1")) {
+  .rb_s <- tryCatch({
+    .rb_src <- file.path(.RF_ROOT, "02_Infrastructure/ops/refresh_barrier.R")
+    if (!file.exists(.rb_src)) .rb_src <- "C:/Users/99922/OneDrive/Quant_Module_Moltbot/02_Infrastructure/ops/refresh_barrier.R"
+    .rb_x <- new.env(); sys.source(.rb_src, envir = .rb_x, keep.source = FALSE)
+    .rb_x$rb_status(.RF_ROOT)
+  }, error = function(e) list(state = "error", reason = conditionMessage(e), blocking = TRUE))
+  if (isTRUE(.rb_s$blocking))
+    stop(sprintf("[refresh_barrier] RAWDATA 적재 직후 재판정 %s(lock=%s pid=%s reason=%s) — 계산 중단 · 미측정 종료(다음 tick 재개)",
+                 .rb_s$state %||% "?", .rb_s$lock %||% "", .rb_s$pid %||% "", .rb_s$reason %||% ""))
+  suppressWarnings(rm(list = intersect(c(".rb_s", ".rb_src", ".rb_x"), ls(all.names = TRUE))))
+}
 DT <- RAWDATA
 if (!inherits(DT$Date, "Date")) DT[, Date := as.Date(Date)]
 setorder(DT, Ticker, Date)
@@ -454,7 +472,8 @@ if (identical(.wt$kind, "ew")) {
 #   ★구현 = 노출 스케일(Sigma w <= 1, 나머지 현금). 하네스가 gross exposure 를 그대로
 #     반영하므로(replication_harness.R 의 Rg = GL*Lr) 비중 축소가 곧 현금 보유다.
 #   ★PIT(C5): 신호는 BM/시장 시계열이고 창 종점 = 시그널일 d(월말). 홀딩은 익월부터라
-#     교집합이 없다. assert_overlay_pit 로 하드 통과. 적합·분위·임계는 전부 확장창이다.
+#     교집합이 없다. 적합·분위·임계는 전부 확장창이다. ★P0-09(2026-09-24): H 의 t 행 fwd(익월 수익)는 NA 로
+#     넘기고, assert_overlay_pit 에는 넘긴 값의 가용일을 넣는다(구판 입력은 둘 다 .M$Date 파생 = 동어반복이었다).
 #   ★임의 상수 금지: 목표변동성·게이트 문턱·EWMA lambda 를 숫자로 박지 않는다. 전부 그
 #     시점까지의 데이터에서 추정한다. 상수를 박으면 그게 곧 사후 선택이다.
 # ★중첩 지원 (v10.2 2026-09-03): overlay 는 **단수 객체 또는 리스트**다.
@@ -535,6 +554,17 @@ if (!identical(.ov_kind, "none")) {
   .M <- merge(.M, .XS, by = "Date", all.x = TRUE)
   setorder(.M, Date)
   .M[, fwd := shift(nav, 1L, type = "lead") / nav - 1]   # 익월 BM 수익 — 학습에만, 과거쌍만 사용
+  # ── ★P0-09 가용일 장부 (2026-09-24 · 플랜 qvest-1-drifting-eclipse P0-09 · 감사 D4-07) ──────────
+  #   fwd[j] = nav[j+1]/nav[j] − 1 은 **j+1 행의 BM 관측일**에야 알 수 있다. 그래서 t 행의 fwd 는 신호일 t 에 미실현이다.
+  #   구판은 H <- .M[seq_len(t)] 로 그 t 행을 arm 에 그대로 넘겼고(파일 arm 의 '읽지 않는다' 는 약속뿐),
+  #   assert_overlay_pit 은 두 입력이 모두 .M$Date 파생이라 무엇을 넘겨도 통과하는 동어반복이었다.
+  #   현행: ① 루프에서 H 의 t 행 fwd 를 NA 로 넘긴다(마스크) ② arm 에 실제로 넘긴 값의 **가용일**을 기록해
+  #   assert 에 넣는다 — 마스크가 빠지면 t 행 fwd 의 가용일(익월 관측일)이 홀딩월 시작을 넘어 assert 가 선다.
+  #   ★가용일을 .M 열로 넣지 않는다 — H 의 열 구성이 바뀌면 열 전체를 쓰는 arm 이 비트 동일을 잃는다.
+  #   행 값(rv*·dd·r252·nav·ew*·xs)의 가용일 = 그 행 신호일(.B 는 findInterval 로 신호일 이하 행만 읽었고 xs 는 그 날 횡단면).
+  .M_AV_ROW <- .M$Date
+  .M_AV_FWD <- .B$Date[shift(.M$i, 1L, type = "lead")]    # fwd[j] 의 가용일 = j+1 행 BM 관측일(마지막 행 NA)
+  .M_FWD0   <- copy(.M$fwd)                                # 마스크가 .M(학습 행)을 건드리지 않았는지 루프 뒤 대조
 
   .N <- nrow(.M)
   .clip <- function(x) max(0, min(1, x))
@@ -581,6 +611,7 @@ if (!identical(.ov_kind, "none")) {
   #   누적합 기반 확장창 통계. 각 신호일 d 에서 d 까지의 모든 관측만 쓴다(홀딩월은 익월이라 교집합 0).
   #   beta/dbeta 는 (n·Sxy − Sx·Sy)/(n·Syy − Sy²) 형태로 O(n) 에 나온다.
   .HOLD <- NULL
+  .HOLD_AV <- NULL                           # ★P0-09 — ctx$hold 의 신호일별 실제 관측일(파일 arm 이 있을 때만)
   # 파일 arm 이 한 층이라도 있으면 종목 상태를 만든다(빌트인만이면 비용 0).
   if (any(!vapply(.OV_FNS, is.null, logical(1)))) {
     if (!exists("PORTFOLIO")) {              # EW 셀은 FACTORS 만 있다 — 보유를 여기서 확정한다
@@ -599,7 +630,9 @@ if (!identical(.ov_kind, "none")) {
       dSyy = cumsum(fifelse(y < 0, y * y, 0)),
       dSxy = cumsum(fifelse(y < 0, x * y, 0))
     ), by = Ticker]
+    .HB[, .xd := Date]                         # ★P0-09 — 조인 뒤에도 남는 실제 관측일(roll 결과의 Date 는 신호일 d 로 덮인다)
     .HF <- .HB[PORTFOLIO[, .(Date, Ticker)], on = .(Ticker, Date), roll = TRUE]  # d 이하 최종 관측
+    .HB[, .xd := NULL]                         # 전 종목 일별 표의 추가 열은 조인에만 필요 — 바로 돌려준다(메모리)
     .MINOBS <- 250L                          # 1년 미만 표본으로는 베타를 말하지 않는다
     .HF[, `:=`(
       beta  = fifelse(n_  >= .MINOBS & (n_  * Syy  - Sy^2)  > 0,
@@ -614,6 +647,9 @@ if (!identical(.ov_kind, "none")) {
                              sqrt((Sxx - Sx^2 / n_) * (Syy - Sy^2 / n_)), NA_real_)]
     .HOLD <- .HF[, .(Date, Ticker, beta, dbeta, ovol, bcorr, n_obs = n_)]
     setkey(.HOLD, Date)
+    # ★P0-09 — 신호일별 ctx$hold 가 실제로 읽은 최종 관측일(가용일). 관측이 없는 종목(NA)은 값도 NA 라 넘긴 정보가 없다.
+    .HOLD_AV <- .HF[!is.na(.xd), .(av = max(.xd)), by = Date]
+    setkey(.HOLD_AV, Date)
     cat(sprintf("[rf_cell_engine] .HOLD %d행 · 종목상태 4축(beta·dbeta·ovol·bcorr) · 최소관측 %d",
                 nrow(.HOLD), .MINOBS), fill = TRUE)
   }
@@ -638,9 +674,19 @@ if (!identical(.ov_kind, "none")) {
   .L_XSD  <- matrix(NA_real_, .N, .nL)         # 층별 · 횡단면 sd (벡터 층의 비대칭 전달)
   .L_COVH <- integer(.nL); .L_COVN <- integer(.nL); .L_TABM <- integer(.nL)   # 벡터 층 커버리지 분모·분자·표를 낸 달 수
   .held_of <- function(d) if (exists("PORTFOLIO")) PORTFOLIO[Date == d, unique(as.character(Ticker))] else character(0)
+  # ★P0-09 — 신호일 t 에 arm 으로 넘긴 값들의 최대 가용일(행 값 · NA 아닌 fwd · ctx$hold 관측일). assert 입력이다.
+  .USED_CUT <- rep(as.Date(NA), .N)
+  .ov_used_cutoff <- function(H, t) {
+    .a <- c(.M_AV_ROW[seq_len(t)], .M_AV_FWD[seq_len(t)][!is.na(H$fwd)])
+    if (!is.null(.HOLD_AV)) .a <- c(.a, .HOLD_AV[J(.M$Date[t]), av, nomatch = 0L])
+    .a <- .a[!is.na(.a)]
+    if (length(.a)) max(.a) else as.Date(NA)
+  }
   for (t in seq_len(.N)) {
     if (t < .n_floor) next
     H <- .M[seq_len(t)]                        # ★확장창 = d 까지. 미래 행 접근 없음
+    H[t, fwd := NA_real_]                      # ★P0-09 마스크 — t 행 fwd(익월 BM 수익)는 미실현이다. 전 층(빌트인·파일 arm)에 NA 로 넘긴다 <P0-09:mask>
+    .USED_CUT[t] <- .ov_used_cutoff(H, t)
     v_now <- H$rv60[t]
     tgt   <- stats::median(H$rv60, na.rm = TRUE)          # 목표 = 자기 이력 중앙 변동성
     .lay <- vector("list", .nL)                # 층별 축소 후 산출 — 스칼라 또는 data.table(Ticker, oe)
@@ -759,6 +805,9 @@ if (!identical(.ov_kind, "none")) {
 
     } else if (!is.null(.OV_FN)) {
       # 파일 기반 arm — 스칼라 e 또는 data.table(Ticker, e) 를 돌려줄 수 있다.
+      #   ★H 의 t 행 fwd 는 NA 다(P0-09 마스크 — 루프 머리). fwd[t] 를 읽는 arm 은 NA 를 받거나 여기서 선다.
+      #   ★마스크는 H 사본에만 걸린다 — arm 이 호출자 프레임(dynGet·parent.frame)으로 이 평가 env 의 .M·BM_DT 에 가면
+      #     마스크 전 값에 닿는다. 그 통로는 등재 관문 overlay_probe.R ③c(호출자 스코프 스캔)가 막는다(2026-09-25 보강).
       e <- .OV_FN(H, t, .ov_ctx)
     } else stop("[rf_cell_engine] overlay.kind 미지원: ", .ov_kind)
     # ── 층별 축소 (자기 n_min) — 곱하기 **전**에 층 단위로 끝낸다. 식은 구판과 같다(단층 비트 동일).
@@ -808,6 +857,10 @@ if (!identical(.ov_kind, "none")) {
       .expo[t] <- mean(.expo_x[[t]]$oe)        # 요약·로그용 대표값(판정은 층별·합성 두 층에서 본다)
     }
   }
+  # ★P0-09 불변식 — 마스크는 H(부분 사본)에만 걸려야 한다. .M 의 fwd 가 바뀌었으면 뒤 시점의 확장창 학습쌍
+  #   (ml_tail_gate · 파일 arm 의 i ≤ t−1 쌍)이 조용히 줄어든 것이다 — 결정론 결함이라 재시도 없이 닫는다.
+  if (!identical(.M$fwd, .M_FWD0))
+    stop("[rf_cell_engine] P0-09 fwd 마스크가 .M(학습 행)을 바꿨다 — 확장창 학습쌍 오염 · 측정 무효")
 
   if (!exists("PORTFOLIO")) {                  # EW 셀은 FACTORS 만 있으므로 여기서 비중을 만든다
     PORTFOLIO <- SEL[, .(Ticker, Weight = 1 / .N), by = Date][, .(Date, Ticker, Weight, Leg = "LONG")]
@@ -853,7 +906,42 @@ if (!identical(.ov_kind, "none")) {
   .hs <- as.Date(vapply(.M$Date, function(x)
            as.character(seq(as.Date(format(x, "%Y-%m-01")), by = "month", length.out = 2L)[2L]),
            character(1)))
-  assert_overlay_pit(.M$Date, .hs, label = paste0("rf_cell:", .ov_kind))
+  # ── ★P0-09 assert 입력 실체화 (보조 방어선 — 주 방어선은 위 마스크 + overlay_probe.R ③c 호출자 스코프 스캔 · ④ 값 섭동) ──────────
+  #   구판 assert_overlay_pit(.M$Date, .hs) 는 두 입력이 모두 .M$Date 파생이라 무엇을 넘겨도 통과했다(감사 D4-07 · 비평 M8).
+  #   used  = arm 에 **실제로 넘긴 값**의 최대 가용일(.USED_CUT: 행 값 · NA 아닌 fwd 의 j+1 관측일 · ctx$hold 관측일).
+  #           overlay_shift 판은 t 에 t−shift 의 노출이 걸리므로 그 시점의 값을 쓴다.
+  #   start = 달력 익월 1일(.hs — 유지)과 하네스 집행일 get_execution_date(d) 중 **이른 쪽**. 집행일은 정의상 익월 첫
+  #           거래일 이상이라 지금은 .hs 가 결속한다 — 집행 규약이 월중으로 바뀌면 그쪽이 자동으로 조인다(느슨해지지 않는다).
+  #   비교  = pit.md C5 "신호는 Date < 컷오프" — assert_overlay_pit 은 used > start 만 막으므로(본문 불변 · 검사 고정)
+  #           한계를 시작 전날로 넘겨 '<' 를 만든다.
+  .ov_exec_dates <- function(sig) {
+    .f <- tryCatch({
+      .ex <- parse(file.path(.RF_ROOT, "02_Infrastructure/backtest_harness.R"), encoding = "UTF-8", keep.source = FALSE)
+      .hit <- Filter(function(e) is.call(e) && identical(as.character(e[[1]]), "<-") &&
+                       identical(as.character(e[[2]]), "get_execution_date"), as.list(.ex))
+      if (length(.hit) != 1L) NULL else {
+        .en <- new.env(parent = globalenv()); assign("NA_Date_", as.Date(NA), envir = .en)
+        eval(.hit[[1]], envir = .en); get("get_execution_date", envir = .en, inherits = FALSE)
+      }
+    }, error = function(e) NULL)
+    if (is.null(.f)) {
+      cat("[rf_cell_engine] P0-09 get_execution_date 미적재 — 홀딩 시작 = 달력 익월 1일(.hs)만 사용", fill = TRUE)
+      return(rep(as.Date(NA), length(sig)))
+    }
+    .ad <- sort(unique(DT$Date))
+    # ★호출 실패(하네스 정의가 이 파일 밖 도우미를 부르게 바뀌는 등)도 적재 실패와 같이 달력으로 접는다 — 이 축은 컷오프를
+    #   조이기만 하므로(pmin) 빠져도 느슨해지지 않는다. 여기서 서면 오버레이 칸 전부가 측정 전에 죽는다.
+    tryCatch(as.Date(vapply(sig, function(s) as.numeric(.f(s, .ad)), numeric(1)), origin = "1970-01-01"),
+             error = function(e) {
+               cat(sprintf("[rf_cell_engine] P0-09 get_execution_date 호출 실패(%s) — 홀딩 시작 = 달력 익월 1일(.hs)만 사용",
+                           conditionMessage(e)), fill = TRUE)
+               rep(as.Date(NA), length(sig))
+             })
+  }
+  .hs_eff <- pmin(.hs, .ov_exec_dates(.M$Date), na.rm = TRUE)
+  .cut_applied <- if (.SHIFT > 0L) c(rep(as.Date(NA), min(.SHIFT, .N)), utils::head(.USED_CUT, max(0L, .N - .SHIFT))) else .USED_CUT
+  assert_overlay_pit(.cut_applied, .hs_eff - 1L,
+                     label = paste0("rf_cell:", .ov_kind, " [P0-09 가용일 · 한계=홀딩 시작 전날]"))
 
   # ── ★층별 판정 (v10.5 2026-09-17 · D2·D3 수리) — 합성 결과만 보면 죽은 층이 산 층 뒤에 숨는다 ──
   #   ① 벡터 층 커버리지: 층마다 분모 = **그 층이 표를 낸 달의 보유 행**, 분자 = 그 표가 덮은 보유 행.

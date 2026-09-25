@@ -672,6 +672,14 @@ def adapter_backlog_pending(root, registered=None):
 #     JUDGE 도달은 12건뿐. dossier 워크플로(Risk→Optimizer→Forge→Judge)의 전제인
 #     "alpha_package 가 WT mailbox 에 있을 것" 은 충족돼 있는데 **개시하는 것이 없었다.**
 #   ⇒ 이 레인이 그 칸을 채운다. 자본(governor/book_state)은 여전히 사람 손이다.
+#
+# ★동결(도훈 결정 QEPM-R0-FREEZE · 2026-09-25): 이 레인(qepm_dossier)과 아래 paper_promotion 은 QEPM WT 체인 진입로다.
+#   체인이 동결돼 next_agent 스폰(forge·judge 포함)·wt_create 는 하지 않는다(소비자 mode_queue_research_run.sh 도 v10 퇴역).
+#   술어는 사료로 남기되 항목마다 frozen 표식을 붙여 소비자가 읽게 한다 — 자문·설계는 /advisor(결정 QEPM-ADVISOR-MODE),
+#   측정은 도훈 승인 뒤 정본 계약(run_paper_replication)만. 해제 = 06_Registry/decision_register.json 재상정.
+QEPM_FREEZE_MARK = "QEPM-R0-FREEZE"
+QEPM_FREEZE_NOTE = ("QEPM WT 체인 동결 — next_agent 스폰·wt_create 금지(해제 = decision_register 재상정) · "
+                    "자문·설계는 /advisor(QEPM-ADVISOR-MODE) · 측정은 도훈 승인 뒤 정본 계약 run_paper_replication 만")
 
 WT_ROOT_REL = ("qepm", "mailbox", "worktask")
 
@@ -741,7 +749,8 @@ def qepm_dossier_pending(root, max_age_days=None):
                         "updated_at": upd0,
                         "screen_priority": "", "shrinkage_builtin": "", "statistic_order": "",
                         "reason": "alpha_hypothesis 만 있고 alpha_package 부재 — 승격이 중간에 끊긴 WT",
-                        "first_seen": "status.json"})
+                        "first_seen": "status.json",
+                        "frozen": QEPM_FREEZE_MARK, "frozen_note": QEPM_FREEZE_NOTE})
             continue
 
         if not has_pkg:
@@ -773,7 +782,8 @@ def qepm_dossier_pending(root, max_age_days=None):
                     "updated_at": upd,
                     "screen_priority": "", "shrinkage_builtin": "", "statistic_order": "",
                     "reason": "alpha_package 보유·판정 전 — 다음 단계(%s) 미개시" % _QEPM_NEXT.get(ph, "?"),
-                    "first_seen": "status.json"})
+                    "first_seen": "status.json",
+                    "frozen": QEPM_FREEZE_MARK, "frozen_note": QEPM_FREEZE_NOTE})
     # 최근 것 우선 — 오래된 legacy 보다 살아있는 라운드를 먼저 잇는다
     out.sort(key=lambda r: (r.get("updated_at") or ""), reverse=True)
     return out
@@ -849,7 +859,8 @@ def promotion_pending(root, grades=None):
                     "fr_eligible": m.get("fr_eligible"),
                     "screen_priority": "", "shrinkage_builtin": "", "statistic_order": "",
                     "reason": "grade %s · 경량 검증 통과했으나 QEPM WT 미생성" % m.get("grade"),
-                    "first_seen": "module_catalog.json"})
+                    "first_seen": "module_catalog.json",
+                    "frozen": QEPM_FREEZE_MARK, "frozen_note": QEPM_FREEZE_NOTE})
     out.sort(key=lambda r: (r.get("grade") or "Z", r.get("registered_at") or ""), reverse=False)
     return out
 

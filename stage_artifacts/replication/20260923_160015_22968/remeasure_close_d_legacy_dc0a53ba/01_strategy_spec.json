@@ -1,0 +1,20 @@
+{
+  "run_id": "20260923_160015_22968",
+  "strategy_name": "RF_PAR_B6_36_2nmax",
+  "lookahead_prevention": "detect_lookahead(engine) CLEAN [PIT C7 정적 패턴 · 러너 하드 게이트] + 집행 close_d_legacy — 새 보유가 집행일(익월 첫 거래일) 수익 Close[exec]/Close[exec-1]-1 을 가짐 = 시그널일 종가 체결 근사(동일봉 · 감사 D4-01 · PIT C2 위험) — 재현·민감도 전용 + 시그널일>RAWDATA 범위 검사",
+  "survivorship_bias_control": "universe=K200_KQ150: 시그널일 당일 RAWDATA 멤버십 플래그(K200|KQ150)로 PIT 시변 필터(.apply_universe) — 사후 생존 조건 없음 · 상장폐지 종목 포함 RAWDATA(폐지 후 수익 행 부재 = 0 처리)",
+  "strategy_idea": "[무인 병렬 B6_36] 랭크 버퍼(2×n_max 히스테리시스) — B6/execution_cadence · factor2=none · weighting=catalog · universe=k200_kq150 · overlay=none",
+  "constraint_profile": "replication",
+  "construction": "top_n_long",
+  "weight_method": "catalog",
+  "rebalance": "monthly",
+  "universe": "K200_KQ150",
+  "liquidity_filter": "paper_faithful",
+  "n_max": 25,
+  "has_short": false,
+  "source_paper_url": "https://arxiv.org/abs/2002.06975",
+  "benchmark_note": "long_vs_long_bm",
+  "factor_engine_path": null,
+  "exec_price": "close_d_legacy",
+  "cost_model_version": "replication_weight_delta_v1/exec_day_additive"
+}

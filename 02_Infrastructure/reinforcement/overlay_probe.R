@@ -7,6 +7,10 @@
 #
 # 계약: 부작용 없음 — 카탈로그·원장에 쓰지 않는다. 판정만 돌려준다.
 #   overlay_probe_arm(kind, root) -> list(ok, checks(data.table), reason)
+# ★P0-09(2026-09-24): ④ 미래 참조 = 설정(06_Registry/overlay_probe_future.json) 12 시점 × 섭동 4종(NA·범위 밖 하·상·중앙값).
+#   ⑤ 처치 전달은 엔진과 같이 t 행 fwd 를 NA 로 넘겨 돈다. 설정이 없으면 ④ FAIL — 샌드박스 루트에도 설정을 두어라.
+# ★P0-09 보강(2026-09-25): ③c 호출자 스코프·엔진 원천 접근 스캔 — 마스크는 H 에만 걸린다. arm 이 dynGet('.M')·parent.frame()
+#   으로 엔진 프레임에 가면 마스크 전 .M·미래 BM_DT 에 닿고, ④ 값 섭동(H 만 흔든다)은 그 통로를 못 본다(실증 = test_rf_overlay_pit_mask.R §B7).
 #==============================================================================
 suppressPackageStartupMessages(library(data.table))
 `%||%` <- function(a, b) if (is.null(a) || length(a) == 0L) b else a
@@ -117,6 +121,76 @@ overlay_probe_calendar_scan <- function(src) {
   out
 }
 
+#' ③c 호출자 스코프·엔진 원천 접근 스캔 (P0-09 보강 · 2026-09-25) — 주석 걷어낸 소스에서 H·ctx 밖으로 값을 가져오는 통로를 찾는다
+#'   ★왜: 엔진은 arm 을 소스 평가 프레임(run_paper_replication 의 fe_env — .M·BM_DT·RAWDATA 가 사는 곳)에서 부른다.
+#'     t 행 fwd 마스크는 H 사본에만 걸리므로 dynGet(".M") · get0("BM_DT", parent.frame()) 는 마스크 전 익월 수익·미래 BM 에 닿는다.
+#'     ④ 는 H 만 흔들어 이 통로를 못 보고, probe 의 호출자 프레임엔 픽스처 M 이 있어 폴백을 둔 arm 은 통과한다.
+#'   ★경계(오탐을 낮추는 쪽): 자기 env 를 만드는 new.env(parent = globalenv()) · get/assign/mget(envir = 자기 env) · <<- 는 통과
+#'     (외부 패널 arm pg2_risk_overlay 의 로더 형태). 걸리는 것은 **프레임 탐색 함수**와 **엔진 내부 객체 이름**뿐이다.
+#'     엔진 객체 이름은 흔한 지역 변수명(DT·.B 등)을 빼고 엔진 밖에서 쓸 일이 없는 것만 둔다.
+#' @return data.table(rule, snippet) — 0행이면 통과
+.OP_SCOPE_RULES <- c(
+  frame_walk   = "\\b(parent\\.frame|sys\\.frames?|sys\\.function|sys\\.calls?|sys\\.parents?|sys\\.status|sys\\.on\\.exit|dynGet|parent\\.env|topenv)\\s*\\(",
+  global_obj   = "\\.GlobalEnv\\b",
+  engine_state = "(?<![A-Za-z0-9._$])(\\.M|BM_DT|RAWDATA|\\.HOLD|\\.HOLD_AV|PORTFOLIO|FACTORS)(?![A-Za-z0-9._])")
+overlay_probe_scope_scan <- function(src) {
+  if (!grepl("\n", src, fixed = TRUE) && file.exists(src)) src <- .op_src_nc(src)
+  out <- data.table(rule = character(), snippet = character())
+  for (nm in names(.OP_SCOPE_RULES)) {
+    h <- regmatches(src, regexpr(.OP_SCOPE_RULES[[nm]], src, perl = TRUE))
+    if (length(h)) out <- rbind(out, data.table(rule = nm, snippet = gsub("[[:space:]]+", " ", h)))
+  }
+  out
+}
+
+#' ④ 미래 섭동 설정 (P0-09 · 2026-09-24) — 정본 = 06_Registry/overlay_probe_future.json (근거는 그 파일에 적는다)
+#'   시점 수·구성·섭동 종류를 코드에 박지 않는다. 부재·손상·어휘 밖 값 = ok=FALSE → ④ FAIL(미측정은 통과가 아니다).
+#'   찾는 순서: root(호출자 루트) → .OP_ROOT()(QM_ROOT · 정본 저장소). 샌드박스 루트(등재 관문 검사 등)는 probe·admit
+#'   사본만 두고 설정을 안 둔다 — 그때 정본 저장소 설정을 **읽기만** 한다(쓰기 0). 어느 쪽을 썼는지는 ④ 상세에 남긴다.
+.OP_FUTURE_KEYS <- c("fwd_low", "fwd_high", "state_dd", "state_rv60", "spread")
+.OP_PERTURB     <- c("na", "below_min", "above_max", "median")
+overlay_probe_future_params <- function(root = .OP_ROOT()) {
+  cands <- unique(file.path(c(root, .OP_ROOT()), "06_Registry/overlay_probe_future.json"))
+  p <- cands[file.exists(cands)][1]
+  no <- function(r) list(ok = FALSE, reason = r, path = p)
+  if (is.na(p)) return(no(sprintf("설정 부재 — %s", paste(cands, collapse = " · "))))
+  j <- tryCatch(jsonlite::fromJSON(p, simplifyVector = FALSE), error = function(e) NULL)
+  if (is.null(j)) return(no(sprintf("설정 JSON 파손 — %s", p)))
+  if (!identical(as.character(j$schema %||% ""), "overlay_probe_future_v1")) return(no("schema != overlay_probe_future_v1"))
+  tf <- suppressWarnings(as.integer(j$t_floor %||% NA))
+  if (length(tf) != 1L || is.na(tf) || tf < 1L) return(no("t_floor 는 1 이상 정수"))
+  pt <- j$points
+  if (!is.list(pt) || !setequal(names(pt), .OP_FUTURE_KEYS)) return(no(sprintf("points 키 = {%s} 여야 한다", paste(.OP_FUTURE_KEYS, collapse = ","))))
+  k <- vapply(.OP_FUTURE_KEYS, function(z) { v <- suppressWarnings(as.integer(pt[[z]])); if (length(v) == 1L && !is.na(v)) v else -1L }, integer(1))
+  if (any(k < 0L) || sum(k) < 1L) return(no("points 값은 0 이상 정수 · 합 1 이상"))
+  pb <- as.character(unlist(j$perturb %||% list()))
+  if (!length(pb) || !all(pb %in% .OP_PERTURB) || anyDuplicated(pb)) return(no(sprintf("perturb ⊆ {%s} · 중복 없음", paste(.OP_PERTURB, collapse = ","))))
+  if (!"na" %in% pb) return(no("perturb 에 na 필수 — 엔진 실행 조건(t 행 fwd = NA)을 재지 않는 설정은 거부"))
+  list(ok = TRUE, t_floor = tf, points = k, perturb = pb, path = p, fallback = !identical(p, cands[1]))
+}
+
+#' ④ 섭동 시점 — 결정론(난수 없음 · 동률은 t 오름차순). 반환 data.table(t, why)
+#'   fwd_low/fwd_high = fwd 하·상 꼬리(익월 폭락·급등 직전 달 — '극단일 때만 읽는' arm 이 켜지는 곳)
+#'   state_dd/state_rv60 = 상태 극단(낙폭·변동성 상위 — 위기 국면에서만 켜지는 arm) · spread = 나머지 구간 균등.
+overlay_probe_future_points <- function(M, fp) {
+  N <- nrow(M)
+  el <- if (N >= fp$t_floor) seq.int(fp$t_floor, N) else integer(0)
+  ch <- integer(0); wy <- character(0)
+  take <- function(ord, k, tag) {
+    for (x in ord) { if (k <= 0L) break
+      if (!(x %in% ch)) { ch <<- c(ch, x); wy <<- c(wy, tag); k <- k - 1L } }
+  }
+  rk <- function(v, dec) { ok <- is.finite(v); e <- el[ok]; v <- v[ok]; e[order(if (dec) -v else v, e)] }
+  take(rk(M$fwd[el], FALSE), fp$points[["fwd_low"]],   "fwd_low")
+  take(rk(M$fwd[el], TRUE),  fp$points[["fwd_high"]],  "fwd_high")
+  take(rk(M$dd[el],  TRUE),  fp$points[["state_dd"]],  "state_dd")
+  take(rk(M$rv60[el], TRUE), fp$points[["state_rv60"]], "state_rv60")
+  rest <- setdiff(el, ch); ks <- fp$points[["spread"]]
+  if (ks > 0L && length(rest)) take(rest[unique(round(seq(1, length(rest), length.out = min(ks, length(rest)))))], ks, "spread")
+  o <- order(ch)
+  data.table(t = ch[o], why = wy[o])
+}
+
 overlay_probe_arm <- function(kind, root = .OP_ROOT()) {
   chk <- data.table(check = character(), status = character(), detail = character())
   add <- function(c_, s_, d_ = "") chk <<- rbind(chk, data.table(check = c_, status = s_, detail = d_))
@@ -175,30 +249,66 @@ overlay_probe_arm <- function(kind, root = .OP_ROOT()) {
                    return(bad("달력 리터럴 — 특정 연·월·인덱스 창에 매인 논리(합성 날짜에선 안 켜지고 실데이터에서만 켜진다)")) }
   add("calendar", "PASS", "달력 리터럴 0")
 
+  # ── ③c 호출자 스코프·엔진 원천 접근 (P0-09 보강 · 2026-09-25) — 마스크(H 사본)를 돌아가는 통로. ④ 값 섭동으로는 안 보인다
+  scope <- overlay_probe_scope_scan(src)
+  if (nrow(scope)) { add("scope", "FAIL", paste(sprintf("%s: %s", scope$rule, scope$snippet), collapse = " | "))
+                     return(bad(sprintf("호출자 스코프·엔진 원천 접근 — H·ctx 밖에서 값을 가져온다(마스크 전 .M·미래 BM 에 닿는 통로): %s",
+                                        paste(unique(scope$rule), collapse = ",")))) }
+  add("scope", "PASS", "프레임 탐색·엔진 원천 이름 0")
+
   fx <- overlay_probe_fixture()
   M <- fx$M; hold <- fx$hold; N <- nrow(M)
   mk_ctx <- function(t, H) list(t = t, date = M$Date[t], v_now = H$rv60[t],
                                 tgt = stats::median(H$rv60, na.rm = TRUE), n_min = 24L, hold = hold)
 
   # ── ④ 미래 참조 — H$fwd 의 **t 행은 미실현**이다. 그 값을 흔들어 산출이 바뀌면 누출이다.
-  tp <- as.integer(N * 0.8)
-  H0 <- M[seq_len(tp)]
-  o0 <- tryCatch(FN(H0, tp, mk_ctx(tp, H0)), error = function(e) e)
-  if (inherits(o0, "error")) { add("run", "FAIL", conditionMessage(o0))
-                               return(bad(paste("실행 오류:", conditionMessage(o0)))) }
-  H1 <- copy(H0); H1[tp, fwd := (fwd %||% 0) + 0.5]
-  o1 <- tryCatch(FN(H1, tp, mk_ctx(tp, H1)), error = function(e) e)
-  .flat <- function(z) if (is.data.frame(z)) as.numeric(z$e) else as.numeric(z)
-  if (inherits(o1, "error") || !isTRUE(all.equal(.flat(o0), .flat(o1)))) {
-    add("future", "FAIL", "H$fwd[t] 섭동에 산출이 반응")
-    return(bad("미래 참조 — 신호일 t 의 fwd(익월 수익)를 읽었다")) }
-  add("future", "PASS", "fwd[t] 섭동 불변")
+  #   ★P0-09 확장(2026-09-24 · 감사 D4-07): 구판은 한 시점(0.8N) · 한 방향(+0.5) 섭동이었다. fwd[t] 를 **극단일 때만**
+  #     읽는 arm('익월 폭락이면 현금')은 그 한 점에서 분기가 안 켜져 통과했다(실증 = test_rf_overlay_pit_mask.R §B).
+  #     현행: 설정(06_Registry/overlay_probe_future.json)이 정한 12 시점 — fwd 꼬리(하·상) · 상태 극단(dd·rv60 상위) ·
+  #     균등 채움 — 마다 fwd[t] 를 NA · 표본 최솟값 아래 · 최댓값 위 · 중앙값으로 바꿔 산출 불변을 요구한다.
+  #     섭동값은 전부 픽스처 fwd 분포에서 나온다(리터럴 없음). NA 섭동 = 엔진 실행 조건 그대로(엔진은 t 행 fwd 를 NA 로 넘긴다).
+  #   설정 부재·손상 = 이 축 FAIL(미측정은 통과가 아니다).
+  fp <- overlay_probe_future_params(root)
+  if (!isTRUE(fp$ok)) { add("future", "FAIL", fp$reason)
+                        return(bad(paste("미래 섭동 설정 불가:", fp$reason))) }
+  tps <- overlay_probe_future_points(M, fp)
+  .fw  <- M$fwd[is.finite(M$fwd)]
+  .rng <- max(.fw) - min(.fw)
+  pert <- c(na = NA_real_, below_min = min(.fw) - .rng, above_max = max(.fw) + .rng, median = stats::median(.fw))
+  pert <- pert[fp$perturb]
+  .same <- function(a, b) {
+    if (is.data.frame(a) || is.data.frame(b)) {
+      if (!(is.data.frame(a) && is.data.frame(b))) return(FALSE)
+      return(isTRUE(all.equal(as.character(a$Ticker), as.character(b$Ticker))) &&
+             isTRUE(all.equal(as.numeric(a$e), as.numeric(b$e))))
+    }
+    isTRUE(all.equal(as.numeric(a), as.numeric(b)))
+  }
+  for (tp in tps$t) {
+    H0 <- M[seq_len(tp)]
+    o0 <- tryCatch(FN(H0, tp, mk_ctx(tp, H0)), error = function(e) e)
+    if (inherits(o0, "error")) { add("run", "FAIL", sprintf("t=%d %s", tp, conditionMessage(o0)))
+                                 return(bad(paste("실행 오류:", conditionMessage(o0)))) }
+    for (pn in names(pert)) {
+      H1 <- copy(H0); H1[tp, fwd := pert[[pn]]]
+      o1 <- tryCatch(FN(H1, tp, mk_ctx(tp, H1)), error = function(e) e)
+      if (inherits(o1, "error") || !.same(o0, o1)) {
+        why <- tps$why[match(tp, tps$t)]
+        add("future", "FAIL", sprintf("t=%d(%s) fwd[t]→%s 에 산출이 %s", tp, why, pn,
+                                      if (inherits(o1, "error")) paste("오류:", conditionMessage(o1)) else "반응"))
+        return(bad(sprintf("미래 참조 — 신호일 t 의 fwd(익월 수익)를 읽었다 [t=%d · %s · 섭동 %s]", tp, why, pn))) }
+    }
+  }
+  add("future", "PASS", sprintf("fwd[t] 섭동 불변 — %d시점(%s) × %d섭동(%s) · 설정 %s", nrow(tps),
+                                paste(unique(tps$why), collapse = "·"), length(pert), paste(names(pert), collapse = "·"),
+                                if (isTRUE(fp$fallback)) paste("QM_ROOT 폴백", fp$path) else "root"))
 
   # ── ⑤ 처치 전달 — 전 기간을 돌려 시간축 ∨ 횡단면 변동이 있는지
+  #   ★P0-09: 엔진과 같은 조건으로 돈다 — t 행 fwd 를 NA 로 넘긴다(엔진 루프 머리의 마스크). fwd[t] 로만 켜지는 처치는 처치가 아니다.
   ex <- numeric(N); xs <- numeric(N); nvec <- 0L
   for (t in seq_len(N)) {
     if (t < 12L) { ex[t] <- 1; next }
-    H <- M[seq_len(t)]
+    H <- M[seq_len(t)]; H[t, fwd := NA_real_]
     o <- tryCatch(FN(H, t, mk_ctx(t, H)), error = function(e) e)
     if (inherits(o, "error")) { add("run", "FAIL", sprintf("t=%d %s", t, conditionMessage(o)))
                                 return(bad(paste("실행 오류 t=", t, ": ", conditionMessage(o), sep = ""))) }

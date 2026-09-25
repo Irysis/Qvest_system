@@ -215,15 +215,26 @@ KRN <- c(VAL = "가치포워드", QUAL = "퀄리티(fROE)", MOM = "모멘텀", L
 cols <- c(VAL = "steelblue", QUAL = "darkgreen", MOM = "firebrick", LOWVOL = "purple",
           SIZE = "darkorange", DIV = "gray40", EREV = "deeppink3")
 
-## (A) 최근 성과 정렬 막대 — 1M / 3M평균 / 12M평균
+## 2026-09-24 도훈 지시("26년 8월 기준으로 고정된 부분 수정"): 진행월 MTD 는 **디스크의 MTD JSON 을
+##   style_brief_lib.R::sw_window12 로 판정**(브리핑과 같은 함수·같은 창) — 12M 막대 = 완결 11개월 + 진행월 MTD,
+##   히트맵 = 24개월 + 진행월 열 'MM(MTD)'. ★SB(월간 파일)는 위에서 이미 기록 — 여기선 읽기만(완결월 발행 규약 불변).
+source("02_Infrastructure/reports/style_brief_lib.R")
+WSB <- tryCatch(sw_window12(SB, sty, sw_read_json(file.path(OUT_DIR, "smartbeta_kr_mtd.json"))),
+                error = function(e) { wf("  [warn] 진행월 창 계산 실패: %s", conditionMessage(e)); NULL })
+MTD_OK <- !is.null(WSB) && identical(WSB$mode, "mtd")
+mtd_note <- if (MTD_OK) sprintf("%s 기준 · 완결월 %s", format(WSB$state$as_of), max(SB$ym)) else
+  sprintf("완결월 %s 기준 · %s", max(SB$ym), if (is.null(WSB)) "진행월 판정 실패" else sw_reason_ko(WSB$state))
+
+## (A) 최근 성과 정렬 막대 — 1M / 3M평균 / 12M평균(완결 11개월 + 진행월 MTD) / 진행월 MTD
 a1  <- vapply(sty, function(s) tail(SB[[s]], 1) * 100, numeric(1))
 a3  <- vapply(sty, function(s) mean(tail(SB[[s]], 3), na.rm = TRUE) * 100, numeric(1))
-a12 <- vapply(sty, function(s) mean(tail(SB[[s]], 12), na.rm = TRUE) * 100, numeric(1))
+a12 <- if (!is.null(WSB)) WSB$values[sty] * 100 else vapply(sty, function(s) mean(tail(SB[[s]], 12), na.rm = TRUE) * 100, numeric(1))
+lab12 <- if (MTD_OK) "12M(11M+MTD)" else "12M avg"
 ord <- order(a12)
-M <- rbind(`1M` = a1[ord], `3M avg` = a3[ord], `12M avg` = a12[ord])
-if (!is.null(SB_MTD)) {
-  mtd_v <- vapply(sty[ord], function(s) { x <- SB_MTD[[s]]; if (is.null(x) || is.na(x)) NA_real_ else x * 100 }, numeric(1))
-  M <- rbind(M, matrix(mtd_v, nrow = 1, dimnames = list(sprintf("MTD~%s", substr(SB_MTD$as_of, 6, 10)), NULL)))
+M <- rbind(a1[ord], a3[ord], a12[ord]); rownames(M) <- c("1M", "3M avg", lab12)
+if (MTD_OK) {
+  mtd_v <- WSB$mtd_values[sty[ord]] * 100
+  M <- rbind(M, matrix(mtd_v, nrow = 1, dimnames = list(sprintf("MTD~%s", WSB$mmdd), NULL)))
   M <- M[c(nrow(M), 1:(nrow(M) - 1)), , drop = FALSE]        # MTD를 맨 앞(그룹 최하단 막대)으로
 }
 bar_cols <- if (nrow(M) == 4) c("lightsteelblue", "gray75", "gray45", "black") else c("gray75", "gray45", "black")
@@ -231,7 +242,7 @@ png(file.path(OUT_DIR, "charts", "smartbeta_recent_bars.png"), width = 1250, hei
 par(mar = c(5, 11.5, 3.5, 8), cex.main = 1.45, cex.lab = 1.25)
 bp <- barplot(M, beside = TRUE, horiz = TRUE, names.arg = KRN[sty[ord]], las = 1,
               col = bar_cols, border = NA, cex.names = 1.25, cex.axis = 1.15,
-              main = sprintf("스마트베타 최근 성과 — 월 active %% (완결월 %s 기준 + 진행월 MTD)", max(SB$ym)),
+              main = sprintf("스마트베타 최근 성과 — 월 active %% (%s)", mtd_note),
               xlab = "월 active %", xlim = range(0, M, na.rm = TRUE) * 1.38)
 abline(v = 0, lty = 1)
 text(x = M + sign(M) * max(abs(M), na.rm = TRUE) * 0.06, y = bp, labels = sprintf("%+.1f", M), cex = 0.98, xpd = TRUE)
@@ -243,9 +254,9 @@ wf("chart written: smartbeta_recent_bars.png")
 n_hm <- min(24, nrow(SB))
 H <- sapply(sty, function(s) tail(SB[[s]], n_hm)) * 100      # n_hm x styles
 ymv <- tail(SB$ym, n_hm)
-if (!is.null(SB_MTD)) {                                       # 진행월 MTD 컬럼 추가 (도훈 지시 07-18)
-  H <- rbind(H, vapply(sty, function(s) { x <- SB_MTD[[s]]; if (is.null(x) || is.na(x)) NA_real_ else x * 100 }, numeric(1)))
-  ymv <- c(ymv, sprintf("%s MTD", substr(SB_MTD$as_of, 6, 10)))
+if (MTD_OK) {                                                 # 진행월 MTD 열 'MM(MTD)' (도훈 지시 07-18 → 09-24 판정 통일)
+  H <- rbind(H, WSB$mtd_values[sty] * 100)
+  ymv <- c(ymv, sprintf("%s(MTD)", substr(WSB$state$mtd_ym, 6, 7)))
   n_hm <- n_hm + 1L
 }
 Hm <- t(H)[length(sty):1, , drop = FALSE]                     # rows=styles(역순: 위가 첫 스타일)
@@ -254,11 +265,13 @@ pal <- colorRampPalette(c("#2166AC", "#F7F7F7", "#B2182B"))(64)
 png(file.path(OUT_DIR, "charts", "smartbeta_heatmap24.png"), width = 1250, height = 540)
 par(mar = c(5.5, 11, 3.5, 2), cex.main = 1.45)
 image(x = 1:n_hm, y = 1:length(sty), z = t(Hm), col = pal, zlim = c(-brk, brk),
-      axes = FALSE, xlab = "", ylab = "", main = "스마트베타 로테이션 — 최근 24개월 월 active % (청=마이너스 / 적=플러스)")
+      axes = FALSE, xlab = "", ylab = "",
+      main = sprintf("스마트베타 로테이션 — 최근 24개월%s 월 active %% (청=마이너스 / 적=플러스)",
+                     if (MTD_OK) sprintf(" + 진행월 MTD(~%s)", WSB$mmdd) else ""))
 axis(2, at = 1:length(sty), labels = KRN[rev(sty)], las = 1, tick = FALSE, cex.axis = 1.2)
 sel <- unique(c(seq(1, n_hm, by = 2), n_hm))                  # MTD 컬럼 라벨 항상 표기
 axis(1, at = sel, labels = ymv[sel], las = 2, cex.axis = 1.05, tick = FALSE)
-if (!is.null(SB_MTD)) abline(v = n_hm - 0.5, col = "black", lwd = 2.5, lty = 2)   # 완결월|MTD 경계
+if (MTD_OK) abline(v = n_hm - 0.5, col = "black", lwd = 2.5, lty = 2)   # 완결월|MTD 경계
 for (i in 1:n_hm) for (j in 1:length(sty))
   text(i, j, sprintf("%.0f", t(Hm)[i, j]), cex = 0.85, col = ifelse(abs(t(Hm)[i, j]) > brk * 0.55, "white", "gray25"))
 abline(h = (0:length(sty)) + 0.5, col = "white", lwd = 2)

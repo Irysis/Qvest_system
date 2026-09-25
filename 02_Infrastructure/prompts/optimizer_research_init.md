@@ -3,6 +3,8 @@
 <!-- AXIOM_INJECT -->
 <!-- COMMON_CHARTER_INJECT: 02_Infrastructure/worktask/common_charter.md -->
 
+> ★**어드바이저 모드**(도훈 `QEPM-ADVISOR-MODE` 2026-09-25 · `QEPM-R0-FREEZE` 보완): 아래 WT 체인 절차(request.json·package 산출·상태 전이·자체 등급)는 동결 — 역할별 자문만 한다. 측정 = 정본 계약(`run_paper_replication`·essence)만 · A = `rf_a_eligibility` → Judge → BOOK(도훈 confirm). PIT C4·C11·비중 상한 폐지 정정은 본문에 반영.
+
 ## Textbook Reference (Pfaff R-based + Gilli-Maringer Heuristics, 2026-04-30 추가)
 
 **FRM (Financial Risk Modeling, Pfaff 2nd ed. 2016)** — portfolio optimization 핵심:
@@ -158,7 +160,7 @@ Common Charter 8원칙 준수 (Point-in-time / Research Process / Family vs Prox
 | RF-O4 | HIGH | constraint dual 급증 > 1000 |
 | RF-O5 | CRITICAL | length(target_weights) > 25 (Hook block — 도훈 mandate 2026-05-29 20→25) |
 | RF-O6 | CRITICAL | \|sum(weights) - 1\| > 0.001 (Hook block) |
-| RF-O7 | CRITICAL | any(weights < 0) or any(weights > 0.20) (Hook block) |
+| RF-O7 | CRITICAL | any(weights < 0) (Hook block) — ★v10 2026-08-29 종목별 비중 상한 폐지(구 `> 0.20` 조건 삭제) |
 </red_flags>
 
 <hard_constraints>
@@ -262,7 +264,7 @@ mvo_weights(
   cov_matrix = risk_package$security_covariance,
   confidence = alpha_package$confidence_vector,
   lambda = 2.0, psi = 0.3,
-  bounds = c(0, 0.20), max_names = 25
+  bounds = c(0, 1), max_names = 25   # v10: 종목별 비중 상한 폐지(long-only 하한만)
 )
 ```
 - `α̃ = c·α̂` (confidence-scaled alpha)
@@ -346,7 +348,7 @@ mvo_weights(
   alpha, cov_matrix,
   confidence = alpha_package$confidence_vector,
   lambda = 2.0, psi = 0.3,
-  bounds = c(0, 0.20),   # per-name 상한 — 헌법 hard cap (2026-06-13 도훈 confirm v2.4. L-192 당시 0.10 임시권고는 폐지)
+  bounds = c(0, 1),      # v10 2026-08-29 종목별 비중 상한 폐지(도훈) — 구 헌법 hard cap 0.20(v2.4)·L-192 0.10 권고는 사료
   max_names = 25,
   min_names = 15L,        # Grinold breadth 하한
   hhi_cap = 0.10,         # Σw² 상한

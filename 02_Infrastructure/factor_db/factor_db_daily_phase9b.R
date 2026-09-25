@@ -19,6 +19,13 @@ INFRA_DIR <- tryCatch(dirname(dirname(sys.frame(1)$ofile)),
   error = function(e) "/mnt/c/Users/99922/OneDrive/바탕 화면/Quant_Module_Moltbot/02_Infrastructure")
 source(file.path(INFRA_DIR, "config.R"))
 sourceCpp(file.path(.SELF_DIR, "factor_db_daily_rcpp.cpp"))
+# ★C11 2단계 수리(2026-09-25 · 재빌드 스모크 적발): 스탬프 가드(fdb_regime_c11_ok)는 현행 규칙 epoch 를
+#   fred_avail_rules_meta() 로 읽는다. 9b 는 phase6·7 과 달리 **별도 R 프로세스로 혼자** 돌고, 이 줄이 없으면 그 함수가
+#   없어 현행 키 = NA → 스탬프가 맞아도 MRS 전부 NA → RE04 전 기간 NA(fail-closed 가 상시 발화 — 수리한 C1 누적 백분위가
+#   한 번도 산출되지 않는다). phase6·7 과 같은 순서로 S0 가용시점 층을 먼저 싣는다. 검사: 08_Tests/factor_db/test_phase9b_standalone_regime_key.R
+source(file.path(INFRA_DIR, "data", "fred_availability.R"))
+# PIT C1 수리(2026-09-24): 일간 fdb PIT 도우미(RE04 누적 백분위 · regime 스탬프 가드). 없으면 여기서 멈춘다.
+source(file.path(.SELF_DIR, "factor_db_daily_pit.R"))
 
 FDB_DIR <- file.path(CACHE_DIR, "factor_db_daily")
 OUT_START <- as.Date("1990-01-01")
@@ -39,10 +46,19 @@ RW <- BM[, .(Date, BM_Ret)][RW, on = "Date"]
 
 REGIME <- as.data.table(read_parquet(file.path(CACHE_DIR, "regime_daily_v2.parquet")))
 REGIME[, Date := as.Date(Date)]; setkey(REGIME, Date)
+# ★PIT C11(2026-09-24 · 판정서 V-11): MRS 는 한국 날짜 d 행끼리 결합한다 — 생산자 수리판 스탬프(c11_avail_regime_key)
+#   없으면 MRS 전부 NA → RE04 NA(fail-closed). 상세 = factor_db_daily_pit.R.
+fdb_regime_c11_mask(REGIME, c("MRS"), file.path(CACHE_DIR, "regime_daily_v2.parquet"), label = "phase9b RE04")
 RW <- REGIME[, .(Date, MRS)][RW, on = "Date"]
 
 tk_counts <- RW[, .N, by = Ticker]
 RW <- RW[Ticker %in% tk_counts[N >= 30L, Ticker]]
+# ★PIT C1 수리(2026-09-24 · 판정서 1-4 · decision PIT-C11-CONVENTIONS ⑤ "RE04 는 검증 후"):
+#   검증 = 운영 식(PART_VR)의 절단 불변성 — T 이후 행을 잘라내면 T 이전 RE04 값의 71.8~89.1% 가 바뀌었다
+#   (표본 40종목 · T = 2008-12-31·2012-12-31·2016-06-30) → 구판 :64 의 종목별 전표본 frank/n 이 미래 MRS 로 과거
+#   고변동 플래그를 정했다 = C1 확정. 수리판 = 결정일까지 누적 백분위(아래 주석이 적은 원래 의도 '해당 시점까지'):
+#   날짜 d 의 플래그 = 그날 MRS 가 d 이하 한국 거래일 MRS 중 상위 30% 인가. 모집단 = 시장 MRS 일자열(상장기간 의존 제거).
+RW <- fdb_attach_mrs_expanding_pct(RW)
 
 PART_VR <- RW[, {
   ret <- as.double(Ret); sz <- as.double(Size); mrs <- as.double(MRS)
@@ -61,7 +77,8 @@ PART_VR <- RW[, {
   # 기존 문제: MRS > 50 조건이 너무 엄격 → 대부분 NA
   # 수정: MRS의 expanding percentile 상위 30% 구간에서 conditional beta
   # 즉, 해당 시점까지 MRS가 상위 30%인 날만 사용
-  mrs_pctile <- fifelse(!is.na(mrs), frank(mrs, ties.method = "average") / sum(!is.na(mrs)), NA_real_)
+  # (C1 수리 2026-09-24: 구판 frank(mrs)/sum(!is.na(mrs)) = 종목 전표본 순위 → 누적 백분위 MRS_Pct_Exp)
+  mrs_pctile <- fifelse(!is.na(mrs), as.double(MRS_Pct_Exp), NA_real_)
   # 상위 30% = percentile > 0.7
   hi_vol_ret <- fifelse(!is.na(mrs_pctile) & mrs_pctile > 0.7, ret, NA_real_)
   hi_vol_bm <- fifelse(!is.na(mrs_pctile) & mrs_pctile > 0.7, bm, NA_real_)
@@ -135,7 +152,9 @@ pb <- max(1L, length(files) %/% 20L)
 
 for (i in seq_along(files)) {
   ym <- months[i]
-  dt <- as.data.table(read_parquet(files[i]))
+  # mmap = FALSE: 같은 경로에 곧 write_parquet 한다 — 매핑이 살아 있으면 Windows error 1224 로 쓰기가 실패한다
+  #   (2026-09-24 샌드박스 실측: 구판 그대로는 첫 파일에서 중단 · phase7 :397-402 와 같은 원인)
+  dt <- as.data.table(read_parquet(files[i], mmap = FALSE))
   setkey(dt, Date, Ticker)
 
   # 기존 NA 컬럼 제거

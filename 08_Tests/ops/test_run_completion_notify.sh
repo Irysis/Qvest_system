@@ -45,7 +45,8 @@ echo "== 배선 축 3: 조기 skip 경로에서는 부르지 않는가 (스팸 �
 for f in $RUNNERS; do
   nt=$(grep -n 'research_run_notify' "$OPS/$f" | head -1 | cut -d: -f1)
   # claude 호출 줄보다 뒤에 있어야 = 실제로 일한 런만 알린다 (2026-08-22 시간제한 제거로 앵커가 timeout 3000 -> _run_claude 로 이동)
-  cl=$(grep -n '_run_claude "$CLAUDE_BIN"' "$OPS/$f" | head -1 | cut -d: -f1)
+  #   (2026-09-24 P0-M1: 단일 진입 이관으로 호출이 `_run_claude ""` 가 됐다 — 두 형태 인정)
+  cl=$(grep -nE '_run_claude "\$CLAUDE_BIN"|^_run_claude ""' "$OPS/$f" | head -1 | cut -d: -f1)
   if [ -n "$nt" ] && [ -n "$cl" ] && [ "$nt" -gt "$cl" ]; then ok "$f — claude 실행 뒤에만 발송"
   else ng "$f skip 경로" "일하지 않은 런도 알린다(nt=$nt cl=$cl)"; fi
 done
@@ -183,15 +184,29 @@ for f in $RUNNERS factor_deep_recheck_run.sh; do
   if grep -q "QVEST_RUN_TIMEOUT" "$OPS/$f"; then ok "$f — env 로 상한 복원 가능"
   else ng "$f 상한 복원" "필요할 때 켤 수단이 없다(코드 수정만 남는다)"; fi
 done
-# 실동작: 기본은 감싸지 않고, 값을 주면 감싼다
-_RC_SH=$(mktemp)
-sed -n "/^_run_claude(){/,/^}/p" "$OPS/mode_queue_research_run.sh" > "$_RC_SH"
-echo '_run_claude echo RAN' >> "$_RC_SH"
-out=$(bash "$_RC_SH" 2>&1); [ "$out" = "RAN" ] && ok "기본 = 제한 없이 실행" || ng "기본 동작" "got=$out"
-out=$(QVEST_RUN_TIMEOUT=5 bash "$_RC_SH" 2>&1); [ "$out" = "RAN" ] && ok "env 지정 시에도 정상 실행" || ng "env 경로" "got=$out"
-out=$(QVEST_RUN_TIMEOUT=1 bash -c "$(cat "$_RC_SH" | sed "s/_run_claude echo RAN/_run_claude sleep 4; echo rc=\$?/")" 2>&1)
+# 실동작: 기본은 제한 없이, 값을 주면 상한이 걸린다.
+#   ★2026-09-24(P0-M1): _run_claude 가 rf_llm_env.sh::rf_llm_agent_run 단일 진입을 거친다 — 상한은
+#   "${QVEST_RUN_TIMEOUT:-0}" 로 넘어가고(timeout 0 = GNU 규약상 무제한) 실행 파일은 CLAUDE_BIN 이다.
+#   그래서 가짜 claude(CLAUDE_BIN)로 실제 함수 본문을 태운다 — 가짜는 FAKE_SLEEP 초 뒤 RAN 을 낸다.
+_RC_D=$(mktemp -d)
+cat > "$_RC_D/fake_claude" <<'FAKE'
+#!/usr/bin/env bash
+cat > /dev/null
+sleep "${FAKE_SLEEP:-0}"
+echo RAN
+FAKE
+chmod +x "$_RC_D/fake_claude"
+{ printf '. "%s"\n' "$OPS/rf_llm_env.sh"
+  sed -n "/^_run_claude(){/,/^}/p" "$OPS/mode_queue_research_run.sh"
+  printf 'CLAUDE_BIN="%s"; LOG="%s"; PROMPT_TEXT=hi; LLM_MODEL=opus; LLM_EFFORT=max; LLM_FALLBACK_MODEL=""\n' "$_RC_D/fake_claude" "$_RC_D/log"
+  printf '_run_claude ""; echo "rc=$?"; cat "$LOG"\n'
+} > "$_RC_D/h.sh"
+out=$(bash "$_RC_D/h.sh" 2>&1); case "$out" in *rc=0*RAN*) ok "기본 = 제한 없이 실행" ;; *) ng "기본 동작" "got=$out" ;; esac
+out=$(FAKE_SLEEP=2 bash "$_RC_D/h.sh" 2>&1); case "$out" in *rc=0*RAN*) ok "기본(무제한) = 2초 걸리는 런도 끝까지(timeout 0)" ;; *) ng "기본 무제한" "got=$out" ;; esac
+out=$(QVEST_RUN_TIMEOUT=5 bash "$_RC_D/h.sh" 2>&1); case "$out" in *rc=0*RAN*) ok "env 지정 시에도 정상 실행" ;; *) ng "env 경로" "got=$out" ;; esac
+out=$(QVEST_RUN_TIMEOUT=1 FAKE_SLEEP=4 bash "$_RC_D/h.sh" 2>&1)
 echo "$out" | grep -q "rc=124" && ok "env 지정 시 실제로 상한이 걸린다(위반 주입)" || ng "상한 실효" "got=$out"
-rm -f "$_RC_SH"
+rm -rf "$_RC_D"
 
 echo "== 창 축: 런 시작 시각을 알림기에 넘기는가 (남의 산출 귀속 방지) =="
 # v2 알림기는 since 로 인사이트 수집 창을 자른다. 러너가 안 넘기면 기본 4시간 창이 쓰여
@@ -202,7 +217,7 @@ for f in $RUNNERS; do
   a=$(grep -n "_NOTIFY_SINCE=" "$p" | head -1 | cut -d: -f1)
   # 함수 **정의**(_run_claude(){ ) 가 아니라 **호출**을 잡는다 — 정의가 앞서므로
   #   그대로 쓰면 순서 판정이 뒤집힌다(도입 당일 실제로 오탐).
-  b=$(grep -nE "_run_claude .*-p " "$p" | head -1 | cut -d: -f1)
+  b=$(grep -nE '_run_claude .*-p |^_run_claude ""' "$p" | head -1 | cut -d: -f1)
   c=$(grep -n "research_run_notify" "$p" | head -1 | cut -d: -f1)
   if [ -z "$a" ]; then
     ng "$f 창 미전달" "since 미기록 — 기본 4시간 창이 남의 산출을 삼킨다"

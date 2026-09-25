@@ -24,7 +24,8 @@ for (d in c("02_Infrastructure/reinforcement/overlay_arms", "02_Infrastructure/p
   dir.create(file.path(SB, d), recursive = TRUE, showWarnings = FALSE)
 .cleanup <- function() unlink(SB, recursive = TRUE)
 for (f in c("02_Infrastructure/reinforcement/overlay_probe.R", "02_Infrastructure/reinforcement/rf_overlay_admit.R",
-            "02_Infrastructure/portfolio/weight_catalog.R"))
+            "02_Infrastructure/portfolio/weight_catalog.R",
+            "06_Registry/overlay_probe_future.json"))   # ★P0-09(2026-09-24) probe ④ 설정 — CLI 자식은 QM_ROOT=SB 라 정본 폴백이 없다
   stopifnot(file.copy(file.path(ROOT, f), file.path(SB, f), overwrite = TRUE))
 CAT <- file.path(SB, "06_Registry/overlay_catalog.json")
 LED <- file.path(SB, "06_Registry/overlay_arm_ledger.jsonl")

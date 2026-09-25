@@ -1,0 +1,19 @@
+{
+  "schema": "overlay_probe_future_v1",
+  "description": "오버레이 arm probe ④ 미래 참조 검사(fwd[t] 값 섭동)의 설정 정본 — P0-09 오버레이 PIT 가드 실체화(2026-09-24 · 플랜 qvest-1-drifting-eclipse P0-09 · 감사 D4-07 · 비평 M8). 구판 ④ 는 한 시점(0.8N)·한 방향(+0.5) 섭동이라 fwd[t] 가 극단일 때만 읽는 arm('익월 폭락이면 현금')이 통과했다. 현행 ④ 는 아래 시점마다 fwd[t] 를 아래 섭동으로 바꿔 산출 불변을 요구한다. 부재·손상·어휘 밖 값이면 ④ 는 FAIL(미측정은 통과가 아니다 — fail-closed).",
+  "t_floor": 12,
+  "t_floor_basis": "02_Infrastructure/reinforcement/rf_cell_engine.R 의 .n_floor(12) — 엔진은 t < 12 에서 arm 을 부르지 않는다(probe ⑤ 도 같은 경계). 그 아래 시점을 섭동해도 엔진이 한 번도 보지 않는 입력이다.",
+  "points": {
+    "fwd_low": 2,
+    "fwd_high": 2,
+    "state_dd": 2,
+    "state_rv60": 2,
+    "spread": 4
+  },
+  "points_basis": "합계 12 = 플랜 P0-09 설계치(scratchpad synth.md §P0-09 '12개 시점'). 구성 = 네 분기에 같은 몫 — fwd 하 꼬리 2(익월 폭락 직전: '폭락이면 읽는' arm 이 기저에서 켜진 곳) · 상 꼬리 2(익월 급등 직전) · 상태 극단 4(낙폭 dd 상위 2 · 변동성 rv60 상위 2: 위기 국면에서만 켜지는 arm) · 균등 4(나머지 구간 — 경계·평시). 순위 기반(분위 문턱 리터럴 없음) · 동률은 t 오름차순 · 이미 뽑힌 시점은 다음 순위로 넘긴다. 합성 픽스처(overlay_probe_fixture: 240개월 · 위기 70:78 · 150:156)에서 위기·평시가 모두 표본에 든다. 재보정 = 도훈 권한.",
+  "perturb": ["na", "below_min", "above_max", "median"],
+  "perturb_basis": "na = 엔진 실행 조건 그대로(rf_cell_engine.R 루프 머리 마스크가 t 행 fwd 를 NA 로 넘긴다 — 필수) · below_min / above_max = 픽스처 fwd 표본 범위 밖으로 범위폭(max−min) 한 번 — '극단이면 읽는' 분기를 어느 시점에서나 켠다(엄격 부등호 분기 포함) · median = 꼬리 시점의 극단값을 중심으로 되돌려 반대 방향 분기를 끈다. 전부 픽스처 fwd 분포에서 유도(수치 리터럴 없음).",
+  "consumed_by": "02_Infrastructure/reinforcement/overlay_probe.R::overlay_probe_future_params · overlay_probe_future_points · overlay_probe_arm ④",
+  "tests": "08_Tests/reinforcement/test_rf_overlay_pit_mask.R · 08_Tests/reinforcement/test_overlay_probe.R",
+  "created": "2026-09-24"
+}

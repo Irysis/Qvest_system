@@ -39,7 +39,7 @@ Rscript 02_Infrastructure/tools/hypothesis_index.R lookup <keyword>   # FAIL/KIL
 
 ### Step 4: 출력 — frontier 큐 등재 제안 (v8.3 M5)
 
-가설을 `06_Registry/alpha_frontier_queue.json` FQ 항목 형식으로 제안 (mechanism·차별점·소비면·owner 표기). 등재 후 착수는 진입점 경유: 논문-검증형 → `/alpha-search`(v10 충실구현 `run_paper_replication`) · 강화 축(멀티팩터·비중방법론·리스크오버레이) → `Skill(reinforce)` 원장 등재 · 정밀 편입 → `/worktask create`(WT-R). 착수 전 큐 `status=open` 확인 + `hypothesis_index lookup` 의무 — CLAUDE.md v10 · lean-loop.md.
+가설을 `06_Registry/alpha_frontier_queue.json` FQ 항목 형식으로 제안 (mechanism·차별점·소비면·owner 표기). 등재 후 착수는 진입점 경유: 논문-검증형 → `/alpha-search`(v10 충실구현 `run_paper_replication`) · 강화 축(멀티팩터·비중방법론·리스크오버레이) → `Skill(reinforce)` 원장 등재 · 정밀 편입(설계·자문) → `/advisor` 안내(도훈 `QEPM-ADVISOR-MODE` — **메모(자문)까지만 · 측정은 도훈 승인**(채팅 발화) 뒤 정본 계약 `run_paper_replication` 만 · 명령은 도훈이 직접 부르고 이 스킬은 `--measure` 를 넘기지 않는다) · ★`/worktask create`(WT-R)는 **동결**(`QEPM-R0-FREEZE` — 해제 = decision_register 재상정). 착수 전 큐 `status=open` 확인 + `hypothesis_index lookup` 의무 — CLAUDE.md v10 · lean-loop.md.
 
 ## 사용 제한
 

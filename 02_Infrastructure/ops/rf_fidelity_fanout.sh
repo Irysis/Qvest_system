@@ -174,19 +174,27 @@ jl start "paper=$PKEY" "wdir=$WDIR" "axes=$NAX" "html=$HTMLU"
 # ── 병렬 실행 ────────────────────────────────────────────────────────────────
 # ★한 축이 죽어도 나머지는 간다. 죽은 축은 파일이 없고, 병합기가 그걸 unverifiable 로
 #   **명시적으로** 센다 — 조용히 빠지는 축이 없다는 것이 이 설계의 요점이다.
+# ★무인 LLM 단일 진입(P0-M1 2026-09-24) — 축마다 rf_llm_agent_run(AutoMem 차단·무인 표식)을 거친다.
+#   모델·노력 = 축 계획 값(M/E · rf_fidelity_axes.json) — 서브셸 안에서 LLM_MODEL/LLM_EFFORT 로 넘긴다.
+#   구판과 같이 축 레인엔 폴백을 싣지 않는다(LLM_FALLBACK_MODEL 비움).
+_RFLE="$ROOT/02_Infrastructure/ops/rf_llm_env.sh"
+[ -f "$_RFLE" ] || _RFLE="$(dirname "${BASH_SOURCE[0]:-$0}")/rf_llm_env.sh"
+. "$_RFLE"
 PIDS=""
 while IFS=$'\t' read -r K M E PF OUT; do
   [ -n "${K:-}" ] || continue
   rm -f "$OUT"
   (
-    timeout "${QVEST_FA_TIMEOUT:-1800}" claude -p < "$PF" \
-      --model "$M" --effort "$E" \
+    LLM_MODEL="$M"; LLM_EFFORT="$E"; LLM_FALLBACK_MODEL=""; LLM_FALLBACK_EFFORT=""
+    rf_llm_agent_run "$PF" "$LOG.$K.run" "${QVEST_FA_TIMEOUT:-1800}" \
       --permission-mode acceptEdits \
       --allowed-tools "Read,Write,Glob,Grep,WebFetch,WebSearch" \
       --disallowed-tools "Bash,Agent,Edit" \
-      --add-dir "$WDIR" \
-      >> "$LOG.$K" 2>&1
-    echo "[axis $K] rc=$? model=$M" >> "$LOG"
+      --add-dir "$WDIR"
+    _arc=$LLM_RC
+    cat "$LOG.$K.run" >> "$LOG.$K" 2>/dev/null
+    rm -f "$LOG.$K.run" "$LOG.$K.run.primary"
+    echo "[axis $K] rc=$_arc model=$M" >> "$LOG"
   ) &
   PIDS="$PIDS $!"
 done < "$PLAN"

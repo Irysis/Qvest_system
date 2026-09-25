@@ -27,8 +27,11 @@ pol_cfg <- function(c0 = list()) list(
 # stats 필드(채점기가 채운다): heldout_win, null_pct, discovery_drop, unreachable, best_loss, peek_blocked, static_clean, negative_control_ok,
 #   shadow_weeks, informative_disagreements, newest_replay_win, placebo_ok, recent_losses(최신 m 트리 중 패 수), demotions_8w,
 #   live_same_kind(현재 live 수 · 같은 kind), live_total, activations_this_week
+# ★2026-09-24 도훈 결정 DIR-ABSORB-ITEMS ④: 자동 live 기본 OFF — 소유가 P1-07(선택 연산자 리플레이)로 옮겨졌고,
+#   P1-07 은 'QVEST_POLICY_UNATTENDED=0 강제 · live 는 도훈 confirm 후'를 요구한다. 구 기본 "1"(자동 live)은
+#   운영 호출자 0 인 채 잠복해 있었다. 켜려면 환경변수를 명시적으로 "1" 로.
 pol_env <- function() list(rf_policy_off = identical(Sys.getenv("QVEST_RF_POLICY", ""), "off"),
-                           unattended = !identical(Sys.getenv("QVEST_POLICY_UNATTENDED", "1"), "0"))
+                           unattended = identical(Sys.getenv("QVEST_POLICY_UNATTENDED", "0"), "1"))
 .pol_ok <- function(x) isTRUE(x)
 pol_gate_shadow <- function(st, cfg) {
   why <- character(0)

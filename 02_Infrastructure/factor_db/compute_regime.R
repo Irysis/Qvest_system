@@ -1,5 +1,5 @@
 #==============================================================================
-# compute_regime.R -- Regime + Macro Factor Module (RE01~RE16, MA01~MA07)
+# compute_regime.R -- Regime + Macro Factor Module (RE01~RE16, MA03~MA07 · MA01/MA02 퇴역)
 #
 # compute_regime(RAWDATA, sig_date, FUND = NULL, CONSENSUS = NULL)
 #   RAWDATA:    data.table(Date, Ticker, Close, Ret, Vol, Size, Sector, BM_Ret)
@@ -13,12 +13,132 @@
 #
 # Returns: data.table(Ticker, Factor_Name, Raw_Value)
 #
-# PIT: Date <= sig_date. Expanding window. Macro data lagged 1 day minimum.
-#      FRED monthly data: use value available as of sig_date only (C11 compliant).
+# PIT: Date <= sig_date. Expanding window.
+#   ★C11 (2026-09-24 수리 · 판정서 04_Research/01_reports/pit_c11_20260924/PIT_C11_verdict_20260924.md
+#   V-01·V-13·⑤-2 · decision_register PIT-C11-REMEDIATION 안 B · PIT-C11-CONVENTIONS ③):
+#   구판 주석 "C11 compliant" 는 거짓이었다 — 전 계열을 `Date <= sig_d - 1`(미국 관측일 1일) 하나로
+#   걸러, 월간 CPIAUCSL·INDPRO 의 신호월(M-01 라벨) 관측을 공표(라벨 +38~54일) 전에 썼다.
+#   지금은 **계열별 가용일**로 거른다: 관측의 가용일 <= sig_d 인 행만 MACRO 에 남는다.
+#     가용일 = 02_Infrastructure/data/fred_availability.R::fred_avail_date (S0 가용시점 층)
+#     규칙   = 06_Registry/fred_availability_rules.json (계열별 상한 · 근거 = 판정서 ② 행) — 이 파일에 오프셋 없음
+#     결정   = 월말 sig_d 한국 종가(판정서 ② 원칙 (a)·(c): close_d_legacy 가 가장 이른 집행이라 가장 엄격)
+#   규칙 없는 계열·금지 계열(DEXKOUS)은 제외(fail-closed · 로그). 도우미 적재 실패 = MACRO 없음(해외 계열
+#   팩터 미산출 → emission_guard 회귀 경보). 값은 최신 빈티지(ALFRED 미적용 — 안 C) → C1·C11 잔여 위험.
+#   RE14·MA07 의 YoY = 날짜 기준 12개월 변화(CPIAUCSL 2025-10 관측 부재 — 행 기준 shift(12) 금지).
+#   MA01·MA02 = 퇴역(decision_register PIT-C11-MA0102) — 산출 중지.
 #==============================================================================
 suppressPackageStartupMessages({
   library(data.table)
 })
+
+#------------------------------------------------------------------------------
+# PIT C11 가용시점 층 연결 (2026-09-24 · S0 기반 fred_availability.R 경유 — 자체 오프셋 없음)
+#------------------------------------------------------------------------------
+.CR_C11 <- new.env(parent = emptyenv())   # 도우미 env · 가용일 주석 캐시(세션 1회)
+
+# 이 파일 자신의 경로 — source() 프레임의 ofile(없으면 NA · sys.source 적재 등)
+.CR_SELF <- local({
+  f <- NA_character_
+  for (i in rev(seq_len(sys.nframe()))) {
+    o <- tryCatch(sys.frame(i)$ofile, error = function(e) NULL)
+    if (!is.null(o) && nzchar(o)) { f <- o; break }
+  }
+  if (is.na(f)) NA_character_ else normalizePath(f, winslash = "/", mustWork = FALSE)
+})
+
+# 도우미 위치: 이 파일의 형제 data/ > FUNC_PATH/data > CLAUDE_PROJECT_DIR > QM_ROOT(r-portability 금칙 ④ — CPD 먼저).
+#   정체 확인 = fred_avail_date 정의.
+.cr_c11_env <- function() {
+  if (!is.null(.CR_C11$fa)) return(.CR_C11$fa)
+  cands <- c(if (!is.na(.CR_SELF)) file.path(dirname(dirname(.CR_SELF)), "data", "fred_availability.R"),
+             if (exists("FUNC_PATH")) file.path(FUNC_PATH, "data", "fred_availability.R"),
+             file.path(Sys.getenv("CLAUDE_PROJECT_DIR", ""), "02_Infrastructure", "data", "fred_availability.R"),
+             file.path(Sys.getenv("QM_ROOT", ""), "02_Infrastructure", "data", "fred_availability.R"))
+  cands <- unique(cands[nzchar(cands) & file.exists(cands)])
+  if (!length(cands))
+    stop("fred_availability.R 미발견 — C11 가용시점 층 없이 해외 계열 결합 불가(fail-closed)")
+  fa <- new.env(parent = globalenv())
+  source(cands[1], local = fa)
+  if (!exists("fred_avail_date", envir = fa, inherits = FALSE))
+    stop("fred_availability.R 에 fred_avail_date 없음: ", cands[1])
+  .CR_C11$fa <- fa
+  .CR_C11$helper_path <- cands[1]
+  fa
+}
+
+# 한국 거래일 달력: CACHE_DIR/trading_calendar.parquet(빌더와 같은 데이터 루트) + 달력 끝 뒤의 RAWDATA
+# 거래일(가격이 있는 평일 = 실제 거래일 — fred_asof_join(extend_calendar=TRUE) 와 같은 규약).
+.cr_c11_calendar <- function(fa, extra_kr_dates = NULL) {
+  p <- if (exists("CACHE_DIR")) file.path(CACHE_DIR, "trading_calendar.parquet") else NULL
+  cal <- fa$fred_kr_calendar(p)
+  ex <- sort(unique(as.Date(extra_kr_dates)))
+  ex <- ex[!is.na(ex) & ex > max(cal) & as.POSIXlt(ex)$wday %in% 1:5]
+  if (length(ex)) cal <- sort(unique(c(cal, ex)))
+  cal
+}
+
+#' 계열별 as-of 이력: 가용일(fred_avail_date) <= sig_d 인 관측만. 한 결정 시점에 필요한 것은
+#' 최신값 하나가 아니라 **그 시점까지 가용한 이력 전체**(분위·YoY·월 회귀)라 결합 대신 이력 필터다
+#' — 같은 규칙 엔진(fred_asof_join 과 동일한 .fa_avail_core)이다.
+.cr_c11_asof <- function(dt, sig_d, macro_path, extra_kr_dates = NULL) {
+  fa  <- .cr_c11_env()
+  RL  <- fa$fred_avail_rules()
+  cal <- .cr_c11_calendar(fa, extra_kr_dates)
+  fi  <- file.info(macro_path)
+  key <- paste(normalizePath(macro_path, winslash = "/", mustWork = FALSE), fi$size,
+               as.numeric(fi$mtime), RL$md5, length(cal), as.integer(max(cal)))
+  if (!identical(.CR_C11$ann_key, key)) {
+    parts <- list(); dropped <- character(0)
+    for (s in unique(dt$Series)) {
+      sub <- dt[Series == s]
+      av <- tryCatch(fa$fred_avail_date(s, sub$Date, kr_calendar = cal, rules = RL),
+                     error = function(e) {
+                       dropped <<- c(dropped, sprintf("%s(%s)", s, conditionMessage(e)))
+                       NULL
+                     })
+      if (is.null(av)) next
+      sub[, avail_date := av]
+      parts[[s]] <- sub
+    }
+    .CR_C11$ann <- rbindlist(parts, use.names = TRUE, fill = TRUE)
+    .CR_C11$ann_key <- key
+    .CR_C11$dropped <- dropped
+    meta <- fa$fred_avail_rules_meta()
+    .CR_C11$regime_key <- meta$regime_key
+    cat(sprintf("[compute_regime] C11 가용일 결합: %s · 계열 %d종 · 제외 %d종%s\n",
+                meta$regime_key, length(parts), length(dropped),
+                if (length(dropped)) paste0(" — ", paste(dropped, collapse = " | ")) else ""))
+  }
+  ann <- .CR_C11$ann
+  if (is.null(ann) || !nrow(ann)) return(ann)
+  out <- ann[!is.na(avail_date) & avail_date <= sig_d]
+  out[, avail_date := NULL]
+  out
+}
+
+# 계열 우선순위 선택(섞지 않는다) + 달력월당 마지막 관측 — 날짜 기준 YoY 의 전제(월 키 유일).
+.cr_pick_series <- function(M, ids) {
+  for (s in ids) {
+    x <- M[Series == s & !is.na(Value)]
+    if (nrow(x)) {
+      setorder(x, Date)
+      x[, ym_key_ := as.integer(format(Date, "%Y")) * 12L + as.integer(format(Date, "%m"))]
+      x <- x[, .SD[.N], by = ym_key_]
+      x[, ym_key_ := NULL]
+      setorder(x, Date)
+      return(x)
+    }
+  }
+  M[0L]
+}
+
+# 날짜 기준 12개월 변화 — 같은 달력월 12개월 전 관측과의 비. 그 관측이 없으면 NA(행 기준 shift 금지).
+.cr_yoy_by_date <- function(Date, Value) {
+  k <- as.integer(format(Date, "%Y")) * 12L + as.integer(format(Date, "%m"))
+  if (anyDuplicated(k)) stop(".cr_yoy_by_date: 달력월 중복 — .cr_pick_series 를 먼저 거쳐라")
+  b <- match(k - 12L, k)
+  Value / Value[b] - 1
+}
 
 compute_regime <- function(RAWDATA, sig_date, FUND = NULL, CONSENSUS = NULL) {
 
@@ -63,7 +183,8 @@ compute_regime <- function(RAWDATA, sig_date, FUND = NULL, CONSENSUS = NULL) {
   if (file.exists(macro_path)) {
     MACRO <- tryCatch({
       if (requireNamespace("arrow", quietly = TRUE)) {
-        dt <- as.data.table(arrow::read_parquet(macro_path))
+        # mmap=FALSE: macro_fred 는 일간 체인이 덮어쓰는 파일 — 매핑을 쥐면 Windows 에서 교체가 막힌다
+        dt <- as.data.table(arrow::read_parquet(macro_path, mmap = FALSE))
         dt[, Date := as.Date(Date)]
         # Series column: legacy macro_fred used FRED codes (VIXCLS) directly,
         # but new schema uses Series_ID for codes and Series for human names.
@@ -72,15 +193,20 @@ compute_regime <- function(RAWDATA, sig_date, FUND = NULL, CONSENSUS = NULL) {
           dt[, Series := fifelse(!is.na(Series_ID) & nchar(Series_ID) > 0,
                                   Series_ID, Series)]
         }
-        # C11: FRED monthly data published with lag. Use data available by sig_date.
-        # Conservative: only use data up to sig_date - 1 day (publication lag)
-        dt <- dt[Date <= (sig_d - 1L) & !is.na(Value)]
+        dt <- dt[!is.na(Value) & !is.na(Date)]
         # Deduplicate (Series, Date) — guard against Cartesian merges downstream
         setorder(dt, Series, Date)
         dt <- unique(dt, by = c("Series", "Date"), fromLast = TRUE)
-        dt
+        # ★C11 (판정서 V-01·V-13·⑤-2): 구판 공통 필터 `Date <= sig_d - 1L` 대체 —
+        #   계열별 가용일 <= sig_d 인 관측만(가용일 규칙 = fred_availability_rules.json).
+        .cr_c11_asof(dt, sig_d, macro_path, extra_kr_dates = unique(rd$Date))
       } else NULL
-    }, error = function(e) NULL)
+    }, error = function(e) {
+      # ★침묵 금지 — 구판은 NULL 만 돌려 해외 계열 팩터가 조용히 사라졌다
+      cat(sprintf("[compute_regime] !!! MACRO 적재 실패 — 해외 계열 팩터 미산출(fail-closed): %s\n",
+                  conditionMessage(e)))
+      NULL
+    })
   }
 
   # ---- Helper: EWMA ----
@@ -311,10 +437,14 @@ compute_regime <- function(RAWDATA, sig_date, FUND = NULL, CONSENSUS = NULL) {
     }
 
     # ---- RE14: Inflation Regime (CPI YoY expanding percentile) ----
-    cpi_dt <- MACRO[Series %in% c("CPIAUCSL", "CPIAUCNS") & !is.na(Value)]
+    # ★2026-09-24 (판정서 V-13 · decision_register PIT-C11-CONVENTIONS ③):
+    #   ① 신호월 관측을 더는 쓰지 않는다 — 가용일 필터는 위 MACRO 적재에서(CPIAUCSL 규칙).
+    #   ② YoY = **날짜 기준 12개월 변화**. 구판 shift(12) 는 행 기준이라 CPIAUCSL 2025-10 관측
+    #      부재(셧다운 — BLS 미공표) 뒤로 13개월 변화가 됐다. 12개월 전 같은 달 관측이 없으면 NA.
+    #   ③ CPIAUCSL·CPIAUCNS 를 섞지 않는다(우선순위 첫 계열만).
+    cpi_dt <- .cr_pick_series(MACRO, c("CPIAUCSL", "CPIAUCNS"))
     if (nrow(cpi_dt) >= 13L) {
-      setorder(cpi_dt, Date)
-      cpi_dt[, cpi_yoy := Value / shift(Value, 12) - 1]
+      cpi_dt[, cpi_yoy := .cr_yoy_by_date(Date, Value)]
       cpi_dt <- cpi_dt[!is.na(cpi_yoy)]
       if (nrow(cpi_dt) > 0L) {
         last_cpi <- cpi_dt[Date == max(Date)]$cpi_yoy
@@ -409,15 +539,12 @@ compute_regime <- function(RAWDATA, sig_date, FUND = NULL, CONSENSUS = NULL) {
       betas[, .(Ticker, Factor_Name = factor_name, Raw_Value = beta)]
     }
 
-    # ---- MA01: GDP Sensitivity (using GDP proxy or industrial production) ----
-    ma01 <- .macro_beta("INDPRO", "MA01_GDP_Sensitivity")
-    if (is.null(ma01)) ma01 <- .macro_beta("A191RL1Q225SBEA", "MA01_GDP_Sensitivity")
-    if (!is.null(ma01)) results[["MA01"]] <- ma01
-
-    # ---- MA02: CPI Sensitivity ----
-    ma02 <- .macro_beta("CPIAUCSL", "MA02_CPI_Sensitivity")
-    if (is.null(ma02)) ma02 <- .macro_beta("CPIAUCNS", "MA02_CPI_Sensitivity")
-    if (!is.null(ma02)) results[["MA02"]] <- ma02
+    # ---- MA01·MA02: 퇴역 (2026-09-24 · decision_register PIT-C11-MA0102 · 판정서 V-01·⑥-5) ----
+    #   구판은 INDPRO·CPIAUCSL 신호월(M-01) 관측을 공표 전에 써서 월 회귀 약 12쌍 중 마지막 쌍이
+    #   미래 정보였다(MA01 = L1 20칸 오염). 공표분만 쓰면 현 창(최근 12개월·최소 12관측)으로는
+    #   202608·202003 이 산출 불가(n<12) — 창 재정의 대신 퇴역을 택했다(도훈 결정).
+    #   산출 중지 · factor_registry.json lifecycle.status = "retired" · 06_Registry/pit_quarantine.json
+    #   격리는 그대로 둔다. ★이름 재사용 금지 — 저장 이력(2005-01~2026-09)은 오염판이다.
 
     # ---- MA03: Interest Rate Sensitivity (10Y Treasury) ----
     ma03 <- .macro_beta("GS10", "MA03_Rate_Sensitivity")
@@ -496,18 +623,18 @@ compute_regime <- function(RAWDATA, sig_date, FUND = NULL, CONSENSUS = NULL) {
 
     # ---- MA07: Business Cycle Composite ----
     # Combine GDP + CPI momentum into composite
+    # ★2026-09-24 (판정서 V-13 · PIT-C11-CONVENTIONS ③): RE14 와 같은 수리 — 가용일 필터(적재에서)
+    #   + 날짜 기준 12개월 변화 + 계열 비혼합. INDPRO 는 공표 +54일 상한(규칙 파일).
     ma07_parts <- list()
-    gdp_dt <- MACRO[Series %in% c("INDPRO", "A191RL1Q225SBEA") & !is.na(Value)]
+    gdp_dt <- .cr_pick_series(MACRO, c("INDPRO", "A191RL1Q225SBEA"))
     if (nrow(gdp_dt) >= 13L) {
-      setorder(gdp_dt, Date)
-      gdp_dt[, gdp_yoy := Value / shift(Value, 12) - 1]
+      gdp_dt[, gdp_yoy := .cr_yoy_by_date(Date, Value)]
       last_gdp <- gdp_dt[!is.na(gdp_yoy)][Date == max(Date)]$gdp_yoy
       if (length(last_gdp) > 0L) ma07_parts[["gdp"]] <- last_gdp
     }
-    cpi_dt2 <- MACRO[Series %in% c("CPIAUCSL", "CPIAUCNS") & !is.na(Value)]
+    cpi_dt2 <- .cr_pick_series(MACRO, c("CPIAUCSL", "CPIAUCNS"))
     if (nrow(cpi_dt2) >= 13L) {
-      setorder(cpi_dt2, Date)
-      cpi_dt2[, cpi_yoy := Value / shift(Value, 12) - 1]
+      cpi_dt2[, cpi_yoy := .cr_yoy_by_date(Date, Value)]
       last_cpi2 <- cpi_dt2[!is.na(cpi_yoy)][Date == max(Date)]$cpi_yoy
       if (length(last_cpi2) > 0L) ma07_parts[["cpi"]] <- last_cpi2
     }
@@ -524,7 +651,7 @@ compute_regime <- function(RAWDATA, sig_date, FUND = NULL, CONSENSUS = NULL) {
     }
   } else {
     # No macro data -- mark as DATA_NEEDED
-    # DATA_NEEDED: macro_fred.parquet for MA01~MA07, RE10~RE16
+    # DATA_NEEDED: macro_fred.parquet for MA03~MA07, RE10~RE16 (MA01·MA02 퇴역)
     snap_tickers <- unique(rd[Date == sig_d]$Ticker)
   }
 
@@ -536,4 +663,4 @@ compute_regime <- function(RAWDATA, sig_date, FUND = NULL, CONSENSUS = NULL) {
   out[, .(Ticker, Factor_Name, Raw_Value)]
 }
 
-cat("[factor_db] compute_regime.R loaded (RE01~RE16, MA01~MA07)\n")
+cat("[factor_db] compute_regime.R loaded (RE01~RE16, MA03~MA07 · MA01/MA02 retired · C11 avail layer)\n")

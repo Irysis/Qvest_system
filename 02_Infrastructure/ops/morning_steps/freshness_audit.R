@@ -49,6 +49,12 @@ audits$ktri_v3_signals <- check_freshness("ktri_v3_signals", "04_Research/regime
 audits$regime_daily    <- check_freshness("regime_daily",    ".cache/unified_regime_signal_daily.parquet", "Date", 3)
 audits$benchmark       <- check_freshness("benchmark",       ".cache/benchmark.parquet",               "Date", 2)  # KOSPI200 종가
 audits$p3_forecast     <- check_freshness("p3_forecast",     "04_Research/decision_framework/bearish_forecast_v3/03_models/daily_predictions/P3_daily.parquet", "Date", 3)
+# ★역할 태그 (v10.4 2026-09-24) — p3_forecast 는 적재 원천이 아니라 **브리핑 [6a] 의 산출물**(601_daily_inference.py
+#   --model P3)이다. daily_refresh [0c] 가 이 감사를 판정으로 쓰면서, 리프레시가 고칠 수 없는 항목이 DR exit 1 로
+#   둔갑했다(09-23·09-24 — 09-22 PC 절전 · 09-23 장중 추론 행 제거로 P3 최대일이 09-18 로 복귀). 판정 제외 목록의
+#   원천은 여기 하나(JSON downstream_items) — 소비자가 다시 적지 않는다. 보고(stale_items · EDC_RESULT · 텔레그램)는 불변.
+#   선례: ensure_data_current.sh:128 DOWNSTREAM_OUTPUTS. 되돌리기: 아래 한 줄 삭제(= 전 항목 판정).
+if (is.list(audits$p3_forecast)) audits$p3_forecast$role <- "downstream"
 
 # ── 전략 소비 패널 (2026-08-30 도훈 지시로 편입) ──────────────────────────────
 #   왜 여기인가: "데이터 리프레시는 리밸런싱 스킬이 아니라 **데이터 리프레시 쪽에서
@@ -74,13 +80,15 @@ for (a in audits) {
     stale_items <- c(stale_items, sprintf("%s(%s,lag=%dd)", a$name, a$status, a$lag_days %||% -1L))
   }
 }
+downstream_items <- unname(unlist(lapply(audits, function(a) if (identical(a$role, "downstream")) a$name else NULL)))
 audit_path <- "qepm/observability/morning_freshness_latest.json"
 dir.create(dirname(audit_path), recursive = TRUE, showWarnings = FALSE)
 write_json(list(ran_at = format(Sys.time(), "%Y-%m-%dT%H:%M:%S%z"),
                 as_of = as.character(as_of),
                 audits = audits,
                 stale_count = length(stale_items),
-                stale_items = if (length(stale_items) > 0) I(as.character(stale_items)) else list()),
+                stale_items = if (length(stale_items) > 0) I(as.character(stale_items)) else list(),
+                downstream_items = if (length(downstream_items) > 0) I(as.character(downstream_items)) else list()),
            audit_path, pretty = TRUE, auto_unbox = TRUE, null = "null")
 cat(sprintf("Audit saved: %s\n", audit_path))
 
@@ -108,7 +116,7 @@ if (length(stale_items) > 0) {
     cat("[freshness] QVEST_FRESHNESS_QUIET=1 — Telegram 발송 억제 (판정/JSON 은 기록됨)\n")
   } else {
     source("02_Infrastructure/telegram/telegram_notify.R")
-    msg <- sprintf("\U0001F6A8 Morning Freshness Audit — %d stale\n\n%s\n\nbrief 07:30 송신 전 점검 필요",
+    msg <- sprintf("\U0001F6A8 Morning Freshness Audit \u2014 %d stale\n\n%s\n\nbrief 07:30 \uc1a1\uc2e0 \uc804 \uc810\uac80 \ud544\uc694",
                    length(stale_items),
                    paste(sprintf("- %s", stale_items), collapse = "\n"))
     tryCatch(tg_send(msg), error = function(e) cat(sprintf("Telegram alert failed: %s\n", e$message)))

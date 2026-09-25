@@ -85,14 +85,14 @@ CANDIDATE(recent PORT_t≥1.9 ∧ full_IR>−0.1 ∧ szPct≥0.5) 뜨면 → 아
 4. **seed-robustness**(동일설정 seed만 바꿔 edge 유지?) · **placebo 다중검정**(랜덤 composite 분포 대비 백분위>97.5%)
 5. **★book-marginal + 오버레이**(bare 아닌 *현 book*에 얹어 ΔIR≥0.05·특히 최근) — `verify4_overlay.R` 패턴
 6. **forward holdout 사전등록**(탐색기간=최근이면 forward 필수. `holdout_falsification.R`)
-전부 통과 → **정밀 측정 후보**(QEPM/충실구현으로 권위 등급 산출). BOOK 등록은 essence A + Judge PIT PASS + **도훈 confirm**(v10) — 이 스킬은 등록하지 않는다. [[measurement-graduation]] 게이트 준수.
+전부 통과 → **정밀 측정 후보**(정본 계약 `run_paper_replication` → essence 로 권위 등급 산출 · QEPM WT 체인은 동결 `QEPM-R0-FREEZE`). BOOK 등록은 essence A + Judge PIT PASS + **도훈 confirm**(v10) — 이 스킬은 등록하지 않는다. [[measurement-graduation]] 게이트 준수.
 
 ### 5. 강령 (규율)
 - 1방법론 실패로 "소진" 단정 금지 — 여러 라운드·직교축·메커니즘 규명까지([[feedback-iterative-multi-methodology-research]]).
 - prior 정직 표기(over-claim 방지). 실측·PIT·정직보고. **멈춰서 "다음 뭐" 묻지 말 것** — 목표 도달/공간 진짜 소진까지 자율.
 
 ## 산출 + 메모리
-- 유의한 결과/의미있는 실패 → 메모리 적립(발견 = project, 방법·교훈 = feedback/reference). PASS 후보는 dossier(qvest-dossier-pipeline)로.
+- 유의한 결과/의미있는 실패 → 메모리 적립(발견 = project, 방법·교훈 = feedback/reference). PASS 후보는 `/advisor` 안내(도훈 `QEPM-ADVISOR-MODE` — **메모(자문)까지만 · 측정은 도훈 승인**(채팅 발화) 뒤 정본 계약 · 명령은 도훈이 직접 부르고 이 스킬은 `--measure` 를 넘기지 않는다)로. ★dossier(qvest-dossier-pipeline)는 **동결**(`QEPM-R0-FREEZE` — 실행 즉시 종료 · 해제 = decision_register 재상정).
 - 신규 팩터 검증 결과는 registry `evidence_tier` 갱신 근거로.
 
 ## 참조

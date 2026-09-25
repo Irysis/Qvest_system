@@ -1,0 +1,1669 @@
+{
+  "schema": "fred_availability_rules/v1",
+  "version": "2026-09-24.b4",
+  "plan": "B_fixed_upper_bound",
+  "superseded_by": "안 C — ALFRED realtime_start(실공표일)·as-of 빈티지. 그때까지 이 파일의 고정 규칙이 가용일 정본이다.",
+  "authority": [
+    "04_Research/01_reports/pit_c11_20260924/PIT_C11_verdict_20260924.md §② (계열별 lag 규약 표·원칙 a/b/c)",
+    "06_Registry/decision_register.json PIT-C11-REMEDIATION (안 B 후 안 C) · PIT-C11-CONVENTIONS (① DEXKOUS→ECOS 731Y001 ② ICE OAS 한국 d+2)"
+  ],
+  "semantics": {
+    "avail_date": "관측 1건이 '한국 d일 15:30 KST 결정'(판정서 ② 소비 형태 a)에 쓰일 수 있는 첫 한국 거래일 d. 계열의 모든 bound 를 계산해 가장 늦은 날(max)을 쓴다.",
+    "decision_close": "형태 (a)·(c): 한국 d 종가에 결정하고 수익이 d 종가 이후 시작 → avail_date ≤ d 인 관측 중 가장 최근(관측일 기준) 것. 월간 보유(c)는 수익 창이 실제 시작하는 집행일을 d 로 넘긴다(close_d_legacy = sig_d, close_t1 = 집행일). 날짜 라벨(anchor·realized_ym)로 d 를 잡지 않는다.",
+    "exposure_return": "형태 (b): 노출을 한국 종가→종가 수익 r_t 에 곱함 → 결정 시점 = 한국 t 의 직전 거래일 15:30 → avail_date ≤ prev_kr_trading_day(t). 한국 날짜 격자에서 '1행 lag' 는 미국 t−1 값을 들이므로 부족하다(판정서 ② (b)).",
+    "calendar": "한국 거래일 = .cache/trading_calendar.parquet (QuantiWise + benchmark 실세션). 주입 가능. 달력 밖으로 떨어지는 가용일 = NA = '아직 불가'(결합 안 됨).",
+    "fail_closed": "규칙 없는 계열·status 가 active 가 아닌 계열(DEXKOUS) = 결합 거부(stop/raise). 알 수 없는 bound type = 규칙 파일 로드 실패.",
+    "vintage": "값은 최신 빈티지다(ALFRED 미수집). revisions != none_known 계열은 결합 산출에 vintage_resolved=FALSE 가 붙는다 — C1·C11 미해소 라벨(판정서 ② 빈티지 조항)."
+  },
+  "bound_types": {
+    "kr_trading_days_after": "params n (정수 ≥0). n=0: 관측일 당일 이후(포함) 첫 한국 거래일. n≥1: 관측일 이후(엄격) n번째 한국 거래일.",
+    "label_plus_days": "params days. 관측 라벨 + days 역일 → 그 날 이후(포함) 첫 한국 거래일.",
+    "month_nth_kr_trading_day": "params month_offset, n. 관측 라벨 월 M 의 M+month_offset 월 n번째 한국 거래일.",
+    "month_day": "params month_offset, day. M+month_offset 월 day일(월말 초과 시 월말) → 그 날 이후(포함) 첫 한국 거래일.",
+    "us_release": "params release{kind,...}, us_holiday_roll(bool), kr_rule(strictly_after|on_or_after). 미국 공표일 R 을 계산하고(us_holiday_roll=true 면 미국 비영업일이면 다음 미국 영업일로 민다), R 이후(엄격: 미국 공표 시각이 한국 15:30 이후) 첫 한국 거래일. release.kind = label_plus_days{days} | month_nth_weekday{month_offset, weekday(ISO 1=월..7=일), nth} | us_business_days_after{n} | month_nth_us_business_day{month_offset, n}."
+  },
+  "us_calendar": {
+    "source": "미국 연방 공휴일 = 5 U.S.C. §6103(a) (신년·MLK(1986~)·워싱턴 탄생일·메모리얼·준틴스(2021~)·독립기념일·노동절·콜럼버스·재향군인·추수감사절·성탄절). 관측일 규칙 = 토요일→전 금요일, 일요일→다음 월요일(5 U.S.C. §6103(b)·EO 11582).",
+    "mlk_from_year": 1986,
+    "juneteenth_from_year": 2021,
+    "use": "us_release bound 에만 쓴다. 휴장·휴무는 공표를 늦출 수만 있게(roll forward) 쓰므로 목록이 과하면 보수 쪽으로만 틀린다.",
+    "extra_closures": [
+      {
+        "date": "2004-06-11",
+        "source": "레이건 전 대통령 국장 — 대통령 명령 연방정부 휴무"
+      },
+      {
+        "date": "2007-01-02",
+        "source": "포드 전 대통령 국가 애도일 — 연방정부 휴무"
+      },
+      {
+        "date": "2012-10-29",
+        "source": "허리케인 샌디 — OPM 워싱턴 연방기관 휴무"
+      },
+      {
+        "date": "2012-10-30",
+        "source": "허리케인 샌디 — OPM 워싱턴 연방기관 휴무"
+      },
+      {
+        "date": "2018-12-05",
+        "source": "G.H.W. 부시 전 대통령 국가 애도일 — 연방정부 휴무"
+      },
+      {
+        "date": "2018-12-24",
+        "source": "대통령 행정명령 — 성탄 전날 연방정부 휴무"
+      },
+      {
+        "date": "2019-12-24",
+        "source": "대통령 행정명령 — 성탄 전날 연방정부 휴무"
+      },
+      {
+        "date": "2020-12-24",
+        "source": "대통령 행정명령 — 성탄 전날 연방정부 휴무"
+      },
+      {
+        "date": "2024-12-24",
+        "source": "대통령 행정명령 — 성탄 전날 연방정부 휴무"
+      },
+      {
+        "date": "2025-01-09",
+        "source": "카터 전 대통령 국가 애도일 — 연방정부 휴무"
+      },
+      {
+        "date": "2025-12-24",
+        "source": "대통령 행정명령 — 성탄 전후 연방정부 휴무"
+      },
+      {
+        "date": "2025-12-26",
+        "source": "대통령 행정명령 — 성탄 전후 연방정부 휴무"
+      }
+    ],
+    "verify": "안 C 에서 ALFRED 실공표일로 대체되면 이 목록의 역할이 사라진다. 목록 자체는 공표를 늦추는 방향으로만 작용한다."
+  },
+  "series": [
+    {
+      "id": "VIXCLS",
+      "name": "VIX",
+      "aliases": [
+        "VIX"
+      ],
+      "source": "FRED",
+      "frequency": "daily",
+      "date_meaning": "미국 거래일(CBOE 종가)",
+      "status": "active",
+      "bounds": [
+        {
+          "type": "kr_trading_days_after",
+          "n": 1,
+          "basis": "판정서 ② VIXCLS·SP500 행: 가용 d+1일 05:00~06:15 KST → 미국 날짜 < 한국 날짜(한국 다음 영업일부터). V-08 실례: 한국 2026-08-31 결정 값 = 미국 08-28(14.43), 미국 08-31(14.92)은 한국 09-01부터."
+        }
+      ],
+      "vintage": {
+        "revisions": "none_known",
+        "evidence": "시장 종가"
+      },
+      "verdict_rows": [
+        "②VIXCLS,SP500",
+        "V-08",
+        "V-09",
+        "V-10"
+      ]
+    },
+    {
+      "id": "SP500",
+      "name": "SP500",
+      "aliases": [],
+      "source": "FRED",
+      "frequency": "daily",
+      "date_meaning": "미국 거래일(S&P 500 종가)",
+      "status": "active",
+      "bounds": [
+        {
+          "type": "kr_trading_days_after",
+          "n": 1,
+          "basis": "판정서 ② VIXCLS·SP500 행: 미국 날짜 < 한국 날짜."
+        }
+      ],
+      "vintage": {
+        "revisions": "none_known",
+        "evidence": "시장 종가"
+      },
+      "notes": "FRED 라이선스로 최근 약 10년만 제공(2016-09~).",
+      "verdict_rows": [
+        "②VIXCLS,SP500"
+      ]
+    },
+    {
+      "id": "DGS10",
+      "name": "US_10Y_Yield",
+      "aliases": [
+        "US_10Y_Yield"
+      ],
+      "source": "FRED",
+      "frequency": "daily",
+      "date_meaning": "미국 국채시장 거래일",
+      "status": "active",
+      "bounds": [
+        {
+          "type": "kr_trading_days_after",
+          "n": 1,
+          "basis": "판정서 ② DGS10·DGS2·T10Y2Y·T10YIE·T5YIE 행: 재무부 d일 저녁 ET = d+1일 오전 KST → 미국 날짜 < 한국 날짜(정보 기준). FRED 적재 기준 라이브는 d+2 — 라이브는 파일에 값이 없을 뿐이라 결합 규칙은 정보 기준."
+        }
+      ],
+      "vintage": {
+        "revisions": "none_known",
+        "evidence": "재무부 수익률 곡선"
+      },
+      "verdict_rows": [
+        "②DGS10"
+      ]
+    },
+    {
+      "id": "DGS2",
+      "name": "US_2Y_Yield",
+      "aliases": [
+        "US_2Y_Yield"
+      ],
+      "source": "FRED",
+      "frequency": "daily",
+      "date_meaning": "미국 국채시장 거래일",
+      "status": "active",
+      "bounds": [
+        {
+          "type": "kr_trading_days_after",
+          "n": 1,
+          "basis": "판정서 ② DGS10·DGS2 행: 미국 날짜 < 한국 날짜(정보 기준)."
+        }
+      ],
+      "vintage": {
+        "revisions": "none_known",
+        "evidence": "재무부 수익률 곡선"
+      },
+      "verdict_rows": [
+        "②DGS2"
+      ]
+    },
+    {
+      "id": "T10Y2Y",
+      "name": "Term_Spread",
+      "aliases": [
+        "Term_Spread"
+      ],
+      "source": "FRED",
+      "frequency": "daily",
+      "date_meaning": "미국 국채시장 거래일(DGS10−DGS2)",
+      "status": "active",
+      "bounds": [
+        {
+          "type": "kr_trading_days_after",
+          "n": 1,
+          "basis": "판정서 ② T10Y2Y 행: 미국 날짜 < 한국 날짜(정보 기준). V-02 의 같은 날짜 결합은 위반."
+        }
+      ],
+      "vintage": {
+        "revisions": "none_known",
+        "evidence": "DGS10−DGS2 파생"
+      },
+      "verdict_rows": [
+        "②T10Y2Y",
+        "V-02",
+        "V-05"
+      ]
+    },
+    {
+      "id": "T10YIE",
+      "name": "Breakeven_Infl",
+      "aliases": [
+        "Breakeven_Infl"
+      ],
+      "source": "FRED",
+      "frequency": "daily",
+      "date_meaning": "미국 국채시장 거래일(DGS10−DFII10)",
+      "status": "active",
+      "bounds": [
+        {
+          "type": "kr_trading_days_after",
+          "n": 1,
+          "basis": "판정서 ② T10YIE 행: 미국 날짜 < 한국 날짜(정보 기준)."
+        }
+      ],
+      "vintage": {
+        "revisions": "none_known",
+        "evidence": "재무부 명목·실질 곡선 파생"
+      },
+      "verdict_rows": [
+        "②T10YIE"
+      ]
+    },
+    {
+      "id": "T5YIE",
+      "name": "Breakeven_5Y",
+      "aliases": [
+        "Breakeven_5Y"
+      ],
+      "source": "FRED",
+      "frequency": "daily",
+      "date_meaning": "미국 국채시장 거래일(DGS5−DFII5)",
+      "status": "active",
+      "bounds": [
+        {
+          "type": "kr_trading_days_after",
+          "n": 1,
+          "basis": "판정서 ② T5YIE 행: 미국 날짜 < 한국 날짜(정보 기준)."
+        }
+      ],
+      "vintage": {
+        "revisions": "none_known",
+        "evidence": "재무부 명목·실질 곡선 파생"
+      },
+      "verdict_rows": [
+        "②T5YIE"
+      ]
+    },
+    {
+      "id": "BAMLH0A0HYM2",
+      "name": "HY_Spread",
+      "aliases": [
+        "HY_Spread"
+      ],
+      "source": "FRED(ICE BofA)",
+      "frequency": "daily",
+      "date_meaning": "ICE 산출일(주말 라벨 소수 존재)",
+      "status": "active",
+      "bounds": [
+        {
+          "type": "kr_trading_days_after",
+          "n": 2,
+          "basis": "decision_register PIT-C11-CONVENTIONS ② — ICE OAS 한국 d+2 영업일부터(판정서 ② 보수안). 근거 표본: 2026-09-23 15:27 KST 에 09-22 값 없음(V2)."
+        },
+        {
+          "type": "us_release",
+          "release": {
+            "kind": "us_business_days_after",
+            "n": 1
+          },
+          "us_holiday_roll": true,
+          "kr_rule": "strictly_after",
+          "basis": "판정서 ② ICE 행: 공개 원천이 FRED 뿐이고 게시 = d+1일(미국 영업일) 밤 KST. 미국 월요일 휴일 뒤 금요일 관측은 화요일 게시 → 한국 수요일부터(d+2 영업일만으로는 화요일이 되어 하루 이르다)."
+        }
+      ],
+      "vintage": {
+        "revisions": "possible",
+        "evidence": "FRED 가 ICE 이력을 3년 롤링 창으로만 제공 — 과거 재현성 문제(판정서 1-7)"
+      },
+      "verdict_rows": [
+        "②BAMLH0A0HYM2",
+        "V-05",
+        "V-12"
+      ]
+    },
+    {
+      "id": "BAMLC0A4CBBB",
+      "name": "BBB_Spread",
+      "aliases": [
+        "BBB_Spread"
+      ],
+      "source": "FRED(ICE BofA)",
+      "frequency": "daily",
+      "date_meaning": "ICE 산출일(주말 라벨 소수 존재)",
+      "status": "active",
+      "bounds": [
+        {
+          "type": "kr_trading_days_after",
+          "n": 2,
+          "basis": "decision_register PIT-C11-CONVENTIONS ② — ICE OAS(HY·BBB) 한국 d+2 영업일부터."
+        },
+        {
+          "type": "us_release",
+          "release": {
+            "kind": "us_business_days_after",
+            "n": 1
+          },
+          "us_holiday_roll": true,
+          "kr_rule": "strictly_after",
+          "basis": "판정서 ② ICE 행: FRED 게시 = 다음 미국 영업일 밤 KST."
+        }
+      ],
+      "vintage": {
+        "revisions": "possible",
+        "evidence": "FRED ICE 3년 롤링 창"
+      },
+      "verdict_rows": [
+        "②BAMLC0A4CBBB",
+        "V-05"
+      ]
+    },
+    {
+      "id": "DEXKOUS",
+      "name": "KRW_USD",
+      "aliases": [
+        "KRW_USD"
+      ],
+      "source": "FRED(H.10)",
+      "frequency": "daily",
+      "date_meaning": "미국 영업일, 뉴욕 정오 환율(H.10 은 주 1회 공표)",
+      "status": "prohibited",
+      "replacement": "ECOS_KRW_USD",
+      "prohibition_basis": "decision_register PIT-C11-CONVENTIONS ① — DEXKOUS 대신 ECOS 731Y001(판정서 ⑥-1 권고). 시장 기준(d+1 01:00 KST)과 H.10 공표 기준(도착 lag 중앙값 5.3~9.5일)이 갈려 규약 미정(판정서 1-7).",
+      "bounds": [],
+      "vintage": {
+        "revisions": "observed",
+        "evidence": "판정서 V-07"
+      },
+      "verdict_rows": [
+        "②DEXKOUS",
+        "1-7"
+      ]
+    },
+    {
+      "id": "WALCL",
+      "name": "Fed_BalSheet",
+      "aliases": [
+        "Fed_BalSheet"
+      ],
+      "source": "FRED(H.4.1)",
+      "frequency": "weekly",
+      "date_meaning": "수요일 잔액",
+      "status": "active",
+      "bounds": [
+        {
+          "type": "label_plus_days",
+          "days": 2,
+          "basis": "판정서 ② WALCL 행: 목 16:30 ET 공표 = 금 05:30 KST → 라벨 +2일(한국 금요일)."
+        },
+        {
+          "type": "us_release",
+          "release": {
+            "kind": "label_plus_days",
+            "days": 1
+          },
+          "us_holiday_roll": true,
+          "kr_rule": "strictly_after",
+          "basis": "같은 행의 공표 요일(목). 목요일이 미국 휴일이면 공표가 밀린 것으로 본다(판정서 ② 각주: 휴일로 밀린 공표는 고정 오프셋이 못 덮음 — 보수 보강)."
+        }
+      ],
+      "vintage": {
+        "revisions": "possible",
+        "evidence": "드묾"
+      },
+      "verdict_rows": [
+        "②WALCL",
+        "r1_alfred_check"
+      ],
+      "release_overrides": [
+        {
+          "obs": "2014-12-24",
+          "us_release": "2014-12-29",
+          "source": "r1 보강 — ALFRED 기간 끝 뒤 첫 빈티지 2014-12-29 · 창 안 빈티지 1개 · R* 2014-12-29(보수). https://alfred.stlouisfed.org/series/downloaddata?seid=WALCL 의 빈티지 날짜 목록(2026-09-24 열람)"
+        },
+        {
+          "obs": "2018-01-03",
+          "us_release": "2018-01-11",
+          "source": "주의: 01-04 빈티지 부재 — ALFRED 공백 의심. 보수로 유지 · r1 보강 — ALFRED 기간 끝 뒤 첫 빈티지 2018-01-11 · 창 안 빈티지 0개 · R* 2018-01-11(보수). https://alfred.stlouisfed.org/series/downloaddata?seid=WALCL 의 빈티지 날짜 목록(2026-09-24 열람)"
+        },
+        {
+          "obs": "2018-01-10",
+          "us_release": "2018-01-18",
+          "source": "b4 값 대조(2026-09-24 C11 사후 검증 최종) — keyless ALFRED alfredgraph.csv?id=WALCL as-of 2018-01-11 판에 2018-01-10 관측 부재, 2018-01-18 판에 첫 등장(4446062). 판정서 :147 '과거 백필 정본 = ALFRED 실공표일' 기준(바로 앞 2018-01-03 override 와 같은 공백 처리). https://alfred.stlouisfed.org/graph/alfredgraph.csv?id=WALCL&vintage_date=2018-01-18"
+        }
+      ]
+    },
+    {
+      "id": "NFCI",
+      "name": "Chi_Fin_Cond",
+      "aliases": [
+        "Chi_Fin_Cond"
+      ],
+      "source": "FRED(Chicago Fed)",
+      "frequency": "weekly",
+      "date_meaning": "그 주 금요일",
+      "status": "active",
+      "bounds": [
+        {
+          "type": "label_plus_days",
+          "days": 6,
+          "basis": "판정서 ② NFCI 행: 수 08:30 CT 공표 = 수 21:30~23:30 KST → 라벨 +6일(한국 목요일)."
+        },
+        {
+          "type": "us_release",
+          "release": {
+            "kind": "label_plus_days",
+            "days": 5
+          },
+          "us_holiday_roll": true,
+          "kr_rule": "strictly_after",
+          "basis": "같은 행의 공표 요일(수). 수요일이 미국 휴일이면 밀린 것으로 본다(보수 보강)."
+        },
+        {
+          "type": "us_release",
+          "release": {
+            "kind": "us_business_days_after",
+            "n": 3
+          },
+          "us_holiday_roll": false,
+          "kr_rule": "strictly_after",
+          "basis": "r1 보강: ALFRED 대조 2011-05-27~2026-09-18 800주 — 공표 = 라벨(금) 이후 3번째 미국 영업일(월요일 휴일 주는 목요일). 라벨 +6(한국 목)은 휴일 주 104건에서 공표 당일(미국 오전 = 한국 밤)이라 위반이었다. 근거: https://alfred.stlouisfed.org/series/downloaddata?seid=NFCI 의 빈티지 날짜 목록(2026-09-24 열람) · 04_Research/01_reports/pit_c11_20260924/evidence/r1_alfred/check_bounds.R·design.R — 창(기간 끝, 다음 기간 끝] 안 마지막 빈티지 R*(개정 전용 빈티지가 공표 앞에 끼면 첫 빈티지가 공표보다 이르다 → 늦은 쪽을 쓴다 · 창이 비면 기간 끝 뒤 첫 빈티지)"
+        }
+      ],
+      "vintage": {
+        "revisions": "observed",
+        "evidence": "판정서 V-07: 매주 전 이력 재추정, 07-01 백업 대비 1,221/1,378행 소급 수정"
+      },
+      "verdict_rows": [
+        "②NFCI",
+        "V-02",
+        "V-03",
+        "V-04",
+        "V-05",
+        "V-07",
+        "V-11",
+        "r1_alfred_check"
+      ],
+      "release_overrides": [
+        {
+          "obs": "2012-10-26",
+          "us_release": "2012-11-07",
+          "source": "r1 보강 — ALFRED 기간 끝 뒤 첫 빈티지 2012-11-07 · 창 안 빈티지 0개 · R* 2012-11-07(보수). https://alfred.stlouisfed.org/series/downloaddata?seid=NFCI 의 빈티지 날짜 목록(2026-09-24 열람)"
+        },
+        {
+          "obs": "2019-12-27",
+          "us_release": "2020-01-08",
+          "source": "r1 보강 — ALFRED 기간 끝 뒤 첫 빈티지 2020-01-08 · 창 안 빈티지 0개 · R* 2020-01-08(보수). https://alfred.stlouisfed.org/series/downloaddata?seid=NFCI 의 빈티지 날짜 목록(2026-09-24 열람)"
+        },
+        {
+          "obs": "2021-12-31",
+          "us_release": "2022-01-06",
+          "source": "r1 보강 — ALFRED 기간 끝 뒤 첫 빈티지 2022-01-06 · 창 안 빈티지 1개 · R* 2022-01-06(보수). https://alfred.stlouisfed.org/series/downloaddata?seid=NFCI 의 빈티지 날짜 목록(2026-09-24 열람)"
+        },
+        {
+          "obs": "2022-12-16",
+          "us_release": "2023-01-05",
+          "source": "r1 보강 — ALFRED 기간 끝 뒤 첫 빈티지 2023-01-05 · 창 안 빈티지 0개 · R* 2023-01-05(보수). https://alfred.stlouisfed.org/series/downloaddata?seid=NFCI 의 빈티지 날짜 목록(2026-09-24 열람)"
+        },
+        {
+          "obs": "2022-12-23",
+          "us_release": "2023-01-05",
+          "source": "r1 보강 — ALFRED 기간 끝 뒤 첫 빈티지 2023-01-05 · 창 안 빈티지 0개 · R* 2023-01-05(보수). https://alfred.stlouisfed.org/series/downloaddata?seid=NFCI 의 빈티지 날짜 목록(2026-09-24 열람)"
+        }
+      ]
+    },
+    {
+      "id": "STLFSI4",
+      "name": "StL_Fin_Stress",
+      "aliases": [
+        "StL_Fin_Stress"
+      ],
+      "source": "FRED(St. Louis Fed)",
+      "frequency": "weekly",
+      "date_meaning": "그 주 금요일",
+      "status": "active",
+      "bounds": [
+        {
+          "type": "label_plus_days",
+          "days": 7,
+          "basis": "판정서 ② STLFSI4 행: 목 10:00 CT 공표 = 금 00:00 KST → 라벨 +7일(한국 금요일)."
+        },
+        {
+          "type": "us_release",
+          "release": {
+            "kind": "label_plus_days",
+            "days": 6
+          },
+          "us_holiday_roll": true,
+          "kr_rule": "strictly_after",
+          "basis": "같은 행의 공표 요일(목). 목요일이 미국 휴일이면 밀린 것으로 본다(보수 보강)."
+        }
+      ],
+      "vintage": {
+        "revisions": "observed",
+        "evidence": "판정서 V-07: 전 이력 재추정, 1,375/1,378행 소급 수정"
+      },
+      "verdict_rows": [
+        "②STLFSI4",
+        "V-02",
+        "V-03",
+        "V-04",
+        "V-07",
+        "V-11"
+      ]
+    },
+    {
+      "id": "ICSA",
+      "name": "Init_Claims",
+      "aliases": [
+        "Init_Claims"
+      ],
+      "source": "FRED(DOL)",
+      "frequency": "weekly",
+      "date_meaning": "그 주 토요일",
+      "status": "active",
+      "bounds": [
+        {
+          "type": "label_plus_days",
+          "days": 6,
+          "basis": "판정서 ② ICSA 행: 목 08:30 ET 공표 = 목 21:30 KST → 라벨 +6일(한국 금요일). V2 실례: 08-29분 09-03 공표."
+        },
+        {
+          "type": "us_release",
+          "release": {
+            "kind": "label_plus_days",
+            "days": 5
+          },
+          "us_holiday_roll": true,
+          "kr_rule": "strictly_after",
+          "basis": "같은 행의 공표 요일(목). 목요일 미국 휴일(추수감사절 등)은 밀린 것으로 본다(실제로는 앞당겨 공표되는 주가 있어 보수 쪽)."
+        }
+      ],
+      "vintage": {
+        "revisions": "observed",
+        "evidence": "판정서 V-07"
+      },
+      "known_gaps": [
+        "2025-10 셧다운 기간 주간 공표 일정 — r1 에서 ALFRED 빈티지 목록으로 확인해 override(2025-09-27~11-08분 = 11-20)"
+      ],
+      "verdict_rows": [
+        "②ICSA",
+        "V-04",
+        "V-07",
+        "V-11",
+        "r1_alfred_check"
+      ],
+      "release_overrides": [
+        {
+          "obs": "2017-03-18",
+          "us_release": "2017-03-24",
+          "source": "r1 보강(2025 셧다운 주간 공표 중단 → 11-20 일괄 · 기타 지연 주) — ALFRED 기간 끝 뒤 첫 빈티지 2017-03-23 · 창 안 빈티지 2개 · R* 2017-03-24(보수). https://alfred.stlouisfed.org/series/downloaddata?seid=ICSA 의 빈티지 날짜 목록(2026-09-24 열람)"
+        },
+        {
+          "obs": "2018-03-17",
+          "us_release": "2018-03-29",
+          "source": "주의: 03-22 빈티지 부재 — ALFRED 공백 의심(실공표는 03-22 였을 가능성). 보수로 유지 · r1 보강(2025 셧다운 주간 공표 중단 → 11-20 일괄 · 기타 지연 주) — ALFRED 기간 끝 뒤 첫 빈티지 2018-03-29 · 창 안 빈티지 0개 · R* 2018-03-29(보수). https://alfred.stlouisfed.org/series/downloaddata?seid=ICSA 의 빈티지 날짜 목록(2026-09-24 열람)"
+        },
+        {
+          "obs": "2025-09-27",
+          "us_release": "2025-11-20",
+          "source": "r1 보강(2025 셧다운 주간 공표 중단 → 11-20 일괄 · 기타 지연 주) — ALFRED 기간 끝 뒤 첫 빈티지 2025-11-20 · 창 안 빈티지 0개 · R* 2025-11-20(보수). https://alfred.stlouisfed.org/series/downloaddata?seid=ICSA 의 빈티지 날짜 목록(2026-09-24 열람)"
+        },
+        {
+          "obs": "2025-10-04",
+          "us_release": "2025-11-20",
+          "source": "r1 보강(2025 셧다운 주간 공표 중단 → 11-20 일괄 · 기타 지연 주) — ALFRED 기간 끝 뒤 첫 빈티지 2025-11-20 · 창 안 빈티지 0개 · R* 2025-11-20(보수). https://alfred.stlouisfed.org/series/downloaddata?seid=ICSA 의 빈티지 날짜 목록(2026-09-24 열람)"
+        },
+        {
+          "obs": "2025-10-11",
+          "us_release": "2025-11-20",
+          "source": "r1 보강(2025 셧다운 주간 공표 중단 → 11-20 일괄 · 기타 지연 주) — ALFRED 기간 끝 뒤 첫 빈티지 2025-11-20 · 창 안 빈티지 0개 · R* 2025-11-20(보수). https://alfred.stlouisfed.org/series/downloaddata?seid=ICSA 의 빈티지 날짜 목록(2026-09-24 열람)"
+        },
+        {
+          "obs": "2025-10-18",
+          "us_release": "2025-11-20",
+          "source": "r1 보강(2025 셧다운 주간 공표 중단 → 11-20 일괄 · 기타 지연 주) — ALFRED 기간 끝 뒤 첫 빈티지 2025-11-20 · 창 안 빈티지 0개 · R* 2025-11-20(보수). https://alfred.stlouisfed.org/series/downloaddata?seid=ICSA 의 빈티지 날짜 목록(2026-09-24 열람)"
+        },
+        {
+          "obs": "2025-10-25",
+          "us_release": "2025-11-20",
+          "source": "r1 보강(2025 셧다운 주간 공표 중단 → 11-20 일괄 · 기타 지연 주) — ALFRED 기간 끝 뒤 첫 빈티지 2025-11-20 · 창 안 빈티지 0개 · R* 2025-11-20(보수). https://alfred.stlouisfed.org/series/downloaddata?seid=ICSA 의 빈티지 날짜 목록(2026-09-24 열람)"
+        },
+        {
+          "obs": "2025-11-01",
+          "us_release": "2025-11-20",
+          "source": "r1 보강(2025 셧다운 주간 공표 중단 → 11-20 일괄 · 기타 지연 주) — ALFRED 기간 끝 뒤 첫 빈티지 2025-11-20 · 창 안 빈티지 0개 · R* 2025-11-20(보수). https://alfred.stlouisfed.org/series/downloaddata?seid=ICSA 의 빈티지 날짜 목록(2026-09-24 열람)"
+        },
+        {
+          "obs": "2025-11-08",
+          "us_release": "2025-11-20",
+          "source": "r1 보강(2025 셧다운 주간 공표 중단 → 11-20 일괄 · 기타 지연 주) — ALFRED 기간 끝 뒤 첫 빈티지 2025-11-20 · 창 안 빈티지 0개 · R* 2025-11-20(보수). https://alfred.stlouisfed.org/series/downloaddata?seid=ICSA 의 빈티지 날짜 목록(2026-09-24 열람)"
+        }
+      ]
+    },
+    {
+      "id": "FEDFUNDS",
+      "name": "Fed_Funds_Rate",
+      "aliases": [
+        "Fed_Funds_Rate"
+      ],
+      "source": "FRED(H.15)",
+      "frequency": "monthly",
+      "date_meaning": "M-01 = M월 평균",
+      "status": "active",
+      "bounds": [
+        {
+          "type": "month_nth_kr_trading_day",
+          "month_offset": 1,
+          "n": 3,
+          "basis": "판정서 ② FEDFUNDS 행: 공표일 기준 M+1월 셋째 한국 영업일부터(월초 LOCF 금지, V-05)."
+        },
+        {
+          "type": "us_release",
+          "release": {
+            "kind": "month_nth_us_business_day",
+            "month_offset": 1,
+            "n": 1
+          },
+          "us_holiday_roll": true,
+          "kr_rule": "strictly_after",
+          "basis": "같은 행: 가용 = M+1월 첫 미국 영업일. 한국 연휴로 셋째 한국 영업일이 그보다 이를 수는 없지만 하한으로 둔다."
+        },
+        {
+          "type": "us_release",
+          "release": {
+            "kind": "month_nth_us_business_day",
+            "month_offset": 1,
+            "n": 9
+          },
+          "us_holiday_roll": false,
+          "kr_rule": "strictly_after",
+          "basis": "r1 보강(2026-09-24 · 판정서 ② 정정): ALFRED 빈티지 대조 2000-01-01~2026-08-01 320관측 중 창 안 빈티지가 하나뿐인(공표가 모호하지 않은) 316관측의 R* 최대 = M+1월 9번째 미국 영업일(셧다운 관측 제외). 그보다 늦은 관측은 release_overrides. 공표 시각(미국 오전 ET)은 한국 15:30 이후 → 다음 한국 거래일. 근거: https://alfred.stlouisfed.org/series/downloaddata?seid=FEDFUNDS 의 빈티지 날짜 목록(2026-09-24 열람) · 04_Research/01_reports/pit_c11_20260924/evidence/r1_alfred/check_bounds.R·design.R — 창(기간 끝, 다음 기간 끝] 안 마지막 빈티지 R*(개정 전용 빈티지가 공표 앞에 끼면 첫 빈티지가 공표보다 이르다 → 늦은 쪽을 쓴다 · 창이 비면 기간 끝 뒤 첫 빈티지)"
+        }
+      ],
+      "vintage": {
+        "revisions": "none_known",
+        "evidence": "월평균 실효금리"
+      },
+      "verdict_rows": [
+        "②FEDFUNDS",
+        "V-05",
+        "r1_alfred_check"
+      ],
+      "release_overrides": [
+        {
+          "obs": "2020-06-01",
+          "us_release": "2020-07-21",
+          "source": "r1 보강 — ALFRED 기간 끝 뒤 첫 빈티지 2020-07-01 · 창 안 빈티지 2개 · R* 2020-07-21(보수). https://alfred.stlouisfed.org/series/downloaddata?seid=FEDFUNDS 의 빈티지 날짜 목록(2026-09-24 열람)"
+        }
+      ]
+    },
+    {
+      "id": "UNRATE",
+      "name": "US_Unemployment",
+      "aliases": [
+        "US_Unemployment"
+      ],
+      "source": "FRED(BLS)",
+      "frequency": "monthly",
+      "date_meaning": "M-01",
+      "status": "active",
+      "bounds": [
+        {
+          "type": "us_release",
+          "release": {
+            "kind": "month_nth_weekday",
+            "month_offset": 1,
+            "weekday": 5,
+            "nth": 2
+          },
+          "us_holiday_roll": true,
+          "kr_rule": "strictly_after",
+          "basis": "판정서 ② UNRATE 행 = 'M+1월 첫 금요일 공표 → 공표 다음 한국 영업일'. 상한화: BLS 고용보고서는 기준주(12일 포함 주) 종료 후 셋째 금요일이라 M+1월 첫 금요일보다 늦은 달이 있다(예: 2022-06분 07-08, 2023-02분 03-10, 2024-12분 2025-01-10). 기준주 규칙상 공표는 M+1월 10일을 넘지 않으므로(휴일·셧다운 예외는 release_overrides) M+1월 둘째 금요일(8~14일)을 상한으로 쓴다. 표의 첫 금요일보다 최대 1주 늦다(보수). 08:30 ET 공표 = 한국 15:30 이후 → 다음 한국 거래일. 예시 공표일은 기억 기반 — 안 C ALFRED 로 확정."
+        }
+      ],
+      "release_overrides": [
+        {
+          "obs": "2013-09-01",
+          "us_release": "2013-10-22",
+          "source": "2013 셧다운 — BLS 9월 고용보고서 10-22 공표"
+        },
+        {
+          "obs": "2013-10-01",
+          "us_release": "2013-11-08",
+          "source": "2013 셧다운 — BLS 10월 고용보고서 11-08 공표"
+        },
+        {
+          "obs": "2025-09-01",
+          "us_release": "2025-11-20",
+          "source": "2025 셧다운 — BLS 9월 고용보고서 11-20 공표"
+        },
+        {
+          "obs": "2025-11-01",
+          "us_release": "2025-12-16",
+          "source": "2025 셧다운 — BLS 11월 고용보고서 12-16 공표(10월 가계조사 미실시 → 2025-10 관측 없음)"
+        }
+      ],
+      "vintage": {
+        "revisions": "possible",
+        "evidence": "연 1회 계절조정 재추정"
+      },
+      "verdict_rows": [
+        "②UNRATE",
+        "V-14"
+      ]
+    },
+    {
+      "id": "CPIAUCSL",
+      "name": "US_CPI",
+      "aliases": [
+        "US_CPI"
+      ],
+      "source": "FRED(BLS)",
+      "frequency": "monthly",
+      "date_meaning": "M-01",
+      "status": "active",
+      "bounds": [
+        {
+          "type": "label_plus_days",
+          "days": 48,
+          "basis": "판정서 ② CPIAUCSL 행: M+1월 10~15일경 공표 → 라벨 +38~48일의 상한 48."
+        },
+        {
+          "type": "us_release",
+          "release": {
+            "kind": "month_nth_us_business_day",
+            "month_offset": 1,
+            "n": 17
+          },
+          "us_holiday_roll": false,
+          "kr_rule": "strictly_after",
+          "basis": "r1 보강(2026-09-24 · 판정서 ② 정정): ALFRED 빈티지 대조 2000-01-01~2026-08-01 319관측 중 창 안 빈티지가 하나뿐인(공표가 모호하지 않은) 296관측의 R* 최대 = M+1월 17번째 미국 영업일(셧다운 관측 제외). 그보다 늦은 관측은 release_overrides. 공표 시각(미국 오전 ET)은 한국 15:30 이후 → 다음 한국 거래일. BLS 실공표 대조(V2): 2003-01→02-21·2004-12→2005-01-19·2005-01→02-23·2010-01→02-19·2015-12→2016-01-20 모두 이 상한 안. 근거: https://alfred.stlouisfed.org/series/downloaddata?seid=CPIAUCSL 의 빈티지 날짜 목록(2026-09-24 열람) · 04_Research/01_reports/pit_c11_20260924/evidence/r1_alfred/check_bounds.R·design.R — 창(기간 끝, 다음 기간 끝] 안 마지막 빈티지 R*(개정 전용 빈티지가 공표 앞에 끼면 첫 빈티지가 공표보다 이르다 → 늦은 쪽을 쓴다 · 창이 비면 기간 끝 뒤 첫 빈티지)"
+        }
+      ],
+      "release_overrides": [
+        {
+          "obs": "2000-08-01",
+          "us_release": "2000-09-28",
+          "source": "r1 보강 — ALFRED 기간 끝 뒤 첫 빈티지 2000-09-15 · 창 안 빈티지 2개 · R* 2000-09-28(보수). https://alfred.stlouisfed.org/series/downloaddata?seid=CPIAUCSL 의 빈티지 날짜 목록(2026-09-24 열람)"
+        },
+        {
+          "obs": "2013-09-01",
+          "us_release": "2013-10-30",
+          "source": "2013 셧다운 — BLS 9월 CPI 10-30 공표"
+        },
+        {
+          "obs": "2013-10-01",
+          "us_release": "2013-11-20",
+          "source": "2013 셧다운 — BLS 10월 CPI 11-20 공표"
+        },
+        {
+          "obs": "2015-01-01",
+          "us_release": "2015-02-26",
+          "source": "r1 보강 — ALFRED 기간 끝 뒤 첫 빈티지 2015-02-20 · 창 안 빈티지 2개 · R* 2015-02-26(보수). https://alfred.stlouisfed.org/series/downloaddata?seid=CPIAUCSL 의 빈티지 날짜 목록(2026-09-24 열람)"
+        },
+        {
+          "obs": "2025-09-01",
+          "us_release": "2025-10-24",
+          "source": "2025 셧다운 — BLS 9월 CPI 10-24 공표"
+        },
+        {
+          "obs": "2025-11-01",
+          "us_release": "2025-12-18",
+          "source": "2025 셧다운 — BLS 11월 CPI 12-18 공표(10월 CPI 미공표 → 2025-10 관측 없음, CONVENTIONS ③)"
+        }
+      ],
+      "vintage": {
+        "revisions": "possible",
+        "evidence": "계절조정 인자 연 1회 재추정"
+      },
+      "known_gaps": [
+        "2025-10 관측 부재 — 행 기준 shift(12) 금지, 날짜 기준 12개월 변화(PIT-C11-CONVENTIONS ③, 소비자 몫)"
+      ],
+      "verdict_rows": [
+        "②CPIAUCSL",
+        "V-01",
+        "V-12",
+        "V-13",
+        "V-14",
+        "r1_alfred_check"
+      ]
+    },
+    {
+      "id": "INDPRO",
+      "name": "US_IndProd",
+      "aliases": [
+        "US_IndProd"
+      ],
+      "source": "FRED(G.17)",
+      "frequency": "monthly",
+      "date_meaning": "M-01",
+      "status": "active",
+      "bounds": [
+        {
+          "type": "label_plus_days",
+          "days": 54,
+          "basis": "판정서 ② INDPRO·PERMIT 행: M+1월 16~20일경 → 라벨 +47~54일의 상한 54. V-01 실례: 8월분 도착 09-18~23."
+        },
+        {
+          "type": "us_release",
+          "release": {
+            "kind": "month_nth_us_business_day",
+            "month_offset": 1,
+            "n": 13
+          },
+          "us_holiday_roll": false,
+          "kr_rule": "strictly_after",
+          "basis": "r1 보강(2026-09-24 · 판정서 ② 정정): ALFRED 빈티지 대조 2000-01-01~2026-08-01 320관측 중 창 안 빈티지가 하나뿐인(공표가 모호하지 않은) 294관측의 R* 최대 = M+1월 13번째 미국 영업일(셧다운 관측 제외). 그보다 늦은 관측은 release_overrides. 공표 시각(미국 오전 ET)은 한국 15:30 이후 → 다음 한국 거래일. 근거: https://alfred.stlouisfed.org/series/downloaddata?seid=INDPRO 의 빈티지 날짜 목록(2026-09-24 열람) · 04_Research/01_reports/pit_c11_20260924/evidence/r1_alfred/check_bounds.R·design.R — 창(기간 끝, 다음 기간 끝] 안 마지막 빈티지 R*(개정 전용 빈티지가 공표 앞에 끼면 첫 빈티지가 공표보다 이르다 → 늦은 쪽을 쓴다 · 창이 비면 기간 끝 뒤 첫 빈티지)"
+        }
+      ],
+      "vintage": {
+        "revisions": "observed",
+        "evidence": "판정서 V-07: 5행 소급 수정"
+      },
+      "verdict_rows": [
+        "②INDPRO",
+        "V-01",
+        "V-07",
+        "V-13",
+        "r1_alfred_check",
+        "postfix_value_check"
+      ],
+      "release_overrides": [
+        {
+          "obs": "2001-10-01",
+          "us_release": "2001-11-27",
+          "source": "r1 보강 — ALFRED 기간 끝 뒤 첫 빈티지 2001-11-16 · 창 안 빈티지 2개 · R* 2001-11-27(보수). https://alfred.stlouisfed.org/series/downloaddata?seid=INDPRO 의 빈티지 날짜 목록(2026-09-24 열람)"
+        },
+        {
+          "obs": "2004-11-01",
+          "us_release": "2004-12-22",
+          "source": "r1 보강 — ALFRED 기간 끝 뒤 첫 빈티지 2004-12-14 · 창 안 빈티지 2개 · R* 2004-12-22(보수). https://alfred.stlouisfed.org/series/downloaddata?seid=INDPRO 의 빈티지 날짜 목록(2026-09-24 열람)"
+        },
+        {
+          "obs": "2008-02-01",
+          "us_release": "2008-03-28",
+          "source": "r1 보강 — ALFRED 기간 끝 뒤 첫 빈티지 2008-03-17 · 창 안 빈티지 2개 · R* 2008-03-28(보수). https://alfred.stlouisfed.org/series/downloaddata?seid=INDPRO 의 빈티지 날짜 목록(2026-09-24 열람)"
+        },
+        {
+          "obs": "2009-02-01",
+          "us_release": "2009-03-27",
+          "source": "r1 보강 — ALFRED 기간 끝 뒤 첫 빈티지 2009-03-16 · 창 안 빈티지 2개 · R* 2009-03-27(보수). https://alfred.stlouisfed.org/series/downloaddata?seid=INDPRO 의 빈티지 날짜 목록(2026-09-24 열람)"
+        },
+        {
+          "obs": "2010-05-01",
+          "us_release": "2010-06-25",
+          "source": "r1 보강 — ALFRED 기간 끝 뒤 첫 빈티지 2010-06-16 · 창 안 빈티지 2개 · R* 2010-06-25(보수). https://alfred.stlouisfed.org/series/downloaddata?seid=INDPRO 의 빈티지 날짜 목록(2026-09-24 열람)"
+        },
+        {
+          "obs": "2011-02-01",
+          "us_release": "2011-03-25",
+          "source": "r1 보강 — ALFRED 기간 끝 뒤 첫 빈티지 2011-03-17 · 창 안 빈티지 2개 · R* 2011-03-25(보수). https://alfred.stlouisfed.org/series/downloaddata?seid=INDPRO 의 빈티지 날짜 목록(2026-09-24 열람)"
+        },
+        {
+          "obs": "2012-02-01",
+          "us_release": "2012-03-30",
+          "source": "r1 보강 — ALFRED 기간 끝 뒤 첫 빈티지 2012-03-16 · 창 안 빈티지 2개 · R* 2012-03-30(보수). https://alfred.stlouisfed.org/series/downloaddata?seid=INDPRO 의 빈티지 날짜 목록(2026-09-24 열람)"
+        },
+        {
+          "obs": "2013-02-01",
+          "us_release": "2013-03-22",
+          "source": "r1 보강 — ALFRED 기간 끝 뒤 첫 빈티지 2013-03-15 · 창 안 빈티지 2개 · R* 2013-03-22(보수). https://alfred.stlouisfed.org/series/downloaddata?seid=INDPRO 의 빈티지 날짜 목록(2026-09-24 열람)"
+        },
+        {
+          "obs": "2013-09-01",
+          "us_release": "2013-10-28",
+          "source": "r1 보강 — ALFRED 기간 끝 뒤 첫 빈티지 2013-10-28 · 창 안 빈티지 1개 · R* 2013-10-28(보수). https://alfred.stlouisfed.org/series/downloaddata?seid=INDPRO 의 빈티지 날짜 목록(2026-09-24 열람)"
+        },
+        {
+          "obs": "2015-06-01",
+          "us_release": "2015-07-21",
+          "source": "r1 보강 — ALFRED 기간 끝 뒤 첫 빈티지 2015-07-15 · 창 안 빈티지 2개 · R* 2015-07-21(보수). https://alfred.stlouisfed.org/series/downloaddata?seid=INDPRO 의 빈티지 날짜 목록(2026-09-24 열람)"
+        },
+        {
+          "obs": "2017-02-01",
+          "us_release": "2017-03-31",
+          "source": "r1 보강 — ALFRED 기간 끝 뒤 첫 빈티지 2017-03-17 · 창 안 빈티지 2개 · R* 2017-03-31(보수). https://alfred.stlouisfed.org/series/downloaddata?seid=INDPRO 의 빈티지 날짜 목록(2026-09-24 열람)"
+        },
+        {
+          "obs": "2018-02-01",
+          "us_release": "2018-03-23",
+          "source": "r1 보강 — ALFRED 기간 끝 뒤 첫 빈티지 2018-03-16 · 창 안 빈티지 2개 · R* 2018-03-23(보수). https://alfred.stlouisfed.org/series/downloaddata?seid=INDPRO 의 빈티지 날짜 목록(2026-09-24 열람)"
+        },
+        {
+          "obs": "2019-02-01",
+          "us_release": "2019-03-27",
+          "source": "r1 보강 — ALFRED 기간 끝 뒤 첫 빈티지 2019-03-15 · 창 안 빈티지 2개 · R* 2019-03-27(보수). https://alfred.stlouisfed.org/series/downloaddata?seid=INDPRO 의 빈티지 날짜 목록(2026-09-24 열람)"
+        },
+        {
+          "obs": "2021-04-01",
+          "us_release": "2021-05-28",
+          "source": "r1 보강 — ALFRED 기간 끝 뒤 첫 빈티지 2021-05-14 · 창 안 빈티지 2개 · R* 2021-05-28(보수). https://alfred.stlouisfed.org/series/downloaddata?seid=INDPRO 의 빈티지 날짜 목록(2026-09-24 열람)"
+        },
+        {
+          "obs": "2022-05-01",
+          "us_release": "2022-06-28",
+          "source": "r1 보강 — ALFRED 기간 끝 뒤 첫 빈티지 2022-06-17 · 창 안 빈티지 2개 · R* 2022-06-28(보수). https://alfred.stlouisfed.org/series/downloaddata?seid=INDPRO 의 빈티지 날짜 목록(2026-09-24 열람)"
+        },
+        {
+          "obs": "2023-02-01",
+          "us_release": "2023-03-28",
+          "source": "r1 보강 — ALFRED 기간 끝 뒤 첫 빈티지 2023-03-17 · 창 안 빈티지 2개 · R* 2023-03-28(보수). https://alfred.stlouisfed.org/series/downloaddata?seid=INDPRO 의 빈티지 날짜 목록(2026-09-24 열람)"
+        },
+        {
+          "obs": "2024-05-01",
+          "us_release": "2024-06-28",
+          "source": "r1 보강 — ALFRED 기간 끝 뒤 첫 빈티지 2024-06-18 · 창 안 빈티지 2개 · R* 2024-06-28(보수). https://alfred.stlouisfed.org/series/downloaddata?seid=INDPRO 의 빈티지 날짜 목록(2026-09-24 열람)"
+        },
+        {
+          "obs": "2025-09-01",
+          "us_release": "2025-12-03",
+          "source": "postfix 값 대조(2026-09-24) — 값의 첫 등장: ALFRED as-of 스냅샷 2025-12-02 판은 2025-09-01 값이 없고 2025-12-03 판에 처음 나온다(값 101.4279). FRED API output_type=4(Initial Release) realtime_start = 2025-12-03 와 일치. r1 의 2025-11-24 는 연간 개정 빈티지(2025-08 에서 끝남)를 공표로 잘못 셌다 — 7 한국 거래일 조기. https://alfred.stlouisfed.org/graph/alfredgraph.csv?id=INDPRO&vintage_date=2025-12-03 · 04_Research/01_reports/pit_c11_20260924/evidence/postfix_value/initial_release.csv (2026-09-24 열람) · 정정 전(r1) us_release 2025-11-24"
+        },
+        {
+          "obs": "2025-10-01",
+          "us_release": "2025-12-23",
+          "source": "postfix 값 대조(2026-09-24) — 값의 첫 등장: ALFRED as-of 스냅샷 2025-12-22 판은 2025-10-01 값이 없고 2025-12-23 판에 처음 나온다(값 101.6160). FRED API output_type=4(Initial Release) realtime_start = 2025-12-23 와 일치. r1 의 2025-12-03 은 9월분 공표판이었다 — 12-16·12-22 판도 2025-09 에서 끝난다. https://alfred.stlouisfed.org/graph/alfredgraph.csv?id=INDPRO&vintage_date=2025-12-23 · 04_Research/01_reports/pit_c11_20260924/evidence/postfix_value/initial_release.csv (2026-09-24 열람) · 정정 전(r1) us_release 2025-12-03"
+        },
+        {
+          "obs": "2025-11-01",
+          "us_release": "2025-12-23",
+          "source": "r1 보강 — ALFRED 기간 끝 뒤 첫 빈티지 2025-12-03 · 창 안 빈티지 2개 · R* 2025-12-23(보수). https://alfred.stlouisfed.org/series/downloaddata?seid=INDPRO 의 빈티지 날짜 목록(2026-09-24 열람)"
+        }
+      ]
+    },
+    {
+      "id": "PERMIT",
+      "name": "Housing_Permits",
+      "aliases": [
+        "Housing_Permits"
+      ],
+      "source": "FRED(Census)",
+      "frequency": "monthly",
+      "date_meaning": "M-01",
+      "status": "active",
+      "bounds": [
+        {
+          "type": "label_plus_days",
+          "days": 54,
+          "basis": "판정서 ② INDPRO·PERMIT 행: 라벨 +47~54일의 상한 54."
+        },
+        {
+          "type": "us_release",
+          "release": {
+            "kind": "month_nth_us_business_day",
+            "month_offset": 1,
+            "n": 21
+          },
+          "us_holiday_roll": false,
+          "kr_rule": "strictly_after",
+          "basis": "r1 보강(2026-09-24 · 판정서 ② 정정): ALFRED 빈티지 대조 2000-01-01~2026-08-01 320관측 중 창 안 빈티지가 하나뿐인(공표가 모호하지 않은) 22관측의 R* 최대 = M+1월 21번째 미국 영업일(셧다운 관측 제외). 그보다 늦은 관측은 release_overrides. 공표 시각(미국 오전 ET)은 한국 15:30 이후 → 다음 한국 거래일. 창 안 빈티지가 보통 2개라(예비·개정) 늦은 쪽 기준 — 보수. 근거: https://alfred.stlouisfed.org/series/downloaddata?seid=PERMIT 의 빈티지 날짜 목록(2026-09-24 열람) · 04_Research/01_reports/pit_c11_20260924/evidence/r1_alfred/check_bounds.R·design.R — 창(기간 끝, 다음 기간 끝] 안 마지막 빈티지 R*(개정 전용 빈티지가 공표 앞에 끼면 첫 빈티지가 공표보다 이르다 → 늦은 쪽을 쓴다 · 창이 비면 기간 끝 뒤 첫 빈티지)"
+        }
+      ],
+      "vintage": {
+        "revisions": "observed",
+        "evidence": "판정서 V-07"
+      },
+      "known_gaps": [
+        "셧다운 기간 공표 지연 — r1 에서 ALFRED 빈티지 목록으로 확인해 override",
+        "2025 셧다운 뒤 Census 일정 지연 — 2025-11·12·2026-01·02분은 비셧다운 달 포함 M+1월 21번째 미국 영업일 상한을 넘었다(postfix 값 대조 · override). 2026-04분부터는 상한 안(05-21·06-16·07-17·08-18·09-17 공표)."
+      ],
+      "verdict_rows": [
+        "②PERMIT",
+        "V-07",
+        "r1_alfred_check",
+        "postfix_value_check"
+      ],
+      "release_overrides": [
+        {
+          "obs": "2013-09-01",
+          "us_release": "2013-11-26",
+          "source": "r1 보강 — ALFRED 기간 끝 뒤 첫 빈티지 2013-11-26 · 창 안 빈티지 0개 · R* 2013-11-26(보수). https://alfred.stlouisfed.org/series/downloaddata?seid=PERMIT 의 빈티지 날짜 목록(2026-09-24 열람)"
+        },
+        {
+          "obs": "2018-12-01",
+          "us_release": "2019-02-26",
+          "source": "r1 보강 — ALFRED 기간 끝 뒤 첫 빈티지 2019-02-26 · 창 안 빈티지 0개 · R* 2019-02-26(보수). https://alfred.stlouisfed.org/series/downloaddata?seid=PERMIT 의 빈티지 날짜 목록(2026-09-24 열람)"
+        },
+        {
+          "obs": "2019-01-01",
+          "us_release": "2019-03-08",
+          "source": "postfix 값 대조(2026-09-24) — 값의 첫 등장: ALFRED as-of 스냅샷 2019-03-07 판은 2019-01-01 값이 없고 2019-03-08 판에 처음 나온다(값 1345). FRED API output_type=4(Initial Release) realtime_start = 2019-03-08 와 일치. 2018-12~2019-01 셧다운 여파 — M+1월 21번째 미국 영업일 상한(03-04)보다 늦다. https://alfred.stlouisfed.org/graph/alfredgraph.csv?id=PERMIT&vintage_date=2019-03-08 · 04_Research/01_reports/pit_c11_20260924/evidence/postfix_value/initial_release.csv (2026-09-24 열람)"
+        },
+        {
+          "obs": "2025-09-01",
+          "us_release": "2026-01-09",
+          "source": "r1 보강 — ALFRED 기간 끝 뒤 첫 빈티지 2026-01-09 · 창 안 빈티지 0개 · R* 2026-01-09(보수). https://alfred.stlouisfed.org/series/downloaddata?seid=PERMIT 의 빈티지 날짜 목록(2026-09-24 열람)"
+        },
+        {
+          "obs": "2025-10-01",
+          "us_release": "2026-01-09",
+          "source": "r1 보강 — ALFRED 기간 끝 뒤 첫 빈티지 2026-01-09 · 창 안 빈티지 0개 · R* 2026-01-09(보수). https://alfred.stlouisfed.org/series/downloaddata?seid=PERMIT 의 빈티지 날짜 목록(2026-09-24 열람)"
+        },
+        {
+          "obs": "2025-11-01",
+          "us_release": "2026-02-18",
+          "source": "postfix 값 대조(2026-09-24) — 값의 첫 등장: ALFRED as-of 스냅샷 2026-02-17 판은 2025-11-01 값이 없고 2026-02-18 판에 처음 나온다(값 1388). FRED API output_type=4(Initial Release) realtime_start = 2026-02-18 와 일치. r1 의 2026-01-09 판은 2025-10 에서 끝났다(01-27 판도 같음). https://alfred.stlouisfed.org/graph/alfredgraph.csv?id=PERMIT&vintage_date=2026-02-18 · 04_Research/01_reports/pit_c11_20260924/evidence/postfix_value/initial_release.csv (2026-09-24 열람) · 정정 전(r1) us_release 2026-01-09"
+        },
+        {
+          "obs": "2025-12-01",
+          "us_release": "2026-02-18",
+          "source": "postfix 값 대조(2026-09-24) — 값의 첫 등장: ALFRED as-of 스냅샷 2026-02-17 판은 2025-12-01 값이 없고 2026-02-18 판에 처음 나온다(값 1448). FRED API output_type=4(Initial Release) realtime_start = 2026-02-18 와 일치. 2025 셧다운 후 Census 일정 지연 — 상한(M+1월 21번째 미국 영업일) 초과. https://alfred.stlouisfed.org/graph/alfredgraph.csv?id=PERMIT&vintage_date=2026-02-18 · 04_Research/01_reports/pit_c11_20260924/evidence/postfix_value/initial_release.csv (2026-09-24 열람)"
+        },
+        {
+          "obs": "2026-01-01",
+          "us_release": "2026-03-12",
+          "source": "postfix 값 대조(2026-09-24) — 값의 첫 등장: ALFRED as-of 스냅샷 2026-03-11 판은 2026-01-01 값이 없고 2026-03-12 판에 처음 나온다(값 1376). FRED API output_type=4(Initial Release) realtime_start = 2026-03-12 와 일치. 비셧다운 달이지만 셧다운 후 일정 지연으로 상한 초과. https://alfred.stlouisfed.org/graph/alfredgraph.csv?id=PERMIT&vintage_date=2026-03-12 · 04_Research/01_reports/pit_c11_20260924/evidence/postfix_value/initial_release.csv (2026-09-24 열람)"
+        },
+        {
+          "obs": "2026-02-01",
+          "us_release": "2026-04-29",
+          "source": "postfix 값 대조(2026-09-24) — 값의 첫 등장: ALFRED as-of 스냅샷 2026-04-28 판은 2026-02-01 값이 없고 2026-04-29 판에 처음 나온다(값 1538). FRED API output_type=4(Initial Release) realtime_start = 2026-04-29 와 일치. 비셧다운 달이지만 셧다운 후 일정 지연으로 상한 초과(03-31·04-10·04-17·04-22·04-28 판 모두 2026-01 에서 끝남). https://alfred.stlouisfed.org/graph/alfredgraph.csv?id=PERMIT&vintage_date=2026-04-29 · 04_Research/01_reports/pit_c11_20260924/evidence/postfix_value/initial_release.csv (2026-09-24 열람)"
+        }
+      ]
+    },
+    {
+      "id": "M2SL",
+      "name": "US_M2",
+      "aliases": [
+        "US_M2"
+      ],
+      "source": "FRED(H.6)",
+      "frequency": "monthly",
+      "date_meaning": "M-01",
+      "status": "active",
+      "bounds": [
+        {
+          "type": "label_plus_days",
+          "days": 64,
+          "basis": "판정서 ② M2SL 행: M+1월 넷째 화요일 → 라벨 +51~64일의 상한 64."
+        }
+      ],
+      "vintage": {
+        "revisions": "observed",
+        "evidence": "판정서 V-07: 313/317행 소급 수정"
+      },
+      "verdict_rows": [
+        "②M2SL",
+        "V-07"
+      ]
+    },
+    {
+      "id": "UMCSENT",
+      "name": "UMich_Sentiment",
+      "aliases": [
+        "UMich_Sentiment"
+      ],
+      "source": "FRED(UMich)",
+      "frequency": "monthly",
+      "date_meaning": "M-01",
+      "status": "active",
+      "bounds": [
+        {
+          "type": "month_day",
+          "month_offset": 2,
+          "day": 5,
+          "basis": "판정서 ② UMCSENT 행: 원천은 M월 말, FRED 는 1개월 늦게 게시 → FRED 경유 기준 M+2월 5일경. 스냅샷 도착 상한 06월분 08-04 08:08 KST·07월분 08-31 08:01 KST."
+        }
+      ],
+      "vintage": {
+        "revisions": "possible",
+        "evidence": "예비→확정"
+      },
+      "verdict_rows": [
+        "②UMCSENT",
+        "V-11"
+      ]
+    },
+    {
+      "id": "PCOPPUSDM",
+      "name": "Copper_Price",
+      "aliases": [
+        "Copper_Price"
+      ],
+      "source": "FRED(IMF)",
+      "frequency": "monthly",
+      "date_meaning": "M-01(월평균)",
+      "status": "active",
+      "bounds": [
+        {
+          "type": "label_plus_days",
+          "days": 51,
+          "basis": "판정서 ② PCOPPUSDM 행: 라벨 +42~51일의 상한 51."
+        },
+        {
+          "type": "us_release",
+          "release": {
+            "kind": "month_nth_us_business_day",
+            "month_offset": 1,
+            "n": 21
+          },
+          "us_holiday_roll": false,
+          "kr_rule": "strictly_after",
+          "basis": "r1 보강(2026-09-24 · 판정서 ② 정정): ALFRED 빈티지 대조 2015-11-01~2026-07-01 111관측 중 창 안 빈티지가 하나뿐인(공표가 모호하지 않은) 90관측의 R* 최대 = M+1월 21번째 미국 영업일(셧다운 관측 제외). 그보다 늦은 관측은 release_overrides. 공표 시각(미국 오전 ET)은 한국 15:30 이후 → 다음 한국 거래일. 근거: https://alfred.stlouisfed.org/series/downloaddata?seid=PCOPPUSDM 의 빈티지 날짜 목록(2026-09-24 열람) · 04_Research/01_reports/pit_c11_20260924/evidence/r1_alfred/check_bounds.R·design.R — 창(기간 끝, 다음 기간 끝] 안 마지막 빈티지 R*(개정 전용 빈티지가 공표 앞에 끼면 첫 빈티지가 공표보다 이르다 → 늦은 쪽을 쓴다 · 창이 비면 기간 끝 뒤 첫 빈티지)"
+        }
+      ],
+      "vintage": {
+        "revisions": "possible",
+        "evidence": "IMF 1차 상품가격 개정"
+      },
+      "verdict_rows": [
+        "②PCOPPUSDM",
+        "r1_alfred_check"
+      ],
+      "release_overrides": [
+        {
+          "obs": "2016-01-01",
+          "us_release": "2016-04-06",
+          "source": "r1 보강(IMF 게시 공백) — ALFRED 기간 끝 뒤 첫 빈티지 2016-04-06 · 창 안 빈티지 0개 · R* 2016-04-06(보수). https://alfred.stlouisfed.org/series/downloaddata?seid=PCOPPUSDM 의 빈티지 날짜 목록(2026-09-24 열람)"
+        },
+        {
+          "obs": "2016-02-01",
+          "us_release": "2016-04-06",
+          "source": "r1 보강(IMF 게시 공백) — ALFRED 기간 끝 뒤 첫 빈티지 2016-04-06 · 창 안 빈티지 0개 · R* 2016-04-06(보수). https://alfred.stlouisfed.org/series/downloaddata?seid=PCOPPUSDM 의 빈티지 날짜 목록(2026-09-24 열람)"
+        },
+        {
+          "obs": "2017-07-01",
+          "us_release": "2019-06-18",
+          "source": "postfix 값 대조(2026-09-24 · 미배포 패치) — FRED API output_type=4 realtime_start = 2019-06-18(값의 첫 등장). r1 날짜 창 대조는 첫 빈티지가 기간 끝 뒤 200일을 넘으면 대조에서 뺐다(IMF·FRED 게시 공백). https://alfred.stlouisfed.org/graph/alfredgraph.csv?id=PCOPPUSDM&vintage_date=2019-06-18"
+        },
+        {
+          "obs": "2017-08-01",
+          "us_release": "2019-06-18",
+          "source": "postfix 값 대조(2026-09-24 · 미배포 패치) — FRED API output_type=4 realtime_start = 2019-06-18(값의 첫 등장). r1 날짜 창 대조는 첫 빈티지가 기간 끝 뒤 200일을 넘으면 대조에서 뺐다(IMF·FRED 게시 공백). https://alfred.stlouisfed.org/graph/alfredgraph.csv?id=PCOPPUSDM&vintage_date=2019-06-18"
+        },
+        {
+          "obs": "2017-09-01",
+          "us_release": "2019-06-18",
+          "source": "postfix 값 대조(2026-09-24 · 미배포 패치) — FRED API output_type=4 realtime_start = 2019-06-18(값의 첫 등장). r1 날짜 창 대조는 첫 빈티지가 기간 끝 뒤 200일을 넘으면 대조에서 뺐다(IMF·FRED 게시 공백). https://alfred.stlouisfed.org/graph/alfredgraph.csv?id=PCOPPUSDM&vintage_date=2019-06-18"
+        },
+        {
+          "obs": "2017-10-01",
+          "us_release": "2019-06-18",
+          "source": "postfix 값 대조(2026-09-24 · 미배포 패치) — FRED API output_type=4 realtime_start = 2019-06-18(값의 첫 등장). r1 날짜 창 대조는 첫 빈티지가 기간 끝 뒤 200일을 넘으면 대조에서 뺐다(IMF·FRED 게시 공백). https://alfred.stlouisfed.org/graph/alfredgraph.csv?id=PCOPPUSDM&vintage_date=2019-06-18"
+        },
+        {
+          "obs": "2017-11-01",
+          "us_release": "2019-06-18",
+          "source": "postfix 값 대조(2026-09-24 · 미배포 패치) — FRED API output_type=4 realtime_start = 2019-06-18(값의 첫 등장). r1 날짜 창 대조는 첫 빈티지가 기간 끝 뒤 200일을 넘으면 대조에서 뺐다(IMF·FRED 게시 공백). https://alfred.stlouisfed.org/graph/alfredgraph.csv?id=PCOPPUSDM&vintage_date=2019-06-18"
+        },
+        {
+          "obs": "2017-12-01",
+          "us_release": "2019-06-18",
+          "source": "postfix 값 대조(2026-09-24 · 미배포 패치) — FRED API output_type=4 realtime_start = 2019-06-18(값의 첫 등장). r1 날짜 창 대조는 첫 빈티지가 기간 끝 뒤 200일을 넘으면 대조에서 뺐다(IMF·FRED 게시 공백). https://alfred.stlouisfed.org/graph/alfredgraph.csv?id=PCOPPUSDM&vintage_date=2019-06-18"
+        },
+        {
+          "obs": "2018-01-01",
+          "us_release": "2019-06-18",
+          "source": "postfix 값 대조(2026-09-24 · 미배포 패치) — FRED API output_type=4 realtime_start = 2019-06-18(값의 첫 등장). r1 날짜 창 대조는 첫 빈티지가 기간 끝 뒤 200일을 넘으면 대조에서 뺐다(IMF·FRED 게시 공백). https://alfred.stlouisfed.org/graph/alfredgraph.csv?id=PCOPPUSDM&vintage_date=2019-06-18"
+        },
+        {
+          "obs": "2018-02-01",
+          "us_release": "2019-06-18",
+          "source": "postfix 값 대조(2026-09-24 · 미배포 패치) — FRED API output_type=4 realtime_start = 2019-06-18(값의 첫 등장). r1 날짜 창 대조는 첫 빈티지가 기간 끝 뒤 200일을 넘으면 대조에서 뺐다(IMF·FRED 게시 공백). https://alfred.stlouisfed.org/graph/alfredgraph.csv?id=PCOPPUSDM&vintage_date=2019-06-18"
+        },
+        {
+          "obs": "2018-03-01",
+          "us_release": "2019-06-18",
+          "source": "postfix 값 대조(2026-09-24 · 미배포 패치) — FRED API output_type=4 realtime_start = 2019-06-18(값의 첫 등장). r1 날짜 창 대조는 첫 빈티지가 기간 끝 뒤 200일을 넘으면 대조에서 뺐다(IMF·FRED 게시 공백). https://alfred.stlouisfed.org/graph/alfredgraph.csv?id=PCOPPUSDM&vintage_date=2019-06-18"
+        },
+        {
+          "obs": "2018-04-01",
+          "us_release": "2019-06-18",
+          "source": "postfix 값 대조(2026-09-24 · 미배포 패치) — FRED API output_type=4 realtime_start = 2019-06-18(값의 첫 등장). r1 날짜 창 대조는 첫 빈티지가 기간 끝 뒤 200일을 넘으면 대조에서 뺐다(IMF·FRED 게시 공백). https://alfred.stlouisfed.org/graph/alfredgraph.csv?id=PCOPPUSDM&vintage_date=2019-06-18"
+        },
+        {
+          "obs": "2018-05-01",
+          "us_release": "2019-06-18",
+          "source": "postfix 값 대조(2026-09-24 · 미배포 패치) — FRED API output_type=4 realtime_start = 2019-06-18(값의 첫 등장). r1 날짜 창 대조는 첫 빈티지가 기간 끝 뒤 200일을 넘으면 대조에서 뺐다(IMF·FRED 게시 공백). https://alfred.stlouisfed.org/graph/alfredgraph.csv?id=PCOPPUSDM&vintage_date=2019-06-18"
+        },
+        {
+          "obs": "2018-06-01",
+          "us_release": "2019-06-18",
+          "source": "postfix 값 대조(2026-09-24 · 미배포 패치) — FRED API output_type=4 realtime_start = 2019-06-18(값의 첫 등장). r1 날짜 창 대조는 첫 빈티지가 기간 끝 뒤 200일을 넘으면 대조에서 뺐다(IMF·FRED 게시 공백). https://alfred.stlouisfed.org/graph/alfredgraph.csv?id=PCOPPUSDM&vintage_date=2019-06-18"
+        },
+        {
+          "obs": "2018-07-01",
+          "us_release": "2019-06-18",
+          "source": "postfix 값 대조(2026-09-24 · 미배포 패치) — FRED API output_type=4 realtime_start = 2019-06-18(값의 첫 등장). r1 날짜 창 대조는 첫 빈티지가 기간 끝 뒤 200일을 넘으면 대조에서 뺐다(IMF·FRED 게시 공백). https://alfred.stlouisfed.org/graph/alfredgraph.csv?id=PCOPPUSDM&vintage_date=2019-06-18"
+        },
+        {
+          "obs": "2018-08-01",
+          "us_release": "2019-06-18",
+          "source": "postfix 값 대조(2026-09-24 · 미배포 패치) — FRED API output_type=4 realtime_start = 2019-06-18(값의 첫 등장). r1 날짜 창 대조는 첫 빈티지가 기간 끝 뒤 200일을 넘으면 대조에서 뺐다(IMF·FRED 게시 공백). https://alfred.stlouisfed.org/graph/alfredgraph.csv?id=PCOPPUSDM&vintage_date=2019-06-18"
+        },
+        {
+          "obs": "2018-09-01",
+          "us_release": "2019-06-18",
+          "source": "postfix 값 대조(2026-09-24 · 미배포 패치) — FRED API output_type=4 realtime_start = 2019-06-18(값의 첫 등장). r1 날짜 창 대조는 첫 빈티지가 기간 끝 뒤 200일을 넘으면 대조에서 뺐다(IMF·FRED 게시 공백). https://alfred.stlouisfed.org/graph/alfredgraph.csv?id=PCOPPUSDM&vintage_date=2019-06-18"
+        },
+        {
+          "obs": "2018-10-01",
+          "us_release": "2019-06-18",
+          "source": "postfix 값 대조(2026-09-24 · 미배포 패치) — FRED API output_type=4 realtime_start = 2019-06-18(값의 첫 등장). r1 날짜 창 대조는 첫 빈티지가 기간 끝 뒤 200일을 넘으면 대조에서 뺐다(IMF·FRED 게시 공백). https://alfred.stlouisfed.org/graph/alfredgraph.csv?id=PCOPPUSDM&vintage_date=2019-06-18"
+        },
+        {
+          "obs": "2018-11-01",
+          "us_release": "2019-06-18",
+          "source": "r1 보강(IMF 게시 공백) — ALFRED 기간 끝 뒤 첫 빈티지 2019-06-18 · 창 안 빈티지 0개 · R* 2019-06-18(보수). https://alfred.stlouisfed.org/series/downloaddata?seid=PCOPPUSDM 의 빈티지 날짜 목록(2026-09-24 열람)"
+        },
+        {
+          "obs": "2018-12-01",
+          "us_release": "2019-06-18",
+          "source": "r1 보강(IMF 게시 공백) — ALFRED 기간 끝 뒤 첫 빈티지 2019-06-18 · 창 안 빈티지 0개 · R* 2019-06-18(보수). https://alfred.stlouisfed.org/series/downloaddata?seid=PCOPPUSDM 의 빈티지 날짜 목록(2026-09-24 열람)"
+        },
+        {
+          "obs": "2019-01-01",
+          "us_release": "2019-06-18",
+          "source": "r1 보강(IMF 게시 공백) — ALFRED 기간 끝 뒤 첫 빈티지 2019-06-18 · 창 안 빈티지 0개 · R* 2019-06-18(보수). https://alfred.stlouisfed.org/series/downloaddata?seid=PCOPPUSDM 의 빈티지 날짜 목록(2026-09-24 열람)"
+        },
+        {
+          "obs": "2019-02-01",
+          "us_release": "2019-06-18",
+          "source": "r1 보강(IMF 게시 공백) — ALFRED 기간 끝 뒤 첫 빈티지 2019-06-18 · 창 안 빈티지 0개 · R* 2019-06-18(보수). https://alfred.stlouisfed.org/series/downloaddata?seid=PCOPPUSDM 의 빈티지 날짜 목록(2026-09-24 열람)"
+        },
+        {
+          "obs": "2019-03-01",
+          "us_release": "2019-06-18",
+          "source": "r1 보강(IMF 게시 공백) — ALFRED 기간 끝 뒤 첫 빈티지 2019-06-18 · 창 안 빈티지 0개 · R* 2019-06-18(보수). https://alfred.stlouisfed.org/series/downloaddata?seid=PCOPPUSDM 의 빈티지 날짜 목록(2026-09-24 열람)"
+        },
+        {
+          "obs": "2019-04-01",
+          "us_release": "2019-06-18",
+          "source": "r1 보강(IMF 게시 공백) — ALFRED 기간 끝 뒤 첫 빈티지 2019-06-18 · 창 안 빈티지 0개 · R* 2019-06-18(보수). https://alfred.stlouisfed.org/series/downloaddata?seid=PCOPPUSDM 의 빈티지 날짜 목록(2026-09-24 열람)"
+        },
+        {
+          "obs": "2019-05-01",
+          "us_release": "2019-07-23",
+          "source": "postfix 값 대조(2026-09-24 · 미배포 패치) — FRED API output_type=4 realtime_start = 2019-07-23(값의 첫 등장). r1 날짜 창 대조는 첫 빈티지가 기간 끝 뒤 200일을 넘으면 대조에서 뺐다(IMF·FRED 게시 공백). https://alfred.stlouisfed.org/graph/alfredgraph.csv?id=PCOPPUSDM&vintage_date=2019-07-23"
+        },
+        {
+          "obs": "2019-06-01",
+          "us_release": "2019-08-08",
+          "source": "postfix 값 대조(2026-09-24 · 미배포 패치) — FRED API output_type=4 realtime_start = 2019-08-08(값의 첫 등장). r1 날짜 창 대조는 첫 빈티지가 기간 끝 뒤 200일을 넘으면 대조에서 뺐다(IMF·FRED 게시 공백). https://alfred.stlouisfed.org/graph/alfredgraph.csv?id=PCOPPUSDM&vintage_date=2019-08-08"
+        },
+        {
+          "obs": "2020-12-01",
+          "us_release": "2021-02-08",
+          "source": "r1 보강(IMF 게시 공백) — ALFRED 기간 끝 뒤 첫 빈티지 2021-02-08 · 창 안 빈티지 0개 · R* 2021-02-08(보수). https://alfred.stlouisfed.org/series/downloaddata?seid=PCOPPUSDM 의 빈티지 날짜 목록(2026-09-24 열람)"
+        },
+        {
+          "obs": "2021-12-01",
+          "us_release": "2022-08-24",
+          "source": "postfix 값 대조(2026-09-24 · 미배포 패치) — FRED API output_type=4 realtime_start = 2022-08-24(값의 첫 등장). r1 날짜 창 대조는 첫 빈티지가 기간 끝 뒤 200일을 넘으면 대조에서 뺐다(IMF·FRED 게시 공백). https://alfred.stlouisfed.org/graph/alfredgraph.csv?id=PCOPPUSDM&vintage_date=2022-08-24"
+        },
+        {
+          "obs": "2022-01-01",
+          "us_release": "2022-08-24",
+          "source": "postfix 값 대조(2026-09-24 · 미배포 패치) — FRED API output_type=4 realtime_start = 2022-08-24(값의 첫 등장). r1 날짜 창 대조는 첫 빈티지가 기간 끝 뒤 200일을 넘으면 대조에서 뺐다(IMF·FRED 게시 공백). https://alfred.stlouisfed.org/graph/alfredgraph.csv?id=PCOPPUSDM&vintage_date=2022-08-24"
+        },
+        {
+          "obs": "2022-02-01",
+          "us_release": "2022-08-24",
+          "source": "r1 보강(IMF 게시 공백) — ALFRED 기간 끝 뒤 첫 빈티지 2022-08-24 · 창 안 빈티지 0개 · R* 2022-08-24(보수). https://alfred.stlouisfed.org/series/downloaddata?seid=PCOPPUSDM 의 빈티지 날짜 목록(2026-09-24 열람)"
+        },
+        {
+          "obs": "2022-03-01",
+          "us_release": "2022-08-24",
+          "source": "r1 보강(IMF 게시 공백) — ALFRED 기간 끝 뒤 첫 빈티지 2022-08-24 · 창 안 빈티지 0개 · R* 2022-08-24(보수). https://alfred.stlouisfed.org/series/downloaddata?seid=PCOPPUSDM 의 빈티지 날짜 목록(2026-09-24 열람)"
+        },
+        {
+          "obs": "2022-04-01",
+          "us_release": "2022-08-24",
+          "source": "r1 보강(IMF 게시 공백) — ALFRED 기간 끝 뒤 첫 빈티지 2022-08-24 · 창 안 빈티지 0개 · R* 2022-08-24(보수). https://alfred.stlouisfed.org/series/downloaddata?seid=PCOPPUSDM 의 빈티지 날짜 목록(2026-09-24 열람)"
+        },
+        {
+          "obs": "2022-05-01",
+          "us_release": "2022-08-24",
+          "source": "r1 보강(IMF 게시 공백) — ALFRED 기간 끝 뒤 첫 빈티지 2022-08-24 · 창 안 빈티지 0개 · R* 2022-08-24(보수). https://alfred.stlouisfed.org/series/downloaddata?seid=PCOPPUSDM 의 빈티지 날짜 목록(2026-09-24 열람)"
+        },
+        {
+          "obs": "2022-06-01",
+          "us_release": "2022-08-24",
+          "source": "r1 보강(IMF 게시 공백) — ALFRED 기간 끝 뒤 첫 빈티지 2022-08-24 · 창 안 빈티지 0개 · R* 2022-08-24(보수). https://alfred.stlouisfed.org/series/downloaddata?seid=PCOPPUSDM 의 빈티지 날짜 목록(2026-09-24 열람)"
+        },
+        {
+          "obs": "2022-11-01",
+          "us_release": "2023-01-03",
+          "source": "r1 보강(IMF 게시 공백) — ALFRED 기간 끝 뒤 첫 빈티지 2023-01-03 · 창 안 빈티지 0개 · R* 2023-01-03(보수). https://alfred.stlouisfed.org/series/downloaddata?seid=PCOPPUSDM 의 빈티지 날짜 목록(2026-09-24 열람)"
+        },
+        {
+          "obs": "2022-12-01",
+          "us_release": "2023-02-09",
+          "source": "postfix 값 대조(2026-09-24 · 미배포 패치) — FRED API output_type=4 realtime_start = 2023-02-09(값의 첫 등장). r1 날짜 창 대조는 첫 빈티지가 기간 끝 뒤 200일을 넘으면 대조에서 뺐다(IMF·FRED 게시 공백). https://alfred.stlouisfed.org/graph/alfredgraph.csv?id=PCOPPUSDM&vintage_date=2023-02-09"
+        },
+        {
+          "obs": "2025-07-01",
+          "us_release": "2026-01-22",
+          "source": "r1 보강(IMF 게시 공백) — ALFRED 기간 끝 뒤 첫 빈티지 2026-01-22 · 창 안 빈티지 0개 · R* 2026-01-22(보수). https://alfred.stlouisfed.org/series/downloaddata?seid=PCOPPUSDM 의 빈티지 날짜 목록(2026-09-24 열람)"
+        },
+        {
+          "obs": "2025-08-01",
+          "us_release": "2026-01-22",
+          "source": "r1 보강(IMF 게시 공백) — ALFRED 기간 끝 뒤 첫 빈티지 2026-01-22 · 창 안 빈티지 0개 · R* 2026-01-22(보수). https://alfred.stlouisfed.org/series/downloaddata?seid=PCOPPUSDM 의 빈티지 날짜 목록(2026-09-24 열람)"
+        },
+        {
+          "obs": "2025-09-01",
+          "us_release": "2026-01-22",
+          "source": "r1 보강(IMF 게시 공백) — ALFRED 기간 끝 뒤 첫 빈티지 2026-01-22 · 창 안 빈티지 0개 · R* 2026-01-22(보수). https://alfred.stlouisfed.org/series/downloaddata?seid=PCOPPUSDM 의 빈티지 날짜 목록(2026-09-24 열람)"
+        },
+        {
+          "obs": "2025-10-01",
+          "us_release": "2026-01-22",
+          "source": "r1 보강(IMF 게시 공백) — ALFRED 기간 끝 뒤 첫 빈티지 2026-01-22 · 창 안 빈티지 0개 · R* 2026-01-22(보수). https://alfred.stlouisfed.org/series/downloaddata?seid=PCOPPUSDM 의 빈티지 날짜 목록(2026-09-24 열람)"
+        },
+        {
+          "obs": "2025-11-01",
+          "us_release": "2026-01-22",
+          "source": "r1 보강(IMF 게시 공백) — ALFRED 기간 끝 뒤 첫 빈티지 2026-01-22 · 창 안 빈티지 0개 · R* 2026-01-22(보수). https://alfred.stlouisfed.org/series/downloaddata?seid=PCOPPUSDM 의 빈티지 날짜 목록(2026-09-24 열람)"
+        },
+        {
+          "obs": "2026-04-01",
+          "us_release": "2026-06-05",
+          "source": "r1 보강(IMF 게시 공백) — ALFRED 기간 끝 뒤 첫 빈티지 2026-06-05 · 창 안 빈티지 0개 · R* 2026-06-05(보수). https://alfred.stlouisfed.org/series/downloaddata?seid=PCOPPUSDM 의 빈티지 날짜 목록(2026-09-24 열람)"
+        }
+      ]
+    },
+    {
+      "id": "DRTSCILM",
+      "name": "Bank_Lending_Std",
+      "aliases": [
+        "Bank_Lending_Std"
+      ],
+      "source": "FRED(SLOOS)",
+      "frequency": "quarterly",
+      "date_meaning": "분기 첫날(07-01 = 7월 조사)",
+      "status": "active",
+      "bounds": [
+        {
+          "type": "label_plus_days",
+          "days": 37,
+          "basis": "판정서 ② DRTSCILM 행: 라벨 +33~37일의 상한 37."
+        },
+        {
+          "type": "us_release",
+          "release": {
+            "kind": "month_nth_us_business_day",
+            "month_offset": 4,
+            "n": 11
+          },
+          "us_holiday_roll": false,
+          "kr_rule": "strictly_after",
+          "basis": "r1 보강(2026-09-24 · 판정서 ② 정정): ALFRED 빈티지 대조 2010-04-01~2026-04-01 65관측 중 창 안 빈티지가 하나뿐인(공표가 모호하지 않은) 58관측의 R* 최대 = M+4월 11번째 미국 영업일(셧다운 관측 제외). 그보다 늦은 관측은 release_overrides. 공표 시각(미국 오전 ET)은 한국 15:30 이후 → 다음 한국 거래일. 라벨(분기 첫날)의 +37일은 ALFRED 대조 65/65 위반이었다. 근거: https://alfred.stlouisfed.org/series/downloaddata?seid=DRTSCILM 의 빈티지 날짜 목록(2026-09-24 열람) · 04_Research/01_reports/pit_c11_20260924/evidence/r1_alfred/check_bounds.R·design.R — 창(기간 끝, 다음 기간 끝] 안 마지막 빈티지 R*(개정 전용 빈티지가 공표 앞에 끼면 첫 빈티지가 공표보다 이르다 → 늦은 쪽을 쓴다 · 창이 비면 기간 끝 뒤 첫 빈티지)"
+        }
+      ],
+      "vintage": {
+        "revisions": "none_known",
+        "evidence": "조사 응답 집계"
+      },
+      "verdict_rows": [
+        "②DRTSCILM",
+        "r1_alfred_check"
+      ]
+    },
+    {
+      "id": "ECOS_KRW_USD",
+      "name": "KRW_USD(ECOS)",
+      "aliases": [
+        "731Y001",
+        "ECOS_731Y001"
+      ],
+      "source": "ECOS 731Y001/0000001",
+      "frequency": "daily",
+      "date_meaning": "한국 적용일(값은 전 거래일 세션 기반)",
+      "status": "active",
+      "bounds": [
+        {
+          "type": "kr_trading_days_after",
+          "n": 0,
+          "basis": "판정서 ② ECOS 원/달러 731Y001 행: lag 0 적합(검증됨 — 변화율 교차상관 최고점 DEXKOUS(d−1) 0.664, 한국 휴장일 0/19). DEXKOUS 대체(PIT-C11-CONVENTIONS ①). 파일 = .cache/ecos_krw_usd.parquet 열 KRW_USD — 이 계열은 반드시 id 'ECOS_KRW_USD' 로 부른다('KRW_USD' 는 DEXKOUS 별칭이라 거부된다)."
+        }
+      ],
+      "vintage": {
+        "revisions": "none_known",
+        "evidence": "고시 환율"
+      },
+      "verdict_rows": [
+        "②ECOS 731Y001",
+        "1-6"
+      ]
+    },
+    {
+      "id": "KR_Gov3Y",
+      "name": "KR_Gov3Y",
+      "aliases": [],
+      "source": "ECOS 817Y002/010190000",
+      "frequency": "daily",
+      "date_meaning": "한국 거래일 d",
+      "status": "active",
+      "bounds": [
+        {
+          "type": "kr_trading_days_after",
+          "n": 1,
+          "basis": "판정서 ② ECOS 채권 금리 817Y002 행: d일 확정, 시각 미검증 → lag 1 권장."
+        }
+      ],
+      "vintage": {
+        "revisions": "none_known",
+        "evidence": "시장금리"
+      },
+      "verdict_rows": [
+        "②ECOS 817Y002"
+      ]
+    },
+    {
+      "id": "KR_Gov10Y",
+      "name": "KR_Gov10Y",
+      "aliases": [],
+      "source": "ECOS 817Y002/010210000",
+      "frequency": "daily",
+      "date_meaning": "한국 거래일 d",
+      "status": "active",
+      "bounds": [
+        {
+          "type": "kr_trading_days_after",
+          "n": 1,
+          "basis": "판정서 ② ECOS 채권 금리 817Y002 행: lag 1 권장."
+        }
+      ],
+      "vintage": {
+        "revisions": "none_known",
+        "evidence": "시장금리"
+      },
+      "verdict_rows": [
+        "②ECOS 817Y002"
+      ]
+    },
+    {
+      "id": "KR_CorpAA",
+      "name": "KR_CorpAA",
+      "aliases": [],
+      "source": "ECOS 817Y002/010300000",
+      "frequency": "daily",
+      "date_meaning": "한국 거래일 d",
+      "status": "active",
+      "bounds": [
+        {
+          "type": "kr_trading_days_after",
+          "n": 1,
+          "basis": "판정서 ② ECOS 채권 금리 817Y002 행: lag 1 권장."
+        }
+      ],
+      "vintage": {
+        "revisions": "none_known",
+        "evidence": "시장금리"
+      },
+      "verdict_rows": [
+        "②ECOS 817Y002"
+      ]
+    },
+    {
+      "id": "KR_CorpBBB",
+      "name": "KR_CorpBBB",
+      "aliases": [],
+      "source": "ECOS 817Y002/010320000",
+      "frequency": "daily",
+      "date_meaning": "한국 거래일 d",
+      "status": "active",
+      "bounds": [
+        {
+          "type": "kr_trading_days_after",
+          "n": 1,
+          "basis": "판정서 ② ECOS 채권 금리 817Y002 행: lag 1 권장."
+        }
+      ],
+      "vintage": {
+        "revisions": "none_known",
+        "evidence": "시장금리"
+      },
+      "verdict_rows": [
+        "②ECOS 817Y002"
+      ]
+    },
+    {
+      "id": "KR_CD91",
+      "name": "KR_CD91",
+      "aliases": [],
+      "source": "ECOS 817Y002/010150000",
+      "frequency": "daily",
+      "date_meaning": "한국 거래일 d",
+      "status": "active",
+      "bounds": [
+        {
+          "type": "kr_trading_days_after",
+          "n": 1,
+          "basis": "판정서 ② ECOS 채권 금리 817Y002 행(CD91 포함): lag 1 권장."
+        }
+      ],
+      "vintage": {
+        "revisions": "none_known",
+        "evidence": "시장금리"
+      },
+      "verdict_rows": [
+        "②ECOS 817Y002"
+      ]
+    },
+    {
+      "id": "KR_Call1D",
+      "name": "KR_Call1D",
+      "aliases": [],
+      "source": "ECOS 817Y002/010101000",
+      "frequency": "daily",
+      "date_meaning": "한국 거래일 d",
+      "status": "active",
+      "bounds": [
+        {
+          "type": "kr_trading_days_after",
+          "n": 2,
+          "basis": "판정서 ② KR_Call1D 행: d+1일 도착(최신일이 다른 817Y002 계열보다 한 영업일 늦음) → lag 1 이상 필수. 도착 시각이 미검증이라 d+1 15:30 이전 도착을 보장 못 함 → 상한 2영업일."
+        }
+      ],
+      "vintage": {
+        "revisions": "none_known",
+        "evidence": "시장금리"
+      },
+      "verdict_rows": [
+        "②KR_Call1D"
+      ]
+    },
+    {
+      "id": "KR_CPI",
+      "name": "KR_CPI",
+      "aliases": [
+        "901Y009"
+      ],
+      "source": "ECOS 901Y009/0",
+      "frequency": "monthly",
+      "date_meaning": "M-01 = 관측월",
+      "status": "active",
+      "bounds": [
+        {
+          "type": "month_nth_kr_trading_day",
+          "month_offset": 1,
+          "n": 5,
+          "basis": "판정서 ② KR_CPI 901Y009 행: 통계청 M+1월 초 08:00 KST 공표 → 공표일부터(08:00 은 한국 15:30 이전이라 당일 사용). 공표일 실측이 없어 M+1월 첫 주의 상한 = 다섯째 한국 거래일."
+        }
+      ],
+      "vintage": {
+        "revisions": "none_known",
+        "evidence": "원계열 소급 개정 드묾(기준년 개편 제외)"
+      },
+      "verdict_rows": [
+        "②KR_CPI"
+      ]
+    }
+  ],
+  "coverage_note": "이 목록 = .cache/macro_fred.parquet·fred_macro.parquet 의 Series_ID 23종 전수(2026-09-24 데이터 확인) + ECOS 8종(ecos_krw_usd 1 + ecos_bond_rates Series 7). 데이터에 새 계열이 생기면 규칙을 먼저 넣어야 결합된다(fail-closed · 검사 08_Tests/data/test_fred_availability.R A축이 누락을 잡는다).",
+  "residual_risk": [
+    "주간·월간 고정 상한은 ALFRED 로 대조한 구간(history_check.coverage)에서만 상한임이 확인됐다. 그 밖(대조 불가 기간)은 미검증.",
+    "b2 까지의 R* 는 빈티지 '날짜'만으로 잡은 추정이었고 보수가 아니었다(개정 전용 빈티지를 공표로 세면 이르다 — INDPRO·PERMIT 7건 실증). INDPRO·PERMIT 은 b3 에서 값의 첫 등장으로 재대조했다. 그 밖 계열은 b3_value_check.other_series_open 참조.",
+    "빈티지는 최신판 — revisions != none_known 계열은 C1·C11 미해소 라벨."
+  ],
+  "history_verified": "partial",
+  "history_check": {
+    "date": "2026-09-24",
+    "method": "ALFRED 빈티지 날짜 목록(공개 페이지)과 .cache/macro_fred.parquet 관측일을 맞대어, 관측마다 보수 공표일 R* 를 잡고 규칙 가용일(한국)이 R* 보다 엄격히 늦은지 전수 대조. 값(빈티지)은 여전히 최신판 — 안 C 몫.",
+    "evidence": [
+      "04_Research/01_reports/pit_c11_20260924/evidence/r1_alfred/check_bounds.R (b1 위반 수 · 날짜 창 R* 기준 — 값 대조는 postfix_value/)",
+      "04_Research/01_reports/pit_c11_20260924/evidence/r1_alfred/design.R · design.json (상한 n · override 산출)",
+      "04_Research/01_reports/pit_c11_20260924/evidence/r1_alfred/vint_<ID>.txt (열람한 빈티지 목록 사본)"
+    ],
+    "b1_violations_first_vintage_vs_Rstar": {
+      "CPIAUCSL": [
+        46,
+        52
+      ],
+      "INDPRO": [
+        3,
+        14
+      ],
+      "PERMIT": [
+        8,
+        222
+      ],
+      "FEDFUNDS": [
+        89,
+        93
+      ],
+      "PCOPPUSDM": [
+        38,
+        38
+      ],
+      "DRTSCILM": [
+        65,
+        65
+      ],
+      "NFCI": [
+        108,
+        108
+      ],
+      "ICSA": [
+        8,
+        9
+      ],
+      "WALCL": [
+        2,
+        2
+      ],
+      "UNRATE": [
+        0,
+        0
+      ],
+      "M2SL": [
+        0,
+        0
+      ],
+      "UMCSENT": [
+        0,
+        0
+      ],
+      "STLFSI4": [
+        0,
+        0
+      ]
+    },
+    "b2_violations": "정정(postfix 2026-09-24): b2 의 '0'은 빈티지 '날짜' 창 대조(R*) 기준이었다 — 값 대조로 다시 재면 INDPRO 2건(2025-09·10: 7·14 한국 거래일 조기) · PERMIT 5건(2019-01·2025-11·2025-12·2026-01·2026-02: 최대 25 한국 거래일 조기). 원인: 개정 전용 빈티지(값 없는 판)를 공표로 셈 + 첫 빈티지가 기간 끝 뒤 200일 초과면 대조 제외(check_bounds.R covered 컷).",
+    "coverage": {
+      "CPIAUCSL": "2000-01-01~2026-08-01 (319관측)",
+      "INDPRO": "2000-01-01~2026-08-01 (320관측)",
+      "PERMIT": "2000-01-01~2026-08-01 (320관측)",
+      "FEDFUNDS": "2000-01-01~2026-08-01 (320관측)",
+      "PCOPPUSDM": "2015-11-01~2026-07-01 (111관측)",
+      "DRTSCILM": "2010-04-01~2026-04-01 (65관측)",
+      "UNRATE": "2000-01-01~2026-08-01 (319관측)",
+      "M2SL": "2000-01-01~2026-08-01 (320관측)",
+      "UMCSENT": "2000-01-01~2026-06-01 (318관측)",
+      "NFCI": "2011-05-27~2026-09-18 (800관측)",
+      "ICSA": "2009-05-30~2026-09-12 (903관측)",
+      "WALCL": "2011-07-13~2026-09-16 (793관측)",
+      "STLFSI4": "2022-11-11~2026-09-11 (201관측)"
+    },
+    "not_covered": "ALFRED 빈티지가 없는 기간(예: NFCI 2011-05 이전 · ICSA 2009-05 이전 · WALCL 2011-07 이전 · STLFSI4 2022-11 이전 · PCOPPUSDM 2015-11 이전 · DRTSCILM 2010-04 이전)과 캐시 밖(2000 이전 관측)은 고정 규칙만 — 미검증. 일간 계열(VIX·DGS·ICE 등)은 이 대조 대상이 아니다(ALFRED 빈티지 없음).",
+    "b3_value_check": {
+      "method": "관측마다 '값의 첫 등장' 공표일 F(o) = FRED API series/observations output_type=4(Initial Release Only) 의 realtime_start 를 잡고 규칙 가용일(한국) A(o) > F(o) 인지 전수 대조(200일 컷 없음). 위반 7건은 keyless ALFRED alfredgraph.csv as-of 스냅샷(F(o)−1일 판에 값 부재 · F(o) 판에 첫 등장)으로 두 번째 출처 대조.",
+      "evidence": [
+        "04_Research/01_reports/pit_c11_20260924/evidence/postfix_value/initial_release.csv (FRED output_type=4 · INDPRO·PERMIT 외 11계열)",
+        "04_Research/01_reports/pit_c11_20260924/evidence/postfix_value/alfred_asof_*.csv (keyless as-of 스냅샷 원문 사본)",
+        "04_Research/01_reports/pit_c11_20260924/evidence/r1_alfred/check_bounds.R (값 대조 모드 violation_V · 200일 컷 제거 · 규칙 파일 인자)"
+      ],
+      "INDPRO": "2000-01-01~2026-08-01 320관측(2026-08 가용일 = 달력 밖 NA) · 값 대조 위반 b2 2 → b3 0",
+      "PERMIT": "2000-01-01~2026-08-01 320관측(2026-08 가용일 = 달력 밖 NA) · 값 대조 위반 b2 5 → b3 0",
+      "other_series_value_check": "CPIAUCSL·UNRATE·FEDFUNDS·M2SL·UMCSENT·DRTSCILM·ICSA·NFCI·STLFSI4 값 대조 위반 0(계열 첫 ALFRED 빈티지 = 백필 관측은 판정 제외)",
+      "other_series_open": "같은 값 대조에서 범위 밖 계열 미수리 잔존: PCOPPUSDM 21관측(2017-07~2018-10 · 2019-05·06 · 2021-12 · 2022-01 · 2022-12 — FRED 게시 공백, r1 이 2018-11~2019-04 는 override 했으나 200일 컷으로 앞쪽을 놓침) · WALCL 1관측(2018-01-10 — ALFRED 01-11 빈티지 부재, 공백 의심). 이번 수리(B1·B2) 범위 밖 — 보고서로 이관. ★b4(2026-09-24 18시대): 두 계열 모두 수리 — PCOPPUSDM 21관측 override(FRED output_type=4 첫 등장일) · WALCL 2018-01-10 → 2018-01-18. 기준 = 판정서 :147 ALFRED 실공표일(기관 원자료 실시간 공개와 다를 수 있음 — 보수 방향). 사후 검증 wf_99b05c6d-906 전수 대조: b4 누출 0."
+    }
+  }
+}

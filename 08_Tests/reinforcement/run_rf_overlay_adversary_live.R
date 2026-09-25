@@ -7,6 +7,13 @@
 #   읽을 때만 T1/T2 재실행(워커 ≈14분/칸). 둘 중 하나라도 안 서면 T1/T2 는 skipped 로 남고 verdict=error(조용한 통과 없음).
 #   해석적 T3/T3b/T4/T5 는 지금도 돈다.
 # 사용: Rscript 08_Tests/reinforcement/run_rf_overlay_adversary_live.R [base_id] [block] [reruns]
+# ★2026-09-24 실행 가드: 이 파일은 검사가 아니라 **운영 캐시(.cache/rf_overlay_adversary)에 쓰는 실물 도구**다. 08_Tests 글롭
+#   (예: Rscript 08_Tests/reinforcement/*.R)으로 검사 스위트와 함께 휩쓸려 돌면서, B5_16~19 의 adversary.json 을 dry-run 판으로
+#   덮어쓰고 재실행 워커로 산출물 80MB 를 만든 사고가 있었다(09-24 20:20 · 원장에서 복원함).
+#   의도한 실행은 QVEST_ADV_LIVE_OK=1 을 명시해야 한다.
+if (!identical(Sys.getenv("QVEST_ADV_LIVE_OK"), "1")) {
+  cat("[live] 실행 거부 — 실물 도구(운영 캐시 쓰기). 의도한 실행이면 QVEST_ADV_LIVE_OK=1 을 명시하라.\n"); quit(status = 0)
+}
 `%||%` <- function(a, b) if (is.null(a) || length(a) == 0L) b else a
 args <- commandArgs(trailingOnly = TRUE)
 BID   <- if (length(args) >= 1L) args[1] else "RP_20260917_105807_22632_combo_rulefast"

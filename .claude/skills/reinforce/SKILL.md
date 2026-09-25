@@ -1,9 +1,9 @@
 ---
 name: reinforce
-description: 강화 프로세스 (v10) — A등급 미달 전략을 QEPM(alpha→risk→optimizer→forge→등급)으로 강화. 1계층 = 논문당 최대 30회 = 격자 6블록×5(멀티팩터/비중방법론/유니버스/리스크오버레이/집행주기/결합) · 2계층 = 무한(국면식별/전략결합). 매 시도 = Axiom 주입 + L-code 발행(근거 논문은 2026-09-03 의무 해제 · evidence 로 기록만). A 달성 시 Judge(PIT) 호출. 원장 = reinforce_ledger_l1/l2.json.
+description: 강화 프로세스 (v10) — A등급 미달 전략을 규칙 기반 셀 엔진(rf_cell_engine.R) + run_paper_replication 으로 강화(QEPM WT 체인 = 동결, QEPM-R0-FREEZE 2026-09-25). 1계층 = 논문당 상한 = 원장 max_attempts · 격자 = reinforce_program.json(현행 7블록×5 — 멀티팩터/비중방법론/유니버스/집행주기/리스크오버레이/구조방어/결합) · 2계층 = 무한(국면식별/전략결합). 매 시도 = Axiom 주입 · L-code 는 블록 단위(근거 논문은 2026-09-03 의무 해제 · evidence 로 기록만). A 달성 시 Judge(PIT) 트리거는 계층별 — 1계층 = A 자격 관문(rf_a_eligibility) 통과분의 후보별 요청 · 2계층 = l2_judge_request.json(rf_l2_auto.R · 관문 없음) — 정본 = judge.md §스폰 조건. 원장 = reinforce_ledger_l1/l2.json.
 ---
 
-# 강화 프로세스 (v10 2026-08-29 — 기계 사다리 퇴역, QEPM 기반 재정의)
+# 강화 프로세스 (v10 2026-08-29 — 기계 사다리 퇴역 · 현행 = §0 규칙기반 셀 엔진 · QEPM WT 경로 동결 2026-09-25)
 
 **목적 = A등급 달성.** 충실구현(1계층) 또는 로테이션 리서치(2계층)가 A 미달로 끝난
 전략을, **논문이 제시한 후속 연구 또는 논문에서 추론 가능한 아이디어**로 강화한다.
@@ -15,10 +15,10 @@ LLM 주도 심층 리서치이며, "후속 연구까지 포함하여 인뎁스 �
 
 | 계층 | 상한 | keyword_axis | 원장 |
 |---|---|---|---|
-| 1계층 | **논문당 최대 30회 = 격자 30칸(6블록×5)** (소진 → exhausted → 새 논문) | `multifactor` / `weighting` / `universe` / `risk_overlay` / `combination` | `06_Registry/reinforce_ledger_l1.json` |
+| 1계층 | **논문당 상한 = 원장 `max_attempts`**(기본값 = 격자 칸 수 — `reinforce_program.json` 현행 7블록×5=35 · entry 예산 가산은 §0.3-0) (소진 → exhausted → 새 논문) | `multifactor` / `weighting` / `universe` / `execution_cadence` / `risk_overlay` / `structural_defense` / `combination` | `06_Registry/reinforce_ledger_l1.json` |
 | 2계층 | **무한** (A 달성까지 — 교훈 지속 주입) | `regime_identification` / `strategy_combination` | `06_Registry/reinforce_ledger_l2.json` |
 
-횟수 제한(현행 30)의 목적 = **실패의 재생산 방지**(도훈). 같은 아이디어의 재탕이 아니라
+횟수 제한(값 = 원장 `max_attempts`)의 목적 = **실패의 재생산 방지**(도훈). 같은 아이디어의 재탕이 아니라
 매 시도가 새 논문 근거·새 축이어야 한다.
 
 ## §0.1 무인 실행 (도훈 지시 2026-08-30 "모든 작업을 무인화")
@@ -36,10 +36,10 @@ v10 의 "무인 파이프라인은 수집까지만" 경계가 **해제**됐다. 
 
 | 조각 | 파일 | 역할 |
 |---|---|---|
-| 격자 | `06_Registry/reinforce_program.json` | 30칸 정의(6블록×5 · 실행 순서 B1→B2→B3→B6→B5→B4 · 적응 순서는 rf_block_order_decide). **논문 독립** — 기저 신호만 논문에서 온다 |
+| 격자 | `06_Registry/reinforce_program.json` | 칸 정의(현행 7블록×5=35 · 파일 순서 B1→B2→B3→B6→B5→B7→B4 · 적응 순서는 rf_block_order_decide · 상주 칸 별도). **논문 독립** — 기저 신호만 논문에서 온다 |
 | 엔진 | `02_Infrastructure/reinforcement/rf_cell_engine.R` | **단 하나**. 셀 스펙(JSON)을 읽어 FACTORS/PORTFOLIO 산출 |
 | 러너 | `02_Infrastructure/ops/reinforce_auto_parallel.R` (`mode=parallel` · 블록 5칸 병렬) | 1 tick = 1블록. 칸 결정 → 워커 실행 → 등급 → 원장 → 기전 → 텔레그램 → 누적 → 다음 블록. `reinforce_auto_run.R` 은 **퇴역**(2026-09-05 — v10.4 핵심 3종 미탑재로 분기 제거. 순차가 필요하면 `parallel_cells=1`) |
-| 이월 | `02_Infrastructure/ops/reinforce_auto_next_paper.R` | 25칸 소진 → exhausted → 큐 다음 논문 착수 요청 |
+| 이월 | `02_Infrastructure/ops/reinforce_auto_next_paper.R` | 상한(원장 `max_attempts`) 소진 → exhausted → 큐 다음 논문 착수 요청 |
 | 선택 | `02_Infrastructure/ops/rf_next_paper_pick.py` | 큐 상단 1편(술어 정본 import — 재구현 금지) |
 | 스위치 | `06_Registry/reinforce_auto_config.json` | `{enabled:false}` → 전면 정지 · `daily_cap` 폭주 backstop |
 | 검사 | `08_Tests/ops/test_reinforce_auto.sh` | **양방향** 15항 (가드마다 정상+위반주입) |
@@ -47,7 +47,7 @@ v10 의 "무인 파이프라인은 수집까지만" 경계가 **해제**됐다. 
 | 기전·설계 | `02_Infrastructure/ops/rf_lcode_mechanism.sh` + `_lib.R` · `rf_block_design.R` | 블록 종료 시 기전 서술 + `next_block_design`/`avoid` · 빈 블록은 `rf_mech_backfill.R` 이 재시도(상한 2) |
 | 순서 | `02_Infrastructure/reinforcement/rf_lesson.R::rf_block_order_decide` | CAGR ≥ 0.16 ∧ Calmar < 0.64 → 위험 축(B5) 2번째 · 기전 `mechanism_pref` 우선 · `QVEST_RF_ORDER_PREF=off` |
 | 누적 | 러너 `block_accumulate` | B2·B3·B5 는 **직전까지 최고 구성**을 바닥으로(자기 축만 교체) · B4 = 이 entry 승자 결합 + LOO |
-| 승격 | `02_Infrastructure/reinforcement/rf_promote.R` | 소진 시 최고 ≥ B ∧ 부모 최고 PORT_t 초과 ∧ 깊이 ≤ 3 → 승자 구성 carry(팩터·비중·유니버스·오버레이)로 새 25칸 · `count_paper=FALSE` |
+| 승격 | `02_Infrastructure/reinforcement/rf_promote.R` | 소진 시 최고 ≥ B ∧ 부모 최고 PORT_t 초과 ∧ 깊이 ≤ 3 → 승자 구성 carry(팩터·비중·유니버스·오버레이)로 새 격자 · `count_paper=FALSE` |
 | 구제 | `02_Infrastructure/contracts/rolling_grade.R` · `defensive_score.R` | 36M 롤링 창 최근 통과율 ≥ 0.5(롤링점 ≥ 24) → F→C 구제(회복→붕괴 이력 경고) · 벤치 하락월 기준 방어형 → 2계층 풀 `defensive_specialist` |
 | 양립·강등 | `02_Infrastructure/reinforcement/rf_arm_compat.R` | arm×유니버스 커버리지 장부 — **신뢰 분모 기록만 차단**(엔진 표식 `[basis=sel_dates]`·`[basis=held_rows]` · 09-13 이전 행은 이력) · 실패 arm 에만 귀속 · 승계 비중이 불가면 EW 강등(`rac_degrade_plan` — B2 자기 축만 제외 · B4 는 강등 + `carry_degraded.loo_equivalent`) · 판정 `rac_gate` 를 **등록·재개 두 경로**가 공용(`rac_gate_apply`) |
 | 회피 집행 | 러너 (`avoid_enforced` / `avoid_noted`) | 기전 `avoid` 중 **측정 무효 사유**만 건너뜀 · 성과 사유는 기록 후 실행(AX-000) · 부모 사슬 walk |
@@ -68,7 +68,9 @@ v10 의 "무인 파이프라인은 수집까지만" 경계가 **해제**됐다. 
 ★**Grade A 는 정지 지점이 아니다**(도훈 지시 2026-08-30 "A등급 달성하더라도 리서치가 이어지게").
 구판은 A 에서 `enabled=false` 로 전 루프를 세웠는데, 그건 **리서치 루프**와 **BOOK 등재 관문**을
 뒤섞은 설계다 — 후보 하나가 A 를 찍었다고 나머지 칸과 다음 논문이 설 이유가 없다.
-현행: A → `06_Registry/grade_a_queue.json` 적재 + `judge_request.json` 발행 + 텔레그램 즉시,
+현행: A → A 자격 관문(`rf_runner_gates.R::rf_a_eligibility`) 통과 시 `06_Registry/grade_a_queue.json` `status=awaiting_judge` +
+후보별 `qepm/mailbox/judge_request_<BID>_<n>.json`(`status=pending`) 발행 + 텔레그램 즉시(보류 = `held:<코드>` · 산출물 `judge_request.json` 은
+`.held.json` 으로 치움 — Judge 트리거 정본 = `.claude/agents/judge.md` §스폰 조건, 2026-09-25 감사 Q15 정정),
 그리고 **루프는 계속 돈다**. 등재 관문만 사람이 지킨다 — Judge(PIT) PASS + 도훈 confirm 없이
 BOOK 에 들어가는 경로는 없다(헌법 불변).
 
@@ -87,7 +89,7 @@ overlay_propose **high**. 정본 = `reinforce_auto_config.json::llm.lanes`(문�
 > 전략 등급을 업그레이드. 1)5번 2)5번 3)5번 4)1,2,3 조합 5번 = 총 20회. 빠르게 여러 가지
 > 강화 방안들을 적용해보는 것이 목적. 게이트 검증 완화, 규칙 기반의 빠른 강화 프로세스."
 
-**구조 (25회 = 5블록 × 5회)** — ★2026-09-01 도훈 지시로 재편: B5 리스크 오버레이 블록 신설, 실행 순서 B1→B2→B3→**B5→B4**, B1·B2·B5 는 격자에 박지 않고 등록부를 소비. 위 인용의 "총 20회"는 8-29 당시 원문이며 상한은 25 로 확장됐다(정본 = `reinforce_program.json` · 원장 `max_attempts=25`).
+**구조 (블록 × 5회 — 현행 7블록 = 35칸 · 정본 = `reinforce_program.json` · 원장 `max_attempts`)** — ★2026-09-01 도훈 지시로 재편: B5 리스크 오버레이 블록 신설, 실행 순서 B1→B2→B3→**B5→B4**, B1·B2·B5 는 격자에 박지 않고 등록부를 소비. 이후 B6 집행 주기·B7 구조적 방어 신설(09-21)로 파일 순서 B1→B2→B3→B6→B5→B7→B4. 위 인용의 "총 20회"는 8-29 당시 원문이며 상한은 25(09-01)를 거쳐 35 로 확장됐다(값은 문서가 아니라 원장에서 읽는다).
 ★아래 실측 인용에 나오는 `1~3/20` · `5/20` · `9/20` 등은 **상한이 아니라 8-29 당시의 시도 번호**다 — 분모를 문서에서 읽지 말고 원장 `max_attempts` 에서 셀 것:
 
 | 블록 | 축 | 내용 | 선행 조건 |
@@ -95,7 +97,9 @@ overlay_propose **high**. 정본 = `reinforce_auto_config.json::llm.lanes`(문�
 | B1 (1~5) | 멀티팩터 | **블록 진입 시 LLM 설계 1회**(`rf_b1_design.sh` — 칸 수·팩터 수·조합 방식을 설계가 정하고, 등록부 331종 안에서 `b1_verify` 가 실재성·중복·≤15칸을 검증) · 실패 = 규칙 선정 폴백(깊이 1~5 · IC 시계열 상관 최소 사슬 · 계열 라운드로빈, `rf_factor_arms.R`) · 승격 entry 는 carry 팩터 위에 얹는다 | 없음 — 즉시 |
 | B2 (6~10) | 비중방법론 | B1 최고 PORT_t 컴포짓 위에서 `weight_catalog.json` 계열당 1종(`rf_weight_arms.R` — 낙폭 축 계열 우선) ★직전 블록 기전의 `next_block_design` 이 있으면 그 셀 목록 · 바닥 = 직전까지 최고 구성(block_accumulate) | B1 착지 |
 | B3 (11~15) | 유니버스 | B1 최고 컴포짓 + EW 로 **적용 유니버스 교체**: 시장별(KOSPI 전수/KOSDAQ 전수)·시가총액별(소형/대형)·섹터 중립 ★기전 설계 우선 · 바닥 = 직전까지 최고 구성 · 승계 비중 불가 시 EW 강등 | B1 착지 |
+| B6 (32·33·34·36·42) | 집행 주기·회전 통제 | B1 승자 컴포짓을 신호로 고정하고 리밸 규칙만 교체(격월 두 위상 · 분기 · 랭크 버퍼 2×/3× — `rf_rebalance.R`) · 비용은 배출 시점 회전율로만 부과 | B1 착지 |
 | B5 (16~20) | 리스크 오버레이 | 직전까지 최고 구성 위에 ★**LLM 설계 레인**(`rf_b5_design.sh` · 스택 칸 + 새 arm) > 기전 설계 > 규칙(`rf_overlay_arms.R` 계열당 1종) · 상주 칸 B5_31 은 별도 · 승자 = Calmar ∧ G2 pass · 오버레이는 carry 위에 중첩(`.ov_stack`) · 순서 규칙이 Calmar 미달이면 2번째로 당긴다 | B1 착지 |
+| B7 (37~41) | 구조적 방어 | 보유 n_max 종 중 k 종을 방어 팩터(as-of 약세장 IC) 상위로 교체 — 총노출·종목수 불변(타이밍 주장 없음) · 무신호(베타매칭 무작위)·부호 반전 대조 2칸 포함(`rf_sleeve.R`) | B1 착지 |
 | B4 (21~25) | 조합 | B1·B2·B3·B5 승자의 **4축 전체 결합 1칸 + 축별 leave-one-out 4칸** | B1~B3·B5 착지 |
 
 **규율 — 폐기된 것과 불변인 것**:
@@ -111,11 +115,11 @@ overlay_propose **high**. 정본 = `reinforce_auto_config.json::llm.lanes`(문�
   공통 유지(실투 가능성 + C10). ★B1·B2·B4 의 기본 유니버스는 여전히 K200∪KQ150.
 - 실행 = engine 1파일(FACTORS 또는 PORTFOLIO) + `run_paper_replication(portfolio_spec=실투형)`
   → `authoritative_remeasure.json::essence_grade`. WT 미사용(원장 wt_id=NULL 허용).
-- 보고 단위 = **블록**(시도 5건 등급 일괄 텔레그램 + L-code 1건). Grade A 발생 시 즉시 Judge.
+- 보고 단위 = **블록**(시도 5건 등급 일괄 텔레그램 + L-code 1건). Grade A 발생 시 = A 자격 관문(`rf_a_eligibility`) 통과분만 후보별 요청 `judge_request_<BID>_<n>.json` 발행 → 그것이 Judge 트리거(보류 = `held:<코드>` → 스폰 없음 · 산출 디렉터리 `judge_request.json` 은 트리거 아님 · 정본 = `.claude/agents/judge.md` §스폰 조건).
 
 ## §0.3 격자 위의 판정 규칙 — 실행 정본 (2026-09-04 · 코드가 정본, 이 절은 지도)
 
-격자(25칸)는 그대로다. 오늘 바뀐 것은 **칸을 채우는 주체와 칸 사이의 이음매**다.
+격자(칸 수 = `reinforce_program.json`)는 그대로다. 오늘 바뀐 것은 **칸을 채우는 주체와 칸 사이의 이음매**다.
 
 0. **entry 예산** — `25 + max(0, B1 설계 칸수 − 5)` (러너 `entry_budget_raised`). B1 설계가 15칸을 내면 예산은 35 이고
    뒤 블록은 그대로 5칸씩 받는다. ★설계가 안 뜨면(규칙 폴백 5칸) 예산은 기본 25 에 머문다 — 09-04 승격 두 세대가
@@ -137,7 +141,7 @@ overlay_propose **high**. 정본 = `reinforce_auto_config.json::llm.lanes`(문�
    실린다. 회피는 **측정 무효 사유**(편의·누출·PIT)만 집행하고 성과 사유는 기록만 한다(AX-000). 앞 블록 처방의 집행 여부는
    `rfbd_action_status` 가 재도출한다(executed/partial/ignored/no_design). 기전이 빈 블록은 다음 tick 에 백필(상한 2회).
 4. **승격 사슬** — 소진 시 최고 등급 ≥ B 이고 **부모 최고 PORT_t 를 넘었을 때만** 승자 구성(팩터·비중·유니버스·오버레이)을 carry 로
-   물려 새 25칸(깊이 ≤ 3, `rf_promote.R`). 승격 entry 의 B1 은 carry 팩터 위에 **더 얹는** 칸이라 단조 희석이 구조적으로 나온다
+   물려 새 격자(깊이 ≤ 3, `rf_promote.R`). 승격 entry 의 B1 은 carry 팩터 위에 **더 얹는** 칸이라 단조 희석이 구조적으로 나온다
    (promo1: 2.171 → 1.011, Spearman −0.90) — 재고 항목. 실측 09-04 두 라운드: 최고 칸은 항상 첫 두 블록, 유니버스·오버레이는 LOO 순손실.
 5. **구제** — 충실구현 F 라도 36M 롤링 창의 최근 통과율 ≥ 0.5(롤링점 ≥ 24)면 C 로 구제해 강화를 연다(`rg_rescue`; 회복→붕괴 이력은
    경고로 병기). 벤치 **실현 하락월** 기준 방어형(`ds_score`)은 등급 floor 미달이라도 2계층 풀 `defensive_specialist` 경로. 기저 게이트
@@ -187,12 +191,15 @@ overlay_propose **high**. 정본 = `reinforce_auto_config.json::llm.lanes`(문�
    의무가 충족되던 상태였다. 지키는 척하는 게이트보다 없는 편이 정직하다.
    같은 뿌리 논문 3회 연속이면 경고(한 논문 매몰 금지 — 교차 논문 탐색).
 3. **사전 등록** — `rf_append_attempt(layer, base_id, idea, keyword_axis, root_papers, wt_id)`.
-   ★1계층 25회 게이트가 여기서 걸린다 (26번째 = stop + exhausted · 상한값 = 원장 파일 `max_attempts`).
-4. **QEPM 실행 (1계층)** — `wt_create(wt_type="reinforcement")` (WT-R) →
-   `Workflow(name="qvest-dossier-pipeline", args={wt_id, ...})` 또는 6-agent 수동 체인.
+   ★1계층 횟수 게이트가 여기서 걸린다 (상한 초과 = stop + exhausted · 상한값 = 원장 `max_attempts` — entry 값 우선, 없으면 파일 값).
+4. **실행 (1계층)** — §0 과 같다: 규칙 기반 셀 엔진 `02_Infrastructure/reinforcement/rf_cell_engine.R`(셀 스펙 → FACTORS/PORTFOLIO) +
+   `run_paper_replication(portfolio_spec=실투형)` → `authoritative_remeasure.json::essence_grade`. WT 미사용(원장 wt_id=NULL).
+   무인 = 러너 `02_Infrastructure/ops/reinforce_auto_parallel.R`(워커 `02_Infrastructure/ops/rf_cell_worker.R`).
    제약 = **실투형 축**: long-only · ≤25종 · K200∪KQ150 · 15bps · Σw=1
-   (★비중 상한 없음 — v10). alpha 가설 설계는 **전기간 데이터** 사용(lockbox 폐지).
-   governor 는 부르지 않는다 — QEPM 종점 = essence 등급.
+   (★비중 상한 없음 — v10). **전기간 데이터** 사용(lockbox 폐지). governor 는 부르지 않는다 — 종점 = essence 등급.
+   ★구 QEPM WT 경로(`wt_create(wt_type="reinforcement")` → `qvest-dossier-pipeline`/6-agent 체인)는 **동결**(도훈 `QEPM-R0-FREEZE`
+   2026-09-25 · 08-29 논문주도 게이트형 16회 뒤 셀 엔진으로 교체 — 원장 `RP_20260829_122020_9192` parked_reason). 아래 4단계 하위 규율 중
+   alpha/risk/optimizer/forge 를 말하는 대목은 그 시절 사료이고, 원칙(단일 측정 · 체인 완주 = 모든 시도가 등급에 도달)만 셀 경로에 적용된다.
    (2계층은 run_wf_ensemble 재실측 — strategy-rotation SKILL 절차.)
 
    ★**단일 측정 원칙 (도훈 지시 2026-08-29 — arm 배터리 폐지)**:
@@ -278,15 +285,16 @@ overlay_propose **high**. 정본 = `reinforce_auto_config.json::llm.lanes`(문�
    - 기록은 지우지 않는다 — 폐지되는 것은 "그 판정을 근거로 체인을 멈추는 규칙" 이지 판정 수치가
      아니다. 음성 판정은 그대로 산출물·L-code 에 남고, 그 위에서 등급이 발행된다.
 5. **결과 기록** — `rf_record_result(layer, base_id, n, grade, essence, artifacts, l_code, lessons)`.
-6. **L-code 발행 (완결 후 의무)** — `emit_lcode(mode="reinforcement", ...)` (prefix RF).
+6. **L-code 발행 (완결 후 의무)** — `emit_lcode(mode="reinforcement", ...)` (prefix RF). ★단위 = **블록**(`02_Infrastructure/ops/rf_block_lcode.R`) —
+   셀마다 내지 않는다(워커 `QVEST_RP_NO_LCODE=1` · P0-M3 2026-09-23).
    next_probe 연속성 계약(C/F ≥2건) 준수.
-7. **텔레그램** — `tg_agent_brief(agent="AlphaSearch", title="[1계층·강화 n/25] {전략} — {축} (등급 {g})")`.
+7. **텔레그램** — `tg_agent_brief(agent="AlphaSearch", title="[1계층·강화 n/25] {전략} — {축} (등급 {g})")` (분모 = 원장 `max_attempts` — qvest-telegram SKILL).
    2계층은 `[2계층·강화 n]`(무한 — 분모 없음). 양식 = qvest-telegram SKILL.
 8. **분기** —
-   - **Grade A** → Judge(PIT 전담) 스폰 (`.claude/agents/judge.md`) →
+   - **Grade A** → Judge(PIT 전담) 스폰은 계층별 트리거 파일이 있을 때만 (`.claude/agents/judge.md` §스폰 조건) — **1계층** = A 자격 관문(`rf_a_eligibility`) 통과분(후보별 요청 `judge_request_<BID>_<n>.json` ∧ `grade_a_queue` `awaiting_judge` · 보류 = 스폰 없음) · **2계층** = `06_Registry/l2_judge_request.json`(`status=pending` · `rf_l2_auto.R` 가 essence A 면 발행 · **관문 없음**) →
      `rf_record_judge(...)`. PASS → BOOK 등록 후보(도훈 confirm). FAIL → 등급 무효,
      수리 후 재측정(원장 자동 재활성화).
-   - **미달** → 다음 시도(1단계부터). 1계층 25회 소진 → 큐의 다음 논문으로.
+   - **미달** → 다음 시도(1단계부터). 1계층 상한(원장 `max_attempts`) 소진 → 큐의 다음 논문으로.
    - ★**등급 미발행은 분기 사유가 아니다** — 계약 미경유(NA)로 마감하는 것은 체인이 실제로
      막혔을 때(데이터 부재·계약 오류)뿐이며, 그 경우 **막힌 지점을 사유로 명시**한다.
      "신호가 음성이라 등급을 안 냈다" 는 허용되지 않는다(위 4단계 체인 완주 의무).
@@ -339,7 +347,7 @@ root_papers 복수로 새 시도.
 ## 경계 (HARD)
 
 - **Q-Lead 는 오케스트레이션만** — 자체 리서치·자체 백테·수치 산출 금지.
-  측정은 QEPM 체인(AX-008: 산출은 Forge)이 한다.
+  측정은 R 계약(셀 엔진 + `run_paper_replication` → essence — AX-008)이 한다.
 - 하드코딩 금지 — 모든 수치(파라미터·문턱·비중)는 논문 근거 또는 데이터 추정.
 - PIT C1~C15 계층 무관 불변. 등급 권위 = essence_score 하나.
 - 구 기계 사다리(`reinforce_ladder.R`)·구 원장(`reinforce_ladder_ledger.json`)은

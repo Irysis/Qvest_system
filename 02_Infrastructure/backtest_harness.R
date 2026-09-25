@@ -238,7 +238,56 @@ load_macro_regime <- function(max_age_days = 7) {
   dt <- as.data.table(read_parquet(FRED_REGIME_CACHE))
   cat(sprintf("  > %d months | %s ~ %s\n",
               nrow(dt), min(dt$Date), max(dt$Date)))
+  ## ★C11 표식 (2026-09-24 · 판정서 V-14 · 결정 PIT-C11-CONVENTIONS ⑦ "등급 밖 소비자 = 표식만"):
+  ##   행 M(월말 라벨)은 미국 월말 종가·월내 주간값·같은 달 CPI 등 **한국 M 월 중에는 몰랐던 값**을 담는다.
+  ##   같은 달 조회(M 월 보유에 M 행)는 미래참조다. 가용일 열(avail_date)이 붙은 재빌드판이면 그 열로 결합하라.
+  ##   값·행·열은 바꾸지 않는다(속성만) — 레거시 소비자 동작 불변.
+  ## ★r1(표식 계약 통일 · 통합 검증 BLOCKING): 열 이름만이 아니라 Date 형 + 현행 규칙 epoch 까지 본다(overlay_pit_guard
+  ##   C11 층 c11_panel_status 와 같은 판정 — POSIXct 가용일·옛 epoch 판은 annotated 가 아니다). 가드 판독 실패 = 미해소.
+  .c11_ann <- tryCatch(identical(.bh_c11_guard()$c11_panel_status(dt, "Macro_Risk_Score"), "avail_annotated"),
+                       error = function(e) FALSE)
+  setattr(dt, "pit_c11", list(
+    status = if (.c11_ann) "avail_annotated" else "unresolved_legacy_panel",
+    violation = "V-14", quarantine = "PITQ-C11-20260924",
+    rule = if (.c11_ann) "행을 avail_date(한국 d 종가 결정에 처음 쓸 수 있는 날)로 결합 — 날짜 라벨·같은 달 조회 금지" else
+      "C11 미해소: 행 M 은 미국 월말 종가·월내 주간값·같은 달 CPI 를 담는다 — M 월 보유(같은 달 조회)에 쓰면 미래참조. 가용일 결합은 2단계 재빌드(avail_date 부착) 후"))
+  if (!.c11_ann)
+    cat("  > ★C11 미해소 legacy 패널(V-14 · PITQ-C11-20260924) — 같은 달 조회 금지 · attr(dt, \"pit_c11\") 참조\n")
   dt
+}
+
+
+#==============================================================================
+# 1c-2. ★C11 regime_tilt / regime_softmax 의 MRS 조회 (2026-09-24 · 판정서 V-06 · ② 규약 a/c)
+#==============================================================================
+# 구판 `regime_dt[Date == exec_date, MRS]` 는 날짜 라벨 일치 조회였다 — build_daily_regime 의 행은 미국
+#   (FRED) 날짜 격자이고 그 MRS 는 미국 전일 세션을 담아, 집행일 종가 결정에 **가용 시각**을 보장하지 못한다.
+# 현행: 결정일 = exec_date(그 종가에 비중을 정하고 수익은 그 뒤에 시작 — 규약 a/c). 가용일(MRS_avail_date /
+#   avail_date)이 exec_date 이하인 최신 MRS. 가용일 열 없는 legacy 패널 = 기본 중단
+#   (QVEST_C11_LEGACY_REGIME=label 이면 구판 조회 재현 — 진단 전용). regime_dt = NULL 경로는 무변경(0).
+.bh_c11_guard_env <- new.env(parent = emptyenv())
+.bh_c11_guard <- function() {
+  g <- .bh_c11_guard_env$g
+  if (!is.null(g)) return(g)
+  f <- file.path(if (exists("VALIDATION_DIR")) VALIDATION_DIR else file.path(FUNC_PATH, "validation"),
+                 "overlay_pit_guard.R")
+  if (!file.exists(f)) stop("[backtest_harness] C11 가용시점 가드 부재 — regime_tilt 의 MRS 를 가용일로 결합할 수 없다: ", f)
+  e <- new.env(parent = globalenv()); sys.source(f, envir = e)
+  if (!exists("c11_asof_align", envir = e, inherits = FALSE)) stop("[backtest_harness] overlay_pit_guard.R 에 C11 층 없음(구판): ", f)
+  .bh_c11_guard_env$g <- e
+  e
+}
+.bh_regime_mrs_at <- function(regime_dt, exec_date, site = "backtest_harness regime_tilt") {
+  g <- .bh_c11_guard()
+  st <- g$c11_legacy_gate(regime_dt, "MRS", site = site, source_desc = "regime_dt(build_daily_regime)")
+  if (isTRUE(st$legacy)) {
+    v <- regime_dt[Date == exec_date, MRS]                       # legacy 재현(label) — 구판 조회 그대로
+  } else {
+    a <- g$c11_asof_align(exec_date, regime_dt, "MRS")           # 규약 (a)(c): exec_date 종가 결정
+    g$assert_overlay_pit_avail(a$avail_date, a$decision_date, site)
+    v <- a$value
+  }
+  if (length(v) > 0 && !is.na(v[1])) v[1] else 0
 }
 
 
@@ -1192,13 +1241,10 @@ run_monthly_simulation <- function(RAWDATA,
       w <- calc_score_tilt_weights(selected, sc, ret_sub,
                                     alpha = 1.0, max_w = 1.0, cov_method = cov_method)
     } else if (weight_method == "regime_tilt") {
-      # V1: Regime-Conditional Alpha — alpha varies by MRS layer (t-1 lagged)
-      # PIT: regime_dt[Date == exec_date, MRS] is already t-1 lagged from build_daily_regime()
+      # V1: Regime-Conditional Alpha — alpha varies by MRS layer
+      # PIT(★C11 2026-09-24): exec_date 종가 결정까지 **가용한** MRS 만 — .bh_regime_mrs_at (1c-2)
       sc <- month_factors[Ticker %in% selected, setNames(Score, Ticker)]
-      mrs_val <- if (!is.null(regime_dt)) {
-        v <- regime_dt[Date == exec_date, MRS]
-        if (length(v) > 0 && !is.na(v[1])) v[1] else 0
-      } else 0
+      mrs_val <- if (!is.null(regime_dt)) .bh_regime_mrs_at(regime_dt, exec_date, "backtest_harness regime_tilt") else 0
       w <- calc_regime_tilt_weights(selected, sc, ret_sub,
                                      regime_mrs = mrs_val,
                                      cov_method = cov_method)
@@ -1234,10 +1280,7 @@ run_monthly_simulation <- function(RAWDATA,
     } else if (weight_method == "regime_softmax") {
       # V10: Regime Alpha + Softmax Synthesis — alpha AND tau vary by regime layer
       sc <- month_factors[Ticker %in% selected, setNames(Score, Ticker)]
-      mrs_val <- if (!is.null(regime_dt)) {
-        v <- regime_dt[Date == exec_date, MRS]
-        if (length(v) > 0 && !is.na(v[1])) v[1] else 0
-      } else 0
+      mrs_val <- if (!is.null(regime_dt)) .bh_regime_mrs_at(regime_dt, exec_date, "backtest_harness regime_softmax") else 0  # ★C11 (1c-2)
       w <- calc_regime_softmax_weights(selected, sc, ret_sub,
                                         regime_mrs = mrs_val,
                                         cov_method = cov_method)

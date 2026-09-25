@@ -98,8 +98,8 @@
 핵심 규칙:
 - C1: full-sample 통계 금지 (rolling/expanding만)
 - C2: same-day circular 금지 (t-1 lag)
-- C4: 재무제표 lag (연간→5월, 분기→45일)
-- C5: overlay t-1, C9: VT/DD lag, C11: 데이터 시간축 검증
+- C4: 재무제표 lag — 연간 = **익년 3/31** · 분기 = 45일+ (DART 분기 고정일 5/15·8/15·11/15) — 정본 `.claude/rules/pit.md` C4 (구 5월 표기 폐기 2026-07-25)
+- C5: overlay t-1, C9: VT/DD lag, C11: 데이터 시간축 검증 — 해외(FRED·ECOS) 시계열은 `02_Infrastructure/data/fred_availability.R::fred_asof_join()` 가용시점 층 경유만 — 같은 날짜·단순 t-1(1행 lag) 결합 금지
 - C13: Z_Score_Aligned만 사용 (manual sign flip 금지)
 - C14: IC usable_date <= sig_date, C15: load_month_factors() 경유
 

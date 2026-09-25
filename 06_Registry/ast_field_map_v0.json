@@ -19,7 +19,20 @@
    "EXTERNAL": "외부 조회형·미확보·제약 충돌 — 리프 부적격(정본 인입 시 재분류)",
    "NOT_LEAF": "운용 산출/메타 — 리프 제외 (단 cache_registry·pin_cache는 availability/vintage 필드의 1차 소스로 재사용)"
   },
-  "updated": "2026-07-25 (v0.2 — Q4 lag 수리 반영: 재무 availability 3/31 정합, 전 스토어 신-vintage 단일화)"
+  "updated": "2026-07-25 (v0.2 — Q4 lag 수리 반영: 재무 availability 3/31 정합, 전 스토어 신-vintage 단일화)",
+  "c11_correction_20260924": {
+   "by": "S6_defense (PIT C11 수리 1단계 · 판정서 ⑤-8 방어선 · decision_register PIT-C11-CONVENTIONS ④)",
+   "judgment": "04_Research/01_reports/pit_c11_20260924/PIT_C11_verdict_20260924.md",
+   "decision_ref": "06_Registry/decision_register.json#PIT-C11-CONVENTIONS (④ 방어선 수리 — 레지스트리 선언 정정)",
+   "what": [
+    "E4_regime_daily_v2_mrs 선언 정정(reference_ts_semantics·availability·pit_hazards 교체 · 원문 c11.original 보존 · status pit_invalid V-10·V-11)",
+    "E3·E6·E7 = c11.status pit_invalid(V-14 · V-10 · V-05/V-06) — 격리 활성 동안 ast_verify FAIL_LOOKAHEAD",
+    "E1·E11·FDB-B5 = c11 선언 정정 블록(본문 보존)",
+    "새 절 c11_registry_series — registry '-1d'·'C11_publication_lag' 팩터 19종의 계열·저장 빌드 상태(ast_verify 규칙 파일 대조 입력)"
+   ],
+   "not_changed": "factor_registry.json(D32 known_discrepancy·RE_VIX_z '-1d' 선언)은 S1 소관 — 이 파일에서 고치지 않았다",
+   "consumer": "02_Infrastructure/ast/ast_verify.py"
+  }
  },
  "summary": {
   "total_groups": 58,
@@ -277,7 +290,14 @@
      "ast_leaf_class": "FIELD_REGISTRY_PTR",
      "coverage_measured": "registry 그룹: macro×monthly 14 + macro_fred×daily 5 = 19엔트리. 시장레벨 팩터라 월간 DB에선 Z 전부 NA + Coverage=TRUE 패턴(dead-factor 방어 대상, FDB-B2 notes 참조) — 횡단면 z 부적용이 구조적",
      "pit_hazards": "① FRED/ECOS 거시 시계열은 사후 revision 상시(restatement_prone) — 현재값 단일 저장이라 발표 시점 vintage 미보존, C11 위반 가능성은 1일 lag 근사에 잔존 ② 시장레벨 값의 브로드캐스트는 data.table by-group 전역벡터 오염 사고 계열(memory project-r-datatable-bygroup-global-vector)과 동형 위험",
-     "notes": "regime/size 카테고리는 group_factors_by_family()에서 alpha 그룹 제외 — control 용도 (factor_db_connector.R:463)"
+     "notes": "regime/size 카테고리는 group_factors_by_family()에서 alpha 그룹 제외 — control 용도 (factor_db_connector.R:463)",
+     "c11": {
+      "status": "declaration_corrected",
+      "judgment": "04_Research/01_reports/pit_c11_20260924/PIT_C11_verdict_20260924.md",
+      "note": "강제점 'compute_regime.R:75-76 sig_date−1'(C11 보수 1일)은 월간 공표 계열(INDPRO·CPIAUCSL)에 불충분(V-01 — MA01·MA02 퇴역, decision PIT-C11-MA0102) · ICE OAS(RE13·RE_HY_z)는 한국 d+2(CONVENTIONS ②). D32 는 compute_regime 을 타지 않는다(빌더 같은 날짜 결합, V-08). registry 의 '-1d'·'C11_publication_lag' 선언을 ast_verify 가 그대로 믿지 않도록 계열·저장 판 빌드 상태를 c11_registry_series 에 적었다.",
+      "corrected_at": "2026-09-24",
+      "corrected_by": "S6_defense (PIT C11 수리 1단계 · 판정서 ⑤-8 방어선 · decision_register PIT-C11-CONVENTIONS ④)"
+     }
     },
     {
      "group_id": "FDB-B6_fdb_daily_store",
@@ -653,7 +673,19 @@
      "ast_leaf_class": "FIELD",
      "coverage_measured": "long 57,194행 / wide 8,226행×24col, 2000-01-01~2026-07-23 (pyarrow row-group stats 실측). macro_fred.parquet 동일 57,194행",
      "pit_hazards": "① 개정 시리즈(CPI/IndProd/M2/Claims)가 latest-vintage overwrite — 백테스트 시 revised 값 사용 = 미세 look-ahead 구조 내재 ② .bak_YYYYMMDD 일별 백업 13개(2026-07-01~07-24)가 사실상 부분 vintage이나 설계된 vintage 아님(운영 부산물, 8일치 갭 존재) ③ monthly 시리즈 관측일과 발표일 격차(CPI ~2주)는 소비 측 t-1 shift(1일)로는 불충분할 수 있음 — regime_engine은 ffill-then-lag로 완화, factor_db는 sig_date-1만",
-     "notes": "fred_supplement_yfinance.R로 VIX 등 보충 경로 존재. daily_refresh.sh:187에서 매일 갱신"
+     "notes": "fred_supplement_yfinance.R로 VIX 등 보충 경로 존재. daily_refresh.sh:187에서 매일 갱신",
+     "c11": {
+      "status": "declaration_corrected",
+      "judgment": "04_Research/01_reports/pit_c11_20260924/PIT_C11_verdict_20260924.md",
+      "note": "관측일 그대로 저장하는 원천 자체는 적합하다. 그러나 이 그룹 availability 가 가리킨 '소비 측 강제점'(regime_engine_daily :348-368 1행 shift · compute_regime :75-76 sig_date−1)은 주간·월간 계열에 불충분했다(V-01·V-11). 이 리프의 가용일은 계열별 규칙(06_Registry/fred_availability_rules.json)으로 계산한다 — ast_verify 는 FIELD 리프에 series(FRED id 또는 별칭) 선언을 요구하고 series_class(market_daily/release, +1일/+35일 근사)는 더 이상 쓰지 않는다(+35일은 INDPRO +47~54일·M2SL +51~64일을 못 덮었다). DEXKOUS/KRW_USD = 사용 금지 → ECOS_KRW_USD(CONVENTIONS ①). 값은 최신 빈티지(V-07 — 안 C ALFRED 전 C1·C11 미해소 라벨).",
+      "violations_context": [
+       "V-01",
+       "V-07",
+       "V-11"
+      ],
+      "corrected_at": "2026-09-24",
+      "corrected_by": "S6_defense (PIT C11 수리 1단계 · 판정서 ⑤-8 방어선 · decision_register PIT-C11-CONVENTIONS ④)"
+     }
     },
     {
      "group_id": "E2_ecos_kr_rates",
@@ -683,7 +715,18 @@
      "ast_leaf_class": "STORED_SCORE",
      "coverage_measured": "319행 2000-01-31~2026-07-31 (실측; 마지막 행은 partial month)",
      "pit_hazards": "① partial-month 최종 row를 완결월로 오소비하면 월중 look-within ② FRED 개정치 상속(E1) ③ walk-forward 여부 미확정 상태로 parity 라벨 없음 — STORED_SCORE 요건(provenance/parity) 미충족",
-     "notes": "provenance: data_collector_fred.R 단일 생성기. Buddha_Mode(score≥70 full-cash)는 권고 신호이지 자동 집행 아님"
+     "notes": "provenance: data_collector_fred.R 단일 생성기. Buddha_Mode(score≥70 full-cash)는 권고 신호이지 자동 집행 아님",
+     "c11": {
+      "status": "pit_invalid",
+      "violations": [
+       "V-14"
+      ],
+      "quarantine_ref": "06_Registry/pit_quarantine.json#PITQ-C11-20260924",
+      "judgment": "04_Research/01_reports/pit_c11_20260924/PIT_C11_verdict_20260924.md",
+      "note": "월말 행에 월말 미국 종가(1세션)·월내 미공표 주간값(3~6일)·같은 달 CPI(약 2주)가 섞인다(2026-08-31 행: VIX 14.92=US 08-31 · NFCI/STLFSI4 08-28분(09-02 공표) · ICSA 08-29분(09-03 공표) · CPI 08-01분). 같은 달 조회 소비자(STR_944 run_all.R:46 등) = 위반.",
+      "corrected_at": "2026-09-24",
+      "corrected_by": "S6_defense (PIT C11 수리 1단계 · 판정서 ⑤-8 방어선 · decision_register PIT-C11-CONVENTIONS ④)"
+     }
     },
     {
      "group_id": "E4_regime_daily_v2_mrs",
@@ -691,14 +734,33 @@
      "storage": ".cache/regime_daily_v2.parquet — writer 02_Infrastructure/regime/regime_engine_daily.R:82(REGIME_DAILY_CACHE),419, 캐시 로더 :226-227",
      "unit": "daily (8,221행, 22col: MRS/exposure/n_axes_firing + 9축 z_smooth + 9축 fire 플래그)",
      "universe": "단일 시계열 (KR 적용용 US+KRW 매크로 합성)",
-     "reference_ts_semantics": "Date = KRX 적용일. MRS[t]는 t-1 close까지의 FRED 데이터만 사용하도록 이미 shift 완료된 상태로 저장(소비자는 추가 lag 불필요)",
-     "availability": "t-1 lag 코드 강제: regime_engine_daily.R:353-368 (MRS_raw→shift 1 FRED-row, weekly/monthly ffill-then-lag; :11-20 선언 주석과 일치). 이 도메인에서 강제점이 가장 명확한 패널",
+     "reference_ts_semantics": "Date = KRX 적용일 라벨. ★정정(2026-09-24 · PIT C11 판정서 V-10·V-11): 'MRS[t]는 t-1 close까지의 FRED 데이터만 쓰도록 shift 완료 저장 — 소비자는 추가 lag 불필요'는 반증됐다. ① VIX_z_smooth 는 setnames 이름 충돌(regime_engine_daily.R:257, :395-415)로 lag 없는 값이 저장됐다(lag0 100% · lag1 0%, n=7,045). ② 주간·월간 축(ICSA·NFCI·STLFSI4·UMCSENT)은 합친 날짜 격자 LOCF + 1행 shift(:89-131, :355)라 공표 전 값을 쓴다(미공표 사용일 NFCI 59.8%·STLFSI4 80.0%·ICSA 78.6%). ③ 1행 lag 는 노출을 한국 종가→종가 수익에 곱하는 형태(판정서 ② (b))에는 부족하다.",
+     "availability": "선언 반증 — 코드 강제점(regime_engine_daily.R 1 FRED-row shift)은 일간 시장 계열의 형태 (a)에만 충분하고 주간·월간·ICE OAS(한국 d+2 · CONVENTIONS ②)에는 모자란다. 가용일 정본 = 06_Registry/fred_availability_rules.json · 결합 = 02_Infrastructure/data/fred_availability.R::fred_asof_join. 재빌드(2단계) 전 저장 패널은 격리(06_Registry/pit_quarantine.json#PITQ-C11-20260924 sources regime_daily_v2) — ast_verify 는 이 그룹을 격리 활성 동안 FAIL_LOOKAHEAD 로 판정한다.",
      "restatement_prone": true,
      "vintage_available": false,
      "ast_leaf_class": "STORED_SCORE",
      "coverage_measured": "8,221행 2000-01-01~2026-07-17 (실측). mtime 2026-07-24인데 max Date 07-17 — FRED 원천(07-23 보유) 대비 ~4영업일 지연, 빌드 트리거 확인 필요",
-     "pit_hazards": "walk-forward PIT-legitimate로 판단(t-1 shift 저장 시점 강제 + zero-lookahead 주석). 잔여 위험: z_smooth의 표준화 윈도우 방식은 코드 심층 미검증. C5 오버레이 소비 시 홀딩월 시작 전 컷오프(overlay_pit_guard.R:27,40 assert_overlay_pit HARD) 의무",
-     "notes": "소비면: mrs_daily 07:30 브리핑(02_Infrastructure/ops/mrs_daily_briefing.sh, cron 30 7 * * 1-5) + morning_steps/fred_regime.R. provenance = fred_robust 캐시 → regime_engine_daily 단일 경로"
+     "pit_hazards": "★PIT C11 위반 확정(V-10·V-11). 종전 'walk-forward PIT-legitimate' 판단은 주석(:11-20 'zero lookahead')의 진술을 증거로 삼은 것이다 — 같은 항목이 스스로 'z_smooth … 코드 심층 미검증'이라 적었고, 엔진 자체 검증(:631-667)은 ax1_VIX 만 보고 출력 열은 보지 않았다(판정서 1-5·D). C5 오버레이 소비 시 홀딩월 시작 전 컷오프(assert_overlay_pit)는 날짜 라벨만 비교하므로 이 누출을 못 잡는다.",
+     "notes": "소비면: mrs_daily 07:30 브리핑(02_Infrastructure/ops/mrs_daily_briefing.sh, cron 30 7 * * 1-5) + morning_steps/fred_regime.R. provenance = fred_robust 캐시 → regime_engine_daily 단일 경로",
+     "c11": {
+      "status": "pit_invalid",
+      "violations": [
+       "V-10",
+       "V-11"
+      ],
+      "quarantine_ref": "06_Registry/pit_quarantine.json#PITQ-C11-20260924",
+      "judgment": "04_Research/01_reports/pit_c11_20260924/PIT_C11_verdict_20260924.md",
+      "evidence": "판정서 ① V-10(regime_engine_daily.R:257 · :395-415 setnames 이름 충돌 → VIX_z_smooth lag0) · V-11(:89-131 합친 격자 LOCF + :355 1행 shift) · ③ '방어선이 C11을 못 잡은 이유'(ast_field_map E4 선언)",
+      "declaration_refuted": "PIT-legitimate · 소비자 추가 lag 불필요",
+      "repair": "코드 = regime_engine_daily.R 가용시점 결합(다른 서브시스템) · 저장 패널 = 2단계 재빌드. 해제 = 격리 항목 released 뒤 이 블록 status 를 갱신(원문은 original 에 보존)",
+      "corrected_at": "2026-09-24",
+      "corrected_by": "S6_defense (PIT C11 수리 1단계 · 판정서 ⑤-8 방어선 · decision_register PIT-C11-CONVENTIONS ④)",
+      "original": {
+       "reference_ts_semantics": "Date = KRX 적용일. MRS[t]는 t-1 close까지의 FRED 데이터만 사용하도록 이미 shift 완료된 상태로 저장(소비자는 추가 lag 불필요)",
+       "availability": "t-1 lag 코드 강제: regime_engine_daily.R:353-368 (MRS_raw→shift 1 FRED-row, weekly/monthly ffill-then-lag; :11-20 선언 주석과 일치). 이 도메인에서 강제점이 가장 명확한 패널",
+       "pit_hazards": "walk-forward PIT-legitimate로 판단(t-1 shift 저장 시점 강제 + zero-lookahead 주석). 잔여 위험: z_smooth의 표준화 윈도우 방식은 코드 심층 미검증. C5 오버레이 소비 시 홀딩월 시작 전 컷오프(overlay_pit_guard.R:27,40 assert_overlay_pit HARD) 의무"
+      }
+     }
     },
     {
      "group_id": "E5_msm_crisis_prob",
@@ -728,7 +790,19 @@
      "ast_leaf_class": "STORED_SCORE",
      "coverage_measured": "8,958행 1990-01-08~2026-06-04 (실측) — ★STALE ~7주(마지막 빌드 2026-06-08 mtime). 정기 리프레시 미배선",
      "pit_hazards": "★실사고 근거: 신호 자체는 clean이나 2026-07-05/06 BearProb 오버레이가 소비 측 anchor_date 컷오프 버그로 ~1개월 동월 look-ahead → SR 2.10→1.84 소멸(FALSIFIED). placebo/DSR/OOS 전부 못 잡음 — lag1 스트레스 + strict-PIT A/B만 판별. 재발방지 = C5 규약 + overlay_pit_guard.R assert_overlay_pit HARD + pit.md C5 절. AST 리프화 시 이 소비 규약을 리프 계약에 내장해야 함",
-     "notes": "SJM ensemble/validation 연구: 04_Research/factor_rotation/regime_jm_validation.R, regime_jm_ensemble_ab.R"
+     "notes": "SJM ensemble/validation 연구: 04_Research/factor_rotation/regime_jm_validation.R, regime_jm_ensemble_ab.R",
+     "c11": {
+      "status": "pit_invalid",
+      "violations": [
+       "V-10"
+      ],
+      "quarantine_ref": "06_Registry/pit_quarantine.json#PITQ-C11-20260924",
+      "judgment": "04_Research/01_reports/pit_c11_20260924/PIT_C11_verdict_20260924.md",
+      "declaration_refuted": "PIT-legitimate 확정(memory project-riskoverlay-multilayer-bearprob)",
+      "note": "판정서 1-5: 'regime_jump_model 안전' 반증(전제 오류) — 입력 VIX_z(:150)가 regime_daily_v2 의 lag 없는 VIX_z_smooth 다. 온라인 DP·+1일 delay 는 입력의 시점 오염을 씻지 못한다.",
+      "corrected_at": "2026-09-24",
+      "corrected_by": "S6_defense (PIT C11 수리 1단계 · 판정서 ⑤-8 방어선 · decision_register PIT-C11-CONVENTIONS ④)"
+     }
     },
     {
      "group_id": "E7_unified_regime_3layer",
@@ -743,7 +817,19 @@
      "ast_leaf_class": "STORED_SCORE",
      "coverage_measured": "월간 431행 1990-09-30~2026-07-31 / 일간 11,238행 1990-01-04~2026-07-23 (실측)",
      "pit_hazards": "① fw_Mom/fw_LowVol/fw_Quality/fw_Value = 국면조건부 팩터 forward 가중 — 산정 근거(회고 조건부 성과)가 full-period면 조향용으로만 ② Category enum 드리프트(m4 어휘 매핑을 보수=위험과대 방향으로 처리, :885-892) ③ partial-month row ④ 하위 KTRI/VEA 미검증 상속",
-     "notes": "regime_current.json 생성기는 2026-07-13 위생수리 task#48에서 신설(:883 주석). 06:30 regime_data_refresh.sh → 07:30 mrs_daily_briefing.sh 소비 체인"
+     "notes": "regime_current.json 생성기는 2026-07-13 위생수리 task#48에서 신설(:883 주석). 06:30 regime_data_refresh.sh → 07:30 mrs_daily_briefing.sh 소비 체인",
+     "c11": {
+      "status": "pit_invalid",
+      "violations": [
+       "V-05",
+       "V-06"
+      ],
+      "quarantine_ref": "06_Registry/pit_quarantine.json#PITQ-C11-20260924",
+      "judgment": "04_Research/01_reports/pit_c11_20260924/PIT_C11_verdict_20260924.md",
+      "note": "regime_signal.R:806-850(병합 :845-847) — FRED_MRS 행 자체가 같은 날짜(미국 1세션) + NFCI 최대 5일 + FEDFUNDS 월초 LOCF. 소비자(apply_regime_overlay·RCMA·module_performance·run_wf_ensemble)는 1행 lag 를 종가→종가 수익에 적용(V-06). 'MSM·MRS walk-forward 확정' 상속 서술은 MRS 에 대해 반증.",
+      "corrected_at": "2026-09-24",
+      "corrected_by": "S6_defense (PIT C11 수리 1단계 · 판정서 ⑤-8 방어선 · decision_register PIT-C11-CONVENTIONS ④)"
+     }
     },
     {
      "group_id": "E8_style_trackers",
@@ -803,7 +889,14 @@
      "ast_leaf_class": "FIELD_REGISTRY_PTR",
      "coverage_measured": "registry 373 엔트리 중 macro 14 + macro_fred 5 실측 카운트(파이썬 json 집계). 개별 팩터 시계열 커버리지는 Factor DB 도메인(별도 담당) 소관 — 여기선 포인터만",
      "pit_hazards": "E1의 개정치 상속(macro 원천이 latest-vintage) — 팩터 재빌드 시 과거 값 변동 가능. category는 regime 18 + defense 1로 분산되어 있어 category 기준 검색 시 누락 주의(data_source 기준이 정본)",
-     "notes": "예시 엔트리: VIX Percentile/Credit Spread Percentile/Business Cycle Composite(macro), HY OAS Z-Score/Market Regime Score/Regime Exposure(macro_fred). 373 개별 나열 금지 원칙에 따라 포인터화"
+     "notes": "예시 엔트리: VIX Percentile/Credit Spread Percentile/Business Cycle Composite(macro), HY OAS Z-Score/Market Regime Score/Regime Exposure(macro_fred). 373 개별 나열 금지 원칙에 따라 포인터화",
+     "c11": {
+      "status": "declaration_corrected",
+      "judgment": "04_Research/01_reports/pit_c11_20260924/PIT_C11_verdict_20260924.md",
+      "note": "강제점 'compute_regime.R:75-76 sig_date−1'(C11 보수 1일)은 월간 공표 계열(INDPRO·CPIAUCSL)에 불충분(V-01 — MA01·MA02 퇴역, decision PIT-C11-MA0102) · ICE OAS(RE13·RE_HY_z)는 한국 d+2(CONVENTIONS ②). D32 는 compute_regime 을 타지 않는다(빌더 같은 날짜 결합, V-08). registry 의 '-1d'·'C11_publication_lag' 선언을 ast_verify 가 그대로 믿지 않도록 계열·저장 판 빌드 상태를 c11_registry_series 에 적었다.",
+      "corrected_at": "2026-09-24",
+      "corrected_by": "S6_defense (PIT C11 수리 1단계 · 판정서 ⑤-8 방어선 · decision_register PIT-C11-CONVENTIONS ④)"
+     }
     }
    ],
    "domain_notes": "도메인 E (매크로+국면+스타일 트래커) 채록 총평. ① 분류 구조: 원천 FIELD는 E1(FRED)·E2(ECOS) 2개뿐이고 나머지는 전부 STORED_SCORE(파생 국면/스타일 패널) — 이 도메인의 AST 가치는 원천보다 '파생 패널의 provenance 등급'에 있음. walk-forward PIT-legitimate 코드 강제가 실증된 것 = MRS(E4, t-1 shift 저장시점 강제), MSM(E5, expanding HMM), SJM(E6, online DP+126d refit++1d delay). 미검증 = macro_regime 월간 스코어(E3)와 unified 합성의 KTRI/VEA 입력(E7) — AST 편입 전 감사 필요. ② 지배 규약: C5 오버레이 타이밍(홀딩월 시작 전 컷오프, overlay_pit_guard.R assert_overlay_pit HARD)이 이 도메인 소비의 지배 계약 — E6 BearProb 실사고(2026-07-05/06, 소비측 anchor_date 버그로 동월 look-ahead, placebo/DSR 무력·lag1+strict A/B만 판별)가 근거. 신호 파일이 clean해도 소비 타이밍이 오염 지점이므로, AST 리프 계약에 '적용 컷오프' 속성을 리프 레벨로 내장할 것을 권고. ③ vintage 현황: 진짜 vintage는 MSM_updated_*.RData 53개(E5)가 유일. FRED .bak 13개는 운영 부산물(갭 있음), ECOS pin 1개·FF5 날짜스탬프 사본 2개는 수동 pin. FRED 원천이 publication-date 미보존 + latest-vintage overwrite인 것이 이 도메인 최대 구조 위험(개정 시리즈 restatement). ④ 신선도 실측 이슈 3건: regime_jump_daily 2026-06-04 STALE(~7주, 리프레시 미배선), conditional_ic_matrix 2026-06-08 STALE, regime_daily_v2 max 07-17 vs FRED 원천 07-23(~4영업일 지연). ⑤ 0-byte orphan soft_mrs.json 실측 확인(지시사항 확인 완료). ⑥ 측정 방법: 전 parquet pyarrow footer row-group statistics로 min/max Date·행수 실측(전체 스캔 없음), 로더/강제점은 파일:라인 인용."
@@ -953,5 +1046,204 @@
    ],
    "domain_notes": "[도메인 F: 기타+외부+공백 — 확보 vs 미확보 공백 요약]\n\n■ 확보돼 있으나 앞 도메인이 놓쳤을 수 있는 자산(실측): ① 종목별 투자자 수급(.cache/investor_stock/ 6 parquet, investor_all 31.86M행 2000-01-04~2026-07-01, QuantiWise 원천 — FLOW 팩터의 upstream FIELD) ② 시장단위 수급(.cache/investor/investor_market.parquet 3,040행 2020-01-02~2026-03-13, ★수집 정지 4.5개월·cache_registry 미등재 orphan) ③ DART 감사의견/담보/정정 취득분(02_Infrastructure/data/dart_pledge_audit/, t1 12,844행 FY2015-25·t2a 4,000행 2024-07~2026-07·t3 7,680행 2005~2026) ④ FQ-064 crosswalk(474행 bizr_no 100%).\n\n■ FQ가 원하는 미확보 데이터(공백, 게이트별): (a) 도훈 로그인/export — ★공매도잔고·대차잔고(FQ-003, 최고-EV 비-return lane, KRX API 부재 실조사 완료→QW export만)·신용잔고 crowding(FQ-005). 저장소 전수 grep으로 실보유 0건 확정 = 전량 계획. (b) 도훈 활용신청/무료키 — NPS 사업장 가입자수(FQ-064, 15083277 활용신청만 남음·백필 124개월 확인·PIT 수리·1커맨드 준비)·산단 가동률(FQ-070)·KIPRIS 특허(FQ-071)·관세청 HS 수출(FQ-073). (c) 파서 비용 도훈 결정 — DART 계약금액 magnitude(FQ-002)·담보 역사 2005~2023 ~29k 문서(FQ-004 2단). (d) 승인형 — FM 가중치 다운로드+venv 패키지(FQ-061). (e) 유료 비권고 — TRASS(FQ-072, alt-data 경계 위반 소지). (f) 쿼터 후순위 — DART list 확장(FQ-038).\n\n■ 판정: 외부 MCP(yfinance/FRED/arxiv/jina 등)는 EXTERNAL — 조회형·vintage 부재로 PIT 불가, yfinance는 크로스마켓 금지 제약과 충돌(백테 원천 부적격, KR 신호 재료용 US 매크로는 FQ-067 선례상 로컬 정본 인입+ALFRED vintage 경유만 clean). live/운용 데이터(book_state·live_track NAV·recon)와 observability(cache_registry 42엔트리·cache_freshness·pin_cache)는 리프 부적격(운용 산출/메타) — 단 cache_registry의 max_lag_days·depends_on DAG와 pin_cache 스냅샷 규약은 AST availability/vintage 필드의 1차 소스로 재사용 권장. KRX 파생은 컬렉터 코드만 있고 캐시 0파일(미수집 공백). ECOS/FRED 신규 계열(PPI·BSI·재고사이클)은 키 보유·게이트 없음이나 on-demand pull 상태라 리프화에 정본 인입 배선 선행 필요."
   }
+ },
+ "c11_registry_series": {
+  "_doc": "ast_verify.py 가 factor_registry availability.rule('-1d'·'C11_publication_lag') 선언을 그대로 믿지 않고(판정서 ③ ast_verify:360-361) 계열별 가용일 규칙(06_Registry/fred_availability_rules.json)과 대조하는 입력. 각 항목 = 그 팩터 **저장 판**이 쓴 해외 계열과 빌드 방식(코드 인용). 판정: 격리 활성(06_Registry/pit_quarantine.json#PITQ-C11-20260924) 항목 = FAIL_LOOKAHEAD · stored_build=lag_days k = 계열 규칙이 '다음 한국 거래일'(kr_trading_days_after n≤1)이고 k≥1 일 때만 적합(공표형·ICE d+2·금지 계열 = FAIL_LOOKAHEAD) · fred_availability = 가용시점 층 재빌드판(rules_regime_key 가 현 규칙 epoch 와 같아야 함) · no_foreign_input = 해외 입력 없음 · retired = FAIL_LOOKAHEAD · 미등재 = FAIL_CONTRACT(선언만으로 통과 없음).",
+  "rules_path": "06_Registry/fred_availability_rules.json",
+  "judgment": "04_Research/01_reports/pit_c11_20260924/PIT_C11_verdict_20260924.md",
+  "state_as_of": "2026-09-24 — 저장 패널은 아직 구판 빌드(2단계 재빌드 전). 재빌드 뒤 stored_build 를 fred_availability + rules_regime_key 로 갱신할 것(2단계 몫)",
+  "build_semantics": {
+   "lag_days": "저장 값(시점 t)이 관측 라벨 <= t - lag_days(역일)인 관측으로 만들어짐 — 코드 인용 기준",
+   "fred_availability": "가용시점 층(fred_asof_join/fred_avail_*)으로 결합된 재빌드판 — rules_regime_key 필수",
+   "no_foreign_input": "해외 계열을 쓰지 않음",
+   "retired": "퇴역 — 소비 불가"
+  },
+  "factors": {
+   "D32_Beta_VIX": {
+    "series": [
+     "VIXCLS"
+    ],
+    "stored_build": "lag_days",
+    "lag_days": 0,
+    "code": "factor_db_builder.R:311-312 구판 같은 날짜 roll 결합 → compute_defense.R:472-493",
+    "verdict": "V-08 · 일간 V-09"
+   },
+   "RE10_VIX_Pctile": {
+    "series": [
+     "VIXCLS"
+    ],
+    "stored_build": "lag_days",
+    "lag_days": 1,
+    "code": "02_Infrastructure/factor_db/compute_regime.R 구판(git 7ea5d8377) :75-77 'Date <= sig_d - 1L' 전 계열 1일 컷 (월간) · 일간 판 = factor_db_daily_phase7.R:279-305 같은 날짜 + 전표본 frank(C1)",
+    "verdict": "일간 V-12"
+   },
+   "RE11_VIX_Change_EWMA": {
+    "series": [
+     "VIXCLS"
+    ],
+    "stored_build": "lag_days",
+    "lag_days": 1,
+    "code": "02_Infrastructure/factor_db/compute_regime.R 구판(git 7ea5d8377) :75-77 'Date <= sig_d - 1L' 전 계열 1일 컷 (월간) · 일간 판 = phase7 같은 날짜 EWMA",
+    "verdict": "일간 V-12"
+   },
+   "RE12_VIX_Regime_3State": {
+    "series": [
+     "VIXCLS"
+    ],
+    "stored_build": "lag_days",
+    "lag_days": 1,
+    "code": "02_Infrastructure/factor_db/compute_regime.R 구판(git 7ea5d8377) :75-77 'Date <= sig_d - 1L' 전 계열 1일 컷"
+   },
+   "RE13_Credit_Spread_Pctile": {
+    "series": [
+     "BAMLH0A0HYM2"
+    ],
+    "stored_build": "lag_days",
+    "lag_days": 1,
+    "code": "02_Infrastructure/factor_db/compute_regime.R 구판(git 7ea5d8377) :75-77 'Date <= sig_d - 1L' 전 계열 1일 컷 (월간) · 일간 판 = phase7 같은 날짜 + 전표본 frank(C1)",
+    "verdict": "일간 V-12 · CONVENTIONS ② ICE 한국 d+2"
+   },
+   "RE14_Inflation_YoY": {
+    "series": [
+     "CPIAUCSL"
+    ],
+    "stored_build": "lag_days",
+    "lag_days": 1,
+    "code": "02_Infrastructure/factor_db/compute_regime.R 구판(git 7ea5d8377) :75-77 'Date <= sig_d - 1L' 전 계열 1일 컷 — 관측월 M-01 라벨을 공표(M+1월 10~15일) 전에 사용",
+    "verdict": "V-12 · V-13"
+   },
+   "RE16_Canary_Signal": {
+    "series": [
+     "SP500"
+    ],
+    "stored_build": "lag_days",
+    "lag_days": 1,
+    "code": "02_Infrastructure/factor_db/compute_regime.R 구판(git 7ea5d8377) :75-77 'Date <= sig_d - 1L' 전 계열 1일 컷"
+   },
+   "MA01_GDP_Sensitivity": {
+    "series": [
+     "INDPRO"
+    ],
+    "stored_build": "retired",
+    "code": "02_Infrastructure/factor_db/compute_regime.R 구판(git 7ea5d8377) :75-77 'Date <= sig_d - 1L' 전 계열 1일 컷 · .macro_beta",
+    "verdict": "V-01",
+    "note": "decision PIT-C11-MA0102 퇴역 — 공표분만으로는 현 명세(12관측) 산출 불가"
+   },
+   "MA02_CPI_Sensitivity": {
+    "series": [
+     "CPIAUCSL"
+    ],
+    "stored_build": "retired",
+    "code": "02_Infrastructure/factor_db/compute_regime.R 구판(git 7ea5d8377) :75-77 'Date <= sig_d - 1L' 전 계열 1일 컷 · .macro_beta",
+    "verdict": "V-01",
+    "note": "decision PIT-C11-MA0102 퇴역"
+   },
+   "MA03_Rate_Sensitivity": {
+    "series": [
+     "DGS10"
+    ],
+    "stored_build": "lag_days",
+    "lag_days": 1,
+    "code": "02_Infrastructure/factor_db/compute_regime.R 구판(git 7ea5d8377) :75-77 'Date <= sig_d - 1L' 전 계열 1일 컷",
+    "verdict": "판정서 1-6 적합(발표 반영판 Spearman 1.0)"
+   },
+   "MA04_YieldCurve_Sensitivity": {
+    "series": [
+     "DGS10",
+     "DGS2"
+    ],
+    "stored_build": "lag_days",
+    "lag_days": 1,
+    "code": "02_Infrastructure/factor_db/compute_regime.R 구판(git 7ea5d8377) :75-77 'Date <= sig_d - 1L' 전 계열 1일 컷",
+    "verdict": "판정서 1-6 적합"
+   },
+   "MA05_MonetaryPolicy_Mom": {
+    "series": [
+     "DGS2"
+    ],
+    "stored_build": "lag_days",
+    "lag_days": 1,
+    "code": "02_Infrastructure/factor_db/compute_regime.R 구판(git 7ea5d8377) :75-77 'Date <= sig_d - 1L' 전 계열 1일 컷",
+    "verdict": "판정서 1-6 적합"
+   },
+   "MA06_Risk_Sentiment_1Y": {
+    "series": [],
+    "stored_build": "no_foreign_input",
+    "code": "compute_regime.R MA06 = 국내 벤치 bm_daily 1년 수익(해외 계열 없음)",
+    "note": "registry data_source 'macro'·rule C11_publication_lag 는 이 팩터에 해당 없음(레지스트리 정정은 S1 소관)"
+   },
+   "MA07_BusinessCycle_Composite": {
+    "series": [
+     "INDPRO",
+     "CPIAUCSL"
+    ],
+    "stored_build": "lag_days",
+    "lag_days": 1,
+    "code": "02_Infrastructure/factor_db/compute_regime.R 구판(git 7ea5d8377) :75-77 'Date <= sig_d - 1L' 전 계열 1일 컷",
+    "verdict": "V-13"
+   },
+   "RE_HY_z": {
+    "series": [
+     "BAMLH0A0HYM2"
+    ],
+    "stored_build": "lag_days",
+    "lag_days": 1,
+    "code": "regime_engine_daily.R 구판(git 7ea5d8377) 1 FRED-row shift → regime_daily_v2 → factor_db_daily_phase6.R:597-599 정확 일치 결합",
+    "verdict": "판정서 1-6(실측 lag1 적합) — 단 CONVENTIONS ② 채택 규약은 한국 d+2"
+   },
+   "RE_TS_z": {
+    "series": [
+     "T10Y2Y"
+    ],
+    "stored_build": "lag_days",
+    "lag_days": 1,
+    "code": "regime_engine_daily.R 구판(git 7ea5d8377) 1 FRED-row shift → regime_daily_v2 → factor_db_daily_phase6.R:597-599 정확 일치 결합",
+    "verdict": "판정서 1-6 적합"
+   },
+   "RE_VIX_z": {
+    "series": [
+     "VIXCLS"
+    ],
+    "stored_build": "lag_days",
+    "lag_days": 0,
+    "code": "regime_engine_daily.R 구판(git 7ea5d8377) 1 FRED-row shift → regime_daily_v2 → factor_db_daily_phase6.R:597-599 정확 일치 결합 — setnames 이름 충돌로 lag 없는 값 저장",
+    "verdict": "V-10"
+   },
+   "RE_MRS": {
+    "series": [
+     "VIXCLS",
+     "BAMLH0A0HYM2",
+     "T10Y2Y",
+     "BAMLC0A4CBBB",
+     "DEXKOUS",
+     "STLFSI4",
+     "NFCI",
+     "ICSA",
+     "UMCSENT"
+    ],
+    "stored_build": "lag_days",
+    "lag_days": 1,
+    "code": "regime_engine_daily.R 구판(git 7ea5d8377) 1 FRED-row shift → regime_daily_v2 → factor_db_daily_phase6.R:597-599 정확 일치 결합 — 9축 합친 격자 LOCF + 1행 shift",
+    "verdict": "V-11"
+   },
+   "RE_exposure": {
+    "series": [
+     "VIXCLS",
+     "BAMLH0A0HYM2",
+     "T10Y2Y",
+     "BAMLC0A4CBBB",
+     "DEXKOUS",
+     "STLFSI4",
+     "NFCI",
+     "ICSA",
+     "UMCSENT"
+    ],
+    "stored_build": "lag_days",
+    "lag_days": 1,
+    "code": "regime_engine_daily.R 구판(git 7ea5d8377) 1 FRED-row shift → regime_daily_v2 → factor_db_daily_phase6.R:597-599 정확 일치 결합 — MRS 파생",
+    "verdict": "V-11"
+   }
+  },
+  "corrected_by": "S6_defense (PIT C11 수리 1단계 · 판정서 ⑤-8 방어선 · decision_register PIT-C11-CONVENTIONS ④)"
  }
 }

@@ -1,0 +1,20 @@
+{
+  "run_id": "20260829_234856_14924",
+  "strategy_name": "RF_B2_6_ScoreTilt",
+  "lookahead_prevention": "detect_lookahead(engine) CLEAN [PIT C7 정적 패턴 · 러너 하드 게이트] + 집행 close_t1 — 시그널일 d 확정 비중을 익월 첫 거래일 종가 Close[exec] 에 체결 · 새 보유 수익 (exec, next_exec] · 집행일 수익은 직전 보유(PIT C2 동일봉 체결 없음 · 정본 backtest_harness 와 같은 의미) + 시그널일>RAWDATA 범위 검사",
+  "survivorship_bias_control": "universe=K200_KQ150: 시그널일 당일 RAWDATA 멤버십 플래그(K200|KQ150)로 PIT 시변 필터(.apply_universe) — 사후 생존 조건 없음 · 상장폐지 종목 포함 RAWDATA(폐지 후 수익 행 부재 = 0 처리)",
+  "strategy_idea": "규칙기반 고속강화 B2-6: B1-5 승자 컴포짓(모멘텀 12-1 rank-Z 50% + Amihud 비유동성 rank-Z 50%)을 그대로 이식하고 비중만 교체 — 상위 25종 EW 를 팩터 스코어 틸트 w_i ∝ (z_i − min(z_25) + eps) 로 바꾼다. 근거 = Grinold(1989) 기본법칙: 최적 액티브 비중은 알파에 비례. K200∪KQ150 · adv20>=2e8(t-1) · long-only · Σw=1 · 월간 · 15bps.",
+  "constraint_profile": "replication",
+  "construction": "engine_direct",
+  "weight_method": "score_tilt",
+  "rebalance": "monthly",
+  "universe": "K200_KQ150",
+  "liquidity_filter": "paper_faithful",
+  "n_max": 25,
+  "has_short": false,
+  "source_paper_url": "https://www.pm-research.com/content/iijpormgmt/15/3/30",
+  "benchmark_note": "long_vs_long_bm",
+  "factor_engine_path": null,
+  "exec_price": "close_t1",
+  "cost_model_version": "replication_weight_delta_v1/first_hold_day_multiplicative"
+}

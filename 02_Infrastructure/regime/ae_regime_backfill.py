@@ -25,8 +25,19 @@
 모델·상수 = 동결 원본(stage_artifacts/WT_D20260718_007/ae_regime_extend.py) verbatim.
   원본은 감사 증거 동결이라 수정 불가(artifact-storage.md ①) — 여기 복제하고 sha 를 기록한다.
 
+★PIT C11 수리 (2026-09-24 · 판정서 V-03 · 결정 PIT-C11-REMEDIATION 안 B · 1단계 코드):
+  구 build_panel(:69-83)은 해외 특성을 미국 관측일(라벨)로 붙였다(`merge_asof(on="Date")`) — 한국 d 행에
+  미국 d 종가·공표 전 주간값(STLFSI4 +7일·NFCI +6일)이 실렸다. 이제 특성 패널은
+  `ae_pit_features.build_pit_panel`(기반 S0 도우미 fred_asof_join · decision_close) 한 경로로만 만든다.
+  원/달러는 DEXKOUS(prohibited) 대신 핀의 ECOS 731Y001(`ecos_krw_usd.parquet`) — 결정 PIT-C11-CONVENTIONS ①.
+  산출 행에 C11 표식 4열을 붙이고(`aepf.stamp`), **수리 전 판 기존 행과는 섞지 않는다**(기존 행에 표식이
+  없으면 중단 — 한 파일에 두 시간축이 공존하면 소비자가 어느 행이 PIT 인지 모른다).
+  ⚠관찰(C11 밖 · 수리 안 함): 아래 SeqAE/PointAE 는 동결 원본(LSTM · 8-4 GELU)과 구조가 다르고(GRU · 16-8 ReLU)
+    M4_FIRE_RATE 도 0.12 vs 원본 0.126 이다 — 머리말의 'verbatim' 서술과 다르다. 2단계 재산출 전에 확인할 것.
+
 사용:
-  .venv_qvest_ml/Scripts/python.exe 02_Infrastructure/regime/ae_regime_backfill.py [--dry-run]
+  .venv_qvest_ml/Scripts/python.exe 02_Infrastructure/regime/ae_regime_backfill.py [--dry-run] [--pin-dir <핀>]
+  (기본 핀 r1 은 수리 전 판이라 ECOS 가 없다 → 입력 오류 2. ECOS 를 담은 핀을 --pin-dir 로.)
 종료코드: 0 정상 / 1 parity 위반 / 2 입력 오류 / 3 PIT 위반
 """
 from __future__ import annotations
@@ -42,6 +53,11 @@ import pyarrow.parquet as pq
 import torch
 import torch.nn as nn
 
+_REGIME_DIR = os.path.dirname(os.path.abspath(__file__))
+if _REGIME_DIR not in sys.path:
+    sys.path.insert(0, _REGIME_DIR)
+import ae_pit_features as aepf  # noqa: E402  (C11 가용시점 결합 — 해외 특성의 유일한 결합 경로)
+
 ROOT = os.environ.get("QM_ROOT", "C:/Users/99922/OneDrive/Quant_Module_Moltbot").replace("\\", "/")
 os.chdir(ROOT)
 torch.set_num_threads(1)
@@ -52,6 +68,7 @@ PIN = ".cache/pins/WT-D20260718_007_r1"
 FRED = os.path.join(PIN, "fred_macro_wide.parquet")
 BENCH = os.path.join(PIN, "benchmark.parquet")
 CARRIER = os.path.join(PIN, "carrier_STR_1715_AR_on_M4_R05_overlay_PG2.parquet")
+ECOS = os.path.join(PIN, aepf.ECOS_KRW_FILE)   # C11: 원/달러 원천(DEXKOUS prohibited)
 OUT = "stage_artifacts/WT_D20260718_007/ae_regime_signal_ext.parquet"
 SRC_FROZEN = "stage_artifacts/WT_D20260718_007/ae_regime_extend.py"
 
@@ -67,20 +84,8 @@ BACKFILL_YEARS = [2004, 2005, 2006, 2007]   # 결손 연도만. 기존 행은 �
 
 
 def build_panel():
-    fr = pq.read_table(FRED).to_pandas(); fr["Date"] = pd.to_datetime(fr["Date"]); fr = fr.sort_values("Date")
-    bm = pq.read_table(BENCH).to_pandas(); bm["Date"] = pd.to_datetime(bm["Date"]); bm = bm.sort_values("Date").reset_index(drop=True)
-    c = bm["BM_Close"].astype(float).values
-    bm["kret"] = bm["BM_Ret"].astype(float)
-    bm["klog"] = np.log(c / np.roll(c, 1)); bm.loc[0, "klog"] = np.nan
-    bm["kvol20"] = bm["kret"].rolling(20, min_periods=10).std()
-    bm["kcum20"] = c / np.concatenate([np.full(20, np.nan), c[:-20]]) - 1.0
-    bm["kcum60"] = c / np.concatenate([np.full(60, np.nan), c[:-60]]) - 1.0
-    spine = bm[["Date", "kret", "klog", "kvol20", "kcum20", "kcum60"]].copy()
-    m = pd.merge_asof(spine, fr[["Date"] + FRED_FEATS], on="Date", direction="backward")
-    feat_cols = ["klog", "kvol20", "kcum20", "kcum60"] + FRED_FEATS
-    m[feat_cols] = m[feat_cols].ffill()
-    m = m.dropna(subset=feat_cols).reset_index(drop=True)
-    return m, feat_cols
+    """★C11: 해외 특성은 가용일로 결합한다(ae_pit_features — S0 도우미 경유). 반환형은 구판과 같다."""
+    return aepf.build_pit_panel(FRED, BENCH, ECOS, FRED_FEATS)
 
 
 class SeqAE(nn.Module):
@@ -158,10 +163,21 @@ def die(code, msg):
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--dry-run", action="store_true")
+    ap.add_argument("--pin-dir", default=None,
+                    help="핀 디렉토리(기본 r1). ★C11 이후 핀에 ecos_krw_usd.parquet 가 있어야 한다")
     args = ap.parse_args()
+    if args.pin_dir:
+        global PIN, FRED, BENCH, CARRIER, ECOS
+        PIN = args.pin_dir
+        FRED = os.path.join(PIN, "fred_macro_wide.parquet")
+        BENCH = os.path.join(PIN, "benchmark.parquet")
+        CARRIER = os.path.join(PIN, "carrier_STR_1715_AR_on_M4_R05_overlay_PG2.parquet")
+        ECOS = os.path.join(PIN, aepf.ECOS_KRW_FILE)
 
-    for p in (FRED, BENCH, CARRIER, OUT, SRC_FROZEN):
-        if not os.path.exists(p): die(2, f"입력 부재: {p}")
+    for p in (FRED, BENCH, CARRIER, OUT, SRC_FROZEN, ECOS):
+        if not os.path.exists(p):
+            die(2, f"입력 부재: {p}" + (" — C11 이후 원/달러 = 핀의 ECOS 731Y001(DEXKOUS prohibited). "
+                                         "수리 전 핀이다: ECOS 를 담은 핀을 --pin-dir 로" if p == ECOS else ""))
     src_sha = hashlib.sha1(open(SRC_FROZEN, "rb").read()).hexdigest()
     print(f"[backfill] 동결 원본 sha1={src_sha[:12]} (모델·상수 verbatim 복제 근거)")
 
@@ -172,8 +188,15 @@ def main():
     print(f"[backfill] 기존 {n_exist}행 {exist_min.date()} ~ {existing['decision_date'].max().date()}")
     if exist_min <= pd.Timestamp("2004-12-31"):
         die(2, "기존 패널이 이미 2004 를 포함 — 백필 대상 없음(중복 실행 방지)")
+    # ★C11: 수리 판 백필을 수리 전 판 기존 행 옆에 붙이지 않는다(한 파일 두 시간축 금지)
+    if not aepf.is_c11_stamped(existing):
+        die(2, "기존 행에 C11 표식이 없다(수리 전 판 — 해외 특성 관측일 결합·DEXKOUS). 수리 판 백필을 섞지 않는다 — "
+               "기존 행을 먼저 C11 판으로 재산출할 것(ae_regime_monthly.py · 2단계 결정 PIT-C11-BOOK0001)")
 
-    panel, feat_cols = build_panel()
+    try:
+        panel, feat_cols = build_panel()
+    except aepf.AEPitError as e:
+        die(3 if "★C11" in str(e) else 2, str(e))
     nfeat = len(feat_cols)
     Xraw = panel[feat_cols].values.astype(np.float64)
     panel_dates = pd.to_datetime(panel["Date"]).values
@@ -257,7 +280,12 @@ def main():
     # ── V2 PIT ────────────────────────────────────────────────────────────────
     bad = int((pd.to_datetime(new["last_feat_date"]) >= pd.to_datetime(new["decision_date"])).sum())
     if bad: die(3, f"PIT 위반 {bad}행 (last_feat_date >= decision_date)")
-    print(f"[V2 PIT] 신규 {len(new)}행 전부 last_feat < decision OK")
+    # ★C11 표식 + 검사: 창에 실린 해외 관측 가용일 ≤ last_feat_date < decision_date
+    try:
+        new = aepf.stamp(new, panel, aepf.rules_regime_key())
+    except aepf.AEPitError as e:
+        die(3, str(e))
+    print(f"[V2 PIT] 신규 {len(new)}행 전부 last_feat < decision OK · C11 표식 {aepf.FEAT_JOIN}")
 
     # ── V1 기존 행 불변 (구조 보장이지만 그래도 **잰다** — 주장과 확인은 다르다) ──
     merged = pd.concat([new, existing], ignore_index=True).sort_values("decision_date").reset_index(drop=True)

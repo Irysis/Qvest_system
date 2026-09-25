@@ -172,6 +172,8 @@ sm_check_waiver <- function(wt_id, waiver_field = "codex_critic_skip_waiver") {
 
 sm_validated_advance <- function(wt_id, from, to, force_waiver = FALSE,
                                   validate_schema = TRUE) {
+  # ★QEPM 동결(도훈 결정 QEPM-R0-FREEZE · 2026-09-25): promote/JUDGE_* 전이 봉쇄 — waiver 무관. 해제 = decision_register 재상정 후 이 줄 삭제.
+  if (any(to %in% c("JUDGE_PASSED", "JUDGE_FAILED"))) stop(sprintf("[state_machine] QEPM 동결(QEPM-R0-FREEZE) — %s → %s 봉쇄(WT 경로 Judge 금지 · 해제 = decision_register 재상정)", paste(from, collapse = ""), paste(to, collapse = "")))
   # Step 1: Transition allowed?
   trans_result <- sm_check_transition(from, to)
   if (!trans_result$allowed) {

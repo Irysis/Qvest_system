@@ -33,6 +33,23 @@ jlog <- function(event, ...) {
                     sep = "=", collapse = " ")))
 }
 
+#' 백필 자격의 lifecycle 술어 — ★소비자(rf_factor_arms.R::rf_factor_pool)와 **같은 뜻**이어야 한다.
+#'   백필의 목적은 IC 이력을 세워 B1 후보 풀에 넣는 것이고, 그 풀은 registry lifecycle.status 가
+#'   "active" 인 팩터만 받는다(status 없음 = active — add_factor.R 이 active 로 등재한다). 풀이 받지 않는
+#'   팩터를 백필하면 매일 밤 예산만 쓴다.
+#'   ★2026-09-25 수리(C11 2단계 · plan '2단계 뒤 남는 것'): 구판은 deprecated **한 값만** 뺐다(블랙리스트).
+#'     2026-09-24 퇴역한 MA01·MA02(status "retired" · decision_register PIT-C11-MA0102)는 산출이 멈춰
+#'     IC 개월수가 줄어드는 순간 후보가 되고, compute_regime 이 더는 내지 않으니 "empty" 로 443개월을
+#'     헛돌린 뒤에야 '이득 없는 재시도' 출구로 빠진다. 블랙리스트는 새 상태값마다 같은 구멍을 다시 연다 —
+#'     그래서 소비자와 같은 화이트리스트로 바꾼다(deprecated·retired·그 밖의 비활성 값 전부 제외).
+#' @param e registry 항목(list) — NULL 이면 FALSE(등재 없는 id 는 팩터가 아니다)
+rf_bf_lifecycle_live <- function(e) {
+  if (is.null(e)) return(FALSE)
+  st <- (e$lifecycle %||% list())$status
+  if (is.null(st) || !length(st)) return(TRUE)          # status 미기재 = active (소비자와 같은 폴백)
+  identical(as.character(st)[1], "active")
+}
+
 #' 이력 미달 팩터 목록 — (id, module, have_months) · 커버리지 적은 순
 #' ★커버리지 대리 = factor_ic_monthly 의 팩터별 개월 수. 443개 parquet 를 전수 스캔하지 않는다
 #'   (같은 체인이 매일 갱신하므로 이 파일이 곧 그 달들의 그림자다).
@@ -61,13 +78,19 @@ rf_backfill_candidates <- function(root = ROOT, min_ratio = 0.5) {
   # ── 빼야 하는 세 부류 (백필해도 소용없거나 나오면 안 되는 것) ────────────────
   #   ① time_series — 시장수준이라 횡단면 Coverage 가 FALSE 인 게 정상(빌더 규칙과 정합).
   #      안 빼면 매일 밤 443개월을 헛돌린다.
-  #   ② deprecated — 승계돼서 안 나오는 게 맞다(C14→M26 · C17→M28).
+  #   ② 비활성 lifecycle — active 가 아닌 전부(deprecated: C14→M26·C17→M28 승계 · retired: MA01·MA02
+  #      C11 퇴역). 술어 = rf_bf_lifecycle_live(소비자 rf_factor_pool 과 같은 화이트리스트).
   #   ③ expected_absent 선언분 — 사유·근거와 함께 "결측이 정상" 으로 선언된 것.
   ax <- tryCatch(fromJSON(file.path(ROOT, "06_Registry/factor_panel_axis.json"),
                           simplifyVector = FALSE)$factors, error = function(e) list())
   ts_ids <- names(Filter(function(v) identical(v$panel_axis, "time_series"), ax %||% list()))
-  dep_ids <- names(Filter(function(e) identical(as.character((e$lifecycle %||% list())$status %||% ""),
-                                                "deprecated"), reg))
+  dep_ids <- names(reg)[!vapply(reg, rf_bf_lifecycle_live, logical(1))]
+  if (length(dep_ids)) {
+    .st <- vapply(reg[dep_ids], function(e) as.character((e$lifecycle %||% list())$status %||% "?")[1], character(1))
+    .tb <- table(.st)
+    cat(sprintf("[fdb_bf] 비활성 lifecycle 제외 %d종 (%s)\n", length(dep_ids),
+                paste(sprintf("%s %d", names(.tb), as.integer(.tb)), collapse = " · ")))
+  }
   ea <- tryCatch(fromJSON(file.path(ROOT, "02_Infrastructure/factor_db/emission_expected_absent.json"),
                           simplifyVector = FALSE)$expected_absent, error = function(e) list())
   dec_ids <- vapply(ea %||% list(), function(e) as.character(e$factor %||% ""), character(1))

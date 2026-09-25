@@ -110,7 +110,16 @@ stage_result() {   # $1=표시명 $2=exit코드 $3=경보 컴포넌트명
     [ ! -f "${LOCK}.done" ] && _retry_reason="직전 실행 미완주(.done 없음 — 중도 사망)"
     _alert_reason=""
     if [ -z "$_retry_reason" ]; then
-      _alert=$(ls -1 "$BASE/.cache/scheduler_alerts/"*"_${TODAY}.alert" 2>/dev/null | head -1)
+      # ★v10.4 (2026-09-24) 관측자 마커(task_health_* · unattended_line_*)는 재시도 근거가 아니다 — 다른 예약작업의 rc 는
+      #   이 체인을 다시 돌려도 안 고쳐진다(실측 09-05 15:46 · 09-17 18:40 체인 전체 재실행 2회, 각 ~1시간 낭비).
+      #   선택 규칙 단일 정본 = _sched_failure_classify.sh::sched_retry_alert_marker. 헬퍼를 못 읽으면 구판 규칙(재시도 허용 쪽).
+      #   되돌리기: 아래 if/else 를 구판 한 줄(ls -1 …_${TODAY}.alert | head -1)로 복원.
+      . "$BASE/02_Infrastructure/ops/_sched_failure_classify.sh" 2>/dev/null || true
+      if command -v sched_retry_alert_marker >/dev/null 2>&1; then
+        _alert=$(sched_retry_alert_marker "$BASE/.cache/scheduler_alerts" "$TODAY")
+      else
+        _alert=$(ls -1 "$BASE/.cache/scheduler_alerts/"*"_${TODAY}.alert" 2>/dev/null | head -1)
+      fi
       if [ -n "$_alert" ]; then
         _alert_reason=$(grep -oE '^reason=.*' "$_alert" 2>/dev/null | cut -d= -f2-)
         _retry_reason="직전 실행에 경보 발행(${_alert_reason:-unknown})"

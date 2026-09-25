@@ -1,5 +1,5 @@
 ## ============================================================================
-## audit_bt_result.R — Backtest Result Contract v1.0 audit (**19 checks**, 구 표기 11 정정)
+## audit_bt_result.R — Backtest Result Contract v1.0 audit (**20 checks** — 2026-09-24 Check 12b cost_sign 추가 · 구 표기 19/11 정정)
 ## L3 hard block trigger: Critical FAIL 시 metrics is_official=FALSE 강제
 ## Lawbook §20
 ## L-249 enforcement (2026-04-29): Check 11 frequency-cadence mismatch detection
@@ -368,6 +368,39 @@ audit_bt_result <- function(bt_result) {
   }
 
   # ────────────────────────────────────────────────────────────────────────────
+  # Check 12b (P0-03 · 2026-09-24 · 감사 D1-10): cost_ret 부호 — 비용은 수익을 늘리지 않는다
+  #   Check 12 는 cost_ret := ret_gross − ret_net 정의 그대로라 **항상 PASS** 하는 동어반복이다.
+  #   실사고: build_period_returns 가 첫 행 ret_gross 를 0 으로 지어 cost_ret = −ret_net 이 됐다 —
+  #   첫날 수익이 양(+)인 산출물은 음의 비용(비용이 이익으로)을, 음(−)이면 부풀린 비용을 달았다
+  #   (골든 20260921_100007_6876 첫 행: ret_net −0.0063728 → cost_ret +0.0063728, 참 비용 0.0015).
+  #   판정: cost_ret < −tol 인 행이 있으면 FAIL. tol = 1e-9 — 행당 부동소수 오차(~1e-16)보다 크고
+  #   실재 비용 최소 단위(회전 1e-5 × 15bps ≈ 1.5e-8)보다 작다.
+  #   severity "high"(critical 아님) — critical 이면 official metrics 가 꺼져 구 산출물 재감사·2계층
+  #   월간 경로(첫 행 폴백 전 산출)가 통째로 unavailable 이 된다(holdings_cap 선례 :642-643 과 같은 사유).
+  #   high FAIL 도 integrity_status 를 WARNING 으로 내려 조용히 지나가지 않는다.
+  # ────────────────────────────────────────────────────────────────────────────
+  if (!is.null(pr_full) && nrow(pr_full) > 0L && "cost_ret" %in% names(pr_full)) {
+    cr <- pr_full$cost_ret
+    neg_i <- which(is.finite(cr) & cr < -1e-9)
+    if (length(neg_i) > 0L) {
+      wi <- neg_i[which.min(cr[neg_i])]
+      add_check("cost", "cost_sign_nonnegative", "FAIL",
+                sprintf("cost_ret < 0 인 행 %d/%d — 최악 %s %.3e (음의 비용 = 회계 결함 · 첫 행 ret_gross 소실 계통 D1-10)",
+                        length(neg_i), nrow(pr_full),
+                        if ("date" %in% names(pr_full)) format(pr_full$date[wi]) else as.character(wi), cr[wi]),
+                "Cost reproducibility,ret_gross", "high")
+    } else {
+      add_check("cost", "cost_sign_nonnegative", "PASS",
+                sprintf("cost_ret ≥ −1e-9 (%d obs · min %.3e)", sum(is.finite(cr)),
+                        if (any(is.finite(cr))) min(cr[is.finite(cr)]) else NA_real_), "", "low")
+    }
+  } else {
+    add_check("cost", "cost_sign_nonnegative", "WARN",
+              "period_returns cost_ret 컬럼 부재 — 비용 부호 검증 skip",
+              "Cost reproducibility", "medium")
+  }
+
+  # ────────────────────────────────────────────────────────────────────────────
   # Check 13 (L-258): T+1 cadence 검사 (rebalance_rule + holdings buy_close_date)
   # ────────────────────────────────────────────────────────────────────────────
   reb_rule <- bt_result$manifest$rebalance_rule[1] %||% ""
@@ -724,4 +757,4 @@ audit_bt_result <- function(bt_result) {
   bt_result
 }
 
-cat("[audit_bt_result.R] Loaded — audit_bt_result() (19 checks, L3 trigger, L-249 frequency_cadence_consistency, E-5 holdings_cap)\n")
+cat("[audit_bt_result.R] Loaded — audit_bt_result() (20 checks, L3 trigger, L-249 frequency_cadence_consistency, E-5 holdings_cap, 12b cost_sign)\n")

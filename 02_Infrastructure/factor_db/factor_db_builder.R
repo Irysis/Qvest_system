@@ -20,6 +20,9 @@
 #   - Fundamentals: Factor_Date <= sig_date (most recent per Ticker×Item)
 #   - Consensus: Date <= sig_date (most recent per Ticker)
 #   - Price/Volume: Date <= sig_date
+#   - Macro(VIX → D32): 관측일이 아니라 **가용일**로 결합 (PIT C11 · 2026-09-24 · 판정서 V-08)
+#       fred_asof_join(mode = "decision_close") — 미국 날짜 < 한국 날짜. 규칙 = 06_Registry/
+#       fred_availability_rules.json (이 파일에 오프셋 없음). 월간 매크로는 compute_regime.R 가 같은 층을 쓴다.
 #   - All z-scores: CROSS-SECTIONAL at sig_date (NOT time-series)
 #==============================================================================
 
@@ -279,6 +282,106 @@ cat("[factor_db_builder] Loaded. FACTOR_DB_DIR:", FACTOR_DB_DIR, "\n")
 
 .fdb_env <- new.env(parent = emptyenv())
 
+#------------------------------------------------------------------------------
+# PIT C11 가용시점 층 (2026-09-24 · S0 기반 02_Infrastructure/data/fred_availability.R 경유)
+#   근거: 04_Research/01_reports/pit_c11_20260924/PIT_C11_verdict_20260924.md V-08 · ⑤-1 ·
+#         decision_register PIT-C11-REMEDIATION(안 B). 오프셋·규칙 수치는 규칙 파일에만 있다.
+#   상설 검사: 08_Tests/factor_db/test_c11_monthly_fdb.R (양성 대조 + 위반 주입)
+#------------------------------------------------------------------------------
+.fdb_c11_env <- function() {
+  if (!is.null(.fdb_env$C11_FA)) return(.fdb_env$C11_FA)
+  p <- file.path(dirname(.self_dir), "data", "fred_availability.R")   # 이 빌더의 형제 data/ (워크트리 안전)
+  if (!file.exists(p))
+    stop("fred_availability.R 부재 — C11 가용시점 층 없이 해외 계열 결합 불가(fail-closed): ", p)
+  fa <- new.env(parent = globalenv())
+  source(p, local = fa)
+  if (!exists("fred_asof_join", envir = fa, inherits = FALSE))
+    stop("fred_availability.R 에 fred_asof_join 없음: ", p)
+  .fdb_env$C11_FA <- fa
+  fa
+}
+
+#' VIX 가용일 결합 — 한국 날짜마다 **그 날 15:30 결정에 쓸 수 있던** 최신 VIXCLS(미국 날짜 < 한국 날짜).
+#' 결합 직후 fred_join_violations() 로 자기 검증 — 위반 1행이라도 있으면 stop.
+#' @param kr_dates  한국 날짜 벡터(RAWDATA 거래일)
+#' @param vix_raw   data.table(Date, Value [, Series_ID|Series]) — VIXCLS 한 계열
+#' @param fa        fred_availability.R 을 적재한 env
+#' @param kr_calendar 한국 거래일 달력(NULL = CACHE_DIR/trading_calendar.parquet)
+#' @return fred_asof_join 결과(kr_date·value·obs_date·avail_date …) + attr "c11_key"(규칙 regime_key)
+.fdb_vix_asof_join <- function(kr_dates, vix_raw, fa = .fdb_c11_env(), kr_calendar = NULL) {
+  if (is.null(kr_calendar))
+    kr_calendar <- fa$fred_kr_calendar(file.path(CACHE_DIR, "trading_calendar.parquet"))
+  j <- fa$fred_asof_join(kr_dates, vix_raw, "VIXCLS", mode = "decision_close",
+                         kr_calendar = kr_calendar)
+  bad <- fa$fred_join_violations(j$kr_date, j$obs_date, "VIXCLS", "decision_close",
+                                 kr_calendar = kr_calendar)
+  if (nrow(bad) > 0L)
+    stop(sprintf("VIX 결합 자기검증 위반 %d행 (예: 한국 %s ← 미국 %s · %s)", nrow(bad),
+                 format(bad$kr_date[1]), format(bad$obs_date[1]), bad$reason[1]))
+  setattr(j, "c11_key", fa$fred_avail_rules_meta()$regime_key)
+  j
+}
+
+#' RAWDATA 에 VIX 열 부착 (D32_Beta_VIX 입력). 검사가 직접 구동하는 순수 함수 — .load_base_data 가 부른다.
+#' ★PIT C11 수리 (2026-09-24 · 판정서 V-08 · ⑤-1): 구판은 FRED VIXCLS 의 **미국 관측일**을 한국 날짜에
+#'   같은 날짜로 roll 결합했다 — 한국 d 행에 미국 d 세션(KRX 종가 13h45m~14h45m 뒤) VIX 가 실려 D32 회귀의
+#'   마지막 쌍이 미래 정보였다(202608 저장값 2550/2550 = 같은 날짜 판 · sig 행 VIX 14.92 = 미국 08-31,
+#'   PIT 값 14.43 = 미국 08-28). 지금은 .fdb_vix_asof_join()(가용일 결합 + 자기검증). 실패 = VIX 열 없음
+#'   → D32 미산출(fail-closed) → emission_guard 회귀 경보. 열 속성 c11_avail(규칙 regime_key)은 소비자
+#'   (compute_defense D32)가 출처를 확인하는 표지다 — 표지 없는 VIX 열은 D32 가 거부한다.
+#'   ★merge 호출·행 순서는 구판과 같다(뒤의 SharesOutstanding .SD[.N] 파생이 행 순서를 탄다).
+#' @return list(RAWDATA = VIX 열이 붙은(또는 없는) RAWDATA, status = list(vix, regime_key, …))
+.fdb_attach_vix <- function(RAWDATA, macro_path, fa = NULL, kr_calendar = NULL) {
+  status <- list(vix = "not_attempted", regime_key = NA_character_)
+  if ("VIX" %in% names(RAWDATA)) {
+    # RAWDATA.parquet 자체에 실린 VIX 열 = 출처 미상(같은 날짜 결합판일 수 있다) — 버리고 다시 결합한다
+    cat("  RAWDATA: !!! 기존 VIX 열 발견(출처 미상) — 폐기 후 가용일 결합으로 재생성 (PIT C11)\n")
+    RAWDATA[, VIX := NULL]
+  }
+  if (!file.exists(macro_path)) {
+    status$vix <- "no_macro_file"
+    cat("  RAWDATA: macro_fred.parquet 없음 — VIX 열 미생성(D32 미산출)\n")
+    return(list(RAWDATA = RAWDATA, status = status))
+  }
+  res <- tryCatch({
+    # mmap=FALSE: macro_fred 는 일간 체인이 덮어쓰는 파일 — 매핑을 쥐면 Windows 에서 교체가 막힌다
+    macro <- as.data.table(read_parquet(macro_path, mmap = FALSE))
+    macro[, Date := as.Date(Date)]
+    vix_raw <- if ("Series_ID" %in% names(macro) &&
+                    "VIXCLS" %in% macro[["Series_ID"]]) {
+      macro[Series_ID == "VIXCLS" & !is.na(Value), .(Series_ID, Date, Value)]
+    } else if ("VIX" %in% macro[["Series"]]) {
+      macro[Series == "VIX" & !is.na(Value), .(Series, Date, Value)]
+    } else NULL
+    if (is.null(vix_raw) || nrow(vix_raw) == 0L) {
+      status$vix <- "no_source"
+      cat("  RAWDATA: VIXCLS 원천 없음 — VIX 열 미생성(D32 미산출)\n")
+      list(RAWDATA = RAWDATA, status = status)
+    } else {
+      if (is.null(fa)) fa <- .fdb_c11_env()
+      # 같은 관측일 중복 = 결합 모호 → 도우미가 거부한다(fail-closed · 구판 last() 는 조용히 골랐다)
+      j <- .fdb_vix_asof_join(sort(unique(RAWDATA$Date)), vix_raw, fa = fa, kr_calendar = kr_calendar)
+      vix_filled <- data.table(Date = j$kr_date, VIX = j$value)
+      out <- merge(RAWDATA, vix_filled, by = "Date", all.x = TRUE)
+      setattr(out[["VIX"]], "c11_avail", attr(j, "c11_key"))
+      status <- list(vix = "ok", regime_key = attr(j, "c11_key"),
+                     last_kr = max(j$kr_date), last_obs = max(j$obs_date, na.rm = TRUE))
+      cat(sprintf(paste0("  RAWDATA: VIX column added — 가용일 결합(decision_close · 미국 날짜 < 한국 날짜) ",
+                         "%d일 · 마지막 한국 %s ← 미국 %s · %s\n"),
+                  sum(!is.na(vix_filled$VIX)), format(max(j$kr_date)),
+                  format(j$obs_date[which.max(j$kr_date)]), attr(j, "c11_key")))
+      list(RAWDATA = out, status = status)
+    }
+  }, error = function(e) {
+    status$vix <- paste("failed:", conditionMessage(e))
+    cat(sprintf("  RAWDATA: !!! VIX 가용일 결합 실패 — VIX 열 없음 → D32 미산출(fail-closed): %s\n",
+                conditionMessage(e)))
+    if ("VIX" %in% names(RAWDATA)) RAWDATA[, VIX := NULL]
+    list(RAWDATA = RAWDATA, status = status)
+  })
+  res
+}
+
 .load_base_data <- function(force = FALSE) {
   if (!force && exists("RAWDATA", envir = .fdb_env)) return(invisible(NULL))
 
@@ -291,32 +394,11 @@ cat("[factor_db_builder] Loaded. FACTOR_DB_DIR:", FACTOR_DB_DIR, "\n")
               min(.fdb_env$RAWDATA$Date), max(.fdb_env$RAWDATA$Date)))
 
   # VIX column from macro_fred (for D32_Beta_VIX in compute_defense.R)
-  macro_path <- file.path(CACHE_DIR, "macro_fred.parquet")
-  if (!("VIX" %in% names(.fdb_env$RAWDATA)) && file.exists(macro_path)) {
-    tryCatch({
-      macro <- as.data.table(read_parquet(macro_path))
-      macro[, Date := as.Date(Date)]
-      vix_col <- if ("Series_ID" %in% names(macro) &&
-                      "VIXCLS" %in% macro[["Series_ID"]]) {
-        macro[Series_ID == "VIXCLS" & !is.na(Value),
-              .(Date, VIX = Value)][, .(VIX = last(VIX)), by = Date]
-      } else if ("VIX" %in% macro[["Series"]]) {
-        macro[Series == "VIX" & !is.na(Value),
-              .(Date, VIX = Value)][, .(VIX = last(VIX)), by = Date]
-      } else NULL
-      if (!is.null(vix_col) && nrow(vix_col) > 0L) {
-        setkey(vix_col, Date)
-        # ffill VIX over all RAWDATA dates
-        all_dates <- data.table(Date = sort(unique(.fdb_env$RAWDATA$Date)))
-        vix_filled <- vix_col[all_dates, on = "Date", roll = TRUE]
-        .fdb_env$RAWDATA <- merge(.fdb_env$RAWDATA, vix_filled, by = "Date", all.x = TRUE)
-        cat(sprintf("  RAWDATA: VIX column added (%d carry-forwarded values)\n",
-                    sum(!is.na(vix_filled$VIX))))
-      }
-    }, error = function(e) {
-      cat(sprintf("  RAWDATA: VIX merge failed (%s)\n", conditionMessage(e)))
-    })
-  }
+  # ★PIT C11 수리 (2026-09-24 · 판정서 V-08): 구판 같은 날짜 roll 결합 → 가용일 결합(.fdb_attach_vix).
+  .vx <- .fdb_attach_vix(.fdb_env$RAWDATA, file.path(CACHE_DIR, "macro_fred.parquet"))
+  .fdb_env$RAWDATA <- .vx$RAWDATA
+  .fdb_env$C11_STATUS <- .vx$status
+  rm(.vx)
 
   # Fundamentals
   fund_path <- file.path(CACHE_DIR, "fundamental_merged.parquet")

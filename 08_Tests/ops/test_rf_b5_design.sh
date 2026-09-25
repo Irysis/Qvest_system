@@ -52,7 +52,7 @@ REAL_JL="$ROOT/.cache/reinforce_auto_log.jsonl"; REAL_JL_N=$( [ -f "$REAL_JL" ] 
 #── 픽스처 ─────────────────────────────────────────────────────────────────────
 mkdir -p "$SB/06_Registry" "$SB/02_Infrastructure/reinforcement/overlay_arms" "$SB/02_Infrastructure/portfolio" "$SB/art/$BID" \
          "$SB/.cache/rf_block_design" "$SB/stage_artifacts/l_code/reinforcement"
-cp "$ROOT/06_Registry/reinforce_program.json" "$ROOT/06_Registry/rf_overlay_adversary_axes.json" "$SB/06_Registry/"
+cp "$ROOT/06_Registry/reinforce_program.json" "$ROOT/06_Registry/rf_overlay_adversary_axes.json" "$ROOT/06_Registry/overlay_probe_future.json" "$SB/06_Registry/"   # ★P0-09 probe ④ 설정
 cp "$ROOT/02_Infrastructure/reinforcement/overlay_probe.R" "$ROOT/02_Infrastructure/reinforcement/rf_overlay_admit.R" "$SB/02_Infrastructure/reinforcement/"
 cp "$ROOT/02_Infrastructure/portfolio/weight_catalog.R" "$SB/02_Infrastructure/portfolio/"
 cat > "$T/mk.py" <<'PYEOF'
@@ -133,13 +133,14 @@ reset_sb(){   # $1 = 원장 변형(base|b5attempted|stagnation) · $2 = 오늘 b
   "$PY" "$T/mk.py" armledger "$SB" "${2:-0}"; "$PY" "$T/mk.py" mech "$SB"
   fx_arms
   rm -rf "$SB/.cache/rf_b5_design" "$SB/.cache/rf_overlay_audit" "$SB/.cache/rf_b5_design.claim" "$SB/.cache/scheduler_logs" "$JL"
-  : > "$STUB_CALLS"; : > "$STUB_AUDITS"; rm -f "$STUB_PROMPT_COPY"
+  : > "$STUB_CALLS"; : > "$STUB_CALLS.env"; : > "$STUB_AUDITS"; rm -f "$STUB_PROMPT_COPY"
 }
 
 # 가짜 claude — 설계 프롬프트(B5_DESIGN_OUTPUT_FILE=)와 감사 프롬프트(AUDIT_OUTPUT_FILE=)를 가른다
 cat > "$T/claude_stub.sh" <<'STUBEOF'
 #!/usr/bin/env bash
 printf '%s\n' "$*" >> "$STUB_CALLS"
+printf 'DES=%s\n' "${QVEST_DESIGN_LANE:-}" >> "$STUB_CALLS.env"   # (P0-M2) 설계 표식은 설계 호출에만 — 감사 호출에 새면 안 된다
 model=""; prev=""
 for a in "$@"; do [ "$prev" = "--model" ] && model="$a"; prev="$a"; done
 prompt=$(cat)
@@ -233,7 +234,7 @@ echo "Done."; exit 0
 STUBEOF
 chmod +x "$T/claude_stub.sh"
 export STUB_CALLS="$T/calls.log" STUB_AUDITS="$T/audits.log" STUB_PROMPT_COPY="$T/prompt_copy.txt"
-: > "$STUB_CALLS"; : > "$STUB_AUDITS"
+: > "$STUB_CALLS"; : > "$STUB_CALLS.env"; : > "$STUB_AUDITS"
 
 run_lane(){   # $1 = 시나리오 · 나머지 = 레인 인자
   export STUB_SCENARIO="$1"; shift
@@ -287,14 +288,15 @@ echo "=== A. 사전 확인 · 레인 배선 ==="
 bash -n "$LANE" && ok "A1 레인 문법" || ng "A1" "bash -n"
 w=""
 grep -q 'rf_llm_agent_run "\$PF"' "$LANE"                         || w="$w no_agent_run"
-grep -q -- '--disallowed-tools "Bash,Agent"' "$LANE"               || w="$w bash_allowed"
+grep -q -- '--disallowed-tools "Bash,PowerShell,Monitor,REPL,Workflow,CronCreate,RemoteTrigger,Agent"' "$LANE" || w="$w shell_allowed"   # (P0-M2) PowerShell · (B-1 수리) Monitor 등 셸 통로 7종 금지
+grep -q '^QVEST_DESIGN_LANE=1 rf_llm_agent_run "\$PF"' "$LANE"     || w="$w no_design_lane_mark" # (P0-M2) 성과 열람 차단 표식
 grep -q -- '--allowed-tools "Read,Write,Edit,Glob,Grep"' "$LANE"   || w="$w tools"
 grep -qE '^[[:space:]]*timeout [0-9]+ claude -p' "$LANE"           && w="$w direct_claude_call"
 grep -q 'rf_llm_limit_hit "\$RUN_OUT"' "$LANE"                     || w="$w env_fail_not_run_out"
 grep -q '^rf_llm_before_fallback()' "$LANE"                        || w="$w no_fallback_hook"
 grep -q 'rf_llm_resolve b5_design' "$LANE"                         || w="$w no_resolve_lane"
 grep -q 'R_ENVIRON_USER=' "$LANE"                                  || w="$w no_renviron_isolation"
-[ -z "$w" ] && ok "A2 레인: 실행기·훅·이번 실행 출력 판정·Bash/Agent 금지·설정 레인 해석·자식 R 환경 격리" || ng "A2" "$w"
+[ -z "$w" ] && ok "A2 레인: 실행기·훅·이번 실행 출력 판정·셸 통로 7종(Monitor 포함)·Agent 금지·설계 표식·설정 레인 해석·자식 R 환경 격리" || ng "A2" "$w"
 : > "$T/empty.Renviron"
 CHILD=$(R_ENVIRON_USER="$T/empty.Renviron" QM_ROOT="$SB" Rscript -e 'cat(Sys.getenv("QM_ROOT"))' 2>/dev/null | tr -d '\r')
 if [ "$CHILD" = "$SB" ]; then ok "A3 자식 Rscript 가 샌드박스를 QM_ROOT 로 읽는다(~/.Renviron 우회) — 레인 절 실행"
@@ -330,11 +332,15 @@ BK="$GD/${BID}_B5.mech.json"
   && ok "S1e 기전 설계 백업 = 레인 디렉터리(원본 해시 동일) · rf_block_design 에는 최종 설계 하나뿐" || ng "S1e" "$(ls "$GD" "$SB/.cache/rf_block_design" | tr '\n' ' ')"
 C1=$(sed -n 1p "$STUB_CALLS")
 if [ "$(ncalls)" = 7 ] && printf '%s' "$C1" | grep -q -- "--model fable --effort max --fallback-model opus" \
-   && printf '%s' "$C1" | grep -q -- "--permission-mode acceptEdits" && printf '%s' "$C1" | grep -q -- "--disallowed-tools Bash,Agent" \
+   && printf '%s' "$C1" | grep -q -- "--permission-mode acceptEdits" && printf '%s' "$C1" | grep -q -- "--disallowed-tools Bash,PowerShell,Monitor,REPL,Workflow,CronCreate,RemoteTrigger,Agent" \
    && printf '%s' "$C1" | grep -q -- "--add-dir $ADIR" && printf '%s' "$C1" | grep -q -- "--add-dir $GD" \
    && [ "$(naudits)" = 6 ] && [ "$(grep -c ' opus$' "$STUB_AUDITS")" = 6 ]; then
-  ok "S1f 호출 — 설계 1회(fable/max · 폴백 opus · acceptEdits · Bash/Agent 금지 · 쓰기 디렉터리 2) + 감사 6회(arm 2 × 축 3 · opus)"
+  ok "S1f 호출 — 설계 1회(fable/max · 폴백 opus · acceptEdits · 셸 통로 7종(Monitor 포함)·Agent 금지 · 쓰기 디렉터리 2) + 감사 6회(arm 2 × 축 3 · opus)"
 else ng "S1f" "calls=$(ncalls) audits=$(naudits) c1=[$C1]"; fi
+# (P0-M2) 설계 표식 범위 — 설계 claude 1회에만 QVEST_DESIGN_LANE=1 · 뒤따르는 G1 감사 claude 6회에는 없다(호출 앞 임시 대입)
+E1=$(sed -n 1p "$STUB_CALLS.env" 2>/dev/null | tr -d '\r'); NE=$(grep -c '^DES=$' "$STUB_CALLS.env" 2>/dev/null)
+if [ "$E1" = "DES=1" ] && [ "${NE:-0}" = 6 ]; then ok "S1g 설계 표식 = 설계 호출 1회에만(성과 열람 차단 훅 발화) · 감사 6회엔 없음(누출 0)"
+else ng "S1g 설계 표식 범위" "first=[$E1] empty=$NE env=[$(tr '\n' ' ' < "$STUB_CALLS.env" 2>/dev/null)]"; fi
 w=""
 for e in b5_design_start overlay_guard_h1_once overlay_guard_h2_quota overlay_guard_h3_stagnation overlay_guard_h4_active_generated materials_written design_verified verify_done; do
   [ "$(evc "$e")" -ge 1 ] || w="$w $e"; done

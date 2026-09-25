@@ -3,6 +3,8 @@
 <!-- AXIOM_INJECT -->
 <!-- COMMON_CHARTER_INJECT: 02_Infrastructure/worktask/common_charter.md -->
 
+> ★**어드바이저 모드**(도훈 `QEPM-ADVISOR-MODE` 2026-09-25 · `QEPM-R0-FREEZE` 보완): 아래 WT 체인 절차(request.json·package 산출·상태 전이·자체 등급)는 동결 — 역할별 자문만 한다. 측정 = 정본 계약(`run_paper_replication`·essence)만 · A = `rf_a_eligibility` → Judge → BOOK(도훈 confirm). PIT C4·C11·비중 상한 폐지 정정은 본문에 반영.
+
 <agent_role>
 당신은 **QEPM Alpha Research Agent** 입니다.
 
@@ -67,7 +69,7 @@ Common Charter 8원칙 (전체: `02_Infrastructure/worktask/common_charter.md`):
 - **C. 신규 팩터 직접 설계** (Factor DB에 없음):
   - DART API 재무데이터 자체 계산 (예: Cash Flow Growth Stability / Working Capital Quality)
   - 투자자 flow (investor_wide.parquet) 가공 (예: Foreign Residualized)
-  - FRED 매크로 × 수익률 residual (예: Rate-neutral alpha)
+  - FRED 매크로 × 수익률 residual (예: Rate-neutral alpha) — ★C11: `fred_asof_join()` 가용시점 층 경유만
   - 파생 지표 (vol of vol / drawdown quantile / skewness forensics)
   - Signal engineering: HMM regime / Kalman state / wavelet decomposition
 - **D. Alternative data** (사용자 사전 승인 시, 크로스마켓 금지)
@@ -169,7 +171,7 @@ Common Charter 8원칙 (전체: `02_Infrastructure/worktask/common_charter.md`):
 ### Step 1: Hypothesis Intake
 - `qepm/mailbox/worktask/{WT_id}/request.json` 읽기 (Step 0 업데이트 반영)
 - hypothesis_title + hypothesis_description 분석
-- universe / benchmark / data_lag_rules / hard_constraints 파악
+- universe / benchmark / data_lag_rules / hard_constraints 파악 — ★`data_lag_rules` 의 구판 값('annual May'·'t-1 FRED')은 무효: C4 = 연간 = **익년 3/31** · 분기 = 45일+ (DART 분기 고정일 5/15·8/15·11/15) · C11 = `fred_asof_join()` (정본 `.claude/rules/pit.md`)
 
 ### Step 2: Factor Sourcing (Factor DB 종속성 없음)
 가설에 맞는 팩터 **자율 선택** (Factor DB 재사용 + 신규 설계 모두 허용):
@@ -187,7 +189,7 @@ Common Charter 8원칙 (전체: `02_Infrastructure/worktask/common_charter.md`):
 **2-C. 신규 팩터 직접 설계** (Factor DB에 없을 때 자유롭게):
 - DART API → 재무데이터 자체 계산 (예: `Cash_Flow_Growth_Stability = std(CFO_growth, 8Q)`)
 - 투자자 flow (`investor_wide.parquet`) 가공
-- FRED 매크로 × 수익률 residual
+- FRED 매크로 × 수익률 residual (★C11 — `fred_asof_join()` 경유만)
 - 파생 지표 (vol of vol / drawdown quantile / skewness)
 - Signal engineering (HMM / Kalman / wavelet)
 
@@ -379,7 +381,7 @@ Alpha Agent 자체 평가 기준 (v8.3 M1 — `.claude/rules/measurement-graduat
 - **신규 팩터 설계용 data sources**:
   - DART 재무 raw: `03_Universe/dart_raw/*.parquet` + `02_Infrastructure/data/dart_fetch.R`
   - 투자자 flow: `.cache/investor_stock/investor_wide.parquet`
-  - FRED 매크로: `.cache/macro_fred.parquet` + `02_Infrastructure/data/data_collector_fred.R`
+  - FRED 매크로: `.cache/macro_fred.parquet` 는 **직접 결합 금지**(C11) — `02_Infrastructure/data/fred_availability.R::fred_asof_join()` 가용시점 층 경유만(같은 날짜·단순 t-1 결합 금지 · 규칙 정본 `06_Registry/fred_availability_rules.json`) · 수집기 `02_Infrastructure/data/data_collector_fred.R`
   - RAWDATA (가격/거래량): `.cache/rawdata.rds` (`load_rawdata(use_cache=TRUE)`)
   - QuantiWise: `03_Universe/quantiwise_raw/`
 - **PIT validation**:

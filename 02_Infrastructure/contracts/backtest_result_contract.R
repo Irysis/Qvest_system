@@ -218,13 +218,22 @@ build_period_returns <- function(sim_result, run_id, strategy_id,
     ret_net = as.numeric(ret_xts)
   )
 
-  # ret_gross: nav_gross에서 산출 (PerformanceAnalytics::CalculateReturns 사용)
-  if (!is.null(sim_result$DAILY_NAV_DT$NAV_gross)) {
+  # ret_gross (P0-03 · 2026-09-24 · 감사 D1-10): 생산자가 비용 전 수익 계열(strategy_gross_xts)을
+  #   주면 그것을 **우선** 쓴다(replication_harness.R 가 Rg 를 반환). 구판은 NAV_gross 에서 diff(log)
+  #   로 되짚어 첫 행이 NA 였고, 그 NA 를 0 으로 채워 **첫 행 ret_gross = 0 · cost_ret = −ret_net**
+  #   이 됐다(골든 20260921_100007_6876: ret_gross 0 / ret_net −0.0063728 → 참값 Rg −0.0048728 · 비용 0.0015).
+  #   ★NAV_gross 폴백 경로도 첫 행(되짚을 수 없는 행)을 0 으로 짓지 않는다 — NA 로 두어 아래
+  #   `is.na → ret_net` 폴백(비용 미상 = 0)이 받게 한다. 구판은 NA→0 채움이 그 폴백을 죽은 줄로 만들었다.
+  g_xts <- sim_result$strategy_gross_xts
+  if (!is.null(g_xts) && NROW(g_xts) > 0L) {
+    if (frequency == "monthly") g_xts <- apply.monthly(g_xts, Return.cumulative)
+    ret_g_dt <- data.table(date = as.Date(index(g_xts)), ret_gross = as.numeric(g_xts))
+    ret_dt <- merge(ret_dt, ret_g_dt, by = "date", all.x = TRUE)
+  } else if (!is.null(sim_result$DAILY_NAV_DT$NAV_gross)) {
     nav_g_xts <- xts(sim_result$DAILY_NAV_DT$NAV_gross,
                      order.by = sim_result$DAILY_NAV_DT$Date)
     if (frequency == "monthly") nav_g_xts <- apply.monthly(nav_g_xts, last)
     ret_g <- diff(log(nav_g_xts))
-    ret_g[is.na(ret_g)] <- 0
     ret_g <- exp(ret_g) - 1
     ret_g_dt <- data.table(date = as.Date(index(ret_g)), ret_gross = as.numeric(ret_g))
     ret_dt <- merge(ret_dt, ret_g_dt, by = "date", all.x = TRUE)

@@ -1,7 +1,7 @@
 export const meta = {
   name: 'qvest-multi-track',
-  description: 'QEPM 다중-track 병렬 alpha 리서치 — N 가설 fan-out → cross-comparison 통합 (Cycle 2 4-track 패턴 codify)',
-  whenToUse: '한 theme에 대해 여러 alpha 가설/스펙을 병렬 탐색하고 4-way 비교가 필요할 때. args = {wt_id, tracks:[{tag,prompt}]} (v10: lockbox cutoff 폐지 — 전기간 사용)',
+  description: '[동결 — QEPM-R0-FREEZE 2026-09-25 · 해제 = decision_register 재상정] QEPM 다중-track 병렬 alpha 리서치 — N 가설 fan-out → cross-comparison 통합 (Cycle 2 4-track 패턴 codify)',
+  whenToUse: '★동결 중 — 쓰지 않는다(QEPM WT 체인 동결). 구 용도: 한 theme에 대해 여러 alpha 가설/스펙을 병렬 탐색하고 4-way 비교가 필요할 때. args = {wt_id, tracks:[{tag,prompt}]} (v10: lockbox cutoff 폐지 — 전기간 사용)',
   phases: [
     { title: 'Alpha Tracks', detail: 'track별 alpha-research 병렬 spawn' },
     { title: 'Synthesize', detail: 'cross-comparison 통합 + 최강 track 선정' },

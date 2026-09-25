@@ -161,6 +161,231 @@ source(file.path(.RP_INFRA, "axiom", "lcode_emit.R"))
   )
 }
 
+# ── 계약 strategy_spec 조립 (P0-03·P0-04 · 2026-09-24) — 러너 밖에서 검사가 parse→eval 로 부른다 ──
+#   ★진술은 **실현값**에서 만든다: 집행 규약·비용 기장은 sim 이 실제로 쓴 값(diagnostics$exec_price ·
+#     cost_model_version)을 읽는다. 구판은 lookahead_prevention 에 "t+1 실행" 을 리터럴로 적었는데
+#     하네스는 새 보유에 집행일 수익을 붙이는 시그널일 종가 체결이었다(감사 D4-01).
+#   ★integrity WARNING 상수(골든 10_audit.csv 의 WARN 4종) 해소 — Check 8(C 코드 참조: 규약 진술이 싣는다)·
+#     Check 9(survivorship_bias_control)·Check 14/15(factor_engine_path — 러너가 이미 같은 detect_lookahead
+#     를 하드 게이트로 돌린다 :268). ★execution_date_rule 은 **넣지 않는다** — Check 13 이 `t\+?1` 을 보고
+#     holdings entry_date(계약 :319 NA)를 요구해 새 WARN 을 상시로 만든다(수리 범위 밖 · 사유 기록).
+#   survivorship: 러너가 멤버십을 적용하는 유니버스(K200_KQ150/INDEX — .apply_universe)만 진술한다.
+#     그 밖은 NA — 러너가 하지 않은 통제를 진술로 채우지 않는다(Check 9 는 그때 WARN 으로 남는다).
+.rp_abs_path <- function(p) {
+  p <- as.character(p)[1]
+  if (is.na(p) || !nzchar(p)) return(NA_character_)
+  if (grepl("^([A-Za-z]:)?[/\\\\]", p)) p else file.path(getwd(), p)   # 정규화 함수 금지(한글 경로)
+}
+.rp_strategy_spec <- function(strategy_name, strategy_idea, portfolio_spec, universe,
+                              sim_grade, sp_url, factor_engine_path) {
+  `%||%` <- function(a, b) if (is.null(a) || length(a) == 0L || (length(a) == 1L && is.na(a))) b else a
+  ep <- sim_grade$diagnostics$exec_price
+  if (is.null(ep) || !nzchar(as.character(ep)[1]))
+    stop("[replication] sim 이 exec_price 를 싣지 않았다 — 하네스 판본 불일치(진술을 지어내지 않는다)")
+  ep <- as.character(ep)[1]
+  list(
+    strategy_name = strategy_name, strategy_idea = strategy_idea,
+    constraint_profile = "replication",          # audit holdings_cap INFO 강등 스위치
+    lookahead_prevention = paste0(
+      "detect_lookahead(engine) CLEAN [PIT C7 정적 패턴 · 러너 하드 게이트] + ",
+      rep_exec_statement(ep), " + 시그널일>RAWDATA 범위 검사"),
+    construction = portfolio_spec$construction %||% "top_n_long",
+    weight_method = portfolio_spec$weighting %||% "paper",
+    rebalance = portfolio_spec$rebalance %||% "monthly",
+    universe = universe, liquidity_filter = "paper_faithful",
+    n_max = sim_grade$diagnostics$n_max, has_short = sim_grade$diagnostics$has_short,
+    source_paper_url = sp_url,
+    benchmark_note = if (isTRUE(sim_grade$diagnostics$has_short)) "long_short_vs_long_bm" else "long_vs_long_bm",
+    factor_engine_path = .rp_abs_path(factor_engine_path),
+    exec_price = ep,
+    cost_model_version = as.character(sim_grade$cost_model_version %||% NA_character_)[1],
+    survivorship_bias_control = if (!is.null(universe) && universe %in% c("K200_KQ150", "INDEX"))
+      paste0("universe=", universe, ": 시그널일 당일 RAWDATA 멤버십 플래그(K200|KQ150)로 PIT 시변 필터",
+             "(.apply_universe) — 사후 생존 조건 없음 · 상장폐지 종목 포함 RAWDATA(폐지 후 수익 행 부재 = 0 처리)")
+      else NA_character_
+  )
+}
+
+# ── Grade A 자격 관문 경유 (P0-13 · 2026-09-25) — 러너 밖에서 검사가 parse→eval 로 부른다(08_Tests/contracts/test_replication_a_gate.R) ──
+#   ★사고: 구판 §11 은 grade A 면 **관문 없이** OUT_DIR/judge_request.json 을 썼다. 강화 셀은 강화 러너(reinforce_auto_parallel.R)가
+#     수집 시점에 A 자격 관문(rf_runner_gates.R 정본)으로 다시 판정해 그 파일을 치우거나(held) 후보별 요청으로 발행하지만, 충실구현
+#     (단독 실행 · 무인 충실구현 레인 rf_replication_verify.R · 결합 · 어드바이저 측정)에는 관문이 없었다. 문서 6곳은 "관문 전 파일 ·
+#     B07 뒤 관문 경유 이관 예정" 이라 적었는데 그 이관을 소유한 항목이 없었다(B07=P0-07 범위 밖 확인 → 플랜 P0-13 이 소유).
+#   ★수리: 충실구현 A 는 **같은 관문 술어**를 탄다 — 판정은 정본 함수 그대로(사본·재구현 없음), 여기는 입력 어댑터만:
+#     entry 없음(계보·승계 층 없음) · 칸 코드 없음(B5 자기 층 없음) · 규약·회계 = 방금 쓴 authoritative_remeasure.json ·
+#     창(effective_start·window_deviation) = 방금 쓴 bt_result.rds 에서 관문이 재도출(essence_score.R 같은 부품 · rf_cell_window ④) ·
+#     빈티지 표식 없음(표식은 원장 칸에 사후로 붙는다) · 회계 요건 = a_eligibility_gate.json
+#     holds.accounting_fail.replication_required_selection_type(충실구현 = 논문 1안 chain/1 — 강화 요건 sweep 을 빌리면 모든 충실구현
+#     A 가 보류된다 · 부재·빈값 = gate_config 보류 fail-closed).
+#     통과 → judge_request.eligible.json (judge_request_v2 · status=pending — 강화 발행 .grade_a_enqueue 와 같은 형식) = Judge 트리거
+#     보류 → judge_request.held.json (status=held:<코드> · 사유) · 요청 미발행. 관문 적재·평가 오류 = gate_error 보류(fail-closed).
+#   ★강화 셀은 구판 그대로(judge_request.json) — 강화 러너의 park/restore(.a_art_request)가 그 이름을 소비하고 관문은 러너가 탄다.
+#     셀 판별 = QVEST_NO_LEDGER_OPEN=1 ∧ RF_CELL_SPEC ∧ 엔진 rf_cell_engine.R(셀 워커 rf_cell_worker.R 가 셋 다 켠다 · 구 직렬 러너
+#     reinforce_auto_run.R 는 퇴역 — 실행 즉시 quit(3)).
+#     스위치 하나로 가르지 않는다 — 무인 충실구현 레인(rf_replication_verify.R)과 어드바이저 측정도 원장 auto-open 억제용으로
+#     QVEST_NO_LEDGER_OPEN=1 을 켠다(스위치로만 가르면 충실구현 주 레인이 관문 밖에 남는다).
+#   ★셀 엔진이 셀 러너 밖에서 돈 A(스위치 또는 RF_CELL_SPEC 불충족 — 수동 셀 재실행·Judge 재현 모양)는 충실구현 어댑터로 판정하지 않고
+#     held:cell_outside_runner 로 보류한다(적대 검증 2026-09-25: 어댑터는 entry·셀 spec·sweep 회계를 모른다 — 같은 B5 칸이 강화 관문에서는
+#     adversary_unverified+accounting_fail 보류인데 충실구현 어댑터에서는 chain/1 로 발행됐다). 강화 A 의 발행 = 강화 러너 관문뿐이다.
+#   ★등급·문턱 불변 — 보류는 발행만 막는다(authoritative_remeasure.json 은 손대지 않는다).
+.RP_JR_LEGACY   <- "judge_request.json"            # 강화 셀 전용(구판 이름 — 강화 러너가 관문 뒤 park/restore)
+.RP_JR_ELIGIBLE <- "judge_request.eligible.json"   # 충실구현 관문 통과 = Judge 트리거(.claude/agents/judge.md §스폰 조건 ③)
+.RP_JR_HELD     <- "judge_request.held.json"       # 관문 보류(사유 코드) — 트리거 아님
+
+.rp_is_cell_run <- function(engine_path) {
+  identical(Sys.getenv("QVEST_NO_LEDGER_OPEN", "0"), "1") && nzchar(Sys.getenv("RF_CELL_SPEC", "")) &&
+    identical(basename(as.character(engine_path)[1]), "rf_cell_engine.R")
+}
+
+#' 관문 정본(rf_runner_gates.R)을 격리 환경에 적재 — 전역 오염 없음. 반환 list(env, err) · 실패면 env=NULL + 사유(호출자가 gate_error 보류).
+#'   적재 동안만 QM_ROOT = root(정본이 의존 파일을 .RFG_ROOT() 에서 source 한다 — 다른 트리의 사본을 섞지 않는다).
+.rp_gate_env <- function(root) {
+  p <- file.path(root, "02_Infrastructure", "reinforcement", "rf_runner_gates.R")
+  if (!file.exists(p)) return(list(env = NULL, err = paste0("관문 정본 부재: ", p)))
+  old <- Sys.getenv("QM_ROOT", NA_character_); Sys.setenv(QM_ROOT = root)
+  on.exit(if (is.na(old)) Sys.unsetenv("QM_ROOT") else Sys.setenv(QM_ROOT = old), add = TRUE)
+  e <- new.env(parent = globalenv())
+  err <- tryCatch({ invisible(capture.output(suppressMessages(sys.source(p, envir = e, keep.source = FALSE)))); "" },
+                  error = function(x) conditionMessage(x))
+  if (nzchar(err)) return(list(env = NULL, err = paste0("관문 정본 적재 실패: ", err)))
+  if (!exists("rf_a_eligibility", envir = e, inherits = FALSE)) return(list(env = NULL, err = "관문 정본에 rf_a_eligibility 없음"))
+  list(env = e, err = "")
+}
+
+#' 충실구현 → 관문 입력 어댑터 (판독만 · 쓰기 0). 반환 = 관문 인자(entry, attempt, spec, ctx) + 회계 요건.
+#'   회계 요건은 [[ ]] 정확 일치로 읽는다 — 관문 설정 판독(rf_a_gate_config)이 `$required_selection_type` 을 쓰므로, 충실구현 키는
+#'   그 이름으로 **시작하지 않게** 지었다(부분 일치가 강화 요건을 대신 집는 함정 차단).
+#'   ★P0-14(2026-09-25 · R1 남은 위험 3): engine_path 를 attempt$engine_path 로 싣는다 — 관문 ⑤ 재도출(rf_lineage_flags.R::rflf_c11_derive)이
+#'   엔진 코드가 06_Registry/pit_quarantine.json 격리 원천·팩터를 참조하는지 스캔한다(충실구현은 spec·원장 표식이 없어 구판 어댑터로는
+#'   격리 원천을 읽는 엔진의 A 가 관문을 통과했다). 선정 기저 승계는 해당 없음(팩터 스펙 없음 — 논문이 고른 신호).
+.rp_a_gate_inputs <- function(out_dir, strategy_id, gx, root, engine_path = NULL) {
+  `%||%` <- function(a, b) if (is.null(a) || length(a) == 0L || (length(a) == 1L && is.na(a))) b else a
+  G <- gx$rf_a_gate_config(root)
+  gj <- tryCatch(jsonlite::fromJSON(file.path(root, "06_Registry", "a_eligibility_gate.json"), simplifyVector = FALSE),
+                 error = function(e) NULL)
+  af <- (((gj %||% list())[["holds"]]) %||% list())[["accounting_fail"]] %||% list()
+  rq <- as.character(unlist(af[["replication_required_selection_type"]]))[1]
+  if (length(rq) != 1L || is.na(rq) || !nzchar(rq)) {
+    G$ok <- FALSE
+    G$error <- paste(c(if (nzchar(as.character(G$error %||% ""))) G$error,
+                       "accounting_fail.replication_required_selection_type 부재 — 충실구현 회계 요건 판독 불가"), collapse = " · ")
+    rq <- NA_character_
+  } else G$required_selection_type <- rq
+  attempt <- list(n = 0L, grade = "A",
+                  essence = list(grade = "A", lane = "replication", source = "authoritative_remeasure.json"),
+                  artifacts = out_dir, vintage_flags = list())
+  if (length(engine_path) && !is.na(engine_path[1]) && nzchar(as.character(engine_path[1]))) attempt$engine_path <- as.character(engine_path[1])
+  ctx <- gx$rf_a_ctx(gx$rf_runner_ctx(root), entries = list(), base_id = strategy_id, gate = G)
+  list(entry = NULL, attempt = attempt, spec = NULL, ctx = ctx, required_selection_type = rq)
+}
+
+# 관문 적재·평가 오류의 보류 판정(강화 러너 .a_eval 의 오류 판정과 같은 모양 — fail-closed)
+.rp_gate_err_verdict <- function(msg, now)
+  list(eligible = FALSE, codes = "gate_error", inactive = character(0), fired = "gate_error",
+       detail = list(gate_error = as.character(msg)[1]), facts = list(), gate_source = "", gate_active = character(0),
+       regime_current = NA_character_, self_unverified = FALSE, evaluated_at = now)
+
+#' §11 Grade A 라우팅 (P0-13) — 반환 list(mode = "cell"|"replication", action = "legacy"|"publish"|"hold", eligible, codes, path, verdict)
+#' @param cell  .rp_is_cell_run() — TRUE 면 구판 그대로(judge_request.json · 관문은 강화 러너가 탄다)
+#' @param gate  관문 술어(정본 rf_runner_gates.R::rf_a_eligibility) — 비함수·gx 없음 = 적재 실패 → gate_error 보류(fail-closed)
+#' @param gx    관문 정본 환경(.rp_gate_env()$env) — 어댑터가 rf_a_gate_config·rf_runner_ctx·rf_a_ctx 를 여기서 부른다
+.rp_a_route <- function(out_dir, grade, strategy_id, engine_path, cell, gate, gx, root, gate_err = "",
+                        now = format(Sys.time(), "%Y-%m-%dT%H:%M:%S%z")) {
+  `%||%` <- function(a, b) if (is.null(a) || length(a) == 0L || (length(a) == 1L && is.na(a))) b else a
+  if (!identical(grade, "A")) return(NULL)
+  if (isTRUE(cell)) {
+    # 강화 셀 — 구판 그대로(이름·내용). 관문 판정 = 강화 러너(reinforce_auto_parallel.R .a_route — 수집 시점 · park/restore).
+    p <- file.path(out_dir, .RP_JR_LEGACY)
+    jsonlite::write_json(list(strategy_id = strategy_id, layer = 1L, grade = grade,
+                              artifacts = out_dir, engine_path = engine_path,
+                              requested_at = now,
+                              note = "v10: Grade A → Judge(PIT 전담) 스폰 요청 — 세션(Q-Lead)이 Agent 스폰"),
+                         p, auto_unbox = TRUE, pretty = TRUE)
+    return(list(mode = "cell", action = "legacy", eligible = NA, codes = character(0), path = p, verdict = NULL))
+  }
+  # 셀 엔진이 셀 러너 밖에서 돌았다(cell=FALSE 인데 엔진이 rf_cell_engine.R) — 충실구현 어댑터로 셀 A 를 판정하지 않는다(fail-closed · 위 머리 주석)
+  cell_eng <- identical(basename(as.character(engine_path)[1]), "rf_cell_engine.R")
+  el <- if (cell_eng) {
+    v <- .rp_gate_err_verdict(paste0("강화 셀 엔진(rf_cell_engine.R)이 셀 러너 밖에서 실행됐다(QVEST_NO_LEDGER_OPEN=1 ∧ RF_CELL_SPEC 불충족) — ",
+                                     "충실구현 어댑터(entry·셀 spec·sweep 회계 없음)로 셀 A 를 판정하지 않는다 · 강화 A 발행 = reinforce_auto_parallel.R 관문"), now)
+    v$eligible <- FALSE; v$codes <- v$fired <- "cell_outside_runner"; names(v$detail) <- "cell_outside_runner"; v
+  } else if (!is.function(gate) || !is.environment(gx)) {
+    .rp_gate_err_verdict(if (nzchar(as.character(gate_err %||% ""))) gate_err else "관문 술어 적재 실패(원인 미상)", now)
+  } else tryCatch({
+    inp <- .rp_a_gate_inputs(out_dir, strategy_id, gx, root, engine_path = engine_path)
+    v <- gate(inp$entry, inp$attempt, inp$spec, inp$ctx)
+    v$required_selection_type <- inp$required_selection_type
+    v
+  }, error = function(e) .rp_gate_err_verdict(paste0("관문 평가 오류: ", conditionMessage(e)), now))
+  ok <- isTRUE(el$eligible)
+  codes <- as.character(el$codes %||% character(0))
+  if (!ok && !length(codes)) codes <- "gate_error"            # 부적격인데 코드가 비면 사유 없는 보류 — 그렇게 두지 않는다
+  req <- list(schema = "judge_request_v2",
+              status = if (ok) "pending" else paste0("held:", paste(codes, collapse = "+")),
+              requested_at = now, source = "run_paper_replication",
+              strategy_id = strategy_id, layer = 1L, grade = "A",
+              base_id = strategy_id, attempt = 0L, cell = NULL, artifacts = out_dir,
+              engine_path = engine_path, base_engine_path = engine_path, spec = "",
+              a_eligibility = list(eligible = ok, codes = as.list(codes),
+                                   inactive = as.list(as.character(el$inactive %||% character(0))),
+                                   detail = el$detail %||% list(),
+                                   checked_at = el$evaluated_at %||% now, regime = el$regime_current %||% NA_character_,
+                                   gate = el$gate_source %||% "", gate_active = as.list(as.character(el$gate_active %||% character(0))),
+                                   lane = "replication", adapter = "run_paper_replication.R::.rp_a_gate_inputs (P0-13)",
+                                   required_selection_type = el$required_selection_type %||% NA_character_,
+                                   facts = el$facts %||% list()),
+              note = if (ok) "P0-13: 충실구현 Grade A → A 자격 관문 통과분만 발행 — Judge(PIT 전담) 트리거(.claude/agents/judge.md §스폰 조건 ③ · 스폰 = 세션 Q-Lead)."
+                     else "P0-13: A 자격 관문 보류 — 등급 불변 · 요청 미발행(트리거 아님). 사유 해소 뒤 재측정 또는 도훈 지시.")
+  if (!ok) req$held <- list(codes = as.list(codes), at = now, by = "run_paper_replication §11 · A 자격 관문(P0-13)")
+  p <- file.path(out_dir, if (ok) .RP_JR_ELIGIBLE else .RP_JR_HELD)
+  tmp <- paste0(p, ".tmp_", Sys.getpid())
+  writeLines(jsonlite::toJSON(req, auto_unbox = TRUE, pretty = TRUE, null = "null", na = "null", digits = NA), tmp, useBytes = TRUE)
+  if (!isTRUE(file.rename(tmp, p))) { file.copy(tmp, p, overwrite = TRUE); unlink(tmp) }
+  list(mode = "replication", action = if (ok) "publish" else "hold", eligible = ok, codes = if (ok) character(0) else codes,
+       path = p, verdict = el)
+}
+# ── 데이터 컷오프 (P0-07 · 2026-09-24 · 감사 D4-11·D8-03 · 플랜 qvest-1-drifting-eclipse) ──
+#   load_rawdata 직후 RAWDATA·BM_DT 를 cutoff 이하로 자른다. 호출자가 data_cutoff 를 안 주면 이 함수는 불리지 않는다
+#   (구판 비트 동일). 강화 entry 는 개설 때 data_cutoff(직전 완결 월말)를 원장에 단다(reinforce_ledger.R::rf_open_entry)
+#   — 러너 spec·워커가 그 값을 여기 넘기면 한 entry 의 칸이 같은 창에서 측정된다(배선 = P0-06 epoch 와 함께).
+#   ★fail-closed: 데이터가 cutoff 를 **넘어서지** 않으면(RAWDATA·벤치 최대일 ≤ cutoff) 멈춘다 — 그 달이 완결됐다는
+#     증거가 없고(월초 적재 전·장중 봉·롤백), 같은 cutoff 이름으로 다른 창을 재게 된다. 판정 정의는 pin_cache.R::pin_complete_month_end 와 같다.
+#   검사가 parse→eval 로 이 정의만 부른다(08_Tests/data/test_pin_fingerprint.R).
+.rp_apply_data_cutoff <- function(RAWDATA, BM_DT, data_cutoff) {
+  co <- tryCatch(as.Date(as.character(data_cutoff)[1]), error = function(e) as.Date(NA))
+  if (length(data_cutoff) != 1L || is.na(co))
+    stop(sprintf("[replication] data_cutoff 해석 불가: %s — 'YYYY-MM-DD' 1개", paste(as.character(data_cutoff), collapse = ",")))
+  mx_r <- max(RAWDATA$Date, na.rm = TRUE); mx_b <- max(BM_DT$Date, na.rm = TRUE)
+  if (!(mx_r > co && mx_b > co))
+    stop(sprintf(paste0("[replication] data_cutoff %s — 데이터가 컷오프를 넘어서지 않는다(RAWDATA 최대 %s · 벤치 최대 %s). ",
+                        "컷오프 월 완결 미증명 — 다른 창을 같은 컷오프 이름으로 재지 않는다(fail-closed)"),
+                 format(co), format(mx_r), format(mx_b)))
+  n0 <- nrow(RAWDATA); b0 <- nrow(BM_DT)
+  RAWDATA <- RAWDATA[Date <= co]; BM_DT <- BM_DT[Date <= co]
+  list(RAWDATA = RAWDATA, BM_DT = BM_DT, cutoff = co,
+       info = list(data_cutoff = format(co), raw_rows_dropped = n0 - nrow(RAWDATA), bm_rows_dropped = b0 - nrow(BM_DT),
+                   raw_max_date_loaded = format(mx_r), bm_max_date_loaded = format(mx_b)))
+}
+#   절단한 데이터의 빈티지 지문(pin_cache.R::pin_fingerprint scheme pin_fp_v2 — 원장 entry 지문과 같은 정의라 digest 로 대조 가능).
+#   소비 열은 소비자 코드(러너·하네스·셀 엔진 + source 폐포 + 이 판의 엔진 engine_path)에서 재도출한다 — 원장 rf_open_entry 가
+#   같은 engine_path 로 재도출하므로 충실구현 → 원장 개설 경로는 같은 열이다(셀 판은 기저 엔진 경로를 모른다 — 기록된 raw_cols 로 재대조).
+#   pin_cache.R 은 통째로 source 하지 않는다(머리의 config.R source) — 지문 정의만 parse→eval. 실패는 측정을 막지 않고 status=error 로 남는다.
+.rp_data_fingerprint <- function(RAWDATA, BM_DT, cutoff, root = .RP_ROOT, engine_path = NULL) {
+  tryCatch({
+    ex <- parse(file.path(root, "02_Infrastructure", "data", "pin_cache.R"), encoding = "UTF-8", keep.source = FALSE)
+    F <- new.env(parent = baseenv())
+    for (e in as.list(ex))
+      if (is.call(e) && as.character(e[[1]])[1] %in% c("<-", "=") && is.name(e[[2]]) &&
+          grepl("^(pin_fingerprint|pin_complete_month_end|pin_fp_|\\.pin_fp_)", as.character(e[[2]]))) eval(e, F)
+    fp <- F$pin_fingerprint(cutoff, raw = RAWDATA, bm = BM_DT, fdb_dir = file.path(root, ".cache", "factor_db"),
+                            code_root = root, engines = engine_path)
+    list(status = fp$status, scheme = fp$scheme, digest = fp$digest, raw_md5 = fp$raw$md5 %||% NA_character_,
+         bm_md5 = fp$bm$md5 %||% NA_character_, fdb_status = fp$fdb$status %||% NA_character_,
+         fdb_md5 = fp$fdb$md5 %||% NA_character_, raw_cols = fp$raw$cols %||% character(0),
+         bm_cols = fp$bm$cols %||% character(0), why = fp$why %||% character(0))
+  }, error = function(e) list(status = "error", why = conditionMessage(e)))
+}
+
 # ★"호출자가 고르지 않았다" 는 **부재(NULL)** 로 표현한다 — 특정 값을 표식으로 삼으면
 #   그 값을 진짜로 고른 호출자와 구분되지 않는다(2026-08-31 실사고).
 # ★종목수 상한 (도훈 지시 2026-08-31). 정본 = constraint_defaults.json::max_names 25
@@ -191,13 +416,27 @@ run_paper_replication <- function(strategy_name, strategy_idea, factor_engine_pa
                                   #   비트 동일. 강화 워커(rf_cell_worker.R)만 sweep + 계보 누적 시행수를 넘긴다.
                                   selection_type = "chain",
                                   n_trials_cumulative = 1L,
-                                  measurement_tags = NULL) {     # 호출자 부기(예: n_trials_basis) — auth$measurement_regime 에 실린다
+                                  measurement_tags = NULL,       # 호출자 부기(예: n_trials_basis) — auth$measurement_regime 에 실린다
+                                  # ★집행 규약 (2026-09-24 · 플랜 P0-04 · 감사 D4-01 · 결정 EXEC-PRICE 도훈 2026-09-23).
+                                  #   NULL = constraint_defaults.json::execution.exec_price(하네스가 읽는다 — 하드코딩 금지).
+                                  #   명시 = "close_d_legacy"|"close_t1"|"open_t1" — Judge 재현은 산출물의
+                                  #   measurement_regime.exec_price 를 여기 넘겨 **같은 규약**으로 재실행한다.
+                                  #   논문 기준판(sim_paper)은 portfolio_spec$exec_price 가 있으면 그 규약을 따른다(논문 체결 규약).
+                                  exec_price = NULL,
+                                  # ★데이터 컷오프 (2026-09-24 · 플랜 P0-07). NULL = 절단 없음(구판 비트 동일 · auth 키 추가 0).
+                                  #   "YYYY-MM-DD" = load_rawdata 직후 그 날 이하로 절단(.rp_apply_data_cutoff) + 엔진 산출도 절단 +
+                                  #   auth measurement_regime 에 data_cutoff·data_fingerprint·절단 기록을 싣는다.
+                                  data_cutoff = NULL) {
   `%||%` <- function(a, b) if (is.null(a) || length(a) == 0L || (length(a) == 1L && is.na(a))) b else a
   stopifnot(file.exists(factor_engine_path))
   selection_type <- match.arg(as.character(selection_type)[1], c("chain", "sweep"))
   n_trials_cumulative <- suppressWarnings(as.integer(n_trials_cumulative)[1])
   if (!is.finite(n_trials_cumulative) || n_trials_cumulative < 1L)
     stop("[replication] n_trials_cumulative 는 1 이상의 정수여야 한다 — 시행 수를 모르면 기록 불가(추정 금지)")
+  # 집행 규약은 엔진·데이터 적재 **전에** 확정한다(설정 부재·허용 밖 값이면 여기서 멈춘다 — fail-closed).
+  exec_price_basis <- if (is.null(exec_price)) "constraint_defaults.json::execution.exec_price" else "argument"
+  exec_price <- rep_resolve_exec_price(exec_price)
+  exec_price_paper <- rep_resolve_exec_price(portfolio_spec$exec_price %||% exec_price)
   # 근거 논문 — 충실구현은 필수(논문을 재현하는 단계에서 논문을 뺄 수 없다),
   #   강화 레인은 2026-09-03 해제(도훈 지시). 호출자가 require_source_paper=FALSE 로 가른다.
   if (isTRUE(require_source_paper) &&
@@ -220,6 +459,19 @@ run_paper_replication <- function(strategy_name, strategy_idea, factor_engine_pa
   RAWDATA <- res$RAWDATA; BM_DT <- res$BM_DT; rm(res); gc(verbose = FALSE)
   if (!inherits(BM_DT$Date, "Date"))   BM_DT[,   Date := as.Date(Date, tz = "Asia/Seoul")]
   if (!inherits(RAWDATA$Date, "Date")) RAWDATA[, Date := as.Date(Date, tz = "Asia/Seoul")]
+  # ---- 1-b. 데이터 컷오프 (P0-07) — NULL 이면 이 블록 전체가 아무것도 하지 않는다 ----
+  #   지문은 엔진 실행 **전**에 잰다(엔진이 RAWDATA 를 참조로 고쳐도 판본 기록이 흔들리지 않게).
+  data_vintage <- NULL
+  if (!is.null(data_cutoff)) {
+    .cut <- .rp_apply_data_cutoff(RAWDATA, BM_DT, data_cutoff)
+    RAWDATA <- .cut$RAWDATA; BM_DT <- .cut$BM_DT; data_cutoff <- .cut$cutoff
+    data_vintage <- c(.cut$info, list(data_fingerprint = .rp_data_fingerprint(RAWDATA, BM_DT, data_cutoff,
+                                                                              engine_path = factor_engine_path)))
+    rm(.cut); gc(verbose = FALSE)
+    cat(sprintf("[replication] data_cutoff %s — RAWDATA %d행·벤치 %d행 절단 (적재 최대 %s) · 지문 %s\n",
+                data_vintage$data_cutoff, data_vintage$raw_rows_dropped, data_vintage$bm_rows_dropped,
+                data_vintage$raw_max_date_loaded, data_vintage$data_fingerprint$digest %||% data_vintage$data_fingerprint$status))
+  }
 
   # ---- 2. Engine → FACTORS 또는 PORTFOLIO ----
   fe_env <- new.env(parent = environment())
@@ -232,6 +484,18 @@ run_paper_replication <- function(strategy_name, strategy_idea, factor_engine_pa
   FACTORS <- if (has_fx) fe_env$FACTORS else NULL
   PORTFOLIO <- if (has_pf) fe_env$PORTFOLIO else NULL
   rm(fe_env); gc(verbose = FALSE)
+  # ★컷오프 뒤 시그널은 버린다(P0-07) — 엔진이 RAWDATA 밖 원천(팩터 DB 등)으로 cutoff 뒤 날짜를 내도 창이 같아야 한다.
+  #   (K200_KQ150 유니버스는 멤버십 결합으로도 떨어지지만, 그 밖 유니버스는 아래 '시그널일 > RAWDATA' 검사에서 멈춘다)
+  if (!is.null(data_vintage)) {
+    if (!is.null(FACTORS)) {
+      if (!inherits(FACTORS$Date, "Date")) FACTORS[, Date := as.Date(Date)]
+      FACTORS <- FACTORS[Date <= data_cutoff]
+    }
+    if (!is.null(PORTFOLIO)) {
+      if (!inherits(PORTFOLIO$Date, "Date")) PORTFOLIO[, Date := as.Date(Date)]
+      PORTFOLIO <- PORTFOLIO[Date <= data_cutoff]
+    }
+  }
 
   # ---- 3. 유니버스 치환 (유일한 변경 — K200∪KQ150 PIT 시변 멤버십) ----
   .apply_universe <- function(dt) {
@@ -316,28 +580,22 @@ run_paper_replication <- function(strategy_name, strategy_idea, factor_engine_pa
   # ---- 6. 이중 시뮬레이션 (논문 기준 + 15bps 등급 기준) ----
   comm_paper <- commission_paper %||% 0
   sim_paper <- run_replication_simulation(RAWDATA, BM_DT, WEIGHTS,
-                                          commission = comm_paper, start_date = start_date)
-  sim_grade <- if (identical(comm_paper, 0.0015)) sim_paper else
+                                          commission = comm_paper, start_date = start_date,
+                                          exec_price = exec_price_paper)
+  # 재사용은 비용·집행 규약이 **둘 다** 같을 때만(규약이 다르면 같은 sim 이 아니다)
+  sim_grade <- if (identical(comm_paper, 0.0015) && identical(exec_price_paper, exec_price)) sim_paper else
     run_replication_simulation(RAWDATA, BM_DT, WEIGHTS,
-                               commission = 0.0015, start_date = start_date)
+                               commission = 0.0015, start_date = start_date,
+                               exec_price = exec_price)
   paper_sum <- .rp_paper_summary(sim_paper)
-  cat(sprintf("[replication] 논문 기준(비용 %.0fbps): CAGR %.1f%% · SR %.2f · MDD %.1f%% · %d개월\n",
-              comm_paper * 1e4, paper_sum$cagr * 100, paper_sum$sharpe,
+  cat(sprintf("[replication] 논문 기준(비용 %.0fbps · 집행 %s): CAGR %.1f%% · SR %.2f · MDD %.1f%% · %d개월\n",
+              comm_paper * 1e4, sim_paper$diagnostics$exec_price, paper_sum$cagr * 100, paper_sum$sharpe,
               paper_sum$mdd * 100, paper_sum$n_months))
 
   # ---- 7. 계약 경유 등급 (15bps 판) ----
-  strategy_spec <- list(
-    strategy_name = strategy_name, strategy_idea = strategy_idea,
-    constraint_profile = "replication",          # audit holdings_cap INFO 강등 스위치
-    lookahead_prevention = "detect_lookahead(engine) CLEAN + t+1 실행(get_execution_date 익월 첫 거래일) + 시그널일>RAWDATA 범위 검사",
-    construction = portfolio_spec$construction %||% "top_n_long",
-    weight_method = portfolio_spec$weighting %||% "paper",
-    rebalance = portfolio_spec$rebalance %||% "monthly",
-    universe = universe, liquidity_filter = "paper_faithful",
-    n_max = sim_grade$diagnostics$n_max, has_short = sim_grade$diagnostics$has_short,
-    source_paper_url = .sp_url,
-    benchmark_note = if (isTRUE(sim_grade$diagnostics$has_short)) "long_short_vs_long_bm" else "long_vs_long_bm"
-  )
+  # ★진술·경로·비용 라벨은 실현값에서 — .rp_strategy_spec (P0-03·P0-04)
+  strategy_spec <- .rp_strategy_spec(strategy_name, strategy_idea, portfolio_spec, universe,
+                                     sim_grade, .sp_url, factor_engine_path)
   bt <- build_bt_result(sim_grade, strategy_spec,
                         run_id = run_id, strategy_id = strategy_id,
                         benchmark_id = "KOSPI200", benchmark_name = "KOSPI 200",
@@ -428,16 +686,20 @@ run_paper_replication <- function(strategy_name, strategy_idea, factor_engine_pa
     ##   auth 에 옮기지 않아, 1,099 산출물 전부에서 n_trials_cumulative 필드 자체가 부재였다.
     n_trials_cumulative = es$n_trials_cumulative, dsr = es$essence$dsr,
     ## ★측정 규약 표식 — regime 이 다른 수치끼리 비교하지 않기 위한 키(플랜 P0-06 rebase 의 식별자).
-    ##   exec_price = 하네스의 **실제** 체결 규약. replication_harness.R 은 새 보유에 집행일 수익
-    ##   Close[exec]/Close[d]−1 을 붙이므로 사실상 시그널일 종가 체결이다(감사 D4-01, 코드 :58·:84-88).
-    ##   P0-04(close_t1 전환)가 인자화되면 그 인자를 그대로 싣는다 — 여기 리터럴은 현행 동작의 정직한 기록이다.
+    ##   exec_price = 하네스가 **실제로 쓴** 체결 규약(sim_grade$diagnostics — 인자 라벨이 아니라 실현값).
+    ##   P0-01 은 인자화 전이라 "close_d_legacy" 를 리터럴로 적었다(당시 현행 동작의 정직한 기록) —
+    ##   P0-04(2026-09-24) 가 하네스를 인자화했으므로 이제 실현값을 싣는다. cost_model_version 도 같은 자리(P0-03).
     ## ★태그는 기본 키를 덮지 못한다(2026-09-23 적대 리뷰 — c() 병합은 같은 이름을 두 번 싣는다 → JSON 중복 키).
     ##   modifyList(태그, 기본) = 태그의 새 키만 추가되고 기본 키 값은 기본이 이긴다.
-    measurement_regime = utils::modifyList(if (is.list(measurement_tags)) measurement_tags else list(), list(
+    ## ★data_cutoff·data_fingerprint(P0-07 · 2026-09-24) — 절단했을 때만 싣는다(data_vintage NULL 이면 c() 가 구판 목록 그대로).
+    measurement_regime = utils::modifyList(if (is.list(measurement_tags)) measurement_tags else list(), c(list(
       selection_type = selection_type, n_trials_cumulative = n_trials_cumulative,
-      exec_price = "close_d_legacy",
+      exec_price = sim_grade$diagnostics$exec_price,
+      exec_price_basis = exec_price_basis,
+      exec_price_paper = sim_paper$diagnostics$exec_price,
+      cost_model_version = sim_grade$cost_model_version,
       harness_md5 = tryCatch(unname(as.character(tools::md5sum(file.path(.RP_INFRA, "replication", "replication_harness.R")))),
-                             error = function(e) NA_character_))),
+                             error = function(e) NA_character_)), data_vintage)),
     ## ★essence_score 가 산출한 겼을 **떨어뜨리지 않는다** (도훈 2026-09-04).
     ##   이 쓰기는 반환 list 를 통째로 실지 않고 필드를 골라 쓴다. 그래서 새로
     ##   붙인 rolling_grade / defensive_score / grade_base 가 산출물에서 사라졌다 —
@@ -563,14 +825,24 @@ run_paper_replication <- function(strategy_name, strategy_idea, factor_engine_pa
                                  "실투형 변환(long-only·≤25종·15bps) 시 신호 보존율 측정"))
   }, error = function(e) { cat("[replication] L-code 실패(비치명):", conditionMessage(e), "\n"); NULL })
 
-  # ---- 11. 라우팅: A → Judge / 미달 → 강화 원장 ----
+  # ---- 11. 라우팅: A → A 자격 관문(P0-13) / 미달 → 강화 원장 ----
+  #   A 면 .rp_a_route(위 정의 · 등급 불변): 강화 셀 = 구판 judge_request.json(관문은 강화 러너가 수집 시점에 탄다) ·
+  #   충실구현 = 관문 정본을 격리 적재해 태운다 → 통과 judge_request.eligible.json(Judge 트리거) / 보류 judge_request.held.json.
+  a_gate <- NULL
+  # ★[P0-07 호출 지점 표시 · 배선 = P2] A 발행 시 판본 스냅샷:
+  #   pin_cache(c(RAWDATA_CACHE, BM_CACHE), tag = <strategy_id>) → judge_request 에 pin_tag 기록 → Judge 재현은 read_pinned 경로.
+  #   (지금은 지문만 — data_cutoff 를 넘긴 판이면 auth measurement_regime.data_fingerprint 가 판본을 식별한다)
   if (identical(grade, "A")) {
-    write_json(list(strategy_id = strategy_id, layer = 1L, grade = grade,
-                    artifacts = OUT_DIR, engine_path = factor_engine_path,
-                    requested_at = format(Sys.time(), "%Y-%m-%dT%H:%M:%S%z"),
-                    note = "v10: Grade A → Judge(PIT 전담) 스폰 요청 — 세션(Q-Lead)이 Agent 스폰"),
-               file.path(OUT_DIR, "judge_request.json"), auto_unbox = TRUE, pretty = TRUE)
-    cat("[replication] ★Grade A — judge_request.json 발행 (Judge 스폰은 세션 소관)\n")
+    .a_cell <- .rp_is_cell_run(factor_engine_path)
+    .a_gx <- if (.a_cell) list(env = NULL, err = "") else .rp_gate_env(PROJECT_ROOT)
+    a_gate <- .rp_a_route(OUT_DIR, grade = grade, strategy_id = strategy_id, engine_path = factor_engine_path,
+                          cell = .a_cell, gate = if (is.environment(.a_gx$env)) .a_gx$env$rf_a_eligibility else NULL,
+                          gx = .a_gx$env, root = PROJECT_ROOT, gate_err = .a_gx$err)
+    cat(sprintf("[replication] ★Grade A — %s\n", switch(a_gate$action,
+      legacy  = "강화 셀: judge_request.json 기록(관문 판정 = 강화 러너 · 수집 시점)",
+      publish = sprintf("A 자격 관문 통과 → %s 발행(Judge 트리거 · 스폰은 세션 소관)", basename(a_gate$path)),
+      hold    = sprintf("A 자격 관문 보류(%s) → %s · 요청 미발행(등급 불변)", paste(a_gate$codes, collapse = "+"), basename(a_gate$path)),
+      sprintf("A 라우팅 결과 미상(%s)", as.character(a_gate$action)[1]))))
   } else if (identical(Sys.getenv("QVEST_NO_LEDGER_OPEN", "0"), "1")) {
     # ★강화 셀 실행 중에는 새 강화 entry 를 열지 않는다 (강화 대상을 강화 중에 또 만드는 자기증식).
     #   2026-08-30 실사고: 무인 병렬 러너가 셀 5개를 돌리자 원장에 active 0/20 쓰레기 entry 5개가 생겼고,
@@ -580,11 +852,15 @@ run_paper_replication <- function(strategy_name, strategy_idea, factor_engine_pa
   } else {
     tryCatch({
       source(file.path(.RP_INFRA, "reinforcement", "reinforce_ledger.R"))
-      rf_open_entry(layer = 1L,
-                    paper_key = as.character(source_paper$paper_key %||% ""),
-                    paper_id = as.character(source_paper$paper_id %||% ""),
-                    base_id = strategy_id, base_grade = grade %||% "NA",
-                    base_artifacts = OUT_DIR, engine_path = factor_engine_path)
+      .oe_args <- list(layer = 1L,
+                       paper_key = as.character(source_paper$paper_key %||% ""),
+                       paper_id = as.character(source_paper$paper_id %||% ""),
+                       base_id = strategy_id, base_grade = grade %||% "NA",
+                       base_artifacts = OUT_DIR, engine_path = factor_engine_path)
+      # P0-07: 절단 판이면 기저 측정의 cutoff 를 entry 에 그대로 싣는다(없으면 원장이 직전 완결 월말을 정한다).
+      #   ★절단했을 때만 인자를 더한다 — 기본 경로의 호출 모양은 구판과 같다(원장 판본이 어긋나도 미지 인자로 개설이 죽지 않게).
+      if (!is.null(data_vintage)) .oe_args$data_cutoff <- data_vintage$data_cutoff
+      do.call(rf_open_entry, .oe_args)
       cat("[replication] 강화 원장 open — reinforce_ledger_l1.json (≤20회)\n")
     }, error = function(e)
       cat("[replication] 강화 원장 등록 실패(비치명 — 세션이 수동 등록):", conditionMessage(e), "\n"))
@@ -594,7 +870,8 @@ run_paper_replication <- function(strategy_name, strategy_idea, factor_engine_pa
                  paper_basis = paper_sum, essence = es$essence,
                  diagnostics = sim_grade$diagnostics, l_code = lc,
                  analysis_ran = analysis_ran,
-                 construction_type = lc_construction))
+                 construction_type = lc_construction,
+                 a_gate = a_gate))   # P0-13 — A 면 list(mode, action, eligible, codes, path, verdict) · A 아니면 NULL
 }
 
 cat("[run_paper_replication.R] Loaded (v10) — run_paper_replication(name, idea, engine, portfolio_spec, source_paper=...)\n")

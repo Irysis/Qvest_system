@@ -118,13 +118,24 @@ jl model_selected "model=$RP_MODEL" "effort=$RP_EFFORT" "kind=$KIND"
 # ★프롬프트는 stdin 으로 (2026-09-04): argv 로 넘기면 Windows 인자 상한(32K)에 걸려 에이전트가 안 뜰다 — 승격 entry B1 설계 재료 41KB 실사고.
 PF="$ADIR/prompt_${KIND}.txt"
 printf %s "$PROMPT" > "$PF"
-QVEST_ARM_GEN=1 timeout 1800 claude -p < "$PF" \
-  --model "$RP_MODEL" --effort "$RP_EFFORT" \
+# ★무인 LLM 단일 진입(P0-M1 2026-09-24) — rf_llm_agent_run 이 AutoMem 차단·무인 표식을 싣고
+#   --model/--effort 는 위 rf_llm_resolve 값(LLM_MODEL=RP_MODEL · LLM_EFFORT=RP_EFFORT)을 쓴다.
+#   QVEST_ARM_GEN=1 은 함수 호출 앞 임시 대입 — bash 는 함수 실행 동안 자식(claude·훅)에게 내보낸다(성과 열람 차단 훅의 표식).
+#   이번 실행 출력 = $LOG.this (구판과 같은 파일 · 폴백이면 1차 출력 = $LOG.this.primary).
+#   폴백 미탑재(LLM_FALLBACK_MODEL="" · 구판 동작 보존): 구판도 --fallback-model 없이 떴고 이 레인엔
+#   반쪽 산출물 청소 훅(rf_llm_before_fallback)이 없다 — 폴백 확대는 청소 훅과 함께 별도 결정.
+#   (P0-M2 2026-09-25) PowerShell 금지 추가 — 성과 열람 차단 훅의 matcher 는 Read|Grep|Glob 이라 셸 도구는 훅이 못 본다.
+#   Bash 만 막고 PowerShell 을 열어 둔 것이 실제 구멍이었다(09-25 transcript: 생성 세션 PowerShell 56회 시도 · 14회 통과).
+#   (P0-M2 수리 2026-09-25 · B-1) 셸 통로 전부 금지 = CLI 2.1.261 이 enablesCodeExecution 으로 표시한 내장 도구 7종
+#   (Bash·PowerShell·Monitor·REPL·Workflow·CronCreate·RemoteTrigger). Monitor 는 셸 명령을 돌려 출력을 이벤트로 돌려준다 —
+#   충실도 감사 세션(25caa112 · 09-17)이 Bash 금지 아래서 Monitor 로 diff 를 돌렸다. 훅 matcher(Read|Grep|Glob) 밖이라 막는 곳은 여기뿐.
+QVEST_ARM_GEN=1 LLM_FALLBACK_MODEL="" rf_llm_agent_run "$PF" "$LOG.this" 1800 \
   --permission-mode acceptEdits \
   --allowed-tools "Read,Write,Edit,Glob,Grep" \
-  --disallowed-tools "Bash,Agent,WebFetch,WebSearch" \
-  --add-dir "$ADIR" >> "$LOG.this" 2>&1
-RC=$?
+  --disallowed-tools "Bash,PowerShell,Monitor,REPL,Workflow,CronCreate,RemoteTrigger,Agent,WebFetch,WebSearch" \
+  --add-dir "$ADIR"
+RC=$LLM_RC
+[ -f "$LOG.this.primary" ] && { cat "$LOG.this.primary" >> "$LOG"; rm -f "$LOG.this.primary"; }
 cat "$LOG.this" >> "$LOG"; jl agent_done "rc=$RC" "kind=$KIND"
 
 # ★이 런의 출력만 본다 — 어제의 401 이 오늘 다시 발화하지 않게

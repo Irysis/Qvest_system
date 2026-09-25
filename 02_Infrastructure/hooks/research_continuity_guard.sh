@@ -173,6 +173,20 @@ def mf_newest_lcode(root):
 
 
 msgs = []
+# ★DIR-PHASE0 (2026-09-24 도훈): 지도는 rf_director.R 이 매일 재생성하던 기계 산출물이다. director.enabled 가 명시적
+#   false(동결)면 갱신 주체가 없어 W3 는 해소 불가능한 경보가 된다(v9 2026-08-23 W8 no-op 과 같은 사유) → 동결 중 무경보.
+#   config 판독 실패·키 부재·true 는 종전 판정 그대로. ★이 블록은 위 정의부 **뒤**에 둔다 — 검사
+#   test_map_freshness_content.R I1 이 정의부만 잘라(첫 msgs 대입 줄 앞) 실행하므로, 앞에 두면 운영 루트에서 조기 종료한다.
+try:
+    with open(os.path.join(root, '06_Registry', 'reinforce_auto_config.json'), 'r', encoding='utf-8-sig') as fh:
+        _dc = (json.load(fh) or {}).get('director')
+    if isinstance(_dc, dict) and _dc.get('enabled') is False:
+        print('{}')
+        sys.exit(0)
+except SystemExit:
+    raise
+except Exception:
+    pass
 try:
     now_s = time.time()
     newest_lc = mf_newest_lcode(root)

@@ -1,7 +1,7 @@
 {
   "$schema": "qvest://worktask/schema/v1",
   "description": "Work Task 제약 기본값 — v8.1 3-tier 분리 (Hard Mandate / Soft Deployment / Graduation).",
-  "version": "v2.5",
+  "version": "v2.6",
   "effective_from": "2026-07-03 v8.2 graduation HARD 4종 배선 (아키텍처 감사 CAP-P0-1)",
   "owner": "사용자 (Dohoon Kim)",
   "_changelog": {
@@ -11,7 +11,8 @@
     "v2.2": "2026-04-24 사용자 실전 운용 확정 — n=20 hard (min=max=20), max_w 0.10→0.15 완화. HHI cap 0.10→0.15 상향 (20종×max 15% = HHI 하한 0.0669 + 불균등 여유).",
     "v2.3": "2026-04-24 AX-007 Sprint 결과 반영 (Architect INFRA_CLEAN + Codex CONFIRM 0.87 + Replication 9/11) + 사용자 β 철학. β_target 0.75→0.90 default, confidence-weighted tier, alpha_divergence_filter 신규 (L-195a fix).",
     "v2.4": "2026-06-11~12 v8.1 sync — max_names 25, 종목별 hard cap 20%, delta-based 15bps cost_model_version=v2.4_kr_retail_15bps.",
-    "v2.5": "2026-07-03 아키텍처 감사 CAP-P0-1/MC-01 — tier_graduation에 min_oos_retention=0.7·min_calmar=0.64 (severity hard) 등재. measurement-graduation §3 HARD 4종(PORT_t 2.95·oos 0.7·calmar 0.64)과 discovery_graduation_gate.sh 배선 정합. 문턱값 신설 아닌 기존 룰 문서값 배선."
+    "v2.5": "2026-07-03 아키텍처 감사 CAP-P0-1/MC-01 — tier_graduation에 min_oos_retention=0.7·min_calmar=0.64 (severity hard) 등재. measurement-graduation §3 HARD 4종(PORT_t 2.95·oos 0.7·calmar 0.64)과 discovery_graduation_gate.sh 배선 정합. 문턱값 신설 아닌 기존 룰 문서값 배선.",
+    "v2.6": "2026-09-24 플랜 P0-04 — execution 블록 신설: exec_price(등급 하네스 집행 규약 기본값 close_t1 · 결정 레지스터 EXEC-PRICE 도훈 2026-09-23) + open_t1 겹밤 가드 한도. 소비자 = replication/replication_harness.R::rep_execution_config."
   },
   "tier_hard_mandate": {
     "description": "불가항력 제약 (PIT + legal + scientific). Discovery + Deployment 모두 강제.",
@@ -117,6 +118,40 @@
     "market_impact_model": "linear_sqrt_ADV",
     "capacity_adv_multiplier": 0.1,
     "cost_rationale": "KR 리테일 증권사 평균 수수료 + 시장 충격 근사. v2.4 (2026-06-11 도훈 confirm): 리밸마다 종목별 |Δ보유 명목|에 매수/매도 각 15bps (delta-based, B0 후속). 구 v2.3 flat per-rebalance 기록과 비교 시 라벨 확인 의무."
+  },
+  "execution": {
+    "description": "등급 하네스(replication/replication_harness.R::run_replication_simulation) 집행 규약 — 호출자가 exec_price 를 명시하지 않으면 여기 값을 쓴다(하네스가 하드코딩하지 않는다). 소비자 = rep_execution_config / rep_exec_price_default. 키가 없거나 값이 허용 밖이면 하네스가 멈춘다(fail-closed).",
+    "exec_price": "close_t1",
+    "exec_price_allowed": ["close_d_legacy", "close_t1", "open_t1"],
+    "exec_price_source": "06_Registry/decision_register.json id=EXEC-PRICE — 도훈 2026-09-23 결정 \"close_t1 — 익일 종가(정본 backtest_harness 와 같은 의미) · 실현 가능성 논거\". 정본 = 02_Infrastructure/backtest_harness.R::run_monthly_simulation: 시그널 d → get_execution_date(d)=익월 첫 거래일, (prev,exec] 구간 NAV 는 옛 보유(:1079-1085), 새 보유는 Close[exec] 로 매수(:1299-1316). 결정 사유 = 실현 가능성: 시그널일 종가로 산출한 신호를 같은 종가에 체결할 수는 없다(감사 D4-01 — 구 하네스는 새 보유가 집행일 수익 Close[exec]/Close[exec-1]-1 을 가져 시그널일 종가 체결과 같았다).",
+    "exec_price_semantics": {
+      "close_d_legacy": "2026-08-29 초판 동작(비트 동일) — 보유 [exec, next_exec) · 비용 exec 행 가산. 재현·민감도 전용(인용 금지)",
+      "close_t1": "새 보유 Close[exec] 체결 · 보유 (exec, next_exec] · 집행일 수익 = 직전 보유(드리프트) · 비용 = 새 보유 첫 날 곱 기장",
+      "open_t1": "새 보유 Open[exec] 체결 · 집행일 겹밤=직전 보유 · 장중=새 보유. RAWDATA Open 수정주가 정합 미검증 — 민감도 전용"
+    },
+    "open_t1_overnight_limit": [
+      {"from": "1900-01-01", "limit": 0.15, "note": "2015-06-12 이전 일일 가격제한폭 상한 ±15%(유가증권 · 코스닥은 2005-03 이전 ±12% — 가드 상한으로 15% 사용)"},
+      {"from": "2015-06-15", "limit": 0.30, "note": "한국거래소 가격제한폭 ±30% 확대 시행(2015-06-15)"}
+    ],
+    "open_t1_overnight_limit_source": "시가는 기준가 대비 일일 가격제한폭 안에서만 형성된다 — 수정 Close_prev 대비 겹밤 갭(Open/Close_prev-1)이 한도를 넘으면 Open 미수정 이음매로 보고 그 종목·날은 close_t1 처리(새 보유에 집행일 수익을 주지 않는 보수 쪽). 2026-09-24 RAWDATA 실측: 2005~ 유효 1,053만 행 중 |겹밤 갭|>0.30 은 1,312 행(비멤버 종목 포함 · 최대값 4,999 는 Ret 자체 이상치 행)."
+  },
+  "remeasure": {
+    "description": "보유 기반 재측정 계약(02_Infrastructure/contracts/remeasure_from_holdings.R · 플랜 P0-05 · 2026-09-24) 설정. ★등급·문턱 밖 — 재측정 대상 선정(1단계 목록)과 배치 운용만 정한다(등급은 essence_score 가 tier_graduation 으로 낸다). 소비자 = rfh_config() → rfh_select_stage1 · rfh_batch. 키가 없으면 소비자가 멈춘다(fail-closed · 리터럴 폴백 없음). 검사 = 08_Tests/contracts/test_remeasure_from_holdings.R.",
+    "stage1_near_a_max_failed": 2,
+    "stage1_near_a_max_failed_source": "1단계 대상 near-A 의 구조 정의 — 원장 attempt essence 가 A 조건(tier_graduation 의 PORT_t·Calmar·Sharpe·CAGR·OOS retention 단독 PASS 문턱 + sweep 칸은 DSR) 중 미충족 이 개수 이하(결측 = 미충족). 2 = 리서치 디렉터 첫 진단의 구속 축 쌍(Calmar + OOS · 5/5 계보 — 메모리 project-research-director-loop-built-first-diagnosis-calmar-erosion-20260921)만 남은 칸, 즉 PORT_t·Sharpe·CAGR 를 이미 넘은 B 칸. 2026-09-24 원장 사본(sha 0f843260) 실측: 1 이하 = 0칸(near-A 가 빈 집합) · 2 = 114 attempt → 1단계 전체 194 산출물(플랜 P0-05 '약 200칸' 과 같은 규모). 등급을 바꾸지 않는다 — 재측정 우선순위만 정한다.",
+    "batch_n_workers": 2,
+    "batch_n_workers_source": "플랜 P0-05 rfh_batch '2~3 병렬' 의 하한. 워커마다 RAWDATA 3열(Date·Ticker·Ret) 부분 적재 1회 ≈ 323MB(2026-09-24 실측 14,121,332행) · 칸×규약 1회 계약 경유 ≈ 40초(골든 legacy 실측 — 하네스 17초·rolling_metrics 14초). 운영 러너 셀 워커(reinforce_auto_config.json::parallel_cells)와 동시에 돌지 않는다 — 배치가 러너 claim 을 쥔다."
+  },
+  "diagnostics": {
+    "description": "등급 밖 진단 키 (플랜 P0-02 · 2026-09-24). ★tier_graduation 밖 — 이 블록의 어떤 값도 등급·문턱을 바꾸지 않는다(진단 키가 문턱 정본 안에 있으면 등급 정의 변경으로 오독된다 — 플랜 비평 8). 소비자 = 02_Infrastructure/contracts/essence_score.R::.essence_diag_params (essence_score()$diagnostics · essence_diagnostics) · 02_Infrastructure/ops/rf_preflight.R::rf_preflight_verify_axes · rf_essence_diag_backfill. 키가 없으면 소비자는 리터럴로 폴백하지 않고 그 진단을 NA(미측정)로 둔다. 검사 = 08_Tests/contracts/test_essence_oos_components.R.",
+    "window_anchor_date": "2005-01-01",
+    "window_anchor_date_source": "고정 축 시작일 — CLAUDE.md 축 2층 실투형 '2005-01-01~' · 06_Registry/reinforce_program.json::fixed_axes.start_date 와 같은 값이어야 한다(드리프트 검사 = test_essence_oos_components.R C1). window_deviation_months = 이 날짜 대비 effective_start 의 달력 월 차(일 무시).",
+    "window_allowance_months": 12,
+    "window_allowance_months_source": "06_Registry/decision_register.json id=D-C (도훈 2026-09-23) \"effective_start 허용 = 기저 최장 룩백 12개월 · 초과 칸은 A 보류 + 바닥·carry 후보 제외\". 12 = 격자 기저 최장 룩백(rf_cell_engine.R mom_12_1 = shift(Close, 252 거래일) ≈ 12개월). 초과 판정 = window_deviation_months > 이 값. 처분(A 보류 · 바닥·carry 제외)은 P0-12 소관 — 이 키 자체는 아무것도 막지 않는다.",
+    "oos_calendar_splits": ["2016-11-30", "2019-02-11", "2021-04-08"],
+    "oos_calendar_splits_source": "oos_retention_calendar(진단 전용 · D3-10 반증으로 정의 교체 아님)의 고정 달력 절단일(IS = date <= 절단일 · OOS = date > 절단일 · retention = 비율판과 같은 규칙의 중앙값). 2005년 시작 칸에서 비율판 {0.55, 0.65, 0.75} 과 같아지도록 등록했다 — 골든 픽스처 stage_artifacts/replication/20260921_100007_6876(순 활성 2005-02-01~2026-09-18 · 5,336일)의 비율 절단점 k = floor(n*fr) 의 IS 마지막 날을 R(essence_score.R::.essence_active_series)로 산출: 0.55 -> 2016-11-30(k=2934) · 0.65 -> 2019-02-11(k=3468) · 0.75 -> 2021-04-08(k=4002). 그 골든에서 달력 성분 = 비율 성분(identical)이 양성 대조다(검사 P3).",
+    "axes_weight_tol": 1e-9,
+    "axes_weight_tol_source": "rf_preflight_verify_axes 의 비중 수치 잡음 하한(|Σw-1| · w<0 판정). 2026-09-24 원장 사본 1,222칸 04_holdings.csv 실측: Σw 정규화 잡음 최대 6.7e-16 · 실제 이탈(오버레이 현금 Σw<1) 331칸 전부 1e-3 초과 · Σw>1 0칸 · 음수 비중 0칸 — 잡음보다 약 10^6 배 크고 실이탈보다 10^6 배 작은 자리. Σw<1 은 위반이 아니라 라벨 sigma_w_lt_1 (도훈 D-D: Σw=1 은 위험자산 정규화 — 오버레이 현금과 양립)."
   },
   "tier_graduation": {
     "description": "Discovery → Deployment 전환 조건. discovery_graduation_gate.sh 강제. v8.x WS2 재설계(2026-05-29): rank-IC 계열은 long-only 실현 alpha와 어긋나(16후보 calibration 실측: rank_ic가 FLOW 거짓탈락+NN/TECH 거짓통과) advisory로 강등, portfolio-alpha t(forge NW lag-3)를 hard로. DSR hard는 sweep형 selection만(2026-06-10 개정 — chain/단일은 advisory). hard 기준은 forge-authoritative 값(alpha-stage proxy 아님)에 적용.",

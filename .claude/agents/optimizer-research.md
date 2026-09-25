@@ -7,6 +7,12 @@ skills: [qvest-opt-style]
 ---
 
 > **페르소나 정본 = `02_Infrastructure/docs/rules/quant-identity.md`** — 최정상급 퀀트 · 냉소는 방법론(과적합·스누핑·시점오염)을 향한다(실증 성과 폄하 금지) · 모든 수치 결정 = 논문 뿌리(원문 링크)·하드코딩 금지.
+
+> ★**어드바이저 모드**(QEPM-ADVISOR-MODE · 도훈 2026-09-25) · WT 체인 자체 경로는 동결(QEPM-R0-FREEZE) — 호출 = `/advisor`(정본 `.claude/skills/qvest-advisor/SKILL.md`). 이 모드에서 아래 WT 절차(request.json·alpha/risk package 선행·optimization_package·weights 산출)는 도메인 지식으로만 읽는다.
+> - **허용** = 비중법 자문만 — 메모의 축 선언에 맞는 방법(충실구현 = 논문 그대로 / 실투형 = long-only·≤25종·Σw=1·비중 상한 없음·15bps) · 회전·비용·집행 주기 · `portfolio_spec` 초안 · PIT 함정(C8·C9·C10). 가중치 산출·백테스트는 측정이라 안 된다.
+> - **금지** = 자체 등급 · forge · Judge 스폰 · BOOK · 원장 쓰기(reinforce_ledger·grade_a_queue·judge_request) · WT·`qepm/mailbox/` 쓰기(`optimization_package.json` 포함) · 고정 축 완화를 레버로 제시(INV-7).
+> - **측정** = 정본 계약만 · Q 경유 · 도훈 승인 뒤 — `run_paper_replication`(시행 회계 `selection_type`·`n_trials_cumulative`·`measurement_tags`) → `authoritative_remeasure.json::essence_grade` 인용. A = `rf_a_eligibility` 관문 → Judge(PIT) → BOOK(도훈 confirm) 경로만.
+> - **산출** = `04_Research/advisor/<YYYYMMDD>_<slug>/optimizer.md` 1건 — 다른 경로 쓰기 금지.
 <!-- (2026-08-29 도훈 지시) QEPM 모델 라우팅 — **전 구간 Opus**. 가설설계 Fable 핀(2026-08-08 지시) 해제.
      `model: opus` = 세션 alias(현행 Opus 5). SOT: 02_Infrastructure/docs/rules/caching.md "모델 라우팅" 절. -->
 
@@ -77,7 +83,7 @@ finalize 직전, optimization_package를 스스로 적대적으로 검증한다 
 finalize 직전 스스로 devil's advocate가 되어 약점 ≥3건 제기 후 분류·처리.
 
 1. **자율 분류** (각 self-concern):
-   - **ACCEPT (mandatory)**: Hard Constraint 위반 (RF-O5/O6/O7 — max_names>25 (도훈 mandate 2026-05-29 20→25), max_w>0.20, Σw≠1), turnover>1,100%, RF-O9 single-snapshot, infeasibility silent override
+   - **ACCEPT (mandatory)**: Hard Constraint 위반 (RF-O5/O6/O7 — max_names>25 (도훈 mandate 2026-05-29 20→25), w<0(long-only), Σw≠1 · ★v10: 종목별 비중 상한 폐지 — 구 max_w>0.20 조건 삭제), turnover>1,100%, RF-O9 single-snapshot, infeasibility silent override
    - **PARTIAL**: 부분 인정 + 보완
    - **REBUTTAL**: 학술 + L-code + 정량 data 3축 근거 필요
 
@@ -87,7 +93,7 @@ finalize 직전 스스로 devil's advocate가 되어 약점 ≥3건 제기 후 �
    - CVaR breach 인정 + book-level mitigation 제안 (silent override 아닌 명시적 infeasibility_report)
 
 3. **자동 Q-Lead escalate trigger**:
-   - Hard Constraint 위반 (max_names/max_w/Σw/turnover) 발견 → 즉시 escalate (Hook block 보강)
+   - Hard Constraint 위반 (max_names/long-only/Σw/turnover — v10: max_w 상한 폐지) 발견 → 즉시 escalate (Hook block 보강)
    - HIGH ≥ 5 / AX axiom hard FAIL ≥ 3 / RF-O9 single-snapshot
 
 4. **walk-forward 검증 절대 ACCEPT** (Iter 1-4 systemic 결함):

@@ -1,0 +1,115 @@
+{
+  "schema": "reference_floors_v2_config_v1",
+  "note": "floor v2(플랜 P2-03) 생성 설정 — 생성기 = 02_Infrastructure/reinforcement/rf_floor_v2.R::rfv_build. 이 파일은 '어느 칸을 인용하고 어떤 규칙으로 F1 을 고르는가'만 정한다. 수치는 전부 원장·R 계약이 낸다(손계산 0). 결과 = reference_floors_v2.json(초안 · 측정 0).",
+  "decided_basis": {
+    "plan": "C:/Users/99922/.claude/plans/qvest-1-drifting-eclipse.md §P2 P2-03 · 09-25 저녁 '다음 A 레버'",
+    "decisions": ["ORGANIC-PRIORITY (floor v2 재정의 = 22632 as-of 재선정 새 칸)", "ORGANIC-DE Q① (격자 승자·바닥·carry·승격 = 다중검정 + 서류 감사) · H1 (측정 전 전기간 통계 스크린 = C1)", "PR-L1-A4-DISPOSITION (측정한 적 없는 칸은 N 미계상 · 대체 금지 선례)"],
+    "pit": ".claude/rules/pit.md C1 D-E · C14 (선정 통계는 Usable_Date <= 결정 시점)"
+  },
+  "asof": null,
+  "asof_note": "null = 격자 06_Registry/reinforce_program.json fixed_axes.start_date(B08 rf_factor_pool 기본 · 첫 시그널일 이전 워밍업 창). 날짜를 적으면 그 날짜.",
+  "floors": {
+    "F1": {
+      "kind": "asof_reselect_new_cell",
+      "role": "주 바닥 — 최고 계보(22632)의 기저 엔진·구조를 유지하고 팩터 층만 as-of 규칙으로 다시 고른 새 칸",
+      "lineage_cell": {"base_id": "RP_20260917_105807_22632_combo_rulefast_promo3", "cell_code": "B1_3"},
+      "depth_rule": "lineage_db_factor_count",
+      "depth_rule_note": "깊이 = 계보 칸 스펙의 DB 팩터 수(구조 승계 · 리터럴 금지). 계보 칸이 바뀌면 깊이도 재도출된다.",
+      "seed_rule": {"kind": "offset", "seed_offset": 0},
+      "seed_rule_note": "seed_offset 0 = rf_pick_factor_sets 정렬(as-of tier → as-of |IC| → 계열 라운드로빈)의 첫 자리 = as-of 1위 팩터. 원장 entry 수 회전(러너 규칙)은 원장 상태에 따라 떠서 바닥의 핀이 될 수 없다. 계보 시드 고정(대안 F1_alt)은 계보의 승격 이력(PT argmax)·설계 레인 교차 entry 노출을 팩터 층에 다시 들여온다 — 채택하려면 사전등록 전 도훈 결정.",
+      "alternatives": [
+        {"id": "F1_alt_lineage_family_seed", "adopted": false,
+         "seed_rule": {"kind": "family_top_of_lineage_root"},
+         "why_not_adopted": "시드 계열을 계보 루트 팩터(승격 사슬 1세대 승자)의 계열로 고정한다 — 팩터 층에 계보 선택 이력을 되들인다(ORGANIC-DE Q① 다중검정 대상). 진단으로만 기록(원 집합과 as-of 규칙이 어디서 갈리는지)."}
+      ]
+    },
+    "F1p": {
+      "kind": "carry_replay_of_F1",
+      "role": "F1 의 carry 경로 재현 쌍(플랜 P1-06 B1_0 · E3) — 결정론 대조. 기측정 없음.",
+      "legacy_entry": "RP_20260917_105807_22632_combo_rulefast_promo4",
+      "e3_tolerance": 1e-06,
+      "e3_tolerance_source": "플랜 P1-06(E3): 같은 regime·빈티지에서 |PT_replay - PT_parent| < 1e-6"
+    },
+    "F2": {
+      "kind": "cite_existing_cell",
+      "role": "위험 축 바닥 후보(플랜 원안: P0-11 소급 G2 pass 시에만)",
+      "base_id": "RP_20260913_090549_14760_adapted_rulefast_promo3", "cell_code": "B5_19"
+    },
+    "F3_DNN": {
+      "kind": "cite_existing_cell",
+      "role": "보조 바닥(플랜 원안 'DNN B1_8' = 084807 DNN 2002.06975 기저의 B1_8) — ★독립 계보 아님: 기저 엔진 RP_AUTO_2002_06975 는 F2(14760) 기저와 같고, F1 결합 엔진의 풀 정의([A] DNN 5분위)도 같은 논문 산술이다(적대검증 2026-09-25)",
+      "base_id": "RP_20260913_084807_skipped_base", "cell_code": "B1_8"
+    }
+  },
+  "exclusion": {
+    "pit_flags": ["selection_basis_full_sample_ic", "selection_basis_full_sample_ic_inherited", "treatment_misspecified", "pit_c11"],
+    "pit_flags_source": "P0-08 표식(apply_p0_08_flags.R — C1 D-E) · C11 봉쇄(pit_quarantine) — PIT 표식 칸은 바닥이 될 수 없다(제1목표)",
+    "exec_price_required": "close_t1",
+    "exec_price_source": "원장 current_axis exec_v2_close_t1 (P0-05/06 epoch · decision P0-05-STAGE2-EPOCH)",
+    "adversary_predicate": "02_Infrastructure/reinforcement/rf_runner_gates.R::rf_adversary_status (P0-11 — pass 만 소비 · 자기 층 B5 칸 verdict 부재 = unverified)",
+    "caveat_note": "PIT 표식이 아닌 빈티지 표식(fdb_* 등)은 제외하지 않고 caveat 로 싣는다 — 바닥 수치는 인용 전용이고 레버 Δ 의 기준은 사전등록 뒤 같은 빈티지 재실행판이다.",
+    "design_exposure": {
+      "what": "원장 표식이 아직 없는 PIT 등급(ORGANIC-DE Q④) 을 파일에서 재도출한다 — 칸 팩터의 출처가 B1 설계 레인(LLM) 칸이고 그 entry 설계 재료의 '앞선 논문' 절에 교차 entry 전기간 수치가 있으면 C1 possible(바닥 제외). 표식 writer 는 P0-14 소관 — 여기는 읽기만 한다.",
+      "materials_dir": ".cache/rf_b1_design",
+      "materials_suffix": ".materials.txt",
+      "section_start_regex": "^## 앞선 논문들에서 이미 배운 것",
+      "section_end_regex": "^## ",
+      "protect_regex": [
+        "(?<![A-Za-z0-9_.])\\d{4}\\.\\d{4,5}(v\\d+)?(?![A-Za-z0-9_])",
+        "(?<![A-Za-z0-9_.])[vV]\\d+(\\.\\d+)+(?![A-Za-z0-9_])",
+        "(?<![A-Za-z0-9_.])(19[89]\\d|20[0-3]\\d)\\.(0[1-9]|1[0-2])(?![0-9])"
+      ],
+      "stat_regex": [
+        "[-+−]?\\d+(\\.\\d+)?\\s?(%p?|pp(?![A-Za-z]))",
+        "(?<![A-Za-z0-9_.])[-+−]?\\d*\\.\\d+(?![A-Za-z0-9_])",
+        "(?i)(?<![A-Za-z0-9_])(port_t|calmar|cagr|mdd|sharpe|icir|ic|dsr|sortino)(\\s*[=:]?\\s*)[-+−]?\\d+(?![A-Za-z0-9_.])"
+      ],
+      "verdict": "possible",
+      "source": "ORGANIC-DE Q④(a) (decision_register 2026-09-25 18:22 · 설계 최종판 §2.6: 가림 이전 재료의 교차 entry 수치에 노출된 채 설계된 과거 칸 = C1 possible · A 보류 · 재측정 금지) · D-E-B5-MATERIALS · 검출식 = R2 스테이징 rf_b1_design_lib.R::rf_b1_has_stats 와 같은 식(R2 배포 뒤 정본 함수로 교체할 것)"
+    },
+    "base_engine_exposure": {
+      "what": "칸 스펙 base_signal 엔진 디렉터리의 설계 프롬프트(결합 설계 레인)에 교차 entry 성과 수치가 있는가 — 칸 팩터 출처(design_exposure)와 다른 통로. F1 은 팩터 층만 as-of 로 다시 고르고 기저 엔진을 승계하므로 팩터 출처 판정으로는 안 보인다. 식별자 보호식·통계식은 design_exposure 것을 그대로 쓴다(키를 두면 덮어쓴다). 사실 도출만 — 판정(verdict)은 도훈 결정 전까지 pending_decision.",
+      "materials_file": "prompt.txt",
+      "section_start_regex": ["^## 이 재료들의 이전 구현", "^## 실측 기록"],
+      "section_end_regex": "^## ",
+      "verdict": "pending_decision",
+      "clearing": {
+        "decision_id": "FLOOR-BASE-ENGINE-Q4",
+        "clears_if_decision_matches": ["^\\s*Q①"],
+        "note": "F1 blocker 는 이 결정이 resolved 이고 decision 문구가 'Q①'(다중검정 + 서류 감사)로 시작할 때만 풀린다. 'Q④' 로 시작하면(C1 possible · A 보류) 그대로 닫혀 있다 — 결정 등록 시 decision 문구를 'Q① …' 또는 'Q④ …' 로 시작할 것"
+      },
+      "source": "적대검증(FLOOR · 2026-09-25): 04_Research/strategies/RP_AUTO_COMBO_combo_1403_8125_2002_069/prompt.txt '이 재료들의 이전 구현' 절 = 재료 6편의 '단독 다중검정 t'(3.589·2.749·2.567·1.228·1.11·0.611 — 각 entry 강화 최고 시도의 전기간 수치) · '실측 기록' 절 = '최고 단독 t 3.589'. ORGANIC-DE Q④ 의 기전(H2-LLM 교차 entry 수치 = D-E 소재)과 같으나 결정문 열거(B1·B2·B3·B5 설계 레인)에 결합 설계 레인이 없다 → 분류 = 도훈 결정(prereg_gate FLOOR-BASE-ENGINE-Q4)"
+    }
+  },
+  "prereg_gate": {
+    "register": "06_Registry/decision_register.json",
+    "note": "사전등록(rf_prereg)은 prereg_gate.ready 가 아니면 착수하지 않는다. 아래 결정이 레지스터에 resolved 로 들어오면 문서 내용이 바뀐다 — 새 판 생성(rfv_write 불변성: 기존 판은 덮어쓰지 않는다). 결정 id 는 Q 가 도훈에게 상정할 때 이 id 로 등록한다.",
+    "required_decisions": [
+      {"id": "FLOOR-F2-EXCLUDED-ARMS",
+       "what": "F2(14760 promo3 B5_19) 제외로 바닥이 빈 arm — PR-L2 의 F2 위 B7_37·B7_40, PR-L1 A3. Q 권고 = PR-L1-A4-DISPOSITION 선례(대체 없이 삭제 · N 미계상 · 다른 조합 대체 금지). F3 는 대체 불가(F3 도 제외)."},
+      {"id": "FLOOR-BASE-ENGINE-Q4",
+       "what": "F1 기저 엔진(22632 결합 엔진 RP_AUTO_COMBO_combo_1403_8125_2002_069) 설계 프롬프트가 교차 entry 전기간 수치(재료 6편 '단독 다중검정 t')에 노출됐다 — ORGANIC-DE Q①(다중검정 + 서류 감사)인가 Q④(a)(C1 possible · A 보류)인가. Q④ 면 F1(과 이 엔진 위 모든 칸)은 A 자격이 없어 레버 실험이 A 를 낼 수 없다."},
+      {"id": "FLOOR-F1-SEED-B7-OVERLAP",
+       "what": "F1 시드 규칙(seed_offset 0 = as-of 1위 D42_EWMA_Vol) 확정 + PR-L2 B7 슬리브(as-of 방어 1위 계열 D42/D35/D36 …)와의 겹침 처리 — B7 교체 후보에서 F1 보유 팩터를 뺄지, 처치 대비 희석을 사전등록에 어떻게 적을지."}
+    ]
+  },
+  "evidence": [
+    {"claim": "선정 통계는 as-of 로만 — 전표본 성과로 고른 신호 조합의 백테스트는 선택 편향으로 부풀려진다(바닥 팩터 층을 as-of 규칙으로 다시 고르는 이유)",
+     "title": "Novy-Marx (2015), Backtesting Strategies Based on Multiple Signals, NBER Working Paper 21329",
+     "url": "https://www.nber.org/papers/w21329"},
+    {"claim": "바닥 계보의 선택 이력(승격 argmax·기저 결합 선정)을 시행 수 N 에 넣는다 — 선택 편향 보정은 시행 수를 알아야 한다",
+     "title": "Bailey & López de Prado (2014), The Deflated Sharpe Ratio: Correcting for Selection Bias, Backtest Overfitting and Non-Normality, JPM",
+     "url": "https://www.davidhbailey.com/dhbpapers/deflated-sharpe.pdf"},
+    {"claim": "바닥을 결과 전에 고정(핀)하고 선정 경로를 파일에 남긴다 — 사후 선택은 백테스트 과적합 확률을 키운다",
+     "title": "Bailey, Borwein, López de Prado & Zhu (2015), The Probability of Backtest Overfitting, JCF",
+     "url": "https://www.davidhbailey.com/dhbpapers/backtest-prob.pdf"}
+  ],
+  "open_items_after_prereg": [
+    "F1 결정론 — 같은 스펙을 엔진으로 2회 재실행해 산출물(04_holdings·essence) 동일 확인(플랜 P2-03)",
+    "F1p — F1 을 carry 로 받은 entry 의 B1_0 재현 칸 |PT_F1p - PT_F1| < e3_tolerance(플랜 P1-06 E3)",
+    "F3_DNN — 레버 Δ 기준으로 쓰려면 같은 빈티지 재실행판(인용 수치는 fdb_202608_v1 빈티지)",
+    "N 회계 — F1 칸 측정 시 n_trials 에 바닥 계보 선택 이력(22632 계보 측정 칸 수) 포함(플랜 P2 공통 규약)",
+    "사전등록 서술(적대검증 2026-09-25) — F1 은 22632 계보의 팩터 층이 아니다(겹침 0). 직교 사슬 2~4번(IN05·AC13·C15)은 as-of |IC| ≤ 0.005 · 최근 ICIR≈0 이고 상관 추정 표본 31~55개월(표준오차 ≈0.14~0.18)이 사슬 max|rho| 0.063 보다 크다 — 시드(D42) 밖 구성은 잡음 수준의 상관 차이로 정해진다(오프셋 0~10 이 11개 서로 다른 집합). PR-L2 '최고 계보 위' 전제·사전확률(플랜 P2)은 22632 기준이라 F1 로 옮겨 적을 때 다시 쓴다",
+    "사전등록 판정 입력 — 인용 수치(lineage_reference·F2·F3 cite.essence)는 기준선이 아니다. 판정(rf_prereg_verdict)은 prereg_gate.ready 와 같은 regime·빈티지 바닥 재실행판만 받는다(P2-01 계약이 강제할 것)"
+  ]
+}

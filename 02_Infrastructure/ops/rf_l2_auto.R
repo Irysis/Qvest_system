@@ -38,6 +38,19 @@ bad <- l2_request_validate(req, led2)
 if (nzchar(bad)) { jl("request_invalid", why = bad); req$status <- "failed"; req$error <- bad; req$completed_at <- format(Sys.time(), "%Y-%m-%dT%H:%M:%S%z"); l2_request_write(req, ROOT); quit(status = 1) }
 if (VALIDATE_ONLY) { jl("validate_ok", base_id = req$base_id); quit(status = 0) }
 
+# ── ★리프레시 배리어 (도훈 결정 OPS-RUNNER-REFRESH-BARRIER · 2026-09-24) — claim·원장 사전 등록 **전** ────────────────
+#   arm 러너(run_wf_ensemble.R)·풀 빌더는 daily_refresh 산출물(.cache/unified_regime_signal_daily.parquet 등)을 읽는다.
+#   잠금이 살아 있으면 요청을 건드리지 않고(pending 유지 · deferred_count 무증가) 물러난다 — 다음 tick 재시도.
+#   판정 정본 = refresh_barrier.sh · stale = 대기 안 함 + 로그 · error = fail-closed · 잠금 없음 = 아무것도 안 한다.
+.rb_l2 <- tryCatch({
+  .rbx <- new.env(); sys.source(file.path(CODE_ROOT, "02_Infrastructure/ops/refresh_barrier.R"), envir = .rbx, keep.source = FALSE)
+  .rbx$rb_status(ROOT)
+}, error = function(e) list(state = "error", reason = conditionMessage(e), blocking = TRUE))
+.rb_l2kv <- list(state = .rb_l2$state %||% "", lock = .rb_l2$lock %||% "", pid = .rb_l2$pid %||% "",
+                 reason = .rb_l2$reason %||% "", path = .rb_l2$path %||% "")
+if (isTRUE(.rb_l2$blocking)) { do.call(jl, c(list("halt_refresh_lock"), .rb_l2kv)); quit(status = 0) }
+if (identical(.rb_l2$state, "stale")) do.call(jl, c(list("refresh_lock_stale"), .rb_l2kv, list(note = "보유자 없음 — 대기하지 않고 진행")))
+
 # ── claim: 자기 것 → 러너 것 (L1 배치 진행 중이면 물러난다 · 다음 tick 재시도) ────────────────
 OWN <- Sys.getenv("QVEST_L2_CLAIM", file.path(ROOT, ".cache/rf_l2_auto.claim"))
 RUN <- Sys.getenv("QVEST_RF_CLAIM", file.path(ROOT, ".cache/reinforce_auto.claim"))

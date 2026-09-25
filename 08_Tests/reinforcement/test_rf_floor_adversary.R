@@ -41,9 +41,14 @@ mkspec <- function(code, overlay = NULL) {
   if (!is.null(overlay)) sp$overlay <- overlay
   write(toJSON(sp, auto_unbox = TRUE, null = "null"), p); p
 }
+# ★2026-09-24(P0-12 규약 혼합 가드 · D-C 창 규칙): 바닥 후보는 현행 규약·k200_kq150·창 허용 칸만(rf_candidates_keep).
+#   픽스처는 그 자격을 **명시**한다 — 원장 rebase 표식 모양의 measurement_regime(검사 규약) · essence 창 이탈 0개월.
+#   러너 문맥 .RCTX 는 같은 검사 규약으로 주입한다(설정 파일의 현행 규약과 무관하게 이 검사가 재는 것 = 적대검증 필터).
+FIX_REGIME <- "fixture_regime"
 att <- function(n, code, port_t, verdict = NULL, overlay = NULL) {
-  a <- list(n = n, cell_code = code,
-            essence = list(port_t = port_t, calmar = 0.3, cell_code = code, spec = mkspec(code, overlay)))
+  a <- list(n = n, cell_code = code, measurement_regime = list(regime = FIX_REGIME, basis = "fixture"),
+            essence = list(port_t = port_t, calmar = 0.3, cell_code = code, spec = mkspec(code, overlay),
+                           window_deviation_months = 0))
   if (!is.null(verdict)) a$adversary <- list(verdict = verdict)
   a
 }
@@ -56,6 +61,7 @@ run_block <- function(attempts, lines = block_src) {
   env$rf_adversary_ok <- rf_adversary_ok
   env$.rf_attempt_code <- function(a, cells = NULL) as.character(a$cell_code %||% "")
   env$fromJSON <- jsonlite::fromJSON
+  env$.RCTX <- rf_runner_ctx(ROOT, regime = FIX_REGIME)
   eval(parse(text = c(metric_src, lines)), envir = env)
   list(code = env$.wbest_code, spec = env$.wbest_spec, events = env$EV)
 }
@@ -78,9 +84,18 @@ r <- run_block(list(att(1, "B1_5", 3.20), att(2, "B5_18", 3.40, "pass", ov)))
 if (identical(r$code, "B5_18") && !("floor_excluded_adversary" %in% r$events) && identical(r$spec$overlay$arm_id, "arm_x"))
   ok("C pass 칸은 바닥 · 오버레이 승계 · 제외 이벤트 없음") else ng("C", sprintf("code=%s", r$code))
 
-# D. 판정 필드 없는 구 시도(legacy)는 그대로 후보
+# D. ★P0-11(2026-09-24): 판정 필드 없는 **자기 층 B5** 칸은 'unverified' — 바닥에서 제외(구판은 부재 = 통과였다)
 r <- run_block(list(att(1, "B1_5", 3.20), att(2, "B5_17", 3.60, NULL, ov)))
-if (identical(r$code, "B5_17") && !length(r$events)) ok("D 판정 필드 없음(구 entry) → 기존대로 바닥 후보") else ng("D", r$code)
+if (identical(r$code, "B1_5") && "floor_excluded_adversary" %in% r$events)
+  ok("D [P0-11] 판정 필드 없는 자기 층 B5(PORT_t 3.60) → unverified 로 제외 · 바닥 B1_5 · floor_excluded_adversary") else
+  ng("D", sprintf("code=%s events=%s", r$code, paste(r$events, collapse = ",")))
+# D2. 판정 필드 없는 B5 밖 칸(B2)은 현행대로 후보 — P0-11 은 자기 층 B5 만 조인다
+r <- run_block(list(att(1, "B1_5", 3.20), att(2, "B2_7", 3.60, NULL, ov)))
+if (identical(r$code, "B2_7") && !("floor_excluded_adversary" %in% r$events)) ok("D2 판정 필드 없는 B2 칸(승계 오버레이) → 그대로 바닥 후보") else ng("D2", r$code)
+# D3. 규약이 다른 칸은 바닥 후보가 아니다(규약 혼합 가드) — PORT_t 가 높아도
+leg <- att(3, "B2_8", 4.00); leg$measurement_regime$regime <- "other_regime"
+r <- run_block(list(att(1, "B1_5", 3.20), leg))
+if (identical(r$code, "B1_5") && "candidates_excluded" %in% r$events) ok("D3 규약이 다른 칸(PORT_t 4.00) 제외 → 바닥 B1_5 · candidates_excluded") else ng("D3", r$code)
 
 # E. 최고가 fail 이 아니면 이벤트를 내지 않는다(잡음 금지) — 하위 칸이 fail 이어도
 r <- run_block(list(att(1, "B1_5", 3.80), att(2, "B5_16", 3.10, "fail", ov)))

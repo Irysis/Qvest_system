@@ -116,6 +116,27 @@ sched_retry_cap() {
 # 재시도 대기 간격 — 한도 특별취급 제거로 전 사유 0(대기 없음).
 sched_retry_backoff_sec() { echo 0; }
 
+# ── 재시도 근거 마커 선택 (v10.4 2026-09-24) — morning_run.sh 재시도 조건 ② 전용 단일 정본.
+#    오늘자 마커 중 **체인 자신의 단계가 남긴 것**만 "직전 실행이 실질 실패했다"의 근거다. 관측자 마커는 뺀다:
+#      task_health_*      — 다른 예약작업의 rc(예: Qvest_DailyRefresh exit_1)를 관측한 것. 아침 체인을 다시 돌려도 안 고쳐진다
+#      unattended_line_*  — 무인 라인 일일 요약(정보성 digest)
+#    실측: task_health 마커 하나로 아침 체인 전체가 재실행된 날 2회(09-05 15:46 · 09-17 18:40 reboot, 각 ~1시간 낭비 · 조치 0).
+#    사용: _alert=$(sched_retry_alert_marker "$BASE/.cache/scheduler_alerts" "$TODAY")   → 경로 1개 또는 빈 값
+#    순서 = 구판(ls -1 | head -1)과 같은 이름순 첫 항목. 검사: 08_Tests/ops/test_morning_run_retry_marker.sh
+sched_retry_alert_marker() {
+  local adir="${1:-}" today="${2:-$(date +%Y%m%d)}" f
+  [ -n "$adir" ] && [ -d "$adir" ] || return 0
+  for f in "$adir/"*"_${today}.alert"; do
+    [ -f "$f" ] || continue
+    case "${f##*/}" in
+      task_health_*|unattended_line_*) continue ;;
+    esac
+    printf '%s\n' "$f"
+    return 0
+  done
+  return 0
+}
+
 # ── 연속 실패 카운트 (같은 사유 N회 연속 = 학습된 무시 방지용 에스컬레이션)
 #    경보 마커 파일명 규칙 {comp}_{reason}_{YYYYMMDD}.alert 를 세어 추정.
 #    ★전기간 개수가 아니라 **오늘부터 거꾸로 이어지는 연속 일수**를 센다.

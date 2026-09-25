@@ -133,22 +133,196 @@ rf_mark_handed_off <- function(layer, base_id, root = .rf_root(), promoted_to = 
   invisible(TRUE)
 }
 
+# =============================================================================
+# 데이터 컷오프·빈티지 지문 (P0-07 · 2026-09-24 · 감사 D4-11·D8-03 · 플랜 qvest-1-drifting-eclipse P0-07)
+# =============================================================================
+# ★왜: 강화 레인은 판본을 고정하지 않았다. 한 entry 의 칸들이 서로 다른 데이터 종료일에서 측정됐고(원장 재도출
+#   rf_entry_end_dates — 감사 시점 6개 · 09-24 8개), 승격은 부모 저장값(다른 판본)과 자식 칸을 비교했다. 09-18 벤치 축
+#   이관처럼 **과거 행이 개정**되면 같은 스펙도 다른 값이 된다(measurement-graduation §7).
+# 계약:
+#   · entry 는 태어날 때 data_cutoff(직전 완결 월말 — pin_cache.R::pin_complete_month_end: 데이터가 그 월말을 넘어섰음이
+#     증명된 마지막 월말)와 data_fingerprint(pin_cache.R::pin_fingerprint scheme pin_fp_v2 — cutoff 이하 RAWDATA **소비 열**의
+#     행 키(Date·Ticker) 정렬 바이트 해시 + 벤치 같은 방식 + 팩터 DB 월 파일 목록)를 단다. 호출자가 data_cutoff 를 주면 그 값을 쓴다.
+#     ★소비 열 = 측정 경로 소비자 코드(러너·하네스·셀 엔진 + source 폐포 + 이 entry 의 engine_path)에서 재도출한다 — 열 목록을
+#     여기 적지 않는다(수리 2026-09-25 적대검증 F1: v1 은 Close·Ret·K200·KQ150 연도별 정렬 합이라 셀 엔진의 Vol·Size 개정과
+#     합 보존 맞교체를 'match' 로 적었다).
+#   · 승격 자식(parent 인자)은 **부모 cutoff·부모 지문의 열로 다시 잰 지문**을 부모 지문과 대조한다(같은 cutoff·같은 열끼리만
+#     비교 가능 — cutoff 가 다르면 창 자체가 다르다). 결과 = data_vintage_vs_parent{status = match|mismatch|unknown, reason =
+#     history_revised(부모 cutoff 이하 과거 행 개정) · cutoff_changed(자식 창이 부모와 다름), parts, years, cols(다른 열)}.
+#     mismatch → jlog 'vintage_mismatch' · 부모 지문 부재(P0-07 이전 entry)·계산 실패 → jlog 'vintage_unverified'.
+#     ★지문 밖 소비 원천(2차 적대검증 F2 — 엔진이 직접 읽는 fundamental_merged·consensus 등 · pin_cache.R sources)이나 한쪽만 본
+#     팩터 DB 가 있으면 해시가 같아도 match 로 세지 않는다 → unknown(why history_match_unverified:…) + jlog 'vintage_unverified'.
+#     ★기록·로그만 한다(차단 아님) — 승격 판정 교체는 P1(같은 판본 재측정 비교)의 일이다.
+#   · 측정 창 절단(run_paper_replication(data_cutoff=))은 **이 원장이 켜지 않는다** — 러너 spec(SPEC$data_cutoff ←
+#     E$data_cutoff)·워커 인자 배선은 소유 밖이고, 켜는 순간 측정 창이 바뀌어 한 entry 안에 두 창이 섞인다 →
+#     P0-06 epoch 전환과 함께 켠다(보고서 '남은 일').
+#   · 지문 계산(키 + 소비 열 11종 적재·소비자 재도출 약 4초 + 계산 약 12초 · 최대 약 1.1GB — 2026-09-25 실측 1,412만 행 ·
+#     승격 자식이 부모와 cutoff 가 다르면 부모 cutoff 재계산 약 12초 추가)은 원장 read-modify-write 창 **밖**에서 한다 —
+#     적재 동안 다른 writer 가 쓴 것을 덮지 않게 계산 뒤 원장을 다시 읽어 붙인다.
+#   · 실패는 개설을 막지 않는다 — data_fingerprint$status = error/absent(+why)로 남는다(조용한 누락 아님).
+#     끄개: 환경변수 QVEST_RF_VINTAGE=0 → status=disabled(계산 0 · 비상용).
+#   · pin_cache.R 은 통째로 source 하지 않는다(머리의 config.R source 가 호출자 전역을 덮는다) — 지문 정의만 parse→eval.
+RF_DATA_VINTAGE_SWITCH <- "QVEST_RF_VINTAGE"
+RF_PIN_FP_DEF_RE <- "^(pin_fingerprint|pin_complete_month_end|pin_fp_|\\.pin_fp_)"
+
+#' 지문 함수 적재 — <root> 사본 우선(사본 트리에서 운영 코드를 섞지 않게), 없으면 코드 루트.
+.rf_pin_fp_env <- function(root) {
+  cand <- file.path(c(root, tryCatch(.rf_root(), error = function(e) character(0))), "02_Infrastructure/data/pin_cache.R")
+  cand <- unique(cand[file.exists(cand)])
+  if (!length(cand)) stop("pin_cache.R 부재 — 지문 정의를 찾을 수 없다")
+  ex <- parse(cand[1], encoding = "UTF-8", keep.source = FALSE)
+  env <- new.env(parent = baseenv())
+  for (e in as.list(ex))
+    if (is.call(e) && as.character(e[[1]])[1] %in% c("<-", "=") && is.name(e[[2]]) &&
+        grepl(RF_PIN_FP_DEF_RE, as.character(e[[2]]))) eval(e, env)
+  for (nm in c("pin_fingerprint", "pin_fingerprint_load", "pin_fingerprint_compare", "pin_complete_month_end", ".pin_fp_cutoff",
+               "pin_fp_consumers"))
+    if (!exists(nm, envir = env, inherits = FALSE)) stop(sprintf("pin_cache.R 에 %s 정의 부재 — 판본 확인", nm))
+  env$.src <- cand[1]
+  env
+}
+
+#' entry 개설용 빈티지 계산(원장 무쓰기) — list(data_cutoff = "YYYY-MM-DD"|NULL, fp, vs_parent|NULL)
+#' @param parent_entry 부모 entry(같은 원장 · 없으면 NULL) · has_parent = 승격 개설인가(parent 인자 유무)
+#' @param engine_path 이 entry 의 엔진(충실구현 엔진) — 그 파일이 읽는 열도 소비 열이다(없거나 못 찾으면 why 에 engine_absent)
+.rf_entry_vintage <- function(root, data_cutoff = NULL, parent_entry = NULL, has_parent = FALSE, parent_base_id = "",
+                              engine_path = "") {
+  out <- list(data_cutoff = NULL, fp = NULL, vs_parent = NULL)
+  if (identical(Sys.getenv(RF_DATA_VINTAGE_SWITCH, "1"), "0")) {
+    out$fp <- list(status = "disabled", why = paste0(RF_DATA_VINTAGE_SWITCH, "=0"))
+    if (has_parent) out$vs_parent <- list(status = "unknown", why = "vintage_disabled", parent_base_id = parent_base_id)
+    return(out)
+  }
+  pfp <- if (is.list(parent_entry)) parent_entry$data_fingerprint else NULL
+  pco <- if (is.list(parent_entry)) .rf_s1(parent_entry$data_cutoff) else ""
+  # 부모 지문의 열(부모 cutoff 재측정은 **부모 열로** — 소비자 코드가 그 뒤 바뀌어도 대조 가능) — 한 번 적재에 함께 싣는다
+  p_raw <- if (is.list(pfp) && identical(.rf_s1(pfp$status), "ok")) as.character(unlist(pfp$raw$cols)) else NULL
+  p_bm  <- if (is.list(pfp) && identical(.rf_s1(pfp$status), "ok")) as.character(unlist(pfp$bm$cols)) else NULL
+  r <- tryCatch({
+    F <- .rf_pin_fp_env(root)
+    croots <- unique(c(root, tryCatch(.rf_root(), error = function(e) character(0))))   # 소비자 코드: 사본 루트 우선 → 코드 루트
+    eng <- .rf_s1(engine_path)
+    eng <- if (nzchar(eng)) { a <- tryCatch(.rf_abs_path(eng, root), error = function(e) NA_character_)
+                              if (length(a) == 1L && !is.na(a) && file.exists(a)) a else eng } else NULL
+    L <- F$pin_fingerprint_load(root, code_root = croots, engines = eng, extra_raw_cols = p_raw)
+    if (is.null(L$raw) || is.null(L$bm)) {
+      list(data_cutoff = NULL, fp = list(scheme = F$.pin_fp_SCHEME, status = "absent", why = L$why), F = F, L = NULL, co = NA)
+    } else {
+      co <- if (!is.null(data_cutoff)) F$.pin_fp_cutoff(data_cutoff) else F$pin_complete_month_end(L$raw$Date, L$bm$Date)
+      if (is.na(co)) stop("데이터 최대일에서 직전 완결 월말을 정할 수 없다")
+      fp <- F$pin_fingerprint(co, raw = L$raw, bm = L$bm, fdb_dir = L$fdb_dir, raw_cols = L$raw_cols, bm_cols = L$bm_cols,
+                              consumers = L$consumers)
+      if (length(L$why)) fp$why <- unique(c(fp$why, L$why))   # engine_absent 등 — 조용한 누락 없음
+      list(data_cutoff = format(co), fp = fp, F = F, L = L, co = co)
+    }
+  }, error = function(e) list(data_cutoff = NULL, fp = list(status = "error", why = conditionMessage(e)), F = NULL, L = NULL))
+  out$data_cutoff <- r$data_cutoff; out$fp <- r$fp
+  if (!has_parent) return(out)
+  vs <- list(parent_base_id = parent_base_id, parent_cutoff = if (nzchar(pco)) pco else NULL, child_cutoff = r$data_cutoff)
+  if (is.null(parent_entry)) {
+    vs$status <- "unknown"; vs$why <- "parent_entry_absent"
+  } else if (!is.list(pfp) || !identical(.rf_s1(pfp$status), "ok") || !nzchar(pco)) {
+    vs$status <- "unknown"; vs$why <- "parent_fingerprint_absent"          # P0-07 이전 부모 — 대조 불가(추정하지 않는다)
+  } else if (is.null(r$L) || !identical(.rf_s1(r$fp$status), "ok")) {
+    vs$status <- "unknown"; vs$why <- paste0("child_fingerprint_", .rf_s1(r$fp$status))
+  } else {
+    cmp <- tryCatch({
+      same_cols <- identical(p_raw, as.character(r$fp$raw$cols)) && identical(p_bm, as.character(r$fp$bm$cols))
+      fpp <- if (identical(pco, r$data_cutoff) && same_cols) r$fp else
+        r$F$pin_fingerprint(pco, raw = r$L$raw, bm = r$L$bm, fdb_dir = r$L$fdb_dir,
+                            raw_cols = p_raw, bm_cols = p_bm)   # 부모 cutoff·부모 열로 다시 잰 지문
+      # F2 — 재측정본(열 지정 = 소비자 재도출 없음)에는 자식 판의 소비 원천 범위를 싣는다(지문 밖 원천이 대조에서 사라지지 않게)
+      if (!identical(.rf_s1(fpp$sources$status), "ok")) fpp$sources <- r$fp$sources
+      r$F$pin_fingerprint_compare(pfp, fpp)
+    }, error = function(e) list(status = "unknown", why = paste0("compare_error: ", conditionMessage(e))))
+    chg <- !identical(pco, r$data_cutoff)
+    rev <- identical(cmp$status, "mismatch")
+    vs$history <- cmp$status; vs$history_why <- cmp$why %||% ""
+    vs$parts <- cmp$parts %||% character(0); vs$years <- cmp$years %||% integer(0)
+    vs$cols <- cmp$cols %||% character(0)
+    vs$unverified <- cmp$unverified %||% character(0)
+    vs$cutoff_changed <- chg
+    # ★F2 — 해시한 원천이 같아도 지문 밖에서 확인 못 한 부분(unverified: 지문 밖 소비 원천 src:* · 한쪽만 본 팩터 DB)이 있으면
+    #   '일치'로 세지 않는다(unknown + jlog vintage_unverified · history 는 match 그대로 남긴다).
+    vs$status <- if (rev || chg) "mismatch" else if (identical(cmp$status, "match") && !length(vs$unverified)) "match" else "unknown"
+    vs$reason <- paste(c(if (rev) "history_revised", if (chg) "cutoff_changed"), collapse = "+")
+    if (identical(vs$status, "unknown"))
+      vs$why <- if (identical(cmp$status, "match")) paste0("history_match_unverified:", paste(vs$unverified, collapse = ",")) else
+        paste0("history_", cmp$status)
+  }
+  out$vs_parent <- vs
+  out
+}
+
+#' 원장 저널 1줄(러너 jlog 와 같은 파일·같은 모양 · src=ledger). 싱크 = QVEST_RP_JLOG(검사 격리) → <root>/.cache/reinforce_auto_log.jsonl.
+.rf_ledger_jlog <- function(root, event, ...) {
+  p <- Sys.getenv("QVEST_RP_JLOG", file.path(root, ".cache", "reinforce_auto_log.jsonl"))
+  rec <- c(list(ts = format(Sys.time(), "%Y-%m-%dT%H:%M:%S%z"), event = event, src = "ledger"), list(...))
+  tryCatch({
+    dir.create(dirname(p), recursive = TRUE, showWarnings = FALSE)
+    cat(toJSON(rec, auto_unbox = TRUE, null = "null"), "\n", sep = "", file = p, append = TRUE)
+  }, error = function(e) cat(sprintf("[reinforce_ledger] jlog 실패(비치명): %s\n", conditionMessage(e))))
+  invisible(TRUE)
+}
+
+#' 원장 재도출(읽기 전용) — entry 별 칸 측정 데이터 종료일 분포(칸 산출물 00_manifest.json 의 end_date).
+#'   감사 D8-03 "entry 안 end_date 혼재" 의 계기. idx0 = 0-기준 색인(감사 표기와 같은 번호).
+#' @param obj 원장 객체(검사·사본용) — NULL 이면 rf_load(layer, root)
+#' @return data.frame(idx0, base_id, n_cells, n_manifest, n_end_dates, end_dates("날짜:칸수;…"), data_cutoff)
+rf_entry_end_dates <- function(layer = 1L, root = .rf_root(), obj = NULL) {
+  if (is.null(obj)) obj <- rf_load(layer, root)
+  rows <- lapply(seq_along(obj$entries), function(k) {
+    e <- obj$entries[[k]]; ends <- character(0); nc <- 0L
+    for (a in (e$attempts %||% list())) {
+      art <- a$artifacts
+      if (!is.character(art) || length(art) != 1L || is.na(art) || !nzchar(art)) next   # dict(WT 시기)·미측정 = 칸 산출물 아님
+      nc <- nc + 1L
+      d <- .rf_abs_path(art, root)
+      j <- if (!is.na(d) && file.exists(file.path(d, "00_manifest.json"))) .rf_read_json(file.path(d, "00_manifest.json")) else NULL
+      v <- if (is.null(j)) "" else .rf_s1(j$end_date)
+      if (nzchar(v)) ends <- c(ends, v)
+    }
+    tb <- table(ends)
+    data.frame(idx0 = k - 1L, base_id = .rf_s1(e$base_id), n_cells = nc, n_manifest = length(ends),
+               n_end_dates = length(tb),
+               end_dates = paste(sprintf("%s:%d", names(tb), as.integer(tb)), collapse = ";"),
+               data_cutoff = .rf_s1(e$data_cutoff), stringsAsFactors = FALSE)
+  })
+  if (!length(rows)) return(data.frame(idx0 = integer(0), base_id = character(0), n_cells = integer(0),
+                                       n_manifest = integer(0), n_end_dates = integer(0), end_dates = character(0),
+                                       data_cutoff = character(0), stringsAsFactors = FALSE))
+  do.call(rbind, rows)
+}
+
 #' 강화 대상 등록 (충실구현/로테이션 라운드가 A 미달로 끝났을 때)
 #' @param carry  승격 entry 전용 — 부모의 승자 구성(factors/weighting/universe).
 #'   러너가 매 셀 스펙에 이것을 먼저 깔고 그 위에 격자 축을 얹는다.
 #' @param parent 승격 계보(부모 base_id · 승자 셀 · 그 때 port_t · 깊이).
 #' @param count_paper 논문 소비 카운터를 올릴지. ★승격은 새 논문이 아니다 — FALSE 로 부른다.
 #'   (TRUE 로 두면 결합 검토 3편 주기가 승격 횟수만큼 앞당겨져 검토 대상이 헛돈다)
+#' @param data_cutoff P0-07 — NULL = 직전 완결 월말(데이터에서 증명) · "YYYY-MM-DD" = 그 값(재현·검사). 위 절 계약 참조.
 rf_open_entry <- function(layer, base_id, base_grade,
                           paper_key = "", paper_id = "",
                           base_artifacts = "", engine_path = "",
                           carry = NULL, parent = NULL, count_paper = TRUE,
-                          root = .rf_root()) {
+                          root = .rf_root(), data_cutoff = NULL) {
   obj <- rf_load(layer, root)
   i <- .rf_find(obj, base_id)
   if (!is.na(i)) {
     cat(sprintf("[reinforce_ledger] 기존 entry 재사용: %s (attempts %d)\n",
                 base_id, obj$entries[[i]]$attempts_used))
+    return(invisible(obj$entries[[i]]))
+  }
+  # ★P0-07 빈티지 — 원장 read-modify-write 창 밖에서 잰다(수 초). 부모 지문은 이 적재본에서 읽는다(개설 뒤 불변 필드).
+  .pbid <- if (!is.null(parent)) .rf_s1(parent$base_id) else ""
+  .pk <- if (nzchar(.pbid)) .rf_find(obj, .pbid) else NA_integer_
+  vin <- .rf_entry_vintage(root, data_cutoff = data_cutoff,
+                           parent_entry = if (!is.na(.pk)) obj$entries[[.pk]] else NULL,
+                           has_parent = !is.null(parent), parent_base_id = .pbid, engine_path = engine_path)
+  obj <- rf_load(layer, root)   # 재적재 — 계산 동안 다른 writer 가 쓴 것을 덮지 않게
+  i <- .rf_find(obj, base_id)
+  if (!is.na(i)) {
+    cat(sprintf("[reinforce_ledger] 기존 entry 재사용(지문 계산 중 다른 경로가 개설): %s\n", base_id))
     return(invisible(obj$entries[[i]]))
   }
   entry <- list(
@@ -166,6 +340,10 @@ rf_open_entry <- function(layer, base_id, base_grade,
   )
   if (!is.null(carry))  entry$carry  <- carry
   if (!is.null(parent)) entry$parent <- parent
+  # ★P0-07 — 필드가 있으면 P0-07 이후 개설(data_cutoff null = 정하지 못함 · 사유는 data_fingerprint$why), 없으면 이전 entry.
+  entry["data_cutoff"] <- list(vin$data_cutoff)
+  entry$data_fingerprint <- vin$fp
+  if (!is.null(parent)) entry$data_vintage_vs_parent <- vin$vs_parent
   obj$entries[[length(obj$entries) + 1L]] <- entry
   # 1계층: 논문 소비 카운터 +1 → 3편마다 결합 검토 플래그
   if (layer == 1L && isTRUE(count_paper)) {
@@ -175,7 +353,24 @@ rf_open_entry <- function(layer, base_id, base_grade,
       cat("[reinforce_ledger] ★결합 검토 도래 — 논문 3편 소비. Q-Lead 는 논문 간 아이디어 결합 기회를 검토하고 rf_record_combination_review() 로 기록할 것 (착수 여부 무관 — 검토 자체가 의무)\n")
   }
   .rf_write(obj, layer, root)
-  cat(sprintf("[reinforce_ledger] L%d entry open: %s (base %s)\n", layer, base_id, base_grade))
+  cat(sprintf("[reinforce_ledger] L%d entry open: %s (base %s · data_cutoff %s · 지문 %s)\n", layer, base_id, base_grade,
+              vin$data_cutoff %||% "NA", .rf_s1(vin$fp$status)))
+  # 저널은 개설이 실제로 원장에 쓰인 뒤에만(개설 실패 경로의 로그 오인 방지)
+  vs <- vin$vs_parent
+  if (!is.null(parent) && is.list(vs)) {
+    if (identical(vs$status, "mismatch"))
+      .rf_ledger_jlog(root, "vintage_mismatch", base_id = base_id, parent = vs$parent_base_id,
+                      reason = vs$reason, parent_cutoff = vs$parent_cutoff, child_cutoff = vs$child_cutoff,
+                      parts = paste(vs$parts %||% character(0), collapse = ","),
+                      years = paste(vs$years %||% integer(0), collapse = ","),
+                      cols = paste(vs$cols %||% character(0), collapse = ","),
+                      note = "부모 best_* 와 자식 칸은 다른 판본 위의 값이다 — 승격 비교는 같은 판본 재측정으로(P1)")
+    else if (!identical(vs$status, "match"))
+      .rf_ledger_jlog(root, "vintage_unverified", base_id = base_id, parent = vs$parent_base_id,
+                      why = vs$why %||% "", note = "부모·자식 판본 대조 불가 — 일치로 간주하지 않는다")
+  }
+  if (identical(.rf_s1(vin$fp$status), "error"))
+    .rf_ledger_jlog(root, "vintage_fingerprint_failed", base_id = base_id, err = .rf_s1(vin$fp$why))
   invisible(entry)
 }
 
@@ -333,10 +528,16 @@ rf_record_block_order <- function(layer, base_id, order, reason, adaptive = FALS
 #'   terminal 은 "측정하지 못했다" 를 기록으로 **닫는다** — 성공으로 위장하지 않고(essence 는
 #'   여전히 NULL), 재개 대상에서만 빠진다.
 #' @param terminal_reason 왜 닫는가. 사유 없이 닫지 않는다.
+#' @param graduate Grade A 를 적을 때 entry 를 graduated 로 바꿀지 (P0-12 · 2026-09-24 도훈 승인 플랜).
+#'   ★왜: 구판은 A 를 적는 순간 entry 를 graduated 로 바꿨다. A 자격 관문(rf_a_eligibility)이 A 를 **보류**하는
+#'   동안(등급 불변 · 발행만 미룸) 그 계보의 탐색이 멈춘다 — 러너는 graduated entry 를 다시 돌리지 않는다.
+#'   FALSE 면 등급은 A 로 기록하되 entry status 는 그대로 두고(active 면 active — 다음 tick 이 칸을 계속 소비),
+#'   attempt 에 graduate_deferred 표식만 남긴다. 보류가 풀리면 rf_graduate_entry() 로 졸업시킨다.
+#'   기본 TRUE = 구판과 비트 동일. NA 등 TRUE 가 아닌 값은 보류로 읽는다(fail-closed — 모르면 졸업시키지 않는다).
 rf_record_result <- function(layer, base_id, n, grade, essence = NULL,
                              artifacts = NULL, l_code = NULL, lessons = NULL,
                              terminal = FALSE, terminal_reason = NULL,
-                             root = .rf_root()) {
+                             root = .rf_root(), graduate = TRUE) {
   obj <- rf_load(layer, root)
   i <- .rf_find(obj, base_id)
   if (is.na(i)) stop(sprintf("[reinforce_ledger] entry 부재: %s", base_id))
@@ -361,12 +562,51 @@ rf_record_result <- function(layer, base_id, n, grade, essence = NULL,
     e$attempts[[j]]$terminal_reason <- as.character(terminal_reason)
   }
   if (identical(as.character(grade), "A")) {
-    e$status <- "graduated"
-    cat(sprintf("[reinforce_ledger] ★Grade A — %s graduated. Judge(PIT) 스폰 → PASS 시 BOOK 등록\n", base_id))
+    if (isTRUE(graduate)) {
+      e$status <- "graduated"
+      cat(sprintf("[reinforce_ledger] ★Grade A — %s graduated. Judge(PIT) 스폰 → PASS 시 BOOK 등록\n", base_id))
+    } else {
+      e$attempts[[j]]$graduate_deferred    <- TRUE
+      e$attempts[[j]]$graduate_deferred_at <- format(Sys.time(), "%Y-%m-%dT%H:%M:%S%z")
+      cat(sprintf("[reinforce_ledger] Grade A 기록 · graduate=FALSE(A 자격 관문 보류) — %s status=%s 유지 · 해제 = rf_graduate_entry()\n",
+                  base_id, as.character(e$status %||% "?")))
+    }
   }
   obj$entries[[i]] <- e
   .rf_write(obj, layer, root)
   invisible(e$attempts[[j]])
+}
+
+#' 보류 A 의 졸업 (P0-12 짝 writer · 2026-09-24) — rf_record_result(graduate = FALSE) 로 적은 A 를 관문 해제 뒤 졸업시킨다.
+#'   ★기록 등급이 A 인 시도만 · active/exhausted entry 만(parked 는 도훈 결정 · superseded 는 대체 — 둘 다 여기서 안 푼다).
+#'   이미 graduated 면 멱등(쓰지 않는다). 사유 필수 — 어떤 보류가 무엇으로 풀렸는지 없이 졸업시키지 않는다.
+rf_graduate_entry <- function(layer, base_id, n, reason, root = .rf_root()) {
+  if (!nzchar(.rf_s1(reason)))
+    stop("[reinforce_ledger] 졸업(보류 해제)은 사유 필수 — 어떤 관문이 무엇으로 풀렸는지 없이 졸업시키지 않는다", call. = FALSE)
+  obj <- rf_load(layer, root)
+  i <- .rf_find(obj, base_id)
+  if (is.na(i)) stop(sprintf("[reinforce_ledger] entry 부재: %s", base_id), call. = FALSE)
+  e <- obj$entries[[i]]
+  j <- which(vapply(e$attempts, function(a) identical(as.integer(a$n), as.integer(n)), logical(1)))
+  if (!length(j)) stop(sprintf("[reinforce_ledger] attempt n=%s 부재 (%s)", n, base_id), call. = FALSE)
+  j <- j[1]
+  g <- .rf_s1(e$attempts[[j]]$grade)
+  if (!identical(g, "A"))
+    stop(sprintf("[reinforce_ledger] n=%s 의 기록 등급이 A 가 아니다(%s) — 졸업 불가", n, g), call. = FALSE)
+  if (identical(e$status, "graduated")) {
+    cat(sprintf("[reinforce_ledger] %s 이미 graduated — 쓰지 않는다\n", base_id))
+    return(invisible(e))
+  }
+  if (!(.rf_s1(e$status) %in% c("active", "exhausted")))
+    stop(sprintf("[reinforce_ledger] status=%s — active/exhausted 만 졸업시킨다", .rf_s1(e$status)), call. = FALSE)
+  now <- format(Sys.time(), "%Y-%m-%dT%H:%M:%S%z")
+  e$graduated_by <- list(n = as.integer(n), reason = as.character(reason), from_status = .rf_s1(e$status), at = now)
+  e$status <- "graduated"
+  e$attempts[[j]]$graduate_released_at <- now
+  obj$entries[[i]] <- e
+  .rf_write(obj, layer, root)
+  cat(sprintf("[reinforce_ledger] ★%s graduated (n=%s · %s)\n", base_id, n, substr(as.character(reason), 1, 60)))
+  invisible(e)
 }
 
 #' 닫힌 칸을 되살린다 — **원인이 제거됐을 때만** (2026-09-07)
@@ -448,31 +688,134 @@ rf_exhaust_entry <- function(layer, base_id, root = .rf_root()) {
   invisible(obj$entries[[i]])
 }
 
-rf_mark_axis_epoch <- function(layer, epoch, legacy, reason, evidence, root = .rf_root()) {
+#' 측정 축 전환 (current_axis 교체) — ★P0-06 수리판 (2026-09-24 · 도훈 승인 플랜 qvest-1-drifting-eclipse)
+#'
+#' ★무발화 결함(수리 전): 구판은 measurement_axis 가 NULL 인 entry 만 표시했다. 그런데 rf_open_entry 가 09-01 부터
+#'   entry 를 태어날 때 current_axis 로 각인하므로 현 원장에서 표시 대상이 **0건**이었다(원장 사본 재도출 ·
+#'   test_rf_rebase.R C1). 부르면 "전환했다" 는 axis_epochs 기록만 남고 과거 칸은 새 축과 계속 비교됐다.
+#' 수리:
+#'   · relabel_from = 이 축 이름을 가진 entry 를 전환 대상으로 삼는다(보통 현 current_axis).
+#'   · require_regime = 새 축에 남을 자격(측정 규약 regime 집합). 대상 entry 의 **측정된 모든 칸**(기저 포함)의 regime 이
+#'     이 집합 안이면 epoch 로 승계(axis_valid 유지), 하나라도 밖이면 legacy 로 표시(axis_valid=FALSE — 비교에서 뺀다).
+#'     regime 은 원장 표식(rebase) → 산출물 auth 의 measurement_regime 순으로 재도출한다(rf_attempt_regime).
+#'     C11 등 PIT 표식 칸(rebase 비편입)은 자격 판정에서 빼되, 어느 칸이 구 규약으로 남았는지 axis_blocked_legacy 에 적는다
+#'     (소비자 필터 몫 — 조용한 혼입 아님). 측정 칸이 전부 표식 칸이면 legacy 다(표식 칸만으로 새 축에 서지 않는다).
+#'     NULL 이면 relabel_from 대상 전부 legacy(순수 무효 표시).
+#'   · measurement_axis 가 NULL 인 entry 는 구판 규칙 그대로 legacy.
+#'   · relabel_from 이 한 건도 안 맞으면 멈춘다(allow_empty=TRUE 로만 통과) — 무발화를 다시 조용히 통과시키지 않는다.
+#'   · 현 current_axis 가 relabel_from 밖이면 멈춘다 — 그 축으로 태어난 신규 entry 가 비교 불가 축에 남는다.
+#'   · 원자: 러너 claim(idle 에서만 · 같은 프로세스가 이미 쥐었으면 그대로 사용) · CAS · 보호 투영(축 필드·axis_epochs·
+#'     current_axis 밖 불변) · axis_epochs append-only · 사후 재적재 대조 → 어긋나면 원본 바이트 복원. dry_run 은 쓰지 않고 계획만.
+#' @return list(n_marked(legacy 로 표시), n_carried(epoch 로 승계), n_matched, written, plan, md5_before, md5_after)
+rf_mark_axis_epoch <- function(layer, epoch, legacy, reason, evidence, root = .rf_root(),
+                               relabel_from = NULL, require_regime = NULL, allow_empty = FALSE,
+                               claim = NULL, wait_s = RF_LEDGER_CLAIM_WAIT_S, poll_s = RF_LEDGER_CLAIM_POLL_S,
+                               dry_run = FALSE, .pre_write_hook = NULL) {
   for (.a in list(epoch, legacy, reason, evidence))
-    if (!nzchar(as.character(.a %||% "")))
-      stop("[reinforce_ledger] 축 전환은 epoch/legacy/reason/evidence 전부 필수 — 근거 없이 무효화하지 않는다")
-  obj <- rf_load(layer, root)
-  now <- format(Sys.time(), "%Y-%m-%dT%H:%M:%S%z")
-  n_marked <- 0L
-  for (i in seq_along(obj$entries)) {
-    if (is.null(obj$entries[[i]]$measurement_axis)) {
-      obj$entries[[i]]$measurement_axis <- legacy
-      obj$entries[[i]]$axis_valid <- FALSE
-      obj$entries[[i]]$axis_marked_at <- now
-      n_marked <- n_marked + 1L
-    }
+    if (!nzchar(.rf_s1(.a)))
+      stop("[reinforce_ledger] 축 전환은 epoch/legacy/reason/evidence 전부 필수 — 근거 없이 무효화하지 않는다", call. = FALSE)
+  epoch <- .rf_s1(epoch); legacy <- .rf_s1(legacy)
+  if (identical(epoch, legacy)) stop("[reinforce_ledger] 축 전환 — epoch 와 legacy 가 같다", call. = FALSE)
+  rf_from <- unique(as.character(unlist(relabel_from %||% character(0)))); rf_from <- rf_from[!is.na(rf_from) & nzchar(rf_from)]
+  acc <- unique(as.character(unlist(require_regime %||% character(0)))); acc <- acc[!is.na(acc) & nzchar(acc)]
+  if (length(acc) && !length(rf_from))
+    stop("[reinforce_ledger] 축 전환 — require_regime 은 relabel_from 과 함께만 쓴다", call. = FALSE)
+  if (epoch %in% rf_from) stop("[reinforce_ledger] 축 전환 — epoch 가 relabel_from 안에 있다", call. = FALSE)
+  blocked <- if (length(acc)) rf_rebase_block_flags(root) else character(0)
+
+  .plan <- function(obj) {
+    if (length(rf_from) && !is.null(obj$current_axis) && !(.rf_s1(obj$current_axis) %in% rf_from))
+      stop(sprintf("[reinforce_ledger] 축 전환 — 현 current_axis(%s) 가 relabel_from(%s) 밖이다: 그 축으로 태어난 entry 가 비교 불가 축에 남는다",
+                   .rf_s1(obj$current_axis), paste(rf_from, collapse = ",")), call. = FALSE)
+    if (identical(.rf_s1(obj$current_axis), epoch))
+      stop(sprintf("[reinforce_ledger] 축 전환 — 이미 current_axis=%s", epoch), call. = FALSE)
+    lapply(seq_along(obj$entries), function(i) {
+      e <- obj$entries[[i]]; ax <- e$measurement_axis
+      if (is.null(ax)) return(list(i = i, base_id = .rf_s1(e$base_id), from = NA_character_, to = "legacy", why = "unlabeled"))
+      ax <- .rf_s1(ax)
+      if (!(ax %in% rf_from)) return(list(i = i, base_id = .rf_s1(e$base_id), from = ax, to = "keep", why = "other_axis"))
+      if (!length(acc)) return(list(i = i, base_id = .rf_s1(e$base_id), from = ax, to = "legacy", why = "relabel_from"))
+      st <- .rf_entry_regime_status(e, acc, blocked, root)
+      list(i = i, base_id = .rf_s1(e$base_id), from = ax, to = st$verdict, why = st$why,
+           off = st$off, blocked = st$blocked, n_on = st$n_on, n_measured = st$n_measured)
+    })
   }
-  obj$axis_epochs <- c(obj$axis_epochs %||% list(), list(list(
+  .apply <- function(obj, P, now) {
+    for (x in P) {
+      if (identical(x$to, "keep")) next
+      e <- obj$entries[[x$i]]
+      hist <- list(at = now, to = if (identical(x$to, "epoch")) epoch else legacy, why = x$why, epoch_switch = epoch)
+      if (!is.na(x$from)) hist$from <- x$from
+      if (identical(x$to, "epoch")) {
+        e$measurement_axis <- epoch; e$axis_valid <- TRUE
+        if (length(x$blocked)) e$axis_blocked_legacy <- as.list(as.character(x$blocked))
+      } else {
+        e$measurement_axis <- legacy; e$axis_valid <- FALSE; e$axis_marked_at <- now
+        if (length(x$off)) hist$off_regime <- as.list(as.character(x$off))
+      }
+      e$axis_history <- c(if (is.list(e$axis_history)) e$axis_history else list(), list(hist))
+      obj$entries[[x$i]] <- e
+    }
+    obj
+  }
+
+  if (isTRUE(dry_run)) {
+    P <- .plan(rf_load(layer, root))
+    n_m <- sum(vapply(P, function(x) identical(x$to, "legacy"), logical(1)))
+    n_c <- sum(vapply(P, function(x) identical(x$to, "epoch"), logical(1)))
+    return(invisible(list(n_marked = n_m, n_carried = n_c, n_matched = sum(vapply(P, function(x) !identical(x$to, "keep"), logical(1))),
+                          written = FALSE, plan = P, md5_before = NA_character_, md5_after = NA_character_)))
+  }
+  hold <- .rf_ledger_claim(root, claim, wait_s, poll_s, "축 전환")
+  on.exit(hold$release(), add = TRUE)
+  p <- .rf_path(layer, root)
+  if (!file.exists(p)) stop("[reinforce_ledger] 축 전환 — 원장 부재: ", p, call. = FALSE)
+  md5_a <- unname(tools::md5sum(p)); raw_a <- readBin(p, "raw", file.info(p)$size)
+  orig <- rf_load(layer, root)
+  P <- .plan(orig)
+  n_matched <- sum(vapply(P, function(x) !identical(x$to, "keep"), logical(1)))
+  n_rf <- sum(vapply(P, function(x) !is.na(x$from) && x$from %in% rf_from, logical(1)))
+  if (length(rf_from) && n_rf == 0L && !isTRUE(allow_empty))
+    stop(sprintf("[reinforce_ledger] 축 전환 — relabel_from(%s) 과 맞는 entry 0건: 무발화 전환 거부(allow_empty=TRUE 로만)",
+                 paste(rf_from, collapse = ",")), call. = FALSE)
+  now <- format(Sys.time(), "%Y-%m-%dT%H:%M:%S%z")
+  obj <- .apply(orig, P, now)
+  n_marked  <- sum(vapply(P, function(x) identical(x$to, "legacy"), logical(1)))
+  n_carried <- sum(vapply(P, function(x) identical(x$to, "epoch"), logical(1)))
+  # 구판 호출형(relabel_from 없음)이 0건을 표시하면 그것이 바로 수리 전 무발화다 — 기록만 남기고 넘어가지 않는다
+  if (!length(rf_from) && (n_marked + n_carried) == 0L && !isTRUE(allow_empty))
+    stop("[reinforce_ledger] 축 전환 — relabel_from 없이 표시 대상 0건(모든 entry 가 이미 축 라벨을 가진다): 무발화 전환 거부. relabel_from 을 주거나 allow_empty=TRUE",
+         call. = FALSE)
+  obj$axis_epochs <- c(if (is.list(orig$axis_epochs)) orig$axis_epochs else list(), list(list(
     epoch = epoch, legacy = legacy, switched_at = now,
-    reason = reason, evidence = evidence, entries_marked = n_marked,
+    reason = reason, evidence = evidence, entries_marked = n_marked, entries_carried = n_carried,
+    relabel_from = as.list(rf_from), require_regime = as.list(acc), from_axis = .rf_s1(orig$current_axis),
     note = paste0("이 시점 이후 개설되는 entry 는 measurement_axis='", epoch,
                   "' 로 태어난다. 축이 다른 entry 끼리는 등급·PORT_t 를 비교하지 않는다."))))
   obj$current_axis <- epoch
+  .ep_ok <- function(x) { eo <- orig$axis_epochs
+    if (!is.list(eo) || !length(eo)) TRUE else identical(x$axis_epochs[seq_along(eo)], eo) }
+  if (!identical(.rf_axis_strip(obj), .rf_axis_strip(orig)) || !.ep_ok(obj))
+    stop("[reinforce_ledger] 축 전환 — 축 필드 밖이 바뀌었다(보호 투영 불일치) — 쓰지 않는다", call. = FALSE)
+  .rt <- fromJSON(toJSON(obj, auto_unbox = TRUE, pretty = TRUE, null = "null", na = "null", digits = 6), simplifyVector = FALSE)
+  if (!identical(.rf_axis_strip(.rt), .rf_axis_strip(orig)))
+    stop("[reinforce_ledger] 축 전환 — 직렬화 왕복이 축 필드 밖 값을 바꾼다 — 쓰지 않는다", call. = FALSE)
+  if (is.function(.pre_write_hook)) .pre_write_hook(p)
+  if (!identical(unname(tools::md5sum(p)), md5_a))
+    stop("[reinforce_ledger] 축 전환 — 적재 뒤 원장이 바뀌었다(claim 밖 쓰기) — 덮어쓰지 않는다", call. = FALSE)
   .rf_write(obj, layer, root)
-  cat(sprintf("[reinforce_ledger] 축 전환 %s -> %s · 과거 entry %d건 무효 표시
-", legacy, epoch, n_marked))
-  invisible(n_marked)
+  back <- tryCatch(rf_load(layer, root), error = function(e) NULL)
+  .nl <- function(x) { x$last_updated <- NULL; x }
+  if (is.null(back) || !identical(.nl(back), .nl(.rt))) {
+    .rf_restore_bytes(p, raw_a, "axis")
+    stop("[reinforce_ledger] 축 전환 — 사후 재적재 대조 실패, 원본 바이트로 되돌렸다", call. = FALSE)
+  }
+  cat(sprintf("[reinforce_ledger] 축 전환 %s -> %s · legacy 표시 %d건 · 승계 %d건 (relabel_from=%s · regime=%s)\n",
+              .rf_s1(orig$current_axis %||% "∅"), epoch, n_marked, n_carried,
+              if (length(rf_from)) paste(rf_from, collapse = ",") else "∅(NULL 만)",
+              if (length(acc)) paste(acc, collapse = ",") else "∅"))
+  invisible(list(n_marked = n_marked, n_carried = n_carried, n_matched = n_matched, written = TRUE, plan = P,
+                 md5_before = md5_a, md5_after = unname(tools::md5sum(p))))
 }
 
 rf_park_entry <- function(layer, base_id, reason, root = .rf_root()) {
@@ -562,7 +905,10 @@ rf_lessons_digest <- function(layer, base_id, n_last = 5L, root = .rf_root()) {
 #' @param policy     list(policy_id=, policy_sha=, mode=) — 부재 = pi0/live
 #' @param shadow     list(policy_id=, choice=, agrees=) — 그림자 정책 판정(D4+) · 부재 = NULL
 RF_DECISION_KINDS <- c("direction", "batch", "block_order", "b1_factor_pick", "b5_overlay_pick", "b2_weight_pick",
-                       "block_winner", "floor", "budget", "promote", "combination", "b1_design_verify", "base_gate")
+                       "block_winner", "floor", "budget", "promote", "combination", "b1_design_verify", "base_gate",
+                       # ★P0-12(2026-09-24) A 자격 관문 판정(보류 사유 코드 · 발행/보류) · P2-01 사전등록 판정
+                       #   (confirmed/powered_null/undetermined/failed) — 미등재 kind 는 위에서 stop 하므로 호출 전에 있어야 한다.
+                       "a_eligibility", "prereg_verdict")
 rf_decisions_path <- function(root = .rf_root()) file.path(root, "06_Registry/rf_decisions.jsonl")
 rf_record_decision <- function(kind, base_id, candidates, chosen, rule, policy = NULL, scope = list(), shadow = NULL,
                                root = .rf_root(), max_candidates = 40L, layer = 1L) {
@@ -1072,6 +1418,610 @@ rf_has_vintage_flag <- function(x, flag) {
   any(vapply(fl, function(z) identical(as.character(z$flag %||% ""), as.character(flag)), logical(1)))
 }
 
+# =============================================================================
+# 측정 규약 rebase · 축 epoch (P0-06 · 2026-09-24 도훈 승인 플랜 qvest-1-drifting-eclipse · 결정 EXEC-PRICE)
+# =============================================================================
+# ★왜: P0-04(2026-09-24)가 등급 하네스의 체결 규약을 close_d_legacy(시그널일 종가 체결) → close_t1(익일 종가)로 바꿨다.
+#   원장의 측정 칸은 전부 구 규약 값이다. 규약이 다른 수치끼리 비교하면 바닥·carry·승격·결합 풀이 섞인 자로 잰다.
+#   P0-05 가 칸마다 04_holdings 로 새 규약 판을 형제 파일 `<artifacts>/remeasure_<regime>/authoritative_remeasure.json`
+#   에 내면, 이 writer 가 원장 essence 를 그 판으로 **교체하고 구판은 essence_history[[구 regime]] 으로 옮긴다**
+#   (append-only — 지우지도 덮지도 않는다). 그 뒤 rf_mark_axis_epoch(relabel_from=, require_regime=) 이 current_axis 를 바꾼다.
+#   순서(플랜 P0-06): config 전환 → 신규 칸은 새 규약 → 전환 이전 칸 전수 remeasure·rebase → current_axis 교체.
+# 계약:
+#   · 등급 = 형제 파일의 essence_grade 만(권위 등급 — 호출자는 등급을 넘기지 못한다 · 손계산 금지).
+#   · 형제 = 그 칸 artifacts 디렉터리 바로 아래 remeasure_<regime>/authoritative_remeasure.json. 다른 칸·다른 regime 의 판은 거부.
+#     파일의 regime 키(measurement_regime$regime → $key → $exec_price)가 인자 regime 과 다르면 거부(regime 불일치 형제).
+#     ★P0-05 판(remeasure_from_holdings.R)의 계약(2026-09-24 수리 · 통합 검증 L-B1): 디렉터리 remeasure_<key> · 파일
+#     measurement_regime{regime = key, key, exec_price} — regime 인자 = 키("<exec_price>_<md5 8>"). 구판 writer 는 regime →
+#     exec_price 만 봐서 실제 P0-05 산출을 어느 regime 으로 불러도 거부했다(regime_mismatch / regime_dir_mismatch 5/5).
+#   · ★원장 essence 는 writer 가 **조립**한다(2026-09-24 수리 · L-B2): 새 essence = 신원 키(RF_REBASE_ID_KEYS — 구 essence 값 그대로)
+#     + 측정 키(RF_REBASE_MEAS — 전부 형제 판 값 · 형제에 없으면 **뺀다**) + source. 구 essence 의 그 밖 키(dsr·net_ir·세션이 적은
+#     보조 수치 등)는 새 essence 에 남지 않는다 — essence_history[[구 regime]] 에만 있다. 구판은 essence_new 를 그대로 써서
+#     핵심 6지표만 대조했고, 호출자가 원장 essence 에서 핵심만 바꾸면 dsr·net_ir·N 이 구 규약 값으로 조용히 남았다(실측
+#     dsr 0.609 대 형제 0.555). essence_new 는 호출자의 **주장**이다 — 측정 키는 형제와 같아야 하고(다르면 essence_mismatch:<키>),
+#     신원 키는 구 essence 와 같아야 하며(identity_mismatch), 허용 밖 키는 거부한다(essence_new_foreign_keys).
+#     조립기 = rf_rebase_essence_from_sibling(구 essence, 형제 판) — 드라이버·검사가 같은 함수로 essence_new 를 만든다.
+#   · 구 regime 은 **재도출**한다: 원장 표식(measurement_regime$regime) → 칸 산출물 auth 의 measurement_regime.
+#     호출자가 준 regime_old 는 재도출값과 대조만 한다(재도출 불가일 때만 채택). P0-01(2026-09-23) 이전 auth 는
+#     measurement_regime 이 없는데, 그때 하네스(replication_harness.R)의 체결 규약은 하나뿐이었고 P0-04 가 그것을
+#     'close_d_legacy' 로 명명했다(P0-01 은 같은 값을 리터럴로 적었다) → RF_REGIME_PRE_P0_01.
+#   · history 키가 이미 있으면 거부(덮어쓰기 0) · 새 regime 이 history 에 이미 있으면 거부 · 같은 regime 재기록은 같은 판
+#     (md5·핵심 지표 동일)이면 멱등, 아니면 거부.
+#   · PIT 표식 칸 거부 — RF_REBASE_BLOCK_FLAGS(pit_c11) ∪ 06_Registry/pit_quarantine.json active flag.
+#     근거 = 도훈 결정 PIT-C11-CONVENTIONS ⑧ "P0-05·06 재측정 경로 비편입": C11 오염은 보유를 고른 신호 안에 있어 보유
+#     재측정으로 씻기지 않는다 — 편입하면 오염 보유가 rebase 된 essence 로 세탁된다. 그 칸은 수리 뒤 새 칸으로 잰다.
+#   · 자식 entry 의 parent$best_* 는 rebase 된 승자 칸 값으로 다시 쓰고, 구값은 parent_rebased_from 에 쌓는다(append-only).
+#   · 잠금 = 러너 claim(idle 에서만 — 같은 프로세스가 이미 쥐었으면 그대로 쓰고 풀지 않는다) · CAS(적재 md5) ·
+#     보호 투영(허용 필드 밖 불변 — 검사 대상 칸이 아닌 모든 칸 포함) · history append-only 전수 대조 · 직렬화 왕복 ·
+#     사후 재적재 대조 → 어긋나면 원본 바이트 복원.
+#   · 배치가 한 단위(기본) — 거부가 하나라도 있으면 아무것도 쓰지 않는다. skip_rejected=TRUE 면 거부 칸은 사유 코드와 함께
+#     반환만 하고(조용한 배제 아님 · items 에 남는다) 나머지를 쓴다. dry_run=TRUE 는 검증·계획만(쓰기·잠금 없음).
+#   · 등급·지표 밖 필드(lessons · adversary · vintage_flags · l_code)는 건드리지 않는다 — 구 측정에 대한 사실 기록이다.
+#   · 검사 = 08_Tests/reinforcement/test_rf_rebase.R (합성 픽스처 + 운영 원장 사본 · 운영 원장 무접촉 · 돌연변이 red).
+RF_REGIME_PRE_P0_01     <- "close_d_legacy"
+RF_REGIME_LABEL_RE      <- "^[a-z0-9][a-z0-9_.-]{1,63}$"      # 디렉터리 이름(remeasure_<regime>)이 되므로 경로 안전 문자만
+RF_REBASE_REGIME_FIELDS <- c("essence", "grade", "grade_base", "retro", "retro_inherited", "measurement_regime")
+RF_REBASE_BASE_FIELDS   <- c("base_grade", "base_measurement_regime", "base_remeasure")
+RF_REBASE_BLOCK_FLAGS   <- c("pit_c11")                          # 결정 PIT-C11-CONVENTIONS ⑧ (06_Registry/decision_register.json)
+# 원장 요약 키 ← 형제 파일 essence 키 (rf_cell_worker.R 의 원장 요약 매핑과 같은 짝)
+RF_REBASE_CORE <- list(port_t = c("portfolio_alpha_t_nw_lag3", "port_t"), net_sharpe = "net_sharpe", cagr = "cagr",
+                       mdd = "mdd", calmar = "calmar", oos_retention = "oos_retention")
+# ★rebase essence 조립(L-B2) — 신원 키(구 essence 값 그대로 · 측정과 무관한 칸 식별·스펙 경로·상속 표식)와
+#   측정 키(원장 요약 키 ← 형제 파일 위치 목록 · 앞에서부터 첫 값). 측정 키 짝은 rf_cell_worker.R 의 원장 요약과 같다
+#   (핵심 6 + 시행 회계 3 — dsr·selection_type·n_trials_cumulative) + net_ir(구 세션 칸의 원장 요약 키 · essence_score 산출).
+#   위치 표기: "essence:<키>" = 형제 essence 안 · "top:<키>" = 형제 최상위 · "mr:<키>" = 형제 measurement_regime 안.
+RF_REBASE_ID_KEYS <- c("cell_code", "block", "spec", "inherited_from", "strategy_name")
+RF_REBASE_MEAS <- list(port_t = c("essence:portfolio_alpha_t_nw_lag3", "essence:port_t"), net_sharpe = "essence:net_sharpe",
+                       cagr = "essence:cagr", mdd = "essence:mdd", calmar = "essence:calmar", oos_retention = "essence:oos_retention",
+                       net_ir = "essence:net_ir", dsr = c("essence:dsr", "top:dsr"),
+                       selection_type = c("top:selection_type", "mr:selection_type"),
+                       n_trials_cumulative = c("top:n_trials_cumulative", "mr:n_trials_cumulative"))
+# 대조 허용오차 = .rf_write 의 직렬화 해상도(toJSON digits = 6 · 소수 6자리) — 새 문턱이 아니라 원장이 담을 수 있는 자릿수
+RF_REBASE_TOL <- 1e-6
+# 잠금 대기 — rf_mark_vintage_batch(2026-09-23) 기본값(wait_s 900 · poll_s 5 · stale_hours 6)과 같은 값을 이름으로 둔다.
+#   stale 6h = reinforce_auto_config.json::claim_stale_hours 기본(러너 CFG$claim_stale_hours %||% 6)과 같다. 새 수치 아님.
+RF_LEDGER_CLAIM_WAIT_S  <- 900
+RF_LEDGER_CLAIM_POLL_S  <- 5
+RF_LEDGER_CLAIM_STALE_H <- 6
+RF_AXIS_ENTRY_FIELDS    <- c("measurement_axis", "axis_valid", "axis_marked_at", "axis_history", "axis_blocked_legacy")
+
+# ★$ 는 부분 일치다 — essence 키가 없고 essence_history 가 있으면 a$essence 가 history 를 돌려준다(검사 A6 에서 실측).
+#   측정 여부·구 essence 판독은 [["essence"]](정확 일치)로만 한다.
+.rf_s1 <- function(x) {
+  x <- tryCatch(suppressWarnings(as.character(unlist(x %||% ""))), error = function(e) "")
+  if (length(x) != 1L || is.na(x)) "" else trimws(x)
+}
+.rf_abs_path <- function(p, root) {
+  p <- .rf_s1(p); if (!nzchar(p)) return(NA_character_)
+  if (!grepl("^([A-Za-z]:[/\\\\]|/|\\\\\\\\)", p)) p <- file.path(root, p)
+  normalizePath(sub("[/\\\\]+$", "", p), winslash = "/", mustWork = FALSE)
+}
+.rf_same_path <- function(a, b) {
+  if (is.na(a) || is.na(b)) return(FALSE)
+  if (identical(.Platform$OS.type, "windows")) identical(tolower(a), tolower(b)) else identical(a, b)
+}
+#' 칸 산출물의 auth 파일 경로 — artifacts 가 dict(2026-08-29 WT 시기)면 $authoritative, 디렉터리면 그 아래 파일
+.rf_auth_file <- function(artifacts, root) {
+  if (is.list(artifacts)) artifacts <- artifacts$authoritative %||% ""
+  d <- .rf_abs_path(artifacts, root); if (is.na(d)) return(NA_character_)
+  if (grepl("\\.json$", d, ignore.case = TRUE)) d else file.path(d, "authoritative_remeasure.json")
+}
+.rf_read_json <- function(p) tryCatch(fromJSON(p, simplifyVector = FALSE), error = function(e) NULL)
+#' auth 객체의 regime 키 — measurement_regime$regime → $key(P0-05 재측정 판 키 · 2026-09-24 L-B1) → $exec_price.
+#'   부재 = P0-01 이전 판(RF_REGIME_PRE_P0_01). (충실구현 러너 판은 key 가 없어 exec_price — 종전과 같다)
+.rf_regime_key <- function(auth) {
+  mr <- auth$measurement_regime
+  if (is.null(mr)) return(list(regime = RF_REGIME_PRE_P0_01, basis = "pre_p0_01"))
+  if (!is.list(mr)) return(list(regime = NA_character_, basis = "measurement_regime_malformed"))
+  r <- .rf_s1(mr[["regime"]]);     if (nzchar(r)) return(list(regime = r, basis = "auth_regime"))
+  r <- .rf_s1(mr[["key"]]);        if (nzchar(r)) return(list(regime = r, basis = "auth_key"))
+  r <- .rf_s1(mr[["exec_price"]]); if (nzchar(r)) return(list(regime = r, basis = "auth_exec_price"))
+  list(regime = NA_character_, basis = "measurement_regime_without_key")
+}
+#' 시도 1칸의 측정 regime — 원장 표식(rebase) → 산출물 auth 재도출. 미측정·산출물 부재는 NA(+basis).
+rf_attempt_regime <- function(a, root = .rf_root()) {
+  if (is.null(a[["essence"]])) return(list(regime = NA_character_, basis = "unmeasured"))
+  mr <- a$measurement_regime
+  r <- if (is.list(mr)) .rf_s1(mr$regime) else ""
+  if (nzchar(r)) return(list(regime = r, basis = "ledger"))
+  f <- .rf_auth_file(a$artifacts, root)
+  if (is.na(f) || !file.exists(f)) return(list(regime = NA_character_, basis = "auth_absent"))
+  j <- .rf_read_json(f)
+  if (is.null(j)) return(list(regime = NA_character_, basis = "auth_parse_failed"))
+  .rf_regime_key(j)
+}
+#' entry 기저 측정의 regime — 원장 표식(base rebase) → base_artifacts auth. 기저 auth 부재 = 미측정(base_unmeasured).
+rf_base_regime <- function(e, root = .rf_root()) {
+  mr <- e$base_measurement_regime
+  r <- if (is.list(mr)) .rf_s1(mr$regime) else ""
+  if (nzchar(r)) return(list(regime = r, basis = "ledger"))
+  f <- .rf_auth_file(e$base_artifacts, root)
+  if (is.na(f) || !file.exists(f)) return(list(regime = NA_character_, basis = "base_unmeasured"))
+  j <- .rf_read_json(f)
+  if (is.null(j)) return(list(regime = NA_character_, basis = "base_auth_parse_failed"))
+  .rf_regime_key(j)
+}
+#' rebase 비편입 표식 — 상수(결정 ⑧) ∪ pit_quarantine.json 의 active 격리 flag. 파손 = stop(조용한 해제 금지 · 그 파일의 fail_policy).
+rf_rebase_block_flags <- function(root = .rf_root()) {
+  fl <- RF_REBASE_BLOCK_FLAGS
+  p <- file.path(root, "06_Registry", "pit_quarantine.json")
+  if (file.exists(p)) {
+    q <- tryCatch(fromJSON(p, simplifyVector = FALSE),
+                  error = function(e) stop(sprintf("[reinforce_ledger] pit_quarantine.json 파손 — rebase 비편입 목록을 못 읽는다(조용한 해제 금지): %s",
+                                                   conditionMessage(e)), call. = FALSE))
+    if (!is.list(q) || !is.list(q$quarantines))
+      stop("[reinforce_ledger] pit_quarantine.json 형식 불량(quarantines 배열 부재) — rebase 거부", call. = FALSE)
+    for (x in q$quarantines) if (identical(.rf_s1(x$status), "active") && nzchar(.rf_s1(x$flag))) fl <- c(fl, .rf_s1(x$flag))
+  }
+  unique(fl)
+}
+.rf_flags_hit <- function(fl_list, flags) {
+  if (!is.list(fl_list) || !length(fl_list)) return(character(0))
+  h <- vapply(fl_list, function(z) .rf_s1(if (is.list(z)) z$flag else NULL), character(1))
+  unique(h[h %in% flags])
+}
+
+#' 러너 claim — 이미 이 프로세스가 쥐었으면 그대로(풀지 않는다), 아니면 획득·대기(못 잡으면 거부). idle 에서만 쓴다.
+.rf_ledger_claim <- function(root, claim, wait_s, poll_s, what) {
+  .cl <- new.env(parent = globalenv())
+  .lib <- c(file.path(root, "02_Infrastructure/ops/rf_claim.R"), file.path(.rf_root(), "02_Infrastructure/ops/rf_claim.R"))
+  .lib <- .lib[file.exists(.lib)]
+  if (!length(.lib)) stop(sprintf("[reinforce_ledger] %s — rf_claim.R 부재(잠금 없이 쓰지 않는다)", what), call. = FALSE)
+  sys.source(.lib[1], envir = .cl)
+  claim <- claim %||% { .e <- Sys.getenv("QVEST_RF_CLAIM", "")
+                        if (nzchar(.e)) .e else file.path(root, ".cache", "reinforce_auto.claim") }
+  own <- file.path(claim, "owner.json")
+  if (dir.exists(claim) && file.exists(own) && !file.exists(file.path(claim, "released.json"))) {
+    o <- tryCatch(fromJSON(own, simplifyVector = TRUE), error = function(e) NULL)
+    if (identical(suppressWarnings(as.integer(o$pid %||% NA)), as.integer(Sys.getpid())) &&
+        (is.null(o$proc_start) || isTRUE(.cl$rf_claim_start_matches(o$proc_start, .cl$rf_claim_proc_start(Sys.getpid())))))
+      return(list(claim = claim, mode = "held_by_caller", release = function() invisible(NULL)))
+  }
+  dir.create(dirname(claim), recursive = TRUE, showWarnings = FALSE)
+  t0 <- Sys.time()
+  repeat {
+    got <- .cl$rf_claim_acquire(claim, stale_hours = RF_LEDGER_CLAIM_STALE_H)
+    if (isTRUE(got$ok)) break
+    if (as.numeric(difftime(Sys.time(), t0, units = "secs")) >= wait_s)
+      stop(sprintf("[reinforce_ledger] %s — 러너 claim 획득 실패(%s · owner_pid=%s · %.0f초 대기) — 러너 idle 에서만 쓴다 · 아무것도 쓰지 않았다",
+                   what, as.character(got$reason), as.character(got$owner_pid %||% NA), wait_s), call. = FALSE)
+    Sys.sleep(poll_s)
+  }
+  list(claim = claim, mode = "acquired", release = function() .cl$rf_claim_release(claim))
+}
+.rf_restore_bytes <- function(p, raw, tag) {
+  .rtmp <- paste0(p, ".", tag, "_restore.tmp")
+  writeBin(raw, .rtmp)
+  if (!suppressWarnings(file.rename(.rtmp, p))) { file.copy(.rtmp, p, overwrite = TRUE); unlink(.rtmp) }
+  invisible(p)
+}
+.rf_axis_strip <- function(obj) {
+  obj$last_updated <- NULL; obj$axis_epochs <- NULL; obj$current_axis <- NULL
+  obj$entries <- lapply(obj$entries, function(e) { for (f in RF_AXIS_ENTRY_FIELDS) e[[f]] <- NULL; e })
+  obj
+}
+
+#' entry 가 새 축 자격(require_regime)을 갖췄는가 — 기저 + 측정 칸 전부. 표식 칸은 판정에서 빼고 목록으로 돌려준다.
+.rf_entry_regime_status <- function(e, accept, blocked_flags, root) {
+  off <- character(0); blocked <- character(0); n_on <- 0L; n_meas <- 0L
+  br <- rf_base_regime(e, root)
+  if (!identical(br$basis, "base_unmeasured")) {
+    n_meas <- n_meas + 1L
+    if (length(.rf_flags_hit(e$base_vintage_flags, blocked_flags))) blocked <- c(blocked, "base")
+    else if (!is.na(br$regime) && br$regime %in% accept) n_on <- n_on + 1L
+    else off <- c(off, sprintf("base:%s", if (is.na(br$regime)) br$basis else br$regime))
+  }
+  for (a in e$attempts %||% list()) {
+    if (is.null(a[["essence"]])) next
+    n_meas <- n_meas + 1L
+    if (length(.rf_flags_hit(a$vintage_flags, blocked_flags))) { blocked <- c(blocked, as.character(a$n)); next }
+    r <- rf_attempt_regime(a, root)
+    if (!is.na(r$regime) && r$regime %in% accept) n_on <- n_on + 1L
+    else off <- c(off, sprintf("n%s:%s", as.character(a$n), if (is.na(r$regime)) r$basis else r$regime))
+  }
+  verdict <- if (length(off)) "legacy" else if (n_on >= 1L || n_meas == 0L) "epoch" else "legacy"
+  why <- if (length(off)) "off_regime" else if (n_on >= 1L) "on_regime" else if (n_meas == 0L) "no_measurement" else "blocked_only"
+  list(verdict = verdict, why = why, off = off, blocked = blocked, n_on = n_on, n_measured = n_meas)
+}
+
+# ── rebase writer ────────────────────────────────────────────────────────────
+.rf_rb_reject <- function(code, msg) stop(structure(class = c("rf_rb_reject", "error", "condition"),
+                                                     list(message = msg, call = NULL, code = code)))
+.rf_rb_item <- function(it, k) {
+  if (!is.list(it) || is.null(names(it)) || any(!nzchar(names(it))))
+    stop(sprintf("[reinforce_ledger] rebase 항목 #%d — 이름 있는 list 여야 한다", k), call. = FALSE)
+  # (변수명을 extra 로 쓰지 않는다 — test_rf_mark_vintage.R 돌연변이가 빈티지 writer 의 그 줄을 문자열 1회로 찾는다)
+  bad_keys <- setdiff(names(it), c("base_id", "n", "essence_new", "regime", "provenance", "regime_old"))
+  if (length(bad_keys)) stop(sprintf("[reinforce_ledger] rebase 항목 #%d — 허용 밖 키 거부: %s (등급은 형제 파일에서만 온다)",
+                                     k, paste(bad_keys, collapse = ",")), call. = FALSE)
+  bid <- .rf_s1(it$base_id)
+  if (!nzchar(bid)) stop(sprintf("[reinforce_ledger] rebase 항목 #%d — base_id 비었음", k), call. = FALSE)
+  nk <- .rf_s1(it$n)
+  if (!(identical(nk, "base") || grepl("^[0-9]+$", nk)))
+    stop(sprintf("[reinforce_ledger] rebase 항목 #%d — n 은 시도 번호 또는 \"base\": %s", k, nk), call. = FALSE)
+  rg <- .rf_s1(it$regime)
+  if (!grepl(RF_REGIME_LABEL_RE, rg))
+    stop(sprintf("[reinforce_ledger] rebase 항목 #%d — regime 이름 형식(%s): %s", k, RF_REGIME_LABEL_RE, rg), call. = FALSE)
+  ro <- .rf_s1(it$regime_old)
+  if (nzchar(ro) && !grepl(RF_REGIME_LABEL_RE, ro))
+    stop(sprintf("[reinforce_ledger] rebase 항목 #%d — regime_old 이름 형식: %s", k, ro), call. = FALSE)
+  pv <- it$provenance
+  if (!is.list(pv) || is.null(names(pv)) || any(!nzchar(names(pv))) || !nzchar(.rf_s1(pv$remeasure_path)))
+    stop(sprintf("[reinforce_ledger] rebase 항목 #%d — provenance$remeasure_path 필수(형제 판 없이 rebase 하지 않는다)", k), call. = FALSE)
+  if (any(names(pv) %in% c("essence", "essence_grade", "grade", "authoritative_remeasure")) ||
+      !all(vapply(pv, function(v) is.atomic(v) && length(v) <= 1L, logical(1))))
+    stop(sprintf("[reinforce_ledger] rebase 항목 #%d — provenance 는 스칼라 출처 필드만(essence·등급 객체 금지 · AX-008)", k), call. = FALSE)
+  es <- it$essence_new
+  if (identical(nk, "base")) {
+    if (!is.null(es) && !is.list(es)) stop(sprintf("[reinforce_ledger] rebase 항목 #%d — base 의 essence_new 는 list 또는 NULL", k), call. = FALSE)
+  } else if (!is.list(es) || !length(es) || is.null(names(es))) {
+    stop(sprintf("[reinforce_ledger] rebase 항목 #%d — essence_new 필수(원장 요약 list)", k), call. = FALSE)
+  }
+  if (is.list(es) && any(c("essence_history", "grade", "essence_grade") %in% names(es)))
+    stop(sprintf("[reinforce_ledger] rebase 항목 #%d — essence_new 에 history·등급 키 금지", k), call. = FALSE)
+  list(base_id = bid, n = nk, essence_new = es, regime = rg, regime_old = ro, provenance = pv)
+}
+.rf_core_of_file <- function(fe) vapply(names(RF_REBASE_CORE), function(k) {
+  for (src in RF_REBASE_CORE[[k]]) { v <- fe[[src]]
+    if (!is.null(v)) return(tryCatch(suppressWarnings(as.numeric(unlist(v))[1]), error = function(e) NA_real_)) }
+  NA_real_ }, numeric(1))
+.rf_core_of_essence <- function(es) vapply(names(RF_REBASE_CORE), function(k) {
+  v <- es[[k]]; if (is.null(v)) NA_real_ else tryCatch(suppressWarnings(as.numeric(unlist(v))[1]), error = function(e) NA_real_) },
+  numeric(1))
+.rf_core_equal <- function(a, b) all((is.na(a) & is.na(b)) | (!is.na(a) & !is.na(b) & abs(a - b) <= RF_REBASE_TOL))
+
+#' 형제 판 측정 값 — RF_REBASE_MEAS 키마다 위치 목록에서 첫 비결측 값(형제에 없으면 그 키는 결과에 없다).
+.rf_meas_of_file <- function(j) {
+  out <- list()
+  for (k in names(RF_REBASE_MEAS)) for (loc in RF_REBASE_MEAS[[k]]) {
+    sp <- strsplit(loc, ":", fixed = TRUE)[[1]]
+    src <- switch(sp[1], essence = j[["essence"]], top = j, mr = j[["measurement_regime"]], NULL)
+    v <- if (is.list(src)) tryCatch(unlist(src[[sp[2]]]), error = function(e) NULL) else NULL
+    if (is.null(v) || !length(v) || is.na(v[1]) || (is.character(v) && !nzchar(v[1]))) next
+    out[[k]] <- v[1]
+    break
+  }
+  out
+}
+#' rebase essence 조립기(정본 · L-B2) — 신원 키(구 essence 값) + 측정 키(형제 판 값 전부 · 형제에 없으면 뺀다) + source.
+#'   드라이버(rf_rebase_driver.R)·검사가 essence_new 를 이 함수로 만들고, writer 는 같은 함수의 결과로 **다시 조립**해 쓴다
+#'   (essence_new 는 대조용 주장 — 원장에 쓰이는 값은 늘 형제 판에서 온다).
+#' @param sibling 형제 판 경로 또는 판독한 list
+rf_rebase_essence_from_sibling <- function(old_essence, sibling) {
+  j <- if (is.character(sibling)) .rf_read_json(sibling) else sibling
+  if (!is.list(j)) stop("[reinforce_ledger] rebase essence 조립 — 형제 판 판독 불가", call. = FALSE)
+  old <- if (is.list(old_essence)) old_essence else list()
+  es <- list()
+  for (k in RF_REBASE_ID_KEYS) if (!is.null(old[[k]])) es[[k]] <- old[[k]]
+  m <- .rf_meas_of_file(j)
+  for (k in names(m)) es[[k]] <- m[[k]]
+  es$source <- "authoritative_remeasure.json(rebase)"
+  es
+}
+#' essence_new(호출자 주장) 대조 → writer 조립값. 허용 밖 키·신원 불일치·측정 불일치(형제 판과 다름 · 형제에 없는 측정 값) = 거부.
+.rf_rb_compose <- function(old_es, en, sib) {
+  want <- rf_rebase_essence_from_sibling(old_es, sib$auth)
+  en <- if (is.list(en)) en else list()
+  foreign <- setdiff(names(en), c(RF_REBASE_ID_KEYS, names(RF_REBASE_MEAS), "source"))
+  if (length(foreign))
+    .rf_rb_reject("essence_new_foreign_keys", sprintf("essence_new 에 허용 밖 키 %s — 구 측정의 보조 값은 history 에만 남는다(새 essence 에 싣지 않는다)",
+                                                      paste(foreign, collapse = ",")))
+  old <- if (is.list(old_es)) old_es else list()
+  for (k in intersect(names(en), RF_REBASE_ID_KEYS))
+    if (!identical(en[[k]], old[[k]])) .rf_rb_reject("identity_mismatch", sprintf("essence_new 신원 키 %s 가 구 essence 와 다르다", k))
+  for (k in intersect(names(en), names(RF_REBASE_MEAS))) {
+    a <- tryCatch(unlist(en[[k]]), error = function(e) NULL); b <- want[[k]]
+    a_na <- is.null(a) || !length(a) || is.na(a[1])
+    same <- if (is.null(b)) a_na else if (a_na) FALSE else if (is.numeric(b)) {
+      av <- suppressWarnings(as.numeric(a[1])); if (is.finite(b)) is.finite(av) && abs(av - b) <= RF_REBASE_TOL else identical(av, as.numeric(b))
+    } else identical(as.character(a[1]), as.character(b))
+    if (!isTRUE(same))
+      .rf_rb_reject(paste0("essence_mismatch:", k), sprintf("essence_new %s=%s ≠ 형제 판 %s — 측정 값은 형제 판에서만 온다",
+                                                            k, paste(format(a), collapse = ","), if (is.null(b)) "(형제에 없음)" else format(b)))
+  }
+  want
+}
+
+#' 형제 판 검증 — 위치(칸 artifacts 바로 아래 remeasure_<regime>/) · regime 키 · 등급 · 핵심 지표.
+.rf_rb_sibling <- function(artifacts, it, root) {
+  if (is.list(artifacts))
+    .rf_rb_reject("artifacts_form", "artifacts 가 디렉터리가 아니다(WT 시기 dict) — 형제 판을 특정할 수 없다")
+  d <- .rf_abs_path(artifacts, root)
+  if (is.na(d) || !dir.exists(d)) .rf_rb_reject("artifacts_unresolvable", sprintf("칸 산출물 디렉터리 부재: %s", .rf_s1(artifacts)))
+  f <- .rf_abs_path(it$provenance$remeasure_path, root)
+  if (is.na(f) || !file.exists(f)) .rf_rb_reject("remeasure_absent", sprintf("형제 판 부재: %s", .rf_s1(it$provenance$remeasure_path)))
+  if (!identical(tolower(basename(f)), "authoritative_remeasure.json"))
+    .rf_rb_reject("remeasure_name", sprintf("형제 판은 authoritative_remeasure.json 이어야 한다: %s", basename(f)))
+  if (!identical(basename(dirname(f)), paste0("remeasure_", it$regime)))
+    .rf_rb_reject("regime_dir_mismatch", sprintf("형제 판 디렉터리 %s ≠ remeasure_%s", basename(dirname(f)), it$regime))
+  if (!.rf_same_path(dirname(dirname(f)), d))
+    .rf_rb_reject("not_sibling", sprintf("형제가 아니다 — %s 는 이 칸(%s) 아래가 아니다", f, d))
+  j <- .rf_read_json(f)
+  if (is.null(j)) .rf_rb_reject("remeasure_parse", sprintf("형제 판 파손: %s", f))
+  if (!is.list(j$measurement_regime))
+    .rf_rb_reject("remeasure_regime_absent", "형제 판에 measurement_regime 이 없다 — 규약을 모르는 판으로 rebase 하지 않는다")
+  rk <- .rf_regime_key(j)
+  if (!identical(rk$regime, it$regime))
+    .rf_rb_reject("regime_mismatch", sprintf("형제 판 regime 키 %s ≠ 인자 regime %s", as.character(rk$regime), it$regime))
+  g <- .rf_s1(j$essence_grade)
+  if (!nzchar(g)) .rf_rb_reject("grade_absent", "형제 판에 essence_grade(권위 등급)가 없다")
+  if (!is.list(j[["essence"]])) .rf_rb_reject("remeasure_essence_absent", "형제 판에 essence 가 없다")
+  core <- .rf_core_of_file(j[["essence"]])
+  if (!any(is.finite(core))) .rf_rb_reject("remeasure_core_na", "형제 판 핵심 지표가 전부 NA")
+  list(path = f, md5 = unname(tools::md5sum(f)), auth = j, grade = g, core = core)
+}
+.rf_rb_regime_old <- function(derived, it) {
+  if (is.na(derived$regime)) {
+    if (nzchar(it$regime_old)) return(list(regime = it$regime_old, basis = paste0("caller(", derived$basis, ")")))
+    .rf_rb_reject("regime_old_unknown", sprintf("구 regime 재도출 불가(%s) — regime_old 를 명시하라", derived$basis))
+  }
+  if (nzchar(it$regime_old) && !identical(it$regime_old, derived$regime))
+    .rf_rb_reject("regime_old_conflict", sprintf("호출자 regime_old %s ≠ 재도출 %s(%s)", it$regime_old, derived$regime, derived$basis))
+  derived
+}
+.rf_rb_mr_new <- function(sib, it, now) {
+  mr <- sib$auth$measurement_regime; if (!is.list(mr)) mr <- list()
+  mr$regime <- it$regime; mr$basis <- "rebase"; mr$remeasure_path <- sib$path; mr$remeasure_md5 <- sib$md5; mr$rebased_at <- now
+  mr
+}
+
+.rf_rb_apply_attempt <- function(obj, i, it, blocked, root, now) {
+  e <- obj$entries[[i]]
+  j <- which(vapply(e$attempts %||% list(), function(a) identical(as.integer(a$n), as.integer(it$n)), logical(1)))
+  if (!length(j)) .rf_rb_reject("attempt_absent", sprintf("attempt n=%s 부재", it$n))
+  j <- j[1]; a <- e$attempts[[j]]
+  if (is.null(a[["essence"]])) .rf_rb_reject("unmeasured", "미측정 칸(essence 없음) — rebase 대상 아님")
+  hit <- .rf_flags_hit(a$vintage_flags, blocked)
+  if (length(hit))
+    .rf_rb_reject(paste0("blocked_flag:", paste(hit, collapse = "+")),
+                  sprintf("PIT 표식 칸(%s) — P0-05·06 재측정 경로 비편입(결정 PIT-C11-CONVENTIONS ⑧: 오염 선택은 보유 재측정으로 씻기지 않는다)",
+                          paste(hit, collapse = ",")))
+  sib <- .rf_rb_sibling(a$artifacts, it, root)
+  if (!.rf_core_equal(.rf_core_of_essence(it$essence_new), sib$core))
+    .rf_rb_reject("essence_mismatch", "essence_new 핵심 지표가 형제 판과 다르다")
+  # ★칸 라벨 = 구 essence$cell_code(없으면 격자 좌표 attempt$cell_code). 승격 기록 parent$cell 이 이 값에서 온다
+  #   (reinforce_auto_next_paper.R best$cell_code = essence$cell_code). B4 결합 칸은 두 라벨이 다르다(운영 원장 실측 30칸 —
+  #   essence 는 빠뜨린 축의 칸을 적는다) — 격자 좌표로 대조하면 정상 칸이 거부되고 자식 매칭이 빗나간다(사본 검사 C3 에서 실측).
+  .cl_of <- function(x) { ce <- .rf_s1((x[["essence"]] %||% list())$cell_code); if (nzchar(ce)) ce else .rf_s1(x$cell_code) }
+  cc <- .cl_of(a)
+  cn <- .rf_s1(it$essence_new$cell_code)
+  if (nzchar(cc) && nzchar(cn) && !identical(cc, cn))
+    .rf_rb_reject("cell_mismatch", sprintf("essence_new cell_code %s ≠ 구 essence 칸 %s", cn, cc))
+  es_new <- .rf_rb_compose(a[["essence"]], it$essence_new, sib)     # ★L-B2 — 원장에 쓰는 값 = writer 조립(형제 판)
+  ro <- .rf_rb_regime_old(rf_attempt_regime(a, root), it)
+  H <- a$essence_history
+  if (!is.null(H) && !is.list(H)) .rf_rb_reject("history_malformed", "essence_history 형식 불량")
+  if (identical(ro$regime, it$regime)) {
+    mr <- a$measurement_regime
+    if (is.list(mr) && identical(.rf_s1(mr$remeasure_md5), sib$md5) &&
+        .rf_core_equal(.rf_core_of_essence(a[["essence"]]), sib$core) && identical(.rf_s1(a$grade), sib$grade))
+      return(list(obj = obj, status = "already", regime_old = ro$regime, touch_att = NULL, kids = integer(0)))
+    .rf_rb_reject("same_regime_overwrite",
+                  sprintf("이미 regime %s(%s) — 같은 regime 으로 다른 판을 쓰면 history 없이 덮어쓴다(새 regime 이름으로)", ro$regime, ro$basis))
+  }
+  if (!is.null(H[[ro$regime]]))
+    .rf_rb_reject("history_exists", sprintf("essence_history[[%s]] 가 이미 있다 — append-only(덮어쓰기 0)", ro$regime))
+  if (!is.null(H[[it$regime]]))
+    .rf_rb_reject("regime_in_history", sprintf("regime %s 는 이미 history 에 있다 — 새 regime 이름으로", it$regime))
+  rec <- list(essence = a[["essence"]], grade = a[["grade"]])
+  for (f in setdiff(RF_REBASE_REGIME_FIELDS, c("essence", "grade"))) if (!is.null(a[[f]])) rec[[f]] <- a[[f]]
+  if (!is.null(a$artifacts)) rec$artifacts <- a$artifacts
+  rec$regime <- ro$regime; rec$regime_basis <- ro$basis; rec$moved_at <- now; rec$superseded_by <- it$regime
+  H2 <- if (is.list(H)) H else list()
+  H2[[ro$regime]] <- rec
+  a$essence <- es_new
+  a$grade   <- sib$grade
+  gb <- .rf_s1(sib$auth$grade_base)
+  a$grade_base <- if (nzchar(gb)) gb else NULL
+  a$retro <- NULL; a$retro_inherited <- NULL
+  a$measurement_regime <- .rf_rb_mr_new(sib, it, now)
+  a$essence_history <- H2
+  a$rebase_log <- c(if (is.list(a$rebase_log)) a$rebase_log else list(),
+                    list(list(at = now, from = ro$regime, to = it$regime, remeasure_path = sib$path, remeasure_md5 = sib$md5,
+                              provenance = it$provenance)))
+  obj$entries[[i]]$attempts[[j]] <- a
+  # 자식 entry 의 parent$best_* — 이 칸이 그 자식을 낳은 승자면 새 regime 값으로
+  kids <- integer(0)
+  if (nzchar(cc)) {
+    same_cell <- which(vapply(e$attempts, function(x) identical(.cl_of(x), cc), logical(1)))
+    for (k2 in seq_along(obj$entries)) {
+      pr <- obj$entries[[k2]]$parent
+      if (!is.list(pr) || !identical(.rf_s1(pr$base_id), it$base_id) || !identical(.rf_s1(pr$cell), cc)) next
+      if (length(same_cell) > 1L) {   # 같은 칸 코드가 여럿이면 승자 = 구 port_t 가 기록과 같은 시도만
+        op <- suppressWarnings(as.numeric(rec$essence$port_t)); bp <- suppressWarnings(as.numeric(pr$best_port_t))
+        if (!(length(op) && length(bp) && is.finite(op[1]) && is.finite(bp[1]) && abs(op[1] - bp[1]) <= RF_REBASE_TOL)) next
+      }
+      bk <- grep("^best_", names(pr), value = TRUE)
+      before <- pr[bk]; after <- list()
+      for (b in bk) { nv <- es_new[[sub("^best_", "", b)]]; if (!is.null(nv)) { pr[[b]] <- nv; after[[b]] <- nv } }
+      if (!length(after)) next
+      obj$entries[[k2]]$parent <- pr
+      prf <- obj$entries[[k2]]$parent_rebased_from
+      obj$entries[[k2]]$parent_rebased_from <- c(if (is.list(prf)) prf else list(), list(list(
+        at = now, parent_base_id = it$base_id, cell = cc, n = as.integer(it$n),
+        regime_old = ro$regime, regime_new = it$regime, before = before, after = after)))
+      kids <- c(kids, k2)
+    }
+  }
+  list(obj = obj, status = "rebased", regime_old = ro$regime, touch_att = c(i, j), kids = kids)
+}
+
+.rf_rb_apply_base <- function(obj, i, it, blocked, root, now) {
+  e <- obj$entries[[i]]
+  hit <- .rf_flags_hit(e$base_vintage_flags, blocked)
+  if (length(hit))
+    .rf_rb_reject(paste0("blocked_flag:", paste(hit, collapse = "+")),
+                  sprintf("PIT 표식 기저(%s) — P0-05·06 재측정 경로 비편입(결정 PIT-C11-CONVENTIONS ⑧)", paste(hit, collapse = ",")))
+  sib <- .rf_rb_sibling(e$base_artifacts, it, root)
+  if (is.list(it$essence_new) && length(it$essence_new) &&
+      !.rf_core_equal(.rf_core_of_essence(it$essence_new), sib$core))
+    .rf_rb_reject("essence_mismatch", "essence_new 핵심 지표가 형제 판과 다르다")
+  if (is.list(it$essence_new) && length(it$essence_new)) invisible(.rf_rb_compose(list(), it$essence_new, sib))   # L-B2 같은 대조
+  ro <- .rf_rb_regime_old(rf_base_regime(e, root), it)
+  H <- e$base_essence_history
+  if (!is.null(H) && !is.list(H)) .rf_rb_reject("history_malformed", "base_essence_history 형식 불량")
+  if (identical(ro$regime, it$regime)) {
+    if (is.list(e$base_remeasure) && identical(.rf_s1(e$base_remeasure$md5), sib$md5) && identical(.rf_s1(e$base_grade), sib$grade))
+      return(list(obj = obj, status = "already", regime_old = ro$regime, touch_base = NULL))
+    .rf_rb_reject("same_regime_overwrite", sprintf("기저가 이미 regime %s(%s) — 새 regime 이름으로", ro$regime, ro$basis))
+  }
+  if (!is.null(H[[ro$regime]]))
+    .rf_rb_reject("history_exists", sprintf("base_essence_history[[%s]] 가 이미 있다 — append-only", ro$regime))
+  if (!is.null(H[[it$regime]]))
+    .rf_rb_reject("regime_in_history", sprintf("regime %s 는 이미 기저 history 에 있다", it$regime))
+  rec <- list(base_grade = e$base_grade)
+  for (f in setdiff(RF_REBASE_BASE_FIELDS, "base_grade")) if (!is.null(e[[f]])) rec[[f]] <- e[[f]]
+  if (!is.null(e$base_artifacts)) rec$base_artifacts <- e$base_artifacts
+  rec$regime <- ro$regime; rec$regime_basis <- ro$basis; rec$moved_at <- now; rec$superseded_by <- it$regime
+  H2 <- if (is.list(H)) H else list()
+  H2[[ro$regime]] <- rec
+  e$base_grade <- sib$grade
+  e$base_measurement_regime <- .rf_rb_mr_new(sib, it, now)
+  e$base_remeasure <- list(path = sib$path, md5 = sib$md5, grade = sib$grade, core = as.list(sib$core[is.finite(sib$core)]))
+  e$base_essence_history <- H2
+  e$base_rebase_log <- c(if (is.list(e$base_rebase_log)) e$base_rebase_log else list(),
+                         list(list(at = now, from = ro$regime, to = it$regime, remeasure_path = sib$path, remeasure_md5 = sib$md5,
+                                   provenance = it$provenance)))
+  obj$entries[[i]] <- e
+  list(obj = obj, status = "rebased", regime_old = ro$regime, touch_base = i)
+}
+
+#' 보호 투영 — 이번 배치가 만질 수 있는 필드만 뺀 원장. 두 투영이 identical 이면 그 밖의 변경 0.
+.rf_rb_strip <- function(obj, att, base, kids) {
+  obj$last_updated <- NULL
+  for (t in att) {
+    ij <- t$ij
+    a <- obj$entries[[ij[1]]]$attempts[[ij[2]]]
+    for (f in c(RF_REBASE_REGIME_FIELDS, "essence_history", "rebase_log")) a[[f]] <- NULL
+    obj$entries[[ij[1]]]$attempts[[ij[2]]] <- a
+  }
+  for (i in base) {
+    e <- obj$entries[[i]]
+    for (f in c(RF_REBASE_BASE_FIELDS, "base_essence_history", "base_rebase_log")) e[[f]] <- NULL
+    obj$entries[[i]] <- e
+  }
+  for (i in unique(kids)) {
+    e <- obj$entries[[i]]
+    if (is.list(e$parent) && length(e$parent)) e$parent <- e$parent[!startsWith(names(e$parent), "best_")]
+    e$parent_rebased_from <- NULL
+    obj$entries[[i]] <- e
+  }
+  obj
+}
+#' append-only 전수 대조 — 기존 history·log 원소는 한 비트도 바뀌지 않고 순서대로 남아 있어야 한다(모든 칸).
+.rf_rb_history_kept <- function(orig, obj) {
+  .prefix <- function(o, n) { if (!is.list(o) || !length(o)) return(TRUE)
+                              is.list(n) && length(n) >= length(o) && identical(n[seq_along(o)], o) }
+  .named <- function(o, n) { if (!is.list(o) || !length(o)) return(TRUE)
+                             is.list(n) && all(vapply(names(o), function(k) identical(n[[k]], o[[k]]), logical(1))) }
+  for (i in seq_along(orig$entries)) {
+    eo <- orig$entries[[i]]; en <- obj$entries[[i]]
+    if (!.named(eo$base_essence_history, en$base_essence_history) || !.prefix(eo$base_rebase_log, en$base_rebase_log) ||
+        !.prefix(eo$parent_rebased_from, en$parent_rebased_from)) return(FALSE)
+    for (j in seq_along(eo$attempts)) {
+      ao <- eo$attempts[[j]]; an <- en$attempts[[j]]
+      if (!.named(ao$essence_history, an$essence_history) || !.prefix(ao$rebase_log, an$rebase_log)) return(FALSE)
+    }
+  }
+  TRUE
+}
+
+#' rebase 배치 writer
+#' @param items list(list(base_id, n = 시도 번호 | "base", essence_new = 원장 요약 list(base 는 선택),
+#'   regime = 새 regime 이름, provenance = list(remeasure_path = 형제 판 경로, ...스칼라 출처), regime_old = 선택 대조값))
+#' @param skip_rejected TRUE 면 거부 칸을 사유 코드와 함께 items 결과에 남기고 나머지를 쓴다(기본 FALSE = 하나라도 거부면 0 쓰기)
+#' @param dry_run TRUE 면 잠금·쓰기 없이 검증과 결과만
+#' @return list(n_rebased, n_already, n_rejected, n_children, written, md5_before, md5_after, items)
+rf_rebase_essence_batch <- function(layer, items, root = .rf_root(), claim = NULL,
+                                    wait_s = RF_LEDGER_CLAIM_WAIT_S, poll_s = RF_LEDGER_CLAIM_POLL_S,
+                                    skip_rejected = FALSE, dry_run = FALSE,
+                                    backup_to = NULL, snapshot_after_to = NULL, .pre_write_hook = NULL) {
+  stopifnot(layer %in% c(1L, 2L))
+  if (!length(items)) stop("[reinforce_ledger] rebase — items 가 비었다", call. = FALSE)
+  IT <- lapply(seq_along(items), function(k) .rf_rb_item(items[[k]], k))      # I/O 전 전수 형식 검증
+  keys <- vapply(IT, function(x) paste0(x$base_id, "#", x$n), character(1))
+  if (anyDuplicated(keys)) stop(sprintf("[reinforce_ledger] rebase — 같은 칸이 배치에 두 번: %s",
+                                        paste(unique(keys[duplicated(keys)]), collapse = ",")), call. = FALSE)
+  blocked <- rf_rebase_block_flags(root)
+  hold <- if (isTRUE(dry_run)) NULL else .rf_ledger_claim(root, claim, wait_s, poll_s, "rebase")
+  if (!is.null(hold)) on.exit(hold$release(), add = TRUE)
+  p <- .rf_path(layer, root)
+  if (!file.exists(p)) stop("[reinforce_ledger] rebase — 원장 부재: ", p, call. = FALSE)
+  md5_a <- unname(tools::md5sum(p)); raw_a <- readBin(p, "raw", file.info(p)$size)
+  if (!isTRUE(dry_run) && !is.null(backup_to)) {
+    writeBin(raw_a, backup_to)
+    if (!identical(unname(tools::md5sum(backup_to)), md5_a))
+      stop("[reinforce_ledger] rebase — 쓰기 전 백업 대조 실패 — 쓰지 않는다: ", backup_to, call. = FALSE)
+  }
+  orig <- rf_load(layer, root); obj <- orig
+  now <- format(Sys.time(), "%Y-%m-%dT%H:%M:%S%z")
+  att <- list(); base <- integer(0); kids <- integer(0); res <- vector("list", length(IT))
+  for (k in seq_along(IT)) {
+    it <- IT[[k]]
+    r <- tryCatch({
+      i <- .rf_find(obj, it$base_id)
+      if (is.na(i)) .rf_rb_reject("entry_absent", sprintf("entry 부재: %s", it$base_id))
+      if (identical(it$n, "base")) .rf_rb_apply_base(obj, i, it, blocked, root, now)
+      else .rf_rb_apply_attempt(obj, i, it, blocked, root, now)
+    }, rf_rb_reject = function(cnd) cnd)
+    if (inherits(r, "rf_rb_reject")) {
+      if (!isTRUE(skip_rejected))
+        stop(sprintf("[reinforce_ledger] rebase 거부 #%d %s [%s] — %s — 배치 전체를 쓰지 않았다", k, keys[k], r$code,
+                     conditionMessage(r)), call. = FALSE)
+      res[[k]] <- list(key = keys[k], status = "rejected", code = r$code, reason = conditionMessage(r))
+      next
+    }
+    obj <- r$obj
+    if (!is.null(r$touch_att)) att[[length(att) + 1L]] <- list(ij = r$touch_att, ro = r$regime_old)
+    if (!is.null(r$touch_base)) base <- c(base, r$touch_base)
+    kids <- c(kids, r$kids %||% integer(0))
+    res[[k]] <- list(key = keys[k], status = r$status, regime_old = r$regime_old, regime = it$regime,
+                     n_children = length(r$kids %||% integer(0)))
+  }
+  st <- vapply(res, function(x) x$status, character(1))
+  out <- list(n_rebased = sum(st == "rebased"), n_already = sum(st == "already"), n_rejected = sum(st == "rejected"),
+              n_children = length(kids), written = FALSE, md5_before = md5_a, md5_after = md5_a, items = res)
+  if (out$n_rebased == 0L) return(invisible(out))
+
+  # ── 보호 투영 · append-only · 구판 보존(비트) — 메모리 + 직렬화 왕복 ────────────────────
+  if (!identical(.rf_rb_strip(obj, att, base, kids), .rf_rb_strip(orig, att, base, kids)))
+    stop("[reinforce_ledger] rebase — 허용 필드 밖이 바뀌었다(보호 투영 불일치) — 쓰지 않는다", call. = FALSE)
+  if (!.rf_rb_history_kept(orig, obj))
+    stop("[reinforce_ledger] rebase — 기존 history/log 원소가 바뀌었다(append-only 위반) — 쓰지 않는다", call. = FALSE)
+  .moved_ok <- function(x) all(vapply(att, function(t) { ij <- t$ij; rk <- t$ro
+    ao <- orig$entries[[ij[1]]]$attempts[[ij[2]]]; an <- x$entries[[ij[1]]]$attempts[[ij[2]]]
+    identical(an$essence_history[[rk]]$essence, ao$essence) && identical(an$essence_history[[rk]]$grade, ao$grade) }, logical(1)))
+  if (!.moved_ok(obj)) stop("[reinforce_ledger] rebase — 구 essence 가 history 로 비트 그대로 옮겨지지 않았다 — 쓰지 않는다", call. = FALSE)
+  .rt <- fromJSON(toJSON(obj, auto_unbox = TRUE, pretty = TRUE, null = "null", na = "null", digits = 6), simplifyVector = FALSE)
+  if (!identical(.rf_rb_strip(.rt, att, base, kids), .rf_rb_strip(orig, att, base, kids)) ||
+      !.rf_rb_history_kept(orig, .rt) || !.moved_ok(.rt))
+    stop("[reinforce_ledger] rebase — 직렬화 왕복이 보호 값·구판 history 를 바꾼다 — 쓰지 않는다", call. = FALSE)
+  if (isTRUE(dry_run)) return(invisible(out))
+
+  if (is.function(.pre_write_hook)) .pre_write_hook(p)
+  if (!identical(unname(tools::md5sum(p)), md5_a))
+    stop("[reinforce_ledger] rebase — 적재 뒤 원장이 바뀌었다(claim 밖 쓰기) — 덮어쓰지 않는다. 재시도하라", call. = FALSE)
+  .rf_write(obj, layer, root)
+  back <- tryCatch(rf_load(layer, root), error = function(e) NULL)
+  .nl <- function(x) { x$last_updated <- NULL; x }
+  if (is.null(back) || !identical(.nl(back), .nl(.rt))) {
+    .rf_restore_bytes(p, raw_a, "rebase")
+    stop("[reinforce_ledger] rebase — 사후 재적재 대조 실패, 원본 바이트로 되돌렸다", call. = FALSE)
+  }
+  out$written <- TRUE; out$md5_after <- unname(tools::md5sum(p))
+  if (!is.null(snapshot_after_to)) file.copy(p, snapshot_after_to, overwrite = TRUE)
+  cat(sprintf("[reinforce_ledger] rebase L%d: %d칸 · 멱등 %d · 거부 %d · 자식 parent 갱신 %d (보호 투영·history 보존 확인)\n",
+              layer, out$n_rebased, out$n_already, out$n_rejected, out$n_children))
+  invisible(out)
+}
+
+#' 단건 wrapper — rf_rebase_essence(layer, base_id, n, essence_new, regime, provenance)
+rf_rebase_essence <- function(layer, base_id, n, essence_new, regime, provenance, root = .rf_root(), regime_old = NULL, ...) {
+  it <- list(base_id = base_id, n = n, essence_new = essence_new, regime = regime, provenance = provenance)
+  if (!is.null(regime_old)) it$regime_old <- regime_old
+  rf_rebase_essence_batch(layer, list(it), root = root, ...)
+}
+
 `%||%` <- function(a, b) if (is.null(a) || length(a) == 0L || (length(a) == 1L && is.na(a))) b else a
 
-cat("[reinforce_ledger.R] Loaded (v10) — rf_open_entry / rf_append_attempt(★L1 25회 게이트·서술 의무 · root_papers 선택) / rf_record_result / rf_park_entry(조기 중단·사유 필수) / rf_record_judge / rf_record_combination_review / rf_lessons_digest / rf_record_adversary(G2 오버레이 반증 표식) / rf_record_b5_redesign(B5 재설계 라운드 표식)\n")
+cat("[reinforce_ledger.R] Loaded (v10) — rf_open_entry / rf_append_attempt(★L1 25회 게이트·서술 의무 · root_papers 선택) / rf_record_result / rf_park_entry(조기 중단·사유 필수) / rf_record_judge / rf_record_combination_review / rf_lessons_digest / rf_record_adversary(G2 오버레이 반증 표식) / rf_record_b5_redesign(B5 재설계 라운드 표식) / rf_rebase_essence(_batch)(P0-06 · history append-only) / rf_mark_axis_epoch(relabel_from · require_regime · claim) / rf_graduate_entry(보류 A 졸업)\n")

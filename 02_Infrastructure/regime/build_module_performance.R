@@ -9,7 +9,12 @@
 #   1) module_catalog.json fr_eligible=true + metric_type=backtested + contract_pass
 #   2) legacy QEPM grade_a_catalog A 모듈(마이그레이션 예외)
 # 광역 scan은 QVEST_FR_ALLOW_BROAD_SCAN=1일 때만 진단용으로 허용한다.
-# PIT: regime t-1 lag(어제 국면 → 오늘 수익 귀속, C5). 실측-only(자체합성 無).
+# PIT: ★C11 규약 (b)(2026-09-24 · 판정서 V-06): 모듈 수익 행마다 결정일 = 그 수익 창의 시작(같은 모듈 계열의
+#   직전 행 — 일간 = 직전 거래일 · 월간 = 직전 월말), 국면 라벨은 가용일(avail_date)이 결정일 이하인 최신 값.
+#   구판 "어제 국면 → 오늘 수익"(Category 1행 lag)은 미국 t-1 세션(약 14시간)을 들였고, 월간 모듈은 월말 라벨로
+#   그 달 수익을 분류했다(동월 누출). 가용일 열 없는 legacy 패널: 풀 조립(계약·등급·해시 — C11 무관)은 계속하고
+#   **국면 분할 성과(per_regime)만** 정책대로 — stop(기본) = 산출 보류(per_regime null) · label = legacy 정렬 산출 + 표식.
+#   실측-only(자체합성 無).
 # =============================================================================
 suppressPackageStartupMessages({ library(data.table); library(arrow); library(jsonlite); library(xts) })
 .find_root <- function() {
@@ -39,11 +44,30 @@ ANN <- 252
 sr  <- function(r, annf=ANN){ r<-r[is.finite(r)]; if(length(r) < (if(annf<=12) 8L else 20L) || sd(r)==0) return(NA_real_); mean(r)/sd(r)*sqrt(annf) }
 mdd <- function(r){ r<-r[is.finite(r)]; if(!length(r)) return(NA_real_); n<-cumprod(1+r); as.numeric(1-min(n/cummax(n))) }
 
-# 1. regime Category (t-1 lag for PIT)
-RG <- as.data.table(read_parquet(file.path(PROJ,".cache/unified_regime_signal_daily.parquet")))
-RG <- RG[!is.na(Category), .(Date=as.Date(Date), Category)]
+# 1. regime Category — ★C11 규약 (b)(2026-09-24): 가용일 결합. 가드 = overlay_pit_guard.R C11 층(격리 env)
+.BMP_C11 <- local({
+  .gp <- file.path(PROJ, "02_Infrastructure/validation/overlay_pit_guard.R")
+  if (!file.exists(.gp)) stop("[build_module_performance] C11 가용시점 가드 부재 — 규약 (b) 없이 국면 분할 불가: ", .gp)
+  e <- new.env(parent = globalenv()); sys.source(.gp, envir = e)
+  if (!exists("c11_asof_align", envir = e, inherits = FALSE)) stop("[build_module_performance] overlay_pit_guard.R 에 C11 층 없음(구판)")
+  e
+})
+RG0 <- as.data.table(read_parquet(file.path(PROJ,".cache/unified_regime_signal_daily.parquet")))
+RG0 <- RG0[!is.na(Category)]; RG0[, Date := as.Date(Date)]
+.C11_AVAIL <- identical(.BMP_C11$c11_panel_status(RG0, "Category"), "avail_annotated")
+## legacy 패널은 여기서 멈추지 않는다 — 풀 조립은 C11 무관. 국면 분할(per_regime)만 정책으로 가른다.
+.C11_POLICY <- if (.C11_AVAIL) NA_character_ else .BMP_C11$c11_legacy_policy()
+.C11G <- if (.C11_AVAIL) list(status = "avail_annotated", policy = NA_character_, legacy = FALSE,
+                              avail_col = .BMP_C11$c11_panel_avail_col(RG0, "Category")) else
+  list(status = if (identical(.C11_POLICY, "label")) "unresolved_legacy_panel" else "withheld_legacy_panel",
+       policy = .C11_POLICY, legacy = TRUE, avail_col = NA_character_)
+if (!.C11_AVAIL)
+  cat(sprintf(paste0("[build_module_performance] ★C11: unified_regime_signal_daily 에 가용일 열 없음(legacy · PITQ-C11-20260924)",
+                     " — 풀 조립은 계속, per_regime = %s\n"),
+              if (identical(.C11_POLICY, "label")) "legacy 정렬 산출 + 미해소 표식(label)" else "산출 보류(stop 정책 · null)"))
+RG <- RG0[, .(Date, Category)]
 setorder(RG, Date); RG[, regime_lag := shift(Category, 1L)]
-RG <- RG[!is.na(regime_lag), .(Date, regime=regime_lag)]
+RG <- RG[!is.na(regime_lag), .(Date, regime=regime_lag)]   # legacy 정렬(보류·label 경로의 행 커버리지 = 구판과 동일)
 
 # 2. 등급 LUT + FR allowlist.
 # ★v10 (2026-08-29 도훈 지시 "1계층에서 생산된 B등급 이상의 전략들을 활용"):
@@ -229,8 +253,14 @@ for(f in sim_files){
   annf <- if(identical(freq,"monthly")) 12 else 252; mdiv <- if(identical(freq,"monthly")) 1L else 21L
   bm <- if(!is.null(s$bm_xts)) data.table(Date=as.Date(index(s$bm_xts)), bm=as.numeric(s$bm_xts[,1])) else NULL
   dm <- d[, .(Date, ret=Strategy_Ret)]
-  # 월간 모듈: 월말 날짜가 RG(거래일) 미일치 가능 → roll-join으로 직전 거래일 regime 귀속(PIT t-1 정합)
-  if(identical(freq,"monthly")){ setkey(RG,Date); setkey(dm,Date); d <- RG[dm, roll=TRUE]
+  # ★C11: 가용일 패널 = 결정일(이 모듈 수익 창 시작 = 직전 행)까지 가용한 라벨 · legacy = 구판 정렬(보류/label)
+  if (.C11_AVAIL) {
+    setorder(dm, Date); dm <- dm[!duplicated(Date)]
+    .dec <- .BMP_C11$c11_window_start(dm$Date)
+    .lab <- .BMP_C11$c11_asof_align(.dec, RG0, "Category")
+    .BMP_C11$assert_overlay_pit_avail(.lab$avail_date, .dec, paste0("module_performance ", dirn))
+    d <- data.table(Date = dm$Date, ret = dm$ret, regime = .lab$value)
+  } else if(identical(freq,"monthly")){ setkey(RG,Date); setkey(dm,Date); d <- RG[dm, roll=TRUE]
   } else d <- merge(dm, RG, by="Date")
   if(!is.null(bm)) d <- merge(d, bm, by="Date", all.x=TRUE) else d[, bm:=NA_real_]
   d <- d[!is.na(regime)]
@@ -247,6 +277,8 @@ for(f in sim_files){
     per[[rg]] <- list(n_days=nrow(sub), n_months=round(nrow(sub)/mdiv,1),
       sharpe=round(sr(sub$ret,annf),3), ir=round(sr(sub$active,annf),3),
       mdd=round(mdd(sub$ret),3), mean_ann=round(mean(sub$ret,na.rm=TRUE)*annf,4)) }
+  ## ★C11: legacy 패널 + stop 정책 = 국면 분할 성과는 C11 오염이라 싣지 않는다(null). label = 싣되 표식.
+  if (!.C11_AVAIL && !identical(.C11_POLICY, "label")) per <- NA
   out[[dirn]] <- list(
     source_strategy_id = dirn, grade = meta$grade %||% "ungraded", role = meta$role %||% NA,
     origin_mode = meta$origin %||% "unknown", trust_status = meta$trust_status %||% "unlisted",
@@ -259,12 +291,16 @@ for(f in sim_files){
     sim_result_path = .rel_path(f),
     full_sharpe = round(sr(d$ret,annf),3), full_ir = round(sr(d$active,annf),3),
     n_days = nrow(d), date_range = c(as.character(min(d$Date)), as.character(max(d$Date))),
-    per_regime = per)
+    per_regime = per,
+    per_regime_pit_c11 = .C11G$status)   # avail_annotated | withheld_legacy_panel | unresolved_legacy_panel
   kept <- kept + 1
 }
 res <- list(schema_version="v3.1", generated=as.character(Sys.Date()),
             generated_by="2계층 전략 로테이션 (build_module_performance.R — 계약 floor + v10 grade floor)",
-            regime_source="unified_regime_signal_daily.parquet Category (t-1 lag PIT)",
+            regime_source=if (.C11_AVAIL) "unified_regime_signal_daily.parquet Category — C11 가용일 결합(규약 b: 모듈 수익 창 시작까지 가용)" else
+              "unified_regime_signal_daily.parquet Category — ★C11 미해소 legacy 패널(가용일 열 없음 · PITQ-C11-20260924)",
+            regime_pit_c11=.BMP_C11$c11_consumption_record(.C11G, site = "build_module_performance",
+              mode = "window_start(b): 모듈 수익 창 시작(직전 행)", n_rows = length(out), root = PROJ),
             regimes=regimes, metric_type="backtested_realized (sim_result NAV, 실측-only)",
             grade_floor=.L2_FLOOR,                       # ★v10: 이 산출물에 실제로 쓰인 floor (검사 재도출용)
             n_floor_excluded=.floor_excluded,

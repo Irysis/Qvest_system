@@ -1,6 +1,6 @@
 ---
 name: alpha-search
-description: 1계층 알파 서칭 (v10) — 논문 1편을 완전 충실구현(롱숏·종목수·비중 논문 그대로, 유니버스만 K200∪KQ150)으로 검증하고 권위 등급 산출, 2차트·성과요약 텔레그램 발송. A 미달 → 강화 원장 open / A → Judge(PIT). 의미있는 실패만 L-code 적립.
+description: 1계층 알파 서칭 (v10) — 논문 1편을 완전 충실구현(롱숏·종목수·비중 논문 그대로, 유니버스만 K200∪KQ150)으로 검증하고 권위 등급 산출, 2차트·성과요약 텔레그램 발송. A 미달 → 강화 원장 open / A → 러너가 A 자격 관문 rf_a_eligibility(충실구현 어댑터 · P0-13)를 태워 통과 = 산출 judge_request.eligible.json(Judge(PIT) 트리거) · 보류 = judge_request.held.json(사유 코드 · 트리거 아님) → [1계층] A 후보 보고. 의미있는 실패만 L-code 적립.
 ---
 
 # 1계층 알파 서칭 (v10 2026-08-29 — 완전 충실구현)
@@ -40,6 +40,7 @@ Weight[, Leg])`. **PIT 필수**: 동일시점 순환참조 금지, 과거 윈도
 익년 3/31·분기 45일+). 위반 시 중단.
 
 ### 3. 실행 (충실구현)
+**선확인(측정 직전)**: `bash 02_Infrastructure/ops/refresh_barrier.sh status` 가 `state=free` 가 아니면 측정 보류 — 잠금 해제 후 재시도(`daily_refresh` 창에선 RAWDATA K200/KQ150 이 NA 라 에러 없이 틀린 등급 · 러너는 배리어를 안 본다 — 무인 레인만 본다).
 ```r
 source("02_Infrastructure/alpha_search/run_paper_replication.R")
 run_paper_replication(
@@ -54,13 +55,13 @@ run_paper_replication(
 경로: 데이터(전기간 — lockbox 폐지) → engine → 유니버스 치환 → **PIT(중단 게이트)** →
 `run_replication_simulation`(비중 기반·롱숏·상한 없음) → bt_result 계약 → essence 등급
 (`authoritative_remeasure.json`) → 2차트 → 텔레그램 `[1계층]` → L-code(`paper_replication`)
-→ 분기(A → `judge_request.json` / 미달 → 강화 원장 open).
+→ 분기(A → A 자격 관문 `rf_a_eligibility`(충실구현 어댑터 · P0-13): 통과 = 산출물 `judge_request.eligible.json`(Judge 트리거) · 보류 = `judge_request.held.json`(사유 코드 · 요청 미발행) / 미달 → 강화 원장 open).
 
 ### 4. 결과 해석 + 분기
 - 등급·수치는 **`authoritative_remeasure.json` 값만 인용**(권위 = essence). 손계산 금지.
   `hurdle` 등급 = 진단(proxy) — 인용 금지. MDD 는 등급을 접지 않는다(Calmar 하나).
 - 보고 3줄(lean-loop 양식): ①등급·CAGR·SR·MDD·n_max(+논문 기준 병기) ②기전 1줄 ③다음.
-- **Grade A** → Judge(PIT 전담) 스폰 → PASS → BOOK 후보(도훈 confirm).
+- **Grade A** → 러너 §11 이 A 자격 관문(`rf_a_eligibility` · 충실구현 어댑터 · P0-13)을 태운 결과를 읽는다(반환 `a_gate` · 산출 디렉터리). 통과 = 산출물 `judge_request.eligible.json`(`status=pending` = Judge 트리거) → Judge(PIT 전담) → PASS → BOOK 후보(도훈 confirm) · 보류 = 산출물 `judge_request.held.json`(사유 코드 · 요청 미발행 · 등급 불변) → `[1계층]` A 후보(보류 사유 병기)로 도훈 보고. 정본 = `.claude/agents/judge.md` §스폰 조건.
 - **미달** → `Skill(reinforce)` — 원장 n/25, 축 = 멀티팩터/비중방법론/유니버스/리스크오버레이/결합.
 
 ## L-code 적립 (PASS + 의미있는 실패만)

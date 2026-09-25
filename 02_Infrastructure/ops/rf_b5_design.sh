@@ -283,10 +283,17 @@ rf_llm_before_fallback() {
 }
 RUN_OUT="$GDIR/run_r${ROUND}.out"
 jl model_selected "base_id=$BID" "model=$LLM_MODEL" "effort=$LLM_EFFORT" "fallback=${LLM_FALLBACK_MODEL:-none}"
-rf_llm_agent_run "$PF" "$RUN_OUT" "${QVEST_B5_TIMEOUT:-2400}" \
+# ★설계 레인 성과 열람 봉쇄(P0-M2 2026-09-25): QVEST_DESIGN_LANE=1 = 함수 호출 앞 임시 대입 — 1차·폴백 두 claude 와 그 훅에만
+#   실리고 호출 뒤 셸에는 남지 않는다(뒤따르는 G1 감사·등재 자식에는 안 샌다). 훅 arm_gen_read_guard.sh 가 원장·측정 산출물·
+#   기억 디렉터리 직접 열람을 막는다 — arm 성과 이력은 재료 (3) 에 날짜 없이 들어 있다(09-25 transcript: 설계 세션이
+#   reinforce_ledger_l1.json 을 Read/Grep 으로 직접 읽어 셀별 port_t·calmar 를 봤다). PowerShell 도 금지 — 훅 matcher 밖.
+#   (P0-M2 수리 2026-09-25 · B-1) 셸 통로 전부 금지 = CLI 2.1.261 이 enablesCodeExecution 으로 표시한 내장 도구 7종
+#   (Bash·PowerShell·Monitor·REPL·Workflow·CronCreate·RemoteTrigger). Monitor 는 셸 명령을 돌려 출력을 이벤트로 돌려준다 —
+#   충실도 감사 세션(25caa112 · 09-17)이 Bash 금지 아래서 Monitor 로 diff 를 돌렸다. 훅 matcher(Read|Grep|Glob) 밖이라 막는 곳은 여기뿐.
+QVEST_DESIGN_LANE=1 rf_llm_agent_run "$PF" "$RUN_OUT" "${QVEST_B5_TIMEOUT:-2400}" \
   --permission-mode acceptEdits \
   --allowed-tools "Read,Write,Edit,Glob,Grep" \
-  --disallowed-tools "Bash,Agent" \
+  --disallowed-tools "Bash,PowerShell,Monitor,REPL,Workflow,CronCreate,RemoteTrigger,Agent" \
   --add-dir "$ADIR" --add-dir "$GDIR"
 RC=$LLM_RC
 [ -f "$RUN_OUT.primary" ] && cat "$RUN_OUT.primary" >> "$LOG"

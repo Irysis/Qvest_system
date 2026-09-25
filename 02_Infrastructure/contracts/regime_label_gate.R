@@ -72,6 +72,27 @@ RLG_EXPANSION_LABELS <- c("RISK_ON", "NEUTRAL")
 
 .rlg_cache <- new.env(parent = emptyenv())
 
+## ── ★C11 가용시점 층 (2026-09-24 · 판정서 V-06 · 1-5 "regime_label_gate 는 경고 전용 진단 도구") ──────
+## 관문은 **소비 지점과 같은 라벨 구성**을 재야 한다(위 ②). RCMA 가 C11 규약 (b)(가용일 결합)로 바뀌었으므로
+## daily_t1_monthstart 도 같은 구성을 쓴다: 홀딩월 m 의 벤치 수익 창은 m-1 마지막 거래일 종가에 시작하므로
+## 결정일 = 그 날, 라벨 = 그 날까지 가용한(avail_date <= 결정일) 최신 Category. 가용일 열 없는 legacy 패널은
+## 구판 구성으로 재되 결과에 pit_c11 = unresolved_legacy_panel 을 싣는다(진단 도구 — 멈추지 않는다.
+## 소비자 RCMA 는 legacy 패널에서 기본 중단한다). 다른 basis 는 각 소비 지점의 구성을 그대로 재고 표식만 단다.
+.rlg_c11_env <- new.env(parent = emptyenv())
+.rlg_c11 <- function(proj = NULL) {
+  g <- .rlg_c11_env$g
+  if (!is.null(g)) return(g)
+  f <- file.path(.rlg_root(proj), "02_Infrastructure/validation/overlay_pit_guard.R")
+  if (!file.exists(f)) stop("[rlg] C11 가용시점 가드 부재(가용일 패널을 결합할 수 없음): ", f)
+  e <- new.env(parent = globalenv()); sys.source(f, envir = e)
+  if (!exists("c11_asof_align", envir = e, inherits = FALSE)) stop("[rlg] overlay_pit_guard.R 에 C11 층 없음(구판): ", f)
+  .rlg_c11_env$g <- e
+  e
+}
+## ★r1(표식 계약 통일): 가용일 열 이름만이 아니라 Date 형 + 현행 규칙 epoch(overlay_pit_guard c11_panel_status)까지 본다.
+.rlg_has_avail <- function(RG, col = "Category", proj = NULL)
+  tryCatch(identical(.rlg_c11(proj)$c11_panel_status(RG, col), "avail_annotated"), error = function(e) FALSE)
+
 #' 정본 국면 라벨 × 벤치 월수익 패널 (PIT: 홀딩월 시작 전 라벨만)
 #'
 #' 라벨 정본 = `.cache/unified_regime_signal_daily.parquet::Category`
@@ -115,6 +136,9 @@ regime_label_monthly_panel <- function(proj = NULL, refresh = FALSE,
   if (is.null(RG) || is.null(B)) return(NULL)
   lab_col <- if (identical(label_basis, "alpha_scores_regime_state")) "regime_state" else "Category"
   if (!(lab_col %in% names(RG))) return(NULL)
+  c11_status <- if (identical(label_basis, "alpha_scores_regime_state")) "not_assessed(alpha_scores regime_state — C11 판정 범위 밖)" else
+    if (label_basis %in% c("monthly_prev", "monthly_same")) "unresolved_label_basis(월말 라벨 구성 — 가용일 미사용 · V4 소견)" else
+    if (.rlg_has_avail(RG, proj = proj)) "avail_annotated" else "unresolved_legacy_panel"
 
   if (identical(label_basis, "alpha_scores_regime_state")) {
     ## 배포 경로 규약: sig_date(월초) 라벨이 **그 달**의 β 를 정한다 → 같은 ym 과 짝짓는다.
@@ -138,13 +162,27 @@ regime_label_monthly_panel <- function(proj = NULL, refresh = FALSE,
     setorder(RG, ym_sig)
     RG[, ym := format(as.Date(paste0(ym_sig, "01"), "%Y%m%d") + 32L, "%Y%m")]  # 직전월 신호 → 홀딩월
     lab_m <- unique(RG[, .(ym, regime = Category)], by = "ym")
+  } else if (.rlg_has_avail(RG, proj = proj)) {
+    ## ★C11 가용일 구성(RCMA 정합): 홀딩월 첫 벤치 거래일 수익의 창 시작 = 직전 벤치 거래일 종가 = 결정일
+    g11 <- .rlg_c11(proj)
+    RG0 <- RG[!is.na(Category)]; RG0[, Date := as.Date(Date)]; RG0[, Category := as.character(Category)]
+    .bn <- names(B); .dc <- .bn[tolower(.bn) == "date"][1]; .rc <- .bn[tolower(.bn) == "bm_ret"][1]
+    if (is.na(.dc) || is.na(.rc)) return(NULL)
+    .bd <- sort(unique(as.Date(B[[.dc]][!is.na(B[[.rc]])])))
+    if (length(.bd) < 2L) return(NULL)
+    .first <- .bd[!duplicated(format(.bd, "%Y%m"))]
+    .pos <- match(.first, .bd) - 1L
+    .dec <- .bd[pmax(.pos, 1L)]; .dec[.pos < 1L] <- NA
+    .lab <- g11$c11_asof_align(.dec, RG0, "Category")
+    g11$assert_overlay_pit_avail(.lab$avail_date, .dec, "regime_label_gate daily_t1_monthstart")
+    lab_m <- data.table(ym = format(.first, "%Y%m"), regime = as.character(.lab$value))[!is.na(regime)]
   } else {
     RG <- RG[!is.na(Category), .(Date = as.Date(Date), Category = as.character(Category))]
     setorder(RG, Date)
-    RG[, regime := shift(Category, 1L)]                  # ★ RCMA 와 동일한 t-1 lag
+    RG[, regime := shift(Category, 1L)]                  # (구판·legacy 패널) RCMA 구판과 동일한 t-1 lag
     RG <- RG[!is.na(regime)]
     RG[, ym := format(Date, "%Y%m")]
-    lab_m <- RG[order(Date), .SD[1L], by = ym][, .(ym, regime)] # 월 첫 거래일 = 홀딩월 시작 전
+    lab_m <- RG[order(Date), .SD[1L], by = ym][, .(ym, regime)] # 월 첫 행(★C11 미해소 — 미국 전일 세션 포함)
   }
 
   setnames(B, tolower(names(B)))
@@ -156,6 +194,7 @@ regime_label_monthly_panel <- function(proj = NULL, refresh = FALSE,
   M <- merge(lab_m, ret_m, by = "ym")[n_days >= 10L]      # 반쪽 월 제외(사건 정의 불안정)
   setorder(M, ym)
   if (nrow(M) == 0L) return(NULL)
+  setattr(M, "pit_c11", c11_status)
   .rlg_cache[[key]] <- M
   M
 }
@@ -177,6 +216,7 @@ regime_label_gate <- function(asof = NULL,
   stress_labels <- .rlg_or(stress_labels, .def$stress)
 
   M <- regime_label_monthly_panel(proj, label_basis = label_basis)
+  c11 <- if (is.null(M)) NA_character_ else .rlg_or(attr(M, "pit_c11"), NA_character_)
   if (is.null(M))
     return(list(eligible = NA, verdict = "UNAVAILABLE_PANEL",
                 reason = "라벨/벤치 정본 패널을 읽지 못함 — 자격 판정 불가(합격 아님)",
@@ -193,7 +233,8 @@ regime_label_gate <- function(asof = NULL,
                 reason = sprintf("asof=%s 이하 월 관측 0 — 자격 판정 불가(합격 아님)", as.character(asof)),
                 recall = NA_real_, base_rate = NA_real_, lift = NA_real_, fisher_p = NA_real_,
                 n = 0L, n_on = 0L, n_event = 0L,
-                asof = as.character(.rlg_or(asof, NA)), event_definition = NA_character_))
+                asof = as.character(.rlg_or(asof, NA)), event_definition = NA_character_,
+                pit_c11 = c11))
 
   on <- M$regime %in% stress_labels
   g  <- le(on, M$bm_m < event_threshold)
@@ -222,7 +263,9 @@ regime_label_gate <- function(asof = NULL,
       monthly_prev              = ".cache/unified_regime_signal.parquet::Category (직전월 신호 → 홀딩월)",
       monthly_same              = ".cache/unified_regime_signal.parquet::Category (동월 라벨 — lag 없음, get_regime_at_date 규약)",
       alpha_scores_regime_state = "stage_artifacts/WT_D20260425_010/alpha_scores.parquet::regime_state (sig_date=홀딩월초)",
-      ".cache/unified_regime_signal_daily.parquet::Category (t-1 lag, month-start)"),
+      if (identical(c11, "avail_annotated")) ".cache/unified_regime_signal_daily.parquet::Category (C11 가용일 결합 — 홀딩월 창 시작 = 직전월 마지막 벤치 거래일 종가)"
+      else ".cache/unified_regime_signal_daily.parquet::Category (t-1 lag, month-start · ★C11 미해소 legacy)"),
+    pit_c11          = c11,
     metric_type      = "diagnostic_event_definition",
     diag_deep        = list(threshold = RLG_EVENT_THR_DIAG, lift = g_diag$lift,
                             fisher_p = g_diag$fisher_p, verdict = g_diag$verdict),
@@ -266,6 +309,7 @@ rlg_summary <- function(g) {
        label_definition = g$label_definition, label_source = g$label_source,
        metric_type = g$metric_type,
        diag_deep = g$diag_deep, diag_expansion = g$diag_expansion, diag_lag1 = g$diag_lag1,
+       pit_c11 = if (is.null(g$pit_c11)) NA_character_ else g$pit_c11,
        contract = "02_Infrastructure/contracts/label_eligibility_gate.R (FQ-119)")
 }
 

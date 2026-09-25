@@ -40,7 +40,10 @@
 #                      ① trailing PORT_t>0 ② placebo p<0.05 ③ ΔSR>0 ∧ |cor|<0.30. holdout은 증거 불가(봉인).
 #                      retention<0.5는 증거 무관 FAIL(band 남용 차단).
 #   oos_fail_pattern : 선택 라벨 "overfit"/"decay" — FAIL 시 사유 분리(decay→screen_route 라우팅, 자본졸업 불가).
-# Returns: list(grade, metric_type, essence{...}, hard_fail, hard_fail_source, structural_drawdown, reasons)
+# Returns: list(grade, metric_type, essence{...}, hard_fail, hard_fail_source, structural_drawdown, reasons,
+#                diagnostics{...})   <- (P0-02 2026-09-24) 등급 밖 진단 — oos_components · effective_start ·
+#                                       window_deviation_months · oos_retention_calendar. 판정 불변(진단 절 참조).
+# essence_diagnostics(bt_result) — 같은 진단만 산출(재채점 없음 · 형제 백필용).
 #==============================================================================
 
 suppressPackageStartupMessages({ library(data.table) })
@@ -177,6 +180,232 @@ suppressPackageStartupMessages({ library(data.table) })
 .thr1 <- function(x) {
   s <- format(x, trim = TRUE, scientific = FALSE)
   if (grepl(".", s, fixed = TRUE)) s else paste0(s, ".0")
+}
+
+#==============================================================================
+# 활성 시계열 · 분할 성분 공용 부품 (2026-09-24 · 플랜 P0-02 — 등급 경로와 진단 경로가 **같은 코드**를 쓴다)
+#
+# ★등급 불변: 아래 부품은 구판 essence_score() 본문(인라인 시계열 추출 · vapply 분할)을 **그대로 옮긴** 것이다 —
+#   연산 순서·문턱 리터럴·NA 규칙이 같다. 옮긴 이유는 진단(essence_diagnostics · 형제 백필)이 등급 경로와
+#   다른 사본을 들고 있으면 둘이 조용히 갈라지기 때문이다(이 파일 머리 v9 §3.3 쌍둥이 드리프트와 같은 계통).
+#   검사 = 08_Tests/contracts/test_essence_oos_components.R R1(변경 전 판본 git blob 과 identical 대조).
+#==============================================================================
+.ESSENCE_OOS_SPLITS <- list(v1 = 0.65, v2 = c(0.55, 0.65, 0.75))   # 구판 인라인 값 그대로 — 값 변경 = 정의 변경(도훈 권한)
+.ESSENCE_MIN_SEG <- 6L                                             # 구판 인라인 `k < 6 || (n - k) < 6` 그대로
+
+.essence_oos_splits <- function(oos_stat_version) {
+  if (identical(oos_stat_version, "v1")) .ESSENCE_OOS_SPLITS$v1 else .ESSENCE_OOS_SPLITS$v2
+}
+
+# 연환산 인자 — 계약 metrics 의 annualization_factor, 없으면 12 (구판 두 줄 그대로)
+.essence_af <- function(M) {
+  af <- suppressWarnings(as.numeric(M[["annualization_factor"]][1]))
+  if (length(af) != 1 || !is.finite(af)) af <- 12
+  af
+}
+
+# 순 활성 시계열 a = ret_net - benchmark_ret (날짜 정렬 · 유한값만) + 그 날짜. 판독 불가면 NULL.
+.essence_active_series <- function(bt_result) {
+  pr <- bt_result$period_returns; br <- bt_result$benchmark_returns
+  if (is.null(pr) || is.null(br)) return(NULL)
+  pr <- as.data.table(pr); br <- as.data.table(br)
+  if (!(all(c("date", "ret_net") %in% names(pr)) &&
+        all(c("date", "benchmark_ret") %in% names(br)))) return(NULL)
+  m <- merge(pr[, .(date, ret_net)], br[, .(date, benchmark_ret)], by = "date")
+  setorder(m, date)
+  a <- m$ret_net - m$benchmark_ret
+  keep <- is.finite(a)
+  list(a = a[keep], date = m$date[keep])
+}
+
+# 한 분할의 IS/OOS 활성 IR 과 retention — retention 규칙은 구판 그대로(IS IR > 0.05 일 때만 비율)
+.essence_ir_split <- function(ia, oa, af) {
+  is_ir  <- if (sd(ia) > 0) mean(ia) / sd(ia) * sqrt(af) else NA_real_
+  oos_ir <- if (sd(oa) > 0) mean(oa) / sd(oa) * sqrt(af) else NA_real_
+  list(n_is = length(ia), n_oos = length(oa), is_ir = is_ir, oos_ir = oos_ir,
+       retention = if (is.finite(is_ir) && is_ir > 0.05 && is.finite(oos_ir)) oos_ir / is_ir else NA_real_)
+}
+
+# 비율 분할(등급 경로) — 절단점 k = floor(n * fr), 양쪽 최소 .ESSENCE_MIN_SEG 관측
+.essence_split_components <- function(a, splits, af) {
+  n <- length(a)
+  lapply(splits, function(fr) {
+    k <- floor(n * fr)
+    if (k < .ESSENCE_MIN_SEG || (n - k) < .ESSENCE_MIN_SEG)
+      return(list(split = fr, n_is = as.integer(k), n_oos = as.integer(n - k),
+                  is_ir = NA_real_, oos_ir = NA_real_, retention = NA_real_))
+    c(list(split = fr), .essence_ir_split(a[1:k], a[(k + 1):n], af))
+  })
+}
+
+#==============================================================================
+# P0-02 진단 필드 (2026-09-24 · 플랜 qvest-1-drifting-eclipse P0-02 · 도훈 결정 D-C)
+#
+# ★등급 불변 — 여기서 만드는 값은 판정에 들어가지 않는다. essence_score() 는 등급·사유를 확정한
+#   **뒤** 반환 객체 끝에 `diagnostics` 한 칸을 덧붙일 뿐이고, 그 계산이 실패해도(tryCatch)
+#   다른 필드는 비트 동일하다.
+#
+# 왜 필요한가 (감사 D10-10·D4-09·D1-08·D1-03·D8-07 · D5 missed):
+#   ① retention 을 **비율만** 저장했다 — IS 가 무너진 것인지 OOS 가 좋아진 것인지 가를 수 없었다.
+#      → 분할별 is_ir/oos_ir/n (oos_components). 등급이 쓴 바로 그 분할이다.
+#   ② 창이 고정 축(2005-01-01~)을 벗어난 칸이 표식 없이 섞였다(감사 시점 강화 1099칸 중 168칸이 2007~13년 시작,
+#      retention 0.7 이상 43칸 중 32칸이 2011~13년 시작 창). → effective_start · window_deviation_months.
+#      허용 = 기저 최장 룩백 12개월(도훈 D-C) — 초과 칸의 처분(A 보류 · 바닥·carry 제외)은 P0-12 소관.
+#   ③ 비율 분할은 창 시작이 늦으면 절단점도 따라 늦어진다 — 같은 달력 구간을 비교하지 않는다.
+#      → oos_retention_calendar = 고정 달력 분할의 retention 중앙값. **진단 전용**(D3-10 반증 —
+#        정의 교체가 아니다). 2005년 시작 칸에서 비율판과 같아지도록 날짜를 등록했다(설정 _source 참조).
+#
+# 설정 = constraint_defaults.json::diagnostics — ★tier_graduation **밖**(진단 키가 문턱 정본 안에 있으면
+#   등급 정의 변경으로 오독된다 · 비평 8). 파일·키가 없으면 **리터럴로 폴백하지 않고** 그 진단을 NA 로
+#   둔다 — 등급과 무관하므로 미측정이 정직하다(폴백 수치를 지어내면 하드코딩이다).
+#==============================================================================
+.ESSENCE_DIAG_VERSION <- "essence_diag_v1"
+.DIAG_CACHE <- new.env(parent = emptyenv())
+
+#' 진단 설정 로더 — constraint_defaults.json::diagnostics (캐시 = R 세션, .graduation_params 와 같은 규약)
+#' @return list(window_anchor_date<Date>, window_allowance_months<num>, oos_calendar_splits<Date[]>,
+#'              axes_weight_tol<num>) + attr source / missing_keys. 결측 = NA(폴백 리터럴 없음).
+.essence_diag_params <- function(refresh = FALSE, root = NULL) {
+  if (!refresh && is.null(root) && !is.null(.DIAG_CACHE$p)) return(.DIAG_CACHE$p)
+  r0 <- if (!is.null(root)) root else .graduation_root()
+  f <- if (!is.na(r0) && nzchar(r0)) {
+    file.path(r0, "02_Infrastructure", "worktask", "constraint_defaults.json")
+  } else NA_character_
+  dg <- NULL
+  if (!is.na(f) && file.exists(f) && requireNamespace("jsonlite", quietly = TRUE))
+    dg <- tryCatch(jsonlite::fromJSON(f, simplifyVector = TRUE)[["diagnostics"]], error = function(e) NULL)
+  # ★`[[ ]]` 정확 일치 — `$` 부분 일치가 *_source 문자열 키를 집는 함정(이 파일 머리 주석)
+  .d1 <- function(v) {
+    d <- tryCatch(as.Date(as.character(v)[1]), error = function(e) as.Date(NA))
+    if (length(d) == 1L) d else as.Date(NA)
+  }
+  .n1 <- function(v) {
+    x <- suppressWarnings(as.numeric(v)[1])
+    if (length(x) == 1L && is.finite(x)) x else NA_real_
+  }
+  .dv <- function(v) {
+    d <- tryCatch(as.Date(as.character(unlist(v))), error = function(e) as.Date(character(0)))
+    sort(d[!is.na(d)])
+  }
+  p <- list(
+    window_anchor_date      = if (is.null(dg)) as.Date(NA) else .d1(dg[["window_anchor_date"]]),
+    window_allowance_months = if (is.null(dg)) NA_real_    else .n1(dg[["window_allowance_months"]]),
+    oos_calendar_splits     = if (is.null(dg)) as.Date(character(0)) else .dv(dg[["oos_calendar_splits"]]),
+    axes_weight_tol         = if (is.null(dg)) NA_real_    else .n1(dg[["axes_weight_tol"]]))
+  miss <- names(p)[vapply(p, function(v) length(v) == 0L || all(is.na(v)), logical(1))]
+  attr(p, "source") <- if (is.null(dg)) NA_character_ else f
+  attr(p, "missing_keys") <- miss
+  if (is.null(root)) .DIAG_CACHE$p <- p
+  p
+}
+
+# 달력 월 차(to - from) — 일(day)은 버린다: 2005-01-01 → 2012-01-02 = 84, → 2005-02-01 = 1
+.essence_month_diff <- function(from, to) {
+  if (length(from) != 1L || length(to) != 1L || is.na(from) || is.na(to)) return(NA_integer_)
+  a <- as.POSIXlt(as.Date(from)); b <- as.POSIXlt(as.Date(to))
+  as.integer((b$year - a$year) * 12L + (b$mon - a$mon))
+}
+
+.essence_as_date <- function(x) {
+  if (inherits(x, "Date")) return(x)
+  if (inherits(x, "POSIXt")) return(as.Date(format(x, "%Y-%m-%d")))   # 표시 시각대의 달력일 — UTC 절단 금지
+  tryCatch(as.Date(as.character(x)), error = function(e) rep(as.Date(NA), length(x)))
+}
+
+# 첫 보유일 — holdings 에서 비중 != 0 인 첫 날(복제 하네스·계약은 집행일로 찍는다)
+.essence_first_holding_date <- function(h) {
+  h <- tryCatch(as.data.table(h), error = function(e) NULL)
+  if (is.null(h) || !nrow(h)) return(as.Date(NA))
+  dc <- intersect(c("date", "Date", "Exec_Date"), names(h))
+  if (!length(dc)) return(as.Date(NA))
+  wc <- intersect(c("actual_weight", "target_weight", "weight", "Weight"), names(h))
+  d <- .essence_as_date(h[[dc[1]]])
+  w <- if (length(wc)) suppressWarnings(as.numeric(h[[wc[1]]])) else rep(1, nrow(h))
+  keep <- !is.na(d) & is.finite(w) & w != 0
+  if (!any(keep)) return(as.Date(NA))
+  min(d[keep])
+}
+
+# 첫/끝 수익일 — period_returns 에서 ret_net 이 유한하고(첫날은 != 0) 기록된 날
+.essence_return_span <- function(pr) {
+  pr <- tryCatch(as.data.table(pr), error = function(e) NULL)
+  na2 <- list(first = as.Date(NA), last = as.Date(NA))
+  if (is.null(pr) || !nrow(pr) || !all(c("date", "ret_net") %in% names(pr))) return(na2)
+  d <- .essence_as_date(pr$date)
+  r <- suppressWarnings(as.numeric(pr$ret_net))
+  live <- !is.na(d) & is.finite(r)
+  nz <- live & r != 0
+  list(first = if (any(nz)) min(d[nz]) else as.Date(NA),
+       last  = if (any(live)) max(d[live]) else as.Date(NA))
+}
+
+.essence_median_finite <- function(x) {
+  x <- suppressWarnings(as.numeric(x)); x <- x[is.finite(x)]
+  if (length(x)) stats::median(x) else NA_real_
+}
+
+# 달력 분할 — IS = date <= split_date · OOS = date > split_date (비율판과 같은 최소 관측·retention 규칙)
+.essence_calendar_components <- function(a, dates, split_dates, af) {
+  d <- .essence_as_date(dates)
+  lapply(seq_along(split_dates), function(i) {
+    s <- split_dates[i]
+    ii <- which(!is.na(d) & d <= s); oo <- which(!is.na(d) & d > s)
+    if (length(ii) < .ESSENCE_MIN_SEG || length(oo) < .ESSENCE_MIN_SEG)
+      return(list(split_date = format(s), n_is = length(ii), n_oos = length(oo),
+                  is_ir = NA_real_, oos_ir = NA_real_, retention = NA_real_))
+    c(list(split_date = format(s)), .essence_ir_split(a[ii], a[oo], af))
+  })
+}
+
+# 진단 조립 — act = .essence_active_series() (NULL 가능) · comps = 등급에 쓰인 비율 분할 성분(NULL 가능)
+.essence_diag_build <- function(bt_result, act, af, comps, dp) {
+  .num <- function(cc, k) if (!length(cc)) numeric(0) else
+    vapply(cc, function(x) suppressWarnings(as.numeric(x[[k]])), numeric(1))
+  cal <- if (!is.null(comps) && !is.null(act) && length(dp$oos_calendar_splits))
+    .essence_calendar_components(act$a, act$date, dp$oos_calendar_splits, af) else list()
+  hd <- .essence_first_holding_date(bt_result$holdings)
+  rs <- .essence_return_span(bt_result$period_returns)
+  cand <- c(hd, rs$first); cand <- cand[!is.na(cand)]
+  eff <- if (length(cand)) min(cand) else as.Date(NA)
+  src <- if (is.na(eff)) NA_character_
+         else if (!is.na(hd) && !is.na(rs$first) && hd == rs$first) "holdings=period_returns"
+         else if (!is.na(hd) && hd == eff) "holdings" else "period_returns"
+  dev   <- .essence_month_diff(dp$window_anchor_date, eff)
+  allow <- dp$window_allowance_months
+  wm    <- .essence_month_diff(eff, rs$last)
+  list(
+    version = .ESSENCE_DIAG_VERSION,
+    status = "ok",
+    note = "등급 밖 진단(P0-02) — 판정·문턱과 무관. 정의 = essence_score.R 진단 절 · 설정 = constraint_defaults.json::diagnostics",
+    oos_components = if (is.null(comps)) list() else comps,
+    oos_is_ir_median  = .essence_median_finite(.num(comps, "is_ir")),
+    oos_oos_ir_median = .essence_median_finite(.num(comps, "oos_ir")),
+    oos_retention_calendar = .essence_median_finite(.num(cal, "retention")),
+    oos_calendar_components = cal,
+    effective_start = if (is.na(eff)) NA_character_ else format(eff),
+    effective_start_source = src,
+    first_holding_date = if (is.na(hd)) NA_character_ else format(hd),
+    first_return_date  = if (is.na(rs$first)) NA_character_ else format(rs$first),
+    effective_end      = if (is.na(rs$last)) NA_character_ else format(rs$last),
+    window_months = if (is.na(wm)) NA_integer_ else wm + 1L,          # 달력 월 수(양끝 포함)
+    window_anchor_date = if (is.na(dp$window_anchor_date)) NA_character_ else format(dp$window_anchor_date),
+    window_deviation_months = dev,
+    window_allowance_months = allow,
+    window_exceeds_allowance = if (is.na(dev) || !is.finite(allow)) NA else (dev > allow),
+    params = list(source = if (is.null(attr(dp, "source"))) NA_character_ else attr(dp, "source"),
+                  missing_keys = if (is.null(attr(dp, "missing_keys"))) character(0) else attr(dp, "missing_keys")))
+}
+
+#' 진단만 산출 (재채점 없음) — 형제 백필(rf_preflight.R::rf_essence_diag_backfill)·검사용.
+#'   essence_score()$diagnostics 와 같은 값을 낸다(패리티 = 검사 R2). 등급·사이드카 로그를 건드리지 않는다.
+essence_diagnostics <- function(bt_result, oos_stat_version = "v2", root = NULL) {
+  M <- tryCatch(as.data.table(bt_result$metrics), error = function(e) data.table())
+  af <- .essence_af(M)
+  act <- .essence_active_series(bt_result)
+  comps <- NULL
+  if (!is.null(act) && length(act$a) >= 12 && sd(act$a) > 0)   # essence_score() 의 분할 진입 문과 같다
+    comps <- .essence_split_components(act$a, .essence_oos_splits(oos_stat_version), af)
+  .essence_diag_build(bt_result, act, af, comps, .essence_diag_params(root = root))
 }
 
 .essence_drawdown_profile <- function(bt_result, mdd,
@@ -357,8 +586,7 @@ essence_score <- function(bt_result, n_trials_cumulative = NULL,
   dd_profile <- .essence_drawdown_profile(bt_result, mdd, severe = mdd_hard)
 
   # --- 활성(alpha) 시계열: OOS retention(과적합, DSR 대체) + DSR(스윕 한정) ---
-  af <- suppressWarnings(as.numeric(M[["annualization_factor"]][1]))
-  if (length(af) != 1 || !is.finite(af)) af <- 12
+  af <- .essence_af(M)   # (P0-02) 구판 두 줄을 공용 부품으로 — 같은 식
   dsr <- NA_real_; oos_retention <- NA_real_; oos_retention_splits <- NA_real_
   # DSR *게이트* = sweep형 selection(열거집합 argmax/threshold-pick)에서만 (도훈 mandate 2026-06-10).
   #   selection_type "sweep"=강제 / "chain"(가설주도 순차개선, IS-only 선택 규율)=면제 /
@@ -367,27 +595,18 @@ essence_score <- function(bt_result, n_trials_cumulative = NULL,
   is_sweep <- if (identical(selection_type, "chain")) FALSE
               else if (identical(selection_type, "sweep")) TRUE
               else has_trials
-  pr <- bt_result$period_returns; br <- bt_result$benchmark_returns
-  if (!is.null(pr) && !is.null(br)) {
-    pr <- as.data.table(pr); br <- as.data.table(br)
-    if (all(c("date", "ret_net") %in% names(pr)) &&
-        all(c("date", "benchmark_ret") %in% names(br))) {
-      m <- merge(pr[, .(date, ret_net)], br[, .(date, benchmark_ret)], by = "date")
-      setorder(m, date)
-      a <- m$ret_net - m$benchmark_ret; a <- a[is.finite(a)]
+  ## (P0-02) 시계열 추출·분할 성분을 공용 부품(.essence_active_series · .essence_split_components)으로 옮겼다 —
+  ##   식은 구판 인라인과 같다(검사 R1 identical). 성분(.comps)은 반환 diagnostics$oos_components 로 나간다.
+  .act <- .essence_active_series(bt_result); .comps <- NULL
+  if (!is.null(.act)) {
+      a <- .act$a
       n <- length(a)
       if (n >= 12 && sd(a) > 0) {
         # OOS retention (C1 v2, 2026-06-10 도훈 mandate): anchored 다중분할 {55/65/75} 중앙값
         #   — 단일 절단점의 임의성 노이즈 축소 (표본 노이즈 자체는 정보이론적 한계, 제거 불가).
-        splits <- if (identical(oos_stat_version, "v1")) 0.65 else c(0.55, 0.65, 0.75)
-        rets <- vapply(splits, function(fr) {
-          k <- floor(n * fr)
-          if (k < 6 || (n - k) < 6) return(NA_real_)
-          ia <- a[1:k]; oa <- a[(k + 1):n]
-          is_ir  <- if (sd(ia) > 0) mean(ia) / sd(ia) * sqrt(af) else NA_real_
-          oos_ir <- if (sd(oa) > 0) mean(oa) / sd(oa) * sqrt(af) else NA_real_
-          if (is.finite(is_ir) && is_ir > 0.05 && is.finite(oos_ir)) oos_ir / is_ir else NA_real_
-        }, numeric(1))
+        splits <- .essence_oos_splits(oos_stat_version)
+        .comps <- .essence_split_components(a, splits, af)
+        rets <- vapply(.comps, function(cc) as.numeric(cc$retention), numeric(1))
         oos_retention_splits <- rets
         if (any(is.finite(rets))) oos_retention <- stats::median(rets[is.finite(rets)])
         # DSR(BLdP) 수치 = n_trials>1이면 진단용 산출 (게이트 적용은 is_sweep — 아래 dsr_ok).
@@ -397,7 +616,6 @@ essence_score <- function(bt_result, n_trials_cumulative = NULL,
                               mean(((a - mu) / s)^3), mean(((a - mu) / s)^4), A = af)
         }
       }
-    }
   }
   # judge lockbox 실 OOS 비율 주입 시 우선 (65/35 fallback 대체)
   if (!is.null(oos_is_ratio_override) && is.finite(oos_is_ratio_override)) oos_retention <- oos_is_ratio_override
@@ -664,6 +882,14 @@ essence_score <- function(bt_result, n_trials_cumulative = NULL,
     ),
     reasons = reasons
   )
+
+  ## ── P0-02 진단 (2026-09-24) — ★등급 확정 **뒤**, 반환 객체 **끝**에 한 칸만 덧붙인다 ──────────
+  ##   판정·사유·다른 필드에 닿지 않는다(순서도 끝 — 위치로 읽는 소비자 보호). 실패하면 status=error 로
+  ##   남기고 등급은 그대로다(fail-soft). 정의·설정 = 위 진단 절(.essence_diag_build · constraint_defaults.json::diagnostics).
+  .res$diagnostics <- tryCatch(
+    .essence_diag_build(bt_result, .act, af, .comps, .essence_diag_params()),
+    error = function(e) list(version = .ESSENCE_DIAG_VERSION, status = "error",
+                             error = conditionMessage(e)))
 
   # ── AST v1.1 Step 4 사이드카 (SOT §5) — append-only, 채점 무관여, fail-soft ──
   #  2026-08-02 수리: 인라인 writer → 단일 writer ast_sidecar_log() 위임.

@@ -21,7 +21,12 @@
 #   regime <- get_regime_at_date(as.Date("2020-03-31"), signal_dt)
 #   FACTORS <- merge_regime_signal(FACTORS, signal_dt)
 #
-# Dependencies: data.table, arrow
+# Dependencies: data.table, arrow, 02_Infrastructure/data/fred_availability.R (PIT C11 가용시점 층)
+#
+# ★PIT C11 수리 (2026-09-24 · 04_Research/01_reports/pit_c11_20260924/PIT_C11_verdict_20260924.md):
+#   해외(FRED) 계열은 관측일이 아니라 가용일로 결합한다(§1b 도우미). 일간 FRED_MRS(V-05) ·
+#   월간 폴백 · BCS(1-3 잠재 위반: 같은 날짜 결합 + 전표본 순위 C1) · BCS 월 병합(C3) 수리.
+#   행 d = 한국 d 15:30 KST 결정용(형태 a). 노출×r_t 소비자는 직전 한국 거래일 행을 쓸 것(형태 b).
 #==============================================================================
 
 if (!exists("PROJECT_ROOT")) {
@@ -98,6 +103,70 @@ load_msm_signal <- function() {
 
 
 #==============================================================================
+# 1b. PIT C11 가용시점 결합 도우미 (2026-09-24 수리 — 판정서 V-05·V-14·1-3)
+#   해외(FRED) 계열은 관측일이 아니라 가용일로 붙인다. 가용일 규칙 정본 =
+#   06_Registry/fred_availability_rules.json (이 파일에는 오프셋 수치가 없다) ·
+#   결합 = 02_Infrastructure/data/fred_availability.R::fred_asof_join(mode = "decision_close").
+#   행 d = 한국 d일 15:30 KST 결정에 가용한 정보(판정서 ② 형태 a). 원/달러 = ECOS 731Y001.
+#   도우미가 없으면 fail-closed(stop) — 호출자의 tryCatch 가 구 캐시를 보존한다.
+#==============================================================================
+
+.rs_need_fred_avail <- function() {
+  if (exists("fred_asof_join", mode = "function") && exists("fred_avail_date", mode = "function"))
+    return(invisible(TRUE))
+  cands <- unique(c(if (exists("FUNC_PATH")) file.path(FUNC_PATH, "data", "fred_availability.R"),
+                    if (exists("PROJECT_ROOT")) file.path(PROJECT_ROOT, "02_Infrastructure", "data",
+                                                          "fred_availability.R")))
+  p <- cands[file.exists(cands)][1]
+  if (is.na(p))
+    stop("[regime_signal] fred_availability.R 없음 — 가용시점 결합 불가(fail-closed)")
+  source(p)
+  invisible(TRUE)
+}
+
+.rs_kr_calendar <- function() {
+  .rs_need_fred_avail()
+  fred_kr_calendar(file.path(CACHE_DIR, "trading_calendar.parquet"))
+}
+
+# 각 YM 의 결정일 = 그 달 말일 이하 마지막 한국 거래일 (없으면 NA)
+.rs_month_decision_dates <- function(yms, cal) {
+  me <- as.Date(cut(as.Date(paste0(yms, "-01")) + 31, "month")) - 1
+  i <- findInterval(as.integer(me), as.integer(cal))
+  out <- rep(NA_integer_, length(yms))
+  out[i > 0L] <- as.integer(cal[i[i > 0L]])
+  as.Date(out)
+}
+
+# wide(관측일 행 · 계열 열 = 친근명 = 규칙 파일 aliases) → kr_dates 행의 가용시점 값
+.rs_asof_wide <- function(kr_dates, wide, cols, cal) {
+  .rs_need_fred_avail()
+  out <- data.table(Date = as.Date(kr_dates))
+  for (cl in cols) {
+    if (!(cl %in% names(wide))) { out[, (cl) := NA_real_]; next }
+    obs <- unique(wide[!is.na(get(cl)), .(Date = as.Date(Date), Value = as.numeric(get(cl)))])
+    if (!nrow(obs) || !nrow(out)) { out[, (cl) := NA_real_]; next }
+    j <- fred_asof_join(out$Date, obs, cl, mode = "decision_close", kr_calendar = cal)
+    out[, (cl) := j$value]
+  }
+  out
+}
+
+# 원/달러 = ECOS 731Y001 (PIT-C11-CONVENTIONS ① — DEXKOUS 대체) · 규칙 id "ECOS_KRW_USD"
+.rs_ecos_krw_asof <- function(kr_dates, cal) {
+  .rs_need_fred_avail()
+  p <- file.path(CACHE_DIR, "ecos_krw_usd.parquet")
+  if (!file.exists(p)) {
+    warning("[regime_signal] ecos_krw_usd.parquet 없음 — KRW_USD NA")
+    return(rep(NA_real_, length(kr_dates)))
+  }
+  e <- as.data.table(read_parquet(p, mmap = FALSE))
+  e <- unique(e[!is.na(Date) & !is.na(KRW_USD), .(Date = as.Date(Date), Value = as.numeric(KRW_USD))])
+  fred_asof_join(as.Date(kr_dates), e, "ECOS_KRW_USD", mode = "decision_close", kr_calendar = cal)$value
+}
+
+
+#==============================================================================
 # 2. load_fred_signal() — macro_regime.parquet → monthly MRS
 #==============================================================================
 
@@ -158,14 +227,19 @@ load_fred_signal <- function() {
   wide_dt[, Date := as.Date(Date)]
   wide_dt[, YM := format(Date, "%Y-%m")]
 
-  # Month-end last obs for key axes
-  key_cols <- intersect(c("VIX", "HY_Spread", "Term_Spread", "KRW_USD",
+  # 월말 행 = 그 달 마지막 한국 거래일 15:30 KST 에 가용한 관측(PIT C11 — 판정서 ② 원칙 c·V-14).
+  #   구판은 월내 마지막 관측일 행(같은 날짜 미국 종가·미공표 주간값)을 그대로 썼다.
+  #   KRW_USD(DEXKOUS)는 이 근사식에 쓰이지 않으므로 싣지 않는다(PIT-C11-CONVENTIONS ① 사용 금지).
+  key_cols <- intersect(c("VIX", "HY_Spread", "Term_Spread",
                           "StL_Fin_Stress", "Chi_Fin_Cond"),
                         names(wide_dt))
-  monthly <- wide_dt[, {
-    last_row <- .SD[which.max(Date)]
-    as.list(last_row)
-  }, by = YM, .SDcols = unique(c("Date", key_cols))]
+  .rs_need_fred_avail()
+  cal <- .rs_kr_calendar()
+  yms <- sort(unique(wide_dt$YM))
+  dec <- .rs_month_decision_dates(yms, cal)
+  keep <- !is.na(dec)
+  monthly <- cbind(data.table(YM = yms[keep]),
+                   .rs_asof_wide(dec[keep], wide_dt, key_cols, cal))
 
   # Simplified MRS approximation (full calc in fred_compute_regime)
   monthly[, FRED_MRS := 0]
@@ -516,6 +590,14 @@ build_regime_signal_table <- function(save_path = NULL, daily = FALSE, ...) {
                   "Regime_Score", "Category", "Cash_Pct",
                   "fw_Mom", "fw_LowVol", "fw_Quality", "fw_Value")
   signal_dt <- base[, ..final_cols]
+  # ★r1 표식 계약(overlay_pit_guard C11 층 · 통합 검증 BLOCKING '표식 계약 불일치'): 행 열 avail_date(Date) = 그 달
+  #   결정일(말일 이하 마지막 한국 거래일 — FRED 층을 그 날 15:30 가용분으로 만든 .rs_month_decision_dates 와 같다)
+  #   + 행 열 c11_regime_key + 파일 속성 c11_avail_regime_key. 달력 밖 달 = NA(아직 불가 · fail-closed).
+  .rs_need_fred_avail()
+  signal_dt[, avail_date := .rs_month_decision_dates(YM, .rs_kr_calendar())]
+  .rs_key <- tryCatch(fred_avail_rules_meta()$regime_key, error = function(e) NA_character_)
+  signal_dt[, c11_regime_key := as.character(.rs_key)]
+  setattr(signal_dt, "c11_avail_regime_key", .rs_key)
 
   # ── Summary ──
   cat("\n[regime_signal] ═══ Distribution ═══\n")
@@ -590,8 +672,9 @@ load_regime_signal <- function() {
 #==============================================================================
 # Step 5 (v6.1 Regime Infra):
 #   - MSM daily (.cache/msm_daily_latest.parquet) — Date/Crisis_Prob 그대로
-#   - FRED wide (.cache/fred_macro_wide.parquet) — 월간 시리즈는 LOCF, 일간은 그대로
-#     → FRED_MRS 를 compute_fred_mrs_daily() 공식으로 매 영업일 계산
+#   - FRED wide (.cache/fred_macro_wide.parquet) — ★PIT C11(2026-09-24): 결정일(한국 거래일)마다
+#     계열별 가용일 결합(fred_asof_join) → FRED_MRS 를 compute_fred_mrs_daily() 공식으로 계산
+#     (구판: 월간 LOCF + 같은 날짜 병합 — 판정서 V-05)
 #   - KTRI daily (ktri_v3_signals.csv) — KTRI/VEA 그대로
 #   - Gap handling: 1~2 layer 누락 시 neutral default + layer_flags 기록
 #   - Regime_Score 는 compute_regime_score() 재사용 (backward compat)
@@ -627,8 +710,10 @@ load_msm_daily <- function() {
 
 
 #------------------------------------------------------------------------------
-# 9b.2 load_fred_daily_wide() — .cache/fred_macro_wide.parquet → daily wide
-#      월간 지표(UNRATE, CPI 등) LOCF 처리. Daily 지표 그대로.
+# 9b.2 load_fred_daily_wide() — .cache/fred_macro_wide.parquet → 관측일 행 wide
+#      ★PIT C11(2026-09-24): LOCF 하지 않는다. 행 = 관측일(미국 날짜·주간/월간 라벨)이고
+#       결합은 build_regime_signal_table_daily 가 계열별 가용일로 한다(.rs_asof_wide).
+#       구판은 여기서 LOCF 한 뒤 날짜 병합해 같은 날짜 미국 세션·미공표 주간/월간 값을 썼다(V-05).
 #------------------------------------------------------------------------------
 
 load_fred_daily_wide <- function() {
@@ -648,11 +733,7 @@ load_fred_daily_wide <- function() {
   dt[, Date := as.Date(Date)]
   setorder(dt, Date)
 
-  # LOCF 일괄 (월간 지표의 일간 forward-fill)
-  fill_cols <- setdiff(names(dt), "Date")
-  for (col in fill_cols) {
-    if (is.numeric(dt[[col]])) setnafill(dt, type = "locf", cols = col)
-  }
+  # (LOCF 없음 — 관측일 행 그대로. 가용일 결합은 호출자 몫, 위 9b.2 주석)
 
   cat(sprintf("[regime_signal/daily] FRED wide loaded: %d rows × %d cols | %s ~ %s\n",
               nrow(dt), ncol(dt), format(min(dt$Date)), format(max(dt$Date))))
@@ -803,9 +884,25 @@ build_regime_signal_table_daily <- function(save_path = NULL,
 
   # ── Load all 3 layers ────────────────────────────────────────
   msm_dt  <- load_msm_daily()
-  fred_wd <- load_fred_daily_wide()
-  fred_dt <- compute_fred_mrs_daily(fred_wd)
   ktri_dt <- load_ktri_daily()
+  # FRED(Layer 2) — PIT C11(2026-09-24, 판정서 V-05): 관측일이 아니라 가용일로 붙인다.
+  #   결정일 척추(MSM ∪ KTRI 날짜 = 한국 거래일)의 각 d 에 "한국 d 15:30 KST 까지 가용한" 값을 붙인 뒤
+  #   FRED_MRS 를 계산한다. 구판은 FRED wide 를 LOCF 해 같은 날짜로 병합했다(미국 d 세션 ·
+  #   미공표 NFCI 최대 5일 · FEDFUNDS 월초 LOCF). FRED 관측일은 더 이상 척추에 행을 만들지 않는다
+  #   (행의 존재가 미공표 관측에 기대면 EWMA 평활 창이 미래에 의존한다).
+  #   ★소비 계약: 행 d = 한국 d 종가 결정용(형태 a). r_t 노출에는 직전 한국 거래일 행(1행 lag, 형태 b).
+  fred_wd <- load_fred_daily_wide()
+  spine0 <- sort(unique(c(msm_dt$Date, ktri_dt$Date)))
+  if (!length(spine0) && nrow(fred_wd) > 0) {        # L1·L3 모두 없음 → 한국 거래일 척추
+    cal0 <- .rs_kr_calendar()
+    spine0 <- cal0[cal0 >= min(fred_wd$Date)]
+  }
+  fred_cols <- intersect(c("VIX", "HY_Spread", "Term_Spread", "Fed_Funds_Rate",
+                           "BBB_Spread", "Chi_Fin_Cond"), names(fred_wd))
+  fred_asof <- if (nrow(fred_wd) > 0 && length(spine0) > 0 && length(fred_cols) > 0) {
+    .rs_asof_wide(spine0, fred_wd, fred_cols, .rs_kr_calendar())
+  } else data.table(Date = as.Date(character(0)))
+  fred_dt <- compute_fred_mrs_daily(fred_asof)
 
   l1_ok <- nrow(msm_dt) > 0
   l2_ok <- nrow(fred_dt) > 0 && any(!is.na(fred_dt$FRED_MRS))
@@ -842,8 +939,9 @@ build_regime_signal_table_daily <- function(save_path = NULL,
 
   # ── Merge FRED MRS ───────────────────────────────────────────
   if (l2_ok) {
+    # fred_dt 는 이미 척추 날짜별 가용시점 값이다(같은 날짜 병합이 곧 결정일 결합).
     base <- merge(base, fred_dt, by = "Date", all.x = TRUE)
-    # FRED 일부 결측 (휴일 등) LOCF
+    # 남는 결측(척추 밖 날짜 등)은 직전 값 유지 — 과거 방향만
     setnafill(base, type = "locf", cols = "FRED_MRS")
   } else {
     base[, FRED_MRS := NA_real_]
@@ -920,6 +1018,13 @@ build_regime_signal_table_daily <- function(save_path = NULL,
                   "Regime_Score", "Regime_Score_smooth", "Category", "Cash_Pct",
                   "Active_Layers", "Is_Month_End", "last_updated")
   signal_dt <- base[, ..final_cols]
+  # ★r1 표식 계약(overlay_pit_guard C11 층): 척추 = 한국 거래일이고 행 d 의 FRED 층은 d 15:30 가용분(decision_close)
+  #   → 행 열 avail_date = 행 날짜 + c11_regime_key + 파일 속성 c11_avail_regime_key.
+  .rs_need_fred_avail()
+  signal_dt[, avail_date := as.Date(Date)]
+  .rs_key <- tryCatch(fred_avail_rules_meta()$regime_key, error = function(e) NA_character_)
+  signal_dt[, c11_regime_key := as.character(.rs_key)]
+  setattr(signal_dt, "c11_avail_regime_key", .rs_key)
 
   # ── Summary ──────────────────────────────────────────────────
   if (verbose) {
@@ -1165,6 +1270,36 @@ spot_check_stress_periods <- function(signal_dt = NULL) {
 # Leads: COVID +80d, Rate Shock +181d, 2015 China +83d, 2011 EU +84d
 #==============================================================================
 
+# 확장창 백분위 — frank(x, ties="average")/비결측수 의 시점판(각 t 는 1..t 의 비결측 값만 본다, C1)
+.rs_expanding_pct <- function(x) {
+  x <- as.numeric(x); n <- length(x)
+  out <- rep(NA_real_, n); hist <- numeric(n); m <- 0L
+  for (i in seq_len(n)) {
+    xi <- x[i]
+    if (is.na(xi)) next
+    m <- m + 1L; hist[m] <- xi
+    h <- hist[seq_len(m)]
+    out[i] <- (sum(h < xi) + (sum(h == xi) + 1) / 2) / m
+  }
+  out
+}
+
+# 확장창 5분위 — 구판(전표본 quantile 경계 + cut)의 시점판. 경계가 겹치는 초기 구간은 NA.
+.rs_expanding_quintile <- function(x) {
+  x <- as.numeric(x); n <- length(x)
+  labs <- c("Q1", "Q2", "Q3", "Q4", "Q5")
+  out <- rep(NA_character_, n); hist <- numeric(n); m <- 0L
+  for (i in seq_len(n)) {
+    xi <- x[i]
+    if (is.na(xi)) next
+    m <- m + 1L; hist[m] <- xi
+    br <- quantile(hist[seq_len(m)], seq(0, 1, 0.2), names = FALSE)
+    if (anyDuplicated(br)) next
+    out[i] <- as.character(cut(xi, breaks = br, include.lowest = TRUE, labels = labs))
+  }
+  factor(out, levels = labs)
+}
+
 compute_bcs_daily <- function() {
   cat("[regime_signal] Computing BCS daily signal...\n")
 
@@ -1181,28 +1316,38 @@ compute_bcs_daily <- function() {
   }
 
   # Load and merge
-  fred_wide <- dcast(as.data.table(read_parquet(fred_path)),
-                      Date ~ Series, value.var = "Value")
-  fred_wide[, Date := as.Date(Date)]
+  # ★PIT C11·C1 수리(2026-09-24, 판정서 1-3 잠재 위반): 구판은 벤치마크(한국 날짜)에 FRED 를
+  #   같은 날짜로 병합했고(미국 d 세션을 한국 d 에) 백분위·분위 경계를 전표본으로 잡았다(C1).
+  #   → FRED 는 한국 날짜마다 가용일 결합(.rs_asof_wide, decision_close) · 원/달러 = ECOS 731Y001 ·
+  #     백분위는 확장창(그 날까지의 관측만) · BCS 분위 경계도 확장창.
+  .rs_need_fred_avail()
+  cal <- .rs_kr_calendar()
+  fred_long <- as.data.table(read_parquet(fred_path, mmap = FALSE))
+  fred_long[, Date := as.Date(Date)]
+  fred_wide <- dcast(fred_long[Series %in% c("VIX", "HY_Spread", "Term_Spread")],
+                     Date ~ Series, value.var = "Value")
   bm <- as.data.table(read_parquet(bm_path))
   bm[, Date := as.Date(Date)]
   drv <- as.data.table(read_parquet(drv_path))
   drv[, Date := as.Date(Date)]
 
-  dt <- merge(bm[, .(Date, BM_Ret)], fred_wide, by = "Date", all.x = TRUE)
+  dt <- bm[, .(Date, BM_Ret)]
+  setorder(dt, Date)
+  fa <- .rs_asof_wide(dt$Date, fred_wide, c("VIX", "HY_Spread", "Term_Spread"), cal)
+  dt <- cbind(dt, fa[, .(VIX, HY_Spread, Term_Spread)])
+  dt[, KRW_USD := .rs_ecos_krw_asof(Date, cal)]
   dt <- merge(dt, drv[, .(Date, PCR_OI, IV_Put_ATM, K200_Basis_Pct,
                             Put_OI, Call_OI, K200_Fut_OI)],
               by = "Date", all.x = TRUE)
   setorder(dt, Date)
 
-  # LOCF fill
-  fill_cols <- intersect(names(dt),
-    c("VIX","HY_Spread","KRW_USD","Term_Spread","PCR_OI","IV_Put_ATM","Put_OI","Call_OI"))
+  # LOCF fill (국내 파생 계열의 결측만 — 해외 계열은 이미 가용시점 값)
+  fill_cols <- intersect(names(dt), c("PCR_OI","IV_Put_ATM","Put_OI","Call_OI"))
   for (col in fill_cols) setnafill(dt, type = "locf", cols = col)
 
   # ── Component 1: VIX 3d change (40%) ──
   dt[, VIX_Chg3 := VIX - shift(VIX, 3)]
-  dt[, VIX_Chg3_pct := frank(VIX_Chg3, na.last = "keep") / sum(!is.na(VIX_Chg3))]
+  dt[, VIX_Chg3_pct := .rs_expanding_pct(VIX_Chg3)]
 
   # ── Component 2: Complacency (25%) ──
   dt[, PCR_Z120 := (PCR_OI - frollmean(PCR_OI, n = 120, align = "right")) /
@@ -1210,7 +1355,7 @@ compute_bcs_daily <- function() {
   dt[, IV_Z120 := (IV_Put_ATM - frollmean(IV_Put_ATM, n = 120, align = "right")) /
                    pmax(frollapply(IV_Put_ATM, n = 120, FUN = sd, align = "right"), 0.01)]
   dt[, Complacency := -PCR_Z120 - IV_Z120]
-  dt[, Complacency_pct := frank(Complacency, na.last = "keep") / sum(!is.na(Complacency))]
+  dt[, Complacency_pct := .rs_expanding_pct(Complacency)]
 
   # ── Component 3: Multi-market danger (15%) ──
   dt[, VIX_Chg20 := VIX - shift(VIX, 20)]
@@ -1225,7 +1370,7 @@ compute_bcs_daily <- function() {
 
   # ── Component 4: Put OI hedging pressure (20%) ──
   dt[, Put_OI_Chg20 := Put_OI / shift(Put_OI, 20) - 1]
-  dt[, Put_OI_Chg_pct := frank(Put_OI_Chg20, na.last = "keep") / sum(!is.na(Put_OI_Chg20))]
+  dt[, Put_OI_Chg_pct := .rs_expanding_pct(Put_OI_Chg20)]
 
   # ── BCS v2: 40/25/15/20 weighting ──
   dt[, BCS := fifelse(
@@ -1234,10 +1379,8 @@ compute_bcs_daily <- function() {
       0.15 * MultiDanger_pct + 0.20 * Put_OI_Chg_pct,
     NA_real_)]
 
-  # ── Quintile classification ──
-  bcs_breaks <- quantile(dt$BCS, seq(0, 1, 0.2), na.rm = TRUE)
-  dt[, BCS_Q := cut(BCS, breaks = bcs_breaks, include.lowest = TRUE,
-                     labels = c("Q1","Q2","Q3","Q4","Q5"))]
+  # ── Quintile classification (확장창 경계 — C1: 그 날까지의 BCS 만으로 분위 경계) ──
+  dt[, BCS_Q := .rs_expanding_quintile(BCS)]
 
   out <- dt[!is.na(BCS), .(Date, VIX_Chg3, Complacency, MultiDanger,
                              Put_OI_Chg20, BCS, BCS_Q)]
@@ -1315,21 +1458,19 @@ merge_regime_with_bcs <- function(FACTORS, signal_dt = NULL, bcs_dt = NULL) {
     return(FACTORS)
   }
 
-  # Monthly aggregation of BCS: last value of month
-  bcs_dt[, YM := format(Date, "%Y-%m")]
-  bcs_monthly <- bcs_dt[, .(BCS = tail(BCS, 1),
-                              BCS_Q = as.character(tail(BCS_Q, 1))),
-                          by = YM]
+  # ★PIT(C3·C5) 수리 2026-09-24: 구판은 BCS 를 YM 별 월말값으로 모아 같은 YM 의 모든 FACTORS
+  #   날짜에 붙였다 — 월 중 날짜가 그 달 말의 BCS(미래)를 받았다. → 각 FACTORS 날짜 d 에
+  #   d 이하 마지막 BCS 행(BCS 행 d 는 한국 d 종가 결정용 — compute_bcs_daily 의 가용시점 결합).
+  bj_src <- bcs_dt[, .(Date = as.Date(Date), BCS = as.numeric(BCS), BCS_Q = as.character(BCS_Q))]
+  setkey(bj_src, Date)
+  bj <- bj_src[data.table(Date = sort(unique(as.Date(FACTORS$Date)))), on = "Date", roll = TRUE]
 
   # Remove existing BCS columns if any
   for (col in c("BCS","BCS_Q","BCS_Cash_Overlay","Total_Cash_Pct")) {
     if (col %in% names(FACTORS)) FACTORS[, (col) := NULL]
   }
 
-  # Derive YM from FACTORS Date
-  if (!"YM" %in% names(FACTORS)) FACTORS[, YM := format(Date, "%Y-%m")]
-
-  FACTORS <- merge(FACTORS, bcs_monthly, by = "YM", all.x = TRUE)
+  FACTORS <- merge(FACTORS, bj, by = "Date", all.x = TRUE)
 
   # Compute overlay
   FACTORS[, BCS_Cash_Overlay := get_bcs_cash_overlay(BCS_Q)]

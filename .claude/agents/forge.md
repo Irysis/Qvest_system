@@ -7,6 +7,8 @@ allowed-tools: Bash(Rscript*) Read Write Edit Grep Glob
 ---
 
 > **페르소나 정본 = `02_Infrastructure/docs/rules/quant-identity.md`** — 최정상급 퀀트 · 냉소는 방법론(과적합·스누핑·시점오염)을 향한다(실증 성과 폄하 금지) · 모든 수치 결정 = 논문 뿌리(원문 링크)·하드코딩 금지.
+
+> ★**동결 — QEPM-R0-FREEZE**(도훈 2026-09-25): forge 는 WT 체인의 측정 단계였다. 어드바이저 모드(`QEPM-ADVISOR-MODE` · `/advisor`)의 자문 역할(alpha·risk·optimizer)에 forge 는 없다 — **어드바이저는 forge 를 쓰지 않는다**(`/advisor` 는 forge 를 스폰하지 않는다). 측정 = 정본 계약(`run_paper_replication`·essence)만, 이 에이전트로 등급을 내지 않는다. 해제 = `06_Registry/decision_register.json` 재상정.
 <!-- (2026-08-29 도훈 지시) QEPM 모델 라우팅 — **전 구간 Opus**. 가설설계 Fable 핀(2026-08-08 지시) 해제.
      `model: opus` = 세션 alias(현행 Opus 5). SOT: 02_Infrastructure/docs/rules/caching.md "모델 라우팅" 절. -->
 
@@ -49,7 +51,7 @@ SOT: `.claude/skills/qvest-telegram/SKILL.md` (v6). `tg_agent_brief(agent="Forge
 - ❌ 금지: hurdle_result.json `method` 필드에 `ProductionSchedule[N]m` 같은 fabrication label
 - alpha_scores.parquet read는 **진단(diagnostic) 전용** — IC/ICIR 재계산 등. holdings 결정에 영향 시 violation.
 
-**Reference 구현**: `qepm/mailbox/worktask/WT-D20260427_017/run_forge_v3_standalone.R` (모범 패턴)
+**Reference 구현**(★사료 — 따르지 말 것): `qepm/mailbox/worktask/WT-D20260427_017/run_forge_v3_standalone.R` 은 실재하지 않는다 — 실물 `_016` 은 close_d_legacy 집행·월간 기간수익·lockbox 창이라 결정 EXEC-PRICE·CALMAR-FREQ-DAILY 와 어긋난다(감사 Q06). 현행 측정 계약 = `02_Infrastructure/contracts/remeasure_from_holdings.R::rfh_remeasure` · `run_paper_replication`.
 
 **Violation 자동 검출** (구 hooks `schedule_fidelity_check.sh`·`forge_pure_function_strict.sh` 는 v9 등록 해제 — 규칙은 유지되고 검출은 forge 자기검증 + Judge 재현이 담당):
 - 검출 시 `forge_package.json.pure_function_violation: true` 자동 기록 + Q-Lead escalate

@@ -27,6 +27,33 @@ mkdir -p "$(dirname "$LOG")"
       exit 0
     fi
   fi
+  # ★리프레시 배리어 — 틱 수준 1차 (도훈 결정 OPS-RUNNER-REFRESH-BARRIER · 2026-09-24).
+  #   daily_refresh 가 잠금을 쥔 동안([0b] 퀀티 증분 ~ [3/7] 유니버스 매핑 사이 RAWDATA K200/KQ150 NA 창 포함) 또는
+  #   아침 RAWDATA writer(krx_update·naver_supplement·self_heal) 잠금이 살아 있는 동안 **틱 전체**를 건너뛴다.
+  #   아래 어떤 레인도 부르기 전(사전 등록 전)이라 시도 예산을 안 태운다. 판정 정본 = refresh_barrier.sh
+  #   (stale = 대기 안 함 + 로그 · 보유자 자손 = 진행 · 판정기 부재 = fail-closed · 잠금 없음 = 아무것도 안 한다).
+  #   판정기는 이 파일 옆에서 먼저 찾는다 — QM_ROOT 가 샌드박스(검사)여도 코드 정본을 쓴다.
+  RB_SH="$(dirname "${BASH_SOURCE[0]:-$0}")/refresh_barrier.sh"
+  [ -f "$RB_SH" ] || RB_SH="$ROOT/02_Infrastructure/ops/refresh_barrier.sh"
+  RB_JLOG="$ROOT/.cache/reinforce_auto_log.jsonl"
+  if [ -f "$RB_SH" ] && . "$RB_SH"; then
+    rb_status
+    case "$RB_STATE" in
+      held)
+        rb_jlog "$RB_JLOG" halt_refresh_lock tick
+        echo "[rf_tick] halt_refresh_lock — $(rb_line)"
+        echo "=== $(date -Iseconds) tick 종료 rc=0 (리프레시 배리어 양보) ==="
+        exit 0 ;;
+      stale)
+        rb_jlog "$RB_JLOG" refresh_lock_stale tick "note=보유자 없음 — 대기하지 않고 진행"
+        echo "[rf_tick] refresh_lock_stale — $(rb_line)" ;;
+    esac
+  else
+    printf '{"ts":"%s","event":"halt_refresh_lock","src":"tick","state":"error","reason":"barrier_helper_missing"}\n' "$(date +%Y-%m-%dT%H:%M:%S%z)" >> "$RB_JLOG"
+    echo "[rf_tick] halt_refresh_lock — 판정기(refresh_barrier.sh) 부재 · fail-closed"
+    echo "=== $(date -Iseconds) tick 종료 rc=0 (배리어 판정기 부재) ==="
+    exit 0
+  fi
   # ★충실구현 대기가 있으면 먼저 처리한다 — active entry 없이는 강화가 못 돈다.
   #   자체 claim/게이트를 갖고 있어 대기가 없으면 즉시 종료한다.
   bash "$ROOT/02_Infrastructure/ops/rf_replication_auto.sh"

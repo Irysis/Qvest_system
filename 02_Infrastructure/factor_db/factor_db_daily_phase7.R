@@ -16,6 +16,9 @@ INFRA_DIR <- tryCatch(dirname(dirname(sys.frame(1)$ofile)),
   error = function(e) "/mnt/c/Users/99922/OneDrive/바탕 화면/Quant_Module_Moltbot/02_Infrastructure")
 source(file.path(INFRA_DIR, "config.R"))
 sourceCpp(file.path(.SELF_DIR, "factor_db_daily_rcpp.cpp"))
+# PIT C11 수리(2026-09-24): 해외 계열 가용시점 층(S0) + 일간 fdb PIT 도우미. 없으면 여기서 멈춘다.
+source(file.path(INFRA_DIR, "data", "fred_availability.R"))
+source(file.path(.SELF_DIR, "factor_db_daily_pit.R"))
 
 FDB_DIR <- file.path(CACHE_DIR, "factor_db_daily")
 START <- as.Date("1989-01-01"); OUT_START <- as.Date("1990-01-01")
@@ -55,6 +58,9 @@ if(!is.null(INV)) { INV[, Date := as.Date(Date)]; setkey(INV, Ticker, Date) }
 # Regime
 REGIME <- as.data.table(read_parquet(file.path(CACHE_DIR,"regime_daily_v2.parquet")))
 REGIME[, Date := as.Date(Date)]; setkey(REGIME, Date)
+# ★PIT C11(2026-09-24 · 판정서 V-11): RE04/RE05 는 MRS 를 한국 날짜 d 행끼리 결합한다 — 생산자 수리판 스탬프
+#   (c11_avail_regime_key) 없으면 MRS 전부 NA → RE04/RE05 NA(fail-closed). 상세 = factor_db_daily_pit.R.
+fdb_regime_c11_mask(REGIME, c("MRS"), file.path(CACHE_DIR, "regime_daily_v2.parquet"), label = "phase7 RE04/RE05")
 
 # Consensus
 CONS_DIR_PATH <- file.path(CACHE_DIR, "consensus")
@@ -252,12 +258,20 @@ if(!is.null(INV)) {
 rm(INV); gc(verbose=FALSE)
 
 # ═══ 4-pre. Stage 1 NEW: Macro-derived daily Regime (RE10/11/13/14) ════════
+# ★PIT C11·C1 수리(2026-09-24 · 판정서 V-12 · ⑤-4 · decision PIT-C11-CONVENTIONS ③⑤):
+#   구판 = (1) RE10·RE13 전표본 frank/.N(C1 — RE10 2020-03-12 = −0.9991059 = 전표본 순위)
+#          (2) 전 계열 FRED 관측일 같은 날짜 roll 결합(C11 — RE11 2020-03-16 = 같은 날짜 판)
+#          (3) RE14 = 행 기준 shift(12)(CPI 2025-10 결측 → 13개월 변화) + M-01 라벨 결합(2020-03-02 에 04-10 공표 3월 CPI).
+#   수리판 = 관측 시계열 위에서 '그 관측까지'만 쓰는 통계(누적 백분위·EWMA·날짜 기준 12개월 변화)를 만든 뒤
+#   S0 가용시점 층 fred_asof_join(mode="decision_close")으로 한국 날짜에 싣는다(fdb_fred_stat_on_kr_dates —
+#   가용일 단조 확인 포함 · 규칙 = 06_Registry/fred_availability_rules.json: VIX 미국 날짜<한국 날짜 · HY 한국 d+2 ·
+#   CPI 라벨+48일/셧다운 override). 계열별 실패 = 그 열 전부 NA(fail-closed · 경고) — 같은 날짜 판으로 되돌아가지 않는다.
 cat("[4-pre/6] Macro daily Regime (RE10/11/13/14)...\n")
 .macro_path_p7 <- file.path(CACHE_DIR, "macro_fred.parquet")
 MACRO_F <- NULL
 if (file.exists(.macro_path_p7)) {
   tryCatch({
-    .m_p7 <- as.data.table(read_parquet(.macro_path_p7))
+    .m_p7 <- as.data.table(read_parquet(.macro_path_p7, mmap = FALSE))
     .m_p7[, Date := as.Date(Date)]
     .m_p7 <- .m_p7[!is.na(Value)]
 
@@ -276,34 +290,38 @@ if (file.exists(.macro_path_p7)) {
 
     .all_dates <- data.table(Date = sort(unique(RW$Date)))
     MACRO_F <- copy(.all_dates)
+    .kr_p7 <- MACRO_F$Date
 
-    # RE10 VIX expanding percentile (negate: high VIX = bad)
-    .vix <- .m_p7[Series_ID == "VIXCLS", .(VIX = last(Value)), by = Date]
-    if (nrow(.vix) > 0L) {
-      setorder(.vix, Date)
-      .vix[, RE10_VIX_Pctile := -frank(VIX, ties.method = "average") / .N]
-      .vix[, vix_chg := c(NA_real_, diff(log(VIX)))]
-      .vix[!is.finite(vix_chg), vix_chg := NA_real_]
-      .vix[, RE11_VIX_Change_EWMA := -.ewma_d(vix_chg, 21)]
-      MACRO_F <- .vix[, .(Date, RE10_VIX_Pctile, RE11_VIX_Change_EWMA)][MACRO_F,
-                       on = "Date", roll = TRUE]
+    # 계열 1개 → 관측 시계열 통계 → 가용일 결합. 실패 = 전부 NA + 경고(fail-closed).
+    .macro_col_p7 <- function(col, series_id, stat_fun) {
+      tryCatch({
+        .obs <- fdb_fred_obs(.m_p7, series_id)
+        if (is.null(.obs) || !nrow(.obs)) stop("관측 0행")
+        .j <- fdb_fred_stat_on_kr_dates(.kr_p7, .obs, series_id, stat_fun)
+        cat(sprintf("  %s ← %s (C11 avail · decision_close): %d/%d 한국일 값\n",
+                    col, series_id, sum(!is.na(.j$value)), nrow(.j)))
+        .j$value
+      }, error = function(e) {
+        cat(sprintf("  !! [C11] %s(%s) 실패 → 전부 NA(fail-closed): %s\n", col, series_id, conditionMessage(e)))
+        warning(sprintf("[C11] phase7 %s(%s): %s", col, series_id, conditionMessage(e)), call. = FALSE)
+        rep(NA_real_, length(.kr_p7))
+      })
     }
-    # RE13 HY OAS expanding percentile
-    .hy <- .m_p7[Series_ID == "BAMLH0A0HYM2", .(HY = last(Value)), by = Date]
-    if (nrow(.hy) > 0L) {
-      setorder(.hy, Date)
-      .hy[, RE13_Credit_Spread_Pctile := -frank(HY, ties.method = "average") / .N]
-      MACRO_F <- .hy[, .(Date, RE13_Credit_Spread_Pctile)][MACRO_F,
-                       on = "Date", roll = TRUE]
-    }
-    # RE14 CPI YoY (negate: high inflation = bad)
-    .cpi <- .m_p7[Series_ID == "CPIAUCSL", .(CPI = last(Value)), by = Date]
-    if (nrow(.cpi) > 0L) {
-      setorder(.cpi, Date)
-      .cpi[, RE14_Inflation_YoY := -(CPI / shift(CPI, 12) - 1)]
-      MACRO_F <- .cpi[, .(Date, RE14_Inflation_YoY)][MACRO_F,
-                       on = "Date", roll = TRUE]
-    }
+
+    # RE10 VIX expanding percentile (negate: high VIX = bad) — 누적 백분위(그 관측까지의 VIX 중 순위)
+    MACRO_F[, RE10_VIX_Pctile := .macro_col_p7("RE10_VIX_Pctile", "VIXCLS",
+                                               function(v, d) -fdb_expanding_pct(v))]
+    # RE11 VIX log-change EWMA(반감기 21 관측 — 구판 그대로)
+    MACRO_F[, RE11_VIX_Change_EWMA := .macro_col_p7("RE11_VIX_Change_EWMA", "VIXCLS", function(v, d) {
+      .ch <- c(NA_real_, diff(log(v))); .ch[!is.finite(.ch)] <- NA_real_
+      -.ewma_d(.ch, 21)
+    })]
+    # RE13 HY OAS expanding percentile — 누적 백분위(FRED 가 ICE 이력을 3년 창으로만 준다: 판정서 1-7)
+    MACRO_F[, RE13_Credit_Spread_Pctile := .macro_col_p7("RE13_Credit_Spread_Pctile", "BAMLH0A0HYM2",
+                                                         function(v, d) -fdb_expanding_pct(v))]
+    # RE14 CPI YoY (negate: high inflation = bad) — 날짜 기준 12개월 변화(YoY 정의 · CONVENTIONS ③)
+    MACRO_F[, RE14_Inflation_YoY := .macro_col_p7("RE14_Inflation_YoY", "CPIAUCSL",
+                                                  function(v, d) -fdb_change_by_date(v, d, months = 12L))]
     MACRO_F[, YM := format(Date, "%Y%m")]
     setkey(MACRO_F, Date)
     .macro_cols <- setdiff(names(MACRO_F), c("Date","YM"))

@@ -3,6 +3,89 @@
 > CLAUDE.md는 "현재 유효한 헌법"만 담는다. 버전 연혁·릴리스 상세는 본 파일이 SOT.
 > 최신 릴리스 상세: `qvest_v8_4_asymmetry_ml_sot.md` (**v8.4 — 주력 SOT**) · `qvest_v8_3_alpha_discovery_sot.md` (v8.3) · `qvest_v8_1_sot.md` (v8.1) · `qvest_v8_0_upgrade_plan.md` (v8.0)
 
+## (v10.4 유지 · 버전 미변경) 측정 기준 전환 close_t1 · C11 2단계 · 무인 레인 기억 봉쇄 (2026-09-25)
+
+**도훈**: `P0-05-STAGE1-RUN` · `P0-05-STAGE2-EPOCH` · `D-A-N-TIMING` · `A-GATE-VINTAGE-STAR` · `PIT-C11-FDB-FROM` · `PIT-C11-M4-S7-APPLY` ·
+"P0 나머지 5개도 지금 진행" · "셧다운 안되는 수준에서 최대병렬" · `REINFORCE-ORGANIC-AUTONOMY`(완전 자율 — 설계 진행 중).
+
+- **원장 측정 기준 전환**: 과거 강화 칸 전수를 보유 기반 재측정(`contracts/remeasure_from_holdings.R` · 1,211 산출물 · 실패 0 ·
+  RAWDATA·벤치 md5 전후 불변) → `rf_rebase_driver.R` rebase 1,250칸(거부 0 · 구판은 `essence_history[close_d_legacy]` append-only) →
+  `rfr_epoch`: `current_axis = exec_v2_close_t1`(승계 49). 미재측정 56칸(C11 35 · WT 사전형 12 · 08-29 파일럿 9)은 legacy 로 남아 A 보류.
+  원장 계약 수치: B 332→220 · PORT_t≥2.95 117→39 · Calmar≥0.5 33→2. 산출·백업 = `04_Research/01_reports/p0_05_remeasure_20260925/`.
+- **P0-08 표식**: 원장 586칸 — `selection_basis_full_sample_ic` 60 · `…_inherited` 501(--include-inherited, C1 D-E·A-GATE-VINTAGE-STAR 정합) ·
+  `treatment_misspecified` 25. 최고 계보 22632 전체가 승계 표식 → A 보류. ★새 칸 자동 승계 부재(`rf_runner_gates.R:552`) = 신규 P0-14.
+- **C11 2단계**(런북 `run_c11_phase2.sh` · 백업 `.cache/_c11_p2_backup/20260925_113012/`): JM 전방 필터 전 이력 · 국면 원장 재발행 ·
+  AE 재산출 · m4 재초기화 · BCS · 월간 FDB 열(2000-06~ · MA01/02 제거) · 일간 FDB 전 월(phase6~9b, 75분). S9 = 최종 대조 20/0 ·
+  C11 스위트 1,147/0(재실행). 첫 S9 의 1 fail·3 미측정은 검사 결함 — `test_pg2_c11_consumers` E2 픽스처가 S3 재발행으로 생긴 파일 스탬프를
+  안 지워 '수리된 상류'가 됨(E0 자기검사 추가) · 신규 3종 요약 JSON 누락(추가).
+- **P0-M1/M2 배포**(키트 `/c/tmp/qvest_kit_M1M2_0925`): 무인 LLM 레인 `CLAUDE_CODE_DISABLE_AUTO_MEMORY=1` 을 `rf_llm_agent_run` 단일 진입에서
+  (27파일 이관 · 미경유 0) · `safety_guard.sh` 무인 레인 기억 쓰기 차단 → `06_Registry/memory_inbox/` · `arm_gen_read_guard.sh` 설계 레인
+  확장(QVEST_DESIGN_LANE) + R2 실순회(좁힌 glob 우회 차단) + `hooks/policies/arm_gen_read_guard.json` · 설계 레인 4종 셸 통로 7종 금지.
+  무인 작성 기억 카드 19장 `source: unattended_lane · review: pending`. P0-08(B08)·P0-09(B09) 는 08:39·08:47 설치.
+- **P0-13 충실구현 A → A 자격 관문**(18:38 · 키트 `/c/tmp/qvest_kit_R1_0925`): `run_paper_replication.R` 이 grade A 면 `rf_a_eligibility` 정본을
+  격리 환경으로 태워 `judge_request.eligible.json`(Judge 트리거) / `judge_request.held.json`(사유 코드) · 셀 판별 3조건(스위치 ∧ RF_CELL_SPEC ∧
+  셀 엔진) · 러너 밖 수동 셀 A = `held:cell_outside_runner` · fail-closed. `a_eligibility_gate.json` 충실구현 회계 요건 chain. 문서 8곳 'B07 뒤 이관 예정' 문언 정정.
+- **설계 레인 전기간 통계 통로 차단**(18:38 · R2): `arm_gen_read_guard.sh` 이름 층 STATS_RE + 내용 층(content_guard) + 좁힌 glob 순회 ·
+  `rf_b1_design_lib.R` 교차 entry 수치 가림(발송 전 재도출 · 남으면 규칙 폴백). 서술형 문서·로그 통로 약 2,700건은 남음.
+- **P0-08 as-of 상한 가드**(18:41 · R3/B08): `rf_factor_arms.R`·`rf_sleeve.R` asof 가 결정 시점보다 늦거나 NA/미래면 stop.
+- **B5 설계 재료 교차 entry 수치 가림**(19:09 · D-E-B5-MATERIALS): `rf_b5_design_lib.R` — 자기 절 외 기본 가림 · (3) arm_id 순 · 발송 전 재검사 fail-closed.
+- **P0-14 계보 기반 표식 자동 승계**(19:37 · 키트 `/c/tmp/qvest_kit_P014_0925`): 신규 `rf_lineage_flags.R`(계보 표식 술어 정본 — 원장 일괄 표식과 관문이
+  같은 함수) · `rf_runner_gates.R` ⑤ 가 새 칸마다 선정 기저 승계(오염 집합 ⊆ 칸 팩터 · as-of 면제는 집합 원소 전부 증명 시만 · carry 출처 n 까지)와
+  C11 격리(spec·arm·엔진 코드 스캔)를 재도출 · 판독 실패 = 보류(fail-closed) · 러너 SPEC 에 `selection_basis`·`selection_asof`(격자 스냅샷 폴백 칸 =
+  full_sample_ic) · 충실구현 어댑터 engine_path 격리 스캔 · `register_module.R::.RM_ROOT` 설정 루트 결손 시 stop(샌드박스 운영 누출 근본 수리).
+  22632 계보는 carry 가 남는 한 A 불가(as-of 재선정 새 칸 = floor v2).
+- **P0-07 데이터 컷오프·빈티지 지문**(21:29 · 키트 `/c/tmp/qvest_kit_B07_0925`): `pin_cache.R` `pin_fp_v2` — 소비 열을 소비자 코드에서 재도출
+  (Close·K200·KQ150·Ret·Size·Vol) · 행 키 정렬 원 비트 해시(맞교체 검출) · 지문 밖 원천(재무·컨센서스 등 엔진이 직접 읽는 패널)은 `unverified`
+  → `vintage_unverified` 저널 · `rf_open_entry` 가 data_cutoff·data_fingerprint 기록 · 승격 자식 vintage_mismatch 저널 · 러너 병합(R1+P0-14 위 3-way).
+  1차 키트 `deploy_b07.py` 퇴역(rollback 이 R1 이전 판으로 덮던 결함).
+- **무인 러너 재개**(21:35 · `reinforce_auto_config.json` enabled=true · RUNNER-RESTART-AFTER-P0-14 · RUNNER-RESTART-RELAX): 현행 격자 ·
+  유기체 live 0 · l2_auto·director 정지 유지. 뒤따름: R3R · V6 · 프롬프트 허용 목록 · B5 라벨 · 카탈로그 차단.
+- **결정**: RUNNER-RESTART-AFTER-P0-14 · PR-L1-A4-DISPOSITION · D-E-B5-MATERIALS · D-E-V6-CONDITIONAL-IC · ORGANIC-DE((iii)+τ_D ·
+  lockbox 폐지 조항의 유기체 입력 한정 예외) · ORGANIC-SCOPE · B3-STRUCTURAL-TRIM · ORGANIC-PRIORITY. 유기적 강화 설계 최종판 =
+  `04_Research/01_reports/organic_reinforce_20260925/organic_design_final.md`(레버 감사·3설계 동봉).
+- 되돌리기: 원장 = `ledger_l1_pre_epoch.json`/`pre_rebase_stage*.json` · P0-08 = `/c/tmp/p0_08_apply/backup_apply` · M1M2 = 키트 `rollback.sh` ·
+  C11 = `run_c11_phase2.sh rollback <S> 20260925_113012` · R1/R2/R3 = 각 키트 `rollback.sh`(배포 직후 sha 와 같을 때만 복원).
+
+---
+
+## (v10.4 유지 · 버전 미변경) 리서치 디렉터 동결 — 흡수 Phase 0 (2026-09-24)
+
+**도훈**: 디렉터 효용 검토 → `DIR-ABSORB`(결정·학습 층 퇴역, 진단·기록 부품은 P1-01·P3-01·P3-05·P3-07 로 흡수) ·
+`DIR-PHASE0`(스위치 배선 + 동결) · `DIR-DIRECTION-SCORE`(방향 채점 폐기). 근거 = `04_Research/01_reports/director_review_20260924/director_verdict_20260924.md`
+(디렉터가 바꾼 결정 0건 · 정정 전 수치 4.349/0.501 재방송 · C11 로 막힌 L2 개설 권고).
+
+- `rf_director.R::dir_run` 이 `director.enabled` 를 실제로 읽는다(구판은 읽기만 하고 소비자 0 = 끌 수 없는 스위치) → config `false`.
+  동결 = 계산·캐시·지도·결정 기록·방향 채점·텔레그램 0, exit 0 한 줄. 기존 캐시는 사료로 둔다. 로케일 가드·UTF-8 쓰기 검증 패치 동시 적용.
+- 부팅: `Director: 동결(흡수 대기 · DIR-ABSORB …) · 대기결정 N` — 옛 캐시(정정 전 수치) 비전재 · config 판독 불가는 '?' ·
+  `Rules: 폐기(DIR-DIRECTION-SCORE …)` (줄 삭제는 Phase 2, 부팅 줄 수 계약과 함께).
+- `/qvest`: 1a 규칙 채점 단계 삭제 · '첫 선택지 = Director 권고 + human_override 기록' 규칙 삭제(선택지 ①②③ 고정).
+- `research_continuity_guard.sh` W3(지도 신선도 넛지): 동결 중 침묵(갱신 주체 부재 — v9 W8 no-op 과 같은 사유).
+- `axiom/replay/policy_state.R`: `QVEST_POLICY_UNATTENDED` 기본 0(자동 live 금지 · 소유 P1-07 · `DIR-ABSORB-ITEMS` ④).
+- 되돌리기: config `director.enabled=true`(부팅·W3·rf_director 가 전부 종전 경로로 복귀) · qvest.md 는 git 이력.
+- 검사(SUITES 등록): `test_rf_director_freeze.R`(8 · 산출 5종 0 · 양성 대조 · 게이트 제거 돌연변이 · 운영 3스위치) ·
+  `test_continuity_w3_director_freeze.py`(4) · `test_boot_lean_director_line.R`(17 · F7~F9·M2) · `test_boot_lean_rules_line.R`(11) ·
+  `test_policy_auto_live_rule.R`(29 · 기본값 off).
+- 기존 결함(범위 밖): `test_map_freshness_content.R` 11 fail — HEAD 에서도 동일. 09-21 디렉터가 지도를 기계 형식(표 3행)으로 바꿔
+  08-20 손 작성 형식(14행) 전제 단정이 깨진 것. 지도 퇴역(Phase 2)과 함께 처분.
+
+---
+
+## (v10.4 유지 · 버전 미변경) 무인 경보 소음·글자 깨짐 수리 (2026-09-24)
+
+**도훈**: "무인스케줄러 task health 이건 왜 자꾸 뜨는거야?" · "글자 깨지는거도 확인해보고" · "의미없는거 같으면 없애버려도 돼".
+
+(v10.4 유지) 09-24 무인 경보 소음·깨짐 — task_health: DR 자기보고 exit_1(완주+[7] 발송 확인) 경보 제외(되돌리기 `QVEST_TH_SELFREPORT_EXEMPT=0`) · morning_run 재시도 조건에서 관측자 마커 제외 · DR [0c] 적재 후 측정 + 하류(p3_forecast) 판정 제외(보고 줄 유지) · 같은 실패 서명 반복은 무음 요약 · `Qvest_MorningReboot.bat` `LC_ALL=C.UTF-8` → `LC_COLLATE/LC_TIME=C`(09-03 '호출부별 prefix' 결정 번복 — 신규 R 호출자 5곳 재발; 되돌리기 = export 복원) · telegram_notify.R 섞인 리터럴 균질화.
+
+- 되돌리기(항목별): task_health 면제 = `QVEST_TH_SELFREPORT_EXEMPT=0` · seen 확정 조건 = `scheduler_task_health.sh` (D) 블록 삭제 ·
+  재시도 마커 = `morning_run.sh` 재시도 블록을 `ls -1 …_${TODAY}.alert | head -1` 한 줄로 · [0c] 위치·하류 제외 = `daily_refresh.sh` 블록 원위치 +
+  `freshness_audit.R` role 한 줄 삭제 · 서명 게이트 = `.cache/dr_fail_signature.json` 삭제(다음 실패가 '신규') 또는 [7] 블록 구판 · `tg_send(mute=)` 는 기본 FALSE 라 무영향.
+- 검사(SUITES 등록): `test_scheduler_task_health_verdict.sh`(37) · `test_morning_run_retry_marker.sh` · `test_scheduler_bat_locale.sh` ·
+  `test_telegram_literal_homogeneity.py` · `test_dr_fail_signature.R` · `test_dr_freshness_gate.py` · `test_boot_lean_director_line.R`(부재≠파손).
+- 병행 소유라 패치로 대기 → 적용 완료: `rf_director.R` 로케일 가드·절단 검증(디렉터 동결과 함께) · `morning_briefing.sh` [5/5]
+  `QVEST_FRESHNESS_QUIET=1`(러너 배리어 v2 SAFE 뒤 13:4x 적용 · `test_refresh_barrier.sh` 89/89 재확인). 발송은 [6a] 뒤 `mrs_daily_briefing.sh` 재감사 한 곳.
+
+---
+
 ## (v10.4 유지 · 버전 미변경) 주간 증류 무인화 — 삭제 판단까지 LLM 위임 (2026-09-05)
 
 **도훈 지시**: "주간 클리너에 자동 증류 기능까지 넣고 싶어" → 범위 ①안(digest + DIST 초안 + L-code) · 삭제 **전면 무인(LLM 판단 위임)** ·

@@ -283,27 +283,46 @@ if (rf_adversary_ok(list(n = 1L)) && rf_adversary_ok(list(adversary = list(verdi
 mkspec <- function(cd, arm) { p <- file.path(TMPD, sprintf("spec_%s.json", cd))
   write(toJSON(list(code = cd, factors = list(), weighting = list(kind = "ew"), universe = list(kind = "k200_kq150"),
                     overlay = list(kind = "k", arm_id = arm)), auto_unbox = TRUE, null = "null"), p); p }
-matt <- function(n, cd, cal, verdict = NULL) { a <- list(n = n, cell_code = cd, grade = "B",
-  essence = list(cell_code = cd, port_t = 2, calmar = cal, spec = mkspec(cd, paste0("arm_", cd))))
+# ★2026-09-24(P0-12 규약 혼합 가드): 블록 승자 후보는 현행 규약 칸만(rf_candidates_keep) — 픽스처는 원장 rebase 표식 모양의
+#   measurement_regime 으로 검사 규약을 명시하고, 러너 문맥 .RCTX 를 같은 규약으로 주입한다(적대검증 필터만 재는 절).
+FIX_REGIME <- "fixture_regime"
+matt <- function(n, cd, cal, verdict = NULL, own = TRUE) { a <- list(n = n, cell_code = cd, grade = "B",
+  measurement_regime = list(regime = FIX_REGIME, basis = "fixture"),
+  essence = list(cell_code = cd, port_t = 2, calmar = cal, spec = mkspec(cd, paste0("arm_", cd), own = own)))
   if (!is.null(verdict)) a$adversary <- list(verdict = verdict); a }
+mkspec0 <- mkspec
+mkspec <- function(cd, arm, own = TRUE) { p <- mkspec0(cd, arm)
+  if (!isTRUE(own)) { s <- fromJSON(p, simplifyVector = FALSE); s$overlay_cell <- list()   # 자기 층 없음(승계분만) 표식
+    write(toJSON(s, auto_unbox = TRUE, null = "null"), p) }
+  p }
 ATT <- list(matt(1L, "B5_16", 0.50), matt(2L, "B5_17", 0.90, "fail"), matt(3L, "B5_18", 0.70, "pass"), matt(4L, "B5_19", 0.95, "not_candidate"))
 i0 <- grep("^\\.winner_of <- function\\(bid", src); i1 <- if (length(i0)) i0 + which(grepl("^}", src[(i0 + 1L):length(src)]))[1] else NA
 if (!length(i0) || is.na(i1)) ng("D2 .winner_of 추출 실패") else {
-  env <- .mkenv(); env$cells <- list(); env$E <- list(attempts = ATT)
+  env <- .mkenv(); env$cells <- list(); env$E <- list(attempts = ATT); env$BID <- "T_WPR_winner"
+  env$.RCTX <- rf_runner_ctx(ROOT, regime = FIX_REGIME)
   env$.metric <- function(a, key) { es <- a$essence; if (is.list(es) && !is.null(es[[key]])) as.numeric(es[[key]]) else NA_real_ }
   env$.cell_by_code <- function(cd) NULL
   eval(parse(text = src[i0:i1]), envir = env)
   w <- env$.winner_of("B5", "calmar", gate = rf_adversary_ok)
   if (!is.null(w) && identical(w$overlay$arm_id, "arm_B5_18")) ok("D2 게이트 — calmar 최고 B5_19(not_candidate)·B5_17(fail) 제외, pass 인 B5_18 승자") else ng("D2 게이트 승자", w$overlay$arm_id %||% "NULL")
   ex <- .logs(env, "winner_excluded_adversary")
-  if (length(ex) == 2L && setequal(vapply(ex, function(z) z$code, character(1)), c("B5_17", "B5_19"))) ok("D3 제외 2건이 코드·verdict 와 함께 로그로 남는다") else ng("D3 제외 로그", as.character(length(ex)))
+  if (length(ex) == 3L && setequal(vapply(ex, function(z) z$code, character(1)), c("B5_16", "B5_17", "B5_19")) &&
+      identical(vapply(ex, function(z) z$verdict, character(1))[vapply(ex, function(z) z$code, character(1)) == "B5_16"], "unverified"))
+    ok("D3 제외 3건(★P0-11: verdict 없는 자기 층 B5_16 = unverified 포함)이 코드·verdict 와 함께 로그로 남는다") else ng("D3 제외 로그", as.character(length(ex)))
   w0 <- env$.winner_of("B5", "calmar")
   if (!is.null(w0) && identical(w0$overlay$arm_id, "arm_B5_19")) ok("D4 게이트 없는 호출(구판)은 not_candidate 도 승자 — 돌연변이 통제: 게이트가 결과를 가른다") else ng("D4 무게이트 대조")
   env$E <- list(attempts = list(matt(1L, "B5_16", 0.5, "fail"), matt(2L, "B5_17", 0.9, "not_candidate")))
   if (is.null(env$.winner_of("B5", "calmar", gate = rf_adversary_ok))) ok("D5 전부 탈락 → NULL(B4 는 carry 오버레이만 깐다)") else ng("D5 전멸 시 NULL")
   env$E <- list(attempts = list(matt(1L, "B5_16", 0.5), matt(2L, "B5_17", 0.9)))
+  if (is.null(env$.winner_of("B5", "calmar", gate = rf_adversary_ok)))
+    ok("D6 ★P0-11: verdict 없는 자기 층 B5 는 unverified → 승자 없음(구판은 부재 = 통과로 승자였다)") else ng("D6 미검증 B5 가 승자")
+  env$E <- list(attempts = list(matt(1L, "B5_16", 0.5, own = FALSE), matt(2L, "B5_17", 0.9, "fail")))
   w2 <- env$.winner_of("B5", "calmar", gate = rf_adversary_ok)
-  if (!is.null(w2) && identical(w2$overlay$arm_id, "arm_B5_17")) ok("D6 verdict 없는 구 attempt 는 그대로 승자(구판 거동 보존)") else ng("D6 구 attempt")
+  if (!is.null(w2) && identical(w2$overlay$arm_id, "arm_B5_16")) ok("D6b verdict 없어도 자기 층이 없는 B5(overlay_cell=[])는 그대로 후보(검증할 처치가 없다)") else ng("D6b 자기 층 없는 B5")
+  env$E <- list(attempts = list(matt(1L, "B5_16", 0.5, "pass"), modifyList(matt(2L, "B5_18", 0.9, "pass"), list(measurement_regime = list(regime = "other_regime")))))
+  w3 <- env$.winner_of("B5", "calmar", gate = rf_adversary_ok)
+  if (!is.null(w3) && identical(w3$overlay$arm_id, "arm_B5_16") && length(.logs(env, "candidates_excluded")))
+    ok("D6c 규약 혼합 가드 — 규약이 다른 칸(Calmar 0.9 pass)은 승자 후보에서 빠진다(candidates_excluded)") else ng("D6c 규약 가드", w3$overlay$arm_id %||% "NULL")
 }
 if (.has('.winner_of("B5", "calmar", gate = rf_adversary_ok)') && .has(".w5_overlay <- if (!is.null(w5)) w5$overlay else E$carry$overlay") &&
     .has('if ("B5" %in% use) .w5_overlay else (E$carry$overlay %||% NULL)'))
@@ -322,9 +341,12 @@ if (rf_grade_a_hold("B5_19", NULL, NULL, NULL)) ok("E6 스펙을 못 읽는 B5 �
 ## ★정의 줄은 `.grade_a_enqueue <- function(` 이라 `.grade_a_enqueue(` 에 안 걸린다 — 호출 줄만 센다(구판은 정의 수를 또 빼 1로 오판)
 n_def <- sum(grepl("^\\.grade_a_enqueue <- function", code)); n_call <- sum(grepl(".grade_a_enqueue(", code, fixed = TRUE))
 if (n_def == 1L && n_call >= 2L) ok(sprintf("E7 발행 1함수(정의 1 · 호출 %d — 즉시 경로 + 경계 해제 경로)", n_call)) else ng("E7 발행 함수", paste(n_def, n_call))
+## ★2026-09-24(P0-12): 적대검증 보류(rf_grade_a_hold)는 A 자격 관문 rf_a_eligibility 의 adversary_unverified(자기 층) 성분으로
+##   흡수됐다 — 러너는 관문 결과(.elA)로 기록(graduate)과 발행(.a_route)을 가른다. 네 사건 로그는 그대로 남는다.
 if (.has('jlog("grade_a_hold_adversary"') && .has('jlog("grade_a_released"') && .has('jlog("grade_a_adversary_blocked"') && .has('jlog("grade_a_hold_unresolved"') &&
-    .has("if (rf_grade_a_hold(j$code, .spA, E$carry$overlay))"))
-  ok("E8 러너 — 보류·해제·차단·미결 네 사건 전부 로그 · 판정은 정본 함수") else ng("E8 러너 보류 배선")
+    .has('.routed <- .a_route(j$n, j$code, R$artifacts, es, .elA, "collect")') &&
+    .has("graduate = is.null(.elA) || isTRUE(.elA$eligible)") && .has("rf_a_eligibility(entry, att, spec, rf_a_ctx(.RCTX, entries, BID, axes = axes))"))
+  ok("E8 러너 — 보류·해제·차단·미결 네 사건 전부 로그 · 판정은 정본 함수(rf_a_eligibility) · 기록 graduate 와 발행이 같은 판정") else ng("E8 러너 보류 배선")
 i_adv <- .at('rf_overlay_adversary_run(BID, "B5", 1L, root = ROOT)'); i_lc <- .at("rf_emit_block_lcode(BID, u2")
 if (!is.na(i_adv) && !is.na(i_lc) && i_adv < i_lc && grepl("tryCatch", code[i_adv - 2L], fixed = TRUE) &&
     .has('jlog("adversary_done"') && .has('jlog("adversary_failed"') && .has("identical(.blk_now, \"B5\") && .blk_left == 0L) || length(.held_a)"))
@@ -348,7 +370,13 @@ run_bound <- function(nb, blk_now, blk_left, held_a = list(), verdicts = list(),
   env$rf_load <- function(layer, root) list(entries = list(list(base_id = "T_WPR_ADV", attempts = lapply(names(verdicts), function(k) {
     a <- list(n = as.integer(k)); if (nzchar(verdicts[[k]])) a$adversary <- list(verdict = verdicts[[k]]); a }))))
   env$.rf_find <- function(obj, base_id) 1L
-  env$.grade_a_enqueue <- function(n, code, artifacts, essence) env$.ENQ[[length(env$.ENQ) + 1L]] <- list(n = n, code = code)
+  env$.grade_a_enqueue <- function(n, code, artifacts, essence, elig = NULL) env$.ENQ[[length(env$.ENQ) + 1L]] <- list(n = n, code = code)
+  # ★2026-09-24(P0-12): 경계는 관문 **전체**를 다시 판정한다(.a_recheck) — 이 절은 경계 배선(호출·해제·차단·미결 분기)을 재므로
+  #   관문을 verdict 로만 가르는 스텁을 꽂는다(관문 자체는 test_rf_a_eligibility.R · 실물 경로는 test_rf_runner_a_gate_e2e.R 이 잰다).
+  env$.a_recheck <- function(h, aL, L) { v <- if (length(aL)) as.character((aL[[1]]$adversary %||% list())$verdict %||% "") else ""
+    list(eligible = identical(v, "pass"), codes = if (identical(v, "pass")) character(0) else "adversary_unverified") }
+  env$.a_decision <- function(...) invisible(TRUE); env$.a_hold_record <- function(...) invisible(TRUE)
+  env$.GRAD <- list(); env$.a_graduate <- function(n, why) { env$.GRAD[[length(env$.GRAD) + 1L]] <- n; TRUE }
   env$rf_record_b5_redesign <- function(layer, base_id, fields, root) env$.RD[[length(env$.RD) + 1L]] <- list(base_id = base_id, fields = fields)
   env$.err <- tryCatch({ invisible(capture.output(eval(parse(text = paste(src[i_v0:i_v1], collapse = "\n")), envir = env))); NULL },
                        error = function(e) conditionMessage(e))
@@ -364,8 +392,9 @@ if (is.na(i_v0) || is.na(i_v1) || i_v1 <= i_v0) ng("E11 경계 블록 추출 실
   if (length(b1$.ENQ) == 1L && identical(as.integer(b1$.ENQ[[1]]$n), 10L) &&
       identical(as.integer(.logs(b1, "grade_a_released")[[1]]$n %||% NA), 10L) &&
       identical(as.integer(.logs(b1, "grade_a_adversary_blocked")[[1]]$n %||% NA), 11L) &&
-      identical(as.integer(.logs(b1, "grade_a_hold_unresolved")[[1]]$n %||% NA), 12L))
-    ok("E12 보류 A — pass(n10) 만 발행 1회 · fail(n11) 차단 · verdict 없음(n12) 미결 유지 (verdict 는 원장에서 재독)") else
+      identical(as.integer(.logs(b1, "grade_a_hold_unresolved")[[1]]$n %||% NA), 12L) &&
+      identical(as.integer(unlist(b1$.GRAD)), 10L))
+    ok("E12 보류 A — pass(n10) 만 발행 1회 + 졸업 · fail(n11) 차단 · verdict 없음(n12) 미결 유지 (verdict 는 원장에서 재독)") else
     ng("E12 해제/차단", paste(length(b1$.ENQ), paste(.ev_of(b1), collapse = ",")))
   if (length(b1$.RD) == 1L && isFALSE(b1$.RD[[1]]$fields$active) && isTRUE(b1$.RD[[1]]$fields$adversary_ran) && "b5_redesign_closed" %in% .ev_of(b1))
     ok("E13 재설계 라운드 종료 — B5 경계에서 rf_record_b5_redesign(active=FALSE · adversary_ran=TRUE)") else ng("E13 재설계 종료", as.character(length(b1$.RD)))
@@ -385,25 +414,35 @@ if (is.na(i_v0) || is.na(i_v1) || i_v1 <= i_v0) ng("E11 경계 블록 추출 실
     ng("E15 발화 조건", paste(length(b3$.ADV_CALLS), length(b4$.ADV_CALLS), length(b5$.ADV_CALLS), length(b6$.RD)))
   b7 <- run_bound(1L, "B5", 3L, held_a = list(held(10L, "B5_31")), verdicts = list("10" = "pass"))
   if (is.null(b7$.err) && length(b7$.ADV_CALLS) == 1L && length(b7$.ENQ) == 1L && !length(b7$.RD))
-    ok("E16 B5 미완이어도 보류 A 가 있으면 같은 tick 에 적대검증(A 는 entry 를 graduated 로 닫는다) · 블록 미완이라 재설계는 안 닫는다") else
+    ok("E16 B5 미완이어도 보류 A 가 있으면 같은 tick 에 적대검증(verdict 를 이 tick 에 받아 재평가 — P0-12 이후 보류 A 의 entry 는 active 유지) · 블록 미완이라 재설계는 안 닫는다") else
     ng("E16 보류 A 즉시 경로", paste(length(b7$.ADV_CALLS), length(b7$.ENQ), length(b7$.RD)))
 }
 ## ── E17 수집 루프의 Grade A 분기 추출 실행 — 보류(자기 층 B5) vs 즉시 발행(B1) ─────────────────────────────
+## ★2026-09-24(P0-12): 수집 분기는 관문 결과 .elA 를 받아 .a_route(발행/보류)로 간다. 관문 판정 자체는 test_rf_a_eligibility.R 가,
+##   실물 배선 전체는 test_rf_runner_a_gate_e2e.R 가 잰다 — 여기서는 **자기 층 B5 보류 → 이 tick 경계 적대검증 대상(.held_a)** 배선과
+##   발행/보류 분기를 설치본 .a_route(소스 추출)로 잰다. .elA 는 그 판정의 모양(rf_a_eligibility 반환)으로 준다.
 i_g0 <- grep('^  if \\(identical\\(R\\$grade, "A"\\)\\) \\{$', src)[1]; i_g1 <- .first_after(i_g0, "^  \\}$")
-run_gradeA <- function(cd, spec) {
+i_r0 <- grep("^\\.a_route <- function\\(n, code, artifacts, essence, elig, phase\\)", src)[1]; i_r1 <- .first_after(i_r0, "^\\}$")
+run_gradeA <- function(cd, spec, elA) {
   sp <- file.path(TMPD, sprintf("specA_%s.json", cd)); write(toJSON(spec, auto_unbox = TRUE, null = "null"), sp)
   env <- .mkenv(); env$R <- list(grade = "A", artifacts = "art"); env$j <- list(n = 5L, code = cd, spec = sp); env$es <- list(port_t = 3)
-  env$E <- list(carry = list(overlay = CAR)); env$.held_a <- list(); env$.ENQ <- list()
-  env$.grade_a_enqueue <- function(n, code, artifacts, essence) env$.ENQ[[length(env$.ENQ) + 1L]] <- list(n = n, code = code)
-  env$.err <- tryCatch({ eval(parse(text = paste(src[i_g0:i_g1], collapse = "\n")), envir = env); NULL }, error = function(e) conditionMessage(e))
+  env$E <- list(carry = list(overlay = CAR)); env$.held_a <- list(); env$.ENQ <- list(); env$.HOLD <- list(); env$.elA <- elA
+  env$.grade_a_enqueue <- function(n, code, artifacts, essence, elig = NULL) env$.ENQ[[length(env$.ENQ) + 1L]] <- list(n = n, code = code)
+  env$.a_hold_record <- function(n, code, artifacts, elig, phase) env$.HOLD[[length(env$.HOLD) + 1L]] <- list(n = n, codes = elig$codes)
+  env$.a_decision <- function(...) invisible(TRUE)
+  env$.err <- tryCatch({ eval(parse(text = paste(c(src[i_r0:i_r1], src[i_g0:i_g1]), collapse = "\n")), envir = env); NULL },
+                       error = function(e) conditionMessage(e))
   env
 }
-if (is.na(i_g0) || is.na(i_g1)) ng("E17 Grade A 분기 추출 실패") else {
-  ga <- run_gradeA("B5_17", sp_b5); gb <- run_gradeA("B1_1", list(code = "B1_1", overlay = CAR, overlay_cell = list()))
-  if (is.null(ga$.err) && length(ga$.held_a) == 1L && !length(ga$.ENQ) && "grade_a_hold_adversary" %in% .ev_of(ga) &&
-      is.null(gb$.err) && !length(gb$.held_a) && length(gb$.ENQ) == 1L)
-    ok("E17 수집 시점 — B5 자기 층 A 는 judge/큐 미발행(보류 목록) · B1 A 는 즉시 발행") else
-    ng("E17 수집 분기", paste(ga$.err %||% "", length(ga$.held_a), length(ga$.ENQ), gb$.err %||% "", length(gb$.ENQ)))
+if (is.na(i_g0) || is.na(i_g1) || is.na(i_r0) || is.na(i_r1)) ng("E17 Grade A 분기 추출 실패") else {
+  ga <- run_gradeA("B5_17", sp_b5, list(eligible = FALSE, codes = "adversary_unverified", self_unverified = TRUE))
+  gb <- run_gradeA("B1_1", list(code = "B1_1", overlay = CAR, overlay_cell = list()), list(eligible = TRUE, codes = character(0), self_unverified = FALSE))
+  gc <- run_gradeA("B2_7", list(code = "B2_7", overlay_cell = list()), list(eligible = FALSE, codes = "legacy_regime", self_unverified = FALSE))
+  if (is.null(ga$.err) && length(ga$.held_a) == 1L && !length(ga$.ENQ) && length(ga$.HOLD) == 1L && "grade_a_hold_adversary" %in% .ev_of(ga) &&
+      is.null(gb$.err) && !length(gb$.held_a) && length(gb$.ENQ) == 1L && !length(gb$.HOLD) &&
+      is.null(gc$.err) && !length(gc$.held_a) && !length(gc$.ENQ) && length(gc$.HOLD) == 1L)
+    ok("E17 수집 시점 — B5 자기 층 A 는 보류 + 이 tick 적대검증 대상 · 발행 가능 A 는 즉시 발행 · 다른 사유 보류(legacy)는 경계 대상 아님") else
+    ng("E17 수집 분기", paste(ga$.err %||% "", length(ga$.held_a), length(ga$.ENQ), gb$.err %||% "", length(gb$.ENQ), gc$.err %||% "", length(gc$.HOLD)))
 }
 
 cat("\n=== F. lcm_merge — B5 사후 설계 거부 (격리 root · 실제 실행) ===\n")

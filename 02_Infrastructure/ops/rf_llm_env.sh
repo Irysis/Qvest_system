@@ -30,6 +30,23 @@
 #   → LLM_MODEL / LLM_EFFORT (+ Fable 계열이면 LLM_FALLBACK_MODEL / LLM_FALLBACK_EFFORT)
 #   rf_llm_agent_run <prompt_file> <run_out> <timeout_sec> [claude 추가 인자...]
 #   → LLM_RC · LLM_USED_MODEL · LLM_USED_EFFORT · LLM_FELL_BACK(0|1) · 폴백 시 1차 출력 = <run_out>.primary
+#   timeout_sec = 0 이면 시간제한 없음(GNU timeout 규약 — "시간제한 없애" 레인 4종이 이 값을 넘긴다).
+#
+# ★무인 레인 단일 진입 (P0-M1 · 2026-09-24 · 도훈 "기억 무결성 전부 승인")
+#   무인 `claude -p` 는 **이 함수 하나로만** 뜬다 — 정적 검사 08_Tests/ops/test_llm_single_entry.sh 가
+#   02_Infrastructure·.claude·qepm·04_Research 코드 전수를 parse 해 미경유 호출 0 을 확인한다.
+#   이 함수는 claude 프로세스에 두 표식을 싣는다(함수 지역 배열 lane_env — 1차·폴백 두 호출이 같은 배열):
+#     CLAUDE_CODE_DISABLE_AUTO_MEMORY=1 — CLI 2.1.261 의 공식 자동 기억 스위치(바이너리 판독: 참이면
+#       자동 기억 비활성, "0" 은 강제 켬 · 설정 키는 autoMemoryEnabled). 양방향 실측(09-24 · 샌드박스 cwd ·
+#       canary MEMORY.md): 켠 판 transcript AutoMem 0 · 끈 판 1(canary 주입). 증거 = 스크래치 p0_rest/M1/probe.
+#       왜: 무인 레인 519 세션 중 416 이 MEMORY.md(성과 수치 포함)를 주입받았고, 성과 blind 설계 레인까지
+#       오염됐다. 무인 레인 27 세션이 기억 디렉터리에 카드 19장 + MEMORY.md 를 썼다(D7-02).
+#     QVEST_UNATTENDED_LANE=1 — 훅 safety_guard.sh 가 이 표식을 보면 기억 디렉터리 쓰기를 차단하고
+#       06_Registry/memory_inbox/ 로 안내한다(스위치가 꺼져도 쓰기는 막히는 두 번째 층).
+#   ★cwd 는 옮기지 않는다 — 프로젝트 훅 13종은 저장소 cwd 기준으로 로드된다(cwd 이동 = 훅 전멸, critique M3).
+#   ★이관 레인(P0-M1 · 10종)은 LLM_FALLBACK_MODEL="" 로 부른다 — 구판 동작 보존(구판은 --fallback-model 없음).
+#     한도 폴백을 싣는 호출자 = 이관 전부터 이 함수를 쓰던 replication·b5_design·overlay_audit 뿐
+#     (검사 08_Tests/ops/test_llm_single_entry.sh §G 가 허용 목록으로 잰다).
 #==============================================================================
 
 # 한도 문구 — 실측 표본: "You've reached your Fable limit"(09-07) · "You've hit your session limit ·
@@ -90,7 +107,9 @@ rf_llm_agent_run() {
   [ -n "${LLM_FALLBACK_MODEL:-}" ] && fb=(--fallback-model "$LLM_FALLBACK_MODEL")
   LLM_FELL_BACK=0; LLM_USED_MODEL="$LLM_MODEL"; LLM_USED_EFFORT="$LLM_EFFORT"
   rm -f "$out.primary"
-  timeout "$tmo" "$bin" -p --model "$LLM_MODEL" --effort "$LLM_EFFORT" ${fb[@]+"${fb[@]}"} "$@" \
+  # ★무인 레인 표식(P0-M1) — 함수 지역 배열이라 호출자가 전역을 덮어도 바뀌지 않는다. 1차·폴백이 같은 배열.
+  local lane_env=(CLAUDE_CODE_DISABLE_AUTO_MEMORY=1 QVEST_UNATTENDED_LANE=1)
+  env "${lane_env[@]}" timeout "$tmo" "$bin" -p --model "$LLM_MODEL" --effort "$LLM_EFFORT" ${fb[@]+"${fb[@]}"} "$@" \
     < "$pf" > "$out" 2>&1
   LLM_RC=$?
   # ★한도 판정은 **이번 실행 출력**만 본다 — 그날 로그 전체를 보면 앞선 실행의 한도 문구가 뒤의 성공을 덮는다.
@@ -100,7 +119,7 @@ rf_llm_agent_run() {
     LLM_FELL_BACK=1
     LLM_USED_MODEL="$LLM_FALLBACK_MODEL"
     LLM_USED_EFFORT="${LLM_FALLBACK_EFFORT:-max}"
-    timeout "$tmo" "$bin" -p --model "$LLM_USED_MODEL" --effort "$LLM_USED_EFFORT" "$@" \
+    env "${lane_env[@]}" timeout "$tmo" "$bin" -p --model "$LLM_USED_MODEL" --effort "$LLM_USED_EFFORT" "$@" \
       < "$pf" > "$out" 2>&1
     LLM_RC=$?
   fi

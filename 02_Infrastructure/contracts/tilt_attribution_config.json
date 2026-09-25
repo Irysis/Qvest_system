@@ -1,0 +1,120 @@
+{
+  "schema": "tilt_attribution_config_v1",
+  "label": "진단 — 등급 대체 아님",
+  "note": "tilt_attribution.R 의 유일한 설정 정본(플랜 qvest-1-drifting-eclipse P2-02 · 2026-09-25 신설). 이 파일의 어떤 값도 등급·문턱을 바꾸지 않는다 — 등급은 essence_score.R 하나다. 파일·키가 없으면 계약은 멈춘다(기본값을 지어내지 않는다). 고정 축(n_max·유동성·비중 상한·비용·시작일)은 여기 적지 않고 fixed_axes_source 에서 읽는다(사본 금지 — 쌍둥이 드리프트).",
+  "fixed_axes_source": "06_Registry/reinforce_program.json::fixed_axes",
+  "fixed_axes_keys": {
+    "n_max": "n_max",
+    "liq_min": "liq_adv20_min",
+    "weight_cap": "weight_cap",
+    "commission_bps": "commission_bps",
+    "start_date": "start_date"
+  },
+  "universe": {
+    "membership_flags": [
+      "K200",
+      "KQ150"
+    ],
+    "liq_window_rows": 20,
+    "liq_lag_rows": 1,
+    "size_lag_rows": 1,
+    "decision_lag_market_days": 1,
+    "_source": "U_t(수익일 t) = 결정일 t-1 의 상태 — 멤버십 K200∪KQ150 플래그(t-1) ∧ 20행 평균 거래대금(Close×Vol)을 1행 늦춘 값(= t-2 까지) ≥ fixed_axes.liq_adv20_min. 엔진 규약 그대로: rf_cell_engine.R:75-76 (.TV·.adv20_l1 = shift(frollmean(TV,20),1)) · pit.md C10(유동성 필터 당일 거래량 금지) · C6(생존편향 — 시변 멤버십) · '20일 평균' = constraint_defaults.json::tier_soft_deployment.liquidity_min_won_20d_avg 의 정의. size_lag_rows = 엔진 .SizeLag(rf_cell_engine.R:219 · C2)."
+  },
+  "ew_universe": {
+    "rebalance": "monthly_bh",
+    "_source": "EW_U = 월말 시그널일 적격 종목(멤버십 K200∪KQ150 ∧ LIQ — 엔진 PANEL 규약과 같은 시그널일 상태) 동일가중 · 익일 종가 체결(close_t1) · 창 안 buy-and-hold. 전략들과 같은 재조정 주기로 맞춘 이유: 일간 재조정 EW 는 호가 반등 편의·단기 반전 수익(Blume & Stambaugh 1983, JFE 12(3):387-404, https://doi.org/10.1016/0304-405X(83)90056-9)을 담아, 월간 buy-and-hold 인 칸마다 그 몫이 선별(음수)로 새어 든다. 'daily'(레버 감사 c3.py 정의 · U_t 일간 동일가중)는 감사 대조용 선택지로만 둔다."
+  },
+  "loadings": {
+    "window_market_days": 252,
+    "min_obs": 120,
+    "shrink_weight_ts": 0.6,
+    "min_prior_n": 30,
+    "det_rel_tol": 1e-08,
+    "_source": "종목별 사전(ex-ante) 적재 = 수익일 t 에 대해 [t-252, t-1] 창의 일간 OLS(절편 포함) — 창은 t 를 포함하지 않는다(C1 rolling). 1년 일간 창·최소 120거래일 = Frazzini & Pedersen (2014) 'Betting against beta', JFE 111(1):1-25, https://doi.org/10.1016/j.jfineco.2013.10.005 (변동성 1년 창·120거래일 요건) — 단일 회귀 창으로의 각색. 짧은 창 일간 회귀로 시변 β 를 재는 근거 = Lewellen & Nagel (2006), JFE 82(2):289-314, https://doi.org/10.1016/j.jfineco.2005.05.012. 횡단면 사전으로의 축소 0.6·TS + 0.4·XS = Frazzini & Pedersen (2014) 식의 w=0.6 · Vasicek (1973), JF 28(5):1233-1239, https://doi.org/10.1111/j.1540-6261.1973.tb01452.x. XS 사전 = 그날 U_t 멤버의 TS 적재 평균(min_prior_n 미만이면 축소 생략 — 사전이 서지 않는다). det_rel_tol = 수치 특이 판정(통계 파라미터 아님)."
+  },
+  "attribution": {
+    "components": [
+      "market_beta",
+      "ew_cw",
+      "tilt_nsc",
+      "selection"
+    ],
+    "_source": "보유 기반 사전 노출 × 요인 실현 = 특성 기반 성과 측정(Daniel, Grinblatt, Titman & Wermers 1997, JF 52(3):1035-1058, https://doi.org/10.1111/j.1540-6261.1997.tb02724.x)의 요인판. 노출(틸트)과 종목 선별의 분리 = Cremers & Petajisto (2009), RFS 22(9):3329-3365, https://doi.org/10.1093/rfs/hhp057. EW−CW(사이즈) 성분이 구간마다 뒤집히는 근거 = Asness, Frazzini, Israel, Moskowitz & Pedersen (2018), JFE 129(3):479-509, https://doi.org/10.1016/j.jfineco.2018.05.006. 순서(시장 → EW_U−K200 → 무신호 대조 잔차 → 선별)는 플랜 P2-02 문언."
+  },
+  "no_signal_control": {
+    "selection": "size_lag_top_n",
+    "weighting": "cap",
+    "grid": "month_end_signal",
+    "exec": "close_t1",
+    "_source": "02_Infrastructure/contracts/no_signal_control.R::build_no_signal_control 의 정의(신호 미사용 · 유니버스 시총 상위 N · 시총가중 · 제약은 전략과 동일)를 일간·t-1 규약으로 옮긴 것. N = fixed_axes.n_max · 비중 상한 = fixed_axes.weight_cap(null = 없음 — v10 폐지) · 비용 = 칸 manifest 의 transaction_cost_bps. 격자는 월말 시그널·익일 종가 체결(replication_harness.R close_t1) — 칸의 주기와 무관한 공통 요인이 되도록 칸별로 바꾸지 않는다."
+  },
+  "nsc_factor": {
+    "orthogonalize": "exante_rolling_on_fm_fe",
+    "_source": "f_n = s_N − ĥ_t·f_m − ĝ_t·f_e, (ĥ,ĝ) = s_N 을 [f_m, f_e] 에 [t−W, t−1] 창(적재와 같은 창·최소 관측)으로 회귀한 사전 계수 · 절편은 빼지 않는다(대조의 α 는 요인에 남긴다). 이유(실측 2026-09-25 샌드박스): 직교화 전 s_N 과 f_e 의 일간 상관이 −0.84 — 메가캡 특이 충격이 K200(따라서 f_e)과 무신호 대조에 반대 부호로 함께 들어 있어, 3요인 적재가 공선으로 E/T 사이를 불안정하게 나눈다. 순차 직교화(플랜 순서: 시장 → EW_U−K200 → 무신호 대조 → 선별)의 근거 = Klein & Chow (2013) 'Orthogonalized factors and systematic risk decomposition', QREF 53(2):175-187, https://doi.org/10.1016/j.qref.2013.02.003. ★귀결: ew_cw 성분은 K200 집중(메가캡 특이 충격의 거울상)을 포함한 'EW_U−K200' 전체를 담고, tilt_nsc 는 그와 직교한 무신호 대조 잔여만 담는다."
+  },
+  "nw": {
+    "lag_rule": "nw1994_bartlett",
+    "house_lag": 3,
+    "_source": "성분 NW-t 의 lag = floor(4·(T/100)^(2/9)) — Newey & West (1994) 'Automatic Lag Selection in Covariance Matrix Estimation', RES 61(4):631-653, https://doi.org/10.2307/2297912 (Bartlett 커널 · Newey & West 1987, Econometrica 55(3):703-708, https://doi.org/10.2307/1913610). house_lag = 3 은 PORT_t 정본(backtest_result_contract.R::.nw_t_mean lag=3)과 나란히 인용하기 위한 병기 — 총 활성의 lag-3 t 는 authoritative_remeasure.json 의 PORT_t 와 같아야 한다(패리티 검사)."
+  },
+  "retention": {
+    "_source": "essence_score.R 의 비율 분할(.essence_split_components · .essence_oos_splits('v2'))을 **그대로 호출**한다 — 분할·최소 관측·IS IR>0.05 규칙 사본 없음. 총 활성의 retention 은 authoritative_remeasure.json::essence.oos_retention 과 같아야 한다(패리티 검사)."
+  },
+  "periods": [
+    {
+      "id": "2005_16",
+      "from": "2005-01-01",
+      "to": "2016-12-31"
+    },
+    {
+      "id": "2017_20",
+      "from": "2017-01-01",
+      "to": "2020-12-31"
+    },
+    {
+      "id": "2021_24",
+      "from": "2021-01-01",
+      "to": "2024-12-31"
+    },
+    {
+      "id": "2025_26",
+      "from": "2025-01-01",
+      "to": "2026-12-31"
+    }
+  ],
+  "periods_source": "★결과를 본 뒤 정한 경계다 — 레버 감사(scratchpad/organic/lever_audit_final.md §② 'OOS 벽의 실체' 표: 157칸 활성 IR 중앙 +1.38/−0.46/+0.72/−0.88)가 본 구간을 그대로 옮겼다. 서술 전용이며 어떤 선정·판정 규칙의 입력으로도 쓰지 않는다(pit.md C1 D-E). 구간 표는 사전등록 실험의 1차 지표가 아니다.",
+  "episodes": {
+    "benchmark_top_k": 5,
+    "include_strategy_mdd": true,
+    "_source": "표시 수량(판정·추정 무관). 벤치(K200) 고점→저점 낙폭 구간 깊이 상위 k 개 + 전략 자신의 최대 낙폭 구간. 구간 안 일간 성분의 산술 합과 그 몫을 적는다 — 월간 귀속은 2020-03 저점을 지운다(플랜 P2-02)."
+  },
+  "pit_probe": {
+    "n_probe_days": 3,
+    "tol": 1e-12,
+    "_source": "접두 불변 검사 — 수익일 c 이후(≥c)의 모든 입력을 뒤섞어도 c 의 사전 상태(U_c·종목 적재·보유 비중·무신호 대조 비중)가 같아야 한다(A층: 미래참조). B층(결정일 규약): 결정일(c-1) 이후의 거래대금 입력을 뒤섞어도 U_c 가 같아야 하고(C10), 시그널일 이후의 Size 를 뒤섞어도 그 창의 무신호 대조 비중이 같아야 한다(C2). 탐침일 = 칸 수익일의 분위(균등 간격 · 무작위 아님). tol = 부동소수 비교 허용치."
+  },
+  "controls": {
+    "random_n_portfolios": 100,
+    "random_seed": 20260925,
+    "fpr_alpha": 0.05,
+    "fpr_max": 0.1,
+    "mean_t_abs_max": 0.5,
+    "inject_alpha_ann": 0.05,
+    "inject_recovery_band": [
+      0.85,
+      1.05
+    ],
+    "ew_replica_ew_share_min": 0.8,
+    "ew_replica_beta_band": [
+      0.9,
+      1.1
+    ],
+    "_source": "양성 대조 수락 기준(사전 고정). 무작위 25종: 명목 5% 에서 R=100 이면 이항 상단 꼬리 P(X≥11)≈1.1% → fpr_max 0.10 초과 = red(오경보 ~1%). 평균 t 의 표준오차 ≈ 1/√100 = 0.1 → |평균 t| ≤ 0.5 는 5σ. 주입 5%/년 = 최고 계보 활성 연 수익의 1/3 규모(검출 가능한 크기 · 판정값 아님). 시장 수준 주입 회수 띠는 보유 종목이 EW_U 에 섞이는 누출(β_e·N/|U| ≈ 0.8·25/340 ≈ 6%)을 허용한다. EW 복제: 공통 성분(ew_cw)이 활성 분산의 ≥80% · 적재 평균이 1±0.1. 이 값들은 계기의 수락 기준이지 전략 판정 문턱이 아니다."
+  },
+  "history": {
+    "buffer_windows": 2,
+    "buffer_extra_market_days": 60,
+    "_source": "적재 시작 = 칸 첫 수익일 − (2·창 + 60) 시장일 — 1차 적재(창) → 무신호 대조 잔차 요인 → 2차 적재(창)가 첫 수익일 전에 서도록. 60 = 월 격자 한 칸 + 여유(판정 무관)."
+  }
+}

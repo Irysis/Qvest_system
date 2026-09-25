@@ -34,12 +34,29 @@ SOT: 02_Infrastructure/docs/qvest_ast_v1_1_sot.md §4 (verify() 알고리즘 = �
 known_discrepancy 처리 (registry 171건):
   선언·구현 불일치 리프는 **보수 쪽 값**으로 판정하고 verdict.discrepancy_used에 기록 (침묵 금지).
   - consensus 'T-1' + disc(33건): 코드 same-day 허용·제공시각 미상 → 보수 avail = t + 1d
-  - macro 'C11_publication_lag'(14건): 코드 1d 근사 vs 실제 발표 lag 수주 → 보수 상한
-    C11_CONSERVATIVE_LAG_DAYS = 35d ("검증 안 됨 (상한 가정)" — 시리즈별 실측 lag 테이블 부재 시
-    보수 envelope. registry known_discrepancy '실제 발표 lag(예: CPI 수주)' 인용 근거)
+  - macro 'C11_publication_lag'(14건)·macro_fred '-1d'(5건): ★2026-09-24 교체(아래 'C11 가용시점 대조').
+    종전 = C11_publication_lag → +35d 상한 · '-1d' → avail=t(선언 그대로 신뢰 — 판정서 ③ "ast_verify.py:360-361
+    레지스트리의 '-1d' 선언을 그대로 믿는다. RE_VIX_z 의 거짓 선언도 통과"). +35d 는 INDPRO(+47~54d)·M2SL(+51~64d)을
+    못 덮었고 '-1d' 는 주간·월간·ICE OAS(한국 d+2) 계열에 불충분했다.
   - fundamental 'quarterly+45d;annual_3/31'(124건): 빌더 .pit_fund as-of 내부강제로 구조적
     look-ahead는 없음 → avail = t. 단 xlsx Q4 +45d(≈2/14) vs 확정 3/31 노출창 [2/14, 3/31)은
     SOT §3 수리 항목(별도 사이클) — discrepancy_used로 주석 (판정영향 주석 의무, block 아님)
+
+C11 가용시점 대조 (2026-09-24 — PIT C11 판정서 ⑤-8 방어선 · decision_register PIT-C11-CONVENTIONS ④):
+  규칙 정본 = 06_Registry/fred_availability_rules.json, 계산 = 02_Infrastructure/data/fred_availability.py(S0 가용시점 층).
+  이 파일에는 오프셋 수치가 없다. 계열 분류: class0(n=0 당일) · class1(kr_trading_days_after n<=1 = 다음 한국 거래일)
+  · class2(주간·월간·us_release·n>=2) · prohibited(DEXKOUS/KRW_USD → ECOS_KRW_USD).
+  - REGISTRY 리프(rule '-1d'·'C11_publication_lag'): 선언을 믿지 않는다.
+      ① 06_Registry/pit_quarantine.json 활성 격리 대상(팩터·일간 열) = FAIL_LOOKAHEAD(선언 반증 — 격리 해제 전 소비 불가)
+      ② ast_field_map c11_registry_series[팩터] = 저장 판의 계열·빌드: lag_days k 는 모든 계열이 class0 이거나
+         (class1 ∧ k>=1)일 때만 avail=t, 그 밖(class2·금지) = FAIL_LOOKAHEAD · fred_availability 재빌드판은
+         rules_regime_key 가 현 규칙 epoch 와 같을 때만 avail=t(아니면 FAIL_CONTRACT) · retired = FAIL_LOOKAHEAD
+      ③ 등재 없음 = FAIL_CONTRACT(선언만으로 통과 없음)
+  - FIELD 리프 E1_fred_macro_raw: series(FRED id·별칭) 선언 필수 — avail = fred_avail_date(series, ref_ts)(규칙 파일).
+      series_class(+1d/+35d 근사)는 더 이상 쓰지 않는다. 한국 거래일 달력: 주입(--kr-calendar · QVEST_AST_KR_CALENDAR) >
+      도우미 기본(.cache/trading_calendar.parquet — pyarrow/pandas 필요) > 평일 근사(하한 — 위반은 확정, 통과는
+      거래일 계수 규칙 계열이면 FAIL_CONTRACT 로 보류).
+  - FIELD/STORED_SCORE 그룹의 ast_field_map c11.status == "pit_invalid"(E3·E4·E6·E7) ∧ 참조 격리 활성 = FAIL_LOOKAHEAD.
 
 escape 리프 4종 계약 (SOT §2 — 결측 시 FAIL_CONTRACT):
   MODEL_SCORE  : training_window_end 선언 + <= t_d - 1 + training_leaves 목록(각 리프 본 맵 검증)
@@ -64,7 +81,7 @@ alpha_package.json 기대 형상 (Step 2 스키마 3층화 전 최소 계약):
   leaf  = {"leaf": "FIELD", "group_id": "<ast_field_map group_id>", "field": "...",
            "period": "quarterly"|"annual",        # regulatory_fund 그룹만; 결측 시 annual(보수)
            "ref_basis": "rcept"|"event_date",     # event 그룹만; 결측 시 rcept
-           "series_class": "market_daily"|"release"}  # E1 FRED만; 결측 시 release(보수)
+           "series": "VIXCLS"}                     # E1 FRED만 — 규칙 파일 id/별칭 필수(2026-09-24)
         | {"leaf": "REGISTRY", "factor": "V01_BM"}
         | {"leaf": "MODEL_SCORE", "training_window_end": "...", "trained_at": "...",
            "training_leaves": [<leaf>...]}
@@ -76,6 +93,7 @@ alpha_package.json 기대 형상 (Step 2 스키마 3층화 전 최소 계약):
 CLI:
   python ast_verify.py <alpha_package.json> [--out verdict.json] [--decision-ts YYYY-MM-DD]
                        [--sig-date YYYY-MM-DD] [--registry PATH] [--map PATH]
+                       [--fred-rules PATH] [--quarantine PATH] [--kr-calendar JSON]
   종료코드: PASS/WARN_RESTATEMENT = 0, FAIL_* = 1 (파이프라인 게이트 소비용)
 
 작성: 2026-07-25 (S2c). 동적 검정(judge lag1·strict A/B·vintage-swap)은 대체 불가 병행 — SOT §4 HARD 원칙.
@@ -92,11 +110,26 @@ import sys
 _QM_ROOT = os.environ.get("QM_ROOT", "C:/Users/99922/OneDrive/Quant_Module_Moltbot")
 DEFAULT_REGISTRY = os.path.join(_QM_ROOT, "02_Infrastructure/factor_db/factor_registry.json")
 DEFAULT_FIELD_MAP = os.path.join(_QM_ROOT, "06_Registry/ast_field_map_v0.json")
+# C11 가용시점 층(2026-09-24): 규칙·격리 목록은 이 파일이 속한 코드 트리 우선(워크트리 사본은 자기 규칙), 없으면 QM_ROOT.
+_CODE_ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
+
+def _first_existing(*paths):
+    for p in paths:
+        if p and os.path.exists(p):
+            return p
+    return paths[0]
+
+
+DEFAULT_FRED_RULES = _first_existing(os.path.join(_CODE_ROOT, "06_Registry/fred_availability_rules.json"),
+                                     os.path.join(_QM_ROOT, "06_Registry/fred_availability_rules.json"))
+DEFAULT_QUARANTINE = _first_existing(os.path.join(_CODE_ROOT, "06_Registry/pit_quarantine.json"),
+                                     os.path.join(_QM_ROOT, "06_Registry/pit_quarantine.json"))
 
 # ----------------------------------------------------------------------------- 보수 상수 (근거 명시)
 FUND_QUARTERLY_LAG_DAYS = 45      # parse_fundamental_xlsx.R:199 / DART 분기 고정일 5/15·8/15·11/15 (45일 규칙)
-C11_CONSERVATIVE_LAG_DAYS = 35    # 보수 envelope 상한 — registry known_discrepancy "실제 발표 lag(예: CPI 수주)"
-                                  # 기반. 시리즈별 실측 lag 테이블 부재 상태의 상한 가정 (검증 안 됨 (상한 가정)).
+C11_CONSERVATIVE_LAG_DAYS = 35    # ★2026-09-24 이후 판정에 쓰지 않는다(구판 호환 상수) — 계열별 규칙 파일 대조로 교체.
+                                  # +35d 는 INDPRO·M2SL·UMCSENT 공표 지연을 못 덮었다(판정서 ② 표).
 EVENT_DATE_REPORT_LAG_DAYS = 7    # DART 임원거래 법정 보고기한 5영업일(ast_field_map D1) → 달력 7일 보수 환산
 CONSENSUS_DISC_LAG_DAYS = 1       # T-1 선언 vs 코드 same-day(제공시각 미상) → 보수 T-1 = +1d
 
@@ -125,7 +158,8 @@ LEAF_KINDS = {"FIELD", "REGISTRY"} | ESCAPE_LEAVES
 #   strict_t1_manual22: avail = t + 1d (C2 strict) + 스테일 플래그(실효 ~22d, map A6 실측)
 #   regulatory_fund   : quarterly → t + 45d / annual → 익년 3/31 (Step 0 확정, data_collector_dart.R:840)
 #   event_rcept       : ref_basis=rcept → t + 0d / event_date → t + 7d (법정 5영업일 보수 환산)
-#   c11_fred          : series_class=market_daily → t + 1d / release(기본) → t + 35d 보수 상한
+#   c11_fred          : [2026-09-24] 리프 series(FRED id·별칭) 필수 → avail = fred_avail_date(series, ref_ts)
+#                       (06_Registry/fred_availability_rules.json · S0 가용시점 층). 구판 series_class(+1d/+35d)는 폐지
 GROUP_AVAIL = {
     # --- rawdata / 유니버스 / 벤치 / 지수 (map domain A — 일배치 cron 00:03, T-1 정합 실측)
     "A1_RAWDATA_OHLCVS_daily":              {"kind": "t1"},
@@ -171,6 +205,68 @@ REGISTRY_RULES = {"T-1", "-1d", "strict_t-1;effective_lag~22d",
                   "C11_publication_lag", "quarterly+45d;annual_3/31"}
 
 
+# ----------------------------------------------------------------------------- C11 가용시점 층 연결 (2026-09-24)
+def _fa_module():
+    """S0 가용시점 층(02_Infrastructure/data/fred_availability.py) — 이 파일의 형제 data/ 에서 로드."""
+    d = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "data")
+    if d not in sys.path:
+        sys.path.insert(0, d)
+    import fred_availability as fa  # noqa: WPS433
+    return fa
+
+
+def c11_series_class(rule):
+    """규칙 파일 계열 1개 → class0/class1/class2/prohibited (수치는 규칙 파일 bound 에서 온다)."""
+    if rule.get("status") != "active":
+        return "prohibited"
+    bs = rule.get("bounds") or []
+    if bs and all(b.get("type") == "kr_trading_days_after" and isinstance(b.get("n"), int) for b in bs):
+        n = max(b["n"] for b in bs)
+        return "class0" if n <= 0 else ("class1" if n <= 1 else "class2")
+    return "class2"
+
+
+def _c11_count_based(rule):
+    """거래일 '계수' 규칙(n>=2 · 월 n번째 거래일) — 평일 근사 달력으로는 통과를 증명할 수 없다."""
+    for b in rule.get("bounds") or []:
+        if b.get("type") == "month_nth_kr_trading_day":
+            return True
+        if b.get("type") == "kr_trading_days_after" and isinstance(b.get("n"), int) and b["n"] >= 2:
+            return True
+    return False
+
+
+def load_quarantine(path):
+    """06_Registry/pit_quarantine.json 활성 격리 → {"factors": {이름: (qid, 위반)}, "active_ids": set}.
+    파일 부재 = 격리 0 · 파손/형식 불량 = 예외(fail-closed — 목록 fail_policy '조용한 해제 금지')."""
+    out = {"factors": {}, "active_ids": set()}
+    if not path or not os.path.exists(path):
+        return out
+    with open(path, encoding="utf-8") as f:
+        q = json.load(f)
+    if not isinstance(q, dict) or not isinstance(q.get("quarantines"), list):
+        raise ValueError("pit_quarantine 형식 불량(quarantines 목록 없음): %s" % path)
+    for e in q["quarantines"]:
+        if not isinstance(e, dict) or e.get("status") != "active":
+            continue
+        qid = e.get("id")
+        out["active_ids"].add(qid)
+        for f in e.get("factors") or []:
+            out["factors"][f["id"]] = (qid, f.get("violation", ""))
+        for f in e.get("factors_already_excluded") or []:
+            out["factors"].setdefault(f["id"], (qid, f.get("violation", "")))
+        dc = e.get("daily_fdb_columns") or {}
+        for c in dc.get("columns") or []:
+            out["factors"].setdefault(c, (qid, dc.get("violation", "")))
+    return out
+
+
+def _load_calendar_json(path):
+    with open(path, encoding="utf-8") as f:
+        v = json.load(f)
+    return sorted({parse_date(x) for x in v})
+
+
 # ----------------------------------------------------------------------------- 날짜 유틸
 def parse_date(s):
     if isinstance(s, _dt.date):
@@ -196,10 +292,25 @@ def next_annual_331(t):
 
 # ----------------------------------------------------------------------------- 검증기 본체
 class AstVerifier:
-    def __init__(self, registry, field_map, decision_ts):
+    def __init__(self, registry, field_map, decision_ts, fred_rules_path=None, quarantine=None, kr_calendar=None):
         self.registry = registry
         self.field_map_groups = self._index_groups(field_map)
         self.t_d = decision_ts
+        # C11 가용시점 대조(2026-09-24) — 규칙·격리·저장 판 빌드 상태
+        self._c11_map = ((field_map.get("c11_registry_series") or {}).get("factors") or {})
+        self._c11_err = None
+        self._fa = self._rules = self._rules_key = None
+        try:
+            self._fa = _fa_module()
+            rp = fred_rules_path or DEFAULT_FRED_RULES
+            self._rules = self._fa.fred_avail_rules(rp)
+            self._rules_key = self._fa.fred_avail_rules_meta(rp)["regime_key"]
+        except Exception as e:  # noqa: BLE001 — 판정 시점에 fail-closed(FAIL_CONTRACT)로 드러낸다
+            self._c11_err = "%s: %s" % (type(e).__name__, e)
+        self._quar = (quarantine if isinstance(quarantine, dict) and "factors" in quarantine
+                      else load_quarantine(quarantine or DEFAULT_QUARANTINE))
+        self._kr_cal = kr_calendar          # None = 지연 로드 · list[date] = 주입
+        self._cal_exact = kr_calendar is not None
         # 수집 버킷
         self.violations = []          # FAIL_LOOKAHEAD 근거
         self.contract_failures = []   # FAIL_CONTRACT 근거
@@ -223,8 +334,141 @@ class AstVerifier:
                     "class": cls.split("(")[0].strip(),
                     "restatement_prone": bool(g.get("restatement_prone")),
                     "vintage_available": bool(g.get("vintage_available")),
+                    "c11": g.get("c11") if isinstance(g.get("c11"), dict) else None,
                 }
         return idx
+
+    # ---- C11 가용시점 대조 (2026-09-24) ---------------------------------------
+    def _c11_rule(self, series):
+        """계열 id/별칭 → 규칙 dict (규칙 파일 index). 없으면 None."""
+        i = self._rules["index"].get(series) if self._rules else None
+        return None if i is None else self._rules["raw"]["series"][i]
+
+    def _c11_calendar(self, lo, hi):
+        """(달력, 정확 여부). 주입 > QVEST_AST_KR_CALENDAR(JSON) > 도우미 기본 > 평일 근사(하한)."""
+        if self._kr_cal is None:
+            envp = os.environ.get("QVEST_AST_KR_CALENDAR")
+            try:
+                if envp:
+                    self._kr_cal, self._cal_exact = _load_calendar_json(envp), True
+                else:
+                    self._kr_cal, self._cal_exact = self._fa.fred_kr_calendar(), True
+            except Exception:  # noqa: BLE001 — pyarrow/pandas 부재(QVEST_PY) 등
+                self._kr_cal, self._cal_exact = False, False
+        if self._kr_cal:
+            return self._kr_cal, self._cal_exact
+        start = lo - _dt.timedelta(days=40)
+        days = (hi - start).days + 420
+        cal = [start + _dt.timedelta(days=k) for k in range(days) if (start + _dt.timedelta(days=k)).weekday() < 5]
+        return cal, False
+
+    def _c11_quarantine_fail(self, path, desc, t, name_or_gid, via):
+        hit = self._quar["factors"].get(name_or_gid) if via == "factor" else None
+        if via == "group":
+            c = (self.field_map_groups.get(name_or_gid) or {}).get("c11") or {}
+            qid = str(c.get("quarantine_ref", "")).split("#")[-1]
+            if c.get("status") == "pit_invalid" and qid in self._quar["active_ids"]:
+                hit = (qid, ",".join(c.get("violations") or []))
+        if not hit:
+            return False
+        self._fail_lookahead(path, desc, t, "격리 해제 전 불가", "pit_quarantine:%s" % hit[0],
+                             "PIT C11 판정서 %s — 선언 반증·격리 활성(06_Registry/pit_quarantine.json). "
+                             "재빌드·해제 전 소비 불가 (04_Research/01_reports/pit_c11_20260924/PIT_C11_verdict_20260924.md)"
+                             % hit[1])
+        return True
+
+    def _resolve_c11_registry(self, name, rule, disc, t, path, desc):
+        """REGISTRY 리프 '-1d'·'C11_publication_lag' — 선언 대신 격리·저장 빌드·규칙 파일로 판정. avail 반환."""
+        if self._c11_quarantine_fail(path, desc, t, name, "factor"):
+            return t
+        if self._c11_err:
+            self._fail_contract(path, "REGISTRY", ["fred_availability_rules"],
+                                "C11 규칙 파일/가용시점 층 로드 실패 — 선언(%s)만으로 통과시키지 않는다(fail-closed): %s"
+                                % (rule, self._c11_err))
+            return t
+        m = self._c11_map.get(name)
+        if not m:
+            self._fail_contract(path, "REGISTRY", ["c11_registry_series"],
+                                "%s: availability.rule=%r 선언만 있고 계열·저장 빌드 등재가 없다 — 규칙 파일 대조 불가"
+                                "(판정서 ③ ast_verify:360-361 선언 맹신 금지). ast_field_map c11_registry_series 등재 필요"
+                                % (name, rule))
+            return t
+        build = m.get("stored_build")
+        if build == "no_foreign_input":
+            self.notes.append("%s: %s 는 해외 입력 없음(c11_registry_series) — registry rule %r 는 해당 없음" % (path, name, rule))
+            return t
+        if build == "retired":
+            self._fail_lookahead(path, desc, t, "퇴역", "c11_registry_series:retired",
+                                 "%s 퇴역(%s) — 소비 불가" % (name, m.get("note", "")))
+            return t
+        if build == "fred_availability":
+            if m.get("rules_regime_key") == self._rules_key:
+                return t
+            self._fail_contract(path, "REGISTRY", ["rules_regime_key"],
+                                "%s: 가용시점 층 재빌드판 선언인데 rules_regime_key(%r)가 현 규칙 epoch(%r)와 다름 — 재빌드 확인 불가"
+                                % (name, m.get("rules_regime_key"), self._rules_key))
+            return t
+        if build != "lag_days" or not isinstance(m.get("lag_days"), int):
+            self._fail_contract(path, "REGISTRY", ["stored_build"],
+                                "%s: c11_registry_series stored_build %r 해석 불가(fail-closed)" % (name, build))
+            return t
+        k = m["lag_days"]
+        bad = []
+        for sid in m.get("series") or []:
+            r = self._c11_rule(sid)
+            if r is None:
+                bad.append("%s(규칙 없음)" % sid)
+                continue
+            cl = c11_series_class(r)
+            if cl == "prohibited":
+                bad.append("%s(금지 → %s)" % (sid, r.get("replacement", "")))
+            elif cl == "class2" or (cl == "class1" and k < 1):
+                bad.append("%s(%s · 저장 lag %dd)" % (sid, cl, k))
+        self._mark_discrepancy(path, desc, rule, "규칙 파일 대조(stored_build lag_days=%d)" % k,
+                               (disc or "") + " | c11_registry_series: " + str(m.get("code", ""))[:120])
+        if not bad:
+            return t
+        avail = None
+        try:
+            r0 = self._c11_rule((m.get("series") or [None])[0])
+            if r0 is not None and c11_series_class(r0) != "prohibited":
+                cal, _ = self._c11_calendar(t, self.t_d)
+                avail = self._fa.fred_avail_date(r0["id"], t - _dt.timedelta(days=k), kr_calendar=cal, rules=self._rules)
+        except Exception:  # noqa: BLE001
+            avail = None
+        self._fail_lookahead(path, desc, t, avail if avail else "규칙 미충족", "C11_rules:%s" % self._rules_key,
+                             "저장 판이 임시 lag %d일로 만든 값 — 규칙 파일 가용일을 못 채우는 계열: %s "
+                             "(판정서 ② · V-01/V-11 형태). 가용시점 층 재빌드 필요" % (k, "; ".join(bad)))
+        return t
+
+    def _c11_field_avail(self, node, t, path, desc):
+        """FIELD 리프 E1_fred_macro_raw — series 의 관측 라벨 ref_ts 가 한국 결정에 쓰일 수 있는 첫 날(규칙 파일)."""
+        if self._c11_err:
+            self._fail_contract(path, "FIELD", ["fred_availability_rules"],
+                                "C11 규칙 파일/가용시점 층 로드 실패(fail-closed): %s" % self._c11_err)
+            return t
+        sid = node.get("series") or node.get("field")
+        r = self._c11_rule(sid) if sid else None
+        if r is None:
+            self._fail_contract(path, "FIELD", ["series"],
+                                "E1 리프 series 미선언/규칙 없음(%r) — 계열별 가용일 대조 불가. series_class 근사는 폐지(2026-09-24)" % sid)
+            return t
+        if c11_series_class(r) == "prohibited":
+            self._fail_lookahead(path, desc, t, "사용 금지", "C11_rules:prohibited",
+                                 "%s 사용 금지 — 대체 = %s (PIT-C11-CONVENTIONS ①)" % (sid, r.get("replacement", "")))
+            return t
+        cal, exact = self._c11_calendar(t, self.t_d)
+        avail = self._fa.fred_avail_date(r["id"], t, kr_calendar=cal, rules=self._rules)
+        if avail is None:            # 달력 밖 = 아직 불가
+            avail = self.t_d + _dt.timedelta(days=1)
+        if not exact:
+            if avail <= self.t_d and _c11_count_based(r):
+                self._fail_contract(path, "FIELD", ["kr_calendar"],
+                                    "%s: 한국 거래일 달력 미로딩(평일 근사) — 거래일 계수 규칙 계열은 통과를 증명할 수 없다"
+                                    "(--kr-calendar 또는 pyarrow 로 재판정)" % r["id"])
+            else:
+                self.notes.append("%s: 한국 거래일 달력 미로딩 — 평일 근사(하한) 가용일 %s" % (path, avail))
+        return avail
 
     # ---- 기록 헬퍼 -----------------------------------------------------------
     def _fail_lookahead(self, path, leaf_desc, ref_ts, avail_ts, rule, detail):
@@ -278,6 +522,8 @@ class AstVerifier:
                                 " (registry가 SOT, 3중 SOT 방지)" % gid)
             return t
 
+        if self._c11_quarantine_fail(path, desc, t, gid, "group"):
+            return t
         spec = GROUP_AVAIL.get(gid)
         if spec is None:
             self._fail_contract(path, "FIELD", [],
@@ -314,19 +560,17 @@ class AstVerifier:
             else:
                 avail = t  # rcept_dt = 접수 당일 공개 (map 도메인 D 공통 규약)
         elif kind == "c11_fred":
-            sc = node.get("series_class", "release")  # 결측 = release(보수)
-            if sc == "market_daily":
-                avail = t + _dt.timedelta(days=1)
-            else:
-                avail = t + _dt.timedelta(days=C11_CONSERVATIVE_LAG_DAYS)
-                self._mark_discrepancy(path, desc, "C11_publication_lag",
-                                       "+%dd 보수 상한" % C11_CONSERVATIVE_LAG_DAYS,
-                                       "발표 lag 실측 테이블 부재 — 상한 가정 적용(모듈 상수 주석 참조)")
+            # [2026-09-24] series_class(+1d/+35d 근사) 폐지 — 계열별 규칙 파일 대조(판정서 ②)
+            avail = self._c11_field_avail(node, t, path, desc)
         else:  # pragma: no cover — GROUP_AVAIL 정의 오류 방어
             self._fail_contract(path, "FIELD", [], "%s: 알 수 없는 avail kind %r" % (gid, kind))
             return t
 
-        if clamp_asof:
+        if clamp_asof and kind == "c11_fred":
+            # [2026-09-24] 관측일 as-of(date<=t)는 해외 계열에선 가용일 as-of 가 아니다(판정서 ② — Date = 미국 관측일).
+            #  클램프를 인정하지 않고 규칙 파일 가용일로 판정한다.
+            self.notes.append("%s: AS_OF 관측일 클램프는 해외 계열에 불인정 — 규칙 파일 가용일 %s 로 판정" % (path, avail))
+        elif clamp_asof:
             avail = min(avail, t)  # 컴파일러-소유 as-of 조인이 가용분만 결합 (§4-2)
         if ginfo["restatement_prone"] and not ginfo["vintage_available"]:
             self._mark_restatement(path, desc, "ast_field_map:%s" % gid, under_pin)
@@ -357,16 +601,14 @@ class AstVerifier:
                 self._mark_discrepancy(path, desc, rule, "+%dd (보수 T-1)" % CONSENSUS_DISC_LAG_DAYS, disc)
             else:
                 avail = t  # 내부 T-1 강제 — sig_date t 행은 t에 가용
-        elif rule == "-1d":
-            avail = t
+        elif rule in ("-1d", "C11_publication_lag"):
+            # [2026-09-24 수리 — 판정서 ③ "ast_verify.py:360-361 레지스트리의 '-1d' 선언을 그대로 믿는다"]
+            #  선언을 믿지 않고 격리·저장 빌드·규칙 파일로 판정한다(_resolve_c11_registry).
+            avail = self._resolve_c11_registry(name, rule, disc, t, path, desc)
         elif rule == "strict_t-1;effective_lag~22d":
             avail = t  # C2 strict(compute_investor.R:100) — look-ahead 없음
             self.staleness_flags.append({"path": path, "leaf": desc,
                                          "note": "수동 export 실효 지연 ~22d (rule 자체 표기) — 라이브 스테일 위험"})
-        elif rule == "C11_publication_lag":
-            avail = t + _dt.timedelta(days=C11_CONSERVATIVE_LAG_DAYS)
-            self._mark_discrepancy(path, desc, rule,
-                                   "+%dd 보수 상한" % C11_CONSERVATIVE_LAG_DAYS, disc)
         else:  # quarterly+45d;annual_3/31
             avail = t  # 빌더 .pit_fund as-of 내부강제(factor_db_builder.R:389-401) — 구조적 look-ahead 없음
             self._mark_discrepancy(path, desc, rule, "as-of 내부강제 인정(avail=t)",
@@ -408,6 +650,9 @@ class AstVerifier:
             self.t_d = saved_td
             return twe
         if kind == "STORED_SCORE":
+            gid0 = node.get("group_id")
+            if gid0 and gid0 in self.field_map_groups and self._c11_quarantine_fail(path, desc, t, gid0, "group"):
+                return t
             # ALB-001 (2026-08-02): provenance 위치 방언 이중 수용.
             #  문서형 = node["provenance"] / ast_compile.R = node["contract"].
             #  종전엔 앞쪽만 봐서, 계약을 **정확히 채운** 패키지도 "provenance 결측"으로
@@ -686,7 +931,11 @@ def main(argv=None):
     ap.add_argument("--sig-date", dest="sig_date", help="sig_date 오버라이드 (YYYY-MM-DD)")
     ap.add_argument("--registry", default=DEFAULT_REGISTRY)
     ap.add_argument("--map", dest="field_map", default=DEFAULT_FIELD_MAP)
+    ap.add_argument("--fred-rules", dest="fred_rules", default=None, help="C11 규칙 파일(기본 06_Registry/fred_availability_rules.json)")
+    ap.add_argument("--quarantine", dest="quarantine", default=None, help="PIT 격리 목록(기본 06_Registry/pit_quarantine.json)")
+    ap.add_argument("--kr-calendar", dest="kr_calendar", default=None, help="한국 거래일 JSON 목록(주입 — 검사·재현)")
     args = ap.parse_args(argv)
+    kr_cal = _load_calendar_json(args.kr_calendar) if args.kr_calendar else None
 
     with open(args.package, encoding="utf-8") as f:
         pkg = json.load(f)
@@ -706,6 +955,8 @@ def main(argv=None):
             "factor_registry": os.path.abspath(args.registry),
             "ast_field_map": os.path.abspath(args.field_map),
             "field_map_version": (field_map.get("_meta") or {}).get("version"),
+            "fred_availability_rules": args.fred_rules or DEFAULT_FRED_RULES,
+            "pit_quarantine": args.quarantine or DEFAULT_QUARANTINE,
         },
     }
     if ast_root is None:
@@ -722,10 +973,13 @@ def main(argv=None):
     # [CF-10 수리] 다중 팩터 = 각각 검증. 훅(ast_spec_gate.sh)과 동일 의미론:
     #  FAIL_LOOKAHEAD > FAIL_CONTRACT > WARN_RESTATEMENT > PASS 우선순위로 최악 팩터를 보고.
     verdict, max_avail = "PASS", None
-    v = AstVerifier(registry, field_map, td)
+    _quar = load_quarantine(args.quarantine or DEFAULT_QUARANTINE)
+    _mk = lambda: AstVerifier(registry, field_map, td, fred_rules_path=args.fred_rules,  # noqa: E731
+                              quarantine=_quar, kr_calendar=kr_cal)
+    v = _mk()
     _rank = {"PASS": 0, "WARN_RESTATEMENT": 1, "FAIL_CONTRACT": 2, "FAIL_LOOKAHEAD": 3}
     for _a in ast_roots:
-        _vf = AstVerifier(registry, field_map, td)
+        _vf = _mk()
         _vd, _ma = _vf.run(_a, sig_d)
         if max_avail is None or (_ma is not None and _ma > max_avail):
             max_avail = _ma

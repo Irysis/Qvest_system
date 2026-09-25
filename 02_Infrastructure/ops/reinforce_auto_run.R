@@ -429,6 +429,9 @@ ar_p <- res$authoritative_remeasure_path %||%
 if (!file.exists(ar_p)) {
   cand <- list.files(file.path(ROOT, "stage_artifacts/replication"), pattern = "^authoritative_remeasure\\.json$",
                      recursive = TRUE, full.names = TRUE)
+  # ★재측정 형제 판(P0-05 · <run>/remeasure_<key>/authoritative_remeasure.json — 원 산출물의 다른 규약 판)은 새 측정이 아니다 —
+  #   폴백 후보에서 뺀다(2026-09-24 · 통합 검증 L-B1 · 원장 rebase 형제 위치 = 칸 산출물 안)
+  cand <- cand[!grepl("/remeasure_[^/]+/authoritative_remeasure\\.json$", gsub("\\", "/", cand, fixed = TRUE))]
   if (length(cand)) ar_p <- cand[which.max(file.mtime(cand))]
 }
 if (!file.exists(ar_p)) {

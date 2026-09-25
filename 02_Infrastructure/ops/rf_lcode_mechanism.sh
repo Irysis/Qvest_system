@@ -163,14 +163,27 @@ jl start "base_id=$BID" "block=$BLK" "model=$LLM_MODEL" "effort=$LLM_EFFORT"
 # ★프롬프트는 stdin 으로 (2026-09-04): argv 로 넘기면 Windows 인자 상한(32K)에 걸려 에이전트가 안 뜰다 — 승격 entry B1 설계 재료 41KB 실사고.
 PF="$WDIR/${BID:0:50}_${BLK}.prompt.txt"
 printf %s "$PROMPT" > "$PF"
-timeout 900 claude -p < "$PF" \
-  --model "$LLM_MODEL" --effort "$LLM_EFFORT" \
+# ★무인 LLM 단일 진입(P0-M1 2026-09-24) — rf_llm_agent_run 이 AutoMem 차단·무인 표식을 싣고
+#   --model/--effort 는 위 rf_llm_resolve 값(LLM_MODEL · LLM_EFFORT)을 쓴다.
+RUN_OUT="$(mktemp "${TMPDIR:-/tmp}/rf_lm_run.XXXXXX")"
+#   폴백 미탑재(LLM_FALLBACK_MODEL="" · 구판 동작 보존): 구판도 --fallback-model 없이 떴고 이 레인엔
+#   반쪽 산출물 청소 훅(rf_llm_before_fallback)이 없다 — 폴백 확대는 청소 훅과 함께 별도 결정.
+# ★설계 레인 성과 열람 봉쇄(P0-M2 2026-09-25): QVEST_DESIGN_LANE=1 = 함수 호출 앞 임시 대입(이 claude·훅에만 · 호출 뒤 셸에 안 남음).
+#   기전은 재료의 표만 인용한다 — 훅 arm_gen_read_guard.sh 가 원장·측정 산출물·기억 디렉터리 직접 열람을 막는다.
+#   PowerShell 금지 — 훅 matcher 밖(09-25 transcript: 기전 세션이 PowerShell 을 39회 시도).
+#   (P0-M2 수리 2026-09-25 · B-1) 셸 통로 전부 금지 = CLI 2.1.261 이 enablesCodeExecution 으로 표시한 내장 도구 7종
+#   (Bash·PowerShell·Monitor·REPL·Workflow·CronCreate·RemoteTrigger). Monitor 는 셸 명령을 돌려 출력을 이벤트로 돌려준다 —
+#   충실도 감사 세션(25caa112 · 09-17)이 Bash 금지 아래서 Monitor 로 diff 를 돌렸다. 훅 matcher(Read|Grep|Glob) 밖이라 막는 곳은 여기뿐.
+QVEST_DESIGN_LANE=1 LLM_FALLBACK_MODEL="" rf_llm_agent_run "$PF" "$RUN_OUT" 900 \
   --permission-mode acceptEdits \
   --allowed-tools "Read,Write,Glob,Grep" \
-  --disallowed-tools "Bash,Agent,Edit,WebFetch,WebSearch" \
-  --add-dir "$WDIR" \
-  >> "$LOG" 2>&1
-jl agent_done "rc=$?"
+  --disallowed-tools "Bash,PowerShell,Monitor,REPL,Workflow,CronCreate,RemoteTrigger,Agent,Edit,WebFetch,WebSearch" \
+  --add-dir "$WDIR"
+ARC=$LLM_RC
+[ -f "$RUN_OUT.primary" ] && cat "$RUN_OUT.primary" >> "$LOG"
+cat "$RUN_OUT" >> "$LOG" 2>/dev/null
+rm -f "$RUN_OUT" "$RUN_OUT.primary"
+jl agent_done "rc=$ARC"
 
 # ★병합은 R 이 한다 — 검증(셀 인용·금칙어·길이)을 통과해야만 L-code 에 얹힌다.
 #   실패해도 L-code 는 그대로 남는다: 규칙 척추는 기전이 없어도 성립한다.

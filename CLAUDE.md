@@ -20,27 +20,27 @@
 
 ## Session Startup
 
-`/qvest` — 부팅 5줄(상태만) → **진행 계층을 도훈에게 질문**(①1계층 ②2계층 ③BOOK). WARN 은 보고 대상이지 그 세션의 과제가 아니다.
+`/qvest` — 부팅(상태만) → **계층 질문**(①1계층 ②2계층 ③BOOK ④`/advisor` 자문). WARN 은 보고 대상이지 그 세션의 과제가 아니다.
 
 ## 2계층 파이프라인 (v10)
 
 ```
 [무인] 수집(paper_recharge→dedup→트리아지→큐) + **강화**(격자+LLM설계·기전·승격 · SKILL §0.1·§0.3)
 [1계층] 충실구현(run_paper_replication — 논문 그대로·유니버스만 KR) → 권위 등급
-        → 미달: 강화 ≤30회(Skill reinforce — QEPM→등급, 논문 3편마다 결합 검토)
+        → 미달: 강화(Skill reinforce — 셀 엔진+run_paper_replication→등급, 3편마다 결합 검토)
         → A: Judge(PIT) → PASS → BOOK          (B 이상 = 2계층 풀 공급)
 [2계층] 로테이션(논문 온디맨드·B+ 풀 국면 배합·FR 등급) → 미달: 강화 무한 → A → Judge → BOOK
 [BOOK]  06_Registry/book/book_registry.json — A등급 등록·온디맨드 트래킹(/book)
 ```
 
-**해상도**: 1계층 강화 = intra-strategy(축 교체) · 2계층 = inter-strategy(모듈 배합 + 국면). QEPM = alpha→risk→optimizer→forge + 등급 평가까지(governor 없음).
+**해상도**: 1계층 강화 = intra-strategy(축 교체) · 2계층 = inter-strategy(모듈 배합 + 국면). QEPM WT 체인 = 동결(QEPM-R0-FREEZE).
 
 | Command | 용도 |
 |---|---|
 | `/qvest` | 부팅 → 계층 질문 |
 | `/alpha-search` | 1계층 논문 1건 충실구현 |
-| `/reinforce`(Skill) | 강화 — L1 ≤30회(원장 l1 · 격자 6블록×5) / L2 무한(원장 l2) |
-| `/worktask` | QEPM 체인 수동 관리 (WT-R = 강화 타입) |
+| `/reinforce`(Skill) | 강화 — L1 상한 = 원장 max_attempts / L2 무한 |
+| `/worktask` | QEPM WT 체인 — 동결(사료) |
 | `/strategy-rotation <track>` | 2계층 — 전천후 모델 |
 | `/book` | BOOK 목록·트래킹 |
 
@@ -81,7 +81,7 @@
 ## Key Paths · 실행 · 톤
 
 - Root `C:/Users/99922/OneDrive/Quant_Module_Moltbot/`(Git Bash `/c/...`) · 인프라 `02_Infrastructure/` · 전략 `04_Research/strategies/STR_*/` · WT `qepm/mailbox/worktask/{WT_ID}/` · 산출물 `stage_artifacts/`(충실구현 = `replication/`).
-- 원장: 강화 `06_Registry/reinforce_ledger_l1.json`(≤25)·`_l2.json`(무한) · BOOK `06_Registry/book/` · 데이터 파이프라인 `06_Registry/data_pipeline_queue.json`.
+- 원장: 강화 `06_Registry/reinforce_ledger_l1.json`·`_l2.json` · BOOK `06_Registry/book/` · 데이터 파이프라인 `06_Registry/data_pipeline_queue.json`.
 - Env(User scope): `QM_ROOT`+`QVEST_PY`+`~/.Renviron` 동일값.
 - R 실행: 전략 디렉터리 `cd` 후 `Rscript -e 'source("run_all.R")'`(한글 경로 회피 — `--file=` 금지). R+Python 공히 1급(venv `.venv_qvest_ml`) — 언어는 PIT·계약을 면제하지 않는다.
 - 톤: 한국어 존댓말. User = Dohoon Kim(도훈), 나 = "Q".

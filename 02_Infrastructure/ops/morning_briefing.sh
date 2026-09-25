@@ -14,6 +14,18 @@ echo "=== Morning Briefing @ $(date) ==="
 source "$(dirname "${BASH_SOURCE[0]:-$0}")/resolve_project.sh"
 INFRA="$BASE/02_Infrastructure"
 
+# ── RAWDATA writer 잠금 (도훈 결정 OPS-RUNNER-REFRESH-BARRIER · 2026-09-24) ─────────────────────────────
+#   [1/5] krx_update · [1.5/5] naver_supplement · [4.5/5] self_heal 은 잠금 없이 RAWDATA 를 쓴다(naver 쓰기는 삭제 후
+#   rename — Windows 비원자). 강화 러너의 리프레시 배리어(refresh_barrier.sh)가 이 창도 held 로 보도록 writer 잠금을 쥔다.
+#   ★daily_refresh 잠금(/tmp/qm_daily_refresh.lock)과는 **다른** 잠금이다 — 같은 잠금을 쥐면 그 사이 뜬 daily_refresh 가
+#     "이미 실행 중" 으로 종료해 버린다(daily_refresh.sh 무변경이 결정 조건).
+#   판정기 부재면 no-op(브리핑은 그대로 돈다 — 막는 쪽인 배리어가 fail-closed 다). 보유자 = 이 셸($$) · EXIT 에서 해제.
+if [ -f "$INFRA/ops/refresh_barrier.sh" ] && . "$INFRA/ops/refresh_barrier.sh"; then
+  trap 'rb_writer_release' EXIT
+else
+  rb_writer_acquire() { return 0; }; rb_writer_release() { return 0; }
+fi
+
 # ── [0/5] 데이터 최신성 확보 — 브리핑보다 **먼저**, 그리고 필요하면 기다린다 ───
 # 도훈 지시 2026-08-03. 실측 경합(같은 날 로그):
 #   07:03 DailyRefresh 보충 실행 시작 → 07:10 이 브리핑 발화 → 07:50 리프레시 완료.
@@ -39,6 +51,7 @@ fi
 # 1. KRX 데이터 최신화
 echo "[1/5] KRX Data Update..."
 cd "$BASE"
+rb_writer_acquire "krx_update+naver_supplement" || echo "[1/5] ⚠ RAWDATA writer 잠금 획득 실패 — 갱신은 계속(배리어 미표시)"
 Rscript --no-save -e 'source("02_Infrastructure/ops/morning_steps/krx_update.R")'
 
 # 1.5 Naver T+0 보완 (KRX T+1 발행지연 gap을 Naver로 채움)
@@ -47,6 +60,7 @@ Rscript --no-save -e 'source("02_Infrastructure/ops/morning_steps/krx_update.R")
 echo "[1.5/5] Naver T+0 Supplement..."
 cd "$BASE"
 Rscript --no-save -e 'source("02_Infrastructure/ops/morning_steps/naver_supplement.R")'
+rb_writer_release
 
 # 2. Arrow + KTRI 연장 (외부화 2026-06-19 — 동일 no-op 트랩 수리)
 echo "[2/5] Arrow + KTRI..."
@@ -72,7 +86,9 @@ echo "[4/5] Regime briefing — skipped (mrs_daily_briefing.sh 07:30 SOT)"
 # 구조: daily_refresh.sh 03:00 primary → morning_briefing.sh 07:10 self-heal layer
 echo "[4.5/5] Self-healing refit (stale detection + auto-refit)..."
 cd "$BASE"
+rb_writer_acquire "self_heal" || echo "[4.5/5] ⚠ RAWDATA writer 잠금 획득 실패 — self-heal 은 계속(배리어 미표시)"
 Rscript --no-save -e 'source("02_Infrastructure/ops/morning_steps/self_heal.R")'
+rb_writer_release
 
 # 5. Freshness audit — 모든 source 최신 거래일 검증 + stale 시 Telegram alert
 # 2026-05-13 도훈 mandate: 구조적 자동 검증 (silent fail 방지)
@@ -80,7 +96,9 @@ echo "[5/5] Freshness audit..."
 cd "$BASE"
 # 외부 .R 파일로 분리 (2026-06-13): 인라인 -e 의 한글/이모지(⚠️🚨✅→) 리터럴이 bash→Windows-R
 # 코드페이지 변환에서 깨져 "Execution halted"로 JSON 미작성되던 문제 해소. 파일은 UTF-8 정상 read.
-Rscript --no-save -e 'source("02_Infrastructure/ops/morning_steps/freshness_audit.R")'
+# v10.4 (2026-09-24) 판정·JSON 은 그대로, 텔레그램은 억제 — 이 감사는 [6a] P3 생산 **전**이라 p3_forecast STALE 을
+#   1~2분 뒤 스스로 해소될 상태로 보냈다(09-10·15·23·24, 조치 0). 발송은 [6a] 뒤 mrs_daily_briefing.sh:57 재감사 한 곳이 맡는다.
+QVEST_FRESHNESS_QUIET=1 Rscript --no-save -e 'source("02_Infrastructure/ops/morning_steps/freshness_audit.R")'
 
 echo "=== Morning Briefing Done @ $(date) ==="
 

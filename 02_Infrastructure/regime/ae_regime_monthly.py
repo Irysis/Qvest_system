@@ -28,6 +28,34 @@
   (--as-of 의 **당월 1일**이 결정일. holding month = month(decision_date), offset 0 — 실측 정렬.
    원본 헤더의 "holding = decision월+1" 표기는 오기다.)
 
+**★PIT C11 수리 (2026-09-24 · 판정서 V-03 · 결정 PIT-C11-REMEDIATION 안 B · 1단계 코드)**:
+  동결 원본의 `build_panel()`(ae_regime_extend.py:34-48)은 해외 특성을 **미국 관측일(라벨)** 로 붙였다
+  (`merge_asof(..., on="Date")`) — 한국 d 행에 미국 d 종가와 공표 전 주간값(STLFSI4 +7일·NFCI +6일)이 실렸다.
+  이 러너는 이제 원본을 exec 한 뒤 **`build_panel` 한 함수만** `ae_pit_features.build_pit_panel` 로 바꿔 끼운다
+  (모델·학습·채점·tau 는 원본 그대로). 해외 특성은 기반(S0) 도우미 `fred_asof_join(mode="decision_close")`
+  로만 결합되고, 원/달러는 DEXKOUS(prohibited) 대신 ECOS 731Y001(핀의 `ecos_krw_usd.parquet`) 을 쓴다
+  (결정 PIT-C11-CONVENTIONS ①). 동결 원본 파일은 **수정하지 않는다**(artifact-storage.md ①ⓒ — 감사 증거는
+  '수리 전 판이 무엇이었나'의 기록이다).
+  산출 행에는 C11 표식 4열(c11_feat_join · c11_regime_key · c11_fred_avail_max · c11_info_cutoff)이 붙는다.
+  ★전환 효과: 기존 발행 행은 수리 전 판이라 다음 실행의 전량 재계산이 판정(fire_seq)을 바꾸면 parity 게이트가
+  **막는다**(exit 1). 그것이 맞다 — 오염 이력의 침묵 덮어쓰기도, 오염 이력 위 신규 행 이어붙이기도 하지 않는다.
+  2단계 재산출(결정 PIT-C11-BOOK0001)에서 사람이 `--accept-parity '<사유>'` 로 넘긴다.
+
+**★C11 2단계 준비 (2026-09-24 · 결정 PIT-C11-AE-1003 "AE 전 이력 재산출을 10-01 전에 선행 → 10-03 정상 실행")**:
+  ① **핀 PIT 절단** — 월간 예약 실행은 매월 3일 09:00(noLayer4_Monthly_PaperTracking)이라 라이브 FRED 에 이미
+     결정일(as_of) 이후 관측이 있다. 구판 advance_pin 은 라이브를 **통째로** 복사했고, 아래 `fr.max() >= as_of`
+     PIT 검사가 그 핀을 막아(exit 3 → 러너 exit 19) 당월 행이 사전 생성되지 않은 달은 **예약 경로가 완주할 수 없었다**
+     (2026-09 는 08-30 수동 사전 생성이라 가려졌다). 핀은 '결정 시점에 알 수 있었던 것'이어야 하므로 Date 축 원천
+     (FRED 와이드 · 벤치마크 · ECOS 원/달러)을 **Date < as_of 로 절단해** 복사한다. 관측일 >= as_of 인 해외 관측은
+     가용일이 as_of 이후라(가용일 >= 관측일) 결정 창에 들어갈 수 없으므로 절단은 PIT 상 무손실이다. PIT 검사는 그대로 둔다
+     (--pin-dir 로 넘긴 사람 핀에는 여전히 이빨이다).
+  ② **핀 완결성** — 태그가 있어도 PIN_SOURCES 중 빠진 파일이 있으면(C11 이전에 뜬 핀 = ECOS 부재) 재사용하지 않는다.
+     재발행은 낡은 핀과 같은 경로(--repin-stale '<사유>' — 지우지 않고 이관 + 감사 기록)로만.
+  ③ **--recompute '<사유>'** — 결정일 행이 이미 있으면 재계산을 생략하는 규칙을, 사유를 남기고 넘는다(최신 결정일 한정).
+     전 이력 C11 재산출(parity 차단은 여전히 --accept-parity 로 따로 넘긴다 — 두 사람 판단을 합치지 않는다).
+  ④ 과거 결정일 삽입(as_of < 기존 최대 결정일) + 핀 전진 = 거부 — 절단(as_of)이 뒤 결정들의 창을 자른다.
+  ⑤ --dry-run 은 감사 기록(parity_override · recompute jsonl)을 쓰지 않는다(구판은 dry-run 에서도 override 를 적었다).
+
 종료코드: 0 정상 / 1 parity 위반(과거 행 변경) / 2 입력·환경 오류 / 3 PIT 위반
 """
 from __future__ import annotations
@@ -39,6 +67,11 @@ import sys
 import numpy as np
 import pandas as pd
 import pyarrow.parquet as pq
+
+_REGIME_DIR = os.path.dirname(os.path.abspath(__file__))
+if _REGIME_DIR not in sys.path:
+    sys.path.insert(0, _REGIME_DIR)
+import ae_pit_features as aepf  # noqa: E402  (C11 가용시점 결합 — 해외 특성의 유일한 결합 경로)
 
 ROOT = os.environ.get("QM_ROOT", "C:/Users/99922/OneDrive/Quant_Module_Moltbot").replace("\\", "/")
 os.chdir(ROOT)
@@ -69,6 +102,8 @@ PIN_SOURCES = {
     # 2026-08-02 정리 2단계: 2-1 정적 사본(철거 대상) → WT-H rerun 정본(매월 재생성)
     "period_returns_layer5.csv":
         "qepm/mailbox/worktask/WT-H20260513_001/output/period_returns_layer5.csv",
+    # 2026-09-24 PIT C11: 원/달러 특성 원천 = ECOS 731Y001 (DEXKOUS prohibited · PIT-C11-CONVENTIONS ①)
+    aepf.ECOS_KRW_FILE: ".cache/ecos_krw_usd.parquet",
 }
 FROZEN_PIN = DEFAULT_PIN   # r1 = D3 졸업 근거 핀. 절대 덮지 않는다.
 
@@ -96,6 +131,39 @@ PIN_FRESHNESS_TOL_DAYS = 14
 #   Date 축이 있는 핀 파일만 검사한다. carrier/period_returns 는 월 단위 스냅샷이라
 #   일 단위 신선도 축이 성립하지 않는다(검사하면 상시 오탐).
 PIN_FRESHNESS_FILES = ("fred_macro_wide.parquet", "benchmark.parquet")
+#   ★핀 PIT 절단 대상(2026-09-24) — 특성 패널을 만드는 **일간 Date 축** 원천만. carrier(결정목록)·period_returns 는
+#   특성이 아니고 Date 축도 아니라 그대로 복사한다. 목록 밖 파일에 Date 열이 있어도 건드리지 않는다(명시 목록).
+PIN_TRUNCATE_FILES = ("fred_macro_wide.parquet", "benchmark.parquet", aepf.ECOS_KRW_FILE)
+
+
+def _pin_copy(src: str, dst: str, as_of: pd.Timestamp, base: str) -> dict:
+    """핀 원천 1개를 복사한다. PIN_TRUNCATE_FILES 는 **Date < as_of** 행만(결정 시점 정보집합) — 스키마·메타데이터 보존.
+
+    반환 = manifest 항목(절단 기록 포함). 절단 대상인데 Date 열이 없으면 거부(무엇을 잘랐는지 모르는 핀은 뜨지 않는다).
+    """
+    import hashlib
+    import shutil
+    rec = {"basename": base, "source": src}
+    if base in PIN_TRUNCATE_FILES:
+        t = pq.read_table(src)
+        if "Date" not in t.column_names:
+            die(2, f"핀 절단 대상 {base} 에 Date 열이 없다({src}) — 결정 시점 절단 불가, 핀을 뜨지 않는다")
+        d = pd.to_datetime(t.column("Date").to_pandas())
+        keep = (d < as_of).to_numpy()
+        import pyarrow as pa
+        t2 = t.filter(pa.array(keep))
+        pq.write_table(t2, dst)
+        rec["truncated"] = {"rule": "Date < as_of", "as_of": as_of.strftime("%Y-%m-%d"),
+                            "rows_source": int(t.num_rows), "rows_kept": int(t2.num_rows),
+                            "rows_dropped": int(t.num_rows - t2.num_rows),
+                            "source_max": str(d.max().date()) if len(d) else None,
+                            "pin_max": str(d[keep].max().date()) if keep.any() else None}
+    else:
+        shutil.copy2(src, dst)
+    raw = open(dst, "rb").read()
+    rec["md5"] = hashlib.md5(raw).hexdigest()
+    rec["size_bytes"] = len(raw)
+    return rec
 
 
 def _max_date(path: str) -> pd.Timestamp | None:
@@ -168,10 +236,15 @@ def advance_pin(as_of: pd.Timestamp, repin_stale: str | None = None) -> str:
     if os.path.isdir(tag_dir) and os.path.exists(os.path.join(tag_dir, "manifest.json")):
         # ★"존재한다" 를 "쓸 수 있다" 로 읽지 않는다 — 재사용 전에 신선도를 재는 게 계약이다.
         fresh, note = pin_freshness(tag_dir, as_of)
-        if fresh:
+        # ★완결성(2026-09-24 C11): PIN_SOURCES 가 요구하는 파일이 전부 있어야 재사용한다. C11 이전에 뜬 핀은
+        #   ECOS 원/달러가 없어 뒤에서 exit 2 로 죽는다 — 여기서 같은 재발행 경로(사유 필수)로 돌린다.
+        missing = [b for b in PIN_SOURCES if not os.path.exists(os.path.join(tag_dir, b))]
+        if fresh and not missing:
             print(f"[ae-monthly] 핀 {tag} 이미 존재 — 재사용 (신선도 OK: {note})")
             return tag_dir
-        print(f"[ae-monthly] ★핀 {tag} 낡음 — {note}")
+        if missing:
+            note = f"{note} || ★필수 파일 부재: {', '.join(missing)} (C11 이전 핀)"
+        print(f"[ae-monthly] ★핀 {tag} 사용 불가 — {note}")
         if not repin_stale:
             die(2, f"낡은 핀 재사용 거부: {tag_dir}\n"
                    f"  {note}\n"
@@ -224,22 +297,18 @@ def advance_pin(as_of: pd.Timestamp, repin_stale: str | None = None) -> str:
                + chr(10) + "  (월간 리밸 경로에서는 run_nolayer4_monthly.sh [0] 이 이걸 자동 수행한다. "
                  "이 게이트가 걸렸다면 그 리프레시가 실제로는 전진하지 못했다는 뜻이다.)")
 
-    os.makedirs(tag_dir, exist_ok=True)
-    import hashlib
     import json
-    import shutil
-    files = []
-    for base, src in PIN_SOURCES.items():
+    for base, src in PIN_SOURCES.items():          # 원본 부재는 디렉토리를 만들기 **전에** 거부(반쯤 뜬 핀 방지)
         if not os.path.exists(src):
             die(2, f"핀 원본 부재: {src} (기대 basename {base})")
-        dst = os.path.join(tag_dir, base)
-        shutil.copy2(src, dst)
-        raw = open(dst, "rb").read()
-        files.append({"basename": base, "md5": hashlib.md5(raw).hexdigest(),
-                      "size_bytes": len(raw), "source": src})
+    os.makedirs(tag_dir, exist_ok=True)
+    files = []
+    for base, src in PIN_SOURCES.items():
+        files.append(_pin_copy(src, os.path.join(tag_dir, base), as_of, base))
     json.dump({"tag": tag,
                "created_at": as_of.strftime("%Y-%m-%d") + " (AS_OF 기준)",
-               "provenance": f"월간 리밸 핀 전진 — 라이브 원본 복사. 동결 근거핀({FROZEN_PIN}) 미변경. "
+               "provenance": f"월간 리밸 핀 전진 — 라이브 원본 복사(Date 축 원천 {list(PIN_TRUNCATE_FILES)} 은 "
+                             f"Date < AS_OF 절단 = 결정 시점 정보집합). 동결 근거핀({FROZEN_PIN}) 미변경. "
                              f"과거 개정 검출은 parity 게이트가 담당.",
                "files": files},
               open(os.path.join(tag_dir, "manifest.json"), "w", encoding="utf-8"),
@@ -256,11 +325,13 @@ def load_frozen_source() -> str:
 
 
 def run_walkforward(decisions: list[str], pin_dir: str, out_path: str):
-    """원본 로직을 그대로 실행하되 결정목록·핀·출력만 주입.
+    """원본 로직을 그대로 실행하되 결정목록·핀·출력만 주입 + ★특성 패널 빌더 1함수 교체(C11).
 
     동결 원본을 텍스트로 읽어 상수 3개만 치환 후 exec 한다 — 로직 복사본을 만들면
     원본과 갈라져 '어느 쪽이 정본인가' 문제가 생긴다(오늘 2-3/2-4 미러에서 sha1 대조가
     필요했던 이유와 같은 계통). 치환은 상수 라인 3개로 한정한다.
+    ★2026-09-24 PIT C11: exec 뒤 `build_panel` 만 `ae_pit_features.build_pit_panel` 로 바꾼다(모델·학습·
+      채점은 원본). 반환 = 그 패널(산출 행 C11 표식용).
     """
     src = load_frozen_source()
     subs = [
@@ -283,7 +354,30 @@ def run_walkforward(decisions: list[str], pin_dir: str, out_path: str):
 
     g = {"__name__": "__ae_monthly__"}
     exec(compile(src, SRC, "exec"), g)      # noqa: S102 — 동결 원본 로직 재사용이 목적
-    g["main"]()
+
+    # ── ★PIT C11 (2026-09-24): build_panel **한 함수만** 가용시점 결합판으로 교체 ──────────
+    #   원본 main 은 build_panel() 을 전역 이름으로 부르므로(원본 :110) 여기서 바꾼 함수가 불린다.
+    #   원본의 RNG 소비는 모델 생성·학습에서만 일어나고 build_panel 은 RNG 를 쓰지 않는다 — 교체가 스트림
+    #   위치를 옮기지 않는다. 핀 경로(FRED·BENCH)는 위 치환으로 이미 주입된 원본 전역을 그대로 읽는다.
+    for _k in ("build_panel", "FRED", "BENCH", "FRED_FEATS", "main"):
+        if _k not in g:
+            die(2, f"원본에서 '{_k}' 를 찾지 못함(원본 변경 의심) — C11 결합을 끼울 수 없다")
+    built = {}
+    ecos = os.path.join(pin_dir, aepf.ECOS_KRW_FILE)
+
+    def _pit_build_panel():
+        panel, feat_cols = aepf.build_pit_panel(g["FRED"], g["BENCH"], ecos, list(g["FRED_FEATS"]))
+        built["panel"] = panel
+        return panel, feat_cols
+
+    g["build_panel"] = _pit_build_panel
+    try:
+        g["main"]()
+    except aepf.AEPitError as e:
+        die(3 if "★C11" in str(e) else 2, str(e))
+    if "panel" not in built:
+        die(2, "C11 패널 빌더가 호출되지 않았다 — 원본 main 이 build_panel 을 부르지 않음(원본 변경 의심)")
+    return built["panel"]
 
 
 def _changed(o: pd.DataFrame, n: pd.DataFrame, common, col):
@@ -332,6 +426,11 @@ def parity_check(old_path: str, new_df: pd.DataFrame) -> tuple[bool, str]:
     note = f"과거 {len(common)}행 · 판정 " + ("★변경 " + " / ".join(hard) if hard else "불변")
     if soft:
         note += " · 점수 " + ", ".join(soft) + " (FRED 과거 개정 반영 — A안 채택으로 통과)"
+    # ★C11 전환 표지 — 기존 발행본이 수리 전 판(관측일 결합·DEXKOUS)이면 차이의 원인은 '개정'이 아니라
+    #   시간축 수리다. 게이트는 그대로 막고(판정 변경 = hard) 원인만 정확히 적는다.
+    if not aepf.is_c11_stamped(o.reset_index()):
+        note += (" · ★C11 전환: 기존 발행 행은 수리 전 판(해외 특성 관측일 결합·DEXKOUS)이다 — 차이는 FRED 개정이 "
+                 "아니라 시간축 수리 몫이다. 2단계 재산출(결정 PIT-C11-BOOK0001)에서 --accept-parity '<사유>'")
     return (not hard), note
 
 
@@ -355,7 +454,15 @@ def main() -> int:
                          "게이트가 요구하는 '개정 시리즈 특정 후 사람 판단'을 손으로 파일을 "
                          "덮는 대신 감사 가능한 경로로 남기기 위한 것. 사유 없이는 못 쓴다. "
                          "★PIT 위반(exit 3)에는 적용되지 않는다 — 그건 여전히 무조건 차단.")
+    ap.add_argument("--recompute", default=None, metavar="REASON",
+                    help="결정일 행이 이미 있어도 **전 이력을 재계산**한다(사유 필수 · 최신 결정일 한정). "
+                         "C11 2단계 전 이력 재산출(결정 PIT-C11-AE-1003)용. parity 차단은 여전히 --accept-parity 로 "
+                         "따로 넘긴다. 기록 = <OUT>.recompute.jsonl (dry-run 은 기록 안 함).")
     a = ap.parse_args()
+    for _flag, _val in (("--recompute", a.recompute), ("--accept-parity", a.accept_parity),
+                        ("--repin-stale", a.repin_stale)):
+        if _val is not None and not str(_val).strip():
+            die(2, f"{_flag} 에는 사유 문자열이 필요하다(빈 사유 금지)")
 
     as_of = pd.Timestamp(a.as_of)
     if as_of.day != 1:
@@ -363,15 +470,31 @@ def main() -> int:
     dec_str = as_of.strftime("%Y-%m-%d")
 
     # 이미 그 결정일이 있으면 재계산 불필요 — 다만 '있다'를 신선함으로 착각하지 않도록 값을 보여준다.
+    cur_max = None
     if os.path.exists(OUT):
         cur = pq.read_table(OUT).to_pandas()
         cur[KEY] = pd.to_datetime(cur[KEY])
+        cur_max = cur[KEY].max() if len(cur) else None
         if (cur[KEY] == as_of).any():
             r = cur[cur[KEY] == as_of].iloc[0]
             print(f"[ae-monthly] 결정일 {dec_str} 이미 존재 — fire_seq={int(r['fire_seq'])} "
-                  f"last_feat={pd.Timestamp(r['last_feat_date']).date()} (재계산 생략)")
-            return 0
-        print(f"[ae-monthly] 기존 max decision_date = {cur[KEY].max().date()} → {dec_str} 추가")
+                  f"last_feat={pd.Timestamp(r['last_feat_date']).date()}"
+                  + (" → ★--recompute: 전 이력 재계산" if a.recompute else " (재계산 생략)"))
+            if not a.recompute:
+                if not aepf.is_c11_stamped(cur[cur[KEY] == as_of]):
+                    # 이미 발행된 달의 재실행 — 값은 바꾸지 않는다(발행 기록). 다만 침묵하지도 않는다.
+                    print(f"[ae-monthly] ★C11 미해소 행 — {dec_str} 행은 수리 전 판(해외 특성 관측일 결합·DEXKOUS)이다. "
+                          f"재산출은 2단계(결정 PIT-C11-BOOK0001): --recompute '<사유>' --accept-parity '<사유>'")
+                return 0
+        else:
+            print(f"[ae-monthly] 기존 max decision_date = {cur[KEY].max().date()} → {dec_str} 추가")
+    # ★재계산 범위 가드 — 핀 절단(Date < as_of)은 as_of 뒤 결정들의 창을 자른다. 과거 결정일 끼워넣기 + 핀 전진,
+    #   또는 최신이 아닌 결정일의 전 이력 재계산은 뒤 결정을 조용히 낡게 만든다 → 거부.
+    if a.recompute and (cur_max is None or as_of != cur_max):
+        die(2, f"--recompute 는 최신 결정일({None if cur_max is None else cur_max.date()})에만 — 요청 {dec_str}")
+    if a.advance_pin and cur_max is not None and as_of < cur_max:
+        die(2, f"과거 결정일 {dec_str} < 기존 최대 {cur_max.date()} + --advance-pin 거부 — 핀 절단(Date < as_of)이 "
+               f"뒤 결정들의 특성 창을 자른다. 과거 달 보충은 그 시점 핀을 --pin-dir 로")
 
     if a.pin_dir:
         pin_dir = a.pin_dir
@@ -382,10 +505,13 @@ def main() -> int:
         print(f"[ae-monthly] 동결 핀 사용 ({pin_dir}) — 신선도 한계 있음. "
               f"리밸런싱 경로는 --advance-pin 을 쓴다")
     for f in ("fred_macro_wide.parquet", "benchmark.parquet",
-              "carrier_STR_1715_AR_on_M4_R05_overlay_PG2.parquet"):
+              "carrier_STR_1715_AR_on_M4_R05_overlay_PG2.parquet", aepf.ECOS_KRW_FILE):
         p = os.path.join(pin_dir, f)
         if not os.path.exists(p):
-            die(2, f"핀 파일 부재: {p}")
+            die(2, f"핀 파일 부재: {p}"
+                   + (" — C11 수리 이후 원/달러 특성은 핀의 ECOS 731Y001 을 쓴다(DEXKOUS prohibited). "
+                      "수리 전에 뜬 핀이다: --advance-pin(새 달) 또는 ECOS 를 담은 핀을 --pin-dir 로"
+                      if f == aepf.ECOS_KRW_FILE else ""))
     fr = pd.to_datetime(pq.read_table(os.path.join(pin_dir, "fred_macro_wide.parquet"),
                                       columns=["Date"]).to_pandas()["Date"])
     print(f"[ae-monthly] 핀 = {pin_dir} · FRED max {fr.max().date()}")
@@ -405,7 +531,7 @@ def main() -> int:
     print(f"[ae-monthly] 결정목록 {len(decisions)}건 (신규 {dec_str}) — 전량 재계산")
 
     tmp = OUT + ".new"
-    run_walkforward(decisions, pin_dir, tmp)
+    panel = run_walkforward(decisions, pin_dir, tmp)
     if not os.path.exists(tmp):
         die(2, "재계산 산출물 미생성")
 
@@ -417,7 +543,16 @@ def main() -> int:
     if bad:
         os.remove(tmp)
         die(3, f"PIT 위반 {bad}행 (last_feat_date >= decision_date) — 원본은 경고만 했으나 여기서 차단")
-    print(f"[ae-monthly] PIT self-check 통과 (위반 0행)")
+    # ── ★C11 표식 + 검사 (2026-09-24): 창에 실린 해외 관측의 가용일이 전부 last_feat_date 이하인가 ──
+    try:
+        new = aepf.stamp(new, panel, aepf.rules_regime_key())
+    except aepf.AEPitError as e:
+        os.remove(tmp)
+        die(3, str(e))
+    new.to_parquet(tmp, index=False)
+    print(f"[ae-monthly] PIT self-check 통과 (위반 0행) · C11 표식 {aepf.FEAT_JOIN} "
+          f"key={new['c11_regime_key'].iloc[0]} · info_cutoff 최대 "
+          f"{pd.Timestamp(new['c11_info_cutoff'].max()).date()}")
 
     # ── parity 게이트 ────────────────────────────────────────────────────────
     ok, note = parity_check(OUT, new)
@@ -427,23 +562,35 @@ def main() -> int:
         os.replace(tmp, keep)
         die(1, f"과거 발행 행이 변경됨 — 교체 중단. FRED 과거 개정 의심. "
                f"재계산본 보존: {keep} (개정 시리즈 특정 후 사람 판단)")
+    import json as _json
     if not ok:
         # ★수용 경로 — 게이트를 끄는 게 아니라 '누가 왜 넘겼는지'를 남긴다.
         #   손으로 .parity_reject 를 OUT 에 복사하면 이 기록이 안 남는다. 그래서 여기 둔다.
-        import json as _json
+        #   ★dry-run 은 교체하지 않으므로 '수용'도 일어나지 않았다 — 기록하지 않는다(구판은 dry-run 에서도 적었다).
         _aud = OUT + ".parity_override.jsonl"
-        with open(_aud, "a", encoding="utf-8") as fh:
-            fh.write(_json.dumps({"as_of": dec_str, "note": note,
-                                  "reason": a.accept_parity,
-                                  "pin_dir": pin_dir.replace("\\", "/")},
-                                 ensure_ascii=False) + "\n")
-        print(f"[ae-monthly] ★parity 수용 — 사유: {a.accept_parity}")
-        print(f"[ae-monthly]   기록: {_aud}")
+        if a.dry_run:
+            print(f"[ae-monthly] ★parity 수용 예정(dry-run — 기록 안 함) — 사유: {a.accept_parity}")
+        else:
+            with open(_aud, "a", encoding="utf-8") as fh:
+                fh.write(_json.dumps({"as_of": dec_str, "note": note,
+                                      "reason": a.accept_parity,
+                                      "recompute": a.recompute,
+                                      "pin_dir": pin_dir.replace("\\", "/")},
+                                     ensure_ascii=False) + "\n")
+            print(f"[ae-monthly] ★parity 수용 — 사유: {a.accept_parity}")
+            print(f"[ae-monthly]   기록: {_aud}")
 
     if a.dry_run:
         print(f"[ae-monthly] dry-run — 교체 안 함. 산출: {tmp}")
         return 0
 
+    if a.recompute:
+        with open(OUT + ".recompute.jsonl", "a", encoding="utf-8") as fh:
+            fh.write(_json.dumps({"as_of": dec_str, "reason": a.recompute, "parity_ok": bool(ok), "note": note,
+                                  "n_decisions": int(len(new)), "pin_dir": pin_dir.replace("\\", "/"),
+                                  "c11_regime_key": str(new["c11_regime_key"].iloc[0]) if len(new) else None},
+                                 ensure_ascii=False) + "\n")
+        print(f"[ae-monthly] ★전 이력 재계산 기록: {OUT}.recompute.jsonl (사유: {a.recompute})")
     os.replace(tmp, OUT)
     r = new[new[KEY] == as_of]
     if len(r):

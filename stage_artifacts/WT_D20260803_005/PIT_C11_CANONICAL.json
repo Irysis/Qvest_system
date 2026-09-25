@@ -1,0 +1,36 @@
+{
+ "schema": "pit_c11_canonical_pointer/v1",
+ "wt_id": "WT-D20260803_005",
+ "purpose": "이 WT 의 결론 인용 정본을 지정한다. 원 산출물은 지우지도 고치지도 않았다 — 무효 표식과 정본 지정만 이 파일에 둔다.",
+ "contamination": {
+  "defect": "PIT C11 — 측정 풀(285종)에 D32_Beta_VIX(V-08: VIXCLS 미국 관측일을 한국 신호일에 같은 날짜로 결합)와 MA01·MA02(V-01: 월간 INDPRO·CPIAUCSL 을 공표 전에 사용)가 들어 있다",
+  "reason": "pit_invalid:C11",
+  "flag": "pit_c11",
+  "violation": "V-08 · V-01",
+  "judgment": "04_Research/01_reports/pit_c11_20260924/PIT_C11_verdict_20260924.md (③ 'WT·스크린' 행 · ④ 측정 설계 'WT-D20260803_005' 행 · 1-5 마지막 행)",
+  "decision_ref": "06_Registry/decision_register.json#PIT-C11-CONVENTIONS (⑥ WT-D20260803_005/006 오염 정본 무효·제외판 정본 지정 — 도훈 2026-09-24)",
+  "quarantine_ref": "06_Registry/pit_quarantine.json#PITQ-C11-20260924",
+  "marked_at": "2026-09-24T12:20:00+0900",
+  "marked_by": "S6_defense (PIT C11 수리 1단계 · 판정서 ⑤-8 · 결정 ⑥)"
+ },
+ "invalidated": {
+  "what": "오염 풀(C11 선언 5종 포함 285종) 위의 헤드라인 정본 — primary P_persist 0.5776(n=850) · 최상위 |t|>=2 bin 지속 0.5000, rob36 0.6079/0.7879(n=1701), rob24 0.5605/0.7343(n=2835)",
+  "where": [
+   "qepm/mailbox/worktask/WT-D20260803_005/alpha_package.json (md5 245240988c8bdd18edf41636e6ab1b77 — p_persist_primary 0.5776 등)",
+   "stage_artifacts/WT_D20260803_005/alpha_validation.json (md5 5096d86f3e99…)",
+   "stage_artifacts/WT_D20260803_005/persistence_results.rds (md5 dc9ce190c324…)"
+  ],
+  "rejected_rationale": "challenge_note.md Concern 3 의 '풀에서 제외 시 Δ ≤ 0.0014 … 판정 불변 → 오염 수치 정본 유지'는 pit.md 가 금지하는 '결과 동일'형 합리화다(판정서 1-5). 차이가 작다는 사실은 오염판을 정본으로 둘 근거가 아니다 — 제외판을 정본으로 한다."
+ },
+ "canonical": {
+  "source": "stage_artifacts/WT_D20260803_005/ap4_c11.rds $impact — C11_publication_lag 선언 5종(D32_Beta_VIX·MA01·MA02·MA03·MA04)을 뺀 제외판. 2026-08-03T10:35:20+0900 AP-4 산출(재측정 아님 · md5 892ea0ce1191d82f1630cd4e6b2e225d). MA03·MA04 는 판정서 1-6 에서 적합으로 확인됐으나 이 판은 보수적으로 함께 뺐다",
+  "values": {
+   "primary": {"p_persist": 0.577245508982036, "n_pairs": 835, "topbin_persist": 0.503105590062112},
+   "rob36":   {"p_persist": 0.608617594254937, "n_pairs": 1671, "topbin_persist": 0.796875},
+   "rob24":   {"p_persist": 0.559066427289048, "n_pairs": 2785, "topbin_persist": 0.733333333333333}
+  },
+  "scope": "제외판이 있는 지표는 P_persist 와 최상위 bin 지속 두 가지뿐이다. 그 밖의 파생 통계(클러스터 CI 3종·era 분해 0.959/0.304·AUC·기울기·lag1 민감도·family 순위)는 오염 풀 위에서 잰 값이라 인용하지 않는다 — 제외판은 산출되지 않았고 재측정은 이 단계(코드 수리)의 범위 밖이다(2·3단계).",
+  "verdict_label": "판정 문구 '(a) FAIL / (b) FAIL' 자체의 재판정은 하지 않았다 — 인용할 때는 위 제외판 수치로만 근거를 댄다"
+ },
+ "original_artifacts_preserved": true
+}

@@ -734,3 +734,62 @@ NumericVector roll_duvol_cpp(NumericVector ret, int n) {
   }
   return out;
 }
+
+// ─── 28. Expanding Tail Beta (PIT C1 수리 2026-09-24 · 판정서 1-4 · D08_Tail_Beta) ──────
+// 구판(phase6:218-229)은 종목 전 이력의 sd(bm)·꼬리일로 계수 1개를 추정해 모든 날짜에 복제했다(C1).
+// 누적판: t 의 값은 t 이하 행만으로 —
+//   sd_t  = sd(bm[0..t], NA 제외, n-1 분모 = R sd())
+//   꼬리  = { j ≤ t : ret_j·bm_j 모두 유효, |bm_j| > k_sd * sd_t }
+//   출력  = -OLS 기울기(ret ~ bm | 꼬리). 꼬리 수 < min_tail · sd_t ≤ 1e-8(구판 가드) · 분모≈0 → NA.
+// 정의 수치(k_sd·min_tail)는 호출부가 구판 값 그대로 넘긴다. 기존 함수는 건드리지 않는다(추가만).
+// O(m log m): |bm| 정렬 슬롯 위 펜윅 트리(개수·Σx·Σy·Σxy·Σx²), 꼬리 = 전체 − (|bm| ≤ c 슬롯 접두합).
+// [[Rcpp::export]]
+NumericVector roll_expanding_tail_beta_cpp(NumericVector ret, NumericVector bm,
+                                           double k_sd, int min_tail) {
+  int m = ret.size();
+  NumericVector out(m, NA_REAL);
+  if (bm.size() != m) stop("roll_expanding_tail_beta_cpp: ret/bm 길이 불일치");
+  std::vector<double> vals;
+  vals.reserve(m);
+  for (int i = 0; i < m; i++)
+    if (!ISNAN(ret[i]) && !ISNAN(bm[i])) vals.push_back(std::fabs(bm[i]));
+  std::sort(vals.begin(), vals.end());
+  const int K = (int)vals.size();
+  std::vector<double> fn(K + 1, 0.0), fx(K + 1, 0.0), fy(K + 1, 0.0), fxy(K + 1, 0.0), fx2(K + 1, 0.0);
+  std::vector<int> next_off(K > 0 ? K : 1, 0);
+  double tn = 0.0, tx = 0.0, ty = 0.0, txy = 0.0, tx2 = 0.0;
+  long nb = 0; double mean_b = 0.0, m2_b = 0.0;
+  for (int t = 0; t < m; t++) {
+    if (!ISNAN(bm[t])) {
+      nb++;
+      double d = bm[t] - mean_b;
+      mean_b += d / (double)nb;
+      m2_b += d * (bm[t] - mean_b);
+    }
+    if (!ISNAN(ret[t]) && !ISNAN(bm[t])) {
+      double a = std::fabs(bm[t]);
+      int lb = (int)(std::lower_bound(vals.begin(), vals.end(), a) - vals.begin());
+      int slot = lb + next_off[lb]++;
+      double x = bm[t], y = ret[t];
+      for (int k = slot + 1; k <= K; k += k & (-k)) {
+        fn[k] += 1.0; fx[k] += x; fy[k] += y; fxy[k] += x * y; fx2[k] += x * x;
+      }
+      tn += 1.0; tx += x; ty += y; txy += x * y; tx2 += x * x;
+    }
+    if (nb < 2) continue;
+    double sd = std::sqrt(m2_b / (double)(nb - 1));
+    if (!(sd > 1e-8)) continue;
+    double c = k_sd * sd;
+    int p = (int)(std::upper_bound(vals.begin(), vals.end(), c) - vals.begin());
+    double pn = 0.0, px = 0.0, py = 0.0, pxy = 0.0, px2 = 0.0;
+    for (int k = p; k > 0; k -= k & (-k)) {
+      pn += fn[k]; px += fx[k]; py += fy[k]; pxy += fxy[k]; px2 += fx2[k];
+    }
+    double n = tn - pn, sx = tx - px, sy = ty - py, sxy = txy - pxy, sx2 = tx2 - px2;
+    if (n < (double)min_tail - 0.5) continue;
+    double den = n * sx2 - sx * sx;
+    if (std::abs(den) < 1e-12) continue;
+    out[t] = -((n * sxy - sx * sy) / den);
+  }
+  return out;
+}

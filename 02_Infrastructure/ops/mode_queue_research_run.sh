@@ -136,7 +136,8 @@ CLAUDE_BIN="$(command -v claude || echo /c/Users/99922/AppData/Roaming/npm/claud
 ROOT="${ROOT:-$BASE}"
 . "$BASE/02_Infrastructure/ops/rf_llm_env.sh"
 rf_llm_resolve mode_queue_research "${QVEST_MQ_MODEL:-}" "${QVEST_MQ_EFFORT:-}"
-LANE_LLM_ARGS=(--model "$LLM_MODEL" --effort "$LLM_EFFORT")
+# (P0-M1 2026-09-24) --model/--effort 는 아래 _run_claude → rf_llm_agent_run 이 LLM_MODEL/LLM_EFFORT 로 싣는다
+#   (구 LANE_LLM_ARGS 배열 폐지 — 모델 인자가 두 벌이면 한쪽만 고쳐진다).
 [ -x "$CLAUDE_BIN" ] || { log "claude CLI 없음 — skip"; exit 0; }
 PF="$BASE/02_Infrastructure/ops/mode_queue_research_prompt.md"
 [ -f "$PF" ] || { log "prompt 없음 — skip"; exit 0; }
@@ -202,19 +203,31 @@ _log_lines_before=$(wc -l < "$LOG" 2>/dev/null || echo 0)
 #   원장 append 가 유실됐다(rc=124 로만 남음).
 #   ★무한 정지 방지의 실질은 timeout 이 아니라 **자기 락**이다 — 락은 PID 를 적고
 #   kill -0 로 생존을 확인하므로 죽은 런의 락은 다음 런이 회수한다.
+# ★(P0-M1 2026-09-24) LLM 호출은 rf_llm_env.sh::rf_llm_agent_run 단일 진입을 거친다 — 그 안에서
+#   AutoMem 차단(CLAUDE_CODE_DISABLE_AUTO_MEMORY=1)과 무인 표식(QVEST_UNATTENDED_LANE=1)이 claude 에 실린다.
+#   인자: $1 = 모델 재지정(빈 값 = 위 rf_llm_resolve 값 · "opus" = 한도 폴백 재시도). 프롬프트 = $PROMPT_TEXT(stdin 파일).
+#   시간제한 규약 불변: QVEST_RUN_TIMEOUT 미설정·0 = 무제한(timeout 0 = GNU 규약상 제한 없음) · 양수 = 그 초.
+#   출력은 이번 실행 파일에 받아 $LOG 에 덧붙인다(구판 `>> $LOG` 와 같은 로그 내용 · 실행이 끝난 뒤 한 번에).
 _run_claude(){
-  if [ -n "${QVEST_RUN_TIMEOUT:-}" ] && [ "${QVEST_RUN_TIMEOUT}" != "0" ]; then
-    timeout "${QVEST_RUN_TIMEOUT}" "$@"
-  else
-    "$@"
-  fi
+  local _model="${1:-${LLM_MODEL:-opus}}" _pf _rc
+  # 폴백은 싣지 않는다(LLM_FALLBACK_MODEL 비움 · 구판 동작 보존 — 구판도 --fallback-model 없이 떴다).
+  #   한도 폴백은 아래 spend_limit → `_run_claude opus` 재시도 한 벌이 맡는다(두 벌이면 한도 한 번에 세 번 뜬다).
+  _pf="$(mktemp "${TMPDIR:-/tmp}/lane_prompt.XXXXXX")" || return 1
+  printf '%s' "$PROMPT_TEXT" > "$_pf"
+  RF_CLAUDE_BIN="$CLAUDE_BIN" LLM_MODEL="$_model" LLM_FALLBACK_MODEL="" \
+    rf_llm_agent_run "$_pf" "$_pf.out" "${QVEST_RUN_TIMEOUT:-0}" --dangerously-skip-permissions
+  _rc=$LLM_RC
+  [ -f "$_pf.out.primary" ] && cat "$_pf.out.primary" >> "$LOG"
+  cat "$_pf.out" >> "$LOG" 2>/dev/null
+  rm -f "$_pf" "$_pf.out" "$_pf.out.primary"
+  return "$_rc"
 }
 
 # 알림 창 기준점 — 이 시각 **이후** 산출만 이 런의 것으로 본다.
 #   안 넘기면 기본 4시간 창이 쓰여 직전 3.5시간의 남의 산출까지 자기 것으로 보고한다
 #   (오늘 여섯 번 겪은 "범위를 안 정하고 센다" 의 알림 판본).
 _NOTIFY_SINCE=$(date +%s)
-_run_claude "$CLAUDE_BIN" -p "$PROMPT_TEXT" "${LANE_LLM_ARGS[@]}" --dangerously-skip-permissions >> "$LOG" 2>&1
+_run_claude ""
 rc=$?
 log "claude -p exit=$rc"
 
@@ -250,8 +263,7 @@ if [ "$rc" -ne 0 ]; then
   # spend_limit 폴백 (도훈 07-14 정책 / 07-24 승인 C8) — 한도는 외생변수이지 게이트가 아니다.
   if [ "$reason" = "spend_limit" ]; then
     log "spend_limit 감지 — --model opus 폴백 재시도"
-    _run_claude "$CLAUDE_BIN" -p "$PROMPT_TEXT" --model opus --effort "$LLM_EFFORT" \
-      --dangerously-skip-permissions >> "$LOG" 2>&1
+    _run_claude opus
     rc=$?; log "fallback(opus) exit=$rc"
     [ "$rc" -ne 0 ] && reason="spend_limit_fallback_exit_${rc}"
   fi

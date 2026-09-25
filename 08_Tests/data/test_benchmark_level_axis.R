@@ -242,6 +242,9 @@ PINNED <- c(
   "02_Infrastructure/ops/triple_monitor.sh",
   "02_Infrastructure/regime/README.md",
   "02_Infrastructure/regime/ae_regime_backfill.py",
+  # PIT C11 수리 1단계 S5(2026-09-24) — AE 한국 측 특성(동결 원본 ae_regime_extend.py:36-43 과 같은 식): klog = log(c/c_-1) ·
+  #   kcum20/60 = c/c_-k − 1 → 비율만(절대 레벨 비의존 · ABS_LEVEL 아님)
+  "02_Infrastructure/regime/ae_pit_features.py",
   "02_Infrastructure/regime/ae_seed_sensitivity_probe.py",
   "02_Infrastructure/regime/ktri_v3_builder.R",
   "02_Infrastructure/regime/msm_daily_refit.R",

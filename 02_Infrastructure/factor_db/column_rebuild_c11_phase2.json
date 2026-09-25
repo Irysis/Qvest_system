@@ -1,0 +1,40 @@
+{
+  "schema": "fdb_column_rebuild/v1",
+  "name": "c11_phase2",
+  "created": "2026-09-24",
+  "purpose": "PIT C11 2단계 월간 factor DB 표적 재빌드 — 해외 계열 가용시점 결합으로 바뀐 열만 현행(수리) 코드로 재계산하고, 퇴역 팩터 열을 제거한다(구판 월 파일은 백업).",
+  "decisions": [
+    "06_Registry/decision_register.json#PIT-C11-REMEDIATION (안 B: 가용시점 층 + 표적 재빌드 — 전체 재빌드는 다른 팩터를 흔든다)",
+    "06_Registry/decision_register.json#PIT-C11-D32-DEF (D32 = 결합 키 이동, 이력 전체 재빌드)",
+    "06_Registry/decision_register.json#PIT-C11-CONVENTIONS (② ICE OAS 한국 d+2 · ③ CPI 날짜 기준 12개월 변화)",
+    "06_Registry/decision_register.json#PIT-C11-MA0102 (MA01·MA02 퇴역)",
+    "06_Registry/decision_register.json#PIT-C11-P2-AUX (① MA01·MA02 열 재빌드 때 팩터 DB 에서 제거 · 구판 백업 보관)"
+  ],
+  "evidence": {
+    "verdict": "04_Research/01_reports/pit_c11_20260924/PIT_C11_verdict_20260924.md (V-01·V-08·V-13 · ⑤ 안 B)",
+    "column_set_derivation": "202608 월 파일 구판 빌드(수리 전 코드) 대 수리판 빌드(같은 데이터) 전 팩터 Raw_Value 대조 — 달라진 팩터 = D32_Beta_VIX(2507/2550) · RE13_Credit_Spread_Pctile(2513/2513) · RE14_Inflation_YoY(2513/2513) · MA07_BusinessCycle_Composite(2513/2513), 사라진 팩터 = MA01_GDP_Sensitivity. 나머지 팩터 전부 불변(RE10·RE11·RE12·RE16·MA03~MA06 = 결합 규칙 동치). 산출: scratchpad/c11_p1/s1_monthly_fdb/run/fdb_202608_{orig,final}.parquet",
+    "stored_span_20260924": "저장 월 파일 스캔(읽기 전용) — D32 200006~202609(316개월 · 2005 이전 55) · RE13 202309~202609(37) · RE14·MA07·MA01 200101~202609(309 · 2005 이전 48) · MA02 200101~202606(305)"
+  },
+  "recompute": [
+    {"id": "D32_Beta_VIX", "module": "defense",
+     "why": "V-08 · VIX 가용일 결합(미국 날짜 < 한국 날짜) — 결합 키 이동(PIT-C11-D32-DEF)"},
+    {"id": "RE13_Credit_Spread_Pctile", "module": "regime",
+     "why": "HY OAS 가용일 필터(ICE OAS 한국 d+2 · PIT-C11-CONVENTIONS ②) — 마지막 관측·확장 분위가 바뀐다"},
+    {"id": "RE14_Inflation_YoY", "module": "regime",
+     "why": "V-13 · CPIAUCSL 가용일 필터 + 날짜 기준 12개월 변화(PIT-C11-CONVENTIONS ③)"},
+    {"id": "MA07_BusinessCycle_Composite", "module": "regime",
+     "why": "V-13 · INDPRO·CPIAUCSL 가용일 필터 + 날짜 기준 12개월 변화"}
+  ],
+  "drop": [
+    {"id": "MA01_GDP_Sensitivity", "why": "퇴역(PIT-C11-MA0102) — 저장 이력 = 오염판. 열 제거 + 구판 월 파일 백업(PIT-C11-P2-AUX ①)"},
+    {"id": "MA02_CPI_Sensitivity", "why": "퇴역(PIT-C11-MA0102) — 저장 이력 = 오염판. 열 제거 + 구판 월 파일 백업(PIT-C11-P2-AUX ①)"}
+  ],
+  "range": {
+    "from": "200501",
+    "to": "202608",
+    "why": "PIT-C11-REMEDIATION 안 B 표적 재빌드 구간 = 플랜 '2단계 순서'(월간 FDB 열 D32·RE13·RE14·MA07, 2005-01~2026-08). 202609 = 당월 — daily_refresh [6a] 가 수리 코드로 매일 전량 빌드한다(런북 검증 단계가 확인).",
+    "residual_note": "저장 이력은 2005 이전에도 있다(D32 200006~ · RE14·MA07 200101~). 이 구간은 기본 범위 밖이라 오염판이 남는다 — 전 구간 수리는 --from 200006 (런북 S4 결정 항목)."
+  },
+  "drop_scope": "all_months",
+  "drop_scope_why": "퇴역 열은 재계산이 아니라 제거라 구간 제한이 없다 — 저장된 모든 달(2005 이전·당월 포함)에서 뺀다(각 파일 구판 백업)."
+}

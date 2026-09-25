@@ -30,6 +30,10 @@ INFRA_DIR <- tryCatch(dirname(dirname(sys.frame(1)$ofile)),
   error = function(e) "/mnt/c/Users/99922/OneDrive/바탕 화면/Quant_Module_Moltbot/02_Infrastructure")
 source(file.path(INFRA_DIR, "config.R"))
 sourceCpp(file.path(.SELF_DIR, "factor_db_daily_rcpp.cpp"))
+# PIT C11 수리(2026-09-24): 해외 계열 가용시점 층(S0) + 일간 fdb PIT 도우미. 없으면 여기서 멈춘다
+#   ([0/8] 전체 삭제 전 — 같은 날짜 판으로 조용히 재빌드하지 않는다).
+source(file.path(INFRA_DIR, "data", "fred_availability.R"))
+source(file.path(.SELF_DIR, "factor_db_daily_pit.R"))
 
 FDB_DIR <- file.path(CACHE_DIR, "factor_db_daily")
 dir.create(FDB_DIR, recursive = TRUE, showWarnings = FALSE)
@@ -71,27 +75,32 @@ if (!"BM_Ret" %in% names(RW) || all(is.na(RW$BM_Ret))) {
 cat(sprintf("  RAWDATA: %s rows, %d tickers\n", format(nrow(RW), big.mark=","), length(unique(RW$Ticker))))
 
 # ── VIX column from macro_fred (for D32_Beta_VIX) ──────────────────────────
+# ★PIT C11 수리(2026-09-24 · 판정서 V-09 · ⑤-1): 구판은 FRED 관측일(미국 거래일)을 한국 날짜에 같은 날짜
+#   roll 결합해 한국 d 행에 미국 d 종가(KRX 종가 뒤 약 14시간)를 실었다(fdb_daily_202003 1,200셀 100% 일치).
+#   수리판 = S0 가용시점 층 fred_asof_join(mode="decision_close"): 한국 d 15:30 결정에 쓸 수 있는 최신 관측만
+#   (VIXCLS = 미국 날짜 < 한국 날짜 · 규칙 정본 06_Registry/fred_availability_rules.json · factor_db_daily_pit.R).
+#   RW 에 이미 VIX 열이 있으면 시간축을 모르므로 버리고 다시 싣는다. 실패 = VIX 전부 NA → D32 전부 NA(fail-closed).
 .macro_path_p6 <- file.path(CACHE_DIR, "macro_fred.parquet")
-if (file.exists(.macro_path_p6) && !("VIX" %in% names(RW))) {
+if ("VIX" %in% names(RW)) {
+  cat("  [C11] RW 의 기존 VIX 열은 가용일 미확인 — 버리고 가용일 결합으로 다시 싣는다\n")
+  RW[, VIX := NULL]
+}
+if (file.exists(.macro_path_p6)) {
   tryCatch({
-    .macro <- as.data.table(read_parquet(.macro_path_p6))
-    .macro[, Date := as.Date(Date)]
-    .vix_d <- if ("Series_ID" %in% names(.macro) && "VIXCLS" %in% .macro[["Series_ID"]]) {
-      .macro[Series_ID == "VIXCLS" & !is.na(Value), .(VIX = last(Value)), by = Date]
-    } else if ("VIX" %in% .macro[["Series"]]) {
-      .macro[Series == "VIX" & !is.na(Value), .(VIX = last(Value)), by = Date]
-    } else NULL
-    if (!is.null(.vix_d) && nrow(.vix_d) > 0L) {
-      setkey(.vix_d, Date)
-      # ffill VIX across all RAWDATA dates (carry-forward weekend/holiday)
-      .all_dates <- data.table(Date = sort(unique(RW[["Date"]])))
-      .vix_filled <- .vix_d[.all_dates, on = "Date", roll = TRUE]
+    .macro <- as.data.table(read_parquet(.macro_path_p6, mmap = FALSE))
+    .vix_obs <- fdb_fred_obs(.macro, "VIXCLS")
+    if (!is.null(.vix_obs) && nrow(.vix_obs) > 0L) {
+      # 한국 거래일마다 그날 15:30 에 가용한 최신 VIX(미국 휴일·주말은 직전 관측이 이어진다)
+      .vix_filled <- fdb_fred_on_kr_dates(sort(unique(RW[["Date"]])), .vix_obs, "VIXCLS")[, .(Date, VIX = value)]
       RW <- merge(RW, .vix_filled, by = "Date", all.x = TRUE)
       setkey(RW, Ticker, Date)
-      cat(sprintf("  VIX column merged: %d carried values\n", sum(!is.na(RW$VIX))))
+      cat(sprintf("  VIX column merged (C11 avail · decision_close): %d carried values\n", sum(!is.na(RW$VIX))))
+    } else {
+      cat("  !! [C11] macro_fred 에 VIXCLS 관측 없음 → D32 전부 NA\n")
     }
   }, error = function(e) {
-    cat(sprintf("  VIX merge failed: %s\n", conditionMessage(e)))
+    cat(sprintf("  !! [C11] VIX 가용일 결합 실패 → D32 전부 NA(fail-closed): %s\n", conditionMessage(e)))
+    warning("[C11] phase6 VIX 가용일 결합 실패: ", conditionMessage(e), call. = FALSE)
   })
 }
 # Ensure VIX column exists even if merge skipped (NA fallback for by=Ticker)
@@ -216,19 +225,15 @@ PART_A <- RW[, {
                                  D57_Down_Vol-D56_Up_Vol, NA_real_)
 
   # ─── Stage 1 NEW: D08 Tail Beta + D32 Beta VIX ──────────────────────
-  # D08: filter by |bm| > 2*sd (full-history tail beta, replicated)
-  D08_Tail_Beta <- {
-    bm_sd_loc <- sd(bm, na.rm=TRUE)
-    if (!is.na(bm_sd_loc) && bm_sd_loc > 1e-8) {
-      tail_mask <- !is.na(bm) & abs(bm) > 2*bm_sd_loc
-      if (sum(tail_mask) >= 60L) {
-        f <- tryCatch(lm.fit(cbind(1, bm[tail_mask]), ret[tail_mask]),
-                      error = function(e) NULL)
-        if (!is.null(f)) rep(-as.numeric(f$coefficients[2L]), m) else rep(NA_real_, m)
-      } else rep(NA_real_, m)
-    } else rep(NA_real_, m)
-  }
+  # D08: filter by |bm| > 2*sd — tail-day slope of ret on bm (sign flipped)
+  # ★PIT C1 수리(2026-09-24 · 판정서 1-4 · decision PIT-C11-CONVENTIONS ⑤): 구판은 종목 전 이력의 sd·꼬리일로
+  #   계수 1개를 추정해 모든 날짜에 복제했다(2008-01 = 2026-06, 1,177/1,177종목 동일) → 날짜 t 값에 t 이후 수익이 섞였다.
+  #   수리판 = 결정일까지 누적(expanding): t 의 sd·꼬리 판정·회귀가 전부 t 이하 행만 쓴다(roll_expanding_tail_beta_cpp).
+  #   정의 수치(2σ · 꼬리 ≥60일)는 구판 그대로. 차이: 꼬리일 중 ret NA 행은 회귀에서 뺀다(구판은 lm.fit 오류로 종목 전체 NA).
+  D08_Tail_Beta <- fdb_d08_expanding_tail_beta(ret, bm, k_sd = 2, min_tail = 60L)
   # D32: rolling 252d beta of ret vs daily VIX log-change
+  #   VIX 열은 위 [1/8] 에서 가용일(C11)로 결합됐다 — t 행 = 한국 t 15:30 까지 가용한 최신 VIX(미국 날짜 < t).
+  #   그래서 roll_beta 창 [t−251, t] 가 당일 t 를 포함해도 ret_t(t 종가까지)·ΔlogVIX_t(미국 t−1 종가까지) 모두 t 결정 시점 정보다.
   vix_chg <- if (exists("VIX") && any(!is.na(VIX))) {
     v <- as.double(VIX); v[v <= 0] <- NA_real_
     c(NA_real_, diff(log(v)))
@@ -439,6 +444,11 @@ if(!is.null(INV)) { INV[, Date := as.Date(Date)]; setkey(INV, Ticker, Date) }
 # Regime 로드
 REGIME <- as.data.table(read_parquet(file.path(CACHE_DIR,"regime_daily_v2.parquet")))
 REGIME[, Date := as.Date(Date)]; setkey(REGIME, Date)
+# ★PIT C11(2026-09-24 · 판정서 V-10·V-11): RE_* 는 한국 날짜 d 행끼리 결합한다(아래 REGIME2) — regime_daily_v2 의
+#   d 행이 'd 15:30 까지 가용한 정보만' 담을 때만 옳다. 그 보장은 생산자(regime_engine_daily.R) 수리판의 스탬프
+#   (c11_avail_regime_key — R 속성·parquet 메타데이터·열 · factor_db_daily_pit.R)로만 받는다. 없으면 regime 값 열 전부 NA(fail-closed).
+fdb_regime_c11_mask(REGIME, c("MRS", "exposure", "VIX_z_smooth", "HY_z_smooth", "TS_z_smooth"),
+                    file.path(CACHE_DIR, "regime_daily_v2.parquet"), label = "phase6 RE_*")
 
 rm(FUND); gc(verbose = FALSE)
 cat(sprintf("  준비 완료 (%.1fs)\n\n", (proc.time()-t2)["elapsed"]))

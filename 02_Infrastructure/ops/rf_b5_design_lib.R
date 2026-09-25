@@ -33,6 +33,15 @@
 #   H6 칸 무결성: 상주 제외 · 스택 중복(정렬 id 키)·이미 측정된 스택 금지 · 같은 kind 두 층 금지 · active 만 (rfbd_verify 재도출)
 #   H7 방출 정직성(위 ④) · H8 폴백 무성 금지(위 ③)
 #
+# ★교차 entry 수치 가림 (도훈 결정 D-E-B5-MATERIALS 2026-09-25 · pit.md C1 D-E):
+#   이 레인은 arm 을 고르는 **무인 자동 선정기**다. 재료가 다른 entry 의 전기간 측정값(arm 별 ΔCalmar 순위 · G2 obs/q/p ·
+#   교훈 서술 속 Calmar/MDD · 증류 지식 수치 · 프로그램 최고치)을 실으면 시점 t 보유를 그 뒤 창의 성과로 고르는 것이다.
+#   그래서 자기·정적 절(B5_OWN_SECTIONS) 밖의 **모든 절**을 B1 과 같은 가림 함수(rf_b1_design_lib.R 정본 — 사본 없이
+#   이름으로만 적재 · .b5_redactor)로 가린다: 식별자 보존 · 700자 등 절단 **앞뒤 2회**(.b5_capx) · 발송 전 재도출 검증
+#   (잔존 = materials_rejected → 레인 materials_failed → 기존 기전/규칙 설계로 진행) · (3) arm 목록은 arm_id 순(성과 순 금지).
+#   자기 entry 측정표·바닥 해부는 가리지 않는다(이 entry 의 강화 루프 자체 — 선택 정직성 = Judge).
+#   가림 함수를 못 싣거나 적재 양성 대조가 실패하면 재료를 쓰지 않는다(fail-closed — 가리지 않은 재료가 나가는 길은 없다).
+#
 # ★발화 시점 (2026-09-17 감사): 러너는 B1 종료 뒤 **다음 배치를 여는 같은 호출 안에서** block_order 를 기록한다
 #   (reinforce_auto_parallel.R · used ≥ 5 ∧ 미결 0). tick 은 레인 → 러너 순서라, 기록된 순서만 보면 레인이 보는 시점엔
 #   항상 미기록 → 러너가 곧바로 B5 를 규칙/기전 설계로 연다 → 레인은 영영 발화하지 못한다. 그래서 미기록이면 러너와
@@ -418,6 +427,50 @@ b5_strip_dates <- function(x) {
 }
 b5_has_dates <- function(x) any(vapply(c(B5_DATE_RULES, episode = B5_EPISODE_RULE), function(rx) any(grepl(rx, x, perl = TRUE)), logical(1)))
 
+# ── 교차 entry 수치 가림 (D-E-B5-MATERIALS 2026-09-25 · pit.md C1 D-E) ─────────────────────────────
+#   정본 = rf_b1_design_lib.R 의 가림 규칙·함수(R2). ★사본을 두지 않는다 — 두 레인의 규칙이 갈리면 한쪽만 새는 구멍이 된다.
+#   ★그 파일을 source() 하지 않는다: 최상위에서 setwd(ROOT) 를 하고, CLI 절이 이 프로세스의 commandArgs("materials <id> <out>")를
+#     자기 인자로 읽어 **B1 재료를 이 출력 경로에 쓴다**(.b5_block_n_cells 의 같은 경고). 그래서 parse 해 아래 이름의 최상위 대입만
+#     baseenv 위 새 환경에서 평가한다(부수효과 0). 이름이 하나라도 없거나 둘이면 NULL(fail-closed).
+#   적재마다 양성 대조 — 가림이 실제로 가리고(검증기 TRUE→FALSE) 식별자를 보존하는지 확인 못 하면 NULL(무발화 계기를 방어선으로 세지 않는다).
+B5_REDACT_NAMES <- c("RF_B1_STAT_PROTECT", "RF_B1_STAT_RULES", "RF_B1_STAT_METRIC", "RF_B1_STAT_MASK", "rf_b1_redact_stats", "rf_b1_has_stats")
+#' 자기·정적 절 — 이 entry 자신(측정표·기전·바닥 해부) · 정적 계약 · 이 라운드 설정. **그 밖의 절은 전부 교차 = 가림**
+#'   (새 절을 조립 순서에 더하면 기본으로 가려진다 — 빠뜨려서 새는 길이 없다).
+B5_OWN_SECTIONS <- c("entry", "floor", "contract", "guard")
+B5_OUTCOME_ROWS <- 40L        # (3) arm 사용 이력 표 상한 — arm_id 순으로 자른다(성과와 무관한 절단)
+B5_RX_CANARY <- "B5_22 xs_vol_gap_corr_brake Calmar 0.763 · MDD 0.287~0.615 · 폭 5.5%p · PORT_t 3 · arXiv 2002.06975 · v10.4"
+.b5_redactor <- function(path = .b5_lib("02_Infrastructure/ops/rf_b1_design_lib.R")) {
+  if (!file.exists(path)) return(NULL)
+  ex <- tryCatch(parse(path, keep.source = FALSE, encoding = "UTF-8"), error = function(e) NULL)
+  if (is.null(ex)) return(NULL)
+  en <- new.env(parent = baseenv()); got <- character(0)
+  for (e in as.list(ex)) {
+    if (!is.call(e) || length(e) != 3L || !(identical(e[[1]], as.name("<-")) || identical(e[[1]], as.name("="))) || !is.name(e[[2]])) next
+    nm <- as.character(e[[2]]); if (!(nm %in% B5_REDACT_NAMES)) next
+    if (nm %in% got) return(NULL)                                          # 같은 이름 두 번 = 어느 것이 정본인지 모른다
+    ok <- tryCatch({ eval(e, envir = en); TRUE }, error = function(err) FALSE); if (!ok) return(NULL)
+    got <- c(got, nm)
+  }
+  if (!setequal(got, B5_REDACT_NAMES)) return(NULL)
+  red <- en$rf_b1_redact_stats; has <- en$rf_b1_has_stats; mask <- en$RF_B1_STAT_MASK
+  if (!is.function(red) || !is.function(has) || !is.character(mask) || length(mask) != 1L || !nzchar(mask) || grepl("[0-9]", mask)) return(NULL)
+  rc <- tryCatch(red(B5_RX_CANARY), error = function(err) NA_character_)
+  if (!is.character(rc) || length(rc) != 1L || is.na(rc) || !isTRUE(has(B5_RX_CANARY)) || isTRUE(has(rc)) ||
+      !grepl(mask, rc, fixed = TRUE) || grepl("0.763", rc, fixed = TRUE) ||
+      !all(vapply(c("B5_22 xs_vol_gap_corr_brake", "2002.06975", "v10.4"), grepl, logical(1), x = rc, fixed = TRUE))) return(NULL)
+  list(redact = red, has = has, mask = mask, path = path)
+}
+.B5_RX <- new.env(parent = emptyenv())
+.b5_rx <- function() {   # 프로세스당 1회 적재(재료 1건 = 1 프로세스) · NULL 도 캐시한다(= 매 호출 fail-closed)
+  if (!exists("rx", envir = .B5_RX, inherits = FALSE)) assign("rx", .b5_redactor(), envir = .B5_RX)
+  get("rx", envir = .B5_RX, inherits = FALSE)
+}
+#' 교차 텍스트 절단 — 가림 **앞뒤 2회**(앞: 온전한 수치를 가린다 · 뒤: 절단이 식별자 가운데를 잘라 생긴 소수 모양 조각을 가린다 · 멱등)
+.b5_capx <- function(x, n) {
+  rx <- .b5_rx(); if (is.null(rx)) stop("[b5_design] 가림 함수 부재 — 교차 텍스트를 가리지 않고 내지 않는다")
+  rx$redact(.cap(rx$redact(.chr(x)), n))
+}
+
 # ── 바닥 낙폭 해부 (날짜 없음) ───────────────────────────────────────────────
 #' floor = 측정된 시도 중 PORT_t 최고 칸 — 러너가 다음 B5 배치의 바닥으로 까는 것과 같은 규칙(reinforce_auto_parallel.R .wbest_spec).
 #'   산출물 02_nav.csv(nav_net) 의 낙폭 에피소드 상위 3 을 깊이·고점→저점 개월·수중 개월·회복 개월로, 같은 창(고점일~저점일)의
@@ -548,7 +601,8 @@ B5_DISTILL_KEYWORDS <- c("오버레이", "낙폭", "MDD", "국면", "현금", "o
   hdr <- c(sprintf("## (4b) G2 사후 반증 상세 — 앞선 오버레이 칸이 **어떤 검사에서** 죽었나 (최근 %d칸 · 전 entry)", as.integer(max_rows)),
            "- 읽는 법: T3 = 노출을 짝지어 무작위로 재배치한 플라시보. obs <= q 면 **같은 노출을 아무 때나 줄여도 같은 Calmar** 라는 뜻 = 타이밍 기여 0.",
            "- T4(상수 등가)만 넘고 T3 에서 죽는 것이 가장 흔한 형태다 — '개선이 있다' 와 '개선이 타이밍에서 왔다' 는 다른 명제.",
-           "- fail/not_candidate 는 등급이 아니라 **소비 보류**다. 이 사인을 피할 기전을 설계하라(칸을 재탕하지 말고 축을 바꿔라).")
+           "- fail/not_candidate 는 등급이 아니라 **소비 보류**다. 이 사인을 피할 기전을 설계하라(칸을 재탕하지 말고 축을 바꿔라).",
+           "- ★수치(Calmar 셀/바닥 · T1 이동 · T3 obs/q/p · T3b p · T4 상수)는 가렸다(<stat> — 다른 entry 의 전기간 측정값으로 arm 을 고르면 평가 창 결과를 소비하는 자동 선정 · pit.md C1 D-E). **어느 검사가 죽였나**(상태·판정)만 읽어라.")
   if (!length(rows)) return(c(hdr, "(아직 반증 기록이 없다)"))
   tab <- c("", "| entry | 코드 | 스택 | Calmar 셀/바닥 | T1 | T3 | T3b | T4 | 판정 |", "|---|---|---|---|---|---|---|---|---|")
   for (r in rows) {
@@ -559,9 +613,10 @@ B5_DISTILL_KEYWORDS <- c("오버레이", "낙폭", "MDD", "국면", "현금", "o
     f_t4 <- if (nzchar(r$t4s)) sprintf("%s const %s", r$t4s, .f3(r$t4c)) else "-"
     tab <- c(tab, sprintf("| %s | %s | %s | %s/%s | %s | %s | %s | %s | %s%s |",
                           # entry 는 접두 타임스탬프를 벗겨 **계보만** 남긴다(전부 같은 접두어라 30자 절단이면 구분이 사라진다)
-                          .cap(sub("^RP_[0-9]{8}_[0-9]{6}_[0-9]+_", "", r$entry), 30), r$code, .cap(r$stack, 42), .f3(r$cell), .f3(r$floor),
+                          # (D-E-B5-MATERIALS) 절단은 가림 앞뒤 2회 · 수치 칸(.f3)은 조립 시 절 전체 가림이 덮는다
+                          .b5_capx(sub("^RP_[0-9]{8}_[0-9]{6}_[0-9]+_", "", r$entry), 30), r$code, .b5_capx(r$stack, 42), .f3(r$cell), .f3(r$floor),
                           f_t1, f_t3, f_t3b, f_t4, r$verdict,
-                          if (nzchar(r$reason)) sprintf("(%s)", .cap(r$reason, 26)) else ""))
+                          if (nzchar(r$reason)) sprintf("(%s)", .b5_capx(r$reason, 26)) else ""))
   }
   vs <- vapply(rows, function(r) r$verdict, character(1))
   killers <- unlist(lapply(rows, function(r) c(if (identical(r$t1s, "fail")) "T1" else NULL,
@@ -593,10 +648,26 @@ b5_director_context <- function(root = ROOT, max_age_h = 48) {
                  .chr(pi$defensive_n), .f3(pi$defensive_deep_dd_excess_median), .f3(pi$defensive_deep_dd_negative_share), .chr(ov$adv_pass), .chr(ov$n_verdict), .chr(ov$status)))
   b5_strip_dates(L)
 }
+#' (D-E-B5-MATERIALS) (2b) 는 교차 절이라 통째로 가려진다 — 그 안의 A 문턱(고정 축 상수 · 측정값 아님)만 자기·정적 절 (8) 로 옮겨 싣는다.
+#'   같은 원천·같은 신선도 규칙(48h) · 부재·낡음·파손 = NULL(줄 생략 — 구판에서 (2b) 가 빠질 때와 같다).
+.b5_director_thresholds <- function(root = ROOT, max_age_h = 48) {
+  p <- file.path(root, ".cache/rf_director_context.json"); if (!file.exists(p)) return(NULL)
+  age <- suppressWarnings(as.numeric(difftime(Sys.time(), file.info(p)$mtime, units = "hours"))); if (!is.finite(age) || age > max_age_h) return(NULL)
+  d <- tryCatch(fromJSON(p, simplifyVector = FALSE), error = function(e) NULL); th <- if (is.list(d)) d$thresholds else NULL
+  if (!is.list(th)) return(NULL)
+  v <- c(calmar = .num(th$calmar_min), port_t = .num(th$port_t_min)); if (any(is.finite(v))) v else NULL
+}
 
 b5_materials <- function(base_id, root = ROOT, cfg = b5_cfg(root), compose_only = FALSE, arm_quota = cfg$max_new_arms,
                          round = 1L, out_p = NULL) {
   E <- .b5_entry(root, base_id); if (is.null(E)) stop("[b5_design] entry 부재: ", base_id)
+  # (D-E-B5-MATERIALS) 가림 함수가 없으면 재료를 만들지 않는다 — 레인은 materials_failed 로 기록하고 기존 설계로 진행한다
+  RX <- .b5_rx()
+  if (is.null(RX)) {
+    .b5_log("materials_rejected", base_id = base_id, round = as.integer(round), why = "redactor_unavailable",
+            note = "rf_b1_design_lib.R 가림 함수 적재·양성 대조 실패 — 교차 entry 수치를 가리지 않은 재료는 내지 않는다(pit.md C1 D-E)")
+    stop("[b5_design] 교차 entry 수치 가림 함수 적재 실패 — 재료 생성 중단(pit.md C1 D-E · 기존 설계로 폴백)")
+  }
   arms <- .b5_catalog(root); k2i <- .b5_kind_to_id(arms)
   st <- .b5_standing(root)
   carry_ov <- (E$carry %||% list())$overlay
@@ -677,15 +748,21 @@ b5_materials <- function(base_id, root = ROOT, cfg = b5_cfg(root), compose_only 
   # (2) 바닥 낙폭 해부 ───────────────────────────────────────────────────────
   sec$floor <- b5_floor_anatomy(E, root)
   sec$director <- tryCatch(b5_director_context(root), error = function(e) character(0))   # D3 (c) · 부재/낡음/오류 = 생략
-  # (3) arm 성과 이력 ───────────────────────────────────────────────────────
+  # (3) arm 사용 이력 ───────────────────────────────────────────────────────
+  #   (D-E-B5-MATERIALS) 구판 = ΔCalmar 순 상위 8/하위 8 + Δ 네 개 + G2 pass/fail — 전부 다른 entry 의 전기간 측정값이고, 순위 자체가
+  #   "무엇을 고를지"를 정해 준다. 이제 **arm_id 순**(성과와 무관한 결정론 순서 · radix = 로캘 무관) · 성과 칸은 가림 표식만 ·
+  #   남는 것은 사용 횟수(설계 이력 — 측정값이 아니다). rf_overlay_outcomes 자체(리서치 디렉터 소비)는 그대로 둔다.
   O <- tryCatch(rf_overlay_outcomes(root), error = function(e) NULL)
-  L3 <- c("## (3) arm 성과 이력 (전 entry B5 칸 · Δ = 그 칸 − 같은 entry B1 중앙값 · arm 별 중앙값 · ΔMDD<0 이 개선) — 상위 8 / 하위 8",
-          "| arm_id | 사용 | 스택사용 | entry수 | ΔMDD | ΔCAGR | ΔPORT_t | ΔCalmar | G2 pass/fail |", "|---|---|---|---|---|---|---|---|---|")
+  L3 <- c("## (3) arm 사용 이력 (전 entry B5 칸 · arm_id 순 — 성과 순위가 아니다) — 성과 수치는 가렸다",
+          sprintf("- ★ΔMDD·ΔCAGR·ΔPORT_t·ΔCalmar·G2 pass/fail 은 다른 entry 의 전기간 측정값이다 — 그것으로 arm 을 고르면 평가 창 결과를 소비하는 자동 선정이다(pit.md C1 D-E). %s 로 가렸고 순위도 없앴다. 사용 횟수(어느 arm 이 이미 많이 쓰였나)만 읽어라.", RX$mask),
+          "| arm_id | 사용 | 스택사용 | entry수 | 성과(Δ·G2) |", "|---|---|---|---|---|")
   if (!is.null(O) && nrow(O)) {
-    idx <- unique(c(utils::head(seq_len(nrow(O)), 8L), utils::tail(seq_len(nrow(O)), 8L)))
-    for (i in idx) L3 <- c(L3, sprintf("| %s | %d | %d | %d | %s | %s | %s | %s | %d/%d |", O$arm_id[i], O$uses[i], O$stacked_uses[i], O$n_entries[i],
-                                       .f3(O$med_d_mdd[i]), .f3(O$med_d_cagr[i]), .f3(O$med_d_port_t[i]), .f3(O$med_d_calmar[i]), O$adv_pass[i], O$adv_fail[i]))
-  } else L3 <- c(L3, "| (이력 없음) | | | | | | | | |")
+    O <- O[order(as.character(O$arm_id), method = "radix")]
+    n_show <- min(nrow(O), B5_OUTCOME_ROWS)
+    for (i in seq_len(n_show)) L3 <- c(L3, sprintf("| %s | %d | %d | %d | %s |", O$arm_id[i], as.integer(O$uses[i]), as.integer(O$stacked_uses[i]),
+                                                   as.integer(O$n_entries[i]), RX$mask))
+    if (nrow(O) > n_show) L3 <- c(L3, sprintf("| … | (arm_id 순 상한 %d행 · 나머지 %d arm 생략) | | | |", n_show, nrow(O) - n_show))
+  } else L3 <- c(L3, "| (이력 없음) | | | | |")
   sec$outcomes <- L3
   # (4) 앞선 논문들의 B5 교훈 ───────────────────────────────────────────────
   fs <- list.files(ld, pattern = "^l_code_.*_B5\\.json$", full.names = TRUE)
@@ -698,17 +775,18 @@ b5_materials <- function(base_id, root = ROOT, cfg = b5_cfg(root), compose_only 
       mech <- .chr(x$mechanism); av <- as.character(unlist(x$avoid %||% list()))
       if (!nzchar(mech) && !length(av)) next
       blk <- sprintf("### %s", .chr(x$strategy_id))
-      if (nzchar(mech)) blk <- c(blk, sprintf("- 기전: %s", .cap(mech, 700)))
-      if (length(av)) blk <- c(blk, sprintf("- 쓰지 말 것: %s", paste(vapply(utils::head(av, 3L), .cap, character(1), n = 160), collapse = " / ")))
+      # (D-E-B5-MATERIALS) 다른 entry 의 교훈 서술 = 그 entry 의 전기간 Calmar·MDD 가 박혀 있다 — 절단 앞뒤로 가린다
+      if (nzchar(mech)) blk <- c(blk, sprintf("- 기전: %s", .b5_capx(mech, 700)))
+      if (length(av)) blk <- c(blk, sprintf("- 쓰지 말 것: %s", paste(vapply(utils::head(av, 3L), .b5_capx, character(1), n = 160), collapse = " / ")))
       prior_blocks[[length(prior_blocks) + 1L]] <- blk
     }
   }
-  .prior_sec <- function(blocks) c(sprintf("## (4) 앞선 논문들의 B5 블록 교훈 (최근 %d entry) — 수치는 그 논문의 것 · **기전과 회피**만 옮겨 붙는다 · 금지 목록이 아니다(AX-000)", length(blocks)),
+  .prior_sec <- function(blocks) c(sprintf("## (4) 앞선 논문들의 B5 블록 교훈 (최근 %d entry) — 수치는 가렸다(%s · 다른 entry 의 전기간 측정값 · pit.md C1 D-E) · **기전과 회피**만 옮겨 붙는다 · 금지 목록이 아니다(AX-000)", length(blocks), RX$mask),
                                    if (length(blocks)) unlist(blocks) else "(없음)")
   sec$prior <- .prior_sec(prior_blocks)
   sec$adv <- .b5_adv_sec(root)
   # (5) 증류 지식 ──────────────────────────────────────────────────────────
-  L5 <- c("## (5) 증류 지식 (distilled · 키워드: 오버레이/낙폭/MDD/국면/현금/overlay/drawdown/regime · 상한 20)")
+  L5 <- c(sprintf("## (5) 증류 지식 (distilled · 키워드: 오버레이/낙폭/MDD/국면/현금/overlay/drawdown/regime · 상한 20 · 수치는 가렸다 %s)", RX$mask))
   rows5 <- tryCatch({
     en <- new.env(parent = globalenv())
     invisible(capture.output(suppressMessages(source(.b5_lib("02_Infrastructure/axiom/distilled.R"), local = en))))
@@ -719,8 +797,8 @@ b5_materials <- function(base_id, root = ROOT, cfg = b5_cfg(root), compose_only 
   }, error = function(e) NULL)
   if (is.data.frame(rows5) && nrow(rows5)) {
     for (i in seq_len(min(20L, nrow(rows5))))
-      L5 <- c(L5, sprintf("- %s [%s] %s%s", rows5$dist_id[i], rows5$polarity[i], .cap(rows5$statement[i], 120),
-                          if (nzchar(.chr(rows5$retry_policy[i]))) paste0(" (", .cap(rows5$retry_policy[i], 80), ")") else ""))
+      L5 <- c(L5, sprintf("- %s [%s] %s%s", rows5$dist_id[i], rows5$polarity[i], .b5_capx(rows5$statement[i], 120),
+                          if (nzchar(.chr(rows5$retry_policy[i]))) paste0(" (", .b5_capx(rows5$retry_policy[i], 80), ")") else ""))
   } else L5 <- c(L5, "(일치 항목 없음)")
   sec$distilled <- L5
   # (6) 기전 지도 + 활성 카탈로그 ─────────────────────────────────────────
@@ -730,7 +808,7 @@ b5_materials <- function(base_id, root = ROOT, cfg = b5_cfg(root), compose_only 
   for (a in arms) { if (!identical(.chr(a$status), "active") || .chr(a$id) %in% st$picks) next
     z <- rfm_arm_axis(a)
     L6 <- c(L6, sprintf("- %s · kind=%s · family=%s · %s/%s%s — %s", .chr(a$id), .chr(a$kind), .chr(a$family), z$action, z$state,
-                        if (nzchar(.chr(a$source))) paste0(" · source=", .chr(a$source)) else "", .cap(a$basis, 200))) }
+                        if (nzchar(.chr(a$source))) paste0(" · source=", .chr(a$source)) else "", .b5_capx(a$basis, 200))) }
   sec$catalog <- L6
   # (7) 계약·엔진 사실·중첩·PIT·금칙·검증부 ────────────────────────────────
   axes <- tryCatch(fromJSON({ p <- file.path(root, "06_Registry/rf_overlay_adversary_axes.json"); if (file.exists(p)) p else .b5_lib("06_Registry/rf_overlay_adversary_axes.json") },
@@ -775,16 +853,36 @@ b5_materials <- function(base_id, root = ROOT, cfg = b5_cfg(root), compose_only 
             if (isTRUE(compose_only)) "★새 arm 을 내지 마라(내도 무시·삭제되고 원장에 남는다). 기존 활성 arm 의 배합(스택)만 설계한다."
             else sprintf("새 arm 은 최대 %d개(그 이상은 무시·삭제). 필요 없으면 0개도 정상이다.", as.integer(arm_quota))),
     sprintf("- 라운드 %d · 설계 칸 ≤ %d · 유효 칸 ≥ %d · 층 ≤ %d · 새 arm kind = b5gen_<short>_%d", as.integer(round), cfg$max_cells, cfg$min_cells, cfg$max_layers, as.integer(round)),
-    "- ★설계는 특정 시기(연·월·이름 붙은 위기)에 기대면 안 된다 — 이 재료의 날짜는 전부 지웠고(<date>/<yr>/<episode>), arm 의 달력 리터럴은 probe 가 거부한다.")
+    "- ★설계는 특정 시기(연·월·이름 붙은 위기)에 기대면 안 된다 — 이 재료의 날짜는 전부 지웠고(<date>/<yr>/<episode>), arm 의 달력 리터럴은 probe 가 거부한다.",
+    sprintf("- ★교차 entry 절(공리·(2b)·(3)·(4)·(4b)·(5)·(6))의 수치는 %s 로 가렸다 — 다른 entry 의 전기간 측정값으로 arm 을 고르면 평가 창 결과를 소비하는 자동 선정이다(pit.md C1 D-E). 이 entry 자신의 측정표((1))·바닥 해부((2))는 그대로다.", RX$mask))
+  thr <- tryCatch(.b5_director_thresholds(root), error = function(e) NULL)
+  if (!is.null(thr)) sec$guard <- c(sec$guard, sprintf("- A 등급 문턱(고정 축 상수 — 측정값이 아니라 가리지 않는다): Calmar ≥ %s · PORT_t ≥ %s",
+                                                       .f3(thr[["calmar"]]), .f3(thr[["port_t"]])))
   # 조립 + 날짜 제거 + 총량 상한 ────────────────────────────────────────────
   order <- c("axioms", "entry", "floor", "director", "outcomes", "prior", "adv", "distilled", "catalog", "contract", "guard")
+  # (D-E-B5-MATERIALS) 교차 절 = 자기·정적 절이 아닌 전부 — 조립 직전 절 전체를 가린다(절단 뒤 2회차 · 멱등) · 조립 뒤 재도출 검증
+  xsecs <- setdiff(order, B5_OWN_SECTIONS)
+  .redact_x <- function(S) { for (k in xsecs) if (length(S[[k]])) S[[k]] <- RX$redact(S[[k]]); S }
   .assemble <- function(S) b5_strip_dates(unlist(lapply(order, function(k) c(S[[k]], ""))))
+  .x_lines <- function(S, tx) {   # 조립된 본문에서 교차 절이 차지한 줄(날짜 제거 뒤 = 실제 발송 텍스트)
+    n <- vapply(order, function(k) length(S[[k]]) + 1L, integer(1)); hi <- cumsum(n); lo <- hi - n + 1L
+    unlist(lapply(which(order %in% xsecs), function(j) tx[lo[j]:hi[j]]), use.names = FALSE)
+  }
+  sec <- .redact_x(sec)
   txt <- .assemble(sec)
   n_prior_dropped <- 0L
   while (sum(nchar(txt, type = "chars")) > B5_MAT_CAP_CHARS && length(prior_blocks)) {
     prior_blocks <- prior_blocks[-length(prior_blocks)]; n_prior_dropped <- n_prior_dropped + 1L
-    sec$prior <- .prior_sec(prior_blocks); txt <- .assemble(sec)
+    sec$prior <- .prior_sec(prior_blocks); sec <- .redact_x(sec); txt <- .assemble(sec)
   }
+  # 발송 전 재도출 검증 — 교차 절(발송 텍스트)에 수치가 하나라도 남으면 재료를 쓰지 않는다(조용한 통과 없음 · 레인 = materials_failed)
+  xl <- .x_lines(sec, txt)
+  if (length(xl) + sum(vapply(order[!(order %in% xsecs)], function(k) length(sec[[k]]) + 1L, integer(1))) != length(txt) || isTRUE(RX$has(xl))) {
+    .b5_log("materials_rejected", base_id = base_id, round = as.integer(round), why = "cross_entry_stats_residual",
+            note = "교차 entry 절에 전기간 수치 잔존(또는 절 경계 재도출 불일치) — pit.md C1 D-E · 기존 설계로 폴백")
+    stop("[b5_design] 교차 entry 절에 전기간 수치 잔존 — 재료 생성 중단(pit.md C1 D-E · 기존 설계로 폴백)")
+  }
+  n_mask <- sum(lengths(regmatches(xl, gregexpr(RX$mask, xl, fixed = TRUE))))
   sizes <- vapply(order, function(k) sum(nchar(b5_strip_dates(sec[[k]]), type = "chars")) + length(sec[[k]]), integer(1))
   if (!is.null(out_p)) {
     dir.create(dirname(out_p), recursive = TRUE, showWarnings = FALSE)
@@ -792,9 +890,10 @@ b5_materials <- function(base_id, root = ROOT, cfg = b5_cfg(root), compose_only 
     write(toJSON(as.list(sizes), auto_unbox = TRUE), paste0(out_p, ".sizes.json"))
     .b5_log("materials_written", base_id = base_id, round = as.integer(round), compose_only = isTRUE(compose_only),
             arm_quota = as.integer(arm_quota), chars_total = sum(nchar(txt, type = "chars")), prior_dropped_for_cap = n_prior_dropped,
-            sizes = paste(sprintf("%s=%d", names(sizes), sizes), collapse = " "), out = out_p)
+            sizes = paste(sprintf("%s=%d", names(sizes), sizes), collapse = " "), out = out_p,
+            cross_entry_stats_masked = n_mask, redacted_sections = paste(xsecs, collapse = ","))
   }
-  invisible(list(text = txt, sizes = sizes, prior_dropped = n_prior_dropped))
+  invisible(list(text = txt, sizes = sizes, prior_dropped = n_prior_dropped, n_masked = n_mask, redacted_sections = xsecs))
 }
 
 # ── 검증 + 최종 설계 쓰기 ────────────────────────────────────────────────────

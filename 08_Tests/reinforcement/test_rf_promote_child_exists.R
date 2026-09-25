@@ -29,7 +29,18 @@ chk <- function(label, got, want_ok, want_reason) {
 }
 
 SPEC <- tempfile(fileext = ".json")
-writeLines('{"factors":[{"kind":"value","name":"bm"}],"weighting":{"arm":"ew"},"universe":{"kind":"kq150"},"overlay":null}', SPEC)
+# ★2026-09-24(P0-12 · D2-08): 승격 best 후보는 spec.universe == k200_kq150 칸만이다 — 구 픽스처(kq150 처치 유니버스)는 이제
+#   best 후보가 아니라 승격 자체가 안 선다. 이 검사가 재는 것(자식 존재·이월 표식)과 무관한 축이라 고정 축으로 둔다.
+writeLines('{"factors":[{"kind":"value","name":"bm"}],"weighting":{"arm":"ew"},"universe":{"kind":"k200_kq150"},"overlay":null}', SPEC)
+# ★승격 best 는 현행 측정 규약·창 허용 칸만(규약 혼합 가드 · D-C) — 산출물 auth 에 현행 규약을, bt_result 에 2005 시작 보유를 둔다.
+ART <- file.path(tempdir(), paste0("rf_ho_art_", Sys.getpid())); dir.create(ART, showWarnings = FALSE)
+CUR_REGIME <- as.character(fromJSON(file.path(ROOT, "02_Infrastructure/worktask/constraint_defaults.json"), simplifyVector = FALSE)$execution$exec_price)
+writeLines(toJSON(list(status = "OK", essence_grade = "B", selection_type = "sweep", n_trials_cumulative = 3L,
+                       measurement_regime = list(selection_type = "sweep", n_trials_cumulative = 3L, exec_price = CUR_REGIME)),
+                  auto_unbox = TRUE), file.path(ART, "authoritative_remeasure.json"))
+.dts <- seq(as.Date("2005-02-01"), as.Date("2026-08-01"), by = "month")
+saveRDS(list(holdings = data.frame(date = .dts, ticker = "A005930", weight = 1),
+             period_returns = data.frame(date = .dts, ret_net = 0.01)), file.path(ART, "bt_result.rds"))
 CFG  <- list(promote_min_grade = "B", promote_max_depth = 3)
 P2   <- list(base_id = "RP_T_promo2", parent = list(base_id = "RP_T_promo1", depth = 2L, best_port_t = 1.0))
 bestB <- list(grade = "B", port_t = 2.0, spec = SPEC, cell_code = "B1_3")
@@ -44,7 +55,7 @@ cat("=== writer ===\n")
 mk_ledger <- function(entries) list(schema_version = "reinforce_ledger_v2", layer = 1L, max_attempts = 25L,
   entries = entries, combination_review = list(papers_since_last_review = 0L, last_review_date = "", history = list()), last_updated = "")
 att <- list(n = 3L, cell_code = "B1_3", grade = "B",
-            essence = list(port_t = 2.0, cell_code = "B1_3", spec = SPEC), artifacts = "")
+            essence = list(port_t = 2.0, cell_code = "B1_3", spec = SPEC), artifacts = ART)
 E_parent <- list(base_id = "RP_T_promo2", status = "exhausted", base_grade = "C", max_attempts = 25L,
                  paper_key = "t", paper_id = "t", engine_path = "", base_artifacts = "",
                  parent = list(base_id = "RP_T_promo1", depth = 2L, best_port_t = 1.0),
@@ -64,8 +75,12 @@ if (identical(r, "error")) ok("W2 없는 entry 는 stop") else ng("W2 없는 ent
 cat("=== 샌드박스 e2e ===\n")
 sbx <- function(entries) {
   S <- file.path(tempdir(), paste0("rf_sbx_", Sys.getpid(), "_", as.integer(runif(1, 1, 1e6))))
-  for (d in c("02_Infrastructure/ops", "02_Infrastructure/reinforcement", "06_Registry", ".cache", "stage_artifacts/paper_recharge"))
+  for (d in c("02_Infrastructure/ops", "02_Infrastructure/reinforcement", "02_Infrastructure/worktask", "02_Infrastructure/contracts",
+              "06_Registry", ".cache", "stage_artifacts/paper_recharge"))
     dir.create(file.path(S, d), recursive = TRUE, showWarnings = FALSE)
+  # 승격 best 자격(규약·창)이 읽는 설정·계약 — 현행 규약(execution.exec_price)·창 규칙(diagnostics)·창 재도출 부품(essence_score.R)
+  file.copy(file.path(ROOT, "02_Infrastructure/worktask/constraint_defaults.json"), file.path(S, "02_Infrastructure/worktask"))
+  file.copy(file.path(ROOT, "02_Infrastructure/contracts/essence_score.R"), file.path(S, "02_Infrastructure/contracts"))
   file.copy(list.files(file.path(ROOT, "02_Infrastructure/ops"), pattern = "[.]R$", full.names = TRUE), file.path(S, "02_Infrastructure/ops"))
   file.copy(list.files(file.path(ROOT, "02_Infrastructure/reinforcement"), pattern = "[.]R$", full.names = TRUE), file.path(S, "02_Infrastructure/reinforcement"))
   file.copy(file.path(ROOT, "06_Registry/reinforce_program.json"), file.path(S, "06_Registry"))
@@ -107,7 +122,7 @@ if (!is.na(k3)) {
   o3 <- run_np(S2)
   if (n_promoted(o3) == 0L) ok("E2 재실행(자식 소진·이월) promoted 0회 — 실사고 재현 조건에서 침묵") else ng("E2 재실행에서 재승격", sprintf("promoted %d회", n_promoted(o3)))
 } else ng("E2 재실행 생략 — 자식 부재")
-unlink(c(S1, S2, W), recursive = TRUE)
+unlink(c(S1, S2, W, ART), recursive = TRUE)
 
 cat(sprintf("\n합계: 통과 %d · 실패 %d\n", PASS, FAIL))
 cat(sprintf('{"test":"rf_promote_child_exists","pass":%d,"fail":%d,"total":%d}\n', PASS, FAIL, PASS + FAIL))

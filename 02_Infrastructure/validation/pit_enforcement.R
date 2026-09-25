@@ -149,18 +149,104 @@ pit_verify_month_regime <- function(regime_dt) {
   invisible(TRUE)
 }
 
-#' PIT Verify FRED Lag — FRED 데이터에 1일 lag 적용 확인
-#'
-#' FRED 데이터(미국 시간)는 한국 시간 기준 1일 lag 필요.
-#' @param fred_dt data.table with Date column and FRED series
-#' @param reference_dates Date vector of month-ends to check
-#' @return TRUE if properly lagged
-#' @export
-pit_verify_fred_lag <- function(fred_dt, reference_dates) {
-  # FRED 데이터의 Date가 reference_date와 같으면 당일 사용 = 시차 위반
-  # FRED Date는 reference_date - 1 이하여야 함 (미국 장 마감 = 한국 다음날)
-  cat("[PIT] FRED lag verification: structural check only (lag must be applied in code)\n")
+# ── pit_verify_fred_lag 보조: 이 파일 위치(도우미 탐색용) · S0 가용시점 층 로드 ──────────────────
+.pite_self_path <- local(tryCatch({    # source() 한 이 파일의 경로(sys.frame ofile) — 전역에 임시 변수를 남기지 않는다
+  f <- NA_character_
+  for (i in rev(seq_len(sys.nframe()))) {
+    of <- tryCatch(sys.frame(i)$ofile, error = function(e) NULL)
+    if (!is.null(of) && nzchar(of)) { f <- of; break }
+  }
+  if (!is.na(f)) gsub("\\\\", "/", f) else NA_character_
+}, error = function(e) NA_character_))
+
+.pite_need_fred_avail <- function() {
+  if (exists("fred_join_violations", mode = "function")) return(invisible(TRUE))
+  cands <- c(if (!is.na(.pite_self_path)) file.path(dirname(dirname(.pite_self_path)), "data", "fred_availability.R"),
+             file.path(gsub("\\\\", "/", Sys.getenv("QM_ROOT", "")), "02_Infrastructure", "data", "fred_availability.R"))
+  hit <- cands[nzchar(cands) & file.exists(cands)]
+  if (!length(hit))
+    stop("[PIT] fred_availability.R(S0 가용시점 층)를 찾지 못함 — FRED lag 검증 불가(fail-closed). 후보: ",
+         paste(cands, collapse = " | "))
+  source(hit[1], local = globalenv())
   invisible(TRUE)
+}
+
+#' PIT Verify FRED Lag — 해외(FRED)·ECOS 결합이 가용일 규칙을 지키는지 **데이터로** 검증
+#'
+#' [2026-09-24 실구현 — PIT C11 판정서 ③·⑤-8, decision_register PIT-C11-CONVENTIONS ④]
+#'  종전 판은 인자를 보지도 않고 무조건 TRUE 를 돌려주는 빈 함수였고(호출부 0) — 이름만 방어선이었다.
+#'  이제 이미 결합된 (한국 날짜, 관측일) 쌍을 규칙 파일(06_Registry/fred_availability_rules.json)의 가용일과
+#'  대조한다. 가용일 계산은 S0 가용시점 층(02_Infrastructure/data/fred_availability.R::fred_join_violations)
+#'  한 곳뿐이다 — 이 함수에는 오프셋·규칙 수치가 없다.
+#'
+#' @param fred_dt 결합 산출(data.table/data.frame). 필수 열:
+#'   - 한국 날짜: kr_date_col (기본 자동 — "kr_date" 가 있으면 그것, 없으면 "Date")
+#'   - 관측일: obs_date_col (기본 "obs_date" — fred_asof_join 산출 열). **없으면 거부**: 관측일을 모르는 값은
+#'     같은 날짜 결합인지 판정할 수 없다(판정 불가 = 통과 아님).
+#'   - 계열: series_col (기본 자동 — "series_id" → "Series_ID") 또는 series_id 인자(한 계열일 때)
+#' @param reference_dates 검증할 한국 날짜(Date). NULL 이면 전 행. 주어졌는데 한 행도 안 맞으면 거부(빈 검증 = 통과 아님).
+#' @param series_id 계열 id/별칭(series_col 이 없을 때). 규칙 없는 계열·금지 계열(DEXKOUS) = 도우미가 거부(fail-closed).
+#' @param mode "decision_close"(판정서 ② 형태 a·c) | "exposure_return"(형태 b — 노출 × 종가→종가 수익)
+#' @param kr_calendar,rules 도우미로 그대로 넘긴다(검사·재현용 주입)
+#' @param stop_on_violation TRUE(기본) = 위반 시 stop (pit_verify_month_regime 과 같은 계약)
+#' @return 적합 = invisible(TRUE) (attr "n_checked"). 위반 = stop, 또는 stop_on_violation=FALSE 면
+#'   FALSE + attr(,"violations") (fred_join_violations 행: kr_date·decision_date·obs_date·avail_date·reason·series_id)
+#' @export
+pit_verify_fred_lag <- function(fred_dt, reference_dates = NULL, series_id = NULL,
+                                mode = c("decision_close", "exposure_return"),
+                                kr_date_col = NULL, obs_date_col = "obs_date", series_col = NULL,
+                                kr_calendar = NULL, rules = NULL, stop_on_violation = TRUE) {
+  mode <- match.arg(mode)
+  .pite_need_fred_avail()
+  dt <- as.data.table(fred_dt)
+  if (!nrow(dt)) stop("[PIT] pit_verify_fred_lag: 빈 입력 — 검증 0행은 통과가 아니다")
+  if (is.null(kr_date_col)) kr_date_col <- if ("kr_date" %in% names(dt)) "kr_date" else "Date"
+  if (!(kr_date_col %in% names(dt))) stop("[PIT] pit_verify_fred_lag: 한국 날짜 열 없음: ", kr_date_col)
+  if (!(obs_date_col %in% names(dt)))
+    stop(sprintf(paste0("[PIT] pit_verify_fred_lag: 관측일 열 '%s' 없음 — 관측일을 모르는 결합은 같은 날짜 결합인지 판정할 수 없다",
+                        "(fail-closed). fred_asof_join() 산출(obs_date 포함)이나 결합 전 관측일을 보존한 표를 넘겨라"), obs_date_col))
+  if (is.null(series_col)) series_col <- intersect(c("series_id", "Series_ID"), names(dt))[1]
+  if (is.na(series_col) || is.null(series_col)) {
+    if (is.null(series_id)) stop("[PIT] pit_verify_fred_lag: 계열을 모름 — series_col 열 또는 series_id 인자가 필요")
+    sids <- rep(series_id, nrow(dt))
+  } else {
+    sids <- as.character(dt[[series_col]])
+    if (!is.null(series_id)) sids[is.na(sids)] <- series_id
+  }
+  kd <- as.Date(dt[[kr_date_col]]); od <- as.Date(dt[[obs_date_col]])
+  keep <- rep(TRUE, length(kd))
+  if (!is.null(reference_dates)) {
+    keep <- kd %in% as.Date(reference_dates)
+    if (!any(keep)) stop("[PIT] pit_verify_fred_lag: reference_dates 와 맞는 행 0 — 검증 0행은 통과가 아니다")
+  }
+  if (any(keep & is.na(sids))) stop("[PIT] pit_verify_fred_lag: 계열 id 가 빈 행이 있다(fail-closed)")
+  viol <- list()
+  n_checked <- 0L
+  for (s in unique(sids[keep])) {
+    ix <- which(keep & sids == s)
+    v <- fred_join_violations(kd[ix], od[ix], s, mode = mode, kr_calendar = kr_calendar, rules = rules)
+    n_checked <- n_checked + sum(!is.na(od[ix]))
+    if (nrow(v)) { v[, row := ix[row]]; viol[[length(viol) + 1L]] <- v }
+  }
+  if (n_checked == 0L) stop("[PIT] pit_verify_fred_lag: 관측일이 있는 행 0 — 검증 0행은 통과가 아니다")
+  if (length(viol)) {
+    V <- rbindlist(viol, fill = TRUE)
+    cat(sprintf("[PIT VIOLATION] 해외 계열 가용일 전 사용 %d/%d 행 (mode=%s):\n", nrow(V), n_checked, mode))
+    print(utils::head(V[, .(row, series_id, kr_date, decision_date, obs_date, avail_date, reason)], 10))
+    if (isTRUE(stop_on_violation))
+      stop(sprintf("[PIT VIOLATION] C11 — %d 행이 가용일 전 관측을 씀(첫 행: %s 결정 %s ← 관측 %s, 가용 %s)",
+                   nrow(V), V$series_id[1], format(V$decision_date[1]), format(V$obs_date[1]),
+                   format(V$avail_date[1])))
+    out <- FALSE
+    attr(out, "violations") <- V
+    attr(out, "n_checked") <- n_checked
+    return(out)
+  }
+  cat(sprintf("[PIT] FRED lag verification (%s): CLEAN — %d 행, 계열 %s\n", mode, n_checked,
+              paste(unique(sids[keep]), collapse = ",")))
+  out <- TRUE
+  attr(out, "n_checked") <- n_checked
+  invisible(out)
 }
 
 #' PIT Self-Audit — judge_pit_enforcement.md 자기감사 3질문
@@ -349,4 +435,4 @@ validate_label_direction <- function(target_df,
   )
 }
 
-cat("[pit_enforcement] Loaded. Functions: pit_filter(), pit_zscore(), pit_zscore_vec(), pit_rolling(), pit_verify_month_regime(), pit_self_audit(), validate_label_direction() [v2 Cycle 51]\n")
+cat("[pit_enforcement] Loaded. Functions: pit_filter(), pit_zscore(), pit_zscore_vec(), pit_rolling(), pit_verify_month_regime(), pit_verify_fred_lag() [C11 실구현 2026-09-24], pit_self_audit(), validate_label_direction() [v2 Cycle 51]\n")

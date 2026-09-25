@@ -47,6 +47,20 @@ import io,json
 try: print(json.loads(io.open(r'$CFG','rb').read().decode('utf-8')).get('enabled'))
 except Exception: print('False')" 2>/dev/null)
 [ "$EN" = "True" ] || { jl halt_disabled; exit 0; }
+# ── ★리프레시 배리어 — 레인 진입 (도훈 결정 OPS-RUNNER-REFRESH-BARRIER · 2026-09-24) ─────────────────────
+#   이 레인의 RAWDATA 읽기는 검증기(rf_replication_verify.R → run_paper_replication → load_rawdata)다.
+#   잠금이 살아 있으면 요청·claim 을 **건드리지 않고**(pending 유지 · auto_retries 무소모) 물러난다.
+#   판정 정본 = refresh_barrier.sh · stale = 대기 안 함 + 로그 · 판정기 부재 = fail-closed · 잠금 없음 = 아무것도 안 한다.
+RB_SH="$(dirname "${BASH_SOURCE[0]:-$0}")/refresh_barrier.sh"; [ -f "$RB_SH" ] || RB_SH="$ROOT/02_Infrastructure/ops/refresh_barrier.sh"
+if [ -f "$RB_SH" ] && . "$RB_SH"; then
+  rb_status
+  case "$RB_STATE" in
+    held)  jl halt_refresh_lock "state=$RB_STATE" "lock=$RB_LOCK" "pid=$RB_PID" "reason=$RB_REASON" "path=$RB_PATH"; exit 0 ;;
+    stale) jl refresh_lock_stale "lock=$RB_LOCK" "pid=$RB_PID" "reason=$RB_REASON" "path=$RB_PATH" "note=보유자 없음 — 대기하지 않고 진행" ;;
+  esac
+else
+  jl halt_refresh_lock "state=error" "reason=barrier_helper_missing"; exit 0
+fi
 # ── ★강화가 도는 동안 새 논문을 돌리지 않는다 (도훈 지적 2026-09-04) ────────
 #   가드가 **한쪽에만** 있었다: reinforce_auto_next_paper.R 은 active entry 를 보고
 #   halt_active_exists 로 멈추는데, 이 레인은 그걸 안 봐서 대기 중인 요청을
@@ -283,6 +297,19 @@ io.open(r'$REQ','wb').write(json.dumps(d,ensure_ascii=False,indent=1).encode('ut
 
 # ── 측정 + 검증 호출 — 한 곳 (정상 경로와 아래 감사 미실행 재시도가 같은 호출을 쓴다) ──
 rp_verify(){
+  # ★리프레시 배리어 — 검증기(RAWDATA 첫 읽기) 직전 (2026-09-24). 에이전트가 도는 30분 사이 daily_refresh 가 잠금을 잡을 수 있다.
+  #   held 면 RB_VERIFY_WAIT_S(기본 600초 — 셀 대기와 같은 근거 · refresh_barrier.R 머리) 동안 기다리고, 그래도 held 면
+  #   **측정 없이** 요청을 pending + failure=refresh_lock_deferred 로 되돌린다(auto_retries 무소모 · 엔진 보존 →
+  #   다음 틱은 에이전트 없이 검증기만 재실행 — audit_not_run 과 같은 verify-only 경로). rc 75 = 미측정 연기.
+  if ! rb_wait "${RB_VERIFY_WAIT_S:-600}" 20; then
+    jl verify_deferred_refresh_lock "waited_s=${RB_WAITED:-0}" "state=${RB_STATE:-error}" "lock=${RB_LOCK:-}" "pid=${RB_PID:-}" "reason=${RB_REASON:-}" "note=측정 없이 pending 복원 — 다음 틱 verify-only 재시도(재시도 예산 무소모)"
+    "$PY" -c "
+import io,json,time
+d=json.loads(io.open(r'$REQ','rb').read().decode('utf-8'))
+d['status']='pending'; d['failure']='refresh_lock_deferred'; d['refresh_deferred_at']=time.strftime('%Y-%m-%dT%H:%M:%S%z')
+io.open(r'$REQ','wb').write(json.dumps(d,ensure_ascii=False,indent=1).encode('utf-8'))"
+    return 75
+  fi
   QM_ROOT="$ROOT" RP_WDIR="$WDIR" RP_URL="$P_URL" RP_TITLE="$P_TITLE" RP_KEY="$P_KEY" \
     QVEST_RP_JLOG="$JLOG" RP_IS_COMBO="${IS_COMBO:-0}" RP_COUNT_PAPER="${C_COUNT:-1}" \
     Rscript "$ROOT/02_Infrastructure/ops/rf_replication_verify.R" >> "$LOG" 2>&1
@@ -301,8 +328,13 @@ PREV_FAIL=$("$PY" -c "
 import io,json
 try: print((json.loads(io.open(r'$REQ','rb').read().decode('utf-8')).get('failure') or '').strip())
 except Exception: print('')" 2>/dev/null)
-if [ "$PREV_FAIL" = "audit_not_run" ] && [ -s "$WDIR/engine.R" ]; then
+if { [ "$PREV_FAIL" = "audit_not_run" ] || [ "$PREV_FAIL" = "refresh_lock_deferred" ]; } && [ -s "$WDIR/engine.R" ]; then
+  # ★refresh_lock_deferred(2026-09-24) — 검증기 직전 리프레시 배리어로 측정 없이 연기된 요청. 엔진은 멀쩡하다 → 검증기만.
+  if [ "$PREV_FAIL" = "refresh_lock_deferred" ]; then
+    jl verify_only_retry "paper=$P_KEY" "note=리프레시 배리어 연기분 재시도 — 에이전트 없이 검증기(측정+감사)만 재실행(엔진 보존)"
+  else
   jl verify_only_retry "paper=$P_KEY" "note=감사 미실행 재시도 — 에이전트 없이 검증기(측정+감사)만 재실행(엔진 보존)"
+  fi
   "$PY" -c "
 import io,json,time
 d=json.loads(io.open(r'$REQ','rb').read().decode('utf-8'))

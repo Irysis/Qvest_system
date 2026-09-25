@@ -287,9 +287,11 @@ adv_atts <- c(b1_five(best_art = art), list(
 write_ledger(list(entry("T_MAT", adv_atts, extra = list(carry = list(overlay = L2("arm_e", "kind_e"))))))
 res_adv <- b5_materials("T_MAT", SB, cfg, round = 1L)
 fa <- paste(res_adv$text, collapse = "\n")
+# (D-E-B5-MATERIALS 2026-09-25) (4b) 는 교차 entry 절 — 검사 상태·판정은 남고 수치는 <stat> 로 가린다(pit.md C1 D-E · 짝 = test_rf_b5_materials_redact.R)
 chk(grepl("## (4b)", fa, fixed = TRUE) && grepl("| B5_18 |", fa, fixed = TRUE) &&
-    grepl("fail obs 0.505 vs q 0.523 p 0.080", fa, fixed = TRUE) && grepl("pass const 0.432", fa, fixed = TRUE),
-    "E15 (4b) 반증 상세 — 칸·검사별 수치(T3 obs/q/p · T4 상수)가 재료에 실린다",
+    grepl("fail obs <stat> vs q <stat> p <stat>", fa, fixed = TRUE) && grepl("pass const <stat>", fa, fixed = TRUE) &&
+    !grepl("0.505", fa, fixed = TRUE) && !grepl("0.523", fa, fixed = TRUE) && !grepl("0.432", fa, fixed = TRUE),
+    "E15 (4b) 반증 상세 — 칸·검사별 상태(T3 fail · T4 pass)는 실리고 수치(obs/q/p · 상수)는 가린다",
     paste(res_adv$text[grepl("B5_18", res_adv$text)], collapse = " / "))
 chk(grepl("arm_a", fa, fixed = TRUE) && grepl("집계: 2칸 · pass 0 · fail 1 · not_candidate 1 · 실패 사인 T3 1건", fa, fixed = TRUE),
     "E16 스택(arm_id)·집계 줄 — 사인 빈도까지 센다",

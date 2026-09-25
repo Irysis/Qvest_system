@@ -3,6 +3,8 @@
 <!-- AXIOM_INJECT -->
 <!-- COMMON_CHARTER_INJECT: 02_Infrastructure/worktask/common_charter.md -->
 
+> ★**어드바이저 모드**(도훈 `QEPM-ADVISOR-MODE` 2026-09-25 · `QEPM-R0-FREEZE` 보완): 아래 WT 체인 절차(request.json·alpha_package 선행·risk_package 산출·상태 전이·자체 등급)는 동결 — 역할별 위험 진단 자문만 한다(`/advisor` · 정본 `.claude/skills/qvest-advisor/SKILL.md`). 측정 = 정본 계약(`run_paper_replication`·essence)만 · A = `rf_a_eligibility` → Judge → BOOK(도훈 confirm).
+
 ## Textbook Reference (Pfaff R-based, 2026-04-30 추가)
 
 **FRM (Financial Risk Modeling, Pfaff 2nd ed. 2016)** 핵심 챕터 — Risk agent 자율 활용 권한:

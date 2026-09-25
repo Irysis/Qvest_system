@@ -44,10 +44,14 @@ PYBIN=""; command -v sched_resolve_python >/dev/null 2>&1 && PYBIN=$(sched_resol
 [ -n "$PYBIN" ] || PYBIN="python3"
 SEEN_LEDGER="$BASE/.cache/scheduler_alerts/reported_failures.json"
 mkdir -p "$(dirname "$SEEN_LEDGER")" 2>/dev/null
-VERDICT=$("$PYBIN" - "$OUT" "$SEEN_LEDGER" <<'PY'
-import json, sys, io, datetime, os
+# ★v10.4 (2026-09-24) 세 번째 인자 = DailyRefresh 스케줄러 로그 — 자기보고 실패(완주 + [7] 발송 확인) 판독용.
+#   되돌리기: QVEST_TH_SELFREPORT_EXEMPT=0 (종전처럼 DR exit_1 도 신규 실패로 경보)
+DR_SELF_LOG="$BASE/.cache/scheduler_logs/daily_refresh.log"
+VERDICT=$("$PYBIN" - "$OUT" "$SEEN_LEDGER" "$DR_SELF_LOG" <<'PY'
+import json, sys, io, datetime, os, re
 d = json.load(io.open(sys.argv[1], encoding="utf-8-sig"))
 SEEN_PATH = sys.argv[2] if len(sys.argv) > 2 else ""
+SELF_LOG  = sys.argv[3] if len(sys.argv) > 3 else ""
 tasks = d.get("tasks") or []
 if isinstance(tasks, dict): tasks = [tasks]        # ConvertTo-Json 은 1건이면 객체로 낸다
 
@@ -85,8 +89,76 @@ def _ts(s):
     try: return datetime.datetime.strptime(s, "%Y-%m-%dT%H:%M:%S")
     except Exception: return None
 
+# ── (C) 자기보고 실패 면제 (v10.4 2026-09-24 · 도훈 "의미없는거 같으면 없애버려도 돼") ──────────────
+#   이 스크립트의 목적(머리 :4-9)은 **실행 자체가 없거나 OS 가 죽인** 경우다. 그런데 rc≠0 이면 전부 실패로 세서
+#   daily_refresh.sh 가 끝까지 돈 뒤 일부러 내는 exit 1(:DR_FAILED — 같은 실행의 [7] 이 "★부분실패 — <스텝>" 을
+#   이미 발송)을 몇 시간 뒤 원인 없이 "정지했습니다" 로 한 번 더 보냈다. 실측 09-11~24: task_health 텔레그램 7건 중
+#   5건이 Qvest_DailyRefresh(exit_1) · 그로 인한 조치 0. task_health 만 알려 준 진짜 결함은 09-18 exit_2(실행 중 편집 →
+#   구문 오류 중도 사망, Done 줄 없음) 1건 — 이 축은 그대로 남는다.
+#   ★면제 조건(전부 참이어야 — 하나라도 판독 실패면 면제하지 않는다 = 경보 쪽으로 넘어진다):
+#     ① Qvest_DailyRefresh ∧ rc==1
+#     ② 그 실행(시작 머리줄 시각이 last_run −60s~+900s)의 구간에 Done — ★실패 줄 1개 (= 완주)
+#     ③ 같은 구간에 "[7] tg_sent=TRUE reported=<목록>" (= [7] 발송이 ok 로 반환 · tg_send 반환값 기준)
+#     ④ reported 목록 == Done 줄의 실패 목록 ([7] 이후 스텝에서 난 실패는 [7] 이 못 알렸다 → 경보)
+#   되돌리기: QVEST_TH_SELFREPORT_EXEMPT=0.
+SELFREP_ON = os.environ.get("QVEST_TH_SELFREPORT_EXEMPT", "1") != "0"
+_DR_HDR, _DR_DONE, _DR_SENT = "=== Daily Refresh v2 @ ", "=== Daily Refresh v2 Done", "[7] tg_sent="
+
+def _dr_ts(s):
+    # bash `date` 기본형 'Thu Sep 24 00:03:02     2026' — 타임존 칸이 비어 공백이 겹친다(실측). 토큰 6개면 5번째(TZ) 제거.
+    toks = s.replace("=", " ").split()
+    if len(toks) == 6: toks = toks[:4] + toks[5:]
+    try: return datetime.datetime.strptime(" ".join(toks), "%a %b %d %H:%M:%S %Y")
+    except Exception: return None
+
+def _self_reported(name, rc, run_id):
+    if not SELFREP_ON or name != "Qvest_DailyRefresh" or rc != 1 or not SELF_LOG or not run_id:
+        return False
+    t0 = _ts(run_id)
+    if not t0: return False
+    try:
+        with io.open(SELF_LOG, "rb") as f:
+            f.seek(0, 2); f.seek(max(0, f.tell() - 8 * 1024 * 1024))
+            lines = f.read().decode("utf-8", "replace").splitlines()
+    except Exception:
+        return False
+    start = None
+    for i, ln in enumerate(lines):
+        if ln.startswith(_DR_HDR):
+            t = _dr_ts(ln[len(_DR_HDR):])
+            if t is not None and -60 <= (t - t0).total_seconds() <= 900:
+                start = i
+    if start is None: return False
+    seg = []
+    for ln in lines[start + 1:]:
+        if ln.startswith(_DR_HDR): break
+        seg.append(ln.rstrip("\r\n "))
+    done = [ln for ln in seg if ln.startswith(_DR_DONE)]
+    if len(done) != 1: return False
+    m = re.match(r"^=== Daily Refresh v2 Done — ★실패 \d+스텝: (.*) @ .+ ===$", done[0])
+    if not m: return False
+    sent = [ln for ln in seg if ln.startswith(_DR_SENT)]
+    if not sent: return False
+    m2 = re.match(r"^\[7\] tg_sent=(\S+) reported=(.*)$", sent[-1])
+    return bool(m2 and m2.group(1) == "TRUE" and m2.group(2).strip() == m.group(1).strip())
+
+# ── (D) 기보고 원장 확정 조건 (v10.4 2026-09-24 · P3) ─────────────────────────────────────────────
+#   구판은 발송 여부와 무관하게 seen 을 갱신했다. 실측 09-12 20:00: DR 신규 실패가 났는데 그날 마커(AxiomActivate 만
+#   적힘)가 이미 있어 sched_alert_emit 이 1일 1회 스로틀로 발송을 건너뛰었고, 그런데도 "보고함"으로 기록돼 그 실패는
+#   영영 경보되지 않았다. 수동 실행(QVEST_UNATTENDED 미선언 — 발송 안 함)도 같은 방식으로 원장을 소모했다.
+#   ∴ 확정 = 무인 선언 ∧ QVEST_NO_ALERT≠1 ∧ (오늘 task_health 마커 없음 = 이번 실행이 만든다 ∨ 마커 detail 에 그 작업명).
+_TH_MARKER = os.path.join(os.path.dirname(SEEN_PATH), "task_health_scheduled_task_unhealthy_%s.alert"
+                          % datetime.datetime.now().strftime("%Y%m%d")) if SEEN_PATH else ""
+def _will_report(name):
+    if os.environ.get("QVEST_UNATTENDED", "0") != "1" or os.environ.get("QVEST_NO_ALERT", "0") == "1":
+        return False
+    if not _TH_MARKER or not os.path.exists(_TH_MARKER):
+        return True
+    try: return name in io.open(_TH_MARKER, encoding="utf-8", errors="replace").read()
+    except Exception: return False
+
 now = datetime.datetime.now()
-bad, stale, inflight, known = [], [], [], []
+bad, stale, inflight, known, selfrep, newly = [], [], [], [], [], []
 seen_next = dict(seen)
 for t in tasks:
     if not t.get("enabled", True):
@@ -98,6 +170,8 @@ for t in tasks:
 
     if state == "Running" or lbl == "still_running":
         inflight.append("%s(%s)" % (name, lbl))          # (A) 판정 보류 — 실패 아님
+    elif rc != 0 and lbl != "never_run" and _self_reported(name, rc, t.get("last_run") or ""):
+        selfrep.append("%s(%s·%s)" % (name, lbl, (t.get("last_run") or "")[5:16]))   # (C) 작업 자신이 발송 — 경보 제외
     elif rc != 0 and lbl != "never_run":
         run_id = t.get("last_run") or ""
         if seen.get(name) == run_id and run_id:
@@ -105,6 +179,7 @@ for t in tasks:
         else:
             bad.append("%s(%s)" % (name, lbl))
             seen_next[name] = run_id
+            newly.append(name)
     elif rc == 0 and name in seen_next:
         seen_next.pop(name, None)                        # 성공하면 기억을 비운다(다음 실패는 신규)
 
@@ -207,7 +282,8 @@ d["cotermination"] = cotermination
 # "조용해진 것"과 "고쳐진 것"을 구분할 수 없다(침묵 실패 계통 그 자체).
 d["verdict"] = {
     "failed_new": bad, "failed_known": known, "in_flight": inflight, "stale": stale,
-    "note": "in_flight=state==Running(완료 판정 부재, 실패 아님) / failed_known=이미 보고한 (task,last_run) 재출현",
+    "self_reported": selfrep,
+    "note": "in_flight=state==Running(완료 판정 부재, 실패 아님) / failed_known=이미 보고한 (task,last_run) 재출현 / self_reported=작업이 완주 후 자기 텔레그램으로 이미 알린 exit_1(DR — 경보 제외)",
 }
 try:
     io.open(sys.argv[1], "w", encoding="utf-8").write(json.dumps(d, ensure_ascii=False, indent=2))
@@ -215,6 +291,11 @@ except Exception:
     pass   # 되쓰기 실패가 판정 자체를 막지는 않는다(원장은 보조 표면)
 
 # 기보고 원장 갱신 — 실패를 **경보한 뒤에만** 기록한다(경보 없이 기록하면 그 실패는 영영 안 보인다)
+#   ★v10.4: 그 주석이 약속한 조건을 실제로 건다(D) — 이번 실행이 발송하지 않을 신규분은 확정하지 않는다.
+for _n in newly:
+    if not _will_report(_n):
+        if _n in seen: seen_next[_n] = seen[_n]
+        else: seen_next.pop(_n, None)
 if SEEN_PATH:
     try:
         io.open(SEEN_PATH, "w", encoding="utf-8").write(json.dumps(seen_next, ensure_ascii=False, indent=2))
@@ -222,7 +303,7 @@ if SEEN_PATH:
         pass
 
 print(json.dumps({"n": len(tasks), "bad": bad, "stale": stale, "shutdown": shutdown,
-                  "inflight": inflight, "known": known}, ensure_ascii=False))
+                  "inflight": inflight, "known": known, "selfrep": selfrep}, ensure_ascii=False))
 PY
 )
 if [ -z "${VERDICT:-}" ]; then
@@ -238,6 +319,7 @@ STALE=$(printf '%s' "$VERDICT" | "$PYBIN" -c 'import json,sys;print(" ".join(jso
 SHUTDOWN=$(printf '%s' "$VERDICT" | "$PYBIN" -c 'import json,sys;print(json.load(sys.stdin).get("shutdown",""))')
 INFLT=$(printf '%s' "$VERDICT"  | "$PYBIN" -c 'import json,sys;print(" ".join(json.load(sys.stdin).get("inflight",[])))')
 KNOWN=$(printf '%s' "$VERDICT"  | "$PYBIN" -c 'import json,sys;print(" ".join(json.load(sys.stdin).get("known",[])))')
+SELFREP=$(printf '%s' "$VERDICT" | "$PYBIN" -c 'import json,sys;print(" ".join(json.load(sys.stdin).get("selfrep",[])))')
 if command -v sched_assert_count >/dev/null 2>&1 && ! sched_assert_count "$N"; then
   log "★ 작업 수가 비숫자('$N') — 계측 사망."; exit 1
 fi
@@ -254,6 +336,7 @@ log "예약작업 $N개 · 신규실패 ${nbad} · 정체 ${nst} · 진행중 ${
 # 아래 2종은 경보 대상이 아니지만 **로그에는 남긴다** — 조용해진 것과 고쳐진 것을 구분하기 위함
 [ -n "$INFLT" ] && log "  · 진행중(판정 보류): $INFLT"
 [ -n "$KNOWN" ] && log "  · 기보고 실패(재시도 대기): $KNOWN"
+[ -n "$SELFREP" ] && log "  · 자기보고 실패(작업 자체 발송 — 경보 제외): $SELFREP"
 
 # 2b) 해소 (v10 2026-09-02) — 전건 정상(신규·기지 실패 0 · 정체 0 · 정지 0)이면 task_health 미해소 마커를 _resolved/ 로.
 #   구판은 이 컴포넌트 마커를 아무도 옮기지 않아 07-27 이후 21개가 digest 에 영구 '열림' 이었다(open=47 의 절반).

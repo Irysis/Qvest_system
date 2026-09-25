@@ -203,22 +203,54 @@ wf("[정합게이트] HML 2024+ 음: %s | SMB 2024+ 음: %s | SMB 2015 스파이
 if (!all(g1, g2, g3, na.rm = TRUE)) wf("[!!] 부호/구성 재점검 필요 — 기존 실측과 불일치")
 
 ## ── 5) 차트 (rolling 12m 평균 — 복리 NAV 없음) ─────────────────────────────
+## 2026-09-24 도훈 지시("26년 8월 기준으로 고정된 부분 수정"): 선 끝에 **진행월 점 1개** = 완결 11개월 + 진행월 MTD
+##   12개월 평균(style_brief_lib.R::sw_window12 — 브리핑과 같은 함수·같은 MTD 판정). 선은 완결월 rolling 그대로.
+##   ★FF(월간 파일)는 위에서 이미 기록됐고 여기선 읽기만 — 진행월은 이 표시층에서만 합친다(완결월 발행 규약 불변).
+source("02_Infrastructure/reports/style_brief_lib.R")
 FFc <- copy(FF)
 for (cc in c("MKT", "SMB", "HML", "RMW", "CMA")) FFc[, (paste0("r12_", cc)) := frollmean(get(cc), 12)]
 FFc[, d := as.Date(paste0(ym, "-01"))]
+W5 <- tryCatch(sw_window12(FF, c("MKT", "SMB", "HML", "RMW", "CMA"), sw_read_json(file.path(OUT_DIR, "ff5_kr_mtd.json"))),
+               error = function(e) { wf("  [warn] 진행월 창 계산 실패: %s", conditionMessage(e)); NULL })
+PT <- if (!is.null(W5) && identical(W5$mode, "mtd"))
+  list(d = as.Date(paste0(W5$state$mtd_ym, "-01")), v = W5$values * 100,
+       lab = sprintf("진행월 MTD(~%s)", W5$mmdd)) else NULL
+pt_note <- if (!is.null(PT)) {
+  sprintf("진행월 %s MTD(~%s, %s거래일) = 완결 11개월 + MTD 의 12개월 평균", W5$state$mtd_ym, W5$mmdd,
+          if (is.na(W5$state$n_days)) "?" else W5$state$n_days)
+} else if (!is.null(W5)) sprintf("진행월 점 없음 — %s", sw_reason_ko(W5$state)) else ""
+xl <- range(c(FFc$d, if (!is.null(PT)) PT$d), na.rm = TRUE)
+lastv <- function(cc) { v <- FFc[[paste0("r12_", cc)]]; i <- max(which(!is.na(v))); list(d = FFc$d[i], v = v[i] * 100) }
 png(file.path(OUT_DIR, "charts", "ff5_rolling12.png"), width = 1250, height = 700)
 par(mfrow = c(2, 1), mar = c(3, 5, 2.8, 9), cex.main = 1.45, cex.axis = 1.15, cex.lab = 1.2)  # 우측 여백 — 범례 플롯 밖
-plot(FFc$d, FFc$r12_MKT * 100, type = "l", lwd = 2.4, col = "black", main = "KR FF5 rolling 12m mean — MKT(excess)",
+yl1 <- range(c(FFc$r12_MKT * 100, if (!is.null(PT)) PT$v[["MKT"]]), na.rm = TRUE)
+plot(FFc$d, FFc$r12_MKT * 100, type = "l", lwd = 2.4, col = "black", xlim = xl, ylim = yl1,
+     main = sprintf("KR FF5 rolling 12m mean — MKT(excess) · 완결월 %s%s", max(FF$ym),
+                    if (!is.null(PT)) sprintf(" + 진행월 MTD ~%s", W5$mmdd) else ""),
      xlab = "", ylab = "월평균 %"); abline(h = 0, lty = 3)
+if (!is.null(PT)) { lv <- lastv("MKT")
+  segments(lv$d, lv$v, PT$d, PT$v[["MKT"]], lty = 2, lwd = 1.6, col = "black")
+  points(PT$d, PT$v[["MKT"]], pch = 21, bg = "gold", col = "black", cex = 2.2, lwd = 1.6) }
+if (nzchar(pt_note)) legend("topleft", legend = pt_note, pch = if (!is.null(PT)) 21 else NA, pt.bg = "gold",
+                            pt.cex = 1.8, cex = 1.05, text.col = "gray20", bty = "n", inset = c(0.005, 0.01))
 cols <- c(SMB = "firebrick", HML = "steelblue", RMW = "darkgreen", CMA = "purple")
-plot(FFc$d, FFc$r12_SMB * 100, type = "l", lwd = 2.4, col = cols["SMB"], ylim = range(FFc[, .(r12_SMB, r12_HML, r12_RMW, r12_CMA)], na.rm = TRUE) * 100,
+yl2 <- range(c(unlist(FFc[, .(r12_SMB, r12_HML, r12_RMW, r12_CMA)]) * 100,
+               if (!is.null(PT)) PT$v[c("SMB", "HML", "RMW", "CMA")]), na.rm = TRUE)
+plot(FFc$d, FFc$r12_SMB * 100, type = "l", lwd = 2.4, col = cols["SMB"], xlim = xl, ylim = yl2,
      main = "SMB / HML / RMW / CMA rolling 12m mean", xlab = "", ylab = "월평균 %")
 for (cc in c("HML", "RMW", "CMA")) lines(FFc$d, FFc[[paste0("r12_", cc)]] * 100, lwd = 2.4, col = cols[cc])
 abline(h = 0, lty = 3)
-legend(x = par("usr")[2] + diff(par("usr")[1:2]) * 0.01, y = par("usr")[4], legend = names(cols), col = cols,
-       lwd = 2.6, cex = 1.2, xpd = TRUE, bty = "n")
+if (!is.null(PT)) for (cc in names(cols)) { lv <- lastv(cc)
+  segments(lv$d, lv$v, PT$d, PT$v[[cc]], lty = 2, lwd = 1.6, col = cols[cc])
+  points(PT$d, PT$v[[cc]], pch = 21, bg = cols[cc], col = "black", cex = 2.0, lwd = 1.4) }
+lg_n <- if (!is.null(PT)) 3L else 0L                         # 진행월 범례 3줄(공백·기호·날짜)
+legend(x = par("usr")[2] + diff(par("usr")[1:2]) * 0.01, y = par("usr")[4],
+       legend = c(names(cols), if (lg_n) c("", "진행월", sprintf("MTD~%s", W5$mmdd))),
+       col = c(cols, rep("black", lg_n)), lty = c(rep(1, 4), rep(0, lg_n)), lwd = 2.6,
+       pch = c(rep(NA, 4), if (lg_n) c(NA, 21, NA)), pt.bg = c(rep(NA, 4), if (lg_n) c(NA, "gray70", NA)),
+       pt.cex = 1.8, cex = 1.2, xpd = TRUE, bty = "n")
 dev.off()
-wf("chart written: ff5_rolling12.png")
+wf("chart written: ff5_rolling12.png (진행월 점: %s)", if (!is.null(PT)) sprintf("%s ~%s", W5$state$mtd_ym, W5$mmdd) else pt_note)
 
 ## 최근 12개월 상세
 rec <- FF[(.N - 11):.N]

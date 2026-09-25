@@ -1,0 +1,144 @@
+{
+ "schema": "pit_jm_c1_consumer_notices/v1",
+ "code": "C1",
+ "note": "PIT C1 — regime_jump_model(SJM) 구판의 블록 미래참조(refit 블록 (prev_end,end_i] 상태를 end_i 까지 적합한 창의 Viterbi 역추적 경로·중심점·표준화로 매김 · 최대 125거래일) 소비자 표식. 표식 메커니즘은 06_Registry/pit_c11_consumer_notices.json(C11 ⑦ 표식만)과 같다: 레지스트리 항목 + 폴더의 PIT_C1_JM_NOTICE.md(원 코드·산출 무변경). 여기 적힌 산출·수치는 jm_causal 판 재빌드 뒤 재측정 전까지 결론 근거로 인용하지 않는다. 등급·원장·BOOK 은 이 파일이 바꾸지 않는다(module_catalog·overlay_catalog·book_registry 에 JM 소비 0 — 2026-09-24 grep 실측).",
+ "source_asset": ".cache/regime_jump_daily.parquet (producer 02_Infrastructure/regime/regime_jump_model.R · daily_refresh.sh SJM 블록)",
+ "fixed_version": "jm_causal:v1 — 모수(Θ·bear·μ/σ) = refit 일 r_k 이하 창 적합 → 블록 (r_k,r_k+1] 적용 · 상태 = 창 [t−l+1,t] 고정 모수 DP 전방 재귀 종점(역추적 없음) · 원문 Shu-Yu-Mulvey 2024 arXiv:2402.05272v3 §3.4.1–3.4.2 (https://arxiv.org/html/2402.05272v3)",
+ "reader": "02_Infrastructure/regime/regime_jump_model.R::jm_causal_status(panel) — 'causal' 외(legacy_noncausal·stale_version·malformed·violated) = C1 미해소 판",
+ "test": "08_Tests/regime/test_jm_causal.R (미래 섭동 양성·구판 참조 음성·접두 불변·C11 입력 관문·돌연변이 6종 red)",
+ "decision_ref": "06_Registry/decision_register.json#PIT-C11-JM-C1",
+ "judgment": "04_Research/01_reports/pit_c11_20260924/PIT_C11_verdict_20260924.md (C11 1단계 S3 jm_lookahead_probe: 2020-03~09 표본 8시점 중 2 상태 뒤집힘)",
+ "evidence_20260924": {
+  "same_input_rebuild": "스크래치 재빌드(운영 캐시 무접촉) — 신판 8,529행(1992-02-07~2026-09-23) vs 구판 9,033행(1990-01-09~): 상태 일치 86.3% · 2005~ 87.6% · 최근 1년 65.8% · Bear_Prob Pearson 0.939 / Spearman 0.914 · bear 비율 38.7% vs 41.4% · 전환 1.27 vs 0.89 회/년",
+  "future_perturbation": "t*=2020-05-15 이후 KOSPI 종가·VIX_z 교란 — 신판 t* 이하 6,969행 identical · 구판 t* 이하 40행 변화(블록 시작 2020-03-17부터 · Bear_Prob 최대 |Δ| 0.19)",
+  "crisis_bear_fraction": "GFC 100/100 · COVID(2020-02-20~04-30) 71.4/91.8 · 2022 93.1/100 (신판/구판)"
+ },
+ "created_by": "C11 2단계 JM 스테이징 워크플로(Q 오케스트레이션 · 도훈 결정 PIT-C11-JM-C1 '소비자 4곳 과거 결과 C1 표식')",
+ "staged_at": "2026-09-24T19:00:00+0900",
+ "deployed_at": "2026-09-25T11:17:06+0900",
+ "action_per_entry": "표식만 — PIT_C1_JM_NOTICE.md(원 코드·산출 무변경). 재측정 = 운영 regime_jump_daily 가 jm_causal:v1 로 재빌드된 뒤 소비자 재실행(jm_causal_status 확인)",
+ "entries": [
+  {
+   "id": "ramp_regime_bakeoff",
+   "kind": "ramp",
+   "in_decision_scope": true,
+   "code": [
+    "02_Infrastructure/ramp/run_ramp_regime_bakeoff.R"
+   ],
+   "reads": "Bear_Prob_lag → 월간 z (Jump 팔)",
+   "outputs": [
+    ".cache/_ramp_bakeoff.txt",
+    ".cache/_ramp_bakeoff.rds"
+   ],
+   "outputs_note": "2026-09-24 현재 두 산출 모두 부재(재생성 시 jm_causal 판 필요)",
+   "same_dir_consumers": [
+    "02_Infrastructure/ramp/run_dfa_fm_exposure_r8.R",
+    "02_Infrastructure/ramp/run_dfa_exposure_r9.R",
+    "02_Infrastructure/ramp/run_dfa_crisis_alignment_audit.R",
+    "02_Infrastructure/ramp/run_ramp_shumulvey_v5_daily.R",
+    "02_Infrastructure/ramp/run_ramp_shumulvey_v6_overlay.R",
+    "outputs/ramp/smv_v6_prereg_20260821.json",
+    "outputs/ramp/smv_v7_prereg_20260821.json"
+   ],
+   "also_flagged": "06_Registry/pit_c11_consumer_notices.json#ramp (C11 — 독립 표식)",
+   "notice_file": "02_Infrastructure/ramp/PIT_C1_JM_NOTICE.md"
+  },
+  {
+   "id": "axiom_overlay_selfdev",
+   "kind": "overlay_research",
+   "in_decision_scope": true,
+   "code": [
+    "02_Infrastructure/axiom/run_overlay_selfdev_r2.R",
+    "stage_artifacts/pg2_overlay_gate_composition_20260705/bull_conviction.R",
+    "stage_artifacts/pg2_overlay_gate_composition_20260705/cycleR1_riskoverlay.R",
+    "stage_artifacts/pg2_overlay_gate_composition_20260705/cycleR2_bearprob_verify.R",
+    "stage_artifacts/pg2_overlay_gate_composition_20260705/cycleR3_multilayer.R",
+    "stage_artifacts/pg2_overlay_gate_composition_20260705/cycleR4_forge_confirm.R",
+    "stage_artifacts/pg2_overlay_gate_composition_20260705/defensive_strict.R",
+    "stage_artifacts/pg2_overlay_gate_composition_20260705/explain_bearprob.R",
+    "stage_artifacts/pg2_overlay_gate_composition_20260705/pit_audit_bearprob.R"
+   ],
+   "reads": "pinned_cache/regime_jump_daily.parquet(2026-07-05 고정 사본) Bear_Prob_lag·Bear_Prob",
+   "outputs": [
+    "stage_artifacts/pg2_overlay_gate_composition_20260705/overlay_selfdev_round2_results.csv",
+    "stage_artifacts/pg2_overlay_gate_composition_20260705/bull_conviction_results.csv",
+    "stage_artifacts/pg2_overlay_gate_composition_20260705/cycleR*_results.csv",
+    "stage_artifacts/pg2_overlay_gate_composition_20260705/defensive_strict_results.csv",
+    "stage_artifacts/pg2_overlay_gate_composition_20260705/pit_audit_bearprob_results.csv"
+   ],
+   "outputs_note": "C5 strict-PIT·lag1 통과는 날짜 라벨만 통제 — 라벨 d 값 자체의 미래 정보는 못 막는다. 고정 사본 pinned_cache/regime_jump_daily.parquet 는 2026-09-24 현재 폴더에 부재. selfdev 가 발행한 L-code 는 원장 소관(표식 밖).",
+   "notice_file": "stage_artifacts/pg2_overlay_gate_composition_20260705/PIT_C1_JM_NOTICE.md"
+  },
+  {
+   "id": "fr_track1",
+   "kind": "factor_rotation",
+   "in_decision_scope": true,
+   "code": [
+    "04_Research/factor_rotation/regime_jm_validation.R",
+    "04_Research/factor_rotation/regime_jm_ensemble_ab.R",
+    "04_Research/factor_rotation/sjm_ep_ablation.R",
+    "04_Research/factor_rotation/sjm_ep_seed_check.R"
+   ],
+   "reads": "JM_State_lag·Bear_Prob_lag (운영 캐시)",
+   "outputs": [
+    "04_Research/factor_rotation/output/regime_jm_validation.json",
+    "04_Research/factor_rotation/output/regime_jm_ensemble_ab.json",
+    "04_Research/factor_rotation/output/sjm_ep_ablation.json",
+    "04_Research/factor_rotation/output/sjm_ep_seed_check.json"
+   ],
+   "cited_in": [
+    "02_Infrastructure/regime/regime_jump_model.R (구 헤더 검증 수치 — jm_causal 판에서 무효 표기)",
+    ".claude/skills/strategy-rotation/SKILL.md (SJM PoC churn·위기 적중)",
+    "04_Research/factor_rotation/regime_model_literature_review.md"
+   ],
+   "hazard": "regime_jm_validation.R DO_SWEEP 경로가 compute_jm_daily_signal(write 기본 TRUE)로 운영 캐시를 λ별 덮어씀(마지막 λ=200) — 재실행 시 write=FALSE",
+   "notice_file": "04_Research/factor_rotation/output/PIT_C1_JM_NOTICE.md"
+  },
+  {
+   "id": "forecaster_v4",
+   "kind": "regime_forecaster",
+   "in_decision_scope": true,
+   "code": [
+    "02_Infrastructure/regime/regime_forecaster_v4.R"
+   ],
+   "reads": "Bear_Prob_lag·JM_State_lag 월말 roll(SJM_Bear·SJM_State)",
+   "outputs": [
+    "04_Research/factor_rotation/output/regime_forecast_v4.json"
+   ],
+   "notice_file": "04_Research/factor_rotation/output/PIT_C1_JM_NOTICE.md"
+  }
+ ],
+ "additional_found": {
+  "note": "결정 4곳 밖에서 2026-09-24 git grep 으로 추가 확인된 구판 JM 소비자 — 표식 파일 미생성(도훈 확인 대상). 같은 결함을 상속한다.",
+  "consumers": [
+   {
+    "id": "fr_valearn_overlay",
+    "code": [
+     "04_Research/factor_rotation/run_valearn_overlay.R"
+    ],
+    "reads": "JM_State_lag(bear cross-check·SJM bear 오버레이)",
+    "wt": "qepm/mailbox/worktask/FR-valearn-overlay"
+   },
+   {
+    "id": "pg2_hunt",
+    "code": [
+     "stage_artifacts/pg2_hunt/m1_label_ranking.R",
+     "stage_artifacts/pg2_hunt/m7_axis_properties.R",
+     "stage_artifacts/pg2_hunt/x5_transplant.R",
+     "stage_artifacts/pg2_hunt/x7_inversion.R",
+     "stage_artifacts/pg2_hunt/x9_circularity.R"
+    ],
+    "reads": "JM_State(라벨 후보)"
+   },
+   {
+    "id": "wt_d20260813_002_f1",
+    "code": [
+     "stage_artifacts/WT_D20260813_002/f1_mechanism.R"
+    ],
+    "reads": "Bear_Prob",
+    "wt": "qepm/mailbox/worktask/WT-D20260813_002"
+   }
+  ],
+  "knowledge_records": "06_Registry/hypothesis_index.json · 06_Registry/distilled_knowledge.json(SJM 언급 4건) — 구판 수치 인용 여부 미확인(원장·기억 소관 · 이 파일은 바꾸지 않는다)"
+ }
+}

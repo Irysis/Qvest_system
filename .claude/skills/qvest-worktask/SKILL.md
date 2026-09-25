@@ -1,9 +1,11 @@
 ---
 name: qvest-worktask
-description: QEPM WorkTask lifecycle 절차 (v10) — alpha→risk→optimizer→forge + 등급 평가까지. Judge 는 Grade A 한정 PIT 전담, governor 폐지(BOOK 승계). wt_type 5종(reinforcement=WT-R 포함).
+description: "[동결 — QEPM-R0-FREEZE 2026-09-25 · 해제 = decision_register 재상정] QEPM WorkTask lifecycle 절차 (v10) — alpha→risk→optimizer→forge + 등급 평가까지. Judge 는 Grade A 한정 PIT 전담, governor 폐지(BOOK 승계). wt_type 5종(reinforcement=WT-R 포함)."
 ---
 
 # Qvest WorkTask Skill
+
+> ★**동결(사료) — 도훈 결정 `QEPM-R0-FREEZE`(2026-09-25)**: WT 체인 신규 착수·promote·JUDGE_* 전이 금지(`state_machine.R` 동결 가드 · dossier 워크플로 즉시 종료). 강화 = `Skill(reinforce)`(셀 엔진 + `run_paper_replication`) · Judge 트리거 = `.claude/agents/judge.md` §스폰 조건 · 살아 있는 부품(weight_method_registry·backtest_harness·contracts·judge·book-tracker·BOOK writer)은 유지 · 에이전트 자문 용도 = 결정 `QEPM-ADVISOR-MODE`(측정은 정본 계약만). 해제 = `06_Registry/decision_register.json` 재상정.
 
 **Active SOT**: `CLAUDE.md`(v10 헌법) + `.claude/rules/lean-loop.md` + 본 문서 (구 `qvest_v8_1_sot.md`·`qvest_modes_sot.md` 2종 = 사료)
 
@@ -21,6 +23,7 @@ SPEC_APPROVED
 ```
 
 임의 phase jump는 waiver 없이 불가 (state machine enforced — `judge_conditional_on_grade_A`).
+★정정(감사 Q01 · 2026-09-25): `judge_conditional_on_grade_A` 를 읽는 코드는 0 — A 미달 거부는 실재하지 않았다. 동결 중 JUDGE_* 전이는 동결 가드가 막는다.
 ★v10 (2026-08-29): GOVERNOR_* phases 는 legacy WT 호환으로만 존치 — 신규 WT 진입 금지.
 QEPM = alpha→risk→optimizer→forge + 등급 평가까지. Judge = PIT 전담(A등급 후에만).
 JUDGE_PASSED 후 BOOK 등록은 원장 밖 수동(`register_book_entry` + 도훈 confirm).
@@ -156,7 +159,7 @@ forge 산출 bt_result → `essence_score` → `authoritative_remeasure.json::es
 - **grade < A** → FORGE_DONE → COMPLETED. 강화 대상(원장 `rf_record_result` 기록 → 다음 시도).
 - **grade A** → Step 6.
 
-### Step 6: judge — PIT 전담 (★v10, Grade A 한정)
+### Step 6: judge — PIT 전담 (★v10, Grade A 한정) — ★동결: WT 경로 스폰 금지(QEPM-R0-FREEZE)
 
 ```
 Agent(subagent_type="judge", prompt="WT{id} PIT 검증 — judge_request.json 참조")

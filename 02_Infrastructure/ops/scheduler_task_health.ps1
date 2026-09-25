@@ -82,7 +82,7 @@ foreach ($t in (Get-ScheduledTask -ErrorAction SilentlyContinue | Where-Object {
     enabled         = [bool]$t.Settings.Enabled
     triggers        = ($trig -join ',')
     trigger_kinds   = ($tkinds -join ',')
-    # 시각 기반 트리거가 하나라도 있으면 NextRunTime 이 반드시 있어야 한다.
+    # Any time-based trigger means NextRunTime must exist.
     time_scheduled  = [bool](@($tkinds | Where-Object { $_ -in @('Time','Daily','Weekly','Monthly','MonthlyDOW') }).Count)
     # 2026-08-02: recorded so a co-termination verdict can RULE OUT hypotheses from the
     # record instead of requiring a live query. Interactive = session-scoped lifetime

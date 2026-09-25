@@ -8,7 +8,9 @@
 # 수집 시리즈:
 #   금리:   DGS10 (US 10Y), DGS2 (US 2Y), FEDFUNDS, T10Y2Y (Term Spread)
 #   변동성: VIXCLS (VIX)
-#   환율:   DEXKOUS (KRW/USD)
+#   환율:   DEXKOUS (KRW/USD) — ★수집만(원본 보존·타 소비자 호환). PIT 결합 사용 금지:
+#           decision_register PIT-C11-CONVENTIONS ① → 원/달러는 ECOS 731Y001(.cache/ecos_krw_usd.parquet)
+#           을 쓴다. fred_availability 규칙에서 DEXKOUS·KRW_USD 는 status=prohibited(결합 거부).
 #   경기:   UNRATE (실업률), CPIAUCSL (CPI), INDPRO (산업생산)
 #   유동성: M2SL (M2 통화량), WALCL (Fed Balance Sheet)
 #   신용:   BAMLH0A0HYM2 (HY Spread), T10YIE (Breakeven Inflation)
@@ -21,6 +23,14 @@
 #   regime <- fred_compute_regime()     # 레짐 시그널 계산
 #
 # API 제한: 분당 120건 (API key당)
+#
+# ★PIT C11 수리 (2026-09-24 · 04_Research/01_reports/pit_c11_20260924/PIT_C11_verdict_20260924.md V-14·1-3):
+#   fred_compute_regime() 의 월 행 = 그 달 마지막 한국 거래일 15:30 KST 까지 **공표된** 관측만
+#   (fred_availability.R::fred_asof_join · 규칙 06_Registry/fred_availability_rules.json — 이 파일에
+#   오프셋 수치 없음). 구판은 월내 마지막 관측(같은 날짜 미국 종가·미공표 주간값·같은 달 CPI)을 실었다.
+#   Asof_Date 열 = 그 행의 결정일. CPI_YoY = 날짜 기준 12개월 변화(CONVENTIONS ③).
+#   merge_regime_to_signals() 는 Asof_Date ≤ 신호일로 결합한다(구판: 월말 라벨 roll, lag 없음).
+#   값은 최신 빈티지(ALFRED 미수집 — 안 C): 개정 계열은 C1·C11 미해소 라벨.
 #==============================================================================
 
 if (!exists("PROJECT_ROOT")) {
@@ -81,8 +91,11 @@ FRED_SERIES <- list(
        desc = "S&P 500 Index (canary momentum, ~10y FRED license window)"),
 
   # 환율 (Exchange Rates)
+  # ★PIT C11: 수집은 유지(원본 보존 · AE 등 미이관 소비자 호환)하되 결합 사용 금지 —
+  #   decision_register PIT-C11-CONVENTIONS ① → ECOS 731Y001(ECOS_KRW_USD). 아래 pit 필드는 표식이다.
   list(id = "DEXKOUS",   name = "KRW_USD",            freq = "d",
-       desc = "Korean Won / US Dollar"),
+       desc = "Korean Won / US Dollar",
+       pit = "prohibited", replacement = "ECOS_KRW_USD"),
 
   # 경기 (Economic Activity)
   list(id = "UNRATE",    name = "US_Unemployment",    freq = "m",
@@ -259,22 +272,105 @@ load_fred_macro <- function(wide = TRUE) {
 # 4. Compute Regime Signals (매크로 레짐 지표)
 #==============================================================================
 
-fred_compute_regime <- function(macro_dt = NULL) {
-  if (is.null(macro_dt)) macro_dt <- load_fred_macro(wide = TRUE)
+#------------------------------------------------------------------------------
+# 4a. PIT C11 가용시점 도우미 (2026-09-24) — 규칙·결합은 fred_availability.R 가 정본
+#     도우미가 없으면 fail-closed(stop): 호출자(fred_run_pipeline·daily_refresh)의 tryCatch 가
+#     잡아 구 macro_regime 을 보존한다 — 관측일 결합판을 새로 쓰지 않는다.
+#------------------------------------------------------------------------------
+.fc_need_fred_avail <- function() {
+  if (exists("fred_asof_join", mode = "function") && exists("fred_series_rule", mode = "function"))
+    return(invisible(TRUE))
+  cands <- unique(c(if (exists("DATA_DIR")) file.path(DATA_DIR, "fred_availability.R"),
+                    if (exists("FUNC_PATH")) file.path(FUNC_PATH, "data", "fred_availability.R"),
+                    file.path(PROJECT_ROOT, "02_Infrastructure", "data", "fred_availability.R")))
+  p <- cands[file.exists(cands)][1]
+  if (is.na(p)) stop("[fred] fred_availability.R 없음 — 가용시점 결합 불가(fail-closed)")
+  source(p)
+  invisible(TRUE)
+}
 
-  cat("[fred] Computing macro regime signals...\n")
+.fc_kr_calendar <- function() {
+  .fc_need_fred_avail()
+  fred_kr_calendar(file.path(CACHE_DIR, "trading_calendar.parquet"))
+}
 
-  # 월말 데이터로 리샘플링 (전략 시그널과 정렬)
-  macro_dt[, YM := format(Date, "%Y-%m")]
-  monthly <- macro_dt[, lapply(.SD, function(x) tail(x[!is.na(x)], 1)),
-                       by = YM,
-                       .SDcols = setdiff(names(macro_dt), c("Date", "YM"))]
-  monthly[, Date := as.Date(paste0(YM, "-01")) + 31]  # 대략 월말
-  # 실제 월말로 보정
-  monthly[, Date := as.Date(format(Date, "%Y-%m-01")) - 1]
-  # 월초로 다시 (다음달 1일 - 1일 = 해당월 말일)
-  monthly[, Date := as.Date(paste0(YM, "-01"))]
-  monthly[, Date := as.Date(cut(Date + 31, "month")) - 1]  # 해당월 말일
+# long(Date, Series, Series_ID, Value) 또는 wide(Date × 친근명 — 구 호출 규약) → long
+.fc_as_long <- function(x) {
+  x <- as.data.table(x)
+  if (all(c("Date", "Series", "Value") %in% names(x))) {
+    sid <- if ("Series_ID" %in% names(x)) as.character(x$Series_ID) else as.character(x$Series)
+    out <- data.table(Date = as.Date(x$Date), Series = as.character(x$Series),
+                      Series_ID = sid, Value = as.numeric(x$Value))
+  } else {
+    cols <- setdiff(names(x), c("Date", "YM"))
+    out <- melt(x[, c("Date", cols), with = FALSE], id.vars = "Date",
+                variable.name = "Series", value.name = "Value", variable.factor = FALSE)
+    out <- out[, .(Date = as.Date(Date), Series = as.character(Series),
+                   Series_ID = as.character(Series), Value = as.numeric(Value))]
+  }
+  out[!is.na(Date) & !is.na(Value)]
+}
+
+# 원/달러 = ECOS 731Y001 (decision_register PIT-C11-CONVENTIONS ① — DEXKOUS 대체)
+.fc_load_ecos_krw <- function() {
+  p <- file.path(CACHE_DIR, "ecos_krw_usd.parquet")
+  if (!file.exists(p)) return(NULL)
+  e <- as.data.table(read_parquet(p, mmap = FALSE))
+  if (!all(c("Date", "KRW_USD") %in% names(e))) stop("[fred] ecos_krw_usd.parquet 스키마 불일치: ", p)
+  unique(e[!is.na(Date) & !is.na(KRW_USD), .(Date = as.Date(Date), Value = as.numeric(KRW_USD))])
+}
+
+fred_compute_regime <- function(macro_dt = NULL, kr_calendar = NULL) {
+  .fc_need_fred_avail()
+  long <- .fc_as_long(if (is.null(macro_dt)) load_fred_macro(wide = FALSE) else macro_dt)
+  cal <- if (is.null(kr_calendar)) .fc_kr_calendar() else sort(unique(as.Date(kr_calendar)))
+
+  cat("[fred] Computing macro regime signals (PIT C11: 월 행 = 그 달 마지막 한국 거래일 15:30 KST 까지 공표분)...\n")
+
+  # 월 목록 = 첫 관측 월 ~ 마지막 관측 월 (구판과 같은 범위). Date = 해당월 말일(구판 규약 유지).
+  # ★구판은 월내 마지막 관측(같은 날짜 미국 종가 · 공표 전 주간값 · 같은 달 CPI 라벨)을 실었다(V-14).
+  #   새 판: 결정일 Asof_Date = 말일 이하 마지막 한국 거래일, 각 계열 = 그 결정일에 가용한 최신 관측
+  #   (fred_asof_join decision_close — 월간 보유(판정서 ② 원칙 c)의 가장 이른 집행 시점 기준이라
+  #   close_d_legacy(sig_d)·close_t1(집행일) 어느 쪽에도 미래 정보가 없다).
+  m0 <- as.Date(format(min(long$Date), "%Y-%m-01"))
+  m1 <- as.Date(format(max(long$Date), "%Y-%m-01"))
+  yms <- format(seq(m0, m1, by = "month"), "%Y-%m")
+  me  <- as.Date(cut(as.Date(paste0(yms, "-01")) + 31, "month")) - 1
+  ii  <- findInterval(as.integer(me), as.integer(cal))
+  dec <- rep(NA_integer_, length(yms)); dec[ii > 0L] <- as.integer(cal)[ii[ii > 0L]]
+  dec <- as.Date(dec)
+  monthly <- data.table(YM = yms, Date = me, Asof_Date = dec)
+  ok <- which(!is.na(dec))
+
+  sids <- unique(long[, .(Series_ID, Series)])
+  sids <- sids[!duplicated(Series_ID)]
+  skipped <- character(0); cpi <- NULL
+  for (k in seq_len(nrow(sids))) {
+    sid <- sids$Series_ID[k]; nm <- sids$Series[k]
+    rule <- tryCatch(fred_series_rule(sid), error = function(e) e)
+    if (inherits(rule, "error")) { skipped <- c(skipped, sid); next }   # 규칙 없음·사용 금지 = 결합 안 함
+    obs <- unique(long[Series_ID == sid, .(Date, Value)])
+    j <- fred_asof_join(dec[ok], obs, sid, mode = "decision_close", kr_calendar = cal)
+    monthly[, (nm) := NA_real_]
+    set(monthly, ok, nm, j$value)
+    if (identical(rule$id, "CPIAUCSL")) {
+      cpi_obs <- as.Date(rep(NA_integer_, nrow(monthly))); cpi_obs[ok] <- j$obs_date
+      cpi <- list(col = nm, obs_date = cpi_obs, series = obs)
+    }
+  }
+  if (length(skipped))
+    cat(sprintf("  결합 제외(규칙 없음·사용 금지 — fail-closed): %s\n", paste(skipped, collapse = ", ")))
+
+  # 원/달러 = ECOS 731Y001. 열 이름 KRW_USD 는 구판 스키마 그대로, 값의 원천만 교체.
+  monthly[, KRW_USD := NA_real_]
+  ek <- .fc_load_ecos_krw()
+  if (!is.null(ek) && nrow(ek)) {
+    set(monthly, ok, "KRW_USD",
+        fred_asof_join(dec[ok], ek, "ECOS_KRW_USD", mode = "decision_close", kr_calendar = cal)$value)
+  } else warning("[fred] ecos_krw_usd.parquet 없음 — KRW_USD NA(KRW_Stress 축 0)")
+
+  ser_cols <- sort(setdiff(names(monthly), c("YM", "Date", "Asof_Date")), method = "radix")
+  setcolorder(monthly, c("YM", ser_cols, "Date", "Asof_Date"))
 
   # ── 레짐 시그널 계산 ──
 
@@ -325,7 +421,17 @@ fred_compute_regime <- function(macro_dt = NULL) {
   # 5. Inflation Regime
   #    CPI YoY > 4% → high inflation
   if ("US_CPI" %in% names(monthly)) {
-    monthly[, CPI_YoY := US_CPI / shift(US_CPI, 12) - 1]
+    # 날짜 기준 12개월 변화(decision_register PIT-C11-CONVENTIONS ③): 가용 관측 o 의 값 / o−12개월 관측값.
+    #   구판 shift(US_CPI, 12)는 행 기준이라 관측이 빠진 달(CPI 2025-10)에 13개월 변화가 됐다.
+    #   o−12개월 관측이 없으면 NA.
+    if (!is.null(cpi)) {
+      o <- cpi$obs_date
+      prev <- rep(as.Date(NA), length(o)); has <- !is.na(o)
+      prev[has] <- as.Date(sprintf("%04d-%02d-%s", as.integer(format(o[has], "%Y")) - 1L,
+                                   as.integer(format(o[has], "%m")), format(o[has], "%d")))
+      v_prev <- cpi$series$Value[match(prev, cpi$series$Date)]
+      monthly[, CPI_YoY := get(cpi$col) / v_prev - 1]
+    } else monthly[, CPI_YoY := NA_real_]
     monthly[, Inflation_Regime := fifelse(
       is.na(CPI_YoY), "unknown",
       fifelse(CPI_YoY > 0.04, "high",
@@ -432,9 +538,15 @@ fred_compute_regime <- function(macro_dt = NULL) {
   # Buddha Mode: Macro_Risk_Score >= 70 → full cash recommended (임계값 유지)
   monthly[, Buddha_Mode := Macro_Risk_Score >= 70]
 
-  # 저장
-  regime_dt <- monthly[!is.na(Date)]
+  # 저장 (결정일이 없는 달 = 한국 달력 이전 — 싣지 않는다)
+  regime_dt <- monthly[!is.na(Date) & !is.na(Asof_Date)]
   setorder(regime_dt, Date)
+  # 측정 epoch 표식(parquet R 메타데이터) + ★r1 표식 계약(overlay_pit_guard C11 층 · 통합 검증 BLOCKING):
+  #   행 열 avail_date(Date) = Asof_Date(그 행 값이 가용해진 한국 결정일) · 행 열 c11_regime_key.
+  .dcf_key <- tryCatch(fred_avail_rules_meta()$regime_key, error = function(e) NA_character_)
+  regime_dt[, avail_date := as.Date(Asof_Date)]
+  regime_dt[, c11_regime_key := as.character(.dcf_key)]
+  setattr(regime_dt, "c11_avail_regime_key", .dcf_key)
   write_parquet(regime_dt, FRED_REGIME_CACHE)
 
   cat(sprintf("[fred] Regime signals: %d months | %s ~ %s\n",
@@ -475,24 +587,32 @@ merge_regime_to_signals <- function(FACTORS, regime_dt = NULL) {
     }
     regime_dt <- as.data.table(read_parquet(FRED_REGIME_CACHE))
   }
+  regime_dt <- as.data.table(regime_dt)
+  # ★PIT C11(2026-09-24, 판정서 1-3 잠재 위반): 결합 키 = 결정일 Asof_Date(그 행 값이 가용해진 한국
+  #   거래일). 구판은 월말 라벨 Date 로 lag 없이 roll 결합했다. Asof_Date 가 없는 캐시는 수리 전 판
+  #   (월말 라벨 행에 공표 전 값) → 결합 거부(fail-closed). FACTORS Date = 한국 d 종가 결정일(형태 a).
+  if (!("Asof_Date" %in% names(regime_dt)))
+    stop("[fred] macro_regime 에 Asof_Date 가 없다 — C11 수리 전 캐시(월말 라벨 = 공표 전 값). ",
+         "fred_compute_regime() 로 재생성할 것(fail-closed)")
 
-  # Rolling join: 각 시그널 날짜에 가장 가까운 이전 레짐 데이터 매칭
+  # Rolling join: 각 시그널 날짜 d 에 Asof_Date ≤ d 인 가장 최근 행
   regime_cols <- intersect(
     names(regime_dt),
-    c("Date", "VIX", "VIX_Regime", "VIX_Zscore",
+    c("VIX", "VIX_Regime", "VIX_Zscore",
       "Term_Spread", "YC_Inversion", "HY_Spread", "Credit_Stress",
       "KRW_USD", "KRW_Stress", "CPI_YoY", "Inflation_Regime",
       "Macro_Risk_Score", "Buddha_Mode")
   )
 
-  regime_sub <- regime_dt[, ..regime_cols]
+  regime_sub <- regime_dt[!is.na(Asof_Date), c("Asof_Date", regime_cols), with = FALSE]
+  regime_sub[, Asof_Date := as.Date(Asof_Date)]
+  setnames(regime_sub, "Asof_Date", "Date")
   setkey(regime_sub, Date)
-  setkey(FACTORS, Date)
 
   # FACTORS는 (Date, Ticker, Score, ...) 형태
   # Date 기준으로 regime 매칭 (Ticker 무관 — macro는 시장 전체)
-  unique_dates <- unique(FACTORS$Date)
-  date_regime <- regime_sub[J(unique_dates), roll = TRUE]
+  unique_dates <- sort(unique(as.Date(FACTORS$Date)))
+  date_regime <- regime_sub[data.table(Date = unique_dates), on = "Date", roll = TRUE]
 
   merged <- merge(FACTORS, date_regime, by = "Date", all.x = TRUE,
                   suffixes = c("", "_macro"))

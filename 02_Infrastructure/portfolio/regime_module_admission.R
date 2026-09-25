@@ -17,7 +17,11 @@
 # ★ C2 (2026-06-10 도훈 mandate, rare_mode flag — 기본 OFF, A/B 통과 후 활성):
 #   희소국면(base rate<10%: CRISIS·RISK_OFF) 셀 한정 ②n≥6·④t≥1.5 완화 OR stress-pool 합산 t≥2 대체경로.
 #   두 경로 모두 ⑤ strict(review_pending 불가) 의무. dispatcher shrink n/(n+36)+w_cap이 사이징 방어.
-# PIT: regime t-1 lag. 실측-only. 모듈 frozen(소비).
+# PIT: ★C11 규약 (b)(2026-09-24 · 판정서 V-06): 모듈 수익 행마다 결정일 = 그 수익 창의 시작(같은 모듈 계열의
+#   직전 행 날짜 — 일간 = 직전 거래일 · 월간 = 직전 월말)이고, 국면 라벨은 가용일(avail_date)이 결정일 이하인
+#   최신 값만 쓴다(overlay_pit_guard.R C11 층). 구판 "Category 1행 lag" 는 미국 t-1 세션(약 14시간)을 들였고
+#   월간 모듈은 월말 라벨로 그 달 수익을 분류했다(동월 누출). 가용일 열 없는 legacy 패널 = 기본 중단.
+#   실측-only. 모듈 frozen(소비).
 # =============================================================================
 suppressPackageStartupMessages({ library(data.table); library(arrow); library(jsonlite); library(xts) })
 if (!exists("PROJ")) PROJ <- Sys.getenv("CLAUDE_PROJECT_DIR", Sys.getenv("QM_ROOT", "G:/Quant_Module_Moltbot"))
@@ -35,6 +39,19 @@ local({
     stop("[regime_module_admission] FQ-119 라벨 자격 관문 어댑터 부재 — 관문 없이 admission 을 돌릴 수 없음: ",
          paste(cands, collapse = " | "))
   source(hit[1], local = FALSE)
+})
+# ── ★C11 가용시점 가드(2026-09-24) — 격리 env 적재. 부재 = 규약 (b) 없이 admission 불가 → 중단 ──
+.RMA_C11 <- local({
+  cands <- c("02_Infrastructure/validation/overlay_pit_guard.R",
+             file.path(PROJ, "02_Infrastructure/validation/overlay_pit_guard.R"))
+  hit <- cands[file.exists(cands)]
+  if (length(hit) == 0L)
+    stop("[regime_module_admission] C11 가용시점 가드(overlay_pit_guard.R) 부재 — 규약 (b) 없이 admission 을 돌릴 수 없음: ",
+         paste(cands, collapse = " | "))
+  e <- new.env(parent = globalenv()); sys.source(hit[1], envir = e)
+  if (!exists("c11_asof_align", envir = e, inherits = FALSE))
+    stop("[regime_module_admission] overlay_pit_guard.R 에 C11 층 없음(구판): ", hit[1])
+  e
 })
 ANN <- 252
 ir_ann <- function(a, annf=ANN){ a<-a[is.finite(a)]; if(length(a) < (if(annf<=12) 8L else 20L) || sd(a)==0) return(NA_real_); mean(a)/sd(a)*sqrt(annf) }
@@ -63,8 +80,14 @@ STRESS_POOL <- c("CRISIS", "RISK_OFF", "CAUTION")
   .mp_env <- Sys.getenv("FR_MODULE_PERF", "")
   MP <- fromJSON(if (nzchar(.mp_env)) .mp_env else file.path(proj,"06_Registry/module_performance.json"), simplifyVector=FALSE)
   mod_ids <- names(MP$modules)
-  RG <- as.data.table(read_parquet(file.path(proj,".cache/unified_regime_signal_daily.parquet")))[!is.na(Category), .(Date=as.Date(Date), Category)]
-  setorder(RG,Date); RG[, regime:=shift(Category,1L)]; RG <- RG[!is.na(regime), .(Date,regime)]
+  ## ★C11 규약 (b)(2026-09-24): 국면 라벨은 날짜 라벨·1행 lag 가 아니라 **가용일**로 붙인다.
+  RG0 <- as.data.table(read_parquet(file.path(proj,".cache/unified_regime_signal_daily.parquet")))[!is.na(Category)]
+  RG0[, Date := as.Date(Date)]
+  C11G <- .RMA_C11$c11_legacy_gate(RG0, "Category", site = "regime_module_admission(.rcma_load)",
+                                   source_desc = ".cache/unified_regime_signal_daily.parquet")
+  RG <- RG0[, .(Date, Category)]
+  setorder(RG,Date); RG[, regime:=shift(Category,1L)]; RG <- RG[!is.na(regime), .(Date,regime)]   # legacy 재현(label 정책) 전용
+  .rg_used <- list()
   AL <- list(); FREQ <- list()
   for(sid in mod_ids){
     p <- file.path(proj, MP$modules[[sid]]$sim_result_path)
@@ -74,14 +97,31 @@ STRESS_POOL <- c("CRISIS", "RISK_OFF", "CAUTION")
     bm <- if(!is.null(s$bm_xts)) data.table(Date=as.Date(index(s$bm_xts)), bm=as.numeric(s$bm_xts[,1])) else NULL
     if(!is.null(bm)) d<-merge(d,bm,by="Date",all.x=TRUE) else d[,bm:=0]
     d[, a := r - fifelse(is.finite(bm),bm,0)]
-    if(identical(fq,"monthly")){ setkey(RG,Date); dd<-d[,.(Date,a)]; setkey(dd,Date); d <- RG[dd, roll=TRUE][!is.na(regime)]
+    if (!isTRUE(C11G$legacy)) {
+      ## 결정일 = 이 모듈 수익 창의 시작(직전 행) — 일간·월간 공통(월간 = 직전 월말 → 동월 누출 제거)
+      setorder(d, Date); d <- d[!duplicated(Date)]
+      .dec <- .RMA_C11$c11_window_start(d$Date)
+      .lab <- .RMA_C11$c11_asof_align(.dec, RG0, "Category")
+      .RMA_C11$assert_overlay_pit_avail(.lab$avail_date, .dec, sprintf("RCMA %s", sid))
+      d <- data.table(Date = d$Date, a = d$a, regime = .lab$value)[!is.na(regime)]
+      .rg_used[[sid]] <- d[, .(Date, regime)]
+    } else if(identical(fq,"monthly")){ setkey(RG,Date); dd<-d[,.(Date,a)]; setkey(dd,Date); d <- RG[dd, roll=TRUE][!is.na(regime)]
     } else d <- merge(d[,.(Date,a)], RG, by="Date")
     if(nrow(d) >= (if(identical(fq,"monthly")) 60L else 250L)){ AL[[sid]] <- d; FREQ[[sid]] <- fq }
   }
   regimes <- unlist(MP$regimes) %||% c("RISK_ON","NEUTRAL","CAUTION","CRISIS","RISK_OFF")
   # C2: 국면 base rate (일수 비중) — rare 판정용 (rare = share < RARE_SHARE)
-  sh <- RG[, .N, by = regime]; regime_share <- setNames(sh$N / sum(sh$N), sh$regime)
-  list(MP = MP, AL = AL, FREQ = FREQ, mod_ids = names(AL), regimes = regimes, regime_share = regime_share)
+  ## 국면 일수 비중 — legacy = 구판(패널 전 행) · 가용일 결합 = 일간 모듈이 실제로 받은 라벨의 날짜 합집합
+  RGS <- if (isTRUE(C11G$legacy)) RG else {
+    .dl <- .rg_used[vapply(names(.rg_used), function(s) !identical(FREQ[[s]], "monthly"), logical(1))]
+    if (length(.dl)) unique(rbindlist(.dl), by = "Date") else data.table(Date = as.Date(character(0)), regime = character(0))
+  }
+  sh <- RGS[, .N, by = regime]; regime_share <- setNames(sh$N / sum(sh$N), sh$regime)
+  pit_c11 <- .RMA_C11$c11_consumption_record(C11G, site = "regime_module_admission(.rcma_load)",
+                                             mode = "window_start(b): 모듈 수익 창 시작(직전 행)",
+                                             n_rows = length(AL), root = proj)
+  list(MP = MP, AL = AL, FREQ = FREQ, mod_ids = names(AL), regimes = regimes, regime_share = regime_share,
+       pit_c11 = pit_c11)
 }
 
 # ── ★ compute_rcma(asof_date): point-in-time admission (Date ≤ asof_date 만 사용) ─────
@@ -127,7 +167,7 @@ compute_rcma <- function(asof_date, ctx = NULL, proj = PROJ,
     } }
   if(length(cells)==0) return(list(CELL=data.table(), admitted_by_regime=setNames(vector("list",length(regimes)),regimes),
                                    admitted_modules=character(0), pool_oos_rho=NA_real_, asof=asof_date, n_modules=0L,
-                                   label_gate=label_gate))
+                                   label_gate=label_gate, pit_c11=ctx$pit_c11))
   CELL <- rbindlist(cells)
   CELL[, grade := vapply(module, function(s) as.character(MP$modules[[s]]$grade %||% "ungraded"), character(1))]
 
@@ -180,7 +220,8 @@ compute_rcma <- function(asof_date, ctx = NULL, proj = PROJ,
   list(CELL=CELL, admitted_by_regime=admitted_by_regime, admitted_modules=admitted_modules,
        pool_oos_rho=pool_rho, asof=asof_date, n_modules=length(mod_ids),
        rare_mode=isTRUE(rare_mode), rare_def="cell-level: regime in STRESS_POOL & n_months<12 (v2.1)",
-       label_gate=label_gate)   # FQ-119: 라벨 자격 판정 동반 반환(소비측이 판정 없이 쓰지 못하게)
+       label_gate=label_gate,   # FQ-119: 라벨 자격 판정 동반 반환(소비측이 판정 없이 쓰지 못하게)
+       pit_c11=ctx$pit_c11)     # ★C11: 국면 라벨 정렬 방식(legacy 면 미해소 표식)
 }
 
 # ── 정적 진단 JSON 산출 (asof = max date). run_wf_ensemble는 함수를 직접 호출. ─────────
@@ -202,7 +243,8 @@ compute_rcma <- function(asof_date, ctx = NULL, proj = PROJ,
                        role=MP$modules[[sid]]$role %||% NA, by_regime=rl) }
   out <- list(schema_version="v2.0", generated=as.character(Sys.Date()),
     method="RCMA 국면조건부 모듈 admission (★WALK-FORWARD: compute_rcma(asof) point-in-time). 본 JSON은 asof=max date 진단용. 실측 권위 = run_wf_ensemble의 WF 함수 호출. 6기준(IR≥0.5|top⅓ / n≥12m / asof창 IS·OOS sign+ / |t|≥2 / 경제논리 / 한계기여). overall 등급 게이트 폐지(도훈 2026-06-05).",
-    pit_note="lookahead 차단: 멤버십이 asof 시점 데이터로만 산정(고정 2012 cut 폐기). 본 정적 JSON은 진단용이며 walk-forward 실측이 권위.",
+    pit_note="lookahead 차단: 멤버십이 asof 시점 데이터로만 산정(고정 2012 cut 폐기). 본 정적 JSON은 진단용이며 walk-forward 실측이 권위. ★C11(2026-09-24): 국면 라벨은 모듈 수익 창 시작까지 가용한 값(가용일 결합, 규약 b) — pit_c11 참조.",
+    pit_c11=ctx$pit_c11,
     thresholds=list(ir_floor=IR_FLOOR, min_months=MIN_MONTHS, t_min=T_MIN),
     # FQ-119: 라벨 자격 판정을 산출물에 **동반 기록**. 소비자가 admission 을 읽을 때
     # "이 국면 라벨이 애초에 자격이 있었나"를 같은 파일에서 보게 한다(별도 조회 요구 = 미조회).

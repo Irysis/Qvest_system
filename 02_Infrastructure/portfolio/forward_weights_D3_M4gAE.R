@@ -131,6 +131,41 @@ m4_fires <- as.integer(m4_scalar < 0.999)
 gate <- if(m4_fires==1L && ae_fire==1L) 0.70 else 1.00
 cat(sprintf("[D3 gate] m4_fires=%d ∩ ae_fire=%d → gate=%.2f  (m4 %.4f 대체)\n", m4_fires, ae_fire, gate, m4_scalar))
 
+## --- 2d. ★PIT C11 표식 (2026-09-24 · 판정서 V-03·V-04 · 결정 PIT-C11-BOOK0001 '표기 → 수리 뒤 재산출') ---
+##   게이트 두 입력(m4 · AE)은 해외(FRED) 정보를 담는다. 라벨 컷오프(last_feat < AS_OF · m4 M−1 월말)는 C11 증거가
+##   아니다 — 생산자가 실은 표식(c11_info_cutoff · c11_regime_key)으로만 안다.
+##     AE : ae_regime_monthly.py → ae_pit_features.stamp (c11_feat_join · c11_regime_key · c11_info_cutoff < 결정일)
+##     m4 : factor_engine.R c11_regime_check (c11_status verified/no_regime/unresolved) → m4_append_only.R 가 승계
+##   · 표식 있음 + 컷오프가 결정일 뒤 → PIT 위반 → 중단(비중을 내지 않는다)
+##   · 표식 없음(수리 전 판 행) · 규칙 epoch 불일치 → **비중은 그대로**, manifest 에 표기(C11_UNRESOLVED / STALE_EPOCH)
+##   ★라벨 전용 — 위반 중단 외에는 gate·β·w 를 한 줄도 바꾸지 않는다(§2b 신선도 검사·§2c 게이트 식 불변).
+C11_KEY_NOW <- tryCatch({
+  .fe <- new.env(parent = globalenv())
+  suppressMessages(sys.source(file.path(ROOT, "02_Infrastructure/data/fred_availability.R"), envir = .fe))
+  as.character(.fe$fred_avail_rules_meta(file.path(ROOT, "06_Registry/fred_availability_rules.json"))$regime_key)
+}, error = function(e) NA_character_)
+AE_C11 <- if (all(c("c11_feat_join", "c11_info_cutoff", "c11_regime_key") %in% names(aer)) && !is.na(aer$c11_info_cutoff[1])) {
+  .cut <- as.Date(aer$c11_info_cutoff[1])
+  if (.cut >= AS_OF) stop(sprintf("[AE] ★C11 위반 — c11_info_cutoff %s >= 결정일 %s (해외 정보가 결정 뒤에야 가용)",
+                                  as.character(.cut), as.character(AS_OF)))
+  .key <- as.character(aer$c11_regime_key[1])
+  list(status = if (!is.na(C11_KEY_NOW) && identical(.key, C11_KEY_NOW)) "C11_VERIFIED" else "C11_STALE_EPOCH",
+       feat_join = as.character(aer$c11_feat_join[1]), regime_key = .key, info_cutoff = as.character(.cut),
+       vintage_unresolved = if ("c11_vintage_unresolved" %in% names(aer)) as.character(aer$c11_vintage_unresolved[1]) else NA_character_)
+} else list(status = "C11_UNRESOLVED", note = "AE 행에 C11 표식 없음 — 수리 전 판(해외 특성 관측일 결합·DEXKOUS)")
+M4_C11 <- if (nrow(m4r) && all(c("c11_status", "c11_info_cutoff", "c11_regime_key") %in% names(m4r))) {
+  .st <- as.character(m4r$c11_status[1]); .mc <- as.Date(m4r$c11_info_cutoff[1]); .mk <- as.character(m4r$c11_regime_key[1])
+  if (identical(.st, "verified") && (is.na(.mc) || .mc > AS_OF))
+    stop(sprintf("[m4] ★C11 위반 — m4 행(%s) verified 인데 c11_info_cutoff %s > 결정일 %s",
+                 as.character(m4r$Date[1]), as.character(.mc), as.character(AS_OF)))
+  list(status = if (identical(.st, "verified") && !identical(.mk, C11_KEY_NOW)) "verified_stale_epoch" else .st,
+       row_date = as.character(m4r$Date[1]), info_cutoff = as.character(.mc), regime_key = .mk)
+} else list(status = "unresolved(표식 열 없음)", row_date = if (nrow(m4r)) as.character(m4r$Date[1]) else NA_character_)
+GATE_C11 <- if (identical(AE_C11$status, "C11_VERIFIED") && M4_C11$status %in% c("verified", "no_regime"))
+  "C11_VERIFIED" else "C11_UNRESOLVED"
+cat(sprintf("[C11] gate %s — AE %s · m4 %s (규칙 epoch %s)\n", GATE_C11, AE_C11$status, M4_C11$status,
+            ifelse(is.na(C11_KEY_NOW), "판독 불가", C11_KEY_NOW)))
+
 ## --- 3. β_faith 제거 (Layer4 없음) ---
 beta_faith <- 1.0
 ## --- 4. β_R05_V5 (동일) ---
@@ -193,7 +228,9 @@ man <- list(strategy="STR_1715_on_M4gAE_R05_noLayer4_PG2", as_of=as.character(AS
       label_gate=LABEL_GATE)),
   invested=invested, cash_pct=cash, n_equity=sum(out$Ticker!="CASH"),
   inert_note=sprintf("2026-07 m4=%.4f(미발화)→gate=1.0 → noLayer4와 동일(swap 실효 0). D3 첫 실효=M4 발화 첫 달", m4_scalar),
-  pit=list(no_future_reference=TRUE, ae_last_feat=ae_lfd, ae_pit_ok=(is.na(ae_lfd)||as.Date(ae_lfd)<AS_OF)),
+  pit=list(no_future_reference=TRUE, ae_last_feat=ae_lfd, ae_pit_ok=(is.na(ae_lfd)||as.Date(ae_lfd)<AS_OF),
+           c11=list(gate=GATE_C11, ae=AE_C11, m4=M4_C11, rules_key=C11_KEY_NOW,
+                    note="판정서 V-03·V-04 — C11_UNRESOLVED 면 게이트 입력이 수리 전 판(결정 PIT-C11-BOOK0001 '표기 → 수리 뒤 재산출')")),
   governance=list(book_state="D3 swap-in (2026-07-19, 도훈 승인)", production_staging=TRUE, source_readonly="05_Production forward_weights_R05_noLayer4.R mirror + AE gate"))
 write_json(man, file.path(OUT, sprintf("%s_M4gAE_manifest.json",dt)), pretty=TRUE, auto_unbox=TRUE)
 cat(sprintf("\n저장: %s_M4gAE_weights_cap_0p20.csv (Sum_w=%.4f, 주식 %.1f%% / 현금 %.1f%%)\n", dt, sum(out$Weight), invested*100, cash*100))

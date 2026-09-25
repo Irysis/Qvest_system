@@ -142,6 +142,18 @@ pending_5axis → [자동초안 에이전트 + 적대검증] → proposed(주입
 - 새 L-code 발행 시 헌법 Session End 규칙 적용: `methodology_active.md` 등재 + auto-memory `MEMORY.md` 헤더 갱신 안내.
 - 이미 L-code가 있는 학습은 재발행 금지 (inventory의 `new_lcodes` 목록과 대조).
 
+### ③b 기억 inbox 검토 (주간 · 2026-09-24 P0-M1 신설 — 세션 전용)
+
+- **왜**: 무인 레인은 이제 Claude 기억 디렉터리에 쓰지 못한다. 자동 기억은 `CLAUDE_CODE_DISABLE_AUTO_MEMORY=1` 로 꺼지고(`rf_llm_env.sh::rf_llm_agent_run` 단일 진입), 쓰기는 훅 `safety_guard.sh` Rule 3 이 막는다(`QVEST_UNATTENDED_LANE=1`). 레인이 남기려던 교훈은 `06_Registry/memory_inbox/` 에 쌓인다. 형식과 파일명은 그 디렉터리의 `README.md` 를 따른다.
+- **누가**: 세션(Q)이 한다. 무인 증류 레인(`cleaner_distill_run.sh`)도 같은 차단 아래 있어 기억에 쓰지 못하므로 이 단계를 대신할 수 없다. §0.1b 사후 검토 때 함께 돈다.
+- **절차**:
+  1. `ls 06_Registry/memory_inbox/*.md` 로 대기 항목을 본다(`README.md` 제외). 0건이면 "inbox 0" 이라고 보고하고 넘어간다.
+  2. 항목마다 셋 중 하나로 판정한다. **승격**(기억 카드로. 겹치는 카드가 있으면 병합하고 front-matter 에 `source: unattended_lane` · `inbox: <파일명>`) · **L-code**(리서치 교훈이면 L-code 가 정본) · **기각**(근거 없음·일회성·성과 수치 재방송 — 사유 1줄).
+  3. 성과 수치는 권위 산출물(`authoritative_remeasure.json`)에서 다시 확인될 때만 카드에 옮긴다. inbox 의 진술은 증거가 아니다.
+  4. 처리한 파일은 `06_Registry/memory_inbox/_processed/<YYYYMMDD>/` 로 옮긴다(삭제 아님). 판정과 목적지를 같은 폴더의 `verdicts.tsv` 에 한 줄씩 적는다.
+  5. ⑤ 완료 보고에 `inbox 처리 n건(승격 a · L-code b · 기각 c)` 를 한 줄 넣는다.
+- **기존 무인 작성 카드**: 2026-08-31~09-23 에 무인 레인이 쓴 카드 19장(09-24 전수 스캔 기준)은 front-matter 에 `source: unattended_lane` · `review: pending` 표식이 붙는다(목록 = P0-M1 산출). 표식이 있는 카드는 같은 세 갈래로 검토하고, 끝나면 `review: done(<YYYY-MM-DD>)` 로 바꾼다.
+
 ### ④ 잔재 삭제 (무아카이브 — 참조0 검증 후)
 
 - 대상 판정: `artifact-storage.md` **§3.1**(리서치 모드 중간 산출 = 재생성 가능 스크래치) + **§4 Retention** 위반 잔재. 지식 기록이 아닌 **죽은 코드·중복·캐시만** 표적.
@@ -153,7 +165,7 @@ pending_5axis → [자동초안 에이전트 + 적대검증] → proposed(주입
 
 - `.cache/cleaner_pending.json`의 `status`를 `"distilled"`로 갱신 + `distilled_at`·`digest_path` 필드 추가 (bootstrap WARN 해제 조건 = `awaiting_distill` 소거). **claim 필드(distill_status/distill_owner/distill_claimed_at)는 보존** — 덮어쓰기 금지.
 - **§0.2 release 실행** (status 갱신 직후): `cleaner_release_distill("<owner>")` → `distill_status=done` + `status=distilled` 동기화. 읽기-수정-쓰기라 위 ⑤ 기록분(digest_path/distill_summary 등)은 전부 보존된다.
-- 텔레그램 완료 보고: `tg_agent_brief()` (qvest-telegram SOT 준수 — 첫 섹션 한글 연구 컨텍스트. agent는 화이트리스트 내 `"Q-Lead"` 사용 — 전용 "Cleaner" 미등재). 내용: digest 경로 / 신규 L-code n건 / 삭제 n건·manifest 경로 / deferred n건.
+- 텔레그램 완료 보고: `tg_agent_brief()` (qvest-telegram SOT 준수 — 첫 섹션 한글 연구 컨텍스트. agent는 화이트리스트 내 `"Q-Lead"` 사용 — 전용 "Cleaner" 미등재). 내용: digest 경로 / 신규 L-code n건 / 삭제 n건·manifest 경로 / deferred n건 / inbox 처리 n건(③b).
 
 ---
 
@@ -167,6 +179,7 @@ pending_5axis → [자동초안 에이전트 + 적대검증] → proposed(주입
 - **§0.2 claim 없이 증류 착수 금지** — claim `claimed=TRUE` 확인 전 digest 작성·L-code 발행·삭제 금지 (2-pass 중복실행 방지). in_progress면 병합 정합만. 무인 레인도 같은 규약을 지킨다.
 - **2계층 충돌 시 손으로 밀어붙이지 말 것** — gate 가 `reinforce_active` 로 연기했다는 건 강화 러너가 원장·`stage_artifacts` 를 쓰고 있다는 뜻이다. 그 창에서 증류를 수동 실행하면 게이트를 우회하는 것이다.
 - **DIST 초안 무인 *활성화* 금지 (INV-6, DIST 카드 한정)** — DIST 카드는 자동초안(pending→proposed)+적대검증까지 허용되나 proposed → distilled 활성화는 **도훈 배치 승인 게이트 필수**(`approve_proposed`). ★**공리(AX-<MODE>-NNN)는 다르다(v9.1)**: 활성화는 `refine_statement.R` R0~R6 가 무인 판정하며 이 스킬은 승인 대행이 아니라 **HELD 사유 소비**(위 §공리 사다리 산출)를 한다. 두 계층을 섞지 말 것 — DIST 는 탐색지도 카드, AX 는 mode-local 공리다.
+- **무인 레인의 기억 쓰기 금지 (P0-M1 2026-09-24)** — 무인 증류 레인을 포함해 `QVEST_UNATTENDED_LANE=1` 레인은 기억 디렉터리에 쓰지 못한다(훅 차단). 기억 후보는 `06_Registry/memory_inbox/` 로 가고 ③b 에서 세션이 판정한다. 차단을 우회해 기억을 직접 고치게 하는 프롬프트를 레인에 넣지 말 것.
 - digest에 proxy/추정 수치를 실측처럼 기재 금지 (answer-principles 회피표현 grep 대상).
 - `stage_artifacts/` 내부는 인벤토리 소스일 뿐 — 어떤 파일도 이동·수정·삭제 금지 (§6 불변 런 기록).
 - 커밋은 메인 세션 규율에 따름 (본 스킬이 임의 커밋하지 않음).
@@ -179,6 +192,7 @@ pending_5axis → [자동초안 에이전트 + 적대검증] → proposed(주입
 - **`06_Registry/cleaner_protected_paths.json`** (절대보존 + `ref_check_ignore` + 집행 상한 — 코드가 아니라 레지스트리라 도훈이 직접 고친다)
 - **`06_Registry/reinforce_auto_config.json::cleaner_distill`** (kill switch·`max_drafts`·충돌 정책) + `llm.lanes.cleaner_distill`
 - **`08_Tests/ops/test_cleaner_distill.sh`** (양방향 20항 — 양성 대조 + 위반 주입 5종. `run_all_hooks.sh` SUITES 등재)
+- **`06_Registry/memory_inbox/README.md`** (③b 기억 inbox 형식·처리 · P0-M1) · 차단 = `02_Infrastructure/hooks/safety_guard.sh` Rule 3 · 단일 진입 = `02_Infrastructure/ops/rf_llm_env.sh::rf_llm_agent_run` · 검사 = `08_Tests/hooks/test_safety_guard_memory.sh` · `08_Tests/ops/test_llm_single_entry.sh`
 - `02_Infrastructure/ops/cleaner_claim.R` (§0.2 선점 프로토콜 — `cleaner_claim_distill`/`cleaner_release_distill`/`cleaner_distill_state`. 2-pass 중복실행 방지. owner 3종: `session_main`·`task#<id>`·`auto_distill`)
 - `02_Infrastructure/ops/scheduler/Qvest_WeeklyCleaner.bat` + Task Scheduler `Qvest_WeeklyCleaner`
 - `02_Infrastructure/docs/rules/artifact-storage.md` §3.1 / §4 / §8

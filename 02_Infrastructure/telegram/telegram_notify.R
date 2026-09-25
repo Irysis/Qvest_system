@@ -338,15 +338,18 @@ tg_with_serial_lock <- function(scope = "telegram_global", expr,
 #'                  status=<int|NA>, error=<chr|NA>))
 #'   ok=FALSE 는 **호출부가 반드시 검사**해야 한다. 구판은 invisible(resp) 였고
 #'   반환값을 소비하는 호출부가 0/115 였다(2026-08-16 전수) — 그래서 계약 변경이 안전.
+#' mute (v10.4 2026-09-24) — TRUE 면 Telegram disable_notification: 채팅에는 남되 푸시(소리·배너)가 없다.
+#'   ★silent 와 다르다: silent 는 콘솔 출력만 끄고 요청은 그대로(푸시 발생). 같은 원인이 반복될 때의 무음 요약용
+#'   (daily_refresh.sh [7] 동일 실패 서명). 기본 FALSE = 요청 본문 바이트 불변(기존 호출자 무영향).
 tg_send <- function(msg, parse_mode = "", silent = FALSE,
-                     validate_emoji = TRUE, emoji_min = 1L) {
+                     validate_emoji = TRUE, emoji_min = 1L, mute = FALSE) {
   .tg_ensure_utf8_ctype()  # 발송 직전 재보증 (중간 locale 리셋 방어; UTF-8이면 no-op)
   if (.tg_serial_enabled() && !.tg_lock_held()) {
     return(tg_with_serial_lock(
       scope = "tg_send",
       owner = substr(gsub("\\s+", " ", as.character(msg %||% "")), 1L, 80L),
       tg_send(msg, parse_mode = parse_mode, silent = silent,
-              validate_emoji = validate_emoji, emoji_min = emoji_min)
+              validate_emoji = validate_emoji, emoji_min = emoji_min, mute = mute)
     ))
   }
   # 2026-04-23: 기본 parse_mode "" (plain). HTML은 <, > 기호로 parse error 유발.
@@ -354,7 +357,7 @@ tg_send <- function(msg, parse_mode = "", silent = FALSE,
   if (validate_emoji) {
     # Unicode emoji 범위 (1F300~1F9FF 확장 + 2600~27BF 기본)
     emoji_n <- tryCatch(
-      length(regmatches(msg, gregexpr("[\U0001F300-\U0001F9FF☀-➿]", msg, perl = TRUE))[[1]]),
+      length(regmatches(msg, gregexpr("[\U0001F300-\U0001F9FF\u2600-\u27bf]", msg, perl = TRUE))[[1]]),
       error = function(e) 0L  # Windows R: astral-range regex invalid → 검증 skip, 발송은 진행
     )
     if (!is.finite(emoji_n)) emoji_n <- 0L
@@ -372,11 +375,13 @@ tg_send <- function(msg, parse_mode = "", silent = FALSE,
   }
 
   tryCatch({
-    resp <- POST(.TG_API, body = list(
+    .tg_body <- list(
       chat_id    = .TG_CHAT_ID,
       text       = msg,
       parse_mode = parse_mode
-    ), encode = "json")
+    )
+    if (isTRUE(mute)) .tg_body$disable_notification <- TRUE   # 푸시 없이 채팅에만(기본 경로는 본문 불변)
+    resp <- POST(.TG_API, body = .tg_body, encode = "json")
     if (http_error(resp)) {
       .body <- content(resp, "text", encoding = "UTF-8")
       if (!silent) cat(sprintf("[tg] Send failed: %s\n", .body))
@@ -922,7 +927,7 @@ tg_decode_jargon <- function(text, mode = c("inline_first", "footer", "off")) {
       }
     }
     if (length(found_pairs) > 0) {
-      footer_str <- paste0("\U0001F4DA 약어: ", paste(found_pairs, collapse = " / "))
+      footer_str <- paste0("\U0001F4DA \uc57d\uc5b4: ", paste(found_pairs, collapse = " / "))
       text <- paste(text, footer_str, sep = "\n\n")
     }
   }
@@ -1029,7 +1034,7 @@ tg_build_glossary <- function(msg, max_bytes = .TG_CONFIG$GLOSSARY_MAX_BYTES) {
   }
   if (length(found) == 0) return("")
   ord <- order(vapply(found, function(x) x$pos, integer(1)))
-  header <- "\U0001F4D6 <b>용어 풀이</b>"
+  header <- "\U0001F4D6 <b>\uc6a9\uc5b4 \ud480\uc774</b>"
   out <- header
   for (i in ord) {
     line <- sprintf("  • %s = %s", found[[i]]$term, found[[i]]$meaning)
@@ -1268,7 +1273,7 @@ tg_agent_brief <- function(agent,
   agent_emoji <- .AGENT_EMOJI_MAP[[agent]]
 
   # v6 SOT 헤더 단순화 — `🎯 Q-Lead · 제목\n📅 2026-XX-XX`
-  hdr <- sprintf("%s <b>%s · %s</b>\n\U0001F4C5 %s",
+  hdr <- sprintf("%s <b>%s \u00b7 %s</b>\n\U0001F4C5 %s",
                  agent_emoji, agent, title, as_of)
 
   # ── 2. 섹션 렌더 ─────────────────────────────────────────────────────────────
@@ -2279,27 +2284,27 @@ tg_trigger_check <- function(current_metrics, strategy_name = "Portfolio") {
   if (!is.null(current_metrics$Sharpe) && !is.null(prev$Sharpe)) {
     d <- current_metrics$Sharpe - prev$Sharpe
     if (d >= 0.10) alerts <- c(alerts,
-      sprintf("\U0001f4c8 Sharpe +%.3f (%.3f → %.3f)", d, prev$Sharpe, current_metrics$Sharpe))
+      sprintf("\U0001f4c8 Sharpe +%.3f (%.3f \u2192 %.3f)", d, prev$Sharpe, current_metrics$Sharpe))
     if (d <= -0.10) alerts <- c(alerts,
-      sprintf("\u26a0\ufe0f Sharpe %.3f (%.3f → %.3f)", d, prev$Sharpe, current_metrics$Sharpe))
+      sprintf("\u26a0\ufe0f Sharpe %.3f (%.3f \u2192 %.3f)", d, prev$Sharpe, current_metrics$Sharpe))
   }
 
   if (!is.null(current_metrics$ES99_d) && !is.null(prev$ES99_d)) {
     d <- current_metrics$ES99_d - prev$ES99_d  # positive = risk increased
     if (d >= 0.30) alerts <- c(alerts,
-      sprintf("\U0001f6a8 ES99 +%.2f%%p (%.2f%% → %.2f%%)", d, prev$ES99_d, current_metrics$ES99_d))
+      sprintf("\U0001f6a8 ES99 +%.2f%%p (%.2f%% \u2192 %.2f%%)", d, prev$ES99_d, current_metrics$ES99_d))
   }
 
   if (!is.null(current_metrics$MDD) && !is.null(prev$MDD)) {
     d <- current_metrics$MDD - prev$MDD  # positive = deeper drawdown
     if (d >= 2.0) alerts <- c(alerts,
-      sprintf("\U0001f4c9 MDD +%.1f%%p (%.1f%% → %.1f%%)", d, prev$MDD, current_metrics$MDD))
+      sprintf("\U0001f4c9 MDD +%.1f%%p (%.1f%% \u2192 %.1f%%)", d, prev$MDD, current_metrics$MDD))
   }
 
   if (!is.null(current_metrics$Turnover) && !is.null(prev$Turnover)) {
     d <- current_metrics$Turnover - prev$Turnover
     if (d >= 100) alerts <- c(alerts,
-      sprintf("\U0001f504 Turnover +%.0f%%p (%.0f%% → %.0f%%)", d, prev$Turnover, current_metrics$Turnover))
+      sprintf("\U0001f504 Turnover +%.0f%%p (%.0f%% \u2192 %.0f%%)", d, prev$Turnover, current_metrics$Turnover))
   }
 
   # Save current as new snapshot

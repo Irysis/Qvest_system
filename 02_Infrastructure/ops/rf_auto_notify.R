@@ -4,7 +4,7 @@
 #
 # 발송 시점 3곳 (매 칸마다 보내면 소음이라 블록 단위로 묶는다):
 #   1) 블록 완료  — n %% 5 == 0 (블록 경계마다)  → 등급표 + 차트 2장
-#   2) Grade A    — 즉시(러너가 스스로 정지하는 그 순간)
+#   2) Grade A    — A 자격 관문을 통과해 Judge 요청을 발행한 그 순간(러너는 멈추지 않는다 — 문구 = rf_grade_a_disposition)
 #   3) 상한 소진  — reinforce_auto_next_paper.R 이 별도로 보낸다
 #
 # 규약 = qvest-telegram SKILL:
@@ -511,6 +511,65 @@ rf_insights <- function(tab) {
   out
 }
 
+# ── ★Grade A 처분 문구 (Q14 · 2026-09-25 · QEPM 감사 · 도훈 QEPM-IMMEDIATE-FIXES) ─────────────────────────
+##   구판은 "무인 정지"·"자동 진행 정지"·단일 qepm/mailbox/judge_request.json 을 **고정 문자열**로 냈다. 현행
+##   (P0-12 · reinforce_auto_parallel.R::.grade_a_enqueue · .a_hold_record)은 반대다 — 러너는 A 에서 멈추지 않고
+##   (도훈 2026-08-30), A 자격 관문을 통과한 칸만 **후보별** qepm/mailbox/judge_request_<BID>_<n>.json 을 발행하며,
+##   보류면 06_Registry/grade_a_queue.json status = held:<코드> 를 남기고 entry 는 active 로 계속 칸을 소비한다.
+##   ★문구는 그 칸의 **대기열 기록에서 재도출**한다 — 기록이 없으면 없다고 쓴다(발행을 지어내지 않는다).
+##   파일명 규칙은 .grade_a_enqueue 와 같은 식(gsub("[^A-Za-z0-9_.-]", "_", BID)) · 기록된 judge_request 가 있으면 그 값이 우선.
+##   ★요약(summary)은 **고정 길이**만 — tg_format_summary 가 [SUMMARY_MIN, SUMMARY_MAX]=[20,100]자를 넘으면 stop 한다
+##     (드라이런 실측: 보류 코드를 요약에 넣은 초판이 128자로 발송 전체 실패 · 결정론적이라 재시도가 출구가 아니다).
+##     길이가 가변인 값(보류 코드·status·경로)은 bullet(relaxed 면제)로만 보낸다.
+##   가드 = 08_Tests/reinforcement/test_rf_notify_grade_a_disposition.R
+rf_grade_a_disposition <- function(base_id, n, root = ROOT) {
+  n <- as.integer(n)
+  rel <- sprintf("qepm/mailbox/judge_request_%s_%d.json", gsub("[^A-Za-z0-9_.-]", "_", base_id), n)
+  qp <- file.path(root, "06_Registry/grade_a_queue.json")
+  q <- if (file.exists(qp)) tryCatch(fromJSON(qp, simplifyVector = FALSE), error = function(e) NULL) else NULL
+  ## 파손·비정형 줄(리스트 아닌 원소)이 있어도 A 알림 전체를 죽이지 않는다 — 그 줄만 건너뛴다
+  hit <- Filter(function(x) is.list(x) && identical(as.character(x$base_id %||% ""), as.character(base_id)) &&
+                  identical(suppressWarnings(as.integer(x$attempt %||% NA)), n), (q %||% list())$entries %||% list())
+  st <- if (length(hit)) as.character(hit[[1]]$status %||% "")[1] else ""
+  jr <- if (length(hit)) as.character(hit[[1]]$judge_request %||% "")[1] else ""
+  if (!is.na(jr) && nzchar(jr)) {
+    jr <- gsub("\\\\", "/", jr); r0 <- sub("/+$", "", gsub("\\\\", "/", root))
+    rel <- if (startsWith(jr, paste0(r0, "/"))) substring(jr, nchar(r0) + 2L)
+           else sub("^.*/(qepm/mailbox/[^/]+)$", "\\1", jr)   # 다른 루트(worktree 등)에서 기록된 경로도 상대 표기로
+  }
+  book <- "BOOK 등재: Judge(PIT) PASS + 도훈 confirm 뒤에만 — 자동 등재 없음"
+  hold_rule <- "보류 규약: A 자격 관문 미통과 칸은 held:<코드> 사유를 남기고 Judge 요청 미발행 · entry active 유지"
+  if (!is.na(st) && startsWith(st, "held:")) {
+    list(state = "held", status = st, request = rel,
+         title = "Grade A 보류 — A 자격 관문, Judge 요청 미발행 · 루프 계속",
+         summary = "Grade A 측정 — A 자격 관문 보류. 등급은 그대로, Judge 요청 발행만 미루고 entry 는 active 로 계속 돕니다",
+         items = c(sprintf("처분: 보류 %s — 사유가 풀리면 tick 시작 재평가에서 발행", st),
+                   "entry: active 유지 — 남은 칸 무인 소비 계속",
+                   sprintf("발행 시 요청 파일(후보별): %s", rel),
+                   book))
+  } else if (identical(st, "awaiting_judge")) {
+    list(state = "published", status = st, request = rel,
+         title = "Grade A 도달 — Judge(PIT) 요청 발행, 루프 계속",
+         summary = paste0("Grade A 도달 — A 자격 관문을 통과해 이 후보의 Judge(PIT) 요청을 발행했습니다. ",
+                          "러너는 멈추지 않고 다음 칸·다음 논문으로 이어갑니다"),
+         items = c(sprintf("요청 파일(후보별): %s", rel),
+                   "처분: Judge 대기(awaiting_judge) — 리서치 루프는 계속",
+                   hold_rule,
+                   book))
+  } else {
+    list(state = "unrecorded", status = st, request = rel,
+         title = "Grade A 도달 — Judge 요청 기록 미확인, 루프 계속",
+         summary = if (!is.na(st) && nzchar(st))
+                     "Grade A 도달 — 대기열에 이 칸의 기록이 비정형입니다. 발행 여부 확인 요망(러너는 계속 돕니다)"
+                   else "Grade A 도달 — 대기열에 이 칸의 발행·보류 기록이 없습니다. 발행 여부 확인 요망(러너는 계속 돕니다)",
+         items = c(sprintf("확인: 06_Registry/grade_a_queue.json · %s · 칸 %d · status=%s", base_id, n,
+                           if (!is.na(st) && nzchar(st)) sprintf("비정형(%s)", st) else "기록 없음"),
+                   sprintf("발행됐다면 요청 파일(후보별): %s", rel),
+                   hold_rule,
+                   book))
+  }
+}
+
 # ── 발송 ──────────────────────────────────────────────────────────────────────
 #' @param kind "block" (블록 완료) 또는 "grade_a"
 rf_auto_notify <- function(base_id, n, kind = "block") {
@@ -523,9 +582,11 @@ rf_auto_notify <- function(base_id, n, kind = "block") {
   .tab_own <- if ("inherited" %in% names(tab)) tab[which(!isTRUE(NA) & !as.logical(tab$inherited))] else tab
   gcnt <- table(factor(.tab_own$grade, levels = c("A", "B", "C", "F")))
   # 승자 셀의 산출물 디렉터리 (원장 attempts[].artifacts)
+  #   ★(2026-09-25 수리) 구판은 정의되지 않은 `info` 를 읽어 tryCatch 가 늘 NULL 을 냈다(08-30 도입 이래) — 승자 셀 요약
+  #   섹션이 한 번도 안 나갔다. 원장 entry 는 rf_notify_table() 결과 S$entry 다. 가드 = test_rf_notify_winner_section.R
   .win_dir <- tryCatch({
     hit <- Filter(function(x) identical(as.integer(x$n %||% -1L), as.integer(best$n)),
-                  info$entry$attempts)
+                  S$entry$attempts)
     d <- if (length(hit)) hit[[1]]$artifacts %||% NULL else NULL
     if (!is.null(d) && dir.exists(d)) d else NULL
   }, error = function(e) NULL)
@@ -534,8 +595,10 @@ rf_auto_notify <- function(base_id, n, kind = "block") {
 
   ch <- tryCatch(rf_notify_charts(tab, file.path(ROOT, "stage_artifacts/rf_auto_report")),
                  error = function(e) character(0))
+  ## ★A 처분 문구는 대기열 기록에서 재도출(Q14) — 표제·요약·다음 세 곳이 같은 판정을 쓴다
+  .gad <- if (identical(kind, "grade_a")) rf_grade_a_disposition(base_id, n) else NULL
   ttl <- if (identical(kind, "grade_a"))
-    sprintf("[1계층·강화 %d/%d] Grade A 도달 — 무인 정지, 확인 요망", n, S$maxa)
+    sprintf("[1계층·강화 %d/%d] %s", n, S$maxa, .gad$title)
   else
     sprintf("[1계층·강화 %d/%d] 무인 블록 완료 — %s", n, S$maxa,
             .rf_axname(sub("_.*$", "", tab[n == max(tab$n)]$code), long = TRUE))
@@ -681,7 +744,7 @@ rf_auto_notify <- function(base_id, n, kind = "block") {
                            gcnt[["A"]], gcnt[["B"]], gcnt[["C"]], gcnt[["F"]]))),
     list(type = "summary", emoji = "\U0001F4CC",
          body = if (identical(kind, "grade_a"))
-           sprintf("Grade A 도달 — 러너가 스스로 멈췄습니다. 검증과 등재는 확인이 필요합니다")
+           .gad$summary
          else sprintf("최고 %s · PORT_t %.3f · 문턱 2.95", best$code, best$port_t)),
     list(type = "kv", emoji = "\U0001F4CA", heading = "핵심 수치",
          kv = list("PORT_t (NW lag-3)" = sprintf("%.3f (%s)", best$port_t, best$code),
@@ -878,8 +941,7 @@ rf_auto_notify <- function(base_id, n, kind = "block") {
              items = utils::head(rf_insights(tab), 5)) },
     list(type = "bullet", emoji = "\u27A1\uFE0F", heading = "다음",
          items = if (identical(kind, "grade_a"))
-           c("처분: 자동 진행 정지 — 검증과 등재는 사람 확인 후",
-             "요청 파일: qepm/mailbox/judge_request.json")
+           .gad$items
          else c("처분: 자본 배정 없음 — 등급 C 이하는 참고용 보관",
                 sprintf("다음: 남은 %d칸을 무인으로 채웁니다", max(0L, S$maxa - S$used)),
                 sprintf("%d칸 소진 시 큐 다음 논문 착수 요청이 발송됩니다", S$maxa))))
@@ -945,7 +1007,10 @@ rf_auto_notify <- function(base_id, n, kind = "block") {
         list(type = "text", emoji = "💡", heading = "이번 배치에서 알게 된 것 — 전체", body = .bi_full)),
       relaxed = TRUE, glossary = FALSE, decode_jargon = FALSE, decode_mode = "off")
   }, error = function(e) cat("[rf_notify] 알게 된 것 후속 발송 실패:", conditionMessage(e), "\n"))
-  if (!is.null(.win_dir) &&
+  ## ★(2026-09-25) tg_pass_analysis 는 tg_send 직송이라 QVEST_TG_DRY_RUN 을 모른다 — 본문(.sent)이 드라이런이거나 실패면
+  ##   보내지 않는다(run_alpha_search.R [팩터분석TG] 관례). 위 .win_dir 수리로 이 줄이 처음 살아나 드라이런 배터리가 실발송할 뻔했다.
+  if (!is.null(.win_dir) && isTRUE(.sent$ok) && !isTRUE(.sent$dry_run) &&
+      !identical(Sys.getenv("QVEST_TG_DRY_RUN", ""), "1") &&
       (file.exists(file.path(.win_dir, "analysis_multifactor.csv")) ||
        file.exists(file.path(.win_dir, "analysis_fmb_summary.csv"))))
     tryCatch(tg_pass_analysis(sprintf("%s %s", base_id, best$code), .win_dir),

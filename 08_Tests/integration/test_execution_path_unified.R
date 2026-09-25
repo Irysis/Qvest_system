@@ -144,6 +144,11 @@ if (is.character(res_a2) && grepl("missing artifacts|BLOCKED", res_a2)) {
 cat("\n--- Test (b): cert eligibility 3-source parity ---\n")
 
 suppressMessages(source("02_Infrastructure/worktask/cert_rules.R"))
+# ★(2026-09-25 Q19) 이 source 가 cert_backfill_audit.R 의 CLI 본체(--auto)를 돌려 운영
+#   qepm/mailbox/governor/governance_log.json 에 append·.bak 을 남겼다(구 가드 `>= 0` 항상 참).
+#   가드는 정본에서 고쳤고(.cba_is_cli_main · 08_Tests/ops/test_cert_backfill_main_guard.R),
+#   여기서는 함수만 쓰므로 NO_MAIN 으로 한 번 더 막는다.
+Sys.setenv(QVEST_CERT_BACKFILL_NO_MAIN = "1")
 suppressMessages(source("02_Infrastructure/ops/cert_backfill_audit.R"))
 
 # Synthetic alpha_package fixtures

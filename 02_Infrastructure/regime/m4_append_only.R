@@ -26,9 +26,20 @@
 ##   ① 새로운 리밸런싱 시점에 **과거 데이터가 변경되면 안 된다** → 발행 원장 append-only
 ##   ② 모든 결과값은 **직전 데이터까지만** 활용 (PIT) → 신규 행의 매크로 관측일 < 결정일 검증
 ##
+## **★PIT C11 표식 승계 (2026-09-24 · 판정서 V-04 · 결정 PIT-C11-BOOK0001 · PIT-C11-P2-AUX ②)**:
+##   factor_engine.R 은 행마다 C11 표식 3열(c11_info_cutoff · c11_regime_key · c11_status)을 싣는다.
+##   구판 병합(`add[, .SD, .SDcols = names(pub)]`)과 두 쓰기(발행 원장 · 운영 패널)는 발행 원장 열 이름으로
+##   잘라 **새 열을 조용히 버렸다** — 소비자(pg2 arm · 배포 생성기)는 C11 상태를 영영 못 봤다.
+##   현행: ① 신규 행이 표식을 싣고 오면 발행 원장이 열을 승계한다(기발행 행 = "unresolved" — 수리 전 상류 위
+##   산출이라는 상태 표기이지 값 재서술이 아니다) ② 표식 일부만 오면 중단(2) ③ 신규 행 C11 검사 —
+##   verified 인데 c11_info_cutoff > Date 또는 상태값 미지 = PIT 위반(4) · unresolved·epoch 불일치 = 경고(기록)
+##   ④ 사이드카·드리프트 로그에 표식 요약. epoch 재초기화 = m4_epoch_reinit.R(구판 보관 → 원장 이관 → --init).
+##
 ## 사용:  Rscript m4_append_only.R --as-of 2026-09-01 [--dry-run] [--init]
+##        --init = 발행 원장이 **없을 때만** — 빈 원장에 재생성본 결정행(월 첫 행, Date <= AS_OF)을 잇는다
+##                 (병합 경로와 같은 후보 필터·C11·PIT·AS_OF 검사·dry-run·동기화). 원장이 있으면 거부(2).
 ## 종료:  0 정상 / 1 드리프트 검출(과거 재서술 시도, 발행본 보존) / 2 입력·환경 오류
-##        3 AS_OF 행 미생성(침묵 낡음 차단) / 4 PIT 위반(결정일 이후 매크로 관측 사용)
+##        3 AS_OF 행 미생성(침묵 낡음 차단) / 4 PIT 위반(결정일 이후 매크로 관측 사용 · C11 컷오프 위반)
 
 ## ★진행 표식 (2026-08-13) — 러너 안에서 **첫 출력 전에** 블록되는 사례를 잡기 위해.
 ##   블록 지점이 라이브러리 로드인지 파일 열기인지 로그만으로 갈리도록 단계마다 찍는다.
@@ -58,9 +69,14 @@ DRIFT_LOG <- file.path(PUBDIR, "m4_drift_log.jsonl")
 ## 2계층: 결정열이 바뀌면 hard, 입력열은 로그만 (AE 배관 ae_regime_monthly.py 와 같은 규약)
 DECISION_COLS <- c("weight_str1715", "weight_cash")
 INPUT_COLS <- c("Regime_Score_lag", "MSM_Crisis_Prob_lag", "combined_regime", "conjunction_score")
+## ★C11 표식 3열 — 생산자 factor_engine.R(c11_regime_check · result_cols)과 같은 이름. 값 규약:
+##   c11_status ∈ {verified(컷오프 있음) · no_regime(국면 미사용 워밍업 행) · unresolved(표식 없음 — 수리 전 상류)}
+C11_COLS <- c("c11_info_cutoff", "c11_regime_key", "c11_status")
+C11_STATUS_OK <- c("verified", "no_regime", "unresolved")
 
 die <- function(code, msg) { cat(sprintf("[m4-append] ERROR %s\n", msg)); quit(status = code) }
 say <- function(...) cat(sprintf(...))
+`%||%` <- function(a, b) if (is.null(a) || length(a) == 0L) b else a
 
 ## ---- args ----
 a <- commandArgs(TRUE)
@@ -90,18 +106,25 @@ cat("[m4-append] PANEL read ok\n"); flush(stdout())
 setorder(fresh, Date)
 say("[m4-append] 재생성본 n=%d  %s ~ %s\n", nrow(fresh), min(fresh$Date), max(fresh$Date))
 
-## ---- 발행 원장 초기화 ----
+## ---- 발행 원장 적재 / 초기화 ----
+##   ★(2026-09-24 C11 epoch 재초기화 대비 수리) 구판 --init 은 재생성본을 **통째로** 원장에 쓰고 바로 끝났다 —
+##     (a) 데이터 꼬리 행·기발행 월 중복 결정행까지 원장에 박히고(아래 2026-08-29 수리가 막는 바로 그 행들)
+##     (b) PIT·C11·AS_OF 검사도, 운영 산출물 2종·사이드카 동기화도 없었다.
+##     또 원장이 이미 있으면 --init 을 **말없이 무시**하고 병합 경로로 흘렀다(사용자는 초기화됐다고 믿는다).
+##   현행: init = '빈 원장에 잇기'. 병합 경로를 그대로 타므로 검사·기록이 전부 같다. 원장이 있으면 거부.
 if (!dir.exists(PUBDIR)) dir.create(PUBDIR, recursive = TRUE, showWarnings = FALSE)
 if (!file.exists(PUB)) {
-  if (!INIT) die(2, sprintf("발행 원장 부재 — 최초 1회 --init 로 현재 산출물을 기준선으로 동결할 것: %s", PUB))
-  write_parquet(fresh, PUB)
-  say("[m4-append] ★발행 원장 초기화 — 현재 산출물을 기준선으로 동결 (n=%d)\n", nrow(fresh))
-  say("[m4-append] 이후 실행부터 과거 행은 이 원장이 정본이다.\n")
-  quit(status = 0)
+  if (!INIT) die(2, sprintf("발행 원장 부재 — 최초 1회 --init 로 재생성본 결정행을 기준선으로 동결할 것: %s", PUB))
+  pub <- fresh[0L]
+  say("[m4-append] ★발행 원장 초기화 모드 — 빈 원장에 재생성본 결정행(월 첫 행 · Date <= %s)을 잇는다\n", AS_OF)
+  say("            (후보 필터·C11 표식·PIT·AS_OF 검사·dry-run·동기화 = 병합 경로와 동일)\n")
+} else {
+  if (INIT) die(2, paste0("--init 인데 발행 원장이 이미 있다 — 덮어쓰지 않는다. epoch 재초기화는 ",
+                          "m4_epoch_reinit.R(구판 보관 → 원장 이관 → --init) 로: ", PUB))
+  pub <- rp(PUB); pub[, Date := as.Date(Date)]
+  setorder(pub, Date)
+  say("[m4-append] 발행 원장   n=%d  %s ~ %s\n", nrow(pub), min(pub$Date), max(pub$Date))
 }
-pub <- rp(PUB); pub[, Date := as.Date(Date)]
-setorder(pub, Date)
-say("[m4-append] 발행 원장   n=%d  %s ~ %s\n", nrow(pub), min(pub$Date), max(pub$Date))
 
 ## ---- 드리프트 대조 (공통 행) — 보고만, 적용 않음 ----
 common <- intersect(as.character(pub$Date), as.character(fresh$Date))
@@ -133,10 +156,36 @@ if (length(drift_hard)) {
     say("   %s: %d행 변경 (최대 Δ%.4f)\n      %s\n", r$col, r$n, r$max_delta, r$examples)
   }
 }
+## ★C11 표식 드리프트 (로그만 — 2026-09-24). 기발행 행의 표식은 발행 시점 상태의 기록이라 덮지 않는다.
+##   재생성본과 갈리면 상류 표식 소실(예: 국면 원장 병합이 표식 열을 지움 · 판정서 사후검증 NON-BLOCKING)이나
+##   규칙 epoch 변경의 지문이다 — 조용히 넘기지 않고 수를 남긴다.
+c11_drift <- list()
+if (length(common) && "c11_status" %in% names(pub) && "c11_status" %in% names(fresh)) {
+  .p <- pub[as.character(Date) %in% common][order(Date)]
+  .f <- fresh[as.character(Date) %in% common][order(Date)]
+  .neq <- function(a, b) { a <- as.character(a); b <- as.character(b)
+                           which(xor(is.na(a), is.na(b)) | (!is.na(a) & !is.na(b) & a != b)) }
+  .ds <- .neq(.p$c11_status, .f$c11_status)
+  .dk <- if ("c11_regime_key" %in% names(pub) && "c11_regime_key" %in% names(fresh))
+    .neq(.p$c11_regime_key, .f$c11_regime_key) else integer(0)
+  c11_drift <- list(status_n = length(.ds), key_n = length(.dk),
+                    examples = paste(sprintf("%s %s->%s", as.character(.p$Date[.ds]), .p$c11_status[.ds],
+                                             .f$c11_status[.ds])[seq_len(min(4L, length(.ds)))], collapse = " | "))
+  if (length(.ds) || length(.dk))
+    say("[m4-append] C11 표식 드리프트(로그): status %d행 · epoch 키 %d행  %s\n            └ 발행 표식 유지 — 상류 표식 소실/epoch 변경 점검\n",
+        length(.ds), length(.dk), c11_drift$examples)
+}
 
 ## ---- append-only 병합 ----
-pub_max <- max(pub$Date)
-add <- fresh[Date > pub_max]
+pub_max <- if (nrow(pub)) max(pub$Date) else as.Date(NA)
+add <- if (nrow(pub)) fresh[Date > pub_max] else copy(fresh)
+if (INIT && nrow(add)) {
+  ## 초기화는 'AS_OF 시점의 기준선'이다 — AS_OF 뒤 행은 다음 병합 실행의 몫(PIT 검사도 그때 받는다).
+  .late <- add$Date > AS_OF
+  if (any(.late)) say("[m4-append] 초기화 — AS_OF 뒤 %d행 제외: %s\n", sum(.late),
+                      paste(as.character(add$Date[.late]), collapse = " "))
+  add <- add[!.late]
+}
 ## ★(2026-08-29 수리) 독트린 정합 — "새 달만 잇는다" (선언 §16 그대로의 구현):
 ##   재생성본은 발행 후보가 아닌 행 2류를 만들 수 있다 —
 ##   ① 기발행 월의 중복 결정행(달력 1일 vs 실거래 첫날 표기 차: 발행 08-01 vs 재생성 08-03)
@@ -158,10 +207,36 @@ if (nrow(add)) {
 if (nrow(add)) {
   say("[m4-append] 신규 %d행 추가: %s\n", nrow(add), paste(as.character(add$Date), collapse = " "))
 } else {
-  say("[m4-append] 신규 행 없음 (발행 종점 %s >= 재생성 종점 %s)\n", pub_max, max(fresh$Date))
+  say("[m4-append] 신규 행 없음 (발행 종점 %s >= 재생성 종점 %s)\n", as.character(pub_max), max(fresh$Date))
 }
 miss <- setdiff(names(pub), names(add))
-if (length(miss) && nrow(add)) die(2, sprintf("신규 행에 발행 원장 컬럼 결손: %s", paste(miss, collapse = ",")))
+if (length(miss) && nrow(add)) {
+  if (any(miss %in% C11_COLS))
+    die(2, sprintf(paste0("신규 행에 C11 표식 열 결손: %s — 발행 원장은 표식을 싣는데 상류(factor_engine)가 표식을 ",
+                          "내지 않았다(구판 엔진·표식 소실). 표식 없는 행을 표식 원장에 잇지 않는다"),
+                   paste(intersect(miss, C11_COLS), collapse = ",")))
+  die(2, sprintf("신규 행에 발행 원장 컬럼 결손: %s", paste(miss, collapse = ",")))
+}
+## ★PIT C11 표식 승계 (2026-09-24 · 판정서 V-04 · 사후검증 NON-BLOCKING 'm4_append_only.R:165·264·267').
+##   구판은 아래 rbindlist 를 names(pub) 로 잘라 신규 행의 표식 열을 버렸고, 그 final 을 발행 원장(PUB)과
+##   운영 패널(PANEL)에 되써 **재생성본의 표식까지 지웠다** — 소비자(pg2 arm · 배포 생성기)는 C11 상태를 못 봤다.
+##   신규 행이 표식을 싣고 오면 원장이 열을 승계한다. 기발행 행 = 수리 전 상류 위 산출 → c11_status "unresolved"
+##   (값 재서술이 아니라 상태 표기 · 컷오프·키는 모름 = NA). 표식 일부만 오면 계약 위반으로 중단.
+.c11_in_add <- intersect(C11_COLS, names(add))
+if (nrow(add) && length(.c11_in_add) && length(.c11_in_add) < length(C11_COLS))
+  die(2, sprintf("신규 행의 C11 표식이 일부만 있다(%s / 필요 %s) — 표식 계약 불일치, 원장에 잇지 않는다",
+                 paste(.c11_in_add, collapse = ","), paste(C11_COLS, collapse = ",")))
+if (nrow(add) && length(.c11_in_add) == length(C11_COLS)) {
+  .n_new <- sum(!C11_COLS %in% names(pub))
+  if (!"c11_info_cutoff" %in% names(pub)) pub[, c11_info_cutoff := as.Date(NA)]
+  if (!"c11_regime_key" %in% names(pub))  pub[, c11_regime_key := NA_character_]
+  if (!"c11_status" %in% names(pub))      pub[, c11_status := if (.N) "unresolved" else character(0)]
+  if (.n_new) say("[m4-append] ★C11 표식 열 %d개 승계 — 기발행 %d행 = unresolved(수리 전 상류 위 산출 · 값 불변)\n",
+                  .n_new, nrow(pub))
+  add[, c11_info_cutoff := as.Date(c11_info_cutoff)]
+  add[, c11_regime_key := as.character(c11_regime_key)]
+  add[, c11_status := as.character(c11_status)]
+}
 final <- if (nrow(add)) rbindlist(list(pub, add[, .SD, .SDcols = names(pub)]), use.names = TRUE) else copy(pub)
 setorder(final, Date)
 
@@ -244,6 +319,67 @@ if (!is.null(pc)) {
   }
 }
 
+## ---- ★PIT C11 — 신규 행의 해외 정보 컷오프 (2026-09-24 · 판정서 V-04) ----
+##   위 원칙 2 검사는 MSM 값의 **라벨** 출처(M−1 월말 행)를 본다. 그 행이 담은 해외 정보가 결정일에 실제로
+##   가용했는지는 라벨로 알 수 없다(C11) — 생산자가 실은 c11_info_cutoff 로만 안다(factor_engine.R c11_regime_check).
+##   · verified 인데 컷오프 결측/컷오프 > 결정일(Date) · 상태값 미지 → PIT 위반(4). 생산자가 이미 멈추는 조건이라
+##     여기 걸리면 패널이 생산자 밖에서 바뀐 것이다 — 발행 원장 앞 마지막 방어선이라 다시 잰다.
+##   · unresolved(상류 표식 없음) · 규칙 epoch 불일치 → 경고·기록(결정 PIT-C11-BOOK0001 '표기'). 차단하지 않는다 —
+##     소비자 pg2 arm 은 이 행들을 스스로 거부한다(fail-closed · pg2_risk_overlay.R .pg2_load_m4).
+c11_rules_key_now <- function() {
+  f <- file.path(ROOT, "02_Infrastructure/data/fred_availability.R")
+  rp_ <- file.path(ROOT, "06_Registry/fred_availability_rules.json")
+  if (!file.exists(f) || !file.exists(rp_)) return(NA_character_)
+  tryCatch({
+    e <- new.env(parent = globalenv())
+    suppressMessages(suppressWarnings(sys.source(f, envir = e)))
+    as.character(e$fred_avail_rules_meta(rp_)$regime_key)
+  }, error = function(err) NA_character_)
+}
+c11_check_rows <- function(rows, key_now) {
+  out <- list(n = nrow(rows), verified = 0L, no_regime = 0L, unresolved = 0L, key_mismatch = 0L,
+              viol = character(0), warn = character(0))
+  if (!nrow(rows)) return(out)
+  if (!all(C11_COLS %in% names(rows))) {
+    out$unresolved <- nrow(rows)
+    out$warn <- sprintf("신규 %d행에 C11 표식 열 없음(상류 수리 전 판) — 원장 표식 미승계", nrow(rows))
+    return(out)
+  }
+  st <- as.character(rows$c11_status); cut <- as.Date(rows$c11_info_cutoff); key <- as.character(rows$c11_regime_key)
+  bad_st <- which(is.na(st) | !(st %in% C11_STATUS_OK))
+  for (i in bad_st) out$viol <- c(out$viol, sprintf("%s c11_status='%s' (허용: %s)", rows$Date[i], st[i],
+                                                    paste(C11_STATUS_OK, collapse = "/")))
+  ver <- which(st %in% "verified")
+  for (i in ver[is.na(cut[ver]) | cut[ver] > rows$Date[ver]])
+    out$viol <- c(out$viol, sprintf("%s c11_status=verified · c11_info_cutoff %s > 결정일(또는 결측)", rows$Date[i],
+                                    as.character(cut[i])))
+  out$verified <- length(ver); out$no_regime <- sum(st %in% "no_regime"); out$unresolved <- sum(st %in% "unresolved")
+  if (out$unresolved)
+    out$warn <- c(out$warn, sprintf("신규 %d행 c11_status=unresolved — 상류 unified 월간 표식 없음(C11 미해소 표기)",
+                                    out$unresolved))
+  if (length(ver)) {
+    km <- ver[is.na(key[ver]) | is.na(key_now) | key[ver] != key_now]
+    out$key_mismatch <- length(km)
+    if (length(km))
+      out$warn <- c(out$warn, sprintf("신규 %d행 규칙 epoch '%s' ≠ 현행 '%s' — 옛 규칙 판(재빌드 대상)", length(km),
+                                      key[km[1]], key_now))
+  }
+  out
+}
+C11_KEY_NOW <- c11_rules_key_now()
+c11c <- c11_check_rows(add, C11_KEY_NOW)
+if (nrow(add))
+  say("[m4-append] C11 신규 %d행: verified %d · no_regime %d · unresolved %d · epoch 불일치 %d (현행 %s)\n",
+      c11c$n, c11c$verified, c11c$no_regime, c11c$unresolved, c11c$key_mismatch,
+      ifelse(is.na(C11_KEY_NOW), "판독 불가", C11_KEY_NOW))
+for (s in c11c$warn) say("[m4-append] ★C11 경고 %s\n", s)
+if (length(c11c$viol)) {
+  say("\n[m4-append] ★★PIT C11 위반 — 신규 행의 해외 정보 컷오프가 결정일 뒤이거나 표식이 계약 밖\n")
+  for (s in c11c$viol) say("   %s\n", s)
+  say("            기록하지 않고 중단한다.\n")
+  quit(status = 4)
+}
+
 ## ---- fail-closed: AS_OF 행 필수 ----
 ##   ★이 게이트가 막으려는 원래 결함이 "행이 없으면 조용히 직전 달 값을 쓴다" 이다.
 ##   따라서 AS_OF 행 미생성은 **쓰기 전에, dry-run 에서도 동일하게** 중단해야 한다.
@@ -260,7 +396,7 @@ if (DRY) { say("[m4-append] dry-run — 기록 안 함\n"); quit(status = if (le
 
 ## ---- 기록 ----
 ts <- format(Sys.time(), "%Y%m%d_%H%M%S")
-invisible(file.copy(PUB, paste0(PUB, ".bak_", ts), overwrite = FALSE))
+if (file.exists(PUB)) invisible(file.copy(PUB, paste0(PUB, ".bak_", ts), overwrite = FALSE))
 write_parquet(final, PUB)
 ## 운영 산출물 2종을 발행본으로 되돌린다 (소비자가 안정된 이력을 보게)
 invisible(file.copy(PANEL, paste0(PANEL, ".regen_", ts), overwrite = FALSE))
@@ -276,9 +412,10 @@ say("[m4-append] 기록 완료 — 발행 원장 n=%d, 운영 산출물 2종 동
 ##   담은 사이드카를 텍스트로 남긴다. 바이너리 강제추가보다 **읽히는 diff** 가 감사에 맞다.
 SIDE <- file.path(PUBDIR, "m4_published_ledger.jsonl")
 side_cols <- intersect(c("Date","weight_str1715","weight_cash","Regime_Score_lag",
-                         "Cash_Pct_lag","MSM_Crisis_Prob_lag","conjunction_score"), names(final))
+                         "Cash_Pct_lag","MSM_Crisis_Prob_lag","conjunction_score", C11_COLS), names(final))
 sd_ <- final[, .SD, .SDcols = side_cols][order(Date)]
 sd_[, Date := as.character(Date)]
+if ("c11_info_cutoff" %in% names(sd_)) sd_[, c11_info_cutoff := as.character(as.Date(c11_info_cutoff))]  # ★C11 표식도 diff 로 감사
 con <- file(SIDE, "w", encoding = "UTF-8")
 for (i in seq_len(nrow(sd_))) writeLines(jsonlite::toJSON(as.list(sd_[i]), auto_unbox = TRUE, digits = 12), con)
 close(con)
@@ -286,7 +423,11 @@ say("[m4-append] 사이드카 %s (%d행, git 추적용)\n", basename(SIDE), nrow
 
 ## 드리프트 감사 로그
 rec <- list(ts = ts, as_of = as.character(AS_OF), n_published = nrow(final),
-            n_added = nrow(add), gaps = gaps,
+            n_added = nrow(add), gaps = gaps, init = INIT,
+            c11 = list(rules_key = C11_KEY_NOW, added_verified = c11c$verified, added_no_regime = c11c$no_regime,
+                       added_unresolved = c11c$unresolved, added_key_mismatch = c11c$key_mismatch,
+                       ledger_has_marker = all(C11_COLS %in% names(final)),
+                       drift_status_n = c11_drift$status_n %||% 0L, drift_key_n = c11_drift$key_n %||% 0L),
             drift_hard = lapply(drift_hard, function(r) list(col = r$col, n = r$n, max_delta = r$max_delta, examples = r$examples)),
             drift_soft = lapply(drift_soft, function(r) list(col = r$col, n = r$n, max_delta = r$max_delta)))
 cat(jsonlite::toJSON(rec, auto_unbox = TRUE), "\n", file = DRIFT_LOG, append = TRUE)

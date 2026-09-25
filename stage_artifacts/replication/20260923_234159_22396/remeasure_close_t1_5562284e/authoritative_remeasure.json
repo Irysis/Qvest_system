@@ -1,0 +1,204 @@
+{
+  "status": "OK",
+  "kind": "remeasure_from_holdings",
+  "strategy_id": "RP_20260923_234159_22396",
+  "strategy_name": "RF_PAR_B1_2_sue",
+  "run_id": "20260923_234159_22396",
+  "remeasured_at": "2026-09-25T14:05:40+0900",
+  "bt_result_path": "C:/Users/99922/OneDrive/Quant_Module_Moltbot/stage_artifacts/replication/20260923_234159_22396/remeasure_close_t1_5562284e/bt_result.rds",
+  "metric_type": "backtested",
+  "essence_grade": "F",
+  "grade_basis": "remeasure_sweep",
+  "essence": {
+    "net_sharpe": 0.564,
+    "net_ir": -0.02,
+    "portfolio_alpha_t_nw_lag3": -0.095,
+    "oos_retention": -1.178,
+    "dsr": 0.011,
+    "mdd": 0.597,
+    "calmar": 0.181,
+    "cagr": 0.108,
+    "drawdown_profile": {
+      "severe45_count": 3,
+      "severe55_count": 4,
+      "severe45_total_periods": 65,
+      "severe45_max_periods": 38,
+      "severe45_period_frac": 0.0124,
+      "catastrophic_mdd_threshold": 0.7,
+      "severe45_hard_count": 15,
+      "severe55_hard_count": 6,
+      "severe45_period_hard_frac": 0.25,
+      "severe45_max_hard_periods": 252,
+      "tail_review": true,
+      "structural_hard_fail": false
+    }
+  },
+  "hard_fail": false,
+  "structural_drawdown": false,
+  "selection_type": "sweep",
+  "dsr_gate_applied": true,
+  "n_trials_cumulative": 41,
+  "dsr": 0.011,
+  "measurement_regime": {
+    "key": "close_t1_5562284e",
+    "regime": "close_t1_5562284e",
+    "exec_price": "close_t1",
+    "exec_price_basis": "argument(rfh_remeasure)",
+    "cost_model_version": "replication_weight_delta_v1/first_hold_day_multiplicative",
+    "harness_md5": "3e316e9cef23c4b10ea7b088493e2ad4",
+    "selection_type": "sweep",
+    "n_trials_cumulative": 41,
+    "n_trials_basis": "D-A raw 누적(rebase 시점): 1(기저) + 계보 측정 칸(상속 제외) · 산출물 참조 entry 최대 · RP_20260923_230819_4212_adapted_rulefast",
+    "scoring_md5": "ce88f24b841d6151c00cb75e8be79217",
+    "data_vintage": {
+      "raw": {
+        "path": "C:/Users/99922/OneDrive/Quant_Module_Moltbot/.cache/RAWDATA.parquet",
+        "size": 424757866,
+        "mtime": "2026-09-25T08:11:23+0900"
+      },
+      "bm": {
+        "path": "C:/Users/99922/OneDrive/Quant_Module_Moltbot/.cache/benchmark.parquet",
+        "size": 189495,
+        "mtime": "2026-09-24T00:04:10+0900"
+      },
+      "raw_nrow": 14121332,
+      "raw_max_date": "2026-09-23",
+      "raw_cols": ["Date", "Ticker", "Ret"],
+      "bm_nrow": 9035,
+      "bm_max_date": "2026-09-23"
+    },
+    "data_end": "2026-09-22"
+  },
+  "grade_base": "F",
+  "recent_regime_rescued": false,
+  "recent_regime_label": null,
+  "rolling_grade": {
+    "status": "ok",
+    "n_points": 221,
+    "window_months": 36,
+    "pass_life": 0.1765,
+    "pass_recent": 0.1667,
+    "current": {
+      "ym": "2026-09",
+      "sharpe": 0.641196823383529,
+      "cagr": 0.129936446738423,
+      "mdd": 0.196684163586714,
+      "calmar": 0.660635022001339,
+      "pass": false
+    },
+    "prior_recoveries": 8,
+    "current_run": 0,
+    "span": ["2008-05", "2026-09"]
+  },
+  "defensive_score": {
+    "status": "ok",
+    "defensive": true,
+    "down": {
+      "n": 108,
+      "excess": 0.00774309807741444,
+      "hit": 0.592592592592593,
+      "t": 2.07045833296597,
+      "capture": 0.818390738338854
+    },
+    "mid": {
+      "n": 29,
+      "excess": 0.00251250677490416,
+      "hit": 0.413793103448276,
+      "t": 0.275137251043435,
+      "capture": 0.974072336158152
+    },
+    "deep": {
+      "n": 10,
+      "excess": 0.00473013059325478,
+      "hit": 0.4,
+      "t": 0.195322873414291,
+      "capture": 0.968761104241408
+    },
+    "up": {
+      "n": 148,
+      "excess": -0.00594427497724756,
+      "hit": 0.527027027027027,
+      "t": -1.27176514708744,
+      "capture": 0.880745543912539
+    },
+    "reason": "하락월 108개: 초과 +0.77%/월 (t 2.07 · 적중 59%) · 벤치-10% 이하 10개: 초과 +0.47%/월 · 상승월 초과 -0.59%/월"
+  },
+  "reasons": "non-positive alpha (PORT_t<=0 또는 net_IR<=0)",
+  "remeasure": {
+    "version": "remeasure_from_holdings_v1",
+    "of_artifact": "C:/Users/99922/OneDrive/Quant_Module_Moltbot/stage_artifacts/replication/20260923_234159_22396",
+    "of_run_id": "20260923_234159_22396",
+    "method": "holdings_replay — 저장 보유(시그널일 확정 비중) → replication_harness → build_bt_result → audit → essence",
+    "holdings_source": "bt_result.rds$holdings(actual_weight)",
+    "signal_rule": "exec 직전 거래일(get_execution_date 역상 전수 단정)",
+    "n_signals_restored": 86,
+    "n_rebal_flag_stored": 86,
+    "n_rebal_sim": 86,
+    "commission": 0.0015,
+    "tail_window_days": 15,
+    "tail_rebal_unbooked": null,
+    "stored": {
+      "essence_grade": "F",
+      "essence": {
+        "net_sharpe": 0.543,
+        "net_ir": -0.05,
+        "portfolio_alpha_t_nw_lag3": -0.232,
+        "oos_retention": -1.303,
+        "dsr": 0.063,
+        "mdd": 0.601,
+        "calmar": 0.172,
+        "cagr": 0.103,
+        "drawdown_profile": {
+          "severe45_count": 4,
+          "severe55_count": 3,
+          "severe45_total_periods": 68,
+          "severe45_max_periods": 38,
+          "severe45_period_frac": 0.0129,
+          "catastrophic_mdd_threshold": 0.7,
+          "severe45_hard_count": 15,
+          "severe55_hard_count": 6,
+          "severe45_period_hard_frac": 0.25,
+          "severe45_max_hard_periods": 252,
+          "tail_review": true,
+          "structural_hard_fail": false
+        }
+      },
+      "exec_price": "close_d_legacy",
+      "exec_price_basis": "measurement_regime",
+      "harness_md5": "a7653c31dc17cf1c285103b073929de8",
+      "selection_type": "sweep",
+      "n_trials_cumulative": 6
+    },
+    "stored_bt_md5": "d94aaef3aaf36d27082221cda796d792",
+    "contract_md5": "3c9c611629e76637970e0ef3999dbb8b",
+    "vintage_flags": [],
+    "pit_screen": {
+      "n_ledger_refs": 1,
+      "c11": false,
+      "text_hit": ""
+    },
+    "vs_stored": {
+      "same_regime": false,
+      "n_days_stored": 5258,
+      "n_days_new": 5257,
+      "same_days": false,
+      "ret_net_identical": false,
+      "nav_net_identical": false,
+      "metrics_identical": false,
+      "benchmark_identical": false,
+      "max_abs_dret_common_days": 0.0268340216436306,
+      "n_common_days": 5257
+    }
+  },
+  "replication": {
+    "n_max": 25,
+    "has_short": false
+  },
+  "contract": {
+    "integrity_status": "OK",
+    "cagr": 0.108,
+    "sharpe": 0.564,
+    "mdd": 0.597,
+    "calmar": 0.181
+  }
+}

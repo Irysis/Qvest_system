@@ -50,6 +50,31 @@ AX <- PROG$fixed_axes
 .SEL <- .rf_sel_args(SPEC)
 SEL_TYPE <- .SEL$selection_type; N_TRIALS <- .SEL$n_trials_cumulative; N_BASIS <- .SEL$n_trials_basis
 
+## ★리프레시 배리어 — 셀 시작 2차 (도훈 결정 OPS-RUNNER-REFRESH-BARRIER · 2026-09-24).
+##   진행 중인 tick 이 잠금 생성 **뒤에** 이 워커를 띄운 경우(앞 레인이 오래 도는 사이 daily_refresh 가 시작) —
+##   RAWDATA 를 읽는 러너(load_rawdata) **직전**에 판정한다. held 면 rb_cell_wait_s()(기본 600초 · 근거는
+##   refresh_barrier.R 머리) 동안 기다리고, 그래도 held 면 측정·등급 기록 없이 끝낸다:
+##   ok=FALSE · deferred="refresh_lock" → 부모(reinforce_auto_parallel.R ③)가 원장에 아무것도 쓰지 않는다
+##   (등록만 된 칸 = pending → 다음 tick 재개 · fail_count 무증가 · 시도 예산 무소모). F·NA 등급 기록 금지.
+##   판정기 불능(error)도 막는다(fail-closed). 잠금 없음이면 아무것도 안 하고 지나간다.
+##   ★판정과 load_rawdata 사이 틈은 엔진이 적재 직후 한 번 더 본다(QVEST_RB_ENGINE_RECHECK — rf_cell_engine.R).
+.rb_defer <- function(st, waited, why, err = NULL) {
+  wr(list(n = N, code = SPEC$code, block = SPEC$block, ok = FALSE, deferred = "refresh_lock", waited_s = waited,
+          barrier = list(state = st$state %||% "", lock = st$lock %||% "", pid = st$pid %||% "",
+                         reason = st$reason %||% "", path = st$path %||% ""),
+          err = err %||% sprintf("[refresh_barrier] %s — %s(lock=%s pid=%s reason=%s) · 측정·등급 기록 없이 종료(다음 tick 재개)",
+                                 why, st$state %||% "?", st$lock %||% "", st$pid %||% "", st$reason %||% "")))
+  quit(status = 3)
+}
+.rb_w <- tryCatch({
+  .rb_src <- file.path(ROOT, "02_Infrastructure/ops/refresh_barrier.R")
+  if (!file.exists(.rb_src)) .rb_src <- "C:/Users/99922/OneDrive/Quant_Module_Moltbot/02_Infrastructure/ops/refresh_barrier.R"
+  .RBX <- new.env(); sys.source(.rb_src, envir = .RBX, keep.source = FALSE)
+  .RBX$rb_wait(.RBX$rb_cell_wait_s(), root = ROOT)
+}, error = function(e) list(proceed = FALSE, waited_s = 0, status = list(state = "error", reason = conditionMessage(e))))
+if (!isTRUE(.rb_w$proceed)) .rb_defer(.rb_w$status, .rb_w$waited_s, sprintf("셀 시작 대기 %s초 뒤에도 막힘", .rb_w$waited_s))
+Sys.setenv(QVEST_RB_ENGINE_RECHECK = "1")
+
 res <- tryCatch({
   suppressMessages(source(file.path(ROOT, "02_Infrastructure/alpha_search/run_paper_replication.R")))
   UNIV <- if (identical(SPEC$universe$kind, "k200_kq150")) "K200_KQ150" else toupper(SPEC$universe$kind)
@@ -74,6 +99,9 @@ res <- tryCatch({
 }, error = function(e) structure(list(err = conditionMessage(e)), class = "rf_err"))
 
 if (inherits(res, "rf_err")) {
+  # ★엔진이 RAWDATA 적재 직후 재판정에서 잠금을 봤다 — 실패가 아니라 미측정 종료(위 .rb_defer 와 같은 표식 · 2026-09-24)
+  if (grepl("[refresh_barrier]", res$err, fixed = TRUE))
+    .rb_defer(list(state = "held", reason = "engine_recheck"), .rb_w$waited_s, "RAWDATA 적재 직후 재판정", err = res$err)
   wr(list(n = N, code = SPEC$code, ok = FALSE, err = res$err)); quit(status = 1)
 }
 
@@ -82,6 +110,9 @@ if (!file.exists(ar)) {
   # 산출 루트에서 이 run 의 것을 고른다 (병렬이므로 mtime 최신 = 남의 것일 수 있어 strategy_name 으로 대조)
   cand <- list.files(file.path(ROOT, "stage_artifacts/replication"),
                      pattern = "^authoritative_remeasure\\.json$", recursive = TRUE, full.names = TRUE)
+  # ★재측정 형제 판(P0-05 · <run>/remeasure_<key>/authoritative_remeasure.json — 원 산출물의 다른 규약 판)은 새 측정이 아니다 —
+  #   폴백 후보에서 뺀다(2026-09-24 · 통합 검증 L-B1 · 원장 rebase 형제 위치 = 칸 산출물 안)
+  cand <- cand[!grepl("/remeasure_[^/]+/authoritative_remeasure\\.json$", gsub("\\", "/", cand, fixed = TRUE))]
   hit <- Filter(function(f) {
     j <- tryCatch(fromJSON(f, simplifyVector = TRUE), error = function(e) NULL)
     !is.null(j) && identical(j$strategy_name, SNAME)

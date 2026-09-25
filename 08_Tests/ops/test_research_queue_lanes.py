@@ -238,6 +238,45 @@ try:
 finally:
     shutil.rmtree(tmp, ignore_errors=True)
 
+# ── F. QEPM 동결 표식 (도훈 결정 QEPM-R0-FREEZE · 2026-09-25 · 동결 잔여 수리) ──
+#   qepm_dossier(next_agent 스폰 — FORGE_DONE 이면 judge)·paper_promotion(wt_create) 은 동결된 WT 체인 진입로다.
+#   술어는 사료로 남기되 항목마다 frozen 표식이 실려야 소비자(프롬프트)가 스폰하지 않는다. 다른 레인엔 표식이 없어야 한다.
+print("== F. QEPM 동결 표식: 동결 레인 항목 전부에 frozen · 다른 레인엔 없음 ==")
+tmp3 = tempfile.mkdtemp()
+try:
+    def mkwt3(name, files, phase):
+        d = os.path.join(tmp3, "qepm", "mailbox", "worktask", name)
+        os.makedirs(d, exist_ok=True)
+        for f in files:
+            io.open(os.path.join(d, f), "w", encoding="utf-8").write("{}")
+        with io.open(os.path.join(d, "status.json"), "w", encoding="utf-8") as fh:
+            json.dump({"current_phase": phase, "updated_at": "2026-09-20"}, fh)
+    mkwt3("WT-D20260920_001", ["alpha_hypothesis.json"], "SPEC_APPROVED")                       # 고아 흡수 분기
+    mkwt3("WT-D20260920_002", ["alpha_hypothesis.json", "alpha_package.json", "forge_package.json"], "FORGE_DONE")  # judge 분기
+    os.makedirs(os.path.join(tmp3, "06_Registry"), exist_ok=True)
+    with io.open(os.path.join(tmp3, "06_Registry", "module_catalog.json"), "w", encoding="utf-8") as fh:
+        json.dump({"modules": [{"strategy_id": "STR_FZ_B1", "grade": "B", "meta": {}}]}, fh)
+    st3 = os.path.join(tmp3, "stage"); os.makedirs(st3, exist_ok=True)
+    q3 = R.research_queue_pending(st3, tmp3)
+    frz = [x for x in q3 if x.get("lane") in ("qepm_dossier", "paper_promotion")]
+    oth = [x for x in q3 if x.get("lane") not in ("qepm_dossier", "paper_promotion")]
+    judge_items = [x for x in frz if x.get("next_agent") == "judge"]
+
+    def frozen_ok(items):
+        return bool(items) and all(x.get("frozen") == "QEPM-R0-FREEZE" and "/advisor" in str(x.get("frozen_note", ""))
+                                   and "재상정" in str(x.get("frozen_note", "")) for x in items)
+    ok("동결 레인 %d건 전부 frozen=QEPM-R0-FREEZE · /advisor · 재상정 안내" % len(frz)) if frozen_ok(frz) and len(frz) == 3 \
+        else ng("동결 표식", "frz=%s" % [(x.get("lane"), x.get("wt_id") or x.get("strategy_id"), x.get("frozen")) for x in frz])
+    ok("FORGE_DONE→judge 항목도 표식(Judge 스폰 진입로 봉쇄 표기)") if judge_items and frozen_ok(judge_items) \
+        else ng("judge 항목 표식", "judge_items=%d" % len(judge_items))
+    ok("다른 레인엔 동결 표식 없음(음성 대조 · %d건)" % len(oth)) if not any("frozen" in x for x in oth) \
+        else ng("과잉 표식", "동결 아닌 레인에 frozen")
+    print("== F-M 돌연변이: 표식이 빠진 항목(구판 모양)을 잡는가 ==")
+    mut = [dict((k, v) for k, v in x.items() if k not in ("frozen", "frozen_note")) for x in frz]
+    ok("frozen 제거 사본 → red") if not frozen_ok(mut) else ng("F-M 판별력", "표식 없는 항목을 통과시킨다")
+finally:
+    shutil.rmtree(tmp3, ignore_errors=True)
+
 print("== t_summary: PASS=%d FAIL=%d ==" % (P, F))
 print('{"test":"research_queue_lanes","pass":%d,"fail":%d,"total":%d,"skipped":0}' % (P, F, (P)+(F)))
 sys.exit(1 if F else 0)

@@ -47,6 +47,9 @@ mkfx() {   # $1=픽스처 루트  $2=신규 후보 포함(0/1)
   : > "$T/02_Infrastructure/hooks/qvest_hook_router.py"        # 루트 marker (resolve_project.sh)
   cp "$ROOT/02_Infrastructure/ops/paper_id_norm.py" "$T/02_Infrastructure/ops/"
   cp "$ROOT/02_Infrastructure/ops/paper_router_prompt.md" "$T/02_Infrastructure/ops/"
+  # (2026-09-25 P0-M1) 러너가 $BASE/…/rf_llm_env.sh 를 읽는다(09-23 모델 해석 배선 · 09-25 단일 진입 rf_llm_agent_run).
+  #   픽스처에 없으면 해석기·진입 함수가 '명령 없음' 으로 죽어 claude 호출 전에 끝난다 — B3·E2 가 그 이유로 상시 빨강이었다.
+  cp "$ROOT/02_Infrastructure/ops/rf_llm_env.sh" "$T/02_Infrastructure/ops/"
   printf '[{"arxiv_id":"2211.04695","title":"Known Paper A","paper_key":"axv:2211.04695"}]\n' > "$T/06_Registry/paper_registry.json"
   if [ "$novel" = "1" ]; then
     printf '{"date":"%s","candidates":[{"arxiv_id":"2211.04695","paper_key":"axv:2211.04695","title":"Known Paper A"},{"arxiv_id":"2509.00001","paper_key":"axv:2509.00001","title":"Brand New Paper"}]}\n' "$TODAY" > "$T/stage_artifacts/paper_recharge/mcp_discovery_${TODAY}.json"

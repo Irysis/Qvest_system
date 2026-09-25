@@ -1,5 +1,7 @@
 # QEPM Common Charter — Alpha/Risk/Optimizer Core + Forge/Judge/Governor Lifecycle
 
+> ★**어드바이저 모드**(도훈 `QEPM-ADVISOR-MODE` 2026-09-25 · `QEPM-R0-FREEZE` 보완): 아래 WT 체인 절차(request.json·package 산출·상태 전이·자체 등급)는 동결 — 역할별 자문만 한다. 측정 = 정본 계약(`run_paper_replication`·essence)만 · A = `rf_a_eligibility` → Judge → BOOK(도훈 confirm). PIT C4·C11·비중 상한 폐지 정정은 본문에 반영.
+
 Alpha / Risk / Optimizer core agent가 준수해야 하는 기본 원칙. Forge / Judge / Governor는 후속 검증·거버넌스 단계로 같은 측정 정직성 원칙을 상속한다.
 
 ## Mission Statement
@@ -20,7 +22,8 @@ Alpha / Risk / Optimizer core agent가 준수해야 하는 기본 원칙. Forge 
 
 - 재작성(restated) 재무는 **look-ahead bias + survivorship bias** 유발 → **as-reported 우선**
 - Factor DB의 `Usable_Date ≤ sig_date` 필터 **필수**
-- 외부 매크로(FRED 등)는 최소 **t-1 lag**
+- 외부 매크로(FRED·ECOS 등)는 **가용시점 층**(`02_Infrastructure/data/fred_availability.R::fred_asof_join()`) 경유만 — 같은 날짜·단순 t-1(1행 lag) 결합 금지(C11 · 규칙 정본 `06_Registry/fred_availability_rules.json`)
+- 재무제표 가용일: 연간 = **익년 3/31** · 분기 = 45일+ (DART 분기 고정일 5/15·8/15·11/15) (C4 · 정본 `.claude/rules/pit.md`)
 - **C1~C15 PIT 체크리스트** 준수 (기존 `02_Infrastructure/validation/pit_enforcement.R`)
 
 ### 2. Research Process First
@@ -198,7 +201,7 @@ factor_engine 측정과 forge_realized 측정 동시 존재 시:
 |---|---|---|
 | 최종 종목수 | **25종 hard** | `worktask_constraint_enforcer.sh` |
 | Long-only | weights ≥ 0 | same |
-| Weight bounds | [0, 0.20] | same |
+| Weight bounds | [0, 1.0] — v10 2026-08-29 종목별 상한 폐지(long-only 하한만) | same |
 | Σw | = 1 (absolute) / = 0 (active) | same |
 | Universe | KOSPI200 ∪ KOSDAQ150 | `worktask_spec_validator.sh` |
 | Liquidity | 20d avg TV ≥ 2e8원 | same |
@@ -252,7 +255,7 @@ Common Charter는 **AX-000 ~ AX-008** 공리 하위에 위치:
 | **P3** | **Uncertainty-aware Forecasting** (CI > Point) | Liao-Ma-Neuhierl-Schilling 2025 RFS | ML pipeline: bootstrap CI / `μ̃ = μ̂ - k·SE(μ̂)` / Confident-High-Low strategy |
 | **P4** | **Direct Portfolio Learning** (Integration > Two-stage) | You-Zhang 2025 SSRN | (Phase 3) optimizer: features → constrained NN weights (sigmoid + L1) |
 | **P5** | **Risk Model 고도화** (Crowding + Concentration) | Acadian 2026 systematic crowding + Behmaram 2024 demand elasticity | risk-research 의무: **`crowding_score_per_factor` 필수** in risk_package.json (Phase 2.C) |
-| **P6** | **Implementation Discipline** (이미 정합) | KR retail constraints | Hook hard-enforced: TO ≤ 11.0/yr + LIQ ≥ 2e8 + max_names 25 + weight [0, 0.20] + Σw=1. Governor admit 기준 |
+| **P6** | **Implementation Discipline** (이미 정합) | KR retail constraints | Hook hard-enforced: TO ≤ 11.0/yr + LIQ ≥ 2e8 + max_names 25 + Σw=1 (v10: 종목별 비중 상한 폐지). Governor admit 기준 |
 | **P7** | **Attribution & Feedback Loop** (Decay 감시) | Brinson-Fachler 1985 + Carhart 1997 JoF + Newey-West 1987 | monitoring agent: 분기별 자동 factor + selection + sector + cost + residual 분해 (Phase 2.D) |
 
 ### Update Mechanism (영구 진화 구조)

@@ -156,7 +156,15 @@
         "note": "격자는 팩터를 갖지 않고 등록부를 소비한다. 위 cells 는 스냅샷이고 정본은 배치 시점 picker 다. ★시드 회전(계열 라운드로빈 · 오프셋 = 원장 누적 entry 수)이 없으면 그리디가 결정론이라 전 논문이 같은 사슬을 받아 총 조합이 entry 수와 무관하게 5개로 고정된다. ★선정은 IC 시계열 상관(언제 벌리나), 결합은 횡단면 rank-Z(어떤 종목을 고르나) — 다른 직교성이다."
       },
       "n_note": "★n 은 폴백 칸 수다. 실제 칸 수는 LLM 설계가 정한다(2026-09-04 실측: 15칸).",
-      "cells_note": "★아래 cells 는 **설계 실패 시 폴백**이다. B1 설계 레인이 산출물을 내면 그것이 이 배열을 대체한다(.cache/rf_b1_design/<base_id>.json). 여기 박힌 구체 팩터(D42_EWMA_Vol 등)는 설계가 성공한 라운드에서는 소비되지 않는다."
+      "cells_note": "★아래 cells 는 **설계 실패 시 폴백**이다. B1 설계 레인이 산출물을 내면 그것이 이 배열을 대체한다(.cache/rf_b1_design/<base_id>.json). 여기 박힌 구체 팩터(D42_EWMA_Vol 등)는 설계가 성공한 라운드에서는 소비되지 않는다.",
+      "selection_asof": {
+        "asof": "fixed_axes.start_date (rf_factor_arms.R::rf_factor_pool 이 격자에서 해석 · 첫 시그널일 이전 워밍업 창)",
+        "min_ic_months": 6,
+        "recent_icir_days": 1095,
+        "recent_icir_min_n": 6,
+        "tier_rule": "06_Registry/factor_evidence.json::thresholds_declared + counts 어휘(S1<S2<S3) — 저장 tier(전기간) 대신 as-of 통계로 재판정",
+        "note": "★2026-09-24 (플랜 P0-08 · 감사 D4-02·D10-05 · pit.md C1 D-E) 규칙 선정기(rf_factor_arms.R)의 순위·tier·IC 시계열 상관은 IC[Usable_Date <= as-of] 로만 계산한다(구판 = 전기간 |ic_all|·전기간 상관 · tier 어휘 불일치로 전부 99). recent_icir_days 1095 · recent_icir_min_n 6 = stage_gate_engine.R:977-978 recent_3y_icir 정의(IC[Date >= max(Date) - 1095] · length(recent) > 5) 계승 — 값 변경 아님, 창 끝만 as-of 표본의 마지막 형성일로. min_ic_months 6 = 같은 줄 최소 표본(> 5)을 순위 표본 하한으로 차용 — 실측 as-of 2005-01-01 에서 V06_fDY(4개월 · |IC| 0.186)만 걸린다(풀 자격은 불변 · 사슬 후보에서만 빠짐). 재보정 = 도훈."
+      }
     },
     {
       "id": "B2",
@@ -442,7 +450,11 @@
       ],
       "n": 5,
       "source": "overlay_catalog",
-      "select_winner_by": "calmar"
+      "select_winner_by": "calmar",
+      "mechanism_map": {
+        "k_saturate": 3,
+        "note": "★2026-09-24 (플랜 P0-11 · 감사 D6-09) 기전 지도 02_Infrastructure/reinforcement/rf_mechanism_map.R 의 포화 k. 포화 = (action,state) 칸이 적대검증 판정(pass·fail·below_floor)을 k 회 이상 받고 pass 가 0 — 생성 표적(rf_next_target)에서 뺀다. 3 = v10.2(2026-09-03) 설계값 계승(구판 rf_mechanism_map(k_saturate = 3L) 서명 기본값을 설정으로 옮겼다 — 값 변경 아님 · 세는 대상만 '측정'에서 '판정'으로 바뀌었다). 성격 = 통계적 기각이 아니라 생성 표적의 배분 절단점: 판정 0/3 pass 의 단측 95% 정확 상한은 1-0.05^(1/3) = 0.632 (Clopper & Pearson 1934, Biometrika 26(4):404-413, https://doi.org/10.1093/biomet/26.4.404) 이라 '이 기전은 안 된다'의 증거가 못 되고 '덜 판정된 칸을 먼저 파라'는 규칙일 뿐이다(AX-000 — pass 가 하나라도 나오면 즉시 미포화로 돌아간다). 재보정 = 도훈."
+      }
     },
     {
       "id": "B7",
@@ -456,7 +468,7 @@
       "invariants": [
         "k 는 정적이다 — 시점마다 바꾸면 총노출 타이밍 주장이 되어 B5 와 같이 T3 에 죽는다. k 자체가 시험 축이다.",
         "총노출 불변(현금 없음) · |SEL| = n_max 보존 — 25종 '안에서의' 분할이다(PIT 2-슬리브 조항과 정합).",
-        "팩터 id 를 격자에 박지 않는다 — 규칙(rf_sl_resolve)이 factor_evidence.json 의 **측정된 ic_bad** 로 고르고, 해석된 id 는 spec 에 기록돼 재현이 고정된다."
+        "팩터 id 를 격자에 박지 않는다 — 규칙(rf_sl_resolve · select=ic_bad_rank_asof)이 **as-of 약세장 IC**(셀 fixed_axes.start_date 까지 실현된 KOSPI200 약세 보유월 · selection_asof)로 1회 고른다(워밍업 창 고정 = 정적 슬리브). 해석된 id·as-of·근거는 엔진 로그(rf_sl_report)에 남는다 — ★정정(2026-09-24 P0-08): 구 문언 'spec 에 기록돼 재현이 고정된다' 는 사실이 아니었다(스펙에 id 필드 없음). 과거 칸 재현은 factor_id 고정 경로로 한다."
       ],
       "cells": [
         {
@@ -465,10 +477,10 @@
           "defense_sleeve": {
             "kind": "factor_topk",
             "k": 5,
-            "select": "ic_bad_rank",
+            "select": "ic_bad_rank_asof",
             "rank": 1
           },
-          "basis": "방법: 보유 n_max 중 k=5 를 방어 팩터 상위로 교체(총노출·종목수 불변). 팩터는 규칙이 고른다 — factor_evidence.json 의 측정 ic_bad(약세장 횡단면 IC) 내림차순 1위. 타이밍 주장 없음 → T3 플라시보 대상 아님."
+          "basis": "방법: 보유 n_max 중 k=5 를 방어 팩터 상위로 교체(총노출·종목수 불변). 팩터는 규칙이 고른다 — as-of(셀 시작일) KOSPI200 실현 약세 보유월의 횡단면 IC(ic_bad) 내림차순 1위(selection_asof · 2026-09-24 P0-08 — 구 전표본·한 달 어긋난 ic_bad 는 퇴역). 타이밍 주장 없음 → T3 플라시보 대상 아님."
         },
         {
           "code": "B7_38",
@@ -476,7 +488,7 @@
           "defense_sleeve": {
             "kind": "factor_topk",
             "k": 8,
-            "select": "ic_bad_rank",
+            "select": "ic_bad_rank_asof",
             "rank": 1
           },
           "note": "k 를 키우면 방어는 늘고 알파 자리는 준다. 희석 대 방어의 교환율을 재는 칸.",
@@ -488,7 +500,7 @@
           "defense_sleeve": {
             "kind": "factor_topk",
             "k": 5,
-            "select": "ic_bad_rank",
+            "select": "ic_bad_rank_asof",
             "rank": 2
           },
           "note": "1위 팩터 특이 효과인지 방어 계열 전반의 효과인지 가른다.",
@@ -500,7 +512,7 @@
           "defense_sleeve": {
             "kind": "random_beta_matched",
             "k": 5,
-            "select": "ic_bad_rank",
+            "select": "ic_bad_rank_asof",
             "rank": 1,
             "beta_factor": "D02_Beta"
           },
@@ -513,7 +525,7 @@
           "defense_sleeve": {
             "kind": "antidefense",
             "k": 5,
-            "select": "ic_bad_rank",
+            "select": "ic_bad_rank_asof",
             "rank": 1
           },
           "note": "같은 팩터의 **하위** k 종. 방향성이 실재하면 이 칸은 기저보다 나빠야 한다. 안 나빠지면 슬리브 교체 자체가 잡음이다.",
@@ -521,7 +533,21 @@
         }
       ],
       "success_criterion": "성공 = Calmar 상승 ∧ PORT_t >= 기저-eps ∧ OOS retention >= 기저. ★Calmar 가 올랐는데 PORT_t 나 OOS 가 내리면 **실패로 판정**하고 b5_pattern 으로 표기한다 — 프로그램 최고 Calmar 5칸 중 4칸이 정확히 그 패턴(OOS -0.024 ~ -0.433)이었고, 그걸 성과로 읽어 온 것이 8일 정체의 정체였다. 추가 보고 의무: 슬리브 자체의 시장 베타(역베타를 방어로 오인하는 함정 — CID 전례) · 개선의 구간 분해(단일 위기 집중 여부) · 심층 버킷 n=10 이므로 점추정이 아니라 CI 로 보고.",
-      "loo_gap_note": "B4(결합) LOO 는 아직 B1·B2·B3·B5 4축이다. B6 에 이어 B7 도 block_accumulate 로 바닥에 실릴 뿐 '방어 제외' LOO 칸은 없다 — 두 축 중 하나라도 값을 내면 그때 LOO 를 넓힌다."
+      "loo_gap_note": "B4(결합) LOO 는 아직 B1·B2·B3·B5 4축이다. B6 에 이어 B7 도 block_accumulate 로 바닥에 실릴 뿐 '방어 제외' LOO 칸은 없다 — 두 축 중 하나라도 값을 내면 그때 LOO 를 넓힌다.",
+      "selection_asof": {
+        "asof": "셀 fixed_axes.start_date (rf_sl_resolve 가 RF_CELL_SPEC 에서 해석 · 규칙 asof 가 있으면 그 값) — 워밍업 창 1회 고정 = 정적 슬리브 불변식",
+        "bear_quantile": 0.3,
+        "min_bear_months": 4,
+        "candidate_categories": [
+          "defense",
+          "risk"
+        ],
+        "rank_key": "ic_bad",
+        "ic_path": ".cache/factor_db/factor_ic_monthly.parquet",
+        "bench_path": ".cache/benchmark.parquet",
+        "bench_price_col": "BM_Close",
+        "note": "★2026-09-24 (플랜 P0-08 · 감사 D4-02·D4-05 · pit.md C1 D-E) B7 선정 통계. 약세장 = KOSPI200 **실현** 보유월 수익(공표 지수 포인트 BM_Close 비율 — Ret/100 단위 오류 원천 제거)이 as-of 까지 실현된 보유월 전부의 하위 bear_quantile 분위 이하(확장창). IC 는 형성일 t 행을 보유월(t 다음 달 · Usable_Date 의 달)에 정렬하고 Usable_Date <= as-of 만 쓴다(C14). 레거시 전략 월수익(STR_1375→STR_1469 대체 경로)은 쓰지 않는다. 값의 출처 = 구 산출기 stage_gate_engine.R:962 `quantile(port_ret$Return, 0.30)`(bear_quantile · 값 계승) · :973 `length(ic_bad_vals) > 3`(min_bear_months 4 ⇔ >3) · candidate_categories = 구 rf_sleeve.R 코드 상수 {defense, risk} 를 격자로 이관(값 변경 아님). rank_key = ic_bad(격자 규칙명 ic_bad_rank 계승 · conditional_value 선택 가능). 재보정 = 도훈."
+      }
     },
     {
       "id": "B4",
