@@ -1,11 +1,11 @@
 {
   "fidelity": "adapted",
 
-  "kept": "계층적 중성화 기전 — 종목의 멀티팩터 컨텍스트를 ①원 ②업종 잔차(업종 그래프 이웃 영향 차감) ③지수(유니버스) 잔차(지수 그래프 이웃 영향 차감) 세 계층으로 분해하고(Eq 2~6), 세 계층을 함께 입력으로 쓴 딥팩터를 누적 팩터수익·ICIR 최대화 비음(합1) 가중으로 만들어(Eq 8~13) 상위 10% 동일가중·월간 리밸(과거 데이터만 쓰는 확장창 + 6개월 블록 재학습).",
+  "kept": "계층적 중성화 기전 — 한 개 광역지수를 실행 단위로 삼아 그 지수 구성종목의 멀티팩터 컨텍스트를 ①원 컨텍스트 ②업종 그래프 영향을 뺀 업종 잔차 ③유니버스 그래프 영향을 뺀 지수 잔차 세 계층으로 분해하고(Eq 1~6), 세 계층을 함께 입력으로 쓴 딥팩터를 k-forward(3·5·10·15·20 거래일) 다중 head 로 ICIR 최대화(Eq 8·13)로 적합한 뒤, 그 지수 구성종목 수의 상위 10% 를 동일가중 롱온리로 월간 리밸한다. walk-forward 는 6개월 블록이고 학습창 종점은 블록 시작의 6개월 전이다.",
 
-  "changed": "(a) 유니버스: CSI300∪CSI500∪CSI1000(2800여 종목) → K200∪KQ150(PIT 시변) · H2 로 KQ150 플래그가 2010-01-29 부터라 그 전 시그널일은 지수 그래프가 단일군으로 퇴화해 C_U == C_I 가 된다. (b) 표본: 논문 2010~2022중 → 2005-01-01~(H3) · 컨텍스트·IC 패널은 PANEL_START=1999-07-01(=측정시작−66개월)부터 쌓아 논문의 최초 학습블록(66개월)이 측정창 앞에 오게 했다 · 최초 산출월 = 66개월 가용 IC 가 처음 충족되는 1월 또는 7월 시그널일이며 팩터 DB 가용월에 따라 달라진다. (c) 입력팩터: 논문 63개(Barra 5그룹 기저+파생, 목록 미열거) → 같은 5그룹의 등록부 17지표 · 파생 생성법(12개월 트레일링·분기변화·연간변화·값/수익률)은 재현하지 않았다 · 같은 기저의 다른 창(M01/M02/M03 · M11/M12)과 복수 value yield(V01/V02/V03/V08)를 함께 쓴 것은 논문의 '기저+파생' 설계를 따른 것이다 · 등록부 dedup 군집에 걸린 선택지표 = V08_PSR(DUPC-041 canonical) · M01_Mom_12_1(DUPC-032) · M11_ST_Reversal(DUPC-033 canonical) · Q02_ROE(DUPC-034) · Q05_Accrual(DUPC-001) · Q06_Asset_Growth(DUPC-023) · Q13_Fin_Leverage(DUPC-036) · S01_Size(DUPC-030) 이고, 선택 17지표 중 **같은 군집을 공유하는 쌍은 없다**(각 군집의 상대 지표는 미사용). (d) 팩터값: 원값이 아니라 Z_Score_Aligned 변환값 — 빌더의 횡단면 winsorize·z-score + 확장창 PIT IC 부호로 방향정렬 + 부호반전 후 sd=1 재표준화. 이것이 논문 BatchNorm 자리를 대신하며, 동시에 **부호 학습을 모델에서 제거**한다. 방향 출처는 날짜에 따라 IC추론/등록부 폴백/기본값이 섞인다(연결자 거동). (e) Eq 1 의 MLP → 항등사상(은닉차원·깊이·활성함수 전부 논문 미공개) → C_t = F_t, m1 = m = 17. (f) Eq 3·5 의 GAT → 이웃 균일 attention(그룹 횡단면 평균) — attention 파라미터 미공개. 단독 업종 노드는 잔차가 정확히 0(self-loop GAT 와 동일 거동). (g) 업종 라벨: RAWDATA$Sector 를 시그널일 당일 행에서 읽음 · NA·공백은 'NA_IND' 한 군집으로 묶음 · **한계**: RAWDATA 패널이 정적 업종분류를 전날짜에 브로드캐스트한 것이라면 업종 멤버십이 엄격한 시변(논문 M_t)이 아니다 — 엔진 쪽에서 검증 불가. (h) K200·KQ150 양쪽 플래그가 켜진 종목은 K200 군으로 배정. (i) 51개 컨텍스트 열을 결합 전 **날짜별 횡단면 재표준화**(논문은 입력에서 BatchNorm 1회) — ICIR 가중은 축척무관(상관)이라 재표준화 없이 결합하면 중성화 계층이 암묵적으로 과소가중된다 · 또한 Z_Score_Aligned 는 팩터 DB 전체 단면 기준이라 우리 유니버스 부분집합에서 sd≠1 이다 · sd ≤ 1e-12 열은 0 으로 둔다. (j) Eq 8 의 W_k → 비음 ICIR 비례 가중 w_j ∝ max(ICIR_j, 0), Σw=1(head 별) — 닫힌형이라 학습률·에폭·초기값·앙상블(전부 미공개)이 없다 · 결과적으로 딥팩터가 정확히 '입력의 비음 선형결합'이 되어 논문 factor-attention 의 재구성항 d_k^t 가 항등적으로 0 이다. (k) Eq 8 의 LeakyReLU 생략 — negative slope 미공개 · head 내에서는 순위보존(랭킹으로만 소비)이나 head 간 평균에는 영향을 준다(논문도 head 결합 규칙을 주지 않는다). (l) head 결합: 논문은 K개 딥팩터가 단일 랭킹이 되는 방법을 서술하지 않는다 → Eq 13 이 k∈K 를 균등 평균하는 것을 따라 head 가중벡터를 균등평균(수학적으로 단일 선형결합으로 축약된다). (m) IC 정의: Spearman 순위상관(논문은 Pearson/Spearman 미명시) · 논문의 b_k^t(횡단면 회귀계수)와 c_k(ICIR)를 ICIR 하나로 합쳤다(분자 mean IC 가 누적 팩터수익에 단조, 분모가 안정성). (n) walk-forward: train/validation/test 3분할 → 단일 확장창 · validation 블록과 '마지막 달 제외' 규칙 생략(닫힌형 추정이라 고를 하이퍼파라미터·조기종료가 없다) · 6개월 재학습 주기는 유지(1월·7월 첫 시그널일, 블록 내 가중 고정) · 재학습이 실패한 블록은 직전 유효 가중을 유지한다. (o) PIT 규칙(논문보다 엄격): 시그널월 s·지평 k 의 IC 관측은 실현 완료일(s 이후 k번째 거래일)이 재학습 시그널일보다 **엄격히 앞설 때만** 학습에 들어간다. (p) 방어코드·결측: 그 달 팩터 부재 → 해당 열 0(분산 0 ⇒ 그 달 IC 는 NA 로 통계에서 제외) · 종목·팩터 값 결측·비유한 → 0(z-score 의 횡단면 평균) · (Ticker,Factor_Name)·(Date,Ticker) 중복행은 첫 행만 남김 · cor() 의 분산0 경고는 억제하고 결측 처리 · load_month_factors 는 tryCatch 로 감싸 오류월은 건너뜀 · **요청월과 팩터 DB as-of 월이 다른 달(연결자의 closest-earlier 대체 적재)은 건너뛴다**(stale 팩터값 차단) · 비유한 점수가 섞인 달은 그 달 산출 없음(구조상 발생 불가한 fail-closed 가드) · 실현수익 가격판은 Close 가 유한하고 **양수**인 행만 쓴다(비양수·결측 종가 종목은 그 (s,k) IC 에서 빠진다) · 시그널일 또는 지평 종점일이 가격판에 아예 없으면(그 날 가격 행 전무) 그 (s,k) IC 관측이 생성되지 않는다 · 관리종목·거래정지 등 상태 플래그는 **쓰지 않았다**(논문도 그런 제외를 서술하지 않는다 · 상장폐지 처리는 H1). (q) 논문에 없는 하한·커버리지 요건: 유니버스 종목수 < 30(MIN_STOCKS) 또는 그 달 존재 팩터 < 5(MIN_FACTORS_PRESENT) 면 그 달 산출 없음 · 실현수익이 유효한 종목이 30(MIN_STOCKS) 미만인 (s,k) 는 IC 관측을 만들지 않는다 · head·열은 가용 IC 관측 < 66(MIN_TRAIN_MONTHS) 이면 가중 0 · 모든 가중이 0 이면 가중 미산출 · **load_month_factors 의 coverage_min 기본값 0.05 를 그대로 쓴다** — 그 달 커버리지가 전체 티커의 5% 미만인 지표는 연결자가 패널에서 떨어뜨리고(그 달 그 열 = 0) 이 값은 논문이 아니라 인프라 기본값이다. **어떤 달에 산출이 비면 그 달 리밸이 없어 하네스가 직전 보유를 다음 시그널까지 이월하고(H5) 그 달 리밸 비용도 청구되지 않는다.** (r) 상위 10% 종목수 = max(1, round(n × 0.10)) — 논문은 '10%' 만 말하고 반올림 규칙을 주지 않는다 · 유니버스 결합을 엔진이 먼저 적용하므로 Σw=1 이 보존된다(H6 의 비재분배 감소 없음). (s) 점수 동률은 dcast 가 만든 Ticker 오름차순으로 결정(결정적) · 엔진에 난수가 전혀 없어 set.seed 없음. (t) 논문 보고지표(α·ICIR·IR·SR)는 엔진이 계산하지 않는다 — 등급·성과는 측정 계약이 낸다. (u) 유동성 필터 추가하지 않음(논문은 지수 멤버십 외 필터 없음 · H8). (v) 비용: 등급은 15bps 순비용판(H7) · 논문판은 commission_paper=0.004(논문 4‰)로 병기된다.",
+  "changed": "(a) 실행 단위·유니버스: 논문은 광역지수 **각각**이 한 번의 실행이고 Table 1 이 CSI1000|CSI500|CSI300 별 α·ICIR·IR·SR 를 따로 보고한다('a given universe ... the benchmark of that universe' · 'these three universes'). 그래서 이 엔진은 파이프라인 전체(업종 그래프·유니버스 그래프·컨텍스트·IC·가중·상위 10%)를 **K200 안에서 한 번, KQ150 안에서 한 번** 독립 실행한다(engine.R IDX_NAMES 루프). 바꾼 것 둘: ①지수 3개 → 2개(K200·KQ150 — RAWDATA 가 주는 한국 광역지수 2종) ②논문의 지수별 3개 포트폴리오 독립 평가 → 측정층이 포트폴리오 1개를 받으므로 **두 슬리브의 선택종목 합집합을 동일가중 1장으로** 낸다(engine.R S[, Weight := 1/.N, by = Date]) — 슬리브 노출은 각 지수 선택종목수 비율(≈20:15)이 되고, 논문처럼 각 지수 벤치마크 대비로 나뉘어 평가되지 않는다(측정 벤치마크 = H9 KOSPI200 하나). ③K200·KQ150 양쪽 플래그가 켜진 종목은 K200 실행에만 넣어 이중 보유를 막는다. ★앞 판(engine.rejected1.R)은 K200∪KQ150 을 하나의 단면으로 합쳐 통합 랭킹 상위 10% 1개를 냈고(지수 정체성이 그래프 계층에만 남음), 그 범위 변경을 신고하지 않았다 — 이 판에서 제거했다. (b) 표본기간: 논문 데이터 2010~mid-2022·테스트 2015~mid-2022 → 측정은 2005-01-01~(H3). 각 실행의 데이터 시작 = 그 지수에서 처음으로 유효 컨텍스트가 만들어지는 거래일(엔진이 런타임에 발견 — 팩터 월판 가용 + 멤버십 ≥30 + 커버 열 ≥5)이고 상수가 아니다. 논문 규칙(최초 학습블록 66개월 + 6개월 갭)을 그 시작에 그대로 적용하므로 **최초 산출 블록은 데이터 의존**이다: 팩터 DB 월판이 1999-01 보다 늦게 시작하면 산출이 2005-01 보다 늦게 시작하고 측정 표본이 H3 보다 짧아진다. KQ150 실행은 H2(KQ150 플래그 2010-01-29 개시) 때문에 데이터가 2010-01 부터이고, 같은 66+6 규칙으로 **최초 테스트블록이 2016-07-01** 이 된다(논문 자신의 일정 — 데이터 2010 시작·최초 테스트블록 2016 — 과 사실상 같다). 결과로 **측정 포트폴리오는 최초 산출월부터 2016-06 까지 K200 단독**이고 2016-07 부터 K200+KQ150 이다. (c) 입력팩터: 논문 63개(Barra 5그룹 기저+파생, 목록 미열거) → 같은 5그룹의 등록부 17지표(engine.R FACTOR_IDS · 대응은 factor_mapping). 파생 생성법(12개월 트레일링·분기변화·연간변화·값/수익률)은 재현하지 않았다 · 같은 기저의 다른 창(M01/M02/M03 · M11/M12)과 복수 value yield(V01/V02/V03/V08)를 함께 쓴 것은 논문의 '기저+파생' 설계에 대응시킨 것이다 · 등록부 dedup 군집에 걸린 선택지표 = V08_PSR(DUPC-041 canonical) · M01_Mom_12_1(DUPC-032) · M11_ST_Reversal(DUPC-033 canonical) · Q02_ROE(DUPC-034) · Q05_Accrual(DUPC-001) · Q06_Asset_Growth(DUPC-023) · Q13_Fin_Leverage(DUPC-036) · S01_Size(DUPC-030) 이고, 선택 17지표 중 **같은 군집을 공유하는 쌍은 없다**(각 군집의 상대 지표는 전부 미사용). load_month_factors 의 dedup 인자는 쓰지 않았다(기본 FALSE) — 같은 군집 동시 사용이 없어 접을 것이 없다. (d) 팩터값 = 원값이 아니라 Z_Score_Aligned 변환값: 빌더의 횡단면 winsorize·z-score + **확장창 PIT IC 부호로 방향정렬** + 부호반전 후 sd=1 재표준화(factor_db_connector.R align_factor_direction). 이것이 논문 BatchNorm 자리를 대신하며 동시에 **부호 학습을 모델에서 제거**한다. 논문은 부호를 전처리로 주지 않는다(Eq 1 BatchNorm = z-score 정규화이고 부호는 Eq 8 의 학습 파라미터 W_k 안에 있다 · '부호 사전정렬' 서술 = 원문에 없음). ★그리고 이 정렬은 **고정값이 아니다**: 연결자가 패널을 요청하는 날짜마다 Usable_Date <= 그 날짜의 확장창 평균 IC 로 ±1 을 다시 추론한다(36개월 burn-in · 미달이면 등록부 direction · 둘 다 없으면 +1). 따라서 기저 원팩터에 걸리는 유효 계수는 w_j x sign_j(t) 이고, **W 가 6개월 블록 내에서 고정이어도 부호 성분은 블록 안에서 월 단위로 뒤집힐 수 있다**(앞 판 감사 지적 — 이 판에서 명시 신고). 엔진은 패널을 월 1회(그 달 as-of 일)만 적재하므로 부호는 월 단위로만 바뀐다. C13 이 Z_Score_Aligned 소비를 강제하므로 이 성질은 제거할 수 없다(원 Z_Score 는 허용 경로로 오지 않는다). (e) Eq 1 의 MLP → 항등사상(은닉차원·깊이·활성함수 전부 논문 미공개) → C_t = z(F_t), m1 = m = 17. (f) Eq 3 의 업종 GAT → 같은 업종 이웃의 단면 평균(균일 attention 극한 · engine.R .grp_mean). 근거: 논문 Definition 3 이 업종중성을 '같은 업종 다른 종목 대비 그 종목의 다른 컨텍스트'로 서술하므로 군집 평균 차감이 그 서술과 일치한다. attention 파라미터는 미공개. 단독 업종 노드는 잔차가 정확히 0(self-loop GAT 와 같은 거동)이고 그 종목은 L1·L2 에서 중립이 된다. (g) Eq 5 의 유니버스 GAT → **rank-1 유사도 attention**(engine.R .rank1_infl): H_U = u uᵀ C_I, u = C_I 의 최대 좌특이벡터(17x17 Gram 의 최대 고유벡터로 계산 · u 의 부호에 결과 무관). ★이것이 앞 판의 핵심 결함 수정이다. 앞 판은 균일 attention A=(1/n)11ᵀ 를 썼는데, 완전그래프에서 그것은 열별 **위치이동**뿐이라 뒤따르는 횡단면 표준화에 완전히 소거되고 z(C_U) 가 z(C_I) 와 비트 동일해진다 — Eq 8 의 세 계층이 두 계층으로 붕괴하고, 열별 ICIR 비례 가중에서 업종중성화 계층이 정확히 2배 투입됐다. rank-1 극한은 유사도 구조를 남기므로 붕괴하지 않는다: C_I 는 군집 평균 차감으로 **열합이 정확히 0** 이므로 1ᵀC_I = 0 이고, 따라서 C_I 의 열공간 전체가 1 과 직교해 u ⊥ 1 이다 — u uᵀ C_I 는 위치이동이 될 수 없다(붕괴가 구조적으로 불가능). 귀속: 논문 Abstract 의 'market neutralization module' 과 Definition 4 의 'eliminating not only the effect of the industry ... but also the effect of the universe context' 가 유니버스 공통성분 제거이고, GAT 는 H_U = A C_I(A = n x n attention)이므로 rank-1 유사도 A 는 그 attention 의 극한이다. ★단 **성분 수 1 은 논문에 없는 보충 선택**이다(유니버스 그래프가 단일 clique = 공통구조 1개라는 근거 · 논문은 GAT 산출의 rank 를 주지 않는다). ★잔존 중복: u 와 거의 직교한 열에서는 L2 ≈ L1 이 된다 — 이는 Eq 6 자체의 성질이다(H_U ≈ 0 이면 두 계층이 일치). 그래도 **가중이 겹치지 않는다**: 가중이 Σ⁻¹μ(수축판)이라 중복에 가까운 열에는 가중을 **나눠** 주고 더하지 않는다(앞 판의 ICIR 비례 가중은 더했다). ★계층 간 비대칭(업종=균일 · 유니버스=rank-1)의 이유: 업종 그래프의 균일 attention 은 군집별이라 표준화에 살아남고 논문 서술과도 맞는데, 완전그래프의 균일 attention 은 살아남지 않는다. (h) Eq 8 의 W_k → **부호 제약 없는** 최대 ICIR 닫힌형(engine.R head_w): w ∝ Σ⁻¹μ, μ = mean_t B_t, Σ = cov_t(B_t), B_t = 앵커 t·지평 k 에서 51개 컨텍스트 열의 순위 IC 벡터. ★앞 판은 w_j = max(ICIR_j, 0) 비음 제약을 걸고 그 근거를 Eq 10 softmax 로 귀속했는데 그 귀속이 틀렸다 — Eq 10 의 softmax 는 Eq 9 의 W_{a,k}ᵀF_t 에 걸린 **해석(interpretation) 모듈**의 attention 을 m 개 원팩터 위에서 정규화하는 것이고, Eq 8 의 W_k(51열)에는 부호·비음 제약이 **없다**. 이 판에서 제약을 제거했다. 유도와 그 근사: 단위분산 열에서 corr(X_t w, r_{t+k}) = wᵀB_t / sqrt(wᵀΩ_t w) 이고, Ω(51열의 횡단면 상관구조)가 학습창에서 근사 일정하면 분모가 mean 과 sd 사이에서 상쇄되어 ICIR(w) = mean_t(wᵀB_t)/sd_t(wᵀB_t) 이므로 최대해가 Σ⁻¹μ 다. **Ω 근사 일정 가정은 논문 진술이 아니라 우리 근사다.** Σ 는 대각으로 수축한다(SHRINK_LAMBDA = 0.5) — 51열이 계층 간 강하게 공선이라 표본 역행렬이 불안정하기 때문이고, 0.5 는 표본공분산과 그 대각의 **미조정 중간값**이다(격자 탐색·성과 비교로 고르지 않았다 · 논문의 W_k 는 SGD + validation 모델선택의 암묵적 정칙화를 받는다). solve() 가 실패하거나 비유한이면 w = μ/diag(Σ) 로 폴백한다. head 별 w 는 Σ|w| = 1 로 맞춘 뒤 head 평균에 들어간다(크기만으로 한 head 가 지배하지 않게). (i) Eq 13 의 세 항 처리: c_k(ICIR) → (h) 의 닫힌형. b_k^t(횡단면 회귀계수 = 팩터수익) → **같은 항에 합쳤다**: 표준화 점수에서 b_t ∝ IC_t x sd(r_t) 이므로 mean_t(wᵀB_t) 최대화가 Σ_t b_t 최대화의 축척무관 부분이다. 논문이 W_k 에 노름 제약을 주지 않아 b 의 절대 수준은 축척을 지어내지 않고는 닫힌형으로 최적화할 수 없다 — **동등이 아니라 근사**로 신고한다. d_k^t(‖f_k − F ā_k‖₂ · attention 추정치와의 편차) → **omitted**. 이유: 해석 모듈의 정칙화항이고, 우리 추정기에는 해석할 attention 망이 없다(계층·팩터 가중이 그대로 읽힌다) · d 를 하드 제약으로 넣으면 'm 개 원팩터 열의 비음·합1 결합' 이라는 퇴화 극단이 된다. ★앞 판 신고 정정: 앞 판은 '딥팩터가 입력의 비음 선형결합이므로 d ≡ 0' 이라고 신고했는데 **사실과 다르다**(감사 지적이 옳다). 우리 딥팩터는 f = Σ_ℓ Q_ℓ F a_ℓ 형태이고(Q_ℓ = I · I−P_ind · (I−u uᵀ)(I−P_ind) 의 행공간 연산자), 이는 F 열들의 결합 F a 로 표현되지 않으므로 d 는 일반적으로 0 이 아니다. 그래서 이 판은 동등성을 주장하지 않고 d 를 omitted 로 신고한다. (j) Eq 8 의 LeakyReLU 생략: negative slope 미공개. head 를 **가중벡터 평균**으로 결합하므로 최종 점수가 단일 선형형 Xw 이고, 그 위의 원소별 단조 LeakyReLU 는 순위를 보존한다 → 이 결합규칙 아래서는 생략이 **정확히 순위 동등**이다(점수 수준에서 head 를 평균한다면 동등하지 않다). (k) head 결합: 논문은 K개 딥팩터가 하나의 랭킹이 되는 방법을 서술하지 않는다 → Eq 13 이 k∈K 를 균등 평균하는 것을 따라 L1 정규화한 head 가중벡터를 균등 평균한다(engine.R blk_w). (l) IC 정의: Spearman 순위상관(논문은 Pearson/Spearman 미명시 = NOT STATED). (m) 학습 표집 = **일별 앵커**: 논문 §4 'We construct our dataset on a daily basis' 이고 Eq 13 의 𝒯 = 'the set of dates in the training period' 이므로 t 는 학습구간 전 거래일이다. 엔진은 **모든 거래일**에 컨텍스트와 IC 관측을 만든다(engine.R for (j in seq_len(nD))). ★앞 판은 월 마지막 거래일만 앵커로 썼고(월당 (월,head) 관측 1개) 그 축소를 신고하지 않았다 — 이 판에서 제거했다. **한계**: 팩터값은 월판에서 온다(load_month_factors 가 C15 유일 경로) → 월 안에서 컨텍스트는 조각별 상수이고 지수 멤버십 변동으로만 바뀐다. 논문은 63팩터를 일별로 재계산한다. 즉 |𝒯| 의 크기는 논문 자릿수와 같아지지만 월 내 팩터값 변동이 없고, k일 라벨창이 겹치는 연속 일별 관측은 강하게 종속이라 **유효 독립 관측수는 |𝒯| 보다 훨씬 적다**. (n) 66 = **개월수**: TRAIN_BLOCK_MONTHS = 66 을 논문 그대로 최초 학습블록의 캘린더 길이(2010/1/1~2015/6/30)로 쓴다 — 최초로 쓰는 테스트블록은 (블록 시작 − 6개월) ≥ (그 지수 데이터 시작 + 66개월) 인 첫 1월/7월 블록이다. ★앞 판은 66 을 열·head 별 **IC 관측 개수** 하한으로 치환하고 그 환산을 신고하지 않았다 — 제거했다. 관측수 하한은 별도 상수 MIN_TRAIN_OBS = 252 이고 보충값이다(51x51 공분산 추정의 수치 하한 · 66개월 캘린더 규칙이 충족되면 head 당 앵커가 ≈1,300 이라 사실상 구속하지 않는다). (o) 학습창 → 테스트블록 **6개월 갭 복원**: 학습 앵커는 '앵커일 < 블록 시작 − 6개월' 을 만족한다(engine.R gc_cut). 블록 [2016-01-01, 2016-06-30] 이면 앵커는 2015-06-30 까지 = 논문의 training 종점 2015/6/30 과 같다. 추가로 라벨 실현 완료일 < 블록 시작 도 구조적으로 강제한다(이중 방어). ★앞 판은 재학습 시그널일 직전까지 확장해 갭이 0 이었고(논문보다 **느슨**), 더구나 FIDELITY 에 '논문보다 엄격' 이라고 적었다 — 둘 다 제거했다. validation 블록과 '마지막 달 제외' 규칙은 **omitted**(닫힌형 추정이라 고를 하이퍼파라미터·조기종료가 없다) · 그 결과 논문이 validation 으로 쓰는 갭 반기 전반부 데이터를 우리는 **아예 쓰지 않는다**(이 축에서는 논문보다 보수적이다). (p) 블록 스케줄: 테스트블록 = 1~6월 / 7~12월(논문 예시 경계). 가중은 블록 안 첫 월말 시그널일에 1회 산출해 블록 동안 고정한다(단 부호 성분은 (d) 참조). 적합이 불가한 블록(워밍업)은 **그 블록 산출이 없다** — 하네스가 직전 보유를 다음 시그널까지 이월하고(H5) 그 달 리밸 비용도 청구되지 않는다. 학습표본이 단조 증가하므로 이 일은 워밍업에서만 생긴다. (q) 선택풀 = **그 지수 멤버십 전체**: 논문 선택풀은 지수 구성종목 전체이고 결측 팩터 종목의 처리를 어디에도 서술하지 않는다. 그래서 엔진은 그 날 지수 구성종목을 **하나도 빼지 않고** 풀에 넣는다 · 결측 셀은 그 풀에서 커버된 종목들의 **열평균**(중립값)으로 대입한다 · 커버된 셀이 **0개**인 종목은 세 계층 전부 0(중립)으로 둔다(어떤 입도에서도 측정된 컨텍스트가 없으므로 — 열평균 대입만 하면 그 종목이 자기 업종의 편차를 물려받아 상위 10%에 들 수 있다). 두 처리 모두 논문에 없는 보충이다. ★앞 판은 그 달 팩터 행이 없는 멤버를 dcast 경로에서 통째로 떨어뜨려 선택풀과 10% 분모를 함께 줄였다 — 제거했다. (r) 분위 모수 = **그 지수의 그 날 구성종목 수**: ktop = max(1, round(N_members x 0.10))(engine.R length(tij) * TOP_FRAC) — 풀이 멤버십 전체이므로 분모가 멤버십 수와 같다. 반올림 규칙은 논문 미명시. 예상 보유 ≈ 20(K200) + 15(KQ150) = 35종(2016-07 이후) · 그 전은 ≈20종 — 저장소 고정 축 25종을 넘지만 engine_direct 는 논문 비중을 자르지 않고 러너가 축 초과를 감사에 남긴다. ★앞 판 분모는 합산 유니버스 중 유한 팩터값을 1개 이상 가진 종목수였다 — 제거했다. (s) 비용: 등급은 15bps 순비용판(H7) · 논문판은 commission_paper = 0.004(논문 4‰)로 병기된다. ★하네스 과금 기저는 연속한 두 목표비중의 Σ|Δw| 이고(하네스 자신이 weight_delta_approx 로 라벨한 근사), 수익 경로는 보유창마다 목표비중에서 재시작하므로(H5) **보유 유지 종목의 드리프트 복원 거래는 실제로 집행되지만 비용은 0 으로 기장된다**. 논문은 'transaction costs for buying and selling set at 4‰ of the transaction amount' 로 매수·매도 거래금액 전액에 매긴다. 이는 엔진이 만든 차이가 아니라 측정층 근사이고 공시는 H7 이 한다. ★앞 판 note 는 'Σ|dw| 가 매수·매도 양변의 거래금액' 이라고 단언했는데, 종목 교체분에는 맞고 유지 종목의 복원 거래분에는 틀리다 — 정정했다. (t) 방어코드·결측·수치 가드 전량: ①가격판은 Close 가 **유한하고 양수**인 행만 담는다 — 비양수·결측 종가는 행이 없어 그 (앵커,지평) IC 에서 해당 종목이 빠진다 ②팩터 DB as-of 월이 요청 월과 다른 달(연결자의 closest-earlier 대체 적재)은 버린다(stale 값 차단) · as-of 가 요청일보다 **뒤인** 달도 버린다(미래 기준일 차단) ③load_month_factors 는 tryCatch 로 감싸 오류월을 건너뛴다 — 수치 폴백은 없고, 그 달은 패널이 없어 그 달 거래일들이 **더 오래된 직전 월판**을 쓴다(as-of ≤ 결정일 규칙) ④(Ticker,Factor_Name)·(ti,dj) 중복행은 첫 행만 남긴다 ⑤.xs_z: 횡단면 sd ≤ ZERO_SD_EPS 열은 0 ⑥.std_cols: 노름 0 열은 NA 로 둬 그 열의 IC 가 NA 가 되고 공분산 표본에서 제외된다 ⑦.rank1_infl: eigen 을 tryCatch 로 감싸 실패 시 영향행렬 0 · ‖C_I v‖ ≤ ZERO_SD_EPS 이면 영향 0 ⑧head_w: 유한 IC 가 MIN_TRAIN_OBS 미만인 열은 가중 0 · 남은 열에 비유한 IC 가 있는 앵커 행은 공통표본을 만들려고 버린다 · solve() 실패·비유한이면 μ/diag(Σ) 폴백 · Σ|w| ≤ ZERO_SD_EPS 면 그 head 를 건너뛴다 ⑨MIN_XS = 30: 그 날 지수 멤버십이 30 미만이면 그 날 산출 없음 · (앵커,지평)의 유효 실현수익 종목이 30 미만이면 그 IC 관측을 만들지 않는다 ⑩MIN_FACTORS_PRESENT = 5: 커버 열이 5 미만인 월판·날짜는 건너뛴다 ⑪COVERAGE_MIN = 0.05 는 연결자 기본값 — 그 달 커버리지가 전체 티커의 5% 미만인 지표를 연결자가 패널에서 떨어뜨린다(인프라 기본값이지 논문 값이 아니다) ⑫ncol(X) != N_LEVELS x NF 면 그 날 산출 없음(구조상 발생 불가한 fail-closed 가드) ⑬비유한 점수가 섞인 달은 산출 없음 ⑭**엔진에 난수가 전혀 없어 set.seed 가 없다**(eigen·solve·rank 전부 결정적 · eigen 의 부호 관례는 u uᵀ 에 영향 없음 · 앙상블·초기값·앞상빌업 없음) ⑮관리종목·거래정지 등 **상태 플래그는 쓰지 않았다**(논문도 그런 제외를 서술하지 않는다 · 상장폐지 처리는 H1) ⑯**유동성 필터 없음**(논문은 지수 멤버십 외 필터를 주지 않는다 · H8) ⑰클립·winsorize·pmax/pmin 상한을 엔진이 추가로 걸지 않는다(max(1, ·) 는 최소 1종 보장이고 상한이 아니다 · 이상치 절단은 팩터 DB 빌더가 이미 적용한 값을 소비하는 것이다 — (d)). ★**어떤 달에 산출이 비면**(워밍업 미적합 블록 · 멤버십<30 · 월판 없음 · 커버 열<5 · 비유한 점수) 그 달 리밸이 없어 하네스가 직전 보유를 다음 시그널까지 이월하고(H5) 그 달 리밸 비용도 청구되지 않는다. (u) 동률·결정성: 점수 동률은 풀의 티커 순서(각 날짜 안에서 tk_u 인덱스 오름차순)로 갈리고 order(decreasing = TRUE) 가 안정정렬이라 결정적이다. (v) 업종 라벨: RAWDATA$Sector 를 시그널일 당일 행에서 읽고 NA·공백은 'NA_IND' 한 군집으로 묶는다. 논문은 CITIC CICSL1 Level 1 을 쓴다. **한계**: RAWDATA 패널이 정적 업종분류를 전 날짜로 브로드캐스트한 것이라면 업종 멤버십이 논문 M_t 처럼 엄격한 시변이 아니다 — 엔진 쪽에서 검증 불가. (w) 51개 컨텍스트 열을 결합 전 **날짜별 횡단면 재표준화**(논문은 입력에서 BatchNorm 1회): (h) 의 닫힌형이 단위분산 열을 전제하고(corr(Xw,r) = wᵀB/sqrt(wᵀΩw)), 재표준화 없이 결합하면 축척무관 IC 에서 나온 가중이 잘못된 상대 축척으로 합쳐진다 · 또한 Z_Score_Aligned 는 팩터 DB 전체 단면 기준이라 우리 지수 부분집합에서 sd ≠ 1 이다. (x) PIT 데이터 계보: 논문은 원 공표(t2)와 정정 공표(t4)를 구분해 'It will never use the modified information before time t4' 를 보장한다. 우리 재무 지표는 등록부 availability(quarterly+45d · annual 3/31)로 가용시점을 잡지만 등록부 vintage_available = false 라 **정정 전 원 수치를 그 당시 판본으로 재현하지 않는다** — 논문이 명시한 restatement vintage 처리는 우리 쪽에 없다(한계). (y) 엔진은 논문 보고지표(α·ICIR·IR·SR)를 계산하지 않고 베이스라인(Linear·EW·MLP·MGAT) 비교도 하지 않는다 — 등급·성과는 측정 계약이 낸다(AX-008).",
 
-  "paper_original_form": "중국 A주 지수 구성종목에 대한 횡단면 종목선택 신호(딥팩터)를 월간 랭킹해 상위 10%를 동일가중 롱온리로 보유 — 이미 횡단면 팩터 전략 형태다(형태 변환 없음 · 바뀐 것은 신호 추정기뿐).",
+  "paper_original_form": "중국 A주 광역지수(CSI300·CSI500·CSI1000) **각각**을 한 번의 실행 단위로 삼아, 그 지수 구성종목의 멀티팩터 컨텍스트에서 딥팩터를 학습하고 그 지수 안에서 상위 10%를 동일가중 롱온리로 월간 리밸해 **지수별 3개 포트폴리오를 따로** 백테스트한 것(Table 1 = CSI1000|CSI500|CSI300 별 α·ICIR·IR·SR) — 이미 횡단면 종목선택 형태다(형태 변환 없음 · 바뀐 것은 신호 추정기와 '3개 산출 → 1개 집계').",
 
   "portfolio_spec": { "construction": "engine_direct" },
 
@@ -13,134 +13,164 @@
 
   "paper_steps": [
     {
-      "step": "표본·유니버스",
-      "paper_quote": "all constituents of the three major broad-based indices, namely CSI 300, CSI 500 and CSI 1000 ... they cover more than 2800 stocks in the period from 2010 to mid-2022 (Experiments, Dataset)",
+      "step": "표본 · 유니버스(Stock Pool)",
+      "paper_quote": "we select all constituents of the three major broad-based indices, namely CSI 300, CSI 500 and CSI 1000, which include 1800 stocks with the highest rank in terms of market capitalization and liquidity at the same time ... they cover more than 2800 stocks in the period from 2010 to mid-2022 (Experiments, Stock Pool)",
       "status": "changed",
-      "note": "K200∪KQ150 로 치환(러너 universe=K200_KQ150 · 시그널일 당일 멤버십을 엔진이 먼저 적용: engine.R UNI_DT/UNI) · 표본 2005-01-01~(H3) · 학습용 패널만 1999-07-01 부터. changed (a)(b) 참조."
+      "note": "광역지수 3개 → K200·KQ150 2개(러너 universe=K200_KQ150 · 시그널일 당일 멤버십을 엔진이 먼저 적용: engine.R U/MEM) · 표본 2005-01-01~(H3) · 각 지수의 데이터 시작은 런타임 발견값. changed (a)(b)."
     },
     {
-      "step": "제외 규칙 / 유동성",
-      "paper_quote": "1800 stocks with the highest rank in terms of market capitalization and liquidity at the same time (Experiments, Dataset)",
+      "step": "실행 단위 — 유니버스별 독립 구성·독립 평가",
+      "paper_quote": "Our goal is to select stocks from a given universe that are considered more attractive than others and build a portfolio that can outperform the benchmark of that universe (Portfolio Construction); Table 1: Experimental results on different universes ... (열 = CSI 1000 | CSI 500 | CSI 300 각각 α(%)·ICIR·IR·SR); the better performance of our model in these three universes shows its generalizability at different levels of market capitalization",
+      "status": "changed",
+      "note": "파이프라인 전체를 K200 안에서 1회, KQ150 안에서 1회 독립 실행한다(engine.R IDX_NAMES 루프 — 그래프·컨텍스트·IC·가중·상위10% 전부 지수 내부). 바뀐 것: 논문의 지수별 독립 **평가**를 재현하지 않고 두 슬리브 선택종목 합집합을 동일가중 1개 포트폴리오로 낸다(측정층이 포트폴리오 1개·벤치마크 1개를 받는다 — H9). changed (a)."
+    },
+    {
+      "step": "제외 규칙 / 유동성 / 상태",
+      "paper_quote": "1800 stocks with the highest rank in terms of market capitalization and liquidity at the same time (Experiments, Stock Pool) — 전문에 exclude/filter/screen · ST · suspend/halt · 가격 하한 · IPO · turnover 하한 · impute 서술 부재",
       "status": "implemented",
-      "note": "논문은 지수 멤버십 자체가 시총·유동성 상위 선별이고 별도 유동성 하한을 주지 않는다 → 엔진도 추가 필터 없음(paper_faithful · H8). 실투형 하한 2e8 은 강화 단계 축이라 적용하지 않았다."
+      "note": "논문은 지수 멤버십 자체가 시총·유동성 상위 선별이고 별도 하한을 주지 않는다 → 엔진도 유동성·상태(관리종목·거래정지)·가격 하한·IPO 필터를 **하나도** 걸지 않는다(paper_faithful · H8). 실투형 하한 2e8 은 강화 단계 축이라 적용하지 않았다. 결측 팩터 종목도 제외하지 않는다 — 중립 대입으로 풀에 남긴다(그 보충은 changed (q))."
+    },
+    {
+      "step": "업종 분류 기준",
+      "paper_quote": "For industry graph, we choose the CITIC Securities Industry Classification Standard Level 1 (CICSL1) as a guideline to define the industry relationships among stocks",
+      "status": "changed",
+      "note": "CICSL1 → RAWDATA$Sector(시그널일 당일 행). 라벨 결측 처리·시변성 한계 = changed (v)."
     },
     {
       "step": "입력 팩터 집합",
-      "paper_quote": "We create 63 factors including the base factors and their derivatives ... five groups derived from the Barra Global Equity Model: reversal, value, size, momentum, quality (Experiments)",
+      "paper_quote": "We construct our dataset on a daily basis and divide the original factors into five groups derived from the Barra Global Equity Model: reversal, value, size, momentum, quality ... Finally, we create 63 factors including the base factors and their derivatives",
       "status": "changed",
-      "note": "논문은 63개 목록을 열거하지 않는다. 같은 5그룹의 등록부 17지표로 대체(engine.R FACTOR_IDS · 대응은 factor_mapping). changed (c) 참조."
+      "note": "논문은 63개 목록을 열거하지 않는다. 같은 5그룹의 등록부 17지표로 대체(engine.R FACTOR_IDS · 대응은 factor_mapping). changed (c)."
     },
     {
       "step": "파생 팩터 생성",
-      "paper_quote": "we create other derivatives of these factors by using twelve trailing months, quarterly changes, annual changes, and factor values over yields (Experiments)",
+      "paper_quote": "we create other derivatives of these factors by using twelve trailing months, quarterly changes, annual changes, and factor values over yields",
       "status": "omitted",
-      "note": "원 지표에 이 4종 변환을 걸어 파생을 만드는 단계를 구현하지 않았다 — 생성 규칙의 기준지표·창·단위가 명시되지 않아 수치를 지어내야 한다. 대신 등록부가 이미 다른 창으로 등재한 지표(M01/M02/M03 등)를 그 자리에 쓴다. changed (c)."
+      "note": "원 지표에 이 4종 변환을 걸어 파생을 만드는 단계를 구현하지 않았다 — 기준지표·창·단위가 명시되지 않아 수치를 지어내야 한다. 대신 등록부가 이미 다른 창으로 등재한 지표(M01/M02/M03 등)를 그 자리에 쓴다. changed (c)."
     },
     {
-      "step": "전처리 / 표준화 (stock context encoder)",
-      "paper_quote": "C_t = MLP(BatchNorm(F_t)) ... Batch normalization provides z-score normalization (Eq 1)",
+      "step": "데이터 구성 빈도 (학습 표집)",
+      "paper_quote": "We construct our dataset on a daily basis (Experiments, Dataset Construction); where T is the set of dates in the training period (Eq 13)",
       "status": "changed",
-      "note": "BatchNorm → 팩터 DB 의 횡단면 Z_Score_Aligned(+ 결합 전 날짜별 재표준화 .xs_z) · MLP → 항등사상. changed (d)(e)(i)."
+      "note": "앵커는 논문대로 **전 거래일**이다(engine.R for (j in seq_len(nD))). 바뀐 것: 팩터값이 월판이라 월 안에서 컨텍스트가 조각별 상수다(논문은 63팩터를 일별 재계산). changed (m) · windows[factor_db_month_asof]."
     },
     {
-      "step": "결측·이상치 처리",
-      "paper_quote": "(논문은 BatchNorm 외 결측·이상치 처리를 서술하지 않는다)",
+      "step": "PIT 데이터 · 정정(restatement) 처리",
+      "paper_quote": "All factors are calculated using point-in-time data, which means that there is no information leakage ... Later, it make a restatement of that report at time t3, while the information is available to investors at t4 ... It will never use the modified information before time t4",
       "status": "changed",
-      "note": "엔진이 넣은 결측 처리·방어코드 전부 = changed (p). 이상치는 팩터 DB 빌더의 횡단면 winsorize 가 이미 적용된 값을 소비한다(changed (d))."
+      "note": "가용시점은 등록부 availability(quarterly+45d · annual 3/31)가 잡는다. 바뀐 것: 등록부 vintage_available = false 라 정정 전 원 판본을 당시 vintage 로 재현하지 않는다. changed (x)."
     },
     {
-      "step": "업종 그래프 (횡단면 분할 ①)",
-      "paper_quote": "M_ij^t = 1 if stock s_i and stock s_j are in the same industry; 0 otherwise (Eq 2); stocks have relations to each other if they belong to the same industry",
+      "step": "전처리 / 표준화 (stock context encoder · Eq 1)",
+      "paper_quote": "C_t = MLP(BatchNorm(F_t)) (Eq 1); The financial insight of the batch normalization used here is the similar to the z-score normalization generally applied in data preprocessing for factor developing",
+      "status": "changed",
+      "note": "BatchNorm → 팩터 DB 의 횡단면 Z_Score_Aligned + 결합 전 날짜별 재표준화(.xs_z) · MLP → 항등사상. changed (d)(e)(w)."
+    },
+    {
+      "step": "결측 · 이상치 처리",
+      "paper_quote": "(논문은 BatchNorm 외 결측·이상치 처리를 서술하지 않는다 — missing/impute/winsorize 표현 부재)",
+      "status": "changed",
+      "note": "엔진이 넣은 결측 처리·방어코드 전부 = changed (q)(t). 이상치는 팩터 DB 빌더의 횡단면 winsorize 가 이미 적용된 값을 소비한다(changed (d))."
+    },
+    {
+      "step": "업종 그래프 (Eq 2 · 시변)",
+      "paper_quote": "M_ij^t = 1, if stock s_i and stock s_j are in the same industry; 0, otherwise (Eq 2); We use a time-variant graph for both cases of industry and universe, since the constituents in a industry or a index change over time",
       "status": "implemented",
-      "note": "RAWDATA$Sector 를 시그널일 당일 행에서 읽어 동일업종 관계로 사용(engine.R .build_ctx: ind). 라벨 결측 처리·시변성 한계 = changed (g)."
+      "note": "같은 업종 관계를 그 지수 안에서 구성(engine.R build_ctx: secj). 라벨 출처·시변성 한계 = changed (v)."
     },
     {
-      "step": "업종 영향 추정",
+      "step": "업종 영향 추정 (Eq 3)",
       "paper_quote": "H_I^t = GAT(M_t C_t) (Eq 3)",
       "status": "changed",
-      "note": "GAT → 업종 이웃 균일 attention(.nbr_mean). attention 파라미터 미공개. changed (f)."
+      "note": "GAT → 업종 이웃 균일 attention(.grp_mean). attention 파라미터 미공개 · 근거 = Definition 3 의 업종중성 서술. changed (f)."
     },
     {
-      "step": "업종 중성화",
-      "paper_quote": "C_I^t = C_t - H_I^t (Eq 4)",
+      "step": "업종 중성화 (Eq 4)",
+      "paper_quote": "We define the industry neutrality C_I^t as the stock context C_t subtracted from the industry influence H_I^t (Eq 4)",
       "status": "implemented",
-      "note": "engine.R .build_ctx: C_I <- M0 - .nbr_mean(M0, ind)."
+      "note": "engine.R build_ctx: C1 <- C0 - .grp_mean(C0, secj)."
     },
     {
-      "step": "유니버스 그래프 (횡단면 분할 ②)",
-      "paper_quote": "all constituents of a broad-based stock index are related",
+      "step": "유니버스 그래프",
+      "paper_quote": "the universe graph is defined as stock graph G_g that all constituents of a broad-based stock index are related",
       "status": "implemented",
-      "note": "동일 광역지수 관계 = K200 군 / KQ150 군(논문의 CSI300·500·1000 세 지수군의 2군 대응물). engine.R .build_ctx: idx. 2010-01-29 이전 퇴화·양쪽 플래그 배정 = changed (a)(h)."
+      "note": "한 실행의 유니버스 그래프 = 그 지수 구성종목 전체의 완전그래프(engine.R 의 지수별 실행 — K200 실행에서는 K200 전체, KQ150 실행에서는 KQ150 전체)."
     },
     {
-      "step": "유니버스 영향 추정",
-      "paper_quote": "H_U^t = GAT(C_I^t) (Eq 5)",
+      "step": "유니버스 영향 추정 (Eq 5)",
+      "paper_quote": "Similar to learning the industry influence, we adopt GAT to capture the multual influence of any two stocks over the universe graph: H_U^t = GAT(C_I^t) (Eq 5)",
       "status": "changed",
-      "note": "GAT → 지수군 내 균일 attention. changed (f)."
+      "note": "GAT → rank-1 유사도 attention H_U = u uᵀ C_I(.rank1_infl). 균일 attention 은 표준화에 소거되어 계층이 붕괴하므로 쓸 수 없다 · 성분 수 1 은 보충 선택. changed (g)."
     },
     {
-      "step": "유니버스(시장) 중성화",
-      "paper_quote": "C_U^t = C_I^t - H_U^t (Eq 6)",
+      "step": "유니버스(시장) 중성화 (Eq 6)",
+      "paper_quote": "We define the universe neutrality C_U^t as the industry-neutralized stock context C_t excluding the universe influence H_U^t (Eq 6); it contains the stock independent context with eliminating not only the effect of the industry on this stock but also the effect of the universe context",
       "status": "implemented",
-      "note": "engine.R .build_ctx: C_U <- C_I - .nbr_mean(C_I, idx)."
+      "note": "engine.R build_ctx: C2 <- C1 - .rank1_infl(C1)."
     },
     {
-      "step": "딥팩터 head (3계층 결합)",
-      "paper_quote": "f_k^t = LeakyReLU(W_k^T (C^t || C_I^t || C_U^t)) (Eq 8)",
+      "step": "딥팩터 head (3계층 결합 · Eq 7~8)",
+      "paper_quote": "f_k^t = LeakyReLU(W_k^T ( C^t || C_I^t || C_U^t )) (Eq 8), where W_k^T is a single-layer feed-forward neural network and || represents concatenation",
       "status": "changed",
-      "note": "3계층 concat 은 그대로(engine.R X <- cbind(L0,L1,L2)) · W_k → 비음 ICIR 비례 가중 · LeakyReLU 생략. changed (j)(k)."
+      "note": "3계층 concat 은 그대로(engine.R X <- cbind(C0, .xs_z(C1), .xs_z(C2)) · 51열) · W_k → 부호 제약 없는 최대 ICIR 닫힌형 · LeakyReLU 생략(순위 동등). changed (h)(j)."
     },
     {
       "step": "다중 head 지평",
-      "paper_quote": "k-forward trading days, where k=3,5,10,15,20",
+      "paper_quote": "We design K output heads for learning ultimate factors corresponding to multiple forward periods ... i.e. k-forward trading days, where k=3,5,10,15,20 ... The minimum forward horizon, therefore, is set to three trading days",
       "status": "implemented",
-      "note": "engine.R HORIZONS · head 별로 자기 지평의 IC 로 가중을 따로 추정한다. head 결합 규칙은 changed (l)."
+      "note": "engine.R HORIZONS — head 별로 자기 지평의 IC 로 가중을 따로 추정한다. head 결합 규칙은 changed (k)."
     },
     {
-      "step": "factor-attention (해석 모듈)",
-      "paper_quote": "U_k^t = LeakyReLU(W_a,k^T F_t) (Eq 9); A_k^t = softmax(U_k^t) (Eq 10); a_k^t = (1/n) sum_i a_ik^t (Eq 11); f_k^t_hat = F_t^T a_k^t (Eq 12)",
+      "step": "factor-attention 해석 모듈 (Eq 9~12)",
+      "paper_quote": "U_k^t = LeakyReLU(W_a,k^T F_t) (Eq 9); A_k^t = softmax(U_k^t) (Eq 10); a_k^t = (1/n) sum_{i in n} a_ik^t (Eq 11); f_hat_k^t = F_t^T a_k^t (Eq 12); when f_hat_k^t is very close to f_k^t, the attention weight a_k^t can interpret the portion of quantity comes from the original input factors",
+      "status": "omitted",
+      "note": "해석 모듈을 구현하지 않았다 — 우리 추정기는 계층·팩터 가중이 그대로 읽히는 선형형이라 복원할 attention 망이 없다. ★Eq 10 의 softmax 는 **이 모듈**의 attention 을 m 개 원팩터 위에서 정규화하는 것이고 Eq 8 의 W_k 를 제약하지 않는다(앞 판은 비음 제약을 여기에 귀속했다 — 정정). changed (i)."
+    },
+    {
+      "step": "목적함수 / 학습 (Eq 13 · 두 최적화기)",
+      "paper_quote": "L = (1/|K||T|) sum_{k in K} sum_{t in T} d_k^t - b_k^t - c_k (Eq 13), where T is the set of dates in the training period, K is the set of forward horizons; c_k measures the stability of the predictive power ... (ICIR); r_hat_{t+k} = b_k^t f_k^t, where b^t in R is the factor return at time t; The cross-sectional optimizer is a local optimizer ... by minimizing the mean squared errors of the predicted returns and the target returns",
       "status": "changed",
-      "note": "softmax attention 망 → 이 모듈이 복원하려는 대상(입력의 비음·합1 선형결합 가중)을 닫힌형으로 직접 구성. 그래서 재구성 오차 d_k^t 가 항등적으로 0 이고 별도 해석단계가 불필요하다. changed (j)."
+      "note": "SGD argmax → 최대 ICIR 닫힌형(engine.R head_w: w ∝ Σ⁻¹μ · 부호 제약 없음 · Σ 대각수축 λ=0.5) · k∈K 균등 평균은 유지(blk_w) · b 를 같은 축척무관 항에 합쳤고(근사) · d 는 omitted. 횡단면 최적화기(별도 local optimizer)도 구현하지 않았다 — b 를 명시 추정하지 않기 때문이다. changed (h)(i)(k)."
     },
     {
-      "step": "목적함수 / 학습",
-      "paper_quote": "L = (1/|K||T|) sum_k sum_t (d_k^t - b_k^t - c_k) (Eq 13), where b = factor return, c = ICIR; look for a stable factor that maximizes ICIR; higher cumulative factor return",
+      "step": "모델 선택 (validation loss)",
+      "paper_quote": "During the testing period, we select the best model with the lowest validation loss and use it to produce the deep factors",
+      "status": "omitted",
+      "note": "닫힌형 추정이라 고를 모델 집합·하이퍼파라미터·조기종료가 없다 → validation 블록을 쓰지 않는다. 결과로 논문이 validation 으로 쓰는 갭 반기 전반부 데이터를 우리는 아예 쓰지 않는다. changed (o)."
+    },
+    {
+      "step": "walk-forward 분할 (14 그룹 · 6개월 확장 · 갭)",
+      "paper_quote": "We follow the temporal order to divide the data into 14 data groups ... The training set is extended every six months. The validation set consists of the data over the following six-month period. However, we exclude the last month data from the validation set to avoid information leakage ... For instance, the three datasets in the first group include training (2010/1/1~2015/6/30), validation (2015/7/1~2015/11/30), test (2016/1/1~2016/6/30)",
       "status": "changed",
-      "note": "SGD argmax → ICIR 비례 비음 가중의 닫힌형(engine.R .head_weights) · k∈K 균등 평균은 유지(.block_weights) · b 와 c 를 ICIR 하나로 합침. changed (j)(l)(m)."
+      "note": "확장학습·6개월 블록·**학습 종점 = 블록 시작 − 6개월(갭 복원)** 유지(engine.R gc_cut) · 최초 학습블록 66개월을 캘린더 길이로 사용 · validation 블록과 '마지막 달 제외' 는 omitted. changed (n)(o)(p) · windows[ic_training_window]·[train_block_length_window]·[validation_window]."
     },
     {
-      "step": "walk-forward 분할",
-      "paper_quote": "The training set is extended every six months. The validation set consists of the data over the following six-month period. However, we exclude the last month data from the validation set to avoid information leakage ... the test set uses data from the next six-month period; e.g. training (2010/1/1~2015/6/30), validation (2015/7/1~2015/11/30), test (2016/1/1~2016/6/30)",
-      "status": "changed",
-      "note": "확장학습·6개월 재학습 주기 유지(RETRAIN_MONTHS=1,7 · 블록 내 가중 고정) · validation 블록과 '마지막 달 제외' 생략 · 최초 학습블록 길이 66개월을 MIN_TRAIN_MONTHS 로 사용 · 누출 방어는 더 엄격한 실현완료일 규칙으로 대체. changed (n)(o)."
-    },
-    {
-      "step": "정렬·분위",
-      "paper_quote": "we rank the stocks in ascending order according to their factor scores. We assume that the stocks with higher values are more attractive",
+      "step": "정렬 · 분위",
+      "paper_quote": "We then rank the stocks in ascending order according to their factor scores. We assume that the stocks with higher values are more attractive",
       "status": "implemented",
-      "note": "engine.R order(sc, decreasing = TRUE) 상위 추출(= 점수 높은 쪽이 매력적). 동률 규칙 = changed (s). 시장·거래소·업종별 독립 정렬은 논문에 없다 — 단일 횡단면 정렬이며 업종·지수 구조는 정렬이 아니라 중성화 단계에서 들어간다."
+      "note": "engine.R order(sc, decreasing = TRUE) 상위 추출(= 점수 높은 쪽이 매력적). ★정렬은 **유니버스 단위**다 — 논문의 한 실행 = 한 지수이므로 랭킹도 그 지수 안에서만 일어난다(engine.R 는 K200·KQ150 각각 안에서 정렬한다). 거래소·업종별 독립 정렬은 원문에 서술이 없고(업종·지수 구조는 정렬이 아니라 중성화 단계에서 들어간다), 지수 축의 독립 정렬은 원문 구조가 요구한다. 동률 규칙 = changed (u)."
     },
     {
       "step": "가중 · 종목수",
-      "paper_quote": "we construct an equally weighted portfolio consisting of the 10% most attractive stocks",
-      "status": "implemented",
-      "note": "동일가중 1/ktop · ktop = 상위 10%(engine.R TOP_FRAC) · 롱온리(숏 다리 없음) · 고정 축 25종 상한은 적용하지 않았다(engine_direct = 논문 비중 그대로 · 러너가 축 초과를 감사에 남긴다). 반올림 규칙 = changed (r)."
+      "paper_quote": "Therefore, we construct an equally weighted portfolio consisting of the 10% most attractive stocks",
+      "status": "changed",
+      "note": "동일가중·롱온리·지수별 10% 비율은 유지하고 분모를 그 지수 구성종목 수로 잡았다(engine.R ktop = max(1, round(length(tij) * TOP_FRAC))). 바뀐 것: 논문의 지수별 3개 포트폴리오를 **두 슬리브 합집합 1개**로 접었고 동일가중을 그 합집합 위에서 매긴다(슬리브 노출 ≈ 구성종목수 비율) · 고정 축 25종 상한은 적용하지 않았다(engine_direct) · 반올림 규칙 미명시. changed (a)(r)."
     },
     {
       "step": "리밸런스",
-      "paper_quote": "The portfolio is rebalanced monthly",
+      "paper_quote": "The portfolio is rebalanced monthly (논문은 리밸 일자(day-of-month)와 형성→보유 스킵을 서술하지 않는다)",
       "status": "implemented",
-      "note": "시그널일 = 각 월 마지막 거래일(engine.R sig_dates) · 체결은 하네스 규약 close_t1(H4) · 보유창 buy-and-hold 드리프트(H5)."
+      "note": "시그널일 = 각 월 마지막 거래일(engine.R is_me) · 체결은 하네스 규약 close_t1(H4) · 보유창 buy-and-hold 드리프트(H5) · 그 달 팩터 월판의 as-of 가 그 시그널일이라 결정일 데이터만 쓴다."
     },
     {
       "step": "거래비용",
-      "paper_quote": "transaction costs for buying and selling set at 4 per mille of the transaction amount",
-      "status": "implemented",
-      "note": "commission_paper = 0.004 로 넘긴다. 하네스 기장은 리밸마다 sum|dw| x commission 이고 sum|dw| 가 매수·매도 양변의 거래금액이라, 0.004 는 '매수·매도 각각 4‰' 해석에 해당한다(전량 교체 시 왕복 0.8%). 등급판은 15bps(H7)."
+      "paper_quote": "with transaction costs for buying and selling set at 4 per mille of the transaction amount (논문은 slippage·시장충격·세금·회전율 모델·집행가격 규약을 서술하지 않는다)",
+      "status": "changed",
+      "note": "commission_paper = 0.004 로 넘기고 등급은 15bps 순비용판(H7)으로 난다. 비용은 측정층 소관이고 하네스 과금 기저는 target↔target Σ|Δw| 근사라 **유지 종목의 드리프트 복원 거래분이 과금되지 않는다**(논문은 거래금액 전액 과금). changed (s)."
     },
     {
-      "step": "평가 지표",
-      "paper_quote": "reported metrics: alpha (%), ICIR, IR, SR; baselines: Linear regression, EW, MLP, MGAT",
+      "step": "평가 지표 · 베이스라인",
+      "paper_quote": "we show the evaluation metrics of each method, i.e., the active return denoted by alpha (%), ICIR, information ratio (IR), and Sharpe ratio (SR); baselines: Linear, EW, MLP, MLP&GAT",
       "status": "omitted",
       "note": "엔진은 성과·등급 수치를 내지 않는다(측정 = R 계약 · AX-008). 베이스라인 비교도 수행하지 않는다 — 충실구현 1단위 범위 밖."
     }
@@ -149,23 +179,38 @@
   "windows": [
     {
       "name": "forward_realized_return (IC 라벨)",
-      "paper": "k-forward trading days, k in {3,5,10,15,20} — 시그널일 다음 거래일부터 k번째 거래일까지",
-      "impl": "거래일 인덱스 (p+1):(p+k), 종점 = p+k (p = 시그널일 all_dates 위치) · 시그널일 당일 수익 불포함 · Close 비율 PM[,p+k]/PM[,p]-1 · k+1번째 이후 미포함"
+      "paper": "k-forward trading days, k in {3,5,10,15,20} — 앵커일 t 다음 거래일부터 t 이후 k번째 거래일까지의 수익 r_{t+k}",
+      "impl": "거래일 인덱스 (j+1):(j+k), 종점 = j+k (j = 앵커일 all_dates 위치) · 앵커일 당일 수익 불포함 · Close 비율 PM[,j+k]/PM[,j]-1 · k+1번째 이후 미포함 · 두 종점 중 하나라도 유한·양수 종가가 없으면 그 종목이 그 관측에서 빠진다"
     },
     {
       "name": "ic_training_window (확장 학습창)",
-      "paper": "training set is extended every six months — 표본 시작부터 블록 직전까지 확장",
-      "impl": "확장창. 재학습 시그널일 T 에서 IC_USABLE_DATE < T 인 관측 전부(엄격 부등호) · 종점 = T 직전 거래일까지 실현이 끝난 관측 · 당월 미실현 관측 불포함 · head·열별 최소 66관측"
+      "paper": "The training set is extended every six months — 테스트블록 [B, B+6개월) 에 대한 학습 종점은 B − 6개월(예시: training 2010/1/1~2015/6/30, test 2016/1/1~2016/6/30)",
+      "impl": "확장창. 앵커일 < (B − 6개월) 인 관측 전부 · 종점 = B − 6개월 직전 거래일(블록 [2016-01-01,2016-06-30] 이면 2015-06-30 까지 = 논문과 같다) · 추가 구조 가드로 라벨 실현 완료일 < B 도 강제 · 당월·블록 내 미실현 관측 불포함"
+    },
+    {
+      "name": "validation_window",
+      "paper": "The validation set consists of the data over the following six-month period. However, we exclude the last month data from the validation set — 종점 = B − 1개월(예시 2015/7/1~2015/11/30)",
+      "impl": "미사용(omitted) — 닫힌형 추정이라 고를 하이퍼파라미터·조기종료가 없다. 그 구간 데이터는 적합에도 선택에도 들어가지 않는다(종점 개념 없음)"
+    },
+    {
+      "name": "train_block_length_window (최초 학습블록 길이)",
+      "paper": "training (2010/1/1~2015/6/30) = 66개월 — 데이터 시작부터 첫 학습 종점까지의 캘린더 길이",
+      "impl": "66개월(TRAIN_BLOCK_MONTHS)을 캘린더 길이로 사용 · 처음 쓰는 테스트블록 = (B − 6개월) ≥ (그 지수 데이터 시작 + 66개월) 인 첫 1월/7월 블록 · 종점 = B − 6개월 · 관측수 하한(MIN_TRAIN_OBS=252)은 별개 보충 가드이지 이 창의 정의가 아니다"
     },
     {
       "name": "retrain_hold_window (블록 내 가중 고정)",
-      "paper": "test set uses data from the next six-month period — 블록(6개월) 동안 모델 고정",
-      "impl": "1월·7월 첫 시그널일에 가중 재산출, 그 가중을 다음 재학습 시그널일 직전 달까지 고정 적용 · 종점 = 다음 1월 또는 7월 시그널일 전월"
+      "paper": "while the test set uses data from the next six-month period — 블록(6개월) 동안 선택된 모델 고정",
+      "impl": "1~6월 / 7~12월 블록의 **첫 월말 시그널일**에 가중 산출, 그 블록 마지막 월말 시그널일까지 고정 · 종점 = 다음 블록 첫 월말 시그널일 직전 월말. ★단 Z_Score_Aligned 안의 팩터 부호 성분은 연결자가 월판 적재마다 다시 추론하므로 **원팩터에 걸리는 유효 계수는 블록 내에서 월 단위로 바뀔 수 있다**(changed (d)) — 고정되는 것은 51열 위의 가중벡터다"
     },
     {
       "name": "factor_db_month_asof (팩터 값 기준일)",
-      "paper": "(논문은 팩터 계산 기준일을 명시하지 않는다 — 월간 리밸만 명시)",
-      "impl": "load_month_factors(sig_date) 가 돌려주는 그 달 파일의 as-of = 시그널월 마지막 거래일(종점 = t, 체결은 t+1 종가) · as-of 월 != 요청 월이면 그 달 폐기"
+      "paper": "We construct our dataset on a daily basis — 팩터값이 거래일마다 재계산된다",
+      "impl": "월판만 가용(load_month_factors = C15 유일 경로) · 월판의 as-of = 그 달 거래 말일(빌더 기록값) · 거래일 t 는 **as-of ≤ t 인 가장 최근 월판**을 쓴다(findInterval) → 월 중 거래일은 직전 월판, 월 말일(= 시그널일)은 그 달 월판(as-of = t, 체결 t+1) · as-of 월 != 요청 월이거나 as-of > 요청일이면 그 월판 폐기"
+    },
+    {
+      "name": "ic_direction_window (Z_Score_Aligned 안의 부호 추론 · 인프라)",
+      "paper": "(논문에 부호 사전정렬 서술 없음 = NOT STATED — 부호는 Eq 8 의 학습 파라미터 W_k 안에 있다)",
+      "impl": "연결자 align_factor_direction 의 확장창: 월간 IC 이력 중 Usable_Date <= 요청 월판 날짜 인 관측의 평균 IC 부호(36개월 burn-in · 미달이면 등록부 direction · 둘 다 없으면 +1) · 종점 = 요청 월판 날짜 · 월판 적재마다 재평가(엔진이 고르지 않는다)"
     },
     {
       "name": "factor 내부 트레일링 창 (지표별)",
@@ -173,44 +218,46 @@
       "impl": "엔진은 팩터 값 위에 어떤 롤링 창도 추가하지 않는다 — 각 지표의 창은 등록부 정의가 정한다(종점 = 그 달 as-of). 지표별 창·skip 월 = factor_mapping 의 registry_definition·deviation"
     },
     {
-      "name": "cross_sectional_stats (.xs_z · .nbr_mean)",
-      "paper": "BatchNorm (Eq 1) — 배치 내 통계",
-      "impl": "시계열 창 없음. 한 시그널일의 단면(그 날짜 행)만으로 mean·sd·그룹평균 산출 — 종점 개념 없음(전표본 통계 아님)"
+      "name": "cross_sectional_stats (.xs_z · .std_cols · .grp_mean · .rank1_infl)",
+      "paper": "BatchNorm (Eq 1) — 배치 내 통계 · GAT (Eq 3·5) — 시점 t 의 그래프 위 집계",
+      "impl": "시계열 창 없음. 한 날짜의 단면(그 날짜 행)만으로 mean·sd·단위노름·군집 평균·최대 고유벡터를 산출 — 종점 개념 없음(전표본 통계 아님 · 날짜 간 정보 이동 없음)"
     }
   ],
 
   "factor_mapping": [
-    { "factor_id": "M11_ST_Reversal", "paper_item": "reversal 그룹 기저(단기 반전)", "registry_definition": "Last 5 trading days cumulative return. Weekly reversal signal.", "deviation": "논문은 reversal 지표의 창 길이를 명시하지 않는다(63개 목록 미열거) — 창 5거래일은 등록부 정의. dedup cluster DUPC-033 의 canonical(alias M29_Mom_5d 는 미사용)." },
+    { "factor_id": "M11_ST_Reversal", "paper_item": "reversal 그룹 기저(단기 반전)", "registry_definition": "Last 5 trading days cumulative return. Weekly reversal signal.", "deviation": "논문은 reversal 지표의 창 길이를 명시하지 않는다(63개 목록 미열거) — 창 5거래일은 등록부 정의. dedup cluster DUPC-033 의 canonical(alias M29_Mom_5d 는 미사용 — 실측 bit-identical)." },
     { "factor_id": "M12_LR_Reversal", "paper_item": "reversal 그룹 기저(장기 반전)", "registry_definition": "60m-13m cumulative return (1260-273 days). Multi-year reversal.", "deviation": "논문 미열거 — 창 60~13개월(skip 13개월)은 등록부 정의. dedup 선언 없음." },
-    { "factor_id": "V01_BM", "paper_item": "value 그룹 기저(book-to-price)", "registry_definition": "TotalEquity / MarketCap. Ratio of book value to market capitalization.", "deviation": "논문 미열거. 재무 가용시점은 등록부 availability 규칙(분기 +45일 · 연간 3/31)이 정한다 — 논문은 재무 lag 를 서술하지 않는다. dedup 선언 없음." },
+    { "factor_id": "V01_BM", "paper_item": "value 그룹 기저(book-to-price)", "registry_definition": "TotalEquity / MarketCap. Ratio of book value to market capitalization.", "deviation": "논문 미열거. 재무 가용시점은 등록부 availability(quarterly+45d · annual 3/31)가 정한다 — 논문은 재무 lag 를 서술하지 않고 restatement vintage 만 서술한다(changed (x)). dedup 선언 없음." },
     { "factor_id": "V02_EP", "paper_item": "value 그룹 기저(earnings yield)", "registry_definition": "NetIncome / MarketCap. Earnings yield metric.", "deviation": "논문 미열거. dedup 선언 없음." },
     { "factor_id": "V03_CFP", "paper_item": "value 그룹 기저(cash-flow yield)", "registry_definition": "OperatingCF / MarketCap. Operating cash flow yield.", "deviation": "논문 미열거. dedup 선언 없음." },
-    { "factor_id": "V08_PSR", "paper_item": "value 그룹 기저(sales-to-price · 논문의 'factor values over yields' 계열)", "registry_definition": "MarketCap / Revenue. Price relative to revenue.", "deviation": "논문 미열거. 부호는 Z_Score_Aligned 가 정렬(정의 자체는 lower_better 방향). dedup cluster DUPC-041 의 canonical — alias V20_SP(Revenue/MarketCap)·redundant V13_EV_Sales 는 **미사용**(둘을 함께 넣으면 가중이 겹친다)." },
+    { "factor_id": "V08_PSR", "paper_item": "value 그룹 기저(sales-to-price · 논문의 'factor values over yields' 계열)", "registry_definition": "MarketCap / Revenue. Price relative to revenue.", "deviation": "논문 미열거. 등록부 direction = lower_better 이고 부호는 Z_Score_Aligned 가 정렬한다. dedup cluster DUPC-041 의 canonical — alias V20_SP(Revenue/MarketCap)·redundant V13_EV_Sales 는 **미사용**(함께 넣으면 가중이 겹친다)." },
     { "factor_id": "S01_Size", "paper_item": "size 그룹 기저(log market cap)", "registry_definition": "-log(MarketCap). Log negative market cap for size premium.", "deviation": "논문 미열거. 등록부 정의가 이미 부호를 반전한 형태(-log)라 Barra size(log MktCap)와 부호가 반대 — Z_Score_Aligned 가 흡수한다. dedup cluster DUPC-030(partners L26_Log_MktCap · S02_Float_Size 는 미사용)." },
     { "factor_id": "M01_Mom_12_1", "paper_item": "momentum 그룹 기저(12-1 relative strength)", "registry_definition": "252-day cumulative return with 1-month skip. Classic 12-1 momentum signal.", "deviation": "논문 미열거 — 창 252일·skip 1개월은 등록부 정의. dedup cluster DUPC-032(partner M13_VolAdj_Mom 은 미사용)." },
-    { "factor_id": "M02_Mom_6_1", "paper_item": "momentum 그룹 파생(다른 트레일링 창)", "registry_definition": "126-day cumulative return with 1-month skip. 6-month momentum.", "deviation": "논문 미열거. M01 과 창만 다른 같은 기저 — 논문의 '기저+트레일링 파생' 설계에 대응하되 창 조합은 등록부 것이다. dedup 선언 없음." },
+    { "factor_id": "M02_Mom_6_1", "paper_item": "momentum 그룹 파생(다른 트레일링 창)", "registry_definition": "126-day cumulative return with 1-month skip. 6-month momentum.", "deviation": "논문 미열거. M01 과 창만 다른 같은 기저 — 논문의 '기저+트레일링 파생' 설계에 대응시켰고 창 조합은 등록부 것이다. dedup 선언 없음." },
     { "factor_id": "M03_Mom_3_1", "paper_item": "momentum 그룹 파생(다른 트레일링 창)", "registry_definition": "63-day cumulative return with 1-month skip. 3-month momentum.", "deviation": "논문 미열거. 위와 같다. dedup 선언 없음." },
     { "factor_id": "M10_Intermediate_Mom", "paper_item": "momentum 그룹 파생(중간기 모멘텀)", "registry_definition": "252-147 day cumulative return (months 12-7). Novy-Marx (2012) intermediate momentum.", "deviation": "논문 미열거 — skip 7개월·창 12~7개월은 등록부 정의. dedup 선언 없음." },
     { "factor_id": "Q01_GPA", "paper_item": "quality 그룹 기저(gross profitability)", "registry_definition": "GrossProfit / TotalAssets. Asset utilization efficiency.", "deviation": "논문 미열거. dedup 선언 없음." },
     { "factor_id": "Q02_ROE", "paper_item": "quality 그룹 기저(profitability · ROE)", "registry_definition": "NetIncome / TotalEquity. Shareholder return efficiency.", "deviation": "논문 미열거. dedup cluster DUPC-034(partner Q23_Sustainable_Growth 는 미사용)." },
     { "factor_id": "Q03_ROA", "paper_item": "quality 그룹 기저(profitability · ROA)", "registry_definition": "NetIncome / TotalAssets. Asset efficiency.", "deviation": "논문 미열거. Q02_ROE 와 경제적으로 인접하지만 등록부 dedup 군집이 다르다(Q03 은 dedup 선언 없음) — 같은 군집 동시 사용은 아니다." },
-    { "factor_id": "Q05_Accrual", "paper_item": "quality 그룹 기저(earnings quality · accruals)", "registry_definition": "(dCA - dCash - dCL + dST_Debt - Depreciation) / TA. Working capital accruals.", "deviation": "논문 미열거. dedup cluster DUPC-001(partners AC01_Total_Accruals_CF · AC11_Accruals_to_Assets · AC18_Accrual_Quality 는 전부 미사용)." },
+    { "factor_id": "Q05_Accrual", "paper_item": "quality 그룹 기저(earnings quality · accruals)", "registry_definition": "(dCA - dCash - dCL + dST_Debt - Depreciation) / TA. Working capital accruals.", "deviation": "논문 미열거. 등록부 direction = lower_better. dedup cluster DUPC-001(partners AC01_Total_Accruals_CF · AC11_Accruals_to_Assets · AC18_Accrual_Quality 는 전부 미사용)." },
     { "factor_id": "Q06_Asset_Growth", "paper_item": "quality 그룹 기저(investment quality · asset growth)", "registry_definition": "-(dTA / lag TA). Negate: low asset growth = conservative = better.", "deviation": "논문 미열거. 등록부 정의가 이미 부호를 반전한 형태. dedup cluster DUPC-023(partner GR03_Asset_Growth 는 미사용)." },
-    { "factor_id": "Q13_Fin_Leverage", "paper_item": "quality 그룹 기저(leverage)", "registry_definition": "TotalAssets / TotalEquity. Debt load relative to equity.", "deviation": "논문 미열거. 방향 lower_better(Z_Score_Aligned 가 정렬). dedup cluster DUPC-036(partner XF_DU03_EquityMultiplier 는 미사용)." }
+    { "factor_id": "Q13_Fin_Leverage", "paper_item": "quality 그룹 기저(leverage)", "registry_definition": "TotalAssets / TotalEquity. Debt load relative to equity.", "deviation": "논문 미열거. 등록부 direction = lower_better(Z_Score_Aligned 가 정렬). dedup cluster DUPC-036(partner XF_DU03_EquityMultiplier 는 미사용)." }
   ],
 
   "constants": [
-    { "name": "TOP_FRAC", "value": 0.10, "source": "paper", "note": "Experiments: 'an equally weighted portfolio consisting of the 10% most attractive stocks'. 반올림 규칙(max(1, round(n*0.10)))은 논문 미명시 — changed (r)." },
-    { "name": "HORIZONS", "value": [3, 5, 10, 15, 20], "source": "paper", "note": "Methodology/Experiments: 'k-forward trading days, where k=3,5,10,15,20' (Eq 8 multi-head)." },
-    { "name": "N_LEVELS", "value": 3, "source": "paper", "note": "Eq 8 이 C^t || C_I^t || C_U^t 세 계층을 concat 한다 — 컨텍스트 열 수 = 3 x 17 = 51." },
-    { "name": "MIN_TRAIN_MONTHS", "value": 66, "source": "paper", "note": "Experiments 예시의 최초 학습블록 training (2010/1/1~2015/6/30) = 66개월. 엔진에서는 head·열별 최소 가용 IC 관측수 및 패널 시작 역산에 쓴다." },
-    { "name": "RETRAIN_MONTHS", "value": [1, 7], "source": "paper", "note": "Experiments: 'The training set is extended every six months ... the test set uses data from the next six-month period' → 6개월 블록 시작월(1월·7월)." },
-    { "name": "ICIR_FLOOR", "value": 0, "source": "paper", "note": "Eq 10 A_k^t = softmax(U_k^t) → attention 가중은 비음·합1. 음의 ICIR 열은 0 으로 절단한다." },
-    { "name": "START_DATE", "value": "2005-01-01", "source": "harness", "note": "H3 측정 표본 시작. 이 날짜 이전 시그널일은 학습에만 쓰이고 PORTFOLIO 로 산출되지 않는다." },
-    { "name": "PANEL_START", "value": "1999-07-01", "source": "harness", "note": "파생값 = START_DATE − MIN_TRAIN_MONTHS 개월. 논문의 66개월 최초 학습블록이 측정창 앞에 오게 하려는 것. 그 구간 팩터 DB 파일이 없으면 자동으로 뒤로 밀린다." },
-    { "name": "MIN_STOCKS", "value": 30, "source": "supplement", "note": "논문 미명시. 상위 10% 분위가 의미를 갖는 단면 하한 · 미달 월은 산출 없음(→ H5 이월). changed (q)." },
-    { "name": "MIN_FACTORS_PRESENT", "value": 5, "source": "supplement", "note": "논문 미명시. 그 달 팩터 DB 에 존재하는 선택지표 수 하한(초기 연도 커버리지 희박 구간에서 거의 빈 컨텍스트가 IC 이력에 들어가는 것을 막는다) · 미달 월은 산출 없음. changed (q)." },
-    { "name": "ZERO_SD_EPS", "value": 1e-12, "source": "supplement", "note": "논문 미명시. 횡단면 sd 및 ICIR 분모 가드 — 이하면 그 열을 0(또는 가중 0)으로 둔다. changed (i)(j)." }
+    { "name": "TOP_FRAC", "value": 0.1, "source": "paper", "note": "Portfolio Construction: 'an equally weighted portfolio consisting of the 10% most attractive stocks'. 분모 = 그 지수 구성종목 수 · 반올림 규칙(max(1, round(n*0.1)))은 논문 미명시 — changed (r)." },
+    { "name": "HORIZONS", "value": "c(3L, 5L, 10L, 15L, 20L)", "source": "paper", "note": "§3.2 Multi-Head Learning: 'k-forward trading days, where k=3,5,10,15,20' (Eq 8)." },
+    { "name": "N_LEVELS", "value": 3, "source": "paper", "note": "Eq 8 이 C^t || C_I^t || C_U^t 세 계층을 concat 한다 — 컨텍스트 열 수 = 3 x 17 = 51. 코드에서는 ncol(X) 구조 검증에 쓴다." },
+    { "name": "TRAIN_BLOCK_MONTHS", "value": 66, "source": "paper", "note": "§4 예시 분할의 최초 학습블록 training (2010/1/1~2015/6/30) = 66개월. **캘린더 길이**로만 쓴다(관측 개수로 치환하지 않는다) — changed (n)." },
+    { "name": "GAP_MONTHS", "value": 6, "source": "paper", "note": "§4 예시: training 종점 2015/6/30 · test 시작 2016/1/1 → 적합 데이터 종점과 테스트블록 시작 사이 6개월(validation 블록 + 제외된 마지막 달). changed (o)." },
+    { "name": "BLOCK_START_MONTHS", "value": "c(1L, 7L)", "source": "paper", "note": "§4: 'The training set is extended every six months ... the test set uses data from the next six-month period' + 예시 test 2016/1/1~2016/6/30 → 6개월 테스트블록 시작월 = 1월·7월." },
+    { "name": "SHRINK_LAMBDA", "value": 0.5, "source": "supplement", "note": "논문 미명시. Σ⁻¹μ 닫힌형의 공분산을 대각으로 수축하는 강도 — 51열이 계층 간 강하게 공선이라 표본 역행렬이 불안정하다. 0.5 = 표본공분산과 그 대각의 **미조정 중간값**(격자 탐색·성과 비교로 고르지 않았다). changed (h)." },
+    { "name": "START_DATE", "value": "2005-01-01", "source": "harness", "note": "H3 측정 표본 시작. 이 날짜 이전 월말 시그널일은 학습에만 쓰이고 PORTFOLIO 로 산출되지 않는다. 실제 최초 산출월은 66+6개월 규칙과 팩터 DB 가용월에 따라 더 늦을 수 있다 — changed (b)." },
+    { "name": "COVERAGE_MIN", "value": 0.05, "source": "harness", "note": "load_month_factors() 의 인프라 기본값(논문 값이 아니다). 그 달 커버리지가 전체 티커의 5% 미만인 지표를 연결자가 패널에서 떨어뜨린다 — 명시적으로 넘겨 가시화했다. changed (t)⑪." },
+    { "name": "MIN_XS", "value": 30, "source": "supplement", "note": "논문 미명시. 횡단면 하한 — 그 날 지수 멤버십이 30 미만이거나 (앵커,지평)의 유효 실현수익 종목이 30 미만이면 그 산출·관측이 없다(→ H5 이월). changed (t)⑨." },
+    { "name": "MIN_FACTORS_PRESENT", "value": 5, "source": "supplement", "note": "논문 미명시. 그 단면에서 커버된 팩터 열 수 하한(초기 연도 희박 커버리지 구간에서 거의 빈 컨텍스트가 IC 이력에 들어가는 것을 막는다) · 미달 월판·날짜는 건너뛴다. changed (t)⑩." },
+    { "name": "MIN_TRAIN_OBS", "value": 252, "source": "supplement", "note": "논문 미명시. 51x51 공분산 추정의 수치 하한(열별 유한 IC 관측수 하한 + head 별 학습행수 하한). 66개월 캘린더 규칙이 충족되면 head 당 일별 앵커가 ≈1,300 이라 사실상 구속하지 않는다 — 논문의 66 을 관측수로 치환한 것이 **아니다**. changed (n)." },
+    { "name": "ZERO_SD_EPS", "value": 1e-12, "source": "supplement", "note": "논문 미명시. 횡단면 sd·단위노름·고유벡터 노름·ICIR 분모·Σ|w| 가드 — 이하면 그 열을 0(또는 NA, 또는 그 head 를 건너뜀)으로 둔다. changed (t)⑤⑥⑦⑧." }
   ],
 
   "harness_disclosure": "[HARNESS-DISCLOSURE v1]\n- H1 유니버스: 엔진 산출(FACTORS·PORTFOLIO)은 각 신호일의 RAWDATA 멤버십(K200 또는 KQ150)과 결합되어 그날 비멤버 행이 제거된다 — PIT 시변 · 사후 생존 조건 없음 · 상장폐지 종목 포함(폐지 뒤 수익 행 부재 = 0).\n- H2 KQ150 멤버십 플래그는 2010-01-29 부터 있다 — 그 전 신호일의 유니버스는 사실상 K200 단독이다.\n- H3 표본: 2005-01-01 이후 신호만 측정한다(논문 표본기간과 다르다).\n- H4 체결: 신호일 d 에 확정한 비중을 다음 거래일 종가에 체결(close_t1) — 새 보유 수익은 집행 다음 날부터 다음 집행일까지, 집행일 당일 수익은 직전 보유(동일봉 체결 없음).\n- H5 보유: 연속한 두 신호일의 집행 사이 보유창 안에서 buy-and-hold(비중 드리프트) — 다음 신호일 집행 때 목표비중으로 되돌린다. 어떤 달에 엔진 산출이 없으면 그 달은 리밸이 없어 직전 보유가 다음 신호까지 이월된다.\n- H6 비중: FACTORS 면 portfolio_spec(top_n_long 등)으로 신호일마다 유니버스 결합 뒤 점수 순 구성 · PORTFOLIO 면 유니버스 결합 뒤 남은 비중을 그대로 쓴다 — 빠진 종목 몫은 재분배되지 않아 그 다리 총노출이 줄어든다(현금처럼 0 수익). 롱·숏 다리 결합 = GL·L − GS·S(GL·GS = 다리 Σ|w|).\n- H7 비용: 등급판 = 리밸마다 Σ|Δw|×15bps(초기 매수 = Σ|w|) · 논문판 = commission_paper(무명시면 0)로 병기한다.\n- H8 유동성: 러너는 유동성 필터를 적용하지 않는다(paper_faithful) — 필터는 엔진이 논문대로만 건다.\n- H9 벤치마크: KOSPI200.\n[/HARNESS-DISCLOSURE]"
