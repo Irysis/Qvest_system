@@ -374,7 +374,8 @@ PROMPT="논문 1편의 **충실구현**을 수행하라. 산출은 **엔진 R �
   changed(바꾼 것과 이유 1줄) · paper_original_form(논문 원래 산출 형태 1줄) ·
   ★portfolio_spec(러너에 그대로 넘어가는 **기계 판독** 객체) ·
   ★commission_paper(논문 명시 왕복비용. 미명시면 null).
-  faithful 이면 changed 는 유니버스만 K200 합집합 KQ150 이다.
+  faithful 이어도 changed 에는 유니버스 치환(K200 합집합 KQ150) 외에 표본기간 차이(논문 표본 vs 2005-01-01~)와
+  보충값(아래 constants 의 supplement)을 적는다 — '유니버스만' 으로 적으면 기간·보충 상수가 미신고가 된다(감사 실측).
   portfolio_spec 은 산출 형태에 맞춰라 — 산문으로 적지 말고 이 형태로:
     PORTFOLIO 를 만들면 {\"construction\":\"engine_direct\"}
       (네가 만든 비중이 곧 논문 비중이다. 롱숏이면 반드시 이 값이어야 한다 —
@@ -401,16 +402,51 @@ PROMPT="논문 1편의 **충실구현**을 수행하라. 산출은 **엔진 R �
 적어둔 변경은 adapted 로 통과하고, 안 적은 변경은 misdeclared 로 재구현을 부른다 —
 **적는 쪽이 싼다.**
 
+### ★FIDELITY 구조 필드 4개 — 측정 전에 기계 사전검사가 확인한다 (2026-10-05)
+측정·감사 **전에** 기계 사전검사(02_Infrastructure/ops/rf_preaudit.py · 규칙 06_Registry/rf_preaudit.json)가
+engine.R 과 FIDELITY.json 만 보고 아래를 확인한다. 빠지면 측정 없이 이 판으로 되돌아온다(보정 1회).
+감사가 가장 자주 기각한 형태를 앞에서 막으려는 것이다 — 논문에 있는 단계를 구현도 신고도 안 함 · 창 종점이 논문과
+한 칸 어긋남 · 팩터 DB 지표의 정의(skip 월·half-life·창 길이)가 논문 지표와 다름 · 등록부 중복 지표 동시 사용 · 방어 코드 미신고.
+
+위 6키에 더해 FIDELITY.json 에 아래 4키를 써라:
+1. paper_steps — 논문이 서술한 절차 단계 **전부**(표본·제외 규칙 · 전처리(결측 대체·이상치·표준화·중성화) · 신호 정의 ·
+   횡단면 분할(시장·거래소·업종별 독립 정렬 여부) · 정렬·분위 · 가중 · 리밸 · 비용).
+   항목 = {step: 단계 이름, paper_quote: 원문 짧은 인용(절·식·표 번호), status: implemented 또는 changed 또는 omitted,
+   note: 구현 위치 또는 바꾼·뺀 이유}. changed·omitted 는 note 필수이고 changed 에도 같은 내용을 적는다.
+2. windows — 코드의 롤링·트레일링 창 **전부**(frollmean 류 · shift(v, 0:(n-1)) · (k-L):(k-1) 인덱스 · tail 등).
+   항목 = {name, paper: 논문 명세(종점까지 — 예 s∈[t-12,t-1]), impl: 구현(종점까지 — 예 [t-12,t-1] · 당월 포함 여부)}.
+   종점이 논문과 다르면 changed 에도 적는다.
+3. factor_mapping — 팩터 DB 지표(load_month_factors)를 쓰면 지표마다
+   {factor_id, paper_item: 대응하는 논문 지표, registry_definition: 등록부 02_Infrastructure/factor_db/factor_registry.json 의
+   definition 문장 그대로, deviation: 논문 정의와 다른 점(창 길이·skip 월·half-life·중성화·부호·단위) — 같으면 none}.
+   등록부 dedup.cluster 가 같은 지표(DUPC-xxx — 값이 사실상 같은 신호)를 둘 이상 쓰면 가중이 겹친다 — 하나만 쓰거나,
+   논문도 같은 변환을 별개 지표로 두었다면(예: 시총·로그시총) 그 대응과 군집 id 를 changed 에 적어라.
+4. constants — engine.R 최상위의 숫자 상수 **전부**(이름 <- 값 형태: 창 길이·하한·seed·하이퍼파라미터·날짜).
+   항목 = {name, value: 코드와 같은 값, source: paper 또는 supplement 또는 harness, note: paper 면 원문 위치 · supplement 면 보충 이유}.
+   코드 안에 직접 쓴 숫자(예: nrow(x) < 20)는 상수로 빼서 여기에 올려라 — 감사 실측에서 엔진당 미신고 상수가 중앙 18개였다.
+(그리고 이 프롬프트 끝의 '하네스 고지' 대괄호 블록을 harness_disclosure 키에 그대로 옮긴다 — 하네스 쪽 차이는 그 블록이 공시한다.)
+
+**제출 전 자가 점검**(사전검사가 그대로 확인한다):
+- engine.R 최상위 숫자 상수가 전부 constants 에 있고 value 가 코드와 같은가.
+- 루프의 next · return(NULL) · 행 필터로 어떤 달의 산출이 비면 하네스가 직전 보유를 이월한다 —
+  언제 비는지와 그 결과(이월)를 changed 에 적었는가.
+- engine.R 에 따옴표로 쓴 팩터 DB 지표 id 가 전부 factor_mapping 에 있는가.
+- engine.R 의 롤링 창이 전부 windows 에 있고 impl 에 종점이 적혀 있는가.
+- engine.R 의 clip·pmax/pmin 상수 · 결측/비유한값 처리 · set.seed · tryCatch 폴백 · 최소 개수 하한 · 유동성 하한 ·
+  상태 플래그(관리종목·거래정지) · 커버리지 하한 · 1e-x 분모 가드가 각각 changed 또는 paper_steps note 에 적혀 있는가.
+
 ## 산출 (이것만)
 ## 산출 (이것만)
 \`${WDIR}/engine.R\` — source 되면 \`FACTORS(Date,Ticker,Score)\` 또는
 \`PORTFOLIO(Date,Ticker,Weight,Leg)\` 를 만드는 R 스크립트. 호출자가 환경에 \`RAWDATA\`·\`BM_DT\` 를 넣어준다.
 
 ## 축 (변수 아님)
-- **논문 그대로** 복제하되 **유니버스만 K200∪KQ150**. 유동성 하한 adv20 ≥ 2e8 은 t-1 로 적용.
+- **논문 그대로** 복제하되 **유니버스만 K200∪KQ150**. 유동성 필터는 **논문 우선**이다 — 논문에 없으면 넣지 않는다
+  (SOT paper_faithful · 실투형 유동성 하한 2e8 은 강화 단계의 축이다). 논문에 있으면 논문 값 그대로 t-1 로 적용하고 paper_steps 에 인용한다.
 - 기간 2005-01-01~. 종목수·비중·리밸 주기는 논문 명시값을 따른다.
 - **PIT C1~C15 절대**: 모든 창의 종점은 t-1. 전 표본 통계 금지(rolling/expanding만).
   팩터 DB 는 \`load_month_factors()\` 경유(C15), \`Z_Score_Aligned\` 만 소비(C13).
+  이 값은 원값이 아니라 변환값(횡단면 절단·z-score·방향 정렬)이므로 그 사실을 changed 에 적는다.
   ★\`detect_lookahead\` 는 비선언 idiom(전 표본 cov()/mean() · shift(-1) · 수동 미래 인덱싱)을
   못 잡는다 — 통과를 근거로 삼지 말고 **구조로** 보장하라.
 - 원문 접근이 불가하면 **지어내지 마라**. \`${WDIR}/ABORT.txt\` 에 사유를 쓰고 끝내라.
@@ -428,6 +464,17 @@ PROMPT="논문 1편의 **충실구현**을 수행하라. 산출은 **엔진 R �
 - 등급·성과 수치 선언(계약이 낸다).
 
 엔진을 쓰고 1~2줄로 무엇을 구현했는지만 보고하라."
+
+# --- ★하네스 공시 블록 (2026-10-05 · 측정 전 사전검사 P8 의 짝) ------------------------------------------
+#   구현자가 하네스를 추측해 서술하다 틀리거나 빠뜨린 것이 감사 기각 사유였다(분류 보고서 HARNESS 12건 · 2차 패스 기각 3건).
+#   그래서 하네스 쪽 차이는 기계가 쓴 블록을 옮기게 한다 — 체결 규약은 하네스 설정(constraint_defaults.json)에서 그때 읽는다.
+#   결합 요청은 제외(사전검사도 결합은 건너뛴다). 생성 실패 = 블록 없이 진행(P8 은 prompt.txt 에 블록이 실렸을 때만 강제).
+if [ "${IS_COMBO:-0}" != "1" ]; then
+  HB="$("$PY" "$ROOT/02_Infrastructure/ops/rf_preaudit.py" --harness-block --root "$ROOT" 2>>"$LOG" | tr -d '\r')"
+  if [ -n "$HB" ]; then PROMPT="$PROMPT
+
+$HB"; else jl harness_block_absent "paper=$P_KEY"; fi
+fi
 
 # --- KOMBO: 결합 설계 프롬프트 (2026-09-04 도훈 지시) -----------------------
 #   ★"조합 갯수도, 설계 방식도 제한하지 마라" (도훈). 그래서 이 프롬프트는 형태를 지정하지
@@ -517,11 +564,18 @@ H={
  'audit_not_run': ('충실도 감사 미실행 — 앞 판 엔진의 결함이 아니었다',
    '앞 판은 측정을 통과했고 감사 레인이 안 돌았을 뿐이다(정상은 엔진을 두고 검증기만 재실행한다). '
    '엔진 파일이 없어 다시 부르는 것이니, 논문을 다시 읽고 같은 기준(충실구현)으로 구현하라.'),
+ 'declaration_gate': ('측정 전 기계 사전검사(신고 구조) — 측정·감사는 하지 않았다',
+   '엔진은 그 자리(engine.R)에 그대로 있다. 아래 지적만 처리하라 — 논문과 맞는 코드면 코드는 두고 '
+   'FIDELITY.json 의 구조 필드(paper_steps · windows · factor_mapping)와 changed 를 보충하고, '
+   '지적이 실제 이탈을 가리키면 그 줄을 논문으로 되돌려라. 지적과 무관한 곳은 고치지 마라 — 이 판은 짧은 보정이다.'),
 }
 title, guide = H.get(why, ('측정 실패', '아래 사유를 읽고 같은 실패를 반복하지 마라.'))
 print('### %s' % title)
 print(guide)
-if det: print(''); print('원문 오류: %s' % det[:400])
+# ★사전검사 지적은 전문을 싣는다(2026-10-05) — 400자 절단이면 지적 목록이 잘려 보정이 반쪽이 된다(사유 문자열은 rf_preaudit.py 가 3500자로 제한).
+lim = 4000 if why == 'declaration_gate' else 400
+lab = '사전검사 지적' if why == 'declaration_gate' else '원문 오류'
+if det: print(''); print('%s: %s' % (lab, det[:lim]))
 " 2>/dev/null)
 if [ -n "$FAILFB" ]; then
   jl reimplement_with_failure "paper=$P_KEY"
@@ -664,6 +718,22 @@ import io,json
 d=json.loads(io.open(r'$REQ','rb').read().decode('utf-8'))
 d['status']='failed_needs_session'; d['failure']='no_engine'
 io.open(r'$REQ','wb').write(json.dumps(d,ensure_ascii=False,indent=1).encode('utf-8'))"; exit 1; }
+
+# ── ★측정 전 기계 사전검사 — declaration gate (도훈 지시 2026-10-05 '반복 감사 지적의 기계 검사화 · 빠른 리서치') ──
+#   감사는 6축 중 한 축이라도 근거 있는 미신고 1건이면 misdeclared → 전체 재구현이다(rf_fidelity_merge.R).
+#   그중 논문 없이 코드·신고·등록부만으로 확정되는 형태를 측정(5~20분)·감사(7~17분) **전에** 몇 초로 거른다.
+#   걸리면 측정·감사 없이 요청을 pending 으로 되돌리고(failure=declaration_gate · 별도 카운터 preaudit_rounds —
+#   audit_retries·auto_retries 불변) 다음 tick 의 보정 패스가 기존 '측정 실패' 절로 지적을 받는다(청정 규칙이 아는 절).
+#   검사 불능·비활성·결합·회차 소진 = 그대로 측정(fail-open). 정본 = rf_preaudit.py --gate · 규칙 06_Registry/rf_preaudit.json
+#   · 검사 08_Tests/ops/test_rf_preaudit.py.
+PA_OUT="$("$PY" "$ROOT/02_Infrastructure/ops/rf_preaudit.py" --gate --req "$REQ" --wdir "$WDIR" --root "$ROOT" \
+          --is-combo "${IS_COMBO:-0}" 2>>"$LOG")"; PA_RC=$?
+PA_OUT="$(printf '%s' "$PA_OUT" | tail -n 1 | tr -d '\r')"
+jl preaudit "rc=$PA_RC" "result=$PA_OUT" "paper=$P_KEY"
+if [ "$PA_RC" = "10" ]; then
+  jl preaudit_reimplement_requested "paper=$P_KEY" "note=측정·감사 생략 — 다음 tick 보정 패스가 사전검사 지적(failure=declaration_gate)을 받는다"
+  exit 0
+fi
 
 # ── 측정 + 검증 (계약이 판정한다 — 에이전트 진술은 근거가 아니다) — rp_verify(위 정의) ──
 rp_verify; exit $?

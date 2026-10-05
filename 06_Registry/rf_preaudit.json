@@ -1,0 +1,336 @@
+{
+ "schema": "rf_preaudit_config_v1",
+ "note": "충실구현 측정 전 기계 사전검사(declaration gate) 규칙 정본 — 판독기 02_Infrastructure/ops/rf_preaudit.py · 배선 02_Infrastructure/ops/rf_replication_auto.sh(측정 직전) · 검사 08_Tests/ops/test_rf_preaudit.py. 도훈 지시 2026-10-05 '반복 감사 지적의 기계 검사화 진행해줘. 빠른 리서치 중요해'. ★논문 판독은 하지 않는다 — 구현자가 구조 필드로 적었는지와, 논문 없이 코드·등록부만으로 확정되는 유형(중복 군집·미신고 방어 코드)만 본다.",
+ "enabled": true,
+ "max_rounds": 1,
+ "max_rounds_basis": "보정 패스는 tick 대기(≤8분) + 에이전트 1회를 태운다. 1회로 시작해 실측(preaudit_failed→다음 패스 통과율)을 보고 조정한다. 감사 재구현 예산(audit_retries 1회)·skiplist 카운터(auto_retries 3회)와 별개 카운터(preaudit_rounds)다.",
+ "apply_to_combo": false,
+ "feedback_max_chars": 3500,
+ "required_keys": [
+  "fidelity",
+  "kept",
+  "changed",
+  "paper_original_form",
+  "portfolio_spec",
+  "commission_paper"
+ ],
+ "factor_ref": {
+  "registry": "02_Infrastructure/factor_db/factor_registry.json",
+  "literal_regex": "[\"']([A-Z]{1,3}[0-9]{2,3}_[A-Za-z0-9_]+)[\"']",
+  "literal_basis": "엔진 안 따옴표 리터럴 중 등록부 키와 정확히 일치하는 것만 '사용 지표'로 센다(오탐 0 방향)."
+ },
+ "structured": {
+  "factor_mapping": {
+   "required_when": "engine_uses_registry_factor",
+   "required_fields": [
+    "factor_id",
+    "paper_item",
+    "registry_definition",
+    "deviation"
+   ],
+   "definition_similarity_min": 0.6,
+   "definition_mismatch_severity": "warn",
+   "basis": "2026-10-05 2508.18592 1차 감사: 반전 군 Roe60/Roe120(최근월 포함 · 60일 half-life)을 1개월 skip 모멘텀(M02/M03)에 매핑 · 등록부 정의를 안 보고 대응시킨 지적."
+  },
+  "paper_steps": {
+   "required": true,
+   "status_enum": [
+    "implemented",
+    "changed",
+    "omitted"
+   ],
+   "min_items": 5,
+   "few_severity": "warn",
+   "basis": "2026-10-05 1차 감사: 업종·시총 잔차화·업종 중위수 결측대체 단계를 구현도 신고도 안 함(§2.1) · 2026-10-04 1505.00328: 거래소별 독립 정렬을 통합 — 논문 절차를 단계로 열거하지 않으면 누락이 신고에서 사라진다."
+  },
+  "windows": {
+   "required_when": "engine_has_window_construct",
+   "endpoint_regex": "t\\s*[-−]\\s*\\d|\\bt\\b|당월|결정월|signal|sig|\\[|\\(",
+   "basis": "2026-10-05 1차 감사: EWM min-max·엔트로피 창이 [t-11, t](논문 [t-12, t-1]) — 창 종점 한 칸 어긋남."
+  },
+  "constants": {
+   "required_when": "engine_has_top_level_numeric_constant",
+   "assign_regex": "^([A-Za-z_.][A-Za-z0-9_.]*)\\s*(?:<-|=)\\s*(-?[0-9][0-9.]*(?:[eE][+-]?[0-9]+)?L?|c\\([-0-9.eEL, +]+\\)|as\\.Date\\(\\s*['\\\"][0-9-]+['\\\"]\\s*\\))\\s*;?\\s*$",
+   "source_enum": [
+    "paper",
+    "supplement",
+    "harness"
+   ],
+   "basis": "2026-10-05 감사 지적 전수 분류(04_Research/01_reports/fidelity_audit_taxonomy_20261005): 최다 유형 GUARD 26건(misdeclared 축 22) · 엔진당 미신고 상수 중앙 18개 — 구조화 상수표 + 완전성 관문 권고(R1)."
+  }
+ },
+ "window_code_regex": [
+  "froll(mean|sum|apply|max|min|median)\\s*\\(",
+  "\\b(rollapply|rollmean|rollsum|rollmax|runMean|runSum|runSD|runMax|runMin)\\s*\\(",
+  "\\broll_[a-z]+\\s*\\(",
+  "\\bshift\\s*\\([^)]*\\b0\\s*:\\s*\\(",
+  "\\(\\s*\\w+\\s*-\\s*\\w+\\s*\\)\\s*:\\s*\\(\\s*\\w+\\s*-\\s*1L?\\s*\\)",
+  "\\btail\\s*\\([^,()]+,\\s*\\w+\\s*\\)"
+ ],
+ "categories": [
+  {
+   "id": "clip_winsor",
+   "title": "값 절단·winsorize·clip·[0,1] 강제",
+   "code_regex": [
+    "\\bwinsor",
+    "\\bclip\\b",
+    "\\bsquish\\s*\\(",
+    "pmin\\s*\\(\\s*pmax\\s*\\(",
+    "pmax\\s*\\([^,()]+,\\s*-?[0-9.]+(e-?[0-9]+)?L?\\s*\\)",
+    "pmin\\s*\\([^,()]+,\\s*-?[0-9.]+(e-?[0-9]+)?L?\\s*\\)",
+    "\\[\\s*[A-Za-z_.][A-Za-z0-9_.]*\\s*[<>]=?\\s*-?[0-9.]+\\s*,\\s*[A-Za-z_.][A-Za-z0-9_.]*\\s*:="
+   ],
+   "decl_regex": [
+    "clip",
+    "winsor",
+    "clamp",
+    "truncat",
+    "절단",
+    "\\bcap(ped|ping|s)?\\b",
+    "\\bbound(ed|s)?\\b",
+    "\\[0,\\s*1\\]",
+    "pmax",
+    "pmin",
+    "으로 자르",
+    "로 제한",
+    "범위 제한"
+   ],
+   "severity": "fail",
+   "decl_basis": "2026-10-05 검사 M1: 'floor'·'하한'·'상한'·접두 'cap' 은 유동성 하한·market cap 서술에도 걸려 미신고 clip 을 가렸다 — 절단 고유 어휘로 좁혔다."
+  },
+  {
+   "id": "na_handling",
+   "title": "결측·비유한값 처리(대체·제외·상수 치환)",
+   "code_regex": [
+    "nafill\\s*\\(",
+    "na\\.locf",
+    "replace_na",
+    "na\\.omit",
+    "complete\\.cases",
+    "f?ifelse\\s*\\(\\s*is\\.na",
+    "is\\.finite\\s*\\("
+   ],
+   "decl_regex": [
+    "missing",
+    "결측",
+    "\\bna\\b",
+    "impute",
+    "대체",
+    "non-finite",
+    "nonfinite",
+    "비유한",
+    "complete.case",
+    "nafill",
+    "locf",
+    "is\\.finite"
+   ],
+   "severity": "fail"
+  },
+  {
+   "id": "seed",
+   "title": "난수 seed·재현 설정",
+   "code_regex": [
+    "set\\.seed\\s*\\(",
+    "\\bseed\\s*="
+   ],
+   "decl_regex": [
+    "seed",
+    "난수",
+    "random",
+    "재현"
+   ],
+   "severity": "fail"
+  },
+  {
+   "id": "fallback",
+   "title": "오류 시 폴백(tryCatch 등 조용한 대체 경로)",
+   "code_regex": [
+    "tryCatch\\s*\\("
+   ],
+   "decl_regex": [
+    "fallback",
+    "폴백",
+    "error",
+    "오류",
+    "trycatch",
+    "실패 시",
+    "on failure",
+    "retain all"
+   ],
+   "severity": "fail"
+  },
+  {
+   "id": "min_threshold",
+   "title": "최소 종목수·최소 관측·표본 하한",
+   "code_regex": [
+    "nrow\\s*\\([^)]*\\)\\s*[<>]=?\\s*[0-9A-Z]",
+    "\\.N\\s*[<>]=?\\s*[0-9]",
+    "length\\s*\\([^)]*\\)\\s*[<>]=?\\s*[0-9]",
+    "\\bMIN_[A-Z_]+\\b",
+    "\\b[A-Z_]*_MIN(_[A-Z]+)?\\b",
+    "\\bmin_(obs|n|rows|names|stocks)\\b"
+   ],
+   "decl_regex": [
+    "minimum",
+    "최소",
+    "at least",
+    "하한",
+    "threshold",
+    "문턱",
+    ">=\\s*[0-9]",
+    "≥",
+    "min_"
+   ],
+   "severity": "fail"
+  },
+  {
+   "id": "liquidity",
+   "title": "유동성 하한(거래대금 등)",
+   "code_regex": [
+    "\\b2e8\\b",
+    "200000000",
+    "\\badv_?(20|lag)?\\b",
+    "\\bLIQ_[A-Z]+\\b"
+   ],
+   "decl_regex": [
+    "liquid",
+    "유동성",
+    "\\badv",
+    "2e8",
+    "거래대금"
+   ],
+   "severity": "fail",
+   "guide": "충실구현은 논문 우선이다(SOT paper_faithful) — 논문에 유동성 필터가 없으면 넣지 마라. 논문에 있으면 paper_steps 에 원문 인용과 함께, 넣은 사실은 changed 에 적어라.",
+   "basis": "분류 보고서 §6-1: 구현자 프롬프트의 'adv20 ≥ 2e8' 줄이 SOT 와 충돌 — 감사 39개 엔진 중 24개가 하한을 실었고 2006 2차 패스는 이것만으로 기각. 같은 날 프롬프트 줄을 논문 우선으로 바꿨다."
+  },
+  {
+   "id": "status_flags",
+   "title": "상태 플래그 제외(관리종목·거래정지·불성실공시)",
+   "code_regex": [
+    "AdminStock",
+    "TradingHalt",
+    "UnfaithfulDisc"
+   ],
+   "decl_regex": [
+    "\\bst\\b",
+    "special treatment",
+    "관리",
+    "halt",
+    "정지",
+    "admin",
+    "suspend",
+    "unfaithful",
+    "불성실"
+   ],
+   "severity": "fail"
+  },
+  {
+   "id": "coverage",
+   "title": "커버리지 하한",
+   "code_regex": [
+    "\\bcoverage",
+    "커버리지",
+    "\\bcov_min\\b"
+   ],
+   "decl_regex": [
+    "coverage",
+    "커버리지"
+   ],
+   "severity": "fail"
+  },
+  {
+   "id": "degenerate_guard",
+   "title": "분모 0·퇴화 방지 상수(1e-x · eps)",
+   "code_regex": [
+    "[<>]=?\\s*1e-[0-9]+",
+    "\\+\\s*1e-[0-9]+",
+    "\\.Machine\\$double\\.eps"
+   ],
+   "decl_regex": [
+    "epsilon",
+    "\\beps\\b",
+    "분모",
+    "zero",
+    "0 방지",
+    "degenerate",
+    "퇴화",
+    "1e-",
+    "division"
+   ],
+   "severity": "fail"
+  },
+  {
+   "id": "month_skip",
+   "title": "무산출 월(next·return(NULL)) — 하네스가 직전 보유를 이월",
+   "code_regex": [
+    "\\bnext\\b",
+    "return\\s*\\(\\s*NULL\\s*\\)",
+    "return\\s*\\(\\s*invisible\\s*\\(\\s*NULL"
+   ],
+   "decl_regex": [
+    "skip",
+    "건너",
+    "carry",
+    "이월",
+    "no scores",
+    "무산출",
+    "미발행",
+    "previous holdings",
+    "직전 보유",
+    "직전 책",
+    "hold over",
+    "carried"
+   ],
+   "guide": "어떤 조건에서 그 달 산출이 비는지와, 그때 하네스가 직전 보유를 이월한다는 결과를 changed 에 적어라(논문이 '매월' 리밸이면 이것은 이탈이다).",
+   "severity": "fail",
+   "basis": "분류 보고서 SKIP 7건 — 전부 misdeclared 축 · 코드 규칙(next) 7건 중 6건 적중. 행 필터로 사라지는 달은 산출물 격자 대조(R2 · 측정 후)가 맡는다(미구현)."
+  },
+  {
+   "id": "zscore_disclosure",
+   "title": "팩터 DB 값 = Z_Score_Aligned 변환값(원값 아님)",
+   "code_regex": [
+    "Z_Score_Aligned",
+    "load_month_factors\\s*\\("
+   ],
+   "decl_regex": [
+    "z_score_aligned",
+    "zscore",
+    "z-score",
+    "z score",
+    "표준화",
+    "방향 정렬",
+    "1/99"
+   ],
+   "guide": "팩터 DB 값은 논문 원값이 아니라 Z_Score_Aligned(횡단면 절단·z-score·방향 정렬) 변환값이다 — 그 사실을 changed 에 적어라.",
+   "severity": "fail",
+   "basis": "분류 보고서 R4② · §6-3: 프롬프트가 Z_Score_Aligned 소비만 지시하고 변환 공시를 안 시켜 지적 F032·F132."
+  }
+ ],
+ "categories_basis": "구현자 프롬프트의 'changed 신고 체크리스트'(2026-09-04 감사 4편 지적 20건 중 9건 = 방어 코드 미신고) 범주를 코드 정규식으로 옮겼다. 신고 말뭉치(changed·changed_items·구조 필드)에 키워드가 하나라도 있으면 통과 — 과잉 신고는 싸다('적는 쪽이 싼다'). 오탐 실측 후 정규식을 좁힌다.",
+ "harness": {
+  "required": true,
+  "marker": "[HARNESS-DISCLOSURE v1]",
+  "end_marker": "[/HARNESS-DISCLOSURE]",
+  "exec_config": "02_Infrastructure/worktask/constraint_defaults.json",
+  "exec_key": "execution.exec_price",
+  "basis": "분류 보고서(04_Research/01_reports/fidelity_audit_taxonomy_20261005) HARNESS 12건(misdeclared 축 10) · 2차 패스 기각 3건이 하네스·프롬프트 지시에서만 나옴 — 구현자가 하네스를 추측해 서술하다 틀리거나(재정규화·체결일) 빠뜨렸다. 각 문장은 2026-10-05 코드로 검증: run_paper_replication.R .apply_universe(:501-512) · start_date(:406) · liquidity_filter=paper_faithful(:197) · survivorship(:202-204) · replication_harness.R 보유창·Return.portfolio(rebalance_on=NA)(:236-241,:219) · leg gross·GL·L−GS·S(:198,:259-268) · 비용 Σ|Δw|×c(:270-) · KQ150 플래그 첫 일자 = RAWDATA 실측. ★보고서 초안 R5 의 '보유 중 드리프트 없음' 은 코드와 달라 쓰지 않았다(창 안 buy-and-hold 드리프트가 맞다).",
+  "lines": [
+   "H1 유니버스: 엔진 산출(FACTORS·PORTFOLIO)은 각 신호일의 RAWDATA 멤버십(K200 또는 KQ150)과 결합되어 그날 비멤버 행이 제거된다 — PIT 시변 · 사후 생존 조건 없음 · 상장폐지 종목 포함(폐지 뒤 수익 행 부재 = 0).",
+   "H2 KQ150 멤버십 플래그는 2010-01-29 부터 있다 — 그 전 신호일의 유니버스는 사실상 K200 단독이다.",
+   "H3 표본: 2005-01-01 이후 신호만 측정한다(논문 표본기간과 다르다).",
+   "H4 체결: {exec_statement}",
+   "H5 보유: 연속한 두 신호일의 집행 사이 보유창 안에서 buy-and-hold(비중 드리프트) — 다음 신호일 집행 때 목표비중으로 되돌린다. 어떤 달에 엔진 산출이 없으면 그 달은 리밸이 없어 직전 보유가 다음 신호까지 이월된다.",
+   "H6 비중: FACTORS 면 portfolio_spec(top_n_long 등)으로 신호일마다 유니버스 결합 뒤 점수 순 구성 · PORTFOLIO 면 유니버스 결합 뒤 남은 비중을 그대로 쓴다 — 빠진 종목 몫은 재분배되지 않아 그 다리 총노출이 줄어든다(현금처럼 0 수익). 롱·숏 다리 결합 = GL·L − GS·S(GL·GS = 다리 Σ|w|).",
+   "H7 비용: 등급판 = 리밸마다 Σ|Δw|×15bps(초기 매수 = Σ|w|) · 논문판 = commission_paper(무명시면 0)로 병기한다.",
+   "H8 유동성: 러너는 유동성 필터를 적용하지 않는다(paper_faithful) — 필터는 엔진이 논문대로만 건다.",
+   "H9 벤치마크: KOSPI200."
+  ],
+  "exec_statements": {
+   "close_t1": "신호일 d 에 확정한 비중을 다음 거래일 종가에 체결(close_t1) — 새 보유 수익은 집행 다음 날부터 다음 집행일까지, 집행일 당일 수익은 직전 보유(동일봉 체결 없음).",
+   "close_d_legacy": "신호일 d 비중으로 집행일 수익부터 보유(close_d_legacy — 시그널일 종가 체결 근사 · 재현·민감도 전용).",
+   "open_t1": "신호일 d 비중을 다음 거래일 시가에 체결(open_t1) — 집행일 겹밤은 직전 보유 · 장중은 새 보유(민감도 전용)."
+  },
+  "prompt_head": "## 하네스 고지 — 측정 층이 정하는 것(구현자가 바꿀 수 없다)",
+  "prompt_guide": "아래 대괄호 블록을 FIDELITY.json 의 harness_disclosure 키(문자열)에 **그대로** 옮겨라. 하네스 동작을 따로 추측해 서술하지 마라 — 감사 실측에서 구현자의 하네스 서술이 틀리거나(재정규화·체결일) 빠진 것이 기각 사유였다. 논문과 다른 점 중 하네스가 만든 것은 이 블록이 공시하고, 엔진이 만든 것은 changed 에 적는다."
+ }
+}
