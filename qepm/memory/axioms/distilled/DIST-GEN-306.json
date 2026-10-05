@@ -3,9 +3,9 @@
   "dist_id": "DIST-GEN-306",
   "cluster_key": "96248eb76a9a",
   "candidate_id": "CAND_paper_replication_96248eb76a9a",
-  "status": "pending_5axis",
-  "statement_refined": null,
-  "retry_condition": null,
+  "status": "proposed",
+  "statement_refined": "market=KR · universe=K200∪KQ150 실투형 봉투에서 규칙 격자(B1~B7)의 오버레이·국면 계열을 포함한 1,172 기록은 단일 방향 규칙으로 요약되지 않으며, 이 집합에서 확정적으로 읽히는 것은 모집단 정의 결함이다. 초안이 전제한 family=paper_replication 라벨은 2026-09-23 감사(D6-03 · 플랜 P0-M3)에서 1,176건 중 1,106건(94.0%)이 research_mode=reinforcement_cell 로 재라벨되며 무효화됐다 — 이 후보의 모집단은 '충실구현 1,172건'이 아니라 '강화 격자 셀 다수 + 충실구현 70건 이하'다. 성과 축으로 인용 가능한 것은 신 규약(close_t1) 재측정 판뿐이며, 그 판에서 같은 셀 집합은 A 0 · B 220 · C 884 · F 83 이고 Calmar ≥0.64 는 0칸, Calmar ≥0.5 는 2칸(둘 다 적대검증 G2 fail)이다. 구 규약(close_d_legacy) 수치는 이 카드의 근거로 쓰지 않는다. 포함 관계: DIST-GEN-245(supporting 994, 같은 overlay_regime 코퍼스) ⊂ 본 후보 — 두 카드는 같은 모집단의 시점 슬라이스이므로 통합 상정이 옳다.",
+  "retry_condition": "supporting 집합을 research_mode(reinforcement_cell vs paper_replication)로 재분할하고, close_t1 판 단독으로 재집계했을 때 두 부분모집단에서 같은 축이 같은 부호를 내면 그 축에 한해 규칙으로 재상정한다. 재분할 전에는 방법론 규칙으로 승격하지 않는다.",
   "refined_at": null,
   "refined_by": null,
   "promoted_to_axiom": null,
@@ -2407,5 +2407,43 @@
     "oos_effect_vs_is": -0.461,
     "note": "L-code oos_retention 실값 1111건 median (IS65/OOS35 활성SR retention) — oos_months 실값 무 → None 유지 — promote.R essence_score 경유 재확정"
   },
-  "cluster_members_count": 1172
+  "cluster_members_count": 1172,
+  "adversarial_verdict": {
+    "a_exaggeration": "강등함. 초안 헤드라인 'supporting=1172건 L-code'는 독립 관측 1,172건을 함의하나, 같은 스윕 파일의 lcode_integrity 가 ID 충돌 297건(1,946 기록 / 1,649 고유)을 기록하고 supporting 목록에 동일 L-code 가 반복 등재돼 있다(예: L-RP-20260830_235311 5회). '1,172 독립 관측' → '1,172 기록(중복·충돌 포함)'으로 낮췄고, 성과 서술은 게이트 미달을 명시한 신 규약 집계만 남겼다.",
+    "b_evidence": "결함 2건 적발·명기. ①family 라벨이 실측과 불일치 — 1,106/1,176(94.0%)이 2026-09-23 reinforcement_cell 로 재라벨(표본 stage_artifacts/l_code/paper_replication/l_code_RP_20260923_161713_28512.json:9~12). ②supporting 의 모든 수치가 구 규약 판이며, 04_Research/01_reports/organic_reinforce_20260925/lever_audit_final.md §⑤ 가 구 규약 수치 인용을 금지한다. 따라서 성과 근거를 신 규약 집계(同 §②: A0/B220/C884/F83)로 교체했다. proxy 를 backtested 로 오라벨한 부분은 없다(전부 계약 산출).",
+    "c_ax000": "'구조적 한계'·'dead-end' 서술 없음. 관측된 상한은 '이 봉투·이 규약·이 모집단에서'로 한정했고, 모집단 재분할 전에는 판정 불가라고 미해결로 열어 뒀다. 재도전 경로(retry_condition·frontier)를 명시했다.",
+    "d_firewall": "위반 없음. 실패를 종목수·유동성·long-only·Σw=1·유니버스·15bps·PIT 어느 것에도 귀속하지 않았고 완화를 레버로 제시하지 않았다. 귀속은 라벨 정합성과 측정 규약이라는 방법 층이고, 제시한 레버는 전부 봉투-안이다(연구모드 재분할 · tilt_attribution 계기 · 벤치 인지 비중 cap_core).",
+    "e_frontier": "frontier 3건 + live_trigger(data) + expiry 부여. 실패가 '모집단을 다시 나누면 무엇이 갈리는가'라는 다음 측정을 가리키도록 썼다."
+  },
+  "expiry": "2026-12-31",
+  "frontier": [
+    "supporting 집합을 research_mode 기준으로 재분할한 뒤 close_t1 판만으로 축별 부호를 재집계 — 두 부분모집단에서 부호가 일치하는 축만 규칙 후보로 남긴다",
+    "P2-02 tilt_attribution.R 계기로 칸별 활성수익을 [시장 · EW−CW · 틸트 · 선별]로 분해한 뒤 overlay_regime 축의 기여를 분리 측정(현재 파일 부재 — lever_audit_final.md §③ 1순위)",
+    "PR-L1 cap_core(벤치 인지 비중) 사전등록 — 오버레이 카탈로그 52 arm 중 벤치 인지 arm 0 인 빈 유형이며, OOS 공통 성분을 비중 단계에서 겨냥하는 유일한 경로"
+  ],
+  "live_trigger": {
+    "type": "data",
+    "condition": "l_code 코퍼스가 research_mode 기준으로 재집계되고, 해당 셀들의 close_t1 판 커버리지가 97% 이상 유지된 상태에서 두 부분모집단의 축별 부호가 산출될 때",
+    "monitored_source": "stage_artifacts/l_code/paper_replication/*.json::research_mode · 04_Research/01_reports/p0_05_remeasure_20260925/batch_triad.csv"
+  },
+  "revival_spec": [
+    {
+      "signal_id": "wall_clock_date",
+      "condition": "x >= as.Date('2026-12-31')",
+      "from_trigger": "expiry",
+      "status": "active"
+    },
+    {
+      "signal_id": "stage_artifacts_present",
+      "condition": "x == TRUE",
+      "from_trigger": "data",
+      "status": "pending"
+    }
+  ],
+  "constraint_firewall": {
+    "mode": "backstop_passed",
+    "checked_at": "2026-09-26"
+  },
+  "drafted_at": "2026-09-26T11:02:54+0900",
+  "drafted_by": "auto_distill"
 }

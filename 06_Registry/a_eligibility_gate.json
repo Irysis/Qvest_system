@@ -30,6 +30,20 @@
       "active": true,
       "flags": ["*"],
       "verdicts": ["consumed", "consumed_absence", "possible"],
+      "entry_base_flags": ["base_automem_cross_entry_metrics"],
+      "entry_base_flags_basis": "결정 AUTOMEM-EXPOSED-CELLS-DISPOSITION(도훈 2026-09-26 12:27 · (b) + 기저 포함) · B5FIX-CONSUME-HOLD(13:35 · 기저 표식 = A 보류만). 관문 ⑤ 는 이 목록의 entry 기저 표식을 그 entry·계보(부모 사슬)·같은 엔진 경로·같은 엔진 내용(표식 source 의 engine_md5) entry 의 칸에 건다(새 칸 포함). 소비 술어(rf_candidate_facts)는 attempt 표식만 읽으므로 기저 표식은 소비를 막지 않는다. 목록 밖 기저 표식(fdb_202608_v1 등)은 칸으로 번지지 않는다(구판 동작). 검사 = 08_Tests/reinforcement/test_rf_a_gate_entry_base_flags.R",
+      "entry_base_clean": {
+        "provenance_file": "lane_provenance.json",
+        "require_mode": "clean",
+        "produced_after": "2026-09-25T15:01:46+0900",
+        "wdir_prefix": "RP_AUTO_CLEAN_",
+        "basis": "FA-CLEAN-BASE-PATH 조정(Q 2026-09-26 13:4x · 10-03 인터페이스 갱신) — 청정 모드 재구현 엔진은 계보·같은 경로 전파에서 뺀다. 조건 = 06_Registry/replication_clean_lane.json provenance_consumer_fields.consumer_rule(mode==clean ∧ post.engine_md5 == 현재 engine.R md5 ∧ 실행 시각 pre.at > cutoff ∧ engine_rel == 그 엔진의 저장소 상대경로 ∧ 디렉터리 이름이 wdir_prefix 로 시작) + 현재 내용이 노출 기저 엔진 md5 가 아님. produced_after = M1M2 배포 시각(AUTOMEM 결정의 cutoff). wdir_prefix = replication_clean_lane.json::wdir_prefix 와 같은 값(청정 레인 배포 후 두 값이 다르면 관문은 청정을 인정하지 않는 쪽으로 넘어진다). 청정 인정 정본은 rf_clean_base.R(rfc_exposure) 사후 검증이며 이 조건은 전파 제외의 최소 조건이다."
+      },
+      "consume_hold": {
+        "flags": ["design_materials_cross_entry_labels", "design_automem_cross_entry_metrics", "arm_automem_cross_entry_metrics", "design_automem_cross_entry_metrics_inherited", "arm_automem_cross_entry_metrics_inherited"],
+        "verdicts": ["possible", "consumed"],
+        "basis": "B5FIX (c) · 도훈 결정 항목(2026-09-26) — 이 표식의 칸은 A 발행뿐 아니라 **소비**(블록 승자·누적 바닥·carry 기준선·승격 best)에서도 뺀다(rf_runner_gates.R::rf_consume_hold_config → rf_candidate_facts). 사유: 위 A 보류는 발행만 막아 교차 entry 결과 라벨 노출 설계(ORGANIC-DE Q④ possible · 7308 B5_16..20)로 잰 B5 칸이 G2 pass 를 받으면 B4 결합·carry 로 표식 없이 퍼진다(이 flag 는 계보 재도출 대상이 아니다). 키 부재 = 소비 제외 없음(항등). ★AUTOMEM 칸 단위 설계 노출 표식 4종 추가(B5FIX-CONSUME-HOLD 위임 2026-09-26 13:35 — 칸 단위 설계 노출 표식에만 소비 보류 · entry 기저 표식 base_automem_cross_entry_metrics 는 entry 필드라 이 술어가 읽지 않는다 = A 보류만)."
+      },
       "basis": "원장 attempt.vintage_flags(rf_mark_vintage_batch) — pit_c11(결정 PIT-C11-CONVENTIONS ⑧: 오염 선택은 보유 재측정으로 씻기지 않는다 · rebase 비편입) · fdb_202608_v1/fdb_inv13_absent/fdb_202609_rebuild_overlap(결정 DATA-CASCADE-202609 · DATA-INV13-ACC: 표식만 — 재측정은 P0-05 흡수). 표식 칸의 A 는 데이터 빈티지가 확정될 때까지 발행하지 않는다(수집 시점 새 칸은 표식이 없다 — 표식은 사후에 붙고 tick 시작 재평가가 읽는다)."
     },
     "sigma_w_lt_1": {

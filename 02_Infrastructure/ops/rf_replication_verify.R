@@ -12,6 +12,8 @@
 #   하나라도 어기면 원장에 열지 않고 세션 대기로 되돌린다. **조용한 통과 없음.**
 #
 # 통과 시: rf_open_entry 로 새 강화 entry 개설 → 다음 tick 부터 강화 20칸이 무인 재개.
+# ★청정 모드(RP_LANE_MODE=clean · 결정 FA-CLEAN-BASE-PATH 2026-09-26): ④ 감사만 달라진다 — 산출물 경로 비공개 + 스폰 한 번에만
+#   가드 표식 · 재구현을 부르면 감사 원천을 .clean_audit_src/r<n> 에 보존하고 요청에 audit_feedback_mode 를 남긴다(도우미 rf_clean_lane_lib.R).
 #==============================================================================
 suppressMessages({ library(jsonlite); library(data.table) })
 `%||%` <- function(a, b) if (is.null(a) || length(a) == 0L) b else a
@@ -319,11 +321,23 @@ suppressMessages(source(file.path(ROOT, "02_Infrastructure/ops/rf_fidelity_audit
 .aud_p <- file.path(WDIR, "fidelity_audit.json")
 .rq0 <- tryCatch(fromJSON(REQ, simplifyVector = FALSE), error = function(e) list())
 .aud_tries <- as.integer(.rq0$audit_retries %||% 0L)
+# ★청정 모드 감사 (결정 FA-CLEAN-BASE-PATH · 2026-09-26) — 레인이 RP_LANE_MODE=clean 을 싣으면 감사 레인에 산출물 경로를 주지 않고
+#   (감사 프롬프트가 '청정 모드 — 비공개' 줄을 쓴다) 스폰 한 번에만 가드 표식을 싣는다(측정·원장 쓰기에는 안 샌다).
+#   재구현 피드백(감사 지적)이 측정을 본 감사자의 서술이 되지 않게 — 도우미 = rf_clean_lane_lib.R. 도우미 판독 불능이면 구판 그대로 부르고
+#   감사 출처를 normal 로 남긴다(레인이 그 지적을 청정 재구현에 싣지 않는다 — fail-closed 방향).
+.CLEAN_LIB_OK <- tryCatch({ suppressMessages(source(file.path(ROOT, "02_Infrastructure/ops/rf_clean_lane_lib.R"), local = TRUE)); TRUE },
+                          error = function(e) { jlog("clean_lane_lib_missing", err = conditionMessage(e)); FALSE })
+.CLEAN <- isTRUE(.CLEAN_LIB_OK) && identical(rcl_lane_mode(), "clean")
+.AUD_MODE <- if (.CLEAN) "clean" else "normal"
+if (identical(Sys.getenv("RP_LANE_MODE", "normal"), "clean") && !.CLEAN)
+  jlog("clean_audit_degraded", note = "레인은 청정인데 도우미 판독 불능 — 감사를 구판 조건으로 부른다(감사 지적은 청정 재구현에 실리지 않는다)")
 # 감사 레인 스폰 1회 → rc. system2(stdout=TRUE) 는 rc≠0 일 때만 status 속성을 단다(없으면 0).
 .spawn_audit <- function() {
-  r <- system2("bash", c(shQuote(file.path(ROOT, "02_Infrastructure/ops/rf_fidelity_audit.sh")),
-                         shQuote(WDIR), shQuote(dirname(ar)), shQuote(URL), shQuote(PKEY %||% "")),
-               wait = TRUE, stdout = TRUE, stderr = TRUE)
+  .art <- if (.CLEAN) rcl_audit_art(TRUE, dirname(ar)) else dirname(ar)
+  .run <- function() system2("bash", c(shQuote(file.path(ROOT, "02_Infrastructure/ops/rf_fidelity_audit.sh")),
+                                       shQuote(WDIR), shQuote(.art), shQuote(URL), shQuote(PKEY %||% "")),
+                             wait = TRUE, stdout = TRUE, stderr = TRUE)
+  r <- if (.CLEAN) rcl_with_env(rcl_clean_env(WDIR), .run()) else .run()
   as.integer(attr(r, "status") %||% 0L)
 }
 # ★감사 없이는 개설하지 않는다 (2026-09-06 — 09-05 실사고 3건: 킬스위치·CLI 부재·병합 즉사로 감사가
@@ -334,7 +348,16 @@ suppressMessages(source(file.path(ROOT, "02_Infrastructure/ops/rf_fidelity_audit
 jlog("fidelity_audit_verdict", verdict = .aud$verdict, action = .disp$action,
      undeclared = length(.aud$undeclared_changes %||% list()),
      mismatch = length(.aud$signal_mismatch %||% list()), retries = .aud_tries,
-     spawns = .gate$spawns, last_rc = .gate$last_rc)
+     spawns = .gate$spawns, last_rc = .gate$last_rc, audit_mode = .AUD_MODE)
+# ★출처 기록(FA-CLEAN-BASE-PATH) — 감사 1건(모드 · 산출물 비공개 여부 · 판정). 청정 재구현이면 아래 분기가 원천 사본 위치를 더한다.
+.aud_src <- NULL
+if (identical(.disp$action, "reimplement") && .CLEAN)
+  .aud_src <- tryCatch(rcl_archive_audit_src(WDIR, .aud_tries + 1L), error = function(e) { jlog("clean_audit_archive_failed", err = conditionMessage(e)); NULL })
+if (isTRUE(.CLEAN_LIB_OK))
+  tryCatch(rcl_prov_audit(WDIR, list(at = format(Sys.time(), "%Y-%m-%dT%H:%M:%S%z"), mode = .AUD_MODE, art_hidden = .CLEAN,
+                                     verdict = as.character(.aud$verdict %||% ""), action = as.character(.disp$action %||% ""),
+                                     spawns = as.integer(.gate$spawns), src = if (is.null(.aud_src)) NULL else .aud_src$rel)),
+           error = function(e) jlog("lane_provenance_audit_failed", err = conditionMessage(e)))
 
 if (identical(.disp$action, "audit_required")) {
   # ★미실행은 별개 사건이다 — 소비도 개설도 큐 미러도 없이 세션 대기(failed_needs_session/audit_not_run)로
@@ -382,6 +405,10 @@ if (identical(.disp$action, "reimplement")) {
   d$audit_feedback <- .disp$feedback
   d$audit_verdict <- .aud$verdict
   d$audit_at <- format(Sys.time(), "%Y-%m-%dT%H:%M:%S%z")
+  # ★감사 지적의 출처 모드(FA-CLEAN-BASE-PATH) — 레인은 clean 인 지적만 청정 재구현 프롬프트에 싣는다(가림 뒤) ·
+  #   원천 사본(.clean_audit_src/r<n>) 위치를 함께 남긴다(사후 검사가 파일에서 '산출물 비공개 감사' 를 재도출한다)
+  d$audit_feedback_mode <- if (.CLEAN && !is.null(.aud_src)) "clean" else "normal"
+  d$audit_feedback_src <- if (is.null(.aud_src)) NULL else .aud_src$rel
   write(toJSON(d, auto_unbox = TRUE, pretty = TRUE, null = "null"), REQ)
   jlog("fidelity_reimplement_requested", paper_key = PKEY %||% "", grade = G,
        note = "충실도 기각 — 소비 보류. 다음 tick 이 지적사항을 안고 재구현한다")

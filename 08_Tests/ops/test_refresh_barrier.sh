@@ -326,7 +326,8 @@ sreq=$("$PY" -c "import json;d=json.load(open(r'$EM/req.json',encoding='utf-8'))
 unhold; mkreq in_progress; rm -f "$E/calls" "$E/j2"
 r=$(bash "$E/run_rpv.sh" "$SH" "$PY" "$EM/req.json" "$E/j2" "$E/log" "$E/calls" "$E/rpv.sh" 2>/dev/null | tail -1)
 [ "$(cat "$E/calls" 2>/dev/null)" = "called" ] && [ "$r" = "rc=0" ] && ok "E3b [양성] 잠금 없음 → 검증기 1회 호출(비트 동일 경로)" || ng "E3b" "$r"
-nc=$(sed 's/#.*$//' "$RPA"); iv=$(printf '%s\n' "$nc" | grep -n '"$PREV_FAIL" = "refresh_lock_deferred"' | grep -- '-s "$WDIR/engine.R"' | head -1 | cut -d: -f1); ic=$(printf '%s\n' "$nc" | grep -n '^rf_llm_agent_run ' | head -1 | cut -d: -f1)
+nc=$(sed 's/#.*$//' "$RPA"); iv=$(printf '%s\n' "$nc" | grep -n '"$PREV_FAIL" = "refresh_lock_deferred"' | grep -- '-s "$WDIR/engine.R"' | head -1 | cut -d: -f1); ic=$(printf '%s\n' "$nc" | grep -nE '^[[:space:]]*(QVEST_CLEAN_LANE=1 QVEST_CLEAN_WDIR="[$]WDIR" )?rf_llm_agent_run ' | head -1 | cut -d: -f1)
+# (10-03 · FA-CLEAN-BASE-PATH) 에이전트 호출이 모드 분기(청정 = 표식 임시 대입 · 일반 = 구판) 안으로 들어가 들여쓰였다 — 첫 호출 줄(어느 분기든)을 잰다
 [ -n "$iv" ] && [ -n "$ic" ] && [ "$iv" -lt "$ic" ] && ok "E4 연기분 재시도 = verify-only 분기(엔진 보존 · 에이전트 앞 $iv < $ic)" || ng "E4" "$iv $ic"
 
 echo "=== F. 2계층 드라이버 (블록 추출 실행) ==="
@@ -471,7 +472,7 @@ DV <- local({ e <- new.env(); eval(parse(text = grep("^ADV_DEFERRED_VERDICT <- "
 i0 <- grep("^\\.adv_def_blk <- unique\\(", src)[1]
 i1 <- if (is.na(i0)) NA else i0 - 1L + which(src[i0:length(src)] == "}")[1]
 ie <- grep("^E <- act\\[\\[1\\]\\]; BID <- E\\$base_id", src)[1]; iu <- grep("^used <- as.integer\\(E\\$attempts_used", src)[1]
-iw <- grep('^w5 <- \\.winner_of\\("B5"', src)[1]; ix <- grep('\\.exhaust_and_delegate\\("budget"\\)', src)[1]
+iw <- grep('^(w5 <- \\.winner_of\\("B5"|\\.b4_win <- rf_axes_block_winners\\()', src)[1]; ix <- grep('\\.exhaust_and_delegate\\("budget"\\)', src)[1]   # B4-SIX(2026-09-26): 승자 해석 = 등록부 승자 맵
 if (is.na(i0) || is.na(i1)) { cat("G8|NOBLOCK\n"); quit(status = 0) }
 blk <- src[i0:i1]
 if (mut) blk <- gsub('"deferred_refresh_lock"', '"deferred_X"', blk, fixed = TRUE)

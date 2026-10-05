@@ -1,0 +1,1202 @@
+{
+  "schema": "reference_floors_v2",
+  "version": 2,
+  "status": "draft_pre_registration",
+  "status_note": "초안 — F1·F1p 는 스펙만(측정 0). 사전등록(rf_prereg) 뒤 측정. 인용 수치는 원장 그대로(close_t1) · 레버 판정 인용 금지(등급 대체 아님).",
+  "generated_at": "2026-09-25T20:20:30+0900",
+  "generator": {
+    "file": "02_Infrastructure/reinforcement/rf_floor_v2.R",
+    "fn": "rfv_build",
+    "root": "C:/tmp/p2flooradv/sbx",
+    "code_root": "C:/tmp/p2flooradv/sbx",
+    "config": "C:/tmp/p2flooradv/sbx/06_Registry/prereg/reference_floors_v2.config.json",
+    "config_md5": "3ebcd8f72c4521c3520e3109c9ca7cbf",
+    "path_note": "경로 문자열에는 생성 루트가 박힌다(rf_pick_factor_sets basis·asof_source 등) — 비교(rfv_write·rfv_verify)는 생성 루트·정본 루트를 <ROOT> 로 정규화해서 한다"
+  },
+  "pins": {
+    "ledger_l1": {
+      "path": "06_Registry/reinforce_ledger_l1.json",
+      "md5": "c211928c546de4f570b6635ef708ea59",
+      "current_axis": "exec_v2_close_t1",
+      "last_updated": "2026-09-25T15:16:31+0900"
+    },
+    "grid": {
+      "path": "06_Registry/reinforce_program.json",
+      "md5": "1b79c7eb746c1f5ad6b816b1b6bbeda5"
+    },
+    "factor_evidence": {
+      "path": "06_Registry/factor_evidence.json",
+      "md5": "f32d47727fb15e8d66c4526b1a47f24a"
+    },
+    "factor_panel_axis": {
+      "path": "06_Registry/factor_panel_axis.json",
+      "md5": "08da98221bb498c358f75fdecb6cdf0e"
+    },
+    "pit_quarantine": {
+      "path": "06_Registry/pit_quarantine.json",
+      "md5": "aecfa6b5746ab1976cedda750cac876e"
+    },
+    "factor_ic_monthly": {
+      "path": ".cache/factor_db/factor_ic_monthly.parquet",
+      "md5": "be81706836515fd851792837002539ca"
+    },
+    "factor_registry": {
+      "path": ".cache/factor_db/factor_registry.json",
+      "md5": "d4780eb33e2d29d61050a641ee7931cb"
+    },
+    "rf_factor_arms": {
+      "path": "02_Infrastructure/ops/rf_factor_arms.R",
+      "md5": "7561e4a35bb5cb45bfbd6c19bd679b0d"
+    },
+    "rf_runner_gates": {
+      "path": "02_Infrastructure/reinforcement/rf_runner_gates.R",
+      "md5": "eacfe6d235bc84d335176f01bbc0ef3b"
+    },
+    "rf_floor_v2": {
+      "path": "02_Infrastructure/reinforcement/rf_floor_v2.R",
+      "md5": "6d7d4b63805f3b37e6d1fb3dc0c08070"
+    },
+    "f1_base_engine": {
+      "path": "C:/Users/99922/OneDrive/Quant_Module_Moltbot/04_Research/strategies/RP_AUTO_COMBO_combo_1403_8125_2002_069/engine.R",
+      "md5": "e2308a99f801629cb068c1fdf2ac404f"
+    },
+    "lineage_spec": {
+      "path": "C:/Users/99922/OneDrive/Quant_Module_Moltbot/.cache/rf_parallel/spec_B1_3__RP_20260917_105807_22632_combo_rulefast_promo3.json",
+      "md5": "62eeee8fb547e477b8c45f3e74ca85c4"
+    }
+  },
+  "floors": {
+    "F1": {
+      "status": "defined_unmeasured",
+      "kind": "asof_reselect_new_cell",
+      "role": "주 바닥 — 최고 계보(22632)의 기저 엔진·구조를 유지하고 팩터 층만 as-of 규칙으로 다시 고른 새 칸",
+      "selection_path": {
+        "rule": "rf_factor_arms.R::rf_pick_factor_sets(n=1, depths=depth, seed_offset, asof)",
+        "depth": 4,
+        "depth_rule": "lineage_db_factor_count",
+        "seed_rule": {
+          "kind": "offset",
+          "seed_offset": 0
+        },
+        "asof_config": "null(격자 fixed_axes.start_date)"
+      },
+      "reselect": {
+        "cell": {
+          "code": "B1_1",
+          "label": "4팩터 직교(defense+consensus+growth+accrual)",
+          "factors": [
+            {
+              "kind": "db",
+              "id": "D42_EWMA_Vol"
+            },
+            {
+              "kind": "db",
+              "id": "IN05_Net_Debt_Issuance"
+            },
+            {
+              "kind": "db",
+              "id": "AC13_Abnormal_Accruals"
+            },
+            {
+              "kind": "db",
+              "id": "C15_Forecast_Error_Trend"
+            }
+          ],
+          "basis": "IC 시계열 상관 최소화 사슬 · 깊이 4 · 계열 4종(중복 0) · max|rho| 0.063 · 시드 D42_EWMA_Vol(회전 오프셋 0) · 후보 338종 · 선정 통계 asof_ic(as-of 2005-01-01 · fixed_axes.start_date(C:/tmp/p2flooradv/sbx/06_Registry/reinforce_program.json) · IC 가용 ~2004-12-30 · 순위 표본 6개월 미만 5종 제외)",
+          "selection_basis": "asof_ic",
+          "selection_asof": "2005-01-01",
+          "root_paper": {
+            "title": "Ang, Hodrick, Xing & Zhang (2006), The Cross-Section of Volatility and Expected Returns, JF 61(1)",
+            "url": "https://onlinelibrary.wiley.com/doi/10.1111/j.1540-6261.2006.00836.x"
+          },
+          "root_papers": [
+            {
+              "title": "Ang, Hodrick, Xing & Zhang (2006), The Cross-Section of Volatility and Expected Returns, JF 61(1)",
+              "url": "https://onlinelibrary.wiley.com/doi/10.1111/j.1540-6261.2006.00836.x"
+            },
+            {
+              "title": "Chan, Jegadeesh & Lakonishok (1996), Momentum Strategies, JF 51(5)",
+              "url": "https://onlinelibrary.wiley.com/doi/10.1111/j.1540-6261.1996.tb05222.x"
+            }
+          ],
+          "unmapped_families": ["growth", "accrual"],
+          "root_papers_note": "★논문 매핑 없는 계열 growth+accrual — 근거 의무의 공백(.RFF_FAMILY_PAPER 보강 대상)",
+          "note": "등록부 선정 — 격자가 팩터를 갖지 않고 factor_evidence+factor_ic_monthly 를 소비한다. IC 이력 부재로 제외 26종 · 횡단면 아님으로 제외 24종. ★선정은 IC 시계열 상관, 결합은 횡단면 rank-Z — 다른 직교성이다."
+        },
+        "picked_ids": ["D42_EWMA_Vol", "IN05_Net_Debt_Issuance", "AC13_Abnormal_Accruals", "C15_Forecast_Error_Trend"],
+        "seed_id": "D42_EWMA_Vol",
+        "seed_offset": 0,
+        "max_rho": 0.0634065370802578,
+        "prefix_chain": ["D42_EWMA_Vol", "IN05_Net_Debt_Issuance", "AC13_Abnormal_Accruals", "C15_Forecast_Error_Trend"],
+        "pool": {
+          "asof": "2005-01-01",
+          "asof_source": "fixed_axes.start_date(C:/tmp/p2flooradv/sbx/06_Registry/reinforce_program.json)",
+          "selection_basis": "asof_ic",
+          "ic_max_usable": "2004-12-30",
+          "n_pool": 343,
+          "n_rankable": 338,
+          "n_unrankable": 5,
+          "min_ic_months": 6,
+          "tier_levels": ["S1", "S2", "S3"],
+          "excluded_pit": ["D32_Beta_VIX", "MA01_GDP_Sensitivity", "MA02_CPI_Sensitivity"]
+        },
+        "compare": {
+          "lineage_set": ["C03_EPS_Chg_3m", "M01_Mom_12_1", "V14_EBIT_EV", "L19_Price_Delay"],
+          "asof_set": ["D42_EWMA_Vol", "IN05_Net_Debt_Issuance", "AC13_Abnormal_Accruals", "C15_Forecast_Error_Trend"],
+          "same_set": false,
+          "overlap": [],
+          "only_asof": ["D42_EWMA_Vol", "IN05_Net_Debt_Issuance", "AC13_Abnormal_Accruals", "C15_Forecast_Error_Trend"],
+          "only_lineage": ["C03_EPS_Chg_3m", "M01_Mom_12_1", "V14_EBIT_EV", "L19_Price_Delay"],
+          "jaccard": 0,
+          "lineage_asof_max_abs_rho": 0.555879641669588,
+          "asof_chain_max_abs_rho": 0.0634065370802578,
+          "verdict": "new_set: as-of 규칙은 다른 집합을 고른다 — F1 = 새 집합 새 칸"
+        },
+        "lineage_factor_asof_stats": [
+          {
+            "id": "C03_EPS_Chg_3m",
+            "in_pool": true,
+            "category": "consensus",
+            "tier_asof": "S2",
+            "ic_asof": 0.0685130433113327,
+            "n_asof": 23,
+            "icir3_asof": 1.03928898826312,
+            "rankable": true
+          },
+          {
+            "id": "M01_Mom_12_1",
+            "in_pool": true,
+            "category": "momentum",
+            "tier_asof": "S3",
+            "ic_asof": 0.00929970472681523,
+            "n_asof": 167,
+            "icir3_asof": 0.761264238043088,
+            "rankable": true
+          },
+          {
+            "id": "V14_EBIT_EV",
+            "in_pool": true,
+            "category": "value",
+            "tier_asof": "S2",
+            "ic_asof": 0.149747032323568,
+            "n_asof": 55,
+            "icir3_asof": 1.30937399705557,
+            "rankable": true
+          },
+          {
+            "id": "L19_Price_Delay",
+            "in_pool": true,
+            "category": "liquidity",
+            "tier_asof": "S3",
+            "ic_asof": -0.000697120011665278,
+            "n_asof": 178,
+            "icir3_asof": 0.526300594311067,
+            "rankable": true
+          }
+        ],
+        "asof_bound_note": "선정 통계 창의 끝은 결정 시점(격자 fixed_axes.start_date) 이하 — rf_factor_arms.R 상한 가드(P0-08 잔여 R3 · 2026-09-25)가 NA(전표본)·미래·결정 시점 뒤 as-of 를 거부한다. 전표본 대조 진단 경로는 폐지됐다(양성 대조는 검사 test_rf_floor_v2.R [I] 의 창 안·창 밖 주입 짝이 맡는다)"
+      },
+      "spec": {
+        "code": "B1_1",
+        "floor_id": "F1",
+        "label": "4팩터 직교(defense+consensus+growth+accrual)",
+        "block": "B1",
+        "fixed_axes": {
+          "long_only": true,
+          "n_max": 25,
+          "universe": "K200_KQ150",
+          "start_date": "2005-01-01",
+          "commission_bps": 15,
+          "liq_adv20_min": 200000000,
+          "weight_cap": null,
+          "base_weight": 0.5,
+          "base_weight_note": "기저(논문) 신호 가중. 등가중이면 팩터 n개에서 1/(1+n) 로 떨어져 결합 깊이와 기저 희석이 교락된다(실측 2026-08-31: 1/2->1/3 희석만으로 B1 다섯 칸 전부 기준선 미달). 고정하면 깊이가 순수 축이 된다. 1팩터일 때 0.5 는 등가중과 수치적으로 동일하다."
+        },
+        "fixed_axes_match_lineage_spec": true,
+        "base_signal": {
+          "kind": "engine",
+          "path": "C:\\Users\\99922\\OneDrive\\Quant_Module_Moltbot/04_Research/strategies/RP_AUTO_COMBO_combo_1403_8125_2002_069/engine.R"
+        },
+        "base_signal_md5": "e2308a99f801629cb068c1fdf2ac404f",
+        "base_weight": 0.5,
+        "factors": [
+          {
+            "kind": "db",
+            "id": "D42_EWMA_Vol"
+          },
+          {
+            "kind": "db",
+            "id": "IN05_Net_Debt_Issuance"
+          },
+          {
+            "kind": "db",
+            "id": "AC13_Abnormal_Accruals"
+          },
+          {
+            "kind": "db",
+            "id": "C15_Forecast_Error_Trend"
+          }
+        ],
+        "weighting": {
+          "kind": "ew"
+        },
+        "universe": {
+          "kind": "k200_kq150"
+        },
+        "rebalance": null,
+        "overlay": [],
+        "overlay_cell": [],
+        "root_paper": {
+          "url": "https://arxiv.org/abs/2002.06975",
+          "title": "결합: Cross-sectional Stock Price Prediction using Deep Learning for Actual Investment Management + One Factor to Bind the Cross-Section of Returns + Maximum drawdown, recovery, and momentum + Pinchuk (2023) Labor Income Risk and the Cross-Section of Expected Returns + Uncovering a factor-based expected return conditioning structure with Regression Trees jointly for many stocks + Dirichlet policies for reinforced factor portfolios",
+          "paper_key": "combo:1403.8125+2002.06975+2007.08115+2011.05381+2301.09173+2404.08129"
+        },
+        "root_papers": [
+          {
+            "url": "https://arxiv.org/abs/2002.06975",
+            "title": "결합: Cross-sectional Stock Price Prediction using Deep Learning for Actual Investment Management + One Factor to Bind the Cross-Section of Returns + Maximum drawdown, recovery, and momentum + Pinchuk (2023) Labor Income Risk and the Cross-Section of Expected Returns + Uncovering a factor-based expected return conditioning structure with Regression Trees jointly for many stocks + Dirichlet policies for reinforced factor portfolios",
+            "paper_key": "combo:1403.8125+2002.06975+2007.08115+2011.05381+2301.09173+2404.08129"
+          },
+          {
+            "title": "Ang, Hodrick, Xing & Zhang (2006), The Cross-Section of Volatility and Expected Returns, JF 61(1)",
+            "url": "https://onlinelibrary.wiley.com/doi/10.1111/j.1540-6261.2006.00836.x"
+          },
+          {
+            "title": "Chan, Jegadeesh & Lakonishok (1996), Momentum Strategies, JF 51(5)",
+            "url": "https://onlinelibrary.wiley.com/doi/10.1111/j.1540-6261.1996.tb05222.x"
+          }
+        ],
+        "root_paper_families": ["defense", "growth", "accrual", "consensus"],
+        "unmapped_families": ["growth", "accrual"],
+        "selection_basis": "asof_ic",
+        "selection_asof": "2005-01-01",
+        "basis": "IC 시계열 상관 최소화 사슬 · 깊이 4 · 계열 4종(중복 0) · max|rho| 0.063 · 시드 D42_EWMA_Vol(회전 오프셋 0) · 후보 338종 · 선정 통계 asof_ic(as-of 2005-01-01 · fixed_axes.start_date(C:/tmp/p2flooradv/sbx/06_Registry/reinforce_program.json) · IC 가용 ~2004-12-30 · 순위 표본 6개월 미만 5종 제외)",
+        "idea": "[floor v2 F1] 4팩터 직교(defense+consensus+growth+accrual) — B1/multifactor(as-of 규칙 선정기) · weighting=ew · universe=k200_kq150 · overlay=none · 기저 엔진 = 계보 칸 스펙 승계",
+        "gate_note": "P0-14 관문(rf_lineage_flags.R) 이 이 칸의 팩터를 as-of 증명으로 보려면 원장 attempt 의 셀 코드가 B1_ 으로 시작하고 라벨이 규칙 선정기 형식('N팩터 직교(')이며 spec$selection_basis == 'asof_ic' 여야 한다 — 이 스펙을 그대로 쓸 것"
+      },
+      "alternatives": [
+        {
+          "id": "F1_alt_lineage_family_seed",
+          "adopted": false,
+          "why_not_adopted": "시드 계열을 계보 루트 팩터(승격 사슬 1세대 승자)의 계열로 고정한다 — 팩터 층에 계보 선택 이력을 되들인다(ORGANIC-DE Q① 다중검정 대상). 진단으로만 기록(원 집합과 as-of 규칙이 어디서 갈리는지).",
+          "anchor_origin": {
+            "base_id": "RP_20260917_105807_22632_combo_rulefast",
+            "cell_code": "B1_5",
+            "via_cell": "",
+            "label": "rev_3m",
+            "origin_kind": "b1_design_lane"
+          },
+          "anchor_origin_exposure": [
+            {
+              "base_id": "RP_20260917_105807_22632_combo_rulefast",
+              "file": ".cache/rf_b1_design/RP_20260917_105807_22632_combo_rulefast.materials.txt",
+              "exists": true,
+              "md5": "b3bfb9e56c728ccfd0393b4faf989da5",
+              "design_json_md5": "03be9f697e61b947144a6face16808c0",
+              "section_found": true,
+              "n_section_lines": 50,
+              "n_stat_lines": 28,
+              "exposed": true
+            }
+          ],
+          "anchor_note": "시드 계열 = 계보 루트 팩터의 계열 — 그 팩터를 고른 칸(anchor_origin)의 설계 재료 노출이 이 대안의 시드 결정에 승계된다",
+          "lineage_root_factor": "C03_EPS_Chg_3m",
+          "family": "consensus",
+          "seed_offset": 6,
+          "seed_id": "C03_EPS_Chg_3m",
+          "picked_ids": ["C03_EPS_Chg_3m", "L08_Roll_Spread", "RE06_Beta_Asymmetry", "TR01_ADX_Proxy"],
+          "compare": {
+            "lineage_set": ["C03_EPS_Chg_3m", "M01_Mom_12_1", "V14_EBIT_EV", "L19_Price_Delay"],
+            "asof_set": ["C03_EPS_Chg_3m", "L08_Roll_Spread", "RE06_Beta_Asymmetry", "TR01_ADX_Proxy"],
+            "same_set": false,
+            "overlap": "C03_EPS_Chg_3m",
+            "only_asof": ["L08_Roll_Spread", "RE06_Beta_Asymmetry", "TR01_ADX_Proxy"],
+            "only_lineage": ["M01_Mom_12_1", "V14_EBIT_EV", "L19_Price_Delay"],
+            "jaccard": 0.142857142857143,
+            "lineage_asof_max_abs_rho": 0.555879641669588,
+            "asof_chain_max_abs_rho": 0.0288823671900973,
+            "verdict": "new_set: as-of 규칙은 다른 집합을 고른다 — F1 = 새 집합 새 칸"
+          }
+        }
+      ],
+      "base_engine_exposure": {
+        "kind": "base_engine",
+        "engine": "04_Research/strategies/RP_AUTO_COMBO_combo_1403_8125_2002_069/engine.R",
+        "engine_id": "RP_AUTO_COMBO_combo_1403_8125_2002_069",
+        "file": "04_Research/strategies/RP_AUTO_COMBO_combo_1403_8125_2002_069/prompt.txt",
+        "exists": true,
+        "md5": "fabc65c29bffa456d4dd55a0676a9e87",
+        "section_found": true,
+        "n_section_lines": 14,
+        "n_stat_lines": 8,
+        "exposed": true
+      },
+      "prereg_blockers": "F1:q4_base_engine_exposure(pending_decision · 04_Research/strategies/RP_AUTO_COMBO_combo_1403_8125_2002_069/prompt.txt)"
+    },
+    "F1p": {
+      "status": "defined_unmeasured",
+      "kind": "carry_replay_of_F1",
+      "role": "F1 의 carry 경로 재현 쌍(플랜 P1-06 B1_0 · E3) — 결정론 대조. 기측정 없음.",
+      "definition": {
+        "spec_ref": "floors.F1.spec(carry = F1 팩터 집합 · weighting·universe 동일 · 추가 팩터 0 = B1_0 재현 칸)",
+        "e3_tolerance": 1e-06,
+        "e3_tolerance_source": "플랜 P1-06(E3): 같은 regime·빈티지에서 |PT_replay - PT_parent| < 1e-6"
+      },
+      "legacy_promo4_carry": {
+        "base_id": "RP_20260917_105807_22632_combo_rulefast_promo4",
+        "carry": {
+          "factors": [
+            {
+              "kind": "db",
+              "id": "C03_EPS_Chg_3m"
+            },
+            {
+              "kind": "db",
+              "id": "M01_Mom_12_1"
+            },
+            {
+              "kind": "db",
+              "id": "V14_EBIT_EV"
+            },
+            {
+              "kind": "db",
+              "id": "L19_Price_Delay"
+            }
+          ],
+          "weighting": {
+            "kind": "ew"
+          },
+          "rebalance": null,
+          "universe": {
+            "kind": "k200_kq150"
+          },
+          "universe_reset_from": {
+            "kind": "k200_kq150"
+          },
+          "overlay": [],
+          "source_cell": "B1_3",
+          "source_spec": "C:/Users/99922/OneDrive/Quant_Module_Moltbot/.cache/rf_parallel/spec_B1_3__RP_20260917_105807_22632_combo_rulefast_promo3.json"
+        },
+        "parent": {
+          "base_id": "RP_20260917_105807_22632_combo_rulefast_promo3",
+          "depth": 4,
+          "cell": "B1_3",
+          "best_port_t": 3.777,
+          "best_calmar": 0.433,
+          "promoted_at": "2026-09-21T13:58:12+0900"
+        },
+        "base_remeasure": {
+          "path": "C:/Users/99922/OneDrive/Quant_Module_Moltbot/stage_artifacts/replication/20260921_100007_6876/remeasure_close_t1_5562284e/authoritative_remeasure.json",
+          "md5": "a8868aa08fefced675a4a1a9012bd2da",
+          "grade": "B",
+          "core": {
+            "port_t": 3.777,
+            "net_sharpe": 1.06,
+            "cagr": 0.251,
+            "mdd": 0.58,
+            "calmar": 0.433,
+            "oos_retention": 0.117
+          }
+        },
+        "base_artifacts": "C:/Users/99922/OneDrive/Quant_Module_Moltbot/stage_artifacts/replication/20260921_100007_6876",
+        "same_artifact_as_lineage_cell": true,
+        "same_remeasure_md5_as_lineage_cell": true,
+        "carry_set_equals_lineage_set": true
+      }
+    },
+    "F2": {
+      "status": "excluded",
+      "role": "위험 축 바닥 후보(플랜 원안: P0-11 소급 G2 pass 시에만)",
+      "cite": {
+        "base_id": "RP_20260913_090549_14760_adapted_rulefast_promo3",
+        "n": 9,
+        "cell_code": "B5_19",
+        "n_measurements_same_code": 1,
+        "grade": "C",
+        "essence": {
+          "cell_code": "B5_19",
+          "block": "B5",
+          "spec": "C:/Users/99922/OneDrive/Quant_Module_Moltbot/.cache/rf_parallel/spec_B5_19__RP_20260913_090549_14760_adapted_rulefast_promo3.json",
+          "port_t": 1.669,
+          "net_sharpe": 1.049,
+          "cagr": 0.188,
+          "mdd": 0.394,
+          "calmar": 0.478,
+          "oos_retention": -0.491,
+          "net_ir": 0.353,
+          "dsr": 0.186,
+          "selection_type": "sweep",
+          "n_trials_cumulative": 98,
+          "source": "authoritative_remeasure.json(rebase)"
+        },
+        "measurement_regime": {
+          "key": "close_t1_5562284e",
+          "regime": "close_t1_5562284e",
+          "exec_price": "close_t1",
+          "exec_price_basis": "argument(rfh_remeasure)",
+          "cost_model_version": "replication_weight_delta_v1/first_hold_day_multiplicative",
+          "harness_md5": "3e316e9cef23c4b10ea7b088493e2ad4",
+          "selection_type": "sweep",
+          "n_trials_cumulative": 98,
+          "n_trials_basis": "D-A raw 누적(rebase 시점): 1(기저) + 계보 측정 칸(상속 제외) · 산출물 참조 entry 최대 · RP_20260913_090549_14760_adapted_rulefast_promo3",
+          "scoring_md5": "ce88f24b841d6151c00cb75e8be79217",
+          "data_vintage": {
+            "raw": {
+              "path": "C:/Users/99922/OneDrive/Quant_Module_Moltbot/.cache/RAWDATA.parquet",
+              "size": 424757866,
+              "mtime": "2026-09-25T08:11:23+0900"
+            },
+            "bm": {
+              "path": "C:/Users/99922/OneDrive/Quant_Module_Moltbot/.cache/benchmark.parquet",
+              "size": 189495,
+              "mtime": "2026-09-24T00:04:10+0900"
+            },
+            "raw_nrow": 14121332,
+            "raw_max_date": "2026-09-23",
+            "raw_cols": [
+              "Date",
+              "Ticker",
+              "Ret"
+            ],
+            "bm_nrow": 9035,
+            "bm_max_date": "2026-09-23"
+          },
+          "data_end": "2026-09-11",
+          "basis": "rebase",
+          "remeasure_path": "C:/Users/99922/OneDrive/Quant_Module_Moltbot/stage_artifacts/replication/20260913_211900_25828/remeasure_close_t1_5562284e/authoritative_remeasure.json",
+          "remeasure_md5": "d0ccdac3fc8c988fa50476e3348695fb",
+          "rebased_at": "2026-09-25T15:14:02+0900"
+        },
+        "vintage_flags": [
+          {
+            "flag": "fdb_202608_v1",
+            "verdict": "consumed",
+            "source": "06_Registry/vintage_cascade_20260923.json (v2)",
+            "policy": "표식만 — 재측정 금지(P0-05 rebase 흡수) · 도훈 2026-09-23",
+            "marked_at": "2026-09-24T01:16:15+0900"
+          },
+          {
+            "flag": "selection_basis_full_sample_ic_inherited",
+            "verdict": "consumed",
+            "source": "p0_08 · B5_19 · 승계 집합 CR08_Volume_Price_Divergence+M01_Mom_12_1+M08_Residual_Mom+V02_EP+V10_FCF_Yield ⊆ factors",
+            "policy": "표식만 — 재측정 금지(규칙이 바뀌면 새 칸 · select=ic_bad_rank_asof / B1 as-of 선정) · 플랜 P0-08 · 2026-09-24",
+            "marked_at": "2026-09-25T15:16:28+0900"
+          }
+        ],
+        "adversary": {
+          "status": "unverified",
+          "ok": false,
+          "detail": "gen_20260907_002324~multivar_channel_tilt",
+          "ledger_verdict": null,
+          "ledger_at": null,
+          "predicate": "rf_runner_gates.R::rf_adversary_status (P0-11)"
+        },
+        "artifacts": "C:/Users/99922/OneDrive/Quant_Module_Moltbot/stage_artifacts/replication/20260913_211900_25828",
+        "spec_path": "C:/Users/99922/OneDrive/Quant_Module_Moltbot/.cache/rf_parallel/spec_B5_19__RP_20260913_090549_14760_adapted_rulefast_promo3.json",
+        "spec_md5": "f3cc4404dd80ef3a95d3f8a201509d48",
+        "label": "다변량 스트레스 구성 x 채널별 랭킹",
+        "factors": ["M01_Mom_12_1", "M08_Residual_Mom", "V02_EP", "V10_FCF_Yield", "CR08_Volume_Price_Divergence", "AC02_Total_Accruals_BS", "C12_Estimate_Dispersion_Proxy"],
+        "overlay": {
+          "kind": "gen_20260907_002324",
+          "arm_id": "multivar_channel_tilt"
+        },
+        "weighting": {
+          "kind": "catalog",
+          "catalog_id": "gen:lean_score_tilt__shr_ledoit_wolf",
+          "label": "lean_score_tilt__shr_ledoit_wolf"
+        },
+        "entry": {
+          "measurement_axis": "exec_v2_close_t1",
+          "status": "exhausted",
+          "parent": {
+            "base_id": "RP_20260913_090549_14760_adapted_rulefast_promo2",
+            "depth": 3,
+            "cell": "B1_2",
+            "best_port_t": 2.776,
+            "promoted_at": "2026-09-13T21:02:39+0900"
+          },
+          "carry_source_cell": "B1_2",
+          "base_remeasure": {
+            "path": "C:/Users/99922/OneDrive/Quant_Module_Moltbot/stage_artifacts/replication/20260913_135829_32808/remeasure_close_t1_5562284e/authoritative_remeasure.json",
+            "md5": "c0d779d6e3311805d04f0f5a5ef91c4d",
+            "grade": "B",
+            "core": {
+              "port_t": 2.776,
+              "net_sharpe": 1.034,
+              "cagr": 0.225,
+              "mdd": 0.569,
+              "calmar": 0.395,
+              "oos_retention": -0.154
+            }
+          }
+        },
+        "ledger_current_axis": "exec_v2_close_t1"
+      },
+      "assess": {
+        "eligible": false,
+        "reasons": ["derived:q4_crossentry_exposure(possible · RP_20260913_090549_14760_adapted_rulefast)", "derived:q4_crossentry_exposure(possible · RP_20260913_090549_14760_adapted_rulefast_promo1)", "derived:q4_crossentry_exposure(possible · RP_20260913_090549_14760_adapted_rulefast_promo2)", "pit_flag:selection_basis_full_sample_ic_inherited", "adversary:unverified"],
+        "caveats": "vintage_flag:fdb_202608_v1"
+      },
+      "provenance": {
+        "steps": [
+          {
+            "base_id": "RP_20260913_090549_14760_adapted_rulefast",
+            "cell_code": "B1_3",
+            "via_cell": "B2_11",
+            "label": "horizon_mom_12_1",
+            "origin_kind": "b1_design_lane",
+            "added": "M01_Mom_12_1",
+            "carry": []
+          },
+          {
+            "base_id": "RP_20260913_090549_14760_adapted_rulefast_promo1",
+            "cell_code": "B1_1",
+            "via_cell": "B2_10",
+            "label": "resid_mom",
+            "origin_kind": "b1_design_lane",
+            "added": "M08_Residual_Mom",
+            "carry": "M01_Mom_12_1"
+          },
+          {
+            "base_id": "RP_20260913_090549_14760_adapted_rulefast_promo2",
+            "cell_code": "B1_2",
+            "via_cell": "",
+            "label": "yield_cash",
+            "origin_kind": "b1_design_lane",
+            "added": ["V02_EP", "V10_FCF_Yield"],
+            "carry": ["M01_Mom_12_1", "M08_Residual_Mom"]
+          },
+          {
+            "base_id": "RP_20260913_090549_14760_adapted_rulefast_promo3",
+            "cell_code": "B1_3",
+            "via_cell": "B5_19",
+            "label": "3팩터 직교(crowding+consensus+accrual)",
+            "origin_kind": "rule_selector(필드 없음=구판 전표본)",
+            "added": ["CR08_Volume_Price_Divergence", "AC02_Total_Accruals_BS", "C12_Estimate_Dispersion_Proxy"],
+            "carry": ["M01_Mom_12_1", "M08_Residual_Mom", "V02_EP", "V10_FCF_Yield"]
+          }
+        ],
+        "factor_origin": {
+          "M01_Mom_12_1": {
+            "base_id": "RP_20260913_090549_14760_adapted_rulefast",
+            "cell_code": "B1_3",
+            "via_cell": "B2_11",
+            "label": "horizon_mom_12_1",
+            "origin_kind": "b1_design_lane"
+          },
+          "M08_Residual_Mom": {
+            "base_id": "RP_20260913_090549_14760_adapted_rulefast_promo1",
+            "cell_code": "B1_1",
+            "via_cell": "B2_10",
+            "label": "resid_mom",
+            "origin_kind": "b1_design_lane"
+          },
+          "V02_EP": {
+            "base_id": "RP_20260913_090549_14760_adapted_rulefast_promo2",
+            "cell_code": "B1_2",
+            "via_cell": "",
+            "label": "yield_cash",
+            "origin_kind": "b1_design_lane"
+          },
+          "V10_FCF_Yield": {
+            "base_id": "RP_20260913_090549_14760_adapted_rulefast_promo2",
+            "cell_code": "B1_2",
+            "via_cell": "",
+            "label": "yield_cash",
+            "origin_kind": "b1_design_lane"
+          },
+          "CR08_Volume_Price_Divergence": {
+            "base_id": "RP_20260913_090549_14760_adapted_rulefast_promo3",
+            "cell_code": "B1_3",
+            "via_cell": "B5_19",
+            "label": "3팩터 직교(crowding+consensus+accrual)",
+            "origin_kind": "rule_selector(필드 없음=구판 전표본)"
+          },
+          "AC02_Total_Accruals_BS": {
+            "base_id": "RP_20260913_090549_14760_adapted_rulefast_promo3",
+            "cell_code": "B1_3",
+            "via_cell": "B5_19",
+            "label": "3팩터 직교(crowding+consensus+accrual)",
+            "origin_kind": "rule_selector(필드 없음=구판 전표본)"
+          },
+          "C12_Estimate_Dispersion_Proxy": {
+            "base_id": "RP_20260913_090549_14760_adapted_rulefast_promo3",
+            "cell_code": "B1_3",
+            "via_cell": "B5_19",
+            "label": "3팩터 직교(crowding+consensus+accrual)",
+            "origin_kind": "rule_selector(필드 없음=구판 전표본)"
+          }
+        },
+        "inherited_flag_sets": [
+          {
+            "set": ["CR08_Volume_Price_Divergence", "M01_Mom_12_1", "M08_Residual_Mom", "V02_EP", "V10_FCF_Yield"],
+            "self_marked_origins": [
+              {
+                "base_id": "RP_20260913_090549_14760_adapted_rulefast_promo3",
+                "cell_code": "B1_1",
+                "in_lineage": true
+              }
+            ],
+            "relation": "lineage_carry"
+          }
+        ],
+        "note": "기록 전용 — 표식 해제 근거가 아니다(표식 정책: 재측정 금지 · 규칙이 바뀌면 새 칸)"
+      },
+      "design_exposure": [
+        {
+          "base_id": "RP_20260913_090549_14760_adapted_rulefast",
+          "file": ".cache/rf_b1_design/RP_20260913_090549_14760_adapted_rulefast.materials.txt",
+          "exists": true,
+          "md5": "6facae7735c7f189a383854afbf2fad1",
+          "design_json_md5": "c3a553f96081eb76b7550d3b76b23e06",
+          "section_found": true,
+          "n_section_lines": 50,
+          "n_stat_lines": 33,
+          "exposed": true
+        },
+        {
+          "base_id": "RP_20260913_090549_14760_adapted_rulefast_promo1",
+          "file": ".cache/rf_b1_design/RP_20260913_090549_14760_adapted_rulefast_promo1.materials.txt",
+          "exists": true,
+          "md5": "014d1f373896db9912793235b15ae178",
+          "design_json_md5": "0d8871a61745ef6a3f425958c7d855ff",
+          "section_found": true,
+          "n_section_lines": 50,
+          "n_stat_lines": 33,
+          "exposed": true
+        },
+        {
+          "base_id": "RP_20260913_090549_14760_adapted_rulefast_promo2",
+          "file": ".cache/rf_b1_design/RP_20260913_090549_14760_adapted_rulefast_promo2.materials.txt",
+          "exists": true,
+          "md5": "e091a4cb7ae8557a2fe82feb52dc4f37",
+          "design_json_md5": "13c04d82a12616c6c0955a214ead126c",
+          "section_found": true,
+          "n_section_lines": 50,
+          "n_stat_lines": 29,
+          "exposed": true
+        }
+      ],
+      "base_engine_exposure": {
+        "kind": "base_engine",
+        "engine": "04_Research/strategies/RP_AUTO_2002_06975/engine.R",
+        "engine_id": "RP_AUTO_2002_06975",
+        "file": "04_Research/strategies/RP_AUTO_2002_06975/prompt.txt",
+        "exists": true,
+        "md5": "c26202af07303cb1a0d2df9c9ff98619",
+        "section_found": false,
+        "n_section_lines": 0,
+        "n_stat_lines": 0,
+        "exposed": false
+      }
+    },
+    "F3_DNN": {
+      "status": "excluded",
+      "role": "보조 바닥(플랜 원안 'DNN B1_8' = 084807 DNN 2002.06975 기저의 B1_8) — ★독립 계보 아님: 기저 엔진 RP_AUTO_2002_06975 는 F2(14760) 기저와 같고, F1 결합 엔진의 풀 정의([A] DNN 5분위)도 같은 논문 산술이다(적대검증 2026-09-25)",
+      "cite": {
+        "base_id": "RP_20260913_084807_skipped_base",
+        "n": 8,
+        "cell_code": "B1_8",
+        "n_measurements_same_code": 1,
+        "grade": "B",
+        "essence": {
+          "cell_code": "B1_8",
+          "block": "B1",
+          "spec": "C:/Users/99922/OneDrive/Quant_Module_Moltbot/.cache/rf_parallel/spec_B1_8__RP_20260913_084807_skipped_base.json",
+          "port_t": 2.892,
+          "net_sharpe": 0.99,
+          "cagr": 0.226,
+          "mdd": 0.555,
+          "calmar": 0.408,
+          "oos_retention": -0.062,
+          "net_ir": 0.636,
+          "dsr": 0.755,
+          "selection_type": "sweep",
+          "n_trials_cumulative": 44,
+          "source": "authoritative_remeasure.json(rebase)"
+        },
+        "measurement_regime": {
+          "key": "close_t1_5562284e",
+          "regime": "close_t1_5562284e",
+          "exec_price": "close_t1",
+          "exec_price_basis": "argument(rfh_remeasure)",
+          "cost_model_version": "replication_weight_delta_v1/first_hold_day_multiplicative",
+          "harness_md5": "3e316e9cef23c4b10ea7b088493e2ad4",
+          "selection_type": "sweep",
+          "n_trials_cumulative": 44,
+          "n_trials_basis": "D-A raw 누적(rebase 시점): 1(기저) + 계보 측정 칸(상속 제외) · 산출물 참조 entry 최대 · RP_20260913_084807_skipped_base",
+          "scoring_md5": "ce88f24b841d6151c00cb75e8be79217",
+          "data_vintage": {
+            "raw": {
+              "path": "C:/Users/99922/OneDrive/Quant_Module_Moltbot/.cache/RAWDATA.parquet",
+              "size": 424757866,
+              "mtime": "2026-09-25T08:11:23+0900"
+            },
+            "bm": {
+              "path": "C:/Users/99922/OneDrive/Quant_Module_Moltbot/.cache/benchmark.parquet",
+              "size": 189495,
+              "mtime": "2026-09-24T00:04:10+0900"
+            },
+            "raw_nrow": 14121332,
+            "raw_max_date": "2026-09-23",
+            "raw_cols": [
+              "Date",
+              "Ticker",
+              "Ret"
+            ],
+            "bm_nrow": 9035,
+            "bm_max_date": "2026-09-23"
+          },
+          "data_end": "2026-09-21",
+          "basis": "rebase",
+          "remeasure_path": "C:/Users/99922/OneDrive/Quant_Module_Moltbot/stage_artifacts/replication/20260922_031558_23272/remeasure_close_t1_5562284e/authoritative_remeasure.json",
+          "remeasure_md5": "0f4a18e913087c7b98014234b5f75675",
+          "rebased_at": "2026-09-25T13:18:08+0900"
+        },
+        "vintage_flags": [
+          {
+            "flag": "fdb_202608_v1",
+            "verdict": "consumed",
+            "source": "06_Registry/vintage_cascade_20260923.json (v2)",
+            "policy": "표식만 — 재측정 금지(P0-05 rebase 흡수) · 도훈 2026-09-23",
+            "marked_at": "2026-09-24T01:16:15+0900"
+          }
+        ],
+        "adversary": {
+          "status": "no_verdict_not_b5",
+          "ok": true,
+          "detail": "",
+          "ledger_verdict": null,
+          "ledger_at": null,
+          "predicate": "rf_runner_gates.R::rf_adversary_status (P0-11)"
+        },
+        "artifacts": "C:/Users/99922/OneDrive/Quant_Module_Moltbot/stage_artifacts/replication/20260922_031558_23272",
+        "spec_path": "C:/Users/99922/OneDrive/Quant_Module_Moltbot/.cache/rf_parallel/spec_B1_8__RP_20260913_084807_skipped_base.json",
+        "spec_md5": "0970bba5c484435b79feeec9c5ec5b81",
+        "label": "horizon_x_yield",
+        "factors": ["M01_Mom_12_1", "V10_FCF_Yield"],
+        "overlay": [],
+        "weighting": {
+          "kind": "ew"
+        },
+        "entry": {
+          "measurement_axis": "exec_v2_close_t1",
+          "status": "exhausted",
+          "parent": null,
+          "carry_source_cell": null,
+          "base_remeasure": {
+            "path": "C:/Users/99922/OneDrive/Quant_Module_Moltbot/stage_artifacts/replication/20260913_063033_21524/remeasure_close_t1_5562284e/authoritative_remeasure.json",
+            "md5": "2095ce259cfdcf22188655373254cdd9",
+            "grade": "F",
+            "core": {
+              "port_t": -1.196,
+              "net_sharpe": 0.439,
+              "cagr": 0.053,
+              "mdd": 0.595,
+              "calmar": 0.089,
+              "oos_retention": -6.88
+            }
+          }
+        },
+        "ledger_current_axis": "exec_v2_close_t1"
+      },
+      "assess": {
+        "eligible": false,
+        "reasons": "derived:q4_crossentry_exposure(possible · RP_20260913_084807_skipped_base)",
+        "caveats": "vintage_flag:fdb_202608_v1"
+      },
+      "provenance": {
+        "steps": [
+          {
+            "base_id": "RP_20260913_084807_skipped_base",
+            "cell_code": "B1_8",
+            "via_cell": "",
+            "label": "horizon_x_yield",
+            "origin_kind": "b1_design_lane",
+            "added": ["M01_Mom_12_1", "V10_FCF_Yield"],
+            "carry": []
+          }
+        ],
+        "factor_origin": {
+          "M01_Mom_12_1": {
+            "base_id": "RP_20260913_084807_skipped_base",
+            "cell_code": "B1_8",
+            "via_cell": "",
+            "label": "horizon_x_yield",
+            "origin_kind": "b1_design_lane"
+          },
+          "V10_FCF_Yield": {
+            "base_id": "RP_20260913_084807_skipped_base",
+            "cell_code": "B1_8",
+            "via_cell": "",
+            "label": "horizon_x_yield",
+            "origin_kind": "b1_design_lane"
+          }
+        },
+        "inherited_flag_sets": [],
+        "note": "기록 전용 — 표식 해제 근거가 아니다(표식 정책: 재측정 금지 · 규칙이 바뀌면 새 칸)"
+      },
+      "design_exposure": [
+        {
+          "base_id": "RP_20260913_084807_skipped_base",
+          "file": ".cache/rf_b1_design/RP_20260913_084807_skipped_base.materials.txt",
+          "exists": true,
+          "md5": "d32b14d15e009545ad21d3fbcc024b2d",
+          "design_json_md5": "a95cc68e7692322b0365b782cc2a64ac",
+          "section_found": true,
+          "n_section_lines": 50,
+          "n_stat_lines": 28,
+          "exposed": true
+        }
+      ],
+      "base_engine_exposure": {
+        "kind": "base_engine",
+        "engine": "04_Research/strategies/RP_AUTO_2002_06975/engine.R",
+        "engine_id": "RP_AUTO_2002_06975",
+        "file": "04_Research/strategies/RP_AUTO_2002_06975/prompt.txt",
+        "exists": true,
+        "md5": "c26202af07303cb1a0d2df9c9ff98619",
+        "section_found": false,
+        "n_section_lines": 0,
+        "n_stat_lines": 0,
+        "exposed": false
+      }
+    }
+  },
+  "lineage_reference": {
+    "role": "옛 F1(플랜 원안 22632 promo3 B1_3) — 바닥 아님 · 기록",
+    "cite": {
+      "base_id": "RP_20260917_105807_22632_combo_rulefast_promo3",
+      "n": 3,
+      "cell_code": "B1_3",
+      "n_measurements_same_code": 1,
+      "grade": "B",
+      "essence": {
+        "cell_code": "B1_3",
+        "block": "B1",
+        "spec": "C:/Users/99922/OneDrive/Quant_Module_Moltbot/.cache/rf_parallel/spec_B1_3__RP_20260917_105807_22632_combo_rulefast_promo3.json",
+        "port_t": 3.777,
+        "net_sharpe": 1.06,
+        "cagr": 0.251,
+        "mdd": 0.58,
+        "calmar": 0.433,
+        "oos_retention": 0.117,
+        "net_ir": 0.827,
+        "dsr": 0.872,
+        "selection_type": "sweep",
+        "n_trials_cumulative": 141,
+        "source": "authoritative_remeasure.json(rebase)"
+      },
+      "measurement_regime": {
+        "key": "close_t1_5562284e",
+        "regime": "close_t1_5562284e",
+        "exec_price": "close_t1",
+        "exec_price_basis": "argument(rfh_remeasure)",
+        "cost_model_version": "replication_weight_delta_v1/first_hold_day_multiplicative",
+        "harness_md5": "3e316e9cef23c4b10ea7b088493e2ad4",
+        "selection_type": "sweep",
+        "n_trials_cumulative": 141,
+        "n_trials_basis": "D-A raw 누적(rebase 시점): 1(기저) + 계보 측정 칸(상속 제외) · 산출물 참조 entry 최대 · RP_20260917_105807_22632_combo_rulefast_promo3",
+        "scoring_md5": "ce88f24b841d6151c00cb75e8be79217",
+        "data_vintage": {
+          "raw": {
+            "path": "C:/Users/99922/OneDrive/Quant_Module_Moltbot/.cache/RAWDATA.parquet",
+            "size": 424757866,
+            "mtime": "2026-09-25T08:11:23+0900"
+          },
+          "bm": {
+            "path": "C:/Users/99922/OneDrive/Quant_Module_Moltbot/.cache/benchmark.parquet",
+            "size": 189495,
+            "mtime": "2026-09-24T00:04:10+0900"
+          },
+          "raw_nrow": 14121332,
+          "raw_max_date": "2026-09-23",
+          "raw_cols": [
+            "Date",
+            "Ticker",
+            "Ret"
+          ],
+          "bm_nrow": 9035,
+          "bm_max_date": "2026-09-23"
+        },
+        "data_end": "2026-09-18",
+        "basis": "rebase",
+        "remeasure_path": "C:/Users/99922/OneDrive/Quant_Module_Moltbot/stage_artifacts/replication/20260921_100007_6876/remeasure_close_t1_5562284e/authoritative_remeasure.json",
+        "remeasure_md5": "a8868aa08fefced675a4a1a9012bd2da",
+        "rebased_at": "2026-09-25T13:18:08+0900"
+      },
+      "vintage_flags": [
+        {
+          "flag": "fdb_202608_v1",
+          "verdict": "consumed",
+          "source": "06_Registry/vintage_cascade_20260923.json (v2)",
+          "policy": "표식만 — 재측정 금지(P0-05 rebase 흡수) · 도훈 2026-09-23",
+          "marked_at": "2026-09-24T01:16:15+0900"
+        },
+        {
+          "flag": "selection_basis_full_sample_ic_inherited",
+          "verdict": "consumed",
+          "source": "p0_08 · B1_3 · 승계 집합 C03_EPS_Chg_3m ⊆ factors",
+          "policy": "표식만 — 재측정 금지(규칙이 바뀌면 새 칸 · select=ic_bad_rank_asof / B1 as-of 선정) · 플랜 P0-08 · 2026-09-24",
+          "marked_at": "2026-09-25T15:16:28+0900"
+        }
+      ],
+      "adversary": {
+        "status": "no_verdict_not_b5",
+        "ok": true,
+        "detail": "",
+        "ledger_verdict": null,
+        "ledger_at": null,
+        "predicate": "rf_runner_gates.R::rf_adversary_status (P0-11)"
+      },
+      "artifacts": "C:/Users/99922/OneDrive/Quant_Module_Moltbot/stage_artifacts/replication/20260921_100007_6876",
+      "spec_path": "C:/Users/99922/OneDrive/Quant_Module_Moltbot/.cache/rf_parallel/spec_B1_3__RP_20260917_105807_22632_combo_rulefast_promo3.json",
+      "spec_md5": "62eeee8fb547e477b8c45f3e74ca85c4",
+      "label": "liq_price_delay",
+      "factors": ["C03_EPS_Chg_3m", "M01_Mom_12_1", "V14_EBIT_EV", "L19_Price_Delay"],
+      "overlay": [],
+      "weighting": {
+        "kind": "ew"
+      },
+      "entry": {
+        "measurement_axis": "exec_v2_close_t1",
+        "status": "exhausted",
+        "parent": {
+          "base_id": "RP_20260917_105807_22632_combo_rulefast_promo2",
+          "depth": 3,
+          "cell": "B1_2",
+          "best_port_t": 3.097,
+          "promoted_at": "2026-09-21T09:48:05+0900"
+        },
+        "carry_source_cell": "B1_2",
+        "base_remeasure": {
+          "path": "C:/Users/99922/OneDrive/Quant_Module_Moltbot/stage_artifacts/replication/20260920_002909_34572/remeasure_close_t1_5562284e/authoritative_remeasure.json",
+          "md5": "d81b868cc62d873ab14ecc4a0d162b89",
+          "grade": "B",
+          "core": {
+            "port_t": 3.097,
+            "net_sharpe": 1.031,
+            "cagr": 0.234,
+            "mdd": 0.562,
+            "calmar": 0.416,
+            "oos_retention": -0.118
+          }
+        }
+      },
+      "ledger_current_axis": "exec_v2_close_t1"
+    },
+    "assess": {
+      "eligible": false,
+      "reasons": ["derived:q4_crossentry_exposure(possible · RP_20260917_105807_22632_combo_rulefast)", "derived:q4_crossentry_exposure(possible · RP_20260917_105807_22632_combo_rulefast_promo1)", "derived:q4_crossentry_exposure(possible · RP_20260917_105807_22632_combo_rulefast_promo2)", "derived:q4_crossentry_exposure(possible · RP_20260917_105807_22632_combo_rulefast_promo3)", "derived:q4_base_engine_exposure(pending_decision · 04_Research/strategies/RP_AUTO_COMBO_combo_1403_8125_2002_069/prompt.txt)", "pit_flag:selection_basis_full_sample_ic_inherited"],
+      "caveats": "vintage_flag:fdb_202608_v1"
+    },
+    "provenance": {
+      "steps": [
+        {
+          "base_id": "RP_20260917_105807_22632_combo_rulefast",
+          "cell_code": "B1_5",
+          "via_cell": "",
+          "label": "rev_3m",
+          "origin_kind": "b1_design_lane",
+          "added": "C03_EPS_Chg_3m",
+          "carry": []
+        },
+        {
+          "base_id": "RP_20260917_105807_22632_combo_rulefast_promo1",
+          "cell_code": "B1_1",
+          "via_cell": "",
+          "label": "mom_12_1_control",
+          "origin_kind": "b1_design_lane",
+          "added": "M01_Mom_12_1",
+          "carry": "C03_EPS_Chg_3m"
+        },
+        {
+          "base_id": "RP_20260917_105807_22632_combo_rulefast_promo2",
+          "cell_code": "B1_2",
+          "via_cell": "",
+          "label": "val_ebit_ev",
+          "origin_kind": "b1_design_lane",
+          "added": "V14_EBIT_EV",
+          "carry": ["C03_EPS_Chg_3m", "M01_Mom_12_1"]
+        },
+        {
+          "base_id": "RP_20260917_105807_22632_combo_rulefast_promo3",
+          "cell_code": "B1_3",
+          "via_cell": "",
+          "label": "liq_price_delay",
+          "origin_kind": "b1_design_lane",
+          "added": "L19_Price_Delay",
+          "carry": ["C03_EPS_Chg_3m", "M01_Mom_12_1", "V14_EBIT_EV"]
+        }
+      ],
+      "factor_origin": {
+        "C03_EPS_Chg_3m": {
+          "base_id": "RP_20260917_105807_22632_combo_rulefast",
+          "cell_code": "B1_5",
+          "via_cell": "",
+          "label": "rev_3m",
+          "origin_kind": "b1_design_lane"
+        },
+        "M01_Mom_12_1": {
+          "base_id": "RP_20260917_105807_22632_combo_rulefast_promo1",
+          "cell_code": "B1_1",
+          "via_cell": "",
+          "label": "mom_12_1_control",
+          "origin_kind": "b1_design_lane"
+        },
+        "V14_EBIT_EV": {
+          "base_id": "RP_20260917_105807_22632_combo_rulefast_promo2",
+          "cell_code": "B1_2",
+          "via_cell": "",
+          "label": "val_ebit_ev",
+          "origin_kind": "b1_design_lane"
+        },
+        "L19_Price_Delay": {
+          "base_id": "RP_20260917_105807_22632_combo_rulefast_promo3",
+          "cell_code": "B1_3",
+          "via_cell": "",
+          "label": "liq_price_delay",
+          "origin_kind": "b1_design_lane"
+        }
+      },
+      "inherited_flag_sets": [
+        {
+          "set": "C03_EPS_Chg_3m",
+          "self_marked_origins": [
+            {
+              "base_id": "RP_20260913_022403_11800_combo_rulefast",
+              "cell_code": "B1_1",
+              "in_lineage": false
+            }
+          ],
+          "relation": "cross_entry_subset_match"
+        }
+      ],
+      "note": "기록 전용 — 표식 해제 근거가 아니다(표식 정책: 재측정 금지 · 규칙이 바뀌면 새 칸)"
+    },
+    "design_exposure": [
+      {
+        "base_id": "RP_20260917_105807_22632_combo_rulefast",
+        "file": ".cache/rf_b1_design/RP_20260917_105807_22632_combo_rulefast.materials.txt",
+        "exists": true,
+        "md5": "b3bfb9e56c728ccfd0393b4faf989da5",
+        "design_json_md5": "03be9f697e61b947144a6face16808c0",
+        "section_found": true,
+        "n_section_lines": 50,
+        "n_stat_lines": 28,
+        "exposed": true
+      },
+      {
+        "base_id": "RP_20260917_105807_22632_combo_rulefast_promo1",
+        "file": ".cache/rf_b1_design/RP_20260917_105807_22632_combo_rulefast_promo1.materials.txt",
+        "exists": true,
+        "md5": "0207594cb8c3281df794035613671740",
+        "design_json_md5": "6ecf53e84fd831225793e22a54103dc9",
+        "section_found": true,
+        "n_section_lines": 50,
+        "n_stat_lines": 28,
+        "exposed": true
+      },
+      {
+        "base_id": "RP_20260917_105807_22632_combo_rulefast_promo2",
+        "file": ".cache/rf_b1_design/RP_20260917_105807_22632_combo_rulefast_promo2.materials.txt",
+        "exists": true,
+        "md5": "3637b191ba5c12936ec4a99a6bde3a58",
+        "design_json_md5": "0998bed283a19917f31b2d3a2a1cc60f",
+        "section_found": true,
+        "n_section_lines": 50,
+        "n_stat_lines": 29,
+        "exposed": true
+      },
+      {
+        "base_id": "RP_20260917_105807_22632_combo_rulefast_promo3",
+        "file": ".cache/rf_b1_design/RP_20260917_105807_22632_combo_rulefast_promo3.materials.txt",
+        "exists": true,
+        "md5": "234ab03ca6f4276b22e4a78a60fe01d6",
+        "design_json_md5": "9c988c6ba5b704ac383723deee6e7fef",
+        "section_found": true,
+        "n_section_lines": 50,
+        "n_stat_lines": 30,
+        "exposed": true
+      }
+    ],
+    "base_engine_exposure": {
+      "kind": "base_engine",
+      "engine": "04_Research/strategies/RP_AUTO_COMBO_combo_1403_8125_2002_069/engine.R",
+      "engine_id": "RP_AUTO_COMBO_combo_1403_8125_2002_069",
+      "file": "04_Research/strategies/RP_AUTO_COMBO_combo_1403_8125_2002_069/prompt.txt",
+      "exists": true,
+      "md5": "fabc65c29bffa456d4dd55a0676a9e87",
+      "section_found": true,
+      "n_section_lines": 14,
+      "n_stat_lines": 8,
+      "exposed": true
+    }
+  },
+  "prereg_gate": {
+    "ready": false,
+    "blockers": ["F1:q4_base_engine_exposure(pending_decision · 04_Research/strategies/RP_AUTO_COMBO_combo_1403_8125_2002_069/prompt.txt)", "decision_pending:FLOOR-F2-EXCLUDED-ARMS(absent)", "decision_pending:FLOOR-BASE-ENGINE-Q4(absent)", "decision_pending:FLOOR-F1-SEED-B7-OVERLAP(absent)"],
+    "required_decisions": [
+      {
+        "id": "FLOOR-F2-EXCLUDED-ARMS",
+        "what": "F2(14760 promo3 B5_19) 제외로 바닥이 빈 arm — PR-L2 의 F2 위 B7_37·B7_40, PR-L1 A3. Q 권고 = PR-L1-A4-DISPOSITION 선례(대체 없이 삭제 · N 미계상 · 다른 조합 대체 금지). F3 는 대체 불가(F3 도 제외).",
+        "register_status": "absent",
+        "decision": null
+      },
+      {
+        "id": "FLOOR-BASE-ENGINE-Q4",
+        "what": "F1 기저 엔진(22632 결합 엔진 RP_AUTO_COMBO_combo_1403_8125_2002_069) 설계 프롬프트가 교차 entry 전기간 수치(재료 6편 '단독 다중검정 t')에 노출됐다 — ORGANIC-DE Q①(다중검정 + 서류 감사)인가 Q④(a)(C1 possible · A 보류)인가. Q④ 면 F1(과 이 엔진 위 모든 칸)은 A 자격이 없어 레버 실험이 A 를 낼 수 없다.",
+        "register_status": "absent",
+        "decision": null
+      },
+      {
+        "id": "FLOOR-F1-SEED-B7-OVERLAP",
+        "what": "F1 시드 규칙(seed_offset 0 = as-of 1위 D42_EWMA_Vol) 확정 + PR-L2 B7 슬리브(as-of 방어 1위 계열 D42/D35/D36 …)와의 겹침 처리 — B7 교체 후보에서 F1 보유 팩터를 뺄지, 처치 대비 희석을 사전등록에 어떻게 적을지.",
+        "register_status": "absent",
+        "decision": null
+      }
+    ],
+    "register": "06_Registry/decision_register.json",
+    "f1_base_engine_cleared_by": null,
+    "rule": "ready = F1 기저 엔진 노출 없음(또는 해제 결정 resolved ∧ 해제 문구 일치) ∧ 필수 결정 전부 resolved — 사전등록(rf_prereg)은 ready 가 아니면 착수하지 않는다. 결정이 바뀌면 문서 내용이 바뀌므로 새 판(rfv_write 불변성)"
+  },
+  "measurement_policy": {
+    "numbers": "원장 인용 전용(close_t1) — 손계산·재구성 0",
+    "lever_delta_basis": "레버 Δ 는 사전등록 뒤 같은 regime·빈티지에서 잰 바닥 재실행판 기준(인용 수치 기준 아님)",
+    "n_accounting": "F1 측정의 n_trials 에 바닥 계보 선택 이력 포함(플랜 P2 공통 규약 · ORGANIC-DE Q①)"
+  },
+  "evidence": [
+    {
+      "claim": "선정 통계는 as-of 로만 — 전표본 성과로 고른 신호 조합의 백테스트는 선택 편향으로 부풀려진다(바닥 팩터 층을 as-of 규칙으로 다시 고르는 이유)",
+      "title": "Novy-Marx (2015), Backtesting Strategies Based on Multiple Signals, NBER Working Paper 21329",
+      "url": "https://www.nber.org/papers/w21329"
+    },
+    {
+      "claim": "바닥 계보의 선택 이력(승격 argmax·기저 결합 선정)을 시행 수 N 에 넣는다 — 선택 편향 보정은 시행 수를 알아야 한다",
+      "title": "Bailey & López de Prado (2014), The Deflated Sharpe Ratio: Correcting for Selection Bias, Backtest Overfitting and Non-Normality, JPM",
+      "url": "https://www.davidhbailey.com/dhbpapers/deflated-sharpe.pdf"
+    },
+    {
+      "claim": "바닥을 결과 전에 고정(핀)하고 선정 경로를 파일에 남긴다 — 사후 선택은 백테스트 과적합 확률을 키운다",
+      "title": "Bailey, Borwein, López de Prado & Zhu (2015), The Probability of Backtest Overfitting, JCF",
+      "url": "https://www.davidhbailey.com/dhbpapers/backtest-prob.pdf"
+    }
+  ],
+  "open_items_after_prereg": [
+    "F1 결정론 — 같은 스펙을 엔진으로 2회 재실행해 산출물(04_holdings·essence) 동일 확인(플랜 P2-03)",
+    "F1p — F1 을 carry 로 받은 entry 의 B1_0 재현 칸 |PT_F1p - PT_F1| < e3_tolerance(플랜 P1-06 E3)",
+    "F3_DNN — 레버 Δ 기준으로 쓰려면 같은 빈티지 재실행판(인용 수치는 fdb_202608_v1 빈티지)",
+    "N 회계 — F1 칸 측정 시 n_trials 에 바닥 계보 선택 이력(22632 계보 측정 칸 수) 포함(플랜 P2 공통 규약)",
+    "사전등록 서술(적대검증 2026-09-25) — F1 은 22632 계보의 팩터 층이 아니다(겹침 0). 직교 사슬 2~4번(IN05·AC13·C15)은 as-of |IC| ≤ 0.005 · 최근 ICIR≈0 이고 상관 추정 표본 31~55개월(표준오차 ≈0.14~0.18)이 사슬 max|rho| 0.063 보다 크다 — 시드(D42) 밖 구성은 잡음 수준의 상관 차이로 정해진다(오프셋 0~10 이 11개 서로 다른 집합). PR-L2 '최고 계보 위' 전제·사전확률(플랜 P2)은 22632 기준이라 F1 로 옮겨 적을 때 다시 쓴다",
+    "사전등록 판정 입력 — 인용 수치(lineage_reference·F2·F3 cite.essence)는 기준선이 아니다. 판정(rf_prereg_verdict)은 prereg_gate.ready 와 같은 regime·빈티지 바닥 재실행판만 받는다(P2-01 계약이 강제할 것)"
+  ],
+  "config_basis": {
+    "plan": "C:/Users/99922/.claude/plans/qvest-1-drifting-eclipse.md §P2 P2-03 · 09-25 저녁 '다음 A 레버'",
+    "decisions": [
+      "ORGANIC-PRIORITY (floor v2 재정의 = 22632 as-of 재선정 새 칸)",
+      "ORGANIC-DE Q① (격자 승자·바닥·carry·승격 = 다중검정 + 서류 감사) · H1 (측정 전 전기간 통계 스크린 = C1)",
+      "PR-L1-A4-DISPOSITION (측정한 적 없는 칸은 N 미계상 · 대체 금지 선례)"
+    ],
+    "pit": ".claude/rules/pit.md C1 D-E · C14 (선정 통계는 Usable_Date <= 결정 시점)"
+  }
+}

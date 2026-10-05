@@ -91,14 +91,24 @@ for (f in c(PAR, SEQ)) {
   #   불변(순서)은 멀쩡한데 검사만 빨개졌다. 재는 것은 "B5 의 overlay 대입 위치" 다.
   io <- grep("SPEC$overlay <- ", L, fixed = TRUE)
   io <- io[grepl("CELL$overlay", L[io], fixed = TRUE)]
-  ij <- grep(".no_treatment <- identical(", L, fixed = TRUE)
+  ij <- grep("\\.no_treatment <- (identical\\(|rf_axes_same_as_carry\\()", L)   # ★B4-SIX(2026-09-26) 병렬 러너 판정식 = 등록부 함수
   if (length(io) && length(ij) && ij[1] > io[1])
     ok(sprintf("%s — 무처치 판정이 overlay 설정 뒤", basename(f))) else
     ng(sprintf("%s — 판정이 overlay 앞", basename(f)), "B5 가 측정 없이 닫힌다")
 }
+## ★B4-SIX-AXIS(2026-09-26): 병렬 러너 판정식 = 축 등록부(rf_spec_axes.R::rf_axes_same_as_carry) — 줄 대신 행동으로 잰다:
+##   전 축 같으면 무처치 · 오버레이만 다르면 처치 · 등록부에 overlay 축이 있다. 순차 러너(퇴역 · 리터럴 판정식)는 구판 검사 그대로.
+.AXF <- file.path(ROOT, "02_Infrastructure/reinforcement/rf_spec_axes.R")
 for (f in c(PAR, SEQ)) {
   b <- paste(sub("#.*$", "", readLines(f, warn = FALSE)), collapse = "\n")
-  if (grepl("SPEC$overlay,   E$carry$overlay", b, fixed = TRUE))
+  if (grepl("rf_axes_same_as_carry(SPEC, E$carry)", b, fixed = TRUE)) {
+    AE <- new.env(parent = globalenv()); invisible(capture.output(sys.source(.AXF, envir = AE)))
+    cy <- list(factors = list(AMI), weighting = list(kind = "ew"), universe = list(kind = "index", flag = "K200"))
+    s_ov <- c(cy, list(overlay = list(kind = "dd_brake", arm_id = "x")))
+    okb <- isTRUE(AE$rf_axes_same_as_carry(cy, cy)) && !isTRUE(AE$rf_axes_same_as_carry(s_ov, cy)) && "overlay" %in% AE$rf_axes_names()
+    if (okb) ok(sprintf("%s — 판정식(등록부)에 overlay 축 포함 · 오버레이만 다른 칸 = 처치", basename(f))) else
+      ng(sprintf("%s — 등록부 판정식이 overlay 를 처치로 안 센다", basename(f)), "오버레이가 처치로 안 세어진다")
+  } else if (grepl("SPEC$overlay,   E$carry$overlay", b, fixed = TRUE))
     ok(sprintf("%s — 판정식에 overlay 축 포함", basename(f))) else
     ng(sprintf("%s — 판정식에 overlay 없음", basename(f)), "오버레이가 처치로 안 세어진다")
 }

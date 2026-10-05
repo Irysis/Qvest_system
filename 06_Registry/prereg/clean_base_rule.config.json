@@ -1,0 +1,461 @@
+{
+  "schema": "clean_base_rule_v1",
+  "note": "A 경로 청정 기저(F_A) 선정 규칙 — 결정 FLOOR-BASE-ENGINE-Q4(2026-09-25 21:38 · '성과를 보지 않고 고른 충실구현 논문 엔진 + as-of 팩터 층 · 교차 entry 노출 0'). 생성기 = 02_Infrastructure/reinforcement/rf_clean_base.R::rfc_build. 이 파일은 '어떤 엔진이 후보가 되고(구조 술어), 무엇을 노출로 보고(노출 통로), 어떤 순서로 고르는가(해시 순서)'만 정한다. 성과 수치(등급·PORT_t·Calmar·essence)는 입력이 아니다 — 원장은 허용 필드 투영 뒤에만 읽고 성과 산출물은 열지 않는다. 결과 = reference_floor_FA.json(초안 · 측정 0).",
+  "decided_basis": {
+    "decision": "06_Registry/decision_register.json#FLOOR-BASE-ENGINE-Q4 (resolved 2026-09-25T21:38:52+0900 · Q④ — F1 계보 A 보류 · A 경로용 청정 기저 별도 신설)",
+    "precedent": "ORGANIC-DE Q④(a) — 교차 entry 수치에 노출된 채 설계된 칸 = C1 possible · A 보류 · 재측정 금지 / reference_floors_v2.config.json exclusion.design_exposure · base_engine_exposure",
+    "pit": ".claude/rules/pit.md C1 D-E (평가 창 결과를 소비하는 자동 선정 규칙 = C1/C14) · C11 · C15",
+    "plan": "C:/Users/99922/.claude/plans/qvest-1-drifting-eclipse.md §P2 (floor v2 · 사전등록 레버)",
+    "lane": "06_Registry/decision_register.json#FA-CLEAN-BASE-PATH (resolved 2026-09-26 12:24 · 도훈 — (나) 기존 레인 강화: 무인 충실구현 레인에 성과 열람 차단·피드백 성과 제거·훅 성과 문맥 제외·출처 기록 → 1505.00328 재구현이 첫 F_A 후보 · 규칙 파일 주입 = 알려진 경계 · 2001.04185 = 탐지기 오탐 수정으로 승계자 명단 복원)"
+  },
+  "decision": {
+    "register": "06_Registry/decision_register.json",
+    "id": "FLOOR-BASE-ENGINE-Q4",
+    "require_status": "resolved",
+    "require_decision_regex": "청정 기저",
+    "note": "결정이 resolved 가 아니거나 문구에 '청정 기저'가 없으면 rfc_build 는 멈춘다(규칙의 존재 근거가 결정이다)"
+  },
+  "floor_v2": {
+    "doc": "06_Registry/prereg/reference_floors_v2.json",
+    "config": "06_Registry/prereg/reference_floors_v2.config.json",
+    "note": "결합 설계 레인 절 검출식(exclusion.base_engine_exposure) · 식별자 보호식·통계식(exclusion.design_exposure) · exec_price 규약(exclusion.exec_price_required)을 floor v2 설정에서 그대로 빌린다(사본 금지 — 검출 함수도 rf_floor_v2.R::rfv_base_engine_exposure 를 부른다)"
+  },
+  "performance_blind": {
+    "ledger_fields_allowed": [
+      "base_id",
+      "paper_key",
+      "paper_id",
+      "engine_path",
+      "base_artifacts",
+      "parent",
+      "combo",
+      "base_signal",
+      "base_vintage_flags",
+      "opened_at"
+    ],
+    "artifact_files_allowed": [
+      "00_manifest.json",
+      "01_strategy_spec.json",
+      "factors_panel.parquet"
+    ],
+    "manifest_fields_allowed": [
+      "run_id",
+      "run_datetime",
+      "start_date",
+      "end_date",
+      "frequency",
+      "universe_id"
+    ],
+    "spec_fields_allowed": [
+      "run_id",
+      "strategy_name",
+      "construction",
+      "weight_method",
+      "rebalance",
+      "universe",
+      "source_paper_url",
+      "has_short"
+    ],
+    "doc_forbidden_key_regex": "(?i)^(grade|base_grade|essence|essence_grade|port_t|calmar|cagr|mdd|sharpe|net_sharpe|oos_retention|dsr|net_ir|best_port_t|best_calmar)$",
+    "note": "성과 필드(base_grade · attempts · status · parked_reason · best_* · base_remeasure · base_essence_history · max_attempts …)와 성과 산출물(authoritative_remeasure.json · 06_metrics · 02_nav …)은 읽지 않는다. 원장 status/base_id 접미사(skipped_base 등)는 성과의 함수라 선택 입력이 아니다. 산출 문서에도 성과 키를 싣지 않는다(후보 간 사후 선택 방지)."
+  },
+  "universe": {
+    "source": "ledger_l1.entries[].engine_path (허용 필드 투영 뒤) — 엔진 파일 단위로 묶는다",
+    "root_entry": "parent 없음 ∧ combo 없음(승격 entry 는 부모 엔진 재사용 · 결합 entry 는 결합 레인)",
+    "note": "충실구현 레인은 기저 등급과 무관하게 entry 를 연다(rf_replication_verify.R — 통과 분기 rf_open_entry · 기저 미달 분기도 rf_open_entry+park) — 원장 엔진 목록은 등급 조건부 표본이 아니다"
+  },
+  "predicates": {
+    "lane": {
+      "engine_rel_regex": "^04_Research/strategies/RP_AUTO_[A-Za-z0-9_]+/engine\\.R$",
+      "combo_dir_regex": "RP_AUTO_COMBO_",
+      "paper_key_combo_regex": "^combo:",
+      "fidelity_file": "FIDELITY.json",
+      "why": "충실구현 레인(rf_replication_auto.sh → rf_replication_verify.R) 산출 엔진만 — 세션 수작업 엔진(파일럿·CID)과 결합 설계 레인(교차 entry 재료)은 레인 밖"
+    },
+    "fidelity": {
+      "self_labels_ok": [
+        "faithful",
+        "adapted"
+      ],
+      "audit_file": "fidelity_audit.json",
+      "audit_reader": "02_Infrastructure/ops/rf_fidelity_audit_lib.R::rf_audit_read",
+      "audit_verdicts_ok": [
+        "faithful",
+        "adapted"
+      ],
+      "why": "적대적 충실도 감사(등급 무관 전건 · rf_replication_verify.R ④)가 미신고 변경 0 을 확인한 엔진만 — misdeclared·unverifiable·감사 부재는 구현이 논문 대조로 검증되지 않았다. adapted 는 '선언된 변경 = 구현'(감사 확인)이라 충실구현 레인 산출로 본다(faithful 만 받으면 후보 1개 · 그마저 설계 재료 판독 불가 — 규칙 민감도 표에 병기)"
+    },
+    "pit_static": {
+      "detector": "02_Infrastructure/validation/lookahead_detector.R::detect_lookahead",
+      "require": "isTRUE(clean) ∧ 구조 검사 적중 0",
+      "c11_rules": "06_Registry/fred_availability_rules.json",
+      "structural_checks": [
+        {
+          "label": "음수 shift(미래 인덱싱)",
+          "all": [
+            "shift\\s*\\(\\s*[^,]+,\\s*-"
+          ],
+          "none": []
+        },
+        {
+          "label": "lead() 사용",
+          "all": [
+            "lead\\s*\\("
+          ],
+          "none": []
+        },
+        {
+          "label": "전 표본 통계 의심",
+          "all": [
+            "\\b(cov|cor|mean|sd)\\s*\\([^)]*\\)\\s*$"
+          ],
+          "none": [
+            "froll|rolling|expanding|by\\s*="
+          ]
+        },
+        {
+          "label": "C15 위반(팩터 DB 직접 로드)",
+          "all": [
+            "read_parquet|open_dataset",
+            "factor_db"
+          ],
+          "none": []
+        },
+        {
+          "label": "C13 위반(부호 반전)",
+          "all": [
+            "NEGATE_FACTORS|FLIP_SIGN"
+          ],
+          "none": []
+        }
+      ],
+      "structural_comment_strip": "#[^\n]*",
+      "structural_source": "02_Infrastructure/ops/rf_replication_verify.R ③ PIT 구조 검사(정적 CLEAN 을 증명으로 쓰지 않는다) — 정규식 사본이다: 검사 [S0] 가 정본 파일의 문자열 상수와 대조해 어긋나면 red(동기화 가드). 같은 엔진(기본 정규식 · perl 아님)으로 판정",
+      "structural_why": "현행 detect_lookahead 는 R 의 음수 shift 를 못 본다(실측 — 검사 S7). 레인 검증기가 측정 전에 걸던 구조 검사를 현행 엔진에 다시 건다",
+      "why": "현행 검출기(C11 계보 분석기 포함 · 2026-09-24)로 엔진을 다시 스캔 — 측정 당시 통과가 현행 통과는 아니다"
+    },
+    "c11": {
+      "predicate": "02_Infrastructure/reinforcement/rf_lineage_flags.R::rflf_c11_derive",
+      "require": "hit == FALSE ∧ unreadable 0",
+      "why": "P0-14 A 자격 관문과 같은 함수(자격 술어는 소비자의 함수) — 엔진 코드의 격리 원천·격리 팩터 · 기저 측정 격리 표식"
+    },
+    "flags": {
+      "exclude_flag_regex": [
+        "^selection_basis_full_sample",
+        "^treatment_misspecified",
+        "^pit_c11",
+        "^legacy",
+        "^fdb_"
+      ],
+      "field": "root entry base_vintage_flags[].flag",
+      "why": "PIT 표식(C1·C11)과 빈티지 표식(fdb_*)이 붙은 기저 — 결정문 예시 'C11/vintage 표식 없음'. prereg 소비 계약 floor_forbidden_flag_patterns 의 상위집합"
+    },
+    "output": {
+      "require_factors_panel": true,
+      "breadth_ref": "fixed_axes.n_max",
+      "breadth_rule": "median over signal dates of distinct Ticker(finite Score) > n_max",
+      "why": "기저가 FACTORS 를 내고 후보 폭이 n_max 를 넘어야 B1 팩터 축이 멤버십을 바꾼다(rf_cell_engine.R 5a 가드 · 메모리 카드 2026-09-12 'PORTFOLIO 기저는 B1 축 붕괴'). 관측(산출물 factors_panel.parquet) 기준 — 선언(construction)은 원천을 말하지 산출 축을 말하지 않는다"
+    },
+    "coverage": {
+      "ref": "fixed_axes.start_date",
+      "rule": "first signal date <= first calendar month-end on/after start_date",
+      "why": "기저 신호가 격자 창의 첫 월말 시그널부터 있어야 칸의 측정 창 = 격자 창(유효 구간이 늦게 시작하면 고정 축 2005-01-01 을 못 채운다 — 메모리 카드 2026-09-12 결합 기저 2011-11~ 사례)"
+    },
+    "source_scope": {
+      "fingerprint": "02_Infrastructure/data/pin_cache.R::pin_fp_consumers + .pin_fp_sources (parse→eval · 원장 rf_open_entry 와 같은 적재)",
+      "require": "sources.status == ok ∧ uncovered == 0 ∧ 숨은 로더 호출 0",
+      "hidden_loader_sources": {
+        "load_investor": "investor(INVESTOR_CACHE · backtest_harness.R)",
+        "load_investor_stock": "investor(parse_investor_quantiwise.R)",
+        "load_fundamentals": "DART_FACTOR_CACHE(backtest_harness.R)",
+        "load_dart_fundamentals": "fundamental_dart(data_collector_dart.R)",
+        "load_macro_regime": "FRED_REGIME_CACHE(backtest_harness.R)",
+        "load_fred_macro": "macro_fred(data_collector_fred.R)",
+        "load_valuation": "VALUATION_CACHE(backtest_harness.R)",
+        "load_daily_factors": "factor_db 일간(factor_db_connector.R — 지문은 월 파일 목록만)",
+        "load_universe_support": "universe_support(parse_universe_support.R)",
+        "load_us_sheet": "us_sheet(parse_universe_support.R)"
+      },
+      "hidden_loader_note": "pin_cache.R 머리 주석이 밝힌 사각('로더 함수 안에 숨은 경로(load_investor)…는 못 본다') 수리 — 엔진 본문의 로더 호출을 원천으로 센다. 지문이 덮는 로더(load_rawdata · load_month_factors)는 목록에 없다. ★2026-09-25 22시대 첫 드라이런 뒤 추가(기준 '엔진 원천이 지문 범위 안'은 불변 · 검출기 사각 수리 — 수리 전후 결과를 문서·보고에 병기)",
+      "why": "엔진이 지문(RAWDATA·벤치·팩터 DB) 밖 원천(fundamental_merged·consensus 등)을 직접 읽으면 판본 대조가 unverified — 결정문 예시 '엔진 원천이 지문 범위 안'",
+      "hidden_loader_flow": {
+        "rule": "diagnostic_only_exempt",
+        "side_effect_calls": [
+          "assign",
+          "list2env",
+          "eval",
+          "evalq",
+          "parse",
+          "source",
+          "sys.source",
+          "attach",
+          "local",
+          "delayedAssign",
+          "makeActiveBinding",
+          "reg.finalizer",
+          "Sys.setenv",
+          "options",
+          "set.seed",
+          "setattr",
+          "set",
+          "setnames",
+          "setkey",
+          "setkeyv",
+          "setorder",
+          "setorderv",
+          "setcolorder",
+          "setDT",
+          "setDF",
+          "setindex",
+          "setindexv",
+          "alloc.col",
+          "runif",
+          "rnorm",
+          "sample",
+          "sample.int",
+          "rbinom",
+          "rpois",
+          "rexp",
+          "rgamma",
+          "rbeta",
+          "rt",
+          "rchisq",
+          "rlnorm",
+          "rmultinom",
+          "globalenv",
+          "parent.frame",
+          "sys.frame",
+          "sys.function",
+          "environment<-",
+          "emptyenv",
+          "topenv"
+        ],
+        "global_assign_ops": [
+          "<<-",
+          "->>"
+        ],
+        "why": "숨은 로더(설정 hidden_loader_sources)는 **산출(FACTORS/PORTFOLIO)로 흐를 때만** 지문 밖 원천이다 — 진단 전용 호출은 원천이 아니다(결정 FA-CLEAN-BASE-PATH: 2001.04185 engine.R:251-257 .crowding_diag() 의 load_investor = 크라우딩 진단 cat 출력만 · 산출물 무영향 → 탐지기 위양성). 판정(전부 만족해야 진단 전용 · 하나라도 어기면 구판처럼 원천으로 센다 — fail-closed): ①호출 지점이 전부 최상위 이름 함수 F 본문 안 ②F 본문에 부수효과 호출(side_effect_calls — 전역 대입·환경 조작·평가·data.table 참조 변경·난수 소비) 0 · 전역 대입 연산자 0 · 지역에서 만들지 않은 객체에 := 0 ③F 이름은 호출 f(...) 로만 쓰인다(값으로 넘기기·문자열 참조 0) ④F 호출은 전부 최상위 문장이고 그 값은 버려지거나 다른 곳에서 읽지 않는 변수에만 대입된다(대입 대상이 원천 흐름을 만들지 않는다) ⑤파싱 실패 = 판독 불가(NA). 양방향 검사 = test_rf_clean_base.R [H]: 2001.04185 형(진단 전용) 통과 · 산출 합류·전역 대입·문자열 참조·다른 함수 경유·최상위 호출·:= 전역 변경 → 탈락."
+      }
+    }
+  },
+  "exposure": {
+    "scope": "full",
+    "scopes": {
+      "prompt": [
+        "prompt_missing",
+        "prompt_combo",
+        "prompt_feedback_measured"
+      ],
+      "full": [
+        "prompt_missing",
+        "prompt_combo",
+        "prompt_feedback_measured",
+        "provenance_order",
+        "wdir_extra_before_engine",
+        "transcript_missing",
+        "transcript_auto_memory",
+        "transcript_tool_reads"
+      ]
+    },
+    "scope_note": "prompt = 결정문이 직접 겨눈 통로(설계 프롬프트 · floor v2 base_engine_exposure 와 같은 층) · full = 엔진 작성 에이전트가 실제로 본 것 전부(프롬프트 + 작업 디렉터리 + 자동 주입 기억 + 도구 열람). 채택 = full(결정문 '교차 entry 노출 0'의 문자 그대로). 두 판의 선택 결과를 문서에 함께 싣는다(민감도).",
+    "prompt": {
+      "file": "prompt.txt",
+      "feedback_section_regex": [
+        "^## ★재구현이다 — 앞 판이 \\*\\*측정에서\\*\\*",
+        "^## ★재구현이다 — 앞 구현이 적대적 충실도 감사에서"
+      ],
+      "feedback_header_generic_regex": "^## ★재구현",
+      "section_end_regex": "^## ",
+      "measured_ref_regex": [
+        "(?i)(authoritative_remeasure|essence_grade|06_metrics|02_nav|03_period_returns|07_benchmark_compare|08_rolling_metrics|09_drawdowns|bt_result|paper_basis)",
+        "(?i)(?<![A-Za-z0-9_])(cagr|sharpe|mdd|calmar|port_t|sortino|dsr|net_ir|grade)\\s*=\\s*[-+−]?\\d",
+        "측정 등급\\s*[ABCF]"
+      ],
+      "why": "재구현 절(감사·측정 실패 피드백)에 측정 산출물 참조·'필드=값' 성과 덤프가 있으면 앞 판의 측정 성과를 보고 다시 쓴 엔진이다(자기 entry 노출 — 결과 조건부 설계). 논문 인용 수치(예: 'Sharpe 0.917')는 '=' 덤프가 아니라 걸지 않는다(양성·음성 대조 = 검사)"
+    },
+    "provenance_order": {
+      "rule": "mtime(prompt.txt) <= mtime(engine.R) <= mtime(fidelity_audit.json)",
+      "why": "감사 뒤 엔진이 바뀌었으면 감사 판정이 현행 엔진의 것이 아니고 그 편집(세션)의 출처를 재도출할 수 없다 — 시계는 mtime(약함 · 남은 위험)"
+    },
+    "wdir": {
+      "lane_file_regex": [
+        "^engine\\.R$",
+        "^engine\\.rejected[0-9A-Za-z_]*\\.R$",
+        "^FIDELITY\\.json$",
+        "^prompt\\.txt$",
+        "^fidelity_audit(\\.[A-Za-z0-9_]+)?\\.json$",
+        "^fidelity_axis_[A-Za-z]+\\.json$",
+        "^\\.audit_",
+        "^\\.agent_run\\.out",
+        "^\\.pre_agent_snapshot$",
+        "^_limit_partial$",
+        "^ABORT\\.txt$",
+        "^lane_provenance\\.json$",
+        "^\\.clean_"
+      ],
+      "why": "레인 밖 파일(세션 진단·작업 폴더)이 엔진보다 먼저 있었으면 구현 에이전트가 읽을 수 있었다(Read 도구 경로 무제한) (FA-CLEAN-BASE-PATH) lane_provenance.json(레인 출처 기록) · .clean_*(피드백 가림 통계 · 감사 원천 사본 .clean_audit_src)은 레인이 쓰는 파일이라 레인 파일로 센다."
+    },
+    "transcript": {
+      "dir": "~/.claude/projects/C--Users-99922-OneDrive-Quant-Module-Moltbot",
+      "first_content_regex": "^논문 1편의 \\*\\*충실구현\\*\\*",
+      "first_line_prefilter": "충실구현",
+      "engine_ref": "strategies/<engine_dir>/",
+      "run_choice": "첫 레코드 timestamp <= engine.R mtime(UTC) 인 구현 전사 중 가장 늦은 것(현행 엔진을 쓴 실행)",
+      "auto_memory": {
+        "attachment_type": "AutoMem",
+        "user_text_marker": "MEMORY.md",
+        "metric_regex": [
+          "(?<![A-Za-z0-9_])(PORT_t|PT|t|Calmar|CAGR|MDD|SR|Sharpe|IC|ICIR|DSR|IR)\\s*[=:]?\\s*[-+−]?\\d+\\.\\d+",
+          "[-−]?\\d+\\.\\d+\\s*(→|->)\\s*[-−]?\\d+\\.\\d+"
+        ]
+      },
+      "tool_names": [
+        "Read",
+        "Grep",
+        "Glob"
+      ],
+      "tool_target_keys": [
+        "file_path",
+        "path",
+        "pattern",
+        "glob"
+      ],
+      "perf_path_regex": "(?i)(reinforce_ledger|authoritative_remeasure|stage_artifacts|reinforce_auto_log|scheduler_logs|[\\\\/]memory([\\\\/]|$)|MEMORY\\.md|fidelity_audit|module_catalog|artifact_index|distilled_knowledge|hypothesis_index|replication_request|observability|06_metrics|02_nav|essence)",
+      "why": "무인 구현 에이전트(claude -p · cwd = 저장소)는 자동 기억 MEMORY.md 를 컨텍스트로 받고(전사 attachment 'AutoMem') Read/Grep/Glob 경로 제한이 없다 — 교차 entry 성과 수치가 설계 프롬프트 밖으로 들어오는 통로. 전사 부재 = 판독 불가(fail-closed)",
+      "blocked_result_regex": "(?s)^PreToolUse:(Read|Grep|Glob) hook error:.*ARM_GEN_READ_BLOCKED\\[",
+      "blocked_basis": "가드(arm_gen_read_guard.sh)가 막은 호출은 도구가 돌지 않았다 — 전사에 tool_use 는 남지만 결과는 is_error=true · 'PreToolUse:<도구> hook error: …ARM_GEN_READ_BLOCKED[…' 다(09-26 실측: 훅 차단 = toolDenialKind permission-rule · 같은 문형). 막힌 시도는 열람이 아니다 — 성과 경로 열람(노출)에서 빼고 blocked 로 따로 센다. 결과가 없거나 오류 문형이 다르면 열람으로 센다(fail-closed).",
+      "unattested_scope": {
+        "allow_policy": "02_Infrastructure/hooks/policies/arm_gen_read_guard.json",
+        "allow_key": "clean_lane.read_allow",
+        "exec_tool_names": ["Bash", "PowerShell", "Monitor", "REPL", "Workflow", "CronCreate", "RemoteTrigger", "Agent", "Skill"],
+        "exec_tool_names_source": "06_Registry/replication_clean_lane.json disallowed_tools_clean 와 같은 목록 — 청정 레인이 CLI 로 금지하는 도구",
+        "why": "(10-04 F_A v2 D2 · 09-26 리서치 경로 통합 검증 확정 결함) 구판 분기(청정 출처 기록 없음·normal)는 성과 경로 정규식에 걸리는 열람만 셌다 — 계획서(~/.claude/plans)·knowledge_index.md·factor_evidence.json(전기간 성과 필드 2,590개)·다른 엔진(주석의 실측 PORT_t·Calmar)을 읽어도 full 자격이 나왔다(자동 기억이 꺼진 뒤의 normal 실행에서 실제로 생길 수 있다). 청정 요건(clean_room.requirements 둘째 줄: 허용 경로 = 작업 디렉터리 + 계약 요약본)에 맞춰, 가드 증명이 없는 실행은 Read/Grep 이 청정 가드 허용 목록(단일 출처 = allow_policy::allow_key — 사본 금지) ∪ 자기 작업 디렉터리 밖이면 판독 불가(NA · fail-closed)로 둔다. Glob 은 이름만 돌려주므로 저장소 안이면 연다(가드 glob_names_in_repo 와 같은 규칙). 실행 도구(셸 등)는 무엇을 읽었는지 전사가 말하지 않으므로 청정·구판 무관 판독 불가. 청정 주장 실행의 범위는 가드 증명(R6_scope)이 맡는다."
+      },
+      "guard_attestation": {
+        "attachment_type": "hook_success",
+        "command_regex": "arm_gen_read_guard\\.sh",
+        "pass_stdout": "{\"continue\":true}",
+        "clean_block_regex": "ARM_GEN_READ_BLOCKED\\[[^\\]]*clean_lane",
+        "why": "청정을 주장하는 실행(출처 기록 mode=clean)은 Read·Grep·Glob 호출 **전부**가 청정 가드 판정을 받았음을 전사에서 재도출해야 한다 — 통과 = 그 호출의 hook_success(toolUseID 짝 · command 가 가드) stdout 이 청정 통과 표식(가드 bash 상수 PASS_OUT — 표준 필드 continue 기본값) · 차단 = tool_result 가 blocked_result_regex 에 맞고 대괄호 안에 clean_lane. 둘 다 아니면 가드가 청정 모드로 돌지 않은 것이다(자기 신고 불인정 · 노출). 레인 밖 실행(출처 기록 없음·mode=normal)에는 걸지 않는다(구판 판정 불변). 동기화 가드 = 08_Tests/ops/test_rf_clean_lane.sh §S2."
+      },
+      "hook_context": {
+        "attachment_type": "hook_additional_context",
+        "why": "훅이 주입한 문맥(PreToolUse:Agent 의 최고 전략 PORT_t·SR·CAGR 줄 · 최근 교훈의 다중검정t·칼마 등 — 09-26 실측)은 자동 주입 문맥이다. 수치(auto_memory.metric_regex)가 있으면 transcript_auto_memory 노출로 센다. 청정 레인은 Agent 금지 + 훅이 표식을 읽어 빼므로 0 이어야 한다."
+      },
+      "instruction_attachments": {
+        "types": [
+          "instructions",
+          "nested_memory"
+        ],
+        "boundary_file_types": [
+          "Project"
+        ],
+        "why": "CLI 가 cwd 에서 주입하는 프로젝트 규칙 파일(CLAUDE.md · .claude/rules — pit.md 사고 수치 등)은 결정문이 정한 알려진 경계다 — 노출로 세지 않고 경로·sha256·수치 개수를 기록한다. 프로젝트 밖 종류(AutoMem · User · Local 등)의 수치는 자동 주입 노출로 센다."
+      },
+      "web": {
+        "tool_names": [
+          "WebFetch",
+          "WebSearch"
+        ],
+        "target_keys": [
+          "url",
+          "query",
+          "prompt"
+        ],
+        "forbidden_regex": "(?i)(github\\.com|githubusercontent\\.com)/Irysis/Qvest_system",
+        "why": "저장소 원격(git remote origin)의 웹 사본은 같은 원장·산출물이다 — WebFetch 는 가드 밖이라 전사에서 잡는다(transcript_tool_reads 노출)."
+      }
+    },
+    "lane_provenance": {
+      "file": "lane_provenance.json",
+      "schema": "lane_provenance_v1",
+      "clean_mode_value": "clean",
+      "start_tolerance_sec": 120,
+      "engine_dir_regex": "^RP_AUTO_CLEAN_[A-Za-z0-9_]+$",
+      "audit_src_clean_regex": "측정 산출물: \\(청정 모드 — 비공개",
+      "audit_src_art_regex": "측정 산출물: ([A-Za-z]:[\\\\/]|/|\\S*stage_artifacts)",
+      "why": "레인 출처 기록(rf_replication_auto.sh → rf_clean_lane.py)은 **자기 신고**다 — 그대로 믿지 않고 대조한다: ①기록의 프롬프트 sha256 = 현재 prompt.txt = 전사 첫 레코드 content 의 sha256(전사를 이것으로 고른다 · prompt.txt mtime − 허용 오차 ≤ 시작 ≤ engine.R mtime — 1차·폴백 두 실행을 모두 본다) ②기록의 engine sha256(실행 후) = 현재 engine.R(청정 실행 뒤 손댄 엔진은 청정이 아니다) ③가드 작동 = 전사 증명(guard_attestation) ④재구현이면 감사 지적의 출처 = 보존된 감사 프롬프트 사본(.clean_audit_src/r<n>)이 전부 '청정 모드 — 비공개' 줄을 갖고 산출물 경로가 없다. 하나라도 어긋나면 그 통로를 판독 불가(NA)로 둔다(fail-closed · D7). 허용 오차 120초 = 레인이 prompt.txt 를 쓴 뒤 claude 기동까지(수 초) + 파일 시계 거칠기. ⑤새 엔진 경로(10-03 · '새 엔진 경로 + 청정 출처' 조건 명시화) — 기록의 engine_rel = 후보 엔진 경로이고 엔진 디렉터리 이름이 engine_dir_regex(청정 작업 디렉터리 접두 · 레인 설정 replication_clean_lane.json wdir_prefix 와 동기화 = test_rf_clean_lane.sh §S8)에 맞아야 한다 — 비청정 판의 엔진·감사·에이전트 출력이 남은 옛 작업 디렉터리(RP_AUTO_<slug>)나 다른 엔진을 가리키는 기록으로는 청정을 주장할 수 없다(표식 키트·A 관문의 기저 전파 제외도 같은 조건을 쓴다)."
+    }
+  },
+  "ordering": {
+    "kind": "sha256_salted",
+    "salt_from_decision_fields": [
+      "id",
+      "decided_at"
+    ],
+    "key": "paper_key",
+    "tie": "engine",
+    "why": "후보 사이 순서에 운영자 재량 0 — 결정 레코드(이 규칙 작성 전에 확정)에서 파생한 salt 의 해시 순서. 성과·도착 순서·이름과 무관(사전등록 무작위 추첨과 같은 역할)"
+  },
+  "pick": {
+    "n": 3,
+    "why": "결정 이행 지시 '규칙이 고른 후보 1~3개를 기록'의 상한 — 1순위 = F_A, 2·3순위 = 사전 선언 승계자(1순위가 결정론·측정 불능이면 차례로). 결과를 본 뒤 순위를 바꾸는 것은 새 사전등록(새 가족)으로만"
+  },
+  "factor_layer": {
+    "rule": "02_Infrastructure/ops/rf_factor_arms.R::rf_pick_factor_sets",
+    "asof": null,
+    "asof_note": "null = 격자 fixed_axes.start_date(rf_factor_arms.R 상한 가드 R3 가 결정 시점 뒤·NA·미래를 거부)",
+    "seed_offset": 0,
+    "seed_note": "오프셋 0 = as-of 정렬 1위 시드 — floor v2 F1 과 같은 규칙(원장 entry 수 회전은 원장 상태에 따라 떠서 바닥 핀이 될 수 없다)",
+    "depth_rule": {
+      "kind": "grid_b1_depths_max"
+    },
+    "depth_note": "격자 blocks[B1].depths 의 최대(= 규칙 선정기 사슬 전체) — 어떤 entry 성과에서도 오지 않는 격자 값. F1 의 깊이(22632 계보 칸 DB 팩터 수)는 계보 승격 사슬의 산물이라 쓰지 않는다(교차 entry 구조 노출). 사슬은 접두 일관이므로 F_A 집합 ⊇ F1 집합(같은 as-of·시드).",
+    "depth_alternatives": [
+      {
+        "kind": "match_floor",
+        "floor_id": "F1",
+        "adopted": false,
+        "why_not": "이식 비교성은 높으나 깊이 정수가 22632 계보 선택 이력에서 온다 — 채택하려면 도훈 결정(FA-DEPTH)"
+      }
+    ]
+  },
+  "spec": {
+    "weighting": {
+      "kind": "ew"
+    },
+    "weighting_source": "rf_cell_engine.R 기본(.wt <- SPEC$weighting %||% list(kind = 'ew')) — 계보 스펙 승계 아님",
+    "universe": {
+      "kind": "k200_kq150"
+    },
+    "universe_source": "격자 fixed_axes.universe(K200_KQ150)",
+    "rebalance": null,
+    "overlay": []
+  },
+  "clean_room": {
+    "role": "full 범위에서 청정 후보가 0 이면 A 경로 기저는 **새로 만든다** — 구조 술어만 통과한 논문(엔진 노출 무관)을 같은 해시 순서로 골라 노출 차단 조건에서 재구현한다. 새 엔진은 측정하지 않은 채 사전등록에 핀(engine md5)으로 들어가고 측정은 등록 뒤 prereg 경로.",
+    "requirements": [
+      "구현 에이전트 cwd = 저장소 밖 격리 디렉터리(프로젝트 CLAUDE.md·자동 기억 MEMORY.md 비주입) — 전사 attachment 에 AutoMem 이 없어야 한다(사후 검증 = 이 규칙의 transcript_auto_memory)",
+      "Read/Glob/Grep 허용 경로 = 작업 디렉터리 + 성과 수치를 지운 계약 요약본(엔진 입출력 규약·RAWDATA 열 사전·PIT 규약) — 원장·산출물·기억·저널·다른 엔진 디렉터리 거부(사후 검증 = transcript_tool_reads)",
+      "WebFetch/WebSearch = 논문 원문만(arxiv.org · r.jina.ai 프록시)",
+      "엔진은 FACTORS(Date,Ticker,Score)를 유니버스 전 종목에 낸다(후보 폭 > n_max — B1 축 생존) · 지문 밖 원천 금지",
+      "적대적 충실도 감사는 **측정 전**에 엔진·논문만 보고 한다(산출물 경로를 주지 않는다 — 재구현 피드백에 측정 성과가 섞이지 않게)",
+      "측정(run_paper_replication)은 하지 않는다 — 사전등록 등록 뒤 prereg 러너가 F_A 기저 측정(결정론 2회 포함)",
+      "사후 검증 = rfc_build 를 새 엔진 디렉터리에 다시 돌려 full 범위 노출 0 확인(양성 대조: 기존 레인 엔진은 exposed 로 나와야 한다)",
+      "(FA-CLEAN-BASE-PATH 2026-09-26 · (나) 기존 레인 강화) 위 요건의 운영판 = 무인 충실구현 레인 청정 모드(rf_replication_auto.sh · 설정 06_Registry/replication_clean_lane.json): 작업 디렉터리 RP_AUTO_CLEAN_<slug> · 가드 arm_gen_read_guard.sh 청정 표식(QVEST_CLEAN_LANE — 허용 목록 read_allow 밖 Read/Grep 차단 · 성과 경로 정규식 사본) · 셸·Agent·Skill 금지 · 자동 기억 차단(CLAUDE_CODE_DISABLE_AUTO_MEMORY) · 재구현 피드백 가림 · 감사자 산출물 비공개 · 출처 기록 lane_provenance.json. cwd 는 저장소 그대로(훅 13종이 cwd 기준으로 로드된다) — 그래서 CLAUDE.md·.claude/rules 주입은 알려진 경계로 남는다(결정문).",
+      "(10-03 정합 주석 · FA-CLEAN-BASE-PATH (나)) 운영판 레인은 검증기(rf_replication_verify.R)가 충실구현 판(논문 축)을 **측정하고** 통과하면 원장 entry 를 연다(레인 순서 불변 — 06_Registry/replication_clean_lane.json known_boundary). 위 '측정(run_paper_replication)은 하지 않는다'는 청정실((가) 저장소 밖 레인) 판의 요건이다 — (나)에서는 이렇게 읽는다: ①F_A 선정·순서·대기열은 그 측정을 소비하지 않는다(rfc_build 입력 = 허용 투영 · 검사 P1/P2 · 입력 열 전수 census_io·census_cols 2026-10-03: 비허용 원장 필드 1,315·산출물 필드 531 삭제, as-of 뒤 IC 89,491행 교란, factor_evidence 저장 성과 2,590필드 교란 → 문서 동일) ②F_A 스펙(실투형 고정 축 + as-of 팩터 층) 측정은 사전등록 등록 뒤 prereg 경로(결정론 2회) ③그 entry 의 러너 강화(격자 칸 측정)를 사전등록 전까지 보류할지 · 그 시도 수를 F_A 가족 N 에 넣을지는 이 규칙이 정하지 않는다(운영 결정 대기 — measurement_policy.n_accounting 은 청정실 재구현·승계자 사용 횟수만 명시)."
+    ]
+  },
+  "evidence": [
+    {
+      "claim": "사전등록·사전 고정 절차(결과를 본 뒤 선택 금지)가 금융 실증의 거짓 발견을 줄인다 — 기저를 규칙으로 먼저 고정하는 이유",
+      "title": "Harvey (2017), Presidential Address: The Scientific Outlook in Financial Economics, Journal of Finance 72(4)",
+      "url": "https://doi.org/10.1111/jofi.12530"
+    },
+    {
+      "claim": "LLM 이 입력 밖에서 결과(미래) 정보를 가지고 있으면 그 산출물은 미래참조 편향을 띤다 — 설계 에이전트의 컨텍스트 노출(자동 기억·도구 열람)을 PIT 통로로 보는 이유",
+      "title": "Glasserman & Lin (2023), Assessing Look-Ahead Bias in Stock Return Predictions Generated By GPT Sentiment Analysis, arXiv:2309.17322",
+      "url": "https://arxiv.org/abs/2309.17322"
+    },
+    {
+      "claim": "전표본 성과로 고른 신호 조합의 백테스트는 선택 편향으로 부풀려진다 — 팩터 층을 as-of 규칙으로 고르는 이유",
+      "title": "Novy-Marx (2015), Backtesting Strategies Based on Multiple Signals, NBER Working Paper 21329",
+      "url": "https://www.nber.org/papers/w21329"
+    },
+    {
+      "claim": "시행 수를 알아야 선택 편향을 보정한다 — 청정 기저 가족의 N 회계(후보·재구현 횟수 포함)",
+      "title": "Bailey & López de Prado (2014), The Deflated Sharpe Ratio, Journal of Portfolio Management",
+      "url": "https://www.davidhbailey.com/dhbpapers/deflated-sharpe.pdf"
+    }
+  ]
+}

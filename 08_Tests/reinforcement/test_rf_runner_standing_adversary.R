@@ -324,9 +324,14 @@ if (!length(i0) || is.na(i1)) ng("D2 .winner_of 추출 실패") else {
   if (!is.null(w3) && identical(w3$overlay$arm_id, "arm_B5_16") && length(.logs(env, "candidates_excluded")))
     ok("D6c 규약 혼합 가드 — 규약이 다른 칸(Calmar 0.9 pass)은 승자 후보에서 빠진다(candidates_excluded)") else ng("D6c 규약 가드", w3$overlay$arm_id %||% "NULL")
 }
-if (.has('.winner_of("B5", "calmar", gate = rf_adversary_ok)') && .has(".w5_overlay <- if (!is.null(w5)) w5$overlay else E$carry$overlay") &&
-    .has('if ("B5" %in% use) .w5_overlay else (E$carry$overlay %||% NULL)'))
-  ok("D7 러너 — B5 승자만 게이트 · 승자 없으면 carry 오버레이(부모 위험통제 보존) · B4 LOO 줄 불변") else ng("D7 러너 승자 배선")
+## ★B4-SIX(2026-09-26): 승자 = 등록부 소유 블록마다(.winner_of(b, by, gate = rf_adversary_ok) · by = 격자 select_winner_by — B5 = calmar) ·
+##   B4 오버레이 base = carry(rf_axes_b4_assemble · 등록부 b4_base) — 줄 대신 정의·행동으로 잰다.
+.ovA <- list(kind = "c", arm_id = "carry1")
+.d7 <- rf_axes_b4_assemble(list(), c("B1", "B5"), list(), list(overlay = .ovA))$spec[["overlay"]]
+.pg <- jsonlite::fromJSON(file.path(ROOT, "06_Registry/reinforce_program.json"), simplifyVector = FALSE)
+if (.has(".winner_of(b, by, gate = rf_adversary_ok)") && .has("rf_axes_block_winners(PROG,") && identical(rf_grid_select_by(.pg, "B5"), "calmar") &&
+    identical(.d7, .ovA) && .has("rf_axes_b4_assemble(SPEC, use, .b4_win, E$carry)"))
+  ok("D7 러너 — B5 승자 게이트(전 블록 공통 · verdict 는 B5 에만) · 승자 없으면 carry 오버레이(부모 위험통제 보존) · B4 조립 = 등록부") else ng("D7 러너 승자 배선")
 
 cat("\n=== E. Grade A 보류·해제 ===\n")
 OWN <- list(kind = "x", arm_id = "a"); CAR <- list(kind = "c", arm_id = "carry1")
@@ -551,7 +556,8 @@ if (nzchar(sig_fn)) {
   s_shift <- syn; s_shift$overlay_shift <- 0L
   if (!identical(menv$.sig_dollar(syn), menv$.sig_dollar(s_shift))) ok("G3b 돌연변이 통제 — `$overlay` 판은 overlay_shift=0 하나로 서명이 갈린다(부분 일치 함정 재현)") else ng("G3b 판별력 없음")
 }
-if (.has("SPEC$overlay_cell <- CELL$overlay") && .has("SPEC$floor_code <- .wbest_code") && .has('if (CELL$block %in% c("B1", "B2", "B3")) SPEC$overlay_cell <- list()') &&
+if (.has("SPEC$overlay_cell <- CELL$overlay") && .has("SPEC$floor_code <- .wbest_code") && .has("if (CELL$block %in% rf_axes_no_layer_blocks()) SPEC$overlay_cell <- list()") &&
+    all(c("B1", "B2", "B3", "B6", "B7") %in% rf_axes_no_layer_blocks()) && !("B5" %in% rf_axes_no_layer_blocks()) &&
     .has("SPEC$overlay <- .ov_stack(E$carry$overlay, CELL$overlay)"))
   ok("G4 러너 — B5 에 overlay_cell·floor_code · B1~B3 는 overlay_cell=[] · 중첩 줄(.ov_stack) 불변") else ng("G4 스펙 필드 배선")
 if (.has("overlay=%s") && .has("rf_ov_txt(SPEC$overlay)") && !.has('ov = SPEC$overlay$arm_id %||% "none"'))
@@ -559,7 +565,10 @@ if (.has("overlay=%s") && .has("rf_ov_txt(SPEC$overlay)") && !.has('ov = SPEC$ov
 if (identical(rf_ov_txt(NULL), "none") && identical(rf_ov_txt(list(kind = "k", arm_id = "a")), "a") &&
     identical(rf_ov_txt(list(list(kind = "k", arm_id = "a"), list(kind = "j", arm_id = "b"))), "a \u00d7 b"))
   ok("G6 rf_ov_txt — NULL none · 단층 id · 스택 ' × ' 연결") else ng("G6 표기 함수")
-if (.has('!is.null(.wbest_spec[["overlay"]])) SPEC$overlay <- .wbest_spec[["overlay"]]') && !.has(".wbest_spec$overlay"))
+## ★B4-SIX(2026-09-26): 누적 = 등록부(rf_axes_accumulate · 전 축 [[ ]] 정확 일치) — 줄 대신 행동으로 잰다:
+##   바닥 스펙에 overlay_cell=[] 만 있고 overlay 키가 없으면 누적 결과에 overlay 가 생기지 않는다($ 부분 일치 재발 방지).
+.g7 <- rf_axes_accumulate(list(weighting = list(kind = "ew")), list(overlay_cell = list(), weighting = list(kind = "ew")), "B2")$spec
+if (.has("rf_axes_accumulate(SPEC, .wbest_spec, CELL$block)") && !("overlay" %in% names(.g7)) && !.has(".wbest_spec$overlay"))
   ok("G7 러너 누적 — 바닥 스펙의 overlay 를 정확 일치로 읽는다(overlay_cell=[] 을 오버레이로 복사하지 않는다)") else ng("G7 누적 overlay 읽기")
 
 cat("\n=== H. 주변 배선 — 승격 호출부 · 충실구현 스위치 · tick · 프롬프트 · 원장 writer ===\n")

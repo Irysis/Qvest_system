@@ -53,6 +53,7 @@ REAL_JL="$ROOT/.cache/reinforce_auto_log.jsonl"; REAL_JL_N=$( [ -f "$REAL_JL" ] 
 mkdir -p "$SB/06_Registry" "$SB/02_Infrastructure/reinforcement/overlay_arms" "$SB/02_Infrastructure/portfolio" "$SB/art/$BID" \
          "$SB/.cache/rf_block_design" "$SB/stage_artifacts/l_code/reinforcement"
 cp "$ROOT/06_Registry/reinforce_program.json" "$ROOT/06_Registry/rf_overlay_adversary_axes.json" "$ROOT/06_Registry/overlay_probe_future.json" "$SB/06_Registry/"   # ★P0-09 probe ④ 설정
+cp "$ROOT/06_Registry/overlay_probe_allowlist.json" "$SB/06_Registry/"   # ★R3R probe ③d 허용 목록(부재 = FAIL · 레인 자식은 QM_ROOT=SB)
 cp "$ROOT/02_Infrastructure/reinforcement/overlay_probe.R" "$ROOT/02_Infrastructure/reinforcement/rf_overlay_admit.R" "$SB/02_Infrastructure/reinforcement/"
 cp "$ROOT/02_Infrastructure/portfolio/weight_catalog.R" "$SB/02_Infrastructure/portfolio/"
 cat > "$T/mk.py" <<'PYEOF'

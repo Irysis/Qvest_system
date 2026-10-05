@@ -113,7 +113,11 @@ if (!exists("%||%")) `%||%` <- function(a, b) if (is.null(a) || length(a) == 0L)
   if (is.null(sp[["rebalance"]])) NULL else as.character(toJSON(sp[["rebalance"]], auto_unbox = TRUE)),
   # ★방어 슬리브(B7 · 2026-09-21)도 **있을 때만**. 없으면 구판 서명과 비트 동일.
   #   서명에 없으면 k=5 와 k=8 칸이, 그리고 대조군 2칸이 전부 같은 칸으로 접힌다.
-  if (is.null(sp[["defense_sleeve"]])) NULL else as.character(toJSON(sp[["defense_sleeve"]], auto_unbox = TRUE))),
+  if (is.null(sp[["defense_sleeve"]])) NULL else as.character(toJSON(sp[["defense_sleeve"]], auto_unbox = TRUE)),
+  # ★PR-L1 cap_core(2026-10-03)도 **있고 k>0 일 때만**. 없거나 k=0(엔진이 무처치 = 바닥과 비트 동일 포트폴리오)이면 구판 서명과 비트 동일.
+  #   서명에 없으면 A1(k=2)·A2(k=1)·C1(무작위 위성) 이 바닥 F1 과 같은 칸으로 접혀 조용히 하나만 측정된다.
+  if (is.null(sp[["cap_core"]]) || identical(suppressWarnings(as.integer(sp[["cap_core"]][["k"]] %||% 0L)), 0L)) NULL
+  else as.character(toJSON(sp[["cap_core"]], auto_unbox = TRUE))),
   collapse = "|")
 
 # ── ★격자 커서 — 자리를 차지한 셀 코드 집합 (2026-09-04 신설) ────────────────

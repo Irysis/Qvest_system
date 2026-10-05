@@ -37,14 +37,25 @@
 #     없으면 격자 fixed_axes.start_date) 이하로만 받는다 — 뒤·미래·NA·복수는 stop. 저수준 계산기(rf_sl_conditional_ic_asof ·
 #     rf_sl_bench_months)는 d 를 받는 순수 함수라 결정 시점을 모른다 — 운영 호출은 rf_sl_resolve 경유 1곳뿐이다.
 #
+# ★후보 제외 exclude = "base_factors" (2026-10-03 B7-EXCL-IMPL · 결정 FLOOR-F1-SEED-B7-OVERLAP · PR-L2-B7-EXCL-UNIT (c) id 단위):
+#   슬리브 규칙에 exclude="base_factors" 가 있으면 rf_sl_resolve 가 **그 칸의 기저 팩터 id**(엔진이 셀 스펙 factors 에서 넘긴다 —
+#   리터럴 id 를 격자·스펙에 박지 않는다)를 후보에서 **순위 계산 전에** 뺀다(rank r = 제외 뒤 순위). 처치·대조(무작위·반방어)가
+#   같은 rf_sl_resolve 를 지나므로 똑같이 걸린다. 사전 고정 규칙(바닥 스펙에서 파생 · 성과 통계 미소비) — C1 대상 아님.
+#   규칙을 걸었는데 제외 집합을 못 받으면(NULL·빈 집합) stop — 제외가 조용히 무시되면 '희석 방지 처치'를 안 받은 칸이 받은 칸으로 기록된다.
+#   계열(D35/D36 등 같은 계열 다른 id)은 남는다(결정 문언 = id 단위) → 희석은 막지 않고 **전달량**으로 잰다(아래).
+# ★처치 전달량 rf_sl_delivery (결정 PR-L2-B7-EXCL-UNIT (c)): 시그널일별 슬리브 자리 |D_t| = |보유_t| − |알파 슬리브_t| 중
+#   바닥 선정(슬리브 전 SEL_t = 같은 실행의 바닥 보유)에 **없던** 이름 수 n_new 의 비율. 하한은 여기서 정하지 않는다(사전등록이 근거와 함께 정한다).
+#   판정 입력은 엔진 진단 파일(rf_engine_diag.json)을 계약 contracts/sleeve_delivery.R 이 재도출한 산출물뿐이다(AX-008).
+#
 # 공개: rf_sl_parse / rf_sl_resolve / rf_sl_conditional_ic_asof / rf_sl_bench_months / rf_sl_select_config /
-#       rf_sl_select / rf_sl_turnover_overlap / rf_sl_report
+#       rf_sl_select / rf_sl_turnover_overlap / rf_sl_report / rf_sl_delivery
 #==============================================================================
 suppressMessages({ library(data.table); library(jsonlite) })
 if (!exists("%||%")) `%||%` <- function(a, b) if (is.null(a) || length(a) == 0L) b else a
 
 .RF_SL_KINDS <- c("factor_topk", "antidefense", "random_beta_matched")
 .RF_SL_SELECTS <- c("ic_bad_rank_asof")
+.RF_SL_EXCLUDES <- c("", "base_factors")   # "" = 제외 없음(구판 거동) · base_factors = 그 칸 기저 팩터 id 제외(B7-EXCL-IMPL)
 # 퇴역 규칙 — 조용히 신판으로 바꿔 읽지 않고 멈춘다(바꿔 읽으면 구 칸과 새 칸이 같은 서명으로 섞인다).
 #   과거 칸 재현은 factor_id 고정 경로로 한다(로그 log_B7_*.txt 의 해석 id).
 .RF_SL_RETIRED_SELECTS <- c(
@@ -65,9 +76,14 @@ rf_sl_parse <- function(x) {
   # ★factor_kind: 방어 팩터의 **원천**. 기본 "db"(팩터 DB · C15 경유). 엔진이 이미 지원하는
   #   다른 원천(예: 오프라인 price 팩터)도 그대로 쓸 수 있어야 한다 — 그래야 엔진 경유 검사가 선다.
   # ★asof: 선정 통계 창의 끝(선택). 없으면 rf_sl_resolve 가 셀 fixed_axes.start_date 로 해석한다.
-  ok_args <- c("kind", "k", "select", "rank", "factor_id", "factor_kind", "beta_factor", "seed", "label", "basis", "asof")
+  ok_args <- c("kind", "k", "select", "rank", "factor_id", "factor_kind", "beta_factor", "seed", "label", "basis", "asof", "exclude")
   extra <- setdiff(names(x), ok_args)
   if (length(extra)) stop(sprintf("[rf_sleeve] 알 수 없는 인자: %s", paste(extra, collapse = ", ")))
+  # ★exclude — 후보 제외 규칙(enum). 값이 틀리면 멈춘다(조용히 무시하면 제외 안 된 칸이 제외된 칸으로 기록된다).
+  exc <- as.character(x$exclude %||% "")
+  if (length(exc) != 1L || is.na(exc) || !(exc %in% .RF_SL_EXCLUDES))
+    stop(sprintf("[rf_sleeve] 미지원 exclude '%s' (지원: %s)", paste(format(x$exclude), collapse = ","),
+                 paste(setdiff(.RF_SL_EXCLUDES, ""), collapse = ", ")))
   fid <- as.character(x$factor_id %||% "")
   sel <- as.character(x$select %||% "ic_bad_rank_asof")
   # 퇴역 select 는 파싱에서 멈춘다(엔진 계산 전) — 단 factor_id 고정이면 select 는 쓰이지 않으므로 통과(과거 칸 재현 경로)
@@ -83,7 +99,8 @@ rf_sl_parse <- function(x) {
        beta_factor = as.character(x$beta_factor %||% "D02_Beta"),
        seed = suppressWarnings(as.integer(x$seed %||% NA_integer_)),
        label = as.character(x$label %||% kind),
-       asof = as.character(x$asof %||% ""))
+       asof = as.character(x$asof %||% ""),
+       exclude = exc)
 }
 
 #' B7 선정 설정 — reinforce_program.json 의 B7.selection_asof (★하드코딩 금지 — 분위·최소 표본·후보 계열·경로는 격자가 진다).
@@ -270,8 +287,23 @@ rf_sl_conditional_ic_asof <- function(d, IC, BM, q, min_n, price_col = "BM_Close
 #' @param asof NULL 이면 규칙 asof → 셀 스펙 → 격자 fixed_axes.start_date 순으로 해석(워밍업 창 1회 고정)
 #'   ★상한 가드(R3 · 2026-09-25): 인자·규칙 as-of 가 결정 시점(셀 스펙 > 격자 fixed_axes.start_date) 뒤·미래·NA 면 stop.
 #' @param IC,BM 주입(검사·시그널일별 호출용). NULL 이면 설정 경로에서 읽는다.
-rf_sl_resolve <- function(rule, root = Sys.getenv("QM_ROOT", "."), asof = NULL, IC = NULL, BM = NULL) {
-  if (nzchar(rule$factor_id %||% "")) return(list(id = rule$factor_id, basis = "spec 고정", asof = NA_character_))
+#' @param exclude_ids rule$exclude == "base_factors" 일 때 후보에서 뺄 팩터 id(엔진 = 셀 스펙 factors 의 id). 규칙이 없으면 무시(구판 거동 비트 동일).
+#'   ★규칙이 있는데 NULL·빈 집합이면 stop · factor_id 고정이 제외 집합에 들면 stop(모순 스펙).
+rf_sl_resolve <- function(rule, root = Sys.getenv("QM_ROOT", "."), asof = NULL, IC = NULL, BM = NULL, exclude_ids = NULL) {
+  .exc_on <- identical(as.character(rule$exclude %||% ""), "base_factors")
+  excl <- character(0)
+  if (.exc_on) {
+    excl <- unique(as.character(unlist(exclude_ids)))
+    excl <- excl[!is.na(excl) & nzchar(excl)]
+    if (!length(excl))
+      stop("[rf_sleeve] exclude='base_factors' 인데 제외할 기저 팩터 id 를 받지 못했다(NULL·빈 집합) — 제외 규칙을 조용히 건너뛰지 않는다")
+  }
+  if (nzchar(rule$factor_id %||% "")) {
+    if (.exc_on && rule$factor_id %in% excl)
+      stop(sprintf("[rf_sleeve] factor_id '%s' 가 제외 집합(기저 팩터)에 든다 — 모순 스펙", rule$factor_id))
+    return(list(id = rule$factor_id, basis = "spec 고정", asof = NA_character_,
+                exclude_rule = if (.exc_on) "base_factors" else "", excluded_ids = excl, excluded_in_pool = character(0)))
+  }
   sel <- as.character(rule$select %||% "")
   if (sel %in% names(.RF_SL_RETIRED_SELECTS))
     stop(sprintf("[rf_sleeve] 퇴역 select '%s' — %s", sel, .RF_SL_RETIRED_SELECTS[[sel]]))
@@ -289,6 +321,12 @@ rf_sl_resolve <- function(rule, root = Sys.getenv("QM_ROOT", "."), asof = NULL, 
   pitq <- .rf_sl_pitq_ids(root)
   n_q <- sum(cand$cat %in% cfg$cats & cand$lc == "active" & cand$id %in% pitq)
   cand <- cand[cat %in% cfg$cats & lc == "active" & !(id %in% pitq)]
+  # ★B7-EXCL — 기저 팩터 id 를 **순위 계산 전에** 뺀다(rank = 제외 뒤 순위). 자격 풀 안에 있던 것만 '풀 안 제외'로 센다.
+  ex_in <- character(0)
+  if (.exc_on) {
+    ex_in <- sort(intersect(excl, cand$id))
+    cand <- cand[!(id %in% excl)]
+  }
   if (!nrow(cand)) stop("[rf_sleeve] 자격 팩터 0종 — 등록부 계열 확인")
   IC <- IC %||% .rf_sl_read_parquet(file.path(root, cfg$ic_path), c("Factor_Name", "Date", "Usable_Date", "IC"))
   BM <- BM %||% .rf_sl_read_parquet(file.path(root, cfg$bench_path))
@@ -306,9 +344,14 @@ rf_sl_resolve <- function(rule, root = Sys.getenv("QM_ROOT", "."), asof = NULL, 
                    r, nrow(C), format(A$date), A$source, 100 * cfg$q, meta$first_hm, meta$last_hm, meta$n_months,
                    meta$threshold, meta$n_bear_months, cfg$rank_key, C$ic_bad[r], C$n_bad[r], C$ic_good[r],
                    n_q)
+  # 제외 규칙이 걸린 칸만 서술을 덧붙인다 — 규칙 없는 칸(기존 B7 전부)의 basis 문자열은 구판과 비트 동일
+  if (.exc_on)
+    basis <- sprintf("%s · 기저 팩터 제외 %d종(풀 안 %d: %s)", basis, length(excl), length(ex_in),
+                     if (length(ex_in)) paste(ex_in, collapse = ",") else "없음")
   list(id = C$Factor_Name[r], basis = basis, asof = format(A$date), asof_source = A$source,
        asof_bound = format(A$bound), asof_bound_source = A$bound_source,
-       table = C, meta = meta)
+       table = C, meta = meta,
+       exclude_rule = if (.exc_on) "base_factors" else "", excluded_ids = excl, excluded_in_pool = ex_in)
 }
 
 #' 방어 슬리브 적용 — 알파 상위 (n_max-k) 종 + 방어 k 종.
@@ -378,6 +421,43 @@ rf_sl_turnover_overlap <- function(before, after) {
   }, numeric(1)))
 }
 
+#' 처치 전달량 (결정 PR-L2-B7-EXCL-UNIT (c)) — 슬리브가 교체한 자리 중 바닥 보유와 **다른** 종목의 비율.
+#' @param before 슬리브 전 선정(SEL — 같은 실행의 바닥 보유) · after 슬리브 뒤 보유(rf_sl_select 산출) · rule rf_sl_parse 결과 · n_max 고정 축
+#' @return list(rows = data.table(Date, n_before, n_after, n_alpha, n_sleeve, n_new, n_kept_floor, delivery, frac_replaced), summary = list(...))
+#'   정의(시그널일 t): n_alpha = min(n_max − k, |before_t|)(rf_sl_select 의 알파 슬리브 크기) · n_sleeve = |after_t| − n_alpha(슬리브 자리 |D_t|) ·
+#'     n_new = |after_t \ before_t|(바닥에 없던 이름 — 알파 슬리브 ⊂ before 이므로 전부 슬리브 이름) · delivery = n_new / n_sleeve ·
+#'     n_kept_floor = n_sleeve − n_new(바닥 하위 자리에 이미 있던 이름을 슬리브가 다시 고른 수 = 희석).
+#'   요약: mean_by_date(시그널일 등가중 평균 — 사전등록 1차 후보) · pooled(Σn_new/Σn_sleeve) · min · median · share_zero(n_new=0 인 시그널일 비율) ·
+#'     share_full(delivery=1) · n_dates. ★하한은 정하지 않는다(사전등록이 근거와 함께 정한다 — 결정 문언).
+#'   불변식 위반(n_new > n_sleeve · n_sleeve < 0 · 슬리브 뒤 보유가 알파 슬리브보다 작음)은 stop — 계산이 rf_sl_select 와 어긋났다는 뜻이다.
+rf_sl_delivery <- function(before, after, rule, n_max) {
+  if (!is.data.table(before) || !is.data.table(after)) stop("[rf_sleeve] rf_sl_delivery 입력은 data.table")
+  n_max <- as.integer(n_max); k <- as.integer(rule$k)
+  B <- unique(before[, .(Date = as.Date(Date), Ticker = as.character(Ticker))])
+  A <- unique(after[,  .(Date = as.Date(Date), Ticker = as.character(Ticker))])
+  dts <- sort(unique(c(B$Date, A$Date)))
+  R <- rbindlist(lapply(dts, function(d) {
+    b <- B[Date == d]$Ticker; a <- A[Date == d]$Ticker
+    na <- min(n_max - k, length(b)); ns <- length(a) - na; nn <- length(setdiff(a, b))
+    data.table(Date = d, n_before = length(b), n_after = length(a), n_alpha = na, n_sleeve = ns, n_new = nn)
+  }))
+  if (any(R$n_sleeve < 0L) || any(R$n_new > R$n_sleeve))
+    stop(sprintf("[rf_sleeve] 전달량 불변식 위반 — 슬리브 자리 음수 %d일 · n_new > n_sleeve %d일(rf_sl_select 와 계산이 어긋났다)",
+                 sum(R$n_sleeve < 0L), sum(R$n_new > R$n_sleeve)))
+  R[, n_kept_floor := n_sleeve - n_new]
+  R[, delivery := fifelse(n_sleeve > 0L, n_new / pmax(n_sleeve, 1L), NA_real_)]
+  R[, frac_replaced := fifelse(n_before > 0L, n_new / pmax(n_before, 1L), NA_real_)]
+  v <- R$delivery[is.finite(R$delivery)]
+  S <- list(definition = "delivery_t = |after_t \\ before_t| / (|after_t| - min(n_max - k, |before_t|)) · before = 슬리브 전 바닥 선정(같은 실행)",
+            k = k, n_max = n_max, n_dates = nrow(R), n_dates_with_sleeve = length(v),
+            mean_by_date = if (length(v)) mean(v) else NA_real_,
+            pooled = if (sum(R$n_sleeve) > 0L) sum(R$n_new) / sum(R$n_sleeve) else NA_real_,
+            min = if (length(v)) min(v) else NA_real_, median = if (length(v)) stats::median(v) else NA_real_,
+            share_zero = if (length(v)) mean(v == 0) else NA_real_, share_full = if (length(v)) mean(v == 1) else NA_real_,
+            mean_frac_replaced = mean(R$frac_replaced, na.rm = TRUE))
+  list(rows = R[], summary = S)
+}
+
 rf_sl_report <- function(before, after, rule, fid, basis) {
   sprintf("defense_sleeve=%s | k=%d · 팩터 %s (%s) · 보유 겹침 %.1f%% · 종목수 %d→%d",
           rule$label %||% rule$kind, rule$k, fid, basis,
@@ -385,4 +465,4 @@ rf_sl_report <- function(before, after, rule, fid, basis) {
           round(mean(before[, .N, by = Date]$N)), round(mean(after[, .N, by = Date]$N)))
 }
 
-cat("[rf_sleeve.R] Loaded — rf_sl_parse / rf_sl_resolve(as-of) / rf_sl_conditional_ic_asof / rf_sl_bench_months / rf_sl_select_config / rf_sl_select / rf_sl_turnover_overlap / rf_sl_report\n")
+cat("[rf_sleeve.R] Loaded — rf_sl_parse / rf_sl_resolve(as-of · exclude) / rf_sl_conditional_ic_asof / rf_sl_bench_months / rf_sl_select_config / rf_sl_select / rf_sl_turnover_overlap / rf_sl_report / rf_sl_delivery\n")

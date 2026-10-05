@@ -31,11 +31,22 @@ if (length(codes) == length(unique(codes))) {
   ok(sprintf("셀 코드 %d개 중복 0", length(codes)))
 } else ng("셀 코드 중복", "승자 판정이 코드 기반이라 중복은 조용히 엇갈린다")
 # ★칸 수를 상수로 박지 않는다 — 블록이 늘면(오버레이 B5 신설처럼) 검사가 같이 낡는다.
-#   구조식으로 잰다: 블록마다 5칸 · 총합 = 5 x 블록수. 병렬 배치 단위가 5라 이게 계약이다.
-per <- vapply(g$blocks, function(b) length(b$cells), integer(1))
-if (all(per == 5L)) {
-  ok(sprintf("블록 %d개 x 5칸 = %d칸 (배치 단위 정합)", length(per), length(codes)))
-} else ng("블록별 칸 수 불균일", paste(per, collapse = "/"))
+#   구조식으로 잰다: 축 소유 블록마다 5칸(병렬 배치 단위) · 결합 블록 = 1 + 등록부 축 수(전결합 + 축별 LOO — 2026-09-26 결정
+#   B4-SIX-AXIS-AND-CARRY-AXES · 6축 = 7칸 · 배치 5 + 2) · 블록 n = 칸 수 · 등록부 ↔ 격자 계약(rf_spec_axes.R::rf_axes_grid_contract).
+suppressMessages(source(file.path(ROOT, "02_Infrastructure/reinforcement/rf_spec_axes.R")))
+per <- vapply(g$blocks, function(b) length(b$cells), integer(1)); names(per) <- vapply(g$blocks, function(b) as.character(b$id), "")
+nn  <- vapply(g$blocks, function(b) as.integer(b$n %||% NA), integer(1))
+own <- rf_axes_blocks()
+exp_n <- ifelse(names(per) %in% own, 5L, ifelse(names(per) == RF_AXES_COMBO_BLOCK, 1L + length(own), NA_integer_))
+if (identical(unname(per), unname(exp_n)) && identical(unname(per), unname(nn))) {
+  ok(sprintf("블록 %d개 — 축 블록 %d개 x 5칸 + 결합 %d칸(1 + 등록부 %d축) = %d칸 · n = 칸 수", length(per), sum(names(per) %in% own),
+             per[[RF_AXES_COMBO_BLOCK]], length(own), length(codes)))
+} else ng("블록별 칸 수 ≠ 계약", paste(sprintf("%s:%d(기대 %s · n %s)", names(per), per, exp_n, nn), collapse = " "))
+.gc <- rf_axes_grid_contract(g)
+if (!length(.gc)) ok("등록부 ↔ 격자 계약(소유 블록 · 승자 기준 · 결합 칸 = 전결합 + 축별 LOO · requires)") else ng("등록부 ↔ 격자 계약", paste(.gc, collapse = " | "))
+# 위반 주입 — 결합 칸 하나를 지우면 반드시 잡혀야 한다
+.g2 <- g; .ib <- which(names(per) == RF_AXES_COMBO_BLOCK); .g2$blocks[[.ib]]$cells <- .g2$blocks[[.ib]]$cells[-1]
+if (length(rf_axes_grid_contract(.g2))) ok("위반 주입(결합 칸 삭제) 적발") else ng("위반 주입 미적발", "계약 검사가 방어선이 아니다")
 
 writeLines("")
 writeLines(sprintf("합계: 통과 %d · 실패 %d", PASS, FAIL))

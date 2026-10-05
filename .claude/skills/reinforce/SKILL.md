@@ -1,6 +1,6 @@
 ---
 name: reinforce
-description: 강화 프로세스 (v10) — A등급 미달 전략을 규칙 기반 셀 엔진(rf_cell_engine.R) + run_paper_replication 으로 강화(QEPM WT 체인 = 동결, QEPM-R0-FREEZE 2026-09-25). 1계층 = 논문당 상한 = 원장 max_attempts · 격자 = reinforce_program.json(현행 7블록×5 — 멀티팩터/비중방법론/유니버스/집행주기/리스크오버레이/구조방어/결합) · 2계층 = 무한(국면식별/전략결합). 매 시도 = Axiom 주입 · L-code 는 블록 단위(근거 논문은 2026-09-03 의무 해제 · evidence 로 기록만). A 달성 시 Judge(PIT) 트리거는 계층별 — 1계층 = A 자격 관문(rf_a_eligibility) 통과분의 후보별 요청 · 2계층 = l2_judge_request.json(rf_l2_auto.R · 관문 없음) — 정본 = judge.md §스폰 조건. 원장 = reinforce_ledger_l1/l2.json.
+description: 강화 프로세스 (v10) — A등급 미달 전략을 규칙 기반 셀 엔진(rf_cell_engine.R) + run_paper_replication 으로 강화(QEPM WT 체인 = 동결, QEPM-R0-FREEZE 2026-09-25). 1계층 = 논문당 상한 = 원장 max_attempts · 격자 = reinforce_program.json(현행 6블록×5 + B4 결합 7칸 = 37 — 멀티팩터/비중방법론/유니버스/집행주기/리스크오버레이/구조방어/결합 · 축 목록 정본 = rf_spec_axes.R) · 2계층 = 무한(국면식별/전략결합). 매 시도 = Axiom 주입 · L-code 는 블록 단위(근거 논문은 2026-09-03 의무 해제 · evidence 로 기록만). A 달성 시 Judge(PIT) 트리거는 계층별 — 1계층 = A 자격 관문(rf_a_eligibility) 통과분의 후보별 요청 · 2계층 = l2_judge_request.json(rf_l2_auto.R · 관문 없음) — 정본 = judge.md §스폰 조건. 원장 = reinforce_ledger_l1/l2.json.
 ---
 
 # 강화 프로세스 (v10 2026-08-29 — 기계 사다리 퇴역 · 현행 = §0 규칙기반 셀 엔진 · QEPM WT 경로 동결 2026-09-25)
@@ -15,7 +15,7 @@ LLM 주도 심층 리서치이며, "후속 연구까지 포함하여 인뎁스 �
 
 | 계층 | 상한 | keyword_axis | 원장 |
 |---|---|---|---|
-| 1계층 | **논문당 상한 = 원장 `max_attempts`**(기본값 = 격자 칸 수 — `reinforce_program.json` 현행 7블록×5=35 · entry 예산 가산은 §0.3-0) (소진 → exhausted → 새 논문) | `multifactor` / `weighting` / `universe` / `execution_cadence` / `risk_overlay` / `structural_defense` / `combination` | `06_Registry/reinforce_ledger_l1.json` |
+| 1계층 | **논문당 상한 = 원장 `max_attempts`**(기본값 = 격자 칸 수 — `reinforce_program.json` 현행 6블록×5 + B4 7칸 = 37 · 러너가 격자 칸 합으로 재도출 `rf_budget_base` · entry 예산 가산은 §0.3-0) (소진 → exhausted → 새 논문) | `multifactor` / `weighting` / `universe` / `execution_cadence` / `risk_overlay` / `structural_defense` / `combination` | `06_Registry/reinforce_ledger_l1.json` |
 | 2계층 | **무한** (A 달성까지 — 교훈 지속 주입) | `regime_identification` / `strategy_combination` | `06_Registry/reinforce_ledger_l2.json` |
 
 횟수 제한(값 = 원장 `max_attempts`)의 목적 = **실패의 재생산 방지**(도훈). 같은 아이디어의 재탕이 아니라
@@ -36,7 +36,8 @@ v10 의 "무인 파이프라인은 수집까지만" 경계가 **해제**됐다. 
 
 | 조각 | 파일 | 역할 |
 |---|---|---|
-| 격자 | `06_Registry/reinforce_program.json` | 칸 정의(현행 7블록×5=35 · 파일 순서 B1→B2→B3→B6→B5→B7→B4 · 적응 순서는 rf_block_order_decide · 상주 칸 별도). **논문 독립** — 기저 신호만 논문에서 온다 |
+| 격자 | `06_Registry/reinforce_program.json` | 칸 정의(현행 6블록×5 + B4 7칸 = 37 · 파일 순서 B1→B2→B3→B6→B5→B7→B4 · 적응 순서는 rf_block_order_decide · 상주 칸 별도). **논문 독립** — 기저 신호만 논문에서 온다 |
+| 축 등록부 | `02_Infrastructure/reinforcement/rf_spec_axes.R` | ★스펙 축 여섯(factors·weighting·universe·overlay·rebalance·defense_sleeve)과 축별 의미(소유 블록 · 결합 union/stack/replace · carry winner/reset/filtered · B4 base · 서명 always/if_present)의 **단일 정본**(결정 B4-SIX-AXIS-AND-CARRY-AXES 2026-09-26). 러너 누적·carry 병합·B4 승자/조립·overlay_cell 표식·승격 carry·carry 바닥·격자 기본 예산이 전부 여기서 파생 · 격자와의 계약은 러너가 tick 마다 대조(`spec_axes_contract_violation`) · 검사 `08_Tests/reinforcement/test_rf_spec_axes.R` |
 | 엔진 | `02_Infrastructure/reinforcement/rf_cell_engine.R` | **단 하나**. 셀 스펙(JSON)을 읽어 FACTORS/PORTFOLIO 산출 |
 | 러너 | `02_Infrastructure/ops/reinforce_auto_parallel.R` (`mode=parallel` · 블록 5칸 병렬) | 1 tick = 1블록. 칸 결정 → 워커 실행 → 등급 → 원장 → 기전 → 텔레그램 → 누적 → 다음 블록. `reinforce_auto_run.R` 은 **퇴역**(2026-09-05 — v10.4 핵심 3종 미탑재로 분기 제거. 순차가 필요하면 `parallel_cells=1`) |
 | 이월 | `02_Infrastructure/ops/reinforce_auto_next_paper.R` | 상한(원장 `max_attempts`) 소진 → exhausted → 큐 다음 논문 착수 요청 |
@@ -44,10 +45,10 @@ v10 의 "무인 파이프라인은 수집까지만" 경계가 **해제**됐다. 
 | 스위치 | `06_Registry/reinforce_auto_config.json` | `{enabled:false}` → 전면 정지 · `daily_cap` 폭주 backstop |
 | 검사 | `08_Tests/ops/test_reinforce_auto.sh` | **양방향** 15항 (가드마다 정상+위반주입) |
 | B1 설계 | `02_Infrastructure/ops/rf_b1_design.sh` + `rf_b1_design_lib.R` | LLM 1회/entry · 검증 실패 = 규칙 폴백 · 재료 상한(교훈 기전 700자) |
-| 기전·설계 | `02_Infrastructure/ops/rf_lcode_mechanism.sh` + `_lib.R` · `rf_block_design.R` | 블록 종료 시 기전 서술 + `next_block_design`/`avoid` · 빈 블록은 `rf_mech_backfill.R` 이 재시도(상한 2) |
+| 기전·설계 | `02_Infrastructure/ops/rf_lcode_mechanism.sh` + `_lib.R` · `rf_block_design.R` | 블록 종료 시 기전 서술 + `next_block_design`/`avoid` · 빈 블록은 `rf_mech_backfill.R` 이 재시도(상한 2) · ★저장 관문(B5FIX 09-26 · `lcm_design_guard`): 다음 블록에 시도가 이미 있으면 거부(사후 설계 · B2/B3 포함) · B5 는 레인 산출(원장 `b5_design.rounds` 비폴백 · 파일 `source=b5_design_lane`)이 있으면 거부 — 거부한 설계는 백업(`rf_b5_design/<BID>/mechanism_deferred/` · `rf_lcode_mech/deferred/`) + jlog `block_design_deferred` |
 | 순서 | `02_Infrastructure/reinforcement/rf_lesson.R::rf_block_order_decide` | CAGR ≥ 0.16 ∧ Calmar < 0.64 → 위험 축(B5) 2번째 · 기전 `mechanism_pref` 우선 · `QVEST_RF_ORDER_PREF=off` |
-| 누적 | 러너 `block_accumulate` | B2·B3·B5 는 **직전까지 최고 구성**을 바닥으로(자기 축만 교체) · B4 = 이 entry 승자 결합 + LOO |
-| 승격 | `02_Infrastructure/reinforcement/rf_promote.R` | 소진 시 최고 ≥ B ∧ 부모 최고 PORT_t 초과 ∧ 깊이 ≤ 3 → 승자 구성 carry(팩터·비중·유니버스·오버레이)로 새 격자 · `count_paper=FALSE` |
+| 누적 | 러너 `block_accumulate` · `rf_axes_accumulate`/`rf_axes_carry_fill` | B2·B3·B5·B6·B7 은 **직전까지 최고 구성**을 바닥으로(자기 축만 교체) · 비소유 축 승계 순서 = 바닥 > carry > 셀 초기값(`RF_AXES_INHERIT_ORDER` · 스위치 `reinforce_auto_config.json::spec_axes.inherit_order` — 부재 = floor > carry · 구판 = ["carry","floor"] · 어휘 밖 = 기본 + 로그 `spec_axes_inherit_order_invalid` · 결정 항목) · B4 = 이 entry 승자 결합 + LOO |
+| 승격 | `02_Infrastructure/reinforcement/rf_promote.R` | 소진 시 최고 ≥ B ∧ 부모 최고 PORT_t 초과 ∧ 깊이 ≤ 3 → 승자 구성 carry(등록부 여섯 축 — 유니버스는 고정 축 리셋)로 새 격자 · 자식의 **모든 블록**(B1·B4 포함)이 carry 축을 싣는다 · `count_paper=FALSE` |
 | 구제 | `02_Infrastructure/contracts/rolling_grade.R` · `defensive_score.R` | 36M 롤링 창 최근 통과율 ≥ 0.5(롤링점 ≥ 24) → F→C 구제(회복→붕괴 이력 경고) · 벤치 하락월 기준 방어형 → 2계층 풀 `defensive_specialist` |
 | 양립·강등 | `02_Infrastructure/reinforcement/rf_arm_compat.R` | arm×유니버스 커버리지 장부 — **신뢰 분모 기록만 차단**(엔진 표식 `[basis=sel_dates]`·`[basis=held_rows]` · 09-13 이전 행은 이력) · 실패 arm 에만 귀속 · 승계 비중이 불가면 EW 강등(`rac_degrade_plan` — B2 자기 축만 제외 · B4 는 강등 + `carry_degraded.loo_equivalent`) · 판정 `rac_gate` 를 **등록·재개 두 경로**가 공용(`rac_gate_apply`) |
 | 회피 집행 | 러너 (`avoid_enforced` / `avoid_noted`) | 기전 `avoid` 중 **측정 무효 사유**만 건너뜀 · 성과 사유는 기록 후 실행(AX-000) · 부모 사슬 walk |
@@ -58,6 +59,7 @@ v10 의 "무인 파이프라인은 수집까지만" 경계가 **해제**됐다. 
 | 상주 칸 | `reinforce_program.json::standing_cells` · `rf_runner_gates.R` | **B5_31 = `pg2_risk_overlay_v1`**(BOOK PG2 사양) 을 매 세대 B5 에서 따로 잰다 — 설계·규칙·회피와 무관한 대조 칸 · 설계에 넣으면 검증이 뺀다 · 승격 carry 제외 |
 | G1 감사 | `ops/rf_overlay_audit.sh` · `06_Registry/rf_overlay_adversary_axes.json` · 병합 `rf_overlay_audit_merge.R` | 새 arm 등재 **전** 3축(leak·degenerate·duplicate) · 설계자(fable)와 다른 계열(opus/xhigh) · 판정은 R 이 근거를 파일에서 재도출(행 인용 실재 · 활성 id) · reject/unavailable = 등재 금지 + 파일 삭제 + 방출 원장 admitted=false |
 | G2 반증 | `reinforcement/rf_overlay_adversary.R` · config `overlay_adversary` | 측정 **뒤** B5 경계에서 T1 lag-1 · T2 strict-PIT A/B · T3 노출 짝지은 블록 순열 placebo · T3b 횡단면 placebo · T4 정적 등가 · **verdict=pass 만 소비**(블록 승자·carry·Grade A 발행). fail = **소비 보류 · 등급 불변**(원장 `attempt.adversary`) |
+| 경계 백필 | 러너 tick 머리(소진 판정 앞) · `reinforcement/rf_boundary_backfill.R` · config `boundary_backfill`(부재 = 켬 · max_tries 2 · max_blocks_per_tick 2) | ★B5FIX 09-26(7308 B5 G2·L-code·텔레그램 증발): **현재 격자**·원장·L-code 파일·로그로 "칸은 다 쟀는데 경계 흔적(B5 G2 판정 · 블록 L-code · 블록 텔레그램)이 없는 블록" 을 찾아 빠진 부품만 G2 → L-code → 기전 → 텔레그램(`delayed` · 그 블록 시점 표) 순으로 다시 돈다 · 부품별 멱등 · 상한 = 시작 표식 수 · 포기 = `boundary_backfill_gave_up` 1회. 같은 자리의 **격자 재도출 대조**(`rfbb_design_drift`)가 tick 도중 설계 파일이 바뀌면 배치를 열지 않고 tick 을 닫는다(`tick_closed_design_drift`) |
 | LLM 레인 | `02_Infrastructure/ops/rf_llm_env.sh` · config `llm.lanes` | 모델은 별칭(fable/opus = 항상 최신) · replication **fable/max** · b5_design **fable/max** · overlay_audit opus/xhigh · fidelity_audit opus/xhigh · b1_design·lcode_mechanism·overlay_propose·cleaner_distill opus/high. ★Fable 한도 → `llm.fable_limit_fallback`(opus/max)로 처음부터 1회 재실행(직전 훅이 1차 산출 정리) · 판정은 **이번 실행 출력**만 |
 
 **자동 정지 지점 2곳** — 무인이 넘으면 안 되는 선:
@@ -89,7 +91,7 @@ overlay_propose **high**. 정본 = `reinforce_auto_config.json::llm.lanes`(문�
 > 전략 등급을 업그레이드. 1)5번 2)5번 3)5번 4)1,2,3 조합 5번 = 총 20회. 빠르게 여러 가지
 > 강화 방안들을 적용해보는 것이 목적. 게이트 검증 완화, 규칙 기반의 빠른 강화 프로세스."
 
-**구조 (블록 × 5회 — 현행 7블록 = 35칸 · 정본 = `reinforce_program.json` · 원장 `max_attempts`)** — ★2026-09-01 도훈 지시로 재편: B5 리스크 오버레이 블록 신설, 실행 순서 B1→B2→B3→**B5→B4**, B1·B2·B5 는 격자에 박지 않고 등록부를 소비. 이후 B6 집행 주기·B7 구조적 방어 신설(09-21)로 파일 순서 B1→B2→B3→B6→B5→B7→B4. 위 인용의 "총 20회"는 8-29 당시 원문이며 상한은 25(09-01)를 거쳐 35 로 확장됐다(값은 문서가 아니라 원장에서 읽는다).
+**구조 (블록 × 5회 + 결합 7칸 — 현행 37칸 · 정본 = `reinforce_program.json` · 축 등록부 `rf_spec_axes.R` · 원장 `max_attempts`)** — ★2026-09-01 도훈 지시로 재편: B5 리스크 오버레이 블록 신설, 실행 순서 B1→B2→B3→**B5→B4**, B1·B2·B5 는 격자에 박지 않고 등록부를 소비. 이후 B6 집행 주기·B7 구조적 방어 신설(09-21)로 파일 순서 B1→B2→B3→B6→B5→B7→B4. ★2026-09-26 B4 6축(결정 B4-SIX-AXIS-AND-CARRY-AXES) — 결합 7칸 · 원장 파일 값(35)이 격자보다 작으면 러너가 격자 칸 합(37)으로 올린다. 위 인용의 "총 20회"는 8-29 당시 원문이며 상한은 25(09-01)·35(09-21)를 거쳐 37 로 확장됐다(값은 문서가 아니라 원장·격자에서 읽는다).
 ★아래 실측 인용에 나오는 `1~3/20` · `5/20` · `9/20` 등은 **상한이 아니라 8-29 당시의 시도 번호**다 — 분모를 문서에서 읽지 말고 원장 `max_attempts` 에서 셀 것:
 
 | 블록 | 축 | 내용 | 선행 조건 |
@@ -99,8 +101,8 @@ overlay_propose **high**. 정본 = `reinforce_auto_config.json::llm.lanes`(문�
 | B3 (11~15) | 유니버스 | B1 최고 컴포짓 + EW 로 **적용 유니버스 교체**: 시장별(KOSPI 전수/KOSDAQ 전수)·시가총액별(소형/대형)·섹터 중립 ★기전 설계 우선 · 바닥 = 직전까지 최고 구성 · 승계 비중 불가 시 EW 강등 | B1 착지 |
 | B6 (32·33·34·36·42) | 집행 주기·회전 통제 | B1 승자 컴포짓을 신호로 고정하고 리밸 규칙만 교체(격월 두 위상 · 분기 · 랭크 버퍼 2×/3× — `rf_rebalance.R`) · 비용은 배출 시점 회전율로만 부과 | B1 착지 |
 | B5 (16~20) | 리스크 오버레이 | 직전까지 최고 구성 위에 ★**LLM 설계 레인**(`rf_b5_design.sh` · 스택 칸 + 새 arm) > 기전 설계 > 규칙(`rf_overlay_arms.R` 계열당 1종) · 상주 칸 B5_31 은 별도 · 승자 = Calmar ∧ G2 pass · 오버레이는 carry 위에 중첩(`.ov_stack`) · 순서 규칙이 Calmar 미달이면 2번째로 당긴다 | B1 착지 |
-| B7 (37~41) | 구조적 방어 | 보유 n_max 종 중 k 종을 방어 팩터(as-of 약세장 IC) 상위로 교체 — 총노출·종목수 불변(타이밍 주장 없음) · 무신호(베타매칭 무작위)·부호 반전 대조 2칸 포함(`rf_sleeve.R`) | B1 착지 |
-| B4 (21~25) | 조합 | B1·B2·B3·B5 승자의 **4축 전체 결합 1칸 + 축별 leave-one-out 4칸** | B1~B3·B5 착지 |
+| B7 (37~41) | 구조적 방어 | 보유 n_max 종 중 k 종을 방어 팩터(as-of 약세장 IC) 상위로 교체 — 총노출·종목수 불변(타이밍 주장 없음) · 무신호(베타매칭 무작위 B7_40)·부호 반전(B7_41) 대조 2칸 포함(`rf_sleeve.R`) — ★대조 칸은 격자 `control` 태그로 승자·바닥·carry·A·N 후보에서 빠진다(정본 술어 `rf_runner_gates.R::rf_is_control` — P1-06 통제 칸과 같은 표식) | B1 착지 |
+| B4 (21~25·43·44) | 조합 | 축 등록부 **6축 전결합 1칸 + 축별 leave-one-out 6칸(= 7칸)** · 승자 없음·LOO 축 = 등록부 b4_base(carry → default) · ★결합 칸은 tick 마다 재도출: 결합 대상 축 = 등록부 축 − 진단 모드 블록(사람 구조 규칙) · 모드 = `reinforce_auto_config.json::b4_combo.diag_mode`(부재 = exclude_axis = 결정 B3-TRIM-VS-B4-SIX (A) — 사람 구조 규칙이 B3 를 진단으로 두면 B1·B2·B5·B6·B7 5축 6칸 · drop_referencing · keep_loo) · 결합 칸 시도가 있으면 스펙 `combo_plan` 으로 동결(스펙을 하나도 못 읽으면 동결 판정 불가 → 현 계획) | B1~B3·B5·B6·B7 착지(블록·승자 없으면 그 축은 base) |
 
 **규율 — 폐기된 것과 불변인 것**:
 - 폐기: 착수 게이트(승자-레그 앵커·β 보상·범주) · 논문별 가설설계 라운드 · 무신호 대조 의무 ·
@@ -124,7 +126,7 @@ overlay_propose **high**. 정본 = `reinforce_auto_config.json::llm.lanes`(문�
 0. **entry 예산** — `25 + max(0, B1 설계 칸수 − 5)` (러너 `entry_budget_raised`). B1 설계가 15칸을 내면 예산은 35 이고
    뒤 블록은 그대로 5칸씩 받는다. ★설계가 안 뜨면(규칙 폴백 5칸) 예산은 기본 25 에 머문다 — 09-04 승격 두 세대가
    25칸이었던 이유가 이것이지 승격 전용 상한이 아니다(충실구현 35 · 결합 34).
-   ★승격 entry 의 설계 재료엔 **승계 절**이 붙는다(이미 켜진 팩터·비중·유니버스·오버레이 + 부모 승자) —
+   ★승격 entry 의 설계 재료엔 **승계 절**이 붙는다(이미 켜진 팩터·비중·유니버스·오버레이 + 부모 승자 · ⚠집행 주기·슬리브는 아직 승계 절에 없다 — rf_b1_design_lib.R 후속) —
    없으면 설계자가 이미 있는 팩터를 다시 골라 dedup 후 무처치 칸이 된다.
 1. **블록 순서 적응** — `rf_block_order_decide`: 기저가 CAGR ≥ 0.16 인데 Calmar < 0.64 면 위험 축 B5 를 2번째로(비중·유니버스는
    MDD 를 거의 안 움직인다 — 그 축을 먼저 돌면 출하되지 않는 구성을 최적화한다). 직전 블록 기전이 `next_block_design` 으로 다음
@@ -140,7 +142,7 @@ overlay_propose **high**. 정본 = `reinforce_auto_config.json::llm.lanes`(문�
 3. **기전 → 설계 → 집행 대조** — 블록 L-code 에 LLM 기전(`mechanism`)·처방(`next_block_actions`)·회피(`avoid`)·다음 블록 설계가
    실린다. 회피는 **측정 무효 사유**(편의·누출·PIT)만 집행하고 성과 사유는 기록만 한다(AX-000). 앞 블록 처방의 집행 여부는
    `rfbd_action_status` 가 재도출한다(executed/partial/ignored/no_design). 기전이 빈 블록은 다음 tick 에 백필(상한 2회).
-4. **승격 사슬** — 소진 시 최고 등급 ≥ B 이고 **부모 최고 PORT_t 를 넘었을 때만** 승자 구성(팩터·비중·유니버스·오버레이)을 carry 로
+4. **승격 사슬** — 소진 시 최고 등급 ≥ B 이고 **부모 최고 PORT_t 를 넘었을 때만** 승자 구성(축 등록부 여섯 축 · 유니버스 리셋)을 carry 로
    물려 새 격자(깊이 ≤ 3, `rf_promote.R`). 승격 entry 의 B1 은 carry 팩터 위에 **더 얹는** 칸이라 단조 희석이 구조적으로 나온다
    (promo1: 2.171 → 1.011, Spearman −0.90) — 재고 항목. 실측 09-04 두 라운드: 최고 칸은 항상 첫 두 블록, 유니버스·오버레이는 LOO 순손실.
 5. **구제** — 충실구현 F 라도 36M 롤링 창의 최근 통과율 ≥ 0.5(롤링점 ≥ 24)면 C 로 구제해 강화를 연다(`rg_rescue`; 회복→붕괴 이력은
@@ -155,7 +157,8 @@ overlay_propose **high**. 정본 = `reinforce_auto_config.json::llm.lanes`(문�
    + "오버레이층만 무한대로 탐색하는 버그 방지" + "오버레이 적대적 검증부") — 설계(`rf_b5_design.sh` · fable/max) → 새 arm 마다
    probe(6검사 · 달력 리터럴 포함) → **G1** 감사(opus · 근거 재도출) → 등재(source=`b5_design`) → 설계 검증·쓰기 → 러너 측정(설계 칸 + 상주 B5_31)
    → B5 경계 **G2** 반증 → pass 칸만 소비. ★러너는 B1 뒤 **같은 호출에서** 순서를 적고 B5 를 열기 때문에 레인은 기록된 순서를 기다리지 않고
-   같은 규칙으로 예측해 발화한다(안 그러면 영영 발화하지 못한다). 기전 설계 백업은 `.cache/rf_b5_design/<BID>/` 에 둔다(`rf_block_design/` 의
+   같은 규칙으로 예측해 발화한다(안 그러면 영영 발화하지 못한다). ★우선순위 집행(B5FIX 09-26): 레인 산출이 있는 entry 의 B5 파일은 기전 경로가
+   덮지 못한다(`lcm_design_guard` — 09-25 7308 사고: 같은 tick 의 B6 기전 백필이 레인 8칸을 5칸으로 덮었다). 기전 설계 백업은 `.cache/rf_b5_design/<BID>/` 에 둔다(`rf_block_design/` 의
    최신 파일 이름이 순서 규칙의 입력이다). ★세션이 arm 을 손으로 설계·등재하지 않는다 — 09-17 수작업 arm `uw_erosion_dbeta_v1` 은 retired(파일·원장 보존).
    **가드 H1~H8**(판정마다 jlog `overlay_guard_<name>`): H1 entry 당 자동 1회 · 수동 재설계 ≤ `guards.max_redesign_rounds`(1) · 비활성 entry 거부 ·
    H2 사이클당 새 arm ≤ `max_new_arms`(3) ∧ 하루 source=b5_design 방출 ≤ `guards.daily_arm_cap`(6 · 집계 실패 = 0) · H3 **arm 을 낸** 최근

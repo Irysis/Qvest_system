@@ -133,6 +133,54 @@ rf_mark_handed_off <- function(layer, base_id, root = .rf_root(), promoted_to = 
   invisible(TRUE)
 }
 
+#' entry 우선순위 어휘·레인 — config lanes(사람 소유 · 정본 = reinforce_auto_config.json · 격리 실행은 QVEST_RF_CONFIG).
+#'   판독 불가 = list(enum = "normal", lane = list()) — 새 어휘는 설정이 있어야만 받는다(fail-closed · 구판 개설은 그대로 된다).
+.rf_priority_vocab <- function(root) {
+  .c <- Sys.getenv("QVEST_RF_CONFIG", "")
+  p <- if (nzchar(.c) && file.exists(.c)) .c else file.path(root, "06_Registry", "reinforce_auto_config.json")
+  L <- tryCatch(fromJSON(p, simplifyVector = FALSE)$lanes, error = function(e) NULL)
+  enum <- as.character(unlist((L %||% list())$priority_enum %||% list()))
+  enum <- enum[!is.na(enum) & nzchar(enum)]
+  if (!length(enum) || !("normal" %in% enum)) return(list(enum = "normal", lane = list(), source = p, ok = FALSE))
+  list(enum = enum, lane = (L$priority_lane %||% list()), source = p, ok = TRUE)
+}
+#' 개설 인자 검증(P1-08) — priority 는 어휘 안의 문자열 1개 · experiment 는 NULL 또는 비어 있지 않은 목록이고 그 priority 의 레인이 prereg.
+.rf_check_priority <- function(priority, experiment, root) {
+  v <- .rf_priority_vocab(root)
+  p <- if (is.character(priority) && length(priority) == 1L && !is.na(priority)) priority else ""
+  if (!nzchar(p) || !(p %in% v$enum))
+    stop(sprintf("[reinforce_ledger] priority '%s' 는 어휘 밖(허용: %s · 원천 %s)", paste(priority, collapse = ","),
+                 paste(v$enum, collapse = "/"), v$source), call. = FALSE)
+  if (!is.null(experiment)) {
+    if (!is.list(experiment) || !length(experiment))
+      stop("[reinforce_ledger] experiment 는 비어 있지 않은 목록이어야 한다(prereg_id · family_id · arm_id)", call. = FALSE)
+    ln <- as.character(unlist(v$lane[[p]] %||% ""))[1]
+    if (!identical(ln, "prereg"))
+      stop(sprintf("[reinforce_ledger] experiment entry 의 priority 는 레인 prereg 여야 한다(priority=%s → 레인 %s)", p,
+                   if (is.na(ln) || !nzchar(ln)) "(구조 판정)" else ln), call. = FALSE)
+  }
+  invisible(p)
+}
+#' entry 우선순위 변경 (P1-08 · 2026-09-25) — 반사실(파킹분 측정) 투입 절차가 idle_only 로 표시하는 writer. experiment 는 바꾸지 않는다.
+#'   사유 필수 · 이력(priority_history) append · 어휘 = config lanes.priority_enum.
+rf_set_entry_priority <- function(layer, base_id, priority, reason, root = .rf_root()) {
+  if (!nzchar(as.character(reason %||% ""))) stop("[reinforce_ledger] 우선순위 변경은 사유 필수", call. = FALSE)
+  .rf_check_priority(priority, NULL, root)
+  obj <- rf_load(layer, root)
+  k <- .rf_find(obj, base_id)
+  if (is.na(k)) stop("[reinforce_ledger] entry not found: ", base_id)
+  e <- obj$entries[[k]]
+  if (!is.null(e$experiment) && length(e$experiment)) stop("[reinforce_ledger] 실험 entry 의 우선순위는 바꾸지 않는다: ", base_id, call. = FALSE)
+  was <- as.character(e$priority %||% "normal")
+  if (identical(was, priority)) return(invisible(FALSE))
+  e$priority <- priority
+  e$priority_history <- c(e$priority_history %||% list(),
+                          list(list(from = was, to = priority, reason = as.character(reason), at = format(Sys.time(), "%Y-%m-%dT%H:%M:%S%z"))))
+  obj$entries[[k]] <- e
+  .rf_write(obj, layer, root)
+  invisible(TRUE)
+}
+
 # =============================================================================
 # 데이터 컷오프·빈티지 지문 (P0-07 · 2026-09-24 · 감사 D4-11·D8-03 · 플랜 qvest-1-drifting-eclipse P0-07)
 # =============================================================================
@@ -301,11 +349,16 @@ rf_entry_end_dates <- function(layer = 1L, root = .rf_root(), obj = NULL) {
 #' @param count_paper 논문 소비 카운터를 올릴지. ★승격은 새 논문이 아니다 — FALSE 로 부른다.
 #'   (TRUE 로 두면 결합 검토 3편 주기가 승격 횟수만큼 앞당겨져 검토 대상이 헛돈다)
 #' @param data_cutoff P0-07 — NULL = 직전 완결 월말(데이터에서 증명) · "YYYY-MM-DD" = 그 값(재현·검사). 위 절 계약 참조.
+#' @param priority P1-08 레인 우선순위(config lanes.priority_enum — prereg/normal/idle_only) · 기본 normal = 구판 거동.
+#' @param experiment P1-08 사전등록 실험 표지 list(prereg_id, family_id, arm_id) — priority 레인이 prereg 여야 한다. 실험 entry 는 격자 러너·
+#'   승격·요약에서 제외된다(rf_lane_rules.R). ★검증은 원장을 읽기 **전**에 한다 — 거부된 개설은 아무것도 쓰지 않는다.
 rf_open_entry <- function(layer, base_id, base_grade,
                           paper_key = "", paper_id = "",
                           base_artifacts = "", engine_path = "",
                           carry = NULL, parent = NULL, count_paper = TRUE,
-                          root = .rf_root(), data_cutoff = NULL) {
+                          root = .rf_root(), data_cutoff = NULL,
+                          priority = "normal", experiment = NULL) {
+  .rf_check_priority(priority, experiment, root)
   obj <- rf_load(layer, root)
   i <- .rf_find(obj, base_id)
   if (!is.na(i)) {
@@ -340,6 +393,8 @@ rf_open_entry <- function(layer, base_id, base_grade,
   )
   if (!is.null(carry))  entry$carry  <- carry
   if (!is.null(parent)) entry$parent <- parent
+  entry$priority <- priority                                   # ★P1-08 — 부재(구 entry) = normal 로 읽힌다(rf_lane_rules.R)
+  if (!is.null(experiment)) entry$experiment <- experiment
   # ★P0-07 — 필드가 있으면 P0-07 이후 개설(data_cutoff null = 정하지 못함 · 사유는 data_fingerprint$why), 없으면 이전 entry.
   entry["data_cutoff"] <- list(vin$data_cutoff)
   entry$data_fingerprint <- vin$fp
@@ -380,7 +435,8 @@ rf_append_attempt <- function(layer, base_id, idea, keyword_axis, root_papers,
                               wt_id = NULL, root = .rf_root(),
                               unmapped_families = NULL,
                               axiom_injected = FALSE,
-                              cell_code = NULL) {
+                              cell_code = NULL,
+                              design = NULL) {
   axes <- if (layer == 1L) RF_KEYWORD_AXES_L1 else RF_KEYWORD_AXES_L2
   if (!keyword_axis %in% axes)
     stop(sprintf("[reinforce_ledger] keyword_axis '%s' 는 L%d 축이 아님 (허용: %s)",
@@ -463,6 +519,14 @@ rf_append_attempt <- function(layer, base_id, idea, keyword_axis, root_papers,
               axiom_injected = isTRUE(axiom_injected),
               grade = NA, essence = NULL, artifacts = NULL, l_code = NULL,
               lessons = NULL, opened_at = format(Sys.time(), "%Y-%m-%dT%H:%M:%S%z"))
+  # ★칸 설계 출처 (P1-02 · O0a 2026-09-25) — 러너가 칸을 **조립한 자리**에서 정한 출처(규칙 as-of/전표본 · LLM 노출 · 격자 · 상주)를
+  #   등록 시점에 박는다. 설계 파일 존재로 사후 도출하면 entry 단위가 돼 폴백 칸을 LLM 칸으로 센다(설계 §1.0 E3). 선택 인자 — 없으면 필드 없음.
+  if (is.list(design) && length(design)) {
+    ds <- .rf_s1(design$design_source)
+    if (nzchar(ds) && !(ds %in% RF_DESIGN_SOURCES))
+      stop(sprintf("[reinforce_ledger] design_source 어휘 밖: %s", ds))
+    att$design <- design[intersect(names(design), c("design_source", "design_lane", "exposure", "basis", "materials", "selection_basis"))]
+  }
   e$attempts[[length(e$attempts) + 1L]] <- att
   e$attempts_used <- n
   obj$entries[[i]] <- e
@@ -648,6 +712,83 @@ rf_reopen_attempt <- function(layer, base_id, n, reason, root = .rf_root()) {
   .rf_write(obj, layer, root)
   cat(sprintf("[reinforce_ledger] reopen n=%s (%s) — %s\n", n, e$attempts[[j]]$cell_code %||% "?", reason))
   invisible(e$attempts[[j]])
+}
+
+#' 소진 entry 되살리기 — **사람 호출 전용** (O0a · 2026-09-25 · 설계 organic_design_final §3 G6 · §3.3 · 헌M10)
+#'
+#' ★왜 필요한가: 유기체의 칸 절단은 state 롤백으로 되돌릴 수 있지만, **러너가 이미 실현한 효과**는 못 되돌린다 —
+#'   절단이 마지막 빈 칸을 닫으면 rf_grid_consumed → .exhaust_and_delegate("grid") → rf_exhaust_entry 로 entry 가 exhausted 가
+#'   되고 승격·다음 논문으로 넘어간다. 롤백이 가장 중요한 효과(소진)에 닿으려면 entry 를 active 로 되돌리는 어휘가 있어야 한다.
+#' 계약:
+#'   · exhausted → active 만. status 와 reopened 이력 **두 필드만** 바뀐다(보호 투영 · CAS · 사후 재적재 대조 · 어긋나면 원본 바이트 복원).
+#'   · 멱등 — 이미 active 이고 마지막 reopened 가 같은 decision_id 면 쓰지 않는다(두 번 불러도 결과 같음).
+#'   · 이미 개시된 승격 자식·다음 논문은 되돌리지 않는다(별개의 사실) — handed_off·promoted_to·summarized_at 은 그대로 둔다
+#'     (그래서 다시 소진돼도 next_paper 가 재승격·재요약하지 않는다). 되살린 entry 는 원장 순서상 먼저라 러너가 먼저 잡는다.
+#'   · 기계·무인 문맥(QVEST_ORGANIC_CTX=1 · QVEST_UNATTENDED_LANE=1)에서는 stop — 유기체는 원장을 쓰지 않는다(롤백이 소진 entry 에
+#'     걸리면 reopen_required 경보만 낸다). 호출 경로 = ops/rf_organic_cmd.R reopen-entry(사람 명령).
+#'   · 잠금 = 러너 claim(idle 에서만 — 같은 프로세스가 쥐었으면 그대로) · 사유·결정 id 필수(무엇을 되돌리는지 없이 되살리지 않는다).
+#' @param decision_id 되살리는 근거 — 롤백한 유기체 결정 id(M-ORG-… · organic decisions.jsonl) 또는 도훈 결정 id
+#' @return list(written, status, note, entry)
+rf_reopen_entry <- function(layer, base_id, reason, decision_id, root = .rf_root(), claim = NULL,
+                            wait_s = RF_LEDGER_CLAIM_WAIT_S, poll_s = RF_LEDGER_CLAIM_POLL_S, .pre_write_hook = NULL) {
+  v <- .dr_ctx_machine()
+  if (nzchar(v))
+    stop(sprintf("[reinforce_ledger] rf_reopen_entry 는 사람 호출 전용 — 기계·무인 문맥(%s=1)에서 부를 수 없다(유기체는 원장을 쓰지 않는다)", v),
+         call. = FALSE)
+  if (!nzchar(.rf_s1(reason))) stop("[reinforce_ledger] rf_reopen_entry — 사유 필수(무엇을 되돌리는지 없이 되살리지 않는다)", call. = FALSE)
+  did <- .rf_s1(decision_id)
+  if (!grepl("^[A-Za-z0-9][A-Za-z0-9_.-]*$", did))
+    stop(sprintf("[reinforce_ledger] rf_reopen_entry — decision_id 형식(영숫자·_.-): '%s'", did), call. = FALSE)
+  hold <- .rf_ledger_claim(root, claim, wait_s, poll_s, "entry 되살리기")
+  on.exit(hold$release(), add = TRUE)
+  p <- .rf_path(layer, root)
+  if (!file.exists(p)) stop("[reinforce_ledger] rf_reopen_entry — 원장 부재: ", p, call. = FALSE)
+  md5_a <- unname(tools::md5sum(p)); raw_a <- readBin(p, "raw", file.info(p)$size)
+  orig <- rf_load(layer, root)
+  i <- .rf_find(orig, base_id)
+  if (is.na(i)) stop(sprintf("[reinforce_ledger] entry 부재: %s", base_id), call. = FALSE)
+  e <- orig$entries[[i]]
+  st <- .rf_s1(e$status)
+  hist <- if (is.list(e$reopened)) e$reopened else list()
+  if (identical(st, "active")) {
+    last <- if (length(hist)) hist[[length(hist)]] else NULL
+    if (!is.null(last) && identical(.rf_s1(last$decision_id), did)) {
+      cat(sprintf("[reinforce_ledger] %s 이미 active(같은 결정 %s 로 되살림) — 쓰지 않는다(멱등)\n", base_id, did))
+      return(invisible(list(written = FALSE, status = "already", note = "idempotent", entry = e)))
+    }
+    stop(sprintf("[reinforce_ledger] %s 는 이미 active — 되살릴 소진이 없다", base_id), call. = FALSE)
+  }
+  if (!identical(st, "exhausted"))
+    stop(sprintf("[reinforce_ledger] status=%s — exhausted 만 되살린다(graduated·parked·superseded 는 별도 결정)", st), call. = FALSE)
+  now <- format(Sys.time(), "%Y-%m-%dT%H:%M:%S%z")
+  used <- as.integer(e$attempts_used %||% 0L); maxa <- e$max_attempts %||% orig$max_attempts
+  note <- if (!is.null(maxa) && used >= as.integer(maxa)) sprintf("예산 소진(used %d ≥ %d) entry — 러너가 곧 다시 소진 처리한다(격자 소진이 아님)", used, as.integer(maxa)) else ""
+  e$status <- "active"
+  e$reopened <- c(hist, list(list(at = now, reason = as.character(reason), decision_id = did, from_status = st,
+                                   exhausted_at = .rf_s1(e$exhausted_at), attempts_used = used,
+                                   handed_off = isTRUE(e$handed_off), promoted_to = .rf_s1(e$promoted_to))))
+  obj <- orig; obj$entries[[i]] <- e
+  .strip <- function(x) { x$last_updated <- NULL; x$entries[[i]]$status <- NULL; x$entries[[i]]$reopened <- NULL; x }
+  if (!identical(.strip(obj), .strip(orig)))
+    stop("[reinforce_ledger] rf_reopen_entry — status·reopened 밖이 바뀌었다(보호 투영) — 쓰지 않는다", call. = FALSE)
+  .rt <- fromJSON(toJSON(obj, auto_unbox = TRUE, pretty = TRUE, null = "null", na = "null", digits = 6), simplifyVector = FALSE)
+  if (!identical(.strip(.rt), .strip(fromJSON(toJSON(orig, auto_unbox = TRUE, pretty = TRUE, null = "null", na = "null", digits = 6),
+                                              simplifyVector = FALSE))))
+    stop("[reinforce_ledger] rf_reopen_entry — 직렬화 왕복이 보호 값을 바꾼다 — 쓰지 않는다", call. = FALSE)
+  if (is.function(.pre_write_hook)) .pre_write_hook(p)
+  if (!identical(unname(tools::md5sum(p)), md5_a))
+    stop("[reinforce_ledger] rf_reopen_entry — 적재 뒤 원장이 바뀌었다(claim 밖 쓰기) — 덮어쓰지 않는다. 재시도하라", call. = FALSE)
+  .rf_write(obj, layer, root)
+  back <- tryCatch(rf_load(layer, root), error = function(e2) NULL)
+  .nl <- function(x) { x$last_updated <- NULL; x }
+  if (is.null(back) || !identical(.nl(back), .nl(.rt))) {
+    .rf_restore_bytes(p, raw_a, "reopen_entry")
+    stop("[reinforce_ledger] rf_reopen_entry — 사후 재적재 대조 실패, 원본 바이트로 되돌렸다", call. = FALSE)
+  }
+  .rf_ledger_jlog(root, "entry_reopened", base_id = base_id, decision_id = did, reason = substr(as.character(reason), 1L, 160L),
+                  attempts_used = used, note = if (nzchar(note)) note else "exhausted → active(사람 호출 · 다음 tick 이 남은 빈 칸을 잰다)")
+  cat(sprintf("[reinforce_ledger] ★%s 되살림(exhausted → active · 결정 %s)%s\n", base_id, did, if (nzchar(note)) paste0(" — ", note) else ""))
+  invisible(list(written = TRUE, status = "reopened", note = note, entry = e))
 }
 
 #' 조기 중단(파킹) — 상한 소진 전에 도훈 결정으로 논문을 접을 때
@@ -908,8 +1049,36 @@ RF_DECISION_KINDS <- c("direction", "batch", "block_order", "b1_factor_pick", "b
                        "block_winner", "floor", "budget", "promote", "combination", "b1_design_verify", "base_gate",
                        # ★P0-12(2026-09-24) A 자격 관문 판정(보류 사유 코드 · 발행/보류) · P2-01 사전등록 판정
                        #   (confirmed/powered_null/undetermined/failed) — 미등재 kind 는 위에서 stop 하므로 호출 전에 있어야 한다.
-                       "a_eligibility", "prereg_verdict")
+                       "a_eligibility", "prereg_verdict",
+                       # ★O0a(2026-09-25 · 유기적 강화 설계 organic_design_final §3 G1 · 결정 REINFORCE-ORGANIC-AUTONOMY·ORGANIC-SCOPE) —
+                       #   유기체 결정 kind. 유기체는 효과(06_Registry/organic/state.json 쓰기)보다 먼저 시행 로그에 쓴다(write-ahead ·
+                       #   rf_organic_write.R::rfo_write 가 선행 레코드를 요구한다). 미등재 kind 는 위에서 stop 하므로 먼저 등재한다.
+                       "organic_proposal", "organic_prediction", "organic_shadow", "organic_live", "organic_reject",
+                       "organic_policy_transition", "organic_kill", "organic_rollback", "organic_measure_tag")
+RF_ORGANIC_KINDS <- grep("^organic_", RF_DECISION_KINDS, value = TRUE)
 rf_decisions_path <- function(root = .rf_root()) file.path(root, "06_Registry/rf_decisions.jsonl")
+
+# ── 고유 id (O0a · 2026-09-25 · 설계 §0.5 "decision_id = kind_base_%Y%m%dT%H%M%S — 초 단위 · 같은 초 다중 결정 충돌") ──────────
+#   구판 decision_id 는 초 단위라 한 tick 안의 여러 결정(블록 승자 4 · 바닥 · 픽 · A 관문)이 같은 초에 같은 id 를 받았다.
+#   id 가 겹치면 결정↔시행 로그 조인이 한 쌍을 잃는다(조인 100% 검사가 설 수 없다). 수리: 밀리초 + 프로세스 순번 + 해시 6자리.
+#   해시 입력 = pid·순번·밀리초·payload(kind·base·후보·선택) — 같은 밀리초 다른 프로세스도 갈라진다. 접두(kind_base_)는 구판과 같다
+#   (소비자 direction_world.R 은 id 를 불투명 문자열로만 쓴다).
+.RF_UID <- new.env(parent = emptyenv()); .RF_UID$seq <- 0L
+.rf_md5_str <- function(x) {
+  f <- tempfile("rfuid_"); on.exit(unlink(f), add = TRUE)
+  writeBin(charToRaw(enc2utf8(paste(as.character(x), collapse = "␟"))), f)
+  unname(tools::md5sum(f))
+}
+.rf_uid_stamp <- function(t = Sys.time()) {
+  sprintf("%s%03d", format(t, "%Y%m%dT%H%M%S"), as.integer(floor((as.numeric(t) %% 1) * 1000)))
+}
+#' @param prefix id 머리(예: "block_winner_RP_x" · "M-ORG") — 결과 = <prefix>_<yyyymmddTHHMMSSmmm>-<순번>-<해시6> (prefix 가 "-" 로 끝나면 "_" 없이)
+.rf_uid <- function(prefix, payload = "") {
+  .RF_UID$seq <- .RF_UID$seq + 1L
+  t <- Sys.time(); st <- .rf_uid_stamp(t)
+  h <- substr(.rf_md5_str(c(Sys.getpid(), .RF_UID$seq, format(as.numeric(t), digits = 17), prefix, payload)), 1L, 6L)
+  sprintf("%s%s%s-%d-%s", prefix, if (grepl("-$", prefix)) "" else "_", st, .RF_UID$seq, h)
+}
 rf_record_decision <- function(kind, base_id, candidates, chosen, rule, policy = NULL, scope = list(), shadow = NULL,
                                root = .rf_root(), max_candidates = 40L, layer = 1L) {
   if (!is.character(kind) || length(kind) != 1L || !(kind %in% RF_DECISION_KINDS))
@@ -932,7 +1101,9 @@ rf_record_decision <- function(kind, base_id, candidates, chosen, rule, policy =
   n_total <- length(candidates)
   if (n_total > max_candidates) candidates <- candidates[seq_len(max_candidates)]
   rec <- list(schema = "rf_decision_v1",
-              decision_id = sprintf("%s_%s_%s", kind, substr(as.character(base_id %||% "program"), 1L, 24L), format(Sys.time(), "%Y%m%dT%H%M%S")),
+              # ★O0a — 밀리초 + 순번 + 해시(위 .rf_uid 머리 주석) · 구판 초 단위 id 는 같은 초 결정끼리 충돌했다
+              decision_id = .rf_uid(sprintf("%s_%s", kind, substr(as.character(base_id %||% "program"), 1L, 24L)),
+                                    payload = c(kind, as.character(base_id %||% "program"), ids, ch_ids)),
               kind = kind, at = format(Sys.time(), "%Y-%m-%dT%H:%M:%S%z"), layer = as.integer(layer),
               scope = c(list(base_id = as.character(base_id %||% "program")), scope),
               policy = policy %||% list(policy_id = "pi0", policy_sha = "", mode = "live"),
@@ -956,6 +1127,149 @@ rf_read_decisions <- function(root = .rf_root(), kind = NULL, day_prefix = NULL)
     if (!is.null(day_prefix) && !startsWith(as.character(r$at %||% ""), day_prefix)) next
     out[[length(out) + 1L]] <- r }
   out
+}
+
+# =============================================================================
+# 시행 로그 (P1-02 정본 · O0a 2026-09-25 · 설계 organic_design_final §3 G1 · 플랜 qvest-1-drifting-eclipse P1-02) — 06_Registry/rf_trial_log.jsonl
+# =============================================================================
+# ★왜: 결정 기록(rf_decisions.jsonl)은 "고른 순간"의 후보·순위를 남기지만 **무엇을 시도했고 무엇을 기각했는가**를 한 줄로
+#   세는 정본이 없었다. 시행 수(N_cell · N_program · N_policy)는 기각된 제안까지 세야 선택 다중성이 정직해지고(설계 §4),
+#   칸마다 **어디서 온 설계인가**(design_source — 규칙 as-of · 규칙 전표본 IC · LLM(교차 entry 노출/가림/자기 entry) · 격자 · 상주)가
+#   칸 단위로 남아야 증거 층화(E3)가 가능하다. 설계 파일 존재로 도출하면 entry 단위가 돼 폴백 칸을 LLM 칸으로 잘못 센다.
+# 계약:
+#   · 한 줄 = 한 시행 사건 {schema rf_trial_v1 · trial_id · kind · at · layer · base_id · decision_id(결정 기록 조인 키) · cells[{code,n,
+#     design_source,design_lane,exposure,basis}] · n_candidates · chosen · rejected[{id,reason}] · n_rejected_total · policy{policy_id,
+#     policy_sha,mode} · counted_in{lineage,program,policy} · organic{layer,view_md5,tau_D}(유기체 kind 만) · src · scope}.
+#   · kind ∈ RF_TRIAL_KINDS = 결정 kind ∪ {cell_registered, proposal_rejected}. 유기체 kind 는 decision_id·policy·organic.layer 필수.
+#   · 등급·essence 객체 금지(AX-008 — rf_record_decision 과 같은 경계) · append-only(한 줄 원자 append · 재파싱 검증 뒤).
+#   · 러너 판정은 이 파일을 읽지 않는다(선례 rf_decisions.jsonl) — 소비자는 유기체 쓰기 관문(write-ahead)·K2 감사·서류·검사.
+#   · 결정 생산자 7곳(블록 승자·바닥·b1/b2/b5 pick·승격·결합)은 rf_record_trial_decision 하나로 결정 기록 + 시행 로그를 함께 남긴다.
+RF_TRIAL_SCHEMA <- "rf_trial_v1"
+RF_TRIAL_KINDS  <- unique(c(RF_DECISION_KINDS, "cell_registered", "proposal_rejected"))
+# 칸 설계 출처 어휘 — 설계 §1.0(e) E3 값 + 규칙 선정기 구분(카탈로그 순회 = 성과 비소비). LLM 칸은 재료 노출로 셋으로 갈린다.
+RF_DESIGN_SOURCES <- c("grid", "rule_asof", "rule_full_ic", "rule_catalog", "standing", "carry_replay",
+                       "llm_crossentry_exposed", "llm_masked", "llm_own_entry", "llm_exposure_unknown", "unknown")
+RF_TRIAL_PRODUCER_KINDS <- c("block_winner", "floor", "b1_factor_pick", "b2_weight_pick", "b5_overlay_pick", "promote", "combination")
+rf_trial_log_path <- function(root = .rf_root()) file.path(root, "06_Registry", "rf_trial_log.jsonl")
+.rf_forbidden_obj <- function(x, forbid = c("essence", "essence_grade", "authoritative_remeasure")) {
+  if (!is.list(x)) return(FALSE)
+  if (any(names(x) %in% forbid)) return(TRUE)
+  any(vapply(x, .rf_forbidden_obj, logical(1), forbid = forbid))
+}
+.rf_jsonl_append1 <- function(p, txt) {
+  dir.create(dirname(p), recursive = TRUE, showWarnings = FALSE)
+  con <- file(p, open = "ab"); on.exit(close(con), add = TRUE)
+  writeBin(charToRaw(enc2utf8(paste0(txt, "\n"))), con)   # 한 줄 = 한 번의 write — 다른 appender 와 줄이 섞이지 않게
+  invisible(p)
+}
+.rf_cells_norm <- function(cells) {
+  lapply(cells %||% list(), function(c) {
+    c <- as.list(c)
+    ds <- .rf_s1(c$design_source)
+    if (!nzchar(ds)) ds <- "unknown"
+    if (!(ds %in% RF_DESIGN_SOURCES))
+      stop(sprintf("[reinforce_ledger] 시행 로그 — design_source 어휘 밖: %s (허용 %s)", ds, paste(RF_DESIGN_SOURCES, collapse = "/")), call. = FALSE)
+    out <- list(code = .rf_s1(c$code), design_source = ds)
+    if (!is.null(c$n)) out$n <- suppressWarnings(as.integer(c$n))
+    for (k in c("design_lane", "exposure", "basis", "selection_basis", "selection_asof", "catalog_id"))
+      if (nzchar(.rf_s1(c[[k]]))) out[[k]] <- .rf_s1(c[[k]])
+    out
+  })
+}
+#' 시행 1건 append — 반환 = 기록 레코드(invisible). 거부는 stop(원장·결정 기록과 같은 경계).
+rf_trial_log_append <- function(kind, base_id = "program", decision_id = NULL, cells = list(), n_candidates = NA_integer_,
+                                chosen = character(0), rejected = list(), n_rejected_total = NULL, policy = NULL,
+                                counted_in = NULL, organic = NULL, src = "", scope = list(), layer = 1L,
+                                root = .rf_root()) {
+  if (!is.character(kind) || length(kind) != 1L || !(kind %in% RF_TRIAL_KINDS))
+    stop(sprintf("[reinforce_ledger] 시행 로그 kind 미등재: %s", paste(kind, collapse = ",")), call. = FALSE)
+  if (.rf_forbidden_obj(scope) || .rf_forbidden_obj(cells) || .rf_forbidden_obj(rejected) || .rf_forbidden_obj(organic))
+    stop("[reinforce_ledger] 시행 로그에 essence/등급 객체를 싣지 않는다(AX-008 경계)", call. = FALSE)
+  did <- .rf_s1(decision_id)
+  pol <- policy %||% list(policy_id = "pi0", policy_sha = "", mode = "live")
+  if (kind %in% RF_ORGANIC_KINDS) {
+    if (!nzchar(did)) stop("[reinforce_ledger] 유기체 시행은 decision_id 필수(write-ahead 조인 키)", call. = FALSE)
+    if (!nzchar(.rf_s1(pol$policy_id)) || !nzchar(.rf_s1(pol$policy_sha)))
+      stop("[reinforce_ledger] 유기체 시행은 policy{policy_id, policy_sha} 필수(사전등록 판 식별)", call. = FALSE)
+    if (!is.list(organic) || !nzchar(.rf_s1(organic$layer)))
+      stop("[reinforce_ledger] 유기체 시행은 organic$layer 필수(budget/space/select/structure)", call. = FALSE)
+  }
+  rej <- lapply(rejected %||% list(), function(r) { r <- as.list(r)
+    list(id = .rf_s1(r$id), reason = .rf_s1(r$reason)) })
+  cin <- counted_in %||% list(lineage = identical(kind, "cell_registered"), program = FALSE,
+                              policy = identical(kind, "organic_policy_transition"))
+  rec <- list(schema = RF_TRIAL_SCHEMA,
+              trial_id = .rf_uid(sprintf("T_%s", kind), payload = c(kind, .rf_s1(base_id), did)),
+              kind = kind, at = format(Sys.time(), "%Y-%m-%dT%H:%M:%S%z"), layer = as.integer(layer),
+              base_id = as.character(base_id %||% "program"), decision_id = if (nzchar(did)) did else NULL,
+              cells = .rf_cells_norm(cells), n_candidates = suppressWarnings(as.integer(n_candidates %||% NA_integer_)),
+              chosen = as.list(as.character(unlist(chosen %||% character(0)))),
+              rejected = rej, n_rejected_total = as.integer(n_rejected_total %||% length(rej)),
+              policy = pol, counted_in = cin, organic = organic, src = as.character(src %||% ""), scope = scope)
+  txt <- toJSON(rec, auto_unbox = TRUE, null = "null", na = "null", digits = 6)
+  chk <- tryCatch(fromJSON(txt, simplifyVector = FALSE), error = function(e) NULL)
+  if (is.null(chk) || !identical(chk$kind, kind) || !identical(chk$trial_id, rec$trial_id))
+    stop("[reinforce_ledger] 시행 로그 레코드 재파싱 실패 — 쓰지 않는다", call. = FALSE)
+  .rf_jsonl_append1(rf_trial_log_path(root), txt)
+  invisible(rec)
+}
+#' 시행 로그 읽기 — 파싱 실패 줄은 **세서** 돌려준다(조용히 버리지 않는다 · attr n_bad).
+rf_trial_log_read <- function(root = .rf_root(), kind = NULL, base_id = NULL, decision_id = NULL) {
+  p <- rf_trial_log_path(root); out <- list(); bad <- 0L
+  if (file.exists(p)) for (l in readLines(p, warn = FALSE, encoding = "UTF-8")) {
+    if (!nzchar(trimws(l))) next
+    r <- tryCatch(fromJSON(l, simplifyVector = FALSE), error = function(e) NULL)
+    if (is.null(r)) { bad <- bad + 1L; next }
+    if (!is.null(kind) && !(.rf_s1(r$kind) %in% kind)) next
+    if (!is.null(base_id) && !identical(.rf_s1(r$base_id), base_id)) next
+    if (!is.null(decision_id) && !identical(.rf_s1(r$decision_id), decision_id)) next
+    out[[length(out) + 1L]] <- r
+  }
+  attr(out, "n_bad") <- bad
+  out
+}
+#' decision_id 에 선행 시행 레코드가 있는가(write-ahead 관문 · 전수 파싱 없이 문자열 1차 거름 → 해당 줄만 파싱)
+rf_trial_log_has <- function(decision_id, root = .rf_root(), kinds = NULL) {
+  did <- .rf_s1(decision_id); p <- rf_trial_log_path(root)
+  if (!nzchar(did) || !file.exists(p)) return(FALSE)
+  L <- readLines(p, warn = FALSE, encoding = "UTF-8")
+  L <- L[grepl(did, L, fixed = TRUE)]
+  for (l in L) { r <- tryCatch(fromJSON(l, simplifyVector = FALSE), error = function(e) NULL)
+    if (!is.null(r) && identical(.rf_s1(r$decision_id), did) && (is.null(kinds) || .rf_s1(r$kind) %in% kinds)) return(TRUE) }
+  FALSE
+}
+#' 결정 기록 ↔ 시행 로그 조인 (K2 · 검사) — 생산자 kind 의 결정마다 시행 1건, 시행의 decision_id 마다 결정 1건.
+#' @return list(n_decisions, n_trials, missing_trial(결정은 있는데 시행 없음), orphan_trial(시행이 가리키는 결정 없음), join_rate)
+rf_trial_log_join <- function(root = .rf_root(), kinds = RF_TRIAL_PRODUCER_KINDS) {
+  D <- Filter(function(r) .rf_s1(r$kind) %in% kinds, rf_read_decisions(root))
+  Tr <- rf_trial_log_read(root, kind = kinds)
+  did_d <- vapply(D, function(r) .rf_s1(r$decision_id), character(1))
+  did_t <- vapply(Tr, function(r) .rf_s1(r$decision_id), character(1))
+  miss <- setdiff(did_d, did_t); orph <- setdiff(did_t[nzchar(did_t)], did_d)
+  list(n_decisions = length(did_d), n_trials = length(did_t), missing_trial = miss, orphan_trial = orph,
+       duplicate_decision_ids = unique(did_d[duplicated(did_d)]), n_bad_lines = attr(Tr, "n_bad"),
+       join_rate = if (length(did_d)) (length(did_d) - length(miss)) / length(did_d) else NA_real_)
+}
+#' 결정 생산자 공용 — 결정 기록(rf_record_decision) + 시행 로그(rf_trial_log_append)를 같은 decision_id 로.
+#'   rejected 를 안 주면 후보 중 선택 밖 전부를 기각으로 적는다(사유 = 후보 reason). 상한 절단 시 n_rejected_total 에 원래 수.
+rf_record_trial_decision <- function(kind, base_id, candidates, chosen, rule, scope = list(), cells = list(),
+                                     rejected = NULL, src = "", root = .rf_root(), layer = 1L, max_candidates = 40L) {
+  if (!(kind %in% RF_TRIAL_PRODUCER_KINDS))
+    stop(sprintf("[reinforce_ledger] 결정 생산자 kind 아님: %s", kind), call. = FALSE)
+  d <- rf_record_decision(kind, base_id, candidates, chosen, rule, scope = scope, root = root,
+                          max_candidates = max_candidates, layer = layer)
+  ch <- as.character(unlist(d$chosen$ids %||% list()))
+  if (is.null(rejected)) {
+    rj <- Filter(function(c) !(.rf_s1(c$id) %in% ch), candidates)
+    n_rj <- length(rj)
+    rejected <- lapply(utils::head(rj, max_candidates), function(c) list(id = .rf_s1(c$id), reason = .rf_s1(c$reason)))
+  } else n_rj <- length(rejected)
+  t <- rf_trial_log_append(kind, base_id, decision_id = d$decision_id, cells = cells, n_candidates = d$n_candidates_total,
+                           chosen = ch, rejected = rejected, n_rejected_total = n_rj, src = src,
+                           scope = scope[intersect(names(scope), c("block", "phase", "by", "consumed_by", "n", "cell", "floor_source",
+                                                                  "depth", "new_base_id", "setkey"))],
+                           root = root, layer = layer)
+  invisible(list(decision = d, trial = t))
 }
 
 #' 오버레이 적대 반증 기록 (G2 · 2026-09-17) — attempts[[j]]$adversary 만 쓴다
@@ -1075,6 +1389,18 @@ rf_record_b5_design <- function(layer, base_id, fields, root = .rf_root()) {
 #   · 읽기 실패(부재·파손 JSON·schema·파손 항목)는 **명시 오류** — 빈 목록으로 접지 않는다
 #     (못 읽은 레지스터 ≠ 대기 결정 0 · 빈결과=합격 병리).
 #   · 전 함수 root 인자로 격리 가능. 검사 = 08_Tests/ops/test_decision_register.R(부팅 표시 양성 대조·돌연변이 포함).
+# ★O0a 개정(2026-09-25 · 설계 organic_design_final §3.1.1 G7 · 결정 REINFORCE-ORGANIC-AUTONOMY "결정 레지스터 자동 기록") — writer 는 **셋**이다:
+#   dr_open · dr_resolve(사람·세션) + dr_record_machine(기계 — 유기체 전이 포인터 행만). 세 writer 가 공용 claim 하나를 쥐고(.dr_txn)
+#   적재 md5 를 쓰기 직전에 재대조(CAS)한다 — 구판은 잠금이 없어 무인 기계 쓰기와 세션 쓰기가 겹치면 도훈 결정 1건이 조용히 사라질 수 있었다.
+#   · 쓰기 전후 대조: 쓴 뒤 다시 읽어 **대상 항목 밖 전 항목이 비트 동일**이고 대상 항목만 바뀌었는지 본다. 어긋나면 원본 바이트 복원 + stop.
+#   · 기계 id 네임스페이스 = "M-ORG-" — dr_open 은 그 접두를 거부한다(사람 id 와 섞이지 않게) · 쓰기 전 중복 검사(중복 id 면 dr_load 가
+#     stop 해 부팅 Director 줄과 모든 dr_* 가 함께 죽는다).
+#   · 자기승인 봉쇄: dr_open/dr_resolve 는 QVEST_ORGANIC_CTX=1 또는 QVEST_UNATTENDED_LANE=1 문맥에서 무조건 stop(무인 LLM 레인도
+#     Rscript 로 resolve 할 수 있었다). 운영 호출처는 세션뿐이라(boot_lean.sh 는 읽기만) 기존 동작은 깨지지 않는다.
+#   · 참조 결정 증거 규칙(dr_evidence_ok): auto_live·킬 해제·live 게이트가 참조하는 결정은 owner·decided_by = dohoon · resolved ·
+#     recorded_by 가 "machine:" 아님 · evidence 비어 있지 않음 — 또는 레거시(evidence 필드가 레지스터에 처음 나타난 항목의 registered_at
+#     이전 등록분은 note 로 대신 · 09-23 일괄 결정 D-A~D-M). 경계는 레지스터에서 재도출한다(리터럴 없음 · 소급 편집 유인 제거).
+#   · 한계: owner 대조는 여전히 문자열 규약이다 — 막는 것은 기계·무인 레인의 자기승인이지 악의적 대화 세션이 아니다.
 DR_SCHEMA <- "decision_register_v1"
 DR_STATUS_ENUM <- c("open", "resolved")
 DR_BLOCK_KINDS <- c("lane", "decision", "item")
@@ -1108,7 +1434,7 @@ dr_load <- function(root = .rf_root(), create = FALSE) {
   if (!file.exists(p)) {
     if (isTRUE(create))
       return(list(schema = DR_SCHEMA,
-                  note = "도훈 결정 대기 레지스터 (P3-07). writer = reinforce_ledger.R::dr_open/dr_resolve 만(owner 만 resolve · 재결정은 새 id). 부팅 Director 줄이 open 수·최고령·차단 레인을 읽는다.",
+                  note = "도훈 결정 대기 레지스터 (P3-07 · O0a 개정 2026-09-25). writer = reinforce_ledger.R::dr_open/dr_resolve(사람·세션 · owner 만 resolve · 재결정은 새 id) + dr_record_machine(유기체 전이 포인터 행 · M-ORG- · status resolved). 세 writer 는 공용 claim + CAS. 부팅 Director 줄이 open 수·최고령·차단 레인을 읽는다.",
                   items = list(), last_updated = ""))
     stop(sprintf("[decision_register] 레지스터 부재: %s", p), call. = FALSE)
   }
@@ -1147,15 +1473,94 @@ dr_load <- function(root = .rf_root(), create = FALSE) {
   invisible(dr_path(root))
 }
 
+# ── 공용 claim + CAS (O0a · 설계 §3.1.1) ─────────────────────────────────────────────────────────────────
+#   claim 위치 = <root>/.cache/decision_register.claim (QVEST_DR_CLAIM 로 덮기 — 검사 격리). 설계 원문은 06_Registry/.decision_register.claim
+#   이었다 — 러너 claim(.cache/reinforce_auto.claim)과 같은 층에 둔다: 06_Registry 는 OneDrive 동기화 폴더라 잠금 디렉터리가
+#   충돌 사본(*-<PC명>)을 만들 수 있고, 운영 .cache 는 OneDrive 밖 정션이다. 구현 = 원장 claim 과 같은 rf_claim.R(.rf_ledger_claim ·
+#   같은 프로세스 재진입 허용 · 죽은 owner 즉시 회수).
+# 대기·폴링 = 원장 claim 과 같은 값(RF_LEDGER_CLAIM_WAIT_S·POLL_S — 이름 있는 값 재사용 · 새 수치 아님). 정의가 파일 아래(rebase 절)라 호출 시점에 읽는다.
+# CAS 재시도 — claim 을 쥔 채로 md5 가 바뀌었다면 claim 밖 writer(구판 코드·손편집)다. 무한 재시도는 침묵과 같으므로 유한.
+#   3 = 재적재·재적용 두 번의 기회(첫 시도 + 2) — 수치 근거가 아니라 "유한"의 최소 표현이다(실패는 명시 stop).
+DR_CAS_TRIES <- 3L
+DR_MACHINE_OWNER  <- "machine:organic"
+DR_MACHINE_PREFIX <- "M-ORG-"
+DR_MACHINE_SCOPES <- c("organic_policy_transition", "organic_kill", "organic_rollback", "organic_structure_change")
+DR_MACHINE_AUTHORITY <- "REINFORCE-ORGANIC-AUTONOMY"
+# 기계 기록이 건드리면 안 되는 대상 — 헌법 경계(tier_graduation · 고정 축 · PIT · BOOK · A 관문)와 도훈 결정 id(D-*) 참조
+DR_MACHINE_FORBIDDEN_RE <- "^(tier_graduation|fixed_axes|pit|book|a_eligibility)([^A-Za-z0-9]|$)|^D-"
+.dr_claim_path <- function(root) {
+  e <- Sys.getenv("QVEST_DR_CLAIM", "")
+  if (nzchar(e)) e else file.path(root, ".cache", "decision_register.claim")
+}
+#' 기계·무인 문맥 표식 — 켜져 있으면 표식 이름, 아니면 "".
+.dr_ctx_machine <- function() {
+  for (v in c("QVEST_ORGANIC_CTX", "QVEST_UNATTENDED_LANE")) if (identical(Sys.getenv(v, ""), "1")) return(v)
+  ""
+}
+.dr_ctx_guard <- function(what) {
+  v <- .dr_ctx_machine()
+  if (nzchar(v))
+    stop(sprintf("[decision_register] %s 는 기계·무인 문맥(%s=1)에서 부를 수 없다 — 자기승인 봉쇄(설계 §3.1.1 ①). 도훈 결정은 대화 세션에서만 적는다.",
+                 what, v), call. = FALSE)
+  invisible(TRUE)
+}
+# 직렬화 왕복 — .dr_write(qvest_atomic_write_json → write_json)와 같은 인자. 전후 대조는 이 정규형끼리만 한다.
+.dr_rt <- function(x) fromJSON(toJSON(x, auto_unbox = TRUE, pretty = TRUE, null = "null", na = "null", digits = 6),
+                               simplifyVector = FALSE)
+#' 트랜잭션 — claim → (적재 md5 · 원본 바이트) → mutate → CAS 재대조 → 원자 쓰기 → 재적재 전후 대조(대상 밖 전 항목 비트 동일 ·
+#'   대상 항목 = 의도한 값). 어긋나면 원본 바이트 복원(원래 부재면 제거) 후 stop(class dr_postcheck_failed).
+#' @param mutate function(obj) → list(obj = 새 레지스터, item = 대상 항목, k = 대상 색인, added = TRUE|FALSE) 또는 NULL(쓸 것 없음)
+.dr_txn <- function(root, what, mutate, create = FALSE, .pre_write_hook = NULL) {
+  hold <- .rf_ledger_claim(root, .dr_claim_path(root), RF_LEDGER_CLAIM_WAIT_S, RF_LEDGER_CLAIM_POLL_S, paste("결정 레지스터", what))
+  on.exit(hold$release(), add = TRUE)
+  p <- dr_path(root)
+  for (try_k in seq_len(DR_CAS_TRIES)) {
+    had <- file.exists(p)
+    md5_a <- if (had) unname(tools::md5sum(p)) else NA_character_
+    raw_a <- if (had) readBin(p, "raw", file.info(p)$size) else NULL
+    orig <- dr_load(root, create = create)
+    res <- mutate(orig)
+    if (is.null(res)) return(invisible(NULL))
+    if (is.function(.pre_write_hook)) .pre_write_hook(p)
+    md5_b <- if (file.exists(p)) unname(tools::md5sum(p)) else NA_character_
+    if (!identical(md5_a, md5_b)) {
+      if (try_k < DR_CAS_TRIES) next
+      stop(sprintf("[decision_register] %s — 적재 뒤 레지스터가 바뀌었다(claim 밖 writer · CAS %d회 실패) — 쓰지 않았다", what, DR_CAS_TRIES),
+           call. = FALSE)
+    }
+    .dr_write(res$obj, root)
+    back <- tryCatch(dr_load(root), error = function(e) NULL)
+    o_rt <- .dr_rt(orig$items); k <- as.integer(res$k)
+    ok <- !is.null(back) && is.list(back$items) && {
+      bi <- back$items
+      n_exp <- length(orig$items) + if (isTRUE(res$added)) 1L else 0L
+      length(bi) == n_exp &&
+        identical(if (isTRUE(res$added)) bi[seq_along(orig$items)] else bi[-k], if (isTRUE(res$added)) o_rt else o_rt[-k]) &&
+        identical(bi[[k]], .dr_rt(list(res$item))[[1]])
+    }
+    if (!ok) {
+      if (had) .rf_restore_bytes(p, raw_a, "decision_register") else unlink(p)
+      stop(structure(class = c("dr_postcheck_failed", "error", "condition"),
+                     list(message = sprintf("[decision_register] %s — 쓰기 전후 대조 실패(대상 밖 항목 변경 또는 대상 불일치) — 원본으로 되돌렸다", what),
+                          call = NULL)))
+    }
+    return(invisible(res$item))
+  }
+}
+
 #' 결정 대기 항목 등록
 #' @param options     선택지(문자 벡터 ≥1)
 #' @param blocks      "lane:" / "decision:" / "item:" 접두 문자 벡터(0개 허용). decision: 대상은 이미 등록돼 있어야 한다
 #' @param opened_at   NULL = 지금. 소급 지정 시 "YYYY-MM-DD…" + opened_at_basis(근거) 필수
 dr_open <- function(id, title, options, recommendation, default_until_decided, blocks,
-                    owner = "dohoon", source, root = .rf_root(), opened_at = NULL, opened_at_basis = NULL) {
+                    owner = "dohoon", source, root = .rf_root(), opened_at = NULL, opened_at_basis = NULL,
+                    .pre_write_hook = NULL) {
+  .dr_ctx_guard("dr_open")
   id <- .dr_str1(id, "id")
   if (!grepl("^[A-Za-z0-9][A-Za-z0-9_.-]*$", id))
     stop(sprintf("[decision_register] id 형식(영숫자·_.-): %s", id), call. = FALSE)
+  if (startsWith(id, DR_MACHINE_PREFIX))
+    stop(sprintf("[decision_register] id 접두 %s 는 기계 기록 네임스페이스다 — dr_open 은 쓰지 못한다: %s", DR_MACHINE_PREFIX, id), call. = FALSE)
   title <- .dr_str1(title, "title")
   opts  <- .dr_chr(options, "options", min_n = 1L)
   rec   <- .dr_str1(recommendation, "recommendation", allow_empty = TRUE)
@@ -1163,6 +1568,8 @@ dr_open <- function(id, title, options, recommendation, default_until_decided, b
   bl    <- .dr_chr(blocks, "blocks")
   owner <- .dr_str1(owner, "owner")
   src   <- .dr_str1(source, "source")
+  if (startsWith(owner, "machine:"))
+    stop("[decision_register] owner 가 machine:* 인 항목은 dr_open 이 만들지 않는다(기계 기록은 dr_record_machine)", call. = FALSE)
   bad <- bl[!grepl(sprintf("^(%s):[^[:space:]]", paste(DR_BLOCK_KINDS, collapse = "|")), bl)]
   if (length(bad))
     stop(sprintf("[decision_register] blocks 접두는 lane:/decision:/item: 뿐: %s", paste(bad, collapse = " | ")), call. = FALSE)
@@ -1172,32 +1579,34 @@ dr_open <- function(id, title, options, recommendation, default_until_decided, b
     if (!.dr_date_ok(oa)) stop(sprintf("[decision_register] opened_at 날짜 형식: %s", oa), call. = FALSE)
     basis <- .dr_str1(opened_at_basis %||% "", "opened_at_basis(소급 개시일 근거)")
   }
-  obj <- dr_load(root, create = TRUE)
-  ids <- vapply(obj$items, function(x) x$id, character(1))
-  if (id %in% ids) {
-    st <- obj$items[[match(id, ids)]]$status
-    stop(sprintf("[decision_register] 이미 있는 id: %s (status=%s) — 재결정·재상정은 새 id 로", id, st), call. = FALSE)
-  }
-  dec <- sub("^decision:", "", bl[startsWith(bl, "decision:")])
-  if (id %in% dec) stop("[decision_register] 자기 자신을 막을 수 없다", call. = FALSE)
-  miss <- setdiff(dec, ids)
-  if (length(miss))
-    stop(sprintf("[decision_register] blocks 의 decision 대상 미등록: %s (막히는 쪽을 먼저 등록)", paste(miss, collapse = ",")), call. = FALSE)
-  item <- list(id = id, title = title, status = "open", opened_at = oa, options = as.list(opts),
-               recommendation = rec, default_until_decided = dflt, blocks = as.list(bl), owner = owner,
-               source = src, decision = NULL, decided_by = NULL, decided_at = NULL, note = NULL, registered_at = now)
-  if (!is.null(basis)) item$opened_at_basis <- basis
-  obj$items[[length(obj$items) + 1L]] <- item
-  .dr_write(obj, root)
-  invisible(item)
+  .dr_txn(root, "dr_open", create = TRUE, .pre_write_hook = .pre_write_hook, mutate = function(obj) {
+    ids <- vapply(obj$items, function(x) x$id, character(1))
+    if (id %in% ids) {
+      st <- obj$items[[match(id, ids)]]$status
+      stop(sprintf("[decision_register] 이미 있는 id: %s (status=%s) — 재결정·재상정은 새 id 로", id, st), call. = FALSE)
+    }
+    dec <- sub("^decision:", "", bl[startsWith(bl, "decision:")])
+    if (id %in% dec) stop("[decision_register] 자기 자신을 막을 수 없다", call. = FALSE)
+    miss <- setdiff(dec, ids)
+    if (length(miss))
+      stop(sprintf("[decision_register] blocks 의 decision 대상 미등록: %s (막히는 쪽을 먼저 등록)", paste(miss, collapse = ",")), call. = FALSE)
+    item <- list(id = id, title = title, status = "open", opened_at = oa, options = as.list(opts),
+                 recommendation = rec, default_until_decided = dflt, blocks = as.list(bl), owner = owner,
+                 source = src, decision = NULL, decided_by = NULL, decided_at = NULL, note = NULL, registered_at = now)
+    if (!is.null(basis)) item$opened_at_basis <- basis
+    obj$items[[length(obj$items) + 1L]] <- item
+    list(obj = obj, item = item, k = length(obj$items), added = TRUE)
+  })
 }
 
 #' 결정 기록 — decided_by 가 항목 owner 와 다르면 거부 · 이미 resolved 면 거부(새 항목으로)
 ## ★출처 필드 (2026-09-23 적대 리뷰): owner 대조는 **문자열 규약이지 인증이 아니다** — 어떤 세션도 decided_by="dohoon" 을 넘길 수 있다.
 ##   그래서 누가 적었는지(recorded_by)와 결정의 근거(evidence — 채팅 응답·파일 경로 인용)를 함께 남겨
 ##   세션이 대신 적은 결정과 도훈이 직접 적은 결정을 사후에 가를 수 있게 한다. 선택 인자(구 호출 호환).
+## ★O0a(2026-09-25): 기계·무인 문맥에서는 무조건 stop(.dr_ctx_guard) · recorded_by 가 "machine:" 이면 거부(기계는 dr_record_machine 만).
 dr_resolve <- function(id, decision, decided_by, note = "", root = .rf_root(), decided_at = NULL,
-                       recorded_by = NULL, evidence = NULL) {
+                       recorded_by = NULL, evidence = NULL, .pre_write_hook = NULL) {
+  .dr_ctx_guard("dr_resolve")
   id <- .dr_str1(id, "id")
   decision <- .dr_str1(decision, "decision")
   decided_by <- .dr_str1(decided_by, "decided_by")
@@ -1207,24 +1616,117 @@ dr_resolve <- function(id, decision, decided_by, note = "", root = .rf_root(), d
     if (!.dr_date_ok(d)) stop(sprintf("[decision_register] decided_at 날짜 형식: %s", d), call. = FALSE)
     d
   }
-  obj <- dr_load(root)
-  k <- which(vapply(obj$items, function(x) identical(x$id, id), logical(1)))
-  if (!length(k)) stop(sprintf("[decision_register] 항목 부재: %s", id), call. = FALSE)
-  it <- obj$items[[k]]
-  if (identical(it$status, "resolved"))
-    stop(sprintf("[decision_register] 재결정 거부: %s 는 %s 에 %s 가 결정(%s) — 바꾸려면 새 항목(dr_open)으로",
-                 id, as.character(it$decided_at %||% "?"), as.character(it$decided_by %||% "?"),
-                 as.character(it$decision %||% "?")), call. = FALSE)
-  own <- trimws(as.character(it$owner %||% ""))
-  if (!identical(decided_by, own))
-    stop(sprintf("[decision_register] owner 불일치 거부: %s 의 owner=%s · decided_by=%s", id, own, decided_by), call. = FALSE)
-  it$status <- "resolved"; it$decision <- decision; it$decided_by <- decided_by
-  it$decided_at <- da; it$note <- note
-  if (!is.null(recorded_by)) it$recorded_by <- .dr_str1(recorded_by, "recorded_by")
-  if (!is.null(evidence))    it$evidence    <- .dr_str1(evidence, "evidence")
-  obj$items[[k]] <- it
-  .dr_write(obj, root)
-  invisible(it)
+  rb <- if (is.null(recorded_by)) NULL else .dr_str1(recorded_by, "recorded_by")
+  if (!is.null(rb) && startsWith(rb, "machine:"))
+    stop("[decision_register] recorded_by=machine:* 는 dr_resolve 로 적지 못한다(기계 기록은 dr_record_machine)", call. = FALSE)
+  ev <- if (is.null(evidence)) NULL else .dr_str1(evidence, "evidence")
+  .dr_txn(root, "dr_resolve", .pre_write_hook = .pre_write_hook, mutate = function(obj) {
+    k <- which(vapply(obj$items, function(x) identical(x$id, id), logical(1)))
+    if (!length(k)) stop(sprintf("[decision_register] 항목 부재: %s", id), call. = FALSE)
+    it <- obj$items[[k]]
+    if (identical(it$status, "resolved"))
+      stop(sprintf("[decision_register] 재결정 거부: %s 는 %s 에 %s 가 결정(%s) — 바꾸려면 새 항목(dr_open)으로",
+                   id, as.character(it$decided_at %||% "?"), as.character(it$decided_by %||% "?"),
+                   as.character(it$decision %||% "?")), call. = FALSE)
+    own <- trimws(as.character(it$owner %||% ""))
+    if (!identical(decided_by, own))
+      stop(sprintf("[decision_register] owner 불일치 거부: %s 의 owner=%s · decided_by=%s", id, own, decided_by), call. = FALSE)
+    it$status <- "resolved"; it$decision <- decision; it$decided_by <- decided_by
+    it$decided_at <- da; it$note <- note
+    if (!is.null(rb)) it$recorded_by <- rb
+    if (!is.null(ev)) it$evidence    <- ev
+    obj$items[[k]] <- it
+    list(obj = obj, item = it, k = k, added = FALSE)
+  })
+}
+
+#' 기계 기록 writer (O0a · 설계 §3.1.1) — 유기체 **전이 단위 포인터 행**만. 본문은 06_Registry/organic/decisions.jsonl 이 정본이고
+#'   여기는 그 포인터(evidence_ptr)를 가리키는 status=resolved 행 1개다(DR_STATUS_ENUM 밖 값을 쓰면 레지스터 전체를 못 읽는다).
+#' @param kind          DR_MACHINE_SCOPES 중 하나(정책 전이 · 킬 · 롤백 · 구조 변경)
+#' @param summary       한 줄 서술(decision·title)
+#' @param evidence_ptr  상세 포인터(예: "06_Registry/organic/decisions.jsonl#<decision_id>") — 비면 거부
+#' @param undo          되돌리는 명령(예: "Rscript 02_Infrastructure/ops/rf_organic_cmd.R rollback <decision_id>") — 비면 거부
+#' @param targets       바뀐 대상(층·arm·블록 식별자) — 헌법 경계(DR_MACHINE_FORBIDDEN_RE)에 걸리면 거부
+#' @param max_rows_week 이번 ISO 주 기계 행 상한(설계: weekly_activation_max + K·롤백 사건 수 — 호출자가 계산). NULL = 상한 없음.
+#'   상한에 닿으면 "외 n건" 포인터 1행(overflow)만 쓰고, 그 뒤는 쓰지 않는다(반환 written=FALSE · jsonl 이 정본).
+#' @return list(written, id, overflow, item)
+dr_record_machine <- function(kind, summary, evidence_ptr, undo, root = .rf_root(), targets = character(0),
+                              authority_id = DR_MACHINE_AUTHORITY, max_rows_week = NULL, .pre_write_hook = NULL) {
+  kind <- .dr_str1(kind, "kind")
+  if (!(kind %in% DR_MACHINE_SCOPES))
+    stop(sprintf("[decision_register] 기계 기록 scope 밖: %s (허용 %s)", kind, paste(DR_MACHINE_SCOPES, collapse = "/")), call. = FALSE)
+  summary <- .dr_str1(summary, "summary"); evp <- .dr_str1(evidence_ptr, "evidence_ptr"); undo <- .dr_str1(undo, "undo")
+  tg <- .dr_chr(targets, "targets")
+  hit <- tg[grepl(DR_MACHINE_FORBIDDEN_RE, tg, ignore.case = TRUE)]
+  if (length(hit))
+    stop(sprintf("[decision_register] 기계 기록 금지 대상(헌법 경계·도훈 결정 참조): %s", paste(hit, collapse = ",")), call. = FALSE)
+  au <- dr_evidence_ok(authority_id, root)
+  if (!isTRUE(au$ok))
+    stop(sprintf("[decision_register] 기계 기록 권한 결정 %s 불충족(%s) — 쓰지 않는다", authority_id, au$why), call. = FALSE)
+  now <- .dr_now()
+  wk <- format(Sys.Date(), "%G-W%V")
+  out <- list(written = FALSE, id = NA_character_, overflow = FALSE, item = NULL)
+  it <- .dr_txn(root, "dr_record_machine", .pre_write_hook = .pre_write_hook, mutate = function(obj) {
+    mine <- Filter(function(x) identical(.rf_s1(x$record_class), "machine") && identical(.rf_s1(x$iso_week), wk), obj$items)
+    ovf <- FALSE
+    if (!is.null(max_rows_week)) {
+      cap <- suppressWarnings(as.integer(max_rows_week))
+      if (!length(cap) || is.na(cap) || cap < 0L) stop("[decision_register] max_rows_week 는 0 이상 정수", call. = FALSE)
+      if (length(mine) > cap) return(NULL)                       # 이미 overflow 행까지 섰다 — 레지스터는 더 쓰지 않는다
+      ovf <- length(mine) == cap
+    }
+    ids <- vapply(obj$items, function(x) x$id, character(1))
+    mid <- NA_character_
+    for (z in seq_len(DR_CAS_TRIES)) {                            # 중복 id 는 쓰기 전에 막는다(dr_load 가 중복에서 stop — 부팅 동반 사망)
+      cand <- .rf_uid(DR_MACHINE_PREFIX, payload = c(kind, summary, evp, now))
+      if (!(cand %in% ids)) { mid <- cand; break }
+    }
+    if (is.na(mid)) stop("[decision_register] 기계 id 생성 충돌 — 쓰지 않는다", call. = FALSE)
+    item <- list(id = mid, title = if (ovf) sprintf("[기계·%s] 이번 주 상한 도달 — 외 건은 %s", kind, evp) else sprintf("[기계·%s] %s", kind, substr(summary, 1L, 120L)),
+                 status = "resolved", opened_at = now, options = list(), recommendation = "", default_until_decided = "",
+                 blocks = list(), owner = DR_MACHINE_OWNER, source = paste0("organic:", kind),
+                 decision = if (ovf) sprintf("이번 ISO 주(%s) 기계 행 상한 %s 도달 — 이후 전이는 jsonl 에만(포인터 참조)", wk, as.character(max_rows_week)) else summary,
+                 decided_by = DR_MACHINE_OWNER, decided_at = now, note = undo, registered_at = now,
+                 recorded_by = DR_MACHINE_OWNER, evidence = evp, record_class = "machine", kind = kind,
+                 targets = as.list(tg), authority = authority_id, iso_week = wk, overflow = ovf)
+    obj$items[[length(obj$items) + 1L]] <- item
+    list(obj = obj, item = item, k = length(obj$items), added = TRUE)
+  })
+  if (is.null(it)) { out$overflow <- TRUE; return(invisible(out)) }
+  out$written <- TRUE; out$id <- it$id; out$overflow <- isTRUE(it$overflow); out$item <- it
+  invisible(out)
+}
+
+#' 참조 결정 증거 규칙 (설계 §3.1.1 ③) — auto_live · 킬 해제 · live 게이트 · 기계 기록 권한이 가리키는 결정이 도훈 결정인가.
+#'   owner = decided_by = "dohoon" · status resolved · recorded_by 가 "machine:" 아님 · 기계 행 아님 ·
+#'   evidence 비어 있지 않음 — 또는 레거시: evidence 필드가 레지스터에 처음 나타난 항목(기계 행 제외)의 registered_at **이전** 등록분은
+#'   note 가 비어 있지 않으면 된다(09-23 일괄 결정 D-A~D-M 의 "도훈 채팅 결정(AskUserQuestion…)"). 경계는 매번 재도출한다(리터럴 없음).
+#' @return list(ok, why, legacy, boundary)
+dr_evidence_ok <- function(id, root = .rf_root(), reg = NULL) {
+  id <- .rf_s1(id)
+  no <- function(why) list(ok = FALSE, why = why, legacy = FALSE, boundary = NA_character_)
+  if (!nzchar(id)) return(no("id_empty"))
+  if (startsWith(id, DR_MACHINE_PREFIX)) return(no("machine_namespace"))
+  R <- reg %||% tryCatch(dr_load(root), error = function(e) NULL)
+  if (is.null(R)) return(no("register_unreadable"))
+  k <- which(vapply(R$items, function(x) identical(x$id, id), logical(1)))
+  if (!length(k)) return(no("absent"))
+  it <- R$items[[k[1]]]
+  if (!identical(.rf_s1(it$status), "resolved")) return(no("not_resolved"))
+  if (!identical(.rf_s1(it$owner), "dohoon")) return(no(paste0("owner:", .rf_s1(it$owner))))
+  if (!identical(.rf_s1(it$decided_by), "dohoon")) return(no(paste0("decided_by:", .rf_s1(it$decided_by))))
+  if (identical(.rf_s1(it$record_class), "machine")) return(no("machine_row"))
+  if (startsWith(.rf_s1(it$recorded_by), "machine:")) return(no("recorded_by_machine"))
+  .ts <- function(s) as.POSIXct(.rf_s1(s), format = "%Y-%m-%dT%H:%M:%S%z", tz = "UTC")
+  hum <- Filter(function(x) !identical(.rf_s1(x$record_class), "machine") && "evidence" %in% names(x), R$items)
+  bts <- if (length(hum)) suppressWarnings(min(do.call(c, lapply(hum, function(x) .ts(x$registered_at))), na.rm = TRUE)) else as.POSIXct(NA)
+  bnd <- if (is.finite(as.numeric(bts))) format(bts, "%Y-%m-%dT%H:%M:%S%z", tz = "UTC") else NA_character_
+  if (nzchar(.rf_s1(it$evidence))) return(list(ok = TRUE, why = "evidence", legacy = FALSE, boundary = bnd))
+  rt <- .ts(it$registered_at)
+  if (is.finite(as.numeric(bts)) && is.finite(as.numeric(rt)) && rt < bts && nzchar(.rf_s1(it$note)))
+    return(list(ok = TRUE, why = "legacy_note", legacy = TRUE, boundary = bnd))
+  list(ok = FALSE, why = if (is.finite(as.numeric(rt)) && is.finite(as.numeric(bts)) && rt < bts) "legacy_note_empty" else "evidence_empty",
+       legacy = FALSE, boundary = bnd)
 }
 
 #' 목록 — status = "open"(기본) / "resolved" / "all". 오래된 순(opened_at → id). 부재·파손은 명시 오류.
@@ -2024,4 +2526,4 @@ rf_rebase_essence <- function(layer, base_id, n, essence_new, regime, provenance
 
 `%||%` <- function(a, b) if (is.null(a) || length(a) == 0L || (length(a) == 1L && is.na(a))) b else a
 
-cat("[reinforce_ledger.R] Loaded (v10) — rf_open_entry / rf_append_attempt(★L1 25회 게이트·서술 의무 · root_papers 선택) / rf_record_result / rf_park_entry(조기 중단·사유 필수) / rf_record_judge / rf_record_combination_review / rf_lessons_digest / rf_record_adversary(G2 오버레이 반증 표식) / rf_record_b5_redesign(B5 재설계 라운드 표식) / rf_rebase_essence(_batch)(P0-06 · history append-only) / rf_mark_axis_epoch(relabel_from · require_regime · claim) / rf_graduate_entry(보류 A 졸업)\n")
+cat("[reinforce_ledger.R] Loaded (v10) — rf_open_entry / rf_append_attempt(★L1 25회 게이트·서술 의무 · root_papers 선택) / rf_record_result / rf_park_entry(조기 중단·사유 필수) / rf_record_judge / rf_record_combination_review / rf_lessons_digest / rf_record_adversary(G2 오버레이 반증 표식) / rf_record_b5_redesign(B5 재설계 라운드 표식) / rf_rebase_essence(_batch)(P0-06 · history append-only) / rf_mark_axis_epoch(relabel_from · require_regime · claim) / rf_graduate_entry(보류 A 졸업) / rf_trial_log_append·rf_record_trial_decision(P1-02 시행 로그) / dr_record_machine·dr_evidence_ok(O0a 기계 기록·증거 규칙) / rf_reopen_entry(사람 호출 소진 되살리기)\n")

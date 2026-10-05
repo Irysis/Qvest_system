@@ -123,7 +123,35 @@ suppressMessages(source(file.path(ROOT, "02_Infrastructure/reinforcement/rf_spec
 suppressMessages(source(file.path(ROOT, "02_Infrastructure/reinforcement/rf_avoid.R"), local = TRUE))
 PROG <- fromJSON(PROG_P, simplifyVector = FALSE)
 led <- rf_load(1L, ROOT)
-act <- Filter(function(e) identical(e$status, "active"), led$entries)
+## ── ★레인 순서 (결정 D-G 2026-09-23 · 플랜 P1-08 · 2026-09-25 · 판정 정본 rf_lane_rules.R) ─────────────────────────────────
+##   구판은 원장 순서 첫 active(act[[1]])를 돌렸다 — 반사실(파킹분 기저 관문 측정) active 1건이 신규 논문 요청을 16시간 막았다(감사 D8-02).
+##   이제: prereg > 신규 논문 > 승격 > 반사실(순서·우선순위 어휘 = config lanes) · 사전등록 실험 entry(experiment)는 격자로 돌리지 않는다
+##   (칸은 사전등록이 정한다 — 전용 실행기 별판 · 현재 live 경로 없음). lanes 설정이 깨졌으면 구판 거동 그대로(로그).
+suppressMessages(source(file.path(ROOT, "02_Infrastructure/reinforcement/rf_lane_rules.R"), local = TRUE))
+.LANE <- rf_lane_cfg(CFG)
+if (!isTRUE(.LANE$ok)) jlog("lane_cfg_unavailable", why = .LANE$why %||% "", note = "lanes 설정 판독 불가 — 구판 거동(원장 순서 첫 active · 전부 차단)")
+.REQ_P <- file.path(ROOT, "06_Registry/replication_request.json")
+.req_now <- function() if (file.exists(.REQ_P)) tryCatch(fromJSON(.REQ_P, simplifyVector = FALSE), error = function(e) NULL) else NULL
+.sel <- rf_lane_select(led$entries, .LANE)
+if (length(.sel$excluded_experiment))
+  jlog("experiment_entries_excluded", ids = paste(.sel$excluded_experiment, collapse = ","),
+       note = "사전등록 실험 entry 는 격자 러너가 돌리지 않는다(전용 실행기 별판) — 개설도 막지 않는다")
+## ★반사실(비차단 우선순위)만 active 면 먼저 next_paper 에 위임한다 — 승격 자식·신규 논문 요청이 반사실에 막히지 않게.
+##   next_paper 는 러너 claim 을 상속받아(QVEST_RF_CLAIM_HELD) 원장을 쓴다. 돌아오면 원장을 다시 읽고 다시 고른다.
+if (length(.sel$entries) && !length(rf_blocking_active(led$entries, .LANE))) {
+  jlog("lane_delegate_nonblocking", n_active = length(.sel$entries), top = as.character(.sel$entries[[1]]$base_id %||% ""),
+       note = "active 가 전부 비차단(반사실) — next_paper 선위임(승격·신규 논문이 먼저)")
+  Sys.setenv(QVEST_RF_CLAIM_HELD = "1")
+  on.exit(Sys.unsetenv("QVEST_RF_CLAIM_HELD"), add = TRUE)
+  system2("Rscript", shQuote(file.path(ROOT, "02_Infrastructure/ops/reinforce_auto_next_paper.R")), wait = TRUE)
+  Sys.unsetenv("QVEST_RF_CLAIM_HELD")
+  led <- rf_load(1L, ROOT); .sel <- rf_lane_select(led$entries, .LANE)
+}
+act <- .sel$entries
+if (length(act) > 1L)
+  jlog("lane_selected", base_id = as.character(act[[1]]$base_id %||% ""), lane = as.character(.sel$lanes[1] %||% NA),
+       n_active = length(act), order = paste(sprintf("%s:%s", vapply(act, function(e) as.character(e$base_id %||% ""), character(1)),
+                                                     as.character(.sel$lanes)), collapse = ","))
 if (!length(act)) {
   ## ★active 가 없으면 **다음 논문을 연다** (2026-09-05 실사고). 구판은 여기서 멈췄다 — 새 요청의 유일한 생산자
   ##   (reinforce_auto_next_paper.R)를 부르는 자리가 소진 위임뿐이라, entry 를 park 로 닫으면(소진 아님)
@@ -136,6 +164,14 @@ if (!length(act)) {
   Sys.unsetenv("QVEST_RF_CLAIM_HELD"); return(0L)
 }
 E <- act[[1]]; BID <- E$base_id
+## ★반사실 양보 — 충실구현 요청이 진행 중(lanes.request_inflight_statuses)이면 비차단 entry 는 이 tick 에 원장을 쓰지 않는다.
+##   충실구현 레인(rf_replication_auto.sh)은 비차단 active 를 세지 않고 돈다 — 그 레인의 원장 개설(rf_replication_verify.R)과
+##   러너 쓰기가 겹치지 않게 하는 쪽이 여기다. 요청 발행은 next_paper 가 러너 claim 아래서만 한다(배치가 떠 있는 동안 발행 없음).
+if (isTRUE(.LANE$ok) && rf_entry_priority(E) %in% .LANE$nonblocking && isTRUE(rf_request_inflight(.req_now(), .LANE))) {
+  jlog("yield_nonblocking_to_replication", base_id = BID, request_status = as.character((.req_now() %||% list())$status %||% ""),
+       note = "반사실 entry 양보 — 신규 논문 충실구현이 진행 중(원장 동시 쓰기 차단 · 레인 순서 신규 논문 > 반사실)")
+  return(0L)
+}
 ## ── ★측정 규약·후보 자격 문맥 (P0-10·11·12 · 규약 혼합 가드 · 2026-09-24 도훈 승인 플랜 qvest-1-drifting-eclipse) ──────────
 ##   현행 규약 = constraint_defaults.json::execution.exec_price(결정 EXEC-PRICE) — 바닥·carry 기준선·블록 승자·A 는 이 규약의 칸만
 ##   소비한다(과도기 = config close_t1 → 신규 칸 close_t1 → 과거 칸 rebase(P0-06) → current_axis 교체. rebase 전에는 legacy 칸이
@@ -145,6 +181,21 @@ suppressMessages(source(file.path(ROOT, "02_Infrastructure/reinforcement/rf_runn
 if (is.na(.RCTX$regime))
   jlog("regime_current_unknown", why = .RCTX$regime_why, source = .RCTX$regime_source,
        note = "현행 측정 규약 판독 불가 — 후보 전부 regime 미판정(fail-closed) · A 발행 보류")
+## >>> O0a 시행 로그(P1-02 · 2026-09-25 · 설계 organic_design_final §3 G1) — 생산자 7곳 중 러너 5곳(블록 승자·바닥·b1/b2/b5 pick) + 칸 설계 출처.
+##   판정 불변 — 기록만 더한다(.TLW 는 .winner_of·바닥 절이 남기는 단계별 후보 메모 · 기록 실패 = jlog trial_log_failed · 러너는 계속).
+tryCatch(suppressMessages(source(file.path(ROOT, "02_Infrastructure/reinforcement/rf_trial_producers.R"), local = TRUE)),
+         error = function(e) jlog("trial_log_load_failed", err = conditionMessage(e),
+                                  note = "시행 로그 생산자 적재 실패 — 러너는 계속(기록 호출은 전부 trial_log_failed 로 남는다 · 판정 불변)"))
+.TLW <- new.env(parent = emptyenv())
+.tlw_note <- function(key, stage, cand, v = NULL, by = NULL) tryCatch({
+  cd <- vapply(cand, function(a) { x <- .rf_attempt_code(a, cells); if (is.na(x)) "" else x }, character(1))
+  cur <- if (exists(key, envir = .TLW, inherits = FALSE)) get(key, envir = .TLW) else list()
+  if (identical(stage, "win")) { cur$chosen <- cd[1]; cur$vals <- as.numeric(v); cur$vcodes <- cur$c2 %||% character(0); cur$by <- by }
+  else cur[[stage]] <- cd
+  assign(key, cur, envir = .TLW); invisible(NULL) }, error = function(e) invisible(NULL))
+.tl_try <- function(what, expr) tryCatch({ force(expr); TRUE },
+  error = function(e) { jlog("trial_log_failed", what = what, err = conditionMessage(e)); FALSE })
+## <<< O0a
 .now_ts <- function() format(Sys.time(), "%Y-%m-%dT%H:%M:%S%z")
 
 ## ── ★Grade A 발행·보류 1벌 (P0-12 A 자격 관문 · 2026-09-24) ────────────────────────────────────────────────────
@@ -370,6 +421,23 @@ used <- as.integer(E$attempts_used %||% 0L)
 #   "칸 수 제한을 두지 마라" 를 B1 에만 적용하고 총예산에 안 적용한 비대칭을 닫는다.
 MAXA <- as.integer(E$max_attempts %||% led$max_attempts %||% 25L)
 cells <- do.call(c, lapply(PROG$blocks, function(b) lapply(b$cells, function(c) { c$block <- b$id; c$axis <- b$axis; c })))
+## ── ★축 등록부 ↔ 격자 계약 · 격자 기본 예산 (결정 B4-SIX-AXIS-AND-CARRY-AXES · 도훈 2026-09-26 · 정본 rf_spec_axes.R) ─────────────
+##   ① 계약 — 등록부 소유 블록 = 격자 블록(결합 블록 제외) · 결합 칸 = 전결합 + 축별 LOO · 승자 기준 존재. 어긋나면 매 tick 로그 1줄
+##      (정지는 안 한다 — 어긋난 축은 B4 에서 승자 없음 → 등록부 b4_base 로 돈다 · 조용한 통과 없음).
+##   ② 기본 예산 — 원장 파일 max_attempts(35 = 7블록×5 시절 격자 크기의 사본)는 격자가 늘면 낡는다(B4 6축 = 7칸 → 격자 37). 그대로면 설계 초과가
+##      없는 entry 에서 B4 마지막 칸이 used ≥ MAXA 로 잘린다. **이 tick 안에서만** 격자 칸 합으로 올린다(파일은 쓰지 않는다 · 내리지 않는다) —
+##      아래 예산 재도출(rf_budget_auto(led$max_attempts …))이 이 값을 기본으로 쓰고, .cur 은 원장 게이트(rf_append_attempt: entry max_attempts →
+##      파일 값)가 실제로 보는 값(.led_max_file)이라 둘이 다르면 entry 예산이 기록된다(기록이 없으면 원장 게이트가 파일 값에서 칸을 거부하고
+##      entry 를 exhausted 로 닫는다).
+.axc <- tryCatch(rf_axes_grid_contract(PROG), error = function(e) paste("계약 판정 실패:", conditionMessage(e)))
+if (length(.axc)) jlog("spec_axes_contract_violation", base_id = BID, problems = paste(.axc, collapse = " | "),
+                       note = "축 등록부(rf_spec_axes.R)와 격자(reinforce_program.json)가 어긋난다 — 어긋난 축은 B4 에서 승자 없음(b4_base)으로 돈다")
+.led_max_file <- led$max_attempts
+led$max_attempts <- rf_budget_base(led$max_attempts, PROG)
+##   ③ 승계 순서 — config spec_axes.inherit_order(부재 = 등록부 기본 floor > carry · 구판 재현 = ["carry","floor"] · 도훈 결정 항목).
+##      무효값(두 원천이 아니거나 중복)은 기본으로 돌고 로그 1줄 — 조용한 통과 없음.
+.axio <- rf_axes_inherit_order(CFG)
+if (!isTRUE(.axio$valid)) jlog("spec_axes_inherit_order_invalid", base_id = BID, source = .axio$source, used = paste(.axio$order, collapse = ">"))
 
 # ── ★B1 설계 소비 (도훈 지시 2026-09-04 "블록 진입 시 1회만 LLM 설계") ────────
 #   설계가 있으면 격자의 B1 칸을 **통째로** 갈아 끼운다. 칸 수가 5가 아니어도 뒤 블록의
@@ -404,6 +472,11 @@ if (length(.b1_design)) {
   jlog("b1_design_applied", base_id = BID, cells = length(.b1_design),
        note = "설계 칸으로 B1 교체 — 칸 수는 설계가 정한다")
 }
+## >>> O0a 칸 설계 출처 표식 — 조립 지점에서 붙인다(설계 파일 존재로 사후 도출하면 entry 단위가 돼 폴백 칸을 LLM 칸으로 센다 · E3).
+##   설계가 적용된 블록의 칸 = 전부 설계 칸(위 두 절이 블록을 통째로 갈아 끼운다). 나머지 = 격자(표식 없음 · 상주 칸은 standing 필드로 판정).
+if (length(.b1_design)) cells <- lapply(cells, function(c) { if (identical(as.character(c$block %||% ""), "B1")) c$design_origin <- "llm_b1"; c })
+for (.bb in names(.blk_design)) cells <- lapply(cells, function(c) { if (identical(as.character(c$block %||% ""), .bb)) c$design_origin <- "llm_block"; c })
+## <<< O0a
 
 # ── ★상주 칸 (WP-R · 도훈 지시 2026-09-17 · 격자 정본 reinforce_program.json::standing_cells) ────────
 #   BOOK_0001 PG2 오버레이의 동결 사양(pg2_risk_overlay_v1)을 **매 세대 B5 마다** 자기 코드(B5_31)로 한 번 잰다 —
@@ -434,30 +507,113 @@ for (.sc in tryCatch(rfbd_standing_cells(ROOT),
        kind = .cellS$overlay$kind, reason = .dec$reason, redesign = .redesign_on,
        note = "상주 칸 — B5 첫 칸으로 삽입(설계·규칙 선정과 무관 · 승격 carry 제외)")
 }
+## ── ★통제 칸 (P1-06 · 2026-09-25 · 격자 정본 reinforce_program.json::standing_cells[control]) ──────────────────────────────
+##   carry 가 있는 entry 의 B1 머리에 carry 재현(B1_0 · E3) + null-factor 희석(B1_N*)을 넣는다. 판정·셀 조립 = rf_runner_gates.R::rf_control_plan
+##   (순수) · 여기는 삽입·로그만. 예산은 상주 삽입 수로 센다(아래 재도출식 · 격자 밖 칸). 선정·승계·dedup 제외는 전부 gates 술어가 한다.
+.ctlP <- tryCatch(rf_control_plan(E, rfbd_control_cells(ROOT), cells),
+                  error = function(e) { jlog("control_cells_failed", base_id = BID, err = conditionMessage(e)); NULL })
+.ctl_replay_codes <- tryCatch(vapply(Filter(function(x) identical(as.character(x$control %||% ""), "carry_replay"), rfbd_control_cells(ROOT)),
+                                     function(x) as.character(x$code %||% ""), character(1)), error = function(e) character(0))
+.ctl_null_codes <- tryCatch(vapply(Filter(function(x) identical(as.character(x$control %||% ""), "null_factor"), rfbd_control_cells(ROOT)),
+                                   function(x) as.character(x$code %||% ""), character(1)), error = function(e) character(0))
+if (!is.null(.ctlP)) {
+  ## carry 없는 entry(no_carry)는 적용 범위 밖이라 로그하지 않는다 — 그 밖의 건너뜀(중간 삽입 금지·형식 오류·inactive)은 1줄로 남긴다.
+  .ctl_sk <- Filter(function(z) !identical(z$reason, "no_carry"), .ctlP$skipped)
+  if (length(.ctl_sk))
+    jlog("control_cells_skipped", base_id = BID, n = length(.ctl_sk),
+         reasons = paste(unique(vapply(.ctl_sk, function(z) z$reason, character(1))), collapse = ","),
+         codes = paste(vapply(.ctl_sk, function(z) sprintf("%s=%s", z$code, z$reason), character(1)), collapse = ","))
+  if (length(.ctlP$cells)) {
+    cells <- rf_control_insert(cells, .ctlP$cells)
+    .n_standing_inserted <- .n_standing_inserted + length(.ctlP$cells)
+    jlog("control_cells_inserted", base_id = BID, n = length(.ctlP$cells),
+         codes = paste(vapply(.ctlP$cells, function(z) sprintf("%s=%s", z$code, z$.reason), character(1)), collapse = ","),
+         note = "통제 칸 — B1 머리 삽입(선정 후보 아님 · 서명 dedup·승계·무처치 면제 · 예산 = 상주 삽입 수)")
+  }
+}
 
 # ── ★entry 예산 — **매 tick 재도출** (도훈 2026-09-04 · 2026-09-17 "예산 상한은 신경쓰지말고 반영") ────────
 #   자동 = 기본(원장 max_attempts) + B1 설계 초과 + B5 설계 초과 + 상주 삽입 + 재설계 추가(E$b5_redesign.cells_added).
 #   구판은 B1 설계가 있을 때만 셌다 — B5 설계가 7칸이거나 상주 칸이 얹히면 그만큼 뒤 블록(B4 결합)이 잘렸다.
 #   실제 상한 = max(자동, 수동): 수동 상향은 덮지 않고(구판은 매 tick 되돌려 써 추가 칸이 1개만 돌았다),
 #   자동은 자동식 위로 못 올린다. 바뀔 때만 원장에 쓴다. 산식 정본 = rf_runner_gates.R::rf_budget_auto/rf_budget_want.
+## ── ★격자 구조 상태 · D-G B5 적응 축소 — **최종 칸 목록**에 적용 (2026-09-25 · 사람 규칙 · 정본 rf_lane_rules.R) ─────────────────
+##   (가) B3-STRUCTURAL-TRIM(결정 2026-09-25): program structure_rules 의 diag 블록 = 격자 진단 칸만 · 결합 블록은 그 블록을 참조하는 칸을
+##       뺀다(전 승자 결합 칸 보존). 절단 전 계획으로 진입한 블록은 동결 · 시도 있는 코드 보존 · 빈 칸이 남는데 used ≥ 칸 수면 항등(정지 방지).
+##   (나) D-G B5 축소(ORGANIC-DE Q②′(α) 고정 사람 규칙 예외): G2 유효 pass 0 ∧ compose_only 연속 라운드 ≥ K → B5 = 상주 + standing_plus 칸.
+##       판정 입력(적대검증 판정·라운드)은 전기간 파생이다 — 결정마다 증거 칸 수(n_evidence)를 로그에 싣는다(N_program 계상).
+##   예산은 아래 재도출이 **이 목록의** B5 칸 수로 센다(축소분 재가산 차단). 둘 다 설정이 없으면 항등.
+cells <- rf_structure_cells(cells, E, PROG)
+.st <- attr(cells, "structure_trim")
+if (length(.st$invalid)) jlog("structure_rules_invalid", base_id = BID, invalid = paste(.st$invalid, collapse = " | "),
+                              note = "무효 구조 규칙은 적용하지 않는다(program structure_rules 확인)")
+if (isTRUE(.st$applied) || grepl("identity$", .st$reason %||% ""))
+  jlog("structure_trim", base_id = BID, reason = .st$reason, rules = paste(.st$rules, collapse = ","),
+       removed = paste(.st$removed, collapse = ","), inserted = paste(.st$inserted, collapse = ","),
+       frozen = paste(unique(.st$frozen), collapse = ","), n_cells = length(cells),
+       note = if (grepl("identity$", .st$reason %||% "")) "불변식 위반 — 구조 절단 취소(항등)" else "구조 상태 적용(사람 규칙)")
+.b5d <- rf_b5_budget_decide(led$entries, get0("CFG", ifnotfound = list()), gate_fn = function() rf_a_gate_config(ROOT))
+cells <- rf_b5_budget_cells(cells, E, .b5d)
+.b5b <- attr(cells, "b5_budget")
+if (isTRUE(.b5b$applied) || identical(.b5b$reason, "inv4_identity"))
+  jlog("b5_budget_decision", base_id = BID, reason = .b5b$reason, removed = paste(.b5b$removed, collapse = ","),
+       why = .b5d$why, run_len = .b5d$run_len, run_start = .b5d$run_start, k = .b5d$k, standing_plus = .b5d$standing_plus,
+       n_valid_pass = .b5d$n_valid_pass, n_pass_flagged = .b5d$n_pass_flagged, n_evidence = .b5d$n_evidence,
+       note = "D-G B5 축소 — 성과 소비 고정 사람 규칙(ORGANIC-DE Q②′(α)) · n_evidence = 이 결정이 소비한 적대검증 판정 칸 수(N_program)")
 .nB1d <- length(.b1_design)
 .b5c  <- rf_b5_design_counts(length(.blk_design[["B5"]] %||% list()), E)
 .slot_of <- function(id) { for (b in PROG$blocks) if (identical(b$id, id)) return(as.integer(b$n %||% length(b$cells))); 5L }
+.nB5c <- rf_block_cell_count(cells, "B5")   # ★최종 목록의 B5 칸(설계·상주·재설계·D-G 축소 적용 뒤) — 가산 차단(2026-09-25)
+.nB1c <- rf_block_cell_count(cells, "B1")   # ★최종 목록의 B1 칸(설계·통제 칸 삽입 뒤) — B1 도 초과분만(P1 · 2026-09-26)
 .auto <- rf_budget_auto(led$max_attempts %||% 25L, .nB1d, .b5c$n_base, .n_standing_inserted, .b5c$n_redesign,
-                        slot_b1 = .slot_of("B1"), slot_b5 = .slot_of("B5"))
+                        slot_b1 = .slot_of("B1"), slot_b5 = .slot_of("B5"), n_b5_cells = .nB5c, n_b1_cells = .nB1c)
 .want <- rf_budget_want(.auto, E$max_attempts)
-.cur  <- as.integer(E$max_attempts %||% led$max_attempts %||% 25L)
+.cur  <- as.integer(E$max_attempts %||% .led_max_file %||% 25L)   # ★원장 게이트가 실제로 보는 값(entry → 파일) — 위 격자 기본 예산과 다르면 기록된다
 if (.want != .cur) {
   ok_b <- tryCatch({ rf_record_entry_budget(1L, BID, .want,
-            sprintf("예산 재도출 %d -> %d = 기본 %d + B1 설계 초과 %d(설계 %d칸) + B5 설계 초과 %d(설계 %d칸) + 상주 %d + 재설계 추가 %d — 뒤 블록이 잘리지 않도록",
-                    .cur, .want, as.integer(led$max_attempts %||% 25L), max(0L, .nB1d - .slot_of("B1")), .nB1d,
-                    max(0L, .b5c$n_base - .slot_of("B5")), .b5c$n_design, .n_standing_inserted, .b5c$n_redesign),
+            sprintf("예산 재도출 %d -> %d = 기본 %d + B1 격자 초과 %d(최종 B1 %d칸 · 설계 %d) + B5 격자 초과 %d(최종 B5 %d칸 = 설계 %d · 상주 %d · 재설계 추가 %d · D-G 축소 −%d) — 뒤 블록이 잘리지 않도록",
+                    .cur, .want, as.integer(led$max_attempts %||% 25L), max(0L, .nB1c - .slot_of("B1")), .nB1c, .nB1d,
+                    max(0L, .nB5c - .slot_of("B5")), .nB5c, .b5c$n_design, .n_standing_inserted, .b5c$n_redesign,
+                    length(.b5b$removed %||% character(0))),
             root = ROOT); TRUE },
           error = function(e) { jlog("entry_budget_failed", err = conditionMessage(e)); FALSE })
   if (isTRUE(ok_b)) { MAXA <- .want
-    jlog("entry_budget_raised", base_id = BID, max_attempts = .want, auto = .auto, b1_cells = .nB1d,
+    jlog("entry_budget_raised", base_id = BID, max_attempts = .want, auto = .auto, b1_cells = .nB1c, b1_design = .nB1d,
          b5_cells = .b5c$n_design, standing = .n_standing_inserted, redesign = .b5c$n_redesign) }
 } else MAXA <- .cur
+## ── ★B4 결합 칸 재도출 — 결합 대상 축 = 축 등록부 − 진단 모드 블록 (B4-SIX-AXIS · 2026-09-26 · 정본 rf_spec_axes.R::rf_axes_combo_cells) ─────
+##   격자 blocks[B4].cells 는 코드·라벨 목록(진단 블록 없을 때의 전결합 1 + 축별 LOO)이다. 진단 모드 블록 = 사람 구조 규칙(rf_structure_rules —
+##   B3-STRUCTURAL-TRIM 등 · 그 판독기가 없으면 없음). 모드 = config b4_combo.diag_mode(부재 = exclude_axis: 진단 블록을 결합 축에서 뺀다 ·
+##   drop_referencing: 진단 블록 참조 칸 절단(구조 규칙 현행) · keep_loo: 절단 없음 — 기본 = exclude_axis = 결정 B3-TRIM-VS-B4-SIX (A) · [위임] 2026-09-26).
+##   ★동결 — 이 entry 에 결합 칸 시도가 있으면 그 칸 스펙에 기록된 계획(combo_plan)을 쓴다(진행 중 결합 블록의 계획을 바꾸지 않는다).
+##   ★위치 — 예산 재도출 **뒤**(예산 기본 = 격자 칸 합 · 결합 칸이 줄면 격자 소진이 닫는다) · 구조 규칙 적용(rf_structure_cells) 뒤에도 결합 블록은
+##     이 계획이 대체한다(같은 판단을 두 번 하지 않는다 — 통합 시 rf_structure_cells 의 결합 절단은 이 계획과 같은 모드여야 한다).
+.b4_trim <- if (exists("rf_structure_rules", mode = "function"))
+  tryCatch(as.character(unlist(lapply(rf_structure_rules(PROG)$rules, function(r) r$block))),
+           error = function(e) { jlog("b4_combo_rules_failed", base_id = BID, err = conditionMessage(e)); character(0) }) else character(0)
+.b4_mode <- rf_axes_diag_mode(CFG)
+if (!isTRUE(.b4_mode$valid)) jlog("b4_combo_mode_invalid", base_id = BID, source = .b4_mode$source, used = .b4_mode$mode)
+.b4_fz <- rf_axes_combo_frozen(E$attempts, function(a) {
+  .p <- as.character((a[["essence"]] %||% list())$spec %||% "")[1]
+  if (is.na(.p) || !nzchar(.p) || !file.exists(.p))
+    .p <- file.path(WDIR, sprintf("spec_%s__%s.json", as.character(a$cell_code %||% "")[1], substr(BID, 1, 48)))
+  if (file.exists(.p)) tryCatch(fromJSON(.p, simplifyVector = FALSE), error = function(e) NULL) else NULL })
+##   ★동결 판정 불가(결합 칸 시도의 스펙을 하나도 못 읽음 · source = unreadable) = 현 계획으로 돈다 — '기록 없는 수리 전 칸'(keep_loo)과 구분(10-03).
+if (!is.null(.b4_fz) && is.na(.b4_fz$mode)) {
+  jlog("b4_combo_frozen_unreadable", base_id = BID, n = .b4_fz$n, note = "결합 칸 시도의 스펙을 하나도 못 읽었다 — 동결 판정 불가 · 현 계획으로 돈다")
+  .b4_fz <- NULL
+}
+.b4_plan <- tryCatch(rf_axes_combo_cells(PROG, if (is.null(.b4_fz)) .b4_trim else .b4_fz$trimmed,
+                                         mode = if (is.null(.b4_fz)) .b4_mode$mode else .b4_fz$mode),
+                     error = function(e) { jlog("b4_combo_plan_failed", base_id = BID, err = conditionMessage(e)); NULL })
+if (!is.null(.b4_plan)) {
+  cells <- c(Filter(function(c) !identical(as.character(c$block %||% ""), RF_AXES_COMBO_BLOCK), cells), .b4_plan$cells)
+  if (length(.b4_plan$trimmed) || length(.b4_plan$drop) || !is.null(.b4_fz))
+    jlog("b4_combo_plan", base_id = BID, mode = .b4_plan$mode, mode_source = if (is.null(.b4_fz)) .b4_mode$source else .b4_fz$source,
+         trimmed = paste(.b4_plan$trimmed, collapse = ","), axes = paste(.b4_plan$axes, collapse = ","),
+         drop = paste(.b4_plan$drop, collapse = ","), projected = paste(.b4_plan$projected, collapse = ","),
+         n_cells = length(.b4_plan$cells), note = "결합 칸 = 등록부 축 − 진단 모드 블록(모드 스위치 b4_combo.diag_mode)")
+}
 
 # ★미측정(등록만 된) 칸 — **소진 판정보다 먼저** 본다. 등록됐는데 실행이 실패한 칸을
 #   exhausted 로 넘기면 그 칸이 영구 소실된다(2026-08-30 실사고: 워커 4개 미기동으로 17~20 이 빈 채 소비).
@@ -480,6 +636,74 @@ if (isTRUE(CFG$enabled) && isTRUE((CFG$lcode_mechanism %||% list())$enabled)) tr
             stdout = FALSE, stderr = FALSE)
   }
 }, error = function(e) jlog("mechanism_backfill_failed", err = conditionMessage(e)))
+
+## ── ★경계 백필 + 격자 재도출 대조 (B5FIX · 2026-09-26 · 도훈 승인 "1번 진행") ─────────────────────────────────────────────
+##   실사고 09-25 RP_20260924_052517_7308 B5: 이 tick 이 위 기전 백필(B6)을 동기로 돌리는 사이 기전 레인이 B5 설계 파일을 덮었다
+##   (8칸 레인 설계 → 5칸 · 그 writer 는 이제 rf_lcode_mechanism_lib.R 저장 관문이 막는다). 격자(cells)는 tick 머리에 읽은 8칸이라
+##   배치 뒤 경계 판정이 '3칸 남음' 을 셌고 B5 적대검증(G2)·블록 L-code·블록 텔레그램이 증발했다 — 다음 tick 은 5칸 격자로 B5 를
+##   완결로 읽고 넘어갔다. 경계 처리는 배치 끝 한 자리에서만 불려, 그 순간을 놓치면(격자 변경 · 경계 도중 러너 사망 · 텔레그램/G2
+##   실패) 다시 돌 길이 없었다(같은 entry B6 텔레그램도 09-24 러너 정지로 없다).
+##   ① 경계 백필 — **현재 격자**(방금 설계 파일에서 재도출한 cells)·원장·L-code 파일·로그로 "칸은 다 쟀는데 흔적이 없는 블록" 을 찾아
+##      빠진 부품만 다시 돈다: G2(B5) → L-code → 기전 → 텔레그램(지연 표기 · 그 블록 시점 표). 판정 정본 = rf_boundary_backfill.R.
+##      상한 = boundary_backfill.max_tries(부재 2 · 시작 표식 수) · tick 당 블록 = boundary_backfill.max_blocks_per_tick(부재 2) ·
+##      끄기 = boundary_backfill.enabled=false. 소진 판정 **앞**이다 — 마지막 블록(B4) 경계를 놓친 entry 가 흔적 없이 소진되지 않게.
+##   ② 격자 재도출 대조 — 이 tick 의 설계 파일을 다시 읽어 격자를 만든 설계(.blk_design)와 다르면 **배치를 열지 않고 tick 을 닫는다**
+##      (위 기전 백필·아래 경계 백필이 다음 블록 설계를 저장했다 = 이 tick 격자가 낡았다). 다음 tick 이 파일에서 새 격자를 만든다.
+##   등급·원장 칸은 건드리지 않는다(G2 표식 · L-code · 텔레그램 · 로그만).
+.bbc <- CFG$boundary_backfill %||% list()
+if (!identical(.bbc$enabled, FALSE)) tryCatch({
+  suppressMessages(source(file.path(ROOT, "02_Infrastructure/reinforcement/rf_boundary_backfill.R"), local = TRUE))
+  .bbT <- rfbb_targets(E, cells, ROOT, LOG_P, max_tries = .bbc$max_tries %||% 2L,
+                       adv_status = function(a) rf_adversary_status(a, carry_overlay = E$carry$overlay)$status)
+  for (.g in .bbT$gave_up)
+    jlog("boundary_backfill_gave_up", base_id = BID, block = .g$block, tries = .g$tries, need = paste(.g$need, collapse = "+"),
+         note = "경계 백필 상한 도달 — 더 돌지 않는다(흔적 누락은 그대로 남는다 · 수동 확인)")
+  .bb_g2 <- FALSE
+  for (.t in utils::head(.bbT$todo, max(1L, as.integer(.bbc$max_blocks_per_tick %||% 2L)))) {
+    .tb <- .t$block; .tn <- as.integer(.t$n_last)
+    jlog("boundary_backfill", base_id = BID, block = .tb, n = .tn, need = paste(.t$need, collapse = "+"), tries = .t$tries + 1L,
+         evidence = paste(.t$evidence, collapse = " · "), note = "칸은 다 쟀는데 경계 흔적이 없다 — 빠진 부품만 다시 돈다")
+    if ("g2" %in% .t$need) {
+      .advB <- tryCatch({
+        suppressMessages(source(file.path(ROOT, "02_Infrastructure/reinforcement/rf_overlay_adversary.R"), local = TRUE))
+        rf_overlay_adversary_run(BID, "B5", 1L, root = ROOT)
+      }, error = function(e) { jlog("adversary_failed", base_id = BID, block = "B5", phase = "boundary_backfill", err = conditionMessage(e)); NULL })
+      if (!is.null(.advB)) { .bb_g2 <- TRUE
+        jlog("adversary_done", base_id = BID, block = "B5", n = NROW(.advB), phase = "boundary_backfill",
+             verdicts = if (NROW(.advB)) paste(sprintf("%s=%s", .advB$code, .advB$verdict), collapse = ",") else "") }
+      if (.redesign_on)
+        tryCatch({ rf_record_b5_redesign(1L, BID, list(active = FALSE, closed_at = .now_ts(), closed_by = "reinforce_auto_parallel:boundary_backfill",
+                                                       adversary_ran = !is.null(.advB)), root = ROOT)
+                   jlog("b5_redesign_closed", base_id = BID, adversary_ran = !is.null(.advB), phase = "boundary_backfill") },
+                 error = function(e) jlog("b5_redesign_close_failed", base_id = BID, err = conditionMessage(e)))
+    }
+    if ("lcode" %in% .t$need) {
+      .lcB <- tryCatch({ source(file.path(ROOT, "02_Infrastructure/ops/rf_block_lcode.R")); rf_emit_block_lcode(BID, .tn, root = ROOT) },
+                       error = function(e) { jlog("lcode_failed", phase = "boundary_backfill", err = conditionMessage(e)); NULL })
+      jlog("lcode_block", n = .tn, l_code = as.character(.lcB %||% "NA"), base_id = BID, block = .tb, phase = "boundary_backfill")
+      if (!is.null(.lcB) && nzchar(as.character(.lcB)))
+        tryCatch(system2("bash", c(shQuote(file.path(ROOT, "02_Infrastructure/ops/rf_lcode_mechanism.sh")), shQuote(BID), shQuote(.tb)),
+                         wait = TRUE, stdout = TRUE, stderr = TRUE),
+                 error = function(e) jlog("lcode_mechanism_failed", phase = "boundary_backfill", err = conditionMessage(e)))
+    }
+    if ("telegram" %in% .t$need) {
+      .okB <- tryCatch({ source(file.path(ROOT, "02_Infrastructure/ops/rf_auto_notify.R"))
+                         isTRUE(rf_auto_notify(BID, .tn, kind = "block", delayed = TRUE)) },
+                       error = function(e) { jlog("telegram_failed", phase = "boundary_backfill", err = conditionMessage(e)); FALSE })
+      jlog("telegram_block", n = .tn, sent = .okB, base_id = BID, block = .tb, phase = "boundary_backfill")
+    }
+  }
+  if (.bb_g2) { led <- rf_load(1L, ROOT); E <- Filter(function(e) identical(e$base_id, BID), led$entries)[[1]] }
+}, error = function(e) jlog("boundary_backfill_failed", base_id = BID, err = conditionMessage(e)))
+.drift <- tryCatch({
+  if (!exists("rfbb_design_drift", mode = "function"))
+    suppressMessages(source(file.path(ROOT, "02_Infrastructure/reinforcement/rf_boundary_backfill.R"), local = TRUE))
+  rfbb_design_drift(ROOT, BID, .blk_design) }, error = function(e) { jlog("design_drift_check_failed", err = conditionMessage(e)); character(0) })
+if (length(.drift)) {
+  jlog("tick_closed_design_drift", base_id = BID, blocks = paste(.drift, collapse = ","),
+       note = "tick 도중 설계 파일이 바뀌었다(격자가 낡음) — 배치를 열지 않고 닫는다 · 다음 tick 이 파일에서 격자를 다시 만든다")
+  return(0L)
+}
 
 ## ★소진 루틴 하나 — 예산 소진(used >= MAXA)과 격자 소진(빈 칸 0 · 아래 halt_no_jobs 자리) 두 입구가 같은 출구를 쓴다.
 ##   구판은 퇴역된 reinforce_auto_run.R 에 위임했는데 그 파일은 안내문만 찍고 종료해 promo2 소진 → 승격이 조용히 실패했다.
@@ -563,7 +787,9 @@ if (!length(pending) && used < length(cells)) {
 #   ★시드 오프셋 = 원장 누적 entry 수. 이게 없으면 그리디가 결정론이라 전 논문이 같은 사슬을
 #     받아 총 조합이 entry 수와 무관하게 5개로 고정된다(계열 라운드로빈으로 회전).
 # ★설계가 있으면 규칙 선정기를 부르지 않는다 — 두 선정이 겹치면 설계가 조용히 덮인다.
-if (length(batch) && identical(first$block, "B1") && !length(.b1_design)) {
+# ★통제 칸(P1-06)은 자리를 내주지 않는다 — 픽커는 **비상주 슬롯만** 채운다(B5 픽커와 같은 정본 rf_batch_open_slots). 통제 칸뿐인 배치는 픽커를 안 부른다.
+.b1_slots <- if (length(batch)) rf_batch_open_slots(batch) else integer(0)
+if (length(batch) && identical(first$block, "B1") && !length(.b1_design) && length(.b1_slots)) {
   .done_fsets <- unique(unlist(lapply(E$attempts, function(a) {
     sp <- a$essence$spec
     if (is.null(sp) || !nzchar(sp) || !file.exists(sp)) return(NULL)
@@ -572,20 +798,33 @@ if (length(batch) && identical(first$block, "B1") && !length(.b1_design)) {
       function(f) as.character(f$id %||% ""), character(1))), collapse = "+")
   })))
   .fp <- tryCatch({ suppressMessages(source(file.path(ROOT, "02_Infrastructure/ops/rf_factor_arms.R")))
-                    rf_pick_factor_sets(length(batch), exclude = .done_fsets %||% character(0),
+                    rf_pick_factor_sets(length(.b1_slots), exclude = .done_fsets %||% character(0),
                                         seed_offset = length(led$entries),
                                         depths = unlist(PROG$blocks[[1]]$depths %||% list()),
                                         fallback_paper = .base_paper, root = ROOT) },
                   error = function(e) { jlog("factor_pick_failed", err = conditionMessage(e)); NULL })
   if (!is.null(.fp) && length(.fp$cells)) {
-    for (j in seq_along(batch)) if (j <= length(.fp$cells)) {
-      .c <- .fp$cells[[j]]; .c$code <- batch[[j]]$code; .c$block <- "B1"; .c$axis <- "multifactor"
+    for (jj in seq_along(.b1_slots)) if (jj <= length(.fp$cells)) {
+      j <- .b1_slots[jj]
+      .c <- .fp$cells[[jj]]; .c$code <- batch[[j]]$code; .c$block <- "B1"; .c$axis <- "multifactor"
       batch[[j]] <- .c
     }
     jlog("factor_arms_picked", seed = .fp$seed_id, offset = .fp$seed_offset,
          chain = paste(.fp$picked_ids, collapse = ","), pool = .fp$n_available,
          max_rho = round(.fp$max_rho %||% NA_real_, 4), asof = .fp$substrate_asof,
          excl_no_ic = length(.fp$excluded_no_ic), excl_axis = length(.fp$excluded_axis))
+    ## >>> O0a b1_factor_pick 기록 · 칸 출처(rule_factor + 선정기 selection_basis) — 기각 = 이미 측정·IC 없음·축 제외
+    ## ★픽 칸 = 픽커가 채운 비상주 슬롯(.b1_slots · P1-06 통제 칸은 B1 머리에 standing 으로 남는다) — 위치 1..n 으로 세면 통제 칸에
+    ##   rule_factor 가 찍히고 실제 픽 칸은 grid 로 남는다(10-03 시스템 렌즈 · probe_b1_provenance). .b1_slots 없는 판 = 구판 위치(1..n).
+    .tl_b1s <- if (exists(".b1_slots", inherits = FALSE)) .b1_slots else seq_along(batch)
+    .tl_b1s <- .tl_b1s[seq_len(min(length(.tl_b1s), length(.fp$cells)))]
+    for (j in .tl_b1s) batch[[j]]$design_origin <- "rule_factor"
+    if (exists(".tl_try", mode = "function")) .tl_try("b1_factor_pick", rf_tp_pick("b1_factor_pick", BID,
+      vapply(batch[.tl_b1s], rf_tp_fset_key, character(1)),
+      excluded = list("이미 측정한 팩터 집합" = .done_fsets, "IC 없음(as-of)" = .fp$excluded_no_ic, "축 제외" = .fp$excluded_axis),
+      batch = batch, rule_src = "02_Infrastructure/ops/rf_factor_arms.R::rf_pick_factor_sets",
+      scope = list(block = "B1", by = as.character(.fp$selection_basis %||% "")[1]), root = ROOT))
+    ## <<< O0a
   } else {
     # ★P0-14 수리 2판(2026-09-25 · 적대검증 PIT B1) 격자 스냅샷 폴백 = 전표본 선정 — 선정 기저를 칸에 싣는다(아래 SPEC 부기가 옮긴다).
     #   격자 B1 cells 는 구판 규칙 선정기의 스냅샷이다(basis '… substrate 2026-07-31' · reinforce_program.json B1.selection_asof.note
@@ -593,6 +832,7 @@ if (length(batch) && identical(first$block, "B1") && !length(.b1_design)) {
     #   ({D42}…{D42,SE02,L38,Q18})의 칸과 그 승격 자식이 A 를 통과했다(운영 로그 2026-09-03 10:10 폴백 1건 = RP_20260903_093807_combo).
     #   selection_asof = 스냅샷 substrate 일자(basis 에서 읽는다 · 없으면 grid_snapshot) — as-of 가 아니라 **선정에 쓴 표본의 끝**이다.
     for (.j in seq_along(batch)) {
+      if (isTRUE(batch[[.j]]$standing)) next   # ★P1-06 통제 칸은 격자 스냅샷 칸이 아니다 — 선정 기저 표식을 싣지 않는다
       .bs <- as.character(batch[[.j]]$basis %||% "")[1]; if (is.na(.bs)) .bs <- ""
       .sa <- regmatches(.bs, regexpr("substrate [0-9]{4}-[0-9]{2}-[0-9]{2}", .bs))
       batch[[.j]]$selection_basis <- "full_sample_ic"
@@ -600,6 +840,13 @@ if (length(batch) && identical(first$block, "B1") && !length(.b1_design)) {
     }
     jlog("factor_arms_fallback", note = "picker 미산출 — 격자 스냅샷 셀로 진행(측정은 계속된다) · selection_basis=full_sample_ic(A 보류)",
          cells = paste(vapply(batch, function(c) as.character(c$code %||% "")[1], character(1)), collapse = ","))
+    ## >>> O0a b1_factor_pick 기록(폴백) — 격자 스냅샷 = 전표본 선정(rule_full_ic)
+    batch <- lapply(batch, function(c) { if (!isTRUE(c$standing)) c$design_origin <- "rule_factor_fallback"; c })   # 통제(상주) 칸은 격자 스냅샷 칸이 아니다(P1-06)
+    if (exists(".tl_try", mode = "function")) .tl_try("b1_factor_pick", rf_tp_pick("b1_factor_pick", BID, vapply(Filter(function(c) !isTRUE(c$standing), batch), rf_tp_fset_key, character(1)),
+      excluded = list("이미 측정한 팩터 집합" = .done_fsets), batch = batch,
+      rule_src = "reinforce_program.json::B1 격자 스냅샷(picker 미산출 폴백 · selection_basis=full_sample_ic)",
+      scope = list(block = "B1", by = "full_sample_ic"), root = ROOT))
+    ## <<< O0a
   }
 }
 
@@ -637,6 +884,12 @@ if (length(batch) && identical(first$block, "B5") && is.null(.blk_design[["B5"]]
     jlog("overlay_arms_picked", ids = paste(.pk$picked_ids, collapse = ","),
          excluded = paste(.done_arms %||% character(0), collapse = ","),
          standing_slots = length(batch) - length(.slots))
+    ## >>> O0a b5_overlay_pick 기록 · 칸 출처(rule_catalog) — 상주 슬롯은 standing 그대로 · 기각 = 이미 측정·carry·상주 arm
+    for (j in seq_len(min(length(.slots), length(.pk$cells)))) batch[[.slots[j]]]$design_origin <- "rule_overlay"
+    if (exists(".tl_try", mode = "function")) .tl_try("b5_overlay_pick", rf_tp_pick("b5_overlay_pick", BID, .pk$picked_ids[seq_len(min(length(.slots), length(.pk$cells)))],
+      excluded = list("이미 측정·carry·상주 arm" = .done_arms), batch = batch,
+      rule_src = "02_Infrastructure/ops/rf_overlay_arms.R::rf_pick_overlay_arms", scope = list(block = "B5"), root = ROOT))
+    ## <<< O0a
   }
 }
 # ★B2(비중) 칸도 등록부에서 뽑는다 (2026-09-03). B1·B5 와 같은 형태 —
@@ -661,6 +914,13 @@ if (length(batch) && identical(first$block, "B2") && is.null(.blk_design[["B2"]]
          ids = paste(vapply(.wk$cells, function(c) as.character(c$weighting$label %||% ""), character(1)),
                      collapse = ","),
          excluded = paste(.done_wt %||% character(0), collapse = ","))
+    ## >>> O0a b2_weight_pick 기록 · 칸 출처(rule_catalog) — 기각 = 이미 측정한 label
+    for (j in seq_len(min(length(batch), length(.wk$cells)))) batch[[j]]$design_origin <- "rule_weight"
+    if (exists(".tl_try", mode = "function")) .tl_try("b2_weight_pick", rf_tp_pick("b2_weight_pick", BID,
+      vapply(.wk$cells[seq_len(min(length(batch), length(.wk$cells)))], function(c) as.character(c$weighting$label %||% c$weighting$catalog_id %||% "")[1], character(1)),
+      excluded = list("이미 측정한 label" = .done_wt), batch = batch,
+      rule_src = "02_Infrastructure/ops/rf_weight_arms.R::rf_pick_weight_arms", scope = list(block = "B2"), root = ROOT))
+    ## <<< O0a
   }
 }
   if (!length(batch)) { jlog("halt_no_room", room = room); return(0L) }
@@ -677,9 +937,11 @@ if (length(batch) && identical(first$block, "B2") && is.null(.blk_design[["B2"]]
   idx <- which(vapply(cells, function(c) identical(c$block, bid), logical(1)))
   cand <- Filter(function(a) { if (is.null(a$essence)) return(FALSE); cd <- a$essence$cell_code
     if (!is.null(cd) && nzchar(cd)) startsWith(cd, paste0(bid, "_")) else (a$n %in% idx) }, E$attempts)
+  if (exists(".tlw_note", mode = "function")) .tlw_note(bid, "c0", cand)   ## O0a 시행 로그 — 측정 후보
   # ★규약 혼합 가드 (2026-09-24 · P0-12 동반): 현행 측정 규약과 regime 이 다른 칸(rebase 전 legacy · C11 비편입 칸)은 승자 후보가
   #   아니다 — 한 argmax 에 두 규약의 PORT_t 를 섞지 않는다. 블록 승자는 규약만 본다(B3 승자의 유니버스는 처치 축이다 · RF_ROLE_CHECKS).
   cand <- rf_candidates_keep(cand, .RCTX, role = paste0("winner_", bid), log = jlog, base_id = BID)
+  if (exists(".tlw_note", mode = "function")) .tlw_note(bid, "c1", cand)   ## O0a — 규약 자격 통과
   # ★소비 술어 (2026-09-17 · 적대검증 G2 · 2026-09-24 P0-11): 게이트가 있으면 통과한 시도만 승자 후보다 — pass, 또는 verdict 가 없는데
   #   자기 오버레이 층이 없는 칸만. 자기 층 B5 의 verdict 부재는 'unverified'(검증 전 = 소비 보류).
   #   fail/error/not_candidate/unverified 는 등급 불변 · **소비만 보류**(블록 승자·B4 바닥·carry 에서 제외). 제외는 로그로 드러낸다.
@@ -691,9 +953,11 @@ if (length(batch) && identical(first$block, "B2") && is.null(.blk_design[["B2"]]
            note = "적대검증 pass 아님(미검증 포함) — 블록 승자·B4 바닥에서 제외(등급 불변 · 소비 보류)")
     cand <- cand[.keep]
   }
+  if (exists(".tlw_note", mode = "function")) .tlw_note(bid, "c2", cand)   ## O0a — 적대검증 소비 술어 통과
   if (!length(cand)) return(NULL)
   v <- vapply(cand, function(a) .metric(a, by), numeric(1)); if (all(is.na(v))) return(NULL)
   w <- cand[[which.max(replace(v, !is.finite(v), -Inf))]]; cd <- w$essence$cell_code
+  if (exists(".tlw_note", mode = "function")) .tlw_note(bid, "win", list(w), v = v, by = by)   ## O0a — 선택(argmax · 판정 불변)
   # ★승자는 **측정된 spec 파일**에서 읽는다 — 격자에서 코드로 조회하면 안 된다(2026-09-01).
   #   B1·B5 셀은 이제 배치 시점에 등록부에서 뽑히므로 **격자에 존재하지 않는다**.
   #   격자를 조회하면 실제로 이긴 구성이 아니라 스냅샷 셀이 나오고, B2/B3/B4 가 이기지도 않은
@@ -721,6 +985,9 @@ if (length(batch) && identical(first$block, "B2") && is.null(.blk_design[["B2"]]
 #     부모 승자 칸이 현행 규약 · k200_kq150(carry 는 유니버스를 리셋한다) · 창 허용 안이어야 한다. 아니면 NA(게이트 무발화) + 사유 로그 —
 #     모르는 기준선으로 막지도, 섞인 기준선으로 통과시키지도 않는다(rebase 가 부모 값을 새 규약으로 바꾸면 다시 선다).
 .carry_bi <- rf_carry_base_info(E, led$entries, .RCTX)
+## ★P1-06: 같은 regime 의 carry 재현 칸(B1_0) PT 가 있고 E3 가 red 가 아니면 그것이 기준선이다(부모 시점 값 = 빈티지 혼합) —
+##   정본 rf_runner_gates.R::rf_carry_base_resolve(재현 칸이 없거나 red 면 위 rf_carry_base_info 결과 그대로 · 반환 모양 동일).
+.carry_bi <- rf_carry_base_resolve(E, led$entries, .RCTX, base = .carry_bi)
 .carry_base <- .carry_bi$value
 if (!is.null(E$carry) && !identical(.carry_bi$why, "ok"))
   jlog("carry_base_unavailable", base_id = BID, why = .carry_bi$why, parent = as.character((E$parent %||% list())$base_id %||% ""),
@@ -738,15 +1005,21 @@ if (!is.null(E$carry) && !identical(.carry_bi$why, "ok"))
 w1 <- if (!identical(.blk, "B1")) .winner_of("B1", "port_t") else NULL
 if (!length(pending) && !identical(.blk, "B1") && is.null(w1)) {
   jlog("halt_no_b1_winner", block = .blk); return(1L) }
-w2 <- .winner_of("B2", "port_t"); w3 <- .winner_of("B3", "calmar")
-
+## ★B4 결합 입력 = 축 등록부(rf_spec_axes.R)의 소유 블록마다 승자 하나 (결정 B4-SIX-AXIS-AND-CARRY-AXES · 도훈 2026-09-26)
+##   승자 기준 = 격자 blocks[].select_winner_by(하드코딩 금지 · 구판은 w2 = B2 port_t · w3 = B3 calmar · w5 = B5 calmar 를 여기 박았다 — 값은 격자와 같다).
+##   구판은 B6·B7 승자를 아예 안 뽑아 B4 가 집행 주기·방어 슬리브 축을 영영 못 봤다. B1 은 위 w1 을 그대로 쓴다(중복 판정·중복 로그 금지).
+##   ★대조 칸(격자 control 태그 — P1-06 B1_0·B1_N* · B7_40 무신호 · B7_41 부호 반전)은 .winner_of 의 rf_candidates_keep 이 뺀다(rf_candidate_facts →
+##     control_cell · 정본 rf_runner_gates.R::rf_is_control). 7308 실측: 빼지 않으면 B7 승자(calmar)가 부호 반전 대조 B7_41(0.247 > B7_37 0.246)이다.
 # ★B5 승자의 오버레이 — .winner_of 가 이미 승자의 spec 을 돌려주므로 그 안의 overlay 를 쓴다.
 #   (격자 B5 cells 는 스냅샷이라 실제로 돈 arm 과 다를 수 있다 — 승자 기준 = calmar,
 #    오버레이의 목적이 낙폭이기 때문이다. 격자 B5.select_winner_by 와 정합.)
-#   ★적대검증 게이트 (2026-09-17 · G2): pass 또는 verdict 부재(구 attempt)만 승자 후보. 전부 탈락이면 w5=NULL —
-#     B4 의 'B5 포함' 칸은 carry 오버레이(부모 위험통제)만 깐다(승자 없음 ≠ 부모 통제 해제 · LOO 대조 보존).
-w5 <- .winner_of("B5", "calmar", gate = rf_adversary_ok)
-.w5_overlay <- if (!is.null(w5)) w5$overlay else E$carry$overlay
+#   ★적대검증 게이트 (2026-09-17 · G2): pass 또는 verdict 부재(구 attempt)만 승자 후보. 전부 탈락이면 B5 승자 없음 —
+#     B4 의 'B5 포함' 칸은 carry 오버레이(부모 위험통제)만 깐다(승자 없음 ≠ 부모 통제 해제 · LOO 대조 보존 · 등록부 b4_base = carry).
+#   ★게이트는 전 블록 공통으로 건다 — 적대검증 verdict 는 B5 칸에만 붙는다(rf_overlay_adversary_run 블록 패턴) → 다른 블록 승자는 구판과 같다.
+.b4_win <- rf_axes_block_winners(PROG, function(b, by) if (identical(b, "B1")) w1 else .winner_of(b, by, gate = rf_adversary_ok))
+if (length(attr(.b4_win, "missing_blocks")))
+  jlog("b4_axis_block_missing", base_id = BID, blocks = paste(attr(.b4_win, "missing_blocks"), collapse = ","),
+       note = "격자에 블록·승자 기준이 없다 — 그 축은 B4 에서 승자 없음(b4_base)으로 돈다")
 
 # 승자의 팩터 축을 집합으로 정규화 — 등록부 셀은 factors(복수), 구 격자 셀은 factor2(단수)
 .win_factors <- function(w) {
@@ -764,16 +1037,19 @@ w5 <- .winner_of("B5", "calmar", gate = rf_adversary_ok)
 .wbest_val  <- NA_real_        # ★바닥 칸의 PORT_t — P0-10 carry 게이트가 읽는다(2026-09-24)
 .wbest_src  <- "none"          # ★바닥 출처 — "attempt"(entry 안 자격 칸) | "carry"(P0-10 고정) | "none"
 { .cd0 <- Filter(function(a) !is.null(a$essence), E$attempts)
+  if (exists(".tlw_note", mode = "function")) .tlw_note("floor", "c0", .cd0)   ## O0a 시행 로그 — 바닥 측정 후보
   # ★바닥 후보 자격 (2026-09-24 · 규약 혼합 가드 · P0-12 D2-08 · D-C): 현행 규약 칸만 · spec.universe == k200_kq150 만 ·
   #   창 허용(12개월 · D-C) 안만. 구판은 B3 처치 유니버스(KQ150 단독 · 2010~) 칸이 PORT_t 최고면 그 유니버스가 B5·B6·B7 바닥으로
   #   **승계**됐다(감사 P0-02 실측: B5 칸 보유 99.6% 비멤버). 제외는 역할당 로그 1줄(candidates_excluded role=floor).
   .cd0 <- rf_candidates_keep(.cd0, .RCTX, role = "floor", log = jlog, base_id = BID)
+  if (exists(".tlw_note", mode = "function")) .tlw_note("floor", "c1", .cd0)   ## O0a — 바닥 자격(규약·유니버스·창) 통과
   # ★바닥도 적대검증 판정을 따른다 (2026-09-17 · WP-R 사후 지적). 판정 fail/error/not_candidate 인 B5 칸이
   #   PORT_t 최고면 그 오버레이가 뒤 블록(B2·B3)의 바닥으로 **승계**돼 소비 보류가 새어 나갔다 — 승자·carry·A 후보만
   #   막고 누적 바닥은 안 막은 비대칭. ★P0-11(2026-09-24): verdict 가 없어도 자기 층 B5 칸이면 'unverified' 로 제외한다
   #   (구판은 부재 = 통과였다). 자기 층이 없는 칸(B1~B4·B6·B7)은 그대로 후보다(rf_adversary_ok).
   .cd0_all <- .cd0
   .cd0 <- Filter(rf_adversary_ok, .cd0)
+  if (exists(".tlw_note", mode = "function")) .tlw_note("floor", "c2", .cd0)   ## O0a — 적대검증 소비 술어 통과
   if (length(.cd0_all) > length(.cd0)) {
     .va <- vapply(.cd0_all, function(a) .metric(a, "port_t"), numeric(1))
     .ba <- .cd0_all[[which.max(replace(.va, !is.finite(.va), -Inf))]]
@@ -786,6 +1062,7 @@ w5 <- .winner_of("B5", "calmar", gate = rf_adversary_ok)
     .v0 <- vapply(.cd0, function(a) .metric(a, "port_t"), numeric(1))
     if (!all(is.na(.v0))) {
       .w0 <- .cd0[[which.max(replace(.v0, !is.finite(.v0), -Inf))]]
+      if (exists(".tlw_note", mode = "function")) .tlw_note("floor", "win", list(.w0), v = .v0, by = "port_t")   ## O0a — 바닥 선택(argmax · 판정 불변)
       .sp0 <- .w0$essence$spec
       if (!is.null(.sp0) && nzchar(.sp0) && file.exists(.sp0)) {
         .wbest_spec <- tryCatch(fromJSON(.sp0, simplifyVector = FALSE), error = function(e) NULL)
@@ -865,7 +1142,8 @@ for (.a in E$attempts) {
   .sp <- .a$essence$spec
   if (is.null(.sp) || !nzchar(.sp) || !file.exists(.sp)) next
   .so <- tryCatch(fromJSON(.sp, simplifyVector = FALSE), error = function(z) NULL)
-  if (!is.null(.so)) .seen_sig[[.spec_sig(.so)]] <- .a$essence$cell_code %||% paste0("n", .a$n)
+  # ★P1-06: 통제 칸의 서명은 등록하지 않는다 — 재현 칸 서명 = carry 서명이라 정규 칸이 그 결과를 승계하는 경로를 만들지 않는다.
+  if (!is.null(.so) && !rf_control_exempt(.so)) .seen_sig[[.spec_sig(.so)]] <- .a$essence$cell_code %||% paste0("n", .a$n)
 }
 ## ── ★시행 회계 (2026-09-23 · 강화 전수감사 D3-01 · 플랜 P0-01) ─────────────────────
 ##   구판은 모든 셀을 chain·n_trials=1 로 채점했다(run_paper_replication.R 하드코딩). 그러나 이 러너는 열거 격자에서
@@ -876,12 +1154,13 @@ for (.a in E$attempts) {
 ##   ★.spec_sig 는 명시 키만 보므로 이 필드는 서명을 바꾸지 않는다(rf_spec_sig.R:95-117).
 ##   판정 정본 = rf_runner_gates.R::rf_lineage_ids / rf_lineage_measured / rf_selection_accounting (순수 함수 · 검사 대상).
 .lineage_ids <- rf_lineage_ids(led$entries, BID)
-.n_measured_prior <- rf_lineage_measured(led$entries, .lineage_ids)
+.n_measured_prior <- rf_lineage_measured(led$entries, .lineage_ids, exclude_codes = rf_control_codes(ROOT))   # ★P1-06 통제 칸은 시행이 아니다
 ## ★배치 균일 N (2026-09-23 적대 리뷰) — 한 배치의 칸은 같은 가족 크기로 채점한다(등록 순서 무관).
 .n_batch_size <- length(batch)
+.tl_nreg <- 0L   ## O0a — 이 tick 에 원장 등록된 칸 수(승자·바닥 결정 기록의 조건)
 if (!length(jobs)) for (CELL in batch) {
   .no_treatment <- FALSE
-  SPEC <- list(code = CELL$code, label = CELL$label, block = CELL$block,
+  SPEC <- c(list(code = CELL$code, label = CELL$label, block = CELL$block,
                fixed_axes = PROG$fixed_axes,
                # ★기저 신호는 원장의 충실구현 engine_path 에서 물려받는다 — 논문이 바뀌면 기저도 바뀐다.
                #   경로가 없거나 파일이 없으면 mom_12_1 로 떨어진다(구 entry 하위호환).
@@ -898,20 +1177,19 @@ if (!length(jobs)) for (CELL in batch) {
                #   구 격자 셀의 factor2(단수)는 길이 1 집합으로 정규화한다.
                factors = (if (!is.null(CELL$factors) && length(CELL$factors)) CELL$factors
                           else if (!is.null(CELL$factor2)) list(CELL$factor2)
-                          else if (.beats_carry(w1, "B1")) .win_factors(w1) else NULL),
-               weighting = CELL$weighting %||% list(kind = "ew"),
-               universe = CELL$universe %||% list(kind = "k200_kq150"),
-               # ★B6(집행 주기) 칸의 규칙 — 빠지면 그 칸은 **조용한 무처치**가 된다
-               #   (격자 셀의 rebalance 를 여기서 안 실으면 엔진은 월간 그대로 돈다)
-               rebalance = CELL[["rebalance"]],
-               # ★B7 방어 슬리브 — 안 실으면 엔진은 알파 단독으로 돈다(처치 미전달)
-               defense_sleeve = CELL[["defense_sleeve"]])
+                          else if (.beats_carry(w1, "B1")) .win_factors(w1) else NULL)),
+            # ★교체 축(비중·유니버스·집행 주기·방어 슬리브 — 축 목록 = 등록부 rf_spec_axes.R · 2026-09-26)은 셀 값 그대로 · 없으면 등록부 default
+            #   (비중 ew · 유니버스 k200_kq150 · 그 밖 키는 두고 값 NULL — 구판 list(…) 와 같은 키·순서). 빠지면 그 칸은 **조용한 무처치**가 된다
+            #   (B6: 엔진이 월간 그대로 · B7: 알파 단독 — 처치 미전달). 구판은 네 축을 여기 리터럴로 적었다.
+            rf_axes_cell_init(CELL))
   # ★P0-14(2026-09-25) 선정 기저 부기 — 규칙 선정기(rf_factor_arms.R::rf_pick_factor_sets) 칸만 selection_basis(asof_ic | full_sample_ic)·
   #   selection_asof 를 든다. A 자격 관문 재도출(rf_lineage_flags.R)이 as-of 로 고른 팩터를 오염 승계 판정에서 빼는 **유일한 증거 필드**다
   #   (없으면 as-of 미증명 = 보수 · 설계 레인 칸은 필드가 없다 · 격자 스냅샷 폴백 칸 = full_sample_ic — 위 factor_arms_fallback). 부기 필드 — .spec_sig 는 명시 키만 접으므로 서명 불변.
   if (!is.null(CELL[["selection_basis"]])) {
     SPEC$selection_basis <- CELL[["selection_basis"]]; SPEC$selection_asof <- CELL[["selection_asof"]]
   }
+  # ★P1-06 통제 칸 부기(control · control_seed) — 후보 술어·A 관문의 영속 표식(격자에서 코드가 바뀌어도 남는다). .spec_sig 는 명시 키만 접으므로 서명 불변.
+  if (rf_control_exempt(CELL)) { SPEC$control <- CELL[["control"]]; SPEC$control_seed <- CELL[["control_seed"]] }
   # ── ★블록 누적 — 실행 순서를 따라간다 (도훈 지시 2026-09-04) ────────────────
   #   구판은 B2·B3 가 **B1 승자만** 물었다. 블록 순서가 고정(B1→B2→B3→B5→B4)일 때는
   #   맞았지만, 교훈 재귀가 순서를 적응시키면서(2026-09-04 B5 를 2번째로) 전제가 깨졌다.
@@ -929,18 +1207,13 @@ if (!length(jobs)) for (CELL in batch) {
   #     이 기본값을 뒤집을 근거는 설계 레인이 처방으로 낸다(예: 낙폭이 구속이면 Calmar 기준).
   #   ★구판의 `B3 는 weighting 을 EW 로 되돌린다` 줄은 여기서 폐기된다 — 그 줄이 B2 승자를
   #     매번 버렸다. 유니버스를 재려고 비중을 리셋하면 그건 통제가 아니라 누적 파괴다.
+  .floor_axes <- character(0)   # ★이 칸에서 바닥이 값을 준 축 — 아래 carry 병합이 덮지 않는다(등록부 승계 순서 floor > carry)
   if (!(CELL$block %in% c("B1", "B4")) && !is.null(.wbest_spec)) {
-    .own <- switch(CELL$block, B2 = "weighting", B3 = "universe", B5 = "overlay",
-                   B6 = "rebalance", B7 = "defense_sleeve", NA_character_)
-    if (is.null(SPEC$factors) || !length(SPEC$factors)) SPEC$factors <- .wbest_spec$factors
-    if (!identical(.own, "weighting") && !is.null(.wbest_spec$weighting)) SPEC$weighting <- .wbest_spec$weighting
-    if (!identical(.own, "universe")  && !is.null(.wbest_spec$universe))  SPEC$universe  <- .wbest_spec$universe
-    # ★overlay 는 정확 일치로 읽는다 (2026-09-17 WP-R) — 바닥이 B1~B3 칸이면 스펙에 overlay 키가 없고 overlay_cell=[] 만
-    #   있어 `$overlay` 가 부분 일치로 그 빈 리스트를 집는다(서명은 같지만 B2/B3 스펙에 "overlay": [] 가 새로 박힌다).
-    if (!identical(.own, "overlay")   && !is.null(.wbest_spec[["overlay"]])) SPEC$overlay <- .wbest_spec[["overlay"]]
-    # ★B6(집행 주기)도 누적 축이다 — 빠지면 "승계 목록에서 빠진 축은 없는 축이 된다"(2026-09-05 교훈)
-    if (!identical(.own, "rebalance") && !is.null(.wbest_spec[["rebalance"]])) SPEC$rebalance <- .wbest_spec[["rebalance"]]
-    if (!identical(.own, "defense_sleeve") && !is.null(.wbest_spec[["defense_sleeve"]])) SPEC$defense_sleeve <- .wbest_spec[["defense_sleeve"]]
+    # ★축 목록 = 등록부(rf_spec_axes.R · 결정 B4-SIX-AXIS-AND-CARRY-AXES 2026-09-26) — 자기 축만 셀 값, 나머지는 바닥 · 팩터(union)는 비었을 때만.
+    #   구판은 여기 여섯 축을 줄마다 적었다(09-21 B6·B7 은 여기만 갱신되고 carry 병합·B4 에는 빠졌다 — 같은 병). 등록부 함수는 전 축을
+    #   정확 일치([[ ]])로 읽는다(2026-09-17 WP-R: `$overlay` 가 부분 일치로 overlay_cell 빈 리스트를 집던 사고).
+    .acc <- rf_axes_accumulate(SPEC, .wbest_spec, CELL$block)
+    SPEC <- .acc$spec; .own <- .acc$own; .floor_axes <- .acc$from_floor
     jlog("block_accumulate", code = CELL$code, own_axis = .own %||% "-",
          w = (SPEC$weighting$kind %||% "?"), u = (SPEC$universe$kind %||% "?"),
          ov = length(.ov_layers(SPEC$overlay)), floor = .wbest_src, floor_code = .wbest_code,
@@ -957,20 +1230,20 @@ if (!length(jobs)) for (CELL in batch) {
     #   아니라 **분해**다 — 축을 합치고 하나씩 빼서 기여를 가른다. 승자가 기준선을 못
     #   넘었어도 합쳤을 때 어떤지가 이 블록이 재려는 값이다.
     #   ★2026-08-31 실사고: 게이트를 여기까지 걸었더니 아무것도 안 얹혀 네 칸이 같은 t(2.241)를 냈다.
-    # ★2026-09-01 4축으로 확장 — 구판은 3축(팩터·비중·유니버스)만 봤는데 그 부분집합 격자는
-    #   이미 완비였다(단일 = 각 블록 승자 · 쌍 = LOO · 전체 1). 빈 곳은 칸이 아니라 축이고,
-    #   그 축은 오버레이다: A 를 막는 것이 낙폭인데 구판 B4 는 오버레이를 보지 않았다.
-    SPEC$factors   <- if ("B1" %in% use) .win_factors(w1) else NULL
-    SPEC$weighting <- if ("B2" %in% use && !is.null(w2)) (w2$weighting %||% list(kind="ew")) else list(kind = "ew")
-    SPEC$universe  <- if ("B3" %in% use && !is.null(w3)) (w3$universe  %||% list(kind="k200_kq150")) else list(kind = "k200_kq150")
-    # ★B5 승자 스펙은 이미 carry 를 포함한 중첩판이라 그대로 쓴다(이중 적용 없음).
-    #   B5 를 뺀 칸도 부모의 오버레이는 기저로 남겨야 LOO 대조가 성립한다 —
-    #   안 그러면 "B5 제외" 가 이 세대 처치와 부모 위험통제를 동시에 벗기는 두 겹 처치가 된다.
-    SPEC$overlay   <- if ("B5" %in% use) .w5_overlay else (E$carry$overlay %||% NULL)
-    SPEC$factor2 <- NULL; SPEC$factor3 <- NULL
+    # ★2026-09-01 4축 → ★2026-09-26 6축(결정 B4-SIX-AXIS-AND-CARRY-AXES) — 축 목록 = 등록부(rf_spec_axes.R). 구판은 B1·B2·B3·B5 네 줄이었고
+    #   09-21 신설 B6(집행 주기)·B7(방어 슬리브)이 빠져 결합이 두 축을 영영 못 봤다(빈 곳은 칸이 아니라 축 — 09-01 교훈의 재발).
+    #   축마다: 소유 블록 ∈ use ∧ 승자 있음 → 승자의 그 축 값 / 아니면 등록부 b4_base(carry → default). ★B5 승자 스펙은 이미 carry 를 포함한
+    #   중첩판이라 그대로 쓴다(이중 적용 없음) · B5 를 뺀 칸도 부모 오버레이는 기저로 남긴다(두 겹 처치 방지 — 그 원리를 전 축에 편다: 승격 entry 의
+    #   비중 LOO 도 EW 가 아니라 carry 비중). 결합 칸 use 는 위 결합 칸 재도출(진단 모드 블록 제외)의 결과이고 계획은 스펙 combo_plan 에 남긴다.
+    .b4a <- rf_axes_b4_assemble(SPEC, use, .b4_win, E$carry)
+    SPEC <- .b4a$spec
+    if (!is.null(CELL$combo_plan)) SPEC$combo_plan <- CELL$combo_plan   # ★부기 필드(동결 판정 원천 · .spec_sig 는 명시 키만 접으므로 서명 불변)
     jlog("b4_axes", code = CELL$code, use = paste(use, collapse = "+"),
          f = length(SPEC$factors %||% list()), w = SPEC$weighting$kind %||% "?",
-         u = SPEC$universe$kind %||% "?", ov = rf_ov_txt(SPEC$overlay))   # ★스택도 전 층을 적는다(구판은 리스트면 "none")
+         u = SPEC$universe$kind %||% "?", ov = rf_ov_txt(SPEC$overlay),   # ★스택도 전 층을 적는다(구판은 리스트면 "none")
+         rb = as.character((SPEC[["rebalance"]] %||% list())$label %||% "none")[1],
+         ds = as.character((SPEC[["defense_sleeve"]] %||% list())$kind %||% "none")[1],
+         src = paste(sprintf("%s=%s", names(.b4a$src), .b4a$src), collapse = ","))
   }
   # ── ★승격 entry 의 carry 병합 (도훈 지시 2026-08-30 "B등급 이상 추가 강화") ──
   #   승격은 B+ 를 낸 승자 구성을 **기저로 물려받아** 그 위에서 25칸을 다시 탐색한다.
@@ -990,13 +1263,17 @@ if (!length(jobs)) for (CELL in batch) {
     #   승계가 물려받은 구성을 희석하면 promote 조건(부모 최고 초과)은 원리상 만족될 수 없다.
     SPEC$factors <- .dedup_factors(c(E$carry$factors %||% list(), .cur))
     SPEC$factor2 <- NULL; SPEC$factor3 <- NULL
-    if (!(CELL$block %in% c("B2", "B4")) && !is.null(E$carry$weighting)) SPEC$weighting <- E$carry$weighting
-    if (!(CELL$block %in% c("B3", "B4")) && !is.null(E$carry$universe))  SPEC$universe  <- E$carry$universe
-    # ★2026-09-03 오버레이 승계 — 구판은 이 줄이 없었다. weighting/universe 는 물려받는데
-    #   overlay 만 안 물려받아, 승격된 자식의 B1/B2/B3 는 부모의 위험 통제가 벗겨진 채 돌았다.
-    #   팩터는 누적(.dedup_factors)되는데 오버레이는 세대마다 0 으로 리셋된 것이다.
-    #   B5 는 자기 축이라 아래에서 **중첩**으로 처리하고, B4 는 부분집합 조립이라 제외한다.
-    if (!(CELL$block %in% c("B5", "B4")) && !is.null(E$carry$overlay)) SPEC$overlay <- E$carry$overlay
+    # ★비소유 축 carry 병합 — 축 목록 = 등록부(rf_spec_axes.R::rf_axes_carry_fill · 결정 B4-SIX-AXIS-AND-CARRY-AXES 2026-09-26).
+    #   구판은 weighting·universe·overlay 세 줄이었다 — 09-21 신설 rebalance(B6)·defense_sleeve(B7)가 빠져 승격 entry 의 B1 칸(바닥 없는 칸)이
+    #   carry 의 집행 주기·방어 슬리브를 벗고 돌았다(실사례 RP_20260913_084807_skipped_base_promo1 · carry = buffer_2x · B1_1..7 월간 리밸 ·
+    #   P1-06 CTRL 실데이터 E3 fail_spec). ★2026-09-03 오버레이 승계 사연(자식 B1/B2/B3 가 부모 위험 통제를 벗고 돌았다)과 같은 병이다 —
+    #   승계 목록에서 빠진 축은 없는 축이 된다. 자기 축은 셀 처치(B5 오버레이는 아래에서 **중첩**) · B4 는 조립이 carry 를 기저로 이미 넣었다.
+    #   ★승계 순서(등록부 RF_AXES_INHERIT_ORDER · 권고 floor > carry): 바닥이 이미 준 축은 덮지 않는다. 구판은 여기서 바닥의 비중·오버레이를
+    #     carry 로 덮어 승격 entry 의 B3 칸이 B2 승자 비중 없이 돌았다(원장 실측 720_promo1 B3 4칸 = carry lean:ivol · 바닥 B2_10 = lean:score_pure).
+    #   순서 스위치 = config spec_axes.inherit_order(부재 = 권고 floor > carry · 구판 재현 = ["carry","floor"]) — 여기서 순수 함수로 해석한다
+    #   (무효값 로그는 위 계약 절 ③이 tick 당 1회 · 이 자리는 등록 루프만 떼어 도는 검사에서도 CFG 없이 기본값으로 선다).
+    SPEC <- rf_axes_carry_fill(SPEC, E$carry, CELL$block, from_floor = .floor_axes,
+                               order = rf_axes_inherit_order(get0("CFG", ifnotfound = list()))$order)
   }
   # ★B5 오버레이 — 전체 최고 구성을 그대로 깔고 그 위에 노출 스케일만 얹는다
   if (identical(CELL$block, "B5")) {
@@ -1024,23 +1301,23 @@ if (!length(jobs)) for (CELL in batch) {
     SPEC$overlay_basis <- CELL$basis %||% ""
     if (!is.null(.base_paper)) SPEC$root_paper <- .base_paper
   }
-  # ★B1~B3 는 자기 층이 없다 — 오버레이는 전부 승계분(carry · block_accumulate 바닥)이다. 빈 리스트로 **명시**해
+  # ★B1~B3·B6·B7 은 자기 층이 없다 — 오버레이는 전부 승계분(carry · block_accumulate 바닥)이다. 빈 리스트로 **명시**해
   #   하류(.ov_own_layers 의 'overlay − carry' 폴백)가 바닥의 B5 층을 이 칸의 처치로 오귀속하지 않게 한다.
   #   엔진은 overlay_cell 이 비면 층별 처치 가드를 승계 층에 걸지 않는다(합성 가드는 그대로 · rf_cell_engine .OV_OWN).
-  if (CELL$block %in% c("B1", "B2", "B3")) SPEC$overlay_cell <- list()
+  #   ★대상 = 등록부의 stack 축(오버레이)이 아닌 축의 소유 블록(rf_axes_no_layer_blocks · 2026-09-26). 구판 목록(B1·B2·B3)에 09-21 신설 B6·B7 이
+  #     빠져 바닥 B5 층이 집행 주기·슬리브 칸의 '자기 층'으로 오귀속됐다(엔진 층별 가드가 승계 층에 걸림 · 기전 지도 과대). B4 는 구판 그대로(표식 없음).
+  if (CELL$block %in% rf_axes_no_layer_blocks()) SPEC$overlay_cell <- list()
   # ★무처치 판정은 **조립이 끝난 뒤** 한다. 구판은 carry 병합 블록 안에서 쟀는데,
   #   B5(오버레이)는 그 뒤에 overlay 를 붙이므로 판정 시점엔 팩터·비중·유니버스가 carry 와
   #   같아 전부 "무처치" 로 닫혔다 — 정작 처치인 오버레이가 아직 없을 때 판정한 것이다.
   #   2026-08-31 실사고: B5 다섯 칸이 측정 0건으로 소비돼 25 소진이 찍히고 다음 논문으로
   #   넘어갔다. 계기가 재려는 것(처치가 있나)이 아니라 재기 쉬운 것(그 시점 세 축)을 쟀다.
   #   ★overlay 는 carry 에 없는 축이므로, 오버레이가 붙은 칸은 자동으로 처치 있음이 된다.
-  if (!is.null(E$carry)) {
-    .no_treatment <- identical(.fkeys(SPEC$factors), .fkeys(E$carry$factors %||% list())) &&
-      .same_axis(SPEC$weighting, E$carry$weighting %||% list(kind = "ew")) &&
-      .same_axis(SPEC$universe,  E$carry$universe  %||% list(kind = "k200_kq150")) &&
-      .same_axis(SPEC$overlay,   E$carry$overlay   %||% list()) &&
-      .same_axis(SPEC[["rebalance"]], E$carry[["rebalance"]] %||% list()) &&
-      .same_axis(SPEC[["defense_sleeve"]], E$carry[["defense_sleeve"]] %||% list())
+  # ★P1-06: 통제 칸은 무처치 판정에서 뺀다 — carry 재현 칸은 정의상 carry 와 같다(여기서 닫히면 측정 0회 = E3 공허 통과).
+  if (!is.null(E$carry) && !rf_control_exempt(CELL)) {
+    # ★축 목록 = 등록부(rf_axes_same_as_carry · 2026-09-26) — 구판 여섯 줄(팩터 키 집합 · 비중·유니버스·오버레이·집행 주기·슬리브 .same_axis)과
+    #   같은 식을 등록부 축마다 돈다. 축이 늘 때 여기서 빠지면 '그 축만 다른 칸'이 무처치로 닫힌다(측정 0회 소비 — 2026-08-31 B5 사고 모양).
+    .no_treatment <- rf_axes_same_as_carry(SPEC, E$carry)
   }
   # ★근거 논문 (2026-09-02 수리). 구판의 폴백 사슬(셀 논문 → B1 승자 논문)은
   #   ①B1 이 시드 계열 논문 하나만 붙이고(사슬이 접두 집합 → 4계열 컴포짓 5칸 전부 Amihud 2002)
@@ -1094,12 +1371,15 @@ if (!length(jobs)) for (CELL in batch) {
   # ★등록이 먼저다 (2026-09-03). 구판은 spec 을 먼저 쓰고 등록을 시도해서, 거부된 칸의
   #   산출물이 디스크에 남았다(실측: spec 5 vs 원장 4 — 산출물만 보면 5칸을 돈 것처럼 보인다).
   #   원장이 정본이므로 원장에 없는 칸의 흔적을 남기지 않는다.
+  ## O0a 칸 설계 출처(P1-02 · E3) — 조립 지점 표식에서 도출해 등록 시점에 원장 attempt$design 으로 박는다(판정 불변 · 실패 = unknown)
+  .ds_cell <- if (!exists("rf_cell_design_source", mode = "function")) NULL else tryCatch(rf_cell_design_source(CELL, BID, ROOT),
+                       error = function(e) list(code = as.character(CELL$code %||% "")[1], design_source = "unknown", design_lane = "error"))
   att <- tryCatch(rf_append_attempt(1L, BID, SPEC$idea, CELL$axis, .root_papers, wt_id = NULL, root = ROOT,
                                     unmapped_families = .rpz$unmapped_families,
                                     # ★실제 적재 여부를 넘긴다 — 상수 TRUE 는 거짓 기록이었다
                                     axiom_injected = isTRUE(SPEC$preflight$axiom_injected),
                                     # ★격자 좌표를 등록 시점에 박는다 — 커서의 정본(2026-09-04)
-                                    cell_code = CELL$code),
+                                    cell_code = CELL$code, design = .ds_cell),
                   error = function(e) { jlog("append_failed", base_id = BID, code = CELL$code,
                                              err = conditionMessage(e)); NULL })
   if (is.null(att)) {
@@ -1114,6 +1394,7 @@ if (!length(jobs)) for (CELL in batch) {
     }
     next
   }
+  if (exists(".tl_nreg")) .tl_nreg <- .tl_nreg + 1L; if (exists(".tl_try", mode = "function")) .tl_try("cell_registered", rf_tp_cell_registered(BID, att$n, .ds_cell, CELL$block, ROOT))   ## O0a 시행 로그 — 등록된 칸(출처 포함)
   ## ── ★기전 회피 집행은 **등록 뒤** (2026-09-05 이동) ──────────────────────────────
   ##   실사고 09:14: 이 블록이 등록(att <- rf_append_attempt) 앞에 있어 att$n 을 미정의로
   ##   읽고 러너가 fatal 로 죽었다 — 8분마다 같은 자리에서 반복되는 결정론적 정지.
@@ -1186,8 +1467,10 @@ if (!length(jobs)) for (CELL in batch) {
   #   전 entry 층을 넓힌 근거: 258 측정 중 고유 서명 230 — 28칸이 이미 잰 구성의 재측정이었고
   #   한 구성은 3개 entry 에 걸쳐 7회 반복됐다. 25칸 예산에서 그만큼이 그냥 날아간 것이다.
   .sig <- .spec_sig(SPEC)
-  .dup <- .seen_sig[[.sig]]
-  if (is.null(.dup) && !isTRUE(.no_treatment)) {
+  # ★P1-06 통제 칸 — 서명 dedup(배치·entry·전 entry 커버리지)·중복 승계 면제. 면제하지 않으면 재현 칸은 부모 서명과 같아 측정 0회로 닫힌다.
+  .ctl_cell <- rf_control_exempt(CELL)
+  .dup <- if (.ctl_cell) NULL else .seen_sig[[.sig]]
+  if (is.null(.dup) && !isTRUE(.no_treatment) && !.ctl_cell) {
     .xh <- tryCatch({
       if (!exists(".COVIDX")) {
         suppressMessages(source(file.path(ROOT, "02_Infrastructure/reinforcement/rf_coverage.R"), local = TRUE))
@@ -1244,7 +1527,7 @@ if (!length(jobs)) for (CELL in batch) {
          note = "기존 칸과 스펙 동일 — 미결 종결(실행 안 함)")
     next
   }
-  .seen_sig[[.sig]] <- CELL$code
+  if (!.ctl_cell) .seen_sig[[.sig]] <- CELL$code
   if (isTRUE(.no_treatment)) {
     # 원장에는 칸이 남되(격자 번호 대응 유지) 측정은 없다. essence 가 없으므로
     # .winner_of 후보에서 자동으로 빠진다 — 무처치 칸이 승자가 되는 경로가 닫힌다.
@@ -1274,6 +1557,23 @@ if (!length(jobs)) for (CELL in batch) {
     name = sprintf("RF_PAR_%s_%s", CELL$code, gsub("[^A-Za-z0-9]", "", CELL$label)),
     out = file.path(WDIR, sprintf("result_%s.json", CELL$code)))
 }
+## >>> O0a 블록 승자·바닥 결정 기록 — 새 배치가 칸을 등록한 tick 에 1회(그 배치가 소비한 값 · 재개 tick·B1 배치는 소비 없음).
+##   B4 = 이 배치 칸들의 combo.use 블록(축 등록부·격자 재도출 — 진단 모드 블록 제외) 승자를 조합한다 · 그 밖(B2·B3·B5·B6·B7) = B1 승자(팩터) + 누적 바닥(.wbest_spec · P0-10 게이트 뒤). 판정 불변.
+##   ★존재 검사를 먼저(10-03 시스템 렌즈) — 등록 루프만 추출 실행하는 검사(test_rf_control_cells D5·D7·D9)에는 pending·.TLW 가 없다. 러너 main 안에서는 값 불변.
+if (exists(".TLW") && exists(".tl_nreg") && !length(pending) && !is.null(first) && .tl_nreg > 0L && !identical(as.character(first$block %||% ""), "B1")) {
+  .tcb <- as.character(first$block %||% "")
+  ## ★B4 가 소비한 블록 = 이 배치 칸들의 combo.use 합집합(격자·축 등록부가 정본 · 하드코딩 금지 — 10-03 시스템 렌즈: B4-SIX(B6·B7 축 · 진단 B3 제외)에서 고정 목록은 기록을 틀리게 한다)
+  .tl_b4use <- tryCatch(unique(as.character(unlist(lapply(batch, function(c) c$combo$use)))), error = function(e) character(0))
+  ## ★고정 목록 폴백 없음(10-03 최종 통합 P5A) — combo.use 가 비면 틀린 블록을 기록하지 않고 사실만 남긴다(판정 불변).
+  if (identical(.tcb, "B4") && !length(.tl_b4use)) jlog("trial_log_b4use_empty", base_id = BID, n_batch = length(batch),
+                                                      note = "B4 배치 칸에 combo.use 가 없다 — 블록 승자 기록 생략")
+  for (.twb in if (identical(.tcb, "B4")) .tl_b4use else "B1")
+    if (exists(".tl_try", mode = "function")) .tl_try(paste0("block_winner_", .twb), rf_tp_winner(BID, .twb, if (exists(.twb, envir = .TLW, inherits = FALSE)) get(.twb, envir = .TLW) else NULL, .tcb, ROOT))
+  if (!identical(.tcb, "B4"))
+    if (exists(".tl_try", mode = "function")) .tl_try("floor", rf_tp_floor(BID, if (exists("floor", envir = .TLW, inherits = FALSE)) get("floor", envir = .TLW) else NULL,
+                                 .wbest_src, .wbest_code, .wbest_gate$why %||% "", .tcb, ROOT))
+}
+## <<< O0a
 if (!length(jobs)) {
   ## ★격자 소진 (2026-09-05 실사고): B1 설계 9칸으로 예산 25→29, B3 설계 4칸이라 격자 총합 28 → used 28 < 29 로
   ##   예산 소진이 영영 안 서고 매 tick halt_no_jobs — 승격·다음 논문 모두 정지(무동작이 대기로 보였다).
@@ -1453,6 +1753,34 @@ for (j in jobs) {
   }
 }
 
+# ── ★P1-06 E3 · null 희석 요약 — 통제 칸이 이번 tick 배치·재개에 있었으면 1회 판정해 남긴다(기록만 · 차단 없음) ─────────────
+#   판정 정본 = rf_runner_gates.R::rf_carry_replay_check(계열 대조 포함) · rf_null_dilution_values. 원장에서 다시 읽는다(방금 기록한 칸 포함).
+#   red(측정 0회 종결 · 승계로 닫힘 · 스펙 불일치 · 같은 판본 불일치)는 carry_replay_e3 의 red=TRUE 로 드러난다 — 기준선은 부모 기록으로 떨어진다.
+.ctl_codes_now <- unique(c(vapply(jobs, function(z) as.character(z$code %||% ""), character(1)),
+                           vapply(batch, function(z) as.character(z$code %||% ""), character(1))))
+if (length(intersect(.ctl_codes_now, c(.ctl_replay_codes, .ctl_null_codes)))) tryCatch({
+  .LC <- rf_load(1L, ROOT); .EC <- Filter(function(e) identical(e$base_id, BID), .LC$entries)[[1]]
+  if (length(intersect(.ctl_codes_now, .ctl_replay_codes))) {
+    .e3 <- rf_carry_replay_check(.EC, .LC$entries, .RCTX, series = TRUE)
+    .e3f <- .e3$facts %||% list()
+    jlog("carry_replay_e3", base_id = BID, verdict = .e3$verdict, red = isTRUE(.e3$red), e3_strict = .e3$e3_strict,
+         e3_history = .e3$e3_history, pt_replay = .e3f$pt_replay %||% NA, pt_ref = .e3f$pt_ref %||% NA, dpt = .e3f$dpt %||% NA,
+         ref = as.character(.e3f$ref_code %||% ""), diff_axes = paste(.e3f$spec_diff_axes %||% character(0), collapse = ","),
+         vintage = paste(c(.e3f$vintage_replay %||% "NA", .e3f$vintage_ref %||% "NA"), collapse = " vs "),
+         series_max_dret = (.e3f$series %||% list())$max_abs_dret %||% NA, use_as_carry_base = isTRUE(.e3$use_as_carry_base),
+         tol = .e3$tolerance, reasons = paste(.e3$reasons, collapse = " | "),
+         note = "P1-06 E3 — carry 재현 칸 판정(기록만). red 면 기준선은 부모 기록 경로(rf_carry_base_info)로 떨어진다")
+  }
+  if (length(intersect(.ctl_codes_now, .ctl_null_codes))) {
+    .nv <- rf_null_dilution_values(.EC, .RCTX, "port_t")
+    .nd <- .nv$delta[is.finite(.nv$delta)]
+    jlog("null_dilution_summary", base_id = BID, metric = "port_t", status = .nv$status, n_finite = .nv$n_finite,
+         mean_delta = if (length(.nd)) mean(.nd) else NA, sd_delta = if (length(.nd) >= 2L) stats::sd(.nd) else NA,
+         replay_value = .nv$replay$value, reasons = paste(.nv$reasons, collapse = " | "),
+         note = "P1-06 null 희석 — 재현 칸 대비 PT 차(기술 요약 · SE 정본 = rf_prereg.R::rf_prereg_se_null)")
+  }
+}, error = function(e) jlog("control_e3_failed", base_id = BID, err = conditionMessage(e)))
+
 # ── 텔레그램: 블록 경계를 넘었으면 1회 ────────────────────────────────────────
 led2 <- rf_load(1L, ROOT)
 E2 <- Filter(function(e) identical(e$base_id, BID), led2$entries)[[1]]
@@ -1554,7 +1882,7 @@ if (nb > 0L && (.blk_left == 0L || u2 >= MAXA)) {
     if (!is.na(.i3)) {
       .en3 <- .E3$entries[[.i3]]
       .bc  <- vapply(cells, function(c) as.character(c$code %||% ""), character(1))
-      .bc  <- .bc[startsWith(.bc, paste0(.blk_now, "_"))]
+      .bc  <- .bc[startsWith(.bc, paste0(.blk_now, "_")) & !(.bc %in% rf_control_codes(ROOT))]   # ★통제·대조 칸(P1-06 · B7 격자 control 태그 — 정본 rf_control_codes)은 축포 대상 아님
       .ng  <- rf_fanfare_new_grade(.en3, .bc)
       if (!is.na(.ng)) {
         .hit <- Filter(function(a) identical(toupper(substr(as.character(a$grade %||% ""), 1, 1)), .ng) &&
@@ -1577,7 +1905,7 @@ if (nb > 0L && (.blk_left == 0L || u2 >= MAXA)) {
                  error = function(e) { jlog("telegram_failed", err = conditionMessage(e)); FALSE })
   if (!ok) jlog("telegram_send_failed", n = u2,
                 note = "발송 실패 — lock 미생성이므로 다음 tick 이 재발송을 시도한다")
-  jlog("telegram_block", n = u2, sent = ok)
+  jlog("telegram_block", n = u2, sent = ok, base_id = BID, block = .blk_now)   # ★base_id·block — 경계 백필의 흔적 판정이 읽는다(B5FIX)
   # ★증류 주기 맞춤 (도훈 지시 2026-09-04) — corpus 는 부팅마다 갱신되는데 증류
   #   (cluster_extractor)는 주간 cleaner 안에서만 돌았다. 강화는 하루에 블록 L-code 를
   #   5~6건 내므로 주 1회로는 못 따라간다 — 실측: 강화 75건이 corpus 에 있는데

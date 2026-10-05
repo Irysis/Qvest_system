@@ -3,9 +3,9 @@
   "dist_id": "DIST-GEN-292",
   "cluster_key": "8d8be9c35dcc",
   "candidate_id": "CAND_reinforcement_8d8be9c35dcc",
-  "status": "pending_5axis",
-  "statement_refined": null,
-  "retry_condition": null,
+  "status": "proposed",
+  "statement_refined": "본 후보(supporting 120, b1)는 DIST-GEN-308(supporting 125)의 이전 시점 슬라이스이며 supporting 목록이 앞에서부터 동일하게 겹친다. 두 카드가 지지하는 명제(B1 선정 축은 PORT_t 에만 작용하고 MDD 대역은 거의 움직이지 않는다)는 동일하고, 120→125 의 증가분 5건이 그 명제를 바꾸지 않는다. 독립 후보로 두면 같은 증거가 두 번 계상돼 supporting 수가 증거력으로 오독되고 R6_distinct 가 무너지므로, 정본 처분은 DIST-GEN-308 로의 통합이다. 통합 후에도 남는 유효 서술은 하나다 — B1 에서 지지되는 것은 'MDD 무반응'이고 'B1 이 우월한 축'은 신 규약 기준선 교체로 부호가 뒤집히므로 지지되지 않는다.",
+  "retry_condition": "120→125 증가분 5건만으로 부호가 바뀌는 축이 확인되면(즉 슬라이스 경계가 판정을 가르면) 시점 의존 규칙으로 별도 상정한다. 그렇지 않으면 DIST-GEN-308 통합 흡수로 닫는다.",
   "refined_at": null,
   "refined_by": null,
   "promoted_to_axiom": null,
@@ -294,5 +294,42 @@
     "oos_effect_vs_is": -0.254,
     "note": "L-code oos_retention 실값 120건 median (IS65/OOS35 활성SR retention) — oos_months 실값 무 → None 유지 — promote.R essence_score 경유 재확정"
   },
-  "cluster_members_count": 120
+  "cluster_members_count": 120,
+  "adversarial_verdict": {
+    "a_exaggeration": "강등함. 독자적 성과 주장을 넣지 않았다. GEN-308 대비 추가 증거가 5건뿐이라는 사실을 statement 앞에 뒀다.",
+    "b_evidence": "확인. 두 후보의 family·tags(b1)·polarity·type 이 같고 supporting 선두가 동일 순서로 겹친다(스윕 재료 §3 실측: 둘 다 L-RF-20260830_182834 부터 시작). 증가분 5건은 2026-09-21~23 사이 유입분이다.",
+    "c_ax000": "'폐기' 단정 없음 — 흡수이며, 슬라이스 경계가 판정을 가르는 경우를 재시도 경로로 열어 뒀다.",
+    "d_firewall": "위반 없음. 고정 제약·PIT 귀속 없음. 판정 범위는 후보 집합의 중복 구조에 한정된다.",
+    "e_frontier": "frontier 2건 + live_trigger(data) + expiry."
+  },
+  "expiry": "2026-12-31",
+  "frontier": [
+    "GEN-308 과의 supporting 차집합 5건만으로 축별 부호를 재집계 — 경계가 판정을 가르는지 직접 확인",
+    "증류기 후보 키를 (모집단 해시 + 축) 으로 바꿔 시점 스냅샷이 새 cluster_key 를 받지 않게 하는 계기 수리"
+  ],
+  "live_trigger": {
+    "type": "data",
+    "condition": "GEN-308 과의 supporting 차집합이 산출되고, 그 차집합만으로 축별 부호가 뒤집힐 때",
+    "monitored_source": ".cache/cleaner_pending.json::axiom_candidates · stage_artifacts/l_code/reinforcement/l_code_*_B1.json"
+  },
+  "revival_spec": [
+    {
+      "signal_id": "wall_clock_date",
+      "condition": "x >= as.Date('2026-12-31')",
+      "from_trigger": "expiry",
+      "status": "active"
+    },
+    {
+      "signal_id": "cache_present",
+      "condition": "x == TRUE",
+      "from_trigger": "data",
+      "status": "pending"
+    }
+  ],
+  "constraint_firewall": {
+    "mode": "backstop_passed",
+    "checked_at": "2026-09-26"
+  },
+  "drafted_at": "2026-09-26T11:03:08+0900",
+  "drafted_by": "auto_distill"
 }

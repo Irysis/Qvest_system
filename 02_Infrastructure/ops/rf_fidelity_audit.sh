@@ -82,6 +82,11 @@ HTMLLINE=""
 
 . "$ROOT/02_Infrastructure/ops/rf_axiom_brief.sh"
 AXB="$(rf_axiom_brief)"
+# ★청정 모드(결정 FA-CLEAN-BASE-PATH · 2026-09-26) — 검증기가 산출물 경로를 비워 부르면(ART="") 감사자는 측정을 보지 않는다.
+#   재구현 피드백 = 이 감사의 지적이다 — 측정 t·보유를 본 서술이 청정 재구현 프롬프트로 가지 않게 한다. 가드 표식(QVEST_CLEAN_LANE)은
+#   검증기가 이 스폰에만 싣는다(아래 --disallowed-tools 청정 판도 그 표식을 본다).
+if [ -n "$ART" ]; then ARTLINE="- 측정 산출물: ${ART}"
+else ARTLINE="- 측정 산출물: (청정 모드 — 비공개. 논문과 코드만 대조하라. 산출물을 보라는 대조 지시는 코드 경로 추적으로 대신하고 그 사실을 note 에 적어라. 산출물이 없다는 이유만으로 unverifiable 을 내지 마라 — unverifiable 은 원문을 못 읽었을 때만이다)"; fi
 
 PROMPT="너는 **적대적 검증자**다. 아래 구현이 논문과 다르다는 것을 **입증하라.**
 
@@ -109,7 +114,7 @@ ${AXB}
 ${HTMLLINE}
 - 구현: ${WDIR}/engine.R
 - 자기신고: ${WDIR}/FIDELITY.json   ← **이 진술을 믿지 마라. 대조 대상이다.**
-- 측정 산출물: ${ART}
+${ARTLINE}
 
 ## 원문 접근 (실측된 함정 — 2026-09-02)
 - \`arxiv.org/abs/…\` 는 **초록만** 준다. 초록만 읽고 판정하면 정의역을 틀린다.
@@ -168,11 +173,20 @@ printf %s "$PROMPT" > "$PF"
 RUN_OUT="$(mktemp "${TMPDIR:-/tmp}/rf_fa_run.XXXXXX")"
 #   폴백 미탑재(LLM_FALLBACK_MODEL="" · 구판 동작 보존): 구판도 --fallback-model 없이 떴고 이 레인엔
 #   반쪽 산출물 청소 훅(rf_llm_before_fallback)이 없다 — 폴백 확대는 청소 훅과 함께 별도 결정.
-LLM_FALLBACK_MODEL="" rf_llm_agent_run "$PF" "$RUN_OUT" 1800 \
-  --permission-mode acceptEdits \
-  --allowed-tools "Read,Write,Glob,Grep,WebFetch,WebSearch" \
-  --disallowed-tools "Bash,Agent,Edit" \
-  --add-dir "$WDIR"
+#   (FA-CLEAN-BASE-PATH) 청정 표식이 실린 스폰이면 셸 통로 7종 + Agent + Skill 도 금지(충실구현 레인 청정 판과 같은 목록 + Edit).
+if [ "${QVEST_CLEAN_LANE:-0}" = "1" ]; then
+  LLM_FALLBACK_MODEL="" rf_llm_agent_run "$PF" "$RUN_OUT" 1800 \
+    --permission-mode acceptEdits \
+    --allowed-tools "Read,Write,Glob,Grep,WebFetch,WebSearch" \
+    --disallowed-tools "Bash,PowerShell,Monitor,REPL,Workflow,CronCreate,RemoteTrigger,Agent,Edit,Skill" \
+    --add-dir "$WDIR"
+else
+  LLM_FALLBACK_MODEL="" rf_llm_agent_run "$PF" "$RUN_OUT" 1800 \
+    --permission-mode acceptEdits \
+    --allowed-tools "Read,Write,Glob,Grep,WebFetch,WebSearch" \
+    --disallowed-tools "Bash,Agent,Edit" \
+    --add-dir "$WDIR"
+fi
 ARC=$LLM_RC
 [ -f "$RUN_OUT.primary" ] && cat "$RUN_OUT.primary" >> "$LOG"
 cat "$RUN_OUT" >> "$LOG" 2>/dev/null

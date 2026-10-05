@@ -12,6 +12,8 @@
 #      emit_lcode 호출 인자를 lcode_emit.R 형식인자(parse)와 대조(Q16) · C11 도구 명시.
 #   D. 동결 표지 + 해제 경로(재상정) 문구 · 결정 레지스터에 QEPM-R0-FREEZE 실재.
 #   E. '강화 매 시도 = QEPM' 문언 소거 + 격자 수를 reinforce_program.json·원장 max_attempts 에서 재도출해 문서 수치와 대조.
+#      ★B4-SIX-AXIS(2026-09-26): 격자가 균일하지 않다(축 블록 × 5 + 결합 B4 = 1 + 축 블록 수). 모양 = 축 등록부 계약(rf_axes_grid_contract) ·
+#      기본 예산 = 러너 재도출(rf_budget_base(원장 값, 격자)) · 문서 수치 = '축 블록 수블록×칸 + B4 K칸 = 합'(균일 격자면 구판 'N블록×M=T').
 #   F. Q07/Q09 문서 — C4 토큰을 pit.md C4 행에서 재도출해 대조 · C11 = fred_asof_join(실재 함수) · 폐지 상한(0.20)이
 #      constraint_defaults weight_bounds([0,1])와 어긋나게 남아 있지 않음 · 동결 문서 표지.
 #   M. 돌연변이(구 문언 재주입 사본) — 각 검사기가 red 를 내는지(검사기 양방향).
@@ -239,24 +241,43 @@ cat("\n=== E. 강화 문언 · 격자 수 재도출 ===\n")
 PROG <- fromJSON(file.path(ROOT, "06_Registry/reinforce_program.json"), simplifyVector = FALSE)
 NB <- length(PROG$blocks); PER <- unique(vapply(PROG$blocks, function(b) length(b$cells), integer(1))); TOT <- sum(vapply(PROG$blocks, function(b) length(b$cells), integer(1)))
 LMAX <- tryCatch(as.integer(fromJSON(file.path(ROOT, "06_Registry/reinforce_ledger_l1.json"), simplifyVector = FALSE)$max_attempts), error = function(e) NA_integer_)
-cat(sprintf("       (격자 재도출: %d블록 × %s칸 = %d · 원장 max_attempts = %s)\n", NB, paste(PER, collapse = "/"), TOT, LMAX))
-chk("E0 원장 max_attempts = 격자 칸 수(문서의 '현행' 수치가 서는 전제)", length(PER) == 1L && identical(LMAX, TOT))
+## ★B4-SIX-AXIS(2026-09-26 · 결정 B4-SIX-AXIS-AND-CARRY-AXES): 결합 블록(axis = combination)은 1 + 축 블록 수 칸이라 격자가 균일하지 않다.
+##   축 블록·결합 칸을 따로 재도출하고 · 모양은 축 등록부 계약(rf_spec_axes.R::rf_axes_grid_contract)으로 · 기본 예산은 러너와 **같은 함수**
+##   (rf_budget_base — 원장 파일 값이 격자 칸 합보다 작으면 tick 안에서 격자 합으로 올린다 · 파일은 쓰지 않는다)로 잰다. 균일 격자면 구판 규칙 그대로.
+AXB <- Filter(function(b) !identical(b$axis, "combination"), PROG$blocks); CMB <- Filter(function(b) identical(b$axis, "combination"), PROG$blocks)
+NAX <- length(AXB); PAX <- unique(vapply(AXB, function(b) length(b$cells), integer(1))); NCB <- sum(vapply(CMB, function(b) length(b$cells), integer(1)))
+AXE <- new.env(parent = globalenv()); invisible(capture.output(sys.source(file.path(ROOT, "02_Infrastructure/reinforcement/rf_spec_axes.R"), envir = AXE)))
+GCT <- AXE$rf_axes_grid_contract(PROG); EFF <- as.integer(AXE$rf_budget_base(LMAX, PROG))
+cat(sprintf("       (격자 재도출: %d블록 × %s칸 = %d · 축 블록 %d × %s + 결합 %d · 원장 max_attempts = %s → 러너 기본 예산 %s · 등록부 계약 위반 %d)\n",
+            NB, paste(PER, collapse = "/"), TOT, NAX, paste(PAX, collapse = "/"), NCB, LMAX, EFF, length(GCT)))
+chk("E0 격자 = 축 등록부 모양 · 러너 기본 예산(rf_budget_base(원장 max_attempts, 격자)) = 격자 칸 수(문서의 '현행' 수치가 서는 전제)",
+    if (length(PER) == 1L) identical(LMAX, TOT) else (!length(GCT) && length(PAX) == 1L && identical(EFF, TOT)),
+    paste(GCT, collapse = " | "))
 DOCS <- c(".claude/rules/lean-loop.md", "CLAUDE.md", ".claude/skills/reinforce/SKILL.md", ".claude/commands/qvest.md")
 STALE_QEPM <- c("매 시도 = QEPM", "QEPM→등급", "(QEPM 기반)", "**QEPM 실행 (1계층)**", "QEPM(alpha→risk→optimizer→forge→등급)으로 강화",
                 "QEPM 체인 수동 관리", "강화 시도는 QEPM 단위", "측정은 QEPM 체인")
 STALE_GRID <- c("최대 30회", "최대 25회", "≤30회", "≤25회", "30칸(", "새 25칸", "25칸 소진", "25회 소진", "25회 게이트", "reinforce_auto_run.R` 이 강화를")
 chk_qepm <- function(txt) !any(vapply(STALE_QEPM, function(s) has(txt, s), logical(1)))
+## ★B4-SIX-AXIS: 문서 수치 형식 — 균일 격자 = 'N블록×M(=T)'(구판) · 등록부 격자 = '축 블록 수블록×축 블록 칸 + B4 (결합) K칸 (= T)'.
+##   등록부 격자에서 'N블록×M' 만 적은 문구는 합계를 잘못 말한다(7블록×5 = 35 ≠ 37) — 낡은 문구로 red.
+GRID_RE <- "([0-9]+)블록\\s*[×x]\\s*([0-9]+)(\\s*\\+\\s*B4(?:\\s*결합)?\\s*([0-9]+)칸)?(\\s*=\\s*([0-9]+))?"
+grid_ok1 <- function(s) {
+  g <- regmatches(s, regexec(GRID_RE, s, perl = TRUE))[[1]]
+  n <- as.integer(g[2]); m <- as.integer(g[3]); k <- suppressWarnings(as.integer(g[5])); t <- suppressWarnings(as.integer(g[7]))
+  if (length(PER) == 1L) return(n == NB && m == PER[1] && is.na(k) && (is.na(t) || t == TOT))
+  n == NAX && length(PAX) == 1L && m == PAX[1] && !is.na(k) && k == NCB && (is.na(t) || t == TOT)
+}
+GRID_TXT <- if (length(PER) == 1L) sprintf("%d블록×%d=%d", NB, PER[1], TOT) else sprintf("%d블록×%d + B4 %d칸 = %d", NAX, PAX[1], NCB, TOT)
 chk_grid <- function(txt) {
-  m <- regmatches(txt, gregexpr("([0-9]+)블록\\s*[×x]\\s*([0-9]+)(=([0-9]+))?", txt, perl = TRUE))[[1]]
-  okm <- all(vapply(m, function(s) { n <- as.integer(regmatches(s, gregexpr("[0-9]+", s, perl = TRUE))[[1]])
-    n[1] == NB && n[2] == PER[1] && (length(n) < 3L || n[3] == TOT) }, logical(1)))
+  m <- regmatches(txt, gregexpr(GRID_RE, txt, perl = TRUE))[[1]]
+  okm <- all(vapply(m, grid_ok1, logical(1)))
   okm && !any(vapply(STALE_GRID, function(s) has(txt, s), logical(1)))
 }
 for (d in DOCS) {
   tx <- rd(d)
   chk(sprintf("E1 %s — '매 시도 = QEPM' 계열 문언 0", d), chk_qepm(tx),
       paste(STALE_QEPM[vapply(STALE_QEPM, function(s) has(tx, s), logical(1))], collapse = " | "))
-  chk(sprintf("E2 %s — 격자 수치 = 재도출값(%d블록×%d=%d)·낡은 상한 문언 0", d, NB, PER[1], TOT), chk_grid(tx),
+  chk(sprintf("E2 %s — 격자 수치 = 재도출값(%s)·낡은 상한 문언 0", d, GRID_TXT), chk_grid(tx),
       paste(c(regmatches(tx, gregexpr("[0-9]+블록\\s*[×x]\\s*[0-9]+", tx, perl = TRUE))[[1]],
               STALE_GRID[vapply(STALE_GRID, function(s) has(tx, s), logical(1))]), collapse = " | "))
 }
@@ -273,6 +294,14 @@ blk_rows <- vapply(PROG$blocks, function(b) grepl(sprintf("\n| %s (", b$id), SKR
 chk(sprintf("E4 SKILL 구조표에 격자 블록 %d종 전부 행이 있다", NB), all(blk_rows), paste(vapply(PROG$blocks, `[[`, "", "id")[!blk_rows], collapse = ","))
 chk("M-E1 돌연변이(lean-loop 에 '매 시도 = QEPM(…)' 재주입) → red", !chk_qepm(paste(LL, "매 시도 = QEPM(alpha→risk→optimizer→forge→등급) + L-code.")))
 chk("M-E2 돌연변이(CLAUDE.md 에 '격자 6블록×5' 재주입) → red", !chk_grid(paste(CM, "L1 ≤30회(원장 l1 · 격자 6블록×5)")))
+## ★B4-SIX-AXIS 양방향 — 격자에서 만든 문구는 green(검사기가 비지 않았다) · 구판 균일 문구·결합 칸 틀린 문구는 red · E0 모양 계약 돌연변이
+chk("M-E2b 양성 대조 — 격자에서 재도출한 문구(GRID_TXT)를 넣은 사본 = green", chk_grid(paste(CM, sprintf("격자 현행 %s", GRID_TXT))), GRID_TXT)
+chk("M-E2c 돌연변이(구판 균일 문구 '현행 7블록×5=35' 재주입) → red", !chk_grid(paste(CM, "격자 현행 7블록×5=35")))
+chk("M-E2d 돌연변이(결합 칸 수 틀림 '+ B4 5칸') → red", !chk_grid(paste(CM, sprintf("격자 현행 %d블록×%d + B4 5칸 = %d", NAX, PAX[1], TOT))))
+PROGm <- PROG; ib4 <- which(vapply(PROGm$blocks, function(b) identical(b$axis, "combination"), logical(1)))
+if (length(ib4) == 1L) PROGm$blocks[[ib4]]$cells <- PROGm$blocks[[ib4]]$cells[1:5]
+chk("M-E0 돌연변이(결합 블록을 구판 5칸으로 되돌린 격자 사본) → 등록부 계약 위반(red)",
+    length(ib4) == 1L && length(AXE$rf_axes_grid_contract(PROGm)) > 0L)
 
 # ═════════════════════════════ F. Q07/Q09 — C4·C11·폐지 상한 ═════════════════════════════
 cat("\n=== F. C4·C11·비중 상한 문서 ===\n")

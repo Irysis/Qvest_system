@@ -1,6 +1,8 @@
 {
   "schema": "reinforce_auto_config_v1",
   "enabled": true,
+  "deploy_window_20260925": "Q 배포 창 22:58~23:4x 종료 — PREREG·V6·B5LAB·CATB 배포(23:35~23:38) · B5_16~20 possible 표식 후 true 복원. 남은 창: R3R_rb·ALLOWP(러너 tick 사이 또는 다음 창)",
+  "deploy_window_20260926": "Q 배포 창 2026-09-26T11:16:35+0900 ~ 2026-10-04T08:16:45+0900 종료 — 10-04 08:1x 배포 창 종료 — AXIS·HUMAN·CORE·AGRG·CLEAN·EXPO 관문/표식 1387·7308 park·PREREG fix·LEVER·1505 청정 요청 배포 완료(결정 ENTRY-7308-DISPOSITION 등) · 복원 enabled=True · b5_design.enabled=True",
   "paused_reason": "(해제) 2026-09-25 21:3x 재개 — 도훈 결정 RUNNER-RESTART-AFTER-P0-14 · RUNNER-RESTART-RELAX(P0-14 19:37 · B07 21:29 배포 뒤 현행 격자로 재개 · 유기체 live 0). 선행 배포: P0-05/06 epoch exec_v2_close_t1 · C11 2단계 · P0-08/09 · M1M2 · P0-13 · R2 · B08 상한 · B5M. 뒤따름: R3R(B09 probe·safety_guard) · V6 · 프롬프트 허용 목록 · B5 라벨 · 카탈로그 차단. (직전 정지: 2026-09-24 10:2x 도훈 지시 '무인 1계층 리서치는 멈춰줘' — PIT C11 봉쇄·수리)",
   "director": {
     "enabled": false,
@@ -51,6 +53,7 @@
   },
   "b5_design": {
     "enabled": true,
+    "paused_reason_20260925": "(해제 23:4x) Q 봉쇄 22:58 — B5LAB 배포 전 라벨 노출 재료로 설계가 돈 사고(21:58 · 7308 B5_16~20 → possible 표식). B5LAB 23:36 배포 뒤 복원",
     "max_cells": 8,
     "min_cells": 3,
     "max_new_arms": 3,
@@ -64,6 +67,43 @@
     },
     "note": "★도훈 지시 2026-09-17 \"매 강화 사이클마다 LLM 이 해당 강화 프로세스와 전체 리서치 아키텍처에 축적된 지식 기반으로 오버레이를 자체 설계\" + \"오버레이 한 칸에 여러 오버레이 중첩\" + \"오버레이층만 무한대로 탐색하는 버그 방지\" + \"오버레이 적대적 검증부\". 레인 = 02_Infrastructure/ops/rf_b5_design.sh(+ rf_b5_design_lib.R) · tick 에서 러너 앞에 돈다. B5 진입 직전 entry 당 1회(자동 — 러너가 블록 순서를 아직 안 적었으면 같은 규칙으로 예측) · 수동 재설계 = --redesign <BID>(guards.max_redesign_rounds 까지 · 측정된 칸은 두고 새 칸을 뒤에 붙인다). 산출 = .cache/rf_block_design/<BID>_B5.json(source=b5_design_lane · round) + 원장 b5_design.rounds(+ 재설계면 b5_redesign). 칸 = 활성 arm 스택(picks · ≤ max_layers 층 · 엔진이 층 노출을 종목별 곱으로 합성). 새 arm(≤ max_new_arms)은 probe → G1 적대 감사(llm.lanes.overlay_audit · 설계자와 다른 모델) → 등재(source=b5_design)를 지나야 설계에 남고, 거부돼도 방출 원장에 admitted=false 로 남는다. 검증 실패·유효 칸 < min_cells = 폴백(기존 설계 보존 · 라운드는 fallback=true 로 기록 — 기록이 없으면 매 tick 같은 호출이 반복된다). kill switch = b5_design.enabled=false(블록 부재도 꺼짐).",
     "guards_note": "무한 탐색 방지 가드(판정은 lib 가 jlog overlay_guard_<name> 으로 남긴다): H1 entry 당 자동 1회·재설계 상한·비활성 entry 거부 · H2 사이클당 max_new_arms ∧ 하루 source=b5_design 방출 ≤ daily_arm_cap(방출 원장 집계 · 집계 실패 = 할당 0) · H3 새 arm 을 낸 최근 stagnation_window 라운드의 arm 이 G2 pass B5 칸의 자기 층에 한 번도 못 들면 compose_only(배합만 · 배합 라운드로 창을 비우는 교대 우회를 막으려고 arm 을 낸 라운드만 센다 · 해제 = 그 arm 중 하나가 pass) · H4 활성 생성 arm(상주 제외) > max_active_generated 면 compose_only. 크기·무결성(H5·H6 — 층·칸 상한, 상주·중복·이미 잰 스택 제외)은 verify 가, 방출 정직성(H7)·폴백 기록(H8)은 레인이 진다. 수치는 예산 backstop 이지 연구 제한이 아니다: max_cells 8 = 격자 한 블록(5칸) 위의 설계 여유 · entry 총 15칸 = rfbd_verify 상한(B5_16..B5_30) · max_redesign_rounds 1 = 측정을 보고 다시 짜는 사후 선택을 한 번으로 묶는다 · daily_arm_cap 6 = 자동 사이클 두 번분 · max_active_generated 40 = 현 활성 생성 arm 수(한 자릿수)의 수 배 — 재보정은 도훈 권한."
+  },
+  "lanes": {
+    "order": ["prereg", "new_paper", "promotion", "counterfactual"],
+    "order_source": "06_Registry/decision_register.json id=D-G (도훈 2026-09-23) '레인 순서 prereg > 신규 논문 > 승격 > 반사실' — 러너 active 선택 순위(rf_lane_rules.R::rf_lane_select)",
+    "priority_enum": ["prereg", "normal", "idle_only"],
+    "priority_enum_source": "플랜 qvest-1-drifting-eclipse P1-08 'entry priority(prereg/normal/idle_only)와 experiment 필드' (D-G 이행 · 원장 writer rf_open_entry(priority=, experiment=) · rf_set_entry_priority)",
+    "priority_lane": {"prereg": "prereg", "normal": "", "idle_only": "counterfactual"},
+    "priority_lane_note": "normal(빈 값) = 구조로 판정 — 부모 있음 = promotion · 없음 = new_paper(정본 rf_lane_rules.R::rf_entry_lane). 필드 없는 구 entry = normal.",
+    "nonblocking_priorities": ["idle_only"],
+    "nonblocking_source": "감사 D8-02(반사실 active 1건이 신규 요청 2511.12129 를 16시간 선점 — rf_replication_auto.sh ACT 가 종류 무구분) · D-G 레인 순서에서 반사실이 최하위 — 반사실은 개설·충실구현을 막지 않고, 요청이 진행 중이면 러너가 반사실 tick 을 양보한다",
+    "min_new_papers_per_promotion_generation": 1,
+    "min_new_papers_source": "06_Registry/decision_register.json id=D-G '승격 세대당 신규 논문 ≥1' — 최근 승격 자식 개설 뒤 신규 논문 착수(원장 신규 논문 entry · 결합·실험 제외) 수. 큐가 비면 면제(next_paper generation_gate_waived_queue_empty)",
+    "request_attempt_statuses": ["exhausted_retries"],
+    "request_attempt_statuses_source": "rf_replication_auto.sh 가 쓰는 요청 종결 상태 중 '논문을 실제로 시도했으나 원장 entry 없이 끝남'(자동 재시도 3회 소진) — 세대 하한의 착수로 센다. done_no_reinforce 는 skipped_base entry 를 열므로 원장에서 세고, skipped_by_skiplist 는 시도 전 차단이라 세지 않는다",
+    "request_inflight_statuses": ["pending", "in_progress", "failed_needs_session"],
+    "request_inflight_statuses_source": "reinforce_auto_next_paper.R §1.7 halt_request_pending 과 같은 집합 — 이 상태 동안 반사실(비차단) entry 는 러너 tick 을 양보한다(원장 동시 쓰기 차단)",
+    "note": "유기체 밖 사람 규칙(설계 최종판 §1.1·§11 · 2026-09-25). 판정 정본 = 02_Infrastructure/reinforcement/rf_lane_rules.R. 이 블록이 없거나 깨지면 러너·next_paper 는 구판 거동(원장 순서 첫 active · active 전부 차단 · 세대 하한 없음)으로 돈다 — FIFO 는 설정과 무관한 수리라 그대로 선다."
+  },
+  "b5_budget": {
+    "enabled": true,
+    "standing_plus": 2,
+    "standing_plus_source": "06_Registry/decision_register.json id=D-G (도훈 2026-09-23) 'B5 적응 축소(G2 pass 0 ∧ compose_only 지속 → 상주+2칸, pass 시 복원)' — 결정 원문 값",
+    "compose_only_consecutive_rounds": 2,
+    "compose_only_consecutive_rounds_source": "A2-e 결정 전 권고값 — 설계 최종판 §10 A2(e) Q 권고 'stagnation_window 와 같은 값(2 라운드)을 compose_only 연속 라운드에 적용 — 도훈 확정'. 결정 레지스터에 A2-e 항목 없음(2026-09-25 22시 확인). 단위 = B5 설계 레인 라운드(원장 entry b5_design.rounds · 전 entry at 시각순 · 끝에서부터 연속 compose_only 수) — stagnation_window(arm 을 낸 라운드만 센다 · rf_b5_design_lib.R H3)와 단위가 달라 별도 키",
+    "restore_on_g2_pass": true,
+    "restore_source": "D-G 'pass 시 복원' — 연속 compose_only 구간 시작 뒤 유효 G2 pass(B5 칸 adversary verdict=pass ∧ A 자격 관문과 같은 표식 필터 a_eligibility_gate.json vintage_flag 를 지난 칸) 1건 이상이면 즉시 전량 복원",
+    "decision_ref": ["D-G", "ORGANIC-DE"],
+    "accounting": "ORGANIC-DE Q②′(α) 고정 사람 규칙 예외(성과 소비 — 전기간 적대검증 판정) · N_program 계상: 러너 jlog b5_budget_decision.n_evidence = 이 결정이 소비한 적대검증 판정 칸 수. 시행 로그(P1-02 06_Registry/rf_trial_log.jsonl)가 배선되면 그쪽이 정본",
+    "scope": "B5 에 아직 시도가 없는 entry 만(진입한 B5 는 동결). B5 칸 = 상주 칸 전부 + 비상주 앞 standing_plus 칸(설계·격자 순서). 예산은 최종 B5 칸 수로 재도출(rf_budget_auto n_b5_cells — 축소분 재가산 차단)",
+    "kill_switch": "enabled=false 면 즉시 항등(B5 칸 불변)",
+    "owner": "D-G 이행 항목(사람 규칙 · 유기체 아님 — 설계 최종판 §1.1·§8.2). 판정 정본 rf_lane_rules.R::rf_b5_budget_decide/rf_b5_budget_cells"
+  },
+  "overlay_propose_g1": {
+    "enabled": true,
+    "source": "06_Registry/decision_register.json id=D-G 'overlay_propose 는 G1 경유 또는 dead 동안 정지' — 성과 비소비 분기(G1 경유) 채택(설계 최종판 §1.1 표 · §11). 구판은 probe 만 지나 등재했다(감사 D5-F2)",
+    "auditor": "02_Infrastructure/ops/rf_overlay_audit.sh — B5 설계 레인과 같은 감사기·판정 규약(rc 0 pass · 3 reject · 그 밖 unavailable) · 모델 = llm.lanes.overlay_audit",
+    "kill_switch": "enabled=false 면 구판 흐름(probe 만 · 로그 g1_disabled). 키가 없거나 설정을 못 읽으면 감사를 건다"
   },
   "overlay_adversary": {
     "enabled": true,
@@ -111,7 +151,8 @@
     "무인 충실구현은 engine.R 만 생성 — 등급은 계약이 낸다(AX-008). 검증 실패 시 원장 미개설"
   ],
   "mode": "parallel",
-  "parallel_cells": 5,
+  "parallel_cells": 7,
+  "parallel_cells_basis": "도훈 2026-10-05 \"병렬 구현 안하니? 01시는 너무 오래\" — 5→7 (24코어·32스레드 · 셀 워커당 메모리 ~3GB · 7칸 블록 B4 를 한 묶음에). 되돌리기 = 5",
   "worker_timeout_sec": 5400,
   "continue_on": {
     "grade_a": "★도훈 지시 2026-08-30 'A등급 달성하더라도 리서치가 이어지게'. Grade A 는 **리서치를 멈추지 않는다** — 06_Registry/grade_a_queue.json 에 쌓이고 judge_request.json 이 발행되며 텔레그램이 즉시 나가되, 남은 칸·다음 논문은 그대로 진행한다. 리서치 루프와 BOOK 등재 관문은 다른 층이다. ★불변: BOOK 등재는 Judge(PIT) + 도훈 confirm — 자동 등재 없음(헌법).",
@@ -465,5 +506,224 @@
     "reverify": "기존 엔진에 검증기만 재실행 → 2404.08129 Grade C · PORT_t 0.55 · entry RP_20260905_184253_720_adapted_rulefast 개설(active, 첫 Fable 산출물)",
     "tests": "extract_pkgs 7/7(변이 3/8) · pending guard 11/11"
   },
-  "enabled_at": "2026-09-07T17:06:34+0900"
+  "enabled_at": "2026-09-07T17:06:34+0900",
+  "organic": {
+    "_note": "유기적 강화 설정(O0a · 2026-09-25 · 설계 04_Research/01_reports/organic_reinforce_20260925/organic_design_final.md §8.2 · 부록 D). 사람 소유 — 기계는 읽기만(결정 ORGANIC-SCOPE). enabled=false = 유기체 live 0(결정 RUNNER-RESTART-AFTER-P0-14 — shadow 는 O1 에서 붙인다). 판단값(부록 D '판단 → A2-c')은 null. 킬 해제·롤백·휴면 해제는 ops/rf_organic_cmd.R 로만(손편집 금지 — 스키마·write-ahead 우회).",
+    "enabled": false,
+    "enabled_source": "결정 RUNNER-RESTART-AFTER-P0-14(유기체 live 0) · 설계 §8.2",
+    "auto_live": false,
+    "auto_live_decision_id": "",
+    "auto_live_decision_id_source": "설계 §3 G4 · §3.1.1 ③ — 빈 값 = auto_live 불인정(도훈 resolved 결정 id 만 인정 · reinforce_ledger.R::dr_evidence_ok)",
+    "auto_live_source": "설계 §3 G4 — auto_live 는 auto_live_decision_id 가 도훈 resolved 결정(reinforce_ledger.R::dr_evidence_ok)을 가리킬 때만 인정",
+    "layers": {
+      "budget": {
+        "mode": "shadow"
+      },
+      "space": {
+        "mode": "shadow"
+      },
+      "select": {
+        "mode": "shadow"
+      },
+      "structure": {
+        "mode": "shadow"
+      }
+    },
+    "layers_source": "설계 §8.2 · 결정 ORGANIC-DE Q⑤(선택 층 live = C-트랙 첫 성적표 뒤 재상정)",
+    "select": {
+      "live_allowed": false,
+      "live_allowed_source": "결정 ORGANIC-DE Q⑤ · 설계 §9-8"
+    },
+    "canary_entries": 1,
+    "canary_entries_source": "부록 D 도출(최소 단위)",
+    "canary_weeks_source": "02_Infrastructure/axiom/replay/policy_state.R::pol_cfg$shadow_min_weeks",
+    "epoch": {
+      "id": "",
+      "tau_upper_source": "02_Infrastructure/worktask/constraint_defaults.json::diagnostics.oos_calendar_splits[1]",
+      "tau0_ratio_source": "02_Infrastructure/contracts/essence_score.R::.ESSENCE_OOS_SPLITS$v2[1](contracts/asof_window.R 안에서만 참조)",
+      "tau_lower_rule": "oos_calendar_splits[1] − diagnostics.window_allowance_months",
+      "_source": "설계 §1.0(b) — τ_D·τ₀ 는 epoch 개시 때 재도출해 06_Registry/organic/state.json epoch 에 고정(전역 리터럴 금지 · 칸별 단언)"
+    },
+    "asof": {
+      "pt_threshold_scaling": "sqrt_T",
+      "retention_denominator": "floor_is_fixed",
+      "dir": "06_Registry/organic/asof",
+      "_source": "설계 §1.0(c)(f) — θ_PT·√T 환산은 내부 정규화 전용(판정 인용 금지 · A2-h)"
+    },
+    "view": {
+      "columns": [
+        "cell_key",
+        "base_id",
+        "n",
+        "root_lineage",
+        "parent_chain",
+        "block",
+        "cell_code",
+        "lever_key",
+        "design_source",
+        "design_lane",
+        "regime",
+        "regime_ok",
+        "flags",
+        "window_deviation_months",
+        "floor_code",
+        "closed_at",
+        "measured",
+        "inherited",
+        "terminal",
+        "cell_no_treatment",
+        "asof_status"
+      ],
+      "columns_source": "설계 §1.0(d) 허용 열 — 전기간 essence 수치·등급·retention·DSR·적대검증 판정 열은 없다(어댑터가 금지 이름을 거부 · fail-closed)"
+    },
+    "evidence": {
+      "exclude_flags": [
+        "pit_c11",
+        "treatment_misspecified",
+        "selection_basis_full_sample_ic",
+        "selection_basis_full_sample_ic_inherited"
+      ],
+      "design_stratum": "stratify",
+      "min_cells_block_rule": "ceil(DE*(z_{1-alpha}+z_{power})^2/delta_sigma^2) — DE=1+(m-1)rho(Campbell et al. 2004)",
+      "min_lineages_block": null,
+      "pairing_order": [
+        "floor_code",
+        "sig_restore"
+      ],
+      "pairing_rule": "unclassified_mismatch_zero",
+      "exclude_blocks": [
+        "B5",
+        "B7"
+      ],
+      "_source": "설계 §1.0(e) E1~E8 · 부록 D(min_lineages_block = A2-c 판단값 — O0b/O2 사전등록으로만 확정(null = 미사용 · 결과를 본 뒤 바꾸면 새 epoch))"
+    },
+    "noise": {
+      "source_order": [
+        "control_cells_P1-06",
+        "stationary_block_bootstrap"
+      ],
+      "bootstrap_B": 999,
+      "block_rule": "auto",
+      "_source": "부록 D 문헌 — Davidson & MacKinnon 2000(B=999) · Politis & Romano 1994 · Politis-White 2004(+Patton-Politis-White 2009)"
+    },
+    "model": {
+      "shrink": "morris_peb",
+      "cluster_lever": "entry",
+      "cluster_block": "lineage_root",
+      "covariate_window": "le_tau0",
+      "outcome_window": "tau0_tauD",
+      "min_clusters_cr": null,
+      "_source": "설계 §1.0(h) — Morris 1983 · Cameron, Gelbach & Miller 2008 · min_clusters_cr = A2-c 판단값 — O0b/O2 사전등록으로만 확정(null = 미사용 · 결과를 본 뒤 바꾸면 새 epoch)"
+    },
+    "budget": {
+      "n_min_by_block": {
+        "B1": null,
+        "B2": null,
+        "B3": 1,
+        "B6": 2,
+        "B7": null
+      },
+      "delta_sigma": null,
+      "futility": {
+        "p_stop_rule": "두 단 리플레이 discovery_drop ≤ pol_cfg.discovery_drop_max 인 최댓값(Saville et al. 2014) · 없으면 철회",
+        "min_blocks": null,
+        "n_min_entry_source": "blocks[B1].n + max(blocks[−B1].n)"
+      },
+      "soft_child": {
+        "enabled": false
+      },
+      "_source": "부록 D — B3·B6 도출(감사 ④ · B6 phase_control 칸 쌍) · B1 절단 금지(null) · B2 n_min·delta_sigma·min_blocks = A2-c 판단값 — O0b/O2 사전등록으로만 확정(null = 미사용 · 결과를 본 뒤 바꾸면 새 epoch) · B7 = PR-L2 사전등록값"
+    },
+    "space": {
+      "managed_blocks": [
+        "B2"
+      ],
+      "n_min_arm_rule": "ceil(DE*2*(z_{1-alpha}+z_{power})^2/MDE^2)",
+      "min_detectable_effect_sigma": null,
+      "r_min_arm": null,
+      "dormant_p": 0.05,
+      "revive_p": null,
+      "stable_share": null,
+      "dormant_weeks_source": "pol_cfg$tombstone_window_weeks",
+      "retire_weeks_rule": "2*dormant_weeks",
+      "max_changes_per_week_source": "pol_cfg$weekly_activation_max",
+      "quota_yield_window_rounds_source": "reinforce_auto_config.json::b5_design.guards.stagnation_window(단위 = arm 을 낸 라운드)",
+      "probe_cells": 1,
+      "retire_probe_failures": null,
+      "_source": "부록 D — dormant_p 관례(α) · probe_cells 도출 · MDE·r_min_arm·revive_p·stable_share·retire_probe_failures = A2-c 판단값 — O0b/O2 사전등록으로만 확정(null = 미사용 · 결과를 본 뒤 바꾸면 새 epoch)"
+    },
+    "structure": {
+      "block_dormant_p": 0.05,
+      "n_min_block_evidence_source": "organic.evidence.min_cells_block_rule",
+      "r_min_block_source": "organic.evidence.min_lineages_block",
+      "consecutive_windows": null,
+      "n_diag": {
+        "B3": 1
+      },
+      "never_dormant": [
+        "B1",
+        "B4"
+      ],
+      "prereg_only": [
+        "B7"
+      ],
+      "max_live_changes_per_week_source": "pol_cfg$weekly_activation_max",
+      "_source": "설계 §1.4 · 부록 D — n_diag.B3 도출(감사 ④) · 불변식 ⑤(B4 전 승자 결합 칸 보존) · consecutive_windows = A2-c 판단값 — O0b/O2 사전등록으로만 확정(null = 미사용 · 결과를 본 뒤 바꾸면 새 epoch)"
+    },
+    "gate": {
+      "power_min_ratio_source": "06_Registry/prereg/prereg_config.json::power_gate.ratio_forbidden_below",
+      "alpha": 0.05,
+      "alpha_source": "부록 D 관례(α 0.05)",
+      "power": 0.8,
+      "power_source": "부록 D 관례(검정력 0.8)",
+      "bootstrap_B": 999,
+      "bootstrap_B_source": "부록 D 문헌 — Davidson & MacKinnon 2000(α(B+1) 정수)",
+      "random_policy_seeds": 999,
+      "random_policy_seeds_source": "부록 D 문헌 — Davidson & MacKinnon 2000(null_pct 0.95 판정)",
+      "placebo_perms": 999,
+      "placebo_perms_source": "부록 D 문헌 — Davidson & MacKinnon 2000(null_pct 0.95 판정)",
+      "pol_cfg_source": "02_Infrastructure/axiom/replay/policy_state.R::pol_cfg 기본값 인용(heldout_win_min · null_percentile_min · discovery_drop_max · unreachable_max · best_loss_max · shadow_min_weeks · weekly_activation_max)",
+      "concurrent_control": {
+        "ratio": "1:1",
+        "block_size": 2,
+        "seed": null,
+        "_source": "부록 D 관례(등분산 두 군 검정력 최대) · seed = 사전등록 시 고정"
+      }
+    },
+    "kill": {
+      "eprocess_alpha": 0.05,
+      "alpha": 0.05,
+      "calib_rule": "binom95_of_0.8",
+      "stale_consecutive": null,
+      "state_max_age_rule": "stale_consecutive × tick 주기",
+      "selftest_max_age_rule": "stale_consecutive × 24h",
+      "oscillation_pause_source": "pol_cfg 주간 회로차단기 창(1주)",
+      "release_path": "Rscript 02_Infrastructure/ops/rf_organic_cmd.R kill-release <도훈 결정 id> → 06_Registry/organic/state.json::kill_release_seen",
+      "_source": "설계 §3.2 · 부록 D — eprocess_alpha·alpha 관례 · stale_consecutive = A2-c 판단값 — O0b/O2 사전등록으로만 확정(null = 미사용 · 결과를 본 뒤 바꾸면 새 epoch) · 해제 토큰은 config 가 아니라 state(사람 명령 경로 · epoch.id 증가 해제 폐기)"
+    },
+    "register": {
+      "max_rows_per_week_rule": "pol_cfg$weekly_activation_max + K 발화·롤백 사건 수",
+      "_source": "설계 §3.1.1 — 상한 넘는 분은 jsonl 에만 · 레지스터에는 '외 n건' 포인터 1행(reinforce_ledger.R::dr_record_machine max_rows_week)"
+    },
+    "tick": {
+      "max_sec": null,
+      "_source": "부록 D A2-c 판단값 — O0b/O2 사전등록으로만 확정(null = 미사용 · 결과를 본 뒤 바꾸면 새 epoch) — O1 tick 실측 분포로 보정"
+    },
+    "report": {
+      "weekday_source": "weekly_cleaner_sweep(토 09:00) 직후 첫 tick",
+      "max_chars": 4096,
+      "max_chars_source": "텔레그램 메시지 길이 한도(부록 D 도출)",
+      "header": "[1계층·강화] 유기적 강화 주간",
+      "header_source": "설계 §3.5 · qvest-telegram SKILL §5.6b 계층 표제(주간 보고 = [1계층·강화] 유기적 강화 주간 — <ISO 주차>)"
+    },
+    "paths": {
+      "dir": "06_Registry/organic",
+      "state": "06_Registry/organic/state.json",
+      "actions": "06_Registry/organic/actions.jsonl",
+      "decisions": "06_Registry/organic/decisions.jsonl",
+      "schema": "06_Registry/organic/schema.json",
+      "trial_log": "06_Registry/rf_trial_log.jsonl",
+      "_source": "설계 §5 단일 writer allowlist(rf_organic_guard.R::RFO_WRITE_ALLOW_RE — schema.json 은 사람 배포 · 기계 쓰기 금지)"
+    }
+  }
 }

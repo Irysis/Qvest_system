@@ -1,0 +1,22 @@
+{
+  "axis": "portfolio",
+  "verdict": "adapted",
+
+  "undeclared_changes": [],
+
+  "signal_mismatch": [],
+
+  "counterexample": "논문과 갈리는 반례는 구성 불가 — 논문이 이 축을 결정하지 않기 때문이다. Algorithm 1 line 7 은 'Form portfolio based on predicted returns y_hat_t^a' 한 줄이 전부이고, 종목수·비중·레그를 고정하는 문장이 본문·표·알고리즘 어디에도 없다. 따라서 top-25 EW long-only 는 논문의 어떤 진술과도 충돌하지 않는다(논문 명세의 미결정 구간 안의 한 점). 대신 구성 가능한 유일한 구체적 괴리는 **구현이 자기 선언(top_n=25)과 갈리는** 지점이다: engine.R:435 가 월 배출 조건을 nrow(o) >= AX_MIN_TEST(=20)으로 두므로 스코어된 횡단면이 20~24개인 달이 배출될 수 있고, 그 달에는 run_paper_replication.R:112 의 k <- min(k, n) 이 걸려 실현 보유가 25가 아니라 20~24가 된다. FIDELITY F5 가 '20종목 미만이면 미배출'을 선언하므로 파생 가능한 사실이지만 G1 의 'top 25' 서술만 읽으면 드러나지 않는다. K200∪KQ150 + adv20 2e8 하에서 통상 횡단면은 수백 개라 초기 월 외에는 비구속적이다. 두 층이 각자 상위 N 을 잘라 실현 종목수가 곱으로 줄어드는 형태는 없다 — 엔진은 절단을 전혀 하지 않고(engine.R 전문에 head/order 기반 절단·분위 호출 부재), 러너의 n_long=25 와 n_max=25 는 곱이 아니라 min() 으로 결합된다(run_paper_replication.R:109, 112).",
+
+  "evidence": "원문(https://arxiv.org/html/2508.18592v1): §3.1 Algorithm 1 전문 10행 — line 7 'Form portfolio based on predicted returns y_hat_t^a' 가 포트폴리오 구성에 관한 유일한 진술. line 8 'Adjust realized returns by applying transaction costs (0.3%)'. Algorithm 1 직전 문장 'To rigorously assess the predictive performance and generalization ability of stock selection models, a rolling forecast framework based on training and testing is employed.', 직후 문장 'The backtesting period spans from January 1, 2020, to December 31, 2022.' §3.1 산문 4단계(훈련 12개월 / 익월 테스트 / 'the training and test windows are advanced by one month' / 비용·지표 집계)에도 포트폴리오 구성 단계 없음. 절 구조 전수 = 1 Introduction · 2 Factor Construction and Screening(2.1 Data Preprocessing · 2.2 Factor Construction · 2.3 Factor Selection and Synthesis) · 3 Stock Selection Strategy Based on Machine Learning(3.1 · 3.2 · 3.2.1 · 3.2.2) · 4 Conclusion and Discussion — 포트폴리오 구성·백테스트 구성 전용 절 부재. 표 2·3·4 열 머리 = Strategy Return · Annualized Return · Annualized Volatility · Excess Return · Sharpe · Beta · Alpha · Maximum Drawdown — 보유종목수·비중·레그 열 없음. 표 5 = rolling window cross-validation, 표 6 = IC_Mean before/after screening — 역시 없음. 분위·데실 분할 서술 부재. 레그 구조의 유일한 정량 흔적 = 표 4 가 CSI 300 벤치마크 대비 Beta 를 양(+)의 1 초과 값(IC_Mean 행 약 140.94%)으로 보고하는 점 — 시장중립 롱숏(β≈0)과 양립하지 않고 롱온리 방향성 포트폴리오와 정합. 구현 측: engine.R:433,441-444 가 FACTORS(Date,Ticker,Score)만 배출(레그·비중·절단 없음) · FIDELITY.json portfolio_spec = top_n_long/ew/monthly/top_n 25/n_long 25/n_max 25 · run_paper_replication.R:105 setorder(md,-Score) 내림차순(예측수익 상위부터), :107 top_n_long 분기, :109 min(k,n_max), :112 min(k,n), :114 .leg_w(head(md,k),'long'), :91 ew = rep(1/nrow(md)), :97 long 레그 부호 양수 — 숏 레그 미생성.",
+
+  "confidence": "high",
+
+  "checked": "롱온리/롱숏 여부 · 분위(데실) 분할 유무 · 보유종목수 명시 유무 · EW/VW/score 비중 · 리밸런스 주기 · 엔진의 top-N 절단 유무 · 러너 top_n_long 분기의 정렬 방향과 레그 부호 · n_long/n_max 이중 절단 여부 · FIDELITY G1·F5·portfolio_spec 과 코드 경로의 일치",
+
+  "_항목 서술 규약": "★모든 항목은 대괄호 **한 줄 요약**으로 시작한다 - 12~30자 · 그 항목만 읽고도 무엇이 어긋났는지 아는 문장 · 원문 인용이나 파일:행을 요약에 넣지 마라(뒤 본문에 적는다). 이 요약이 통지에 그대로 실리고 본문은 안 실린다 - 요약이 없으면 사람은 잘린 원문 조각을 받는다. 예: '[숏 레그 그로스 익스포저 24% 미달]' · '[유니버스 탈락분 비중 재분배 없음]' · '[은닉층 순환 구조 미구현]'. ★용어는 그 분야의 정통 표기를 쓴다 - 임의 한글 조어를 만들지 말고, 원문 용어가 영문이면 통용 표기를 그대로(gross exposure · long/short leg · winsorize · lookback), 우리 지표는 정본 표기를 그대로(PORT_t · Calmar · MDD · OOS retention). 뜻이 통해도 조어면 읽는 사람이 두 번 해석한다.",
+
+  "_배열 규약": "undeclared_changes·signal_mismatch 는 **발견만** 담는다. 없으면 빈 배열 [] 로 두고 '불일치 없음' 같은 비발견을 항목으로 넣지 마라 - 근거 게이트가 배열 길이로 선다.",
+
+  "note": "청정 모드라 holdings 산출물 대신 코드 경로(engine.R → portfolio_spec → run_paper_replication.R:74-128)를 추적해 실현 레그·종목수·비중을 확인했다. 원문 raw 텍스트 추출본 읽기는 clean-lane 훅(ARM_GEN_READ_BLOCKED)이 차단해, 훅이 지정한 WebFetch 경로로 arxiv HTML·ar5iv·r.jina.ai 5개 질의를 교차해 §3.1 Algorithm 1 전문·절 구조 전수·표 열 머리를 재구성했다(요약 모델 경유이므로 매장된 단문 1개를 놓쳤을 잔여 위험은 남는다). G1 이 '논문 미명시 → 하네스 고정 축 top-25 EW, 월 리밸런스는 논문의 것'이라 선언한 내용은 원문·코드 양쪽과 절마다 일치했다."
+}

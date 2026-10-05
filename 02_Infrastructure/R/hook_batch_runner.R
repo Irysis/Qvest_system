@@ -29,6 +29,7 @@ hook_determine_role <- function(strategy_dir, s4_file) {
     suppressMessages({
       source("02_Infrastructure/config.R")
       source("02_Infrastructure/stage_gate_engine.R")
+      source("02_Infrastructure/validation/cond_ic_asof_guard.R")   # D-E-V6 호출부 가드
     })
     # S2 artifact
     s2_path <- list.files(strategy_dir, pattern = "s2_profile.*\\.json",
@@ -44,8 +45,11 @@ hook_determine_role <- function(strategy_dir, s4_file) {
     } else list()
     # S4 artifact
     s4 <- tryCatch(fromJSON(s4_file, simplifyVector = FALSE), error = function(e) list())
-    # sg_determine_role
-    role <- tryCatch(sg_determine_role(s2, s3, s4), error = function(e) "core_alpha")
+    # 역할 판정 — 호출부 가드 경유(D-E-V6-CONDITIONAL-IC 2026-09-25 · pit.md V6 · C1/C14): 전기간 조건부 IC 행렬은
+    #   가린다(as-of 판 미제공 → 사용 안 함 · defense 분기가 그 행렬로 켜지지 않는다). 가드 거부·오류 = 기존 기본값
+    #   core_alpha(조건부 IC 무관 분기) + stderr 고지(stdout 은 역할 한 줄 규약 그대로).
+    role <- tryCatch(sg_determine_role_asof(s2, s3, s4), error = function(e) {
+      message("[hook_determine_role] ", conditionMessage(e)); "core_alpha" })
     role
   }, error = function(e) "core_alpha")
 }
@@ -292,27 +296,11 @@ hook_quant_factcheck <- function(factors_json, hyp_id = "unknown", family = "") 
       }
     })
 
-    # conditional_ic_matrix.csv 조회 (있으면)
-    cic_path <- file.path(".", ".cache", "conditional_ic_matrix.csv")
-    if (file.exists(cic_path)) {
-      tryCatch({
-        cic <- fread(cic_path)
-        for (fac in factors) {
-          if (fac %in% names(cic)) {
-            # hit_rate = % of months with positive IC
-            ic_col <- cic[[fac]]
-            ic_col <- ic_col[!is.na(ic_col)]
-            if (length(ic_col) > 0) {
-              hit <- round(sum(ic_col > 0) / length(ic_col), 3)
-              # Override sign from CIC if available
-              kr_ic_sign[[fac]] <- if (mean(ic_col) > 0) "+" else "-"
-            }
-          }
-        }
-      }, error = function(e_cic) {
-        # CIC 없어도 진행
-      })
-    }
+    # (제거) 조건부 IC 행렬 조회 — D-E-V6-CONDITIONAL-IC 2026-09-25 · pit.md C1/C14 · V6 Gap-Directed 절.
+    #   그 행렬은 전기간 IC 스냅샷(Usable_Date 없음)이라 kr_ic_sign 을 그것으로 덮어쓰면 평가 창 결과가 가설
+    #   사실확인에 들어간다. as-of 판 미제공 → 사용 안 함. kr_ic_sign 은 위 Factor DB 경로 값만 쓴다.
+    #   (구판 블록은 열 이름(names)으로 팩터를 찾았고 행렬은 긴 형식(Factor_Name 열)이라 실측 적중 0 이었다 —
+    #    형식이 바뀌는 순간 켜지는 통로라 닫는다. 구판 = git 이력.)
 
     result <- list(
       hypothesis_id    = hyp_id,

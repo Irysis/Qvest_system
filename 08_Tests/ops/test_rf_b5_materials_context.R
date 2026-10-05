@@ -4,6 +4,8 @@
 #
 # ① 컨텍스트 파일 존재·신선 → 절 3~4줄 · 숫자만 · 날짜 0(b5_has_dates) ② 부재 → 절 없음 ③ 48h 초과 → 절 없음
 # ④ 파손 JSON → 절 없음(오류 없음) ⑤ b5_materials 조립 순서에 director 가 floor 뒤에 있고 sec$director 가 tryCatch 로 감싸여 있다
+# ⑥ (D-E-B5-LABELS 2026-09-25) label_mask 모드 — 구속·공동 구속·형태·공유 계보 수·방어형 수·반증 집계·상태 자리 = 표식 · 본문 정수(개수) 0 ·
+#    라벨 규칙 문장(형태 어휘) 없음 · 수치는 그대로(조립부가 <stat> 로 가린다) · 기본(NULL) 모드는 구판 그대로(①)
 # 샌드박스 root(QVEST_RF_ROOT) — 운영 무접촉 · 쓰기 0.
 #==============================================================================
 suppressPackageStartupMessages({ library(jsonlite) })
@@ -32,11 +34,18 @@ if (length(L) >= 4L && startsWith(L[1], "## (2b)")) ok(sprintf("① 절 %d줄 ·
 if (any(grepl("calmar+oos_retention", L, fixed = TRUE)) && any(grepl("4.349", L, fixed = TRUE)) && any(grepl("침식형", L, fixed = TRUE)) && any(grepl("25.8", L, fixed = TRUE)) && any(grepl("0/46", L, fixed = TRUE))) ok("① 숫자 항등(구속·최고·형태·개월·반증)") else ng("① 숫자", paste(L, collapse = " / "))
 if (!B$b5_has_dates(L)) ok("① 날짜 0 (b5_has_dates)") else ng("① 날짜 노출")
 if (!any(grepl("2026", L, fixed = TRUE))) ok("① as_of 가 본문에 없다") else ng("① as_of 노출")
+LM <- tryCatch(B$b5_director_context(S, label_mask = "<label>"), error = function(e) paste("ERR", conditionMessage(e)))   # 수리 전 판 = 인자 부재 → ⑥ red
+bodyM <- LM[-1]
+nM <- sum(lengths(regmatches(LM, gregexpr("<label>", LM, fixed = TRUE))))
+if (length(LM) >= 4L && startsWith(LM[1], "## (2b)") && nM >= 6L && any(grepl("4.349", bodyM, fixed = TRUE)) &&
+    !any(grepl("oos_retention|calmar\\+|침식형|급락형|dead|0/46|pass|라벨 규칙", bodyM)) &&
+    !any(grepl("[0-9]", gsub("[-+]?[0-9]*\\.[0-9]+", "", bodyM))))
+  ok(sprintf("⑥ label_mask 모드 — 라벨 자리 %d개 = 표식 · 개수 정수 0 · 형태 어휘 0 · 수치(4.349)는 조립부 몫으로 남는다", nM)) else ng("⑥ label_mask 모드", paste(LM, collapse = " / "))
 Sys.setFileTime(P, Sys.time() - 3 * 24 * 3600)
 if (!length(B$b5_director_context(S))) ok("③ 72h 경과 → 절 없음(낡은 컨텍스트 차단)") else ng("③ 낡은 컨텍스트 통과")
 writeLines("{not json", P)
 if (!length(tryCatch(B$b5_director_context(S), error = function(e) "ERR"))) ok("④ 파손 JSON → 절 없음 · 오류 없음") else ng("④ 파손 처리")
 src <- readLines(file.path(ROOT, "02_Infrastructure/ops/rf_b5_design_lib.R"), encoding = "UTF-8", warn = FALSE)
-if (any(grepl('order <- c("axioms", "entry", "floor", "director", "outcomes"', src, fixed = TRUE)) && any(grepl("sec$director <- tryCatch(b5_director_context(root)", src, fixed = TRUE))) ok("⑤ 조립 순서 floor→director · tryCatch 감쌈") else ng("⑤ 조립 배선")
+if (any(grepl('order <- c("axioms", "entry", "floor", "director", "outcomes"', src, fixed = TRUE)) && any(grepl("sec$director <- tryCatch(b5_director_context(root, label_mask = LB$mask)", src, fixed = TRUE))) ok("⑤ 조립 순서 floor→director · tryCatch 감쌈 · 재료 경로는 라벨 표식 모드(D-E-B5-LABELS)") else ng("⑤ 조립 배선")
 unlink(S, recursive = TRUE)
 finish()

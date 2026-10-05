@@ -1,0 +1,179 @@
+{
+  "schema": "rf_prereg_config_v1",
+  "version": "2026-10-03.p2-01+integ2+preregfix",
+  "version_note": "2026-10-03 PREREGFIX(결정 PREREG-MECHANISM-ONLY-FLOOR (가) · PREREG-POWERED-NULL-CALIBRATION · PR-L2-B7-EXCL-UNIT (c) · PR-L1-THRESHOLD-TURNOVER — 전부 2026-09-26 [위임]): registration.floor_status_mechanism_only·mechanism_only_scope·floor_permitted_use_mechanism_only · verdict.calibration·param_derivations·validity_outcomes · verdict.stats += cal_q_lo·cal_q_hi · verdict.contracts += sleeve_delivery. 등록 전 개정(등록본 0건 — 판정 핀 무관).",
+  "note": "사전등록 레버 실험(P2-01 · 플랜 qvest-1-drifting-eclipse §P2) 규약의 정본. 소비자 = 02_Infrastructure/reinforcement/rf_prereg.R 단 하나. 코드에는 수치 기본값이 없다 — 이 파일이 없거나 키가 비면 rf_prereg.R 은 멈춘다(fail-closed). 재보정은 도훈 결정(decision_register) 뒤에만. ★'등급 대체 아님' — 등급은 essence 하나(authoritative_remeasure.json::essence_grade)이고, 이 규약의 라벨 4종은 레버 가설에 대한 반증 시도의 판정이다.",
+
+  "layout": {
+    "registered_dir": "06_Registry/prereg",
+    "draft_dir": "06_Registry/prereg/drafts",
+    "index": "06_Registry/prereg/prereg_index.jsonl",
+    "registered_name": "<prereg_id>.json",
+    "draft_name": "<prereg_id>.draft<rev>.json",
+    "prereg_id_pattern": "^PR-[A-Za-z0-9][A-Za-z0-9_.-]{1,80}$",
+    "family_id_pattern": "^FAM-[A-Za-z0-9][A-Za-z0-9_.-]{1,80}$",
+    "legacy_files": ["06_Registry/prereg/prereg_score_tilt_invested_axis.json"],
+    "legacy_note": "스키마 이전 선례(2026-08-24). 색인에 없으므로 rf_prereg_load 가 거부한다 — 읽기 전용 사료. 스키마는 이 선례(예측·대안 결말·반증 문언)를 확장했다.",
+    "rules": [
+      "덮어쓰기 거부 — 같은 경로에 파일이 있거나 색인에 같은 (prereg_id, kind, rev) 가 있으면 쓰지 않는다(파일이 지워져도 색인이 묘비로 남는다).",
+      "초안 개정 = 새 rev 파일(draft<rev+1>) · 등록 = 최신 초안에서 새 파일(<prereg_id>.json) — 초안 파일은 남는다.",
+      "등록본 개정 = 새 prereg_id + 새 family_id(revision_of = 옛 prereg_id). 결과를 본 뒤 k·arm·절단일을 바꾸는 유일한 경로다.",
+      "무결성 = 색인의 sha256(파일 바이트). 로드 때 재계산해 다르면 거부한다(손편집 = 변조).",
+      "판정은 등록본에만, 1회만 — 기록된 판정이 있으면 재판정을 거부한다(재판정 = 새 사전등록)."
+    ]
+  },
+
+  "labels": ["confirmed", "powered_null", "undetermined", "failed"],
+  "label_precedence": ["failed", "confirmed", "powered_null", "undetermined"],
+  "label_semantics": {
+    "confirmed": "성공 조건 전부 TRUE(NA 없음). '확증'이 아니라 반증 시도를 통과했다는 뜻이다.",
+    "powered_null": "1차 기전 지표의 CI 가 사전 선언한 기전-함의 효과를 배제하고 0 을 포함 — 검정력 있는 부재(Lakens 2017 동등성 논리). '벽'이 아니라 이 설계에서의 부재.",
+    "undetermined": "위 어디에도 해당하지 않음(검정력 부족 · 일부 조건 NA · 효과가 0 과 함의값 사이). 미결은 '벽'으로 적립하지 않는다(AX-000).",
+    "failed": "사전 선언한 실패 조건이 TRUE — 반증(대안 기전으로 설명됨 · b5_pattern 등)."
+  },
+  "label_links": [
+    {"cite": "Lakens (2017) Equivalence Tests: A Practical Primer. Social Psychological and Personality Science 8(4)", "url": "https://doi.org/10.1177/1948550617697177", "use": "powered_null = 사전 선언 효과를 배제하는 구간(동등성 검정의 90% CI 논리)"},
+    {"cite": "Nosek, Ebersole, DeHaven, Mellor (2018) The preregistration revolution. PNAS 115(11)", "url": "https://doi.org/10.1073/pnas.1708274114", "use": "가설·arm·판정 규칙을 결과 전에 고정 · 사후 변경은 새 등록으로 투명하게"}
+  ],
+
+  "power_gate": {
+    "power_target": 0.80,
+    "alpha_two_sided": 0.05,
+    "ratio_forbidden_below": 0.15,
+    "ratio_conditional_below": 0.70,
+    "ratio_design80_at": 1.00,
+    "dispositions": ["forbidden", "conditional", "normal", "design80"],
+    "source": ".claude/rules/measurement-graduation.md '착수 크기산술 관문'(2026-08-22 신설·재교정 · 도훈 권한 위임): ratio = 기전-함의 효과 / MDE80 · 기대 t = ratio×(z(.80)+z(.975)) · 검정력 = Φ(기대 t − z(.975)) · (a) ratio<0.15 착수 금지 (b) 0.15≤ratio<0.70 조건부(미결 최빈 명시 + 남는 것) (c) ≥0.70 통상 (d) ≥1.00 설계상 80%",
+    "mde_contract": "02_Infrastructure/contracts/required_effect_size.R::required_effect(t_threshold = z(power_target)+z(1-alpha/2)) — MDE80 의 단일 출처(재구현 금지)",
+    "links": [
+      {"cite": "Hoenig & Heisey (2001) The Abuse of Power. The American Statistician 55(1)", "url": "https://doi.org/10.1198/000313001300339897", "use": "검정력은 관측 효과가 아니라 사전 선언한 효과로만 계산한다(사후 검정력 금지)"},
+      {"cite": "Gelman & Carlin (2014) Beyond Power Calculations: Type S and Type M errors. Perspectives on Psychological Science 9(6)", "url": "https://doi.org/10.1177/1745691614551642", "use": "저검정력 설계의 유의 결과는 크기가 과장된다 — 조건부 착수는 '미결 최빈'을 명시한다"}
+    ]
+  },
+
+  "se_sources": {
+    "allowed": ["null_dilution", "block_bootstrap"],
+    "combine": "max",
+    "combine_note": "두 원천이 다 있으면 큰 쪽(보수). null 희석 = 무신호 치환 칸의 구현·선정 잡음 · 블록 부트스트랩 = 경로 표본 잡음 — 서로 다른 성분이라 작은 쪽을 쓰면 한 성분을 버린다.",
+    "forbidden": {
+      "phase_pair": "레버 감사(scratchpad/organic/lever_audit_final.md §③#3·§⑤ · 2026-09-25): 위상쌍 B6_32/33 은 10쌍 중 8쌍이 같은 부호 = 계통 효과라 대칭 잡음(SE) 추정원이 될 수 없다.",
+      "misspecified_b7": "구 B7 칸(전기간 IC 선정 · P0-08 이전)은 처치 오지정 — SE·기대효과 원천 금지(플랜 PR-L2)."
+    },
+    "links": [
+      {"cite": "Harvey & Liu (2021) Lucky factors. Journal of Financial Economics", "url": "https://doi.org/10.1016/j.jfineco.2021.04.014", "use": "귀무(무신호) 치환으로 잡음 분포를 직접 만든다 — null 희석 칸의 근거"}
+    ]
+  },
+
+  "bootstrap": {
+    "kind": "paired_circular_block",
+    "B": 2000,
+    "ci_level": 0.90,
+    "block_rule": "auto",
+    "block_rule_note": "rf_overlay_adversary.R::adv_block_len 재사용(단일 출처) — np::b.star(Politis-White 원형 블록) 있으면 그것 · 없으면 HHJ n^(1/3). P1-03 selection_accounting.R 이 배포되면 그 공용판으로 이관한다.",
+    "seed": 20260925,
+    "ann_periods_daily": 252,
+    "ann_note": "adv_calmar_from_ret 기본 ann 과 같은 값(rf_overlay_adversary.R:156 · 일간 경로 Calmar = 계약과 같은 식)",
+    "min_valid_frac": 0.95,
+    "min_valid_frac_note": "재표본 통계가 NA(예: 심층 하락월 0개)인 비율이 1−min_valid_frac 을 넘으면 그 측정은 무효(NA)로 돌려준다 — 조용한 표본 축소 금지",
+    "B_note": "백분위 구간은 꼬리 분위를 재야 하므로 B 는 1000 이상 권고 — 2000 은 그 두 배(재현 오차 여유). seed 는 기록용 고정값(값 자체에 근거 없음 · 재현성만)",
+    "links": [
+      {"cite": "Efron & Tibshirani (1993) An Introduction to the Bootstrap. Springer", "url": "https://doi.org/10.1007/978-1-4899-4541-9", "use": "백분위 신뢰구간에 B ≥ 1000"},
+      {"cite": "Davison & Hinkley (1997) Bootstrap Methods and their Application. Cambridge UP", "url": "https://doi.org/10.1017/CBO9780511802843", "use": "재표본 통계 NA·몬테카를로 오차 관리"},
+      {"cite": "Künsch (1989) The Jackknife and the Bootstrap for General Stationary Observations. Annals of Statistics 17(3)", "url": "https://doi.org/10.1214/aos/1176347265", "use": "블록 부트스트랩(자기상관 보존)"},
+      {"cite": "Politis & White (2004) Automatic Block-Length Selection for the Dependent Bootstrap. Econometric Reviews 23(1)", "url": "https://doi.org/10.1081/ETC-120028836", "use": "블록 길이 자동 선택(원형 블록 b*)"},
+      {"cite": "Patton, Politis & White (2009) Correction to 'Automatic Block-Length Selection…'. Econometric Reviews 28(4)", "url": "https://doi.org/10.1080/07474930802459016", "use": "b* 정정판(np::b.star 구현 기준)"},
+      {"cite": "Hall, Horowitz & Jing (1995) On blocking rules for the bootstrap with dependent data. Biometrika 82(3)", "url": "https://doi.org/10.1093/biomet/82.3.561", "use": "np 부재 시 n^(1/3) 블록 규칙"},
+      {"cite": "Ledoit & Wolf (2008) Robust performance hypothesis testing with the Sharpe ratio. Journal of Empirical Finance 15(5)", "url": "https://doi.org/10.1016/j.jempfin.2008.03.002", "use": "두 전략 성과 차의 짝지은(같은 인덱스) 원형 블록 부트스트랩"},
+      {"cite": "White (2000) A Reality Check for Data Snooping. Econometrica 68(5)", "url": "https://doi.org/10.1111/1468-0262.00152", "use": "기준(바닥) 대비 성과 차의 블록 부트스트랩 추론"},
+      {"cite": "Lakens (2017) Equivalence Tests", "url": "https://doi.org/10.1177/1948550617697177", "use": "ci_level 0.90 = 단측 5% 두 번(TOST)과 같은 구간 — powered_null 판정과 짝"}
+    ]
+  },
+
+  "selection_accounting": {
+    "selection_type": "sweep",
+    "n_basis": "rf_runner_gates.R::rf_selection_accounting(ids = rf_lineage_ids(바닥 계보), n_measured_prior = rf_lineage_measured, n_batch = 가족 arm 수) — 1 + 계보 측정 칸(상속 제외) + arm 수. 삭제 arm(측정 0)은 넣지 않는다(PR-L1-A4-DISPOSITION)",
+    "decision_refs": ["D-A", "D-A-N-TIMING", "PR-L1-A4-DISPOSITION"],
+    "links": [
+      {"cite": "Bailey & López de Prado (2014) The Deflated Sharpe Ratio. Journal of Portfolio Management 40(5)", "url": "https://doi.org/10.3905/jpm.2014.40.5.094", "use": "선택 편향 보정의 N 은 선택 이력 전체(바닥 계보 포함)"},
+      {"cite": "Harvey, Liu & Zhu (2016) …and the Cross-Section of Expected Returns. Review of Financial Studies 29(1)", "url": "https://doi.org/10.1093/rfs/hhv059", "use": "다중검정 — 시행 수를 숨기지 않는다"}
+    ]
+  },
+
+  "verdict": {
+    "contracts": {
+      "essence_score":          {"file": "02_Infrastructure/contracts/essence_score.R", "artifact_hint": "authoritative_remeasure.json", "artifact_regime_required": true},
+      "defensive_score":        {"file": "02_Infrastructure/contracts/defensive_score.R", "artifact_hint": "authoritative_remeasure.json::defensive_score", "artifact_regime_required": true},
+      "rf_prereg_paired_boot":  {"file": "02_Infrastructure/reinforcement/rf_prereg.R", "artifact_hint": "rf_prereg_artifact 로 쓴 rf_prereg_paired_boot 산출 json", "artifact_regime_required": true,
+                                 "pinned": {"B": "bootstrap.B", "seed": "bootstrap.seed", "ci_level": "bootstrap.ci_level"}, "pin_config_sha": true,
+                                 "pinned_note": "B·seed 는 인자로 바꿀 수 있어(진단용) 판정 입력은 설정값으로 낸 산출물만 받는다 — seed 쇼핑 차단. deep_capture 의 deep_threshold 는 ds_params() 와 대조(코드)"},
+      "null_dilution":          {"file": "02_Infrastructure/reinforcement/rf_prereg.R", "artifact_hint": "rf_prereg_artifact 로 쓴 rf_prereg_se_null 산출 json (P1-06 null 희석 상주 칸의 essence 들)", "artifact_regime_required": true},
+      "sa_subwindow":           {"file": "02_Infrastructure/contracts/selection_accounting.R", "artifact_hint": "P1-03 sa_subwindow(cut=설정 id) → sa_write/rf_prereg_artifact JSON — 수치 경로 essence/calmar·essence/oos_retention · window.cut_id·end_source(config: 만 판정 입력)", "artifact_regime_required": true,
+                                 "pinned": {"end_from_config": "verdict.contracts.sa_subwindow.pinned_values.end_from_config"}, "pinned_values": {"end_from_config": 1},
+                                 "pinned_note": "산출물 최상위 end_from_config(설정 cut id = 1 · end 인자 직접 지정 = 0)를 1 과 대조 — end 인자(진단) 산출은 판정 입력이 아니다(절단일 쇼핑 차단 · 2026-09-26 INTEG). 절단일 자체의 원천은 계약 설정 selection_accounting_config.json subwindow.cuts(산출물 config.md5 · window.end 에 기록)"},
+      "tilt_attribution":       {"file": "02_Infrastructure/contracts/tilt_attribution.R", "artifact_hint": "P2-02 — 일간 공통 성분 분해"},
+      "b_ewcw_paired_delta":    {"file": "02_Infrastructure/contracts/b_ewcw_paired.R", "artifact_hint": "PR-L1 1차 — bew_paired_delta(arm·바닥 tilt 산출) → bew_write/rf_prereg_artifact JSON · 최상위 value·se·t·ci_lo·ci_hi·ci_level(fixed-b)", "artifact_regime_required": true,
+                                 "pinned": {"ci_level": "bootstrap.ci_level", "nw_b_fraction": "verdict.contracts.b_ewcw_paired_delta.pinned_values.nw_b_fraction"}, "pinned_values": {"nw_b_fraction": 0.2},
+                                 "pinned_note": "ci_level(부트스트랩 없음 — CI 는 fixed-b 임계 × NW se)과 NW 대역폭 비율 b(nw_b_fraction)를 사전등록 설정과 대조 — 등록 뒤 계약 설정의 b 를 바꿔 t 를 고르는 쇼핑 차단(2026-09-26 INTEG). b 의 원천 = 계약 설정 b_ewcw_paired_config.json nw.b_fraction(귀무 교정 근거) — 두 값의 일치는 검사 test_b_ewcw_paired.R [RT2]. fixed-b 계수는 계약 설정(산출물 config.md5 에 기록)"},
+      "beta_controlled_alpha":  {"file": "02_Infrastructure/contracts/beta_controlled_alpha.R", "artifact_hint": "β-통제 α t"},
+      "no_signal_control":      {"file": "02_Infrastructure/contracts/no_signal_control.R", "artifact_hint": "no_signal_gate verdict"},
+      "sleeve_delivery":        {"file": "02_Infrastructure/reinforcement/rf_sleeve.R", "artifact_hint": "PR-L2 처치 전달량(PR-L2-B7-EXCL-UNIT (c)) — 셀 산출물의 슬리브 전달 요약 → rf_prereg_artifact JSON · 최상위 value = Σ_t |S_t \\ H_t| / Σ_t |S_t| (S_t = 시그널일 t 에 슬리브가 넣은 종목 · H_t = 같은 날 바닥(F1) 선정 보유 · 풀링 비율) · 최상위 measurement_regime.exec_price · 구현 = leverimpl 스테이징(DELIVERY-IMPL)", "artifact_regime_required": true,
+                                 "note": "계약 파일은 슬리브 구현의 정본(rf_sleeve.R) — 전달량 산출 함수가 배포되기 전 산출물은 파일 존재와 무관하게 사전등록 의존 DELIVERY-IMPL 이 등록을 막는다"}
+    },
+    "forbidden_contract_labels": ["manual", "hand", "python", "llm", "q_lead", "session", "estimate"],
+    "require_artifact_sha": true,
+    "require_artifact_sha_note": "true 면 rf_prereg_verdict(verify_artifacts=FALSE) 를 거부한다 — 판정 수치는 산출물(파일+sha256)에서 재도출한 값만(측정 객체의 수치는 주장 · 다르면 거부). 중첩 산출물은 source.fields={stat:'json/경로'}",
+    "arm_artifacts_after_registration": true,
+    "arm_artifacts_after_registration_note": "arm(또는 arm 을 포함한 대조)을 대상으로 한 측정의 산출물 파일 mtime ≥ 등록본 registered_at — 결과를 본 뒤 등록한 측정을 받지 않는다(Nosek et al. 2018 · 결과 전 잠금). 바닥·SE 칸은 등록 전 측정이 정당(바닥 결정론·검정력 SE 가 등록 차단 해소 조건). mtime 은 위조 가능한 약한 증거 — 강한 닻은 쓰기 가드 훅(미배포)",
+    "pin_to_registration_config": true,
+    "pin_to_registration_config_note": "판정 시 현재 설정 sha256 = 색인의 등록 시점 config_sha256 이어야 한다 — 등록 뒤 label_precedence·부트스트랩·계약 목록을 바꿔 결과를 고르는 경로 차단. 재보정은 등록 전에, 등록 뒤면 새 사전등록",
+    "regime_key": "exec_price",
+    "artifact_regime_note": "artifact_regime_required=true 인 계약은 산출물 JSON 최상위 measurement_regime.<regime_key> 로 규약을 재도출한다(주장 블록만 믿지 않는다 · authoritative_remeasure.json 은 P0-05 뒤 싣는다). sa_subwindow·b_ewcw_paired_delta 는 산출물 최상위 measurement_regime 을 싣는다(2026-09-25 INTEG 배포 때 켬). tilt_attribution 은 최상위 measurement_regime 이 없어(input.exec_price 만) 꺼 둔다 — PR-L1 1차 지표는 b_ewcw_paired_delta 로 소비할 것(초안 draft1 의 contract=tilt_attribution 은 draft2 에서 교체).",
+    "stats": ["value", "ci_lo", "ci_hi", "p_gt0", "t", "se", "cal_q_lo", "cal_q_hi"],
+    "stats_note": "cal_q_lo·cal_q_hi = rf_prereg_paired_boot(cal_alpha=등록본 α) 가 같은 재표본에서 낸 α·1−α 분위(2026-10-03 PREREGFIX) — 1차 판정 교정(bootstrap_p)의 함의 효과 배제에 쓴다",
+    "calibration": {
+      "kinds": {
+        "bootstrap_p": {"params": ["alpha"], "stats": ["p_gt0", "cal_q_lo", "cal_q_hi"], "artifact_key": "cal_alpha",
+                        "rule": "단측 교정 수준 α(등록 전 귀무 FPR 교정 산출물): decrease → 기전 탐지 = p_gt0 < α · 0 포함 = α ≤ p_gt0 ≤ 1−α · 함의 효과 배제 = cal_q_lo(α 분위) > 함의 효과 / increase 는 대칭. 산출물 cal_alpha = 등록본 α(판정이 대조 — 수준 쇼핑 차단)"},
+        "null_t_quantile": {"params": ["t_lo", "t_hi"], "stats": ["value", "se", "t"],
+                            "rule": "판정 통계 t 의 경험 귀무 분위(등록 전 · 처치 비열람 산출 — PR-L1: arm 회전 맞춤 무작위 쌍 · fixed-b 판정 통계 그대로 · 단측 1%): decrease → 기전 탐지 = t ≤ t_lo · 0 포함 = t_lo < t < t_hi · 함의 효과 배제 = (value − 함의 효과)/se ≥ t_hi / increase 는 대칭"}
+      },
+      "note": "PREREG-POWERED-NULL-CALIBRATION(2026-09-26 [위임] '판정이 너그러우면 검정력 있는 무효가 거짓으로 서서 유망 레버를 조기에 닫는다') — rf_prereg_verdict 의 mechanism_detected·powered_null 은 등록본 power.calibration 의 교정 문턱으로만 낸다. 명목 90% CI(ci_lo·ci_hi)는 병기만. 교정 없는 사전등록은 등록 차단 · 판정 거부(설정 스위치 없음). 함의 효과 쪽 배제에 같은 교정 수준을 쓰는 것은 위치 이동 근사(귀무 Δ=0 에서 교정한 수준을 Δ=함의 효과에 옮김) — 결과에 병기",
+      "links": [
+        {"cite": "Hall (1986) On the bootstrap and confidence intervals. Annals of Statistics 14(4)", "url": "https://doi.org/10.1214/aos/1176350164", "use": "백분위 구간 포함 확률 오차 — 명목 수준이 아니라 교정 수준으로 판정"},
+        {"cite": "Beran (1987) Prepivoting to reduce level error of confidence sets. Biometrika 74(3)", "url": "https://doi.org/10.1093/biomet/74.3.457", "use": "부트스트랩 p 의 귀무 분포로 문턱을 다시 잡는다(교정 α)"},
+        {"cite": "Kiefer & Vogelsang (2005) A new asymptotic theory for heteroskedasticity-autocorrelation robust tests. Econometric Theory 21(6)", "url": "https://doi.org/10.1017/S0266466605050565", "use": "fixed-b t 의 귀무 분포는 정규가 아니다 — 판정 문턱은 그 분포(경험 귀무)의 분위로"},
+        {"cite": "Lakens (2017) Equivalence Tests", "url": "https://doi.org/10.1177/1948550617697177", "use": "검정력 있는 무효 = 0 을 배제하지 못함 ∧ 함의 효과 배제(동등성 논리) — 같은 교정 수준으로"}
+      ]
+    },
+    "param_derivations": ["one_minus", "disposition_floor_over_ratio"],
+    "param_derivations_note": "decision_params.derive.op 어휘(코드 rf_prereg.R::.rfp_derive_param 이 아는 것만). one_minus = 1 − of(교정 α 의 반대 꼬리). disposition_floor_over_ratio = (등록 처분 등급 하한 ratio — power_gate.ratio_forbidden_below/ratio_conditional_below/ratio_design80_at) ÷ rf_prereg_power 재계산 ratio — 전달된 효과 ≈ 전달률 × 기전-함의 효과(ITT = 순응률 × 효과)라 전달률이 이 아래면 실현 설계가 등록 처분 등급 밖으로 떨어진다(PR-L2-B7-EXCL-UNIT (c) 전달량 하한 · 2026-10-03 PREREGFIX 제안)",
+    "param_derivations_links": [
+      {"cite": "Angrist, Imbens & Rubin (1996) Identification of Causal Effects Using Instrumental Variables. JASA 91(434)", "url": "https://doi.org/10.1080/01621459.1996.10476902", "use": "배정 효과(ITT) = 순응률 × 처치 효과 — 슬리브가 F1 보유와 같은 종목을 넣으면 그 몫은 처치가 전달되지 않는다(전달률 비례 희석)"}
+    ],
+    "validity_outcomes": {
+      "treatment_dilution": "처치 전달량(슬리브 교체 종목 중 바닥 보유와 다른 종목 비율)이 사전 선언 하한 미만 — 판정 불가(PR-L2-B7-EXCL-UNIT (c) 2026-09-26). 라벨 없음 · 1회 기록 · 재판정 = 새 사전등록"
+    },
+    "ops": ["<", "<=", ">", ">=", "=="],
+    "forbidden_record_keys": ["essence", "essence_grade", "authoritative_remeasure"],
+    "forbidden_record_keys_note": "reinforce_ledger.R::rf_record_decision 의 AX-008 경계와 같은 집합 — 판정 기록은 등급을 주장하지 않는다"
+  },
+
+  "registration": {
+    "floor_ref_path": "06_Registry/prereg/reference_floors_v2.json",
+    "floor_required_fields": ["id", "status", "determinism_ok", "selection_basis", "measurement_regime"],
+    "floor_status_ok": ["confirmed"],
+    "floor_selection_basis_ok": ["as_of"],
+    "floor_status_mechanism_only": ["confirmed_mechanism_only"],
+    "mechanism_only_scope": {"label": "mechanism_only", "a_eligible": false},
+    "floor_permitted_use_mechanism_only": ["mechanism_only"],
+    "mechanism_only_note": "PREREG-MECHANISM-ONLY-FLOOR (가) 2026-09-26 [위임] — 바닥 status confirmed_mechanism_only(rf_floor_v2.R: 결정론·규약·기저 통과 · 관문이 use_restriction{mechanism_only · a_eligible=false}로만 열림)는 사전등록 scope.label=mechanism_only ∧ scope.a_eligible=false 일 때만 받는다. 이때 바닥 permitted_use ∈ floor_permitted_use_mechanism_only · 바닥 a_eligible=false · 바닥 use_restriction.decision_id = 사전등록 scope.decision_ref(있으면) 도 대조. A 경로(그 밖 scope)는 floor_status_ok(confirmed)뿐 — fail-closed 유지. 근거 결정 FLOOR-BASE-ENGINE-Q4(F1 위 '기전 반증 시도' 등록·실행).",
+    "floor_forbidden_flag_patterns": ["^selection_basis_full_sample", "^pit_c11", "^legacy"],
+    "floor_note": "P2-03 floor v2 가 이 필드를 싣는다는 소비자 계약 — 형태 {\"floors\": [{\"id\":\"F1\", \"status\", \"determinism_ok\", \"selection_basis\", \"measurement_regime\": {\"exec_price\"}, \"vintage_flags\": [...]}, ...]}. 최고 계보 22632·14760 promo3 칸은 selection_basis_full_sample_ic_inherited(C1 · D-E) 표식이라 그대로는 바닥이 될 수 없다 — as-of 재선정 새 칸(P0-08 규칙)만."
+  },
+
+  "run": {
+    "live_enabled": false,
+    "live_note": "rf_prereg_run 은 드라이런 전용. 원장 entry 개설(rf_open_entry(priority='prereg', experiment=))은 P1-08 배포 + 별판 검토 뒤에만 — 이 키를 true 로 바꾸는 것만으로는 열리지 않는다(코드가 formals 를 재도출해 priority·experiment 부재면 거부 · 현 코드는 live 경로 자체가 없다).",
+    "required_open_entry_formals": ["priority", "experiment"]
+  }
+}

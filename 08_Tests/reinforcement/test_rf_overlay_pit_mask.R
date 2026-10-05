@@ -98,7 +98,8 @@ for (f in c("02_Infrastructure/validation/overlay_pit_guard.R", "02_Infrastructu
             "02_Infrastructure/portfolio/weight_catalog.R",
             "02_Infrastructure/reinforcement/overlay_arms/dbeta_tilt.R",
             "02_Infrastructure/reinforcement/overlay_arms/gen_20260906_174032.R",
-            "06_Registry/overlay_probe_future.json"))
+            "06_Registry/overlay_probe_future.json",
+            "06_Registry/overlay_probe_allowlist.json"))   # ★R3R probe ③d 허용 목록(부재 = FAIL)
   if (!file.copy(file.path(ROOT, f), file.path(STUB, f), overwrite = TRUE)) ng("스텁 루트 사본", f)
 ADIR <- file.path(STUB, "02_Infrastructure/reinforcement/overlay_arms")
 .arm <- function(kind, body) writeLines(body, file.path(ADIR, paste0(kind, ".R")))
@@ -379,6 +380,8 @@ cfg_root <- function(tag, cfg) {
   dir.create(file.path(r, "06_Registry"), recursive = TRUE, showWarnings = FALSE)
   for (k in c("zz_v1_tailpeek", "dbeta_tilt")) file.copy(file.path(ADIR, paste0(k, ".R")), file.path(r, "02_Infrastructure/reinforcement/overlay_arms"), overwrite = TRUE)
   if (!is.null(cfg)) writeLines(toJSON(cfg, auto_unbox = TRUE, pretty = TRUE), file.path(r, "06_Registry/overlay_probe_future.json"))
+  # ★R3R — ③d 허용 목록은 ④ 설정과 별개 축이다. B5 는 ④ 설정만 흔든다(QM_ROOT = 이 스텁이라 정본 폴백이 없다) — 목록은 둔다
+  file.copy(file.path(ROOT, "06_Registry/overlay_probe_allowlist.json"), file.path(r, "06_Registry"), overwrite = TRUE)
   r
 }
 C0 <- fromJSON(CFG, simplifyVector = FALSE)
@@ -429,16 +432,27 @@ for (k in c("zz_dyn", "zz_pf")) {
 PX <- readLines(PROBE, warn = FALSE, encoding = "UTF-8")
 SC_ANCHOR <- "  scope <- overlay_probe_scope_scan(src)"
 hitc <- which(PX == SC_ANCHOR)
-if (length(hitc) == 1L) {
-  PX[hitc] <- "  scope <- overlay_probe_scope_scan(src)[0]"          # ③c 무력화 돌연변이(0행 = 통과)
-  PM <- file.path(TD, "overlay_probe_noscope.R"); writeLines(PX, PM, useBytes = TRUE)
-  pM <- new.env(); suppressMessages(capture.output(sys.source(PM, envir = pM)))
+AL_ANCHOR <- "  al_s <- overlay_probe_allowlist_scan(p, kind = kind, root = root)"
+hita <- which(PX == AL_ANCHOR)
+if (length(hitc) == 1L && length(hita) == 1L) {
+  # ★R3R(2026-09-25): 정적 층이 둘이 됐다 — ③c(알려진 통로 열거) · ③d(허용 목록). ③c 만 끄면 ③d 가 잡고(중복 방어),
+  #   둘 다 꺼야 ④ 값 섭동까지 통과한다(정적 층이 하중을 진다 — ④ 는 H 만 흔든다).
+  PX1 <- PX; PX1[hitc] <- "  scope <- overlay_probe_scope_scan(src)[0]"          # ③c 무력화(0행 = 통과)
+  PM1 <- file.path(TD, "overlay_probe_noscope.R"); writeLines(PX1, PM1, useBytes = TRUE)
+  pM1 <- new.env(); suppressMessages(capture.output(sys.source(PM1, envir = pM1)))
+  PX2 <- PX1; PX2[hita] <- "  al_s <- list(ok = TRUE, grant = \"MUTANT\", al_path = \"-\", fallback = FALSE)"   # ③d 도 무력화
+  PM2 <- file.path(TD, "overlay_probe_nostatic.R"); writeLines(PX2, PM2, useBytes = TRUE)
+  pM <- new.env(); suppressMessages(capture.output(sys.source(PM2, envir = pM)))
+  al_of <- function(r) { z <- r$checks[r$checks$check == "allowlist", ]; if (nrow(z)) z$status[1] else "-" }
   for (k in c("zz_dyn", "zz_pf")) {
+    invisible(capture.output(r1_ <- pM1$overlay_probe_arm(k, STUB)))
+    if (!isTRUE(r1_$ok) && identical(al_of(r1_), "FAIL")) ok(sprintf("B7b' ③c 만 끈 probe 는 %s 를 ③d allowlist 에서 거부(중복 방어)", k)) else
+      ng(sprintf("B7b' ③c 만 끄면 %s 가 샌다 — ③d 가 이 통로를 못 본다", k), as.character(r1_$reason))
     invisible(capture.output(rm_ <- pM$overlay_probe_arm(k, STUB)))
-    if (isTRUE(rm_$ok) && identical(fut_of(rm_), "PASS")) ok(sprintf("B7b ③c 없는 probe 는 %s 를 통과시킨다(④ PASS — 값 섭동은 H 만 흔든다 = ③c 가 하중을 진다)", k)) else
-      ng(sprintf("B7b ③c 없이도 %s 가 잡힌다 — 전제 재확인", k), as.character(rm_$reason))
+    if (isTRUE(rm_$ok) && identical(fut_of(rm_), "PASS")) ok(sprintf("B7b ③c·③d 없는 probe 는 %s 를 통과시킨다(④ PASS — 값 섭동은 H 만 흔든다 = 정적 층이 하중을 진다)", k)) else
+      ng(sprintf("B7b 정적 층 없이도 %s 가 잡힌다 — 전제 재확인", k), as.character(rm_$reason))
   }
-} else ng("B7b 돌연변이 앵커", sprintf("'%s' %d건(1건이어야 한다)", SC_ANCHOR, length(hitc)))
+} else ng("B7b 돌연변이 앵커", sprintf("'%s' %d건 · '%s' %d건(각 1건이어야 한다)", SC_ANCHOR, length(hitc), AL_ANCHOR, length(hita)))
 scope_of <- function(r) { z <- r$checks[r$checks$check == "scope", ]; if (nrow(z)) z$status[1] else "-" }
 for (k in c("zz_dyn", "zz_pf")) {
   invisible(capture.output(rs <- pN$overlay_probe_arm(k, STUB)))

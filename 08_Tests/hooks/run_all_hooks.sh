@@ -1624,6 +1624,13 @@ SUITES=(
   "08_Tests/reinforcement/test_rf_selection_asof.R"
   #   B7 슬리브 단위(k 정적 · |SEL| 보존 · 처치 미전달 가드 · 대조군 2칸 · as-of 규칙 해석) — 09-21 신설 이후 미편입이던 것(요약 JSON 추가)
   "08_Tests/reinforcement/test_rf_sleeve.R"
+  # 2026-10-03 LVIMPL(결정 PR-L2-B7-EXCL-UNIT (c) · PREREG-DRAFT2-Q-INTERPRETATIONS ③ · PR-L1-L2-ORDER (C)): PR-L1 cap_core(rf_capcore.R · 엔진 비중 단계 뒤) —
+  #   k=0 비트 동일 · 코어 = K200 t-1 시총 상위 k(독립 재계산) · union_truncation · 고정 축 · PIT 섭동(당일·t-1·미래) · C1 무작위 위성 · 서명 ·
+  #   B7 exclude=base_factors 엔진 배선(양방향 픽스처) · 전달량 진단 → 계약 왕복 — tempdir 만 씀 · 약 1분
+  "08_Tests/reinforcement/test_rf_capcore.R"
+  #   처치 전달량 계약(contracts/sleeve_delivery.R · value = δ 풀링): 재도출 · 입력 계약(변조·규약·불변식) · 소비자 왕복(rf_prereg — 배포 순서 무관:
+  #   미등재 거부 · 등재판(이 계약 file · preregfix 형식 rf_sleeve.R file) 수락 · 규약·regime·손 수치·바뀐 파일·다른 대상 거부) · 돌연변이 M1~M5
+  "08_Tests/contracts/test_sleeve_delivery.R"
   # >>> P0-09 오버레이 PIT 가드(B09 · 2026-09-25)
   #   rf_cell_engine.R t 행 fwd 마스크 · assert 입력 = arm 에 넘긴 값의 가용일(한계 = 홀딩 시작 전날) · overlay_probe ④ 12시점×4섭동(06_Registry/overlay_probe_future.json):
   #   구판 빨강(t 행 실값 노출 · 익월 섭동 반응 · 구 probe 가 위반 arm V1/V2 통과) · 신판 NA/정지 · 정직 arm 신·구 비트 동일 · .M 불변식 · 집행일 축 호출 실패 → 달력 폴백
@@ -1741,6 +1748,104 @@ SUITES=(
   #   적대검증·Q④ 노출) · Q④ 검출기(식별자 보호 돌연변이) · 적대검증 정본 술어 위임 · 쓰기 불변성 · 핀 대조 · 설정 fail-closed · tempdir 만 씀
   #   (적대검증 수리) 기저 엔진 설계 노출(결합 엔진 프롬프트 교차 entry 수치 · 실데이터 양성/음성 대조) · 사전등록 관문(필수 결정 · 해제 문구 · fail-closed)
   "08_Tests/reinforcement/test_rf_floor_v2.R"
+  # 2026-09-25 P2-01 사전등록 레버 실험 계약(rf_prereg.R): 설정 fail-closed · 스키마 위반 주입 17 + 등록 차단 13 · writer(덮어쓰기 거부·
+  #   rev·가족·색인 묘비·변조 검출) · 검정력 3종(measurement-graduation 표 항등·required_effect 단일 출처) · SE(짝지은 블록 부트스트랩·
+  #   null 희석·위상쌍 거부) · 판정(라벨 4종·멈춤 집행·손계산/sha/규약 거부·1회만·AX-008) · 드라이런 쓰기 0 · 적대 검증 수리(수치=산출물 재도출·
+  #   멈춤 생략/NA 우회·등록 전 측정·등록 뒤 설정 변경·seed 쇼핑·halt must_report·대상 귀속 위조) — 돌연변이 29종 red · tempdir 만 씀
+  "08_Tests/reinforcement/test_rf_prereg.R"
+  # 2026-09-25 de_follow V6 — 조건부 IC 소비의 호출부 차단(D-E-V6-CONDITIONAL-IC · pit.md C1/C14 · V6 절):
+  #   가드 래퍼(행렬 섭동 불변 · 원본 = 양성 대조 · U=NA · slate 쓰기 0 · 과차단 없음) · 우회 변형 5종 거부 · 정적 봉인(직접 호출 0 ·
+  #   행렬 파일명 허용 목록 · .md 표식) · 호출부 실행(hook_determine_role · hook_quant_factcheck · v55 fail-closed) ·
+  #   돌연변이(원본 호출 복원 · 구판 행렬 블록) red · pit.md ORGANIC-DE 문장 · tempdir 만 씀
+  "08_Tests/validation/test_cond_ic_asof_guard.R"
+  # 2026-09-25 de_follow2 B5LAB — B5 설계 재료의 교차 entry 결과 라벨 가림(D-E-B5-LABELS · pit.md C1 D-E):
+  #   어휘 재도출(원장 G2 기록·RFM_VCLASSES·ADV_DEFERRED_VERDICT·rf_target_brief 리터럴·디렉터 상태 · 결손 = fail-closed) · 교차 절 라벨 0(검사 자체 판별기) ·
+  #   (2b)(4b)(5)(6) 원천 표식·(6) (action,state) 순 · 자기 절 바이트 불변 · 돌연변이 8종(조립 가림 끔 → 게이트 · 전부 끔 → 판별기 · 순서·개수·사인·디렉터·극성 복원 · 적재 실패)
+  "08_Tests/reinforcement/test_rf_b5_materials_labels.R"
+  # 2026-09-25 de_follow2 ALLOWP — 오버레이 arm 생성 프롬프트의 probe ③d 허용 함수 목록(도훈 결정 B09-ALLOWLIST-PROMPT):
+  #   렌더러(probe 적재기 경유 · 키별 집합 = 레지스트리 · 변경 반영 · 부재/파손/스키마/능력 오염/적재기 부재 = 미제공 rc 3 · 렌더 ⇔ probe 판정) ·
+  #   B5 재료 (7) 목록 · 미제공 = (7)·(8) 명시 · 생성 레인 실제 프롬프트(가짜 claude) · 미제공 = LLM 호출 0 — 운영 무접촉(tempdir)
+  "08_Tests/ops/test_rf_allowlist_prompt.R"
+  # >>> B5FIX 7308 B5 설계 우선순위·경계 백필 (2026-09-26 · 도훈 "1번 진행" · 러너 본체 예외 승인 · 사고 09-25 22:07~22:55)
+  #   저장 관문(rf_lcode_mechanism_lib.R::lcm_design_guard): 레인 산출(원장 b5_design.rounds · 파일 source)이 있으면 기전 B5 설계 거부 +
+  #   백업 · B2/B3 사후 설계 금지 · 원장 판독 불가 = 기존 파일 보존 · 반대 방향(레인이 기전을 덮음) 불변 — 실물 레인·merge · 돌연변이 4종 red
+  "08_Tests/reinforcement/test_rf_b5_design_priority.R"
+  #   경계 백필 + 격자 재도출 대조(reinforce_auto_parallel.R · rf_boundary_backfill.R): 실물 러너 샌드박스 — 사고 재현(경계 1회) · 사고 뒤
+  #   상태 백필(G2 → L-code → 기전 → 지연 텔레그램) · 멱등 · 격자 소진(예산 > 격자) · G2 실패 상한 · 대조가 낡은 격자 tick 을 닫는다 ·
+  #   돌연변이 4종 red (약 15~20분)
+  "08_Tests/reinforcement/test_rf_boundary_backfill.R"
+  #   지연 블록 텔레그램 = 그 블록 시점 표(rf_auto_notify n 까지 · delayed 표기) · 정상 경로 불변 — 드라이런
+  "08_Tests/reinforcement/test_rf_notify_block_asof.R"
+  # <<< B5FIX
+  # >>> B5FIX-C 소비 보류 표식 (2026-09-26 · 도훈 결정 항목 (c) · a_eligibility_gate.json holds.vintage_flag.consume_hold)
+  #   표식 칸(design_materials_cross_entry_labels · possible)은 블록 승자·바닥·carry 기준선·승격 best 에서 제외 · 설정 없으면 항등 — 돌연변이 red
+  "08_Tests/reinforcement/test_rf_consume_hold.R"
+  # <<< B5FIX-C
+  # 2026-09-25 P1-06 통제 칸(carry 재현 B1_0 · null-factor 희석 B1_N*): 격자 정본 형식·패리티(parallel_cells·floor v2 E3 허용오차) ·
+  #   삽입 판정 8 · 제외 술어(승자·바닥·승격·A always-on·N) + 양성 대조 · 러너 격자·예산·등록 루프 추출 실행 · 면제 제거 돌연변이 3종 →
+  #   재현 칸 측정 0회 = E3 red · E3 판정 11 · 기준선 해석 5 · null 판독기(→ rf_prereg_se_null 사슬) · 엔진 null_perm(결정론·접두 안정·난수 복원) ·
+  #   축포·블록 L-code 제외 — tempdir 만 씀
+  "08_Tests/reinforcement/test_rf_control_cells.R"
+  # 2026-09-25 P2 통합 구현(INTEG) ② b_ewcw 짝지은 Δ 계약(contracts/b_ewcw_paired.R · PR-L1 1차 지표): NW 패리티(정본 .nw_t_mean) ·
+  #   알려진 Δ 주입 회수(value·se·CI 정확 이동 · −4SE → t=−4) · 구조 주입(tilt .ta_roll_ols·.ta_shrink → 회수비 ≈ Vasicek w) ·
+  #   귀무 보정(교환 가능 무작위 쌍 T=5400 · fixed-b 위양성률 ∈ 띠 · t≤−3 꼬리 · CI 0 제외율) · 입력 계약(규약·설정·데이터 지문·창·주입·겹침) ·
+  #   [RT] 소비자 왕복(rf_prereg 판정 입력 검사 정본 — 등재 · pinned ci_level·nw_b_fraction · 규약·regime 누락·쇼핑·변조·손 수치·sha 거부) ·
+  #   돌연변이(목록 = 검사 파일 머리 · 각 가드를 끈 사본 red) · tempdir 만 씀 · 2026-09-26 RT 추가
+  "08_Tests/contracts/test_b_ewcw_paired.R"
+  # 2026-09-25 P2 통합 구현(INTEG) ③ 선택 회계 계약 sa_subwindow(contracts/selection_accounting.R · P1-03 중 이 함수만 · 2024-12 절단판):
+  #   항등(절단 없음 = 권위 essence 비트 동일) · 절단 = 절단 시뮬레이션(독립 경로 3종) · 미래 둔감·이빨·항등 자기검사 · 형제 판 해석 ·
+  #   [RT] 소비자 왕복(설정 cut 산출만 판정 입력 — pinned end_from_config · end 인자 산출 거부) · 돌연변이(목록 = 검사 파일 머리) red ·
+  #   합성 · 약 3~4분 · 2026-09-26 RT 추가
+  "08_Tests/contracts/test_selection_accounting.R"
+  # 2026-09-26 B4-SIX-AXIS(결정 B4-SIX-AXIS-AND-CARRY-AXES): 축 등록부 rf_spec_axes.R 단일화 — 등록부 검사·격자 계약·서명 정합(행동) ·
+  #   러너 등록 루프 추출 실행(승격 B1 칸 carry rebalance · 바닥 우선 · B6·B7 overlay_cell · B4 7칸 LOO 한 축) · 대조 칸(B7_40·B7_41) 제외 ·
+  #   결합 칸 재도출(exclude_axis/drop_referencing/keep_loo · 동결) · 승격 carry · 예산 기본 = 격자 칸 합 · 승계 순서 스위치(spec_axes.inherit_order) ·
+  #   돌연변이(축 삭제·태그 삭제·.cur) — tempdir 만 씀
+  "08_Tests/reinforcement/test_rf_spec_axes.R"
+  # >>> O0a HUMAN 사람 규칙 (2026-09-25 · 유기적 강화 설계 최종판 §1.1·§11 · 결정 D-G · B3-STRUCTURAL-TRIM · ORGANIC-DE Q②′(α) · 플랜 P1-08)
+  #   정본 rf_lane_rules.R — 레인 순위·차단·FIFO·세대 하한·구조 상태(불변식 ①④⑤ · 진입 동결)·D-G B5 축소 + 예산 가산 차단(rf_budget_auto n_b5_cells) · 돌연변이 12종
+  "08_Tests/reinforcement/test_rf_lane_rules.R"
+  #   next_paper 종단(합성 원장 샌드박스): FIFO · 개설 직전 halt · 세대 하한(미룸·면제·충족 · 미룬 부모 미이월) · 실험 제외 · 러너 claim — 돌연변이 5종
+  "08_Tests/reinforcement/test_rf_next_paper_fifo.R"
+  #   러너 active 선택 절 추출 실행: 레인 순위 · 반사실 선위임 · 반사실 양보(원장 동시 쓰기 차단) · 실험 제외 — 돌연변이 2종
+  "08_Tests/reinforcement/test_rf_runner_lane_select.R"
+  #   arm 생성 레인 G1 적대 감사 경유(D-G 성과 비소비 분기): pass/reject/unavailable · probe 먼저 · kill switch — 돌연변이 2종
+  "08_Tests/ops/test_rf_overlay_propose_g1.sh"
+  #   충실구현 레인 ACT = 차단 active 만(반사실·실험 비차단 · 판정 불능 폴백) — 돌연변이 1종
+  "08_Tests/ops/test_rf_replication_lane_act.sh"
+  # <<< O0a HUMAN 사람 규칙
+  # >>> O0a 유기적 강화 기질(회계·기록·봉쇄) (2026-09-25 · 설계 04_Research/01_reports/organic_reinforce_20260925/organic_design_final.md §8.1 O0a · 결정 REINFORCE-ORGANIC-AUTONOMY·ORGANIC-SCOPE)
+  #   결정 레지스터 G7: 기계 포인터 행(M-ORG- · resolved · scope 허용목록 · 헌법 경계 거부 · 권한 결정 · 주간 상한) · 네임스페이스 · 기계/무인 문맥 stop ·
+  #   증거 레거시 규칙(경계 재도출 · 09-23 일괄 결정) · 공용 claim+CAS · 전후 대조 — 돌연변이 4종 red
+  "08_Tests/reinforcement/test_dr_record_machine.R"
+  #   레지스터 경합 시뮬 — 3프로세스 동시 쓰기 유실 0 · 잠금·CAS 제거 돌연변이 = 유실(발화 실증 · 약 1.5분)
+  "08_Tests/reinforcement/test_dr_register_concurrency.R"
+  #   시행 로그 정본(P1-02): writer · 거부 · 결정↔시행 조인 · decision_id 밀리초+순번+해시(구판 초 단위 돌연변이 = 중복) · attempt$design
+  "08_Tests/reinforcement/test_rf_trial_log.R"
+  #   생산자 7곳 종단(샌드박스 러너·이월·결합 · 스텁 워커/픽커): 조인 100% · 원장 재도출 대조 · reopen 종단 · 돌연변이 2종 red(약 5분)
+  "08_Tests/reinforcement/test_rf_trial_log_producers.R"
+  #   소진 entry 되살리기(사람 호출): exhausted→active · 멱등 · 거부 · 문맥 봉쇄 · CAS — 돌연변이 3종 red
+  "08_Tests/reinforcement/test_rf_reopen_entry.R"
+  #   유기체 정책 사전등록(rf_prereg.R 확장 · P2-01 writer 재사용): 관문 shadow_ok/미결 전용/refused · sha 재계산 · 문맥 봉쇄 — 돌연변이 3종 red
+  "08_Tests/reinforcement/test_rf_prereg_min.R"
+  #   헌법 경계 행렬: 위반 7 · 돌연변이 3(+write-ahead) · 우회 3(결합·do.call·eval(parse)) · 롤백 · 사람 명령 · OneDrive 충돌 사본 · 스냅샷
+  "08_Tests/reinforcement/test_rf_organic_boundary.R"
+  #   원장 투영 어댑터 열 허용목록(config organic.view.columns) · fail-closed · 값 누출 0 · 돌연변이 red
+  "08_Tests/reinforcement/test_rf_organic_adapter_columns.R"
+  #   칸 단위 설계 출처(E3) · B1 재료 교차 entry 노출 파일별 도출 — 돌연변이 2종 red
+  "08_Tests/reinforcement/test_rf_design_source.R"
+  # <<< O0a 유기적 강화 기질
+  # >>> CLEANLANE FA-CLEAN-BASE-PATH 청정 충실구현 레인 (2026-09-26 · 결정 FA-CLEAN-BASE-PATH · FLOOR-BASE-ENGINE-Q4)
+  #   가드 청정 표식(R6 대상·허용 목록·저장소 밖 · 증명 표식 · fail-closed · 설계 레인 바이트 동일) · 주입 훅 성과 문맥 제외 · 모드 해석 ·
+  #   피드백 가림(사후 재검 fail-closed) · 레인 동적(가짜 claude) · 감사 셸 청정 분기 · 검증기 도우미 · 돌연변이 8종 red
+  "08_Tests/ops/test_rf_clean_lane.sh"
+  #   F_A 청정 기저 선정 계약 + 청정 레인 출처 기록 대조(전사 증명·sha·감사 원천) + 숨은 로더 흐름(2001.04185 위양성 수리)
+  "08_Tests/reinforcement/test_rf_clean_base.R"
+  # <<< CLEANLANE
+  # 2026-09-26/10-03 AUTOMEM-EXPOSED-CELLS-DISPOSITION · B5FIX-CONSUME-HOLD · PROMO1-CARRY-OMISSION-FLAG — A 관문 ⑤ entry 기저 표식 전파
+  #   (entry_base_flags · 계보·같은 엔진·같은 내용) · 청정 출처 전파 제외(engine_rel·wdir_prefix) · 칸 표식 = 소비 제외 · 기저 표식 = 소비 유지 ·
+  #   carry 누락 표식 보류 · 돌연변이 7종 red · tempdir 만 씀
+  "08_Tests/reinforcement/test_rf_a_gate_entry_base_flags.R"
 )
 
 

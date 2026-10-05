@@ -6,6 +6,7 @@
 #
 # Usage:
 #   source("02_Infrastructure/stage_gate_engine.R")
+#   source("02_Infrastructure/validation/cond_ic_asof_guard.R")   # D-E-V6 — 없으면 기존 3종 판정이 fail-closed
 #   source("02_Infrastructure/pipeline/v55_stage_gate_extensions.R")
 #==============================================================================
 
@@ -31,13 +32,15 @@ sg_determine_role_v55 <- function(s0_record = NULL, s2, s3, s4) {
     return(hint_role)
   }
 
-  # Priority 2: 기존 3종 판정 로직 (stage_gate_engine의 sg_determine_role 호출)
-  if (exists("sg_determine_role", mode = "function")) {
-    return(sg_determine_role(s2, s3, s4))
+  # Priority 2: 기존 3종 판정 로직 — 호출부 가드 경유만(D-E-V6-CONDITIONAL-IC 2026-09-25 · pit.md V6 · C1/C14):
+  #   전기간 조건부 IC 행렬은 가린다(as-of 판 미제공 → 사용 안 함).
+  if (exists("sg_determine_role_asof", mode = "function")) {
+    return(sg_determine_role_asof(s2, s3, s4))
   }
 
-  # Fallback
-  "diversifier"
+  # 폴백 폐지(fail-closed) — 구판은 판정 함수가 없을 때 근거 없이 "diversifier" 를 돌려줬다. 원본 직접 호출도 하지 않는다.
+  stop("[v55] sg_determine_role_asof 미적재 — 02_Infrastructure/validation/cond_ic_asof_guard.R 를 source 하라",
+       "(원본 직접 호출·기본 역할 폴백 금지 · fail-closed · D-E-V6)")
 }
 
 #==============================================================================
@@ -78,12 +81,17 @@ sg_role_admission_v55 <- function(provisional_role, s4, s3 = NULL, s0_record = N
                 s1_gate = "SR_OOS/SR_IS>0.70 + feature_concentration<0.4 + holdout_12M+"))
   }
 
-  # 기존 3종 admission은 기존 sg_role_admission (있으면)
-  if (exists("sg_role_admission", mode = "function")) {
-    return(sg_role_admission(provisional_role, s4, s3))
+  # 기존 3종 admission — 호출부 가드 경유만(D-E-V6-CONDITIONAL-IC 2026-09-25 · pit.md V6 · C1/C14).
+  #   가드 거부·오류 = 입장 불가(fail-closed · route S5).
+  if (exists("sg_role_admission_asof", mode = "function")) {
+    return(tryCatch(sg_role_admission_asof(provisional_role, s4, s3),
+                    error = function(e) list(ok = FALSE, route = "S5",
+                                             reason = paste0("fail-closed: ", conditionMessage(e)))))
   }
 
-  list(ok = TRUE, reason = sprintf("%s admitted (v55 default)", provisional_role))
+  # 구판 기본값 `ok = TRUE (v55 default)` 폐지 — 판정 함수(가드)가 없으면 입장시키지 않는다(fail-closed · D-E-V6).
+  list(ok = FALSE, route = "S5",
+       reason = sprintf("%s: sg_role_admission_asof 미적재 — 입장 불가(fail-closed · D-E-V6)", provisional_role))
 }
 
 #==============================================================================

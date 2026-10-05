@@ -3,14 +3,14 @@
   "dist_id": "DIST-AR-045",
   "cluster_key": "f94d3e05f0b0",
   "candidate_id": "CAND_alpha_research_f94d3e05f0b0",
-  "status": "pending_5axis",
-  "statement_refined": null,
-  "retry_condition": null,
+  "status": "proposed",
+  "statement_refined": "이 아크에서는 벤치·빈티지·집행 타이밍이라는 계기 축이 신호보다 더 자주 판정을 결정했고, 유일한 통과는 새 신호가 아니라 소비면을 조건부로 바꾼 데서 나왔다. 측정: (1) 벤치 — bare book 의 PORT_t 7.236 은 IKS001 벤치 버그 아티팩트였다. 하네스·carrier·비용을 고정하고 벤치만 교체한 격리에서 4경로가 6.02 / 6.34 / 6.35 / 6.40 으로 수렴했고 교정 후 6.344, 그 판의 oos_v2 0.613(<0.7 FAIL)과 MDD 40.7 로 챔피언이 강등됐다. 같은 교정으로 value blend w=0.15 의 '+0.22' 가 역전됐다 — dPORT_t −0.067 · paired NW-t −2.946(유의 음) · oos 0.746→0.590. (2) 빈티지 — 저장 268개월 패널은 전기간 균일하게 같은 달(off+1) 팩터 빈티지였다(stored-theta 중앙 상관 off+1 0.913 대 off0 0.612). 이음새는 패널 내부가 아니라 {저장 = 같은 달}과 {전향 재계산 = T−1} 사이의 1개월 live 불연속이다. (3) 집행 타이밍 — 리밸 timing-luck 첫 실측에서 range_SR 0.1871(≥0.05)로 settled-null 이 아니었고 집행일 0~+5영업일 시프트가 SR 1.519(k0)→1.332(k5) 로 단조 감쇠했다. 대칭적 운이 아니라 단조 구조이므로 현행 anchor 집행이 6개 중 최상단이고 지연 자체가 비용이다(반월 2분할 tranche 는 SR 1.366 < k0 1.519). (4) 새 신호 3건은 dual-basis 에서 null — 공시 가독성 변화축은 4 config 전부 cap-w PORT_t 0.77 / 0.64 / −0.20 / −0.38 이고 rank-IC +0.008 로 가설과 부호가 반대이며 무의미했다(Harvey-t 1.85 · placebo p 0.085 · IS→OOS 전 config 부호 반전). 최적수송 W1 횡단면은 구현이 정리 수준 9/9 PASS(barycenter 오차 4e-16 · 위반 주입 2종 검출)인데 cap-w PORT_t −1.236 · EW-uni −2.053 로 양 basis 가 기각했고 기전 실측이 원인을 특정했다 — n=63 창의 W1 노이즈 바닥 0.167 이 실측 형상 편차 0.156 과 같아 단기 창의 '분포 형상'은 대부분 표본 잡음이고 Gaussian 치환 placebo 5시드 대역 [−1.52, −0.25] 이 관측을 포함한다. 285팩터 × 비중첩 창 3격자의 자격 부호 지속성은 달력 시간의 반감기를 보이지 않았다 — 비절단 sign-run 중앙값 1창, 기하 중앙값 2.26 / 2.39 / 2.20(창 단위로 격자 무관)인데 개월 환산은 136 / 86 / 53 으로 창 길이에 비례하므로 감쇠가 아니라 추정잡음 지배의 지문이고 상수-알파 귀무 0.548 [0.326, 0.748] 이 관측 0.578(60.2 백분위)을 포함한다. 같은 측정에서 정적 |t| 자격 게이트는 bin 별 지속률 0.503 / 0.571 / 0.666 / 0.500 으로 최상위에서 무너져 원리적으로 성립하지 않았다(|t|≥2 CI [0.366, 0.655] — 동전던지기 미배제). (5) 유일한 통과는 조건부 소비면이다 — value 틸트를 비-mega(MID+OTHER)에만 적용하고 mega 는 순수 base 로 둔 구성이 cap-w paired NW-t 2.378 ≥ 2.0 ∧ ΔIR 0.232 ≥ 0.05 로 AND-게이트를 통과했고(무조건 적용판은 paired 1.243 FAIL), placebo N=40 null 최대 1.104 ≪ 2.378 로 p=0.000 · lag1 2.473 로 같은 달 미래참조 부재 · paired-diff oos_v2 2.326 이었다. 이 봉투 안에서의 조건부 규칙은 '판정을 쓰기 전에 벤치·빈티지·집행일을 고정하라, 그리고 막힌 벽은 새 신호보다 소비면 조건화로 먼저 뚫린다'이며, 세 계기를 한 배터리로 묶어 선행 요구한 측정은 아직 없으므로 미해결로 열어둔다.",
+  "retry_condition": "판정 전 계기 고정 3종(권위 벤치 · 패널 빈티지 off 규약 · 집행일 offset)을 사전등록 배터리에 넣은 측정이 1건 이상 나오고, 동시에 조건부 소비면(cap-tier·국면) 통과가 EW basis 와 오버레이 적용 북에서 각각 재현될 때 방법론 규칙으로 재상정한다. 계기 중 하나라도 사후 확인이면 통과 서술로 쓰지 않는다.",
   "refined_at": null,
   "refined_by": null,
   "promoted_to_axiom": null,
   "created_at": "2026-08-03T22:42:10+00:00",
-  "updated_at": "2026-09-23T21:57:10+00:00",
+  "updated_at": "2026-10-03T01:59:17+00:00",
   "research_mode": "alpha_research",
   "metric_type": "estimated",
   "type": "empirical",
@@ -79,9 +79,47 @@
     "causal_plausibility": null
   },
   "oos_validation_draft": {
-    "oos_months": 268.0,
+    "oos_months": 268,
     "oos_effect_vs_is": 0.5,
     "note": "L-code oos_retention 실값 1건 median (IS65/OOS35 활성SR retention) + oos_months 실값 6건 median — promote.R essence_score 경유 재확정"
   },
-  "cluster_members_count": 8
+  "cluster_members_count": 8,
+  "adversarial_verdict": {
+    "a_exaggeration": "강등함. 'AND-게이트 PASS · paired 3.807' 류를 머리말로 세우면 배포 가능 성과로 읽히는데 supporting 8건 중 5건의 metric_type 은 canonical_screen 이고 같은 L-code 가 결론을 'CONFIG_SCOPED_NEGATIVE'·'book-marginal 자본'·'SCREEN_TIER_ROUTED' 로 못 박았다. 머리말을 계기 축 서술로 바꾸고 통과분은 screening 층 통과로 한정했다. 7.236 같은 큰 수치는 벤치 버그 아티팩트임을 같은 문장에 적었다.",
+    "b_evidence": "결함 1건 적발·명기. supporting 8건의 metric_type 은 canonical_screen 5 · backtested 2 · unavailable 1 이다 — screening 수치를 배포 등급으로 읽지 않도록 모든 통과 서술에 층을 붙였다. 또 L-AR-20260714_164238/172027 의 '저장 패널 = 같은 달 빈티지'는 미래참조 발견이므로 같은 패널로 잰 이전 수치를 현행 사실로 인용하지 않았다. 등급·합격 단정은 하지 않았다.",
+    "c_ax000": "'구조적 한계'·'dead-end' 없음. 새 신호 3건의 null 은 각각 기전이 특정된 null(노이즈 바닥 · 부호 반전 · 추정잡음 지배)로 서술했고 family 판결로 올리지 않았다. 조건부 소비면이 벽을 한 번 뚫은 양성 관측을 함께 실어 재도전 방향을 남겼으며 계기 배터리는 미해결로 열어 뒀다.",
+    "d_firewall": "위반 없음. 귀속 대상은 벤치 버그·패널 빈티지·집행일 단조 감쇠라는 계기 층이고 고정 제약이나 PIT 를 실패 원인으로 지목하거나 완화를 레버로 제시한 부분이 없다. cap-tier 조건부 적용은 소비면을 조건화하는 봉투-안 레버이며 멤버십 범위를 바꾸는 제안이 아니다.",
+    "e_frontier": "frontier 3건 + live_trigger(data) + expiry. '벽은 새 신호보다 소비면 조건화로 먼저 뚫렸다'는 기전이 다음 측정을 조건부 소비면 전수로 돌리게 썼다."
+  },
+  "expiry": "2026-12-31",
+  "frontier": [
+    "조건부 소비면을 cap-tier 외 축으로 확장 — 비-mega 한정 적용이 paired 1.243→2.378 로 벽을 뚫었으므로 같은 조건화를 국면·회전 tier·유동성 tier 축에 전수 적용해 어느 조건이 게이트를 움직이는지 분리",
+    "저장 패널의 1개월 live 이음새를 계기로 승격 — {저장 = 같은 달}과 {전향 재계산 = T−1}의 불연속을 상시 검사로 만들어 이 이음새를 건너는 수치가 판정에 들어가지 못하게 한다",
+    "집행일 단조 감쇠(SR 1.519→1.332)를 비용 항으로 모델에 넣기 — 지연이 대칭적 운이 아니라 단조 비용이므로 집행 지연을 자유도가 아니라 비용 파라미터로 사전등록"
+  ],
+  "live_trigger": {
+    "type": "data",
+    "condition": "권위 벤치·패널 빈티지 off 규약·집행일 offset 세 계기를 고정한 사전등록 측정이 1건 이상 산출되고 그 안에서 조건부 소비면 arm 의 paired NW-t·ΔIR 이 함께 보고될 때",
+    "monitored_source": "06_Registry/prereg/prereg_index.jsonl · 06_Registry/basis_break_registry.json"
+  },
+  "revival_spec": [
+    {
+      "signal_id": "wall_clock_date",
+      "condition": "x >= as.Date('2026-12-31')",
+      "from_trigger": "expiry",
+      "status": "active"
+    },
+    {
+      "signal_id": "registry_present",
+      "condition": "x == TRUE",
+      "from_trigger": "data",
+      "status": "pending"
+    }
+  ],
+  "constraint_firewall": {
+    "mode": "backstop_passed",
+    "checked_at": "2026-10-03"
+  },
+  "drafted_at": "2026-10-03T11:35:54+0900",
+  "drafted_by": "auto_distill"
 }

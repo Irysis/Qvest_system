@@ -28,7 +28,7 @@
 5. **교훈** — 의미있는 실패(기전이 특정되는 실패)만 L-code 적립(mode=`paper_replication`).
 6. **분기** —
    - **Grade A** → 러너 §11 이 **A 자격 관문**(`rf_runner_gates.R::rf_a_eligibility` · 충실구현 어댑터 · P0-13)을 태운다. 통과 = 산출물 `judge_request.eligible.json`(`status=pending` = Judge 트리거) → Judge(PIT 전담) → PASS → BOOK 등록 후보(도훈 confirm) / FAIL → 결과 무효·수리·재측정. 보류 = 산출물 `judge_request.held.json`(사유 코드 · 요청 미발행 · 등급 불변) → `[1계층]` A 후보(보류 사유 병기)로 도훈 보고. 트리거 정본 = `judge.md` §스폰 조건.
-   - **미달(B/C/F)** → **강화 프로세스**(`Skill(reinforce)` — 원장 `reinforce_ledger_l1.json` open 자동). 논문당 상한 = 원장 `max_attempts`(격자 = `reinforce_program.json` blocks — 현행 7블록×5), 축 = 멀티팩터/비중방법론/유니버스/집행주기/리스크오버레이/구조방어/결합. 매 시도 = 규칙 기반 셀 엔진(`rf_cell_engine.R`) + `run_paper_replication`(실투형) → 권위 등급 · L-code 는 블록 단위(QEPM WT 체인 = 동결 `QEPM-R0-FREEZE`). ★근거 논문은 **의무 아님**(도훈 2026-09-03 해제) — 있으면 기록하고 없으면 `evidence=none` 으로 남긴다. 상한 소진 → exhausted → 큐 다음 논문.
+   - **미달(B/C/F)** → **강화 프로세스**(`Skill(reinforce)` — 원장 `reinforce_ledger_l1.json` open 자동). 논문당 상한 = 원장 `max_attempts`(격자 = `reinforce_program.json` blocks — 현행 6블록×5 + B4 7칸 = 37 · 축 목록 정본 = `rf_spec_axes.R`), 축 = 멀티팩터/비중방법론/유니버스/집행주기/리스크오버레이/구조방어/결합. 매 시도 = 규칙 기반 셀 엔진(`rf_cell_engine.R`) + `run_paper_replication`(실투형) → 권위 등급 · L-code 는 블록 단위(QEPM WT 체인 = 동결 `QEPM-R0-FREEZE`). ★근거 논문은 **의무 아님**(도훈 2026-09-03 해제) — 있으면 기록하고 없으면 `evidence=none` 으로 남긴다. 상한 소진 → exhausted → 큐 다음 논문.
      ★현행(2026-09-04): B1 = 블록 진입 시 LLM 설계 1회(검증 실패 = 규칙 폴백) · 블록 순서 적응(Calmar 미달 → 위험 축 먼저) ·
        블록 누적 · 소진 시 B+ 승자는 부모를 넘으면 승격 사슬(깊이 ≤ 3) · F 도 롤링 구제 시 강화 개시. 정본 = reinforce SKILL §0.3.
    - **논문 3편 소비마다** Q-Lead 가 논문 간 아이디어 결합 기회를 검토·기록(`rf_record_combination_review` — 착수 무관 의무).

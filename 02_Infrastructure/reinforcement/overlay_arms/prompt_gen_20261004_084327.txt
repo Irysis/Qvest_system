@@ -1,0 +1,73 @@
+리스크 오버레이 arm 하나를 새로 구현하라. 산출은 파일 2개다.
+
+## 표적 (기전 지도가 지목한 미측정 칸)
+action = cross_sectional   — 포트폴리오에 무엇을 하는가
+state  = ml    — 무엇을 보고 반응하는가
+
+현재 기전 지도(측정 횟수와 포화 여부만. 성과 수치는 주지 않는다):
+[rf_mechanism_map.R] Loaded — rf_mechanism_map() / rf_next_target() / rf_write_mechanism_map() / rf_target_brief()
+cross_sectional  ml             측정 8(판정 0 · 미검증 8) · 카탈로그 2 · 미포화
+scalar_exposure  ml             측정 13(판정 2 · 미검증 11) · 카탈로그 1 · 미포화
+cross_sectional  drawdown       측정 19(판정 0 · 미검증 19) · 카탈로그 2 · 미포화
+cross_sectional  holding_level  측정 21(판정 0 · 미검증 21) · 카탈로그 1 · 미포화
+scalar_exposure  multivar       측정 28(판정 0 · 미검증 28) · 카탈로그 3 · 미포화
+cross_sectional  vol            측정 7(판정 6 · 미검증 0) · 카탈로그 2 · 포화
+scalar_exposure  holding_level  측정 9(판정 7 · 미검증 0) · 카탈로그 4 · 포화
+scalar_exposure  vol            측정 14(판정 4 · 미검증 10) · 카탈로그 3 · 포화
+cross_sectional  trend          측정 17(판정 10 · 미검증 2) · 카탈로그 3 · 포화
+scalar_exposure  dispersion     측정 20(판정 14 · 미검증 3) · 카탈로그 2 · 포화
+cross_sectional  dispersion     측정 23(판정 5 · 미검증 18) · 카탈로그 1 · 포화
+scalar_exposure  trend          측정 25(판정 17 · 미검증 5) · 카탈로그 3 · 포화
+scalar_exposure  drawdown       측정 34(판정 6 · 미검증 27) · 카탈로그 2 · 포화
+cross_sectional  multivar       측정 36(판정 23 · 미검증 8) · 카탈로그 4 · 포화
+
+## 산출 (이것만)
+1. C:\Users\99922\OneDrive\Quant_Module_Moltbot/02_Infrastructure/reinforcement/overlay_arms/gen_20261004_084327.R
+   함수 하나: overlay_expo_gen_20261004_084327 <- function(H, t, ctx)
+   반환 = 스칼라 e (0~1)  또는  data.table(Ticker, e) — 종목별 노출.
+   ★표적 action 이 cross_sectional 이면 **반드시 종목별 표**를 돌려줘야 한다.
+     스칼라만 내면 처치가 전달되지 않아 등재에서 거부된다.
+2. C:\Users\99922\OneDrive\Quant_Module_Moltbot/02_Infrastructure/reinforcement/overlay_arms/gen_20261004_084327.arm.json
+   {"id":"<고유id>","family":"<계열>","basis":"<방법 근거 1~3문장>","est_cost_min":8}
+   basis 는 비면 거부된다. 무엇을 어떻게 추정하는지 적어라.
+
+## 입력 계약
+H = 월별 특징 확장창 (t 행까지만 존재. 미래 행 없음).
+  열: Date, rv20, rv60, rv120, dd, r252, nav, ew1..ew10, xs, fwd
+  ★H$fwd 의 t 행은 **익월 수익 = 신호일에 미실현**이다. 절대 읽지 마라(학습에 쓰려면 t-1 이하만).
+ctx = list(t, date, v_now, tgt, n_min, hold)
+  ctx$hold = 그 달 보유 종목의 확장창 상태 data.table:
+    Ticker, beta, dbeta(하방베타), ovol(자체 변동성), bcorr(시장 상관), n_obs
+  보유가 없으면 NULL 일 수 있다 — 그때는 1 을 돌려라.
+
+## 절대 금칙
+- 임의 상수 문턱 금지: H 나 hold 의 열을 숫자 리터럴과 직접 비교하지 마라
+  (H$dd[t] > 0.2 같은 형태는 자동 거부된다). 문턱은 quantile/median/ecdf 등
+  **확장창 추정**으로 그 시점 데이터에서 뽑아라.
+- 성과 필드 참조 금지: 소스에 sharpe, calmar, essence_score, bt_result, port_t 같은
+  단어를 쓰지 마라(주석 포함). 등재 스캐너가 거부한다.
+- 추정 불가·표본 부족이면 e <- 1 (무개입) 으로 떨어져라. 오류를 던지지 마라.
+- C:\Users\99922\OneDrive\Quant_Module_Moltbot/02_Infrastructure/reinforcement/overlay_arms 밖에 쓰지 마라.
+- 허용 목록 밖 이름 금지: 아래 목록에 없는 함수 호출·참조 이름·pkg:: 접두는 등재에서 자동 거부된다(파서가 전수 대조).
+
+### 허용 함수 목록 — probe ③d 정적 대조 (정본 06_Registry/overlay_probe_allowlist.json · 동결 · 목록 밖 = 등재 거부)
+- probe 는 arm 소스의 모든 이름을 파서로 뽑아 아래 목록과 대조한다. 목록 밖 이름이 **하나라도** 있으면 probe FAIL → 등재 거부(arm 파일 삭제 · 방출 원장에 거부 기록).
+  흔한 함수라도 여기 없으면 거부된다 — 목록 안 함수의 조합으로 써라. 목록은 동결이다(새 arm 이 자기 허가를 만들 수 없다 · 넓히기 = 사람 검토).
+- 목록과 무관하게 쓸 수 있는 것: 이 파일 안에서 대입한 지역 변수·도우미 함수(참조 이름공간에 없는 이름) · H·ctx$hold 의 열($ 로 읽을 때 — data.table 안 맨이름은 그 열 이름이 참조 이름공간에 없을 때만) · 함수 리터럴 function(x) … .
+- 참조 이름공간(이 안의 이름은 아래 목록에 있어야 쓸 수 있다): `base`, `stats`, `utils`, `methods`, `graphics`, `grDevices`, `datasets`, `data.table`, `jsonlite`, `arrow`, `rlang`
+  ★열 이름이 참조 이름공간의 이름과 겹치면 data.table 안 맨이름(값 자리)은 목록 밖 참조로 잡혀 거부된다 — $ 로 읽어라(H$열 · ctx$hold$열). 겹치는 열: `beta`, `dbeta`
+- calls — 호출할 수 있는 함수·연산자 (97종): `%*%`, `%in%`, `%||%`, `.`, `abs`, `all`, `any`, `anyNA`, `apply`, `as.Date`, `as.character`, `as.data.table`, `as.integer`, `as.numeric`, `attr`, `ave`, `c`, `cbind`, `character`, `colMeans`, `colnames`, `complete.cases`, `cor`, `cummax`, `cumprod`, `cumsum`, `data.frame`, `data.table`, `diag`, `diff`, `do.call`, `ecdf`, `exp`, `file.path`, `fitted`, `floor`, `format`, `gsub`, `ifelse`, `integer`, `intersect`, `is.data.table`, `is.finite`, `is.na`, `is.null`, `isFALSE`, `isTRUE`, `lapply`, `length`, `list`, `lm`, `log`, `matrix`, `max`, `mean`, `median`, `min`, `names`, `names<-`, `ncol`, `nrow`, `numeric`, `nzchar`, `paste`, `paste0`, `pmax`, `pmin`, `predict`, `quantile`, `rank`, `rbindlist`, `rep`, `rev`, `rowMeans`, `rowSums`, `sd`, `seq_along`, `seq_len`, `setdiff`, `solve`, `sort`, `sprintf`, `sqrt`, `stop`, `sum`, `suppressMessages`, `suppressPackageStartupMessages`, `suppressWarnings`, `sweep`, `tryCatch`, `unique`, `unlist`, `unname`, `vapply`, `var`, `vector`, `which`
+- values — 값 자리(호출하지 않고 이름으로)에 쓸 수 있는 참조 이름 (4종): `.Machine`, `.N`, `.SD`, `data.table`
+- shadow — 지역 변수로 대입해 가려도 되는 참조 이름(이 파일이 대입했을 때만) (14종): `D`, `beta`, `col`, `cut`, `hist`, `key`, `lm`, `nobs`, `q`, `raw`, `rf`, `t`, `use`, `vi`
+- strings — 문자열로 적어도 되는 고차 함수·능력 계열 이름 (1종): `list`
+- fnargs — 고차 함수의 함수 자리 인자(FUN·f·what·fn·FN·fun·.f·.fn)로 넘길 수 있는 함수 이름(그 자신이 고차 함수가 아닐 것) (4종): `cbind`, `cummin`, `cumsum`, `sd`
+- fnstrs — 함수 자리 인자에 문자열로 넘길 수 있는 이름 (2종): `-`, `/` · 그 밖에 문법 연산자 문자열 `[`, `[[`, `$`, `@`, `+`, `-`, `*`, `/`, `^`, `%%`, `%/%`, `<`, `>`, `<=`, `>=`, `==`, `!=`, `!`, `&`, `&&`, `|`, `||`, `:`, `~`, `[<-`, `[[<-`, `$<-`, `@<-` 도 허용 · do.call 에는 문자열 전면 금지
+- headcalls — 계산된 호출 머리 f(…)(…) 의 f 로 허용 (2종): `$`, `ecdf`
+- pkgs — pkg::name 접두로 쓸 수 있는 패키지(name 은 위 목록 안이어야 한다 · ::: 금지) (3종): `data.table`, `stats`, `utils`
+- 개별 허가 1건 — **새 arm 에는 적용되지 않는다**(각 정본 파일의 sha256 에만 묶인 예외 · 한 바이트라도 다르면 공통 목록으로만 잰다). 그 파일을 본보기로 베껴 아래 이름을 쓰면 probe 가 거부한다:
+  · pg2_risk_overlay — 그 파일만 쓰는 이름 36종: `:=`, `<<-`, `BM_Close`, `Ret`, `Sys.getenv`, `Sys.getpid`, `Z_Score_Aligned`, `arrow`, `assign`, `capture.output`, `cat`, `dir.create`, `emptyenv`, `exists`, `file.exists`, `file.info`, `file.rename`, `fire_seq`, `get`, `globalenv`, `is.environment`, `last_feat_date`, `library`, `ls`, `mget`, `new.env`, `open_dataset`, `readRDS`, `read_parquet`, `rm`, `saveRDS`, `setorder`, `source`, `trace`, `unlink`, `weight_str1715`
+
+## 본보기
+C:\Users\99922\OneDrive\Quant_Module_Moltbot/02_Infrastructure/reinforcement/overlay_arms/dbeta_tilt.R 를 읽어라 — 계약과 문체의 기준이다.
+
+파일 2개를 쓰고 무엇을 구현했는지 1~2줄로만 보고하라.

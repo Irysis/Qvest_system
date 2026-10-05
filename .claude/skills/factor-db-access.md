@@ -28,4 +28,5 @@ compute_all_factor_ic_monthly()  # 전기간 IC
 ```
 
 ### conditional_ic_matrix
-`.cache/conditional_ic_matrix.csv` — ic_all, ic_bad, ic_good, conditional_value
+`.cache/conditional_ic_matrix.csv` — ic_all, ic_bad, ic_good, conditional_value · ★**전기간 IC 스냅샷(Usable_Date 없음) — 팩터·역할·후보 선정 입력 금지**(pit.md C1/C14 · V6 절 · D-E-V6 2026-09-25)
+★조건부 IC 는 `Usable_Date <= 결정 시점` as-of 판만 쓴다 — as-of 판 미제공(현행)이면 사용하지 않는다. 엔진 소비 함수 4종은 `02_Infrastructure/validation/cond_ic_asof_guard.R` 의 `*_asof` 래퍼 경유만(D-E-V6).

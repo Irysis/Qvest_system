@@ -3,14 +3,14 @@
   "dist_id": "DIST-GEN-314",
   "cluster_key": "a4c042339142",
   "candidate_id": "CAND_paper_replication_a4c042339142",
-  "status": "pending_5axis",
-  "statement_refined": null,
-  "retry_condition": null,
+  "status": "proposed",
+  "statement_refined": "market=KR · universe=K200∪KQ150 충실구현 레인(family 라벨 momentum, supporting 67)에서 이 코퍼스가 실제로 지지하는 것은 모멘텀 계열 규칙이 아니라 라벨과 모집단의 불일치다. 67 기록의 다수는 RF_PAR_B* 강화 격자 셀이며, 2026-09-23 감사(D6-03 · P0-M3)에서 paper_replication L-code 1,176건 중 1,106건(94.0%)이 reinforcement_cell 로 재라벨되면서 'momentum 충실구현 67건'이라는 모집단 전제가 무효화됐다 — 잔존하는 진짜 충실구현 기록은 전체 70건 이하다. 충실구현 레인 자체의 실현 분포로 말할 수 있는 것은 이것뿐이다: 이 봉투에서 A 등급 충실구현은 0건이고, 관측된 최고는 6편 결합 기저의 B 1건(L-RP-20260917_110442)이며 2026-09-23~24 에 추가된 2편(arXiv 2511.12129 · 2202.05702)은 네 판 모두 C 또는 F 로 멈췄고 oos_retention 이 각각 −1.113 · −1.169 다.",
+  "retry_condition": "research_mode=paper_replication 로 남은 70건 이하 집합만으로 family 를 재판정하고, 그 집합이 momentum 계열에서 단일 방향을 내면 규칙으로 재상정한다. 재라벨 이전 집계로 만든 momentum 규칙은 상정하지 않는다.",
   "refined_at": null,
   "refined_by": null,
   "promoted_to_axiom": null,
   "created_at": "2026-09-23T21:23:31+00:00",
-  "updated_at": "2026-09-23T21:57:10+00:00",
+  "updated_at": "2026-10-03T01:59:17+00:00",
   "research_mode": "paper_replication",
   "metric_type": "backtested",
   "type": "empirical",
@@ -194,5 +194,43 @@
     "oos_effect_vs_is": -1.541,
     "note": "L-code oos_retention 실값 43건 median (IS65/OOS35 활성SR retention) — oos_months 실값 무 → None 유지 — promote.R essence_score 경유 재확정"
   },
-  "cluster_members_count": 67
+  "cluster_members_count": 67,
+  "adversarial_verdict": {
+    "a_exaggeration": "강등함. 'supporting=67' 을 momentum 증거 67건으로 읽지 않도록 모집단 결함을 statement 앞에 뒀고, 성과는 A 0건 · 최고 B 1건 · 신규 2편 C/F 라는 분포만 적었다. 논문기준 SR 과 15bps SR 의 대소 비교는 두 값의 산출 기준이 이 재료로 확정되지 않아 서술에서 뺐다(미측정 취급).",
+    "b_evidence": "확인. 재라벨 실측 1,106/1,176 = 94.0%(디렉터리 grep · 표본 l_code_RP_20260923_161713_28512.json:9~12). 등급·oos_retention 은 stage_artifacts/l_code/paper_replication/l_code_RP_20260923_230819_4212.json · l_code_RP_20260924_052517_7308.json 실값. 전부 metric_type=backtested 로 기록된 계약 산출이며 proxy 오라벨 없음.",
+    "c_ax000": "'모멘텀은 KR 에서 안 된다'류 단정 없음. 모집단이 정의되지 않았으므로 family 판정 자체를 보류했고, 재판정 경로를 retry_condition 에 명시했다.",
+    "d_firewall": "위반 없음. 충실구현 레인의 유일한 변경이 유니버스 K200∪KQ150 이라는 점을 실패 원인으로 쓰지 않았고, 비용·종목수·long-only 도 인용하지 않았다. 판정 대상은 라벨·모집단이다.",
+    "e_frontier": "frontier 3건 + live_trigger(data) + expiry."
+  },
+  "expiry": "2026-12-31",
+  "frontier": [
+    "research_mode=paper_replication 잔존 70건 이하 집합만으로 family 재판정 — momentum 라벨이 그 집합에서도 다수인지부터 확인",
+    "충실구현 A 자격 관문(P0-13 · chain/1 회계)이 실제로 발화하는지 양성 대조 — 현재 판정 경로가 한 번도 eligible 산출물을 낸 적이 없다(judge_request*.json 0건)",
+    "신규 2편(2511.12129 · 2202.05702)의 oos_retention −1.1 대가 칸 고유인지 2025~26 공통 활성 성분인지 P2-02 tilt_attribution 으로 분리"
+  ],
+  "live_trigger": {
+    "type": "data",
+    "condition": "paper_replication 잔존 집합의 family 재집계가 발행되거나, 충실구현 경로에서 judge_request.eligible.json 이 1건이라도 산출될 때",
+    "monitored_source": "stage_artifacts/l_code/paper_replication/*.json::research_mode · stage_artifacts/replication/*/judge_request.eligible.json"
+  },
+  "revival_spec": [
+    {
+      "signal_id": "wall_clock_date",
+      "condition": "x >= as.Date('2026-12-31')",
+      "from_trigger": "expiry",
+      "status": "active"
+    },
+    {
+      "signal_id": "stage_artifacts_present",
+      "condition": "x == TRUE",
+      "from_trigger": "data",
+      "status": "pending"
+    }
+  ],
+  "constraint_firewall": {
+    "mode": "backstop_passed",
+    "checked_at": "2026-09-26"
+  },
+  "drafted_at": "2026-09-26T11:03:21+0900",
+  "drafted_by": "auto_distill"
 }

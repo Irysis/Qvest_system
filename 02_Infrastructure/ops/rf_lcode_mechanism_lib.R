@@ -172,6 +172,72 @@ lcm_materials <- function(base_id, block_id, out_p) {
   invisible(out_p)
 }
 
+# ── ★다음 블록 설계 저장 관문 (B5FIX · 2026-09-26 · 도훈 승인 "1번 진행") ─────────────────────────────────────
+#   실사고 09-25 (RP_20260924_052517_7308_adapted_rulefast): 22:07:25 B5 설계 레인이 8칸을 검증·기록(원장 b5_design.rounds r1 ·
+#   파일 source=b5_design_lane)한 **뒤** 같은 tick 22:08 의 기전 백필(B6)이 22:16:13 같은 파일을 다른 5칸으로 덮었다(키 block·cells ·
+#   source 없음). SKILL §0.1 B5 행의 우선순위(LLM 설계 레인 > 기전 설계 > 규칙)가 뒤집혔고, 러너는 tick 머리에 읽은 8칸으로
+#   앞 5칸을 잰 뒤 경계 판정이 '3칸 남음' 이라 G2·L-code·텔레그램을 건너뛰었다(다음 tick 격자 = 5칸 → 소진으로 읽힘).
+#   H6(아래 .b5_measured)은 'B5 시도가 있다' 만 봤다 — 시도 등록 전 창의 레인 산출은 몰랐다.
+#' 저장 관문 — 기전 경로가 이 블록의 설계 파일을 쓰면 안 되는가. 판정은 **재도출 가능한 증거**로만 한다(파일 source 필드는
+#'   덮이면 사라지는 자기 진술이라 단독 근거로 쓰지 않는다):
+#'   ① 사후 설계 — 원장 attempts 에 그 블록 코드(<blk>_*)의 시도가 이미 있다(등록 코드 > 측정 코드). H6 의 B5 전용 규칙을 설계 대상
+#'      전 블록(B2·B3)으로 넓힌 것이다 — 경계 백필이 지난 블록의 기전을 늦게 돌리면 이미 잰 블록의 설계를 덮어 격자가 바뀌고 새 코드가
+#'      빈 칸으로 떠 사후 측정된다(B5 는 위 H6 이 먼저 거른다).
+#'   ② B5 레인 소유 — (a) 원장 entries[].b5_design.rounds 에 fallback 이 아닌 라운드(n_cells > 0)가 있다: 레인이 설계를 검증해
+#'      파일을 원자적으로 쓴 **뒤** R writer(rf_record_b5_design)가 남긴 기록 · (b) 현재 파일 source == "b5_design_lane": (a) 기록 직전 창
+#'      보강. 보조(기록만) = 레인 원 산출 .cache/rf_b5_design/<BID>/design_r*.json 실재.
+#'   ③ 원장 판독 불가 — 덮어쓰기만 막는다(파일이 이미 있으면 보존 · 없으면 덮을 것이 없어 저장 허용).
+#'   ★반대 방향(레인이 기전 설계를 백업하고 덮는 것 · rf_b5_design_lib.R::b5_verify_and_write round 1)은 그대로다.
+#' @param fp 그 블록 설계 파일 경로 — 호출자가 정본(rf_block_design.R::rfbd_path)으로 넘긴다(경로 규약 사본 금지 ·
+#'   rf_block_design.R 은 lcm_merge 안에서 local 적재라 이 함수의 정의 환경에서는 안 보인다).
+#' @return list(refuse, code, evidence)
+lcm_design_guard <- function(root, base_id, block, fp) {
+  led <- tryCatch(fromJSON(file.path(root, "06_Registry/reinforce_ledger_l1.json"), simplifyVector = FALSE), error = function(e) NULL)
+  E <- if (is.null(led)) NULL else { f <- Filter(function(x) identical(x$base_id, base_id), led$entries %||% list())
+                                     if (length(f)) f[[1]] else list() }
+  if (is.null(E)) {
+    if (file.exists(fp)) return(list(refuse = TRUE, code = "design_guard_ledger_unreadable",
+                                     evidence = sprintf("ledger_unreadable · existing=%s", basename(fp))))
+    return(list(refuse = FALSE, code = "", evidence = "ledger_unreadable · no_existing"))
+  }
+  cc <- vapply(E$attempts %||% list(), function(a) {
+    x <- as.character(a$cell_code %||% "")[1]
+    if (is.na(x) || !nzchar(x)) x <- as.character((a$essence %||% list())$cell_code %||% "")[1]
+    if (is.na(x)) "" else x }, character(1))
+  st <- cc[startsWith(cc, paste0(block, "_"))]
+  if (length(st)) return(list(refuse = TRUE, code = "block_design_refused_post_measure",
+                              evidence = sprintf("attempts=%s", paste(utils::head(st, 6L), collapse = ","))))
+  if (!identical(block, "B5")) return(list(refuse = FALSE, code = "", evidence = "no_attempts"))
+  ev <- character(0)
+  rr <- Filter(function(r) is.list(r) && !isTRUE(r$fallback) &&
+                 isTRUE(suppressWarnings(as.integer(r$n_cells %||% 0L)) > 0L), (E$b5_design %||% list())$rounds %||% list())
+  if (length(rr)) ev <- c(ev, paste(vapply(rr, function(r) sprintf("ledger_round=r%s(n_cells=%s)", as.character(r$round %||% "?")[1],
+                                                                  as.character(r$n_cells %||% "?")[1]), character(1)), collapse = ","))
+  src <- if (file.exists(fp)) tryCatch(as.character(fromJSON(fp, simplifyVector = FALSE)$source %||% "")[1], error = function(e) "") else ""
+  if (identical(src, "b5_design_lane")) ev <- c(ev, "file_source=b5_design_lane")
+  if (!length(ev)) return(list(refuse = FALSE, code = "", evidence = "no_lane_round"))
+  raw <- list.files(file.path(root, ".cache/rf_b5_design", base_id), pattern = "^design_r[0-9]+[.]json$")
+  if (length(raw)) ev <- c(ev, sprintf("lane_raw=%s", paste(raw, collapse = ",")))
+  list(refuse = TRUE, code = "b5_design_lane_priority", evidence = paste(ev, collapse = " · "))
+}
+#' 거부한 설계의 백업 — 무성 폐기 금지. .cache/rf_block_design/ **밖**에 둔다(그 디렉터리의 최신 파일 이름이 블록 순서 규칙의
+#'   기전 선호 입력이다 · rf_lesson.R::rf_block_order_decide). B5 = 레인 디렉터리의 하위 폴더(레인의 새 파일 정리 snap_files 는
+#'   $GDIR/* 파일만 본다 — 하위 폴더는 레인이 지우지 않는다) · B2/B3 = .cache/rf_lcode_mech/deferred/.
+#' @return 백업 경로(실패 = "")
+lcm_backup_deferred <- function(root, base_id, block, from_block, nd, guard, fp) tryCatch({
+  d <- if (identical(block, "B5")) file.path(root, ".cache/rf_b5_design", base_id, "mechanism_deferred")
+       else file.path(root, ".cache/rf_lcode_mech/deferred")
+  dir.create(d, recursive = TRUE, showWarnings = FALSE)
+  stem <- sprintf("%s_%s_mechanism_next_%s", substr(base_id, 1, 50), block, format(Sys.time(), "%Y%m%d_%H%M%S"))
+  p <- file.path(d, paste0(stem, ".json")); k <- 1L
+  while (file.exists(p)) { p <- file.path(d, sprintf("%s_%d.json", stem, k)); k <- k + 1L }
+  rec <- list(schema = "rf_mech_design_deferred_v1", base_id = base_id, block = block, from_block = from_block,
+              at = format(Sys.time(), "%Y-%m-%dT%H:%M:%S%z"), reason = guard$code, evidence = guard$evidence,
+              kept_design_path = fp, design = nd)
+  write(toJSON(rec, auto_unbox = TRUE, pretty = TRUE, null = "null"), p)
+  if (file.exists(p)) p else ""
+}, error = function(e) "")
+
 # ── merge — 검증 후 R 이 병합한다 (에이전트는 L-code 에 접근하지 않는다) ────
 LCM_BANNED <- "(Grade\\s*[ABCF]\\b|등급\\s*[ABCF]\\b|합격|졸업|BOOK\\s*등재)"
 lcm_merge <- function(base_id, block_id, mech_p) {
@@ -241,8 +307,20 @@ lcm_merge <- function(base_id, block_id, mech_p) {
     if (isTRUE(.b5_measured))
       .mx_log("b5_design_refused_post_measure", base_id = base_id, block = .nb,
               note = "B5 시도가 이미 있다 — 기전 경로의 B5 재설계 거부(재설계 = rf_b5_design 레인 전용 · 사후 선택 차단)")
+    ## ★저장 관문 (B5FIX · 2026-09-26) — B5 레인 우선 · 사후 설계 금지(B2·B3) · 원장 판독 불가면 기존 파일 보존. 판정 = lcm_design_guard.
+    ##   거부한 설계는 버리지 않고 레인/기전 디렉터리에 백업한다(무성 폐기 금지) — 기존 설계 파일은 그대로 남는다.
+    .dg <- if (!isTRUE(.b5_measured) && .nb %in% RFBD_BLOCKS)
+             tryCatch(lcm_design_guard(ROOT, base_id, .nb, rfbd_path(ROOT, base_id, .nb)),
+                      error = function(e) list(refuse = TRUE, code = "design_guard_error", evidence = conditionMessage(e))) else NULL
+    if (isTRUE(.dg$refuse)) {
+      .bk <- lcm_backup_deferred(ROOT, base_id, .nb, block_id, .nd, .dg, rfbd_path(ROOT, base_id, .nb))
+      .mx_log("block_design_deferred", base_id = base_id, block = .nb, from_block = block_id, cells = length(.nd$cells),
+              reason = .dg$code, evidence = .dg$evidence, backup = .bk,
+              note = "기전 설계를 저장하지 않았다 — 기존 설계 파일 보존 · 제안은 백업(B5 = 레인 우선 · B2/B3 = 사후 설계 금지)")
+    }
     .vv <- if (isTRUE(.b5_measured)) "b5_design_refused_post_measure"
            else if (!(.nb %in% RFBD_BLOCKS)) sprintf("설계 대상 블록이 아니다: %s", .nb)
+           else if (isTRUE(.dg$refuse)) .dg$code
            else rfbd_verify(.nd, .nb, ROOT)
     if (isTRUE(.vv)) {
       dir.create(dirname(rfbd_path(ROOT, base_id, .nb)), recursive = TRUE, showWarnings = FALSE)

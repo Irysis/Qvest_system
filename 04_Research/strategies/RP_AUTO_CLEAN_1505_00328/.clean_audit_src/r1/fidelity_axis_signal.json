@@ -1,0 +1,26 @@
+{
+  "axis": "signal",
+  "verdict": "misdeclared",
+
+  "undeclared_changes": [
+    "[거래소별 독립 정렬을 단일 풀로 통합] 논문은 두 거래소를 각각 독립 횡단면으로 정렬해 거래소별 CON 계열을 따로 산출하는데(SHSE/SZSE independently · Table 2 Panel A=SHSE, Panel B=SZSE), engine.R:91-99 는 K200∪KQ150(KOSPI+KOSDAQ 2개 시장)을 SigDate 단위 **단일** 횡단면으로 묶어 N_elig·frank·dec 를 한 번만 계산한다 - FIDELITY.changed 에 없음(① 은 유니버스 멤버십 치환만 선언하고 독립 횡단면 2개가 1개로 합쳐진 사실은 선언하지 않는다)",
+    "[paper_original_form 이 통합 패널로 서술] FIDELITY.paper_original_form 은 논문 형태를 '중국 A주(상하이·선전) 월간 패널에서 ... 10/5/3분위 정렬' 즉 단일 통합 패널로 적었으나, 논문은 통합 패널을 한 번도 만들지 않는다('we investigate the momentum and contrarian effects in the SHSE and the SZSE independently') - 선언이 사실과 다르다"
+  ],
+
+  "signal_mismatch": [
+    "[decile 브레이크포인트 풀 불일치] 논문의 10분위 경계는 거래소 내부 횡단면에서 산출되고 LOS/WIN 다리가 거래소를 섞지 않는데(Table 2 Panel A1/B1 - decile grouping 이 각 패널 안에서 따로), engine.R:93-99 의 frank(MRet)·dec 는 두 시장 통합 분포의 단일 경계이므로 LOS/WIN 다리가 시장을 섞고 경계값 자체가 다른 분포에서 나온다"
+  ],
+
+  "counterexample": "동일 월 M 에서 롱 다리 멤버십이 양방향으로 갈린다. 전제(실측 아님 · 월간 횡단면 분산의 표준적 사실): 유동성 통과 후 N_elig≈350(K200≈200·KQ150≈150), 월간 수익 횡단면 SD 가 K200≈8%·KQ150≈14%, 중심 0 근방. 통합 분포의 10퍼센타일이 약 -13% 가 되면 engine.R:96 의 dec==1 은 K200 에서 Φ(-13/8)=5.2%×200≈10종 · KQ150 에서 Φ(-13/14)=17.6%×150≈26종 → 약 36종 중 72% 가 KOSDAQ(풀 비중 43%)으로 쏠린다. (ㄱ) 월 M 수익 -10% 인 K200 종목: 논문 절차에서는 K200 내부 하위 10분위(KOSPI 패널 10퍼센타일 ≈ -10.2%)에 들어 LOS → 롱이지만, engine 통합 컷 -13% 에 못 미쳐 dec>1 → Weight 0. (ㄴ) 월 M 수익 -13.5% 인 KQ150 종목: engine 통합 컷을 통과해 dec==1 → 롱(Weight +1/N)이지만, KOSDAQ 내부로는 약 17퍼센타일(KOSDAQ 10퍼센타일 ≈ -17.9%)이라 논문의 SZSE-대응 패널 LOS 에 들지 못한다. 즉 같은 달·같은 종목에서 보유/미보유가 서로 반대로 뒤집히고, 숏 다리(dec==10)도 대칭으로 동일하게 쏠린다.",
+
+  "evidence": "원문(arxiv.org/html/1505.00328v1 · ar5iv 교차 확인, 3회 독립 fetch 일치): ① Method - 'For a given \"current\" month t=0, all the stocks are sorted according to their returns in the past J months from t=-J to t=0 (Fig. 2). We divide the stocks into several groups.' ② Method - 'Since the features of A-shares listed on these two stock exchanges are not similar, we investigate the momentum and contrarian effects in the SHSE and the SZSE independently' + 'we shall investigate separately the A-share stocks in the two exchanges for comparison'. ③ Table 2 패널 구조 = Panel A(SHSE)/Panel B(SZSE) × A1·A2·A3 / B1·B2·B3 (decile·quintile·tertile) - 두 거래소를 섞은 패널 없음. ④ Method - 'The group of stocks with the worst performance in the estimation is called loser portfolio LOS(J,K) and the group with best performance is called winner portfolio WIN(J,K)' · 'buying the loser portfolio and selling the winner portfolio' · 'equal-weighted average returns per annum' (L_{J,K}·W_{J,K}·C_{J,K}, C=L-W 식 번호 없음). ⑤ Method - 'The periods range from one month to four years: J=K∈{J,K|1,6,12,18,24,30,36,42,48}'. ⑥ Table 2 Panel A1 - CON(1,1) 연 12.8%, t=3.41 (유의) → J=K=1 은 주변 칸이 아니라 초록 주장('1 month or longer than 12 months')의 한쪽. ⑦ Data - 'the first-month return data of individual stocks are excluded from our analysis' · 'the data mainly contain the monthly adjusted returns of individual stocks'(기업행위 조정 · 시장조정/초과수익 언급 없음) · winsorize·표준화·정규화 서술 0건.",
+
+  "confidence": "high",
+
+  "checked": "신호식(J개월 누적수익 · J=1 → 당월 수익: engine.R:69 prod(1+Ret)-1 by (Ticker,Mon) = 전월말→당월말 구간) · 룩백 창 길이(J=1 ∈ 논문 격자) · 창 종점(t=0 = 당월 마지막 거래일 종가 포함 · 주 결과 skip 없음 · engine.R:65 MEND = 거래소 달력 max(Date) by Mon) · 부호(frank 오름차순 → r=1 최저 → engine.R:96-98 dec==1 = 패자 = LONG +1/N · dec==10 = 승자 = SHORT -1/N · dec(1)=1·dec(N)=10 산술 확인 = 논문 buy loser/sell winner 와 동일 방향) · 표준화(논문 winsorize·z·정규화 0건 ↔ engine 도 순위→정수 10분위만 · 값 변환 0건) · 분위 수(10 = 논문 주 결과 grouping) · 시장조정 부재(양측 원수익) · IPO 첫달 배제(논문 서술 ↔ engine.R:74-76 직전달 관측 요건) · 분위 경계 산출 **풀**(← 유일한 불일치)",
+
+  "_항목 서술 규약": "★모든 항목은 대괄호 **한 줄 요약**으로 시작한다 - 12~30자 · 그 항목만 읽고도 무엇이 어긋났는지 아는 문장 · 원문 인용이나 파일:행을 요약에 넣지 마라(뒤 본문에 적는다). 이 요약이 통지에 그대로 실리고 본문은 안 실린다 - 요약이 없으면 사람은 잘린 원문 조각을 받는다. 예: '[숏 레그 그로스 익스포저 24% 미달]' · '[유니버스 탈락분 비중 재분배 없음]' · '[은닉층 순환 구조 미구현]'. ★용어는 그 분야의 정통 표기를 쓴다 - 임의 한글 조어를 만들지 말고, 원문 용어가 영문이면 통용 표기를 그대로(gross exposure · long/short leg · winsorize · lookback), 우리 지표는 정본 표기를 그대로(PORT_t · Calmar · MDD · OOS retention). 뜻이 통해도 조어면 읽는 사람이 두 번 해석한다.",
+  "_배열 규약": "undeclared_changes·signal_mismatch 는 **발견만** 담는다. 없으면 빈 배열 [] 로 두고 '불일치 없음' 같은 비발견을 항목으로 넣지 마라 - 근거 게이트가 배열 길이로 선다.",
+
+  "note": "청정 모드 — 측정 산출물 비공개이므로 '산출물 대조' 지시는 코드 경로 추적(engine.R:51~99 신호·순위·분위 계산 흐름)으로 대신했다. RAWDATA$Ret 의 일별 후행수익 규약은 데이터 빌드 경로가 청정 레인 열람 범위 밖이라 직접 확인 못 하고 harness 소비부(backtest_harness.R:1438 NAV/shift(NAV)-1)로 간접 확인했다 — 선행수익 징후는 없다. ★축 중복 고지: 이 발견은 유니버스 축과 경계를 접하지만, 내가 지적하는 것은 어느 종목이 적격이냐가 아니라 10분위 **경계가 산출되는 횡단면 개수**(2개 독립 → 1개 통합)이므로 신호·표준화 축 항목으로 적었다 — 집계 시 유니버스 축 보고와 dedupe 필요. 신호식·부호·룩백 창·종점·표준화 방식 자체는 논문과 일치한다(J=K=1 칸 선택도 Table 2 Panel A1 에서 유의한 칸이라 선택 사유가 원문과 어긋나지 않는다)."
+}

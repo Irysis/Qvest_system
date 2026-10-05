@@ -3,14 +3,14 @@
   "dist_id": "DIST-QPM-032",
   "cluster_key": "98f49bc24265",
   "candidate_id": "CAND_qepm_legacy_98f49bc24265",
-  "status": "pending_5axis",
-  "statement_refined": null,
-  "retry_condition": null,
+  "status": "proposed",
+  "statement_refined": "이 계열에서 분산자 후보의 통계적 유의성은 포트 성과로 전이되지 않았고 전이를 막은 지점이 항목마다 달랐다 — 신호 자체의 잡음 · 정규화 단계의 지배 수렴 · 원천 데이터의 정보 두께 · 이미 포화된 오버레이 층 넷이다. 측정: (1) 프로파일 대 실측의 괴리 — D22_Tracking_Error 는 프로파일 ICIR 0.608 이고 호황 국면 IC 0.086 · 스트레스 3/3 초과수익인데 백테스트 SR 0.569 · MDD 51.2% 이고 OOS 유지율 0.47(IS SR 0.695 대 OOS 0.326)로 벌어졌다. (2) 정규화 단계의 지배 수렴 — 2팩터 선형 z-score 50/50 블렌드는 표준편차를 1로 맞춰도 꼬리 거동과 횡단면 분산의 동조 불균형이 있으면 고분산 팩터로 기운다. Q25×M01 실측에서 IQR 정규화 상관 0.716 · 백분위 순위 상관 0.596 으로 M01 단독에 수렴해 Avramov 2013 의 distress×momentum 상호작용 포착에 실패했고, 선형 합성의 사용 범위가 sd 비 0.8~1.25 로 좁혀졌으며 대안으로 gated double-sort 가 지목됐다. (3) 구현 결함과 가설의 혼동 — 잔차 모멘텀을 Carhart 1997 + Blitz-Huij-Martens 2011 정통 설계로 구현해도 MDD 86.66 · SR −0.13 · CAGR −4.32 · 스트레스 0/3 이 나왔는데 'KR 모멘텀 역전' 가설은 기각(10%)되고 '구현 버그' 가설이 채택(85%)됐다. 근거는 Factor DB parquet 의 Z_Score 표준편차 불일치 실측이다 — M07 1.000(정상) 대 R12 0.071 · D01 0.071 · M08_Residual_Mom 0.054. (4) 원천 정보 두께 — CR06(DTC 대리) + V16(Tobin's Q) 역행-가치 조합은 SR 0.425(벤치 수준) · MDD 58.11% · IR −0.067 · FF5 알파 −2.05%(t −0.54) · 스트레스 2/4 였고 FMB t 2.10 의 약한 횡단면 신호만 남았다. 2020~2024 의 매도 제도 변화 구간에서 DTC 대리지표의 정보량이 얇아지는 것은 원천 데이터 속성이며 대안 혼잡도 대리(기관 순매수 집중도 · 외국인 보유비율 변화)가 미탐색으로 남았다. (5) 포화된 층 — 외국인 자금 흐름 모멘텀은 개념이 문헌에 서 있고(Froot et al. 2001 · Richards 2005) FMB t 5.50 · OOS 유지 63% 로 횡단면 유효성이 확인됐으나 C10(같은 날 거래대금)과 C11(같은 달 FRED)의 시점 오염 2건이 남아 판정 보류 상태다. 같은 계열의 Soft MRS 소비 전략은 같은 오염 2종으로 Gate 0 기각이었고 오염을 걷어도 SR 0.944 · CAGR 12.25% · FF5 t 0.648 · FMB t 0.85 로 약했다. 반면 층 자체가 이미 포화된 경우도 측정됐다 — 잔차 모멘텀(M08+M14)은 기존 북에 수익-직교(상관 −0.06 · 낙폭 달 +3.1%)인데 증분 수익이 0 에 가까워(IS drag t −2.17 · OOS flat t +0.09) 공식 Sharpe 1.549→1.56 으로 사실상 불변이었고 대상 북이 이미 국면 오버레이를 받은 상태(book beta 0.107)라 2차 오버레이가 중복이었다. (6) 오버레이가 순효과를 낸 조건도 측정됐다 — CVaR 기반 팩터에 DD 6/20 을 얹으면 MDD 52.7%→30.4%(−42%) · SR 0.554→0.598(+8%) · CAGR 9.49%→6.93%(−27%) 이고 위기 알파 4/4→3/3 으로, 기저 팩터가 강한 위기 알파를 가질 때 DD 오버레이는 순양이다. 이 봉투 안에서의 조건부 규칙은 '유의성은 전이를 보장하지 않고 전이 실패 지점을 먼저 특정해야 다음 레버가 결정된다'이며 구 기록의 봉투 수준 천장 단정(1.56~1.74)은 이 카드가 판정으로 승계하지 않는다 — 미해결로 열어둔다.",
+  "retry_condition": "Factor DB 의 Z_Score 표준편차 불일치(M08 0.054 등)를 먼저 고친 뒤 잔차 모멘텀을 재구현해 구현 가설과 신호 가설을 분리하고, 외국인 흐름 계열은 C10·C11 시점 오염 2건을 제거한 판으로 재측정해야 한다. 두 수리 전에는 이 계열의 전이 실패를 신호 부재로 읽지 않는다.",
   "refined_at": null,
   "refined_by": null,
   "promoted_to_axiom": null,
   "created_at": "2026-07-26T08:52:22+00:00",
-  "updated_at": "2026-09-23T21:57:10+00:00",
+  "updated_at": "2026-10-03T01:59:17+00:00",
   "research_mode": "qepm_legacy",
   "metric_type": "estimated",
   "type": "empirical",
@@ -75,5 +75,43 @@
     "oos_effect_vs_is": null,
     "note": "promote.R r4_regime_payoff / essence_score 경유 확정"
   },
-  "cluster_members_count": 8
+  "cluster_members_count": 8,
+  "adversarial_verdict": {
+    "a_exaggeration": "강등함. supporting 에는 'FMB t 5.50'·'ICIR 0.608' 처럼 단독으로는 강해 보이는 수치가 있는데 같은 L-code 가 각각 시점 오염 2건 미해결, 백테스트 SR 0.569 로의 미전이를 함께 적었다. 유의성 수치 옆에 전이 결과를 병기하고 'diversifier 무가치' 같은 단정은 '그 북이 이미 포화된 조건에서의 증분 0'이라는 조건부 서술로 내렸다.",
+    "b_evidence": "결함 1건 적발·명기. supporting 8건의 metric_type 은 estimated 7 · backtested 1 이다 — estimated 판 수치를 등급·합격 판정으로 쓰지 않고 축별 값과 전이 여부 서술에만 썼다. 또 L-647·L-650 의 수치는 C10·C11 오염이 남은 판이므로 '판정 보류 상태'로 명시하고 현행 사실로 인용하지 않았다. Grade 표기는 하지 않았다.",
+    "c_ax000": "'구조적 한계'·'dead-end' 없음. L-QPM-20260606-001 의 봉투 수준 천장 단정(1.56~1.74)을 판정으로 승계하지 않음을 명시했고, 전이 실패를 네 지점으로 분해해 각각 수리 가능한 항목으로 서술했다(정규화 형태 · Z_Score 빌더 · 원천 대리지표 교체 · 오버레이 포화 판별). 미해결로 열어 뒀다.",
+    "d_firewall": "위반 없음. 실패를 종목수·유동성 기준·long-only·Σw=1·유니버스 멤버십·15bps·PIT 에 귀속하지 않았다. 2020~2024 제도 변화 구간 서술은 원천 데이터의 정보 두께에 관한 사실이며 봉투의 고정 축과 무관하고 완화를 레버로 제시한 부분이 없다. 제시한 레버는 전부 봉투-안이다(대안 혼잡도 대리 · gated double-sort · DD 오버레이 폭 · 잔차 sleeve).",
+    "e_frontier": "frontier 3건 + live_trigger(data) + expiry. '전이 실패 지점이 항목마다 다르다'는 기전이 다음 작업을 지점별 수리로 돌리게 썼다."
+  },
+  "expiry": "2027-03-31",
+  "frontier": [
+    "Factor DB Z_Score 표준편차 정합(M07 1.000 대 M08 0.054 등)을 고친 뒤 잔차 모멘텀 재구현 — 구현 버그 가설이 85% 로 채택된 상태에서 신호 가설은 아직 검정되지 않았다",
+    "선형 합성을 gated double-sort 로 교체 — sd 비 0.8~1.25 밖에서 선형 블렌드가 고분산 팩터로 수렴한 실측(상관 0.716 / 0.596)이 형태 교체의 근거다",
+    "혼잡도 대리지표 교체 — DTC 대리 대신 기관 순매수 집중도·외국인 보유비율 변화를 비-return 원천으로 사용해 2020~2024 구간에서 정보량이 유지되는지 측정"
+  ],
+  "live_trigger": {
+    "type": "data",
+    "condition": "Factor DB 재빌드로 Z_Score 표준편차가 팩터 전반에서 1.0 근방으로 정합되거나, C10·C11 시점 오염을 제거한 외국인 흐름 판이 산출될 때",
+    "monitored_source": "06_Registry/factor_evidence.json · 06_Registry/pit_quarantine.json · 02_Infrastructure/validation/lookahead_detector.R 산출"
+  },
+  "revival_spec": [
+    {
+      "signal_id": "wall_clock_date",
+      "condition": "x >= as.Date('2027-03-31')",
+      "from_trigger": "expiry",
+      "status": "active"
+    },
+    {
+      "signal_id": "registry_present",
+      "condition": "x == TRUE",
+      "from_trigger": "data",
+      "status": "pending"
+    }
+  ],
+  "constraint_firewall": {
+    "mode": "backstop_passed",
+    "checked_at": "2026-10-03"
+  },
+  "drafted_at": "2026-10-03T11:35:57+0900",
+  "drafted_by": "auto_distill"
 }

@@ -1,0 +1,22 @@
+{
+  "schema": "rf_organic_schema_v1",
+  "note": "유기체 state.json 허용 스키마(deny-by-default · O0a 2026-09-25 · 설계 organic_design_final §5). 사람이 배포한다 — rf_organic_write.R::rfo_write 는 이 파일을 쓰지 못한다(allowlist 밖). 고정 축·문턱·N 정의·보류 코드·PIT 격리 키는 존재하지 않는다(forbidden_keys 가 어느 깊이에서든 거부).",
+  "state_top_keys": ["schema_version", "updated_at", "plan", "arms", "structure", "quotas", "policies", "killed", "epoch", "posterior_ref", "dg_shadow", "kill_release_seen"],
+  "state_top_keys_source": "설계 §5 스키마(deny-by-default) — plan · arms[].status · structure.blocks[].state · quotas · policies · killed · epoch · posterior_ref(포인터·해시만) · dg_shadow · kill_release_seen",
+  "arm_status_enum": ["pi0", "organic_dormant", "organic_probation", "organic_retired"],
+  "block_state_enum": ["full", "reduced", "diag", "dormant"],
+  "arm_transitions": [["pi0", "organic_dormant"], ["organic_dormant", "pi0"], ["organic_dormant", "organic_probation"], ["organic_probation", "pi0"], ["organic_dormant", "organic_retired"]],
+  "arm_transitions_source": "설계 §5 전이표 — 허용 전이 = {pi0 ↔ organic_dormant, organic_dormant → organic_probation → pi0, organic_dormant → organic_retired}",
+  "unmanaged_canonical_status": ["suspended", "retired", "retracted", "withdrawn", "quarantined", "tombstone", "failed"],
+  "unmanaged_source": "설계 §5 — 정본 status 가 suspended(C11 — pg2_risk_overlay_v1)·retired·pit_quarantine·사람 tombstone 인 id 는 관리 대상이 아니다(재료 카탈로그의 비활성 어휘 포함)",
+  "posterior_ref_keys": ["path", "md5", "fit_at", "pool_md5"],
+  "posterior_ref_source": "설계 §1.0(h) 헌R7 — state 에는 포인터·해시만 · 본문은 06_Registry/organic/lever_book/",
+  "forbidden_keys": ["n_max", "universe", "start_date", "commission_bps", "liq_adv20_min", "long_only", "weight_cap", "base_weight", "fixed_axes",
+                     "tier_graduation", "port_t_min", "calmar_min", "sr_min", "cagr_min", "oos_retention_min", "thresholds",
+                     "n_trials", "n_trials_cumulative", "n_cell", "n_program", "hold_codes", "a_eligibility", "vintage_flags", "pit_quarantine", "quarantine",
+                     "essence", "essence_grade", "grade", "authoritative_remeasure", "max_attempts", "daily_cap", "parallel_cells", "worker_timeout_sec",
+                     "cell_max_retry", "promote_max_depth", "promote_max_depth_hard"],
+  "forbidden_keys_source": "설계 §5 스키마 · §1.1 불변(기계 권한 밖: daily_cap · parallel_cells · worker_timeout_sec · cell_max_retry · max_attempts · 격자 n · promote_max_depth(_hard)) · INV-7 고정 축 · tier_graduation · N 정의 · 보류 코드 · PIT 격리 · AX-008(등급·essence)",
+  "plan_value_keys": ["n", "n_cap", "n_min", "n_attempted", "cells_kept", "frozen", "decided_at", "policy_sha", "decision_id"],
+  "plan_value_source": "설계 §1.1 plan[BID][b] = {n, cells_kept[], frozen, decided_at, policy@sha} · 값 제약 n ∈ [max(n_min, 시도 코드 수), n_cap] · B1 절단 금지"
+}

@@ -1,0 +1,22 @@
+{
+  "axis": "portfolio",
+  "verdict": "adapted",
+
+  "undeclared_changes": [],
+
+  "signal_mismatch": [],
+
+  "counterexample": "구성했으나 **선언된 변경 안**이다 — 미선언 발산은 구성하지 못했다. 논문은 거래소별 CON 을 2개 값으로 보고하고(Table 3 = SHSE 격자 / Table 4 = SZSE 격자) Table 6 에서 그 **차분**을 본다. 구현은 engine.R:144-148 에서 보드별 CON 에 1/S gross 를 주어 한 계열로 합성한다. 구체적으로 어느 달 K200 적격 190종(LOS 19종)·KQ150 적격 80종(LOS 8종)이면 K200 패자 1종 비중 = 1/(2·19) = 2.63%, KQ150 패자 1종 = 1/(2·8) = 6.25% 로, 보유 종목 **전체에 대한 EW 가 아니다**(보드 안에서만 EW — 이 부분은 논문 규칙 그대로). 결과 계열 = (CON_K200 + CON_KQ150)/2 이고 이 평균값은 논문 어느 표에도 없다. 그러나 이 합성은 FIDELITY.changed ② 에 산식(Rg = (1/S)·Σ_seg (R_LOS,seg − R_WIN,seg))까지 적시돼 있고 engine.R:138-143 주석과 일치한다 → adapted. (종목수는 지수 멤버십 규모에서 나온 산술 예시이지 측정값이 아니다 — AX-008.)",
+
+  "evidence": "원문 Materials and Methods · Method: 'all the stocks are sorted according to their returns in the past J months from t=−J to t=0 ... For comparison, decile grouping, quintile grouping and tertile grouping are adopted ... The group of stocks with the worst performance ... is called loser portfolio LOS(J,K) and the group with best performance is called winner portfolio WIN(J,K). One then adopts the contrarian strategy by buying the loser portfolio and selling the winner portfolio' + 'forms zero-cost arbitrage portfolios' + 'We examine the equal-weighted average returns per annum of the loser portfolio, the winner portfolio, and the contrarian portfolio'. Introduction: 'Since the features of A-shares listed on these two stock exchanges are not similar, we investigate the momentum and contrarian effects in the SHSE and the SZSE independently.' Table 2 캡션: '...formed based on decile grouping with J=K...' · Table 3 = SHSE · Table 4 = SZSE (둘 다 'based on decile grouping') · Table 5 = 'Relative performance of different grouping methods' · Table 6 = 두 거래소 비교. Table 1 = 2012년말 SHSE A주 944종 · SZSE A주 1,528종. Abstract: 'decile grouping outperforms quintile grouping and tertile grouping, which is more evident and robust in the long run.' 원문에 value-weighted 판 0건 · 고정 종목수 지정 0건 · 분위별 종목수 서술 0건.",
+
+  "confidence": "high",
+
+  "checked": "분위 개수(decile=10 · engine.R:71,130-133 ↔ Table 2/3/4 캡션) · 롱숏 레그 방향(dec==1 패자 LONG / dec==10 승자 SHORT · engine.R:135-136,151-152 ↔ 'buying the loser ... selling the winner') · 레그 gross 1:1 zero-cost(engine.R:147-148,164-167) · 비중방법 EW(레그 내 1/N · 논문 'equal-weighted') · 정렬 도메인 분리(by=.(SigDate,Seg) ↔ 거래소 독립 · 선언 ②) · 실현 종목수(분위 1/10 규칙 보존 · 절대 종목수는 유니버스 치환 산물 · 선언 ①⑭) · 25종 캡 미적용(선언 ⑭ ↔ run_paper_replication.R:560-569 실제 미절단) · 이중 상위N 절단 여부(보드분할 → 분위 = 곱절 축소 구조이나 선언 ②·⑨) · 분위 군크기 ±1 정수산술(engine.R:133 · 선언 ⑧) · 유동성 필터가 분위 모집단을 바꾸는 순서(engine.R:121-123 · 선언 ③) · value-weighted 혼입 0건",
+
+  "note": "청정 모드라 holdings 산출물 대신 코드 경로를 추적했다 — run_paper_replication.R:529(.apply_universe 는 시그널일 멤버십 inner join 이라 이미 보드 플래그로 거른 이 엔진엔 무영향)·:560-569(engine_direct 미절단) · replication_harness.R:196-198(레그 분리는 Weight 부호로만 — Leg 열 이중부호 없음)·259-269(Rg = 1·Lr − 1·Sr) → 논문 CON 정의가 보존된다. 축 밖 1줄: 초록의 decile 우월 주장에는 'more evident and robust in the long run' 단서가 있고 본문은 'decreases with the number of groups from tertile to decile for small J' 라 적는데 FIDELITY.kept 괄호주석은 이 단서를 떼고 인용했다 — 구현 칸(J=K=1)이 그 단서 구간이다. 다만 Table 2/3/4 가 J=1 칸도 decile 로 보고하므로 코드-논문 불일치는 아니다(격자 칸 선택 축 소관).",
+
+  "_항목 서술 규약": "★모든 항목은 대괄호 **한 줄 요약**으로 시작한다 - 12~30자 · 그 항목만 읽고도 무엇이 어긋났는지 아는 문장 · 원문 인용이나 파일:행을 요약에 넣지 마라(뒤 본문에 적는다). 이 요약이 통지에 그대로 실리고 본문은 안 실린다 - 요약이 없으면 사람은 잘린 원문 조각을 받는다.",
+
+  "_배열 규약": "undeclared_changes·signal_mismatch 는 **발견만** 담는다. 없으면 빈 배열 [] 로 두고 '불일치 없음' 같은 비발견을 항목으로 넣지 마라 - 근거 게이트가 배열 길이로 선다."
+}

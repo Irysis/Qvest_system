@@ -17,6 +17,8 @@
 #
 # 흐름: replication_request.json(pending) → claude -p 헤드리스 → 검증 → rf_open_entry → 강화 재개
 # 호출: 스케줄러(tick) 또는 수동. kill switch 는 강화 러너와 공유한다.
+# ★청정 모드(결정 FA-CLEAN-BASE-PATH · 2026-09-26): 모드 해석 → RP_AUTO_CLEAN_<slug> 작업 디렉터리 → 가드 표식(QVEST_CLEAN_LANE)으로
+#   성과 열람 차단 · 재구현 피드백 가림 · 출처 기록(lane_provenance.json) — 아래 "청정 모드 해석" 절과 rf_clean_lane.py 가 정본.
 #==============================================================================
 set -uo pipefail
 ROOT="${QM_ROOT:-C:/Users/99922/OneDrive/Quant_Module_Moltbot}"
@@ -68,13 +70,24 @@ fi
 #   강화(1403.8125 구제분)와 **나란히** 돌았다.
 #   ★요청을 지우지 않는다 — pending 으로 두면 강화가 끝난 뒤 그대로 집힌다.
 if [ "${QVEST_RP_ALLOW_CONCURRENT:-0}" != "1" ]; then
-  ACT=$("$PY" -c "
+  ACT_ALL=$("$PY" -c "
 import io,json
 try:
     d=json.loads(io.open(r'$ROOT/06_Registry/reinforce_ledger_l1.json','rb').read().decode('utf-8'))
     n=sum(1 for e in d.get('entries',[]) if e.get('status')=='active')
     print(n)
 except Exception: print(0)" 2>/dev/null)
+  # ★차단 active 만 센다 (P1-08 · 결정 D-G 레인 순서 · 감사 D8-02 · 2026-09-25): 반사실(lanes.nonblocking_priorities — idle_only)·사전등록
+  #   실험 entry 는 신규 논문을 막지 않는다(반사실 active 1건이 신규 요청을 16시간 막았다). 술어 = rf_lane_rules.R::rf_blocking_active
+  #   (러너·next_paper 와 같은 함수 · 파이썬 사본 없음). 러너는 요청이 진행 중인 동안 비차단 entry 로 원장을 쓰지 않는다(양보) —
+  #   그래서 이 레인의 원장 개설과 겹치지 않는다. R 판정 실패 = 구판 계수(active 전부)로 폴백한다(막는 쪽).
+  ACT=$(QM_ROOT="$ROOT" QVEST_LANE_CFG="$CFG" Rscript -e 'suppressMessages(source(file.path(Sys.getenv("QM_ROOT"), "02_Infrastructure/reinforcement/rf_lane_rules.R"))); L <- rf_lane_cfg(tryCatch(jsonlite::fromJSON(Sys.getenv("QVEST_LANE_CFG"), simplifyVector = FALSE), error = function(e) list())); d <- jsonlite::fromJSON(file.path(Sys.getenv("QM_ROOT"), "06_Registry/reinforce_ledger_l1.json"), simplifyVector = FALSE); cat(sprintf("ACT_BLOCKING=%d\n", length(rf_blocking_active(d$entries, L))))' 2>/dev/null | tr -d '\r' | sed -n 's/^ACT_BLOCKING=\([0-9][0-9]*\)$/\1/p' | tail -1)
+  if [ -z "$ACT" ]; then
+    ACT="$ACT_ALL"
+    jl lane_blocking_fallback "n=$ACT_ALL" "note=차단 술어(R) 판정 실패 — 구판 계수(active 전부)로 막는다"
+  elif [ "${ACT_ALL:-0}" != "$ACT" ]; then
+    jl reinforce_active_nonblocking "n_active=$ACT_ALL" "n_blocking=$ACT" "note=반사실·실험 entry 는 신규 논문 충실구현을 막지 않는다(레인 순서)"
+  fi
   if [ "${ACT:-0}" != "0" ]; then
     jl halt_reinforce_active "n=$ACT" "note=강화 entry 가 활성이다 — 새 논문 충실구현을 보류한다(요청은 pending 으로 보존)"
     exit 0
@@ -279,13 +292,37 @@ if _cp is None: _cp = (c.get('count_paper') if c else True)
 print('C_COUNT=%s'  % q('1' if _cp else '0'))")"
 [ -n "$P_URL" ] || { jl halt_no_url; exit 1; }
 
+# ── ★청정 모드 해석 (결정 FA-CLEAN-BASE-PATH · 도훈 2026-09-26 12:24 — "(나) 기존 레인 강화") ──────────────────
+#   청정 = 성과를 보지 않고 논문만으로 쓴 엔진(A 경로 청정 기저 F_A 후보 · rf_clean_base.R 이 전사에서 재도출해 인정).
+#   이 레인에 네 층을 싣는다: ①성과 열람 차단(가드 arm_gen_read_guard.sh 청정 표식 QVEST_CLEAN_LANE + 작업 디렉터리 QVEST_CLEAN_WDIR ·
+#   셸·Agent·Skill 금지) ②재구현 피드백 성과 제거(rf_clean_lane.py sanitize — 충실도 사유만) ③훅 성과 문맥 제외(axiom_context_inject.sh 가
+#   같은 표식을 읽는다 · 이 레인은 Agent 금지라 원래 발화하지 않는다) ④출처 기록(작업 디렉터리 lane_provenance.json — 실행 전·후).
+#   모드 규칙(결합 = normal · 요청 clean_mode · 설정 default_mode · 전제 미충족 처리)은 rf_clean_lane.py cmd_mode 머리 주석이 정본.
+#   청정 실행은 새 작업 디렉터리(RP_AUTO_CLEAN_<slug>)에서 한다 — 기존 RP_AUTO_<slug> 의 비청정 판 산출(엔진·감사·에이전트 출력)을 읽지 않게.
+#   알려진 경계(막지 않음 · 결정문): CLI 가 cwd 에서 자동 주입하는 규칙 파일(CLAUDE.md · .claude/rules — pit.md 사고 수치 등) —
+#   출처 기록에 지문을 남기고 사후 검사가 전사에서 재도출한다. 운영 설정 = 06_Registry/replication_clean_lane.json.
+CL_PY="$ROOT/02_Infrastructure/ops/rf_clean_lane.py"
+CL_LANE_CFG="${QVEST_CLEAN_LANE_CFG:-$ROOT/06_Registry/replication_clean_lane.json}"
+LANE_MODE=normal; LANE_MODE_SOURCE=helper_absent; LANE_MODE_WHY=""; LANE_WDIR_PREFIX=RP_AUTO_CLEAN_
+if [ -f "$CL_PY" ]; then
+  _CLM="$("$PY" "$CL_PY" mode --req "$REQ" --lane-cfg "$CL_LANE_CFG" --root "$ROOT" --combo "${IS_COMBO:-0}" 2>>"$LOG" | tr -d '\r')" || _CLM=""
+  if [ -n "$_CLM" ]; then eval "$_CLM"; else LANE_MODE=halt; LANE_MODE_SOURCE=helper_failed; fi
+fi
+case "$LANE_MODE" in
+  clean|normal) ;;
+  *) jl halt_clean_unavailable "mode=$LANE_MODE" "src=$LANE_MODE_SOURCE" "why=$LANE_MODE_WHY" \
+       "note=청정 모드 요청인데 전제(설정·가드·훅) 미충족 — 요청 보존(비청정으로 돌지 않는다 · 재시도 예산 무소모)"
+     exit 0 ;;
+esac
+
 SLUG=$(printf '%s' "$P_KEY" | tr -c 'A-Za-z0-9' '_' | cut -c1-24)
 WDIR="$ROOT/04_Research/strategies/RP_AUTO_${SLUG}"
 # ★결합은 두 논문의 설계 산출물이라 단독 논문 작업본을 덮으면 안 된다.
 #   paper_key 가 "combo:a+b" 라 SLUG 이 이미 다르지만, 접두로 의도를 드러낸다.
 [ "${IS_COMBO:-0}" = "1" ] && WDIR="$ROOT/04_Research/strategies/RP_AUTO_COMBO_${SLUG}"
+[ "$LANE_MODE" = "clean" ] && WDIR="$ROOT/04_Research/strategies/${LANE_WDIR_PREFIX}${SLUG}"
 mkdir -p "$WDIR"
-jl start "paper=$P_KEY" "url=$P_URL" "wdir=$WDIR"
+jl start "paper=$P_KEY" "url=$P_URL" "wdir=$WDIR" "lane_mode=$LANE_MODE" "lane_mode_src=$LANE_MODE_SOURCE" "lane_mode_why=$LANE_MODE_WHY"
 # ★상태 전이 pending → in_progress (cleaner 의 distill_status 선례).
 #   claim 이 1차 방어지만, 검증이 20분 넘게 돌 수 있어 그 사이 다른 소비자가 들어오면
 #   LLM 호출이 중복된다. 상태가 그 창을 눈에 보이게 만든다(2026-08-30 실측: 중복 1회).
@@ -310,8 +347,10 @@ d['status']='pending'; d['failure']='refresh_lock_deferred'; d['refresh_deferred
 io.open(r'$REQ','wb').write(json.dumps(d,ensure_ascii=False,indent=1).encode('utf-8'))"
     return 75
   fi
+  # ★RP_LANE_MODE(FA-CLEAN-BASE-PATH) — 청정이면 검증기가 충실도 감사를 청정 조건(산출물 경로 비공개 + 같은 가드 표식)으로 부른다.
+  #   가드 표식 자체는 여기서 싣지 않는다(검증기의 측정·원장 쓰기에 새면 안 된다 — 감사 스폰 한 번에만 검증기가 싣는다).
   QM_ROOT="$ROOT" RP_WDIR="$WDIR" RP_URL="$P_URL" RP_TITLE="$P_TITLE" RP_KEY="$P_KEY" \
-    QVEST_RP_JLOG="$JLOG" RP_IS_COMBO="${IS_COMBO:-0}" RP_COUNT_PAPER="${C_COUNT:-1}" \
+    QVEST_RP_JLOG="$JLOG" RP_IS_COMBO="${IS_COMBO:-0}" RP_COUNT_PAPER="${C_COUNT:-1}" RP_LANE_MODE="$LANE_MODE" \
     Rscript "$ROOT/02_Infrastructure/ops/rf_replication_verify.R" >> "$LOG" 2>&1
   VRC=$?
   jl verify_done "rc=$VRC"
@@ -577,6 +616,38 @@ lim = 4000 if why == 'declaration_gate' else 400
 lab = '사전검사 지적' if why == 'declaration_gate' else '원문 오류'
 if det: print(''); print('%s: %s' % (lab, det[:lim]))
 " 2>/dev/null)
+# ── ★청정 모드: 열람 범위 절 + 재구현 피드백 가림 (FA-CLEAN-BASE-PATH) ──────────────────────────────────────
+#   ①열람 범위 절 = 가드 설정 clean_lane.read_allow 에서 생성(사본 없음) — 막힌 경로를 헤매지 않게 허용 목록을 미리 준다.
+#   ②피드백은 충실도 사유만: 측정 산출물 참조 줄 제거 + 지표 수치·'필드=값'·등급 문자 가림 → 사후 검사 정규식으로 재검증(남으면 그 줄 제거).
+#     감사 지적은 **청정 감사**(검증기가 산출물 경로 없이 · 같은 가드로 부른 감사)의 것만 싣는다 — 요청의 audit_feedback_mode 가
+#     clean 이 아니면(배포 전 감사 등) 싣지 않는다(출처 기록에 남긴다). 가림 실패 = halt(요청은 다음 tick 에 되살아난다 · 비청정으로 돌지 않는다).
+#   절 머리는 '## ★재구현' 이 아니다 — 사후 검사의 재구현 절 검출(feedback_header_generic_regex)을 건드리지 않는다.
+if [ "$LANE_MODE" = "clean" ]; then
+  CL_SEC="$("$PY" "$CL_PY" prompt-section --lane-cfg "$CL_LANE_CFG" --policy "$ROOT/02_Infrastructure/hooks/policies/arm_gen_read_guard.json" --wdir "$WDIR" 2>>"$LOG" | tr -d '\r')" || CL_SEC=""
+  [ -n "$CL_SEC" ] || { jl halt_clean_prompt_section_failed "paper=$P_KEY"; exit 0; }
+  PROMPT="$PROMPT
+
+$CL_SEC"
+  rm -f "$WDIR/.clean_fb_failure.json" "$WDIR/.clean_fb_audit.json"
+  if [ -n "$FAILFB" ]; then
+    FAILFB="$(printf '%s' "$FAILFB" | "$PY" "$CL_PY" sanitize --lane-cfg "$CL_LANE_CFG" --root "$ROOT" --kind failure \
+                --stats "$WDIR/.clean_fb_failure.json" 2>>"$LOG" | tr -d '\r')" || { jl halt_clean_sanitize_failed "kind=failure"; exit 0; }
+  fi
+  if [ -n "$AUDFB" ]; then
+    AFM=$("$PY" -c "
+import io,json
+try: print(json.loads(io.open(r'$REQ','rb').read().decode('utf-8')).get('audit_feedback_mode') or '')
+except Exception: print('')" 2>/dev/null | tr -d '\r')
+    if [ "$AFM" != "clean" ]; then
+      jl clean_audit_feedback_dropped "paper=$P_KEY" "audit_feedback_mode=${AFM:-none}" \
+        "note=비청정 감사의 지적은 청정 재구현 프롬프트에 싣지 않는다(측정을 본 감사자의 서술일 수 있다)"
+      AUDFB=""
+    else
+      AUDFB="$(printf '%s' "$AUDFB" | "$PY" "$CL_PY" sanitize --lane-cfg "$CL_LANE_CFG" --root "$ROOT" --kind audit \
+                 --stats "$WDIR/.clean_fb_audit.json" 2>>"$LOG" | tr -d '\r')" || { jl halt_clean_sanitize_failed "kind=audit"; exit 0; }
+    fi
+  fi
+fi
 if [ -n "$FAILFB" ]; then
   jl reimplement_with_failure "paper=$P_KEY"
   PROMPT="$PROMPT
@@ -642,16 +713,43 @@ rf_llm_before_fallback() {
     "why=limit_in_run_output" "moved_aside=${moved:- none}"
 }
 RUN_OUT="$WDIR/.agent_run.out"
-rf_llm_agent_run "$PF" "$RUN_OUT" 3000 \
-  --permission-mode acceptEdits \
-  --allowed-tools "Read,Write,Edit,Glob,Grep,WebFetch,WebSearch" \
-  --disallowed-tools "Bash,Agent" \
-  --add-dir "$WDIR"
+# ── ★출처 기록 · 실행 전 (FA-CLEAN-BASE-PATH) — 모드·가드/훅/설정 sha256·CLI 도구·프롬프트 sha256·피드백 가림 통계·자동 주입 규칙 지문.
+#   사후 검사(rf_clean_base.R)는 이 기록을 믿지 않고 전사(첫 레코드 = prompt.txt 바이트 · hook_success stdout)·현재 파일과 대조한다.
+#   청정 모드는 기록 실패 = halt(재도출 대상이 없으면 청정을 주장할 수 없다) · normal 은 기록만 시도한다.
+if [ "$LANE_MODE" = "clean" ]; then
+  "$PY" "$CL_PY" prov-pre --wdir "$WDIR" --root "$ROOT" --req "$REQ" --lane-cfg "$CL_LANE_CFG" --prompt "$PF" \
+    --mode clean --mode-source "$LANE_MODE_SOURCE" --mode-why "$LANE_MODE_WHY" \
+    --allowed "Read,Write,Edit,Glob,Grep,WebFetch,WebSearch" \
+    --disallowed "Bash,PowerShell,Monitor,REPL,Workflow,CronCreate,RemoteTrigger,Agent,Skill" \
+    --model "$RP_MODEL" --effort "$RP_EFFORT" --fallback-model "${LLM_FALLBACK_MODEL:-}" >> "$LOG" 2>&1 \
+    || { jl halt_clean_provenance_failed "paper=$P_KEY"; rm -rf "$SNAP"; exit 0; }
+  # ★청정 표식 = 함수 호출 앞 임시 대입(설계 레인과 같은 형) — 이 claude(1차·폴백)와 그 훅에만 실리고 호출 뒤 셸·검증기에는 안 남는다.
+  #   셸 통로 7종 + Agent(성과 문맥 주입 훅) + Skill(SKILL.md 원문 주입) 금지 — 목록 정본 = replication_clean_lane.json disallowed_tools_clean(검사 §W).
+  QVEST_CLEAN_LANE=1 QVEST_CLEAN_WDIR="$WDIR" rf_llm_agent_run "$PF" "$RUN_OUT" 3000 \
+    --permission-mode acceptEdits \
+    --allowed-tools "Read,Write,Edit,Glob,Grep,WebFetch,WebSearch" \
+    --disallowed-tools "Bash,PowerShell,Monitor,REPL,Workflow,CronCreate,RemoteTrigger,Agent,Skill" \
+    --add-dir "$WDIR"
+else
+  "$PY" "$CL_PY" prov-pre --wdir "$WDIR" --root "$ROOT" --req "$REQ" --lane-cfg "$CL_LANE_CFG" --prompt "$PF" \
+    --mode normal --mode-source "$LANE_MODE_SOURCE" --mode-why "$LANE_MODE_WHY" \
+    --allowed "Read,Write,Edit,Glob,Grep,WebFetch,WebSearch" --disallowed "Bash,Agent" \
+    --model "$RP_MODEL" --effort "$RP_EFFORT" --fallback-model "${LLM_FALLBACK_MODEL:-}" >> "$LOG" 2>&1 \
+    || jl lane_provenance_failed "mode=normal"
+  rf_llm_agent_run "$PF" "$RUN_OUT" 3000 \
+    --permission-mode acceptEdits \
+    --allowed-tools "Read,Write,Edit,Glob,Grep,WebFetch,WebSearch" \
+    --disallowed-tools "Bash,Agent" \
+    --add-dir "$WDIR"
+fi
 RC=$LLM_RC
 [ -f "$RUN_OUT.primary" ] && cat "$RUN_OUT.primary" >> "$LOG"
 cat "$RUN_OUT" >> "$LOG" 2>/dev/null
 rm -rf "$SNAP"
-jl agent_done "rc=$RC" "model=$LLM_USED_MODEL" "effort=$LLM_USED_EFFORT" "fell_back=$LLM_FELL_BACK"
+jl agent_done "rc=$RC" "model=$LLM_USED_MODEL" "effort=$LLM_USED_EFFORT" "fell_back=$LLM_FELL_BACK" "lane_mode=$LANE_MODE"
+# ── ★출처 기록 · 실행 후 — rc·폴백·engine/FIDELITY sha256·mtime(사후 검사가 현재 engine.R 과 대조 — 청정 실행 뒤 손댄 엔진은 청정이 아니다)
+"$PY" "$CL_PY" prov-post --wdir "$WDIR" --lane-cfg "$CL_LANE_CFG" --rc "$RC" --fell-back "${LLM_FELL_BACK:-0}" \
+  --used-model "${LLM_USED_MODEL:-}" --used-effort "${LLM_USED_EFFORT:-}" >> "$LOG" 2>&1 || jl lane_provenance_post_failed "mode=$LANE_MODE"
 
 if [ -f "$WDIR/ABORT.txt" ]; then
   jl aborted_by_agent "reason=$(head -c 120 "$WDIR/ABORT.txt" | tr '\n' ' ')"

@@ -1,0 +1,22 @@
+{
+  "axis": "undeclared",
+  "verdict": "misdeclared",
+
+  "undeclared_changes": [
+    "[시장별 decile을 단일 횡단면으로 통합] 논문은 두 거래소를 절대 합치지 않고 각 거래소 안에서 독립적으로 정렬·분위화하는데(서론 마지막 단락: \"Since the features of A-shares listed on these two stock exchanges are not similar, we investigate the momentum and contrarian effects in the SHSE and the SZSE independently.\" · decile 격자는 Table 3 = SHSE 전용 / Table 4 = SZSE 전용 · Table 2·5 는 \"Panel A: SHSE\"/\"Panel B: SZSE\" · Table 6 은 SHSE−SZSE 차이 · Table 1 은 종목수를 944/1,528 로 따로 보고), engine.R 은 K200∪KQ150 를 하나의 횡단면으로 묶어 N_elig·frank·dec 를 전부 그 합집합 위에서 계산한다(engine.R:86 합집합 필터 · :91 `N_elig := .N, by = SigDate` · :93 `frank(MRet), by = SigDate` · :96 `dec` · :98-99 LOS/WIN · :102-103 비중). 즉 논문 절차는 매월 CON 포트폴리오를 시장별로 2개 만드는데 구현은 1개만 만든다. FIDELITY.changed 에 이 통합은 없다 — ① 은 '상하이·선전 전 A주 → K200∪KQ150' 라는 유니버스 치환만 선언한다.",
+    "[논문을 단일 통합 패널로 서술] FIDELITY 의 paper_original_form 은 논문을 \"중국 A주(상하이·선전) 월간 패널에서 과거 J개월 수익 기준 10/5/3분위 정렬\"로, changed ① 은 논문 유니버스를 \"상하이·선전 전 A주\"(하나의 집합)로 서술한다. 논문은 그 통합 패널 정렬을 어느 표에서도 수행하지 않는다(위 서론 문장 · Table 3/4 분리 · Table 6 차분). 선언이 논문 원형을 통합 패널로 바꿔 서술했기 때문에, 구현의 횡단면 통합이 '유니버스 치환'에 흡수돼 changed 에서 사라졌다.",
+    "[분위 기준점 도메인에 시장 분할 없음] 시스템이 부과하는 고정 축은 유니버스 집합(K200∪KQ150)이지 정렬 분할이 아니다. K200·KQ150 은 상장 보드가 달라 상호배타적 플래그이므로(engine.R:86 의 `K200 == TRUE | KQ150 == TRUE`) `by = .(SigDate, Market)` 분할 정렬이 구조적으로 가능하다 — 통합은 축이 강제한 결과가 아니라 구현 선택이고, 그 선택이 changed 에 기록되지 않았다."
+  ],
+
+  "signal_mismatch": [],
+
+  "counterexample": "KQ150 구성종목은 K200 대비 고유변동성이 체계적으로 높아 1개월 수익 횡단면의 양쪽 꼬리를 과점한다. 적격 종목 약 350종(다리당 약 35종) 기준, KOSDAQ 단독 급락월 — 모든 KQ150 종목의 그 달 수익이 모든 K200 종목의 수익보다 낮은 달 — 을 잡으면 engine.R:96 의 pooled dec 는 최하위 10분위을 100% KQ150, 최상위 10분위을 100% K200 으로 채운다. 그 달 구현의 CON 은 'KOSDAQ 롱 / KOSPI 숏' 이라는 순수 시장 베팅이 되고 두 시장 어느 쪽에서도 역추세 성분이 0이다. 같은 달 논문 절차(Table 3·4)는 K200 내부에서 패자(약 20종) 롱 + 승자 롱숏 다리, KQ150 내부에서 패자(약 15종) 롱 + 승자 숏 다리를 각각 만들어 시장별 CON 두 개를 산출하므로, 두 절차의 보유 종목 집합이 교집합을 거의 갖지 않고 월 수익이 다르다. 극단 달이 아니어도 효과는 단조로 남는다: pooled 꼬리의 KQ150 비중이 50%(유니버스 비중)를 넘는 모든 달에서 구현의 CON 은 논문이 보고하지 않는 시장간(inter-market) 익스포저를 싣는다.",
+
+  "evidence": "원문(https://arxiv.org/html/1505.00328v1): ① 서론 마지막 단락(Materials and Methods 직전) — \"Since the features of A-shares listed on these two stock exchanges are not similar, we investigate the momentum and contrarian effects in the SHSE and the SZSE independently.\" ② Table 3 캡션 \"The annualized returns of the loser, winner, and contrarian portfolios on the SHSE formed based on decile grouping with varying J and K for the whole sample period 1997-2012\" / Table 4 = 동일 격자의 SZSE 판 — decile 격자가 거래소별로 두 표. ③ Table 2·Table 5 = \"Panel A: SHSE\"/\"Panel B: SZSE\" 분리 패널 · Table 7(SHSE 부표본)/Table 8(SZSE 부표본). ④ Table 6 = SHSE−SZSE 차분표(두 시장을 합치지 않았음을 역으로 입증). ⑤ Table 1 = 2012년말 A주 종목수 SHSE 944 / SZSE 1,528 별도 보고. ⑥ 방법론 — \"all the stocks are sorted according to their returns in the past J months from t=-J to t=0\" 의 'all the stocks' 는 ①에 의해 해당 거래소 내 종목으로 한정된다. 통합 횡단면 정렬은 원문 어느 표·절에도 없다.",
+
+  "confidence": "high",
+
+  "checked": "engine.R 전 126행을 FIDELITY.changed ①~⑬ + '추가하지 않은 것' 목록과 1:1 대조 — 유동성(ADV20 창·shift·na.rm) · 월간수익 복리곱 · PrevOK(IPO) · SigDate/inner join · frank 동순위 · dec 정수산술 · N>=10 · EW ±1 다리 · 종목수 상한 미적용 · 비용 · winsorize/nafill/set.seed/비중상한 부재는 모두 선언과 코드가 일치. 미선언으로 남은 것은 정렬·분위 횡단면의 시장 통합 1건.",
+
+  "note": "청정 모드로 산출물이 비공개여서 '산출물 대조' 지시는 코드 경로 추적으로 대신했다 — N_elig·frank·dec·Weight 의 by 절(engine.R:91·93·96·102-103)이 모두 SigDate 단독이고 시장 식별자가 어떤 by 절에도 들어가지 않음을 소스에서 직접 확인했으며, 다리당 종목수 등 수치는 선언하지 않았다. 축 밖 1줄: changed 의 '20일 유동성 창 밖 워밍업 0건' 은 PrevOK(engine.R:74-76,88)라는 별도 이력 요건과 형식상 어긋나지만 실효 워밍업이 유동성 창과 거의 겹쳐 실질 불일치로 올리지 않았다 — 필터 축 검증자 판단 영역."
+}

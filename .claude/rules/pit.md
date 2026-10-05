@@ -70,12 +70,13 @@
 - IS/OOS anchored 분할(`essence_score.R` oos_retention)도 lockbox 가 아니라 측정 규율 — 불변.
 - 구 제도 전문·훅 계층 사연(2026-08-24 "세 층이 동시에 비어 있었다" 정정 포함) = `02_Infrastructure/docs/rules/lockbox-scope.md`(RETIRED 사료) + git 태그 `pre-v10-2layer`.
 - (존치 교훈) **양성 대조 없는 계기는 방어선으로 세지 않는다** — 발화 실증(위반 주입 + 돌연변이 통제) 없는 훅·검사기를 방어선 목록에 올리지 말 것.
+- ★예외(ORGANIC-DE 2026-09-25 도훈 승인): 유기적 강화 컨트롤러의 **자동 결정 입력**에 한해 τ_D 이후 성과를 제외한다(기계 입력 holdout · B08 대비 완화 명시). 사람·등급·Judge·BOOK·전략 구현·격자 선택은 전기간 그대로.
 
 ## V6 Gap-Directed 가설
 
 - S0 가설에 `expected_role` + `why_now` 필수
 - `.cache/portfolio_gap_vector.json` → 현재 SR/CAGR/MDD gap 확인
-- `.cache/conditional_ic_matrix.csv` → 조건부 IC 높은 팩터 우선
+- 조건부 IC 높은 팩터 우선 — 단 **`Usable_Date <= 결정 시점`의 조건부 IC**만 쓴다. **as-of 판 미제공 시 사용 안 함**(현행 `.cache/conditional_ic_matrix.csv` = 전기간 스냅샷 → C1/C14 대상 · 엔진 소비 함수 4종은 `02_Infrastructure/validation/cond_ic_asof_guard.R` 호출부 가드가 가린다 · D-E-V6 2026-09-25 도훈 결정)
 
 ## 위반 시 처리
 

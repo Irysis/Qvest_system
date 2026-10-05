@@ -3,14 +3,14 @@
   "dist_id": "DIST-QPM-022",
   "cluster_key": "7742b6e28427",
   "candidate_id": "CAND_qepm_legacy_7742b6e28427",
-  "status": "pending_5axis",
-  "statement_refined": null,
-  "retry_condition": null,
+  "status": "proposed",
+  "statement_refined": "이 family 에서 같은 경제적 계열의 팩터를 더 얹는 것은 독립 노출을 더하지 않았고, 계열을 넘는 결합과 오버레이 폭은 지표를 움직였다. 측정: (1) 같은 계열 누적의 무효 — 컨센서스 4팩터(C19+C13+C10+C04) 균등 배합은 PIT clean · OOS retention 0.77 · 최근 3년 SR 1.259 였는데 S3 직교성에서 최강 단일 팩터 C04_ESBR 대비 상관 0.899 로 independence_class=redundant 판정을 받고 Core Alpha 역할 주장이 Role Honesty 감사에서 기각됐다(DSR 1.000 · saturation_penalty −20). 적응형 가중도 같은 곳으로 수렴했다 — 확장창 ICIR 동적 가중(Arnott et al. 2019)은 엄격 PIT(IC 2개월 시차, C14) 아래서도 가중이 컨센서스 팩터로 수렴해 BM 상관 0.677 · FF5 알파 t −1.14 를 냈고 계보 상관이 기존 전략과 0.88 을 넘었다. (2) 계열 교차의 유효 — 방어 3팩터 조합(D01 50 + D02 30 + Q07 20)은 S1 순수 SR 0.399 로 벤치 0.458 에 못 미쳤는데 11개 돌연변이 중 C19 교차(M6)만 SR 0.684 로 +71% 를 냈고, C19 60 + V14 20 + D01 20 점수 블렌드는 SR 1.077 로 C19 단독 0.996 을 +8.1%p 넘었다. 같은 측정에서 수익률 블렌드보다 점수 블렌드가 우월하고 EW 블렌드는 열위이며 4팩터 확장은 한계 개선이 미미했다. (3) 위험 축은 팩터 수가 아니라 오버레이 폭이 움직였다 — C19 단독 MDD 52.85% 는 DD 8/22 오버레이로 37.1%, DD+Regime 복합으로 32.9% 가 됐고, C19+L22 60/40 에서 DD 폭 8/20 대 12/28 은 CAGR 12.9% 대 15.3% · MDD 32.0% 대 31.8% 로 갈려 폭이 CAGR–MDD 교환 곡선임을 보였다. (4) 진정한 분산자의 조건 — L22(수익률 자기상관)는 단독 SR 0.397 로 약하나 C19 대비 상관 −0.108 로 분산 효과가 실재했고 결합 M6 에서 SR 0.893 · CAGR 14.15% · MDD 32.2% 를 냈다. 다만 롤링 z-score 변환은 이 신호를 파괴했다(126일: SR 0.11) — 미시구조 계열은 원시 값 소비가 최적이다. V14 를 L22 로 교체한 판은 분산 이익보다 알파 손실이 커서 CAGR 11.53% · SR 0.793 · OOS 0.62 로 내려갔다. 이 봉투 안에서 반복 관측된 조건부 규칙은 '독립성은 같은 계열 안에서 오지 않고 위험 축은 오버레이 폭이 담당한다'이며, 구 기록 중 'defense_core_alpha family 구조적 한계 확인' 류의 단정은 이 카드가 승계하지 않는다 — 미해결로 열어둔다.",
+  "retry_condition": "같은 계열 누적을 다시 상정하려면 S3 최대 절대 상관이 지배 단일 팩터 대비 0.899 보다 유의하게 낮은 구성이 먼저 나와야 한다. 계열 교차 쪽은 C19 교차의 +71%·+8.1%p 가 essence 권위 계약(authoritative_remeasure)으로 재측정돼 Calmar·oos_retention 이 함께 산출될 때 규칙으로 재상정한다 — 현 수치는 estimated 구 하네스 판이다.",
   "refined_at": null,
   "refined_by": null,
   "promoted_to_axiom": null,
   "created_at": "2026-07-26T08:52:22+00:00",
-  "updated_at": "2026-09-23T21:57:10+00:00",
+  "updated_at": "2026-10-03T01:59:17+00:00",
   "research_mode": "qepm_legacy",
   "metric_type": "estimated",
   "type": "empirical",
@@ -75,5 +75,43 @@
     "oos_effect_vs_is": null,
     "note": "promote.R r4_regime_payoff / essence_score 경유 확정"
   },
-  "cluster_members_count": 10
+  "cluster_members_count": 10,
+  "adversarial_verdict": {
+    "a_exaggeration": "강등함. supporting 에 'Grade A'(L-1550 · L-1555)와 'hurdle B/42.5' 가 있으나 둘 다 구 hurdle 판이고 헌법상 hurdle 등급은 진단(proxy)이라 판정 인용이 금지된다. 머리말에서 등급 표현을 전부 제거하고 축별 값(SR·CAGR·MDD·상관)만 남겼다. 'Core Alpha 최적' 같은 단정도 같은 집합의 Role Honesty 기각·상관 0.899 와 충돌하므로 조건부 서술로 내렸다.",
+    "b_evidence": "결함 2건 적발·명기. ①supporting 10건 전부 metric_type=estimated 다 — essence 계약 산출이 아니므로 등급·합격 판정의 근거로 쓸 수 없고 본 카드는 방향·상관·교환 곡선 서술에만 썼다. ②L-1469 와 L-1469-b 는 같은 전략(STR_1469)의 중복 등재로 OOS 0.77 과 0.769 를 각각 적어 두 관측처럼 보인다 — 1건으로 셌다. MDD 29.76% 가 '목표 25% 초과'로 서술된 부분은 현행 규약에서 MDD 가 등급을 접지 않으므로(위험 축 = Calmar) 판정 서술로 옮기지 않았다.",
+    "c_ax000": "'구조적 한계' 단정 승계 거부를 명시했다 — L-767 의 '16회 연속 실패로 defense_core_alpha family 구조적 한계 확인'은 AX-000 에 어긋나므로 envelope-상대 서술로 바꾸고, 같은 집합이 가리키는 재도전 방향(계열 교차 · 오버레이 폭)을 frontier 로 열었다.",
+    "d_firewall": "위반 없음. 실패를 종목수·유동성·long-only·Σw=1·유니버스 멤버십·15bps·PIT 에 귀속하지 않았다 — 귀속 대상은 같은 계열 내 노출 중복과 변환 형태(롤링 z-score)라는 방법 층이다. 제시한 레버는 전부 봉투-안이다(계열 교차 composite · DD/Regime 오버레이 폭 · 점수 블렌드 형태 · 원시 값 소비).",
+    "e_frontier": "frontier 3건 + live_trigger(spread) + expiry. '독립성은 계열을 넘어서 온다'는 기전이 다음 측정을 교차 계열 쌍 탐색으로 돌리게 썼다."
+  },
+  "expiry": "2027-03-31",
+  "frontier": [
+    "방어×컨센서스 교차(M6 계열, SR 0.399→0.684)를 essence 권위 계약으로 재측정 — 구 하네스 estimated 판에서 가장 큰 단일 개선이었고 Calmar·oos 가 산출된 적이 없다",
+    "오버레이 폭을 상수가 아니라 CAGR–MDD 교환 곡선 위의 선택으로 사전등록 — 8/20 대 12/28 이 CAGR 12.9% 대 15.3% 를 가른 관측이 폭 자체가 결정 변수임을 가리킨다",
+    "미시구조 계열(L22 류)을 원시 값으로 유지한 잔차 sleeve — 롤링 z-score 가 신호를 파괴한 측정(SR 0.397→0.11)이 변환 단계를 소비면에서 분리할 근거다"
+  ],
+  "live_trigger": {
+    "type": "spread",
+    "condition": "컨센서스 지배 팩터(C04_ESBR·C19) 대비 S3 최대 절대 상관이 0.899 미만인 신규 구성이 등장하거나, 교차 계열 쌍의 essence 재측정이 Calmar·oos_retention 과 함께 산출될 때",
+    "monitored_source": "06_Registry/factor_evidence.json · 06_Registry/module_performance.json"
+  },
+  "revival_spec": [
+    {
+      "signal_id": "wall_clock_date",
+      "condition": "x >= as.Date('2027-03-31')",
+      "from_trigger": "expiry",
+      "status": "active"
+    },
+    {
+      "signal_id": "value_quality_spread",
+      "condition": "x >= 0.90",
+      "from_trigger": "spread",
+      "status": "active"
+    }
+  ],
+  "constraint_firewall": {
+    "mode": "backstop_passed",
+    "checked_at": "2026-10-03"
+  },
+  "drafted_at": "2026-10-03T11:35:51+0900",
+  "drafted_by": "auto_distill"
 }

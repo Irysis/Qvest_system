@@ -90,8 +90,11 @@ chk(all(c("Vol", "Size", "Close", "Ret") %in% ul(e1$data_fingerprint$raw$cols)) 
     "B1b2 entry 지문 = 소비 열(Vol·Size 포함 · 비소비 High 제외) + 소비자 파일 기록", paste(ul(e1$data_fingerprint$raw$cols), collapse = ","))
 old_keys <- c("base_id", "base_grade", "paper_key", "paper_id", "base_artifacts", "engine_path", "status", "target_grade",
               "measurement_axis", "axis_valid", "attempts_used", "attempts", "judge", "opened_at")
-chk(identical(setdiff(names(e1), c("data_cutoff", "data_fingerprint")), old_keys) && is.null(e1$data_vintage_vs_parent),
-    "B1c 기존 필드·순서 불변 + 새 필드 2개만(부모 없으면 대조 필드 없음)", paste(names(e1), collapse = ","))
+## ★P1-08(HUMAN 레인 규칙 · 10-03 최종 통합 INTEG-TF): 개설 entry 에 레인 필드(priority · experiment — rf_open_entry 가 붙인다)가 생긴다.
+##   빈티지와 무관한 다른 갈래 필드라 빼고 같은 단정(기존 필드 순서 불변 · 빈티지 새 필드 2개 · 그 밖 새 필드 0)을 유지한다.
+.lane_keys <- c("priority", "experiment")
+chk(identical(setdiff(names(e1), c("data_cutoff", "data_fingerprint", .lane_keys)), old_keys) && is.null(e1$data_vintage_vs_parent),
+    "B1c 기존 필드·순서 불변 + 새 필드 2개만(부모 없으면 대조 필드 없음 · P1-08 레인 필드 제외)", paste(names(e1), collapse = ","))
 chk(!any(grepl("^vintage", jl_events())), "B1d 부모 없는 개설 — 빈티지 저널 0")
 invisible(capture.output(r2 <- L$rf_open_entry(1L, "RP_V1", "C", root = T1)))
 chk(identical(r2$data_fingerprint$digest, e1$data_fingerprint$digest) && length(L$rf_load(1L, T1)$entries) == 1L,

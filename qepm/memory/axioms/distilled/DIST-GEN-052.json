@@ -3,9 +3,9 @@
   "dist_id": "DIST-GEN-052",
   "cluster_key": "27fafe001de8",
   "candidate_id": "CAND_reinforcement_27fafe001de8",
-  "status": "pending_5axis",
-  "statement_refined": null,
-  "retry_condition": null,
+  "status": "proposed",
+  "statement_refined": "강화 격자 B3(유니버스 축) 교체는 이 봉투 안에서 수익 축만 움직이고 위험 축을 움직이지 않았다. 구 규약 블록 16건 실측(2026-08-30~09-04 · supporting 17건 중 1건은 corpus 미발견): 블록 최고 다중검정 t 2.630 · 최고 Calmar 0.338 로 합격선(2.95 · 0.64) 안쪽에 도달한 블록이 없고 A등급은 16/16 블록 전부 0건이다. 방향은 혼재다 — 직전 최고 대비 전진 8블록 · 열위 8블록으로 정확히 갈린다. 기전은 낙폭 대역의 경직이다: 축을 바꿔도 블록 내 낙폭 대역 폭이 9.0~14.5%p 에 머물고(관측 대역 51~86%), 그 수준에서 블록 교훈이 스스로 환산한 합격 요구치는 연복리 33~48% 다. 표본외 유지율은 보고된 블록 전부가 합격 구간 밖이며 최고 0.52 · 최저 −1.00 이다. 신 규약(close_t1) 집계는 같은 방향을 더 강하게 말한다 — 1,187/1,222(97%) 재측정에서 Calmar ≥0.64 는 0칸이고, B3 블록 효과는 ΔCalmar −0.092(P>0 0.09) · ΔOOS −0.72(P>0 0.09) · ΔPT −1.15 로 두 기준 모두 모든 축이 음수이며 B3 계보의 PT·Calmar 양수는 0/24 다. 규약 교체에도 블록 순위는 보존된다(옛/새 Δ 상관 PT 0.97~0.99 · Calmar 0.92~0.96) — 따라서 순위 서술은 두 규약에서 같고 수준값은 신 규약 판만 판정에 쓴다. 이 경로의 상한이 관측된 것이지 축의 사망이 아니다 — 위험 축과 같은 칸에서 결합한 측정은 아직 없으므로 미해결로 열어둔다.",
+  "retry_condition": "B3 축을 단독 교체가 아니라 위험 축(B5 오버레이)과 같은 칸에서 결합한 블록이 신 규약으로 1건 이상 측정되고, 그 칸의 Calmar 와 표본외 유지율이 동시에 바닥을 넘을 때 규칙으로 재상정한다. 결합 측정 전에는 축 수준의 규칙으로 승격하지 않는다.",
   "refined_at": null,
   "refined_by": null,
   "promoted_to_axiom": null,
@@ -88,5 +88,43 @@
     "oos_effect_vs_is": -0.48,
     "note": "L-code oos_retention 실값 17건 median (IS65/OOS35 활성SR retention) — oos_months 실값 무 → None 유지 — promote.R essence_score 경유 재확정"
   },
-  "cluster_members_count": 17
+  "cluster_members_count": 17,
+  "adversarial_verdict": {
+    "a_exaggeration": "강등함. 초안의 'B3 5칸 실측 · 최고 t 2.630' 머리말은 블록 하나의 최대값이라 축 전체의 대표값으로 읽힌다. 블록 16건 전수(전진 8 / 열위 8)로 바꾸고 합격선 2.95·0.64 미달을 수치와 함께 명시했다. 또한 2.630 은 구 규약 판이므로 신 규약 블록 효과(ΔCalmar −0.092 · ΔOOS −0.72 · ΔPT −1.15)와 Calmar ≥0.64 0칸을 같이 적어 낙관 해석을 막았다.",
+    "b_evidence": "supporting 17건 중 16건만 수치를 가진다(L-RF-20260905_100534 = corpus 미발견 — 명기했다). 16건 전부 metric_type=backtested 이나 측정 시점이 2026-08-30~09-04 로 close_t1 규약 교체(P0-05/06, 2026-09-25) 이전 판이다. 04_Research/01_reports/organic_reinforce_20260925/lever_audit_final.md §② 가 구 규약 수준값의 판정 인용을 금지하므로 수준 판정은 신 규약 집계(A 0 · B 220 · C 884 · F 83 · 커버리지 1,187/1,222)로 교체하고 구 규약 수치는 순위·방향 서술에만 남겼다(규약 간 Δ 상관 PT 0.97~0.99 가 그 사용을 허용한다). proxy 를 backtested 로 올려 적은 부분은 없다.",
+    "c_ax000": "'구조적 한계'·'dead-end' 서술 없음. 16블록이 3~4회를 넘지만 판정은 '이 봉투·이 축 단독 교체 경로에서 상한이 관측됐다'로 한정했고, 아직 측정되지 않은 결합 형태(위험 축 동일-칸)를 명시해 미해결로 열어 뒀다. retry_condition·frontier 가 재도전 조건을 담는다.",
+    "d_firewall": "위반 없음. 실패를 종목수·유동성·long-only·Σw=1·유니버스 멤버십·15bps·PIT 어디에도 귀속하지 않았다. B3 는 고정 축이 아니라 격자의 교체 가능한 축(멤버십 선별 규칙)이고 서술은 '이 봉투 안에서 이 경로가 상한'이라는 envelope-상대 사실이다. 제시한 레버는 전부 봉투-안이다(위험 오버레이 동일-칸 결합 · 국면 조건부 활성 · cap-tier 조건부 적용).",
+    "e_frontier": "frontier 3건 + live_trigger(data) + expiry 부여. 낙폭 대역이 축 교체에 둔감했다는 기전이 '다음에는 위험 축을 같은 칸에서 건드려라'를 직접 가리키게 썼다."
+  },
+  "expiry": "2026-12-31",
+  "frontier": [
+    "B3 축과 위험 축(B5 오버레이)을 순차 블록이 아니라 같은 칸에서 결합 — 낙폭 대역 폭이 축 교체에 9.0~14.5%p 로 둔감했으므로 위험 축을 같은 칸에 넣지 않는 한 Calmar 바닥에 닿을 경로가 없다",
+    "유니버스 멤버십을 교체 대상이 아니라 조건화 변수로 쓰는 형태 — 국면 조건부 soft membership 으로 B3 를 상시 교체가 아닌 국면별 가중으로 소비",
+    "cap-tier 조건부 적용 — DIST-AR-045/AR-032 계열이 비-mega 한정 적용에서 paired 1.243→2.378 로 AND-게이트를 통과한 선례를 B3 축에 이식"
+  ],
+  "live_trigger": {
+    "type": "data",
+    "condition": "reinforce_ledger_l1 에 B3 축과 위험 축을 같은 칸에서 결합한 신 규약(close_t1) 칸이 1건 이상 기록되고 그 칸의 Calmar·oos_retention 이 함께 산출될 때",
+    "monitored_source": "06_Registry/reinforce_ledger_l1.json::attempts[].cell_code · 04_Research/01_reports/organic_reinforce_20260925/lever_audit_final.md §②"
+  },
+  "revival_spec": [
+    {
+      "signal_id": "wall_clock_date",
+      "condition": "x >= as.Date('2026-12-31')",
+      "from_trigger": "expiry",
+      "status": "active"
+    },
+    {
+      "signal_id": "registry_present",
+      "condition": "x == TRUE",
+      "from_trigger": "data",
+      "status": "pending"
+    }
+  ],
+  "constraint_firewall": {
+    "mode": "backstop_passed",
+    "checked_at": "2026-10-03"
+  },
+  "drafted_at": "2026-10-03T11:35:36+0900",
+  "drafted_by": "auto_distill"
 }

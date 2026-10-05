@@ -3,6 +3,49 @@
 > CLAUDE.md는 "현재 유효한 헌법"만 담는다. 버전 연혁·릴리스 상세는 본 파일이 SOT.
 > 최신 릴리스 상세: `qvest_v8_4_asymmetry_ml_sot.md` (**v8.4 — 주력 SOT**) · `qvest_v8_3_alpha_discovery_sot.md` (v8.3) · `qvest_v8_1_sot.md` (v8.1) · `qvest_v8_0_upgrade_plan.md` (v8.0)
 
+## (v10.4 유지 · 버전 미변경) 09-26 중단분 배포 · B4 5축 · 유기체 O0a · 청정 레인 · 노출 표식 · 러너 재개 (2026-10-04)
+
+**도훈**: `ORGANIC-EVIDENCE-SCOPE`([위임] 불인정 + 주제 결속) · `B4SIX-INHERIT-ORDER`(바닥 > carry) · `B4SIX-LEANLOOP-DOC` ·
+`CLEAN-LANE-REINFORCE-BEFORE-FA`(평소 강화 + N 계상) · `ENTRY-7308-DISPOSITION`(park) · `EXPO-INHERITED-FLAGS`(포함). 09-26 위임 결정은 그날 묶음 한정.
+
+배포 창(09-26 11:16 개시 → 10-04 08:16 종료 · 러너 정지 8일) 안에서 순차 배포(07:46~08:13 · 단계별 사후 점검 통과 · 키트 = `/c/tmp/qvest_deploy_1003`·세션 스크래치):
+- **AXIS(B4-SIX)**: 신규 `reinforcement/rf_spec_axes.R`(축 등록부 6축 — 러너·promote·gates·block_design 파생) · B4 = 전결합 1 + 축별 LOO 6(B3 diag 시 6칸) ·
+  대조 칸(B7_40·41) 승자 제외 · 승계 순서 바닥 > carry(config `spec_axes.inherit_order` 로 되돌림) · lean-loop.md '6블록×5 + B4 7칸 = 37'.
+- **HUMAN(사람 규칙)**: P1-08 FIFO·entry priority/experiment · 레인 순서 · 세대당 신규 논문 · overlay_propose G1 · `rf_budget_auto` 가산 차단(B1 몫 = 최종 칸) ·
+  `b5_budget`(compose_only 연속 K=2 → 상주+2칸) · B3 구조 축소(진단 1칸 keep B3_12 — 구조 사실 근거만).
+- **CORE(유기체 O0a)**: 시행 로그 `06_Registry/rf_trial_log.jsonl` + 생산자 배선 · 결정 id 수리·기계 기록 · organic writer/guard/adapter/cmd · config `organic.*`(enabled=false · live 0).
+- **AGRG**: `arm_gen_read_guard` 측정 구역에 `rf_decisions.jsonl`·`rf_trial_log.jsonl`·`06_registry/organic/` 추가(운영 결정 기록에 전기간 성과 수치가 이미 있었음 · 335/0).
+- **CLEAN(청정 레인 + F_A floor)**: 성과 비소비 청정 기저 선정(`rf_clean_base.R` · 입력 열 전수 확인) · 청정 provenance · F_A v1(blocked · 후보 0) ·
+  ★F_A v2 전 D1(청정 분기 앞 실행 전사 미대조)·D2(구판 분기 full 자격) 수리 필수(미스테이징).
+- **EXPO(AutoMem 노출 표식 v2)**: 관문 패치(gates bc6cbf6ad140 · 34/0) + 원장 표식 1,387(+ 승계 · PROMO1 carry 누락 · 청정 재구현 전파 제외).
+- **7308 park**(39/35 · active 0) · **PREREG 수리**(draft3 드라이런 DESIGN 0 · 남은 차단 = 측정 전 항목) · **LEVER**(B7 교체 후보 제외+전달량 `rf_engine_diag.json` · cap_core 는 사전등록 arm 스펙에서만) ·
+  **1505.00328 청정 재구현 요청** 배치.
+- 사고: Windows 임시 파일 자동 정리가 %TEMP% 세션 스크래치의 키트 일부를 삭제(10-03 11:10) → 키트를 `/c/tmp/` 로 이관(기억 카드).
+- **F_A v2 D1·D2 수리(10-04 오전 · 배포 창 불요 — `rf_clean_base.R` 소비자 = F_A 생성기·검사뿐)**: D1 = 청정 분기가 같은 작업 디렉터리의 앞 회차 구현 전사·프롬프트(재구현 절·감사 원천 사본 전부)까지 판독 ·
+  D2 = 가드 증명 없는 실행의 Read/Grep 이 청정 가드 허용 목록(단일 출처 `policies/arm_gen_read_guard.json::clean_lane.read_allow`) ∪ 자기 작업 디렉터리 밖이거나 실행 도구 사용 = 판독 불가(NA) ·
+  설정 `clean_base_rule.config.json::exposure.transcript.unattested_scope`(부재 = stop) · 검사 `test_rf_clean_base.R` 104 → 117/0(X12 기대값 정정: 다른 엔진 열람 = 비노출 → 판독 불가 · 돌연변이 C31 red).
+  **아키텍처 리뷰(10-04) 30일 규칙**: 이 수리 뒤 7일간 수리·배포 창 0(라운드 차단 결함만 예외) · 공급 순서 Calmar 우선(`SUPPLY-TARGET-WALL`)은 F_A v2 생성 시점(청정 후보 발생 시)에 적용 · B5 LLM 레인 유지(`B5-LLM-LANE-KEEP`).
+
+---
+
+## (v10.4 유지 · 버전 미변경) 09-25 미배포분 배포 · B5 경계 증발 수리 · A 레버 기반 (2026-09-26)
+
+**도훈**: "지난 세션 미처리 Task 병렬 처리" · "일단 배포에 집중" · `RUNNER-B5-BOUNDARY-FIX` · `B4-SIX-AXIS-AND-CARRY-AXES` · `P1-06-CTRL-APPROVE` ·
+`FA-CLEAN-BASE-PATH` · `AUTOMEM-EXPOSED-CELLS-DISPOSITION` · `PR-L1-POWER-MEASURE-FIRST` · `PR-L1-L2-ORDER` · `PR-L2-B7-EXCL-UNIT` ·
+`PREREG-DRAFT2-Q-INTERPRETATIONS` · 위임("알파 창출력 강화를 명제로 자체 판단" + "결정 수치 보정도 위임" — 레지스터 `[위임]` 9건 · Grade A 기준 불변).
+
+- **배포(Q 배포 창 11:16~ · 사후 점검 전부 불일치 0)**: R3R_rb 12:46(safety_guard 줄 이음 D2 · overlay_probe allowlist 레지스트리 eb940a5b) ·
+  ALLOWP 13:29(B5 설계 프롬프트 허용 목록 127 · 1차는 run_all_hooks.sh 잠금 WinError 5 → 자동 원복) · RUNNER-B5-BOUNDARY-FIX 13:39(기전 레인이 B5 설계
+  레인 산출을 덮지 못하게 · 경계 처리 누락 블록 tick 시작 백필 · 격자 재대조) + 7308 설계 기록 r2 복원 13:40 + stage_c 소비 보류 13:43 · CTRL 13:45(P1-06
+  통제 칸 B1_0 carry 재현 · B1_N1..N4 null 희석 · 러너·관문 merge3) · INTEG 13:50(floor v2 소비 필드 · `contracts/b_ewcw_paired.R` · `selection_accounting.R::sa_subwindow`) · DRAFT2 13:50.
+- **사고·발견**: 09-25 22:07 B5 설계 레인 8칸 설계를 같은 tick 의 B6 기전 백필 레인이 22:16 다른 5칸으로 덮어써 B5 블록의 G2·L-code·텔레그램이
+  증발(경계 판정이 tick 시작 격자 8칸 기준) — 위 수리. B4 격자·승격 carry 에 B6·B7 축 누락(러너 963~999행 · promo1 41칸 중 36칸 buffer_2x 없이 측정) — 수리 스테이징 중.
+  아침 재부팅 체인의 suite_totals 배터리가 운영 run_all_hooks.sh 를 2시간+ 점유 → 배포 차단(도훈 승인으로 중단 · 배포 뒤 재수집).
+- **미배포(종료로 중단 · 인수인계 = 플랜 `qvest-1-drifting-eclipse.md` "09-26 종료 시점")**: B4-SIX · 청정 레인 강화 · 노출 표식 · 유기체 CORE·HUMAN · 사전등록 수리 · 레버 구현.
+  러너는 배포 창 상태(enabled=false)로 의도 정지 — 남은 러너 변경 배포 뒤 복원.
+
+---
+
 ## (v10.4 유지 · 버전 미변경) 측정 기준 전환 close_t1 · C11 2단계 · 무인 레인 기억 봉쇄 (2026-09-25)
 
 **도훈**: `P0-05-STAGE1-RUN` · `P0-05-STAGE2-EPOCH` · `D-A-N-TIMING` · `A-GATE-VINTAGE-STAR` · `PIT-C11-FDB-FROM` · `PIT-C11-M4-S7-APPLY` ·
@@ -40,6 +83,14 @@
   1차 키트 `deploy_b07.py` 퇴역(rollback 이 R1 이전 판으로 덮던 결함).
 - **무인 러너 재개**(21:35 · `reinforce_auto_config.json` enabled=true · RUNNER-RESTART-AFTER-P0-14 · RUNNER-RESTART-RELAX): 현행 격자 ·
   유기체 live 0 · l2_auto·director 정지 유지. 뒤따름: R3R · V6 · 프롬프트 허용 목록 · B5 라벨 · 카탈로그 차단.
+- **P2 기초**: `contracts/tilt_attribution.R`(21:38 · 공통 성분 분해 진단 — 등급 대체 아님) · floor v2 `rf_floor_v2.R`·`06_Registry/prereg/reference_floors_v2*.json`(21:39) ·
+  `reinforcement/rf_prereg.R`(23:35 · 사전등록 스키마·writer·판정 · 초안 PR-L2/PR-L1 draft1).
+- **배포 창 1차**(22:58 러너·B5 설계 레인 정지 → 23:34 tick 소진 → 23:35~38 배포 → 23:40 복원): V6(pit.md V6 절 as-of 조건부 IC ·
+  lockbox 절에 ORGANIC-DE 예외 1줄 · 전기간 조건부 IC 소비 호출부 차단) · B5LAB(B5 재료 교차 entry 결과 라벨 가림 95→0) ·
+  CATB(설계 레인 카탈로그·arm basis 성과 수치 차단 — 가린 사본 179).
+- **사고(Q 과실)**: RUNNER-RESTART-RELAX 를 올릴 때 'b5_design.enabled=false' 를 설정 확인 없이 전제로 적었다(실제 true). 21:58 B5 설계 레인이
+  교차 entry 결과 라벨 95건 노출 재료로 7308 B5_16~20 을 설계·측정 → 표식 `design_materials_cross_entry_labels`(possible · A 보류 · 재측정 없음 ·
+  ORGANIC-DE Q④ 기본값). 교훈: 에이전트 보고의 설정 상태는 설정 파일에서 재도출한 뒤에만 결정 전제로 쓴다.
 - **결정**: RUNNER-RESTART-AFTER-P0-14 · PR-L1-A4-DISPOSITION · D-E-B5-MATERIALS · D-E-V6-CONDITIONAL-IC · ORGANIC-DE((iii)+τ_D ·
   lockbox 폐지 조항의 유기체 입력 한정 예외) · ORGANIC-SCOPE · B3-STRUCTURAL-TRIM · ORGANIC-PRIORITY. 유기적 강화 설계 최종판 =
   `04_Research/01_reports/organic_reinforce_20260925/organic_design_final.md`(레버 감사·3설계 동봉).

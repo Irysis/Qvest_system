@@ -11,6 +11,10 @@
 #   ⑤ 처치 전달은 엔진과 같이 t 행 fwd 를 NA 로 넘겨 돈다. 설정이 없으면 ④ FAIL — 샌드박스 루트에도 설정을 두어라.
 # ★P0-09 보강(2026-09-25): ③c 호출자 스코프·엔진 원천 접근 스캔 — 마스크는 H 에만 걸린다. arm 이 dynGet('.M')·parent.frame()
 #   으로 엔진 프레임에 가면 마스크 전 .M·미래 BM_DT 에 닿고, ④ 값 섭동(H 만 흔든다)은 그 통로를 못 본다(실증 = test_rf_overlay_pit_mask.R §B7).
+# ★R3R(2026-09-25 · P0-09 정적 probe 경화): ③c 정규식 열거는 eval.parent·rlang::caller_env·do.call("sys.frame")·별칭·백틱·계산된 FUN·
+#   get/assign(envir =)·문자열 안 '#' 을 놓쳤다. ③d 허용 목록을 더했다 — 정본 arm 이 쓰는 이름 전수(getParseData·AST 추출)가 허용 집합이고
+#   밖은 전부 거부(06_Registry/overlay_probe_allowlist.json · 동결 · 능력 계열은 sha 고정 개별 허가로만). 주석 걷기는 파서(COMMENT 토큰)로.
+#   ③c 는 알려진 통로 열거(보조)로 남는다. 1차 방어는 여전히 엔진 런타임 마스크. 검사 = test_overlay_probe_allowlist.R
 #==============================================================================
 suppressPackageStartupMessages(library(data.table))
 `%||%` <- function(a, b) if (is.null(a) || length(a) == 0L) b else a
@@ -19,9 +23,32 @@ suppressPackageStartupMessages(library(data.table))
 
 # 주석을 걷어낸 소스 — 근거를 적은 주석이 스캔에 걸리면 안 되고,
 # 반대로 주석 안에 숨긴 코드가 통과해서도 안 된다.
+# ★R3R(2026-09-25 · P0-09 정적 probe 경화): 주석 = 파서가 COMMENT 토큰으로 판정한 것만 걷는다. 구판 sub("#.*$", "", ln) 은
+#   문자열 안 '#' 뒤 같은 줄 전부를 지웠다 — `tag <- "#"; M <- dynGet(".M")` 이 ③·③b·③c 전부에서 사라졌다(실증 = test_overlay_probe_allowlist.R §C).
+#   주석은 줄 끝까지 가므로 줄이 그 토큰 텍스트로 끝나는지 대조해 잘라낸다. 파싱 불가·좌표 불일치 = 구판 걷기 + parse_failed 표식
+#   (③d 허용 목록이 같은 소스를 파서로 다시 읽어 unparseable 로 거부한다 — 걷기 실패가 통과로 새지 않는다).
+.op_strip_comments <- function(ln) {
+  ln <- sub("\r$", "", ln)
+  bad <- function() structure(sub("#.*$", "", ln), parse_failed = TRUE)
+  ex <- tryCatch(parse(text = ln, keep.source = TRUE), error = function(e) NULL)
+  if (is.null(ex)) return(bad())
+  pd <- utils::getParseData(ex, includeText = TRUE)
+  if (is.null(pd)) return(if (length(ex)) bad() else ln)
+  cm <- pd[pd$token == "COMMENT", c("line1", "text"), drop = FALSE]
+  for (i in seq_len(nrow(cm))) {
+    k <- cm$line1[i]; x <- ln[k]; tx <- cm$text[i]
+    if (!endsWith(x, tx)) { x <- sub("[[:space:]]+$", "", x); tx <- sub("[[:space:]]+$", "", tx) }
+    if (!endsWith(x, tx)) return(bad())
+    ln[k] <- substr(x, 1L, nchar(x) - nchar(tx))
+  }
+  ln
+}
 .op_src_nc <- function(path) {
-  ln <- readLines(path, warn = FALSE)
-  paste(sub("#.*$", "", ln), collapse = "\n")
+  ln <- readLines(path, warn = FALSE, encoding = "UTF-8")
+  s <- .op_strip_comments(ln)
+  out <- paste(s, collapse = "\n")
+  if (isTRUE(attr(s, "parse_failed"))) attr(out, "parse_failed") <- TRUE
+  out
 }
 
 #' 결정론적 합성 픽스처 — 240개월 · 25종목 · 위기 구간 주입
@@ -143,6 +170,450 @@ overlay_probe_scope_scan <- function(src) {
   out
 }
 
+#==============================================================================
+# ③d 허용 목록(allowlist) — R3R 2026-09-25 · P0-09 정적 probe 경화
+#
+# ★왜 목록 방식을 뒤집었나: ③c 는 '막을 통로'를 열거했다(frame_walk 정규식). eval.parent · rlang::caller_env ·
+#   do.call("sys.frame") · 별칭 f <- sys.frames · 계산된 FUN · get(…, envir =) — 통로는 열거보다 빨리 는다(R3 검증이 넷을 더 찾았다).
+#   ③d 는 거꾸로 '쓸 수 있는 것'만 적는다: 정본 arm 이 실제로 쓰는 이름 전수(파서로 추출)가 허용 집합이고, 그 밖은 전부 거부다.
+#   새 우회 형태는 목록에 없으므로 기본값이 거부다(fail-closed). 1차 방어는 여전히 엔진 런타임 마스크(rf_cell_engine.R H[t, fwd:=NA])다.
+# ★허용 집합 = 06_Registry/overlay_probe_allowlist.json(동결). 후보 arm 파일이 overlay_arms/ 에 들어온 뒤 probe 가 도므로
+#   디렉터리를 매번 다시 읽어 만들면 후보 자신이 허용 집합에 섞인다 — 그래서 빌드는 별도 행위(overlay_probe_allowlist_build)이고
+#   probe 는 읽기만 한다. 부재·손상·스키마 불일치 = FAIL(미측정은 통과가 아니다).
+# 판정 규칙(한 구현 — 빌더와 스캐너가 같은 추출기 .op_allow_extract 를 쓴다):
+#   R0 파싱 불가 = 거부
+#   R1 호출 머리(파서 토큰 SYMBOL_FUNCTION_CALL·SPECIAL·<<-·:=·치환함수 f<-) ∈ calls — 또는 이 파일이 묶은 이름이면서 참조 이름공간에 없는 것(지역 도우미)
+#      ★파서 토큰 집합과 AST 머리 집합이 다르면 추출 불일치로 거부(두 추출기가 갈리면 하나는 소스를 안 재는 것이다)
+#   R2 값 자리 기호: 참조 이름공간(레지스트리 ref_namespaces)에 있는 이름 ∈ values — 이 파일이 지역 변수로 묶은 이름이면
+#      shadow 목록이거나 능력 계열·고차 함수가 아닐 것 · 참조 이름공간에 없는 이름은 이 파일이 묶었거나 픽스처 열 이름
+#      (전역·엔진 객체 이름은 어느 쪽도 아니라 거부 — 어휘 스코프로 globalenv 에 닿는 통로)
+#   R3 pkg::name — pkg ∈ pkgs · name 은 자리대로 R1/R2(지역 묶기로 면제 없음) · pkg:::name · 기호 아닌 피연산자 = 거부
+#   R4 문자열이 능력 계열·고차 함수 이름이면 ∈ strings(이중 방어 — 변환 통로 자체는 R5 가 막는다)
+#   R5 함수 자리 인자(참조 정의의 formals FUN·f·what… 를 match.call 로 찾는다 · do.call 은 what):
+#      기호 ∈ fnargs 이면서 그 자신이 고차 함수가 아닐 것 · 함수 리터럴 · 이 파일이 함수 리터럴로만 묶은 이름 · pkg::name(fnargs) ·
+#      문자열 ∈ fnstrs(do.call 은 문자열 전면 거부 — 도훈 결정 R3R) · 그 밖(계산된 값·지역 문자열 변수·형식 인자) = 거부 ·
+#      `...` 가 섞였는데 함수 자리를 이름으로 안 줬으면 거부
+#   R6 계산된 호출 머리 f(...)(...) 는 f ∈ headcalls 일 때만(정본: stats::ecdf(x)(v)) · x[[i]](…) 류 = 거부
+#   R7 능력 계열(.OP_CAPABILITY) 이름은 공통 목록에 들어갈 수 없다 — 레지스트리 공통 목록에 있으면 레지스트리 무효(fail-closed).
+#      그 이름이 필요한 정본 arm(외부 패널 로더 pg2_risk_overlay)은 파일 sha256 에 묶인 개별 허가(grants)로만 통과한다 —
+#      한 바이트라도 바뀌면 허가가 풀리고 공통 목록으로만 잰다.
+#==============================================================================
+.OP_ALLOW_SCHEMA <- "overlay_probe_allowlist_v1"
+# 능력 계열 — 프레임·호출 스택 · 환경 · 동적 코드 · 이름공간/패키지 · 입출력/시스템 · 훅.
+#   ★탐지 기제가 아니다(탐지는 허용 목록 — 목록 밖은 전부 거부). 쓰임은 R7 두 곳뿐: 빌더의 공통/개별 분류 · 레지스트리 무결성.
+#   빠진 이름이 있어도 그 이름은 정본 공통 arm 이 쓰지 않는 한 허용 집합에 없으므로 거부된다.
+.OP_CAPABILITY <- c(
+  "sys.call", "sys.calls", "sys.frame", "sys.frames", "sys.function", "sys.nframe", "sys.on.exit", "sys.parent",
+  "sys.parents", "sys.status", "parent.frame", "dynGet", "eval.parent",
+  "environment", "environment<-", "parent.env", "parent.env<-", "topenv", "globalenv", "emptyenv", "baseenv",
+  "as.environment", "pos.to.env", "new.env", "list2env", "as.list.environment", "local", "attach", "detach", "get",
+  "get0", "mget", "exists", "assign", "rm", "remove", "delayedAssign", "makeActiveBinding", "lockBinding",
+  "unlockBinding", "lockEnvironment", "eapply", "ls", "objects", "is.environment", ".GlobalEnv", ".BaseNamespaceEnv",
+  "eval", "evalq", "parse", "str2lang", "str2expression", "body", "body<-", "formals", "formals<-", "as.function",
+  "as.call", "call", "match.fun", "forceAndCall", "quote", "bquote", "substitute", "alist", "as.name", "as.symbol",
+  "getFunction", ".Internal", ".Primitive", ".Call", ".External", ".External2", ".C", ".Fortran", "trace", "untrace",
+  "browser", "debug", "debugonce", "Recall",
+  "library", "require", "requireNamespace", "loadNamespace", "attachNamespace", "asNamespace", "getNamespace",
+  "getExportedValue", "getFromNamespace", "assignInNamespace", "assignInMyNamespace", "fixInNamespace", "getAnywhere",
+  "sys.source", "source", "readRDS", "saveRDS", "load", "save", "file", "url", "gzfile", "readLines", "writeLines",
+  "scan", "read.csv", "read.table", "write.csv", "write.table", "fread", "fwrite", "read_parquet", "write_parquet",
+  "open_dataset", "read_json", "fromJSON", "toJSON", "write_json", "file.exists", "file.info", "file.rename",
+  "file.remove", "file.copy", "unlink", "dir.create", "list.files", "dir.exists", "download.file", "system", "system2",
+  "shell", "Sys.setenv", "Sys.getenv", "Sys.getpid", "Sys.setlocale", "setwd", "capture.output", "sink", "cat",
+  "options", "setHook", "addTaskCallback", "reg.finalizer",
+  "caller_env", "current_env", "env", "env_parent", "env_get", "env_get_list", "eval_bare", "eval_tidy", "inject",
+  "exec", "sym", "syms", "parse_expr", "parse_exprs", "new_function", "as_function", "caller_fn", "caller_call",
+  "frame_call", "frame_fn", "trace_back", "load_month_factors",
+  # 참조 변경 — 엔진 소유 객체(H·ctx$hold)를 제자리에서 바꾸거나 둘러싼 환경(전역)에 쓴다
+  "<<-", ":=", "set", "setattr", "setnames", "setorder", "setorderv", "setkey", "setkeyv", "setindex", "setindexv",
+  "setDT", "setDF", "setcolorder", "setattr", "alloc.col", "truelength")
+# R 문법 자체(파서가 만드는 머리) — 연산자·제어 구조. 백틱으로 불러도 문법과 같은 일만 한다. <<- 와 := 는 여기 없다(허용 목록 대상).
+.OP_SYNTAX <- c("{", "(", "if", "for", "while", "repeat", "break", "next", "function", "return", "<-", "=", "[", "[[",
+                "$", "@", "+", "-", "*", "/", "^", "%%", "%/%", "<", ">", "<=", ">=", "==", "!=", "!", "&", "&&",
+                "|", "||", ":", "~", "?", "[<-", "[[<-", "$<-", "@<-")
+# 함수 자리 formals — match.fun 을 거쳐 문자열·기호를 함수로 바꾸는 인자 이름(apply 계열·Reduce·Map·outer·sweep·ave·do.call).
+.OP_FN_FORMALS <- c("FUN", "f", "what", "fn", "FN", "fun", ".f", ".fn")
+# 함수 자리 문자열로 허용하는 문법 연산자 — 문법으로 이미 부를 수 있는 산술·비교·논리·추출·치환 연산자뿐(제어 구조·대입·function·? 제외).
+#   능력을 더하지 않는다(match.fun("+") = 문법 +). do.call 의 문자열은 이것과 무관하게 전면 거부.
+.OP_FN_SYNTAX_STR <- setdiff(.OP_SYNTAX, c("{", "(", "if", "for", "while", "repeat", "break", "next", "function", "return", "<-", "=", "?"))
+
+.OP_REF_CACHE <- new.env(parent = emptyenv())
+#' 참조 이름공간 색인 — 이름 전부(all) · 함수 이름(fun) · 고차 함수 정의(hof: 이름 → formals 에 FN 자리가 있는 closure)
+.op_ref_index <- function(nss) {
+  key <- paste(nss, collapse = "|")
+  if (!is.null(.OP_REF_CACHE[[key]])) return(.OP_REF_CACHE[[key]])
+  all <- character(0); fun <- character(0); defs <- list(); by_ns <- list(); missing_ns <- character(0)
+  for (ns in nss) {
+    if (identical(ns, "base")) {
+      en <- baseenv(); nm <- ls(en, all.names = TRUE)
+      getv <- function(n) get0(n, envir = en, inherits = FALSE)
+    } else {
+      if (!requireNamespace(ns, quietly = TRUE)) { missing_ns <- c(missing_ns, ns); next }
+      en <- asNamespace(ns)
+      lz <- tryCatch(ls(getNamespaceInfo(ns, "lazydata"), all.names = TRUE), error = function(e) character(0))
+      nm <- unique(c(getNamespaceExports(ns), lz))
+      getv <- function(n) if (n %in% lz) NULL else
+        tryCatch(getExportedValue(ns, n), error = function(e) get0(n, envir = en, inherits = FALSE))
+    }
+    all <- c(all, nm); by_ns[[ns]] <- list()
+    for (n in nm) {
+      v <- getv(n)
+      if (is.function(v)) {
+        fun <- c(fun, n)
+        if (!is.primitive(v) && (any(names(formals(v)) %in% .OP_FN_FORMALS) || identical(n, "do.call"))) {
+          by_ns[[ns]][[n]] <- v
+          if (is.null(defs[[n]])) defs[[n]] <- v
+        }
+      }
+    }
+  }
+  out <- list(all = unique(all), fun = unique(fun), hof = defs, hof_by_ns = by_ns, missing = missing_ns, nss = nss)
+  assign(key, out, envir = .OP_REF_CACHE)
+  out
+}
+
+#' 추출기(빌더·스캐너 공용 — 한 구현) — 파일 하나의 이름 쓰임을 자리(role)별로 뽑는다.
+#'   role: head(호출 머리) · head_computed(계산된 머리의 안쪽 함수) · value(값 자리 기호) · string(문자열) ·
+#'         fn_sym/fn_str/fn_other(고차 함수의 함수 자리 인자) · hof_dots/hof_unmatched · internal(:::) · ns_bad
+#' @return list(ok, err, occ = data.table(role, name, ns, hof, snip), bound, fnlit_only, tok_calls)
+.op_allow_extract <- function(path_or_src, ref) {
+  src <- if (length(path_or_src) == 1L && !grepl("\n", path_or_src, fixed = TRUE) && file.exists(path_or_src))
+    paste(sub("\r$", "", readLines(path_or_src, warn = FALSE, encoding = "UTF-8")), collapse = "\n") else
+    paste(as.character(path_or_src), collapse = "\n")
+  ex <- tryCatch(parse(text = src, keep.source = TRUE), error = function(e) e)
+  if (inherits(ex, "error")) return(list(ok = FALSE, err = conditionMessage(ex)))
+  # ── 파서 토큰(getParseData) — 호출 머리 집합의 1차 원천. SYMBOL_FUNCTION_CALL($·@ 오른쪽 제외) · SPECIAL(%op%) · <<- · :=
+  pd <- utils::getParseData(ex, includeText = TRUE)
+  tok_calls <- character(0)
+  if (!is.null(pd) && nrow(pd)) {
+    tk <- pd[pd$terminal & pd$token != "COMMENT", c("line1", "col1", "token", "text")]
+    tk <- tk[order(tk$line1, tk$col1), , drop = FALSE]
+    prev <- c("", tk$token[-nrow(tk)])
+    fc <- tk$token == "SYMBOL_FUNCTION_CALL" & !prev %in% c("'$'", "'@'")
+    asg <- tk$text[tk$token %in% c("LEFT_ASSIGN", "RIGHT_ASSIGN")]
+    tok_calls <- unique(c(gsub("^`|`$", "", tk$text[fc]), tk$text[tk$token == "SPECIAL"],
+                          ifelse(asg == "->>", "<<-", asg)[asg %in% c("<<-", "->>", ":=")]))
+    tok_calls <- setdiff(tok_calls, .OP_SYNTAX)
+  }
+  # ── AST 걷기 — 자리를 안다(토큰은 자리를 모른다: 함수 자리 인자·계산된 머리·대입 대상)
+  st <- new.env(parent = emptyenv())
+  st$rows <- list(); st$b <- character(0); st$lit <- character(0); st$nonlit <- character(0)
+  dp <- function(v) substr(paste(deparse(v, width.cutoff = 60L)[1], collapse = ""), 1L, 70L)
+  add <- function(role, name, ns = NA_character_, hof = NA_character_, snip = name)
+    st$rows[[length(st$rows) + 1L]] <- list(role = role, name = name, ns = ns, hof = hof, snip = snip)
+  bind <- function(n, lit = NA) {
+    st$b <- c(st$b, n)
+    if (isTRUE(lit)) st$lit <- c(st$lit, n) else if (identical(lit, FALSE)) st$nonlit <- c(st$nonlit, n)
+  }
+  # 빈 인자(x[, 1] 의 빈 자리)는 변수에 묶으면 평가 순간 missing 오류다 — 늘 색인식으로 quote(expr = ) 와 대조한다
+  is_fn_lit <- function(v) is.call(v) && is.symbol(v[[1]]) && identical(as.character(v[[1]]), "function")
+  unparen <- function(v) { while (is.call(v) && identical(v[[1]], as.name("(")) && length(v) == 2L) v <- v[[2]]; v }
+  ns_parts <- function(v) {
+    if (is.call(v) && is.symbol(v[[1]]) && as.character(v[[1]]) %in% c("::", ":::") && length(v) == 3L)
+      return(list(op = as.character(v[[1]]), pkg = v[[2]], nm = v[[3]]))
+    NULL
+  }
+  walk_args <- function(a) {
+    nm <- names(a); if (is.null(nm)) nm <- rep("", length(a))
+    for (i in seq_along(a)) {
+      if (nzchar(nm[i])) bind(nm[i])                        # 이름 붙은 인자 = 열·원소 이름(data.table(Ticker = …) 등)
+      if (!identical(a[[i]], quote(expr = ))) walk(a[[i]])
+    }
+  }
+  target <- function(x) {                                   # 대입 대상 — 묶는 이름 · 치환 함수 f<- 머리
+    x <- unparen(x)
+    if (is.symbol(x)) { bind(as.character(x), lit = FALSE); return(invisible()) }
+    if (is.character(x)) { for (z in x) bind(z, lit = FALSE); return(invisible()) }
+    if (!is.call(x)) { walk(x); return(invisible()) }
+    h <- x[[1]]
+    if (is.symbol(h)) {
+      hn <- as.character(h)
+      if (hn %in% c("$", "@")) { target(x[[2]]); return(invisible()) }
+      if (!hn %in% .OP_SYNTAX) { add("head", hn); add("head", paste0(hn, "<-")) }   # names(x) <- v = `names<-`(x, v) (중첩이면 getter 도 불린다)
+    } else {
+      np <- ns_parts(h)
+      if (!is.null(np) && identical(np$op, "::") && is.symbol(np$pkg) && is.symbol(np$nm)) {
+        add("head", as.character(np$nm), ns = as.character(np$pkg)); add("head", paste0(as.character(np$nm), "<-"), ns = as.character(np$pkg))
+      } else add("head_computed", "?", snip = dp(x))
+    }
+    if (length(x) >= 2L) target(x[[2]])
+    if (length(x) >= 3L) walk_args(as.list(x)[-(1:2)])
+    invisible()
+  }
+  fn_arg <- function(v, hof) {                              # R5 — 함수 자리 인자
+    v <- unparen(v)
+    if (is.symbol(v)) { add("fn_sym", as.character(v), hof = hof); return(invisible()) }
+    if (is.character(v) && length(v) == 1L) { add("fn_str", v, hof = hof); return(invisible()) }
+    if (is_fn_lit(v)) { walk(v); return(invisible()) }
+    np <- ns_parts(v)
+    if (!is.null(np)) {
+      if (identical(np$op, "::") && is.symbol(np$pkg) && is.symbol(np$nm))
+        add("fn_sym", as.character(np$nm), ns = as.character(np$pkg), hof = hof)
+      else add(if (identical(np$op, ":::")) "internal" else "ns_bad", dp(v), snip = dp(v))
+      return(invisible())
+    }
+    add("fn_other", dp(v), hof = hof, snip = dp(v)); walk(v)
+  }
+  hof_check <- function(e, hn, ns) {                        # R5 — 참조 정의에 FN 자리가 있으면 match.call 로 찾는다
+    def <- if (!is.na(ns)) ref$hof_by_ns[[ns]][[hn]] else ref$hof[[hn]]
+    if (is.null(def)) return(FALSE)
+    a <- as.list(e)[-1]; an <- names(a); if (is.null(an)) an <- rep("", length(a))
+    fnf <- intersect(names(formals(def)), .OP_FN_FORMALS)
+    dots <- vapply(seq_along(a), function(i) identical(a[[i]], as.name("...")), logical(1))
+    if (any(dots) && !any(an %in% fnf)) { add("hof_dots", hn, hof = hn, snip = dp(e)); walk_args(a); return(TRUE) }
+    m <- tryCatch(match.call(def, as.call(c(list(as.name(hn)), a[!dots])), expand.dots = FALSE), error = function(z) NULL)
+    if (is.null(m)) { add("hof_unmatched", hn, hof = hn, snip = dp(e)); walk_args(a); return(TRUE) }
+    ma <- as.list(m)[-1]
+    for (k in names(ma)) {
+      if (k %in% fnf) { fn_arg(ma[[k]], hn); next }
+      if (identical(k, "...")) { walk_args(ma[[k]]); next }
+      if (!identical(ma[[k]], quote(expr = ))) walk(ma[[k]])
+    }
+    TRUE
+  }
+  walk <- function(e) {
+    if (is.symbol(e)) { n <- as.character(e); if (nzchar(n)) add("value", n); return(invisible()) }
+    if (is.character(e)) { for (z in e) add("string", z); return(invisible()) }
+    if (is.expression(e) || is.pairlist(e) || (is.list(e) && !is.call(e))) {
+      for (i in seq_along(e)) if (!identical(e[[i]], quote(expr = ))) walk(e[[i]])
+      return(invisible())
+    }
+    if (!is.call(e)) return(invisible())
+    h <- e[[1]]; a <- as.list(e)[-1]
+    np <- ns_parts(e)
+    if (!is.null(np)) {                                     # pkg::name 을 값으로
+      if (identical(np$op, "::") && is.symbol(np$pkg) && is.symbol(np$nm)) add("value", as.character(np$nm), ns = as.character(np$pkg))
+      else add(if (identical(np$op, ":::")) "internal" else "ns_bad", dp(e), snip = dp(e))
+      return(invisible())
+    }
+    if (is.symbol(h)) {
+      hn <- as.character(h)
+      if (identical(hn, "function")) {
+        fm <- e[[2]]
+        if (!is.null(fm)) { for (z in names(fm)) bind(z); for (i in seq_along(fm)) if (!identical(fm[[i]], quote(expr = ))) walk(fm[[i]]) }
+        if (length(e) >= 3L) walk(e[[3]])
+        return(invisible())
+      }
+      if (hn %in% c("<-", "=", "<<-")) {
+        if (identical(hn, "<<-")) add("head", "<<-")
+        rhs <- if (length(e) >= 3L) e[[3]] else NULL
+        tg <- unparen(e[[2]])
+        if (is.symbol(tg)) bind(as.character(tg), lit = is_fn_lit(unparen(rhs))) else target(tg)
+        if (!is.null(rhs)) walk(rhs)
+        return(invisible())
+      }
+      if (identical(hn, ":=")) {
+        add("head", ":=")
+        an <- names(a)
+        if (length(a) == 2L && (is.null(an) || !any(nzchar(an)))) {
+          l <- unparen(a[[1]])
+          if (is.symbol(l)) bind(as.character(l), lit = FALSE)
+          else if (is.character(l)) for (z in l) bind(z, lit = FALSE)
+          else if (is.call(l) && identical(l[[1]], as.name("c")) && length(l) > 1L &&
+                   all(vapply(as.list(l)[-1], is.character, logical(1)))) for (z in unlist(as.list(l)[-1])) bind(z, lit = FALSE)
+          else walk(l)
+          if (!identical(a[[2]], quote(expr = ))) walk(a[[2]])
+        } else walk_args(a)
+        return(invisible())
+      }
+      if (identical(hn, "for")) { bind(as.character(e[[2]]), lit = FALSE); walk(e[[3]]); walk(e[[4]]); return(invisible()) }
+      if (hn %in% c("$", "@")) { walk(e[[2]]); return(invisible()) }    # 오른쪽 = 필드 이름(변수 조회 아님)
+      if (hn %in% .OP_SYNTAX) { walk_args(a); return(invisible()) }
+      add("head", hn)
+      if (!hof_check(e, hn, NA_character_)) walk_args(a)
+      return(invisible())
+    }
+    hnp <- ns_parts(h)
+    if (!is.null(hnp)) {                                    # pkg::f(…)
+      if (!identical(hnp$op, "::") || !is.symbol(hnp$pkg) || !is.symbol(hnp$nm)) {
+        add(if (identical(hnp$op, ":::")) "internal" else "ns_bad", dp(h), snip = dp(h)); walk_args(a); return(invisible()) }
+      hn <- as.character(hnp$nm); ns <- as.character(hnp$pkg)
+      add("head", hn, ns = ns)
+      if (!hof_check(e, hn, ns)) walk_args(a)
+      return(invisible())
+    }
+    hu <- unparen(h)
+    if (is.symbol(hu)) { walk(as.call(c(list(hu), a))); return(invisible()) }   # (f)(…) = f(…)
+    if (is_fn_lit(hu)) { walk(hu); walk_args(a); return(invisible()) }          # 즉시 호출 함수 리터럴
+    inner <- "?"                                            # 계산된 머리 — f(…)(…) 의 f · 추출 연산자면 그 이름([[ · $ …)
+    if (is.call(hu)) {
+      if (is.symbol(hu[[1]])) inner <- as.character(hu[[1]]) else {
+        q <- ns_parts(hu[[1]]); if (!is.null(q) && is.symbol(q$nm)) inner <- as.character(q$nm) }
+    }
+    add("head_computed", inner, snip = dp(e))
+    walk(hu); walk_args(a)
+    invisible()
+  }
+  for (i in seq_along(ex)) walk(ex[[i]])
+  occ <- if (length(st$rows)) rbindlist(st$rows) else
+    data.table(role = character(), name = character(), ns = character(), hof = character(), snip = character())
+  list(ok = TRUE, occ = occ, bound = unique(st$b), fnlit_only = setdiff(unique(st$lit), c(unique(st$nonlit))),
+       tok_calls = tok_calls)
+}
+
+#' 레지스트리 적재·검증 — 찾는 순서 root → .OP_ROOT()(④ 설정과 같은 규약 · 샌드박스 루트는 정본을 읽기만 한다)
+#' @return list(ok, reason, path, fallback, ref_ns, common = list(calls, values, strings, fnargs, fnstrs, headcalls, pkgs), grants)
+overlay_probe_allowlist_params <- function(root = .OP_ROOT()) {
+  cands <- unique(file.path(c(root, .OP_ROOT()), "06_Registry/overlay_probe_allowlist.json"))
+  p <- cands[file.exists(cands)][1]
+  no <- function(r) list(ok = FALSE, reason = r, path = p)
+  if (is.na(p)) return(no(sprintf("허용 목록 부재 — %s", paste(cands, collapse = " · "))))
+  j <- tryCatch(jsonlite::fromJSON(p, simplifyVector = FALSE), error = function(e) NULL)
+  if (is.null(j)) return(no(sprintf("허용 목록 JSON 파손 — %s", p)))
+  if (!identical(as.character(j$schema %||% ""), .OP_ALLOW_SCHEMA)) return(no(sprintf("schema != %s", .OP_ALLOW_SCHEMA)))
+  vec <- function(x) as.character(unlist(x %||% list()))
+  keys <- c("calls", "values", "shadow", "strings", "fnargs", "fnstrs", "headcalls", "pkgs")
+  cm <- j$common
+  if (!is.list(cm) || !all(keys %in% names(cm))) return(no(sprintf("common 키 = {%s} 여야 한다", paste(keys, collapse = ","))))
+  common <- setNames(lapply(keys, function(k) vec(cm[[k]])), keys)
+  # widened = 사람이 검토해 넓힌 이름(빌더 산출 common 과 분리 — 재빌드 대조가 손편집과 드리프트를 가를 수 있게). 능력 계열은 여기서도 거부.
+  wd <- j$widened
+  if (is.list(wd)) for (k in intersect(keys, names(wd))) common[[k]] <- union(common[[k]], vec(wd[[k]]))
+  ref_ns <- vec(j$ref_namespaces)
+  if (!"base" %in% ref_ns) return(no("ref_namespaces 에 base 필수"))
+  cap <- intersect(unlist(common[setdiff(keys, "pkgs")]), .OP_CAPABILITY)
+  if (length(cap)) return(no(sprintf("공통 목록에 능력 계열 이름 %s — 레지스트리 무효(능력은 sha 고정 개별 허가로만)", paste(cap, collapse = ","))))
+  gr <- j$grants %||% list()
+  grants <- lapply(gr, function(g) c(list(sha256 = as.character(g$sha256 %||% "")), setNames(lapply(keys, function(k) vec(g[[k]])), keys)))
+  list(ok = TRUE, path = p, fallback = !identical(p, cands[1]), ref_ns = ref_ns, common = common, grants = grants,
+       schema_cols = vec(j$schema_columns))
+}
+
+.op_sha256 <- function(p) {             # 없으면 "" — 개별 허가가 안 맞아 공통 목록으로만 잰다(fail-closed)
+  if (requireNamespace("digest", quietly = TRUE)) return(digest::digest(file = p, algo = "sha256"))
+  if (requireNamespace("openssl", quietly = TRUE)) { con <- file(p, "rb"); on.exit(close(con)); return(as.character(openssl::sha256(con))) }
+  ""
+}
+
+#' R1~R6 판정 — 추출 결과 × 허용 집합. 0행 = 통과
+.op_allow_decide <- function(x, al, ref, schema) {
+  if (!isTRUE(x$ok)) return(data.table(rule = "unparseable", snippet = substr(as.character(x$err %||% ""), 1L, 70L)))
+  o <- x$occ; B <- x$bound; A <- al
+  inref <- function(n) n %in% ref$all
+  out <- list(); hit <- function(rule, s) out[[length(out) + 1L]] <<- data.table(rule = rule, snippet = s)
+  # 추출 일치 — 토큰이 본 호출 머리를 AST 가 못 봤으면 걷기 결함(검사 안 된 호출)이다
+  miss <- setdiff(x$tok_calls, o[role == "head", name])
+  if (length(miss)) hit("extract_mismatch", paste(miss, collapse = ","))
+  for (i in seq_len(nrow(o))) {
+    r <- o$role[i]; n <- o$name[i]; ns <- o$ns[i]; q <- !is.na(ns)
+    if (q && !ns %in% A$pkgs) { hit("pkg_not_allowed", paste0(ns, "::", n)); next }
+    if (r == "head") {
+      if (n %in% A$calls) next
+      if (!q && n %in% B && !inref(n)) next                  # 지역 도우미(이 파일이 묶은 이름 · 참조 이름공간에 없음)
+      hit("call_not_allowed", if (q) paste0(ns, "::", n) else n)
+    } else if (r == "value") {
+      if (n %in% A$values || n %in% c("...", sprintf("..%d", 1:9))) next
+      # 지역 변수 이름이 참조 이름과 겹친다(q·t·cut·col·nobs…) — 이 파일이 그 이름을 묶었을 때만. 정본 shadow 목록이 아니면
+      #   능력 계열·고차 함수 이름은 안 된다(if (FALSE) sys.frame <- 1; f <- sys.frame 처럼 '묶인 척' 해 참조 이름공간 객체를 끌어오는 별칭 차단)
+      if (!q && inref(n) && n %in% B && (n %in% A$shadow || (!n %in% .OP_CAPABILITY && is.null(ref$hof[[n]])))) next
+      if (!q && !inref(n) && (n %in% B || n %in% schema)) next
+      hit(if (inref(n)) "value_not_allowed" else "free_name", if (q) paste0(ns, "::", n) else n)
+    } else if (r == "string") {
+      # 문자열 → 함수 변환 통로는 R5(함수 자리)·do.call 이 막는다. 여기는 이중 방어 — 능력 계열·고차 함수 이름 문자열만 거부
+      #   ("sys.frame"·"sapply" 를 어딘가에 들고 있는 것 자체). "list"·"mean" 같은 흔한 낱말은 통과(정본 LOO 오탐 원인이었다).
+      if (n %in% ref$fun && !n %in% A$strings && (n %in% .OP_CAPABILITY || !is.null(ref$hof[[n]]))) hit("string_ref", sprintf('"%s"', n))
+    } else if (r == "fn_sym") {
+      if (!q && n %in% x$fnlit_only && !inref(n)) next       # 이 파일이 함수 리터럴로만 묶은 이름
+      if (n %in% A$fnargs && is.null(ref$hof[[n]])) next     # 허용된 함수이면서 그 자신은 고차 함수가 아님
+      hit("fn_not_allowed", sprintf("%s(… %s …)", o$hof[i], if (q) paste0(ns, "::", n) else n))
+    } else if (r == "fn_str") {
+      if (identical(o$hof[i], "do.call")) { hit("docall_string", sprintf('do.call("%s", …)', n)); next }
+      if (n %in% A$fnstrs && is.null(ref$hof[[n]])) next
+      if (n %in% .OP_FN_SYNTAX_STR) next                   # 연산자 문자열(sweep(…, "*") · vapply(l, "[[", …)) — 문법으로 이미 쓸 수 있는 것
+      hit("fn_not_allowed", sprintf('%s(… "%s" …)', o$hof[i], n))
+    } else if (r == "fn_other") {
+      hit("computed_fn", sprintf("%s(… %s …)", o$hof[i], o$snip[i]))
+    } else if (r == "head_computed") {
+      if (n %in% A$headcalls) next
+      hit("computed_head", o$snip[i])
+    } else if (r %in% c("hof_dots", "hof_unmatched", "internal", "ns_bad")) {
+      hit(r, o$snip[i])
+    }
+  }
+  if (!length(out)) return(data.table(rule = character(), snippet = character()))
+  unique(rbindlist(out))
+}
+
+#' ③d 공개 진입 — 파일(또는 소스 문자열) 하나를 허용 목록으로 판정한다
+#' @param kind  개별 허가(grants) 조회 키. NULL 이면 공통 목록만
+#' @return list(ok, reason, hits = data.table(rule, snippet), grant, al_path)
+overlay_probe_allowlist_scan <- function(path_or_src, kind = NULL, root = .OP_ROOT(), al = NULL) {
+  if (is.null(al)) al <- overlay_probe_allowlist_params(root)
+  if (!isTRUE(al$ok)) return(list(ok = FALSE, reason = al$reason, hits = data.table(rule = "registry", snippet = al$reason)))
+  ref <- .op_ref_index(al$ref_ns)
+  if (length(ref$missing)) return(list(ok = FALSE, reason = sprintf("참조 이름공간 미설치 %s — 판정 불가(fail-closed)", paste(ref$missing, collapse = ",")),
+                                       hits = data.table(rule = "ref_missing", snippet = paste(ref$missing, collapse = ","))))
+  A <- al$common; gnote <- "공통 목록"
+  g <- if (!is.null(kind)) al$grants[[kind]] else NULL
+  if (!is.null(g)) {
+    is_file <- length(path_or_src) == 1L && !grepl("\n", path_or_src, fixed = TRUE) && file.exists(path_or_src)
+    sh <- if (is_file) .op_sha256(path_or_src) else ""
+    if (nzchar(g$sha256) && identical(tolower(sh), tolower(g$sha256))) {
+      for (k in names(A)) A[[k]] <- union(A[[k]], g[[k]])
+      gnote <- sprintf("공통 + 개별 허가 %s(sha %s)", kind, substr(sh, 1L, 12L))
+    } else gnote <- sprintf("개별 허가 %s 무효 — sha 불일치(%s ≠ %s) · 공통 목록만", kind, substr(sh, 1L, 12L), substr(g$sha256, 1L, 12L))
+  }
+  fx <- overlay_probe_fixture()
+  schema <- unique(c(names(fx$M), names(fx$hold), "Date", al$schema_cols))
+  x <- .op_allow_extract(path_or_src, ref)
+  h <- .op_allow_decide(x, A, ref, schema)
+  list(ok = !nrow(h), hits = h, grant = gnote, al_path = al$path, fallback = isTRUE(al$fallback),
+       reason = if (nrow(h)) sprintf("허용 목록 밖 %d건 — %s", nrow(h),
+                                     paste(utils::head(sprintf("%s: %s", h$rule, h$snippet), 6L), collapse = " | ")) else NA_character_)
+}
+
+#' 빌더 — 정본 arm 디렉터리에서 허용 집합을 만든다(쓰기는 호출자 몫 · 이 함수는 목록만 돌려준다)
+#'   ★규칙(도훈 지시 R3R — "정본 arm 이 쓰는 함수 호출 전수가 허용 집합, 환경 조작은 거부"):
+#'   공통(common) = 정본 arm **전부**의 쓰임 합집합 − 능력 계열(.OP_CAPABILITY). 참조 이름공간에 있는 이름만(지역 도우미 이름은 넣지 않는다).
+#'     values = 이 파일이 묶지 않은 채 값으로 부른 참조 이름(진짜 참조) · shadow = 이 파일이 지역 변수로 묶은 참조 이름(q·t·cut 류 —
+#'     지역 변수 이름으로만 허용하고 묶지 않은 파일에서는 거부한다)
+#'   개별 허가(grants) = 능력 계열을 쓰거나 자유 이름(전역 조회)이 있는 정본 arm — 공통 밖에 필요한 것 전부 · 파일 sha256 고정
+#' @return list(json = <레지스트리 본문>, cls = 분류, per = arm 별 추출)
+overlay_probe_allowlist_build <- function(arm_dir, ref_ns, exclude = character(0), reasons = list()) {
+  ref <- .op_ref_index(ref_ns)
+  if (length(ref$missing)) stop("[overlay_probe] 참조 이름공간 미설치: ", paste(ref$missing, collapse = ","))
+  fs <- list.files(arm_dir, pattern = "^[A-Za-z].*[.]R$", full.names = TRUE)
+  fs <- fs[!sub("[.]R$", "", basename(fs)) %in% exclude]
+  fx <- overlay_probe_fixture(); schema <- unique(c(names(fx$M), names(fx$hold), "Date"))
+  keys <- c("calls", "values", "shadow", "strings", "fnargs", "fnstrs", "headcalls", "pkgs")
+  use_of <- function(x) {
+    o <- x$occ; B <- x$bound; inr <- function(n) n %in% ref$all
+    hv <- o[role == "value"]
+    list(calls     = unique(c(o[role == "head" & (!is.na(ns) | !(name %in% B) | inr(name)), name],
+                              x$tok_calls[!x$tok_calls %in% B | inr(x$tok_calls)])),
+         values    = unique(hv[(!is.na(ns) & inr(name)) | (is.na(ns) & inr(name) & !(name %in% B)), name]),
+         shadow    = unique(hv[is.na(ns) & inr(name) & name %in% B, name]),
+         strings   = unique(o[role == "string" & name %in% ref$fun, name]),
+         fnargs    = unique(o[role == "fn_sym" & (!is.na(ns) | !(name %in% x$fnlit_only) | inr(name)), name]),
+         fnstrs    = unique(o[role == "fn_str", name]),
+         headcalls = unique(o[role == "head_computed", name]),
+         pkgs      = unique(stats::na.omit(o$ns)),
+         free      = unique(hv[is.na(ns) & !inr(name) & !(name %in% B) & !(name %in% schema), name]))
+  }
+  per <- list(); cls <- character(0)
+  for (f in fs) {
+    k <- sub("[.]R$", "", basename(f))
+    x <- .op_allow_extract(f, ref)
+    if (!isTRUE(x$ok)) stop("[overlay_probe] 정본 arm 파싱 불가: ", basename(f), " — ", x$err)
+    u <- use_of(x)
+    capu <- intersect(unlist(u[setdiff(keys, "pkgs")]), .OP_CAPABILITY)
+    per[[k]] <- list(u = u, x = x, sha = .op_sha256(f), cap = capu)
+    cls[k] <- if (length(capu) || length(u$free)) "grant" else "common"
+  }
+  common <- setNames(lapply(keys, function(z) sort(setdiff(unique(unlist(lapply(per, function(p) p$u[[z]]))), .OP_CAPABILITY))), keys)
+  grants <- list()
+  for (k in names(cls)[cls == "grant"]) {
+    u <- per[[k]]$u; u$values <- unique(c(u$values, u$free))
+    g <- setNames(lapply(keys, function(z) sort(setdiff(u[[z]], common[[z]]))), keys)
+    grants[[k]] <- c(list(sha256 = per[[k]]$sha, capability = sort(per[[k]]$cap), free_names = sort(per[[k]]$u$free),
+                          reason = as.character(reasons[[k]] %||% "능력 계열 사용 정본 arm — 파일 sha 고정 개별 허가")), g)
+  }
+  js <- list(schema = .OP_ALLOW_SCHEMA, ref_namespaces = ref_ns, schema_columns = character(0),
+             source_arms = unname(lapply(names(per), function(k) list(kind = k, sha256 = per[[k]]$sha, class = unname(cls[k])))),
+             common = common, grants = grants)
+  list(json = js, cls = cls, per = per)
+}
+
 #' ④ 미래 섭동 설정 (P0-09 · 2026-09-24) — 정본 = 06_Registry/overlay_probe_future.json (근거는 그 파일에 적는다)
 #'   시점 수·구성·섭동 종류를 코드에 박지 않는다. 부재·손상·어휘 밖 값 = ok=FALSE → ④ FAIL(미측정은 통과가 아니다).
 #'   찾는 순서: root(호출자 루트) → .OP_ROOT()(QM_ROOT · 정본 저장소). 샌드박스 루트(등재 관문 검사 등)는 probe·admit
@@ -256,6 +727,15 @@ overlay_probe_arm <- function(kind, root = .OP_ROOT()) {
                                         paste(unique(scope$rule), collapse = ",")))) }
   add("scope", "PASS", "프레임 탐색·엔진 원천 이름 0")
 
+  # ── ③d 허용 목록 (R3R 2026-09-25 · P0-09 정적 probe 경화) — 목록 밖 호출·값·함수 자리 인자·환경 조작·do.call 문자열 = 거부.
+  #   ③c 는 알려진 통로 열거(보조)로 남는다. 레지스트리(06_Registry/overlay_probe_allowlist.json) 부재·손상·능력 계열 오염 = FAIL.
+  al_s <- overlay_probe_allowlist_scan(p, kind = kind, root = root)
+  if (!isTRUE(al_s$ok)) { add("allowlist", "FAIL", as.character(al_s$reason))
+                          return(bad(sprintf("허용 목록 밖 — 정본 arm 이 쓰지 않는 호출·환경 조작·계산된 함수 자리(fail-closed): %s",
+                                             as.character(al_s$reason)))) }
+  add("allowlist", "PASS", sprintf("허용 목록 안 — %s · 레지스트리 %s%s", al_s$grant, basename(al_s$al_path),
+                                   if (isTRUE(al_s$fallback)) " (QM_ROOT 폴백)" else ""))
+
   fx <- overlay_probe_fixture()
   M <- fx$M; hold <- fx$hold; N <- nrow(M)
   mk_ctx <- function(t, H) list(t = t, date = M$Date[t], v_now = H$rv60[t],
@@ -333,4 +813,4 @@ overlay_probe_arm <- function(kind, root = .OP_ROOT()) {
        mean_exposure = mean(ex, na.rm = TRUE), t_var = t_var, x_var = x_var)
 }
 
-cat("[overlay_probe.R] Loaded — overlay_probe_arm(kind) / overlay_probe_fixture()\n")
+cat("[overlay_probe.R] Loaded — overlay_probe_arm(kind) / overlay_probe_fixture() / overlay_probe_allowlist_scan(path, kind) (+ ③d 허용 목록 · R3R)\n")

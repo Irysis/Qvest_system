@@ -94,6 +94,22 @@ if (max(fx$M$dd, na.rm = TRUE) > 0.2 && length(unique(fx$hold$dbeta)) > 5L)
   ok(sprintf("⑧ 픽스처에 위기 구간 존재 (최대 낙폭 %.2f · dbeta 분산 있음)", max(fx$M$dd, na.rm = TRUE))) else
   ng("⑧ 픽스처가 밋밋하다 — 상수 노출이 arm 결함인지 픽스처 결함인지 구분 불가")
 
+# ── ⑩ ③d 허용 목록 (R3R 2026-09-25) — 정본 arm 이 쓰지 않는 호출 1개면 등재 전 거부 ─────────
+#   상세(정본 전수·우회 24종·레지스트리 fail-closed·돌연변이)는 test_overlay_probe_allowlist.R.
+al_row <- function(r) { z <- r$checks[check == "allowlist"]; if (nrow(z)) z$status[1] else NA_character_ }
+if (identical(al_row(r0), "PASS")) ok("⑩a 양성 대조 — dbeta_tilt 의 allowlist 행 PASS") else ng("⑩a allowlist 행", as.character(r0$reason))
+r <- inject("zz_probe_evalparent", c(
+  "overlay_expo_zz_probe_evalparent <- function(H, t, ctx) {",
+  "  z0 <- eval.parent(1)                 # 허용 목록 밖 호출 1개(③c 정규식 밖 통로)",
+  "  h <- H$rv60[is.finite(H$rv60)]",
+  "  if (length(h) < 24L) return(1)",
+  "  v <- H$rv60[t]",
+  "  if (!is.finite(v) || v <= 0) return(1)",
+  "  max(0, min(1, stats::median(h) / v))",
+  "}"))
+if (!isTRUE(r$ok) && identical(failed_at(r), "allowlist"))
+  ok("⑩b 허용 목록 밖 호출(eval.parent) 검출 — ③c 가 못 보는 통로") else ng("⑩b 미검출", as.character(r$reason))
+
 # ── ⑨ 잔여 픽스처 0 ────────────────────────────────────────────────────────
 left <- list.files(ADIR, pattern = "^zz_probe_")
 if (!length(left)) ok("⑨ 픽스처 잔여 0") else ng("⑨ 픽스처가 남았다", paste(left, collapse = ","))

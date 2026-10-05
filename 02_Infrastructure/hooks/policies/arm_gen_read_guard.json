@@ -1,97 +1,236 @@
 {
-  "_doc": "arm_gen_read_guard.sh R2(Grep 범위) 순회 설정 — P0-M2 수리 2026-09-25(B-2 좁힌 glob 우회). 훅이 자기 옆 policies/ 에서 읽는다. 판독 불능이면 순회가 필요한 Grep 만 block(fail-closed). 검사 = 08_Tests/hooks/test_arm_gen_read_guard.sh §N. (R2 2026-09-25 · pit.md C1 D-E) content_guard = R1_content(이름 밖 전기간 통계 산출물을 내용 구조 키로 재도출)의 설정 — 판독 불능이면 데이터 파일 Read 만 block(R1_content_policy · fail-closed). 검사 = §O.",
-  "r2_walk": {
-    "max_entries": 250000,
-    "max_seconds": 20,
-    "basis": "09-25 운영 트리 읽기 전용 os.scandir 전수 순회 실측(디렉터리+파일 항목 수): 측정 구역 항목 수 — 06_Registry 483 · .cache 28,423 · stage_artifacts 81,625 · 04_Research/strategies 7,597 · korea_research 330 · qepm/research 2,072 · qepm/mailbox 6,625 · 05_Production 5,435 · 기억 489 = 합계 약 13.3만(따뜻한 캐시 순회 약 1.6초) / .claude/worktrees 969,689(40.2초). max_entries 25만 = 워크트리를 뺀 전 구역을 한 번에 순회할 수 있는 크기(성장 여유 약 1.9배)이자 워크트리 전역 순회는 넘치는 크기 — 넘치면 block(범위를 좁히라는 안내). max_seconds 20 = 따뜻한 캐시 전 구역 순회의 12배 여유 · 설계 레인 Grep 1회가 기다릴 상한(넘치면 block)."
-  },
-  "code_ext": [
-    ".r",
-    ".py",
-    ".sh",
-    ".bash",
-    ".ps1",
-    ".psm1",
-    ".bat",
-    ".cmd",
-    ".cpp",
-    ".cc",
-    ".cxx",
-    ".h",
-    ".hpp",
-    ".c",
-    ".js",
-    ".mjs",
-    ".cjs",
-    ".ts",
-    ".tsx",
-    ".jsx",
-    ".rmd",
-    ".rd",
-    ".rprofile",
-    ".pyi",
-    ".zsh"
+ "_doc": "arm_gen_read_guard.sh R2(Grep 범위) 순회 설정 — P0-M2 수리 2026-09-25(B-2 좁힌 glob 우회). 훅이 자기 옆 policies/ 에서 읽는다. 판독 불능이면 순회가 필요한 Grep 만 block(fail-closed). 검사 = 08_Tests/hooks/test_arm_gen_read_guard.sh §N. (R2 2026-09-25 · pit.md C1 D-E) content_guard = R1_content(이름 밖 전기간 통계 산출물을 내용 구조 키로 재도출)의 설정 — 판독 불능이면 데이터 파일 Read 만 block(R1_content_policy · fail-closed). 검사 = §O. (D-E-CATALOG-BASIS 2026-09-25) catalog_view = R5(카탈로그·설계 산출의 basis·note 안 성과 수치 → 수치 가린 사본)의 설정 — 판독 불능이면 데이터 파일 Read·내용 Grep block(R5_catalog_policy · fail-closed). 검사 = §Q. (FA-CLEAN-BASE-PATH 2026-09-26) clean_lane = R6(청정 충실구현 레인 · 표식 QVEST_CLEAN_LANE)의 설정 — 판독 불능이면 청정 모드의 모든 Read/Grep/Glob block(R6_policy · fail-closed). 검사 = 08_Tests/ops/test_rf_clean_lane.sh.",
+ "r2_walk": {
+  "max_entries": 250000,
+  "max_seconds": 20,
+  "basis": "09-25 운영 트리 읽기 전용 os.scandir 전수 순회 실측(디렉터리+파일 항목 수): 측정 구역 항목 수 — 06_Registry 483 · .cache 28,423 · stage_artifacts 81,625 · 04_Research/strategies 7,597 · korea_research 330 · qepm/research 2,072 · qepm/mailbox 6,625 · 05_Production 5,435 · 기억 489 = 합계 약 13.3만(따뜻한 캐시 순회 약 1.6초) / .claude/worktrees 969,689(40.2초). max_entries 25만 = 워크트리를 뺀 전 구역을 한 번에 순회할 수 있는 크기(성장 여유 약 1.9배)이자 워크트리 전역 순회는 넘치는 크기 — 넘치면 block(범위를 좁히라는 안내). max_seconds 20 = 따뜻한 캐시 전 구역 순회의 12배 여유 · 설계 레인 Grep 1회가 기다릴 상한(넘치면 block)."
+ },
+ "code_ext": [
+  ".r",
+  ".py",
+  ".sh",
+  ".bash",
+  ".ps1",
+  ".psm1",
+  ".bat",
+  ".cmd",
+  ".cpp",
+  ".cc",
+  ".cxx",
+  ".h",
+  ".hpp",
+  ".c",
+  ".js",
+  ".mjs",
+  ".cjs",
+  ".ts",
+  ".tsx",
+  ".jsx",
+  ".rmd",
+  ".rd",
+  ".rprofile",
+  ".pyi",
+  ".zsh"
+ ],
+ "code_ext_basis": "R2 는 측정 데이터(원장·산출 csv/json/rds/png·기억 카드)의 **내용** 열람을 막는다 — 코드 파일은 성과를 담지 않는다. 09-25 적대 검증 우회 137건 중 코드는 4건(.R — .cache/essence_score_orig.R · qepm/mailbox/*/build_bt_result_*.R)뿐이고, 생성 레인은 Grep 루트 glob=*.R 로 코드를 찾는다(드라이런 00321·00397·00419·00427 — 막으면 오차단). 목록 = 저장소가 쓰는 언어(R·Python·셸·PowerShell·배치·Rcpp·JS 워크플로). .md·.txt·.json·.csv 는 코드가 아니다(analysis_report.md 등 측정 산출). R1(Read)의 이름 차단은 이 목록과 무관하게 그대로다. rg type 별칭(r = .r·.rmd·.rd·.rprofile · py = .py·.pyi · sh = .sh·.bash·.zsh)이 전부 코드여야 type=r·py·sh 가 '코드만' 으로 판정된다(구판 통과 유지: Grep 루트 type=r).",
+ "content_guard": {
+  "ext": [
+   ".json",
+   ".jsonl",
+   ".csv",
+   ".tsv"
   ],
-  "code_ext_basis": "R2 는 측정 데이터(원장·산출 csv/json/rds/png·기억 카드)의 **내용** 열람을 막는다 — 코드 파일은 성과를 담지 않는다. 09-25 적대 검증 우회 137건 중 코드는 4건(.R — .cache/essence_score_orig.R · qepm/mailbox/*/build_bt_result_*.R)뿐이고, 생성 레인은 Grep 루트 glob=*.R 로 코드를 찾는다(드라이런 00321·00397·00419·00427 — 막으면 오차단). 목록 = 저장소가 쓰는 언어(R·Python·셸·PowerShell·배치·Rcpp·JS 워크플로). .md·.txt·.json·.csv 는 코드가 아니다(analysis_report.md 등 측정 산출). R1(Read)의 이름 차단은 이 목록과 무관하게 그대로다. rg type 별칭(r = .r·.rmd·.rd·.rprofile · py = .py·.pyi · sh = .sh·.bash·.zsh)이 전부 코드여야 type=r·py·sh 가 '코드만' 으로 판정된다(구판 통과 유지: Grep 루트 type=r).",
-  "content_guard": {
-    "ext": [
-      ".json",
-      ".jsonl",
-      ".csv",
-      ".tsv"
-    ],
-    "max_bytes": 262144,
-    "min_distinct_keys": 2,
-    "keys": [
-      "port_t",
-      "portfolio_alpha_t(_[a-z0-9]+)*",
-      "calmar",
-      "sharpe",
-      "net_sr",
-      "net_ir",
-      "abs_net_sr",
-      "cagr",
-      "mdd",
-      "max_drawdown",
-      "oos_retention",
-      "essence_grade",
-      "information_ratio",
-      "alpha_annualized",
-      "ic",
-      "ic_all",
-      "ic_bad",
-      "ic_good",
-      "ic_mean",
-      "icir",
-      "rank_ic",
-      "mean_ic",
-      "ic_ir",
-      "recent_3y_icir",
-      "conditional_value",
-      "ic_screen_tier",
-      "t_stat",
-      "tstat",
-      "fmb_t",
-      "med_d_calmar",
-      "sortino",
-      "ann_ret",
-      "ann_vol",
-      "hit_rate",
-      "ff5_t",
-      "avg_ff5_t",
-      "ff3_t",
-      "dsr"
-    ],
-    "open_prefixes": [
-      "02_infrastructure/",
-      "qepm/memory/axioms/active/",
-      ".claude/rules/",
-      ".claude/skills/",
-      ".claude/agents/",
-      ".claude/commands/",
-      "00_lawbook/",
-      "01_literature/"
-    ],
-    "basis": "R1_content 는 이름 목록(STATS_RE)에 없는 새 통계 산출물을 **내용**으로 잡는다(B-2 교훈 — 표본 밖 이름이 우회로였다). keys = 저장소 성과·IC 산출물이 실제로 쓰는 구조 키(essence·hurdle·factor_evidence·conditional_ic_matrix·evidence_summary·rf_director·ast_structure_log 의 키 집합 — 09-25 내용 스캔 원장). 값으로 든 이름(\"select_winner_by\": \"port_t\")은 키가 아니라 세지 않는다(격자 reinforce_program.json = 0종). min_distinct_keys 2 = 09-25 운영 트리 텍스트 데이터 파일 17,973건 보정: 문턱 2 에서 2,656건 적중 · 설계 레인 정당 열람 파일(overlay_catalog · reinforce_program · weight_catalog · reinforce_auto_config · rf_overlay_adversary_axes · rf_arm_compat · factor_registry · 설계 캐시 rf_b1/b5/block/lcode) 전부 0종. 문턱 1 은 단일 키 파일(pit_quarantine.json ic_screen_tier ×3 — B1 재료가 이미 격리를 뺀다)까지 막아 오차단만 늘린다. max_bytes 256KB = 보정 스캔이 읽은 앞부분 — 알려진 통계 원장(factor_evidence 2,220 키 · hypothesis_index 1.7MB · module_catalog 2.3MB)이 전부 이 창 안에서 적중했다. open_prefixes = 저장소 루트 기준 — 코드·설정 트리(02_Infrastructure: constraint_defaults.json 의 등급 문턱 · schema.json · docs 예제는 측정값이 아니다) · 공리 원천(qepm/memory/axioms/active — 프롬프트 공리 주입 원천. ★R2 적대 검증 수리 09-25: 구판은 qepm/memory/axioms/ 전체를 열어 distilled·candidates·review_log·deprecated 의 전기간 수치 사본(DIST-QPM-014 \"L-160 IC 0.22·ICIR 1.88\")까지 내용 검사를 면제했다 — 그 넷은 훅 STATS_RE ⑤ 가 이름으로 막는다) · .claude 규칙·스킬·에이전트·명령 문서 · 00_Lawbook · 01_Literature(문헌). 그 밖(06_Registry·.cache·04_Research·stage_artifacts·qepm/mailbox·research 등)은 전부 검사한다."
-  }
+  "max_bytes": 262144,
+  "min_distinct_keys": 2,
+  "keys": [
+   "port_t",
+   "portfolio_alpha_t(_[a-z0-9]+)*",
+   "calmar",
+   "sharpe",
+   "net_sr",
+   "net_ir",
+   "abs_net_sr",
+   "cagr",
+   "mdd",
+   "max_drawdown",
+   "oos_retention",
+   "essence_grade",
+   "information_ratio",
+   "alpha_annualized",
+   "ic",
+   "ic_all",
+   "ic_bad",
+   "ic_good",
+   "ic_mean",
+   "icir",
+   "rank_ic",
+   "mean_ic",
+   "ic_ir",
+   "recent_3y_icir",
+   "conditional_value",
+   "ic_screen_tier",
+   "t_stat",
+   "tstat",
+   "fmb_t",
+   "med_d_calmar",
+   "sortino",
+   "ann_ret",
+   "ann_vol",
+   "hit_rate",
+   "ff5_t",
+   "avg_ff5_t",
+   "ff3_t",
+   "dsr"
+  ],
+  "open_prefixes": [
+   "02_infrastructure/",
+   "qepm/memory/axioms/active/",
+   ".claude/rules/",
+   ".claude/skills/",
+   ".claude/agents/",
+   ".claude/commands/",
+   "00_lawbook/",
+   "01_literature/",
+   ".cache/design_view/"
+  ],
+  "basis": "R1_content 는 이름 목록(STATS_RE)에 없는 새 통계 산출물을 **내용**으로 잡는다(B-2 교훈 — 표본 밖 이름이 우회로였다). keys = 저장소 성과·IC 산출물이 실제로 쓰는 구조 키(essence·hurdle·factor_evidence·conditional_ic_matrix·evidence_summary·rf_director·ast_structure_log 의 키 집합 — 09-25 내용 스캔 원장). 값으로 든 이름(\"select_winner_by\": \"port_t\")은 키가 아니라 세지 않는다(격자 reinforce_program.json = 0종). min_distinct_keys 2 = 09-25 운영 트리 텍스트 데이터 파일 17,973건 보정: 문턱 2 에서 2,656건 적중 · 설계 레인 정당 열람 파일(overlay_catalog · reinforce_program · weight_catalog · reinforce_auto_config · rf_overlay_adversary_axes · rf_arm_compat · factor_registry · 설계 캐시 rf_b1/b5/block/lcode) 전부 0종. 문턱 1 은 단일 키 파일(pit_quarantine.json ic_screen_tier ×3 — B1 재료가 이미 격리를 뺀다)까지 막아 오차단만 늘린다. max_bytes 256KB = 보정 스캔이 읽은 앞부분 — 알려진 통계 원장(factor_evidence 2,220 키 · hypothesis_index 1.7MB · module_catalog 2.3MB)이 전부 이 창 안에서 적중했다. open_prefixes = 저장소 루트 기준 — 코드·설정 트리(02_Infrastructure: constraint_defaults.json 의 등급 문턱 · schema.json · docs 예제는 측정값이 아니다) · 공리 원천(qepm/memory/axioms/active — 프롬프트 공리 주입 원천. ★R2 적대 검증 수리 09-25: 구판은 qepm/memory/axioms/ 전체를 열어 distilled·candidates·review_log·deprecated 의 전기간 수치 사본(DIST-QPM-014 \"L-160 IC 0.22·ICIR 1.88\")까지 내용 검사를 면제했다 — 그 넷은 훅 STATS_RE ⑤ 가 이름으로 막는다) · .claude 규칙·스킬·에이전트·명령 문서 · 00_Lawbook · 01_Literature(문헌). 그 밖(06_Registry·.cache·04_Research·stage_artifacts·qepm/mailbox·research 등)은 전부 검사한다. ★(D-E-CATALOG-BASIS 2026-09-25) .cache/design_view/ = R5 가 만든 **수치 가린 사본** 디렉터리(catalog_view.view_dir) — 사본은 정본의 구조 키(port_t·calmar 등)를 그대로 가지므로(값만 <stat>) 내용 층이 사본 열람을 막으면 R5 가 무의미해진다. 그 디렉터리에 쓰는 것은 이 훅(사본 생성)뿐이다."
+ },
+ "catalog_view": {
+  "lanes": [
+   "design_lane",
+   "arm_gen",
+   "clean_lane"
+  ],
+  "lanes_basis": "도훈 결정 D-E-CATALOG-BASIS(09-25)의 대상 = 설계 레인 표식(QVEST_DESIGN_LANE) 세션. 생성 레인(QVEST_ARM_GEN · rf_overlay_propose)을 함께 거는 근거 = 이 훅의 첫 약속 '생성기는 성과를 보지 않는다'(머리 주석) + transcript 전수(09-25): 생성 레인 17세션이 overlay_catalog.json 을 Read 3회 — 3회 전부 basis 의 'Calmar 중앙값 … 최악(0.160)' 을 받았다. 설계 레인만으로 좁히려면 이 목록에서 arm_gen 을 빼면 된다(코드 무수정). (FA-CLEAN-BASE-PATH 2026-09-26) clean_lane = 무인 충실구현 레인 청정 모드(QVEST_CLEAN_LANE) — 허용 목록의 팩터 등록부(02_Infrastructure/factor_db/factor_registry.json · dedup.reason 에 port_t 비교 문장)를 가린 사본으로 연다.",
+  "targets": [
+   "06_registry/overlay_catalog.json*",
+   "06_registry/weight_catalog.json*",
+   "06_registry/reinforce_program.json*",
+   "06_registry/reinforce_auto_config.json*",
+   "06_registry/distilled_knowledge.json*",
+   "02_infrastructure/reinforcement/overlay_arms/*.arm.json*",
+   "02_infrastructure/factor_db/factor_registry.json*",
+   ".cache/rf_b5_design/**",
+   ".cache/rf_b1_design/**",
+   ".cache/rf_block_design/**",
+   ".cache/rf_lcode_mech/**",
+   ".cache/factor_db/factor_registry.json*",
+   ".cache/pins/*/factor_registry.json*",
+   ".cache/_dk_backup*.json",
+   "02_infrastructure/hooks/arm_gen_read_guard.sh*",
+   "02_infrastructure/hooks/policies/arm_gen_read_guard.json*",
+   "08_tests/hooks/test_arm_gen_read_guard.sh*"
+  ],
+  "targets_basis": "저장소 루트 기준 glob(소문자 · ** = 하위 전부 · 끝 * = 백업 접미사 .bak_* 포함) · .claude/worktrees/<w>/ 아래 같은 상대경로도 대상(worktree_prefix). 도출 = 09-25 운영 전수(정본 규칙 rf_b1_design_lib.R 가림으로 서술 필드 수치 조사): overlay_catalog basis 5곳(그중 'MDD -10% 대비 CAGR -23% … Calmar 중앙값 … 최악(0.160)') · weight_catalog prior_measured.measurement_status 2곳('IR=0.939 vs EW IR=1.301 · PORT_t=3.944 …') · factor_registry dedup.reason('port_t +0.194 vs -0.106') + dedup 상관 수치 · arm json basis 4/24 · 격자 reinforce_program cells.basis·why('promo4 PORT_t 4.153 · Calmar 0.492 · OOS +0.152') 15곳 · 설정 reinforce_auto_config note·what('Grade B · PORT_t 2.567 · Calmar 0.499') 8곳 · 설계 산출 design_r*·블록 설계·기전 json 전부(rationale·why·expect·mechanism — 교차 entry 수치 사본 · R2 머리 주석이 '남은 위험'으로 적은 것). 레인 실열람(transcript 09-25): B5 설계 overlay_catalog Read 3·Grep 6 · 형제 design_r* Read 13 · 블록 설계 Read 8 · 기전 레인 남의 기전 json Read 3 · B1 설계 factor_registry Grep 7·Read 1 · 격자·설정 Grep 4. 대상 수 770(09-25: 06_Registry 5 · arm json 24 · 등록부 3 · rf_b5_design 129 · rf_b1_design 80 · rf_block_design 79 · rf_lcode_mech 450). 뺀 것: arm 소스 .R(탐침 wc_scan_measurement_leak 가 성과 토큰을 금지 — 09-25 주석 적중 4줄 전부 사양 상수) · prompt_gen_*.txt(성과 무수치 프롬프트 — 적중은 '> 0.2 같은 형태는 거부' 예시 1줄) · rf_arm_compat·rf_overlay_adversary_axes(성과 토큰 0). 재료·프롬프트 .txt 는 대상이어도 R1(STATS_RE ⑤)이 먼저 막는다. ★06_registry/distilled_knowledge.json = 증류 지식 **색인**(02_Infrastructure/axiom/distilled.R:56 .dist_index) — 원천 qepm/memory/axioms/distilled/ 는 R2 적대 검증 수리가 이름 층(STATS_RE ⑤)으로 막았는데 같은 문장의 색인 사본이 열려 있었다(09-25 성과 지표+수치 79곳 · 'L-160 IC 0.22·ICIR 1.88' 꼴). B5 재료 (5) 절은 이 지식을 가린 판으로 싣는다 — 파일 직접 열람이 그 가림을 우회하는 것은 카탈로그와 같은 꼴이라 대상에 넣는다. ★(CATB 적대 검증 수리 09-25) 대상 밖 사본 두 부류를 더했다 — ① 같은 수치의 **사본**: .cache/factor_db/factor_registry.json = 정본 02_Infrastructure/factor_db/factor_registry.json 과 바이트 동일(09-25 sha 대조) + .bak_* 3건(dedup.reason port_t 비교 · dedup 상관 수치) — B1 레인 자기 코드 rf_factor_arms.R:82·274 가 이 경로를 등록부로 읽는다(= 레인이 코드를 읽으면 경로를 안다) · 설계 레인 Read 가 통과했다(샌드박스 실증). .cache/pins/*/factor_registry.json* = 핀 스냅샷(09-25 수치 0 — 다음 핀부터 dedup 수치가 실린다 · 수치 없으면 정본 그대로 연다). .cache/_dk_backup.json = 증류 지식 색인 백업(08-20 · 성과 토큰 문장 7곳). ② 이 가드 자신의 파일(훅 머리 주석 · 이 설정의 근거 필드 · 검사 픽스처)은 누출 실례를 원문 그대로 인용한다(카탈로그·격자·설정·등록부의 교차 entry 성과 수치) — 코드·설정 트리라 열린 경로여서 막힌 레인이 '왜 막혔나' 를 읽으면 가린 수치를 그대로 받는다. 대상에 넣어 수치 가린 사본으로 돌린다(훅·검사는 파이썬 open 으로 읽으므로 동작 무관).",
+  "worktree_prefix": "^\\.claude/worktrees/[^/]+/",
+  "view_dir": ".cache/design_view",
+  "view_dir_basis": "사본 = <저장소 루트>/.cache/design_view/<상대경로의 / → __>(이름이 측정 정규식에 걸리거나 경로가 길면 v_<sha1>). .cache = 저장소 산출 캐시(운영 junction → C:/qm_cache · 동기화 밖) — 정본(06_Registry·02_Infrastructure)은 한 바이트도 쓰지 않는다. content_guard.open_prefixes 에 같은 경로가 있어야 사본이 열린다(검사 §Q 가 잰다).",
+  "keep_keys": [
+   "id",
+   "kind",
+   "catalog_id",
+   "name",
+   "family",
+   "category",
+   "definition",
+   "window_definition",
+   "formula",
+   "canonical",
+   "paper_id",
+   "url"
+  ],
+  "keep_keys_basis": "정의 필드 — 이 키의 문자열은 가리지 않는다(도훈 결정: 'arm 이름·정의·계열은 보이게'). 09-25 대상 전수에서 수치가 든 정의 필드 = factor_registry definition 10(Altman Z 계수 1.2·1.4·3.3 · 'worst 5%' · '0.5 * GDP growth' 등) · name 7('VaR 95%' · 'CVaR 5%') · window_definition 3 — 전부 정의 상수이고 성과 수치 0. 그 밖의 문자열(basis·note·reason·rationale·why·measurement_status·label 등)은 **전부** 가린다(fail-closed — 새 서술 키가 생겨도 기본이 가림). ★arm·오버레이 basis 는 정의와 근거 서술이 한 필드에 섞여 있어(09-25: 5곳 중 1곳이 성과 · 4곳이 사양 상수 0.1/0.9·0.70 등) 가림 쪽에 둔다 — B5 재료 (6) 절(D-E-B5-MATERIALS)이 같은 basis 를 같은 규칙으로 가린 판과 일치하고, 정확한 상수는 arm 소스 .R(대상 아님)에 있다. url = 근거 논문 원문 링크(하드코딩 금지 원칙의 근거 필드).",
+  "stat_keys": [
+   "([a-z0-9]+_)*(cor|corr|rho|spearman|pearson|ic|icir|ir|sr|dsr|sharpe|sortino|calmar|cagr|mdd|port_t|oos|retention|hit_rate|t_stat|tstat)(_[a-z0-9]+)*"
+  ],
+  "stat_keys_basis": "JSON **수치** 값을 가리는 키 = content_guard.keys ∪ 이 목록(밑줄 토큰 단위 — best_port_t·oos_retention·median_abs_cor·rho_before 는 걸리고 score·dir·src 는 안 걸린다). 그 밖의 수치(est_cost_min·n_trials_family·max_abs_dev_from_ew·설정 파라미터)는 사양이라 그대로 둔다. 상관(cor·rho) 포함 근거 = pit.md C1 D-E '팩터·arm·슬리브를 전기간 IC·ic_bad·**상관**으로 고르면' — factor_registry dedup.evidence 의 전기간 median_abs_cor·max_pair_abs_cor(258개월) 76+곳.",
+  "redactor_source": "../ops/rf_b1_design_lib.R",
+  "redactor_basis": "가림 규칙 정본 = rf_b1_design_lib.R 의 RF_B1_STAT_PROTECT·RULES·METRIC·MASK(R2 · B5M 이 이름으로 싣는 같은 파일 · 이 훅 디렉터리 기준 상대경로). 훅은 네 이름의 최상위 리터럴 대입만 읽고(평가 없음) B5M 과 같은 카나리아로 적재 양성 대조한다 — 실패 = 대상 전부 block(R5_catalog_redactor). 파이썬↔R 가림 동치 = 검사 §Q Q29.",
+  "redact_passes": 3,
+  "redact_passes_basis": "가림 반복 상한 — 정본 가림을 잔존 0 이 될 때까지 거듭한다(멱등). 한 번이면 세 마디 판본 '2.1.170' 이 '<stat>.170' 을 남긴다(09-25 운영: 설정 reinforce_auto_config 5곳 · 격자 reinforce_program DOI 1곳 — 전부 두 번째에 0). 3 = 실측 최대 2회 + 1회 여유. 그래도 남으면 사본을 내지 않고 막는다(R5_catalog_residual).",
+  "max_views_per_call": 300,
+  "max_source_bytes": 16777216,
+  "max_view_path": 259,
+  "limits_basis": "max_views_per_call 300 = 디렉터리 하나가 덮는 최대 대상(09-25: rf_lcode_mech 기전 json 146 · 재료·프롬프트 .txt 는 R1 이 먼저 막는다)의 약 2배 — 넘치면 사본을 다 만들지 않고 막는다(범위를 좁히라는 안내). max_source_bytes 16MiB = 최대 대상 4,583,714B(distilled_knowledge.json · 다음 573,580B factor_registry.json)의 약 3.7배 — 넘치면 막는다(R5_catalog_size · fail-closed). 사본 계산 실측(09-25 샌드박스): distilled_knowledge 1회 약 2.8초 · factor_registry 약 0.5초. max_view_path 259 = Win32 MAX_PATH 260(NUL 포함) — 넘치면 해시 이름. 대상 목록 순회 상한 = r2_walk.max_entries(같은 설정 · 넘치면 R5_catalog_budget)."
+ },
+ "clean_lane": {
+  "decision": "06_Registry/decision_register.json#FA-CLEAN-BASE-PATH (도훈 2026-09-26 12:24 — (나) 기존 레인 강화)",
+  "env": "QVEST_CLEAN_LANE",
+  "wdir_env": "QVEST_CLEAN_WDIR",
+  "target_keys": [
+   "file_path",
+   "path",
+   "pattern",
+   "glob"
+  ],
+  "target_regex": "(?i)(reinforce_ledger|authoritative_remeasure|stage_artifacts|reinforce_auto_log|scheduler_logs|[\\\\/]memory([\\\\/]|$)|MEMORY\\.md|fidelity_audit|module_catalog|artifact_index|distilled_knowledge|hypothesis_index|replication_request|observability|06_metrics|02_nav|essence)",
+  "target_regex_source": "06_Registry/prereg/clean_base_rule.config.json :: exposure.transcript.perf_path_regex 사본 — 사후 검사(rf_clean_base.R transcript_tool_reads)와 같은 키(target_keys = tool_target_keys)·같은 식이라 막힌 호출만 전사에 남는다(동기화 가드 = 08_Tests/ops/test_rf_clean_lane.sh §S1)",
+  "read_allow": [
+   {
+    "path": "claude.md",
+    "why": "CLI 가 cwd 에서 자동 주입하는 헌법 — 재열람은 새 정보가 없다(알려진 경계: 목표·문턱 수치 SR 2.5 · Calmar 0.64)"
+   },
+   {
+    "path": ".claude/rules/pit.md",
+    "why": "자동 주입 규칙(PIT C1~C15) — 재열람은 새 정보가 없다(알려진 경계: 2026-07-06 오버레이 사고 수치 Calmar 2.50→1.83 · SR 2.10→1.84)"
+   },
+   {
+    "path": ".claude/rules/lean-loop.md",
+    "why": "자동 주입 규칙(충실구현 라운드 축) — 수치 0"
+   },
+   {
+    "path": ".claude/rules/python-policy.md",
+    "why": "경로 주입 규칙(**/*.py 열람 시 자동 주입) — 수치 0"
+   },
+   {
+    "path": ".claude/skills/factor-db-access.md",
+    "why": "팩터 DB 사용 규약(load_month_factors · Z_Score_Aligned · C13·C15) — 수치 0"
+   },
+   {
+    "path": ".claude/skills/pit-validation.md",
+    "why": "PIT 자가 점검 규약 — 수치 0"
+   },
+   {
+    "path": "02_infrastructure/backtest_harness.r",
+    "why": "RAWDATA·벤치·수급 로더 정의(load_rawdata · load_investor) = 엔진 입력 규약 — 수치형 1곳('1.0→0.0' 선형 척도 · 성과 아님)"
+   },
+   {
+    "path": "02_infrastructure/factor_db/factor_db_connector.r",
+    "why": "load_month_factors 정의(C15 유일 경로) — 수치 0"
+   },
+   {
+    "path": "02_infrastructure/factor_db/factor_registry.json",
+    "why": "팩터 이름·정의·계열 — R5 가 dedup.reason 의 port_t 비교를 가린 사본(.cache/design_view)으로 돌린다"
+   },
+   {
+    "path": "02_infrastructure/data/",
+    "why": "원천 수집·로더 코드(DART·컨센서스·수급 열 이름) — 지문 밖 원천을 쓰면 구조 술어 source_scope 가 사후에 거른다 · 수치형 1곳(커버리지 0.715→0.868 · 성과 아님)"
+   },
+   {
+    "path": "02_infrastructure/alpha_search/run_paper_replication.r",
+    "why": "러너 계약(portfolio_spec · FACTORS/PORTFOLIO 입출력 · t-1) — 수치 0"
+   },
+   {
+    "path": "02_infrastructure/replication/",
+    "why": "충실구현 하네스(월간 집행 규약) — 수치 0"
+   },
+   {
+    "path": "02_infrastructure/validation/lookahead_detector.r",
+    "why": "PIT 정적 검출기(자가 점검) — 수치 0"
+   },
+   {
+    "path": "02_infrastructure/validation/pit_enforcement.r",
+    "why": "PIT 규약 코드 — 수치 0"
+   },
+   {
+    "path": ".cache/design_view/",
+    "why": "R5 가린 사본 디렉터리(수치 = <stat>) — 등록부를 여는 유일한 길"
+   }
+  ],
+  "read_allow_basis": "충실구현에 꼭 필요한 읽기만 연다(논문 원문은 WebFetch — 훅 밖). 엔진 입력 규약(RAWDATA·팩터 DB·수급 로더) · 러너 계약 · PIT 자가 점검 · 가린 등록부. 막는 것 = 저장소의 나머지 전부: 04_Research(다른 전략 엔진 — 09-26 전수: 결합 엔진 주석에 실측 PORT_t 0.691 · Calmar 0.235 · 'F PORT_t -2.326' 등) · 06_Registry·stage_artifacts·qepm·.cache(원장·산출물·교훈) · 02_Infrastructure 의 나머지(09-26 전수: ops 20파일 52곳 · ramp 30파일 · docs 13파일 · contracts 9파일 — contracts/** 열람은 경로 주입 규칙 measurement-graduation.md(실측 수치 19곳)를 끌어온다) · config.R(주석 CAGR 11.1 · SR 0.796 · MDD -18.1) · 저장소 밖(~/.claude/plans 계획서 등).",
+  "read_allow_boundary": "허용 목록 안 수치형 문자열 전수(09-26 · 사후 검사 metric_regex): CLAUDE.md 2(목표·문턱) · .claude/rules/pit.md 4(사고 수치) · backtest_harness.R 1(선형 척도) · data/data_collector_dart.R 1(커버리지) — 교차 entry 성과 0. 규칙 파일은 CLI 자동 주입이라 어차피 전사에 들어간다(알려진 경계 — 결정문).",
+  "glob_names_in_repo": true,
+  "glob_basis": "Glob 은 이름만 돌려준다(R3 원칙: 이름은 성과가 아니다 · 기억 카드 이름만 R3 가 막는다). 저장소 안 이름 열거는 열고 내용(Read·Grep)만 허용 목록으로 가둔다 — 저장소 밖 열거(계획서·기억 디렉터리)는 R6_outside 로 막는다.",
+  "pass_output_note": "청정 모드 통과 출력 = bash 상수 PASS_OUT='{\"continue\":true}'(표준 필드 기본값 — 동작 무변화) · 사후 검사 정본 = clean_base_rule.config.json exposure.transcript.guard_attestation.pass_stdout"
+ }
 }

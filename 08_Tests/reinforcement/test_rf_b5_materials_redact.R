@@ -14,7 +14,8 @@
 #      [위반] 이름 결손 / 같은 이름 두 번 / 무력 가림(규칙 no-op) / 무력 검증기(항상 FALSE) / 파일 부재 → NULL(fail-closed)
 #   B. b5_materials 합성 루트 — 교차 절 잔존 수치 0(★검사 자체 판별기 — 피검 코드의 검증기를 빌리지 않는다) · <stat> 존재 ·
 #      자기 절 수치 보존((1) 측정표·자기 L-code · (2) 바닥 해부) · (3) arm_id 순·성과 칸 가림(픽스처는 ΔCalmar 순 ≠ id 순) ·
-#      (4b) 검사 상태·판정 보존 · 식별자 보존 · 700자 절단이 식별자를 잘라도 오탐 폴백 없음 · (8) A 문턱 · jlog 가린 개수
+#      (4b) 코드·스택 보존(판정·검사 상태는 D-E-B5-LABELS 로 <label> — 짝 test_rf_b5_materials_labels.R) · 식별자 보존 ·
+#      700자 절단이 식별자를 잘라도 오탐 폴백 없음 · (8) A 문턱 · jlog 가린 개수
 #   C. 돌연변이 — ① 절 가림 끔(게이트 유지) → 중단·파일 없음·materials_rejected(게이트가 잡는다)
 #                 ② 절 가림 + 게이트 끔 → 재료에 수치 잔존 → 이 검사의 판별기가 잡는다(red)
 #                 ③ (3) 순위 복원(ΔCalmar 내림차순) → arm_id 순 판별이 잡는다(red)
@@ -229,9 +230,10 @@ if (!inherits(M$r, "err") && !is.null(M$txt)) {
   s3 <- own_lines(txt, "## (3)"); rows3 <- s3[startsWith(s3, "| arm_") & !startsWith(s3, "| arm_id")]
   chk(length(rows3) == 3L && all(endsWith(rows3, "| <stat> |")) && !any(grepl("상위|하위", s3[1])), "B7 (3) 성과 칸 = <stat> 뿐 · '상위/하위' 순위 머리 없음", paste(rows3, collapse = " / "))
   s4b <- own_lines(txt, "## (4b)")
-  chk(any(grepl("fail obs <stat> vs q <stat> p <stat>", s4b, fixed = TRUE)) && any(grepl("pass const <stat>", s4b, fixed = TRUE)) &&
+  # (D-E-B5-LABELS 2026-09-25) 판정·검사 상태도 교차 entry 결과 라벨 — <label> 로 가린다(짝 = test_rf_b5_materials_labels.R)
+  chk(any(grepl("| <stat> · <label> |", s4b, fixed = TRUE)) && !any(grepl("fail obs|pass const|\\| fail|\\| pass", s4b)) &&
       any(grepl("| B5_16 |", s4b, fixed = TRUE)) && any(grepl("arm_zeta", s4b, fixed = TRUE)),
-      "B8 (4b) 검사 상태·판정·코드·스택은 남고 수치만 가린다", paste(s4b[grepl("B5_16", s4b)], collapse = " / "))
+      "B8 (4b) 코드·스택은 남고 수치(<stat>)·판정·검사 상태(<label>)는 가린다", paste(s4b[grepl("B5_16", s4b)], collapse = " / "))
   flat <- paste(txt, collapse = "\n")
   chk(grepl("2002.06975", flat, fixed = TRUE) && grepl("v10.4", flat, fixed = TRUE) && grepl("RP_20260917_105807_22632", flat, fixed = TRUE) &&
       grepl("L-RF-20260905_120000", flat, fixed = TRUE) && grepl("b5gen_fx_1", flat, fixed = TRUE) && grepl("DIST-T-001", flat, fixed = TRUE) &&

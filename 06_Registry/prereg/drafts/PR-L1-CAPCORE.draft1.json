@@ -1,0 +1,1145 @@
+{
+  "schema": "rf_prereg_v1",
+  "prereg_id": "PR-L1-CAPCORE",
+  "family_id": "FAM-PR-L1-CAPCORE-01",
+  "status": "draft",
+  "draft_rev": 1,
+  "revision_of": null,
+  "layer": 1,
+  "lever": "PR-L1",
+  "title": "벤치 인지 코어-위성(cap_core) — L2 다음 · A4 삭제",
+  "created_at": "2026-09-25T19:11:48+0900",
+  "created_by": "Q(세션) · P2-01 워크플로 갈래 PREREG",
+  "plan_ref": {
+    "path": "C:/Users/99922/.claude/plans/qvest-1-drifting-eclipse.md",
+    "section": "P2 · PR-L1 (D-H 확정 · L2 다음)",
+    "lever_audit": "scratchpad/organic/lever_audit_final.md (세션 be2e88bf · wf_7ea8a829-483)"
+  },
+  "decision_refs": [
+    "D-H",
+    "PR-L1-A4-DISPOSITION",
+    "D-D",
+    "ORGANIC-PRIORITY",
+    "ORGANIC-DE",
+    "D-E",
+    "D-A",
+    "D-A-N-TIMING",
+    "D-M",
+    "CALMAR-FREQ-DAILY"
+  ],
+  "framing": "falsification_attempt",
+  "framing_note": "L1 은 2025~26 을 본 뒤 고안됐고 2024-12 절단판도 2016~24 반전을 본 상태 — 완전한 사전성이 없다. 결과는 반증 시도로만 라벨한다.",
+  "hypothesis": {
+    "statement": "t-1 시총(.SizeLag) 상위 k 종(K200 멤버)을 t-1 벤치 비중으로 보유하는 정적 코어와 (1−Σ코어)로 스케일한 위성(바닥 전략)이 EW−CW 공통 성분 적재(b_ewcw)를 줄여 K200 대비 OOS retention 과 Calmar 를 함께 올린다.",
+    "mechanism": "레버 감사 §② 진단: OOS 벽 = 2017~20·2025~26 두 시기에 거의 모든 칸이 같은 부호로 공유하는 활성 성분. 격자 카탈로그에 벤치 인지 비중 arm 이 0 이라, 비중 단계에서 EW−CW 성분을 겨냥하는 유일한 유형이다. 코어가 메가캡 저비중 갭을 메우면 그 공통 성분 적재가 기계적으로 준다.",
+    "prediction": "b_ewcw Δ(A1−F1) 짝지은 NW-t ≤ −3, 그리고 6조건(D-H) 충족.",
+    "alternatives": {
+      "closet_indexing": "A1 − C1 ≤ 0 → 07-05 closet-indexing 을 essence 에서 재현(failed)",
+      "recent_only": "절단판(2024-12)에서 이득 소멸 → 이득이 2025~26 에서만(failed)",
+      "denominator_game": "IS(2005~16) 활성 IR 이 줄고 OOS/IS 비만 오름 → 분모 게임(is_active_ir_delta 보고 의무로 드러낸다)",
+      "undetermined": "Calmar 축은 미결이 최빈(플랜 검정력 주석) — 벽이 아니다"
+    }
+  },
+  "differs_from_prior_negatives": [
+    {
+      "ref": "07-05 메가캡 앵커(memory project-megacap-anchor-construction-discovery — 총수익 SR 하락 · paired NW-t 음 · tracking-error 축소)",
+      "difference": "구 앵커는 '선정된 종목 중' 시총 top-2 에 20% 캡(삼성 미선택 월 72% — 의도가 구현된 적 없음). 여기서는 K200 전체에서 t-1 시총 상위 k 를 t-1 벤치 비중 그대로(캡 없음 · v10 비중 상한 폐지) 보유하고, 위성은 floor v2 계보 그대로, 판정은 essence 권위 등급 + 절단판 + β-통제·무신호 대조 + C1(무작위 위성)."
+    },
+    {
+      "ref": "07-05 벤치 인지 construction Cycle 1(memory project-selfdev-benchaware-construction-confirm — Anchor2+EW-fill closet-indexing)",
+      "difference": "screening-tier 근사(top-25 EW-fill · 12-1 모멘텀 단일)가 아니라 강화 셀 엔진의 실투형 전략 위에서 측정하고, closet-indexing 을 C1 대조(⑥)로 직접 판별한다."
+    },
+    {
+      "ref": "R39/R40 TE 최소화(synth.md §3.4 인용 · 원 기록 위치 미확인)",
+      "difference": "TE 를 목적함수로 최소화하지 않는다 — 벤치 비중을 복사한 정적 코어일 뿐 위성 선정·비중은 바닥 그대로. β 구간 제약을 승자 목적함수에 넣지 않는다(플랜 하지 말 것 4)."
+    }
+  ],
+  "floors": [
+    {
+      "id": "F1",
+      "ref": "06_Registry/prereg/reference_floors_v2.json#F1",
+      "status": "pending",
+      "lineage_entry": "RP_20260917_105807_22632_combo_rulefast_promo3",
+      "source_cell": "B1_3",
+      "requirement": "as-of 재선정 새 칸(원 칸 = selection_basis_full_sample_ic_inherited 표식 · C1/D-E) · close_t1 · pin 스냅샷 · 엔진 2회 재실행 결정론(플랜 P2-03)"
+    },
+    {
+      "id": "F2",
+      "ref": "06_Registry/prereg/reference_floors_v2.json#F2",
+      "status": "pending",
+      "lineage_entry": "RP_20260913_090549_14760_adapted_rulefast_promo3",
+      "source_cell": "B5_19",
+      "requirement": "P0-11 소급 G2 pass 시에만 · 원 칸 selection_basis_full_sample_ic_inherited 표식 → as-of 재선정 새 칸",
+      "conditional": true
+    }
+  ],
+  "arms_frozen": true,
+  "arms": [
+    {
+      "id": "A1",
+      "order": 1,
+      "role": "treatment",
+      "on_floor": "F1",
+      "selection_basis": "none",
+      "spec": {
+        "weight_stage": "cap_core",
+        "k": 2,
+        "core": {
+          "rank_key": ".SizeLag (t-1 Size · rf_cell_engine.R:221 과 같은 정의)",
+          "universe": "K200 멤버(시그널일 플래그)",
+          "weight": "t-1 벤치 비중 근사 = Size_{t-1} / Σ_{K200} Size_{t-1} (유동비율·지수 편입 상한 미반영 — Q-L1-4)"
+        },
+        "satellite": {
+          "source": "바닥 전략 비중 그대로",
+          "scale": "1 − Σ코어"
+        },
+        "invariants": [
+          "Σw=1",
+          "w≥0",
+          "보유 합집합 ≤ fixed_axes.n_max(25) — 위성 절단 규칙 Q-L1-5",
+          "k=0 이면 기존 칸과 비트 동일(구현 검사 의무)",
+          "비중 상한 없음(v10 폐지)"
+        ],
+        "implementation": "rf_sleeve.R + rf_cell_engine.R 비중 단계 뒤 — 미구현(의존 CAPCORE-IMPL)"
+      }
+    },
+    {
+      "id": "A3",
+      "order": 2,
+      "role": "treatment",
+      "on_floor": "F2",
+      "selection_basis": "none",
+      "spec": {
+        "weight_stage": "cap_core",
+        "k": 2,
+        "core": {
+          "rank_key": ".SizeLag (t-1 Size · rf_cell_engine.R:221 과 같은 정의)",
+          "universe": "K200 멤버(시그널일 플래그)",
+          "weight": "t-1 벤치 비중 근사 = Size_{t-1} / Σ_{K200} Size_{t-1} (유동비율·지수 편입 상한 미반영 — Q-L1-4)"
+        },
+        "satellite": {
+          "source": "바닥 전략 비중 그대로",
+          "scale": "1 − Σ코어"
+        },
+        "invariants": [
+          "Σw=1",
+          "w≥0",
+          "보유 합집합 ≤ fixed_axes.n_max(25) — 위성 절단 규칙 Q-L1-5",
+          "k=0 이면 기존 칸과 비트 동일(구현 검사 의무)",
+          "비중 상한 없음(v10 폐지)"
+        ],
+        "implementation": "rf_sleeve.R + rf_cell_engine.R 비중 단계 뒤 — 미구현(의존 CAPCORE-IMPL)"
+      },
+      "conditional_on": {
+        "floor": "F2",
+        "require": "F2 확정 = P0-11 소급 G2 pass ∧ as-of 재선정 새 칸(floor v2)",
+        "resolved": false
+      }
+    },
+    {
+      "id": "C1",
+      "order": 3,
+      "role": "control",
+      "on_floor": "F1",
+      "selection_basis": "none",
+      "spec": {
+        "weight_stage": "cap_core",
+        "k": 2,
+        "core": {
+          "rank_key": ".SizeLag (t-1 Size · rf_cell_engine.R:221 과 같은 정의)",
+          "universe": "K200 멤버(시그널일 플래그)",
+          "weight": "t-1 벤치 비중 근사 = Size_{t-1} / Σ_{K200} Size_{t-1} (유동비율·지수 편입 상한 미반영 — Q-L1-4)"
+        },
+        "satellite": {
+          "source": "베타매칭 무작위 — 바닥 위성과 같은 D02_Beta 구간에서 seed 고정 무작위",
+          "scale": "1 − Σ코어"
+        },
+        "invariants": [
+          "Σw=1",
+          "w≥0",
+          "보유 합집합 ≤ fixed_axes.n_max(25) — 위성 절단 규칙 Q-L1-5",
+          "k=0 이면 기존 칸과 비트 동일(구현 검사 의무)",
+          "비중 상한 없음(v10 폐지)"
+        ],
+        "implementation": "rf_sleeve.R + rf_cell_engine.R 비중 단계 뒤 — 미구현(의존 CAPCORE-IMPL)"
+      },
+      "note": "closet-indexing 판별 — 코어 k=2 + 베타매칭 무작위 위성"
+    },
+    {
+      "id": "A2",
+      "order": 4,
+      "role": "treatment",
+      "on_floor": "F1",
+      "selection_basis": "none",
+      "spec": {
+        "weight_stage": "cap_core",
+        "k": 1,
+        "core": {
+          "rank_key": ".SizeLag (t-1 Size · rf_cell_engine.R:221 과 같은 정의)",
+          "universe": "K200 멤버(시그널일 플래그)",
+          "weight": "t-1 벤치 비중 근사 = Size_{t-1} / Σ_{K200} Size_{t-1} (유동비율·지수 편입 상한 미반영 — Q-L1-4)"
+        },
+        "satellite": {
+          "source": "바닥 전략 비중 그대로",
+          "scale": "1 − Σ코어"
+        },
+        "invariants": [
+          "Σw=1",
+          "w≥0",
+          "보유 합집합 ≤ fixed_axes.n_max(25) — 위성 절단 규칙 Q-L1-5",
+          "k=0 이면 기존 칸과 비트 동일(구현 검사 의무)",
+          "비중 상한 없음(v10 폐지)"
+        ],
+        "implementation": "rf_sleeve.R + rf_cell_engine.R 비중 단계 뒤 — 미구현(의존 CAPCORE-IMPL)"
+      }
+    },
+    {
+      "id": "S1",
+      "order": 5,
+      "role": "spare",
+      "on_floor": "F2",
+      "selection_basis": "none",
+      "spec": {
+        "weight_stage": "cap_core",
+        "k": 2,
+        "core": {
+          "rank_key": ".SizeLag (t-1 Size · rf_cell_engine.R:221 과 같은 정의)",
+          "universe": "K200 멤버(시그널일 플래그)",
+          "weight": "t-1 벤치 비중 근사 = Size_{t-1} / Σ_{K200} Size_{t-1} (유동비율·지수 편입 상한 미반영 — Q-L1-4)"
+        },
+        "satellite": {
+          "source": "베타매칭 무작위 — 바닥 위성과 같은 D02_Beta 구간에서 seed 고정 무작위",
+          "scale": "1 − Σ코어"
+        },
+        "invariants": [
+          "Σw=1",
+          "w≥0",
+          "보유 합집합 ≤ fixed_axes.n_max(25) — 위성 절단 규칙 Q-L1-5",
+          "k=0 이면 기존 칸과 비트 동일(구현 검사 의무)",
+          "비중 상한 없음(v10 폐지)"
+        ],
+        "implementation": "rf_sleeve.R + rf_cell_engine.R 비중 단계 뒤 — 미구현(의존 CAPCORE-IMPL)"
+      },
+      "activation": "A3 가 측정될 때만(F2 발동) — F2 위 closet-indexing 대조(C1-F2 · synth §3.4 예비 칸)",
+      "conditional_on": {
+        "floor": "F2",
+        "require": "F2 확정 = P0-11 소급 G2 pass ∧ as-of 재선정 새 칸(floor v2)",
+        "resolved": false
+      }
+    },
+    {
+      "id": "S2",
+      "order": 6,
+      "role": "spare",
+      "on_floor": "F2",
+      "selection_basis": "none",
+      "spec": {
+        "weight_stage": "cap_core",
+        "k": 1,
+        "core": {
+          "rank_key": ".SizeLag (t-1 Size · rf_cell_engine.R:221 과 같은 정의)",
+          "universe": "K200 멤버(시그널일 플래그)",
+          "weight": "t-1 벤치 비중 근사 = Size_{t-1} / Σ_{K200} Size_{t-1} (유동비율·지수 편입 상한 미반영 — Q-L1-4)"
+        },
+        "satellite": {
+          "source": "바닥 전략 비중 그대로",
+          "scale": "1 − Σ코어"
+        },
+        "invariants": [
+          "Σw=1",
+          "w≥0",
+          "보유 합집합 ≤ fixed_axes.n_max(25) — 위성 절단 규칙 Q-L1-5",
+          "k=0 이면 기존 칸과 비트 동일(구현 검사 의무)",
+          "비중 상한 없음(v10 폐지)"
+        ],
+        "implementation": "rf_sleeve.R + rf_cell_engine.R 비중 단계 뒤 — 미구현(의존 CAPCORE-IMPL)"
+      },
+      "activation": "A3 측정 ∧ A2 의 1차 기전(b_ewcw Δ NW-t ≤ −3) 성립 시 — F2 위 k 민감도(A2-F2 · synth §3.4 예비 칸 · Q-L1-6)",
+      "conditional_on": {
+        "floor": "F2",
+        "require": "F2 확정 = P0-11 소급 G2 pass ∧ as-of 재선정 새 칸(floor v2)",
+        "resolved": false
+      }
+    }
+  ],
+  "deleted_arms": [
+    {
+      "id": "A4",
+      "spec_was": "A1 + PG2 상주 오버레이",
+      "reason": "PG2 C11 격리로 판정 불능 — 대체 없이 삭제. 측정한 적 없는 칸이라 N 에 넣지 않는다. 다른 조합으로의 대체 금지(관측 낙폭을 보고 고른 조합 = 스누핑 · 레버 감사 §⑤).",
+      "counted_in_n": false,
+      "decision_ref": "PR-L1-A4-DISPOSITION (2026-09-25 도훈)"
+    }
+  ],
+  "contrasts": [
+    {
+      "id": "A1-F1",
+      "a": "A1",
+      "b": "F1"
+    },
+    {
+      "id": "A2-F1",
+      "a": "A2",
+      "b": "F1"
+    },
+    {
+      "id": "A3-F2",
+      "a": "A3",
+      "b": "F2"
+    },
+    {
+      "id": "C1-F1",
+      "a": "C1",
+      "b": "F1"
+    },
+    {
+      "id": "A1-C1",
+      "a": "A1",
+      "b": "C1"
+    },
+    {
+      "id": "S1-F2",
+      "a": "S1",
+      "b": "F2"
+    },
+    {
+      "id": "A3-S1",
+      "a": "A3",
+      "b": "S1"
+    },
+    {
+      "id": "S2-F2",
+      "a": "S2",
+      "b": "F2"
+    }
+  ],
+  "se_cells": [
+    {
+      "id": "F1.NULL",
+      "on_floor": "F1",
+      "kind": "null_dilution",
+      "counts_in_n": false,
+      "dependency": "P1-06",
+      "spec": "null-factor 희석 상주 칸(월내 순열 · seed 고정 · control 태그 = 서명 dedup·승계 제외) — n_seeds 는 P1-06 확정값"
+    },
+    {
+      "id": "F2.NULL",
+      "on_floor": "F2",
+      "kind": "null_dilution",
+      "counts_in_n": false,
+      "dependency": "P1-06",
+      "spec": "F2 발동 시에만"
+    }
+  ],
+  "metrics": [
+    {
+      "id": "b_ewcw_delta",
+      "tier": "primary",
+      "contract": "tilt_attribution",
+      "direction": "decrease",
+      "targets": [
+        "A1-F1",
+        "A2-F1",
+        "A3-F2",
+        "C1-F1",
+        "S2-F2"
+      ],
+      "field": "tilt_attribution 일간 [시장, EW_U−K200] 적재 b_ewcw 의 짝지은 Δ — value·t(NW)·ci(블록 부트스트랩)",
+      "note": "일간 귀속(월간은 2020-03 저점을 지운다 · P2-02) · t-1 멤버·LIQ"
+    },
+    {
+      "id": "oos_retention",
+      "tier": "secondary",
+      "contract": "essence_score",
+      "direction": "increase",
+      "targets": [
+        "A1",
+        "A3",
+        "C1",
+        "A2",
+        "S1",
+        "S2",
+        "F1",
+        "F2"
+      ],
+      "field": "essence.oos_retention(K200 대비 활성 · 등급 정의 그대로)"
+    },
+    {
+      "id": "calmar_delta_boot",
+      "tier": "secondary",
+      "contract": "rf_prereg_paired_boot",
+      "direction": "increase",
+      "targets": [
+        "A1-F1",
+        "A3-F2",
+        "A1-C1"
+      ],
+      "field": "rf_prereg_paired_boot(stat='calmar') p_gt0 — 일간 순수익"
+    },
+    {
+      "id": "calmar_trunc",
+      "tier": "secondary",
+      "contract": "sa_subwindow",
+      "direction": "increase",
+      "targets": [
+        "A1",
+        "A3",
+        "C1",
+        "A2",
+        "S1",
+        "S2",
+        "F1",
+        "F2"
+      ],
+      "field": "sa_subwindow(end=2024-12-31) Calmar"
+    },
+    {
+      "id": "oos_retention_trunc",
+      "tier": "secondary",
+      "contract": "sa_subwindow",
+      "direction": "increase",
+      "targets": [
+        "A1",
+        "A3",
+        "C1",
+        "A2",
+        "S1",
+        "S2",
+        "F1",
+        "F2"
+      ],
+      "field": "sa_subwindow(end=2024-12-31) oos_retention"
+    },
+    {
+      "id": "net_sharpe",
+      "tier": "secondary",
+      "contract": "essence_score",
+      "direction": "increase",
+      "targets": [
+        "A1",
+        "A3",
+        "C1",
+        "A2",
+        "S1",
+        "S2",
+        "F1",
+        "F2"
+      ],
+      "field": "essence.net_sharpe(총수익 SR)"
+    },
+    {
+      "id": "cagr",
+      "tier": "secondary",
+      "contract": "essence_score",
+      "direction": "increase",
+      "targets": [
+        "A1",
+        "A3",
+        "C1",
+        "A2",
+        "S1",
+        "S2",
+        "F1",
+        "F2"
+      ],
+      "field": "essence.cagr"
+    },
+    {
+      "id": "port_t",
+      "tier": "secondary",
+      "contract": "essence_score",
+      "direction": "increase",
+      "targets": [
+        "A1",
+        "A3",
+        "C1",
+        "A2",
+        "S1",
+        "S2",
+        "F1",
+        "F2"
+      ],
+      "field": "essence.portfolio_alpha_t_nw_lag3"
+    },
+    {
+      "id": "beta_ctrl_sel_t",
+      "tier": "secondary",
+      "contract": "beta_controlled_alpha",
+      "direction": "increase",
+      "targets": [
+        "A1",
+        "A3"
+      ],
+      "field": "β-통제 선별 α 의 t"
+    },
+    {
+      "id": "no_signal_distinguishable",
+      "tier": "secondary",
+      "contract": "no_signal_control",
+      "direction": "increase",
+      "targets": [
+        "A1",
+        "A3"
+      ],
+      "field": "no_signal_gate verdict ≠ INDISTINGUISHABLE_FROM_NO_SIGNAL → 1 · 같으면 0"
+    },
+    {
+      "id": "cagr_null_se",
+      "tier": "safety",
+      "contract": "null_dilution",
+      "direction": "report",
+      "targets": [
+        "F1.NULL",
+        "F2.NULL"
+      ],
+      "field": "rf_prereg_se_null(null 희석 칸들의 cagr) se — '④ CAGR ≥ floor − 잡음' 의 잡음(Q-L1-2)"
+    },
+    {
+      "id": "is_active_ir_delta",
+      "tier": "safety",
+      "contract": "tilt_attribution",
+      "direction": "report",
+      "must_report": true,
+      "targets": [
+        "A1-F1",
+        "A2-F1",
+        "A3-F2"
+      ],
+      "field": "IS(2005~16) K200 대비 활성 IR 변화",
+      "note": "보고 의무(레버 감사 §④ · retention 분모 게임 방지 — L-QPM-20260706_081232). 누락이면 판정이 라벨을 내지 않는다"
+    },
+    {
+      "id": "mdd",
+      "tier": "safety",
+      "contract": "essence_score",
+      "direction": "report",
+      "targets": [
+        "A1",
+        "A3",
+        "C1",
+        "A2",
+        "S1",
+        "S2",
+        "F1",
+        "F2"
+      ],
+      "field": "essence.mdd"
+    }
+  ],
+  "criteria": {
+    "success": [
+      {
+        "metric": "b_ewcw_delta",
+        "target": "A1-F1",
+        "stat": "t",
+        "op": "<=",
+        "rhs": -3
+      },
+      {
+        "metric": "oos_retention",
+        "target": "A1",
+        "stat": "value",
+        "op": ">=",
+        "rhs": {
+          "ref": {
+            "metric": "oos_retention",
+            "target": "F1",
+            "stat": "value"
+          },
+          "offset": 0.3
+        }
+      },
+      {
+        "metric": "calmar_delta_boot",
+        "target": "A1-F1",
+        "stat": "p_gt0",
+        "op": ">=",
+        "rhs": 0.8
+      },
+      {
+        "all": [
+          {
+            "metric": "calmar_trunc",
+            "target": "A1",
+            "stat": "value",
+            "op": ">=",
+            "rhs": {
+              "ref": {
+                "metric": "calmar_trunc",
+                "target": "F1",
+                "stat": "value"
+              }
+            }
+          },
+          {
+            "metric": "oos_retention_trunc",
+            "target": "A1",
+            "stat": "value",
+            "op": ">",
+            "rhs": {
+              "ref": {
+                "metric": "oos_retention_trunc",
+                "target": "F1",
+                "stat": "value"
+              }
+            }
+          }
+        ]
+      },
+      {
+        "all": [
+          {
+            "metric": "net_sharpe",
+            "target": "A1",
+            "stat": "value",
+            "op": ">=",
+            "rhs": {
+              "ref": {
+                "metric": "net_sharpe",
+                "target": "F1",
+                "stat": "value"
+              }
+            }
+          },
+          {
+            "metric": "cagr",
+            "target": "A1",
+            "stat": "value",
+            "op": ">=",
+            "rhs": {
+              "ref": {
+                "metric": "cagr",
+                "target": "F1",
+                "stat": "value"
+              },
+              "noise": {
+                "metric": "cagr_null_se",
+                "target": "F1.NULL",
+                "stat": "se",
+                "k": 1
+              }
+            }
+          }
+        ]
+      },
+      {
+        "all": [
+          {
+            "metric": "beta_ctrl_sel_t",
+            "target": "A1",
+            "stat": "t",
+            "op": ">=",
+            "rhs": 4
+          },
+          {
+            "metric": "no_signal_distinguishable",
+            "target": "A1",
+            "stat": "value",
+            "op": "==",
+            "rhs": 1
+          }
+        ]
+      },
+      {
+        "metric": "port_t",
+        "target": "A1",
+        "stat": "value",
+        "op": ">",
+        "rhs": {
+          "ref": {
+            "metric": "port_t",
+            "target": "C1",
+            "stat": "value"
+          }
+        }
+      }
+    ],
+    "failure": [
+      {
+        "any": [
+          {
+            "metric": "calmar_trunc",
+            "target": "A1",
+            "stat": "value",
+            "op": "<",
+            "rhs": {
+              "ref": {
+                "metric": "calmar_trunc",
+                "target": "F1",
+                "stat": "value"
+              }
+            }
+          },
+          {
+            "metric": "oos_retention_trunc",
+            "target": "A1",
+            "stat": "value",
+            "op": "<=",
+            "rhs": {
+              "ref": {
+                "metric": "oos_retention_trunc",
+                "target": "F1",
+                "stat": "value"
+              }
+            }
+          }
+        ]
+      },
+      {
+        "metric": "port_t",
+        "target": "A1",
+        "stat": "value",
+        "op": "<=",
+        "rhs": {
+          "ref": {
+            "metric": "port_t",
+            "target": "C1",
+            "stat": "value"
+          }
+        }
+      }
+    ],
+    "stop": [
+      {
+        "id": "STOP_L1_TRUNC",
+        "after_arms": [
+          "A1",
+          "A3"
+        ],
+        "when": {
+          "all": [
+            {
+              "any": [
+                {
+                  "metric": "calmar_trunc",
+                  "target": "A1",
+                  "stat": "value",
+                  "op": "<",
+                  "rhs": {
+                    "ref": {
+                      "metric": "calmar_trunc",
+                      "target": "F1",
+                      "stat": "value"
+                    }
+                  }
+                },
+                {
+                  "metric": "oos_retention_trunc",
+                  "target": "A1",
+                  "stat": "value",
+                  "op": "<=",
+                  "rhs": {
+                    "ref": {
+                      "metric": "oos_retention_trunc",
+                      "target": "F1",
+                      "stat": "value"
+                    }
+                  }
+                }
+              ]
+            },
+            {
+              "any": [
+                {
+                  "metric": "calmar_trunc",
+                  "target": "A3",
+                  "stat": "value",
+                  "op": "<",
+                  "rhs": {
+                    "ref": {
+                      "metric": "calmar_trunc",
+                      "target": "F2",
+                      "stat": "value"
+                    }
+                  }
+                },
+                {
+                  "metric": "oos_retention_trunc",
+                  "target": "A3",
+                  "stat": "value",
+                  "op": "<=",
+                  "rhs": {
+                    "ref": {
+                      "metric": "oos_retention_trunc",
+                      "target": "F2",
+                      "stat": "value"
+                    }
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        "action": {
+          "halt": true
+        },
+        "note": "플랜 PR-L1 멈춤: A1·A3 가 ③(2024-12 절단판)에서 동시에 실패하면 즉시 종료 — A3 가 삭제되면 A1 단독으로 재선언(Q-L1-3 · 등록 전)"
+      }
+    ],
+    "text": {
+      "success": [
+        "① 0: 1차 기전 b_ewcw Δ(A1−F1) 짝지은 NW-t ≤ −3",
+        "① K200-OOS retention(A1) ≥ retention(F1) + 0.3",
+        "② Calmar 짝지은 블록 부트스트랩 P(Δ>0) ≥ 0.8",
+        "③ 2024-12 절단판 ΔCalmar ≥ 0 ∧ Δretention > 0",
+        "④ 총수익 SR 비하락 ∧ CAGR ≥ floor − 1×SE_null(cagr) (Q-L1-2)",
+        "⑤ β-통제 선별 t ≥ 4 ∧ no_signal_gate ≠ INDISTINGUISHABLE",
+        "⑥ A1 − C1 > 0 — 지표 = PORT_t(초안 제안 · Q-L1-1)"
+      ],
+      "failure": [
+        "③ 불충족(이득이 2025~26 에서만) — 종결 · L-code 에 기전",
+        "⑥ 불충족(closet-indexing — 07-05 를 essence 에서 재현) — 종결 · L-code 에 기전"
+      ],
+      "stop": [
+        "STOP_L1_TRUNC: A1·A3 가 ③ 에서 동시 실패 → 즉시 종료(halt)"
+      ],
+      "thresholds_source": "D-H(2026-09-23 도훈 resolved: 'PR-L1 6조건 승인') — 수치 +0.3 · 0.8 · 0 · −3 · 4 는 플랜 PR-L1 절 그대로"
+    }
+  },
+  "labels": [
+    "confirmed",
+    "powered_null",
+    "undetermined",
+    "failed"
+  ],
+  "power": {
+    "primary": {
+      "metric": "b_ewcw_delta",
+      "target": "A1-F1"
+    },
+    "ci_level": 0.9,
+    "implied_effect": {
+      "value": null,
+      "status": "pending",
+      "formula": "Δb ≈ w̄_core × (b_core − b_F1) — w̄_core = 표본 평균 t-1 코어 비중(k=2 · Size 패널에서 R 산출) · b_core = 코어 k 종 바스켓의 b_ewcw · b_F1 = floor v2 F1 의 b_ewcw(둘 다 tilt_attribution)",
+      "inputs": [
+        "w̄_core (Size t-1 · R)",
+        "b_core (tilt_attribution)",
+        "b_F1 (tilt_attribution · floor v2 뒤)"
+      ],
+      "note": "관측 Δ 로 역산 금지 — 착수 전 입력만으로 R 이 계산"
+    },
+    "se": {
+      "value": null,
+      "status": "pending",
+      "source": [
+        "null_dilution",
+        "block_bootstrap"
+      ],
+      "method": "rf_prereg_combine_se(max): SE_null = F1.NULL 칸들의 b_ewcw Δ 표준편차 · SE_boot = tilt_attribution 짝지은 블록 부트스트랩(P2-02 가 제공해야 함 — NW-t 는 판정 통계이고 SE 원천은 부트스트랩)"
+    },
+    "computed": null,
+    "modal_outcome": "pending — 1차는 검정력 높은 기전량으로 설계(플랜) · 착수 전 산출. Calmar 축은 미결 최빈(플랜: ΔCalmar ratio 약 0.2 추정 — 옛 규약 · 인용 아닌 설계 참고)",
+    "leaves_behind": [
+      "cap_core arm(k=0 비트 동일 검사 포함)",
+      "tilt_attribution 의 첫 사전등록 판정 사용",
+      "절단판 계약(sa_subwindow) 실사용",
+      "07-05 closet-indexing 재현 여부의 essence 판정(⑥)"
+    ]
+  },
+  "se_source": {
+    "methods": [
+      "null_dilution",
+      "block_bootstrap"
+    ],
+    "combine": "max",
+    "replaced": "위상쌍 금지(레버 감사 §⑤) — null 희석·블록 부트스트랩"
+  },
+  "budget": {
+    "max_cells": 6,
+    "counted": "A1·A3·C1·A2 + 예비 S1·S2 — A4 삭제로 플랜 ≤8 에서 6",
+    "se_cells": "null 희석 칸은 예산·N 밖"
+  },
+  "priors": {
+    "mechanism": 0.6,
+    "success": 0.1,
+    "grade_a": 0.03,
+    "basis": "판단값 — 플랜 §P2 PR-L1(기전 60% · 성공 10% · A 3%) · A4 삭제로 'A4 포함 최대 5%' 조항 소멸"
+  },
+  "hypothesis_index_lookup": {
+    "status": "attached",
+    "tool": "02_Infrastructure/tools/hypothesis_index.R::lookup_hypothesis(auto_rebuild=FALSE)",
+    "run_at": "2026-09-25T19:12:41+0900",
+    "index_sha256": "5db5ca64232568aed97556d9d330637e308290c7787de008e043559f562f9c41",
+    "index_mtime": "2026-09-24T06:58:40+0900",
+    "index_stale_sources": [
+      "06_Registry/distilled_knowledge.json",
+      "06_Registry/module_catalog.json",
+      "stage_artifacts/l_code (원본 L-code)"
+    ],
+    "note": "과거 negative 는 사실 기록이지 금지 목록이 아니다(AX-000) — 새 각도면 재시도 정당",
+    "queries": [
+      {
+        "keywords": [
+          "메가캡"
+        ],
+        "n_hits": 0,
+        "fallback_single_word": false,
+        "hits": []
+      },
+      {
+        "keywords": [
+          "anchor"
+        ],
+        "n_hits": 5,
+        "fallback_single_word": false,
+        "hits": [
+          {
+            "strategy_id": "DIST-AR-001",
+            "verdict": "DISTILLED_NEG",
+            "grade": null,
+            "title": "DIST-AR-001: KR defense-family Q07+Accounting-Beta(D29) composite 30종목 long-only",
+            "date": "2026-07-04",
+            "research_mode": ""
+          },
+          {
+            "strategy_id": "WT-P20260706_001_megacap_anchor_forge",
+            "verdict": "FAIL",
+            "grade": "F",
+            "title": "L-QPM-20260706_081232: WT-P20260706_001_megacap_anchor_forge",
+            "date": "2026-07-05",
+            "research_mode": "qepm_legacy"
+          },
+          {
+            "strategy_id": "STR_MEGACAP_ANCHOR_CAPRELAX_20260706",
+            "verdict": "FAIL",
+            "grade": "F",
+            "title": "L-QPM-20260706_083113: STR_MEGACAP_ANCHOR_CAPRELAX_20260706",
+            "date": "2026-07-05",
+            "research_mode": "qepm_legacy"
+          },
+          {
+            "strategy_id": "STR_AS_20260612_123546_52003",
+            "verdict": "FAIL",
+            "grade": "F",
+            "title": "52-Week High Anchor Momentum",
+            "date": "2026-06-12",
+            "research_mode": ""
+          },
+          {
+            "strategy_id": "STR_AS_20260612_132740_321992",
+            "verdict": "PASS",
+            "grade": "B",
+            "title": "52-Week High Anchor Momentum",
+            "date": "2026-06-12",
+            "research_mode": "alpha_search"
+          }
+        ]
+      },
+      {
+        "keywords": [
+          "closet"
+        ],
+        "n_hits": 1,
+        "fallback_single_word": false,
+        "hits": [
+          {
+            "strategy_id": "DIST-AR-009",
+            "verdict": "DISTILLED_NEG",
+            "grade": null,
+            "title": "DIST-AR-009: KR K200∪KQ150 월말-그리드에서 기존 return/consensus-파생 신호의 재구성(packaging) — ",
+            "date": "2026-08-20",
+            "research_mode": ""
+          }
+        ]
+      },
+      {
+        "keywords": [
+          "벤치",
+          "비중"
+        ],
+        "n_hits": 2,
+        "fallback_single_word": false,
+        "hits": [
+          {
+            "strategy_id": "DIST-RAMP-006",
+            "verdict": "DISTILLED_COND",
+            "grade": null,
+            "title": "DIST-RAMP-006: KR 시장에서 value/국면-조건부 팩터배분은 배포 조건(25종 long-only)에서 실현 PORT_t 천장이 ~",
+            "date": "2026-08-22",
+            "research_mode": ""
+          },
+          {
+            "strategy_id": "DIST-AR-009",
+            "verdict": "DISTILLED_NEG",
+            "grade": null,
+            "title": "DIST-AR-009: KR K200∪KQ150 월말-그리드에서 기존 return/consensus-파생 신호의 재구성(packaging) — ",
+            "date": "2026-08-20",
+            "research_mode": ""
+          }
+        ]
+      },
+      {
+        "keywords": [
+          "tracking"
+        ],
+        "n_hits": 2,
+        "fallback_single_word": false,
+        "hits": [
+          {
+            "strategy_id": "DIST-QPM-032",
+            "verdict": "DISTILLED",
+            "grade": null,
+            "title": "DIST-QPM-032: [초안] [실증 혼재(방향불명) 규칙 초안] family=momentum, tags=legacy,diversifier,",
+            "date": "2026-07-26",
+            "research_mode": ""
+          },
+          {
+            "strategy_id": "R41_insider_safe_fading_horizon_bounded_wiring",
+            "verdict": "PASS",
+            "grade": "B",
+            "title": "L-RAMP-20260715_053646: R41_insider_safe_fading_horizon_bounded_wiring",
+            "date": "2026-09-01",
+            "research_mode": "ramp"
+          }
+        ]
+      }
+    ]
+  },
+  "pit": {
+    "as_of_selection": true,
+    "c_codes": [
+      "C1",
+      "C2",
+      "C6",
+      "C10",
+      "C13",
+      "C14",
+      "C15"
+    ],
+    "statements": [
+      "C1·C14(D-E · pit.md 2026-09-23): 평가 창 결과를 소비하는 자동 선정은 as-of 만 — 선정 통계는 Usable_Date ≤ 결정 시점. 전기간 IC·conditional_ic_matrix 를 선정에 쓰지 않는다(D-E-V6-CONDITIONAL-IC).",
+      "C1: 바닥 F1·F2 는 as-of 재선정 새 칸만 — 원 칸(22632·14760 promo3)의 selection_basis_full_sample_ic_inherited 표식 계보를 그대로 쓰지 않는다(P0-14 승계 표식 · floor v2).",
+      "C6: 유니버스 K200∪KQ150 시변 멤버십(시그널일 플래그) · 상장폐지 포함 원장.",
+      "C10: 유동성 = adv20 t-1 ≥ 격자 fixed_axes.liq_adv20_min(= LIQ 2e8).",
+      "C13·C15: 팩터는 load_month_factors() 경유 · Z_Score_Aligned 만(NEGATE/FLIP 금지).",
+      "C5: 레버 자체는 오버레이가 아니다 — 바닥에 오버레이 층이 있으면 overlay_pit_guard(assert_overlay_pit · lag1 · strict A/B) 규약 그대로.",
+      "집행 = close_t1(current_axis exec_v2_close_t1) — 시그널일 종가 체결 없음. 규약이 다른 칸과 비교하지 않는다.",
+      "코어 선정 = t-1 Size(.SizeLag — 시그널일 전일 값 · C2) 횡단면 순위 · 성과 통계 소비 없음(selection_basis none).",
+      "코어 비중 = t-1 벤치 비중 근사(t-1 Size) — 같은 날 가격·시총 사용 금지.",
+      "C1(베타매칭 무작위 위성) 베타 = D02_Beta(시그널일 t 값) · seed 고정."
+    ]
+  },
+  "measurement_regime": {
+    "exec_price": "close_t1",
+    "current_axis": "exec_v2_close_t1",
+    "pin_tag": null
+  },
+  "selection_accounting": {
+    "selection_type": "sweep",
+    "n_family": null,
+    "n_source": null,
+    "draft_estimate": {
+      "F1_lineage": {
+        "selection_type": "sweep",
+        "family_root": "RP_20260917_105807_22632_combo_rulefast",
+        "lineage": [
+          "RP_20260917_105807_22632_combo_rulefast_promo3",
+          "RP_20260917_105807_22632_combo_rulefast_promo2",
+          "RP_20260917_105807_22632_combo_rulefast_promo1",
+          "RP_20260917_105807_22632_combo_rulefast"
+        ],
+        "n_family_at_registration": 147,
+        "n_trials_basis": "base1+lineage_measured(excl_inherited)+batch_size",
+        "n_lineage_measured": 140,
+        "ledger_sha256": "8e8d7e40b0cf37977801d56c68234e334ce22086f8168f157e2722ac06ea785f",
+        "computed_at": "2026-09-25T19:12:41+0900",
+        "n_source": "rf_runner_gates.R::rf_selection_accounting(rf_lineage_ids, rf_lineage_measured, n_arms)"
+      }
+    },
+    "note": "삭제 arm(A4) 은 N 미계상(PR-L1-A4-DISPOSITION). 등록 시 rf_prereg_lineage_n 재산출."
+  },
+  "dependencies": [
+    {
+      "id": "PR-L2-VERDICT",
+      "what": "PR-L2 판정 기록(플랜 순서 L2 → L1)",
+      "status": "pending"
+    },
+    {
+      "id": "D-H",
+      "what": "L1 성공 기준값·코어 집중 거버넌스",
+      "status": "available",
+      "ref": "06_Registry/decision_register.json#D-H"
+    },
+    {
+      "id": "CAPCORE-IMPL",
+      "what": "cap_core 구현(rf_sleeve.R + rf_cell_engine.R 비중 단계 뒤 · Σw=1·w≥0·≤25 stopifnot · k=0 비트 동일 검사)",
+      "status": "pending"
+    },
+    {
+      "id": "P2-02",
+      "what": "tilt_attribution(b_ewcw · IS 활성 IR · 블록 부트스트랩 SE)",
+      "status": "pending",
+      "file": "02_Infrastructure/contracts/tilt_attribution.R"
+    },
+    {
+      "id": "P1-03",
+      "what": "sa_subwindow(2024-12 절단판)",
+      "status": "pending",
+      "file": "02_Infrastructure/contracts/selection_accounting.R"
+    },
+    {
+      "id": "P2-03",
+      "what": "floor v2 F1·F2",
+      "status": "pending",
+      "file": "06_Registry/prereg/reference_floors_v2.json"
+    },
+    {
+      "id": "P1-06",
+      "what": "null 희석 상주 칸",
+      "status": "pending"
+    },
+    {
+      "id": "SIZE-T1",
+      "what": "Size t-1 커버리지 확인(09-23 데이터 배선 감사: Size 09-10~ 100% NA → 수리 이력 확인)",
+      "status": "unverified"
+    }
+  ],
+  "open_questions": [
+    {
+      "id": "Q-L1-1",
+      "question": "⑥ 'A1 − C1 > 0' 의 지표 — D-H 결정문은 '6조건 승인'만 기록",
+      "proposal": "PORT_t(NW lag3) — 선별 신호 기여가 무작위 위성보다 커야 closet-indexing 아님(초안 success[7]·failure[2])",
+      "blocks": "registration"
+    },
+    {
+      "id": "Q-L1-2",
+      "question": "④ 'CAGR ≥ floor − 잡음' 의 잡음 정의",
+      "proposal": "1 × SE_null(cagr)",
+      "blocks": "registration"
+    },
+    {
+      "id": "Q-L1-3",
+      "question": "A3 가 삭제(F2 미충족)되면 멈춤 조건",
+      "proposal": "A1 단독 ③ 실패 → halt 로 등록 전 재선언",
+      "blocks": "registration"
+    },
+    {
+      "id": "Q-L1-4",
+      "question": "벤치 비중 근사(t-1 Size 비중) vs 실제 KOSPI200(유동시총·편입 상한)",
+      "proposal": "근사로 착수하되 차이를 기록 — PIT 유동비율 원천이 필요하면 data_pipeline_queue 적재(데이터 부재 = 포기 사유 아님)",
+      "blocks": "registration"
+    },
+    {
+      "id": "Q-L1-5",
+      "question": "코어+위성 합집합 ≤25 절단 규칙",
+      "proposal": "위성 = 바닥 순위 상위 (25 − |코어 ∖ 바닥 보유|) 종으로 절단 후 (1−Σ코어)로 스케일",
+      "blocks": "registration"
+    },
+    {
+      "id": "Q-L1-6",
+      "question": "예비 2칸(S1=C1-F2 · S2=A2-F2) 발동 조건 확정",
+      "proposal": "S1 = A3 측정 시 · S2 = A3 측정 ∧ A2 1차 기전 성립 시",
+      "blocks": "registration"
+    }
+  ],
+  "reporting_obligations": [
+    "IS(2005~16) 활성 IR 변화(must_report — 없으면 라벨 없음)",
+    "2024-12 절단판(③)",
+    "삼성+하이닉스 코어 집중 = 리서치 측정 허용 · BOOK 적격성은 A 발생 시 별도(D-H)",
+    "성공 확인 전 cap_core 를 전 계보 상주 칸으로 배포 금지(플랜 PR-L1)",
+    "모든 결과 = 반증 시도 · 미결을 벽으로 적립하지 않음(AX-000)",
+    "close_t1 전환·floor v2 이전 수치 인용 금지"
+  ],
+  "not_a_grade": "등급은 essence 하나 — 이 사전등록의 라벨은 등급을 대체하지 않는다"
+}

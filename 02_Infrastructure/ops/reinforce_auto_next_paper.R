@@ -18,6 +18,16 @@
 #      A 면 judge_request 발행 + kill switch 정지 (도훈 confirm)
 #
 # ★이 파일은 논문을 고르지 않는다 — 큐 순서를 그대로 따른다. 재검색·재정렬 금지(lean-loop 규약).
+#
+# ★2026-09-25 사람 규칙 이행 (유기적 강화 설계 최종판 §1.1 '유기체 밖 사람 규칙' · 판정 정본 rf_lane_rules.R):
+#   · P1-08 FIFO(감사 D2-12): 이월 대상 = 미이월 소진 entry 중 **exhausted_at 가장 이른 것**(rf_fifo_exhausted). 구판은 ex[[length(ex)]]
+#     (원장 마지막 = LIFO)라 최고 계보 promo4 가 뒤에 소진된 반사실 entry 들에 밀려 이틀째 요약·승격 판정을 못 받았다. 호출당 1건 처리는 같다.
+#   · halt 위치: '활성 entry 가 있으면 즉시 종료' 를 요약 **뒤 · 개설(승격 자식·요청 발행) 직전**으로 옮겼다. 막는 것은 차단 활성
+#     (rf_blocking_active — 반사실 idle_only·사전등록 실험 entry 제외 · 감사 D8-02)뿐이다.
+#   · D-G 세대 하한: 승격 자격이 서도 '가장 최근 승격 뒤 신규 논문 착수 ≥ lanes.min_new_papers_per_promotion_generation' 이 아니면
+#     승격을 미루고(부모는 미이월 — 다음 호출도 FIFO 머리) 신규 논문을 먼저 연다. 열 신규 논문이 없으면(요청 없음 ∧ 큐 비었음) 면제.
+#   · 실험 entry(사전등록 arm)는 요약·승격·이월 대상이 아니다(rf_fifo_exhausted 가 뺀다).
+#   · 러너 claim: 원장을 쓰므로 러너가 부른 경우(QVEST_RF_CLAIM_HELD)가 아니면 러너 claim 을 잡는다 — 못 잡으면 쓰지 않고 물러난다.
 #==============================================================================
 suppressMessages({ library(data.table); library(jsonlite) })
 `%||%` <- function(a, b) if (is.null(a) || length(a) == 0L) b else a
@@ -48,21 +58,43 @@ led <- rf_load(1L, ROOT)
 #   (2026-08-31 도훈 지적: 상한이 25 인데 텔레그램이 계속 "20칸" 이라고 말했다).
 MAXA <- as.integer(led$max_attempts %||% 25L)   # 전역 기본값 — 아래에서 소진 entry 값으로 덮는다
 
-# 이미 active 가 있으면 이월할 필요 없음 (중복 개설 방지)
-if (length(Filter(function(e) identical(e$status, "active"), led$entries))) {
-  jlog("halt_active_exists"); return(invisible(0L))
+## ★러너 claim (2026-09-25) — 이 파일은 원장을 쓴다(요약 표식 · 이월 표식 · 승격 개설). 러너가 부르면 claim 을 상속한다(QVEST_RF_CLAIM_HELD).
+##   그 밖의 호출자(충실구현 레인 · 검증기 · 세션)는 러너 claim 을 잡아야 쓴다 — 못 잡으면(러너 배치 진행 중) 쓰지 않고 물러난다
+##   (러너가 active 0 · 반사실만 active · 소진 위임 때 다시 부른다). 구판은 잠금 없이 썼다 — 아래 halt 를 개설 직전으로 옮기면서
+##   활성 entry 가 있는 동안에도 요약 표식을 쓰므로 이 잠금이 전제다.
+if (!nzchar(Sys.getenv("QVEST_RF_CLAIM_HELD", ""))) {
+  suppressMessages(source(file.path(ROOT, "02_Infrastructure/ops/rf_claim.R")))
+  .CL <- { .c0 <- Sys.getenv("QVEST_RF_CLAIM", ""); if (nzchar(.c0)) .c0 else file.path(ROOT, ".cache/reinforce_auto.claim") }
+  .acq <- rf_claim_acquire(.CL, stale_hours = as.numeric(CFG$claim_stale_hours %||% 6))
+  if (!isTRUE(.acq$ok)) {
+    jlog("halt_runner_busy", reason = as.character(.acq$reason %||% ""), owner_pid = .acq$owner_pid %||% NA,
+         note = "러너 claim 이 잡혀 있다 — 원장을 쓰지 않고 물러난다(러너가 다음 tick 에 부른다)")
+    return(invisible(0L))
+  }
+  on.exit(tryCatch(rf_claim_release(.CL), error = function(e) NULL), add = TRUE)
 }
+## ★레인 규칙(D-G · P1-08) — 판정 정본 rf_lane_rules.R · 설정 lanes(없거나 깨지면 구판 거동: 활성 전부 차단 · 세대 하한 없음)
+suppressMessages(source(file.path(ROOT, "02_Infrastructure/reinforcement/rf_lane_rules.R")))
+.LANE <- rf_lane_cfg(CFG)
+if (!isTRUE(.LANE$ok)) jlog("lane_cfg_unavailable", why = .LANE$why %||% "", note = "lanes 설정 판독 불가 — 세대 하한 미적용 · 활성 전부 차단(구판 거동)")
+.REQ0_P <- file.path(ROOT, "06_Registry/replication_request.json")
+.req <- if (file.exists(.REQ0_P)) tryCatch(fromJSON(.REQ0_P, simplifyVector = FALSE), error = function(e) NULL) else NULL
+.gen_deferred <- FALSE   # D-G 세대 하한으로 승격을 미뤘다 — 이 entry 는 이월 표식을 받지 않는다(다음 호출도 FIFO 머리)
 
 # ── 1. 소진 entry 의 성적 요약 (개선 유무 판정 — 이월은 무조건) ──────────────
 # ★이미 이월을 끝낸 entry 는 다시 요약하지 않는다. 구판은 exhausted 목록의 마지막을
 #   매 tick 다시 집어 exhausted_summary/promote 판정을 반복했고, 그때마다 "N회 소진"
 #   텔레그램이 나갔다(2026-08-31: 27076 한 건에 대해 4회 반복 — 도훈이 "텔레가 섞여서
 #   온다" 고 지적한 소음의 절반이 이것이다).
-ex <- Filter(function(e) identical(e$status, "exhausted") && !isTRUE(e$handed_off), led$entries)
+## ★P1-08 FIFO — 미이월 소진 entry 를 exhausted_at 오름차순(판독 불가 = 뒤 · 원장 순서)으로 · 실험 entry 제외(정본 rf_fifo_exhausted)
+.F <- rf_fifo_exhausted(led$entries)
+if (length(.F$time_unreadable))
+  jlog("fifo_time_unreadable", ids = paste(.F$time_unreadable, collapse = ","), note = "exhausted_at 판독 불가 — FIFO 끝으로(원장 순서)")
+ex <- .F$entries
 best <- NULL
 .already <- FALSE
 if (length(ex)) {
-  E <- ex[[length(ex)]]
+  E <- ex[[1]]   # ★FIFO 머리(가장 먼저 소진) — 구판 ex[[length(ex)]](LIFO)
   # ★예산은 **entry 별**이다 (2026-09-04 도훈 지적: 텔레그램이 계속 "25회" 라고 말했다).
   #   B1 설계가 격자 5칸을 k칸으로 늘리면 그 entry 예산은 25+(k-5) 가 된다 — 오늘 실제로
   #   34였다. 전역 max_attempts 를 읽으면 **실제로 태운 횟수와 다른 숫자**를 보고하게 된다.
@@ -113,10 +145,20 @@ if (length(ex)) {
   if (!.already) {
     jlog("exhausted_summary", base_id = E$base_id, attempts = length(E$attempts),
          best_port_t = best$port_t %||% NA, best_grade = best$grade %||% "NA",
-         improved = isTRUE(!identical(best$grade %||% "F", E$base_grade %||% "F")))
+         improved = isTRUE(!identical(best$grade %||% "F", E$base_grade %||% "F")),
+         fifo_queue = length(ex), exhausted_at = as.character(E$exhausted_at %||% ""))
     tryCatch(rf_mark_summarized(1L, E$base_id, ROOT),
              error = function(e) jlog("summarized_mark_failed", err = conditionMessage(e)))
   }
+}
+
+# ── ★개설 직전 halt (P1-08 · 2026-09-25) — 요약은 위에서 끝났다. 막는 것은 **개설**(승격 자식 · 요청 발행)뿐이고, 막는 활성은
+#   차단 활성뿐이다(반사실 idle_only · 사전등록 실험 entry 는 막지 않는다 — 감사 D8-02 · 정본 rf_blocking_active).
+.blk <- rf_blocking_active(led$entries, .LANE)
+if (length(.blk)) {
+  jlog("halt_active_exists", n = length(.blk), ids = paste(vapply(.blk, function(z) as.character(z$base_id %||% ""), character(1)), collapse = ","),
+       fifo_head = if (length(ex)) as.character(ex[[1]]$base_id %||% "") else "")
+  return(invisible(0L))
 }
 
 # ── ★1.5 B등급 이상 승격 분기 (도훈 지시 2026-08-30) ─────────────────────────
@@ -128,7 +170,7 @@ if (length(ex)) {
 #   ★깊이 상한은 큐 정체 방지 — 한 논문이 승격 사슬로 무한히 예산을 먹지 않게 한다.
 # ★판정은 rf_promote.R 의 순수 함수 하나 — 인라인으로 두면 검사가 못 건드린다.
 if (length(ex)) {
-  E2 <- ex[[length(ex)]]
+  E2 <- ex[[1]]   # ★FIFO 머리 — 요약과 같은 entry
   suppressMessages(source(file.path(ROOT, "02_Infrastructure/reinforcement/rf_promote.R")))
   ## ★자식 base_id 가 이미 원장에 있으면 승격은 끝난 사건 — child_exists (2026-09-05 실사고 promo2 재승격 반복)
   .ids  <- vapply(led$entries, function(z) as.character(z$base_id %||% ""), character(1))
@@ -144,9 +186,48 @@ if (length(ex)) {
                                 note = "부모 기준선 비교 불가 — 부모 대비 개선 판정 생략 · 깊이 연장 불가(보수)")
   }
   PD    <- rf_promote_decide(E2d, best, CFG, existing_ids = .ids)
+  ## ★D-G 승격 세대당 신규 논문 ≥1 (결정 D-G 2026-09-23 · 정본 rf_lane_rules.R::rf_generation_gate · 값 = config lanes)
+  ##   자격이 서도 최근 승격 뒤 신규 논문 착수가 하한 미만이면 미룬다 — 부모는 이월 표식을 받지 않는다(다음 호출도 FIFO 머리 ·
+  ##   신규 논문이 열린 뒤 다시 판정). 열 신규 논문이 없으면(요청 진행 중 아님 ∧ 큐 술어 0) 면제하고 승격한다(무동작보다 낫다).
+  if (isTRUE(PD$ok)) {
+    .gate <- rf_generation_gate(led$entries, .LANE, request = .req)
+    if (!isTRUE(.gate$ok)) {
+      .np_n <- if (isTRUE(rf_request_inflight(.req, .LANE))) NA_integer_ else suppressWarnings(as.integer(system2(PY,
+        c(shQuote(file.path(ROOT, "02_Infrastructure/ops/research_pool_predicates.py")), "alpha-pending",
+          shQuote(file.path(ROOT, "stage_artifacts/paper_recharge"))), stdout = TRUE, stderr = FALSE)[1]))
+      if (isTRUE(rf_request_inflight(.req, .LANE)) || (!is.na(.np_n) && .np_n > 0L)) {
+        .gen_deferred <- TRUE
+        PD <- utils::modifyList(PD, list(ok = FALSE, reason = "generation_gate_new_paper_first"))
+        if (!isTRUE(rf_request_inflight(.req, .LANE)))
+          jlog("promote_deferred_new_paper_first", base_id = E2$base_id, last_promotion = .gate$last_promotion %||% "",
+               since = .gate$since %||% "", n_new = .gate$n_new_entries %||% NA, need = .gate$need %||% NA, n_pending = .np_n,
+               note = "D-G 승격 세대당 신규 논문 ≥1 — 신규 논문 착수 뒤 FIFO 로 다시 판정(부모 미이월 유지)")
+      } else {
+        jlog("generation_gate_waived_queue_empty", base_id = E2$base_id, last_promotion = .gate$last_promotion %||% "",
+             n_new = .gate$n_new_entries %||% NA, need = .gate$need %||% NA, n_pending = .np_n,
+             note = "D-G 세대 하한 미달이지만 열 신규 논문이 없다(요청 없음 ∧ 큐 0) — 승격 진행")
+      }
+    } else if (isTRUE(.gate$applied))
+      jlog("generation_gate_ok", base_id = E2$base_id, last_promotion = .gate$last_promotion %||% "", n_new = .gate$n_new_entries %||% NA,
+           n_request_attempts = .gate$n_request_attempts %||% NA, need = .gate$need %||% NA, why = .gate$why %||% "",
+           note = "D-G 세대 하한 충족 — 승격 판정 진행")
+  }
   MAXD  <- as.integer(CFG$promote_max_depth %||% 3L)
   depth <- PD$depth
   sp    <- best$spec %||% NA_character_
+  ## >>> O0a 시행 로그(P1-02 · 설계 organic_design_final §3 G1) — 승격 결정 1건(승격 / 비승격 + 사유 · 판정 불변 · 실패는 이월을 막지 않는다)
+  .tl_promote <- function(chosen, why) tryCatch({
+    suppressMessages(source(file.path(ROOT, "02_Infrastructure/reinforcement/rf_trial_producers.R"), local = TRUE))
+    rf_tp_record("promote", E2$base_id,
+      list(list(id = "promote", rank = if (identical(chosen, "promote")) 1L else 2L,
+                reason = sprintf("best %s · grade %s", as.character(best$cell_code %||% "NA"), as.character(best$grade %||% "NA")),
+                features = list(value = suppressWarnings(as.numeric(best$port_t %||% NA)))),
+           list(id = "no_promote", rank = if (identical(chosen, "promote")) 2L else 1L, reason = as.character(why))),
+      chosen, "02_Infrastructure/reinforcement/rf_promote.R::rf_promote_decide",
+      scope = list(block = "promote", depth = as.integer(PD$depth %||% NA), new_base_id = as.character(PD$new_base_id %||% ""),
+                   cell = as.character(best$cell_code %||% "")), root = ROOT)
+  }, error = function(e) jlog("trial_log_failed", what = "promote", err = conditionMessage(e)))
+  ## <<< O0a
 
   if (!isTRUE(PD$ok) && isTRUE(.already)) {
     # 이미 한 번 판정한 entry — 이월만 다시 시도한다(아래 합류). 로그는 반복하지 않는다.
@@ -155,6 +236,7 @@ if (length(ex)) {
     #   안 한 것(등급 미달)은 다른 사건이고, 사유가 없으면 둘을 구분할 수 없다.
     jlog("promote_skipped", reason = PD$reason, base_id = E2$base_id, depth = PD$depth,
          best_grade = best$grade %||% "NA", best_port_t = best$port_t %||% NA_real_)
+    .tl_promote("no_promote", PD$reason %||% "")   ## O0a
   } else {
     ws <- tryCatch(fromJSON(sp, simplifyVector = FALSE), error = function(e) NULL)
     cf <- if (!is.null(ws)) ws$factors else NULL
@@ -165,6 +247,7 @@ if (length(ex)) {
     }
     if (is.null(ws)) {
       jlog("promote_skipped", reason = "winner_spec_unreadable", spec = sp)
+      .tl_promote("no_promote", "winner_spec_unreadable")   ## O0a
     } else {
       ## ★overlay 도 실는다 (2026-09-04): 소비자(러너 carry 병합)는 E$carry$overlay 를 읽는데 생산자가 안 실었다 —
       ##   승자가 B5/B4 칸이면 위험 통제가 세대마다 리셋된다(승계 목록에서 빠진 축은 없는 축이 된다).
@@ -195,6 +278,7 @@ if (length(ex)) {
            cell = best$cell_code %||% "NA", grade = best$grade, port_t = best$port_t,
            calmar = best$calmar %||% NA_real_, via = PD$reason %||% "ok",
            carry_factors = length(carry$factors))
+      .tl_promote("promote", PD$reason %||% "ok")   ## O0a
       ## ★부모에 이월 표식 — 다음 논문 hand-off 와 같은 표식(rf_mark_handed_off). 이게 없으면 자식이 큐로
       ##   넘어간 뒤 부모가 "마지막 미이월 소진 entry" 로 다시 떠올라 매 tick 재승격한다(2026-09-05 실사고).
       tryCatch(rf_mark_handed_off(1L, E2$base_id, ROOT, promoted_to = nid),
@@ -245,7 +329,7 @@ suppressMessages(source(file.path(ROOT, "02_Infrastructure/ops/rf_reimplement_qu
                 error = function(e) { jlog("reimplement_queue_failed", err = conditionMessage(e)); list(issued = FALSE) })
 if (isTRUE(.rq$issued)) {
   # 이월 완료 표식 — 승격·다음 논문 경로와 같은 writer(rf_mark_handed_off). 재구현으로 넘어간 것도 이월이다.
-  if (!is.null(best$base_id)) tryCatch({
+  if (!is.null(best$base_id) && !isTRUE(.gen_deferred)) tryCatch({   # ★세대 하한으로 미룬 승격은 이월하지 않는다(2026-09-25)
     rf_mark_handed_off(1L, best$base_id, ROOT, reason = "reimplement_queue")
     jlog("handed_off", base_id = best$base_id)
   }, error = function(e) jlog("handoff_mark_failed", err = conditionMessage(e)))
@@ -322,7 +406,7 @@ write(toJSON(list(requested_at = format(Sys.time(), "%Y-%m-%dT%H:%M:%S%z"),
              auto_unbox = TRUE, pretty = TRUE, null = "null"), REQ)
 jlog("replication_requested", path = REQ)
   # 이월 완료 표식 — 이 entry 는 다음 tick 부터 요약·승격 대상이 아니다 (writer = rf_mark_handed_off · 승격 경로와 동일)
-  if (!is.null(best$base_id)) tryCatch({
+  if (!is.null(best$base_id) && !isTRUE(.gen_deferred)) tryCatch({   # ★세대 하한으로 미룬 승격은 이월하지 않는다(2026-09-25)
     rf_mark_handed_off(1L, best$base_id, ROOT)
     jlog("handed_off", base_id = best$base_id)
   }, error = function(e) jlog("handoff_mark_failed", err = conditionMessage(e)))

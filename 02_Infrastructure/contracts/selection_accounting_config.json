@@ -1,0 +1,21 @@
+{
+  "schema": "selection_accounting_config_v1",
+  "note": "selection_accounting.R(플랜 P1-03) 설정 정본 — 이 판은 sa_subwindow(절단판 진단)만. P1-03 의 나머지 항목(N_eff · DSR · CSCV-PBO · 가족 조정 Calmar · retention 감쇠귀무)은 계약·설정 모두 부재(스텁 없음). 코드에 날짜·수치 기본값 없음 — 이 파일이 없거나 키가 비면 멈춘다. ★'진단 — 등급 대체 아님'.",
+  "subwindow": {
+    "prefer_exec_price": "close_t1",
+    "prefer_exec_price_note": "입력 판 = 원장 current_axis(exec_v2_close_t1)의 권위 재측정 판 remeasure_close_t1_* (tilt_attribution.R ta_resolve_artifact 와 같은 규칙 · 결정 EXEC-PRICE 2026-09-23 · P0-05/06)",
+    "default_cut": "trunc_2024_12",
+    "cuts": {
+      "trunc_2024_12": {
+        "end": "2024-12-31",
+        "source": "플랜 qvest-1-drifting-eclipse §P2 PR-L1 성공 ③ '2024-12 절단판 ΔCalmar ≥ 0 ∧ Δretention > 0' · 실패(③ 불충족 = 이득이 2025~26 에서만) · 멈춤 STOP_L1_TRUNC — 결정 D-H(2026-09-23 도훈: PR-L1 6조건 승인). 경계 = 레버 감사(scratchpad/organic/lever_audit_final.md §②)가 본 2025~26 공통 성분 벽 구간의 시작 전날. 경계 자체가 사후 경계라 선정 규칙 입력 금지 · 서술·반증 전용(P2 통합 보고 §6).",
+        "use": "PR-L1 calmar_trunc · oos_retention_trunc(성공 ③·실패·멈춤) · PR-L2 calmar_trunc(2차)"
+      }
+    },
+    "identity_rule": "매 호출 전 구간 재구성 essence 가 authoritative_remeasure.json essence·essence_grade 와 identical(JSON 왕복) — 아니면 stop. end ≥ 산출 마지막 날이면 절단 없음 = 그 값.",
+    "links": [
+      {"cite": "Bailey, Borwein, López de Prado & Zhu (2017) The Probability of Backtest Overfitting. Journal of Computational Finance 20(4)", "url": "https://doi.org/10.21314/JCF.2016.322", "use": "표본 부분창에서 성과가 유지되는지로 선택 편향을 가늠(플랜 P1-03 인용 · 절단판은 그 가장 단순한 부분창)"},
+      {"cite": "Harvey, Liu & Zhu (2016) …and the Cross-Section of Expected Returns. Review of Financial Studies 29(1)", "url": "https://doi.org/10.1093/rfs/hhv059", "use": "사후 경계·다중 시행에서 '확증' 대신 반증 시도로 서술"}
+    ]
+  }
+}

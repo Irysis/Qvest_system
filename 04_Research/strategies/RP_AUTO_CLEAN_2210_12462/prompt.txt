@@ -1,0 +1,167 @@
+논문 1편의 **충실구현**을 수행하라. 산출은 **엔진 R 파일 하나**다.
+
+## 논문
+제목: Factor Investing with a Deep Multi-Factor Model
+원문: https://arxiv.org/abs/2210.12462
+트리아지가 뽑은 후보 팩터: 딥 멀티팩터 모델
+정의 초안: Modeling and characterizing multiple factors is perhaps the most important step in achieving excess returns over market benchmarks. Both academia and industry are striving to find new factors that hav
+
+## 판정 순서 (★2026-08-30 도훈 지시 — 어떤 논문이라도 팩터 전략으로 변형 가능한
+##   형태인지부터 판단하는 게 참된 리서치의 자세다. 인사이트가 중요한 거니까)
+**논문이 횡단면 종목선택 형태가 아니어도 즉시 포기하지 마라.** 순서는 이렇다:
+
+1. **충실구현이 되는가** — 논문 그대로 신호·종목수·비중·리밸. 되면 fidelity=faithful.
+2. 안 되면 **인사이트가 이식되는가** — 논문의 *기전*을 횡단면 팩터로 옮길 수 있는가.
+   되면 fidelity=adapted. ★이때 **무엇을 남기고 무엇을 바꿨는지 명시 의무**다.
+   예: 리더-팔로워 군집 논문에서 특정 군집기·정렬기는 **한 구현일 뿐**이고, 기전은
+   선행 종목의 움직임이 후행 종목을 예측한다는 것이다. 그건 가용한 추정기로 이식된다.
+3. **데이터가 진짜 없으면** ABORT. 대리변수로 지어내지 마라 — 레버리지 ETF NAV,
+   장중·종가단일가 같은 미보유 패널은 근사 대상이 아니다. ABORT.txt + 필요 데이터 명시.
+
+★adapted 는 정직한 결과다. 등급은 계약이 내되 귀속이 충실구현이 아니라 **착안**이며,
+  그 구분이 원장에 남으므로 misattribution 이 되지 않는다. 인사이트를 버리는 것보다 낫다.
+★단 **지어내기와 이식은 다르다**: 논문이 주지 않는 수치를 임의로 정하면 그건 이식이 아니다.
+  이식은 *기전*을 옮기는 것이고, 파라미터는 **우리 고정 축**(25종·월간·EW)을 쓴다.
+
+★산출에 `C:\Users\99922\OneDrive\Quant_Module_Moltbot/04_Research/strategies/RP_AUTO_CLEAN_2210_12462/FIDELITY.json` 을 함께 써라 — 키 6개:
+  fidelity(faithful 또는 adapted) · kept(논문에서 남긴 기전 1줄) ·
+  changed(바꾼 것과 이유 1줄) · paper_original_form(논문 원래 산출 형태 1줄) ·
+  ★portfolio_spec(러너에 그대로 넘어가는 **기계 판독** 객체) ·
+  ★commission_paper(논문 명시 왕복비용. 미명시면 null).
+  faithful 이어도 changed 에는 유니버스 치환(K200 합집합 KQ150) 외에 표본기간 차이(논문 표본 vs 2005-01-01~)와
+  보충값(아래 constants 의 supplement)을 적는다 — '유니버스만' 으로 적으면 기간·보충 상수가 미신고가 된다(감사 실측).
+  portfolio_spec 은 산출 형태에 맞춰라 — 산문으로 적지 말고 이 형태로:
+    PORTFOLIO 를 만들면 {"construction":"engine_direct"}
+      (네가 만든 비중이 곧 논문 비중이다. 롱숏이면 반드시 이 값이어야 한다 —
+       이게 없으면 러너가 숏 다리를 버리고 롱온리 top-N 으로 다시 구성한다.)
+    FACTORS 만 만들면 {"construction":"top_n_long","weighting":"ew","rebalance":"monthly","top_n":<논문값>}
+  ★engine.R 주석에만 적지 마라 — 주석은 아무도 읽지 않는다. 이 파일이 유일한 통로다.
+
+### ★changed 신고 체크리스트 — 논문에 없는데 네가 넣은 것을 **전부** 적어라
+실측(2026-09-04, 적대적 감사 4편 · 지적 20건): 그중 **9건이 이 종류**였다 —
+논문을 못 읽은 게 아니라, 합리적인 방어 코드를 넣고 **신고를 잊은** 것이다.
+그래서 재구현 한 사이클(에이전트 12분 + 측정 + 감사 6축)이 통째로 타율다.
+아래를 한 줄씩 훑고 해당하는 것을 changed 에 옮겨라. 해당 없으면 적지 마라.
+
+- 값 하한·상한·커버리지 요건 (예: 관측 80% 이상만 정렬, 최소 종목수 30)
+- 수치 가드 (분모 0 방지 · 변동성 바닥 · |값| 상한 치환 · winsorize·clip)
+- 결측 처리 (nafill/locf · 상장 전 상수 · 비유한값 0 치환)
+- 난수·재현 (set.seed · 초기값 · 앞상빌업 횟수 · 앜상블 여부)
+- 창·워밍업 길이를 논문과 다르게 잡은 것
+- 논문이 여러 설정을 보고했는데 하나를 골랏으면 **어느 칸을 골랐는지**
+- 논문 수식을 근사한 것 (폐형·선형화·이산화)
+
+★"영향이 미미해서 안 적었다" 는 사유가 아니다. 영향의 크기를 판단하는 것은
+감사와 도훈이지 구현자가 아니고, 그 판단은 **적혀 있어야** 할 수 있다.
+적어둔 변경은 adapted 로 통과하고, 안 적은 변경은 misdeclared 로 재구현을 부른다 —
+**적는 쪽이 싼다.**
+
+### ★FIDELITY 구조 필드 4개 — 측정 전에 기계 사전검사가 확인한다 (2026-10-05)
+측정·감사 **전에** 기계 사전검사(02_Infrastructure/ops/rf_preaudit.py · 규칙 06_Registry/rf_preaudit.json)가
+engine.R 과 FIDELITY.json 만 보고 아래를 확인한다. 빠지면 측정 없이 이 판으로 되돌아온다(보정 1회).
+감사가 가장 자주 기각한 형태를 앞에서 막으려는 것이다 — 논문에 있는 단계를 구현도 신고도 안 함 · 창 종점이 논문과
+한 칸 어긋남 · 팩터 DB 지표의 정의(skip 월·half-life·창 길이)가 논문 지표와 다름 · 등록부 중복 지표 동시 사용 · 방어 코드 미신고.
+
+위 6키에 더해 FIDELITY.json 에 아래 4키를 써라:
+1. paper_steps — 논문이 서술한 절차 단계 **전부**(표본·제외 규칙 · 전처리(결측 대체·이상치·표준화·중성화) · 신호 정의 ·
+   횡단면 분할(시장·거래소·업종별 독립 정렬 여부) · 정렬·분위 · 가중 · 리밸 · 비용).
+   항목 = {step: 단계 이름, paper_quote: 원문 짧은 인용(절·식·표 번호), status: implemented 또는 changed 또는 omitted,
+   note: 구현 위치 또는 바꾼·뺀 이유}. changed·omitted 는 note 필수이고 changed 에도 같은 내용을 적는다.
+2. windows — 코드의 롤링·트레일링 창 **전부**(frollmean 류 · shift(v, 0:(n-1)) · (k-L):(k-1) 인덱스 · tail 등).
+   항목 = {name, paper: 논문 명세(종점까지 — 예 s∈[t-12,t-1]), impl: 구현(종점까지 — 예 [t-12,t-1] · 당월 포함 여부)}.
+   종점이 논문과 다르면 changed 에도 적는다.
+3. factor_mapping — 팩터 DB 지표(load_month_factors)를 쓰면 지표마다
+   {factor_id, paper_item: 대응하는 논문 지표, registry_definition: 등록부 02_Infrastructure/factor_db/factor_registry.json 의
+   definition 문장 그대로, deviation: 논문 정의와 다른 점(창 길이·skip 월·half-life·중성화·부호·단위) — 같으면 none}.
+   등록부 dedup.cluster 가 같은 지표(DUPC-xxx — 값이 사실상 같은 신호)를 둘 이상 쓰면 가중이 겹친다 — 하나만 쓰거나,
+   논문도 같은 변환을 별개 지표로 두었다면(예: 시총·로그시총) 그 대응과 군집 id 를 changed 에 적어라.
+4. constants — engine.R 최상위의 숫자 상수 **전부**(이름 <- 값 형태: 창 길이·하한·seed·하이퍼파라미터·날짜).
+   항목 = {name, value: 코드와 같은 값, source: paper 또는 supplement 또는 harness, note: paper 면 원문 위치 · supplement 면 보충 이유}.
+   코드 안에 직접 쓴 숫자(예: nrow(x) < 20)는 상수로 빼서 여기에 올려라 — 감사 실측에서 엔진당 미신고 상수가 중앙 18개였다.
+(그리고 이 프롬프트 끝의 '하네스 고지' 대괄호 블록을 harness_disclosure 키에 그대로 옮긴다 — 하네스 쪽 차이는 그 블록이 공시한다.)
+
+**제출 전 자가 점검**(사전검사가 그대로 확인한다):
+- engine.R 최상위 숫자 상수가 전부 constants 에 있고 value 가 코드와 같은가.
+- 루프의 next · return(NULL) · 행 필터로 어떤 달의 산출이 비면 하네스가 직전 보유를 이월한다 —
+  언제 비는지와 그 결과(이월)를 changed 에 적었는가.
+- engine.R 에 따옴표로 쓴 팩터 DB 지표 id 가 전부 factor_mapping 에 있는가.
+- engine.R 의 롤링 창이 전부 windows 에 있고 impl 에 종점이 적혀 있는가.
+- engine.R 의 clip·pmax/pmin 상수 · 결측/비유한값 처리 · set.seed · tryCatch 폴백 · 최소 개수 하한 · 유동성 하한 ·
+  상태 플래그(관리종목·거래정지) · 커버리지 하한 · 1e-x 분모 가드가 각각 changed 또는 paper_steps note 에 적혀 있는가.
+
+## 산출 (이것만)
+## 산출 (이것만)
+`C:\Users\99922\OneDrive\Quant_Module_Moltbot/04_Research/strategies/RP_AUTO_CLEAN_2210_12462/engine.R` — source 되면 `FACTORS(Date,Ticker,Score)` 또는
+`PORTFOLIO(Date,Ticker,Weight,Leg)` 를 만드는 R 스크립트. 호출자가 환경에 `RAWDATA`·`BM_DT` 를 넣어준다.
+
+## 축 (변수 아님)
+- **논문 그대로** 복제하되 **유니버스만 K200∪KQ150**. 유동성 필터는 **논문 우선**이다 — 논문에 없으면 넣지 않는다
+  (SOT paper_faithful · 실투형 유동성 하한 2e8 은 강화 단계의 축이다). 논문에 있으면 논문 값 그대로 t-1 로 적용하고 paper_steps 에 인용한다.
+- 기간 2005-01-01~. 종목수·비중·리밸 주기는 논문 명시값을 따른다.
+- **PIT C1~C15 절대**: 모든 창의 종점은 t-1. 전 표본 통계 금지(rolling/expanding만).
+  팩터 DB 는 `load_month_factors()` 경유(C15), `Z_Score_Aligned` 만 소비(C13).
+  이 값은 원값이 아니라 변환값(횡단면 절단·z-score·방향 정렬)이므로 그 사실을 changed 에 적는다.
+  ★`detect_lookahead` 는 비선언 idiom(전 표본 cov()/mean() · shift(-1) · 수동 미래 인덱싱)을
+  못 잡는다 — 통과를 근거로 삼지 말고 **구조로** 보장하라.
+- 원문 접근이 불가하면 **지어내지 마라**. `C:\Users\99922\OneDrive\Quant_Module_Moltbot/04_Research/strategies/RP_AUTO_CLEAN_2210_12462/ABORT.txt` 에 사유를 쓰고 끝내라.
+
+## 실행 환경
+- R 349개 패키지가 이미 있고(data.table · arrow · PerformanceAnalytics · xts · quadprog ·
+  cluster · matrixStats · glmnet · TTR · roll · proxy 등), **없는 패키지는 호출자가 자동 설치**한다
+  (검증 러너가 엔진을 스캔해 CRAN 에서 최대 6개까지 설치). 그러니 필요한 패키지를 자유롭게 쓰라.
+- 다만 **정말 필요한 것만** 쓰라 — 의존이 6개를 넘으면 착수가 차단된다.
+- 파이썬 연동(reticulate)도 가능하나, R 로 충분하면 R 로 하라(무인 실행에서 층이 하나 줄어든다).
+- 원문 접근이 불가하거나 논문을 훼손하지 않고는 구현할 수 없으면 `ABORT.txt` 에 사유를 쓰고 멈춰라.
+
+## 금지
+- `C:\Users\99922\OneDrive\Quant_Module_Moltbot/04_Research/strategies/RP_AUTO_CLEAN_2210_12462` 밖 쓰기. 원장·설정·훅·테스트 수정. 백테스트 직접 실행(측정은 호출자 계약이 한다).
+- 등급·성과 수치 선언(계약이 낸다).
+
+엔진을 쓰고 1~2줄로 무엇을 구현했는지만 보고하라.
+
+## 하네스 고지 — 측정 층이 정하는 것(구현자가 바꿀 수 없다) · exec=close_t1
+아래 대괄호 블록을 FIDELITY.json 의 harness_disclosure 키(문자열)에 **그대로** 옮겨라. 하네스 동작을 따로 추측해 서술하지 마라 — 감사 실측에서 구현자의 하네스 서술이 틀리거나(재정규화·체결일) 빠진 것이 기각 사유였다. 논문과 다른 점 중 하네스가 만든 것은 이 블록이 공시하고, 엔진이 만든 것은 changed 에 적는다.
+
+[HARNESS-DISCLOSURE v1]
+- H1 유니버스: 엔진 산출(FACTORS·PORTFOLIO)은 각 신호일의 RAWDATA 멤버십(K200 또는 KQ150)과 결합되어 그날 비멤버 행이 제거된다 — PIT 시변 · 사후 생존 조건 없음 · 상장폐지 종목 포함(폐지 뒤 수익 행 부재 = 0).
+- H2 KQ150 멤버십 플래그는 2010-01-29 부터 있다 — 그 전 신호일의 유니버스는 사실상 K200 단독이다.
+- H3 표본: 2005-01-01 이후 신호만 측정한다(논문 표본기간과 다르다).
+- H4 체결: 신호일 d 에 확정한 비중을 다음 거래일 종가에 체결(close_t1) — 새 보유 수익은 집행 다음 날부터 다음 집행일까지, 집행일 당일 수익은 직전 보유(동일봉 체결 없음).
+- H5 보유: 연속한 두 신호일의 집행 사이 보유창 안에서 buy-and-hold(비중 드리프트) — 다음 신호일 집행 때 목표비중으로 되돌린다. 어떤 달에 엔진 산출이 없으면 그 달은 리밸이 없어 직전 보유가 다음 신호까지 이월된다.
+- H6 비중: FACTORS 면 portfolio_spec(top_n_long 등)으로 신호일마다 유니버스 결합 뒤 점수 순 구성 · PORTFOLIO 면 유니버스 결합 뒤 남은 비중을 그대로 쓴다 — 빠진 종목 몫은 재분배되지 않아 그 다리 총노출이 줄어든다(현금처럼 0 수익). 롱·숏 다리 결합 = GL·L − GS·S(GL·GS = 다리 Σ|w|).
+- H7 비용: 등급판 = 리밸마다 Σ|Δw|×15bps(초기 매수 = Σ|w|) · 논문판 = commission_paper(무명시면 0)로 병기한다.
+- H8 유동성: 러너는 유동성 필터를 적용하지 않는다(paper_faithful) — 필터는 엔진이 논문대로만 건다.
+- H9 벤치마크: KOSPI200.
+[/HARNESS-DISCLOSURE]
+
+## 청정 모드 — 열람 범위 (결정 FA-CLEAN-BASE-PATH)
+이 실행은 **성과를 보지 않고 논문만으로** 구현하는 청정 레인이다. 읽기(Read·Grep)는 아래 허용 목록과 작업 디렉터리로
+제한되고 그 밖은 훅이 막는다(원장·산출물·다른 전략 엔진·교훈·기억 — 그 안의 수치는 이 구현의 입력이 아니다).
+- 작업 디렉터리: `C:\Users\99922\OneDrive\Quant_Module_Moltbot/04_Research/strategies/RP_AUTO_CLEAN_2210_12462` (네 산출물만 있다)
+- `claude.md` — CLI 가 cwd 에서 자동 주입하는 헌법 — 재열람은 새 정보가 없다(알려진 경계: 목표·문턱 수치 SR 2.5 · Calmar 0.64)
+- `.claude/rules/pit.md` — 자동 주입 규칙(PIT C1~C15) — 재열람은 새 정보가 없다(알려진 경계: 2026-07-06 오버레이 사고 수치 Calmar 2.50→1.83 · SR 2.10→1.84)
+- `.claude/rules/lean-loop.md` — 자동 주입 규칙(충실구현 라운드 축) — 수치 0
+- `.claude/rules/python-policy.md` — 경로 주입 규칙(**/*.py 열람 시 자동 주입) — 수치 0
+- `.claude/skills/factor-db-access.md` — 팩터 DB 사용 규약(load_month_factors · Z_Score_Aligned · C13·C15) — 수치 0
+- `.claude/skills/pit-validation.md` — PIT 자가 점검 규약 — 수치 0
+- `02_infrastructure/backtest_harness.r` — RAWDATA·벤치·수급 로더 정의(load_rawdata · load_investor) = 엔진 입력 규약 — 수치형 1곳('1.0→0.0' 선형 척도 · 성과 아님)
+- `02_infrastructure/factor_db/factor_db_connector.r` — load_month_factors 정의(C15 유일 경로) — 수치 0
+- `02_infrastructure/factor_db/factor_registry.json` — 팩터 이름·정의·계열 — R5 가 dedup.reason 의 port_t 비교를 가린 사본(.cache/design_view)으로 돌린다
+- `02_infrastructure/data/` — 원천 수집·로더 코드(DART·컨센서스·수급 열 이름) — 지문 밖 원천을 쓰면 구조 술어 source_scope 가 사후에 거른다 · 수치형 1곳(커버리지 0.715→0.868 · 성과 아님)
+- `02_infrastructure/alpha_search/run_paper_replication.r` — 러너 계약(portfolio_spec · FACTORS/PORTFOLIO 입출력 · t-1) — 수치 0
+- `02_infrastructure/replication/` — 충실구현 하네스(월간 집행 규약) — 수치 0
+- `02_infrastructure/validation/lookahead_detector.r` — PIT 정적 검출기(자가 점검) — 수치 0
+- `02_infrastructure/validation/pit_enforcement.r` — PIT 규약 코드 — 수치 0
+- `.cache/design_view/` — R5 가린 사본 디렉터리(수치 = <stat>) — 등록부를 여는 유일한 길
+Glob(이름 열거)은 저장소 안에서 열려 있지만 내용은 위 목록 밖에서 열리지 않는다 — 막히면 경로를 바꾸지 말고 이 목록 안에서 찾아라.
+논문 원문은 WebFetch 로 읽어라. 셸·Agent·Skill 도구는 이 실행에 없다.
+★이 저장소의 웹 사본(github.com/Irysis/Qvest_system · raw.githubusercontent.com/Irysis/Qvest_system)을 열지 마라 — 원격 사본도 같은 원장·산출물이다.
+
+## 공리 (전제 — 지시가 아니다)
+아래는 이 저장소가 실측으로 세운 전제다. 네 판단은 이 위에서 이뤄진다.
+어긋나는 결론을 낼 수는 있지만, 그때는 **무엇이 이 전제를 뒤집는 증거인지** 적어라.
+
+- **AX-000 · 한계란 없다** — 한계는 대개 법칙이 아니라 방법의 한계다. 모든 목표는 충분한 엄밀함·창의성·반복으로 달성 가능하다는 전제로 임한다. 소수(3~4회)의 실험 실패를 '구조적 한계'나 'dead-end'로 단정하는 것을 금지하며, 탐색은 가용한 모든 수단(개념 발산·다른 데이터원·다른 구조·ML·수리·물리)을 소진하거나 도훈이 중단을 지시할 때까지 계속한다. 실증·PIT·수리로 얻은 결과는 정직히 보고하되(성공 위장·추측 금지), 그 자체가 탐색 중단의 근거가 되지 않는다.
+- **AX-001 · 방어형 처분은 전기간 등급 단독 금지 — defensive_score 계약** — 방어형 전략·팩터의 처분(기각·폐기)을 전기간 등급 단독으로 내리지 않는다. 방어형 판정 계약 = defensive_score(자격 기준은 무신호 대조 통과 후 확정).
+- **AX-002 · 규칙 안에서 찾아낸 성과가 진짜 성과** — 프로세스 우회 = 판단의 미래참조. 하네스 내 성과만 유효.
+- **AX-008 · 결정 수치는 계약 산출만 인용 · 독립 검증 = Judge** — 결정에 영향을 주는 수치(등급·PORT_t·Calmar 등)는 R 계약 산출만 인용한다 — 손계산·재구성·추정 금지. 독립 검증 = Judge(PIT 전담, essence Grade A 확정 후).

@@ -334,7 +334,7 @@
       "rule": "B1 승자 컴포짓을 신호로 고정하고 **집행 주기·회전 통제 규칙만** 교체한다. 엔진은 spec$rebalance 를 rf_rebalance.R 로 적용하고(선정 단계 rank_buffer · 배출 단계 interval/band/cap), 하네스는 배출 날짜를 리밸 시점으로 읽어 그 사이를 Return.portfolio(rebalance_on=NA) 로 드리프트 보유한다 — 즉 비용은 배출 시점의 회전율로만 부과된다. 하네스 수정 없음.",
       "why": "실측 2026-09-21(promo2 B1_2): 총액 CAGR 28.97% vs 순 25.84% — **연 3.13%p 가 비용**이고 월 회전율 0.678(연 8.1회). A 를 막는 Calmar(0.490<0.64)는 분모(MDD)뿐 아니라 분자(CAGR)로도 칠 수 있는데, 이 계보에서 분모 쪽(B5 오버레이)은 적대검증 29칸 0 pass 로 막혀 있다. 비용 절감은 타이밍 주장이 아니라 체결 규칙이라 T3 플라시보로 죽는 종류가 아니다. 과거 기록도 같은 방향 — DIST-RAMP-013 '분기 리밸: oos_retention −0.27→−0.02 · 회전 절반'(RAMP 추정치).",
       "phase_control": "interval 칸은 시작 위상에 따라 결과가 갈린다. 그래서 k=2 를 **두 위상 모두**(B6_32·B6_33) 재고 판정은 그 쌍의 중앙값으로 읽는다 — 운 좋은 위상을 개선으로 읽지 않기 위한 통제다(오버레이의 T3 에 해당).",
-      "loo_gap_note": "★알려진 공백: B4(결합)의 LOO 는 B1·B2·B3·B5 4축이다. B6 승자는 block_accumulate 로 바닥에 실려 B4 전 칸에 들어가지만 '주기 제외' LOO 칸은 아직 없다 — 이 축이 값을 내면 그때 5축으로 넓힌다.",
+      "loo_gap_note": "★2026-09-26 해소(도훈 결정 B4-SIX-AXIS-AND-CARRY-AXES): B4 는 축 등록부(rf_spec_axes.R) 6축이다 — '주기 제외' LOO = B4_43. 구판 공백(B1·B2·B3·B5 4축 · B6 승자는 바닥으로만 실림)과 승격 carry 병합 누락(B1 칸이 carry.rebalance 를 벗고 돎)은 같은 등록부로 닫았다.",
       "cells": [
         {
           "code": "B6_32",
@@ -508,6 +508,7 @@
         },
         {
           "code": "B7_40",
+          "control": "null_beta_matched",
           "label": "[무신호 대조] 베타매칭 무작위 슬리브 k=5",
           "defense_sleeve": {
             "kind": "random_beta_matched",
@@ -521,6 +522,7 @@
         },
         {
           "code": "B7_41",
+          "control": "sign_flip",
           "label": "[부호 반전 대조] 반(反)방어 슬리브 k=5",
           "defense_sleeve": {
             "kind": "antidefense",
@@ -533,7 +535,8 @@
         }
       ],
       "success_criterion": "성공 = Calmar 상승 ∧ PORT_t >= 기저-eps ∧ OOS retention >= 기저. ★Calmar 가 올랐는데 PORT_t 나 OOS 가 내리면 **실패로 판정**하고 b5_pattern 으로 표기한다 — 프로그램 최고 Calmar 5칸 중 4칸이 정확히 그 패턴(OOS -0.024 ~ -0.433)이었고, 그걸 성과로 읽어 온 것이 8일 정체의 정체였다. 추가 보고 의무: 슬리브 자체의 시장 베타(역베타를 방어로 오인하는 함정 — CID 전례) · 개선의 구간 분해(단일 위기 집중 여부) · 심층 버킷 n=10 이므로 점추정이 아니라 CI 로 보고.",
-      "loo_gap_note": "B4(결합) LOO 는 아직 B1·B2·B3·B5 4축이다. B6 에 이어 B7 도 block_accumulate 로 바닥에 실릴 뿐 '방어 제외' LOO 칸은 없다 — 두 축 중 하나라도 값을 내면 그때 LOO 를 넓힌다.",
+      "loo_gap_note": "★2026-09-26 해소(도훈 결정 B4-SIX-AXIS-AND-CARRY-AXES): B4 는 축 등록부 6축 — '방어 제외' LOO = B4_44.",
+      "control_note": "★대조 칸(2026-09-26 · 같은 결정): B7_40(무신호 · control=null_beta_matched)·B7_41(부호 반전 · control=sign_flip)은 **판정 기준선**이지 후보가 아니다 — control 태그(P1-06 standing 통제와 같은 표식)로 정본 술어 rf_runner_gates.R::rf_is_control 이 알아보고 블록 승자·B4 입력·바닥·carry 부모·승격 best·A 발행(always-on control_cell)·시행 수 N 에서 뺀다. 측정·등급·원장 기록은 그대로다(비교 대상으로 남는다). 실측 7308: 빼지 않으면 B7 승자(calmar)가 부호 반전 B7_41(0.247)이고 B7_37(0.246)을 넘었다 — 대조가 결합으로 들어갈 뻔했다. ★코드를 지우지 말 것(판정은 코드로 한다 — 지우면 과거 대조 칸이 후보로 되살아난다).",
       "selection_asof": {
         "asof": "셀 fixed_axes.start_date (rf_sl_resolve 가 RF_CELL_SPEC 에서 해석 · 규칙 asof 가 있으면 그 값) — 워밍업 창 1회 고정 = 정적 슬리브 불변식",
         "bear_quantile": 0.3,
@@ -552,25 +555,31 @@
     {
       "id": "B4",
       "axis": "combination",
-      "n": 5,
-      "rule": "B1·B2·B3·B5 승자의 4축 전결합 1칸 + 축별 leave-one-out 4칸. ★2026-09-04 실측: block_accumulate 가 각 블록에 앞 승자를 물려주므로 **전결합 칸은 구조적으로 마지막 블록 승자와 동일**하고, 제거 축의 승자가 기본값과 같으면 LOO 칸도 앞 블록 칸과 같아진다(B4_21=B3_11 · B4_24=B2_6). 중복은 측정하지 않고 **그 결과를 승계**한다 — 답은 남고 예산은 안 태운다. 이 블록의 값어치는 새 측정이 아니라 **축별 기여의 분리**에 있다.",
+      "n": 7,
+      "rule": "축 등록부 6축(B1 팩터 · B2 비중 · B3 유니버스 · B5 오버레이 · B6 집행 주기 · B7 방어 슬리브 — 정본 02_Infrastructure/reinforcement/rf_spec_axes.R::RF_SPEC_AXES · 도훈 결정 B4-SIX-AXIS-AND-CARRY-AXES 2026-09-26) 승자의 전결합 1칸 + 축별 leave-one-out 6칸(= 7칸). 축마다: 소유 블록 ∈ use ∧ 승자 있음 → 승자의 그 축 값 / 아니면 등록부 b4_base(carry → default — 현행 B5 원리 '승자 없음 ≠ 부모 통제 해제 · LOO 대조 보존' 을 전 축에). 대조 칸(control 태그)은 승자 후보가 아니다. ★결합 칸 목록은 아래 cells(코드·라벨 — 진단 블록이 없을 때의 목록)를 등록부 역할(전결합 · LOO-X)로 읽어 **tick 마다 재도출**한다: 결합 대상 축 = 등록부 축 − 진단 모드 블록(사람 구조 규칙) · 모드 = diag_mode_source. ★2026-09-04 실측: block_accumulate 가 각 블록에 앞 승자를 물려주므로 전결합 칸은 구조적으로 마지막 블록 승자와 같을 수 있고, 제거 축의 승자가 base 와 같으면 LOO 칸도 앞 칸과 같아진다(B4_21=B3_11 · B4_24=B2_6). 중복은 측정하지 않고 그 결과를 승계한다(같은 배치 안 중복은 미결 종결 — 답은 전결합과 같다) — 이 블록의 값어치는 새 측정이 아니라 축별 기여의 분리에 있다.",
       "requires": [
         "B1",
         "B2",
         "B3",
-        "B5"
+        "B5",
+        "B6",
+        "B7"
       ],
       "select_winner_by": "port_t",
+      "axes_source": "02_Infrastructure/reinforcement/rf_spec_axes.R::RF_SPEC_AXES — 이 블록의 cells·requires·n 은 등록부와 같아야 한다(러너 tick 계약 rf_axes_grid_contract → spec_axes_contract_violation 로그 · 검사 test_rf_spec_axes.R · test_rf_grid_contract.R)",
+      "diag_mode_source": "06_Registry/reinforce_auto_config.json::b4_combo.diag_mode — exclude_axis(기본 · 진단 블록을 결합 축에서 뺀다: 전결합 = 등록부 축 − 진단 · LOO-진단 칸은 전결합과 같아 돌지 않는다) | drop_referencing(진단 블록 참조 칸 절단 · 가장 넓은 칸 보존 = 구조 규칙 현행 rf_structure_combo_drop) | keep_loo(절단 없음). 진단 블록 = 사람 구조 규칙(rf_structure_rules)의 diag·dormant 블록. 기본 = exclude_axis = 결정 B3-TRIM-VS-B4-SIX (A)([위임] 2026-09-26 13:35 — B3 진단 동안 B4 = B1·B2·B5·B6·B7 전결합 1 + LOO 5 = 6칸 · B3 가 진단에서 풀리면 등록부 파생으로 6축 7칸). 결합 칸 시도가 있는 entry 는 그 칸 스펙의 combo_plan 으로 동결.",
       "cells": [
         {
           "code": "B4_21",
-          "label": "전 요소 결합(4축)",
+          "label": "전 요소 결합(6축)",
           "combo": {
             "use": [
               "B1",
               "B2",
               "B3",
-              "B5"
+              "B5",
+              "B6",
+              "B7"
             ]
           }
         },
@@ -581,7 +590,9 @@
             "use": [
               "B2",
               "B3",
-              "B5"
+              "B5",
+              "B6",
+              "B7"
             ]
           }
         },
@@ -592,7 +603,9 @@
             "use": [
               "B1",
               "B3",
-              "B5"
+              "B5",
+              "B6",
+              "B7"
             ]
           }
         },
@@ -603,23 +616,53 @@
             "use": [
               "B1",
               "B2",
-              "B5"
+              "B5",
+              "B6",
+              "B7"
             ]
           }
         },
         {
           "code": "B4_25",
-          "label": "오버레이 제외(LOO) = 구 3축 전체결합",
+          "label": "오버레이 제외(LOO)",
           "combo": {
             "use": [
               "B1",
               "B2",
-              "B3"
+              "B3",
+              "B6",
+              "B7"
+            ]
+          }
+        },
+        {
+          "code": "B4_43",
+          "label": "집행 주기 제외(LOO)",
+          "combo": {
+            "use": [
+              "B1",
+              "B2",
+              "B3",
+              "B5",
+              "B7"
+            ]
+          }
+        },
+        {
+          "code": "B4_44",
+          "label": "방어 슬리브 제외(LOO)",
+          "combo": {
+            "use": [
+              "B1",
+              "B2",
+              "B3",
+              "B5",
+              "B6"
             ]
           }
         }
       ],
-      "loo_note": "LOO 해석: ΔPORT_t = 전결합 − 제거판. Δ가 **음수면 그 축이 해롭다**. 실측 2026-09-04(1403.8125): −유니버스 Δ−0.525 · −오버레이 Δ−0.135 로 둘 다 순손실이었고, 기여는 비중(Δ+0.202) 하나뿐이었다. 블록 안 순위(B3 에서 소형주 1위)가 전결합에서 뒤집힌 사례."
+      "loo_note": "LOO 해석: ΔPORT_t = 전결합 − 제거판. Δ가 **음수면 그 축이 해롭다**. 실측 2026-09-04(1403.8125): −유니버스 Δ−0.525 · −오버레이 Δ−0.135 로 둘 다 순손실이었고, 기여는 비중(Δ+0.202) 하나뿐이었다. 블록 안 순위(B3 에서 소형주 1위)가 전결합에서 뒤집힌 사례. ★2026-09-26 6축: 코드 B4_21..B4_25 는 역할(전결합 · 팩터/비중/유니버스/오버레이 제외)을 그대로 잇고 나머지 축이 두 개 늘었다 — 이 판 이전 칸(4축)과 Δ 를 직접 섞지 말 것(칸 스펙 combo.use 가 정본). 새 코드 B4_43(주기 제외)·B4_44(슬리브 제외)."
     }
   ],
   "standing_cells": [
@@ -628,8 +671,58 @@
       "block": "B5",
       "label": "PG2 리스크 오버레이 상주",
       "overlay_pick": "pg2_risk_overlay_v1"
+    },
+    {
+      "code": "B1_0",
+      "block": "B1",
+      "label": "carry 재현(통제 · E3)",
+      "control": "carry_replay",
+      "applies_to": "carry_present",
+      "active": true,
+      "e3": {
+        "tolerance": 1e-06,
+        "tolerance_source": "플랜 qvest-1-drifting-eclipse P1-06(E3) '같은 regime·빈티지에서 |PT_replay − PT_parent| < 1e-6' · reinforce_ledger.R RF_REBASE_TOL(원장 직렬화 해상도)과 같은 값 · floor v2 설정(06_Registry/prereg/reference_floors_v2.config.json floors.F1p.e3_tolerance)과 같아야 한다(test_rf_control_cells.R 단언)",
+        "resolution_note": "원장 essence 수치는 essence_score.R .rn(d = 3) 로 소수 3자리 반올림돼 있다 — 원장 PT 대조는 사실상 3자리 일치다. 그래서 산출물 일간 순수익(bt_result.rds period_returns$ret_net)의 공통 날짜 대조를 같은 허용오차로 함께 한다(rf_carry_replay_check)."
+      }
+    },
+    {
+      "code": "B1_N1",
+      "block": "B1",
+      "label": "null 희석 s1(통제)",
+      "control": "null_factor",
+      "applies_to": "carry_present",
+      "active": true,
+      "seed": 1
+    },
+    {
+      "code": "B1_N2",
+      "block": "B1",
+      "label": "null 희석 s2(통제)",
+      "control": "null_factor",
+      "applies_to": "carry_present",
+      "active": true,
+      "seed": 2
+    },
+    {
+      "code": "B1_N3",
+      "block": "B1",
+      "label": "null 희석 s3(통제)",
+      "control": "null_factor",
+      "applies_to": "carry_present",
+      "active": true,
+      "seed": 3
+    },
+    {
+      "code": "B1_N4",
+      "block": "B1",
+      "label": "null 희석 s4(통제)",
+      "control": "null_factor",
+      "applies_to": "carry_present",
+      "active": true,
+      "seed": 4
     }
   ],
+  "standing_cells_control_note": "★통제 칸 (P1-06 · 플랜 qvest-1-drifting-eclipse · 2026-09-25 스테이징). control 태그가 있는 standing_cells 원소는 **선정 후보가 아니라 대조**다 — carry 가 있는 entry(승격 entry · carry 를 가진 사전등록 실험 entry)의 B1 머리에 매 세대 한 번 돈다. ①carry_replay(B1_0) = carry 구성을 B1 칸과 **같은 조립 경로**로 그대로 잰다(처치 0) → E3(rf_runner_gates.R::rf_carry_replay_check) · 같은 regime 이면 carry 기준선(.carry_base)이 이 칸의 PT 를 쓴다(rf_carry_base_resolve). 조립 경로가 carry 축을 떨어뜨리면(예: B1 칸이 carry 의 rebalance·defense_sleeve 를 안 싣는 경로) E3 가 spec_mismatch 로 붉어진다 — 그것이 이 칸의 일이다. ②null_factor(B1_N1..N4) = carry + 무정보 팩터 1개(rf_cell_engine.R factor kind null_perm — 시그널일마다 패널 종목의 순위를 seed 고정 순열로 준다 · 정보 0 · 커버리지 = 패널 그대로라 inner join 축소 없음) → 'B1 에 팩터 하나를 얹는 처치'의 귀무 분포. 칸 간 표본 표준편차 = 잡음 척도(SE 원천 — rf_prereg.R::rf_prereg_se_null 의 입력 · 판독기 rf_runner_gates.R::rf_null_dilution_values) · 평균 Δ(대 B1_0) = 희석 편향. 위상쌍(B6_32/33)은 계통 효과라 SE 원천이 아니다(레버 감사 · prereg_config se_sources.forbidden). ★제외 규약(rf_runner_gates.R 순수 함수 · 러너는 부작용만): 블록 승자·바닥·carry 기준선의 부모 칸·승격 best·A 자격(always-on 보류 control_cell)·시행 수 N(rf_lineage_measured exclude_codes)·서명 dedup(전 entry 커버리지 포함)·중복 승계·무처치 판정에서 뺀다 — 빼지 않으면 carry 재현 칸은 부모 서명과 같아 '측정 0회'로 닫히고(공허 통과) null 칸이 승자가 될 수 있다. ★칸 수 4 = 러너 병렬 칸 수(reinforce_auto_config.json parallel_cells 5) − 재현 1 → 통제 5칸이 한 배치(추가 벽시계 1배치)이고 rf_prereg_se_null 의 최소 2칸을 넘는다. 정규 표본 표본표준편차의 상대 정밀도는 약 1/sqrt(2(k−1)) = 0.41(k=4 · χ² 표준 결과 — 근거 링크 미확인 · evidence=method)라 SE 는 거칠다 → 사전등록은 블록 부트스트랩과 max 결합(prereg_config se_sources.combine)을 쓴다. 재보정 = 도훈 결정(D 안건 · 스테이징 값). seed 값 자체에는 근거가 없다(재현성 식별자 · 칸마다 달라야 한다 — 검사 단언). ★코드를 지우지 말 것 — 지우면 과거 통제 칸이 후보로 되살아난다(판정은 코드로 한다). 끄려면 active=false(삽입만 멈추고 제외는 유지).",
   "standing_cells_note": "★상주 칸 (2026-09-17 · WP-Z). blocks[].cells 밖의 고정 칸 — 설계·규칙 선정과 무관하게 B5 마다 돈다(BOOK_0001 PG2 오버레이의 동결 사양 이식). 그래서 ①설계 검증(rfbd_verify)은 overlay_pick 과 같은 스택을 기각하고 ②기전 지도(rf_mechanism_map)는 이 arm 을 측정·카탈로그 수에서 빼며 ③승격 carry(rf_promote_carry)는 이 arm 을 물려주지 않는다(다음 세대도 상주로 다시 돈다 — 물려주면 이중 적용). blocks[].cells 는 블록당 5칸 계약(test_rf_grid_contract)이라 여기 두지 않는다. 러너는 이 목록을 읽어 B5 배치에 code 그대로 얹는다.",
   "graduation": {
     "target_grade": "A",
@@ -641,6 +734,139 @@
     },
     "on_grade_a": "큐 적재(grade_a_queue.json) + judge_request 발행 + 텔레그램. **루프 정지 없음** — 남은 칸과 다음 논문은 계속 진행한다(도훈 2026-08-30). BOOK 등재만 Judge PASS + 도훈 confirm 을 거친다.",
     "judge_on_grade_a": true
+  },
+  "structure_rules": {
+    "schema": "structure_rules_v1",
+    "note": "격자 구조 상태(사람 소유 · 설계 최종판 §1.4 어휘 diag/dormant). 블록 cells 는 그대로 두고(격자 5칸 계약 · 코드 보존) 러너가 최종 칸 목록에 적용한다 — 정본 02_Infrastructure/reinforcement/rf_lane_rules.R::rf_structure_cells(불변식 ① 시도 코드 보존 · ③ 결합은 diag/dormant 참조 칸만 · ④ 빈 칸이 남으면 used < 칸 수 · ⑤ 전 승자 결합 칸 보존 — 어기면 항등). 유기체는 이 파일을 쓰지 않는다(ORGANIC-SCOPE).",
+    "protected_blocks": [
+      "B1",
+      "B4"
+    ],
+    "protected_source": "도훈 09-04 지시(러너 B1 칸 수 제한 금지 · 결합이 못 돌면 A 로 갈 길이 없다 — reinforce_auto_parallel.R 예산 절 주석) · 설계 최종판 §1.4 'B1·B4 는 휴면 불가'",
+    "combo_block": "B4",
+    "combo_rule": "불변식 ③ combo.use 에 diag/dormant 블록이 든 칸만 뺀다 · 불변식 ⑤ combo.use 가 가장 넓은 칸(전 승자 결합)은 보존 — 판정 정본 rf_lane_rules.R::rf_structure_combo_drop",
+    "rules": [
+      {
+        "id": "B3-STRUCTURAL-TRIM",
+        "decision": "B3-STRUCTURAL-TRIM",
+        "decided_at": "2026-09-25T18:22:07+0900",
+        "decided_by": "dohoon",
+        "block": "B3",
+        "state": "diag",
+        "keep_cells": [
+          "B3_12"
+        ],
+        "keep_rule": "격자 순서상 D-C 창 규칙(window_deviation_months ≤ diagnostics.window_allowance_months)을 만족하는 첫 칸 — 진단 칸은 고정 축과 같은 창이어야 유니버스 효과가 창 효과와 섞이지 않는다. 가용 시작일 = RAWDATA 지수 편입 플래그 첫 날·Size/Sector 첫 비결측일(데이터 커버리지 사실 · 성과 수치 미사용)",
+        "keep_derivation": [
+          {
+            "code": "B3_11",
+            "universe": {
+              "kind": "index",
+              "flag": "KQ150"
+            },
+            "first_available": "2010-01-29",
+            "window_deviation_months": 60,
+            "compliant": false
+          },
+          {
+            "code": "B3_12",
+            "universe": {
+              "kind": "index",
+              "flag": "K200"
+            },
+            "first_available": "1990-01-31",
+            "window_deviation_months": 0,
+            "compliant": true
+          },
+          {
+            "code": "B3_13",
+            "universe": {
+              "kind": "size_band",
+              "q_lo": 0,
+              "q_hi": 0.3333
+            },
+            "first_available": "1990-01-05",
+            "window_deviation_months": 0,
+            "compliant": true
+          },
+          {
+            "code": "B3_14",
+            "universe": {
+              "kind": "size_band",
+              "q_lo": 0.6667,
+              "q_hi": 1
+            },
+            "first_available": "1990-01-05",
+            "window_deviation_months": 0,
+            "compliant": true
+          },
+          {
+            "code": "B3_15",
+            "universe": {
+              "kind": "sector_neutral",
+              "field": "Sector_Lv2"
+            },
+            "first_available": "1990-01-31",
+            "window_deviation_months": 0,
+            "compliant": true
+          }
+        ],
+        "derived_combo_drop": [
+          "B4_22",
+          "B4_23",
+          "B4_25"
+        ],
+        "combo_keep_widest": [
+          "B4_21"
+        ],
+        "structural_facts": [
+          {
+            "id": "F1_role_checks",
+            "ok": true,
+            "detail": "floor=regime+universe+window · carry_base=regime+universe+window · promote=regime+universe+window · winner=regime (rf_runner_gates.R::RF_ROLE_CHECKS)"
+          },
+          {
+            "id": "F2_candidate_universe",
+            "ok": true,
+            "detail": "B3_11(index)/floor:탈락 · B3_11(index)/carry_base:탈락 · B3_11(index)/promote:탈락 · B3_12(index)/floor:탈락 · B3_12(index)/carry_base:탈락 · B3_12(index)/promote:탈락 · B3_13(size_band)/floor:탈락 · B3_13(size_band)/carry_base:탈락 · B3_13(size_band)/promote:탈락 · B3_14(size_band)/floor:탈락 · B3_14(size_band)/carry_base:탈락 · B3_14(size_band)/promote:탈락 · B3_15(sector_neutral)/floor:탈락 · B3_15(sector_neutral)/carry_base:탈락 · B3_15(sector_neutral)/promote:탈락 · 대조 B1_1(universe 미지정=k200_kq150)/floor:통과"
+          },
+          {
+            "id": "F3_carry_universe_reset",
+            "ok": true,
+            "detail": "rf_promote_carry(승자 universe=index/KQ150) → carry universe=k200_kq150 · universe_reset_from=index/KQ150"
+          },
+          {
+            "id": "F4_promote_best_excludes",
+            "ok": true,
+            "detail": "rf_promote_best → i=3(B2_6) · 제외 B3_12=universe:index,B4_22=universe:index"
+          },
+          {
+            "id": "F5_runner_consumers",
+            "ok": true,
+            "detail": "w3 기호 출현 줄 741,965(정의 741 · 소비 = 결합 SPEC$universe 1곳) · 바닥 후보 rf_candidates_keep(role=floor)=TRUE · .winner_of(\"B4\") 소비자=FALSE"
+          },
+          {
+            "id": "F6_grid_universe",
+            "ok": true,
+            "detail": "B3 칸 universe kind = B3_11:index,B3_12:index,B3_13:size_band,B3_14:size_band,B3_15:sector_neutral · B3 참조 결합 칸 = B4_21,B4_22,B4_23,B4_25(→ 결합 SPEC universe = B3 승자 유니버스 = k200_kq150 아님)"
+          },
+          {
+            "id": "G_diag_keep",
+            "ok": true,
+            "detail": "창 규칙 anchor 2005-01-01 · 허용 12개월 · 칸별 B3_11:2010-01-29(60개월), B3_12:1990-01-31(0개월), B3_13:1990-01-05(0개월), B3_14:1990-01-05(0개월), B3_15:1990-01-31(0개월) → keep = B3_12(격자 순서 첫 준수 칸)"
+          },
+          {
+            "id": "T_terminal_consumers_report",
+            "ok": true,
+            "detail": "A 자격 관문 rf_a_eligibility 유니버스 검사 없음=TRUE(B3·B3 참조 결합 칸도 A 후보가 될 수 있다 — 종단 평가 경로 · 계보 하류 아님) · 셀 워커가 universe 라벨로 run_paper_replication 에 넘김=TRUE(모듈 등재 경로 — 2계층 풀 자격은 등급 기준)"
+          }
+        ],
+        "facts_generated_at": "2026-09-25T22:27:28+0900",
+        "facts_tool": "scratchpad organic_o0a/HUMAN/tools/verify_b3_structure_facts.R(키트 동봉 · 코드 실행 재확인 6종 + 종단 소비자 보고)",
+        "excluded_evidence": "성과 수치(B3 계보 PORT_t·Calmar 등)는 근거에서 제외한다 — 결정 문언(넣으면 성과 소비 규칙이 된다)",
+        "applies": "B3·B4 에 시도가 아직 없는 entry(진입한 블록은 동결 — 진행 중 entry 의 계획을 바꾸지 않는다). 시도 있는 코드는 어떤 경우에도 보존"
+      }
+    ]
   },
   "execution": {
     "mode": "parallel_within_block",

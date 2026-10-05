@@ -86,7 +86,9 @@ np <- paste(readLines(file.path(ROOT, "02_Infrastructure/ops/reinforce_auto_next
 if (grepl("E$max_attempts", np, fixed = TRUE))
   ok("D1 소진 entry 의 예산을 읽는다 ★전역 25 가 아니다") else
   ng("D1 전역 max_attempts 만 읽는다", "B1 설계로 늘어난 예산과 어긋난다")
-i_e <- regexpr("E <- ex[[length(ex)]]", np, fixed = TRUE)
+## ★P1-08 FIFO(HUMAN · 10-03 최종 통합 INTEG-TF) — 집는 식이 ex[[length(ex)]](LIFO) → ex[[1]](FIFO)로 바뀌었다. 재는 것은 순서(집은 뒤 예산)라
+##   앵커를 두 판 공통 접두로 둔다.
+i_e <- regexpr("E <- ex[[", np, fixed = TRUE)
 i_m <- regexpr("MAXA <- as.integer(E$max_attempts", np, fixed = TRUE)
 if (i_e > 0 && i_m > 0 && i_e < i_m)
   ok("D2 entry 를 집은 **뒤에** 예산을 재도출한다(순서)") else ng("D2 재도출 순서")

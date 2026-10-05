@@ -182,6 +182,75 @@ chk(grepl("selection_asof", .err(rf_sl_resolve(RULE5, .tmp2, IC = .ic, BM = .bm)
 chk(grepl("as-of 미해석", .err(rf_sl_resolve(RULE5, .tmp2, IC = .ic, BM = .bm)) %||% ""),
     "R5 as-of 를 어디서도 못 정하면 멈춘다(전기간으로 계산하지 않는다 · C1)", "R5 as-of 없이 돌았다")
 
+# ── B7-EXCL 후보 제외 (2026-10-03 · 결정 FLOOR-F1-SEED-B7-OVERLAP · PR-L2-B7-EXCL-UNIT (c) id 단위) ──
+#   픽스처(.tmp): as-of 1위 DA · 2위 DB · DX deprecated · VV 비방어. 기저 팩터에 DA 가 있으면 제외 뒤 1위 = DB(rank = 제외 뒤 순위).
+cat("-- B7-EXCL 후보 제외 --\n")
+RX <- rf_sl_parse(list(kind = "factor_topk", k = 5, exclude = "base_factors"))
+chk(identical(RX$exclude, "base_factors") && identical(RULE5$exclude, ""),
+    "X0 exclude 파싱 — base_factors 보존 · 키 없으면 ''(구판 거동)", "X0 파싱", paste(RX$exclude, RULE5$exclude))
+chk(grepl("미지원 exclude", .err(rf_sl_parse(list(kind = "factor_topk", k = 5, exclude = "family"))) %||% "") &&
+      grepl("미지원 exclude", .err(rf_sl_parse(list(kind = "factor_topk", k = 5, exclude = c("base_factors", "x")))) %||% ""),
+    "X1 미지원·복수 exclude 값 → stop(계열 단위 'family' 는 결정 (c) 밖 — 조용히 받지 않는다)", "X1 미지원 exclude 통과")
+x1 <- tryCatch(rf_sl_resolve(RX, .tmp, IC = .ic, BM = .bm, exclude_ids = c("DA", "IN05_Net_Debt_Issuance")), error = function(e) list(id = paste("ERR", conditionMessage(e))))
+chk(identical(x1$id, "DB") && identical(x1$excluded_in_pool, "DA") && setequal(x1$excluded_ids, c("DA", "IN05_Net_Debt_Issuance")) &&
+      identical(x1$exclude_rule, "base_factors") && grepl("기저 팩터 제외 2종(풀 안 1: DA)", x1$basis, fixed = TRUE),
+    "X2 [양성] 기저 팩터 DA 제외 → 1위 DB · 풀 안 제외 = DA · basis 에 제외 기록", "X2 제외가 순위에 안 먹는다", paste(x1$id, x1$basis))
+x3 <- tryCatch(rf_sl_resolve(RX, .tmp, IC = .ic, BM = .bm, exclude_ids = "ZZ_NOT_IN_POOL"), error = function(e) list(id = paste("ERR", conditionMessage(e))))
+chk(identical(x3$id, "DA") && !length(x3$excluded_in_pool) && grepl("풀 안 0: 없음", x3$basis, fixed = TRUE),
+    "X3 풀 밖 id 만 제외 → 순위 불변(DA) · 풀 안 제외 0 기록", "X3", paste(x3$id, x3$basis))
+chk(grepl("받지 못했다", .err(rf_sl_resolve(RX, .tmp, IC = .ic, BM = .bm)) %||% "") &&
+      grepl("받지 못했다", .err(rf_sl_resolve(RX, .tmp, IC = .ic, BM = .bm, exclude_ids = character(0))) %||% "") &&
+      grepl("받지 못했다", .err(rf_sl_resolve(RX, .tmp, IC = .ic, BM = .bm, exclude_ids = c(NA, ""))) %||% ""),
+    "X4 규칙이 있는데 제외 집합이 NULL·빈·결측 → stop(제외를 조용히 건너뛰지 않는다)", "X4 빈 제외 집합이 통과")
+r1b <- rf_sl_resolve(RULE5, .tmp, IC = .ic, BM = .bm, exclude_ids = c("DA"))
+chk(identical(r1b$id, r1$id) && identical(r1b$basis, r1$basis) && identical(r1b$exclude_rule, ""),
+    "X5 [구판 비트 동일] 규칙 없는 칸은 exclude_ids 를 받아도 무시 — id·basis 문자열 구판 그대로", "X5 규칙 없는 칸이 바뀌었다",
+    paste(r1b$id, r1b$basis))
+chk(grepl("모순 스펙", .err(rf_sl_resolve(rf_sl_parse(list(kind = "factor_topk", k = 5, factor_id = "DA", exclude = "base_factors")),
+                                         .tmp, exclude_ids = "DA")) %||% ""),
+    "X6 factor_id 고정이 제외 집합에 들면 stop(모순)", "X6 모순 스펙 통과")
+chk(grepl("rank", .err(rf_sl_resolve(rf_sl_parse(list(kind = "factor_topk", k = 5, rank = 2, exclude = "base_factors")),
+                                    .tmp, IC = .ic, BM = .bm, exclude_ids = "DA")) %||% ""),
+    "X7 rank 는 제외 뒤 순위 — 자격 1종(DB)만 남으면 rank 2 는 stop", "X7 rank 가 제외 전 순위로 셌다")
+xr <- tryCatch(rf_sl_resolve(rf_sl_parse(list(kind = "random_beta_matched", k = 5, exclude = "base_factors")), .tmp, IC = .ic, BM = .bm,
+                             exclude_ids = "DA"), error = function(e) list(id = "ERR"))
+xa <- tryCatch(rf_sl_resolve(rf_sl_parse(list(kind = "antidefense", k = 5, exclude = "base_factors")), .tmp, IC = .ic, BM = .bm,
+                             exclude_ids = "DA"), error = function(e) list(id = "ERR"))
+chk(identical(xr$id, "DB") && identical(xa$id, "DB"),
+    "X8 대조(베타매칭 무작위·반방어)도 같은 제외가 걸린다 — 기준 팩터 = 처치와 같은 DB(귀속 성립)", "X8 대조에 제외 미적용", paste(xr$id, xa$id))
+
+# ── 처치 전달량 rf_sl_delivery (결정 PR-L2-B7-EXCL-UNIT (c)) ──
+cat("-- 처치 전달량 --\n")
+D5 <- rf_sl_delivery(SEL0, S5, RULE5, NMAX)
+.nw <- merge(S5[, .(a = list(as.character(Ticker))), by = Date], SEL0[, .(b = list(as.character(Ticker))), by = Date], by = "Date")
+.nn <- vapply(seq_len(nrow(.nw)), function(i) length(setdiff(.nw$a[[i]], .nw$b[[i]])), integer(1))
+chk(all(D5$rows$n_sleeve == 5L) && all(D5$rows$n_new == .nn) && isTRUE(all.equal(D5$summary$pooled, sum(.nn) / (5 * nrow(.nw)))) &&
+      isTRUE(all.equal(D5$summary$mean_by_date, mean(.nn / 5))),
+    sprintf("D1 전달량 재도출 — 슬리브 자리 5 · 바닥에 없던 이름 수 = 독립 setdiff · 평균 %.3f · 합산 %.3f", D5$summary$mean_by_date, D5$summary$pooled),
+    "D1 전달량 계산 불일치")
+# 희석 픽스처: 방어값을 '알파 21~23위'(바닥 하위 자리 3)에 가장 높게 · 24~25위에 가장 낮게 깔면 슬리브 5자리 중 3자리가
+#   바닥 이름을 다시 고른다 → 전 시그널일 전달량 = 2/5 · n_kept_floor = 3. 보유는 매달 2종 바뀌므로 처치 미전달 가드(99% 동일)는
+#   **통과**한다 — 가드가 못 보는 희석이라 전달량을 따로 잰다(결정 (c)의 존재 이유).
+PD <- copy(PANEL); PD[, .rk := frank(-Score, ties.method = "first"), by = Date]
+PD[, .zdef := fifelse(.rk > 20L & .rk <= 23L, 10 + runif(.N), fifelse(.rk > 23L & .rk <= 25L, -10, runif(.N)))]
+SD0 <- tryCatch(rf_sl_select(PD, SEL0, RULE5, NMAX, defcol = ".zdef"), error = function(e) NULL)
+D0 <- if (!is.null(SD0)) rf_sl_delivery(SEL0, SD0, RULE5, NMAX) else NULL
+chk(!is.null(D0) && isTRUE(all.equal(D0$summary$mean_by_date, 0.4)) && isTRUE(all.equal(D0$summary$pooled, 0.4)) &&
+      all(D0$rows$n_kept_floor == 3L) && isTRUE(D0$summary$share_zero == 0),
+    "D2 [희석 양성 대조] 슬리브 5자리 중 3자리가 바닥 하위 이름 재선택 → 전달량 0.4 · n_kept_floor 3 (처치 미전달 가드는 통과하는 희석)",
+    "D2 희석을 못 잡는다", if (is.null(D0)) "선정 실패(가드 발화?)" else sprintf("%.3f", D0$summary$mean_by_date))
+PZ <- copy(PANEL); PZ[, .rk := frank(-Score, ties.method = "first"), by = Date]
+PZ[, .zdef := fifelse(.rk > 20L & .rk <= 25L, 10 + runif(.N), runif(.N))]
+chk(grepl("처치 미전달", .err(rf_sl_select(PZ, SEL0, RULE5, NMAX, defcol = ".zdef")) %||% ""),
+    "D2b 전 자리 희석(전달량 0 · 보유 100% 동일)은 기존 처치 미전달 가드가 먼저 멈춘다 — 전달량 계기는 그 아래 구간(부분 희석)을 잰다", "D2b")
+SF <- rf_sl_select(copy(PANEL)[, .zdef := -Score], SEL0, RULE5, NMAX, defcol = ".zdef")
+DF <- rf_sl_delivery(SEL0, SF, RULE5, NMAX)
+chk(isTRUE(DF$summary$mean_by_date == 1) && isTRUE(DF$summary$share_full == 1),
+    "D3 [완전 전달] 방어 = 알파 역순(비선정 꼬리) → 전 시그널일 전달량 1", "D3", sprintf("%.3f", DF$summary$mean_by_date))
+BAD <- copy(S5)[, Ticker := paste0(Ticker, "_x")]          # 알파 슬리브까지 바뀐 '보유' — 슬리브 자리보다 새 이름이 많다
+chk(grepl("불변식 위반", .err(rf_sl_delivery(SEL0, BAD, RULE5, NMAX)) %||% ""),
+    "D4 n_new > 슬리브 자리(계산 어긋남) → stop", "D4 불변식 위반 통과")
+
 # ── 서명 · 격자 · 배선 (재도출) ─────────────────────────────────────────────
 suppressMessages(source(file.path(ROOT, "02_Infrastructure/reinforcement/rf_spec_sig.R")))
 base <- list(factors = list(list(kind = "db", id = "X1")), weighting = list(kind = "ew"))
@@ -191,6 +260,8 @@ s8 <- base; s8$defense_sleeve <- list(kind = "factor_topk", k = 8)
 chk(!identical(.spec_sig(s5), .spec_sig(s8)), "G1 k=5 와 k=8 이 다른 칸으로 갈린다", "G1 서명이 접힌다")
 chk(identical(.spec_sig(base), .spec_sig(base)) && !grepl("defense", .spec_sig(base)),
     "G2 defense_sleeve 없는 스펙 서명은 구판 그대로", "G2 구판 서명 오염")
+s5x <- s5; s5x$defense_sleeve$exclude <- "base_factors"
+chk(!identical(.spec_sig(s5x), .spec_sig(s5)), "G2b exclude 를 건 칸은 구 B7 칸과 다른 서명(접히지 않는다)", "G2b 제외 칸이 구 칸으로 접힌다")
 
 PROG <- fromJSON(file.path(ROOT, "06_Registry/reinforce_program.json"), simplifyVector = FALSE)
 ids <- vapply(PROG$blocks, function(b) as.character(b$id %||% ""), character(1))
@@ -225,8 +296,23 @@ NP <- parse(file.path(ROOT, "02_Infrastructure/ops/reinforce_auto_parallel.R"))
   for (e in exprs) walk(e)
   hit
 }
-chk(.has(NP, "defense_sleeve"),
-    "G8 러너가 SPEC 에 defense_sleeve 를 싣는다(안 실으면 엔진은 알파 단독)", "G8 러너 미배선")
+## ★B4-SIX-AXIS(2026-09-26 · 10-03 차등 회귀): 교체 축(비중·유니버스·집행 주기·방어 슬리브)은 축 등록부(rf_spec_axes.R::rf_axes_cell_init)로 싣는다 —
+##   직접 인자(구판) **또는** 러너가 rf_axes_cell_init 을 부르고 등록부가 셀의 defense_sleeve 를 그대로 싣는다(행동 대조). 등록부에서 축을 지우면 red.
+.calls <- function(exprs, fn) {
+  hit <- FALSE
+  walk <- function(x) {
+    if (is.call(x)) { if (identical(x[[1]], as.name(fn))) hit <<- TRUE
+      for (i in seq_along(x)) if (!is.null(x[[i]])) try(walk(x[[i]]), silent = TRUE)
+    } else if (is.pairlist(x) || is.list(x)) for (i in seq_along(x)) if (!is.null(x[[i]])) try(walk(x[[i]]), silent = TRUE)
+  }
+  for (e in exprs) walk(e)
+  hit
+}
+.ax_ds <- local({ f <- file.path(ROOT, "02_Infrastructure/reinforcement/rf_spec_axes.R")
+  if (!file.exists(f)) FALSE else tryCatch({ ae <- new.env(); sys.source(f, envir = ae); ds <- list(kind = "factor_topk", k = 5L, select = "ic_bad_rank_asof")
+    identical(ae$rf_axes_cell_init(list(code = "B7_37", defense_sleeve = ds))[["defense_sleeve"]], ds) }, error = function(e) FALSE) })
+chk(.has(NP, "defense_sleeve") || (.calls(NP, "rf_axes_cell_init") && isTRUE(.ax_ds)),
+    "G8 러너가 SPEC 에 defense_sleeve 를 싣는다(직접 또는 축 등록부 rf_axes_cell_init — 안 실으면 엔진은 알파 단독)", "G8 러너 미배선")
 
 cat(sprintf("\n== 결과: %d PASS / %d FAIL ==\n", .pass, .fail))
 # 배터리 요약 계약(run_all_hooks.sh — 요약 JSON 없으면 UNMEASURED) · 2026-09-25 SUITES 편입과 함께 추가

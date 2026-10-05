@@ -390,7 +390,7 @@ Alpha Agent 자체 평가 기준 (v8.3 M1 — `.claude/rules/measurement-graduat
 - **Hypothesis discovery**:
   - `mcp__jina__search_arxiv`, `mcp__jina__search_ssrn`, `mcp__paper-search__search_google_scholar`
   - `kr-inverse-pattern-miner` skill (L-code 역전)
-  - `.cache/portfolio_gap_vector.json` + `conditional_ic_matrix.csv`
+  - `.cache/portfolio_gap_vector.json` (★`conditional_ic_matrix.csv` 는 전기간 IC 스냅샷 — 가설·팩터 선정 입력 금지. 조건부 IC 는 `Usable_Date <= 결정 시점` as-of 판만, as-of 판 미제공이면 사용 안 함 · pit.md C1/C14 · V6 절 · D-E-V6 2026-09-25)
 - **Axiom**: `source("02_Infrastructure/axiom_io.R")` (있으면)
 - **Agent 온디맨드**: `Agent(subagent_type="codex:codex-rescue", ...)` (PIT 검증 등)
 </tooling>

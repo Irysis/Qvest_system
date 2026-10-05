@@ -81,6 +81,16 @@ rf_emit_block_lcode <- function(base_id, n_used, root = Sys.getenv("QM_ROOT",
   blk <- if (!is.na(.bid0)) tab[grepl(paste0("^", .bid0, "_"), code) & n <= .n_end] else
          tab[n >= max(1L, .n_end - 4L) & n <= .n_end]
   if (!nrow(blk)) return(invisible(NULL))
+  # ★P1-06 통제 칸(carry 재현 · null 희석)은 선정 후보가 아니다 — 최고·최저·등급 집계·'직전 최고'에서 빼고 따로 한 줄로 적는다
+  #   (빼지 않으면 '최고 B1_0 … B4 조합 후보로 고정' 같은 처방이 교훈·기전 재료로 들어간다). 코드 정본 = 격자 standing_cells[control].
+  .ctl_codes <- tryCatch({
+    if (!exists("rfbd_control_codes", mode = "function"))
+      suppressMessages(source(file.path(root, "02_Infrastructure/reinforcement/rf_block_design.R"), local = TRUE))
+    rfbd_control_codes(root) }, error = function(e) character(0))
+  ctl <- blk[code %in% .ctl_codes]
+  blk <- blk[!(code %in% .ctl_codes)]
+  tab <- tab[!(code %in% .ctl_codes)]
+  if (!nrow(blk)) return(invisible(NULL))
 
   # ★진행 중 블록에서는 발행하지 않는다 — 측정 없는 L-code 는 기록이 아니라 잡음이다.
   #   러너는 블록 경계(측정 완료 후)에서만 부르지만, 검사·수동 호출이 in-flight 를 집을 수 있다.
@@ -111,6 +121,11 @@ rf_emit_block_lcode <- function(base_id, n_used, root = Sys.getenv("QM_ROOT",
                                     if (best$port_t > base_line$port_t) "전진" else "열위 — 이 축은 기준선을 못 넘었다"))
   ins <- tryCatch(rf_insights(blk), error = function(e) character(0))
   if (length(ins)) lesson <- paste(lesson, paste(ins, collapse = " · "))
+  if (nrow(ctl)) {
+    .cf <- ctl[is.finite(port_t)]
+    lesson <- paste(lesson, sprintf("통제 칸(P1-06 · 후보 아님) %d칸 측정 %d — %s.", nrow(ctl), nrow(.cf),
+      if (nrow(.cf)) paste(sprintf("%s %.3f", .cf$code, .cf$port_t), collapse = " · ") else "측정 없음"))
+  }
 
   # next_probe — 규칙 도출(C/F 는 2건 이상 계약)
   probes <- character(0)

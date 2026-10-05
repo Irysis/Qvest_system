@@ -3,9 +3,9 @@
   "dist_id": "DIST-GEN-308",
   "cluster_key": "70111772998b",
   "candidate_id": "CAND_reinforcement_70111772998b",
-  "status": "pending_5axis",
-  "statement_refined": null,
-  "retry_condition": null,
+  "status": "proposed",
+  "statement_refined": "market=KR · universe=K200∪KQ150 실투형 봉투의 규칙 격자 B1(멀티팩터) 블록에서, 선정 팩터 축의 교체는 초과수익 축에만 작용하고 낙폭 대역은 거의 움직이지 않는다. 구 규약 최근 실측: 22632 promo4 B1 10칸이 MDD 0.541~0.568(폭 0.027) · Calmar 0.449~0.494(폭 0.045) 안에 갇힌 채 PORT_t 만 3.770~4.167(폭 0.397)로 벌어졌고, 위험 축을 직접 겨눈 CR07_Momentum_Crowding 은 블록 최저 MDD 0.541 을 냈지만 CAGR 이 0.273→0.261 로 함께 내려 Calmar 는 0.484 로 제자리였다(L-RF-20260921_143005). 추가는 부분가법적이다 — 단일 추가 상위 둘을 함께 넣은 B1_10 이 블록 최저 PORT_t 3.770 이다. 다만 'B1 이 살아 있는 재료 축'이라는 강한 형태는 신 규약에서 약화된다: 짝 806개 부트스트랩 기준 ΔCalmar(B1) = −0.025 [−0.037, −0.016] · P(Δ>0) = 0.24 이고, 기준선을 선행 칸 중앙값으로 바꾸면 부호가 뒤집힌다(lever_audit_final.md §② · 부록 E4). 따라서 이 봉투에서 B1 에 대해 지지되는 명제는 'MDD 무반응'이며, 'B1 이 우월한 축'은 지지되지 않는다 — 정확한 서술은 '다른 블록보다 덜 나쁘다'이다. 포함 관계: DIST-GEN-292(supporting 120) ⊂ 본 후보(125).",
+  "retry_condition": "close_t1 판에서 B1 칸의 MDD 폭이 0.027 대역을 벗어나거나, 팩터 추가별 보유 교집합·결측률 계측이 붙어 PORT_t 감소가 순위 희석인지 결측 패턴 교체(inner join 통로)인지 갈리면 재상정한다. 두 계측 없이 같은 격자를 더 도는 것은 재시도로 세지 않는다.",
   "refined_at": null,
   "refined_by": null,
   "promoted_to_axiom": null,
@@ -304,5 +304,43 @@
     "oos_effect_vs_is": -0.236,
     "note": "L-code oos_retention 실값 125건 median (IS65/OOS35 활성SR retention) — oos_months 실값 무 → None 유지 — promote.R essence_score 경유 재확정"
   },
-  "cluster_members_count": 125
+  "cluster_members_count": 125,
+  "adversarial_verdict": {
+    "a_exaggeration": "강등함. 블록 L-code 가 A0/B10/C0/F0(세 세대 연속)을 냈다는 점이 성과로 읽히지 않도록, 같은 집합의 신 규약 판정(A 0 · Calmar ≥0.64 0칸 · 구속 축은 OOS)을 같은 문단에 붙였다. ΔCalmar 를 '개선'이 아니라 음수 구간 [−0.037, −0.016]과 P(Δ>0)=0.24 로 적었다.",
+    "b_evidence": "확인. MDD 폭 0.027 · PORT_t 폭 0.397 · CR07 상쇄(0.273→0.261, Calmar 0.484 vs 0.494)는 L-RF-20260921_143005::mechanism 실값이다. 신 규약 약화 근거는 lever_audit_final.md §② 블록 표와 부록 E4('B1만 재료 축으로 살아 있다' → 약화). 구 규약 수치는 규약을 명기해 인용했고, 두 규약 수치를 한 문장에 섞지 않았다.",
+    "c_ax000": "'구조적 한계' 단정 없음. 'MDD 무반응'은 관측 서술이고, 그 원인(순위 희석 vs 결측 패턴 교체)은 이 블록으로 안 갈린다고 미해결로 명시했다 — 원 L-code 의 미결 서술을 그대로 승계했다.",
+    "d_firewall": "위반 없음. '25종 동일가중이라 낙폭이 안 준다' 같은 고정 축 귀속을 쓰지 않았다. 관측은 '선정 지점에서는 위험 축이 안 움직인다'이고, 레버는 봉투-안 소비 지점 교체(예산 고정 배분 짝 · 보유 원천 상태 층 · 벤치 인지 비중)다.",
+    "e_frontier": "frontier 3건 + live_trigger(data) + expiry. 실패가 '어느 소비 지점에서 같은 정보를 쓰면 움직이는가'를 가리키도록 했다."
+  },
+  "expiry": "2027-03-31",
+  "frontier": [
+    "팩터 추가별 보유 교집합·결측률을 산출물 컬럼으로 남겨 PORT_t 부분가법성이 순위 희석인지 inner join 결측 교체인지 분리 — 원 L-code 가 남긴 유일한 미결",
+    "예산 E=1−g 를 고정하고 배분만 가르는 짝(trend_ladder_gate 균등 vs ladder_idio_conc_tilt 잔차 집중)으로 '깎은 양'과 '누구를 깎았나'의 기여를 분리",
+    "시장 시계열을 한 열도 읽지 않는 보유 원천 상태 층(book_risk_balance_gap · book_convexity_brake) — 타이밍 반증(lag-1 · 블록 순열)과 독립으로 판정되는 유일한 계열"
+  ],
+  "live_trigger": {
+    "type": "data",
+    "condition": "B1 칸의 close_t1 판 MDD 폭이 0.027 대역을 벗어나거나, 보유 교집합·결측률 컬럼이 산출물에 실려 부분가법성의 경로가 특정될 때",
+    "monitored_source": "stage_artifacts/l_code/reinforcement/l_code_*_B1.json · 04_Research/01_reports/p0_05_remeasure_20260925/batch_triad.csv"
+  },
+  "revival_spec": [
+    {
+      "signal_id": "wall_clock_date",
+      "condition": "x >= as.Date('2027-03-31')",
+      "from_trigger": "expiry",
+      "status": "active"
+    },
+    {
+      "signal_id": "stage_artifacts_present",
+      "condition": "x == TRUE",
+      "from_trigger": "data",
+      "status": "pending"
+    }
+  ],
+  "constraint_firewall": {
+    "mode": "backstop_passed",
+    "checked_at": "2026-09-26"
+  },
+  "drafted_at": "2026-09-26T11:03:01+0900",
+  "drafted_by": "auto_distill"
 }

@@ -85,8 +85,16 @@ rf_grade_fanfare <- function(base_id, grade, code, es = list(), n = NA, maxa = N
 
 #' 이번 블록이 **처음으로** 그 등급을 냈는가 — 원장에서 재도출한다(선언 아님)
 #' @return "A" / "B" / NA  (둘 다면 A 우선)
-rf_fanfare_new_grade <- function(entry, block_codes) {
-  ats <- entry$attempts %||% list()
+#' ★P1-06(2026-09-25): 통제 칸(carry 재현 · null 희석 — 격자 standing_cells[control])은 등급을 '냈다'고 세지 않는다 —
+#'   승격 entry 의 B1_0 은 부모 구성을 다시 잰 것이라 B 가 당연하다(축포가 매 승격마다 울린다). control_codes 로 뺀다
+#'   (기본 = 격자에서 읽는다 · 읽지 못하면 빼지 않는다 = 구판 거동).
+rf_fanfare_new_grade <- function(entry, block_codes,
+                                 control_codes = tryCatch({
+                                   .r <- Sys.getenv("QM_ROOT", getwd())
+                                   if (!exists("rfbd_control_codes", mode = "function"))
+                                     suppressMessages(source(file.path(.r, "02_Infrastructure/reinforcement/rf_block_design.R"), local = TRUE))
+                                   rfbd_control_codes(.r) }, error = function(e) character(0))) {
+  ats <- Filter(function(a) !(as.character(a$cell_code %||% "") %in% control_codes), entry$attempts %||% list())
   if (!length(ats)) return(NA_character_)
   .g <- function(a) toupper(substr(as.character(a$grade %||% ""), 1, 1))
   .c <- function(a) as.character(a$cell_code %||% "")

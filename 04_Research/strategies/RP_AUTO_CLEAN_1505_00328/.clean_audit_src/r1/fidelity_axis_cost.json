@@ -1,0 +1,18 @@
+{
+  "axis": "cost",
+  "verdict": "faithful",
+
+  "undeclared_changes": [],
+
+  "signal_mismatch": [],
+
+  "counterexample": "구성하지 못했다 — 비용 축에서 구현이 논문보다 유리해지는 지점을 찾지 못했다. 시도한 4개 반례 경로와 각각이 막힌 사유: ①[논문 기준판에 15bps 혼입] run_paper_replication.R:581 comm_paper <- commission_paper %||% 0 → FIDELITY.json:12 commission_paper=null 이므로 0. replication_harness.R:44 'commission=0 = gross' · :284-285 cost = to_val*0 = 0 → Rn = Rg · :288-290 .k=0 이라 곱 기장 분기 자체가 실행되지 않는다. 등급판은 :586 에서 comm_paper(0) != 0.0015 라 **별도 시뮬레이션**으로 돌고, 두 판은 같은 WEIGHTS·같은 exec_price(portfolio_spec 에 exec_price 키 없음 → :439 exec_price_paper == exec_price)를 써서 유일한 차이가 commission 이다. 병기값은 :591·:714·:766 에서 'commission_paper_bps = 0' / '(비용 0bps)' 로 비용 기준이 함께 실린다 — 즉 병기값은 라벨까지 논문 비용(무비용 gross)이다. ②[숏 레그 턴오버 무과금] replication_harness.R:272 cur_w 는 부호 있는 비중(engine.R:102-103 롱 +1/N · 숏 -1/N)이고 :274 sum(abs(cur_w))=2.0 · :276-279 sum(abs(a-b)) 가 티커 합집합 위에서 계산되므로 숏 다리 턴오버가 과금된다. 숏 데실 → 롱 데실로 건너간 종목은 |+1/N_L-(-1/N_S)| ≈ 2/N 로 양측 거래가 다 잡힌다. 과소 과금 없음. ③[저비용 칸 선택] 구현 칸 K=1(engine.R:16)은 81칸 격자 {1,6,12,18,24,30,36,42,48}^2 중 **최대 턴오버 칸**이다(양 다리 월 전량 교체). 15bps 등급판에서 가장 불리한 칸이므로 칸 선택은 비용 축에서 구현에 역방향으로 기운다. ④[집행 시점이 논문보다 유리] engine.R:65 시그널일 = 월 마지막 거래일, 체결은 harness:234 get_execution_date. 보유창은 harness:238-247 규약이 가른다 — close_d_legacy = [M+1 첫 거래일, M+1 마지막 거래일] = 논문의 월말→월말 창과 동일 · close_t1 = (M+1 첫 거래일, M+2 첫 거래일] = 논문 창을 1거래일 뒤로 밀어 **형성 직후 첫 거래일(J=1 역추세에서 반전이 가장 강한 날)을 버린다** = 보수 쪽. 두 해석 모두 논문보다 유리하지 않다.",
+
+  "evidence": "arxiv.org/html/1505.00328v1 전문 3회 독립 독해 일치 — 논문은 거래비용을 **어디에서도 다루지 않는다**. (a) Materials and Methods: 'The contrarian portfolio CON(J,K) is held for K months. We examine the equal-weighted average returns per annum of the loser portfolio, the winner portfolio, and the contrarian portfolio during the holding period' — 비용 항 없음, 수익은 equal-weighted 연율 원수익. (b) 표 캡션 전수: 'average annualized returns' + 't-statistics adjusted for heteroscedasticity and autocorrelation' 뿐 — net of transaction costs 판·bps·% 비용 가정 0건. (c) 비용 인접 서술은 Introduction 의 선행연구 인용 1문장뿐: 'It is found that the bid-ask spread, non-synchronous trading as well as the lack of liquidity would enlarge the momentum and contrarian effects' — 이것은 저자의 비용 차감이 아니라 효과 증폭 요인 인용이고, 저자의 대응은 비용 차감이 아니라 skip 월('the common approach is to skip certain time intervals between the estimation and the holding period', 주 결과는 skip 없음 · skip 1개월은 강건성). (d) 왕복 여부·시장충격·stamp duty·수수료 명시 0건. (e) 숏 레그: 'buying the loser portfolio and selling the winner portfolio' 외에 중국 A주 공매도 가능성·제약·차입비용 논의 0건. → 논문의 비용 = 0(무비용 gross), 왕복 규약·시장충격 모델 = 부재.",
+
+  "confidence": "high",
+
+  "checked": "논문 비용 명시값(bps·왕복·시장충격·stamp duty·숏 차입) 전수 탐색 → 전부 부재 확인 · FIDELITY.json ⑬ commission_paper=null 3개 절 사실성 · 논문 기준판 비용 경로(commission_paper=null → %||% 0 → gross · 라벨 동반) · 등급판 15bps 분리 시뮬레이션 여부 · 비용 모델의 턴오버 정의(Σ|Δw| 양 다리 과금 여부·레그 교차 종목) · 보유창·체결 시점 규약 3종(close_d_legacy·close_t1·open_t1)과 논문 월말→월말 창 대조 · 칸 선택(K=1)의 턴오버 방향성 · 유동성 하한의 시장충격 축 대응물(논문 = B주 제외뿐)",
+
+  "note": "청정 모드라 측정 산출물을 보지 않았다 — 비용 과금 실현값 대조는 지시대로 **코드 경로 추적**(run_paper_replication.R:405·581-593·602·714·766 → replication_harness.R:42-44·158-164·231-301)으로 대신했다. 미해소 1건: exec_price 기본값은 constraint_defaults.json::execution.exec_price 에 있고 청정 레인 읽기 범위 밖이라 close_d_legacy/close_t1 중 어느 규약이 떴는지 확정하지 못했다 — 단 두 값 모두 논문 창과 동일하거나 1거래일 보수 쪽이라 판정은 바뀌지 않는다(Judge 가 measurement_regime.exec_price 로 확정 가능). 축 밖 1줄: FIDELITY ⑫ 가 신고한 다리당 약 35종·합계 약 70종은 고정 축 25종을 넘고 러너도 engine_direct 를 자르지 않는다(run_paper_replication.R:560-569 경고만) — 포트폴리오 축 검증자 소관."
+}

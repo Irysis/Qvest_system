@@ -45,6 +45,20 @@ suppressMessages(source(file.path(.RF_ROOT, "02_Infrastructure/reinforcement/rf_
 suppressMessages(source(file.path(.RF_ROOT, "02_Infrastructure/reinforcement/rf_sleeve.R")))
 .RB <- rf_rb_parse(SPEC[["rebalance"]])
 .SL <- rf_sl_parse(SPEC[["defense_sleeve"]])   # B7 구조적 방어 슬리브(없으면 NULL = 기존 경로)
+# ★PR-L1 cap_core(벤치 인지 코어-위성 · 2026-10-03 CAPCORE-IMPL) — 키가 없거나 k=0 이면 rf_capcore.R 를 적재조차 하지 않는다(기존 칸 비트 동일).
+.CC <- NULL
+# ★형식 불일치 차단(2026-10-03 재개) — 사전등록 PR-L1 draft3 arm 스펙은 weight_stage='cap_core'·k·core·satellite 를 **최상위**에 적는다.
+#   엔진은 SPEC$cap_core 만 읽으므로 그 형식이 셀 스펙에 그대로 실리면 처치가 조용히 빠져 바닥과 비트 동일 포트폴리오가 arm 이름으로
+#   측정된다(서명도 바닥과 같아 dedup 이 접는다). 엔진이 읽지 않는 처치 키는 멈춘다 — 형식 정합은 등록 전 사전등록 쪽에서 맞춘다.
+if (!is.null(SPEC[["weight_stage"]]))
+  stop(sprintf("[rf_cell_engine] 최상위 weight_stage='%s' 는 엔진이 읽지 않는다 — cap_core 처치는 SPEC$cap_core = {k, satellite, ...}(rf_capcore.R::rf_cc_parse)로만 · 형식 불일치는 조용한 무처치가 된다",
+               paste(as.character(unlist(SPEC[["weight_stage"]])), collapse = ",")))
+if (!is.null(SPEC[["cap_core"]])) {
+  suppressMessages(source(file.path(.RF_ROOT, "02_Infrastructure/reinforcement/rf_capcore.R")))
+  .CC <- rf_cc_parse(SPEC[["cap_core"]])
+  if (!is.null(.CC) && .CC$k == 0L) .CC <- NULL
+}
+.RF_DIAG <- list()   # 엔진 진단(B7 전달량 · cap_core) — 비어 있으면 아무것도 쓰지 않는다(기존 칸 무변화)
 .LIQ_MIN <- as.numeric(.AX$liq_adv20_min %||% 2e8)
 .START   <- as.Date(.AX$start_date    %||% "2005-01-01")
 
@@ -257,6 +271,35 @@ if (is.null(.flist)) {
     }
     out <- DT[Date %in% .sig_dates & !is.na(.sd60_l1) & .sd60_l1 > 0, .(Date, Ticker, v = -.sd60_l1)]
     setnames(out, "v", tag); out
+  } else if (identical(fs$kind, "null_perm")) {
+    # ★P1-06 null-factor 희석 통제 칸 (2026-09-25 · 격자 정본 reinforce_program.json standing_cells[control=null_factor]).
+    #   무정보 팩터 = 그 시그널일 **현재 패널 종목**(앞 팩터 결합 뒤 · 커버리지 축소 없음)의 순위를 seed 고정 순열로 준다(월내 순열).
+    #   정보 0 이므로 이 칸과 carry 재현 칸(B1_0)의 차이 = 'B1 에 팩터 하나를 얹는 처치'의 귀무(희석 편향 + 선정 잡음).
+    #   PIT: 그 날짜와 그 날짜의 패널 멤버십만 쓴다(미래 정보 0). 월별 seed = 격자 시작일(fixed_axes.start_date) 대비 달 순번으로
+    #   주 seed 의 runif 흐름에서 뽑는다(접두 안정 — 뒤에 달이 붙어도 과거 달의 순열은 그대로다). 전역 난수 상태는 되돌린다.
+    .null_s <- suppressWarnings(as.integer(fs$seed %||% NA))
+    if (length(.null_s) != 1L || is.na(.null_s))
+      stop("[rf_cell_engine] null_perm seed 부재 — 통제 칸 사양 오류(측정 무효)")
+    .nk <- unique(PANEL[, .(Date, Ticker)]); setorder(.nk, Date, Ticker)
+    .nd <- sort(unique(.nk$Date))
+    .nmi <- (as.integer(format(.nd, "%Y")) - as.integer(format(.START, "%Y"))) * 12L +
+            (as.integer(format(.nd, "%m")) - as.integer(format(.START, "%m")))
+    if (!length(.nd)) stop("[rf_cell_engine] null_perm — 패널이 비었다(측정 무효)")
+    if (any(.nmi < 0L) || anyDuplicated(.nmi))
+      stop("[rf_cell_engine] null_perm — 시그널일이 격자 시작 달 앞이거나 한 달에 둘이다(월별 seed 정의 불가 · 측정 무효)")
+    .rs_old <- if (exists(".Random.seed", envir = globalenv(), inherits = FALSE)) get(".Random.seed", envir = globalenv()) else NULL
+    .rk_old <- RNGkind()
+    on.exit({ if (is.null(.rs_old)) { RNGkind(.rk_old[1], .rk_old[2], .rk_old[3])
+                if (exists(".Random.seed", envir = globalenv(), inherits = FALSE)) rm(".Random.seed", envir = globalenv()) }
+              else assign(".Random.seed", .rs_old, envir = globalenv()) }, add = TRUE)
+    set.seed(.null_s, kind = "Mersenne-Twister", normal.kind = "Inversion", sample.kind = "Rejection")
+    .nms <- as.integer(floor(stats::runif(max(.nmi) + 1L) * 2147483646)) + 1L
+    out <- rbindlist(lapply(seq_along(.nd), function(i) {
+      tk <- .nk$Ticker[.nk$Date == .nd[i]]
+      set.seed(.nms[.nmi[i] + 1L], kind = "Mersenne-Twister", normal.kind = "Inversion", sample.kind = "Rejection")
+      data.table(Date = .nd[i], Ticker = tk, v = as.numeric(sample.int(length(tk))))
+    }))
+    setnames(out, "v", tag); out
   } else stop("[rf_cell_engine] factor kind 미지원: ", fs$kind)
 }
 
@@ -343,7 +386,11 @@ SEL <- rf_rb_select(PANEL, SEL, .RB, .N_MAX)
 #   ★B6 뒤에 둔다: 버퍼가 알파 순위의 연속성을 먼저 정하고, 그 다음 k 자리를 방어에 내준다.
 #   ★팩터 id 는 spec 에 박지 않는다 — 규칙(rf_sl_resolve)이 등록부의 측정 ic_bad 로 고른다.
 if (!is.null(.SL)) {
-  .sl_res <- rf_sl_resolve(.SL, .RF_ROOT)
+  # ★B7-EXCL(결정 FLOOR-F1-SEED-B7-OVERLAP · PR-L2-B7-EXCL-UNIT (c)) — exclude="base_factors" 면 이 칸 기저 팩터 id(셀 스펙 factors)를 후보에서 뺀다.
+  #   id 는 스펙의 팩터 목록에서 파생한다(리터럴 금지). 규칙이 없으면 NULL 을 넘긴다 = 구판 호출과 같은 거동.
+  .sl_excl <- if (identical(.SL$exclude, "base_factors"))
+                unique(as.character(unlist(lapply(.flist, function(f) f$id %||% NULL)))) else NULL
+  .sl_res <- rf_sl_resolve(.SL, .RF_ROOT, exclude_ids = .sl_excl)
   .pdef <- .load_factor(list(kind = .SL$factor_kind %||% "db", id = .sl_res$id), ".zdef")  # db 면 C15 단일 경유
   if (is.null(.pdef) || !nrow(.pdef))
     stop(sprintf("[rf_cell_engine] 방어 팩터 %s 패널 부재 — 처치 불가", .sl_res$id))
@@ -359,6 +406,16 @@ if (!is.null(.SL)) {
   .sl_before <- SEL
   SEL <- rf_sl_select(.PANEL_D, SEL, .SL, .N_MAX, defcol = ".zdef", betacol = .bcol)
   cat(sprintf("[rf_cell_engine] %s\n", rf_sl_report(.sl_before, SEL, .SL, .sl_res$id, .sl_res$basis)))
+  # ★처치 전달량(결정 PR-L2-B7-EXCL-UNIT (c)) — 슬리브 자리 중 바닥(.sl_before = 같은 실행의 슬리브 전 선정)에 없던 이름 비율.
+  #   판정 입력은 이 진단을 계약 contracts/sleeve_delivery.R 이 재도출한 산출물뿐 — 여기 로그 줄은 사람용.
+  .sl_dl <- rf_sl_delivery(.sl_before, SEL, .SL, .N_MAX)
+  .RF_DIAG$sleeve_delivery <- list(rule = .SL, resolved_id = .sl_res$id, basis = .sl_res$basis, asof = .sl_res$asof %||% NA_character_,
+                                   exclude_rule = .sl_res$exclude_rule %||% "", excluded_ids = .sl_res$excluded_ids %||% character(0),
+                                   excluded_in_pool = .sl_res$excluded_in_pool %||% character(0),
+                                   summary = .sl_dl$summary, rows = .sl_dl$rows)
+  cat(sprintf("[rf_cell_engine] sleeve_delivery | 바닥과 다른 교체 비율 평균 %.3f · 합산 %.3f · 최소 %.3f · 0인 시그널일 %.1f%% · 시그널일 %d\n",
+              .sl_dl$summary$mean_by_date, .sl_dl$summary$pooled, .sl_dl$summary$min,
+              100 * .sl_dl$summary$share_zero, .sl_dl$summary$n_dates_with_sleeve))
 }
 
 if (identical(.wt$kind, "ew")) {
@@ -460,6 +517,42 @@ if (identical(.wt$kind, "ew")) {
   stopifnot(all(PORTFOLIO$Weight >= 0))
   .chk <- PORTFOLIO[, .(s = sum(Weight)), by = Date]
   stopifnot(max(abs(.chk$s - 1)) < 1e-8)
+}
+
+# ── 5.4 PR-L1 cap_core — 비중 단계 뒤 코어-위성 합성 (2026-10-03 CAPCORE-IMPL · 정의·근거 = rf_capcore.R 머리) ──
+#   .CC 가 NULL(키 없음 · k=0)이면 이 블록은 아무것도 하지 않는다 → FACTORS/PORTFOLIO 비트 동일(검사 test_rf_capcore.R K0).
+#   위성 = 비중 단계 산출(PORTFOLIO — EW 칸이면 SEL 의 1/|SEL|) 또는 C1 베타매칭 무작위 · 코어 = 시그널일 K200 멤버 t-1 시총 상위 k(t-1 벤치 비중).
+#   ★유니버스 축이 K200∪KQ150 인 칸에서만 정의한다 — 다른 유니버스(KQ150 단독·size_band 등)에 K200 메가캡을 얹으면 유니버스 축을 깬다.
+if (!is.null(.CC)) {
+  if (!identical(.univ$kind, "k200_kq150"))
+    stop(sprintf("[rf_cell_engine] cap_core 는 universe k200_kq150 칸에서만 — 이 칸 universe=%s(코어 K200 메가캡이 유니버스 축을 깬다)", .univ$kind))
+  if (!("K200" %in% names(DT))) stop("[rf_cell_engine] cap_core — RAWDATA 에 K200 멤버십 열 부재")
+  if (.CC$k >= .N_MAX) stop(sprintf("[rf_cell_engine] cap_core k %d ≥ n_max %d — 위성이 사라진다", .CC$k, .N_MAX))
+  .cc_sat <- if (exists("PORTFOLIO")) PORTFOLIO[, .(Date, Ticker, Weight)] else
+               SEL[, .(Ticker, Weight = 1 / .N), by = Date][, .(Date, Ticker, Weight)]
+  .cc_days <- sort(unique(.cc_sat$Date))
+  .cc_core <- rf_cc_core(DT[Date %in% .cc_days, .(Date, Ticker, K200, .SizeLag, .adv20_l1)], .CC$k, .LIQ_MIN)
+  .cc_rand <- NULL
+  if (identical(.CC$satellite, "random_beta_matched")) {
+    .cc_pb <- .load_factor(list(kind = .CC$beta_kind, id = .CC$beta_factor), ".zbeta")   # db 면 C15 단일 경유
+    if (is.null(.cc_pb) || !nrow(.cc_pb)) stop(sprintf("[rf_cell_engine] cap_core 베타 팩터 %s 패널 부재 — C1 대조 불가", .CC$beta_factor))
+    .cc_sat <- rf_cc_random_satellite(PANEL[, .(Date, Ticker, Score)], SEL[, .(Date, Ticker)], .cc_pb, ".zbeta", .CC$seed, .START)
+    .cc_rand <- attr(.cc_sat, "rf_cc_rand")
+  }
+  .cc <- rf_cc_compose(.cc_sat, .cc_core$core, .N_MAX, PANEL[, .(Date, Ticker, Score)])
+  PORTFOLIO <- .cc$portfolio[, .(Date, Ticker, Weight, Leg = "LONG")]
+  # 고정 축 단정 — long-only · Σw=1 · ≤ n_max (합성 함수 안의 불변식을 엔진 산출에서 한 번 더 · 비중 상한 없음 v10)
+  stopifnot(all(PORTFOLIO$Weight >= 0))
+  stopifnot(max(abs(PORTFOLIO[, .(s = sum(Weight)), by = Date]$s - 1)) < 1e-8)
+  stopifnot(max(PORTFOLIO[, .N, by = Date]$N) <= .N_MAX)
+  if (exists("FACTORS")) rm(FACTORS)   # 러너는 construction=top_n_long 이면 FACTORS 를 우선한다 — 남기면 cap_core 가 버려진다
+  .RF_DIAG$cap_core <- list(rule = .CC, compose = .cc$diag, core = .cc_core$core, core_diag = .cc_core$diag, random = .cc_rand,
+                            summary = list(k = .CC$k, satellite = .CC$satellite, n_dates = nrow(.cc$diag),
+                                           mean_sum_core = mean(.cc$diag$sum_core), min_sum_core = min(.cc$diag$sum_core),
+                                           max_sum_core = max(.cc$diag$sum_core), mean_overlap = mean(.cc$diag$n_overlap),
+                                           mean_truncated = mean(.cc$diag$n_truncated), max_hold = max(.cc$diag$n_hold),
+                                           min_size_cov = min(.cc_core$diag$size_cov)))
+  cat(sprintf("[rf_cell_engine] %s\n", rf_cc_report(.CC, .cc$diag, .cc_core$diag)))
 }
 
 # ── 5.5 리스크 오버레이 (도훈 지시 2026-08-30) ────────────────────────────────
@@ -1045,3 +1138,25 @@ cat(sprintf("[rf_cell_engine] cell=%s | univ=%s | factors=%s | wt=%s | months=%d
             if (.base_only) "none" else paste(vapply(.flist, function(f) f$id %||% "?", character(1)), collapse = "+"),
             .wt$kind,
             length(.sig_dates), if (exists("PORTFOLIO")) nrow(PORTFOLIO) else nrow(FACTORS)))
+
+# ── 엔진 진단 파일 (2026-10-03 · B7 전달량 · cap_core) — 진단이 비어 있으면(기존 칸 전부) 아무것도 쓰지 않는다 ──
+#   위치 = 러너 산출 디렉터리(OUT_DIR — 러너가 엔진을 new.env(parent = 러너 함수 환경)에서 source 하므로 상위 환경에서 보인다) ·
+#   러너 밖(검사)은 RF_ENGINE_DIAG_DIR 환경변수. 둘 다 없으면 쓰지 않는다 — 그 경우 판정 계약(contracts/sleeve_delivery.R)이 파일 부재로 멈춘다(fail-closed).
+#   ★판정 입력이 아니다 — 계약이 rows 에서 요약을 재도출하고 authoritative_remeasure.json 의 실현 규약(exec_price)을 붙인 산출물만 판정 입력이다.
+if (length(.RF_DIAG)) {
+  .dg_dir <- get0("OUT_DIR", ifnotfound = "")
+  if (!is.character(.dg_dir) || length(.dg_dir) != 1L || !nzchar(.dg_dir) || !dir.exists(.dg_dir)) .dg_dir <- Sys.getenv("RF_ENGINE_DIAG_DIR", "")
+  if (nzchar(.dg_dir) && dir.exists(.dg_dir)) {
+    .dg <- c(list(schema = "rf_engine_diag_v1", cell_code = SPEC$code %||% NA_character_,
+                  spec_md5 = unname(tools::md5sum(.rf_spec_path)), written_at = format(Sys.time(), "%Y-%m-%dT%H:%M:%S%z"),
+                  n_sig_dates = length(.sig_dates)), .RF_DIAG)
+    .dg_out <- file.path(.dg_dir, "rf_engine_diag.json"); .dg_tmp <- paste0(.dg_out, ".tmp", Sys.getpid())
+    writeLines(jsonlite::toJSON(.dg, auto_unbox = TRUE, pretty = TRUE, digits = NA, na = "null", null = "null",
+                                dataframe = "rows", Date = "ISO8601"), .dg_tmp, useBytes = TRUE)
+    if (!file.rename(.dg_tmp, .dg_out)) { unlink(.dg_tmp); stop("[rf_cell_engine] 엔진 진단 원자 쓰기 실패: ", .dg_out) }
+    cat(sprintf("[rf_cell_engine] 엔진 진단 → %s (%s)\n", .dg_out, paste(names(.RF_DIAG), collapse = "+")))
+  } else {
+    cat(sprintf("[rf_cell_engine] 엔진 진단 미기록 — 산출 디렉터리 없음(러너 밖 실행 · RF_ENGINE_DIAG_DIR 미설정) · %s\n",
+                paste(names(.RF_DIAG), collapse = "+")))
+  }
+}

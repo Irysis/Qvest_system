@@ -50,7 +50,7 @@ r <- inject("zz_cal_clean1", c(
   "  ym <- format(ctx$date, \"%Y-%m\")",
   "  v <- H$rv60; okv <- is.finite(v)",
   "  if (sum(okv) < 24L) return(1)",
-  "  ybar <- tapply(v[okv], yr[okv], mean)",
+  "  ybar <- stats::ave(v[okv], yr[okv])            # 연도별 평균(★R3R: tapply 는 ③d 허용 목록 밖 — 정본 arm 이 쓰는 ave 로)",
   "  ref <- stats::median(ybar)",
   "  now <- v[t]",
   "  if (!is.finite(now) || now <= 0) return(1)",

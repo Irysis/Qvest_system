@@ -3,9 +3,9 @@
   "dist_id": "DIST-GEN-217",
   "cluster_key": "d331eed56310",
   "candidate_id": "CAND_reinforcement_d331eed56310",
-  "status": "pending_5axis",
-  "statement_refined": null,
-  "retry_condition": null,
+  "status": "proposed",
+  "statement_refined": "market=KR · universe=K200∪KQ150 실투형 봉투의 규칙 격자 B3(유니버스) 블록에서, 후보군을 좁히는 방향의 칸은 초과수익을 잃으면서 낙폭 대역은 되찾지 못한다. 신 규약 짝 부트스트랩 실측: ΔPT −1.15 · ΔCalmar −0.092(P(Δ>0) 0.09) · ΔOOS −0.72(P(Δ>0) 0.09) 로 '두 기준 모두 모든 축이 음수'이고, 계보 단위로는 PT·Calmar 가 동시에 양수인 칸이 0/24 다(lever_audit_final.md §② · §③ 레버 2). 구 규약 블록 기록도 같은 방향이다 — 최근 세 계보의 B3 최고 셀이 PORT_t 1.293~2.619 · Calmar 0.324~0.366 으로 같은 세대 B1/B2/B6 최고에 전부 열위였다(L-RF-20260921_135635 · 20260922_023948 · 20260923_155032). 다만 이 축을 통째로 닫는 것은 근거를 넘는다: B3 는 유니버스 의존성을 볼 수 있는 유일한 진단원이며(6580 B3_12 의 2018~20 낙폭비 0.94), 감사의 권고도 폐지가 아니라 '진단용 1칸을 남기고 나머지 예산을 신규 논문으로 회수'다. 포함 관계: DIST-GEN-105(supporting 22) ⊂ 본 후보(33).",
+  "retry_condition": "한 번도 단독 측정된 적 없는 여집합 레그(KOSDAQ150 단독)와 시총 컷(하위 1/3)을 같은 블록에서 나란히 재서 멤버십 컷과 시총 컷이 갈리면 재상정한다. 승계 없이 동일가중 기저 위에서 재는 것이 조건이며, 승계된 칸은 귀속 불가로 표시한다.",
   "refined_at": null,
   "refined_by": null,
   "promoted_to_axiom": null,
@@ -120,5 +120,43 @@
     "oos_effect_vs_is": -0.304,
     "note": "L-code oos_retention 실값 33건 median (IS65/OOS35 활성SR retention) — oos_months 실값 무 → None 유지 — promote.R essence_score 경유 재확정"
   },
-  "cluster_members_count": 33
+  "cluster_members_count": 33,
+  "adversarial_verdict": {
+    "a_exaggeration": "강등함. '유니버스 축은 죽었다'를 '이 봉투에서 후보군 축소 방향은 단방향 손실이며, 진단 가치는 남는다'로 낮췄다. P(Δ>0) 0.09 를 유의로 읽지 않도록 값 그대로 적었다.",
+    "b_evidence": "확인. Δ 값은 lever_audit_final.md §② 블록 표(짝 806 · 계보 군집 부트스트랩 · 진단 표기), 0/24 는 §③ 레버 2 의 반박 항목. 구 규약 블록 수치는 각 L-RF 파일 실값이며 규약을 명기했다. 신·구 규약 수치를 한 문장에 섞지 않았다.",
+    "c_ax000": "'dead-end' 단정 없음. 감사 자신이 '진단용 1칸을 남길지는 가드가 판단한다'고 적은 것을 그대로 승계해, 축 폐지가 아니라 예산 재배치로 서술했다.",
+    "d_firewall": "위반 없음. 실패를 유니버스 고정 축(K200∪KQ150)에 귀속하지 않았고 '전종목으로 넓히면' 같은 완화를 레버로 제시하지 않았다. 판정 대상은 '고정 유니버스 안에서 후보군을 좁히는 처치'이며, 레버는 봉투-안 예산 회수와 여집합 대조다.",
+    "e_frontier": "frontier 3건 + live_trigger(data) + expiry."
+  },
+  "expiry": "2027-03-31",
+  "frontier": [
+    "여집합 레그(KOSDAQ150 단독)를 시총 하위 1/3 과 같은 블록에서 나란히 측정 — 멤버십 컷과 시총 컷이 같은 종목군을 자르는지가 한 번도 갈린 적이 없다",
+    "B3 5칸 + B3 유니버스를 쓰는 B4 4칸의 예산을 회수해 신규 논문 기저로 돌린다(감사 §③ 레버 2 — 천장을 옮기는 유일한 경로는 새 기저)",
+    "B3 칸마다 실현 보유종목수·실현 유니버스 크기·연 누적 회전량을 산출물 컬럼으로 남겨, 후보군 축소 효과와 처치 효과가 섞인 칸을 귀속 불가로 표시"
+  ],
+  "live_trigger": {
+    "type": "data",
+    "condition": "동일가중 기저 위에서 KOSDAQ150 단독 레그와 시총 하위 1/3 이 같은 블록에서 측정되어 두 컷의 PORT_t 가 나란히 기록될 때",
+    "monitored_source": "stage_artifacts/l_code/reinforcement/l_code_*_B3.json · 06_Registry/reinforce_ledger_l1.json"
+  },
+  "revival_spec": [
+    {
+      "signal_id": "wall_clock_date",
+      "condition": "x >= as.Date('2027-03-31')",
+      "from_trigger": "expiry",
+      "status": "active"
+    },
+    {
+      "signal_id": "stage_artifacts_present",
+      "condition": "x == TRUE",
+      "from_trigger": "data",
+      "status": "pending"
+    }
+  ],
+  "constraint_firewall": {
+    "mode": "backstop_passed",
+    "checked_at": "2026-09-26"
+  },
+  "drafted_at": "2026-09-26T11:03:26+0900",
+  "drafted_by": "auto_distill"
 }

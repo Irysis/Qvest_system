@@ -572,8 +572,20 @@ rf_grade_a_disposition <- function(base_id, n, root = ROOT) {
 
 # ── 발송 ──────────────────────────────────────────────────────────────────────
 #' @param kind "block" (블록 완료) 또는 "grade_a"
-rf_auto_notify <- function(base_id, n, kind = "block") {
+#' @param delayed TRUE = 경계 백필의 지연 발송(러너 rf_boundary_backfill · B5FIX) — 표제·상황 줄에 지연을 적는다
+rf_auto_notify <- function(base_id, n, kind = "block", delayed = FALSE) {
   S <- rf_notify_table(base_id); if (is.null(S)) return(invisible(FALSE))
+  ## ★블록 시점 표 (B5FIX · 2026-09-26): 경계 백필은 **지난 블록**의 보고를 늦게 보낸다. 그 뒤 블록이 이미 측정돼 있으면 아래 판독
+  ##   (tab[n == max(tab$n)] · 소진 위치 S$used)이 '가장 마지막 칸' 의 블록을 이번 블록으로 읽어 다른 블록의 보고가 나간다.
+  ##   delayed=TRUE(경계 백필 전용)일 때만 n(그 블록의 마지막 측정 칸)보다 뒤 칸을 표에서 빼고 위치도 n 으로 둔다.
+  ##   ★delayed 로 가른다(n 만으로 가르지 않는다) — 기존 호출자·검사는 n 을 자리표시로 넘기며 '마지막 블록' 을 기대한다
+  ##     (test_rf_notify_rank_distinct.R 는 n=5 로 부른다 — n 으로 자르면 검사 대상 블록이 B1 로 바뀌어 기존 결함을 가린다 · 첫 판 실측).
+  ##     정상 경로(러너 u2 · 수동 호출 전부)는 비트 동일하다.
+  .n0 <- suppressWarnings(as.integer(n)[1])
+  if (isTRUE(delayed) && identical(kind, "block") && length(.n0) && !is.na(.n0) && nrow(S$tab) && .n0 < max(S$tab$n)) {
+    S$tab <- S$tab[S$tab$n <= .n0]; S$used <- .n0
+    if (!nrow(S$tab)) return(invisible(FALSE))
+  }
   tab <- S$tab; blk <- sub("_.*$", "", tab$code)
   best <- tab[which.max(replace(port_t, !is.finite(port_t), -Inf))]
   bestC <- tab[which.max(replace(calmar, !is.finite(calmar), -Inf))]
@@ -600,7 +612,7 @@ rf_auto_notify <- function(base_id, n, kind = "block") {
   ttl <- if (identical(kind, "grade_a"))
     sprintf("[1계층·강화 %d/%d] %s", n, S$maxa, .gad$title)
   else
-    sprintf("[1계층·강화 %d/%d] 무인 블록 완료 — %s", n, S$maxa,
+    sprintf("[1계층·강화 %d/%d] 무인 블록 완료%s — %s", n, S$maxa, if (isTRUE(delayed)) "(지연 발송 · 경계 백필)" else "",
             .rf_axname(sub("_.*$", "", tab[n == max(tab$n)]$code), long = TRUE))
   suppressMessages(source(file.path(ROOT, "02_Infrastructure/telegram/telegram_notify.R")))
   .learn_sec <- NULL; .adapt_sec <- NULL
@@ -738,6 +750,7 @@ rf_auto_notify <- function(base_id, n, kind = "block") {
   secs <- list(
     list(type = "bullet", emoji = "\U0001F3AF", heading = "현재 리서치 상황",
          items = c("단계: 1계층 강화 프로세스 — 무인 규칙 러너",
+                   if (isTRUE(delayed)) "지연 발송 — 이 블록의 경계 처리가 누락돼 경계 백필이 늦게 보낸다(표·위치는 그 블록 시점 · 현재 위치는 원장)",
                    .rf_target_items(S$entry, suffix = sprintf(" · 기저 등급 %s", S$entry$base_grade %||% "F")),
                    sprintf("위치: %d/%d 칸 소진 · 측정 완료 %d건", S$used, S$maxa, nrow(tab)),
                    sprintf("등급 분포: A %d · B %d · C %d · F %d",

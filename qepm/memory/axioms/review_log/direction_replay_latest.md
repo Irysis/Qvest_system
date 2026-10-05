@@ -1,9 +1,9 @@
-# direction_replay latest b
+# direction_replay latest — 판정 insufficient
 
-- j20l  3 B7 m	k 0 B7 j20j3< l8!l  0 (l5l 8) B7 lm 
-- m	k k6m,:  B7 k(l k1j8	: 
-- N(k(l Calmar b j20l  ll  mk!j78k( l5j3  Calmar) l$l NA B7 N(mk!j78k( l5j3  Calmar j20l  l4m) l$l NA B7 ml, l5j3  0.501 B7 MC1 l k,k%  NA
-- ll1 k
-- k0)m% k
+- 결정 3 · 행동 0 · 결과 측정 0 (최소 8) · 상태 
+- 행동 분포:  · 단위 등급: 
+- Δ(단위 Calmar − 결정 시점 프로그램 최고 Calmar) 중앙 NA · Δ(프로그램 최고 Calmar 결정 이후) 중앙 NA · 현재 최고 NA · MC1 전달률 NA
+- 양성 대조(규칙 재현): 3/3 일치 (1) · 음성 대조(항상 B5): 기대 Δ 0 · B5 dead 결정 3
+- 방향 대안은 실행되지 않았으므로 대안의 결과는 없다(unreachable). 이 채점은 실행 단위의 결과와 규칙 재현만 본다.
 
-> j20j3<j0
+> 결과가 붙은 행동 결정이 8건 미만 — 판정 보류(NO-GO 아님). 규칙 v1 제안·shadow 는 이 수를 채운 뒤(플랜 Part 3 §7).

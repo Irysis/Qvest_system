@@ -8,6 +8,8 @@
 # ★기존 레인의 알려진 결함 2종은 복제하지 않는다:
 #   (a) auth grep 이 일간 로그 전체를 훑어 오전 401 이 오후에 재발화 → 이 런의 로그만 본다
 #   (b) 죽은 알림 heredoc → 알림은 jl 이벤트로만 남긴다
+# ★허용 함수 목록 (도훈 결정 B09-ALLOWLIST-PROMPT 2026-09-25): probe ③d 목록(06_Registry/overlay_probe_allowlist.json)을
+#   프롬프트에 싣는다(렌더 = probe 적재기 · 사본 없음). 목록 미제공이면 LLM 을 부르지 않는다(산출이 반드시 거부된다).
 #==============================================================================
 set -uo pipefail
 ROOT="${QM_ROOT:-C:/Users/99922/OneDrive/Quant_Module_Moltbot}"
@@ -63,6 +65,25 @@ ACT="${TG%%~*}"; REST="${TG#*~}"; ST="${REST%%~*}"
 jl target_picked "action=$ACT" "state=$ST"
 
 BRIEF=$(Rscript -e "$RMAP; cat(rf_target_brief())" 2>/dev/null)
+
+# ── 허용 함수 목록 (도훈 결정 B09-ALLOWLIST-PROMPT 2026-09-25 19시 · 06_Registry/decision_register.json) ─────────────
+#   probe ③d(R3R)는 06_Registry/overlay_probe_allowlist.json(동결) 밖의 이름을 전부 거부한다 — 프롬프트가 목록을 모르면
+#   흔한 함수 하나로 arm 을 버린다(R3R 빌드 노트: 공통 arm 하나 뺀 목록으로 그 arm 을 재면 17/23 통과). 렌더 = probe 자신의
+#   적재기(overlay_allowlist_prompt.R → overlay_probe_allowlist_params · 사본 파서 없음) — 목록이 바뀌면 다음 실행 프롬프트가 따라간다.
+#   ★미제공(적재기·레지스트리 부재·손상·스키마·능력 계열 오염) = LLM 을 부르지 않고 멈춘다: 이 레인의 산출은 새 arm 하나뿐이고
+#     probe 가 그 arm 을 반드시 거부한다 — 부르면 모델 한도와 일간 방출 몫만 태운다. 생성이 없었으니 방출 원장에도 쓰지 않는다.
+#   목록은 파일로 받는다(stdout 에는 적재 잡음이 섞일 수 있다) · 이 런 전용 경로(claim 이 직렬화한다) · 판정 = rc 0 ∧ 비지 않음 ∧ 'allowlist: ok'.
+ALLOW_TXT="$LOG.allow"; rm -f "$ALLOW_TXT"
+AOUT=$(Rscript "$ROOT/02_Infrastructure/reinforcement/overlay_allowlist_prompt.R" "$ALLOW_TXT" "$ROOT" 2>&1); ALRC=$?
+printf '%s\n' "$AOUT" >> "$LOG"
+AL_LINE=$(printf '%s\n' "$AOUT" | tr -d '\r' | grep '^allowlist:' | tail -1)
+if [ "$ALRC" -ne 0 ] || [ ! -s "$ALLOW_TXT" ] || [ "${AL_LINE#allowlist: ok}" = "$AL_LINE" ]; then
+  rm -f "$ALLOW_TXT"
+  jl halt_allowlist_unavailable "rc=$ALRC" "why=${AL_LINE:-렌더러 출력 없음}" "action=$ACT" "state=$ST" "note=probe ③d 가 새 arm 을 전부 거부하는 상태 — LLM 미호출"
+  exit 0
+fi
+ALLOW=$(tr -d '\r' < "$ALLOW_TXT"); rm -f "$ALLOW_TXT"
+jl allowlist_rendered "line=$AL_LINE"
 ADIR="$ROOT/02_Infrastructure/reinforcement/overlay_arms"
 KIND="gen_$(date +%Y%m%d_%H%M%S)"
 
@@ -102,6 +123,9 @@ ctx = list(t, date, v_now, tgt, n_min, hold)
   단어를 쓰지 마라(주석 포함). 등재 스캐너가 거부한다.
 - 추정 불가·표본 부족이면 e <- 1 (무개입) 으로 떨어져라. 오류를 던지지 마라.
 - ${ADIR} 밖에 쓰지 마라.
+- 허용 목록 밖 이름 금지: 아래 목록에 없는 함수 호출·참조 이름·pkg:: 접두는 등재에서 자동 거부된다(파서가 전수 대조).
+
+${ALLOW}
 
 ## 본보기
 ${ADIR}/dbeta_tilt.R 를 읽어라 — 계약과 문체의 기준이다.
@@ -145,6 +169,48 @@ fi
 rm -f "$LOG.this"
 
 [ -s "$ADIR/$KIND.R" ] || { jl no_arm_file "kind=$KIND"; exit 1; }
+
+# ── ★G1 적대 감사 경유 (결정 D-G 2026-09-23 "overlay_propose 는 G1 경유 또는 dead 동안 정지" 의 성과 비소비 분기 · 2026-09-25) ────
+#   구판은 등재기(rf_overlay_admit) 안의 probe 만 지나 하루 1 arm 을 등재했다(감사 D5-F2 — G1 없이 등재). B5 설계 레인은 이미
+#   probe → G1(rf_overlay_audit.sh · 설계자와 다른 모델 · 축 정본 rf_overlay_adversary_axes.json) → 등재를 지난다(b5_design.note).
+#   같은 감사기 · 같은 판정 규약(마지막 줄 'audit:' · rc 0 pass · 3 reject · 그 밖 unavailable)을 여기에도 건다.
+#   ① probe 먼저(기계 검사 · 백테 0) — 떨어질 arm 에 감사 비용을 쓰지 않는다. probe 실패면 감사를 건너뛰고 등재기가 같은 probe 로
+#      거부·기록한다(구판과 같은 방출 원장 기록). ② G1 reject/unavailable = 등재 금지 · 방출 원장에 admitted=false(stage=audit|audit_unavailable)
+#      · arm 파일 제거(B5 레인과 같은 처분 — 미판정도 등재하지 않는다). ③ pass 만 등재기로 간다.
+#   kill switch = config overlay_propose_g1.enabled=false(구판 흐름 · 로그). 키가 없거나 설정을 못 읽으면 감사를 건다(막는 쪽).
+#   ★Rscript -e 는 한 줄 · R 코드 안에 파이프 문자 금지(Windows 에서 명령이 잘린다 — 실측 rc 255) — probe 줄 구분자는 '~'.
+G1_EN=$("$PY" -c "
+import json,io
+try:
+    v=(json.load(io.open(r'$CFG',encoding='utf-8')).get('overlay_propose_g1') or {}).get('enabled',True)
+    print('False' if v is False else 'True')
+except Exception: print('True')" 2>/dev/null || echo True)
+if [ "$G1_EN" = "True" ]; then
+  POUT="$LOG.probe_${KIND}"
+  QM_ROOT="$ROOT" QVEST_OV_KIND="$KIND" Rscript -e 'suppressMessages(invisible(capture.output(source(file.path(Sys.getenv("QM_ROOT"), "02_Infrastructure/reinforcement/overlay_probe.R"))))); k <- Sys.getenv("QVEST_OV_KIND"); pr <- tryCatch(overlay_probe_arm(k, Sys.getenv("QM_ROOT")), error = function(e) list(ok = FALSE, reason = conditionMessage(e))); cat(sprintf("probe: %s ~ %s ~ %s\n", k, if (isTRUE(pr$ok)) "pass" else "fail", gsub("[[:cntrl:]]+", " ", paste(pr$reason, collapse = " ")))); quit(status = if (isTRUE(pr$ok)) 0L else 3L)' > "$POUT" 2>&1
+  PR_RC=$?
+  PR_LINE=$(tr -d '\r' < "$POUT" | grep '^probe:' | tail -1); cat "$POUT" >> "$LOG"; rm -f "$POUT"
+  if [ "$PR_RC" -eq 0 ]; then
+    AUDIT_SH="${QVEST_OV_AUDIT_SH:-$ROOT/02_Infrastructure/ops/rf_overlay_audit.sh}"
+    AOUT="$LOG.audit_${KIND}"
+    QVEST_RF_ROOT="$ROOT" QM_ROOT="$ROOT" QVEST_OA_ARMDIR="$ADIR" bash "$AUDIT_SH" "$KIND" > "$AOUT" 2>&1
+    A_RC=$?
+    A_LINE=$(tr -d '\r' < "$AOUT" | grep '^audit:' | tail -1); cat "$AOUT" >> "$LOG"; rm -f "$AOUT"
+    if [ "$A_RC" -ne 0 ]; then
+      if [ "$A_RC" -eq 3 ]; then G1_STAGE=audit; else G1_STAGE=audit_unavailable; fi
+      QM_ROOT="$ROOT" QVEST_OV_KIND="$KIND" QVEST_OV_ACT="$ACT" QVEST_OV_ST="$ST" QVEST_OV_MODEL="$RP_MODEL" QVEST_OV_STAGE="$G1_STAGE" QVEST_OV_REASON="${A_LINE:-G1 rc=$A_RC}" Rscript -e 'suppressMessages(invisible(capture.output(source(file.path(Sys.getenv("QM_ROOT"), "02_Infrastructure/reinforcement/rf_overlay_admit.R"))))); invisible(rf_overlay_record_emission(Sys.getenv("QVEST_OV_KIND"), target = list(action = Sys.getenv("QVEST_OV_ACT"), state = Sys.getenv("QVEST_OV_ST")), n_siblings = 1L, generator_model = Sys.getenv("QVEST_OV_MODEL"), root = Sys.getenv("QM_ROOT"), source = "overlay_propose", stage = Sys.getenv("QVEST_OV_STAGE"), reason = Sys.getenv("QVEST_OV_REASON")))' >> "$LOG" 2>&1 \
+        || jl emission_record_failed "kind=$KIND" "stage=$G1_STAGE"
+      jl admit_rejected_g1 "kind=$KIND" "rc=$A_RC" "stage=$G1_STAGE" "verdict=${A_LINE:-}" "note=G1 미통과 — 등재하지 않는다(방출 원장 admitted=false)"
+      rm -f "$ADIR/$KIND.R" "$ADIR/$KIND.arm.json"
+      exit 0
+    fi
+    jl g1_pass "kind=$KIND" "verdict=${A_LINE:-pass}"
+  else
+    jl g1_skipped_probe_fail "kind=$KIND" "rc=$PR_RC" "probe=${PR_LINE:-}" "note=probe 실패 — 감사 생략 · 등재기가 같은 probe 로 거부·기록"
+  fi
+else
+  jl g1_disabled "kind=$KIND" "note=config overlay_propose_g1.enabled=false — 구판 흐름(probe 만)"
+fi
 
 # ★반드시 스크립트 파일로 부른다 — 여러 줄 `Rscript -e` 는 Windows 에서 rc=139 로 죽는다.
 #   실측(2026-09-03): 이 자리에서 죽었고, 인프라 오류인데 아래 정리가 arm 을 지워버렸다.

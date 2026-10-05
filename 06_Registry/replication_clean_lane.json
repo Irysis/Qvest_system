@@ -1,0 +1,58 @@
+{
+ "schema": "replication_clean_lane_v1",
+ "note": "무인 충실구현 레인(rf_replication_auto.sh) 청정 모드의 운영 설정 — 결정 FA-CLEAN-BASE-PATH(도훈 2026-09-26 12:24 · '(나) 기존 레인 강화 — 노출 범위 full 유지 · 무인 충실구현 레인에 성과 열람 차단·피드백 성과 제거·훅 성과 문맥 제외·출처 기록 → 1505.00328 재구현이 첫 F_A 후보'). ★판정 규칙(무엇이 청정인가)은 06_Registry/prereg/clean_base_rule.config.json(사전등록 핀 대상)이 정본이고, 이 파일은 레인이 **어떻게 돌까**만 정한다 — 운영 토글(default_mode)을 바꿔도 F_A 문서 핀이 흔들리지 않게 두 파일로 갈랐다. 판독기 = 02_Infrastructure/ops/rf_clean_lane.py · 검사 = 08_Tests/ops/test_rf_clean_lane.sh.",
+ "decision": "06_Registry/decision_register.json#FA-CLEAN-BASE-PATH",
+ "default_mode": "clean",
+ "default_mode_basis": "결정문 '(나) 기존 레인 강화' — 레인 자체를 청정으로 돌린다(별도 청정실 레인이 아니다). 요청 파일 clean_mode:false 면 그 요청만 normal. 첫 청정 실행을 1505.00328 하나로 제한하려면 여기를 \"normal\" 로 두고 요청에 clean_mode:true 를 싣는다(코드 무수정).",
+ "combo_mode": "normal",
+ "combo_basis": "결합 요청(combo)은 같은 레인 셸을 타지만 설계 재료 자체가 교차 entry 실측(단독 다중검정 t · 계보 최고 t — 도훈 09-04 '실측 기록은 금지가 아니라 자료다')이라 청정이 될 수 없다. F_A 후보 술어(clean_base_rule predicates.lane)도 결합 레인을 뺀다. 결합을 청정으로 돌리려면 재료 절을 지워야 하고 그것은 09-04 지시의 번복이다 — 이 설정은 건드리지 않는다.",
+ "wdir_prefix": "RP_AUTO_CLEAN_",
+ "wdir_basis": "청정 실행은 새 작업 디렉터리에서 한다 — 기존 RP_AUTO_<slug> 에는 비청정 판의 engine·prompt·감사·에이전트 출력이 남아 있어(1505.00328: 09-04 판 engine.R·fidelity_audit.json) 같은 폴더에서 돌리면 그 판을 읽을 수 있다. 이름 접두가 청정 산출을 눈으로도 가른다. 레인 술어 정규식(RP_AUTO_[A-Za-z0-9_]+)과 결합 접두(RP_AUTO_COMBO_)에 대해 안전.",
+ "rule_config": "06_Registry/prereg/clean_base_rule.config.json",
+ "guard": "02_Infrastructure/hooks/arm_gen_read_guard.sh",
+ "guard_policy": "02_Infrastructure/hooks/policies/arm_gen_read_guard.json",
+ "inject_hook": "02_Infrastructure/hooks/axiom_context_inject.sh",
+ "guard_support_marker": "PASS_OUT='{\"continue\":true}'",
+ "inject_support_marker": "QVEST_CLEAN_LANE",
+ "support_basis": "청정 모드는 배포된 훅이 청정 표식을 읽을 때만 켠다 — 구판 훅 위에서 '청정' 으로 돌면 막는 층 없이 청정을 주장하게 된다. 표식 문자열이 훅 본문에 없으면 요청 명시(clean_mode:true)는 halt(요청 보존), 설정 기본값은 normal 로 내려가고 사유를 출처 기록에 남긴다.",
+ "provenance_file": "lane_provenance.json",
+ "provenance_schema": "lane_provenance_v1",
+ "provenance_consumer_fields": {
+  "mode": "clean | normal (청정 = 이 레인이 청정 조건으로 엔진을 쓰게 했다는 **자기 신고**)",
+  "clean": "mode == clean 의 불리언 사본",
+  "engine_rel": "저장소 루트 기준 엔진 경로(04_Research/strategies/RP_AUTO_CLEAN_<slug>/engine.R)",
+  "pre.guard.applied": "가드 청정 표식을 claude 에 실었는가(QVEST_CLEAN_LANE · QVEST_CLEAN_WDIR)",
+  "pre.injected_context_fingerprint": "주입 문맥 원천(프롬프트 · 자동 주입 규칙 파일 · 가드·clean_lane 설정·주입 훅 · 레인/규칙 설정 · 모드) sha256 묶음의 sha256 — 구성 = pre.injected_context_sources",
+  "pre.prompt.sha256 / .md5": "prompt.txt(= 전사 첫 레코드 content)",
+  "post.engine_sha256 / post.engine_md5": "실행 직후 engine.R — 현재 파일과 다르면 청정 실행 뒤 손댄 엔진이다",
+  "audits[]": "검증기가 덧붙이는 감사 기록(mode · art_hidden · verdict · src)",
+  "consumer_rule": "★자기 신고를 그대로 믿지 말 것 — 청정 인정은 rf_clean_base.R(rfc_exposure)이 전사·파일과 대조해 낸다. 표식 키트(mark_automem_exposure.R)·A 관문(rf_engine_clean_verified)의 기저 전파 제외에 쓸 때의 최소 조건 = mode==clean ∧ post.engine_md5 == md5(현재 engine.R) ∧ 실행 시각(pre.at)이 cutoff(09-25 15:01) 뒤 ∧ (10-03) 새 엔진 경로 — engine_rel == 그 엔진의 저장소 상대경로 ∧ 디렉터리 이름이 wdir_prefix 로 시작(사후 검사 rf_clean_base.R 은 clean_base_rule.config.json exposure.lane_provenance.engine_dir_regex 로 같은 조건을 잰다 · 동기화 = test_rf_clean_lane.sh §S8). 청정 실행은 항상 새 작업 디렉터리(wdir_prefix)에 쓰므로 노출 실행의 엔진 경로와 겹치지 않는다(경로 기반 전파에 원래 걸리지 않는다 — 이 필드는 이중 안전)."
+ },
+ "disallowed_tools_clean": "Bash,PowerShell,Monitor,REPL,Workflow,CronCreate,RemoteTrigger,Agent,Skill",
+ "audit_disallowed_tools_clean": "Bash,PowerShell,Monitor,REPL,Workflow,CronCreate,RemoteTrigger,Agent,Edit,Skill",
+ "disallowed_basis": "셸 통로 7종(CLI 2.1.261 enablesCodeExecution — 설계 레인 P0-M2 B-1 과 같은 목록 · 09-25 설계 레인이 PowerShell findstr 로 원장 calmar 를 읽었다) + Agent(PreToolUse:Agent 훅이 성과 문맥을 주입한다) + Skill(SKILL.md 원문 주입 — qvest-telegram 8곳 · strategy-rotation 3곳 등 실측 수치). 레인 셸의 --disallowed-tools 리터럴과 이 값이 같아야 한다(검사 §W).",
+ "web_forbidden": ["github.com/Irysis/Qvest_system", "raw.githubusercontent.com/Irysis/Qvest_system"],
+ "web_forbidden_basis": "저장소 원격(git remote origin = https://github.com/Irysis/Qvest_system) — 공개 여부와 무관하게 웹 사본도 같은 원장·산출물이다. WebFetch 는 훅 밖이라 프롬프트로 알리고 사후 검사(clean_base_rule exposure.transcript.web_forbidden_regex)가 전사에서 잡는다.",
+ "feedback_sanitize": {
+  "mask": "<stat>",
+  "drop_placeholder": "- (청정 모드: 측정 산출물 참조 줄 제거)",
+  "drop_line_regex": [
+   "(?i)(authoritative_remeasure|essence_grade|06_metrics|02_nav|03_period_returns|04_holdings|07_benchmark_compare|08_rolling_metrics|09_drawdowns|bt_result|paper_basis|stage_artifacts|hurdle_result)"
+  ],
+  "mask_regex": [
+   "(?i)(?<![A-Za-z0-9_])(?:PORT_t|PT|t값|t|Calmar|CAGR|MDD|SR|Sharpe|IC|ICIR|DSR|IR|Sortino|net_sr|net_ir|OOS[ _]retention)\\s*[=:]?\\s*(?P<v>[-+\u2212]?\\d+\\.\\d+%?)",
+   "(?i)(?<![A-Za-z0-9_])(?:CAGR|MDD|수익률|낙폭|return|drawdown)\\s*[=:]?\\s*(?P<v>[-+\u2212]?\\d+(?:\\.\\d+)?\\s?%p?)",
+   "(?i)(?<![A-Za-z0-9_])(?:cagr|sharpe|mdd|calmar|port_t|sortino|dsr|net_ir|grade)\\s*=\\s*(?P<v>[-+\u2212]?\\d[\\d.]*)",
+   "(?P<v>[-\u2212]?\\d+\\.\\d+\\s*(?:\u2192|->)\\s*[-\u2212]?\\d+\\.\\d+)",
+   "(?:측정\\s*등급|기저\\s*등급|등급|[Gg]rade)\\s*(?P<v>[ABCF])(?![A-Za-z0-9_])"
+  ],
+  "basis": "피드백은 충실도 사유만 남긴다(결정문 '피드백 성과 제거'). ①측정 산출물을 가리키는 줄은 통째로 뺀다(산출물 이름 = 사후 검사 measured_ref_regex[0] + stage_artifacts·hurdle_result·04_holdings) ②지표 이름 뒤 수치·'필드=값' 덤프·소수 화살표·등급 문자만 <stat> 로 가린다 — 논문 파라미터(룩백 12 · 상위 10% · t-1)는 지표 이름이 앞에 없어 남는다(정수 t-1 은 소수가 아니라 안 걸린다) ③가린 뒤 사후 검사 정규식 전부(clean_base_rule exposure.prompt.measured_ref_regex + transcript.auto_memory.metric_regex)를 줄마다 다시 걸어 하나라도 남으면 그 줄을 뺀다(fail-closed). 가림 규칙이 사후 검사보다 넓어 논문 인용 성과(예 'Sharpe 0.887')도 가려진다 — 충실도 사유는 문장으로 남는다(보수적)."
+ },
+ "known_boundary": [
+  "CLI 가 cwd(저장소 루트)에서 자동 주입하는 규칙 파일 — CLAUDE.md(목표·문턱 SR 2.5 · Calmar 0.64) · .claude/rules/lean-loop.md · .claude/rules/pit.md(2026-07-06 오버레이 사고 수치 Calmar 2.50→1.83 · SR 2.10→1.84). 결정문이 '알려진 경계로 문서화'로 정했다 — 막지 않고, 사후 검사가 전사의 instructions 첨부에서 경로·sha256·수치 개수를 재도출해 기록한다.",
+  "경로 주입 규칙 — 허용 목록 안에서 끌려오는 것은 python-policy.md(수치 0)뿐이다. measurement-graduation.md(실측 수치 19곳)·backtest-contract.md 를 끄는 경로(02_Infrastructure/contracts/**·worktask/**)는 허용 목록 밖이다.",
+  "허용 목록 코드 주석의 수치형 문자열(09-26 전수: backtest_harness.R 1 · data/data_collector_dart.R 1 — 성과 아님).",
+  "스킬 목록(skill_listing 첨부 · 설명 한 줄씩 — 수치 0) · 세션 문맥(git status 파일 이름 · 커밋 제목).",
+  "적대적 충실도 감사는 측정 뒤에 돈다(레인 순서 불변) — 청정 모드에서는 감사자에게 산출물 경로를 주지 않고 같은 가드를 건다(감사자 전사는 F_A 사후 검사 대상이 아니다 — 재구현 피드백의 출처로만 쓰인다)."
+ ]
+}

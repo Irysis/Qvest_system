@@ -287,19 +287,24 @@ adv_atts <- c(b1_five(best_art = art), list(
 write_ledger(list(entry("T_MAT", adv_atts, extra = list(carry = list(overlay = L2("arm_e", "kind_e"))))))
 res_adv <- b5_materials("T_MAT", SB, cfg, round = 1L)
 fa <- paste(res_adv$text, collapse = "\n")
-# (D-E-B5-MATERIALS 2026-09-25) (4b) 는 교차 entry 절 — 검사 상태·판정은 남고 수치는 <stat> 로 가린다(pit.md C1 D-E · 짝 = test_rf_b5_materials_redact.R)
-chk(grepl("## (4b)", fa, fixed = TRUE) && grepl("| B5_18 |", fa, fixed = TRUE) &&
-    grepl("fail obs <stat> vs q <stat> p <stat>", fa, fixed = TRUE) && grepl("pass const <stat>", fa, fixed = TRUE) &&
+sec_lines <- function(txt, h) { i <- which(startsWith(txt, h)); if (!length(i)) return(character(0))
+  j <- which(startsWith(txt, "## ") & seq_along(txt) > i[1]); txt[i[1]:(if (length(j)) j[1] - 1L else length(txt))] }
+s4b <- sec_lines(res_adv$text, "## (4b)"); s1 <- sec_lines(res_adv$text, "## (1)")
+# (D-E-B5-MATERIALS · D-E-B5-LABELS 2026-09-25) (4b) 는 교차 entry 절 — 칸·스택(설계 이력)만 남고 판정·검사별 상태·사유는 <label>, 수치는 <stat>
+#   (짝 = test_rf_b5_materials_redact.R · test_rf_b5_materials_labels.R)
+chk(length(s4b) > 0L && any(grepl("| B5_18 |", s4b, fixed = TRUE)) && any(grepl("| <stat> · <label> |", s4b, fixed = TRUE)) &&
+    !any(grepl("fail obs|pass const|not_computed|calmar_not_above_floor|\\| fail|\\| pass", s4b)) &&
     !grepl("0.505", fa, fixed = TRUE) && !grepl("0.523", fa, fixed = TRUE) && !grepl("0.432", fa, fixed = TRUE),
-    "E15 (4b) 반증 상세 — 칸·검사별 상태(T3 fail · T4 pass)는 실리고 수치(obs/q/p · 상수)는 가린다",
-    paste(res_adv$text[grepl("B5_18", res_adv$text)], collapse = " / "))
-chk(grepl("arm_a", fa, fixed = TRUE) && grepl("집계: 2칸 · pass 0 · fail 1 · not_candidate 1 · 실패 사인 T3 1건", fa, fixed = TRUE),
-    "E16 스택(arm_id)·집계 줄 — 사인 빈도까지 센다",
-    paste(res_adv$text[grepl("집계:", res_adv$text)], collapse = " / "))
+    "E15 (4b) 반증 이력 — 칸·스택은 실리고 판정·검사별 상태(T3 fail · T4 pass)·사유와 수치(obs/q/p · 상수)는 가린다",
+    paste(s4b[grepl("B5_18", s4b)], collapse = " / "))
+chk(any(grepl("arm_a", s4b, fixed = TRUE)) && any(grepl("집계: 2칸 (판정별 개수·실패 사인은 가렸다 <label>)", s4b, fixed = TRUE)) &&
+    !any(grepl("T3|T4|T1", s4b)) && any(grepl("| B5_18 |", s1, fixed = TRUE) & grepl("| fail |", s1, fixed = TRUE)),
+    "E16 스택(arm_id)·집계 줄(칸 수만) — 판정별 개수·실패 사인(T3 1건)은 가리고 · 자기 entry (1) 측정표의 판정(fail)은 그대로",
+    paste(s4b[grepl("집계:", s4b)], collapse = " / "))
 # 돌연변이: 절을 붙이는 줄을 지운 사본 → (4b) 가 사라져야 한다(= E15 가 결함을 잡는다)
 mut_src <- readLines(file.path(CODE, "02_Infrastructure/ops/rf_b5_design_lib.R"), warn = FALSE, encoding = "UTF-8")
 # ★fixed=TRUE — `sec$adv` 의 $ 는 정규식에서 행 끝이라 패턴이 영원히 안 맞는다(초판 실패)
-drop_i <- grepl("sec$adv <- .b5_adv_sec(root)", mut_src, fixed = TRUE)
+drop_i <- grepl("sec$adv <- .b5_adv_sec(root, lb = LB)", mut_src, fixed = TRUE)
 stopifnot(sum(drop_i) == 1L)
 mut_src <- mut_src[!drop_i]
 mp <- file.path(SB, "rf_b5_design_lib_mut.R"); writeLines(mut_src, mp, useBytes = TRUE)

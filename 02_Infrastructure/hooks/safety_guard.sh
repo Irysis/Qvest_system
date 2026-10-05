@@ -20,7 +20,29 @@
 #   ★한계(명시): 이 훅의 등록 matcher 는 Write|Edit · Bash 뿐이다(settings.json) — MultiEdit·NotebookEdit·
 #     PowerShell 도구 경로는 여기 오지 않는다. 등록 확장은 settings.json 변경(별도 결정)이다.
 #   검사: 08_Tests/hooks/test_safety_guard_memory.sh
+#
+# (R3R 2026-09-25 · 결정 R3R-D2-MULTILINE) 여러 줄 명령 — bash 의미대로 판정:
+#   Rule 2 는 grep 이 줄 단위라 `cp x \<개행> 05_Production/` · `05_Produ\<개행>ction` 처럼 줄 이음으로 가른 쓰기를 못 봤고,
+#   Rule 3 토큰화(read -a)는 첫 줄만 읽어 둘째 줄의 글롭·find·cd 를 못 봤다.
+#   ① 줄 이음(\<개행>)은 bash 가 지우므로 판정 전에 지운다(_qsg_join — 낱말이 붙는다). Rule 2 · fail-closed 는 여기까지다 —
+#      개행은 명령 경계로 남긴다: `cp a b<개행>ls 05_Production` 은 두 명령이다(초판은 개행을 ' ; ' 로 이어
+#      대화형 05_Production 읽기 명령 83/16,063 을 새로 막았다 — Rule 2 의 `.*` 가 명령 경계를 건넜다).
+#   ② Rule 3 토큰화만 개행·CR 을 명령 구분자 ' ; ' 로 바꿔(_qsg_oneline) 둘째 줄까지 본다(같은 셸이라 cd 는 다음 줄로 이어진다).
+#   한 줄 명령(개행·CR 없음)은 두 변환 모두에서 바뀌지 않으므로 종전 판정 그대로다.
 #==============================================================================
+
+# ── 줄 이음·개행 정규화 (R3R · 순수 bash · 서브셸 0) ─────────────────────────────
+_qsg_join() {  # $1 → _Q1 : 줄 이음 \<CR><LF>·\<LF> 만 제거(bash 의미) — 개행은 명령 경계로 남긴다(Rule 2 · fail-closed)
+  local s="$1"
+  s="${s//$'\\\r\n'/}"; s="${s//$'\\\n'/}"
+  _Q1="$s"
+}
+_qsg_oneline() {  # $1 → _Q1 : _qsg_join 뒤 CRLF·LF·CR = ' ; ' (Rule 3 토큰화 전용 — read -a 는 첫 줄만 읽는다)
+  local s
+  _qsg_join "$1"; s="$_Q1"
+  s="${s//$'\r\n'/ ; }"; s="${s//$'\n'/ ; }"; s="${s//$'\r'/ ; }"
+  _Q1="$s"
+}
 
 # ── Rule 3 도우미 (무인 레인 전용 · 순수 bash · 서브셸 0) ─────────────────────
 # 판정 규칙 코드(차단 사유에 싣는다 — 고정 집합이라 JSON 이스케이프 불요):
@@ -114,6 +136,7 @@ _qmem_cmd_hit() {  # $1 = Bash 명령 원문 → 0(차단) + _QMEM_WHY
   local raw="$1" v c tok t r cand k n j sp ecwd
   local -a toks
   _qmem_home_forms; _qmem_cands
+  _qsg_oneline "$raw"; raw="$_Q1"   # (R3R) 여러 줄 → 한 줄 — read -a 가 첫 줄만 토큰화하던 구멍
   # 두 정규화: ① 백슬래시→슬래시(윈도 경로) ② 백슬래시 제거(이스케이프 결합). 공통: 따옴표 제거 · 소문자.
   for v in 1 2; do
     c="$raw"
@@ -187,6 +210,7 @@ _qmem_block() {
 _gate_fail_closed() {
   local hay="${FILE_PATH:-}${COMMAND:-}"
   [ -n "$hay" ] || hay="${INPUT:-}"
+  _qsg_join "$hay"; hay="$_Q1"   # (R3R) 줄 이음으로 쪼갠 보호 낱말(05_Produ\<개행>ction)도 한 낱말로
   if printf '%s' "$hay" | grep -qE '05_Production|normalizePath' \
      || { printf '%s' "$hay" | grep -q '01_Literature' \
           && ! printf '%s' "$hay" | grep -q 'Korea_Research'; }; then
@@ -236,12 +260,13 @@ fi
 
 # Rule 2: Bash에서 05_Production에 쓰기 시도 차단 (> 또는 mv/cp 대상일 때만)
 if [ "$TOOL_NAME" = "Bash" ]; then
-  if echo "$COMMAND" | grep -qE "(>|mv|cp|rm).*05_Production"; then
+  _qsg_join "$COMMAND"   # (R3R·D2) 줄 이음만 잇는다 — 개행은 명령 경계 그대로(grep 줄 단위: 개행으로 갈린 두 명령을 잇지 않는다)
+  if printf '%s\n' "$_Q1" | grep -qE "(>|mv|cp|rm).*05_Production"; then
     echo '{"decision":"block","reason":"05_Production/ write attempt via Bash"}'
     exit 0
   fi
   # normalizePath 차단
-  if echo "$COMMAND" | grep -q "normalizePath"; then
+  if printf '%s\n' "$_Q1" | grep -q "normalizePath"; then
     echo '{"decision":"block","reason":"normalizePath() breaks Korean paths in WSL2"}'
     exit 0
   fi

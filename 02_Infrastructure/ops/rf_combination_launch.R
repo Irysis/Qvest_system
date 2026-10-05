@@ -275,5 +275,18 @@ req <- list(
 write(toJSON(req, auto_unbox = TRUE, pretty = TRUE, null = "null"), REQ)
 jlog("combination_design_requested", setkey = top$setkey, k_items = top$k,
      n_papers = top$n_papers, tries_before = .tries_before, axis = .CUR_AXIS, req = REQ)
+## >>> O0a 시행 로그(P1-02 · 설계 organic_design_final §3 G1) — 결합 결정 1건(선택 = 발행한 조합 · 기각 = 열거된 나머지 · 판정 불변)
+tryCatch({
+  suppressMessages(source(file.path(ROOT, "02_Infrastructure/reinforcement/rf_trial_producers.R")))
+  .tl_c <- if (exists("combos", inherits = FALSE) && length(combos)) combos else list(top)
+  rf_tp_record("combination", "program",
+    rf_tp_candidates(vapply(.tl_c, function(x) as.character(x$setkey), character(1)), NULL,   # 순위 = 실제 선정 순(정렬 뒤 combos 순서 그대로)
+                     vapply(.tl_c, function(x) sprintf("재료 %d · 논문 %d · 점수 %.3f · 착수 %d회%s", as.integer(x$k %||% NA), as.integer(x$n_papers %||% NA),
+                                                       as.numeric(x$score %||% NA), as.integer(.ntry_of(x$setkey)),
+                                                       if (x$setkey %in% .skip_keys) " · 스킵리스트" else ""), character(1))),
+    top$setkey, "02_Infrastructure/ops/rf_combination_launch.R(미착수 → 착수 적은 순 → 점수)",
+    scope = list(block = "combination", setkey = top$setkey, by = if (length(DKEYS)) "directed" else "enumerated"), root = ROOT)
+}, error = function(e) jlog("trial_log_failed", what = "combination", err = conditionMessage(e)))
+## <<< O0a
 cat(sprintf("\n결합 설계 요청 발행: %s\n  재료 %d개 · 구성 논문 %d편 · 기왕 착수 %d회\n  다음 tick 이 설계 에이전트를 띄우고, 그 기저를 한 번 측정한 뒤 등급이 문턱을 넘으면 25칸을 엽니다.\n",
             PAIR, top$k, top$n_papers, .tries_before))

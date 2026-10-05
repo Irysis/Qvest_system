@@ -15,7 +15,15 @@
 #       rf_carry_floor_spec · rf_floor_carry_gate
 #       ★P0-14(2026-09-25): rf_a_eligibility ⑤ 가 원장 표식 + **관문 시점 재도출**(rf_lineage_flags.R::rflf_gate_flags — 계보 선정 기저 승계 ·
 #       C11 격리)을 함께 본다. 수집 시점 새 칸은 원장 표식이 없다(표식은 사후) — 같은 사실을 관문이 스스로 재도출한다.
-# 요구: rf_spec_sig.R(.rf_taken_codes · .ov_arm_ids · .ov_own_layers) · rf_block_design.R(rfbd_standing_cells · .rfbd_b5_raw) ·
+#       ★AUTOMEM(2026-09-26 · 결정 AUTOMEM-EXPOSED-CELLS-DISPOSITION · B5FIX-CONSUME-HOLD · FA-CLEAN-BASE-PATH 조정): ⑤ 가 entry **기저** 표식 중
+#       설정 vintage_flag.entry_base_flags 에 든 것을 그 entry·계보(부모 사슬)·같은 엔진 경로·같은 엔진 내용(md5) entry 의 칸에 건다 —
+#       **A 보류만**(소비 술어 rf_candidate_facts 는 attempt 표식만 읽는다 → 기저 노출 entry 도 연구는 계속). 청정 출처(lane_provenance ·
+#       설정 entry_base_clean 소비 규칙) 엔진은 계보·경로 전파에서 뺀다. 목록 밖 기저 표식(fdb_* 등)은 구판처럼 칸으로 번지지 않는다.
+#       ★P1-06(2026-09-25 스테이징 · 통제 칸): rf_control_codes · rf_is_control · rf_control_exempt · rf_control_cell · rf_control_plan ·
+#       rf_control_insert · rf_cell_vintage · rf_series_compare · rf_carry_replay_check(E3) · rf_carry_base_resolve · rf_null_dilution_values —
+#       통제 칸은 모든 소비 역할(승자·바닥·carry 부모·승격·A·N)에서 빠진다(rf_candidate_facts 머리 · rf_a_eligibility always-on control_cell ·
+#       rf_lineage_measured exclude_codes).
+# 요구: rf_spec_sig.R(.rf_taken_codes · .ov_arm_ids · .ov_own_layers) · rf_block_design.R(rfbd_standing_cells · .rfbd_b5_raw · rfbd_control_cells) ·
 #       rf_lineage_flags.R(P0-14 · 계보 표식 술어 정본 — P0-08 derive 와 같은 함수) ·
 #       reinforce_ledger.R(.rf_regime_key — regime 해석 정본) · 설정: 02_Infrastructure/worktask/constraint_defaults.json
 #       (execution.exec_price · diagnostics.window_*) · 06_Registry/a_eligibility_gate.json(A 보류 코드 on/off)
@@ -23,15 +31,23 @@
 suppressPackageStartupMessages(library(jsonlite))
 if (!exists("%||%")) `%||%` <- function(a, b) if (is.null(a) || length(a) == 0L) b else a
 .RFG_ROOT <- function() Sys.getenv("QM_ROOT", "C:/Users/99922/OneDrive/Quant_Module_Moltbot")
+# ★스펙 축 등록부 정본(결정 B4-SIX-AXIS-AND-CARRY-AXES · 2026-09-26) — carry 바닥 스펙(rf_carry_floor_spec)과 러너 누적·carry 병합·B4 승자/조립·
+#   결합 칸 재도출·격자 기본 예산이 이 표에서 파생된다. 부재 = 적재 실패(러너는 source 실패로 멈춘다 — 축 없이 조용히 도는 판 금지).
+if (!exists("rf_axes", mode = "function"))
+  source(file.path(.RFG_ROOT(), "02_Infrastructure/reinforcement/rf_spec_axes.R"), local = TRUE)
 # ★층 정규화·상주 칸 읽기는 정본 하나만 — 러너 안에서는 이미 적재돼 있고, 단독 source(검사)면 여기서 적재한다.
 if (!exists(".ov_arm_ids", mode = "function") || !exists(".rf_taken_codes", mode = "function"))
   source(file.path(.RFG_ROOT(), "02_Infrastructure/reinforcement/rf_spec_sig.R"), local = TRUE)
-if (!exists("rfbd_standing_cells", mode = "function"))
+if (!exists("rfbd_standing_cells", mode = "function") || !exists("rfbd_control_cells", mode = "function"))
   invisible(capture.output(source(file.path(.RFG_ROOT(), "02_Infrastructure/reinforcement/rf_block_design.R"), local = TRUE)))
 # ★P0-14 계보 표식 술어 정본 — 관문 ⑤ 재도출(선정 기저 승계 · C11 격리). 파일 부재 = 적재 실패(러너는 source 실패로 멈춘다 ·
 #   충실구현 어댑터는 gate_error 보류) — 조용히 재도출 없이 도는 판이 생기지 않게 조건부 적재를 하지 않는다.
 if (!exists("rflf_gate_flags", mode = "function"))
   invisible(capture.output(source(file.path(.RFG_ROOT(), "02_Infrastructure/reinforcement/rf_lineage_flags.R"), local = TRUE)))
+# ★유기체 밖 사람 규칙 정본(2026-09-25 · 설계 최종판 §1.1·§11 — D-G 레인·세대 하한 · P1-08 FIFO · B3-STRUCTURAL-TRIM · D-G B5 축소).
+#   러너·next_paper 가 이 파일을 통해 받는다. 부재 = 적재 실패(러너는 source 실패로 멈춘다 — 규칙 없이 조용히 도는 판 금지).
+if (!exists("rf_lane_select", mode = "function"))
+  invisible(capture.output(source(file.path(.RFG_ROOT(), "02_Infrastructure/reinforcement/rf_lane_rules.R"), local = TRUE)))
 
 #' B5 재설계 라운드가 열려 있는가 — 원장 entry$b5_redesign (B5 설계 레인 계약 2026-09-17).
 #'   계약: {active: logical, round: integer(2 = 첫 재설계), at, cells_added: integer, base_design_cells: integer}.
@@ -95,11 +111,20 @@ rf_b5_design_counts <- function(n_design, entry) {
 
 #' entry 자동 예산 = 기본 + B1 설계 초과 + B5 설계 초과 + 상주 삽입 + 재설계 추가 (도훈 2026-09-04 · 2026-09-17 확장)
 #'   초과분만 더한다 — 설계가 5칸보다 적어도 예산을 깎지 않는다(격자 소진이 그 경우를 닫는다 · rf_grid_consumed).
+#' ★가산 차단 (D-G 이행 · 레버 감사 ④-3 · 2026-09-25): n_b5_cells(최종 칸 목록의 B5 칸 수 — 설계·상주·재설계·D-G 축소를 **다
+#'   적용한 뒤** 센 값)가 오면 B5 몫 = max(0, n_b5_cells − slot_b5) 하나다. 구판 산식은 상주·재설계 추가를 B5 가 슬롯 안이어도
+#'   무조건 더했고(설계 3칸 + 상주 1 = 4칸인데 +1), D-G 축소로 빠진 칸도 설계 칸 수로 다시 더했다(축소분 재가산). 러너는
+#'   n_b5_cells 를 넘긴다. 인자가 없으면 구판 산식(검사·구 호출 호환) — 두 산식은 설계 ≥ 슬롯일 때 같은 값이다.
+#'   ★예산 숫자는 올리기만 한다(rf_budget_want 의 max) — 내리면 used ≥ MAXA 로 뒤 블록(B4 전 승자 결합)이 잘린다(불변식 ⑤).
+#'   축소는 격자 소진(rf_grid_consumed)으로 실현된다(설계 §1.1 '예산 숫자는 건드리지 않는다').
 #' @param slot_b1/slot_b5 격자 블록 칸 수(program blocks[].n — 하드코딩 금지)
 rf_budget_auto <- function(base, n_b1_design = 0L, n_b5_design = 0L, n_standing = 0L, n_redesign = 0L,
-                           slot_b1 = 5L, slot_b5 = 5L) {
+                           slot_b1 = 5L, slot_b5 = 5L, n_b5_cells = NULL, n_b1_cells = NULL) {
   z <- function(v) { v <- suppressWarnings(as.integer(v %||% 0L)); if (length(v) != 1L || is.na(v)) 0L else v }
-  z(base) + max(0L, z(n_b1_design) - z(slot_b1)) + max(0L, z(n_b5_design) - z(slot_b5)) + max(0L, z(n_standing)) + max(0L, z(n_redesign))
+  b5 <- if (!is.null(n_b5_cells)) max(0L, z(n_b5_cells) - z(slot_b5))
+        else max(0L, z(n_b5_design) - z(slot_b5)) + max(0L, z(n_standing)) + max(0L, z(n_redesign))
+  b1 <- if (!is.null(n_b1_cells)) max(0L, z(n_b1_cells) - z(slot_b1)) else max(0L, z(n_b1_design) - z(slot_b1))
+  z(base) + b1 + b5
 }
 #' 실제 상한 = max(자동, 수동) — 수동으로 올린 예산은 덮지 않고(도훈 2026-09-17), 자동은 .auto 위로 못 올린다.
 rf_budget_want <- function(auto, manual = NULL) {
@@ -207,11 +232,19 @@ rf_lineage_ids <- function(entries, bid, max_depth = 20L) {
 #' 계보 안 **측정된** 칸 수 — essence$port_t 가 유한 수치인 attempt 만 센다(미측정 NA 종결은 평가되지 않은 시행).
 #'   ★상속 칸(essence$inherited_from — 같은 스펙 결과를 물려받은 중복)은 새 시행이 아니다(2026-09-23 적대 리뷰 · 이중 계수 수리).
 #'     rf_auto_notify.R:53-56 이 등급 집계에서 같은 이유로 뺀다.
-rf_lineage_measured <- function(entries, ids) {
+#'   ★통제 칸(P1-06 · 2026-09-25)은 선정 후보가 아니라 새 시행이 아니다 — exclude_codes(러너 = rfbd_control_codes)로 뺀다.
+#'     기본값 character(0) = 구판과 같다(rf_prereg.R 은 이 정의만 parse 해 부른다 — 코드 목록 없이도 서도록 base R 만 쓴다).
+rf_lineage_measured <- function(entries, ids, exclude_codes = character(0)) {
+  exclude_codes <- as.character(unlist(exclude_codes %||% character(0)))
   sum(vapply(Filter(function(x) x$base_id %in% ids, entries %||% list()), function(x)
     sum(vapply(x$attempts %||% list(), function(a) {
       v <- a$essence$port_t
-      is.numeric(v) && length(v) == 1L && is.finite(v) && is.null(a$essence$inherited_from)
+      ok <- is.numeric(v) && length(v) == 1L && is.finite(v) && is.null(a$essence$inherited_from)
+      if (ok && length(exclude_codes)) {
+        cd <- as.character(unlist(a$cell_code %||% a$essence$cell_code %||% ""))[1]
+        ok <- !(!is.na(cd) && nzchar(cd) && cd %in% exclude_codes)
+      }
+      ok
     }, logical(1))), numeric(1)))
 }
 
@@ -294,6 +327,21 @@ rf_current_regime <- function(root = .RFG_ROOT()) {
   list(regime = ep, source = p, why = "ok")
 }
 
+#' ★소비 보류 표식 (B5FIX (c) · 2026-09-26 · 도훈 결정 항목) — 원장 attempt$vintage_flags 중 이 설정에 걸린 표식의 칸은 **소비 후보가
+#'   아니다**(rf_candidate_facts 를 지나는 전 역할 = 블록 승자 · 누적 바닥 · carry 기준선의 부모 칸 · 승격 best). 사연: A 관문 ⑤ vintage_flag 는
+#'   **발행만** 막는다. 교차 entry 결과 라벨이 노출된 설계 재료로 잰 B5 칸(design_materials_cross_entry_labels · possible · 7308 B5_16..20)이
+#'   G2 pass 를 받으면 블록 승자 → B4 결합 · 승격 carry 로 그 처치가 **표식 없이** 퍼진다(표식은 사후·수기이고 이 flag 는 계보 재도출
+#'   rf_lineage_flags.R 대상도 아니다 — 소비한 칸이 표식을 물려받는 경로가 없다).
+#'   설정 = 06_Registry/a_eligibility_gate.json::holds.vintage_flag.consume_hold {flags, verdicts} ("*" = 모든 flag · verdicts 빈 = 모든 판정).
+#'   부재·판독 불가 = 보류 표식 없음(현행 거동 그대로 · 항등) — 소비 제외는 선택 정책이라 fail-closed 로 넘어지면 러너가 선다(halt_no_b1_winner).
+rf_consume_hold_config <- function(root = .RFG_ROOT()) {
+  h <- (.rfg_json(file.path(root, "06_Registry", "a_eligibility_gate.json")) %||% list())[["holds"]]
+  ch <- if (is.list(h) && is.list(h[["vintage_flag"]])) h[["vintage_flag"]][["consume_hold"]] else NULL
+  fl <- as.character(unlist((ch %||% list())[["flags"]])); fl <- fl[!is.na(fl) & nzchar(fl)]
+  vd <- as.character(unlist((ch %||% list())[["verdicts"]])); vd <- vd[!is.na(vd) & nzchar(vd)]
+  list(flags = fl, verdicts = vd)
+}
+
 #' 러너 문맥 = 현행 규약 + 창 규칙(D-C) + tick 판독 캐시. 창 규칙 값은 constraint_defaults.json::diagnostics(P0-02 정본)에서만 읽는다
 #'   (window_anchor_date = 고정 축 시작일 · window_allowance_months = D-C 12 — 둘 다 그 파일의 *_source 가 근거).
 #' @param regime 주입(검사·리플레이 전용) — NULL 이면 rf_current_regime(root)
@@ -306,6 +354,7 @@ rf_runner_ctx <- function(root = .RFG_ROOT(), regime = NULL) {
        exec_allowed = as.character(unlist((cdj[["execution"]] %||% list())[["exec_price_allowed"]])),
        window_anchor = if (length(anc) == 1L) anc else as.Date(NA),
        window_allow = .rfg_num(if (is.list(dg)) dg[["window_allowance_months"]] else NULL),
+       consume_hold = rf_consume_hold_config(root),   # ★B5FIX (c) — 설정 없으면 빈 목록(무발화)
        cache = new.env(parent = emptyenv()))
 }
 
@@ -399,7 +448,15 @@ RF_ROLE_CHECKS <- list(floor = c("regime", "universe", "window"), carry_base = c
                        promote = c("regime", "universe", "window"), winner = "regime")
 
 #' 후보 자격 사실 — fail = 사유 코드(비었으면 자격 있음). 규약이 다르면 나머지는 비교 대상조차 아니라 판독을 멈춘다(비싼 창 판독 생략).
+#'   ★P1-06(2026-09-25): 통제 칸(carry 재현 · null 희석)은 **어떤 역할의 후보도 아니다** — 역할 축과 무관하게 control_cell 로 떨어진다
+#'     (블록 승자·바닥·carry 기준선의 부모 칸·승격 best 가 전부 이 술어를 지난다). 통제 칸 자신의 자격(재현 칸을 carry 기준선으로 쓸 때)은
+#'     통제 판정을 건너뛰는 .rfg_facts_core 로 잰다.
 rf_candidate_facts <- function(a, ctx, checks = c("regime", "universe", "window")) {
+  if (isTRUE(tryCatch(rf_is_control(a, ctx), error = function(e) FALSE)))
+    return(list(fail = "control_cell", facts = list(control = TRUE)))
+  .rfg_facts_core(a, ctx, checks)
+}
+.rfg_facts_core <- function(a, ctx, checks = c("regime", "universe", "window")) {
   fail <- character(0); fx <- list()
   if ("regime" %in% checks) {
     r <- rf_cell_regime(a, ctx); fx$regime <- r$regime; fx$regime_basis <- r$basis
@@ -418,6 +475,16 @@ rf_candidate_facts <- function(a, ctx, checks = c("regime", "universe", "window"
     w <- rf_cell_window(a, ctx); fx$window_dev <- w$dev; fx$window_source <- w$source
     if (isTRUE(w$exceeds)) fail <- c(fail, sprintf("window_deviation:%dm", as.integer(w$dev)))
     else if (is.na(w$exceeds)) fail <- c(fail, paste0("window_undetermined:", w$source))
+  }
+  ## ★소비 보류 표식 (B5FIX (c)) — 역할 무관(이 술어를 지나는 역할은 전부 소비다) · 설정(rf_consume_hold_config)이 없으면 무발화.
+  ch <- ctx$consume_hold
+  if (length(ch$flags)) {
+    hit <- Filter(function(z) { f <- .rfg_s1(z$flag); v <- .rfg_s1(z$verdict)
+      nzchar(f) && ("*" %in% ch$flags || f %in% ch$flags) && (!length(ch$verdicts) || v %in% ch$verdicts) }, a$vintage_flags %||% list())
+    if (length(hit)) {
+      fx$consume_hold <- vapply(hit, function(z) sprintf("%s:%s", .rfg_s1(z$flag), .rfg_s1(z$verdict)), character(1))
+      fail <- c(fail, paste0("vintage_hold:", fx$consume_hold[1]))
+    }
   }
   list(fail = fail, facts = fx)
 }
@@ -467,7 +534,8 @@ rf_a_gate_config <- function(root = .RFG_ROOT()) {
   p <- file.path(root, "06_Registry", "a_eligibility_gate.json")
   bad <- function(why) list(ok = FALSE, source = p, error = why,
                             active = stats::setNames(rep(TRUE, length(RF_A_HOLD_CODES)), RF_A_HOLD_CODES),
-                            vintage_flags = "*", vintage_verdicts = character(0), required_selection_type = "")
+                            vintage_flags = "*", vintage_verdicts = character(0), entry_base_flags = character(0), entry_base_clean = NULL,
+                            required_selection_type = "")
   j <- .rfg_json(p)
   if (is.null(j)) return(bad(if (file.exists(p)) "unparseable" else "absent"))
   h <- j[["holds"]]
@@ -483,7 +551,52 @@ rf_a_gate_config <- function(root = .RFG_ROOT()) {
   list(ok = TRUE, source = p, error = "", active = act, schema = .rfg_s1(j$schema),
        vintage_flags = as.character(unlist(vf$flags %||% list("*"))),
        vintage_verdicts = as.character(unlist(vf$verdicts %||% list())),
+       entry_base_flags = as.character(unlist(vf[["entry_base_flags"]] %||% list())),
+       entry_base_clean = if (is.list(vf[["entry_base_clean"]])) vf[["entry_base_clean"]] else NULL,
        required_selection_type = .rfg_s1(h[["accounting_fail"]]$required_selection_type))
+}
+
+#' 엔진 파일 경로 해석·내용 md5 (AUTOMEM 기저 전파 · 2026-09-26) — 판독 불가 = NA
+.rfg_engine_file <- function(p, root = .RFG_ROOT()) {
+  p <- gsub("\\\\", "/", .rfg_s1(p)); if (!nzchar(p)) return("")
+  if (!grepl("^([A-Za-z]:)?/", p)) p <- file.path(root, p)
+  p
+}
+rf_engine_md5 <- function(p, root = .RFG_ROOT()) {
+  f <- .rfg_engine_file(p, root)
+  if (nzchar(f) && file.exists(f) && !dir.exists(f)) unname(as.character(tools::md5sum(f))) else NA_character_
+}
+.rfg_utc <- function(s) {
+  s <- .rfg_s1(s); if (!nzchar(s)) return(NA_real_)
+  if (grepl("Z$", s)) return(as.numeric(as.POSIXct(sub("Z$", "", s), tz = "UTC", format = "%Y-%m-%dT%H:%M:%OS")))
+  as.numeric(as.POSIXct(sub("([+-][0-9]{2}):?([0-9]{2})$", "\\1\\2", s), format = "%Y-%m-%dT%H:%M:%OS%z", tz = "UTC"))
+}
+#' 청정 출처 판정 — 자기 신고(lane_provenance)를 현재 파일과 대조(FA-CLEAN-BASE-PATH 레인 소비 규칙 · 06_Registry/replication_clean_lane.json
+#'   provenance_consumer_fields.consumer_rule): mode == require_mode ∧ clean ∧ post.engine_md5 == 현재 내용 md5 ∧ pre.at > produced_after ∧
+#'   (10-03 인터페이스 갱신) engine_rel == 이 엔진의 저장소 상대경로 ∧ 엔진 디렉터리 이름이 wdir_prefix 로 시작 ∧
+#'   현재 내용이 노출 기저 엔진 md5 가 아님. 설정·기록·파일 판독 불가 = 청정 아님(보수 — 전파 유지).
+.rfg_rel <- function(f, root) {
+  a <- tolower(gsub("\\\\", "/", .rfg_s1(f))); r <- tolower(sub("/+$", "", gsub("\\\\", "/", .rfg_s1(root))))
+  if (nzchar(r) && startsWith(a, paste0(r, "/"))) substring(a, nchar(r) + 2L) else a
+}
+rf_engine_clean_verified <- function(p, root, cfg, md5_now = rf_engine_md5(p, root), exposed_md5 = character(0)) {
+  no <- function(why) list(ok = FALSE, why = why)
+  if (!is.list(cfg) || !nzchar(.rfg_s1(cfg$provenance_file))) return(no("청정 규칙 설정 없음"))
+  if (!nzchar(.rfg_s1(cfg$wdir_prefix))) return(no("청정 규칙 wdir_prefix 없음(반쪽 설정으로 청정을 인정하지 않는다)"))
+  f <- .rfg_engine_file(p, root); if (!nzchar(f)) return(no("엔진 경로 없음"))
+  pp <- file.path(dirname(f), .rfg_s1(cfg$provenance_file)); pv <- .rfg_json(pp)
+  if (is.null(pv)) return(no("출처 기록 없음"))
+  if (!identical(.rfg_s1(pv$mode), .rfg_s1(cfg$require_mode)) || !isTRUE(pv$clean)) return(no(sprintf("출처 mode=%s", .rfg_s1(pv$mode))))
+  if (is.na(md5_now)) return(no("엔진 판독 불가"))
+  if (!identical(.rfg_s1((pv$post %||% list())$engine_md5), md5_now)) return(no("출처 post.engine_md5 ≠ 현재 엔진(청정 실행 뒤 수정)"))
+  t0 <- .rfg_utc((pv$pre %||% list())$at); tc <- .rfg_utc(cfg$produced_after)
+  if (!is.finite(t0) || !is.finite(tc) || t0 <= tc) return(no("청정 실행 시각이 cutoff 뒤가 아니다"))
+  er <- tolower(gsub("\\\\", "/", .rfg_s1(pv$engine_rel)))
+  if (!nzchar(er) || !identical(er, .rfg_rel(f, root))) return(no("출처 engine_rel ≠ 이 엔진의 저장소 상대경로(다른 디렉터리의 기록)"))
+  if (!startsWith(tolower(basename(dirname(f))), tolower(.rfg_s1(cfg$wdir_prefix))))
+    return(no(sprintf("엔진 디렉터리가 청정 접두(%s)로 시작하지 않는다", .rfg_s1(cfg$wdir_prefix))))
+  if (md5_now %in% exposed_md5) return(no("현재 내용 = 노출 기저 엔진 내용"))
+  list(ok = TRUE, why = "청정 출처(소비 규칙 충족)", provenance = pp)
 }
 
 #' A 관문 문맥 = 러너 문맥 + 관문 설정 + 계보 검증 층 키 (+ 선택: 고정 축 재도출 결과 axes · 서류/규칙 준비 표식)
@@ -515,6 +628,10 @@ rf_a_eligibility <- function(entry, attempt, spec, ctx) {
   if (!nzchar(code) && is.list(sp)) code <- .rfg_s1(sp$code)
   au <- .rfg_auth(attempt, ctx)
   es <- attempt[["essence"]] %||% list()
+  # ⓪ control_cell (P1-06 · 2026-09-25) — 통제 칸은 선정 후보가 아니다. 설정 on/off 가 없는 always-on 보류(gate_config 와 같은 자리):
+  #   RF_A_HOLD_CODES·a_eligibility_gate.json 집합에 넣지 않는다(코드 집합 일치 규칙을 건드리지 않고 끌 수도 없게).
+  if (isTRUE(tryCatch(rf_is_control(attempt, ctx, spec = sp), error = function(e) FALSE)))
+    add("control_cell", "통제 칸(P1-06 carry 재현·null 희석) — 선정 후보 아님 · 등급 불변 · 발행 없음")
   # ① legacy_regime — 칸 규약 ≠ 현행 규약(P0-04 결정 EXEC-PRICE · rebase 전 측정은 현행 규약의 A 가 아니다)
   r <- rf_cell_regime(attempt, ctx)
   fx$regime <- r$regime; fx$regime_basis <- r$basis; fx$regime_current <- ctx$regime %||% NA_character_
@@ -577,8 +694,41 @@ rf_a_eligibility <- function(entry, attempt, spec, ctx) {
   if (length(dv$unreadable))
     add("vintage_flag", sprintf("재도출 입력 판독 불가(%s) — fail-closed(P0-14)", paste(utils::head(dv$unreadable, 3L), collapse = " · ")))
   fl <- c(fl, dv$flags %||% list())
-  .dtag <- function(z) if (isTRUE(z$derived)) " · 재도출 P0-14" else ""
-  fx$vintage_flags <- vapply(fl, function(z) sprintf("%s:%s%s", .rfg_s1(z$flag), .rfg_s1(z$verdict), if (isTRUE(z$derived)) "(derived)" else ""),
+  # ★entry 기저 표식 전파(AUTOMEM · 2026-09-26) — 설정 entry_base_flags 에 든 base_vintage_flags 만. 경로: self(이 entry) · lineage(부모 사슬 ·
+  #   rf_lineage_ids) · same_engine(같은 엔진 경로) · same_content(현재 엔진 내용 md5 = 표식 source 의 engine_md5). 청정 출처 엔진은 lineage·same_engine
+  #   전파에서 뺀다(FA-CLEAN-BASE-PATH 조정). **A 보류만** — 소비 술어(rf_candidate_facts)는 attempt 표식만 읽으므로 기저 노출 entry 의 칸은
+  #   바닥·승자·carry·승격 후보로 남는다(B5FIX-CONSUME-HOLD). 원장에는 쓰지 않는다(판정만). 목록이 비면 구판과 같다.
+  .ebf <- as.character(unlist(G$entry_base_flags %||% character(0)))
+  if (length(.ebf)) {
+    .root <- ctx$root %||% .RFG_ROOT()
+    .bid0 <- .rfg_s1((entry %||% list())$base_id)
+    .npth <- function(p) tolower(gsub("\\\\", "/", .rfg_s1(p)))
+    .all <- c(if (!is.null(entry)) list(entry), Filter(function(x) !identical(.rfg_s1(x$base_id), .bid0), ctx$entries %||% list()))
+    .bfl <- function(x) Filter(function(z) .rfg_s1(z$flag) %in% .ebf, x$base_vintage_flags %||% list())
+    .zmd5 <- function(z) { s <- .rfg_s1(z$source); m <- regmatches(s, regexpr("engine_md5=[0-9a-f]{32}", s)); if (length(m)) sub("engine_md5=", "", m) else "" }
+    .xmd5 <- unique(unlist(lapply(.all, function(x) vapply(.bfl(x), .zmd5, character(1))))); .xmd5 <- .xmd5[nzchar(.xmd5)]
+    .md50 <- if (!is.null(entry)) rf_engine_md5(entry$engine_path, .root) else NA_character_
+    .cl0 <- if (!is.null(entry)) rf_engine_clean_verified(entry$engine_path, .root, G$entry_base_clean, .md50, .xmd5) else list(ok = FALSE, why = "entry 없음")
+    fx$engine_clean <- .cl0$why
+    .lin <- if (nzchar(.bid0)) rf_lineage_ids(.all, .bid0) else character(0)
+    .eng0 <- if (!is.null(entry)) .npth(entry$engine_path) else ""
+    .mk <- function(z, b, via) list(flag = .rfg_s1(z$flag), verdict = .rfg_s1(z$verdict), evidence = .rfg_s1(z$evidence),
+                                    source = .rfg_s1(z$source), entry_base = b, via = via)
+    .got <- character(0)
+    for (.x in .all) {
+      .b <- .rfg_s1(.x$base_id); .zs <- .bfl(.x); if (!length(.zs)) next
+      .via <- if (identical(.b, .bid0)) "self" else if (.b %in% .lin) "lineage" else
+              if (nzchar(.eng0) && identical(.npth(.x$engine_path), .eng0)) "same_engine" else
+              if (!is.na(.md50) && .md50 %in% vapply(.zs, .zmd5, character(1))) "same_content" else ""
+      if (!nzchar(.via)) next
+      if (.via %in% c("lineage", "same_engine") && isTRUE(.cl0$ok)) next      # 청정 출처 엔진 = 전파 제외
+      for (.z in .zs) { fl <- c(fl, list(.mk(.z, .b, .via))); .got <- c(.got, .via) }
+    }
+    fx$entry_base_via <- unique(.got)
+  }
+  .dtag <- function(z) if (isTRUE(z$derived)) " · 재도출 P0-14" else if (nzchar(.rfg_s1(z$entry_base))) sprintf(" · entry 기저 %s(%s)", .rfg_s1(z$entry_base), .rfg_s1(z$via)) else ""
+  fx$vintage_flags <- vapply(fl, function(z) sprintf("%s:%s%s", .rfg_s1(z$flag), .rfg_s1(z$verdict),
+                                                     if (isTRUE(z$derived)) "(derived)" else if (nzchar(.rfg_s1(z$entry_base))) "(entry_base)" else ""),
                              character(1))
   fx$derived_flags <- vapply(dv$flags %||% list(), function(z) sprintf("%s — %s", .rfg_s1(z$flag), .rfg_s1(z$source)), character(1))
   if (!is.null(dv$selection)) { fx$selection_basis <- dv$selection$selection_basis; fx$asof_clean_ids <- dv$selection$clean }
@@ -595,7 +745,7 @@ rf_a_eligibility <- function(entry, attempt, spec, ctx) {
   if (!isTRUE(ctx$rule_ready)) add("rule_pending", "판정 규칙 미확정 — D-B: 보고만")
   act <- if (isTRUE(G$ok)) G$active else stats::setNames(rep(TRUE, length(RF_A_HOLD_CODES)), RF_A_HOLD_CODES)
   u <- unique(fired)
-  on <- u[vapply(u, function(k) identical(k, "gate_config") || isTRUE(act[k]), logical(1))]
+  on <- u[vapply(u, function(k) k %in% c("gate_config", "control_cell") || isTRUE(act[k]), logical(1))]
   list(eligible = !length(on), codes = on, inactive = setdiff(u, on), fired = u, detail = detail, facts = fx,
        gate_source = G$source, gate_active = names(act)[act], regime_current = cur, self_unverified = isTRUE(su$hold),
        evaluated_at = format(Sys.time(), "%Y-%m-%dT%H:%M:%S%z"))
@@ -638,13 +788,11 @@ rf_carry_base_info <- function(E, entries, ctx) {
 
 #' carry 구성 → 바닥 스펙. E$carry 가 곧 물려받은 구성이다(rf_promote_carry: 유니버스 고정 축 리셋 · 탈락 층 제거 후).
 #'   source_spec 파일을 다시 읽으면 리셋 전 유니버스·탈락 층이 되살아나므로 읽지 않고 출처(source_cell·source_spec)로만 남긴다.
+#'   ★축 목록 = 등록부(rf_spec_axes.R::rf_axes_floor_from_carry · 2026-09-26) — 구판은 여기 여섯 축을 따로 적었다(같은 목록이 코드 네 곳).
+#'     union 축(팩터) = carry 값(없으면 빈 목록) · 나머지 = carry 값 → 없으면 등록부 default(비중 ew · 유니버스 k200_kq150) → 그래도 없으면 키 없음.
 rf_carry_floor_spec <- function(carry) {
   if (is.null(carry)) return(NULL)
-  s <- list(factors = carry$factors %||% list(), weighting = carry$weighting,
-            universe = carry[["universe"]] %||% list(kind = "k200_kq150"))
-  if (!is.null(carry[["overlay"]])) s$overlay <- carry[["overlay"]]
-  if (!is.null(carry[["rebalance"]])) s$rebalance <- carry[["rebalance"]]
-  if (!is.null(carry[["defense_sleeve"]])) s$defense_sleeve <- carry[["defense_sleeve"]]
+  s <- rf_axes_floor_from_carry(carry)
   s$floor_source <- "carry"; s$source_cell <- .rfg_s1(carry$source_cell); s$source_spec <- .rfg_s1(carry$source_spec)
   s
 }
@@ -663,6 +811,343 @@ rf_floor_carry_gate <- function(floor_spec, floor_val, carry, carry_base) {
   if (!is.null(floor_spec) && is.finite(fv) && fv > cb) return(list(use_carry = FALSE, why = "floor_beats_carry"))
   list(use_carry = TRUE, why = if (is.null(floor_spec)) "no_floor" else "floor_not_above_carry",
        spec = rf_carry_floor_spec(carry))
+}
+
+
+# ═══════════════════════════════════════════════════════════════════════════════════════════════════════
+# P1-06 통제 칸 (2026-09-25 스테이징 · 플랜 qvest-1-drifting-eclipse P1-06 · 검증 E3) — 판정은 여기(순수 · 읽기만), 부작용은 러너.
+# ═══════════════════════════════════════════════════════════════════════════════════════════════════════
+# ★왜: 승격 entry 의 B1 칸은 전부 'carry + 팩터' 다. 그런데 ①carry 구성 자체를 이 entry 의 측정 문맥(규약·빈티지·조립 경로)에서 잰 적이
+#   없어 기준선(.carry_base)이 부모 시점 값이었고(빈티지 혼합) ②'팩터 하나를 얹는 처치'가 무정보일 때 얼마나 흔들리는지(잡음 척도)를
+#   몰랐다 — 위상쌍(B6_32/33)은 계통 효과라 SE 원천이 아니다(레버 감사). 그래서 B1 머리에 대조 두 종을 매 세대 한 번 잰다:
+#     carry_replay(B1_0) — 처치 0. 같은 조립 경로라 carry 가 경로에서 새면(예: B1 칸이 carry 의 rebalance·defense_sleeve 를 안 싣는다)
+#                          부모 승자 스펙과 서명이 갈라져 E3 가 붉어진다. 같은 regime 이면 carry 기준선이 이 칸의 PT 를 쓴다.
+#     null_factor(B1_N*) — carry + 무정보 순위 팩터(rf_cell_engine.R kind null_perm · seed 고정 월내 순열). 칸 간 흩어짐 = 잡음 척도.
+# ★통제 칸이 새면 생기는 병: 승자·바닥·승격·A 로 소비되면 무정보 칸이 다음 세대의 구성이 되고, 서명 dedup·승계·무처치 판정에 걸리면
+#   재현 칸이 부모 서명과 같아 '측정 0회'로 닫힌다(공허 통과) — 그래서 E3 는 inherited·terminal 을 red 로 읽는다.
+RF_CONTROL_KINDS <- c("carry_replay", "null_factor")
+
+#' 통제 칸 설정 — 격자 정본 standing_cells[control](rf_block_design.R::rfbd_control_cells). ctx 가 있으면 tick 캐시.
+.rfg_control_cfg <- function(ctx = NULL, root = NULL) {
+  root <- root %||% (ctx$root %||% .RFG_ROOT())
+  f <- function() {
+    cl <- tryCatch(rfbd_control_cells(root), error = function(e) list())
+    cd <- vapply(cl, function(x) .rfg_s1(x$code), character(1))
+    # ★B4-SIX-AXIS(2026-09-26): 코드에는 격자 블록 칸의 대조 칸(같은 control 태그 — B7_40 무신호 · B7_41 부호 반전)도 든다(rfbd_control_codes =
+    #   standing 통제 ∪ 격자 대조). cells 는 standing 통제만(rf_control_plan 이 B1 머리에 넣는 칸 · E3 · null 희석 판독기의 입력 — 격자 칸은 이미 격자에 있다).
+    list(cells = cl, codes = unique(c(cd[nzchar(cd)], tryCatch(rfbd_control_codes(root), error = function(e) character(0)))))
+  }
+  if (is.list(ctx) && is.environment(ctx$cache)) .rfg_cached(ctx, paste0("ctlcfg|", root), f) else f()
+}
+#' 통제 칸 코드 전부(active 무관 — retired 칸도 후보에서 계속 빠져야 한다)
+rf_control_codes <- function(root = .RFG_ROOT()) .rfg_control_cfg(root = root)$codes
+
+#' attempt 가 통제 칸인가 — 두 통로: ①셀 코드 ∈ 격자 통제 코드 ②측정된 스펙의 control 필드(러너가 조립 때 싣는 부기 필드 ·
+#'   격자에서 코드가 사라져도 남는 영속 표식). 어느 하나라도 참이면 통제 칸이다.
+rf_is_control <- function(a, ctx = NULL, codes = NULL, spec = NULL) {
+  if (is.null(codes)) codes <- .rfg_control_cfg(ctx)$codes
+  cd <- .rfg_s1(tryCatch(.rf_attempt_code(a), error = function(e) NA_character_))
+  if (nzchar(cd) && cd %in% codes) return(TRUE)
+  sp <- spec
+  if (is.null(sp)) {
+    p <- .rfg_s1((a[["essence"]] %||% list())$spec)
+    sp <- if (!nzchar(p)) NULL else if (is.list(ctx) && is.environment(ctx$cache))
+            .rfg_cached(ctx, paste0("spec|", p), function() .rfg_json(p)) else .rfg_json(p)
+  }
+  is.list(sp) && nzchar(.rfg_s1(sp[["control"]]))
+}
+#' 러너 셀(격자 칸)이 통제 칸인가 — 무처치·서명 dedup·중복 승계·.seen_sig 등록을 건너뛰는 유일한 술어.
+rf_control_exempt <- function(cell) is.list(cell) && nzchar(.rfg_s1(cell[["control"]]))
+
+#' 통제 칸 → 러너 셀 (B1 · standing=TRUE → 회피 목록 면제 · 규칙 픽커 자리 보존(rf_batch_open_slots)).
+#'   carry_replay = 팩터 0(조립 경로가 carry 를 그대로 깐다) · null_factor = null_perm 1개(carry 팩터 뒤에 붙는다 — .dedup_factors(c(carry, cur))).
+rf_control_cell <- function(sc) {
+  kind <- .rfg_s1(sc$control); code <- .rfg_s1(sc$code)
+  out <- list(code = code, label = .rfg_s1(sc$label %||% code), block = "B1", axis = "multifactor", standing = TRUE, control = kind,
+              note = "★통제 칸(P1-06) — 선정 후보가 아니다(승자·바닥·승격·A·N 제외 · 서명 dedup·승계·무처치 판정 면제).")
+  if (identical(kind, "null_factor")) {
+    s <- suppressWarnings(as.integer(sc$seed %||% NA))[1]
+    out$factors <- list(list(kind = "null_perm", id = sprintf("null_perm_s%d", s), seed = s))
+    out$control_seed <- s
+    out$basis <- sprintf("통제 칸 null_factor(P1-06) — carry + 무정보 순위 팩터(seed %d · 월내 순열)", s)
+  } else {
+    out$factors <- list()
+    out$basis <- "통제 칸 carry_replay(P1-06 · E3) — 처치 0: carry 구성을 B1 조립 경로 그대로"
+  }
+  out
+}
+
+#' 이번 tick 에 얹을 통제 칸 (순수) — 판정 순서:
+#'   형식(코드·종류·B1·seed·격자 코드 충돌) → (a) 그 코드의 시도가 이미 있으면 항상(재개·커서·승자 해석이 코드로 칸을 찾는다) →
+#'   active 아님 → applies_to(carry_present = entry$carry 가 있다) → (b) 통제 칸 없이 B1 이 이미 측정됐으면 건너뜀(entry 중간 삽입 금지 —
+#'   B1 경계가 다시 서 L-code·기전·알림이 두 번 돈다) → 삽입. 건너뜀은 사유와 함께 돌려준다(러너가 로그 1줄로 모은다).
+#' @return list(cells = 러너 셀 목록(.reason 포함), skipped = list(list(code, control, reason)))
+rf_control_plan <- function(E, ctl_cells, cells = list()) {
+  ins <- list(); skip <- list(); seeds <- integer(0)
+  atts <- E$attempts %||% list()
+  taken <- .rf_taken_codes(atts)
+  ccodes <- vapply(ctl_cells %||% list(), function(x) .rfg_s1(x$code), character(1))
+  gcodes <- vapply(cells %||% list(), function(c) .rfg_s1(c$code), character(1))
+  b1_meas <- any(startsWith(setdiff(taken, ccodes), "B1_"))
+  sk <- function(sc, why) skip[[length(skip) + 1L]] <<- list(code = .rfg_s1(sc$code), control = .rfg_s1(sc$control), reason = why)
+  for (sc in ctl_cells %||% list()) {
+    code <- .rfg_s1(sc$code); kind <- .rfg_s1(sc$control)
+    if (!nzchar(code) || !(kind %in% RF_CONTROL_KINDS)) { sk(sc, "control_malformed"); next }
+    if (!identical(.rfg_s1(sc$block %||% "B1"), "B1") || !startsWith(code, "B1_")) { sk(sc, "control_block_not_b1"); next }
+    if (code %in% gcodes) { sk(sc, "control_code_collides_with_grid"); next }
+    if (sum(ccodes == code) > 1L) { sk(sc, "control_code_duplicate"); next }
+    if (identical(kind, "null_factor")) {
+      s <- suppressWarnings(as.integer(sc$seed %||% NA))[1]
+      if (length(s) != 1L || is.na(s)) { sk(sc, "null_seed_missing"); next }
+      if (s %in% seeds) { sk(sc, "null_seed_duplicate"); next }
+      seeds <- c(seeds, s)
+    }
+    if (code %in% taken) { ins[[length(ins) + 1L]] <- c(rf_control_cell(sc), list(.reason = "attempt_exists")); next }
+    if (!isTRUE(sc$active)) { sk(sc, "inactive"); next }
+    ap <- .rfg_s1(sc$applies_to %||% "carry_present")
+    if (!identical(ap, "carry_present")) { sk(sc, paste0("applies_to_unknown:", ap)); next }
+    if (is.null(E$carry)) { sk(sc, "no_carry"); next }
+    if (b1_meas) { sk(sc, "b1_measured_before_controls"); next }
+    ins[[length(ins) + 1L]] <- c(rf_control_cell(sc), list(.reason = "carry_entry_first_b1"))
+  }
+  list(cells = ins, skipped = skip)
+}
+
+#' 통제 칸을 B1 **머리**에 넣는다(설계·격자 B1 칸 앞 — 첫 B1 배치가 통제 배치다: 재현 PT 가 B1 승자 게이트보다 먼저 선다).
+#'   B1 칸이 없으면 맨 앞. .reason(판정 사유)은 떼어낸다.
+rf_control_insert <- function(cells, new) {
+  if (!length(new)) return(cells)
+  new <- lapply(new, function(c) { c$.reason <- NULL; c })
+  k <- which(vapply(cells %||% list(), function(c) identical(.rfg_s1(c$block), "B1"), logical(1)))
+  if (length(k)) append(cells, new, after = k[1] - 1L) else c(new, cells %||% list())
+}
+
+# ── 측정 판본(빈티지) · 산출물 계열 대조 ─────────────────────────────────────────────────────────────────
+#' 칸의 현 essence 를 낸 산출물(rebase 된 칸 = 형제 재측정 판 measurement_regime$remeasure_path) 경로
+.rfg_cur_auth_path <- function(a, ctx) {
+  mrL <- if (is.list(a$measurement_regime)) a$measurement_regime else list()
+  rp <- .rfg_s1(mrL$remeasure_path)
+  if (nzchar(rp) && file.exists(rp)) return(list(path = rp, source = "rebase_sibling"))
+  d <- .rfg_art_dir(a$artifacts, ctx$root)
+  if (is.na(d)) return(list(path = "", source = "artifacts_absent"))
+  list(path = file.path(d, "authoritative_remeasure.json"), source = "artifact")
+}
+
+#' 칸 1개의 데이터 판본 키 — 강도 순: fingerprint(pin_cache 지문 digest · P0-07 절단 측정) > file_stamp(재측정 판 data_vintage 의
+#'   파일 크기@mtime) > snapshot_day(00_manifest data_snapshot_id + end_date — 같은 날 리프레시 전후를 못 가르는 약한 키) > unknown.
+#'   두 칸의 판본이 '같다' = 강도와 키가 둘 다 같다(강도가 다르면 비교 불가 — 같다고 치지 않는다).
+rf_cell_vintage <- function(a, ctx) {
+  ap <- .rfg_cur_auth_path(a, ctx)
+  au <- if (nzchar(ap$path)) .rfg_cached(ctx, paste0("vauth|", ap$path), function() .rfg_json(ap$path)) else NULL
+  mr <- if (is.list((au %||% list())$measurement_regime)) au$measurement_regime else list()
+  bt <- .rfg_s1((au %||% list())$bt_result_path)
+  if (!nzchar(bt) && nzchar(ap$path)) bt <- file.path(dirname(ap$path), "bt_result.rds")
+  man <- if (nzchar(bt)) .rfg_cached(ctx, paste0("man|", bt), function() .rfg_json(file.path(dirname(bt), "00_manifest.json"))) else NULL
+  snap <- .rfg_s1((man %||% list())$data_snapshot_id); endd <- .rfg_s1((man %||% list())$end_date)
+  fp <- .rfg_s1(((mr$data_fingerprint %||% list()))$digest)
+  dv <- mr$data_vintage
+  stamp <- if (is.list(dv)) {
+    nm <- sort(names(dv)[vapply(dv, function(z) is.list(z) && !is.null(z$size) && !is.null(z$mtime), logical(1))])
+    if (length(nm)) paste(vapply(nm, function(k) sprintf("%s:%s@%s", k, .rfg_s1(dv[[k]]$size), .rfg_s1(dv[[k]]$mtime)), character(1)), collapse = "|") else ""
+  } else ""
+  key <- if (nzchar(fp)) list(k = paste0("fp:", fp), s = "fingerprint") else
+         if (nzchar(stamp)) list(k = paste0("stamp:", stamp), s = "file_stamp") else
+         if (nzchar(snap)) list(k = sprintf("snapshot:%s|end:%s", snap, endd), s = "snapshot_day") else list(k = NA_character_, s = "unknown")
+  list(key = key$k, strength = key$s, snapshot = snap, end_date = endd, auth = ap$path, auth_source = ap$source,
+       bt = if (nzchar(bt)) bt else NA_character_)
+}
+.rfg_same_vintage <- function(v1, v2) !is.na(v1$key) && !is.na(v2$key) && identical(v1$strength, v2$strength) && identical(v1$key, v2$key)
+
+#' 두 산출물의 계열 대조 (순수 · 읽기만) — 공통 날짜 일간 순수익(period_returns$ret_net) 최대 |차| · 공통 리밸일 보유 비중 최대 |차|.
+#'   같은 스펙·같은 데이터면 비트 동일이어야 한다(엔진은 결정론 · PIT 라 뒤에 날짜가 붙어도 과거 날짜 값은 안 변한다).
+#'   공통 창에서 다르면 = 데이터 판본 개정(원천 이음매·리프레시) ∨ 조립 경로 불일치 ∨ 미래 정보 누출 — 이 함수는 가르지 않고 사실만 낸다.
+rf_series_compare <- function(bt_a, bt_b, tol) {
+  rd <- function(p) if (length(p) == 1L && !is.na(p) && nzchar(p) && file.exists(p)) tryCatch(readRDS(p), error = function(e) NULL) else NULL
+  A <- rd(bt_a); B <- rd(bt_b)
+  if (is.null(A) || is.null(B)) return(list(status = "unreadable", which = c(a = is.null(A), b = is.null(B))))
+  pr <- function(x) { r <- x$period_returns
+    if (is.null(r) || !all(c("date", "ret_net") %in% names(r))) return(NULL)
+    data.frame(date = as.Date(r$date), r = as.numeric(r$ret_net)) }
+  ra <- pr(A); rb <- pr(B)
+  if (is.null(ra) || is.null(rb)) return(list(status = "no_period_returns"))
+  m <- merge(ra, rb, by = "date", suffixes = c("_a", "_b"))
+  dr <- if (nrow(m)) max(abs(m$r_a - m$r_b), na.rm = TRUE) else NA_real_
+  hl <- function(x) { h <- x$holdings
+    if (is.null(h) || !all(c("date", "ticker", "target_weight") %in% names(h))) return(NULL)
+    data.frame(date = as.Date(h$date), ticker = as.character(h$ticker), w = as.numeric(h$target_weight)) }
+  ha <- hl(A); hb <- hl(B); dw <- NA_real_; nhd <- 0L
+  if (!is.null(ha) && !is.null(hb)) {
+    cd <- intersect(unique(ha$date), unique(hb$date)); nhd <- length(cd)
+    if (nhd) {
+      hm <- merge(ha[ha$date %in% cd, ], hb[hb$date %in% cd, ], by = c("date", "ticker"), all = TRUE, suffixes = c("_a", "_b"))
+      hm$w_a[is.na(hm$w_a)] <- 0; hm$w_b[is.na(hm$w_b)] <- 0
+      dw <- max(abs(hm$w_a - hm$w_b))
+    }
+  }
+  da <- unique(ra$date); db <- unique(rb$date)
+  rel <- if (setequal(da, db)) "same_dates" else if (all(db %in% da)) "a_extends_b" else if (all(da %in% db)) "b_extends_a" else "overlap"
+  list(status = "ok", n_a = nrow(ra), n_b = nrow(rb), n_common = nrow(m), dates = rel,
+       max_abs_dret = dr, returns_same = is.finite(dr) && dr <= tol,
+       n_hold_dates_common = nhd, max_abs_dw = dw, holdings_same = if (nhd) is.finite(dw) && dw <= tol else NA, tol = tol)
+}
+
+# ── E3 — carry 재현 검사 ────────────────────────────────────────────────────────────────────────────────
+#' 스펙 축별 차이 — 서명(.spec_sig)이 접는 축과 같은 정의로 축 이름만 돌려준다(서술·문서화 판정용).
+.rfg_spec_axes_diff <- function(s1, s2) {
+  j <- function(x) as.character(toJSON(x %||% list(), auto_unbox = TRUE, null = "null"))
+  ax <- c(factors = !identical(paste(.fkeys(.rp_all_factors(s1)), collapse = "+"), paste(.fkeys(.rp_all_factors(s2)), collapse = "+")),
+          base_weight = !identical(as.character(s1$base_weight %||% "ew"), as.character(s2$base_weight %||% "ew")),
+          weighting = !identical(j(s1$weighting %||% list(kind = "ew")), j(s2$weighting %||% list(kind = "ew"))),
+          universe = !identical(j(s1$universe %||% list(kind = "k200_kq150")), j(s2$universe %||% list(kind = "k200_kq150"))),
+          overlay = !identical(j(.ov_canon(s1[["overlay"]])), j(.ov_canon(s2[["overlay"]]))),
+          base_signal = !identical(as.character(s1$base_signal$path %||% s1$base_signal$kind %||% ""),
+                                   as.character(s2$base_signal$path %||% s2$base_signal$kind %||% "")),
+          rebalance = !identical(j(s1[["rebalance"]]), j(s2[["rebalance"]])),
+          defense_sleeve = !identical(j(s1[["defense_sleeve"]]), j(s2[["defense_sleeve"]])))
+  names(ax)[ax]
+}
+
+#' E3 (P1-06) — carry 재현 칸(B1_0)이 부모 승자(또는 주어진 기준 칸)를 재현하는가. 순수 · 읽기만.
+#' @param ref_attempt 기준 칸(사전등록 바닥 재실행 등) — NULL 이면 rf_parent_best_attempt(E, entries)(승격 기준선을 낳은 칸)
+#' @param series TRUE 면 산출물 일간 계열·보유까지 대조(bt_result.rds 두 개를 읽는다 — tick 마다 부르는 경로는 FALSE)
+#' @return list(verdict, red, e3_strict(TRUE/FALSE/NA), e3_history(TRUE/FALSE/NA), use_as_carry_base, reasons, facts, tolerance)
+#'   verdict: absent · pending · unmeasured_terminal(red — 측정 0회 종결) · inherited(red — 승계로 닫힘 = 공허 통과) · ref_missing ·
+#'            config_missing · fail_spec(red — 서명 불일치 · carry 문서화 변환으로 설명 안 됨) · not_comparable(규약 다름 · 문서화 변환 ·
+#'            판본 다름/미상) · pass(같은 규약·스펙·판본 ∧ |ΔPT| < tol ∧ (계열 대조 시) 공통 창 동일) · fail(red — 같은데 다르다)
+rf_carry_replay_check <- function(E, entries, ctx, ref_attempt = NULL, series = FALSE, cfg = NULL) {
+  cfg <- cfg %||% .rfg_control_cfg(ctx)
+  rcell <- Filter(function(x) identical(.rfg_s1(x$control), "carry_replay"), cfg$cells %||% list())
+  out <- function(verdict, red = FALSE, strict = NA, hist = NA, use = FALSE, reasons = character(0), facts = list(), tol = NA_real_)
+    list(verdict = verdict, red = red, e3_strict = strict, e3_history = hist, use_as_carry_base = use, reasons = reasons,
+         facts = facts, tolerance = tol)
+  if (!length(rcell)) return(out("config_missing", reasons = "격자 standing_cells 에 carry_replay 통제 칸이 없다"))
+  rcode <- .rfg_s1(rcell[[1]]$code)
+  tol <- .rfg_num((rcell[[1]]$e3 %||% list())$tolerance)
+  if (!is.finite(tol) || tol < 0) return(out("config_missing", reasons = "e3.tolerance 부재·비정상 — fail-closed(판정 안 함)"))
+  ra <- Filter(function(a) identical(.rfg_s1(tryCatch(.rf_attempt_code(a), error = function(e) NA_character_)), rcode), E$attempts %||% list())
+  fx <- list(replay_code = rcode)
+  if (!length(ra)) return(out("absent", facts = fx, tol = tol))
+  ra <- ra[[length(ra)]]; fx$replay_n <- ra$n
+  es <- ra[["essence"]] %||% list()
+  pt_r <- .rfg_num(es$port_t)
+  if (!is.null(es$inherited_from))
+    return(out("inherited", red = TRUE, reasons = sprintf("재현 칸이 %s 의 결과를 승계했다 — 측정 0회(공허 통과 · 통제 칸 dedup 면제 누락)",
+                                                          .rfg_s1(es$inherited_from)), facts = fx, tol = tol))
+  if (!is.finite(pt_r))
+    return(if (isTRUE(ra$terminal)) out("unmeasured_terminal", red = TRUE,
+                                         reasons = sprintf("재현 칸이 측정 없이 종결 — %s", substr(.rfg_s1(ra$terminal_reason), 1, 200)),
+                                         facts = fx, tol = tol)
+           else out("pending", facts = fx, tol = tol))
+  pa <- ref_attempt %||% rf_parent_best_attempt(E, entries)
+  fx$pt_replay <- pt_r
+  rr <- rf_cell_regime(ra, ctx); fx$regime_replay <- rr$regime
+  core <- .rfg_facts_core(ra, ctx, RF_ROLE_CHECKS$carry_base)
+  fx$replay_role_fail <- core$fail
+  if (is.null(pa)) return(out("ref_missing", reasons = "기준 칸(부모 승자) 부재 — 대조 불가", facts = fx, tol = tol))
+  fx$ref_code <- .rfg_s1(tryCatch(.rf_attempt_code(pa), error = function(e) NA_character_)); fx$ref_n <- pa$n
+  pt_p <- .rfg_num((pa[["essence"]] %||% list())$port_t); fx$pt_ref <- pt_p; fx$dpt <- pt_r - pt_p
+  rp <- rf_cell_regime(pa, ctx); fx$regime_ref <- rp$regime
+  s_r <- .rfg_spec_read(ra); s_p <- .rfg_spec_read(pa)
+  if (is.null(s_r) || is.null(s_p)) return(out("not_comparable", reasons = "스펙 판독 불가(재현 또는 기준)", facts = fx, tol = tol))
+  diff_ax <- .rfg_spec_axes_diff(s_r, s_p); fx$spec_diff_axes <- diff_ax
+  sig_eq <- identical(.spec_sig(s_r), .spec_sig(s_p)); fx$sig_equal <- sig_eq
+  documented <- character(0)
+  urf <- .rfg_s1(((E$carry %||% list())$universe_reset_from %||% list())$kind)
+  if (nzchar(urf) && !identical(urf, "k200_kq150")) documented <- c(documented, "universe")
+  if (length((E$carry %||% list())$overlay_dropped)) documented <- c(documented, "overlay")
+  fx$documented_transforms <- documented
+  use_ok <- !length(core$fail) && identical(rr$regime, ctx$regime %||% NA_character_)
+  if (!sig_eq && length(setdiff(diff_ax, documented)))
+    return(out("fail_spec", red = TRUE, reasons = sprintf("재현 스펙 ≠ 기준 스펙(축 %s) — carry 문서화 변환(%s)으로 설명 안 됨: 조립 경로가 carry 를 떨어뜨린다",
+                                                         paste(setdiff(diff_ax, documented), collapse = ","),
+                                                         if (length(documented)) paste(documented, collapse = ",") else "없음"),
+               facts = fx, tol = tol))
+  if (!sig_eq) return(out("not_comparable", use = use_ok, reasons = sprintf("carry 문서화 변환(%s) — 재현은 변환된 carry 를 잰다", paste(diff_ax, collapse = ",")),
+                          facts = fx, tol = tol))
+  vr <- rf_cell_vintage(ra, ctx); vp <- rf_cell_vintage(pa, ctx)
+  fx$vintage_replay <- vr$key; fx$vintage_ref <- vp$key; fx$vintage_strength <- c(replay = vr$strength, ref = vp$strength)
+  same_reg <- !is.na(rr$regime) && identical(rr$regime, rp$regime)
+  same_vin <- .rfg_same_vintage(vr, vp)
+  sc <- if (isTRUE(series)) rf_series_compare(vr$bt, vp$bt, tol) else NULL
+  if (!is.null(sc)) fx$series <- sc
+  hist <- if (!is.null(sc) && identical(sc$status, "ok")) isTRUE(sc$returns_same) && !isFALSE(sc$holdings_same) else NA
+  if (!same_reg) return(out("not_comparable", hist = hist, use = use_ok,
+                            reasons = sprintf("규약 다름(재현 %s · 기준 %s) — 재현 PT 가 현행 규약의 carry 기준선", rr$regime, rp$regime), facts = fx, tol = tol))
+  if (!same_vin) return(out("not_comparable", hist = hist, use = use_ok,
+                            reasons = sprintf("판본 다름 또는 미상(재현 %s · 기준 %s) — ΔPT %.4f 는 빈티지 표류로만 읽는다",
+                                              vr$key %||% "NA", vp$key %||% "NA", fx$dpt), facts = fx, tol = tol))
+  ok_pt <- is.finite(fx$dpt) && abs(fx$dpt) < tol
+  if (ok_pt && !isFALSE(hist)) return(out("pass", strict = TRUE, hist = hist, use = use_ok, facts = fx, tol = tol))
+  out("fail", red = TRUE, strict = FALSE, hist = hist, use = FALSE,
+      reasons = sprintf("같은 규약·스펙·판본인데 재현이 다르다(|ΔPT| %.6f · 계열 %s) — 비결정성 또는 숨은 입력 차이",
+                        abs(fx$dpt), if (is.na(hist)) "미대조" else if (isTRUE(hist)) "동일" else "다름"), facts = fx, tol = tol)
+}
+
+#' carry 기준선 해석 (P1-06 — 러너가 부르는 정본) — 같은 regime 의 재현 칸 PT 우선, 아니면 부모 기록(rf_carry_base_info · 구판 그대로).
+#'   재현 칸을 쓰는 조건 = E3 가 red 가 아니고(fail·fail_spec·inherited·unmeasured_terminal 아님) 재현 칸이 현행 규약 · k200_kq150 · 창 허용 안
+#'   (RF_ROLE_CHECKS$carry_base — 통제 판정만 건너뛴 핵심 술어). red 면 부모 기록 경로로 떨어지고 사유를 싣는다(기준선 의미를 바꾸지 않는다).
+#'   ★반환 모양은 rf_carry_base_info 와 같다(value · why) + source(replay|parent|none) · e3_verdict · parent_value · parent_why.
+#'   ★승격 판정(reinforce_auto_next_paper.R)은 계속 rf_carry_base_info 를 부른다 — live 승격 규칙 교체는 안건(플랜 P1-06).
+#' @param base 이미 계산한 rf_carry_base_info 결과(러너는 그 줄을 먼저 둔다 — 두 번 계산하지 않는다) · NULL 이면 여기서 계산
+rf_carry_base_resolve <- function(E, entries, ctx, base = NULL) {
+  base <- base %||% rf_carry_base_info(E, entries, ctx)
+  if (is.null(E$carry)) return(c(base, list(source = "none")))
+  e3 <- tryCatch(rf_carry_replay_check(E, entries, ctx, series = FALSE),
+                 error = function(e) list(verdict = "error", red = FALSE, use_as_carry_base = FALSE, reasons = conditionMessage(e), facts = list()))
+  if (isTRUE(e3$use_as_carry_base) && !isTRUE(e3$red) && is.finite(.rfg_num(e3$facts$pt_replay)))
+    return(list(value = .rfg_num(e3$facts$pt_replay), why = "ok", source = "replay", replay_code = e3$facts$replay_code,
+                e3_verdict = e3$verdict, parent_value = base$value, parent_why = base$why, regime = e3$facts$regime_replay))
+  c(base, list(source = "parent", e3_verdict = e3$verdict, replay_reasons = paste(e3$reasons, collapse = " | ")))
+}
+
+# ── null 희석 판독기 — 사전등록 SE 원천(rf_prereg.R::rf_prereg_se_null) · 유기체 잡음 척도의 입력 ─────────────
+#' entry 의 null 희석 통제 칸 값 (순수 · 읽기만). ★선택 자유도 0: 격자의 active null 칸 **전부**를 읽는다(부분집합 인자 없음 — seed 쇼핑 차단).
+#' @param metric essence 키(port_t · calmar · cagr · net_sharpe · mdd · oos_retention)
+#' @return list(contract = "null_dilution_cells", metric, status, reasons, codes, seeds, values, delta(값 − 재현 칸 값 · 짝지음),
+#'   replay(code, value), n_finite, complete, regime, vintage, artifacts(code → auth 경로 · md5), config_codes)
+#'   status ok = active null 칸 전부 측정 · 전부 현행 규약 · 재현 칸 측정 · 같은 판본 키(재현과 짝) · 유한값 ≥ 2.
+#'   소비: v <- rf_null_dilution_values(E, ctx, "port_t"); if (identical(v$status, "ok")) rf_prereg_se_null(v$delta)
+rf_null_dilution_values <- function(E, ctx, metric = "port_t", cfg = NULL) {
+  cfg <- cfg %||% .rfg_control_cfg(ctx)
+  nc <- Filter(function(x) identical(.rfg_s1(x$control), "null_factor") && isTRUE(x$active), cfg$cells %||% list())
+  rc <- Filter(function(x) identical(.rfg_s1(x$control), "carry_replay"), cfg$cells %||% list())
+  codes <- vapply(nc, function(x) .rfg_s1(x$code), character(1))
+  seeds <- vapply(nc, function(x) suppressWarnings(as.integer(x$seed %||% NA))[1], integer(1))
+  last_of <- function(cd) { z <- Filter(function(a) identical(.rfg_s1(tryCatch(.rf_attempt_code(a), error = function(e) NA_character_)), cd),
+                                        E$attempts %||% list()); if (length(z)) z[[length(z)]] else NULL }
+  val <- function(a) if (is.null(a) || !is.null((a[["essence"]] %||% list())$inherited_from)) NA_real_ else .rfg_num((a[["essence"]] %||% list())[[metric]])
+  reasons <- character(0)
+  atts <- lapply(codes, last_of)
+  values <- vapply(atts, val, numeric(1))
+  regs <- vapply(atts, function(a) if (is.null(a)) NA_character_ else .rfg_s1(rf_cell_regime(a, ctx)$regime), character(1))
+  vins <- vapply(atts, function(a) if (is.null(a)) NA_character_ else .rfg_s1(rf_cell_vintage(a, ctx)$key), character(1))
+  arts <- lapply(atts, function(a) { if (is.null(a)) return(list(path = NA_character_, md5 = NA_character_))
+    p <- .rfg_cur_auth_path(a, ctx)$path
+    list(path = p, md5 = if (nzchar(p) && file.exists(p)) unname(as.character(tools::md5sum(p))) else NA_character_) })
+  names(values) <- codes; names(regs) <- codes; names(vins) <- codes; names(arts) <- codes
+  rcode <- if (length(rc)) .rfg_s1(rc[[1]]$code) else ""
+  ra <- if (nzchar(rcode)) last_of(rcode) else NULL
+  rv <- val(ra)
+  rreg <- if (is.null(ra)) NA_character_ else .rfg_s1(rf_cell_regime(ra, ctx)$regime)
+  rvin <- if (is.null(ra)) NA_character_ else .rfg_s1(rf_cell_vintage(ra, ctx)$key)
+  delta <- values - rv
+  complete <- length(codes) > 0L && all(is.finite(values))
+  if (!length(codes)) reasons <- c(reasons, "격자에 active null_factor 통제 칸이 없다")
+  if (length(codes) && !complete) reasons <- c(reasons, sprintf("미측정 %s", paste(codes[!is.finite(values)], collapse = ",")))
+  cur <- ctx$regime %||% NA_character_
+  if (any(is.finite(values)) && !all(regs[is.finite(values)] %in% cur)) reasons <- c(reasons, "현행 규약 아닌 칸이 섞였다")
+  if (!is.finite(rv)) reasons <- c(reasons, "재현 칸(B1_0) 미측정 — 짝지음 불가")
+  else if (!identical(rreg, cur)) reasons <- c(reasons, "재현 칸 규약 ≠ 현행")
+  if (is.finite(rv) && any(is.finite(values)) &&
+      !all(vapply(vins[is.finite(values)], function(v) !is.na(v) && !is.na(rvin) && identical(v, rvin), logical(1))))
+    reasons <- c(reasons, "판본 키가 재현 칸과 다르거나 미상인 null 칸이 있다(짝지음 무효)")
+  nfin <- sum(is.finite(delta))
+  if (nfin < 2L) reasons <- c(reasons, sprintf("유한 짝 %d개 < 2(rf_prereg_se_null 최소)", nfin))
+  status <- if (!length(reasons)) "ok" else if (!length(codes)) "no_config" else if (!complete) "incomplete" else "invalid"
+  list(contract = "null_dilution_cells", metric = metric, status = status, reasons = reasons, codes = codes, seeds = seeds,
+       values = values, delta = delta, replay = list(code = rcode, value = rv, regime = rreg, vintage = rvin),
+       n_finite = nfin, complete = complete, regime = regs, vintage = vins, artifacts = arts, config_codes = codes,
+       regime_current = cur)
 }
 
 if (sys.nframe() == 0L)

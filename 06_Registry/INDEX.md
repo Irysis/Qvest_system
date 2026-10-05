@@ -1,21 +1,21 @@
 # 06_Registry INDEX
 
-> 자동 생성 2026-09-25 08:39 — 큐레이션 원본: `06_Registry/index_descriptions.json` (role/status/category 수동 보완처) · 재생성: `Rscript 02_Infrastructure/tools/build_artifact_index.R` (daily_refresh 말미 자동). 본 파일 직접 수정 금지 — 재생성 시 덮어씀.
+> 자동 생성 2026-10-05 07:48 — 큐레이션 원본: `06_Registry/index_descriptions.json` (role/status/category 수동 보완처) · 재생성: `Rscript 02_Infrastructure/tools/build_artifact_index.R` (daily_refresh 말미 자동). 본 파일 직접 수정 금지 — 재생성 시 덮어씀.
 
 ## 데이터 (12)
 
 | 항목 | 정체 | status | 최근 | 크기 |
 |---|---|---|---|---|
 | `index_descriptions.json` | 존별 INDEX 큐레이션 DB (본 파일 — 사람 수동 보완, build_artifact_index.R이 소비해 INDEX.md 4개 생성) | active | 2026-09-05 | 46KB |
-| `hygiene_report.json` | 일간 파일위생 감사 리포트 (ops/artifact_hygiene_audit.R 산출 — 자동정리 삭제 기록 + artifact-storage.md 위반 감지) | active | 2026-09-24 | 12KB |
-| `artifact_index.json` | build_artifact_index.R이 daily_refresh 말미 자동 재생성하는 전체 산출물 기계가독 인덱스 | active | 2026-09-23 | 436KB |
+| `hygiene_report.json` | 일간 파일위생 감사 리포트 (ops/artifact_hygiene_audit.R 산출 — 자동정리 삭제 기록 + artifact-storage.md 위반 감지) | active | 2026-10-04 | 12KB |
+| `artifact_index.json` | build_artifact_index.R이 daily_refresh 말미 자동 재생성하는 전체 산출물 기계가독 인덱스 | active | 2026-10-04 | 441KB |
 | `book_carrier/` | PG2 book 수익 캐리어(carrier_STR_1715_*) + H1/H1b/H2 오버레이·가중 A/B 실측 결과 저장소 | active | 2026-08-29 | 912KB |
 | `idea_registry.json` | 구 S0 아이디어 소싱 레지스트리 — telegram_notify.R이 아직 참조하나 갱신은 06-08 정지 | legacy | 2026-06-07 | 40KB |
 | `live_track/STR_1715_on_M4_R05_noLayer4_PG2/` | 현행 PG2 book(noLayer4) 라이브 페이퍼트래킹 — daily_nav/paper_nav/holdout_interval, TaskScheduler 월간 소비 | active | 2026-08-01 | 156KB |
 | `live_track/STR_1715_FaithTrend_on_M4_R05_overlay_PG2/` | 제거된 구 FaithTrend 오버레이 라이브트랙 — look-ahead 판명 후 rollback 보존분(도훈 지시) | legacy | 2026-07-13 | 5KB |
 | `strategy_grades.json` | 전략 등급 레지스트리 — 검색 인덱스와 v8 readiness gate가 소비 (06-08 이후 정지 상태이나 게이트 의존) | active | 2026-06-07 | 79KB |
 | `alpha_frontier_queue.json` | 상설 알파 프론티어 큐 SOT — '다음에 뭘 시도할지' EV순 (발굴 착수 전 확인·owner 표기 의무, dohoon_decision 항목 임의 착수 금지. v8.3 §4) | active | 2026-09-23 | 430KB |
-| `wiring_map.json` | 표준↔소비자 배선 지도 (ops/wiring_map_build.R 산출 — contracts/validation 헬퍼 + 권위 판정 원장의 실코드 소비자 수. status: orphan/thin/wired. ★판정은 이 원장이 권위 — 소비자는 n_consumers 로 재판정 금지) | active | 2026-09-23 | 81KB |
+| `wiring_map.json` | 표준↔소비자 배선 지도 (ops/wiring_map_build.R 산출 — contracts/validation 헬퍼 + 권위 판정 원장의 실코드 소비자 수. status: orphan/thin/wired. ★판정은 이 원장이 권위 — 소비자는 n_consumers 로 재판정 금지) | active | 2026-10-04 | 93KB |
 | `wiring_map_baseline.json` | 배선 지도 래칫 기준선 — 소비자 수 감소(표준 우회 시작)만 드리프트로 경고. 자동 갱신 금지(자동이면 악화가 매일 흡수돼 래칫이 무력화) | active | 2026-08-08 | 6KB |
 | `cleaner_protected_paths.json` | 무인 증류 레인(cleaner_distill_run.sh)의 삭제 집행 경계 정본 — 절대보존 목록 + ref_check_ignore(기록 vs 소비) + 집행 상한(건수·용량·mtime). 2026-09-05 도훈 '삭제 전면 무인' 지시로 신설. 코드가 아니라 레지스트리에 둔 이유 = 하드코딩 금지 + 도훈이 코드를 안 열고 경계를 조정 | active | 2026-09-05 | 7KB |
 
@@ -25,7 +25,7 @@
 |---|---|---|---|---|
 | `factor_rotation_registry.json` | factor-rotation 모드 FR_XXXX 등록 레지스트리(현행 v6146B, 06-13 갱신) | active | 2026-09-23 | 26KB |
 | `live_track/STR_1715_AR_on_M4_R05_overlay_PG2/` | holdout falsification 1호 등록(구간 [0.39,3.16]) 라이브트랙 — measurement-graduation §3 규약상 불변 봉인 | active | 2026-07-13 | 2KB |
-| `module_catalog.json` | register_module 공용계약의 모듈 카탈로그(SOT) — 계약 floor 통과 모듈 표준 등록부, 07-03 갱신 | active | 2026-09-23 | 2.4MB |
+| `module_catalog.json` | register_module 공용계약의 모듈 카탈로그(SOT) — 계약 floor 통과 모듈 표준 등록부, 07-03 갱신 | active | 2026-10-04 | 2.5MB |
 | `module_quarantine.json` | register_module 계약 미충족 산출물 격리 보존소(v8.1 헌법이 보존 명시) | active | 2026-09-15 | 170KB |
 | `overlay_candidate_queue.json` | screen_route=OVERLAY_CANDIDATE 라우팅 큐(게이트 2계층 소비 경로) — 07-03 갱신 | active | 2026-08-23 | 242KB |
 
@@ -39,14 +39,14 @@
 
 | 항목 | 정체 | status | 최근 | 크기 |
 |---|---|---|---|---|
-| `hypothesis_index.json` | alpha-search 가설/검증 이력 인덱스(중복 가설 방지용) — 07-04 갱신 중 | active | 2026-09-23 | 1.8MB |
-| `paper_registry.json` | 논문 리서치 파이프라인 레지스트리(수집→라우터→alpha-search 큐) — 07-03 갱신 | active | 2026-09-12 | 613KB |
+| `hypothesis_index.json` | alpha-search 가설/검증 이력 인덱스(중복 가설 방지용) — 07-04 갱신 중 | active | 2026-09-25 | 1.8MB |
+| `paper_registry.json` | 논문 리서치 파이프라인 레지스트리(수집→라우터→alpha-search 큐) — 07-03 갱신 | active | 2026-10-03 | 614KB |
 
 ## 모드-FR (3)
 
 | 항목 | 정체 | status | 최근 | 크기 |
 |---|---|---|---|---|
-| `module_performance.json` | FR input-floor용 모듈 국면조건부 성과 매트릭스 — build_module_performance.R 산출, regime admission 소비 | active | 2026-09-23 | 1.1MB |
+| `module_performance.json` | FR input-floor용 모듈 국면조건부 성과 매트릭스 — build_module_performance.R 산출, regime admission 소비 | active | 2026-10-04 | 1.2MB |
 | `module_regime_admission.json` | RCMA(국면조건부 모듈 admission) 판정 결과 레지스트리 — FR 모드 소비 | active | 2026-06-12 | 393KB |
 | `overlay_ab_results/` | 오버레이 후보(LH loser-harvest 등) A/B 실측 결과 — 07-03 스마트베타 LH 후속 소비 예정 | active | 2026-08-17 | 370KB |
 
@@ -73,13 +73,13 @@
 
 | 항목 | 정체 | status | 최근 | 크기 |
 |---|---|---|---|---|
-| `{knowledge_index.json, knowledge_index.md}` | 지식 순차 인덱스(Law/Distilled/L-code 1..N 뷰) — weekly_cleaner_sweep [3.6] build_knowledge_index가 주간 재생성 | active | 2026-09-24 | 1.1MB |
-| `distilled_knowledge.json` | Distilled 탐색지도 카드 SOT(DIST-*) — negative 지식의 재도전 대상 보관(INV-7) | active | 2026-09-24 | 4.4MB |
+| `{knowledge_index.json, knowledge_index.md}` | 지식 순차 인덱스(Law/Distilled/L-code 1..N 뷰) — weekly_cleaner_sweep [3.6] build_knowledge_index가 주간 재생성 | active | 2026-10-03 | 1.1MB |
+| `distilled_knowledge.json` | Distilled 탐색지도 카드 SOT(DIST-*) — negative 지식의 재도전 대상 보관(INV-7) | active | 2026-10-04 | 4.5MB |
 | `knowledge_recheck_queue.json` | 지식 재검 큐 — 부활신호/재도전 후보 대기열 | active | 2026-07-18 | 8KB |
-| `revival_signals.json` | 부활신호 정의·발화 상태(INV-7) — settled-negative를 시스템이 먼저 un-bury하는 트리거 | active | 2026-09-12 | 9KB |
+| `revival_signals.json` | 부활신호 정의·발화 상태(INV-7) — settled-negative를 시스템이 먼저 un-bury하는 트리거 | active | 2026-10-03 | 10KB |
 | `lcode_family_override.json` | L-code family 수동 오버라이드 — 하버스터 word-boundary 추론 보정(07-18 substring FP 수리 동반) | active | 2026-07-18 | 52KB |
 | `layer_bottleneck_map.md` | 계층 병목 지도(상시 실측) — 목표 갭이 어느 계층에 막혀 있나. answer-principles 연속성 5호 의무 갱신 대상 | active | 2026-09-24 | 882B |
-| `{distill_manifest_*.json, lcode_distill_*.json, cleanup_manifest_*.json, cache_cleanup_manifest_*.json, axiom_recert_queue_*.json} (날짜 스탬프 증류/정리 매니페스트)` | 주간 cleaner·증류 사이클이 실행마다 남기는 날짜 스탬프 매니페스트(감사 추적용, 1회성 기록) | archive | 2026-09-19 | 1.8MB |
+| `{distill_manifest_*.json, lcode_distill_*.json, cleanup_manifest_*.json, cache_cleanup_manifest_*.json, axiom_recert_queue_*.json} (날짜 스탬프 증류/정리 매니페스트)` | 주간 cleaner·증류 사이클이 실행마다 남기는 날짜 스탬프 매니페스트(감사 추적용, 1회성 기록) | archive | 2026-10-03 | 1.8MB |
 | `lcode_id_collision_review_20260725.md` | L-code ID 충돌 5건 판정표 + 해소 기록(재발급 3·병합 2·초안이관 1). 갈래 분류 규칙과 소비면 인용 실측 근거 | active | 2026-07-25 | 11KB |
 
 ## 하네스-Continuity (1)
@@ -93,7 +93,7 @@
 | 항목 | 정체 | status | 최근 | 크기 |
 |---|---|---|---|---|
 | `README.md` | 레지스트리 존 진입 설명 | active | 2026-07-03 | 1KB |
-| `handbook_facts.json` | 핸드북 사실 집합 — 세션 간 참조되는 확정 수치/규약 스냅샷 | active | 2026-09-24 | 1KB |
+| `handbook_facts.json` | 핸드북 사실 집합 — 세션 간 참조되는 확정 수치/규약 스냅샷 | active | 2026-10-04 | 1KB |
 
 ## AST-v1.1 (1)
 
@@ -105,14 +105,14 @@
 
 | 항목 | 정체 | status | 최근 | 크기 |
 |---|---|---|---|---|
-| `stranded_repairs.json` | worktree 미커밋 수리 감사 산출 — stranded_repairs_audit.sh(무인 12/20시)가 파일 triage·충돌탐지·prune 후보 기록 | active | 2026-09-24 | 20KB |
+| `stranded_repairs.json` | worktree 미커밋 수리 감사 산출 — stranded_repairs_audit.sh(무인 12/20시)가 파일 triage·충돌탐지·prune 후보 기록 | active | 2026-10-04 | 20KB |
 
-## 미분류 (127) — index_descriptions.json에 추가하세요
+## 미분류 (132) — index_descriptions.json에 추가하세요
 
 | 항목 | 정체 | status | 최근 | 크기 |
 |---|---|---|---|---|
 | `_archive` | (미분류 — index_descriptions.json에 추가하세요) | - | 2026-08-23 | 594KB |
-| `a_eligibility_gate.json` | (미분류 — index_descriptions.json에 추가하세요) | - | 2026-09-24 | 5KB |
+| `a_eligibility_gate.json` | (미분류 — index_descriptions.json에 추가하세요) | - | 2026-10-03 | 9KB |
 | `adapter_axis_backfill_20260813.json` | (미분류 — index_descriptions.json에 추가하세요) | - | 2026-08-13 | 26KB |
 | `adapter_feasibility_20260813.json` | (미분류 — index_descriptions.json에 추가하세요) | - | 2026-08-13 | 10KB |
 | `adapter_registration_queue.json` | (미분류 — index_descriptions.json에 추가하세요) | - | 2026-08-13 | 35KB |
@@ -154,7 +154,7 @@
 | `ast_gate_alerts.jsonl` | (미분류 — index_descriptions.json에 추가하세요) | - | 2026-08-22 | 2KB |
 | `ast_leaf_table_bugs.jsonl` | (미분류 — index_descriptions.json에 추가하세요) | - | 2026-08-02 | 22KB |
 | `ast_operator_backlog.json` | (미분류 — index_descriptions.json에 추가하세요) | - | 2026-08-02 | 3KB |
-| `ast_structure_log.jsonl` | (미분류 — index_descriptions.json에 추가하세요) | - | 2026-09-24 | 6.3MB |
+| `ast_structure_log.jsonl` | (미분류 — index_descriptions.json에 추가하세요) | - | 2026-10-04 | 6.5MB |
 | `auto_spawn_config.json` | (미분류 — index_descriptions.json에 추가하세요) | - | 2026-08-16 | 208B |
 | `auto_spawn_log.jsonl` | (미분류 — index_descriptions.json에 추가하세요) | - | 2026-08-23 | 12KB |
 | `auto_spawn_queue.json` | (미분류 — index_descriptions.json에 추가하세요) | - | 2026-08-23 | 27KB |
@@ -167,12 +167,12 @@
 | `continuity_blocks_snapshot_20260809.jsonl` | (미분류 — index_descriptions.json에 추가하세요) | - | 2026-08-12 | 31KB |
 | `data_pipeline_queue.json` | (미분류 — index_descriptions.json에 추가하세요) | - | 2026-09-17 | 19KB |
 | `decision_dossier_lottery_filter_20260802.md` | (미분류 — index_descriptions.json에 추가하세요) | - | 2026-08-02 | 11KB |
-| `decision_register.json` | (미분류 — index_descriptions.json에 추가하세요) | - | 2026-09-24 | 84KB |
+| `decision_register.json` | (미분류 — index_descriptions.json에 추가하세요) | - | 2026-10-04 | 149KB |
 | `defensive_score.json` | (미분류 — index_descriptions.json에 추가하세요) | - | 2026-09-04 | 2KB |
 | `distribution_target_queue.json` | (미분류 — index_descriptions.json에 추가하세요) | - | 2026-08-22 | 2KB |
 | `essence_regrade_20260824.json` | (미분류 — index_descriptions.json에 추가하세요) | - | 2026-08-24 | 250KB |
-| `factor_evidence.json` | (미분류 — index_descriptions.json에 추가하세요) | - | 2026-09-20 | 171KB |
-| `factor_panel_axis.json` | (미분류 — index_descriptions.json에 추가하세요) | - | 2026-09-21 | 96KB |
+| `factor_evidence.json` | (미분류 — index_descriptions.json에 추가하세요) | - | 2026-10-04 | 171KB |
+| `factor_panel_axis.json` | (미분류 — index_descriptions.json에 추가하세요) | - | 2026-10-03 | 96KB |
 | `failure_revival_history_snapshot_20260809.jsonl` | (미분류 — index_descriptions.json에 추가하세요) | - | 2026-08-12 | 50KB |
 | `fred_availability_rules.json` | (미분류 — index_descriptions.json에 추가하세요) | - | 2026-09-24 | 82KB |
 | `hygiene_manifest_snapshot_20260809.jsonl` | (미분류 — index_descriptions.json에 추가하세요) | - | 2026-08-12 | 186KB |
@@ -180,7 +180,8 @@
 | `infra_backlog.json` | (미분류 — index_descriptions.json에 추가하세요) | - | 2026-08-23 | 160KB |
 | `l2_unit_request.json` | (미분류 — index_descriptions.json에 추가하세요) | - | 2026-09-23 | 1KB |
 | `lean_carrier` | (미분류 — index_descriptions.json에 추가하세요) | - | 2026-08-23 | 117KB |
-| `m4_published` | (미분류 — index_descriptions.json에 추가하세요) | - | 2026-09-03 | 1.3MB |
+| `m4_published` | (미분류 — index_descriptions.json에 추가하세요) | - | 2026-09-25 | 1.5MB |
+| `memory_inbox` | (미분류 — index_descriptions.json에 추가하세요) | - | 2026-09-25 | 4KB |
 | `method_registry.json` | (미분류 — index_descriptions.json에 추가하세요) | - | 2026-08-29 | 74KB |
 | `mfro_consolidated_verdict_20260822.csv` | (미분류 — index_descriptions.json에 추가하세요) | - | 2026-08-22 | 285B |
 | `mfro_index_turnover_audit_20260822.csv` | (미분류 — index_descriptions.json에 추가하세요) | - | 2026-08-22 | 1KB |
@@ -196,33 +197,37 @@
 | `no_signal_queue_audit_r46_20260822.csv` | (미분류 — index_descriptions.json에 추가하세요) | - | 2026-08-22 | 5KB |
 | `no_signal_queue_audit_r46_clusters_20260822.csv` | (미분류 — index_descriptions.json에 추가하세요) | - | 2026-08-22 | 659B |
 | `no_signal_recheck_census_20260822.json` | (미분류 — index_descriptions.json에 추가하세요) | - | 2026-08-22 | 785B |
-| `overlay_arm_ledger.jsonl` | (미분류 — index_descriptions.json에 추가하세요) | - | 2026-09-23 | 12KB |
+| `organic` | (미분류 — index_descriptions.json에 추가하세요) | - | 2026-10-03 | 3KB |
+| `overlay_arm_ledger.jsonl` | (미분류 — index_descriptions.json에 추가하세요) | - | 2026-10-04 | 14KB |
 | `overlay_base_q1_share_20260810.json` | (미분류 — index_descriptions.json에 추가하세요) | - | 2026-08-12 | 4KB |
-| `overlay_catalog.json` | (미분류 — index_descriptions.json에 추가하세요) | - | 2026-09-23 | 54KB |
+| `overlay_catalog.json` | (미분류 — index_descriptions.json에 추가하세요) | - | 2026-10-04 | 65KB |
 | `overlay_mechanism_map.json` | (미분류 — index_descriptions.json에 추가하세요) | - | 2026-09-24 | 3KB |
+| `overlay_probe_allowlist.json` | (미분류 — index_descriptions.json에 추가하세요) | - | 2026-09-26 | 8KB |
 | `overlay_probe_future.json` | (미분류 — index_descriptions.json에 추가하세요) | - | 2026-09-24 | 3KB |
 | `paper_feasibility_20260813.json` | (미분류 — index_descriptions.json에 추가하세요) | - | 2026-08-13 | 18KB |
 | `pit_c11_consumer_notices.json` | (미분류 — index_descriptions.json에 추가하세요) | - | 2026-09-24 | 14KB |
+| `pit_jm_c1_consumer_notices.json` | (미분류 — index_descriptions.json에 추가하세요) | - | 2026-09-25 | 8KB |
 | `pit_quarantine.json` | (미분류 — index_descriptions.json에 추가하세요) | - | 2026-09-24 | 36KB |
-| `prereg` | (미분류 — index_descriptions.json에 추가하세요) | - | 2026-08-23 | 4KB |
+| `prereg` | (미분류 — index_descriptions.json에 추가하세요) | - | 2026-10-04 | 929KB |
 | `rawdata_source_priority.json` | (미분류 — index_descriptions.json에 추가하세요) | - | 2026-09-23 | 10KB |
-| `regime_published` | (미분류 — index_descriptions.json에 추가하세요) | - | 2026-09-24 | 22.7MB |
+| `regime_published` | (미분류 — index_descriptions.json에 추가하세요) | - | 2026-10-04 | 28.6MB |
 | `reimplement_queue.json` | (미분류 — index_descriptions.json에 추가하세요) | - | 2026-09-07 | 10KB |
-| `reinforce_auto_config.json` | (미분류 — index_descriptions.json에 추가하세요) | - | 2026-09-24 | 59KB |
+| `reinforce_auto_config.json` | (미분류 — index_descriptions.json에 추가하세요) | - | 2026-10-03 | 76KB |
 | `reinforce_ladder_config.json` | (미분류 — index_descriptions.json에 추가하세요) | - | 2026-08-24 | 5KB |
 | `reinforce_ladder_ledger.json` | (미분류 — index_descriptions.json에 추가하세요) | - | 2026-08-24 | 61KB |
-| `reinforce_ledger_l1.json` | (미분류 — index_descriptions.json에 추가하세요) | - | 2026-09-23 | 4.0MB |
+| `reinforce_ledger_l1.json` | (미분류 — index_descriptions.json에 추가하세요) | - | 2026-10-04 | 10.8MB |
 | `reinforce_ledger_l1.json.bak_20260904_174834` | (미분류 — index_descriptions.json에 추가하세요) | - | 2026-09-04 | 756KB |
 | `reinforce_ledger_l1.json.bak_b2reset_211311` | (미분류 — index_descriptions.json에 추가하세요) | - | 2026-09-04 | 869KB |
 | `reinforce_ledger_l1.json.bak_b5reset_192513` | (미분류 — index_descriptions.json에 추가하세요) | - | 2026-09-04 | 801KB |
 | `reinforce_ledger_l1.json.bak_b5reset_192528` | (미분류 — index_descriptions.json에 추가하세요) | - | 2026-09-04 | 801KB |
 | `reinforce_ledger_l1.json.bak_dupfill_202510` | (미분류 — index_descriptions.json에 추가하세요) | - | 2026-09-04 | 831KB |
 | `reinforce_ledger_l2.json` | (미분류 — index_descriptions.json에 추가하세요) | - | 2026-09-23 | 8KB |
-| `reinforce_program.json` | (미분류 — index_descriptions.json에 추가하세요) | - | 2026-09-24 | 41KB |
-| `replication_request.json` | (미분류 — index_descriptions.json에 추가하세요) | - | 2026-09-23 | 235KB |
+| `reinforce_program.json` | (미분류 — index_descriptions.json에 추가하세요) | - | 2026-10-03 | 56KB |
+| `replication_clean_lane.json` | (미분류 — index_descriptions.json에 추가하세요) | - | 2026-10-03 | 9KB |
+| `replication_request.json` | (미분류 — index_descriptions.json에 추가하세요) | - | 2026-10-04 | 17KB |
 | `replication_skiplist.json` | (미분류 — index_descriptions.json에 추가하세요) | - | 2026-09-07 | 4KB |
 | `retro_rolling_defensive_report.csv` | (미분류 — index_descriptions.json에 추가하세요) | - | 2026-09-04 | 54KB |
-| `rf_arm_compat.json` | (미분류 — index_descriptions.json에 추가하세요) | - | 2026-09-23 | 24KB |
+| `rf_arm_compat.json` | (미분류 — index_descriptions.json에 추가하세요) | - | 2026-09-25 | 24KB |
 | `rf_decisions.jsonl` | (미분류 — index_descriptions.json에 추가하세요) | - | 2026-09-24 | 5KB |
 | `rf_fidelity_axes.json` | (미분류 — index_descriptions.json에 추가하세요) | - | 2026-09-23 | 6KB |
 | `rf_overlay_adversary_axes.json` | (미분류 — index_descriptions.json에 추가하세요) | - | 2026-09-23 | 8KB |
@@ -231,12 +236,12 @@
 | `round_closures_snapshot_20260809_index.json` | (미분류 — index_descriptions.json에 추가하세요) | - | 2026-08-12 | 100KB |
 | `round_closures_snapshot_20260809_README.md` | (미분류 — index_descriptions.json에 추가하세요) | - | 2026-08-12 | 974B |
 | `rule_axis_map_seed_20260813.json` | (미분류 — index_descriptions.json에 추가하세요) | - | 2026-08-13 | 135KB |
-| `scheduler_task_health.json` | (미분류 — index_descriptions.json에 추가하세요) | - | 2026-09-24 | 7KB |
+| `scheduler_task_health.json` | (미분류 — index_descriptions.json에 추가하세요) | - | 2026-10-04 | 7KB |
 | `standalone_track_dispositions.json` | (미분류 — index_descriptions.json에 추가하세요) | - | 2026-08-20 | 31KB |
 | `standalone_track_queue.json` | (미분류 — index_descriptions.json에 추가하세요) | - | 2026-08-23 | 5KB |
 | `suite_totals_baseline.json` | (미분류 — index_descriptions.json에 추가하세요) | - | 2026-08-03 | 399B |
 | `vintage_cascade_20260923.json` | (미분류 — index_descriptions.json에 추가하세요) | - | 2026-09-23 | 1.5MB |
-| `weight_catalog.json` | (미분류 — index_descriptions.json에 추가하세요) | - | 2026-09-24 | 50KB |
+| `weight_catalog.json` | (미분류 — index_descriptions.json에 추가하세요) | - | 2026-10-04 | 50KB |
 | `weight_variant_ledger.jsonl` | (미분류 — index_descriptions.json에 추가하세요) | - | 2026-08-23 | 5KB |
 
 ## stale 큐레이션 키 (5) — 디스크 부재, index_descriptions.json에서 제거 권장

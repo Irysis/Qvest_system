@@ -19,6 +19,9 @@
 #
 # 고정부(절대 절단 없음) = [AX 전제] 헤더 + active 공리 + [고정 축]/프론티어 + dead 줄.
 # 감축 사다리(예산 초과 시)  = ①DIST 포기 ②최근 교훈 3→2→1 ③전략 5→3.
+# (FA-CLEAN-BASE-PATH 2026-09-26) 청정 충실구현 레인(표식 QVEST_CLEAN_LANE=1)에서는 변동부 전부(최고 전략 성과 줄 · 양성 DIST ·
+#   최근 교훈 · dead 줄)를 빼고 '[청정 레인 — … 제외]' 1줄로 바꾼다 — 교차 entry 성과 수치가 설계 입력에 들어가지 않게.
+#   고정부는 그대로(수치 없음). 계측 파일(.cache/axiom_inject_last.json)에 clean_lane 을 남긴다. 검사 = 08_Tests/ops/test_rf_clean_lane.sh §I.
 #==============================================================================
 trap 'echo "{}"; exit 0' ERR
 # (v8.1.2 2026-06-11) python stdio/open UTF-8 강제 — cache body가 cp949로 쓰이고 additionalContext에
@@ -273,6 +276,15 @@ except Exception:
     except Exception:
         pos_lines, dist_lines, rec_lines, dead_line = [], [], [], ''
         pc_status = 'missing' if not os.path.exists(os.environ.get('PC', '')) else 'unreadable'
+# (FA-CLEAN-BASE-PATH 2026-09-26) 청정 충실구현 레인(표식 QVEST_CLEAN_LANE=1) = 성과 문맥 제외.
+#   변동부 넷(최고 전략의 PORT_t·SR·CAGR·MDD 줄 · 양성 DIST · 최근 교훈의 다중검정t·칼마 · dead 개수와 성과 원장 조회 명령)은
+#   전부 교차 entry 성과다 — 청정 레인은 그 어느 것도 받지 않는다. 고정부(공리·고정 축·정체성·프론티어)는 수치가 없어 그대로 둔다.
+#   충실구현 레인은 Agent 를 금지해 이 훅이 발화하지 않지만, 표식을 읽는 층을 훅 자신에도 둔다(레인 인자가 바뀌어도 성과 줄이 새지 않게).
+#   ★이 블록은 셸 -c 큰따옴표 안이다 — 주석에도 큰따옴표·백틱·달러 금지.
+CLEAN = os.environ.get('QVEST_CLEAN_LANE', '') == '1'
+if CLEAN:
+    pos_lines, dist_lines, rec_lines, dead_line = [], [], [], '[청정 레인 — 성과·교훈·dead 문맥 제외(결정 FA-CLEAN-BASE-PATH)]'
+    pc_status = 'clean_lane_excluded'
 
 H_POS = '[현재 최고 연구-tier 전략 — 여기서 출발·결합할 것]'
 H_DIST = '[검증된 양성 지식]'
@@ -383,6 +395,7 @@ try:
                        'ml_max_total': ML_MAX_TOTAL, 'ml_max_per_mode': ML_MAX_PER_MODE,
                        'agent': os.environ.get('QVEST_INJECT_AGENT', ''),
                        'pc_status': pc_status,
+                       'clean_lane': CLEAN,
                        'markers': {'positive': H_POS[:20] in ctx,
                                    'recent': '[최근 교훈' in ctx,
                                    'dead': 'dead configs' in ctx,

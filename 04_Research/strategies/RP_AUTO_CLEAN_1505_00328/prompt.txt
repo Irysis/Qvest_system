@@ -1,0 +1,134 @@
+논문 1편의 **충실구현**을 수행하라. 산출은 **엔진 R 파일 하나**다.
+
+## 논문
+제목: Profitability of contrarian strategies in the Chinese stock market
+원문: https://arxiv.org/abs/1505.00328
+트리아지가 뽑은 후보 팩터: 
+정의 초안: 
+
+## 판정 순서 (★2026-08-30 도훈 지시 — 어떤 논문이라도 팩터 전략으로 변형 가능한
+##   형태인지부터 판단하는 게 참된 리서치의 자세다. 인사이트가 중요한 거니까)
+**논문이 횡단면 종목선택 형태가 아니어도 즉시 포기하지 마라.** 순서는 이렇다:
+
+1. **충실구현이 되는가** — 논문 그대로 신호·종목수·비중·리밸. 되면 fidelity=faithful.
+2. 안 되면 **인사이트가 이식되는가** — 논문의 *기전*을 횡단면 팩터로 옮길 수 있는가.
+   되면 fidelity=adapted. ★이때 **무엇을 남기고 무엇을 바꿨는지 명시 의무**다.
+   예: 리더-팔로워 군집 논문에서 특정 군집기·정렬기는 **한 구현일 뿐**이고, 기전은
+   선행 종목의 움직임이 후행 종목을 예측한다는 것이다. 그건 가용한 추정기로 이식된다.
+3. **데이터가 진짜 없으면** ABORT. 대리변수로 지어내지 마라 — 레버리지 ETF NAV,
+   장중·종가단일가 같은 미보유 패널은 근사 대상이 아니다. ABORT.txt + 필요 데이터 명시.
+
+★adapted 는 정직한 결과다. 등급은 계약이 내되 귀속이 충실구현이 아니라 **착안**이며,
+  그 구분이 원장에 남으므로 misattribution 이 되지 않는다. 인사이트를 버리는 것보다 낫다.
+★단 **지어내기와 이식은 다르다**: 논문이 주지 않는 수치를 임의로 정하면 그건 이식이 아니다.
+  이식은 *기전*을 옮기는 것이고, 파라미터는 **우리 고정 축**(25종·월간·EW)을 쓴다.
+
+★산출에 `C:\Users\99922\OneDrive\Quant_Module_Moltbot/04_Research/strategies/RP_AUTO_CLEAN_1505_00328/FIDELITY.json` 을 함께 써라 — 키 6개:
+  fidelity(faithful 또는 adapted) · kept(논문에서 남긴 기전 1줄) ·
+  changed(바꾼 것과 이유 1줄) · paper_original_form(논문 원래 산출 형태 1줄) ·
+  ★portfolio_spec(러너에 그대로 넘어가는 **기계 판독** 객체) ·
+  ★commission_paper(논문 명시 왕복비용. 미명시면 null).
+  faithful 이면 changed 는 유니버스만 K200 합집합 KQ150 이다.
+  portfolio_spec 은 산출 형태에 맞춰라 — 산문으로 적지 말고 이 형태로:
+    PORTFOLIO 를 만들면 {"construction":"engine_direct"}
+      (네가 만든 비중이 곧 논문 비중이다. 롱숏이면 반드시 이 값이어야 한다 —
+       이게 없으면 러너가 숏 다리를 버리고 롱온리 top-N 으로 다시 구성한다.)
+    FACTORS 만 만들면 {"construction":"top_n_long","weighting":"ew","rebalance":"monthly","top_n":<논문값>}
+  ★engine.R 주석에만 적지 마라 — 주석은 아무도 읽지 않는다. 이 파일이 유일한 통로다.
+
+### ★changed 신고 체크리스트 — 논문에 없는데 네가 넣은 것을 **전부** 적어라
+실측(2026-09-04, 적대적 감사 4편 · 지적 20건): 그중 **9건이 이 종류**였다 —
+논문을 못 읽은 게 아니라, 합리적인 방어 코드를 넣고 **신고를 잊은** 것이다.
+그래서 재구현 한 사이클(에이전트 12분 + 측정 + 감사 6축)이 통째로 타율다.
+아래를 한 줄씩 훑고 해당하는 것을 changed 에 옮겨라. 해당 없으면 적지 마라.
+
+- 값 하한·상한·커버리지 요건 (예: 관측 80% 이상만 정렬, 최소 종목수 30)
+- 수치 가드 (분모 0 방지 · 변동성 바닥 · |값| 상한 치환 · winsorize·clip)
+- 결측 처리 (nafill/locf · 상장 전 상수 · 비유한값 0 치환)
+- 난수·재현 (set.seed · 초기값 · 앞상빌업 횟수 · 앜상블 여부)
+- 창·워밍업 길이를 논문과 다르게 잡은 것
+- 논문이 여러 설정을 보고했는데 하나를 골랏으면 **어느 칸을 골랐는지**
+- 논문 수식을 근사한 것 (폐형·선형화·이산화)
+
+★"영향이 미미해서 안 적었다" 는 사유가 아니다. 영향의 크기를 판단하는 것은
+감사와 도훈이지 구현자가 아니고, 그 판단은 **적혀 있어야** 할 수 있다.
+적어둔 변경은 adapted 로 통과하고, 안 적은 변경은 misdeclared 로 재구현을 부른다 —
+**적는 쪽이 싼다.**
+
+## 산출 (이것만)
+## 산출 (이것만)
+`C:\Users\99922\OneDrive\Quant_Module_Moltbot/04_Research/strategies/RP_AUTO_CLEAN_1505_00328/engine.R` — source 되면 `FACTORS(Date,Ticker,Score)` 또는
+`PORTFOLIO(Date,Ticker,Weight,Leg)` 를 만드는 R 스크립트. 호출자가 환경에 `RAWDATA`·`BM_DT` 를 넣어준다.
+
+## 축 (변수 아님)
+- **논문 그대로** 복제하되 **유니버스만 K200∪KQ150**. 유동성 하한 adv20 ≥ 2e8 은 t-1 로 적용.
+- 기간 2005-01-01~. 종목수·비중·리밸 주기는 논문 명시값을 따른다.
+- **PIT C1~C15 절대**: 모든 창의 종점은 t-1. 전 표본 통계 금지(rolling/expanding만).
+  팩터 DB 는 `load_month_factors()` 경유(C15), `Z_Score_Aligned` 만 소비(C13).
+  ★`detect_lookahead` 는 비선언 idiom(전 표본 cov()/mean() · shift(-1) · 수동 미래 인덱싱)을
+  못 잡는다 — 통과를 근거로 삼지 말고 **구조로** 보장하라.
+- 원문 접근이 불가하면 **지어내지 마라**. `C:\Users\99922\OneDrive\Quant_Module_Moltbot/04_Research/strategies/RP_AUTO_CLEAN_1505_00328/ABORT.txt` 에 사유를 쓰고 끝내라.
+
+## 실행 환경
+- R 349개 패키지가 이미 있고(data.table · arrow · PerformanceAnalytics · xts · quadprog ·
+  cluster · matrixStats · glmnet · TTR · roll · proxy 등), **없는 패키지는 호출자가 자동 설치**한다
+  (검증 러너가 엔진을 스캔해 CRAN 에서 최대 6개까지 설치). 그러니 필요한 패키지를 자유롭게 쓰라.
+- 다만 **정말 필요한 것만** 쓰라 — 의존이 6개를 넘으면 착수가 차단된다.
+- 파이썬 연동(reticulate)도 가능하나, R 로 충분하면 R 로 하라(무인 실행에서 층이 하나 줄어든다).
+- 원문 접근이 불가하거나 논문을 훼손하지 않고는 구현할 수 없으면 `ABORT.txt` 에 사유를 쓰고 멈춰라.
+
+## 금지
+- `C:\Users\99922\OneDrive\Quant_Module_Moltbot/04_Research/strategies/RP_AUTO_CLEAN_1505_00328` 밖 쓰기. 원장·설정·훅·테스트 수정. 백테스트 직접 실행(측정은 호출자 계약이 한다).
+- 등급·성과 수치 선언(계약이 낸다).
+
+엔진을 쓰고 1~2줄로 무엇을 구현했는지만 보고하라.
+
+## 청정 모드 — 열람 범위 (결정 FA-CLEAN-BASE-PATH)
+이 실행은 **성과를 보지 않고 논문만으로** 구현하는 청정 레인이다. 읽기(Read·Grep)는 아래 허용 목록과 작업 디렉터리로
+제한되고 그 밖은 훅이 막는다(원장·산출물·다른 전략 엔진·교훈·기억 — 그 안의 수치는 이 구현의 입력이 아니다).
+- 작업 디렉터리: `C:\Users\99922\OneDrive\Quant_Module_Moltbot/04_Research/strategies/RP_AUTO_CLEAN_1505_00328` (네 산출물만 있다)
+- `claude.md` — CLI 가 cwd 에서 자동 주입하는 헌법 — 재열람은 새 정보가 없다(알려진 경계: 목표·문턱 수치 SR 2.5 · Calmar 0.64)
+- `.claude/rules/pit.md` — 자동 주입 규칙(PIT C1~C15) — 재열람은 새 정보가 없다(알려진 경계: 2026-07-06 오버레이 사고 수치 Calmar 2.50→1.83 · SR 2.10→1.84)
+- `.claude/rules/lean-loop.md` — 자동 주입 규칙(충실구현 라운드 축) — 수치 0
+- `.claude/rules/python-policy.md` — 경로 주입 규칙(**/*.py 열람 시 자동 주입) — 수치 0
+- `.claude/skills/factor-db-access.md` — 팩터 DB 사용 규약(load_month_factors · Z_Score_Aligned · C13·C15) — 수치 0
+- `.claude/skills/pit-validation.md` — PIT 자가 점검 규약 — 수치 0
+- `02_infrastructure/backtest_harness.r` — RAWDATA·벤치·수급 로더 정의(load_rawdata · load_investor) = 엔진 입력 규약 — 수치형 1곳('1.0→0.0' 선형 척도 · 성과 아님)
+- `02_infrastructure/factor_db/factor_db_connector.r` — load_month_factors 정의(C15 유일 경로) — 수치 0
+- `02_infrastructure/factor_db/factor_registry.json` — 팩터 이름·정의·계열 — R5 가 dedup.reason 의 port_t 비교를 가린 사본(.cache/design_view)으로 돌린다
+- `02_infrastructure/data/` — 원천 수집·로더 코드(DART·컨센서스·수급 열 이름) — 지문 밖 원천을 쓰면 구조 술어 source_scope 가 사후에 거른다 · 수치형 1곳(커버리지 0.715→0.868 · 성과 아님)
+- `02_infrastructure/alpha_search/run_paper_replication.r` — 러너 계약(portfolio_spec · FACTORS/PORTFOLIO 입출력 · t-1) — 수치 0
+- `02_infrastructure/replication/` — 충실구현 하네스(월간 집행 규약) — 수치 0
+- `02_infrastructure/validation/lookahead_detector.r` — PIT 정적 검출기(자가 점검) — 수치 0
+- `02_infrastructure/validation/pit_enforcement.r` — PIT 규약 코드 — 수치 0
+- `.cache/design_view/` — R5 가린 사본 디렉터리(수치 = <stat>) — 등록부를 여는 유일한 길
+Glob(이름 열거)은 저장소 안에서 열려 있지만 내용은 위 목록 밖에서 열리지 않는다 — 막히면 경로를 바꾸지 말고 이 목록 안에서 찾아라.
+논문 원문은 WebFetch 로 읽어라. 셸·Agent·Skill 도구는 이 실행에 없다.
+★이 저장소의 웹 사본(github.com/Irysis/Qvest_system · raw.githubusercontent.com/Irysis/Qvest_system)을 열지 마라 — 원격 사본도 같은 원장·산출물이다.
+
+## ★재구현이다 — 앞 구현이 적대적 충실도 감사에서 기각됐다
+아래는 감사자가 **원문과 대조해** 찾은 지적이다. 같은 구현을 다시 내지 마라.
+
+- 미신고 변경: [signal] [거래소별 독립 정렬을 단일 풀로 통합] 논문은 두 거래소를 각각 독립 횡단면으로 정렬해 거래소별 CON 계열을 따로 산출하는데(SHSE/SZSE independently · Table 2 Panel A=SHSE, Panel B=SZSE), engine.R:91-99 는 K200∪KQ150(KOSPI+KOSDAQ 2개 시장)을 SigDate 단위 **단일** 횡단면으로 묶어 N_elig·frank·dec 를 한 번만 계산한다 - FIDELITY.changed 에 없음(① 은 유니버스 멤버십 치환만 선언하고 독립 횡단면 2개가 1개로 합쳐진 사실은 선언하지 않는다)
+- 미신고 변경: [signal] [paper_original_form 이 통합 패널로 서술] FIDELITY.paper_original_form 은 논문 형태를 '중국 A주(상하이·선전) 월간 패널에서 ... 10/5/3분위 정렬' 즉 단일 통합 패널로 적었으나, 논문은 통합 패널을 한 번도 만들지 않는다('we investigate the momentum and contrarian effects in the SHSE and the SZSE independently') - 선언이 사실과 다르다
+- 미신고 변경: [universe] [거래소별 분리 정렬을 단일 횡단면으로 통합] 논문은 두 거래소를 독립 표본으로 각각 정렬해 decile 을 만든다 — Materials and Methods/Data 1문단 말미 "Because the average market capitalizations of SHSE stocks (16.73 billion CNY per stock) and SZSE stocks (4.64 billion CNY per stock) are significantly different, we shall investigate separately the A-share stocks in the two exchanges for comparison." · Conclusion "Since the features of A-shares listed on these two stock exchanges are not similar, we investigate the momentum and contrarian effects in the SHSE and the SZSE independently." · 표 구조도 Table 3 = "...on the SHSE formed based on decile grouping" / Table 4 = "...on the SZSE formed based on decile grouping" / Table 6 = "Comparison of the performance of contrarian portfolios in the two exchanges" 로 거래소별이며, 두 거래소를 합친 단일 랭킹 유니버스는 논문 어디에도 없다. 구현은 engine.R:86 에서 `(K200 == TRUE | KQ150 == TRUE)` 로 두 시장을 한 후보군으로 합치고, engine.R:91 `N_elig := .N, by = SigDate` · engine.R:93 `frank(MRet), by = SigDate` · engine.R:96 `dec` 가 전부 SigDate 단일 기준이라 decile 이 두 시장 통합 횡단면에서 매겨진다. 시장 구분자(K200·KQ150 열)는 engine.R:82 에서 이미 들고 있으면서 분위 산출에는 쓰이지 않는다. FIDELITY.changed ① 은 이 축을 "상하이·선전 전 A주 → K200∪KQ150" 로만 적어 논문 쪽을 단일 패널로 서술하고, paper_original_form 도 "중국 A주(상하이·선전) 월간 패널에서 ... 횡단면 롱숏" 이라 적는다 — 거래소 분리 설계의 제거가 changed 전 항목(①~⑬)에 없고, 논문 원형 서술 자체가 위 원문 두 문장과 어긋난다.
+- 미신고 변경: [portfolio] [거래소별 분위 정렬을 단일 풀로 통합] 논문은 두 거래소를 각각 독립 횡단면으로 정렬해 거래소별로 별개의 CON 전략을 만드는데(Materials and Methods: "Because the average market capitalizations of SHSE stocks (16.73 billion CNY per stock) and SZSE stocks (4.64 billion CNY per stock) are significantly different, we shall investigate separately the A-share stocks in the two exchanges for comparison" · Table 2 Panel A: SHSE / Panel B: SZSE · Table 3 = SHSE · Table 4 = SZSE), 구현은 K200∪KQ150 을 한 풀로 합쳐 단일 횡단면에서 분위를 자른다 — engine.R:91 `N_elig := .N, by = SigDate` · engine.R:93 `frank(MRet, ties.method='first'), by = SigDate` · engine.R:96 `dec := (((r-1L)*.N_GROUP) %/% N_elig)+1L` 의 그룹 키에 세그먼트(K200/KQ150) 항이 없다. FIDELITY.changed ① 은 유니버스 집합의 치환만 선언하고(상하이·선전 전 A주 → K200∪KQ150) 두 횡단면을 하나로 합치는 것은 ①~⑬ 어디에도 없다. 논문이 분리를 택한 사유(거래소 간 시가총액 이질성)는 K200(대형주)·KQ150(중소형주)에 그대로 해당한다.
+- 미신고 변경: [portfolio] [다리당 35종을 논문 분위 크기로 선언] FIDELITY.changed ⑫ 는 "10분위 크기를 논문 그대로 둬 다리당 약 35종·합계 약 70종" 이라고 적었으나 약 35종/다리는 두 세그먼트를 합친 풀(≈350종)을 10으로 나눈 값이지 논문 구성의 분위 크기가 아니다. 논문 구성을 KR 유니버스에 적용하면 산출물은 단일 포트폴리오가 아니라 거래소별 2개(K200 ≈200종 → ≈20종/다리 · KQ150 ≈150종 → ≈15종/다리)이며, 논문 자체의 분위 크기는 A주 전수(2012년말 SHSE 944종·SZSE 1528종) 기준 ≈94종·≈153종/다리다. ⑫ 의 서술은 단일 풀 정렬의 산물을 "논문 그대로" 로 제시한다.
+- 미신고 변경: [undeclared] [시장별 decile을 단일 횡단면으로 통합] 논문은 두 거래소를 절대 합치지 않고 각 거래소 안에서 독립적으로 정렬·분위화하는데(서론 마지막 단락: "Since the features of A-shares listed on these two stock exchanges are not similar, we investigate the momentum and contrarian effects in the SHSE and the SZSE independently." · decile 격자는 Table 3 = SHSE 전용 / Table 4 = SZSE 전용 · Table 2·5 는 "Panel A: SHSE"/"Panel B: SZSE" · Table 6 은 SHSE−SZSE 차이 · Table 1 은 종목수를 944/1,528 로 따로 보고), engine.R 은 K200∪KQ150 를 하나의 횡단면으로 묶어 N_elig·frank·dec 를 전부 그 합집합 위에서 계산한다(engine.R:86 합집합 필터 · :91 `N_elig := .N, by = SigDate` · :93 `frank(MRet), by = SigDate` · :96 `dec` · :98-99 LOS/WIN · :102-103 비중). 즉 논문 절차는 매월 CON 포트폴리오를 시장별로 2개 만드는데 구현은 1개만 만든다. FIDELITY.changed 에 이 통합은 없다 — ① 은 '상하이·선전 전 A주 → K200∪KQ150' 라는 유니버스 치환만 선언한다.
+- 미신고 변경: [undeclared] [논문을 단일 통합 패널로 서술] FIDELITY 의 paper_original_form 은 논문을 "중국 A주(상하이·선전) 월간 패널에서 과거 J개월 수익 기준 10/5/3분위 정렬"로, changed ① 은 논문 유니버스를 "상하이·선전 전 A주"(하나의 집합)로 서술한다. 논문은 그 통합 패널 정렬을 어느 표에서도 수행하지 않는다(위 서론 문장 · Table 3/4 분리 · Table 6 차분). 선언이 논문 원형을 통합 패널로 바꿔 서술했기 때문에, 구현의 횡단면 통합이 '유니버스 치환'에 흡수돼 changed 에서 사라졌다.
+- 미신고 변경: [undeclared] [분위 기준점 도메인에 시장 분할 없음] 시스템이 부과하는 고정 축은 유니버스 집합(K200∪KQ150)이지 정렬 분할이 아니다. K200·KQ150 은 상장 보드가 달라 상호배타적 플래그이므로(engine.R:86 의 `K200 == TRUE | KQ150 == TRUE`) `by = .(SigDate, Market)` 분할 정렬이 구조적으로 가능하다 — 통합은 축이 강제한 결과가 아니라 구현 선택이고, 그 선택이 changed 에 기록되지 않았다.
+- 신호 불일치: [signal] [decile 브레이크포인트 풀 불일치] 논문의 10분위 경계는 거래소 내부 횡단면에서 산출되고 LOS/WIN 다리가 거래소를 섞지 않는데(Table 2 Panel A1/B1 - decile grouping 이 각 패널 안에서 따로), engine.R:93-99 의 frank(MRet)·dec 는 두 시장 통합 분포의 단일 경계이므로 LOS/WIN 다리가 시장을 섞고 경계값 자체가 다른 분포에서 나온다
+원문 근거: [signal] 원문(arxiv.org/html/1505.00328v1 · ar5iv 교차 확인, 3회 독립 fetch 일치): ① Method - 'For a given "current" month t=0, all the stocks are sorted according to their returns in the past J months from t=-J to t=0 (Fig. 2). We divide the stocks into several groups.' ② Method - 'Since the features of A-shares listed on these two stock exchanges are not similar, we investigate the momentum and contrarian effects in the SHSE and the SZSE independently' + 'we shall investigate separately the A-share stocks in the two exchanges for comparison'. ③ Table 2 패널 구조 = Panel A(SHSE)/Panel B(SZSE) × A1·A2·A3 / B1·B2·B3 (decile·quintile·tertile) - 두 거래소를 섞은 패널 없음. ④ Method - 'The group of stocks with the worst performance in the estimation is called loser portfolio LOS(J,K) and the group with best performance is called winner portfolio WIN(J,K)' · 'buying the loser portfolio and selling the winner portfolio' · 'equal-weighted average returns per annum' (L_{J,K}·W_{J,K}·C_{J,K}, C=L-W 식 번호 없음). ⑤ Method - 'The periods range from one month to four years: J=K∈{J,K|1,6,12,18,24,30,36,42,48}'. ⑥ Table 2 Panel A1 - CON(1,1) 연 12.8%, t=<stat> (유의) → J=K=1 은 주변 칸이 아니라 초록 주장('1 month or longer than 12 months')의 한쪽. ⑦ Data - 'the first-month return data of individual stocks are excluded from our analysis' · 'the data mainly contain the monthly adjusted returns of individual stocks'(기업행위 조정 · 시장조정/초과수익 언급 없음) · winsorize·표준화·정규화 서술 0건. / [timing] 원문 https://arxiv.org/html/1505.00328v1 — (a) Materials and Methods §Method: "For a given 'current' month t=0, all the stocks are sorted according to their returns in the past J months from t=-J to t=0" + "The contrarian portfolio CON(J,K) is held for K months" + Fig. 2 캡션 "The estimation period is J months and the holding period is K months"(스킵 간격 없는 인접 설계). (b) 격자 값: Table 2 = J=K ∈ {1,6,12,18,24,30,36,42,48}(J=K=1 행 포함) · Table 3(SHSE)·Table 4(SZSE) = J 행 {1,6,...,48} × K 열 {1,6,...,48} 9×9 로 J=1·K=1 칸이 좌상단에 존재. (c) 스킵: Abstract "These results are robust to the one-month skipping between the estimation and holding periods" + §Robustness check "the case of skipping one month between the estimation and holding periods is considered to avoid possible measurement errors" — 주 결과표(2~4)에는 스킵 미적용. (d) 리밸 주기·중첩 규약: 원문은 "held for K months" 외에 월별 재형성·중첩 여부를 명시하지 않는다(K>1 보유수익 산출법도 미명시). (e) Abstract 유의 구간 "when the estimation and holding horizons are 1 month or longer than 12 months" — 1개월 칸은 본 주장의 한쪽. / [universe] arXiv:1505.00328v1 HTML 전문. Materials and Methods / Data 1문단 전문(A주 대 B주 비교·Table 1 수치·"we shall investigate separately the A-share stocks in the two exchanges for comparison"), Data 2문단 전문(RESSET 월간 adjusted return · 1991-01~2012-12 수록 · "the first-month return data of individual stocks are excluded from our analysis" · ±10% 가격제한 1996-12 발효 → "we exclude the data before 1997 and consider the period from January 1997 to December 2012"), Methods J-K 포트폴리오 형성 문단("For a given 'current' month t=0, all the stocks are sorted according to their returns in the past J months from t=-J to t=0 ... decile grouping, quintile grouping and tertile grouping"), Table 1(거래소별 A/B주 종목수·시총·거래대금 비중), Table 3·Table 4·Table 6 캡션, Conclusion 의 거래소 독립 분석 문장. ST/*ST·금융주 제외·가격 하한·시총 컷·최소 상장이력·최소 거래일수·보유기간 전구간 수익 요구는 원문 전체(Results·Robustness·Discussion·Conclusion 포함) 어디에도 없음을 확인했다. / [portfolio] Materials and Methods — 포트폴리오 형성 문단("For a given 'current' month t=0, all the stocks are sorted according to their returns in the past J months from t=-J to t=0. We divide the stocks into several groups. For comparison, decile grouping, quintile grouping and tertile grouping are adopted. The group of stocks with the worst performance in the estimation is called loser portfolio LOS(J,K) and the group with best performance is called winner portfolio WIN(J,K). One then adopts the contrarian strategy by buying the loser portfolio and selling the winner portfolio. The contrarian portfolio CON(J,K) is held for K months.") · 같은 절의 거래소 분리 문장(시가총액 16.73B vs 4.64B CNY → "we shall investigate separately the A-share stocks in the two exchanges") · 비중 문장("We examine the equal-weighted average returns per annum of the loser portfolio, the winner portfolio, and the contrarian portfolio during the holding period" — value-weighted 판 보고 0건) · Table 2(decile · J=K · Panel A: SHSE / Panel B: SZSE) · Table 3(SHSE) · Table 4(SZSE) 캡션 · Data 절(A주만 · B주 제외 사유 = 유동성·시가총액 · "the first-month return data of individual stocks are excluded from our analysis" · 1997-01~2012-12 · 2012년말 SHSE 944종 / SZSE 1528종) · 결론부 grouping 비교("decile grouping outperforms quintile grouping and tertile grouping, which is more evident and robust in the long run"). / [cost] arxiv.org/html/1505.00328v1 전문 3회 독립 독해 일치 — 논문은 거래비용을 **어디에서도 다루지 않는다**. (a) Materials and Methods: 'The contrarian portfolio CON(J,K) is held for K months. We examine the equal-weighted average returns per annum of the loser portfolio, the winner portfolio, and the contrarian portfolio during the holding period' — 비용 항 없음, 수익은 equal-weighted 연율 원수익. (b) 표 캡션 전수: 'average annualized returns' + 't-statistics adjusted for heteroscedasticity and autocorrelation' 뿐 — net of transaction costs 판·bps·% 비용 가정 0건. (c) 비용 인접 서술은 Introduction 의 선행연구 인용 1문장뿐: 'It is found that the bid-ask spread, non-synchronous trading as well as the lack of liquidity would enlarge the momentum and contrarian effects' — 이것은 저자의 비용 차감이 아니라 효과 증폭 요인 인용이고, 저자의 대응은 비용 차감이 아니라 skip 월('the common approach is to skip certain time intervals between the estimation and the holding period', 주 결과는 skip 없음 · skip 1개월은 강건성). (d) 왕복 여부·시장충격·stamp duty·수수료 명시 0건. (e) 숏 레그: 'buying the loser portfolio and selling the winner portfolio' 외에 중국 A주 공매도 가능성·제약·차입비용 논의 0건. → 논문의 비용 = 0(무비용 gross), 왕복 규약·시장충격 모델 = 부재. / [undeclared] 원문(https://arxiv.org/html/1505.00328v1): ① 서론 마지막 단락(Materials and Methods 직전) — "Since the features of A-shares listed on these two stock exchanges are not similar, we investigate the momentum and contrarian effects in the SHSE and the SZSE independently." ② Table 3 캡션 "The annualized returns of the loser, winner, and contrarian portfolios on the SHSE formed based on decile grouping with varying J and K for the whole sample period 1997-2012" / Table 4 = 동일 격자의 SZSE 판 — decile 격자가 거래소별로 두 표. ③ Table 2·Table 5 = "Panel A: SHSE"/"Panel B: SZSE" 분리 패널 · Table 7(SHSE 부표본)/Table 8(SZSE 부표본). ④ Table 6 = SHSE−SZSE 차분표(두 시장을 합치지 않았음을 역으로 입증). ⑤ Table 1 = 2012년말 A주 종목수 SHSE 944 / SZSE 1,528 별도 보고. ⑥ 방법론 — "all the stocks are sorted according to their returns in the past J months from t=-J to t=0" 의 'all the stocks' 는 ①에 의해 해당 거래소 내 종목으로 한정된다. 통합 횡단면 정렬은 원문 어느 표·절에도 없다.
+
+앞 판은 C:\Users\99922\OneDrive\Quant_Module_Moltbot/04_Research/strategies/RP_AUTO_CLEAN_1505_00328/engine.rejected*.R 로 남아 있다. 무엇이 틀렸는지 보고, 지적된 지점을
+논문 원문으로 되돌려라. 지적이 부당하다고 판단하면 FIDELITY.json 의 changed 에
+**왜 그것이 논문과 일치하는지** 원문 근거로 적어라 — 침묵으로 넘기지 마라.
+
+## 공리 (전제 — 지시가 아니다)
+아래는 이 저장소가 실측으로 세운 전제다. 네 판단은 이 위에서 이뤄진다.
+어긋나는 결론을 낼 수는 있지만, 그때는 **무엇이 이 전제를 뒤집는 증거인지** 적어라.
+
+- **AX-000 · 한계란 없다** — 한계는 대개 법칙이 아니라 방법의 한계다. 모든 목표는 충분한 엄밀함·창의성·반복으로 달성 가능하다는 전제로 임한다. 소수(3~4회)의 실험 실패를 '구조적 한계'나 'dead-end'로 단정하는 것을 금지하며, 탐색은 가용한 모든 수단(개념 발산·다른 데이터원·다른 구조·ML·수리·물리)을 소진하거나 도훈이 중단을 지시할 때까지 계속한다. 실증·PIT·수리로 얻은 결과는 정직히 보고하되(성공 위장·추측 금지), 그 자체가 탐색 중단의 근거가 되지 않는다.
+- **AX-001 · 방어형 처분은 전기간 등급 단독 금지 — defensive_score 계약** — 방어형 전략·팩터의 처분(기각·폐기)을 전기간 등급 단독으로 내리지 않는다. 방어형 판정 계약 = defensive_score(자격 기준은 무신호 대조 통과 후 확정).
+- **AX-002 · 규칙 안에서 찾아낸 성과가 진짜 성과** — 프로세스 우회 = 판단의 미래참조. 하네스 내 성과만 유효.
+- **AX-008 · 결정 수치는 계약 산출만 인용 · 독립 검증 = Judge** — 결정에 영향을 주는 수치(등급·PORT_t·Calmar 등)는 R 계약 산출만 인용한다 — 손계산·재구성·추정 금지. 독립 검증 = Judge(PIT 전담, essence Grade A 확정 후).

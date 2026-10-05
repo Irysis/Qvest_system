@@ -1,0 +1,22 @@
+{
+  "axis": "cost",
+  "verdict": "adapted",
+
+  "undeclared_changes": [],
+
+  "signal_mismatch": [],
+
+  "counterexample": "비용 축의 차이는 상수 오프셋이 아니라 회전율 의존 양방향이다. (1) 전량 교체 월: 논문은 Algorithm 1 line 8 에서 실현수익에서 0.3% 를 차감하지만, 구현은 replication_harness.R:271-290 의 Sigma|dw_target| x commission 로 과금하므로 25종 전량 교체(Sigma|dw|=2)에서 0.003 x 2 = 왕복 60bps = 논문 30bps 의 2배를 문다 — 전략에 불리한 방향이고 FIDELITY changed H1 에 '0.3% per side (0.6% round-trip on a full turnover)' 로 문자 그대로 선언돼 있다(one-way 환산 0.0015 를 명시하고 적용하지 않은 것까지 선언). (2) 반대 방향: engine.R:410(세 모델 중 하나라도 적합 실패) 또는 engine.R:429(sum(max(mu_IC,0))<=0) 로 점수를 내지 않는 월에는 리밸 행이 없어 Sigma|dw_target|=0, 즉 그 달 비용이 0 이다. 논문 Algorithm 1 은 루프의 매 월 t 에 0.3% 를 차감한다. 같은 이유로 Sigma|dw|<1.0 인 월은 논문의 0.3% 보다 적게 문다. 단 논문은 0.3% 의 과금 베이스(체결 명목 비례인지 수익률 정액 차감인지)를 어디에서도 말하지 않으므로(아래 evidence — 비용 언급은 3곳 전부), 이 양방향 편차를 '논문과 다른 미선언 변경'으로 입증할 수 없다. 선언된 기전(H1 의 과금식 · F4/F5 의 미발행 월 이월)의 귀결이다.",
+
+  "evidence": "https://arxiv.org/html/2508.18592v1 — 논문의 비용 언급은 전 논문에서 3곳뿐이다: §3.1 Step 4 'Realized returns are adjusted to account for transaction costs, with the total cost rate set at 0.3%.' / Algorithm 1 Input 'Transaction cost rate: 0.3%;' / Algorithm 1 line 8 'Adjust realized returns by applying transaction costs (0.3%);'. 왕복-편도 구분 없음 · 매수/매도 레그 분할 없음 · 시장충격(market impact)·슬리피지·인지세 항목 없음 · 포트폴리오 turnover 수치 보고 없음(Table 1 의 turnover 는 2차 지표 이름이지 포트폴리오 회전율 지표가 아니다) · 성과표는 전부 0.3% 차감 후(net). 로컬 PDF(_paper_dl/2508.18592.pdf)는 pdftoppm 부재로 열리지 않아 HTML 전문 경로로 읽었다.",
+
+  "confidence": "high",
+
+  "checked": "논문 비용률·과금 베이스·왕복 여부 문언 / 시장충격·슬리피지 항목 유무 / engine.R 내 비용항 유무(없음 — 헤더 23-27 대로 포트폴리오·비용 계층은 러너) / FIDELITY commission_paper=0.003 과 스키마 의미(prompt.txt:30 '논문 명시 왕복비용') 정합 / 러너 이중 시뮬 배선(run_paper_replication.R:405·581-592·714, .rp_paper_summary:153-154 가 net strategy_xts 사용) / 하네스 과금식(replication_harness.R:42-44·271-290·340-341) / 등급 15bps 판 분기(:586-589)",
+
+  "_항목 서술 규약": "★모든 항목은 대괄호 **한 줄 요약**으로 시작한다 - 12~30자 · 그 항목만 읽고도 무엇이 어긋났는지 아는 문장 · 원문 인용이나 파일:행을 요약에 넣지 마라(뒤 본문에 적는다). 이 요약이 통지에 그대로 실리고 본문은 안 실린다 - 요약이 없으면 사람은 잘린 원문 조각을 받는다. 예: '[숏 레그 그로스 익스포저 24% 미달]' · '[유니버스 탈락분 비중 재분배 없음]' · '[은닉층 순환 구조 미구현]'. ★용어는 그 분야의 정통 표기를 쓴다 - 임의 한글 조어를 만들지 말고, 원문 용어가 영문이면 통용 표기를 그대로(gross exposure · long/short leg · winsorize · lookback), 우리 지표는 정본 표기를 그대로(PORT_t · Calmar · MDD · OOS retention). 뜻이 통해도 조어면 읽는 사람이 두 번 해석한다.",
+
+  "_배열 규약": "undeclared_changes·signal_mismatch 는 **발견만** 담는다. 없으면 빈 배열 [] 로 두고 '불일치 없음' 같은 비발견을 항목으로 넣지 마라 - 근거 게이트가 배열 길이로 선다.",
+
+  "note": "청정 모드 — 측정 산출물은 열지 않았고 비용 축은 코드 경로 추적만으로 대조했다(.agent_run.out 등 산출물 미열람). 논문 대비 유리하게 기울어진 비용 설정은 찾지 못했다 — 주 설정은 논문 왕복 0.3% 대비 전량 교체 월 2배 과금(불리)이고 그 사실이 H1 에 선언돼 있다. 축 밖 1줄: 논문 기준판의 체결 규약은 portfolio_spec 에 exec_price 키가 없어 constraint_defaults.json::execution.exec_price 폴백(run_paper_replication.R:439)이고 그 설정 파일은 청정 열람 범위 밖이라 집행가 기본값 자체를 못 박지 못했다 — close_d_legacy 면 보유창이 '[exec, next_exec)'(replication_harness.R:343)로 시그널일 수익이 신규 보유에 붙는다(timing 축 소관)."
+}

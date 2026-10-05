@@ -3,34 +3,34 @@
   "version": 2,
   "status": "draft_pre_registration",
   "status_note": "초안 — F1·F1p 는 스펙만(측정 0). 사전등록(rf_prereg) 뒤 측정. 인용 수치는 원장 그대로(close_t1) · 레버 판정 인용 금지(등급 대체 아님).",
-  "generated_at": "2026-09-25T20:20:30+0900",
+  "generated_at": "2026-10-04T10:02:11+0900",
   "generator": {
     "file": "02_Infrastructure/reinforcement/rf_floor_v2.R",
     "fn": "rfv_build",
-    "root": "C:/tmp/p2flooradv/sbx",
-    "code_root": "C:/tmp/p2flooradv/sbx",
-    "config": "C:/tmp/p2flooradv/sbx/06_Registry/prereg/reference_floors_v2.config.json",
-    "config_md5": "3ebcd8f72c4521c3520e3109c9ca7cbf",
+    "root": "C:/Users/99922/OneDrive/Quant_Module_Moltbot",
+    "code_root": "C:/Users/99922/OneDrive/Quant_Module_Moltbot",
+    "config": "C:/Users/99922/OneDrive/Quant_Module_Moltbot/06_Registry/prereg/reference_floors_v2.config.json",
+    "config_md5": "0c30f15af56a18ad5624e036a7521760",
     "path_note": "경로 문자열에는 생성 루트가 박힌다(rf_pick_factor_sets basis·asof_source 등) — 비교(rfv_write·rfv_verify)는 생성 루트·정본 루트를 <ROOT> 로 정규화해서 한다"
   },
   "pins": {
     "ledger_l1": {
       "path": "06_Registry/reinforce_ledger_l1.json",
-      "md5": "c211928c546de4f570b6635ef708ea59",
+      "md5": "1bb94eec51bcdf184d1bdbc83e12d7d8",
       "current_axis": "exec_v2_close_t1",
-      "last_updated": "2026-09-25T15:16:31+0900"
+      "last_updated": "2026-10-04T08:09:43+0900"
     },
     "grid": {
       "path": "06_Registry/reinforce_program.json",
-      "md5": "1b79c7eb746c1f5ad6b816b1b6bbeda5"
+      "md5": "d0b4eaca04534821e790b014ec3d4520"
     },
     "factor_evidence": {
       "path": "06_Registry/factor_evidence.json",
-      "md5": "f32d47727fb15e8d66c4526b1a47f24a"
+      "md5": "13e157b75ac310655434dd57741bf96d"
     },
     "factor_panel_axis": {
       "path": "06_Registry/factor_panel_axis.json",
-      "md5": "08da98221bb498c358f75fdecb6cdf0e"
+      "md5": "0525cce3c8d6566f845a34ff6815aa83"
     },
     "pit_quarantine": {
       "path": "06_Registry/pit_quarantine.json",
@@ -38,7 +38,7 @@
     },
     "factor_ic_monthly": {
       "path": ".cache/factor_db/factor_ic_monthly.parquet",
-      "md5": "be81706836515fd851792837002539ca"
+      "md5": "16dbd370338c8e7aac37186cb5bf714a"
     },
     "factor_registry": {
       "path": ".cache/factor_db/factor_registry.json",
@@ -50,11 +50,11 @@
     },
     "rf_runner_gates": {
       "path": "02_Infrastructure/reinforcement/rf_runner_gates.R",
-      "md5": "eacfe6d235bc84d335176f01bbc0ef3b"
+      "md5": "f20ee39782147c8da10ef92f34b3c125"
     },
     "rf_floor_v2": {
       "path": "02_Infrastructure/reinforcement/rf_floor_v2.R",
-      "md5": "6d7d4b63805f3b37e6d1fb3dc0c08070"
+      "md5": "79a6a2830a98ecc715ca546e2f3e5dea"
     },
     "f1_base_engine": {
       "path": "C:/Users/99922/OneDrive/Quant_Module_Moltbot/04_Research/strategies/RP_AUTO_COMBO_combo_1403_8125_2002_069/engine.R",
@@ -67,7 +67,52 @@
   },
   "floors": {
     "F1": {
-      "status": "defined_unmeasured",
+      "id": "F1",
+      "status": "confirmed_mechanism_only",
+      "determinism_ok": true,
+      "selection_basis": "as_of",
+      "selection_basis_detail": "asof_ic",
+      "measurement_regime": {
+        "exec_price": "close_t1",
+        "key": "",
+        "harness_md5": "3e316e9cef23c4b10ea7b088493e2ad4",
+        "cost_model_version": "replication_weight_delta_v1/first_hold_day_multiplicative",
+        "basis": "realized(determinism_record · authoritative_remeasure.json)",
+        "current_axis": "exec_v2_close_t1"
+      },
+      "a_eligible": false,
+      "permitted_use": "mechanism_only",
+      "determinism": {
+        "spec_md5": "52584f88ed8d5c4c077ef0e6a9d99f89",
+        "records": [
+          {
+            "file": "06_Registry/prereg/floor_determinism/F1__52584f88ed8d__20261004_093211.json",
+            "determinism_ok": null,
+            "verdict": "inconclusive_data_vintage_differs",
+            "measurement_regime": {
+              "exec_price": "close_t1",
+              "key": "",
+              "harness_md5": "3e316e9cef23c4b10ea7b088493e2ad4",
+              "cost_model_version": "replication_weight_delta_v1/first_hold_day_multiplicative"
+            },
+            "checked_at": "2026-10-04T09:32:11+0900"
+          },
+          {
+            "file": "06_Registry/prereg/floor_determinism/F1__52584f88ed8d__20261004_100147.json",
+            "determinism_ok": true,
+            "verdict": "deterministic",
+            "measurement_regime": {
+              "exec_price": "close_t1",
+              "key": "",
+              "harness_md5": "3e316e9cef23c4b10ea7b088493e2ad4",
+              "cost_model_version": "replication_weight_delta_v1/first_hold_day_multiplicative"
+            },
+            "checked_at": "2026-10-04T10:01:47+0900"
+          }
+        ],
+        "stale": [],
+        "rule": "determinism_ok = 이 스펙 지문의 결정론 기록 종합(FALSE 우선 · TRUE · 없으면 NA) — rfv_determinism_record 가 쓴다"
+      },
       "kind": "asof_reselect_new_cell",
       "role": "주 바닥 — 최고 계보(22632)의 기저 엔진·구조를 유지하고 팩터 층만 as-of 규칙으로 다시 고른 새 칸",
       "selection_path": {
@@ -102,7 +147,7 @@
               "id": "C15_Forecast_Error_Trend"
             }
           ],
-          "basis": "IC 시계열 상관 최소화 사슬 · 깊이 4 · 계열 4종(중복 0) · max|rho| 0.063 · 시드 D42_EWMA_Vol(회전 오프셋 0) · 후보 338종 · 선정 통계 asof_ic(as-of 2005-01-01 · fixed_axes.start_date(C:/tmp/p2flooradv/sbx/06_Registry/reinforce_program.json) · IC 가용 ~2004-12-30 · 순위 표본 6개월 미만 5종 제외)",
+          "basis": "IC 시계열 상관 최소화 사슬 · 깊이 4 · 계열 4종(중복 0) · max|rho| 0.063 · 시드 D42_EWMA_Vol(회전 오프셋 0) · 후보 338종 · 선정 통계 asof_ic(as-of 2005-01-01 · fixed_axes.start_date(C:/Users/99922/OneDrive/Quant_Module_Moltbot/06_Registry/reinforce_program.json) · IC 가용 ~2004-12-30 · 순위 표본 6개월 미만 5종 제외)",
           "selection_basis": "asof_ic",
           "selection_asof": "2005-01-01",
           "root_paper": {
@@ -121,7 +166,7 @@
           ],
           "unmapped_families": ["growth", "accrual"],
           "root_papers_note": "★논문 매핑 없는 계열 growth+accrual — 근거 의무의 공백(.RFF_FAMILY_PAPER 보강 대상)",
-          "note": "등록부 선정 — 격자가 팩터를 갖지 않고 factor_evidence+factor_ic_monthly 를 소비한다. IC 이력 부재로 제외 26종 · 횡단면 아님으로 제외 24종. ★선정은 IC 시계열 상관, 결합은 횡단면 rank-Z — 다른 직교성이다."
+          "note": "등록부 선정 — 격자가 팩터를 갖지 않고 factor_evidence+factor_ic_monthly 를 소비한다. IC 이력 부재로 제외 26종 · 횡단면 아님으로 제외 26종. ★선정은 IC 시계열 상관, 결합은 횡단면 rank-Z — 다른 직교성이다."
         },
         "picked_ids": ["D42_EWMA_Vol", "IN05_Net_Debt_Issuance", "AC13_Abnormal_Accruals", "C15_Forecast_Error_Trend"],
         "seed_id": "D42_EWMA_Vol",
@@ -130,7 +175,7 @@
         "prefix_chain": ["D42_EWMA_Vol", "IN05_Net_Debt_Issuance", "AC13_Abnormal_Accruals", "C15_Forecast_Error_Trend"],
         "pool": {
           "asof": "2005-01-01",
-          "asof_source": "fixed_axes.start_date(C:/tmp/p2flooradv/sbx/06_Registry/reinforce_program.json)",
+          "asof_source": "fixed_axes.start_date(C:/Users/99922/OneDrive/Quant_Module_Moltbot/06_Registry/reinforce_program.json)",
           "selection_basis": "asof_ic",
           "ic_max_usable": "2004-12-30",
           "n_pool": 343,
@@ -270,7 +315,7 @@
         "unmapped_families": ["growth", "accrual"],
         "selection_basis": "asof_ic",
         "selection_asof": "2005-01-01",
-        "basis": "IC 시계열 상관 최소화 사슬 · 깊이 4 · 계열 4종(중복 0) · max|rho| 0.063 · 시드 D42_EWMA_Vol(회전 오프셋 0) · 후보 338종 · 선정 통계 asof_ic(as-of 2005-01-01 · fixed_axes.start_date(C:/tmp/p2flooradv/sbx/06_Registry/reinforce_program.json) · IC 가용 ~2004-12-30 · 순위 표본 6개월 미만 5종 제외)",
+        "basis": "IC 시계열 상관 최소화 사슬 · 깊이 4 · 계열 4종(중복 0) · max|rho| 0.063 · 시드 D42_EWMA_Vol(회전 오프셋 0) · 후보 338종 · 선정 통계 asof_ic(as-of 2005-01-01 · fixed_axes.start_date(C:/Users/99922/OneDrive/Quant_Module_Moltbot/06_Registry/reinforce_program.json) · IC 가용 ~2004-12-30 · 순위 표본 6개월 미만 5종 제외)",
         "idea": "[floor v2 F1] 4팩터 직교(defense+consensus+growth+accrual) — B1/multifactor(as-of 규칙 선정기) · weighting=ew · universe=k200_kq150 · overlay=none · 기저 엔진 = 계보 칸 스펙 승계",
         "gate_note": "P0-14 관문(rf_lineage_flags.R) 이 이 칸의 팩터를 as-of 증명으로 보려면 원장 attempt 의 셀 코드가 B1_ 으로 시작하고 라벨이 규칙 선정기 형식('N팩터 직교(')이며 spec$selection_basis == 'asof_ic' 여야 한다 — 이 스펙을 그대로 쓸 것"
       },
@@ -331,10 +376,35 @@
         "n_stat_lines": 8,
         "exposed": true
       },
-      "prereg_blockers": "F1:q4_base_engine_exposure(pending_decision · 04_Research/strategies/RP_AUTO_COMBO_combo_1403_8125_2002_069/prompt.txt)"
+      "prereg_blockers": "F1:q4_base_engine_exposure(possible · 04_Research/strategies/RP_AUTO_COMBO_combo_1403_8125_2002_069/prompt.txt)",
+      "use_restriction": {
+        "kind": "mechanism_only",
+        "decision_id": "FLOOR-BASE-ENGINE-Q4",
+        "decision": "Q④(C1 possible)로 분류 — F1 계보에서 나온 A 는 보류. PR-L2·PR-L1 은 F1 위에서 '기전 반증 시도'(라벨 mechanism_only · A 자격 없음 명시)로 등록·실행. A 경로용 청정 기저(성과를 보지 않고 고른 충실구현 논문 엔진 + as-of 팩터 층 · 교차 entry 노출 0)를 별도 floor 로 신설하고, 기전이 확인된 레버만 그 위에 새 사전등록 가족으로 이식.",
+        "a_eligible": false,
+        "lifts_blocker": "F1:q4_base_engine_exposure(possible · 04_Research/strategies/RP_AUTO_COMBO_combo_1403_8125_2002_069/prompt.txt)",
+        "note": "A 경로 blocker 는 남는다(ready 불변) — 이 제한 아래 바닥은 기전 반증 시도에만 쓴다(결정문)"
+      }
     },
     "F1p": {
+      "id": "F1p",
       "status": "defined_unmeasured",
+      "determinism_ok": null,
+      "selection_basis": "as_of",
+      "selection_basis_detail": "asof_ic",
+      "measurement_regime": {
+        "exec_price": "close_t1",
+        "basis": "declared_required(측정 전 — exclusion.exec_price_required)",
+        "current_axis": "exec_v2_close_t1"
+      },
+      "a_eligible": false,
+      "permitted_use": "none",
+      "determinism": {
+        "spec_md5": "52584f88ed8d5c4c077ef0e6a9d99f89",
+        "records": [],
+        "stale": [],
+        "rule": "F1p 의 결정론 = E3(|PT_F1p − PT_F1| < e3_tolerance · 플랜 P1-06) — 이 판은 기록 판독 대상이 아니다(determinism.floors 밖) · 측정 전 NA"
+      },
       "kind": "carry_replay_of_F1",
       "role": "F1 의 carry 경로 재현 쌍(플랜 P1-06 B1_0 · E3) — 결정론 대조. 기측정 없음.",
       "definition": {
@@ -406,6 +476,23 @@
     },
     "F2": {
       "status": "excluded",
+      "id": "F2",
+      "determinism_ok": null,
+      "selection_basis": "full_sample",
+      "selection_basis_detail": "",
+      "measurement_regime": {
+        "exec_price": "close_t1",
+        "key": "close_t1_5562284e",
+        "harness_md5": "3e316e9cef23c4b10ea7b088493e2ad4",
+        "cost_model_version": "replication_weight_delta_v1/first_hold_day_multiplicative",
+        "basis": "cited(원장 attempt · 인용 전용 — 바닥 재실행판 아님)",
+        "current_axis": "exec_v2_close_t1"
+      },
+      "a_eligible": false,
+      "permitted_use": "none",
+      "determinism": {
+        "rule": "인용 칸(1회 측정 · 결정론 미평가) — 바닥으로 쓰려면 같은 빈티지 재실행판 2회(open_items_after_prereg)"
+      },
       "role": "위험 축 바닥 후보(플랜 원안: P0-11 소급 G2 pass 시에만)",
       "cite": {
         "base_id": "RP_20260913_090549_14760_adapted_rulefast_promo3",
@@ -481,6 +568,27 @@
             "source": "p0_08 · B5_19 · 승계 집합 CR08_Volume_Price_Divergence+M01_Mom_12_1+M08_Residual_Mom+V02_EP+V10_FCF_Yield ⊆ factors",
             "policy": "표식만 — 재측정 금지(규칙이 바뀌면 새 칸 · select=ic_bad_rank_asof / B1 as-of 선정) · 플랜 P0-08 · 2026-09-24",
             "marked_at": "2026-09-25T15:16:28+0900"
+          },
+          {
+            "flag": "design_automem_cross_entry_metrics",
+            "verdict": "possible",
+            "source": "AUTOMEM-EXPOSED-CELLS-DISPOSITION · mechanism · d71092fe · design:mechanism",
+            "policy": "표식만 — A 보류 · 재측정 금지 · 결정 AUTOMEM-EXPOSED-CELLS-DISPOSITION(도훈 2026-09-26 12:27 · (b) 수치 적중 칸 + 기저 포함) · 선례 ORGANIC-DE Q④ · design_materials_cross_entry_labels(09-25)",
+            "marked_at": "2026-10-04T08:09:28+0900"
+          },
+          {
+            "flag": "arm_automem_cross_entry_metrics",
+            "verdict": "possible",
+            "source": "AUTOMEM-EXPOSED-CELLS-DISPOSITION · overlay_propose · ef0bb670 · arm:own_layer",
+            "policy": "표식만 — A 보류 · 재측정 금지 · 결정 AUTOMEM-EXPOSED-CELLS-DISPOSITION(도훈 2026-09-26 12:27 · (b) 수치 적중 칸 + 기저 포함) · 선례 ORGANIC-DE Q④ · design_materials_cross_entry_labels(09-25)",
+            "marked_at": "2026-10-04T08:09:28+0900"
+          },
+          {
+            "flag": "design_automem_cross_entry_metrics_inherited",
+            "verdict": "possible",
+            "source": "AUTOMEM-EXPOSED-CELLS-DISPOSITION · b1_design · 3b529251 · inherit:carry_descendant",
+            "policy": "표식만 — A 보류 · 재측정 금지 · 결정 AUTOMEM-EXPOSED-CELLS-DISPOSITION(도훈 2026-09-26 12:27 · (b) 수치 적중 칸 + 기저 포함) · 선례 ORGANIC-DE Q④ · design_materials_cross_entry_labels(09-25)",
+            "marked_at": "2026-10-04T08:09:28+0900"
           }
         ],
         "adversary": {
@@ -535,7 +643,7 @@
       "assess": {
         "eligible": false,
         "reasons": ["derived:q4_crossentry_exposure(possible · RP_20260913_090549_14760_adapted_rulefast)", "derived:q4_crossentry_exposure(possible · RP_20260913_090549_14760_adapted_rulefast_promo1)", "derived:q4_crossentry_exposure(possible · RP_20260913_090549_14760_adapted_rulefast_promo2)", "pit_flag:selection_basis_full_sample_ic_inherited", "adversary:unverified"],
-        "caveats": "vintage_flag:fdb_202608_v1"
+        "caveats": ["vintage_flag:fdb_202608_v1", "vintage_flag:design_automem_cross_entry_metrics", "vintage_flag:arm_automem_cross_entry_metrics", "vintage_flag:design_automem_cross_entry_metrics_inherited"]
       },
       "provenance": {
         "steps": [
@@ -692,6 +800,23 @@
     },
     "F3_DNN": {
       "status": "excluded",
+      "id": "F3_DNN",
+      "determinism_ok": null,
+      "selection_basis": "unknown",
+      "selection_basis_detail": "",
+      "measurement_regime": {
+        "exec_price": "close_t1",
+        "key": "close_t1_5562284e",
+        "harness_md5": "3e316e9cef23c4b10ea7b088493e2ad4",
+        "cost_model_version": "replication_weight_delta_v1/first_hold_day_multiplicative",
+        "basis": "cited(원장 attempt · 인용 전용 — 바닥 재실행판 아님)",
+        "current_axis": "exec_v2_close_t1"
+      },
+      "a_eligible": false,
+      "permitted_use": "none",
+      "determinism": {
+        "rule": "인용 칸(1회 측정 · 결정론 미평가) — 바닥으로 쓰려면 같은 빈티지 재실행판 2회(open_items_after_prereg)"
+      },
       "role": "보조 바닥(플랜 원안 'DNN B1_8' = 084807 DNN 2002.06975 기저의 B1_8) — ★독립 계보 아님: 기저 엔진 RP_AUTO_2002_06975 는 F2(14760) 기저와 같고, F1 결합 엔진의 풀 정의([A] DNN 5분위)도 같은 논문 산술이다(적대검증 2026-09-25)",
       "cite": {
         "base_id": "RP_20260913_084807_skipped_base",
@@ -760,6 +885,13 @@
             "source": "06_Registry/vintage_cascade_20260923.json (v2)",
             "policy": "표식만 — 재측정 금지(P0-05 rebase 흡수) · 도훈 2026-09-23",
             "marked_at": "2026-09-24T01:16:15+0900"
+          },
+          {
+            "flag": "design_automem_cross_entry_metrics",
+            "verdict": "possible",
+            "source": "AUTOMEM-EXPOSED-CELLS-DISPOSITION · b1_design · 6deb151d · design:b1_design",
+            "policy": "표식만 — A 보류 · 재측정 금지 · 결정 AUTOMEM-EXPOSED-CELLS-DISPOSITION(도훈 2026-09-26 12:27 · (b) 수치 적중 칸 + 기저 포함) · 선례 ORGANIC-DE Q④ · design_materials_cross_entry_labels(09-25)",
+            "marked_at": "2026-10-04T08:09:28+0900"
           }
         ],
         "adversary": {
@@ -803,7 +935,7 @@
       "assess": {
         "eligible": false,
         "reasons": "derived:q4_crossentry_exposure(possible · RP_20260913_084807_skipped_base)",
-        "caveats": "vintage_flag:fdb_202608_v1"
+        "caveats": ["vintage_flag:fdb_202608_v1", "vintage_flag:design_automem_cross_entry_metrics"]
       },
       "provenance": {
         "steps": [
@@ -939,6 +1071,20 @@
           "source": "p0_08 · B1_3 · 승계 집합 C03_EPS_Chg_3m ⊆ factors",
           "policy": "표식만 — 재측정 금지(규칙이 바뀌면 새 칸 · select=ic_bad_rank_asof / B1 as-of 선정) · 플랜 P0-08 · 2026-09-24",
           "marked_at": "2026-09-25T15:16:28+0900"
+        },
+        {
+          "flag": "design_automem_cross_entry_metrics",
+          "verdict": "possible",
+          "source": "AUTOMEM-EXPOSED-CELLS-DISPOSITION · b1_design · c74f52b2 · design:b1_design",
+          "policy": "표식만 — A 보류 · 재측정 금지 · 결정 AUTOMEM-EXPOSED-CELLS-DISPOSITION(도훈 2026-09-26 12:27 · (b) 수치 적중 칸 + 기저 포함) · 선례 ORGANIC-DE Q④ · design_materials_cross_entry_labels(09-25)",
+          "marked_at": "2026-10-04T08:09:28+0900"
+        },
+        {
+          "flag": "design_automem_cross_entry_metrics_inherited",
+          "verdict": "possible",
+          "source": "AUTOMEM-EXPOSED-CELLS-DISPOSITION · b1_design · d49dc9f8 · inherit:carry_descendant",
+          "policy": "표식만 — A 보류 · 재측정 금지 · 결정 AUTOMEM-EXPOSED-CELLS-DISPOSITION(도훈 2026-09-26 12:27 · (b) 수치 적중 칸 + 기저 포함) · 선례 ORGANIC-DE Q④ · design_materials_cross_entry_labels(09-25)",
+          "marked_at": "2026-10-04T08:09:28+0900"
         }
       ],
       "adversary": {
@@ -987,8 +1133,8 @@
     },
     "assess": {
       "eligible": false,
-      "reasons": ["derived:q4_crossentry_exposure(possible · RP_20260917_105807_22632_combo_rulefast)", "derived:q4_crossentry_exposure(possible · RP_20260917_105807_22632_combo_rulefast_promo1)", "derived:q4_crossentry_exposure(possible · RP_20260917_105807_22632_combo_rulefast_promo2)", "derived:q4_crossentry_exposure(possible · RP_20260917_105807_22632_combo_rulefast_promo3)", "derived:q4_base_engine_exposure(pending_decision · 04_Research/strategies/RP_AUTO_COMBO_combo_1403_8125_2002_069/prompt.txt)", "pit_flag:selection_basis_full_sample_ic_inherited"],
-      "caveats": "vintage_flag:fdb_202608_v1"
+      "reasons": ["derived:q4_crossentry_exposure(possible · RP_20260917_105807_22632_combo_rulefast)", "derived:q4_crossentry_exposure(possible · RP_20260917_105807_22632_combo_rulefast_promo1)", "derived:q4_crossentry_exposure(possible · RP_20260917_105807_22632_combo_rulefast_promo2)", "derived:q4_crossentry_exposure(possible · RP_20260917_105807_22632_combo_rulefast_promo3)", "derived:q4_base_engine_exposure(possible · 04_Research/strategies/RP_AUTO_COMBO_combo_1403_8125_2002_069/prompt.txt)", "pit_flag:selection_basis_full_sample_ic_inherited"],
+      "caveats": ["vintage_flag:fdb_202608_v1", "vintage_flag:design_automem_cross_entry_metrics", "vintage_flag:design_automem_cross_entry_metrics_inherited"]
     },
     "provenance": {
       "steps": [
@@ -1135,30 +1281,70 @@
   },
   "prereg_gate": {
     "ready": false,
-    "blockers": ["F1:q4_base_engine_exposure(pending_decision · 04_Research/strategies/RP_AUTO_COMBO_combo_1403_8125_2002_069/prompt.txt)", "decision_pending:FLOOR-F2-EXCLUDED-ARMS(absent)", "decision_pending:FLOOR-BASE-ENGINE-Q4(absent)", "decision_pending:FLOOR-F1-SEED-B7-OVERLAP(absent)"],
+    "blockers": "F1:q4_base_engine_exposure(possible · 04_Research/strategies/RP_AUTO_COMBO_combo_1403_8125_2002_069/prompt.txt)",
     "required_decisions": [
       {
         "id": "FLOOR-F2-EXCLUDED-ARMS",
         "what": "F2(14760 promo3 B5_19) 제외로 바닥이 빈 arm — PR-L2 의 F2 위 B7_37·B7_40, PR-L1 A3. Q 권고 = PR-L1-A4-DISPOSITION 선례(대체 없이 삭제 · N 미계상 · 다른 조합 대체 금지). F3 는 대체 불가(F3 도 제외).",
-        "register_status": "absent",
-        "decision": null
+        "register_status": "resolved",
+        "decision": "대체 없이 삭제: 사전등록 deleted_arms 에 사유(F2 = 적대검증 미검증 · 승계 표식 · Q④ 노출)를 기록 · 측정한 적 없으므로 N 미계상(PR-L1-A4-DISPOSITION 선례)."
       },
       {
         "id": "FLOOR-BASE-ENGINE-Q4",
         "what": "F1 기저 엔진(22632 결합 엔진 RP_AUTO_COMBO_combo_1403_8125_2002_069) 설계 프롬프트가 교차 entry 전기간 수치(재료 6편 '단독 다중검정 t')에 노출됐다 — ORGANIC-DE Q①(다중검정 + 서류 감사)인가 Q④(a)(C1 possible · A 보류)인가. Q④ 면 F1(과 이 엔진 위 모든 칸)은 A 자격이 없어 레버 실험이 A 를 낼 수 없다.",
-        "register_status": "absent",
-        "decision": null
+        "register_status": "resolved",
+        "decision": "Q④(C1 possible)로 분류 — F1 계보에서 나온 A 는 보류. PR-L2·PR-L1 은 F1 위에서 '기전 반증 시도'(라벨 mechanism_only · A 자격 없음 명시)로 등록·실행. A 경로용 청정 기저(성과를 보지 않고 고른 충실구현 논문 엔진 + as-of 팩터 층 · 교차 entry 노출 0)를 별도 floor 로 신설하고, 기전이 확인된 레버만 그 위에 새 사전등록 가족으로 이식."
       },
       {
         "id": "FLOOR-F1-SEED-B7-OVERLAP",
         "what": "F1 시드 규칙(seed_offset 0 = as-of 1위 D42_EWMA_Vol) 확정 + PR-L2 B7 슬리브(as-of 방어 1위 계열 D42/D35/D36 …)와의 겹침 처리 — B7 교체 후보에서 F1 보유 팩터를 뺄지, 처치 대비 희석을 사전등록에 어떻게 적을지.",
-        "register_status": "absent",
-        "decision": null
+        "register_status": "resolved",
+        "decision": "F1 보유 팩터(D42_EWMA_Vol · IN05 · AC13 · C15)를 B7 슬리브 교체 후보에서 제외 — 사전등록 규칙으로 고정(처치 희석 방지). F1 시드는 as-of 규칙 오프셋 0 유지."
       }
     ],
     "register": "06_Registry/decision_register.json",
     "f1_base_engine_cleared_by": null,
-    "rule": "ready = F1 기저 엔진 노출 없음(또는 해제 결정 resolved ∧ 해제 문구 일치) ∧ 필수 결정 전부 resolved — 사전등록(rf_prereg)은 ready 가 아니면 착수하지 않는다. 결정이 바뀌면 문서 내용이 바뀌므로 새 판(rfv_write 불변성)"
+    "use_restriction": {
+      "kind": "mechanism_only",
+      "decision_id": "FLOOR-BASE-ENGINE-Q4",
+      "decision": "Q④(C1 possible)로 분류 — F1 계보에서 나온 A 는 보류. PR-L2·PR-L1 은 F1 위에서 '기전 반증 시도'(라벨 mechanism_only · A 자격 없음 명시)로 등록·실행. A 경로용 청정 기저(성과를 보지 않고 고른 충실구현 논문 엔진 + as-of 팩터 층 · 교차 entry 노출 0)를 별도 floor 로 신설하고, 기전이 확인된 레버만 그 위에 새 사전등록 가족으로 이식.",
+      "a_eligible": false,
+      "lifts_blocker": "F1:q4_base_engine_exposure(possible · 04_Research/strategies/RP_AUTO_COMBO_combo_1403_8125_2002_069/prompt.txt)",
+      "note": "A 경로 blocker 는 남는다(ready 불변) — 이 제한 아래 바닥은 기전 반증 시도에만 쓴다(결정문)"
+    },
+    "ready_mechanism_only": true,
+    "blockers_mechanism_only": [],
+    "rule": "ready = F1 기저 엔진 노출 없음(또는 해제 결정 resolved ∧ 해제 문구 일치) ∧ 필수 결정 전부 resolved — 사전등록(rf_prereg)은 ready 가 아니면 착수하지 않는다. 결정이 바뀌면 문서 내용이 바뀌므로 새 판(rfv_write 불변성). ready_mechanism_only = ready 이거나, 해제 결정이 제한 문구로 resolved(use_restriction · a_eligible=FALSE)이고 그 blocker 밖 blocker 0 — 기전 반증 시도 전용(A 자격 없음). 사전등록 소비자가 이 제한을 명시적으로 받기 전에는 쓸 수 없다"
+  },
+  "consumer_contract": {
+    "consumer": "02_Infrastructure/reinforcement/rf_prereg.R::.rfp_floor_check (registration.floor_required_fields · floor_status_ok · floor_selection_basis_ok · verdict.regime_key)",
+    "required_fields": [
+      "id",
+      "status",
+      "determinism_ok",
+      "selection_basis",
+      "measurement_regime"
+    ],
+    "selection_basis_category": {
+      "asof_ic": "as_of",
+      "full_sample_ic": "full_sample"
+    },
+    "selection_basis_ok": [
+      "as_of"
+    ],
+    "status_values": {
+      "defined_unmeasured": "스펙만 · 결정론 기록 없음(determinism_ok = null)",
+      "nondeterministic": "결정론 기록이 불일치(determinism_ok = false) — 엔진 수리 전 바닥 불가",
+      "selection_basis_rejected": "선정 기저 범주가 selection_basis_ok 밖",
+      "regime_unverified": "결정론은 확인됐으나 실현 규약이 요구 규약과 다르거나 선언값뿐",
+      "gate_blocked": "결정론·규약·기저는 통과 — 사전등록 관문 blocker 가 남음",
+      "confirmed_mechanism_only": "위 전부 통과 · 관문이 사용 제한(mechanism_only · a_eligible=false)으로만 열림 — 기전 반증 시도 전용. 사전등록 소비자가 명시적으로 받아들여야 한다(현 rf_prereg.R floor_status_ok = confirmed 뿐 → 거부)",
+      "confirmed": "위 전부 통과 · 관문 ready(A 경로 포함)",
+      "excluded": "인용 칸 제외(assess.reasons)",
+      "cited_eligible": "인용 칸 자격 — 인용 수치는 기준선이 아님(같은 빈티지 재실행판 필요)"
+    },
+    "determinism_record_dir": "06_Registry/prereg/floor_determinism",
+    "note": "바닥 층 필드는 rf_floor_v2.R 가 규칙으로 낸다(손편집 금지 · 개정 = rfv_write(supersede) 새 판). 상태 confirmed_mechanism_only 는 사전등록 소비자가 명시적으로 받아들여야 쓸 수 있다"
   },
   "measurement_policy": {
     "numbers": "원장 인용 전용(close_t1) — 손계산·재구성 0",
@@ -1195,8 +1381,17 @@
     "decisions": [
       "ORGANIC-PRIORITY (floor v2 재정의 = 22632 as-of 재선정 새 칸)",
       "ORGANIC-DE Q① (격자 승자·바닥·carry·승격 = 다중검정 + 서류 감사) · H1 (측정 전 전기간 통계 스크린 = C1)",
-      "PR-L1-A4-DISPOSITION (측정한 적 없는 칸은 N 미계상 · 대체 금지 선례)"
+      "PR-L1-A4-DISPOSITION (측정한 적 없는 칸은 N 미계상 · 대체 금지 선례)",
+      "FLOOR-BASE-ENGINE-Q4 (2026-09-25 21:38 · Q④ C1 possible — F1 계보 A 보류 · PR-L2·PR-L1 은 F1 위 '기전 반증 시도'(mechanism_only · A 자격 없음) · A 경로 = 청정 기저 별도 신설)",
+      "FLOOR-F2-EXCLUDED-ARMS · FLOOR-F1-SEED-B7-OVERLAP · PR-L1-A4-DISPOSITION (2026-09-25 — 사전등록 초안 쪽 처리 · 이 설정은 관문 결정 상태만 읽는다)"
     ],
     "pit": ".claude/rules/pit.md C1 D-E · C14 (선정 통계는 Usable_Date <= 결정 시점)"
+  },
+  "supersedes": {
+    "path": "06_Registry/prereg/floor_history/reference_floors_v2.20260926134538.b32d2bc2cb6d.json",
+    "md5": "b32d2bc2cb6da3324595e27eae41199a",
+    "generated_at": "2026-09-26T13:45:38+0900",
+    "n_diff": 22,
+    "diff_head": ["/pins/ledger_l1/md5", "/pins/ledger_l1/last_updated", "/pins/grid/md5", "/pins/factor_evidence/md5", "/pins/factor_panel_axis/md5", "/pins/factor_ic_monthly/md5", "/pins/rf_runner_gates/md5", "/floors/F1/status", "/floors/F1/determinism_ok", "/floors/F1/measurement_regime/basis"]
   }
 }

@@ -68,7 +68,15 @@ NEED <- c("02_Infrastructure/reinforcement/rf_runner_gates.R", "02_Infrastructur
           "02_Infrastructure/contracts/essence_score.R", "02_Infrastructure/worktask/constraint_defaults.json",
           "06_Registry/a_eligibility_gate.json",
           # ★P0-14(2026-09-25): 관문 정본이 계보 표식 술어(rf_lineage_flags.R)를 적재한다 — 없으면 .rp_gate_env 가 적재 실패(gate_error)
-          "02_Infrastructure/reinforcement/rf_lineage_flags.R")
+          "02_Infrastructure/reinforcement/rf_lineage_flags.R",
+          # ★B4-SIX-AXIS(2026-09-26): 관문 정본이 축 등록부(rf_spec_axes.R)를 적재한다 — 같은 이유(최소 루트에 없으면 적재 실패)
+          "02_Infrastructure/reinforcement/rf_spec_axes.R")
+# ★관문 정본이 source 하는 파일 = 관문 소스에서 재도출(10-03 최종 통합 러너 경로 · INTEG-TF) — HUMAN(rf_lane_rules.R)처럼 갈래가 관문 의존을
+#   늘리면 최소 루트 리터럴이 낡아 .rp_gate_env 가 '적재 실패'로 죽는다(합본 차등 회귀 실측). 관문이 부르는 그대로 따라간다(판정 불변).
+NEED <- unique(c(NEED, tryCatch({
+  .g <- readLines(file.path(ROOT, "02_Infrastructure/reinforcement/rf_runner_gates.R"), warn = FALSE, encoding = "UTF-8")
+  unlist(regmatches(.g, gregexpr('(?<=source\\(file\\.path\\(\\.RFG_ROOT\\(\\), ")02_Infrastructure/[A-Za-z0-9_/]+[.]R', .g, perl = TRUE)))
+}, error = function(e) character(0))))
 mk_root <- function(dst, drop = character(0)) {
   for (r in setdiff(NEED, drop)) {
     dir.create(dirname(file.path(dst, r)), recursive = TRUE, showWarnings = FALSE)

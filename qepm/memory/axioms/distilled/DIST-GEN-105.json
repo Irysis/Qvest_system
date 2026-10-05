@@ -3,9 +3,9 @@
   "dist_id": "DIST-GEN-105",
   "cluster_key": "f0fccaae4b76",
   "candidate_id": "CAND_reinforcement_f0fccaae4b76",
-  "status": "pending_5axis",
-  "statement_refined": null,
-  "retry_condition": null,
+  "status": "proposed",
+  "statement_refined": "본 후보(supporting 22, b3)는 DIST-GEN-217(supporting 33)의 이전 시점 슬라이스이며 supporting 22건이 그대로 포함된다. 두 카드가 지지하는 명제(B3 유니버스 축에서 후보군을 좁히는 처치는 단방향 손실)는 동일하고, 증가분 11건이 방향을 바꾸지 않는다. 독립 후보로 두면 supporting 수가 증거력으로 오독되고 R6_distinct 가 무너지므로 정본 처분은 DIST-GEN-217 로의 통합이다. 통합 카드에서도 축을 닫지는 않는다 — B3 는 유니버스 의존성의 유일한 진단원이고, 정본 권고는 폐지가 아니라 진단용 1칸 존치 + 나머지 예산의 신규 논문 회수다.",
+  "retry_condition": "22→33 증가분 11건에서만 부호가 뒤집히는 축이 확인되면 시점 의존 규칙으로 별도 상정한다. 그렇지 않으면 DIST-GEN-217 통합 흡수로 닫는다.",
   "refined_at": null,
   "refined_by": null,
   "promoted_to_axiom": null,
@@ -98,5 +98,42 @@
     "oos_effect_vs_is": -0.455,
     "note": "L-code oos_retention 실값 22건 median (IS65/OOS35 활성SR retention) — oos_months 실값 무 → None 유지 — promote.R essence_score 경유 재확정"
   },
-  "cluster_members_count": 22
+  "cluster_members_count": 22,
+  "adversarial_verdict": {
+    "a_exaggeration": "강등함. 독자 성과 주장 없음. 포함 관계를 맨 앞에 두어 22 를 독립 증거로 읽지 못하게 했다.",
+    "b_evidence": "확인. 두 후보의 family·tags(b3)·polarity·type 이 같고 supporting 선두가 L-RF-20260830_184746 부터 동일 순서로 겹친다(스윕 재료 §3 실측). 증가분 11건은 2026-09-07~19 유입분이다.",
+    "c_ax000": "'폐기' 단정 없음 — 흡수이며, 통합 카드에서도 축을 닫지 않고 진단 존치를 명시했다.",
+    "d_firewall": "위반 없음. 고정 유니버스를 실패 원인으로 적지 않았고 완화 제시도 없다. 판정 범위는 후보 중복 구조다.",
+    "e_frontier": "frontier 2건 + live_trigger(data) + expiry."
+  },
+  "expiry": "2026-12-31",
+  "frontier": [
+    "GEN-217 과의 supporting 차집합 11건만으로 축별 부호를 재집계 — 슬라이스 경계가 판정을 가르는지 직접 확인",
+    "B3 를 규칙 축이 아니라 진단원으로 재정의하는 카드로 전환(낙폭비 0.94 사례처럼 유니버스 의존성만 읽는 1칸)"
+  ],
+  "live_trigger": {
+    "type": "data",
+    "condition": "GEN-217 과의 supporting 차집합이 산출되고, 그 차집합만으로 축별 부호가 뒤집힐 때",
+    "monitored_source": ".cache/cleaner_pending.json::axiom_candidates · stage_artifacts/l_code/reinforcement/l_code_*_B3.json"
+  },
+  "revival_spec": [
+    {
+      "signal_id": "wall_clock_date",
+      "condition": "x >= as.Date('2026-12-31')",
+      "from_trigger": "expiry",
+      "status": "active"
+    },
+    {
+      "signal_id": "cache_present",
+      "condition": "x == TRUE",
+      "from_trigger": "data",
+      "status": "pending"
+    }
+  ],
+  "constraint_firewall": {
+    "mode": "backstop_passed",
+    "checked_at": "2026-09-26"
+  },
+  "drafted_at": "2026-09-26T11:03:30+0900",
+  "drafted_by": "auto_distill"
 }

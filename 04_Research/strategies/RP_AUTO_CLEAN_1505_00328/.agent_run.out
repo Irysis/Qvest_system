@@ -1,0 +1,5 @@
+엔진과 FIDELITY 를 썼습니다.
+
+**구현**: CON(J=1,K=1) · decile · EW · skip 없음 — 논문의 **거래소 독립 정렬**을 복원해 분위 경계·LOS·WIN 을 `by = .(SigDate, Seg)`(K200↔SHSE 대형 / KQ150↔SZSE 중소형, 보드 플래그) 안에서만 산출하고, 논문 산출물인 보드별 CON 2개를 러너가 받는 PORTFOLIO 1개로 **등가중 합성**(각 1/S gross)해 `Rg = (1/S)·Σ_seg (R_LOS,seg − R_WIN,seg)` = 논문 보고 CON 수익들의 단순 평균이 되게 했습니다.
+
+**기각 지적 처리**: 6건 전부 수용 — 단일 풀 정렬 제거(보드별 독립 횡단면), `paper_original_form` 을 거래소 분리 설계(Table 2 Panel A/B · Table 3 SHSE / Table 4 SZSE · Table 6 차분)로 정정, R1 의 "다리당 약 35종 = 논문 그대로" 서술이 틀렸음을 `changed ⑭`에 명시(분위 **규칙**만 보존되고 **크기**는 유니버스가 정한다). 합성 규칙은 논문에 없으므로 `fidelity = "adapted"` 로 적고 귀속을 착안으로 내렸습니다(changed 15항 — 유동성 2e8·격자 칸 선택·월간수익 일별 복리곱·IPO 첫 달 배제 구현·보드 동시 TRUE 우선순위·동순위·분위 나머지 정수산술·N≥10·집행 규약·마지막 달 배제 포함). `commission_paper = null` — 원문 3회 독립 독해에서 거래비용 서술 0건.

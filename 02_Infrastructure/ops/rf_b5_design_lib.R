@@ -41,6 +41,11 @@
 #   (잔존 = materials_rejected → 레인 materials_failed → 기존 기전/규칙 설계로 진행) · (3) arm 목록은 arm_id 순(성과 순 금지).
 #   자기 entry 측정표·바닥 해부는 가리지 않는다(이 entry 의 강화 루프 자체 — 선택 정직성 = Judge).
 #   가림 함수를 못 싣거나 적재 양성 대조가 실패하면 재료를 쓰지 않는다(fail-closed — 가리지 않은 재료가 나가는 길은 없다).
+# ★교차 entry 결과 라벨 가림 (도훈 결정 D-E-B5-LABELS 2026-09-25 · 같은 C1 D-E):
+#   수치를 가려도 라벨(G2 pass/fail · 어느 검사가 죽였나 · 기전 지도 포화/미포화 · '반증 pass k/N' 같은 개수)이 남으면 같은 선정이다.
+#   같은 가림 체계에 라벨 규칙을 더했다 — .b5_capx 앞뒤 · 조립부 교차 절 기본 가림(.label_x) · 발송 전 재검증(.b5_label_residue).
+#   어휘는 나열하지 않고 코드가 실제로 낸 문자열(원장 G2 기록·생산자 상수·rf_target_brief 리터럴·디렉터 상태)에서 재료마다 재도출한다(.b5_labeler).
+#   (2b)·(4b)·(5)·(6) 은 라벨 자리를 원천에서 표식으로 쓴다(유무·순서 패턴 누출 차단). 자기 절 (1)(2)(7)(8) 라벨은 유지(바이트 불변).
 #
 # ★발화 시점 (2026-09-17 감사): 러너는 B1 종료 뒤 **다음 배치를 여는 같은 호출 안에서** block_order 를 기록한다
 #   (reinforce_auto_parallel.R · used ≥ 5 ∧ 미결 0). tick 은 레인 → 러너 순서라, 기록된 순서만 보면 레인이 보는 시점엔
@@ -466,9 +471,140 @@ B5_RX_CANARY <- "B5_22 xs_vol_gap_corr_brake Calmar 0.763 · MDD 0.287~0.615 · 
   get("rx", envir = .B5_RX, inherits = FALSE)
 }
 #' 교차 텍스트 절단 — 가림 **앞뒤 2회**(앞: 온전한 수치를 가린다 · 뒤: 절단이 식별자 가운데를 잘라 생긴 소수 모양 조각을 가린다 · 멱등)
-.b5_capx <- function(x, n) {
+#'   (D-E-B5-LABELS) 결과 라벨도 같은 자리에서 앞뒤로 가린다 — 라벨 먼저(사유 문자열 "failed: T1,T3" 를 통째로 잡는다) · 수치 다음.
+#'   lb = .b5_labeler() 산출(재료 1건마다 새로 세운다 · 캐시 없음) — 없으면 멈춘다(라벨을 가리지 않은 교차 텍스트는 내지 않는다).
+.b5_capx <- function(x, n, lb = NULL) {
   rx <- .b5_rx(); if (is.null(rx)) stop("[b5_design] 가림 함수 부재 — 교차 텍스트를 가리지 않고 내지 않는다")
-  rx$redact(.cap(rx$redact(.chr(x)), n))
+  if (!is.list(lb) || !is.function(lb$redact)) stop("[b5_design] 라벨 가림기 부재 — 교차 텍스트를 가리지 않고 내지 않는다")
+  sx <- function(s) rx$redact(lb$redact(s))
+  sx(.cap(sx(.chr(x)), n))
+}
+
+# ── 교차 entry 결과 라벨 가림 (도훈 결정 D-E-B5-LABELS 2026-09-25 · pit.md C1 D-E) ─────────────────────────────
+#   왜: 수치를 가려도(D-E-B5-MATERIALS) 결과 **라벨**이 남으면 같은 선정이다 — (4b) "fail(failed: T1,T3)" · "실패 사인 T3 4건" ·
+#   (6) 기전 지도 "포화/미포화"(+ 그 순서) · (2b) "오버레이 반증 pass 0/114 (dead)" 는 다른 entry 의 전기간 반증·측정 결과다.
+#   무인 설계자가 "한 번도 안 죽은 arm · 미포화 칸" 을 고르면 평가 창 결과를 소비하는 자동 선정이다(C1 D-E).
+#   방식 = B5M 가림 체계에 라벨 규칙을 더한다: ① 절단 앞뒤(.b5_capx) ② 조립부 교차 절 기본 가림(.label_x) ③ 발송 전 재도출 게이트.
+#   ★어휘는 나열하지 않는다 — **코드가 실제로 낸 문자열**에서 재료 1건마다 다시 세운다(.b5_label_sources · 캐시 없음):
+#     G2 = 원장 attempt$adversary 기록(verdict·analytic_verdict·reason 과 그 머리·tests.*.status·history verdict — rf_overlay_adversary 가 쓴 값)
+#     생산자 상수 = rf_mechanism_map.R::RFM_VCLASSES(판정 등급) · rf_overlay_adversary.R::ADV_DEFERRED_VERDICT(parse 만 — 평가 없음)
+#     포화 = rf_mechanism_map.R::rf_target_brief 본문 ifelse(<saturated>, a, b) 의 리터럴(AST) · 디렉터 = 소비하는 컨텍스트의 overlay$status
+#   검사 이름(tests 의 키)은 단독으로는 가리지 않는다(정의 어휘 — (7) 계약이 쓴다). 라벨 뒤 목록("failed: T1,T3" · "fail T3")·개수("pass 3/10" · "fail 7")는 함께 가린다.
+#   경계: ASCII = 영숫자·_·- 가 이어지면 안 가린다(bypass · dead-end · b5gen_pass_1 보존) · 한글 = 앞뒤가 한글이면 안 가린다(포화한다 보존 · 조사 1자는 허용).
+#   절 원천 가림(구조·순서·유무 패턴으로도 새는 곳은 라벨 자리에 표식을 직접 쓴다): (2b) 구속·형태·계보 수·방어형 수·반증 집계 ·
+#     (4b) 검사별 상태·판정·사유·집계(검사 칸의 '-' 유무가 후보 여부를 드러낸다) · (5) 극성 · (6) 판정·미검증 수·포화 + 행 순서(구판 = 포화 순).
+#   자기·정적 절((1)·(2)·(7)·(8))은 건드리지 않는다(바이트 동일 — 자기 entry 라벨은 유지).
+#   원천 결손(상수·포화 리터럴을 못 찾음) 또는 적재 양성 대조 실패 = NULL → 재료를 쓰지 않는다(materials_rejected · labeler_unavailable).
+B5_LABEL_MASK <- "<label>"
+B5_LABEL_PARTICLES <- "은는이가을를로와과의도만에"   # 은는이가을를로와과의도만에 — 한글 라벨 뒤 조사 1자
+.B5_HANGUL <- "가-힣"
+.b5_rx_esc <- function(s) gsub("([\\\\^$.|?*+()\\[\\]{}])", "\\\\\\1", s, perl = TRUE)
+#' 토큰 1개의 정규식 — 앞뒤 경계는 토큰 첫·끝 글자의 종류로 정한다(ASCII 단어 / 한글) · ci = ASCII 대소문자 무시
+.b5_tok_rx <- function(t, ci = TRUE) {
+  a <- "A-Za-z0-9_\\-"; h <- .B5_HANGUL
+  f1 <- substr(t, 1L, 1L); fn <- substr(t, nchar(t), nchar(t))
+  isa <- function(ch) grepl("^[A-Za-z0-9_]$", ch, perl = TRUE); ish <- function(ch) grepl(sprintf("^[%s]$", h), ch, perl = TRUE)
+  pre  <- if (isa(f1)) sprintf("(?<![%s])", a) else if (ish(f1)) sprintf("(?<![%s])", h) else ""
+  post <- if (isa(fn)) sprintf("(?![%s])", a) else if (ish(fn)) sprintf("(?:(?![%s])|(?=[%s](?![%s])))", h, B5_LABEL_PARTICLES, h) else ""
+  core <- .b5_rx_esc(t); if (ci && grepl("[A-Za-z]", t)) core <- sprintf("(?i:%s)", core)
+  paste0(pre, core, post)
+}
+#' 최상위 `name <- "<문자열 1개>"` 하나 — parse 만(평가 없음 · 부수효과 0) · 없거나 둘 이상·비문자 = NULL
+.b5_const_str <- function(path, name) {
+  ex <- if (file.exists(path)) tryCatch(parse(path, keep.source = FALSE, encoding = "UTF-8"), error = function(e) NULL) else NULL
+  if (is.null(ex)) return(NULL)
+  hit <- list()
+  for (e in as.list(ex)) if (is.call(e) && length(e) == 3L && (identical(e[[1]], as.name("<-")) || identical(e[[1]], as.name("="))) &&
+                            identical(e[[2]], as.name(name))) hit[[length(hit) + 1L]] <- e[[3]]
+  if (length(hit) != 1L || !is.character(hit[[1]]) || length(hit[[1]]) != 1L || is.na(hit[[1]]) || !nzchar(hit[[1]])) return(NULL)
+  hit[[1]]
+}
+#' 함수 본문의 ifelse(<cond 가 든 식>, "a", "b") 리터럴 — 생산자가 실제로 내는 라벨 문자열(AST · 평가 없음)
+#'   가지가 이름(생산자 상수)이면 그 함수의 환경에서 문자열 상수 1개로 풀어 쓴다(생산자가 리터럴을 상수로 옮겨도 이어진다 · 풀리지 않으면 버린다).
+.b5_ifelse_literals <- function(fn, cond) {
+  out <- character(0)
+  lit <- function(x) {
+    if (is.character(x) && length(x) == 1L) return(x)
+    if (is.name(x)) { v <- tryCatch(get(as.character(x), envir = environment(fn), mode = "character"), error = function(e) NULL)
+                      if (is.character(v) && length(v) == 1L) return(v) }
+    NULL
+  }
+  walk <- function(e) {
+    if (!is.call(e)) return(invisible(NULL))
+    h <- e[[1]]
+    if (is.name(h) && identical(as.character(h), "ifelse") && length(e) == 4L && cond %in% all.names(e[[2]])) {
+      a <- lit(e[[3]]); b <- lit(e[[4]]); if (!is.null(a) && !is.null(b)) out <<- c(out, a, b)
+    }
+    lst <- as.list(e)
+    for (i in seq_along(lst)) if (!identical(lst[[i]], quote(expr = ))) walk(lst[[i]])
+    invisible(NULL)
+  }
+  if (is.function(fn)) walk(body(fn))
+  unique(out[!is.na(out) & nzchar(out)])
+}
+#' 라벨 어휘 원천 — 코드가 실제로 낸 문자열(원장·디렉터 컨텍스트) + 생산자 상수 + 생산자 함수 리터럴
+.b5_label_sources <- function(root = ROOT) {
+  led <- .b5_ledger(root)
+  g2 <- character(0); tests <- character(0)
+  for (E in led$entries %||% list()) for (a in E$attempts %||% list()) {
+    adv <- a$adversary; if (!is.list(adv)) next
+    tl <- if (is.list(adv$tests)) adv$tests else list()
+    rs <- .chr(adv$reason)
+    g2 <- c(g2, .chr(adv$verdict), .chr(adv$analytic_verdict), rs, if (grepl(":", rs, fixed = TRUE)) trimws(sub(":.*$", "", rs)) else character(0),
+            unname(vapply(tl, function(z) if (is.list(z)) .chr(z$status) else "", character(1))),
+            unname(vapply(adv$history %||% list(), function(h) if (is.list(h)) .chr(h$verdict) else "", character(1))))
+    tests <- c(tests, names(tl))
+  }
+  dp <- file.path(root, ".cache/rf_director_context.json")
+  d <- if (file.exists(dp)) tryCatch(fromJSON(dp, simplifyVector = FALSE), error = function(e) NULL) else NULL
+  list(g2 = g2, tests = tests,
+       const_classes = if (exists("RFM_VCLASSES", inherits = TRUE)) as.character(get("RFM_VCLASSES", inherits = TRUE)) else character(0),
+       const_deferred = .b5_const_str(.b5_lib("02_Infrastructure/reinforcement/rf_overlay_adversary.R"), "ADV_DEFERRED_VERDICT") %||% character(0),
+       sat = if (exists("rf_target_brief", mode = "function")) .b5_ifelse_literals(get("rf_target_brief", mode = "function"), "saturated") else character(0),
+       dir = .chr((if (is.list(d) && is.list(d$overlay)) d$overlay else list())$status))
+}
+.b5_vocab_clean <- function(v) {
+  v <- unique(trimws(as.character(unlist(v)))); v <- v[!is.na(v) & nchar(v) >= 2L]
+  v <- v[grepl(sprintf("[A-Za-z%s]", .B5_HANGUL), v, perl = TRUE)]
+  # 표식 안에 든 낱말(예: 어떤 판정 값이 "label" 이면)은 표식을 다시 가려 멱등이 깨진다 — 어휘에서 뺀다(표식 = 라벨·수치 두 종)
+  mk <- c(B5_LABEL_MASK, (.b5_rx() %||% list(mask = ""))$mask)
+  v[!vapply(v, function(t) any(grepl(tolower(t), tolower(mk), fixed = TRUE)), logical(1))]
+}
+#' 라벨 가림기 — list(redact, has, mask, vocab, tests, tok, n_src) · 원천 결손 또는 적재 양성 대조 실패 = NULL(fail-closed)
+.b5_labeler <- function(root = ROOT) {
+  src <- tryCatch(.b5_label_sources(root), error = function(e) NULL)
+  if (is.null(src) || !length(src$const_classes) || !length(src$const_deferred) || length(src$sat) < 2L) return(NULL)
+  vocab <- .b5_vocab_clean(c(src$g2, src$const_classes, src$const_deferred, src$sat, src$dir))
+  tests <- .b5_vocab_clean(src$tests)
+  if (!length(vocab)) return(NULL)
+  vocab <- vocab[order(-nchar(vocab), vocab, method = "radix")]
+  tok <- sprintf("(?:%s)", paste(vapply(vocab, .b5_tok_rx, character(1), USE.NAMES = FALSE), collapse = "|"))
+  tail1 <- if (length(tests)) sprintf("\\s*[:,]?\\s*(?:%s)(?![A-Za-z0-9_])", paste(.b5_rx_esc(tests[order(-nchar(tests), tests, method = "radix")]), collapse = "|")) else ""
+  cnt1 <- "\\s*[:=]?\\s*\\d+(?:\\s*/\\s*\\d+)?(?:\\s*건)?"   # 라벨에 붙은 개수: "pass 3/10" · "fail 7" · "4건"
+  mask_rx <- sprintf("%s(?:%s)*", tok, if (nzchar(tail1)) paste0(cnt1, "|", tail1) else cnt1)
+  mk <- .b5_rx_esc(B5_LABEL_MASK)
+  has_rx <- c(tok = tok, after = sprintf("%s(?:\\s*[:=]?\\s*\\d%s)", mk, if (nzchar(tail1)) paste0("|", tail1) else ""))
+  redact <- function(x) {
+    x <- as.character(x); if (!length(x)) return(x)
+    ok <- !is.na(x) & nzchar(x); x[ok] <- gsub(mask_rx, B5_LABEL_MASK, x[ok], perl = TRUE); x
+  }
+  has <- function(x) {
+    x <- as.character(x); x <- x[!is.na(x)]; if (!length(x)) return(FALSE)
+    any(vapply(has_rx, function(rx) any(grepl(rx, x, perl = TRUE)), logical(1)))
+  }
+  # 적재 양성 대조 — 어휘 전부가 실제로 가려지고(검증기 TRUE→FALSE) 식별자·경계 밖 낱말은 남는가
+  hg <- vocab[grepl(sprintf("[%s]$", .B5_HANGUL), vocab, perl = TRUE)]
+  asc <- vocab[grepl("[A-Za-z]", vocab)]
+  keep <- c("bypass", "dead-end", "B5_22 xs_vol_gap_corr_brake", "Calmar", "2002.06975", if (length(hg)) paste0(hg[1], "한다"))   # ~한다
+  canary <- paste(c(paste0("· ", vocab, " ·"), if (length(asc)) paste0(asc[1], " 3/10"), if (length(asc) && length(tests)) paste0(asc[1], ": ", tests[1]),
+                    keep), collapse = " ")
+  rc <- tryCatch(redact(canary), error = function(e) NA_character_)
+  n_mask <- if (is.character(rc) && !is.na(rc)) lengths(regmatches(rc, gregexpr(B5_LABEL_MASK, rc, fixed = TRUE))) else 0L
+  if (!is.character(rc) || length(rc) != 1L || is.na(rc) || !isTRUE(has(canary)) || isTRUE(has(rc)) || n_mask < length(vocab) ||
+      grepl("3/10", rc, fixed = TRUE) || !all(vapply(keep, grepl, logical(1), x = rc, fixed = TRUE))) return(NULL)
+  list(redact = redact, has = has, mask = B5_LABEL_MASK, vocab = vocab, tests = tests, tok = tok,
+       n_src = c(g2 = length(.b5_vocab_clean(src$g2)), const = length(.b5_vocab_clean(c(src$const_classes, src$const_deferred))),
+                 sat = length(src$sat), director = length(.b5_vocab_clean(src$dir))))
 }
 
 # ── 바닥 낙폭 해부 (날짜 없음) ───────────────────────────────────────────────
@@ -548,6 +684,27 @@ B5_DISTILL_KEYWORDS <- c("오버레이", "낙폭", "MDD", "국면", "현금", "o
                            "abs_net_sr", "net_sr", "h1b_sigma_ab", "ladder_table", "period_returns", "measured", "sharpe", "calmar")
   as.character(tk)
 }
+#' (B09-ALLOWLIST-PROMPT · 도훈 결정 2026-09-25 19시) probe ③d 허용 목록 — 재료 (7) 에 싣는 줄.
+#'   렌더러 정본 = overlay_allowlist_prompt.R(코드 루트). 목록은 probe 자신의 적재기(overlay_probe_allowlist_params)로
+#'   **데이터 루트(ROOT)** 에서 읽는다 — 이 lib 의 probe 명령(코드 루트 overlay_probe.R · overlay_probe_arm(kind, ROOT))과
+#'   같은 파일·같은 루트다. 프롬프트가 보여주는 집합 = 등재가 대조하는 집합.
+#'   ★미제공 = 재료를 막지 않는다(설계 선택 — 이 레인의 산출은 배합 칸 + 선택적 새 arm · 배합은 목록과 무관). 대신 미제공 블록을
+#'     싣고 호출자가 (8) 에 '새 arm 을 내지 마라' 를 더하고 jlog 에 남긴다. 새 arm 의 fail-closed 는 probe ③d 가 진다.
+#' @return list(ok, reason, lines, sha256, n_names, ...) — lines 는 언제나 1줄 이상
+.b5_allowlist <- function(root = ROOT) {
+  r <- tryCatch({
+    en <- new.env(parent = globalenv())
+    invisible(capture.output(suppressMessages(sys.source(.b5_lib("02_Infrastructure/reinforcement/overlay_allowlist_prompt.R"), envir = en))))
+    en$overlay_allowlist_prompt(root, probe_path = .b5_lib("02_Infrastructure/reinforcement/overlay_probe.R"))
+  }, error = function(e) list(ok = FALSE, reason = sprintf("렌더러 적재 실패 — %s", conditionMessage(e))))
+  if (!is.list(r) || !is.character(r$lines) || !length(r$lines)) {
+    why <- gsub("[\r\n]+", " ", .chr((if (is.list(r)) r$reason) %||% "렌더러 반환 이상"))
+    r <- list(ok = FALSE, reason = why, sha256 = "", n_names = 0L,
+              lines = c(sprintf("### 허용 함수 목록 — 미제공 (%s)", why),
+                        "- ★probe ③d 는 허용 목록을 적재하지 못하면 모든 새 arm 을 거부한다(fail-closed). 이번에는 새 arm 을 내지 마라."))
+  }
+  r
+}
 #' 이 entry 의 B5 칸이 이미 잰 스택 키(정렬 id) — 설계 검증이 같은 스택을 다시 넣는 칸을 뺀다(H6)
 .b5_measured_b5_keys <- function(E, root = ROOT) {
   k2i <- .b5_kind_to_id(.b5_catalog(root)); st <- .b5_standing(root); carry_ov <- (E$carry %||% list())$overlay
@@ -596,49 +753,50 @@ B5_DISTILL_KEYWORDS <- c("오버레이", "낙폭", "MDD", "국면", "현금", "o
   rows[order(vapply(rows, function(r) r$at, character(1)), decreasing = TRUE)][seq_len(min(length(rows), max_rows))]
 }
 
-.b5_adv_sec <- function(root = ROOT, max_rows = 24L) {
+#' (D-E-B5-LABELS 2026-09-25) 이 절은 전부 다른 entry 의 결과다 — 판정·검사별 상태·사유·실패 사인·개수는 라벨 표식, 수치는 수치 표식.
+#'   ★검사 칸을 표식으로만 바꾸면 '-'(미검정) 유무가 후보 여부(= 바닥 Calmar 를 넘었나)를 드러낸다 — 그래서 결과를 한 칸으로 접는다.
+#'   남는 것 = 어느 entry 의 어느 칸이 어떤 스택으로 사후 반증을 **거쳤나**(설계 이력) · 행 = 기록 시각 역순(결과와 무관).
+.b5_adv_sec <- function(root = ROOT, max_rows = 24L, lb = NULL) {
   rows <- .b5_adv_rows(root, max_rows)
-  hdr <- c(sprintf("## (4b) G2 사후 반증 상세 — 앞선 오버레이 칸이 **어떤 검사에서** 죽었나 (최근 %d칸 · 전 entry)", as.integer(max_rows)),
-           "- 읽는 법: T3 = 노출을 짝지어 무작위로 재배치한 플라시보. obs <= q 면 **같은 노출을 아무 때나 줄여도 같은 Calmar** 라는 뜻 = 타이밍 기여 0.",
-           "- T4(상수 등가)만 넘고 T3 에서 죽는 것이 가장 흔한 형태다 — '개선이 있다' 와 '개선이 타이밍에서 왔다' 는 다른 명제.",
-           "- fail/not_candidate 는 등급이 아니라 **소비 보류**다. 이 사인을 피할 기전을 설계하라(칸을 재탕하지 말고 축을 바꿔라).",
-           "- ★수치(Calmar 셀/바닥 · T1 이동 · T3 obs/q/p · T3b p · T4 상수)는 가렸다(<stat> — 다른 entry 의 전기간 측정값으로 arm 을 고르면 평가 창 결과를 소비하는 자동 선정 · pit.md C1 D-E). **어느 검사가 죽였나**(상태·판정)만 읽어라.")
+  mk <- if (is.list(lb) && is.character(lb$mask)) lb$mask else B5_LABEL_MASK
+  sm <- (.b5_rx() %||% list(mask = "<stat>"))$mask     # 수치 표식 = 정본 가림 함수의 표식(rx 부재면 아래 .b5_capx 가 멈춘다)
+  hdr <- c(sprintf("## (4b) G2 사후 반증 이력 — 앞선 오버레이 칸이 어떤 스택으로 사후 반증을 거쳤나 (최근 %d칸 · 전 entry)", as.integer(max_rows)),
+           sprintf("- ★판정·검사별 상태·사유·실패 사인·개수는 %s, Calmar·검정 수치는 %s 로 가렸다 — 다른 entry 의 전기간 결과로 arm 을 고르면 평가 창 결과를 소비하는 자동 선정이다(pit.md C1 D-E).", mk, sm),
+           "- 반증 검정의 구성과 소비 규약은 (7) 에 있다. 이미 반증을 거친 스택을 재탕하지 말고, 반증을 견딜 기전을 설계하라(축을 바꿔라).")
   if (!length(rows)) return(c(hdr, "(아직 반증 기록이 없다)"))
-  tab <- c("", "| entry | 코드 | 스택 | Calmar 셀/바닥 | T1 | T3 | T3b | T4 | 판정 |", "|---|---|---|---|---|---|---|---|---|")
-  for (r in rows) {
-    f_t1 <- if (nzchar(r$t1s)) sprintf("%s %s", r$t1s, .f3(r$t1v)) else "-"
-    f_t3 <- if (nzchar(r$t3s)) sprintf("%s obs %s vs q %s%s", r$t3s, .f3(r$t3o), .f3(r$t3q),
-                                       if (is.finite(r$t3p)) sprintf(" p %s", .f3(r$t3p)) else "") else "-"
-    f_t3b <- if (nzchar(r$t3bs)) sprintf("%s%s", r$t3bs, if (is.finite(r$t3bp)) sprintf(" p %s", .f3(r$t3bp)) else "") else "-"
-    f_t4 <- if (nzchar(r$t4s)) sprintf("%s const %s", r$t4s, .f3(r$t4c)) else "-"
-    tab <- c(tab, sprintf("| %s | %s | %s | %s/%s | %s | %s | %s | %s | %s%s |",
+  tab <- c("", "| entry | 코드 | 스택 | 결과 |", "|---|---|---|---|")
+  for (r in rows)
+    tab <- c(tab, sprintf("| %s | %s | %s | %s · %s |",
                           # entry 는 접두 타임스탬프를 벗겨 **계보만** 남긴다(전부 같은 접두어라 30자 절단이면 구분이 사라진다)
-                          # (D-E-B5-MATERIALS) 절단은 가림 앞뒤 2회 · 수치 칸(.f3)은 조립 시 절 전체 가림이 덮는다
-                          .b5_capx(sub("^RP_[0-9]{8}_[0-9]{6}_[0-9]+_", "", r$entry), 30), r$code, .b5_capx(r$stack, 42), .f3(r$cell), .f3(r$floor),
-                          f_t1, f_t3, f_t3b, f_t4, r$verdict,
-                          if (nzchar(r$reason)) sprintf("(%s)", .b5_capx(r$reason, 26)) else ""))
-  }
-  vs <- vapply(rows, function(r) r$verdict, character(1))
-  killers <- unlist(lapply(rows, function(r) c(if (identical(r$t1s, "fail")) "T1" else NULL,
-                                               if (identical(r$t3s, "fail")) "T3" else NULL,
-                                               if (identical(r$t3bs, "fail")) "T3b" else NULL,
-                                               if (identical(r$t4s, "fail")) "T4" else NULL)))
-  kt <- if (length(killers)) table(killers) else integer(0)
-  ksum <- if (length(kt)) paste(sprintf("%s %d건", names(kt), as.integer(kt)), collapse = " · ") else "없음"
-  c(hdr, tab, "",
-    sprintf("- 집계: %d칸 · pass %d · fail %d · not_candidate %d · 실패 사인 %s",
-            length(rows), sum(vs == "pass"), sum(vs == "fail"), sum(vs == "not_candidate"), ksum))
+                          # (D-E-B5-MATERIALS · LABELS) 절단은 가림(라벨·수치) 앞뒤 2회
+                          .b5_capx(sub("^RP_[0-9]{8}_[0-9]{6}_[0-9]+_", "", r$entry), 30, lb), r$code, .b5_capx(r$stack, 42, lb), sm, mk))
+  c(hdr, tab, "", sprintf("- 집계: %d칸 (판정별 개수·실패 사인은 가렸다 %s)", length(rows), mk))
 }
 
 # ── (2b) 프로그램 낙폭 구조 — 리서치 디렉터 컨텍스트 (2026-09-21 도훈 승인 플랜 Part 3 · D3 (c)) ──────────────
 #   .cache/rf_director_context.json(rf_director.R 이 매일 아침 씀)의 **숫자만** 옮긴다. 서사·지침 없음(Dream-RSI §5.1: 기록은
 #   시뮬레이터 산출로만 넘긴다). 날짜 없음 · 48h 초과·부재·파손 = 절 생략(설계는 종전과 동일). 검증부(b5_has_dates)가 그대로 적용된다.
-b5_director_context <- function(root = ROOT, max_age_h = 48) {
+#' (D-E-B5-LABELS) label_mask 를 주면 결과 라벨 자리(구속·공동 구속 · 낙폭 형태 · 공유 계보 수 · 방어형 수 · 오버레이 반증 집계·상태)를
+#'   그 표식으로 **원천에서** 쓴다(재료 경로). 라벨 규칙 문장(shape_rule)은 형태 어휘를 담아 가린 라벨을 되살리므로 싣지 않는다.
+#'   NULL(기본) = 구판 그대로(디렉터 문맥 자체의 검사 · 사람용 확인).
+b5_director_context <- function(root = ROOT, max_age_h = 48, label_mask = NULL) {
   p <- file.path(root, ".cache/rf_director_context.json"); if (!file.exists(p)) return(character(0))
   age <- suppressWarnings(as.numeric(difftime(Sys.time(), file.info(p)$mtime, units = "hours"))); if (!is.finite(age) || age > max_age_h) return(character(0))
   d <- tryCatch(fromJSON(p, simplifyVector = FALSE), error = function(e) NULL); if (!is.list(d)) return(character(0))
   rc <- d$recurring_class %||% list(); pi <- d$pool_inventory %||% list(); b <- d$program_best %||% list(); ov <- d$overlay %||% list(); th <- d$thresholds %||% list()
   co <- as.character(unlist(d$co_binding %||% list()))
+  if (is.character(label_mask) && length(label_mask) == 1L && nzchar(label_mask)) {
+    m <- label_mask
+    return(b5_strip_dates(c("## (2b) 프로그램 낙폭 구조 (리서치 디렉터 · 상위 계보 최심 에피소드 집계 · 날짜 없음 · 형태만)",
+      # ★이 절 본문엔 숫자를 쓰지 않는다 — 발송 전 검증이 본문 정수 잔존을 개수 누출로 본다(수치는 조립부가 <stat> 로 가린다)
+      sprintf("- ★구속 조건·낙폭 형태·공유 계보 수·방어형 수·오버레이 반증 집계는 다른 entry 의 전기간 결과 라벨이라 %s 로 가렸다(pit.md D-E) — 수치는 조립부가 가린다.", m),
+      sprintf("- 구속 조건: %s · 프로그램 최고 PORT_t %s · Calmar %s · MDD %s · CAGR %s (A 문턱 Calmar %s)",
+              m, .f3(b$port_t), .f3(b$calmar), .f3(b$mdd), .f3(b$cagr), .f3(th$calmar_min)),
+      sprintf("- 낙폭 형태: %s · 최심 깊이 중앙 %s · 고점→저점 중앙 %s개월 · 벤치 대비 비 중앙 %s · 공유 계보 %s",
+              m, .f3(rc$depth_median), .f1(rc$m_peak_trough_median), .f3(rc$ratio_median), m),
+      sprintf("- 풀 재고: 방어형 %s · 깊은 낙폭 초과 중앙 %s%%/월 · 음수 비율 %s · 오버레이 반증 %s",
+              m, .f3(pi$defensive_deep_dd_excess_median), .f3(pi$defensive_deep_dd_negative_share), m))))
+  }
   L <- c("## (2b) 프로그램 낙폭 구조 (리서치 디렉터 · 상위 계보 최심 에피소드 집계 · 날짜 없음 · 형태만)",
          sprintf("- 구속 조건: %s%s · 프로그램 최고 PORT_t %s · Calmar %s · MDD %s · CAGR %s (A 문턱 Calmar %s)",
                  .chr(d$binding), if (length(co)) paste0("+", paste(co, collapse = "+")) else "", .f3(b$port_t), .f3(b$calmar), .f3(b$mdd), .f3(b$cagr), .f3(th$calmar_min)),
@@ -667,6 +825,13 @@ b5_materials <- function(base_id, root = ROOT, cfg = b5_cfg(root), compose_only 
     .b5_log("materials_rejected", base_id = base_id, round = as.integer(round), why = "redactor_unavailable",
             note = "rf_b1_design_lib.R 가림 함수 적재·양성 대조 실패 — 교차 entry 수치를 가리지 않은 재료는 내지 않는다(pit.md C1 D-E)")
     stop("[b5_design] 교차 entry 수치 가림 함수 적재 실패 — 재료 생성 중단(pit.md C1 D-E · 기존 설계로 폴백)")
+  }
+  # (D-E-B5-LABELS) 결과 라벨 가림기 — 어휘는 이 재료가 읽는 원장·컨텍스트·생산자에서 지금 다시 세운다(캐시 없음) · 못 세우면 재료를 만들지 않는다
+  LB <- tryCatch(.b5_labeler(root), error = function(e) NULL)
+  if (is.null(LB)) {
+    .b5_log("materials_rejected", base_id = base_id, round = as.integer(round), why = "labeler_unavailable",
+            note = "결과 라벨 어휘 원천(RFM_VCLASSES·ADV_DEFERRED_VERDICT·rf_target_brief 포화 리터럴) 결손 또는 적재 양성 대조 실패 — 라벨을 가리지 않은 재료는 내지 않는다(pit.md C1 D-E)")
+    stop("[b5_design] 교차 entry 결과 라벨 가림기 적재 실패 — 재료 생성 중단(pit.md C1 D-E · 기존 설계로 폴백)")
   }
   arms <- .b5_catalog(root); k2i <- .b5_kind_to_id(arms)
   st <- .b5_standing(root)
@@ -747,14 +912,14 @@ b5_materials <- function(base_id, root = ROOT, cfg = b5_cfg(root), compose_only 
   sec$entry <- L1
   # (2) 바닥 낙폭 해부 ───────────────────────────────────────────────────────
   sec$floor <- b5_floor_anatomy(E, root)
-  sec$director <- tryCatch(b5_director_context(root), error = function(e) character(0))   # D3 (c) · 부재/낡음/오류 = 생략
+  sec$director <- tryCatch(b5_director_context(root, label_mask = LB$mask), error = function(e) character(0))   # D3 (c) · 부재/낡음/오류 = 생략 · (D-E-B5-LABELS) 결과 라벨은 원천에서 표식
   # (3) arm 사용 이력 ───────────────────────────────────────────────────────
   #   (D-E-B5-MATERIALS) 구판 = ΔCalmar 순 상위 8/하위 8 + Δ 네 개 + G2 pass/fail — 전부 다른 entry 의 전기간 측정값이고, 순위 자체가
   #   "무엇을 고를지"를 정해 준다. 이제 **arm_id 순**(성과와 무관한 결정론 순서 · radix = 로캘 무관) · 성과 칸은 가림 표식만 ·
   #   남는 것은 사용 횟수(설계 이력 — 측정값이 아니다). rf_overlay_outcomes 자체(리서치 디렉터 소비)는 그대로 둔다.
   O <- tryCatch(rf_overlay_outcomes(root), error = function(e) NULL)
   L3 <- c("## (3) arm 사용 이력 (전 entry B5 칸 · arm_id 순 — 성과 순위가 아니다) — 성과 수치는 가렸다",
-          sprintf("- ★ΔMDD·ΔCAGR·ΔPORT_t·ΔCalmar·G2 pass/fail 은 다른 entry 의 전기간 측정값이다 — 그것으로 arm 을 고르면 평가 창 결과를 소비하는 자동 선정이다(pit.md C1 D-E). %s 로 가렸고 순위도 없앴다. 사용 횟수(어느 arm 이 이미 많이 쓰였나)만 읽어라.", RX$mask),
+          sprintf("- ★ΔMDD·ΔCAGR·ΔPORT_t·ΔCalmar·G2 판정은 다른 entry 의 전기간 측정값·결과 라벨이다 — 그것으로 arm 을 고르면 평가 창 결과를 소비하는 자동 선정이다(pit.md C1 D-E). %s 로 가렸고 순위도 없앴다. 사용 횟수(어느 arm 이 이미 많이 쓰였나)만 읽어라.", RX$mask),
           "| arm_id | 사용 | 스택사용 | entry수 | 성과(Δ·G2) |", "|---|---|---|---|---|")
   if (!is.null(O) && nrow(O)) {
     O <- O[order(as.character(O$arm_id), method = "radix")]
@@ -776,17 +941,17 @@ b5_materials <- function(base_id, root = ROOT, cfg = b5_cfg(root), compose_only 
       if (!nzchar(mech) && !length(av)) next
       blk <- sprintf("### %s", .chr(x$strategy_id))
       # (D-E-B5-MATERIALS) 다른 entry 의 교훈 서술 = 그 entry 의 전기간 Calmar·MDD 가 박혀 있다 — 절단 앞뒤로 가린다
-      if (nzchar(mech)) blk <- c(blk, sprintf("- 기전: %s", .b5_capx(mech, 700)))
-      if (length(av)) blk <- c(blk, sprintf("- 쓰지 말 것: %s", paste(vapply(utils::head(av, 3L), .b5_capx, character(1), n = 160), collapse = " / ")))
+      if (nzchar(mech)) blk <- c(blk, sprintf("- 기전: %s", .b5_capx(mech, 700, LB)))
+      if (length(av)) blk <- c(blk, sprintf("- 쓰지 말 것: %s", paste(vapply(utils::head(av, 3L), .b5_capx, character(1), n = 160, lb = LB), collapse = " / ")))
       prior_blocks[[length(prior_blocks) + 1L]] <- blk
     }
   }
   .prior_sec <- function(blocks) c(sprintf("## (4) 앞선 논문들의 B5 블록 교훈 (최근 %d entry) — 수치는 가렸다(%s · 다른 entry 의 전기간 측정값 · pit.md C1 D-E) · **기전과 회피**만 옮겨 붙는다 · 금지 목록이 아니다(AX-000)", length(blocks), RX$mask),
                                    if (length(blocks)) unlist(blocks) else "(없음)")
   sec$prior <- .prior_sec(prior_blocks)
-  sec$adv <- .b5_adv_sec(root)
+  sec$adv <- .b5_adv_sec(root, lb = LB)
   # (5) 증류 지식 ──────────────────────────────────────────────────────────
-  L5 <- c(sprintf("## (5) 증류 지식 (distilled · 키워드: 오버레이/낙폭/MDD/국면/현금/overlay/drawdown/regime · 상한 20 · 수치는 가렸다 %s)", RX$mask))
+  L5 <- c(sprintf("## (5) 증류 지식 (distilled · 키워드: 오버레이/낙폭/MDD/국면/현금/overlay/drawdown/regime · 상한 20 · 수치는 가렸다 %s · 극성 라벨은 %s)", RX$mask, LB$mask))
   rows5 <- tryCatch({
     en <- new.env(parent = globalenv())
     invisible(capture.output(suppressMessages(source(.b5_lib("02_Infrastructure/axiom/distilled.R"), local = en))))
@@ -795,25 +960,39 @@ b5_materials <- function(base_id, root = ROOT, cfg = b5_cfg(root), compose_only 
       if (is.data.frame(r) && nrow(r)) acc[[length(acc) + 1L]] <- r }
     if (length(acc)) { d <- do.call(rbind, acc); d[!duplicated(d$dist_id), , drop = FALSE] } else NULL
   }, error = function(e) NULL)
+  pol5 <- character(0)
   if (is.data.frame(rows5) && nrow(rows5)) {
+    # (D-E-B5-LABELS) 극성(polarity — 그 지식이 성공/실패/조건부였나)은 다른 entry 결과의 라벨이다 — 자리에 표식을 쓴다
+    pol5 <- .b5_vocab_clean(utils::head(as.character(rows5$polarity), 20L))
     for (i in seq_len(min(20L, nrow(rows5))))
-      L5 <- c(L5, sprintf("- %s [%s] %s%s", rows5$dist_id[i], rows5$polarity[i], .b5_capx(rows5$statement[i], 120),
-                          if (nzchar(.chr(rows5$retry_policy[i]))) paste0(" (", .b5_capx(rows5$retry_policy[i], 80), ")") else ""))
+      L5 <- c(L5, sprintf("- %s [%s] %s%s", rows5$dist_id[i], LB$mask, .b5_capx(rows5$statement[i], 120, LB),
+                          if (nzchar(.chr(rows5$retry_policy[i]))) paste0(" (", .b5_capx(rows5$retry_policy[i], 80, LB), ")") else ""))
   } else L5 <- c(L5, "(일치 항목 없음)")
   sec$distilled <- L5
   # (6) 기전 지도 + 활성 카탈로그 ─────────────────────────────────────────
-  tb <- tryCatch(rf_target_brief(root), error = function(e) "(기전 지도 산출 실패)")
-  L6 <- c("## (6) 기전 지도 (action × state · 측정 횟수·포화만) 와 활성 카탈로그", tb, "",
+  #   (D-E-B5-LABELS) 구판 = rf_target_brief — 칸마다 "판정 k · 미검증 m · 포화/미포화" 를 싣고 **포화 순**으로 정렬했다(순서만으로도 라벨이 샌다).
+  #   판정·미검증 수와 포화는 다른 entry 의 G2 결과에서 온다 — 측정 횟수·카탈로그 수만 남기고 (action, state) 순(결과와 무관 · radix)으로 쓴다.
+  #   정본 집계기(rf_mechanism_map)는 그대로 쓴다(사본 없음) · rf_target_brief 자체(다른 레인 소비)는 건드리지 않는다.
+  mp6 <- tryCatch(rf_mechanism_map(root), error = function(e) NULL)
+  tb <- if (is.null(mp6) || !nrow(mp6)) "(기전 지도 산출 실패)" else {
+    mp6 <- mp6[order(as.character(mp6$action), as.character(mp6$state), method = "radix")]
+    sprintf("%-16s %-14s 측정 %d · 카탈로그 %d · 결과 라벨 %s", mp6$action, mp6$state, as.integer(mp6$n_measured), as.integer(mp6$n_arms_catalog), LB$mask)
+  }
+  L6 <- c(sprintf("## (6) 기전 지도 (action × state 순 · 측정 횟수·카탈로그 수만 — 판정 개수·결과 라벨은 %s 로 가렸다) 와 활성 카탈로그", LB$mask), tb, "",
           "### 활성 arm (여기 있는 id 만 picks 에 쓸 수 있다 · 상주 arm 은 목록에서 뺐다 · 새 arm 의 kind 는 아래 kind 와 겹치면 거부된다)")
   for (a in arms) { if (!identical(.chr(a$status), "active") || .chr(a$id) %in% st$picks) next
     z <- rfm_arm_axis(a)
     L6 <- c(L6, sprintf("- %s · kind=%s · family=%s · %s/%s%s — %s", .chr(a$id), .chr(a$kind), .chr(a$family), z$action, z$state,
-                        if (nzchar(.chr(a$source))) paste0(" · source=", .chr(a$source)) else "", .b5_capx(a$basis, 200))) }
+                        if (nzchar(.chr(a$source))) paste0(" · source=", .chr(a$source)) else "", .b5_capx(a$basis, 200, LB))) }
   sec$catalog <- L6
   # (7) 계약·엔진 사실·중첩·PIT·금칙·검증부 ────────────────────────────────
   axes <- tryCatch(fromJSON({ p <- file.path(root, "06_Registry/rf_overlay_adversary_axes.json"); if (file.exists(p)) p else .b5_lib("06_Registry/rf_overlay_adversary_axes.json") },
                             simplifyVector = FALSE), error = function(e) NULL)
   st_txt <- if (length(st$cells)) paste(vapply(st$cells, function(x) sprintf("%s(%s)", .chr(x$code), .chr(x$overlay_pick)), character(1)), collapse = " · ") else "없음"
+  AL <- .b5_allowlist(root)     # (B09-ALLOWLIST-PROMPT) probe ③d 허용 목록 — (7) 금칙 뒤에 싣는다 · 미제공이면 (8) 에도 명시
+  .b5_log("materials_allowlist", base_id = base_id, round = as.integer(round), status = if (isTRUE(AL$ok)) "ok" else "unavailable",
+          names = as.integer(.num(AL$n_names %||% 0L)), sha = substr(.chr(AL$sha256), 1L, 12L), why = .chr(AL$reason),
+          note = if (isTRUE(AL$ok)) "재료 (7) 에 probe ③d 허용 목록" else "재료 (7)·(8) 에 미제공·새 arm 금지 명시 — 배합 설계는 계속 · 새 arm 은 probe ③d 가 전부 거부한다")
   L7 <- c("## (7) arm 계약 · 엔진 사실 · 중첩 의미론 · PIT · 금칙 · 검증부",
     "### arm 계약 (overlay_arms/<kind>.R · 정본 엔진 = 02_Infrastructure/reinforcement/rf_cell_engine.R)",
     "- 함수 하나: overlay_expo_<kind> <- function(H, t, ctx) → 스칼라 e ∈ [0,1] 또는 data.table(Ticker, e). 추정 불가·표본 부족이면 e <- 1(무개입). 오류를 던지지 마라.",
@@ -837,6 +1016,7 @@ b5_materials <- function(base_id, root = ROOT, cfg = b5_cfg(root), compose_only 
     sprintf("- 성과 토큰(주석 포함): %s", paste(.b5_measure_tokens(), collapse = ", ")),
     "- 임의 상수 문턱: H·hold 의 열을 숫자 리터럴과 직접 비교(H$dd[t] > 0.2 · hold$beta > 1.2) 금지 — 문턱은 quantile/median/ecdf 등 확장창 추정.",
     "- 달력 리터럴: 특정 연·월·날짜·인덱스 창('어느 해 이후만' · t %in% 146:153 · year(ctx$date) >= 연도) 금지. probe 는 합성 픽스처(240개월 · 위기 2구간 주입 · 종목 T001~T025)로 돌아 픽스처에서 안 켜지고 실데이터에서만 켜지는 조건도 회피로 잡는다.",
+    AL$lines,
     "### G1 적대적 설계시점 감사 (새 arm 마다 · 설계자와 **다른 모델** · 축 정본 06_Registry/rf_overlay_adversary_axes.json · 판정은 R 병합기가 근거를 재도출)")
   for (ax in axes$axes %||% list()) L7 <- c(L7, sprintf("- [%s] %s — %s", .chr(ax$id), .chr(ax$title), .cap(ax$focus, 420)))
   L7 <- c(L7,
@@ -858,6 +1038,7 @@ b5_materials <- function(base_id, root = ROOT, cfg = b5_cfg(root), compose_only 
   thr <- tryCatch(.b5_director_thresholds(root), error = function(e) NULL)
   if (!is.null(thr)) sec$guard <- c(sec$guard, sprintf("- A 등급 문턱(고정 축 상수 — 측정값이 아니라 가리지 않는다): Calmar ≥ %s · PORT_t ≥ %s",
                                                        .f3(thr[["calmar"]]), .f3(thr[["port_t"]])))
+  if (!isTRUE(AL$ok)) sec$guard <- c(sec$guard, "- ★허용 함수 목록 미제공((7) 참조) — probe ③d 가 새 arm 을 전부 거부한다. 할당과 무관하게 이번 라운드는 새 arm 을 내지 마라(기존 활성 arm 배합만).")
   # 조립 + 날짜 제거 + 총량 상한 ────────────────────────────────────────────
   order <- c("axioms", "entry", "floor", "director", "outcomes", "prior", "adv", "distilled", "catalog", "contract", "guard")
   # (D-E-B5-MATERIALS) 교차 절 = 자기·정적 절이 아닌 전부 — 조립 직전 절 전체를 가린다(절단 뒤 2회차 · 멱등) · 조립 뒤 재도출 검증
@@ -868,12 +1049,14 @@ b5_materials <- function(base_id, root = ROOT, cfg = b5_cfg(root), compose_only 
     n <- vapply(order, function(k) length(S[[k]]) + 1L, integer(1)); hi <- cumsum(n); lo <- hi - n + 1L
     unlist(lapply(which(order %in% xsecs), function(j) tx[lo[j]:hi[j]]), use.names = FALSE)
   }
-  sec <- .redact_x(sec)
+  # (D-E-B5-LABELS) 교차 절 결과 라벨 기본 가림 — 수치 가림보다 **먼저**(사유 문자열을 통째로 잡는다) · 멱등 · 자기·정적 절은 건드리지 않는다
+  .label_x <- function(S) { for (k in xsecs) if (length(S[[k]])) S[[k]] <- LB$redact(S[[k]]); S }
+  sec <- .redact_x(.label_x(sec))
   txt <- .assemble(sec)
   n_prior_dropped <- 0L
   while (sum(nchar(txt, type = "chars")) > B5_MAT_CAP_CHARS && length(prior_blocks)) {
     prior_blocks <- prior_blocks[-length(prior_blocks)]; n_prior_dropped <- n_prior_dropped + 1L
-    sec$prior <- .prior_sec(prior_blocks); sec <- .redact_x(sec); txt <- .assemble(sec)
+    sec$prior <- .prior_sec(prior_blocks); sec <- .redact_x(.label_x(sec)); txt <- .assemble(sec)
   }
   # 발송 전 재도출 검증 — 교차 절(발송 텍스트)에 수치가 하나라도 남으면 재료를 쓰지 않는다(조용한 통과 없음 · 레인 = materials_failed)
   xl <- .x_lines(sec, txt)
@@ -882,7 +1065,15 @@ b5_materials <- function(base_id, root = ROOT, cfg = b5_cfg(root), compose_only 
             note = "교차 entry 절에 전기간 수치 잔존(또는 절 경계 재도출 불일치) — pit.md C1 D-E · 기존 설계로 폴백")
     stop("[b5_design] 교차 entry 절에 전기간 수치 잔존 — 재료 생성 중단(pit.md C1 D-E · 기존 설계로 폴백)")
   }
+  # (D-E-B5-LABELS) 발송 전 라벨 재검증 — 발송 텍스트(날짜 제거 뒤)에서 절마다 다시 잰다(수치 판정과 독립: 수치 가림을 한 번 더 씌운 사본 위)
+  lab_bad <- .b5_label_residue(sec, txt, order, xsecs, LB, RX, pol = pol5)
+  if (length(lab_bad)) {
+    .b5_log("materials_rejected", base_id = base_id, round = as.integer(round), why = "cross_entry_labels_residual", detail = paste(lab_bad, collapse = ","),
+            note = "교차 entry 절에 결과 라벨(G2 판정·검사 사인·포화·극성·디렉터 구속/형태·라벨 개수) 잔존 — pit.md C1 D-E · 기존 설계로 폴백")
+    stop("[b5_design] 교차 entry 절에 결과 라벨 잔존(", paste(lab_bad, collapse = ","), ") — 재료 생성 중단(pit.md C1 D-E · 기존 설계로 폴백)")
+  }
   n_mask <- sum(lengths(regmatches(xl, gregexpr(RX$mask, xl, fixed = TRUE))))
+  n_lab <- sum(lengths(regmatches(xl, gregexpr(LB$mask, xl, fixed = TRUE))))
   sizes <- vapply(order, function(k) sum(nchar(b5_strip_dates(sec[[k]]), type = "chars")) + length(sec[[k]]), integer(1))
   if (!is.null(out_p)) {
     dir.create(dirname(out_p), recursive = TRUE, showWarnings = FALSE)
@@ -891,9 +1082,51 @@ b5_materials <- function(base_id, root = ROOT, cfg = b5_cfg(root), compose_only 
     .b5_log("materials_written", base_id = base_id, round = as.integer(round), compose_only = isTRUE(compose_only),
             arm_quota = as.integer(arm_quota), chars_total = sum(nchar(txt, type = "chars")), prior_dropped_for_cap = n_prior_dropped,
             sizes = paste(sprintf("%s=%d", names(sizes), sizes), collapse = " "), out = out_p,
-            cross_entry_stats_masked = n_mask, redacted_sections = paste(xsecs, collapse = ","))
+            cross_entry_stats_masked = n_mask, redacted_sections = paste(xsecs, collapse = ","),
+            cross_entry_labels_masked = n_lab, label_vocab = length(LB$vocab),
+            label_vocab_src = paste(sprintf("%s=%d", names(LB$n_src), as.integer(LB$n_src)), collapse = ","))
   }
-  invisible(list(text = txt, sizes = sizes, prior_dropped = n_prior_dropped, n_masked = n_mask, redacted_sections = xsecs))
+  invisible(list(text = txt, sizes = sizes, prior_dropped = n_prior_dropped, n_masked = n_mask, redacted_sections = xsecs,
+                 n_labels_masked = n_lab, label_vocab = LB$vocab))
+}
+
+#' (D-E-B5-LABELS) 발송 텍스트의 교차 절 라벨 잔존 — 사유 코드 벡터(빈 = 통과). 절 경계는 조립 규칙(각 절 + 빈 줄)에서 재도출한다.
+#'   ① vocab:<절>   어휘(원장 G2 기록·생산자 상수·포화 리터럴·디렉터 상태) 또는 표식에 붙은 개수·검사 목록이 남았다
+#'   ② director     (2b) 에 디렉터가 쓴 구속·공동 구속·형태·상태 값이 남았거나(대소문자 그대로) 본문에 개수(정수)가 남았다
+#'   ③ adv_tests    (4b) 에 검사 이름(원장 tests 키)이 남았다 — 검사별 칸·실패 사인 집계의 흔적
+#'   ④ map_counts   (6) 에 "판정 k"·"미검증 k" 개수가 남았다
+#'   ⑤ polarity     (5) 에 소비한 극성 값이 [괄호] 자리로 남았다
+#'   ★수치 판정과 독립 — 수치 가림(rx)을 한 번 더 씌운 사본 위에서 잰다(수치 잔존은 앞 게이트 몫 · 멱등).
+.b5_label_residue <- function(sec, txt, order, xsecs, lb, rx, pol = character(0), root = ROOT) {
+  n <- vapply(order, function(k) length(sec[[k]]) + 1L, integer(1)); hi <- cumsum(n); lo <- hi - n + 1L
+  if (hi[length(hi)] != length(txt)) return("section_bounds")
+  lines_of <- function(k) { j <- match(k, order); if (is.na(j)) character(0) else rx$redact(txt[lo[j]:hi[j]]) }
+  bad <- character(0)
+  for (k in xsecs) if (isTRUE(lb$has(lines_of(k)))) bad <- c(bad, paste0("vocab:", k))
+  d2 <- lines_of("director")
+  if (length(d2)) {
+    dp <- file.path(root, ".cache/rf_director_context.json")
+    d <- if (file.exists(dp)) tryCatch(fromJSON(dp, simplifyVector = FALSE), error = function(e) NULL) else NULL
+    dv <- .b5_vocab_clean(c(.chr(d$binding), as.character(unlist(d$co_binding %||% list())), .chr((d$recurring_class %||% list())$shape),
+                            .chr((d$overlay %||% list())$status)))
+    body <- d2[!startsWith(d2, "## ") & nzchar(d2)]
+    if ((length(dv) && any(vapply(dv, function(v) any(grepl(.b5_tok_rx(v, ci = FALSE), body, perl = TRUE)), logical(1)))) ||
+        any(grepl("[0-9]", body))) bad <- c(bad, "director")
+  }
+  if (length(lb$tests)) {
+    a4 <- lines_of("adv")
+    trx <- paste(vapply(lb$tests, .b5_tok_rx, character(1), ci = FALSE, USE.NAMES = FALSE), collapse = "|")
+    if (length(a4) && any(grepl(trx, a4, perl = TRUE))) bad <- c(bad, "adv_tests")
+  }
+  m6 <- lines_of("catalog")
+  i3 <- which(startsWith(m6, "### ")); if (length(i3)) m6 <- m6[seq_len(i3[1] - 1L)]   # 지도 행만(뒤의 활성 카탈로그 basis 는 서술 — 대상 밖)
+  if (length(m6) && any(grepl("(판정|미검증)\\s*\\d", m6, perl = TRUE))) bad <- c(bad, "map_counts")   # 판정 · 미검증
+  if (length(pol)) {
+    p5 <- lines_of("distilled")
+    prx <- sprintf("\\[\\s*(?:%s)\\s*\\]", paste(.b5_rx_esc(pol), collapse = "|"))
+    if (length(p5) && any(grepl(prx, p5, perl = TRUE))) bad <- c(bad, "polarity")
+  }
+  unique(bad)
 }
 
 # ── 검증 + 최종 설계 쓰기 ────────────────────────────────────────────────────

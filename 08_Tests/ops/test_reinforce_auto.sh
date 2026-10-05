@@ -331,7 +331,17 @@ d = json.load(io.open("06_Registry/reinforce_program.json", encoding="utf-8"))
 # ★칸 수를 20 으로 박지 않는다 — 오버레이 B5 신설처럼 블록이 늘면 검사가 낡는다.
 #   계약은 "블록마다 5칸"(병렬 배치 단위)이고 총합은 거기서 파생된다.
 n = sum(b["n"] for b in d["blocks"])
-assert all(b["n"] == 5 for b in d["blocks"]), "블록당 5칸 계약 위반: %s" % [(b["id"], b["n"]) for b in d["blocks"]]
+# ★B4-SIX-AXIS(2026-09-26): 축 블록은 5칸(병렬 배치 단위) · 결합 블록(axis=combination)은 1 + 축 블록 수(전결합 + 축별 LOO — 정본 rf_spec_axes.R ·
+#   러너 tick 계약 rf_axes_grid_contract). 결합 칸 use 는 '축 블록 전부' 하나 + '하나만 뺀 집합' 축 블록 수만큼이어야 한다(구조로 잰다).
+cb = [b for b in d["blocks"] if b.get("axis") == "combination"]
+ob = [b for b in d["blocks"] if b.get("axis") != "combination"]
+assert len(cb) == 1, "결합 블록 %d개" % len(cb)
+assert all(b["n"] == 5 for b in ob), "축 블록 5칸 계약 위반: %s" % [(b["id"], b["n"]) for b in ob]
+own = sorted(b["id"] for b in ob)
+assert cb[0]["n"] == 1 + len(own), "결합 블록 n=%d ≠ 1 + 축 블록 %d" % (cb[0]["n"], len(own))
+uses = sorted(tuple(sorted(c["combo"]["use"])) for c in cb[0]["cells"])
+want = sorted([tuple(own)] + [tuple(x for x in own if x != o) for o in own])
+assert uses == want, "결합 칸 ≠ 전결합 + 축별 LOO: %s" % uses
 codes = [c["code"] for b in d["blocks"] for c in b["cells"]]
 assert len(codes) == n and len(set(codes)) == n, "코드 중복/누락: %s" % codes
 for b in d["blocks"]:
@@ -348,7 +358,7 @@ for b in d["blocks"]:
             assert has_method, "%s 오버레이는 method 명시 필수" % c["code"]
 ax = d["fixed_axes"]
 assert ax["long_only"] is True and ax["n_max"] == 25, "고정 축 위반: %s" % ax
-print("  OK   격자 %d칸(블록 %d x 5) · 코드 유일 · 근거(논문 url 또는 method) · 고정 축" % (n, len(d["blocks"])))
+print("  OK   격자 %d칸(축 블록 %d x 5 + 결합 %d) · 코드 유일 · 근거(논문 url 또는 method) · 고정 축" % (n, len(ob), cb[0]["n"]))
 PYEOF
 [ $? -eq 0 ] && PASS=$((PASS+1)) || { FAIL=$((FAIL+1)); echo "  FAIL 격자 무결성"; }
 

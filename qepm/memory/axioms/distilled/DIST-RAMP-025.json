@@ -3,14 +3,14 @@
   "dist_id": "DIST-RAMP-025",
   "cluster_key": "ad0cd8e7e47d",
   "candidate_id": "CAND_ramp_ad0cd8e7e47d",
-  "status": "pending_5axis",
-  "statement_refined": null,
-  "retry_condition": null,
+  "status": "proposed",
+  "statement_refined": "이 모멘텀 아크에서 문턱을 넘은 머리말은 전부 더 엄한 계기에 의해 뒤에 깎였고 깎은 계기가 매번 달랐다 — 벤치마크 기준 · 리밸런스 위상 · 단일 기간 의존 셋이다. 측정: (1) 25종 Book 돌파 주장(book_momcons PORT_t 3.05 · 구성 book_base 6.73)은 시프트 사다리가 미래로 단조 증가(shift−1 1.94 / 0 2.54 / +1 6.73 / +2 9.70)해 1개월 미래참조로 확정됐고 shift+0 의 2.54 가 실현 배포 Book(164개월 2.64)과 일치했다. (2) 미래참조를 제거한 뒤 cap-weight 로 회복한 판(PORT_t 2.98 · oos_ret 1.19)은 교정 IKS200 벤치에서 2.65 로 내려가 경계 +0.03 의 벤치 취약성이 드러났고 oos_retention 1.19→0.22~0.41 · calmar 0.89→0.42~0.60 으로 붕괴해 어느 창×벤치에서도 HARD 0/3~1/3 이었다. 같은 재현에서 'cap-weight = OOS 레버'라는 기전 주장이 역전됐다(재측정 시 cap-w 가 최악 가중). (3) 분기 리밸 A5 가 PORT_t 3.232 · oos 0.704 로 두 HARD 를 동시 통과했는데 배터리는 전부 clean(사다리 5.147→3.232→2.714 · placebo p=0.000 · 시대 4구간 전부 양수 · 40bps 에서도 2.821 · 손익분기 회전 34.65 대 실제 2.35)이었고 오직 분기 시작월 offset 0/1/2 → 3.232 / 2.208 / 2.981 이 통과가 위상 선택에 달렸음을 드러냈다. (4) 중첩 코호트 앙상블 A5E 의 oos 0.706 통과는 독립 적대검증에서 철회됐다 — 2026년 8개월을 빼면 0.065, 2025~26 을 빼면 0.102, 2026-05 한 달만 빼도 0.493 이고 그 해가 전체 활성수익의 25.7% 를 낸다. 그 구간의 원천 특성도 측정됐다(Market 일별 변동성 연율 0.658 대 2020 COVID 0.288 · 2022 0.196 · 2025 0.220 · 최대 일수익 +18.2% · |일수익|>8% 11회 · 원천 BM_Ret 도 vol 0.703 이라 지수 빌더 아티팩트가 아니다). 조건부 규칙은 이것이다 — 이 아크에서 문턱 통과는 벤치 기준 · 리밸 위상 · 단일 기간 제외 세 축에 모두 둔감할 때만 유지됐고 세 축을 모두 통과한 구성은 아직 없다. 가장 오래 버틴 구성은 국면 조건부 다차원 배합(Cascade soft 3-state × 팩터별 국면 매칭 active · max(·,0) · PIT)으로 PORT_t 2.79 · OOS +0.82 · calmar 0.97 · absSR 1.13 인데 이 역시 2.95 에 0.16 모자란다. 국면 엔진의 상대 서열은 재현됐다(14엔진 bake-off: Cascade 2.85 > Trend 2.79 > AR+MSM 2.76 > MSM 2.72 > hard4 2.66 … GMM 2.17 · 앙상블 < 최고 단독). 반례도 측정됐다 — 팩터별 sparse jump model(Shu-Mulvey 2024 arXiv 2410.14841)은 pt 0.62 로 Cascade 단독 2.85 에 크게 못 미쳤고 기전은 KR 팩터 IC 가 순환이 아니라 2017년 이후 일방 감쇠여서 최근 IC 저하를 국면으로 오분류한 것이다. 세 축 동시 둔감성을 사전등록 배터리로 선행 요구한 측정은 아직 없으므로 미해결로 열어둔다.",
+  "retry_condition": "벤치 기준(교정 IKS200 등 권위 벤치) · 리밸런스 위상(시작월 offset 전수) · 단일 기간 제외(연도 및 단월 제외) 세 축을 사전등록 배터리에 넣고 측정한 뒤 세 축 모두에서 문턱을 유지하는 구성이 1건 나올 때 규칙으로 재상정한다. 세 축 중 하나라도 사후에 확인한 결과는 통과 서술로 쓰지 않는다.",
   "refined_at": null,
   "refined_by": null,
   "promoted_to_axiom": null,
   "created_at": "2026-08-22T05:40:41+00:00",
-  "updated_at": "2026-09-23T21:57:10+00:00",
+  "updated_at": "2026-10-03T01:59:17+00:00",
   "research_mode": "ramp",
   "metric_type": "backtested",
   "type": "empirical",
@@ -86,5 +86,37 @@
     "oos_effect_vs_is": 0.22,
     "note": "L-code oos_retention 실값 1건 median (IS65/OOS35 활성SR retention) — oos_months 실값 무 → None 유지 — promote.R essence_score 경유 재확정"
   },
-  "cluster_members_count": 12
+  "cluster_members_count": 12,
+  "adversarial_verdict": {
+    "a_exaggeration": "강등함. 이 아크의 머리말 후보는 PORT_t 3.05 · 2.98 · 3.232 · oos 0.706 넷인데 각각 미래참조 확정 · 벤치 교정 후 2.65 · 위상 의존 · 2026 단독 의존으로 뒤에 깎였다. 어느 하나를 머리말로 세우면 그 자체가 과장이므로 머리말을 '깎인 이력 자체'로 바꾸고 각 수치에 깎인 뒤 값을 병기했다. 가장 오래 버틴 구성(2.79)도 2.95 미달을 명시했다.",
+    "b_evidence": "supporting 12건 전부 metric_type=backtested 이고 각 수치는 해당 L-code 실측이다. 철회 2건(L-RAMP-20260822_120000 의 oos 통과 · L-RAMP-20260713_211037 의 cap-weight 기전)을 철회된 것으로 표기하고 철회 전 값을 현행 사실로 쓰지 않았다. 등급 서술은 하지 않았다 — 이 아크 수치는 essence 권위 등급 계약 밖 판이라 PORT_t·oos·calmar 를 축별 값으로만 인용했다.",
+    "c_ax000": "'구조적 한계'·'dead-end' 없음. 네 번의 깎임을 '계기가 매번 달랐다'는 관측으로 정리했고 세 축 동시 둔감성을 요구하는 사전등록 배터리가 아직 없다는 점을 미해결로 열어 뒀다. 국면 조건부 배합이 가장 오래 버텼다는 양성 관측도 함께 실었다.",
+    "d_firewall": "위반 없음. 깎임을 종목수·유동성·long-only·Σw=1·유니버스 멤버십·15bps·PIT 에 귀속하지 않았다 — 귀속 대상은 벤치 기준·위상·기간 의존이라는 계기 층이다. 2026 구간은 원천 데이터 특성(변동성 연율 0.658)으로 서술했고 봉투를 바꾸자는 제안은 없다. 레버는 전부 봉투-안이다(국면 조건부 배합 · 중첩 코호트 · 사전등록 배터리).",
+    "e_frontier": "frontier 3건 + live_trigger(time) + expiry. '깎은 계기가 매번 달랐다'는 기전이 다음 측정을 '세 계기를 미리 묶은 배터리'로 돌리게 썼다."
+  },
+  "expiry": "2027-03-31",
+  "frontier": [
+    "세 깎임 축(벤치 기준 · 리밸 위상 offset 전수 · 단일 연도·단월 제외)을 사전등록 배터리로 묶어 문턱 통과 선언 전에 요구 — 이 아크는 세 축을 모두 사후에 배웠다",
+    "중첩 코호트 앙상블(Jegadeesh-Titman 표준)을 위상 둔감 형태로 재측정 — A5E 는 위상 문제를 겨냥했으나 기간 의존에서 걸렸으므로 두 축을 분리해 재판정",
+    "2026 구간을 OOS 주장의 재료가 아니라 데이터 품질 항목으로 승격 — 원천 BM_Ret vol 0.703 이 지수 빌더 밖 사실이므로 data_gate 계열 기록과 합쳐 구간 라벨을 먼저 확정"
+  ],
+  "live_trigger": {
+    "type": "time",
+    "condition": "2026 구간의 데이터 라벨이 확정된 뒤 그 구간을 제외한 창에서 oos_retention 이 재산출되고, 동시에 분기 위상 offset 전수와 교정 벤치로 재측정된 구성이 1건 이상 생길 때",
+    "monitored_source": "06_Registry/basis_break_registry.json · .cache/benchmark.parquet · 04_Research/01_reports/ (FQ-239 계열 후속)"
+  },
+  "revival_spec": [
+    {
+      "signal_id": "wall_clock_date",
+      "condition": "x >= as.Date('2027-03-31')",
+      "from_trigger": "expiry",
+      "status": "active"
+    }
+  ],
+  "constraint_firewall": {
+    "mode": "backstop_passed",
+    "checked_at": "2026-10-03"
+  },
+  "drafted_at": "2026-10-03T11:35:49+0900",
+  "drafted_by": "auto_distill"
 }

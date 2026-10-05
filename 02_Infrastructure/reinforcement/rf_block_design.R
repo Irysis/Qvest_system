@@ -46,7 +46,34 @@ rfbd_standing_cells <- function(root) {
   g <- tryCatch(fromJSON(file.path(root, "06_Registry/reinforce_program.json"), simplifyVector = FALSE),
                 error = function(e) NULL)
   sc <- g$standing_cells %||% list()
-  Filter(function(x) is.list(x) && nzchar(as.character(x$code %||% "")), sc)
+  # ★통제 칸(control 태그 · P1-06 · 2026-09-25)은 여기서 빼고 rfbd_control_cells 로만 준다 — 이 함수의 소비자(러너 B5 상주 루프 ·
+  #   상주 pick 제외 목록 · 기전 지도 · B5 설계 프롬프트 · 알림 칸 서술)는 전부 'B5 오버레이 상주 칸' 을 전제한다.
+  Filter(function(x) is.list(x) && nzchar(as.character(x$code %||% "")) && is.null(x$control), sc)
+}
+#' 통제 칸 (P1-06) — 격자 정본 standing_cells 중 control 태그(carry_replay · null_factor)가 있는 원소. active 무관(판정은 코드로 한다).
+#'   [{code, block, label, control, applies_to, active, seed?, e3?}] · 판정·셀 조립은 rf_runner_gates.R::rf_control_plan.
+rfbd_control_cells <- function(root) {
+  g <- tryCatch(fromJSON(file.path(root, "06_Registry/reinforce_program.json"), simplifyVector = FALSE),
+                error = function(e) NULL)
+  Filter(function(x) is.list(x) && nzchar(as.character(x$code %||% "")) && !is.null(x$control), g$standing_cells %||% list())
+}
+#' 격자 블록 칸 중 대조 칸 — blocks[].cells 에 control 태그가 있는 원소(B4-SIX-AXIS · 2026-09-26: B7_40 무신호 베타매칭 무작위 · B7_41 부호 반전).
+#'   standing_cells[control](P1-06 carry 재현 · null 희석)과 **같은 표식**(control 필드 하나 — 표식 체계는 하나다). 목록만 나눈다: standing 통제는
+#'   러너가 B1 머리에 넣는 칸(rf_control_plan)이고 격자 대조 칸은 이미 격자에 있는 칸이라 삽입 대상이 아니다. 각 원소에 block 을 싣는다.
+rfbd_grid_control_cells <- function(root) {
+  g <- tryCatch(fromJSON(file.path(root, "06_Registry/reinforce_program.json"), simplifyVector = FALSE),
+                error = function(e) NULL)
+  out <- list()
+  for (b in g$blocks %||% list()) for (x in b$cells %||% list())
+    if (is.list(x) && nzchar(as.character(x$code %||% "")) && !is.null(x$control)) {
+      x$block <- as.character(b$id %||% ""); out[[length(out) + 1L]] <- x }
+  out
+}
+#' 통제·대조 칸 코드 전부(retired 포함) — 후보 제외·N 제외·dedup 면제·축포·블록 L-code 의 정본 키. 격자 판독 불가면 character(0).
+#'   = standing 통제(rfbd_control_cells) ∪ 격자 대조(rfbd_grid_control_cells · 2026-09-26).
+rfbd_control_codes <- function(root) {
+  v <- as.character(unlist(lapply(c(rfbd_control_cells(root), rfbd_grid_control_cells(root)), function(x) x$code %||% "")))
+  unique(v[nzchar(v)])
 }
 #' 상주 칸의 오버레이 arm id 들(제외 목록의 정본 — 지도·승격·설계 검증이 전부 이걸 읽는다)
 rfbd_standing_picks <- function(root) {

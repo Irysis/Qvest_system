@@ -3,14 +3,14 @@
   "dist_id": "DIST-AR-032",
   "cluster_key": "f092a7ae6f11",
   "candidate_id": "CAND_alpha_research_f092a7ae6f11",
-  "status": "pending_5axis",
-  "statement_refined": null,
-  "retry_condition": null,
+  "status": "proposed",
+  "statement_refined": "이 value 아크에서는 결합의 형태가 value 의 정의보다 결과를 더 많이 결정했다. 측정: (1) 정의 축은 거의 전멸 — 7개 하위 정의(BM · EP · CFP · FCF · SP · SHY · EBIT_EV)를 cap-w top-25 paired NW-t AND-게이트(paired ≥2.0 ∧ ΔIR ≥0.05)로 스크린한 결과 통과는 EBIT_EV(2.378) 하나이고 나머지는 SP 1.523 · SHY 1.275 · BM 1.291 · EP 1.229 · CFP 0.332 · FCF −0.214 였다. 8번째 팩터 add/remove/replace 스크린에서도 14 arm 중 paired ≥2.0 에 닿은 것이 없었다(최고 V14_EBIT_EV w0.30 = 1.87 · ΔIR +0.102 · holdout 1.76 / V07_EV_EBITDA w0.15 = 1.81 · ΔIR +0.120 · holdout 0.39 로 감쇠). (2) 같은 재료가 형태를 바꾸면 통과 — V14+V07 의 z-blend(w0.30)는 paired NW-t 3.807 · ΔIR 창-정합 +0.481 · variant PORT_t 7.60(기저 5.324) · net-IR 1.755(기저 1.275) · 회전 13.0(+0.5) 으로 통과하고 게이트 통과 arm 이 10 중 7(z-blend 5 + slot-carve 2)이었다. tier 조건부 적용도 같은 방향이다 — 비-mega 한정 적용이 paired 2.378 인데 무조건 적용은 1.243 으로 FAIL 이다. (3) 배포 북의 위험 축은 개선되고 최근성은 감쇠 — 실제 소비 형태(알파 × 국면 현금 오버레이)에 value 를 넣은 3-arm 대칭 측정에서 전기간(269개월) Calmar 0.724→1.141(tier 조건부) / 1.124(z-blend) · MDD 0.349→0.278 · SR_geo 1.089→1.369 · PORT_t(NW3) 3.455→4.533 이 나왔으나 같은 측정의 판정은 CONFIG-SCOPED POSITIVE + RECENCY-DECAYED(자본 NO-GO)였다. (4) 2024년 이후 유일 생존 정의는 screen-tier 로 라우팅 — SP(매출-yield)는 EW basis 에서 cap-w PORT_t 2.236 · EW-uni 2.758 로 둘 다 2.95 미달이고 post2017 t 1.16 · capw 0.029 · TE_ew 12.6% · 회전 3.9 이며 수용력 중앙값 0.5억원이라 feature 보존(SCREEN_TIER_ROUTED)으로 남았다. (5) 전이 벽의 시간-샘플링 성분은 배제됐다 — 무선택 진단(0 trial · spec sha256 동결)에서 3개 독립 age 축 전부 fresh>stale 이질성이 없었고(값-혁신 τ contrast NW-t score_eff −0.085/0.572 · M08 −0.224/0.627 · V02_EP −0.028/−0.744 · DART 자사주 이벤트-나이 +0.261 · 보유 tenure −0.323), score_eff 는 오히려 stale(4개월+) 버킷에서 최강이었다(IC 0.047 · NW-t 5.77). 즉 IC→PORT_t 전이 벽에 샘플링 성분은 없고 결핍은 신호 내용·공간 쪽이다. (6) 인접 비-return 축의 꼬리 신호 — 제출지연 극단꼬리 × 심각사건은 동결 PRIMARY 가 성립하지 않았으나(1105 에피소드 / 528종목 · lift 1.23 · firm-부트 CI [0.86, 1.62] ∋ 1 · 통제 OR 2.34 p 0.051), 엄격 상위십분위 진단에서 lift 10.0배 · CI [3.5, 17.3] ∌ 1 로 신호가 극단꼬리에만 있음이 드러났고 커버리지는 677종목 상한으로 정직 축소·동결됐다. 이 봉투 안에서의 조건부 규칙은 '정의를 더 모으는 것보다 결합 형태와 소비면 조건화가 게이트를 움직인다'이며, 최근성 감쇠와 수용력은 screening 통과를 배포로 바꾸지 못한 상태로 미해결로 열어둔다.",
+  "retry_condition": "z-blend·tier 조건부 통과를 배포 판정으로 올리려면 최근성 감쇠(RECENCY-DECAYED)가 뒤집히거나 그 감쇠의 기전이 분리돼야 하고, 수용력 중앙값 0.5억원 수준의 arm 은 EW basis 통과만으로 자본 판정에 올리지 않는다. screening 통과분이 essence 권위 계약으로 재측정돼 Calmar·oos_retention 이 함께 산출될 때 규칙으로 재상정한다.",
   "refined_at": null,
   "refined_by": null,
   "promoted_to_axiom": null,
   "created_at": "2026-07-18T08:47:58+00:00",
-  "updated_at": "2026-09-23T21:57:10+00:00",
+  "updated_at": "2026-10-03T01:59:17+00:00",
   "research_mode": "alpha_research",
   "metric_type": "estimated",
   "type": "empirical",
@@ -75,9 +75,47 @@
     "causal_plausibility": null
   },
   "oos_validation_draft": {
-    "oos_months": 268.0,
+    "oos_months": 268,
     "oos_effect_vs_is": null,
     "note": "promote.R r4_regime_payoff / essence_score 경유 확정"
   },
-  "cluster_members_count": 7
+  "cluster_members_count": 7,
+  "adversarial_verdict": {
+    "a_exaggeration": "강등함. 'paired 3.807 · PORT_t 7.60 · Calmar 0.724→1.141' 은 배포 가능 성과로 읽히는데 같은 L-code 들이 결론을 'book-marginal 자본'·'CONFIG-SCOPED NEGATIVE'·'RECENCY-DECAYED(자본 NO-GO)'·'SCREEN_TIER_ROUTED' 로 못 박았다. 통과 서술마다 층(screening / overlay 북)과 자본 판정을 붙였고 수용력 중앙값 0.5억원을 같이 적어 배포 해석을 막았다.",
+    "b_evidence": "결함 1건 적발·명기. supporting 7건의 metric_type 은 canonical_screen 5 · backtested 1 · unavailable 1 이다. Calmar·MDD·SR_geo 개선분은 backtested 1건(오버레이 적용 북 측정)에서 나오고 나머지 통과 수치는 canonical_screen 이므로 두 층을 섞지 않았다. 기저 PORT_t 5.324 는 frozen 패널 기준이고 같은 아크의 다른 L-code 가 그 저장 패널의 같은 달 빈티지를 적발했으므로 기저 대비 Δ 서술에만 쓰고 수준값을 판정 근거로 쓰지 않았다.",
+    "c_ax000": "'구조적 한계'·'dead-end' 없음. 정의 축 6/7 미달은 'cap-w screening 게이트에서'로 층을 한정했고 같은 재료가 형태 교체로 통과한 양성 관측을 바로 옆에 실어 축의 사망으로 읽히지 않게 했다. 최근성 감쇠와 수용력은 미해결로 열어 뒀다.",
+    "d_firewall": "위반 없음. 미달을 종목수·유동성 기준·long-only·Σw=1·유니버스 멤버십·15bps·PIT 에 귀속하지 않았다 — 귀속 대상은 결합 형태(z-blend 대 단순 추가)와 소비면 조건화라는 방법 층이다. 수용력 0.5억원은 배포 가능성의 실측 사실 서술이며 완화를 요구하지 않는다. 레버는 전부 봉투-안이다(z-blend · slot-carve · tier 조건부 · 오버레이 북 소비 · 비-return 꼬리 신호).",
+    "e_frontier": "frontier 3건 + live_trigger(spread) + expiry. '형태가 정의를 이긴다'는 기전이 다음 측정을 형태·소비면 공간으로 돌리게 썼다."
+  },
+  "expiry": "2026-12-31",
+  "frontier": [
+    "결합 형태 공간을 전수화 — z-blend 가 단순 추가를 3.807 대 1.87 로 갈랐으므로 slot-carve·gated double-sort·tier 조건부를 같은 재료에 교차 적용해 형태 자체를 설계 변수로 사전등록",
+    "RECENCY-DECAYED 의 기전 분리 — 전기간 Calmar 0.724→1.141 과 최근 감쇠가 공존하므로 개선분이 특정 시대 구간에 몰린 것인지 구간별로 분해(시대 4구간 분해 + 단일 연도 제외 민감도)",
+    "제출지연 극단꼬리를 비-return 꼬리 축으로 재설계 — 상위십분위 lift 10.0배 · CI [3.5, 17.3] ∌ 1 은 꼬리 한정 신호의 실측이고, 커버리지 677종목 상한 안에서 정의를 꼬리-only 로 사전등록하면 검정력 벽을 피한다"
+  ],
+  "live_trigger": {
+    "type": "spread",
+    "condition": "value 계열의 최근 구간 활성수익 부호가 전기간 부호와 다시 일치하거나, 형태 축(z-blend·slot-carve·tier 조건부)의 사전등록 교차 측정이 산출될 때",
+    "monitored_source": "06_Registry/factor_evidence.json · 06_Registry/prereg/prereg_index.jsonl"
+  },
+  "revival_spec": [
+    {
+      "signal_id": "wall_clock_date",
+      "condition": "x >= as.Date('2026-12-31')",
+      "from_trigger": "expiry",
+      "status": "active"
+    },
+    {
+      "signal_id": "value_quality_spread",
+      "condition": "x >= 0.90",
+      "from_trigger": "spread",
+      "status": "active"
+    }
+  ],
+  "constraint_firewall": {
+    "mode": "backstop_passed",
+    "checked_at": "2026-10-03"
+  },
+  "drafted_at": "2026-10-03T11:35:59+0900",
+  "drafted_by": "auto_distill"
 }

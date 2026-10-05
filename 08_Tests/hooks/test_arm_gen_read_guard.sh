@@ -36,10 +36,16 @@
 #      ② 백업 접미사·BOM·8.3 짧은 이름이 내용 층 확장자·머리 판정을 비껴감 ③ 구역 밖 디렉터리 Grep(순회 없음) ④ 같은 수치의 사본
 #      (공리 distilled·candidates · 설계 캐시 재료·프롬프트 · 스케줄러 로그) → block / 열린 경로 active·좁힌 코드·설계 산출 되읽기 → pass ·
 #      돌연변이 m23~m28 · N18 뒤집음(내용 설정 불량이면 순회도 데이터 파일에서 fail-closed) · D19·O21·O28 뒤집음(distilled 사본)
+#   Q. (D-E-CATALOG-BASIS 2026-09-25 · 도훈 결정) R5 카탈로그 사본 — 수치 있는 카탈로그·격자·설정·arm json·팩터 등록부·설계 산출(design_r·
+#      블록 설계·기전 json·실행 출력)의 Read·내용 Grep → block + 수치 가린 사본 안내 / 수치 없는 대상·코드·files_with_matches·count·사본 열람 → pass ·
+#      사본 내용(QV — 알려진 수치 리터럴 0 · 정의·이름·구조 글자 그대로 · 머리 sha = 원본) · 정본 sha 불변(Q21) · 신선도(Q22) ·
+#      설정 축(Q23 레인 목록 · Q24 설정 부재 fail-closed · Q25~26 가림 정본 부재·무력화 = 카나리아) · bash 거울(Q27~28) · 파이썬↔R 가림 동치(Q29) ·
+#      돌연변이 m40~m53. ★C03·C04·O19 는 pass → block 으로 뒤집었다(등록부 dedup.reason port_t · 카탈로그 basis Calmar — 사본으로 돌린다).
+#      (CATB 적대 검증 수리 09-25) Q33~Q36 — 대상 밖 사본(.cache 등록부·증류 색인 백업) · 장치·루프백 UNC 표기 · 가드 자신의 파일 · 돌연변이 m54~m55.
 # 격리: 훅을 임시 루트로 복사 · 가짜 HOME(기억 디렉터리) · CLAUDE_PROJECT_DIR·QM_ROOT = 임시 루트 · 로그 = 임시 파일.
 #   운영 원장·기억 디렉터리는 읽지도 쓰지도 않는다(판정 대상 경로는 전부 임시 루트 안이다).
 # 대상 교체: QVEST_AGRG_HOOK(훅) · QVEST_AGRG_POLICY(R2 순회 설정 — 기본 = 훅 옆 policies/) · QVEST_AGRG_OPS(레인 셸·rf_llm_env.sh 디렉터리) ·
-#   QVEST_AGRG_SETTINGS — 스테이징 판 검증용
+#   QVEST_AGRG_SETTINGS · QVEST_AGRG_RX(R5 가림 정본 rf_b1_design_lib.R) — 스테이징 판 검증용
 #==============================================================================
 set -uo pipefail
 ROOT="${QM_ROOT:-C:/Users/99922/OneDrive/Quant_Module_Moltbot}"
@@ -67,6 +73,10 @@ cp "$SRC_HOOK" "$SBX/02_Infrastructure/hooks/arm_gen_read_guard.sh"
 HOOK="$SBX/02_Infrastructure/hooks/arm_gen_read_guard.sh"
 if [ -f "$SRC_POL" ]; then mkdir -p "$SBX/02_Infrastructure/hooks/policies"; cp "$SRC_POL" "$SBX/02_Infrastructure/hooks/policies/arm_gen_read_guard.json"
 else ng "R2 순회 설정 부재" "$SRC_POL"; fi
+# (§Q · D-E-CATALOG-BASIS) R5 가림 규칙 정본 — 훅이 policies catalog_view.redactor_source(훅 디렉터리 기준 ../ops/rf_b1_design_lib.R)에서 이름으로 싣는다
+SRC_RX="${QVEST_AGRG_RX:-$ROOT/02_Infrastructure/ops/rf_b1_design_lib.R}"
+mkdir -p "$SBX/02_Infrastructure/ops"
+if [ -f "$SRC_RX" ]; then cp "$SRC_RX" "$SBX/02_Infrastructure/ops/rf_b1_design_lib.R"; else ng "R5 가림 규칙 정본 부재" "$SRC_RX"; fi
 
 # ── 픽스처 트리 — 측정 구역 + 정당 경로 + 가짜 기억 디렉터리 ────────────────────────────────
 mk(){ mkdir -p "$(dirname "$1")"; printf '%s\n' "${2:-x}" > "$1"; }
@@ -84,6 +94,10 @@ for f in 06_Registry/reinforce_ledger_l1.json 06_Registry/reinforce_ledger_l1.js
          06_Registry/reinforce_ledger_l1.json.bak_20260904_174834 06_Registry/bt_result_format_census_x.csv \
          stage_artifacts/replication/r1/analysis_fmb.csv 04_Research/strategies/S1/bt_result_C_x.rds \
          04_Research/strategies/S1/build_bt_result_x.R; do mk "$SBX/$f"; done
+# [제안 10-03 · 적대검증 PIT] O0a 결정 기록·시행 로그·유기체 상태(구조 키 value·rank — 내용 층 밖)
+mk "$SBX/06_Registry/rf_decisions.jsonl" '{"kind":"block_winner","candidates":[{"id":"B5_21","rank":1,"features":{"value":0.342}}]}'
+mk "$SBX/06_Registry/rf_trial_log.jsonl" '{"kind":"block_winner","chosen":["B5_21"],"rejected":[{"id":"B5_19","reason":""}]}'
+mk "$SBX/06_Registry/organic/state.json" '{"schema_version":"rf_organic_state_v1"}'
 # (B-2) 표본에 없는 이름의 측정 파일 — 적대 검증 우회 실례(원장 .bak_2* · rf_parallel/result_B1_* · analysis_fmb*.csv · pins/**/bt_result_*)
 mkdir -p "$CT/rf_parallel" "$CT/rf_b1_design" "$CT/pins/p1"
 mk "$CT/reinforce_auto_log.jsonl"; mk "$CT/rf_parallel/result_b5_1_1.json"; mk "$CT/rf_b1_design/design_x.json"
@@ -104,7 +118,7 @@ mk "$SBX/qepm/memory/evidence_summary/fam.json" '{"family":"x","avg_ff5_t":1.47,
 mk "$SBX/qepm/memory/axioms/distilled/DIST-x.json" '{"statement":"s","port_t":2.1,"calmar":0.5}'
 mk "$SBX/outputs/ramp/latent_factor_returns.parquet" 'PAR1'
 mk "$SBX/02_Infrastructure/worktask/constraint_defaults.json" '{"tier_graduation":{"calmar":0.64,"portfolio_alpha_t_nw_lag3":2.95,"oos_retention":0.5}}'
-mk "$SBX/02_Infrastructure/factor_db/factor_registry.json" '{"S01_Size":{"category":"size","definition":"-log(MarketCap)","dedup":{"reason":"승인 게이트 통계 우위(port_t +0.194 vs -0.106)"}}}'
+mk "$SBX/02_Infrastructure/factor_db/factor_registry.json" '{"S01_Size":{"category":"size","definition":"-log(MarketCap)","dedup":{"reason":"승인 게이트 통계 우위(port_t +0.194 vs -0.106)","evidence":{"median_abs_cor":0.9989,"n_months":258}}},"Q24_Altman_Z":{"name":"Altman Z","category":"quality","definition":"1.2*WC_TA + 1.4*RE_TA + 3.3*EBIT_TA"},"R01_VaR_95":{"name":"Value-at-Risk 95%","category":"risk","definition":"Negate 5th percentile of returns."}}'
 mkdir -p "$CT/factor_db" "$CT/rf_b5_design/b"
 mk "$CT/conditional_ic_matrix.csv" 'Factor_Name,ic_all,ic_bad,ic_good,conditional_value,recent_3y_icir,n_months,used,category'
 mk "$CT/factor_db/factor_ic_monthly.parquet" 'PAR1'
@@ -125,9 +139,43 @@ mk "$CT/rf_b5_design/b/materials_r1.txt" '(3) arm 성과 이력 med_d_calmar 0.1
 mk "$CT/rf_b5_design/b/materials_r1.txt.sizes.json" '{"materials_bytes":1234}'
 mk "$CT/scheduler_logs/reinforce_auto_x.log" '[rf_par] cell_done code=B5_31 grade=B port_t=2.32 calmar=0.491'
 mk "$CT/rf_parallel/spec_B1_3__RP_x.json" '{"code":"B1_3","factors":[{"id":"V01_BM"}],"preflight":{"recent_attempts":["n=3 B1_3 Grade C · PORT_t 0.174"]}}'
+# (§Q · D-E-CATALOG-BASIS) 카탈로그·설계 산출 픽스처 — 서술 필드에 운영 실측 모양의 성과 수치(09-25 전수에서 뽑은 문장 모양) · 정의 필드의 사양 상수
+mk "$SBX/06_Registry/overlay_catalog.json" '{"schema":"overlay_catalog_v1","families":{"drawdown":{"note":"낙폭 계열"}},"arms":[{"id":"dd_brake_q","kind":"dd_brake","family":"drawdown","basis":"낙폭이 확장창 중앙값~90분위 구간에서 선형 축소. 근거: B5 50셀 실측에서 MDD -10% 대비 CAGR -23% 로 Calmar 중앙값이 최악(0.160)이었다.","status":"active","est_cost_min":6},{"id":"vol_x","kind":"vol_x","family":"vol","basis":"변동성 백분위로 축소","status":"active","est_cost_min":4}]}'
+mk "$SBX/06_Registry/weight_catalog.json.bak_q" '{"entries":[{"catalog_id":"paper:SchurDamping","label":"SchurDamping","family":"optimizer","prior_measured":{"measurement_status":"IR=0.939 vs EW IR=1.301(-27.8%) · PORT_t=3.944"},"probe":{"max_abs_dev_from_ew":0.0648}}]}'
+mk "$SBX/06_Registry/weight_catalog.json.bak_q2" '{"entries":[{"catalog_id":"paper:Fresh","label":"Fresh","family":"risk","prior_measured":{"measurement_status":"PORT_t=6.047"}}]}'
+mk "$SBX/06_Registry/reinforce_auto_config.json" '{"b5_design":{"enabled":true,"max_cells":8,"note":"실측 Grade B · PORT_t 2.567 · Calmar 0.499 · CLI 2.1.170"},"alpha":0.05}'
+mk "$SBX/02_Infrastructure/reinforcement/overlay_arms/num_arm.arm.json" '{"id":"num_arm","family":"drawdown","action":"scalar_exposure","state":"drawdown","basis":"근거: 실측 Calmar 0.160 · 보유 분위(0.1/0.9)로 절단","est_cost_min":5,"port_t":3.592,"calmar":0.61}'
+mk "$SBX/02_Infrastructure/reinforcement/overlay_arms/plain_arm.arm.json" '{"id":"plain_arm","family":"vol","action":"cross_sectional","state":"vol","basis":"변동성 백분위로 축소","est_cost_min":3}'
+mk "$SBX/06_Registry/distilled_knowledge.json" '{"schema_version":"distilled_knowledge_v1","entries":[{"id":"DIST-QPM-014","statement":"L-160 IC 0.22 · ICIR 1.88 · FM t 16.9 — 수급 계열이 산다","family":"flow"}]}'
+# (CATB 적대 검증 수리 09-25) 대상 밖 사본 — 운영 .cache/factor_db/factor_registry.json = 정본과 바이트 동일(rf_factor_arms.R 가 읽는 경로) · .cache/_dk_backup.json = 증류 색인 백업
+mkdir -p "$CT/factor_db"; cp "$SBX/02_Infrastructure/factor_db/factor_registry.json" "$CT/factor_db/factor_registry.json"
+cp "$SBX/06_Registry/distilled_knowledge.json" "$CT/_dk_backup.json"
+mk "$SBX/.claude/worktrees/w1/06_Registry/reinforce_program.json" '{"blocks":[{"id":"B6","cells":[{"code":"B6_36","basis":"promo4 PORT_t 4.153 · Calmar 0.492 · OOS +0.152"}]}]}'
+mkdir -p "$CT/rf_b5_design/c" "$CT/rf_block_design"
+mk "$CT/rf_b5_design/c/design_r1.json" '{"schema":"rf_b5_design_v1","base_id":"RP_c","rationale":"바닥 MDD 0.533 · PORT_t 3.592 — 침식형","cells":[{"picks":["dd_brake_q"],"label":"l","why":"MDD 0.500 아래면 켜진 것"}]}'
+mk "$CT/rf_b5_design/c/run_r1.out" '설계 파일을 썼습니다 — 두 에피소드가 55.1%·54.9% 로 동률'
+mk "$CT/rf_lcode_mech/RP_y_B2.mechanism.json" '{"mechanism":"판정: B1_1 L19_Price_Delay PORT_t 0.338 · MDD 0.405","next_block_actions":[{"action":"x","why":"MDD 0.640→0.533"}]}'
+mk "$CT/rf_block_design/RP_y_B5.json" '{"cells":[{"label":"b","why":"B1_9 합성 순위 — PORT_t 1.971 대비 회수분"}]}'
 JUNCTION=0
 if cmd //c "mklink /J $(wp "$SBX/.cache") $(wp "$CT")" >/dev/null 2>&1 && [ -f "$SBX/.cache/rf_b1_design/design_x.json" ]; then JUNCTION=1
 else rm -rf "$SBX/.cache" 2>/dev/null; mkdir -p "$SBX/.cache"; cp -r "$CT/." "$SBX/.cache/"; fi
+# (§Q Q21) 정본 해시 — 픽스처 직후(판정 전) 기준값
+qsha(){ "$PY" - "$(wp "$SBX")" <<'PYEOF' | tr -d '\r'
+import hashlib, os, sys
+r = sys.argv[1]
+fs = ['06_Registry/overlay_catalog.json', '06_Registry/weight_catalog.json.bak_q', '06_Registry/reinforce_auto_config.json',
+      '06_Registry/reinforce_program.json', '02_Infrastructure/factor_db/factor_registry.json',
+      '02_Infrastructure/reinforcement/overlay_arms/num_arm.arm.json', '02_Infrastructure/reinforcement/overlay_arms/plain_arm.arm.json',
+      '.claude/worktrees/w1/06_Registry/reinforce_program.json', '.cache/rf_b5_design/c/design_r1.json', '.cache/rf_b5_design/c/run_r1.out',
+      '.cache/rf_lcode_mech/RP_y_B2.mechanism.json', '.cache/rf_block_design/RP_y_B5.json', '02_Infrastructure/ops/rf_b1_design_lib.R',
+      '.cache/factor_db/factor_registry.json', '.cache/_dk_backup.json']
+try:
+    print(' '.join(hashlib.sha256(open(os.path.join(r, f), 'rb').read()).hexdigest()[:16] for f in fs))
+except Exception as e:
+    print('QSHA_FAIL %s' % e)
+PYEOF
+}
+QSHA0="$(qsha)"
 SLUG="C--fake-proj"
 mk "$HOMEF/.claude/projects/$SLUG/memory/MEMORY.md"; mk "$HOMEF/.claude/projects/$SLUG/memory/project-card-x.md"
 mk "$HOMEF/.claude/projects/$SLUG/abc.jsonl"
@@ -186,8 +234,8 @@ R('B18', 'block', 'stage_artifacts/replication/r1/../r1/04_holdings.csv', '복�
 # C. 정당 경로
 R('C01', 'pass', w('02_Infrastructure', 'reinforcement', 'overlay_arms', 'dbeta_tilt.R'), 'arm 본보기')
 R('C02', 'pass', '04_Research/strategies/S1/engine.R', '기저 엔진')
-R('C03', 'pass', '02_Infrastructure/factor_db/factor_registry.json', '팩터 등록부')
-R('C04', 'pass', w('06_Registry', 'overlay_catalog.json'), '오버레이 카탈로그')
+R('C03', 'block', '02_Infrastructure/factor_db/factor_registry.json', '팩터 등록부(§Q R5 — dedup.reason 의 port_t 비교 문장 · 사본으로 돌린다 · 구판 pass)')
+R('C04', 'block', w('06_Registry', 'overlay_catalog.json'), '오버레이 카탈로그(§Q R5 — basis 의 Calmar 중앙값 · 사본으로 돌린다 · 구판 pass)')
 R('C05', 'pass', '.cache/rf_b1_design/design_x.json', '설계 캐시')
 R('C06', 'pass', 'stage_artifacts/replication/r1/01_strategy_spec.json', '복제 01_strategy_spec')
 R('C07', 'pass', 'stage_artifacts/replication/r1/10_audit.csv', '복제 10_audit(무결성 검사)')
@@ -205,7 +253,7 @@ G('D04', 'block', {'path': sbw, 'glob': '*.json'}, 'Grep 루트 glob=*.json')
 G('D05', 'pass', {'path': sbw, 'glob': '*.R'}, 'Grep 루트 glob=*.R')
 G('D06', 'pass', {'path': sbw, 'type': 'r'}, 'Grep 루트 type=r')
 G('D07', 'pass', {'path': '02_Infrastructure'}, 'Grep 02_Infrastructure')
-G('D08', 'pass', {'path': '06_Registry/overlay_catalog.json'}, 'Grep 카탈로그 파일')
+G('D08', 'pass', {'path': '06_Registry/overlay_catalog.json'}, 'Grep 카탈로그 파일(files_with_matches 기본 — 이름만 · §Q R5 는 내용 모드만)')
 G('D09', 'block', {'path': 'stage_artifacts/replication', 'glob': '0?_*.csv'}, 'Grep 글롭 우회 0?_*.csv')
 G('D10', 'pass', {'path': 'stage_artifacts/replication/r1', 'glob': '01_strategy_spec.json'}, 'Grep 복제 run 의 01_spec 만')
 G('D11', 'block', {'path': sbw, 'glob': '!*.R'}, 'Grep 부정 글롭(!*.R = 나머지 전부)')
@@ -213,7 +261,7 @@ G('D12', 'block', {'path': '04_Research/strategies/S1'}, 'Grep 전략 디렉터�
 G('D13', 'pass', {'path': '04_Research/strategies/S1/engine.R'}, 'Grep 엔진 파일')
 G('D14', 'block', {'path': homew + B + '.claude' + B + 'projects'}, 'Grep 기억 디렉터리 조상')
 G('D15', 'block', {'path': memw, 'glob': '*.md'}, 'Grep 기억 디렉터리 *.md')
-G('D16', 'pass', {'path': '06_Registry', 'glob': 'overlay_catalog.json'}, 'Grep 06_Registry 카탈로그만')
+G('D16', 'pass', {'path': '06_Registry', 'glob': 'overlay_catalog.json'}, 'Grep 06_Registry 카탈로그만(files_with_matches 기본 · §Q R5 는 내용 모드만)')
 G('D17', 'block' if junction == '1' else 'skip', {'path': ctw}, 'Grep junction 실경로(C:/qm_cache 판) 직접')
 G('D18', 'block', {'path': sbw, 'glob': '**/stage_artifacts/**/*.csv'}, 'Grep ** 글롭')
 G('D19', 'block', {'path': 'qepm/memory/axioms'}, 'Grep qepm/memory/axioms(§P: 순회가 distilled 사본을 이름으로 잡는다 — 운영도 block · 구판 pass)')
@@ -259,7 +307,7 @@ R('O15', 'block', 'outputs/ramp/latent_factor_returns.parquet', 'outputs/ramp �
 R('O16', 'block', '04_Research/strategies/S1/output/perf_novel_name.csv', '이름 목록 밖 성과 csv(머리 열 port_t·calmar·cagr → R1_content)')
 R('O17', 'block', '06_Registry/novel_stats_table.json', '이름 목록 밖 성과 json(구조 키 calmar·sharpe → R1_content)')
 G('O18', 'block', {'path': '06_Registry/novel_stats_table.json'}, 'Grep 이름 목록 밖 성과 json 파일(R1_content)')
-R('O19', 'pass', '02_Infrastructure/factor_db/factor_registry.json', '팩터 등록부(이름·정의·계열 — 본문 속 port_t 는 키가 아니다)')
+R('O19', 'block', '02_Infrastructure/factor_db/factor_registry.json', '팩터 등록부(R1_content 는 통과 — 본문 속 port_t 는 키가 아니다 · §Q R5 가 사본으로 돌린다 · 구판 pass)')
 R('O20', 'pass', '02_Infrastructure/worktask/constraint_defaults.json', '등급 문턱 설정(구조 키 3종이지만 열린 경로 02_Infrastructure)')
 R('O21', 'block', 'qepm/memory/axioms/distilled/DIST-x.json', '공리 distilled 사본(§P — L-code 수치 사본 · 열린 경로는 active/ 로 좁혔다 · 구판 pass)')
 R('O22', 'pass', '06_Registry/pit_quarantine.json', '격리 목록(구조 키 1종 < 문턱 2)')
@@ -270,6 +318,10 @@ L('O26', 'block', {'pattern': '06_Registry/factor_evidence.json'}, 'Glob factor_
 L('O27', 'pass', {'pattern': '06_Registry/**/*factor*.json'}, 'Glob 06_Registry/**/*factor*.json(이름 열거만 — 09-23 B1 설계 실사용)')
 G('O28', 'block', {'path': 'qepm/memory/axioms'}, 'Grep qepm/memory/axioms(§P — distilled 사본 포함 · 구판 pass)')
 put('O29', 'arm', 'block', 'Read', {'file_path': '06_Registry/factor_evidence.json'}, '생성 표식: factor_evidence')
+R('O30', 'block', '06_Registry/rf_decisions.jsonl', '결정 기록(O0a 생산자 — 후보별 전기간 지표 값·순위 · 구조 키 value 라 내용 층 밖)')
+R('O31', 'block', '06_Registry/rf_trial_log.jsonl', '시행 로그(기각 순서 = 전기간 순위)')
+R('O32', 'block', '06_Registry/organic/state.json', '유기체 상태(설계 §5 LLM 권한 — 구역 확장)')
+G('O33', 'block', {'path': '06_Registry', 'glob': 'rf_decisions.jsonl', 'output_mode': 'content'}, 'Grep 06_Registry glob=rf_decisions.jsonl(좁힌 glob)')
 # P. (R2 적대 검증 수리 2026-09-25) 운영 실증 우회 — 좁힌 glob 순회 · 확장자 변형 · 구역 밖 디렉터리 · 수치 사본
 G('P01', 'block', {'path': '04_Research/90_legacy', 'glob': 'residual_x.csv', 'output_mode': 'content'}, '좁힌 glob 디렉터리 Grep → 이름 밖 IC csv(순회가 내용으로 — 운영 residual_alpha_ranking.csv 재현)')
 G('P02', 'block', {'path': '06_Registry', 'glob': 'novel_stats_table.json'}, '좁힌 glob 06_Registry → 이름 밖 성과 json(Read 는 O17 이 막는데 Grep 은 통과하던 것)')
@@ -295,6 +347,54 @@ if short83:
     R('P20', 'block', w('06_Registry', short83), '8.3 짧은 이름(%s — 실경로 novel_stats_table.json · 입력 형태 확장자만 보던 판 우회)' % short83)
 else:
     put('P20', 'design', 'skip', 'Read', {'file_path': w('06_Registry', 'novel_stats_table.json')}, '8.3 짧은 이름 — 이 볼륨이 8.3 이름을 만들지 않는다')
+# Q. (D-E-CATALOG-BASIS 2026-09-25) R5 카탈로그 사본 — 수치 있는 대상은 사본으로 · 수치 없는 대상·코드·이름 열거는 그대로
+R('Q01', 'block', '06_Registry/overlay_catalog.json', 'overlay_catalog basis 의 Calmar 중앙값(0.160) → 사본으로(R5_catalog)')
+G('Q02', 'block', {'path': '06_Registry/overlay_catalog.json', 'output_mode': 'content', 'pattern': '"id"'}, 'Grep 카탈로그 파일 내용 모드(B5 설계 실사용 — id 조회) → 사본으로')
+G('Q03', 'pass', {'path': '06_Registry/overlay_catalog.json', 'output_mode': 'files_with_matches', 'pattern': '"id"'}, 'Grep 카탈로그 files_with_matches(이름만) → 통과')
+G('Q03b', 'pass', {'path': '06_Registry/overlay_catalog.json', 'output_mode': 'count', 'pattern': '"id"'}, 'Grep 카탈로그 count(개수만) → 통과')
+R('Q06', 'block', '02_Infrastructure/factor_db/factor_registry.json', 'factor_registry dedup.reason port_t 비교 → 사본으로(정의 필드는 사본에 그대로 — 내용 검사 Q-V)')
+R('Q07', 'block', '06_Registry/weight_catalog.json.bak_q', 'weight_catalog prior_measured(IR·PORT_t) 백업 접미사 → 사본으로')
+R('Q08', 'block', '02_Infrastructure/reinforcement/overlay_arms/num_arm.arm.json', 'arm json basis 의 Calmar + 성과 키 수치 → 사본으로(열린 경로 02_Infrastructure 여도)')
+R('Q08b', 'pass', '02_Infrastructure/reinforcement/overlay_arms/plain_arm.arm.json', '수치 없는 arm json → 정본 그대로(양성 대조 — 대상이라고 다 막지 않는다)')
+R('Q04', 'pass', '.cache/design_view/02_infrastructure__reinforcement__overlay_arms__num_arm.arm.json', '사본 열람(성과 키 2종이 있어도 사본 디렉터리 = 열린 경로)')
+G('Q05', 'pass', {'path': '.cache/design_view', 'output_mode': 'content', 'pattern': 'calmar'}, '사본 디렉터리 내용 Grep → 통과')
+R('Q09', 'block', '.cache/rf_b5_design/c/design_r1.json', '형제 entry 설계 산출 design_r1.json(rationale 수치) → 사본으로(R2 남은 위험 해소)')
+R('Q10', 'block', '.cache/rf_lcode_mech/RP_y_B2.mechanism.json', '남의 기전 json(PORT_t·MDD) → 사본으로')
+R('Q11', 'block', '.cache/rf_block_design/RP_y_B5.json', '블록 설계 json(why 의 PORT_t) → 사본으로')
+R('Q11b', 'block', '.cache/rf_b5_design/c/run_r1.out', '설계 실행 출력 .out(비 JSON) → 텍스트 사본으로')
+R('Q12', 'block', '.claude/worktrees/w1/06_Registry/reinforce_program.json', '워크트리 사본 격자(cells.basis promo4 PORT_t) → 사본으로')
+R('Q12b', 'block', '06_Registry/reinforce_auto_config.json', '설정 note(Grade B · PORT_t · Calmar · 세 마디 판본) → 사본으로')
+R('Q12c', 'pass', '06_Registry/reinforce_program.json', '수치 없는 격자 → 정본 그대로(C11·O25 와 같은 파일)')
+R('Q12d', 'block', '06_Registry/distilled_knowledge.json', '증류 지식 색인(원천 distilled/ 는 R2 가 막았다 — 같은 문장의 색인 사본) → 사본으로')
+G('Q13', 'block', {'path': '02_Infrastructure/reinforcement', 'output_mode': 'content', 'pattern': 'basis'}, 'Grep 02_Infrastructure/reinforcement 내용 무필터(수치 arm json 을 덮는다) → R5_catalog_scope')
+G('Q14', 'pass', {'path': '02_Infrastructure/reinforcement', 'output_mode': 'content', 'glob': '*.R', 'pattern': 'basis'}, '같은 범위 glob=*.R(코드만) → 통과(레인 코드 찾기 실사용)')
+G('Q15', 'pass', {'path': '02_Infrastructure/reinforcement', 'pattern': 'basis'}, '같은 범위 files_with_matches 기본 → 통과')
+G('Q16', 'block', {'path': '02_Infrastructure', 'output_mode': 'content', 'glob': '*.json', 'pattern': 'x'}, 'Grep 02_Infrastructure 내용 glob=*.json(factor_registry 포함) → R5_catalog_scope')
+G('Q16b', 'pass', {'path': '02_Infrastructure/reinforcement/overlay_arms', 'output_mode': 'content', 'glob': 'plain_arm.arm.json', 'pattern': 'x'}, '범위 안 대상이 수치 없는 것뿐 → 통과')
+R('Q17', 'block' if junction == '1' else 'skip', ctw + B + 'rf_b5_design' + B + 'c' + B + 'design_r1.json', 'junction 실경로(C:/qm_cache 판)로 설계 산출 → 저장소 경로로 되돌려 사본으로')
+put('Q19', 'arm', 'block', 'Read', {'file_path': '06_Registry/overlay_catalog.json'}, '생성 표식도 R5(설정 lanes · 생성 레인 overlay_catalog Read 3회 전부 수치 수신)')
+put('Q20', 'both', 'block', 'Read', {'file_path': w('06_Registry', 'overlay_catalog.json')}, '두 표식 동시 → R5')
+R('Q22a', 'block', '06_Registry/weight_catalog.json.bak_q2', 'weight_catalog 백업 사본(신선도 검사 Q22 의 대상)')
+put('Q32', 'design', 'pass', 'Write', {'file_path': '.cache/rf_b5_design/c/design_r1.json', 'content': '{}'}, 'Write 는 R5 밖(레인이 제 설계를 쓴다 — matcher 가 넓어져도)')
+# (CATB 적대 검증 수리 09-25) ① 대상 밖 사본 ② 장치·루프백 UNC 표기(Read 도구가 여는 표기 — 루트 상대 대조를 비껴갔다) ③ 가드 자신의 파일(누출 실례 원문 인용)
+R('Q33', 'block', '.cache/factor_db/factor_registry.json', '등록부 .cache 사본(정본과 바이트 동일 · rf_factor_arms.R 가 읽는 경로) → 사본으로')
+R('Q33b', 'block', '.cache/_dk_backup.json', '증류 지식 색인 백업 사본 → 사본으로')
+R('Q34', 'block', B + B + '?' + B + w('06_Registry', 'overlay_catalog.json'), '장치 표기(?) 카탈로그 Read → 사본으로')
+R('Q34b', 'block', B + B + '.' + B + w('06_Registry', 'overlay_catalog.json'), '장치 표기(.) 카탈로그 Read → 사본으로')
+G('Q34c', 'block', {'path': B + B + '?' + B + w('06_Registry'), 'glob': 'overlay_catalog.json', 'output_mode': 'content', 'pattern': 'basis'}, '장치 표기 디렉터리 내용 Grep → R5_catalog_scope')
+unc = B + B + 'localhost' + B + sbf[0].upper() + '$' + sbf[2:].replace('/', B) + B + '06_Registry' + B + 'overlay_catalog.json'
+R('Q35', 'block' if os.path.isfile(unc) else 'skip', unc, '루프백 관리 공유(localhost C$) 카탈로그 Read → 사본으로')
+try:
+    import ctypes
+    _vb = ctypes.create_unicode_buffer(128)
+    vol = _vb.value if ctypes.windll.kernel32.GetVolumeNameForVolumeMountPointW(sbf[:2] + B, _vb, 128) else ''
+except Exception:
+    vol = ''
+vgp = (vol + sbf[3:].replace('/', B) + B + '06_Registry' + B + 'overlay_catalog.json') if vol else ''
+R('Q34d', 'block' if vgp and os.path.isfile(vgp) else 'skip', vgp or 'x', '볼륨 GUID 표기(Volume{…}) 카탈로그 Read → 사본으로')
+R('Q36', 'block', '02_Infrastructure/hooks/policies/arm_gen_read_guard.json', '가드 설정 근거 필드(누출 실례 원문 인용 수치) → 사본으로')
+R('Q36b', 'block', '02_Infrastructure/hooks/arm_gen_read_guard.sh', '가드 훅 머리 주석(누출 실례 원문 인용 수치) → 사본으로')
+G('Q36c', 'block', {'path': '02_Infrastructure/hooks', 'output_mode': 'content', 'pattern': 'PORT_t'}, '가드 디렉터리 내용 Grep → R5_catalog_scope')
 # E. Glob 열거(R3)
 L('E01', 'pass', {'pattern': '06_Registry/*.json'}, 'Glob 06_Registry/*.json — 이름 열거만(원장 내용은 R1 이 Read 에서)')
 L('E02', 'pass', {'pattern': '**/*.R'}, 'Glob **/*.R')
@@ -553,7 +653,8 @@ PYEOF
     else ng "L $1 판별력" "사례 $2 가 여전히 block — 이 규칙 없이도 막히면 검사가 규칙을 안 잰다"; fi
   else ok "L $1 — 규칙을 끄면 사례 $2 가 뚫린다($got)"; fi
 }
-mut m01_gate_design B02 design 'if [ "${QVEST_ARM_GEN:-0}" != "1" ] && [ "${QVEST_DESIGN_LANE:-0}" != "1" ]; then' 'if [ "${QVEST_ARM_GEN:-0}" != "1" ]; then'
+# (10-03 · FA-CLEAN-BASE-PATH) 발화 문이 청정 표식(QVEST_CLEAN_LANE)을 더 받는다 — 설계 레인 조건만 빼는 돌연변이(뜻 불변 · 좌표 갱신)
+mut m01_gate_design B02 design 'if [ "${QVEST_ARM_GEN:-0}" != "1" ] && [ "${QVEST_DESIGN_LANE:-0}" != "1" ] && [ "${QVEST_CLEAN_LANE:-0}" != "1" ]; then' 'if [ "${QVEST_ARM_GEN:-0}" != "1" ] && [ "${QVEST_CLEAN_LANE:-0}" != "1" ]; then'
 mut m02_memory_re B09 design '|\.claud(e|~[0-9])/projects/[^/]+/memory(/|"|$)|memory\.md' ''
 mut m03_replication_re B06 design '|stage_artifacts/replication/[^/]+/(0[2-9]_[a-z_]+\.csv|analysis_[a-z_]+\.(csv|md)|(equity_curve|drawdown|annual_returns)\.png)' ''
 mut m04_no_slash_norm B06 design "    s = s.replace('\\\\', '/')
@@ -584,6 +685,7 @@ mut m15_no_code_skip D39 design "                if nm.endswith(cx):
 mut m17_no_dir_whitelist D36 design "stack.append((full, rel, inc or _dir_whitelisted(rel, glob)))" "stack.append((full, rel, inc))"
 # (R2 · §O) 돌연변이 — 이름 층(이진 패널은 내용으로 못 잡는다) · 내용 층 · 열린 경로 · 새 구역 · 키 대 값
 mut m18_no_stats_re O03 design 'MEASURE_RE="${MEASURE_RE}|${STATS_RE}"' 'MEASURE_RE="${MEASURE_RE}"'
+mut m30_no_o0a_records O30 design "STATS_RE+='|rf_decisions\.jsonl|rf_trial_log\.jsonl|06_registry/organic/'" "STATS_RE+=''"
 mut m19_no_content O16 design "        h = content_hit(fsr)                                    # (R2) 이름 밖 통계 산출물 — 내용 재도출" "        h = None"
 mut m20_no_open O20 design "        if rel is not None and rel.startswith(cp['open']):
             return None
@@ -595,7 +697,9 @@ mut m22_values_counted O25 design "krx=re.compile(r'\"(' + '|'.join(keys) + r')\
 mut m23_no_walk_content P01 design "                    ch = content_hit([full])                     # scandir 이름 = 긴 이름(8.3 아님) — 실경로 해소 불요" "                    ch = None"
 mut m24_ext_endswith P04 design "        de = _dext(f, cp['ext'])" "        de = next((e for e in cp['ext'] if f.endswith(e)), None)"
 mut m25_no_nonregion_walk P10 design "        if rel is not None and cpo and not (rel + '/').startswith(cpo['open']):" "        if False:"
-mut m26_no_copies_re P06 design "|qepm/memory/axioms/(distilled|candidates|review_log|deprecated)/|rf_(b1_design|b5_design|lcode_mech|block_design)/([^/\" ]*/)*[^/\" ]*(materials|prompt)[^/\" ]*\.txt([^a-z0-9_.]|$)|scheduler_logs/|rf_parallel/spec_|backtest_registry\.csv" ""
+# (§Q D-E-CATALOG-BASIS) m26 표적을 P06(설계 캐시 재료 .txt) → P09(스케줄러 로그)로 옮겼다: 설계 캐시(.cache/rf_*/**)는 이제 R5 대상이라
+#   이름 규칙 ⑤를 꺼도 P06 은 R5 가 사본으로 돌린다(이중 방어 — 아래 m26b 가 그 사실 자체를 잰다). ⑤ 의 판별력은 R5 밖 사본(P09)으로 잰다.
+mut m26_no_copies_re P09 design "|qepm/memory/axioms/(distilled|candidates|review_log|deprecated)/|rf_(b1_design|b5_design|lcode_mech|block_design)/([^/\" ]*/)*[^/\" ]*(materials|prompt)[^/\" ]*\.txt([^a-z0-9_.]|$)|scheduler_logs/|rf_parallel/spec_|backtest_registry\.csv" ""
 mut m28_no_bom P05 design "s.lstrip('\ufeff').split('\n', 1)[0]" "s.split('\n', 1)[0]"
 if [ -n "${SHORT83:-}" ]; then
   mut m29_first_form_only P20 design "    for f in fs:
@@ -658,7 +762,9 @@ if cmp -s "$T/nm/nobudget.sh" "$HOOK" || cmp -s "$T/nm/noprune.sh" "$HOOK" || cm
 else
   nchk "N10 돌연변이 예산 검사 삭제 + 항목 예산 3 → D40 pass(검사가 예산을 잰다)" pass "$(alt m_nobudget 3 20 "$T/nm/nobudget.sh")" D40
   nchk "N11 돌연변이 코드 생략 삭제 + 항목 예산 3 → D05 block(생략이 루트 *.R 을 살린다)" block "$(alt m_noprune 3 20 "$T/nm/noprune.sh")" D05 R2_scope_budget
-  nchk "N12 돌연변이 설정 부재=통과 → D29 pass(fail-closed 가 표본 밖 측정 파일을 지킨다)" pass "$(alt m_polopen '' '' "$T/nm/polopen.sh")" D29
+  # (§Q D-E-CATALOG-BASIS) 표적 D29 → D30: D29 는 내용 모드 Grep 이라 설정 부재 시 R5 fail-closed(R5_catalog_policy)가 한 겹 더 막는다(이중 방어) —
+  #   R2_policy 의 판별력은 R5 가 닿지 않는 files_with_matches 기본 모드 사례(D30 · 표본 밖 병렬 결과)로 잰다.
+  nchk "N12 돌연변이 설정 부재=통과 → D30 pass(fail-closed 가 표본 밖 측정 파일을 지킨다)" pass "$(alt m_polopen '' '' "$T/nm/polopen.sh")" D30
 fi
 
 # (R2 · §O) content_guard 설정 축 — 부재·불량 = 데이터 Read fail-closed · 문턱이 판정을 가른다 · R2 순회 설정과 분리
@@ -698,6 +804,293 @@ for id in O16 O17 O18; do
   if [ -f "$T/blocks/$id.out" ] && grep -q 'R1_content' "$T/blocks/$id.out"; then ok "N19 $id 차단 사유 = R1_content(이름이 아니라 내용이 잡았다)"
   else ng "N19 $id 사유" "$(head -c 200 "$T/blocks/$id.out" 2>/dev/null)"; fi
 done
+
+# ── Q. (D-E-CATALOG-BASIS 2026-09-25) R5 카탈로그 사본 — 사본 내용 · 정본 불변 · 설정·가림 규칙 fail-closed · 거울 · 동치 · 돌연변이 ──────
+echo "--- Q. R5 카탈로그 사본 ---"
+VD="$SBX/.cache/design_view"
+vchk(){ # $1 id $2 사본 파일 이름 $3 원본 경로(sha 대조 · 빈 = 생략) $4 있어야 할 문자열(| 구분) $5 없어야 할 문자열(| 구분)
+  local r; r="$("$PY" - "$(wp "$VD/$2")" "${3:+$(wp "$3")}" "$4" "$5" <<'PYEOF' 2>&1 | tr -d '\r'
+import hashlib, io, json, sys
+vp, src, must, mustnot = sys.argv[1:5]
+try:
+    t = io.open(vp, encoding='utf-8').read()
+except Exception as e:
+    print('NOVIEW %s' % type(e).__name__); sys.exit(0)
+bad = ['부재:' + x for x in must.split('|') if x and x not in t] + ['잔존:' + x for x in mustnot.split('|') if x and x in t]
+if src:
+    h = hashlib.sha256(open(src, 'rb').read()).hexdigest()
+    if h not in t.split('\n', 3)[0] + t[:2048]:
+        bad.append('머리 sha 불일치')
+print('OK' if not bad else 'BAD ' + ' · '.join(bad))
+PYEOF
+)"
+  [ "$r" = OK ] && ok "$1 사본 $2" || ng "$1 사본 $2" "$r"; }
+# Q-V 사본 내용 — 수치 0 · 정의·이름·구조 보존 · 머리 sha = 원본 sha(독립 판별: 알려진 수치 리터럴·정의 문자열을 글자 그대로 대조)
+vchk QV1 06_registry__overlay_catalog.json "$SBX/06_Registry/overlay_catalog.json" 'dd_brake_q|vol_x|drawdown|90분위|선형 축소|<stat>|"est_cost_min": 6' '0.160|-23%|-10%'
+vchk QV2 02_infrastructure__factor_db__factor_registry.json "$SBX/02_Infrastructure/factor_db/factor_registry.json" '1.2*WC_TA + 1.4*RE_TA + 3.3*EBIT_TA|Value-at-Risk 95%|Negate 5th percentile of returns.|-log(MarketCap)|port_t <stat> vs <stat>|"n_months": 258' '+0.194|-0.106|0.9989'
+vchk QV3 06_registry__weight_catalog.json.bak_q "$SBX/06_Registry/weight_catalog.json.bak_q" 'paper:SchurDamping|"max_abs_dev_from_ew": 0.0648' '0.939|1.301|3.944|27.8'
+vchk QV4 02_infrastructure__reinforcement__overlay_arms__num_arm.arm.json "$SBX/02_Infrastructure/reinforcement/overlay_arms/num_arm.arm.json" 'num_arm|"family": "drawdown"|"port_t": "<stat>"|"est_cost_min": 5' '0.160|3.592|0.61|0.1/0.9'
+vchk QV5 cache__rf_b5_design__c__design_r1.json "$SBX/.cache/rf_b5_design/c/design_r1.json" 'dd_brake_q|침식형' '0.533|3.592|0.500'
+vchk QV6 cache__rf_lcode_mech__rp_y_b2.mechanism.json "$SBX/.cache/rf_lcode_mech/RP_y_B2.mechanism.json" 'L19_Price_Delay|판정' '0.338|0.405|0.640'
+vchk QV7 cache__rf_b5_design__c__run_r1.out.txt "$SBX/.cache/rf_b5_design/c/run_r1.out" '동률|#design_view' '55.1%|54.9%'
+vchk QV8 claude__worktrees__w1__06_registry__reinforce_program.json "$SBX/.claude/worktrees/w1/06_Registry/reinforce_program.json" 'B6_36|promo4' '4.153|0.492|+0.152'
+vchk QV9 06_registry__reinforce_auto_config.json "$SBX/06_Registry/reinforce_auto_config.json" '"alpha": 0.05|"max_cells": 8|Grade B' '2.567|0.499|2.1.170'
+vchk QV10 cache__rf_block_design__rp_y_b5.json "$SBX/.cache/rf_block_design/RP_y_B5.json" 'B1_9' '1.971'
+vchk QV11 06_registry__distilled_knowledge.json "$SBX/06_Registry/distilled_knowledge.json" 'DIST-QPM-014|L-160|수급 계열이 산다' '0.22|1.88|16.9'
+vchk QV12 cache__factor_db__factor_registry.json "$SBX/.cache/factor_db/factor_registry.json" '1.2*WC_TA + 1.4*RE_TA + 3.3*EBIT_TA|Value-at-Risk 95%' '+0.194|-0.106|0.9989'
+vchk QV13 cache___dk_backup.json "$SBX/.cache/_dk_backup.json" 'DIST-QPM-014|수급 계열이 산다' '0.22|1.88|16.9'
+for id in Q01 Q06 Q09; do
+  if [ -f "$T/blocks/$id.out" ] && grep -q 'R5_catalog' "$T/blocks/$id.out" && grep -q 'design_view' "$T/blocks/$id.out"; then ok "QR $id 차단 사유 = R5_catalog + 사본 경로 안내"
+  else ng "QR $id 사유" "$(head -c 200 "$T/blocks/$id.out" 2>/dev/null)"; fi
+done
+for id in Q13 Q16; do
+  if [ -f "$T/blocks/$id.out" ] && grep -q 'R5_catalog_scope' "$T/blocks/$id.out"; then ok "QR $id 차단 사유 = R5_catalog_scope(범위 사본 안내)"
+  else ng "QR $id 사유" "$(head -c 200 "$T/blocks/$id.out" 2>/dev/null)"; fi
+done
+[ -f "$VD/02_infrastructure__reinforcement__overlay_arms__plain_arm.arm.json" ] && ok "QS1 범위 Grep(Q13)이 범위 안 대상 사본을 빠짐없이 썼다(수치 없는 plain_arm 포함 — 사본 디렉터리 Grep 이 완전하게)" \
+  || ng "QS1 범위 사본 누락" "plain_arm 사본 없음"
+# Q21 정본 sha 불변 — 사본을 쓰는 동안 정본은 한 바이트도 바뀌지 않는다(픽스처 생성 직후 해시 대비)
+[ "$(qsha)" = "$QSHA0" ] && ok "Q21 정본 sha 불변 — 대상 14종 + 가림 정본(사본 생성·판정 전후)" || ng "Q21 정본이 바뀌었다" "$(qsha) vs $QSHA0"
+# Q22 신선도 — 원본이 바뀌면 사본을 다시 만든다(낡은 사본 금지)
+out="$(fire design "$T/cases/Q22a.json")"
+"$PY" - "$(wp "$SBX/06_Registry/weight_catalog.json.bak_q2")" <<'PYEOF'
+import io, json, sys
+d = json.load(io.open(sys.argv[1], encoding='utf-8'))
+d['entries'].append({'catalog_id': 'paper:Fresh2', 'label': 'Fresh2', 'family': 'risk', 'prior_measured': {'measurement_status': 'PORT_t=7.123'}})
+io.open(sys.argv[1], 'w', encoding='utf-8', newline='').write(json.dumps(d, ensure_ascii=False))
+PYEOF
+out2="$(fire design "$T/cases/Q22a.json")"
+[ "$(verdict "$out")" = block ] && [ "$(verdict "$out2")" = block ] && ok "Q22a 원본 수정 전후 모두 R5 block" || ng "Q22a" "$out | $out2"
+vchk Q22b 06_registry__weight_catalog.json.bak_q2 "$SBX/06_Registry/weight_catalog.json.bak_q2" 'paper:Fresh2|paper:Fresh"' '7.123|6.047'
+# Q23~Q26 설정·가림 규칙 축 — 대체 설정은 훅 사본 디렉터리로 준다(가림 정본 = 사본 디렉터리 ../ops)
+mkdir -p "$T/ops"; cp "$SBX/02_Infrastructure/ops/rf_b1_design_lib.R" "$T/ops/rf_b1_design_lib.R"
+altq(){ # $1 이름 $2 훅 원본 $3 파이썬 수정식(d = 설정 dict · nopol = 파일 없음) → 훅 사본 경로
+  local d="$T/altq_$1"; mkdir -p "$d"; cp "$2" "$d/arm_gen_read_guard.sh"
+  if [ "$3" != nopol ]; then mkdir -p "$d/policies"
+    "$PY" - "$(wp "$POLSRC")" "$(wp "$d/policies/arm_gen_read_guard.json")" "$3" <<'PYEOF'
+import io, json, sys
+src, dst, expr = sys.argv[1:4]
+d = json.load(io.open(src, encoding='utf-8'))
+exec(expr)
+io.open(dst, 'w', encoding='utf-8', newline='\n').write(json.dumps(d, ensure_ascii=False))
+PYEOF
+  fi
+  printf '%s' "$d/arm_gen_read_guard.sh"; }
+qchk(){ # $1 id $2 기대 $3 훅 $4 사례 $5 표식 [$6 사유 문자열]
+  local out got; out="$(fire "$5" "$T/cases/$4.json" "$3")"; got="$(verdict "$out")"
+  if [ "$got" != "$2" ]; then ng "$1" "기대 $2 · 실제 $got · ${out:0:160}"; return; fi
+  if [ -n "${6:-}" ] && ! printf '%s' "$out" | grep -q "$6"; then ng "$1" "사유에 $6 없음 · ${out:0:160}"; return; fi
+  ok "$1 → $2${6:+ ($6)}"; }
+HQ_BASE="$(altq base "$HOOK" 'pass')"
+qchk "Q23a 대체 설정 사본(무수정) + Q01 → block — 사본 디렉터리의 가림 정본을 싣는다" block "$HQ_BASE" Q01 design R5_catalog
+HQ_DES="$(altq des "$HOOK" "d['catalog_view']['lanes']=['design_lane']")"
+qchk "Q23b lanes=[design_lane] + 생성 표식 Read 카탈로그(Q19) → pass — 레인 목록이 판정을 가른다" pass "$HQ_DES" Q19 arm
+qchk "Q23c lanes=[design_lane] + 설계 표식(Q01) → block" block "$HQ_DES" Q01 design R5_catalog
+HQ_NOCV="$(altq nocv "$HOOK" "del d['catalog_view']")"
+qchk "Q24a catalog_view 부재 + 카탈로그 Read(Q01) → block(fail-closed)" block "$HQ_NOCV" Q01 design R5_catalog_policy
+qchk "Q24b catalog_view 부재 + 엔진 .R Read(C02) → pass — 데이터 파일만" pass "$HQ_NOCV" C02 design
+qchk "Q24c catalog_view 부재 + 내용 Grep 범위(Q13) → block(fail-closed)" block "$HQ_NOCV" Q13 design R5_catalog_policy
+qchk "Q24d catalog_view 부재 + files_with_matches Grep(Q15) → pass" pass "$HQ_NOCV" Q15 design
+qchk "Q24e catalog_view 부재 + 내용 Grep glob=*.R(Q14) → pass — 코드만 필터" pass "$HQ_NOCV" Q14 design
+HQ_NORX="$(altq norx "$HOOK" "d['catalog_view']['redactor_source']='../no_such/rf_b1_design_lib.R'")"
+qchk "Q25a 가림 정본 부재 + 카탈로그 Read(Q01) → block(R5_catalog_redactor)" block "$HQ_NORX" Q01 design R5_catalog_redactor
+qchk "Q25b 가림 정본 부재 + 수치 없는 대상(Q08b) → block — 판별 불능이면 대상은 막는다" block "$HQ_NORX" Q08b design R5_catalog_redactor
+qchk "Q25c 가림 정본 부재 + 엔진 .R(C02) → pass — 대상 밖 영향 없음" pass "$HQ_NORX" C02 design
+mkdir -p "$T/ops_bad"; "$PY" - "$(wp "$T/ops/rf_b1_design_lib.R")" "$(wp "$T/ops_bad/rf_b1_design_lib.R")" <<'PYEOF'
+import io, sys
+s = io.open(sys.argv[1], encoding='utf-8', newline='').read()
+old = 'dec = "(?<![A-Za-z0-9_.])'
+s2 = s.replace(old, 'dec = "(?<![A-Za-z0-9_.])ZZZNEVER', 1) if s.count(old) == 1 else s
+io.open(sys.argv[2], 'w', encoding='utf-8', newline='').write(s2)
+PYEOF
+if cmp -s "$T/ops/rf_b1_design_lib.R" "$T/ops_bad/rf_b1_design_lib.R"; then ng "Q26 가림 정본 돌연변이" "dec 규칙 좌표 낡음"
+else
+  HQ_BADRX="$(altq badrx "$HOOK" "d['catalog_view']['redactor_source']='../ops_bad/rf_b1_design_lib.R'")"
+  qchk "Q26 가림 정본의 소수 규칙을 무력화 → 카나리아가 잡아 block(R5_catalog_redactor) — 적재 양성 대조" block "$HQ_BADRX" Q01 design R5_catalog_redactor
+fi
+# Q27 판정기 부재 — bash 거울 CATALOG_FALLBACK_RE
+out="$(fire design "$T/cases/Q01.json" "" "$T/no_such_python.exe")"
+case "$out" in *'"decision":"block"'*catalog*) ok "Q27 판정기 부재 + 카탈로그 Read → block(fail_closed · catalog 거울)" ;; *) ng "Q27" "$out" ;; esac
+out="$(fire design "$T/cases/Q08b.json" "" "$T/no_such_python.exe")"
+[ "$(verdict "$out")" = block ] && ok "Q27b 판정기 부재 + 수치 없는 arm json → block(판별 불능)" || ng "Q27b" "$out"
+# Q28 거울 표류 방지 — 설정 대상 glob 마다 표본 경로가 bash CATALOG_FALLBACK_RE 에 걸린다
+q28="$("$PY" - "$(wp "$HOOK")" "$(wp "$POLSRC")" <<'PYEOF' 2>&1 | tr -d '\r'
+import io, json, re, sys
+h = io.open(sys.argv[1], encoding='utf-8').read()
+m = re.search(r"^CATALOG_FALLBACK_RE='([^']*)'", h, re.M)
+if not m:
+    print('NO_RE'); sys.exit(0)
+rx = re.compile(m.group(1))
+bad = []
+for t in json.load(io.open(sys.argv[2], encoding='utf-8'))['catalog_view']['targets']:
+    s = t.replace('**', 'a/b.json').replace('*', 'x')
+    for p in (s, '.claude/worktrees/w/' + s):
+        if not rx.search(p.lower()):
+            bad.append(p)
+print('OK' if not bad else 'BAD ' + ','.join(bad))
+PYEOF
+)"
+[ "$q28" = OK ] && ok "Q28 bash 거울이 설정 대상 전부(워크트리 사본 포함)를 덮는다" || ng "Q28 거울 표류" "$q28"
+# Q29 파이썬↔R 가림 동치 — 같은 문자열을 판정기(AgrgRedactProbe)와 R rf_b1_redact_stats(이름 적재 · 부수효과 0)에 넣어 대조
+RS="$(command -v Rscript 2>/dev/null || true)"
+if [ -z "$RS" ]; then sk "Q29 파이썬↔R 가림 동치" "Rscript 없음"
+else
+  "$PY" - "$(wp "$T/cases/QP.json")" "$(wp "$T/q29_strings.json")" "$SBXW" <<'PYEOF'
+import io, json, sys
+out, sj, sbw = sys.argv[1:4]
+xs = ['B5_22 xs_vol_gap_corr_brake Calmar 0.763 · MDD 0.287~0.615 · 폭 5.5%p · PORT_t 3 · arXiv 2002.06975 · v10.4',
+      '승인 게이트 통계 우위(port_t +0.194 vs -0.106). 주의', 'CLI 2.1.170 < 2.1.251', 'L-code 5.5pp·2.5pp·4pp 재현', 'IC 1위 · ICIR 2 · Sharpe=1',
+      '2026.09 창 · arXiv 1806.01743v2 · 0.338이 · 문장 끝 0.504.', '−0.5%p · +12.8% · 1/25 동일가중 · 25종', 'IR=0.939 vs EW IR=1.301(-27.8%)',
+      'doi.org/10.1093/biomet/88.2.404', 'MDD -10% 대비 CAGR -23% 로 Calmar 중앙값이 최악(0.160)', '수치 없는 문장', '']
+io.open(sj, 'w', encoding='utf-8').write(json.dumps(xs, ensure_ascii=False))
+io.open(out, 'w', encoding='utf-8', newline='').write(json.dumps({'tool_name': 'AgrgRedactProbe', 'tool_input': {'strings': xs}, 'cwd': sbw}, ensure_ascii=False))
+PYEOF
+  pyo="$(cd "$SBX" && env -u QVEST_ARM_GEN QVEST_DESIGN_LANE=1 AGRG_SELFTEST=1 QVEST_PY="$PY" USERPROFILE="$HOMEW" HOME="$HOMEF" \
+        CLAUDE_PROJECT_DIR="$SBXW" QM_ROOT="$SBXW" QVEST_ARM_GEN_GUARD_LOG="$T/guard.log" bash "$HOOK" < "$T/cases/QP.json" 2>/dev/null)"
+  printf '%s' "$pyo" > "$T/q29_py.json"
+  : > "$T/empty.Renviron"
+  # R 은 이름 적재만(B5M .b5_redactor 와 같은 방식 — 정본 파일을 source 하지 않는다: 최상위 setwd·CLI 절 부수효과) · R_ENVIRON_USER = 빈 파일(QM_ROOT 덮어쓰기 방지)
+  cat > "$T/q29.R" <<'REOF'
+suppressMessages(library(jsonlite)); a <- commandArgs(TRUE)
+ex <- parse(a[1], keep.source = FALSE, encoding = "UTF-8"); en <- new.env(parent = baseenv())
+nm <- c("RF_B1_STAT_PROTECT", "RF_B1_STAT_RULES", "RF_B1_STAT_METRIC", "RF_B1_STAT_MASK", "rf_b1_redact_stats", "rf_b1_has_stats")
+for (e in as.list(ex)) if (is.call(e) && length(e) == 3L && (identical(e[[1]], as.name("<-")) || identical(e[[1]], as.name("="))) &&
+                          is.name(e[[2]]) && as.character(e[[2]]) %in% nm) eval(e, envir = en)
+xs <- fromJSON(a[2]); xs[is.na(xs)] <- ""
+r <- vapply(xs, function(s) en$rf_b1_redact_stats(s), character(1), USE.NAMES = FALSE)
+h <- vapply(xs, function(s) isTRUE(en$rf_b1_has_stats(s)), logical(1), USE.NAMES = FALSE)
+writeLines(enc2utf8(as.character(toJSON(list(redacted = r, has = h), auto_unbox = FALSE))), a[3], useBytes = TRUE)
+REOF
+  (cd "$T" && R_ENVIRON_USER="$(wp "$T/empty.Renviron")" R_PROFILE_USER="$(wp "$T/empty.Renviron")" "$RS" "$(wp "$T/q29.R")" \
+    "$(wp "$SBX/02_Infrastructure/ops/rf_b1_design_lib.R")" "$(wp "$T/q29_strings.json")" "$(wp "$T/q29_r.json")" >/dev/null 2>&1)
+  q29="$("$PY" - "$(wp "$T/q29_py.json")" "$(wp "$T/q29_r.json")" <<'PYEOF' 2>&1 | tr -d '\r'
+import io, json, sys
+try:
+    p = json.load(io.open(sys.argv[1], encoding='utf-8')); r = json.load(io.open(sys.argv[2], encoding='utf-8'))
+except Exception as e:
+    print('READ_FAIL %s' % type(e).__name__); sys.exit(0)
+if not p.get('redact_probe'):
+    print('PY_RX_NULL'); sys.exit(0)
+d = [i for i, (a, b) in enumerate(zip(p['redacted'], r['redacted'])) if a != b]
+dh = [i for i, (a, b) in enumerate(zip(p['has'], r['has'])) if bool(a) != bool(b)]
+print('OK %d' % len(p['redacted']) if not d and not dh and len(p['redacted']) == len(r['redacted']) else 'DIFF red=%s has=%s ex=%s' % (d, dh, [(p['redacted'][i], r['redacted'][i]) for i in d[:2]]))
+PYEOF
+)"
+  case "$q29" in "OK "*) ok "Q29 파이썬 판정기 가림 = R rf_b1_redact_stats(가림·잔존 판정 ${q29#OK }문자열 전부 동치 — 정본 규칙을 이름으로 싣는다)" ;;
+                 *) ng "Q29 파이썬↔R 가림 동치" "$q29" ;; esac
+fi
+# Q-L 돌연변이 — R5 규칙을 하나씩 끈 훅 사본에서 해당 사례가 뚫리거나(판별력) 사본 내용이 틀어진다
+mutq(){ # $1 이름 $2 사례 $3 표식 $4 기대(pass|block) $5 [(old,new) 쌍 JSON] [$6 QVEST_PY_BIN] [$7 사유 문자열]
+  local h="$T/mut/q_$1.sh" out got
+  "$PY" - "$(wp "$HOOK")" "$(wp "$h")" "$5" <<'PYEOF'
+import io, json, sys
+src, dst, pairs = sys.argv[1:4]
+s = io.open(src, encoding='utf-8', newline='').read()
+for old, new in json.loads(pairs):
+    if s.count(old) != 1:
+        s = None; break
+    s = s.replace(old, new, 1)
+io.open(dst, 'w', encoding='utf-8', newline='').write(s if s is not None else io.open(src, encoding='utf-8', newline='').read())
+PYEOF
+  if cmp -s "$h" "$HOOK"; then ng "QL $1" "치환 대상이 1곳이 아니다(좌표 낡음)"; return; fi
+  cp "$h" "$SBX/02_Infrastructure/hooks/_mutq_$1.sh"
+  out="$(fire "$3" "$T/cases/$2.json" "$SBX/02_Infrastructure/hooks/_mutq_$1.sh" "${6:-}")"; got="$(verdict "$out")"
+  if [ "$got" = "$4" ] && { [ -z "${7:-}" ] || printf '%s' "$out" | grep -q "$7"; }; then ok "QL $1 — 사례 $2 → $got${7:+ ($7)}"
+  else ng "QL $1 판별력" "사례 $2 = $got · ${out:0:160}"; fi
+}
+J(){ "$PY" -c 'import json,sys; a=sys.argv[1:]; print(json.dumps([[a[i],a[i+1]] for i in range(0,len(a),2)], ensure_ascii=False))' "$@"; }
+mutq m40_no_r5_read Q01 design pass "$(J "            h = catalog_file_hit(fsr)                           # (D-E-CATALOG-BASIS) R5 — 수치 있는 카탈로그·설계 산출은 사본으로" "            h = None")"
+mutq m41_no_r5_scope Q13 design pass "$(J "                h = catalog_scope_hit(fs, TI.get('glob') or '', TI.get('type') or '')" "                h = None")"
+mutq m42_no_worktree Q12 design pass "$(J "            return rr, rel, (rel[m.end():] if m else rel)" "            return rr, rel, rel")"
+mutq m43_all_modes Q15 design block "$(J "        if str(TI.get('output_mode') or '') == 'content':" "        if True:")"
+# m44·m45 — 가림을 통째로 끄면(항등) 잔존 게이트가 사본을 막는다(block · R5_catalog_residual) · 게이트까지 끄면 수치가 가릴 곳 0 으로 통과한다(뚫림)
+CV_RED_BODY="    r = _rx_redact(R, s)
+    k = 1
+    while k < cv['passes'] and _rx_has(R, r):
+        r = _rx_redact(R, r)
+        k += 1
+    return r"
+mutq m44_identity_redact Q01 design block "$(J "$CV_RED_BODY" "    return s")" "" R5_catalog_residual
+mutq m45_identity_no_residual Q01 design pass "$(J "$CV_RED_BODY" "    return s" "    if st[1]:
+        raise _CvErr('R5_catalog_residual'," "    if False:
+        raise _CvErr('R5_catalog_residual',")"
+# (10-03 · FA-CLEAN-BASE-PATH) 레인 판정에 청정 레인 항이 붙어 두 줄이 됐다 — 레인 판정 전체를 지우는 돌연변이(뜻 불변 · 좌표 갱신)
+mkmut "$HOOK" "$T/mut/q_m46.sh" "    return cv if ((_des and 'design_lane' in cv['lanes']) or (_arm and 'arm_gen' in cv['lanes'])
+                  or (_cln and 'clean_lane' in cv['lanes'])) else None" "    return cv"
+if cmp -s "$T/mut/q_m46.sh" "$HOOK"; then ng "QL m46" "치환 대상이 1곳이 아니다(좌표 낡음)"
+else qchk "QL m46 레인 판정 삭제 + lanes=[design_lane] + 생성 표식(Q19) → block(오차단 부활 — Q23b 가 레인 판정을 잰다)" block \
+       "$(altq m46 "$T/mut/q_m46.sh" "d['catalog_view']['lanes']=['design_lane']")" Q19 arm R5_catalog; fi
+if [ "$JUNCTION" = 1 ]; then
+  mutq m47_no_alias Q17 design pass "$(J "def _canon(n):
+    for rp, p in _junction_alias():" "def _canon(n):
+    return n
+    for rp, p in _junction_alias():")"
+else sk "QL m47_no_alias" "junction 없음"; fi
+mutq m48_no_fallback Q01 design pass "$(J '  if printf '"'"'%s'"'"' "$hay" | grep -qE "$CATALOG_FALLBACK_RE"; then _deny_const "catalog"; fi' '')" "$T/no_such_python.exe"
+# (CATB 적대 검증 수리 09-25) 장치·루프백 표기 정규화를 끄면 Q34 가 뚫린다 · 새 대상(사본·가드 파일)을 설정에서 빼면 Q33·Q36 이 뚫린다
+mutq m54_no_devform Q34 design pass "$(J "    m = re.match(r'^//(?:[?.]/)?unc/', n)" "    return None")"
+mutq m54b_no_devform_unc Q35 design pass "$(J "    m = re.match(r'^//(?:[?.]/)?unc/', n)" "    return None")"
+if grep -qi 'volume{' "$T/cases/Q34d.json"; then
+  mutq m54c_no_volume_realpath Q34d design pass "$(J "    m = re.match(r'^//(?:[?.]/)?(volume\{[0-9a-f-]+\}(?:/.*)?)\$', n) or re.match(r'^//[?.]/(.+)\$', n)" "    m = None")"
+else sk "QL m54c_no_volume_realpath" "볼륨 GUID 없음"; fi
+HQ_OLDTG="$(altq oldtg "$HOOK" "d['catalog_view']['targets']=[t for t in d['catalog_view']['targets'] if not (t.startswith('.cache/factor_db/') or t.startswith('.cache/pins/') or t.startswith('.cache/_dk_backup') or 'arm_gen_read_guard' in t)]")"
+qchk "QL m55 새 대상 제거(설정) → 등록부 .cache 사본(Q33) pass — 사본 대상이 판정을 가른다" pass "$HQ_OLDTG" Q33 design
+qchk "QL m55b 새 대상 제거(설정) → 가드 설정 근거 필드(Q36) pass" pass "$HQ_OLDTG" Q36 design
+# m26b 이중 방어 — 이름 규칙 ⑤(설계 캐시 재료 사본)를 끈 훅(L m26)에서도 재료 .txt(P06)는 R5 가 사본으로 돌린다(R1_path → R5_catalog)
+if [ -f "$SBX/02_Infrastructure/hooks/_mut_m26_no_copies_re.sh" ]; then
+  out="$(fire design "$T/cases/P06.json" "$SBX/02_Infrastructure/hooks/_mut_m26_no_copies_re.sh")"
+  case "$out" in *'"decision":"block"'*R5_catalog*) ok "QL m26b ⑤ 를 꺼도 설계 캐시 재료 사본(P06)은 R5 가 막는다(이중 방어)" ;;
+                 *) ng "QL m26b 이중 방어" "${out:0:160}" ;; esac
+else ng "QL m26b" "L m26 돌연변이 사본 없음"; fi
+# 사본 내용 돌연변이 — 판정은 같지만(block) 사본이 틀어진다: 정의 보존 · 성과 키 수치 가림 · 신선도
+mutv(){ # $1 이름 $2 사례 $3 사본 이름 $4 (old,new) 쌍 JSON $5 있어야(|) $6 없어야(|) — 원판 사본은 이미 vchk 로 통과했다 → 돌연변이 사본은 실패해야 한다
+  local h="$T/mut/qv_$1.sh" r
+  "$PY" - "$(wp "$HOOK")" "$(wp "$h")" "$4" <<'PYEOF'
+import io, json, sys
+src, dst, pairs = sys.argv[1:4]
+s = io.open(src, encoding='utf-8', newline='').read()
+for old, new in json.loads(pairs):
+    if s.count(old) != 1:
+        s = None; break
+    s = s.replace(old, new, 1)
+io.open(dst, 'w', encoding='utf-8', newline='').write(s if s is not None else io.open(src, encoding='utf-8', newline='').read())
+PYEOF
+  if cmp -s "$h" "$HOOK"; then ng "QL $1" "치환 대상이 1곳이 아니다(좌표 낡음)"; return; fi
+  cp "$h" "$SBX/02_Infrastructure/hooks/_mutv_$1.sh"
+  fire design "$T/cases/$2.json" "$SBX/02_Infrastructure/hooks/_mutv_$1.sh" >/dev/null
+  r="$(vchk_quiet "$3" "$5" "$6")"
+  [ "$r" != OK ] && ok "QL $1 — 사본 $3 이 틀어진다($r) · 원판은 통과(QV)" || ng "QL $1 판별력" "돌연변이 사본도 통과 — 검사가 이 규칙을 안 잰다"
+  fire design "$T/cases/$2.json" >/dev/null                      # 원판으로 사본 복구(뒤 검사 오염 방지)
+}
+vchk_quiet(){ "$PY" - "$(wp "$VD/$1")" "$2" "$3" <<'PYEOF' 2>&1 | tr -d '\r'
+import io, sys
+vp, must, mustnot = sys.argv[1:4]
+t = io.open(vp, encoding='utf-8').read()
+bad = [x for x in must.split('|') if x and x not in t] + [x for x in mustnot.split('|') if x and x in t]
+print('OK' if not bad else 'BAD ' + ','.join(bad))
+PYEOF
+}
+mutv m49_no_keep Q06 02_infrastructure__factor_db__factor_registry.json "$(J "        if key in cv['keep']:" "        if False:")" '1.2*WC_TA + 1.4*RE_TA + 3.3*EBIT_TA|Value-at-Risk 95%' ''
+mutv m50_no_numeric Q08 02_infrastructure__reinforcement__overlay_arms__num_arm.arm.json "$(J "    if isinstance(o, (int, float)) and key is not None and cv['prx'].match(str(key)):" "    if False:")" '' '3.592|0.61'
+# m51 — 가림을 한 번만 하면 세 마디 판본("2.1.170")이 "<stat>.170" 을 남겨 잔존 게이트가 사본을 막는다(block · R5_catalog_residual)
+mutq m51_one_pass Q12b design block "$(J "    while k < cv['passes'] and _rx_has(R, r):" "    while False:")" "" R5_catalog_residual
+# 신선도 돌연변이 — 사본이 있으면 다시 안 쓰는 판: 원본을 바꿔도 사본이 낡은 채로 남는다
+"$PY" - "$(wp "$SBX/06_Registry/weight_catalog.json.bak_q2")" <<'PYEOF'
+import io, json, sys
+d = json.load(io.open(sys.argv[1], encoding='utf-8'))
+d['entries'].append({'catalog_id': 'paper:Fresh3', 'label': 'Fresh3', 'family': 'risk', 'prior_measured': {'measurement_status': 'PORT_t=8.8'}})
+io.open(sys.argv[1], 'w', encoding='utf-8', newline='').write(json.dumps(d, ensure_ascii=False))
+PYEOF
+mutv m52_stale Q22a 06_registry__weight_catalog.json.bak_q2 "$(J "    try:
+        with open(p, 'rb') as fh:
+            if fh.read() == v['data']:
+                return
+    except Exception:
+        pass" "    if os.path.exists(p):
+        return")" 'paper:Fresh3' ''
+# 사본 디렉터리 열린 경로 돌연변이(설정) — 사본에 성과 키가 남아 있어 열린 경로가 없으면 내용 층이 사본을 막는다(R5 무력화)
+HQ_NOOPEN="$(altq noopen "$HOOK" "d['content_guard']['open_prefixes']=[x for x in d['content_guard']['open_prefixes'] if x!='.cache/design_view/']")"
+qchk "QL m53 열린 경로에서 .cache/design_view/ 삭제 → 사본 열람(Q04) block(R1_content) — 열린 경로가 사본을 살린다" block "$HQ_NOOPEN" Q04 design R1_content
 
 # ── M. 등록 — 훅이 settings.json 에 실제로 걸려 있는가(파일만 있고 안 도는 계기 금지) ──────────────
 echo "--- M. 등록 ---"

@@ -1,0 +1,2208 @@
+{
+  "schema": "rf_prereg_v1",
+  "prereg_id": "PR-L2-B7ASOF-STRUCTDEF",
+  "family_id": "FAM-PR-L2-B7ASOF-01",
+  "status": "draft",
+  "draft_rev": 2,
+  "layer": 1,
+  "lever": "PR-L2",
+  "title": "F1 위 B7 as-of 구조 방어 슬리브 — 기전 반증 시도(mechanism_only · A 자격 없음) · 새 칸 ≤5",
+  "created_at": "2026-09-25T22:39:35+0900",
+  "created_by": "Q(세션) · DRAFT2 갈래(a_lever · 2026-09-25 22시)",
+  "plan_ref": {
+    "path": "C:/Users/99922/.claude/plans/qvest-1-drifting-eclipse.md",
+    "section": "P2 · PR-L2 (결정 불요 · 먼저 실행)",
+    "lever_audit": "scratchpad/organic/lever_audit_final.md (세션 be2e88bf · wf_7ea8a829-483)",
+    "p2_report": "scratchpad/p2_found/p2_found_report.md (§1.3 정정 · §3 등록 차단 27건)",
+    "decisions_0925_21": [
+      "FLOOR-BASE-ENGINE-Q4",
+      "FLOOR-F2-EXCLUDED-ARMS",
+      "FLOOR-F1-SEED-B7-OVERLAP",
+      "PR-L1-A4-DISPOSITION"
+    ]
+  },
+  "decision_refs": [
+    "ORGANIC-PRIORITY",
+    "ORGANIC-DE",
+    "D-E",
+    "D-E-V6-CONDITIONAL-IC",
+    "D-F",
+    "D-A",
+    "D-A-N-TIMING",
+    "CALMAR-FREQ-DAILY",
+    "RUNNER-RESTART-AFTER-P0-14",
+    "FLOOR-BASE-ENGINE-Q4",
+    "FLOOR-F2-EXCLUDED-ARMS",
+    "FLOOR-F1-SEED-B7-OVERLAP",
+    "PR-L1-A4-DISPOSITION"
+  ],
+  "framing": "falsification_attempt",
+  "framing_note": "결과는 '확증'이 아니라 '반증 시도'로 라벨한다. 2024-12 절단판도 2016~24 를 본 상태라 완전한 사전성이 없다(플랜 P2 공통 규약). ★draft2: FLOOR-BASE-ENGINE-Q4(Q④)로 이 가족은 '기전 반증 시도' 전용 — A 자격 없음(scope).",
+  "hypothesis": {
+    "statement": "floor v2 F1(22632 기저 엔진 + as-of 재선정 4팩터 층) 위에서, 보유 n_max 종 중 k 종을 as-of 약세장 IC 상위 방어 팩터(F1 보유 팩터 제외)로 교체하는 정적 슬리브가 심층(벤치 월수익 < 심층 문턱) capture 를 낮춰 Calmar 를 올리되, PORT_t·OOS retention 은 해치지 않는다.",
+    "mechanism": "총노출(Σw=1)·종목수 불변에서 '누구를 보유하는가'만 바꾼다(reinforce_program.json B7.rule). 정적 k 라 노출 타이밍 주장이 없다(T3 대상 아님). 방어 팩터 상위 이름이 심층 하락월에 덜 깨지면 MDD 분모가 줄어 Calmar 가 오른다 — 단 알파 자리 k 개를 내주므로 PT·OOS 비열위가 함께 성립해야 레버다. ★F1 은 방어 계열 시드(D42_EWMA_Vol)를 이미 팩터 층에 둔다 — 같은 팩터로 슬리브를 채우면 처치가 바닥과 겹쳐 희석되므로 F1 보유 팩터는 후보에서 뺀다(FLOOR-F1-SEED-B7-OVERLAP).",
+    "prediction": "F1.B7_37 의 심층 capture Δ(대 F1)의 부트스트랩 P(Δ*>0) < α_cal(0.0240 · 귀무 크기 5% 교정)이고 점추정 순서 Δ(방어) < Δ(베타매칭) < Δ(반방어).",
+    "alternatives": {
+      "beta_only": "B7_40 도 같은 폭으로 capture 를 낮추면 효과 = 베타 축소(failed · X1)",
+      "b5_pattern": "Calmar 는 오르나 PT·OOS 가 내리면 B5 패턴(failed · X2)",
+      "powered_null": "Δ CI 가 기전-함의 효과를 배제하고 0 을 포함",
+      "undetermined": "P(Δ*>0) 가 α_cal 이상이고 CI 가 0 과 기전-함의 효과를 모두 포함 — 미결은 벽이 아니다(AX-000)",
+      "treatment_dilution": "F1 의 저변동성 시드와 슬리브 후보(같은 계열)가 겹쳐 한계 효과가 작다 — 기전-함의 효과가 작게 산출되면 착수 관문(ratio)이 먼저 걸러내고, 착수하면 powered_null/undetermined 로 기록(벽이 아니다)."
+    }
+  },
+  "differs_from_prior_negatives": [
+    {
+      "ref": "구 B7 칸(P0-08 이전 · 전기간 ic_bad 선정 · 한 달 어긋난 IC)",
+      "difference": "선정이 as-of(셀 시작일까지 실현된 약세 보유월 · Usable_Date ≤ as-of). 구 칸은 처치 오지정 — 판정·SE·기대효과 원천으로 쓰지 않고 재측정하지도 않는다(새 규칙 = 새 칸)."
+    },
+    {
+      "ref": "B1 방어 팩터 점수 혼합 67칸(MDD 0.53~0.67 불변 · B7.rule 사실 기록)",
+      "difference": "점수 혼합이 아니라 보유 교체(슬리브) — 방어 이름이 실제로 k 자리를 차지한다."
+    },
+    {
+      "ref": "B5 오버레이(적대검증 T3 pass 0 · memory project-overlay-timing-contributes-nothing)",
+      "difference": "노출 타이밍이 아니라 정적 구성 — 노출 짝지은 플라시보 대상이 아니다."
+    },
+    {
+      "ref": "09-23·09-24 무인 병렬 B7_37~41 칸(hypothesis_index lookup: RP_20260923_171133_* B · RP_20260924_031815_* C)",
+      "difference": "다른 바닥(무인 레인 entry) 위 측정이고 사전등록 밖이다 — 판정·SE·기대효과 원천으로 쓰지 않는다. 이 가족은 F1 위 새 칸 + F1 보유 팩터 제외 규칙 + 교정 문턱이다."
+    }
+  ],
+  "floors": [
+    {
+      "id": "F1",
+      "ref": "06_Registry/prereg/reference_floors_v2.json#F1",
+      "status": "pending",
+      "lineage_entry": "RP_20260917_105807_22632_combo_rulefast_promo3",
+      "floor_kind": "asof_reselect_new_cell",
+      "spec_code": "B1_1",
+      "requirement": "floor v2 F1(as-of 재선정 새 칸 · 22632 기저 엔진 + 4팩터 층) — 등록 전: ①엔진 2회 재실행 결정론(determinism_ok) ②floor 문서 소비 계약 필드(selection_basis=as_of · measurement_regime.exec_price=close_t1 · status=confirmed — INTEG①) ③pin 스냅샷 태그. 측정은 등록 전 허용(바닥)."
+    }
+  ],
+  "arms_frozen": true,
+  "arms": [
+    {
+      "id": "F1.B7_37",
+      "order": 1,
+      "role": "treatment",
+      "on_floor": "F1",
+      "cell_template": "B7_37",
+      "selection_basis": "as_of",
+      "spec": {
+        "defense_sleeve": {
+          "kind": "factor_topk",
+          "k": 5,
+          "select": "ic_bad_rank_asof",
+          "rank": 1
+        },
+        "label": "방어 슬리브 k=5 (약세장 IC 1위)",
+        "selection_asof": {
+          "asof": "셀 fixed_axes.start_date (rf_sl_resolve 가 RF_CELL_SPEC 에서 해석 · 규칙 asof 가 있으면 그 값) — 워밍업 창 1회 고정 = 정적 슬리브 불변식",
+          "bear_quantile": 0.3,
+          "min_bear_months": 4,
+          "candidate_categories": [
+            "defense",
+            "risk"
+          ],
+          "rank_key": "ic_bad",
+          "ic_path": ".cache/factor_db/factor_ic_monthly.parquet",
+          "bench_path": ".cache/benchmark.parquet",
+          "bench_price_col": "BM_Close",
+          "note": "★2026-09-24 (플랜 P0-08 · 감사 D4-02·D4-05 · pit.md C1 D-E) B7 선정 통계. 약세장 = KOSPI200 **실현** 보유월 수익(공표 지수 포인트 BM_Close 비율 — Ret/100 단위 오류 원천 제거)이 as-of 까지 실현된 보유월 전부의 하위 bear_quantile 분위 이하(확장창). IC 는 형성일 t 행을 보유월(t 다음 달 · Usable_Date 의 달)에 정렬하고 Usable_Date <= as-of 만 쓴다(C14). 레거시 전략 월수익(STR_1375→STR_1469 대체 경로)은 쓰지 않는다. 값의 출처 = 구 산출기 stage_gate_engine.R:962 `quantile(port_ret$Return, 0.30)`(bear_quantile · 값 계승) · :973 `length(ic_bad_vals) > 3`(min_bear_months 4 ⇔ >3) · candidate_categories = 구 rf_sleeve.R 코드 상수 {defense, risk} 를 격자로 이관(값 변경 아님). rank_key = ic_bad(격자 규칙명 ic_bad_rank 계승 · conditional_value 선택 가능). 재보정 = 도훈."
+        },
+        "candidate_exclusion": {
+          "rule": "exclude_floor_factors",
+          "decision_ref": "FLOOR-F1-SEED-B7-OVERLAP",
+          "decision_text": "F1 보유 팩터(D42_EWMA_Vol · IN05 · AC13 · C15)를 B7 슬리브 교체 후보에서 제외 — 사전등록 규칙으로 고정(처치 희석 방지). F1 시드는 as-of 규칙 오프셋 0 유지.",
+          "source": "06_Registry/prereg/reference_floors_v2.json#F1.spec.factors",
+          "source_sha256": "ff47a9daf7a49615edc5de5b3e8e56c7ae5867fa02c3bc8ac7dd754db249f41b",
+          "resolved_ids": [
+            "D42_EWMA_Vol",
+            "IN05_Net_Debt_Issuance",
+            "AC13_Abnormal_Accruals",
+            "C15_Forecast_Error_Trend"
+          ],
+          "in_candidate_pool": [
+            "D42_EWMA_Vol"
+          ],
+          "candidate_categories": [
+            "defense",
+            "risk"
+          ],
+          "semantics": "B7 as-of 선정(rf_sl_resolve · ic_bad_rank_asof)의 후보 집합에서 바닥 F1 이 보유한 팩터 id 를 순위 계산 전에 뺀다 — rank r 은 제외 뒤 순위다. 처치(B7_37·B7_38·B7_39)와 대조(B7_40 베타매칭 기준 팩터·B7_41 반방어)에 똑같이 적용한다(대조가 처치와 같은 팩터를 기준으로 삼아야 귀속이 선다).",
+          "pit": "제외 집합 = 바닥 스펙에서 파생한 사전 고정 규칙(성과 통계 미소비) — as-of 선정 규칙의 후보 축소일 뿐 C1 대상 아님",
+          "family_overlap_note": "id 제외만 한다(결정 문언) — 같은 계열(저변동성 D35/D36 등)은 후보에 남는다 → 처치 희석이 남을 수 있다(대안 결말 treatment_dilution 로 기록).",
+          "implementation": "B7-EXCL-IMPL(미구현) — 현행 rf_sleeve.R::rf_sl_parse 의 ok_args 에 제외 인자가 없다. 구현안: defense_sleeve.exclude = 'base_factors'(셀 스펙 factors 의 db id 를 rf_sl_resolve 가 후보에서 제외 · rf_sl_report 에 제외 목록 기록) — 리터럴 id 를 격자·스펙에 박지 않는다.",
+          "asof_selection_table": {
+            "asof": "2005-01-01",
+            "asof_source": "program fixed_axes.start_date",
+            "basis_rank1": "ic_bad_rank_asof 1/76 · as-of 2005-01-01(program fixed_axes.start_date) · 약세장 = KOSPI200 실현 보유월 확장창 하위 30% (1990-02~2004-12 179개월 · 문턱 -0.0448 · 약세 54개월) · ic_bad 정렬 · ic_bad 0.2452(n=17) · ic_good 0.1322 · 격리 제외 1",
+            "n_eligible": 76,
+            "top8": [
+              {
+                "rank": 1,
+                "id": "D42_EWMA_Vol",
+                "ic_bad": 0.245232851981982,
+                "n_bad": 17
+              },
+              {
+                "rank": 2,
+                "id": "D35_RealVol_63d",
+                "ic_bad": 0.241123463258807,
+                "n_bad": 17
+              },
+              {
+                "rank": 3,
+                "id": "D36_RealVol_126d",
+                "ic_bad": 0.24078247133426,
+                "n_bad": 17
+              },
+              {
+                "rank": 4,
+                "id": "D45_Downside_Dev",
+                "ic_bad": 0.235988940227394,
+                "n_bad": 17
+              },
+              {
+                "rank": 5,
+                "id": "D34_RealVol_21d",
+                "ic_bad": 0.233940693439932,
+                "n_bad": 17
+              },
+              {
+                "rank": 6,
+                "id": "D03_RealVol",
+                "ic_bad": 0.233868725633956,
+                "n_bad": 17
+              },
+              {
+                "rank": 7,
+                "id": "D48_VaR_5pct",
+                "ic_bad": 0.227835000009823,
+                "n_bad": 17
+              },
+              {
+                "rank": 8,
+                "id": "D50_MaxDrawdown",
+                "ic_bad": 0.221964986815914,
+                "n_bad": 17
+              }
+            ],
+            "rank1_before_exclusion": "D42_EWMA_Vol",
+            "rank2_before_exclusion": "D35_RealVol_63d",
+            "rank1_after_exclusion": "D35_RealVol_63d",
+            "rank2_after_exclusion": "D36_RealVol_126d",
+            "excluded_hit_in_top8": [
+              "D42_EWMA_Vol"
+            ],
+            "note": "선정 통계(as-of) 기록 — 성과 수치 아님 · rf_sl_resolve(select=ic_bad_rank_asof) 를 샌드박스(운영 사본)에서 그대로 부른 값. 등록 시 같은 호출로 재도출(바뀌면 등록 전 개정)."
+          }
+        },
+        "invariants": [
+          "k 는 정적이다 — 시점마다 바꾸면 총노출 타이밍 주장이 되어 B5 와 같이 T3 에 죽는다. k 자체가 시험 축이다.",
+          "총노출 불변(현금 없음) · |SEL| = n_max 보존 — 25종 '안에서의' 분할이다(PIT 2-슬리브 조항과 정합).",
+          "팩터 id 를 격자에 박지 않는다 — 규칙(rf_sl_resolve · select=ic_bad_rank_asof)이 **as-of 약세장 IC**(셀 fixed_axes.start_date 까지 실현된 KOSPI200 약세 보유월 · selection_asof)로 1회 고른다(워밍업 창 고정 = 정적 슬리브). 해석된 id·as-of·근거는 엔진 로그(rf_sl_report)에 남는다 — ★정정(2026-09-24 P0-08): 구 문언 'spec 에 기록돼 재현이 고정된다' 는 사실이 아니었다(스펙에 id 필드 없음). 과거 칸 재현은 factor_id 고정 경로로 한다."
+        ],
+        "program_path": "06_Registry/reinforce_program.json",
+        "program_sha256": "b7f07c764041f3376aaed962d0fd05bc3d79630fa9c4e1911fc7c59cfa9c1b48",
+        "rule": "rf_sl_resolve(select=ic_bad_rank_asof) · P0-08(2026-09-24) · 후보 제외 = F1 보유 팩터(FLOOR-F1-SEED-B7-OVERLAP)",
+        "new_cell": true,
+        "new_cell_note": "과거 B7 칸(전기간 IC 선정 · 처치 오지정)·09-23/24 무인 병렬 B7 칸(다른 바닥)의 재측정이 아니다 — floor v2 F1 위 새 칸"
+      }
+    },
+    {
+      "id": "F1.B7_40",
+      "order": 2,
+      "role": "control",
+      "on_floor": "F1",
+      "cell_template": "B7_40",
+      "selection_basis": "as_of",
+      "spec": {
+        "defense_sleeve": {
+          "kind": "random_beta_matched",
+          "k": 5,
+          "select": "ic_bad_rank_asof",
+          "rank": 1,
+          "beta_factor": "D02_Beta"
+        },
+        "label": "[무신호 대조] 베타매칭 무작위 슬리브 k=5",
+        "selection_asof": {
+          "asof": "셀 fixed_axes.start_date (rf_sl_resolve 가 RF_CELL_SPEC 에서 해석 · 규칙 asof 가 있으면 그 값) — 워밍업 창 1회 고정 = 정적 슬리브 불변식",
+          "bear_quantile": 0.3,
+          "min_bear_months": 4,
+          "candidate_categories": [
+            "defense",
+            "risk"
+          ],
+          "rank_key": "ic_bad",
+          "ic_path": ".cache/factor_db/factor_ic_monthly.parquet",
+          "bench_path": ".cache/benchmark.parquet",
+          "bench_price_col": "BM_Close",
+          "note": "★2026-09-24 (플랜 P0-08 · 감사 D4-02·D4-05 · pit.md C1 D-E) B7 선정 통계. 약세장 = KOSPI200 **실현** 보유월 수익(공표 지수 포인트 BM_Close 비율 — Ret/100 단위 오류 원천 제거)이 as-of 까지 실현된 보유월 전부의 하위 bear_quantile 분위 이하(확장창). IC 는 형성일 t 행을 보유월(t 다음 달 · Usable_Date 의 달)에 정렬하고 Usable_Date <= as-of 만 쓴다(C14). 레거시 전략 월수익(STR_1375→STR_1469 대체 경로)은 쓰지 않는다. 값의 출처 = 구 산출기 stage_gate_engine.R:962 `quantile(port_ret$Return, 0.30)`(bear_quantile · 값 계승) · :973 `length(ic_bad_vals) > 3`(min_bear_months 4 ⇔ >3) · candidate_categories = 구 rf_sleeve.R 코드 상수 {defense, risk} 를 격자로 이관(값 변경 아님). rank_key = ic_bad(격자 규칙명 ic_bad_rank 계승 · conditional_value 선택 가능). 재보정 = 도훈."
+        },
+        "candidate_exclusion": {
+          "rule": "exclude_floor_factors",
+          "decision_ref": "FLOOR-F1-SEED-B7-OVERLAP",
+          "decision_text": "F1 보유 팩터(D42_EWMA_Vol · IN05 · AC13 · C15)를 B7 슬리브 교체 후보에서 제외 — 사전등록 규칙으로 고정(처치 희석 방지). F1 시드는 as-of 규칙 오프셋 0 유지.",
+          "source": "06_Registry/prereg/reference_floors_v2.json#F1.spec.factors",
+          "source_sha256": "ff47a9daf7a49615edc5de5b3e8e56c7ae5867fa02c3bc8ac7dd754db249f41b",
+          "resolved_ids": [
+            "D42_EWMA_Vol",
+            "IN05_Net_Debt_Issuance",
+            "AC13_Abnormal_Accruals",
+            "C15_Forecast_Error_Trend"
+          ],
+          "in_candidate_pool": [
+            "D42_EWMA_Vol"
+          ],
+          "candidate_categories": [
+            "defense",
+            "risk"
+          ],
+          "semantics": "B7 as-of 선정(rf_sl_resolve · ic_bad_rank_asof)의 후보 집합에서 바닥 F1 이 보유한 팩터 id 를 순위 계산 전에 뺀다 — rank r 은 제외 뒤 순위다. 처치(B7_37·B7_38·B7_39)와 대조(B7_40 베타매칭 기준 팩터·B7_41 반방어)에 똑같이 적용한다(대조가 처치와 같은 팩터를 기준으로 삼아야 귀속이 선다).",
+          "pit": "제외 집합 = 바닥 스펙에서 파생한 사전 고정 규칙(성과 통계 미소비) — as-of 선정 규칙의 후보 축소일 뿐 C1 대상 아님",
+          "family_overlap_note": "id 제외만 한다(결정 문언) — 같은 계열(저변동성 D35/D36 등)은 후보에 남는다 → 처치 희석이 남을 수 있다(대안 결말 treatment_dilution 로 기록).",
+          "implementation": "B7-EXCL-IMPL(미구현) — 현행 rf_sleeve.R::rf_sl_parse 의 ok_args 에 제외 인자가 없다. 구현안: defense_sleeve.exclude = 'base_factors'(셀 스펙 factors 의 db id 를 rf_sl_resolve 가 후보에서 제외 · rf_sl_report 에 제외 목록 기록) — 리터럴 id 를 격자·스펙에 박지 않는다.",
+          "asof_selection_table": {
+            "asof": "2005-01-01",
+            "asof_source": "program fixed_axes.start_date",
+            "basis_rank1": "ic_bad_rank_asof 1/76 · as-of 2005-01-01(program fixed_axes.start_date) · 약세장 = KOSPI200 실현 보유월 확장창 하위 30% (1990-02~2004-12 179개월 · 문턱 -0.0448 · 약세 54개월) · ic_bad 정렬 · ic_bad 0.2452(n=17) · ic_good 0.1322 · 격리 제외 1",
+            "n_eligible": 76,
+            "top8": [
+              {
+                "rank": 1,
+                "id": "D42_EWMA_Vol",
+                "ic_bad": 0.245232851981982,
+                "n_bad": 17
+              },
+              {
+                "rank": 2,
+                "id": "D35_RealVol_63d",
+                "ic_bad": 0.241123463258807,
+                "n_bad": 17
+              },
+              {
+                "rank": 3,
+                "id": "D36_RealVol_126d",
+                "ic_bad": 0.24078247133426,
+                "n_bad": 17
+              },
+              {
+                "rank": 4,
+                "id": "D45_Downside_Dev",
+                "ic_bad": 0.235988940227394,
+                "n_bad": 17
+              },
+              {
+                "rank": 5,
+                "id": "D34_RealVol_21d",
+                "ic_bad": 0.233940693439932,
+                "n_bad": 17
+              },
+              {
+                "rank": 6,
+                "id": "D03_RealVol",
+                "ic_bad": 0.233868725633956,
+                "n_bad": 17
+              },
+              {
+                "rank": 7,
+                "id": "D48_VaR_5pct",
+                "ic_bad": 0.227835000009823,
+                "n_bad": 17
+              },
+              {
+                "rank": 8,
+                "id": "D50_MaxDrawdown",
+                "ic_bad": 0.221964986815914,
+                "n_bad": 17
+              }
+            ],
+            "rank1_before_exclusion": "D42_EWMA_Vol",
+            "rank2_before_exclusion": "D35_RealVol_63d",
+            "rank1_after_exclusion": "D35_RealVol_63d",
+            "rank2_after_exclusion": "D36_RealVol_126d",
+            "excluded_hit_in_top8": [
+              "D42_EWMA_Vol"
+            ],
+            "note": "선정 통계(as-of) 기록 — 성과 수치 아님 · rf_sl_resolve(select=ic_bad_rank_asof) 를 샌드박스(운영 사본)에서 그대로 부른 값. 등록 시 같은 호출로 재도출(바뀌면 등록 전 개정)."
+          }
+        },
+        "invariants": [
+          "k 는 정적이다 — 시점마다 바꾸면 총노출 타이밍 주장이 되어 B5 와 같이 T3 에 죽는다. k 자체가 시험 축이다.",
+          "총노출 불변(현금 없음) · |SEL| = n_max 보존 — 25종 '안에서의' 분할이다(PIT 2-슬리브 조항과 정합).",
+          "팩터 id 를 격자에 박지 않는다 — 규칙(rf_sl_resolve · select=ic_bad_rank_asof)이 **as-of 약세장 IC**(셀 fixed_axes.start_date 까지 실현된 KOSPI200 약세 보유월 · selection_asof)로 1회 고른다(워밍업 창 고정 = 정적 슬리브). 해석된 id·as-of·근거는 엔진 로그(rf_sl_report)에 남는다 — ★정정(2026-09-24 P0-08): 구 문언 'spec 에 기록돼 재현이 고정된다' 는 사실이 아니었다(스펙에 id 필드 없음). 과거 칸 재현은 factor_id 고정 경로로 한다."
+        ],
+        "program_path": "06_Registry/reinforce_program.json",
+        "program_sha256": "b7f07c764041f3376aaed962d0fd05bc3d79630fa9c4e1911fc7c59cfa9c1b48",
+        "rule": "rf_sl_resolve(select=ic_bad_rank_asof) · P0-08(2026-09-24) · 후보 제외 = F1 보유 팩터(FLOOR-F1-SEED-B7-OVERLAP)",
+        "new_cell": true,
+        "new_cell_note": "과거 B7 칸(전기간 IC 선정 · 처치 오지정)·09-23/24 무인 병렬 B7 칸(다른 바닥)의 재측정이 아니다 — floor v2 F1 위 새 칸"
+      }
+    },
+    {
+      "id": "F1.B7_41",
+      "order": 3,
+      "role": "control",
+      "on_floor": "F1",
+      "cell_template": "B7_41",
+      "selection_basis": "as_of",
+      "spec": {
+        "defense_sleeve": {
+          "kind": "antidefense",
+          "k": 5,
+          "select": "ic_bad_rank_asof",
+          "rank": 1
+        },
+        "label": "[부호 반전 대조] 반(反)방어 슬리브 k=5",
+        "selection_asof": {
+          "asof": "셀 fixed_axes.start_date (rf_sl_resolve 가 RF_CELL_SPEC 에서 해석 · 규칙 asof 가 있으면 그 값) — 워밍업 창 1회 고정 = 정적 슬리브 불변식",
+          "bear_quantile": 0.3,
+          "min_bear_months": 4,
+          "candidate_categories": [
+            "defense",
+            "risk"
+          ],
+          "rank_key": "ic_bad",
+          "ic_path": ".cache/factor_db/factor_ic_monthly.parquet",
+          "bench_path": ".cache/benchmark.parquet",
+          "bench_price_col": "BM_Close",
+          "note": "★2026-09-24 (플랜 P0-08 · 감사 D4-02·D4-05 · pit.md C1 D-E) B7 선정 통계. 약세장 = KOSPI200 **실현** 보유월 수익(공표 지수 포인트 BM_Close 비율 — Ret/100 단위 오류 원천 제거)이 as-of 까지 실현된 보유월 전부의 하위 bear_quantile 분위 이하(확장창). IC 는 형성일 t 행을 보유월(t 다음 달 · Usable_Date 의 달)에 정렬하고 Usable_Date <= as-of 만 쓴다(C14). 레거시 전략 월수익(STR_1375→STR_1469 대체 경로)은 쓰지 않는다. 값의 출처 = 구 산출기 stage_gate_engine.R:962 `quantile(port_ret$Return, 0.30)`(bear_quantile · 값 계승) · :973 `length(ic_bad_vals) > 3`(min_bear_months 4 ⇔ >3) · candidate_categories = 구 rf_sleeve.R 코드 상수 {defense, risk} 를 격자로 이관(값 변경 아님). rank_key = ic_bad(격자 규칙명 ic_bad_rank 계승 · conditional_value 선택 가능). 재보정 = 도훈."
+        },
+        "candidate_exclusion": {
+          "rule": "exclude_floor_factors",
+          "decision_ref": "FLOOR-F1-SEED-B7-OVERLAP",
+          "decision_text": "F1 보유 팩터(D42_EWMA_Vol · IN05 · AC13 · C15)를 B7 슬리브 교체 후보에서 제외 — 사전등록 규칙으로 고정(처치 희석 방지). F1 시드는 as-of 규칙 오프셋 0 유지.",
+          "source": "06_Registry/prereg/reference_floors_v2.json#F1.spec.factors",
+          "source_sha256": "ff47a9daf7a49615edc5de5b3e8e56c7ae5867fa02c3bc8ac7dd754db249f41b",
+          "resolved_ids": [
+            "D42_EWMA_Vol",
+            "IN05_Net_Debt_Issuance",
+            "AC13_Abnormal_Accruals",
+            "C15_Forecast_Error_Trend"
+          ],
+          "in_candidate_pool": [
+            "D42_EWMA_Vol"
+          ],
+          "candidate_categories": [
+            "defense",
+            "risk"
+          ],
+          "semantics": "B7 as-of 선정(rf_sl_resolve · ic_bad_rank_asof)의 후보 집합에서 바닥 F1 이 보유한 팩터 id 를 순위 계산 전에 뺀다 — rank r 은 제외 뒤 순위다. 처치(B7_37·B7_38·B7_39)와 대조(B7_40 베타매칭 기준 팩터·B7_41 반방어)에 똑같이 적용한다(대조가 처치와 같은 팩터를 기준으로 삼아야 귀속이 선다).",
+          "pit": "제외 집합 = 바닥 스펙에서 파생한 사전 고정 규칙(성과 통계 미소비) — as-of 선정 규칙의 후보 축소일 뿐 C1 대상 아님",
+          "family_overlap_note": "id 제외만 한다(결정 문언) — 같은 계열(저변동성 D35/D36 등)은 후보에 남는다 → 처치 희석이 남을 수 있다(대안 결말 treatment_dilution 로 기록).",
+          "implementation": "B7-EXCL-IMPL(미구현) — 현행 rf_sleeve.R::rf_sl_parse 의 ok_args 에 제외 인자가 없다. 구현안: defense_sleeve.exclude = 'base_factors'(셀 스펙 factors 의 db id 를 rf_sl_resolve 가 후보에서 제외 · rf_sl_report 에 제외 목록 기록) — 리터럴 id 를 격자·스펙에 박지 않는다.",
+          "asof_selection_table": {
+            "asof": "2005-01-01",
+            "asof_source": "program fixed_axes.start_date",
+            "basis_rank1": "ic_bad_rank_asof 1/76 · as-of 2005-01-01(program fixed_axes.start_date) · 약세장 = KOSPI200 실현 보유월 확장창 하위 30% (1990-02~2004-12 179개월 · 문턱 -0.0448 · 약세 54개월) · ic_bad 정렬 · ic_bad 0.2452(n=17) · ic_good 0.1322 · 격리 제외 1",
+            "n_eligible": 76,
+            "top8": [
+              {
+                "rank": 1,
+                "id": "D42_EWMA_Vol",
+                "ic_bad": 0.245232851981982,
+                "n_bad": 17
+              },
+              {
+                "rank": 2,
+                "id": "D35_RealVol_63d",
+                "ic_bad": 0.241123463258807,
+                "n_bad": 17
+              },
+              {
+                "rank": 3,
+                "id": "D36_RealVol_126d",
+                "ic_bad": 0.24078247133426,
+                "n_bad": 17
+              },
+              {
+                "rank": 4,
+                "id": "D45_Downside_Dev",
+                "ic_bad": 0.235988940227394,
+                "n_bad": 17
+              },
+              {
+                "rank": 5,
+                "id": "D34_RealVol_21d",
+                "ic_bad": 0.233940693439932,
+                "n_bad": 17
+              },
+              {
+                "rank": 6,
+                "id": "D03_RealVol",
+                "ic_bad": 0.233868725633956,
+                "n_bad": 17
+              },
+              {
+                "rank": 7,
+                "id": "D48_VaR_5pct",
+                "ic_bad": 0.227835000009823,
+                "n_bad": 17
+              },
+              {
+                "rank": 8,
+                "id": "D50_MaxDrawdown",
+                "ic_bad": 0.221964986815914,
+                "n_bad": 17
+              }
+            ],
+            "rank1_before_exclusion": "D42_EWMA_Vol",
+            "rank2_before_exclusion": "D35_RealVol_63d",
+            "rank1_after_exclusion": "D35_RealVol_63d",
+            "rank2_after_exclusion": "D36_RealVol_126d",
+            "excluded_hit_in_top8": [
+              "D42_EWMA_Vol"
+            ],
+            "note": "선정 통계(as-of) 기록 — 성과 수치 아님 · rf_sl_resolve(select=ic_bad_rank_asof) 를 샌드박스(운영 사본)에서 그대로 부른 값. 등록 시 같은 호출로 재도출(바뀌면 등록 전 개정)."
+          }
+        },
+        "invariants": [
+          "k 는 정적이다 — 시점마다 바꾸면 총노출 타이밍 주장이 되어 B5 와 같이 T3 에 죽는다. k 자체가 시험 축이다.",
+          "총노출 불변(현금 없음) · |SEL| = n_max 보존 — 25종 '안에서의' 분할이다(PIT 2-슬리브 조항과 정합).",
+          "팩터 id 를 격자에 박지 않는다 — 규칙(rf_sl_resolve · select=ic_bad_rank_asof)이 **as-of 약세장 IC**(셀 fixed_axes.start_date 까지 실현된 KOSPI200 약세 보유월 · selection_asof)로 1회 고른다(워밍업 창 고정 = 정적 슬리브). 해석된 id·as-of·근거는 엔진 로그(rf_sl_report)에 남는다 — ★정정(2026-09-24 P0-08): 구 문언 'spec 에 기록돼 재현이 고정된다' 는 사실이 아니었다(스펙에 id 필드 없음). 과거 칸 재현은 factor_id 고정 경로로 한다."
+        ],
+        "program_path": "06_Registry/reinforce_program.json",
+        "program_sha256": "b7f07c764041f3376aaed962d0fd05bc3d79630fa9c4e1911fc7c59cfa9c1b48",
+        "rule": "rf_sl_resolve(select=ic_bad_rank_asof) · P0-08(2026-09-24) · 후보 제외 = F1 보유 팩터(FLOOR-F1-SEED-B7-OVERLAP)",
+        "new_cell": true,
+        "new_cell_note": "과거 B7 칸(전기간 IC 선정 · 처치 오지정)·09-23/24 무인 병렬 B7 칸(다른 바닥)의 재측정이 아니다 — floor v2 F1 위 새 칸"
+      }
+    },
+    {
+      "id": "F1.B7_38",
+      "order": 4,
+      "role": "treatment",
+      "on_floor": "F1",
+      "cell_template": "B7_38",
+      "selection_basis": "as_of",
+      "spec": {
+        "defense_sleeve": {
+          "kind": "factor_topk",
+          "k": 8,
+          "select": "ic_bad_rank_asof",
+          "rank": 1
+        },
+        "label": "방어 슬리브 k=8 — 분할 비율 축",
+        "selection_asof": {
+          "asof": "셀 fixed_axes.start_date (rf_sl_resolve 가 RF_CELL_SPEC 에서 해석 · 규칙 asof 가 있으면 그 값) — 워밍업 창 1회 고정 = 정적 슬리브 불변식",
+          "bear_quantile": 0.3,
+          "min_bear_months": 4,
+          "candidate_categories": [
+            "defense",
+            "risk"
+          ],
+          "rank_key": "ic_bad",
+          "ic_path": ".cache/factor_db/factor_ic_monthly.parquet",
+          "bench_path": ".cache/benchmark.parquet",
+          "bench_price_col": "BM_Close",
+          "note": "★2026-09-24 (플랜 P0-08 · 감사 D4-02·D4-05 · pit.md C1 D-E) B7 선정 통계. 약세장 = KOSPI200 **실현** 보유월 수익(공표 지수 포인트 BM_Close 비율 — Ret/100 단위 오류 원천 제거)이 as-of 까지 실현된 보유월 전부의 하위 bear_quantile 분위 이하(확장창). IC 는 형성일 t 행을 보유월(t 다음 달 · Usable_Date 의 달)에 정렬하고 Usable_Date <= as-of 만 쓴다(C14). 레거시 전략 월수익(STR_1375→STR_1469 대체 경로)은 쓰지 않는다. 값의 출처 = 구 산출기 stage_gate_engine.R:962 `quantile(port_ret$Return, 0.30)`(bear_quantile · 값 계승) · :973 `length(ic_bad_vals) > 3`(min_bear_months 4 ⇔ >3) · candidate_categories = 구 rf_sleeve.R 코드 상수 {defense, risk} 를 격자로 이관(값 변경 아님). rank_key = ic_bad(격자 규칙명 ic_bad_rank 계승 · conditional_value 선택 가능). 재보정 = 도훈."
+        },
+        "candidate_exclusion": {
+          "rule": "exclude_floor_factors",
+          "decision_ref": "FLOOR-F1-SEED-B7-OVERLAP",
+          "decision_text": "F1 보유 팩터(D42_EWMA_Vol · IN05 · AC13 · C15)를 B7 슬리브 교체 후보에서 제외 — 사전등록 규칙으로 고정(처치 희석 방지). F1 시드는 as-of 규칙 오프셋 0 유지.",
+          "source": "06_Registry/prereg/reference_floors_v2.json#F1.spec.factors",
+          "source_sha256": "ff47a9daf7a49615edc5de5b3e8e56c7ae5867fa02c3bc8ac7dd754db249f41b",
+          "resolved_ids": [
+            "D42_EWMA_Vol",
+            "IN05_Net_Debt_Issuance",
+            "AC13_Abnormal_Accruals",
+            "C15_Forecast_Error_Trend"
+          ],
+          "in_candidate_pool": [
+            "D42_EWMA_Vol"
+          ],
+          "candidate_categories": [
+            "defense",
+            "risk"
+          ],
+          "semantics": "B7 as-of 선정(rf_sl_resolve · ic_bad_rank_asof)의 후보 집합에서 바닥 F1 이 보유한 팩터 id 를 순위 계산 전에 뺀다 — rank r 은 제외 뒤 순위다. 처치(B7_37·B7_38·B7_39)와 대조(B7_40 베타매칭 기준 팩터·B7_41 반방어)에 똑같이 적용한다(대조가 처치와 같은 팩터를 기준으로 삼아야 귀속이 선다).",
+          "pit": "제외 집합 = 바닥 스펙에서 파생한 사전 고정 규칙(성과 통계 미소비) — as-of 선정 규칙의 후보 축소일 뿐 C1 대상 아님",
+          "family_overlap_note": "id 제외만 한다(결정 문언) — 같은 계열(저변동성 D35/D36 등)은 후보에 남는다 → 처치 희석이 남을 수 있다(대안 결말 treatment_dilution 로 기록).",
+          "implementation": "B7-EXCL-IMPL(미구현) — 현행 rf_sleeve.R::rf_sl_parse 의 ok_args 에 제외 인자가 없다. 구현안: defense_sleeve.exclude = 'base_factors'(셀 스펙 factors 의 db id 를 rf_sl_resolve 가 후보에서 제외 · rf_sl_report 에 제외 목록 기록) — 리터럴 id 를 격자·스펙에 박지 않는다.",
+          "asof_selection_table": {
+            "asof": "2005-01-01",
+            "asof_source": "program fixed_axes.start_date",
+            "basis_rank1": "ic_bad_rank_asof 1/76 · as-of 2005-01-01(program fixed_axes.start_date) · 약세장 = KOSPI200 실현 보유월 확장창 하위 30% (1990-02~2004-12 179개월 · 문턱 -0.0448 · 약세 54개월) · ic_bad 정렬 · ic_bad 0.2452(n=17) · ic_good 0.1322 · 격리 제외 1",
+            "n_eligible": 76,
+            "top8": [
+              {
+                "rank": 1,
+                "id": "D42_EWMA_Vol",
+                "ic_bad": 0.245232851981982,
+                "n_bad": 17
+              },
+              {
+                "rank": 2,
+                "id": "D35_RealVol_63d",
+                "ic_bad": 0.241123463258807,
+                "n_bad": 17
+              },
+              {
+                "rank": 3,
+                "id": "D36_RealVol_126d",
+                "ic_bad": 0.24078247133426,
+                "n_bad": 17
+              },
+              {
+                "rank": 4,
+                "id": "D45_Downside_Dev",
+                "ic_bad": 0.235988940227394,
+                "n_bad": 17
+              },
+              {
+                "rank": 5,
+                "id": "D34_RealVol_21d",
+                "ic_bad": 0.233940693439932,
+                "n_bad": 17
+              },
+              {
+                "rank": 6,
+                "id": "D03_RealVol",
+                "ic_bad": 0.233868725633956,
+                "n_bad": 17
+              },
+              {
+                "rank": 7,
+                "id": "D48_VaR_5pct",
+                "ic_bad": 0.227835000009823,
+                "n_bad": 17
+              },
+              {
+                "rank": 8,
+                "id": "D50_MaxDrawdown",
+                "ic_bad": 0.221964986815914,
+                "n_bad": 17
+              }
+            ],
+            "rank1_before_exclusion": "D42_EWMA_Vol",
+            "rank2_before_exclusion": "D35_RealVol_63d",
+            "rank1_after_exclusion": "D35_RealVol_63d",
+            "rank2_after_exclusion": "D36_RealVol_126d",
+            "excluded_hit_in_top8": [
+              "D42_EWMA_Vol"
+            ],
+            "note": "선정 통계(as-of) 기록 — 성과 수치 아님 · rf_sl_resolve(select=ic_bad_rank_asof) 를 샌드박스(운영 사본)에서 그대로 부른 값. 등록 시 같은 호출로 재도출(바뀌면 등록 전 개정)."
+          }
+        },
+        "invariants": [
+          "k 는 정적이다 — 시점마다 바꾸면 총노출 타이밍 주장이 되어 B5 와 같이 T3 에 죽는다. k 자체가 시험 축이다.",
+          "총노출 불변(현금 없음) · |SEL| = n_max 보존 — 25종 '안에서의' 분할이다(PIT 2-슬리브 조항과 정합).",
+          "팩터 id 를 격자에 박지 않는다 — 규칙(rf_sl_resolve · select=ic_bad_rank_asof)이 **as-of 약세장 IC**(셀 fixed_axes.start_date 까지 실현된 KOSPI200 약세 보유월 · selection_asof)로 1회 고른다(워밍업 창 고정 = 정적 슬리브). 해석된 id·as-of·근거는 엔진 로그(rf_sl_report)에 남는다 — ★정정(2026-09-24 P0-08): 구 문언 'spec 에 기록돼 재현이 고정된다' 는 사실이 아니었다(스펙에 id 필드 없음). 과거 칸 재현은 factor_id 고정 경로로 한다."
+        ],
+        "program_path": "06_Registry/reinforce_program.json",
+        "program_sha256": "b7f07c764041f3376aaed962d0fd05bc3d79630fa9c4e1911fc7c59cfa9c1b48",
+        "rule": "rf_sl_resolve(select=ic_bad_rank_asof) · P0-08(2026-09-24) · 후보 제외 = F1 보유 팩터(FLOOR-F1-SEED-B7-OVERLAP)",
+        "new_cell": true,
+        "new_cell_note": "과거 B7 칸(전기간 IC 선정 · 처치 오지정)·09-23/24 무인 병렬 B7 칸(다른 바닥)의 재측정이 아니다 — floor v2 F1 위 새 칸"
+      }
+    },
+    {
+      "id": "F1.B7_39",
+      "order": 5,
+      "role": "treatment",
+      "on_floor": "F1",
+      "cell_template": "B7_39",
+      "selection_basis": "as_of",
+      "spec": {
+        "defense_sleeve": {
+          "kind": "factor_topk",
+          "k": 5,
+          "select": "ic_bad_rank_asof",
+          "rank": 2
+        },
+        "label": "방어 슬리브 k=5 (약세장 IC 2위 — 계열 특이성)",
+        "selection_asof": {
+          "asof": "셀 fixed_axes.start_date (rf_sl_resolve 가 RF_CELL_SPEC 에서 해석 · 규칙 asof 가 있으면 그 값) — 워밍업 창 1회 고정 = 정적 슬리브 불변식",
+          "bear_quantile": 0.3,
+          "min_bear_months": 4,
+          "candidate_categories": [
+            "defense",
+            "risk"
+          ],
+          "rank_key": "ic_bad",
+          "ic_path": ".cache/factor_db/factor_ic_monthly.parquet",
+          "bench_path": ".cache/benchmark.parquet",
+          "bench_price_col": "BM_Close",
+          "note": "★2026-09-24 (플랜 P0-08 · 감사 D4-02·D4-05 · pit.md C1 D-E) B7 선정 통계. 약세장 = KOSPI200 **실현** 보유월 수익(공표 지수 포인트 BM_Close 비율 — Ret/100 단위 오류 원천 제거)이 as-of 까지 실현된 보유월 전부의 하위 bear_quantile 분위 이하(확장창). IC 는 형성일 t 행을 보유월(t 다음 달 · Usable_Date 의 달)에 정렬하고 Usable_Date <= as-of 만 쓴다(C14). 레거시 전략 월수익(STR_1375→STR_1469 대체 경로)은 쓰지 않는다. 값의 출처 = 구 산출기 stage_gate_engine.R:962 `quantile(port_ret$Return, 0.30)`(bear_quantile · 값 계승) · :973 `length(ic_bad_vals) > 3`(min_bear_months 4 ⇔ >3) · candidate_categories = 구 rf_sleeve.R 코드 상수 {defense, risk} 를 격자로 이관(값 변경 아님). rank_key = ic_bad(격자 규칙명 ic_bad_rank 계승 · conditional_value 선택 가능). 재보정 = 도훈."
+        },
+        "candidate_exclusion": {
+          "rule": "exclude_floor_factors",
+          "decision_ref": "FLOOR-F1-SEED-B7-OVERLAP",
+          "decision_text": "F1 보유 팩터(D42_EWMA_Vol · IN05 · AC13 · C15)를 B7 슬리브 교체 후보에서 제외 — 사전등록 규칙으로 고정(처치 희석 방지). F1 시드는 as-of 규칙 오프셋 0 유지.",
+          "source": "06_Registry/prereg/reference_floors_v2.json#F1.spec.factors",
+          "source_sha256": "ff47a9daf7a49615edc5de5b3e8e56c7ae5867fa02c3bc8ac7dd754db249f41b",
+          "resolved_ids": [
+            "D42_EWMA_Vol",
+            "IN05_Net_Debt_Issuance",
+            "AC13_Abnormal_Accruals",
+            "C15_Forecast_Error_Trend"
+          ],
+          "in_candidate_pool": [
+            "D42_EWMA_Vol"
+          ],
+          "candidate_categories": [
+            "defense",
+            "risk"
+          ],
+          "semantics": "B7 as-of 선정(rf_sl_resolve · ic_bad_rank_asof)의 후보 집합에서 바닥 F1 이 보유한 팩터 id 를 순위 계산 전에 뺀다 — rank r 은 제외 뒤 순위다. 처치(B7_37·B7_38·B7_39)와 대조(B7_40 베타매칭 기준 팩터·B7_41 반방어)에 똑같이 적용한다(대조가 처치와 같은 팩터를 기준으로 삼아야 귀속이 선다).",
+          "pit": "제외 집합 = 바닥 스펙에서 파생한 사전 고정 규칙(성과 통계 미소비) — as-of 선정 규칙의 후보 축소일 뿐 C1 대상 아님",
+          "family_overlap_note": "id 제외만 한다(결정 문언) — 같은 계열(저변동성 D35/D36 등)은 후보에 남는다 → 처치 희석이 남을 수 있다(대안 결말 treatment_dilution 로 기록).",
+          "implementation": "B7-EXCL-IMPL(미구현) — 현행 rf_sleeve.R::rf_sl_parse 의 ok_args 에 제외 인자가 없다. 구현안: defense_sleeve.exclude = 'base_factors'(셀 스펙 factors 의 db id 를 rf_sl_resolve 가 후보에서 제외 · rf_sl_report 에 제외 목록 기록) — 리터럴 id 를 격자·스펙에 박지 않는다.",
+          "asof_selection_table": {
+            "asof": "2005-01-01",
+            "asof_source": "program fixed_axes.start_date",
+            "basis_rank1": "ic_bad_rank_asof 1/76 · as-of 2005-01-01(program fixed_axes.start_date) · 약세장 = KOSPI200 실현 보유월 확장창 하위 30% (1990-02~2004-12 179개월 · 문턱 -0.0448 · 약세 54개월) · ic_bad 정렬 · ic_bad 0.2452(n=17) · ic_good 0.1322 · 격리 제외 1",
+            "n_eligible": 76,
+            "top8": [
+              {
+                "rank": 1,
+                "id": "D42_EWMA_Vol",
+                "ic_bad": 0.245232851981982,
+                "n_bad": 17
+              },
+              {
+                "rank": 2,
+                "id": "D35_RealVol_63d",
+                "ic_bad": 0.241123463258807,
+                "n_bad": 17
+              },
+              {
+                "rank": 3,
+                "id": "D36_RealVol_126d",
+                "ic_bad": 0.24078247133426,
+                "n_bad": 17
+              },
+              {
+                "rank": 4,
+                "id": "D45_Downside_Dev",
+                "ic_bad": 0.235988940227394,
+                "n_bad": 17
+              },
+              {
+                "rank": 5,
+                "id": "D34_RealVol_21d",
+                "ic_bad": 0.233940693439932,
+                "n_bad": 17
+              },
+              {
+                "rank": 6,
+                "id": "D03_RealVol",
+                "ic_bad": 0.233868725633956,
+                "n_bad": 17
+              },
+              {
+                "rank": 7,
+                "id": "D48_VaR_5pct",
+                "ic_bad": 0.227835000009823,
+                "n_bad": 17
+              },
+              {
+                "rank": 8,
+                "id": "D50_MaxDrawdown",
+                "ic_bad": 0.221964986815914,
+                "n_bad": 17
+              }
+            ],
+            "rank1_before_exclusion": "D42_EWMA_Vol",
+            "rank2_before_exclusion": "D35_RealVol_63d",
+            "rank1_after_exclusion": "D35_RealVol_63d",
+            "rank2_after_exclusion": "D36_RealVol_126d",
+            "excluded_hit_in_top8": [
+              "D42_EWMA_Vol"
+            ],
+            "note": "선정 통계(as-of) 기록 — 성과 수치 아님 · rf_sl_resolve(select=ic_bad_rank_asof) 를 샌드박스(운영 사본)에서 그대로 부른 값. 등록 시 같은 호출로 재도출(바뀌면 등록 전 개정)."
+          }
+        },
+        "invariants": [
+          "k 는 정적이다 — 시점마다 바꾸면 총노출 타이밍 주장이 되어 B5 와 같이 T3 에 죽는다. k 자체가 시험 축이다.",
+          "총노출 불변(현금 없음) · |SEL| = n_max 보존 — 25종 '안에서의' 분할이다(PIT 2-슬리브 조항과 정합).",
+          "팩터 id 를 격자에 박지 않는다 — 규칙(rf_sl_resolve · select=ic_bad_rank_asof)이 **as-of 약세장 IC**(셀 fixed_axes.start_date 까지 실현된 KOSPI200 약세 보유월 · selection_asof)로 1회 고른다(워밍업 창 고정 = 정적 슬리브). 해석된 id·as-of·근거는 엔진 로그(rf_sl_report)에 남는다 — ★정정(2026-09-24 P0-08): 구 문언 'spec 에 기록돼 재현이 고정된다' 는 사실이 아니었다(스펙에 id 필드 없음). 과거 칸 재현은 factor_id 고정 경로로 한다."
+        ],
+        "program_path": "06_Registry/reinforce_program.json",
+        "program_sha256": "b7f07c764041f3376aaed962d0fd05bc3d79630fa9c4e1911fc7c59cfa9c1b48",
+        "rule": "rf_sl_resolve(select=ic_bad_rank_asof) · P0-08(2026-09-24) · 후보 제외 = F1 보유 팩터(FLOOR-F1-SEED-B7-OVERLAP)",
+        "new_cell": true,
+        "new_cell_note": "과거 B7 칸(전기간 IC 선정 · 처치 오지정)·09-23/24 무인 병렬 B7 칸(다른 바닥)의 재측정이 아니다 — floor v2 F1 위 새 칸"
+      }
+    }
+  ],
+  "deleted_arms": [
+    {
+      "id": "F2.B7_37",
+      "spec_was": "B7_37 (F2 = 14760 promo3 B5_19 위 treatment · 방어 슬리브 k=5 (약세장 IC 1위))",
+      "reason": "바닥 F2 제외(floor v2 status=excluded · assess: q4_crossentry_exposure 3건 · pit_flag selection_basis_full_sample_ic_inherited · adversary unverified) — 적대검증 미검증·승계 표식·Q④ 노출. 대체 없이 삭제(다른 바닥으로 이동 금지 — 결정 선택지 2 기각). 측정한 적 없는 칸이라 N 에 넣지 않는다.",
+      "counted_in_n": false,
+      "decision_ref": "FLOOR-F2-EXCLUDED-ARMS",
+      "precedent": "PR-L1-A4-DISPOSITION",
+      "deleted_in": "draft2"
+    },
+    {
+      "id": "F2.B7_40",
+      "spec_was": "B7_40 (F2 = 14760 promo3 B5_19 위 control · [무신호 대조] 베타매칭 무작위 슬리브 k=5)",
+      "reason": "바닥 F2 제외(floor v2 status=excluded · assess: q4_crossentry_exposure 3건 · pit_flag selection_basis_full_sample_ic_inherited · adversary unverified) — 적대검증 미검증·승계 표식·Q④ 노출. 대체 없이 삭제(다른 바닥으로 이동 금지 — 결정 선택지 2 기각). 측정한 적 없는 칸이라 N 에 넣지 않는다.",
+      "counted_in_n": false,
+      "decision_ref": "FLOOR-F2-EXCLUDED-ARMS",
+      "precedent": "PR-L1-A4-DISPOSITION",
+      "deleted_in": "draft2"
+    }
+  ],
+  "contrasts": [
+    {
+      "id": "F1.B7_37-F1",
+      "a": "F1.B7_37",
+      "b": "F1"
+    },
+    {
+      "id": "F1.B7_40-F1",
+      "a": "F1.B7_40",
+      "b": "F1"
+    },
+    {
+      "id": "F1.B7_41-F1",
+      "a": "F1.B7_41",
+      "b": "F1"
+    },
+    {
+      "id": "F1.B7_38-F1",
+      "a": "F1.B7_38",
+      "b": "F1"
+    },
+    {
+      "id": "F1.B7_39-F1",
+      "a": "F1.B7_39",
+      "b": "F1"
+    },
+    {
+      "id": "F1.B7_37-F1.B7_40",
+      "a": "F1.B7_37",
+      "b": "F1.B7_40"
+    }
+  ],
+  "se_cells": [
+    {
+      "id": "F1.NULL",
+      "on_floor": "F1",
+      "kind": "null_dilution",
+      "counts_in_n": false,
+      "dependency": "P1-06",
+      "spec": "P1-06 null_factor 통제 칸 B1_N1~B1_N4(carry = F1 구성 + 무정보 팩터 1개 · rf_cell_engine.R factor kind null_perm · seed 1~4 · control 태그 = 서명 dedup·승계·N 제외 · CTRL 갈래 스테이징 2026-09-25) — 판독 rf_runner_gates.R::rf_null_dilution_values → rf_prereg_se_null(칸 ≥2)",
+      "role": "SE 원천(1차 지표 SE_null · PT 비열위 ε = 1×SE_null(port_t))"
+    }
+  ],
+  "metrics": [
+    {
+      "id": "deep_capture_delta",
+      "tier": "primary",
+      "contract": "rf_prereg_paired_boot",
+      "direction": "decrease",
+      "targets": [
+        "F1.B7_37-F1",
+        "F1.B7_40-F1",
+        "F1.B7_41-F1",
+        "F1.B7_38-F1",
+        "F1.B7_39-F1",
+        "F1.B7_37-F1.B7_40"
+      ],
+      "field": "rf_prereg_paired_boot(stat='deep_capture', dates=) value·ci_lo·ci_hi — 03_period_returns ret_net vs 05_benchmark_returns(일간이면 dates 로 달력월 복리 — defensive_score::ds_score 와 같은 월 테이블)",
+      "note": "defensive_score.R 와 같은 식(심층 = 벤치 월수익 < ds_params()$deep_threshold · capture = 평균비) · 짝지은 원형 블록 부트스트랩 · 심층 버킷 n=10(교정 산출물 bench.n_deep) — 명목 90% CI(ci_lo·ci_hi)는 병기만 하고 판정 문턱은 교정 α_cal(primary_calibration).",
+      "decision_stat": "p_gt0",
+      "decision_rule": "기전(감소) 성립 = p_gt0 < α_cal(0.0240) · 구별 불가 = α_cal ≤ p_gt0 ≤ 1−α_cal · 유의한 반대 = p_gt0 > 1−α_cal",
+      "calibration_ref": {
+        "artifact": "stage_artifacts/prereg/_calibration/PR-L2-deep_capture_alpha_v1/calibration.json",
+        "artifact_sha256": "1dfe1a1256fe2d5170c2da49c505d5f6788010a3f38eee6023a3af40bab8b3c1",
+        "id": "PR-L2.deep_capture_delta.p_gt0.alpha_cal.v1"
+      }
+    },
+    {
+      "id": "calmar",
+      "tier": "secondary",
+      "contract": "essence_score",
+      "direction": "increase",
+      "targets": [
+        "F1.B7_37",
+        "F1.B7_40",
+        "F1.B7_41",
+        "F1.B7_38",
+        "F1.B7_39",
+        "F1"
+      ],
+      "field": "authoritative_remeasure.json::essence.calmar(일간 경로 · CALMAR-FREQ-DAILY)"
+    },
+    {
+      "id": "port_t",
+      "tier": "secondary",
+      "contract": "essence_score",
+      "direction": "increase",
+      "targets": [
+        "F1.B7_37",
+        "F1.B7_40",
+        "F1.B7_41",
+        "F1.B7_38",
+        "F1.B7_39",
+        "F1"
+      ],
+      "field": "essence.portfolio_alpha_t_nw_lag3"
+    },
+    {
+      "id": "oos_retention",
+      "tier": "secondary",
+      "contract": "essence_score",
+      "direction": "increase",
+      "targets": [
+        "F1.B7_37",
+        "F1.B7_40",
+        "F1.B7_41",
+        "F1.B7_38",
+        "F1.B7_39",
+        "F1"
+      ],
+      "field": "essence.oos_retention"
+    },
+    {
+      "id": "calmar_delta_boot",
+      "tier": "secondary",
+      "contract": "rf_prereg_paired_boot",
+      "direction": "increase",
+      "targets": [
+        "F1.B7_37-F1",
+        "F1.B7_37-F1.B7_40"
+      ],
+      "field": "rf_prereg_paired_boot(stat='calmar') p_gt0 — 일간 순수익 짝지은 블록"
+    },
+    {
+      "id": "calmar_trunc",
+      "tier": "secondary",
+      "contract": "sa_subwindow",
+      "direction": "increase",
+      "targets": [
+        "F1.B7_37",
+        "F1.B7_40",
+        "F1.B7_41",
+        "F1.B7_38",
+        "F1.B7_39",
+        "F1"
+      ],
+      "field": "sa_subwindow(artifact_dir, cut='trunc_2024_12') → sa_write (INTEG③ · contracts/selection_accounting.R · P1-03 · 진단 · 등급 아님) — source.fields {value: 'essence/calmar'} · 절단일은 설정 cut id 산출만(end 인자 직접 지정 산출 = end_source 'argument' → 판정 입력 아님) · 산출물 최상위 measurement_regime.exec_price"
+    },
+    {
+      "id": "oos_retention_trunc",
+      "tier": "secondary",
+      "contract": "sa_subwindow",
+      "direction": "report",
+      "targets": [
+        "F1.B7_37",
+        "F1.B7_40",
+        "F1.B7_41",
+        "F1.B7_38",
+        "F1.B7_39",
+        "F1"
+      ],
+      "field": "sa_subwindow(artifact_dir, cut='trunc_2024_12') → sa_write (INTEG③ · contracts/selection_accounting.R · P1-03 · 진단 · 등급 아님) — source.fields {value: 'essence/oos_retention'} · 절단일은 설정 cut id 산출만(end 인자 직접 지정 산출 = end_source 'argument' → 판정 입력 아님) · 산출물 최상위 measurement_regime.exec_price"
+    },
+    {
+      "id": "port_t_null_se",
+      "tier": "safety",
+      "contract": "null_dilution",
+      "direction": "report",
+      "targets": [
+        "F1.NULL"
+      ],
+      "field": "rf_prereg_se_null(F1.NULL = B1_N1~N4 칸들의 port_t) se — PT 비열위 여백 ε 의 원천(위상쌍 대체)"
+    },
+    {
+      "id": "sleeve_beta",
+      "tier": "safety",
+      "contract": "beta_controlled_alpha",
+      "direction": "report",
+      "must_report": true,
+      "targets": [
+        "F1.B7_37"
+      ],
+      "field": "슬리브 분리 수익의 시장 β",
+      "note": "역베타를 방어로 오인하는 함정(CID 전례 · memory project-cid-beta-spread-is-inverse-market-beta-in-kr) — B7 success_criterion 보고 의무"
+    },
+    {
+      "id": "episode_share",
+      "tier": "safety",
+      "contract": "tilt_attribution",
+      "direction": "report",
+      "must_report": true,
+      "targets": [
+        "F1.B7_37-F1"
+      ],
+      "field": "개선의 에피소드(단일 위기) 몫 — P2-02 일간 귀속",
+      "note": "B7 success_criterion '개선의 구간 분해' 보고 의무 · 선언치는 Q-L2-3"
+    },
+    {
+      "id": "deep_capture",
+      "tier": "safety",
+      "contract": "defensive_score",
+      "direction": "report",
+      "targets": [
+        "F1.B7_37",
+        "F1.B7_40",
+        "F1.B7_41",
+        "F1.B7_38",
+        "F1.B7_39",
+        "F1"
+      ],
+      "field": "authoritative_remeasure.json::defensive_score.deep.capture(점추정 · 보고용)"
+    },
+    {
+      "id": "mdd",
+      "tier": "safety",
+      "contract": "essence_score",
+      "direction": "report",
+      "targets": [
+        "F1.B7_37",
+        "F1.B7_40",
+        "F1.B7_41",
+        "F1.B7_38",
+        "F1.B7_39",
+        "F1"
+      ],
+      "field": "essence.mdd"
+    }
+  ],
+  "criteria": {
+    "success": [
+      {
+        "metric": "deep_capture_delta",
+        "target": "F1.B7_37-F1",
+        "stat": "p_gt0",
+        "op": "<",
+        "rhs": 0.024
+      },
+      {
+        "all": [
+          {
+            "metric": "deep_capture_delta",
+            "target": "F1.B7_37-F1",
+            "stat": "value",
+            "op": "<",
+            "rhs": {
+              "ref": {
+                "metric": "deep_capture_delta",
+                "target": "F1.B7_40-F1",
+                "stat": "value"
+              }
+            }
+          },
+          {
+            "metric": "deep_capture_delta",
+            "target": "F1.B7_40-F1",
+            "stat": "value",
+            "op": "<",
+            "rhs": {
+              "ref": {
+                "metric": "deep_capture_delta",
+                "target": "F1.B7_41-F1",
+                "stat": "value"
+              }
+            }
+          }
+        ]
+      },
+      {
+        "metric": "calmar",
+        "target": "F1.B7_37",
+        "stat": "value",
+        "op": ">",
+        "rhs": {
+          "ref": {
+            "metric": "calmar",
+            "target": "F1",
+            "stat": "value"
+          }
+        }
+      },
+      {
+        "metric": "port_t",
+        "target": "F1.B7_37",
+        "stat": "value",
+        "op": ">=",
+        "rhs": {
+          "ref": {
+            "metric": "port_t",
+            "target": "F1",
+            "stat": "value"
+          },
+          "noise": {
+            "metric": "port_t_null_se",
+            "target": "F1.NULL",
+            "stat": "se",
+            "k": 1
+          }
+        }
+      },
+      {
+        "metric": "oos_retention",
+        "target": "F1.B7_37",
+        "stat": "value",
+        "op": ">=",
+        "rhs": {
+          "ref": {
+            "metric": "oos_retention",
+            "target": "F1",
+            "stat": "value"
+          }
+        }
+      },
+      {
+        "metric": "calmar_delta_boot",
+        "target": "F1.B7_37-F1.B7_40",
+        "stat": "p_gt0",
+        "op": ">=",
+        "rhs": 0.8
+      },
+      {
+        "metric": "calmar_trunc",
+        "target": "F1.B7_37",
+        "stat": "value",
+        "op": ">=",
+        "rhs": {
+          "ref": {
+            "metric": "calmar_trunc",
+            "target": "F1",
+            "stat": "value"
+          }
+        }
+      }
+    ],
+    "failure": [
+      {
+        "all": [
+          {
+            "metric": "deep_capture_delta",
+            "target": "F1.B7_40-F1",
+            "stat": "p_gt0",
+            "op": "<",
+            "rhs": 0.024
+          },
+          {
+            "metric": "deep_capture_delta",
+            "target": "F1.B7_37-F1.B7_40",
+            "stat": "p_gt0",
+            "op": ">=",
+            "rhs": 0.024
+          },
+          {
+            "metric": "deep_capture_delta",
+            "target": "F1.B7_37-F1.B7_40",
+            "stat": "p_gt0",
+            "op": "<=",
+            "rhs": 0.976
+          }
+        ]
+      },
+      {
+        "all": [
+          {
+            "metric": "calmar",
+            "target": "F1.B7_37",
+            "stat": "value",
+            "op": ">",
+            "rhs": {
+              "ref": {
+                "metric": "calmar",
+                "target": "F1",
+                "stat": "value"
+              }
+            }
+          },
+          {
+            "any": [
+              {
+                "metric": "port_t",
+                "target": "F1.B7_37",
+                "stat": "value",
+                "op": "<",
+                "rhs": {
+                  "ref": {
+                    "metric": "port_t",
+                    "target": "F1",
+                    "stat": "value"
+                  },
+                  "noise": {
+                    "metric": "port_t_null_se",
+                    "target": "F1.NULL",
+                    "stat": "se",
+                    "k": 1
+                  }
+                }
+              },
+              {
+                "metric": "oos_retention",
+                "target": "F1.B7_37",
+                "stat": "value",
+                "op": "<",
+                "rhs": {
+                  "ref": {
+                    "metric": "oos_retention",
+                    "target": "F1",
+                    "stat": "value"
+                  }
+                }
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "metric": "deep_capture_delta",
+        "target": "F1.B7_37-F1.B7_40",
+        "stat": "p_gt0",
+        "op": ">",
+        "rhs": 0.976
+      }
+    ],
+    "stop": [
+      {
+        "id": "STOP_F1_MECH",
+        "after_arms": [
+          "F1.B7_37",
+          "F1.B7_40",
+          "F1.B7_41"
+        ],
+        "when": {
+          "any": [
+            {
+              "metric": "deep_capture_delta",
+              "target": "F1.B7_37-F1",
+              "stat": "p_gt0",
+              "op": ">=",
+              "rhs": 0.024
+            },
+            {
+              "metric": "deep_capture_delta",
+              "target": "F1.B7_37-F1",
+              "stat": "value",
+              "op": ">=",
+              "rhs": {
+                "ref": {
+                  "metric": "deep_capture_delta",
+                  "target": "F1.B7_40-F1",
+                  "stat": "value"
+                }
+              }
+            },
+            {
+              "metric": "deep_capture_delta",
+              "target": "F1.B7_40-F1",
+              "stat": "value",
+              "op": ">=",
+              "rhs": {
+                "ref": {
+                  "metric": "deep_capture_delta",
+                  "target": "F1.B7_41-F1",
+                  "stat": "value"
+                }
+              }
+            }
+          ]
+        },
+        "action": {
+          "halt": true
+        },
+        "note": "draft2: F2 2칸 삭제로 구판 skip 대상이 사라졌다 — 같은 의도(기전 불성립이면 칸을 더 쓰지 않는다)를 기전 우선 순서로 옮겼다. 기전 3칸(B7_37·B7_40·B7_41) 뒤 1차 기전(교정 문턱)·대조 순서가 불성립하면 즉시 종료 — 용량(B7_38)·계열 특이성(B7_39) 2칸은 재지 않는다(N 절약). rf_prereg_verdict 가 뒤 칸 측정을 멈춤 위반으로 거부."
+      }
+    ],
+    "text": {
+      "success": [
+        "S1 1차 기전: 심층 capture Δ(F1.B7_37−F1) 부트스트랩 P(Δ*>0) < α_cal = 0.0240 (귀무 크기 5% 교정 · 명목 90% CI 상한<0 병기)",
+        "S2 대조 순서(점추정): Δ(방어) < Δ(베타매칭 B7_40) < Δ(반방어 B7_41)",
+        "S3 B7 success_criterion: Calmar(B7_37) > Calmar(F1)",
+        "S4 B7 success_criterion: PORT_t(B7_37) ≥ PORT_t(F1) − ε · ε = 1×SE_null(port_t)(Q-L2-1 해소)",
+        "S5 B7 success_criterion: OOS retention(B7_37) ≥ OOS retention(F1)",
+        "S6 B7_37 대 B7_40 Calmar 짝지은 블록 부트스트랩 P(Δ>0) ≥ 0.8 (플랜 PR-L2)",
+        "S7 2024-12 절단판 비열위: Calmar_trunc(B7_37) ≥ Calmar_trunc(F1) (INTEG③)"
+      ],
+      "failure": [
+        "X1 'B7 효과 = 베타 축소': B7_40 도 심층 capture 를 낮추고(P(Δ*>0) < 0.0240) B7_37−B7_40 이 구별 불가(0.0240 ≤ P ≤ 0.9760)",
+        "X2 b5_pattern(B7 success_criterion 문언): Calmar 는 올랐는데 PORT_t 가 기저−ε 미만이거나 OOS 가 기저 미만",
+        "X3 대조 순서의 유의한 반전(Q-L2-2 해소): B7_37−B7_40 의 P(Δ*>0) > 0.9760 — 방어 슬리브가 베타매칭보다 유의하게 덜 막는다"
+      ],
+      "stop": [
+        "STOP_F1_MECH: 기전 3칸(B7_37·B7_40·B7_41) 뒤 1차 기전(교정 문턱) 또는 대조 순서 불성립 → halt(B7_38·B7_39 생략)"
+      ]
+    }
+  },
+  "labels": [
+    "confirmed",
+    "powered_null",
+    "undetermined",
+    "failed"
+  ],
+  "power": {
+    "primary": {
+      "metric": "deep_capture_delta",
+      "target": "F1.B7_37-F1"
+    },
+    "ci_level": 0.9,
+    "implied_effect": {
+      "value": null,
+      "status": "pending",
+      "formula": "(w_sleeve) × (c_sleeve_asof − c_F1) — w_sleeve = F1 비중 방법(floor v2 F1.spec.weighting = ew) 아래 슬리브 k 종 비중 합의 시점 평균 = mean_t(k/|SEL_t|)(R 이 F1 보유에서 산출 · Q-L2-5 해소) · c_sleeve_asof = **F1 보유 팩터 제외 뒤** as-of 선정 방어 팩터 상위 k 종 단독 슬리브의 심층 capture(defensive_score) · c_F1 = F1 재실행판의 심층 capture(authoritative_remeasure.json::defensive_score.deep.capture)",
+      "inputs": [
+        "c_F1 (F1 등록 전 측정 · 결정론 2회 중 1판)",
+        "c_sleeve_asof (제외 규칙 반영 슬리브 단독 측정 · defensive_score)",
+        "w_sleeve (F1 보유 · R 산출)"
+      ],
+      "note": "관측 Δ 로 역산 금지(Hoenig & Heisey 2001 · 설정 power_gate.links) — 착수 전 입력만으로 R 이 계산. 부호는 1차 지표 방향(decrease)과 맞아야 한다(음수)."
+    },
+    "se": {
+      "value": null,
+      "status": "pending",
+      "source": [
+        "null_dilution",
+        "block_bootstrap"
+      ],
+      "method": "rf_prereg_combine_se(max): SE_null = F1.NULL(P1-06 null_factor 통제 칸 B1_N1~B1_N4(carry = F1 구성 + 무정보 팩터 1개 · rf_cell_engine.R factor kind null_perm · seed 1~4 · control 태그 = 서명 dedup·승계·N 제외 · CTRL 갈래 스테이징 2026-09-25) — 판독 rf_runner_gates.R::rf_null_dilution_values → rf_prereg_se_null(칸 ≥2)) 칸들의 심층 capture Δ(null 칸 − F1) 표본표준편차(rf_prereg_se_null) · SE_boot = rf_prereg_paired_boot(stat='deep_capture') 의 se on (B1_N1 대 F1) — 위상쌍(B6_32/33)·구 B7 칸·09-23/24 무인 B7 칸 금지",
+      "source_note": "SE 원천 = P1-06 null 희석 칸(k=4 · 표본표준편차 상대정밀도 ≈0.41 이라 거칠다 → 블록 부트스트랩과 max 결합)"
+    },
+    "computed": null,
+    "decision_rule": {
+      "rule": "p_gt0 < α_cal = 0.0240",
+      "calibrated_size_one_sided": 0.05,
+      "effective_critical_normal": 1.64485362695147,
+      "gate_critical_normal": 1.95996398454005,
+      "note": "prereg_config power_gate(착수 관문)는 z(.975)=1.96 기준 — 교정 규칙의 점근 유효 임계(단측 5% = 1.645)보다 보수적이다. 착수 관문 통과 = 판정 검정력이 그 이상."
+    },
+    "power_at_decision": {
+      "value": null,
+      "status": "pending",
+      "formula": "Φ(|ie|/SE − z(0.95)) (정규 근사 · 교정 규칙의 크기 = 5% 단측)",
+      "mc_cost": "교정의 검정력 비용 = primary_calibration.power_cost(같은 참 Δ 에서 명목 대비 탐지율)"
+    },
+    "modal_outcome": "undetermined",
+    "leaves_behind": [
+      "as-of B7 새 칸(F1 보유 팩터 제외 규칙)의 권위 등급·심층 capture — 기전 반증 기록(L-code 블록 단위)",
+      "심층 capture Δ 부트스트랩 계기의 교정 문턱(α_cal) 첫 실사용",
+      "베타매칭·반방어 대조 칸",
+      "F1 위 null 희석 SE(청정 기저 이식 가족의 설계 참고 — 수치 재사용은 금지)"
+    ],
+    "calmar_axis_note": "Calmar 는 '미결 최빈'을 사전등록한 2차 지표(플랜 P2 공통 규약) — 착수 관문은 1차 기전 지표(심층 capture Δ)로 판정"
+  },
+  "se_source": {
+    "methods": [
+      "null_dilution",
+      "block_bootstrap"
+    ],
+    "combine": "max",
+    "primary_source": "null_dilution — P1-06 null 희석 칸(F1.NULL = B1_N1~N4)",
+    "replaced": "플랜 원문 'SE 는 위상쌍 B6_32/33 에서 잡는다' → 레버 감사 §③#4·§④-4·§⑤ 에 따라 null 희석·블록 부트스트랩으로 교체(위상쌍 = 10쌍 중 8쌍 같은 부호 = 계통 효과)"
+  },
+  "budget": {
+    "max_cells": 5,
+    "counted": "arms 만(F1 5칸) — F2 2칸은 삭제(측정 0 · N 미계상 · FLOOR-F2-EXCLUDED-ARMS)",
+    "se_cells": "null 희석 칸(B1_N1~N4)은 선정 후보가 아니라 예산·N 밖(P1-06 control 태그)",
+    "halt_saving": "STOP_F1_MECH 발동 시 측정 3칸(N +3)"
+  },
+  "priors": {
+    "mechanism": 0.3,
+    "success": {
+      "lo": 0.1,
+      "hi": 0.15
+    },
+    "grade_a": 0,
+    "basis": "판단값(draft2 재산정 — 플랜 원안 기전 35%·성공 15~20%·A ≤1% 는 22632 계보 기준이라 F1 로 옮기며 다시 씀): ① 기전 0.35→0.30 — F1 이 이미 방어 계열 시드(D42_EWMA_Vol · 팩터 층 1/4 · 점수 가중 1/8)를 보유해 슬리브의 한계 capture 감소가 희석된다(id 제외 뒤에도 같은 저변동성 계열이 후보에 남는다). ② 성공 0.15~0.20→0.10~0.15 — F1 은 성과 미측정이고 팩터 층 2~4번이 잡음 수준(as-of |IC| ≤0.005)이라 PT·OOS 비열위(S4·S5)의 기준선이 불확실. ③ A 0 — FLOOR-BASE-ENGINE-Q4(Q④): 이 가족은 A 자격이 없다(scope.mechanism_only). A 확률은 청정 기저 이식 가족에서 새로 산정.",
+    "basis_refs": [
+      "FLOOR-BASE-ENGINE-Q4",
+      "reference_floors_v2.json open_items_after_prereg(사전등록 서술 · 적대검증 2026-09-25)"
+    ]
+  },
+  "hypothesis_index_lookup": {
+    "status": "attached",
+    "tool": "02_Infrastructure/tools/hypothesis_index.R::lookup_hypothesis(auto_rebuild=FALSE)",
+    "run_at": "2026-09-25T22:40:34+0900",
+    "index_sha256": "5db5ca64232568aed97556d9d330637e308290c7787de008e043559f562f9c41",
+    "index_mtime": "2026-09-24T06:58:40+0900",
+    "index_stale_sources": [
+      "06_Registry/distilled_knowledge.json",
+      "06_Registry/module_catalog.json",
+      "stage_artifacts/l_code (원본 L-code)"
+    ],
+    "note": "과거 negative 는 사실 기록이지 금지 목록이 아니다(AX-000) — 새 각도면 재시도 정당",
+    "queries": [
+      {
+        "keywords": [
+          "B7"
+        ],
+        "n_hits": 8,
+        "fallback_single_word": false,
+        "hits": [
+          {
+            "strategy_id": "DIST-GEN-284",
+            "verdict": "DISTILLED_NEG",
+            "grade": null,
+            "title": "DIST-GEN-284: [초안] [실증 실패 규칙 초안] family=defense, tags=reinforcement,rule_grid,b7",
+            "date": "2026-09-21",
+            "research_mode": ""
+          },
+          {
+            "strategy_id": "DIST-GEN-298",
+            "verdict": "DISTILLED",
+            "grade": null,
+            "title": "DIST-GEN-298: [초안] [실증 혼재(방향불명) 규칙 초안] family=defense, tags=reinforcement,rule_g",
+            "date": "2026-09-21",
+            "research_mode": ""
+          },
+          {
+            "strategy_id": "RP_20260924_031815_18728",
+            "verdict": "REGISTERED",
+            "grade": "C",
+            "title": "[무인 병렬 B7_37] 방어 슬리브 k=5 (약세장 IC 1위) — B7/structural_defense · factor2=none · we",
+            "date": "2026-09-24",
+            "research_mode": ""
+          },
+          {
+            "strategy_id": "RP_20260924_031815_29616",
+            "verdict": "REGISTERED",
+            "grade": "C",
+            "title": "[무인 병렬 B7_38] 방어 슬리브 k=8 — 분할 비율 축 — B7/structural_defense · factor2=none · weig",
+            "date": "2026-09-24",
+            "research_mode": ""
+          },
+          {
+            "strategy_id": "RP_20260924_031815_26320",
+            "verdict": "REGISTERED",
+            "grade": "C",
+            "title": "[무인 병렬 B7_41] [부호 반전 대조] 반(反)방어 슬리브 k=5 — B7/structural_defense · factor2=none ·",
+            "date": "2026-09-24",
+            "research_mode": ""
+          },
+          {
+            "strategy_id": "RP_20260924_031815_17136",
+            "verdict": "REGISTERED",
+            "grade": "C",
+            "title": "[무인 병렬 B7_39] 방어 슬리브 k=5 (약세장 IC 2위 — 계열 특이성) — B7/structural_defense · factor2=",
+            "date": "2026-09-24",
+            "research_mode": ""
+          },
+          {
+            "strategy_id": "RP_20260924_031815_23620",
+            "verdict": "REGISTERED",
+            "grade": "C",
+            "title": "[무인 병렬 B7_40] [무신호 대조] 베타매칭 무작위 슬리브 k=5 — B7/structural_defense · factor2=none ·",
+            "date": "2026-09-24",
+            "research_mode": ""
+          },
+          {
+            "strategy_id": "RP_20260913_084807_skipped_base_promo1_B7",
+            "verdict": "PASS",
+            "grade": "B",
+            "title": "L-RF-20260923_172033: RP_20260913_084807_skipped_base_promo1_B7",
+            "date": "2026-09-23",
+            "research_mode": "reinforcement"
+          }
+        ]
+      },
+      {
+        "keywords": [
+          "방어",
+          "슬리브"
+        ],
+        "n_hits": 8,
+        "fallback_single_word": false,
+        "hits": [
+          {
+            "strategy_id": "RP_20260924_031815_18728",
+            "verdict": "REGISTERED",
+            "grade": "C",
+            "title": "[무인 병렬 B7_37] 방어 슬리브 k=5 (약세장 IC 1위) — B7/structural_defense · factor2=none · we",
+            "date": "2026-09-24",
+            "research_mode": ""
+          },
+          {
+            "strategy_id": "RP_20260924_031815_29616",
+            "verdict": "REGISTERED",
+            "grade": "C",
+            "title": "[무인 병렬 B7_38] 방어 슬리브 k=8 — 분할 비율 축 — B7/structural_defense · factor2=none · weig",
+            "date": "2026-09-24",
+            "research_mode": ""
+          },
+          {
+            "strategy_id": "RP_20260924_031815_26320",
+            "verdict": "REGISTERED",
+            "grade": "C",
+            "title": "[무인 병렬 B7_41] [부호 반전 대조] 반(反)방어 슬리브 k=5 — B7/structural_defense · factor2=none ·",
+            "date": "2026-09-24",
+            "research_mode": ""
+          },
+          {
+            "strategy_id": "RP_20260924_031815_17136",
+            "verdict": "REGISTERED",
+            "grade": "C",
+            "title": "[무인 병렬 B7_39] 방어 슬리브 k=5 (약세장 IC 2위 — 계열 특이성) — B7/structural_defense · factor2=",
+            "date": "2026-09-24",
+            "research_mode": ""
+          },
+          {
+            "strategy_id": "RP_20260924_031815_23620",
+            "verdict": "REGISTERED",
+            "grade": "C",
+            "title": "[무인 병렬 B7_40] [무신호 대조] 베타매칭 무작위 슬리브 k=5 — B7/structural_defense · factor2=none ·",
+            "date": "2026-09-24",
+            "research_mode": ""
+          },
+          {
+            "strategy_id": "RP_20260923_171133_6064",
+            "verdict": "REGISTERED",
+            "grade": "B",
+            "title": "[무인 병렬 B7_39] 방어 슬리브 k=5 (약세장 IC 2위 — 계열 특이성) — B7/structural_defense · factor2=",
+            "date": "2026-09-23",
+            "research_mode": ""
+          },
+          {
+            "strategy_id": "RP_20260923_171133_15804",
+            "verdict": "REGISTERED",
+            "grade": "B",
+            "title": "[무인 병렬 B7_41] [부호 반전 대조] 반(反)방어 슬리브 k=5 — B7/structural_defense · factor2=none ·",
+            "date": "2026-09-23",
+            "research_mode": ""
+          },
+          {
+            "strategy_id": "RP_20260923_171133_15736",
+            "verdict": "REGISTERED",
+            "grade": "B",
+            "title": "[무인 병렬 B7_37] 방어 슬리브 k=5 (약세장 IC 1위) — B7/structural_defense · factor2=none · we",
+            "date": "2026-09-23",
+            "research_mode": ""
+          }
+        ]
+      },
+      {
+        "keywords": [
+          "defensive"
+        ],
+        "n_hits": 8,
+        "fallback_single_word": false,
+        "hits": [
+          {
+            "strategy_id": "DIST-GEN-284",
+            "verdict": "DISTILLED_NEG",
+            "grade": null,
+            "title": "DIST-GEN-284: [초안] [실증 실패 규칙 초안] family=defense, tags=reinforcement,rule_grid,b7",
+            "date": "2026-09-21",
+            "research_mode": ""
+          },
+          {
+            "strategy_id": "DIST-GEN-298",
+            "verdict": "DISTILLED",
+            "grade": null,
+            "title": "DIST-GEN-298: [초안] [실증 혼재(방향불명) 규칙 초안] family=defense, tags=reinforcement,rule_g",
+            "date": "2026-09-21",
+            "research_mode": ""
+          },
+          {
+            "strategy_id": "DIST-AS-008",
+            "verdict": "DISTILLED_COND",
+            "grade": null,
+            "title": "DIST-AS-008: KR alpha-search fast-validation 후보군(momentum 중심 + value/quality/def",
+            "date": "2026-08-20",
+            "research_mode": ""
+          },
+          {
+            "strategy_id": "DIST-AR-051",
+            "verdict": "DISTILLED",
+            "grade": null,
+            "title": "DIST-AR-051: [미승인 초안] 국면·오버레이 재료는 소비 형태를 바꿔도 자본 경로로 전이되지 않았다 — 소비 형태 교체가 **스크리닝 ",
+            "date": "2026-08-12",
+            "research_mode": ""
+          },
+          {
+            "strategy_id": "DIST-GEN-005",
+            "verdict": "DISTILLED",
+            "grade": null,
+            "title": "DIST-GEN-005: [초안] [실증 규칙(성과증거 미분류) 초안] family=defense, tags=O,_,E, supporting=1",
+            "date": "2026-08-03",
+            "research_mode": ""
+          },
+          {
+            "strategy_id": "DIST-RAMP-018",
+            "verdict": "DISTILLED_COND",
+            "grade": null,
+            "title": "DIST-RAMP-018: [미승인 초안] KR long-only top-25 구성에서 다수 약신호의 직교 조합 + 회전 제어는 단독 신호를 이",
+            "date": "2026-08-02",
+            "research_mode": ""
+          },
+          {
+            "strategy_id": "DIST-JG-007",
+            "verdict": "DISTILLED_NEG",
+            "grade": null,
+            "title": "DIST-JG-007: [초안] [실증 실패 규칙 초안] family=consensus, tags=HARD_FAIL_MDD,HIGH_SATURA",
+            "date": "2026-07-26",
+            "research_mode": ""
+          },
+          {
+            "strategy_id": "DIST-JG-008",
+            "verdict": "DISTILLED_COND",
+            "grade": null,
+            "title": "DIST-JG-008: [초안] [실증 조건부 규칙 초안] family=defense, tags=PIT,C3,C11, supporting=3건 ",
+            "date": "2026-07-26",
+            "research_mode": ""
+          }
+        ]
+      },
+      {
+        "keywords": [
+          "크래시"
+        ],
+        "n_hits": 8,
+        "fallback_single_word": false,
+        "hits": [
+          {
+            "strategy_id": "DIST-GEN-284",
+            "verdict": "DISTILLED_NEG",
+            "grade": null,
+            "title": "DIST-GEN-284: [초안] [실증 실패 규칙 초안] family=defense, tags=reinforcement,rule_grid,b7",
+            "date": "2026-09-21",
+            "research_mode": ""
+          },
+          {
+            "strategy_id": "DIST-GEN-298",
+            "verdict": "DISTILLED",
+            "grade": null,
+            "title": "DIST-GEN-298: [초안] [실증 혼재(방향불명) 규칙 초안] family=defense, tags=reinforcement,rule_g",
+            "date": "2026-09-21",
+            "research_mode": ""
+          },
+          {
+            "strategy_id": "DIST-GEN-211",
+            "verdict": "DISTILLED",
+            "grade": null,
+            "title": "DIST-GEN-211: [미승인 초안] B1(멀티팩터 선정) 블록 요약 62건 전수에서 essence Grade A 는 0건이다. 블록 최고 ",
+            "date": "2026-09-18",
+            "research_mode": ""
+          },
+          {
+            "strategy_id": "DIST-GEN-151",
+            "verdict": "DISTILLED",
+            "grade": null,
+            "title": "DIST-GEN-151: [미승인 초안] B1(멀티팩터) 블록 52건 실측에서 A등급은 0건이고 블록 최고 다중검정 t 는 2.650(L-RF-",
+            "date": "2026-09-12",
+            "research_mode": ""
+          },
+          {
+            "strategy_id": "DIST-GEN-155",
+            "verdict": "DISTILLED",
+            "grade": null,
+            "title": "DIST-GEN-155: [미승인 초안] B5(리스크 오버레이)·B4(결합) 블록 48건 실측에서 오버레이의 유효 축은 총노출 스칼라가 아니라 ",
+            "date": "2026-09-12",
+            "research_mode": ""
+          },
+          {
+            "strategy_id": "DIST-GEN-047",
+            "verdict": "DISTILLED",
+            "grade": null,
+            "title": "DIST-GEN-047: [미승인 초안] 강화격자 B4(결합)·B5(리스크오버레이) 30개 블록 실측에서 두 축 모두 직전 블록 최고 t를 거의",
+            "date": "2026-09-05",
+            "research_mode": ""
+          },
+          {
+            "strategy_id": "DIST-GEN-048",
+            "verdict": "DISTILLED",
+            "grade": null,
+            "title": "DIST-GEN-048: [미승인 초안] 충실구현(논문 그대로·유니버스만 K200∪KQ150)과 그 위 강화격자 재현(B1~B5) 450건 실측",
+            "date": "2026-09-05",
+            "research_mode": ""
+          },
+          {
+            "strategy_id": "DIST-GEN-049",
+            "verdict": "DISTILLED",
+            "grade": null,
+            "title": "DIST-GEN-049: [미승인 초안] 강화격자 B2 비중방법론 17블록 실측 — cvar(tail_aware)·entropy·factor_r",
+            "date": "2026-09-05",
+            "research_mode": ""
+          }
+        ]
+      },
+      {
+        "keywords": [
+          "저베타"
+        ],
+        "n_hits": 8,
+        "fallback_single_word": false,
+        "hits": [
+          {
+            "strategy_id": "DIST-GEN-284",
+            "verdict": "DISTILLED_NEG",
+            "grade": null,
+            "title": "DIST-GEN-284: [초안] [실증 실패 규칙 초안] family=defense, tags=reinforcement,rule_grid,b7",
+            "date": "2026-09-21",
+            "research_mode": ""
+          },
+          {
+            "strategy_id": "DIST-GEN-298",
+            "verdict": "DISTILLED",
+            "grade": null,
+            "title": "DIST-GEN-298: [초안] [실증 혼재(방향불명) 규칙 초안] family=defense, tags=reinforcement,rule_g",
+            "date": "2026-09-21",
+            "research_mode": ""
+          },
+          {
+            "strategy_id": "DIST-GEN-211",
+            "verdict": "DISTILLED",
+            "grade": null,
+            "title": "DIST-GEN-211: [미승인 초안] B1(멀티팩터 선정) 블록 요약 62건 전수에서 essence Grade A 는 0건이다. 블록 최고 ",
+            "date": "2026-09-18",
+            "research_mode": ""
+          },
+          {
+            "strategy_id": "DIST-GEN-155",
+            "verdict": "DISTILLED",
+            "grade": null,
+            "title": "DIST-GEN-155: [미승인 초안] B5(리스크 오버레이)·B4(결합) 블록 48건 실측에서 오버레이의 유효 축은 총노출 스칼라가 아니라 ",
+            "date": "2026-09-12",
+            "research_mode": ""
+          },
+          {
+            "strategy_id": "DIST-RAMP-014",
+            "verdict": "DISTILLED_COND",
+            "grade": null,
+            "title": "DIST-RAMP-014: 지수-비중 최적화 계열(Black-Litterman / 팩터 모멘텀 배분)을 KR 배포 형태인 top-25 횡단면으로",
+            "date": "2026-08-22",
+            "research_mode": ""
+          },
+          {
+            "strategy_id": "DIST-AS-008",
+            "verdict": "DISTILLED_COND",
+            "grade": null,
+            "title": "DIST-AS-008: KR alpha-search fast-validation 후보군(momentum 중심 + value/quality/def",
+            "date": "2026-08-20",
+            "research_mode": ""
+          },
+          {
+            "strategy_id": "DIST-AR-051",
+            "verdict": "DISTILLED",
+            "grade": null,
+            "title": "DIST-AR-051: [미승인 초안] 국면·오버레이 재료는 소비 형태를 바꿔도 자본 경로로 전이되지 않았다 — 소비 형태 교체가 **스크리닝 ",
+            "date": "2026-08-12",
+            "research_mode": ""
+          },
+          {
+            "strategy_id": "DIST-GEN-008",
+            "verdict": "DISTILLED",
+            "grade": null,
+            "title": "DIST-GEN-008: [초안] [실증 규칙(성과증거 미분류) 초안] family=unknown, tags=breadth,grinold,tie",
+            "date": "2026-08-09",
+            "research_mode": ""
+          }
+        ]
+      },
+      {
+        "keywords": [
+          "저변동"
+        ],
+        "n_hits": 8,
+        "fallback_single_word": false,
+        "hits": [
+          {
+            "strategy_id": "DIST-GEN-284",
+            "verdict": "DISTILLED_NEG",
+            "grade": null,
+            "title": "DIST-GEN-284: [초안] [실증 실패 규칙 초안] family=defense, tags=reinforcement,rule_grid,b7",
+            "date": "2026-09-21",
+            "research_mode": ""
+          },
+          {
+            "strategy_id": "DIST-GEN-298",
+            "verdict": "DISTILLED",
+            "grade": null,
+            "title": "DIST-GEN-298: [초안] [실증 혼재(방향불명) 규칙 초안] family=defense, tags=reinforcement,rule_g",
+            "date": "2026-09-21",
+            "research_mode": ""
+          },
+          {
+            "strategy_id": "DIST-AS-008",
+            "verdict": "DISTILLED_COND",
+            "grade": null,
+            "title": "DIST-AS-008: KR alpha-search fast-validation 후보군(momentum 중심 + value/quality/def",
+            "date": "2026-08-20",
+            "research_mode": ""
+          },
+          {
+            "strategy_id": "DIST-AR-051",
+            "verdict": "DISTILLED",
+            "grade": null,
+            "title": "DIST-AR-051: [미승인 초안] 국면·오버레이 재료는 소비 형태를 바꿔도 자본 경로로 전이되지 않았다 — 소비 형태 교체가 **스크리닝 ",
+            "date": "2026-08-12",
+            "research_mode": ""
+          },
+          {
+            "strategy_id": "DIST-GEN-005",
+            "verdict": "DISTILLED",
+            "grade": null,
+            "title": "DIST-GEN-005: [초안] [실증 규칙(성과증거 미분류) 초안] family=defense, tags=O,_,E, supporting=1",
+            "date": "2026-08-03",
+            "research_mode": ""
+          },
+          {
+            "strategy_id": "DIST-RAMP-018",
+            "verdict": "DISTILLED_COND",
+            "grade": null,
+            "title": "DIST-RAMP-018: [미승인 초안] KR long-only top-25 구성에서 다수 약신호의 직교 조합 + 회전 제어는 단독 신호를 이",
+            "date": "2026-08-02",
+            "research_mode": ""
+          },
+          {
+            "strategy_id": "DIST-JG-007",
+            "verdict": "DISTILLED_NEG",
+            "grade": null,
+            "title": "DIST-JG-007: [초안] [실증 실패 규칙 초안] family=consensus, tags=HARD_FAIL_MDD,HIGH_SATURA",
+            "date": "2026-07-26",
+            "research_mode": ""
+          },
+          {
+            "strategy_id": "DIST-JG-008",
+            "verdict": "DISTILLED_COND",
+            "grade": null,
+            "title": "DIST-JG-008: [초안] [실증 조건부 규칙 초안] family=defense, tags=PIT,C3,C11, supporting=3건 ",
+            "date": "2026-07-26",
+            "research_mode": ""
+          }
+        ]
+      }
+    ]
+  },
+  "pit": {
+    "as_of_selection": true,
+    "c_codes": [
+      "C1",
+      "C5",
+      "C6",
+      "C10",
+      "C13",
+      "C14",
+      "C15"
+    ],
+    "statements": [
+      "C1·C14(D-E · pit.md 2026-09-23): 평가 창 결과를 소비하는 자동 선정은 as-of 만 — 선정 통계는 Usable_Date ≤ 결정 시점. 전기간 IC·conditional_ic_matrix 를 선정에 쓰지 않는다(D-E-V6-CONDITIONAL-IC).",
+      "C1: 바닥 F1 은 as-of 재선정 새 칸만(floor v2 · selection_basis asof_ic · as-of 2005-01-01) — 원 칸(22632 promo3 B1_3)의 selection_basis_full_sample_ic_inherited 표식 계보를 쓰지 않는다. F2(14760) 는 제외(표식·Q④ 노출).",
+      "C6: 유니버스 K200∪KQ150 시변 멤버십(시그널일 플래그) · 상장폐지 포함 원장.",
+      "C10: 유동성 = adv20 t-1 ≥ 격자 fixed_axes.liq_adv20_min(= LIQ 2e8).",
+      "C13·C15: 팩터는 load_month_factors() 경유 · Z_Score_Aligned 만(NEGATE/FLIP 금지).",
+      "C5: 레버 자체는 오버레이가 아니다 — 바닥에 오버레이 층이 있으면 overlay_pit_guard(assert_overlay_pit · lag1 · strict A/B) 규약 그대로.",
+      "집행 = close_t1(current_axis exec_v2_close_t1) — 시그널일 종가 체결 없음. 규약이 다른 칸과 비교하지 않는다.",
+      "B7 선정: rf_sl_resolve(select=ic_bad_rank_asof) — reinforce_program.json B7.selection_asof(as-of = 셀 fixed_axes.start_date · 격자 값 · 확장창 실현 약세 보유월만). 후보에서 F1 보유 팩터 id 제외(사전 고정 규칙 · 성과 통계 미소비).",
+      "B7_40 베타매칭 무작위: 베타 = D02_Beta(Factor DB · 시그널일 t 값) · seed 고정 · 재현 가능."
+    ]
+  },
+  "measurement_regime": {
+    "exec_price": "close_t1",
+    "current_axis": "exec_v2_close_t1",
+    "pin_tag": null
+  },
+  "selection_accounting": {
+    "selection_type": "sweep",
+    "n_family": null,
+    "n_source": null,
+    "draft_estimate": {
+      "F1_lineage": {
+        "selection_type": "sweep",
+        "family_root": "RP_20260917_105807_22632_combo_rulefast",
+        "lineage": [
+          "RP_20260917_105807_22632_combo_rulefast_promo3",
+          "RP_20260917_105807_22632_combo_rulefast_promo2",
+          "RP_20260917_105807_22632_combo_rulefast_promo1",
+          "RP_20260917_105807_22632_combo_rulefast"
+        ],
+        "n_family_at_registration": 146,
+        "n_trials_basis": "base1+lineage_measured(excl_inherited)+batch_size",
+        "n_lineage_measured": 140,
+        "ledger_sha256": "8e8d7e40b0cf37977801d56c68234e334ce22086f8168f157e2722ac06ea785f",
+        "computed_at": "2026-09-25T22:40:34+0900",
+        "n_source": "rf_runner_gates.R::rf_selection_accounting(rf_lineage_ids, rf_lineage_measured, n_arms)"
+      }
+    },
+    "note": "등록 시 F1 새 칸이 계보에 더해진 뒤 rf_prereg_lineage_n 으로 재산출(N = 1 + 바닥 계보 측정 칸(상속 제외) + arm 수 · D-A · D-A-N-TIMING). 삭제 arm(F2 2칸) 미계상. 초안 추정치는 참고용."
+  },
+  "dependencies": [
+    {
+      "id": "P2-03",
+      "what": "floor v2 문서(F1 스펙 · pins · prereg_gate)",
+      "status": "available",
+      "file": "06_Registry/prereg/reference_floors_v2.json",
+      "note": "운영 배포 2026-09-25 21:38 — F1 은 defined_unmeasured(측정·필드는 아래 F1-MEASURE·INTEG-1)"
+    },
+    {
+      "id": "INTEG-1",
+      "what": "floor 문서 ↔ 사전등록 소비 계약 필드(F1: determinism_ok · selection_basis='as_of' · measurement_regime.exec_price · status=confirmed)",
+      "status": "pending",
+      "note": "p2_found_report §6 통합 구현 ① · INTEG 갈래"
+    },
+    {
+      "id": "F1-MEASURE",
+      "what": "F1 등록 전 측정 — 엔진 2회 재실행 결정론 + 기전-함의 효과 입력(c_F1 등) · pin 스냅샷 태그",
+      "status": "pending",
+      "note": "바닥 측정은 등록 전 허용(rf_prereg 설계) · run_paper_replication 은 이 워크플로 밖"
+    },
+    {
+      "id": "P1-06",
+      "what": "null 희석 통제 칸 B1_N1~N4(F1 carry) — SE 원천",
+      "status": "pending",
+      "note": "CTRL 갈래 스테이징(reinforce_program.json standing_cells control · rf_runner_gates.R::rf_null_dilution_values)"
+    },
+    {
+      "id": "P1-03",
+      "what": "sa_subwindow(2024-12 절단판) — INTEG③",
+      "status": "pending",
+      "file": "02_Infrastructure/contracts/selection_accounting.R"
+    },
+    {
+      "id": "P2-02",
+      "what": "tilt_attribution(일간 공통 성분 분해)",
+      "status": "available",
+      "file": "02_Infrastructure/contracts/tilt_attribution.R",
+      "note": "운영 배포 2026-09-25 21:35"
+    },
+    {
+      "id": "P0-14",
+      "what": "관문 시점 계보 기반 선정 기저 표식 자동 승계",
+      "status": "available",
+      "note": "운영 배포 2026-09-25 19:37(draft1 의 pending 은 낡은 표기)"
+    },
+    {
+      "id": "P1-08",
+      "what": "원장 entry priority/experiment 필드(러너 개설 경로) — rf_prereg_run 드라이런 전용 해제 조건",
+      "status": "pending"
+    },
+    {
+      "id": "CALIB-DEEPCAP",
+      "what": "1차 지표 교정 산출물(α_cal)",
+      "status": "available",
+      "file": "stage_artifacts/prereg/_calibration/PR-L2-deep_capture_alpha_v1/calibration.json",
+      "sha256": "1dfe1a1256fe2d5170c2da49c505d5f6788010a3f38eee6023a3af40bab8b3c1"
+    },
+    {
+      "id": "B7-EXCL-IMPL",
+      "what": "rf_sleeve.R 후보 제외 인자(defense_sleeve.exclude='base_factors' — FLOOR-F1-SEED-B7-OVERLAP 집행)",
+      "status": "pending",
+      "note": "현행 rf_sl_parse ok_args 에 없음 — 미구현이면 제외 규칙이 조용히 무시되는 게 아니라 파싱에서 멈춘다(알 수 없는 인자)"
+    },
+    {
+      "id": "SLEEVE-SERIES",
+      "what": "슬리브 분리 수익 산출물(슬리브 β 보고 must_report) — 엔진·rf_sleeve.R 가 내는지 미확인",
+      "status": "unverified"
+    }
+  ],
+  "open_questions": [],
+  "reporting_obligations": [
+    "scope = mechanism_only — essence Grade A 가 나와도 A 후보·Judge 트리거·BOOK 후보가 아니다(FLOOR-BASE-ENGINE-Q4). confirmed 면 청정 기저 이식 가족을 연다",
+    "슬리브 자체 시장 β(must_report)",
+    "개선의 구간 분해 — 단일 위기 집중 여부(must_report · 선언치 없음)",
+    "1차 지표 = 교정 문턱 α_cal(0.0240) 판정 + 명목 90% CI 병기 · 심층 월 수(n_deep) 병기",
+    "B7 해석 팩터 id·as-of·근거(rf_sl_report) + F1 보유 팩터 제외 목록 기록(B7-EXCL-IMPL)",
+    "모든 결과 = 반증 시도 · 미결을 벽으로 적립하지 않음(AX-000)",
+    "close_t1 전환·floor v2 이전 수치를 A 후보·레버 성공으로 인용 금지(플랜 하지 말 것 3)",
+    "판정 = rf_prereg_verdict(kind prereg_verdict 1회) · 보고 표제 [1계층·강화] · L-code mode='reinforcement'"
+  ],
+  "not_a_grade": "등급은 essence 하나 — 이 사전등록의 라벨은 등급을 대체하지 않는다",
+  "excluded_floors": [
+    {
+      "id": "F2",
+      "ref": "06_Registry/prereg/reference_floors_v2.json#F2",
+      "status": "excluded",
+      "reasons": [
+        "derived:q4_crossentry_exposure(possible · RP_20260913_090549_14760_adapted_rulefast)",
+        "derived:q4_crossentry_exposure(possible · RP_20260913_090549_14760_adapted_rulefast_promo1)",
+        "derived:q4_crossentry_exposure(possible · RP_20260913_090549_14760_adapted_rulefast_promo2)",
+        "pit_flag:selection_basis_full_sample_ic_inherited",
+        "adversary:unverified"
+      ],
+      "decision_ref": "FLOOR-F2-EXCLUDED-ARMS",
+      "arms_deleted": [
+        "F2.B7_37",
+        "F2.B7_40"
+      ]
+    }
+  ],
+  "primary_calibration": {
+    "artifact": "stage_artifacts/prereg/_calibration/PR-L2-deep_capture_alpha_v1/calibration.json",
+    "artifact_sha256": "1dfe1a1256fe2d5170c2da49c505d5f6788010a3f38eee6023a3af40bab8b3c1",
+    "id": "PR-L2.deep_capture_delta.p_gt0.alpha_cal.v1",
+    "alpha_cal": 0.024,
+    "problem": "적대검증(fpr_sim · B=499 · 300회) 귀무 FPR 8.66% (명목 5%) — 교정 산출물 재현(B=설정값 2000 · 실현 KOSPI200 심층 월 경로) 명목 FPR 0.086/0.073/0.070(정규/t5 이분산/t5 이분산 AR1) — '90% CI 상한<0' 규칙이 반증 시도를 쉽게 통과시킨다",
+    "method": "max α s.t. P0(p_gt0 < α ∧ 유효) ≤ 0.05 · 세 잡음 형태 최소",
+    "bench": {
+      "path": ".cache/benchmark.parquet",
+      "sha256": "75fdee3c89e6234ed35162ce537cb8a363eeedb573926af0b0f133107e8ea1ec",
+      "mtime": "2026-09-24T00:04:10+0900",
+      "months": "2005-01 ~ 마지막 완결월(달력월 복리 BM_Ret)",
+      "n_months": 260,
+      "n_deep": 10
+    },
+    "instrument": {
+      "rf_prereg_R_sha256": "ab52e9283e862bc17ac07fc5fd0e32b06b2ae26ca2b22ac817463b996a631e94",
+      "prereg_config_sha256": "093db7d3564be06a7d3a00a107c061b54f489c09ecdf27f7e43f97f5ecfd1fcb",
+      "B": 2000,
+      "seed": 20260925,
+      "ci_level": 0.9,
+      "block_rule_config": "auto",
+      "block_rule_realized": 7,
+      "block_rule_note": "np 패키지 부재 → adv_block_len 이 HHJ n^(1/3) 로 폴백(설정 'auto' 의 Politis-White 는 이 환경에서 실현되지 않는다)",
+      "deep_threshold": -0.1
+    },
+    "holdout": {
+      "real_norm": {
+        "scenario": "real_norm",
+        "fpr_at_alpha_cal": 0.044,
+        "ci95": [
+          0.0321494970108714,
+          0.0586204192063309
+        ],
+        "fpr_nominal": 0.069
+      },
+      "real_t5het": {
+        "scenario": "real_t5het",
+        "fpr_at_alpha_cal": 0.051,
+        "ci95": [
+          0.0382052367746862,
+          0.0665134615949348
+        ],
+        "fpr_nominal": 0.079
+      },
+      "real_t5het_ar": {
+        "scenario": "real_t5het_ar",
+        "fpr_at_alpha_cal": 0.044,
+        "ci95": [
+          0.0321494970108714,
+          0.0586204192063309
+        ],
+        "fpr_nominal": 0.083
+      }
+    },
+    "positive_control": {
+      "scenario": "adv_B(적대검증 fpr_sim B 재현 · B=설정값)",
+      "fpr_nominal": 0.067,
+      "fpr_at_alpha_cal": 0.041
+    },
+    "why_not_block_length": "블록 길이 1/7/12/24 → 명목 FPR 0.063/0.075/0.080/0.090 (블록이 길수록 악화) · 합성 표본 심층 월 중앙 6/13/26 → 명목 FPR 0.067/0.060/0.073 — 표본 길이만으로 명목 크기가 회복되지 않음 → 블록 길이·표본 조정이 아니라 문턱 교정(크기 5% 직접 표적)을 채택 · 이 환경은 np 부재로 설정 'auto' 의 Politis-White 가 실현되지 않고 HHJ n^(1/3) 로 폴백한다(instrument.block_rule_note).",
+    "findings": {
+      "block_len": [
+        1,
+        7,
+        12,
+        24
+      ],
+      "fpr_by_block": [
+        0.0633333333333333,
+        0.075,
+        0.08,
+        0.09
+      ],
+      "block_monotone_up": true,
+      "block_all_above_nominal": true,
+      "n_deep_trend": [
+        6,
+        13,
+        26
+      ],
+      "fpr_by_n_deep": [
+        0.067,
+        0.06,
+        0.0733333333333333
+      ],
+      "n_deep_restores_size": false,
+      "conclusion": "블록 길이 1/7/12/24 → 명목 FPR 0.063/0.075/0.080/0.090 (블록이 길수록 악화) · 합성 표본 심층 월 중앙 6/13/26 → 명목 FPR 0.067/0.060/0.073 — 표본 길이만으로 명목 크기가 회복되지 않음 → 블록 길이·표본 조정이 아니라 문턱 교정(크기 5% 직접 표적)을 채택"
+    },
+    "power_cost": [
+      {
+        "delta_true": -0.15,
+        "scenario": "real_t5het",
+        "n": 600,
+        "detect_nominal": 0.268333333333333,
+        "detect_alpha_cal": 0.2,
+        "median_value": -0.152816984349635,
+        "sd_value": 0.181473240072942
+      },
+      {
+        "delta_true": -0.3,
+        "scenario": "real_t5het",
+        "n": 600,
+        "detect_nominal": 0.59,
+        "detect_alpha_cal": 0.463333333333333,
+        "median_value": -0.302816984349634,
+        "sd_value": 0.181473240072942
+      },
+      {
+        "delta_true": -0.45,
+        "scenario": "real_t5het",
+        "n": 600,
+        "detect_nominal": 0.863333333333333,
+        "detect_alpha_cal": 0.765,
+        "median_value": -0.452816984349635,
+        "sd_value": 0.181473240072942
+      }
+    ],
+    "measurement_window_rule": "α_cal 은 등록본에 고정한다. 측정 창의 심층 월 수가 교정 창(bench.n_deep)과 다르면 결과에 병기하고 사후 재교정하지 않는다(재교정 = 새 사전등록).",
+    "known_limit": "rf_prereg_verdict 의 powered_null·mechanism_detected 는 명목 90% CI(ci_lo·ci_hi)를 쓴다(코드) — 소표본에서 CI 가 좁아 powered_null 이 관대할 수 있다. 라벨 confirmed/failed 는 교정 문턱을 쓴 성공·실패 조건이 정한다.",
+    "links": [
+      {
+        "cite": "Hall (1986) On the bootstrap and confidence intervals. Annals of Statistics 14(4)",
+        "url": "https://doi.org/10.1214/aos/1176350164",
+        "use": "백분위 구간의 포함 확률 오차 — 교정(calibration)으로 명목 수준을 맞춘다"
+      },
+      {
+        "cite": "Beran (1987) Prepivoting to reduce level error of confidence sets. Biometrika 74(3)",
+        "url": "https://doi.org/10.1093/biomet/74.3.457",
+        "use": "부트스트랩 p 값의 귀무 분포로 문턱을 다시 잡는다(prepivoting)"
+      },
+      {
+        "cite": "Hall & Martin (1988) On bootstrap resampling and iteration. Biometrika 75(4)",
+        "url": "https://doi.org/10.1093/biomet/75.4.661",
+        "use": "수준 교정(iterated/calibrated bootstrap)"
+      },
+      {
+        "cite": "Hesterberg (2015) What Teachers Should Know About the Bootstrap. The American Statistician 69(4)",
+        "url": "https://doi.org/10.1080/00031305.2015.1089789",
+        "use": "소표본 백분위 구간은 좁다(sqrt((n-1)/n) · z vs t) — 심층 월 n=10 의 부분 설명(블록 길이 악화분은 설명하지 못한다 · findings)"
+      },
+      {
+        "cite": "Politis & White (2004) Automatic Block-Length Selection for the Dependent Bootstrap. Econometric Reviews 23(1)",
+        "url": "https://doi.org/10.1081/ETC-120028836",
+        "use": "블록 길이 선택 — 이 교정에서는 블록 길이 what-if 로 크기 회복 경로가 아님을 대조(findings)"
+      }
+    ]
+  },
+  "premise": {
+    "floor": "F1 (06_Registry/prereg/reference_floors_v2.json#F1)",
+    "floor_doc_sha256": "ff47a9daf7a49615edc5de5b3e8e56c7ae5867fa02c3bc8ac7dd754db249f41b",
+    "status": "defined_unmeasured",
+    "base_engine": {
+      "path": "04_Research/strategies/RP_AUTO_COMBO_combo_1403_8125_2002_069/engine.R",
+      "md5": "e2308a99f801629cb068c1fdf2ac404f",
+      "base_weight": 0.5
+    },
+    "factor_layer": [
+      "D42_EWMA_Vol",
+      "IN05_Net_Debt_Issuance",
+      "AC13_Abnormal_Accruals",
+      "C15_Forecast_Error_Trend"
+    ],
+    "weighting": "ew",
+    "n_max": 25,
+    "selection": {
+      "rule": "rf_factor_arms.R::rf_pick_factor_sets(n=1, depths=depth, seed_offset, asof)",
+      "basis": "asof_ic",
+      "asof": "2005-01-01",
+      "seed_id": "D42_EWMA_Vol",
+      "seed_offset": 0
+    },
+    "overlap_with_22632_factor_layer": {
+      "jaccard": 0,
+      "overlap": [],
+      "lineage_set": [
+        "C03_EPS_Chg_3m",
+        "M01_Mom_12_1",
+        "V14_EBIT_EV",
+        "L19_Price_Delay"
+      ]
+    },
+    "deleted_premise": "'최고 계보 위' 전제 삭제 — F1 은 22632 계보의 팩터 층이 아니다(겹침 0 · jaccard 0). 같은 것은 기저 엔진뿐이고 F1 성과는 미측정(defined_unmeasured)이다. 레버 효과는 F1 대비 Δ 로만 읽고, 22632 계보의 과거 수치(PT·잔차 NW-t 등)를 사전확률·기대효과 근거로 옮겨 쓰지 않는다.",
+    "noise_note": "F1 사슬 2~4번(IN05·AC13·C15)은 as-of |IC| ≤ 0.005 · 상관 추정 표준오차 ≈0.14~0.18 > 사슬 max|rho| 0.063 — 시드(D42_EWMA_Vol) 밖 구성은 잡음 수준 차이로 정해졌다(floor v2 open_items · 적대검증 2026-09-25)."
+  },
+  "scope": {
+    "label": "mechanism_only",
+    "a_eligible": false,
+    "decision_ref": "FLOOR-BASE-ENGINE-Q4",
+    "decision_text": "Q④(C1 possible)로 분류 — F1 계보에서 나온 A 는 보류. PR-L2·PR-L1 은 F1 위에서 '기전 반증 시도'(라벨 mechanism_only · A 자격 없음 명시)로 등록·실행. A 경로용 청정 기저(성과를 보지 않고 고른 충실구현 논문 엔진 + as-of 팩터 층 · 교차 entry 노출 0)를 별도 floor 로 신설하고, 기전이 확인된 레버만 그 위에 새 사전등록 가족으로 이식.",
+    "decided_at": "2026-09-25T21:38:52+0900",
+    "statement": "F1 은 22632 결합 엔진(RP_AUTO_COMBO_combo_1403_8125_2002_069) 위에 있고, 그 엔진 설계가 교차 entry 성과에 노출돼 Q④(C1 possible)로 분류됐다. 따라서 이 사전등록은 '기전 반증 시도' 전용이다 — 어느 칸의 essence 가 Grade A 여도 A 후보가 아니다(보류 · Judge 트리거·BOOK 후보 아님). 라벨 4종(confirmed/powered_null/undetermined/failed)은 기전 가설의 판정일 뿐이다.",
+    "a_path": "기전이 confirmed 이면 A 경로용 청정 기저(성과를 보지 않고 고른 충실구현 논문 엔진 + as-of 팩터 층 · 교차 entry 노출 0 — 별도 floor)에 같은 레버를 **새 사전등록 가족**(새 prereg_id·새 family_id)으로 이식해서만 A 를 잰다. 이 가족의 수치는 이식 가족의 기준선·SE 로 쓰지 않는다.",
+    "transplant_rule": {
+      "requires": "이 가족 label = confirmed",
+      "new_family": true,
+      "floor": "청정 기저(FLOOR-BASE-ENGINE-Q4 신설 · 미정의)",
+      "reuse_numbers": false
+    },
+    "lever": "PR-L2"
+  },
+  "resolved_questions": [
+    {
+      "id": "Q-L2-1",
+      "question": "PT 비열위 여백 ε 의 배수(플랜 '기저−ε(잡음)' — 배수 미정)",
+      "resolution": "ε = 1 × SE_null(port_t) (S4·X2 · noise.k = 1)",
+      "basis": "B7 success_criterion 'PORT_t >= 기저-eps' · 플랜 '기저−ε(잡음)' — 잡음 1단위(1 SE)가 문언의 최소 해석",
+      "authority": "도훈 승인 문언(플랜·D-H·B7 success_criterion)의 최소 해석 — 결과 전 고정. 도훈 이의 시 draft3(새 rev)."
+    },
+    {
+      "id": "Q-L2-2",
+      "question": "'대조 순서 불성립' 실패를 점추정으로 볼지 CI 로 볼지",
+      "resolution": "성공(S2)은 점추정 순서(플랜 문언) · 실패(X3)는 B7_37−B7_40 의 유의한 반전(P(Δ*>0) > 1−α_cal = 0.9760)만",
+      "basis": "'failed' 가 라벨 우선순위 최상위라 잡음 반전(점추정)이 실패로 굳으면 기전이 참이어도 failed 가 난다 — 실패는 교정된 유의 반전으로만",
+      "authority": "도훈 승인 문언(플랜·D-H·B7 success_criterion)의 최소 해석 — 결과 전 고정. 도훈 이의 시 draft3(새 rev)."
+    },
+    {
+      "id": "Q-L2-3",
+      "question": "단일 위기 집중 몫의 선언치(성공 조건 '에피소드 몫 < 선언치' · synth §3.4)",
+      "resolution": "선언치 없음 — episode_share 는 must_report(안전 지표)로 확정 · 성공 조건에 넣지 않는다",
+      "basis": "B7 success_criterion 문언 = '개선의 구간 분해(단일 위기 집중 여부)' 보고 의무 · 수치 문턱의 근거 원문 없음(하드코딩 금지)",
+      "authority": "도훈 승인 문언(플랜·D-H·B7 success_criterion)의 최소 해석 — 결과 전 고정. 도훈 이의 시 draft3(새 rev)."
+    },
+    {
+      "id": "Q-L2-4",
+      "question": "F2 조건 미충족 시 F2 2칸 처리",
+      "resolution": "F2.B7_37·F2.B7_40 → deleted_arms(측정 0 · N 미계상 · 대체 없음)",
+      "basis": "도훈 결정 FLOOR-F2-EXCLUDED-ARMS(2026-09-25 21:38)",
+      "authority": "도훈 결정"
+    },
+    {
+      "id": "Q-L2-5",
+      "question": "기전-함의 효과 식의 w_sleeve — 바닥 비중 방법이 EW 가 아닐 때",
+      "resolution": "F1 비중 방법 = ew(floor v2 F1.spec.weighting) → w_sleeve = mean_t(k/|SEL_t|) 를 F1 보유에서 R 로 산출",
+      "basis": "floor v2 F1 스펙(비중 방법이 EW 로 고정됐다)",
+      "authority": "도훈 승인 문언(플랜·D-H·B7 success_criterion)의 최소 해석 — 결과 전 고정. 도훈 이의 시 draft3(새 rev)."
+    }
+  ],
+  "draft_changes": [
+    {
+      "id": "L2-C1",
+      "what": "scope = mechanism_only · A 자격 없음 · 청정 기저 이식 규칙",
+      "ref": "FLOOR-BASE-ENGINE-Q4"
+    },
+    {
+      "id": "L2-C2",
+      "what": "'최고 계보 위' 전제 삭제 → premise(F1 = 22632 기저 엔진 + as-of 4팩터 · 22632 팩터 층과 겹침 0) · 제목·가설 문언 수정",
+      "ref": "floor v2 compare.jaccard=0 · p2_found_report §3"
+    },
+    {
+      "id": "L2-C3",
+      "what": "F2 위 arm 2칸(F2.B7_37·F2.B7_40) → deleted_arms · F2 바닥·F2.NULL·F2 대조 제거 · excluded_floors 기록",
+      "ref": "FLOOR-F2-EXCLUDED-ARMS"
+    },
+    {
+      "id": "L2-C4",
+      "what": "B7 후보에서 F1 보유 팩터 4종 제외 규칙(모든 B7 arm 공통) + as-of 선정 표 기록 + 구현 의존 B7-EXCL-IMPL",
+      "ref": "FLOOR-F1-SEED-B7-OVERLAP"
+    },
+    {
+      "id": "L2-C5",
+      "what": "1차 지표 판정 문턱: 명목 90% CI 상한<0(귀무 FPR 8.66%) → 교정 P(Δ*>0) < α_cal=0.0240 (성공 S1·실패 X1·X3·멈춤 공통)",
+      "ref": "primary_calibration · 교정 산출물"
+    },
+    {
+      "id": "L2-C6",
+      "what": "SE 원천 = P1-06 null 희석 칸 B1_N1~N4(F1 carry) 명시 · 블록 부트스트랩과 max",
+      "ref": "플랜 P1-06 · CTRL 갈래"
+    },
+    {
+      "id": "L2-C7",
+      "what": "arm 순서 기전 우선(B7_37→B7_40→B7_41→B7_38→B7_39) · 멈춤 = 기전 3칸 뒤 halt(구판 F2 skip 대체)",
+      "ref": "플랜 PR-L2 멈춤 의도 보존"
+    },
+    {
+      "id": "L2-C8",
+      "what": "미결 질문 5건 해소(resolved_questions) · 사전확률 재산정(A 0) · 예산 7→5 · 의존 갱신(P2-02·P2-03·P0-14 available · P0-11 제거 · INTEG-1·F1-MEASURE·CALIB·B7-EXCL 추가)",
+      "ref": "p2_found_report §3"
+    }
+  ],
+  "supersedes_draft": {
+    "rev": 1,
+    "path": "06_Registry/prereg/drafts/PR-L2-B7ASOF-STRUCTDEF.draft1.json",
+    "sha256": "df23fbe5c9dfb1730be249e3353e8fcb628914fe5498bc5ba7b76b224560b7f5"
+  },
+  "revision_of": null
+}

@@ -1,0 +1,47 @@
+{
+  "schema": "b_ewcw_paired_config_v1",
+  "note": "b_ewcw_paired.R(PR-L1 1차 기전 지표 · 플랜 qvest-1-drifting-eclipse §P2 PR-L1 '1차 지표: b_ewcw 감소(짝지은 NW-t ≤ −3)') 설정 정본. 코드에 수치 기본값 없음 — 이 파일이 없거나 키가 비면 계약이 멈춘다. ★'진단 — 등급 대체 아님'. 판정 문턱(t ≤ −3)은 사전등록 기준(criteria)이 갖고 여기에는 없다.",
+  "input": {
+    "series": "b_ewcw_2f",
+    "series_note": "tilt_attribution.R::ta_decompose 의 b_ewcw_2f = [f_m, f_e] 2요인 사전 적재(창 [t−W, t−1] · Vasicek 축소)의 보유 가중 합(현금 포함 Σw = GL) — 플랜 δ1 정의의 as-of 판(tilt 산출 loadings.note)",
+    "tilt_label": "진단 — 등급 대체 아님",
+    "tilt_version": "tilt_attribution_v1",
+    "window_field": "window",
+    "window_field_note": "tilt 산출 JSON config.window = 설정 loadings.window_market_days(두 칸이 같아야 짝 — 다르면 멈춘다)",
+    "min_common_frac": 0.95,
+    "min_common_frac_note": "짝지은 비교는 같은 수익일만 쓴다. 한쪽 일간 산출의 5% 넘게가 짝이 없으면(시작일·데이터 끝이 다른 두 칸) 표본이 다른 두 칸의 비교라 거부한다 — 자료 무결성 가드(통계 문턱 아님 · 판정 무관)."
+  },
+  "nw": {
+    "kernel": "bartlett",
+    "lag_rule": "bandwidth_fraction",
+    "b_fraction": 0.2,
+    "lag_rule_note": "lag = max(W, ⌈b·T⌉) · W = tilt 적재 창(252 시장일) · b = 0.2. 근거: Δ_t 의 의존 = ① 겹친 적재 창(W−1 일 공유 → MA(W−1) · Hansen & Hodrick 1980) + ② 보유 지속(월 교체 수개월~수년). 표본의 고정 비율 대역폭 + fixed-b 임계(Kiefer & Vogelsang 2005)는 강한 의존에서 크기가 명목에 가깝다(Sun, Phillips & Jin 2008 — 크기·검정력 절충의 대역폭 비율). b 값은 귀무 교정(교환 가능한 무작위 쌍 · 결과를 보기 전 · 귀무 자료만)으로 정했다: T=5400 합성 — b=W/T(0.047) 에서 월 교체 10% 쌍의 fixed-b 위양성률 11.3% · b=0.1 7.7% · b=0.2 5.3%(교체 34% 쌍 6.0%). 자동 lag floor(4(T/100)^(2/9))(Newey & West 1994 · T=5400 → 9)는 54~79% — 비교 대조 전용.",
+    "links": [
+      {"cite": "Newey & West (1987) A Simple, Positive Semi-Definite, Heteroskedasticity and Autocorrelation Consistent Covariance Matrix. Econometrica 55(3)", "url": "https://doi.org/10.2307/1913610", "use": "Bartlett 커널 장기분산(정본 .nw_t_mean 식)"},
+      {"cite": "Hansen & Hodrick (1980) Forward Exchange Rates as Optimal Predictors of Future Spot Rates. Journal of Political Economy 88(5)", "url": "https://doi.org/10.1086/260910", "use": "겹친 관측(창 길이 k)의 오차는 MA(k−1) — lag 하한 = 겹침 길이"},
+      {"cite": "Sun, Phillips & Jin (2008) Optimal Bandwidth Selection in Heteroskedasticity-Autocorrelation Robust Testing. Econometrica 76(1)", "url": "https://doi.org/10.1111/j.0012-9682.2008.00822.x", "use": "검정 목적 대역폭은 표본의 비율로 크게 — 크기 왜곡과 검정력의 절충"},
+      {"cite": "Newey & West (1994) Automatic Lag Selection in Covariance Matrix Estimation. Review of Economic Studies 61(4)", "url": "https://doi.org/10.2307/2297912", "use": "자동 lag 규칙 — 이 계열에선 과소(교정 비교 대조로만)"}
+    ],
+    "fixed_b": {
+      "alpha_two_sided": 0.05,
+      "coef_975": [1.9600, 2.9694, 0.4160, -0.5324],
+      "ci_level": 0.90,
+      "coef_ci": [1.6449, 2.1859, 0.3142, -0.3427],
+      "coef_note": "Bartlett 커널 fixed-b 분위 cv(b) = c0 + c1·b + c2·b² + c3·b³ (Kiefer & Vogelsang 2005 3차 다항 근사 · b = lag/T): coef_975 = 97.5% 분위(양측 5% 임계) · coef_ci = 95% 분위(양측 90% CI = ci_level). 검산(2026-09-25 INTEG): iid N(0,1) n=2000 × 20000회 NW-t 의 |t| 95%·90% 분위가 b ∈ {0.047, 0.1, 0.2, 0.3, 0.5} 에서 다항식과 0.03 이내로 일치. ci_level 0.90 = 06_Registry/prereg/prereg_config.json bootstrap.ci_level 과 같은 값(사전등록 pinned 대조 · 산출물 최상위 ci_level).",
+      "links": [
+        {"cite": "Kiefer & Vogelsang (2005) A New Asymptotic Theory for Heteroskedasticity-Autocorrelation Robust Tests. Econometric Theory 21(6)", "url": "https://doi.org/10.1017/S0266466605050565", "use": "fixed-b 점근 · Bartlett 임계값 다항식"}
+      ]
+    }
+  },
+  "no_bootstrap_note": "짝지은 블록 부트스트랩은 이 계약에 없다(2026-09-25 교정): 블록 = 대역폭(b·T)이면 표본당 블록이 5 개 안팎이라 백분위 CI 가 과신한다 — 합성 귀무(T=5400 · b=0.2)에서 90% CI 의 0 제외율 17~19%(명목 10%). ci 는 fixed-b 임계 × NW se 로 낸다. 사전등록 검정력의 SE 원천(null_dilution · block_bootstrap)은 P1-06 null 희석 칸이 맡는다.",
+  "calibration": {
+    "what": "귀무 교정 수락 기준(계기 수락 · 전략 판정 문턱 아님). 무작위 쌍 = 같은 분포에서 뽑은 두 지속 보유 포트(교환 가능 → 참 E[Δ]=0) · 적재 오차 = 겹친 창 이동평균.",
+    "fpr_alpha": 0.05,
+    "fpr_band": [0.02, 0.10],
+    "fpr_band_note": "R=200 무작위 쌍에서 명목 5% 위양성률의 이항 표준오차 ≈ 1.5%p — 띠 [2%, 10%] ≈ ±3σ. 자동 lag(대조)는 이 띠를 크게 벗어나야 한다(검사 돌연변이 red).",
+    "t_thr_tail_max": 0.03,
+    "t_thr_tail_note": "판정 문턱 t ≤ −3 의 귀무 꼬리 상한(검사 수락) — fixed-b(b=0.2) 이론값 P(t ≤ −3) ≈ 1.27%(iid 검산) · R=200 에서 상한 3% ≈ 이론값 + 2σ(이항). 정규 이론 0.135% 가 아니다 — 사전등록 서술이 이 크기를 적어야 한다.",
+    "turnover_one_way_monthly": 0.34,
+    "turnover_note": "지속 보유 무작위 포트의 월 교체 비율 — 강화 격자 B6 실측 월 회전 Σ|Δw| 0.678(양방향 · memory project-b6-execution-cadence-axis-added-20260921)의 절반(한 방향). 교정 표는 0.10(끈적) 도 병기한다(INTEG 보고)."
+  }
+}

@@ -21,6 +21,9 @@ if (!exists("rfbd_standing_picks", mode = "function"))
 #   자식의 carry 기준선이 부모 바닥과 다른 규약·유니버스·창의 값이 된다(D2-08). 읽기뿐 — 이 파일은 여전히 쓰지 않는다.
 if (!exists("rf_candidate_facts", mode = "function"))
   invisible(capture.output(source(file.path(.RFP_ROOT(), "02_Infrastructure/reinforcement/rf_runner_gates.R"), local = TRUE)))
+# ★carry 축 목록은 등록부 정본(rf_spec_axes.R · 결정 B4-SIX-AXIS-AND-CARRY-AXES 2026-09-26) — 관문이 이미 적재했으면 그대로 쓴다.
+if (!exists("rf_axes_promote_carry", mode = "function"))
+  source(file.path(.RFP_ROOT(), "02_Infrastructure/reinforcement/rf_spec_axes.R"), local = TRUE)
 
 #' 승격 best 후보 자격 (P0-12 · D2-08 · D-C · 규약 혼합 가드 · P0-11 · 2026-09-24)
 #'   구판(reinforce_auto_next_paper.R)은 소진 entry 의 **전 칸** PORT_t 최대를 best 로 골랐다. B3 유니버스 처치 칸(KQ150 단독 ·
@@ -123,7 +126,7 @@ rf_promote_decide <- function(entry, best, cfg = list(), existing_ids = NULL) {
   out(TRUE, if (isTRUE(.ext$ok)) "ok_extended" else "ok")
 }
 
-#' 승격 carry 구성 — 승자 스펙에서 팩터·비중·오버레이만 물려주고 **유니버스는 고정 축으로 리셋**한다.
+#' 승격 carry 구성 — 승자 스펙에서 등록부 축(팩터·비중·오버레이·집행 주기·방어 슬리브)을 물려주고 **유니버스는 고정 축으로 리셋**한다.
 #'   (도훈 결정 2026-09-05) SKILL §0: B1·B2·B4 의 기본 유니버스는 K200∪KQ150 이고 B3 만 유니버스를 바꾼다.
 #'   승자가 B3 칸이면 ws$universe 는 그 블록의 시험 축(예: KQ150 단독 · NAV 2010-02~)이라 그대로 물려주면
 #'   다음 세대 25칸이 전부 고정 축 밖에서 돌고, 창이 다른 PORT_t(2.567 vs 2005~ 칸)가 기저가 된다(실사고 promo2 n=17).
@@ -143,16 +146,13 @@ rf_promote_decide <- function(entry, best, cfg = list(), existing_ids = NULL) {
 #' @param root 저장소 루트(상주 칸·config 읽기) · parent_carry 부모 entry 의 carry$overlay(자기 층 판별 정밀도용 · 선택)
 rf_promote_carry <- function(ws, cf, best, sp, cfg = list(), root = .RFP_ROOT(), parent_carry = NULL) {
   ov <- .rfp_carry_overlay(ws, best, cfg, root, parent_carry)
-  # ★집행 주기(B6)는 시험 축이자 **승계 축**이다 — 유니버스처럼 리셋하지 않는다.
-  #   (유니버스는 그 블록의 시험 축이라 리셋하지만, 주기는 다음 세대의 바닥 구성에 남아야
-  #    비용 구조가 유지된다. 빠뜨리면 세대마다 월간으로 되돌아간다 — overlay 사고와 동형)
-  out <- list(factors = cf %||% list(), weighting = ws$weighting,
-              rebalance = ws[["rebalance"]],
-              defense_sleeve = ws[["defense_sleeve"]],
-              universe = list(kind = "k200_kq150"),
-              universe_reset_from = ws$universe,
-              overlay = ov$overlay,
-              source_cell = best$cell_code %||% "NA", source_spec = sp)
+  # ★축 목록 = 등록부(rf_spec_axes.R::rf_axes_promote_carry · 2026-09-26) — 축마다 carry 방식(winner · reset · winner_filtered)을 등록부가 정한다.
+  #   집행 주기(B6)·방어 슬리브(B7)는 승계 축이다(winner) — 유니버스처럼 리셋하지 않는다(빠뜨리면 세대마다 월간·슬리브 없음으로 되돌아간다 —
+  #   overlay 사고와 동형). 구판도 여기서는 여섯 축을 실었다 — 병은 소비자(러너 carry 병합·B4)가 두 축을 안 읽은 것이었다(같은 등록부로 닫는다).
+  #   ★키 순서는 등록부 순서다(구판 factors·weighting·rebalance·defense_sleeve·universe·… → factors·weighting·universe·universe_reset_from·overlay·
+  #     rebalance·defense_sleeve) — 값·키 집합은 같다(소비자는 전부 이름으로 읽는다).
+  out <- c(rf_axes_promote_carry(ws, cf, ov),
+           list(source_cell = best$cell_code %||% "NA", source_spec = sp))
   if (length(ov$dropped)) out$overlay_dropped <- ov$dropped
   out
 }

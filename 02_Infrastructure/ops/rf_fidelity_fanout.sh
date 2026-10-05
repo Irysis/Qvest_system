@@ -87,6 +87,11 @@ AXB="$AXB" HTMLU="$HTMLU" PURL="$PURL" WDIR="$WDIR" ART="$ART" AXES="$AXES" PLAN
 import io, json, os
 axes = json.load(io.open(os.environ['AXES'], encoding='utf-8'))['axes']
 W, A = os.environ['WDIR'], os.environ['ART']
+# (FA-CLEAN-BASE-PATH 2026-09-26) 청정 모드 — 검증기가 산출물 경로를 비워 부르면 감사자는 측정을 보지 않는다(재구현 피드백 = 이 감사의 지적).
+#   산출물 대조 지시(portfolio 축 holdings 등)는 코드 경로 추적으로 대신하게 알린다. unverifiable 은 원문 판독 실패 전용이다.
+if not A:
+    A = ('(청정 모드 — 비공개. 논문과 코드만 대조하라. 산출물을 보라는 대조 지시는 코드 경로 추적으로 대신하고 그 사실을 note 에 적어라. '
+         '산출물이 없다는 이유만으로 unverifiable 을 내지 마라 — unverifiable 은 원문을 못 읽었을 때만이다)')
 htmlline = ("- 원문 전문(이 주소로 읽어라): " + os.environ['HTMLU']) if os.environ['HTMLU'] else \
            "- ★arxiv id 를 못 뽑았다. 원문 전문을 못 읽으면 verdict 는 unverifiable 이다."
 rows = []
@@ -186,11 +191,21 @@ while IFS=$'\t' read -r K M E PF OUT; do
   rm -f "$OUT"
   (
     LLM_MODEL="$M"; LLM_EFFORT="$E"; LLM_FALLBACK_MODEL=""; LLM_FALLBACK_EFFORT=""
-    rf_llm_agent_run "$PF" "$LOG.$K.run" "${QVEST_FA_TIMEOUT:-1800}" \
-      --permission-mode acceptEdits \
-      --allowed-tools "Read,Write,Glob,Grep,WebFetch,WebSearch" \
-      --disallowed-tools "Bash,Agent,Edit" \
-      --add-dir "$WDIR"
+    # (FA-CLEAN-BASE-PATH) 청정 표식이 실린 스폰(검증기가 싣는다)이면 셸 통로 7종 + Agent + Skill 도 금지 — 단일 감사 레인과 같은 목록.
+    #   두 호출 모두 LLM_FALLBACK_MODEL="" 를 앞에 둔다(위 서브셸 대입과 같은 값 · 폴백 배선 검사 test_llm_single_entry.sh §G2 의 3줄 창 안).
+    if [ "${QVEST_CLEAN_LANE:-0}" = "1" ]; then
+      LLM_FALLBACK_MODEL="" rf_llm_agent_run "$PF" "$LOG.$K.run" "${QVEST_FA_TIMEOUT:-1800}" \
+        --permission-mode acceptEdits \
+        --allowed-tools "Read,Write,Glob,Grep,WebFetch,WebSearch" \
+        --disallowed-tools "Bash,PowerShell,Monitor,REPL,Workflow,CronCreate,RemoteTrigger,Agent,Edit,Skill" \
+        --add-dir "$WDIR"
+    else
+      LLM_FALLBACK_MODEL="" rf_llm_agent_run "$PF" "$LOG.$K.run" "${QVEST_FA_TIMEOUT:-1800}" \
+        --permission-mode acceptEdits \
+        --allowed-tools "Read,Write,Glob,Grep,WebFetch,WebSearch" \
+        --disallowed-tools "Bash,Agent,Edit" \
+        --add-dir "$WDIR"
+    fi
     _arc=$LLM_RC
     cat "$LOG.$K.run" >> "$LOG.$K" 2>/dev/null
     rm -f "$LOG.$K.run" "$LOG.$K.run.primary"

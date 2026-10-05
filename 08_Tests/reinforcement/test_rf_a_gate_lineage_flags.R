@@ -339,6 +339,7 @@ if (is.null(RPE) || length(setdiff(WANT, ls(RPE, all.names = TRUE)))) {
   SQ <- file.path(TMP, sprintf("p14_lf_rq_%d", Sys.getpid())); unlink(SQ, recursive = TRUE)
   for (r in c("02_Infrastructure/reinforcement/rf_runner_gates.R", "02_Infrastructure/reinforcement/rf_spec_sig.R", "02_Infrastructure/reinforcement/rf_block_design.R",
               "02_Infrastructure/reinforcement/reinforce_ledger.R", "02_Infrastructure/reinforcement/rf_lineage_flags.R", "02_Infrastructure/contracts/essence_score.R",
+              "02_Infrastructure/reinforcement/rf_spec_axes.R",   # ★B4-SIX-AXIS(2026-09-26) 관문 정본이 축 등록부를 적재한다
               "02_Infrastructure/worktask/constraint_defaults.json", "06_Registry/a_eligibility_gate.json", "06_Registry/pit_quarantine.json",
               "02_Infrastructure/validation/pit_quarantine.R")) {
     dir.create(dirname(file.path(SQ, r)), recursive = TRUE, showWarnings = FALSE)

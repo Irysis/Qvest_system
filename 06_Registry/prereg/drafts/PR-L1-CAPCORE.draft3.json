@@ -1,0 +1,1563 @@
+{
+  "schema": "rf_prereg_v1",
+  "prereg_id": "PR-L1-CAPCORE",
+  "family_id": "FAM-PR-L1-CAPCORE-01",
+  "status": "draft",
+  "draft_rev": 3,
+  "layer": 1,
+  "lever": "PR-L1",
+  "title": "F1 위 벤치 인지 코어-위성(cap_core) — 기전 반증 시도(mechanism_only · A 자격 없음) · A3/S1/S2·A4 삭제",
+  "created_at": "2026-10-03T13:31:59+0900",
+  "created_by": "Q(세션) · PREREGFIX 갈래(2026-10-03 · 09-26 결정 9건 반영 · 측정 0)",
+  "plan_ref": {
+    "path": "C:/Users/99922/.claude/plans/qvest-1-drifting-eclipse.md",
+    "section": "P2 · PR-L1 (D-H 확정 · L2 다음)",
+    "lever_audit": "scratchpad/organic/lever_audit_final.md (세션 be2e88bf · wf_7ea8a829-483)",
+    "p2_report": "scratchpad/p2_found/p2_found_report.md (§1.3 정정 · §3 등록 차단 27건)",
+    "decisions_0925_21": [
+      "FLOOR-BASE-ENGINE-Q4",
+      "FLOOR-F2-EXCLUDED-ARMS",
+      "FLOOR-F1-SEED-B7-OVERLAP",
+      "PR-L1-A4-DISPOSITION"
+    ]
+  },
+  "decision_refs": [
+    "D-H",
+    "PR-L1-A4-DISPOSITION",
+    "D-D",
+    "ORGANIC-PRIORITY",
+    "ORGANIC-DE",
+    "D-E",
+    "D-A",
+    "D-A-N-TIMING",
+    "D-M",
+    "CALMAR-FREQ-DAILY",
+    "FLOOR-BASE-ENGINE-Q4",
+    "FLOOR-F2-EXCLUDED-ARMS",
+    "PREREG-MECHANISM-ONLY-FLOOR",
+    "PREREG-POWERED-NULL-CALIBRATION",
+    "PREREG-DRAFT2-Q-INTERPRETATIONS",
+    "PR-L1-L2-ORDER",
+    "PR-L1-POWER-MEASURE-FIRST",
+    "PR-L1-THRESHOLD-TURNOVER",
+    "PR-L2-B7-EXCL-UNIT",
+    "FA-CLEAN-BASE-PATH",
+    "AUTOMEM-EXPOSED-CELLS-DISPOSITION"
+  ],
+  "framing": "falsification_attempt",
+  "framing_note": "L1 은 2025~26 을 본 뒤 고안됐고 2024-12 절단판도 2016~24 반전을 본 상태 — 완전한 사전성이 없다. 결과는 반증 시도로만 라벨한다. ★draft2: FLOOR-BASE-ENGINE-Q4(Q④)로 '기전 반증 시도' 전용 — A 자격 없음(scope).",
+  "hypothesis": {
+    "statement": "floor v2 F1 위에서, t-1 시총(.SizeLag) 상위 k 종(K200 멤버)을 t-1 벤치 비중 근사로 보유하는 정적 코어와 (1−Σ코어)로 스케일한 위성(F1 · ≤25 절단)이 EW−CW 공통 성분 적재(b_ewcw)를 줄여 K200 대비 OOS retention 과 Calmar 를 함께 올린다.",
+    "mechanism": "레버 감사 §② 진단: OOS 벽 = 2017~20·2025~26 두 시기에 거의 모든 칸이 같은 부호로 공유하는 활성 성분. 격자 카탈로그에 벤치 인지 비중 arm 이 0 이라, 비중 단계에서 EW−CW 성분을 겨냥하는 유일한 유형이다. 코어가 메가캡 저비중 갭을 메우면 그 공통 성분 적재가 기계적으로 준다.",
+    "prediction": "b_ewcw Δ(A1−F1) 짝지은 NW-t ≤ −3, 그리고 6조건(D-H) 충족.",
+    "alternatives": {
+      "closet_indexing": "A1 − C1 ≤ 0 → 07-05 closet-indexing 을 essence 에서 재현(failed)",
+      "recent_only": "절단판(2024-12)에서 이득 소멸 → 이득이 2025~26 에서만(failed)",
+      "denominator_game": "IS(2005~16) 활성 IR 이 줄고 OOS/IS 비만 오름 → 분모 게임(is_active_ir_delta 보고 의무로 드러낸다)",
+      "undetermined": "Calmar 축은 미결이 최빈(플랜 검정력 주석) — 벽이 아니다"
+    }
+  },
+  "differs_from_prior_negatives": [
+    {
+      "ref": "07-05 메가캡 앵커(memory project-megacap-anchor-construction-discovery — 총수익 SR 하락 · paired NW-t 음 · tracking-error 축소)",
+      "difference": "구 앵커는 '선정된 종목 중' 시총 top-2 에 20% 캡(삼성 미선택 월 72% — 의도가 구현된 적 없음). 여기서는 K200 전체에서 t-1 시총 상위 k 를 t-1 벤치 비중 그대로(캡 없음 · v10 비중 상한 폐지) 보유하고, 위성은 floor v2 계보 그대로, 판정은 essence 권위 등급 + 절단판 + β-통제·무신호 대조 + C1(무작위 위성)."
+    },
+    {
+      "ref": "07-05 벤치 인지 construction Cycle 1(memory project-selfdev-benchaware-construction-confirm — Anchor2+EW-fill closet-indexing)",
+      "difference": "screening-tier 근사(top-25 EW-fill · 12-1 모멘텀 단일)가 아니라 강화 셀 엔진의 실투형 전략 위에서 측정하고, closet-indexing 을 C1 대조(⑥)로 직접 판별한다."
+    },
+    {
+      "ref": "R39/R40 TE 최소화(synth.md §3.4 인용 · 원 기록 위치 미확인)",
+      "difference": "TE 를 목적함수로 최소화하지 않는다 — 벤치 비중을 복사한 정적 코어일 뿐 위성 선정·비중은 바닥 그대로. β 구간 제약을 승자 목적함수에 넣지 않는다(플랜 하지 말 것 4)."
+    }
+  ],
+  "floors": [
+    {
+      "id": "F1",
+      "ref": "06_Registry/prereg/reference_floors_v2.json#F1",
+      "status": "pending",
+      "lineage_entry": "RP_20260917_105807_22632_combo_rulefast_promo3",
+      "floor_kind": "asof_reselect_new_cell",
+      "spec_code": "B1_1",
+      "requirement": "floor v2 F1(as-of 재선정 새 칸 · 22632 기저 엔진 + 4팩터 층) — 등록 전: ①엔진 2회 재실행 결정론(determinism_ok) ②floor 문서 소비 계약 필드(selection_basis=as_of · measurement_regime.exec_price=close_t1) ③status ∈ {confirmed, confirmed_mechanism_only} — 이 가족은 scope=mechanism_only ∧ a_eligible=false 이므로 confirmed_mechanism_only(permitted_use=mechanism_only · use_restriction FLOOR-BASE-ENGINE-Q4)를 받는다(PREREG-MECHANISM-ONLY-FLOOR (가)) ④pin 스냅샷 태그. 측정은 등록 전 허용(바닥)."
+    }
+  ],
+  "arms_frozen": true,
+  "arms": [
+    {
+      "id": "A1",
+      "order": 1,
+      "role": "treatment",
+      "on_floor": "F1",
+      "selection_basis": "none",
+      "spec": {
+        "weight_stage": "cap_core",
+        "k": 2,
+        "core": {
+          "rank_key": ".SizeLag (t-1 Size · rf_cell_engine.R:221 과 같은 정의)",
+          "universe": "K200 멤버(시그널일 플래그)",
+          "weight": "t-1 벤치 비중 근사 = Size_{t-1} / Σ_{K200} Size_{t-1} (유동비율·지수 편입 상한 미반영 — Q-L1-4)",
+          "weight_definition": {
+            "definition": "t-1 벤치 비중 근사 = Size_{t-1} / Σ_{K200 멤버} Size_{t-1} (유동비율·지수 편입 상한 미반영)",
+            "status": "치료(treatment) 정의의 일부로 고정 — 공표 KOSPI200 비중을 복제한다고 주장하지 않는다(Q-L1-4 해소)",
+            "data_note": "PIT 유동비율·편입 상한 원천이 생기면 근사 오차를 보고(데이터 부재 = 포기 사유 아님 — 필요 시 data_pipeline_queue 적재 · 이 가족 판정에는 쓰지 않는다)"
+          }
+        },
+        "satellite": {
+          "source": "바닥 F1 비중 그대로(floor v2 F1.spec.weighting = ew)",
+          "scale": "1 − Σ코어"
+        },
+        "invariants": [
+          "Σw=1",
+          "w≥0",
+          "보유 합집합 ≤ fixed_axes.n_max(25) — 위성 절단 규칙 union_truncation(Q-L1-5 해소)",
+          "k=0 이면 기존 칸과 비트 동일(구현 검사 의무)",
+          "비중 상한 없음(v10 폐지)"
+        ],
+        "implementation": "rf_sleeve.R + rf_cell_engine.R 비중 단계 뒤 — 미구현(의존 CAPCORE-IMPL)",
+        "union_truncation": {
+          "rule": "satellite_truncate_by_floor_rank",
+          "statement": "코어 C(k 종 · t-1 .SizeLag 상위 K200 멤버) ∪ 위성 S(바닥 F1 보유) 가 fixed_axes.n_max 를 넘으면, 코어에 없는 위성 이름을 바닥 F1 의 시그널일 점수(결합 Score) **낮은 순**으로 빼서 |C ∪ S'| = n_max 로 맞춘다. 코어와 겹치는 위성 이름은 한 자리(코어)로 세고 그 위성 비중은 코어 비중에 더한다. 남은 위성 비중은 합이 (1 − Σ코어)가 되게 비례 재조정한다.",
+          "tie_break": "점수 동률은 Ticker 사전순(결정론)",
+          "pit": "절단 순위 = 바닥의 시그널일 점수(t-1 정보 · C2) — 성과 통계 미소비",
+          "invariants": [
+            "Σw = 1 · w ≥ 0 · |보유| ≤ n_max(stopifnot)",
+            "k = 0 이면 절단 0 · 비중 재조정 계수 1 → 기존 칸과 비트 동일(구현 검사 의무)",
+            "비중 상한 없음(v10)"
+          ],
+          "resolves": "Q-L1-5",
+          "implementation": "CAPCORE-IMPL"
+        }
+      }
+    },
+    {
+      "id": "C1",
+      "order": 2,
+      "role": "control",
+      "on_floor": "F1",
+      "selection_basis": "none",
+      "spec": {
+        "weight_stage": "cap_core",
+        "k": 2,
+        "core": {
+          "rank_key": ".SizeLag (t-1 Size · rf_cell_engine.R:221 과 같은 정의)",
+          "universe": "K200 멤버(시그널일 플래그)",
+          "weight": "t-1 벤치 비중 근사 = Size_{t-1} / Σ_{K200} Size_{t-1} (유동비율·지수 편입 상한 미반영 — Q-L1-4)",
+          "weight_definition": {
+            "definition": "t-1 벤치 비중 근사 = Size_{t-1} / Σ_{K200 멤버} Size_{t-1} (유동비율·지수 편입 상한 미반영)",
+            "status": "치료(treatment) 정의의 일부로 고정 — 공표 KOSPI200 비중을 복제한다고 주장하지 않는다(Q-L1-4 해소)",
+            "data_note": "PIT 유동비율·편입 상한 원천이 생기면 근사 오차를 보고(데이터 부재 = 포기 사유 아님 — 필요 시 data_pipeline_queue 적재 · 이 가족 판정에는 쓰지 않는다)"
+          }
+        },
+        "satellite": {
+          "source": "베타매칭 무작위 — F1 위성과 같은 D02_Beta 구간(시그널일 t)에서 seed 고정 무작위(seed 는 구현 시 스펙에 기록 · CAPCORE-IMPL)",
+          "scale": "1 − Σ코어"
+        },
+        "invariants": [
+          "Σw=1",
+          "w≥0",
+          "보유 합집합 ≤ fixed_axes.n_max(25) — 위성 절단 규칙 union_truncation(Q-L1-5 해소)",
+          "k=0 이면 기존 칸과 비트 동일(구현 검사 의무)",
+          "비중 상한 없음(v10 폐지)"
+        ],
+        "implementation": "rf_sleeve.R + rf_cell_engine.R 비중 단계 뒤 — 미구현(의존 CAPCORE-IMPL)",
+        "union_truncation": {
+          "rule": "satellite_truncate_by_floor_rank",
+          "statement": "코어 C(k 종 · t-1 .SizeLag 상위 K200 멤버) ∪ 위성 S(바닥 F1 보유) 가 fixed_axes.n_max 를 넘으면, 코어에 없는 위성 이름을 바닥 F1 의 시그널일 점수(결합 Score) **낮은 순**으로 빼서 |C ∪ S'| = n_max 로 맞춘다. 코어와 겹치는 위성 이름은 한 자리(코어)로 세고 그 위성 비중은 코어 비중에 더한다. 남은 위성 비중은 합이 (1 − Σ코어)가 되게 비례 재조정한다.",
+          "tie_break": "점수 동률은 Ticker 사전순(결정론)",
+          "pit": "절단 순위 = 바닥의 시그널일 점수(t-1 정보 · C2) — 성과 통계 미소비",
+          "invariants": [
+            "Σw = 1 · w ≥ 0 · |보유| ≤ n_max(stopifnot)",
+            "k = 0 이면 절단 0 · 비중 재조정 계수 1 → 기존 칸과 비트 동일(구현 검사 의무)",
+            "비중 상한 없음(v10)"
+          ],
+          "resolves": "Q-L1-5",
+          "implementation": "CAPCORE-IMPL"
+        }
+      },
+      "note": "closet-indexing 판별 — 코어 k=2 + 베타매칭 무작위 위성"
+    },
+    {
+      "id": "A2",
+      "order": 3,
+      "role": "treatment",
+      "on_floor": "F1",
+      "selection_basis": "none",
+      "spec": {
+        "weight_stage": "cap_core",
+        "k": 1,
+        "core": {
+          "rank_key": ".SizeLag (t-1 Size · rf_cell_engine.R:221 과 같은 정의)",
+          "universe": "K200 멤버(시그널일 플래그)",
+          "weight": "t-1 벤치 비중 근사 = Size_{t-1} / Σ_{K200} Size_{t-1} (유동비율·지수 편입 상한 미반영 — Q-L1-4)",
+          "weight_definition": {
+            "definition": "t-1 벤치 비중 근사 = Size_{t-1} / Σ_{K200 멤버} Size_{t-1} (유동비율·지수 편입 상한 미반영)",
+            "status": "치료(treatment) 정의의 일부로 고정 — 공표 KOSPI200 비중을 복제한다고 주장하지 않는다(Q-L1-4 해소)",
+            "data_note": "PIT 유동비율·편입 상한 원천이 생기면 근사 오차를 보고(데이터 부재 = 포기 사유 아님 — 필요 시 data_pipeline_queue 적재 · 이 가족 판정에는 쓰지 않는다)"
+          }
+        },
+        "satellite": {
+          "source": "바닥 F1 비중 그대로(floor v2 F1.spec.weighting = ew)",
+          "scale": "1 − Σ코어"
+        },
+        "invariants": [
+          "Σw=1",
+          "w≥0",
+          "보유 합집합 ≤ fixed_axes.n_max(25) — 위성 절단 규칙 union_truncation(Q-L1-5 해소)",
+          "k=0 이면 기존 칸과 비트 동일(구현 검사 의무)",
+          "비중 상한 없음(v10 폐지)"
+        ],
+        "implementation": "rf_sleeve.R + rf_cell_engine.R 비중 단계 뒤 — 미구현(의존 CAPCORE-IMPL)",
+        "union_truncation": {
+          "rule": "satellite_truncate_by_floor_rank",
+          "statement": "코어 C(k 종 · t-1 .SizeLag 상위 K200 멤버) ∪ 위성 S(바닥 F1 보유) 가 fixed_axes.n_max 를 넘으면, 코어에 없는 위성 이름을 바닥 F1 의 시그널일 점수(결합 Score) **낮은 순**으로 빼서 |C ∪ S'| = n_max 로 맞춘다. 코어와 겹치는 위성 이름은 한 자리(코어)로 세고 그 위성 비중은 코어 비중에 더한다. 남은 위성 비중은 합이 (1 − Σ코어)가 되게 비례 재조정한다.",
+          "tie_break": "점수 동률은 Ticker 사전순(결정론)",
+          "pit": "절단 순위 = 바닥의 시그널일 점수(t-1 정보 · C2) — 성과 통계 미소비",
+          "invariants": [
+            "Σw = 1 · w ≥ 0 · |보유| ≤ n_max(stopifnot)",
+            "k = 0 이면 절단 0 · 비중 재조정 계수 1 → 기존 칸과 비트 동일(구현 검사 의무)",
+            "비중 상한 없음(v10)"
+          ],
+          "resolves": "Q-L1-5",
+          "implementation": "CAPCORE-IMPL"
+        }
+      }
+    }
+  ],
+  "deleted_arms": [
+    {
+      "id": "A4",
+      "spec_was": "A1 + PG2 상주 오버레이",
+      "reason": "PG2 C11 격리로 판정 불능 — 대체 없이 삭제. 측정한 적 없는 칸이라 N 에 넣지 않는다. 다른 조합으로의 대체 금지(관측 낙폭을 보고 고른 조합 = 스누핑 · 레버 감사 §⑤).",
+      "counted_in_n": false,
+      "decision_ref": "PR-L1-A4-DISPOSITION (2026-09-25 도훈)"
+    },
+    {
+      "id": "A3",
+      "spec_was": "F2(14760 promo3 B5_19) 위 treatment · k=2",
+      "reason": "바닥 F2 제외(floor v2 status=excluded · 적대검증 미검증·승계 표식·Q④ 노출) — 대체 없이 삭제 · 측정 0 · N 미계상(floor v2 required_decisions 'PR-L1 A3' 명시)",
+      "counted_in_n": false,
+      "decision_ref": "FLOOR-F2-EXCLUDED-ARMS",
+      "precedent": "PR-L1-A4-DISPOSITION",
+      "deleted_in": "draft2"
+    },
+    {
+      "id": "S1",
+      "spec_was": "F2(14760 promo3 B5_19) 위 spare · k=2 · 예비 발동 조건: A3 가 측정될 때만(F2 발동) — F2 위 closet-indexing 대조(C1-F2 · synth §3.4 예비 칸)",
+      "reason": "예비 칸의 바닥 F2 가 제외돼 발동 조건(A3 측정 · F2 발동)이 영구히 성립할 수 없다 — 대체 없이 삭제(다른 바닥 이동 금지 = FLOOR-F2-EXCLUDED-ARMS 선택지 2 기각과 같은 규칙). 측정 0 · N 미계상. (Q-L1-6 해소)",
+      "counted_in_n": false,
+      "decision_ref": "FLOOR-F2-EXCLUDED-ARMS",
+      "precedent": "PR-L1-A4-DISPOSITION",
+      "deleted_in": "draft2"
+    },
+    {
+      "id": "S2",
+      "spec_was": "F2(14760 promo3 B5_19) 위 spare · k=1 · 예비 발동 조건: A3 측정 ∧ A2 의 1차 기전(b_ewcw Δ NW-t ≤ −3) 성립 시 — F2 위 k 민감도(A2-F2 · synth §3.4 예비 칸 · Q-L1-6)",
+      "reason": "예비 칸의 바닥 F2 가 제외돼 발동 조건(A3 측정 · F2 발동)이 영구히 성립할 수 없다 — 대체 없이 삭제(다른 바닥 이동 금지 = FLOOR-F2-EXCLUDED-ARMS 선택지 2 기각과 같은 규칙). 측정 0 · N 미계상. (Q-L1-6 해소)",
+      "counted_in_n": false,
+      "decision_ref": "FLOOR-F2-EXCLUDED-ARMS",
+      "precedent": "PR-L1-A4-DISPOSITION",
+      "deleted_in": "draft2"
+    }
+  ],
+  "contrasts": [
+    {
+      "id": "A1-F1",
+      "a": "A1",
+      "b": "F1"
+    },
+    {
+      "id": "C1-F1",
+      "a": "C1",
+      "b": "F1"
+    },
+    {
+      "id": "A1-C1",
+      "a": "A1",
+      "b": "C1"
+    },
+    {
+      "id": "A2-F1",
+      "a": "A2",
+      "b": "F1"
+    }
+  ],
+  "se_cells": [
+    {
+      "id": "F1.NULL",
+      "on_floor": "F1",
+      "kind": "null_dilution",
+      "counts_in_n": false,
+      "dependency": "P1-06",
+      "spec": "P1-06 null_factor 통제 칸 B1_N1~B1_N4(carry = F1 구성 + 무정보 팩터 1개 · rf_cell_engine.R factor kind null_perm · seed 1~4 · control 태그 = 서명 dedup·승계·N 제외 · CTRL 갈래 스테이징 2026-09-25) — 판독 rf_runner_gates.R::rf_null_dilution_values → rf_prereg_se_null(칸 ≥2)",
+      "role": "SE 원천(1차 지표 SE_null · PT 비열위 ε = 1×SE_null(port_t))"
+    }
+  ],
+  "metrics": [
+    {
+      "id": "b_ewcw_delta",
+      "tier": "primary",
+      "contract": "b_ewcw_paired_delta",
+      "direction": "decrease",
+      "targets": [
+        "A1-F1",
+        "A2-F1",
+        "C1-F1"
+      ],
+      "field": "INTEG② — 02_Infrastructure/contracts/b_ewcw_paired.R::bew_paired_delta(arm, floor) → bew_write (계약명 'b_ewcw_paired_delta' · p2_found_report §6 통합 구현 ②): 두 칸의 tilt_attribution 일간 산출(ta_write)에서 b_ewcw_2f 의 같은 날 짝 차 d_t = b_arm − b_floor → value = mean(d) · se·t = NW Bartlett(lag = max(W, ⌈b·T⌉) · b = 설정 b_fraction) · ci_lo/ci_hi = fixed-b 임계 × se(ci_level 0.90 = 이 사전등록 power.ci_level — rf_prereg_verdict 가 대조) · 블록 부트스트랩 없음(INTEG 교정: 과신) · 산출물 최상위 measurement_regime.exec_price. 짝 조건(tilt 설정 md5·데이터 지문·적재 창·공통일 ≥95%)이 어긋나면 계약이 멈춘다. source.fields = {value:'value', t:'t', se:'se', ci_lo:'ci_lo', ci_hi:'ci_hi'}.",
+      "note": "일간 귀속(월간은 2020-03 저점을 지운다 · P2-02) · t-1 멤버·LIQ · 판정 통계 = t(≤ −3 · D-H) — power.decision_rule 참조",
+      "contract_binding": {
+        "status": "bound",
+        "contract": "b_ewcw_paired_delta",
+        "file": "02_Infrastructure/contracts/b_ewcw_paired.R",
+        "file_sha256": "e65ff6dd02a9efaa22604d62ac4fb8615d9fcae80b872e39ab8b8e32fbc0120e",
+        "fn": "bew_paired_delta + bew_write",
+        "note": "draft2 의 계약 라벨(tilt_attribution · 입력 계열 원천)을 결속 — INTEG 배포(2026-09-26 13:50)로 prereg_config verdict.contracts.b_ewcw_paired_delta 등재(artifact_regime_required · ci_level·nw_b_fraction 핀)"
+      },
+      "fixed_b": {
+        "source": "02_Infrastructure/contracts/b_ewcw_paired_config.json",
+        "source_sha256": "ae426be21ecf80a1869a3d459137383ef83b2cb03cd144c0729f4cca7efd2ed4",
+        "b": 0.2,
+        "cv_975": 2.5662608,
+        "ci_level": 0.9
+      },
+      "source_fields": {
+        "value": "value",
+        "t": "t",
+        "se": "se",
+        "ci_lo": "ci_lo",
+        "ci_hi": "ci_hi"
+      }
+    },
+    {
+      "id": "oos_retention",
+      "tier": "secondary",
+      "contract": "essence_score",
+      "direction": "increase",
+      "targets": [
+        "A1",
+        "C1",
+        "A2",
+        "F1"
+      ],
+      "field": "essence.oos_retention(K200 대비 활성 · 등급 정의 그대로)"
+    },
+    {
+      "id": "calmar_delta_boot",
+      "tier": "secondary",
+      "contract": "rf_prereg_paired_boot",
+      "direction": "increase",
+      "targets": [
+        "A1-F1",
+        "A1-C1"
+      ],
+      "field": "rf_prereg_paired_boot(stat='calmar') p_gt0 — 일간 순수익"
+    },
+    {
+      "id": "calmar_trunc",
+      "tier": "secondary",
+      "contract": "sa_subwindow",
+      "direction": "increase",
+      "targets": [
+        "A1",
+        "C1",
+        "A2",
+        "F1"
+      ],
+      "field": "sa_subwindow(artifact_dir, cut='trunc_2024_12') → sa_write (INTEG③ · contracts/selection_accounting.R · P1-03 · 진단 · 등급 아님) — source.fields {value: 'essence/calmar'} · 절단일은 설정 cut id 산출만(end 인자 직접 지정 산출 = end_source 'argument' → 판정 입력 아님) · 산출물 최상위 measurement_regime.exec_price"
+    },
+    {
+      "id": "oos_retention_trunc",
+      "tier": "secondary",
+      "contract": "sa_subwindow",
+      "direction": "increase",
+      "targets": [
+        "A1",
+        "C1",
+        "A2",
+        "F1"
+      ],
+      "field": "sa_subwindow(artifact_dir, cut='trunc_2024_12') → sa_write (INTEG③ · contracts/selection_accounting.R · P1-03 · 진단 · 등급 아님) — source.fields {value: 'essence/oos_retention'} · 절단일은 설정 cut id 산출만(end 인자 직접 지정 산출 = end_source 'argument' → 판정 입력 아님) · 산출물 최상위 measurement_regime.exec_price"
+    },
+    {
+      "id": "net_sharpe",
+      "tier": "secondary",
+      "contract": "essence_score",
+      "direction": "increase",
+      "targets": [
+        "A1",
+        "C1",
+        "A2",
+        "F1"
+      ],
+      "field": "essence.net_sharpe(총수익 SR)"
+    },
+    {
+      "id": "cagr",
+      "tier": "secondary",
+      "contract": "essence_score",
+      "direction": "increase",
+      "targets": [
+        "A1",
+        "C1",
+        "A2",
+        "F1"
+      ],
+      "field": "essence.cagr"
+    },
+    {
+      "id": "port_t",
+      "tier": "secondary",
+      "contract": "essence_score",
+      "direction": "increase",
+      "targets": [
+        "A1",
+        "C1",
+        "A2",
+        "F1"
+      ],
+      "field": "essence.portfolio_alpha_t_nw_lag3"
+    },
+    {
+      "id": "beta_ctrl_sel_t",
+      "tier": "secondary",
+      "contract": "beta_controlled_alpha",
+      "direction": "increase",
+      "targets": [
+        "A1"
+      ],
+      "field": "β-통제 선별 α 의 t"
+    },
+    {
+      "id": "no_signal_distinguishable",
+      "tier": "secondary",
+      "contract": "no_signal_control",
+      "direction": "increase",
+      "targets": [
+        "A1"
+      ],
+      "field": "no_signal_gate verdict ≠ INDISTINGUISHABLE_FROM_NO_SIGNAL → 1 · 같으면 0"
+    },
+    {
+      "id": "cagr_null_se",
+      "tier": "safety",
+      "contract": "null_dilution",
+      "direction": "report",
+      "targets": [
+        "F1.NULL"
+      ],
+      "field": "rf_prereg_se_null(F1.NULL = B1_N1~N4 칸들의 cagr) se — '④ CAGR ≥ floor − 잡음' 의 잡음(Q-L1-2 해소 · k=1)"
+    },
+    {
+      "id": "is_active_ir_delta",
+      "tier": "safety",
+      "contract": "tilt_attribution",
+      "direction": "report",
+      "must_report": true,
+      "targets": [
+        "A1-F1",
+        "A2-F1"
+      ],
+      "field": "IS(2005~16) K200 대비 활성 IR 변화",
+      "note": "보고 의무(레버 감사 §④ · retention 분모 게임 방지 — L-QPM-20260706_081232). 누락이면 판정이 라벨을 내지 않는다"
+    },
+    {
+      "id": "mdd",
+      "tier": "safety",
+      "contract": "essence_score",
+      "direction": "report",
+      "targets": [
+        "A1",
+        "C1",
+        "A2",
+        "F1"
+      ],
+      "field": "essence.mdd"
+    }
+  ],
+  "criteria": {
+    "success": [
+      {
+        "metric": "b_ewcw_delta",
+        "target": "A1-F1",
+        "stat": "t",
+        "op": "<=",
+        "rhs": {
+          "param": "t_crit_lo"
+        }
+      },
+      {
+        "metric": "oos_retention",
+        "target": "A1",
+        "stat": "value",
+        "op": ">=",
+        "rhs": {
+          "ref": {
+            "metric": "oos_retention",
+            "target": "F1",
+            "stat": "value"
+          },
+          "offset": 0.3
+        }
+      },
+      {
+        "metric": "calmar_delta_boot",
+        "target": "A1-F1",
+        "stat": "p_gt0",
+        "op": ">=",
+        "rhs": 0.8
+      },
+      {
+        "all": [
+          {
+            "metric": "calmar_trunc",
+            "target": "A1",
+            "stat": "value",
+            "op": ">=",
+            "rhs": {
+              "ref": {
+                "metric": "calmar_trunc",
+                "target": "F1",
+                "stat": "value"
+              }
+            }
+          },
+          {
+            "metric": "oos_retention_trunc",
+            "target": "A1",
+            "stat": "value",
+            "op": ">",
+            "rhs": {
+              "ref": {
+                "metric": "oos_retention_trunc",
+                "target": "F1",
+                "stat": "value"
+              }
+            }
+          }
+        ]
+      },
+      {
+        "all": [
+          {
+            "metric": "net_sharpe",
+            "target": "A1",
+            "stat": "value",
+            "op": ">=",
+            "rhs": {
+              "ref": {
+                "metric": "net_sharpe",
+                "target": "F1",
+                "stat": "value"
+              }
+            }
+          },
+          {
+            "metric": "cagr",
+            "target": "A1",
+            "stat": "value",
+            "op": ">=",
+            "rhs": {
+              "ref": {
+                "metric": "cagr",
+                "target": "F1",
+                "stat": "value"
+              },
+              "noise": {
+                "metric": "cagr_null_se",
+                "target": "F1.NULL",
+                "stat": "se",
+                "k": 1
+              }
+            }
+          }
+        ]
+      },
+      {
+        "all": [
+          {
+            "metric": "beta_ctrl_sel_t",
+            "target": "A1",
+            "stat": "t",
+            "op": ">=",
+            "rhs": 4
+          },
+          {
+            "metric": "no_signal_distinguishable",
+            "target": "A1",
+            "stat": "value",
+            "op": "==",
+            "rhs": 1
+          }
+        ]
+      },
+      {
+        "metric": "port_t",
+        "target": "A1",
+        "stat": "value",
+        "op": ">",
+        "rhs": {
+          "ref": {
+            "metric": "port_t",
+            "target": "C1",
+            "stat": "value"
+          }
+        }
+      }
+    ],
+    "failure": [
+      {
+        "any": [
+          {
+            "metric": "calmar_trunc",
+            "target": "A1",
+            "stat": "value",
+            "op": "<",
+            "rhs": {
+              "ref": {
+                "metric": "calmar_trunc",
+                "target": "F1",
+                "stat": "value"
+              }
+            }
+          },
+          {
+            "metric": "oos_retention_trunc",
+            "target": "A1",
+            "stat": "value",
+            "op": "<=",
+            "rhs": {
+              "ref": {
+                "metric": "oos_retention_trunc",
+                "target": "F1",
+                "stat": "value"
+              }
+            }
+          }
+        ]
+      },
+      {
+        "metric": "port_t",
+        "target": "A1",
+        "stat": "value",
+        "op": "<=",
+        "rhs": {
+          "ref": {
+            "metric": "port_t",
+            "target": "C1",
+            "stat": "value"
+          }
+        }
+      }
+    ],
+    "stop": [
+      {
+        "id": "STOP_L1_TRUNC",
+        "after_arms": [
+          "A1"
+        ],
+        "when": {
+          "any": [
+            {
+              "metric": "calmar_trunc",
+              "target": "A1",
+              "stat": "value",
+              "op": "<",
+              "rhs": {
+                "ref": {
+                  "metric": "calmar_trunc",
+                  "target": "F1",
+                  "stat": "value"
+                }
+              }
+            },
+            {
+              "metric": "oos_retention_trunc",
+              "target": "A1",
+              "stat": "value",
+              "op": "<=",
+              "rhs": {
+                "ref": {
+                  "metric": "oos_retention_trunc",
+                  "target": "F1",
+                  "stat": "value"
+                }
+              }
+            }
+          ]
+        },
+        "action": {
+          "halt": true
+        },
+        "note": "Q-L1-3 해소(draft2): A3 삭제(F2 제외)로 플랜의 'A1·A3 동시 실패' 조건을 A1 단독으로 재선언 — A1 이 ③(2024-12 절단판)에서 실패하면 즉시 종료(C1·A2 생략). 실패 조건 ③ 과 같은 식이라 멈춤 = failed 라벨."
+      }
+    ],
+    "text": {
+      "success": [
+        "① 0: 1차 기전 b_ewcw Δ(A1−F1) 짝지은 NW-t(fixed-b) ≤ t_crit_lo — arm 회전 맞춤 경험 귀무(무작위 쌍)의 단측 1% 분위(PR-L1-THRESHOLD-TURNOVER · D-H 't ≤ −3' 의 엄격도 대체)",
+        "① K200-OOS retention(A1) ≥ retention(F1) + 0.3",
+        "② Calmar 짝지은 블록 부트스트랩 P(Δ>0) ≥ 0.8",
+        "③ 2024-12 절단판 ΔCalmar ≥ 0 ∧ Δretention > 0",
+        "④ 총수익 SR 비하락 ∧ CAGR ≥ floor − 1×SE_null(cagr) (Q-L1-2)",
+        "⑤ β-통제 선별 t ≥ 4 ∧ no_signal_gate ≠ INDISTINGUISHABLE",
+        "⑥ A1 − C1 > 0 — 지표 = PORT_t(초안 제안 · Q-L1-1)"
+      ],
+      "failure": [
+        "③ 불충족(이득이 2025~26 에서만) — 종결 · L-code 에 기전",
+        "⑥ 불충족(closet-indexing — 07-05 를 essence 에서 재현) — 종결 · L-code 에 기전"
+      ],
+      "stop": [
+        "STOP_L1_TRUNC: A1 이 ③(2024-12 절단판)에서 실패 → 즉시 종료(halt · C1·A2 생략) — A3 삭제로 A1 단독 재선언(Q-L1-3)"
+      ],
+      "thresholds_source": "D-H(2026-09-23 도훈 'PR-L1 6조건 승인') — +0.3 · 0.8 · 0 · 4 는 플랜 PR-L1 그대로. ① 의 −3 은 PR-L1-THRESHOLD-TURNOVER(2026-09-26 [위임])로 경험 귀무 분위(decision_params.t_crit_lo)로 대체 · D-H 의 나머지 5조건 불변"
+    }
+  },
+  "labels": [
+    "confirmed",
+    "powered_null",
+    "undetermined",
+    "failed"
+  ],
+  "power": {
+    "primary": {
+      "metric": "b_ewcw_delta",
+      "target": "A1-F1"
+    },
+    "ci_level": 0.9,
+    "implied_effect": {
+      "value": null,
+      "status": "pending",
+      "formula": "Δb ≈ w̄_core × (b_core − b_F1) — w̄_core = 표본 평균 t-1 코어 비중(k=2 · Size 패널 · R) · b_core = 코어 k 종의 t-1 비중 가중 사전 적재 β_e(tilt_attribution ta_build_state 의 종목 적재) · b_F1 = F1 재실행판의 b_ewcw(tilt_attribution)",
+      "inputs": [
+        "w̄_core (Size t-1 · R)",
+        "b_core (tilt_attribution 종목 사전 적재 · R)",
+        "b_F1 (F1 등록 전 측정 → tilt_attribution)"
+      ],
+      "note": "관측 Δ 로 역산 금지 — 착수 전 입력만으로 R 이 계산. 부호 음수(decrease)."
+    },
+    "se": {
+      "value": null,
+      "status": "pending",
+      "source": [
+        "null_dilution"
+      ],
+      "method": "SE_null = F1.NULL(P1-06 null_factor 통제 칸 B1_N1~B1_N4(carry = F1 구성 + 무정보 팩터 1개 · rf_cell_engine.R factor kind null_perm · seed 1~4 · control 태그 = 서명 dedup·승계·N 제외 · CTRL 갈래 스테이징 2026-09-25) — 판독 rf_runner_gates.R::rf_null_dilution_values → rf_prereg_se_null(칸 ≥2)) 칸마다 bew_paired_delta(null 칸, F1) 의 value 를 내어 그 표본표준편차(rf_prereg_se_null · 칸 ≥2) — 블록 부트스트랩은 쓰지 않는다(INTEG② 교정: 블록 = 대역폭이면 표본당 블록 ≈5 개 → 90% CI 0 제외율 ≈19% · 과신). 교차 확인 = bew 산출의 se_eff_fixed_b(검정력 근사 표기 · 설정 허용 원천 아님).",
+      "source_note": "SE 원천 = P1-06 null 희석 칸 단독(k=4 · 상대정밀도 ≈0.41 — 거칠다). 판정 통계(NW-t · fixed-b)와 SE 원천이 다르다는 점을 검정력 서술에 병기"
+    },
+    "computed": null,
+    "decision_rule": {
+      "rule": "b_ewcw_delta(A1−F1) t ≤ t_crit_lo (decision_params · arm 회전 맞춤 경험 귀무 단측 1% 분위 — PR-L1-THRESHOLD-TURNOVER)",
+      "gate_basis": "prereg_config power_gate: 검정력 0.80 · 양측 α 0.05 → 착수 관문의 기대 t 기준 t80 = z(0.80)+z(0.975) = 2.8016",
+      "mismatch": "관문이 'design80'(ratio=1 · 기대 t=2.8016)이라 해도 판정 문턱 t ≤ −3 기준 검정력은 Φ(2.8016 − 3) = 0.421 다(현재 42%의 출처). 판정 문턱에서 80% 를 내려면 ratio ≥ (3 + z(.80))/t80 = 1.3712(기대 t ≥ 3.8416).",
+      "at_design80": {
+        "expected_t": 2.80158521811297,
+        "power_at_z": 0.8,
+        "power_at_decision": 0.421360276538796
+      },
+      "ratio_needed_for_80_at_decision": 1.37123126176418,
+      "expected_t_needed": 3.84162123357291,
+      "null_note": "INTEG② 는 t 의 귀무를 fixed-b(Bartlett · b = b_fraction)로 둔다 — 그 경우 P0(t ≤ −3) 는 정규 0.135% 가 아니라 약 1.3%(INTEG 설정 calibration.t_thr_tail_note · 수락 상한 3%). 판정 문턱 −3 의 크기는 이 값으로 읽는다(아래 fixed_b).",
+      "fixed_b": {
+        "source": "INTEG 스테이징 02_Infrastructure/contracts/b_ewcw_paired_config.json(nw.fixed_b.coef_975 · b_fraction)",
+        "source_sha256": "ae426be21ecf80a1869a3d459137383ef83b2cb03cd144c0729f4cca7efd2ed4",
+        "b": 0.2,
+        "cv_975": 2.5662608,
+        "ci_level": 0.9,
+        "p0_t_le_m3_note": "판정 문턱 t ≤ −3 의 귀무 꼬리 상한(검사 수락) — fixed-b(b=0.2) 이론값 P(t ≤ −3) ≈ 1.27%(iid 검산) · R=200 에서 상한 3% ≈ 이론값 + 2σ(이항). 정규 이론 0.135% 가 아니다 — 사전등록 서술이 이 크기를 적어야 한다.",
+        "fpr_band": [
+          0.02,
+          0.1
+        ],
+        "no_bootstrap_note": "짝지은 블록 부트스트랩은 이 계약에 없다(2026-09-25 교정): 블록 = 대역폭(b·T)이면 표본당 블록이 5 개 안팎이라 백분위 CI 가 과신한다 — 합성 귀무(T=5400 · b=0.2)에서 90% CI 의 0 제외율 17~19%(명목 10%). ci 는 fixed-b 임계 × NW se 로 낸다. 사전등록 검정력의 SE 원천(null_dilution · block_bootstrap)은 P1-06 null 희석 칸이 맡는다."
+      },
+      "supersedes": "draft2 't ≤ −3'(D-H 승인 수치) — 같은 엄격도(통상 회전 귀무 크기 ≈1.2%)를 회전이 낮은 arm 에서도 지키도록 경험 귀무 분위로 대체. D-H 의 나머지 5조건 불변",
+      "normal_anchor_correction": "draft2 의 'fixed-b 꼬리가 두꺼워 같은 기대 t 에서 판정 문턱 검정력은 정규 근사보다 낮다' 는 방향 오류(PR-L1-POWER-MEASURE-FIRST 정정): 적대 검증 fixed-b iid 모의 검정력 0.569 > 정규 근사 Φ(2.8016−3) = 0.421 — 기대 t 가 문턱 안쪽(|E t| < 문턱)이면 분산이 큰 fixed-b 분포가 문턱을 넘을 확률이 더 크다. 검정력은 근사가 아니라 등록 전 R 몬테카를로(calibration.procedure.power)로 잰다"
+    },
+    "power_at_decision": {
+      "value": null,
+      "status": "pending",
+      "formula": "P(t ≤ t_crit_lo | Δ = ie) — 경험 귀무 쌍에 ie 주입한 R 몬테카를로(calibration.procedure.power). 정규 근사는 쓰지 않는다(방향 오류 정정)",
+      "registration_rule": "PR-L1-THRESHOLD-TURNOVER [위임]: power_at_decision ≥ power_gate.power_target(0.80) → R0 설계 유지 · 미만 → redesign_options 의 R2/R3 중 검정력을 올리는 쪽을 Q 가 위임 판단으로 선택(수치·근거 결정 레지스터 기록). 주의: R3(A2 삭제)는 1차 대상(A1−F1) 검정력을 올리지 않는다(N 만 줄인다) · R2 는 1차 대상을 k=3 arm 으로 옮겨야 검정력이 오르며 코어 3번째 이름은 D-H 거버넌스 범위 밖(도훈)"
+    },
+    "redesign_options": [
+      {
+        "id": "R0_keep",
+        "change": "없음 — t ≤ −3 · k∈{2,1} 유지, 검정력 부족을 명시하고 conditional 착수(modal undetermined)",
+        "cells": 3,
+        "N_added": 3,
+        "needs_decision": "없음(관문 규칙 안)",
+        "prior_mechanism_detect": "≈ 0.6 × power_at_decision (예: design80 이면 0.6 × 0.42 = 0.25)",
+        "cost": "3칸 · 미결 확률 높음"
+      },
+      {
+        "id": "R2_dose_k3",
+        "change": "A2(k=1) 를 k=3 으로 교체 — w̄_core 가 커져 기전-함의 효과가 대략 비례 증가(코어 3번째 이름 = 삼성·하이닉스 밖)",
+        "cells": 3,
+        "N_added": 3,
+        "needs_decision": "D-H 코어 집중 거버넌스 범위(삼성+하이닉스 명시 · 3번째 이름은 범위 밖 → 도훈)",
+        "prior_mechanism_detect": "k=3 효과 ≈ (w̄_core(3)/w̄_core(2)) × k=2 효과 — Size 패널로 착수 전 R 산출(pending)",
+        "cost": "칸 수 불변 · 용량 축이 k∈{2,3} 으로 이동(k=1 정보 상실)"
+      },
+      {
+        "id": "R3_drop_A2",
+        "change": "A2(k=1) 삭제 — k=1 은 k=2 보다 효과가 작아 같은 문턱에서 검정력이 더 낮다",
+        "cells": 2,
+        "N_added": 2,
+        "needs_decision": "플랜 arm 삭제(도훈 확인 · A4 선례처럼 측정 전 삭제는 N 미계상)",
+        "prior_mechanism_detect": "A1 과 같음(A2 는 주 판정에 쓰이지 않는다 — 성공·실패 조건은 A1·C1 만)",
+        "cost": "N −1 · 용량 반응 정보 상실"
+      }
+    ],
+    "modal_outcome": "undetermined",
+    "leaves_behind": [
+      "cap_core arm(k=0 비트 동일 검사 포함) + 위성 절단 규칙 구현",
+      "tilt_attribution 짝지은 Δ 계약(INTEG②)의 첫 사전등록 판정 사용",
+      "절단판 계약(sa_subwindow · INTEG③) 실사용",
+      "07-05 closet-indexing 재현 여부의 essence 판정(⑥)"
+    ],
+    "calmar_axis_note": "Calmar 축은 미결 최빈(플랜 검정력 주석) — 착수 관문은 1차 기전(b_ewcw Δ)로",
+    "calibration": {
+      "kind": "null_t_quantile",
+      "params": {
+        "t_lo": "t_crit_lo",
+        "t_hi": "t_crit_hi"
+      },
+      "artifact": "stage_artifacts/prereg/_calibration/PR-L1-b_ewcw_null_turnover_v1/calibration.json",
+      "artifact_sha256": null,
+      "status": "pending",
+      "rule": "decrease: 기전 탐지 = t ≤ t_crit_lo · 0 포함 = t_crit_lo < t < t_crit_hi · 함의 효과 배제 = (value − 함의 효과)/se ≥ t_crit_hi — rf_prereg_verdict 코드(PREREG-POWERED-NULL-CALIBRATION)",
+      "procedure": {
+        "inputs": "등록 전 · 처치 비열람: F1 결정론 실행판 A 의 04_holdings · t-1 Size(.SizeLag) · K200 멤버(시그널일) · tilt_attribution 사전 적재 상태(ta_build_state) · b_ewcw_paired_config.json(b_fraction = 설정 핀 · W · fixed-b 계수)",
+        "turnover": "p_A1 = A1 보유 경로의 월 교체율(나간 종목 수 / 보유 수의 월 평균) — CAPCORE-IMPL 의 비중 단계(union_truncation)를 F1 보유 + t-1 Size 에 **보유만** 적용해 재구성(수익 계열 미계산 · 처치 성과 비열람). p_F1 병기",
+        "null": "무작위 쌍 R_pairs 개 — INTEG calib_real2.R 의 port(p) 생성기(유니버스 적격 집합 · n_max · 월 교체 확률 p = p_A1) 두 개 → b_ewcw_2f 일간 차 d → bew_nw_stats(d, bew_nw_lag(W, T, cfg)) 의 t (bew_paired_delta 와 같은 판정 통계)",
+        "R_pairs": "설정 bootstrap.B(=2000) — 꼬리 분위 재현 여유(Efron & Tibshirani 1993 · 설정 bootstrap.links)",
+        "thresholds": "t_lo = 1% 분위 순서통계 이항 CI 의 하단 · t_hi = 99% 분위 CI 의 상단(수준 1 − power_gate.alpha_two_sided) → 산출물 threshold.{t_lo,t_hi}",
+        "power": "같은 귀무 쌍 d 에 함의 효과(Δb = power.implied_effect.value) 주입(d + Δb · INTEG calib_real2 의 주입 꼴) → P(t ≤ t_lo) = 판정 문턱 검정력 → 산출물 power.at_threshold",
+        "qc": "산출물에 seed · R · p_A1 · p_F1 · b · W · config md5 · tilt 상태 sha · 경험 귀무의 P(t ≤ −3) 병기(D-H 엄격도 대조)",
+        "artifact": "stage_artifacts/prereg/_calibration/PR-L1-b_ewcw_null_turnover_v1/calibration.json",
+        "script": "등록 전 측정 단계에서 작성(이 판 범위 밖 — 규칙·절차만)"
+      }
+    },
+    "redesign_options_note": "R1(t ≤ −2.566 · D-H 수치 개정)은 PR-L1-THRESHOLD-TURNOVER 로 판정 문턱이 규칙(경험 귀무 분위)으로 고정돼 삭제 — 남은 재설계는 효과 크기(R2)·칸 수(R3)뿐"
+  },
+  "se_source": {
+    "methods": [
+      "null_dilution"
+    ],
+    "combine": "max",
+    "block_bootstrap_excluded": "INTEG② 교정(과신) — b_ewcw 짝 계열에는 블록 부트스트랩을 SE 원천으로 쓰지 않는다",
+    "primary_source": "null_dilution — P1-06 null 희석 칸(F1.NULL = B1_N1~N4)",
+    "replaced": "위상쌍 금지(레버 감사 §⑤) — null 희석·블록 부트스트랩"
+  },
+  "budget": {
+    "max_cells": 3,
+    "counted": "A1·C1·A2 — 삭제 A3·S1·S2(F2 제외 · FLOOR-F2-EXCLUDED-ARMS)·A4(PG2 C11 · PR-L1-A4-DISPOSITION) = 측정 0 · N 미계상 · 플랜 ≤8 → 3",
+    "se_cells": "null 희석 칸(B1_N1~N4)은 예산·N 밖",
+    "halt_saving": "STOP_L1_TRUNC 발동 시 측정 1칸(N +1)"
+  },
+  "priors": {
+    "mechanism": 0.6,
+    "success": 0.05,
+    "grade_a": 0,
+    "basis": "판단값(draft2 재산정): ① 기전 0.6 유지 — b_ewcw 감소는 코어 편입의 기계적 결과라 바닥이 바뀌어도 방향이 같다(플랜). ② 성공 0.10→0.05 — 6조건 중 ⑤(β-통제 선별 t ≥ 4)·⑥(A1 PORT_t > C1)은 위성의 선별 알파가 강해야 선다. 플랜 원안은 22632 위성(잔차 NW-t≈6)을 전제했으나 F1 은 성과 미측정·팩터 층 2~4번 잡음 수준이다. ③ A 0 — FLOOR-BASE-ENGINE-Q4(Q④ · mechanism_only). A 는 청정 기저 이식 가족에서 새로 산정.",
+    "basis_refs": [
+      "FLOOR-BASE-ENGINE-Q4",
+      "플랜 §P2 PR-L1 사전확률(기전 60% · 성공 10% · A 3%)"
+    ]
+  },
+  "hypothesis_index_lookup": {
+    "status": "attached",
+    "tool": "02_Infrastructure/tools/hypothesis_index.R::lookup_hypothesis(auto_rebuild=FALSE)",
+    "run_at": "2026-09-25T22:41:13+0900",
+    "index_sha256": "5db5ca64232568aed97556d9d330637e308290c7787de008e043559f562f9c41",
+    "index_mtime": "2026-09-24T06:58:40+0900",
+    "index_stale_sources": [
+      "06_Registry/distilled_knowledge.json",
+      "06_Registry/module_catalog.json",
+      "stage_artifacts/l_code (원본 L-code)"
+    ],
+    "note": "과거 negative 는 사실 기록이지 금지 목록이 아니다(AX-000) — 새 각도면 재시도 정당",
+    "queries": [
+      {
+        "keywords": [
+          "메가캡"
+        ],
+        "n_hits": 0,
+        "fallback_single_word": false,
+        "hits": []
+      },
+      {
+        "keywords": [
+          "anchor"
+        ],
+        "n_hits": 5,
+        "fallback_single_word": false,
+        "hits": [
+          {
+            "strategy_id": "DIST-AR-001",
+            "verdict": "DISTILLED_NEG",
+            "grade": null,
+            "title": "DIST-AR-001: KR defense-family Q07+Accounting-Beta(D29) composite 30종목 long-only",
+            "date": "2026-07-04",
+            "research_mode": ""
+          },
+          {
+            "strategy_id": "WT-P20260706_001_megacap_anchor_forge",
+            "verdict": "FAIL",
+            "grade": "F",
+            "title": "L-QPM-20260706_081232: WT-P20260706_001_megacap_anchor_forge",
+            "date": "2026-07-05",
+            "research_mode": "qepm_legacy"
+          },
+          {
+            "strategy_id": "STR_MEGACAP_ANCHOR_CAPRELAX_20260706",
+            "verdict": "FAIL",
+            "grade": "F",
+            "title": "L-QPM-20260706_083113: STR_MEGACAP_ANCHOR_CAPRELAX_20260706",
+            "date": "2026-07-05",
+            "research_mode": "qepm_legacy"
+          },
+          {
+            "strategy_id": "STR_AS_20260612_123546_52003",
+            "verdict": "FAIL",
+            "grade": "F",
+            "title": "52-Week High Anchor Momentum",
+            "date": "2026-06-12",
+            "research_mode": ""
+          },
+          {
+            "strategy_id": "STR_AS_20260612_132740_321992",
+            "verdict": "PASS",
+            "grade": "B",
+            "title": "52-Week High Anchor Momentum",
+            "date": "2026-06-12",
+            "research_mode": "alpha_search"
+          }
+        ]
+      },
+      {
+        "keywords": [
+          "closet"
+        ],
+        "n_hits": 1,
+        "fallback_single_word": false,
+        "hits": [
+          {
+            "strategy_id": "DIST-AR-009",
+            "verdict": "DISTILLED_NEG",
+            "grade": null,
+            "title": "DIST-AR-009: KR K200∪KQ150 월말-그리드에서 기존 return/consensus-파생 신호의 재구성(packaging) — ",
+            "date": "2026-08-20",
+            "research_mode": ""
+          }
+        ]
+      },
+      {
+        "keywords": [
+          "벤치",
+          "비중"
+        ],
+        "n_hits": 2,
+        "fallback_single_word": false,
+        "hits": [
+          {
+            "strategy_id": "DIST-RAMP-006",
+            "verdict": "DISTILLED_COND",
+            "grade": null,
+            "title": "DIST-RAMP-006: KR 시장에서 value/국면-조건부 팩터배분은 배포 조건(25종 long-only)에서 실현 PORT_t 천장이 ~",
+            "date": "2026-08-22",
+            "research_mode": ""
+          },
+          {
+            "strategy_id": "DIST-AR-009",
+            "verdict": "DISTILLED_NEG",
+            "grade": null,
+            "title": "DIST-AR-009: KR K200∪KQ150 월말-그리드에서 기존 return/consensus-파생 신호의 재구성(packaging) — ",
+            "date": "2026-08-20",
+            "research_mode": ""
+          }
+        ]
+      },
+      {
+        "keywords": [
+          "tracking"
+        ],
+        "n_hits": 2,
+        "fallback_single_word": false,
+        "hits": [
+          {
+            "strategy_id": "DIST-QPM-032",
+            "verdict": "DISTILLED",
+            "grade": null,
+            "title": "DIST-QPM-032: [초안] [실증 혼재(방향불명) 규칙 초안] family=momentum, tags=legacy,diversifier,",
+            "date": "2026-07-26",
+            "research_mode": ""
+          },
+          {
+            "strategy_id": "R41_insider_safe_fading_horizon_bounded_wiring",
+            "verdict": "PASS",
+            "grade": "B",
+            "title": "L-RAMP-20260715_053646: R41_insider_safe_fading_horizon_bounded_wiring",
+            "date": "2026-09-01",
+            "research_mode": "ramp"
+          }
+        ]
+      },
+      {
+        "keywords": [
+          "코어"
+        ],
+        "n_hits": 5,
+        "fallback_single_word": false,
+        "hits": [
+          {
+            "strategy_id": "STR_AS_20260612_184129_2477",
+            "verdict": "FAIL",
+            "grade": "F",
+            "title": "Evolution: STR_1036 + STR_943 스코어 블렌드 → 독립 alpha 조합",
+            "date": "2026-06-12",
+            "research_mode": ""
+          },
+          {
+            "strategy_id": "STR_AS_20260612_203904_100496",
+            "verdict": "MARGINAL",
+            "grade": "C",
+            "title": "Evolution: STR_1036 + STR_943 스코어 블렌드 → 독립 alpha 조합",
+            "date": "2026-06-12",
+            "research_mode": ""
+          },
+          {
+            "strategy_id": "STR_AS_20260612_204643_171825",
+            "verdict": "MARGINAL",
+            "grade": "C",
+            "title": "Evolution: STR_1036 + STR_943 스코어 블렌드 → 독립 alpha 조합",
+            "date": "2026-06-12",
+            "research_mode": ""
+          },
+          {
+            "strategy_id": "STR_AS_20260612_221129_187194",
+            "verdict": "MARGINAL",
+            "grade": "C",
+            "title": "STR_1050 — STR_1036 + 6th sleeve로 STR_943 EPS Change 추가. 종목레벨 스코어 블렌드 N=30 유지.",
+            "date": "2026-06-12",
+            "research_mode": ""
+          },
+          {
+            "strategy_id": "WT-D20260530_002",
+            "verdict": "INFLIGHT_STALE",
+            "grade": null,
+            "title": "WT-D20260530_002 [ALPHA_DONE]: Sector-pair relative-value reversion (FDR+OOS 생존 ",
+            "date": "2026-06-08",
+            "research_mode": ""
+          }
+        ]
+      }
+    ]
+  },
+  "pit": {
+    "as_of_selection": true,
+    "c_codes": [
+      "C1",
+      "C2",
+      "C6",
+      "C10",
+      "C13",
+      "C14",
+      "C15"
+    ],
+    "statements": [
+      "C1·C14(D-E · pit.md 2026-09-23): 평가 창 결과를 소비하는 자동 선정은 as-of 만 — 선정 통계는 Usable_Date ≤ 결정 시점. 전기간 IC·conditional_ic_matrix 를 선정에 쓰지 않는다(D-E-V6-CONDITIONAL-IC).",
+      "C1: 바닥 F1 은 as-of 재선정 새 칸만(floor v2 · selection_basis asof_ic · as-of 2005-01-01) — 원 칸(22632 promo3 B1_3)의 selection_basis_full_sample_ic_inherited 표식 계보를 쓰지 않는다. F2(14760) 는 제외(표식·Q④ 노출).",
+      "C6: 유니버스 K200∪KQ150 시변 멤버십(시그널일 플래그) · 상장폐지 포함 원장.",
+      "C10: 유동성 = adv20 t-1 ≥ 격자 fixed_axes.liq_adv20_min(= LIQ 2e8).",
+      "C13·C15: 팩터는 load_month_factors() 경유 · Z_Score_Aligned 만(NEGATE/FLIP 금지).",
+      "C5: 레버 자체는 오버레이가 아니다 — 바닥에 오버레이 층이 있으면 overlay_pit_guard(assert_overlay_pit · lag1 · strict A/B) 규약 그대로.",
+      "집행 = close_t1(current_axis exec_v2_close_t1) — 시그널일 종가 체결 없음. 규약이 다른 칸과 비교하지 않는다.",
+      "코어 선정 = t-1 Size(.SizeLag — 시그널일 전일 값 · C2) 횡단면 순위 · 성과 통계 소비 없음(selection_basis none).",
+      "코어 비중 = t-1 벤치 비중 근사(t-1 Size) — 같은 날 가격·시총 사용 금지.",
+      "위성 절단 = 바닥 F1 의 시그널일 점수 순위(t-1 정보) — 성과 통계 소비 없음.",
+      "C1(베타매칭 무작위 위성) 베타 = D02_Beta(시그널일 t 값) · seed 고정."
+    ]
+  },
+  "measurement_regime": {
+    "exec_price": "close_t1",
+    "current_axis": "exec_v2_close_t1",
+    "pin_tag": null
+  },
+  "selection_accounting": {
+    "selection_type": "sweep",
+    "n_family": null,
+    "n_source": null,
+    "draft_estimate": {
+      "F1_lineage": {
+        "selection_type": "sweep",
+        "family_root": "RP_20260917_105807_22632_combo_rulefast",
+        "lineage": [
+          "RP_20260917_105807_22632_combo_rulefast_promo3",
+          "RP_20260917_105807_22632_combo_rulefast_promo2",
+          "RP_20260917_105807_22632_combo_rulefast_promo1",
+          "RP_20260917_105807_22632_combo_rulefast"
+        ],
+        "n_family_at_registration": 144,
+        "n_trials_basis": "base1+lineage_measured(excl_inherited)+batch_size",
+        "n_lineage_measured": 140,
+        "ledger_sha256": "8e8d7e40b0cf37977801d56c68234e334ce22086f8168f157e2722ac06ea785f",
+        "computed_at": "2026-09-25T22:41:14+0900",
+        "n_source": "rf_runner_gates.R::rf_selection_accounting(rf_lineage_ids, rf_lineage_measured, n_arms)"
+      }
+    },
+    "note": "삭제 arm(A3·S1·S2·A4)은 N 미계상(FLOOR-F2-EXCLUDED-ARMS · PR-L1-A4-DISPOSITION). 등록 시 rf_prereg_lineage_n 재산출."
+  },
+  "dependencies": [
+    {
+      "id": "D-H",
+      "what": "L1 성공 기준값·코어 집중 거버넌스",
+      "status": "available",
+      "ref": "06_Registry/decision_register.json#D-H"
+    },
+    {
+      "id": "CAPCORE-IMPL",
+      "what": "cap_core 구현(weight_stage='cap_core' · rf_sleeve.R + rf_cell_engine.R 비중 단계 뒤 · Σw=1·w≥0·≤25 stopifnot · union_truncation · k=0 비트 동일 검사)",
+      "status": "pending",
+      "kind": "implementation",
+      "note": "leverimpl 스테이징 — arm spec 이름(weight_stage·k·core·satellite·union_truncation)으로 맞출 것. 보유만 재구성 함수는 경험 귀무 회전(p_A1) 산출에도 쓴다"
+    },
+    {
+      "id": "INTEG-2",
+      "what": "b_ewcw 짝지은 Δ 계약(bew_paired_delta · 계약명 b_ewcw_paired_delta)",
+      "status": "available",
+      "file": "02_Infrastructure/contracts/b_ewcw_paired.R",
+      "sha256": "e65ff6dd02a9efaa22604d62ac4fb8615d9fcae80b872e39ab8b8e32fbc0120e",
+      "note": "INTEG 배포 2026-09-26 13:50"
+    },
+    {
+      "id": "INTEG-2-CFG",
+      "what": "prereg_config verdict.contracts.b_ewcw_paired_delta 등재 + 1차 지표 contract 결속",
+      "status": "available",
+      "file": "06_Registry/prereg/prereg_config.json",
+      "note": "결속 = 이 판(draft3) metrics.b_ewcw_delta.contract"
+    },
+    {
+      "id": "SIZE-T1",
+      "what": "Size t-1 커버리지(코어 선정 입력 · 09-23 감사 'Size 09-10~ NA' 이력)",
+      "status": "unverified",
+      "kind": "data_check",
+      "evidence": "leverimpl 2026-09-26 13:52 운영 RAWDATA 읽기 전용 확인(report/size_t1_check.json): 시그널일 261 · K200 .SizeLag 커버리지 최소 0.995(2021-05-31 1종) · 0 인 날 0 · 2026-08-25~09-23 일간 199/199",
+      "note": "등록 전 pin 스냅샷 시점에 같은 R 검사로 재확인(데이터가 바뀔 수 있다 — 10-03 daily_refresh) → available"
+    },
+    {
+      "id": "P2-03",
+      "what": "floor v2 문서(F1 스펙 · pins · prereg_gate)",
+      "status": "available",
+      "file": "06_Registry/prereg/reference_floors_v2.json",
+      "sha256": "1d91e25d60320acbc729ddb8af993a18b0410b900fbea188066e7f6bd151f137",
+      "note": "INTEG 배포 판"
+    },
+    {
+      "id": "INTEG-1",
+      "what": "floor 문서 ↔ 사전등록 소비 계약 필드(id·status·determinism_ok·selection_basis·measurement_regime · a_eligible·permitted_use)",
+      "status": "available",
+      "file": "06_Registry/prereg/reference_floors_v2.json",
+      "sha256": "1d91e25d60320acbc729ddb8af993a18b0410b900fbea188066e7f6bd151f137",
+      "note": "INTEG 배포 2026-09-26 13:50(floor v2 superseded 판) — F1 status 는 측정 전 defined_unmeasured"
+    },
+    {
+      "id": "F1-MEASURE",
+      "what": "F1 등록 전 측정 — 엔진 2회 재실행 결정론(rfv_determinism_record) → floor v2 재생성(status confirmed_mechanism_only 기대) + 기전-함의 효과 입력 · pin 스냅샷 태그",
+      "status": "pending",
+      "kind": "measurement",
+      "note": "바닥 측정은 등록 전 허용(rf_prereg 설계) · run_paper_replication 은 이 갈래 밖(새 측정 0) · 기전 한정 바닥 수락 = PREREG-MECHANISM-ONLY-FLOOR (가)"
+    },
+    {
+      "id": "P1-06",
+      "what": "null 희석 통제 칸 코드(격자 standing control B1_N1~N4 · rf_runner_gates.R::rf_null_dilution_values)",
+      "status": "available",
+      "file": "02_Infrastructure/reinforcement/rf_runner_gates.R",
+      "sha256": "3b6f7ce2c5ba84ad45925bc17981a9e98bc1017d6b56817b1547c8838c52ce87",
+      "note": "CTRL 배포 2026-09-26 13:45 · 칸 실측은 P1-06-CELLS"
+    },
+    {
+      "id": "P1-06-CELLS",
+      "what": "null 희석 통제 칸 B1_N1~N4 를 F1 carry 로 실측(SE_null 원천 · rf_null_dilution_values)",
+      "status": "pending",
+      "kind": "measurement",
+      "note": "P1-06 코드(rf_runner_gates.R::rf_null_dilution_values · 격자 control 칸)는 운영 배포(CTRL 2026-09-26 13:45) — 남은 것은 F1 위 실측"
+    },
+    {
+      "id": "P1-03",
+      "what": "sa_subwindow(2024-12 절단판) — INTEG③",
+      "status": "available",
+      "file": "02_Infrastructure/contracts/selection_accounting.R",
+      "sha256": "23517727ea02659001f677b9a8515cb4344cfe7b4e3bd94b6144803e24befdbf",
+      "note": "INTEG 배포 2026-09-26 13:50 · 절단일 = 계약 설정 cut id(end_from_config 핀)"
+    },
+    {
+      "id": "P2-02",
+      "what": "tilt_attribution(일간 공통 성분 분해)",
+      "status": "available",
+      "file": "02_Infrastructure/contracts/tilt_attribution.R",
+      "sha256": "64020e321ac404b487b7bfa8851d6e11fbe1a07af02a73313d20fd8f17210219",
+      "note": "운영 배포 2026-09-25 21:35"
+    },
+    {
+      "id": "P0-14",
+      "what": "관문 시점 계보 기반 선정 기저 표식 자동 승계",
+      "status": "available",
+      "note": "운영 배포 2026-09-25 19:37"
+    },
+    {
+      "id": "PR-L1-NULL-THRESHOLD",
+      "what": "arm 회전 맞춤 경험 귀무 분위(t_crit_lo·t_crit_hi) 산출물 — power.calibration.procedure",
+      "status": "pending",
+      "kind": "measurement",
+      "note": "등록 전 · 처치 비열람 · 산출물 = decision_params.from.artifact(sha256 는 산출 뒤 기재)"
+    },
+    {
+      "id": "PR-L1-POWER-MC",
+      "what": "판정 문턱 검정력 R 몬테카를로(power_at_decision) + R0/R2/R3 선택 기록(결정 레지스터)",
+      "status": "pending",
+      "kind": "measurement",
+      "note": "PR-L1-POWER-MEASURE-FIRST (i) · PR-L1-THRESHOLD-TURNOVER — 측정 전 항목"
+    }
+  ],
+  "open_questions": [
+    {
+      "id": "Q-NOISE-5",
+      "question": "잡음 기준 ε = 1×SE_null(k=4 칸 · 표본표준편차 상대 오차 ±41%) — 잡음 칸 수 · 보수 계수 · entry 간 합산(seed = hash(base_id, k) 제안)",
+      "status": "deferred_to_power_measurement",
+      "resolve_at": "pre_registration_power_measurement",
+      "decision_ref": "PREREG-DRAFT2-Q-INTERPRETATIONS ⑤ — '이 결정에서 확정하지 않고 PR-L1-POWER-MEASURE-FIRST 의 등록 전 검정력 측정 때 함께 재검토'",
+      "affects": "noise.k=1 SE_null 을 쓰는 조건(PR-L2 S4·X2 port_t · PR-L1 ④ cagr)",
+      "note": "측정 전 항목 — 등록 전 검정력·SE 산출 때 해소(새 rev). 해소 전에는 등록 차단(rf_prereg_validate '미결 질문')"
+    }
+  ],
+  "reporting_obligations": [
+    "scope = mechanism_only — essence Grade A 가 나와도 A 후보·Judge·BOOK 아님(FLOOR-BASE-ENGINE-Q4) · confirmed 면 청정 기저 이식 가족",
+    "IS(2005~16) 활성 IR 변화(must_report — 없으면 라벨 없음)",
+    "2024-12 절단판(③)",
+    "삼성+하이닉스 코어 집중 = 리서치 측정 허용 · BOOK 적격성은 A 발생 시 별도(D-H)",
+    "1차 지표 = t ≤ −3 판정 + power.decision_rule 의 판정 문턱 검정력 병기(관문 z .975 기준과 구분)",
+    "성공 확인 전 cap_core 를 전 계보 상주 칸으로 배포 금지(플랜 PR-L1)",
+    "모든 결과 = 반증 시도 · 미결을 벽으로 적립하지 않음(AX-000)",
+    "close_t1 전환·floor v2 이전 수치 인용 금지"
+  ],
+  "not_a_grade": "등급은 essence 하나 — 이 사전등록의 라벨은 등급을 대체하지 않는다",
+  "excluded_floors": [
+    {
+      "id": "F2",
+      "ref": "06_Registry/prereg/reference_floors_v2.json#F2",
+      "status": "excluded",
+      "reasons": [
+        "derived:q4_crossentry_exposure(possible · RP_20260913_090549_14760_adapted_rulefast)",
+        "derived:q4_crossentry_exposure(possible · RP_20260913_090549_14760_adapted_rulefast_promo1)",
+        "derived:q4_crossentry_exposure(possible · RP_20260913_090549_14760_adapted_rulefast_promo2)",
+        "pit_flag:selection_basis_full_sample_ic_inherited",
+        "adversary:unverified"
+      ],
+      "decision_ref": "FLOOR-F2-EXCLUDED-ARMS",
+      "arms_deleted": [
+        "A3",
+        "S1",
+        "S2"
+      ]
+    }
+  ],
+  "premise": {
+    "floor": "F1 (06_Registry/prereg/reference_floors_v2.json#F1)",
+    "floor_doc_sha256": "1d91e25d60320acbc729ddb8af993a18b0410b900fbea188066e7f6bd151f137",
+    "status": "defined_unmeasured",
+    "base_engine": {
+      "path": "04_Research/strategies/RP_AUTO_COMBO_combo_1403_8125_2002_069/engine.R",
+      "md5": "e2308a99f801629cb068c1fdf2ac404f",
+      "base_weight": 0.5
+    },
+    "factor_layer": [
+      "D42_EWMA_Vol",
+      "IN05_Net_Debt_Issuance",
+      "AC13_Abnormal_Accruals",
+      "C15_Forecast_Error_Trend"
+    ],
+    "weighting": "ew",
+    "n_max": 25,
+    "selection": {
+      "rule": "rf_factor_arms.R::rf_pick_factor_sets(n=1, depths=depth, seed_offset, asof)",
+      "basis": "asof_ic",
+      "asof": "2005-01-01",
+      "seed_id": "D42_EWMA_Vol",
+      "seed_offset": 0
+    },
+    "overlap_with_22632_factor_layer": {
+      "jaccard": 0,
+      "overlap": [],
+      "lineage_set": [
+        "C03_EPS_Chg_3m",
+        "M01_Mom_12_1",
+        "V14_EBIT_EV",
+        "L19_Price_Delay"
+      ]
+    },
+    "deleted_premise": "'최고 계보 위' 전제 삭제 — F1 은 22632 계보의 팩터 층이 아니다(겹침 0 · jaccard 0). 같은 것은 기저 엔진뿐이고 F1 성과는 미측정(defined_unmeasured)이다. 레버 효과는 F1 대비 Δ 로만 읽고, 22632 계보의 과거 수치(PT·잔차 NW-t 등)를 사전확률·기대효과 근거로 옮겨 쓰지 않는다.",
+    "noise_note": "F1 사슬 2~4번(IN05·AC13·C15)은 as-of |IC| ≤ 0.005 · 상관 추정 표준오차 ≈0.14~0.18 > 사슬 max|rho| 0.063 — 시드(D42_EWMA_Vol) 밖 구성은 잡음 수준 차이로 정해졌다(floor v2 open_items · 적대검증 2026-09-25).",
+    "satellite_premise_deleted": "플랜의 '위성은 잔차 NW-t≈6 계보' 전제(22632)는 F1 에 옮겨지지 않는다 — F1 위성 선별 알파는 미측정",
+    "floor_doc_note": "INTEG 배포 판(2026-09-26 13:45 생성 · superseded 이력 floor_history) — draft2 의 ff47a9da… 는 이전 판",
+    "cited_decisions": [
+      {
+        "id": "FA-CLEAN-BASE-PATH",
+        "decision": "(나) 기존 레인 강화 — 노출 범위 full 유지(FA-EXPOSURE-SCOPE=full) · 무인 충실구현 레인에 성과 열람 차단·피드백 성과 제거·훅 성과 문맥 제외·출처 기록 → 1505.00328 재구현이 첫 F_A 후보. 규칙 파일(pit.md 사고 수치 등) 주입은 알려진 경계로 문서화. 2001.04185 는 탐지기 오탐 수정으로 승계자 명단 복원",
+        "use": "A 경로 청정 기저 F_A 의 출처 — 이 가족(mechanism_only)의 수치·판정에는 쓰지 않는다. confirmed 이식 가족의 바닥 후보(첫 후보 1505.00328 재구현 · 미측정)"
+      },
+      {
+        "id": "AUTOMEM-EXPOSED-CELLS-DISPOSITION",
+        "decision": "(b) 교차 entry 수치 적중이 있는 설계 레인 전사(B1 설계·B5 설계·기전 next_block_design·오버레이 arm 제안·결합 설계)가 정한 칸만 vintage 표식(possible · A 보류 · 재측정 금지) + 기저 포함: 충실구현·결합 전사에 적중이 있던 entry 는 entry 단위(base) 표식. 대상 = 09-25 15:01 이전으로 닫힌 집합 · 적대 감사(G1)는 칸을 정하지 않아 제외",
+        "use": "09-25 15:01 이전 무인 LLM 레인 노출 표식((b)+기저 · possible · A 보류) — F1 기저 엔진 계보는 이미 FLOOR-BASE-ENGINE-Q4 로 A 보류라 이 가족 scope 와 같은 방향. 바닥 vintage_flags 에 표식이 붙으면 rf_prereg 금지 패턴과 별개로 scope 가 A 를 막는다"
+      }
+    ]
+  },
+  "scope": {
+    "label": "mechanism_only",
+    "a_eligible": false,
+    "decision_ref": "FLOOR-BASE-ENGINE-Q4",
+    "decision_text": "Q④(C1 possible)로 분류 — F1 계보에서 나온 A 는 보류. PR-L2·PR-L1 은 F1 위에서 '기전 반증 시도'(라벨 mechanism_only · A 자격 없음 명시)로 등록·실행. A 경로용 청정 기저(성과를 보지 않고 고른 충실구현 논문 엔진 + as-of 팩터 층 · 교차 entry 노출 0)를 별도 floor 로 신설하고, 기전이 확인된 레버만 그 위에 새 사전등록 가족으로 이식.",
+    "decided_at": "2026-09-25T21:38:52+0900",
+    "statement": "F1 은 22632 결합 엔진(RP_AUTO_COMBO_combo_1403_8125_2002_069) 위에 있고, 그 엔진 설계가 교차 entry 성과에 노출돼 Q④(C1 possible)로 분류됐다. 따라서 이 사전등록은 '기전 반증 시도' 전용이다 — 어느 칸의 essence 가 Grade A 여도 A 후보가 아니다(보류 · Judge 트리거·BOOK 후보 아님). 라벨 4종(confirmed/powered_null/undetermined/failed)은 기전 가설의 판정일 뿐이다.",
+    "a_path": "기전이 confirmed 이면 A 경로용 청정 기저(성과를 보지 않고 고른 충실구현 논문 엔진 + as-of 팩터 층 · 교차 entry 노출 0 — 별도 floor)에 같은 레버를 **새 사전등록 가족**(새 prereg_id·새 family_id)으로 이식해서만 A 를 잰다. 이 가족의 수치는 이식 가족의 기준선·SE 로 쓰지 않는다.",
+    "transplant_rule": {
+      "requires": "이 가족 label = confirmed",
+      "new_family": true,
+      "floor": "청정 기저 F_A(FA-CLEAN-BASE-PATH (나) 기존 무인 충실구현 레인 강화 · 첫 후보 1505.00328 재구현 · 미측정)",
+      "reuse_numbers": false
+    },
+    "lever": "PR-L1"
+  },
+  "resolved_questions": [
+    {
+      "id": "Q-L1-1",
+      "question": "⑥ 'A1 − C1 > 0' 의 지표 — D-H 결정문은 '6조건 승인'만 기록",
+      "resolution": "⑥ 지표 = PORT_t(NW lag3) — A1 > C1(성공) · A1 ≤ C1(실패)",
+      "basis": "closet-indexing = 위성 선별 신호 기여가 무작위 위성과 구별되지 않음 → essence 의 A 1축(PORT_t)으로 잰다(플랜 ⑥ 문언 'A1−C1>0')",
+      "authority": "도훈 승인 문언(플랜·D-H·B7 success_criterion)의 최소 해석 — 결과 전 고정. 도훈 이의 시 draft3(새 rev)."
+    },
+    {
+      "id": "Q-L1-2",
+      "question": "④ 'CAGR ≥ floor − 잡음' 의 잡음 정의",
+      "resolution": "잡음 = 1 × SE_null(cagr) (F1.NULL = B1_N1~N4)",
+      "basis": "플랜 ④ 'CAGR ≥ floor − 잡음' 의 최소 해석(1 SE)",
+      "authority": "도훈 승인 문언(플랜·D-H·B7 success_criterion)의 최소 해석 — 결과 전 고정. 도훈 이의 시 draft3(새 rev)."
+    },
+    {
+      "id": "Q-L1-3",
+      "question": "A3 가 삭제(F2 미충족)되면 멈춤 조건",
+      "resolution": "STOP_L1_TRUNC = A1 단독: A1 이 ③ 실패 → halt(C1·A2 생략)",
+      "basis": "A3 삭제(FLOOR-F2-EXCLUDED-ARMS) — 플랜 멈춤 '동시 실패'의 남은 성분",
+      "authority": "도훈 승인 문언(플랜·D-H·B7 success_criterion)의 최소 해석 — 결과 전 고정. 도훈 이의 시 draft3(새 rev)."
+    },
+    {
+      "id": "Q-L1-4",
+      "question": "벤치 비중 근사(t-1 Size 비중) vs 실제 KOSPI200(유동시총·편입 상한)",
+      "resolution": "t-1 Size 비중 근사를 치료 정의로 고정(공표 비중 복제 주장 없음) — core.weight_definition",
+      "basis": "치료의 정의가 근사 자체면 근사 오차는 판정 편향이 아니다 · PIT 유동비율 원천 부재는 포기 사유 아님(보고용 적재만)",
+      "authority": "도훈 승인 문언(플랜·D-H·B7 success_criterion)의 최소 해석 — 결과 전 고정. 도훈 이의 시 draft3(새 rev)."
+    },
+    {
+      "id": "Q-L1-5",
+      "question": "코어+위성 합집합 ≤25 절단 규칙",
+      "resolution": "union_truncation: 코어 밖 위성을 바닥 점수 낮은 순으로 빼 |C∪S'| = n_max · 겹침은 코어 한 자리 · 위성 비중 비례 재조정 · k=0 비트 동일",
+      "basis": "PIT 2-슬리브 조항(최종 보유 ≤25) · 바닥 자신의 순위만 사용(성과 미소비)",
+      "authority": "도훈 승인 문언(플랜·D-H·B7 success_criterion)의 최소 해석 — 결과 전 고정. 도훈 이의 시 draft3(새 rev)."
+    },
+    {
+      "id": "Q-L1-6",
+      "question": "예비 2칸(S1=C1-F2 · S2=A2-F2) 발동 조건 확정",
+      "resolution": "예비 S1·S2 삭제 — 바닥 F2 제외로 발동 조건 영구 불성립 · 다른 바닥 이동 금지 · N 미계상",
+      "basis": "FLOOR-F2-EXCLUDED-ARMS(선택지 '다른 바닥으로 이동' 기각) · PR-L1-A4-DISPOSITION 선례",
+      "authority": "도훈 결정 준용(범위 확인 권고 — 결정 문언 표제는 PR-L2 · required_decisions 'what' 에 PR-L1 A3 명시)"
+    }
+  ],
+  "draft_changes": [
+    {
+      "id": "L1-D3-1",
+      "what": "① 판정 문턱 t ≤ −3 → t ≤ {param t_crit_lo}(arm 회전 맞춤 경험 귀무 단측 1% 분위 · 값 null · 산출 절차) · power.calibration(null_t_quantile)",
+      "ref": "PR-L1-THRESHOLD-TURNOVER · PREREG-POWERED-NULL-CALIBRATION"
+    },
+    {
+      "id": "L1-D3-2",
+      "what": "검정력 = 판정 문턱 R 몬테카를로(정규 근사 금지) · 'fixed-b 가 정규 근사보다 낮다' 서술 정정 · R1 재설계 삭제 · R2/R3 효과 주의",
+      "ref": "PR-L1-POWER-MEASURE-FIRST"
+    },
+    {
+      "id": "L1-D3-3",
+      "what": "dependencies 에서 PR-L2-VERDICT 삭제",
+      "ref": "PR-L1-L2-ORDER (C)"
+    },
+    {
+      "id": "L1-D3-4",
+      "what": "1차 지표 계약 결속 tilt_attribution → b_ewcw_paired_delta(INTEG 배포) · fixed_b 출처 = 운영 계약 설정",
+      "ref": "INTEG-2-CFG"
+    },
+    {
+      "id": "L1-D3-5",
+      "what": "의존 재도출(INTEG-1·INTEG-2·P1-03·P1-06 코드 available · SIZE-T1 증거 첨부 · PR-L1-NULL-THRESHOLD·PR-L1-POWER-MC 측정 추가) · P1-08 → run_prerequisites",
+      "ref": "운영 배포 2026-09-26"
+    },
+    {
+      "id": "L1-D3-6",
+      "what": "바닥 요구 confirmed_mechanism_only 명시 · open_questions Q-NOISE-5 · pre_registration_procedure",
+      "ref": "PREREG-MECHANISM-ONLY-FLOOR · PREREG-DRAFT2-Q-INTERPRETATIONS"
+    }
+  ],
+  "supersedes_draft": {
+    "rev": 2,
+    "path": "06_Registry/prereg/drafts/PR-L1-CAPCORE.draft2.json",
+    "sha256": "43b64b25955b545e57c0236f342b9d667a1c6b7980fe3264e54d8a067ac96354"
+  },
+  "decision_params": [
+    {
+      "id": "t_crit_lo",
+      "value": null,
+      "from": {
+        "artifact": "stage_artifacts/prereg/_calibration/PR-L1-b_ewcw_null_turnover_v1/calibration.json",
+        "artifact_sha256": null,
+        "field": "threshold/t_lo"
+      },
+      "status": "pending",
+      "rule": "arm 실현 회전 맞춤 경험 귀무(무작위 쌍 · fixed-b 판정 통계 그대로)의 단측 1% 분위 — 몬테카를로 분위 잡음은 순서통계 이항 신뢰구간(수준 1 − power_gate.alpha_two_sided)의 보수 끝(더 음수)으로 흡수",
+      "basis": "PR-L1-THRESHOLD-TURNOVER [위임] (나) — D-H 't ≤ −3' 이 의도한 엄격도(통상 회전 귀무 크기 ≈1.2%)를 회전이 낮은 arm 에서도 유지(p=0.10 에서 P(t≤−3)=4.0% · INTEG D1)"
+    },
+    {
+      "id": "t_crit_hi",
+      "value": null,
+      "from": {
+        "artifact": "stage_artifacts/prereg/_calibration/PR-L1-b_ewcw_null_turnover_v1/calibration.json",
+        "artifact_sha256": null,
+        "field": "threshold/t_hi"
+      },
+      "status": "pending",
+      "rule": "같은 경험 귀무의 단측 1% 상단 분위(99%) — 보수 끝(더 양수). 반대 방향 유의(0 배제)·함의 효과 배제(검정력 있는 무효) 판정에 쓴다",
+      "basis": "PREREG-POWERED-NULL-CALIBRATION — 판정 양쪽 꼬리 모두 교정 문턱"
+    }
+  ],
+  "run_prerequisites": [
+    {
+      "id": "P1-08",
+      "what": "원장 entry priority/experiment 필드(rf_open_entry formals) — 실험 칸 개설 경로",
+      "status": "pending",
+      "check": "rf_prereg_run()$p108_ready(formals 재도출) · run.live_enabled",
+      "note": "등록 차단이 아니다 — 설계(arm·지표·판정)를 바꾸지 않는 실행 경로 의존이라 결과 전 잠금(등록)을 늦출 이유가 없다. HUMAN 갈래(organic_o0a/HUMAN · reinforce_ledger.R rf_open_entry(priority, experiment)) 배포로 formals 충족 예정. 실행은 rf_prereg_run 의 run_blockers 가 0 일 때"
+    }
+  ],
+  "decisions_applied": [
+    {
+      "id": "PREREG-MECHANISM-ONLY-FLOOR",
+      "decided_at": "2026-09-26T13:35:02+0900",
+      "decided_by": "dohoon",
+      "decision": "[위임] (가) — FLOOR-BASE-ENGINE-Q4 가 이미 정한 'F1 위 기전 반증 시도' 등록을 가능하게 하는 최소 완화 · A 경로 사전등록은 계속 fail-closed",
+      "applied_as": "floors[F1].requirement — confirmed_mechanism_only 수락"
+    },
+    {
+      "id": "PREREG-POWERED-NULL-CALIBRATION",
+      "decided_at": "2026-09-26T13:35:02+0900",
+      "decided_by": "dohoon",
+      "decision": "[위임] 등록 전 개정 — 판정이 너그러우면 '검정력 있는 무효'가 거짓으로 서서 유망 레버를 조기에 닫는다(알파 창출력 손실)",
+      "applied_as": "power.calibration(null_t_quantile · t_crit_lo/hi) — 판정 양쪽 꼬리 교정 문턱"
+    },
+    {
+      "id": "PR-L1-THRESHOLD-TURNOVER",
+      "decided_at": "2026-09-26T13:35:02+0900",
+      "decided_by": "dohoon",
+      "decision": "[위임] (나) 규칙 확정 — PR-L1 판정 문턱 = arm 실현 회전에 맞춘 경험 귀무(무작위 쌍 · fixed-b 판정 통계 그대로)의 단측 1% 분위(D-H 't ≤ −3' 이 의도한 엄격도 = 통상 회전에서 실현 크기 약 1.2% 에 맞춤). 등록 전 · 처치 비열람으로 산출. 그 문턱에서 R 몬테카를로 검정력 ≥ 0.8 이면 R0 형 설계 유지, 미만이면 R2/R3 중 검정력을 올리는 쪽을 Q 가 위임 판단으로 선택(수치·근거를 결정 레지스터에 추가 기록). D-H 의 나머지 5조건은 불변",
+      "applied_as": "criteria.success[1] t ≤ {param t_crit_lo} · decision_params(값 null · 규칙) · calibration.procedure(산출 절차) · redesign R1 삭제"
+    },
+    {
+      "id": "PR-L1-POWER-MEASURE-FIRST",
+      "decided_at": "2026-09-26T12:31:22+0900",
+      "decided_by": "dohoon",
+      "decision": "(i) 먼저 잰다 — 등록 전 R 계약으로 효과 입력과 fixed-b 몬테카를로 검정력을 산출하고, 그 수치로 R0(≥0.8) 또는 R1~R3 를 도훈이 선택. draft3 의 'fixed-b 가 정규 근사보다 낮다' 서술 정정",
+      "applied_as": "power.power_at_decision = R 몬테카를로(정규 근사 금지) · decision_rule.normal_anchor_correction(방향 오류 정정) · 의존 PR-L1-POWER-MC"
+    },
+    {
+      "id": "PR-L1-L2-ORDER",
+      "decided_at": "2026-09-26T12:36:33+0900",
+      "decided_by": "dohoon",
+      "decision": "(C) 병행 — PR-L1 의 PR-L2-VERDICT 의존 제거 · 각 실험은 준비되는 대로 등록·실행 · PR-L1 구현(CAPCORE-IMPL·검정력 측정 PR-L1-POWER-MEASURE-FIRST)은 오늘 배포 직후 착수",
+      "applied_as": "dependencies 에서 PR-L2-VERDICT 삭제((C) 병행)"
+    },
+    {
+      "id": "PREREG-DRAFT2-Q-INTERPRETATIONS",
+      "decided_at": "2026-09-26T13:16:06+0900",
+      "decided_by": "dohoon",
+      "decision": "①②③④ 승인. ⑤ 잡음 기준은 이 결정에서 확정하지 않고 PR-L1-POWER-MEASURE-FIRST 의 등록 전 검정력 측정 때 함께 재검토(잡음 칸 수 · 보수 계수 · entry 간 합산 — seed = hash(base_id, k) 제안 포함)",
+      "applied_as": "②(예비 S1·S2 삭제) ③(union_truncation) ④(⑥ 지표 PORT_t) 유지 · ⑤ = open_questions Q-NOISE-5"
+    },
+    {
+      "id": "FA-CLEAN-BASE-PATH",
+      "decided_at": "2026-09-26T12:24:27+0900",
+      "decided_by": "dohoon",
+      "decision": "(나) 기존 레인 강화 — 노출 범위 full 유지(FA-EXPOSURE-SCOPE=full) · 무인 충실구현 레인에 성과 열람 차단·피드백 성과 제거·훅 성과 문맥 제외·출처 기록 → 1505.00328 재구현이 첫 F_A 후보. 규칙 파일(pit.md 사고 수치 등) 주입은 알려진 경계로 문서화. 2001.04185 는 탐지기 오탐 수정으로 승계자 명단 복원",
+      "applied_as": "premise.cited_decisions · scope.transplant_rule.floor(인용만)"
+    },
+    {
+      "id": "AUTOMEM-EXPOSED-CELLS-DISPOSITION",
+      "decided_at": "2026-09-26T12:27:37+0900",
+      "decided_by": "dohoon",
+      "decision": "(b) 교차 entry 수치 적중이 있는 설계 레인 전사(B1 설계·B5 설계·기전 next_block_design·오버레이 arm 제안·결합 설계)가 정한 칸만 vintage 표식(possible · A 보류 · 재측정 금지) + 기저 포함: 충실구현·결합 전사에 적중이 있던 entry 는 entry 단위(base) 표식. 대상 = 09-25 15:01 이전으로 닫힌 집합 · 적대 감사(G1)는 칸을 정하지 않아 제외",
+      "applied_as": "premise.cited_decisions(인용만)"
+    }
+  ],
+  "pre_registration_procedure": [
+    {
+      "step": 1,
+      "what": "F1 결정론 2회 — 같은 F1 스펙을 엔진으로 2회 재실행(R 계약 · 새 측정 = 이 갈래 밖) → rfv_determinism_record → rfv_write(supersede)",
+      "output": "06_Registry/prereg/floor_determinism/F1__<spec_md5>__*.json · reference_floors_v2.json(F1 status confirmed_mechanism_only)",
+      "class": "measurement"
+    },
+    {
+      "step": 2,
+      "what": "pin 스냅샷 태그 — floor v2 pins(원장·격자·팩터 증거·데이터) 고정 후 measurement_regime.pin_tag 기재",
+      "output": "pin_tag",
+      "class": "measurement"
+    },
+    {
+      "step": 3,
+      "what": "P1-06-CELLS — B1_N1~N4(F1 carry) 실측 → rf_null_dilution_values → rf_prereg_se_null / rf_prereg_artifact(null_dilution)",
+      "output": "SE_null(port_t · cagr · 1차 지표)",
+      "class": "measurement"
+    },
+    {
+      "step": 4,
+      "what": "기전-함의 효과 입력(R · 처치 비열람) → power.implied_effect.value · power.se.value → rf_prereg_power → power.computed",
+      "output": "power.*",
+      "class": "measurement"
+    },
+    {
+      "step": 5,
+      "what": "N 회계 — rf_prereg_lineage_n(F1 새 칸 계보 · 삭제 arm 제외)",
+      "output": "selection_accounting.n_family·n_source",
+      "class": "measurement"
+    },
+    {
+      "step": 6,
+      "what": "hypothesis_index 재빌드 뒤 rf_prereg_lookup 재첨부(stale 0)",
+      "output": "hypothesis_index_lookup",
+      "class": "index"
+    },
+    {
+      "step": 7,
+      "what": "Q-NOISE-5 해소(잡음 칸 수·보수 계수·entry 간 합산) — 검정력 측정과 함께",
+      "output": "resolved_questions 추가 · open_questions 0",
+      "class": "measurement"
+    },
+    {
+      "step": 8,
+      "what": "PR-L1-NULL-THRESHOLD + PR-L1-POWER-MC — 회전 p_A1(보유만 재구성) → 경험 귀무 t 분위(t_crit_lo/hi) → 함의 효과 주입 검정력 → R0/R2/R3 선택(위임 판단 · 레지스터)",
+      "output": "stage_artifacts/prereg/_calibration/PR-L1-b_ewcw_null_turnover_v1/calibration.json",
+      "class": "measurement"
+    },
+    {
+      "step": 9,
+      "what": "draft4(새 rev) = 위 수치·태그를 채운 판 → rf_prereg_run(kind='draft') blockers 0 확인 → rf_prereg_register",
+      "output": "06_Registry/prereg/<id>.json(등록본)",
+      "class": "registration"
+    }
+  ],
+  "revision_of": null
+}

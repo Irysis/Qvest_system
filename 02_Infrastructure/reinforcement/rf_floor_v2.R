@@ -26,13 +26,31 @@
 #     승계하므로 여기서만 보인다(22632 결합 엔진 프롬프트 = 재료 6편의 '단독 다중검정 t' 교차 entry 수치). 인용 칸은 제외 사유로,
 #     F1 은 prereg_blockers 로 싣는다. ② 사전등록 관문 prereg_gate — F1 기저 엔진 노출 없음 ∧ 설정 required_decisions 가
 #     결정 레지스터에서 전부 resolved 일 때만 ready. 사전등록은 ready 가 아니면 착수하지 않는다(판정 = 도훈 결정 · 여기는 사실만).
+#   · ★사전등록 소비 계약 필드(통합 · 2026-09-25 밤 · P2 통합 구현 ①): rf_prereg.R::.rfp_floor_check 가 바닥마다 읽는
+#     id · status · determinism_ok · selection_basis · measurement_regime 을 **바닥 층**에 싣는다(구판은 F1.spec 안에만 있거나 부재).
+#     - selection_basis = 사전등록 범주어휘(as_of · none · full_sample · unknown). 칸 스펙의 세부 값(asof_ic — rf_factor_arms.R 생산 ·
+#       rf_lineage_flags.R(P0-14 관문) 소비)은 **바꾸지 않고** selection_basis_detail 로 병기한다. 범주 사상 = 설정
+#       consumer_contract.selection_basis_category(전수 grep 근거는 설정 note). 전표본 표식 칸은 사상과 무관하게 full_sample.
+#     - determinism_ok = 결정론 기록(rfv_determinism_record — 같은 F1 스펙을 엔진으로 2회 잰 산출물 대조)이 있으면 TRUE/FALSE,
+#       없으면 NA(측정 전 · JSON null). 기록은 스펙 지문(정규화 JSON md5)에 묶인다 — 다른 스펙의 기록은 채우지 않는다.
+#     - measurement_regime = 기록이 있으면 실현값(산출물 authoritative_remeasure.json) · 없으면 선언값(exclusion.exec_price_required) +
+#       basis 로 구분한다. 인용 칸(F2·F3)은 원장 실현값.
+#     - status = 규칙(.rfv_floor_status): 측정 전 defined_unmeasured · 비결정 nondeterministic · 결정론 ∧ as_of ∧ 실현 규약 일치 ∧
+#       관문 ready → confirmed / 관문이 '기전 한정'으로만 열리면 confirmed_mechanism_only / 그 밖 gate_blocked. 인용 칸 = 기존 판정.
+#   · ★관문 사용 제한(결정 FLOOR-BASE-ENGINE-Q4 = Q④ · 2026-09-25 21:38): 해제 결정이 restricts_if_decision_matches 에 맞으면
+#     F1 blocker 는 A 경로에 그대로 남고(ready 불변) 관문이 use_restriction{mechanism_only · a_eligible=FALSE} 과
+#     ready_mechanism_only 를 낸다 — 사전등록 소비자가 이 상태를 명시적으로 받아들이기 전에는 confirmed_mechanism_only 는 거부된다
+#     (rf_prereg.R floor_status_ok = confirmed 뿐 — fail-closed).
+#   · ★개정(supersede): 사전등록 등록본이 0 건이고 기존 판 status 가 revision.supersede_allowed_status 일 때만 새 판으로 바꾼다 —
+#     옛 판은 revision.history_dir 로 옮겨 보존(덮어쓰기 없음) · 새 판에 supersedes{경로·md5·생성 시각}. 등록 뒤 = 거부(새 파일·새 가족).
 #
 # 요구: <code_root>/02_Infrastructure/ops/rf_factor_arms.R · reinforcement/rf_runner_gates.R(+ rf_spec_sig.R · rf_block_design.R —
 #   rf_runner_gates.R 가 QM_ROOT 에서 적재) · 데이터 = <root>/06_Registry(원장·격자·factor_evidence·axis·pit_quarantine) ·
 #   <root>/.cache/factor_db(factor_ic_monthly.parquet · factor_registry.json)
 # 공개: rfv_load_cfg · rfv_env · rfv_ledger · rfv_cite · rfv_assess · rfv_lineage_provenance · rfv_asof_reselect ·
 #       rfv_family_seed_offset · rfv_f1_spec · rfv_build · rfv_check_citations · rfv_write · rfv_verify · rfv_diff ·
-#       rfv_design_exposure · rfv_base_engine_exposure · rfv_prereg_gate
+#       rfv_design_exposure · rfv_base_engine_exposure · rfv_prereg_gate ·
+#       (통합) rfv_sb_category · rfv_spec_md5 · rfv_determinism_check · rfv_determinism_record · rfv_determinism_load · rfv_floor_fields
 # 검사: 08_Tests/reinforcement/test_rf_floor_v2.R
 #==============================================================================
 suppressPackageStartupMessages({ library(jsonlite); library(data.table) })
@@ -75,7 +93,208 @@ rfv_load_cfg <- function(path) {
   cid <- .rfv_chr1(.rfv_or(bx$clearing, list())$decision_id)
   if (nzchar(cid) && !(cid %in% vapply(pg$required_decisions, function(d) .rfv_chr1(d$id), "")))
     stop("[rf_floor_v2] base_engine_exposure.clearing.decision_id(", cid, ")가 prereg_gate.required_decisions 에 없다 — 해제 결정은 필수 결정이어야 한다")
+  # ★통합(2026-09-25 밤) — 사용 제한 규칙은 해제 규칙과 짝(해제 결정 id 필수 · 제한 이름 필수)
+  clr <- .rfv_or(bx$clearing, list())
+  if (length(clr$restricts_if_decision_matches)) {
+    if (!nzchar(cid)) stop("[rf_floor_v2] clearing.restricts_if_decision_matches 는 clearing.decision_id 가 있어야 한다")
+    if (!nzchar(.rfv_chr1(clr$restriction))) stop("[rf_floor_v2] clearing.restriction(제한 이름) 부재")
+  }
+  # ★통합 — 사전등록 소비 계약(바닥 층 필드) · 결정론 기록 · 개정 규약. 없으면 멈춘다(필드를 지어내지 않는다)
+  cc <- cfg$consumer_contract
+  if (!is.list(cc) || !is.list(cc$selection_basis_category) || !length(cc$selection_basis_categories) ||
+      !length(cc$selection_basis_ok) || !nzchar(.rfv_chr1(cc$full_sample_flag_regex)) || !length(cc$required_fields))
+    stop("[rf_floor_v2] consumer_contract(selection_basis_category · selection_basis_categories · selection_basis_ok · full_sample_flag_regex · required_fields) 부재")
+  cats <- as.character(unlist(cc$selection_basis_categories))
+  for (k in names(cc$selection_basis_category)) {
+    v <- .rfv_chr1(cc$selection_basis_category[[k]])
+    if (!(v %in% cats)) stop("[rf_floor_v2] selection_basis_category.", k, " = '", v, "' 는 범주 어휘 밖")
+    # 전표본 세부 값이 as_of·none 으로 사상되면 C1 표식 칸이 바닥 소비 검사를 통과한다 — 설정으로도 허용하지 않는다
+    if (grepl("full_sample", k, fixed = TRUE) && !identical(v, "full_sample"))
+      stop("[rf_floor_v2] selection_basis_category.", k, " 는 full_sample 로만 사상할 수 있다(C1 · D-E)")
+  }
+  if (!all(as.character(unlist(cc$selection_basis_ok)) %in% cats) || "full_sample" %in% unlist(cc$selection_basis_ok))
+    stop("[rf_floor_v2] consumer_contract.selection_basis_ok 는 범주 어휘 안 · full_sample 불가")
+  dt <- cfg$determinism
+  if (!is.list(dt) || !nzchar(.rfv_chr1(dt$record_dir)) || !length(dt$compare_files) || !length(dt$floors) || !length(dt$spec_fields) ||
+      is.null(dt$ignore_columns) || is.null(dt$essence_ignore) || !nzchar(.rfv_chr1(dt$idea_match)))
+    stop("[rf_floor_v2] determinism(record_dir · compare_files · floors · spec_fields · ignore_columns · essence_ignore · idea_match) 부재")
+  if (!(.rfv_chr1(dt$idea_match) %in% c("contains", "equals"))) stop("[rf_floor_v2] determinism.idea_match 는 contains|equals")
+  rv <- cfg$revision
+  if (!is.list(rv) || !nzchar(.rfv_chr1(rv$history_dir)) || !nzchar(.rfv_chr1(rv$prereg_index)) || !length(rv$supersede_allowed_status))
+    stop("[rf_floor_v2] revision(history_dir · prereg_index · supersede_allowed_status) 부재")
   cfg
+}
+
+# ── ★통합(2026-09-25 밤) 사전등록 소비 계약 필드 ─────────────────────────────────────────────
+#' 선정 기저 범주 — 전표본 표식이 있으면 full_sample(사상 무관) · 세부 값이 사상에 있으면 그 범주 · 그 밖 unknown
+rfv_sb_category <- function(detail, flags, cc) {
+  fl <- as.character(unlist(flags)); fl <- fl[!is.na(fl) & nzchar(fl)]
+  if (length(fl) && any(grepl(.rfv_chr1(cc$full_sample_flag_regex), fl, perl = TRUE))) return("full_sample")
+  d <- .rfv_chr1(detail)
+  if (nzchar(d) && !is.null(cc$selection_basis_category[[d]])) return(.rfv_chr1(cc$selection_basis_category[[d]]))
+  "unknown"
+}
+
+#' 스펙 지문 — 측정 정의 필드(fields · 설정 determinism.spec_fields — 비면 전체)만 골라 정규화(JSON 왕복 · 경로 <ROOT>) 뒤 직렬화 md5.
+#'   결정론 기록을 스펙에 묶는 키. 서술 필드(gate_note·idea·root_papers 등)는 측정을 바꾸지 않으므로 넣지 않는다 — 넣으면 러너가 스펙 파일을
+#'   다듬는 순간 같은 칸이 다른 칸이 된다. 정의 필드가 스펙에 없으면(NULL) 그 자리는 null 로 들어간다(누락도 지문의 일부).
+rfv_spec_md5 <- function(spec, roots = character(0), fields = NULL) {
+  sp <- .rfv_rt(spec)
+  f <- as.character(unlist(fields))
+  if (length(f)) { sp <- lapply(f, function(k) sp[[k]]); names(sp) <- f }
+  x <- .rfv_norm(sp, c(roots, .RFV_CANON_ROOT))
+  txt <- as.character(toJSON(x, auto_unbox = TRUE, null = "null", na = "null", digits = NA))
+  f <- tempfile(fileext = ".json"); on.exit(unlink(f), add = TRUE)
+  con <- file(f, open = "wb"); writeBin(charToRaw(enc2utf8(txt)), con); close(con)
+  unname(as.character(tools::md5sum(f)))
+}
+
+.rfv_read_tbl <- function(p, ignore) {
+  x <- fread(p, colClasses = "character", na.strings = NULL)
+  keep <- setdiff(names(x), as.character(unlist(ignore)))
+  x <- x[, ..keep]
+  if ("date" %in% names(x)) setorderv(x, intersect(c("date", "ticker"), names(x)))
+  x
+}
+
+#' 결정론 대조(순수 · 쓰기 없음) — 같은 F1 스펙을 엔진으로 두 번 잰 산출물 두 개를 비교한다(플랜 P2-03).
+#'   거부(stop) = 증거가 아니다: 같은 디렉터리 두 번 · 스펙 불일치 · 산출물이 스펙에 묶이지 않음(strategy_idea) · 규약 불일치.
+#'   determinism_ok: TRUE = 대조 파일(식별 열 제외 · 문자 그대로)과 essence(시행 수 의존 키 제외)가 같다 · FALSE = 다르다 ·
+#'   NA = 판정 불가(데이터 빈티지가 두 실행 사이에 바뀜 — 엔진 결정론과 데이터 변화를 가를 수 없다).
+rfv_determinism_check <- function(run_dirs, spec_path, f1_spec, dt, exec_required, roots = character(0)) {
+  rd <- gsub("\\", "/", as.character(unlist(run_dirs)), fixed = TRUE)   # (.rfv_np 는 첫 원소만 — 벡터는 직접)
+  if (length(rd) != 2L) stop("[rf_floor_v2] 결정론 대조는 산출물 2개(같은 스펙 2회 측정)")
+  nd <- vapply(rd, function(p) tolower(normalizePath(p, winslash = "/", mustWork = FALSE)), "")
+  if (!all(dir.exists(rd))) stop("[rf_floor_v2] 산출물 디렉터리 부재: ", paste(rd[!dir.exists(rd)], collapse = ","))
+  if (identical(nd[[1]], nd[[2]])) stop("[rf_floor_v2] 같은 산출물을 두 번 넣었다 — 결정론 증거가 아니다")
+  sp <- .rfv_json(spec_path)
+  if (is.null(sp)) stop("[rf_floor_v2] 스펙 판독 불가: ", spec_path)
+  s_md5 <- rfv_spec_md5(sp, roots, dt$spec_fields); d_md5 <- rfv_spec_md5(f1_spec, roots, dt$spec_fields)
+  if (!identical(s_md5, d_md5)) stop(sprintf("[rf_floor_v2] 스펙 파일(%s) ≠ 바닥 문서 F1 스펙(%s) — 다른 칸의 측정이다", s_md5, d_md5))
+  idea <- .rfv_chr1(f1_spec$idea)
+  one <- function(d) {
+    ap <- file.path(d, "authoritative_remeasure.json"); au <- .rfv_json(ap)
+    if (is.null(au)) stop("[rf_floor_v2] authoritative_remeasure.json 부재: ", d)
+    ss <- .rfv_json(file.path(d, "01_strategy_spec.json"))
+    si <- .rfv_chr1(if (is.null(ss)) "" else ss$strategy_idea)
+    bound <- nzchar(idea) && (if (identical(.rfv_chr1(dt$idea_match), "equals")) identical(si, idea) else grepl(idea, si, fixed = TRUE))
+    if (!bound) stop(sprintf("[rf_floor_v2] 산출물 %s 의 strategy_idea 가 F1 스펙 idea 와 묶이지 않는다(%s) — 어느 칸의 측정인지 증명 불가", d, dt$idea_match))
+    mr <- .rfv_or(au$measurement_regime, list())
+    ep <- .rfv_chr1(mr$exec_price)
+    if (!identical(ep, .rfv_chr1(exec_required))) stop(sprintf("[rf_floor_v2] 산출물 %s 규약 exec_price=%s ≠ 요구 %s", d, if (nzchar(ep)) ep else "없음", exec_required))
+    files <- lapply(as.character(unlist(dt$compare_files)), function(f) {
+      p <- file.path(d, f); if (!file.exists(p)) stop("[rf_floor_v2] 대조 파일 부재: ", p)
+      list(file = f, md5 = .rfv_md5(p))
+    })
+    list(dir = d, auth_md5 = .rfv_md5(ap), files = files, exec_price = ep,
+         harness_md5 = .rfv_chr1(mr$harness_md5), cost_model_version = .rfv_chr1(mr$cost_model_version),
+         key = .rfv_chr1(.rfv_or(mr$key, mr$regime)),
+         data_vintage = .rfv_rt(if (!is.null(mr$data_fingerprint)) list(data_cutoff = mr$data_cutoff, data_fingerprint = mr$data_fingerprint) else mr$data_vintage),
+         essence = au[["essence"]],
+         strategy_idea = si)
+  }
+  A <- one(rd[1]); B <- one(rd[2])
+  reasons <- character(0)
+  for (k in c("harness_md5", "cost_model_version"))
+    if (!identical(A[[k]], B[[k]])) stop(sprintf("[rf_floor_v2] 두 실행의 %s 가 다르다(%s ≠ %s) — 규약이 다른 측정은 결정론 증거가 아니다", k, A[[k]], B[[k]]))
+  vint_same <- identical(A$data_vintage, B$data_vintage) && !is.null(A$data_vintage)
+  diffs <- list()
+  for (f in as.character(unlist(dt$compare_files))) {
+    ta <- .rfv_read_tbl(file.path(rd[1], f), dt$ignore_columns); tb <- .rfv_read_tbl(file.path(rd[2], f), dt$ignore_columns)
+    same <- identical(names(ta), names(tb)) && nrow(ta) == nrow(tb) && identical(as.list(ta), as.list(tb))   # 문자 그대로(CSV 표기 정밀도)
+    diffs[[f]] <- list(same = same, rows = c(nrow(ta), nrow(tb)))
+    if (!same) reasons <- c(reasons, sprintf("table_diff:%s(rows %d/%d)", f, nrow(ta), nrow(tb)))
+  }
+  ea <- A$essence; eb <- B$essence
+  for (k in as.character(unlist(dt$essence_ignore))) { ea[[k]] <- NULL; eb[[k]] <- NULL }
+  ess_same <- length(rfv_diff(ea, eb)) == 0L && !is.null(ea)
+  if (!ess_same) reasons <- c(reasons, "essence_diff")
+  ok <- if (!length(reasons)) TRUE else FALSE
+  verdict <- if (isTRUE(ok)) "deterministic" else "nondeterministic"
+  if (!vint_same) { ok <- NA; verdict <- "inconclusive_data_vintage_differs"; reasons <- c(reasons, "data_vintage_differs") }
+  strip <- function(z) { z$essence <- NULL; z }
+  list(schema = "rfv_determinism_v1", spec_md5 = d_md5, spec_path = .rfv_np(spec_path), determinism_ok = ok, verdict = verdict,
+       reasons = reasons, compared = list(files = dt$compare_files, ignore_columns = dt$ignore_columns, essence_ignore = dt$essence_ignore,
+                                          table = diffs, essence_same = ess_same, data_vintage_same = vint_same),
+       measurement_regime = list(exec_price = A$exec_price, key = A$key, harness_md5 = A$harness_md5, cost_model_version = A$cost_model_version),
+       runs = list(strip(A), strip(B)), checked_at = format(Sys.time(), "%Y-%m-%dT%H:%M:%S%z"))
+}
+
+#' 결정론 기록 쓰기(등록 전 측정 단계 — 사전등록 러너가 F1 을 두 번 잰 뒤 부른다). 기록 = <record_dir>/<floor>__<spec_md5 12>__<시각>.json
+#'   덮어쓰기 없음. F1 스펙은 **저장된 바닥 문서**에서 읽는다(문서와 다른 스펙의 기록을 만들 수 없다).
+rfv_determinism_record <- function(floor_id, run_dirs, spec_path, root = .RFV_ROOT(),
+                                   cfg_path = file.path(root, "06_Registry/prereg/reference_floors_v2.config.json"),
+                                   doc_path = file.path(root, "06_Registry/prereg/reference_floors_v2.json")) {
+  cfg <- rfv_load_cfg(cfg_path); dt <- cfg$determinism
+  if (!(floor_id %in% as.character(unlist(dt$floors)))) stop("[rf_floor_v2] 결정론 기록 대상 바닥이 아니다: ", floor_id)
+  doc <- .rfv_json(doc_path); if (is.null(doc)) stop("[rf_floor_v2] 바닥 문서 부재: ", doc_path)
+  sp <- doc$floors[[floor_id]]$spec; if (is.null(sp)) stop("[rf_floor_v2] 문서에 ", floor_id, " 스펙이 없다")
+  rec <- rfv_determinism_check(run_dirs, spec_path, sp, dt, cfg$exclusion$exec_price_required,
+                               roots = c(.rfv_chr1(doc$generator$root), root))
+  rec$floor_id <- floor_id; rec$doc_md5 <- .rfv_md5(doc_path)
+  od <- file.path(root, .rfv_chr1(dt$record_dir)); dir.create(od, recursive = TRUE, showWarnings = FALSE)
+  out <- file.path(od, sprintf("%s__%s__%s.json", floor_id, substr(rec$spec_md5, 1, 12), format(Sys.time(), "%Y%m%d_%H%M%S")))
+  if (file.exists(out)) stop("[rf_floor_v2] 결정론 기록 덮어쓰기 거부: ", out)
+  tmp <- sprintf("%s.tmp%d", out, Sys.getpid())
+  txt <- toJSON(rec, auto_unbox = TRUE, pretty = TRUE, null = "null", na = "null", digits = NA)
+  con <- file(tmp, open = "wb"); writeBin(charToRaw(enc2utf8(as.character(txt))), con); close(con)
+  if (file.exists(out) || !file.rename(tmp, out)) { unlink(tmp); stop("[rf_floor_v2] 결정론 기록 원자 쓰기 실패: ", out) }
+  invisible(list(path = out, record = rec))
+}
+
+#' 결정론 기록 판독(순수) — 이 스펙 지문의 기록만. 기록된 산출물 파일 md5 가 지금과 다르면(재작성·삭제) 그 기록은 stale(무시 · 사유 기록).
+#'   종합: 하나라도 FALSE → FALSE · 아니고 하나라도 TRUE → TRUE · 그 밖 NA. 반환 list(determinism_ok, records, stale, regime)
+rfv_determinism_load <- function(root, dt, floor_id, spec, roots = character(0)) {
+  md <- rfv_spec_md5(spec, roots, dt$spec_fields)
+  dir_ <- file.path(root, .rfv_chr1(dt$record_dir))
+  fs <- if (dir.exists(dir_)) list.files(dir_, pattern = sprintf("^%s__%s__.*\\.json$", floor_id, substr(md, 1, 12)), full.names = TRUE) else character(0)
+  recs <- list(); stale <- character(0)
+  for (f in sort(fs)) {
+    r <- tryCatch(fromJSON(f, simplifyVector = FALSE), error = function(e) NULL)
+    if (is.null(r) || !identical(.rfv_chr1(r$spec_md5), md) || !identical(.rfv_chr1(r$floor_id), floor_id)) { stale <- c(stale, paste0(basename(f), ":unreadable_or_other_spec")); next }
+    fresh <- all(vapply(.rfv_or(r$runs, list()), function(u) {
+      all(vapply(.rfv_or(u$files, list()), function(z) identical(.rfv_md5(file.path(.rfv_chr1(u$dir), .rfv_chr1(z$file))), .rfv_chr1(z$md5)), logical(1))) &&
+        identical(.rfv_md5(file.path(.rfv_chr1(u$dir), "authoritative_remeasure.json")), .rfv_chr1(u$auth_md5))
+    }, logical(1)))
+    if (!fresh) { stale <- c(stale, paste0(basename(f), ":artifact_changed")); next }
+    fr <- .rfv_np(f); rr <- paste0(.rfv_np(root), "/")
+    if (startsWith(tolower(fr), tolower(rr))) fr <- substring(fr, nchar(rr) + 1L)
+    recs[[length(recs) + 1L]] <- list(file = fr, determinism_ok = r$determinism_ok,
+                                      verdict = r$verdict, measurement_regime = r$measurement_regime, checked_at = r$checked_at)
+  }
+  oks <- lapply(recs, function(z) z$determinism_ok)
+  ok <- if (any(vapply(oks, isFALSE, logical(1)))) FALSE else if (any(vapply(oks, isTRUE, logical(1)))) TRUE else NA
+  reg <- NULL
+  if (isTRUE(ok)) { tr <- Filter(function(z) isTRUE(z$determinism_ok), recs); reg <- tr[[length(tr)]]$measurement_regime }
+  list(determinism_ok = ok, spec_md5 = md, records = recs, stale = stale, regime = reg)
+}
+
+#' 바닥 상태 규칙(순수) — 사전등록 소비자가 status 하나로 읽는 값
+.rfv_floor_status <- function(det_ok, sb_cat, regime, exec_required, ok_sb, gate) {
+  if (is.na(det_ok)) return("defined_unmeasured")
+  if (!isTRUE(det_ok)) return("nondeterministic")
+  if (!(sb_cat %in% ok_sb)) return("selection_basis_rejected")
+  if (!identical(.rfv_chr1(regime$exec_price), .rfv_chr1(exec_required)) || !startsWith(.rfv_chr1(regime$basis), "realized")) return("regime_unverified")
+  if (isTRUE(gate$ready)) return("confirmed")
+  if (isTRUE(gate$ready_mechanism_only)) return("confirmed_mechanism_only")
+  "gate_blocked"
+}
+
+#' 새 칸 바닥(F1·F1p) 소비 계약 필드 — id · status · determinism_ok · selection_basis(범주) · selection_basis_detail · measurement_regime ·
+#'   a_eligible · permitted_use · determinism(근거)
+rfv_floor_fields <- function(floor_id, spec_detail, det, cfg, current_axis, gate) {
+  cc <- cfg$consumer_contract; ex <- cfg$exclusion
+  sb <- rfv_sb_category(spec_detail, character(0), cc)
+  reg <- if (isTRUE(det$determinism_ok) && is.list(det$regime))
+    c(det$regime, list(basis = "realized(determinism_record · authoritative_remeasure.json)", current_axis = current_axis))
+  else list(exec_price = .rfv_chr1(ex$exec_price_required), basis = "declared_required(측정 전 — exclusion.exec_price_required)", current_axis = current_axis)
+  st <- .rfv_floor_status(det$determinism_ok, sb, reg, ex$exec_price_required, as.character(unlist(cc$selection_basis_ok)), gate)
+  list(id = floor_id, status = st, determinism_ok = det$determinism_ok, selection_basis = sb, selection_basis_detail = .rfv_chr1(spec_detail),
+       measurement_regime = reg,
+       a_eligible = identical(st, "confirmed"),
+       permitted_use = if (identical(st, "confirmed")) "a_path_and_mechanism" else if (identical(st, "confirmed_mechanism_only")) "mechanism_only" else "none",
+       determinism = list(spec_md5 = det$spec_md5, records = det$records, stale = det$stale,
+                          rule = "determinism_ok = 이 스펙 지문의 결정론 기록 종합(FALSE 우선 · TRUE · 없으면 NA) — rfv_determinism_record 가 쓴다"))
 }
 
 #' 정본 계약 적재(격리 환경) — rf_factor_arms.R(B08 as-of 선정) + rf_runner_gates.R(P0-11 적대검증 술어)
@@ -224,23 +443,37 @@ rfv_prereg_gate <- function(root, pg, f1_bx, bx_verdict, bx = NULL) {
     list(status = s, decision = if (length(hit) && identical(s, "resolved")) .rfv_chr1(hit[[length(hit)]]$decision) else "")
   }
   cl <- .rfv_or(.rfv_or(bx, list())$clearing, list())
-  cleared_by <- NULL
+  cleared_by <- NULL; restriction <- NULL; q4_bl <- NULL
+  hits <- function(rxs, txt) any(vapply(as.character(unlist(rxs)), function(rx) grepl(rx, txt, perl = TRUE), logical(1)))
   if (isTRUE(f1_bx$exposed)) {
     cid <- .rfv_chr1(cl$decision_id); lk <- if (nzchar(cid)) look(cid) else list(status = "no_clearing_decision", decision = "")
-    ok <- identical(lk$status, "resolved") &&
-      any(vapply(as.character(unlist(cl$clears_if_decision_matches)), function(rx) grepl(rx, lk$decision, perl = TRUE), logical(1)))
+    ok <- identical(lk$status, "resolved") && hits(cl$clears_if_decision_matches, lk$decision)
+    # ★통합(2026-09-25 밤) — 사용 제한: 결정이 제한 문구(예 'Q④')로 resolved 면 A 경로 blocker 는 그대로 두고 기전 한정 사용을 연다
+    rs <- identical(lk$status, "resolved") && length(cl$restricts_if_decision_matches) && hits(cl$restricts_if_decision_matches, lk$decision)
+    if (ok && rs) stop(sprintf("[rf_floor_v2] 결정 %s 문구가 해제·제한 규칙에 동시에 맞는다 — 분류 모호(설정 확인): %s", cid, lk$decision))
     if (ok) cleared_by <- list(decision_id = cid, decision = lk$decision)
-    else bl <- c(bl, sprintf("F1:q4_base_engine_exposure(%s · %s)", bx_verdict, .rfv_chr1(f1_bx$file)))
+    else {
+      q4_bl <- sprintf("F1:q4_base_engine_exposure(%s · %s)", bx_verdict, .rfv_chr1(f1_bx$file)); bl <- c(bl, q4_bl)
+      if (rs) restriction <- list(kind = .rfv_chr1(cl$restriction), decision_id = cid, decision = lk$decision, a_eligible = FALSE,
+                                  lifts_blocker = q4_bl,
+                                  note = "A 경로 blocker 는 남는다(ready 불변) — 이 제한 아래 바닥은 기전 반증 시도에만 쓴다(결정문)")
+    }
   } else if (!isFALSE(f1_bx$exposed)) bl <- c(bl, sprintf("F1:q4_base_engine_unknown(%s)", .rfv_chr1(f1_bx$file)))
   st <- lapply(.rfv_or(pg$required_decisions, list()), function(d) {
     id <- .rfv_chr1(d$id); lk <- look(id)
     list(id = id, what = d$what, register_status = lk$status, decision = if (nzchar(lk$decision)) lk$decision else NULL)
   })
   for (z in st) if (!identical(z$register_status, "resolved")) bl <- c(bl, sprintf("decision_pending:%s(%s)", z$id, z$register_status))
+  bl_mech <- if (is.null(restriction)) bl else setdiff(bl, q4_bl)
   list(ready = !length(bl), blockers = bl, required_decisions = st, register = .rfv_chr1(pg$register),
        f1_base_engine_cleared_by = cleared_by,
+       use_restriction = restriction,
+       ready_mechanism_only = !length(bl) || (!is.null(restriction) && !length(bl_mech)),
+       blockers_mechanism_only = if (!length(bl)) character(0) else if (is.null(restriction)) bl else bl_mech,
        rule = paste0("ready = F1 기저 엔진 노출 없음(또는 해제 결정 resolved ∧ 해제 문구 일치) ∧ 필수 결정 전부 resolved — ",
-                     "사전등록(rf_prereg)은 ready 가 아니면 착수하지 않는다. 결정이 바뀌면 문서 내용이 바뀌므로 새 판(rfv_write 불변성)"))
+                     "사전등록(rf_prereg)은 ready 가 아니면 착수하지 않는다. 결정이 바뀌면 문서 내용이 바뀌므로 새 판(rfv_write 불변성). ",
+                     "ready_mechanism_only = ready 이거나, 해제 결정이 제한 문구로 resolved(use_restriction · a_eligible=FALSE)이고 그 blocker 밖 blocker 0 — ",
+                     "기전 반증 시도 전용(A 자격 없음). 사전등록 소비자가 이 제한을 명시적으로 받기 전에는 쓸 수 없다"))
 }
 
 #' 칸 출처 중 설계 레인 origin entry 들의 노출 판정 모음
@@ -436,6 +669,13 @@ rfv_build <- function(root = .RFV_ROOT(), cfg_path = file.path(root, "06_Registr
   bxv <- .rfv_chr1(ex$base_engine_exposure$verdict)
   f1_bx <- rfv_base_engine_exposure(root, f1_spec$base_signal, ex$base_engine_exposure, ex$design_exposure)
   gate <- rfv_prereg_gate(root, cfg$prereg_gate, f1_bx, bxv, ex$base_engine_exposure)
+  # ★통합 — 사전등록 소비 계약 필드(결정론 기록 · 선정 기저 범주 · 규약 · 상태)
+  cc <- cfg$consumer_contract; dtc <- cfg$determinism
+  det_na <- list(determinism_ok = NA, spec_md5 = rfv_spec_md5(f1_spec, c(root, code_root), dtc$spec_fields), records = list(), stale = character(0), regime = NULL)
+  det_f1 <- if ("F1" %in% as.character(unlist(dtc$floors))) rfv_determinism_load(root, dtc, "F1", f1_spec, c(root, code_root)) else det_na
+  f1_fields <- rfv_floor_fields("F1", f1_spec$selection_basis, det_f1, cfg, L$current_axis, gate)
+  f1p_fields <- rfv_floor_fields("F1p", f1_spec$selection_basis, det_na, cfg, L$current_axis, gate)
+  f1p_fields$determinism$rule <- "F1p 의 결정론 = E3(|PT_F1p − PT_F1| < e3_tolerance · 플랜 P1-06) — 이 판은 기록 판독 대상이 아니다(determinism.floors 밖) · 측정 전 NA"
 
   # ── 대안(비채택 · 진단): 계보 루트 팩터 계열 시드 ──
   alts <- lapply(.rfv_or(fl$F1$alternatives, list()), function(al) {
@@ -473,6 +713,19 @@ rfv_build <- function(root = .RFV_ROOT(), cfg_path = file.path(root, "06_Registr
     list(cite = c1, assess = rfv_assess(c1, ex, c(xp, list(bx))), provenance = pv, design_exposure = xp, base_engine_exposure = bx)
   }
   f2 <- cite_assess("F2"); f3 <- cite_assess("F3_DNN")
+  cited_fields <- function(id, ca) {
+    sp_ <- .rfv_json(ca$cite$spec_path)
+    fl_ <- vapply(.rfv_or(ca$cite$vintage_flags, list()), function(z) .rfv_chr1(z$flag), "")
+    mr_ <- .rfv_or(ca$cite$measurement_regime, list())
+    list(id = id, determinism_ok = NA,
+         selection_basis = rfv_sb_category(if (is.null(sp_)) "" else sp_$selection_basis, fl_, cc),
+         selection_basis_detail = .rfv_chr1(if (is.null(sp_)) "" else sp_$selection_basis),
+         measurement_regime = list(exec_price = .rfv_chr1(mr_$exec_price), key = .rfv_chr1(.rfv_or(mr_$key, mr_$regime)),
+                                   harness_md5 = .rfv_chr1(mr_$harness_md5), cost_model_version = .rfv_chr1(mr_$cost_model_version),
+                                   basis = "cited(원장 attempt · 인용 전용 — 바닥 재실행판 아님)", current_axis = L$current_axis),
+         a_eligible = FALSE, permitted_use = "none",
+         determinism = list(rule = "인용 칸(1회 측정 · 결정론 미평가) — 바닥으로 쓰려면 같은 빈티지 재실행판 2회(open_items_after_prereg)"))
+  }
 
   pin <- function(rel) list(path = rel, md5 = .rfv_md5(file.path(root, rel)))
   cpin <- function(rel) list(path = rel, md5 = .rfv_md5(file.path(code_root, rel)))
@@ -493,24 +746,29 @@ rfv_build <- function(root = .RFV_ROOT(), cfg_path = file.path(root, "06_Registr
                 f1_base_engine = list(path = .rfv_np(f1_spec$base_signal$path), md5 = f1_spec$base_signal_md5),
                 lineage_spec = list(path = .rfv_np(lin$spec_path), md5 = lin$spec_md5)),
     floors = list(
-      F1 = list(status = "defined_unmeasured", kind = fl$F1$kind, role = fl$F1$role,
+      F1 = c(f1_fields, list(kind = fl$F1$kind, role = fl$F1$role,
                 selection_path = list(rule = "rf_factor_arms.R::rf_pick_factor_sets(n=1, depths=depth, seed_offset, asof)",
                                       depth = depth, depth_rule = fl$F1$depth_rule, seed_rule = fl$F1$seed_rule,
                                       asof_config = if (is.null(asof)) "null(격자 fixed_axes.start_date)" else asof),
                 reselect = sel, spec = f1_spec, alternatives = alts,
                 base_engine_exposure = f1_bx,
-                prereg_blockers = grep("^F1:", gate$blockers, value = TRUE)),
-      F1p = list(status = "defined_unmeasured", kind = fl$F1p$kind, role = fl$F1p$role,
+                prereg_blockers = grep("^F1:", gate$blockers, value = TRUE),
+                use_restriction = gate$use_restriction)),
+      F1p = c(f1p_fields, list(kind = fl$F1p$kind, role = fl$F1p$role,
                  definition = list(spec_ref = "floors.F1.spec(carry = F1 팩터 집합 · weighting·universe 동일 · 추가 팩터 0 = B1_0 재현 칸)",
                                    e3_tolerance = fl$F1p$e3_tolerance, e3_tolerance_source = fl$F1p$e3_tolerance_source),
-                 legacy_promo4_carry = legacy_f1p),
-      F2 = list(status = if (isTRUE(f2$assess$eligible)) "cited_eligible" else "excluded", role = fl$F2$role,
-                cite = f2$cite, assess = f2$assess, provenance = f2$provenance, design_exposure = f2$design_exposure, base_engine_exposure = f2$base_engine_exposure),
-      F3_DNN = list(status = if (isTRUE(f3$assess$eligible)) "cited_eligible" else "excluded", role = fl$F3_DNN$role,
-                    cite = f3$cite, assess = f3$assess, provenance = f3$provenance, design_exposure = f3$design_exposure, base_engine_exposure = f3$base_engine_exposure)),
+                 legacy_promo4_carry = legacy_f1p)),
+      F2 = c(list(status = if (isTRUE(f2$assess$eligible)) "cited_eligible" else "excluded"), cited_fields("F2", f2), list(role = fl$F2$role,
+                cite = f2$cite, assess = f2$assess, provenance = f2$provenance, design_exposure = f2$design_exposure, base_engine_exposure = f2$base_engine_exposure)),
+      F3_DNN = c(list(status = if (isTRUE(f3$assess$eligible)) "cited_eligible" else "excluded"), cited_fields("F3_DNN", f3), list(role = fl$F3_DNN$role,
+                    cite = f3$cite, assess = f3$assess, provenance = f3$provenance, design_exposure = f3$design_exposure, base_engine_exposure = f3$base_engine_exposure))),
     lineage_reference = list(role = "옛 F1(플랜 원안 22632 promo3 B1_3) — 바닥 아님 · 기록", cite = lin, assess = lin_assess,
                              provenance = lin_prov, design_exposure = lin_expo, base_engine_exposure = lin_bx),
     prereg_gate = gate,
+    consumer_contract = list(consumer = cc$consumer, required_fields = cc$required_fields,
+                             selection_basis_category = cc$selection_basis_category, selection_basis_ok = cc$selection_basis_ok,
+                             status_values = cc$status_values, determinism_record_dir = dtc$record_dir,
+                             note = "바닥 층 필드는 rf_floor_v2.R 가 규칙으로 낸다(손편집 금지 · 개정 = rfv_write(supersede) 새 판). 상태 confirmed_mechanism_only 는 사전등록 소비자가 명시적으로 받아들여야 쓸 수 있다"),
     measurement_policy = list(
       numbers = "원장 인용 전용(close_t1) — 손계산·재구성 0",
       lever_delta_basis = "레버 Δ 는 사전등록 뒤 같은 regime·빈티지에서 잰 바닥 재실행판 기준(인용 수치 기준 아님)",
@@ -561,7 +819,7 @@ rfv_diff <- function(a, b, path = "") {
   out <- walk(a, b, path); if (is.null(out)) character(0) else out
 }
 
-.rfv_strip <- function(doc) { doc$generated_at <- NULL; doc }
+.rfv_strip <- function(doc) { doc$generated_at <- NULL; doc$supersedes <- NULL; doc }   # supersedes = 개정 이력(내용 비교 밖)
 .RFV_CANON_ROOT <- "C:/Users/99922/OneDrive/Quant_Module_Moltbot"   # 정본(운영) 루트 — 경로 정규화 전용(설정값 아님)
 #' 경로 정규화(비교 전용) — 백슬래시 → 슬래시 · 생성 루트·정본 루트 접두 → <ROOT>. 저장 문서는 바꾸지 않는다.
 .rfv_norm <- function(x, roots) {
@@ -580,20 +838,48 @@ rfv_diff <- function(a, b, path = "") {
 }
 
 #' 쓰기 — 원자적 · 기존 파일과 내용(생성 시각 제외)이 다르면 거부(사전등록 불변성) · 같으면 already
-rfv_write <- function(doc, out) {
+#'   ★통합(2026-09-25 밤) 개정 = supersede = TRUE 일 때만: ① 기존 판 status ∈ revision.supersede_allowed_status(초안) ② 사전등록 색인
+#'   (revision.prereg_index)에 등록본(kind=registered) 0건 ③ 옛 판은 revision.history_dir 로 **옮겨** 보존(같은 이름 있으면 거부) ④ 새 판에
+#'   supersedes{path · md5 · generated_at}. 하나라도 어기면 쓰지 않는다. root·cfg 는 supersede 때 필수(색인·이력 경로 해석).
+rfv_write <- function(doc, out, supersede = FALSE, root = NULL, cfg = NULL) {
   txt <- toJSON(doc, auto_unbox = TRUE, pretty = TRUE, null = "null", na = "null", digits = NA)
+  sup <- NULL
   if (file.exists(out)) {
     old <- fromJSON(out, simplifyVector = FALSE)
     d <- rfv_diff(.rfv_cmp_view(old), .rfv_cmp_view(fromJSON(txt, simplifyVector = FALSE)))
     if (!length(d)) return(invisible("already"))
-    stop(sprintf("[rf_floor_v2] 기존 파일과 내용이 다르다(%d곳 · 예: %s) — 덮어쓰지 않는다(사전등록 불변성): %s",
-                 length(d), paste(head(d, 3), collapse = " ; "), out))
+    if (!isTRUE(supersede))
+      stop(sprintf("[rf_floor_v2] 기존 파일과 내용이 다르다(%d곳 · 예: %s) — 덮어쓰지 않는다(사전등록 불변성): %s",
+                   length(d), paste(head(d, 3), collapse = " ; "), out))
+    if (is.null(root) || is.null(cfg) || !is.list(cfg$revision)) stop("[rf_floor_v2] supersede 는 root·cfg(revision) 필수")
+    rv <- cfg$revision
+    if (!(.rfv_chr1(old$status) %in% as.character(unlist(rv$supersede_allowed_status))))
+      stop(sprintf("[rf_floor_v2] 기존 판 status=%s — 개정 불가(허용: %s) · 새 파일·새 가족으로", .rfv_chr1(old$status), paste(unlist(rv$supersede_allowed_status), collapse = ",")))
+    ip <- file.path(root, .rfv_chr1(rv$prereg_index))
+    if (file.exists(ip)) {
+      L <- readLines(ip, warn = FALSE, encoding = "UTF-8"); L <- L[nzchar(trimws(L))]
+      kinds <- vapply(L, function(l) { z <- tryCatch(fromJSON(l, simplifyVector = FALSE), error = function(e) NULL)
+                                       if (is.null(z)) "unreadable" else .rfv_chr1(z$kind) }, "")
+      if (any(kinds %in% c("registered", "unreadable")))
+        stop(sprintf("[rf_floor_v2] 사전등록 색인에 등록본(또는 판독 불가 줄)이 있다(%d) — 바닥 문서 개정 거부(등록 뒤 불변 · 새 파일·새 가족)",
+                     sum(kinds %in% c("registered", "unreadable"))))
+    }
+    hd <- file.path(root, .rfv_chr1(rv$history_dir)); dir.create(hd, recursive = TRUE, showWarnings = FALSE)
+    om <- .rfv_md5(out)
+    stamp <- gsub("[^0-9]", "", substr(.rfv_chr1(old$generated_at), 1, 19))
+    arch <- file.path(hd, sprintf("%s.%s.%s.json", sub("\\.json$", "", basename(out)), if (nzchar(stamp)) stamp else "nostamp", substr(om, 1, 12)))
+    if (file.exists(arch)) stop("[rf_floor_v2] 이력 파일이 이미 있다(덮어쓰기 거부): ", arch)
+    if (!file.copy(out, arch, copy.date = TRUE) || !identical(.rfv_md5(arch), om)) { unlink(arch); stop("[rf_floor_v2] 옛 판 보존 실패 — 개정하지 않는다") }
+    rel <- .rfv_np(arch); rr <- paste0(.rfv_np(root), "/"); if (startsWith(tolower(rel), tolower(rr))) rel <- substring(rel, nchar(rr) + 1L)
+    sup <- list(path = rel, md5 = om, generated_at = .rfv_chr1(old$generated_at), n_diff = length(d), diff_head = head(d, 10))
+    doc$supersedes <- sup
+    txt <- toJSON(doc, auto_unbox = TRUE, pretty = TRUE, null = "null", na = "null", digits = NA)
   }
   dir.create(dirname(out), recursive = TRUE, showWarnings = FALSE)
   tmp <- sprintf("%s.tmp%d", out, Sys.getpid())
   con <- file(tmp, open = "wb"); writeBin(charToRaw(enc2utf8(as.character(txt))), con); close(con)
   if (!file.rename(tmp, out)) { unlink(tmp); stop("[rf_floor_v2] 원자 교체 실패: ", out) }
-  invisible("written")
+  invisible(if (is.null(sup)) "written" else "superseded")
 }
 
 #' 핀 대조 — 저장된 문서와 지금 재생성한 문서의 차이(생성 시각 제외). 사전등록 직전에 부른다.

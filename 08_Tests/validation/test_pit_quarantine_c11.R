@@ -126,7 +126,9 @@ adm <- function(kind) { r <- NULL; invisible(capture.output(r <- AE$rf_overlay_a
                                                                                       root = SB, source = "test_pitq"))); r }
 mk_arm("zzq_clean"); r <- adm("zzq_clean")
 chk(isTRUE(r$ok) && in_cat("zzq_clean_v1"), "A1 대조 — 청정 arm 은 등재된다(probe 통과 · 격리 원천 0)", as.character(r$reason %||% ""))
-TAINT <- '.PANEL <- file.path(Sys.getenv("QM_ROOT"), "06_Registry/m4_published/m4_panel_published.parquet")'
+# ★R3R(2026-09-25): 구판은 file.path(Sys.getenv("QM_ROOT"), …) — Sys.getenv 는 probe ③d 허용 목록 밖(능력 계열)이라 A4(released 면 등재)가
+#   격리 목록이 아닌 ③d 에서 거부됐다. 이 절은 격리 목록의 원천 참조 판정만 재므로 허용 목록 안 형태(file.path 문자열)로 참조한다.
+TAINT <- '.PANEL <- file.path("06_Registry", "m4_published/m4_panel_published.parquet")'
 mk_arm("zzq_m4", TAINT); r <- adm("zzq_m4"); lr <- last_rec()
 chk(!isTRUE(r$ok) && grepl("pit_quarantine", as.character(r$reason)) && !in_cat("zzq_m4_v1"),
     "A2 m4 발행 패널 참조 arm → 등재 거부 · 카탈로그 무변경", as.character(r$reason %||% ""))

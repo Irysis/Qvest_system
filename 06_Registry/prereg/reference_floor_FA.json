@@ -1,0 +1,5307 @@
+{
+  "schema": "reference_floor_clean_v1",
+  "version": 1,
+  "status": "blocked_no_clean_candidate",
+  "status_note": "채택 범위(full)에서 청정 후보 0 — A 경로 기저는 청정실 재구현으로만 선다. floors = 규칙 순서의 재구현 대기열(측정 0).",
+  "generated_at": "2026-10-04T07:59:43+0900",
+  "generator": {
+    "file": "02_Infrastructure/reinforcement/rf_clean_base.R",
+    "fn": "rfc_build",
+    "root": "C:/Users/99922/AppData/Local/Temp/cl_fa_mirror_kj5jxdub",
+    "code_root": "C:/Users/99922/AppData/Local/Temp/cl_fa_mirror_kj5jxdub",
+    "config": "C:/Users/99922/AppData/Local/Temp/cl_fa_mirror_kj5jxdub/06_Registry/prereg/clean_base_rule.config.json",
+    "config_md5": "adb0bdab84c95682167022744ec4a946",
+    "path_note": "경로 비교는 생성 루트·정본 루트를 <ROOT> 로 정규화(rf_floor_v2.R .rfv_cmp_view)"
+  },
+  "decision": {
+    "id": "FLOOR-BASE-ENGINE-Q4",
+    "status": "resolved",
+    "decided_at": "2026-09-25T21:38:52+0900",
+    "decision_md5": "d0d7da91f5f19c1c564950fb08fbd31c"
+  },
+  "extends": {
+    "doc": "06_Registry/prereg/reference_floors_v2.json",
+    "md5": "b32d2bc2cb6da3324595e27eae41199a",
+    "relation": "F1(기전 반증 전용 · mechanism_only) 와 별도 가족 — 기전이 확인된 레버만 F_A 위 새 사전등록 가족으로 이식"
+  },
+  "pins": {
+    "ledger_l1": {
+      "path": "06_Registry/reinforce_ledger_l1.json",
+      "md5": "ef15c8546b2d8bbdb48563f0be524a86"
+    },
+    "grid": {
+      "path": "06_Registry/reinforce_program.json",
+      "md5": "d0b4eaca04534821e790b014ec3d4520"
+    },
+    "floor_v2_config": {
+      "path": "06_Registry/prereg/reference_floors_v2.config.json",
+      "md5": "0c30f15af56a18ad5624e036a7521760"
+    },
+    "pit_quarantine": {
+      "path": "06_Registry/pit_quarantine.json",
+      "md5": "aecfa6b5746ab1976cedda750cac876e"
+    },
+    "fred_rules": {
+      "path": "06_Registry/fred_availability_rules.json",
+      "md5": "631e4f98cba5a7ea80c4e9a6180ab636"
+    },
+    "factor_ic_monthly": {
+      "path": ".cache/factor_db/factor_ic_monthly.parquet",
+      "md5": "16dbd370338c8e7aac37186cb5bf714a"
+    },
+    "factor_registry": {
+      "path": ".cache/factor_db/factor_registry.json",
+      "md5": "d4780eb33e2d29d61050a641ee7931cb"
+    },
+    "factor_evidence": {
+      "path": "06_Registry/factor_evidence.json",
+      "md5": "13e157b75ac310655434dd57741bf96d"
+    },
+    "rf_clean_base": {
+      "path": "02_Infrastructure/reinforcement/rf_clean_base.R",
+      "md5": "5cf45bfec0f1b3d0371d6dace6913cf8"
+    },
+    "rf_floor_v2": {
+      "path": "02_Infrastructure/reinforcement/rf_floor_v2.R",
+      "md5": "79a6a2830a98ecc715ca546e2f3e5dea"
+    },
+    "rf_factor_arms": {
+      "path": "02_Infrastructure/ops/rf_factor_arms.R",
+      "md5": "7561e4a35bb5cb45bfbd6c19bd679b0d"
+    },
+    "rf_lineage_flags": {
+      "path": "02_Infrastructure/reinforcement/rf_lineage_flags.R",
+      "md5": "8cd1d8ed75d7ce4575677d90f26d282e"
+    },
+    "lookahead_detector": {
+      "path": "02_Infrastructure/validation/lookahead_detector.R",
+      "md5": "960fd5941b3bcd4e4a77331c18e35bd5"
+    },
+    "pin_cache": {
+      "path": "02_Infrastructure/data/pin_cache.R",
+      "md5": "f62a3562fb912b3d22067949e1f52afc"
+    },
+    "rf_fidelity_audit_lib": {
+      "path": "02_Infrastructure/ops/rf_fidelity_audit_lib.R",
+      "md5": "3f95cfc93e13db5cda7b062ab6f2ea54"
+    },
+    "transcript_dir": {
+      "path": "C:/Users/99922/.claude/projects/C--Users-99922-OneDrive-Quant-Module-Moltbot",
+      "available": true
+    }
+  },
+  "rule": {
+    "config": "C:/Users/99922/AppData/Local/Temp/cl_fa_mirror_kj5jxdub/06_Registry/prereg/clean_base_rule.config.json",
+    "config_md5": "adb0bdab84c95682167022744ec4a946",
+    "ordering": {
+      "kind": "sha256_salted",
+      "salt_from_decision_fields": [
+        "id",
+        "decided_at"
+      ],
+      "key": "paper_key",
+      "tie": "engine",
+      "why": "후보 사이 순서에 운영자 재량 0 — 결정 레코드(이 규칙 작성 전에 확정)에서 파생한 salt 의 해시 순서. 성과·도착 순서·이름과 무관(사전등록 무작위 추첨과 같은 역할)"
+    },
+    "salt_fields": ["id", "decided_at"],
+    "pick_n": 3,
+    "adopted_scope": "full",
+    "scopes": {
+      "prompt": [
+        "prompt_missing",
+        "prompt_combo",
+        "prompt_feedback_measured"
+      ],
+      "full": [
+        "prompt_missing",
+        "prompt_combo",
+        "prompt_feedback_measured",
+        "provenance_order",
+        "wdir_extra_before_engine",
+        "transcript_missing",
+        "transcript_auto_memory",
+        "transcript_tool_reads"
+      ]
+    }
+  },
+  "performance_blind": {
+    "ledger_fields_read": ["base_id", "paper_key", "paper_id", "engine_path", "base_artifacts", "parent", "combo", "base_signal", "base_vintage_flags", "opened_at"],
+    "artifact_files_read": ["00_manifest.json", "01_strategy_spec.json", "factors_panel.parquet"],
+    "note": "원장 성과 필드·성과 산출물 무판독(투영) · 문서 성과 키 0(rfc_forbidden_keys 자기 검사)"
+  },
+  "candidates": [
+    {
+      "engine": "stage_artifacts/replication/_pilot/fe_jt1993_momentum.R",
+      "paper_key": "ttl:jt1993",
+      "root_entries": ["RP_20260829_122020_9192"],
+      "artifacts": "stage_artifacts/replication/20260829_122020_9192",
+      "base_vintage_flags": [],
+      "structural_ok": false,
+      "structural_failed": ["lane", "fidelity_self", "fidelity_audit", "output", "coverage"],
+      "structural": {
+        "lane": {
+          "ok": false,
+          "engine_exists": true,
+          "fidelity_file": false,
+          "root_entries": 1
+        },
+        "fidelity_self": {
+          "ok": null,
+          "label": ""
+        },
+        "fidelity_audit": {
+          "ok": false,
+          "verdict": "unverifiable",
+          "reason": "감사 미실행",
+          "audit_md5": null
+        },
+        "pit_static": {
+          "ok": true,
+          "detector_clean": true,
+          "structural_hits": [],
+          "n_violations": 0,
+          "checks": [],
+          "error": ""
+        },
+        "c11": {
+          "ok": true,
+          "factors": [],
+          "sources": [],
+          "base_flag": [],
+          "unreadable": [],
+          "error": ""
+        },
+        "flags": {
+          "ok": true,
+          "hit": []
+        },
+        "output": {
+          "ok": null,
+          "factors_panel": false,
+          "n_max": 25,
+          "declared_construction": "decile_long_short",
+          "why": "factors_panel.parquet 부재 — 산출 형태 미관측(선언만으로 FACTORS 폭을 인정하지 않는다)"
+        },
+        "coverage": {
+          "ok": null,
+          "why": "factors_panel 부재"
+        },
+        "source_scope": {
+          "ok": true,
+          "status": "ok",
+          "consumed": [],
+          "uncovered": [],
+          "hidden_loaders": [],
+          "hidden_sources": [],
+          "hidden_flow": {
+            "status": "ok",
+            "diagnostic_only": [],
+            "text_match_legacy": [],
+            "detail": []
+          },
+          "why": ""
+        }
+      },
+      "exposure": {
+        "prompt_missing": {
+          "exposed": true,
+          "file": "stage_artifacts/replication/_pilot/prompt.txt",
+          "md5": null
+        },
+        "prompt_combo": {
+          "exposed": null,
+          "section_found": false,
+          "n_stat_lines": null,
+          "detector": "rf_floor_v2.R::rfv_base_engine_exposure"
+        },
+        "prompt_feedback_measured": {
+          "exposed": null,
+          "why": "prompt 부재"
+        },
+        "provenance_order": {
+          "exposed": null,
+          "mtime_utc": {
+            "prompt": null,
+            "engine": "2026-08-29T04:11:31Z",
+            "audit": null
+          }
+        },
+        "wdir_extra_before_engine": {
+          "exposed": true,
+          "before": ["fe_jt1993_momentum.R"],
+          "after": []
+        },
+        "transcript_missing": {
+          "exposed": true,
+          "why": "엔진 mtime 이전 구현 전사 없음",
+          "n_runs_referencing": 0
+        },
+        "transcript_auto_memory": {
+          "exposed": null,
+          "why": "전사 없음"
+        },
+        "transcript_tool_reads": {
+          "exposed": null,
+          "why": "전사 없음"
+        }
+      },
+      "lane_provenance": {
+        "present": false,
+        "mode": "",
+        "mode_source": "",
+        "claims_clean": false,
+        "file": "",
+        "sha256": "",
+        "engine_rel": "",
+        "guard_applied": false,
+        "n_audits": 0,
+        "note": "자기 신고 — 판정은 exposure 통로가 전사·파일과 대조한 결과다(FA-CLEAN-BASE-PATH)"
+      },
+      "eligible": {
+        "prompt": false,
+        "full": false
+      },
+      "order_hash": "13de85e9a778068efb5f4551d9defd256a1a18ccc8079a2a4c0bdf53c862ff52",
+      "md5": {
+        "engine": "a88a2a9345cf081f9fdc20b76f0dd67f",
+        "fidelity": null,
+        "audit": null,
+        "prompt": null
+      }
+    },
+    {
+      "engine": "04_Research/strategies/RP_AUTO_2608_24703/engine.R",
+      "paper_key": "2608.24703",
+      "root_entries": ["RP_20260830_123019_12956_adapted_rulefast"],
+      "artifacts": "stage_artifacts/replication/20260830_123019_12956",
+      "base_vintage_flags": [],
+      "structural_ok": false,
+      "structural_failed": ["fidelity_audit", "output", "coverage"],
+      "structural": {
+        "lane": {
+          "ok": true,
+          "engine_exists": true,
+          "fidelity_file": true,
+          "root_entries": 1
+        },
+        "fidelity_self": {
+          "ok": true,
+          "label": "adapted"
+        },
+        "fidelity_audit": {
+          "ok": false,
+          "verdict": "unverifiable",
+          "reason": "감사 미실행",
+          "audit_md5": null
+        },
+        "pit_static": {
+          "ok": true,
+          "detector_clean": true,
+          "structural_hits": [],
+          "n_violations": 0,
+          "checks": [],
+          "error": ""
+        },
+        "c11": {
+          "ok": true,
+          "factors": [],
+          "sources": [],
+          "base_flag": [],
+          "unreadable": [],
+          "error": ""
+        },
+        "flags": {
+          "ok": true,
+          "hit": []
+        },
+        "output": {
+          "ok": null,
+          "factors_panel": false,
+          "n_max": 25,
+          "declared_construction": "top_n_long",
+          "why": "factors_panel.parquet 부재 — 산출 형태 미관측(선언만으로 FACTORS 폭을 인정하지 않는다)"
+        },
+        "coverage": {
+          "ok": null,
+          "why": "factors_panel 부재"
+        },
+        "source_scope": {
+          "ok": true,
+          "status": "ok",
+          "consumed": [],
+          "uncovered": [],
+          "hidden_loaders": [],
+          "hidden_sources": [],
+          "hidden_flow": {
+            "status": "ok",
+            "diagnostic_only": [],
+            "text_match_legacy": [],
+            "detail": []
+          },
+          "why": ""
+        }
+      },
+      "exposure": {
+        "prompt_missing": {
+          "exposed": true,
+          "file": "04_Research/strategies/RP_AUTO_2608_24703/prompt.txt",
+          "md5": null
+        },
+        "prompt_combo": {
+          "exposed": null,
+          "section_found": false,
+          "n_stat_lines": null,
+          "detector": "rf_floor_v2.R::rfv_base_engine_exposure"
+        },
+        "prompt_feedback_measured": {
+          "exposed": null,
+          "why": "prompt 부재"
+        },
+        "provenance_order": {
+          "exposed": null,
+          "mtime_utc": {
+            "prompt": null,
+            "engine": "2026-08-30T03:30:34Z",
+            "audit": null
+          }
+        },
+        "wdir_extra_before_engine": {
+          "exposed": false,
+          "before": [],
+          "after": []
+        },
+        "transcript_missing": {
+          "exposed": false,
+          "transcript": "0e5c419a-5a1e-46fd-8259-63ed301b0690.jsonl",
+          "started_utc": "2026-08-30T03:26:56.676Z",
+          "md5": "be9561afafd2d8a896949d7c4ee5c5dd",
+          "n_runs_referencing": 11,
+          "n_runs_before_engine": 11
+        },
+        "transcript_auto_memory": {
+          "exposed": false,
+          "auto_memory_seen": false,
+          "metric_hits": 0,
+          "hook_context_n": 0,
+          "hook_context_metric_hits": 0,
+          "known_boundary_instruction_files": []
+        },
+        "transcript_tool_reads": {
+          "exposed": false,
+          "n_tool_uses": 14,
+          "n_perf_path_reads": 0,
+          "perf_path_reads": [],
+          "n_perf_path_blocked": 0,
+          "perf_path_blocked": [],
+          "web_forbidden": [],
+          "guard_attestation": {
+            "required": false
+          }
+        }
+      },
+      "lane_provenance": {
+        "present": false,
+        "mode": "",
+        "mode_source": "",
+        "claims_clean": false,
+        "file": "",
+        "sha256": "",
+        "engine_rel": "",
+        "guard_applied": false,
+        "n_audits": 0,
+        "note": "자기 신고 — 판정은 exposure 통로가 전사·파일과 대조한 결과다(FA-CLEAN-BASE-PATH)"
+      },
+      "eligible": {
+        "prompt": false,
+        "full": false
+      },
+      "order_hash": "fdefd416d64f1aafb916d1c5c6cf6301b262480f2b74e76692629e4f9be3e8d0",
+      "md5": {
+        "engine": "7182e57a6f8004108155a08d73444c87",
+        "fidelity": "8970021c846d4ddc0514d4f2371d54e2",
+        "audit": null,
+        "prompt": null
+      }
+    },
+    {
+      "engine": "04_Research/strategies/RP_AUTO_2608_27156/engine.R",
+      "paper_key": "2608.27156",
+      "root_entries": ["RP_20260830_133919_6580_adapted_rulefast", "RP_20260830_134444_28224_adapted_rulefast"],
+      "artifacts": "stage_artifacts/replication/20260830_134444_28224",
+      "base_vintage_flags": [],
+      "structural_ok": false,
+      "structural_failed": ["fidelity_audit", "output", "coverage"],
+      "structural": {
+        "lane": {
+          "ok": true,
+          "engine_exists": true,
+          "fidelity_file": true,
+          "root_entries": 2
+        },
+        "fidelity_self": {
+          "ok": true,
+          "label": "adapted"
+        },
+        "fidelity_audit": {
+          "ok": false,
+          "verdict": "unverifiable",
+          "reason": "감사 미실행",
+          "audit_md5": null
+        },
+        "pit_static": {
+          "ok": true,
+          "detector_clean": true,
+          "structural_hits": [],
+          "n_violations": 0,
+          "checks": [],
+          "error": ""
+        },
+        "c11": {
+          "ok": true,
+          "factors": [],
+          "sources": [],
+          "base_flag": [],
+          "unreadable": [],
+          "error": ""
+        },
+        "flags": {
+          "ok": true,
+          "hit": []
+        },
+        "output": {
+          "ok": null,
+          "factors_panel": false,
+          "n_max": 25,
+          "declared_construction": "top_n_long",
+          "why": "factors_panel.parquet 부재 — 산출 형태 미관측(선언만으로 FACTORS 폭을 인정하지 않는다)"
+        },
+        "coverage": {
+          "ok": null,
+          "why": "factors_panel 부재"
+        },
+        "source_scope": {
+          "ok": true,
+          "status": "ok",
+          "consumed": [],
+          "uncovered": [],
+          "hidden_loaders": [],
+          "hidden_sources": [],
+          "hidden_flow": {
+            "status": "ok",
+            "diagnostic_only": [],
+            "text_match_legacy": [],
+            "detail": []
+          },
+          "why": ""
+        }
+      },
+      "exposure": {
+        "prompt_missing": {
+          "exposed": true,
+          "file": "04_Research/strategies/RP_AUTO_2608_27156/prompt.txt",
+          "md5": null
+        },
+        "prompt_combo": {
+          "exposed": null,
+          "section_found": false,
+          "n_stat_lines": null,
+          "detector": "rf_floor_v2.R::rfv_base_engine_exposure"
+        },
+        "prompt_feedback_measured": {
+          "exposed": null,
+          "why": "prompt 부재"
+        },
+        "provenance_order": {
+          "exposed": null,
+          "mtime_utc": {
+            "prompt": null,
+            "engine": "2026-08-30T04:11:47Z",
+            "audit": null
+          }
+        },
+        "wdir_extra_before_engine": {
+          "exposed": false,
+          "before": [],
+          "after": []
+        },
+        "transcript_missing": {
+          "exposed": true,
+          "why": "엔진 mtime 이전 구현 전사 없음",
+          "n_runs_referencing": 0
+        },
+        "transcript_auto_memory": {
+          "exposed": null,
+          "why": "전사 없음"
+        },
+        "transcript_tool_reads": {
+          "exposed": null,
+          "why": "전사 없음"
+        }
+      },
+      "lane_provenance": {
+        "present": false,
+        "mode": "",
+        "mode_source": "",
+        "claims_clean": false,
+        "file": "",
+        "sha256": "",
+        "engine_rel": "",
+        "guard_applied": false,
+        "n_audits": 0,
+        "note": "자기 신고 — 판정은 exposure 통로가 전사·파일과 대조한 결과다(FA-CLEAN-BASE-PATH)"
+      },
+      "eligible": {
+        "prompt": false,
+        "full": false
+      },
+      "order_hash": "f5bb6a95529b5294f7018b616575afc5a72c18b8521218d61a383e2b1fb7bbd6",
+      "md5": {
+        "engine": "c4bd14c88ee291e37971a7ea1a9d4975",
+        "fidelity": "73b56c4a7e217a2595a0ef962a11162c",
+        "audit": null,
+        "prompt": null
+      }
+    },
+    {
+      "engine": "04_Research/strategies/RP_AUTO_2608_27076/engine.R",
+      "paper_key": "2608.27076",
+      "root_entries": ["RP_20260831_124332_8840_adapted_rulefast"],
+      "artifacts": "stage_artifacts/replication/20260831_155333_28228",
+      "base_vintage_flags": [],
+      "structural_ok": false,
+      "structural_failed": ["fidelity_audit", "output", "coverage"],
+      "structural": {
+        "lane": {
+          "ok": true,
+          "engine_exists": true,
+          "fidelity_file": true,
+          "root_entries": 1
+        },
+        "fidelity_self": {
+          "ok": true,
+          "label": "adapted"
+        },
+        "fidelity_audit": {
+          "ok": false,
+          "verdict": "unverifiable",
+          "reason": "감사 미실행",
+          "audit_md5": null
+        },
+        "pit_static": {
+          "ok": true,
+          "detector_clean": true,
+          "structural_hits": [],
+          "n_violations": 0,
+          "checks": [],
+          "error": ""
+        },
+        "c11": {
+          "ok": true,
+          "factors": [],
+          "sources": [],
+          "base_flag": [],
+          "unreadable": [],
+          "error": ""
+        },
+        "flags": {
+          "ok": true,
+          "hit": []
+        },
+        "output": {
+          "ok": null,
+          "factors_panel": false,
+          "n_max": 25,
+          "declared_construction": "top_n_long",
+          "why": "factors_panel.parquet 부재 — 산출 형태 미관측(선언만으로 FACTORS 폭을 인정하지 않는다)"
+        },
+        "coverage": {
+          "ok": null,
+          "why": "factors_panel 부재"
+        },
+        "source_scope": {
+          "ok": true,
+          "status": "ok",
+          "consumed": [],
+          "uncovered": [],
+          "hidden_loaders": [],
+          "hidden_sources": [],
+          "hidden_flow": {
+            "status": "ok",
+            "diagnostic_only": [],
+            "text_match_legacy": [],
+            "detail": []
+          },
+          "why": ""
+        }
+      },
+      "exposure": {
+        "prompt_missing": {
+          "exposed": true,
+          "file": "04_Research/strategies/RP_AUTO_2608_27076/prompt.txt",
+          "md5": null
+        },
+        "prompt_combo": {
+          "exposed": null,
+          "section_found": false,
+          "n_stat_lines": null,
+          "detector": "rf_floor_v2.R::rfv_base_engine_exposure"
+        },
+        "prompt_feedback_measured": {
+          "exposed": null,
+          "why": "prompt 부재"
+        },
+        "provenance_order": {
+          "exposed": null,
+          "mtime_utc": {
+            "prompt": null,
+            "engine": "2026-08-31T03:42:36Z",
+            "audit": null
+          }
+        },
+        "wdir_extra_before_engine": {
+          "exposed": false,
+          "before": [],
+          "after": []
+        },
+        "transcript_missing": {
+          "exposed": true,
+          "why": "엔진 mtime 이전 구현 전사 없음",
+          "n_runs_referencing": 0
+        },
+        "transcript_auto_memory": {
+          "exposed": null,
+          "why": "전사 없음"
+        },
+        "transcript_tool_reads": {
+          "exposed": null,
+          "why": "전사 없음"
+        }
+      },
+      "lane_provenance": {
+        "present": false,
+        "mode": "",
+        "mode_source": "",
+        "claims_clean": false,
+        "file": "",
+        "sha256": "",
+        "engine_rel": "",
+        "guard_applied": false,
+        "n_audits": 0,
+        "note": "자기 신고 — 판정은 exposure 통로가 전사·파일과 대조한 결과다(FA-CLEAN-BASE-PATH)"
+      },
+      "eligible": {
+        "prompt": false,
+        "full": false
+      },
+      "order_hash": "d42e06de309e0feaec245fe9e7d13993459ef3f66d48fa020c64f47b8420bdff",
+      "md5": {
+        "engine": "0ee5a57b307458946b6e24490bc385cd",
+        "fidelity": "cb669a146301ac1f7522c97dfa094aab",
+        "audit": null,
+        "prompt": null
+      }
+    },
+    {
+      "engine": "04_Research/strategies/RP_AUTO_2608_23944/engine.R",
+      "paper_key": "2608.23944",
+      "root_entries": ["RP_20260831_202530_skipped_base", "RP_20260831_204546_skipped_base"],
+      "artifacts": "stage_artifacts/replication/20260831_204238_30740",
+      "base_vintage_flags": [],
+      "structural_ok": false,
+      "structural_failed": ["fidelity_audit", "output", "coverage"],
+      "structural": {
+        "lane": {
+          "ok": true,
+          "engine_exists": true,
+          "fidelity_file": true,
+          "root_entries": 2
+        },
+        "fidelity_self": {
+          "ok": true,
+          "label": "adapted"
+        },
+        "fidelity_audit": {
+          "ok": false,
+          "verdict": "unverifiable",
+          "reason": "감사 미실행",
+          "audit_md5": null
+        },
+        "pit_static": {
+          "ok": true,
+          "detector_clean": true,
+          "structural_hits": [],
+          "n_violations": 0,
+          "checks": [],
+          "error": ""
+        },
+        "c11": {
+          "ok": true,
+          "factors": [],
+          "sources": [],
+          "base_flag": [],
+          "unreadable": [],
+          "error": ""
+        },
+        "flags": {
+          "ok": true,
+          "hit": []
+        },
+        "output": {
+          "ok": null,
+          "factors_panel": false,
+          "n_max": 25,
+          "declared_construction": "top_n_long",
+          "why": "factors_panel.parquet 부재 — 산출 형태 미관측(선언만으로 FACTORS 폭을 인정하지 않는다)"
+        },
+        "coverage": {
+          "ok": null,
+          "why": "factors_panel 부재"
+        },
+        "source_scope": {
+          "ok": true,
+          "status": "ok",
+          "consumed": [],
+          "uncovered": [],
+          "hidden_loaders": [],
+          "hidden_sources": [],
+          "hidden_flow": {
+            "status": "ok",
+            "diagnostic_only": [],
+            "text_match_legacy": [],
+            "detail": []
+          },
+          "why": ""
+        }
+      },
+      "exposure": {
+        "prompt_missing": {
+          "exposed": true,
+          "file": "04_Research/strategies/RP_AUTO_2608_23944/prompt.txt",
+          "md5": null
+        },
+        "prompt_combo": {
+          "exposed": null,
+          "section_found": false,
+          "n_stat_lines": null,
+          "detector": "rf_floor_v2.R::rfv_base_engine_exposure"
+        },
+        "prompt_feedback_measured": {
+          "exposed": null,
+          "why": "prompt 부재"
+        },
+        "provenance_order": {
+          "exposed": null,
+          "mtime_utc": {
+            "prompt": null,
+            "engine": "2026-08-31T11:41:21Z",
+            "audit": null
+          }
+        },
+        "wdir_extra_before_engine": {
+          "exposed": false,
+          "before": [],
+          "after": []
+        },
+        "transcript_missing": {
+          "exposed": true,
+          "why": "엔진 mtime 이전 구현 전사 없음",
+          "n_runs_referencing": 0
+        },
+        "transcript_auto_memory": {
+          "exposed": null,
+          "why": "전사 없음"
+        },
+        "transcript_tool_reads": {
+          "exposed": null,
+          "why": "전사 없음"
+        }
+      },
+      "lane_provenance": {
+        "present": false,
+        "mode": "",
+        "mode_source": "",
+        "claims_clean": false,
+        "file": "",
+        "sha256": "",
+        "engine_rel": "",
+        "guard_applied": false,
+        "n_audits": 0,
+        "note": "자기 신고 — 판정은 exposure 통로가 전사·파일과 대조한 결과다(FA-CLEAN-BASE-PATH)"
+      },
+      "eligible": {
+        "prompt": false,
+        "full": false
+      },
+      "order_hash": "0701f45ae8bd98319df1c80f6c33d26ad7df64115a0c34a7a4c18b90c2d42631",
+      "md5": {
+        "engine": "bdeed704a7febe058d46cc679b4bf1e1",
+        "fidelity": "d9d9e370f72297b6a4449602442a51c6",
+        "audit": null,
+        "prompt": null
+      }
+    },
+    {
+      "engine": "04_Research/strategies/RP_AUTO_COMBO_combo_1403_8125_2002_069/engine.R",
+      "paper_key": "",
+      "root_entries": [],
+      "artifacts": "",
+      "base_vintage_flags": [],
+      "structural_ok": false,
+      "structural_failed": ["lane", "fidelity_self", "output", "coverage", "source_scope"],
+      "structural": {
+        "lane": {
+          "ok": false,
+          "engine_exists": true,
+          "fidelity_file": true,
+          "root_entries": 0
+        },
+        "fidelity_self": {
+          "ok": false,
+          "label": "combination"
+        },
+        "fidelity_audit": {
+          "ok": true,
+          "verdict": "adapted",
+          "reason": "",
+          "audit_md5": "ca4250c968f41666686a24b77f9e1690"
+        },
+        "pit_static": {
+          "ok": true,
+          "detector_clean": true,
+          "structural_hits": [],
+          "n_violations": 0,
+          "checks": [],
+          "error": ""
+        },
+        "c11": {
+          "ok": true,
+          "factors": [],
+          "sources": [],
+          "base_flag": [],
+          "unreadable": [],
+          "error": ""
+        },
+        "flags": {
+          "ok": true,
+          "hit": []
+        },
+        "output": {
+          "ok": null,
+          "factors_panel": false,
+          "n_max": 25,
+          "declared_construction": "",
+          "why": "기저 산출물 없음"
+        },
+        "coverage": {
+          "ok": null,
+          "why": "factors_panel 부재"
+        },
+        "source_scope": {
+          "ok": false,
+          "status": "ok",
+          "consumed": ["consensus", "fundamental_merged.parquet"],
+          "uncovered": ["consensus", "fundamental_merged.parquet"],
+          "hidden_loaders": [],
+          "hidden_sources": [],
+          "hidden_flow": {
+            "status": "ok",
+            "diagnostic_only": [],
+            "text_match_legacy": [],
+            "detail": []
+          },
+          "why": ""
+        }
+      },
+      "exposure": {
+        "prompt_missing": {
+          "exposed": false,
+          "file": "04_Research/strategies/RP_AUTO_COMBO_combo_1403_8125_2002_069/prompt.txt",
+          "md5": "fabc65c29bffa456d4dd55a0676a9e87"
+        },
+        "prompt_combo": {
+          "exposed": true,
+          "section_found": true,
+          "n_stat_lines": 8,
+          "detector": "rf_floor_v2.R::rfv_base_engine_exposure"
+        },
+        "prompt_feedback_measured": {
+          "exposed": false,
+          "section_found": false,
+          "n_feedback_headers": 0,
+          "n_known_sections": 0,
+          "n_section_lines": 0,
+          "n_hit_lines": 0
+        },
+        "provenance_order": {
+          "exposed": false,
+          "mtime_utc": {
+            "prompt": "2026-09-17T01:21:25Z",
+            "engine": "2026-09-17T01:47:41Z",
+            "audit": "2026-09-17T02:21:52Z"
+          }
+        },
+        "wdir_extra_before_engine": {
+          "exposed": false,
+          "before": [],
+          "after": ["_work"]
+        },
+        "transcript_missing": {
+          "exposed": true,
+          "why": "엔진 mtime 이전 구현 전사 없음",
+          "n_runs_referencing": 0
+        },
+        "transcript_auto_memory": {
+          "exposed": null,
+          "why": "전사 없음"
+        },
+        "transcript_tool_reads": {
+          "exposed": null,
+          "why": "전사 없음"
+        }
+      },
+      "lane_provenance": {
+        "present": false,
+        "mode": "",
+        "mode_source": "",
+        "claims_clean": false,
+        "file": "",
+        "sha256": "",
+        "engine_rel": "",
+        "guard_applied": false,
+        "n_audits": 0,
+        "note": "자기 신고 — 판정은 exposure 통로가 전사·파일과 대조한 결과다(FA-CLEAN-BASE-PATH)"
+      },
+      "eligible": {
+        "prompt": false,
+        "full": false
+      },
+      "order_hash": "d75575410ea36034551e39d67958ba94d95663b215bebd56026b3def9cda313d",
+      "md5": {
+        "engine": "e2308a99f801629cb068c1fdf2ac404f",
+        "fidelity": "8067bb98ce9750431ddec4fa130714e7",
+        "audit": "ca4250c968f41666686a24b77f9e1690",
+        "prompt": "fabc65c29bffa456d4dd55a0676a9e87"
+      }
+    },
+    {
+      "engine": "04_Research/strategies/RP_AUTO_2608_17481/engine.R",
+      "paper_key": "2608.17481",
+      "root_entries": ["RP_20260831_225227_skipped_base"],
+      "artifacts": "stage_artifacts/replication/20260831_224926_27512",
+      "base_vintage_flags": [],
+      "structural_ok": false,
+      "structural_failed": ["fidelity_audit", "output", "coverage"],
+      "structural": {
+        "lane": {
+          "ok": true,
+          "engine_exists": true,
+          "fidelity_file": true,
+          "root_entries": 1
+        },
+        "fidelity_self": {
+          "ok": true,
+          "label": "adapted"
+        },
+        "fidelity_audit": {
+          "ok": false,
+          "verdict": "unverifiable",
+          "reason": "감사 미실행",
+          "audit_md5": null
+        },
+        "pit_static": {
+          "ok": true,
+          "detector_clean": true,
+          "structural_hits": [],
+          "n_violations": 0,
+          "checks": [],
+          "error": ""
+        },
+        "c11": {
+          "ok": true,
+          "factors": [],
+          "sources": [],
+          "base_flag": [],
+          "unreadable": [],
+          "error": ""
+        },
+        "flags": {
+          "ok": true,
+          "hit": []
+        },
+        "output": {
+          "ok": null,
+          "factors_panel": false,
+          "n_max": 25,
+          "declared_construction": "top_n_long",
+          "why": "factors_panel.parquet 부재 — 산출 형태 미관측(선언만으로 FACTORS 폭을 인정하지 않는다)"
+        },
+        "coverage": {
+          "ok": null,
+          "why": "factors_panel 부재"
+        },
+        "source_scope": {
+          "ok": true,
+          "status": "ok",
+          "consumed": [],
+          "uncovered": [],
+          "hidden_loaders": [],
+          "hidden_sources": [],
+          "hidden_flow": {
+            "status": "ok",
+            "diagnostic_only": [],
+            "text_match_legacy": [],
+            "detail": []
+          },
+          "why": ""
+        }
+      },
+      "exposure": {
+        "prompt_missing": {
+          "exposed": true,
+          "file": "04_Research/strategies/RP_AUTO_2608_17481/prompt.txt",
+          "md5": null
+        },
+        "prompt_combo": {
+          "exposed": null,
+          "section_found": false,
+          "n_stat_lines": null,
+          "detector": "rf_floor_v2.R::rfv_base_engine_exposure"
+        },
+        "prompt_feedback_measured": {
+          "exposed": null,
+          "why": "prompt 부재"
+        },
+        "provenance_order": {
+          "exposed": null,
+          "mtime_utc": {
+            "prompt": null,
+            "engine": "2026-08-31T13:46:44Z",
+            "audit": null
+          }
+        },
+        "wdir_extra_before_engine": {
+          "exposed": false,
+          "before": [],
+          "after": []
+        },
+        "transcript_missing": {
+          "exposed": true,
+          "why": "엔진 mtime 이전 구현 전사 없음",
+          "n_runs_referencing": 0
+        },
+        "transcript_auto_memory": {
+          "exposed": null,
+          "why": "전사 없음"
+        },
+        "transcript_tool_reads": {
+          "exposed": null,
+          "why": "전사 없음"
+        }
+      },
+      "lane_provenance": {
+        "present": false,
+        "mode": "",
+        "mode_source": "",
+        "claims_clean": false,
+        "file": "",
+        "sha256": "",
+        "engine_rel": "",
+        "guard_applied": false,
+        "n_audits": 0,
+        "note": "자기 신고 — 판정은 exposure 통로가 전사·파일과 대조한 결과다(FA-CLEAN-BASE-PATH)"
+      },
+      "eligible": {
+        "prompt": false,
+        "full": false
+      },
+      "order_hash": "24875fafc6129310a8e8f2255303e8068d17058fa789b30d2f17d647070d960f",
+      "md5": {
+        "engine": "0482d4db976ad5523350cf9577df4ee9",
+        "fidelity": "b4a938eebbebc34917f16a9a780501b7",
+        "audit": null,
+        "prompt": null
+      }
+    },
+    {
+      "engine": "04_Research/strategies/RP_AUTO_2608_14014/engine.R",
+      "paper_key": "2608.14014",
+      "root_entries": ["RP_20260901_000646_skipped_base"],
+      "artifacts": "stage_artifacts/replication/20260901_000300_29152",
+      "base_vintage_flags": [],
+      "structural_ok": false,
+      "structural_failed": ["fidelity_audit", "output", "coverage"],
+      "structural": {
+        "lane": {
+          "ok": true,
+          "engine_exists": true,
+          "fidelity_file": true,
+          "root_entries": 1
+        },
+        "fidelity_self": {
+          "ok": true,
+          "label": "adapted"
+        },
+        "fidelity_audit": {
+          "ok": false,
+          "verdict": "unverifiable",
+          "reason": "감사 미실행",
+          "audit_md5": null
+        },
+        "pit_static": {
+          "ok": true,
+          "detector_clean": true,
+          "structural_hits": [],
+          "n_violations": 0,
+          "checks": [],
+          "error": ""
+        },
+        "c11": {
+          "ok": true,
+          "factors": [],
+          "sources": [],
+          "base_flag": [],
+          "unreadable": [],
+          "error": ""
+        },
+        "flags": {
+          "ok": true,
+          "hit": []
+        },
+        "output": {
+          "ok": null,
+          "factors_panel": false,
+          "n_max": 25,
+          "declared_construction": "top_n_long",
+          "why": "factors_panel.parquet 부재 — 산출 형태 미관측(선언만으로 FACTORS 폭을 인정하지 않는다)"
+        },
+        "coverage": {
+          "ok": null,
+          "why": "factors_panel 부재"
+        },
+        "source_scope": {
+          "ok": true,
+          "status": "ok",
+          "consumed": [],
+          "uncovered": [],
+          "hidden_loaders": [],
+          "hidden_sources": [],
+          "hidden_flow": {
+            "status": "ok",
+            "diagnostic_only": [],
+            "text_match_legacy": [],
+            "detail": []
+          },
+          "why": ""
+        }
+      },
+      "exposure": {
+        "prompt_missing": {
+          "exposed": true,
+          "file": "04_Research/strategies/RP_AUTO_2608_14014/prompt.txt",
+          "md5": null
+        },
+        "prompt_combo": {
+          "exposed": null,
+          "section_found": false,
+          "n_stat_lines": null,
+          "detector": "rf_floor_v2.R::rfv_base_engine_exposure"
+        },
+        "prompt_feedback_measured": {
+          "exposed": null,
+          "why": "prompt 부재"
+        },
+        "provenance_order": {
+          "exposed": null,
+          "mtime_utc": {
+            "prompt": null,
+            "engine": "2026-08-31T15:00:28Z",
+            "audit": null
+          }
+        },
+        "wdir_extra_before_engine": {
+          "exposed": false,
+          "before": [],
+          "after": []
+        },
+        "transcript_missing": {
+          "exposed": true,
+          "why": "엔진 mtime 이전 구현 전사 없음",
+          "n_runs_referencing": 0
+        },
+        "transcript_auto_memory": {
+          "exposed": null,
+          "why": "전사 없음"
+        },
+        "transcript_tool_reads": {
+          "exposed": null,
+          "why": "전사 없음"
+        }
+      },
+      "lane_provenance": {
+        "present": false,
+        "mode": "",
+        "mode_source": "",
+        "claims_clean": false,
+        "file": "",
+        "sha256": "",
+        "engine_rel": "",
+        "guard_applied": false,
+        "n_audits": 0,
+        "note": "자기 신고 — 판정은 exposure 통로가 전사·파일과 대조한 결과다(FA-CLEAN-BASE-PATH)"
+      },
+      "eligible": {
+        "prompt": false,
+        "full": false
+      },
+      "order_hash": "83c33585a197a7488a9c070f5845874cf9b1c6be1827b4739aa28fa0643baa22",
+      "md5": {
+        "engine": "30c338fc3ad12c4795e94ef284c7e8fc",
+        "fidelity": "988162ae21aba5c762c4b3e27f163190",
+        "audit": null,
+        "prompt": null
+      }
+    },
+    {
+      "engine": "04_Research/strategies/RP_AUTO_2505_20608/engine.R",
+      "paper_key": "2505.20608",
+      "root_entries": ["RP_20260901_003907_skipped_base"],
+      "artifacts": "stage_artifacts/replication/20260901_003409_31072",
+      "base_vintage_flags": [],
+      "structural_ok": false,
+      "structural_failed": ["fidelity_audit", "output", "coverage"],
+      "structural": {
+        "lane": {
+          "ok": true,
+          "engine_exists": true,
+          "fidelity_file": true,
+          "root_entries": 1
+        },
+        "fidelity_self": {
+          "ok": true,
+          "label": "adapted"
+        },
+        "fidelity_audit": {
+          "ok": false,
+          "verdict": "unverifiable",
+          "reason": "감사 미실행",
+          "audit_md5": null
+        },
+        "pit_static": {
+          "ok": true,
+          "detector_clean": true,
+          "structural_hits": [],
+          "n_violations": 0,
+          "checks": [],
+          "error": ""
+        },
+        "c11": {
+          "ok": true,
+          "factors": [],
+          "sources": [],
+          "base_flag": [],
+          "unreadable": [],
+          "error": ""
+        },
+        "flags": {
+          "ok": true,
+          "hit": []
+        },
+        "output": {
+          "ok": null,
+          "factors_panel": false,
+          "n_max": 25,
+          "declared_construction": "engine_direct",
+          "why": "factors_panel.parquet 부재 — 산출 형태 미관측(선언만으로 FACTORS 폭을 인정하지 않는다)"
+        },
+        "coverage": {
+          "ok": null,
+          "why": "factors_panel 부재"
+        },
+        "source_scope": {
+          "ok": true,
+          "status": "ok",
+          "consumed": [],
+          "uncovered": [],
+          "hidden_loaders": [],
+          "hidden_sources": [],
+          "hidden_flow": {
+            "status": "ok",
+            "diagnostic_only": [],
+            "text_match_legacy": [],
+            "detail": []
+          },
+          "why": ""
+        }
+      },
+      "exposure": {
+        "prompt_missing": {
+          "exposed": true,
+          "file": "04_Research/strategies/RP_AUTO_2505_20608/prompt.txt",
+          "md5": null
+        },
+        "prompt_combo": {
+          "exposed": null,
+          "section_found": false,
+          "n_stat_lines": null,
+          "detector": "rf_floor_v2.R::rfv_base_engine_exposure"
+        },
+        "prompt_feedback_measured": {
+          "exposed": null,
+          "why": "prompt 부재"
+        },
+        "provenance_order": {
+          "exposed": null,
+          "mtime_utc": {
+            "prompt": null,
+            "engine": "2026-08-31T15:29:57Z",
+            "audit": null
+          }
+        },
+        "wdir_extra_before_engine": {
+          "exposed": false,
+          "before": [],
+          "after": []
+        },
+        "transcript_missing": {
+          "exposed": true,
+          "why": "엔진 mtime 이전 구현 전사 없음",
+          "n_runs_referencing": 0
+        },
+        "transcript_auto_memory": {
+          "exposed": null,
+          "why": "전사 없음"
+        },
+        "transcript_tool_reads": {
+          "exposed": null,
+          "why": "전사 없음"
+        }
+      },
+      "lane_provenance": {
+        "present": false,
+        "mode": "",
+        "mode_source": "",
+        "claims_clean": false,
+        "file": "",
+        "sha256": "",
+        "engine_rel": "",
+        "guard_applied": false,
+        "n_audits": 0,
+        "note": "자기 신고 — 판정은 exposure 통로가 전사·파일과 대조한 결과다(FA-CLEAN-BASE-PATH)"
+      },
+      "eligible": {
+        "prompt": false,
+        "full": false
+      },
+      "order_hash": "70ee9334819cff901ac3454ffbadc48d48cb49da3b9b0e1990d9489361a991dd",
+      "md5": {
+        "engine": "d5479116618b2c053abfee830647ffd7",
+        "fidelity": "6916a0fbda217de3dea24f6efb22497f",
+        "audit": null,
+        "prompt": null
+      }
+    },
+    {
+      "engine": "04_Research/strategies/RP_AUTO_cond_mat_0410079/engine.R",
+      "paper_key": "cond-mat/0410079",
+      "root_entries": ["RP_20260901_145755_5376_adapted_rulefast"],
+      "artifacts": "stage_artifacts/replication/20260901_145755_5376",
+      "base_vintage_flags": [],
+      "structural_ok": false,
+      "structural_failed": ["fidelity_audit", "output", "coverage", "source_scope"],
+      "structural": {
+        "lane": {
+          "ok": true,
+          "engine_exists": true,
+          "fidelity_file": true,
+          "root_entries": 1
+        },
+        "fidelity_self": {
+          "ok": true,
+          "label": "adapted"
+        },
+        "fidelity_audit": {
+          "ok": false,
+          "verdict": "unverifiable",
+          "reason": "감사 미실행",
+          "audit_md5": null
+        },
+        "pit_static": {
+          "ok": true,
+          "detector_clean": true,
+          "structural_hits": [],
+          "n_violations": 0,
+          "checks": [],
+          "error": ""
+        },
+        "c11": {
+          "ok": true,
+          "factors": [],
+          "sources": [],
+          "base_flag": [],
+          "unreadable": [],
+          "error": ""
+        },
+        "flags": {
+          "ok": true,
+          "hit": []
+        },
+        "output": {
+          "ok": null,
+          "factors_panel": false,
+          "n_max": 25,
+          "declared_construction": "top_n_long",
+          "why": "factors_panel.parquet 부재 — 산출 형태 미관측(선언만으로 FACTORS 폭을 인정하지 않는다)"
+        },
+        "coverage": {
+          "ok": null,
+          "why": "factors_panel 부재"
+        },
+        "source_scope": {
+          "ok": false,
+          "status": "ok",
+          "consumed": ["consensus", "fundamental_dart.parquet", "fundamental_merged.parquet"],
+          "uncovered": ["consensus", "fundamental_dart.parquet", "fundamental_merged.parquet"],
+          "hidden_loaders": [],
+          "hidden_sources": [],
+          "hidden_flow": {
+            "status": "ok",
+            "diagnostic_only": [],
+            "text_match_legacy": [],
+            "detail": []
+          },
+          "why": ""
+        }
+      },
+      "exposure": {
+        "prompt_missing": {
+          "exposed": true,
+          "file": "04_Research/strategies/RP_AUTO_cond_mat_0410079/prompt.txt",
+          "md5": null
+        },
+        "prompt_combo": {
+          "exposed": null,
+          "section_found": false,
+          "n_stat_lines": null,
+          "detector": "rf_floor_v2.R::rfv_base_engine_exposure"
+        },
+        "prompt_feedback_measured": {
+          "exposed": null,
+          "why": "prompt 부재"
+        },
+        "provenance_order": {
+          "exposed": null,
+          "mtime_utc": {
+            "prompt": null,
+            "engine": "2026-09-01T05:57:11Z",
+            "audit": null
+          }
+        },
+        "wdir_extra_before_engine": {
+          "exposed": false,
+          "before": [],
+          "after": []
+        },
+        "transcript_missing": {
+          "exposed": true,
+          "why": "엔진 mtime 이전 구현 전사 없음",
+          "n_runs_referencing": 0
+        },
+        "transcript_auto_memory": {
+          "exposed": null,
+          "why": "전사 없음"
+        },
+        "transcript_tool_reads": {
+          "exposed": null,
+          "why": "전사 없음"
+        }
+      },
+      "lane_provenance": {
+        "present": false,
+        "mode": "",
+        "mode_source": "",
+        "claims_clean": false,
+        "file": "",
+        "sha256": "",
+        "engine_rel": "",
+        "guard_applied": false,
+        "n_audits": 0,
+        "note": "자기 신고 — 판정은 exposure 통로가 전사·파일과 대조한 결과다(FA-CLEAN-BASE-PATH)"
+      },
+      "eligible": {
+        "prompt": false,
+        "full": false
+      },
+      "order_hash": "8b4b219fedb68ab764ae7ad7e410bf41eb02797907fbf6d8ee47204d5e6dc4a3",
+      "md5": {
+        "engine": "bf835c2c2bb655a5d1ec13cac44f6c4d",
+        "fidelity": "e60207a6d9291dcdacb12ab2f225497f",
+        "audit": null,
+        "prompt": null
+      }
+    },
+    {
+      "engine": "04_Research/strategies/RP_2301_09173_CID/engine.R",
+      "paper_key": "2301.09173",
+      "root_entries": ["RP_20260902_122546_22268"],
+      "artifacts": "stage_artifacts/replication/20260902_122546_22268",
+      "base_vintage_flags": [],
+      "structural_ok": false,
+      "structural_failed": ["lane", "fidelity_self", "fidelity_audit"],
+      "structural": {
+        "lane": {
+          "ok": false,
+          "engine_exists": true,
+          "fidelity_file": false,
+          "root_entries": 1
+        },
+        "fidelity_self": {
+          "ok": null,
+          "label": ""
+        },
+        "fidelity_audit": {
+          "ok": false,
+          "verdict": "unverifiable",
+          "reason": "감사 미실행",
+          "audit_md5": null
+        },
+        "pit_static": {
+          "ok": true,
+          "detector_clean": true,
+          "structural_hits": [],
+          "n_violations": 0,
+          "checks": [],
+          "error": ""
+        },
+        "c11": {
+          "ok": true,
+          "factors": [],
+          "sources": [],
+          "base_flag": [],
+          "unreadable": [],
+          "error": ""
+        },
+        "flags": {
+          "ok": true,
+          "hit": []
+        },
+        "output": {
+          "ok": true,
+          "factors_panel": true,
+          "median_names_per_date": 334,
+          "n_max": 25,
+          "n_dates": 260
+        },
+        "coverage": {
+          "ok": true,
+          "first_signal_date": "2005-01-31",
+          "limit": "2005-01-31",
+          "start_date": "2005-01-01"
+        },
+        "source_scope": {
+          "ok": true,
+          "status": "ok",
+          "consumed": [],
+          "uncovered": [],
+          "hidden_loaders": [],
+          "hidden_sources": [],
+          "hidden_flow": {
+            "status": "ok",
+            "diagnostic_only": [],
+            "text_match_legacy": [],
+            "detail": []
+          },
+          "why": ""
+        }
+      },
+      "exposure": {
+        "prompt_missing": {
+          "exposed": true,
+          "file": "04_Research/strategies/RP_2301_09173_CID/prompt.txt",
+          "md5": null
+        },
+        "prompt_combo": {
+          "exposed": null,
+          "section_found": false,
+          "n_stat_lines": null,
+          "detector": "rf_floor_v2.R::rfv_base_engine_exposure"
+        },
+        "prompt_feedback_measured": {
+          "exposed": null,
+          "why": "prompt 부재"
+        },
+        "provenance_order": {
+          "exposed": null,
+          "mtime_utc": {
+            "prompt": null,
+            "engine": "2026-09-02T03:24:07Z",
+            "audit": null
+          }
+        },
+        "wdir_extra_before_engine": {
+          "exposed": false,
+          "before": [],
+          "after": ["diag_cid_market_comovement.R", "last_result.rds", "NOTES.md", "run_20260902.log", "run_replication.R"]
+        },
+        "transcript_missing": {
+          "exposed": true,
+          "why": "엔진 mtime 이전 구현 전사 없음",
+          "n_runs_referencing": 0
+        },
+        "transcript_auto_memory": {
+          "exposed": null,
+          "why": "전사 없음"
+        },
+        "transcript_tool_reads": {
+          "exposed": null,
+          "why": "전사 없음"
+        }
+      },
+      "lane_provenance": {
+        "present": false,
+        "mode": "",
+        "mode_source": "",
+        "claims_clean": false,
+        "file": "",
+        "sha256": "",
+        "engine_rel": "",
+        "guard_applied": false,
+        "n_audits": 0,
+        "note": "자기 신고 — 판정은 exposure 통로가 전사·파일과 대조한 결과다(FA-CLEAN-BASE-PATH)"
+      },
+      "eligible": {
+        "prompt": false,
+        "full": false
+      },
+      "order_hash": "779ad95d355f8b4e8a789d227f9f89a88e83f8299f5c90686eb589ed29cd0779",
+      "md5": {
+        "engine": "1c9644d73100c3af6b7302de56ba20b5",
+        "fidelity": null,
+        "audit": null,
+        "prompt": null
+      }
+    },
+    {
+      "engine": "04_Research/strategies/RP_AUTO_2505_16336/engine.R",
+      "paper_key": "2505.16336",
+      "root_entries": ["RP_20260903_074827_skipped_base"],
+      "artifacts": "stage_artifacts/replication/20260903_074335_28136",
+      "base_vintage_flags": [],
+      "structural_ok": false,
+      "structural_failed": ["fidelity_audit", "output", "coverage", "source_scope"],
+      "structural": {
+        "lane": {
+          "ok": true,
+          "engine_exists": true,
+          "fidelity_file": true,
+          "root_entries": 1
+        },
+        "fidelity_self": {
+          "ok": true,
+          "label": "faithful"
+        },
+        "fidelity_audit": {
+          "ok": false,
+          "verdict": "unverifiable",
+          "reason": "감사 미실행",
+          "audit_md5": null
+        },
+        "pit_static": {
+          "ok": true,
+          "detector_clean": true,
+          "structural_hits": [],
+          "n_violations": 0,
+          "checks": [],
+          "error": ""
+        },
+        "c11": {
+          "ok": true,
+          "factors": [],
+          "sources": [],
+          "base_flag": [],
+          "unreadable": [],
+          "error": ""
+        },
+        "flags": {
+          "ok": true,
+          "hit": []
+        },
+        "output": {
+          "ok": null,
+          "factors_panel": false,
+          "n_max": 25,
+          "declared_construction": "engine_direct",
+          "why": "factors_panel.parquet 부재 — 산출 형태 미관측(선언만으로 FACTORS 폭을 인정하지 않는다)"
+        },
+        "coverage": {
+          "ok": null,
+          "why": "factors_panel 부재"
+        },
+        "source_scope": {
+          "ok": false,
+          "status": "ok",
+          "consumed": ["fundamental_merged.parquet"],
+          "uncovered": ["fundamental_merged.parquet"],
+          "hidden_loaders": [],
+          "hidden_sources": [],
+          "hidden_flow": {
+            "status": "ok",
+            "diagnostic_only": [],
+            "text_match_legacy": [],
+            "detail": []
+          },
+          "why": ""
+        }
+      },
+      "exposure": {
+        "prompt_missing": {
+          "exposed": true,
+          "file": "04_Research/strategies/RP_AUTO_2505_16336/prompt.txt",
+          "md5": null
+        },
+        "prompt_combo": {
+          "exposed": null,
+          "section_found": false,
+          "n_stat_lines": null,
+          "detector": "rf_floor_v2.R::rfv_base_engine_exposure"
+        },
+        "prompt_feedback_measured": {
+          "exposed": null,
+          "why": "prompt 부재"
+        },
+        "provenance_order": {
+          "exposed": null,
+          "mtime_utc": {
+            "prompt": null,
+            "engine": "2026-09-02T22:37:30Z",
+            "audit": null
+          }
+        },
+        "wdir_extra_before_engine": {
+          "exposed": false,
+          "before": [],
+          "after": []
+        },
+        "transcript_missing": {
+          "exposed": true,
+          "why": "엔진 mtime 이전 구현 전사 없음",
+          "n_runs_referencing": 0
+        },
+        "transcript_auto_memory": {
+          "exposed": null,
+          "why": "전사 없음"
+        },
+        "transcript_tool_reads": {
+          "exposed": null,
+          "why": "전사 없음"
+        }
+      },
+      "lane_provenance": {
+        "present": false,
+        "mode": "",
+        "mode_source": "",
+        "claims_clean": false,
+        "file": "",
+        "sha256": "",
+        "engine_rel": "",
+        "guard_applied": false,
+        "n_audits": 0,
+        "note": "자기 신고 — 판정은 exposure 통로가 전사·파일과 대조한 결과다(FA-CLEAN-BASE-PATH)"
+      },
+      "eligible": {
+        "prompt": false,
+        "full": false
+      },
+      "order_hash": "b89108615fcdbca0712aee70a017b0bf6e8f295950d5e85c6a12bc7f7b9ab81a",
+      "md5": {
+        "engine": "b0c50f0d7dc00eeff5e6ca422da5117d",
+        "fidelity": "18e049f3c3c80149d1e206d0a5fe164b",
+        "audit": null,
+        "prompt": null
+      }
+    },
+    {
+      "engine": "04_Research/strategies/RP_AUTO_2007_08115/engine.R",
+      "paper_key": "2007.08115",
+      "root_entries": ["RP_20260903_081538_1520_adapted_rulefast"],
+      "artifacts": "stage_artifacts/replication/20260903_081538_1520",
+      "base_vintage_flags": [],
+      "structural_ok": false,
+      "structural_failed": ["fidelity_audit", "source_scope"],
+      "structural": {
+        "lane": {
+          "ok": true,
+          "engine_exists": true,
+          "fidelity_file": true,
+          "root_entries": 1
+        },
+        "fidelity_self": {
+          "ok": true,
+          "label": "adapted"
+        },
+        "fidelity_audit": {
+          "ok": false,
+          "verdict": "unverifiable",
+          "reason": "감사 미실행",
+          "audit_md5": null
+        },
+        "pit_static": {
+          "ok": true,
+          "detector_clean": true,
+          "structural_hits": [],
+          "n_violations": 0,
+          "checks": [],
+          "error": ""
+        },
+        "c11": {
+          "ok": true,
+          "factors": [],
+          "sources": [],
+          "base_flag": [],
+          "unreadable": [],
+          "error": ""
+        },
+        "flags": {
+          "ok": true,
+          "hit": []
+        },
+        "output": {
+          "ok": true,
+          "factors_panel": true,
+          "median_names_per_date": 308,
+          "n_max": 25,
+          "n_dates": 261
+        },
+        "coverage": {
+          "ok": true,
+          "first_signal_date": "2005-01-31",
+          "limit": "2005-01-31",
+          "start_date": "2005-01-01"
+        },
+        "source_scope": {
+          "ok": false,
+          "status": "ok",
+          "consumed": ["kr_factor_returns.parquet", "kr_factor_returns_v2.parquet"],
+          "uncovered": ["kr_factor_returns.parquet", "kr_factor_returns_v2.parquet"],
+          "hidden_loaders": [],
+          "hidden_sources": [],
+          "hidden_flow": {
+            "status": "ok",
+            "diagnostic_only": [],
+            "text_match_legacy": [],
+            "detail": []
+          },
+          "why": ""
+        }
+      },
+      "exposure": {
+        "prompt_missing": {
+          "exposed": true,
+          "file": "04_Research/strategies/RP_AUTO_2007_08115/prompt.txt",
+          "md5": null
+        },
+        "prompt_combo": {
+          "exposed": null,
+          "section_found": false,
+          "n_stat_lines": null,
+          "detector": "rf_floor_v2.R::rfv_base_engine_exposure"
+        },
+        "prompt_feedback_measured": {
+          "exposed": null,
+          "why": "prompt 부재"
+        },
+        "provenance_order": {
+          "exposed": null,
+          "mtime_utc": {
+            "prompt": null,
+            "engine": "2026-09-02T23:14:27Z",
+            "audit": null
+          }
+        },
+        "wdir_extra_before_engine": {
+          "exposed": false,
+          "before": [],
+          "after": []
+        },
+        "transcript_missing": {
+          "exposed": true,
+          "why": "엔진 mtime 이전 구현 전사 없음",
+          "n_runs_referencing": 0
+        },
+        "transcript_auto_memory": {
+          "exposed": null,
+          "why": "전사 없음"
+        },
+        "transcript_tool_reads": {
+          "exposed": null,
+          "why": "전사 없음"
+        }
+      },
+      "lane_provenance": {
+        "present": false,
+        "mode": "",
+        "mode_source": "",
+        "claims_clean": false,
+        "file": "",
+        "sha256": "",
+        "engine_rel": "",
+        "guard_applied": false,
+        "n_audits": 0,
+        "note": "자기 신고 — 판정은 exposure 통로가 전사·파일과 대조한 결과다(FA-CLEAN-BASE-PATH)"
+      },
+      "eligible": {
+        "prompt": false,
+        "full": false
+      },
+      "order_hash": "dba8ecdc91bbed20efc35b20bcf984ce97f10a73c05879ce85f3d5e04048e910",
+      "md5": {
+        "engine": "f2a36c04abf931770259644ea76c564e",
+        "fidelity": "6dc9084c797896f4dedf7a244b0a481f",
+        "audit": null,
+        "prompt": null
+      }
+    },
+    {
+      "engine": "04_Research/strategies/RP_AUTO_1505_00328/engine.R",
+      "paper_key": "1505.00328",
+      "root_entries": ["RP_20260904_091821_skipped_base"],
+      "artifacts": "stage_artifacts/replication/20260904_091410_6956",
+      "base_vintage_flags": [],
+      "structural_ok": true,
+      "structural_failed": [],
+      "structural": {
+        "lane": {
+          "ok": true,
+          "engine_exists": true,
+          "fidelity_file": true,
+          "root_entries": 1
+        },
+        "fidelity_self": {
+          "ok": true,
+          "label": "faithful"
+        },
+        "fidelity_audit": {
+          "ok": true,
+          "verdict": "faithful",
+          "reason": "",
+          "audit_md5": "7007c48cc85c729d83d793f03c383cde"
+        },
+        "pit_static": {
+          "ok": true,
+          "detector_clean": true,
+          "structural_hits": [],
+          "n_violations": 0,
+          "checks": [],
+          "error": ""
+        },
+        "c11": {
+          "ok": true,
+          "factors": [],
+          "sources": [],
+          "base_flag": [],
+          "unreadable": [],
+          "error": ""
+        },
+        "flags": {
+          "ok": true,
+          "hit": []
+        },
+        "output": {
+          "ok": true,
+          "factors_panel": true,
+          "median_names_per_date": 346,
+          "n_max": 25,
+          "n_dates": 261
+        },
+        "coverage": {
+          "ok": true,
+          "first_signal_date": "2005-01-31",
+          "limit": "2005-01-31",
+          "start_date": "2005-01-01"
+        },
+        "source_scope": {
+          "ok": true,
+          "status": "ok",
+          "consumed": [],
+          "uncovered": [],
+          "hidden_loaders": [],
+          "hidden_sources": [],
+          "hidden_flow": {
+            "status": "ok",
+            "diagnostic_only": [],
+            "text_match_legacy": [],
+            "detail": []
+          },
+          "why": ""
+        }
+      },
+      "exposure": {
+        "prompt_missing": {
+          "exposed": true,
+          "file": "04_Research/strategies/RP_AUTO_1505_00328/prompt.txt",
+          "md5": null
+        },
+        "prompt_combo": {
+          "exposed": null,
+          "section_found": false,
+          "n_stat_lines": null,
+          "detector": "rf_floor_v2.R::rfv_base_engine_exposure"
+        },
+        "prompt_feedback_measured": {
+          "exposed": null,
+          "why": "prompt 부재"
+        },
+        "provenance_order": {
+          "exposed": null,
+          "mtime_utc": {
+            "prompt": null,
+            "engine": "2026-09-04T00:11:52Z",
+            "audit": "2026-09-04T01:52:48Z"
+          }
+        },
+        "wdir_extra_before_engine": {
+          "exposed": false,
+          "before": [],
+          "after": []
+        },
+        "transcript_missing": {
+          "exposed": false,
+          "transcript": "f408ab55-8bf2-414c-8539-031298ed7041.jsonl",
+          "started_utc": "2026-09-03T23:58:04.547Z",
+          "md5": "700804e1b3e31c562a796b985af5e879",
+          "n_runs_referencing": 1,
+          "n_runs_before_engine": 1
+        },
+        "transcript_auto_memory": {
+          "exposed": false,
+          "auto_memory_seen": false,
+          "metric_hits": 0,
+          "hook_context_n": 0,
+          "hook_context_metric_hits": 0,
+          "known_boundary_instruction_files": []
+        },
+        "transcript_tool_reads": {
+          "exposed": true,
+          "n_tool_uses": 21,
+          "n_perf_path_reads": 2,
+          "perf_path_reads": ["Grep C:/Users/99922/OneDrive/Quant_Module_Moltbot/stage_artifacts/replication \"has_short\"|\"n_max\" **/authoritative_remeasure.json", "Read C:/Users/99922/OneDrive/Quant_Module_Moltbot/stage_artifacts/replication/20260830_123019_12956/authoritative_remeasure.json"],
+          "n_perf_path_blocked": 0,
+          "perf_path_blocked": [],
+          "web_forbidden": [],
+          "guard_attestation": {
+            "required": false
+          }
+        }
+      },
+      "lane_provenance": {
+        "present": false,
+        "mode": "",
+        "mode_source": "",
+        "claims_clean": false,
+        "file": "",
+        "sha256": "",
+        "engine_rel": "",
+        "guard_applied": false,
+        "n_audits": 0,
+        "note": "자기 신고 — 판정은 exposure 통로가 전사·파일과 대조한 결과다(FA-CLEAN-BASE-PATH)"
+      },
+      "eligible": {
+        "prompt": false,
+        "full": false
+      },
+      "order_hash": "26e3a1daf9c487512e2a52aa11cada16b16270f755a4bd9488c9cee75f6d6a12",
+      "md5": {
+        "engine": "adf17051a09f635dee62b5c77aa55a58",
+        "fidelity": "3feb44266f23ebb75c55e5f0b7544380",
+        "audit": "7007c48cc85c729d83d793f03c383cde",
+        "prompt": null
+      }
+    },
+    {
+      "engine": "04_Research/strategies/RP_AUTO_2302_10175/engine.R",
+      "paper_key": "2302.10175",
+      "root_entries": ["RP_20260904_095749_skipped_base"],
+      "artifacts": "stage_artifacts/replication/20260904_095420_17456",
+      "base_vintage_flags": [],
+      "structural_ok": false,
+      "structural_failed": ["fidelity_audit", "output", "coverage"],
+      "structural": {
+        "lane": {
+          "ok": true,
+          "engine_exists": true,
+          "fidelity_file": true,
+          "root_entries": 1
+        },
+        "fidelity_self": {
+          "ok": true,
+          "label": "adapted"
+        },
+        "fidelity_audit": {
+          "ok": false,
+          "verdict": "misdeclared",
+          "reason": "",
+          "audit_md5": "5ae9db804e76e2789c9f07c04934ae3d"
+        },
+        "pit_static": {
+          "ok": true,
+          "detector_clean": true,
+          "structural_hits": [],
+          "n_violations": 0,
+          "checks": [],
+          "error": ""
+        },
+        "c11": {
+          "ok": true,
+          "factors": [],
+          "sources": [],
+          "base_flag": [],
+          "unreadable": [],
+          "error": ""
+        },
+        "flags": {
+          "ok": true,
+          "hit": []
+        },
+        "output": {
+          "ok": null,
+          "factors_panel": false,
+          "n_max": 25,
+          "declared_construction": "engine_direct",
+          "why": "factors_panel.parquet 부재 — 산출 형태 미관측(선언만으로 FACTORS 폭을 인정하지 않는다)"
+        },
+        "coverage": {
+          "ok": null,
+          "why": "factors_panel 부재"
+        },
+        "source_scope": {
+          "ok": true,
+          "status": "ok",
+          "consumed": [],
+          "uncovered": [],
+          "hidden_loaders": [],
+          "hidden_sources": [],
+          "hidden_flow": {
+            "status": "ok",
+            "diagnostic_only": [],
+            "text_match_legacy": [],
+            "detail": []
+          },
+          "why": ""
+        }
+      },
+      "exposure": {
+        "prompt_missing": {
+          "exposed": true,
+          "file": "04_Research/strategies/RP_AUTO_2302_10175/prompt.txt",
+          "md5": null
+        },
+        "prompt_combo": {
+          "exposed": null,
+          "section_found": false,
+          "n_stat_lines": null,
+          "detector": "rf_floor_v2.R::rfv_base_engine_exposure"
+        },
+        "prompt_feedback_measured": {
+          "exposed": null,
+          "why": "prompt 부재"
+        },
+        "provenance_order": {
+          "exposed": null,
+          "mtime_utc": {
+            "prompt": null,
+            "engine": "2026-09-04T00:50:57Z",
+            "audit": "2026-09-04T07:23:43Z"
+          }
+        },
+        "wdir_extra_before_engine": {
+          "exposed": false,
+          "before": [],
+          "after": []
+        },
+        "transcript_missing": {
+          "exposed": false,
+          "transcript": "5225263d-835a-4609-b7ac-1b6ab063c1dd.jsonl",
+          "started_utc": "2026-09-04T00:46:02.990Z",
+          "md5": "a600ae0346fa605cf7bd1f4b8d4fab5c",
+          "n_runs_referencing": 2,
+          "n_runs_before_engine": 2
+        },
+        "transcript_auto_memory": {
+          "exposed": false,
+          "auto_memory_seen": false,
+          "metric_hits": 0,
+          "hook_context_n": 0,
+          "hook_context_metric_hits": 0,
+          "known_boundary_instruction_files": []
+        },
+        "transcript_tool_reads": {
+          "exposed": false,
+          "n_tool_uses": 6,
+          "n_perf_path_reads": 0,
+          "perf_path_reads": [],
+          "n_perf_path_blocked": 0,
+          "perf_path_blocked": [],
+          "web_forbidden": [],
+          "guard_attestation": {
+            "required": false
+          }
+        }
+      },
+      "lane_provenance": {
+        "present": false,
+        "mode": "",
+        "mode_source": "",
+        "claims_clean": false,
+        "file": "",
+        "sha256": "",
+        "engine_rel": "",
+        "guard_applied": false,
+        "n_audits": 0,
+        "note": "자기 신고 — 판정은 exposure 통로가 전사·파일과 대조한 결과다(FA-CLEAN-BASE-PATH)"
+      },
+      "eligible": {
+        "prompt": false,
+        "full": false
+      },
+      "order_hash": "e6da3d2a4cb6e2c0f5bd21e1cdd03609cbd8b8b92553a21a546516b3e3f875b8",
+      "md5": {
+        "engine": "250bc523c45d5b825ca6b523223993ed",
+        "fidelity": "3b6690b5a77efbcaaac76077aae223cf",
+        "audit": "5ae9db804e76e2789c9f07c04934ae3d",
+        "prompt": null
+      }
+    },
+    {
+      "engine": "04_Research/strategies/RP_AUTO_COMBO_combo_2007_08115_2301_09/engine.R",
+      "paper_key": "combo:2007.08115+2301.09173",
+      "root_entries": ["RP_20260904_102326_skipped_base"],
+      "artifacts": "stage_artifacts/replication/20260904_102001_21992",
+      "base_vintage_flags": [],
+      "structural_ok": false,
+      "structural_failed": ["lane", "fidelity_self", "fidelity_audit"],
+      "structural": {
+        "lane": {
+          "ok": false,
+          "engine_exists": true,
+          "fidelity_file": true,
+          "root_entries": 1
+        },
+        "fidelity_self": {
+          "ok": false,
+          "label": "combination"
+        },
+        "fidelity_audit": {
+          "ok": false,
+          "verdict": "misdeclared",
+          "reason": "",
+          "audit_md5": "9bc0e07eae86e7552804075634c1ce5d"
+        },
+        "pit_static": {
+          "ok": true,
+          "detector_clean": true,
+          "structural_hits": [],
+          "n_violations": 0,
+          "checks": [],
+          "error": ""
+        },
+        "c11": {
+          "ok": true,
+          "factors": [],
+          "sources": [],
+          "base_flag": [],
+          "unreadable": [],
+          "error": ""
+        },
+        "flags": {
+          "ok": true,
+          "hit": []
+        },
+        "output": {
+          "ok": true,
+          "factors_panel": true,
+          "median_names_per_date": 308,
+          "n_max": 25,
+          "n_dates": 261
+        },
+        "coverage": {
+          "ok": true,
+          "first_signal_date": "2005-01-31",
+          "limit": "2005-01-31",
+          "start_date": "2005-01-01"
+        },
+        "source_scope": {
+          "ok": true,
+          "status": "ok",
+          "consumed": [],
+          "uncovered": [],
+          "hidden_loaders": [],
+          "hidden_sources": [],
+          "hidden_flow": {
+            "status": "ok",
+            "diagnostic_only": [],
+            "text_match_legacy": [],
+            "detail": []
+          },
+          "why": ""
+        }
+      },
+      "exposure": {
+        "prompt_missing": {
+          "exposed": true,
+          "file": "04_Research/strategies/RP_AUTO_COMBO_combo_2007_08115_2301_09/prompt.txt",
+          "md5": null
+        },
+        "prompt_combo": {
+          "exposed": null,
+          "section_found": false,
+          "n_stat_lines": null,
+          "detector": "rf_floor_v2.R::rfv_base_engine_exposure"
+        },
+        "prompt_feedback_measured": {
+          "exposed": null,
+          "why": "prompt 부재"
+        },
+        "provenance_order": {
+          "exposed": null,
+          "mtime_utc": {
+            "prompt": null,
+            "engine": "2026-09-04T07:17:46Z",
+            "audit": "2026-09-04T04:55:51Z"
+          }
+        },
+        "wdir_extra_before_engine": {
+          "exposed": false,
+          "before": [],
+          "after": []
+        },
+        "transcript_missing": {
+          "exposed": true,
+          "why": "엔진 mtime 이전 구현 전사 없음",
+          "n_runs_referencing": 0
+        },
+        "transcript_auto_memory": {
+          "exposed": null,
+          "why": "전사 없음"
+        },
+        "transcript_tool_reads": {
+          "exposed": null,
+          "why": "전사 없음"
+        }
+      },
+      "lane_provenance": {
+        "present": false,
+        "mode": "",
+        "mode_source": "",
+        "claims_clean": false,
+        "file": "",
+        "sha256": "",
+        "engine_rel": "",
+        "guard_applied": false,
+        "n_audits": 0,
+        "note": "자기 신고 — 판정은 exposure 통로가 전사·파일과 대조한 결과다(FA-CLEAN-BASE-PATH)"
+      },
+      "eligible": {
+        "prompt": false,
+        "full": false
+      },
+      "order_hash": "df46e39fad39c947e712745da8b2d8bee797b9cb86d0f34b759f3f9bed13eb35",
+      "md5": {
+        "engine": "103fc87280cc69ac1beafe5a9269d8a6",
+        "fidelity": "14c950706f1901914886042bc603f06f",
+        "audit": "9bc0e07eae86e7552804075634c1ce5d",
+        "prompt": null
+      }
+    },
+    {
+      "engine": "04_Research/strategies/RP_AUTO_1403_8125/engine.R",
+      "paper_key": "1403.8125",
+      "root_entries": ["RP_20260904_165332_skipped_base", "RP_20260904_163647_18444_rescued_rulefast"],
+      "artifacts": "stage_artifacts/replication/20260904_163647_18444",
+      "base_vintage_flags": [],
+      "structural_ok": false,
+      "structural_failed": ["fidelity_audit", "output", "coverage"],
+      "structural": {
+        "lane": {
+          "ok": true,
+          "engine_exists": true,
+          "fidelity_file": true,
+          "root_entries": 2
+        },
+        "fidelity_self": {
+          "ok": true,
+          "label": "faithful"
+        },
+        "fidelity_audit": {
+          "ok": false,
+          "verdict": "misdeclared",
+          "reason": "",
+          "audit_md5": "ba7828d793ee5e2d595380ff96c38ab8"
+        },
+        "pit_static": {
+          "ok": true,
+          "detector_clean": true,
+          "structural_hits": [],
+          "n_violations": 0,
+          "checks": [],
+          "error": ""
+        },
+        "c11": {
+          "ok": true,
+          "factors": [],
+          "sources": [],
+          "base_flag": [],
+          "unreadable": [],
+          "error": ""
+        },
+        "flags": {
+          "ok": true,
+          "hit": []
+        },
+        "output": {
+          "ok": null,
+          "factors_panel": false,
+          "n_max": 25,
+          "declared_construction": "engine_direct",
+          "why": "factors_panel.parquet 부재 — 산출 형태 미관측(선언만으로 FACTORS 폭을 인정하지 않는다)"
+        },
+        "coverage": {
+          "ok": null,
+          "why": "factors_panel 부재"
+        },
+        "source_scope": {
+          "ok": true,
+          "status": "ok",
+          "consumed": [],
+          "uncovered": [],
+          "hidden_loaders": [],
+          "hidden_sources": [],
+          "hidden_flow": {
+            "status": "ok",
+            "diagnostic_only": [],
+            "text_match_legacy": [],
+            "detail": []
+          },
+          "why": ""
+        }
+      },
+      "exposure": {
+        "prompt_missing": {
+          "exposed": true,
+          "file": "04_Research/strategies/RP_AUTO_1403_8125/prompt.txt",
+          "md5": null
+        },
+        "prompt_combo": {
+          "exposed": null,
+          "section_found": false,
+          "n_stat_lines": null,
+          "detector": "rf_floor_v2.R::rfv_base_engine_exposure"
+        },
+        "prompt_feedback_measured": {
+          "exposed": null,
+          "why": "prompt 부재"
+        },
+        "provenance_order": {
+          "exposed": null,
+          "mtime_utc": {
+            "prompt": null,
+            "engine": "2026-09-04T07:35:24Z",
+            "audit": "2026-09-04T07:53:32Z"
+          }
+        },
+        "wdir_extra_before_engine": {
+          "exposed": false,
+          "before": [],
+          "after": []
+        },
+        "transcript_missing": {
+          "exposed": false,
+          "transcript": "38cac35a-8696-4597-a37a-79d9abf3efd4.jsonl",
+          "started_utc": "2026-09-04T07:26:04.723Z",
+          "md5": "8c18a91757ecba333adee6194e71d712",
+          "n_runs_referencing": 2,
+          "n_runs_before_engine": 2
+        },
+        "transcript_auto_memory": {
+          "exposed": false,
+          "auto_memory_seen": false,
+          "metric_hits": 0,
+          "hook_context_n": 0,
+          "hook_context_metric_hits": 0,
+          "known_boundary_instruction_files": []
+        },
+        "transcript_tool_reads": {
+          "exposed": false,
+          "n_tool_uses": 18,
+          "n_perf_path_reads": 0,
+          "perf_path_reads": [],
+          "n_perf_path_blocked": 0,
+          "perf_path_blocked": [],
+          "web_forbidden": [],
+          "guard_attestation": {
+            "required": false
+          }
+        }
+      },
+      "lane_provenance": {
+        "present": false,
+        "mode": "",
+        "mode_source": "",
+        "claims_clean": false,
+        "file": "",
+        "sha256": "",
+        "engine_rel": "",
+        "guard_applied": false,
+        "n_audits": 0,
+        "note": "자기 신고 — 판정은 exposure 통로가 전사·파일과 대조한 결과다(FA-CLEAN-BASE-PATH)"
+      },
+      "eligible": {
+        "prompt": false,
+        "full": false
+      },
+      "order_hash": "32b482cf5130079fcac1c58c859d5c5c3ed1afe488328784633493dfaffc6372",
+      "md5": {
+        "engine": "b5c73412176120706f7819fbaacc976f",
+        "fidelity": "fc3b63f65897d8d2517b9604d41e8dd7",
+        "audit": "ba7828d793ee5e2d595380ff96c38ab8",
+        "prompt": null
+      }
+    },
+    {
+      "engine": "04_Research/strategies/RP_AUTO_2511_12490/engine.R",
+      "paper_key": "2511.12490",
+      "root_entries": ["RP_20260904_191543_skipped_base"],
+      "artifacts": "stage_artifacts/replication/20260904_190039_22572",
+      "base_vintage_flags": [],
+      "structural_ok": false,
+      "structural_failed": ["fidelity_audit", "output", "coverage"],
+      "structural": {
+        "lane": {
+          "ok": true,
+          "engine_exists": true,
+          "fidelity_file": true,
+          "root_entries": 1
+        },
+        "fidelity_self": {
+          "ok": true,
+          "label": "adapted"
+        },
+        "fidelity_audit": {
+          "ok": false,
+          "verdict": "misdeclared",
+          "reason": "",
+          "audit_md5": "b9579e1661ccce782a5ea600c6cc5439"
+        },
+        "pit_static": {
+          "ok": true,
+          "detector_clean": true,
+          "structural_hits": [],
+          "n_violations": 0,
+          "checks": [],
+          "error": ""
+        },
+        "c11": {
+          "ok": true,
+          "factors": [],
+          "sources": [],
+          "base_flag": [],
+          "unreadable": [],
+          "error": ""
+        },
+        "flags": {
+          "ok": true,
+          "hit": []
+        },
+        "output": {
+          "ok": null,
+          "factors_panel": false,
+          "n_max": 25,
+          "declared_construction": "engine_direct",
+          "why": "factors_panel.parquet 부재 — 산출 형태 미관측(선언만으로 FACTORS 폭을 인정하지 않는다)"
+        },
+        "coverage": {
+          "ok": null,
+          "why": "factors_panel 부재"
+        },
+        "source_scope": {
+          "ok": true,
+          "status": "ok",
+          "consumed": [],
+          "uncovered": [],
+          "hidden_loaders": [],
+          "hidden_sources": [],
+          "hidden_flow": {
+            "status": "ok",
+            "diagnostic_only": [],
+            "text_match_legacy": [],
+            "detail": []
+          },
+          "why": ""
+        }
+      },
+      "exposure": {
+        "prompt_missing": {
+          "exposed": true,
+          "file": "04_Research/strategies/RP_AUTO_2511_12490/prompt.txt",
+          "md5": null
+        },
+        "prompt_combo": {
+          "exposed": null,
+          "section_found": false,
+          "n_stat_lines": null,
+          "detector": "rf_floor_v2.R::rfv_base_engine_exposure"
+        },
+        "prompt_feedback_measured": {
+          "exposed": null,
+          "why": "prompt 부재"
+        },
+        "provenance_order": {
+          "exposed": null,
+          "mtime_utc": {
+            "prompt": null,
+            "engine": "2026-09-04T09:58:39Z",
+            "audit": "2026-09-04T10:15:43Z"
+          }
+        },
+        "wdir_extra_before_engine": {
+          "exposed": false,
+          "before": [],
+          "after": []
+        },
+        "transcript_missing": {
+          "exposed": false,
+          "transcript": "aa0fef22-9ce3-44f7-9e19-270c4537c195.jsonl",
+          "started_utc": "2026-09-04T09:34:03.825Z",
+          "md5": "993163078548bc385328d5c942fefd21",
+          "n_runs_referencing": 4,
+          "n_runs_before_engine": 4
+        },
+        "transcript_auto_memory": {
+          "exposed": false,
+          "auto_memory_seen": false,
+          "metric_hits": 0,
+          "hook_context_n": 0,
+          "hook_context_metric_hits": 0,
+          "known_boundary_instruction_files": []
+        },
+        "transcript_tool_reads": {
+          "exposed": true,
+          "n_tool_uses": 43,
+          "n_perf_path_reads": 2,
+          "perf_path_reads": ["Grep C:/Users/99922/OneDrive/Quant_Module_Moltbot/.cache/scheduler_logs 격자 패널|RP_2511_12490|국면 활성|PIT 위반", "Read C:/qm_cache/scheduler_logs/replication_auto_20260904.log"],
+          "n_perf_path_blocked": 0,
+          "perf_path_blocked": [],
+          "web_forbidden": [],
+          "guard_attestation": {
+            "required": false
+          }
+        }
+      },
+      "lane_provenance": {
+        "present": false,
+        "mode": "",
+        "mode_source": "",
+        "claims_clean": false,
+        "file": "",
+        "sha256": "",
+        "engine_rel": "",
+        "guard_applied": false,
+        "n_audits": 0,
+        "note": "자기 신고 — 판정은 exposure 통로가 전사·파일과 대조한 결과다(FA-CLEAN-BASE-PATH)"
+      },
+      "eligible": {
+        "prompt": false,
+        "full": false
+      },
+      "order_hash": "b87585fc2bc6548feb3375c8c811130123e919d180ecc5c2d9ee34e6cece19d2",
+      "md5": {
+        "engine": "de4214f65140d82ea5c1c91bcfdce38e",
+        "fidelity": "6ecb19d4c2e9f014c4671b2e00ece0da",
+        "audit": "b9579e1661ccce782a5ea600c6cc5439",
+        "prompt": null
+      }
+    },
+    {
+      "engine": "04_Research/strategies/RP_AUTO_COMBO_combo_1403_8125_2007_081/engine.R",
+      "paper_key": "",
+      "root_entries": [],
+      "artifacts": "",
+      "base_vintage_flags": [],
+      "structural_ok": false,
+      "structural_failed": ["lane", "fidelity_self", "output", "coverage", "source_scope"],
+      "structural": {
+        "lane": {
+          "ok": false,
+          "engine_exists": true,
+          "fidelity_file": true,
+          "root_entries": 0
+        },
+        "fidelity_self": {
+          "ok": false,
+          "label": "combination"
+        },
+        "fidelity_audit": {
+          "ok": true,
+          "verdict": "adapted",
+          "reason": "",
+          "audit_md5": "7c45270303b79d48b05cb1679b3f8303"
+        },
+        "pit_static": {
+          "ok": true,
+          "detector_clean": true,
+          "structural_hits": [],
+          "n_violations": 0,
+          "checks": [],
+          "error": ""
+        },
+        "c11": {
+          "ok": true,
+          "factors": [],
+          "sources": [],
+          "base_flag": [],
+          "unreadable": [],
+          "error": ""
+        },
+        "flags": {
+          "ok": true,
+          "hit": []
+        },
+        "output": {
+          "ok": null,
+          "factors_panel": false,
+          "n_max": 25,
+          "declared_construction": "",
+          "why": "기저 산출물 없음"
+        },
+        "coverage": {
+          "ok": null,
+          "why": "factors_panel 부재"
+        },
+        "source_scope": {
+          "ok": false,
+          "status": "ok",
+          "consumed": ["ecos_bond_rates.parquet"],
+          "uncovered": ["ecos_bond_rates.parquet"],
+          "hidden_loaders": [],
+          "hidden_sources": [],
+          "hidden_flow": {
+            "status": "ok",
+            "diagnostic_only": [],
+            "text_match_legacy": [],
+            "detail": []
+          },
+          "why": ""
+        }
+      },
+      "exposure": {
+        "prompt_missing": {
+          "exposed": false,
+          "file": "04_Research/strategies/RP_AUTO_COMBO_combo_1403_8125_2007_081/prompt.txt",
+          "md5": "60afe6db26512e4731fc9a2bf3aec075"
+        },
+        "prompt_combo": {
+          "exposed": true,
+          "section_found": true,
+          "n_stat_lines": 7,
+          "detector": "rf_floor_v2.R::rfv_base_engine_exposure"
+        },
+        "prompt_feedback_measured": {
+          "exposed": false,
+          "section_found": false,
+          "n_feedback_headers": 0,
+          "n_known_sections": 0,
+          "n_section_lines": 0,
+          "n_hit_lines": 0
+        },
+        "provenance_order": {
+          "exposed": false,
+          "mtime_utc": {
+            "prompt": "2026-09-12T16:48:49Z",
+            "engine": "2026-09-12T17:21:40Z",
+            "audit": "2026-09-12T17:34:29Z"
+          }
+        },
+        "wdir_extra_before_engine": {
+          "exposed": false,
+          "before": [],
+          "after": []
+        },
+        "transcript_missing": {
+          "exposed": true,
+          "why": "엔진 mtime 이전 구현 전사 없음",
+          "n_runs_referencing": 0
+        },
+        "transcript_auto_memory": {
+          "exposed": null,
+          "why": "전사 없음"
+        },
+        "transcript_tool_reads": {
+          "exposed": null,
+          "why": "전사 없음"
+        }
+      },
+      "lane_provenance": {
+        "present": false,
+        "mode": "",
+        "mode_source": "",
+        "claims_clean": false,
+        "file": "",
+        "sha256": "",
+        "engine_rel": "",
+        "guard_applied": false,
+        "n_audits": 0,
+        "note": "자기 신고 — 판정은 exposure 통로가 전사·파일과 대조한 결과다(FA-CLEAN-BASE-PATH)"
+      },
+      "eligible": {
+        "prompt": false,
+        "full": false
+      },
+      "order_hash": "2224baa23cc1d63b33eefa2aa7bbf21f768778fa8c9d77f35700205139eba1ee",
+      "md5": {
+        "engine": "60e06421e5b0a178c538fe2a351127e3",
+        "fidelity": "57b93031ccfb8132976009abc81920ab",
+        "audit": "7c45270303b79d48b05cb1679b3f8303",
+        "prompt": "60afe6db26512e4731fc9a2bf3aec075"
+      }
+    },
+    {
+      "engine": "04_Research/strategies/RP_AUTO_2006_04639/engine.R",
+      "paper_key": "2006.04639",
+      "root_entries": ["RP_20260905_172632_skipped_base", "RP_20260907_103522_skipped_base"],
+      "artifacts": "stage_artifacts/replication/20260907_101130_20668",
+      "base_vintage_flags": [],
+      "structural_ok": false,
+      "structural_failed": ["fidelity_audit", "output", "coverage"],
+      "structural": {
+        "lane": {
+          "ok": true,
+          "engine_exists": true,
+          "fidelity_file": true,
+          "root_entries": 2
+        },
+        "fidelity_self": {
+          "ok": true,
+          "label": "adapted"
+        },
+        "fidelity_audit": {
+          "ok": false,
+          "verdict": "misdeclared",
+          "reason": "",
+          "audit_md5": "cb43bf018b1b6d2dff2d8ee1942fca54"
+        },
+        "pit_static": {
+          "ok": true,
+          "detector_clean": true,
+          "structural_hits": [],
+          "n_violations": 0,
+          "checks": [],
+          "error": ""
+        },
+        "c11": {
+          "ok": true,
+          "factors": [],
+          "sources": [],
+          "base_flag": [],
+          "unreadable": [],
+          "error": ""
+        },
+        "flags": {
+          "ok": true,
+          "hit": []
+        },
+        "output": {
+          "ok": null,
+          "factors_panel": false,
+          "n_max": 25,
+          "declared_construction": "engine_direct",
+          "why": "factors_panel.parquet 부재 — 산출 형태 미관측(선언만으로 FACTORS 폭을 인정하지 않는다)"
+        },
+        "coverage": {
+          "ok": null,
+          "why": "factors_panel 부재"
+        },
+        "source_scope": {
+          "ok": true,
+          "status": "ok",
+          "consumed": [],
+          "uncovered": [],
+          "hidden_loaders": [],
+          "hidden_sources": [],
+          "hidden_flow": {
+            "status": "ok",
+            "diagnostic_only": [],
+            "text_match_legacy": [],
+            "detail": []
+          },
+          "why": ""
+        }
+      },
+      "exposure": {
+        "prompt_missing": {
+          "exposed": false,
+          "file": "04_Research/strategies/RP_AUTO_2006_04639/prompt.txt",
+          "md5": "a29248c87fdd1b14b90b42eb3088c98b"
+        },
+        "prompt_combo": {
+          "exposed": false,
+          "section_found": false,
+          "n_stat_lines": 0,
+          "detector": "rf_floor_v2.R::rfv_base_engine_exposure"
+        },
+        "prompt_feedback_measured": {
+          "exposed": false,
+          "section_found": true,
+          "n_feedback_headers": 1,
+          "n_known_sections": 1,
+          "n_section_lines": 13,
+          "n_hit_lines": 0
+        },
+        "provenance_order": {
+          "exposed": false,
+          "mtime_utc": {
+            "prompt": "2026-09-07T00:48:31Z",
+            "engine": "2026-09-07T01:05:47Z",
+            "audit": "2026-09-07T01:35:21Z"
+          }
+        },
+        "wdir_extra_before_engine": {
+          "exposed": false,
+          "before": [],
+          "after": [".inspect_tmp.R"]
+        },
+        "transcript_missing": {
+          "exposed": false,
+          "transcript": "1f32fff1-5577-42bb-a9cb-17a5a933ca45.jsonl",
+          "started_utc": "2026-09-07T00:48:33.230Z",
+          "md5": "9b515da5a2defa27a5797a87e464da95",
+          "n_runs_referencing": 2,
+          "n_runs_before_engine": 2
+        },
+        "transcript_auto_memory": {
+          "exposed": true,
+          "auto_memory_seen": true,
+          "metric_hits": 14,
+          "hook_context_n": 0,
+          "hook_context_metric_hits": 0,
+          "known_boundary_instruction_files": [
+            {
+              "path": "C:/Users/99922/OneDrive/Quant_Module_Moltbot/CLAUDE.md",
+              "sha256": "59474a87a4e5e21ce800b3dc2ee73625235efc996ea441c643a552573ecee940",
+              "metric_hits": 2
+            },
+            {
+              "path": "C:/Users/99922/OneDrive/Quant_Module_Moltbot/.claude/rules/lean-loop.md",
+              "sha256": "659814f91f4f7992e05c06e3eb4a15c2b7c0a8e99ab440a5fb15cc06f1bb37c8",
+              "metric_hits": 0
+            },
+            {
+              "path": "C:/Users/99922/OneDrive/Quant_Module_Moltbot/.claude/rules/pit.md",
+              "sha256": "43b5b494fa9ea4d25d9f0ccc7609712310bf47960173684ccc6555e2b96190c9",
+              "metric_hits": 4
+            }
+          ]
+        },
+        "transcript_tool_reads": {
+          "exposed": true,
+          "n_tool_uses": 34,
+          "n_perf_path_reads": 1,
+          "perf_path_reads": ["Read C:/Users/99922/OneDrive/Quant_Module_Moltbot/04_Research/strategies/RP_AUTO_2006_04639/fidelity_audit.json"],
+          "n_perf_path_blocked": 0,
+          "perf_path_blocked": [],
+          "web_forbidden": [],
+          "guard_attestation": {
+            "required": false
+          }
+        }
+      },
+      "lane_provenance": {
+        "present": false,
+        "mode": "",
+        "mode_source": "",
+        "claims_clean": false,
+        "file": "",
+        "sha256": "",
+        "engine_rel": "",
+        "guard_applied": false,
+        "n_audits": 0,
+        "note": "자기 신고 — 판정은 exposure 통로가 전사·파일과 대조한 결과다(FA-CLEAN-BASE-PATH)"
+      },
+      "eligible": {
+        "prompt": false,
+        "full": false
+      },
+      "order_hash": "34f67741175c916790d3377ede45e71d62e5a864c254114e39721e60dcbf6d82",
+      "md5": {
+        "engine": "f78734d6afb42ceca23496d6a5c89e63",
+        "fidelity": "6dbb398d301f4145d8838c1eb58e79ae",
+        "audit": "cb43bf018b1b6d2dff2d8ee1942fca54",
+        "prompt": "a29248c87fdd1b14b90b42eb3088c98b"
+      }
+    },
+    {
+      "engine": "04_Research/strategies/RP_AUTO_2404_08129/engine.R",
+      "paper_key": "2404.08129",
+      "root_entries": ["RP_20260905_184253_720_adapted_rulefast", "RP_20260906_223437_skipped_base"],
+      "artifacts": "stage_artifacts/replication/20260906_221711_23848",
+      "base_vintage_flags": [],
+      "structural_ok": false,
+      "structural_failed": ["output", "coverage", "source_scope"],
+      "structural": {
+        "lane": {
+          "ok": true,
+          "engine_exists": true,
+          "fidelity_file": true,
+          "root_entries": 2
+        },
+        "fidelity_self": {
+          "ok": true,
+          "label": "faithful"
+        },
+        "fidelity_audit": {
+          "ok": true,
+          "verdict": "adapted",
+          "reason": "",
+          "audit_md5": "2fd45beb4494a57d5b55faabf23a2606"
+        },
+        "pit_static": {
+          "ok": true,
+          "detector_clean": true,
+          "structural_hits": [],
+          "n_violations": 0,
+          "checks": [],
+          "error": ""
+        },
+        "c11": {
+          "ok": true,
+          "factors": [],
+          "sources": [],
+          "base_flag": [],
+          "unreadable": [],
+          "error": ""
+        },
+        "flags": {
+          "ok": true,
+          "hit": []
+        },
+        "output": {
+          "ok": null,
+          "factors_panel": false,
+          "n_max": 25,
+          "declared_construction": "engine_direct",
+          "why": "factors_panel.parquet 부재 — 산출 형태 미관측(선언만으로 FACTORS 폭을 인정하지 않는다)"
+        },
+        "coverage": {
+          "ok": null,
+          "why": "factors_panel 부재"
+        },
+        "source_scope": {
+          "ok": false,
+          "status": "ok",
+          "consumed": ["ecos_bond_rates.parquet"],
+          "uncovered": ["ecos_bond_rates.parquet"],
+          "hidden_loaders": [],
+          "hidden_sources": [],
+          "hidden_flow": {
+            "status": "ok",
+            "diagnostic_only": [],
+            "text_match_legacy": [],
+            "detail": []
+          },
+          "why": ""
+        }
+      },
+      "exposure": {
+        "prompt_missing": {
+          "exposed": false,
+          "file": "04_Research/strategies/RP_AUTO_2404_08129/prompt.txt",
+          "md5": "5401dc02b1e7759b93a882d1af1f869c"
+        },
+        "prompt_combo": {
+          "exposed": false,
+          "section_found": false,
+          "n_stat_lines": 0,
+          "detector": "rf_floor_v2.R::rfv_base_engine_exposure"
+        },
+        "prompt_feedback_measured": {
+          "exposed": true,
+          "section_found": true,
+          "n_feedback_headers": 1,
+          "n_known_sections": 1,
+          "n_section_lines": 30,
+          "n_hit_lines": 2
+        },
+        "provenance_order": {
+          "exposed": false,
+          "mtime_utc": {
+            "prompt": "2026-09-06T12:40:31Z",
+            "engine": "2026-09-06T13:10:18Z",
+            "audit": "2026-09-06T13:34:36Z"
+          }
+        },
+        "wdir_extra_before_engine": {
+          "exposed": false,
+          "before": [],
+          "after": [".chk_data.R"]
+        },
+        "transcript_missing": {
+          "exposed": false,
+          "transcript": "88901a75-8eaa-4684-943c-dc7dc2e31ecf.jsonl",
+          "started_utc": "2026-09-06T12:40:33.142Z",
+          "md5": "e14f34e26a20a01bb217981a7c9edb9c",
+          "n_runs_referencing": 2,
+          "n_runs_before_engine": 2
+        },
+        "transcript_auto_memory": {
+          "exposed": true,
+          "auto_memory_seen": true,
+          "metric_hits": 14,
+          "hook_context_n": 0,
+          "hook_context_metric_hits": 0,
+          "known_boundary_instruction_files": [
+            {
+              "path": "C:/Users/99922/OneDrive/Quant_Module_Moltbot/CLAUDE.md",
+              "sha256": "59474a87a4e5e21ce800b3dc2ee73625235efc996ea441c643a552573ecee940",
+              "metric_hits": 2
+            },
+            {
+              "path": "C:/Users/99922/OneDrive/Quant_Module_Moltbot/.claude/rules/lean-loop.md",
+              "sha256": "659814f91f4f7992e05c06e3eb4a15c2b7c0a8e99ab440a5fb15cc06f1bb37c8",
+              "metric_hits": 0
+            },
+            {
+              "path": "C:/Users/99922/OneDrive/Quant_Module_Moltbot/.claude/rules/pit.md",
+              "sha256": "43b5b494fa9ea4d25d9f0ccc7609712310bf47960173684ccc6555e2b96190c9",
+              "metric_hits": 4
+            }
+          ]
+        },
+        "transcript_tool_reads": {
+          "exposed": true,
+          "n_tool_uses": 70,
+          "n_perf_path_reads": 12,
+          "perf_path_reads": ["Read C:/Users/99922/OneDrive/Quant_Module_Moltbot/04_Research/strategies/RP_AUTO_2404_08129/fidelity_audit.json", "Read C:/Users/99922/.claude/projects/C--Users-99922-OneDrive-Quant-Module-Moltbot/memory/_archive_harness_2026Q3/feedback-replication-harness-rebalance-axis-is-month", "Grep 04_Research/strategies \"verdict\": \"(faithful|adapted)\" RP_AUTO_*/fidelity_audit.json", "Grep 04_Research/strategies \"verdict\" RP_AUTO_*/fidelity_audit.json", "Grep 02_Infrastructure/contracts/essence_score.R has_short|n_max", "Grep 06_Registry/reinforce_ledger_l1.json 2006[._]04639", "Glob stage_artifacts/replication/20260905_184253_720/*", "Grep 06_Registry/reinforce_ledger_l1.json \"paper_key\": \"2006.04639\"", "Read C:/Users/99922/OneDrive/Quant_Module_Moltbot/stage_artifacts/replication/20260905_184253_720/00_manifest.json", "Read C:/Users/99922/OneDrive/Quant_Module_Moltbot/stage_artifacts/replication/20260905_171637_29296/authoritative_remeasure.json", "Read C:/Users/99922/OneDrive/Quant_Module_Moltbot/stage_artifacts/replication/20260905_184253_720/analysis_sample_alignment.csv", "Read C:/Users/99922/OneDrive/Quant_Module_Moltbot/stage_artifacts/replication/20260905_184253_720/analysis_ic.csv"],
+          "n_perf_path_blocked": 0,
+          "perf_path_blocked": [],
+          "web_forbidden": [],
+          "guard_attestation": {
+            "required": false
+          }
+        }
+      },
+      "lane_provenance": {
+        "present": false,
+        "mode": "",
+        "mode_source": "",
+        "claims_clean": false,
+        "file": "",
+        "sha256": "",
+        "engine_rel": "",
+        "guard_applied": false,
+        "n_audits": 0,
+        "note": "자기 신고 — 판정은 exposure 통로가 전사·파일과 대조한 결과다(FA-CLEAN-BASE-PATH)"
+      },
+      "eligible": {
+        "prompt": false,
+        "full": false
+      },
+      "order_hash": "e8701771bf093dae1c83f53a11a53ef7715195ed4012d40c2f5e9987cf4c7e67",
+      "md5": {
+        "engine": "3644760bb5f59be14e3e848bc4a49041",
+        "fidelity": "c16a00198aa11cbcc6a8808191e908e9",
+        "audit": "2fd45beb4494a57d5b55faabf23a2606",
+        "prompt": "5401dc02b1e7759b93a882d1af1f869c"
+      }
+    },
+    {
+      "engine": "04_Research/strategies/RP_AUTO_0806_2606/engine.R",
+      "paper_key": "0806.2606",
+      "root_entries": ["RP_20260907_142938_skipped_base"],
+      "artifacts": "stage_artifacts/replication/20260907_134612_36700",
+      "base_vintage_flags": [],
+      "structural_ok": false,
+      "structural_failed": ["fidelity_audit", "source_scope"],
+      "structural": {
+        "lane": {
+          "ok": true,
+          "engine_exists": true,
+          "fidelity_file": true,
+          "root_entries": 1
+        },
+        "fidelity_self": {
+          "ok": true,
+          "label": "adapted"
+        },
+        "fidelity_audit": {
+          "ok": false,
+          "verdict": "misdeclared",
+          "reason": "",
+          "audit_md5": "7c2359db9e24e664c2d80823e0e6d041"
+        },
+        "pit_static": {
+          "ok": true,
+          "detector_clean": true,
+          "structural_hits": [],
+          "n_violations": 0,
+          "checks": [],
+          "error": ""
+        },
+        "c11": {
+          "ok": true,
+          "factors": [],
+          "sources": [],
+          "base_flag": [],
+          "unreadable": [],
+          "error": ""
+        },
+        "flags": {
+          "ok": true,
+          "hit": []
+        },
+        "output": {
+          "ok": true,
+          "factors_panel": true,
+          "median_names_per_date": 345,
+          "n_max": 25,
+          "n_dates": 260
+        },
+        "coverage": {
+          "ok": true,
+          "first_signal_date": "2005-01-31",
+          "limit": "2005-01-31",
+          "start_date": "2005-01-01"
+        },
+        "source_scope": {
+          "ok": false,
+          "status": "ok",
+          "consumed": ["fundamental_xlsx.parquet"],
+          "uncovered": ["fundamental_xlsx.parquet"],
+          "hidden_loaders": [],
+          "hidden_sources": [],
+          "hidden_flow": {
+            "status": "ok",
+            "diagnostic_only": [],
+            "text_match_legacy": [],
+            "detail": []
+          },
+          "why": ""
+        }
+      },
+      "exposure": {
+        "prompt_missing": {
+          "exposed": false,
+          "file": "04_Research/strategies/RP_AUTO_0806_2606/prompt.txt",
+          "md5": "1703ff17c1276452d225ac9f4bb38adb"
+        },
+        "prompt_combo": {
+          "exposed": false,
+          "section_found": false,
+          "n_stat_lines": 0,
+          "detector": "rf_floor_v2.R::rfv_base_engine_exposure"
+        },
+        "prompt_feedback_measured": {
+          "exposed": false,
+          "section_found": true,
+          "n_feedback_headers": 1,
+          "n_known_sections": 1,
+          "n_section_lines": 13,
+          "n_hit_lines": 0
+        },
+        "provenance_order": {
+          "exposed": false,
+          "mtime_utc": {
+            "prompt": "2026-09-07T03:02:04Z",
+            "engine": "2026-09-07T03:33:40Z",
+            "audit": "2026-09-07T05:29:36Z"
+          }
+        },
+        "wdir_extra_before_engine": {
+          "exposed": false,
+          "before": [],
+          "after": []
+        },
+        "transcript_missing": {
+          "exposed": false,
+          "transcript": "5c9bd9b4-4f68-4355-ba3a-def074c3e56c.jsonl",
+          "started_utc": "2026-09-07T03:02:05.621Z",
+          "md5": "673c2d577731e121c0225dba4bd001a0",
+          "n_runs_referencing": 2,
+          "n_runs_before_engine": 2
+        },
+        "transcript_auto_memory": {
+          "exposed": true,
+          "auto_memory_seen": true,
+          "metric_hits": 14,
+          "hook_context_n": 2,
+          "hook_context_metric_hits": 0,
+          "known_boundary_instruction_files": [
+            {
+              "path": "C:/Users/99922/OneDrive/Quant_Module_Moltbot/CLAUDE.md",
+              "sha256": "59474a87a4e5e21ce800b3dc2ee73625235efc996ea441c643a552573ecee940",
+              "metric_hits": 2
+            },
+            {
+              "path": "C:/Users/99922/OneDrive/Quant_Module_Moltbot/.claude/rules/lean-loop.md",
+              "sha256": "659814f91f4f7992e05c06e3eb4a15c2b7c0a8e99ab440a5fb15cc06f1bb37c8",
+              "metric_hits": 0
+            },
+            {
+              "path": "C:/Users/99922/OneDrive/Quant_Module_Moltbot/.claude/rules/pit.md",
+              "sha256": "43b5b494fa9ea4d25d9f0ccc7609712310bf47960173684ccc6555e2b96190c9",
+              "metric_hits": 4
+            }
+          ]
+        },
+        "transcript_tool_reads": {
+          "exposed": true,
+          "n_tool_uses": 37,
+          "n_perf_path_reads": 4,
+          "perf_path_reads": ["Read C:/Users/99922/OneDrive/Quant_Module_Moltbot/04_Research/strategies/RP_AUTO_0806_2606/fidelity_audit.json", "Read C:/Users/99922/OneDrive/Quant_Module_Moltbot/stage_artifacts/replication/20260907_111327_24756/authoritative_remeasure.json", "Read C:/Users/99922/.claude/projects/C--Users-99922-OneDrive-Quant-Module-Moltbot/memory/reference-arxiv-full-text-via-html-endpoint.md", "Read C:/Users/99922/.claude/projects/C--Users-99922-OneDrive-Quant-Module-Moltbot/memory/MEMORY.md"],
+          "n_perf_path_blocked": 0,
+          "perf_path_blocked": [],
+          "web_forbidden": [],
+          "guard_attestation": {
+            "required": false
+          }
+        }
+      },
+      "lane_provenance": {
+        "present": false,
+        "mode": "",
+        "mode_source": "",
+        "claims_clean": false,
+        "file": "",
+        "sha256": "",
+        "engine_rel": "",
+        "guard_applied": false,
+        "n_audits": 0,
+        "note": "자기 신고 — 판정은 exposure 통로가 전사·파일과 대조한 결과다(FA-CLEAN-BASE-PATH)"
+      },
+      "eligible": {
+        "prompt": false,
+        "full": false
+      },
+      "order_hash": "bbd9e566695e59cf0016704a6b43b54992f3efc0755252801648f07ac4e45ee2",
+      "md5": {
+        "engine": "0fc989148daeae56aca9edd03bea3286",
+        "fidelity": "95cf8fc273df7d7b7fa734a6294fb260",
+        "audit": "7c2359db9e24e664c2d80823e0e6d041",
+        "prompt": "1703ff17c1276452d225ac9f4bb38adb"
+      }
+    },
+    {
+      "engine": "04_Research/strategies/RP_AUTO_1707_05552/engine.R",
+      "paper_key": "1707.05552",
+      "root_entries": ["RP_20260907_173919_skipped_base"],
+      "artifacts": "stage_artifacts/replication/20260907_172213_22908",
+      "base_vintage_flags": [],
+      "structural_ok": false,
+      "structural_failed": ["fidelity_audit"],
+      "structural": {
+        "lane": {
+          "ok": true,
+          "engine_exists": true,
+          "fidelity_file": true,
+          "root_entries": 1
+        },
+        "fidelity_self": {
+          "ok": true,
+          "label": "adapted"
+        },
+        "fidelity_audit": {
+          "ok": false,
+          "verdict": "misdeclared",
+          "reason": "",
+          "audit_md5": "66a08a2c9914fe5b4d80310f7ff09832"
+        },
+        "pit_static": {
+          "ok": true,
+          "detector_clean": true,
+          "structural_hits": [],
+          "n_violations": 0,
+          "checks": [],
+          "error": ""
+        },
+        "c11": {
+          "ok": true,
+          "factors": [],
+          "sources": [],
+          "base_flag": [],
+          "unreadable": [],
+          "error": ""
+        },
+        "flags": {
+          "ok": true,
+          "hit": []
+        },
+        "output": {
+          "ok": true,
+          "factors_panel": true,
+          "median_names_per_date": 348,
+          "n_max": 25,
+          "n_dates": 260
+        },
+        "coverage": {
+          "ok": true,
+          "first_signal_date": "2005-01-31",
+          "limit": "2005-01-31",
+          "start_date": "2005-01-01"
+        },
+        "source_scope": {
+          "ok": true,
+          "status": "ok",
+          "consumed": [],
+          "uncovered": [],
+          "hidden_loaders": [],
+          "hidden_sources": [],
+          "hidden_flow": {
+            "status": "ok",
+            "diagnostic_only": [],
+            "text_match_legacy": [],
+            "detail": []
+          },
+          "why": ""
+        }
+      },
+      "exposure": {
+        "prompt_missing": {
+          "exposed": false,
+          "file": "04_Research/strategies/RP_AUTO_1707_05552/prompt.txt",
+          "md5": "d0e732ab30d171ff8cac5998bab800a0"
+        },
+        "prompt_combo": {
+          "exposed": false,
+          "section_found": false,
+          "n_stat_lines": 0,
+          "detector": "rf_floor_v2.R::rfv_base_engine_exposure"
+        },
+        "prompt_feedback_measured": {
+          "exposed": false,
+          "section_found": true,
+          "n_feedback_headers": 1,
+          "n_known_sections": 1,
+          "n_section_lines": 14,
+          "n_hit_lines": 0
+        },
+        "provenance_order": {
+          "exposed": false,
+          "mtime_utc": {
+            "prompt": "2026-09-07T08:08:31Z",
+            "engine": "2026-09-07T08:15:56Z",
+            "audit": "2026-09-07T08:39:18Z"
+          }
+        },
+        "wdir_extra_before_engine": {
+          "exposed": false,
+          "before": [],
+          "after": []
+        },
+        "transcript_missing": {
+          "exposed": false,
+          "transcript": "02a42205-0d00-40df-b619-c350fb10ffcf.jsonl",
+          "started_utc": "2026-09-07T08:08:33.517Z",
+          "md5": "cb6a702cfe7acf067daff04c8ab1268a",
+          "n_runs_referencing": 3,
+          "n_runs_before_engine": 3
+        },
+        "transcript_auto_memory": {
+          "exposed": true,
+          "auto_memory_seen": true,
+          "metric_hits": 3,
+          "hook_context_n": 0,
+          "hook_context_metric_hits": 0,
+          "known_boundary_instruction_files": [
+            {
+              "path": "C:/Users/99922/OneDrive/Quant_Module_Moltbot/CLAUDE.md",
+              "sha256": "59474a87a4e5e21ce800b3dc2ee73625235efc996ea441c643a552573ecee940",
+              "metric_hits": 2
+            },
+            {
+              "path": "C:/Users/99922/OneDrive/Quant_Module_Moltbot/.claude/rules/lean-loop.md",
+              "sha256": "659814f91f4f7992e05c06e3eb4a15c2b7c0a8e99ab440a5fb15cc06f1bb37c8",
+              "metric_hits": 0
+            },
+            {
+              "path": "C:/Users/99922/OneDrive/Quant_Module_Moltbot/.claude/rules/pit.md",
+              "sha256": "43b5b494fa9ea4d25d9f0ccc7609712310bf47960173684ccc6555e2b96190c9",
+              "metric_hits": 4
+            }
+          ]
+        },
+        "transcript_tool_reads": {
+          "exposed": true,
+          "n_tool_uses": 28,
+          "n_perf_path_reads": 8,
+          "perf_path_reads": ["Read C:/Users/99922/OneDrive/Quant_Module_Moltbot/04_Research/strategies/RP_AUTO_1707_05552/fidelity_audit.json", "Read C:/Users/99922/OneDrive/Quant_Module_Moltbot/06_Registry/replication_request.json", "Read C:/Users/99922/.claude/projects/C--Users-99922-OneDrive-Quant-Module-Moltbot/memory/project-replication-prompt-template-liquidity-line-conflicts-with-sot-202609", "Read C:/Users/99922/.claude/projects/C--Users-99922-OneDrive-Quant-Module-Moltbot/memory/reference-autonomous-session-cannot-execute-r-static-verification-only-20260", "Grep C:/Users/99922/OneDrive/Quant_Module_Moltbot/06_Registry/module_catalog.json 1707", "Grep C:/Users/99922/OneDrive/Quant_Module_Moltbot/02_Infrastructure/alpha_search/run_paper_replication.R FIDELITY|portfolio_spec|commission_paper|engine_direct|fidel", "Glob stage_artifacts/replication/20260907_153605_34808/*", "Read C:/Users/99922/.claude/projects/C--Users-99922-OneDrive-Quant-Module-Moltbot/memory/MEMORY.md"],
+          "n_perf_path_blocked": 0,
+          "perf_path_blocked": [],
+          "web_forbidden": [],
+          "guard_attestation": {
+            "required": false
+          }
+        }
+      },
+      "lane_provenance": {
+        "present": false,
+        "mode": "",
+        "mode_source": "",
+        "claims_clean": false,
+        "file": "",
+        "sha256": "",
+        "engine_rel": "",
+        "guard_applied": false,
+        "n_audits": 0,
+        "note": "자기 신고 — 판정은 exposure 통로가 전사·파일과 대조한 결과다(FA-CLEAN-BASE-PATH)"
+      },
+      "eligible": {
+        "prompt": false,
+        "full": false
+      },
+      "order_hash": "b86addf876b5ac1b14a9a21bba9c30f568d665f19fabf61564b7f21a856b7580",
+      "md5": {
+        "engine": "8a19b48968b1ee24402e6bdb611b233e",
+        "fidelity": "8c254ca9e1e094feeda3f01a06bf579c",
+        "audit": "66a08a2c9914fe5b4d80310f7ff09832",
+        "prompt": "d0e732ab30d171ff8cac5998bab800a0"
+      }
+    },
+    {
+      "engine": "04_Research/strategies/RP_AUTO_COMBO_combo_1403_8125_2301_091/engine.R",
+      "paper_key": "",
+      "root_entries": [],
+      "artifacts": "",
+      "base_vintage_flags": [],
+      "structural_ok": false,
+      "structural_failed": ["lane", "fidelity_self", "fidelity_audit", "output", "coverage", "source_scope"],
+      "structural": {
+        "lane": {
+          "ok": false,
+          "engine_exists": true,
+          "fidelity_file": true,
+          "root_entries": 0
+        },
+        "fidelity_self": {
+          "ok": false,
+          "label": "combination"
+        },
+        "fidelity_audit": {
+          "ok": false,
+          "verdict": "misdeclared",
+          "reason": "",
+          "audit_md5": "12a88a0b3b4e4d0468e1be95557d533d"
+        },
+        "pit_static": {
+          "ok": true,
+          "detector_clean": true,
+          "structural_hits": [],
+          "n_violations": 0,
+          "checks": [],
+          "error": ""
+        },
+        "c11": {
+          "ok": true,
+          "factors": [],
+          "sources": [],
+          "base_flag": [],
+          "unreadable": [],
+          "error": ""
+        },
+        "flags": {
+          "ok": true,
+          "hit": []
+        },
+        "output": {
+          "ok": null,
+          "factors_panel": false,
+          "n_max": 25,
+          "declared_construction": "",
+          "why": "기저 산출물 없음"
+        },
+        "coverage": {
+          "ok": null,
+          "why": "factors_panel 부재"
+        },
+        "source_scope": {
+          "ok": false,
+          "status": "ok",
+          "consumed": ["ecos_bond_rates.parquet"],
+          "uncovered": ["ecos_bond_rates.parquet"],
+          "hidden_loaders": [],
+          "hidden_sources": [],
+          "hidden_flow": {
+            "status": "ok",
+            "diagnostic_only": [],
+            "text_match_legacy": [],
+            "detail": []
+          },
+          "why": ""
+        }
+      },
+      "exposure": {
+        "prompt_missing": {
+          "exposed": false,
+          "file": "04_Research/strategies/RP_AUTO_COMBO_combo_1403_8125_2301_091/prompt.txt",
+          "md5": "c31b67bb272768b01d8d84ad6a007276"
+        },
+        "prompt_combo": {
+          "exposed": true,
+          "section_found": true,
+          "n_stat_lines": 5,
+          "detector": "rf_floor_v2.R::rfv_base_engine_exposure"
+        },
+        "prompt_feedback_measured": {
+          "exposed": false,
+          "section_found": false,
+          "n_feedback_headers": 0,
+          "n_known_sections": 0,
+          "n_section_lines": 0,
+          "n_hit_lines": 0
+        },
+        "provenance_order": {
+          "exposed": false,
+          "mtime_utc": {
+            "prompt": "2026-09-10T02:28:07Z",
+            "engine": "2026-09-10T03:36:41Z",
+            "audit": "2026-09-10T04:01:29Z"
+          }
+        },
+        "wdir_extra_before_engine": {
+          "exposed": false,
+          "before": [],
+          "after": ["engine_factors_base.R"]
+        },
+        "transcript_missing": {
+          "exposed": true,
+          "why": "엔진 mtime 이전 구현 전사 없음",
+          "n_runs_referencing": 0
+        },
+        "transcript_auto_memory": {
+          "exposed": null,
+          "why": "전사 없음"
+        },
+        "transcript_tool_reads": {
+          "exposed": null,
+          "why": "전사 없음"
+        }
+      },
+      "lane_provenance": {
+        "present": false,
+        "mode": "",
+        "mode_source": "",
+        "claims_clean": false,
+        "file": "",
+        "sha256": "",
+        "engine_rel": "",
+        "guard_applied": false,
+        "n_audits": 0,
+        "note": "자기 신고 — 판정은 exposure 통로가 전사·파일과 대조한 결과다(FA-CLEAN-BASE-PATH)"
+      },
+      "eligible": {
+        "prompt": false,
+        "full": false
+      },
+      "order_hash": "c4e94fead9f7acc098e3ddc57a7def7b13697c2b0ddd05b6f01d21b43d240628",
+      "md5": {
+        "engine": "0bb75a4535fde09ebf8fed09984c94d2",
+        "fidelity": "dcdd64547d8dc57569bbf4d3e1b7b220",
+        "audit": "12a88a0b3b4e4d0468e1be95557d533d",
+        "prompt": "c31b67bb272768b01d8d84ad6a007276"
+      }
+    },
+    {
+      "engine": "04_Research/strategies/RP_AUTO_2003_02515/engine.R",
+      "paper_key": "2003.02515",
+      "root_entries": ["RP_20260912_212323_skipped_base"],
+      "artifacts": "stage_artifacts/replication/20260912_205731_6912",
+      "base_vintage_flags": ["fdb_202608_v1"],
+      "structural_ok": false,
+      "structural_failed": ["fidelity_audit", "flags"],
+      "structural": {
+        "lane": {
+          "ok": true,
+          "engine_exists": true,
+          "fidelity_file": true,
+          "root_entries": 1
+        },
+        "fidelity_self": {
+          "ok": true,
+          "label": "adapted"
+        },
+        "fidelity_audit": {
+          "ok": false,
+          "verdict": "misdeclared",
+          "reason": "",
+          "audit_md5": "cb474491df7f7126b158206649d223ae"
+        },
+        "pit_static": {
+          "ok": true,
+          "detector_clean": true,
+          "structural_hits": [],
+          "n_violations": 0,
+          "checks": [],
+          "error": ""
+        },
+        "c11": {
+          "ok": true,
+          "factors": [],
+          "sources": [],
+          "base_flag": [],
+          "unreadable": [],
+          "error": ""
+        },
+        "flags": {
+          "ok": false,
+          "hit": ["fdb_202608_v1"]
+        },
+        "output": {
+          "ok": true,
+          "factors_panel": true,
+          "median_names_per_date": 349,
+          "n_max": 25,
+          "n_dates": 260
+        },
+        "coverage": {
+          "ok": true,
+          "first_signal_date": "2005-01-31",
+          "limit": "2005-01-31",
+          "start_date": "2005-01-01"
+        },
+        "source_scope": {
+          "ok": true,
+          "status": "ok",
+          "consumed": [],
+          "uncovered": [],
+          "hidden_loaders": [],
+          "hidden_sources": [],
+          "hidden_flow": {
+            "status": "ok",
+            "diagnostic_only": [],
+            "text_match_legacy": [],
+            "detail": []
+          },
+          "why": ""
+        }
+      },
+      "exposure": {
+        "prompt_missing": {
+          "exposed": false,
+          "file": "04_Research/strategies/RP_AUTO_2003_02515/prompt.txt",
+          "md5": "6bf76ca087741d6822869da6cc723f5e"
+        },
+        "prompt_combo": {
+          "exposed": false,
+          "section_found": false,
+          "n_stat_lines": 0,
+          "detector": "rf_floor_v2.R::rfv_base_engine_exposure"
+        },
+        "prompt_feedback_measured": {
+          "exposed": true,
+          "section_found": true,
+          "n_feedback_headers": 1,
+          "n_known_sections": 1,
+          "n_section_lines": 13,
+          "n_hit_lines": 1
+        },
+        "provenance_order": {
+          "exposed": false,
+          "mtime_utc": {
+            "prompt": "2026-09-12T11:18:02Z",
+            "engine": "2026-09-12T11:46:14Z",
+            "audit": "2026-09-12T12:23:21Z"
+          }
+        },
+        "wdir_extra_before_engine": {
+          "exposed": false,
+          "before": [],
+          "after": []
+        },
+        "transcript_missing": {
+          "exposed": false,
+          "transcript": "ff01db19-7136-416a-907d-e01405e4d642.jsonl",
+          "started_utc": "2026-09-12T11:18:03.615Z",
+          "md5": "f4365e167167ea431957c33ce1fc16db",
+          "n_runs_referencing": 2,
+          "n_runs_before_engine": 2
+        },
+        "transcript_auto_memory": {
+          "exposed": true,
+          "auto_memory_seen": true,
+          "metric_hits": 4,
+          "hook_context_n": 0,
+          "hook_context_metric_hits": 0,
+          "known_boundary_instruction_files": [
+            {
+              "path": "C:/Users/99922/OneDrive/Quant_Module_Moltbot/CLAUDE.md",
+              "sha256": "59474a87a4e5e21ce800b3dc2ee73625235efc996ea441c643a552573ecee940",
+              "metric_hits": 2
+            },
+            {
+              "path": "C:/Users/99922/OneDrive/Quant_Module_Moltbot/.claude/rules/lean-loop.md",
+              "sha256": "659814f91f4f7992e05c06e3eb4a15c2b7c0a8e99ab440a5fb15cc06f1bb37c8",
+              "metric_hits": 0
+            },
+            {
+              "path": "C:/Users/99922/OneDrive/Quant_Module_Moltbot/.claude/rules/pit.md",
+              "sha256": "43b5b494fa9ea4d25d9f0ccc7609712310bf47960173684ccc6555e2b96190c9",
+              "metric_hits": 4
+            }
+          ]
+        },
+        "transcript_tool_reads": {
+          "exposed": true,
+          "n_tool_uses": 77,
+          "n_perf_path_reads": 5,
+          "perf_path_reads": ["Read C:/Users/99922/OneDrive/Quant_Module_Moltbot/04_Research/strategies/RP_AUTO_2003_02515/fidelity_audit.json", "Grep stage_artifacts/replication 2003_02515|2003/.02515 **/authoritative_remeasure.json", "Read C:/Users/99922/OneDrive/Quant_Module_Moltbot/stage_artifacts/replication/20260912_194913_31448/10_audit.csv", "Read C:/Users/99922/OneDrive/Quant_Module_Moltbot/stage_artifacts/replication/20260912_194913_31448/01_strategy_spec.json", "Read C:/Users/99922/OneDrive/Quant_Module_Moltbot/stage_artifacts/replication/20260912_194913_31448/analysis_sample_alignment.csv"],
+          "n_perf_path_blocked": 0,
+          "perf_path_blocked": [],
+          "web_forbidden": [],
+          "guard_attestation": {
+            "required": false
+          }
+        }
+      },
+      "lane_provenance": {
+        "present": false,
+        "mode": "",
+        "mode_source": "",
+        "claims_clean": false,
+        "file": "",
+        "sha256": "",
+        "engine_rel": "",
+        "guard_applied": false,
+        "n_audits": 0,
+        "note": "자기 신고 — 판정은 exposure 통로가 전사·파일과 대조한 결과다(FA-CLEAN-BASE-PATH)"
+      },
+      "eligible": {
+        "prompt": false,
+        "full": false
+      },
+      "order_hash": "6c2428ca66df06e3967e32d24f5106d8e6c7995ececbe825a28e8fac20b8a250",
+      "md5": {
+        "engine": "a173bea49cf62032e3e4bb18990cfc2f",
+        "fidelity": "97da90238fe4d8ffa559770d75b4cb17",
+        "audit": "cb474491df7f7126b158206649d223ae",
+        "prompt": "6bf76ca087741d6822869da6cc723f5e"
+      }
+    },
+    {
+      "engine": "04_Research/strategies/RP_AUTO_2001_04185/engine.R",
+      "paper_key": "2001.04185",
+      "root_entries": ["RP_20260912_222205_skipped_base"],
+      "artifacts": "stage_artifacts/replication/20260912_220329_20900",
+      "base_vintage_flags": [],
+      "structural_ok": true,
+      "structural_failed": [],
+      "structural": {
+        "lane": {
+          "ok": true,
+          "engine_exists": true,
+          "fidelity_file": true,
+          "root_entries": 1
+        },
+        "fidelity_self": {
+          "ok": true,
+          "label": "adapted"
+        },
+        "fidelity_audit": {
+          "ok": true,
+          "verdict": "adapted",
+          "reason": "",
+          "audit_md5": "bdcc3906c971473800df883bf1d224cb"
+        },
+        "pit_static": {
+          "ok": true,
+          "detector_clean": true,
+          "structural_hits": [],
+          "n_violations": 0,
+          "checks": [],
+          "error": ""
+        },
+        "c11": {
+          "ok": true,
+          "factors": [],
+          "sources": [],
+          "base_flag": [],
+          "unreadable": [],
+          "error": ""
+        },
+        "flags": {
+          "ok": true,
+          "hit": []
+        },
+        "output": {
+          "ok": true,
+          "factors_panel": true,
+          "median_names_per_date": 343,
+          "n_max": 25,
+          "n_dates": 260
+        },
+        "coverage": {
+          "ok": true,
+          "first_signal_date": "2005-01-31",
+          "limit": "2005-01-31",
+          "start_date": "2005-01-01"
+        },
+        "source_scope": {
+          "ok": true,
+          "status": "ok",
+          "consumed": [],
+          "uncovered": [],
+          "hidden_loaders": [],
+          "hidden_sources": [],
+          "hidden_flow": {
+            "status": "ok",
+            "diagnostic_only": ["load_investor@.crowding_diag(L251)"],
+            "text_match_legacy": ["load_investor"],
+            "detail": {
+              "load_investor": {
+                "verdict": "diagnostic_only",
+                "functions": [".crowding_diag"]
+              }
+            }
+          },
+          "why": ""
+        }
+      },
+      "exposure": {
+        "prompt_missing": {
+          "exposed": false,
+          "file": "04_Research/strategies/RP_AUTO_2001_04185/prompt.txt",
+          "md5": "c206c65ac59901061de01dcdd08720c6"
+        },
+        "prompt_combo": {
+          "exposed": false,
+          "section_found": false,
+          "n_stat_lines": 0,
+          "detector": "rf_floor_v2.R::rfv_base_engine_exposure"
+        },
+        "prompt_feedback_measured": {
+          "exposed": false,
+          "section_found": false,
+          "n_feedback_headers": 0,
+          "n_known_sections": 0,
+          "n_section_lines": 0,
+          "n_hit_lines": 0
+        },
+        "provenance_order": {
+          "exposed": false,
+          "mtime_utc": {
+            "prompt": "2026-09-12T12:24:48Z",
+            "engine": "2026-09-12T12:51:08Z",
+            "audit": "2026-09-12T13:22:04Z"
+          }
+        },
+        "wdir_extra_before_engine": {
+          "exposed": false,
+          "before": [],
+          "after": []
+        },
+        "transcript_missing": {
+          "exposed": false,
+          "transcript": "21398241-5553-4f02-88a5-8e9e873ee1e8.jsonl",
+          "started_utc": "2026-09-12T12:24:49.840Z",
+          "md5": "c05a4d74299a700e9d1ac0652ffa4d0d",
+          "n_runs_referencing": 1,
+          "n_runs_before_engine": 1
+        },
+        "transcript_auto_memory": {
+          "exposed": true,
+          "auto_memory_seen": true,
+          "metric_hits": 4,
+          "hook_context_n": 0,
+          "hook_context_metric_hits": 0,
+          "known_boundary_instruction_files": [
+            {
+              "path": "C:/Users/99922/OneDrive/Quant_Module_Moltbot/CLAUDE.md",
+              "sha256": "59474a87a4e5e21ce800b3dc2ee73625235efc996ea441c643a552573ecee940",
+              "metric_hits": 2
+            },
+            {
+              "path": "C:/Users/99922/OneDrive/Quant_Module_Moltbot/.claude/rules/lean-loop.md",
+              "sha256": "659814f91f4f7992e05c06e3eb4a15c2b7c0a8e99ab440a5fb15cc06f1bb37c8",
+              "metric_hits": 0
+            },
+            {
+              "path": "C:/Users/99922/OneDrive/Quant_Module_Moltbot/.claude/rules/pit.md",
+              "sha256": "43b5b494fa9ea4d25d9f0ccc7609712310bf47960173684ccc6555e2b96190c9",
+              "metric_hits": 4
+            }
+          ]
+        },
+        "transcript_tool_reads": {
+          "exposed": true,
+          "n_tool_uses": 39,
+          "n_perf_path_reads": 6,
+          "perf_path_reads": ["Read C:/Users/99922/OneDrive/Quant_Module_Moltbot/04_Research/strategies/RP_AUTO_2003_02515/fidelity_audit.json", "Grep stage_artifacts/replication \"n_rebalances\"/s*:/s*[0-9]{3,} **/*.json", "Grep 06_Registry/reinforce_ledger_l1.json 2006_04639|2006/.04639", "Grep stage_artifacts Cache loaded: /d+ rows", "Grep stage_artifacts /[load_investor/] Loading|investor_wide.*rows|rows /| /d+ tickers /| /d{4}-/d{2}-/d{2} ~", "Read C:/Users/99922/.claude/projects/C--Users-99922-OneDrive-Quant-Module-Moltbot/memory/MEMORY.md"],
+          "n_perf_path_blocked": 0,
+          "perf_path_blocked": [],
+          "web_forbidden": [],
+          "guard_attestation": {
+            "required": false
+          }
+        }
+      },
+      "lane_provenance": {
+        "present": false,
+        "mode": "",
+        "mode_source": "",
+        "claims_clean": false,
+        "file": "",
+        "sha256": "",
+        "engine_rel": "",
+        "guard_applied": false,
+        "n_audits": 0,
+        "note": "자기 신고 — 판정은 exposure 통로가 전사·파일과 대조한 결과다(FA-CLEAN-BASE-PATH)"
+      },
+      "eligible": {
+        "prompt": true,
+        "full": false
+      },
+      "order_hash": "f79584f553f9f1003141fe7a7940331eaa55aa2d1d81b60e53e348de4f3ef0f7",
+      "md5": {
+        "engine": "160ddb5498132050bd7c95dd295655e6",
+        "fidelity": "2dc57f622f9e751fbc0a79d071f741dd",
+        "audit": "bdcc3906c971473800df883bf1d224cb",
+        "prompt": "c206c65ac59901061de01dcdd08720c6"
+      }
+    },
+    {
+      "engine": "04_Research/strategies/RP_AUTO_2011_05381/engine.R",
+      "paper_key": "2011.05381",
+      "root_entries": ["RP_20260912_234505_2216_adapted_rulefast"],
+      "artifacts": "stage_artifacts/replication/20260912_234505_2216",
+      "base_vintage_flags": [],
+      "structural_ok": false,
+      "structural_failed": ["fidelity_audit", "source_scope"],
+      "structural": {
+        "lane": {
+          "ok": true,
+          "engine_exists": true,
+          "fidelity_file": true,
+          "root_entries": 1
+        },
+        "fidelity_self": {
+          "ok": true,
+          "label": "adapted"
+        },
+        "fidelity_audit": {
+          "ok": false,
+          "verdict": "misdeclared",
+          "reason": "",
+          "audit_md5": "f82691f72a0570aa91853080e9b0a67b"
+        },
+        "pit_static": {
+          "ok": true,
+          "detector_clean": true,
+          "structural_hits": [],
+          "n_violations": 0,
+          "checks": [],
+          "error": ""
+        },
+        "c11": {
+          "ok": true,
+          "factors": [],
+          "sources": [],
+          "base_flag": [],
+          "unreadable": [],
+          "error": ""
+        },
+        "flags": {
+          "ok": true,
+          "hit": []
+        },
+        "output": {
+          "ok": true,
+          "factors_panel": true,
+          "median_names_per_date": 176,
+          "n_max": 25,
+          "n_dates": 260
+        },
+        "coverage": {
+          "ok": true,
+          "first_signal_date": "2005-01-31",
+          "limit": "2005-01-31",
+          "start_date": "2005-01-01"
+        },
+        "source_scope": {
+          "ok": false,
+          "status": "ok",
+          "consumed": ["fundamental_merged.parquet"],
+          "uncovered": ["fundamental_merged.parquet"],
+          "hidden_loaders": [],
+          "hidden_sources": [],
+          "hidden_flow": {
+            "status": "ok",
+            "diagnostic_only": [],
+            "text_match_legacy": [],
+            "detail": []
+          },
+          "why": ""
+        }
+      },
+      "exposure": {
+        "prompt_missing": {
+          "exposed": false,
+          "file": "04_Research/strategies/RP_AUTO_2011_05381/prompt.txt",
+          "md5": "3239e61b08a9d1d068946aa8984b15a7"
+        },
+        "prompt_combo": {
+          "exposed": false,
+          "section_found": false,
+          "n_stat_lines": 0,
+          "detector": "rf_floor_v2.R::rfv_base_engine_exposure"
+        },
+        "prompt_feedback_measured": {
+          "exposed": false,
+          "section_found": true,
+          "n_feedback_headers": 1,
+          "n_known_sections": 1,
+          "n_section_lines": 13,
+          "n_hit_lines": 0
+        },
+        "provenance_order": {
+          "exposed": false,
+          "mtime_utc": {
+            "prompt": "2026-09-12T14:24:49Z",
+            "engine": "2026-09-12T14:35:35Z",
+            "audit": "2026-09-12T15:01:46Z"
+          }
+        },
+        "wdir_extra_before_engine": {
+          "exposed": false,
+          "before": [],
+          "after": []
+        },
+        "transcript_missing": {
+          "exposed": false,
+          "transcript": "616afe3c-c5c7-4136-aad9-f18f3af265b4.jsonl",
+          "started_utc": "2026-09-12T14:24:50.452Z",
+          "md5": "e9a574f7bbb513b83cbd6c025fb3b2c3",
+          "n_runs_referencing": 2,
+          "n_runs_before_engine": 2
+        },
+        "transcript_auto_memory": {
+          "exposed": true,
+          "auto_memory_seen": true,
+          "metric_hits": 4,
+          "hook_context_n": 0,
+          "hook_context_metric_hits": 0,
+          "known_boundary_instruction_files": [
+            {
+              "path": "C:/Users/99922/OneDrive/Quant_Module_Moltbot/CLAUDE.md",
+              "sha256": "59474a87a4e5e21ce800b3dc2ee73625235efc996ea441c643a552573ecee940",
+              "metric_hits": 2
+            },
+            {
+              "path": "C:/Users/99922/OneDrive/Quant_Module_Moltbot/.claude/rules/lean-loop.md",
+              "sha256": "659814f91f4f7992e05c06e3eb4a15c2b7c0a8e99ab440a5fb15cc06f1bb37c8",
+              "metric_hits": 0
+            },
+            {
+              "path": "C:/Users/99922/OneDrive/Quant_Module_Moltbot/.claude/rules/pit.md",
+              "sha256": "43b5b494fa9ea4d25d9f0ccc7609712310bf47960173684ccc6555e2b96190c9",
+              "metric_hits": 4
+            }
+          ]
+        },
+        "transcript_tool_reads": {
+          "exposed": true,
+          "n_tool_uses": 15,
+          "n_perf_path_reads": 2,
+          "perf_path_reads": ["Read C:/Users/99922/OneDrive/Quant_Module_Moltbot/04_Research/strategies/RP_AUTO_2011_05381/fidelity_audit.json", "Read C:/Users/99922/.claude/projects/C--Users-99922-OneDrive-Quant-Module-Moltbot/memory/reference-autonomous-session-cannot-execute-r-static-verification-only-20260"],
+          "n_perf_path_blocked": 0,
+          "perf_path_blocked": [],
+          "web_forbidden": [],
+          "guard_attestation": {
+            "required": false
+          }
+        }
+      },
+      "lane_provenance": {
+        "present": false,
+        "mode": "",
+        "mode_source": "",
+        "claims_clean": false,
+        "file": "",
+        "sha256": "",
+        "engine_rel": "",
+        "guard_applied": false,
+        "n_audits": 0,
+        "note": "자기 신고 — 판정은 exposure 통로가 전사·파일과 대조한 결과다(FA-CLEAN-BASE-PATH)"
+      },
+      "eligible": {
+        "prompt": false,
+        "full": false
+      },
+      "order_hash": "9d5832eb7e8e2736ed6efb067f5e2915486266d3b94f36ebb0ac6b7c3134d3b2",
+      "md5": {
+        "engine": "da932816cca01dee02ee95a6e38d20f3",
+        "fidelity": "dddddf3a0c26cfa72495cc3703b52c6e",
+        "audit": "f82691f72a0570aa91853080e9b0a67b",
+        "prompt": "3239e61b08a9d1d068946aa8984b15a7"
+      }
+    },
+    {
+      "engine": "04_Research/strategies/RP_AUTO_2002_06975/engine.R",
+      "paper_key": "2002.06975",
+      "root_entries": ["RP_20260913_084807_skipped_base", "RP_20260913_090549_14760_adapted_rulefast"],
+      "artifacts": "stage_artifacts/replication/20260913_090549_14760",
+      "base_vintage_flags": [],
+      "structural_ok": false,
+      "structural_failed": ["source_scope"],
+      "structural": {
+        "lane": {
+          "ok": true,
+          "engine_exists": true,
+          "fidelity_file": true,
+          "root_entries": 2
+        },
+        "fidelity_self": {
+          "ok": true,
+          "label": "adapted"
+        },
+        "fidelity_audit": {
+          "ok": true,
+          "verdict": "adapted",
+          "reason": "",
+          "audit_md5": "8d8fb019f89f23ae5c0997804ccf2a55"
+        },
+        "pit_static": {
+          "ok": true,
+          "detector_clean": true,
+          "structural_hits": [],
+          "n_violations": 0,
+          "checks": [],
+          "error": ""
+        },
+        "c11": {
+          "ok": true,
+          "factors": [],
+          "sources": [],
+          "base_flag": [],
+          "unreadable": [],
+          "error": ""
+        },
+        "flags": {
+          "ok": true,
+          "hit": []
+        },
+        "output": {
+          "ok": true,
+          "factors_panel": true,
+          "median_names_per_date": 349,
+          "n_max": 25,
+          "n_dates": 260
+        },
+        "coverage": {
+          "ok": true,
+          "first_signal_date": "2005-01-31",
+          "limit": "2005-01-31",
+          "start_date": "2005-01-01"
+        },
+        "source_scope": {
+          "ok": false,
+          "status": "ok",
+          "consumed": ["consensus", "fundamental_merged.parquet"],
+          "uncovered": ["consensus", "fundamental_merged.parquet"],
+          "hidden_loaders": [],
+          "hidden_sources": [],
+          "hidden_flow": {
+            "status": "ok",
+            "diagnostic_only": [],
+            "text_match_legacy": [],
+            "detail": []
+          },
+          "why": ""
+        }
+      },
+      "exposure": {
+        "prompt_missing": {
+          "exposed": false,
+          "file": "04_Research/strategies/RP_AUTO_2002_06975/prompt.txt",
+          "md5": "c26202af07303cb1a0d2df9c9ff98619"
+        },
+        "prompt_combo": {
+          "exposed": false,
+          "section_found": false,
+          "n_stat_lines": 0,
+          "detector": "rf_floor_v2.R::rfv_base_engine_exposure"
+        },
+        "prompt_feedback_measured": {
+          "exposed": true,
+          "section_found": true,
+          "n_feedback_headers": 1,
+          "n_known_sections": 1,
+          "n_section_lines": 15,
+          "n_hit_lines": 1
+        },
+        "provenance_order": {
+          "exposed": false,
+          "mtime_utc": {
+            "prompt": "2026-09-12T23:44:49Z",
+            "engine": "2026-09-12T23:58:13Z",
+            "audit": "2026-09-13T01:28:56Z"
+          }
+        },
+        "wdir_extra_before_engine": {
+          "exposed": false,
+          "before": [],
+          "after": ["_work"]
+        },
+        "transcript_missing": {
+          "exposed": false,
+          "transcript": "9210f945-0011-4faa-b8dd-8fe811b8b11e.jsonl",
+          "started_utc": "2026-09-12T23:44:50.569Z",
+          "md5": "fcd258e37e8c8c10d46b01357fce49a2",
+          "n_runs_referencing": 4,
+          "n_runs_before_engine": 4
+        },
+        "transcript_auto_memory": {
+          "exposed": true,
+          "auto_memory_seen": true,
+          "metric_hits": 4,
+          "hook_context_n": 0,
+          "hook_context_metric_hits": 0,
+          "known_boundary_instruction_files": [
+            {
+              "path": "C:/Users/99922/OneDrive/Quant_Module_Moltbot/CLAUDE.md",
+              "sha256": "59474a87a4e5e21ce800b3dc2ee73625235efc996ea441c643a552573ecee940",
+              "metric_hits": 2
+            },
+            {
+              "path": "C:/Users/99922/OneDrive/Quant_Module_Moltbot/.claude/rules/lean-loop.md",
+              "sha256": "659814f91f4f7992e05c06e3eb4a15c2b7c0a8e99ab440a5fb15cc06f1bb37c8",
+              "metric_hits": 0
+            },
+            {
+              "path": "C:/Users/99922/OneDrive/Quant_Module_Moltbot/.claude/rules/pit.md",
+              "sha256": "43b5b494fa9ea4d25d9f0ccc7609712310bf47960173684ccc6555e2b96190c9",
+              "metric_hits": 4
+            }
+          ]
+        },
+        "transcript_tool_reads": {
+          "exposed": true,
+          "n_tool_uses": 22,
+          "n_perf_path_reads": 3,
+          "perf_path_reads": ["Read C:/Users/99922/OneDrive/Quant_Module_Moltbot/04_Research/strategies/RP_AUTO_2002_06975/fidelity_audit.json", "Read C:/Users/99922/.claude/projects/C--Users-99922-OneDrive-Quant-Module-Moltbot/memory/project-raw-fundamental-and-consensus-panels-for-faithful-replication-202609", "Read C:/Users/99922/.claude/projects/C--Users-99922-OneDrive-Quant-Module-Moltbot/memory/project-unattended-replication-lane-reclaims-live-runs-at-2h-20260913.md"],
+          "n_perf_path_blocked": 0,
+          "perf_path_blocked": [],
+          "web_forbidden": [],
+          "guard_attestation": {
+            "required": false
+          }
+        }
+      },
+      "lane_provenance": {
+        "present": false,
+        "mode": "",
+        "mode_source": "",
+        "claims_clean": false,
+        "file": "",
+        "sha256": "",
+        "engine_rel": "",
+        "guard_applied": false,
+        "n_audits": 0,
+        "note": "자기 신고 — 판정은 exposure 통로가 전사·파일과 대조한 결과다(FA-CLEAN-BASE-PATH)"
+      },
+      "eligible": {
+        "prompt": false,
+        "full": false
+      },
+      "order_hash": "7e0e758e8484946ab9a2543ea4c72a85bb32656ddcd6b0ed8428efa735dc9be6",
+      "md5": {
+        "engine": "5d8a1ea8e25ac7e6c65436f6e1802433",
+        "fidelity": "79ce26494c7425f4cbc77af8b9e188f5",
+        "audit": "8d8fb019f89f23ae5c0997804ccf2a55",
+        "prompt": "c26202af07303cb1a0d2df9c9ff98619"
+      }
+    },
+    {
+      "engine": "04_Research/strategies/RP_AUTO_1806_01743/engine.R",
+      "paper_key": "1806.01743",
+      "root_entries": ["RP_20260917_101834_skipped_base"],
+      "artifacts": "stage_artifacts/replication/20260917_095447_16940",
+      "base_vintage_flags": [],
+      "structural_ok": false,
+      "structural_failed": ["source_scope"],
+      "structural": {
+        "lane": {
+          "ok": true,
+          "engine_exists": true,
+          "fidelity_file": true,
+          "root_entries": 1
+        },
+        "fidelity_self": {
+          "ok": true,
+          "label": "adapted"
+        },
+        "fidelity_audit": {
+          "ok": true,
+          "verdict": "adapted",
+          "reason": "",
+          "audit_md5": "6f2721d9cf4af0564e9e00011f817b9b"
+        },
+        "pit_static": {
+          "ok": true,
+          "detector_clean": true,
+          "structural_hits": [],
+          "n_violations": 0,
+          "checks": [],
+          "error": ""
+        },
+        "c11": {
+          "ok": true,
+          "factors": [],
+          "sources": [],
+          "base_flag": [],
+          "unreadable": [],
+          "error": ""
+        },
+        "flags": {
+          "ok": true,
+          "hit": []
+        },
+        "output": {
+          "ok": true,
+          "factors_panel": true,
+          "median_names_per_date": 349,
+          "n_max": 25,
+          "n_dates": 260
+        },
+        "coverage": {
+          "ok": true,
+          "first_signal_date": "2005-01-31",
+          "limit": "2005-01-31",
+          "start_date": "2005-01-01"
+        },
+        "source_scope": {
+          "ok": false,
+          "status": "ok",
+          "consumed": ["consensus", "fundamental_merged.parquet"],
+          "uncovered": ["consensus", "fundamental_merged.parquet"],
+          "hidden_loaders": [],
+          "hidden_sources": [],
+          "hidden_flow": {
+            "status": "ok",
+            "diagnostic_only": [],
+            "text_match_legacy": [],
+            "detail": []
+          },
+          "why": ""
+        }
+      },
+      "exposure": {
+        "prompt_missing": {
+          "exposed": false,
+          "file": "04_Research/strategies/RP_AUTO_1806_01743/prompt.txt",
+          "md5": "d2048fb5f3e1b89f434866e194133a0f"
+        },
+        "prompt_combo": {
+          "exposed": false,
+          "section_found": false,
+          "n_stat_lines": 0,
+          "detector": "rf_floor_v2.R::rfv_base_engine_exposure"
+        },
+        "prompt_feedback_measured": {
+          "exposed": false,
+          "section_found": true,
+          "n_feedback_headers": 2,
+          "n_known_sections": 2,
+          "n_section_lines": 20,
+          "n_hit_lines": 0
+        },
+        "provenance_order": {
+          "exposed": false,
+          "mtime_utc": {
+            "prompt": "2026-09-17T00:25:26Z",
+            "engine": "2026-09-17T00:38:11Z",
+            "audit": "2026-09-17T01:18:33Z"
+          }
+        },
+        "wdir_extra_before_engine": {
+          "exposed": true,
+          "before": ["_gradcheck_diag.R", "_pdf_extract.py"],
+          "after": []
+        },
+        "transcript_missing": {
+          "exposed": false,
+          "transcript": "df01b6f0-f131-4e4a-a342-cbaaa9e9558f.jsonl",
+          "started_utc": "2026-09-17T00:25:28.202Z",
+          "md5": "899628b3c9de0010be358895e010761a",
+          "n_runs_referencing": 6,
+          "n_runs_before_engine": 6
+        },
+        "transcript_auto_memory": {
+          "exposed": true,
+          "auto_memory_seen": true,
+          "metric_hits": 13,
+          "hook_context_n": 1,
+          "hook_context_metric_hits": 0,
+          "known_boundary_instruction_files": [
+            {
+              "path": "C:/Users/99922/OneDrive/Quant_Module_Moltbot/CLAUDE.md",
+              "sha256": "59474a87a4e5e21ce800b3dc2ee73625235efc996ea441c643a552573ecee940",
+              "metric_hits": 2
+            },
+            {
+              "path": "C:/Users/99922/OneDrive/Quant_Module_Moltbot/.claude/rules/lean-loop.md",
+              "sha256": "659814f91f4f7992e05c06e3eb4a15c2b7c0a8e99ab440a5fb15cc06f1bb37c8",
+              "metric_hits": 0
+            },
+            {
+              "path": "C:/Users/99922/OneDrive/Quant_Module_Moltbot/.claude/rules/pit.md",
+              "sha256": "43b5b494fa9ea4d25d9f0ccc7609712310bf47960173684ccc6555e2b96190c9",
+              "metric_hits": 4
+            }
+          ]
+        },
+        "transcript_tool_reads": {
+          "exposed": true,
+          "n_tool_uses": 37,
+          "n_perf_path_reads": 11,
+          "perf_path_reads": ["Read C:/Users/99922/.claude/projects/C--Users-99922-OneDrive-Quant-Module-Moltbot/memory/project-gradient-check-failed-on-test-conditioning-not-backprop-20260915.md", "Read C:/Users/99922/OneDrive/Quant_Module_Moltbot/04_Research/strategies/RP_AUTO_1806_01743/fidelity_audit.json", "Grep C:/Users/99922/OneDrive/Quant_Module_Moltbot/.cache/reinforce_auto_log.jsonl RP_AUTO_1806_01743", "Grep C:/Users/99922/OneDrive/Quant_Module_Moltbot/06_Registry/replication_request.json 1806_01743|1806/.01743", "Read C:/Users/99922/OneDrive/Quant_Module_Moltbot/.cache/reinforce_auto_log.jsonl", "Grep C:/Users/99922/OneDrive/Quant_Module_Moltbot/.cache/scheduler_logs/replication_auto_20260917.log RP_AUTO_1806_01743", "Read C:/Users/99922/OneDrive/Quant_Module_Moltbot/.cache/scheduler_logs/replication_auto_20260917.log", "Read C:/Users/99922/OneDrive/Quant_Module_Moltbot/.cache/scheduler_logs/replication_auto_20260917.log", "Grep C:/Users/99922/OneDrive/Quant_Module_Moltbot/02_Infrastructure/ops rejected|audit_response|reimplement_with_audit|fidelity_audit/.json", "Read C:/Users/99922/.claude/projects/C--Users-99922-OneDrive-Quant-Module-Moltbot/memory/MEMORY.md", "Read C:/Users/99922/.claude/projects/C--Users-99922-OneDrive-Quant-Module-Moltbot/memory/reference-autonomous-session-cannot-execute-r-static-verification-only-20260"],
+          "n_perf_path_blocked": 0,
+          "perf_path_blocked": [],
+          "web_forbidden": [],
+          "guard_attestation": {
+            "required": false
+          }
+        }
+      },
+      "lane_provenance": {
+        "present": false,
+        "mode": "",
+        "mode_source": "",
+        "claims_clean": false,
+        "file": "",
+        "sha256": "",
+        "engine_rel": "",
+        "guard_applied": false,
+        "n_audits": 0,
+        "note": "자기 신고 — 판정은 exposure 통로가 전사·파일과 대조한 결과다(FA-CLEAN-BASE-PATH)"
+      },
+      "eligible": {
+        "prompt": false,
+        "full": false
+      },
+      "order_hash": "4cbab98524662ecd28d5dedc839481f90f935aa612c169c50044f88a71f3d8ba",
+      "md5": {
+        "engine": "b530df89ac75d5f392133ba7220ce0f1",
+        "fidelity": "fe277be87c202a1f52ff53c44867a980",
+        "audit": "6f2721d9cf4af0564e9e00011f817b9b",
+        "prompt": "d2048fb5f3e1b89f434866e194133a0f"
+      }
+    },
+    {
+      "engine": "04_Research/strategies/RP_AUTO_2511_12129/engine.R",
+      "paper_key": "2511.12129",
+      "root_entries": ["RP_20260923_230819_4212_adapted_rulefast"],
+      "artifacts": "stage_artifacts/replication/20260923_230819_4212",
+      "base_vintage_flags": [],
+      "structural_ok": false,
+      "structural_failed": ["coverage", "source_scope"],
+      "structural": {
+        "lane": {
+          "ok": true,
+          "engine_exists": true,
+          "fidelity_file": true,
+          "root_entries": 1
+        },
+        "fidelity_self": {
+          "ok": true,
+          "label": "adapted"
+        },
+        "fidelity_audit": {
+          "ok": true,
+          "verdict": "adapted",
+          "reason": "",
+          "audit_md5": "aabb41eb1dd47d70b9eae728a2f94b72"
+        },
+        "pit_static": {
+          "ok": true,
+          "detector_clean": true,
+          "structural_hits": [],
+          "n_violations": 0,
+          "checks": [],
+          "error": ""
+        },
+        "c11": {
+          "ok": true,
+          "factors": [],
+          "sources": [],
+          "base_flag": [],
+          "unreadable": [],
+          "error": ""
+        },
+        "flags": {
+          "ok": true,
+          "hit": []
+        },
+        "output": {
+          "ok": true,
+          "factors_panel": true,
+          "median_names_per_date": 279,
+          "n_max": 25,
+          "n_dates": 86
+        },
+        "coverage": {
+          "ok": false,
+          "first_signal_date": "2005-05-31",
+          "limit": "2005-01-31",
+          "start_date": "2005-01-01"
+        },
+        "source_scope": {
+          "ok": false,
+          "status": "ok",
+          "consumed": ["fundamental_merged.parquet", "fundamental_xlsx.parquet"],
+          "uncovered": ["fundamental_merged.parquet", "fundamental_xlsx.parquet"],
+          "hidden_loaders": [],
+          "hidden_sources": [],
+          "hidden_flow": {
+            "status": "ok",
+            "diagnostic_only": [],
+            "text_match_legacy": [],
+            "detail": []
+          },
+          "why": ""
+        }
+      },
+      "exposure": {
+        "prompt_missing": {
+          "exposed": false,
+          "file": "04_Research/strategies/RP_AUTO_2511_12129/prompt.txt",
+          "md5": "75f4517edaad93d6a3a0565dd2ad17a2"
+        },
+        "prompt_combo": {
+          "exposed": false,
+          "section_found": false,
+          "n_stat_lines": 0,
+          "detector": "rf_floor_v2.R::rfv_base_engine_exposure"
+        },
+        "prompt_feedback_measured": {
+          "exposed": true,
+          "section_found": true,
+          "n_feedback_headers": 1,
+          "n_known_sections": 1,
+          "n_section_lines": 19,
+          "n_hit_lines": 1
+        },
+        "provenance_order": {
+          "exposed": false,
+          "mtime_utc": {
+            "prompt": "2026-09-23T13:37:44Z",
+            "engine": "2026-09-23T14:00:45Z",
+            "audit": "2026-09-23T14:31:08Z"
+          }
+        },
+        "wdir_extra_before_engine": {
+          "exposed": false,
+          "before": [],
+          "after": []
+        },
+        "transcript_missing": {
+          "exposed": false,
+          "transcript": "01fb253d-499b-49a4-8df6-a62411d3153a.jsonl",
+          "started_utc": "2026-09-23T13:37:48.810Z",
+          "md5": "89cbe399f02d053eee3448362c9c941b",
+          "n_runs_referencing": 2,
+          "n_runs_before_engine": 2
+        },
+        "transcript_auto_memory": {
+          "exposed": true,
+          "auto_memory_seen": true,
+          "metric_hits": 12,
+          "hook_context_n": 0,
+          "hook_context_metric_hits": 0,
+          "known_boundary_instruction_files": [
+            {
+              "path": "C:/Users/99922/OneDrive/Quant_Module_Moltbot/CLAUDE.md",
+              "sha256": "0e8a94b606138bf277d93b7216db4b73e1dfcab8739c778246ce196bcd510822",
+              "metric_hits": 2
+            },
+            {
+              "path": "C:/Users/99922/OneDrive/Quant_Module_Moltbot/.claude/rules/lean-loop.md",
+              "sha256": "659814f91f4f7992e05c06e3eb4a15c2b7c0a8e99ab440a5fb15cc06f1bb37c8",
+              "metric_hits": 0
+            },
+            {
+              "path": "C:/Users/99922/OneDrive/Quant_Module_Moltbot/.claude/rules/pit.md",
+              "sha256": "3565e63ea6e1c0a568abc35734cadde8a7e5d910d5c323032f67bb449c74dc45",
+              "metric_hits": 4
+            }
+          ]
+        },
+        "transcript_tool_reads": {
+          "exposed": true,
+          "n_tool_uses": 49,
+          "n_perf_path_reads": 1,
+          "perf_path_reads": ["Read C:/Users/99922/OneDrive/Quant_Module_Moltbot/stage_artifacts/fq069_precheck/np_fq069.R"],
+          "n_perf_path_blocked": 0,
+          "perf_path_blocked": [],
+          "web_forbidden": [],
+          "guard_attestation": {
+            "required": false
+          }
+        }
+      },
+      "lane_provenance": {
+        "present": false,
+        "mode": "",
+        "mode_source": "",
+        "claims_clean": false,
+        "file": "",
+        "sha256": "",
+        "engine_rel": "",
+        "guard_applied": false,
+        "n_audits": 0,
+        "note": "자기 신고 — 판정은 exposure 통로가 전사·파일과 대조한 결과다(FA-CLEAN-BASE-PATH)"
+      },
+      "eligible": {
+        "prompt": false,
+        "full": false
+      },
+      "order_hash": "ecdfa0325ee22cba89d62d79980c0ddaa083c62aa11a169018277840cd2c2d89",
+      "md5": {
+        "engine": "29aee68d80943f117a9fca40f37a8fa5",
+        "fidelity": "02d97d015451cb26758fe13358759704",
+        "audit": "aabb41eb1dd47d70b9eae728a2f94b72",
+        "prompt": "75f4517edaad93d6a3a0565dd2ad17a2"
+      }
+    },
+    {
+      "engine": "04_Research/strategies/RP_AUTO_2202_05702/engine.R",
+      "paper_key": "2202.05702",
+      "root_entries": ["RP_20260924_052517_7308_adapted_rulefast"],
+      "artifacts": "stage_artifacts/replication/20260924_052517_7308",
+      "base_vintage_flags": [],
+      "structural_ok": false,
+      "structural_failed": ["fidelity_audit", "coverage", "source_scope"],
+      "structural": {
+        "lane": {
+          "ok": true,
+          "engine_exists": true,
+          "fidelity_file": true,
+          "root_entries": 1
+        },
+        "fidelity_self": {
+          "ok": true,
+          "label": "adapted"
+        },
+        "fidelity_audit": {
+          "ok": false,
+          "verdict": "misdeclared",
+          "reason": "",
+          "audit_md5": "adf2a7f2c57000baf66d60a5e29922dd"
+        },
+        "pit_static": {
+          "ok": true,
+          "detector_clean": true,
+          "structural_hits": [],
+          "n_violations": 0,
+          "checks": [],
+          "error": ""
+        },
+        "c11": {
+          "ok": true,
+          "factors": [],
+          "sources": [],
+          "base_flag": [],
+          "unreadable": [],
+          "error": ""
+        },
+        "flags": {
+          "ok": true,
+          "hit": []
+        },
+        "output": {
+          "ok": true,
+          "factors_panel": true,
+          "median_names_per_date": 217,
+          "n_max": 25,
+          "n_dates": 86
+        },
+        "coverage": {
+          "ok": false,
+          "first_signal_date": "2005-03-31",
+          "limit": "2005-01-31",
+          "start_date": "2005-01-01"
+        },
+        "source_scope": {
+          "ok": false,
+          "status": "ok",
+          "consumed": ["fundamental_dart_quarterly.parquet", "fundamental_merged.parquet"],
+          "uncovered": ["fundamental_dart_quarterly.parquet", "fundamental_merged.parquet"],
+          "hidden_loaders": [],
+          "hidden_sources": [],
+          "hidden_flow": {
+            "status": "ok",
+            "diagnostic_only": [],
+            "text_match_legacy": [],
+            "detail": []
+          },
+          "why": ""
+        }
+      },
+      "exposure": {
+        "prompt_missing": {
+          "exposed": false,
+          "file": "04_Research/strategies/RP_AUTO_2202_05702/prompt.txt",
+          "md5": "493ff744e3e9a5981d9b8fc4572add2b"
+        },
+        "prompt_combo": {
+          "exposed": false,
+          "section_found": false,
+          "n_stat_lines": 0,
+          "detector": "rf_floor_v2.R::rfv_base_engine_exposure"
+        },
+        "prompt_feedback_measured": {
+          "exposed": false,
+          "section_found": true,
+          "n_feedback_headers": 2,
+          "n_known_sections": 2,
+          "n_section_lines": 26,
+          "n_hit_lines": 0
+        },
+        "provenance_order": {
+          "exposed": false,
+          "mtime_utc": {
+            "prompt": "2026-09-23T20:14:06Z",
+            "engine": "2026-09-23T20:22:47Z",
+            "audit": "2026-09-23T20:43:51Z"
+          }
+        },
+        "wdir_extra_before_engine": {
+          "exposed": false,
+          "before": [],
+          "after": []
+        },
+        "transcript_missing": {
+          "exposed": false,
+          "transcript": "11913ab8-9ac9-4141-947d-1ab7affdf4f3.jsonl",
+          "started_utc": "2026-09-23T20:14:13.692Z",
+          "md5": "98924b31382d190b025039f384cb9d67",
+          "n_runs_referencing": 3,
+          "n_runs_before_engine": 3
+        },
+        "transcript_auto_memory": {
+          "exposed": true,
+          "auto_memory_seen": true,
+          "metric_hits": 12,
+          "hook_context_n": 0,
+          "hook_context_metric_hits": 0,
+          "known_boundary_instruction_files": [
+            {
+              "path": "C:/Users/99922/OneDrive/Quant_Module_Moltbot/CLAUDE.md",
+              "sha256": "0e8a94b606138bf277d93b7216db4b73e1dfcab8739c778246ce196bcd510822",
+              "metric_hits": 2
+            },
+            {
+              "path": "C:/Users/99922/OneDrive/Quant_Module_Moltbot/.claude/rules/lean-loop.md",
+              "sha256": "659814f91f4f7992e05c06e3eb4a15c2b7c0a8e99ab440a5fb15cc06f1bb37c8",
+              "metric_hits": 0
+            },
+            {
+              "path": "C:/Users/99922/OneDrive/Quant_Module_Moltbot/.claude/rules/pit.md",
+              "sha256": "3565e63ea6e1c0a568abc35734cadde8a7e5d910d5c323032f67bb449c74dc45",
+              "metric_hits": 4
+            }
+          ]
+        },
+        "transcript_tool_reads": {
+          "exposed": false,
+          "n_tool_uses": 21,
+          "n_perf_path_reads": 0,
+          "perf_path_reads": [],
+          "n_perf_path_blocked": 0,
+          "perf_path_blocked": [],
+          "web_forbidden": [],
+          "guard_attestation": {
+            "required": false
+          }
+        }
+      },
+      "lane_provenance": {
+        "present": false,
+        "mode": "",
+        "mode_source": "",
+        "claims_clean": false,
+        "file": "",
+        "sha256": "",
+        "engine_rel": "",
+        "guard_applied": false,
+        "n_audits": 0,
+        "note": "자기 신고 — 판정은 exposure 통로가 전사·파일과 대조한 결과다(FA-CLEAN-BASE-PATH)"
+      },
+      "eligible": {
+        "prompt": false,
+        "full": false
+      },
+      "order_hash": "f19fe10239bbfced2d898cff692b633b3c02da72c030a3d2b7eab566e0436d8d",
+      "md5": {
+        "engine": "8df40bba85bf1e0fbf6056223ccea114",
+        "fidelity": "c5c902e16a4d9e106fd105b5bf1e4bf8",
+        "audit": "adf2a7f2c57000baf66d60a5e29922dd",
+        "prompt": "493ff744e3e9a5981d9b8fc4572add2b"
+      }
+    }
+  ],
+  "selection": {
+    "order": ["04_Research/strategies/RP_AUTO_2608_23944/engine.R", "stage_artifacts/replication/_pilot/fe_jt1993_momentum.R", "04_Research/strategies/RP_AUTO_COMBO_combo_1403_8125_2007_081/engine.R", "04_Research/strategies/RP_AUTO_2608_17481/engine.R", "04_Research/strategies/RP_AUTO_1505_00328/engine.R", "04_Research/strategies/RP_AUTO_1403_8125/engine.R", "04_Research/strategies/RP_AUTO_2006_04639/engine.R", "04_Research/strategies/RP_AUTO_1806_01743/engine.R", "04_Research/strategies/RP_AUTO_2003_02515/engine.R", "04_Research/strategies/RP_AUTO_2505_20608/engine.R", "04_Research/strategies/RP_2301_09173_CID/engine.R", "04_Research/strategies/RP_AUTO_2002_06975/engine.R", "04_Research/strategies/RP_AUTO_2608_14014/engine.R", "04_Research/strategies/RP_AUTO_cond_mat_0410079/engine.R", "04_Research/strategies/RP_AUTO_2011_05381/engine.R", "04_Research/strategies/RP_AUTO_1707_05552/engine.R", "04_Research/strategies/RP_AUTO_2511_12490/engine.R", "04_Research/strategies/RP_AUTO_2505_16336/engine.R", "04_Research/strategies/RP_AUTO_0806_2606/engine.R", "04_Research/strategies/RP_AUTO_COMBO_combo_1403_8125_2301_091/engine.R", "04_Research/strategies/RP_AUTO_2608_27076/engine.R", "04_Research/strategies/RP_AUTO_COMBO_combo_1403_8125_2002_069/engine.R", "04_Research/strategies/RP_AUTO_2007_08115/engine.R", "04_Research/strategies/RP_AUTO_COMBO_combo_2007_08115_2301_09/engine.R", "04_Research/strategies/RP_AUTO_2302_10175/engine.R", "04_Research/strategies/RP_AUTO_2404_08129/engine.R", "04_Research/strategies/RP_AUTO_2511_12129/engine.R", "04_Research/strategies/RP_AUTO_2202_05702/engine.R", "04_Research/strategies/RP_AUTO_2608_27156/engine.R", "04_Research/strategies/RP_AUTO_2001_04185/engine.R", "04_Research/strategies/RP_AUTO_2608_24703/engine.R"],
+    "structural_ok": ["04_Research/strategies/RP_AUTO_1505_00328/engine.R", "04_Research/strategies/RP_AUTO_2001_04185/engine.R"],
+    "by_scope": {
+      "prompt": {
+        "scope": "prompt",
+        "n_eligible": 1,
+        "eligible_in_order": ["04_Research/strategies/RP_AUTO_2001_04185/engine.R"],
+        "picks": ["04_Research/strategies/RP_AUTO_2001_04185/engine.R"]
+      },
+      "full": {
+        "scope": "full",
+        "n_eligible": 0,
+        "eligible_in_order": [],
+        "picks": []
+      }
+    },
+    "adopted_scope": "full",
+    "picks": [],
+    "clean_room_queue": ["04_Research/strategies/RP_AUTO_1505_00328/engine.R", "04_Research/strategies/RP_AUTO_2001_04185/engine.R"],
+    "clean_room_order": ["04_Research/strategies/RP_AUTO_1505_00328/engine.R", "04_Research/strategies/RP_AUTO_2001_04185/engine.R"]
+  },
+  "factor_layer": {
+    "depth": 5,
+    "depth_source": "reinforce_program.json blocks[B1].depths 최대",
+    "seed_offset": 0,
+    "asof_config": "null(격자 fixed_axes.start_date)",
+    "cell": {
+      "code": "B1_1",
+      "label": "5팩터 직교(defense+momentum+consensus+growth+accrual)",
+      "factors": [
+        {
+          "kind": "db",
+          "id": "D42_EWMA_Vol"
+        },
+        {
+          "kind": "db",
+          "id": "IN05_Net_Debt_Issuance"
+        },
+        {
+          "kind": "db",
+          "id": "AC13_Abnormal_Accruals"
+        },
+        {
+          "kind": "db",
+          "id": "C15_Forecast_Error_Trend"
+        },
+        {
+          "kind": "db",
+          "id": "M12_LR_Reversal"
+        }
+      ],
+      "basis": "IC 시계열 상관 최소화 사슬 · 깊이 5 · 계열 5종(중복 0) · max|rho| 0.094 · 시드 D42_EWMA_Vol(회전 오프셋 0) · 후보 338종 · 선정 통계 asof_ic(as-of 2005-01-01 · fixed_axes.start_date(C:/Users/99922/AppData/Local/Temp/cl_fa_mirror_kj5jxdub/06_Registry/reinforce_program.json) · IC 가용 ~2004-12-30 · 순위 표본 6개월 미만 5종 제외)",
+      "selection_basis": "asof_ic",
+      "selection_asof": "2005-01-01",
+      "root_paper": {
+        "title": "Ang, Hodrick, Xing & Zhang (2006), The Cross-Section of Volatility and Expected Returns, JF 61(1)",
+        "url": "https://onlinelibrary.wiley.com/doi/10.1111/j.1540-6261.2006.00836.x"
+      },
+      "root_papers": [
+        {
+          "title": "Ang, Hodrick, Xing & Zhang (2006), The Cross-Section of Volatility and Expected Returns, JF 61(1)",
+          "url": "https://onlinelibrary.wiley.com/doi/10.1111/j.1540-6261.2006.00836.x"
+        },
+        {
+          "title": "Chan, Jegadeesh & Lakonishok (1996), Momentum Strategies, JF 51(5)",
+          "url": "https://onlinelibrary.wiley.com/doi/10.1111/j.1540-6261.1996.tb05222.x"
+        }
+      ],
+      "unmapped_families": ["growth", "accrual"],
+      "root_papers_note": "★논문 매핑 없는 계열 growth+accrual — 근거 의무의 공백(.RFF_FAMILY_PAPER 보강 대상)",
+      "note": "등록부 선정 — 격자가 팩터를 갖지 않고 factor_evidence+factor_ic_monthly 를 소비한다. IC 이력 부재로 제외 26종 · 횡단면 아님으로 제외 26종. ★선정은 IC 시계열 상관, 결합은 횡단면 rank-Z — 다른 직교성이다."
+    },
+    "picked_ids": ["D42_EWMA_Vol", "IN05_Net_Debt_Issuance", "AC13_Abnormal_Accruals", "C15_Forecast_Error_Trend", "M12_LR_Reversal"],
+    "seed_id": "D42_EWMA_Vol",
+    "max_rho": 0.0935252324778075,
+    "prefix_chain": ["D42_EWMA_Vol", "IN05_Net_Debt_Issuance", "AC13_Abnormal_Accruals", "C15_Forecast_Error_Trend", "M12_LR_Reversal"],
+    "prefix_cells": [
+      {
+        "label": "1팩터 직교(defense)",
+        "ids": ["D42_EWMA_Vol"]
+      },
+      {
+        "label": "2팩터 직교(defense+growth)",
+        "ids": ["D42_EWMA_Vol", "IN05_Net_Debt_Issuance"]
+      },
+      {
+        "label": "3팩터 직교(defense+growth+accrual)",
+        "ids": ["D42_EWMA_Vol", "IN05_Net_Debt_Issuance", "AC13_Abnormal_Accruals"]
+      },
+      {
+        "label": "4팩터 직교(defense+consensus+growth+accrual)",
+        "ids": ["D42_EWMA_Vol", "IN05_Net_Debt_Issuance", "AC13_Abnormal_Accruals", "C15_Forecast_Error_Trend"]
+      },
+      {
+        "label": "5팩터 직교(defense+momentum+consensus+growth+accrual)",
+        "ids": ["D42_EWMA_Vol", "IN05_Net_Debt_Issuance", "AC13_Abnormal_Accruals", "C15_Forecast_Error_Trend", "M12_LR_Reversal"]
+      }
+    ],
+    "vs_F1": {
+      "f1_ids": ["D42_EWMA_Vol", "IN05_Net_Debt_Issuance", "AC13_Abnormal_Accruals", "C15_Forecast_Error_Trend"],
+      "f1_subset_of_FA": true,
+      "only_FA": ["M12_LR_Reversal"],
+      "note": "사슬은 접두 일관 — 같은 as-of·시드면 F1 집합 ⊆ F_A 집합(깊이만 다름). 레버 이식 비교성의 근거"
+    },
+    "selection_basis": "asof_ic",
+    "selection_asof": "2005-01-01"
+  },
+  "floors": {
+    "F_A1": {
+      "id": "F_A1",
+      "rank": 1,
+      "status": "pending_clean_room_engine",
+      "a_path": true,
+      "mechanism_only": false,
+      "determinism_ok": false,
+      "selection_basis": "as_of",
+      "selection_basis_detail": "asof_ic",
+      "measurement_regime": {
+        "exec_price": "close_t1",
+        "regime": null,
+        "note": "측정 0 — 사전등록 뒤 같은 regime 으로 2회(결정론) 측정"
+      },
+      "vintage_flags": [],
+      "paper_key": "1505.00328",
+      "paper_url": "https://arxiv.org/abs/1505.00328",
+      "source_engine": {
+        "engine": "04_Research/strategies/RP_AUTO_1505_00328/engine.R",
+        "md5": "adf17051a09f635dee62b5c77aa55a58",
+        "role": "청정실 재구현의 논문 출처(엔진 재사용 아님 — 노출)"
+      },
+      "order_hash": "26e3a1daf9c487512e2a52aa11cada16b16270f755a4bd9488c9cee75f6d6a12",
+      "spec": {
+        "code": "B1_1",
+        "floor_id": "F_A1",
+        "label": "5팩터 직교(defense+momentum+consensus+growth+accrual)",
+        "block": "B1",
+        "fixed_axes": {
+          "long_only": true,
+          "n_max": 25,
+          "universe": "K200_KQ150",
+          "start_date": "2005-01-01",
+          "commission_bps": 15,
+          "liq_adv20_min": 200000000,
+          "weight_cap": null,
+          "base_weight": 0.5,
+          "base_weight_note": "기저(논문) 신호 가중. 등가중이면 팩터 n개에서 1/(1+n) 로 떨어져 결합 깊이와 기저 희석이 교락된다(실측 2026-08-31: 1/2->1/3 희석만으로 B1 다섯 칸 전부 기준선 미달). 고정하면 깊이가 순수 축이 된다. 1팩터일 때 0.5 는 등가중과 수치적으로 동일하다."
+        },
+        "base_weight": 0.5,
+        "base_signal": {
+          "kind": "engine",
+          "path": null,
+          "pending": "clean_room_engine",
+          "paper_url": "https://arxiv.org/abs/1505.00328"
+        },
+        "base_signal_md5": null,
+        "factors": [
+          {
+            "kind": "db",
+            "id": "D42_EWMA_Vol"
+          },
+          {
+            "kind": "db",
+            "id": "IN05_Net_Debt_Issuance"
+          },
+          {
+            "kind": "db",
+            "id": "AC13_Abnormal_Accruals"
+          },
+          {
+            "kind": "db",
+            "id": "C15_Forecast_Error_Trend"
+          },
+          {
+            "kind": "db",
+            "id": "M12_LR_Reversal"
+          }
+        ],
+        "weighting": {
+          "kind": "ew"
+        },
+        "universe": {
+          "kind": "k200_kq150"
+        },
+        "rebalance": null,
+        "overlay": [],
+        "overlay_cell": [],
+        "root_paper": {
+          "url": "https://arxiv.org/abs/1505.00328"
+        },
+        "root_papers": [
+          {
+            "url": "https://arxiv.org/abs/1505.00328"
+          },
+          {
+            "title": "Ang, Hodrick, Xing & Zhang (2006), The Cross-Section of Volatility and Expected Returns, JF 61(1)",
+            "url": "https://onlinelibrary.wiley.com/doi/10.1111/j.1540-6261.2006.00836.x"
+          },
+          {
+            "title": "Chan, Jegadeesh & Lakonishok (1996), Momentum Strategies, JF 51(5)",
+            "url": "https://onlinelibrary.wiley.com/doi/10.1111/j.1540-6261.1996.tb05222.x"
+          }
+        ],
+        "root_paper_families": ["defense", "growth", "accrual", "consensus", "momentum"],
+        "unmapped_families": ["growth", "accrual"],
+        "selection_basis": "asof_ic",
+        "selection_asof": "2005-01-01",
+        "basis": "IC 시계열 상관 최소화 사슬 · 깊이 5 · 계열 5종(중복 0) · max|rho| 0.094 · 시드 D42_EWMA_Vol(회전 오프셋 0) · 후보 338종 · 선정 통계 asof_ic(as-of 2005-01-01 · fixed_axes.start_date(C:/Users/99922/AppData/Local/Temp/cl_fa_mirror_kj5jxdub/06_Registry/reinforce_program.json) · IC 가용 ~2004-12-30 · 순위 표본 6개월 미만 5종 제외)",
+        "idea": "[floor clean F_A1] 5팩터 직교(defense+momentum+consensus+growth+accrual) — B1/multifactor(as-of 규칙 선정기) · weighting=ew · universe=k200_kq150 · overlay=none · 기저 엔진 = 청정 규칙 선정(계보 승계 없음)",
+        "gate_note": "P0-14 관문(rf_lineage_flags.R)이 이 칸의 팩터를 as-of 증명으로 보려면 원장 attempt 셀 코드 B1_ · 라벨 'N팩터 직교(' · spec$selection_basis == 'asof_ic' — 이 스펙 그대로"
+      }
+    },
+    "F_A2": {
+      "id": "F_A2",
+      "rank": 2,
+      "status": "pending_clean_room_engine",
+      "a_path": true,
+      "mechanism_only": false,
+      "determinism_ok": false,
+      "selection_basis": "as_of",
+      "selection_basis_detail": "asof_ic",
+      "measurement_regime": {
+        "exec_price": "close_t1",
+        "regime": null,
+        "note": "측정 0 — 사전등록 뒤 같은 regime 으로 2회(결정론) 측정"
+      },
+      "vintage_flags": [],
+      "paper_key": "2001.04185",
+      "paper_url": "https://arxiv.org/abs/2001.04185",
+      "source_engine": {
+        "engine": "04_Research/strategies/RP_AUTO_2001_04185/engine.R",
+        "md5": "160ddb5498132050bd7c95dd295655e6",
+        "role": "청정실 재구현의 논문 출처(엔진 재사용 아님 — 노출)"
+      },
+      "order_hash": "f79584f553f9f1003141fe7a7940331eaa55aa2d1d81b60e53e348de4f3ef0f7",
+      "spec": {
+        "code": "B1_1",
+        "floor_id": "F_A2",
+        "label": "5팩터 직교(defense+momentum+consensus+growth+accrual)",
+        "block": "B1",
+        "fixed_axes": {
+          "long_only": true,
+          "n_max": 25,
+          "universe": "K200_KQ150",
+          "start_date": "2005-01-01",
+          "commission_bps": 15,
+          "liq_adv20_min": 200000000,
+          "weight_cap": null,
+          "base_weight": 0.5,
+          "base_weight_note": "기저(논문) 신호 가중. 등가중이면 팩터 n개에서 1/(1+n) 로 떨어져 결합 깊이와 기저 희석이 교락된다(실측 2026-08-31: 1/2->1/3 희석만으로 B1 다섯 칸 전부 기준선 미달). 고정하면 깊이가 순수 축이 된다. 1팩터일 때 0.5 는 등가중과 수치적으로 동일하다."
+        },
+        "base_weight": 0.5,
+        "base_signal": {
+          "kind": "engine",
+          "path": null,
+          "pending": "clean_room_engine",
+          "paper_url": "https://arxiv.org/abs/2001.04185"
+        },
+        "base_signal_md5": null,
+        "factors": [
+          {
+            "kind": "db",
+            "id": "D42_EWMA_Vol"
+          },
+          {
+            "kind": "db",
+            "id": "IN05_Net_Debt_Issuance"
+          },
+          {
+            "kind": "db",
+            "id": "AC13_Abnormal_Accruals"
+          },
+          {
+            "kind": "db",
+            "id": "C15_Forecast_Error_Trend"
+          },
+          {
+            "kind": "db",
+            "id": "M12_LR_Reversal"
+          }
+        ],
+        "weighting": {
+          "kind": "ew"
+        },
+        "universe": {
+          "kind": "k200_kq150"
+        },
+        "rebalance": null,
+        "overlay": [],
+        "overlay_cell": [],
+        "root_paper": {
+          "url": "https://arxiv.org/abs/2001.04185"
+        },
+        "root_papers": [
+          {
+            "url": "https://arxiv.org/abs/2001.04185"
+          },
+          {
+            "title": "Ang, Hodrick, Xing & Zhang (2006), The Cross-Section of Volatility and Expected Returns, JF 61(1)",
+            "url": "https://onlinelibrary.wiley.com/doi/10.1111/j.1540-6261.2006.00836.x"
+          },
+          {
+            "title": "Chan, Jegadeesh & Lakonishok (1996), Momentum Strategies, JF 51(5)",
+            "url": "https://onlinelibrary.wiley.com/doi/10.1111/j.1540-6261.1996.tb05222.x"
+          }
+        ],
+        "root_paper_families": ["defense", "growth", "accrual", "consensus", "momentum"],
+        "unmapped_families": ["growth", "accrual"],
+        "selection_basis": "asof_ic",
+        "selection_asof": "2005-01-01",
+        "basis": "IC 시계열 상관 최소화 사슬 · 깊이 5 · 계열 5종(중복 0) · max|rho| 0.094 · 시드 D42_EWMA_Vol(회전 오프셋 0) · 후보 338종 · 선정 통계 asof_ic(as-of 2005-01-01 · fixed_axes.start_date(C:/Users/99922/AppData/Local/Temp/cl_fa_mirror_kj5jxdub/06_Registry/reinforce_program.json) · IC 가용 ~2004-12-30 · 순위 표본 6개월 미만 5종 제외)",
+        "idea": "[floor clean F_A2] 5팩터 직교(defense+momentum+consensus+growth+accrual) — B1/multifactor(as-of 규칙 선정기) · weighting=ew · universe=k200_kq150 · overlay=none · 기저 엔진 = 청정 규칙 선정(계보 승계 없음)",
+        "gate_note": "P0-14 관문(rf_lineage_flags.R)이 이 칸의 팩터를 as-of 증명으로 보려면 원장 attempt 셀 코드 B1_ · 라벨 'N팩터 직교(' · spec$selection_basis == 'asof_ic' — 이 스펙 그대로"
+      }
+    }
+  },
+  "clean_room": {
+    "role": "full 범위에서 청정 후보가 0 이면 A 경로 기저는 **새로 만든다** — 구조 술어만 통과한 논문(엔진 노출 무관)을 같은 해시 순서로 골라 노출 차단 조건에서 재구현한다. 새 엔진은 측정하지 않은 채 사전등록에 핀(engine md5)으로 들어가고 측정은 등록 뒤 prereg 경로.",
+    "requirements": [
+      "구현 에이전트 cwd = 저장소 밖 격리 디렉터리(프로젝트 CLAUDE.md·자동 기억 MEMORY.md 비주입) — 전사 attachment 에 AutoMem 이 없어야 한다(사후 검증 = 이 규칙의 transcript_auto_memory)",
+      "Read/Glob/Grep 허용 경로 = 작업 디렉터리 + 성과 수치를 지운 계약 요약본(엔진 입출력 규약·RAWDATA 열 사전·PIT 규약) — 원장·산출물·기억·저널·다른 엔진 디렉터리 거부(사후 검증 = transcript_tool_reads)",
+      "WebFetch/WebSearch = 논문 원문만(arxiv.org · r.jina.ai 프록시)",
+      "엔진은 FACTORS(Date,Ticker,Score)를 유니버스 전 종목에 낸다(후보 폭 > n_max — B1 축 생존) · 지문 밖 원천 금지",
+      "적대적 충실도 감사는 **측정 전**에 엔진·논문만 보고 한다(산출물 경로를 주지 않는다 — 재구현 피드백에 측정 성과가 섞이지 않게)",
+      "측정(run_paper_replication)은 하지 않는다 — 사전등록 등록 뒤 prereg 러너가 F_A 기저 측정(결정론 2회 포함)",
+      "사후 검증 = rfc_build 를 새 엔진 디렉터리에 다시 돌려 full 범위 노출 0 확인(양성 대조: 기존 레인 엔진은 exposed 로 나와야 한다)",
+      "(FA-CLEAN-BASE-PATH 2026-09-26 · (나) 기존 레인 강화) 위 요건의 운영판 = 무인 충실구현 레인 청정 모드(rf_replication_auto.sh · 설정 06_Registry/replication_clean_lane.json): 작업 디렉터리 RP_AUTO_CLEAN_<slug> · 가드 arm_gen_read_guard.sh 청정 표식(QVEST_CLEAN_LANE — 허용 목록 read_allow 밖 Read/Grep 차단 · 성과 경로 정규식 사본) · 셸·Agent·Skill 금지 · 자동 기억 차단(CLAUDE_CODE_DISABLE_AUTO_MEMORY) · 재구현 피드백 가림 · 감사자 산출물 비공개 · 출처 기록 lane_provenance.json. cwd 는 저장소 그대로(훅 13종이 cwd 기준으로 로드된다) — 그래서 CLAUDE.md·.claude/rules 주입은 알려진 경계로 남는다(결정문).",
+      "(10-03 정합 주석 · FA-CLEAN-BASE-PATH (나)) 운영판 레인은 검증기(rf_replication_verify.R)가 충실구현 판(논문 축)을 **측정하고** 통과하면 원장 entry 를 연다(레인 순서 불변 — 06_Registry/replication_clean_lane.json known_boundary). 위 '측정(run_paper_replication)은 하지 않는다'는 청정실((가) 저장소 밖 레인) 판의 요건이다 — (나)에서는 이렇게 읽는다: ①F_A 선정·순서·대기열은 그 측정을 소비하지 않는다(rfc_build 입력 = 허용 투영 · 검사 P1/P2 · 입력 열 전수 census_io·census_cols 2026-10-03: 비허용 원장 필드 1,315·산출물 필드 531 삭제, as-of 뒤 IC 89,491행 교란, factor_evidence 저장 성과 2,590필드 교란 → 문서 동일) ②F_A 스펙(실투형 고정 축 + as-of 팩터 층) 측정은 사전등록 등록 뒤 prereg 경로(결정론 2회) ③그 entry 의 러너 강화(격자 칸 측정)를 사전등록 전까지 보류할지 · 그 시도 수를 F_A 가족 N 에 넣을지는 이 규칙이 정하지 않는다(운영 결정 대기 — measurement_policy.n_accounting 은 청정실 재구현·승계자 사용 횟수만 명시)."
+    ]
+  },
+  "prereg_gate": {
+    "ready": false,
+    "blockers": ["FA:no_clean_candidate(scope=full · 구조 통과 2 · 채택 범위 자격 0)", "FA:clean_room_engine_absent(청정실 재구현 전 — 규칙 대기열 1순위부터)", "FA:unmeasured(결정론 2회 · 사전등록 뒤)"],
+    "rule": "ready = 청정 후보(채택 범위) ≥ 1 ∧ F_A 결정론 2회 측정 ∧ 소비 계약 필드(status confirmed) — 초안은 항상 false"
+  },
+  "measurement_policy": {
+    "numbers": "성과 수치 0 — 인용도 하지 않는다(후보 간 사후 선택 방지)",
+    "n_accounting": "F_A 가족 N 에 청정실 재구현 횟수·승계자 사용 횟수를 넣는다(Bailey & López de Prado 2014)"
+  },
+  "evidence": [
+    {
+      "claim": "사전등록·사전 고정 절차(결과를 본 뒤 선택 금지)가 금융 실증의 거짓 발견을 줄인다 — 기저를 규칙으로 먼저 고정하는 이유",
+      "title": "Harvey (2017), Presidential Address: The Scientific Outlook in Financial Economics, Journal of Finance 72(4)",
+      "url": "https://doi.org/10.1111/jofi.12530"
+    },
+    {
+      "claim": "LLM 이 입력 밖에서 결과(미래) 정보를 가지고 있으면 그 산출물은 미래참조 편향을 띤다 — 설계 에이전트의 컨텍스트 노출(자동 기억·도구 열람)을 PIT 통로로 보는 이유",
+      "title": "Glasserman & Lin (2023), Assessing Look-Ahead Bias in Stock Return Predictions Generated By GPT Sentiment Analysis, arXiv:2309.17322",
+      "url": "https://arxiv.org/abs/2309.17322"
+    },
+    {
+      "claim": "전표본 성과로 고른 신호 조합의 백테스트는 선택 편향으로 부풀려진다 — 팩터 층을 as-of 규칙으로 고르는 이유",
+      "title": "Novy-Marx (2015), Backtesting Strategies Based on Multiple Signals, NBER Working Paper 21329",
+      "url": "https://www.nber.org/papers/w21329"
+    },
+    {
+      "claim": "시행 수를 알아야 선택 편향을 보정한다 — 청정 기저 가족의 N 회계(후보·재구현 횟수 포함)",
+      "title": "Bailey & López de Prado (2014), The Deflated Sharpe Ratio, Journal of Portfolio Management",
+      "url": "https://www.davidhbailey.com/dhbpapers/deflated-sharpe.pdf"
+    }
+  ]
+}

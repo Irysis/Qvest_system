@@ -3,14 +3,14 @@
   "dist_id": "DIST-QPM-043",
   "cluster_key": "3779497cf8cb",
   "candidate_id": "CAND_qepm_legacy_3779497cf8cb",
-  "status": "pending_5axis",
-  "statement_refined": null,
-  "retry_condition": null,
+  "status": "proposed",
+  "statement_refined": "검증 층은 세 조건을 동시에 만족할 때만 방어선이다 — (1) 위반 주입에 대한 검출력 실증, (2) 실제 운영 호출 경로 1건 이상, (3) 검사 대상 원장으로부터의 격리. supporting 13건에서 세 조건이 각각 독립적으로 깨진 사례가 측정됐다. (1) 미충족: Forge 자체 점검은 PIT 위반과 명세 전달 실패를 4건 누적 증거(STR_1686 C11/C14/C15 3건 · STR_1687 C13/C14/C15+S1 4건 · STR_1656 C10 major+C15 minor · STR_1631 C15 minor)에서 체계적으로 탐지하지 못해 교차 모델 또는 Architect 감사가 필수 검증 층으로 확립됐다. (2) 미충족: knowledge_index 신선도 검사기는 돌연변이 6종에서 17/17 로 검출력이 실증됐는데 운영 소비자가 0 이었다(참조 = 자기 파일 + 자기 테스트 2곳) — 만들었지만 설치하지 않은 상태로 원래 결함이 운영에서 그대로였고, 같은 라운드에서 `if (!exists(...))` 가드가 호출자 오염 경로임이 실측됐다. (3) 미충족: 검사 하네스가 생산 원장을 변조했다 — test_hypothesis_index_paper_lane.R 의 T5 가 형제 검사 8종과 달리 실 06_Registry/method_registry.json 에 가짜 method 를 주입했고 같은 배터리의 후속 3 스위트가 그 가짜를 실물 등재 항목으로 소비했으며 크래시 시 오염이 회차 간 잔존했다. 조건이 갖춰진 검증은 실제로 단일 출처가 놓친 것을 잡는다 — 'Grade A' 34건 카탈로그 재검에서 hurdle 기준 JUDGE_PASS_A 25 / PASS_LOWER 2 / REJECT 2 / NO_HURDLE 5 로 갈리고 s6_judge 산출물은 34건 전수 부재였으며, PIT 재검 스윕은 같은 34건을 PASS 11 / AMBIGUOUS_MINOR 12 / AMBIGUOUS_MAJOR 2 / FAIL 7 로 재분류했다(STR_1631 family 10건 중 PIT clean 1건). 역방향 증거도 있다 — C11 시차를 적용했더니 지표가 전부 개선된 사례(SR 1.099→1.111 · CAGR 14.31→14.48% · MDD 28.16→27.12%)는 그 알파가 미래참조에 기대지 않았음을 가리킨다. 또한 진단이 두 번 뒤집힌 사례가 '죽은 검사기'와 '현행 파이프라인이 재지 않는 것을 요구하는 검사'를 구분하게 했다 — 재탕 방지 벌점의 분기 로직은 정상이고 입력 eff_corr 이 산출물 400건 전수에서 NA 였다. 이 규칙의 범위는 검증·계기 층이며 성과 수치가 섞인 supporting 항목의 라벨은 estimated 이므로 등급 판정에 인용하지 않는다. 저장소 검사기 전수에 같은 3축을 적용한 인벤토리는 아직 없으므로 미해결로 열어둔다.",
+  "retry_condition": "신규 검사기·계기의 완료 조건에 세 조건을 모두 계측해 넣고(위반 주입 검출력 · 자기 파일·자기 테스트를 제외한 실 호출 경로 ≥1 · 픽스처 격리), 저장소의 기존 검사기 전수에 같은 3축을 적용한 인벤토리가 산출될 때 방법론 규칙으로 재상정한다. 인벤토리 전에는 '설치됨'을 '작동함'으로 읽지 않는다.",
   "refined_at": null,
   "refined_by": null,
   "promoted_to_axiom": null,
   "created_at": "2026-08-22T01:45:31+00:00",
-  "updated_at": "2026-09-23T21:57:10+00:00",
+  "updated_at": "2026-10-03T01:59:17+00:00",
   "research_mode": "qepm_legacy",
   "metric_type": "estimated",
   "type": "methodological",
@@ -86,5 +86,43 @@
     "oos_effect_vs_is": null,
     "note": "promote.R r4_regime_payoff / essence_score 경유 확정"
   },
-  "cluster_members_count": 13
+  "cluster_members_count": 13,
+  "adversarial_verdict": {
+    "a_exaggeration": "강등함. supporting 에는 'mandatory verification layer 확립'·'재발방지 체계 완비' 같은 완료형 서술이 있는데 같은 집합의 뒤 항목들이 그 뒤에도 같은 계통 결함(검사기 미설치 · 하네스의 원장 변조)을 새로 적발했다. 완료형을 '세 조건 중 어느 것이 충족됐는지'의 조건부 서술로 바꾸고, 저장소 전수 인벤토리는 미측정이라고 명시했다.",
+    "b_evidence": "supporting 13건의 metric_type 은 estimated 8 · backtested 1 · unavailable 4 이며 성과 수치(L-612 SR 0.531·MDD 53.3% · L-722 hurdle B/42.5 · L-731 SR 1.099→1.111)는 전부 estimated 라벨의 구 하네스 판이다. 이 수치를 등급 판정으로 인용하지 않고 '검증 층이 무엇을 잡았는가'의 증거로만 썼다. hurdle 등급은 헌법상 진단(proxy)이므로 L-1550/L-722 의 'Grade A'·'B/42.5' 를 권위 등급으로 올려 읽지 않았다.",
+    "c_ax000": "'구조적 한계'·'dead-end' 없음. 세 조건이 깨진 사례를 셋 다 수리 가능한 결함으로 서술했고, 조건이 갖춰진 재검이 34건 카탈로그를 재분류한 양성 사례를 함께 담았다. 저장소 전수 적용은 미해결로 열어 뒀다.",
+    "d_firewall": "위반 없음. 귀속 대상은 검증 층의 설계·배선·격리라는 방법 층이고 고정 제약이나 PIT 를 실패 원인으로 지목하거나 완화를 레버로 제시한 부분이 없다. PIT 언급은 검사 대상으로서의 언급이며, 오히려 C11 시차 적용이 지표를 개선한 사례를 반대 방향 증거로 실었다.",
+    "e_frontier": "frontier 3건 + live_trigger(data) + expiry. '검출력 실증과 운영 설치는 다른 사건'이라는 기전이 다음 작업을 전수 인벤토리로 돌리게 썼다."
+  },
+  "expiry": "2027-03-31",
+  "frontier": [
+    "저장소 검사기 전수에 3축 인벤토리(검출력 실증 · 자기 참조 제외 실 호출 경로 수 · 픽스처 격리 여부) 적용 — 참조가 자기 파일+자기 테스트뿐인 항목이 미설치의 지문이다",
+    "`if (!exists(...))` 류 가드를 호출자 오염 경로로 분류해 검사 — 가드가 있으면 통과가 아니라 SKIP 이 되고 SKIP 이 초록으로 읽힌다",
+    "검사 배터리의 생산 원장 쓰기 금지를 기계로 강제 — tempdir 픽스처 미사용 스위트를 배터리 실행 전에 거부하고, 크래시 경로의 회차 간 오염 잔존을 양성 대조로 실증"
+  ],
+  "live_trigger": {
+    "type": "data",
+    "condition": "검사기 3축 인벤토리가 산출되어 '실 호출 경로 0' 항목 수가 집계될 때",
+    "monitored_source": "08_Tests/hooks/run_all_hooks.sh SUITES · 06_Registry/wiring_map.json"
+  },
+  "revival_spec": [
+    {
+      "signal_id": "wall_clock_date",
+      "condition": "x >= as.Date('2027-03-31')",
+      "from_trigger": "expiry",
+      "status": "active"
+    },
+    {
+      "signal_id": "tests_present",
+      "condition": "x == TRUE",
+      "from_trigger": "data",
+      "status": "pending"
+    }
+  ],
+  "constraint_firewall": {
+    "mode": "backstop_passed",
+    "checked_at": "2026-10-03"
+  },
+  "drafted_at": "2026-10-03T11:35:46+0900",
+  "drafted_by": "auto_distill"
 }
