@@ -223,6 +223,10 @@ if (length(.missing)) {
 
 # ── ① 계약 실행 ───────────────────────────────────────────────────────────────
 Sys.setenv(QVEST_NO_LEDGER_OPEN = "1")   # 개설은 아래에서 검증 후 직접 한다
+# ★기저 캐시 시드 (2026-10-05) — 이 측정이 강화 entry 의 기저가 되면 첫 블록 셀들이 이 엔진 산출을 캐시에서 바로 쓴다
+#   (셀마다 엔진 재실행 → 무거운 엔진은 첫 블록 40~50분). 정본 = reinforcement/rf_base_cache.R '기저 캐시 시드'.
+#   이 프로세스(검증기)에서만 켠다 — 셀 워커는 별도 프로세스라 상속하지 않는다.
+Sys.setenv(QVEST_RP_SEED_BASE_CACHE = "1")
 suppressMessages(source(file.path(ROOT, "02_Infrastructure/alpha_search/run_paper_replication.R")))
 # ★논문 포트폴리오 사양은 **에이전트가 FIDELITY.json 에 남긴 값**을 쓴다.
 #   구판은 이 호출에 portfolio_spec 이 아예 없어서 러너 기본값(top_n_long)이 적용됐고,

@@ -114,10 +114,13 @@ rf_base_cache_stamps <- function(rawdata_path, bench_path, factor_db_dir) {
 #   수치열: NA 수 · 전합 · 간격 7 표본의 위치가중합(값 교환도 잡는다) — 전부 %.17g(정확 표기).
 #   문자열: NA 수 · 간격 7 표본의 고유값 수 · 위치가중 바이트 길이합.
 #   같은 데이터·같은 정렬이면 결정론적이다(엔진이 캐시 앞에서 setorder(Ticker, Date) 를 한다).
-rf_base_data_fingerprint <- function(DT) {
+#   ord(선택 · 2026-10-05 기저 캐시 시드) — 행 순열. 주면 DT[ord] 순서로 잰 것과 **비트 동일**한 지문을 복사 없이 낸다
+#   (합은 순열된 벡터 위에서 다시 더한다 — 부동소수 합은 순서에 따라 끝자리가 달라질 수 있어서다). NULL = 구판 비트 동일.
+rf_base_data_fingerprint <- function(DT, ord = NULL) {
   cols <- names(DT)
   cols <- cols[!startsWith(cols, ".")]
   n <- nrow(DT)
+  if (!is.null(ord) && length(ord) != n) stop("[rf_base_cache] ord 길이 ", length(ord), " != nrow ", n)
   idx <- if (n > 0L) seq.int(1L, n, by = 7L) else integer(0)
   wv <- as.numeric(seq_along(idx))
   parts <- vapply(cols, function(cn) {
@@ -125,11 +128,12 @@ rf_base_data_fingerprint <- function(DT) {
     na <- sum(is.na(x))
     if (is.numeric(x) || is.logical(x) || inherits(x, "Date") || inherits(x, "POSIXt")) {
       v <- as.numeric(unclass(x))
+      if (!is.null(ord)) v <- v[ord]
       s1 <- sum(v, na.rm = TRUE)
       s2 <- if (length(idx)) sum(v[idx] * wv, na.rm = TRUE) else 0
       sprintf("%s:%d:%.17g:%.17g", cn, na, s1, s2)
     } else {
-      xs <- as.character(x)[idx]
+      xs <- if (is.null(ord)) as.character(x)[idx] else as.character(x)[ord[idx]]
       nb <- nchar(xs, type = "bytes"); nb[is.na(xs)] <- 0L
       sprintf("%s:%d:%d:%.17g", cn, na, data.table::uniqueN(xs), sum(as.numeric(nb) * wv))
     }
@@ -185,4 +189,55 @@ rf_base_cache_save <- function(obj, cpath, ck) {
   saveRDS(o, tmp)
   if (!file.rename(tmp, cpath)) stop("rename 실패: ", basename(tmp), " -> ", basename(cpath))
   "saved"
+}
+
+#==============================================================================
+# ★기저 캐시 시드 (2026-10-05 · 도훈 지시 "빠른 리서치") — 강화 entry 첫 블록의 콜드 미스 제거
+#
+# 왜: 새 entry 의 첫 블록 셀들은 캐시가 비어 있어 기저 엔진을 **각자** 다시 돌린다. 같은 엔진·같은 데이터로
+#   바로 전 충실구현 측정(run_paper_replication)이 이미 돌린 계산이다. 무거운 엔진이면 첫 블록이 통째로 40~50분이다
+#   (2508.18592 실측: 셀 5개가 18:23 투입 → 19:03 에야 캐시 저장).
+# 무엇을: 레인 측정이 엔진을 돌리기 **전에** 셀과 같은 키를 계산하고, 엔진 산출(유니버스·시작일 필터 **전** 원산출)을
+#   셀의 .load_one 과 같은 모양으로 저장한다. 셀은 코드 변경 없이 그대로 적중한다.
+# 키 동치: 셀(rf_cell_engine.R)은 DT <- RAWDATA · setorder(DT, Ticker, Date) 뒤 '.' 파생 열을 더하고(지문 제외)
+#   지문을 잰다. 측정 RAWDATA 는 parquet 순서((Date, Ticker))라 같은 순열(setorderv · 안정)을 만들어 지문만 그 순서로
+#   잰다 — 측정 입력 자체는 건드리지 않는다. start = 셀 고정 축 start_date 와 같은 문자열이어야 적중한다.
+# 산출 동치(실증): 2508.18592 엔진 — 셀이 (Ticker, Date)+파생 열 입력으로 계산한 기저와 측정 패널이 겹치는 57,976행
+#   전부 비트 동일(2026-10-05). 입력 행 순서에 기대는 엔진이면 시드값과 셀 재계산값이 갈릴 수 있다 — 시드 객체는
+#   rf_base_seeded_from 속성으로 출처를 남긴다(사후 대조 가능). 저장 규약(실행 중 도장 변경 = 저장 생략 · tmp→rename)은
+#   rf_base_cache_save 를 그대로 쓴다.
+# 검사 = 08_Tests/reinforcement/test_rf_base_cache_seed.R
+#==============================================================================
+rf_base_cache_seed_key <- function(engine_path, RAWDATA, root, start) {
+  if (!data.table::is.data.table(RAWDATA)) stop("[rf_base_cache] seed: RAWDATA 가 data.table 이 아니다")
+  if (!all(c("Ticker", "Date") %in% names(RAWDATA))) stop("[rf_base_cache] seed: Ticker/Date 열 없음")
+  if (!inherits(RAWDATA$Date, "Date"))
+    stop("[rf_base_cache] seed: Date 가 Date 형이 아니다 — 셀은 Date 로 바꾼 뒤 잰다(틀린 키를 쓰느니 시드를 건너뛴다)")
+  o <- data.table::data.table(Ticker = RAWDATA$Ticker, Date = RAWDATA$Date, .i = seq_len(nrow(RAWDATA)))
+  data.table::setorderv(o, c("Ticker", "Date"))          # 셀의 setorder(DT, Ticker, Date) 와 같은 정렬기(안정 · C 로케일)
+  ord <- o$.i
+  rm(o)
+  eng_md5 <- tryCatch(unname(tools::md5sum(engine_path)), error = function(e) NA_character_)
+  fp <- rf_base_data_fingerprint(RAWDATA, ord = ord)
+  rf_base_cache_key(eng_md5,
+                    rawdata_path  = file.path(root, ".cache", "rawdata.parquet"),
+                    bench_path    = file.path(root, ".cache", "benchmark.parquet"),
+                    factor_db_dir = file.path(root, ".cache", "factor_db"),
+                    data_fp = fp, n_rows = nrow(RAWDATA), start = as.Date(start))
+}
+
+# 엔진 원산출 → 셀 .load_one 과 같은 모양((Date, Ticker, .base_sig) · FACTORS 우선 · 없으면 PORTFOLIO Weight) → 저장.
+#   호출자의 FACTORS 는 바꾸지 않는다(복사본에서 이름을 바꾼다 — 러너가 뒤에서 Score 를 쓴다).
+#   반환 = 사유 문자열("saved" 가 성공 · "uncacheable" · "stamp_changed_during_run:…" · "no_engine_output" · "empty_engine_output").
+rf_base_cache_seed_save <- function(FACTORS, PORTFOLIO, ck, root, provenance = "") {
+  b <- if (data.table::is.data.table(FACTORS)) {
+         FACTORS[, .(Date, Ticker, .base_sig = Score)]          # 새 표로 투영 — 호출자 FACTORS 불변
+       } else if (data.table::is.data.table(PORTFOLIO)) {
+         PORTFOLIO[, .(Date, Ticker, .base_sig = as.numeric(Weight))]
+       } else return("no_engine_output")
+  if (!nrow(b)) return("empty_engine_output")
+  data.table::setattr(b, "rf_base_seeded_from", as.character(provenance)[1])
+  cdir <- file.path(root, ".cache", "rf_base_signal")
+  dir.create(cdir, recursive = TRUE, showWarnings = FALSE)
+  rf_base_cache_save(b, file.path(cdir, ck$file), ck)
 }

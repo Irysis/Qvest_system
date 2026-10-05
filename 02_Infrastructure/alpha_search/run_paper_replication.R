@@ -474,6 +474,20 @@ run_paper_replication <- function(strategy_name, strategy_idea, factor_engine_pa
   }
 
   # ---- 2. Engine → FACTORS 또는 PORTFOLIO ----
+  # ★기저 캐시 시드 (2026-10-05 · 도훈 지시 "빠른 리서치") — 이 측정이 강화 entry 의 기저가 되면 첫 블록 셀들이 같은 엔진을
+  #   각자 다시 돌린다(무거운 엔진은 첫 블록 40~50분). 엔진을 돌리기 **전에** 셀과 같은 캐시 키를 재고, 원산출을 셀 모양으로
+  #   심는다(정본·근거 = reinforcement/rf_base_cache.R '기저 캐시 시드'). 켜는 자 = 레인 검증기(QVEST_RP_SEED_BASE_CACHE=1)뿐 —
+  #   셀 워커·세션 호출은 비트 동일. data_cutoff 절단 판은 셀이 보는 RAWDATA 와 달라 시드하지 않는다. 실패는 전부 비치명.
+  .seed_ck <- NULL
+  if (identical(Sys.getenv("QVEST_RP_SEED_BASE_CACHE", ""), "1") && is.null(data_cutoff)) {
+    .seed_ck <- tryCatch({
+      suppressMessages(source(file.path(.RP_INFRA, "reinforcement", "rf_base_cache.R"), local = TRUE))
+      rf_base_cache_seed_key(factor_engine_path, RAWDATA, root = .RP_ROOT, start = start_date)
+    }, error = function(e) { cat(sprintf("[replication] 기저 캐시 시드 키 실패(비치명): %s\n", conditionMessage(e))); NULL })
+    if (!is.null(.seed_ck) && !isTRUE(.seed_ck$cacheable)) {
+      cat("[replication] 기저 캐시 시드 생략: 키 불가(도장·지문 판독 실패)\n"); .seed_ck <- NULL
+    }
+  }
   fe_env <- new.env(parent = environment())
   fe_env$RAWDATA <- RAWDATA; fe_env$BM_DT <- BM_DT
   source(factor_engine_path, local = fe_env)
@@ -484,6 +498,14 @@ run_paper_replication <- function(strategy_name, strategy_idea, factor_engine_pa
   FACTORS <- if (has_fx) fe_env$FACTORS else NULL
   PORTFOLIO <- if (has_pf) fe_env$PORTFOLIO else NULL
   rm(fe_env); gc(verbose = FALSE)
+  if (!is.null(.seed_ck)) {
+    .sv <- tryCatch(rf_base_cache_seed_save(FACTORS, PORTFOLIO, .seed_ck, root = .RP_ROOT,
+                                            provenance = sprintf("run_paper_replication %s · %s",
+                                                                 format(Sys.time(), "%Y-%m-%dT%H:%M:%S%z"), factor_engine_path)),
+                    error = function(e) paste("error:", conditionMessage(e)))
+    cat(sprintf("[replication] 기저 캐시 시드 — %s (%s)\n", .sv, .seed_ck$file))
+    rm(.seed_ck)
+  }
   # ★컷오프 뒤 시그널은 버린다(P0-07) — 엔진이 RAWDATA 밖 원천(팩터 DB 등)으로 cutoff 뒤 날짜를 내도 창이 같아야 한다.
   #   (K200_KQ150 유니버스는 멤버십 결합으로도 떨어지지만, 그 밖 유니버스는 아래 '시그널일 > RAWDATA' 검사에서 멈춘다)
   if (!is.null(data_vintage)) {
