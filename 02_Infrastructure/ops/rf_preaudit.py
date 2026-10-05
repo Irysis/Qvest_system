@@ -109,12 +109,43 @@ def _norm(s):
     return re.sub(r"\s+", " ", str(s or "")).strip().lower()
 
 
-def _r_num(s):
-    """R 숫자 리터럴(12L · 1e-3 · '20') → float. 숫자가 아니면 None(c(…)·as.Date(…) 는 문자열 대조로 간다)."""
-    try:
-        return float(str(s).strip().rstrip("L"))
-    except ValueError:
-        return None
+_NUM_RX = re.compile(r"-?(?:\d+\.?\d*|\.\d+)(?:[eE][+-]?\d+)?")
+_DATE_RX = re.compile(r"\d{4}-\d{2}-\d{2}")
+
+
+def _vals(x, from_code):
+    """값 → ('date', 'YYYY-MM-DD') · ('num', [floats]) · ('str', 정규형). 코드 쪽은 R 리터럴(12L · c(3L, 5L) · as.Date("…")),
+    신고 쪽은 JSON 값(숫자 · 배열 · 문자열 — 'c(3L, 5L)' · '[3, 5]' · '2005-01-01' 어느 표기든). 2026-10-05 첫 실전 오탐 수리:
+    R 벡터 c(3L, 5L) 와 JSON 배열 [3, 5] 를 문자열로 대조해 같은 값을 불일치로 냈다."""
+    if isinstance(x, bool):
+        return ("str", str(x).lower())
+    if isinstance(x, (int, float)):
+        return ("num", [float(x)])
+    if isinstance(x, list):
+        try:
+            return ("num", [float(str(e).strip().rstrip("L")) for e in x])
+        except ValueError:
+            return ("str", _norm(json.dumps(x, ensure_ascii=False)).replace(" ", ""))
+    s = str(x if x is not None else "").strip()
+    d = _DATE_RX.search(s)
+    if d and (not from_code or "as.Date" in s or s.strip("'\"") == d.group(0)):
+        return ("date", d.group(0))
+    nums = _NUM_RX.findall(s.replace("L", " "))
+    if nums and (from_code or re.fullmatch(r"[\s\[\]\(\),cL0-9eE.+\-]*", s)):
+        try:
+            return ("num", [float(t) for t in nums])
+        except ValueError:
+            pass
+    return ("str", _norm(s).replace(" ", ""))
+
+
+def _same_value(code_v, decl_v):
+    a, b = _vals(code_v, True), _vals(decl_v, False)
+    if a[0] != b[0]:
+        return False
+    if a[0] == "num":
+        return len(a[1]) == len(b[1]) and all(abs(p - q) <= 1e-12 * max(1.0, abs(p)) for p, q in zip(a[1], b[1]))
+    return a[1] == b[1]
 
 
 def harness_block(root, cfg):
@@ -335,6 +366,18 @@ def run(wdir, root, cfg):
             m = crx.match(ln)
             if m:
                 top.append((m.group(1), m.group(2), i))
+        # ★두 번 이상 대입되는 이름은 상수가 아니라 변수다(카운터·누적기 초기화 `rr <- 0L` → 루프의 `rr <- rr + 1L`).
+        #   2026-10-05 2210.12462 첫 실전 오탐 — 상수표에 카운터를 요구해 보정 패스 하나를 태웠다.
+        code_all = "\n".join(code_lines)
+
+        def _n_assign(name):
+            nm = re.escape(name)
+            arrows = len(re.findall(r"(?<![\w.$@])" + nm + r"\s*(?:<<-|<-)", code_all))
+            eqs = len(re.findall(r"(?m)^\s*" + nm + r"\s*=(?!=)", code_all))
+            return arrows + eqs
+        n_var = sum(1 for n, _, _ in top if _n_assign(n) > 1)
+        top = [(n, v, i) for n, v, i in top if _n_assign(n) <= 1]
+        stats["top_level_reassigned_skipped"] = n_var
         stats["top_level_constants"] = len(top)
         if top:
             cl = fid.get("constants")
@@ -362,11 +405,7 @@ def run(wdir, root, cfg):
                         continue
                     if str(it.get("source") or "").strip().lower() not in ok_src:
                         bad_src.append(n)
-                    cv, dv = _r_num(v), _r_num(it.get("value"))
-                    if cv is not None and dv is not None and abs(cv - dv) > 1e-12 * max(1.0, abs(cv)):
-                        bad_val.append("%s(코드 %s · 신고 %s)" % (n, v, it.get("value")))
-                    elif cv is None and _norm(v).replace(" ", "") != _norm(it.get("value")).replace(" ", "") \
-                            and _norm(it.get("value")).replace(" ", "") not in _norm(v).replace(" ", ""):
+                    if not _same_value(v, it.get("value")):
                         bad_val.append("%s(코드 %s · 신고 %s)" % (n, v, it.get("value")))
                 if bad_src:
                     add("P7_constants_source", "fail", "constants 의 source 가 paper|supplement|harness 가 아닌 항목 %d개" % len(bad_src),

@@ -20,7 +20,7 @@ import sys
 import tempfile
 
 ROOT = os.environ.get("QM_ROOT") or os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
-PA = os.path.join(ROOT, "02_Infrastructure", "ops", "rf_preaudit.py")
+PA = os.environ.get("RF_PREAUDIT_SRC") or os.path.join(ROOT, "02_Infrastructure", "ops", "rf_preaudit.py")
 CFG = os.path.join(ROOT, "06_Registry", "rf_preaudit.json")
 REG = os.path.join(ROOT, "02_Infrastructure", "factor_db", "factor_registry.json")
 CLPY = os.path.join(ROOT, "02_Infrastructure", "ops", "rf_clean_lane.py")
@@ -195,6 +195,33 @@ def main():
         check("N3 constants table complete (int literal 12L vs declared 12) → pass", rc14 == 0, "codes=%s" % codes(rep14))
         ENG_S = GOOD_ENGINE.replace("FACTORS <-", "for (k in 1:3) { if (k == 2) next }\nFACTORS <-")
         mut("M14 undeclared month skip (next)", engine=ENG_S, expect="P6_month_skip")
+        # ── 2026-10-05 첫 실전 오탐 수리 — 카운터(재대입 변수) · R 벡터 vs JSON 배열 · 날짜 ─────────────
+        N4_DIR = os.path.join(ROOT, "08_Tests", "ops", "fixtures", "preaudit_2210_12462_pass1")
+        if os.path.isdir(N4_DIR):
+            dn4 = os.path.join(tmp, "N4")
+            shutil.copytree(N4_DIR, dn4)
+            rcn4, repn4 = run_pa(dn4)
+            check("N4 실전 음성 대조 — 2210.12462 1차(구조 필드 5종 신고) → pass(구판은 오탐 2건)", rcn4 == 0, str(codes(repn4)))
+        ENG_C = ENG_K + "for (k in 1:3) { cnt <- 0L }\nn_skip <- 0L\nfor (k in 1:3) n_skip <- n_skip + 1L\n"
+        f17 = good_fidelity()
+        with_consts(f17)
+        rc17, rep17 = run_pa(make_fx(tmp, "M17", engine=ENG_C, fid=f17))
+        check("M17 재대입 카운터(n_skip <- 0L … n_skip <- n_skip + 1L)는 상수표 대상 아님 → pass", rc17 == 0, str(codes(rep17)))
+        ENG_V = ENG_K + "HOR <- c(3L, 5L, 10L)\nSTART <- as.Date(\"2005-01-01\")\n"
+
+        def with_vec(f, hor, start):
+            with_consts(f)
+            f["constants"] += [{"name": "HOR", "value": hor, "source": "paper", "note": "§3 k"},
+                               {"name": "START", "value": start, "source": "harness", "note": "H3"}]
+        for tag, hor, start in (("JSON 배열", [3, 5, 10], "2005-01-01"), ("R 표기 문자열", "c(3L, 5L, 10L)", "as.Date(\"2005-01-01\")")):
+            f18 = good_fidelity()
+            with_vec(f18, hor, start)
+            rc18, rep18 = run_pa(make_fx(tmp, "M18_%d" % len(tag), engine=ENG_V, fid=f18))
+            check("M18 벡터·날짜 같은 값(%s) → pass" % tag, rc18 == 0, str(codes(rep18)))
+        mut("M19 벡터 값이 실제로 다르면 → P7_constants_value_mismatch", engine=ENG_V,
+            fid_fn=lambda f: with_vec(f, [3, 5, 11], "2005-01-01"), expect="P7_constants_value_mismatch")
+        mut("M20 날짜가 실제로 다르면 → P7_constants_value_mismatch", engine=ENG_V,
+            fid_fn=lambda f: with_vec(f, [3, 5, 10], "2006-01-01"), expect="P7_constants_value_mismatch")
         f15 = good_fidelity()
         f15["changed"] += " · 표본 부족 달은 건너뛰고(next) 하네스가 직전 보유를 이월"
         rc15, rep15 = run_pa(make_fx(tmp, "M15", engine=ENG_S, fid=f15))

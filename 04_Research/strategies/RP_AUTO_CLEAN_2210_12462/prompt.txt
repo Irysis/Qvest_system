@@ -157,6 +157,19 @@ Glob(이름 열거)은 저장소 안에서 열려 있지만 내용은 위 목록
 논문 원문은 WebFetch 로 읽어라. 셸·Agent·Skill 도구는 이 실행에 없다.
 ★이 저장소의 웹 사본(github.com/Irysis/Qvest_system · raw.githubusercontent.com/Irysis/Qvest_system)을 열지 마라 — 원격 사본도 같은 원장·산출물이다.
 
+## ★재구현이다 — 앞 판이 **측정에서** 실패했다
+아래는 계약이 낸 실패 사유다. 같은 자리에서 다시 죽지 마라.
+
+### 측정 전 기계 사전검사(신고 구조) — 측정·감사는 하지 않았다
+엔진은 그 자리(engine.R)에 그대로 있다. 아래 지적만 처리하라 — 논문과 맞는 코드면 코드는 두고 FIDELITY.json 의 구조 필드(paper_steps · windows · factor_mapping)와 changed 를 보충하고, 지적이 실제 이탈을 가리키면 그 줄을 논문으로 되돌려라. 지적과 무관한 곳은 고치지 마라 — 이 판은 짧은 보정이다.
+
+사전검사 지적: - [P7_constants_undeclared] constants 에 없는 최상위 상수 2개 — 다음 상수의 값·출처(paper|supplement|harness)·근거를 적어라: rr=0L, n_rt=0L
+- [P7_constants_value_mismatch] constants 의 value 가 코드 값과 다르다 2건 — 신고가 사실과 다르면 감사는 misdeclared 를 낸다 — 코드 값 그대로 적어라: HORIZONS(코드 c(3L, 5L, 10L, 15L, 20L) · 신고 [3, 5, 10, 15, 20]), RETRAIN_MONTHS(코드 c(1L, 7L) · 신고 [1, 7])
+
+앞 판은 C:\Users\99922\OneDrive\Quant_Module_Moltbot/04_Research/strategies/RP_AUTO_CLEAN_2210_12462/engine.R 에 그대로 있다(감사 기각분은 engine.rejected*.R).
+★그래도 **목적은 충실구현이다.** 오류를 피하려고 논문을 훼손하지 마라 — 그렇게 만든 엔진은
+측정은 통과하고 충실도 감사에서 걸린다(두 번 낭비).
+
 ## 공리 (전제 — 지시가 아니다)
 아래는 이 저장소가 실측으로 세운 전제다. 네 판단은 이 위에서 이뤄진다.
 어긋나는 결론을 낼 수는 있지만, 그때는 **무엇이 이 전제를 뒤집는 증거인지** 적어라.
