@@ -1,0 +1,133 @@
+{
+  "status": "OK",
+  "strategy_id": "RP_20261005_205951_21104",
+  "strategy_name": "RF_PAR_B2_10_scoretiltLWshrinkage",
+  "remeasured_at": "2026-10-05T21:34:46+0900",
+  "run_id": "20261005_205951_21104",
+  "bt_result_path": "C:/Users/99922/OneDrive/Quant_Module_Moltbot/stage_artifacts/replication/20261005_205951_21104/bt_result.rds",
+  "metric_type": "backtested",
+  "essence_grade": "C",
+  "grade_basis": "replication_sweep",
+  "essence": {
+    "net_sharpe": 0.726,
+    "net_ir": 0.198,
+    "portfolio_alpha_t_nw_lag3": 0.908,
+    "oos_retention": -0.655,
+    "dsr": 0.174,
+    "mdd": 0.601,
+    "calmar": 0.242,
+    "cagr": 0.145,
+    "drawdown_profile": {
+      "severe45_count": 13,
+      "severe55_count": 1,
+      "severe45_total_periods": 105,
+      "severe45_max_periods": 52,
+      "severe45_period_frac": 0.0197,
+      "catastrophic_mdd_threshold": 0.7,
+      "severe45_hard_count": 15,
+      "severe55_hard_count": 6,
+      "severe45_period_hard_frac": 0.25,
+      "severe45_max_hard_periods": 252,
+      "tail_review": true,
+      "structural_hard_fail": false
+    }
+  },
+  "hard_fail": false,
+  "structural_drawdown": false,
+  "selection_type": "sweep",
+  "dsr_gate_applied": true,
+  "n_trials_cumulative": 18,
+  "dsr": 0.174,
+  "measurement_regime": {
+    "n_trials_basis": "base1+lineage_measured(excl_inherited)+batch_size",
+    "family_root": "RP_20261005_170345_8524_adapted_rulefast",
+    "selection_type": "sweep",
+    "n_trials_cumulative": 18,
+    "exec_price": "close_t1",
+    "exec_price_basis": "constraint_defaults.json::execution.exec_price",
+    "exec_price_paper": "close_t1",
+    "cost_model_version": "replication_weight_delta_v1/first_hold_day_multiplicative",
+    "harness_md5": "3e316e9cef23c4b10ea7b088493e2ad4"
+  },
+  "grade_base": "C",
+  "recent_regime_rescued": false,
+  "recent_regime_label": null,
+  "rolling_grade": {
+    "status": "ok",
+    "n_points": 226,
+    "window_months": 36,
+    "pass_life": 0.2655,
+    "pass_recent": 0.8333,
+    "current": {
+      "ym": "2026-10",
+      "sharpe": 1.179918,
+      "cagr": 0.383499,
+      "mdd": 0.220246,
+      "calmar": 1.741233,
+      "pass": true
+    },
+    "prior_recoveries": 9,
+    "current_run": 10,
+    "span": ["2008-01", "2026-10"]
+  },
+  "defensive_score": {
+    "status": "ok",
+    "defensive": true,
+    "down": {
+      "n": 110,
+      "excess": 0.01159,
+      "hit": 0.590909,
+      "t": 3.352114,
+      "capture": 0.729245
+    },
+    "mid": {
+      "n": 30,
+      "excess": 0.008915,
+      "hit": 0.533333,
+      "t": 1.318297,
+      "capture": 0.906746
+    },
+    "deep": {
+      "n": 10,
+      "excess": 0.023948,
+      "hit": 0.7,
+      "t": 1.65097,
+      "capture": 0.841839
+    },
+    "up": {
+      "n": 151,
+      "excess": -0.004127,
+      "hit": 0.470199,
+      "t": -1.175896,
+      "capture": 0.917194
+    },
+    "reason": "하락월 110개: 초과 +1.16%/월 (t 3.35 · 적중 59%) · 벤치-10% 이하 10개: 초과 +2.39%/월 · 상승월 초과 -0.41%/월"
+  },
+  "reasons": "Ensemble: positive alpha이나 B 미달 (블렌드에서만 가치)",
+  "replication": {
+    "source_paper": {
+      "url": "https://arxiv.org/abs/2508.18592",
+      "title": "Combined machine learning for stock selection strategy based on dynamic weighting methods",
+      "paper_key": "2508.18592"
+    },
+    "commission_paper_bps": 15,
+    "paper_basis": {
+      "cagr": 0.145692,
+      "sharpe": 0.612597,
+      "mdd": 0.600532,
+      "n_months": 261
+    },
+    "grade_basis_note": "등급은 15bps 순비용 판 (essence 문턱 15bps 보정 — gross 등급은 인플레)",
+    "fidelity": "universe 치환(K200∪KQ150)만 — 그 외 논문 그대로 (v10 완전 충실구현)",
+    "benchmark_note": "long_vs_long_bm",
+    "n_max": 25,
+    "has_short": false
+  },
+  "contract": {
+    "integrity_status": "OK",
+    "cagr": 0.145,
+    "sharpe": 0.726,
+    "mdd": 0.601,
+    "calmar": 0.242
+  }
+}

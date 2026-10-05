@@ -17,11 +17,41 @@
   "calmar": 0.273,
   "oos_retention": -0.351,
   "portfolio_alpha_t": 1.517,
-  "next_probes": [
-    "다음 격자 축 B2(weighting) — 이 블록 승자 위에서 측정",
-    "B1_11(최고 1.517)는 B4 조합 후보로 고정 · B1_7(최저 0.031)는 축 역작동 여부를 조합 LOO 로 분리"
-  ],
+  "next_probes": ["다음 격자 축 B2(weighting) — 이 블록 승자 위에서 측정", "B1_11(최고 1.517)는 B4 조합 후보로 고정 · B1_7(최저 0.031)는 축 역작동 여부를 조합 LOO 로 분리"],
   "next_probe": "다음 격자 축 B2(weighting) — 이 블록 승자 위에서 측정 | B1_11(최고 1.517)는 B4 조합 후보로 고정 · B1_7(최저 0.031)는 축 역작동 여부를 조합 LOO 로 분리",
   "source_paper": "https://arxiv.org/abs/2508.18592",
-  "record_type": "performance"
+  "record_type": "performance",
+  "mechanism": "B1 결론 — 이 블록을 가른 축은 팩터 선택이 아니라 MDD였고, 선택 축은 위험 분모에 대해 포화 상태입니다. 실측: PORT_t는 B1_7(R14_DUVOL+D25_Left_Tail_Beta) 0.031에서 B1_11(M01_Mom_12_1+M06_High_52w+D05_MaxRet+R14_DUVOL+L19_Price_Delay) 1.517까지 약 50배 벌어졌는데, 같은 11칸의 CAGR은 0.113~0.165, Calmar는 0.167~0.279(폭 0.112)에 머물렀습니다. 횡단면 선택력이 올라도 위험 축이 따라오지 않습니다. MDD 최저는 B1_3(Q01_GPA+Q35_CashBased_OpProf) 0.525이고 모멘텀 단독 B1_1은 0.731 — 11칸 중 어느 조합도 0.525 아래로 내려가지 않았습니다. 동일가중 1/25 long-only 구성에서 낙폭은 종목 선택으로 제거되지 않는 공통 노출이 만든다는 뜻입니다. 정황(실측 아님, 1쌍 비교): 순수 위험·꼬리 팩터는 횡단면 선택 신호로는 비유의에 가깝지만(B1_6 PORT_t 0.072 · B1_7 0.031), 수익 팩터 복합 안에 결합되면 B1_1 MDD 0.731 → B1_11 MDD 0.604로 12.7pp 축소되면서 PORT_t도 1.136→1.517로 올랐습니다. 같은 정보가 score 입력에서는 비유의하고 노출 제어에서는 기여하는 형태라 소비 지점의 문제로 읽히지만, 두 칸은 팩터 수(1 vs 5)도 다르므로 이 블록만으로는 분리되지 않습니다. 미결: 공통 노출 가설은 비중 방법론을 바꿔 공분산·낙폭 경로를 직접 소비해야 갈립니다 — B2에서 CAGR을 B1_11 수준(0.165) 근처로 유지한 채 MDD가 B1_3의 0.525 아래로 내려가는지가 판별점입니다. 내려가지 않으면 비중 축에도 벽이 있고 남은 자유도는 B5 노출 스케일입니다.",
+  "mechanism_by": "llm:block_end",
+  "mechanism_at": "2026-10-05T20:54:58+0900",
+  "prior_lessons_used": [],
+  "next_block_actions": [
+    {
+      "action": "B2에서 qepm:CDaR_LP와 qepm:CVaR_LP를 같은 엔진 계열로 짝지어, 낙폭 경로 표적과 단일기간 좌측꼬리 표적을 분리한다.",
+      "why": "B1 11칸의 MDD 하한 0.525(B1_3)·Calmar 상한 0.279가 팩터 선택으로 내려가지 않았다 — 남은 자유도는 비중이고, 그 중 MDD를 직접 목적함수로 쓰는 것은 CDaR뿐이다.",
+      "expect": "CDaR_LP의 MDD가 CVaR_LP보다 낮으면 낙폭은 경로 의존 구조이고, 두 칸이 같으면 단일기간 분산·꼬리로 설명된다. 둘 다 B1_3의 0.525를 못 깨면 비중 축 벽이 확인되고 다음 자유도는 B5 노출 스케일로 넘어간다."
+    },
+    {
+      "action": "lean:minvar와 lean:hrp를 같은 블록에 태워 공분산 추정 불안정과 실제 공통 노출을 분리한다.",
+      "why": "25종 long-only에서 표본 공분산 기반 역행렬은 불안정하다. 위 기전의 '공통 노출' 진단은 추정 실패와 관측상 구분되지 않는다.",
+      "expect": "minvar에서는 MDD가 B1 범위(0.525~0.731)에 남고 HRP에서만 내려가면 레버는 공분산 추정 안정화다. 두 칸 모두 B1 범위에 남으면 종목 단위 위험 비중으로는 낙폭을 줄일 수 없다."
+    },
+    {
+      "action": "gen:lean_score_tilt__shr_ledoit_wolf로 score 정보를 유지한 채 shrunk 공분산만 결합해, 위험 기반 비중이 깎는 초과수익 비용을 측정한다.",
+      "why": "B1_11의 PORT_t 1.517·CAGR 0.165가 이 전략에서 가장 강한 선택 신호다. 순수 위험 비중이 Calmar를 올리더라도 CAGR을 B1_7 수준(0.113)까지 깎으면 순이득이 아니다.",
+      "expect": "순수 위험 비중(minvar·CDaR_LP)의 CAGR이 0.113 근처로 떨어지는 반면 tilt 판이 0.145 이상을 유지하면, 이후 블록(B3·B6·B5)의 기본 비중은 tilt 계열로 고정한다."
+    },
+    {
+      "action": "lean:factor_rp로 종목 단위가 아닌 팩터 노출 단위의 위험 균등화를 시험한다.",
+      "why": "동일가중 1/25는 종목 균등이지 노출 균등이 아니다 — B1 전칸이 MDD 0.525~0.731에 갇힌 것은 공통 노출이 비중에 그대로 남았다는 정황이다.",
+      "expect": "factor_rp의 MDD가 B1 최저칸 0.525 밑으로 내려가면 낙폭의 주 원인은 팩터 노출 집중이고, 이후 강화는 노출 제어 축으로 좁힌다. B1 범위에 남으면 노출 집중 가설이 기각된다."
+    }
+  ],
+  "next_block_actions_by": "llm:block_end",
+  "avoid": ["순수 위험·꼬리 팩터(R14_DUVOL·D25_Left_Tail_Beta·D05_MaxRet·D43_Skewness)를 score 입력으로 다시 고르는 것 — B1_6 PORT_t 0.072 · B1_7 0.031로 횡단면 선택력이 비유의에 가까웠다. 벽이 확인된 소비 지점이다. 같은 정보는 B5 노출 스케일에서 소비한다.", "수익 계열 팩터 조합을 더 늘려 Calmar를 올리려는 시도 — 11칸이 PORT_t 0.031→1.517로 약 50배 움직였는데 Calmar는 0.167~0.279(폭 0.112)에 머물렀다. 선택 축은 위험 분모에 대해 포화다.", "monotone score 변환만 수행하는 칸(lean:score_pure·lean:rank_tilt·lean:softmax_tilt·lean:winsor_tilt) — 공분산·낙폭 정보가 없어 B1이 세운 MDD 하한 0.525를 건드릴 수 없다. B2 칸 낭비다.", "lean:kelly·qepm:MVO 같은 기대수익 추정 의존 비중을 shrinkage 없이 쓰는 것 — B1은 기대수익 추정 품질을 재지 않았으므로 실패해도 원인이 추정 오차인지 구조인지 갈리지 않는다."],
+  "next_block_design_for": "B2",
+  "next_block_design_n": 6,
+  "prior_action_status": "no_design",
+  "prior_action_detail": "그 블록에 설계가 없었다(규칙 선정)",
+  "mechanism_confidence": "medium"
 }
