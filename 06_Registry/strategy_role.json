@@ -1,0 +1,39 @@
+{
+  "schema_version": "strategy_role_v1",
+  "_note": "전략 역할 등급 정본 (도훈 결정 2026-10-06 — 1계층 목표 = 2계층 다양한 전략풀 확보 · 역할별 등급 · 단독 A 경로 불변 · 규칙 기반). 설계·재생 = 04_Research/01_reports/strategy_role_grading_20261006/README.md · 계약 = 02_Infrastructure/contracts/strategy_role.R · 산출 레지스트리 = 06_Registry/strategy_roles.json. 문턱 재보정 = 도훈 권한.",
+  "benchmark": ".cache/benchmark.parquet",
+  "size_factor": ".cache/indices.parquet",
+  "roles": {
+    "defensive": {"regime": "ps_bear", "side": "D", "desc": "약세장(Pagan-Sossounov 연대기)에서 전기간 베타 잔차가 양(+)", "robustness": "lt_bear"},
+    "offensive": {"regime": "ps_bear", "side": "U", "desc": "강세장(Pagan-Sossounov 연대기)에서 전기간 베타 잔차가 양(+)"},
+    "rebound": {"regime": "cgh36", "side": "D", "desc": "직전 36개월 시장 DOWN 상태(Cooper-Gutierrez-Hameed · 월초 기지) 이후의 잔차 — 약세 후 반등형"},
+    "alpha": {"desc": "2요인 잔차 α(시장 + 유니버스 동일가중 사이즈) NW(3) t · 강세·약세 잔차 둘 다 ≥ 0 일 때만 역할 성립"},
+    "diversifier": {"desc": "기존 essence B+ 풀 대비 생성 회귀 α t(2요인 잔차 · rf_diversification_gate.R)"}
+  },
+  "regimes": {
+    "ps_bear": {"ref": "Pagan & Sossounov (2003) Journal of Applied Econometrics 18(1)", "url": "https://doi.org/10.1002/jae.664", "impl": "CRAN bbdetection 1.0 run_dating_alg · setpar_dating_alg(t_window 8, t_censor 6, t_phase 4, t_cycle 16, max_chng 20) 월간 기본값", "timing": "사후 연대기 — 등급 산정 전용(2계층 as-of 소비 금지)"},
+    "lt_bear": {"ref": "Lunde & Timmermann (2004) Journal of Business & Economic Statistics 22(3)", "url": "https://doi.org/10.1198/073500104000000136", "impl": "bbdetection run_filtering_alg · setpar_filtering_alg(tr_bull 30, tr_bear 20) 기본값", "timing": "사후 — 강건성 기록"},
+    "cgh36": {"ref": "Cooper, Gutierrez & Hameed (2004) Journal of Finance 59(3)", "url": "https://doi.org/10.1111/j.1540-6261.2004.00665.x", "impl": "직전 36개월 벤치 누적수익 < 0 = DOWN", "timing": "월초 기지 — 2계층 as-of 소비 가능"}
+  },
+  "grading": {
+    "t_A": 2.95,
+    "t_A_basis": "Harvey, Liu & Zhu (2016) RFS 29(1) https://doi.org/10.1093/rfs/hhv059 — essence PORT_t 와 같은 장벽",
+    "t_B": 1.96,
+    "t_B_basis": "양측 5% 정규 임계",
+    "oos_splits": [0.55, 0.65, 0.75],
+    "oos_min_splits": 2,
+    "oos_basis": "essence_score.R oos v2 anchored 3분할과 같은 절단 — 분할 뒤 역할 통계 평균 > 0 인 분할 수",
+    "min_months": 60,
+    "nw_lag": 3
+  },
+  "pool": {
+    "route_enabled": true,
+    "route_grades": ["A", "B"],
+    "basis": "역할 B+ 하나 이상 = 2계층 풀 편입 경로(role_<역할>). essence 등급 floor 경로와 병렬 — 단독 A(BOOK·Judge) 경로 불변."
+  },
+  "replay_20261006": {
+    "n_members": 1298,
+    "noise_bplus_rate": "베타 맞춤 잡음 500 — ps_bear 방어 3.2% · 공격 2.4% (명목 수준)",
+    "old_defensive_route_finding": "구 방어형(하락월 초과 r−b, defensive_score.R) = 베타 맞춤 잡음의 61% 가 B+ — 베타<1 착시. 2계층 풀 defensive_specialist 422 의 근거가 약하다(대체 여부 = 도훈 결정)"
+  }
+}
