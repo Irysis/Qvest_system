@@ -1,6 +1,6 @@
 # Knowledge Index — 순차 뷰 (안정 ID 불변 · 활성 집합 1..N 자동)
 
-생성: 2026-10-03T11:00:25+0900 · `build_knowledge_index.R` · **안정 ID(AX-003/L-132/DIST-*)는 provenance 앵커 = 영구 불변**. 순번(#)은 현재 활성 집합의 위치일 뿐 — 증류/강등되면 뷰에서 자동 제외되어 항상 1..N 연속(구멍 없음). 빠진 것도 아카이브+검색+부활로 보존.
+생성: 2026-10-06T07:49:35+0900 · `build_knowledge_index.R` · **안정 ID(AX-003/L-132/DIST-*)는 provenance 앵커 = 영구 불변**. 순번(#)은 현재 활성 집합의 위치일 뿐 — 증류/강등되면 뷰에서 자동 제외되어 항상 1..N 연속(구멍 없음). 빠진 것도 아카이브+검색+부활로 보존.
 
 ## Active Law (4)
 
@@ -38,7 +38,7 @@
 | 21 | DIST-RAMP-014 | conditional | 지수-비중 최적화 계열(Black-Litterman / 팩터 모멘텀 배분)을 KR 배포 형태인 top-25 횡단면으로 변환하면 엣지가 남지 않는다 — 손실 지점은 신호 부재가 아니… | 31 |
 | 22 | DIST-RAMP-026 | negative | 자동-탐색지도 · family=factor_timing_allocation, tags=DFA,factor_momentum,deployment_form, supporting=5건 L… | 5 |
 
-## L-code 코퍼스 — 모드별 순차 (총 1946 · 글로벌 연속 #)
+## L-code 코퍼스 — 모드별 순차 (총 1956 · 글로벌 연속 #)
 
 안정 ID(L-...)는 불변. 아래 #는 활성 코퍼스 내 위치(모드 그룹 · 글로벌 연속).
 
@@ -496,1573 +496,1583 @@
 | 412 | L-RP-20260923_231445 | ? | C | RP_AUTO_251112129 충실구현: 등급 C. 논문기준 SR 0.61 vs 15bps SR 0.71. [무인 충실구현] A Practical Machine… |
 | 413 | L-RP-20260924_043703 | ? | C | RP_AUTO_220205702 충실구현: 등급 C. 논문기준 SR 0.54 vs 15bps SR 0.60. [무인 충실구현] Machine Learning fo… |
 | 414 | L-RP-20260924_052943 | ? | C | RP_AUTO_220205702 충실구현: 등급 C. 논문기준 SR 0.47 vs 15bps SR 0.56. [무인 충실구현] Machine Learning fo… |
+| 415 | L-RP-20261004_083621 | quality_profitability | F | RP_AUTO_150500328 충실구현: 등급 F. 논문기준 SR -0.27 vs 15bps SR -0.43. [무인 충실구현] Profitability of … |
+| 416 | L-RP-20261004_094652 | quality_profitability | F | RP_AUTO_150500328 충실구현: 등급 F. 논문기준 SR -0.25 vs 15bps SR -0.41. [무인 충실구현] Profitability of … |
+| 417 | L-RP-20261005_161758 | ? | C | RP_AUTO_250818592 충실구현: 등급 C. 논문기준 SR 0.45 vs 15bps SR 0.65. [무인 충실구현] Combined machine le… |
+| 418 | L-RP-20261005_180111 | ? | C | RP_AUTO_250818592 충실구현: 등급 C. 논문기준 SR 0.44 vs 15bps SR 0.65. [무인 충실구현] Combined machine le… |
+| 419 | L-RP-20261005_214844 | ? | F | RP_AUTO_221012462 충실구현: 등급 F. 논문기준 SR 0.28 vs 15bps SR 0.54. [무인 충실구현] Factor Investing wi… |
+| 420 | L-RP-20261005_230153 | ? | C | RP_AUTO_221012462 충실구현: 등급 C. 논문기준 SR 0.35 vs 15bps SR 0.56. [무인 충실구현] Factor Investing wi… |
 
 ### qepm_legacy
 
 | # | L-code | family | grade | 요지 |
 |---|--------|--------|-------|------|
-| 415 | L-130 | quality_earnings | A | DFA(Dynamic Factor Allocation)는 MRS 국면별 방어팩터(Q07/Q03/D29) 블렌딩으로 Base MDD를 48.2%에서 30.2%로 축… |
-| 416 | L-131 | behavioral | F | 개인투자자 순매수 contrarian(역발상) 3MA 시그널은 한국시장에서 alpha source 부재. SR 0.157, MDD 65.6%, IR -0.283.… |
-| 417 | L-132 | value | F | V02 EP(Earnings/Price) 단독 diversifier는 CAGR -1.71%, SR -0.265로 완전 실패. Turnover 3.3%는 시그널이 … |
-| 418 | L-133 | quality_profitability | F | Cash-Based Profitability Quality(CBPQ)은 MDD 94.0%, SR -0.232로 치명적 실패. Ball et al.(2016)의 현… |
-| 419 | L-134 | quality_profitability | F | Growth Stability Composite Diversifier는 OOS retention -0.001(IS SR 0.60 → OOS SR 0.00)로 전형… |
-| 420 | L-135 | value | F | Sector Neutral Accrual은 OOS retention 0.12(IS 0.575→OOS 0.071)로 과적합. MDD 64.7%. Sloan(1996… |
-| 421 | L-136 | defense | C | D25(Accounting Beta)+Q07(Earnings Stability) defense는 MDD 10.2%로 방어 목적에는 부합하나 CAGR 2.59%로 … |
-| 422 | L-137 | quality_earnings | F | Piotroski+RetAutocorr는 score 45.4(hard fail 없으면 Grade A급)에 OOS retention 0.89, stress 3/3,… |
-| 423 | L-138 | quality_earnings | F | EV Accrual Quality Defense는 defense 역할로 설계했으나 stress 0/3 outperform으로 방어 기능 완전 부재. MDD 67.… |
-| 424 | L-139 | quality_profitability | C | Profitability Fortress는 IS에서 SR 1.044이지만 OOS retention 0.24 + recent 3Y SR 0.135로 심각한 alph… |
-| 425 | L-140 | quality_profitability | F | LowBeta 3F(VDplus/Diversifier 두 버전 모두)는 OOS에서 alpha 완전 소멸(retention -0.35/-0.02). Recent 3… |
-| 426 | L-141 | quality_earnings | A | Axiom 승격 시 scope 제한 필수 교훈. v1 승격(AX-004/005 weighted 0.89) 완료했으나 Q-Lead가 scope 과광 우려 제기 → … |
-| 427 | L-142 | infra_process | A | Grade A 34건 catalog recheck 결과: hurdle-level JUDGE_PASS_A 25건 + JUDGE_PASS_LOWER 2건 + JUDG… |
-| 428 | L-1469 | consensus | B | STR_1469 Consensus 4F(C19+C13+C10+C04) 5-Sleeve 조합은 PIT clean(G0), OOS retention 0.77(G2),… |
-| 429 | L-1469-b | consensus | Archive | STR_1469 Consensus 4F(C19+C13+C10+C04) 5-Sleeve 재검증 결과: PIT clean(G0 PASS, 자동검출 0건, DD/VT … |
-| 430 | L-148 | infra_process | A | NO_JUDGE sweep v2 (34건 전수 PIT C1-C15 + hurdle 재검증) 결과 3-way 분류: PASS 11 / AMBIGUOUS_PIT_MI… |
-| 431 | L-1549 | consensus | C | D01_IdioVol(50%)+D02_Beta(30%)+Q07_EarningsStability(20%) 섹터중립 가중 RankCombo는 한국시장에서 S1 순수 … |
-| 432 | L-1550 | consensus | A | C19_Composite_Earnings 단독 팩터가 한국시장 Core Alpha로 최적. S1 순수 SR 1.001, CAGR 22.69% (KOSPI 대폭 초… |
-| 433 | L-1551 | defense | B | D01_IdioVol 단독 Defense sleeve: S1 SR 0.449, MDD 53.7%. DD 8/22 overlay로 MDD 31.9% 제어(Grade… |
-| 434 | L-1555 | consensus | A | C19(60%)+V14(20%)+D01(20%) Score Blend + DD 8/22 + Regime v7.1 = V7 최적 Core Alpha. SR 1.07… |
-| 435 | L-1555-b | ml_complexity | A | C19(60%)+V14(20%)+D01(20%) Score Blend + Risk Parity + DD 8/22 + Regime v7.1 = V7 최종 Core … |
-| 436 | L-1555-c | defense | B | DD Brake 파라미터 tightening (8/22→6/20)은 수확체감 법칙에 걸린다. STR_1555에서 DD_START를 8→6%, DD_FULL을 22… |
-| 437 | L-1570 | consensus | B | STR_1570은 C19(50%)+L22(30%)+D01(20%) 3팩터 블렌드에 DD 8/22 + Regime 오버레이를 적용한 전략이다. L22(수익률 자기상… |
-| 438 | L-1571 | behavioral | B | STR_1571은 STR_1555 M9(C19+V14+D01)에 L22를 4th factor로 추가한 실험이다. 가중치 C19(40%)+V14(25%)+D01(1… |
-| 439 | L-1576 | quality_earnings | F | CF_to_Accrual_Ratio(AC21_CF_to_Accrual_Ratio) 단일 팩터 순수 백테스트 결과 SR 0.572, CAGR 12.8%, MDD 5… |
-| 440 | L-1577 | quality | F | Earnings_Growth(GR02_Earnings_Growth) 단일 팩터 MDD 59.5%로 Hard Fail. SR 0.509, CAGR 12.9%. Gr… |
-| 441 | L-1578 | defense | F | Kurtosis(D44_Kurtosis) 단일 팩터 MDD 66.9%로 최악 수준. SR 0.350, CAGR 7.8%. 꼬리 위험 기반 방어 팩터로 기대했으나 … |
-| 442 | L-1579 | quality_earnings | F | Earnings_Stability(Q07_Earnings_Stability) Quality 계열 단일 팩터 MDD 62.7% Hard Fail. SR 0.332,… |
-| 443 | L-1580 | behavioral | F | Volume_Price_Divergence(CR08_Volume_Price_Divergence) MDD 59.5% + Turnover 904% 이중 Hard Fa… |
-| 444 | L-1581 | overlay_regime | F | Book_Leverage(R18_Book_Leverage) Risk 계열 단일 팩터 MDD 55.8% Hard Fail. SR 0.338, CAGR 7.4%. 저… |
-| 445 | L-160 | signal_portfolio_translation_failure | F | H_1682 Distress(Q25) + Calmar(R16) 60/40 composite signal 품질 IC 0.2207 / ICIR 1.879 / FM t… |
-| 446 | L-1608 | momentum | F | D22_Tracking_Error standalone diversifier는 MDD 51.2%로 hard fail. Good-regime IC 0.086으로 상승… |
-| 447 | L-1609 | flow_supply | F | L40_VWAP_Spread standalone diversifier는 높은 profile ICIR(0.826)에도 불구하고 실제 IR -0.015(음수)로 초과… |
-| 448 | L-160A | behavioral | INFRASTRUCTURE | 2-party flow divergence 또는 cross-channel difference 가설 설계 시 수식 수준 algebraic identity 사전 검증… |
-| 449 | L-161 | momentum | F | H_1688 Residual Momentum Carhart 1997 + Blitz-Huij-Martens 2011 정통 설계 구현에도 Grade F (MDD 86… |
-| 450 | L-161A | infra_process | ? | Codex Critic Bash script (run_codex_critic.sh)가 codex-companion 응답 실패 시 S0 Debate 5인 합의 프로… |
-| 451 | L-162 | momentum | ? | 2-factor linear z-score blend (50/50)은 표준편차 불균형 시 dominant factor 단일 수렴 구조적 위험. H_1687 Q25… |
-| 452 | L-1621 | quality_earnings | C | STR_1621은 Regime-Conditional AllWeather 전략으로, C19+V14(core) / D01+D44(defense) 2-sleeve 구조… |
-| 453 | L-1622 | quality_profitability | C | STR_1622는 C19+V14+Q01+D01+M25 5팩터 IC-weighted blend로, expanding 12M rolling IC 기반 shrinkag… |
-| 454 | L-1623 | defense | A | Bayesian Black-Litterman 5-sleeve 앙상블(Defense/IndMom/Consensus/ConsGate/TPGap)에 C11 FRED t… |
-| 455 | L-1624 | defense | F | Q17_ROIC와 D43_Skewness의 EW 블렌드는 defense 역할을 기대했으나 MDD 59.7%로 hard fail 하였다. Skewness 팩터는 한… |
-| 456 | L-1625 | quality_earnings | F | AC22_Accrual_Volatility와 Q28_Cash_Conversion의 EW 블렌드는 MDD 64.8%로 hard fail이지만 Score 49.2, … |
-| 457 | L-162A | infra_process | ? | Forge v2 STR_1684 factor_engine.R 실행 중 'Date.x/Date.y merge 충돌' 에러 발견. 원인: data.table rbin… |
-| 458 | L-163 | quality_earnings | ? | Defense family composite 구성 시 각 factor의 stress_icir × weight 곱이 -0.05 이하로 떨어지면 조건부 차단. L-1… |
-| 459 | L-165 | signal_portfolio_translation_failure | F | Multi-Source Defense Anchor (M08+C19+Q07+R16 4-axis regime-smoothed composite)는 signal lev… |
-| 460 | L-166 | signal_portfolio_translation_failure | F | STR_1687 (H_1693 Q07 sector-neutral defense) AX-005 EXCLUSION clause 3개(sector-neutralizat… |
-| 461 | L-167 | infra_process | INFRASTRUCTURE_PROCESS | Forge self-check process는 PIT 위반(C1~C15) 및 s0_record 명세 전달 실패를 체계적으로 탐지하지 못하는 구조적 한계를 4건 누… |
-| 462 | L-1682 | defense | F | STR_1682 Option A 4-regressor 잔차화(log_mcap + R12 + SUE + beta_24m) 시도는 3중 인프라/프로세스 실패로 Gra… |
-| 463 | L-170 | industry_momentum_residualized_core_secondary_fail | F | STR_1692 H_1692 v2 industry momentum residualized (M18) Core_Secondary **post-L168-fix 첫 정… |
-| 464 | L-572 | quality_earnings | B | Bayesian Shrinkage GARP: ICIR 기반 팩터 가중을 Bayesian shrinkage(w_post = (1-lambda)*w_ICIR + la… |
-| 465 | L-578 | liquidity | F | L15_Turnover_252d(Ibbotson 2013) standalone은 SR 0.506, stress 3/4(EuDebt만 실패). IC 0.037 안정… |
-| 466 | L-579 | ? | F | R01_VaR_95는 IC 0.042(배치 2위), pos_rate 67.9%(최고)로 팩터 자체는 유효하나, FF alpha가 강하게 음수(t=-1.15~-1.… |
-| 467 | L-590 | defense | B | C19(Composite Earnings) 60% + L22(Ret Autocorr) 40% Score Blend: 음의 팩터 상관(-0.108)을 활용한 블렌드… |
-| 468 | L-591 | consensus | B | L22_Ret_Autocorr(Lo & MacKinlay 1990 variance ratio 기반)은 standalone SR 0.397, MDD 64%로 단독 … |
-| 469 | L-601 | quality_earnings | B | Aggressive DD brake (5/15, min_exp 0.35) on D01+Q07 delivers strong crisis protection (str… |
-| 470 | L-602 | quality_earnings | B | Baltussen et al. (2018) vol-of-vol premium and Dichev & Tang (2009) earnings stability pre… |
-| 471 | L-603 | consensus | B | Expanding-window ICIR-based dynamic factor weighting (Arnott et al. 2019 'Alice in Factorl… |
-| 472 | L-604 | quality_earnings | B | S5 M1 mutation tightened DD brake from 15/35 to 10/25 on D41_VolVol + Q07_EarningsStabilit… |
-| 473 | L-605 | overlay_regime | B | Adaptive IC-weighted factor rotation with expanding-window ICIR and 2-month lag is PIT-cle… |
-| 474 | L-606 | overlay_regime | B | Aggressive DD brake (5%/15%, min_exp=35%) on adaptive IC-weighted rotation: MDD compressed… |
-| 475 | L-607 | behavioral | B | R10_Cokurtosis as bottom-10% exclusion gate + C19_Composite_Earnings scoring yields SR 0.1… |
-| 476 | L-609 | quality_earnings | B | D41(Vol-of-Vol) + Q07(Earnings_Stability) 2-factor blend with VT 18% + DD 7/22 overlay fai… |
-| 477 | L-610 | overlay_regime | B | DD-only overlay (10/30, min_exp=25%) on adaptive ICIR-weighted rotation is the weakest S5 … |
-| 478 | L-611 | quality_earnings | B | DD 7/22 overlay on IndMom+QualityGate(Q07 top 80%) fails to improve risk-adjusted returns.… |
-| 479 | L-612 | infra_process | C | CR04_Ownership_Concentration (Shleifer & Vishny 1986 large shareholders, Edmans 2009 block… |
-| 480 | L-613 | overlay_regime | C | DD 7/22 brake on weak-alpha cokurtosis strategy destroys more value than it protects. SR d… |
-| 481 | L-614 | quality_earnings | C | DD 7/22 overlay on weak alpha composite (D01_IdioVol + Q07_EarningsStability + C01_SUE, pa… |
-| 482 | L-615 | ? | C | CVaR95 (Acerbi & Tasche 2002 expected shortfall, Bali et al 2009 tail risk pricing) standa… |
-| 483 | L-616 | dividend | C | Bid-ask proxy (Amihud & Mendelson 1986) + payout ratio (Fama & French 1993 HML adjacent, P… |
-| 484 | L-617 | quality_earnings | C | Aggressive DD brake (5/15, min_exp=0.35) on weak base signal (IndMom+Q07 gate, FMB t=1.35)… |
-| 485 | L-620 | momentum | F | CR06(DTC Proxy) + V16(Tobin's Q) contrarian-value 조합 실패. DeBondt & Thaler(1985) contrarian… |
-| 486 | L-621 | quality_earnings | F | V04(Forward PER)+Q13(Financial Leverage) 2-factor 조합은 Piotroski(2000) 가치함정 회피 + Novy-Marx(… |
-| 487 | L-622 | defense | C | CR08 Volume-Price Divergence (Lou & Polk 2022 crowding, Llorente et al 2002 informed tradi… |
-| 488 | L-623 | behavioral | C | Flow reversal (Coval & Stafford 2007 fire sales, Lou 2012 flow-driven returns) applied as … |
-| 489 | L-627 | low_vol | B | Inverse-volatility weighting on BM+ESBR value-earnings synergy strategy degraded all metri… |
-| 490 | L-628 | overlay_regime | B | DD brake tightening (10/25 vs 15/35) on BM+ESBR synergy strategy yields poor trade-off: on… |
-| 491 | L-629 | overlay_regime | C | Risk Parity (Maillard et al. 2010 ERC) on 30 Korean stocks with 120-day Ledoit-Wolf covari… |
-| 492 | L-630 | overlay_regime | B | MRS threshold tightening (15/30 → 12/25) on regime_engine_daily v2.0 worsened MDD from 34.… |
-| 493 | L-631 | defense | C | When the underlying 2-factor blend has cross-factor correlation of 0.943 (CR08 Volume-Pric… |
-| 494 | L-632 | defense | C | Removing VT and using only DD brake (10/25) on a weak base signal (SR 0.633) produces the … |
-| 495 | L-633 | defense | C | VT 15% + DD 8/20 is the tightest overlay in the STR_1422 family, achieving the best MDD (2… |
-| 496 | L-634 | INV01_FlowReversal | C | Flow reversal signal produces ~3200% annual turnover regardless of DD overlay parameters. … |
-| 497 | L-635 | INV01_FlowReversal | C | Tighter buffer zone (keep=40, entry=20) on flow reversal signal actually increased turnove… |
-| 498 | L-643 | defense | B | STR_791 orthogonal residual scoring concept is sound (cross-sectional regression removes D… |
-| 499 | L-646 | defense | F | Adaptive VT (VIX-regime dynamic vol target) uses same-month VIX to set VT level — this is … |
-| 500 | L-647 | momentum | B | Foreign investor flow momentum as a regime-conditional alpha source in Korean equities is … |
-| 501 | L-650 | momentum | ? | STR_794 Soft MRS + Quality Gate: Gate 0 REJECT. Uses deprecated old MRS (FRED_REGIME_CACHE… |
-| 502 | L-718 | overlay_regime | B | M25_Earnings_Mom_Streak showed OOS>1.8 in 5 base strategies but combined with V24_Residual… |
-| 503 | L-719 | quality | B | Gentle DD (15/35) vs tight DD (10/25) outcome depends on base alpha strength. STR_1527 M25… |
-| 504 | L-720 | quality | ? | Q17_ROIC + Q23_Sustainable_Growth: ICIR 1.27 (highest 2-factor combo in scan) but portfoli… |
-| 505 | L-721 | momentum | ? | STR_1502 R03_CVaR_95 + DD 6/20: MDD 52.7%->30.4% (-42%), SR 0.554->0.598 (+8%), CAGR 9.49%… |
-| 506 | L-722 | infra_process | ? | STR_1506 CR04_Ownership_Concentration + DD 6/20: Hurdle scored B/42.5 (MDD 31.9%, stress 3… |
-| 507 | L-723 | behavioral | A | STR_887 v7.1 rebuild proves old MRS contamination was SUPPRESSING alpha, not inflating it.… |
-| 508 | L-731 | infra_process | ? | Applying shift(n=1L, type='lag') to FRED-derived monthly signals (fred_exposure, n_sig) to… |
-| 509 | L-750 | ml_complexity | B | STR_1047(TO 3702%)의 턴오버를 국면전환 스무딩(max 10%p/month)으로 154%로 대폭 감축하는 데 성공했으나, 수익률 블렌드 구조(4개 하… |
-| 510 | L-761 | oc_eps_chg | A | STR_943 OC+EpsChg composite achieves Grade A (52.2, SR 1.312, CAGR 17.1%, MDD 22.1%) but C… |
-| 511 | L-767 | consensus | C | Defense Core Alpha (D01 IVol 50% + D02 Beta 30% + Q07 EarnStab 20%) — PIT 완전 준수 상태에서 ICIR … |
-| 512 | L-768 | defense_idiovol | C | D01_IdioVol as standalone defense sleeve fails MDD hard gate (53.7% > 45%) despite statist… |
-| 513 | L-795 | defense | A | C11 수정(FRED 동월 접근 -> t-1월 접근)이 성과를 개선한 사례. STR_1028 대비 SR 1.300->1.333, OOS 0.906->1.09 향상… |
-| 514 | L-799 | technical_price | F | CR08_Volume_Price_Divergence standalone F (MDD 61%, TO 999%, SR 0.427, FMB t=0.152). Facto… |
-| 515 | L-802 | defense | B | C19(Composite Earnings) 60% + L22(Ret Autocorr) 40% blend에 DD 8/22 + Regime v7.1 overlay를 … |
-| 516 | L-812 | defense | B | C19+L22+D01 3F blend (50/30/20) with DD 8/22 + Regime overlay yields SR 0.793, CAGR 11.53%… |
-| 517 | L-813 | defense | B | C19+V14+D01+L22 4F blend (40/25/15/20) with DD 8/22 + Regime yields SR 0.756, CAGR 11.24%,… |
-| 518 | L-814 | consensus | B | C19+L22 (60/40) with DD 12/28 wider brake yields SR 0.867, CAGR 15.29%, MDD 31.83%. Compar… |
-| 519 | L-QPM-20260606-001 | momentum | F | KR long-only 단일+multi-sleeve+국면 overlay로 SR 2.5 돌파 실패 (full QEPM 5-agent alpha/risk/optimi… |
-| 520 | L-QPM-20260607-001 | infra_process | ? | KR long-only SR 2.5 목표는 현 universe(KOSPI200∪KQ150)·제약(max25 / 15bps / TO<=11 / no-short / … |
-| 521 | L-QPM-20260704_114303 | ml_complexity | F | KR 300팩터 월간 ML 랭킹 베이스라인(Session 57): XGBoost walk-forward OOS IC 0.0669/ICIR 0.7206(2008-0… |
-| 522 | L-QPM-20260705_102041 | overlay_regime | F | DIST-QPM-003 frontier(b) '국면조건부 quality activation' 실측 반증(FALSIFIED). regime-conditional(s… |
-| 523 | L-QPM-20260705_105130 | defense | F | cross-family regime-conditional composite (value/multi-axis-quality/residual-momentum/tail… |
-| 524 | L-QPM-20260705_110752 | quality_earnings | F | DIST-QPM-003 frontier(a) 'multi-axis quality를 multi-sleeve Q07 성분으로 배치'(AX-004 EXCLUSION e… |
-| 525 | L-QPM-20260705_180719 | quality | F | WT-D20260705_002 QEPM 자율발굴 CLEAN_NEGATIVE — SR-gap(+0.602) residual-orthogonal sleeve는 fac… |
-| 526 | L-QPM-20260705_192441 | unknown | F | WT-D20260705_008 QEPM 자율발굴 CLEAN_NEGATIVE — 조건부 교집합(AND-gate conjunctive intersection) 선택은… |
-| 527 | L-QPM-20260706_081232 | size | F | WT-P20260706_001 (deployment, forge-authoritative) DE-RATE — mega-cap 앵커 구성은 자본급 배포성 구성 레버… |
-| 528 | L-QPM-20260706_083113 | overlay_regime | F | KR long-only 20종 book(STR_1715, K200 union KQ150): mega-cap 앵커 구성(top-2 by size 20pct-cap … |
-| 529 | L-QPM-20260706_095231 | flow_supply | F | WT-D20260706_009 QEPM 자율발굴 CLEAN_NEGATIVE — Net Share Issuance(Daniel-Titman 2006·Pontiff-… |
-| 530 | L-QPM-20260706_102132 | value | F | WT-D20260706_013 QEPM 자율발굴 CLEAN_NEGATIVE — Intangible-adjusted value(Peters-Taylor 2017, … |
-| 531 | L-QPM-20260718_101841 | infra_process | ? | Cleaner 증류 2-pass 중복실행 방지 = cleaner_pending.json에 distill_status(pending/in_progress/done)… |
-| 532 | L-QPM-20260718_190624 | risk_sigma_method | B | FQ-057 method-frontier 1호 아크(R1→NP3→NP4→P1, 2026-07-18, pin fq057_20260718_171024) 수렴 — (1… |
-| 533 | L-QPM-20260718_201043 | drawdown_aware_construction | C | FQ-058 method-frontier(2026-07-18, round fq058_20260718_191740, pin 상속 fq057): drawdown-aw… |
-| 534 | L-QPM-20260820_PROXY_CHECKER_INSTALL | infra_process | ? | 2026-08-20 계기(檢査器) 층 교체 라운드 — 대리 지표 4종을 내용 기반으로 바꾸고, 그 과정에서 '계기가 산다'는 것의 조건 세 가지를 실측으로 분리했… |
-| 535 | L-QPM-20260821_R11_RETRY_PREVENTION_DIAGNOSIS | infra_process | ? | Axiom 루프 ⑪(재탕 방지 벌점) 진단 — **'죽은 검사기'가 아니라 '현행 파이프라인이 재지 않는 것을 요구하는 검사'** 였다. 진단이 두 번 뒤집혔고 … |
-| 536 | L-QPM-20260822_005809 | ml_complexity | C | Lane C 선형 분위회귀 음성 대조 — 판정 PARTIAL(음성 대조 미확립). P1: ML vs 선형 3쌍 paired 전부 UNDERPOWERED(MDE 6… |
-| 537 | L-QPM-20260822_010303 | ? | B | 해상도 사다리(F1 top-50→F2 top-100→F3L 전브레드스 스코어-수준)가 mean-blind 관문으로 MDE 를 7.5%p→1.22%p 로 낮춰(di… |
-| 538 | L-QPM-20260822_AXIOM_AUDIT_TEST_ISOLATION | infra_process | ? | Axiom 엔진 설계 전수점검(16 agent · 63 요소 · 48 발견) + P0/P1 수리 라운드. 가장 깊은 결함은 엔진이 아니라 **엔진을 검사하는 배터… |
+| 421 | L-130 | quality_earnings | A | DFA(Dynamic Factor Allocation)는 MRS 국면별 방어팩터(Q07/Q03/D29) 블렌딩으로 Base MDD를 48.2%에서 30.2%로 축… |
+| 422 | L-131 | behavioral | F | 개인투자자 순매수 contrarian(역발상) 3MA 시그널은 한국시장에서 alpha source 부재. SR 0.157, MDD 65.6%, IR -0.283.… |
+| 423 | L-132 | value | F | V02 EP(Earnings/Price) 단독 diversifier는 CAGR -1.71%, SR -0.265로 완전 실패. Turnover 3.3%는 시그널이 … |
+| 424 | L-133 | quality_profitability | F | Cash-Based Profitability Quality(CBPQ)은 MDD 94.0%, SR -0.232로 치명적 실패. Ball et al.(2016)의 현… |
+| 425 | L-134 | quality_profitability | F | Growth Stability Composite Diversifier는 OOS retention -0.001(IS SR 0.60 → OOS SR 0.00)로 전형… |
+| 426 | L-135 | value | F | Sector Neutral Accrual은 OOS retention 0.12(IS 0.575→OOS 0.071)로 과적합. MDD 64.7%. Sloan(1996… |
+| 427 | L-136 | defense | C | D25(Accounting Beta)+Q07(Earnings Stability) defense는 MDD 10.2%로 방어 목적에는 부합하나 CAGR 2.59%로 … |
+| 428 | L-137 | quality_earnings | F | Piotroski+RetAutocorr는 score 45.4(hard fail 없으면 Grade A급)에 OOS retention 0.89, stress 3/3,… |
+| 429 | L-138 | quality_earnings | F | EV Accrual Quality Defense는 defense 역할로 설계했으나 stress 0/3 outperform으로 방어 기능 완전 부재. MDD 67.… |
+| 430 | L-139 | quality_profitability | C | Profitability Fortress는 IS에서 SR 1.044이지만 OOS retention 0.24 + recent 3Y SR 0.135로 심각한 alph… |
+| 431 | L-140 | quality_profitability | F | LowBeta 3F(VDplus/Diversifier 두 버전 모두)는 OOS에서 alpha 완전 소멸(retention -0.35/-0.02). Recent 3… |
+| 432 | L-141 | quality_earnings | A | Axiom 승격 시 scope 제한 필수 교훈. v1 승격(AX-004/005 weighted 0.89) 완료했으나 Q-Lead가 scope 과광 우려 제기 → … |
+| 433 | L-142 | infra_process | A | Grade A 34건 catalog recheck 결과: hurdle-level JUDGE_PASS_A 25건 + JUDGE_PASS_LOWER 2건 + JUDG… |
+| 434 | L-1469 | consensus | B | STR_1469 Consensus 4F(C19+C13+C10+C04) 5-Sleeve 조합은 PIT clean(G0), OOS retention 0.77(G2),… |
+| 435 | L-1469-b | consensus | Archive | STR_1469 Consensus 4F(C19+C13+C10+C04) 5-Sleeve 재검증 결과: PIT clean(G0 PASS, 자동검출 0건, DD/VT … |
+| 436 | L-148 | infra_process | A | NO_JUDGE sweep v2 (34건 전수 PIT C1-C15 + hurdle 재검증) 결과 3-way 분류: PASS 11 / AMBIGUOUS_PIT_MI… |
+| 437 | L-1549 | consensus | C | D01_IdioVol(50%)+D02_Beta(30%)+Q07_EarningsStability(20%) 섹터중립 가중 RankCombo는 한국시장에서 S1 순수 … |
+| 438 | L-1550 | consensus | A | C19_Composite_Earnings 단독 팩터가 한국시장 Core Alpha로 최적. S1 순수 SR 1.001, CAGR 22.69% (KOSPI 대폭 초… |
+| 439 | L-1551 | defense | B | D01_IdioVol 단독 Defense sleeve: S1 SR 0.449, MDD 53.7%. DD 8/22 overlay로 MDD 31.9% 제어(Grade… |
+| 440 | L-1555 | consensus | A | C19(60%)+V14(20%)+D01(20%) Score Blend + DD 8/22 + Regime v7.1 = V7 최적 Core Alpha. SR 1.07… |
+| 441 | L-1555-b | ml_complexity | A | C19(60%)+V14(20%)+D01(20%) Score Blend + Risk Parity + DD 8/22 + Regime v7.1 = V7 최종 Core … |
+| 442 | L-1555-c | defense | B | DD Brake 파라미터 tightening (8/22→6/20)은 수확체감 법칙에 걸린다. STR_1555에서 DD_START를 8→6%, DD_FULL을 22… |
+| 443 | L-1570 | consensus | B | STR_1570은 C19(50%)+L22(30%)+D01(20%) 3팩터 블렌드에 DD 8/22 + Regime 오버레이를 적용한 전략이다. L22(수익률 자기상… |
+| 444 | L-1571 | behavioral | B | STR_1571은 STR_1555 M9(C19+V14+D01)에 L22를 4th factor로 추가한 실험이다. 가중치 C19(40%)+V14(25%)+D01(1… |
+| 445 | L-1576 | quality_earnings | F | CF_to_Accrual_Ratio(AC21_CF_to_Accrual_Ratio) 단일 팩터 순수 백테스트 결과 SR 0.572, CAGR 12.8%, MDD 5… |
+| 446 | L-1577 | quality | F | Earnings_Growth(GR02_Earnings_Growth) 단일 팩터 MDD 59.5%로 Hard Fail. SR 0.509, CAGR 12.9%. Gr… |
+| 447 | L-1578 | defense | F | Kurtosis(D44_Kurtosis) 단일 팩터 MDD 66.9%로 최악 수준. SR 0.350, CAGR 7.8%. 꼬리 위험 기반 방어 팩터로 기대했으나 … |
+| 448 | L-1579 | quality_earnings | F | Earnings_Stability(Q07_Earnings_Stability) Quality 계열 단일 팩터 MDD 62.7% Hard Fail. SR 0.332,… |
+| 449 | L-1580 | behavioral | F | Volume_Price_Divergence(CR08_Volume_Price_Divergence) MDD 59.5% + Turnover 904% 이중 Hard Fa… |
+| 450 | L-1581 | overlay_regime | F | Book_Leverage(R18_Book_Leverage) Risk 계열 단일 팩터 MDD 55.8% Hard Fail. SR 0.338, CAGR 7.4%. 저… |
+| 451 | L-160 | signal_portfolio_translation_failure | F | H_1682 Distress(Q25) + Calmar(R16) 60/40 composite signal 품질 IC 0.2207 / ICIR 1.879 / FM t… |
+| 452 | L-1608 | momentum | F | D22_Tracking_Error standalone diversifier는 MDD 51.2%로 hard fail. Good-regime IC 0.086으로 상승… |
+| 453 | L-1609 | flow_supply | F | L40_VWAP_Spread standalone diversifier는 높은 profile ICIR(0.826)에도 불구하고 실제 IR -0.015(음수)로 초과… |
+| 454 | L-160A | behavioral | INFRASTRUCTURE | 2-party flow divergence 또는 cross-channel difference 가설 설계 시 수식 수준 algebraic identity 사전 검증… |
+| 455 | L-161 | momentum | F | H_1688 Residual Momentum Carhart 1997 + Blitz-Huij-Martens 2011 정통 설계 구현에도 Grade F (MDD 86… |
+| 456 | L-161A | infra_process | ? | Codex Critic Bash script (run_codex_critic.sh)가 codex-companion 응답 실패 시 S0 Debate 5인 합의 프로… |
+| 457 | L-162 | momentum | ? | 2-factor linear z-score blend (50/50)은 표준편차 불균형 시 dominant factor 단일 수렴 구조적 위험. H_1687 Q25… |
+| 458 | L-1621 | quality_earnings | C | STR_1621은 Regime-Conditional AllWeather 전략으로, C19+V14(core) / D01+D44(defense) 2-sleeve 구조… |
+| 459 | L-1622 | quality_profitability | C | STR_1622는 C19+V14+Q01+D01+M25 5팩터 IC-weighted blend로, expanding 12M rolling IC 기반 shrinkag… |
+| 460 | L-1623 | defense | A | Bayesian Black-Litterman 5-sleeve 앙상블(Defense/IndMom/Consensus/ConsGate/TPGap)에 C11 FRED t… |
+| 461 | L-1624 | defense | F | Q17_ROIC와 D43_Skewness의 EW 블렌드는 defense 역할을 기대했으나 MDD 59.7%로 hard fail 하였다. Skewness 팩터는 한… |
+| 462 | L-1625 | quality_earnings | F | AC22_Accrual_Volatility와 Q28_Cash_Conversion의 EW 블렌드는 MDD 64.8%로 hard fail이지만 Score 49.2, … |
+| 463 | L-162A | infra_process | ? | Forge v2 STR_1684 factor_engine.R 실행 중 'Date.x/Date.y merge 충돌' 에러 발견. 원인: data.table rbin… |
+| 464 | L-163 | quality_earnings | ? | Defense family composite 구성 시 각 factor의 stress_icir × weight 곱이 -0.05 이하로 떨어지면 조건부 차단. L-1… |
+| 465 | L-165 | signal_portfolio_translation_failure | F | Multi-Source Defense Anchor (M08+C19+Q07+R16 4-axis regime-smoothed composite)는 signal lev… |
+| 466 | L-166 | signal_portfolio_translation_failure | F | STR_1687 (H_1693 Q07 sector-neutral defense) AX-005 EXCLUSION clause 3개(sector-neutralizat… |
+| 467 | L-167 | infra_process | INFRASTRUCTURE_PROCESS | Forge self-check process는 PIT 위반(C1~C15) 및 s0_record 명세 전달 실패를 체계적으로 탐지하지 못하는 구조적 한계를 4건 누… |
+| 468 | L-1682 | defense | F | STR_1682 Option A 4-regressor 잔차화(log_mcap + R12 + SUE + beta_24m) 시도는 3중 인프라/프로세스 실패로 Gra… |
+| 469 | L-170 | industry_momentum_residualized_core_secondary_fail | F | STR_1692 H_1692 v2 industry momentum residualized (M18) Core_Secondary **post-L168-fix 첫 정… |
+| 470 | L-572 | quality_earnings | B | Bayesian Shrinkage GARP: ICIR 기반 팩터 가중을 Bayesian shrinkage(w_post = (1-lambda)*w_ICIR + la… |
+| 471 | L-578 | liquidity | F | L15_Turnover_252d(Ibbotson 2013) standalone은 SR 0.506, stress 3/4(EuDebt만 실패). IC 0.037 안정… |
+| 472 | L-579 | ? | F | R01_VaR_95는 IC 0.042(배치 2위), pos_rate 67.9%(최고)로 팩터 자체는 유효하나, FF alpha가 강하게 음수(t=-1.15~-1.… |
+| 473 | L-590 | defense | B | C19(Composite Earnings) 60% + L22(Ret Autocorr) 40% Score Blend: 음의 팩터 상관(-0.108)을 활용한 블렌드… |
+| 474 | L-591 | consensus | B | L22_Ret_Autocorr(Lo & MacKinlay 1990 variance ratio 기반)은 standalone SR 0.397, MDD 64%로 단독 … |
+| 475 | L-601 | quality_earnings | B | Aggressive DD brake (5/15, min_exp 0.35) on D01+Q07 delivers strong crisis protection (str… |
+| 476 | L-602 | quality_earnings | B | Baltussen et al. (2018) vol-of-vol premium and Dichev & Tang (2009) earnings stability pre… |
+| 477 | L-603 | consensus | B | Expanding-window ICIR-based dynamic factor weighting (Arnott et al. 2019 'Alice in Factorl… |
+| 478 | L-604 | quality_earnings | B | S5 M1 mutation tightened DD brake from 15/35 to 10/25 on D41_VolVol + Q07_EarningsStabilit… |
+| 479 | L-605 | overlay_regime | B | Adaptive IC-weighted factor rotation with expanding-window ICIR and 2-month lag is PIT-cle… |
+| 480 | L-606 | overlay_regime | B | Aggressive DD brake (5%/15%, min_exp=35%) on adaptive IC-weighted rotation: MDD compressed… |
+| 481 | L-607 | behavioral | B | R10_Cokurtosis as bottom-10% exclusion gate + C19_Composite_Earnings scoring yields SR 0.1… |
+| 482 | L-609 | quality_earnings | B | D41(Vol-of-Vol) + Q07(Earnings_Stability) 2-factor blend with VT 18% + DD 7/22 overlay fai… |
+| 483 | L-610 | overlay_regime | B | DD-only overlay (10/30, min_exp=25%) on adaptive ICIR-weighted rotation is the weakest S5 … |
+| 484 | L-611 | quality_earnings | B | DD 7/22 overlay on IndMom+QualityGate(Q07 top 80%) fails to improve risk-adjusted returns.… |
+| 485 | L-612 | infra_process | C | CR04_Ownership_Concentration (Shleifer & Vishny 1986 large shareholders, Edmans 2009 block… |
+| 486 | L-613 | overlay_regime | C | DD 7/22 brake on weak-alpha cokurtosis strategy destroys more value than it protects. SR d… |
+| 487 | L-614 | quality_earnings | C | DD 7/22 overlay on weak alpha composite (D01_IdioVol + Q07_EarningsStability + C01_SUE, pa… |
+| 488 | L-615 | ? | C | CVaR95 (Acerbi & Tasche 2002 expected shortfall, Bali et al 2009 tail risk pricing) standa… |
+| 489 | L-616 | dividend | C | Bid-ask proxy (Amihud & Mendelson 1986) + payout ratio (Fama & French 1993 HML adjacent, P… |
+| 490 | L-617 | quality_earnings | C | Aggressive DD brake (5/15, min_exp=0.35) on weak base signal (IndMom+Q07 gate, FMB t=1.35)… |
+| 491 | L-620 | momentum | F | CR06(DTC Proxy) + V16(Tobin's Q) contrarian-value 조합 실패. DeBondt & Thaler(1985) contrarian… |
+| 492 | L-621 | quality_earnings | F | V04(Forward PER)+Q13(Financial Leverage) 2-factor 조합은 Piotroski(2000) 가치함정 회피 + Novy-Marx(… |
+| 493 | L-622 | defense | C | CR08 Volume-Price Divergence (Lou & Polk 2022 crowding, Llorente et al 2002 informed tradi… |
+| 494 | L-623 | behavioral | C | Flow reversal (Coval & Stafford 2007 fire sales, Lou 2012 flow-driven returns) applied as … |
+| 495 | L-627 | low_vol | B | Inverse-volatility weighting on BM+ESBR value-earnings synergy strategy degraded all metri… |
+| 496 | L-628 | overlay_regime | B | DD brake tightening (10/25 vs 15/35) on BM+ESBR synergy strategy yields poor trade-off: on… |
+| 497 | L-629 | overlay_regime | C | Risk Parity (Maillard et al. 2010 ERC) on 30 Korean stocks with 120-day Ledoit-Wolf covari… |
+| 498 | L-630 | overlay_regime | B | MRS threshold tightening (15/30 → 12/25) on regime_engine_daily v2.0 worsened MDD from 34.… |
+| 499 | L-631 | defense | C | When the underlying 2-factor blend has cross-factor correlation of 0.943 (CR08 Volume-Pric… |
+| 500 | L-632 | defense | C | Removing VT and using only DD brake (10/25) on a weak base signal (SR 0.633) produces the … |
+| 501 | L-633 | defense | C | VT 15% + DD 8/20 is the tightest overlay in the STR_1422 family, achieving the best MDD (2… |
+| 502 | L-634 | INV01_FlowReversal | C | Flow reversal signal produces ~3200% annual turnover regardless of DD overlay parameters. … |
+| 503 | L-635 | INV01_FlowReversal | C | Tighter buffer zone (keep=40, entry=20) on flow reversal signal actually increased turnove… |
+| 504 | L-643 | defense | B | STR_791 orthogonal residual scoring concept is sound (cross-sectional regression removes D… |
+| 505 | L-646 | defense | F | Adaptive VT (VIX-regime dynamic vol target) uses same-month VIX to set VT level — this is … |
+| 506 | L-647 | momentum | B | Foreign investor flow momentum as a regime-conditional alpha source in Korean equities is … |
+| 507 | L-650 | momentum | ? | STR_794 Soft MRS + Quality Gate: Gate 0 REJECT. Uses deprecated old MRS (FRED_REGIME_CACHE… |
+| 508 | L-718 | overlay_regime | B | M25_Earnings_Mom_Streak showed OOS>1.8 in 5 base strategies but combined with V24_Residual… |
+| 509 | L-719 | quality | B | Gentle DD (15/35) vs tight DD (10/25) outcome depends on base alpha strength. STR_1527 M25… |
+| 510 | L-720 | quality | ? | Q17_ROIC + Q23_Sustainable_Growth: ICIR 1.27 (highest 2-factor combo in scan) but portfoli… |
+| 511 | L-721 | momentum | ? | STR_1502 R03_CVaR_95 + DD 6/20: MDD 52.7%->30.4% (-42%), SR 0.554->0.598 (+8%), CAGR 9.49%… |
+| 512 | L-722 | infra_process | ? | STR_1506 CR04_Ownership_Concentration + DD 6/20: Hurdle scored B/42.5 (MDD 31.9%, stress 3… |
+| 513 | L-723 | behavioral | A | STR_887 v7.1 rebuild proves old MRS contamination was SUPPRESSING alpha, not inflating it.… |
+| 514 | L-731 | infra_process | ? | Applying shift(n=1L, type='lag') to FRED-derived monthly signals (fred_exposure, n_sig) to… |
+| 515 | L-750 | ml_complexity | B | STR_1047(TO 3702%)의 턴오버를 국면전환 스무딩(max 10%p/month)으로 154%로 대폭 감축하는 데 성공했으나, 수익률 블렌드 구조(4개 하… |
+| 516 | L-761 | oc_eps_chg | A | STR_943 OC+EpsChg composite achieves Grade A (52.2, SR 1.312, CAGR 17.1%, MDD 22.1%) but C… |
+| 517 | L-767 | consensus | C | Defense Core Alpha (D01 IVol 50% + D02 Beta 30% + Q07 EarnStab 20%) — PIT 완전 준수 상태에서 ICIR … |
+| 518 | L-768 | defense_idiovol | C | D01_IdioVol as standalone defense sleeve fails MDD hard gate (53.7% > 45%) despite statist… |
+| 519 | L-795 | defense | A | C11 수정(FRED 동월 접근 -> t-1월 접근)이 성과를 개선한 사례. STR_1028 대비 SR 1.300->1.333, OOS 0.906->1.09 향상… |
+| 520 | L-799 | technical_price | F | CR08_Volume_Price_Divergence standalone F (MDD 61%, TO 999%, SR 0.427, FMB t=0.152). Facto… |
+| 521 | L-802 | defense | B | C19(Composite Earnings) 60% + L22(Ret Autocorr) 40% blend에 DD 8/22 + Regime v7.1 overlay를 … |
+| 522 | L-812 | defense | B | C19+L22+D01 3F blend (50/30/20) with DD 8/22 + Regime overlay yields SR 0.793, CAGR 11.53%… |
+| 523 | L-813 | defense | B | C19+V14+D01+L22 4F blend (40/25/15/20) with DD 8/22 + Regime yields SR 0.756, CAGR 11.24%,… |
+| 524 | L-814 | consensus | B | C19+L22 (60/40) with DD 12/28 wider brake yields SR 0.867, CAGR 15.29%, MDD 31.83%. Compar… |
+| 525 | L-QPM-20260606-001 | momentum | F | KR long-only 단일+multi-sleeve+국면 overlay로 SR 2.5 돌파 실패 (full QEPM 5-agent alpha/risk/optimi… |
+| 526 | L-QPM-20260607-001 | infra_process | ? | KR long-only SR 2.5 목표는 현 universe(KOSPI200∪KQ150)·제약(max25 / 15bps / TO<=11 / no-short / … |
+| 527 | L-QPM-20260704_114303 | ml_complexity | F | KR 300팩터 월간 ML 랭킹 베이스라인(Session 57): XGBoost walk-forward OOS IC 0.0669/ICIR 0.7206(2008-0… |
+| 528 | L-QPM-20260705_102041 | overlay_regime | F | DIST-QPM-003 frontier(b) '국면조건부 quality activation' 실측 반증(FALSIFIED). regime-conditional(s… |
+| 529 | L-QPM-20260705_105130 | defense | F | cross-family regime-conditional composite (value/multi-axis-quality/residual-momentum/tail… |
+| 530 | L-QPM-20260705_110752 | quality_earnings | F | DIST-QPM-003 frontier(a) 'multi-axis quality를 multi-sleeve Q07 성분으로 배치'(AX-004 EXCLUSION e… |
+| 531 | L-QPM-20260705_180719 | quality | F | WT-D20260705_002 QEPM 자율발굴 CLEAN_NEGATIVE — SR-gap(+0.602) residual-orthogonal sleeve는 fac… |
+| 532 | L-QPM-20260705_192441 | unknown | F | WT-D20260705_008 QEPM 자율발굴 CLEAN_NEGATIVE — 조건부 교집합(AND-gate conjunctive intersection) 선택은… |
+| 533 | L-QPM-20260706_081232 | size | F | WT-P20260706_001 (deployment, forge-authoritative) DE-RATE — mega-cap 앵커 구성은 자본급 배포성 구성 레버… |
+| 534 | L-QPM-20260706_083113 | overlay_regime | F | KR long-only 20종 book(STR_1715, K200 union KQ150): mega-cap 앵커 구성(top-2 by size 20pct-cap … |
+| 535 | L-QPM-20260706_095231 | flow_supply | F | WT-D20260706_009 QEPM 자율발굴 CLEAN_NEGATIVE — Net Share Issuance(Daniel-Titman 2006·Pontiff-… |
+| 536 | L-QPM-20260706_102132 | value | F | WT-D20260706_013 QEPM 자율발굴 CLEAN_NEGATIVE — Intangible-adjusted value(Peters-Taylor 2017, … |
+| 537 | L-QPM-20260718_101841 | infra_process | ? | Cleaner 증류 2-pass 중복실행 방지 = cleaner_pending.json에 distill_status(pending/in_progress/done)… |
+| 538 | L-QPM-20260718_190624 | risk_sigma_method | B | FQ-057 method-frontier 1호 아크(R1→NP3→NP4→P1, 2026-07-18, pin fq057_20260718_171024) 수렴 — (1… |
+| 539 | L-QPM-20260718_201043 | drawdown_aware_construction | C | FQ-058 method-frontier(2026-07-18, round fq058_20260718_191740, pin 상속 fq057): drawdown-aw… |
+| 540 | L-QPM-20260820_PROXY_CHECKER_INSTALL | infra_process | ? | 2026-08-20 계기(檢査器) 층 교체 라운드 — 대리 지표 4종을 내용 기반으로 바꾸고, 그 과정에서 '계기가 산다'는 것의 조건 세 가지를 실측으로 분리했… |
+| 541 | L-QPM-20260821_R11_RETRY_PREVENTION_DIAGNOSIS | infra_process | ? | Axiom 루프 ⑪(재탕 방지 벌점) 진단 — **'죽은 검사기'가 아니라 '현행 파이프라인이 재지 않는 것을 요구하는 검사'** 였다. 진단이 두 번 뒤집혔고 … |
+| 542 | L-QPM-20260822_005809 | ml_complexity | C | Lane C 선형 분위회귀 음성 대조 — 판정 PARTIAL(음성 대조 미확립). P1: ML vs 선형 3쌍 paired 전부 UNDERPOWERED(MDE 6… |
+| 543 | L-QPM-20260822_010303 | ? | B | 해상도 사다리(F1 top-50→F2 top-100→F3L 전브레드스 스코어-수준)가 mean-blind 관문으로 MDE 를 7.5%p→1.22%p 로 낮춰(di… |
+| 544 | L-QPM-20260822_AXIOM_AUDIT_TEST_ISOLATION | infra_process | ? | Axiom 엔진 설계 전수점검(16 agent · 63 요소 · 48 발견) + P0/P1 수리 라운드. 가장 깊은 결함은 엔진이 아니라 **엔진을 검사하는 배터… |
 
 ### QPM
 
 | # | L-code | family | grade | 요지 |
 |---|--------|--------|-------|------|
-| 539 | L-AR-20260809_214500 | momentum | F | ★**'재빌드로 해금된 신규 재료 4종'은 실제로 0종이었다.** 2026-08-09 factor_db 전면 재빌드(440개월)가 C10_SUE_Persisten… |
-| 540 | L-AR-20260813_R31R33 | measurement_form | N/A_panel_statistic | ★이 라운드가 확립한 것 = '평균 표적은 꼬리에 속고 순위·중앙값 표적은 안 속는다' 가 **factor DB 전반의 측정 가능한 성질**이라는 것. 세 층에서… |
-| 541 | L-AR-20260813_WT002 | overlay_regime | N/A_mechanism_gate_fail | ★판정 F1_FAIL — 기전 관문에서 기각, 성과 미산출(미달이 아니라 미측정). 하방 꼬리월 AUC: 신규 꼬리표적 0.7143 < MSM 상태-baselin… |
-| 542 | L-AR-20260813_WT003 | overlay_regime | N/A_mechanism_gate_fail | ★VT2 PASS / **VT2b REJECT** — VT4(성과) 미착수. VT1 예측 링크 실재(spearman(sigma_hat, 홀딩월 실현vol) **0… |
-| 543 | L-AR-20260813_WT005 | measurement_form | C | ★2단 라운드. **1차(깊이 20%)** paired NW3 t **+0.4930** < 문턱 2.0 = NOT_SUPPORTED. 자기 적발한 최강 비판 = … |
+| 545 | L-AR-20260809_214500 | momentum | F | ★**'재빌드로 해금된 신규 재료 4종'은 실제로 0종이었다.** 2026-08-09 factor_db 전면 재빌드(440개월)가 C10_SUE_Persisten… |
+| 546 | L-AR-20260813_R31R33 | measurement_form | N/A_panel_statistic | ★이 라운드가 확립한 것 = '평균 표적은 꼬리에 속고 순위·중앙값 표적은 안 속는다' 가 **factor DB 전반의 측정 가능한 성질**이라는 것. 세 층에서… |
+| 547 | L-AR-20260813_WT002 | overlay_regime | N/A_mechanism_gate_fail | ★판정 F1_FAIL — 기전 관문에서 기각, 성과 미산출(미달이 아니라 미측정). 하방 꼬리월 AUC: 신규 꼬리표적 0.7143 < MSM 상태-baselin… |
+| 548 | L-AR-20260813_WT003 | overlay_regime | N/A_mechanism_gate_fail | ★VT2 PASS / **VT2b REJECT** — VT4(성과) 미착수. VT1 예측 링크 실재(spearman(sigma_hat, 홀딩월 실현vol) **0… |
+| 549 | L-AR-20260813_WT005 | measurement_form | C | ★2단 라운드. **1차(깊이 20%)** paired NW3 t **+0.4930** < 문턱 2.0 = NOT_SUPPORTED. 자기 적발한 최강 비판 = … |
 
 ### ramp
 
 | # | L-code | family | grade | 요지 |
 |---|--------|--------|-------|------|
-| 544 | L-RAMP-20260618_131316 | overlay_regime | F | [failure-ledger/INV-7] 순진한 국면틸트(CAUTION/CRISIS서 방어군 1.5x·공격군 0.5x 고정룰) 역효과: net_sr −0.151 … |
-| 545 | L-RAMP-20260618_131316B | infra_process | C | factor_db 316 전수 sweep + 풀 479 PCA: standalone long-only PORT_t>1 인 단일팩터 0/316. 직교성은 gross… |
-| 546 | L-RAMP-20260618_131316C | infra_process | B | 11 직교 약신호군 EW 조합 + 회전제어(13.1→7.8x) → long-only net_sr +0.083(양수), port_t +0.21. 개별군 전부 음수(… |
-| 547 | L-RAMP-20260618_131800 | infra_process | B | Gate6 iteration: 최고=M0_smooth net_sr=+0.083 port_t=+0.21 TO=7.8 (기준 M0_EW −0.04). 회전제어=핵심레… |
-| 548 | L-RAMP-20260618_134000 | value | C | regime-cash 오버레이(CRISIS 0.3/CAUTION 0.6)를 M_regime_dd에 얹으니 net_sr +0.110→−0.105 악화. 원인=측정창… |
-| 549 | L-RAMP-20260618_140528 | ? | B | Round1 고레버리지: best=H3_regdd_conviction net_sr=+0.110 port_t=+0.26 oos=-1.067 (직전 +0.110). … |
-| 550 | L-RAMP-20260618_142650 | overlay_regime | A | ★유의 달성: RAMP M-code(11직교군+데이터구동 regime, top-25 long-only net) port_t(NW)=2.39 vs EW-univer… |
-| 551 | L-RAMP-20260618_175207 | infra_process | A | Graduation 시도: best=M_regdd port_t=3.66 oos_reten=0.15 calmar=0.37 DSR=3.24 (vs EW-uni). 게… |
-| 552 | L-RAMP-20260619_070753 | overlay_regime | B | 가이드북 Gate6-8 정식구현(역할 M0-M4 + drift 플래그 + 인베스터 레짐배분). Gate9: INVESTOR OOS active IR -0.192 … |
-| 553 | L-RAMP-20260619_081702 | overlay_regime | B | 팩터군 보강(2005-2026 전체 316팩터). equal-weight 316=희석 붕괴(pt 0.82) → IC-가중 composite가 해소: oos_ret… |
-| 554 | L-RAMP-20260619_103729 | overlay_regime | A | 미배선 Absorption Ratio(Kritzman 2010, 횡단면 상관 top15 고유값 분산비=시장동조화) 엔진을 RAMP에 배선. 헌법 §3.5 정합 s… |
-| 555 | L-RAMP-20260619_105903 | ? | A | 자율 자가발전: AR-soft 배선 위 {AR/AR+MSM}×{monthly/quarterly} 4변형. best=AR+MSM_quarterly pt_capwt … |
-| 556 | L-RAMP-20260619_132312 | momentum | A | 국면엔진 리서치풀 14개(인프라7:Cascade/AR/MSM/MRS9/Jump/Forecaster/hard4 + 신규리서치4:Trend/RealizedVol/Dr… |
-| 557 | L-RAMP-20260619_135237 | overlay_regime | B | 제약완화(도훈): active-only 제약 풀고 Gate8 soft 타이밍(Cascade Category 노출스케줄 1.0/0.7/0.4, 헌법 Σa≤1 허용·… |
-| 558 | L-RAMP-20260619_140656 | ml_complexity | B | 국면엔진 강화 3종 전부 Cascade 단독(pt 2.85) 미달: 순진앙상블 2.61·스마트앙상블(트레일링IR가중) 2.65·multi-axis 경제분업 2.7… |
-| 559 | L-RAMP-20260619_141402 | momentum | B | 새 국면엔진 설계(최신페이퍼 Shu-Mulvey 2024 arXiv 2410.14841 per-factor Sparse Jump Model): 각 군 IC시계열에… |
-| 560 | L-RAMP-20260619_193015 | overlay_regime | F | 도훈 'DPL 해보고 RAMP_02 로직 돌파법 최대추론'. 추론: RAMP_02 엣지=broad base 작은tilt timing, 25종목=집중 → compo… |
-| 561 | L-RAMP-20260620_103109 | momentum | B | ★새 접근 성공(도훈 '기존 틀말고 새 접근'): 25종목서 OOS 양수+calmar 통과하는 첫 배포가능 전략. ★결정적 발견(alpha OOS probe): … |
-| 562 | L-RAMP-20260620_104415 | momentum | B | ★도훈 교정 검증(국면조건부 다차원 블렌딩 > 정적 모멘텀-중심): 내 'momentum이 유일 생존알파' 프레임은 *무조건부 OOS*만 본 좁은 시각. Valu… |
-| 563 | L-RAMP-20260620_132802 | overlay_regime | C | 도훈 'FWL+국면엔진 개발진행'. ★내 'FWL이 최대 미사용 레버' 단언 측정이 반박(과신 정정). blanket FWL(전팩터 size중립화)=Size팩터(… |
-| 564 | L-RAMP-20260620_161507 | momentum | A | ★도훈 goal 달성: 정직 실측으로 현 Book 초과 포트 발굴. 8-구성요소 grid(3024 config, 공유캐시 병렬) 탐색→robust 승자 selec… |
-| 565 | L-RAMP-20260620_171915 | overlay_regime | A | 도훈 옵션2(Book을 factor로 흡수 재최적화, 25종목준수). ★전제정정: 직전 '31종목 결합 Book초과'는 25종목 위반(book20∪sleeve25… |
-| 566 | L-RAMP-20260620_184509 | momentum | F | ★중대 PIT 정정: 옵션2 book-흡수 '25종목 beat'(book_momcons pt 3.05)와 construction(book_base 6.73)은 L… |
-| 567 | L-RAMP-20260620_184815 | momentum | A | ★PIT-클린 25종목 Book 돌파 회복(구성요소 g=cap-weight 강화, look-ahead 제거 후). book score(shift0 PIT-veri… |
-| 568 | L-RAMP-20260620_185554 | momentum | A | ★8-구성요소 전수 강화 종합(도훈 goal '25종목 BOOK 성과돌파', PIT-클린). 각 레버 결과: z(raw best, FWL refuted)·R국면(… |
-| 569 | L-RAMP-20260705_184828 | overlay_regime | B | RAMP R1 잔차-직교 sleeve 스태킹 실측 — DIST-RAMP-006 '미검증' 프론티어 측정(프레임: canonical top-25 EW long-on… |
-| 570 | L-RAMP-20260705_191446 | infra_process | B | RAMP R2 Track A top-N 민감도(N∈{15,20,25}, 15bps 고정, envelope-안) — R1 음성 재확인. N축소가 IS PORT_t … |
-| 571 | L-RAMP-20260705_191446_02 | ml_complexity | B | RAMP R2 Track B 국면조건부 lightgbm 앙상블(11 직교 sleeve + regime soft-membership → forward return,… |
-| 572 | L-RAMP-20260711_152314 | value | B | RAMP R3 — 지정 재도전 경로 2개(A tail 방어 sleeve / B V02_EP EW-가중 sleeve)를 국면-IC 가중 base(M_regdd, o… |
-| 573 | L-RAMP-20260711_181539 | ml_complexity | F | RAMP R4 Boruta 팩터-존 축소 배분(정적 arm S) VALIDATED_NEGATIVE(config-scoped): rolling 학습창(36/60m,… |
-| 574 | L-RAMP-20260711_184155 | ml_complexity | F | RAMP R5(Branch B): 선별-규율 계열(Boruta shadow-null + Stability Selection[glmnet LASSO compleme… |
-| 575 | L-RAMP-20260711_200226 | ? | C | RAMP R6: 선별 기질을 relevance(R4/R5)에서 realized-PORT_t(trailing 배포권 실측 성과)로 교체 = R5 부활신호 발화. 결… |
-| 576 | L-RAMP-20260712_161537 | infra_process | C | RAMP R7 (FQ-015, R6 잔존 frontier ②): 선별 라벨 basis 교체 실험 — trailing 선별 라벨을 cap-w active NW-t(… |
-| 577 | L-RAMP-20260712_175852 | infra_process | C | RAMP R8 (FQ-016) = R7 종결의 판정 절차 보완(re-sweep 아님, n_trials family=20 불변). R7이 R6-best Ppure_… |
-| 578 | L-RAMP-20260713_084821 | infra_process | C | RAMP R10 (FQ-023, 도훈 '비중 결정 통계적 고도화 적용해봤니'): P-pure(W36_K20) 동일가중(종목 EW × 팩터 EW)을 알파/점수-비례… |
-| 579 | L-RAMP-20260713_093129 | ? | C | RAMP R11 (FQ-024, 도훈 'P-pure 더 발전시켜봐'): P-pure(W36_K20)의 바인딩 실패=oos·post-2017 감쇠 추적을 세 독립 … |
-| 580 | L-RAMP-20260713_100638 | ? | C | RAMP R12 (FQ-025, 도훈 mandate — R11 next_probe 수렴점 소비 '퇴출 빠르게·진입 엄격하게'): P-pure(W36_K20) 감쇠… |
-| 581 | L-RAMP-20260713_102944 | ? | F | RAMP R13 (FQ-026) = R12 메타진단 축전환 소비: construction 4축(비중2.930·vintage2.895·신선도2.852·비대칭퇴출2.… |
-| 582 | L-RAMP-20260713_110343 | ? | F | RAMP R14 퇴출 결합(FQ-027): R12 F-1(순위 퇴출·cap-w 2.937)과 R13 D-2(감쇠 퇴출·oos+0.045) 트리거를 AND/OR 결… |
-| 583 | L-RAMP-20260713_112544 | ? | F | RAMP R15 충원(fill) 규율 축(FQ-028, R14 next_probe 1순위 소비): 퇴출 트리거를 챔피언 F-1(순위-단독)에 고정하고 빈 슬롯 충… |
-| 584 | L-RAMP-20260713_211037 | momentum | B | ★RAMP_03C(book+mom6 cap-weight) 단일 config 재현 = DEMOTED(재현 실패). FQ-018 감사의 A급 원장 유일 명목 HARD… |
-| 585 | L-RAMP-20260713_213904 | infra_process | F | ★RAMP_03C EW/score-tilt variant book-marginal ΔIR 진단(#65 next_probe 2 소비) = blend 기여 없음, c… |
-| 586 | L-RAMP-20260715_004100 | flow_supply | F | RAMP R9 insider 확장 패널 × PORT_t-정렬 선별 (FQ-019, 선별-규율 아크 R4~R15 잔존 frontier ① 소비 — 비-수익 subs… |
-| 587 | L-RAMP-20260715_015734 | flow_supply | C | insider 소비면 전환(R9 next_probe P1): 선별/필터 3면(R9 pool-선별·A net-seller exclusion paired t=-0.0… |
-| 588 | L-RAMP-20260715_022534 | low_vol | C | insider net-buy 클러스터(INS02 z>=+1.0) monitoring tripwire 배선 + 북-레벨 de-risk 진단(R33 P1 소비). 북… |
-| 589 | L-RAMP-20260715_040901 | overlay_regime | B | insider net-buy SAFE 청산-타이밍 대칭검정 (R38/FQ-052, R34 P3/R37 P1 소비). SAFE 진입 정보성(R33/R34 확립)이 … |
-| 590 | L-RAMP-20260715_043643 | flow_supply | B | [monitoring 배선] R39 FQ-053 insider SAFE_FADING 상태전이 tripwire 실배선 (R38 P2 소비, wiring 태스크·새 … |
-| 591 | L-RAMP-20260715_053646 | flow_supply | B | [monitoring 배선 refine] R41 FQ-053 insider SAFE_FADING horizon-bounded 실배선 (R40 P1 소비, wiri… |
-| 592 | L-RAMP-20260715_055418 | flow_supply | B | [monitoring 배선 — live OOS 추적] R42 FQ-053 P2 insider SAFE/SAFE_FADING live 발화 종목 익월 실현위험 OO… |
-| 593 | L-RAMP-20260715_070019 | infra_process | B | [데이터무결성 방화벽 배선] R44 FQ-054 R1+R4 — R43 적발 'canonical 입력단 Ret winsorize 방화벽 부재'(물리불가 Ret 통과… |
-| 594 | L-RAMP-20260715_072549 | infra_process | B | [데이터무결성 근원진단] R45 FQ-054 P3 — R44가 남긴 'stored Ret vs recompute max|Δ|=4.86(non-universe mi… |
-| 595 | L-RAMP-20260715_075509 | infra_process | B | [데이터무결성 배선정련] R46 FQ-054 P2+P3 — R45 근원 지식(date-gap 불일치=Close 시계열 구멍 span recompute 스퓨리어스·… |
-| 596 | L-RAMP-20260717_195731 | infra_process | B | [데이터무결성 근원수리] R47 R46-P1 — R46 tripwire가 특정한 218 source-seam Close 구멍을 KRX 백필로 실수리. ★rawda… |
-| 597 | L-RAMP-20260802_204804 | flow_supply | C | insider INS_MAGQ3 보조 tripwire 증분 = 기각. 그러나 본 과제보다 큰 관측가능성 결함(R43-F1)을 적발·수리했다. ① 증분 판정 UND… |
-| 598 | L-RAMP-20260820_212848 | low_vol | F | FQ-239 P0-2 (도훈 mandate 2026-08-20 자본졸업 루프 착수 게이트). run_ramp_shumulvey.R bt()(:179-199)와 _… |
-| 599 | L-RAMP-20260820_221500 | low_vol | C | FQ-239 (도훈 mandate 자본졸업 루프, prereg smv_v5_prereg_20260820, pin smv_r2_20260820). 보정 회계(월말 … |
-| 600 | L-RAMP-20260821_073500 | low_vol | F | FQ-239 라운드 2 (도훈 지시 2026-08-21 '피처·오버레이·하네스 튜닝'). prereg smv_v6_prereg_20260821 (34셀 전수, a… |
-| 601 | L-RAMP-20260821_080500 | low_vol | C | FQ-239 R3 자동 사이클 (도훈 2026-08-21). prereg smv_v7_prereg_20260821 (측정-전 기록 + amendment_2 측정-… |
-| 602 | L-RAMP-20260821_103000 | low_vol | B | FQ-239 감사·설계게이트 아크 (도훈 감사 사양 발행 2026-08-21). [독립성] v5 작성자 Q-Lead는 §0 규칙상 감사 배제 — 사양 원문 보존(… |
-| 603 | L-RAMP-20260822_020000 | momentum | B | FQ-239 R7~R8 (도훈 2026-08-22 '발전 가이드대로 팩터 모멘텀에서 발전'). prereg dfa_v9_prereg_20260822 + 측정-전 … |
-| 604 | L-RAMP-20260822_040000 | momentum | B | FQ-239 R10~R13 (도훈 '모멘텀 후속 연구' + '문헌 반영 발전 라운드'). prereg dfa_v11/v12 + 측정-전 amendment. [R1… |
-| 605 | L-RAMP-20260822_120000 | momentum | F | FQ-239 R14 + 독립 적대검증(6-agent 워크플로우) 결과 §15~17 핵심 주장 2건 철회. [철회 1 — oos] A5E oos 0.706 통과는 … |
-| 606 | L-RAMP-20260822_134500 | factor_timing_allocation | F | DFA_RegimeSignals R18~R20: 감쇠 기전 분해가 구속 게이트를 신호층에서 배포 형태층으로 옮겼다. R18 3분해(broad-21, 완결월 247… |
-| 607 | L-RAMP-20260822_140701 | factor_timing_allocation | F | DFA_RegimeSignals R21~R22: 변동성 상승의 귀속이 두 개의 가중-규칙 축을 사전에 배제했고, 남은 하나를 측정해 기각했다. R21 2x2 반사… |
-| 608 | L-RAMP-20260822_144529 | factor_timing_allocation | F | DFA_RegimeSignals R23~R25: 게이트 계층 순서가 틀렸음이 드러났고, 동시에 이전 라운드의 축 폐쇄 선언 하나가 철회됐다. [R23 — 노출 축… |
-| 609 | L-RAMP-20260822_173112 | factor_timing_allocation | F | DFA_RegimeSignals 아크 측정 종료(R35~R45). 구성 축 6회 · 노출 축 4회 · 신호 선택 1회 전수 측정 후 판정 3건이 확정됐다. [판정… |
-| 610 | L-RAMP-20260822_184930 | factor_timing_allocation | F | FR Track2 배분 규칙(compute_regime_module_weights)은 모듈 수가 많으면 정적 risk-parity 로 붕괴한다. 21 팩터지수 적… |
+| 550 | L-RAMP-20260618_131316 | overlay_regime | F | [failure-ledger/INV-7] 순진한 국면틸트(CAUTION/CRISIS서 방어군 1.5x·공격군 0.5x 고정룰) 역효과: net_sr −0.151 … |
+| 551 | L-RAMP-20260618_131316B | infra_process | C | factor_db 316 전수 sweep + 풀 479 PCA: standalone long-only PORT_t>1 인 단일팩터 0/316. 직교성은 gross… |
+| 552 | L-RAMP-20260618_131316C | infra_process | B | 11 직교 약신호군 EW 조합 + 회전제어(13.1→7.8x) → long-only net_sr +0.083(양수), port_t +0.21. 개별군 전부 음수(… |
+| 553 | L-RAMP-20260618_131800 | infra_process | B | Gate6 iteration: 최고=M0_smooth net_sr=+0.083 port_t=+0.21 TO=7.8 (기준 M0_EW −0.04). 회전제어=핵심레… |
+| 554 | L-RAMP-20260618_134000 | value | C | regime-cash 오버레이(CRISIS 0.3/CAUTION 0.6)를 M_regime_dd에 얹으니 net_sr +0.110→−0.105 악화. 원인=측정창… |
+| 555 | L-RAMP-20260618_140528 | ? | B | Round1 고레버리지: best=H3_regdd_conviction net_sr=+0.110 port_t=+0.26 oos=-1.067 (직전 +0.110). … |
+| 556 | L-RAMP-20260618_142650 | overlay_regime | A | ★유의 달성: RAMP M-code(11직교군+데이터구동 regime, top-25 long-only net) port_t(NW)=2.39 vs EW-univer… |
+| 557 | L-RAMP-20260618_175207 | infra_process | A | Graduation 시도: best=M_regdd port_t=3.66 oos_reten=0.15 calmar=0.37 DSR=3.24 (vs EW-uni). 게… |
+| 558 | L-RAMP-20260619_070753 | overlay_regime | B | 가이드북 Gate6-8 정식구현(역할 M0-M4 + drift 플래그 + 인베스터 레짐배분). Gate9: INVESTOR OOS active IR -0.192 … |
+| 559 | L-RAMP-20260619_081702 | overlay_regime | B | 팩터군 보강(2005-2026 전체 316팩터). equal-weight 316=희석 붕괴(pt 0.82) → IC-가중 composite가 해소: oos_ret… |
+| 560 | L-RAMP-20260619_103729 | overlay_regime | A | 미배선 Absorption Ratio(Kritzman 2010, 횡단면 상관 top15 고유값 분산비=시장동조화) 엔진을 RAMP에 배선. 헌법 §3.5 정합 s… |
+| 561 | L-RAMP-20260619_105903 | ? | A | 자율 자가발전: AR-soft 배선 위 {AR/AR+MSM}×{monthly/quarterly} 4변형. best=AR+MSM_quarterly pt_capwt … |
+| 562 | L-RAMP-20260619_132312 | momentum | A | 국면엔진 리서치풀 14개(인프라7:Cascade/AR/MSM/MRS9/Jump/Forecaster/hard4 + 신규리서치4:Trend/RealizedVol/Dr… |
+| 563 | L-RAMP-20260619_135237 | overlay_regime | B | 제약완화(도훈): active-only 제약 풀고 Gate8 soft 타이밍(Cascade Category 노출스케줄 1.0/0.7/0.4, 헌법 Σa≤1 허용·… |
+| 564 | L-RAMP-20260619_140656 | ml_complexity | B | 국면엔진 강화 3종 전부 Cascade 단독(pt 2.85) 미달: 순진앙상블 2.61·스마트앙상블(트레일링IR가중) 2.65·multi-axis 경제분업 2.7… |
+| 565 | L-RAMP-20260619_141402 | momentum | B | 새 국면엔진 설계(최신페이퍼 Shu-Mulvey 2024 arXiv 2410.14841 per-factor Sparse Jump Model): 각 군 IC시계열에… |
+| 566 | L-RAMP-20260619_193015 | overlay_regime | F | 도훈 'DPL 해보고 RAMP_02 로직 돌파법 최대추론'. 추론: RAMP_02 엣지=broad base 작은tilt timing, 25종목=집중 → compo… |
+| 567 | L-RAMP-20260620_103109 | momentum | B | ★새 접근 성공(도훈 '기존 틀말고 새 접근'): 25종목서 OOS 양수+calmar 통과하는 첫 배포가능 전략. ★결정적 발견(alpha OOS probe): … |
+| 568 | L-RAMP-20260620_104415 | momentum | B | ★도훈 교정 검증(국면조건부 다차원 블렌딩 > 정적 모멘텀-중심): 내 'momentum이 유일 생존알파' 프레임은 *무조건부 OOS*만 본 좁은 시각. Valu… |
+| 569 | L-RAMP-20260620_132802 | overlay_regime | C | 도훈 'FWL+국면엔진 개발진행'. ★내 'FWL이 최대 미사용 레버' 단언 측정이 반박(과신 정정). blanket FWL(전팩터 size중립화)=Size팩터(… |
+| 570 | L-RAMP-20260620_161507 | momentum | A | ★도훈 goal 달성: 정직 실측으로 현 Book 초과 포트 발굴. 8-구성요소 grid(3024 config, 공유캐시 병렬) 탐색→robust 승자 selec… |
+| 571 | L-RAMP-20260620_171915 | overlay_regime | A | 도훈 옵션2(Book을 factor로 흡수 재최적화, 25종목준수). ★전제정정: 직전 '31종목 결합 Book초과'는 25종목 위반(book20∪sleeve25… |
+| 572 | L-RAMP-20260620_184509 | momentum | F | ★중대 PIT 정정: 옵션2 book-흡수 '25종목 beat'(book_momcons pt 3.05)와 construction(book_base 6.73)은 L… |
+| 573 | L-RAMP-20260620_184815 | momentum | A | ★PIT-클린 25종목 Book 돌파 회복(구성요소 g=cap-weight 강화, look-ahead 제거 후). book score(shift0 PIT-veri… |
+| 574 | L-RAMP-20260620_185554 | momentum | A | ★8-구성요소 전수 강화 종합(도훈 goal '25종목 BOOK 성과돌파', PIT-클린). 각 레버 결과: z(raw best, FWL refuted)·R국면(… |
+| 575 | L-RAMP-20260705_184828 | overlay_regime | B | RAMP R1 잔차-직교 sleeve 스태킹 실측 — DIST-RAMP-006 '미검증' 프론티어 측정(프레임: canonical top-25 EW long-on… |
+| 576 | L-RAMP-20260705_191446 | infra_process | B | RAMP R2 Track A top-N 민감도(N∈{15,20,25}, 15bps 고정, envelope-안) — R1 음성 재확인. N축소가 IS PORT_t … |
+| 577 | L-RAMP-20260705_191446_02 | ml_complexity | B | RAMP R2 Track B 국면조건부 lightgbm 앙상블(11 직교 sleeve + regime soft-membership → forward return,… |
+| 578 | L-RAMP-20260711_152314 | value | B | RAMP R3 — 지정 재도전 경로 2개(A tail 방어 sleeve / B V02_EP EW-가중 sleeve)를 국면-IC 가중 base(M_regdd, o… |
+| 579 | L-RAMP-20260711_181539 | ml_complexity | F | RAMP R4 Boruta 팩터-존 축소 배분(정적 arm S) VALIDATED_NEGATIVE(config-scoped): rolling 학습창(36/60m,… |
+| 580 | L-RAMP-20260711_184155 | ml_complexity | F | RAMP R5(Branch B): 선별-규율 계열(Boruta shadow-null + Stability Selection[glmnet LASSO compleme… |
+| 581 | L-RAMP-20260711_200226 | ? | C | RAMP R6: 선별 기질을 relevance(R4/R5)에서 realized-PORT_t(trailing 배포권 실측 성과)로 교체 = R5 부활신호 발화. 결… |
+| 582 | L-RAMP-20260712_161537 | infra_process | C | RAMP R7 (FQ-015, R6 잔존 frontier ②): 선별 라벨 basis 교체 실험 — trailing 선별 라벨을 cap-w active NW-t(… |
+| 583 | L-RAMP-20260712_175852 | infra_process | C | RAMP R8 (FQ-016) = R7 종결의 판정 절차 보완(re-sweep 아님, n_trials family=20 불변). R7이 R6-best Ppure_… |
+| 584 | L-RAMP-20260713_084821 | infra_process | C | RAMP R10 (FQ-023, 도훈 '비중 결정 통계적 고도화 적용해봤니'): P-pure(W36_K20) 동일가중(종목 EW × 팩터 EW)을 알파/점수-비례… |
+| 585 | L-RAMP-20260713_093129 | ? | C | RAMP R11 (FQ-024, 도훈 'P-pure 더 발전시켜봐'): P-pure(W36_K20)의 바인딩 실패=oos·post-2017 감쇠 추적을 세 독립 … |
+| 586 | L-RAMP-20260713_100638 | ? | C | RAMP R12 (FQ-025, 도훈 mandate — R11 next_probe 수렴점 소비 '퇴출 빠르게·진입 엄격하게'): P-pure(W36_K20) 감쇠… |
+| 587 | L-RAMP-20260713_102944 | ? | F | RAMP R13 (FQ-026) = R12 메타진단 축전환 소비: construction 4축(비중2.930·vintage2.895·신선도2.852·비대칭퇴출2.… |
+| 588 | L-RAMP-20260713_110343 | ? | F | RAMP R14 퇴출 결합(FQ-027): R12 F-1(순위 퇴출·cap-w 2.937)과 R13 D-2(감쇠 퇴출·oos+0.045) 트리거를 AND/OR 결… |
+| 589 | L-RAMP-20260713_112544 | ? | F | RAMP R15 충원(fill) 규율 축(FQ-028, R14 next_probe 1순위 소비): 퇴출 트리거를 챔피언 F-1(순위-단독)에 고정하고 빈 슬롯 충… |
+| 590 | L-RAMP-20260713_211037 | momentum | B | ★RAMP_03C(book+mom6 cap-weight) 단일 config 재현 = DEMOTED(재현 실패). FQ-018 감사의 A급 원장 유일 명목 HARD… |
+| 591 | L-RAMP-20260713_213904 | infra_process | F | ★RAMP_03C EW/score-tilt variant book-marginal ΔIR 진단(#65 next_probe 2 소비) = blend 기여 없음, c… |
+| 592 | L-RAMP-20260715_004100 | flow_supply | F | RAMP R9 insider 확장 패널 × PORT_t-정렬 선별 (FQ-019, 선별-규율 아크 R4~R15 잔존 frontier ① 소비 — 비-수익 subs… |
+| 593 | L-RAMP-20260715_015734 | flow_supply | C | insider 소비면 전환(R9 next_probe P1): 선별/필터 3면(R9 pool-선별·A net-seller exclusion paired t=-0.0… |
+| 594 | L-RAMP-20260715_022534 | low_vol | C | insider net-buy 클러스터(INS02 z>=+1.0) monitoring tripwire 배선 + 북-레벨 de-risk 진단(R33 P1 소비). 북… |
+| 595 | L-RAMP-20260715_040901 | overlay_regime | B | insider net-buy SAFE 청산-타이밍 대칭검정 (R38/FQ-052, R34 P3/R37 P1 소비). SAFE 진입 정보성(R33/R34 확립)이 … |
+| 596 | L-RAMP-20260715_043643 | flow_supply | B | [monitoring 배선] R39 FQ-053 insider SAFE_FADING 상태전이 tripwire 실배선 (R38 P2 소비, wiring 태스크·새 … |
+| 597 | L-RAMP-20260715_053646 | flow_supply | B | [monitoring 배선 refine] R41 FQ-053 insider SAFE_FADING horizon-bounded 실배선 (R40 P1 소비, wiri… |
+| 598 | L-RAMP-20260715_055418 | flow_supply | B | [monitoring 배선 — live OOS 추적] R42 FQ-053 P2 insider SAFE/SAFE_FADING live 발화 종목 익월 실현위험 OO… |
+| 599 | L-RAMP-20260715_070019 | infra_process | B | [데이터무결성 방화벽 배선] R44 FQ-054 R1+R4 — R43 적발 'canonical 입력단 Ret winsorize 방화벽 부재'(물리불가 Ret 통과… |
+| 600 | L-RAMP-20260715_072549 | infra_process | B | [데이터무결성 근원진단] R45 FQ-054 P3 — R44가 남긴 'stored Ret vs recompute max|Δ|=4.86(non-universe mi… |
+| 601 | L-RAMP-20260715_075509 | infra_process | B | [데이터무결성 배선정련] R46 FQ-054 P2+P3 — R45 근원 지식(date-gap 불일치=Close 시계열 구멍 span recompute 스퓨리어스·… |
+| 602 | L-RAMP-20260717_195731 | infra_process | B | [데이터무결성 근원수리] R47 R46-P1 — R46 tripwire가 특정한 218 source-seam Close 구멍을 KRX 백필로 실수리. ★rawda… |
+| 603 | L-RAMP-20260802_204804 | flow_supply | C | insider INS_MAGQ3 보조 tripwire 증분 = 기각. 그러나 본 과제보다 큰 관측가능성 결함(R43-F1)을 적발·수리했다. ① 증분 판정 UND… |
+| 604 | L-RAMP-20260820_212848 | low_vol | F | FQ-239 P0-2 (도훈 mandate 2026-08-20 자본졸업 루프 착수 게이트). run_ramp_shumulvey.R bt()(:179-199)와 _… |
+| 605 | L-RAMP-20260820_221500 | low_vol | C | FQ-239 (도훈 mandate 자본졸업 루프, prereg smv_v5_prereg_20260820, pin smv_r2_20260820). 보정 회계(월말 … |
+| 606 | L-RAMP-20260821_073500 | low_vol | F | FQ-239 라운드 2 (도훈 지시 2026-08-21 '피처·오버레이·하네스 튜닝'). prereg smv_v6_prereg_20260821 (34셀 전수, a… |
+| 607 | L-RAMP-20260821_080500 | low_vol | C | FQ-239 R3 자동 사이클 (도훈 2026-08-21). prereg smv_v7_prereg_20260821 (측정-전 기록 + amendment_2 측정-… |
+| 608 | L-RAMP-20260821_103000 | low_vol | B | FQ-239 감사·설계게이트 아크 (도훈 감사 사양 발행 2026-08-21). [독립성] v5 작성자 Q-Lead는 §0 규칙상 감사 배제 — 사양 원문 보존(… |
+| 609 | L-RAMP-20260822_020000 | momentum | B | FQ-239 R7~R8 (도훈 2026-08-22 '발전 가이드대로 팩터 모멘텀에서 발전'). prereg dfa_v9_prereg_20260822 + 측정-전 … |
+| 610 | L-RAMP-20260822_040000 | momentum | B | FQ-239 R10~R13 (도훈 '모멘텀 후속 연구' + '문헌 반영 발전 라운드'). prereg dfa_v11/v12 + 측정-전 amendment. [R1… |
+| 611 | L-RAMP-20260822_120000 | momentum | F | FQ-239 R14 + 독립 적대검증(6-agent 워크플로우) 결과 §15~17 핵심 주장 2건 철회. [철회 1 — oos] A5E oos 0.706 통과는 … |
+| 612 | L-RAMP-20260822_134500 | factor_timing_allocation | F | DFA_RegimeSignals R18~R20: 감쇠 기전 분해가 구속 게이트를 신호층에서 배포 형태층으로 옮겼다. R18 3분해(broad-21, 완결월 247… |
+| 613 | L-RAMP-20260822_140701 | factor_timing_allocation | F | DFA_RegimeSignals R21~R22: 변동성 상승의 귀속이 두 개의 가중-규칙 축을 사전에 배제했고, 남은 하나를 측정해 기각했다. R21 2x2 반사… |
+| 614 | L-RAMP-20260822_144529 | factor_timing_allocation | F | DFA_RegimeSignals R23~R25: 게이트 계층 순서가 틀렸음이 드러났고, 동시에 이전 라운드의 축 폐쇄 선언 하나가 철회됐다. [R23 — 노출 축… |
+| 615 | L-RAMP-20260822_173112 | factor_timing_allocation | F | DFA_RegimeSignals 아크 측정 종료(R35~R45). 구성 축 6회 · 노출 축 4회 · 신호 선택 1회 전수 측정 후 판정 3건이 확정됐다. [판정… |
+| 616 | L-RAMP-20260822_184930 | factor_timing_allocation | F | FR Track2 배분 규칙(compute_regime_module_weights)은 모듈 수가 많으면 정적 risk-parity 로 붕괴한다. 21 팩터지수 적… |
 
 ### regime_research
 
 | # | L-code | family | grade | 요지 |
 |---|--------|--------|-------|------|
-| 611 | L-RR-20260704_114303 | value | F | KR book(STR_1715_AR_on_M4_R05_overlay_PG2) 인버스 ETF(-1x 114800/-2x 252670) 헤지 슬리브 전면 REJECT… |
+| 617 | L-RR-20260704_114303 | value | F | KR book(STR_1715_AR_on_M4_R05_overlay_PG2) 인버스 ETF(-1x 114800/-2x 252670) 헤지 슬리브 전면 REJECT… |
 
 ### reinforcement
 
 | # | L-code | family | grade | 요지 |
 |---|--------|--------|-------|------|
-| 612 | L-RF-20260829_142955 | momentum | ? | CJL1996 의 핵심 주장 'neither momentum strategy subsumes the other'(가격모멘텀·이익 서프라이즈 상호 비포섭)는 KR … |
-| 613 | L-RF-20260829_152717 | momentum | ? | 기저 F 의 귀속은 '숏 레그' 도 '집중 형태' 도 아니라 **신호**다. 4셀 직교 분해(신호·보유·EW·비용 전셀 6-6 고정, 259월): 축 A(숏 레그… |
-| 614 | L-RF-20260829_163417 | momentum | ? | LS2000 모멘텀 생애주기는 KR 승자 사이드에서 성립하지 않는다 — 사전등록 1급·2급 동시 기각, 처분 reject. 1급(승자 데실 내부 회전율 층화 스프… |
-| 615 | L-RF-20260829_190619 | value_momentum | C | AMP2013 value-momentum 결합의 KR 이식 — **essence C**(권위, forge). 5조건 전부 미달: PORT_t 0.646(<2.95… |
-| 616 | L-RF-20260829_193556 | momentum | C | EL2022 팩터 모멘텀의 KR 검정 — essence C (0/5). PORT_t 1.002 · OOS retention -0.780(분할 -0.484/-0.7… |
-| 617 | L-RF-20260829_193556_02 | momentum | C | GH2004 52주 신고가 근접도의 KR 검정 — essence C (0/5). PORT_t 0.6364 · OOS -0.693(분할 -0.561/-0.693/-… |
-| 618 | L-RF-20260829_195704 | momentum | C | DM2016/BSC2015 모멘텀 크래시 관리의 KR 적용 — essence C (0/5). PORT_t 0.7547 · OOS -0.660 · SR 0.5699… |
-| 619 | L-RF-20260829_224532 | momentum | ? | ★착수 전 검정력 게이트가 처음으로 발화해 라운드를 중단시켰다 — 측정 예산을 쓰기 전에. DGW2014 frog-in-the-pan(일별 축 정보 회수)을 8/… |
-| 620 | L-RF-20260830_182834 | ? | B | [B1 multifactor] 5칸 실측 — 최고 B1_5 다중검정t 2.241 · 칼마 0.320 · 등급 A0/B1/C2/F2. 칼마 최고 0.32 — 낙폭 … |
-| 621 | L-RF-20260830_182834_02 | ? | C | [B2 weighting] 5칸 실측 — 최고 B2_7 다중검정t 0.569 · 칼마 0.214 · 등급 A0/B0/C1/F4. 직전 최고 B1_5(2.241) … |
-| 622 | L-RF-20260830_184746 | ? | B | [B3 universe] 5칸 실측 — 최고 B3_12 다중검정t 2.630 · 칼마 0.338 · 등급 A0/B2/C3/F0. 직전 최고 B1_5(2.241) … |
-| 623 | L-RF-20260830_195606 | ? | B | [B4 combination] 5칸 실측 — 최고 B4_18 다중검정t 2.630 · 칼마 0.338 · 등급 A0/B1/C2/F2. 직전 최고 B3_12(2.6… |
-| 624 | L-RF-20260830_203345 | overlay_regime | F | [B5 risk_overlay] 5칸 실측 — 최고 B5_24 다중검정t -1.253 · 칼마 0.141 · 등급 A0/B0/C0/F5. 직전 최고 B3_12(2… |
-| 625 | L-RF-20260830_233034 | ? | B | [B1 multifactor] 5칸 실측 — 최고 B1_5 다중검정t 2.251 · 칼마 0.305 · 등급 A0/B1/C3/F1. 낙폭이 축을 바꿔도 60~68… |
-| 626 | L-RF-20260830_235334 | ? | F | [B2 weighting] 5칸 실측 — 최고 B2_7 다중검정t -0.090 · 칼마 0.185 · 등급 A0/B0/C0/F5. 직전 최고 B1_5(2.251)… |
-| 627 | L-RF-20260831_001629 | ? | B | [B3 universe] 4칸 실측 — 최고 B3_12 다중검정t 2.251 · 칼마 0.305 · 등급 A0/B1/C3/F0. 직전 최고 B1_5(2.251) … |
-| 628 | L-RF-20260831_082400 | ? | B | [B4 combination] 5칸 실측 — 최고 B4_18 다중검정t 2.251 · 칼마 0.305 · 등급 A0/B1/C2/F2. 직전 최고 B1_5(2.25… |
-| 629 | L-RF-20260831_093256 | ? | C | [B1 multifactor] 4칸 실측 — 최고 B1_1 다중검정t 0.814 · 칼마 0.194 · 등급 A0/B0/C3/F1. 칼마 최고 0.19 — 낙폭 … |
-| 630 | L-RF-20260831_103953 | ? | F | [B2 weighting] 5칸 실측 — 최고 B2_7 다중검정t -0.562 · 칼마 0.161 · 등급 A0/B0/C0/F5. 직전 최고 B1_1(0.814)… |
-| 631 | L-RF-20260831_105459 | ? | C | [B3 universe] 4칸 실측 — 최고 B3_14 다중검정t 1.750 · 칼마 0.273 · 등급 A0/B0/C4/F0. 직전 최고 B1_1(0.814) … |
-| 632 | L-RF-20260831_114822 | ? | C | [B4 combination] 5칸 실측 — 최고 B4_19 다중검정t 1.064 · 칼마 0.259 · 등급 A0/B0/C2/F3. 직전 최고 B3_14(1.7… |
-| 633 | L-RF-20260831_132029 | overlay_regime | F | [B5 risk_overlay] 5칸 실측 — 최고 B5_24 다중검정t -1.202 · 칼마 0.138 · 등급 A0/B0/C0/F5. 직전 최고 B3_14(1… |
-| 634 | L-RF-20260831_174413 | ? | C | [B1 multifactor] 5칸 실측 — 최고 B1_5 다중검정t 1.074 · 칼마 0.141 · 등급 A0/B0/C2/F3. 칼마 최고 0.14 — 낙폭 … |
-| 635 | L-RF-20260831_180129 | ? | C | [B2 weighting] 5칸 실측 — 최고 B2_8 다중검정t 1.073 · 칼마 0.230 · 등급 A0/B0/C4/F1. 직전 최고 B1_5(1.074) … |
-| 636 | L-RF-20260831_181652 | ? | C | [B3 universe] 5칸 실측 — 최고 B3_14 다중검정t 1.191 · 칼마 0.181 · 등급 A0/B0/C5/F0. 직전 최고 B1_5(1.074) … |
-| 637 | L-RF-20260831_183600 | ? | C | [B4 combination] 3칸 실측 — 최고 B4_16 다중검정t 0.310 · 칼마 0.198 · 등급 A0/B0/C2/F1. 직전 최고 B3_14(1.1… |
-| 638 | L-RF-20260831_190237 | overlay_regime | F | [B5 risk_overlay] 5칸 실측 — 최고 B5_24 다중검정t -0.098 · 칼마 0.175 · 등급 A0/B0/C0/F5. 직전 최고 B3_14(1… |
-| 639 | L-RF-20260831_205809 | ? | C | [B1 multifactor] 5칸 실측 — 최고 B1_5 다중검정t 1.813 · 칼마 0.259 · 등급 A0/B0/C3/F2. 칼마 최고 0.26 — 낙폭 … |
-| 640 | L-RF-20260831_211842 | ? | C | [B2 weighting] 5칸 실측 — 최고 B2_7 다중검정t 1.725 · 칼마 0.304 · 등급 A0/B0/C4/F1. 직전 최고 B1_5(1.813) … |
-| 641 | L-RF-20260831_213406 | ? | C | [B3 universe] 5칸 실측 — 최고 B3_11 다중검정t 1.697 · 칼마 0.325 · 등급 A0/B0/C4/F1. 직전 최고 B1_5(1.813) … |
-| 642 | L-RF-20260831_222134 | overlay_regime | C | [B5 risk_overlay] 5칸 실측 — 최고 B5_24 다중검정t 1.014 · 칼마 0.251 · 등급 A0/B0/C3/F2. 직전 최고 B1_5(1.8… |
-| 643 | L-RF-20260901_152722 | ? | C | [B1 multifactor] 5칸 실측 — 최고 B1_4 다중검정t 1.103 · 칼마 0.218 · 등급 A0/B0/C4/F1. 칼마 최고 0.22 — 낙폭 … |
-| 644 | L-RF-20260901_162704 | ? | F | [B2 weighting] 5칸 실측 — 최고 B2_7 다중검정t -0.636 · 칼마 0.160 · 등급 A0/B0/C0/F5. 직전 최고 B1_4(1.103)… |
-| 645 | L-RF-20260901_165529 | ? | C | [B3 universe] 5칸 실측 — 최고 B3_11 다중검정t 0.654 · 칼마 0.163 · 등급 A0/B0/C3/F2. 직전 최고 B1_4(1.103) … |
-| 646 | L-RF-20260901_171829 | overlay_regime | F | [B5 risk_overlay] 5칸 실측 — 최고 B5_19 다중검정t -0.919 · 칼마 0.136 · 등급 A0/B0/C0/F5. 직전 최고 B1_4(1.… |
-| 647 | L-RF-20260902_135628 | ? | C | [B1 multifactor] 5칸 실측 — 최고 B1_4 다중검정t 0.911 · 칼마 0.288 · 등급 A0/B0/C3/F2. 낙폭이 축을 바꿔도 53~63… |
-| 648 | L-RF-20260902_143033 | ? | C | [B2 weighting] 5칸 실측 — 최고 B2_7 다중검정t 0.882 · 칼마 0.270 · 등급 A0/B0/C5/F0. 직전 최고 B1_4(0.911) … |
-| 649 | L-RF-20260902_145143 | ? | C | [B3 universe] 5칸 실측 — 최고 B3_13 다중검정t 1.170 · 칼마 0.293 · 등급 A0/B0/C3/F2. 직전 최고 B1_4(0.911) … |
-| 650 | L-RF-20260902_184933 | overlay_regime | C | [B5 risk_overlay] 5칸 실측 — 최고 B5_19 다중검정t 1.071 · 칼마 0.274 · 등급 A0/B0/C5/F0. 직전 최고 B3_13(1.… |
-| 651 | L-RF-20260902_191232 | ? | C | [B4 combination] 4칸 실측 — 최고 B4_25 다중검정t 1.228 · 칼마 0.311 · 등급 A0/B0/C2/F2. 직전 최고 B3_13(1.1… |
-| 652 | L-RF-20260902_193325 | ? | C | [B1 multifactor] 5칸 실측 — 최고 B1_4 다중검정t 0.862 · 칼마 0.232 · 등급 A0/B0/C4/F1. 낙폭이 축을 바꿔도 56~60… |
-| 653 | L-RF-20260902_194620 | ? | C | [B2 weighting] 5칸 실측 — 최고 B2_7 다중검정t 0.666 · 칼마 0.217 · 등급 A0/B0/C5/F0. 직전 최고 B1_4(0.862) … |
-| 654 | L-RF-20260902_200354 | ? | C | [B3 universe] 5칸 실측 — 최고 B3_13 다중검정t 1.081 · 칼마 0.241 · 등급 A0/B0/C3/F2. 직전 최고 B1_4(0.862) … |
-| 655 | L-RF-20260902_201645 | overlay_regime | C | [B5 risk_overlay] 5칸 실측 — 최고 B5_19 다중검정t 0.681 · 칼마 0.225 · 등급 A0/B0/C3/F2. 직전 최고 B3_13(1.… |
-| 656 | L-RF-20260902_203350 | ? | C | [B4 combination] 2칸 실측 — 최고 B4_23 다중검정t 0.680 · 칼마 0.246 · 등급 A0/B0/C2/F0. 직전 최고 B3_13(1.0… |
-| 657 | L-RF-20260902_213647 | ? | C | [B1 multifactor] 5칸 실측 — 최고 B1_1 다중검정t 0.036 · 칼마 0.215 · 등급 A0/B0/C1/F4. 낙폭이 축을 바꿔도 51~61… |
-| 658 | L-RF-20260902_215126 | ? | F | [B2 weighting] 5칸 실측 — 최고 B2_7 다중검정t -0.006 · 칼마 0.213 · 등급 A0/B0/C0/F5. 직전 최고 B1_1(0.036)… |
-| 659 | L-RF-20260902_215952 | ? | C | [B3 universe] 5칸 실측 — 최고 B3_11 다중검정t 1.410 · 칼마 0.331 · 등급 A0/B0/C3/F2. 직전 최고 B1_1(0.036) … |
-| 660 | L-RF-20260902_220612 | overlay_regime | C | [B5 risk_overlay] 5칸 실측 — 최고 B5_19 다중검정t 0.997 · 칼마 0.309 · 등급 A0/B0/C5/F0. 직전 최고 B3_11(1.… |
-| 661 | L-RF-20260902_221455 | ? | F | [B4 combination] 1칸 실측 — 최고 B4_24 다중검정t -0.451 · 칼마 0.213 · 등급 A0/B0/C0/F1. 직전 최고 B3_11(1.… |
-| 662 | L-RF-20260903_083313 | ? | C | [B1 multifactor] 5칸 실측 — 최고 B1_4 다중검정t 0.764 · 칼마 0.169 · 등급 A0/B0/C5/F0. 낙폭이 축을 바꿔도 67~71… |
-| 663 | L-RF-20260903_084433 | ? | C | [B2 weighting] 5칸 실측 — 최고 B2_7 다중검정t 0.789 · 칼마 0.170 · 등급 A0/B0/C4/F1. 직전 최고 B1_4(0.764) … |
-| 664 | L-RF-20260903_085940 | ? | C | [B3 universe] 5칸 실측 — 최고 B3_11 다중검정t 1.110 · 칼마 0.266 · 등급 A0/B0/C3/F2. 직전 최고 B2_7(0.789) … |
-| 665 | L-RF-20260903_091456 | overlay_regime | C | [B5 risk_overlay] 5칸 실측 — 최고 B5_19 다중검정t 0.738 · 칼마 0.244 · 등급 A0/B0/C3/F2. 직전 최고 B3_11(1.… |
-| 666 | L-RF-20260903_092946 | ? | C | [B4 combination] 1칸 실측 — 최고 B4_24 다중검정t 0.406 · 칼마 0.152 · 등급 A0/B0/C1/F0. 직전 최고 B3_11(1.1… |
-| 667 | L-RF-20260903_101512 | ? | C | [B1 multifactor] 5칸 실측 — 최고 B1_4 다중검정t 0.177 · 칼마 0.153 · 등급 A0/B0/C1/F4. 낙폭이 축을 바꿔도 64~67… |
-| 668 | L-RF-20260903_102611 | ? | C | [B2 weighting] 5칸 실측 — 최고 B2_6 다중검정t 0.134 · 칼마 0.158 · 등급 A0/B0/C3/F2. 직전 최고 B1_4(0.177) … |
-| 669 | L-RF-20260903_104110 | ? | C | [B3 universe] 5칸 실측 — 최고 B3_12 다중검정t 0.324 · 칼마 0.162 · 등급 A0/B0/C1/F4. 직전 최고 B1_4(0.177) … |
-| 670 | L-RF-20260903_104831 | overlay_regime | F | [B5 risk_overlay] 5칸 실측 — 최고 B5_19 다중검정t -0.117 · 칼마 0.148 · 등급 A0/B0/C0/F5. 직전 최고 B3_12(0… |
-| 671 | L-RF-20260903_105750 | ? | F | [B4 combination] 5칸 실측 — 최고 B4_24 다중검정t -0.354 · 칼마 0.143 · 등급 A0/B0/C0/F5. 직전 최고 B3_12(0.… |
-| 672 | L-RF-20260903_152756 | ? | C | [B1 multifactor] 5칸 실측 — 최고 B1_5 다중검정t 1.578 · 칼마 0.275 · 등급 A0/B0/C5/F0. 낙폭이 축을 바꿔도 57~65… |
-| 673 | L-RF-20260903_153707 | ? | C | [B2 weighting] 5칸 실측 — 최고 B2_6 다중검정t 0.967 · 칼마 0.231 · 등급 A0/B0/C5/F0. 직전 최고 B1_5(1.578) … |
-| 674 | L-RF-20260903_154442 | ? | C | [B3 universe] 5칸 실측 — 최고 B3_13 다중검정t 1.275 · 칼마 0.260 · 등급 A0/B0/C4/F1. 직전 최고 B1_5(1.578) … |
-| 675 | L-RF-20260903_155118 | overlay_regime | C | [B5 risk_overlay] 5칸 실측 — 최고 B5_20 다중검정t 0.716 · 칼마 0.212 · 등급 A0/B0/C2/F3. 직전 최고 B1_5(1.5… |
-| 676 | L-RF-20260903_160050 | ? | C | [B4 combination] 5칸 실측 — 최고 B4_25 다중검정t 1.077 · 칼마 0.250 · 등급 A0/B0/C3/F2. 직전 최고 B1_5(1.57… |
-| 677 | L-RF-20260903_215344 | ? | C | [B1 multifactor] 5칸 실측 — 최고 B1_2 다중검정t 0.754 · 칼마 0.159 · 등급 A0/B0/C5/F0. 낙폭이 축을 바꿔도 67~74… |
-| 678 | L-RF-20260904_081651 | ? | C | [B2 weighting] 5칸 실측 — 최고 B2_6 다중검정t 0.766 · 칼마 0.158 · 등급 A0/B0/C5/F0. 직전 최고 B1_2(0.754) … |
-| 679 | L-RF-20260904_082522 | ? | C | [B3 universe] 5칸 실측 — 최고 B3_11 다중검정t 0.314 · 칼마 0.137 · 등급 A0/B0/C3/F2. 직전 최고 B2_6(0.766) … |
-| 680 | L-RF-20260904_083345 | overlay_regime | C | [B5 risk_overlay] 5칸 실측 — 최고 B5_17 다중검정t 0.605 · 칼마 0.180 · 등급 A0/B0/C2/F3. 직전 최고 B2_6(0.7… |
-| 681 | L-RF-20260904_084213 | ? | F | [B4 combination] 4칸 실측 — 최고 B4_22 다중검정t -0.044 · 칼마 0.155 · 등급 A0/B0/C0/F4. 직전 최고 B2_6(0.7… |
-| 682 | L-RF-20260904_122401 | overlay_regime | C | [B5 risk_overlay] 5칸 실측 — 최고 B5_17 다중검정t 1.163 · 칼마 0.402 · 등급 A0/B0/C3/F2. 직전 최고 B1_4(1.4… |
-| 683 | L-RF-20260904_123854 | ? | C | [B2 weighting] 5칸 실측 — 최고 B2_7 다중검정t 1.472 · 칼마 0.410 · 등급 A0/B0/C5/F0. 직전 최고 B1_4(1.454) … |
-| 684 | L-RF-20260904_124229 | ? | C | [B1 multifactor] 14칸 실측 — 최고 B1_4 다중검정t 1.454 · 칼마 0.400 · 등급 A0/B0/C10/F4. 칼마 최고 0.40 — 낙… |
-| 685 | L-RF-20260904_124816 | ? | C | [B3 universe] 5칸 실측 — 최고 B3_11 다중검정t 1.147 · 칼마 0.319 · 등급 A0/B0/C4/F1. 직전 최고 B2_7(1.472) … |
-| 686 | L-RF-20260904_125641 | ? | C | [B4 combination] 2칸 실측 — 최고 B4_24 다중검정t 1.167 · 칼마 0.417 · 등급 A0/B0/C2/F0. 직전 최고 B2_7(1.47… |
-| 687 | L-RF-20260904_182647 | ? | C | [B1 multifactor] 15칸 실측 — 최고 B1_10 다중검정t 1.951 · 칼마 0.319 · 등급 A0/B0/C14/F1. 낙폭이 축을 바꿔도 55… |
-| 688 | L-RF-20260904_193643 | overlay_regime | C | [B5 risk_overlay] 6칸 실측 — 최고 B5_18 다중검정t 1.971 · 칼마 0.357 · 등급 A0/B0/C6/F0. 직전 최고 B1_10(1.… |
-| 689 | L-RF-20260904_194435 | ? | B | [B2 weighting] 5칸 실측 — 최고 B2_6 다중검정t 2.109 · 칼마 0.388 · 등급 A0/B3/C2/F0. 직전 최고 B5_18(1.971)… |
-| 690 | L-RF-20260904_200044 | ? | C | [B3 universe] 4칸 실측 — 최고 B3_11 다중검정t 1.584 · 칼마 0.317 · 등급 A0/B0/C4/F0. 직전 최고 B2_6(2.109) … |
-| 691 | L-RF-20260904_201605 | ? | C | [B4 combination] 3칸 실측 — 최고 B4_25 다중검정t 1.719 · 칼마 0.301 · 등급 A0/B0/C3/F0. 직전 최고 B2_6(2.10… |
-| 692 | L-RF-20260904_204419 | ? | B | [B1 multifactor] 5칸 실측 — 최고 B1_2 다중검정t 2.171 · 칼마 0.351 · 등급 A0/B3/C2/F0. 낙폭이 축을 바꿔도 55~60… |
-| 693 | L-RF-20260904_205939 | overlay_regime | B | [B5 risk_overlay] 5칸 실측 — 최고 B5_17 다중검정t 2.025 · 칼마 0.372 · 등급 A0/B1/C4/F0. 직전 최고 B1_2(2.1… |
-| 694 | L-RF-20260904_212507 | ? | C | [B2 weighting] 5칸 실측 — 최고 B2_7 다중검정t -0.127 · 칼마 0.181 · 등급 A0/B0/C5/F0. 직전 최고 B1_2(2.171)… |
-| 695 | L-RF-20260904_213903 | ? | C | [B3 universe] 4칸 실측 — 최고 B3_13 다중검정t 1.886 · 칼마 0.325 · 등급 A0/B0/C4/F0. 직전 최고 B1_2(2.171) … |
-| 696 | L-RF-20260904_220226 | ? | B | [B4 combination] 5칸 실측 — 최고 B4_25 다중검정t 2.009 · 칼마 0.335 · 등급 A0/B1/C4/F0. 직전 최고 B1_2(2.17… |
-| 697 | L-RF-20260904_223318 | ? | B | [B1 multifactor] 5칸 실측 — 최고 B1_1 다중검정t 2.280 · 칼마 0.364 · 등급 A0/B1/C4/F0. 낙폭이 축을 바꿔도 57~61… |
-| 698 | L-RF-20260905_090856 | overlay_regime | C | [B5 risk_overlay] 5칸 실측 — 최고 B5_17 다중검정t 1.966 · 칼마 0.398 · 등급 A0/B0/C5/F0. 직전 최고 B1_1(2.2… |
-| 699 | L-RF-20260905_093424 | ? | C | [B2 weighting] 3칸 실측 — 최고 B2_8 다중검정t 1.989 · 칼마 0.379 · 등급 A0/B0/C3/F0. 직전 최고 B1_1(2.280) … |
-| 700 | L-RF-20260905_102006 | ? | B | [B3 universe] 4칸 실측 — 최고 B3_12 다중검정t 2.567 · 칼마 0.499 · 등급 A0/B1/C3/F0. 직전 최고 B1_1(2.280) … |
-| 701 | L-RF-20260905_104629 | ? | C | [B4 combination] 3칸 실측 — 최고 B4_23 다중검정t 1.209 · 칼마 0.400 · 등급 A0/B0/C3/F0. 직전 최고 B3_12(2.5… |
-| 702 | L-RF-20260905_113751 | ? | B | [B1 multifactor] 9칸 실측 — 최고 B1_3 다중검정t 2.553 · 칼마 0.389 · 등급 A0/B6/C3/F0. 낙폭이 축을 바꿔도 56~63… |
-| 703 | L-RF-20260905_115930 | overlay_regime | B | [B5 risk_overlay] 6칸 실측 — 최고 B5_21 다중검정t 2.327 · 칼마 0.373 · 등급 A0/B3/C3/F0. 직전 최고 B1_3(2.5… |
-| 704 | L-RF-20260905_123245 | ? | B | [B2 weighting] 6칸 실측 — 최고 B2_10 다중검정t 2.526 · 칼마 0.389 · 등급 A0/B3/C3/F0. 직전 최고 B1_3(2.553)… |
-| 705 | L-RF-20260905_124845 | ? | C | [B3 universe] 3칸 실측 — 최고 B3_15 다중검정t 1.743 · 칼마 0.287 · 등급 A0/B0/C3/F0. 직전 최고 B1_3(2.553) … |
-| 706 | L-RF-20260905_130617 | ? | B | [B4 combination] 5칸 실측 — 최고 B4_24 다중검정t 2.260 · 칼마 0.426 · 등급 A0/B1/C4/F0. 직전 최고 B1_3(2.55… |
-| 707 | L-RF-20260905_192114 | ? | C | [B1 multifactor] 9칸 실측 — 최고 B1_2 다중검정t 1.567 · 칼마 0.266 · 등급 A0/B0/C9/F0. 낙폭이 축을 바꿔도 60~69… |
-| 708 | L-RF-20260905_193559 | overlay_regime | C | [B5 risk_overlay] 5칸 실측 — 최고 B5_20 다중검정t 1.582 · 칼마 0.290 · 등급 A0/B0/C5/F0. 직전 최고 B1_2(1.5… |
-| 709 | L-RF-20260905_195232 | ? | C | [B2 weighting] 5칸 실측 — 최고 B2_7 다중검정t 1.441 · 칼마 0.290 · 등급 A0/B0/C5/F0. 직전 최고 B5_20(1.582)… |
-| 710 | L-RF-20260905_200635 | ? | C | [B3 universe] 4칸 실측 — 최고 B3_13 다중검정t 1.588 · 칼마 0.311 · 등급 A0/B0/C4/F0. 직전 최고 B5_20(1.582)… |
-| 711 | L-RF-20260905_201528 | ? | B | [B4 combination] 3칸 실측 — 최고 B4_25 다중검정t 2.128 · 칼마 0.355 · 등급 A0/B1/C2/F0. 직전 최고 B3_13(1.5… |
-| 712 | L-RF-20260905_210445 | ? | B | [B1 multifactor] 8칸 실측 — 최고 B1_5 다중검정t 2.265 · 칼마 0.344 · 등급 A0/B2/C6/F0. 낙폭이 축을 바꿔도 55~66… |
-| 713 | L-RF-20260905_212102 | overlay_regime | C | [B5 risk_overlay] 4칸 실측 — 최고 B5_19 다중검정t 1.929 · 칼마 0.351 · 등급 A0/B0/C4/F0. 직전 최고 B1_5(2.2… |
-| 714 | L-RF-20260905_213747 | ? | B | [B2 weighting] 5칸 실측 — 최고 B2_10 다중검정t 2.749 · 칼마 0.366 · 등급 A0/B2/C3/F0. 직전 최고 B1_5(2.265)… |
-| 715 | L-RF-20260905_215306 | ? | C | [B3 universe] 4칸 실측 — 최고 B3_13 다중검정t 1.334 · 칼마 0.269 · 등급 A0/B0/C4/F0. 직전 최고 B2_10(2.749)… |
-| 716 | L-RF-20260905_220844 | ? | C | [B4 combination] 5칸 실측 — 최고 B4_25 다중검정t 1.811 · 칼마 0.283 · 등급 A0/B0/C5/F0. 직전 최고 B2_10(2.7… |
-| 717 | L-RF-20260905_225052 | ? | B | [B1 multifactor] 10칸 실측 — 최고 B1_1 다중검정t 2.650 · 칼마 0.362 · 등급 A0/B6/C4/F0. 낙폭이 축을 바꿔도 63~7… |
-| 718 | L-RF-20260905_230546 | overlay_regime | B | [B5 risk_overlay] 5칸 실측 — 최고 B5_18 다중검정t 2.485 · 칼마 0.388 · 등급 A0/B4/C1/F0. 직전 최고 B1_1(2.6… |
-| 719 | L-RF-20260906_191608 | ? | B | [B2 weighting] 4칸 실측 — 최고 B2_10 다중검정t 2.107 · 칼마 0.344 · 등급 A0/B1/C3/F0. 직전 최고 B1_1(2.650)… |
-| 720 | L-RF-20260906_210805 | ? | B | [B3 universe] 4칸 실측 — 최고 B3_13 다중검정t 2.093 · 칼마 0.305 · 등급 A0/B1/C3/F0. 직전 최고 B1_1(2.650) … |
-| 721 | L-RF-20260906_212419 | ? | B | [B4 combination] 5칸 실측 — 최고 B4_24 다중검정t 2.031 · 칼마 0.391 · 등급 A0/B1/C4/F0. 직전 최고 B1_1(2.65… |
-| 722 | L-RF-20260907_005001 | ? | C | [B1 multifactor] 9칸 실측 — 최고 B1_4 다중검정t 1.585 · 칼마 0.299 · 등급 A0/B0/C8/F1. 낙폭이 축을 바꿔도 51~63… |
-| 723 | L-RF-20260907_010439 | overlay_regime | C | [B5 risk_overlay] 5칸 실측 — 최고 B5_20 다중검정t 1.564 · 칼마 0.299 · 등급 A0/B0/C5/F0. 직전 최고 B1_4(1.5… |
-| 724 | L-RF-20260907_041652 | ? | C | [B2 weighting] 5칸 실측 — 최고 B2_6 다중검정t 1.794 · 칼마 0.323 · 등급 A0/B0/C5/F0. 직전 최고 B1_4(1.585) … |
-| 725 | L-RF-20260907_044020 | ? | B | [B3 universe] 5칸 실측 — 최고 B3_13 다중검정t 2.162 · 칼마 0.349 · 등급 A0/B2/C2/F1. 직전 최고 B2_6(1.794) … |
-| 726 | L-RF-20260907_050717 | ? | C | [B1 multifactor] 8칸 실측 — 최고 B1_8 다중검정t 1.636 · 칼마 0.315 · 등급 A0/B0/C8/F0. 낙폭이 축을 바꿔도 55~62… |
-| 727 | L-RF-20260907_052805 | overlay_regime | C | [B5 risk_overlay] 6칸 실측 — 최고 B5_19 다중검정t 1.397 · 칼마 0.315 · 등급 A0/B0/C6/F0. 직전 최고 B1_8(1.6… |
-| 728 | L-RF-20260907_091341 | ? | C | [B2 weighting] 5칸 실측 — 최고 B2_9 다중검정t 1.518 · 칼마 0.313 · 등급 A0/B0/C5/F0. 직전 최고 B1_8(1.636) … |
-| 729 | L-RF-20260907_092836 | ? | C | [B3 universe] 4칸 실측 — 최고 B3_13 다중검정t 1.635 · 칼마 0.313 · 등급 A0/B0/C4/F0. 직전 최고 B1_8(1.636) … |
-| 730 | L-RF-20260907_094000 | ? | C | [B4 combination] 5칸 실측 — 최고 B4_22 다중검정t 1.807 · 칼마 0.408 · 등급 A0/B0/C5/F0. 직전 최고 B1_8(1.63… |
-| 731 | L-RF-20260912_170118 | ? | C | [B1 multifactor] 9칸 실측 — 최고 B1_5 다중검정t 1.275 · 칼마 0.246 · 등급 A0/B0/C9/F0. 낙폭이 축을 바꿔도 66~73… |
-| 732 | L-RF-20260912_171557 | overlay_regime | C | [B5 risk_overlay] 5칸 실측 — 최고 B5_20 다중검정t 1.748 · 칼마 0.292 · 등급 A0/B0/C5/F0. 직전 최고 B1_5(1.2… |
-| 733 | L-RF-20260912_174349 | ? | B | [B3 universe] 5칸 실측 — 최고 B3_13 다중검정t 2.071 · 칼마 0.340 · 등급 A0/B2/C3/F0. 직전 최고 B5_20(1.748)… |
-| 734 | L-RF-20260912_175312 | ? | C | [B4 combination] 2칸 실측 — 최고 B4_25 다중검정t 1.726 · 칼마 0.267 · 등급 A0/B0/C2/F0. 직전 최고 B3_13(2.0… |
-| 735 | L-RF-20260912_181435 | ? | C | [B1 multifactor] 6칸 실측 — 최고 B1_1 다중검정t 1.748 · 칼마 0.292 · 등급 A0/B0/C6/F0. 낙폭이 축을 바꿔도 69~73… |
-| 736 | L-RF-20260912_182320 | overlay_regime | C | [B5 risk_overlay] 5칸 실측 — 최고 B5_16 다중검정t 1.716 · 칼마 0.305 · 등급 A0/B0/C5/F0. 직전 최고 B1_1(1.7… |
-| 737 | L-RF-20260912_185911 | ? | B | [B3 universe] 6칸 실측 — 최고 B3_13 다중검정t 2.071 · 칼마 0.340 · 등급 A0/B3/C3/F0. 직전 최고 B4_21(2.002)… |
-| 738 | L-RF-20260913_003410 | ? | C | [B1 multifactor] 10칸 실측 — 최고 B1_10 다중검정t 0.611 · 칼마 0.231 · 등급 A0/B0/C8/F2. 칼마 최고 0.23 — 낙… |
-| 739 | L-RF-20260913_005935 | ? | C | [B2 weighting] 6칸 실측 — 최고 B2_9 다중검정t 0.610 · 칼마 0.248 · 등급 A0/B0/C6/F0. 직전 최고 B1_10(0.611)… |
-| 740 | L-RF-20260913_011229 | ? | C | [B3 universe] 3칸 실측 — 최고 B3_13 다중검정t 0.133 · 칼마 0.161 · 등급 A0/B0/C3/F0. 직전 최고 B1_10(0.611)… |
-| 741 | L-RF-20260913_012340 | overlay_regime | C | [B5 risk_overlay] 4칸 실측 — 최고 B5_19 다중검정t 0.328 · 칼마 0.238 · 등급 A0/B0/C2/F2. 직전 최고 B1_10(0.… |
-| 742 | L-RF-20260913_013827 | ? | C | [B4 combination] 5칸 실측 — 최고 B4_24 다중검정t -0.062 · 칼마 0.253 · 등급 A0/B0/C5/F0. 직전 최고 B1_10(0.… |
-| 743 | L-RF-20260913_024342 | ? | C | [B1 multifactor] 5칸 실측 — 최고 B1_1 다중검정t 0.791 · 칼마 0.244 · 등급 A0/B0/C5/F0. 낙폭이 축을 바꿔도 61~66… |
-| 744 | L-RF-20260913_025653 | ? | C | [B2 weighting] 4칸 실측 — 최고 B2_10 다중검정t 0.845 · 칼마 0.245 · 등급 A0/B0/C4/F0. 직전 최고 B1_1(0.791)… |
-| 745 | L-RF-20260913_032839 | overlay_regime | C | [B5 risk_overlay] 4칸 실측 — 최고 B5_17 다중검정t 0.790 · 칼마 0.259 · 등급 A0/B0/C4/F0. 직전 최고 B2_10(0.… |
-| 746 | L-RF-20260913_033842 | ? | C | [B3 universe] 3칸 실측 — 최고 B3_15 다중검정t -0.612 · 칼마 0.157 · 등급 A0/B0/C2/F1. 직전 최고 B2_10(0.845… |
-| 747 | L-RF-20260913_105813 | ? | B | [B1 multifactor] 9칸 실측 — 최고 B1_3 다중검정t 2.743 · 칼마 0.412 · 등급 A0/B3/C6/F0. 낙폭이 축을 바꿔도 53~62… |
-| 748 | L-RF-20260913_111221 | overlay_regime | B | [B5 risk_overlay] 5칸 실측 — 최고 B5_20 다중검정t 2.519 · 칼마 0.438 · 등급 A0/B4/C1/F0. 직전 최고 B1_3(2.7… |
-| 749 | L-RF-20260913_113608 | ? | B | [B2 weighting] 6칸 실측 — 최고 B2_11 다중검정t 2.823 · 칼마 0.412 · 등급 A0/B5/C1/F0. 직전 최고 B1_3(2.743)… |
-| 750 | L-RF-20260913_120820 | ? | C | [B3 universe] 3칸 실측 — 최고 B3_12 다중검정t 1.848 · 칼마 0.306 · 등급 A0/B0/C3/F0. 직전 최고 B2_11(2.823)… |
-| 751 | L-RF-20260913_124105 | ? | B | [B1 multifactor] 8칸 실측 — 최고 B1_1 다중검정t 3.032 · 칼마 0.470 · 등급 A0/B5/C3/F0. 낙폭이 축을 바꿔도 46~60… |
-| 752 | L-RF-20260913_125802 | overlay_regime | B | [B5 risk_overlay] 5칸 실측 — 최고 B5_20 다중검정t 2.800 · 칼마 0.478 · 등급 A0/B5/C0/F0. 직전 최고 B1_1(3.0… |
-| 753 | L-RF-20260913_131326 | ? | B | [B2 weighting] 4칸 실측 — 최고 B2_10 다중검정t 3.092 · 칼마 0.486 · 등급 A0/B3/C1/F0. 직전 최고 B1_1(3.032)… |
-| 754 | L-RF-20260913_132841 | ? | B | [B3 universe] 4칸 실측 — 최고 B3_14 다중검정t 2.338 · 칼마 0.354 · 등급 A0/B1/C3/F0. 직전 최고 B2_10(3.092)… |
-| 755 | L-RF-20260913_134050 | ? | B | [B4 combination] 5칸 실측 — 최고 B4_25 다중검정t 2.414 · 칼마 0.357 · 등급 A0/B2/C3/F0. 직전 최고 B2_10(3.0… |
-| 756 | L-RF-20260913_141813 | ? | B | [B1 multifactor] 8칸 실측 — 최고 B1_2 다중검정t 3.589 · 칼마 0.477 · 등급 A0/B7/C1/F0. 낙폭이 축을 바꿔도 51~59… |
-| 757 | L-RF-20260913_143429 | overlay_regime | B | [B5 risk_overlay] 5칸 실측 — 최고 B5_20 다중검정t 3.257 · 칼마 0.478 · 등급 A0/B5/C0/F0. 직전 최고 B1_2(3.5… |
-| 758 | L-RF-20260913_145007 | ? | B | [B2 weighting] 4칸 실측 — 최고 B2_10 다중검정t 3.513 · 칼마 0.468 · 등급 A0/B4/C0/F0. 직전 최고 B1_2(3.589)… |
-| 759 | L-RF-20260913_150543 | ? | B | [B3 universe] 3칸 실측 — 최고 B3_12 다중검정t 2.374 · 칼마 0.367 · 등급 A0/B1/C2/F0. 직전 최고 B1_2(3.589) … |
-| 760 | L-RF-20260913_205827 | ? | B | [B4 combination] 5칸 실측 — 최고 B4_24 다중검정t 3.130 · 칼마 0.488 · 등급 A0/B4/C1/F0. 직전 최고 B1_2(3.58… |
-| 761 | L-RF-20260913_212800 | overlay_regime | B | [B5 risk_overlay] 5칸 실측 — 최고 B5_20 다중검정t 2.806 · 칼마 0.483 · 등급 A0/B5/C0/F0. 직전 최고 B1_3(3.1… |
-| 762 | L-RF-20260913_214207 | ? | B | [B1 multifactor] 6칸 실측 — 최고 B1_3 다중검정t 3.133 · 칼마 0.504 · 등급 A0/B6/C0/F0. 직전 최고 B5_20(2.80… |
-| 763 | L-RF-20260913_220034 | ? | C | [B3 universe] 5칸 실측 — 최고 B3_12 다중검정t 1.903 · 칼마 0.352 · 등급 A0/B0/C5/F0. 직전 최고 B1_3(3.133) … |
-| 764 | L-RF-20260913_221408 | ? | C | [B4 combination] 2칸 실측 — 최고 B4_24 다중검정t 1.627 · 칼마 0.482 · 등급 A0/B0/C2/F0. 직전 최고 B1_3(3.13… |
-| 765 | L-RF-20260917_120507 | ? | B | [B1 multifactor] 8칸 실측 — 최고 B1_5 다중검정t 3.202 · 칼마 0.385 · 등급 A0/B5/C3/F0. 낙폭이 축을 바꿔도 54~61… |
-| 766 | L-RF-20260917_191958 | ? | B | [B2 weighting] 6칸 실측 — 최고 B2_7 다중검정t 3.066 · 칼마 0.382 · 등급 A0/B4/C2/F0. 직전 최고 B1_5(3.202) … |
-| 767 | L-RF-20260917_193646 | ? | C | [B3 universe] 3칸 실측 — 최고 B3_14 다중검정t 1.728 · 칼마 0.278 · 등급 A0/B0/C3/F0. 직전 최고 B1_5(3.202) … |
-| 768 | L-RF-20260917_195304 | ? | B | [B4 combination] 5칸 실측 — 최고 B4_24 다중검정t 2.159 · 칼마 0.426 · 등급 A0/B1/C4/F0. 직전 최고 B1_5(3.20… |
-| 769 | L-RF-20260919_024247 | overlay_regime | B | [B5 risk_overlay] 14칸 실측 — 최고 B5_17 다중검정t 3.069 · 칼마 0.385 · 등급 A0/B8/C6/F0. 직전 최고 B1_5(3.… |
-| 770 | L-RF-20260919_031143 | ? | B | [B1 multifactor] 10칸 실측 — 최고 B1_1 다중검정t 3.592 · 칼마 0.457 · 등급 A0/B7/C3/F0. 낙폭이 축을 바꿔도 55~6… |
-| 771 | L-RF-20260919_230728 | overlay_regime | B | [B5 risk_overlay] 8칸 실측 — 최고 B5_17 다중검정t 3.297 · 칼마 0.474 · 등급 A0/B8/C0/F0. 직전 최고 B1_1(3.5… |
-| 772 | L-RF-20260919_232849 | ? | B | [B2 weighting] 8칸 실측 — 최고 B2_13 다중검정t 3.391 · 칼마 0.421 · 등급 A0/B7/C1/F0. 직전 최고 B1_1(3.592)… |
-| 773 | L-RF-20260919_235924 | ? | B | [B3 universe] 5칸 실측 — 최고 B3_12 다중검정t 2.305 · 칼마 0.339 · 등급 A0/B3/C2/F0. 직전 최고 B1_1(3.592) … |
-| 774 | L-RF-20260920_005108 | ? | B | [B1 multifactor] 10칸 실측 — 최고 B1_2 다중검정t 3.806 · 칼마 0.490 · 등급 A0/B10/C0/F0. 낙폭이 축을 바꿔도 50~… |
-| 775 | L-RF-20260921_081957 | overlay_regime | B | [B5 risk_overlay] 7칸 실측 — 최고 B5_16 다중검정t 3.750 · 칼마 0.486 · 등급 A0/B6/C1/F0. 직전 최고 B1_2(3.8… |
-| 776 | L-RF-20260921_085253 | ? | B | [B2 weighting] 8칸 실측 — 최고 B2_12 다중검정t 3.612 · 칼마 0.478 · 등급 A0/B8/C0/F0. 직전 최고 B1_2(3.806)… |
-| 777 | L-RF-20260921_090838 | ? | B | [B3 universe] 4칸 실측 — 최고 B3_12 다중검정t 2.375 · 칼마 0.372 · 등급 A0/B3/C1/F0. 직전 최고 B1_2(3.806) … |
-| 778 | L-RF-20260921_092209 | ? | B | [B4 combination] 4칸 실측 — 최고 B2_12 다중검정t 3.612 · 칼마 0.478 · 등급 A0/B1/C3/F0. 직전 최고 B1_2(3.80… |
-| 779 | L-RF-20260921_093812 | ? | B | [B6 execution_cadence] 3칸 실측 — 최고 B6_32 다중검정t 3.078 · 칼마 0.420 · 등급 A0/B3/C0/F0. 직전 최고 B1_… |
-| 780 | L-RF-20260921_102142 | ? | B | [B1 multifactor] 10칸 실측 — 최고 B1_3 다중검정t 4.349 · 칼마 0.501 · 등급 A0/B10/C0/F0. 낙폭이 축을 바꿔도 52~… |
-| 781 | L-RF-20260921_110617 | overlay_regime | B | [B5 risk_overlay] 8칸 실측 — 최고 B5_20 다중검정t 4.143 · 칼마 0.496 · 등급 A0/B7/C1/F0. 직전 최고 B1_3(4.3… |
-| 782 | L-RF-20260921_114215 | ? | B | [B2 weighting] 8칸 실측 — 최고 B2_11 다중검정t 4.094 · 칼마 0.476 · 등급 A0/B8/C0/F0. 직전 최고 B1_3(4.349)… |
-| 783 | L-RF-20260921_115643 | ? | B | [B3 universe] 5칸 실측 — 최고 B3_12 다중검정t 2.538 · 칼마 0.366 · 등급 A0/B2/C3/F0. 직전 최고 B1_3(4.349) … |
-| 784 | L-RF-20260921_121226 | ? | B | [B6 execution_cadence] 5칸 실측 — 최고 B6_36 다중검정t 4.089 · 칼마 0.468 · 등급 A0/B5/C0/F0. 직전 최고 B1_… |
-| 785 | L-RF-20260921_122641 | ? | C | [B4 combination] 2칸 실측 — 최고 B4_21 다중검정t 1.619 · 칼마 0.362 · 등급 A0/B0/C2/F0. 직전 최고 B1_3(4.34… |
-| 786 | L-RF-20260921_130909 | ? | C | [B1 multifactor] 10칸 실측 — 최고 B1_9 다중검정t 1.971 · 칼마 0.349 · 등급 A0/B0/C9/F1. 낙폭이 축을 바꿔도 53~6… |
-| 787 | L-RF-20260921_134037 | ? | C | [B2 weighting] 9칸 실측 — 최고 B2_9 다중검정t 1.741 · 칼마 0.349 · 등급 A0/B0/C9/F0. 직전 최고 B1_9(1.971) … |
-| 788 | L-RF-20260921_135635 | ? | C | [B3 universe] 5칸 실측 — 최고 B3_11 다중검정t 1.329 · 칼마 0.330 · 등급 A0/B0/C5/F0. 직전 최고 B1_9(1.971) … |
-| 789 | L-RF-20260921_143005 | ? | B | [B1 multifactor] 10칸 실측 — 최고 B1_1 다중검정t 4.167 · 칼마 0.494 · 등급 A0/B10/C0/F0. 낙폭이 축을 바꿔도 54~… |
-| 790 | L-RF-20260921_151447 | overlay_regime | B | [B5 risk_overlay] 5칸 실측 — 최고 B5_17 다중검정t 3.488 · 칼마 0.472 · 등급 A0/B5/C0/F0. 직전 최고 B1_1(4.1… |
-| 791 | L-RF-20260921_153400 | ? | B | [B2 weighting] 5칸 실측 — 최고 B2_10 다중검정t 3.918 · 칼마 0.475 · 등급 A0/B5/C0/F0. 직전 최고 B1_1(4.167)… |
-| 792 | L-RF-20260921_155019 | ? | B | [B3 universe] 3칸 실측 — 최고 B3_15 다중검정t 2.115 · 칼마 0.305 · 등급 A0/B1/C2/F0. 직전 최고 B1_1(4.167) … |
-| 793 | L-RF-20260921_160505 | ? | B | [B6 execution_cadence] 5칸 실측 — 최고 B6_36 다중검정t 4.153 · 칼마 0.492 · 등급 A0/B5/C0/F0. 직전 최고 B1_… |
-| 794 | L-RF-20260921_161947 | ? | B | [B4 combination] 4칸 실측 — 최고 B2_10 다중검정t 3.918 · 칼마 0.475 · 등급 A0/B2/C2/F0. 직전 최고 B1_1(4.16… |
-| 795 | L-RF-20260921_185036 | ? | C | [B6 execution_cadence] 6칸 실측 — 최고 B6_35 다중검정t 1.894 · 칼마 0.318 · 등급 A0/B0/C6/F0. 직전 최고 B1_… |
-| 796 | L-RF-20260921_194448 | overlay_regime | C | [B5 risk_overlay] 7칸 실측 — 최고 B5_16 다중검정t 1.736 · 칼마 0.374 · 등급 A0/B0/C7/F0. 직전 최고 B1_9(1.9… |
-| 797 | L-RF-20260921_200247 | ? | C | [B4 combination] 4칸 실측 — 최고 B2_9 다중검정t 1.741 · 칼마 0.349 · 등급 A0/B0/C4/F0. 직전 최고 B1_9(1.971… |
-| 798 | L-RF-20260921_204520 | ? | C | [B1 multifactor] 10칸 실측 — 최고 B1_6 다중검정t 1.704 · 칼마 0.290 · 등급 A0/B0/C10/F0. 낙폭이 축을 바꿔도 58~… |
-| 799 | L-RF-20260921_210516 | defense | C | [B7 structural_defense] 5칸 실측 — 최고 B7_37 다중검정t 1.116 · 칼마 0.262 · 등급 A0/B0/C5/F0. 직전 최고 B1… |
-| 800 | L-RF-20260921_220556 | overlay_regime | C | [B5 risk_overlay] 9칸 실측 — 최고 B5_18 다중검정t 1.326 · 칼마 0.351 · 등급 A0/B0/C9/F0. 직전 최고 B1_6(1.7… |
-| 801 | L-RF-20260921_223459 | ? | C | [B2 weighting] 6칸 실측 — 최고 B2_7 다중검정t 1.573 · 칼마 0.289 · 등급 A0/B0/C6/F0. 직전 최고 B1_6(1.704) … |
-| 802 | L-RF-20260921_225123 | ? | C | [B3 universe] 4칸 실측 — 최고 B3_11 다중검정t 1.293 · 칼마 0.362 · 등급 A0/B0/C3/F1. 직전 최고 B1_6(1.704) … |
-| 803 | L-RF-20260921_230928 | ? | C | [B6 execution_cadence] 5칸 실측 — 최고 B6_34 다중검정t 1.476 · 칼마 0.278 · 등급 A0/B0/C5/F0. 직전 최고 B1_… |
-| 804 | L-RF-20260921_232548 | ? | C | [B4 combination] 5칸 실측 — 최고 B4_25 다중검정t 1.546 · 칼마 0.407 · 등급 A0/B0/C5/F0. 직전 최고 B1_6(1.70… |
-| 805 | L-RF-20260922_003305 | ? | B | [B1 multifactor] 11칸 실측 — 최고 B1_3 다중검정t 2.097 · 칼마 0.320 · 등급 A0/B1/C10/F0. 칼마 최고 0.34 — 낙… |
-| 806 | L-RF-20260922_005007 | defense | C | [B7 structural_defense] 5칸 실측 — 최고 B7_37 다중검정t 1.457 · 칼마 0.296 · 등급 A0/B0/C5/F0. 직전 최고 B1… |
-| 807 | L-RF-20260922_013801 | overlay_regime | B | [B5 risk_overlay] 8칸 실측 — 최고 B5_18 다중검정t 2.305 · 칼마 0.364 · 등급 A0/B1/C7/F0. 직전 최고 B1_3(2.0… |
-| 808 | L-RF-20260922_015953 | ? | B | [B2 weighting] 6칸 실측 — 최고 B2_11 다중검정t 2.166 · 칼마 0.361 · 등급 A0/B4/C2/F0. 직전 최고 B5_18(2.305… |
-| 809 | L-RF-20260922_022546 | ? | B | [B6 execution_cadence] 5칸 실측 — 최고 B6_42 다중검정t 2.399 · 칼마 0.413 · 등급 A0/B4/C1/F0. 직전 최고 B5_… |
-| 810 | L-RF-20260922_023948 | ? | C | [B3 universe] 6칸 실측 — 최고 B3_13 다중검정t 1.631 · 칼마 0.324 · 등급 A0/B0/C6/F0. 직전 최고 B6_42(2.399)… |
-| 811 | L-RF-20260922_032228 | ? | B | [B1 multifactor] 10칸 실측 — 최고 B1_8 다중검정t 3.535 · 칼마 0.496 · 등급 A0/B8/C2/F0. 낙폭이 축을 바꿔도 46~5… |
-| 812 | L-RF-20260922_033921 | defense | B | [B7 structural_defense] 5칸 실측 — 최고 B7_37 다중검정t 2.910 · 칼마 0.437 · 등급 A0/B4/C1/F0. 직전 최고 B1… |
-| 813 | L-RF-20260922_042908 | overlay_regime | B | [B5 risk_overlay] 9칸 실측 — 최고 B5_20 다중검정t 3.195 · 칼마 0.493 · 등급 A0/B8/C1/F0. 직전 최고 B1_8(3.5… |
-| 814 | L-RF-20260923_152811 | ? | B | [B2 weighting] 8칸 실측 — 최고 B2_7 다중검정t 3.547 · 칼마 0.491 · 등급 A0/B8/C0/F0. 직전 최고 B1_8(3.535) … |
-| 815 | L-RF-20260923_155032 | ? | B | [B3 universe] 5칸 실측 — 최고 B3_12 다중검정t 2.619 · 칼마 0.366 · 등급 A0/B2/C3/F0. 직전 최고 B2_7(3.547) … |
-| 816 | L-RF-20260923_160642 | ? | B | [B6 execution_cadence] 5칸 실측 — 최고 B6_36 다중검정t 3.599 · 칼마 0.493 · 등급 A0/B4/C1/F0. 직전 최고 B2_… |
-| 817 | L-RF-20260923_162029 | ? | C | [B4 combination] 1칸 실측 — 최고 B4_22 다중검정t 1.367 · 칼마 0.448 · 등급 A0/B0/C1/F0. 직전 최고 B6_36(3.5… |
-| 818 | L-RF-20260923_170116 | ? | B | [B1 multifactor] 7칸 실측 — 최고 B1_1 다중검정t 3.402 · 칼마 0.543 · 등급 A0/B6/C1/F0. 낙폭이 축을 바꿔도 47~57… |
-| 819 | L-RF-20260923_172033 | defense | B | [B7 structural_defense] 5칸 실측 — 최고 B7_37 다중검정t 2.882 · 칼마 0.491 · 등급 A0/B5/C0/F0. 직전 최고 B1… |
-| 820 | L-RF-20260923_194649 | overlay_regime | B | [B5 risk_overlay] 9칸 실측 — 최고 B5_17 다중검정t 3.298 · 칼마 0.533 · 등급 A0/B7/C2/F0. 직전 최고 B1_1(3.4… |
-| 821 | L-RF-20260923_204658 | ? | B | [B3 universe] 3칸 실측 — 최고 B3_12 다중검정t 2.321 · 칼마 0.344 · 등급 A0/B2/C1/F0. 직전 최고 B1_1(3.402) … |
-| 822 | L-RF-20260923_210633 | ? | B | [B6 execution_cadence] 5칸 실측 — 최고 B6_36 다중검정t 3.559 · 칼마 0.537 · 등급 A0/B4/C1/F0. 직전 최고 B1_… |
-| 823 | L-RF-20260923_212816 | ? | B | [B2 weighting] 9칸 실측 — 최고 B2_9 다중검정t 3.294 · 칼마 0.504 · 등급 A0/B9/C0/F0. 직전 최고 B6_36(3.559)… |
-| 824 | L-RF-20260924_000528 | ? | C | [B1 multifactor] 8칸 실측 — 최고 B1_3 다중검정t 0.763 · 칼마 0.258 · 등급 A0/B0/C6/F2. 낙폭이 축을 바꿔도 54~64… |
-| 825 | L-RF-20260924_011003 | ? | C | [B3 universe] 4칸 실측 — 최고 B3_13 다중검정t 0.846 · 칼마 0.246 · 등급 A0/B0/C4/F0. 직전 최고 B1_3(0.763) … |
-| 826 | L-RF-20260924_012955 | ? | C | [B6 execution_cadence] 5칸 실측 — 최고 B6_33 다중검정t 1.481 · 칼마 0.291 · 등급 A0/B0/C5/F0. 직전 최고 B3_… |
-| 827 | L-RF-20260924_022958 | overlay_regime | C | [B5 risk_overlay] 9칸 실측 — 최고 B5_16 다중검정t 1.370 · 칼마 0.290 · 등급 A0/B0/C9/F0. 직전 최고 B6_33(1.… |
-| 828 | L-RF-20260924_033001 | defense | C | [B7 structural_defense] 5칸 실측 — 최고 B7_39 다중검정t 0.988 · 칼마 0.270 · 등급 A0/B0/C5/F0. 직전 최고 B6… |
-| 829 | L-RF-20260924_034311 | ? | C | [B2 weighting] 8칸 실측 — 최고 B2_9 다중검정t 0.676 · 칼마 0.254 · 등급 A0/B0/C8/F0. 직전 최고 B6_33(1.481)… |
-| 830 | L-RF-20260924_061831 | ? | C | [B1 multifactor] 11칸 실측 — 최고 B1_7 다중검정t 1.865 · 칼마 0.318 · 등급 A0/B0/C11/F0. 낙폭이 축을 바꿔도 58~… |
-| 831 | L-RF-20260924_063921 | ? | B | [B2 weighting] 6칸 실측 — 최고 B2_10 다중검정t 2.007 · 칼마 0.343 · 등급 A0/B1/C5/F0. 직전 최고 B1_7(1.865)… |
-| 832 | L-RF-20260924_065022 | ? | C | [B3 universe] 4칸 실측 — 최고 B3_12 다중검정t 0.315 · 칼마 0.198 · 등급 A0/B0/C3/F1. 직전 최고 B2_10(2.007)… |
-| 833 | L-RF-20260924_070403 | ? | C | [B6 execution_cadence] 5칸 실측 — 최고 B6_36 다중검정t 1.331 · 칼마 0.277 · 등급 A0/B0/C5/F0. 직전 최고 B2_… |
-| 834 | L-RF-20260925_233320 | defense | C | [B7 structural_defense] 5칸 실측 — 최고 B7_41 다중검정t 1.026 · 칼마 0.247 · 등급 A0/B0/C5/F0. 직전 최고 B2… |
+| 618 | L-RF-20260829_142955 | momentum | ? | CJL1996 의 핵심 주장 'neither momentum strategy subsumes the other'(가격모멘텀·이익 서프라이즈 상호 비포섭)는 KR … |
+| 619 | L-RF-20260829_152717 | momentum | ? | 기저 F 의 귀속은 '숏 레그' 도 '집중 형태' 도 아니라 **신호**다. 4셀 직교 분해(신호·보유·EW·비용 전셀 6-6 고정, 259월): 축 A(숏 레그… |
+| 620 | L-RF-20260829_163417 | momentum | ? | LS2000 모멘텀 생애주기는 KR 승자 사이드에서 성립하지 않는다 — 사전등록 1급·2급 동시 기각, 처분 reject. 1급(승자 데실 내부 회전율 층화 스프… |
+| 621 | L-RF-20260829_190619 | value_momentum | C | AMP2013 value-momentum 결합의 KR 이식 — **essence C**(권위, forge). 5조건 전부 미달: PORT_t 0.646(<2.95… |
+| 622 | L-RF-20260829_193556 | momentum | C | EL2022 팩터 모멘텀의 KR 검정 — essence C (0/5). PORT_t 1.002 · OOS retention -0.780(분할 -0.484/-0.7… |
+| 623 | L-RF-20260829_193556_02 | momentum | C | GH2004 52주 신고가 근접도의 KR 검정 — essence C (0/5). PORT_t 0.6364 · OOS -0.693(분할 -0.561/-0.693/-… |
+| 624 | L-RF-20260829_195704 | momentum | C | DM2016/BSC2015 모멘텀 크래시 관리의 KR 적용 — essence C (0/5). PORT_t 0.7547 · OOS -0.660 · SR 0.5699… |
+| 625 | L-RF-20260829_224532 | momentum | ? | ★착수 전 검정력 게이트가 처음으로 발화해 라운드를 중단시켰다 — 측정 예산을 쓰기 전에. DGW2014 frog-in-the-pan(일별 축 정보 회수)을 8/… |
+| 626 | L-RF-20260830_182834 | ? | B | [B1 multifactor] 5칸 실측 — 최고 B1_5 다중검정t 2.241 · 칼마 0.320 · 등급 A0/B1/C2/F2. 칼마 최고 0.32 — 낙폭 … |
+| 627 | L-RF-20260830_182834_02 | ? | C | [B2 weighting] 5칸 실측 — 최고 B2_7 다중검정t 0.569 · 칼마 0.214 · 등급 A0/B0/C1/F4. 직전 최고 B1_5(2.241) … |
+| 628 | L-RF-20260830_184746 | ? | B | [B3 universe] 5칸 실측 — 최고 B3_12 다중검정t 2.630 · 칼마 0.338 · 등급 A0/B2/C3/F0. 직전 최고 B1_5(2.241) … |
+| 629 | L-RF-20260830_195606 | ? | B | [B4 combination] 5칸 실측 — 최고 B4_18 다중검정t 2.630 · 칼마 0.338 · 등급 A0/B1/C2/F2. 직전 최고 B3_12(2.6… |
+| 630 | L-RF-20260830_203345 | overlay_regime | F | [B5 risk_overlay] 5칸 실측 — 최고 B5_24 다중검정t -1.253 · 칼마 0.141 · 등급 A0/B0/C0/F5. 직전 최고 B3_12(2… |
+| 631 | L-RF-20260830_233034 | ? | B | [B1 multifactor] 5칸 실측 — 최고 B1_5 다중검정t 2.251 · 칼마 0.305 · 등급 A0/B1/C3/F1. 낙폭이 축을 바꿔도 60~68… |
+| 632 | L-RF-20260830_235334 | ? | F | [B2 weighting] 5칸 실측 — 최고 B2_7 다중검정t -0.090 · 칼마 0.185 · 등급 A0/B0/C0/F5. 직전 최고 B1_5(2.251)… |
+| 633 | L-RF-20260831_001629 | ? | B | [B3 universe] 4칸 실측 — 최고 B3_12 다중검정t 2.251 · 칼마 0.305 · 등급 A0/B1/C3/F0. 직전 최고 B1_5(2.251) … |
+| 634 | L-RF-20260831_082400 | ? | B | [B4 combination] 5칸 실측 — 최고 B4_18 다중검정t 2.251 · 칼마 0.305 · 등급 A0/B1/C2/F2. 직전 최고 B1_5(2.25… |
+| 635 | L-RF-20260831_093256 | ? | C | [B1 multifactor] 4칸 실측 — 최고 B1_1 다중검정t 0.814 · 칼마 0.194 · 등급 A0/B0/C3/F1. 칼마 최고 0.19 — 낙폭 … |
+| 636 | L-RF-20260831_103953 | ? | F | [B2 weighting] 5칸 실측 — 최고 B2_7 다중검정t -0.562 · 칼마 0.161 · 등급 A0/B0/C0/F5. 직전 최고 B1_1(0.814)… |
+| 637 | L-RF-20260831_105459 | ? | C | [B3 universe] 4칸 실측 — 최고 B3_14 다중검정t 1.750 · 칼마 0.273 · 등급 A0/B0/C4/F0. 직전 최고 B1_1(0.814) … |
+| 638 | L-RF-20260831_114822 | ? | C | [B4 combination] 5칸 실측 — 최고 B4_19 다중검정t 1.064 · 칼마 0.259 · 등급 A0/B0/C2/F3. 직전 최고 B3_14(1.7… |
+| 639 | L-RF-20260831_132029 | overlay_regime | F | [B5 risk_overlay] 5칸 실측 — 최고 B5_24 다중검정t -1.202 · 칼마 0.138 · 등급 A0/B0/C0/F5. 직전 최고 B3_14(1… |
+| 640 | L-RF-20260831_174413 | ? | C | [B1 multifactor] 5칸 실측 — 최고 B1_5 다중검정t 1.074 · 칼마 0.141 · 등급 A0/B0/C2/F3. 칼마 최고 0.14 — 낙폭 … |
+| 641 | L-RF-20260831_180129 | ? | C | [B2 weighting] 5칸 실측 — 최고 B2_8 다중검정t 1.073 · 칼마 0.230 · 등급 A0/B0/C4/F1. 직전 최고 B1_5(1.074) … |
+| 642 | L-RF-20260831_181652 | ? | C | [B3 universe] 5칸 실측 — 최고 B3_14 다중검정t 1.191 · 칼마 0.181 · 등급 A0/B0/C5/F0. 직전 최고 B1_5(1.074) … |
+| 643 | L-RF-20260831_183600 | ? | C | [B4 combination] 3칸 실측 — 최고 B4_16 다중검정t 0.310 · 칼마 0.198 · 등급 A0/B0/C2/F1. 직전 최고 B3_14(1.1… |
+| 644 | L-RF-20260831_190237 | overlay_regime | F | [B5 risk_overlay] 5칸 실측 — 최고 B5_24 다중검정t -0.098 · 칼마 0.175 · 등급 A0/B0/C0/F5. 직전 최고 B3_14(1… |
+| 645 | L-RF-20260831_205809 | ? | C | [B1 multifactor] 5칸 실측 — 최고 B1_5 다중검정t 1.813 · 칼마 0.259 · 등급 A0/B0/C3/F2. 칼마 최고 0.26 — 낙폭 … |
+| 646 | L-RF-20260831_211842 | ? | C | [B2 weighting] 5칸 실측 — 최고 B2_7 다중검정t 1.725 · 칼마 0.304 · 등급 A0/B0/C4/F1. 직전 최고 B1_5(1.813) … |
+| 647 | L-RF-20260831_213406 | ? | C | [B3 universe] 5칸 실측 — 최고 B3_11 다중검정t 1.697 · 칼마 0.325 · 등급 A0/B0/C4/F1. 직전 최고 B1_5(1.813) … |
+| 648 | L-RF-20260831_222134 | overlay_regime | C | [B5 risk_overlay] 5칸 실측 — 최고 B5_24 다중검정t 1.014 · 칼마 0.251 · 등급 A0/B0/C3/F2. 직전 최고 B1_5(1.8… |
+| 649 | L-RF-20260901_152722 | ? | C | [B1 multifactor] 5칸 실측 — 최고 B1_4 다중검정t 1.103 · 칼마 0.218 · 등급 A0/B0/C4/F1. 칼마 최고 0.22 — 낙폭 … |
+| 650 | L-RF-20260901_162704 | ? | F | [B2 weighting] 5칸 실측 — 최고 B2_7 다중검정t -0.636 · 칼마 0.160 · 등급 A0/B0/C0/F5. 직전 최고 B1_4(1.103)… |
+| 651 | L-RF-20260901_165529 | ? | C | [B3 universe] 5칸 실측 — 최고 B3_11 다중검정t 0.654 · 칼마 0.163 · 등급 A0/B0/C3/F2. 직전 최고 B1_4(1.103) … |
+| 652 | L-RF-20260901_171829 | overlay_regime | F | [B5 risk_overlay] 5칸 실측 — 최고 B5_19 다중검정t -0.919 · 칼마 0.136 · 등급 A0/B0/C0/F5. 직전 최고 B1_4(1.… |
+| 653 | L-RF-20260902_135628 | ? | C | [B1 multifactor] 5칸 실측 — 최고 B1_4 다중검정t 0.911 · 칼마 0.288 · 등급 A0/B0/C3/F2. 낙폭이 축을 바꿔도 53~63… |
+| 654 | L-RF-20260902_143033 | ? | C | [B2 weighting] 5칸 실측 — 최고 B2_7 다중검정t 0.882 · 칼마 0.270 · 등급 A0/B0/C5/F0. 직전 최고 B1_4(0.911) … |
+| 655 | L-RF-20260902_145143 | ? | C | [B3 universe] 5칸 실측 — 최고 B3_13 다중검정t 1.170 · 칼마 0.293 · 등급 A0/B0/C3/F2. 직전 최고 B1_4(0.911) … |
+| 656 | L-RF-20260902_184933 | overlay_regime | C | [B5 risk_overlay] 5칸 실측 — 최고 B5_19 다중검정t 1.071 · 칼마 0.274 · 등급 A0/B0/C5/F0. 직전 최고 B3_13(1.… |
+| 657 | L-RF-20260902_191232 | ? | C | [B4 combination] 4칸 실측 — 최고 B4_25 다중검정t 1.228 · 칼마 0.311 · 등급 A0/B0/C2/F2. 직전 최고 B3_13(1.1… |
+| 658 | L-RF-20260902_193325 | ? | C | [B1 multifactor] 5칸 실측 — 최고 B1_4 다중검정t 0.862 · 칼마 0.232 · 등급 A0/B0/C4/F1. 낙폭이 축을 바꿔도 56~60… |
+| 659 | L-RF-20260902_194620 | ? | C | [B2 weighting] 5칸 실측 — 최고 B2_7 다중검정t 0.666 · 칼마 0.217 · 등급 A0/B0/C5/F0. 직전 최고 B1_4(0.862) … |
+| 660 | L-RF-20260902_200354 | ? | C | [B3 universe] 5칸 실측 — 최고 B3_13 다중검정t 1.081 · 칼마 0.241 · 등급 A0/B0/C3/F2. 직전 최고 B1_4(0.862) … |
+| 661 | L-RF-20260902_201645 | overlay_regime | C | [B5 risk_overlay] 5칸 실측 — 최고 B5_19 다중검정t 0.681 · 칼마 0.225 · 등급 A0/B0/C3/F2. 직전 최고 B3_13(1.… |
+| 662 | L-RF-20260902_203350 | ? | C | [B4 combination] 2칸 실측 — 최고 B4_23 다중검정t 0.680 · 칼마 0.246 · 등급 A0/B0/C2/F0. 직전 최고 B3_13(1.0… |
+| 663 | L-RF-20260902_213647 | ? | C | [B1 multifactor] 5칸 실측 — 최고 B1_1 다중검정t 0.036 · 칼마 0.215 · 등급 A0/B0/C1/F4. 낙폭이 축을 바꿔도 51~61… |
+| 664 | L-RF-20260902_215126 | ? | F | [B2 weighting] 5칸 실측 — 최고 B2_7 다중검정t -0.006 · 칼마 0.213 · 등급 A0/B0/C0/F5. 직전 최고 B1_1(0.036)… |
+| 665 | L-RF-20260902_215952 | ? | C | [B3 universe] 5칸 실측 — 최고 B3_11 다중검정t 1.410 · 칼마 0.331 · 등급 A0/B0/C3/F2. 직전 최고 B1_1(0.036) … |
+| 666 | L-RF-20260902_220612 | overlay_regime | C | [B5 risk_overlay] 5칸 실측 — 최고 B5_19 다중검정t 0.997 · 칼마 0.309 · 등급 A0/B0/C5/F0. 직전 최고 B3_11(1.… |
+| 667 | L-RF-20260902_221455 | ? | F | [B4 combination] 1칸 실측 — 최고 B4_24 다중검정t -0.451 · 칼마 0.213 · 등급 A0/B0/C0/F1. 직전 최고 B3_11(1.… |
+| 668 | L-RF-20260903_083313 | ? | C | [B1 multifactor] 5칸 실측 — 최고 B1_4 다중검정t 0.764 · 칼마 0.169 · 등급 A0/B0/C5/F0. 낙폭이 축을 바꿔도 67~71… |
+| 669 | L-RF-20260903_084433 | ? | C | [B2 weighting] 5칸 실측 — 최고 B2_7 다중검정t 0.789 · 칼마 0.170 · 등급 A0/B0/C4/F1. 직전 최고 B1_4(0.764) … |
+| 670 | L-RF-20260903_085940 | ? | C | [B3 universe] 5칸 실측 — 최고 B3_11 다중검정t 1.110 · 칼마 0.266 · 등급 A0/B0/C3/F2. 직전 최고 B2_7(0.789) … |
+| 671 | L-RF-20260903_091456 | overlay_regime | C | [B5 risk_overlay] 5칸 실측 — 최고 B5_19 다중검정t 0.738 · 칼마 0.244 · 등급 A0/B0/C3/F2. 직전 최고 B3_11(1.… |
+| 672 | L-RF-20260903_092946 | ? | C | [B4 combination] 1칸 실측 — 최고 B4_24 다중검정t 0.406 · 칼마 0.152 · 등급 A0/B0/C1/F0. 직전 최고 B3_11(1.1… |
+| 673 | L-RF-20260903_101512 | ? | C | [B1 multifactor] 5칸 실측 — 최고 B1_4 다중검정t 0.177 · 칼마 0.153 · 등급 A0/B0/C1/F4. 낙폭이 축을 바꿔도 64~67… |
+| 674 | L-RF-20260903_102611 | ? | C | [B2 weighting] 5칸 실측 — 최고 B2_6 다중검정t 0.134 · 칼마 0.158 · 등급 A0/B0/C3/F2. 직전 최고 B1_4(0.177) … |
+| 675 | L-RF-20260903_104110 | ? | C | [B3 universe] 5칸 실측 — 최고 B3_12 다중검정t 0.324 · 칼마 0.162 · 등급 A0/B0/C1/F4. 직전 최고 B1_4(0.177) … |
+| 676 | L-RF-20260903_104831 | overlay_regime | F | [B5 risk_overlay] 5칸 실측 — 최고 B5_19 다중검정t -0.117 · 칼마 0.148 · 등급 A0/B0/C0/F5. 직전 최고 B3_12(0… |
+| 677 | L-RF-20260903_105750 | ? | F | [B4 combination] 5칸 실측 — 최고 B4_24 다중검정t -0.354 · 칼마 0.143 · 등급 A0/B0/C0/F5. 직전 최고 B3_12(0.… |
+| 678 | L-RF-20260903_152756 | ? | C | [B1 multifactor] 5칸 실측 — 최고 B1_5 다중검정t 1.578 · 칼마 0.275 · 등급 A0/B0/C5/F0. 낙폭이 축을 바꿔도 57~65… |
+| 679 | L-RF-20260903_153707 | ? | C | [B2 weighting] 5칸 실측 — 최고 B2_6 다중검정t 0.967 · 칼마 0.231 · 등급 A0/B0/C5/F0. 직전 최고 B1_5(1.578) … |
+| 680 | L-RF-20260903_154442 | ? | C | [B3 universe] 5칸 실측 — 최고 B3_13 다중검정t 1.275 · 칼마 0.260 · 등급 A0/B0/C4/F1. 직전 최고 B1_5(1.578) … |
+| 681 | L-RF-20260903_155118 | overlay_regime | C | [B5 risk_overlay] 5칸 실측 — 최고 B5_20 다중검정t 0.716 · 칼마 0.212 · 등급 A0/B0/C2/F3. 직전 최고 B1_5(1.5… |
+| 682 | L-RF-20260903_160050 | ? | C | [B4 combination] 5칸 실측 — 최고 B4_25 다중검정t 1.077 · 칼마 0.250 · 등급 A0/B0/C3/F2. 직전 최고 B1_5(1.57… |
+| 683 | L-RF-20260903_215344 | ? | C | [B1 multifactor] 5칸 실측 — 최고 B1_2 다중검정t 0.754 · 칼마 0.159 · 등급 A0/B0/C5/F0. 낙폭이 축을 바꿔도 67~74… |
+| 684 | L-RF-20260904_081651 | ? | C | [B2 weighting] 5칸 실측 — 최고 B2_6 다중검정t 0.766 · 칼마 0.158 · 등급 A0/B0/C5/F0. 직전 최고 B1_2(0.754) … |
+| 685 | L-RF-20260904_082522 | ? | C | [B3 universe] 5칸 실측 — 최고 B3_11 다중검정t 0.314 · 칼마 0.137 · 등급 A0/B0/C3/F2. 직전 최고 B2_6(0.766) … |
+| 686 | L-RF-20260904_083345 | overlay_regime | C | [B5 risk_overlay] 5칸 실측 — 최고 B5_17 다중검정t 0.605 · 칼마 0.180 · 등급 A0/B0/C2/F3. 직전 최고 B2_6(0.7… |
+| 687 | L-RF-20260904_084213 | ? | F | [B4 combination] 4칸 실측 — 최고 B4_22 다중검정t -0.044 · 칼마 0.155 · 등급 A0/B0/C0/F4. 직전 최고 B2_6(0.7… |
+| 688 | L-RF-20260904_122401 | overlay_regime | C | [B5 risk_overlay] 5칸 실측 — 최고 B5_17 다중검정t 1.163 · 칼마 0.402 · 등급 A0/B0/C3/F2. 직전 최고 B1_4(1.4… |
+| 689 | L-RF-20260904_123854 | ? | C | [B2 weighting] 5칸 실측 — 최고 B2_7 다중검정t 1.472 · 칼마 0.410 · 등급 A0/B0/C5/F0. 직전 최고 B1_4(1.454) … |
+| 690 | L-RF-20260904_124229 | ? | C | [B1 multifactor] 14칸 실측 — 최고 B1_4 다중검정t 1.454 · 칼마 0.400 · 등급 A0/B0/C10/F4. 칼마 최고 0.40 — 낙… |
+| 691 | L-RF-20260904_124816 | ? | C | [B3 universe] 5칸 실측 — 최고 B3_11 다중검정t 1.147 · 칼마 0.319 · 등급 A0/B0/C4/F1. 직전 최고 B2_7(1.472) … |
+| 692 | L-RF-20260904_125641 | ? | C | [B4 combination] 2칸 실측 — 최고 B4_24 다중검정t 1.167 · 칼마 0.417 · 등급 A0/B0/C2/F0. 직전 최고 B2_7(1.47… |
+| 693 | L-RF-20260904_182647 | ? | C | [B1 multifactor] 15칸 실측 — 최고 B1_10 다중검정t 1.951 · 칼마 0.319 · 등급 A0/B0/C14/F1. 낙폭이 축을 바꿔도 55… |
+| 694 | L-RF-20260904_193643 | overlay_regime | C | [B5 risk_overlay] 6칸 실측 — 최고 B5_18 다중검정t 1.971 · 칼마 0.357 · 등급 A0/B0/C6/F0. 직전 최고 B1_10(1.… |
+| 695 | L-RF-20260904_194435 | ? | B | [B2 weighting] 5칸 실측 — 최고 B2_6 다중검정t 2.109 · 칼마 0.388 · 등급 A0/B3/C2/F0. 직전 최고 B5_18(1.971)… |
+| 696 | L-RF-20260904_200044 | ? | C | [B3 universe] 4칸 실측 — 최고 B3_11 다중검정t 1.584 · 칼마 0.317 · 등급 A0/B0/C4/F0. 직전 최고 B2_6(2.109) … |
+| 697 | L-RF-20260904_201605 | ? | C | [B4 combination] 3칸 실측 — 최고 B4_25 다중검정t 1.719 · 칼마 0.301 · 등급 A0/B0/C3/F0. 직전 최고 B2_6(2.10… |
+| 698 | L-RF-20260904_204419 | ? | B | [B1 multifactor] 5칸 실측 — 최고 B1_2 다중검정t 2.171 · 칼마 0.351 · 등급 A0/B3/C2/F0. 낙폭이 축을 바꿔도 55~60… |
+| 699 | L-RF-20260904_205939 | overlay_regime | B | [B5 risk_overlay] 5칸 실측 — 최고 B5_17 다중검정t 2.025 · 칼마 0.372 · 등급 A0/B1/C4/F0. 직전 최고 B1_2(2.1… |
+| 700 | L-RF-20260904_212507 | ? | C | [B2 weighting] 5칸 실측 — 최고 B2_7 다중검정t -0.127 · 칼마 0.181 · 등급 A0/B0/C5/F0. 직전 최고 B1_2(2.171)… |
+| 701 | L-RF-20260904_213903 | ? | C | [B3 universe] 4칸 실측 — 최고 B3_13 다중검정t 1.886 · 칼마 0.325 · 등급 A0/B0/C4/F0. 직전 최고 B1_2(2.171) … |
+| 702 | L-RF-20260904_220226 | ? | B | [B4 combination] 5칸 실측 — 최고 B4_25 다중검정t 2.009 · 칼마 0.335 · 등급 A0/B1/C4/F0. 직전 최고 B1_2(2.17… |
+| 703 | L-RF-20260904_223318 | ? | B | [B1 multifactor] 5칸 실측 — 최고 B1_1 다중검정t 2.280 · 칼마 0.364 · 등급 A0/B1/C4/F0. 낙폭이 축을 바꿔도 57~61… |
+| 704 | L-RF-20260905_090856 | overlay_regime | C | [B5 risk_overlay] 5칸 실측 — 최고 B5_17 다중검정t 1.966 · 칼마 0.398 · 등급 A0/B0/C5/F0. 직전 최고 B1_1(2.2… |
+| 705 | L-RF-20260905_093424 | ? | C | [B2 weighting] 3칸 실측 — 최고 B2_8 다중검정t 1.989 · 칼마 0.379 · 등급 A0/B0/C3/F0. 직전 최고 B1_1(2.280) … |
+| 706 | L-RF-20260905_102006 | ? | B | [B3 universe] 4칸 실측 — 최고 B3_12 다중검정t 2.567 · 칼마 0.499 · 등급 A0/B1/C3/F0. 직전 최고 B1_1(2.280) … |
+| 707 | L-RF-20260905_104629 | ? | C | [B4 combination] 3칸 실측 — 최고 B4_23 다중검정t 1.209 · 칼마 0.400 · 등급 A0/B0/C3/F0. 직전 최고 B3_12(2.5… |
+| 708 | L-RF-20260905_113751 | ? | B | [B1 multifactor] 9칸 실측 — 최고 B1_3 다중검정t 2.553 · 칼마 0.389 · 등급 A0/B6/C3/F0. 낙폭이 축을 바꿔도 56~63… |
+| 709 | L-RF-20260905_115930 | overlay_regime | B | [B5 risk_overlay] 6칸 실측 — 최고 B5_21 다중검정t 2.327 · 칼마 0.373 · 등급 A0/B3/C3/F0. 직전 최고 B1_3(2.5… |
+| 710 | L-RF-20260905_123245 | ? | B | [B2 weighting] 6칸 실측 — 최고 B2_10 다중검정t 2.526 · 칼마 0.389 · 등급 A0/B3/C3/F0. 직전 최고 B1_3(2.553)… |
+| 711 | L-RF-20260905_124845 | ? | C | [B3 universe] 3칸 실측 — 최고 B3_15 다중검정t 1.743 · 칼마 0.287 · 등급 A0/B0/C3/F0. 직전 최고 B1_3(2.553) … |
+| 712 | L-RF-20260905_130617 | ? | B | [B4 combination] 5칸 실측 — 최고 B4_24 다중검정t 2.260 · 칼마 0.426 · 등급 A0/B1/C4/F0. 직전 최고 B1_3(2.55… |
+| 713 | L-RF-20260905_192114 | ? | C | [B1 multifactor] 9칸 실측 — 최고 B1_2 다중검정t 1.567 · 칼마 0.266 · 등급 A0/B0/C9/F0. 낙폭이 축을 바꿔도 60~69… |
+| 714 | L-RF-20260905_193559 | overlay_regime | C | [B5 risk_overlay] 5칸 실측 — 최고 B5_20 다중검정t 1.582 · 칼마 0.290 · 등급 A0/B0/C5/F0. 직전 최고 B1_2(1.5… |
+| 715 | L-RF-20260905_195232 | ? | C | [B2 weighting] 5칸 실측 — 최고 B2_7 다중검정t 1.441 · 칼마 0.290 · 등급 A0/B0/C5/F0. 직전 최고 B5_20(1.582)… |
+| 716 | L-RF-20260905_200635 | ? | C | [B3 universe] 4칸 실측 — 최고 B3_13 다중검정t 1.588 · 칼마 0.311 · 등급 A0/B0/C4/F0. 직전 최고 B5_20(1.582)… |
+| 717 | L-RF-20260905_201528 | ? | B | [B4 combination] 3칸 실측 — 최고 B4_25 다중검정t 2.128 · 칼마 0.355 · 등급 A0/B1/C2/F0. 직전 최고 B3_13(1.5… |
+| 718 | L-RF-20260905_210445 | ? | B | [B1 multifactor] 8칸 실측 — 최고 B1_5 다중검정t 2.265 · 칼마 0.344 · 등급 A0/B2/C6/F0. 낙폭이 축을 바꿔도 55~66… |
+| 719 | L-RF-20260905_212102 | overlay_regime | C | [B5 risk_overlay] 4칸 실측 — 최고 B5_19 다중검정t 1.929 · 칼마 0.351 · 등급 A0/B0/C4/F0. 직전 최고 B1_5(2.2… |
+| 720 | L-RF-20260905_213747 | ? | B | [B2 weighting] 5칸 실측 — 최고 B2_10 다중검정t 2.749 · 칼마 0.366 · 등급 A0/B2/C3/F0. 직전 최고 B1_5(2.265)… |
+| 721 | L-RF-20260905_215306 | ? | C | [B3 universe] 4칸 실측 — 최고 B3_13 다중검정t 1.334 · 칼마 0.269 · 등급 A0/B0/C4/F0. 직전 최고 B2_10(2.749)… |
+| 722 | L-RF-20260905_220844 | ? | C | [B4 combination] 5칸 실측 — 최고 B4_25 다중검정t 1.811 · 칼마 0.283 · 등급 A0/B0/C5/F0. 직전 최고 B2_10(2.7… |
+| 723 | L-RF-20260905_225052 | ? | B | [B1 multifactor] 10칸 실측 — 최고 B1_1 다중검정t 2.650 · 칼마 0.362 · 등급 A0/B6/C4/F0. 낙폭이 축을 바꿔도 63~7… |
+| 724 | L-RF-20260905_230546 | overlay_regime | B | [B5 risk_overlay] 5칸 실측 — 최고 B5_18 다중검정t 2.485 · 칼마 0.388 · 등급 A0/B4/C1/F0. 직전 최고 B1_1(2.6… |
+| 725 | L-RF-20260906_191608 | ? | B | [B2 weighting] 4칸 실측 — 최고 B2_10 다중검정t 2.107 · 칼마 0.344 · 등급 A0/B1/C3/F0. 직전 최고 B1_1(2.650)… |
+| 726 | L-RF-20260906_210805 | ? | B | [B3 universe] 4칸 실측 — 최고 B3_13 다중검정t 2.093 · 칼마 0.305 · 등급 A0/B1/C3/F0. 직전 최고 B1_1(2.650) … |
+| 727 | L-RF-20260906_212419 | ? | B | [B4 combination] 5칸 실측 — 최고 B4_24 다중검정t 2.031 · 칼마 0.391 · 등급 A0/B1/C4/F0. 직전 최고 B1_1(2.65… |
+| 728 | L-RF-20260907_005001 | ? | C | [B1 multifactor] 9칸 실측 — 최고 B1_4 다중검정t 1.585 · 칼마 0.299 · 등급 A0/B0/C8/F1. 낙폭이 축을 바꿔도 51~63… |
+| 729 | L-RF-20260907_010439 | overlay_regime | C | [B5 risk_overlay] 5칸 실측 — 최고 B5_20 다중검정t 1.564 · 칼마 0.299 · 등급 A0/B0/C5/F0. 직전 최고 B1_4(1.5… |
+| 730 | L-RF-20260907_041652 | ? | C | [B2 weighting] 5칸 실측 — 최고 B2_6 다중검정t 1.794 · 칼마 0.323 · 등급 A0/B0/C5/F0. 직전 최고 B1_4(1.585) … |
+| 731 | L-RF-20260907_044020 | ? | B | [B3 universe] 5칸 실측 — 최고 B3_13 다중검정t 2.162 · 칼마 0.349 · 등급 A0/B2/C2/F1. 직전 최고 B2_6(1.794) … |
+| 732 | L-RF-20260907_050717 | ? | C | [B1 multifactor] 8칸 실측 — 최고 B1_8 다중검정t 1.636 · 칼마 0.315 · 등급 A0/B0/C8/F0. 낙폭이 축을 바꿔도 55~62… |
+| 733 | L-RF-20260907_052805 | overlay_regime | C | [B5 risk_overlay] 6칸 실측 — 최고 B5_19 다중검정t 1.397 · 칼마 0.315 · 등급 A0/B0/C6/F0. 직전 최고 B1_8(1.6… |
+| 734 | L-RF-20260907_091341 | ? | C | [B2 weighting] 5칸 실측 — 최고 B2_9 다중검정t 1.518 · 칼마 0.313 · 등급 A0/B0/C5/F0. 직전 최고 B1_8(1.636) … |
+| 735 | L-RF-20260907_092836 | ? | C | [B3 universe] 4칸 실측 — 최고 B3_13 다중검정t 1.635 · 칼마 0.313 · 등급 A0/B0/C4/F0. 직전 최고 B1_8(1.636) … |
+| 736 | L-RF-20260907_094000 | ? | C | [B4 combination] 5칸 실측 — 최고 B4_22 다중검정t 1.807 · 칼마 0.408 · 등급 A0/B0/C5/F0. 직전 최고 B1_8(1.63… |
+| 737 | L-RF-20260912_170118 | ? | C | [B1 multifactor] 9칸 실측 — 최고 B1_5 다중검정t 1.275 · 칼마 0.246 · 등급 A0/B0/C9/F0. 낙폭이 축을 바꿔도 66~73… |
+| 738 | L-RF-20260912_171557 | overlay_regime | C | [B5 risk_overlay] 5칸 실측 — 최고 B5_20 다중검정t 1.748 · 칼마 0.292 · 등급 A0/B0/C5/F0. 직전 최고 B1_5(1.2… |
+| 739 | L-RF-20260912_174349 | ? | B | [B3 universe] 5칸 실측 — 최고 B3_13 다중검정t 2.071 · 칼마 0.340 · 등급 A0/B2/C3/F0. 직전 최고 B5_20(1.748)… |
+| 740 | L-RF-20260912_175312 | ? | C | [B4 combination] 2칸 실측 — 최고 B4_25 다중검정t 1.726 · 칼마 0.267 · 등급 A0/B0/C2/F0. 직전 최고 B3_13(2.0… |
+| 741 | L-RF-20260912_181435 | ? | C | [B1 multifactor] 6칸 실측 — 최고 B1_1 다중검정t 1.748 · 칼마 0.292 · 등급 A0/B0/C6/F0. 낙폭이 축을 바꿔도 69~73… |
+| 742 | L-RF-20260912_182320 | overlay_regime | C | [B5 risk_overlay] 5칸 실측 — 최고 B5_16 다중검정t 1.716 · 칼마 0.305 · 등급 A0/B0/C5/F0. 직전 최고 B1_1(1.7… |
+| 743 | L-RF-20260912_185911 | ? | B | [B3 universe] 6칸 실측 — 최고 B3_13 다중검정t 2.071 · 칼마 0.340 · 등급 A0/B3/C3/F0. 직전 최고 B4_21(2.002)… |
+| 744 | L-RF-20260913_003410 | ? | C | [B1 multifactor] 10칸 실측 — 최고 B1_10 다중검정t 0.611 · 칼마 0.231 · 등급 A0/B0/C8/F2. 칼마 최고 0.23 — 낙… |
+| 745 | L-RF-20260913_005935 | ? | C | [B2 weighting] 6칸 실측 — 최고 B2_9 다중검정t 0.610 · 칼마 0.248 · 등급 A0/B0/C6/F0. 직전 최고 B1_10(0.611)… |
+| 746 | L-RF-20260913_011229 | ? | C | [B3 universe] 3칸 실측 — 최고 B3_13 다중검정t 0.133 · 칼마 0.161 · 등급 A0/B0/C3/F0. 직전 최고 B1_10(0.611)… |
+| 747 | L-RF-20260913_012340 | overlay_regime | C | [B5 risk_overlay] 4칸 실측 — 최고 B5_19 다중검정t 0.328 · 칼마 0.238 · 등급 A0/B0/C2/F2. 직전 최고 B1_10(0.… |
+| 748 | L-RF-20260913_013827 | ? | C | [B4 combination] 5칸 실측 — 최고 B4_24 다중검정t -0.062 · 칼마 0.253 · 등급 A0/B0/C5/F0. 직전 최고 B1_10(0.… |
+| 749 | L-RF-20260913_024342 | ? | C | [B1 multifactor] 5칸 실측 — 최고 B1_1 다중검정t 0.791 · 칼마 0.244 · 등급 A0/B0/C5/F0. 낙폭이 축을 바꿔도 61~66… |
+| 750 | L-RF-20260913_025653 | ? | C | [B2 weighting] 4칸 실측 — 최고 B2_10 다중검정t 0.845 · 칼마 0.245 · 등급 A0/B0/C4/F0. 직전 최고 B1_1(0.791)… |
+| 751 | L-RF-20260913_032839 | overlay_regime | C | [B5 risk_overlay] 4칸 실측 — 최고 B5_17 다중검정t 0.790 · 칼마 0.259 · 등급 A0/B0/C4/F0. 직전 최고 B2_10(0.… |
+| 752 | L-RF-20260913_033842 | ? | C | [B3 universe] 3칸 실측 — 최고 B3_15 다중검정t -0.612 · 칼마 0.157 · 등급 A0/B0/C2/F1. 직전 최고 B2_10(0.845… |
+| 753 | L-RF-20260913_105813 | ? | B | [B1 multifactor] 9칸 실측 — 최고 B1_3 다중검정t 2.743 · 칼마 0.412 · 등급 A0/B3/C6/F0. 낙폭이 축을 바꿔도 53~62… |
+| 754 | L-RF-20260913_111221 | overlay_regime | B | [B5 risk_overlay] 5칸 실측 — 최고 B5_20 다중검정t 2.519 · 칼마 0.438 · 등급 A0/B4/C1/F0. 직전 최고 B1_3(2.7… |
+| 755 | L-RF-20260913_113608 | ? | B | [B2 weighting] 6칸 실측 — 최고 B2_11 다중검정t 2.823 · 칼마 0.412 · 등급 A0/B5/C1/F0. 직전 최고 B1_3(2.743)… |
+| 756 | L-RF-20260913_120820 | ? | C | [B3 universe] 3칸 실측 — 최고 B3_12 다중검정t 1.848 · 칼마 0.306 · 등급 A0/B0/C3/F0. 직전 최고 B2_11(2.823)… |
+| 757 | L-RF-20260913_124105 | ? | B | [B1 multifactor] 8칸 실측 — 최고 B1_1 다중검정t 3.032 · 칼마 0.470 · 등급 A0/B5/C3/F0. 낙폭이 축을 바꿔도 46~60… |
+| 758 | L-RF-20260913_125802 | overlay_regime | B | [B5 risk_overlay] 5칸 실측 — 최고 B5_20 다중검정t 2.800 · 칼마 0.478 · 등급 A0/B5/C0/F0. 직전 최고 B1_1(3.0… |
+| 759 | L-RF-20260913_131326 | ? | B | [B2 weighting] 4칸 실측 — 최고 B2_10 다중검정t 3.092 · 칼마 0.486 · 등급 A0/B3/C1/F0. 직전 최고 B1_1(3.032)… |
+| 760 | L-RF-20260913_132841 | ? | B | [B3 universe] 4칸 실측 — 최고 B3_14 다중검정t 2.338 · 칼마 0.354 · 등급 A0/B1/C3/F0. 직전 최고 B2_10(3.092)… |
+| 761 | L-RF-20260913_134050 | ? | B | [B4 combination] 5칸 실측 — 최고 B4_25 다중검정t 2.414 · 칼마 0.357 · 등급 A0/B2/C3/F0. 직전 최고 B2_10(3.0… |
+| 762 | L-RF-20260913_141813 | ? | B | [B1 multifactor] 8칸 실측 — 최고 B1_2 다중검정t 3.589 · 칼마 0.477 · 등급 A0/B7/C1/F0. 낙폭이 축을 바꿔도 51~59… |
+| 763 | L-RF-20260913_143429 | overlay_regime | B | [B5 risk_overlay] 5칸 실측 — 최고 B5_20 다중검정t 3.257 · 칼마 0.478 · 등급 A0/B5/C0/F0. 직전 최고 B1_2(3.5… |
+| 764 | L-RF-20260913_145007 | ? | B | [B2 weighting] 4칸 실측 — 최고 B2_10 다중검정t 3.513 · 칼마 0.468 · 등급 A0/B4/C0/F0. 직전 최고 B1_2(3.589)… |
+| 765 | L-RF-20260913_150543 | ? | B | [B3 universe] 3칸 실측 — 최고 B3_12 다중검정t 2.374 · 칼마 0.367 · 등급 A0/B1/C2/F0. 직전 최고 B1_2(3.589) … |
+| 766 | L-RF-20260913_205827 | ? | B | [B4 combination] 5칸 실측 — 최고 B4_24 다중검정t 3.130 · 칼마 0.488 · 등급 A0/B4/C1/F0. 직전 최고 B1_2(3.58… |
+| 767 | L-RF-20260913_212800 | overlay_regime | B | [B5 risk_overlay] 5칸 실측 — 최고 B5_20 다중검정t 2.806 · 칼마 0.483 · 등급 A0/B5/C0/F0. 직전 최고 B1_3(3.1… |
+| 768 | L-RF-20260913_214207 | ? | B | [B1 multifactor] 6칸 실측 — 최고 B1_3 다중검정t 3.133 · 칼마 0.504 · 등급 A0/B6/C0/F0. 직전 최고 B5_20(2.80… |
+| 769 | L-RF-20260913_220034 | ? | C | [B3 universe] 5칸 실측 — 최고 B3_12 다중검정t 1.903 · 칼마 0.352 · 등급 A0/B0/C5/F0. 직전 최고 B1_3(3.133) … |
+| 770 | L-RF-20260913_221408 | ? | C | [B4 combination] 2칸 실측 — 최고 B4_24 다중검정t 1.627 · 칼마 0.482 · 등급 A0/B0/C2/F0. 직전 최고 B1_3(3.13… |
+| 771 | L-RF-20260917_120507 | ? | B | [B1 multifactor] 8칸 실측 — 최고 B1_5 다중검정t 3.202 · 칼마 0.385 · 등급 A0/B5/C3/F0. 낙폭이 축을 바꿔도 54~61… |
+| 772 | L-RF-20260917_191958 | ? | B | [B2 weighting] 6칸 실측 — 최고 B2_7 다중검정t 3.066 · 칼마 0.382 · 등급 A0/B4/C2/F0. 직전 최고 B1_5(3.202) … |
+| 773 | L-RF-20260917_193646 | ? | C | [B3 universe] 3칸 실측 — 최고 B3_14 다중검정t 1.728 · 칼마 0.278 · 등급 A0/B0/C3/F0. 직전 최고 B1_5(3.202) … |
+| 774 | L-RF-20260917_195304 | ? | B | [B4 combination] 5칸 실측 — 최고 B4_24 다중검정t 2.159 · 칼마 0.426 · 등급 A0/B1/C4/F0. 직전 최고 B1_5(3.20… |
+| 775 | L-RF-20260919_024247 | overlay_regime | B | [B5 risk_overlay] 14칸 실측 — 최고 B5_17 다중검정t 3.069 · 칼마 0.385 · 등급 A0/B8/C6/F0. 직전 최고 B1_5(3.… |
+| 776 | L-RF-20260919_031143 | ? | B | [B1 multifactor] 10칸 실측 — 최고 B1_1 다중검정t 3.592 · 칼마 0.457 · 등급 A0/B7/C3/F0. 낙폭이 축을 바꿔도 55~6… |
+| 777 | L-RF-20260919_230728 | overlay_regime | B | [B5 risk_overlay] 8칸 실측 — 최고 B5_17 다중검정t 3.297 · 칼마 0.474 · 등급 A0/B8/C0/F0. 직전 최고 B1_1(3.5… |
+| 778 | L-RF-20260919_232849 | ? | B | [B2 weighting] 8칸 실측 — 최고 B2_13 다중검정t 3.391 · 칼마 0.421 · 등급 A0/B7/C1/F0. 직전 최고 B1_1(3.592)… |
+| 779 | L-RF-20260919_235924 | ? | B | [B3 universe] 5칸 실측 — 최고 B3_12 다중검정t 2.305 · 칼마 0.339 · 등급 A0/B3/C2/F0. 직전 최고 B1_1(3.592) … |
+| 780 | L-RF-20260920_005108 | ? | B | [B1 multifactor] 10칸 실측 — 최고 B1_2 다중검정t 3.806 · 칼마 0.490 · 등급 A0/B10/C0/F0. 낙폭이 축을 바꿔도 50~… |
+| 781 | L-RF-20260921_081957 | overlay_regime | B | [B5 risk_overlay] 7칸 실측 — 최고 B5_16 다중검정t 3.750 · 칼마 0.486 · 등급 A0/B6/C1/F0. 직전 최고 B1_2(3.8… |
+| 782 | L-RF-20260921_085253 | ? | B | [B2 weighting] 8칸 실측 — 최고 B2_12 다중검정t 3.612 · 칼마 0.478 · 등급 A0/B8/C0/F0. 직전 최고 B1_2(3.806)… |
+| 783 | L-RF-20260921_090838 | ? | B | [B3 universe] 4칸 실측 — 최고 B3_12 다중검정t 2.375 · 칼마 0.372 · 등급 A0/B3/C1/F0. 직전 최고 B1_2(3.806) … |
+| 784 | L-RF-20260921_092209 | ? | B | [B4 combination] 4칸 실측 — 최고 B2_12 다중검정t 3.612 · 칼마 0.478 · 등급 A0/B1/C3/F0. 직전 최고 B1_2(3.80… |
+| 785 | L-RF-20260921_093812 | ? | B | [B6 execution_cadence] 3칸 실측 — 최고 B6_32 다중검정t 3.078 · 칼마 0.420 · 등급 A0/B3/C0/F0. 직전 최고 B1_… |
+| 786 | L-RF-20260921_102142 | ? | B | [B1 multifactor] 10칸 실측 — 최고 B1_3 다중검정t 4.349 · 칼마 0.501 · 등급 A0/B10/C0/F0. 낙폭이 축을 바꿔도 52~… |
+| 787 | L-RF-20260921_110617 | overlay_regime | B | [B5 risk_overlay] 8칸 실측 — 최고 B5_20 다중검정t 4.143 · 칼마 0.496 · 등급 A0/B7/C1/F0. 직전 최고 B1_3(4.3… |
+| 788 | L-RF-20260921_114215 | ? | B | [B2 weighting] 8칸 실측 — 최고 B2_11 다중검정t 4.094 · 칼마 0.476 · 등급 A0/B8/C0/F0. 직전 최고 B1_3(4.349)… |
+| 789 | L-RF-20260921_115643 | ? | B | [B3 universe] 5칸 실측 — 최고 B3_12 다중검정t 2.538 · 칼마 0.366 · 등급 A0/B2/C3/F0. 직전 최고 B1_3(4.349) … |
+| 790 | L-RF-20260921_121226 | ? | B | [B6 execution_cadence] 5칸 실측 — 최고 B6_36 다중검정t 4.089 · 칼마 0.468 · 등급 A0/B5/C0/F0. 직전 최고 B1_… |
+| 791 | L-RF-20260921_122641 | ? | C | [B4 combination] 2칸 실측 — 최고 B4_21 다중검정t 1.619 · 칼마 0.362 · 등급 A0/B0/C2/F0. 직전 최고 B1_3(4.34… |
+| 792 | L-RF-20260921_130909 | ? | C | [B1 multifactor] 10칸 실측 — 최고 B1_9 다중검정t 1.971 · 칼마 0.349 · 등급 A0/B0/C9/F1. 낙폭이 축을 바꿔도 53~6… |
+| 793 | L-RF-20260921_134037 | ? | C | [B2 weighting] 9칸 실측 — 최고 B2_9 다중검정t 1.741 · 칼마 0.349 · 등급 A0/B0/C9/F0. 직전 최고 B1_9(1.971) … |
+| 794 | L-RF-20260921_135635 | ? | C | [B3 universe] 5칸 실측 — 최고 B3_11 다중검정t 1.329 · 칼마 0.330 · 등급 A0/B0/C5/F0. 직전 최고 B1_9(1.971) … |
+| 795 | L-RF-20260921_143005 | ? | B | [B1 multifactor] 10칸 실측 — 최고 B1_1 다중검정t 4.167 · 칼마 0.494 · 등급 A0/B10/C0/F0. 낙폭이 축을 바꿔도 54~… |
+| 796 | L-RF-20260921_151447 | overlay_regime | B | [B5 risk_overlay] 5칸 실측 — 최고 B5_17 다중검정t 3.488 · 칼마 0.472 · 등급 A0/B5/C0/F0. 직전 최고 B1_1(4.1… |
+| 797 | L-RF-20260921_153400 | ? | B | [B2 weighting] 5칸 실측 — 최고 B2_10 다중검정t 3.918 · 칼마 0.475 · 등급 A0/B5/C0/F0. 직전 최고 B1_1(4.167)… |
+| 798 | L-RF-20260921_155019 | ? | B | [B3 universe] 3칸 실측 — 최고 B3_15 다중검정t 2.115 · 칼마 0.305 · 등급 A0/B1/C2/F0. 직전 최고 B1_1(4.167) … |
+| 799 | L-RF-20260921_160505 | ? | B | [B6 execution_cadence] 5칸 실측 — 최고 B6_36 다중검정t 4.153 · 칼마 0.492 · 등급 A0/B5/C0/F0. 직전 최고 B1_… |
+| 800 | L-RF-20260921_161947 | ? | B | [B4 combination] 4칸 실측 — 최고 B2_10 다중검정t 3.918 · 칼마 0.475 · 등급 A0/B2/C2/F0. 직전 최고 B1_1(4.16… |
+| 801 | L-RF-20260921_185036 | ? | C | [B6 execution_cadence] 6칸 실측 — 최고 B6_35 다중검정t 1.894 · 칼마 0.318 · 등급 A0/B0/C6/F0. 직전 최고 B1_… |
+| 802 | L-RF-20260921_194448 | overlay_regime | C | [B5 risk_overlay] 7칸 실측 — 최고 B5_16 다중검정t 1.736 · 칼마 0.374 · 등급 A0/B0/C7/F0. 직전 최고 B1_9(1.9… |
+| 803 | L-RF-20260921_200247 | ? | C | [B4 combination] 4칸 실측 — 최고 B2_9 다중검정t 1.741 · 칼마 0.349 · 등급 A0/B0/C4/F0. 직전 최고 B1_9(1.971… |
+| 804 | L-RF-20260921_204520 | ? | C | [B1 multifactor] 10칸 실측 — 최고 B1_6 다중검정t 1.704 · 칼마 0.290 · 등급 A0/B0/C10/F0. 낙폭이 축을 바꿔도 58~… |
+| 805 | L-RF-20260921_210516 | defense | C | [B7 structural_defense] 5칸 실측 — 최고 B7_37 다중검정t 1.116 · 칼마 0.262 · 등급 A0/B0/C5/F0. 직전 최고 B1… |
+| 806 | L-RF-20260921_220556 | overlay_regime | C | [B5 risk_overlay] 9칸 실측 — 최고 B5_18 다중검정t 1.326 · 칼마 0.351 · 등급 A0/B0/C9/F0. 직전 최고 B1_6(1.7… |
+| 807 | L-RF-20260921_223459 | ? | C | [B2 weighting] 6칸 실측 — 최고 B2_7 다중검정t 1.573 · 칼마 0.289 · 등급 A0/B0/C6/F0. 직전 최고 B1_6(1.704) … |
+| 808 | L-RF-20260921_225123 | ? | C | [B3 universe] 4칸 실측 — 최고 B3_11 다중검정t 1.293 · 칼마 0.362 · 등급 A0/B0/C3/F1. 직전 최고 B1_6(1.704) … |
+| 809 | L-RF-20260921_230928 | ? | C | [B6 execution_cadence] 5칸 실측 — 최고 B6_34 다중검정t 1.476 · 칼마 0.278 · 등급 A0/B0/C5/F0. 직전 최고 B1_… |
+| 810 | L-RF-20260921_232548 | ? | C | [B4 combination] 5칸 실측 — 최고 B4_25 다중검정t 1.546 · 칼마 0.407 · 등급 A0/B0/C5/F0. 직전 최고 B1_6(1.70… |
+| 811 | L-RF-20260922_003305 | ? | B | [B1 multifactor] 11칸 실측 — 최고 B1_3 다중검정t 2.097 · 칼마 0.320 · 등급 A0/B1/C10/F0. 칼마 최고 0.34 — 낙… |
+| 812 | L-RF-20260922_005007 | defense | C | [B7 structural_defense] 5칸 실측 — 최고 B7_37 다중검정t 1.457 · 칼마 0.296 · 등급 A0/B0/C5/F0. 직전 최고 B1… |
+| 813 | L-RF-20260922_013801 | overlay_regime | B | [B5 risk_overlay] 8칸 실측 — 최고 B5_18 다중검정t 2.305 · 칼마 0.364 · 등급 A0/B1/C7/F0. 직전 최고 B1_3(2.0… |
+| 814 | L-RF-20260922_015953 | ? | B | [B2 weighting] 6칸 실측 — 최고 B2_11 다중검정t 2.166 · 칼마 0.361 · 등급 A0/B4/C2/F0. 직전 최고 B5_18(2.305… |
+| 815 | L-RF-20260922_022546 | ? | B | [B6 execution_cadence] 5칸 실측 — 최고 B6_42 다중검정t 2.399 · 칼마 0.413 · 등급 A0/B4/C1/F0. 직전 최고 B5_… |
+| 816 | L-RF-20260922_023948 | ? | C | [B3 universe] 6칸 실측 — 최고 B3_13 다중검정t 1.631 · 칼마 0.324 · 등급 A0/B0/C6/F0. 직전 최고 B6_42(2.399)… |
+| 817 | L-RF-20260922_032228 | ? | B | [B1 multifactor] 10칸 실측 — 최고 B1_8 다중검정t 3.535 · 칼마 0.496 · 등급 A0/B8/C2/F0. 낙폭이 축을 바꿔도 46~5… |
+| 818 | L-RF-20260922_033921 | defense | B | [B7 structural_defense] 5칸 실측 — 최고 B7_37 다중검정t 2.910 · 칼마 0.437 · 등급 A0/B4/C1/F0. 직전 최고 B1… |
+| 819 | L-RF-20260922_042908 | overlay_regime | B | [B5 risk_overlay] 9칸 실측 — 최고 B5_20 다중검정t 3.195 · 칼마 0.493 · 등급 A0/B8/C1/F0. 직전 최고 B1_8(3.5… |
+| 820 | L-RF-20260923_152811 | ? | B | [B2 weighting] 8칸 실측 — 최고 B2_7 다중검정t 3.547 · 칼마 0.491 · 등급 A0/B8/C0/F0. 직전 최고 B1_8(3.535) … |
+| 821 | L-RF-20260923_155032 | ? | B | [B3 universe] 5칸 실측 — 최고 B3_12 다중검정t 2.619 · 칼마 0.366 · 등급 A0/B2/C3/F0. 직전 최고 B2_7(3.547) … |
+| 822 | L-RF-20260923_160642 | ? | B | [B6 execution_cadence] 5칸 실측 — 최고 B6_36 다중검정t 3.599 · 칼마 0.493 · 등급 A0/B4/C1/F0. 직전 최고 B2_… |
+| 823 | L-RF-20260923_162029 | ? | C | [B4 combination] 1칸 실측 — 최고 B4_22 다중검정t 1.367 · 칼마 0.448 · 등급 A0/B0/C1/F0. 직전 최고 B6_36(3.5… |
+| 824 | L-RF-20260923_170116 | ? | B | [B1 multifactor] 7칸 실측 — 최고 B1_1 다중검정t 3.402 · 칼마 0.543 · 등급 A0/B6/C1/F0. 낙폭이 축을 바꿔도 47~57… |
+| 825 | L-RF-20260923_172033 | defense | B | [B7 structural_defense] 5칸 실측 — 최고 B7_37 다중검정t 2.882 · 칼마 0.491 · 등급 A0/B5/C0/F0. 직전 최고 B1… |
+| 826 | L-RF-20260923_194649 | overlay_regime | B | [B5 risk_overlay] 9칸 실측 — 최고 B5_17 다중검정t 3.298 · 칼마 0.533 · 등급 A0/B7/C2/F0. 직전 최고 B1_1(3.4… |
+| 827 | L-RF-20260923_204658 | ? | B | [B3 universe] 3칸 실측 — 최고 B3_12 다중검정t 2.321 · 칼마 0.344 · 등급 A0/B2/C1/F0. 직전 최고 B1_1(3.402) … |
+| 828 | L-RF-20260923_210633 | ? | B | [B6 execution_cadence] 5칸 실측 — 최고 B6_36 다중검정t 3.559 · 칼마 0.537 · 등급 A0/B4/C1/F0. 직전 최고 B1_… |
+| 829 | L-RF-20260923_212816 | ? | B | [B2 weighting] 9칸 실측 — 최고 B2_9 다중검정t 3.294 · 칼마 0.504 · 등급 A0/B9/C0/F0. 직전 최고 B6_36(3.559)… |
+| 830 | L-RF-20260924_000528 | ? | C | [B1 multifactor] 8칸 실측 — 최고 B1_3 다중검정t 0.763 · 칼마 0.258 · 등급 A0/B0/C6/F2. 낙폭이 축을 바꿔도 54~64… |
+| 831 | L-RF-20260924_011003 | ? | C | [B3 universe] 4칸 실측 — 최고 B3_13 다중검정t 0.846 · 칼마 0.246 · 등급 A0/B0/C4/F0. 직전 최고 B1_3(0.763) … |
+| 832 | L-RF-20260924_012955 | ? | C | [B6 execution_cadence] 5칸 실측 — 최고 B6_33 다중검정t 1.481 · 칼마 0.291 · 등급 A0/B0/C5/F0. 직전 최고 B3_… |
+| 833 | L-RF-20260924_022958 | overlay_regime | C | [B5 risk_overlay] 9칸 실측 — 최고 B5_16 다중검정t 1.370 · 칼마 0.290 · 등급 A0/B0/C9/F0. 직전 최고 B6_33(1.… |
+| 834 | L-RF-20260924_033001 | defense | C | [B7 structural_defense] 5칸 실측 — 최고 B7_39 다중검정t 0.988 · 칼마 0.270 · 등급 A0/B0/C5/F0. 직전 최고 B6… |
+| 835 | L-RF-20260924_034311 | ? | C | [B2 weighting] 8칸 실측 — 최고 B2_9 다중검정t 0.676 · 칼마 0.254 · 등급 A0/B0/C8/F0. 직전 최고 B6_33(1.481)… |
+| 836 | L-RF-20260924_061831 | ? | C | [B1 multifactor] 11칸 실측 — 최고 B1_7 다중검정t 1.865 · 칼마 0.318 · 등급 A0/B0/C11/F0. 낙폭이 축을 바꿔도 58~… |
+| 837 | L-RF-20260924_063921 | ? | B | [B2 weighting] 6칸 실측 — 최고 B2_10 다중검정t 2.007 · 칼마 0.343 · 등급 A0/B1/C5/F0. 직전 최고 B1_7(1.865)… |
+| 838 | L-RF-20260924_065022 | ? | C | [B3 universe] 4칸 실측 — 최고 B3_12 다중검정t 0.315 · 칼마 0.198 · 등급 A0/B0/C3/F1. 직전 최고 B2_10(2.007)… |
+| 839 | L-RF-20260924_070403 | ? | C | [B6 execution_cadence] 5칸 실측 — 최고 B6_36 다중검정t 1.331 · 칼마 0.277 · 등급 A0/B0/C5/F0. 직전 최고 B2_… |
+| 840 | L-RF-20260925_233320 | defense | C | [B7 structural_defense] 5칸 실측 — 최고 B7_41 다중검정t 1.026 · 칼마 0.247 · 등급 A0/B0/C5/F0. 직전 최고 B2… |
+| 841 | L-RF-20261005_205017 | ? | C | [B1 multifactor] 11칸 실측 — 최고 B1_11 다중검정t 1.517 · 칼마 0.273 · 등급 A0/B0/C11/F0. 칼마 최고 0.28 — … |
+| 842 | L-RF-20261005_213607 | ? | C | [B2 weighting] 6칸 실측 — 최고 B2_11 다중검정t 1.131 · 칼마 0.254 · 등급 A0/B0/C6/F0. 직전 최고 B1_11(1.517… |
+| 843 | L-RF-20261005_223529 | ? | C | [B3 universe] 1칸 실측 — 최고 B3_12 다중검정t 0.076 · 칼마 0.198 · 등급 A0/B0/C1/F0. 직전 최고 B1_11(1.517)… |
+| 844 | L-RF-20261005_234748 | ? | C | [B6 execution_cadence] 5칸 실측 — 최고 B6_32 다중검정t 1.396 · 칼마 0.266 · 등급 A0/B0/C5/F0. 직전 최고 B1_… |
 
 ### reinforcement_cell
 
 | # | L-code | family | grade | 요지 |
 |---|--------|--------|-------|------|
-| 835 | L-RP-20260830_095622 | ? | F | RF_PAR_B4_17_LOO 충실구현: 등급 F. 논문기준 SR 0.16 vs 15bps SR 0.33. [무인 병렬 B4_17] 팩터 제외(LOO) — B4/… |
-| 836 | L-RP-20260830_100417 | liquidity | C | RF_PAR_B4_18_LOO 충실구현: 등급 C. 논문기준 SR -0.09 vs 15bps SR 0.13. [무인 병렬 B4_18] 비중 제외(LOO) — B4… |
-| 837 | L-RP-20260830_100418 | quality_profitability | C | RF_PAR_B4_20_ 충실구현: 등급 C. 논문기준 SR 0.55 vs 15bps SR 0.67. [무인 병렬 B4_20] 승자 요소 + 차순위 팩터 — B4… |
-| 838 | L-RP-20260830_100425 | liquidity | C | RF_PAR_B4_19_LOO 충실구현: 등급 C. 논문기준 SR 0.49 vs 15bps SR 0.64. [무인 병렬 B4_19] 유니버스 제외(LOO) — B… |
-| 839 | L-RP-20260830_155407 | low_vol | F | RF_PAR_B1_3_sigma60 충실구현: 등급 F. 논문기준 SR 0.03 vs 15bps SR 0.14. [무인 병렬 B1_3] 저변동 sigma60 — … |
-| 840 | L-RP-20260830_160021 | liquidity | B | RF_PAR_B1_5_Amihud 충실구현: 등급 B. 논문기준 SR 0.54 vs 15bps SR 0.69. [무인 병렬 B1_5] 비유동 Amihud — B1… |
-| 841 | L-RP-20260830_160028 | quality_profitability | C | RF_PAR_B1_2_GPA 충실구현: 등급 C. 논문기준 SR 0.34 vs 15bps SR 0.54. [무인 병렬 B1_2] 수익성 GP/A — B1/mult… |
-| 842 | L-RP-20260830_160031 | value | F | RF_PAR_B1_1_BM 충실구현: 등급 F. 논문기준 SR 0.17 vs 15bps SR 0.36. [무인 병렬 B1_1] 가치 B/M — B1/multifa… |
-| 843 | L-RP-20260830_160038 | earnings_event | C | RF_PAR_B1_4_3m 충실구현: 등급 C. 논문기준 SR 0.13 vs 15bps SR 0.34. [무인 병렬 B1_4] 이익수정 3m — B1/multif… |
-| 844 | L-RP-20260830_165024 | liquidity | C | RF_PAR_B2_7_entropyentropy 충실구현: 등급 C. 논문기준 SR 0.45 vs 15bps SR 0.57. [무인 병렬 B2_7] entropy… |
-| 845 | L-RP-20260830_165030 | liquidity | F | RF_PAR_B2_6_cvartailaware 충실구현: 등급 F. 논문기준 SR 0.43 vs 15bps SR 0.54. [무인 병렬 B2_6] cvar(tai… |
-| 846 | L-RP-20260830_165030_02 | liquidity | F | RF_PAR_B2_10_SchurDampingoptimizer 충실구현: 등급 F. 논문기준 SR 0.36 vs 15bps SR 0.45. [무인 병렬 B2_10… |
-| 847 | L-RP-20260830_165031 | liquidity | F | RF_PAR_B2_8_factorrpriskparity 충실구현: 등급 F. 논문기준 SR 0.44 vs 15bps SR 0.54. [무인 병렬 B2_8] fac… |
-| 848 | L-RP-20260830_165034 | low_vol | F | RF_PAR_B2_9_ivolriskbased 충실구현: 등급 F. 논문기준 SR 0.42 vs 15bps SR 0.53. [무인 병렬 B2_9] ivol(ris… |
-| 849 | L-RP-20260830_184713 | liquidity | C | RF_PAR_B3_14_13 충실구현: 등급 C. 논문기준 SR 0.46 vs 15bps SR 0.62. [무인 병렬 B3_14] 대형주(시총 상위 1/3) — … |
-| 850 | L-RP-20260830_184714 | liquidity | B | RF_PAR_B3_11_ 충실구현: 등급 B. 논문기준 SR 0.54 vs 15bps SR 0.69. [무인 병렬 B3_11] 지수 멤버십 해제 — B3/univ… |
-| 851 | L-RP-20260830_184717 | liquidity | B | RF_PAR_B3_12_KOSPI200 충실구현: 등급 B. 논문기준 SR 0.59 vs 15bps SR 0.73. [무인 병렬 B3_12] KOSPI200 단독… |
-| 852 | L-RP-20260830_184724 | liquidity | C | RF_PAR_B3_15_ 충실구현: 등급 C. 논문기준 SR 0.30 vs 15bps SR 0.48. [무인 병렬 B3_15] 섹터 중립 — B3/universe… |
-| 853 | L-RP-20260830_184732 | liquidity | C | RF_PAR_B3_13_13 충실구현: 등급 C. 논문기준 SR 0.32 vs 15bps SR 0.54. [무인 병렬 B3_13] 소형주(시총 하위 1/3) — … |
-| 854 | L-RP-20260830_194215 | ? | F | RF_PAR_B4_17_LOO 충실구현: 등급 F. 논문기준 SR 0.23 vs 15bps SR 0.36. [무인 병렬 B4_17] 팩터 제외(LOO) — B4/… |
-| 855 | L-RP-20260830_194914 | liquidity | B | RF_PAR_B4_18_LOO 충실구현: 등급 B. 논문기준 SR 0.59 vs 15bps SR 0.73. [무인 병렬 B4_18] 비중 제외(LOO) — B4/… |
-| 856 | L-RP-20260830_194934 | liquidity | F | RF_PAR_B4_16_ 충실구현: 등급 F. 논문기준 SR 0.35 vs 15bps SR 0.47. [무인 병렬 B4_16] 전 요소 결합 — B4/combin… |
-| 857 | L-RP-20260830_194939 | liquidity | C | RF_PAR_B4_19_LOO 충실구현: 등급 C. 논문기준 SR 0.45 vs 15bps SR 0.57. [무인 병렬 B4_19] 유니버스 제외(LOO) — B… |
-| 858 | L-RP-20260830_195544 | liquidity | C | RF_PAR_B4_20_3 충실구현: 등급 C. 논문기준 SR 0.50 vs 15bps SR 0.60. [무인 병렬 B4_20] 3팩터(승자+차순위) — B4/c… |
-| 859 | L-RP-20260830_201656 | overlay_regime | F | RF_PAR_B5_23_ 충실구현: 등급 F. 논문기준 SR 0.33 vs 15bps SR 0.42. [무인 병렬 B5_23] 마할라노비스 난기류 게이트 — B5… |
-| 860 | L-RP-20260830_201656 | overlay_regime | F | RF_PAR_B5_25_x 충실구현: 등급 F. 논문기준 SR 0.22 vs 15bps SR 0.32. [무인 병렬 B5_25] 변동성 x 낙폭 결합 — B5/r… |
-| 861 | L-RP-20260830_201657 | overlay_regime | F | RF_PAR_B5_22_HARRV 충실구현: 등급 F. 논문기준 SR 0.34 vs 15bps SR 0.45. [무인 병렬 B5_22] HAR-RV 예측 타게팅 … |
-| 862 | L-RP-20260830_201658 | overlay_regime | F | RF_PAR_B5_21_ 충실구현: 등급 F. 논문기준 SR 0.31 vs 15bps SR 0.42. [무인 병렬 B5_21] 실현변동성 타게팅 — B5/risk… |
-| 863 | L-RP-20260830_201659 | ml_complexity | F | RF_PAR_B5_24_ML 충실구현: 등급 F. 논문기준 SR 0.33 vs 15bps SR 0.44. [무인 병렬 B5_24] ML 꼬리위험 게이트(로지스틱)… |
-| 864 | L-RP-20260830_203323 | overlay_regime | F | RF_PAR_B5_21_ddbrakeqdrawdown 충실구현: 등급 F. 논문기준 SR 0.23 vs 15bps SR 0.34. [무인 병렬 B5_21] dd_… |
-| 865 | L-RP-20260830_203323 | overlay_regime | F | RF_PAR_B5_22_volxddcombo 충실구현: 등급 F. 논문기준 SR 0.25 vs 15bps SR 0.34. [무인 병렬 B5_22] vol_x_dd… |
-| 866 | L-RP-20260830_203328 | overlay_regime | F | RF_PAR_B5_23_turbulencestatemultivar 충실구현: 등급 F. 논문기준 SR 0.33 vs 15bps SR 0.42. [무인 병렬 B5_… |
-| 867 | L-RP-20260830_203329 | overlay_regime | F | RF_PAR_B5_25_volmedianvoltarget 충실구현: 등급 F. 논문기준 SR 0.34 vs 15bps SR 0.44. [무인 병렬 B5_25] v… |
-| 868 | L-RP-20260830_203331 | ml_complexity | F | RF_PAR_B5_24_mltailgateml 충실구현: 등급 F. 논문기준 SR 0.33 vs 15bps SR 0.44. [무인 병렬 B5_24] ml_tail… |
-| 869 | L-RP-20260830_232402 | low_vol | F | RF_PAR_B1_3_sigma60 충실구현: 등급 F. 논문기준 SR 0.36 vs 15bps SR 0.43. 저변동 sigma60 |
-| 870 | L-RP-20260830_233012 | liquidity | B | RF_PAR_B1_5_Amihud 충실구현: 등급 B. 논문기준 SR 0.54 vs 15bps SR 0.69. 비유동 Amihud |
-| 871 | L-RP-20260830_233013 | value | C | RF_PAR_B1_1_BM 충실구현: 등급 C. 논문기준 SR 0.41 vs 15bps SR 0.55. 가치 B/M |
-| 872 | L-RP-20260830_233014 | quality_profitability | C | RF_PAR_B1_2_GPA 충실구현: 등급 C. 논문기준 SR 0.32 vs 15bps SR 0.49. 수익성 GP/A |
-| 873 | L-RP-20260830_233015 | ? | C | RF_PAR_B1_4_3m 충실구현: 등급 C. 논문기준 SR 0.30 vs 15bps SR 0.44. 이익수정 3m |
-| 874 | L-RP-20260830_235311 | low_vol | F | RF_PAR_B2_9_ivolriskbased 충실구현: 등급 F. 논문기준 SR 0.42 vs 15bps SR 0.52. ivol(risk_based) |
-| 875 | L-RP-20260830_235311 | ? | F | RF_PAR_B2_8_factorrpriskparity 충실구현: 등급 F. 논문기준 SR 0.43 vs 15bps SR 0.53. factor_rp(risk_p… |
-| 876 | L-RP-20260830_235311 | ? | F | RF_PAR_B2_6_cvartailaware 충실구현: 등급 F. 논문기준 SR 0.42 vs 15bps SR 0.52. cvar(tail_aware) |
-| 877 | L-RP-20260830_235311 | ? | F | RF_PAR_B2_7_entropyentropy 충실구현: 등급 F. 논문기준 SR 0.41 vs 15bps SR 0.53. entropy(entropy) |
-| 878 | L-RP-20260830_235311 | ? | F | RF_PAR_B2_10_SchurDampingoptimizer 충실구현: 등급 F. 논문기준 SR 0.32 vs 15bps SR 0.42. SchurDamping… |
-| 879 | L-RP-20260831_001552 | ? | B | RF_PAR_B3_12_KOSPI200 충실구현: 등급 B. 논문기준 SR 0.54 vs 15bps SR 0.69. KOSPI200 단독 |
-| 880 | L-RP-20260831_001552 | ? | C | RF_PAR_B3_14_13 충실구현: 등급 C. 논문기준 SR 0.48 vs 15bps SR 0.62. 대형주(시총 상위 1/3) |
-| 881 | L-RP-20260831_001559 | ? | C | RF_PAR_B3_15_ 충실구현: 등급 C. 논문기준 SR 0.29 vs 15bps SR 0.46. 섹터 중립 |
-| 882 | L-RP-20260831_001608 | size | C | RF_PAR_B3_13_13 충실구현: 등급 C. 논문기준 SR 0.32 vs 15bps SR 0.52. 소형주(시총 하위 1/3) |
-| 883 | L-RP-20260831_081014 | ? | F | RF_PAR_B4_17_LOO 충실구현: 등급 F. 논문기준 SR 0.35 vs 15bps SR 0.47. 팩터 제외(LOO) |
-| 884 | L-RP-20260831_081709 | ? | B | RF_PAR_B4_18_LOO 충실구현: 등급 B. 논문기준 SR 0.54 vs 15bps SR 0.69. 비중 제외(LOO) |
-| 885 | L-RP-20260831_081744 | ? | F | RF_PAR_B4_16_ 충실구현: 등급 F. 논문기준 SR 0.41 vs 15bps SR 0.53. 전 요소 결합 |
-| 886 | L-RP-20260831_081747 | ? | C | RF_PAR_B4_19_LOO 충실구현: 등급 C. 논문기준 SR 0.48 vs 15bps SR 0.60. 유니버스 제외(LOO) |
-| 887 | L-RP-20260831_082351 | ? | C | RF_PAR_B4_20_3 충실구현: 등급 C. 논문기준 SR 0.52 vs 15bps SR 0.62. 3팩터(승자+차순위) |
-| 888 | L-RP-20260831_092632 | low_vol | F | RF_PAR_B1_3_sigma60 충실구현: 등급 F. 논문기준 SR 0.36 vs 15bps SR 0.43. 저변동 sigma60 |
-| 889 | L-RP-20260831_093239 | quality_profitability | C | RF_PAR_B1_2_GPA 충실구현: 등급 C. 논문기준 SR 0.32 vs 15bps SR 0.49. 수익성 GP/A |
-| 890 | L-RP-20260831_093239 | ? | C | RF_PAR_B1_4_3m 충실구현: 등급 C. 논문기준 SR 0.30 vs 15bps SR 0.44. 이익수정 3m |
-| 891 | L-RP-20260831_093239 | value | C | RF_PAR_B1_1_BM 충실구현: 등급 C. 논문기준 SR 0.41 vs 15bps SR 0.55. 가치 B/M |
-| 892 | L-RP-20260831_103933 | low_vol | F | RF_PAR_B2_9_ivolriskbased 충실구현: 등급 F. 논문기준 SR 0.35 vs 15bps SR 0.46. ivol(risk_based) |
-| 893 | L-RP-20260831_103933 | ? | F | RF_PAR_B2_7_entropyentropy 충실구현: 등급 F. 논문기준 SR 0.35 vs 15bps SR 0.47. entropy(entropy) |
-| 894 | L-RP-20260831_103933 | ? | F | RF_PAR_B2_6_cvartailaware 충실구현: 등급 F. 논문기준 SR 0.35 vs 15bps SR 0.46. cvar(tail_aware) |
-| 895 | L-RP-20260831_103933 | ? | F | RF_PAR_B2_8_factorrpriskparity 충실구현: 등급 F. 논문기준 SR 0.36 vs 15bps SR 0.47. factor_rp(risk_p… |
-| 896 | L-RP-20260831_103933 | ? | F | RF_PAR_B2_10_SchurDampingoptimizer 충실구현: 등급 F. 논문기준 SR 0.25 vs 15bps SR 0.35. SchurDamping… |
-| 897 | L-RP-20260831_105400 | ? | C | RF_PAR_B3_11_KOSDAQ150 충실구현: 등급 C. 논문기준 SR 0.32 vs 15bps SR 0.58. KOSDAQ150 단독 |
-| 898 | L-RP-20260831_105410 | ? | C | RF_PAR_B3_14_13 충실구현: 등급 C. 논문기준 SR 0.46 vs 15bps SR 0.62. 대형주(시총 상위 1/3) |
-| 899 | L-RP-20260831_105422 | ? | C | RF_PAR_B3_15_ 충실구현: 등급 C. 논문기준 SR 0.30 vs 15bps SR 0.48. 섹터 중립 |
-| 900 | L-RP-20260831_105432 | size | C | RF_PAR_B3_13_13 충실구현: 등급 C. 논문기준 SR 0.32 vs 15bps SR 0.54. 소형주(시총 하위 1/3) |
-| 901 | L-RP-20260831_111014 | ? | B | RF_PAR_B4_19_LOO 충실구현: 등급 B. 논문기준 SR 0.54 vs 15bps SR 0.69. 유니버스 제외(LOO) |
-| 902 | L-RP-20260831_111014 | ? | B | RF_PAR_B4_17_LOO 충실구현: 등급 B. 논문기준 SR 0.54 vs 15bps SR 0.69. 팩터 제외(LOO) |
-| 903 | L-RP-20260831_111014 | ? | B | RF_PAR_B4_18_LOO 충실구현: 등급 B. 논문기준 SR 0.54 vs 15bps SR 0.69. 비중 제외(LOO) |
-| 904 | L-RP-20260831_111015 | ? | B | RF_PAR_B4_16_ 충실구현: 등급 B. 논문기준 SR 0.54 vs 15bps SR 0.69. 전 요소 결합 |
-| 905 | L-RP-20260831_111620 | ? | F | RF_PAR_B4_20_3 충실구현: 등급 F. 논문기준 SR 0.18 vs 15bps SR 0.34. 3팩터(승자+차순위) |
-| 906 | L-RP-20260831_113448 | ? | F | RF_PAR_B4_17_LOO 충실구현: 등급 F. 논문기준 SR 0.32 vs 15bps SR 0.44. 팩터 제외(LOO) |
-| 907 | L-RP-20260831_114119 | ? | F | RF_PAR_B4_18_LOO 충실구현: 등급 F. 논문기준 SR 0.10 vs 15bps SR 0.26. 비중 제외(LOO) |
-| 908 | L-RP-20260831_114150 | ? | C | RF_PAR_B4_16_ 충실구현: 등급 C. 논문기준 SR 0.44 vs 15bps SR 0.55. 전 요소 결합 |
-| 909 | L-RP-20260831_114157 | ? | C | RF_PAR_B4_19_LOO 충실구현: 등급 C. 논문기준 SR 0.54 vs 15bps SR 0.65. 유니버스 제외(LOO) |
-| 910 | L-RP-20260831_114755 | ? | F | RF_PAR_B4_20_3 충실구현: 등급 F. 논문기준 SR 0.40 vs 15bps SR 0.50. 3팩터(승자+차순위) |
-| 911 | L-RP-20260831_132010 | overlay_regime | F | RF_PAR_B5_21_ddbrakeqdrawdown 충실구현: 등급 F. 논문기준 SR 0.23 vs 15bps SR 0.34. dd_brake_q(drawdo… |
-| 912 | L-RP-20260831_132010 | ? | F | RF_PAR_B5_23_turbulencestatemultivar 충실구현: 등급 F. 논문기준 SR 0.33 vs 15bps SR 0.42. turbulence… |
-| 913 | L-RP-20260831_132010 | ? | F | RF_PAR_B5_22_volxddcombo 충실구현: 등급 F. 논문기준 SR 0.27 vs 15bps SR 0.36. vol_x_dd(combo) |
-| 914 | L-RP-20260831_132012 | ? | F | RF_PAR_B5_25_volmedianvoltarget 충실구현: 등급 F. 논문기준 SR 0.34 vs 15bps SR 0.45. vol_median(vol_… |
-| 915 | L-RP-20260831_132012 | ml_complexity | F | RF_PAR_B5_24_mltailgateml 충실구현: 등급 F. 논문기준 SR 0.33 vs 15bps SR 0.44. ml_tail_gate(ml) |
-| 916 | L-RP-20260831_170534 | value | F | RF_PAR_B1_1_BM 충실구현: 등급 F. 논문기준 SR 0.06 vs 15bps SR 0.28. [무인 병렬 B1_1] 가치 B/M — B1/multifa… |
-| 917 | L-RP-20260831_171914 | low_vol | C | RF_PAR_B2_9_ivolriskbased 충실구현: 등급 C. 논문기준 SR 0.44 vs 15bps SR 0.59. [무인 병렬 B2_9] ivol(ris… |
-| 918 | L-RP-20260831_171914 | ? | C | RF_PAR_B2_7_entropyentropy 충실구현: 등급 C. 논문기준 SR 0.36 vs 15bps SR 0.52. [무인 병렬 B2_7] entropy… |
-| 919 | L-RP-20260831_171914 | ? | C | RF_PAR_B2_6_cvartailaware 충실구현: 등급 C. 논문기준 SR 0.43 vs 15bps SR 0.58. [무인 병렬 B2_6] cvar(tai… |
-| 920 | L-RP-20260831_171914 | ? | C | RF_PAR_B2_8_factorrpriskparity 충실구현: 등급 C. 논문기준 SR 0.43 vs 15bps SR 0.58. [무인 병렬 B2_8] fac… |
-| 921 | L-RP-20260831_171914 | ? | F | RF_PAR_B2_10_SchurDampingoptimizer 충실구현: 등급 F. 논문기준 SR 0.29 vs 15bps SR 0.44. [무인 병렬 B2_10… |
-| 922 | L-RP-20260831_173734 | low_vol | F | RF_PAR_B1_3_sigma60 충실구현: 등급 F. 논문기준 SR 0.25 vs 15bps SR 0.39. [무인 병렬 B1_3] 저변동 sigma60 — … |
-| 923 | L-RP-20260831_174335 | liquidity | C | RF_PAR_B1_5_Amihud 충실구현: 등급 C. 논문기준 SR 0.21 vs 15bps SR 0.46. [무인 병렬 B1_5] 비유동 Amihud — B1… |
-| 924 | L-RP-20260831_174336 | quality_profitability | C | RF_PAR_B1_2_GPA 충실구현: 등급 C. 논문기준 SR 0.06 vs 15bps SR 0.29. [무인 병렬 B1_2] 수익성 GP/A — B1/mult… |
-| 925 | L-RP-20260831_174338 | value | F | RF_PAR_B1_1_BM 충실구현: 등급 F. 논문기준 SR 0.06 vs 15bps SR 0.28. [무인 병렬 B1_1] 가치 B/M — B1/multifa… |
-| 926 | L-RP-20260831_174344 | earnings_event | F | RF_PAR_B1_4_3m 충실구현: 등급 F. 논문기준 SR -0.11 vs 15bps SR 0.10. [무인 병렬 B1_4] 이익수정 3m — B1/multi… |
-| 927 | L-RP-20260831_180111 | liquidity | C | RF_PAR_B2_6_cvartailaware 충실구현: 등급 C. 논문기준 SR 0.42 vs 15bps SR 0.55. [무인 병렬 B2_6] cvar(tai… |
-| 928 | L-RP-20260831_180111 | liquidity | C | RF_PAR_B2_7_entropyentropy 충실구현: 등급 C. 논문기준 SR 0.38 vs 15bps SR 0.53. [무인 병렬 B2_7] entropy… |
-| 929 | L-RP-20260831_180111 | liquidity | C | RF_PAR_B2_8_factorrpriskparity 충실구현: 등급 C. 논문기준 SR 0.43 vs 15bps SR 0.56. [무인 병렬 B2_8] fac… |
-| 930 | L-RP-20260831_180111 | low_vol | C | RF_PAR_B2_9_ivolriskbased 충실구현: 등급 C. 논문기준 SR 0.42 vs 15bps SR 0.55. [무인 병렬 B2_9] ivol(ris… |
-| 931 | L-RP-20260831_180111 | liquidity | F | RF_PAR_B2_10_SchurDampingoptimizer 충실구현: 등급 F. 논문기준 SR 0.07 vs 15bps SR 0.22. [무인 병렬 B2_10… |
-| 932 | L-RP-20260831_181606 | liquidity | C | RF_PAR_B3_14_13 충실구현: 등급 C. 논문기준 SR 0.29 vs 15bps SR 0.52. [무인 병렬 B3_14] 대형주(시총 상위 1/3) — … |
-| 933 | L-RP-20260831_181606 | liquidity | C | RF_PAR_B3_11_KOSDAQ150 충실구현: 등급 C. 논문기준 SR 0.09 vs 15bps SR 0.35. [무인 병렬 B3_11] KOSDAQ150 … |
-| 934 | L-RP-20260831_181610 | liquidity | C | RF_PAR_B3_12_KOSPI200 충실구현: 등급 C. 논문기준 SR 0.15 vs 15bps SR 0.39. [무인 병렬 B3_12] KOSPI200 단독… |
-| 935 | L-RP-20260831_181622 | liquidity | C | RF_PAR_B3_13_13 충실구현: 등급 C. 논문기준 SR 0.16 vs 15bps SR 0.45. [무인 병렬 B3_13] 소형주(시총 하위 1/3) — … |
-| 936 | L-RP-20260831_181625 | liquidity | C | RF_PAR_B3_15_ 충실구현: 등급 C. 논문기준 SR 0.13 vs 15bps SR 0.39. [무인 병렬 B3_15] 섹터 중립 — B3/universe… |
-| 937 | L-RP-20260831_182302 | ? | C | RF_PAR_B4_17_LOO 충실구현: 등급 C. 논문기준 SR 0.34 vs 15bps SR 0.47. [무인 병렬 B4_17] 팩터 제외(LOO) — B4/… |
-| 938 | L-RP-20260831_182919 | liquidity | C | RF_PAR_B4_16_ 충실구현: 등급 C. 논문기준 SR 0.40 vs 15bps SR 0.53. [무인 병렬 B4_16] 전 요소 결합 — B4/combin… |
-| 939 | L-RP-20260831_183534 | liquidity | F | RF_PAR_B4_20_3 충실구현: 등급 F. 논문기준 SR 0.41 vs 15bps SR 0.52. [무인 병렬 B4_20] 3팩터(승자+차순위) — B4/c… |
-| 940 | L-RP-20260831_190204 | overlay_regime | F | RF_PAR_B5_21_ddbrakeqdrawdown 충실구현: 등급 F. 논문기준 SR 0.20 vs 15bps SR 0.30. [무인 병렬 B5_21] dd_… |
-| 941 | L-RP-20260831_190204 | overlay_regime | F | RF_PAR_B5_22_volxddcombo 충실구현: 등급 F. 논문기준 SR 0.23 vs 15bps SR 0.32. [무인 병렬 B5_22] vol_x_dd… |
-| 942 | L-RP-20260831_190204 | overlay_regime | F | RF_PAR_B5_25_volmedianvoltarget 충실구현: 등급 F. 논문기준 SR 0.38 vs 15bps SR 0.49. [무인 병렬 B5_25] v… |
-| 943 | L-RP-20260831_190204 | overlay_regime | F | RF_PAR_B5_23_turbulencestatemultivar 충실구현: 등급 F. 논문기준 SR 0.35 vs 15bps SR 0.45. [무인 병렬 B5_… |
-| 944 | L-RP-20260831_190209 | ml_complexity | F | RF_PAR_B5_24_mltailgateml 충실구현: 등급 F. 논문기준 SR 0.36 vs 15bps SR 0.48. [무인 병렬 B5_24] ml_tail… |
-| 945 | L-RP-20260831_205211 | low_vol | F | RF_PAR_B1_3_sigma60 충실구현: 등급 F. 논문기준 SR 0.15 vs 15bps SR 0.27. [무인 병렬 B1_3] 저변동 sigma60 — … |
-| 946 | L-RP-20260831_205741 | liquidity | C | RF_PAR_B1_5_Amihud 충실구현: 등급 C. 논문기준 SR 0.36 vs 15bps SR 0.62. [무인 병렬 B1_5] 비유동 Amihud — B1… |
-| 947 | L-RP-20260831_205749 | quality_profitability | C | RF_PAR_B1_2_GPA 충실구현: 등급 C. 논문기준 SR 0.25 vs 15bps SR 0.47. [무인 병렬 B1_2] 수익성 GP/A — B1/mult… |
-| 948 | L-RP-20260831_205749_02 | value | C | RF_PAR_B1_1_BM 충실구현: 등급 C. 논문기준 SR 0.15 vs 15bps SR 0.37. [무인 병렬 B1_1] 가치 B/M — B1/multifa… |
-| 949 | L-RP-20260831_205756 | earnings_event | F | RF_PAR_B1_4_3m 충실구현: 등급 F. 논문기준 SR -0.02 vs 15bps SR 0.20. [무인 병렬 B1_4] 이익수정 3m — B1/multi… |
-| 950 | L-RP-20260831_211813 | liquidity | C | RF_PAR_B2_7_entropyentropy 충실구현: 등급 C. 논문기준 SR 0.51 vs 15bps SR 0.66. [무인 병렬 B2_7] entropy… |
-| 951 | L-RP-20260831_211813_02 | liquidity | F | RF_PAR_B2_10_SchurDampingoptimizer 충실구현: 등급 F. 논문기준 SR 0.35 vs 15bps SR 0.47. [무인 병렬 B2_10… |
-| 952 | L-RP-20260831_211816 | liquidity | C | RF_PAR_B2_8_factorrpriskparity 충실구현: 등급 C. 논문기준 SR 0.51 vs 15bps SR 0.64. [무인 병렬 B2_8] fac… |
-| 953 | L-RP-20260831_211816_02 | liquidity | C | RF_PAR_B2_6_cvartailaware 충실구현: 등급 C. 논문기준 SR 0.51 vs 15bps SR 0.65. [무인 병렬 B2_6] cvar(tai… |
-| 954 | L-RP-20260831_211817 | low_vol | C | RF_PAR_B2_9_ivolriskbased 충실구현: 등급 C. 논문기준 SR 0.49 vs 15bps SR 0.63. [무인 병렬 B2_9] ivol(ris… |
-| 955 | L-RP-20260831_213321 | liquidity | C | RF_PAR_B3_11_KOSDAQ150 충실구현: 등급 C. 논문기준 SR 0.40 vs 15bps SR 0.65. [무인 병렬 B3_11] KOSDAQ150 … |
-| 956 | L-RP-20260831_213334 | liquidity | C | RF_PAR_B3_14_13 충실구현: 등급 C. 논문기준 SR 0.34 vs 15bps SR 0.56. [무인 병렬 B3_14] 대형주(시총 상위 1/3) — … |
-| 957 | L-RP-20260831_213344 | liquidity | C | RF_PAR_B3_12_KOSPI200 충실구현: 등급 C. 논문기준 SR 0.13 vs 15bps SR 0.34. [무인 병렬 B3_12] KOSPI200 단독… |
-| 958 | L-RP-20260831_213349 | liquidity | F | RF_PAR_B3_15_ 충실구현: 등급 F. 논문기준 SR -0.10 vs 15bps SR 0.09. [무인 병렬 B3_15] 섹터 중립 — B3/univers… |
-| 959 | L-RP-20260831_213350 | liquidity | C | RF_PAR_B3_13_13 충실구현: 등급 C. 논문기준 SR 0.09 vs 15bps SR 0.34. [무인 병렬 B3_13] 소형주(시총 하위 1/3) — … |
-| 960 | L-RP-20260831_222105 | overlay_regime | F | RF_PAR_B5_22_volxddcombo 충실구현: 등급 F. 논문기준 SR 0.36 vs 15bps SR 0.45. [무인 병렬 B5_22] vol_x_dd… |
-| 961 | L-RP-20260831_222105 | overlay_regime | F | RF_PAR_B5_21_ddbrakeqdrawdown 충실구현: 등급 F. 논문기준 SR 0.32 vs 15bps SR 0.43. [무인 병렬 B5_21] dd_… |
-| 962 | L-RP-20260831_222107 | overlay_regime | C | RF_PAR_B5_23_turbulencestatemultivar 충실구현: 등급 C. 논문기준 SR 0.44 vs 15bps SR 0.53. [무인 병렬 B5_… |
-| 963 | L-RP-20260831_222111 | ml_complexity | C | RF_PAR_B5_24_mltailgateml 충실구현: 등급 C. 논문기준 SR 0.48 vs 15bps SR 0.60. [무인 병렬 B5_24] ml_tail… |
-| 964 | L-RP-20260831_222113 | overlay_regime | C | RF_PAR_B5_25_volmedianvoltarget 충실구현: 등급 C. 논문기준 SR 0.47 vs 15bps SR 0.58. [무인 병렬 B5_25] v… |
-| 965 | L-RP-20260901_151625 | low_vol | F | RF_PAR_B1_3_sigma60 충실구현: 등급 F. 논문기준 SR 0.05 vs 15bps SR 0.16. [무인 병렬 B1_3] 저변동 sigma60 — … |
-| 966 | L-RP-20260901_152628 | quality_profitability | C | RF_PAR_B1_2_GPA 충실구현: 등급 C. 논문기준 SR 0.47 vs 15bps SR 0.55. [무인 병렬 B1_2] 수익성 GP/A — B1/mult… |
-| 967 | L-RP-20260901_152628 | liquidity | C | RF_PAR_B1_5_Amihud 충실구현: 등급 C. 논문기준 SR 0.41 vs 15bps SR 0.53. [무인 병렬 B1_5] 비유동 Amihud — B1… |
-| 968 | L-RP-20260901_152635 | value | C | RF_PAR_B1_1_BM 충실구현: 등급 C. 논문기준 SR 0.30 vs 15bps SR 0.47. [무인 병렬 B1_1] 가치 B/M — B1/multifa… |
-| 969 | L-RP-20260901_152708 | earnings_event | C | RF_PAR_B1_4_3m 충실구현: 등급 C. 논문기준 SR 0.44 vs 15bps SR 0.59. [무인 병렬 B1_4] 이익수정 3m — B1/multif… |
-| 970 | L-RP-20260901_162642 | ? | F | RF_PAR_B2_7_entropyentropy 충실구현: 등급 F. 논문기준 SR 0.41 vs 15bps SR 0.51. entropy(entropy) |
-| 971 | L-RP-20260901_162642 | ? | F | RF_PAR_B2_8_factorrpriskparity 충실구현: 등급 F. 논문기준 SR 0.39 vs 15bps SR 0.48. factor_rp(risk_p… |
-| 972 | L-RP-20260901_162643 | ? | F | RF_PAR_B2_10_SchurDampingoptimizer 충실구현: 등급 F. 논문기준 SR 0.35 vs 15bps SR 0.43. SchurDamping… |
-| 973 | L-RP-20260901_162645 | low_vol | F | RF_PAR_B2_9_ivolriskbased 충실구현: 등급 F. 논문기준 SR 0.39 vs 15bps SR 0.48. ivol(risk_based) |
-| 974 | L-RP-20260901_162647 | ? | F | RF_PAR_B2_6_cvartailaware 충실구현: 등급 F. 논문기준 SR 0.38 vs 15bps SR 0.48. cvar(tail_aware) |
-| 975 | L-RP-20260901_165403 | ? | C | RF_PAR_B3_11_KOSDAQ150 충실구현: 등급 C. 논문기준 SR 0.33 vs 15bps SR 0.49. KOSDAQ150 단독 |
-| 976 | L-RP-20260901_165432 | ? | F | RF_PAR_B3_14_13 충실구현: 등급 F. 논문기준 SR 0.08 vs 15bps SR 0.24. 대형주(시총 상위 1/3) |
-| 977 | L-RP-20260901_165501 | size | C | RF_PAR_B3_13_13 충실구현: 등급 C. 논문기준 SR 0.31 vs 15bps SR 0.48. 소형주(시총 하위 1/3) |
-| 978 | L-RP-20260901_165510 | ? | C | RF_PAR_B3_12_KOSPI200 충실구현: 등급 C. 논문기준 SR 0.25 vs 15bps SR 0.39. KOSPI200 단독 |
-| 979 | L-RP-20260901_165515 | ? | F | RF_PAR_B3_15_ 충실구현: 등급 F. 논문기준 SR 0.26 vs 15bps SR 0.40. 섹터 중립 |
-| 980 | L-RP-20260901_171759 | overlay_regime | F | RF_PAR_B5_17_volxddcombo 충실구현: 등급 F. 논문기준 SR 0.32 vs 15bps SR 0.40. [무인 병렬 B5_17] vol_x_dd… |
-| 981 | L-RP-20260901_171759 | overlay_regime | F | RF_PAR_B5_16_ddbrakeqdrawdown 충실구현: 등급 F. 논문기준 SR 0.31 vs 15bps SR 0.41. [무인 병렬 B5_16] dd_… |
-| 982 | L-RP-20260901_171802 | overlay_regime | F | RF_PAR_B5_18_turbulencestatemultivar 충실구현: 등급 F. 논문기준 SR 0.29 vs 15bps SR 0.38. [무인 병렬 B5_… |
-| 983 | L-RP-20260901_171810 | ml_complexity | F | RF_PAR_B5_19_mltailgateml 충실구현: 등급 F. 논문기준 SR 0.36 vs 15bps SR 0.46. [무인 병렬 B5_19] ml_tail… |
-| 984 | L-RP-20260901_171811 | overlay_regime | F | RF_PAR_B5_20_volmedianvoltarget 충실구현: 등급 F. 논문기준 SR 0.33 vs 15bps SR 0.42. [무인 병렬 B5_20] v… |
-| 985 | L-RP-20260902_132503 | ? | F | RF_PAR_B1_1_1liquidity 충실구현: 등급 F. 논문기준 SR 0.40 vs 15bps SR 0.52. 1팩터 직교(liquidity) |
-| 986 | L-RP-20260902_133524 | overlay_regime | F | RF_PAR_B1_2_2liquidityregime 충실구현: 등급 F. 논문기준 SR 0.48 vs 15bps SR 0.60. 2팩터 직교(liquidity+r… |
-| 987 | L-RP-20260902_134242 | overlay_regime | C | RF_PAR_B1_3_3liquidityqualityregime 충실구현: 등급 C. 논문기준 SR 0.63 vs 15bps SR 0.71. 3팩터 직교(liqu… |
-| 988 | L-RP-20260902_135009 | overlay_regime | C | RF_PAR_B1_4_4liquidityqualityregimecrowding 충실구현: 등급 C. 논문기준 SR 0.68 vs 15bps SR 0.75. 4팩터… |
-| 989 | L-RP-20260902_135540 | defense | C | RF_PAR_B1_5_5liquidityqualityregimecrowdingdefense 충실구현: 등급 C. 논문기준 SR 0.63 vs 15bps SR 0.… |
-| 990 | L-RP-20260902_142951 | ? | C | RF_PAR_B2_8_factorrpriskparity 충실구현: 등급 C. 논문기준 SR 0.66 vs 15bps SR 0.73. factor_rp(risk_p… |
-| 991 | L-RP-20260902_142951 | ? | C | RF_PAR_B2_10_SchurDampingoptimizer 충실구현: 등급 C. 논문기준 SR 0.57 vs 15bps SR 0.71. SchurDamping… |
-| 992 | L-RP-20260902_142951 | ? | C | RF_PAR_B2_7_entropyentropy 충실구현: 등급 C. 논문기준 SR 0.66 vs 15bps SR 0.74. entropy(entropy) |
-| 993 | L-RP-20260902_142951 | ? | C | RF_PAR_B2_6_cvartailaware 충실구현: 등급 C. 논문기준 SR 0.66 vs 15bps SR 0.73. cvar(tail_aware) |
-| 994 | L-RP-20260902_143008 | low_vol | C | RF_PAR_B2_9_ivolriskbased 충실구현: 등급 C. 논문기준 SR 0.65 vs 15bps SR 0.71. ivol(risk_based) |
-| 995 | L-RP-20260902_144904 | ? | C | RF_PAR_B3_11_KOSDAQ150 충실구현: 등급 C. 논문기준 SR 0.56 vs 15bps SR 0.62. KOSDAQ150 단독 |
-| 996 | L-RP-20260902_144933 | ? | F | RF_PAR_B3_12_KOSPI200 충실구현: 등급 F. 논문기준 SR 0.44 vs 15bps SR 0.54. KOSPI200 단독 |
-| 997 | L-RP-20260902_144959 | ? | C | RF_PAR_B3_15_ 충실구현: 등급 C. 논문기준 SR 0.51 vs 15bps SR 0.61. 섹터 중립 |
-| 998 | L-RP-20260902_145031 | ? | F | RF_PAR_B3_14_13 충실구현: 등급 F. 논문기준 SR 0.49 vs 15bps SR 0.60. 대형주(시총 상위 1/3) |
-| 999 | L-RP-20260902_145114 | size | C | RF_PAR_B3_13_13 충실구현: 등급 C. 논문기준 SR 0.39 vs 15bps SR 0.51. 소형주(시총 하위 1/3) |
-| 1000 | L-RP-20260902_184900 | overlay_regime | C | RF_PAR_B5_16_ddbrakeqdrawdown 충실구현: 등급 C. 논문기준 SR 0.39 vs 15bps SR 0.48. dd_brake_q(drawdo… |
-| 1001 | L-RP-20260902_184904 | ? | C | RF_PAR_B5_18_turbulencestatemultivar 충실구현: 등급 C. 논문기준 SR 0.50 vs 15bps SR 0.63. turbulence… |
-| 1002 | L-RP-20260902_184911 | ml_complexity | C | RF_PAR_B5_19_mltailgateml 충실구현: 등급 C. 논문기준 SR 0.40 vs 15bps SR 0.51. ml_tail_gate(ml) |
-| 1003 | L-RP-20260902_184913 | ? | C | RF_PAR_B5_20_volmedianvoltarget 충실구현: 등급 C. 논문기준 SR 0.54 vs 15bps SR 0.63. vol_median(vol_… |
-| 1004 | L-RP-20260902_184915 | ? | C | RF_PAR_B5_17_volxddcombo 충실구현: 등급 C. 논문기준 SR 0.51 vs 15bps SR 0.59. vol_x_dd(combo) |
-| 1005 | L-RP-20260902_190528 | ? | F | RF_PAR_B4_22_LOO 충실구현: 등급 F. 논문기준 SR -0.14 vs 15bps SR 0.01. 팩터 제외(LOO) |
-| 1006 | L-RP-20260902_191200 | ? | C | RF_PAR_B4_21_4 충실구현: 등급 C. 논문기준 SR 0.38 vs 15bps SR 0.47. 전 요소 결합(4축) |
-| 1007 | L-RP-20260902_191214 | overlay_regime | C | RF_PAR_B4_25_LOO3 충실구현: 등급 C. 논문기준 SR 0.39 vs 15bps SR 0.51. 오버레이 제외(LOO) = 구 3축 전체결합 |
-| 1008 | L-RP-20260902_191216 | ? | F | RF_PAR_B4_24_LOO 충실구현: 등급 F. 논문기준 SR 0.53 vs 15bps SR 0.64. 유니버스 제외(LOO) |
-| 1009 | L-RP-20260902_193054 | ? | C | RF_PAR_B1_1_1value 충실구현: 등급 C. 논문기준 SR 0.46 vs 15bps SR 0.57. 1팩터 직교(value) |
-| 1010 | L-RP-20260902_193055 | ? | F | RF_PAR_B1_2_2valueaccrual 충실구현: 등급 F. 논문기준 SR 0.44 vs 15bps SR 0.55. 2팩터 직교(value+accrual) |
-| 1011 | L-RP-20260902_193118 | quality | C | RF_PAR_B1_3_3valuequalityaccrual 충실구현: 등급 C. 논문기준 SR 0.59 vs 15bps SR 0.66. 3팩터 직교(value+q… |
-| 1012 | L-RP-20260902_193232 | overlay_regime | C | RF_PAR_B1_4_4valuequalityregimeaccrual 충실구현: 등급 C. 논문기준 SR 0.58 vs 15bps SR 0.67. 4팩터 직교(v… |
-| 1013 | L-RP-20260902_193310 | overlay_regime | C | RF_PAR_B1_5_5valuequalityregimecrowdingaccrual 충실구현: 등급 C. 논문기준 SR 0.48 vs 15bps SR 0.58. … |
-| 1014 | L-RP-20260902_194543 | ? | C | RF_PAR_B2_10_SchurDampingoptimizer 충실구현: 등급 C. 논문기준 SR 0.49 vs 15bps SR 0.60. SchurDamping… |
-| 1015 | L-RP-20260902_194543 | ? | C | RF_PAR_B2_6_cvartailaware 충실구현: 등급 C. 논문기준 SR 0.56 vs 15bps SR 0.64. cvar(tail_aware) |
-| 1016 | L-RP-20260902_194543 | ? | C | RF_PAR_B2_7_entropyentropy 충실구현: 등급 C. 논문기준 SR 0.55 vs 15bps SR 0.64. entropy(entropy) |
-| 1017 | L-RP-20260902_194543 | low_vol | C | RF_PAR_B2_9_ivolriskbased 충실구현: 등급 C. 논문기준 SR 0.59 vs 15bps SR 0.66. ivol(risk_based) |
-| 1018 | L-RP-20260902_194543 | ? | C | RF_PAR_B2_8_factorrpriskparity 충실구현: 등급 C. 논문기준 SR 0.56 vs 15bps SR 0.64. factor_rp(risk_p… |
-| 1019 | L-RP-20260902_200228 | ? | C | RF_PAR_B3_11_KOSDAQ150 충실구현: 등급 C. 논문기준 SR 0.59 vs 15bps SR 0.67. KOSDAQ150 단독 |
-| 1020 | L-RP-20260902_200248 | ? | F | RF_PAR_B3_14_13 충실구현: 등급 F. 논문기준 SR 0.45 vs 15bps SR 0.52. 대형주(시총 상위 1/3) |
-| 1021 | L-RP-20260902_200316 | ? | F | RF_PAR_B3_12_KOSPI200 충실구현: 등급 F. 논문기준 SR 0.43 vs 15bps SR 0.53. KOSPI200 단독 |
-| 1022 | L-RP-20260902_200321 | size | C | RF_PAR_B3_13_13 충실구현: 등급 C. 논문기준 SR 0.55 vs 15bps SR 0.69. 소형주(시총 하위 1/3) |
-| 1023 | L-RP-20260902_200333 | ? | C | RF_PAR_B3_15_ 충실구현: 등급 C. 논문기준 SR 0.55 vs 15bps SR 0.65. 섹터 중립 |
-| 1024 | L-RP-20260902_201618 | ? | C | RF_PAR_B5_18_turbulencestatemultivar 충실구현: 등급 C. 논문기준 SR 0.53 vs 15bps SR 0.65. turbulence… |
-| 1025 | L-RP-20260902_201618 | overlay_regime | F | RF_PAR_B5_16_ddbrakeqdrawdown 충실구현: 등급 F. 논문기준 SR 0.50 vs 15bps SR 0.63. dd_brake_q(drawdo… |
-| 1026 | L-RP-20260902_201618 | ? | F | RF_PAR_B5_17_volxddcombo 충실구현: 등급 F. 논문기준 SR 0.54 vs 15bps SR 0.68. vol_x_dd(combo) |
-| 1027 | L-RP-20260902_201619 | ? | C | RF_PAR_B5_20_volmedianvoltarget 충실구현: 등급 C. 논문기준 SR 0.55 vs 15bps SR 0.67. vol_median(vol_… |
-| 1028 | L-RP-20260902_201620 | ml_complexity | C | RF_PAR_B5_19_mltailgateml 충실구현: 등급 C. 논문기준 SR 0.53 vs 15bps SR 0.66. ml_tail_gate(ml) |
-| 1029 | L-RP-20260902_203214 | ? | C | RF_PAR_B4_23_LOO 충실구현: 등급 C. 논문기준 SR 0.58 vs 15bps SR 0.65. 비중 제외(LOO) |
-| 1030 | L-RP-20260902_203328 | ? | C | RF_PAR_B4_24_LOO 충실구현: 등급 C. 논문기준 SR 0.54 vs 15bps SR 0.62. 유니버스 제외(LOO) |
-| 1031 | L-RP-20260902_213446 | ? | F | RF_PAR_B1_2_2riskgrowth 충실구현: 등급 F. 논문기준 SR 0.34 vs 15bps SR 0.45. 2팩터 직교(risk+growth) |
-| 1032 | L-RP-20260902_213446 | ? | C | RF_PAR_B1_1_1risk 충실구현: 등급 C. 논문기준 SR 0.57 vs 15bps SR 0.65. 1팩터 직교(risk) |
-| 1033 | L-RP-20260902_213553 | ? | F | RF_PAR_B1_3_3riskcrowdinggrowth 충실구현: 등급 F. 논문기준 SR 0.32 vs 15bps SR 0.44. 3팩터 직교(risk+cro… |
-| 1034 | L-RP-20260902_213611 | ? | F | RF_PAR_B1_4_4riskcrowdinggrowthliquidity 충실구현: 등급 F. 논문기준 SR 0.39 vs 15bps SR 0.49. 4팩터 직교… |
-| 1035 | L-RP-20260902_213629 | ? | F | RF_PAR_B1_5_5riskcrowdinggrowthvalueliquidity 충실구현: 등급 F. 논문기준 SR 0.22 vs 15bps SR 0.33. 5… |
-| 1036 | L-RP-20260902_215053 | low_vol | F | RF_PAR_B2_9_ivolriskbased 충실구현: 등급 F. 논문기준 SR 0.52 vs 15bps SR 0.60. ivol(risk_based) |
-| 1037 | L-RP-20260902_215053 | ? | F | RF_PAR_B2_8_factorrpriskparity 충실구현: 등급 F. 논문기준 SR 0.52 vs 15bps SR 0.60. factor_rp(risk_p… |
-| 1038 | L-RP-20260902_215053 | ? | F | RF_PAR_B2_7_entropyentropy 충실구현: 등급 F. 논문기준 SR 0.57 vs 15bps SR 0.64. entropy(entropy) |
-| 1039 | L-RP-20260902_215053 | ? | F | RF_PAR_B2_10_SchurDampingoptimizer 충실구현: 등급 F. 논문기준 SR 0.40 vs 15bps SR 0.49. SchurDamping… |
-| 1040 | L-RP-20260902_215053 | ? | F | RF_PAR_B2_6_cvartailaware 충실구현: 등급 F. 논문기준 SR 0.56 vs 15bps SR 0.64. cvar(tail_aware) |
-| 1041 | L-RP-20260902_215906 | ? | C | RF_PAR_B3_11_KOSDAQ150 충실구현: 등급 C. 논문기준 SR 0.80 vs 15bps SR 0.85. KOSDAQ150 단독 |
-| 1042 | L-RP-20260902_215906 | ? | F | RF_PAR_B3_14_13 충실구현: 등급 F. 논문기준 SR 0.33 vs 15bps SR 0.41. 대형주(시총 상위 1/3) |
-| 1043 | L-RP-20260902_215917 | ? | F | RF_PAR_B3_12_KOSPI200 충실구현: 등급 F. 논문기준 SR 0.42 vs 15bps SR 0.50. KOSPI200 단독 |
-| 1044 | L-RP-20260902_215925 | size | C | RF_PAR_B3_13_13 충실구현: 등급 C. 논문기준 SR 0.51 vs 15bps SR 0.63. 소형주(시총 하위 1/3) |
-| 1045 | L-RP-20260902_215932 | ? | C | RF_PAR_B3_15_ 충실구현: 등급 C. 논문기준 SR 0.58 vs 15bps SR 0.68. 섹터 중립 |
-| 1046 | L-RP-20260902_220557 | overlay_regime | C | RF_PAR_B5_16_ddbrakeqdrawdown 충실구현: 등급 C. 논문기준 SR 0.69 vs 15bps SR 0.78. dd_brake_q(drawdo… |
-| 1047 | L-RP-20260902_220557 | ? | C | RF_PAR_B5_17_volxddcombo 충실구현: 등급 C. 논문기준 SR 0.80 vs 15bps SR 0.90. vol_x_dd(combo) |
-| 1048 | L-RP-20260902_220557 | ? | C | RF_PAR_B5_18_turbulencestatemultivar 충실구현: 등급 C. 논문기준 SR 0.86 vs 15bps SR 0.87. turbulence… |
-| 1049 | L-RP-20260902_220557 | ? | C | RF_PAR_B5_20_volmedianvoltarget 충실구현: 등급 C. 논문기준 SR 0.85 vs 15bps SR 0.89. vol_median(vol_… |
-| 1050 | L-RP-20260902_220558 | ml_complexity | C | RF_PAR_B5_19_mltailgateml 충실구현: 등급 C. 논문기준 SR 0.79 vs 15bps SR 0.83. ml_tail_gate(ml) |
-| 1051 | L-RP-20260902_221428 | ? | F | RF_PAR_B4_24_LOO 충실구현: 등급 F. 논문기준 SR 0.60 vs 15bps SR 0.68. 유니버스 제외(LOO) |
-| 1052 | L-RP-20260903_083003 | quality | C | RF_PAR_B1_1_1quality 충실구현: 등급 C. 논문기준 SR 0.28 vs 15bps SR 0.42. 1팩터 직교(quality) |
-| 1053 | L-RP-20260903_083048 | quality | C | RF_PAR_B1_2_2qualitycrowding 충실구현: 등급 C. 논문기준 SR 0.31 vs 15bps SR 0.46. 2팩터 직교(quality+cro… |
-| 1054 | L-RP-20260903_083200 | defense | C | RF_PAR_B1_3_3qualitycrowdingdefense 충실구현: 등급 C. 논문기준 SR 0.38 vs 15bps SR 0.52. 3팩터 직교(qual… |
-| 1055 | L-RP-20260903_083222 | defense | C | RF_PAR_B1_4_4qualitycrowdingaccrualdefense 충실구현: 등급 C. 논문기준 SR 0.36 vs 15bps SR 0.51. 4팩터 … |
-| 1056 | L-RP-20260903_083258 | defense | C | RF_PAR_B1_5_5qualityregimecrowdingaccrualdefense 충실구현: 등급 C. 논문기준 SR 0.32 vs 15bps SR 0.48… |
-| 1057 | L-RP-20260903_084355 | ? | C | RF_PAR_B2_7_entropyentropy 충실구현: 등급 C. 논문기준 SR 0.36 vs 15bps SR 0.51. entropy(entropy) |
-| 1058 | L-RP-20260903_084409 | ? | C | RF_PAR_B2_6_cvartailaware 충실구현: 등급 C. 논문기준 SR 0.33 vs 15bps SR 0.48. cvar(tail_aware) |
-| 1059 | L-RP-20260903_084409 | ? | C | RF_PAR_B2_8_factorrpriskparity 충실구현: 등급 C. 논문기준 SR 0.33 vs 15bps SR 0.48. factor_rp(risk_p… |
-| 1060 | L-RP-20260903_084410 | ? | F | RF_PAR_B2_10_SchurDampingoptimizer 충실구현: 등급 F. 논문기준 SR 0.20 vs 15bps SR 0.35. SchurDamping… |
-| 1061 | L-RP-20260903_084412 | low_vol | C | RF_PAR_B2_9_ivolriskbased 충실구현: 등급 C. 논문기준 SR 0.33 vs 15bps SR 0.48. ivol(risk_based) |
-| 1062 | L-RP-20260903_085859 | ? | C | RF_PAR_B3_11_KOSDAQ150 충실구현: 등급 C. 논문기준 SR 0.47 vs 15bps SR 0.59. KOSDAQ150 단독 |
-| 1063 | L-RP-20260903_085904 | ? | F | RF_PAR_B3_14_13 충실구현: 등급 F. 논문기준 SR 0.19 vs 15bps SR 0.35. 대형주(시총 상위 1/3) |
-| 1064 | L-RP-20260903_085915 | ? | F | RF_PAR_B3_12_KOSPI200 충실구현: 등급 F. 논문기준 SR 0.17 vs 15bps SR 0.33. KOSPI200 단독 |
-| 1065 | L-RP-20260903_085919 | size | C | RF_PAR_B3_13_13 충실구현: 등급 C. 논문기준 SR 0.32 vs 15bps SR 0.47. 소형주(시총 하위 1/3) |
-| 1066 | L-RP-20260903_085929 | ? | C | RF_PAR_B3_15_ 충실구현: 등급 C. 논문기준 SR 0.42 vs 15bps SR 0.54. 섹터 중립 |
-| 1067 | L-RP-20260903_091417 | ? | F | RF_PAR_B5_18_turbulencestatemultivar 충실구현: 등급 F. 논문기준 SR 0.38 vs 15bps SR 0.46. turbulence… |
-| 1068 | L-RP-20260903_091417 | ? | F | RF_PAR_B5_17_volxddcombo 충실구현: 등급 F. 논문기준 SR 0.39 vs 15bps SR 0.49. vol_x_dd(combo) |
-| 1069 | L-RP-20260903_091417 | ? | C | RF_PAR_B5_20_volmedianvoltarget 충실구현: 등급 C. 논문기준 SR 0.45 vs 15bps SR 0.56. vol_median(vol_… |
-| 1070 | L-RP-20260903_091417 | overlay_regime | C | RF_PAR_B5_16_ddbrakeqdrawdown 충실구현: 등급 C. 논문기준 SR 0.36 vs 15bps SR 0.48. dd_brake_q(drawdo… |
-| 1071 | L-RP-20260903_091418 | ml_complexity | C | RF_PAR_B5_19_mltailgateml 충실구현: 등급 C. 논문기준 SR 0.46 vs 15bps SR 0.57. ml_tail_gate(ml) |
-| 1072 | L-RP-20260903_092923 | ? | C | RF_PAR_B4_24_LOO 충실구현: 등급 C. 논문기준 SR 0.35 vs 15bps SR 0.49. 유니버스 제외(LOO) |
-| 1073 | L-RP-20260903_095317 | momentum | F | RF_PAR_B1_2_2momentumaccrual 충실구현: 등급 F. 논문기준 SR 0.23 vs 15bps SR 0.37. 2팩터 직교(momentum+ac… |
-| 1074 | L-RP-20260903_095335 | momentum | F | RF_PAR_B1_3_3momentumaccrualconsensus 충실구현: 등급 F. 논문기준 SR 0.33 vs 15bps SR 0.45. 3팩터 직교(mo… |
-| 1075 | L-RP-20260903_095401 | momentum | C | RF_PAR_B1_4_4momentumaccrualconsensusquality 충실구현: 등급 C. 논문기준 SR 0.35 vs 15bps SR 0.48. 4팩… |
-| 1076 | L-RP-20260903_095427 | defense | F | RF_PAR_B1_5_5momentumaccrualconsensusdefensequality 충실구현: 등급 F. 논문기준 SR 0.25 vs 15bps SR 0… |
-| 1077 | L-RP-20260903_101503 | defense | F | RF_PAR_B1_5_5defensecrowdingaccrualliquidityquality 충실구현: 등급 F. 논문기준 SR 0.20 vs 15bps SR 0… |
-| 1078 | L-RP-20260903_102553 | ? | F | RF_PAR_B2_7_entropyentropy 충실구현: 등급 F. 논문기준 SR 0.32 vs 15bps SR 0.45. entropy(entropy) |
-| 1079 | L-RP-20260903_102553 | ? | C | RF_PAR_B2_6_cvartailaware 충실구현: 등급 C. 논문기준 SR 0.37 vs 15bps SR 0.50. cvar(tail_aware) |
-| 1080 | L-RP-20260903_102553 | ? | C | RF_PAR_B2_8_factorrpriskparity 충실구현: 등급 C. 논문기준 SR 0.37 vs 15bps SR 0.49. factor_rp(risk_p… |
-| 1081 | L-RP-20260903_102553 | ? | F | RF_PAR_B2_10_SchurDampingoptimizer 충실구현: 등급 F. 논문기준 SR 0.33 vs 15bps SR 0.44. SchurDamping… |
-| 1082 | L-RP-20260903_102555 | low_vol | C | RF_PAR_B2_9_ivolriskbased 충실구현: 등급 C. 논문기준 SR 0.36 vs 15bps SR 0.49. ivol(risk_based) |
-| 1083 | L-RP-20260903_104017 | ? | F | RF_PAR_B3_11_KOSDAQ150 충실구현: 등급 F. 논문기준 SR 0.29 vs 15bps SR 0.38. KOSDAQ150 단독 |
-| 1084 | L-RP-20260903_104044 | ? | F | RF_PAR_B3_14_13 충실구현: 등급 F. 논문기준 SR 0.33 vs 15bps SR 0.46. 대형주(시총 상위 1/3) |
-| 1085 | L-RP-20260903_104049 | size | F | RF_PAR_B3_13_13 충실구현: 등급 F. 논문기준 SR 0.31 vs 15bps SR 0.45. 소형주(시총 하위 1/3) |
-| 1086 | L-RP-20260903_104052 | ? | C | RF_PAR_B3_12_KOSPI200 충실구현: 등급 C. 논문기준 SR 0.38 vs 15bps SR 0.51. KOSPI200 단독 |
-| 1087 | L-RP-20260903_104055 | ? | F | RF_PAR_B3_15_ 충실구현: 등급 F. 논문기준 SR 0.40 vs 15bps SR 0.50. 섹터 중립 |
-| 1088 | L-RP-20260903_104815 | ? | F | RF_PAR_B5_17_volxddcombo 충실구현: 등급 F. 논문기준 SR 0.30 vs 15bps SR 0.41. vol_x_dd(combo) |
-| 1089 | L-RP-20260903_104815 | overlay_regime | F | RF_PAR_B5_16_ddbrakeqdrawdown 충실구현: 등급 F. 논문기준 SR 0.30 vs 15bps SR 0.41. dd_brake_q(drawdo… |
-| 1090 | L-RP-20260903_104816 | ? | F | RF_PAR_B5_18_turbulencestatemultivar 충실구현: 등급 F. 논문기준 SR 0.32 vs 15bps SR 0.42. turbulence… |
-| 1091 | L-RP-20260903_104820 | ? | F | RF_PAR_B5_20_volmedianvoltarget 충실구현: 등급 F. 논문기준 SR 0.35 vs 15bps SR 0.46. vol_median(vol_… |
-| 1092 | L-RP-20260903_104822 | ml_complexity | F | RF_PAR_B5_19_mltailgateml 충실구현: 등급 F. 논문기준 SR 0.37 vs 15bps SR 0.49. ml_tail_gate(ml) |
-| 1093 | L-RP-20260903_105544 | ? | F | RF_PAR_B4_22_LOO 충실구현: 등급 F. 논문기준 SR 0.35 vs 15bps SR 0.46. 팩터 제외(LOO) |
-| 1094 | L-RP-20260903_105642 | ? | F | RF_PAR_B4_23_LOO 충실구현: 등급 F. 논문기준 SR 0.40 vs 15bps SR 0.50. 비중 제외(LOO) |
-| 1095 | L-RP-20260903_105742 | overlay_regime | F | RF_PAR_B4_25_LOO3 충실구현: 등급 F. 논문기준 SR 0.39 vs 15bps SR 0.49. 오버레이 제외(LOO) = 구 3축 전체결합 |
-| 1096 | L-RP-20260903_105742_02 | ? | F | RF_PAR_B4_21_4 충실구현: 등급 F. 논문기준 SR 0.40 vs 15bps SR 0.48. 전 요소 결합(4축) |
-| 1097 | L-RP-20260903_105745 | ? | F | RF_PAR_B4_24_LOO 충실구현: 등급 F. 논문기준 SR 0.37 vs 15bps SR 0.48. 유니버스 제외(LOO) |
-| 1098 | L-RP-20260903_111233 | defense | C | RF_PAR_B1_2_2growthdefense 충실구현: 등급 C. 논문기준 SR 0.56 vs 15bps SR 0.67. 2팩터 직교(growth+defens… |
-| 1099 | L-RP-20260903_111307 | defense | C | RF_PAR_B1_3_3growthliquiditydefense 충실구현: 등급 C. 논문기준 SR 0.51 vs 15bps SR 0.62. 3팩터 직교(grow… |
-| 1100 | L-RP-20260903_111349 | defense | C | RF_PAR_B1_4_4growthliquidityqualitydefense 충실구현: 등급 C. 논문기준 SR 0.50 vs 15bps SR 0.61. 4팩터 … |
-| 1101 | L-RP-20260903_111428 | defense | C | RF_PAR_B1_5_5growthconsensusliquidityqualitydefense 충실구현: 등급 C. 논문기준 SR 0.57 vs 15bps SR 0… |
-| 1102 | L-RP-20260903_152740 | ? | C | RF_PAR_B1_5_5defensecrowdingaccrualliquidityquality 충실구현: 등급 C. 논문기준 SR 0.49 vs 15bps SR 0… |
-| 1103 | L-RP-20260903_153644 | ? | C | RF_PAR_B2_7_entropyentropy 충실구현: 등급 C. 논문기준 SR 0.47 vs 15bps SR 0.58. [무인 병렬 B2_7] entropy… |
-| 1104 | L-RP-20260903_153644 | ? | C | RF_PAR_B2_6_cvartailaware 충실구현: 등급 C. 논문기준 SR 0.51 vs 15bps SR 0.62. [무인 병렬 B2_6] cvar(tai… |
-| 1105 | L-RP-20260903_153644 | ? | C | RF_PAR_B2_8_factorrpriskparity 충실구현: 등급 C. 논문기준 SR 0.50 vs 15bps SR 0.60. [무인 병렬 B2_8] fac… |
-| 1106 | L-RP-20260903_153644 | ? | C | RF_PAR_B2_10_SchurDampingoptimizer 충실구현: 등급 C. 논문기준 SR 0.42 vs 15bps SR 0.58. [무인 병렬 B2_10… |
-| 1107 | L-RP-20260903_153644 | low_vol | C | RF_PAR_B2_9_ivolriskbased 충실구현: 등급 C. 논문기준 SR 0.49 vs 15bps SR 0.60. [무인 병렬 B2_9] ivol(ris… |
-| 1108 | L-RP-20260903_154354 | ? | C | RF_PAR_B3_11_KOSDAQ150 충실구현: 등급 C. 논문기준 SR 0.52 vs 15bps SR 0.60. [무인 병렬 B3_11] KOSDAQ150 … |
-| 1109 | L-RP-20260903_154403 | ? | F | RF_PAR_B3_14_13 충실구현: 등급 F. 논문기준 SR 0.30 vs 15bps SR 0.42. [무인 병렬 B3_14] 대형주(시총 상위 1/3) — … |
-| 1110 | L-RP-20260903_154420 | ? | C | RF_PAR_B3_12_KOSPI200 충실구현: 등급 C. 논문기준 SR 0.42 vs 15bps SR 0.54. [무인 병렬 B3_12] KOSPI200 단독… |
-| 1111 | L-RP-20260903_154423 | size | C | RF_PAR_B3_13_13 충실구현: 등급 C. 논문기준 SR 0.54 vs 15bps SR 0.67. [무인 병렬 B3_13] 소형주(시총 하위 1/3) — … |
-| 1112 | L-RP-20260903_154432 | ? | C | RF_PAR_B3_15_ 충실구현: 등급 C. 논문기준 SR 0.53 vs 15bps SR 0.64. [무인 병렬 B3_15] 섹터 중립 — B3/universe… |
-| 1113 | L-RP-20260903_155047 | overlay_regime | F | RF_PAR_B5_17_ddbrakeqdrawdown 충실구현: 등급 F. 논문기준 SR 0.38 vs 15bps SR 0.50. [무인 병렬 B5_17] dd_… |
-| 1114 | L-RP-20260903_155047 | overlay_regime | F | RF_PAR_B5_18_volxddcombo 충실구현: 등급 F. 논문기준 SR 0.46 vs 15bps SR 0.56. [무인 병렬 B5_18] vol_x_dd… |
-| 1115 | L-RP-20260903_155047 | overlay_regime | C | RF_PAR_B5_19_turbulencestatemultivar 충실구현: 등급 C. 논문기준 SR 0.44 vs 15bps SR 0.54. [무인 병렬 B5_… |
-| 1116 | L-RP-20260903_155050 | ml_complexity | C | RF_PAR_B5_20_mltailgateml 충실구현: 등급 C. 논문기준 SR 0.49 vs 15bps SR 0.60. [무인 병렬 B5_20] ml_tail… |
-| 1117 | L-RP-20260903_155054 | overlay_regime | F | RF_PAR_B5_16_dbetatiltrankcrosssectional 충실구현: 등급 F. 논문기준 SR 0.45 vs 15bps SR 0.56. [무인 병렬… |
-| 1118 | L-RP-20260903_155933 | ? | C | RF_PAR_B4_23_LOO 충실구현: 등급 C. 논문기준 SR 0.50 vs 15bps SR 0.63. [무인 병렬 B4_23] 비중 제외(LOO) — B4/… |
-| 1119 | L-RP-20260903_160004 | ? | F | RF_PAR_B4_22_LOO 충실구현: 등급 F. 논문기준 SR 0.36 vs 15bps SR 0.49. [무인 병렬 B4_22] 팩터 제외(LOO) — B4/… |
-| 1120 | L-RP-20260903_160026 | overlay_regime | C | RF_PAR_B4_25_LOO3 충실구현: 등급 C. 논문기준 SR 0.53 vs 15bps SR 0.66. [무인 병렬 B4_25] 오버레이 제외(LOO) = … |
-| 1121 | L-RP-20260903_160033 | ? | C | RF_PAR_B4_21_4 충실구현: 등급 C. 논문기준 SR 0.49 vs 15bps SR 0.62. [무인 병렬 B4_21] 전 요소 결합(4축) — B4/c… |
-| 1122 | L-RP-20260903_160038 | ? | F | RF_PAR_B4_24_LOO 충실구현: 등급 F. 논문기준 SR 0.46 vs 15bps SR 0.56. [무인 병렬 B4_24] 유니버스 제외(LOO) — B… |
-| 1123 | L-RP-20260903_214959 | consensus | C | RF_PAR_B1_1_1consensus 충실구현: 등급 C. 논문기준 SR 0.24 vs 15bps SR 0.39. [무인 병렬 B1_1] 1팩터 직교(cons… |
-| 1124 | L-RP-20260903_215044 | defense | C | RF_PAR_B1_2_2consensusdefense 충실구현: 등급 C. 논문기준 SR 0.34 vs 15bps SR 0.50. [무인 병렬 B1_2] 2팩터 … |
-| 1125 | L-RP-20260903_215124 | defense | C | RF_PAR_B1_3_3consensusaccrualdefense 충실구현: 등급 C. 논문기준 SR 0.29 vs 15bps SR 0.44. [무인 병렬 B1_… |
-| 1126 | L-RP-20260903_215247 | defense | C | RF_PAR_B1_4_4consensusleverageaccrualdefense 충실구현: 등급 C. 논문기준 SR 0.27 vs 15bps SR 0.43. [무… |
-| 1127 | L-RP-20260903_215328 | defense | C | RF_PAR_B1_5_5consensusleverageaccrualdefensequality 충실구현: 등급 C. 논문기준 SR 0.28 vs 15bps SR 0… |
-| 1128 | L-RP-20260904_081628 | low_vol | C | RF_PAR_B2_9_ivolriskbased 충실구현: 등급 C. 논문기준 SR 0.33 vs 15bps SR 0.49. [무인 병렬 B2_9] ivol(ris… |
-| 1129 | L-RP-20260904_081632 | ? | C | RF_PAR_B2_7_entropyentropy 충실구현: 등급 C. 논문기준 SR 0.31 vs 15bps SR 0.48. [무인 병렬 B2_7] entropy… |
-| 1130 | L-RP-20260904_081633 | ? | C | RF_PAR_B2_6_cvartailaware 충실구현: 등급 C. 논문기준 SR 0.35 vs 15bps SR 0.51. [무인 병렬 B2_6] cvar(tai… |
-| 1131 | L-RP-20260904_081633 | ? | C | RF_PAR_B2_10_SchurDampingoptimizer 충실구현: 등급 C. 논문기준 SR 0.27 vs 15bps SR 0.43. [무인 병렬 B2_10… |
-| 1132 | L-RP-20260904_081635 | ? | C | RF_PAR_B2_8_factorrpriskparity 충실구현: 등급 C. 논문기준 SR 0.33 vs 15bps SR 0.49. [무인 병렬 B2_8] fac… |
-| 1133 | L-RP-20260904_082429 | ? | C | RF_PAR_B3_11_KOSDAQ150 충실구현: 등급 C. 논문기준 SR 0.31 vs 15bps SR 0.46. [무인 병렬 B3_11] KOSDAQ150 … |
-| 1134 | L-RP-20260904_082433 | ? | F | RF_PAR_B3_14_13 충실구현: 등급 F. 논문기준 SR 0.25 vs 15bps SR 0.40. [무인 병렬 B3_14] 대형주(시총 상위 1/3) — … |
-| 1135 | L-RP-20260904_082442 | ? | F | RF_PAR_B3_12_KOSPI200 충실구현: 등급 F. 논문기준 SR 0.23 vs 15bps SR 0.39. [무인 병렬 B3_12] KOSPI200 단독… |
-| 1136 | L-RP-20260904_082444 | size | C | RF_PAR_B3_13_13 충실구현: 등급 C. 논문기준 SR 0.25 vs 15bps SR 0.41. [무인 병렬 B3_13] 소형주(시총 하위 1/3) — … |
-| 1137 | L-RP-20260904_082454 | ? | C | RF_PAR_B3_15_ 충실구현: 등급 C. 논문기준 SR 0.34 vs 15bps SR 0.46. [무인 병렬 B3_15] 섹터 중립 — B3/universe… |
-| 1138 | L-RP-20260904_083308 | overlay_regime | F | RF_PAR_B5_19_ddbrakeqdrawdown 충실구현: 등급 F. 논문기준 SR 0.28 vs 15bps SR 0.42. [무인 병렬 B5_19] dd_… |
-| 1139 | L-RP-20260904_083308 | overlay_regime | F | RF_PAR_B5_20_volxddcombo 충실구현: 등급 F. 논문기준 SR 0.37 vs 15bps SR 0.48. [무인 병렬 B5_20] vol_x_dd… |
-| 1140 | L-RP-20260904_083315 | overlay_regime | F | RF_PAR_B5_16_dbetatiltrankcrosssectional 충실구현: 등급 F. 논문기준 SR 0.33 vs 15bps SR 0.46. [무인 병렬… |
-| 1141 | L-RP-20260904_083315_02 | overlay_regime | C | RF_PAR_B5_17_csdidiotiltcrosssectional 충실구현: 등급 C. 논문기준 SR 0.41 vs 15bps SR 0.56. [무인 병렬 B… |
-| 1142 | L-RP-20260904_083316 | overlay_regime | C | RF_PAR_B5_18_holdlvlsyscrowdtiltcrosssectional 충실구현: 등급 C. 논문기준 SR 0.35 vs 15bps SR 0.49. … |
-| 1143 | L-RP-20260904_084000 | ? | F | RF_PAR_B4_22_LOO 충실구현: 등급 F. 논문기준 SR 0.38 vs 15bps SR 0.50. [무인 병렬 B4_22] 팩터 제외(LOO) — B4/… |
-| 1144 | L-RP-20260904_084101 | ? | F | RF_PAR_B4_23_LOO 충실구현: 등급 F. 논문기준 SR 0.39 vs 15bps SR 0.50. [무인 병렬 B4_23] 비중 제외(LOO) — B4/… |
-| 1145 | L-RP-20260904_084147 | overlay_regime | F | RF_PAR_B4_25_LOO3 충실구현: 등급 F. 논문기준 SR 0.35 vs 15bps SR 0.46. [무인 병렬 B4_25] 오버레이 제외(LOO) = … |
-| 1146 | L-RP-20260904_084152 | ? | F | RF_PAR_B4_21_4 충실구현: 등급 F. 논문기준 SR 0.39 vs 15bps SR 0.50. [무인 병렬 B4_21] 전 요소 결합(4축) — B4/c… |
-| 1147 | L-RP-20260904_115109 | ? | C | RF_PAR_B1_5_laborshadow 충실구현: 등급 C. 논문기준 SR 0.50 vs 15bps SR 0.61. [무인 병렬 B1_5] labor_shad… |
-| 1148 | L-RP-20260904_115109 | ? | F | RF_PAR_B1_1_vollow 충실구현: 등급 F. 논문기준 SR 0.52 vs 15bps SR 0.58. [무인 병렬 B1_1] vol_low — B1/mu… |
-| 1149 | L-RP-20260904_115116 | ? | F | RF_PAR_B1_2_crisisbeta 충실구현: 등급 F. 논문기준 SR 0.44 vs 15bps SR 0.52. [무인 병렬 B1_2] crisis_beta… |
-| 1150 | L-RP-20260904_115116_02 | ? | C | RF_PAR_B1_4_profitcore 충실구현: 등급 C. 논문기준 SR 0.74 vs 15bps SR 0.79. [무인 병렬 B1_4] profit_core… |
-| 1151 | L-RP-20260904_115122 | ? | F | RF_PAR_B1_3_betarelevel 충실구현: 등급 F. 논문기준 SR 0.50 vs 15bps SR 0.58. [무인 병렬 B1_3] beta_relev… |
-| 1152 | L-RP-20260904_120102 | ? | C | RF_PAR_B1_9_residlevel 충실구현: 등급 C. 논문기준 SR 0.50 vs 15bps SR 0.57. [무인 병렬 B1_9] resid_level… |
-| 1153 | L-RP-20260904_120112 | ? | C | RF_PAR_B1_8_sectordecrowd 충실구현: 등급 C. 논문기준 SR 0.45 vs 15bps SR 0.57. [무인 병렬 B1_8] sector_d… |
-| 1154 | L-RP-20260904_120117 | ? | C | RF_PAR_B1_7_intraindustry 충실구현: 등급 C. 논문기준 SR 0.59 vs 15bps SR 0.67. [무인 병렬 B1_7] intra_in… |
-| 1155 | L-RP-20260904_120122 | behavioral | C | RF_PAR_B1_10_flowforeign 충실구현: 등급 C. 논문기준 SR 0.44 vs 15bps SR 0.54. [무인 병렬 B1_10] flow_for… |
-| 1156 | L-RP-20260904_120131 | ? | C | RF_PAR_B1_6_valueanchor 충실구현: 등급 C. 논문기준 SR 0.58 vs 15bps SR 0.68. [무인 병렬 B1_6] value_anch… |
-| 1157 | L-RP-20260904_120832 | ? | C | RF_PAR_B1_12_riskxprofit 충실구현: 등급 C. 논문기준 SR 0.69 vs 15bps SR 0.72. [무인 병렬 B1_12] risk_x_p… |
-| 1158 | L-RP-20260904_120835 | consensus | F | RF_PAR_B1_11_consensusrev 충실구현: 등급 F. 논문기준 SR 0.44 vs 15bps SR 0.53. [무인 병렬 B1_11] consens… |
-| 1159 | L-RP-20260904_120848 | ? | C | RF_PAR_B1_13_riskxlabor 충실구현: 등급 C. 논문기준 SR 0.52 vs 15bps SR 0.61. [무인 병렬 B1_13] risk_x_la… |
-| 1160 | L-RP-20260904_120952 | ? | C | RF_PAR_B1_14_wideblend 충실구현: 등급 C. 논문기준 SR 0.71 vs 15bps SR 0.75. [무인 병렬 B1_14] wide_blend… |
-| 1161 | L-RP-20260904_122334 | overlay_regime | F | RF_PAR_B5_19_ddbrakeqdrawdown 충실구현: 등급 F. 논문기준 SR 0.59 vs 15bps SR 0.68. [무인 병렬 B5_19] dd_… |
-| 1162 | L-RP-20260904_122334 | overlay_regime | F | RF_PAR_B5_20_volxddcombo 충실구현: 등급 F. 논문기준 SR 0.67 vs 15bps SR 0.74. [무인 병렬 B5_20] vol_x_dd… |
-| 1163 | L-RP-20260904_122343 | overlay_regime | C | RF_PAR_B5_18_holdlvlsyscrowdtiltcrosssectional 충실구현: 등급 C. 논문기준 SR 0.73 vs 15bps SR 0.79. … |
-| 1164 | L-RP-20260904_122343 | overlay_regime | C | RF_PAR_B5_17_csdidiotiltcrosssectional 충실구현: 등급 C. 논문기준 SR 0.79 vs 15bps SR 0.84. [무인 병렬 B… |
-| 1165 | L-RP-20260904_122344 | overlay_regime | C | RF_PAR_B5_16_dbetatiltrankcrosssectional 충실구현: 등급 C. 논문기준 SR 0.68 vs 15bps SR 0.75. [무인 병렬… |
-| 1166 | L-RP-20260904_123314 | ? | C | RF_PAR_B2_6_cvartailaware 충실구현: 등급 C. 논문기준 SR 0.78 vs 15bps SR 0.82. [무인 병렬 B2_6] cvar(tai… |
-| 1167 | L-RP-20260904_123314 | ? | C | RF_PAR_B2_8_factorrpriskparity 충실구현: 등급 C. 논문기준 SR 0.78 vs 15bps SR 0.82. [무인 병렬 B2_8] fac… |
-| 1168 | L-RP-20260904_123314 | ? | C | RF_PAR_B2_7_entropyentropy 충실구현: 등급 C. 논문기준 SR 0.74 vs 15bps SR 0.79. [무인 병렬 B2_7] entropy… |
-| 1169 | L-RP-20260904_123314 | ? | C | RF_PAR_B2_10_SchurDampingoptimizer 충실구현: 등급 C. 논문기준 SR 0.56 vs 15bps SR 0.65. [무인 병렬 B2_10… |
-| 1170 | L-RP-20260904_123315 | low_vol | C | RF_PAR_B2_9_ivolriskbased 충실구현: 등급 C. 논문기준 SR 0.77 vs 15bps SR 0.82. [무인 병렬 B2_9] ivol(ris… |
-| 1171 | L-RP-20260904_123835 | ? | C | RF_PAR_B3_11_KOSDAQ150 충실구현: 등급 C. 논문기준 SR 0.65 vs 15bps SR 0.71. [무인 병렬 B3_11] KOSDAQ150 … |
-| 1172 | L-RP-20260904_124725 | ? | F | RF_PAR_B3_14_13 충실구현: 등급 F. 논문기준 SR 0.45 vs 15bps SR 0.52. [무인 병렬 B3_14] 대형주(시총 상위 1/3) — … |
-| 1173 | L-RP-20260904_124732 | ? | C | RF_PAR_B3_12_KOSPI200 충실구현: 등급 C. 논문기준 SR 0.60 vs 15bps SR 0.67. [무인 병렬 B3_12] KOSPI200 단독… |
-| 1174 | L-RP-20260904_124744 | size | C | RF_PAR_B3_13_13 충실구현: 등급 C. 논문기준 SR 0.48 vs 15bps SR 0.62. [무인 병렬 B3_13] 소형주(시총 하위 1/3) — … |
-| 1175 | L-RP-20260904_124749 | ? | C | RF_PAR_B3_15_ 충실구현: 등급 C. 논문기준 SR 0.50 vs 15bps SR 0.57. [무인 병렬 B3_15] 섹터 중립 — B3/universe… |
-| 1176 | L-RP-20260904_125520 | ? | C | RF_PAR_B4_23_LOO 충실구현: 등급 C. 논문기준 SR 0.65 vs 15bps SR 0.71. [무인 병렬 B4_23] 비중 제외(LOO) — B4/… |
-| 1177 | L-RP-20260904_125624 | ? | C | RF_PAR_B4_24_LOO 충실구현: 등급 C. 논문기준 SR 0.73 vs 15bps SR 0.78. [무인 병렬 B4_24] 유니버스 제외(LOO) — B… |
-| 1178 | L-RP-20260904_180704 | earnings_event | C | RF_PAR_B1_1_earnsue 충실구현: 등급 C. 논문기준 SR 0.51 vs 15bps SR 0.63. [무인 병렬 B1_1] earn_sue — B1/… |
-| 1179 | L-RP-20260904_180705 | value | C | RF_PAR_B1_3_valueep 충실구현: 등급 C. 논문기준 SR 0.66 vs 15bps SR 0.78. [무인 병렬 B1_3] value_ep — B1/… |
-| 1180 | L-RP-20260904_180707 | ? | F | RF_PAR_B1_2_sysbetabab 충실구현: 등급 F. 논문기준 SR 0.47 vs 15bps SR 0.58. [무인 병렬 B1_2] sysbeta_bab… |
-| 1181 | L-RP-20260904_180713 | behavioral | C | RF_PAR_B1_5_flowfxresid 충실구현: 등급 C. 논문기준 SR 0.42 vs 15bps SR 0.55. [무인 병렬 B1_5] flow_fx_re… |
-| 1182 | L-RP-20260904_180717 | ? | C | RF_PAR_B1_4_noskipstrev 충실구현: 등급 C. 논문기준 SR 0.56 vs 15bps SR 0.69. [무인 병렬 B1_4] noskip_str… |
-| 1183 | L-RP-20260904_181638 | quality_profitability | C | RF_PAR_B1_6_profgpa 충실구현: 등급 C. 논문기준 SR 0.62 vs 15bps SR 0.72. [무인 병렬 B1_6] prof_gpa — B1/… |
-| 1184 | L-RP-20260904_181640 | ? | C | RF_PAR_B1_7_crisisbetacond 충실구현: 등급 C. 논문기준 SR 0.52 vs 15bps SR 0.63. [무인 병렬 B1_7] crisisb… |
-| 1185 | L-RP-20260904_181643 | ? | C | RF_PAR_B1_9_pathriskecho 충실구현: 등급 C. 논문기준 SR 0.53 vs 15bps SR 0.67. [무인 병렬 B1_9] pathrisk_… |
-| 1186 | L-RP-20260904_181646 | ? | C | RF_PAR_B1_10_sizeaxis 충실구현: 등급 C. 논문기준 SR 0.66 vs 15bps SR 0.79. [무인 병렬 B1_10] size_axis —… |
-| 1187 | L-RP-20260904_181657 | ? | C | RF_PAR_B1_8_earnxsysbeta 충실구현: 등급 C. 논문기준 SR 0.51 vs 15bps SR 0.63. [무인 병렬 B1_8] earn_x_sy… |
-| 1188 | L-RP-20260904_182455 | ? | C | RF_PAR_B1_11_earnqualaccrual 충실구현: 등급 C. 논문기준 SR 0.49 vs 15bps SR 0.63. [무인 병렬 B1_11] earn… |
-| 1189 | L-RP-20260904_182513 | ? | C | RF_PAR_B1_12_valuexprof 충실구현: 등급 C. 논문기준 SR 0.62 vs 15bps SR 0.74. [무인 병렬 B1_12] value_x_p… |
-| 1190 | L-RP-20260904_182542 | ? | C | RF_PAR_B1_13_ladderL3val 충실구현: 등급 C. 논문기준 SR 0.55 vs 15bps SR 0.67. [무인 병렬 B1_13] ladder_L… |
-| 1191 | L-RP-20260904_182605 | ? | C | RF_PAR_B1_14_ladderL4prof 충실구현: 등급 C. 논문기준 SR 0.61 vs 15bps SR 0.73. [무인 병렬 B1_14] ladder_… |
-| 1192 | L-RP-20260904_182631 | ? | C | RF_PAR_B1_15_ladderL5wide 충실구현: 등급 C. 논문기준 SR 0.58 vs 15bps SR 0.70. [무인 병렬 B1_15] ladder_… |
-| 1193 | L-RP-20260904_193034 | momentum | C | RF_PAR_B5_20_ 충실구현: 등급 C. 논문기준 SR 0.59 vs 15bps SR 0.71. [무인 병렬 B5_20] 추세 이탈(전량 현금) — 밴드 바… |
-| 1194 | L-RP-20260904_193053 | overlay_regime | C | RF_PAR_B5_16_ 충실구현: 등급 C. 논문기준 SR 0.65 vs 15bps SR 0.77. [무인 병렬 B5_16] 스칼라 낙폭 브레이크(귀속 기준선)… |
-| 1195 | L-RP-20260904_193105 | overlay_regime | C | RF_PAR_B5_18_ 충실구현: 등급 C. 논문기준 SR 0.76 vs 15bps SR 0.89. [무인 병렬 B5_18] 횡단면분산 상태 · 특이변동 순위 … |
-| 1196 | L-RP-20260904_193106 | overlay_regime | C | RF_PAR_B5_17_ 충실구현: 등급 C. 논문기준 SR 0.66 vs 15bps SR 0.78. [무인 병렬 B5_17] 낙폭 상태 · 하방베타 순위 차등 … |
-| 1197 | L-RP-20260904_193107 | overlay_regime | C | RF_PAR_B5_19_ 충실구현: 등급 C. 논문기준 SR 0.67 vs 15bps SR 0.80. [무인 병렬 B5_19] 보유 체계비중 φ 상태 · 분산불가… |
-| 1198 | L-RP-20260904_193634 | overlay_regime | C | RF_PAR_B5_21_ 충실구현: 등급 C. 논문기준 SR 0.66 vs 15bps SR 0.78. [무인 병렬 B5_21] 회복 조건부 재진입 — 비용 소재 … |
-| 1199 | L-RP-20260904_194418 | ? | B | RF_PAR_B2_8_factorrpriskparity 충실구현: 등급 B. 논문기준 SR 0.80 vs 15bps SR 0.93. [무인 병렬 B2_8] fac… |
-| 1200 | L-RP-20260904_194418 | ? | C | RF_PAR_B2_7_entropyentropy 충실구현: 등급 C. 논문기준 SR 0.77 vs 15bps SR 0.89. [무인 병렬 B2_7] entropy… |
-| 1201 | L-RP-20260904_194418 | low_vol | B | RF_PAR_B2_9_ivolriskbased 충실구현: 등급 B. 논문기준 SR 0.81 vs 15bps SR 0.94. [무인 병렬 B2_9] ivol(ris… |
-| 1202 | L-RP-20260904_194418 | ? | C | RF_PAR_B2_10_SchurDampingoptimizer 충실구현: 등급 C. 논문기준 SR 0.49 vs 15bps SR 0.62. [무인 병렬 B2_10… |
-| 1203 | L-RP-20260904_194418 | ? | B | RF_PAR_B2_6_cvartailaware 충실구현: 등급 B. 논문기준 SR 0.82 vs 15bps SR 0.95. [무인 병렬 B2_6] cvar(tai… |
-| 1204 | L-RP-20260904_200027 | ? | C | RF_PAR_B3_12_13 충실구현: 등급 C. 논문기준 SR 0.50 vs 15bps SR 0.60. [무인 병렬 B3_12] 대형 상위1/3 — B3/uni… |
-| 1205 | L-RP-20260904_200027 | ? | C | RF_PAR_B3_14_ 충실구현: 등급 C. 논문기준 SR 0.52 vs 15bps SR 0.65. [무인 병렬 B3_14] 섹터 중립 — B3/universe… |
-| 1206 | L-RP-20260904_200027 | ? | C | RF_PAR_B3_11_13 충실구현: 등급 C. 논문기준 SR 0.69 vs 15bps SR 0.83. [무인 병렬 B3_11] 소형 하위1/3 — B3/uni… |
-| 1207 | L-RP-20260904_200031 | ? | C | RF_PAR_B3_13_K200 충실구현: 등급 C. 논문기준 SR 0.44 vs 15bps SR 0.57. [무인 병렬 B3_13] K200 단독(청정 통제) … |
-| 1208 | L-RP-20260904_201504 | ? | C | RF_PAR_B4_23_LOO 충실구현: 등급 C. 논문기준 SR 0.63 vs 15bps SR 0.77. [무인 병렬 B4_23] 비중 제외(LOO) — B4/… |
-| 1209 | L-RP-20260904_201526 | ? | C | RF_PAR_B4_22_LOO 충실구현: 등급 C. 논문기준 SR 0.70 vs 15bps SR 0.83. [무인 병렬 B4_22] 팩터 제외(LOO) — B4/… |
-| 1210 | L-RP-20260904_201551 | overlay_regime | C | RF_PAR_B4_25_LOO3 충실구현: 등급 C. 논문기준 SR 0.64 vs 15bps SR 0.78. [무인 병렬 B4_25] 오버레이 제외(LOO) = … |
-| 1211 | L-RP-20260904_204206 | ? | B | RF_PAR_B1_1_1value 충실구현: 등급 B. 논문기준 SR 0.74 vs 15bps SR 0.87. [무인 병렬 B1_1] 1팩터 직교(value) —… |
-| 1212 | L-RP-20260904_204244 | ? | B | RF_PAR_B1_2_2valueliquidity 충실구현: 등급 B. 논문기준 SR 0.74 vs 15bps SR 0.86. [무인 병렬 B1_2] 2팩터 직교… |
-| 1213 | L-RP-20260904_204300 | ? | B | RF_PAR_B1_3_3valueriskliquidity 충실구현: 등급 B. 논문기준 SR 0.73 vs 15bps SR 0.85. [무인 병렬 B1_3] 3팩… |
-| 1214 | L-RP-20260904_204330 | ? | C | RF_PAR_B1_4_4valueriskcrowdingliquidity 충실구현: 등급 C. 논문기준 SR 0.70 vs 15bps SR 0.82. [무인 병렬 … |
-| 1215 | L-RP-20260904_204357 | consensus | C | RF_PAR_B1_5_5valueriskcrowdingliquidityconsensus 충실구현: 등급 C. 논문기준 SR 0.61 vs 15bps SR 0.70… |
-| 1216 | L-RP-20260904_205911 | overlay_regime | C | RF_PAR_B5_19_ddbrakeqdrawdown 충실구현: 등급 C. 논문기준 SR 0.74 vs 15bps SR 0.86. [무인 병렬 B5_19] dd_… |
-| 1217 | L-RP-20260904_205911 | overlay_regime | C | RF_PAR_B5_20_volxddcombo 충실구현: 등급 C. 논문기준 SR 0.83 vs 15bps SR 0.99. [무인 병렬 B5_20] vol_x_dd… |
-| 1218 | L-RP-20260904_205919 | overlay_regime | C | RF_PAR_B5_18_holdlvlsyscrowdtiltcrosssectional 충실구현: 등급 C. 논문기준 SR 0.75 vs 15bps SR 0.86. … |
-| 1219 | L-RP-20260904_205919_02 | overlay_regime | B | RF_PAR_B5_17_csdidiotiltcrosssectional 충실구현: 등급 B. 논문기준 SR 0.81 vs 15bps SR 0.94. [무인 병렬 B… |
-| 1220 | L-RP-20260904_205920 | overlay_regime | C | RF_PAR_B5_16_dbetatiltrankcrosssectional 충실구현: 등급 C. 논문기준 SR 0.75 vs 15bps SR 0.86. [무인 병렬… |
-| 1221 | L-RP-20260904_212443 | ? | C | RF_PAR_B2_8_scoretilt 충실구현: 등급 C. 논문기준 SR 0.42 vs 15bps SR 0.52. factor_rp(risk_parity) |
-| 1222 | L-RP-20260904_212444 | ? | C | RF_PAR_B2_6_minvar 충실구현: 등급 C. 논문기준 SR 0.41 vs 15bps SR 0.51. cvar(tail_aware) |
-| 1223 | L-RP-20260904_212444 | ? | C | RF_PAR_B2_10_highermoment 충실구현: 등급 C. 논문기준 SR 0.31 vs 15bps SR 0.41. SchurDamping(optimize… |
-| 1224 | L-RP-20260904_212446 | ml_complexity | C | RF_PAR_B2_7_hrp 충실구현: 등급 C. 논문기준 SR 0.40 vs 15bps SR 0.52. entropy(entropy) |
-| 1225 | L-RP-20260904_212452 | low_vol | C | RF_PAR_B2_9_CDaRLP 충실구현: 등급 C. 논문기준 SR 0.41 vs 15bps SR 0.51. ivol(risk_based) |
-| 1226 | L-RP-20260904_213847 | size | C | RF_PAR_B3_13_13 충실구현: 등급 C. 논문기준 SR 0.68 vs 15bps SR 0.82. [무인 병렬 B3_13] 소형주(시총 하위 1/3) — … |
-| 1227 | L-RP-20260904_213847 | ? | C | RF_PAR_B3_15_ 충실구현: 등급 C. 논문기준 SR 0.61 vs 15bps SR 0.73. [무인 병렬 B3_15] 섹터 중립 — B3/universe… |
-| 1228 | L-RP-20260904_213847 | ? | C | RF_PAR_B3_14_13 충실구현: 등급 C. 논문기준 SR 0.47 vs 15bps SR 0.61. [무인 병렬 B3_14] 대형주(시총 상위 1/3) — … |
-| 1229 | L-RP-20260904_213852 | ? | C | RF_PAR_B3_12_KOSPI200 충실구현: 등급 C. 논문기준 SR 0.49 vs 15bps SR 0.65. [무인 병렬 B3_12] KOSPI200 단독… |
-| 1230 | L-RP-20260904_220111 | ? | C | RF_PAR_B4_22_LOO 충실구현: 등급 C. 논문기준 SR 0.63 vs 15bps SR 0.78. [무인 병렬 B4_22] 팩터 제외(LOO) — B4/… |
-| 1231 | L-RP-20260904_220111 | ? | C | RF_PAR_B4_23_LOO 충실구현: 등급 C. 논문기준 SR 0.59 vs 15bps SR 0.72. [무인 병렬 B4_23] 비중 제외(LOO) — B4/… |
-| 1232 | L-RP-20260904_220209 | ? | C | RF_PAR_B4_21_4 충실구현: 등급 C. 논문기준 SR 0.65 vs 15bps SR 0.80. [무인 병렬 B4_21] 전 요소 결합(4축) — B4/c… |
-| 1233 | L-RP-20260904_220214 | overlay_regime | B | RF_PAR_B4_25_LOO3 충실구현: 등급 B. 논문기준 SR 0.67 vs 15bps SR 0.81. [무인 병렬 B4_25] 오버레이 제외(LOO) = … |
-| 1234 | L-RP-20260904_220216 | ? | C | RF_PAR_B4_24_LOO 충실구현: 등급 C. 논문기준 SR 0.68 vs 15bps SR 0.80. [무인 병렬 B4_24] 유니버스 제외(LOO) — B… |
-| 1235 | L-RP-20260904_223019 | ? | B | RF_PAR_B1_1_1risk 충실구현: 등급 B. 논문기준 SR 0.79 vs 15bps SR 0.90. [무인 병렬 B1_1] 1팩터 직교(risk) — B… |
-| 1236 | L-RP-20260904_223053 | ? | C | RF_PAR_B1_2_2riskcrowding 충실구현: 등급 C. 논문기준 SR 0.71 vs 15bps SR 0.83. [무인 병렬 B1_2] 2팩터 직교(r… |
-| 1237 | L-RP-20260904_223138 | ? | C | RF_PAR_B1_3_3riskcrowdingaccrual 충실구현: 등급 C. 논문기준 SR 0.66 vs 15bps SR 0.79. [무인 병렬 B1_3] 3… |
-| 1238 | L-RP-20260904_223223 | ? | C | RF_PAR_B1_4_4riskcrowdinggrowthaccrual 충실구현: 등급 C. 논문기준 SR 0.46 vs 15bps SR 0.59. [무인 병렬 B… |
-| 1239 | L-RP-20260904_223311 | quality | C | RF_PAR_B1_5_5riskcrowdinggrowthaccrualquality 충실구현: 등급 C. 논문기준 SR 0.49 vs 15bps SR 0.61. [… |
-| 1240 | L-RP-20260905_090839 | overlay_regime | C | RF_PAR_B5_19_ddbrakeqdrawdown 충실구현: 등급 C. 논문기준 SR 0.80 vs 15bps SR 0.91. [무인 병렬 B5_19] dd_… |
-| 1241 | L-RP-20260905_090841 | overlay_regime | C | RF_PAR_B5_20_volxddcombo 충실구현: 등급 C. 논문기준 SR 0.85 vs 15bps SR 1.01. [무인 병렬 B5_20] vol_x_dd… |
-| 1242 | L-RP-20260905_090849 | overlay_regime | C | RF_PAR_B5_16_dbetatiltrankcrosssectional 충실구현: 등급 C. 논문기준 SR 0.81 vs 15bps SR 0.92. [무인 병렬… |
-| 1243 | L-RP-20260905_090849 | overlay_regime | C | RF_PAR_B5_18_holdlvlsyscrowdtiltcrosssectional 충실구현: 등급 C. 논문기준 SR 0.80 vs 15bps SR 0.91. … |
-| 1244 | L-RP-20260905_090850 | overlay_regime | C | RF_PAR_B5_17_csdidiotiltcrosssectional 충실구현: 등급 C. 논문기준 SR 0.86 vs 15bps SR 0.98. [무인 병렬 B… |
-| 1245 | L-RP-20260905_093409 | ? | C | RF_PAR_B2_7_ 충실구현: 등급 C. 논문기준 SR 0.79 vs 15bps SR 0.94. [무인 병렬 B2_7] 분산 최소화 하한 — B2/weight… |
-| 1246 | L-RP-20260905_093410 | ? | C | RF_PAR_B2_8_ 충실구현: 등급 C. 논문기준 SR 0.78 vs 15bps SR 0.91. [무인 병렬 B2_8] 상관구조 표적 — B2/weightin… |
-| 1247 | L-RP-20260905_093412 | ? | C | RF_PAR_B2_9_ 충실구현: 등급 C. 논문기준 SR 0.72 vs 15bps SR 0.86. [무인 병렬 B2_9] 점수 탑재 기준선 — B2/weight… |
-| 1248 | L-RP-20260905_100103 | ? | B | RF_PAR_B3_12_KOSDAQ150 충실구현: 등급 B. 논문기준 SR 0.90 vs 15bps SR 0.95. [무인 병렬 B3_12] KOSDAQ150 … |
-| 1249 | L-RP-20260905_100149 | ? | C | RF_PAR_B3_14_13 충실구현: 등급 C. 논문기준 SR 0.45 vs 15bps SR 0.58. [무인 병렬 B3_14] 대형주 상위 1/3 — B3/u… |
-| 1250 | L-RP-20260905_100151 | ? | C | RF_PAR_B3_13_ 충실구현: 등급 C. 논문기준 SR 0.64 vs 15bps SR 0.75. [무인 병렬 B3_13] 섹터 중립 — B3/universe… |
-| 1251 | L-RP-20260905_103417 | ? | C | RF_PAR_B4_23_LOO 충실구현: 등급 C. 논문기준 SR 0.76 vs 15bps SR 0.82. [무인 병렬 B4_23] 비중 제외(LOO) — B4/… |
-| 1252 | L-RP-20260905_103527 | ? | C | RF_PAR_B4_24_LOO 충실구현: 등급 C. 논문기준 SR 0.81 vs 15bps SR 0.93. [무인 병렬 B4_24] 유니버스 제외(LOO) — B… |
-| 1253 | L-RP-20260905_104624 | ? | C | RF_PAR_B4_23_LOO 충실구현: 등급 C. 논문기준 SR 0.76 vs 15bps SR 0.82. [무인 병렬 B4_23] 비중 제외(LOO) — B4/… |
-| 1254 | L-RP-20260905_112454 | momentum | B | RF_PAR_B1_5_crowdmomentum 충실구현: 등급 B. 논문기준 SR 0.74 vs 15bps SR 0.85. [무인 병렬 B1_5] crowd_mo… |
-| 1255 | L-RP-20260905_112454 | earnings_event | C | RF_PAR_B1_4_revisionbreadth 충실구현: 등급 C. 논문기준 SR 0.70 vs 15bps SR 0.81. [무인 병렬 B1_4] revisi… |
-| 1256 | L-RP-20260905_112454 | behavioral | B | RF_PAR_B1_1_flowforeignresid 충실구현: 등급 B. 논문기준 SR 0.72 vs 15bps SR 0.84. [무인 병렬 B1_1] flow_… |
-| 1257 | L-RP-20260905_112454 | quality | C | RF_PAR_B1_2_qualitycashprofit 충실구현: 등급 C. 논문기준 SR 0.66 vs 15bps SR 0.78. [무인 병렬 B1_2] qual… |
-| 1258 | L-RP-20260905_112454 | ? | B | RF_PAR_B1_3_investmentassetgrowth 충실구현: 등급 B. 논문기준 SR 0.78 vs 15bps SR 0.90. [무인 병렬 B1_3] … |
-| 1259 | L-RP-20260905_113723 | ? | B | RF_PAR_B1_6_ddpathulcer 충실구현: 등급 B. 논문기준 SR 0.74 vs 15bps SR 0.86. [무인 병렬 B1_6] dd_path_ul… |
-| 1260 | L-RP-20260905_113723 | ? | B | RF_PAR_B1_7_asymmetryncskew 충실구현: 등급 B. 논문기준 SR 0.76 vs 15bps SR 0.90. [무인 병렬 B1_7] asymme… |
-| 1261 | L-RP-20260905_113735 | ? | C | RF_PAR_B1_9_depth2pathxcrowd 충실구현: 등급 C. 논문기준 SR 0.68 vs 15bps SR 0.80. [무인 병렬 B1_9] depth… |
-| 1262 | L-RP-20260905_113736 | behavioral | B | RF_PAR_B1_8_depth2flowxquality 충실구현: 등급 B. 논문기준 SR 0.70 vs 15bps SR 0.81. [무인 병렬 B1_8] dep… |
-| 1263 | L-RP-20260905_115256 | overlay_regime | C | RF_PAR_B5_17_ 충실구현: 등급 C. 논문기준 SR 0.75 vs 15bps SR 0.86. [무인 병렬 B5_17] 낙폭상태 스칼라 축소 (대조군) —… |
-| 1264 | L-RP-20260905_115256 | overlay_regime | C | RF_PAR_B5_20_ 충실구현: 등급 C. 논문기준 SR 0.71 vs 15bps SR 0.83. [무인 병렬 B5_20] 다변량 상태(변동성·분산·낙폭) 게… |
-| 1265 | L-RP-20260905_115300 | overlay_regime | B | RF_PAR_B5_19_ 충실구현: 등급 B. 논문기준 SR 0.85 vs 15bps SR 0.99. [무인 병렬 B5_19] 횡단면분산 판독 + 특이변동 차등 … |
-| 1266 | L-RP-20260905_115301 | overlay_regime | C | RF_PAR_B5_16_x 충실구현: 등급 C. 논문기준 SR 0.76 vs 15bps SR 0.88. [무인 병렬 B5_16] 낙폭상태 x 하방베타 순위 차등 … |
-| 1267 | L-RP-20260905_115301 | overlay_regime | B | RF_PAR_B5_18_ 충실구현: 등급 B. 논문기준 SR 0.79 vs 15bps SR 0.90. [무인 병렬 B5_18] 보유 체계위험 비중 판독 + 차등 … |
-| 1268 | L-RP-20260905_115917 | overlay_regime | B | RF_PAR_B5_21_ 충실구현: 등급 B. 논문기준 SR 0.73 vs 15bps SR 0.87. [무인 병렬 B5_21] 회복 조건부 재진입 — B5/ris… |
-| 1269 | L-RP-20260905_121745 | ? | B | RF_PAR_B2_10_cvar 충실구현: 등급 B. 논문기준 SR 0.82 vs 15bps SR 0.93. [무인 병렬 B2_10] cvar — B2/weigh… |
-| 1270 | L-RP-20260905_121745 | low_vol | B | RF_PAR_B2_9_ivol 충실구현: 등급 B. 논문기준 SR 0.79 vs 15bps SR 0.91. [무인 병렬 B2_9] ivol — B2/weighti… |
-| 1271 | L-RP-20260905_121745 | ? | B | RF_PAR_B2_7_riskparity 충실구현: 등급 B. 논문기준 SR 0.82 vs 15bps SR 0.93. [무인 병렬 B2_7] riskparity … |
-| 1272 | L-RP-20260905_121745 | ? | C | RF_PAR_B2_6_minvar 충실구현: 등급 C. 논문기준 SR 0.77 vs 15bps SR 0.89. [무인 병렬 B2_6] minvar — B2/wei… |
-| 1273 | L-RP-20260905_121745 | ml_complexity | C | RF_PAR_B2_8_hrp 충실구현: 등급 C. 논문기준 SR 0.81 vs 15bps SR 0.92. [무인 병렬 B2_8] hrp — B2/weighting… |
-| 1274 | L-RP-20260905_123232 | ? | C | RF_PAR_B2_11_scoretilt 충실구현: 등급 C. 논문기준 SR 0.75 vs 15bps SR 0.88. [무인 병렬 B2_11] score_tilt… |
-| 1275 | L-RP-20260905_124805 | ? | C | RF_PAR_B3_14_13 충실구현: 등급 C. 논문기준 SR 0.46 vs 15bps SR 0.60. [무인 병렬 B3_14] 대형주 상위 1/3 — B3/u… |
-| 1276 | L-RP-20260905_124821 | size | C | RF_PAR_B3_13_13 충실구현: 등급 C. 논문기준 SR 0.60 vs 15bps SR 0.74. [무인 병렬 B3_13] 소형주 하위 1/3 — B3/u… |
-| 1277 | L-RP-20260905_124826 | ? | C | RF_PAR_B3_15_ 충실구현: 등급 C. 논문기준 SR 0.67 vs 15bps SR 0.78. [무인 병렬 B3_15] 섹터 중립 — B3/universe… |
-| 1278 | L-RP-20260905_130504 | ? | C | RF_PAR_B4_23_LOO 충실구현: 등급 C. 논문기준 SR 0.76 vs 15bps SR 0.87. [무인 병렬 B4_23] 비중 제외(LOO) — B4/… |
-| 1279 | L-RP-20260905_130538 | ? | C | RF_PAR_B4_22_LOO 충실구현: 등급 C. 논문기준 SR 0.73 vs 15bps SR 0.84. [무인 병렬 B4_22] 팩터 제외(LOO) — B4/… |
-| 1280 | L-RP-20260905_130557 | overlay_regime | C | RF_PAR_B4_25_LOO3 충실구현: 등급 C. 논문기준 SR 0.67 vs 15bps SR 0.77. [무인 병렬 B4_25] 오버레이 제외(LOO) = … |
-| 1281 | L-RP-20260905_130601 | ? | C | RF_PAR_B4_21_4 충실구현: 등급 C. 논문기준 SR 0.76 vs 15bps SR 0.85. [무인 병렬 B4_21] 전 요소 결합(4축) — B4/c… |
-| 1282 | L-RP-20260905_130605 | ? | B | RF_PAR_B4_24_LOO 충실구현: 등급 B. 논문기준 SR 0.89 vs 15bps SR 1.01. [무인 병렬 B4_24] 유니버스 제외(LOO) — B… |
-| 1283 | L-RP-20260905_191218 | ? | C | RF_PAR_B1_2_valueebitev 충실구현: 등급 C. 논문기준 SR 0.65 vs 15bps SR 0.73. [무인 병렬 B1_2] value_ebit… |
-| 1284 | L-RP-20260905_191218 | quality | C | RF_PAR_B1_3_qualitycashopprof 충실구현: 등급 C. 논문기준 SR 0.46 vs 15bps SR 0.55. [무인 병렬 B1_3] qual… |
-| 1285 | L-RP-20260905_191221 | earnings_event | C | RF_PAR_B1_5_revisionbreadth 충실구현: 등급 C. 논문기준 SR 0.43 vs 15bps SR 0.55. [무인 병렬 B1_5] revisi… |
-| 1286 | L-RP-20260905_191221 | ? | C | RF_PAR_B1_4_tailncskew 충실구현: 등급 C. 논문기준 SR 0.53 vs 15bps SR 0.65. [무인 병렬 B1_4] tail_ncskew… |
-| 1287 | L-RP-20260905_191223 | behavioral | C | RF_PAR_B1_1_flowforeignresid 충실구현: 등급 C. 논문기준 SR 0.29 vs 15bps SR 0.44. [무인 병렬 B1_1] flow_… |
-| 1288 | L-RP-20260905_192014 | ? | C | RF_PAR_B1_7_sizeprobe 충실구현: 등급 C. 논문기준 SR 0.44 vs 15bps SR 0.58. [무인 병렬 B1_7] size_probe —… |
-| 1289 | L-RP-20260905_192023 | ? | C | RF_PAR_B1_6_residmom 충실구현: 등급 C. 논문기준 SR 0.50 vs 15bps SR 0.62. [무인 병렬 B1_6] resid_mom — B… |
-| 1290 | L-RP-20260905_192032 | quality | C | RF_PAR_B1_8_valuexquality 충실구현: 등급 C. 논문기준 SR 0.59 vs 15bps SR 0.67. [무인 병렬 B1_8] value_x_… |
-| 1291 | L-RP-20260905_192055 | behavioral | C | RF_PAR_B1_9_triadflowvaluetail 충실구현: 등급 C. 논문기준 SR 0.54 vs 15bps SR 0.66. [무인 병렬 B1_9] tri… |
-| 1292 | L-RP-20260905_193512 | overlay_regime | C | RF_PAR_B5_20_ 충실구현: 등급 C. 논문기준 SR 0.67 vs 15bps SR 0.77. [무인 병렬 B5_20] 스칼라 축 상한 탐침 — B5/ri… |
-| 1293 | L-RP-20260905_193532 | overlay_regime | C | RF_PAR_B5_19_ 충실구현: 등급 C. 논문기준 SR 0.66 vs 15bps SR 0.71. [무인 병렬 B5_19] 다변량 상태 스칼라 게이트 — B5… |
-| 1294 | L-RP-20260905_193541 | overlay_regime | C | RF_PAR_B5_18_tilt 충실구현: 등급 C. 논문기준 SR 0.67 vs 15bps SR 0.75. [무인 병렬 B5_18] 낙폭 상태 + 하방베타 순위… |
-| 1295 | L-RP-20260905_193542 | overlay_regime | C | RF_PAR_B5_17_tilt 충실구현: 등급 C. 논문기준 SR 0.70 vs 15bps SR 0.79. [무인 병렬 B5_17] 횡단면분산 상태 + 특이변동… |
-| 1296 | L-RP-20260905_193542 | overlay_regime | C | RF_PAR_B5_16_tilt 충실구현: 등급 C. 논문기준 SR 0.66 vs 15bps SR 0.73. [무인 병렬 B5_16] 보유-체계집중 tilt — … |
-| 1297 | L-RP-20260905_195208 | ? | C | RF_PAR_B2_6_minvar 충실구현: 등급 C. 논문기준 SR 0.58 vs 15bps SR 0.69. [무인 병렬 B2_6] minvar (전 공분산) … |
-| 1298 | L-RP-20260905_195208 | ? | C | RF_PAR_B2_10_scoretilt0 충실구현: 등급 C. 논문기준 SR 0.65 vs 15bps SR 0.76. [무인 병렬 B2_10] score_til… |
-| 1299 | L-RP-20260905_195208 | ? | C | RF_PAR_B2_9_cvar 충실구현: 등급 C. 논문기준 SR 0.67 vs 15bps SR 0.77. [무인 병렬 B2_9] cvar (좌측 꼬리 목적) —… |
-| 1300 | L-RP-20260905_195208 | ml_complexity | C | RF_PAR_B2_8_hrp 충실구현: 등급 C. 논문기준 SR 0.63 vs 15bps SR 0.74. [무인 병렬 B2_8] hrp (상관 구조, 역행렬 없음… |
-| 1301 | L-RP-20260905_195208 | low_vol | C | RF_PAR_B2_7_ivol 충실구현: 등급 C. 논문기준 SR 0.68 vs 15bps SR 0.78. [무인 병렬 B2_7] ivol (대각 분산만) — B… |
-| 1302 | L-RP-20260905_200614 | ? | C | RF_PAR_B3_14_13 충실구현: 등급 C. 논문기준 SR 0.50 vs 15bps SR 0.60. [무인 병렬 B3_14] 대형주 상위 1/3 — B3/u… |
-| 1303 | L-RP-20260905_200614 | ? | C | RF_PAR_B3_15_ 충실구현: 등급 C. 논문기준 SR 0.51 vs 15bps SR 0.61. [무인 병렬 B3_15] 섹터 중립 — B3/universe… |
-| 1304 | L-RP-20260905_200614 | size | C | RF_PAR_B3_13_13 충실구현: 등급 C. 논문기준 SR 0.63 vs 15bps SR 0.77. [무인 병렬 B3_13] 소형주 하위 1/3 — B3/u… |
-| 1305 | L-RP-20260905_200617 | ? | C | RF_PAR_B3_12_KOSPI200 충실구현: 등급 C. 논문기준 SR 0.46 vs 15bps SR 0.57. [무인 병렬 B3_12] KOSPI200 단독… |
-| 1306 | L-RP-20260905_201433 | ? | C | RF_PAR_B4_22_LOO 충실구현: 등급 C. 논문기준 SR 0.45 vs 15bps SR 0.58. [무인 병렬 B4_22] 팩터 제외(LOO) — B4/… |
-| 1307 | L-RP-20260905_201456 | ? | C | RF_PAR_B4_21_4 충실구현: 등급 C. 논문기준 SR 0.67 vs 15bps SR 0.80. [무인 병렬 B4_21] 전 요소 결합(4축) — B4/c… |
-| 1308 | L-RP-20260905_201517 | overlay_regime | B | RF_PAR_B4_25_LOO3 충실구현: 등급 B. 논문기준 SR 0.75 vs 15bps SR 0.86. [무인 병렬 B4_25] 오버레이 제외(LOO) = … |
-| 1309 | L-RP-20260905_205134 | ? | C | RF_PAR_B1_4_ncskewsel 충실구현: 등급 C. 논문기준 SR 0.66 vs 15bps SR 0.76. [무인 병렬 B1_4] ncskew_sel —… |
-| 1310 | L-RP-20260905_205134 | ? | C | RF_PAR_B1_3_betasymmetricctrl 충실구현: 등급 C. 논문기준 SR 0.71 vs 15bps SR 0.80. [무인 병렬 B1_3] beta… |
-| 1311 | L-RP-20260905_205134 | ? | C | RF_PAR_B1_1_dbetasel 충실구현: 등급 C. 논문기준 SR 0.74 vs 15bps SR 0.80. [무인 병렬 B1_1] dbeta_sel — B… |
-| 1312 | L-RP-20260905_205134 | ? | B | RF_PAR_B1_5_ulcerpathsel 충실구현: 등급 B. 논문기준 SR 0.80 vs 15bps SR 0.88. [무인 병렬 B1_5] ulcer_pat… |
-| 1313 | L-RP-20260905_205134 | ? | C | RF_PAR_B1_2_tailbetasel 충실구현: 등급 C. 논문기준 SR 0.66 vs 15bps SR 0.75. [무인 병렬 B1_2] tailbeta_s… |
-| 1314 | L-RP-20260905_210419 | ? | C | RF_PAR_B1_6_sizesofttilt 충실구현: 등급 C. 논문기준 SR 0.73 vs 15bps SR 0.81. [무인 병렬 B1_6] size_soft… |
-| 1315 | L-RP-20260905_210419 | ? | B | RF_PAR_B1_8_retaxisctrl 충실구현: 등급 B. 논문기준 SR 0.69 vs 15bps SR 0.79. [무인 병렬 B1_8] ret_axis_c… |
-| 1316 | L-RP-20260905_210438 | ? | C | RF_PAR_B1_7_dbetaxsize 충실구현: 등급 C. 논문기준 SR 0.70 vs 15bps SR 0.77. [무인 병렬 B1_7] dbeta_x_siz… |
-| 1317 | L-RP-20260905_212047 | overlay_regime | C | RF_PAR_B5_16_ 충실구현: 등급 C. 논문기준 SR 0.77 vs 15bps SR 0.85. [무인 병렬 B5_16] 낙폭 스칼라 브레이크(대조군) — … |
-| 1318 | L-RP-20260905_212052 | overlay_regime | C | RF_PAR_B5_17_ 충실구현: 등급 C. 논문기준 SR 0.80 vs 15bps SR 0.88. [무인 병렬 B5_17] 낙폭 상태 · 하방베타 순위 차등 … |
-| 1319 | L-RP-20260905_212052 | overlay_regime | C | RF_PAR_B5_19_ 충실구현: 등급 C. 논문기준 SR 0.86 vs 15bps SR 0.95. [무인 병렬 B5_19] 횡단면분산 상태 · 특이변동 차등 … |
-| 1320 | L-RP-20260905_212053 | overlay_regime | C | RF_PAR_B5_18_ 충실구현: 등급 C. 논문기준 SR 0.81 vs 15bps SR 0.88. [무인 병렬 B5_18] 보유 체계위험 집중 상태 — B5/… |
-| 1321 | L-RP-20260905_213717 | ? | C | RF_PAR_B2_9_NCO 충실구현: 등급 C. 논문기준 SR 0.79 vs 15bps SR 0.88. [무인 병렬 B2_9] NCO 잡음제거 공분산 — B2/… |
-| 1322 | L-RP-20260905_213717 | ? | B | RF_PAR_B2_8_CVaR 충실구현: 등급 B. 논문기준 SR 0.81 vs 15bps SR 0.89. [무인 병렬 B2_8] CVaR 꼬리 목적 — B2/w… |
-| 1323 | L-RP-20260905_213717 | ? | B | RF_PAR_B2_10_ 충실구현: 등급 B. 논문기준 SR 0.85 vs 15bps SR 0.93. [무인 병렬 B2_10] 위험항 제거 대조 — B2/weig… |
-| 1324 | L-RP-20260905_213717 | ml_complexity | C | RF_PAR_B2_6_HRP 충실구현: 등급 C. 논문기준 SR 0.82 vs 15bps SR 0.90. [무인 병렬 B2_6] HRP 클러스터 배분 — B2/w… |
-| 1325 | L-RP-20260905_213717 | ? | C | RF_PAR_B2_7_ 충실구현: 등급 C. 논문기준 SR 0.65 vs 15bps SR 0.74. [무인 병렬 B2_7] 최대분산화 — B2/weighting … |
-| 1326 | L-RP-20260905_215247 | size | C | RF_PAR_B3_13_13 충실구현: 등급 C. 논문기준 SR 0.59 vs 15bps SR 0.72. [무인 병렬 B3_13] 소형주 하위 1/3 — B3/u… |
-| 1327 | L-RP-20260905_215247 | ? | C | RF_PAR_B3_15_ 충실구현: 등급 C. 논문기준 SR 0.63 vs 15bps SR 0.70. [무인 병렬 B3_15] 섹터 중립 — B3/universe… |
-| 1328 | L-RP-20260905_215247 | ? | C | RF_PAR_B3_14_13 충실구현: 등급 C. 논문기준 SR 0.42 vs 15bps SR 0.53. [무인 병렬 B3_14] 대형주 상위 1/3 — B3/u… |
-| 1329 | L-RP-20260905_215250 | ? | C | RF_PAR_B3_12_KOSPI200 충실구현: 등급 C. 논문기준 SR 0.50 vs 15bps SR 0.60. [무인 병렬 B3_12] KOSPI200 단독… |
-| 1330 | L-RP-20260905_220725 | ? | C | RF_PAR_B4_23_LOO 충실구현: 등급 C. 논문기준 SR 0.58 vs 15bps SR 0.72. [무인 병렬 B4_23] 비중 제외(LOO) — B4/… |
-| 1331 | L-RP-20260905_220759 | ? | C | RF_PAR_B4_22_LOO 충실구현: 등급 C. 논문기준 SR 0.70 vs 15bps SR 0.82. [무인 병렬 B4_22] 팩터 제외(LOO) — B4/… |
-| 1332 | L-RP-20260905_220823 | ? | C | RF_PAR_B4_21_4 충실구현: 등급 C. 논문기준 SR 0.64 vs 15bps SR 0.80. [무인 병렬 B4_21] 전 요소 결합(4축) — B4/c… |
-| 1333 | L-RP-20260905_220829 | ? | C | RF_PAR_B4_24_LOO 충실구현: 등급 C. 논문기준 SR 0.83 vs 15bps SR 0.91. [무인 병렬 B4_24] 유니버스 제외(LOO) — B… |
-| 1334 | L-RP-20260905_220831 | overlay_regime | C | RF_PAR_B4_25_LOO3 충실구현: 등급 C. 논문기준 SR 0.64 vs 15bps SR 0.78. [무인 병렬 B4_25] 오버레이 제외(LOO) = … |
-| 1335 | L-RP-20260905_223522 | quality_profitability | C | RF_PAR_B1_3_cashprofitability 충실구현: 등급 C. 논문기준 SR 0.71 vs 15bps SR 0.78. [무인 병렬 B1_3] cash… |
-| 1336 | L-RP-20260905_223522 | ? | B | RF_PAR_B1_4_pctaccruals 충실구현: 등급 B. 논문기준 SR 0.65 vs 15bps SR 0.77. [무인 병렬 B1_4] pct_accrua… |
-| 1337 | L-RP-20260905_223522 | momentum | C | RF_PAR_B1_2_streversal 충실구현: 등급 C. 논문기준 SR 0.65 vs 15bps SR 0.76. [무인 병렬 B1_2] st_reversal… |
-| 1338 | L-RP-20260905_223522 | ? | B | RF_PAR_B1_1_sizefactorpoint 충실구현: 등급 B. 논문기준 SR 0.81 vs 15bps SR 0.91. [무인 병렬 B1_1] size_f… |
-| 1339 | L-RP-20260905_223522 | earnings_event | B | RF_PAR_B1_5_revisionbreadth 충실구현: 등급 B. 논문기준 SR 0.74 vs 15bps SR 0.82. [무인 병렬 B1_5] revisi… |
-| 1340 | L-RP-20260905_224949 | ? | B | RF_PAR_B1_6_crashasymmetry 충실구현: 등급 B. 논문기준 SR 0.81 vs 15bps SR 0.90. [무인 병렬 B1_6] crash_a… |
-| 1341 | L-RP-20260905_224949 | ? | B | RF_PAR_B1_7_valuechanneldepth 충실구현: 등급 B. 논문기준 SR 0.79 vs 15bps SR 0.88. [무인 병렬 B1_7] valu… |
-| 1342 | L-RP-20260905_225011 | ? | B | RF_PAR_B1_9_sizexcashprofit 충실구현: 등급 B. 논문기준 SR 0.77 vs 15bps SR 0.84. [무인 병렬 B1_9] size_x… |
-| 1343 | L-RP-20260905_225012 | momentum | C | RF_PAR_B1_8_sizexreversal 충실구현: 등급 C. 논문기준 SR 0.62 vs 15bps SR 0.73. [무인 병렬 B1_8] size_x_r… |
-| 1344 | L-RP-20260905_225048 | ? | C | RF_PAR_B1_10_stack3ceiling 충실구현: 등급 C. 논문기준 SR 0.65 vs 15bps SR 0.74. [무인 병렬 B1_10] stack3… |
-| 1345 | L-RP-20260905_230517 | momentum | B | RF_PAR_B5_20_ 충실구현: 등급 B. 논문기준 SR 0.77 vs 15bps SR 0.90. [무인 병렬 B5_20] 추세 부호 전량현금 — B5/ris… |
-| 1346 | L-RP-20260905_230528 | overlay_regime | C | RF_PAR_B5_16_ 충실구현: 등급 C. 논문기준 SR 0.81 vs 15bps SR 0.93. [무인 병렬 B5_16] 낙폭 스칼라 대조 — B5/risk… |
-| 1347 | L-RP-20260905_230540 | overlay_regime | B | RF_PAR_B5_18_xtilt 충실구현: 등급 B. 논문기준 SR 0.88 vs 15bps SR 0.99. [무인 병렬 B5_18] 횡단면분산 x 특이변동 t… |
-| 1348 | L-RP-20260905_230541 | overlay_regime | B | RF_PAR_B5_19_tilt 충실구현: 등급 B. 논문기준 SR 0.82 vs 15bps SR 0.91. [무인 병렬 B5_19] 보유 체계위험 수렴 tilt… |
-| 1349 | L-RP-20260905_230541_02 | overlay_regime | B | RF_PAR_B5_17_xtilt 충실구현: 등급 B. 논문기준 SR 0.83 vs 15bps SR 0.94. [무인 병렬 B5_17] 낙폭 x 하방베타 순위 t… |
-| 1350 | L-RP-20260905_232157 | ? | C | RF_PAR_B2_6_ 충실구현: 등급 C. 논문기준 SR 0.67 vs 15bps SR 0.79. [무인 병렬 B2_6] 최소분산 — B2/weighting ·… |
-| 1351 | L-RP-20260905_232157 | ? | C | RF_PAR_B2_8_CVaR 충실구현: 등급 C. 논문기준 SR 0.72 vs 15bps SR 0.81. [무인 병렬 B2_8] CVaR — B2/weighti… |
-| 1352 | L-RP-20260905_232157 | ml_complexity | C | RF_PAR_B2_9_HRP 충실구현: 등급 C. 논문기준 SR 0.70 vs 15bps SR 0.79. [무인 병렬 B2_9] HRP — B2/weighting… |
-| 1353 | L-RP-20260905_232157 | ? | B | RF_PAR_B2_10_NCO 충실구현: 등급 B. 논문기준 SR 0.80 vs 15bps SR 0.88. [무인 병렬 B2_10] NCO+점수 — B2/weig… |
-| 1354 | L-RP-20260906_180028 | ? | B | RF_PAR_B2_10_NCO 충실구현: 등급 B. 논문기준 SR 0.80 vs 15bps SR 0.88. [무인 병렬 B2_10] NCO+점수 — B2/weig… |
-| 1355 | L-RP-20260906_180028 | ? | C | RF_PAR_B2_6_ 충실구현: 등급 C. 논문기준 SR 0.67 vs 15bps SR 0.79. [무인 병렬 B2_6] 최소분산 — B2/weighting ·… |
-| 1356 | L-RP-20260906_180028 | ml_complexity | C | RF_PAR_B2_9_HRP 충실구현: 등급 C. 논문기준 SR 0.70 vs 15bps SR 0.79. [무인 병렬 B2_9] HRP — B2/weighting… |
-| 1357 | L-RP-20260906_180028 | ? | C | RF_PAR_B2_8_CVaR 충실구현: 등급 C. 논문기준 SR 0.72 vs 15bps SR 0.81. [무인 병렬 B2_8] CVaR — B2/weighti… |
-| 1358 | L-RP-20260906_210754 | ? | C | RF_PAR_B3_14_13 충실구현: 등급 C. 논문기준 SR 0.43 vs 15bps SR 0.54. [무인 병렬 B3_14] 대형주 상위 1/3 — B3/u… |
-| 1359 | L-RP-20260906_210754 | ? | C | RF_PAR_B3_15_ 충실구현: 등급 C. 논문기준 SR 0.67 vs 15bps SR 0.75. [무인 병렬 B3_15] 섹터 중립 — B3/universe… |
-| 1360 | L-RP-20260906_210754 | size | B | RF_PAR_B3_13_13 충실구현: 등급 B. 논문기준 SR 0.69 vs 15bps SR 0.82. [무인 병렬 B3_13] 소형주 하위 1/3 — B3/u… |
-| 1361 | L-RP-20260906_210754 | ? | C | RF_PAR_B3_12_K200 충실구현: 등급 C. 논문기준 SR 0.46 vs 15bps SR 0.58. [무인 병렬 B3_12] K200 단독 — B3/un… |
-| 1362 | L-RP-20260906_212316 | ? | C | RF_PAR_B4_23_LOO 충실구현: 등급 C. 논문기준 SR 0.62 vs 15bps SR 0.75. [무인 병렬 B4_23] 비중 제외(LOO) — B4/… |
-| 1363 | L-RP-20260906_212344 | ? | C | RF_PAR_B4_22_LOO 충실구현: 등급 C. 논문기준 SR 0.74 vs 15bps SR 0.87. [무인 병렬 B4_22] 팩터 제외(LOO) — B4/… |
-| 1364 | L-RP-20260906_212402 | overlay_regime | C | RF_PAR_B4_25_LOO3 충실구현: 등급 C. 논문기준 SR 0.67 vs 15bps SR 0.79. [무인 병렬 B4_25] 오버레이 제외(LOO) = … |
-| 1365 | L-RP-20260906_212411 | ? | C | RF_PAR_B4_21_4 충실구현: 등급 C. 논문기준 SR 0.76 vs 15bps SR 0.88. [무인 병렬 B4_21] 전 요소 결합(4축) — B4/c… |
-| 1366 | L-RP-20260906_212414 | ? | B | RF_PAR_B4_24_LOO 충실구현: 등급 B. 논문기준 SR 0.88 vs 15bps SR 0.98. [무인 병렬 B4_24] 유니버스 제외(LOO) — B… |
-| 1367 | L-RP-20260907_003810 | earnings_event | C | RF_PAR_B1_2_sue 충실구현: 등급 C. 논문기준 SR 0.49 vs 15bps SR 0.59. [무인 병렬 B1_2] sue — B1/multifact… |
-| 1368 | L-RP-20260907_003814 | ? | C | RF_PAR_B1_1_revbreadth 충실구현: 등급 C. 논문기준 SR 0.52 vs 15bps SR 0.62. [무인 병렬 B1_1] rev_breadth… |
-| 1369 | L-RP-20260907_003814 | ? | C | RF_PAR_B1_5_cashprofit 충실구현: 등급 C. 논문기준 SR 0.64 vs 15bps SR 0.70. [무인 병렬 B1_5] cash_profit… |
-| 1370 | L-RP-20260907_003814 | ? | C | RF_PAR_B1_4_sizeonly 충실구현: 등급 C. 논문기준 SR 0.62 vs 15bps SR 0.77. [무인 병렬 B1_4] size_only — B… |
-| 1371 | L-RP-20260907_003818 | behavioral | F | RF_PAR_B1_3_krforeignflow 충실구현: 등급 F. 논문기준 SR 0.34 vs 15bps SR 0.46. [무인 병렬 B1_3] kr_forei… |
-| 1372 | L-RP-20260907_004924 | ? | C | RF_PAR_B1_6_pricedelay 충실구현: 등급 C. 논문기준 SR 0.35 vs 15bps SR 0.46. [무인 병렬 B1_6] price_delay… |
-| 1373 | L-RP-20260907_004924 | earnings_event | C | RF_PAR_B1_9_suexprofit 충실구현: 등급 C. 논문기준 SR 0.57 vs 15bps SR 0.66. [무인 병렬 B1_9] sue_x_profi… |
-| 1374 | L-RP-20260907_004933 | ? | C | RF_PAR_B1_7_revxsize 충실구현: 등급 C. 논문기준 SR 0.61 vs 15bps SR 0.71. [무인 병렬 B1_7] rev_x_size — … |
-| 1375 | L-RP-20260907_004940 | behavioral | C | RF_PAR_B1_8_krflowxsize 충실구현: 등급 C. 논문기준 SR 0.47 vs 15bps SR 0.59. [무인 병렬 B1_8] kr_flow_x_… |
-| 1376 | L-RP-20260907_010352 | overlay_regime | C | RF_PAR_B5_20_ 충실구현: 등급 C. 논문기준 SR 0.61 vs 15bps SR 0.76. [무인 병렬 B5_20] 회복 조건부 재진입(스칼라 대조) … |
-| 1377 | L-RP-20260907_010414 | overlay_regime | C | RF_PAR_B5_17_tilt 충실구현: 등급 C. 논문기준 SR 0.69 vs 15bps SR 0.86. [무인 병렬 B5_17] 특이변동 귀속 tilt (반… |
-| 1378 | L-RP-20260907_010415 | overlay_regime | C | RF_PAR_B5_16_tilt 충실구현: 등급 C. 논문기준 SR 0.63 vs 15bps SR 0.78. [무인 병렬 B5_16] 체계위험 귀속 tilt — … |
-| 1379 | L-RP-20260907_010416 | overlay_regime | C | RF_PAR_B5_19_ 충실구현: 등급 C. 논문기준 SR 0.67 vs 15bps SR 0.82. [무인 병렬 B5_19] 체계/특이 예보 축 회전 — B5/… |
-| 1380 | L-RP-20260907_010416_02 | overlay_regime | C | RF_PAR_B5_18_ 충실구현: 등급 C. 논문기준 SR 0.66 vs 15bps SR 0.82. [무인 병렬 B5_18] 스트레스 채널 라우팅 — B5/ri… |
-| 1381 | L-RP-20260907_011553 | ? | C | RF_PAR_B2_7_ 충실구현: 등급 C. 논문기준 SR 0.63 vs 15bps SR 0.79. [무인 병렬 B2_7] 최소분산 — B2/weighting ·… |
-| 1382 | L-RP-20260907_011553 | ? | C | RF_PAR_B2_8_ 충실구현: 등급 C. 논문기준 SR 0.67 vs 15bps SR 0.81. [무인 병렬 B2_8] 군집 계층 배분 — B2/weighti… |
-| 1383 | L-RP-20260907_011553 | ? | C | RF_PAR_B2_6_ 충실구현: 등급 C. 논문기준 SR 0.70 vs 15bps SR 0.85. [무인 병렬 B2_6] 특이변동 역가중 — B2/weighti… |
-| 1384 | L-RP-20260907_011553 | ? | C | RF_PAR_B2_10_ 충실구현: 등급 C. 논문기준 SR 0.67 vs 15bps SR 0.81. [무인 병렬 B2_10] 단기간 꼬리 목적 — B2/weig… |
-| 1385 | L-RP-20260907_041641 | ? | C | RF_PAR_B2_11_ 충실구현: 등급 C. 논문기준 SR 0.68 vs 15bps SR 0.83. [무인 병렬 B2_11] 동일가중 이탈 대조 — B2/wei… |
-| 1386 | L-RP-20260907_042550 | ? | C | RF_PAR_B3_15_ 충실구현: 등급 C. 논문기준 SR 0.53 vs 15bps SR 0.64. [무인 병렬 B3_15] 섹터 중립 — B3/universe… |
-| 1387 | L-RP-20260907_042550 | ? | B | RF_PAR_B3_13_tercile 충실구현: 등급 B. 논문기준 SR 0.77 vs 15bps SR 0.94. [무인 병렬 B3_13] 소형 tercile —… |
-| 1388 | L-RP-20260907_042550 | ? | C | RF_PAR_B3_14_tercile 충실구현: 등급 C. 논문기준 SR 0.44 vs 15bps SR 0.54. [무인 병렬 B3_14] 대형 tercile —… |
-| 1389 | L-RP-20260907_042554 | ? | F | RF_PAR_B3_12_K200 충실구현: 등급 F. 논문기준 SR 0.28 vs 15bps SR 0.40. [무인 병렬 B3_12] K200 단독 — B3/un… |
-| 1390 | L-RP-20260907_043915 | ? | C | RF_PAR_B4_23_LOO 충실구현: 등급 C. 논문기준 SR 0.71 vs 15bps SR 0.90. [무인 병렬 B4_23] 비중 제외(LOO) — B4/… |
-| 1391 | L-RP-20260907_043938 | ? | C | RF_PAR_B4_22_LOO 충실구현: 등급 C. 논문기준 SR 0.61 vs 15bps SR 0.77. [무인 병렬 B4_22] 팩터 제외(LOO) — B4/… |
-| 1392 | L-RP-20260907_044008 | ? | C | RF_PAR_B4_21_4 충실구현: 등급 C. 논문기준 SR 0.81 vs 15bps SR 1.00. [무인 병렬 B4_21] 전 요소 결합(4축) — B4/c… |
-| 1393 | L-RP-20260907_044014 | ? | C | RF_PAR_B4_24_LOO 충실구현: 등급 C. 논문기준 SR 0.75 vs 15bps SR 0.91. [무인 병렬 B4_24] 유니버스 제외(LOO) — B… |
-| 1394 | L-RP-20260907_045940 | ? | C | RF_PAR_B1_1_sizevalueebitev 충실구현: 등급 C. 논문기준 SR 0.74 vs 15bps SR 0.82. [무인 병렬 B1_1] size+v… |
-| 1395 | L-RP-20260907_045940 | quality_earnings | C | RF_PAR_B1_4_sizeaccrualquality 충실구현: 등급 C. 논문기준 SR 0.60 vs 15bps SR 0.73. [무인 병렬 B1_4] siz… |
-| 1396 | L-RP-20260907_045940 | quality_profitability | C | RF_PAR_B1_3_sizecashprofitability 충실구현: 등급 C. 논문기준 SR 0.67 vs 15bps SR 0.73. [무인 병렬 B1_3] … |
-| 1397 | L-RP-20260907_045940 | quality_earnings | C | RF_PAR_B1_2_sizepiotroskiscreen 충실구현: 등급 C. 논문기준 SR 0.68 vs 15bps SR 0.77. [무인 병렬 B1_2] si… |
-| 1398 | L-RP-20260907_045940 | earnings_event | C | RF_PAR_B1_5_sizerevisionbreadth 충실구현: 등급 C. 논문기준 SR 0.64 vs 15bps SR 0.74. [무인 병렬 B1_5] si… |
-| 1399 | L-RP-20260907_050651 | ? | C | RF_PAR_B1_7_sizeilliquidity 충실구현: 등급 C. 논문기준 SR 0.60 vs 15bps SR 0.72. [무인 병렬 B1_7] size+i… |
-| 1400 | L-RP-20260907_050651 | ? | C | RF_PAR_B1_8_sizeequityissuance 충실구현: 등급 C. 논문기준 SR 0.75 vs 15bps SR 0.84. [무인 병렬 B1_8] siz… |
-| 1401 | L-RP-20260907_050710 | ? | C | RF_PAR_B1_6_sizecheapandsafe 충실구현: 등급 C. 논문기준 SR 0.71 vs 15bps SR 0.78. [무인 병렬 B1_6] size+… |
-| 1402 | L-RP-20260907_052113 | overlay_regime | C | RF_PAR_B5_16_ 충실구현: 등급 C. 논문기준 SR 0.67 vs 15bps SR 0.77. [무인 병렬 B5_16] 낙폭 스칼라(대조군) — B5/ri… |
-| 1403 | L-RP-20260907_052117 | overlay_regime | C | RF_PAR_B5_19_ 충실구현: 등급 C. 논문기준 SR 0.76 vs 15bps SR 0.85. [무인 병렬 B5_19] 보유 수준 체계위험 집중도 — B5… |
-| 1404 | L-RP-20260907_052117 | overlay_regime | C | RF_PAR_B5_18_xtilt 충실구현: 등급 C. 논문기준 SR 0.79 vs 15bps SR 0.90. [무인 병렬 B5_18] 횡단면분산 x 특이변동 t… |
-| 1405 | L-RP-20260907_052117 | overlay_regime | C | RF_PAR_B5_20_x 충실구현: 등급 C. 논문기준 SR 0.76 vs 15bps SR 0.86. [무인 병렬 B5_20] 다변량 방향 x 채널 매핑 — B… |
-| 1406 | L-RP-20260907_052118 | overlay_regime | C | RF_PAR_B5_17_xtilt 충실구현: 등급 C. 논문기준 SR 0.71 vs 15bps SR 0.80. [무인 병렬 B5_17] 낙폭 x 하방베타 순위 t… |
-| 1407 | L-RP-20260907_052803 | overlay_regime | C | RF_PAR_B5_21_tilt 충실구현: 등급 C. 논문기준 SR 0.75 vs 15bps SR 0.85. [무인 병렬 B5_21] 학습 이중예보 tilt — … |
-| 1408 | L-RP-20260907_053903 | ? | C | RF_PAR_B2_8_ 충실구현: 등급 C. 논문기준 SR 0.66 vs 15bps SR 0.76. [무인 병렬 B2_8] 분산 단일축 통제 — B2/weight… |
-| 1409 | L-RP-20260907_053903 | ? | C | RF_PAR_B2_9_ 충실구현: 등급 C. 논문기준 SR 0.73 vs 15bps SR 0.83. [무인 병렬 B2_9] 축소추정 통제 — B2/weightin… |
-| 1410 | L-RP-20260907_053903 | ? | C | RF_PAR_B2_7_ 충실구현: 등급 C. 논문기준 SR 0.62 vs 15bps SR 0.70. [무인 병렬 B2_7] 군집 후 재조립 비중 — B2/weig… |
-| 1411 | L-RP-20260907_053903 | ? | C | RF_PAR_B2_6_ 충실구현: 등급 C. 논문기준 SR 0.64 vs 15bps SR 0.72. [무인 병렬 B2_6] 계층 상관 구조 비중 — B2/weig… |
-| 1412 | L-RP-20260907_091325 | ? | C | RF_PAR_B2_10_ 충실구현: 등급 C. 논문기준 SR 0.56 vs 15bps SR 0.70. [무인 병렬 B2_10] 낙폭 목적함수 직접 — B2/wei… |
-| 1413 | L-RP-20260907_092822 | ? | C | RF_PAR_B3_14_13 충실구현: 등급 C. 논문기준 SR 0.38 vs 15bps SR 0.48. [무인 병렬 B3_14] 대형주 상위 1/3 — B3/u… |
-| 1414 | L-RP-20260907_092822 | size | C | RF_PAR_B3_13_13 충실구현: 등급 C. 논문기준 SR 0.73 vs 15bps SR 0.86. [무인 병렬 B3_13] 소형주 하위 1/3 — B3/u… |
-| 1415 | L-RP-20260907_092822 | ? | C | RF_PAR_B3_15_ 충실구현: 등급 C. 논문기준 SR 0.53 vs 15bps SR 0.63. [무인 병렬 B3_15] 섹터 중립 — B3/universe… |
-| 1416 | L-RP-20260907_092824 | ? | C | RF_PAR_B3_12_KOSPI200 충실구현: 등급 C. 논문기준 SR 0.43 vs 15bps SR 0.55. [무인 병렬 B3_12] KOSPI200 단독… |
-| 1417 | L-RP-20260907_093853 | ? | C | RF_PAR_B4_23_LOO 충실구현: 등급 C. 논문기준 SR 0.67 vs 15bps SR 0.83. [무인 병렬 B4_23] 비중 제외(LOO) — B4/… |
-| 1418 | L-RP-20260907_093924 | ? | C | RF_PAR_B4_22_LOO 충실구현: 등급 C. 논문기준 SR 0.81 vs 15bps SR 1.00. [무인 병렬 B4_22] 팩터 제외(LOO) — B4/… |
-| 1419 | L-RP-20260907_093945 | overlay_regime | C | RF_PAR_B4_25_LOO3 충실구현: 등급 C. 논문기준 SR 0.72 vs 15bps SR 0.85. [무인 병렬 B4_25] 오버레이 제외(LOO) = … |
-| 1420 | L-RP-20260907_093949 | ? | C | RF_PAR_B4_21_4 충실구현: 등급 C. 논문기준 SR 0.76 vs 15bps SR 0.91. [무인 병렬 B4_21] 전 요소 결합(4축) — B4/c… |
-| 1421 | L-RP-20260907_093956 | ? | C | RF_PAR_B4_24_LOO 충실구현: 등급 C. 논문기준 SR 0.75 vs 15bps SR 0.85. [무인 병렬 B4_24] 유니버스 제외(LOO) — B… |
-| 1422 | L-RP-20260910_131852 | ? | C | RF_PAR_B1_2_valueebitev 충실구현: 등급 C. 논문기준 SR 0.38 vs 15bps SR 0.54. [무인 병렬 B1_2] value_ebit… |
-| 1423 | L-RP-20260910_131852 | ? | C | RF_PAR_B1_4_netissuance 충실구현: 등급 C. 논문기준 SR 0.40 vs 15bps SR 0.56. [무인 병렬 B1_4] net_issuan… |
-| 1424 | L-RP-20260910_131852 | liquidity | C | RF_PAR_B1_3_illiqamihud 충실구현: 등급 C. 논문기준 SR 0.40 vs 15bps SR 0.56. [무인 병렬 B1_3] illiq_amih… |
-| 1425 | L-RP-20260910_131852 | ? | C | RF_PAR_B1_1_size 충실구현: 등급 C. 논문기준 SR 0.40 vs 15bps SR 0.56. [무인 병렬 B1_1] size — B1/multifa… |
-| 1426 | L-RP-20260910_131953 | earnings_event | C | RF_PAR_B1_5_sueconfirm 충실구현: 등급 C. 논문기준 SR 0.45 vs 15bps SR 0.64. [무인 병렬 B1_5] sue_confirm… |
-| 1427 | L-RP-20260912_170105 | ? | C | RF_PAR_B1_6_momcrowding 충실구현: 등급 C. 논문기준 SR 0.40 vs 15bps SR 0.56. [무인 병렬 B1_6] mom_crowdi… |
-| 1428 | L-RP-20260912_170105 | ? | C | RF_PAR_B1_7_babrank 충실구현: 등급 C. 논문기준 SR 0.40 vs 15bps SR 0.56. [무인 병렬 B1_7] bab_rank — B1/… |
-| 1429 | L-RP-20260912_170112 | ? | C | RF_PAR_B1_8_sizexvalue 충실구현: 등급 C. 논문기준 SR 0.38 vs 15bps SR 0.54. [무인 병렬 B1_8] size_x_valu… |
-| 1430 | L-RP-20260912_170113 | ? | C | RF_PAR_B1_9_sizexissuance 충실구현: 등급 C. 논문기준 SR 0.40 vs 15bps SR 0.56. [무인 병렬 B1_9] size_x_i… |
-| 1431 | L-RP-20260912_171504 | momentum | C | RF_PAR_B5_20_ 충실구현: 등급 C. 논문기준 SR 0.51 vs 15bps SR 0.71. [무인 병렬 B5_20] 추세 부호 전량 현금 — B5/ri… |
-| 1432 | L-RP-20260912_171518 | overlay_regime | C | RF_PAR_B5_16_ 충실구현: 등급 C. 논문기준 SR 0.34 vs 15bps SR 0.48. [무인 병렬 B5_16] 낙폭 스칼라 앵커 — B5/risk… |
-| 1433 | L-RP-20260912_171529 | overlay_regime | C | RF_PAR_B5_17_ 충실구현: 등급 C. 논문기준 SR 0.37 vs 15bps SR 0.54. [무인 병렬 B5_17] 같은 상태·종목축 소비 — B5/r… |
-| 1434 | L-RP-20260912_171530 | overlay_regime | C | RF_PAR_B5_18_ 충실구현: 등급 C. 논문기준 SR 0.47 vs 15bps SR 0.64. [무인 병렬 B5_18] 보유에서 읽는 상태 — B5/ris… |
-| 1435 | L-RP-20260912_171539 | overlay_regime | C | RF_PAR_B5_19_ 충실구현: 등급 C. 논문기준 SR 0.44 vs 15bps SR 0.62. [무인 병렬 B5_19] 다변량 상태·채널 매핑 — B5/r… |
-| 1436 | L-RP-20260912_174326 | size | B | RF_PAR_B3_13_13 충실구현: 등급 B. 논문기준 SR 0.51 vs 15bps SR 0.77. [무인 병렬 B3_13] 소형주(시총 하위 1/3) — … |
-| 1437 | L-RP-20260912_174327 | ? | B | RF_PAR_B3_15_ 충실구현: 등급 B. 논문기준 SR 0.49 vs 15bps SR 0.71. [무인 병렬 B3_15] 섹터 중립 — B3/universe… |
-| 1438 | L-RP-20260912_174328 | ? | C | RF_PAR_B3_14_13 충실구현: 등급 C. 논문기준 SR 0.37 vs 15bps SR 0.61. [무인 병렬 B3_14] 대형주(시총 상위 1/3) — … |
-| 1439 | L-RP-20260912_174334 | ? | C | RF_PAR_B3_12_KOSPI200 충실구현: 등급 C. 논문기준 SR 0.36 vs 15bps SR 0.59. [무인 병렬 B3_12] KOSPI200 단독… |
-| 1440 | L-RP-20260912_174338 | ? | C | RF_PAR_B3_11_KOSDAQ150 충실구현: 등급 C. 논문기준 SR 0.19 vs 15bps SR 0.40. [무인 병렬 B3_11] KOSDAQ150 … |
-| 1441 | L-RP-20260912_175216 | ? | C | RF_PAR_B4_22_LOO 충실구현: 등급 C. 논문기준 SR 0.42 vs 15bps SR 0.64. [무인 병렬 B4_22] 팩터 제외(LOO) — B4/… |
-| 1442 | L-RP-20260912_175306 | overlay_regime | C | RF_PAR_B4_25_LOO3 충실구현: 등급 C. 논문기준 SR 0.41 vs 15bps SR 0.65. [무인 병렬 B4_25] 오버레이 제외(LOO) = … |
-| 1443 | L-RP-20260912_180902 | ? | C | RF_PAR_B1_1_ctlfullcoverage 충실구현: 등급 C. 논문기준 SR 0.51 vs 15bps SR 0.71. [무인 병렬 B1_1] ctl_fu… |
-| 1444 | L-RP-20260912_180902 | ? | C | RF_PAR_B1_2_acctsupport 충실구현: 등급 C. 논문기준 SR 0.51 vs 15bps SR 0.71. [무인 병렬 B1_2] acct_suppo… |
-| 1445 | L-RP-20260912_180902 | ? | C | RF_PAR_B1_4_narrownonvis 충실구현: 등급 C. 논문기준 SR 0.46 vs 15bps SR 0.65. [무인 병렬 B1_4] narrow_no… |
-| 1446 | L-RP-20260912_180902 | ? | C | RF_PAR_B1_5_vistighter 충실구현: 등급 C. 논문기준 SR 0.51 vs 15bps SR 0.71. [무인 병렬 B1_5] vis_tighter… |
-| 1447 | L-RP-20260912_180902 | ? | C | RF_PAR_B1_3_vissamewidth 충실구현: 등급 C. 논문기준 SR 0.51 vs 15bps SR 0.71. [무인 병렬 B1_3] vis_same_… |
-| 1448 | L-RP-20260912_181421 | ? | C | RF_PAR_B1_6_vistightest 충실구현: 등급 C. 논문기준 SR 0.51 vs 15bps SR 0.71. [무인 병렬 B1_6] vis_tighte… |
-| 1449 | L-RP-20260912_182257 | overlay_regime | C | RF_PAR_B5_17_ 충실구현: 등급 C. 논문기준 SR 0.53 vs 15bps SR 0.70. [무인 병렬 B5_17] 체계위험 비중 상태 — B5/ris… |
-| 1450 | L-RP-20260912_182257 | overlay_regime | C | RF_PAR_B5_18_ 충실구현: 등급 C. 논문기준 SR 0.58 vs 15bps SR 0.75. [무인 병렬 B5_18] 특이변동 채널 — B5/risk_o… |
-| 1451 | L-RP-20260912_182257 | overlay_regime | C | RF_PAR_B5_20_ 충실구현: 등급 C. 논문기준 SR 0.56 vs 15bps SR 0.71. [무인 병렬 B5_20] 학습 이중 예보 — B5/risk_… |
-| 1452 | L-RP-20260912_182257 | overlay_regime | C | RF_PAR_B5_19_ 충실구현: 등급 C. 논문기준 SR 0.52 vs 15bps SR 0.71. [무인 병렬 B5_19] 다변량 채널 배합 — B5/risk… |
-| 1453 | L-RP-20260912_182257 | momentum | C | RF_PAR_B5_16_ 충실구현: 등급 C. 논문기준 SR 0.53 vs 15bps SR 0.72. [무인 병렬 B5_16] 추세 동일·지점 이동 — B5/ri… |
-| 1454 | L-RP-20260912_184715 | size | B | RF_PAR_B3_13_13 충실구현: 등급 B. 논문기준 SR 0.51 vs 15bps SR 0.77. [무인 병렬 B3_13] 소형주(시총 하위 1/3) — … |
-| 1455 | L-RP-20260912_184716 | ? | B | RF_PAR_B3_15_ 충실구현: 등급 B. 논문기준 SR 0.49 vs 15bps SR 0.71. [무인 병렬 B3_15] 섹터 중립 — B3/universe… |
-| 1456 | L-RP-20260912_184718 | ? | C | RF_PAR_B3_14_13 충실구현: 등급 C. 논문기준 SR 0.37 vs 15bps SR 0.61. [무인 병렬 B3_14] 대형주(시총 상위 1/3) — … |
-| 1457 | L-RP-20260912_184719 | ? | C | RF_PAR_B3_12_KOSPI200 충실구현: 등급 C. 논문기준 SR 0.36 vs 15bps SR 0.59. [무인 병렬 B3_12] KOSPI200 단독… |
-| 1458 | L-RP-20260912_184722 | ? | C | RF_PAR_B3_11_KOSDAQ150 충실구현: 등급 C. 논문기준 SR 0.19 vs 15bps SR 0.40. [무인 병렬 B3_11] KOSDAQ150 … |
-| 1459 | L-RP-20260912_185848 | ? | B | RF_PAR_B4_22_LOO 충실구현: 등급 B. 논문기준 SR 0.55 vs 15bps SR 0.75. [무인 병렬 B4_22] 팩터 제외(LOO) — B4/… |
-| 1460 | L-RP-20260912_185910 | ? | B | RF_PAR_B4_21_4 충실구현: 등급 B. 논문기준 SR 0.55 vs 15bps SR 0.75. [무인 병렬 B4_21] 전 요소 결합(4축) — B4/c… |
-| 1461 | L-RP-20260913_001750 | ? | C | RF_PAR_B1_2_2growthvalue 충실구현: 등급 C. 논문기준 SR 0.31 vs 15bps SR 0.44. [무인 병렬 B1_2] 2팩터 직교(gr… |
-| 1462 | L-RP-20260913_001750 | ? | F | RF_PAR_B1_1_1growth 충실구현: 등급 F. 논문기준 SR 0.31 vs 15bps SR 0.44. [무인 병렬 B1_1] 1팩터 직교(growth)… |
-| 1463 | L-RP-20260913_001826 | ? | C | RF_PAR_B1_3_3growthcrowdingvalue 충실구현: 등급 C. 논문기준 SR 0.34 vs 15bps SR 0.46. [무인 병렬 B1_3] 3… |
-| 1464 | L-RP-20260913_001845 | overlay_regime | C | RF_PAR_B1_4_4growthregimecrowdingvalue 충실구현: 등급 C. 논문기준 SR 0.35 vs 15bps SR 0.48. [무인 병렬 B… |
-| 1465 | L-RP-20260913_001912 | overlay_regime | C | RF_PAR_B1_5_5growthregimecrowdingaccrualvalue 충실구현: 등급 C. 논문기준 SR 0.38 vs 15bps SR 0.50. [… |
-| 1466 | L-RP-20260913_003221 | ? | C | RF_PAR_B1_8_turnoveraligned 충실구현: 등급 C. 논문기준 SR 0.28 vs 15bps SR 0.37. [무인 병렬 B1_8] turnov… |
-| 1467 | L-RP-20260913_003233 | ? | F | RF_PAR_B1_6_assetgrowthaligned 충실구현: 등급 F. 논문기준 SR 0.31 vs 15bps SR 0.44. [무인 병렬 B1_6] ass… |
-| 1468 | L-RP-20260913_003237 | behavioral | C | RF_PAR_B1_9_flowkrabsentaxis 충실구현: 등급 C. 논문기준 SR 0.19 vs 15bps SR 0.32. [무인 병렬 B1_9] flow_… |
-| 1469 | L-RP-20260913_003239 | momentum | C | RF_PAR_B1_7_streversal 충실구현: 등급 C. 논문기준 SR 0.40 vs 15bps SR 0.54. [무인 병렬 B1_7] st_reversal… |
-| 1470 | L-RP-20260913_003357 | ? | C | RF_PAR_B1_10_jointsignrepair4 충실구현: 등급 C. 논문기준 SR 0.47 vs 15bps SR 0.61. [무인 병렬 B1_10] joi… |
-| 1471 | L-RP-20260913_005013 | low_vol | C | RF_PAR_B2_7_ivol 충실구현: 등급 C. 논문기준 SR 0.52 vs 15bps SR 0.64. [무인 병렬 B2_7] ivol — B2/weighti… |
-| 1472 | L-RP-20260913_005013 | ? | C | RF_PAR_B2_10_nco 충실구현: 등급 C. 논문기준 SR 0.57 vs 15bps SR 0.66. [무인 병렬 B2_10] nco — B2/weighti… |
-| 1473 | L-RP-20260913_005013 | ? | C | RF_PAR_B2_9_CVaR 충실구현: 등급 C. 논문기준 SR 0.53 vs 15bps SR 0.65. [무인 병렬 B2_9] CVaR — B2/weighti… |
-| 1474 | L-RP-20260913_005013 | ? | C | RF_PAR_B2_6_minvar 충실구현: 등급 C. 논문기준 SR 0.60 vs 15bps SR 0.69. [무인 병렬 B2_6] minvar — B2/wei… |
-| 1475 | L-RP-20260913_005031 | ? | C | RF_PAR_B2_8_CDaR 충실구현: 등급 C. 논문기준 SR 0.37 vs 15bps SR 0.48. [무인 병렬 B2_8] CDaR — B2/weighti… |
-| 1476 | L-RP-20260913_005915 | ? | C | RF_PAR_B2_11_scoretilt 충실구현: 등급 C. 논문기준 SR 0.54 vs 15bps SR 0.66. [무인 병렬 B2_11] score_tilt… |
-| 1477 | L-RP-20260913_011152 | ? | C | RF_PAR_B3_14_13 충실구현: 등급 C. 논문기준 SR 0.45 vs 15bps SR 0.56. [무인 병렬 B3_14] 대형주 상위 1/3 — B3/u… |
-| 1478 | L-RP-20260913_011204 | size | C | RF_PAR_B3_13_13 충실구현: 등급 C. 논문기준 SR 0.36 vs 15bps SR 0.50. [무인 병렬 B3_13] 소형주 하위 1/3 — B3/u… |
-| 1479 | L-RP-20260913_011212 | ? | C | RF_PAR_B3_15_ 충실구현: 등급 C. 논문기준 SR 0.40 vs 15bps SR 0.50. [무인 병렬 B3_15] 섹터 중립 — B3/universe… |
-| 1480 | L-RP-20260913_012325 | overlay_regime | F | RF_PAR_B5_16_ 충실구현: 등급 F. 논문기준 SR 0.46 vs 15bps SR 0.56. [무인 병렬 B5_16] 낙폭 스칼라 브레이크(대조) — B… |
-| 1481 | L-RP-20260913_012333 | overlay_regime | C | RF_PAR_B5_19_x 충실구현: 등급 C. 논문기준 SR 0.53 vs 15bps SR 0.64. [무인 병렬 B5_19] 횡단면분산 국면 x 특이변동 순위… |
-| 1482 | L-RP-20260913_012334 | overlay_regime | F | RF_PAR_B5_17_x 충실구현: 등급 F. 논문기준 SR 0.50 vs 15bps SR 0.61. [무인 병렬 B5_17] 낙폭 국면 x 하방베타 순위 차등… |
-| 1483 | L-RP-20260913_012334_02 | overlay_regime | C | RF_PAR_B5_18_ 충실구현: 등급 C. 논문기준 SR 0.49 vs 15bps SR 0.61. [무인 병렬 B5_18] 보유 체계위험 비중 기반 차등 — … |
-| 1484 | L-RP-20260913_013618 | ? | C | RF_PAR_B4_22_LOO 충실구현: 등급 C. 논문기준 SR 0.40 vs 15bps SR 0.49. [무인 병렬 B4_22] 팩터 제외(LOO) — B4/… |
-| 1485 | L-RP-20260913_013700 | ? | C | RF_PAR_B4_23_LOO 충실구현: 등급 C. 논문기준 SR 0.48 vs 15bps SR 0.57. [무인 병렬 B4_23] 비중 제외(LOO) — B4/… |
-| 1486 | L-RP-20260913_013757 | overlay_regime | C | RF_PAR_B4_25_LOO3 충실구현: 등급 C. 논문기준 SR 0.48 vs 15bps SR 0.57. [무인 병렬 B4_25] 오버레이 제외(LOO) = … |
-| 1487 | L-RP-20260913_013804 | ? | C | RF_PAR_B4_21_4 충실구현: 등급 C. 논문기준 SR 0.49 vs 15bps SR 0.57. [무인 병렬 B4_21] 전 요소 결합(4축) — B4/c… |
-| 1488 | L-RP-20260913_013807 | ? | C | RF_PAR_B4_24_LOO 충실구현: 등급 C. 논문기준 SR 0.54 vs 15bps SR 0.65. [무인 병렬 B4_24] 유니버스 제외(LOO) — B… |
-| 1489 | L-RP-20260913_024206 | consensus | C | RF_PAR_B1_1_1consensus 충실구현: 등급 C. 논문기준 SR 0.64 vs 15bps SR 0.72. [무인 병렬 B1_1] 1팩터 직교(cons… |
-| 1490 | L-RP-20260913_024223 | consensus | C | RF_PAR_B1_2_2consensusregime 충실구현: 등급 C. 논문기준 SR 0.47 vs 15bps SR 0.59. [무인 병렬 B1_2] 2팩터 직… |
-| 1491 | L-RP-20260913_024250 | consensus | C | RF_PAR_B1_3_3consensusregimevalue 충실구현: 등급 C. 논문기준 SR 0.49 vs 15bps SR 0.59. [무인 병렬 B1_3] … |
-| 1492 | L-RP-20260913_024312 | consensus | C | RF_PAR_B1_4_4consensusregimevaluequality 충실구현: 등급 C. 논문기준 SR 0.53 vs 15bps SR 0.64. [무인 병렬… |
-| 1493 | L-RP-20260913_024335 | consensus | C | RF_PAR_B1_5_5consensusregimevalueaccrualquality 충실구현: 등급 C. 논문기준 SR 0.51 vs 15bps SR 0.62.… |
-| 1494 | L-RP-20260913_025630 | ml_complexity | C | RF_PAR_B2_9_hrp 충실구현: 등급 C. 논문기준 SR 0.75 vs 15bps SR 0.78. [무인 병렬 B2_9] hrp — B2/weighting… |
-| 1495 | L-RP-20260913_025630 | ? | C | RF_PAR_B2_8_minvar 충실구현: 등급 C. 논문기준 SR 0.81 vs 15bps SR 0.82. [무인 병렬 B2_8] minvar — B2/wei… |
-| 1496 | L-RP-20260913_025630 | ? | C | RF_PAR_B2_10_scoretilt 충실구현: 등급 C. 논문기준 SR 0.73 vs 15bps SR 0.78. [무인 병렬 B2_10] score_tilt… |
-| 1497 | L-RP-20260913_025650 | ? | C | RF_PAR_B2_6_CDaRLP 충실구현: 등급 C. 논문기준 SR 0.54 vs 15bps SR 0.63. [무인 병렬 B2_6] CDaR_LP — B2/we… |
-| 1498 | L-RP-20260913_030642 | ? | C | RF_PAR_B3_15_ 충실구현: 등급 C. 논문기준 SR 0.48 vs 15bps SR 0.57. [무인 병렬 B3_15] 섹터 중립 — B3/universe… |
-| 1499 | L-RP-20260913_030645 | ? | F | RF_PAR_B3_12_KOSPI200 충실구현: 등급 F. 논문기준 SR 0.45 vs 15bps SR 0.54. [무인 병렬 B3_12] KOSPI200 단독… |
-| 1500 | L-RP-20260913_032819 | overlay_regime | C | RF_PAR_B5_16_tilt 충실구현: 등급 C. 논문기준 SR 0.74 vs 15bps SR 0.79. [무인 병렬 B5_16] 보유 체계위험 비중 tilt… |
-| 1501 | L-RP-20260913_032819 | overlay_regime | C | RF_PAR_B5_18_tilt 충실구현: 등급 C. 논문기준 SR 0.74 vs 15bps SR 0.80. [무인 병렬 B5_18] 하방베타 순위 tilt(기준… |
-| 1502 | L-RP-20260913_032819 | overlay_regime | C | RF_PAR_B5_19_ratio 충실구현: 등급 C. 논문기준 SR 0.76 vs 15bps SR 0.81. [무인 병렬 B5_19] 내재 평균상관 비(rati… |
-| 1503 | L-RP-20260913_032819 | overlay_regime | C | RF_PAR_B5_17_ 충실구현: 등급 C. 논문기준 SR 0.79 vs 15bps SR 0.82. [무인 병렬 B5_17] 이중 예보 랭킹축 회전 — B5/r… |
-| 1504 | L-RP-20260913_033744 | ? | C | RF_PAR_B4_23_LOO 충실구현: 등급 C. 논문기준 SR 0.55 vs 15bps SR 0.62. [무인 병렬 B4_23] 비중 제외(LOO) — B4/… |
-| 1505 | L-RP-20260913_033808 | ? | C | RF_PAR_B4_22_LOO 충실구현: 등급 C. 논문기준 SR 0.37 vs 15bps SR 0.47. [무인 병렬 B4_22] 팩터 제외(LOO) — B4/… |
-| 1506 | L-RP-20260913_033835 | ? | C | RF_PAR_B4_21_4 충실구현: 등급 C. 논문기준 SR 0.53 vs 15bps SR 0.60. [무인 병렬 B4_21] 전 요소 결합(4축) — B4/c… |
-| 1507 | L-RP-20260913_104539 | ? | C | RF_PAR_B1_1_riskidiovol 충실구현: 등급 C. 논문기준 SR 0.72 vs 15bps SR 0.76. [무인 병렬 B1_1] risk_idiov… |
-| 1508 | L-RP-20260913_104541 | earnings_event | C | RF_PAR_B1_4_realizedsurprisesue 충실구현: 등급 C. 논문기준 SR 0.76 vs 15bps SR 0.81. [무인 병렬 B1_4] re… |
-| 1509 | L-RP-20260913_104608 | ? | C | RF_PAR_B1_2_distshapemaxret 충실구현: 등급 C. 논문기준 SR 0.52 vs 15bps SR 0.60. [무인 병렬 B1_2] dist_s… |
-| 1510 | L-RP-20260913_104610 | ? | B | RF_PAR_B1_3_horizonmom121 충실구현: 등급 B. 논문기준 SR 0.82 vs 15bps SR 0.89. [무인 병렬 B1_3] horizon_… |
-| 1511 | L-RP-20260913_104617 | behavioral | C | RF_PAR_B1_5_krforeignflow 충실구현: 등급 C. 논문기준 SR 0.60 vs 15bps SR 0.66. [무인 병렬 B1_5] kr_forei… |
-| 1512 | L-RP-20260913_105706 | ? | C | RF_PAR_B1_6_infodiffusiondelay 충실구현: 등급 C. 논문기준 SR 0.67 vs 15bps SR 0.71. [무인 병렬 B1_6] inf… |
-| 1513 | L-RP-20260913_105713 | ? | B | RF_PAR_B1_7_riskplushorizon 충실구현: 등급 B. 논문기준 SR 0.95 vs 15bps SR 0.99. [무인 병렬 B1_7] risk_p… |
-| 1514 | L-RP-20260913_105714 | ? | C | RF_PAR_B1_8_infoarrivalpair 충실구현: 등급 C. 논문기준 SR 0.76 vs 15bps SR 0.83. [무인 병렬 B1_8] info_a… |
-| 1515 | L-RP-20260913_105807 | ? | B | RF_PAR_B1_9_fouraxisbreadth 충실구현: 등급 B. 논문기준 SR 0.92 vs 15bps SR 0.96. [무인 병렬 B1_9] four_a… |
-| 1516 | L-RP-20260913_111154 | momentum | B | RF_PAR_B5_20_tilt 충실구현: 등급 B. 논문기준 SR 0.88 vs 15bps SR 0.95. [무인 병렬 B5_20] 추세 기간구조를 tilt 축… |
-| 1517 | L-RP-20260913_111154 | overlay_regime | C | RF_PAR_B5_16_x 충실구현: 등급 C. 논문기준 SR 0.80 vs 15bps SR 0.88. [무인 병렬 B5_16] 낙폭상태 x 하방베타 순위 — B… |
-| 1518 | L-RP-20260913_111154 | overlay_regime | B | RF_PAR_B5_17_ 충실구현: 등급 B. 논문기준 SR 0.82 vs 15bps SR 0.89. [무인 병렬 B5_17] 보유 체계위험 비중 상태 — B5/… |
-| 1519 | L-RP-20260913_111154 | overlay_regime | B | RF_PAR_B5_18_ 충실구현: 등급 B. 논문기준 SR 0.86 vs 15bps SR 0.93. [무인 병렬 B5_18] 스트레스 구성별 채널 배합 — B5… |
-| 1520 | L-RP-20260913_111154 | overlay_regime | B | RF_PAR_B5_19_ 충실구현: 등급 B. 논문기준 SR 0.84 vs 15bps SR 0.93. [무인 병렬 B5_19] 체계 충격 대 특이 산포 예보 — … |
-| 1521 | L-RP-20260913_112851 | ? | B | RF_PAR_B2_8_ 충실구현: 등급 B. 논문기준 SR 0.85 vs 15bps SR 0.90. [무인 병렬 B2_8] 분산비 최대화 — B2/weightin… |
-| 1522 | L-RP-20260913_112851 | ? | B | RF_PAR_B2_7_ 충실구현: 등급 B. 논문기준 SR 0.92 vs 15bps SR 0.98. [무인 병렬 B2_7] 분산 목적함수 대조 — B2/weigh… |
-| 1523 | L-RP-20260913_112851 | ? | B | RF_PAR_B2_10_ 충실구현: 등급 B. 논문기준 SR 0.87 vs 15bps SR 0.94. [무인 병렬 B2_10] Σ 추정 처치 — B2/weight… |
-| 1524 | L-RP-20260913_112851 | ? | B | RF_PAR_B2_9_ 충실구현: 등급 B. 논문기준 SR 0.92 vs 15bps SR 0.97. [무인 병렬 B2_9] 군집 분해 배분 — B2/weighti… |
-| 1525 | L-RP-20260913_112910 | ? | C | RF_PAR_B2_6_ 충실구현: 등급 C. 논문기준 SR 0.75 vs 15bps SR 0.81. [무인 병렬 B2_6] 경로낙폭 목적함수 — B2/weight… |
-| 1526 | L-RP-20260913_113547 | ? | B | RF_PAR_B2_11_null 충실구현: 등급 B. 논문기준 SR 0.88 vs 15bps SR 0.95. [무인 병렬 B2_11] Σ 추정 null — B2/… |
-| 1527 | L-RP-20260913_114539 | ? | C | RF_PAR_B3_15_ 충실구현: 등급 C. 논문기준 SR 0.69 vs 15bps SR 0.77. [무인 병렬 B3_15] 섹터 중립 — B3/universe… |
-| 1528 | L-RP-20260913_114541 | ? | C | RF_PAR_B3_12_K200 충실구현: 등급 C. 논문기준 SR 0.75 vs 15bps SR 0.85. [무인 병렬 B3_12] K200 단독 — B3/un… |
-| 1529 | L-RP-20260913_120716 | ? | C | RF_PAR_B4_23_LOO 충실구현: 등급 C. 논문기준 SR 0.79 vs 15bps SR 0.89. [무인 병렬 B4_23] 비중 제외(LOO) — B4/… |
-| 1530 | L-RP-20260913_120728 | ? | C | RF_PAR_B4_22_LOO 충실구현: 등급 C. 논문기준 SR 0.79 vs 15bps SR 0.85. [무인 병렬 B4_22] 팩터 제외(LOO) — B4/… |
-| 1531 | L-RP-20260913_120810 | ? | C | RF_PAR_B4_21_4 충실구현: 등급 C. 논문기준 SR 0.82 vs 15bps SR 0.91. [무인 병렬 B4_21] 전 요소 결합(4축) — B4/c… |
-| 1532 | L-RP-20260913_120811 | ? | B | RF_PAR_B4_24_LOO 충실구현: 등급 B. 논문기준 SR 0.93 vs 15bps SR 0.99. [무인 병렬 B4_24] 유니버스 제외(LOO) — B… |
-| 1533 | L-RP-20260913_122918 | ? | B | RF_PAR_B1_2_voladjmom 충실구현: 등급 B. 논문기준 SR 0.89 vs 15bps SR 0.96. [무인 병렬 B1_2] voladj_mom —… |
-| 1534 | L-RP-20260913_122918 | ? | B | RF_PAR_B1_3_hi52wanchor 충실구현: 등급 B. 논문기준 SR 1.00 vs 15bps SR 1.04. [무인 병렬 B1_3] hi52w_anch… |
-| 1535 | L-RP-20260913_122918 | ? | C | RF_PAR_B1_5_crisiscond 충실구현: 등급 C. 논문기준 SR 0.85 vs 15bps SR 0.92. [무인 병렬 B1_5] crisis_cond… |
-| 1536 | L-RP-20260913_122918 | ? | C | RF_PAR_B1_4_dbetasleeve 충실구현: 등급 C. 논문기준 SR 0.94 vs 15bps SR 0.99. [무인 병렬 B1_4] dbeta_slee… |
-| 1537 | L-RP-20260913_122919 | ? | B | RF_PAR_B1_1_residmom 충실구현: 등급 B. 논문기준 SR 0.93 vs 15bps SR 1.00. [무인 병렬 B1_1] resid_mom — B… |
-| 1538 | L-RP-20260913_124042 | ? | B | RF_PAR_B1_6_momcrowd 충실구현: 등급 B. 논문기준 SR 1.01 vs 15bps SR 1.03. [무인 병렬 B1_6] mom_crowd — B… |
-| 1539 | L-RP-20260913_124042 | behavioral | C | RF_PAR_B1_7_foreignresidflow 충실구현: 등급 C. 논문기준 SR 0.79 vs 15bps SR 0.86. [무인 병렬 B1_7] forei… |
-| 1540 | L-RP-20260913_124101 | ? | B | RF_PAR_B1_8_residmomxdbeta 충실구현: 등급 B. 논문기준 SR 0.99 vs 15bps SR 1.05. [무인 병렬 B1_8] resid_m… |
-| 1541 | L-RP-20260913_125750 | overlay_regime | B | RF_PAR_B5_16_ 충실구현: 등급 B. 논문기준 SR 0.93 vs 15bps SR 1.01. [무인 병렬 B5_16] 하방베타 조건부 축소 — B5/ri… |
-| 1542 | L-RP-20260913_125750 | overlay_regime | B | RF_PAR_B5_20_ 충실구현: 등급 B. 논문기준 SR 0.98 vs 15bps SR 1.05. [무인 병렬 B5_20] 내재상관 격차 스칼라 대조 — B5… |
-| 1543 | L-RP-20260913_125750 | overlay_regime | B | RF_PAR_B5_18_ 충실구현: 등급 B. 논문기준 SR 0.94 vs 15bps SR 1.01. [무인 병렬 B5_18] 보유 체계비중 축소 — B5/ris… |
-| 1544 | L-RP-20260913_125750 | overlay_regime | B | RF_PAR_B5_17_ 충실구현: 등급 B. 논문기준 SR 0.99 vs 15bps SR 1.06. [무인 병렬 B5_17] 특이변동 축소 배분 — B5/ris… |
-| 1545 | L-RP-20260913_125750 | overlay_regime | B | RF_PAR_B5_19_ 충실구현: 등급 B. 논문기준 SR 0.97 vs 15bps SR 1.04. [무인 병렬 B5_19] 스트레스 구성별 채널 축소 — B5… |
-| 1546 | L-RP-20260913_131245 | ? | B | RF_PAR_B2_8_ 충실구현: 등급 B. 논문기준 SR 0.92 vs 15bps SR 0.99. [무인 병렬 B2_8] 군집 공분산 + 점수 유지 — B2/w… |
-| 1547 | L-RP-20260913_131245 | ? | B | RF_PAR_B2_9_ 충실구현: 등급 B. 논문기준 SR 0.92 vs 15bps SR 0.98. [무인 병렬 B2_9] 상관 정보의 횡단면 소비 — B2/we… |
-| 1548 | L-RP-20260913_131245 | ? | B | RF_PAR_B2_10_ 충실구현: 등급 B. 논문기준 SR 0.93 vs 15bps SR 1.00. [무인 병렬 B2_10] 기저 대비 추정량 단일 변경 — B… |
-| 1549 | L-RP-20260913_131305 | ? | C | RF_PAR_B2_6_ 충실구현: 등급 C. 논문기준 SR 0.81 vs 15bps SR 0.85. [무인 병렬 B2_6] 낙폭경로 목적함수 — B2/weight… |
-| 1550 | L-RP-20260913_132832 | size | C | RF_PAR_B3_13_13 충실구현: 등급 C. 논문기준 SR 0.66 vs 15bps SR 0.75. [무인 병렬 B3_13] 소형주 하위 1/3 — B3/u… |
-| 1551 | L-RP-20260913_132832 | ? | B | RF_PAR_B3_14_13 충실구현: 등급 B. 논문기준 SR 0.84 vs 15bps SR 0.90. [무인 병렬 B3_14] 대형주 상위 1/3 — B3/u… |
-| 1552 | L-RP-20260913_132832 | ? | C | RF_PAR_B3_15_ 충실구현: 등급 C. 논문기준 SR 0.68 vs 15bps SR 0.76. [무인 병렬 B3_15] 섹터 중립 — B3/universe… |
-| 1553 | L-RP-20260913_132837 | ? | C | RF_PAR_B3_12_KOSPI200 충실구현: 등급 C. 논문기준 SR 0.77 vs 15bps SR 0.87. [무인 병렬 B3_12] KOSPI200 단독… |
-| 1554 | L-RP-20260913_133924 | ? | C | RF_PAR_B4_23_LOO 충실구현: 등급 C. 논문기준 SR 0.83 vs 15bps SR 0.90. [무인 병렬 B4_23] 비중 제외(LOO) — B4/… |
-| 1555 | L-RP-20260913_133957 | ? | C | RF_PAR_B4_22_LOO 충실구현: 등급 C. 논문기준 SR 0.84 vs 15bps SR 0.91. [무인 병렬 B4_22] 팩터 제외(LOO) — B4/… |
-| 1556 | L-RP-20260913_134016 | overlay_regime | B | RF_PAR_B4_25_LOO3 충실구현: 등급 B. 논문기준 SR 0.83 vs 15bps SR 0.89. [무인 병렬 B4_25] 오버레이 제외(LOO) = … |
-| 1557 | L-RP-20260913_134021 | ? | C | RF_PAR_B4_21_4 충실구현: 등급 C. 논문기준 SR 0.88 vs 15bps SR 0.94. [무인 병렬 B4_21] 전 요소 결합(4축) — B4/c… |
-| 1558 | L-RP-20260913_134028 | ? | B | RF_PAR_B4_24_LOO 충실구현: 등급 B. 논문기준 SR 0.97 vs 15bps SR 1.03. [무인 병렬 B4_24] 유니버스 제외(LOO) — B… |
-| 1559 | L-RP-20260913_140502 | ? | B | RF_PAR_B1_1_valuebm 충실구현: 등급 B. 논문기준 SR 0.90 vs 15bps SR 0.98. [무인 병렬 B1_1] value_bm — B1/… |
-| 1560 | L-RP-20260913_140502 | quality_profitability | B | RF_PAR_B1_3_gpa 충실구현: 등급 B. 논문기준 SR 1.01 vs 15bps SR 1.05. [무인 병렬 B1_3] gpa — B1/multifact… |
-| 1561 | L-RP-20260913_140523 | ? | B | RF_PAR_B1_2_yieldcash 충실구현: 등급 B. 논문기준 SR 1.12 vs 15bps SR 1.15. [무인 병렬 B1_2] yield_cash —… |
-| 1562 | L-RP-20260913_140524 | ? | C | RF_PAR_B1_5_accrualjunk 충실구현: 등급 C. 논문기준 SR 0.71 vs 15bps SR 0.80. [무인 병렬 B1_5] accrual_ju… |
-| 1563 | L-RP-20260913_140525 | quality | B | RF_PAR_B1_4_earnquality 충실구현: 등급 B. 논문기준 SR 1.02 vs 15bps SR 1.05. [무인 병렬 B1_4] earn_quali… |
-| 1564 | L-RP-20260913_141734 | quality | B | RF_PAR_B1_6_valuexquality 충실구현: 등급 B. 논문기준 SR 1.03 vs 15bps SR 1.08. [무인 병렬 B1_6] value_x_… |
-| 1565 | L-RP-20260913_141734 | ? | B | RF_PAR_B1_7_fundconfirm 충실구현: 등급 B. 논문기준 SR 1.03 vs 15bps SR 1.06. [무인 병렬 B1_7] fund_confi… |
-| 1566 | L-RP-20260913_141753 | ? | B | RF_PAR_B1_8_fundbreadth3axis 충실구현: 등급 B. 논문기준 SR 1.02 vs 15bps SR 1.05. [무인 병렬 B1_8] fund_… |
-| 1567 | L-RP-20260913_143418 | overlay_regime | B | RF_PAR_B5_19_ 충실구현: 등급 B. 논문기준 SR 1.11 vs 15bps SR 1.16. [무인 병렬 B5_19] 두 예보로 랭킹축 회전 — B5/r… |
-| 1568 | L-RP-20260913_143418 | overlay_regime | B | RF_PAR_B5_16_ 충실구현: 등급 B. 논문기준 SR 1.15 vs 15bps SR 1.21. [무인 병렬 B5_16] 낙폭상태·하방베타순위 차등축소 — … |
-| 1569 | L-RP-20260913_143418 | overlay_regime | B | RF_PAR_B5_18_ 충실구현: 등급 B. 논문기준 SR 1.13 vs 15bps SR 1.16. [무인 병렬 B5_18] 보유 체계위험집중 상태·분산불가 하… |
-| 1570 | L-RP-20260913_143418 | overlay_regime | B | RF_PAR_B5_17_ 충실구현: 등급 B. 논문기준 SR 1.14 vs 15bps SR 1.19. [무인 병렬 B5_17] 횡단면분산상태·특이변동순위 — B5… |
-| 1571 | L-RP-20260913_143418 | overlay_regime | B | RF_PAR_B5_20_ 충실구현: 등급 B. 논문기준 SR 1.15 vs 15bps SR 1.19. [무인 병렬 B5_20] 내재 평균상관 비 기반 총노출 할인… |
-| 1572 | L-RP-20260913_144935 | ? | B | RF_PAR_B2_10_ 충실구현: 등급 B. 논문기준 SR 1.14 vs 15bps SR 1.16. [무인 병렬 B2_10] 추정기 단일 변경 대조 — B2/w… |
-| 1573 | L-RP-20260913_144935 | ? | B | RF_PAR_B2_7_ 충실구현: 등급 B. 논문기준 SR 1.19 vs 15bps SR 1.19. [무인 병렬 B2_7] 분산 최소 하한 — B2/weighti… |
-| 1574 | L-RP-20260913_144935 | ? | B | RF_PAR_B2_8_ 충실구현: 등급 B. 논문기준 SR 1.22 vs 15bps SR 1.23. [무인 병렬 B2_8] Σ 역행렬 없는 강건 분산 — B2/w… |
-| 1575 | L-RP-20260913_144954 | ? | B | RF_PAR_B2_6_ 충실구현: 등급 B. 논문기준 SR 1.01 vs 15bps SR 0.97. [무인 병렬 B2_6] 낙폭 목적함수 — B2/weightin… |
-| 1576 | L-RP-20260913_150520 | ? | C | RF_PAR_B3_15_ 충실구현: 등급 C. 논문기준 SR 0.81 vs 15bps SR 0.87. [무인 병렬 B3_15] 섹터 중립 — B3/universe… |
-| 1577 | L-RP-20260913_150520 | size | C | RF_PAR_B3_13_13 충실구현: 등급 C. 논문기준 SR 0.75 vs 15bps SR 0.83. [무인 병렬 B3_13] 소형주 하위 1/3 — B3/u… |
-| 1578 | L-RP-20260913_150523 | low_vol | B | RF_PAR_B3_12_K200 충실구현: 등급 B. 논문기준 SR 0.91 vs 15bps SR 0.98. [무인 병렬 B3_12] K200 단독(저베타 극) … |
-| 1579 | L-RP-20260913_152721 | ? | C | RF_PAR_B4_22_LOO 충실구현: 등급 C. 논문기준 SR 0.83 vs 15bps SR 0.92. [무인 병렬 B4_22] 팩터 제외(LOO) — B4/… |
-| 1580 | L-RP-20260913_152803 | ? | B | RF_PAR_B4_21_4 충실구현: 등급 B. 논문기준 SR 0.95 vs 15bps SR 1.01. [무인 병렬 B4_21] 전 요소 결합(4축) — B4/c… |
-| 1581 | L-RP-20260913_205707 | ? | B | RF_PAR_B4_23_LOO 충실구현: 등급 B. 논문기준 SR 0.88 vs 15bps SR 0.95. [무인 병렬 B4_23] 비중 제외(LOO) — B4/… |
-| 1582 | L-RP-20260913_205803 | overlay_regime | B | RF_PAR_B4_25_LOO3 충실구현: 등급 B. 논문기준 SR 0.93 vs 15bps SR 0.99. [무인 병렬 B4_25] 오버레이 제외(LOO) = … |
-| 1583 | L-RP-20260913_205811 | ? | B | RF_PAR_B4_24_LOO 충실구현: 등급 B. 논문기준 SR 1.13 vs 15bps SR 1.17. [무인 병렬 B4_24] 유니버스 제외(LOO) — B… |
-| 1584 | L-RP-20260913_211219 | ? | B | RF_PAR_B1_1_1crowding 충실구현: 등급 B. 논문기준 SR 1.07 vs 15bps SR 1.10. [무인 병렬 B1_1] 1팩터 직교(crowd… |
-| 1585 | L-RP-20260913_211246 | ? | B | RF_PAR_B1_2_2crowdingaccrual 충실구현: 등급 B. 논문기준 SR 1.06 vs 15bps SR 1.10. [무인 병렬 B1_2] 2팩터 직… |
-| 1586 | L-RP-20260913_211313 | consensus | B | RF_PAR_B1_3_3crowdingconsensusaccrual 충실구현: 등급 B. 논문기준 SR 1.08 vs 15bps SR 1.11. [무인 병렬 B1… |
-| 1587 | L-RP-20260913_211337 | consensus | B | RF_PAR_B1_4_4crowdingconsensusgrowthaccrual 충실구현: 등급 B. 논문기준 SR 0.93 vs 15bps SR 0.96. [무인… |
-| 1588 | L-RP-20260913_211401 | consensus | B | RF_PAR_B1_5_5crowdingregimeconsensusgrowthaccrual 충실구현: 등급 B. 논문기준 SR 0.90 vs 15bps SR 0.9… |
-| 1589 | L-RP-20260913_212751 | overlay_regime | B | RF_PAR_B5_16_x 충실구현: 등급 B. 논문기준 SR 1.10 vs 15bps SR 1.15. [무인 병렬 B5_16] 낙폭상태 x 하방베타 순위 — B… |
-| 1590 | L-RP-20260913_212752 | overlay_regime | B | RF_PAR_B5_18_x 충실구현: 등급 B. 논문기준 SR 1.09 vs 15bps SR 1.11. [무인 병렬 B5_18] 보유레벨 체계비중 x 분산불가 하… |
-| 1591 | L-RP-20260913_212753 | overlay_regime | B | RF_PAR_B5_17_x 충실구현: 등급 B. 논문기준 SR 1.09 vs 15bps SR 1.13. [무인 병렬 B5_17] 횡단면분산상태 x 특이변동 순위 … |
-| 1592 | L-RP-20260913_212754 | overlay_regime | B | RF_PAR_B5_19_x 충실구현: 등급 B. 논문기준 SR 1.16 vs 15bps SR 1.17. [무인 병렬 B5_19] 다변량 스트레스 구성 x 채널별 … |
-| 1593 | L-RP-20260913_212755 | overlay_regime | B | RF_PAR_B5_20_2 충실구현: 등급 B. 논문기준 SR 1.07 vs 15bps SR 1.12. [무인 병렬 B5_20] 학습 예보 2종이 랭킹 축을 회전… |
-| 1594 | L-RP-20260913_214132 | ? | C | RF_PAR_B2_8_varianceonly 충실구현: 등급 C. 논문기준 SR 1.08 vs 15bps SR 1.10. [무인 병렬 B2_8] variance_… |
-| 1595 | L-RP-20260913_214132_02 | ? | B | RF_PAR_B2_9_covstructurerobust 충실구현: 등급 B. 논문기준 SR 1.06 vs 15bps SR 1.08. [무인 병렬 B2_9] cov… |
-| 1596 | L-RP-20260913_214155 | ? | B | RF_PAR_B2_6_drawdownpathobjective 충실구현: 등급 B. 논문기준 SR 1.03 vs 15bps SR 1.04. [무인 병렬 B2_6] … |
-| 1597 | L-RP-20260913_215926 | ? | C | RF_PAR_B3_11_KOSDAQ150 충실구현: 등급 C. 논문기준 SR 0.76 vs 15bps SR 0.76. [무인 병렬 B3_11] KOSDAQ150 … |
-| 1598 | L-RP-20260913_220012 | size | C | RF_PAR_B3_13_13 충실구현: 등급 C. 논문기준 SR 0.71 vs 15bps SR 0.77. [무인 병렬 B3_13] 소형주(시총 하위 1/3) — … |
-| 1599 | L-RP-20260913_220018 | ? | C | RF_PAR_B3_14_13 충실구현: 등급 C. 논문기준 SR 0.78 vs 15bps SR 0.85. [무인 병렬 B3_14] 대형주(시총 상위 1/3) — … |
-| 1600 | L-RP-20260913_220019 | ? | C | RF_PAR_B3_12_KOSPI200 충실구현: 등급 C. 논문기준 SR 0.85 vs 15bps SR 0.92. [무인 병렬 B3_12] KOSPI200 단독… |
-| 1601 | L-RP-20260913_220021 | ? | C | RF_PAR_B3_15_ 충실구현: 등급 C. 논문기준 SR 0.81 vs 15bps SR 0.86. [무인 병렬 B3_15] 섹터 중립 — B3/universe… |
-| 1602 | L-RP-20260913_221245 | ? | C | RF_PAR_B4_23_LOO 충실구현: 등급 C. 논문기준 SR 0.75 vs 15bps SR 0.74. [무인 병렬 B4_23] 비중 제외(LOO) — B4/… |
-| 1603 | L-RP-20260913_221401 | ? | C | RF_PAR_B4_24_LOO 충실구현: 등급 C. 논문기준 SR 1.12 vs 15bps SR 1.13. [무인 병렬 B4_24] 유니버스 제외(LOO) — B… |
-| 1604 | L-RP-20260917_115351 | earnings_event | C | RF_PAR_B1_4_suerealized 충실구현: 등급 C. 논문기준 SR 0.73 vs 15bps SR 0.78. [무인 병렬 B1_4] sue_realiz… |
-| 1605 | L-RP-20260917_115357 | ? | B | RF_PAR_B1_3_high52w 충실구현: 등급 B. 논문기준 SR 0.98 vs 15bps SR 0.99. [무인 병렬 B1_3] high_52w — B1/… |
-| 1606 | L-RP-20260917_115405 | ? | B | RF_PAR_B1_1_mom121 충실구현: 등급 B. 논문기준 SR 0.84 vs 15bps SR 0.90. [무인 병렬 B1_1] mom_12_1 — B1/m… |
-| 1607 | L-RP-20260917_115410 | ? | B | RF_PAR_B1_5_rev3m 충실구현: 등급 B. 논문기준 SR 0.93 vs 15bps SR 0.99. [무인 병렬 B1_5] rev_3m — B1/mult… |
-| 1608 | L-RP-20260917_115420 | ? | B | RF_PAR_B1_2_mominter127 충실구현: 등급 B. 논문기준 SR 0.81 vs 15bps SR 0.87. [무인 병렬 B1_2] mom_inter_… |
-| 1609 | L-RP-20260917_120457 | behavioral | C | RF_PAR_B1_6_flowforeign60d 충실구현: 등급 C. 논문기준 SR 0.60 vs 15bps SR 0.69. [무인 병렬 B1_6] flow_fo… |
-| 1610 | L-RP-20260917_120458 | behavioral | C | RF_PAR_B1_7_flowretailcontra 충실구현: 등급 C. 논문기준 SR 0.67 vs 15bps SR 0.73. [무인 병렬 B1_7] flow_… |
-| 1611 | L-RP-20260917_120501 | earnings_event | B | RF_PAR_B1_8_interxsue 충실구현: 등급 B. 논문기준 SR 0.86 vs 15bps SR 0.91. [무인 병렬 B1_8] inter_x_sue … |
-| 1612 | L-RP-20260917_122052 | overlay_regime | B | RF_PAR_B5_17_ 충실구현: 등급 B. 논문기준 SR 0.94 vs 15bps SR 1.00. [무인 병렬 B5_17] 위험지분 균등화 — B5/risk_… |
-| 1613 | L-RP-20260917_122052 | overlay_regime | C | RF_PAR_B5_16_ 충실구현: 등급 C. 논문기준 SR 0.91 vs 15bps SR 1.00. [무인 병렬 B5_16] 책 위험예산 브레이크 — B5/ri… |
-| 1614 | L-RP-20260917_122052 | overlay_regime | B | RF_PAR_B5_20_ 충실구현: 등급 B. 논문기준 SR 0.98 vs 15bps SR 1.04. [무인 병렬 B5_20] 스트레스 채널 회전 — B5/ris… |
-| 1615 | L-RP-20260917_122052 | momentum | B | RF_PAR_B5_19_ 충실구현: 등급 B. 논문기준 SR 0.93 vs 15bps SR 0.99. [무인 병렬 B5_19] 추세 지속성 상태 — B5/risk… |
-| 1616 | L-RP-20260917_122052 | overlay_regime | B | RF_PAR_B5_18_ 충실구현: 등급 B. 논문기준 SR 0.96 vs 15bps SR 1.03. [무인 병렬 B5_18] 내재 평균상관 브레이크 — B5/r… |
-| 1617 | L-RP-20260917_185435 | ? | B | RF_PAR_B2_8_ 충실구현: 등급 B. 논문기준 SR 0.94 vs 15bps SR 0.98. [무인 병렬 B2_8] 계층 분산구조 배분 — B2/weigh… |
-| 1618 | L-RP-20260917_185435 | ? | C | RF_PAR_B2_10_ 충실구현: 등급 C. 논문기준 SR 0.89 vs 15bps SR 0.94. [무인 병렬 B2_10] 순수 위험최소 상한 — B2/wei… |
-| 1619 | L-RP-20260917_185436 | ? | B | RF_PAR_B2_9_GerberRMTtilt 충실구현: 등급 B. 논문기준 SR 0.93 vs 15bps SR 0.99. [무인 병렬 B2_9] Gerber-R… |
-| 1620 | L-RP-20260917_185508 | ? | C | RF_PAR_B2_6_ 충실구현: 등급 C. 논문기준 SR 0.84 vs 15bps SR 0.90. [무인 병렬 B2_6] 낙폭경로 목적 비중 — B2/weigh… |
-| 1621 | L-RP-20260917_190733 | ? | B | RF_PAR_B2_7_ 충실구현: 등급 B. 논문기준 SR 0.96 vs 15bps SR 1.02. [무인 병렬 B2_7] 단일시점 꼬리 목적 비중 — B2/we… |
-| 1622 | L-RP-20260917_191947 | ? | B | RF_PAR_B2_11_ 충실구현: 등급 B. 논문기준 SR 0.93 vs 15bps SR 1.00. [무인 병렬 B2_11] 공분산 미사용 최소개입 대조 — B… |
-| 1623 | L-RP-20260917_193608 | ? | C | RF_PAR_B3_14_13 충실구현: 등급 C. 논문기준 SR 0.69 vs 15bps SR 0.76. [무인 병렬 B3_14] 대형주 상위 1/3 — B3/u… |
-| 1624 | L-RP-20260917_193629 | size | C | RF_PAR_B3_13_13 충실구현: 등급 C. 논문기준 SR 0.64 vs 15bps SR 0.73. [무인 병렬 B3_13] 소형주 하위 1/3 — B3/u… |
-| 1625 | L-RP-20260917_193637 | ? | C | RF_PAR_B3_15_ 충실구현: 등급 C. 논문기준 SR 0.72 vs 15bps SR 0.78. [무인 병렬 B3_15] 섹터 중립 — B3/universe… |
-| 1626 | L-RP-20260917_195151 | ? | C | RF_PAR_B4_23_LOO 충실구현: 등급 C. 논문기준 SR 0.78 vs 15bps SR 0.83. [무인 병렬 B4_23] 비중 제외(LOO) — B4/… |
-| 1627 | L-RP-20260917_195217 | ? | C | RF_PAR_B4_22_LOO 충실구현: 등급 C. 논문기준 SR 0.76 vs 15bps SR 0.81. [무인 병렬 B4_22] 팩터 제외(LOO) — B4/… |
-| 1628 | L-RP-20260917_195239 | overlay_regime | C | RF_PAR_B4_25_LOO3 충실구현: 등급 C. 논문기준 SR 0.69 vs 15bps SR 0.75. [무인 병렬 B4_25] 오버레이 제외(LOO) = … |
-| 1629 | L-RP-20260917_195245 | ? | C | RF_PAR_B4_21_4 충실구현: 등급 C. 논문기준 SR 0.76 vs 15bps SR 0.81. [무인 병렬 B4_21] 전 요소 결합(4축) — B4/c… |
-| 1630 | L-RP-20260917_195250 | ? | B | RF_PAR_B4_24_LOO 충실구현: 등급 B. 논문기준 SR 1.02 vs 15bps SR 1.06. [무인 병렬 B4_24] 유니버스 제외(LOO) — B… |
-| 1631 | L-RP-20260919_001828 | overlay_regime | C | RF_PAR_B5_23_ 충실구현: 등급 C. 논문기준 SR 0.99 vs 15bps SR 1.10. [무인 병렬 B5_23] 침식 층 × 급락 층 — 형태 분할… |
-| 1632 | L-RP-20260919_001828 | overlay_regime | B | RF_PAR_B5_21_ 충실구현: 등급 B. 논문기준 SR 0.98 vs 15bps SR 1.06. [무인 병렬 B5_21] 변동성 기간구조 종목축 — 급락 층… |
-| 1633 | L-RP-20260919_001828 | momentum | C | RF_PAR_B5_24_ 충실구현: 등급 C. 논문기준 SR 0.99 vs 15bps SR 1.07. [무인 병렬 B5_24] 지속성×베타 층 × 급락 층 — B… |
-| 1634 | L-RP-20260919_001830 | overlay_regime | B | RF_PAR_B5_22_arm 충실구현: 등급 B. 논문기준 SR 0.92 vs 15bps SR 1.00. [무인 병렬 B5_22] 침식 형태 × 잔차축 — 새 … |
-| 1635 | L-RP-20260919_001954 | overlay_regime | C | RF_PAR_B5_31_PG2 충실구현: 등급 C. 논문기준 SR 0.91 vs 15bps SR 1.02. [무인 병렬 B5_31] PG2 리스크 오버레이 상주 … |
-| 1636 | L-RP-20260919_023223 | momentum | B | RF_PAR_B5_25_ 충실구현: 등급 B. 논문기준 SR 0.97 vs 15bps SR 1.03. [무인 병렬 B5_25] 지속성 종목축 × 내재상관 스칼라 … |
-| 1637 | L-RP-20260919_023223 | overlay_regime | C | RF_PAR_B5_28_ 충실구현: 등급 C. 논문기준 SR 0.99 vs 15bps SR 1.07. [무인 병렬 B5_28] 다변량 채널 × 급락 층 — B5/… |
-| 1638 | L-RP-20260919_023223 | overlay_regime | C | RF_PAR_B5_26_ 충실구현: 등급 C. 논문기준 SR 0.97 vs 15bps SR 1.03. [무인 병렬 B5_26] 침식 층 × 다변량 채널 — 최고 … |
-| 1639 | L-RP-20260919_023224 | momentum | B | RF_PAR_B5_27_ 충실구현: 등급 B. 논문기준 SR 0.98 vs 15bps SR 1.03. [무인 병렬 B5_27] 지속성×베타 층 × 다변량 채널 —… |
-| 1640 | L-RP-20260919_025915 | overlay_regime | C | RF_PAR_B1_2_ivollevel 충실구현: 등급 C. 논문기준 SR 0.88 vs 15bps SR 0.91. [무인 병렬 B1_2] ivol_level —… |
-| 1641 | L-RP-20260919_025921 | overlay_regime | C | RF_PAR_B1_3_downsidebeta 충실구현: 등급 C. 논문기준 SR 0.87 vs 15bps SR 0.93. [무인 병렬 B1_3] downside_… |
-| 1642 | L-RP-20260919_025923 | overlay_regime | B | RF_PAR_B1_4_lefttailbeta 충실구현: 등급 B. 논문기준 SR 0.89 vs 15bps SR 0.94. [무인 병렬 B1_4] left_tail… |
-| 1643 | L-RP-20260919_025924 | overlay_regime | B | RF_PAR_B1_1_mom121control 충실구현: 등급 B. 논문기준 SR 1.02 vs 15bps SR 1.04. [무인 병렬 B1_1] mom_12_1… |
-| 1644 | L-RP-20260919_025925 | overlay_regime | B | RF_PAR_B1_5_crashskewncskew 충실구현: 등급 B. 논문기준 SR 0.92 vs 15bps SR 0.97. [무인 병렬 B1_5] crash_… |
-| 1645 | L-RP-20260919_031051 | overlay_regime | C | RF_PAR_B1_9_crisisconditionalbeta 충실구현: 등급 C. 논문기준 SR 0.89 vs 15bps SR 0.95. [무인 병렬 B1_9] … |
-| 1646 | L-RP-20260919_031053 | overlay_regime | B | RF_PAR_B1_6_ddpathulcer 충실구현: 등급 B. 논문기준 SR 1.00 vs 15bps SR 1.02. [무인 병렬 B1_6] dd_path_ul… |
-| 1647 | L-RP-20260919_031054 | overlay_regime | B | RF_PAR_B1_7_dddepthonly 충실구현: 등급 B. 논문기준 SR 1.01 vs 15bps SR 1.02. [무인 병렬 B1_7] dd_depth_o… |
-| 1648 | L-RP-20260919_031056 | overlay_regime | B | RF_PAR_B1_8_volasymmetry 충실구현: 등급 B. 논문기준 SR 0.93 vs 15bps SR 0.98. [무인 병렬 B1_8] vol_asymm… |
-| 1649 | L-RP-20260919_031119 | overlay_regime | B | RF_PAR_B1_10_composemomxdbeta 충실구현: 등급 B. 논문기준 SR 1.06 vs 15bps SR 1.09. [무인 병렬 B1_10] com… |
-| 1650 | L-RP-20260919_224509 | momentum | B | RF_PAR_B5_16_ 충실구현: 등급 B. 논문기준 SR 0.89 vs 15bps SR 0.95. [무인 병렬 B5_16] 추세 부호 전량현금 — 느린 스칼라… |
-| 1651 | L-RP-20260919_224556 | momentum | B | RF_PAR_B5_17_ 충실구현: 등급 B. 논문기준 SR 1.02 vs 15bps SR 1.04. [무인 병렬 B5_17] 지속성 단계 게이트 — 드물고 긴 … |
-| 1652 | L-RP-20260919_224559 | momentum | B | RF_PAR_B5_18_ 충실구현: 등급 B. 논문기준 SR 1.12 vs 15bps SR 1.15. [무인 병렬 B5_18] 지평 사다리 게이트 — 빠른 진입·… |
-| 1653 | L-RP-20260919_224600 | overlay_regime | B | RF_PAR_B5_19_ 충실구현: 등급 B. 논문기준 SR 1.10 vs 15bps SR 1.14. [무인 병렬 B5_19] 사다리 예산 고정 · 잔차 집중 배… |
-| 1654 | L-RP-20260919_224806 | overlay_regime | B | RF_PAR_B5_31_PG2 충실구현: 등급 B. 논문기준 SR 1.03 vs 15bps SR 1.10. [무인 병렬 B5_31] PG2 리스크 오버레이 상주 … |
-| 1655 | L-RP-20260919_225539 | momentum | B | RF_PAR_B5_22_tilt 충실구현: 등급 B. 논문기준 SR 0.91 vs 15bps SR 0.97. [무인 병렬 B5_22] 추세 현금 × 산포 잔차 t… |
-| 1656 | L-RP-20260919_225557 | overlay_regime | B | RF_PAR_B5_21_ 충실구현: 등급 B. 논문기준 SR 1.03 vs 15bps SR 1.05. [무인 병렬 B5_21] 책 볼록성 브레이크 — 보유 원천 … |
-| 1657 | L-RP-20260919_225558 | momentum | B | RF_PAR_B5_20_tilt 충실구현: 등급 B. 논문기준 SR 1.09 vs 15bps SR 1.11. [무인 병렬 B5_20] 사다리 상태 · 하방채널 선… |
-| 1658 | L-RP-20260919_232116 | overlay_regime | B | RF_PAR_B2_10_ 충실구현: 등급 B. 논문기준 SR 1.02 vs 15bps SR 1.04. [무인 병렬 B2_10] 위험단독 극단 — B2/weight… |
-| 1659 | L-RP-20260919_232116 | overlay_regime | B | RF_PAR_B2_7_ 충실구현: 등급 B. 논문기준 SR 1.01 vs 15bps SR 1.03. [무인 병렬 B2_7] 등가 위험지분 — B2/weightin… |
-| 1660 | L-RP-20260919_232116 | overlay_regime | B | RF_PAR_B2_8_ 충실구현: 등급 B. 논문기준 SR 1.03 vs 15bps SR 1.04. [무인 병렬 B2_8] 군집 배분 — B2/weighting … |
-| 1661 | L-RP-20260919_232116 | overlay_regime | B | RF_PAR_B2_9_ 충실구현: 등급 B. 논문기준 SR 1.03 vs 15bps SR 1.07. [무인 병렬 B2_9] 군집+점수보존 — B2/weightin… |
-| 1662 | L-RP-20260919_232133 | overlay_regime | C | RF_PAR_B2_6_ 충실구현: 등급 C. 논문기준 SR 0.80 vs 15bps SR 0.82. [무인 병렬 B2_6] 낙폭경로 목적함수 — B2/weight… |
-| 1663 | L-RP-20260919_232843 | overlay_regime | B | RF_PAR_B2_11_ 충실구현: 등급 B. 논문기준 SR 1.05 vs 15bps SR 1.08. [무인 병렬 B2_11] 공분산 없는 기준선 — B2/wei… |
-| 1664 | L-RP-20260919_232843 | overlay_regime | B | RF_PAR_B2_13_LWlift 충실구현: 등급 B. 논문기준 SR 1.04 vs 15bps SR 1.08. [무인 병렬 B2_13] LW 축소 lift — … |
-| 1665 | L-RP-20260919_232843 | overlay_regime | B | RF_PAR_B2_12_lift 충실구현: 등급 B. 논문기준 SR 1.04 vs 15bps SR 1.08. [무인 병렬 B2_12] 표본 공분산 lift — B… |
-| 1666 | L-RP-20260919_234418 | overlay_regime | C | RF_PAR_B3_14_ 충실구현: 등급 C. 논문기준 SR 0.70 vs 15bps SR 0.78. [무인 병렬 B3_14] 대형주 단독 — B3/univers… |
-| 1667 | L-RP-20260919_234428 | overlay_regime | B | RF_PAR_B3_12_KOSPI200LOO 충실구현: 등급 B. 논문기준 SR 0.81 vs 15bps SR 0.88. [무인 병렬 B3_12] KOSPI200… |
-| 1668 | L-RP-20260919_234438 | overlay_regime | C | RF_PAR_B3_13_ 충실구현: 등급 C. 논문기준 SR 0.63 vs 15bps SR 0.72. [무인 병렬 B3_13] 소형주 단독 — B3/univers… |
-| 1669 | L-RP-20260919_234446 | overlay_regime | B | RF_PAR_B3_15_ 충실구현: 등급 B. 논문기준 SR 0.84 vs 15bps SR 0.89. [무인 병렬 B3_15] 섹터 중립 — B3/universe… |
-| 1670 | L-RP-20260919_235900 | overlay_regime | C | RF_PAR_B4_22_LOO 충실구현: 등급 C. 논문기준 SR 0.77 vs 15bps SR 0.86. [무인 병렬 B4_22] 팩터 제외(LOO) — B4/… |
-| 1671 | L-RP-20260919_235918 | overlay_regime | B | RF_PAR_B4_21_4 충실구현: 등급 B. 논문기준 SR 0.87 vs 15bps SR 0.93. [무인 병렬 B4_21] 전 요소 결합(4축) — B4/c… |
-| 1672 | L-RP-20260920_004101 | overlay_regime | B | RF_PAR_B1_2_valebitev 충실구현: 등급 B. 논문기준 SR 1.08 vs 15bps SR 1.13. [무인 병렬 B1_2] val_ebit_ev … |
-| 1673 | L-RP-20260920_004101 | overlay_regime | B | RF_PAR_B1_3_valfcf 충실구현: 등급 B. 논문기준 SR 1.04 vs 15bps SR 1.07. [무인 병렬 B1_3] val_fcf — B1/mu… |
-| 1674 | L-RP-20260920_004102 | quality_profitability | B | RF_PAR_B1_5_profgpa 충실구현: 등급 B. 논문기준 SR 1.05 vs 15bps SR 1.07. [무인 병렬 B1_5] prof_gpa — B1/… |
-| 1675 | L-RP-20260920_004103 | overlay_regime | B | RF_PAR_B1_4_profcbop 충실구현: 등급 B. 논문기준 SR 1.10 vs 15bps SR 1.09. [무인 병렬 B1_4] prof_cbop — B… |
-| 1676 | L-RP-20260920_004104 | value | B | RF_PAR_B1_1_valep 충실구현: 등급 B. 논문기준 SR 1.02 vs 15bps SR 1.06. [무인 병렬 B1_1] val_ep — B1/mult… |
-| 1677 | L-RP-20260920_005040 | overlay_regime | B | RF_PAR_B1_7_laborsga 충실구현: 등급 B. 논문기준 SR 0.92 vs 15bps SR 0.98. [무인 병렬 B1_7] labor_sga — B… |
-| 1678 | L-RP-20260920_005040 | overlay_regime | B | RF_PAR_B1_8_illiqamihud 충실구현: 등급 B. 논문기준 SR 0.99 vs 15bps SR 1.02. [무인 병렬 B1_8] illiq_amih… |
-| 1679 | L-RP-20260920_005040 | behavioral | B | RF_PAR_B1_9_flowresidfx 충실구현: 등급 B. 논문기준 SR 0.92 vs 15bps SR 0.96. [무인 병렬 B1_9] flow_resid… |
-| 1680 | L-RP-20260920_005041 | overlay_regime | B | RF_PAR_B1_6_laboroplev 충실구현: 등급 B. 논문기준 SR 0.92 vs 15bps SR 0.98. [무인 병렬 B1_6] labor_oplev… |
-| 1681 | L-RP-20260920_005049 | overlay_regime | B | RF_PAR_B1_10_valxprof 충실구현: 등급 B. 논문기준 SR 1.10 vs 15bps SR 1.11. [무인 병렬 B1_10] val_x_prof … |
-| 1682 | L-RP-20260921_075713 | overlay_regime | B | RF_PAR_B5_16_ 충실구현: 등급 B. 논문기준 SR 1.08 vs 15bps SR 1.14. [무인 병렬 B5_16] 책 이력담보 단독 — B5/risk… |
-| 1683 | L-RP-20260921_075713 | overlay_regime | B | RF_PAR_B5_18_ 충실구현: 등급 B. 논문기준 SR 1.07 vs 15bps SR 1.14. [무인 병렬 B5_18] 책 볼록성 단독 (이 바닥 기준점)… |
-| 1684 | L-RP-20260921_075713 | overlay_regime | B | RF_PAR_B5_17_ 충실구현: 등급 B. 논문기준 SR 1.09 vs 15bps SR 1.15. [무인 병렬 B5_17] 책 위험균형 갭 단독 — B5/ri… |
-| 1685 | L-RP-20260921_075727 | momentum | B | RF_PAR_B5_19_ 충실구현: 등급 B. 논문기준 SR 1.07 vs 15bps SR 1.14. [무인 병렬 B5_19] 책 볼록성 × 추세 지속 게이트 —… |
-| 1686 | L-RP-20260921_075757 | overlay_regime | B | RF_PAR_B5_31_PG2 충실구현: 등급 B. 논문기준 SR 1.06 vs 15bps SR 1.18. [무인 병렬 B5_31] PG2 리스크 오버레이 상주 … |
-| 1687 | L-RP-20260921_080946 | overlay_regime | B | RF_PAR_B5_20_ 충실구현: 등급 B. 논문기준 SR 1.16 vs 15bps SR 1.25. [무인 병렬 B5_20] 같은 예산·잔차 집중 배분 — B5… |
-| 1688 | L-RP-20260921_080946 | overlay_regime | C | RF_PAR_B5_21_ 충실구현: 등급 C. 논문기준 SR 1.07 vs 15bps SR 1.19. [무인 병렬 B5_21] 위험예산 × 침식(발화 달 분리) … |
-| 1689 | L-RP-20260921_083625 | ml_complexity | B | RF_PAR_B2_8_hrpcluster 충실구현: 등급 B. 논문기준 SR 1.09 vs 15bps SR 1.14. [무인 병렬 B2_8] hrp_cluster… |
-| 1690 | L-RP-20260921_083625 | overlay_regime | B | RF_PAR_B2_9_ncoscoretilt 충실구현: 등급 B. 논문기준 SR 1.15 vs 15bps SR 1.19. [무인 병렬 B2_9] nco_score… |
-| 1691 | L-RP-20260921_083625 | overlay_regime | B | RF_PAR_B2_7_ivolcontrol 충실구현: 등급 B. 논문기준 SR 1.09 vs 15bps SR 1.15. [무인 병렬 B2_7] ivol_contr… |
-| 1692 | L-RP-20260921_083625 | overlay_regime | B | RF_PAR_B2_6_minvarxs 충실구현: 등급 B. 논문기준 SR 1.07 vs 15bps SR 1.11. [무인 병렬 B2_6] minvar_xs — B… |
-| 1693 | L-RP-20260921_083639 | overlay_regime | B | RF_PAR_B2_10_cdarpath 충실구현: 등급 B. 논문기준 SR 0.93 vs 15bps SR 0.97. [무인 병렬 B2_10] cdar_path —… |
-| 1694 | L-RP-20260921_085247 | overlay_regime | B | RF_PAR_B2_13_tiltshrgerber 충실구현: 등급 B. 논문기준 SR 1.14 vs 15bps SR 1.19. [무인 병렬 B2_13] tilt_s… |
-| 1695 | L-RP-20260921_085247 | overlay_regime | B | RF_PAR_B2_12_tiltshrsample 충실구현: 등급 B. 논문기준 SR 1.16 vs 15bps SR 1.20. [무인 병렬 B2_12] tilt_s… |
-| 1696 | L-RP-20260921_085247 | overlay_regime | B | RF_PAR_B2_11_cvartail 충실구현: 등급 B. 논문기준 SR 1.11 vs 15bps SR 1.16. [무인 병렬 B2_11] cvar_tail —… |
-| 1697 | L-RP-20260921_090751 | overlay_regime | C | RF_PAR_B3_11_KQ150 충실구현: 등급 C. 논문기준 SR 0.81 vs 15bps SR 0.80. [무인 병렬 B3_11] KQ150 단독 — B3/… |
-| 1698 | L-RP-20260921_090751 | overlay_regime | B | RF_PAR_B3_14_13 충실구현: 등급 B. 논문기준 SR 0.73 vs 15bps SR 0.82. [무인 병렬 B3_14] 대형주 상위 1/3 — B3/u… |
-| 1699 | L-RP-20260921_090802 | overlay_regime | B | RF_PAR_B3_12_K200 충실구현: 등급 B. 논문기준 SR 0.84 vs 15bps SR 0.93. [무인 병렬 B3_12] K200 단독 — B3/un… |
-| 1700 | L-RP-20260921_090817 | overlay_regime | B | RF_PAR_B3_15_ 충실구현: 등급 B. 논문기준 SR 0.86 vs 15bps SR 0.92. [무인 병렬 B3_15] 섹터 중립 — B3/universe… |
-| 1701 | L-RP-20260921_092128 | overlay_regime | C | RF_PAR_B4_22_LOO 충실구현: 등급 C. 논문기준 SR 0.83 vs 15bps SR 0.84. [무인 병렬 B4_22] 팩터 제외(LOO) — B4/… |
-| 1702 | L-RP-20260921_092148 | overlay_regime | C | RF_PAR_B4_21_4 충실구현: 등급 C. 논문기준 SR 0.86 vs 15bps SR 0.84. [무인 병렬 B4_21] 전 요소 결합(4축) — B4/c… |
-| 1703 | L-RP-20260921_093745 | overlay_regime | B | RF_PAR_B6_34_k30 충실구현: 등급 B. 논문기준 SR 0.81 vs 15bps SR 0.94. [무인 병렬 B6_34] 분기(k=3 · 위상 0) —… |
-| 1704 | L-RP-20260921_093751 | overlay_regime | B | RF_PAR_B6_33_k21 충실구현: 등급 B. 논문기준 SR 0.81 vs 15bps SR 0.88. [무인 병렬 B6_33] 격월(k=2 · 위상 1) —… |
-| 1705 | L-RP-20260921_093752 | overlay_regime | B | RF_PAR_B6_32_k20 충실구현: 등급 B. 논문기준 SR 0.94 vs 15bps SR 1.01. [무인 병렬 B6_32] 격월(k=2 · 위상 0) —… |
-| 1706 | L-RP-20260921_100745 | overlay_regime | B | RF_PAR_B1_1_liqamihud 충실구현: 등급 B. 논문기준 SR 1.07 vs 15bps SR 1.10. [무인 병렬 B1_1] liq_amihud —… |
-| 1707 | L-RP-20260921_100745 | overlay_regime | B | RF_PAR_B1_2_liqturnover252 충실구현: 등급 B. 논문기준 SR 1.10 vs 15bps SR 1.14. [무인 병렬 B1_2] liq_tur… |
-| 1708 | L-RP-20260921_100745 | behavioral | B | RF_PAR_B1_5_flowretailcontra 충실구현: 등급 B. 논문기준 SR 1.07 vs 15bps SR 1.11. [무인 병렬 B1_5] flow_… |
-| 1709 | L-RP-20260921_100745 | overlay_regime | B | RF_PAR_B1_3_liqpricedelay 충실구현: 등급 B. 논문기준 SR 1.11 vs 15bps SR 1.14. [무인 병렬 B1_3] liq_pric… |
-| 1710 | L-RP-20260921_100746 | behavioral | B | RF_PAR_B1_4_flowforeignresid63 충실구현: 등급 B. 논문기준 SR 1.05 vs 15bps SR 1.09. [무인 병렬 B1_4] flo… |
-| 1711 | L-RP-20260921_102116 | overlay_regime | B | RF_PAR_B1_7_crowdidioresid 충실구현: 등급 B. 논문기준 SR 1.04 vs 15bps SR 1.08. [무인 병렬 B1_7] crowd_i… |
-| 1712 | L-RP-20260921_102116 | overlay_regime | B | RF_PAR_B1_6_crowdmomcrowding 충실구현: 등급 B. 논문기준 SR 1.16 vs 15bps SR 1.17. [무인 병렬 B1_6] crowd… |
-| 1713 | L-RP-20260921_102128 | behavioral | B | RF_PAR_B1_8_liqxflow 충실구현: 등급 B. 논문기준 SR 1.03 vs 15bps SR 1.05. [무인 병렬 B1_8] liq_x_flow — … |
-| 1714 | L-RP-20260921_102130 | behavioral | B | RF_PAR_B1_10_flowxcrowd 충실구현: 등급 B. 논문기준 SR 1.08 vs 15bps SR 1.09. [무인 병렬 B1_10] flow_x_cr… |
-| 1715 | L-RP-20260921_102131 | overlay_regime | B | RF_PAR_B1_9_liqxcrowd 충실구현: 등급 B. 논문기준 SR 1.09 vs 15bps SR 1.11. [무인 병렬 B1_9] liq_x_crowd … |
-| 1716 | L-RP-20260921_105001 | overlay_regime | B | RF_PAR_B5_18_ 충실구현: 등급 B. 논문기준 SR 1.11 vs 15bps SR 1.16. [무인 병렬 B5_18] 급락 전담 단독 — 요인 대조(변동… |
-| 1717 | L-RP-20260921_105001 | momentum | B | RF_PAR_B5_16_ 충실구현: 등급 B. 논문기준 SR 1.10 vs 15bps SR 1.16. [무인 병렬 B5_16] 급락 스칼라 × 침식 스칼라 — 형… |
-| 1718 | L-RP-20260921_105002 | momentum | B | RF_PAR_B5_17_ 충실구현: 등급 B. 논문기준 SR 1.10 vs 15bps SR 1.12. [무인 병렬 B5_17] 침식 전담 단독 — 요인 대조(추세… |
-| 1719 | L-RP-20260921_105003 | overlay_regime | B | RF_PAR_B5_19_GLS 충실구현: 등급 B. 논문기준 SR 1.19 vs 15bps SR 1.21. [무인 병렬 B5_19] GLS 합성 상태 — 한 층이… |
-| 1720 | L-RP-20260921_105052 | overlay_regime | B | RF_PAR_B5_31_PG2 충실구현: 등급 B. 논문기준 SR 1.10 vs 15bps SR 1.18. [무인 병렬 B5_31] PG2 리스크 오버레이 상주 … |
-| 1721 | L-RP-20260921_110049 | overlay_regime | B | RF_PAR_B5_20_ 충실구현: 등급 B. 논문기준 SR 1.11 vs 15bps SR 1.14. [무인 병렬 B5_20] 위험지분 균등화 — 타이밍 없는 배… |
-| 1722 | L-RP-20260921_110049 | momentum | B | RF_PAR_B5_22_3 충실구현: 등급 B. 논문기준 SR 1.10 vs 15bps SR 1.16. [무인 병렬 B5_22] 형태 전담 곱 × 위험지분 배분 … |
-| 1723 | L-RP-20260921_110049 | overlay_regime | C | RF_PAR_B5_21_ 충실구현: 등급 C. 논문기준 SR 1.09 vs 15bps SR 1.16. [무인 병렬 B5_21] 변동성 분할 스택 — 급락 스칼라 … |
-| 1724 | L-RP-20260921_112403 | overlay_regime | B | RF_PAR_B2_9_ 충실구현: 등급 B. 논문기준 SR 1.12 vs 15bps SR 1.16. [무인 병렬 B2_9] 잡음제거 군집 — B2/weightin… |
-| 1725 | L-RP-20260921_112403 | overlay_regime | B | RF_PAR_B2_7_ERC 충실구현: 등급 B. 논문기준 SR 1.14 vs 15bps SR 1.18. [무인 병렬 B2_7] ERC(상관 포함) — B2/we… |
-| 1726 | L-RP-20260921_112403 | overlay_regime | B | RF_PAR_B2_8_ 충실구현: 등급 B. 논문기준 SR 1.13 vs 15bps SR 1.14. [무인 병렬 B2_8] 군집 배분 — B2/weighting … |
-| 1727 | L-RP-20260921_112404 | overlay_regime | B | RF_PAR_B2_6_ 충실구현: 등급 B. 논문기준 SR 1.12 vs 15bps SR 1.15. [무인 병렬 B2_6] 역변동성 배분 — B2/weightin… |
-| 1728 | L-RP-20260921_112421 | overlay_regime | B | RF_PAR_B2_10_ 충실구현: 등급 B. 논문기준 SR 0.91 vs 15bps SR 0.96. [무인 병렬 B2_10] 낙폭 직접 표적 — B2/weigh… |
-| 1729 | L-RP-20260921_114209 | overlay_regime | B | RF_PAR_B2_13_ 충실구현: 등급 B. 논문기준 SR 1.15 vs 15bps SR 1.18. [무인 병렬 B2_13] 스코어 집중 대조군 — B2/wei… |
-| 1730 | L-RP-20260921_114209 | overlay_regime | B | RF_PAR_B2_12_ 충실구현: 등급 B. 논문기준 SR 1.07 vs 15bps SR 1.10. [무인 병렬 B2_12] 분산 최소(극단) — B2/weig… |
-| 1731 | L-RP-20260921_114209 | overlay_regime | B | RF_PAR_B2_11_ 충실구현: 등급 B. 논문기준 SR 1.13 vs 15bps SR 1.15. [무인 병렬 B2_11] 꼬리 표적 — B2/weightin… |
-| 1732 | L-RP-20260921_115543 | overlay_regime | C | RF_PAR_B3_11_KQ150 충실구현: 등급 C. 논문기준 SR 0.81 vs 15bps SR 0.80. [무인 병렬 B3_11] KQ150 단독 — B3/… |
-| 1733 | L-RP-20260921_115546 | overlay_regime | C | RF_PAR_B3_14_13 충실구현: 등급 C. 논문기준 SR 0.71 vs 15bps SR 0.78. [무인 병렬 B3_14] 대형주 상위 1/3 — B3/u… |
-| 1734 | L-RP-20260921_115607 | overlay_regime | B | RF_PAR_B3_12_K200 충실구현: 등급 B. 논문기준 SR 0.83 vs 15bps SR 0.91. [무인 병렬 B3_12] K200 단독 — B3/un… |
-| 1735 | L-RP-20260921_115611 | overlay_regime | C | RF_PAR_B3_13_13 충실구현: 등급 C. 논문기준 SR 0.70 vs 15bps SR 0.78. [무인 병렬 B3_13] 소형주 하위 1/3 — B3/u… |
-| 1736 | L-RP-20260921_115620 | overlay_regime | B | RF_PAR_B3_15_ 충실구현: 등급 B. 논문기준 SR 0.86 vs 15bps SR 0.90. [무인 병렬 B3_15] 섹터 중립 — B3/universe… |
-| 1737 | L-RP-20260921_121044 | overlay_regime | B | RF_PAR_B6_34_k30 충실구현: 등급 B. 논문기준 SR 0.83 vs 15bps SR 0.94. [무인 병렬 B6_34] 분기(k=3 · 위상 0) —… |
-| 1738 | L-RP-20260921_121052 | overlay_regime | B | RF_PAR_B6_32_k20 충실구현: 등급 B. 논문기준 SR 0.92 vs 15bps SR 0.98. [무인 병렬 B6_32] 격월(k=2 · 위상 0) —… |
-| 1739 | L-RP-20260921_121053 | overlay_regime | B | RF_PAR_B6_33_k21 충실구현: 등급 B. 논문기준 SR 0.84 vs 15bps SR 0.90. [무인 병렬 B6_33] 격월(k=2 · 위상 1) —… |
-| 1740 | L-RP-20260921_121059 | overlay_regime | B | RF_PAR_B6_35_ 충실구현: 등급 B. 논문기준 SR 0.91 vs 15bps SR 0.97. [무인 병렬 B6_35] 노트레이드 밴드(확장창 중앙값) —… |
-| 1741 | L-RP-20260921_121219 | overlay_regime | B | RF_PAR_B6_36_2nmax 충실구현: 등급 B. 논문기준 SR 1.07 vs 15bps SR 1.10. [무인 병렬 B6_36] 랭크 버퍼(2×n_max … |
-| 1742 | L-RP-20260921_122610 | overlay_regime | C | RF_PAR_B4_22_LOO 충실구현: 등급 C. 논문기준 SR 0.85 vs 15bps SR 0.82. [무인 병렬 B4_22] 팩터 제외(LOO) — B4/… |
-| 1743 | L-RP-20260921_122627 | overlay_regime | C | RF_PAR_B4_21_4 충실구현: 등급 C. 논문기준 SR 0.84 vs 15bps SR 0.82. [무인 병렬 B4_21] 전 요소 결합(4축) — B4/c… |
-| 1744 | L-RP-20260921_125518 | overlay_regime | C | RF_PAR_B1_3_bulklevel 충실구현: 등급 C. 논문기준 SR 0.39 vs 15bps SR 0.51. [무인 병렬 B1_3] bulk_level —… |
-| 1745 | L-RP-20260921_125518 | overlay_regime | C | RF_PAR_B1_4_edgerestored 충실구현: 등급 C. 논문기준 SR 0.41 vs 15bps SR 0.53. [무인 병렬 B1_4] edge_rest… |
-| 1746 | L-RP-20260921_125519 | overlay_regime | C | RF_PAR_B1_1_delayspeed 충실구현: 등급 C. 논문기준 SR 0.42 vs 15bps SR 0.53. [무인 병렬 B1_1] delay_speed… |
-| 1747 | L-RP-20260921_125523 | overlay_regime | F | RF_PAR_B1_5_fourthmoment 충실구현: 등급 F. 논문기준 SR 0.36 vs 15bps SR 0.49. [무인 병렬 B1_5] fourth_mo… |
-| 1748 | L-RP-20260921_125524 | overlay_regime | C | RF_PAR_B1_2_naiveautocorr 충실구현: 등급 C. 논문기준 SR 0.43 vs 15bps SR 0.55. [무인 병렬 B1_2] naive_au… |
-| 1749 | L-RP-20260921_130813 | overlay_regime | C | RF_PAR_B1_7_dirmom 충실구현: 등급 C. 논문기준 SR 0.50 vs 15bps SR 0.65. [무인 병렬 B1_7] dir_mom — B1/mu… |
-| 1750 | L-RP-20260921_130813 | overlay_regime | C | RF_PAR_B1_10_speedxdir 충실구현: 등급 C. 논문기준 SR 0.50 vs 15bps SR 0.63. [무인 병렬 B1_10] speed_x_di… |
-| 1751 | L-RP-20260921_130814 | overlay_regime | C | RF_PAR_B1_6_downtail 충실구현: 등급 C. 논문기준 SR 0.47 vs 15bps SR 0.60. [무인 병렬 B1_6] down_tail — B… |
-| 1752 | L-RP-20260921_130815 | overlay_regime | C | RF_PAR_B1_8_dirrev 충실구현: 등급 C. 논문기준 SR 0.67 vs 15bps SR 0.76. [무인 병렬 B1_8] dir_rev — B1/mu… |
-| 1753 | L-RP-20260921_130857 | overlay_regime | C | RF_PAR_B1_9_dircore3 충실구현: 등급 C. 논문기준 SR 0.72 vs 15bps SR 0.83. [무인 병렬 B1_9] dir_core3 — B… |
-| 1754 | L-RP-20260921_132409 | ml_complexity | C | RF_PAR_B2_7_hrp 충실구현: 등급 C. 논문기준 SR 0.70 vs 15bps SR 0.80. [무인 병렬 B2_7] hrp — B2/weighting… |
-| 1755 | L-RP-20260921_132409 | overlay_regime | C | RF_PAR_B2_9_cvar 충실구현: 등급 C. 논문기준 SR 0.74 vs 15bps SR 0.85. [무인 병렬 B2_9] cvar — B2/weighti… |
-| 1756 | L-RP-20260921_132409 | overlay_regime | C | RF_PAR_B2_10_scoretilt 충실구현: 등급 C. 논문기준 SR 0.73 vs 15bps SR 0.83. [무인 병렬 B2_10] score_tilt… |
-| 1757 | L-RP-20260921_132409 | overlay_regime | C | RF_PAR_B2_6_minvar 충실구현: 등급 C. 논문기준 SR 0.61 vs 15bps SR 0.71. [무인 병렬 B2_6] minvar — B2/wei… |
-| 1758 | L-RP-20260921_132426 | overlay_regime | C | RF_PAR_B2_8_cdar 충실구현: 등급 C. 논문기준 SR 0.58 vs 15bps SR 0.68. [무인 병렬 B2_8] cdar — B2/weighti… |
-| 1759 | L-RP-20260921_134020 | overlay_regime | C | RF_PAR_B2_14_riskparity 충실구현: 등급 C. 논문기준 SR 0.72 vs 15bps SR 0.83. [무인 병렬 B2_14] riskparit… |
-| 1760 | L-RP-20260921_134020 | overlay_regime | C | RF_PAR_B2_13_maxdiv 충실구현: 등급 C. 논문기준 SR 0.59 vs 15bps SR 0.69. [무인 병렬 B2_13] maxdiv — B2/w… |
-| 1761 | L-RP-20260921_134020 | overlay_regime | C | RF_PAR_B2_12_highermoment 충실구현: 등급 C. 논문기준 SR 0.73 vs 15bps SR 0.84. [무인 병렬 B2_12] higher_… |
-| 1762 | L-RP-20260921_134020 | overlay_regime | C | RF_PAR_B2_11_ncotilt 충실구현: 등급 C. 논문기준 SR 0.71 vs 15bps SR 0.81. [무인 병렬 B2_11] nco_tilt — B… |
-| 1763 | L-RP-20260921_135554 | overlay_regime | C | RF_PAR_B3_11_KQ150 충실구현: 등급 C. 논문기준 SR 0.64 vs 15bps SR 0.72. [무인 병렬 B3_11] KQ150 단독 — B3/… |
-| 1764 | L-RP-20260921_135602 | overlay_regime | C | RF_PAR_B3_14_13 충실구현: 등급 C. 논문기준 SR 0.47 vs 15bps SR 0.60. [무인 병렬 B3_14] 대형주(시총 상위 1/3) — … |
-| 1765 | L-RP-20260921_135615 | overlay_regime | C | RF_PAR_B3_12_KOSPI200 충실구현: 등급 C. 논문기준 SR 0.55 vs 15bps SR 0.67. [무인 병렬 B3_12] KOSPI200 단독… |
-| 1766 | L-RP-20260921_135622 | overlay_regime | C | RF_PAR_B3_13_13 충실구현: 등급 C. 논문기준 SR 0.58 vs 15bps SR 0.69. [무인 병렬 B3_13] 소형주(시총 하위 1/3) — … |
-| 1767 | L-RP-20260921_135627 | overlay_regime | C | RF_PAR_B3_15_ 충실구현: 등급 C. 논문기준 SR 0.57 vs 15bps SR 0.65. [무인 병렬 B3_15] 섹터 중립 — B3/universe… |
-| 1768 | L-RP-20260921_141707 | quality_profitability | B | RF_PAR_B1_1_cashprofitability 충실구현: 등급 B. 논문기준 SR 1.13 vs 15bps SR 1.14. [무인 병렬 B1_1] cash… |
-| 1769 | L-RP-20260921_141707 | overlay_regime | B | RF_PAR_B1_4_investmentintensity 충실구현: 등급 B. 논문기준 SR 1.06 vs 15bps SR 1.10. [무인 병렬 B1_4] in… |
-| 1770 | L-RP-20260921_141707 | momentum | B | RF_PAR_B1_5_shortreversal 충실구현: 등급 B. 논문기준 SR 1.05 vs 15bps SR 1.08. [무인 병렬 B1_5] short_re… |
-| 1771 | L-RP-20260921_141709 | quality_earnings | B | RF_PAR_B1_2_accrualquality 충실구현: 등급 B. 논문기준 SR 1.04 vs 15bps SR 1.08. [무인 병렬 B1_2] accrual… |
-| 1772 | L-RP-20260921_141711 | overlay_regime | B | RF_PAR_B1_3_equityissuance 충실구현: 등급 B. 논문기준 SR 1.09 vs 15bps SR 1.12. [무인 병렬 B1_3] equity_… |
-| 1773 | L-RP-20260921_142931 | overlay_regime | B | RF_PAR_B1_7_idioresidual 충실구현: 등급 B. 논문기준 SR 1.00 vs 15bps SR 1.03. [무인 병렬 B1_7] idio_resi… |
-| 1774 | L-RP-20260921_142931 | momentum | B | RF_PAR_B1_6_momentumcrowding 충실구현: 등급 B. 논문기준 SR 1.09 vs 15bps SR 1.10. [무인 병렬 B1_6] momen… |
-| 1775 | L-RP-20260921_142944 | overlay_regime | B | RF_PAR_B1_10_fundamentalpair 충실구현: 등급 B. 논문기준 SR 1.06 vs 15bps SR 1.09. [무인 병렬 B1_10] fund… |
-| 1776 | L-RP-20260921_142945 | overlay_regime | B | RF_PAR_B1_8_crowdpair 충실구현: 등급 B. 논문기준 SR 1.05 vs 15bps SR 1.07. [무인 병렬 B1_8] crowd_pair —… |
-| 1777 | L-RP-20260921_142947 | overlay_regime | B | RF_PAR_B1_9_crowdxprofit 충실구현: 등급 B. 논문기준 SR 1.10 vs 15bps SR 1.11. [무인 병렬 B1_9] crowd_x_p… |
-| 1778 | L-RP-20260921_150344 | momentum | B | RF_PAR_B5_16_ 충실구현: 등급 B. 논문기준 SR 1.21 vs 15bps SR 1.25. [무인 병렬 B5_16] 지평 사다리 게이트 단독 — 지속성… |
-| 1779 | L-RP-20260921_150344 | ml_complexity | B | RF_PAR_B5_17_ 충실구현: 등급 B. 논문기준 SR 1.09 vs 15bps SR 1.12. [무인 병렬 B5_17] 익월 하위분위 확률 게이트 단독 —… |
-| 1780 | L-RP-20260921_150345 | momentum | B | RF_PAR_B5_19_GLS 충실구현: 등급 B. 논문기준 SR 1.20 vs 15bps SR 1.23. [무인 병렬 B5_19] 지평 사다리 × GLS 다변량… |
-| 1781 | L-RP-20260921_150347 | momentum | B | RF_PAR_B5_18_ 충실구현: 등급 B. 논문기준 SR 1.19 vs 15bps SR 1.25. [무인 병렬 B5_18] 지속성 × 학습 즉시성 — 스칼라 … |
-| 1782 | L-RP-20260921_150426 | overlay_regime | B | RF_PAR_B5_31_PG2 충실구현: 등급 B. 논문기준 SR 1.11 vs 15bps SR 1.18. [무인 병렬 B5_31] PG2 리스크 오버레이 상주 … |
-| 1783 | L-RP-20260921_153320 | overlay_regime | B | RF_PAR_B2_10_cvar 충실구현: 등급 B. 논문기준 SR 1.16 vs 15bps SR 1.17. [무인 병렬 B2_10] cvar — B2/weigh… |
-| 1784 | L-RP-20260921_153320 | overlay_regime | B | RF_PAR_B2_6_minvar 충실구현: 등급 B. 논문기준 SR 1.15 vs 15bps SR 1.17. [무인 병렬 B2_6] minvar — B2/wei… |
-| 1785 | L-RP-20260921_153320 | overlay_regime | B | RF_PAR_B2_8_nco 충실구현: 등급 B. 논문기준 SR 1.13 vs 15bps SR 1.16. [무인 병렬 B2_8] nco — B2/weighting… |
-| 1786 | L-RP-20260921_153320 | overlay_regime | B | RF_PAR_B2_9_ncoscore 충실구현: 등급 B. 논문기준 SR 1.17 vs 15bps SR 1.20. [무인 병렬 B2_9] nco+score — B… |
-| 1787 | L-RP-20260921_153338 | overlay_regime | B | RF_PAR_B2_7_CDaRLP 충실구현: 등급 B. 논문기준 SR 1.10 vs 15bps SR 1.08. [무인 병렬 B2_7] CDaR_LP — B2/we… |
-| 1788 | L-RP-20260921_154935 | overlay_regime | C | RF_PAR_B3_14_13 충실구현: 등급 C. 논문기준 SR 0.72 vs 15bps SR 0.79. [무인 병렬 B3_14] 대형주 상위 1/3 — B3/u… |
-| 1789 | L-RP-20260921_154956 | overlay_regime | C | RF_PAR_B3_13_13 충실구현: 등급 C. 논문기준 SR 0.63 vs 15bps SR 0.72. [무인 병렬 B3_13] 소형주 하위 1/3 — B3/u… |
-| 1790 | L-RP-20260921_155001 | overlay_regime | B | RF_PAR_B3_15_ 충실구현: 등급 B. 논문기준 SR 0.84 vs 15bps SR 0.89. [무인 병렬 B3_15] 섹터 중립 — B3/universe… |
-| 1791 | L-RP-20260921_160316 | overlay_regime | B | RF_PAR_B6_34_k30 충실구현: 등급 B. 논문기준 SR 0.86 vs 15bps SR 0.97. [무인 병렬 B6_34] 분기(k=3 · 위상 0) —… |
-| 1792 | L-RP-20260921_160317 | overlay_regime | B | RF_PAR_B6_32_k20 충실구현: 등급 B. 논문기준 SR 0.92 vs 15bps SR 0.98. [무인 병렬 B6_32] 격월(k=2 · 위상 0) —… |
-| 1793 | L-RP-20260921_160319 | overlay_regime | B | RF_PAR_B6_33_k21 충실구현: 등급 B. 논문기준 SR 0.86 vs 15bps SR 0.91. [무인 병렬 B6_33] 격월(k=2 · 위상 1) —… |
-| 1794 | L-RP-20260921_160323 | overlay_regime | B | RF_PAR_B6_35_ 충실구현: 등급 B. 논문기준 SR 0.88 vs 15bps SR 0.98. [무인 병렬 B6_35] 노트레이드 밴드(확장창 중앙값) —… |
-| 1795 | L-RP-20260921_160447 | overlay_regime | B | RF_PAR_B6_36_2nmax 충실구현: 등급 B. 논문기준 SR 1.12 vs 15bps SR 1.13. [무인 병렬 B6_36] 랭크 버퍼(2×n_max … |
-| 1796 | L-RP-20260921_161920 | overlay_regime | C | RF_PAR_B4_22_LOO 충실구현: 등급 C. 논문기준 SR 0.85 vs 15bps SR 0.88. [무인 병렬 B4_22] 팩터 제외(LOO) — B4/… |
-| 1797 | L-RP-20260921_161940 | overlay_regime | C | RF_PAR_B4_21_4 충실구현: 등급 C. 논문기준 SR 0.82 vs 15bps SR 0.86. [무인 병렬 B4_21] 전 요소 결합(4축) — B4/c… |
-| 1798 | L-RP-20260921_164134 | overlay_regime | C | RF_PAR_B6_34_k30 충실구현: 등급 C. 논문기준 SR 0.68 vs 15bps SR 0.77. [무인 병렬 B6_34] 분기(k=3 · 위상 0) —… |
-| 1799 | L-RP-20260921_164139 | overlay_regime | C | RF_PAR_B6_33_k21 충실구현: 등급 C. 논문기준 SR 0.67 vs 15bps SR 0.78. [무인 병렬 B6_33] 격월(k=2 · 위상 1) —… |
-| 1800 | L-RP-20260921_164140 | overlay_regime | C | RF_PAR_B6_32_k20 충실구현: 등급 C. 논문기준 SR 0.68 vs 15bps SR 0.78. [무인 병렬 B6_32] 격월(k=2 · 위상 0) —… |
-| 1801 | L-RP-20260921_164151 | overlay_regime | C | RF_PAR_B6_35_ 충실구현: 등급 C. 논문기준 SR 0.71 vs 15bps SR 0.81. [무인 병렬 B6_35] 노트레이드 밴드(확장창 중앙값) —… |
-| 1802 | L-RP-20260921_185016 | overlay_regime | C | RF_PAR_B6_42_3nmax 충실구현: 등급 C. 논문기준 SR 0.65 vs 15bps SR 0.77. [무인 병렬 B6_42] 랭크 버퍼(3×n_max … |
-| 1803 | L-RP-20260921_185020 | overlay_regime | C | RF_PAR_B6_36_2nmax 충실구현: 등급 C. 논문기준 SR 0.67 vs 15bps SR 0.79. [무인 병렬 B6_36] 랭크 버퍼(2×n_max … |
-| 1804 | L-RP-20260921_192214 | overlay_regime | C | RF_PAR_B5_16_ 충실구현: 등급 C. 논문기준 SR 0.75 vs 15bps SR 0.86. [무인 병렬 B5_16] 급성 스칼라 단독 — 내재 상관 브… |
-| 1805 | L-RP-20260921_192214 | overlay_regime | C | RF_PAR_B5_19_ 충실구현: 등급 C. 논문기준 SR 0.74 vs 15bps SR 0.85. [무인 병렬 B5_19] 침식 선택적 종목 틸트 단독 — B… |
-| 1806 | L-RP-20260921_192214 | momentum | C | RF_PAR_B5_17_ 충실구현: 등급 C. 논문기준 SR 0.72 vs 15bps SR 0.82. [무인 병렬 B5_17] 만성 스칼라 단독 — 추세 아래 연… |
-| 1807 | L-RP-20260921_192214 | momentum | C | RF_PAR_B5_18_ 충실구현: 등급 C. 논문기준 SR 0.75 vs 15bps SR 0.85. [무인 병렬 B5_18] 급성×만성 스칼라 분할 스택 — B… |
-| 1808 | L-RP-20260921_192256 | overlay_regime | C | RF_PAR_B5_31_PG2 충실구현: 등급 C. 논문기준 SR 0.76 vs 15bps SR 0.89. [무인 병렬 B5_31] PG2 리스크 오버레이 상주 … |
-| 1809 | L-RP-20260921_192958 | overlay_regime | C | RF_PAR_B5_21_GLS4 충실구현: 등급 C. 논문기준 SR 0.77 vs 15bps SR 0.89. [무인 병렬 B5_21] 단일 합성 상태(GLS 4축… |
-| 1810 | L-RP-20260921_192958 | overlay_regime | C | RF_PAR_B5_20_ 충실구현: 등급 C. 논문기준 SR 0.78 vs 15bps SR 0.89. [무인 병렬 B5_20] 급성 스칼라 × 침식 종목틸트 — … |
-| 1811 | L-RP-20260921_200111 | overlay_regime | C | RF_PAR_B4_22_LOO 충실구현: 등급 C. 논문기준 SR 0.58 vs 15bps SR 0.64. [무인 병렬 B4_22] 팩터 제외(LOO) — B4/… |
-| 1812 | L-RP-20260921_200227 | overlay_regime | C | RF_PAR_B4_21_4 충실구현: 등급 C. 논문기준 SR 0.67 vs 15bps SR 0.74. [무인 병렬 B4_21] 전 요소 결합(4축) — B4/c… |
-| 1813 | L-RP-20260921_203307 | overlay_regime | C | RF_PAR_B1_3_revmom 충실구현: 등급 C. 논문기준 SR 0.60 vs 15bps SR 0.70. [무인 병렬 B1_3] rev_mom — B1/mu… |
-| 1814 | L-RP-20260921_203307 | overlay_regime | C | RF_PAR_B1_2_momsolo 충실구현: 등급 C. 논문기준 SR 0.59 vs 15bps SR 0.69. [무인 병렬 B1_2] mom_solo — B1/… |
-| 1815 | L-RP-20260921_203307 | overlay_regime | C | RF_PAR_B1_1_revsolo 충실구현: 등급 C. 논문기준 SR 0.47 vs 15bps SR 0.59. [무인 병렬 B1_1] rev_solo — B1/… |
-| 1816 | L-RP-20260921_203415 | overlay_regime | C | RF_PAR_B1_4_coretrio 충실구현: 등급 C. 논문기준 SR 0.62 vs 15bps SR 0.72. [무인 병렬 B1_4] core_trio — B… |
-| 1817 | L-RP-20260921_203442 | overlay_regime | C | RF_PAR_B1_5_core4xfer 충실구현: 등급 C. 논문기준 SR 0.61 vs 15bps SR 0.72. [무인 병렬 B1_5] core4_xfer —… |
-| 1818 | L-RP-20260921_204411 | overlay_regime | C | RF_PAR_B1_10_revidiovol 충실구현: 등급 C. 논문기준 SR 0.49 vs 15bps SR 0.61. [무인 병렬 B1_10] rev_idiov… |
-| 1819 | L-RP-20260921_204412 | overlay_regime | C | RF_PAR_B1_8_revlaborshare 충실구현: 등급 C. 논문기준 SR 0.50 vs 15bps SR 0.62. [무인 병렬 B1_8] rev_labo… |
-| 1820 | L-RP-20260921_204412 | overlay_regime | C | RF_PAR_B1_7_revoplev 충실구현: 등급 C. 논문기준 SR 0.44 vs 15bps SR 0.56. [무인 병렬 B1_7] rev_oplev — B… |
-| 1821 | L-RP-20260921_204412 | overlay_regime | C | RF_PAR_B1_9_revsectordisp 충실구현: 등급 C. 논문기준 SR 0.50 vs 15bps SR 0.60. [무인 병렬 B1_9] rev_sect… |
-| 1822 | L-RP-20260921_204512 | overlay_regime | C | RF_PAR_B1_6_core5xfer 충실구현: 등급 C. 논문기준 SR 0.67 vs 15bps SR 0.77. [무인 병렬 B1_6] core5_xfer —… |
-| 1823 | L-RP-20260921_210429 | defense | C | RF_PAR_B7_38_k8 충실구현: 등급 C. 논문기준 SR 0.61 vs 15bps SR 0.68. [무인 병렬 B7_38] 방어 슬리브 k=8 — 분할 비… |
-| 1824 | L-RP-20260921_210429 | defense | C | RF_PAR_B7_41_k5 충실구현: 등급 C. 논문기준 SR 0.41 vs 15bps SR 0.54. [무인 병렬 B7_41] [부호 반전 대조] 반(反)방어… |
-| 1825 | L-RP-20260921_210429 | defense | C | RF_PAR_B7_37_k5IC1 충실구현: 등급 C. 논문기준 SR 0.62 vs 15bps SR 0.70. [무인 병렬 B7_37] 방어 슬리브 k=5 (약세… |
-| 1826 | L-RP-20260921_210429 | defense | C | RF_PAR_B7_39_k5IC2 충실구현: 등급 C. 논문기준 SR 0.60 vs 15bps SR 0.69. [무인 병렬 B7_39] 방어 슬리브 k=5 (약세… |
-| 1827 | L-RP-20260921_210502 | defense | C | RF_PAR_B7_40_k5 충실구현: 등급 C. 논문기준 SR 0.51 vs 15bps SR 0.62. [무인 병렬 B7_40] [무신호 대조] 베타매칭 무작위… |
-| 1828 | L-RP-20260921_213714 | momentum | C | RF_PAR_B5_16_ 충실구현: 등급 C. 논문기준 SR 0.70 vs 15bps SR 0.81. [무인 병렬 B5_16] 사다리 스칼라 — 예산 균등(타이밍… |
-| 1829 | L-RP-20260921_213714 | overlay_regime | C | RF_PAR_B5_17_ 충실구현: 등급 C. 논문기준 SR 0.66 vs 15bps SR 0.77. [무인 병렬 B5_17] 사다리 예산 고정 — 잔차 취약도 … |
-| 1830 | L-RP-20260921_213714 | momentum | C | RF_PAR_B5_18_dbetabcorrdbetabeta 충실구현: 등급 C. 논문기준 SR 0.71 vs 15bps SR 0.81. [무인 병렬 B5_18] … |
-| 1831 | L-RP-20260921_213714 | overlay_regime | C | RF_PAR_B5_19_4GLStilt 충실구현: 등급 C. 논문기준 SR 0.67 vs 15bps SR 0.76. [무인 병렬 B5_19] 4축 GLS 다변량 … |
-| 1832 | L-RP-20260921_213753 | overlay_regime | C | RF_PAR_B5_31_PG2 충실구현: 등급 C. 논문기준 SR 0.76 vs 15bps SR 0.84. [무인 병렬 B5_31] PG2 리스크 오버레이 상주 … |
-| 1833 | L-RP-20260921_214804 | overlay_regime | C | RF_PAR_B5_23_ 충실구현: 등급 C. 논문기준 SR 0.68 vs 15bps SR 0.78. [무인 병렬 B5_23] 스택: 보유 볼록성 × 사다리 잔차… |
-| 1834 | L-RP-20260921_214804 | momentum | C | RF_PAR_B5_22_tilt 충실구현: 등급 C. 논문기준 SR 0.75 vs 15bps SR 0.86. [무인 병렬 B5_22] 스택: 사다리 스칼라 × 분… |
-| 1835 | L-RP-20260921_214804 | overlay_regime | C | RF_PAR_B5_20_tilt 충실구현: 등급 C. 논문기준 SR 0.69 vs 15bps SR 0.79. [무인 병렬 B5_20] 분산 국면 게이트 — 잔차 … |
-| 1836 | L-RP-20260921_214804 | overlay_regime | C | RF_PAR_B5_21_ 충실구현: 등급 C. 논문기준 SR 0.69 vs 15bps SR 0.77. [무인 병렬 B5_21] 보유 볼록성 브레이크 — 시장 시계… |
-| 1837 | L-RP-20260921_222113 | overlay_regime | C | RF_PAR_B2_8_minvarfullcov 충실구현: 등급 C. 논문기준 SR 0.66 vs 15bps SR 0.78. [무인 병렬 B2_8] minvar_f… |
-| 1838 | L-RP-20260921_222113 | overlay_regime | C | RF_PAR_B2_9_ivoldiag 충실구현: 등급 C. 논문기준 SR 0.66 vs 15bps SR 0.76. [무인 병렬 B2_9] ivol_diag — B… |
-| 1839 | L-RP-20260921_222113 | ml_complexity | C | RF_PAR_B2_10_hrpestrobust 충실구현: 등급 C. 논문기준 SR 0.65 vs 15bps SR 0.76. [무인 병렬 B2_10] hrp_est… |
-| 1840 | L-RP-20260921_222117 | overlay_regime | C | RF_PAR_B2_7_cvartail 충실구현: 등급 C. 논문기준 SR 0.68 vs 15bps SR 0.77. [무인 병렬 B2_7] cvar_tail — B… |
-| 1841 | L-RP-20260921_222128 | overlay_regime | C | RF_PAR_B2_6_cdarpath 충실구현: 등급 C. 논문기준 SR 0.45 vs 15bps SR 0.57. [무인 병렬 B2_6] cdar_path — B… |
-| 1842 | L-RP-20260921_223449 | overlay_regime | C | RF_PAR_B2_11_scoretiltcontrol 충실구현: 등급 C. 논문기준 SR 0.66 vs 15bps SR 0.76. [무인 병렬 B2_11] sco… |
-| 1843 | L-RP-20260921_225037 | overlay_regime | C | RF_PAR_B3_11_KQ150 충실구현: 등급 C. 논문기준 SR 0.68 vs 15bps SR 0.73. [무인 병렬 B3_11] KQ150 단독 — B3/… |
-| 1844 | L-RP-20260921_225100 | overlay_regime | C | RF_PAR_B3_12_K200 충실구현: 등급 C. 논문기준 SR 0.56 vs 15bps SR 0.67. [무인 병렬 B3_12] K200 단독 — B3/un… |
-| 1845 | L-RP-20260921_225101 | overlay_regime | C | RF_PAR_B3_13_13 충실구현: 등급 C. 논문기준 SR 0.45 vs 15bps SR 0.59. [무인 병렬 B3_13] 소형(시총 하위 1/3) — B… |
-| 1846 | L-RP-20260921_225112 | overlay_regime | F | RF_PAR_B3_15_ 충실구현: 등급 F. 논문기준 SR 0.44 vs 15bps SR 0.54. [무인 병렬 B3_15] 섹터 중립 — B3/universe… |
-| 1847 | L-RP-20260921_230733 | overlay_regime | C | RF_PAR_B6_34_k30 충실구현: 등급 C. 논문기준 SR 0.64 vs 15bps SR 0.74. [무인 병렬 B6_34] 분기(k=3 · 위상 0) —… |
-| 1848 | L-RP-20260921_230733 | overlay_regime | C | RF_PAR_B6_33_k21 충실구현: 등급 C. 논문기준 SR 0.58 vs 15bps SR 0.68. [무인 병렬 B6_33] 격월(k=2 · 위상 1) —… |
-| 1849 | L-RP-20260921_230735 | overlay_regime | C | RF_PAR_B6_32_k20 충실구현: 등급 C. 논문기준 SR 0.63 vs 15bps SR 0.73. [무인 병렬 B6_32] 격월(k=2 · 위상 0) —… |
-| 1850 | L-RP-20260921_230855 | overlay_regime | C | RF_PAR_B6_42_3nmax 충실구현: 등급 C. 논문기준 SR 0.47 vs 15bps SR 0.58. [무인 병렬 B6_42] 랭크 버퍼(3×n_max … |
-| 1851 | L-RP-20260921_230902 | overlay_regime | C | RF_PAR_B6_36_2nmax 충실구현: 등급 C. 논문기준 SR 0.52 vs 15bps SR 0.63. [무인 병렬 B6_36] 랭크 버퍼(2×n_max … |
-| 1852 | L-RP-20260921_232251 | overlay_regime | C | RF_PAR_B4_22_LOO 충실구현: 등급 C. 논문기준 SR 0.71 vs 15bps SR 0.76. [무인 병렬 B4_22] 팩터 제외(LOO) — B4/… |
-| 1853 | L-RP-20260921_232422 | overlay_regime | C | RF_PAR_B4_25_LOO3 충실구현: 등급 C. 논문기준 SR 0.77 vs 15bps SR 0.80. [무인 병렬 B4_25] 오버레이 제외(LOO) = … |
-| 1854 | L-RP-20260921_232433 | overlay_regime | C | RF_PAR_B4_23_LOO 충실구현: 등급 C. 논문기준 SR 0.71 vs 15bps SR 0.75. [무인 병렬 B4_23] 비중 제외(LOO) — B4/… |
-| 1855 | L-RP-20260921_232454 | overlay_regime | C | RF_PAR_B4_21_4 충실구현: 등급 C. 논문기준 SR 0.78 vs 15bps SR 0.82. [무인 병렬 B4_21] 전 요소 결합(4축) — B4/c… |
-| 1856 | L-RP-20260921_232522 | overlay_regime | C | RF_PAR_B4_24_LOO 충실구현: 등급 C. 논문기준 SR 0.72 vs 15bps SR 0.81. [무인 병렬 B4_24] 유니버스 제외(LOO) — B… |
-| 1857 | L-RP-20260921_235812 | overlay_regime | B | RF_PAR_B1_3_V14 충실구현: 등급 B. 논문기준 SR 0.76 vs 15bps SR 0.87. [무인 병렬 B1_3] 회계밸류 V14 — B1/mult… |
-| 1858 | L-RP-20260921_235812 | overlay_regime | C | RF_PAR_B1_5_C01 충실구현: 등급 C. 논문기준 SR 0.52 vs 15bps SR 0.61. [무인 병렬 B1_5] 컨센서스 C01 — B1/mult… |
-| 1859 | L-RP-20260921_235820 | overlay_regime | C | RF_PAR_B1_4_Q35 충실구현: 등급 C. 논문기준 SR 0.70 vs 15bps SR 0.76. [무인 병렬 B1_4] 현금수익성 Q35 — B1/mul… |
-| 1860 | L-RP-20260921_235825 | momentum | C | RF_PAR_B1_1_M01 충실구현: 등급 C. 논문기준 SR 0.52 vs 15bps SR 0.65. [무인 병렬 B1_1] 가격장기 M01 — B1/mult… |
-| 1861 | L-RP-20260921_235829 | overlay_regime | C | RF_PAR_B1_2_M11 충실구현: 등급 C. 논문기준 SR 0.45 vs 15bps SR 0.57. [무인 병렬 B1_2] 가격단기 M11 — B1/mult… |
-| 1862 | L-RP-20260922_002442 | overlay_regime | C | RF_PAR_B1_7_S01Size 충실구현: 등급 C. 논문기준 SR 0.68 vs 15bps SR 0.80. [무인 병렬 B1_7] 대조 S01_Size — … |
-| 1863 | L-RP-20260922_002448 | behavioral | C | RF_PAR_B1_6_INV10 충실구현: 등급 C. 논문기준 SR 0.54 vs 15bps SR 0.66. [무인 병렬 B1_6] 수급 INV10 — B1/mu… |
-| 1864 | L-RP-20260922_002513 | overlay_regime | C | RF_PAR_B1_8_3 충실구현: 등급 C. 논문기준 SR 0.77 vs 15bps SR 0.85. [무인 병렬 B1_8] 비가격 3축 — B1/multifac… |
-| 1865 | L-RP-20260922_002518 | overlay_regime | C | RF_PAR_B1_10_ 충실구현: 등급 C. 논문기준 SR 0.71 vs 15bps SR 0.81. [무인 병렬 B1_10] 가격+비가격 혼합 — B1/mult… |
-| 1866 | L-RP-20260922_002544 | behavioral | C | RF_PAR_B1_9_4 충실구현: 등급 C. 논문기준 SR 0.73 vs 15bps SR 0.81. [무인 병렬 B1_9] 비가격+수급 4축 — B1/multi… |
-| 1867 | L-RP-20260922_003258 | overlay_regime | C | RF_PAR_B1_11_5 충실구현: 등급 C. 논문기준 SR 0.67 vs 15bps SR 0.77. [무인 병렬 B1_11] 5축 전체 — B1/multifa… |
-| 1868 | L-RP-20260922_004942 | defense | C | RF_PAR_B7_39_k5IC2 충실구현: 등급 C. 논문기준 SR 0.69 vs 15bps SR 0.79. [무인 병렬 B7_39] 방어 슬리브 k=5 (약세… |
-| 1869 | L-RP-20260922_004942 | defense | C | RF_PAR_B7_38_k8 충실구현: 등급 C. 논문기준 SR 0.72 vs 15bps SR 0.80. [무인 병렬 B7_38] 방어 슬리브 k=8 — 분할 비… |
-| 1870 | L-RP-20260922_004942 | defense | C | RF_PAR_B7_37_k5IC1 충실구현: 등급 C. 논문기준 SR 0.71 vs 15bps SR 0.80. [무인 병렬 B7_37] 방어 슬리브 k=5 (약세… |
-| 1871 | L-RP-20260922_004942 | defense | C | RF_PAR_B7_41_k5 충실구현: 등급 C. 논문기준 SR 0.53 vs 15bps SR 0.64. [무인 병렬 B7_41] [부호 반전 대조] 반(反)방어… |
-| 1872 | L-RP-20260922_004951 | defense | C | RF_PAR_B7_40_k5 충실구현: 등급 C. 논문기준 SR 0.65 vs 15bps SR 0.76. [무인 병렬 B7_40] [무신호 대조] 베타매칭 무작위… |
-| 1873 | L-RP-20260922_011541 | overlay_regime | C | RF_PAR_B5_19_ 충실구현: 등급 C. 논문기준 SR 0.73 vs 15bps SR 0.83. [무인 병렬 B5_19] 이진 게이트 × 채널 틸트 — 소비… |
-| 1874 | L-RP-20260922_011541 | overlay_regime | B | RF_PAR_B5_18_ 충실구현: 등급 B. 논문기준 SR 0.77 vs 15bps SR 0.88. [무인 병렬 B5_18] 낙폭×직전월 부호 이진 게이트 — … |
-| 1875 | L-RP-20260922_011603 | overlay_regime | C | RF_PAR_B5_17_ 충실구현: 등급 C. 논문기준 SR 0.82 vs 15bps SR 0.91. [무인 병렬 B5_17] 다변량 × 보유 화이트닝 틸트 — … |
-| 1876 | L-RP-20260922_011605 | overlay_regime | C | RF_PAR_B5_16_ 충실구현: 등급 C. 논문기준 SR 0.81 vs 15bps SR 0.90. [무인 병렬 B5_16] 다변량 채널 틸트 — 기준(원순위 … |
-| 1877 | L-RP-20260922_011648 | overlay_regime | C | RF_PAR_B5_31_PG2 충실구현: 등급 C. 논문기준 SR 0.78 vs 15bps SR 0.91. [무인 병렬 B5_31] PG2 리스크 오버레이 상주 … |
-| 1878 | L-RP-20260922_012732 | overlay_regime | C | RF_PAR_B5_21_ 충실구현: 등급 C. 논문기준 SR 0.84 vs 15bps SR 0.95. [무인 병렬 B5_21] 내재상관 브레이크 × 분산 틸트 —… |
-| 1879 | L-RP-20260922_012732 | overlay_regime | C | RF_PAR_B5_20_ 충실구현: 등급 C. 논문기준 SR 0.80 vs 15bps SR 0.91. [무인 병렬 B5_20] 횡단면분산 × 특이변동 틸트 — 출… |
-| 1880 | L-RP-20260922_012732 | overlay_regime | C | RF_PAR_B5_22_arm 충실구현: 등급 C. 논문기준 SR 0.74 vs 15bps SR 0.84. [무인 병렬 B5_22] 침식 형태(지속×완만) 틸트 … |
-| 1881 | L-RP-20260922_015249 | overlay_regime | B | RF_PAR_B2_8_ncoscoretilt 충실구현: 등급 B. 논문기준 SR 0.81 vs 15bps SR 0.92. [무인 병렬 B2_8] nco_score… |
-| 1882 | L-RP-20260922_015249 | overlay_regime | B | RF_PAR_B2_10_scoretiltsamplecov 충실구현: 등급 B. 논문기준 SR 0.83 vs 15bps SR 0.93. [무인 병렬 B2_10] s… |
-| 1883 | L-RP-20260922_015249 | ml_complexity | B | RF_PAR_B2_7_hrp 충실구현: 등급 B. 논문기준 SR 0.84 vs 15bps SR 0.94. [무인 병렬 B2_7] hrp — 역행렬 없는 공분산 대… |
-| 1884 | L-RP-20260922_015249 | overlay_regime | C | RF_PAR_B2_6_minvarMDD 충실구현: 등급 C. 논문기준 SR 0.89 vs 15bps SR 0.98. [무인 병렬 B2_6] minvar — 동일가… |
-| 1885 | L-RP-20260922_015300 | overlay_regime | C | RF_PAR_B2_9_CDaRLP 충실구현: 등급 C. 논문기준 SR 0.47 vs 15bps SR 0.57. [무인 병렬 B2_9] CDaR_LP — 낙폭 정보… |
-| 1886 | L-RP-20260922_015942 | overlay_regime | B | RF_PAR_B2_11_scoretiltLedoitWolf 충실구현: 등급 B. 논문기준 SR 0.82 vs 15bps SR 0.92. [무인 병렬 B2_11] … |
-| 1887 | L-RP-20260922_020928 | overlay_regime | C | RF_PAR_B3_15_ 충실구현: 등급 C. 논문기준 SR 0.62 vs 15bps SR 0.71. [무인 병렬 B3_15] 섹터 중립 — B3/universe… |
-| 1888 | L-RP-20260922_020928 | overlay_regime | C | RF_PAR_B3_14_13 충실구현: 등급 C. 논문기준 SR 0.59 vs 15bps SR 0.66. [무인 병렬 B3_14] 대형주 상위 1/3 — B3/u… |
-| 1889 | L-RP-20260922_020928 | overlay_regime | C | RF_PAR_B3_13_13 충실구현: 등급 C. 논문기준 SR 0.75 vs 15bps SR 0.85. [무인 병렬 B3_13] 소형주 하위 1/3 — B3/u… |
-| 1890 | L-RP-20260922_020931 | overlay_regime | C | RF_PAR_B3_12_KOSPI200 충실구현: 등급 C. 논문기준 SR 0.66 vs 15bps SR 0.80. [무인 병렬 B3_12] KOSPI200 단독… |
-| 1891 | L-RP-20260922_022451 | overlay_regime | C | RF_PAR_B6_34_k30 충실구현: 등급 C. 논문기준 SR 0.69 vs 15bps SR 0.82. [무인 병렬 B6_34] 분기(k=3 · 위상 0) —… |
-| 1892 | L-RP-20260922_022455 | overlay_regime | B | RF_PAR_B6_32_k20 충실구현: 등급 B. 논문기준 SR 0.87 vs 15bps SR 0.96. [무인 병렬 B6_32] 격월(k=2 · 위상 0) —… |
-| 1893 | L-RP-20260922_022457 | overlay_regime | B | RF_PAR_B6_33_k21 충실구현: 등급 B. 논문기준 SR 0.82 vs 15bps SR 0.92. [무인 병렬 B6_33] 격월(k=2 · 위상 1) —… |
-| 1894 | L-RP-20260922_022527 | overlay_regime | B | RF_PAR_B6_36_2nmax 충실구현: 등급 B. 논문기준 SR 0.86 vs 15bps SR 0.97. [무인 병렬 B6_36] 랭크 버퍼(2×n_max … |
-| 1895 | L-RP-20260922_022528 | overlay_regime | B | RF_PAR_B6_42_3nmax 충실구현: 등급 B. 논문기준 SR 0.90 vs 15bps SR 0.99. [무인 병렬 B6_42] 랭크 버퍼(3×n_max … |
-| 1896 | L-RP-20260922_023926 | overlay_regime | C | RF_PAR_B4_22_LOO 충실구현: 등급 C. 논문기준 SR 0.58 vs 15bps SR 0.71. [무인 병렬 B4_22] 팩터 제외(LOO) — B4/… |
-| 1897 | L-RP-20260922_023940 | overlay_regime | C | RF_PAR_B4_23_LOO 충실구현: 등급 C. 논문기준 SR 0.63 vs 15bps SR 0.75. [무인 병렬 B4_23] 비중 제외(LOO) — B4/… |
-| 1898 | L-RP-20260922_030926 | overlay_regime | C | RF_PAR_B1_4_yieldfcf 충실구현: 등급 C. 논문기준 SR 0.79 vs 15bps SR 0.85. [무인 병렬 B1_4] yield_fcf — B… |
-| 1899 | L-RP-20260922_030926 | overlay_regime | B | RF_PAR_B1_3_horizonanchor 충실구현: 등급 B. 논문기준 SR 0.95 vs 15bps SR 0.98. [무인 병렬 B1_3] horizon_… |
-| 1900 | L-RP-20260922_030926 | overlay_regime | B | RF_PAR_B1_2_horizonresid 충실구현: 등급 B. 논문기준 SR 0.88 vs 15bps SR 0.93. [무인 병렬 B1_2] horizon_r… |
-| 1901 | L-RP-20260922_030928 | overlay_regime | B | RF_PAR_B1_5_yieldpair 충실구현: 등급 B. 논문기준 SR 0.93 vs 15bps SR 0.98. [무인 병렬 B1_5] yield_pair —… |
-| 1902 | L-RP-20260922_030929 | overlay_regime | B | RF_PAR_B1_1_horizonbeyondwindow 충실구현: 등급 B. 논문기준 SR 0.77 vs 15bps SR 0.84. [무인 병렬 B1_1] ho… |
-| 1903 | L-RP-20260922_032156 | overlay_regime | B | RF_PAR_B1_7_revisionbreadth 충실구현: 등급 B. 논문기준 SR 0.81 vs 15bps SR 0.85. [무인 병렬 B1_7] revisi… |
-| 1904 | L-RP-20260922_032200 | overlay_regime | B | RF_PAR_B1_9_horizonxconfirm 충실구현: 등급 B. 논문기준 SR 0.89 vs 15bps SR 0.94. [무인 병렬 B1_9] horizo… |
-| 1905 | L-RP-20260922_032202 | overlay_regime | C | RF_PAR_B1_6_qualitycashpersist 충실구현: 등급 C. 논문기준 SR 0.74 vs 15bps SR 0.79. [무인 병렬 B1_6] qua… |
-| 1906 | L-RP-20260922_032204 | overlay_regime | B | RF_PAR_B1_10_pathgeometrycm 충실구현: 등급 B. 논문기준 SR 0.96 vs 15bps SR 0.99. [무인 병렬 B1_10] path_… |
-| 1907 | L-RP-20260922_032205 | overlay_regime | B | RF_PAR_B1_8_horizonxyield 충실구현: 등급 B. 논문기준 SR 1.05 vs 15bps SR 1.08. [무인 병렬 B1_8] horizon_… |
-| 1908 | L-RP-20260922_033854 | defense | B | RF_PAR_B7_38_k8 충실구현: 등급 B. 논문기준 SR 0.90 vs 15bps SR 0.94. [무인 병렬 B7_38] 방어 슬리브 k=8 — 분할 비… |
-| 1909 | L-RP-20260922_033854 | defense | B | RF_PAR_B7_39_k5IC2 충실구현: 등급 B. 논문기준 SR 0.96 vs 15bps SR 0.99. [무인 병렬 B7_39] 방어 슬리브 k=5 (약세… |
-| 1910 | L-RP-20260922_033854 | defense | B | RF_PAR_B7_37_k5IC1 충실구현: 등급 B. 논문기준 SR 0.96 vs 15bps SR 0.99. [무인 병렬 B7_37] 방어 슬리브 k=5 (약세… |
-| 1911 | L-RP-20260922_033855 | defense | C | RF_PAR_B7_41_k5 충실구현: 등급 C. 논문기준 SR 0.73 vs 15bps SR 0.80. [무인 병렬 B7_41] [부호 반전 대조] 반(反)방어… |
-| 1912 | L-RP-20260922_033858 | defense | B | RF_PAR_B7_40_k5 충실구현: 등급 B. 논문기준 SR 0.90 vs 15bps SR 0.95. [무인 병렬 B7_40] [무신호 대조] 베타매칭 무작위… |
-| 1913 | L-RP-20260922_040615 | momentum | B | RF_PAR_B5_16_ 충실구현: 등급 B. 논문기준 SR 1.14 vs 15bps SR 1.17. [무인 병렬 B5_16] 사다리 스칼라 — 예산 기준선 — … |
-| 1914 | L-RP-20260922_040615 | overlay_regime | B | RF_PAR_B5_19_ 충실구현: 등급 B. 논문기준 SR 1.05 vs 15bps SR 1.09. [무인 병렬 B5_19] 침식 상태(지속×완만) · 잔차 몫… |
-| 1915 | L-RP-20260922_040615 | momentum | B | RF_PAR_B5_18_ 충실구현: 등급 B. 논문기준 SR 1.12 vs 15bps SR 1.15. [무인 병렬 B5_18] 사다리 · λ 적응 체계축 틸트 —… |
-| 1916 | L-RP-20260922_040615 | overlay_regime | B | RF_PAR_B5_17_ 충실구현: 등급 B. 논문기준 SR 1.12 vs 15bps SR 1.16. [무인 병렬 B5_17] 사다리 예산 · 잔차 몫 집중 배분… |
-| 1917 | L-RP-20260922_040706 | overlay_regime | C | RF_PAR_B5_31_PG2 충실구현: 등급 C. 논문기준 SR 1.01 vs 15bps SR 1.09. [무인 병렬 B5_31] PG2 리스크 오버레이 상주 … |
-| 1918 | L-RP-20260922_041704 | overlay_regime | B | RF_PAR_B5_20_ 충실구현: 등급 B. 논문기준 SR 1.08 vs 15bps SR 1.11. [무인 병렬 B5_20] 내재 평균상관 스칼라 브레이크 — … |
-| 1919 | L-RP-20260922_041704 | momentum | B | RF_PAR_B5_23_ 충실구현: 등급 B. 논문기준 SR 1.15 vs 15bps SR 1.20. [무인 병렬 B5_23] 스칼라 × 스칼라 — 두 에피소드 … |
-| 1920 | L-RP-20260922_041704 | momentum | B | RF_PAR_B5_22_ 충실구현: 등급 B. 논문기준 SR 1.15 vs 15bps SR 1.18. [무인 병렬 B5_22] 사다리 틸트 × 동조 급락 층 — … |
-| 1921 | L-RP-20260922_041704 | overlay_regime | B | RF_PAR_B5_21_ 충실구현: 등급 B. 논문기준 SR 1.10 vs 15bps SR 1.13. [무인 병렬 B5_21] 침식 층 × 동조 급락 층 — 소비… |
-| 1922 | L-RP-20260923_151144 | overlay_regime | B | RF_PAR_B2_9_ 충실구현: 등급 B. 논문기준 SR 1.11 vs 15bps SR 1.13. [무인 병렬 B2_9] robust_mv(classical) … |
-| 1923 | L-RP-20260923_151144 | overlay_regime | B | RF_PAR_B2_7_ 충실구현: 등급 B. 논문기준 SR 1.04 vs 15bps SR 1.07. [무인 병렬 B2_7] entropy(entropy) — B2… |
-| 1924 | L-RP-20260923_151154 | overlay_regime | B | RF_PAR_B2_6_ 충실구현: 등급 B. 논문기준 SR 1.10 vs 15bps SR 1.13. [무인 병렬 B2_6] cvar(tail_aware) — B2… |
-| 1925 | L-RP-20260923_151156 | overlay_regime | B | RF_PAR_B2_8_ 충실구현: 등급 B. 논문기준 SR 1.07 vs 15bps SR 1.10. [무인 병렬 B2_8] factor_rp(risk_parity… |
-| 1926 | L-RP-20260923_151157 | overlay_regime | B | RF_PAR_B2_10_ 충실구현: 등급 B. 논문기준 SR 0.99 vs 15bps SR 1.01. [무인 병렬 B2_10] kelly(growth) — B2/… |
-| 1927 | L-RP-20260923_152748 | overlay_regime | B | RF_PAR_B2_12_A 충실구현: 등급 B. 논문기준 SR 1.05 vs 15bps SR 1.10. [무인 병렬 B2_12] Σ 추정 대조 A(표본) — B2… |
-| 1928 | L-RP-20260923_152748 | overlay_regime | B | RF_PAR_B2_13_B 충실구현: 등급 B. 논문기준 SR 1.06 vs 15bps SR 1.10. [무인 병렬 B2_13] Σ 추정 대조 B(축소추정) — … |
-| 1929 | L-RP-20260923_152751 | overlay_regime | B | RF_PAR_B2_11_ 충실구현: 등급 B. 논문기준 SR 1.09 vs 15bps SR 1.12. [무인 병렬 B2_11] 수익꼬리 표적 대조 — B2/wei… |
-| 1930 | L-RP-20260923_154953 | overlay_regime | C | RF_PAR_B3_11_KQ150 충실구현: 등급 C. 논문기준 SR 0.82 vs 15bps SR 0.80. [무인 병렬 B3_11] KQ150 단독 — B3/… |
-| 1931 | L-RP-20260923_155015 | overlay_regime | C | RF_PAR_B3_13_13 충실구현: 등급 C. 논문기준 SR 0.67 vs 15bps SR 0.75. [무인 병렬 B3_13] 소형주 하위 1/3 — B3/u… |
-| 1932 | L-RP-20260923_155016 | overlay_regime | C | RF_PAR_B3_14_13 충실구현: 등급 C. 논문기준 SR 0.74 vs 15bps SR 0.80. [무인 병렬 B3_14] 대형주 상위 1/3 — B3/u… |
-| 1933 | L-RP-20260923_155018 | overlay_regime | B | RF_PAR_B3_15_ 충실구현: 등급 B. 논문기준 SR 0.81 vs 15bps SR 0.88. [무인 병렬 B3_15] 섹터 중립 — B3/universe… |
-| 1934 | L-RP-20260923_155021 | overlay_regime | B | RF_PAR_B3_12_K200 충실구현: 등급 B. 논문기준 SR 0.88 vs 15bps SR 0.95. [무인 병렬 B3_12] K200 단독 — B3/un… |
-| 1935 | L-RP-20260923_160546 | overlay_regime | C | RF_PAR_B6_34_k30 충실구현: 등급 C. 논문기준 SR 0.67 vs 15bps SR 0.79. [무인 병렬 B6_34] 분기(k=3 · 위상 0) —… |
-| 1936 | L-RP-20260923_160550 | overlay_regime | B | RF_PAR_B6_32_k20 충실구현: 등급 B. 논문기준 SR 0.87 vs 15bps SR 0.94. [무인 병렬 B6_32] 격월(k=2 · 위상 0) —… |
-| 1937 | L-RP-20260923_160552 | overlay_regime | B | RF_PAR_B6_33_k21 충실구현: 등급 B. 논문기준 SR 0.76 vs 15bps SR 0.82. [무인 병렬 B6_33] 격월(k=2 · 위상 1) —… |
-| 1938 | L-RP-20260923_160621 | overlay_regime | B | RF_PAR_B6_42_3nmax 충실구현: 등급 B. 논문기준 SR 0.99 vs 15bps SR 1.04. [무인 병렬 B6_42] 랭크 버퍼(3×n_max … |
-| 1939 | L-RP-20260923_160622 | overlay_regime | B | RF_PAR_B6_36_2nmax 충실구현: 등급 B. 논문기준 SR 1.05 vs 15bps SR 1.08. [무인 병렬 B6_36] 랭크 버퍼(2×n_max … |
-| 1940 | L-RP-20260923_162011 | overlay_regime | C | RF_PAR_B4_22_LOO 충실구현: 등급 C. 논문기준 SR 0.78 vs 15bps SR 0.76. [무인 병렬 B4_22] 팩터 제외(LOO) — B4/… |
+| 845 | L-RP-20260830_095622 | ? | F | RF_PAR_B4_17_LOO 충실구현: 등급 F. 논문기준 SR 0.16 vs 15bps SR 0.33. [무인 병렬 B4_17] 팩터 제외(LOO) — B4/… |
+| 846 | L-RP-20260830_100417 | liquidity | C | RF_PAR_B4_18_LOO 충실구현: 등급 C. 논문기준 SR -0.09 vs 15bps SR 0.13. [무인 병렬 B4_18] 비중 제외(LOO) — B4… |
+| 847 | L-RP-20260830_100418 | quality_profitability | C | RF_PAR_B4_20_ 충실구현: 등급 C. 논문기준 SR 0.55 vs 15bps SR 0.67. [무인 병렬 B4_20] 승자 요소 + 차순위 팩터 — B4… |
+| 848 | L-RP-20260830_100425 | liquidity | C | RF_PAR_B4_19_LOO 충실구현: 등급 C. 논문기준 SR 0.49 vs 15bps SR 0.64. [무인 병렬 B4_19] 유니버스 제외(LOO) — B… |
+| 849 | L-RP-20260830_155407 | low_vol | F | RF_PAR_B1_3_sigma60 충실구현: 등급 F. 논문기준 SR 0.03 vs 15bps SR 0.14. [무인 병렬 B1_3] 저변동 sigma60 — … |
+| 850 | L-RP-20260830_160021 | liquidity | B | RF_PAR_B1_5_Amihud 충실구현: 등급 B. 논문기준 SR 0.54 vs 15bps SR 0.69. [무인 병렬 B1_5] 비유동 Amihud — B1… |
+| 851 | L-RP-20260830_160028 | quality_profitability | C | RF_PAR_B1_2_GPA 충실구현: 등급 C. 논문기준 SR 0.34 vs 15bps SR 0.54. [무인 병렬 B1_2] 수익성 GP/A — B1/mult… |
+| 852 | L-RP-20260830_160031 | value | F | RF_PAR_B1_1_BM 충실구현: 등급 F. 논문기준 SR 0.17 vs 15bps SR 0.36. [무인 병렬 B1_1] 가치 B/M — B1/multifa… |
+| 853 | L-RP-20260830_160038 | earnings_event | C | RF_PAR_B1_4_3m 충실구현: 등급 C. 논문기준 SR 0.13 vs 15bps SR 0.34. [무인 병렬 B1_4] 이익수정 3m — B1/multif… |
+| 854 | L-RP-20260830_165024 | liquidity | C | RF_PAR_B2_7_entropyentropy 충실구현: 등급 C. 논문기준 SR 0.45 vs 15bps SR 0.57. [무인 병렬 B2_7] entropy… |
+| 855 | L-RP-20260830_165030 | liquidity | F | RF_PAR_B2_6_cvartailaware 충실구현: 등급 F. 논문기준 SR 0.43 vs 15bps SR 0.54. [무인 병렬 B2_6] cvar(tai… |
+| 856 | L-RP-20260830_165030_02 | liquidity | F | RF_PAR_B2_10_SchurDampingoptimizer 충실구현: 등급 F. 논문기준 SR 0.36 vs 15bps SR 0.45. [무인 병렬 B2_10… |
+| 857 | L-RP-20260830_165031 | liquidity | F | RF_PAR_B2_8_factorrpriskparity 충실구현: 등급 F. 논문기준 SR 0.44 vs 15bps SR 0.54. [무인 병렬 B2_8] fac… |
+| 858 | L-RP-20260830_165034 | low_vol | F | RF_PAR_B2_9_ivolriskbased 충실구현: 등급 F. 논문기준 SR 0.42 vs 15bps SR 0.53. [무인 병렬 B2_9] ivol(ris… |
+| 859 | L-RP-20260830_184713 | liquidity | C | RF_PAR_B3_14_13 충실구현: 등급 C. 논문기준 SR 0.46 vs 15bps SR 0.62. [무인 병렬 B3_14] 대형주(시총 상위 1/3) — … |
+| 860 | L-RP-20260830_184714 | liquidity | B | RF_PAR_B3_11_ 충실구현: 등급 B. 논문기준 SR 0.54 vs 15bps SR 0.69. [무인 병렬 B3_11] 지수 멤버십 해제 — B3/univ… |
+| 861 | L-RP-20260830_184717 | liquidity | B | RF_PAR_B3_12_KOSPI200 충실구현: 등급 B. 논문기준 SR 0.59 vs 15bps SR 0.73. [무인 병렬 B3_12] KOSPI200 단독… |
+| 862 | L-RP-20260830_184724 | liquidity | C | RF_PAR_B3_15_ 충실구현: 등급 C. 논문기준 SR 0.30 vs 15bps SR 0.48. [무인 병렬 B3_15] 섹터 중립 — B3/universe… |
+| 863 | L-RP-20260830_184732 | liquidity | C | RF_PAR_B3_13_13 충실구현: 등급 C. 논문기준 SR 0.32 vs 15bps SR 0.54. [무인 병렬 B3_13] 소형주(시총 하위 1/3) — … |
+| 864 | L-RP-20260830_194215 | ? | F | RF_PAR_B4_17_LOO 충실구현: 등급 F. 논문기준 SR 0.23 vs 15bps SR 0.36. [무인 병렬 B4_17] 팩터 제외(LOO) — B4/… |
+| 865 | L-RP-20260830_194914 | liquidity | B | RF_PAR_B4_18_LOO 충실구현: 등급 B. 논문기준 SR 0.59 vs 15bps SR 0.73. [무인 병렬 B4_18] 비중 제외(LOO) — B4/… |
+| 866 | L-RP-20260830_194934 | liquidity | F | RF_PAR_B4_16_ 충실구현: 등급 F. 논문기준 SR 0.35 vs 15bps SR 0.47. [무인 병렬 B4_16] 전 요소 결합 — B4/combin… |
+| 867 | L-RP-20260830_194939 | liquidity | C | RF_PAR_B4_19_LOO 충실구현: 등급 C. 논문기준 SR 0.45 vs 15bps SR 0.57. [무인 병렬 B4_19] 유니버스 제외(LOO) — B… |
+| 868 | L-RP-20260830_195544 | liquidity | C | RF_PAR_B4_20_3 충실구현: 등급 C. 논문기준 SR 0.50 vs 15bps SR 0.60. [무인 병렬 B4_20] 3팩터(승자+차순위) — B4/c… |
+| 869 | L-RP-20260830_201656 | overlay_regime | F | RF_PAR_B5_23_ 충실구현: 등급 F. 논문기준 SR 0.33 vs 15bps SR 0.42. [무인 병렬 B5_23] 마할라노비스 난기류 게이트 — B5… |
+| 870 | L-RP-20260830_201656 | overlay_regime | F | RF_PAR_B5_25_x 충실구현: 등급 F. 논문기준 SR 0.22 vs 15bps SR 0.32. [무인 병렬 B5_25] 변동성 x 낙폭 결합 — B5/r… |
+| 871 | L-RP-20260830_201657 | overlay_regime | F | RF_PAR_B5_22_HARRV 충실구현: 등급 F. 논문기준 SR 0.34 vs 15bps SR 0.45. [무인 병렬 B5_22] HAR-RV 예측 타게팅 … |
+| 872 | L-RP-20260830_201658 | overlay_regime | F | RF_PAR_B5_21_ 충실구현: 등급 F. 논문기준 SR 0.31 vs 15bps SR 0.42. [무인 병렬 B5_21] 실현변동성 타게팅 — B5/risk… |
+| 873 | L-RP-20260830_201659 | ml_complexity | F | RF_PAR_B5_24_ML 충실구현: 등급 F. 논문기준 SR 0.33 vs 15bps SR 0.44. [무인 병렬 B5_24] ML 꼬리위험 게이트(로지스틱)… |
+| 874 | L-RP-20260830_203323 | overlay_regime | F | RF_PAR_B5_21_ddbrakeqdrawdown 충실구현: 등급 F. 논문기준 SR 0.23 vs 15bps SR 0.34. [무인 병렬 B5_21] dd_… |
+| 875 | L-RP-20260830_203323 | overlay_regime | F | RF_PAR_B5_22_volxddcombo 충실구현: 등급 F. 논문기준 SR 0.25 vs 15bps SR 0.34. [무인 병렬 B5_22] vol_x_dd… |
+| 876 | L-RP-20260830_203328 | overlay_regime | F | RF_PAR_B5_23_turbulencestatemultivar 충실구현: 등급 F. 논문기준 SR 0.33 vs 15bps SR 0.42. [무인 병렬 B5_… |
+| 877 | L-RP-20260830_203329 | overlay_regime | F | RF_PAR_B5_25_volmedianvoltarget 충실구현: 등급 F. 논문기준 SR 0.34 vs 15bps SR 0.44. [무인 병렬 B5_25] v… |
+| 878 | L-RP-20260830_203331 | ml_complexity | F | RF_PAR_B5_24_mltailgateml 충실구현: 등급 F. 논문기준 SR 0.33 vs 15bps SR 0.44. [무인 병렬 B5_24] ml_tail… |
+| 879 | L-RP-20260830_232402 | low_vol | F | RF_PAR_B1_3_sigma60 충실구현: 등급 F. 논문기준 SR 0.36 vs 15bps SR 0.43. 저변동 sigma60 |
+| 880 | L-RP-20260830_233012 | liquidity | B | RF_PAR_B1_5_Amihud 충실구현: 등급 B. 논문기준 SR 0.54 vs 15bps SR 0.69. 비유동 Amihud |
+| 881 | L-RP-20260830_233013 | value | C | RF_PAR_B1_1_BM 충실구현: 등급 C. 논문기준 SR 0.41 vs 15bps SR 0.55. 가치 B/M |
+| 882 | L-RP-20260830_233014 | quality_profitability | C | RF_PAR_B1_2_GPA 충실구현: 등급 C. 논문기준 SR 0.32 vs 15bps SR 0.49. 수익성 GP/A |
+| 883 | L-RP-20260830_233015 | ? | C | RF_PAR_B1_4_3m 충실구현: 등급 C. 논문기준 SR 0.30 vs 15bps SR 0.44. 이익수정 3m |
+| 884 | L-RP-20260830_235311 | low_vol | F | RF_PAR_B2_9_ivolriskbased 충실구현: 등급 F. 논문기준 SR 0.42 vs 15bps SR 0.52. ivol(risk_based) |
+| 885 | L-RP-20260830_235311 | ? | F | RF_PAR_B2_8_factorrpriskparity 충실구현: 등급 F. 논문기준 SR 0.43 vs 15bps SR 0.53. factor_rp(risk_p… |
+| 886 | L-RP-20260830_235311 | ? | F | RF_PAR_B2_6_cvartailaware 충실구현: 등급 F. 논문기준 SR 0.42 vs 15bps SR 0.52. cvar(tail_aware) |
+| 887 | L-RP-20260830_235311 | ? | F | RF_PAR_B2_7_entropyentropy 충실구현: 등급 F. 논문기준 SR 0.41 vs 15bps SR 0.53. entropy(entropy) |
+| 888 | L-RP-20260830_235311 | ? | F | RF_PAR_B2_10_SchurDampingoptimizer 충실구현: 등급 F. 논문기준 SR 0.32 vs 15bps SR 0.42. SchurDamping… |
+| 889 | L-RP-20260831_001552 | ? | B | RF_PAR_B3_12_KOSPI200 충실구현: 등급 B. 논문기준 SR 0.54 vs 15bps SR 0.69. KOSPI200 단독 |
+| 890 | L-RP-20260831_001552 | ? | C | RF_PAR_B3_14_13 충실구현: 등급 C. 논문기준 SR 0.48 vs 15bps SR 0.62. 대형주(시총 상위 1/3) |
+| 891 | L-RP-20260831_001559 | ? | C | RF_PAR_B3_15_ 충실구현: 등급 C. 논문기준 SR 0.29 vs 15bps SR 0.46. 섹터 중립 |
+| 892 | L-RP-20260831_001608 | size | C | RF_PAR_B3_13_13 충실구현: 등급 C. 논문기준 SR 0.32 vs 15bps SR 0.52. 소형주(시총 하위 1/3) |
+| 893 | L-RP-20260831_081014 | ? | F | RF_PAR_B4_17_LOO 충실구현: 등급 F. 논문기준 SR 0.35 vs 15bps SR 0.47. 팩터 제외(LOO) |
+| 894 | L-RP-20260831_081709 | ? | B | RF_PAR_B4_18_LOO 충실구현: 등급 B. 논문기준 SR 0.54 vs 15bps SR 0.69. 비중 제외(LOO) |
+| 895 | L-RP-20260831_081744 | ? | F | RF_PAR_B4_16_ 충실구현: 등급 F. 논문기준 SR 0.41 vs 15bps SR 0.53. 전 요소 결합 |
+| 896 | L-RP-20260831_081747 | ? | C | RF_PAR_B4_19_LOO 충실구현: 등급 C. 논문기준 SR 0.48 vs 15bps SR 0.60. 유니버스 제외(LOO) |
+| 897 | L-RP-20260831_082351 | ? | C | RF_PAR_B4_20_3 충실구현: 등급 C. 논문기준 SR 0.52 vs 15bps SR 0.62. 3팩터(승자+차순위) |
+| 898 | L-RP-20260831_092632 | low_vol | F | RF_PAR_B1_3_sigma60 충실구현: 등급 F. 논문기준 SR 0.36 vs 15bps SR 0.43. 저변동 sigma60 |
+| 899 | L-RP-20260831_093239 | quality_profitability | C | RF_PAR_B1_2_GPA 충실구현: 등급 C. 논문기준 SR 0.32 vs 15bps SR 0.49. 수익성 GP/A |
+| 900 | L-RP-20260831_093239 | ? | C | RF_PAR_B1_4_3m 충실구현: 등급 C. 논문기준 SR 0.30 vs 15bps SR 0.44. 이익수정 3m |
+| 901 | L-RP-20260831_093239 | value | C | RF_PAR_B1_1_BM 충실구현: 등급 C. 논문기준 SR 0.41 vs 15bps SR 0.55. 가치 B/M |
+| 902 | L-RP-20260831_103933 | low_vol | F | RF_PAR_B2_9_ivolriskbased 충실구현: 등급 F. 논문기준 SR 0.35 vs 15bps SR 0.46. ivol(risk_based) |
+| 903 | L-RP-20260831_103933 | ? | F | RF_PAR_B2_7_entropyentropy 충실구현: 등급 F. 논문기준 SR 0.35 vs 15bps SR 0.47. entropy(entropy) |
+| 904 | L-RP-20260831_103933 | ? | F | RF_PAR_B2_6_cvartailaware 충실구현: 등급 F. 논문기준 SR 0.35 vs 15bps SR 0.46. cvar(tail_aware) |
+| 905 | L-RP-20260831_103933 | ? | F | RF_PAR_B2_8_factorrpriskparity 충실구현: 등급 F. 논문기준 SR 0.36 vs 15bps SR 0.47. factor_rp(risk_p… |
+| 906 | L-RP-20260831_103933 | ? | F | RF_PAR_B2_10_SchurDampingoptimizer 충실구현: 등급 F. 논문기준 SR 0.25 vs 15bps SR 0.35. SchurDamping… |
+| 907 | L-RP-20260831_105400 | ? | C | RF_PAR_B3_11_KOSDAQ150 충실구현: 등급 C. 논문기준 SR 0.32 vs 15bps SR 0.58. KOSDAQ150 단독 |
+| 908 | L-RP-20260831_105410 | ? | C | RF_PAR_B3_14_13 충실구현: 등급 C. 논문기준 SR 0.46 vs 15bps SR 0.62. 대형주(시총 상위 1/3) |
+| 909 | L-RP-20260831_105422 | ? | C | RF_PAR_B3_15_ 충실구현: 등급 C. 논문기준 SR 0.30 vs 15bps SR 0.48. 섹터 중립 |
+| 910 | L-RP-20260831_105432 | size | C | RF_PAR_B3_13_13 충실구현: 등급 C. 논문기준 SR 0.32 vs 15bps SR 0.54. 소형주(시총 하위 1/3) |
+| 911 | L-RP-20260831_111014 | ? | B | RF_PAR_B4_19_LOO 충실구현: 등급 B. 논문기준 SR 0.54 vs 15bps SR 0.69. 유니버스 제외(LOO) |
+| 912 | L-RP-20260831_111014 | ? | B | RF_PAR_B4_17_LOO 충실구현: 등급 B. 논문기준 SR 0.54 vs 15bps SR 0.69. 팩터 제외(LOO) |
+| 913 | L-RP-20260831_111014 | ? | B | RF_PAR_B4_18_LOO 충실구현: 등급 B. 논문기준 SR 0.54 vs 15bps SR 0.69. 비중 제외(LOO) |
+| 914 | L-RP-20260831_111015 | ? | B | RF_PAR_B4_16_ 충실구현: 등급 B. 논문기준 SR 0.54 vs 15bps SR 0.69. 전 요소 결합 |
+| 915 | L-RP-20260831_111620 | ? | F | RF_PAR_B4_20_3 충실구현: 등급 F. 논문기준 SR 0.18 vs 15bps SR 0.34. 3팩터(승자+차순위) |
+| 916 | L-RP-20260831_113448 | ? | F | RF_PAR_B4_17_LOO 충실구현: 등급 F. 논문기준 SR 0.32 vs 15bps SR 0.44. 팩터 제외(LOO) |
+| 917 | L-RP-20260831_114119 | ? | F | RF_PAR_B4_18_LOO 충실구현: 등급 F. 논문기준 SR 0.10 vs 15bps SR 0.26. 비중 제외(LOO) |
+| 918 | L-RP-20260831_114150 | ? | C | RF_PAR_B4_16_ 충실구현: 등급 C. 논문기준 SR 0.44 vs 15bps SR 0.55. 전 요소 결합 |
+| 919 | L-RP-20260831_114157 | ? | C | RF_PAR_B4_19_LOO 충실구현: 등급 C. 논문기준 SR 0.54 vs 15bps SR 0.65. 유니버스 제외(LOO) |
+| 920 | L-RP-20260831_114755 | ? | F | RF_PAR_B4_20_3 충실구현: 등급 F. 논문기준 SR 0.40 vs 15bps SR 0.50. 3팩터(승자+차순위) |
+| 921 | L-RP-20260831_132010 | overlay_regime | F | RF_PAR_B5_21_ddbrakeqdrawdown 충실구현: 등급 F. 논문기준 SR 0.23 vs 15bps SR 0.34. dd_brake_q(drawdo… |
+| 922 | L-RP-20260831_132010 | ? | F | RF_PAR_B5_23_turbulencestatemultivar 충실구현: 등급 F. 논문기준 SR 0.33 vs 15bps SR 0.42. turbulence… |
+| 923 | L-RP-20260831_132010 | ? | F | RF_PAR_B5_22_volxddcombo 충실구현: 등급 F. 논문기준 SR 0.27 vs 15bps SR 0.36. vol_x_dd(combo) |
+| 924 | L-RP-20260831_132012 | ? | F | RF_PAR_B5_25_volmedianvoltarget 충실구현: 등급 F. 논문기준 SR 0.34 vs 15bps SR 0.45. vol_median(vol_… |
+| 925 | L-RP-20260831_132012 | ml_complexity | F | RF_PAR_B5_24_mltailgateml 충실구현: 등급 F. 논문기준 SR 0.33 vs 15bps SR 0.44. ml_tail_gate(ml) |
+| 926 | L-RP-20260831_170534 | value | F | RF_PAR_B1_1_BM 충실구현: 등급 F. 논문기준 SR 0.06 vs 15bps SR 0.28. [무인 병렬 B1_1] 가치 B/M — B1/multifa… |
+| 927 | L-RP-20260831_171914 | low_vol | C | RF_PAR_B2_9_ivolriskbased 충실구현: 등급 C. 논문기준 SR 0.44 vs 15bps SR 0.59. [무인 병렬 B2_9] ivol(ris… |
+| 928 | L-RP-20260831_171914 | ? | C | RF_PAR_B2_7_entropyentropy 충실구현: 등급 C. 논문기준 SR 0.36 vs 15bps SR 0.52. [무인 병렬 B2_7] entropy… |
+| 929 | L-RP-20260831_171914 | ? | C | RF_PAR_B2_6_cvartailaware 충실구현: 등급 C. 논문기준 SR 0.43 vs 15bps SR 0.58. [무인 병렬 B2_6] cvar(tai… |
+| 930 | L-RP-20260831_171914 | ? | C | RF_PAR_B2_8_factorrpriskparity 충실구현: 등급 C. 논문기준 SR 0.43 vs 15bps SR 0.58. [무인 병렬 B2_8] fac… |
+| 931 | L-RP-20260831_171914 | ? | F | RF_PAR_B2_10_SchurDampingoptimizer 충실구현: 등급 F. 논문기준 SR 0.29 vs 15bps SR 0.44. [무인 병렬 B2_10… |
+| 932 | L-RP-20260831_173734 | low_vol | F | RF_PAR_B1_3_sigma60 충실구현: 등급 F. 논문기준 SR 0.25 vs 15bps SR 0.39. [무인 병렬 B1_3] 저변동 sigma60 — … |
+| 933 | L-RP-20260831_174335 | liquidity | C | RF_PAR_B1_5_Amihud 충실구현: 등급 C. 논문기준 SR 0.21 vs 15bps SR 0.46. [무인 병렬 B1_5] 비유동 Amihud — B1… |
+| 934 | L-RP-20260831_174336 | quality_profitability | C | RF_PAR_B1_2_GPA 충실구현: 등급 C. 논문기준 SR 0.06 vs 15bps SR 0.29. [무인 병렬 B1_2] 수익성 GP/A — B1/mult… |
+| 935 | L-RP-20260831_174338 | value | F | RF_PAR_B1_1_BM 충실구현: 등급 F. 논문기준 SR 0.06 vs 15bps SR 0.28. [무인 병렬 B1_1] 가치 B/M — B1/multifa… |
+| 936 | L-RP-20260831_174344 | earnings_event | F | RF_PAR_B1_4_3m 충실구현: 등급 F. 논문기준 SR -0.11 vs 15bps SR 0.10. [무인 병렬 B1_4] 이익수정 3m — B1/multi… |
+| 937 | L-RP-20260831_180111 | liquidity | C | RF_PAR_B2_6_cvartailaware 충실구현: 등급 C. 논문기준 SR 0.42 vs 15bps SR 0.55. [무인 병렬 B2_6] cvar(tai… |
+| 938 | L-RP-20260831_180111 | liquidity | C | RF_PAR_B2_7_entropyentropy 충실구현: 등급 C. 논문기준 SR 0.38 vs 15bps SR 0.53. [무인 병렬 B2_7] entropy… |
+| 939 | L-RP-20260831_180111 | liquidity | C | RF_PAR_B2_8_factorrpriskparity 충실구현: 등급 C. 논문기준 SR 0.43 vs 15bps SR 0.56. [무인 병렬 B2_8] fac… |
+| 940 | L-RP-20260831_180111 | low_vol | C | RF_PAR_B2_9_ivolriskbased 충실구현: 등급 C. 논문기준 SR 0.42 vs 15bps SR 0.55. [무인 병렬 B2_9] ivol(ris… |
+| 941 | L-RP-20260831_180111 | liquidity | F | RF_PAR_B2_10_SchurDampingoptimizer 충실구현: 등급 F. 논문기준 SR 0.07 vs 15bps SR 0.22. [무인 병렬 B2_10… |
+| 942 | L-RP-20260831_181606 | liquidity | C | RF_PAR_B3_14_13 충실구현: 등급 C. 논문기준 SR 0.29 vs 15bps SR 0.52. [무인 병렬 B3_14] 대형주(시총 상위 1/3) — … |
+| 943 | L-RP-20260831_181606 | liquidity | C | RF_PAR_B3_11_KOSDAQ150 충실구현: 등급 C. 논문기준 SR 0.09 vs 15bps SR 0.35. [무인 병렬 B3_11] KOSDAQ150 … |
+| 944 | L-RP-20260831_181610 | liquidity | C | RF_PAR_B3_12_KOSPI200 충실구현: 등급 C. 논문기준 SR 0.15 vs 15bps SR 0.39. [무인 병렬 B3_12] KOSPI200 단독… |
+| 945 | L-RP-20260831_181622 | liquidity | C | RF_PAR_B3_13_13 충실구현: 등급 C. 논문기준 SR 0.16 vs 15bps SR 0.45. [무인 병렬 B3_13] 소형주(시총 하위 1/3) — … |
+| 946 | L-RP-20260831_181625 | liquidity | C | RF_PAR_B3_15_ 충실구현: 등급 C. 논문기준 SR 0.13 vs 15bps SR 0.39. [무인 병렬 B3_15] 섹터 중립 — B3/universe… |
+| 947 | L-RP-20260831_182302 | ? | C | RF_PAR_B4_17_LOO 충실구현: 등급 C. 논문기준 SR 0.34 vs 15bps SR 0.47. [무인 병렬 B4_17] 팩터 제외(LOO) — B4/… |
+| 948 | L-RP-20260831_182919 | liquidity | C | RF_PAR_B4_16_ 충실구현: 등급 C. 논문기준 SR 0.40 vs 15bps SR 0.53. [무인 병렬 B4_16] 전 요소 결합 — B4/combin… |
+| 949 | L-RP-20260831_183534 | liquidity | F | RF_PAR_B4_20_3 충실구현: 등급 F. 논문기준 SR 0.41 vs 15bps SR 0.52. [무인 병렬 B4_20] 3팩터(승자+차순위) — B4/c… |
+| 950 | L-RP-20260831_190204 | overlay_regime | F | RF_PAR_B5_21_ddbrakeqdrawdown 충실구현: 등급 F. 논문기준 SR 0.20 vs 15bps SR 0.30. [무인 병렬 B5_21] dd_… |
+| 951 | L-RP-20260831_190204 | overlay_regime | F | RF_PAR_B5_22_volxddcombo 충실구현: 등급 F. 논문기준 SR 0.23 vs 15bps SR 0.32. [무인 병렬 B5_22] vol_x_dd… |
+| 952 | L-RP-20260831_190204 | overlay_regime | F | RF_PAR_B5_25_volmedianvoltarget 충실구현: 등급 F. 논문기준 SR 0.38 vs 15bps SR 0.49. [무인 병렬 B5_25] v… |
+| 953 | L-RP-20260831_190204 | overlay_regime | F | RF_PAR_B5_23_turbulencestatemultivar 충실구현: 등급 F. 논문기준 SR 0.35 vs 15bps SR 0.45. [무인 병렬 B5_… |
+| 954 | L-RP-20260831_190209 | ml_complexity | F | RF_PAR_B5_24_mltailgateml 충실구현: 등급 F. 논문기준 SR 0.36 vs 15bps SR 0.48. [무인 병렬 B5_24] ml_tail… |
+| 955 | L-RP-20260831_205211 | low_vol | F | RF_PAR_B1_3_sigma60 충실구현: 등급 F. 논문기준 SR 0.15 vs 15bps SR 0.27. [무인 병렬 B1_3] 저변동 sigma60 — … |
+| 956 | L-RP-20260831_205741 | liquidity | C | RF_PAR_B1_5_Amihud 충실구현: 등급 C. 논문기준 SR 0.36 vs 15bps SR 0.62. [무인 병렬 B1_5] 비유동 Amihud — B1… |
+| 957 | L-RP-20260831_205749 | quality_profitability | C | RF_PAR_B1_2_GPA 충실구현: 등급 C. 논문기준 SR 0.25 vs 15bps SR 0.47. [무인 병렬 B1_2] 수익성 GP/A — B1/mult… |
+| 958 | L-RP-20260831_205749_02 | value | C | RF_PAR_B1_1_BM 충실구현: 등급 C. 논문기준 SR 0.15 vs 15bps SR 0.37. [무인 병렬 B1_1] 가치 B/M — B1/multifa… |
+| 959 | L-RP-20260831_205756 | earnings_event | F | RF_PAR_B1_4_3m 충실구현: 등급 F. 논문기준 SR -0.02 vs 15bps SR 0.20. [무인 병렬 B1_4] 이익수정 3m — B1/multi… |
+| 960 | L-RP-20260831_211813 | liquidity | C | RF_PAR_B2_7_entropyentropy 충실구현: 등급 C. 논문기준 SR 0.51 vs 15bps SR 0.66. [무인 병렬 B2_7] entropy… |
+| 961 | L-RP-20260831_211813_02 | liquidity | F | RF_PAR_B2_10_SchurDampingoptimizer 충실구현: 등급 F. 논문기준 SR 0.35 vs 15bps SR 0.47. [무인 병렬 B2_10… |
+| 962 | L-RP-20260831_211816 | liquidity | C | RF_PAR_B2_8_factorrpriskparity 충실구현: 등급 C. 논문기준 SR 0.51 vs 15bps SR 0.64. [무인 병렬 B2_8] fac… |
+| 963 | L-RP-20260831_211816_02 | liquidity | C | RF_PAR_B2_6_cvartailaware 충실구현: 등급 C. 논문기준 SR 0.51 vs 15bps SR 0.65. [무인 병렬 B2_6] cvar(tai… |
+| 964 | L-RP-20260831_211817 | low_vol | C | RF_PAR_B2_9_ivolriskbased 충실구현: 등급 C. 논문기준 SR 0.49 vs 15bps SR 0.63. [무인 병렬 B2_9] ivol(ris… |
+| 965 | L-RP-20260831_213321 | liquidity | C | RF_PAR_B3_11_KOSDAQ150 충실구현: 등급 C. 논문기준 SR 0.40 vs 15bps SR 0.65. [무인 병렬 B3_11] KOSDAQ150 … |
+| 966 | L-RP-20260831_213334 | liquidity | C | RF_PAR_B3_14_13 충실구현: 등급 C. 논문기준 SR 0.34 vs 15bps SR 0.56. [무인 병렬 B3_14] 대형주(시총 상위 1/3) — … |
+| 967 | L-RP-20260831_213344 | liquidity | C | RF_PAR_B3_12_KOSPI200 충실구현: 등급 C. 논문기준 SR 0.13 vs 15bps SR 0.34. [무인 병렬 B3_12] KOSPI200 단독… |
+| 968 | L-RP-20260831_213349 | liquidity | F | RF_PAR_B3_15_ 충실구현: 등급 F. 논문기준 SR -0.10 vs 15bps SR 0.09. [무인 병렬 B3_15] 섹터 중립 — B3/univers… |
+| 969 | L-RP-20260831_213350 | liquidity | C | RF_PAR_B3_13_13 충실구현: 등급 C. 논문기준 SR 0.09 vs 15bps SR 0.34. [무인 병렬 B3_13] 소형주(시총 하위 1/3) — … |
+| 970 | L-RP-20260831_222105 | overlay_regime | F | RF_PAR_B5_22_volxddcombo 충실구현: 등급 F. 논문기준 SR 0.36 vs 15bps SR 0.45. [무인 병렬 B5_22] vol_x_dd… |
+| 971 | L-RP-20260831_222105 | overlay_regime | F | RF_PAR_B5_21_ddbrakeqdrawdown 충실구현: 등급 F. 논문기준 SR 0.32 vs 15bps SR 0.43. [무인 병렬 B5_21] dd_… |
+| 972 | L-RP-20260831_222107 | overlay_regime | C | RF_PAR_B5_23_turbulencestatemultivar 충실구현: 등급 C. 논문기준 SR 0.44 vs 15bps SR 0.53. [무인 병렬 B5_… |
+| 973 | L-RP-20260831_222111 | ml_complexity | C | RF_PAR_B5_24_mltailgateml 충실구현: 등급 C. 논문기준 SR 0.48 vs 15bps SR 0.60. [무인 병렬 B5_24] ml_tail… |
+| 974 | L-RP-20260831_222113 | overlay_regime | C | RF_PAR_B5_25_volmedianvoltarget 충실구현: 등급 C. 논문기준 SR 0.47 vs 15bps SR 0.58. [무인 병렬 B5_25] v… |
+| 975 | L-RP-20260901_151625 | low_vol | F | RF_PAR_B1_3_sigma60 충실구현: 등급 F. 논문기준 SR 0.05 vs 15bps SR 0.16. [무인 병렬 B1_3] 저변동 sigma60 — … |
+| 976 | L-RP-20260901_152628 | quality_profitability | C | RF_PAR_B1_2_GPA 충실구현: 등급 C. 논문기준 SR 0.47 vs 15bps SR 0.55. [무인 병렬 B1_2] 수익성 GP/A — B1/mult… |
+| 977 | L-RP-20260901_152628 | liquidity | C | RF_PAR_B1_5_Amihud 충실구현: 등급 C. 논문기준 SR 0.41 vs 15bps SR 0.53. [무인 병렬 B1_5] 비유동 Amihud — B1… |
+| 978 | L-RP-20260901_152635 | value | C | RF_PAR_B1_1_BM 충실구현: 등급 C. 논문기준 SR 0.30 vs 15bps SR 0.47. [무인 병렬 B1_1] 가치 B/M — B1/multifa… |
+| 979 | L-RP-20260901_152708 | earnings_event | C | RF_PAR_B1_4_3m 충실구현: 등급 C. 논문기준 SR 0.44 vs 15bps SR 0.59. [무인 병렬 B1_4] 이익수정 3m — B1/multif… |
+| 980 | L-RP-20260901_162642 | ? | F | RF_PAR_B2_7_entropyentropy 충실구현: 등급 F. 논문기준 SR 0.41 vs 15bps SR 0.51. entropy(entropy) |
+| 981 | L-RP-20260901_162642 | ? | F | RF_PAR_B2_8_factorrpriskparity 충실구현: 등급 F. 논문기준 SR 0.39 vs 15bps SR 0.48. factor_rp(risk_p… |
+| 982 | L-RP-20260901_162643 | ? | F | RF_PAR_B2_10_SchurDampingoptimizer 충실구현: 등급 F. 논문기준 SR 0.35 vs 15bps SR 0.43. SchurDamping… |
+| 983 | L-RP-20260901_162645 | low_vol | F | RF_PAR_B2_9_ivolriskbased 충실구현: 등급 F. 논문기준 SR 0.39 vs 15bps SR 0.48. ivol(risk_based) |
+| 984 | L-RP-20260901_162647 | ? | F | RF_PAR_B2_6_cvartailaware 충실구현: 등급 F. 논문기준 SR 0.38 vs 15bps SR 0.48. cvar(tail_aware) |
+| 985 | L-RP-20260901_165403 | ? | C | RF_PAR_B3_11_KOSDAQ150 충실구현: 등급 C. 논문기준 SR 0.33 vs 15bps SR 0.49. KOSDAQ150 단독 |
+| 986 | L-RP-20260901_165432 | ? | F | RF_PAR_B3_14_13 충실구현: 등급 F. 논문기준 SR 0.08 vs 15bps SR 0.24. 대형주(시총 상위 1/3) |
+| 987 | L-RP-20260901_165501 | size | C | RF_PAR_B3_13_13 충실구현: 등급 C. 논문기준 SR 0.31 vs 15bps SR 0.48. 소형주(시총 하위 1/3) |
+| 988 | L-RP-20260901_165510 | ? | C | RF_PAR_B3_12_KOSPI200 충실구현: 등급 C. 논문기준 SR 0.25 vs 15bps SR 0.39. KOSPI200 단독 |
+| 989 | L-RP-20260901_165515 | ? | F | RF_PAR_B3_15_ 충실구현: 등급 F. 논문기준 SR 0.26 vs 15bps SR 0.40. 섹터 중립 |
+| 990 | L-RP-20260901_171759 | overlay_regime | F | RF_PAR_B5_17_volxddcombo 충실구현: 등급 F. 논문기준 SR 0.32 vs 15bps SR 0.40. [무인 병렬 B5_17] vol_x_dd… |
+| 991 | L-RP-20260901_171759 | overlay_regime | F | RF_PAR_B5_16_ddbrakeqdrawdown 충실구현: 등급 F. 논문기준 SR 0.31 vs 15bps SR 0.41. [무인 병렬 B5_16] dd_… |
+| 992 | L-RP-20260901_171802 | overlay_regime | F | RF_PAR_B5_18_turbulencestatemultivar 충실구현: 등급 F. 논문기준 SR 0.29 vs 15bps SR 0.38. [무인 병렬 B5_… |
+| 993 | L-RP-20260901_171810 | ml_complexity | F | RF_PAR_B5_19_mltailgateml 충실구현: 등급 F. 논문기준 SR 0.36 vs 15bps SR 0.46. [무인 병렬 B5_19] ml_tail… |
+| 994 | L-RP-20260901_171811 | overlay_regime | F | RF_PAR_B5_20_volmedianvoltarget 충실구현: 등급 F. 논문기준 SR 0.33 vs 15bps SR 0.42. [무인 병렬 B5_20] v… |
+| 995 | L-RP-20260902_132503 | ? | F | RF_PAR_B1_1_1liquidity 충실구현: 등급 F. 논문기준 SR 0.40 vs 15bps SR 0.52. 1팩터 직교(liquidity) |
+| 996 | L-RP-20260902_133524 | overlay_regime | F | RF_PAR_B1_2_2liquidityregime 충실구현: 등급 F. 논문기준 SR 0.48 vs 15bps SR 0.60. 2팩터 직교(liquidity+r… |
+| 997 | L-RP-20260902_134242 | overlay_regime | C | RF_PAR_B1_3_3liquidityqualityregime 충실구현: 등급 C. 논문기준 SR 0.63 vs 15bps SR 0.71. 3팩터 직교(liqu… |
+| 998 | L-RP-20260902_135009 | overlay_regime | C | RF_PAR_B1_4_4liquidityqualityregimecrowding 충실구현: 등급 C. 논문기준 SR 0.68 vs 15bps SR 0.75. 4팩터… |
+| 999 | L-RP-20260902_135540 | defense | C | RF_PAR_B1_5_5liquidityqualityregimecrowdingdefense 충실구현: 등급 C. 논문기준 SR 0.63 vs 15bps SR 0.… |
+| 1000 | L-RP-20260902_142951 | ? | C | RF_PAR_B2_8_factorrpriskparity 충실구현: 등급 C. 논문기준 SR 0.66 vs 15bps SR 0.73. factor_rp(risk_p… |
+| 1001 | L-RP-20260902_142951 | ? | C | RF_PAR_B2_10_SchurDampingoptimizer 충실구현: 등급 C. 논문기준 SR 0.57 vs 15bps SR 0.71. SchurDamping… |
+| 1002 | L-RP-20260902_142951 | ? | C | RF_PAR_B2_7_entropyentropy 충실구현: 등급 C. 논문기준 SR 0.66 vs 15bps SR 0.74. entropy(entropy) |
+| 1003 | L-RP-20260902_142951 | ? | C | RF_PAR_B2_6_cvartailaware 충실구현: 등급 C. 논문기준 SR 0.66 vs 15bps SR 0.73. cvar(tail_aware) |
+| 1004 | L-RP-20260902_143008 | low_vol | C | RF_PAR_B2_9_ivolriskbased 충실구현: 등급 C. 논문기준 SR 0.65 vs 15bps SR 0.71. ivol(risk_based) |
+| 1005 | L-RP-20260902_144904 | ? | C | RF_PAR_B3_11_KOSDAQ150 충실구현: 등급 C. 논문기준 SR 0.56 vs 15bps SR 0.62. KOSDAQ150 단독 |
+| 1006 | L-RP-20260902_144933 | ? | F | RF_PAR_B3_12_KOSPI200 충실구현: 등급 F. 논문기준 SR 0.44 vs 15bps SR 0.54. KOSPI200 단독 |
+| 1007 | L-RP-20260902_144959 | ? | C | RF_PAR_B3_15_ 충실구현: 등급 C. 논문기준 SR 0.51 vs 15bps SR 0.61. 섹터 중립 |
+| 1008 | L-RP-20260902_145031 | ? | F | RF_PAR_B3_14_13 충실구현: 등급 F. 논문기준 SR 0.49 vs 15bps SR 0.60. 대형주(시총 상위 1/3) |
+| 1009 | L-RP-20260902_145114 | size | C | RF_PAR_B3_13_13 충실구현: 등급 C. 논문기준 SR 0.39 vs 15bps SR 0.51. 소형주(시총 하위 1/3) |
+| 1010 | L-RP-20260902_184900 | overlay_regime | C | RF_PAR_B5_16_ddbrakeqdrawdown 충실구현: 등급 C. 논문기준 SR 0.39 vs 15bps SR 0.48. dd_brake_q(drawdo… |
+| 1011 | L-RP-20260902_184904 | ? | C | RF_PAR_B5_18_turbulencestatemultivar 충실구현: 등급 C. 논문기준 SR 0.50 vs 15bps SR 0.63. turbulence… |
+| 1012 | L-RP-20260902_184911 | ml_complexity | C | RF_PAR_B5_19_mltailgateml 충실구현: 등급 C. 논문기준 SR 0.40 vs 15bps SR 0.51. ml_tail_gate(ml) |
+| 1013 | L-RP-20260902_184913 | ? | C | RF_PAR_B5_20_volmedianvoltarget 충실구현: 등급 C. 논문기준 SR 0.54 vs 15bps SR 0.63. vol_median(vol_… |
+| 1014 | L-RP-20260902_184915 | ? | C | RF_PAR_B5_17_volxddcombo 충실구현: 등급 C. 논문기준 SR 0.51 vs 15bps SR 0.59. vol_x_dd(combo) |
+| 1015 | L-RP-20260902_190528 | ? | F | RF_PAR_B4_22_LOO 충실구현: 등급 F. 논문기준 SR -0.14 vs 15bps SR 0.01. 팩터 제외(LOO) |
+| 1016 | L-RP-20260902_191200 | ? | C | RF_PAR_B4_21_4 충실구현: 등급 C. 논문기준 SR 0.38 vs 15bps SR 0.47. 전 요소 결합(4축) |
+| 1017 | L-RP-20260902_191214 | overlay_regime | C | RF_PAR_B4_25_LOO3 충실구현: 등급 C. 논문기준 SR 0.39 vs 15bps SR 0.51. 오버레이 제외(LOO) = 구 3축 전체결합 |
+| 1018 | L-RP-20260902_191216 | ? | F | RF_PAR_B4_24_LOO 충실구현: 등급 F. 논문기준 SR 0.53 vs 15bps SR 0.64. 유니버스 제외(LOO) |
+| 1019 | L-RP-20260902_193054 | ? | C | RF_PAR_B1_1_1value 충실구현: 등급 C. 논문기준 SR 0.46 vs 15bps SR 0.57. 1팩터 직교(value) |
+| 1020 | L-RP-20260902_193055 | ? | F | RF_PAR_B1_2_2valueaccrual 충실구현: 등급 F. 논문기준 SR 0.44 vs 15bps SR 0.55. 2팩터 직교(value+accrual) |
+| 1021 | L-RP-20260902_193118 | quality | C | RF_PAR_B1_3_3valuequalityaccrual 충실구현: 등급 C. 논문기준 SR 0.59 vs 15bps SR 0.66. 3팩터 직교(value+q… |
+| 1022 | L-RP-20260902_193232 | overlay_regime | C | RF_PAR_B1_4_4valuequalityregimeaccrual 충실구현: 등급 C. 논문기준 SR 0.58 vs 15bps SR 0.67. 4팩터 직교(v… |
+| 1023 | L-RP-20260902_193310 | overlay_regime | C | RF_PAR_B1_5_5valuequalityregimecrowdingaccrual 충실구현: 등급 C. 논문기준 SR 0.48 vs 15bps SR 0.58. … |
+| 1024 | L-RP-20260902_194543 | ? | C | RF_PAR_B2_10_SchurDampingoptimizer 충실구현: 등급 C. 논문기준 SR 0.49 vs 15bps SR 0.60. SchurDamping… |
+| 1025 | L-RP-20260902_194543 | ? | C | RF_PAR_B2_6_cvartailaware 충실구현: 등급 C. 논문기준 SR 0.56 vs 15bps SR 0.64. cvar(tail_aware) |
+| 1026 | L-RP-20260902_194543 | ? | C | RF_PAR_B2_7_entropyentropy 충실구현: 등급 C. 논문기준 SR 0.55 vs 15bps SR 0.64. entropy(entropy) |
+| 1027 | L-RP-20260902_194543 | low_vol | C | RF_PAR_B2_9_ivolriskbased 충실구현: 등급 C. 논문기준 SR 0.59 vs 15bps SR 0.66. ivol(risk_based) |
+| 1028 | L-RP-20260902_194543 | ? | C | RF_PAR_B2_8_factorrpriskparity 충실구현: 등급 C. 논문기준 SR 0.56 vs 15bps SR 0.64. factor_rp(risk_p… |
+| 1029 | L-RP-20260902_200228 | ? | C | RF_PAR_B3_11_KOSDAQ150 충실구현: 등급 C. 논문기준 SR 0.59 vs 15bps SR 0.67. KOSDAQ150 단독 |
+| 1030 | L-RP-20260902_200248 | ? | F | RF_PAR_B3_14_13 충실구현: 등급 F. 논문기준 SR 0.45 vs 15bps SR 0.52. 대형주(시총 상위 1/3) |
+| 1031 | L-RP-20260902_200316 | ? | F | RF_PAR_B3_12_KOSPI200 충실구현: 등급 F. 논문기준 SR 0.43 vs 15bps SR 0.53. KOSPI200 단독 |
+| 1032 | L-RP-20260902_200321 | size | C | RF_PAR_B3_13_13 충실구현: 등급 C. 논문기준 SR 0.55 vs 15bps SR 0.69. 소형주(시총 하위 1/3) |
+| 1033 | L-RP-20260902_200333 | ? | C | RF_PAR_B3_15_ 충실구현: 등급 C. 논문기준 SR 0.55 vs 15bps SR 0.65. 섹터 중립 |
+| 1034 | L-RP-20260902_201618 | ? | C | RF_PAR_B5_18_turbulencestatemultivar 충실구현: 등급 C. 논문기준 SR 0.53 vs 15bps SR 0.65. turbulence… |
+| 1035 | L-RP-20260902_201618 | overlay_regime | F | RF_PAR_B5_16_ddbrakeqdrawdown 충실구현: 등급 F. 논문기준 SR 0.50 vs 15bps SR 0.63. dd_brake_q(drawdo… |
+| 1036 | L-RP-20260902_201618 | ? | F | RF_PAR_B5_17_volxddcombo 충실구현: 등급 F. 논문기준 SR 0.54 vs 15bps SR 0.68. vol_x_dd(combo) |
+| 1037 | L-RP-20260902_201619 | ? | C | RF_PAR_B5_20_volmedianvoltarget 충실구현: 등급 C. 논문기준 SR 0.55 vs 15bps SR 0.67. vol_median(vol_… |
+| 1038 | L-RP-20260902_201620 | ml_complexity | C | RF_PAR_B5_19_mltailgateml 충실구현: 등급 C. 논문기준 SR 0.53 vs 15bps SR 0.66. ml_tail_gate(ml) |
+| 1039 | L-RP-20260902_203214 | ? | C | RF_PAR_B4_23_LOO 충실구현: 등급 C. 논문기준 SR 0.58 vs 15bps SR 0.65. 비중 제외(LOO) |
+| 1040 | L-RP-20260902_203328 | ? | C | RF_PAR_B4_24_LOO 충실구현: 등급 C. 논문기준 SR 0.54 vs 15bps SR 0.62. 유니버스 제외(LOO) |
+| 1041 | L-RP-20260902_213446 | ? | F | RF_PAR_B1_2_2riskgrowth 충실구현: 등급 F. 논문기준 SR 0.34 vs 15bps SR 0.45. 2팩터 직교(risk+growth) |
+| 1042 | L-RP-20260902_213446 | ? | C | RF_PAR_B1_1_1risk 충실구현: 등급 C. 논문기준 SR 0.57 vs 15bps SR 0.65. 1팩터 직교(risk) |
+| 1043 | L-RP-20260902_213553 | ? | F | RF_PAR_B1_3_3riskcrowdinggrowth 충실구현: 등급 F. 논문기준 SR 0.32 vs 15bps SR 0.44. 3팩터 직교(risk+cro… |
+| 1044 | L-RP-20260902_213611 | ? | F | RF_PAR_B1_4_4riskcrowdinggrowthliquidity 충실구현: 등급 F. 논문기준 SR 0.39 vs 15bps SR 0.49. 4팩터 직교… |
+| 1045 | L-RP-20260902_213629 | ? | F | RF_PAR_B1_5_5riskcrowdinggrowthvalueliquidity 충실구현: 등급 F. 논문기준 SR 0.22 vs 15bps SR 0.33. 5… |
+| 1046 | L-RP-20260902_215053 | low_vol | F | RF_PAR_B2_9_ivolriskbased 충실구현: 등급 F. 논문기준 SR 0.52 vs 15bps SR 0.60. ivol(risk_based) |
+| 1047 | L-RP-20260902_215053 | ? | F | RF_PAR_B2_8_factorrpriskparity 충실구현: 등급 F. 논문기준 SR 0.52 vs 15bps SR 0.60. factor_rp(risk_p… |
+| 1048 | L-RP-20260902_215053 | ? | F | RF_PAR_B2_7_entropyentropy 충실구현: 등급 F. 논문기준 SR 0.57 vs 15bps SR 0.64. entropy(entropy) |
+| 1049 | L-RP-20260902_215053 | ? | F | RF_PAR_B2_10_SchurDampingoptimizer 충실구현: 등급 F. 논문기준 SR 0.40 vs 15bps SR 0.49. SchurDamping… |
+| 1050 | L-RP-20260902_215053 | ? | F | RF_PAR_B2_6_cvartailaware 충실구현: 등급 F. 논문기준 SR 0.56 vs 15bps SR 0.64. cvar(tail_aware) |
+| 1051 | L-RP-20260902_215906 | ? | C | RF_PAR_B3_11_KOSDAQ150 충실구현: 등급 C. 논문기준 SR 0.80 vs 15bps SR 0.85. KOSDAQ150 단독 |
+| 1052 | L-RP-20260902_215906 | ? | F | RF_PAR_B3_14_13 충실구현: 등급 F. 논문기준 SR 0.33 vs 15bps SR 0.41. 대형주(시총 상위 1/3) |
+| 1053 | L-RP-20260902_215917 | ? | F | RF_PAR_B3_12_KOSPI200 충실구현: 등급 F. 논문기준 SR 0.42 vs 15bps SR 0.50. KOSPI200 단독 |
+| 1054 | L-RP-20260902_215925 | size | C | RF_PAR_B3_13_13 충실구현: 등급 C. 논문기준 SR 0.51 vs 15bps SR 0.63. 소형주(시총 하위 1/3) |
+| 1055 | L-RP-20260902_215932 | ? | C | RF_PAR_B3_15_ 충실구현: 등급 C. 논문기준 SR 0.58 vs 15bps SR 0.68. 섹터 중립 |
+| 1056 | L-RP-20260902_220557 | overlay_regime | C | RF_PAR_B5_16_ddbrakeqdrawdown 충실구현: 등급 C. 논문기준 SR 0.69 vs 15bps SR 0.78. dd_brake_q(drawdo… |
+| 1057 | L-RP-20260902_220557 | ? | C | RF_PAR_B5_17_volxddcombo 충실구현: 등급 C. 논문기준 SR 0.80 vs 15bps SR 0.90. vol_x_dd(combo) |
+| 1058 | L-RP-20260902_220557 | ? | C | RF_PAR_B5_18_turbulencestatemultivar 충실구현: 등급 C. 논문기준 SR 0.86 vs 15bps SR 0.87. turbulence… |
+| 1059 | L-RP-20260902_220557 | ? | C | RF_PAR_B5_20_volmedianvoltarget 충실구현: 등급 C. 논문기준 SR 0.85 vs 15bps SR 0.89. vol_median(vol_… |
+| 1060 | L-RP-20260902_220558 | ml_complexity | C | RF_PAR_B5_19_mltailgateml 충실구현: 등급 C. 논문기준 SR 0.79 vs 15bps SR 0.83. ml_tail_gate(ml) |
+| 1061 | L-RP-20260902_221428 | ? | F | RF_PAR_B4_24_LOO 충실구현: 등급 F. 논문기준 SR 0.60 vs 15bps SR 0.68. 유니버스 제외(LOO) |
+| 1062 | L-RP-20260903_083003 | quality | C | RF_PAR_B1_1_1quality 충실구현: 등급 C. 논문기준 SR 0.28 vs 15bps SR 0.42. 1팩터 직교(quality) |
+| 1063 | L-RP-20260903_083048 | quality | C | RF_PAR_B1_2_2qualitycrowding 충실구현: 등급 C. 논문기준 SR 0.31 vs 15bps SR 0.46. 2팩터 직교(quality+cro… |
+| 1064 | L-RP-20260903_083200 | defense | C | RF_PAR_B1_3_3qualitycrowdingdefense 충실구현: 등급 C. 논문기준 SR 0.38 vs 15bps SR 0.52. 3팩터 직교(qual… |
+| 1065 | L-RP-20260903_083222 | defense | C | RF_PAR_B1_4_4qualitycrowdingaccrualdefense 충실구현: 등급 C. 논문기준 SR 0.36 vs 15bps SR 0.51. 4팩터 … |
+| 1066 | L-RP-20260903_083258 | defense | C | RF_PAR_B1_5_5qualityregimecrowdingaccrualdefense 충실구현: 등급 C. 논문기준 SR 0.32 vs 15bps SR 0.48… |
+| 1067 | L-RP-20260903_084355 | ? | C | RF_PAR_B2_7_entropyentropy 충실구현: 등급 C. 논문기준 SR 0.36 vs 15bps SR 0.51. entropy(entropy) |
+| 1068 | L-RP-20260903_084409 | ? | C | RF_PAR_B2_6_cvartailaware 충실구현: 등급 C. 논문기준 SR 0.33 vs 15bps SR 0.48. cvar(tail_aware) |
+| 1069 | L-RP-20260903_084409 | ? | C | RF_PAR_B2_8_factorrpriskparity 충실구현: 등급 C. 논문기준 SR 0.33 vs 15bps SR 0.48. factor_rp(risk_p… |
+| 1070 | L-RP-20260903_084410 | ? | F | RF_PAR_B2_10_SchurDampingoptimizer 충실구현: 등급 F. 논문기준 SR 0.20 vs 15bps SR 0.35. SchurDamping… |
+| 1071 | L-RP-20260903_084412 | low_vol | C | RF_PAR_B2_9_ivolriskbased 충실구현: 등급 C. 논문기준 SR 0.33 vs 15bps SR 0.48. ivol(risk_based) |
+| 1072 | L-RP-20260903_085859 | ? | C | RF_PAR_B3_11_KOSDAQ150 충실구현: 등급 C. 논문기준 SR 0.47 vs 15bps SR 0.59. KOSDAQ150 단독 |
+| 1073 | L-RP-20260903_085904 | ? | F | RF_PAR_B3_14_13 충실구현: 등급 F. 논문기준 SR 0.19 vs 15bps SR 0.35. 대형주(시총 상위 1/3) |
+| 1074 | L-RP-20260903_085915 | ? | F | RF_PAR_B3_12_KOSPI200 충실구현: 등급 F. 논문기준 SR 0.17 vs 15bps SR 0.33. KOSPI200 단독 |
+| 1075 | L-RP-20260903_085919 | size | C | RF_PAR_B3_13_13 충실구현: 등급 C. 논문기준 SR 0.32 vs 15bps SR 0.47. 소형주(시총 하위 1/3) |
+| 1076 | L-RP-20260903_085929 | ? | C | RF_PAR_B3_15_ 충실구현: 등급 C. 논문기준 SR 0.42 vs 15bps SR 0.54. 섹터 중립 |
+| 1077 | L-RP-20260903_091417 | ? | F | RF_PAR_B5_18_turbulencestatemultivar 충실구현: 등급 F. 논문기준 SR 0.38 vs 15bps SR 0.46. turbulence… |
+| 1078 | L-RP-20260903_091417 | ? | F | RF_PAR_B5_17_volxddcombo 충실구현: 등급 F. 논문기준 SR 0.39 vs 15bps SR 0.49. vol_x_dd(combo) |
+| 1079 | L-RP-20260903_091417 | ? | C | RF_PAR_B5_20_volmedianvoltarget 충실구현: 등급 C. 논문기준 SR 0.45 vs 15bps SR 0.56. vol_median(vol_… |
+| 1080 | L-RP-20260903_091417 | overlay_regime | C | RF_PAR_B5_16_ddbrakeqdrawdown 충실구현: 등급 C. 논문기준 SR 0.36 vs 15bps SR 0.48. dd_brake_q(drawdo… |
+| 1081 | L-RP-20260903_091418 | ml_complexity | C | RF_PAR_B5_19_mltailgateml 충실구현: 등급 C. 논문기준 SR 0.46 vs 15bps SR 0.57. ml_tail_gate(ml) |
+| 1082 | L-RP-20260903_092923 | ? | C | RF_PAR_B4_24_LOO 충실구현: 등급 C. 논문기준 SR 0.35 vs 15bps SR 0.49. 유니버스 제외(LOO) |
+| 1083 | L-RP-20260903_095317 | momentum | F | RF_PAR_B1_2_2momentumaccrual 충실구현: 등급 F. 논문기준 SR 0.23 vs 15bps SR 0.37. 2팩터 직교(momentum+ac… |
+| 1084 | L-RP-20260903_095335 | momentum | F | RF_PAR_B1_3_3momentumaccrualconsensus 충실구현: 등급 F. 논문기준 SR 0.33 vs 15bps SR 0.45. 3팩터 직교(mo… |
+| 1085 | L-RP-20260903_095401 | momentum | C | RF_PAR_B1_4_4momentumaccrualconsensusquality 충실구현: 등급 C. 논문기준 SR 0.35 vs 15bps SR 0.48. 4팩… |
+| 1086 | L-RP-20260903_095427 | defense | F | RF_PAR_B1_5_5momentumaccrualconsensusdefensequality 충실구현: 등급 F. 논문기준 SR 0.25 vs 15bps SR 0… |
+| 1087 | L-RP-20260903_101503 | defense | F | RF_PAR_B1_5_5defensecrowdingaccrualliquidityquality 충실구현: 등급 F. 논문기준 SR 0.20 vs 15bps SR 0… |
+| 1088 | L-RP-20260903_102553 | ? | F | RF_PAR_B2_7_entropyentropy 충실구현: 등급 F. 논문기준 SR 0.32 vs 15bps SR 0.45. entropy(entropy) |
+| 1089 | L-RP-20260903_102553 | ? | C | RF_PAR_B2_6_cvartailaware 충실구현: 등급 C. 논문기준 SR 0.37 vs 15bps SR 0.50. cvar(tail_aware) |
+| 1090 | L-RP-20260903_102553 | ? | C | RF_PAR_B2_8_factorrpriskparity 충실구현: 등급 C. 논문기준 SR 0.37 vs 15bps SR 0.49. factor_rp(risk_p… |
+| 1091 | L-RP-20260903_102553 | ? | F | RF_PAR_B2_10_SchurDampingoptimizer 충실구현: 등급 F. 논문기준 SR 0.33 vs 15bps SR 0.44. SchurDamping… |
+| 1092 | L-RP-20260903_102555 | low_vol | C | RF_PAR_B2_9_ivolriskbased 충실구현: 등급 C. 논문기준 SR 0.36 vs 15bps SR 0.49. ivol(risk_based) |
+| 1093 | L-RP-20260903_104017 | ? | F | RF_PAR_B3_11_KOSDAQ150 충실구현: 등급 F. 논문기준 SR 0.29 vs 15bps SR 0.38. KOSDAQ150 단독 |
+| 1094 | L-RP-20260903_104044 | ? | F | RF_PAR_B3_14_13 충실구현: 등급 F. 논문기준 SR 0.33 vs 15bps SR 0.46. 대형주(시총 상위 1/3) |
+| 1095 | L-RP-20260903_104049 | size | F | RF_PAR_B3_13_13 충실구현: 등급 F. 논문기준 SR 0.31 vs 15bps SR 0.45. 소형주(시총 하위 1/3) |
+| 1096 | L-RP-20260903_104052 | ? | C | RF_PAR_B3_12_KOSPI200 충실구현: 등급 C. 논문기준 SR 0.38 vs 15bps SR 0.51. KOSPI200 단독 |
+| 1097 | L-RP-20260903_104055 | ? | F | RF_PAR_B3_15_ 충실구현: 등급 F. 논문기준 SR 0.40 vs 15bps SR 0.50. 섹터 중립 |
+| 1098 | L-RP-20260903_104815 | ? | F | RF_PAR_B5_17_volxddcombo 충실구현: 등급 F. 논문기준 SR 0.30 vs 15bps SR 0.41. vol_x_dd(combo) |
+| 1099 | L-RP-20260903_104815 | overlay_regime | F | RF_PAR_B5_16_ddbrakeqdrawdown 충실구현: 등급 F. 논문기준 SR 0.30 vs 15bps SR 0.41. dd_brake_q(drawdo… |
+| 1100 | L-RP-20260903_104816 | ? | F | RF_PAR_B5_18_turbulencestatemultivar 충실구현: 등급 F. 논문기준 SR 0.32 vs 15bps SR 0.42. turbulence… |
+| 1101 | L-RP-20260903_104820 | ? | F | RF_PAR_B5_20_volmedianvoltarget 충실구현: 등급 F. 논문기준 SR 0.35 vs 15bps SR 0.46. vol_median(vol_… |
+| 1102 | L-RP-20260903_104822 | ml_complexity | F | RF_PAR_B5_19_mltailgateml 충실구현: 등급 F. 논문기준 SR 0.37 vs 15bps SR 0.49. ml_tail_gate(ml) |
+| 1103 | L-RP-20260903_105544 | ? | F | RF_PAR_B4_22_LOO 충실구현: 등급 F. 논문기준 SR 0.35 vs 15bps SR 0.46. 팩터 제외(LOO) |
+| 1104 | L-RP-20260903_105642 | ? | F | RF_PAR_B4_23_LOO 충실구현: 등급 F. 논문기준 SR 0.40 vs 15bps SR 0.50. 비중 제외(LOO) |
+| 1105 | L-RP-20260903_105742 | overlay_regime | F | RF_PAR_B4_25_LOO3 충실구현: 등급 F. 논문기준 SR 0.39 vs 15bps SR 0.49. 오버레이 제외(LOO) = 구 3축 전체결합 |
+| 1106 | L-RP-20260903_105742_02 | ? | F | RF_PAR_B4_21_4 충실구현: 등급 F. 논문기준 SR 0.40 vs 15bps SR 0.48. 전 요소 결합(4축) |
+| 1107 | L-RP-20260903_105745 | ? | F | RF_PAR_B4_24_LOO 충실구현: 등급 F. 논문기준 SR 0.37 vs 15bps SR 0.48. 유니버스 제외(LOO) |
+| 1108 | L-RP-20260903_111233 | defense | C | RF_PAR_B1_2_2growthdefense 충실구현: 등급 C. 논문기준 SR 0.56 vs 15bps SR 0.67. 2팩터 직교(growth+defens… |
+| 1109 | L-RP-20260903_111307 | defense | C | RF_PAR_B1_3_3growthliquiditydefense 충실구현: 등급 C. 논문기준 SR 0.51 vs 15bps SR 0.62. 3팩터 직교(grow… |
+| 1110 | L-RP-20260903_111349 | defense | C | RF_PAR_B1_4_4growthliquidityqualitydefense 충실구현: 등급 C. 논문기준 SR 0.50 vs 15bps SR 0.61. 4팩터 … |
+| 1111 | L-RP-20260903_111428 | defense | C | RF_PAR_B1_5_5growthconsensusliquidityqualitydefense 충실구현: 등급 C. 논문기준 SR 0.57 vs 15bps SR 0… |
+| 1112 | L-RP-20260903_152740 | ? | C | RF_PAR_B1_5_5defensecrowdingaccrualliquidityquality 충실구현: 등급 C. 논문기준 SR 0.49 vs 15bps SR 0… |
+| 1113 | L-RP-20260903_153644 | ? | C | RF_PAR_B2_7_entropyentropy 충실구현: 등급 C. 논문기준 SR 0.47 vs 15bps SR 0.58. [무인 병렬 B2_7] entropy… |
+| 1114 | L-RP-20260903_153644 | ? | C | RF_PAR_B2_6_cvartailaware 충실구현: 등급 C. 논문기준 SR 0.51 vs 15bps SR 0.62. [무인 병렬 B2_6] cvar(tai… |
+| 1115 | L-RP-20260903_153644 | ? | C | RF_PAR_B2_8_factorrpriskparity 충실구현: 등급 C. 논문기준 SR 0.50 vs 15bps SR 0.60. [무인 병렬 B2_8] fac… |
+| 1116 | L-RP-20260903_153644 | ? | C | RF_PAR_B2_10_SchurDampingoptimizer 충실구현: 등급 C. 논문기준 SR 0.42 vs 15bps SR 0.58. [무인 병렬 B2_10… |
+| 1117 | L-RP-20260903_153644 | low_vol | C | RF_PAR_B2_9_ivolriskbased 충실구현: 등급 C. 논문기준 SR 0.49 vs 15bps SR 0.60. [무인 병렬 B2_9] ivol(ris… |
+| 1118 | L-RP-20260903_154354 | ? | C | RF_PAR_B3_11_KOSDAQ150 충실구현: 등급 C. 논문기준 SR 0.52 vs 15bps SR 0.60. [무인 병렬 B3_11] KOSDAQ150 … |
+| 1119 | L-RP-20260903_154403 | ? | F | RF_PAR_B3_14_13 충실구현: 등급 F. 논문기준 SR 0.30 vs 15bps SR 0.42. [무인 병렬 B3_14] 대형주(시총 상위 1/3) — … |
+| 1120 | L-RP-20260903_154420 | ? | C | RF_PAR_B3_12_KOSPI200 충실구현: 등급 C. 논문기준 SR 0.42 vs 15bps SR 0.54. [무인 병렬 B3_12] KOSPI200 단독… |
+| 1121 | L-RP-20260903_154423 | size | C | RF_PAR_B3_13_13 충실구현: 등급 C. 논문기준 SR 0.54 vs 15bps SR 0.67. [무인 병렬 B3_13] 소형주(시총 하위 1/3) — … |
+| 1122 | L-RP-20260903_154432 | ? | C | RF_PAR_B3_15_ 충실구현: 등급 C. 논문기준 SR 0.53 vs 15bps SR 0.64. [무인 병렬 B3_15] 섹터 중립 — B3/universe… |
+| 1123 | L-RP-20260903_155047 | overlay_regime | F | RF_PAR_B5_17_ddbrakeqdrawdown 충실구현: 등급 F. 논문기준 SR 0.38 vs 15bps SR 0.50. [무인 병렬 B5_17] dd_… |
+| 1124 | L-RP-20260903_155047 | overlay_regime | F | RF_PAR_B5_18_volxddcombo 충실구현: 등급 F. 논문기준 SR 0.46 vs 15bps SR 0.56. [무인 병렬 B5_18] vol_x_dd… |
+| 1125 | L-RP-20260903_155047 | overlay_regime | C | RF_PAR_B5_19_turbulencestatemultivar 충실구현: 등급 C. 논문기준 SR 0.44 vs 15bps SR 0.54. [무인 병렬 B5_… |
+| 1126 | L-RP-20260903_155050 | ml_complexity | C | RF_PAR_B5_20_mltailgateml 충실구현: 등급 C. 논문기준 SR 0.49 vs 15bps SR 0.60. [무인 병렬 B5_20] ml_tail… |
+| 1127 | L-RP-20260903_155054 | overlay_regime | F | RF_PAR_B5_16_dbetatiltrankcrosssectional 충실구현: 등급 F. 논문기준 SR 0.45 vs 15bps SR 0.56. [무인 병렬… |
+| 1128 | L-RP-20260903_155933 | ? | C | RF_PAR_B4_23_LOO 충실구현: 등급 C. 논문기준 SR 0.50 vs 15bps SR 0.63. [무인 병렬 B4_23] 비중 제외(LOO) — B4/… |
+| 1129 | L-RP-20260903_160004 | ? | F | RF_PAR_B4_22_LOO 충실구현: 등급 F. 논문기준 SR 0.36 vs 15bps SR 0.49. [무인 병렬 B4_22] 팩터 제외(LOO) — B4/… |
+| 1130 | L-RP-20260903_160026 | overlay_regime | C | RF_PAR_B4_25_LOO3 충실구현: 등급 C. 논문기준 SR 0.53 vs 15bps SR 0.66. [무인 병렬 B4_25] 오버레이 제외(LOO) = … |
+| 1131 | L-RP-20260903_160033 | ? | C | RF_PAR_B4_21_4 충실구현: 등급 C. 논문기준 SR 0.49 vs 15bps SR 0.62. [무인 병렬 B4_21] 전 요소 결합(4축) — B4/c… |
+| 1132 | L-RP-20260903_160038 | ? | F | RF_PAR_B4_24_LOO 충실구현: 등급 F. 논문기준 SR 0.46 vs 15bps SR 0.56. [무인 병렬 B4_24] 유니버스 제외(LOO) — B… |
+| 1133 | L-RP-20260903_214959 | consensus | C | RF_PAR_B1_1_1consensus 충실구현: 등급 C. 논문기준 SR 0.24 vs 15bps SR 0.39. [무인 병렬 B1_1] 1팩터 직교(cons… |
+| 1134 | L-RP-20260903_215044 | defense | C | RF_PAR_B1_2_2consensusdefense 충실구현: 등급 C. 논문기준 SR 0.34 vs 15bps SR 0.50. [무인 병렬 B1_2] 2팩터 … |
+| 1135 | L-RP-20260903_215124 | defense | C | RF_PAR_B1_3_3consensusaccrualdefense 충실구현: 등급 C. 논문기준 SR 0.29 vs 15bps SR 0.44. [무인 병렬 B1_… |
+| 1136 | L-RP-20260903_215247 | defense | C | RF_PAR_B1_4_4consensusleverageaccrualdefense 충실구현: 등급 C. 논문기준 SR 0.27 vs 15bps SR 0.43. [무… |
+| 1137 | L-RP-20260903_215328 | defense | C | RF_PAR_B1_5_5consensusleverageaccrualdefensequality 충실구현: 등급 C. 논문기준 SR 0.28 vs 15bps SR 0… |
+| 1138 | L-RP-20260904_081628 | low_vol | C | RF_PAR_B2_9_ivolriskbased 충실구현: 등급 C. 논문기준 SR 0.33 vs 15bps SR 0.49. [무인 병렬 B2_9] ivol(ris… |
+| 1139 | L-RP-20260904_081632 | ? | C | RF_PAR_B2_7_entropyentropy 충실구현: 등급 C. 논문기준 SR 0.31 vs 15bps SR 0.48. [무인 병렬 B2_7] entropy… |
+| 1140 | L-RP-20260904_081633 | ? | C | RF_PAR_B2_6_cvartailaware 충실구현: 등급 C. 논문기준 SR 0.35 vs 15bps SR 0.51. [무인 병렬 B2_6] cvar(tai… |
+| 1141 | L-RP-20260904_081633 | ? | C | RF_PAR_B2_10_SchurDampingoptimizer 충실구현: 등급 C. 논문기준 SR 0.27 vs 15bps SR 0.43. [무인 병렬 B2_10… |
+| 1142 | L-RP-20260904_081635 | ? | C | RF_PAR_B2_8_factorrpriskparity 충실구현: 등급 C. 논문기준 SR 0.33 vs 15bps SR 0.49. [무인 병렬 B2_8] fac… |
+| 1143 | L-RP-20260904_082429 | ? | C | RF_PAR_B3_11_KOSDAQ150 충실구현: 등급 C. 논문기준 SR 0.31 vs 15bps SR 0.46. [무인 병렬 B3_11] KOSDAQ150 … |
+| 1144 | L-RP-20260904_082433 | ? | F | RF_PAR_B3_14_13 충실구현: 등급 F. 논문기준 SR 0.25 vs 15bps SR 0.40. [무인 병렬 B3_14] 대형주(시총 상위 1/3) — … |
+| 1145 | L-RP-20260904_082442 | ? | F | RF_PAR_B3_12_KOSPI200 충실구현: 등급 F. 논문기준 SR 0.23 vs 15bps SR 0.39. [무인 병렬 B3_12] KOSPI200 단독… |
+| 1146 | L-RP-20260904_082444 | size | C | RF_PAR_B3_13_13 충실구현: 등급 C. 논문기준 SR 0.25 vs 15bps SR 0.41. [무인 병렬 B3_13] 소형주(시총 하위 1/3) — … |
+| 1147 | L-RP-20260904_082454 | ? | C | RF_PAR_B3_15_ 충실구현: 등급 C. 논문기준 SR 0.34 vs 15bps SR 0.46. [무인 병렬 B3_15] 섹터 중립 — B3/universe… |
+| 1148 | L-RP-20260904_083308 | overlay_regime | F | RF_PAR_B5_19_ddbrakeqdrawdown 충실구현: 등급 F. 논문기준 SR 0.28 vs 15bps SR 0.42. [무인 병렬 B5_19] dd_… |
+| 1149 | L-RP-20260904_083308 | overlay_regime | F | RF_PAR_B5_20_volxddcombo 충실구현: 등급 F. 논문기준 SR 0.37 vs 15bps SR 0.48. [무인 병렬 B5_20] vol_x_dd… |
+| 1150 | L-RP-20260904_083315 | overlay_regime | F | RF_PAR_B5_16_dbetatiltrankcrosssectional 충실구현: 등급 F. 논문기준 SR 0.33 vs 15bps SR 0.46. [무인 병렬… |
+| 1151 | L-RP-20260904_083315_02 | overlay_regime | C | RF_PAR_B5_17_csdidiotiltcrosssectional 충실구현: 등급 C. 논문기준 SR 0.41 vs 15bps SR 0.56. [무인 병렬 B… |
+| 1152 | L-RP-20260904_083316 | overlay_regime | C | RF_PAR_B5_18_holdlvlsyscrowdtiltcrosssectional 충실구현: 등급 C. 논문기준 SR 0.35 vs 15bps SR 0.49. … |
+| 1153 | L-RP-20260904_084000 | ? | F | RF_PAR_B4_22_LOO 충실구현: 등급 F. 논문기준 SR 0.38 vs 15bps SR 0.50. [무인 병렬 B4_22] 팩터 제외(LOO) — B4/… |
+| 1154 | L-RP-20260904_084101 | ? | F | RF_PAR_B4_23_LOO 충실구현: 등급 F. 논문기준 SR 0.39 vs 15bps SR 0.50. [무인 병렬 B4_23] 비중 제외(LOO) — B4/… |
+| 1155 | L-RP-20260904_084147 | overlay_regime | F | RF_PAR_B4_25_LOO3 충실구현: 등급 F. 논문기준 SR 0.35 vs 15bps SR 0.46. [무인 병렬 B4_25] 오버레이 제외(LOO) = … |
+| 1156 | L-RP-20260904_084152 | ? | F | RF_PAR_B4_21_4 충실구현: 등급 F. 논문기준 SR 0.39 vs 15bps SR 0.50. [무인 병렬 B4_21] 전 요소 결합(4축) — B4/c… |
+| 1157 | L-RP-20260904_115109 | ? | C | RF_PAR_B1_5_laborshadow 충실구현: 등급 C. 논문기준 SR 0.50 vs 15bps SR 0.61. [무인 병렬 B1_5] labor_shad… |
+| 1158 | L-RP-20260904_115109 | ? | F | RF_PAR_B1_1_vollow 충실구현: 등급 F. 논문기준 SR 0.52 vs 15bps SR 0.58. [무인 병렬 B1_1] vol_low — B1/mu… |
+| 1159 | L-RP-20260904_115116 | ? | F | RF_PAR_B1_2_crisisbeta 충실구현: 등급 F. 논문기준 SR 0.44 vs 15bps SR 0.52. [무인 병렬 B1_2] crisis_beta… |
+| 1160 | L-RP-20260904_115116_02 | ? | C | RF_PAR_B1_4_profitcore 충실구현: 등급 C. 논문기준 SR 0.74 vs 15bps SR 0.79. [무인 병렬 B1_4] profit_core… |
+| 1161 | L-RP-20260904_115122 | ? | F | RF_PAR_B1_3_betarelevel 충실구현: 등급 F. 논문기준 SR 0.50 vs 15bps SR 0.58. [무인 병렬 B1_3] beta_relev… |
+| 1162 | L-RP-20260904_120102 | ? | C | RF_PAR_B1_9_residlevel 충실구현: 등급 C. 논문기준 SR 0.50 vs 15bps SR 0.57. [무인 병렬 B1_9] resid_level… |
+| 1163 | L-RP-20260904_120112 | ? | C | RF_PAR_B1_8_sectordecrowd 충실구현: 등급 C. 논문기준 SR 0.45 vs 15bps SR 0.57. [무인 병렬 B1_8] sector_d… |
+| 1164 | L-RP-20260904_120117 | ? | C | RF_PAR_B1_7_intraindustry 충실구현: 등급 C. 논문기준 SR 0.59 vs 15bps SR 0.67. [무인 병렬 B1_7] intra_in… |
+| 1165 | L-RP-20260904_120122 | behavioral | C | RF_PAR_B1_10_flowforeign 충실구현: 등급 C. 논문기준 SR 0.44 vs 15bps SR 0.54. [무인 병렬 B1_10] flow_for… |
+| 1166 | L-RP-20260904_120131 | ? | C | RF_PAR_B1_6_valueanchor 충실구현: 등급 C. 논문기준 SR 0.58 vs 15bps SR 0.68. [무인 병렬 B1_6] value_anch… |
+| 1167 | L-RP-20260904_120832 | ? | C | RF_PAR_B1_12_riskxprofit 충실구현: 등급 C. 논문기준 SR 0.69 vs 15bps SR 0.72. [무인 병렬 B1_12] risk_x_p… |
+| 1168 | L-RP-20260904_120835 | consensus | F | RF_PAR_B1_11_consensusrev 충실구현: 등급 F. 논문기준 SR 0.44 vs 15bps SR 0.53. [무인 병렬 B1_11] consens… |
+| 1169 | L-RP-20260904_120848 | ? | C | RF_PAR_B1_13_riskxlabor 충실구현: 등급 C. 논문기준 SR 0.52 vs 15bps SR 0.61. [무인 병렬 B1_13] risk_x_la… |
+| 1170 | L-RP-20260904_120952 | ? | C | RF_PAR_B1_14_wideblend 충실구현: 등급 C. 논문기준 SR 0.71 vs 15bps SR 0.75. [무인 병렬 B1_14] wide_blend… |
+| 1171 | L-RP-20260904_122334 | overlay_regime | F | RF_PAR_B5_19_ddbrakeqdrawdown 충실구현: 등급 F. 논문기준 SR 0.59 vs 15bps SR 0.68. [무인 병렬 B5_19] dd_… |
+| 1172 | L-RP-20260904_122334 | overlay_regime | F | RF_PAR_B5_20_volxddcombo 충실구현: 등급 F. 논문기준 SR 0.67 vs 15bps SR 0.74. [무인 병렬 B5_20] vol_x_dd… |
+| 1173 | L-RP-20260904_122343 | overlay_regime | C | RF_PAR_B5_18_holdlvlsyscrowdtiltcrosssectional 충실구현: 등급 C. 논문기준 SR 0.73 vs 15bps SR 0.79. … |
+| 1174 | L-RP-20260904_122343 | overlay_regime | C | RF_PAR_B5_17_csdidiotiltcrosssectional 충실구현: 등급 C. 논문기준 SR 0.79 vs 15bps SR 0.84. [무인 병렬 B… |
+| 1175 | L-RP-20260904_122344 | overlay_regime | C | RF_PAR_B5_16_dbetatiltrankcrosssectional 충실구현: 등급 C. 논문기준 SR 0.68 vs 15bps SR 0.75. [무인 병렬… |
+| 1176 | L-RP-20260904_123314 | ? | C | RF_PAR_B2_6_cvartailaware 충실구현: 등급 C. 논문기준 SR 0.78 vs 15bps SR 0.82. [무인 병렬 B2_6] cvar(tai… |
+| 1177 | L-RP-20260904_123314 | ? | C | RF_PAR_B2_8_factorrpriskparity 충실구현: 등급 C. 논문기준 SR 0.78 vs 15bps SR 0.82. [무인 병렬 B2_8] fac… |
+| 1178 | L-RP-20260904_123314 | ? | C | RF_PAR_B2_7_entropyentropy 충실구현: 등급 C. 논문기준 SR 0.74 vs 15bps SR 0.79. [무인 병렬 B2_7] entropy… |
+| 1179 | L-RP-20260904_123314 | ? | C | RF_PAR_B2_10_SchurDampingoptimizer 충실구현: 등급 C. 논문기준 SR 0.56 vs 15bps SR 0.65. [무인 병렬 B2_10… |
+| 1180 | L-RP-20260904_123315 | low_vol | C | RF_PAR_B2_9_ivolriskbased 충실구현: 등급 C. 논문기준 SR 0.77 vs 15bps SR 0.82. [무인 병렬 B2_9] ivol(ris… |
+| 1181 | L-RP-20260904_123835 | ? | C | RF_PAR_B3_11_KOSDAQ150 충실구현: 등급 C. 논문기준 SR 0.65 vs 15bps SR 0.71. [무인 병렬 B3_11] KOSDAQ150 … |
+| 1182 | L-RP-20260904_124725 | ? | F | RF_PAR_B3_14_13 충실구현: 등급 F. 논문기준 SR 0.45 vs 15bps SR 0.52. [무인 병렬 B3_14] 대형주(시총 상위 1/3) — … |
+| 1183 | L-RP-20260904_124732 | ? | C | RF_PAR_B3_12_KOSPI200 충실구현: 등급 C. 논문기준 SR 0.60 vs 15bps SR 0.67. [무인 병렬 B3_12] KOSPI200 단독… |
+| 1184 | L-RP-20260904_124744 | size | C | RF_PAR_B3_13_13 충실구현: 등급 C. 논문기준 SR 0.48 vs 15bps SR 0.62. [무인 병렬 B3_13] 소형주(시총 하위 1/3) — … |
+| 1185 | L-RP-20260904_124749 | ? | C | RF_PAR_B3_15_ 충실구현: 등급 C. 논문기준 SR 0.50 vs 15bps SR 0.57. [무인 병렬 B3_15] 섹터 중립 — B3/universe… |
+| 1186 | L-RP-20260904_125520 | ? | C | RF_PAR_B4_23_LOO 충실구현: 등급 C. 논문기준 SR 0.65 vs 15bps SR 0.71. [무인 병렬 B4_23] 비중 제외(LOO) — B4/… |
+| 1187 | L-RP-20260904_125624 | ? | C | RF_PAR_B4_24_LOO 충실구현: 등급 C. 논문기준 SR 0.73 vs 15bps SR 0.78. [무인 병렬 B4_24] 유니버스 제외(LOO) — B… |
+| 1188 | L-RP-20260904_180704 | earnings_event | C | RF_PAR_B1_1_earnsue 충실구현: 등급 C. 논문기준 SR 0.51 vs 15bps SR 0.63. [무인 병렬 B1_1] earn_sue — B1/… |
+| 1189 | L-RP-20260904_180705 | value | C | RF_PAR_B1_3_valueep 충실구현: 등급 C. 논문기준 SR 0.66 vs 15bps SR 0.78. [무인 병렬 B1_3] value_ep — B1/… |
+| 1190 | L-RP-20260904_180707 | ? | F | RF_PAR_B1_2_sysbetabab 충실구현: 등급 F. 논문기준 SR 0.47 vs 15bps SR 0.58. [무인 병렬 B1_2] sysbeta_bab… |
+| 1191 | L-RP-20260904_180713 | behavioral | C | RF_PAR_B1_5_flowfxresid 충실구현: 등급 C. 논문기준 SR 0.42 vs 15bps SR 0.55. [무인 병렬 B1_5] flow_fx_re… |
+| 1192 | L-RP-20260904_180717 | ? | C | RF_PAR_B1_4_noskipstrev 충실구현: 등급 C. 논문기준 SR 0.56 vs 15bps SR 0.69. [무인 병렬 B1_4] noskip_str… |
+| 1193 | L-RP-20260904_181638 | quality_profitability | C | RF_PAR_B1_6_profgpa 충실구현: 등급 C. 논문기준 SR 0.62 vs 15bps SR 0.72. [무인 병렬 B1_6] prof_gpa — B1/… |
+| 1194 | L-RP-20260904_181640 | ? | C | RF_PAR_B1_7_crisisbetacond 충실구현: 등급 C. 논문기준 SR 0.52 vs 15bps SR 0.63. [무인 병렬 B1_7] crisisb… |
+| 1195 | L-RP-20260904_181643 | ? | C | RF_PAR_B1_9_pathriskecho 충실구현: 등급 C. 논문기준 SR 0.53 vs 15bps SR 0.67. [무인 병렬 B1_9] pathrisk_… |
+| 1196 | L-RP-20260904_181646 | ? | C | RF_PAR_B1_10_sizeaxis 충실구현: 등급 C. 논문기준 SR 0.66 vs 15bps SR 0.79. [무인 병렬 B1_10] size_axis —… |
+| 1197 | L-RP-20260904_181657 | ? | C | RF_PAR_B1_8_earnxsysbeta 충실구현: 등급 C. 논문기준 SR 0.51 vs 15bps SR 0.63. [무인 병렬 B1_8] earn_x_sy… |
+| 1198 | L-RP-20260904_182455 | ? | C | RF_PAR_B1_11_earnqualaccrual 충실구현: 등급 C. 논문기준 SR 0.49 vs 15bps SR 0.63. [무인 병렬 B1_11] earn… |
+| 1199 | L-RP-20260904_182513 | ? | C | RF_PAR_B1_12_valuexprof 충실구현: 등급 C. 논문기준 SR 0.62 vs 15bps SR 0.74. [무인 병렬 B1_12] value_x_p… |
+| 1200 | L-RP-20260904_182542 | ? | C | RF_PAR_B1_13_ladderL3val 충실구현: 등급 C. 논문기준 SR 0.55 vs 15bps SR 0.67. [무인 병렬 B1_13] ladder_L… |
+| 1201 | L-RP-20260904_182605 | ? | C | RF_PAR_B1_14_ladderL4prof 충실구현: 등급 C. 논문기준 SR 0.61 vs 15bps SR 0.73. [무인 병렬 B1_14] ladder_… |
+| 1202 | L-RP-20260904_182631 | ? | C | RF_PAR_B1_15_ladderL5wide 충실구현: 등급 C. 논문기준 SR 0.58 vs 15bps SR 0.70. [무인 병렬 B1_15] ladder_… |
+| 1203 | L-RP-20260904_193034 | momentum | C | RF_PAR_B5_20_ 충실구현: 등급 C. 논문기준 SR 0.59 vs 15bps SR 0.71. [무인 병렬 B5_20] 추세 이탈(전량 현금) — 밴드 바… |
+| 1204 | L-RP-20260904_193053 | overlay_regime | C | RF_PAR_B5_16_ 충실구현: 등급 C. 논문기준 SR 0.65 vs 15bps SR 0.77. [무인 병렬 B5_16] 스칼라 낙폭 브레이크(귀속 기준선)… |
+| 1205 | L-RP-20260904_193105 | overlay_regime | C | RF_PAR_B5_18_ 충실구현: 등급 C. 논문기준 SR 0.76 vs 15bps SR 0.89. [무인 병렬 B5_18] 횡단면분산 상태 · 특이변동 순위 … |
+| 1206 | L-RP-20260904_193106 | overlay_regime | C | RF_PAR_B5_17_ 충실구현: 등급 C. 논문기준 SR 0.66 vs 15bps SR 0.78. [무인 병렬 B5_17] 낙폭 상태 · 하방베타 순위 차등 … |
+| 1207 | L-RP-20260904_193107 | overlay_regime | C | RF_PAR_B5_19_ 충실구현: 등급 C. 논문기준 SR 0.67 vs 15bps SR 0.80. [무인 병렬 B5_19] 보유 체계비중 φ 상태 · 분산불가… |
+| 1208 | L-RP-20260904_193634 | overlay_regime | C | RF_PAR_B5_21_ 충실구현: 등급 C. 논문기준 SR 0.66 vs 15bps SR 0.78. [무인 병렬 B5_21] 회복 조건부 재진입 — 비용 소재 … |
+| 1209 | L-RP-20260904_194418 | ? | B | RF_PAR_B2_8_factorrpriskparity 충실구현: 등급 B. 논문기준 SR 0.80 vs 15bps SR 0.93. [무인 병렬 B2_8] fac… |
+| 1210 | L-RP-20260904_194418 | ? | C | RF_PAR_B2_7_entropyentropy 충실구현: 등급 C. 논문기준 SR 0.77 vs 15bps SR 0.89. [무인 병렬 B2_7] entropy… |
+| 1211 | L-RP-20260904_194418 | low_vol | B | RF_PAR_B2_9_ivolriskbased 충실구현: 등급 B. 논문기준 SR 0.81 vs 15bps SR 0.94. [무인 병렬 B2_9] ivol(ris… |
+| 1212 | L-RP-20260904_194418 | ? | C | RF_PAR_B2_10_SchurDampingoptimizer 충실구현: 등급 C. 논문기준 SR 0.49 vs 15bps SR 0.62. [무인 병렬 B2_10… |
+| 1213 | L-RP-20260904_194418 | ? | B | RF_PAR_B2_6_cvartailaware 충실구현: 등급 B. 논문기준 SR 0.82 vs 15bps SR 0.95. [무인 병렬 B2_6] cvar(tai… |
+| 1214 | L-RP-20260904_200027 | ? | C | RF_PAR_B3_12_13 충실구현: 등급 C. 논문기준 SR 0.50 vs 15bps SR 0.60. [무인 병렬 B3_12] 대형 상위1/3 — B3/uni… |
+| 1215 | L-RP-20260904_200027 | ? | C | RF_PAR_B3_14_ 충실구현: 등급 C. 논문기준 SR 0.52 vs 15bps SR 0.65. [무인 병렬 B3_14] 섹터 중립 — B3/universe… |
+| 1216 | L-RP-20260904_200027 | ? | C | RF_PAR_B3_11_13 충실구현: 등급 C. 논문기준 SR 0.69 vs 15bps SR 0.83. [무인 병렬 B3_11] 소형 하위1/3 — B3/uni… |
+| 1217 | L-RP-20260904_200031 | ? | C | RF_PAR_B3_13_K200 충실구현: 등급 C. 논문기준 SR 0.44 vs 15bps SR 0.57. [무인 병렬 B3_13] K200 단독(청정 통제) … |
+| 1218 | L-RP-20260904_201504 | ? | C | RF_PAR_B4_23_LOO 충실구현: 등급 C. 논문기준 SR 0.63 vs 15bps SR 0.77. [무인 병렬 B4_23] 비중 제외(LOO) — B4/… |
+| 1219 | L-RP-20260904_201526 | ? | C | RF_PAR_B4_22_LOO 충실구현: 등급 C. 논문기준 SR 0.70 vs 15bps SR 0.83. [무인 병렬 B4_22] 팩터 제외(LOO) — B4/… |
+| 1220 | L-RP-20260904_201551 | overlay_regime | C | RF_PAR_B4_25_LOO3 충실구현: 등급 C. 논문기준 SR 0.64 vs 15bps SR 0.78. [무인 병렬 B4_25] 오버레이 제외(LOO) = … |
+| 1221 | L-RP-20260904_204206 | ? | B | RF_PAR_B1_1_1value 충실구현: 등급 B. 논문기준 SR 0.74 vs 15bps SR 0.87. [무인 병렬 B1_1] 1팩터 직교(value) —… |
+| 1222 | L-RP-20260904_204244 | ? | B | RF_PAR_B1_2_2valueliquidity 충실구현: 등급 B. 논문기준 SR 0.74 vs 15bps SR 0.86. [무인 병렬 B1_2] 2팩터 직교… |
+| 1223 | L-RP-20260904_204300 | ? | B | RF_PAR_B1_3_3valueriskliquidity 충실구현: 등급 B. 논문기준 SR 0.73 vs 15bps SR 0.85. [무인 병렬 B1_3] 3팩… |
+| 1224 | L-RP-20260904_204330 | ? | C | RF_PAR_B1_4_4valueriskcrowdingliquidity 충실구현: 등급 C. 논문기준 SR 0.70 vs 15bps SR 0.82. [무인 병렬 … |
+| 1225 | L-RP-20260904_204357 | consensus | C | RF_PAR_B1_5_5valueriskcrowdingliquidityconsensus 충실구현: 등급 C. 논문기준 SR 0.61 vs 15bps SR 0.70… |
+| 1226 | L-RP-20260904_205911 | overlay_regime | C | RF_PAR_B5_19_ddbrakeqdrawdown 충실구현: 등급 C. 논문기준 SR 0.74 vs 15bps SR 0.86. [무인 병렬 B5_19] dd_… |
+| 1227 | L-RP-20260904_205911 | overlay_regime | C | RF_PAR_B5_20_volxddcombo 충실구현: 등급 C. 논문기준 SR 0.83 vs 15bps SR 0.99. [무인 병렬 B5_20] vol_x_dd… |
+| 1228 | L-RP-20260904_205919 | overlay_regime | C | RF_PAR_B5_18_holdlvlsyscrowdtiltcrosssectional 충실구현: 등급 C. 논문기준 SR 0.75 vs 15bps SR 0.86. … |
+| 1229 | L-RP-20260904_205919_02 | overlay_regime | B | RF_PAR_B5_17_csdidiotiltcrosssectional 충실구현: 등급 B. 논문기준 SR 0.81 vs 15bps SR 0.94. [무인 병렬 B… |
+| 1230 | L-RP-20260904_205920 | overlay_regime | C | RF_PAR_B5_16_dbetatiltrankcrosssectional 충실구현: 등급 C. 논문기준 SR 0.75 vs 15bps SR 0.86. [무인 병렬… |
+| 1231 | L-RP-20260904_212443 | ? | C | RF_PAR_B2_8_scoretilt 충실구현: 등급 C. 논문기준 SR 0.42 vs 15bps SR 0.52. factor_rp(risk_parity) |
+| 1232 | L-RP-20260904_212444 | ? | C | RF_PAR_B2_6_minvar 충실구현: 등급 C. 논문기준 SR 0.41 vs 15bps SR 0.51. cvar(tail_aware) |
+| 1233 | L-RP-20260904_212444 | ? | C | RF_PAR_B2_10_highermoment 충실구현: 등급 C. 논문기준 SR 0.31 vs 15bps SR 0.41. SchurDamping(optimize… |
+| 1234 | L-RP-20260904_212446 | ml_complexity | C | RF_PAR_B2_7_hrp 충실구현: 등급 C. 논문기준 SR 0.40 vs 15bps SR 0.52. entropy(entropy) |
+| 1235 | L-RP-20260904_212452 | low_vol | C | RF_PAR_B2_9_CDaRLP 충실구현: 등급 C. 논문기준 SR 0.41 vs 15bps SR 0.51. ivol(risk_based) |
+| 1236 | L-RP-20260904_213847 | size | C | RF_PAR_B3_13_13 충실구현: 등급 C. 논문기준 SR 0.68 vs 15bps SR 0.82. [무인 병렬 B3_13] 소형주(시총 하위 1/3) — … |
+| 1237 | L-RP-20260904_213847 | ? | C | RF_PAR_B3_15_ 충실구현: 등급 C. 논문기준 SR 0.61 vs 15bps SR 0.73. [무인 병렬 B3_15] 섹터 중립 — B3/universe… |
+| 1238 | L-RP-20260904_213847 | ? | C | RF_PAR_B3_14_13 충실구현: 등급 C. 논문기준 SR 0.47 vs 15bps SR 0.61. [무인 병렬 B3_14] 대형주(시총 상위 1/3) — … |
+| 1239 | L-RP-20260904_213852 | ? | C | RF_PAR_B3_12_KOSPI200 충실구현: 등급 C. 논문기준 SR 0.49 vs 15bps SR 0.65. [무인 병렬 B3_12] KOSPI200 단독… |
+| 1240 | L-RP-20260904_220111 | ? | C | RF_PAR_B4_22_LOO 충실구현: 등급 C. 논문기준 SR 0.63 vs 15bps SR 0.78. [무인 병렬 B4_22] 팩터 제외(LOO) — B4/… |
+| 1241 | L-RP-20260904_220111 | ? | C | RF_PAR_B4_23_LOO 충실구현: 등급 C. 논문기준 SR 0.59 vs 15bps SR 0.72. [무인 병렬 B4_23] 비중 제외(LOO) — B4/… |
+| 1242 | L-RP-20260904_220209 | ? | C | RF_PAR_B4_21_4 충실구현: 등급 C. 논문기준 SR 0.65 vs 15bps SR 0.80. [무인 병렬 B4_21] 전 요소 결합(4축) — B4/c… |
+| 1243 | L-RP-20260904_220214 | overlay_regime | B | RF_PAR_B4_25_LOO3 충실구현: 등급 B. 논문기준 SR 0.67 vs 15bps SR 0.81. [무인 병렬 B4_25] 오버레이 제외(LOO) = … |
+| 1244 | L-RP-20260904_220216 | ? | C | RF_PAR_B4_24_LOO 충실구현: 등급 C. 논문기준 SR 0.68 vs 15bps SR 0.80. [무인 병렬 B4_24] 유니버스 제외(LOO) — B… |
+| 1245 | L-RP-20260904_223019 | ? | B | RF_PAR_B1_1_1risk 충실구현: 등급 B. 논문기준 SR 0.79 vs 15bps SR 0.90. [무인 병렬 B1_1] 1팩터 직교(risk) — B… |
+| 1246 | L-RP-20260904_223053 | ? | C | RF_PAR_B1_2_2riskcrowding 충실구현: 등급 C. 논문기준 SR 0.71 vs 15bps SR 0.83. [무인 병렬 B1_2] 2팩터 직교(r… |
+| 1247 | L-RP-20260904_223138 | ? | C | RF_PAR_B1_3_3riskcrowdingaccrual 충실구현: 등급 C. 논문기준 SR 0.66 vs 15bps SR 0.79. [무인 병렬 B1_3] 3… |
+| 1248 | L-RP-20260904_223223 | ? | C | RF_PAR_B1_4_4riskcrowdinggrowthaccrual 충실구현: 등급 C. 논문기준 SR 0.46 vs 15bps SR 0.59. [무인 병렬 B… |
+| 1249 | L-RP-20260904_223311 | quality | C | RF_PAR_B1_5_5riskcrowdinggrowthaccrualquality 충실구현: 등급 C. 논문기준 SR 0.49 vs 15bps SR 0.61. [… |
+| 1250 | L-RP-20260905_090839 | overlay_regime | C | RF_PAR_B5_19_ddbrakeqdrawdown 충실구현: 등급 C. 논문기준 SR 0.80 vs 15bps SR 0.91. [무인 병렬 B5_19] dd_… |
+| 1251 | L-RP-20260905_090841 | overlay_regime | C | RF_PAR_B5_20_volxddcombo 충실구현: 등급 C. 논문기준 SR 0.85 vs 15bps SR 1.01. [무인 병렬 B5_20] vol_x_dd… |
+| 1252 | L-RP-20260905_090849 | overlay_regime | C | RF_PAR_B5_16_dbetatiltrankcrosssectional 충실구현: 등급 C. 논문기준 SR 0.81 vs 15bps SR 0.92. [무인 병렬… |
+| 1253 | L-RP-20260905_090849 | overlay_regime | C | RF_PAR_B5_18_holdlvlsyscrowdtiltcrosssectional 충실구현: 등급 C. 논문기준 SR 0.80 vs 15bps SR 0.91. … |
+| 1254 | L-RP-20260905_090850 | overlay_regime | C | RF_PAR_B5_17_csdidiotiltcrosssectional 충실구현: 등급 C. 논문기준 SR 0.86 vs 15bps SR 0.98. [무인 병렬 B… |
+| 1255 | L-RP-20260905_093409 | ? | C | RF_PAR_B2_7_ 충실구현: 등급 C. 논문기준 SR 0.79 vs 15bps SR 0.94. [무인 병렬 B2_7] 분산 최소화 하한 — B2/weight… |
+| 1256 | L-RP-20260905_093410 | ? | C | RF_PAR_B2_8_ 충실구현: 등급 C. 논문기준 SR 0.78 vs 15bps SR 0.91. [무인 병렬 B2_8] 상관구조 표적 — B2/weightin… |
+| 1257 | L-RP-20260905_093412 | ? | C | RF_PAR_B2_9_ 충실구현: 등급 C. 논문기준 SR 0.72 vs 15bps SR 0.86. [무인 병렬 B2_9] 점수 탑재 기준선 — B2/weight… |
+| 1258 | L-RP-20260905_100103 | ? | B | RF_PAR_B3_12_KOSDAQ150 충실구현: 등급 B. 논문기준 SR 0.90 vs 15bps SR 0.95. [무인 병렬 B3_12] KOSDAQ150 … |
+| 1259 | L-RP-20260905_100149 | ? | C | RF_PAR_B3_14_13 충실구현: 등급 C. 논문기준 SR 0.45 vs 15bps SR 0.58. [무인 병렬 B3_14] 대형주 상위 1/3 — B3/u… |
+| 1260 | L-RP-20260905_100151 | ? | C | RF_PAR_B3_13_ 충실구현: 등급 C. 논문기준 SR 0.64 vs 15bps SR 0.75. [무인 병렬 B3_13] 섹터 중립 — B3/universe… |
+| 1261 | L-RP-20260905_103417 | ? | C | RF_PAR_B4_23_LOO 충실구현: 등급 C. 논문기준 SR 0.76 vs 15bps SR 0.82. [무인 병렬 B4_23] 비중 제외(LOO) — B4/… |
+| 1262 | L-RP-20260905_103527 | ? | C | RF_PAR_B4_24_LOO 충실구현: 등급 C. 논문기준 SR 0.81 vs 15bps SR 0.93. [무인 병렬 B4_24] 유니버스 제외(LOO) — B… |
+| 1263 | L-RP-20260905_104624 | ? | C | RF_PAR_B4_23_LOO 충실구현: 등급 C. 논문기준 SR 0.76 vs 15bps SR 0.82. [무인 병렬 B4_23] 비중 제외(LOO) — B4/… |
+| 1264 | L-RP-20260905_112454 | momentum | B | RF_PAR_B1_5_crowdmomentum 충실구현: 등급 B. 논문기준 SR 0.74 vs 15bps SR 0.85. [무인 병렬 B1_5] crowd_mo… |
+| 1265 | L-RP-20260905_112454 | earnings_event | C | RF_PAR_B1_4_revisionbreadth 충실구현: 등급 C. 논문기준 SR 0.70 vs 15bps SR 0.81. [무인 병렬 B1_4] revisi… |
+| 1266 | L-RP-20260905_112454 | behavioral | B | RF_PAR_B1_1_flowforeignresid 충실구현: 등급 B. 논문기준 SR 0.72 vs 15bps SR 0.84. [무인 병렬 B1_1] flow_… |
+| 1267 | L-RP-20260905_112454 | quality | C | RF_PAR_B1_2_qualitycashprofit 충실구현: 등급 C. 논문기준 SR 0.66 vs 15bps SR 0.78. [무인 병렬 B1_2] qual… |
+| 1268 | L-RP-20260905_112454 | ? | B | RF_PAR_B1_3_investmentassetgrowth 충실구현: 등급 B. 논문기준 SR 0.78 vs 15bps SR 0.90. [무인 병렬 B1_3] … |
+| 1269 | L-RP-20260905_113723 | ? | B | RF_PAR_B1_6_ddpathulcer 충실구현: 등급 B. 논문기준 SR 0.74 vs 15bps SR 0.86. [무인 병렬 B1_6] dd_path_ul… |
+| 1270 | L-RP-20260905_113723 | ? | B | RF_PAR_B1_7_asymmetryncskew 충실구현: 등급 B. 논문기준 SR 0.76 vs 15bps SR 0.90. [무인 병렬 B1_7] asymme… |
+| 1271 | L-RP-20260905_113735 | ? | C | RF_PAR_B1_9_depth2pathxcrowd 충실구현: 등급 C. 논문기준 SR 0.68 vs 15bps SR 0.80. [무인 병렬 B1_9] depth… |
+| 1272 | L-RP-20260905_113736 | behavioral | B | RF_PAR_B1_8_depth2flowxquality 충실구현: 등급 B. 논문기준 SR 0.70 vs 15bps SR 0.81. [무인 병렬 B1_8] dep… |
+| 1273 | L-RP-20260905_115256 | overlay_regime | C | RF_PAR_B5_17_ 충실구현: 등급 C. 논문기준 SR 0.75 vs 15bps SR 0.86. [무인 병렬 B5_17] 낙폭상태 스칼라 축소 (대조군) —… |
+| 1274 | L-RP-20260905_115256 | overlay_regime | C | RF_PAR_B5_20_ 충실구현: 등급 C. 논문기준 SR 0.71 vs 15bps SR 0.83. [무인 병렬 B5_20] 다변량 상태(변동성·분산·낙폭) 게… |
+| 1275 | L-RP-20260905_115300 | overlay_regime | B | RF_PAR_B5_19_ 충실구현: 등급 B. 논문기준 SR 0.85 vs 15bps SR 0.99. [무인 병렬 B5_19] 횡단면분산 판독 + 특이변동 차등 … |
+| 1276 | L-RP-20260905_115301 | overlay_regime | C | RF_PAR_B5_16_x 충실구현: 등급 C. 논문기준 SR 0.76 vs 15bps SR 0.88. [무인 병렬 B5_16] 낙폭상태 x 하방베타 순위 차등 … |
+| 1277 | L-RP-20260905_115301 | overlay_regime | B | RF_PAR_B5_18_ 충실구현: 등급 B. 논문기준 SR 0.79 vs 15bps SR 0.90. [무인 병렬 B5_18] 보유 체계위험 비중 판독 + 차등 … |
+| 1278 | L-RP-20260905_115917 | overlay_regime | B | RF_PAR_B5_21_ 충실구현: 등급 B. 논문기준 SR 0.73 vs 15bps SR 0.87. [무인 병렬 B5_21] 회복 조건부 재진입 — B5/ris… |
+| 1279 | L-RP-20260905_121745 | ? | B | RF_PAR_B2_10_cvar 충실구현: 등급 B. 논문기준 SR 0.82 vs 15bps SR 0.93. [무인 병렬 B2_10] cvar — B2/weigh… |
+| 1280 | L-RP-20260905_121745 | low_vol | B | RF_PAR_B2_9_ivol 충실구현: 등급 B. 논문기준 SR 0.79 vs 15bps SR 0.91. [무인 병렬 B2_9] ivol — B2/weighti… |
+| 1281 | L-RP-20260905_121745 | ? | B | RF_PAR_B2_7_riskparity 충실구현: 등급 B. 논문기준 SR 0.82 vs 15bps SR 0.93. [무인 병렬 B2_7] riskparity … |
+| 1282 | L-RP-20260905_121745 | ? | C | RF_PAR_B2_6_minvar 충실구현: 등급 C. 논문기준 SR 0.77 vs 15bps SR 0.89. [무인 병렬 B2_6] minvar — B2/wei… |
+| 1283 | L-RP-20260905_121745 | ml_complexity | C | RF_PAR_B2_8_hrp 충실구현: 등급 C. 논문기준 SR 0.81 vs 15bps SR 0.92. [무인 병렬 B2_8] hrp — B2/weighting… |
+| 1284 | L-RP-20260905_123232 | ? | C | RF_PAR_B2_11_scoretilt 충실구현: 등급 C. 논문기준 SR 0.75 vs 15bps SR 0.88. [무인 병렬 B2_11] score_tilt… |
+| 1285 | L-RP-20260905_124805 | ? | C | RF_PAR_B3_14_13 충실구현: 등급 C. 논문기준 SR 0.46 vs 15bps SR 0.60. [무인 병렬 B3_14] 대형주 상위 1/3 — B3/u… |
+| 1286 | L-RP-20260905_124821 | size | C | RF_PAR_B3_13_13 충실구현: 등급 C. 논문기준 SR 0.60 vs 15bps SR 0.74. [무인 병렬 B3_13] 소형주 하위 1/3 — B3/u… |
+| 1287 | L-RP-20260905_124826 | ? | C | RF_PAR_B3_15_ 충실구현: 등급 C. 논문기준 SR 0.67 vs 15bps SR 0.78. [무인 병렬 B3_15] 섹터 중립 — B3/universe… |
+| 1288 | L-RP-20260905_130504 | ? | C | RF_PAR_B4_23_LOO 충실구현: 등급 C. 논문기준 SR 0.76 vs 15bps SR 0.87. [무인 병렬 B4_23] 비중 제외(LOO) — B4/… |
+| 1289 | L-RP-20260905_130538 | ? | C | RF_PAR_B4_22_LOO 충실구현: 등급 C. 논문기준 SR 0.73 vs 15bps SR 0.84. [무인 병렬 B4_22] 팩터 제외(LOO) — B4/… |
+| 1290 | L-RP-20260905_130557 | overlay_regime | C | RF_PAR_B4_25_LOO3 충실구현: 등급 C. 논문기준 SR 0.67 vs 15bps SR 0.77. [무인 병렬 B4_25] 오버레이 제외(LOO) = … |
+| 1291 | L-RP-20260905_130601 | ? | C | RF_PAR_B4_21_4 충실구현: 등급 C. 논문기준 SR 0.76 vs 15bps SR 0.85. [무인 병렬 B4_21] 전 요소 결합(4축) — B4/c… |
+| 1292 | L-RP-20260905_130605 | ? | B | RF_PAR_B4_24_LOO 충실구현: 등급 B. 논문기준 SR 0.89 vs 15bps SR 1.01. [무인 병렬 B4_24] 유니버스 제외(LOO) — B… |
+| 1293 | L-RP-20260905_191218 | ? | C | RF_PAR_B1_2_valueebitev 충실구현: 등급 C. 논문기준 SR 0.65 vs 15bps SR 0.73. [무인 병렬 B1_2] value_ebit… |
+| 1294 | L-RP-20260905_191218 | quality | C | RF_PAR_B1_3_qualitycashopprof 충실구현: 등급 C. 논문기준 SR 0.46 vs 15bps SR 0.55. [무인 병렬 B1_3] qual… |
+| 1295 | L-RP-20260905_191221 | earnings_event | C | RF_PAR_B1_5_revisionbreadth 충실구현: 등급 C. 논문기준 SR 0.43 vs 15bps SR 0.55. [무인 병렬 B1_5] revisi… |
+| 1296 | L-RP-20260905_191221 | ? | C | RF_PAR_B1_4_tailncskew 충실구현: 등급 C. 논문기준 SR 0.53 vs 15bps SR 0.65. [무인 병렬 B1_4] tail_ncskew… |
+| 1297 | L-RP-20260905_191223 | behavioral | C | RF_PAR_B1_1_flowforeignresid 충실구현: 등급 C. 논문기준 SR 0.29 vs 15bps SR 0.44. [무인 병렬 B1_1] flow_… |
+| 1298 | L-RP-20260905_192014 | ? | C | RF_PAR_B1_7_sizeprobe 충실구현: 등급 C. 논문기준 SR 0.44 vs 15bps SR 0.58. [무인 병렬 B1_7] size_probe —… |
+| 1299 | L-RP-20260905_192023 | ? | C | RF_PAR_B1_6_residmom 충실구현: 등급 C. 논문기준 SR 0.50 vs 15bps SR 0.62. [무인 병렬 B1_6] resid_mom — B… |
+| 1300 | L-RP-20260905_192032 | quality | C | RF_PAR_B1_8_valuexquality 충실구현: 등급 C. 논문기준 SR 0.59 vs 15bps SR 0.67. [무인 병렬 B1_8] value_x_… |
+| 1301 | L-RP-20260905_192055 | behavioral | C | RF_PAR_B1_9_triadflowvaluetail 충실구현: 등급 C. 논문기준 SR 0.54 vs 15bps SR 0.66. [무인 병렬 B1_9] tri… |
+| 1302 | L-RP-20260905_193512 | overlay_regime | C | RF_PAR_B5_20_ 충실구현: 등급 C. 논문기준 SR 0.67 vs 15bps SR 0.77. [무인 병렬 B5_20] 스칼라 축 상한 탐침 — B5/ri… |
+| 1303 | L-RP-20260905_193532 | overlay_regime | C | RF_PAR_B5_19_ 충실구현: 등급 C. 논문기준 SR 0.66 vs 15bps SR 0.71. [무인 병렬 B5_19] 다변량 상태 스칼라 게이트 — B5… |
+| 1304 | L-RP-20260905_193541 | overlay_regime | C | RF_PAR_B5_18_tilt 충실구현: 등급 C. 논문기준 SR 0.67 vs 15bps SR 0.75. [무인 병렬 B5_18] 낙폭 상태 + 하방베타 순위… |
+| 1305 | L-RP-20260905_193542 | overlay_regime | C | RF_PAR_B5_17_tilt 충실구현: 등급 C. 논문기준 SR 0.70 vs 15bps SR 0.79. [무인 병렬 B5_17] 횡단면분산 상태 + 특이변동… |
+| 1306 | L-RP-20260905_193542 | overlay_regime | C | RF_PAR_B5_16_tilt 충실구현: 등급 C. 논문기준 SR 0.66 vs 15bps SR 0.73. [무인 병렬 B5_16] 보유-체계집중 tilt — … |
+| 1307 | L-RP-20260905_195208 | ? | C | RF_PAR_B2_6_minvar 충실구현: 등급 C. 논문기준 SR 0.58 vs 15bps SR 0.69. [무인 병렬 B2_6] minvar (전 공분산) … |
+| 1308 | L-RP-20260905_195208 | ? | C | RF_PAR_B2_10_scoretilt0 충실구현: 등급 C. 논문기준 SR 0.65 vs 15bps SR 0.76. [무인 병렬 B2_10] score_til… |
+| 1309 | L-RP-20260905_195208 | ? | C | RF_PAR_B2_9_cvar 충실구현: 등급 C. 논문기준 SR 0.67 vs 15bps SR 0.77. [무인 병렬 B2_9] cvar (좌측 꼬리 목적) —… |
+| 1310 | L-RP-20260905_195208 | ml_complexity | C | RF_PAR_B2_8_hrp 충실구현: 등급 C. 논문기준 SR 0.63 vs 15bps SR 0.74. [무인 병렬 B2_8] hrp (상관 구조, 역행렬 없음… |
+| 1311 | L-RP-20260905_195208 | low_vol | C | RF_PAR_B2_7_ivol 충실구현: 등급 C. 논문기준 SR 0.68 vs 15bps SR 0.78. [무인 병렬 B2_7] ivol (대각 분산만) — B… |
+| 1312 | L-RP-20260905_200614 | ? | C | RF_PAR_B3_14_13 충실구현: 등급 C. 논문기준 SR 0.50 vs 15bps SR 0.60. [무인 병렬 B3_14] 대형주 상위 1/3 — B3/u… |
+| 1313 | L-RP-20260905_200614 | ? | C | RF_PAR_B3_15_ 충실구현: 등급 C. 논문기준 SR 0.51 vs 15bps SR 0.61. [무인 병렬 B3_15] 섹터 중립 — B3/universe… |
+| 1314 | L-RP-20260905_200614 | size | C | RF_PAR_B3_13_13 충실구현: 등급 C. 논문기준 SR 0.63 vs 15bps SR 0.77. [무인 병렬 B3_13] 소형주 하위 1/3 — B3/u… |
+| 1315 | L-RP-20260905_200617 | ? | C | RF_PAR_B3_12_KOSPI200 충실구현: 등급 C. 논문기준 SR 0.46 vs 15bps SR 0.57. [무인 병렬 B3_12] KOSPI200 단독… |
+| 1316 | L-RP-20260905_201433 | ? | C | RF_PAR_B4_22_LOO 충실구현: 등급 C. 논문기준 SR 0.45 vs 15bps SR 0.58. [무인 병렬 B4_22] 팩터 제외(LOO) — B4/… |
+| 1317 | L-RP-20260905_201456 | ? | C | RF_PAR_B4_21_4 충실구현: 등급 C. 논문기준 SR 0.67 vs 15bps SR 0.80. [무인 병렬 B4_21] 전 요소 결합(4축) — B4/c… |
+| 1318 | L-RP-20260905_201517 | overlay_regime | B | RF_PAR_B4_25_LOO3 충실구현: 등급 B. 논문기준 SR 0.75 vs 15bps SR 0.86. [무인 병렬 B4_25] 오버레이 제외(LOO) = … |
+| 1319 | L-RP-20260905_205134 | ? | C | RF_PAR_B1_4_ncskewsel 충실구현: 등급 C. 논문기준 SR 0.66 vs 15bps SR 0.76. [무인 병렬 B1_4] ncskew_sel —… |
+| 1320 | L-RP-20260905_205134 | ? | C | RF_PAR_B1_3_betasymmetricctrl 충실구현: 등급 C. 논문기준 SR 0.71 vs 15bps SR 0.80. [무인 병렬 B1_3] beta… |
+| 1321 | L-RP-20260905_205134 | ? | C | RF_PAR_B1_1_dbetasel 충실구현: 등급 C. 논문기준 SR 0.74 vs 15bps SR 0.80. [무인 병렬 B1_1] dbeta_sel — B… |
+| 1322 | L-RP-20260905_205134 | ? | B | RF_PAR_B1_5_ulcerpathsel 충실구현: 등급 B. 논문기준 SR 0.80 vs 15bps SR 0.88. [무인 병렬 B1_5] ulcer_pat… |
+| 1323 | L-RP-20260905_205134 | ? | C | RF_PAR_B1_2_tailbetasel 충실구현: 등급 C. 논문기준 SR 0.66 vs 15bps SR 0.75. [무인 병렬 B1_2] tailbeta_s… |
+| 1324 | L-RP-20260905_210419 | ? | C | RF_PAR_B1_6_sizesofttilt 충실구현: 등급 C. 논문기준 SR 0.73 vs 15bps SR 0.81. [무인 병렬 B1_6] size_soft… |
+| 1325 | L-RP-20260905_210419 | ? | B | RF_PAR_B1_8_retaxisctrl 충실구현: 등급 B. 논문기준 SR 0.69 vs 15bps SR 0.79. [무인 병렬 B1_8] ret_axis_c… |
+| 1326 | L-RP-20260905_210438 | ? | C | RF_PAR_B1_7_dbetaxsize 충실구현: 등급 C. 논문기준 SR 0.70 vs 15bps SR 0.77. [무인 병렬 B1_7] dbeta_x_siz… |
+| 1327 | L-RP-20260905_212047 | overlay_regime | C | RF_PAR_B5_16_ 충실구현: 등급 C. 논문기준 SR 0.77 vs 15bps SR 0.85. [무인 병렬 B5_16] 낙폭 스칼라 브레이크(대조군) — … |
+| 1328 | L-RP-20260905_212052 | overlay_regime | C | RF_PAR_B5_17_ 충실구현: 등급 C. 논문기준 SR 0.80 vs 15bps SR 0.88. [무인 병렬 B5_17] 낙폭 상태 · 하방베타 순위 차등 … |
+| 1329 | L-RP-20260905_212052 | overlay_regime | C | RF_PAR_B5_19_ 충실구현: 등급 C. 논문기준 SR 0.86 vs 15bps SR 0.95. [무인 병렬 B5_19] 횡단면분산 상태 · 특이변동 차등 … |
+| 1330 | L-RP-20260905_212053 | overlay_regime | C | RF_PAR_B5_18_ 충실구현: 등급 C. 논문기준 SR 0.81 vs 15bps SR 0.88. [무인 병렬 B5_18] 보유 체계위험 집중 상태 — B5/… |
+| 1331 | L-RP-20260905_213717 | ? | C | RF_PAR_B2_9_NCO 충실구현: 등급 C. 논문기준 SR 0.79 vs 15bps SR 0.88. [무인 병렬 B2_9] NCO 잡음제거 공분산 — B2/… |
+| 1332 | L-RP-20260905_213717 | ? | B | RF_PAR_B2_8_CVaR 충실구현: 등급 B. 논문기준 SR 0.81 vs 15bps SR 0.89. [무인 병렬 B2_8] CVaR 꼬리 목적 — B2/w… |
+| 1333 | L-RP-20260905_213717 | ? | B | RF_PAR_B2_10_ 충실구현: 등급 B. 논문기준 SR 0.85 vs 15bps SR 0.93. [무인 병렬 B2_10] 위험항 제거 대조 — B2/weig… |
+| 1334 | L-RP-20260905_213717 | ml_complexity | C | RF_PAR_B2_6_HRP 충실구현: 등급 C. 논문기준 SR 0.82 vs 15bps SR 0.90. [무인 병렬 B2_6] HRP 클러스터 배분 — B2/w… |
+| 1335 | L-RP-20260905_213717 | ? | C | RF_PAR_B2_7_ 충실구현: 등급 C. 논문기준 SR 0.65 vs 15bps SR 0.74. [무인 병렬 B2_7] 최대분산화 — B2/weighting … |
+| 1336 | L-RP-20260905_215247 | size | C | RF_PAR_B3_13_13 충실구현: 등급 C. 논문기준 SR 0.59 vs 15bps SR 0.72. [무인 병렬 B3_13] 소형주 하위 1/3 — B3/u… |
+| 1337 | L-RP-20260905_215247 | ? | C | RF_PAR_B3_15_ 충실구현: 등급 C. 논문기준 SR 0.63 vs 15bps SR 0.70. [무인 병렬 B3_15] 섹터 중립 — B3/universe… |
+| 1338 | L-RP-20260905_215247 | ? | C | RF_PAR_B3_14_13 충실구현: 등급 C. 논문기준 SR 0.42 vs 15bps SR 0.53. [무인 병렬 B3_14] 대형주 상위 1/3 — B3/u… |
+| 1339 | L-RP-20260905_215250 | ? | C | RF_PAR_B3_12_KOSPI200 충실구현: 등급 C. 논문기준 SR 0.50 vs 15bps SR 0.60. [무인 병렬 B3_12] KOSPI200 단독… |
+| 1340 | L-RP-20260905_220725 | ? | C | RF_PAR_B4_23_LOO 충실구현: 등급 C. 논문기준 SR 0.58 vs 15bps SR 0.72. [무인 병렬 B4_23] 비중 제외(LOO) — B4/… |
+| 1341 | L-RP-20260905_220759 | ? | C | RF_PAR_B4_22_LOO 충실구현: 등급 C. 논문기준 SR 0.70 vs 15bps SR 0.82. [무인 병렬 B4_22] 팩터 제외(LOO) — B4/… |
+| 1342 | L-RP-20260905_220823 | ? | C | RF_PAR_B4_21_4 충실구현: 등급 C. 논문기준 SR 0.64 vs 15bps SR 0.80. [무인 병렬 B4_21] 전 요소 결합(4축) — B4/c… |
+| 1343 | L-RP-20260905_220829 | ? | C | RF_PAR_B4_24_LOO 충실구현: 등급 C. 논문기준 SR 0.83 vs 15bps SR 0.91. [무인 병렬 B4_24] 유니버스 제외(LOO) — B… |
+| 1344 | L-RP-20260905_220831 | overlay_regime | C | RF_PAR_B4_25_LOO3 충실구현: 등급 C. 논문기준 SR 0.64 vs 15bps SR 0.78. [무인 병렬 B4_25] 오버레이 제외(LOO) = … |
+| 1345 | L-RP-20260905_223522 | quality_profitability | C | RF_PAR_B1_3_cashprofitability 충실구현: 등급 C. 논문기준 SR 0.71 vs 15bps SR 0.78. [무인 병렬 B1_3] cash… |
+| 1346 | L-RP-20260905_223522 | ? | B | RF_PAR_B1_4_pctaccruals 충실구현: 등급 B. 논문기준 SR 0.65 vs 15bps SR 0.77. [무인 병렬 B1_4] pct_accrua… |
+| 1347 | L-RP-20260905_223522 | momentum | C | RF_PAR_B1_2_streversal 충실구현: 등급 C. 논문기준 SR 0.65 vs 15bps SR 0.76. [무인 병렬 B1_2] st_reversal… |
+| 1348 | L-RP-20260905_223522 | ? | B | RF_PAR_B1_1_sizefactorpoint 충실구현: 등급 B. 논문기준 SR 0.81 vs 15bps SR 0.91. [무인 병렬 B1_1] size_f… |
+| 1349 | L-RP-20260905_223522 | earnings_event | B | RF_PAR_B1_5_revisionbreadth 충실구현: 등급 B. 논문기준 SR 0.74 vs 15bps SR 0.82. [무인 병렬 B1_5] revisi… |
+| 1350 | L-RP-20260905_224949 | ? | B | RF_PAR_B1_6_crashasymmetry 충실구현: 등급 B. 논문기준 SR 0.81 vs 15bps SR 0.90. [무인 병렬 B1_6] crash_a… |
+| 1351 | L-RP-20260905_224949 | ? | B | RF_PAR_B1_7_valuechanneldepth 충실구현: 등급 B. 논문기준 SR 0.79 vs 15bps SR 0.88. [무인 병렬 B1_7] valu… |
+| 1352 | L-RP-20260905_225011 | ? | B | RF_PAR_B1_9_sizexcashprofit 충실구현: 등급 B. 논문기준 SR 0.77 vs 15bps SR 0.84. [무인 병렬 B1_9] size_x… |
+| 1353 | L-RP-20260905_225012 | momentum | C | RF_PAR_B1_8_sizexreversal 충실구현: 등급 C. 논문기준 SR 0.62 vs 15bps SR 0.73. [무인 병렬 B1_8] size_x_r… |
+| 1354 | L-RP-20260905_225048 | ? | C | RF_PAR_B1_10_stack3ceiling 충실구현: 등급 C. 논문기준 SR 0.65 vs 15bps SR 0.74. [무인 병렬 B1_10] stack3… |
+| 1355 | L-RP-20260905_230517 | momentum | B | RF_PAR_B5_20_ 충실구현: 등급 B. 논문기준 SR 0.77 vs 15bps SR 0.90. [무인 병렬 B5_20] 추세 부호 전량현금 — B5/ris… |
+| 1356 | L-RP-20260905_230528 | overlay_regime | C | RF_PAR_B5_16_ 충실구현: 등급 C. 논문기준 SR 0.81 vs 15bps SR 0.93. [무인 병렬 B5_16] 낙폭 스칼라 대조 — B5/risk… |
+| 1357 | L-RP-20260905_230540 | overlay_regime | B | RF_PAR_B5_18_xtilt 충실구현: 등급 B. 논문기준 SR 0.88 vs 15bps SR 0.99. [무인 병렬 B5_18] 횡단면분산 x 특이변동 t… |
+| 1358 | L-RP-20260905_230541 | overlay_regime | B | RF_PAR_B5_19_tilt 충실구현: 등급 B. 논문기준 SR 0.82 vs 15bps SR 0.91. [무인 병렬 B5_19] 보유 체계위험 수렴 tilt… |
+| 1359 | L-RP-20260905_230541_02 | overlay_regime | B | RF_PAR_B5_17_xtilt 충실구현: 등급 B. 논문기준 SR 0.83 vs 15bps SR 0.94. [무인 병렬 B5_17] 낙폭 x 하방베타 순위 t… |
+| 1360 | L-RP-20260905_232157 | ? | C | RF_PAR_B2_6_ 충실구현: 등급 C. 논문기준 SR 0.67 vs 15bps SR 0.79. [무인 병렬 B2_6] 최소분산 — B2/weighting ·… |
+| 1361 | L-RP-20260905_232157 | ? | C | RF_PAR_B2_8_CVaR 충실구현: 등급 C. 논문기준 SR 0.72 vs 15bps SR 0.81. [무인 병렬 B2_8] CVaR — B2/weighti… |
+| 1362 | L-RP-20260905_232157 | ml_complexity | C | RF_PAR_B2_9_HRP 충실구현: 등급 C. 논문기준 SR 0.70 vs 15bps SR 0.79. [무인 병렬 B2_9] HRP — B2/weighting… |
+| 1363 | L-RP-20260905_232157 | ? | B | RF_PAR_B2_10_NCO 충실구현: 등급 B. 논문기준 SR 0.80 vs 15bps SR 0.88. [무인 병렬 B2_10] NCO+점수 — B2/weig… |
+| 1364 | L-RP-20260906_180028 | ? | B | RF_PAR_B2_10_NCO 충실구현: 등급 B. 논문기준 SR 0.80 vs 15bps SR 0.88. [무인 병렬 B2_10] NCO+점수 — B2/weig… |
+| 1365 | L-RP-20260906_180028 | ? | C | RF_PAR_B2_6_ 충실구현: 등급 C. 논문기준 SR 0.67 vs 15bps SR 0.79. [무인 병렬 B2_6] 최소분산 — B2/weighting ·… |
+| 1366 | L-RP-20260906_180028 | ml_complexity | C | RF_PAR_B2_9_HRP 충실구현: 등급 C. 논문기준 SR 0.70 vs 15bps SR 0.79. [무인 병렬 B2_9] HRP — B2/weighting… |
+| 1367 | L-RP-20260906_180028 | ? | C | RF_PAR_B2_8_CVaR 충실구현: 등급 C. 논문기준 SR 0.72 vs 15bps SR 0.81. [무인 병렬 B2_8] CVaR — B2/weighti… |
+| 1368 | L-RP-20260906_210754 | ? | C | RF_PAR_B3_14_13 충실구현: 등급 C. 논문기준 SR 0.43 vs 15bps SR 0.54. [무인 병렬 B3_14] 대형주 상위 1/3 — B3/u… |
+| 1369 | L-RP-20260906_210754 | ? | C | RF_PAR_B3_15_ 충실구현: 등급 C. 논문기준 SR 0.67 vs 15bps SR 0.75. [무인 병렬 B3_15] 섹터 중립 — B3/universe… |
+| 1370 | L-RP-20260906_210754 | size | B | RF_PAR_B3_13_13 충실구현: 등급 B. 논문기준 SR 0.69 vs 15bps SR 0.82. [무인 병렬 B3_13] 소형주 하위 1/3 — B3/u… |
+| 1371 | L-RP-20260906_210754 | ? | C | RF_PAR_B3_12_K200 충실구현: 등급 C. 논문기준 SR 0.46 vs 15bps SR 0.58. [무인 병렬 B3_12] K200 단독 — B3/un… |
+| 1372 | L-RP-20260906_212316 | ? | C | RF_PAR_B4_23_LOO 충실구현: 등급 C. 논문기준 SR 0.62 vs 15bps SR 0.75. [무인 병렬 B4_23] 비중 제외(LOO) — B4/… |
+| 1373 | L-RP-20260906_212344 | ? | C | RF_PAR_B4_22_LOO 충실구현: 등급 C. 논문기준 SR 0.74 vs 15bps SR 0.87. [무인 병렬 B4_22] 팩터 제외(LOO) — B4/… |
+| 1374 | L-RP-20260906_212402 | overlay_regime | C | RF_PAR_B4_25_LOO3 충실구현: 등급 C. 논문기준 SR 0.67 vs 15bps SR 0.79. [무인 병렬 B4_25] 오버레이 제외(LOO) = … |
+| 1375 | L-RP-20260906_212411 | ? | C | RF_PAR_B4_21_4 충실구현: 등급 C. 논문기준 SR 0.76 vs 15bps SR 0.88. [무인 병렬 B4_21] 전 요소 결합(4축) — B4/c… |
+| 1376 | L-RP-20260906_212414 | ? | B | RF_PAR_B4_24_LOO 충실구현: 등급 B. 논문기준 SR 0.88 vs 15bps SR 0.98. [무인 병렬 B4_24] 유니버스 제외(LOO) — B… |
+| 1377 | L-RP-20260907_003810 | earnings_event | C | RF_PAR_B1_2_sue 충실구현: 등급 C. 논문기준 SR 0.49 vs 15bps SR 0.59. [무인 병렬 B1_2] sue — B1/multifact… |
+| 1378 | L-RP-20260907_003814 | ? | C | RF_PAR_B1_1_revbreadth 충실구현: 등급 C. 논문기준 SR 0.52 vs 15bps SR 0.62. [무인 병렬 B1_1] rev_breadth… |
+| 1379 | L-RP-20260907_003814 | ? | C | RF_PAR_B1_5_cashprofit 충실구현: 등급 C. 논문기준 SR 0.64 vs 15bps SR 0.70. [무인 병렬 B1_5] cash_profit… |
+| 1380 | L-RP-20260907_003814 | ? | C | RF_PAR_B1_4_sizeonly 충실구현: 등급 C. 논문기준 SR 0.62 vs 15bps SR 0.77. [무인 병렬 B1_4] size_only — B… |
+| 1381 | L-RP-20260907_003818 | behavioral | F | RF_PAR_B1_3_krforeignflow 충실구현: 등급 F. 논문기준 SR 0.34 vs 15bps SR 0.46. [무인 병렬 B1_3] kr_forei… |
+| 1382 | L-RP-20260907_004924 | ? | C | RF_PAR_B1_6_pricedelay 충실구현: 등급 C. 논문기준 SR 0.35 vs 15bps SR 0.46. [무인 병렬 B1_6] price_delay… |
+| 1383 | L-RP-20260907_004924 | earnings_event | C | RF_PAR_B1_9_suexprofit 충실구현: 등급 C. 논문기준 SR 0.57 vs 15bps SR 0.66. [무인 병렬 B1_9] sue_x_profi… |
+| 1384 | L-RP-20260907_004933 | ? | C | RF_PAR_B1_7_revxsize 충실구현: 등급 C. 논문기준 SR 0.61 vs 15bps SR 0.71. [무인 병렬 B1_7] rev_x_size — … |
+| 1385 | L-RP-20260907_004940 | behavioral | C | RF_PAR_B1_8_krflowxsize 충실구현: 등급 C. 논문기준 SR 0.47 vs 15bps SR 0.59. [무인 병렬 B1_8] kr_flow_x_… |
+| 1386 | L-RP-20260907_010352 | overlay_regime | C | RF_PAR_B5_20_ 충실구현: 등급 C. 논문기준 SR 0.61 vs 15bps SR 0.76. [무인 병렬 B5_20] 회복 조건부 재진입(스칼라 대조) … |
+| 1387 | L-RP-20260907_010414 | overlay_regime | C | RF_PAR_B5_17_tilt 충실구현: 등급 C. 논문기준 SR 0.69 vs 15bps SR 0.86. [무인 병렬 B5_17] 특이변동 귀속 tilt (반… |
+| 1388 | L-RP-20260907_010415 | overlay_regime | C | RF_PAR_B5_16_tilt 충실구현: 등급 C. 논문기준 SR 0.63 vs 15bps SR 0.78. [무인 병렬 B5_16] 체계위험 귀속 tilt — … |
+| 1389 | L-RP-20260907_010416 | overlay_regime | C | RF_PAR_B5_19_ 충실구현: 등급 C. 논문기준 SR 0.67 vs 15bps SR 0.82. [무인 병렬 B5_19] 체계/특이 예보 축 회전 — B5/… |
+| 1390 | L-RP-20260907_010416_02 | overlay_regime | C | RF_PAR_B5_18_ 충실구현: 등급 C. 논문기준 SR 0.66 vs 15bps SR 0.82. [무인 병렬 B5_18] 스트레스 채널 라우팅 — B5/ri… |
+| 1391 | L-RP-20260907_011553 | ? | C | RF_PAR_B2_7_ 충실구현: 등급 C. 논문기준 SR 0.63 vs 15bps SR 0.79. [무인 병렬 B2_7] 최소분산 — B2/weighting ·… |
+| 1392 | L-RP-20260907_011553 | ? | C | RF_PAR_B2_8_ 충실구현: 등급 C. 논문기준 SR 0.67 vs 15bps SR 0.81. [무인 병렬 B2_8] 군집 계층 배분 — B2/weighti… |
+| 1393 | L-RP-20260907_011553 | ? | C | RF_PAR_B2_6_ 충실구현: 등급 C. 논문기준 SR 0.70 vs 15bps SR 0.85. [무인 병렬 B2_6] 특이변동 역가중 — B2/weighti… |
+| 1394 | L-RP-20260907_011553 | ? | C | RF_PAR_B2_10_ 충실구현: 등급 C. 논문기준 SR 0.67 vs 15bps SR 0.81. [무인 병렬 B2_10] 단기간 꼬리 목적 — B2/weig… |
+| 1395 | L-RP-20260907_041641 | ? | C | RF_PAR_B2_11_ 충실구현: 등급 C. 논문기준 SR 0.68 vs 15bps SR 0.83. [무인 병렬 B2_11] 동일가중 이탈 대조 — B2/wei… |
+| 1396 | L-RP-20260907_042550 | ? | C | RF_PAR_B3_15_ 충실구현: 등급 C. 논문기준 SR 0.53 vs 15bps SR 0.64. [무인 병렬 B3_15] 섹터 중립 — B3/universe… |
+| 1397 | L-RP-20260907_042550 | ? | B | RF_PAR_B3_13_tercile 충실구현: 등급 B. 논문기준 SR 0.77 vs 15bps SR 0.94. [무인 병렬 B3_13] 소형 tercile —… |
+| 1398 | L-RP-20260907_042550 | ? | C | RF_PAR_B3_14_tercile 충실구현: 등급 C. 논문기준 SR 0.44 vs 15bps SR 0.54. [무인 병렬 B3_14] 대형 tercile —… |
+| 1399 | L-RP-20260907_042554 | ? | F | RF_PAR_B3_12_K200 충실구현: 등급 F. 논문기준 SR 0.28 vs 15bps SR 0.40. [무인 병렬 B3_12] K200 단독 — B3/un… |
+| 1400 | L-RP-20260907_043915 | ? | C | RF_PAR_B4_23_LOO 충실구현: 등급 C. 논문기준 SR 0.71 vs 15bps SR 0.90. [무인 병렬 B4_23] 비중 제외(LOO) — B4/… |
+| 1401 | L-RP-20260907_043938 | ? | C | RF_PAR_B4_22_LOO 충실구현: 등급 C. 논문기준 SR 0.61 vs 15bps SR 0.77. [무인 병렬 B4_22] 팩터 제외(LOO) — B4/… |
+| 1402 | L-RP-20260907_044008 | ? | C | RF_PAR_B4_21_4 충실구현: 등급 C. 논문기준 SR 0.81 vs 15bps SR 1.00. [무인 병렬 B4_21] 전 요소 결합(4축) — B4/c… |
+| 1403 | L-RP-20260907_044014 | ? | C | RF_PAR_B4_24_LOO 충실구현: 등급 C. 논문기준 SR 0.75 vs 15bps SR 0.91. [무인 병렬 B4_24] 유니버스 제외(LOO) — B… |
+| 1404 | L-RP-20260907_045940 | ? | C | RF_PAR_B1_1_sizevalueebitev 충실구현: 등급 C. 논문기준 SR 0.74 vs 15bps SR 0.82. [무인 병렬 B1_1] size+v… |
+| 1405 | L-RP-20260907_045940 | quality_earnings | C | RF_PAR_B1_4_sizeaccrualquality 충실구현: 등급 C. 논문기준 SR 0.60 vs 15bps SR 0.73. [무인 병렬 B1_4] siz… |
+| 1406 | L-RP-20260907_045940 | quality_profitability | C | RF_PAR_B1_3_sizecashprofitability 충실구현: 등급 C. 논문기준 SR 0.67 vs 15bps SR 0.73. [무인 병렬 B1_3] … |
+| 1407 | L-RP-20260907_045940 | quality_earnings | C | RF_PAR_B1_2_sizepiotroskiscreen 충실구현: 등급 C. 논문기준 SR 0.68 vs 15bps SR 0.77. [무인 병렬 B1_2] si… |
+| 1408 | L-RP-20260907_045940 | earnings_event | C | RF_PAR_B1_5_sizerevisionbreadth 충실구현: 등급 C. 논문기준 SR 0.64 vs 15bps SR 0.74. [무인 병렬 B1_5] si… |
+| 1409 | L-RP-20260907_050651 | ? | C | RF_PAR_B1_7_sizeilliquidity 충실구현: 등급 C. 논문기준 SR 0.60 vs 15bps SR 0.72. [무인 병렬 B1_7] size+i… |
+| 1410 | L-RP-20260907_050651 | ? | C | RF_PAR_B1_8_sizeequityissuance 충실구현: 등급 C. 논문기준 SR 0.75 vs 15bps SR 0.84. [무인 병렬 B1_8] siz… |
+| 1411 | L-RP-20260907_050710 | ? | C | RF_PAR_B1_6_sizecheapandsafe 충실구현: 등급 C. 논문기준 SR 0.71 vs 15bps SR 0.78. [무인 병렬 B1_6] size+… |
+| 1412 | L-RP-20260907_052113 | overlay_regime | C | RF_PAR_B5_16_ 충실구현: 등급 C. 논문기준 SR 0.67 vs 15bps SR 0.77. [무인 병렬 B5_16] 낙폭 스칼라(대조군) — B5/ri… |
+| 1413 | L-RP-20260907_052117 | overlay_regime | C | RF_PAR_B5_19_ 충실구현: 등급 C. 논문기준 SR 0.76 vs 15bps SR 0.85. [무인 병렬 B5_19] 보유 수준 체계위험 집중도 — B5… |
+| 1414 | L-RP-20260907_052117 | overlay_regime | C | RF_PAR_B5_18_xtilt 충실구현: 등급 C. 논문기준 SR 0.79 vs 15bps SR 0.90. [무인 병렬 B5_18] 횡단면분산 x 특이변동 t… |
+| 1415 | L-RP-20260907_052117 | overlay_regime | C | RF_PAR_B5_20_x 충실구현: 등급 C. 논문기준 SR 0.76 vs 15bps SR 0.86. [무인 병렬 B5_20] 다변량 방향 x 채널 매핑 — B… |
+| 1416 | L-RP-20260907_052118 | overlay_regime | C | RF_PAR_B5_17_xtilt 충실구현: 등급 C. 논문기준 SR 0.71 vs 15bps SR 0.80. [무인 병렬 B5_17] 낙폭 x 하방베타 순위 t… |
+| 1417 | L-RP-20260907_052803 | overlay_regime | C | RF_PAR_B5_21_tilt 충실구현: 등급 C. 논문기준 SR 0.75 vs 15bps SR 0.85. [무인 병렬 B5_21] 학습 이중예보 tilt — … |
+| 1418 | L-RP-20260907_053903 | ? | C | RF_PAR_B2_8_ 충실구현: 등급 C. 논문기준 SR 0.66 vs 15bps SR 0.76. [무인 병렬 B2_8] 분산 단일축 통제 — B2/weight… |
+| 1419 | L-RP-20260907_053903 | ? | C | RF_PAR_B2_9_ 충실구현: 등급 C. 논문기준 SR 0.73 vs 15bps SR 0.83. [무인 병렬 B2_9] 축소추정 통제 — B2/weightin… |
+| 1420 | L-RP-20260907_053903 | ? | C | RF_PAR_B2_7_ 충실구현: 등급 C. 논문기준 SR 0.62 vs 15bps SR 0.70. [무인 병렬 B2_7] 군집 후 재조립 비중 — B2/weig… |
+| 1421 | L-RP-20260907_053903 | ? | C | RF_PAR_B2_6_ 충실구현: 등급 C. 논문기준 SR 0.64 vs 15bps SR 0.72. [무인 병렬 B2_6] 계층 상관 구조 비중 — B2/weig… |
+| 1422 | L-RP-20260907_091325 | ? | C | RF_PAR_B2_10_ 충실구현: 등급 C. 논문기준 SR 0.56 vs 15bps SR 0.70. [무인 병렬 B2_10] 낙폭 목적함수 직접 — B2/wei… |
+| 1423 | L-RP-20260907_092822 | ? | C | RF_PAR_B3_14_13 충실구현: 등급 C. 논문기준 SR 0.38 vs 15bps SR 0.48. [무인 병렬 B3_14] 대형주 상위 1/3 — B3/u… |
+| 1424 | L-RP-20260907_092822 | size | C | RF_PAR_B3_13_13 충실구현: 등급 C. 논문기준 SR 0.73 vs 15bps SR 0.86. [무인 병렬 B3_13] 소형주 하위 1/3 — B3/u… |
+| 1425 | L-RP-20260907_092822 | ? | C | RF_PAR_B3_15_ 충실구현: 등급 C. 논문기준 SR 0.53 vs 15bps SR 0.63. [무인 병렬 B3_15] 섹터 중립 — B3/universe… |
+| 1426 | L-RP-20260907_092824 | ? | C | RF_PAR_B3_12_KOSPI200 충실구현: 등급 C. 논문기준 SR 0.43 vs 15bps SR 0.55. [무인 병렬 B3_12] KOSPI200 단독… |
+| 1427 | L-RP-20260907_093853 | ? | C | RF_PAR_B4_23_LOO 충실구현: 등급 C. 논문기준 SR 0.67 vs 15bps SR 0.83. [무인 병렬 B4_23] 비중 제외(LOO) — B4/… |
+| 1428 | L-RP-20260907_093924 | ? | C | RF_PAR_B4_22_LOO 충실구현: 등급 C. 논문기준 SR 0.81 vs 15bps SR 1.00. [무인 병렬 B4_22] 팩터 제외(LOO) — B4/… |
+| 1429 | L-RP-20260907_093945 | overlay_regime | C | RF_PAR_B4_25_LOO3 충실구현: 등급 C. 논문기준 SR 0.72 vs 15bps SR 0.85. [무인 병렬 B4_25] 오버레이 제외(LOO) = … |
+| 1430 | L-RP-20260907_093949 | ? | C | RF_PAR_B4_21_4 충실구현: 등급 C. 논문기준 SR 0.76 vs 15bps SR 0.91. [무인 병렬 B4_21] 전 요소 결합(4축) — B4/c… |
+| 1431 | L-RP-20260907_093956 | ? | C | RF_PAR_B4_24_LOO 충실구현: 등급 C. 논문기준 SR 0.75 vs 15bps SR 0.85. [무인 병렬 B4_24] 유니버스 제외(LOO) — B… |
+| 1432 | L-RP-20260910_131852 | ? | C | RF_PAR_B1_2_valueebitev 충실구현: 등급 C. 논문기준 SR 0.38 vs 15bps SR 0.54. [무인 병렬 B1_2] value_ebit… |
+| 1433 | L-RP-20260910_131852 | ? | C | RF_PAR_B1_4_netissuance 충실구현: 등급 C. 논문기준 SR 0.40 vs 15bps SR 0.56. [무인 병렬 B1_4] net_issuan… |
+| 1434 | L-RP-20260910_131852 | liquidity | C | RF_PAR_B1_3_illiqamihud 충실구현: 등급 C. 논문기준 SR 0.40 vs 15bps SR 0.56. [무인 병렬 B1_3] illiq_amih… |
+| 1435 | L-RP-20260910_131852 | ? | C | RF_PAR_B1_1_size 충실구현: 등급 C. 논문기준 SR 0.40 vs 15bps SR 0.56. [무인 병렬 B1_1] size — B1/multifa… |
+| 1436 | L-RP-20260910_131953 | earnings_event | C | RF_PAR_B1_5_sueconfirm 충실구현: 등급 C. 논문기준 SR 0.45 vs 15bps SR 0.64. [무인 병렬 B1_5] sue_confirm… |
+| 1437 | L-RP-20260912_170105 | ? | C | RF_PAR_B1_6_momcrowding 충실구현: 등급 C. 논문기준 SR 0.40 vs 15bps SR 0.56. [무인 병렬 B1_6] mom_crowdi… |
+| 1438 | L-RP-20260912_170105 | ? | C | RF_PAR_B1_7_babrank 충실구현: 등급 C. 논문기준 SR 0.40 vs 15bps SR 0.56. [무인 병렬 B1_7] bab_rank — B1/… |
+| 1439 | L-RP-20260912_170112 | ? | C | RF_PAR_B1_8_sizexvalue 충실구현: 등급 C. 논문기준 SR 0.38 vs 15bps SR 0.54. [무인 병렬 B1_8] size_x_valu… |
+| 1440 | L-RP-20260912_170113 | ? | C | RF_PAR_B1_9_sizexissuance 충실구현: 등급 C. 논문기준 SR 0.40 vs 15bps SR 0.56. [무인 병렬 B1_9] size_x_i… |
+| 1441 | L-RP-20260912_171504 | momentum | C | RF_PAR_B5_20_ 충실구현: 등급 C. 논문기준 SR 0.51 vs 15bps SR 0.71. [무인 병렬 B5_20] 추세 부호 전량 현금 — B5/ri… |
+| 1442 | L-RP-20260912_171518 | overlay_regime | C | RF_PAR_B5_16_ 충실구현: 등급 C. 논문기준 SR 0.34 vs 15bps SR 0.48. [무인 병렬 B5_16] 낙폭 스칼라 앵커 — B5/risk… |
+| 1443 | L-RP-20260912_171529 | overlay_regime | C | RF_PAR_B5_17_ 충실구현: 등급 C. 논문기준 SR 0.37 vs 15bps SR 0.54. [무인 병렬 B5_17] 같은 상태·종목축 소비 — B5/r… |
+| 1444 | L-RP-20260912_171530 | overlay_regime | C | RF_PAR_B5_18_ 충실구현: 등급 C. 논문기준 SR 0.47 vs 15bps SR 0.64. [무인 병렬 B5_18] 보유에서 읽는 상태 — B5/ris… |
+| 1445 | L-RP-20260912_171539 | overlay_regime | C | RF_PAR_B5_19_ 충실구현: 등급 C. 논문기준 SR 0.44 vs 15bps SR 0.62. [무인 병렬 B5_19] 다변량 상태·채널 매핑 — B5/r… |
+| 1446 | L-RP-20260912_174326 | size | B | RF_PAR_B3_13_13 충실구현: 등급 B. 논문기준 SR 0.51 vs 15bps SR 0.77. [무인 병렬 B3_13] 소형주(시총 하위 1/3) — … |
+| 1447 | L-RP-20260912_174327 | ? | B | RF_PAR_B3_15_ 충실구현: 등급 B. 논문기준 SR 0.49 vs 15bps SR 0.71. [무인 병렬 B3_15] 섹터 중립 — B3/universe… |
+| 1448 | L-RP-20260912_174328 | ? | C | RF_PAR_B3_14_13 충실구현: 등급 C. 논문기준 SR 0.37 vs 15bps SR 0.61. [무인 병렬 B3_14] 대형주(시총 상위 1/3) — … |
+| 1449 | L-RP-20260912_174334 | ? | C | RF_PAR_B3_12_KOSPI200 충실구현: 등급 C. 논문기준 SR 0.36 vs 15bps SR 0.59. [무인 병렬 B3_12] KOSPI200 단독… |
+| 1450 | L-RP-20260912_174338 | ? | C | RF_PAR_B3_11_KOSDAQ150 충실구현: 등급 C. 논문기준 SR 0.19 vs 15bps SR 0.40. [무인 병렬 B3_11] KOSDAQ150 … |
+| 1451 | L-RP-20260912_175216 | ? | C | RF_PAR_B4_22_LOO 충실구현: 등급 C. 논문기준 SR 0.42 vs 15bps SR 0.64. [무인 병렬 B4_22] 팩터 제외(LOO) — B4/… |
+| 1452 | L-RP-20260912_175306 | overlay_regime | C | RF_PAR_B4_25_LOO3 충실구현: 등급 C. 논문기준 SR 0.41 vs 15bps SR 0.65. [무인 병렬 B4_25] 오버레이 제외(LOO) = … |
+| 1453 | L-RP-20260912_180902 | ? | C | RF_PAR_B1_1_ctlfullcoverage 충실구현: 등급 C. 논문기준 SR 0.51 vs 15bps SR 0.71. [무인 병렬 B1_1] ctl_fu… |
+| 1454 | L-RP-20260912_180902 | ? | C | RF_PAR_B1_2_acctsupport 충실구현: 등급 C. 논문기준 SR 0.51 vs 15bps SR 0.71. [무인 병렬 B1_2] acct_suppo… |
+| 1455 | L-RP-20260912_180902 | ? | C | RF_PAR_B1_4_narrownonvis 충실구현: 등급 C. 논문기준 SR 0.46 vs 15bps SR 0.65. [무인 병렬 B1_4] narrow_no… |
+| 1456 | L-RP-20260912_180902 | ? | C | RF_PAR_B1_5_vistighter 충실구현: 등급 C. 논문기준 SR 0.51 vs 15bps SR 0.71. [무인 병렬 B1_5] vis_tighter… |
+| 1457 | L-RP-20260912_180902 | ? | C | RF_PAR_B1_3_vissamewidth 충실구현: 등급 C. 논문기준 SR 0.51 vs 15bps SR 0.71. [무인 병렬 B1_3] vis_same_… |
+| 1458 | L-RP-20260912_181421 | ? | C | RF_PAR_B1_6_vistightest 충실구현: 등급 C. 논문기준 SR 0.51 vs 15bps SR 0.71. [무인 병렬 B1_6] vis_tighte… |
+| 1459 | L-RP-20260912_182257 | overlay_regime | C | RF_PAR_B5_17_ 충실구현: 등급 C. 논문기준 SR 0.53 vs 15bps SR 0.70. [무인 병렬 B5_17] 체계위험 비중 상태 — B5/ris… |
+| 1460 | L-RP-20260912_182257 | overlay_regime | C | RF_PAR_B5_18_ 충실구현: 등급 C. 논문기준 SR 0.58 vs 15bps SR 0.75. [무인 병렬 B5_18] 특이변동 채널 — B5/risk_o… |
+| 1461 | L-RP-20260912_182257 | overlay_regime | C | RF_PAR_B5_20_ 충실구현: 등급 C. 논문기준 SR 0.56 vs 15bps SR 0.71. [무인 병렬 B5_20] 학습 이중 예보 — B5/risk_… |
+| 1462 | L-RP-20260912_182257 | overlay_regime | C | RF_PAR_B5_19_ 충실구현: 등급 C. 논문기준 SR 0.52 vs 15bps SR 0.71. [무인 병렬 B5_19] 다변량 채널 배합 — B5/risk… |
+| 1463 | L-RP-20260912_182257 | momentum | C | RF_PAR_B5_16_ 충실구현: 등급 C. 논문기준 SR 0.53 vs 15bps SR 0.72. [무인 병렬 B5_16] 추세 동일·지점 이동 — B5/ri… |
+| 1464 | L-RP-20260912_184715 | size | B | RF_PAR_B3_13_13 충실구현: 등급 B. 논문기준 SR 0.51 vs 15bps SR 0.77. [무인 병렬 B3_13] 소형주(시총 하위 1/3) — … |
+| 1465 | L-RP-20260912_184716 | ? | B | RF_PAR_B3_15_ 충실구현: 등급 B. 논문기준 SR 0.49 vs 15bps SR 0.71. [무인 병렬 B3_15] 섹터 중립 — B3/universe… |
+| 1466 | L-RP-20260912_184718 | ? | C | RF_PAR_B3_14_13 충실구현: 등급 C. 논문기준 SR 0.37 vs 15bps SR 0.61. [무인 병렬 B3_14] 대형주(시총 상위 1/3) — … |
+| 1467 | L-RP-20260912_184719 | ? | C | RF_PAR_B3_12_KOSPI200 충실구현: 등급 C. 논문기준 SR 0.36 vs 15bps SR 0.59. [무인 병렬 B3_12] KOSPI200 단독… |
+| 1468 | L-RP-20260912_184722 | ? | C | RF_PAR_B3_11_KOSDAQ150 충실구현: 등급 C. 논문기준 SR 0.19 vs 15bps SR 0.40. [무인 병렬 B3_11] KOSDAQ150 … |
+| 1469 | L-RP-20260912_185848 | ? | B | RF_PAR_B4_22_LOO 충실구현: 등급 B. 논문기준 SR 0.55 vs 15bps SR 0.75. [무인 병렬 B4_22] 팩터 제외(LOO) — B4/… |
+| 1470 | L-RP-20260912_185910 | ? | B | RF_PAR_B4_21_4 충실구현: 등급 B. 논문기준 SR 0.55 vs 15bps SR 0.75. [무인 병렬 B4_21] 전 요소 결합(4축) — B4/c… |
+| 1471 | L-RP-20260913_001750 | ? | C | RF_PAR_B1_2_2growthvalue 충실구현: 등급 C. 논문기준 SR 0.31 vs 15bps SR 0.44. [무인 병렬 B1_2] 2팩터 직교(gr… |
+| 1472 | L-RP-20260913_001750 | ? | F | RF_PAR_B1_1_1growth 충실구현: 등급 F. 논문기준 SR 0.31 vs 15bps SR 0.44. [무인 병렬 B1_1] 1팩터 직교(growth)… |
+| 1473 | L-RP-20260913_001826 | ? | C | RF_PAR_B1_3_3growthcrowdingvalue 충실구현: 등급 C. 논문기준 SR 0.34 vs 15bps SR 0.46. [무인 병렬 B1_3] 3… |
+| 1474 | L-RP-20260913_001845 | overlay_regime | C | RF_PAR_B1_4_4growthregimecrowdingvalue 충실구현: 등급 C. 논문기준 SR 0.35 vs 15bps SR 0.48. [무인 병렬 B… |
+| 1475 | L-RP-20260913_001912 | overlay_regime | C | RF_PAR_B1_5_5growthregimecrowdingaccrualvalue 충실구현: 등급 C. 논문기준 SR 0.38 vs 15bps SR 0.50. [… |
+| 1476 | L-RP-20260913_003221 | ? | C | RF_PAR_B1_8_turnoveraligned 충실구현: 등급 C. 논문기준 SR 0.28 vs 15bps SR 0.37. [무인 병렬 B1_8] turnov… |
+| 1477 | L-RP-20260913_003233 | ? | F | RF_PAR_B1_6_assetgrowthaligned 충실구현: 등급 F. 논문기준 SR 0.31 vs 15bps SR 0.44. [무인 병렬 B1_6] ass… |
+| 1478 | L-RP-20260913_003237 | behavioral | C | RF_PAR_B1_9_flowkrabsentaxis 충실구현: 등급 C. 논문기준 SR 0.19 vs 15bps SR 0.32. [무인 병렬 B1_9] flow_… |
+| 1479 | L-RP-20260913_003239 | momentum | C | RF_PAR_B1_7_streversal 충실구현: 등급 C. 논문기준 SR 0.40 vs 15bps SR 0.54. [무인 병렬 B1_7] st_reversal… |
+| 1480 | L-RP-20260913_003357 | ? | C | RF_PAR_B1_10_jointsignrepair4 충실구현: 등급 C. 논문기준 SR 0.47 vs 15bps SR 0.61. [무인 병렬 B1_10] joi… |
+| 1481 | L-RP-20260913_005013 | low_vol | C | RF_PAR_B2_7_ivol 충실구현: 등급 C. 논문기준 SR 0.52 vs 15bps SR 0.64. [무인 병렬 B2_7] ivol — B2/weighti… |
+| 1482 | L-RP-20260913_005013 | ? | C | RF_PAR_B2_10_nco 충실구현: 등급 C. 논문기준 SR 0.57 vs 15bps SR 0.66. [무인 병렬 B2_10] nco — B2/weighti… |
+| 1483 | L-RP-20260913_005013 | ? | C | RF_PAR_B2_9_CVaR 충실구현: 등급 C. 논문기준 SR 0.53 vs 15bps SR 0.65. [무인 병렬 B2_9] CVaR — B2/weighti… |
+| 1484 | L-RP-20260913_005013 | ? | C | RF_PAR_B2_6_minvar 충실구현: 등급 C. 논문기준 SR 0.60 vs 15bps SR 0.69. [무인 병렬 B2_6] minvar — B2/wei… |
+| 1485 | L-RP-20260913_005031 | ? | C | RF_PAR_B2_8_CDaR 충실구현: 등급 C. 논문기준 SR 0.37 vs 15bps SR 0.48. [무인 병렬 B2_8] CDaR — B2/weighti… |
+| 1486 | L-RP-20260913_005915 | ? | C | RF_PAR_B2_11_scoretilt 충실구현: 등급 C. 논문기준 SR 0.54 vs 15bps SR 0.66. [무인 병렬 B2_11] score_tilt… |
+| 1487 | L-RP-20260913_011152 | ? | C | RF_PAR_B3_14_13 충실구현: 등급 C. 논문기준 SR 0.45 vs 15bps SR 0.56. [무인 병렬 B3_14] 대형주 상위 1/3 — B3/u… |
+| 1488 | L-RP-20260913_011204 | size | C | RF_PAR_B3_13_13 충실구현: 등급 C. 논문기준 SR 0.36 vs 15bps SR 0.50. [무인 병렬 B3_13] 소형주 하위 1/3 — B3/u… |
+| 1489 | L-RP-20260913_011212 | ? | C | RF_PAR_B3_15_ 충실구현: 등급 C. 논문기준 SR 0.40 vs 15bps SR 0.50. [무인 병렬 B3_15] 섹터 중립 — B3/universe… |
+| 1490 | L-RP-20260913_012325 | overlay_regime | F | RF_PAR_B5_16_ 충실구현: 등급 F. 논문기준 SR 0.46 vs 15bps SR 0.56. [무인 병렬 B5_16] 낙폭 스칼라 브레이크(대조) — B… |
+| 1491 | L-RP-20260913_012333 | overlay_regime | C | RF_PAR_B5_19_x 충실구현: 등급 C. 논문기준 SR 0.53 vs 15bps SR 0.64. [무인 병렬 B5_19] 횡단면분산 국면 x 특이변동 순위… |
+| 1492 | L-RP-20260913_012334 | overlay_regime | F | RF_PAR_B5_17_x 충실구현: 등급 F. 논문기준 SR 0.50 vs 15bps SR 0.61. [무인 병렬 B5_17] 낙폭 국면 x 하방베타 순위 차등… |
+| 1493 | L-RP-20260913_012334_02 | overlay_regime | C | RF_PAR_B5_18_ 충실구현: 등급 C. 논문기준 SR 0.49 vs 15bps SR 0.61. [무인 병렬 B5_18] 보유 체계위험 비중 기반 차등 — … |
+| 1494 | L-RP-20260913_013618 | ? | C | RF_PAR_B4_22_LOO 충실구현: 등급 C. 논문기준 SR 0.40 vs 15bps SR 0.49. [무인 병렬 B4_22] 팩터 제외(LOO) — B4/… |
+| 1495 | L-RP-20260913_013700 | ? | C | RF_PAR_B4_23_LOO 충실구현: 등급 C. 논문기준 SR 0.48 vs 15bps SR 0.57. [무인 병렬 B4_23] 비중 제외(LOO) — B4/… |
+| 1496 | L-RP-20260913_013757 | overlay_regime | C | RF_PAR_B4_25_LOO3 충실구현: 등급 C. 논문기준 SR 0.48 vs 15bps SR 0.57. [무인 병렬 B4_25] 오버레이 제외(LOO) = … |
+| 1497 | L-RP-20260913_013804 | ? | C | RF_PAR_B4_21_4 충실구현: 등급 C. 논문기준 SR 0.49 vs 15bps SR 0.57. [무인 병렬 B4_21] 전 요소 결합(4축) — B4/c… |
+| 1498 | L-RP-20260913_013807 | ? | C | RF_PAR_B4_24_LOO 충실구현: 등급 C. 논문기준 SR 0.54 vs 15bps SR 0.65. [무인 병렬 B4_24] 유니버스 제외(LOO) — B… |
+| 1499 | L-RP-20260913_024206 | consensus | C | RF_PAR_B1_1_1consensus 충실구현: 등급 C. 논문기준 SR 0.64 vs 15bps SR 0.72. [무인 병렬 B1_1] 1팩터 직교(cons… |
+| 1500 | L-RP-20260913_024223 | consensus | C | RF_PAR_B1_2_2consensusregime 충실구현: 등급 C. 논문기준 SR 0.47 vs 15bps SR 0.59. [무인 병렬 B1_2] 2팩터 직… |
+| 1501 | L-RP-20260913_024250 | consensus | C | RF_PAR_B1_3_3consensusregimevalue 충실구현: 등급 C. 논문기준 SR 0.49 vs 15bps SR 0.59. [무인 병렬 B1_3] … |
+| 1502 | L-RP-20260913_024312 | consensus | C | RF_PAR_B1_4_4consensusregimevaluequality 충실구현: 등급 C. 논문기준 SR 0.53 vs 15bps SR 0.64. [무인 병렬… |
+| 1503 | L-RP-20260913_024335 | consensus | C | RF_PAR_B1_5_5consensusregimevalueaccrualquality 충실구현: 등급 C. 논문기준 SR 0.51 vs 15bps SR 0.62.… |
+| 1504 | L-RP-20260913_025630 | ml_complexity | C | RF_PAR_B2_9_hrp 충실구현: 등급 C. 논문기준 SR 0.75 vs 15bps SR 0.78. [무인 병렬 B2_9] hrp — B2/weighting… |
+| 1505 | L-RP-20260913_025630 | ? | C | RF_PAR_B2_8_minvar 충실구현: 등급 C. 논문기준 SR 0.81 vs 15bps SR 0.82. [무인 병렬 B2_8] minvar — B2/wei… |
+| 1506 | L-RP-20260913_025630 | ? | C | RF_PAR_B2_10_scoretilt 충실구현: 등급 C. 논문기준 SR 0.73 vs 15bps SR 0.78. [무인 병렬 B2_10] score_tilt… |
+| 1507 | L-RP-20260913_025650 | ? | C | RF_PAR_B2_6_CDaRLP 충실구현: 등급 C. 논문기준 SR 0.54 vs 15bps SR 0.63. [무인 병렬 B2_6] CDaR_LP — B2/we… |
+| 1508 | L-RP-20260913_030642 | ? | C | RF_PAR_B3_15_ 충실구현: 등급 C. 논문기준 SR 0.48 vs 15bps SR 0.57. [무인 병렬 B3_15] 섹터 중립 — B3/universe… |
+| 1509 | L-RP-20260913_030645 | ? | F | RF_PAR_B3_12_KOSPI200 충실구현: 등급 F. 논문기준 SR 0.45 vs 15bps SR 0.54. [무인 병렬 B3_12] KOSPI200 단독… |
+| 1510 | L-RP-20260913_032819 | overlay_regime | C | RF_PAR_B5_16_tilt 충실구현: 등급 C. 논문기준 SR 0.74 vs 15bps SR 0.79. [무인 병렬 B5_16] 보유 체계위험 비중 tilt… |
+| 1511 | L-RP-20260913_032819 | overlay_regime | C | RF_PAR_B5_18_tilt 충실구현: 등급 C. 논문기준 SR 0.74 vs 15bps SR 0.80. [무인 병렬 B5_18] 하방베타 순위 tilt(기준… |
+| 1512 | L-RP-20260913_032819 | overlay_regime | C | RF_PAR_B5_19_ratio 충실구현: 등급 C. 논문기준 SR 0.76 vs 15bps SR 0.81. [무인 병렬 B5_19] 내재 평균상관 비(rati… |
+| 1513 | L-RP-20260913_032819 | overlay_regime | C | RF_PAR_B5_17_ 충실구현: 등급 C. 논문기준 SR 0.79 vs 15bps SR 0.82. [무인 병렬 B5_17] 이중 예보 랭킹축 회전 — B5/r… |
+| 1514 | L-RP-20260913_033744 | ? | C | RF_PAR_B4_23_LOO 충실구현: 등급 C. 논문기준 SR 0.55 vs 15bps SR 0.62. [무인 병렬 B4_23] 비중 제외(LOO) — B4/… |
+| 1515 | L-RP-20260913_033808 | ? | C | RF_PAR_B4_22_LOO 충실구현: 등급 C. 논문기준 SR 0.37 vs 15bps SR 0.47. [무인 병렬 B4_22] 팩터 제외(LOO) — B4/… |
+| 1516 | L-RP-20260913_033835 | ? | C | RF_PAR_B4_21_4 충실구현: 등급 C. 논문기준 SR 0.53 vs 15bps SR 0.60. [무인 병렬 B4_21] 전 요소 결합(4축) — B4/c… |
+| 1517 | L-RP-20260913_104539 | ? | C | RF_PAR_B1_1_riskidiovol 충실구현: 등급 C. 논문기준 SR 0.72 vs 15bps SR 0.76. [무인 병렬 B1_1] risk_idiov… |
+| 1518 | L-RP-20260913_104541 | earnings_event | C | RF_PAR_B1_4_realizedsurprisesue 충실구현: 등급 C. 논문기준 SR 0.76 vs 15bps SR 0.81. [무인 병렬 B1_4] re… |
+| 1519 | L-RP-20260913_104608 | ? | C | RF_PAR_B1_2_distshapemaxret 충실구현: 등급 C. 논문기준 SR 0.52 vs 15bps SR 0.60. [무인 병렬 B1_2] dist_s… |
+| 1520 | L-RP-20260913_104610 | ? | B | RF_PAR_B1_3_horizonmom121 충실구현: 등급 B. 논문기준 SR 0.82 vs 15bps SR 0.89. [무인 병렬 B1_3] horizon_… |
+| 1521 | L-RP-20260913_104617 | behavioral | C | RF_PAR_B1_5_krforeignflow 충실구현: 등급 C. 논문기준 SR 0.60 vs 15bps SR 0.66. [무인 병렬 B1_5] kr_forei… |
+| 1522 | L-RP-20260913_105706 | ? | C | RF_PAR_B1_6_infodiffusiondelay 충실구현: 등급 C. 논문기준 SR 0.67 vs 15bps SR 0.71. [무인 병렬 B1_6] inf… |
+| 1523 | L-RP-20260913_105713 | ? | B | RF_PAR_B1_7_riskplushorizon 충실구현: 등급 B. 논문기준 SR 0.95 vs 15bps SR 0.99. [무인 병렬 B1_7] risk_p… |
+| 1524 | L-RP-20260913_105714 | ? | C | RF_PAR_B1_8_infoarrivalpair 충실구현: 등급 C. 논문기준 SR 0.76 vs 15bps SR 0.83. [무인 병렬 B1_8] info_a… |
+| 1525 | L-RP-20260913_105807 | ? | B | RF_PAR_B1_9_fouraxisbreadth 충실구현: 등급 B. 논문기준 SR 0.92 vs 15bps SR 0.96. [무인 병렬 B1_9] four_a… |
+| 1526 | L-RP-20260913_111154 | momentum | B | RF_PAR_B5_20_tilt 충실구현: 등급 B. 논문기준 SR 0.88 vs 15bps SR 0.95. [무인 병렬 B5_20] 추세 기간구조를 tilt 축… |
+| 1527 | L-RP-20260913_111154 | overlay_regime | C | RF_PAR_B5_16_x 충실구현: 등급 C. 논문기준 SR 0.80 vs 15bps SR 0.88. [무인 병렬 B5_16] 낙폭상태 x 하방베타 순위 — B… |
+| 1528 | L-RP-20260913_111154 | overlay_regime | B | RF_PAR_B5_17_ 충실구현: 등급 B. 논문기준 SR 0.82 vs 15bps SR 0.89. [무인 병렬 B5_17] 보유 체계위험 비중 상태 — B5/… |
+| 1529 | L-RP-20260913_111154 | overlay_regime | B | RF_PAR_B5_18_ 충실구현: 등급 B. 논문기준 SR 0.86 vs 15bps SR 0.93. [무인 병렬 B5_18] 스트레스 구성별 채널 배합 — B5… |
+| 1530 | L-RP-20260913_111154 | overlay_regime | B | RF_PAR_B5_19_ 충실구현: 등급 B. 논문기준 SR 0.84 vs 15bps SR 0.93. [무인 병렬 B5_19] 체계 충격 대 특이 산포 예보 — … |
+| 1531 | L-RP-20260913_112851 | ? | B | RF_PAR_B2_8_ 충실구현: 등급 B. 논문기준 SR 0.85 vs 15bps SR 0.90. [무인 병렬 B2_8] 분산비 최대화 — B2/weightin… |
+| 1532 | L-RP-20260913_112851 | ? | B | RF_PAR_B2_7_ 충실구현: 등급 B. 논문기준 SR 0.92 vs 15bps SR 0.98. [무인 병렬 B2_7] 분산 목적함수 대조 — B2/weigh… |
+| 1533 | L-RP-20260913_112851 | ? | B | RF_PAR_B2_10_ 충실구현: 등급 B. 논문기준 SR 0.87 vs 15bps SR 0.94. [무인 병렬 B2_10] Σ 추정 처치 — B2/weight… |
+| 1534 | L-RP-20260913_112851 | ? | B | RF_PAR_B2_9_ 충실구현: 등급 B. 논문기준 SR 0.92 vs 15bps SR 0.97. [무인 병렬 B2_9] 군집 분해 배분 — B2/weighti… |
+| 1535 | L-RP-20260913_112910 | ? | C | RF_PAR_B2_6_ 충실구현: 등급 C. 논문기준 SR 0.75 vs 15bps SR 0.81. [무인 병렬 B2_6] 경로낙폭 목적함수 — B2/weight… |
+| 1536 | L-RP-20260913_113547 | ? | B | RF_PAR_B2_11_null 충실구현: 등급 B. 논문기준 SR 0.88 vs 15bps SR 0.95. [무인 병렬 B2_11] Σ 추정 null — B2/… |
+| 1537 | L-RP-20260913_114539 | ? | C | RF_PAR_B3_15_ 충실구현: 등급 C. 논문기준 SR 0.69 vs 15bps SR 0.77. [무인 병렬 B3_15] 섹터 중립 — B3/universe… |
+| 1538 | L-RP-20260913_114541 | ? | C | RF_PAR_B3_12_K200 충실구현: 등급 C. 논문기준 SR 0.75 vs 15bps SR 0.85. [무인 병렬 B3_12] K200 단독 — B3/un… |
+| 1539 | L-RP-20260913_120716 | ? | C | RF_PAR_B4_23_LOO 충실구현: 등급 C. 논문기준 SR 0.79 vs 15bps SR 0.89. [무인 병렬 B4_23] 비중 제외(LOO) — B4/… |
+| 1540 | L-RP-20260913_120728 | ? | C | RF_PAR_B4_22_LOO 충실구현: 등급 C. 논문기준 SR 0.79 vs 15bps SR 0.85. [무인 병렬 B4_22] 팩터 제외(LOO) — B4/… |
+| 1541 | L-RP-20260913_120810 | ? | C | RF_PAR_B4_21_4 충실구현: 등급 C. 논문기준 SR 0.82 vs 15bps SR 0.91. [무인 병렬 B4_21] 전 요소 결합(4축) — B4/c… |
+| 1542 | L-RP-20260913_120811 | ? | B | RF_PAR_B4_24_LOO 충실구현: 등급 B. 논문기준 SR 0.93 vs 15bps SR 0.99. [무인 병렬 B4_24] 유니버스 제외(LOO) — B… |
+| 1543 | L-RP-20260913_122918 | ? | B | RF_PAR_B1_2_voladjmom 충실구현: 등급 B. 논문기준 SR 0.89 vs 15bps SR 0.96. [무인 병렬 B1_2] voladj_mom —… |
+| 1544 | L-RP-20260913_122918 | ? | B | RF_PAR_B1_3_hi52wanchor 충실구현: 등급 B. 논문기준 SR 1.00 vs 15bps SR 1.04. [무인 병렬 B1_3] hi52w_anch… |
+| 1545 | L-RP-20260913_122918 | ? | C | RF_PAR_B1_5_crisiscond 충실구현: 등급 C. 논문기준 SR 0.85 vs 15bps SR 0.92. [무인 병렬 B1_5] crisis_cond… |
+| 1546 | L-RP-20260913_122918 | ? | C | RF_PAR_B1_4_dbetasleeve 충실구현: 등급 C. 논문기준 SR 0.94 vs 15bps SR 0.99. [무인 병렬 B1_4] dbeta_slee… |
+| 1547 | L-RP-20260913_122919 | ? | B | RF_PAR_B1_1_residmom 충실구현: 등급 B. 논문기준 SR 0.93 vs 15bps SR 1.00. [무인 병렬 B1_1] resid_mom — B… |
+| 1548 | L-RP-20260913_124042 | ? | B | RF_PAR_B1_6_momcrowd 충실구현: 등급 B. 논문기준 SR 1.01 vs 15bps SR 1.03. [무인 병렬 B1_6] mom_crowd — B… |
+| 1549 | L-RP-20260913_124042 | behavioral | C | RF_PAR_B1_7_foreignresidflow 충실구현: 등급 C. 논문기준 SR 0.79 vs 15bps SR 0.86. [무인 병렬 B1_7] forei… |
+| 1550 | L-RP-20260913_124101 | ? | B | RF_PAR_B1_8_residmomxdbeta 충실구현: 등급 B. 논문기준 SR 0.99 vs 15bps SR 1.05. [무인 병렬 B1_8] resid_m… |
+| 1551 | L-RP-20260913_125750 | overlay_regime | B | RF_PAR_B5_16_ 충실구현: 등급 B. 논문기준 SR 0.93 vs 15bps SR 1.01. [무인 병렬 B5_16] 하방베타 조건부 축소 — B5/ri… |
+| 1552 | L-RP-20260913_125750 | overlay_regime | B | RF_PAR_B5_20_ 충실구현: 등급 B. 논문기준 SR 0.98 vs 15bps SR 1.05. [무인 병렬 B5_20] 내재상관 격차 스칼라 대조 — B5… |
+| 1553 | L-RP-20260913_125750 | overlay_regime | B | RF_PAR_B5_18_ 충실구현: 등급 B. 논문기준 SR 0.94 vs 15bps SR 1.01. [무인 병렬 B5_18] 보유 체계비중 축소 — B5/ris… |
+| 1554 | L-RP-20260913_125750 | overlay_regime | B | RF_PAR_B5_17_ 충실구현: 등급 B. 논문기준 SR 0.99 vs 15bps SR 1.06. [무인 병렬 B5_17] 특이변동 축소 배분 — B5/ris… |
+| 1555 | L-RP-20260913_125750 | overlay_regime | B | RF_PAR_B5_19_ 충실구현: 등급 B. 논문기준 SR 0.97 vs 15bps SR 1.04. [무인 병렬 B5_19] 스트레스 구성별 채널 축소 — B5… |
+| 1556 | L-RP-20260913_131245 | ? | B | RF_PAR_B2_8_ 충실구현: 등급 B. 논문기준 SR 0.92 vs 15bps SR 0.99. [무인 병렬 B2_8] 군집 공분산 + 점수 유지 — B2/w… |
+| 1557 | L-RP-20260913_131245 | ? | B | RF_PAR_B2_9_ 충실구현: 등급 B. 논문기준 SR 0.92 vs 15bps SR 0.98. [무인 병렬 B2_9] 상관 정보의 횡단면 소비 — B2/we… |
+| 1558 | L-RP-20260913_131245 | ? | B | RF_PAR_B2_10_ 충실구현: 등급 B. 논문기준 SR 0.93 vs 15bps SR 1.00. [무인 병렬 B2_10] 기저 대비 추정량 단일 변경 — B… |
+| 1559 | L-RP-20260913_131305 | ? | C | RF_PAR_B2_6_ 충실구현: 등급 C. 논문기준 SR 0.81 vs 15bps SR 0.85. [무인 병렬 B2_6] 낙폭경로 목적함수 — B2/weight… |
+| 1560 | L-RP-20260913_132832 | size | C | RF_PAR_B3_13_13 충실구현: 등급 C. 논문기준 SR 0.66 vs 15bps SR 0.75. [무인 병렬 B3_13] 소형주 하위 1/3 — B3/u… |
+| 1561 | L-RP-20260913_132832 | ? | B | RF_PAR_B3_14_13 충실구현: 등급 B. 논문기준 SR 0.84 vs 15bps SR 0.90. [무인 병렬 B3_14] 대형주 상위 1/3 — B3/u… |
+| 1562 | L-RP-20260913_132832 | ? | C | RF_PAR_B3_15_ 충실구현: 등급 C. 논문기준 SR 0.68 vs 15bps SR 0.76. [무인 병렬 B3_15] 섹터 중립 — B3/universe… |
+| 1563 | L-RP-20260913_132837 | ? | C | RF_PAR_B3_12_KOSPI200 충실구현: 등급 C. 논문기준 SR 0.77 vs 15bps SR 0.87. [무인 병렬 B3_12] KOSPI200 단독… |
+| 1564 | L-RP-20260913_133924 | ? | C | RF_PAR_B4_23_LOO 충실구현: 등급 C. 논문기준 SR 0.83 vs 15bps SR 0.90. [무인 병렬 B4_23] 비중 제외(LOO) — B4/… |
+| 1565 | L-RP-20260913_133957 | ? | C | RF_PAR_B4_22_LOO 충실구현: 등급 C. 논문기준 SR 0.84 vs 15bps SR 0.91. [무인 병렬 B4_22] 팩터 제외(LOO) — B4/… |
+| 1566 | L-RP-20260913_134016 | overlay_regime | B | RF_PAR_B4_25_LOO3 충실구현: 등급 B. 논문기준 SR 0.83 vs 15bps SR 0.89. [무인 병렬 B4_25] 오버레이 제외(LOO) = … |
+| 1567 | L-RP-20260913_134021 | ? | C | RF_PAR_B4_21_4 충실구현: 등급 C. 논문기준 SR 0.88 vs 15bps SR 0.94. [무인 병렬 B4_21] 전 요소 결합(4축) — B4/c… |
+| 1568 | L-RP-20260913_134028 | ? | B | RF_PAR_B4_24_LOO 충실구현: 등급 B. 논문기준 SR 0.97 vs 15bps SR 1.03. [무인 병렬 B4_24] 유니버스 제외(LOO) — B… |
+| 1569 | L-RP-20260913_140502 | ? | B | RF_PAR_B1_1_valuebm 충실구현: 등급 B. 논문기준 SR 0.90 vs 15bps SR 0.98. [무인 병렬 B1_1] value_bm — B1/… |
+| 1570 | L-RP-20260913_140502 | quality_profitability | B | RF_PAR_B1_3_gpa 충실구현: 등급 B. 논문기준 SR 1.01 vs 15bps SR 1.05. [무인 병렬 B1_3] gpa — B1/multifact… |
+| 1571 | L-RP-20260913_140523 | ? | B | RF_PAR_B1_2_yieldcash 충실구현: 등급 B. 논문기준 SR 1.12 vs 15bps SR 1.15. [무인 병렬 B1_2] yield_cash —… |
+| 1572 | L-RP-20260913_140524 | ? | C | RF_PAR_B1_5_accrualjunk 충실구현: 등급 C. 논문기준 SR 0.71 vs 15bps SR 0.80. [무인 병렬 B1_5] accrual_ju… |
+| 1573 | L-RP-20260913_140525 | quality | B | RF_PAR_B1_4_earnquality 충실구현: 등급 B. 논문기준 SR 1.02 vs 15bps SR 1.05. [무인 병렬 B1_4] earn_quali… |
+| 1574 | L-RP-20260913_141734 | quality | B | RF_PAR_B1_6_valuexquality 충실구현: 등급 B. 논문기준 SR 1.03 vs 15bps SR 1.08. [무인 병렬 B1_6] value_x_… |
+| 1575 | L-RP-20260913_141734 | ? | B | RF_PAR_B1_7_fundconfirm 충실구현: 등급 B. 논문기준 SR 1.03 vs 15bps SR 1.06. [무인 병렬 B1_7] fund_confi… |
+| 1576 | L-RP-20260913_141753 | ? | B | RF_PAR_B1_8_fundbreadth3axis 충실구현: 등급 B. 논문기준 SR 1.02 vs 15bps SR 1.05. [무인 병렬 B1_8] fund_… |
+| 1577 | L-RP-20260913_143418 | overlay_regime | B | RF_PAR_B5_19_ 충실구현: 등급 B. 논문기준 SR 1.11 vs 15bps SR 1.16. [무인 병렬 B5_19] 두 예보로 랭킹축 회전 — B5/r… |
+| 1578 | L-RP-20260913_143418 | overlay_regime | B | RF_PAR_B5_16_ 충실구현: 등급 B. 논문기준 SR 1.15 vs 15bps SR 1.21. [무인 병렬 B5_16] 낙폭상태·하방베타순위 차등축소 — … |
+| 1579 | L-RP-20260913_143418 | overlay_regime | B | RF_PAR_B5_18_ 충실구현: 등급 B. 논문기준 SR 1.13 vs 15bps SR 1.16. [무인 병렬 B5_18] 보유 체계위험집중 상태·분산불가 하… |
+| 1580 | L-RP-20260913_143418 | overlay_regime | B | RF_PAR_B5_17_ 충실구현: 등급 B. 논문기준 SR 1.14 vs 15bps SR 1.19. [무인 병렬 B5_17] 횡단면분산상태·특이변동순위 — B5… |
+| 1581 | L-RP-20260913_143418 | overlay_regime | B | RF_PAR_B5_20_ 충실구현: 등급 B. 논문기준 SR 1.15 vs 15bps SR 1.19. [무인 병렬 B5_20] 내재 평균상관 비 기반 총노출 할인… |
+| 1582 | L-RP-20260913_144935 | ? | B | RF_PAR_B2_10_ 충실구현: 등급 B. 논문기준 SR 1.14 vs 15bps SR 1.16. [무인 병렬 B2_10] 추정기 단일 변경 대조 — B2/w… |
+| 1583 | L-RP-20260913_144935 | ? | B | RF_PAR_B2_7_ 충실구현: 등급 B. 논문기준 SR 1.19 vs 15bps SR 1.19. [무인 병렬 B2_7] 분산 최소 하한 — B2/weighti… |
+| 1584 | L-RP-20260913_144935 | ? | B | RF_PAR_B2_8_ 충실구현: 등급 B. 논문기준 SR 1.22 vs 15bps SR 1.23. [무인 병렬 B2_8] Σ 역행렬 없는 강건 분산 — B2/w… |
+| 1585 | L-RP-20260913_144954 | ? | B | RF_PAR_B2_6_ 충실구현: 등급 B. 논문기준 SR 1.01 vs 15bps SR 0.97. [무인 병렬 B2_6] 낙폭 목적함수 — B2/weightin… |
+| 1586 | L-RP-20260913_150520 | ? | C | RF_PAR_B3_15_ 충실구현: 등급 C. 논문기준 SR 0.81 vs 15bps SR 0.87. [무인 병렬 B3_15] 섹터 중립 — B3/universe… |
+| 1587 | L-RP-20260913_150520 | size | C | RF_PAR_B3_13_13 충실구현: 등급 C. 논문기준 SR 0.75 vs 15bps SR 0.83. [무인 병렬 B3_13] 소형주 하위 1/3 — B3/u… |
+| 1588 | L-RP-20260913_150523 | low_vol | B | RF_PAR_B3_12_K200 충실구현: 등급 B. 논문기준 SR 0.91 vs 15bps SR 0.98. [무인 병렬 B3_12] K200 단독(저베타 극) … |
+| 1589 | L-RP-20260913_152721 | ? | C | RF_PAR_B4_22_LOO 충실구현: 등급 C. 논문기준 SR 0.83 vs 15bps SR 0.92. [무인 병렬 B4_22] 팩터 제외(LOO) — B4/… |
+| 1590 | L-RP-20260913_152803 | ? | B | RF_PAR_B4_21_4 충실구현: 등급 B. 논문기준 SR 0.95 vs 15bps SR 1.01. [무인 병렬 B4_21] 전 요소 결합(4축) — B4/c… |
+| 1591 | L-RP-20260913_205707 | ? | B | RF_PAR_B4_23_LOO 충실구현: 등급 B. 논문기준 SR 0.88 vs 15bps SR 0.95. [무인 병렬 B4_23] 비중 제외(LOO) — B4/… |
+| 1592 | L-RP-20260913_205803 | overlay_regime | B | RF_PAR_B4_25_LOO3 충실구현: 등급 B. 논문기준 SR 0.93 vs 15bps SR 0.99. [무인 병렬 B4_25] 오버레이 제외(LOO) = … |
+| 1593 | L-RP-20260913_205811 | ? | B | RF_PAR_B4_24_LOO 충실구현: 등급 B. 논문기준 SR 1.13 vs 15bps SR 1.17. [무인 병렬 B4_24] 유니버스 제외(LOO) — B… |
+| 1594 | L-RP-20260913_211219 | ? | B | RF_PAR_B1_1_1crowding 충실구현: 등급 B. 논문기준 SR 1.07 vs 15bps SR 1.10. [무인 병렬 B1_1] 1팩터 직교(crowd… |
+| 1595 | L-RP-20260913_211246 | ? | B | RF_PAR_B1_2_2crowdingaccrual 충실구현: 등급 B. 논문기준 SR 1.06 vs 15bps SR 1.10. [무인 병렬 B1_2] 2팩터 직… |
+| 1596 | L-RP-20260913_211313 | consensus | B | RF_PAR_B1_3_3crowdingconsensusaccrual 충실구현: 등급 B. 논문기준 SR 1.08 vs 15bps SR 1.11. [무인 병렬 B1… |
+| 1597 | L-RP-20260913_211337 | consensus | B | RF_PAR_B1_4_4crowdingconsensusgrowthaccrual 충실구현: 등급 B. 논문기준 SR 0.93 vs 15bps SR 0.96. [무인… |
+| 1598 | L-RP-20260913_211401 | consensus | B | RF_PAR_B1_5_5crowdingregimeconsensusgrowthaccrual 충실구현: 등급 B. 논문기준 SR 0.90 vs 15bps SR 0.9… |
+| 1599 | L-RP-20260913_212751 | overlay_regime | B | RF_PAR_B5_16_x 충실구현: 등급 B. 논문기준 SR 1.10 vs 15bps SR 1.15. [무인 병렬 B5_16] 낙폭상태 x 하방베타 순위 — B… |
+| 1600 | L-RP-20260913_212752 | overlay_regime | B | RF_PAR_B5_18_x 충실구현: 등급 B. 논문기준 SR 1.09 vs 15bps SR 1.11. [무인 병렬 B5_18] 보유레벨 체계비중 x 분산불가 하… |
+| 1601 | L-RP-20260913_212753 | overlay_regime | B | RF_PAR_B5_17_x 충실구현: 등급 B. 논문기준 SR 1.09 vs 15bps SR 1.13. [무인 병렬 B5_17] 횡단면분산상태 x 특이변동 순위 … |
+| 1602 | L-RP-20260913_212754 | overlay_regime | B | RF_PAR_B5_19_x 충실구현: 등급 B. 논문기준 SR 1.16 vs 15bps SR 1.17. [무인 병렬 B5_19] 다변량 스트레스 구성 x 채널별 … |
+| 1603 | L-RP-20260913_212755 | overlay_regime | B | RF_PAR_B5_20_2 충실구현: 등급 B. 논문기준 SR 1.07 vs 15bps SR 1.12. [무인 병렬 B5_20] 학습 예보 2종이 랭킹 축을 회전… |
+| 1604 | L-RP-20260913_214132 | ? | C | RF_PAR_B2_8_varianceonly 충실구현: 등급 C. 논문기준 SR 1.08 vs 15bps SR 1.10. [무인 병렬 B2_8] variance_… |
+| 1605 | L-RP-20260913_214132_02 | ? | B | RF_PAR_B2_9_covstructurerobust 충실구현: 등급 B. 논문기준 SR 1.06 vs 15bps SR 1.08. [무인 병렬 B2_9] cov… |
+| 1606 | L-RP-20260913_214155 | ? | B | RF_PAR_B2_6_drawdownpathobjective 충실구현: 등급 B. 논문기준 SR 1.03 vs 15bps SR 1.04. [무인 병렬 B2_6] … |
+| 1607 | L-RP-20260913_215926 | ? | C | RF_PAR_B3_11_KOSDAQ150 충실구현: 등급 C. 논문기준 SR 0.76 vs 15bps SR 0.76. [무인 병렬 B3_11] KOSDAQ150 … |
+| 1608 | L-RP-20260913_220012 | size | C | RF_PAR_B3_13_13 충실구현: 등급 C. 논문기준 SR 0.71 vs 15bps SR 0.77. [무인 병렬 B3_13] 소형주(시총 하위 1/3) — … |
+| 1609 | L-RP-20260913_220018 | ? | C | RF_PAR_B3_14_13 충실구현: 등급 C. 논문기준 SR 0.78 vs 15bps SR 0.85. [무인 병렬 B3_14] 대형주(시총 상위 1/3) — … |
+| 1610 | L-RP-20260913_220019 | ? | C | RF_PAR_B3_12_KOSPI200 충실구현: 등급 C. 논문기준 SR 0.85 vs 15bps SR 0.92. [무인 병렬 B3_12] KOSPI200 단독… |
+| 1611 | L-RP-20260913_220021 | ? | C | RF_PAR_B3_15_ 충실구현: 등급 C. 논문기준 SR 0.81 vs 15bps SR 0.86. [무인 병렬 B3_15] 섹터 중립 — B3/universe… |
+| 1612 | L-RP-20260913_221245 | ? | C | RF_PAR_B4_23_LOO 충실구현: 등급 C. 논문기준 SR 0.75 vs 15bps SR 0.74. [무인 병렬 B4_23] 비중 제외(LOO) — B4/… |
+| 1613 | L-RP-20260913_221401 | ? | C | RF_PAR_B4_24_LOO 충실구현: 등급 C. 논문기준 SR 1.12 vs 15bps SR 1.13. [무인 병렬 B4_24] 유니버스 제외(LOO) — B… |
+| 1614 | L-RP-20260917_115351 | earnings_event | C | RF_PAR_B1_4_suerealized 충실구현: 등급 C. 논문기준 SR 0.73 vs 15bps SR 0.78. [무인 병렬 B1_4] sue_realiz… |
+| 1615 | L-RP-20260917_115357 | ? | B | RF_PAR_B1_3_high52w 충실구현: 등급 B. 논문기준 SR 0.98 vs 15bps SR 0.99. [무인 병렬 B1_3] high_52w — B1/… |
+| 1616 | L-RP-20260917_115405 | ? | B | RF_PAR_B1_1_mom121 충실구현: 등급 B. 논문기준 SR 0.84 vs 15bps SR 0.90. [무인 병렬 B1_1] mom_12_1 — B1/m… |
+| 1617 | L-RP-20260917_115410 | ? | B | RF_PAR_B1_5_rev3m 충실구현: 등급 B. 논문기준 SR 0.93 vs 15bps SR 0.99. [무인 병렬 B1_5] rev_3m — B1/mult… |
+| 1618 | L-RP-20260917_115420 | ? | B | RF_PAR_B1_2_mominter127 충실구현: 등급 B. 논문기준 SR 0.81 vs 15bps SR 0.87. [무인 병렬 B1_2] mom_inter_… |
+| 1619 | L-RP-20260917_120457 | behavioral | C | RF_PAR_B1_6_flowforeign60d 충실구현: 등급 C. 논문기준 SR 0.60 vs 15bps SR 0.69. [무인 병렬 B1_6] flow_fo… |
+| 1620 | L-RP-20260917_120458 | behavioral | C | RF_PAR_B1_7_flowretailcontra 충실구현: 등급 C. 논문기준 SR 0.67 vs 15bps SR 0.73. [무인 병렬 B1_7] flow_… |
+| 1621 | L-RP-20260917_120501 | earnings_event | B | RF_PAR_B1_8_interxsue 충실구현: 등급 B. 논문기준 SR 0.86 vs 15bps SR 0.91. [무인 병렬 B1_8] inter_x_sue … |
+| 1622 | L-RP-20260917_122052 | overlay_regime | B | RF_PAR_B5_17_ 충실구현: 등급 B. 논문기준 SR 0.94 vs 15bps SR 1.00. [무인 병렬 B5_17] 위험지분 균등화 — B5/risk_… |
+| 1623 | L-RP-20260917_122052 | overlay_regime | C | RF_PAR_B5_16_ 충실구현: 등급 C. 논문기준 SR 0.91 vs 15bps SR 1.00. [무인 병렬 B5_16] 책 위험예산 브레이크 — B5/ri… |
+| 1624 | L-RP-20260917_122052 | overlay_regime | B | RF_PAR_B5_20_ 충실구현: 등급 B. 논문기준 SR 0.98 vs 15bps SR 1.04. [무인 병렬 B5_20] 스트레스 채널 회전 — B5/ris… |
+| 1625 | L-RP-20260917_122052 | momentum | B | RF_PAR_B5_19_ 충실구현: 등급 B. 논문기준 SR 0.93 vs 15bps SR 0.99. [무인 병렬 B5_19] 추세 지속성 상태 — B5/risk… |
+| 1626 | L-RP-20260917_122052 | overlay_regime | B | RF_PAR_B5_18_ 충실구현: 등급 B. 논문기준 SR 0.96 vs 15bps SR 1.03. [무인 병렬 B5_18] 내재 평균상관 브레이크 — B5/r… |
+| 1627 | L-RP-20260917_185435 | ? | B | RF_PAR_B2_8_ 충실구현: 등급 B. 논문기준 SR 0.94 vs 15bps SR 0.98. [무인 병렬 B2_8] 계층 분산구조 배분 — B2/weigh… |
+| 1628 | L-RP-20260917_185435 | ? | C | RF_PAR_B2_10_ 충실구현: 등급 C. 논문기준 SR 0.89 vs 15bps SR 0.94. [무인 병렬 B2_10] 순수 위험최소 상한 — B2/wei… |
+| 1629 | L-RP-20260917_185436 | ? | B | RF_PAR_B2_9_GerberRMTtilt 충실구현: 등급 B. 논문기준 SR 0.93 vs 15bps SR 0.99. [무인 병렬 B2_9] Gerber-R… |
+| 1630 | L-RP-20260917_185508 | ? | C | RF_PAR_B2_6_ 충실구현: 등급 C. 논문기준 SR 0.84 vs 15bps SR 0.90. [무인 병렬 B2_6] 낙폭경로 목적 비중 — B2/weigh… |
+| 1631 | L-RP-20260917_190733 | ? | B | RF_PAR_B2_7_ 충실구현: 등급 B. 논문기준 SR 0.96 vs 15bps SR 1.02. [무인 병렬 B2_7] 단일시점 꼬리 목적 비중 — B2/we… |
+| 1632 | L-RP-20260917_191947 | ? | B | RF_PAR_B2_11_ 충실구현: 등급 B. 논문기준 SR 0.93 vs 15bps SR 1.00. [무인 병렬 B2_11] 공분산 미사용 최소개입 대조 — B… |
+| 1633 | L-RP-20260917_193608 | ? | C | RF_PAR_B3_14_13 충실구현: 등급 C. 논문기준 SR 0.69 vs 15bps SR 0.76. [무인 병렬 B3_14] 대형주 상위 1/3 — B3/u… |
+| 1634 | L-RP-20260917_193629 | size | C | RF_PAR_B3_13_13 충실구현: 등급 C. 논문기준 SR 0.64 vs 15bps SR 0.73. [무인 병렬 B3_13] 소형주 하위 1/3 — B3/u… |
+| 1635 | L-RP-20260917_193637 | ? | C | RF_PAR_B3_15_ 충실구현: 등급 C. 논문기준 SR 0.72 vs 15bps SR 0.78. [무인 병렬 B3_15] 섹터 중립 — B3/universe… |
+| 1636 | L-RP-20260917_195151 | ? | C | RF_PAR_B4_23_LOO 충실구현: 등급 C. 논문기준 SR 0.78 vs 15bps SR 0.83. [무인 병렬 B4_23] 비중 제외(LOO) — B4/… |
+| 1637 | L-RP-20260917_195217 | ? | C | RF_PAR_B4_22_LOO 충실구현: 등급 C. 논문기준 SR 0.76 vs 15bps SR 0.81. [무인 병렬 B4_22] 팩터 제외(LOO) — B4/… |
+| 1638 | L-RP-20260917_195239 | overlay_regime | C | RF_PAR_B4_25_LOO3 충실구현: 등급 C. 논문기준 SR 0.69 vs 15bps SR 0.75. [무인 병렬 B4_25] 오버레이 제외(LOO) = … |
+| 1639 | L-RP-20260917_195245 | ? | C | RF_PAR_B4_21_4 충실구현: 등급 C. 논문기준 SR 0.76 vs 15bps SR 0.81. [무인 병렬 B4_21] 전 요소 결합(4축) — B4/c… |
+| 1640 | L-RP-20260917_195250 | ? | B | RF_PAR_B4_24_LOO 충실구현: 등급 B. 논문기준 SR 1.02 vs 15bps SR 1.06. [무인 병렬 B4_24] 유니버스 제외(LOO) — B… |
+| 1641 | L-RP-20260919_001828 | overlay_regime | C | RF_PAR_B5_23_ 충실구현: 등급 C. 논문기준 SR 0.99 vs 15bps SR 1.10. [무인 병렬 B5_23] 침식 층 × 급락 층 — 형태 분할… |
+| 1642 | L-RP-20260919_001828 | overlay_regime | B | RF_PAR_B5_21_ 충실구현: 등급 B. 논문기준 SR 0.98 vs 15bps SR 1.06. [무인 병렬 B5_21] 변동성 기간구조 종목축 — 급락 층… |
+| 1643 | L-RP-20260919_001828 | momentum | C | RF_PAR_B5_24_ 충실구현: 등급 C. 논문기준 SR 0.99 vs 15bps SR 1.07. [무인 병렬 B5_24] 지속성×베타 층 × 급락 층 — B… |
+| 1644 | L-RP-20260919_001830 | overlay_regime | B | RF_PAR_B5_22_arm 충실구현: 등급 B. 논문기준 SR 0.92 vs 15bps SR 1.00. [무인 병렬 B5_22] 침식 형태 × 잔차축 — 새 … |
+| 1645 | L-RP-20260919_001954 | overlay_regime | C | RF_PAR_B5_31_PG2 충실구현: 등급 C. 논문기준 SR 0.91 vs 15bps SR 1.02. [무인 병렬 B5_31] PG2 리스크 오버레이 상주 … |
+| 1646 | L-RP-20260919_023223 | momentum | B | RF_PAR_B5_25_ 충실구현: 등급 B. 논문기준 SR 0.97 vs 15bps SR 1.03. [무인 병렬 B5_25] 지속성 종목축 × 내재상관 스칼라 … |
+| 1647 | L-RP-20260919_023223 | overlay_regime | C | RF_PAR_B5_28_ 충실구현: 등급 C. 논문기준 SR 0.99 vs 15bps SR 1.07. [무인 병렬 B5_28] 다변량 채널 × 급락 층 — B5/… |
+| 1648 | L-RP-20260919_023223 | overlay_regime | C | RF_PAR_B5_26_ 충실구현: 등급 C. 논문기준 SR 0.97 vs 15bps SR 1.03. [무인 병렬 B5_26] 침식 층 × 다변량 채널 — 최고 … |
+| 1649 | L-RP-20260919_023224 | momentum | B | RF_PAR_B5_27_ 충실구현: 등급 B. 논문기준 SR 0.98 vs 15bps SR 1.03. [무인 병렬 B5_27] 지속성×베타 층 × 다변량 채널 —… |
+| 1650 | L-RP-20260919_025915 | overlay_regime | C | RF_PAR_B1_2_ivollevel 충실구현: 등급 C. 논문기준 SR 0.88 vs 15bps SR 0.91. [무인 병렬 B1_2] ivol_level —… |
+| 1651 | L-RP-20260919_025921 | overlay_regime | C | RF_PAR_B1_3_downsidebeta 충실구현: 등급 C. 논문기준 SR 0.87 vs 15bps SR 0.93. [무인 병렬 B1_3] downside_… |
+| 1652 | L-RP-20260919_025923 | overlay_regime | B | RF_PAR_B1_4_lefttailbeta 충실구현: 등급 B. 논문기준 SR 0.89 vs 15bps SR 0.94. [무인 병렬 B1_4] left_tail… |
+| 1653 | L-RP-20260919_025924 | overlay_regime | B | RF_PAR_B1_1_mom121control 충실구현: 등급 B. 논문기준 SR 1.02 vs 15bps SR 1.04. [무인 병렬 B1_1] mom_12_1… |
+| 1654 | L-RP-20260919_025925 | overlay_regime | B | RF_PAR_B1_5_crashskewncskew 충실구현: 등급 B. 논문기준 SR 0.92 vs 15bps SR 0.97. [무인 병렬 B1_5] crash_… |
+| 1655 | L-RP-20260919_031051 | overlay_regime | C | RF_PAR_B1_9_crisisconditionalbeta 충실구현: 등급 C. 논문기준 SR 0.89 vs 15bps SR 0.95. [무인 병렬 B1_9] … |
+| 1656 | L-RP-20260919_031053 | overlay_regime | B | RF_PAR_B1_6_ddpathulcer 충실구현: 등급 B. 논문기준 SR 1.00 vs 15bps SR 1.02. [무인 병렬 B1_6] dd_path_ul… |
+| 1657 | L-RP-20260919_031054 | overlay_regime | B | RF_PAR_B1_7_dddepthonly 충실구현: 등급 B. 논문기준 SR 1.01 vs 15bps SR 1.02. [무인 병렬 B1_7] dd_depth_o… |
+| 1658 | L-RP-20260919_031056 | overlay_regime | B | RF_PAR_B1_8_volasymmetry 충실구현: 등급 B. 논문기준 SR 0.93 vs 15bps SR 0.98. [무인 병렬 B1_8] vol_asymm… |
+| 1659 | L-RP-20260919_031119 | overlay_regime | B | RF_PAR_B1_10_composemomxdbeta 충실구현: 등급 B. 논문기준 SR 1.06 vs 15bps SR 1.09. [무인 병렬 B1_10] com… |
+| 1660 | L-RP-20260919_224509 | momentum | B | RF_PAR_B5_16_ 충실구현: 등급 B. 논문기준 SR 0.89 vs 15bps SR 0.95. [무인 병렬 B5_16] 추세 부호 전량현금 — 느린 스칼라… |
+| 1661 | L-RP-20260919_224556 | momentum | B | RF_PAR_B5_17_ 충실구현: 등급 B. 논문기준 SR 1.02 vs 15bps SR 1.04. [무인 병렬 B5_17] 지속성 단계 게이트 — 드물고 긴 … |
+| 1662 | L-RP-20260919_224559 | momentum | B | RF_PAR_B5_18_ 충실구현: 등급 B. 논문기준 SR 1.12 vs 15bps SR 1.15. [무인 병렬 B5_18] 지평 사다리 게이트 — 빠른 진입·… |
+| 1663 | L-RP-20260919_224600 | overlay_regime | B | RF_PAR_B5_19_ 충실구현: 등급 B. 논문기준 SR 1.10 vs 15bps SR 1.14. [무인 병렬 B5_19] 사다리 예산 고정 · 잔차 집중 배… |
+| 1664 | L-RP-20260919_224806 | overlay_regime | B | RF_PAR_B5_31_PG2 충실구현: 등급 B. 논문기준 SR 1.03 vs 15bps SR 1.10. [무인 병렬 B5_31] PG2 리스크 오버레이 상주 … |
+| 1665 | L-RP-20260919_225539 | momentum | B | RF_PAR_B5_22_tilt 충실구현: 등급 B. 논문기준 SR 0.91 vs 15bps SR 0.97. [무인 병렬 B5_22] 추세 현금 × 산포 잔차 t… |
+| 1666 | L-RP-20260919_225557 | overlay_regime | B | RF_PAR_B5_21_ 충실구현: 등급 B. 논문기준 SR 1.03 vs 15bps SR 1.05. [무인 병렬 B5_21] 책 볼록성 브레이크 — 보유 원천 … |
+| 1667 | L-RP-20260919_225558 | momentum | B | RF_PAR_B5_20_tilt 충실구현: 등급 B. 논문기준 SR 1.09 vs 15bps SR 1.11. [무인 병렬 B5_20] 사다리 상태 · 하방채널 선… |
+| 1668 | L-RP-20260919_232116 | overlay_regime | B | RF_PAR_B2_10_ 충실구현: 등급 B. 논문기준 SR 1.02 vs 15bps SR 1.04. [무인 병렬 B2_10] 위험단독 극단 — B2/weight… |
+| 1669 | L-RP-20260919_232116 | overlay_regime | B | RF_PAR_B2_7_ 충실구현: 등급 B. 논문기준 SR 1.01 vs 15bps SR 1.03. [무인 병렬 B2_7] 등가 위험지분 — B2/weightin… |
+| 1670 | L-RP-20260919_232116 | overlay_regime | B | RF_PAR_B2_8_ 충실구현: 등급 B. 논문기준 SR 1.03 vs 15bps SR 1.04. [무인 병렬 B2_8] 군집 배분 — B2/weighting … |
+| 1671 | L-RP-20260919_232116 | overlay_regime | B | RF_PAR_B2_9_ 충실구현: 등급 B. 논문기준 SR 1.03 vs 15bps SR 1.07. [무인 병렬 B2_9] 군집+점수보존 — B2/weightin… |
+| 1672 | L-RP-20260919_232133 | overlay_regime | C | RF_PAR_B2_6_ 충실구현: 등급 C. 논문기준 SR 0.80 vs 15bps SR 0.82. [무인 병렬 B2_6] 낙폭경로 목적함수 — B2/weight… |
+| 1673 | L-RP-20260919_232843 | overlay_regime | B | RF_PAR_B2_11_ 충실구현: 등급 B. 논문기준 SR 1.05 vs 15bps SR 1.08. [무인 병렬 B2_11] 공분산 없는 기준선 — B2/wei… |
+| 1674 | L-RP-20260919_232843 | overlay_regime | B | RF_PAR_B2_13_LWlift 충실구현: 등급 B. 논문기준 SR 1.04 vs 15bps SR 1.08. [무인 병렬 B2_13] LW 축소 lift — … |
+| 1675 | L-RP-20260919_232843 | overlay_regime | B | RF_PAR_B2_12_lift 충실구현: 등급 B. 논문기준 SR 1.04 vs 15bps SR 1.08. [무인 병렬 B2_12] 표본 공분산 lift — B… |
+| 1676 | L-RP-20260919_234418 | overlay_regime | C | RF_PAR_B3_14_ 충실구현: 등급 C. 논문기준 SR 0.70 vs 15bps SR 0.78. [무인 병렬 B3_14] 대형주 단독 — B3/univers… |
+| 1677 | L-RP-20260919_234428 | overlay_regime | B | RF_PAR_B3_12_KOSPI200LOO 충실구현: 등급 B. 논문기준 SR 0.81 vs 15bps SR 0.88. [무인 병렬 B3_12] KOSPI200… |
+| 1678 | L-RP-20260919_234438 | overlay_regime | C | RF_PAR_B3_13_ 충실구현: 등급 C. 논문기준 SR 0.63 vs 15bps SR 0.72. [무인 병렬 B3_13] 소형주 단독 — B3/univers… |
+| 1679 | L-RP-20260919_234446 | overlay_regime | B | RF_PAR_B3_15_ 충실구현: 등급 B. 논문기준 SR 0.84 vs 15bps SR 0.89. [무인 병렬 B3_15] 섹터 중립 — B3/universe… |
+| 1680 | L-RP-20260919_235900 | overlay_regime | C | RF_PAR_B4_22_LOO 충실구현: 등급 C. 논문기준 SR 0.77 vs 15bps SR 0.86. [무인 병렬 B4_22] 팩터 제외(LOO) — B4/… |
+| 1681 | L-RP-20260919_235918 | overlay_regime | B | RF_PAR_B4_21_4 충실구현: 등급 B. 논문기준 SR 0.87 vs 15bps SR 0.93. [무인 병렬 B4_21] 전 요소 결합(4축) — B4/c… |
+| 1682 | L-RP-20260920_004101 | overlay_regime | B | RF_PAR_B1_2_valebitev 충실구현: 등급 B. 논문기준 SR 1.08 vs 15bps SR 1.13. [무인 병렬 B1_2] val_ebit_ev … |
+| 1683 | L-RP-20260920_004101 | overlay_regime | B | RF_PAR_B1_3_valfcf 충실구현: 등급 B. 논문기준 SR 1.04 vs 15bps SR 1.07. [무인 병렬 B1_3] val_fcf — B1/mu… |
+| 1684 | L-RP-20260920_004102 | quality_profitability | B | RF_PAR_B1_5_profgpa 충실구현: 등급 B. 논문기준 SR 1.05 vs 15bps SR 1.07. [무인 병렬 B1_5] prof_gpa — B1/… |
+| 1685 | L-RP-20260920_004103 | overlay_regime | B | RF_PAR_B1_4_profcbop 충실구현: 등급 B. 논문기준 SR 1.10 vs 15bps SR 1.09. [무인 병렬 B1_4] prof_cbop — B… |
+| 1686 | L-RP-20260920_004104 | value | B | RF_PAR_B1_1_valep 충실구현: 등급 B. 논문기준 SR 1.02 vs 15bps SR 1.06. [무인 병렬 B1_1] val_ep — B1/mult… |
+| 1687 | L-RP-20260920_005040 | overlay_regime | B | RF_PAR_B1_7_laborsga 충실구현: 등급 B. 논문기준 SR 0.92 vs 15bps SR 0.98. [무인 병렬 B1_7] labor_sga — B… |
+| 1688 | L-RP-20260920_005040 | overlay_regime | B | RF_PAR_B1_8_illiqamihud 충실구현: 등급 B. 논문기준 SR 0.99 vs 15bps SR 1.02. [무인 병렬 B1_8] illiq_amih… |
+| 1689 | L-RP-20260920_005040 | behavioral | B | RF_PAR_B1_9_flowresidfx 충실구현: 등급 B. 논문기준 SR 0.92 vs 15bps SR 0.96. [무인 병렬 B1_9] flow_resid… |
+| 1690 | L-RP-20260920_005041 | overlay_regime | B | RF_PAR_B1_6_laboroplev 충실구현: 등급 B. 논문기준 SR 0.92 vs 15bps SR 0.98. [무인 병렬 B1_6] labor_oplev… |
+| 1691 | L-RP-20260920_005049 | overlay_regime | B | RF_PAR_B1_10_valxprof 충실구현: 등급 B. 논문기준 SR 1.10 vs 15bps SR 1.11. [무인 병렬 B1_10] val_x_prof … |
+| 1692 | L-RP-20260921_075713 | overlay_regime | B | RF_PAR_B5_16_ 충실구현: 등급 B. 논문기준 SR 1.08 vs 15bps SR 1.14. [무인 병렬 B5_16] 책 이력담보 단독 — B5/risk… |
+| 1693 | L-RP-20260921_075713 | overlay_regime | B | RF_PAR_B5_18_ 충실구현: 등급 B. 논문기준 SR 1.07 vs 15bps SR 1.14. [무인 병렬 B5_18] 책 볼록성 단독 (이 바닥 기준점)… |
+| 1694 | L-RP-20260921_075713 | overlay_regime | B | RF_PAR_B5_17_ 충실구현: 등급 B. 논문기준 SR 1.09 vs 15bps SR 1.15. [무인 병렬 B5_17] 책 위험균형 갭 단독 — B5/ri… |
+| 1695 | L-RP-20260921_075727 | momentum | B | RF_PAR_B5_19_ 충실구현: 등급 B. 논문기준 SR 1.07 vs 15bps SR 1.14. [무인 병렬 B5_19] 책 볼록성 × 추세 지속 게이트 —… |
+| 1696 | L-RP-20260921_075757 | overlay_regime | B | RF_PAR_B5_31_PG2 충실구현: 등급 B. 논문기준 SR 1.06 vs 15bps SR 1.18. [무인 병렬 B5_31] PG2 리스크 오버레이 상주 … |
+| 1697 | L-RP-20260921_080946 | overlay_regime | B | RF_PAR_B5_20_ 충실구현: 등급 B. 논문기준 SR 1.16 vs 15bps SR 1.25. [무인 병렬 B5_20] 같은 예산·잔차 집중 배분 — B5… |
+| 1698 | L-RP-20260921_080946 | overlay_regime | C | RF_PAR_B5_21_ 충실구현: 등급 C. 논문기준 SR 1.07 vs 15bps SR 1.19. [무인 병렬 B5_21] 위험예산 × 침식(발화 달 분리) … |
+| 1699 | L-RP-20260921_083625 | ml_complexity | B | RF_PAR_B2_8_hrpcluster 충실구현: 등급 B. 논문기준 SR 1.09 vs 15bps SR 1.14. [무인 병렬 B2_8] hrp_cluster… |
+| 1700 | L-RP-20260921_083625 | overlay_regime | B | RF_PAR_B2_9_ncoscoretilt 충실구현: 등급 B. 논문기준 SR 1.15 vs 15bps SR 1.19. [무인 병렬 B2_9] nco_score… |
+| 1701 | L-RP-20260921_083625 | overlay_regime | B | RF_PAR_B2_7_ivolcontrol 충실구현: 등급 B. 논문기준 SR 1.09 vs 15bps SR 1.15. [무인 병렬 B2_7] ivol_contr… |
+| 1702 | L-RP-20260921_083625 | overlay_regime | B | RF_PAR_B2_6_minvarxs 충실구현: 등급 B. 논문기준 SR 1.07 vs 15bps SR 1.11. [무인 병렬 B2_6] minvar_xs — B… |
+| 1703 | L-RP-20260921_083639 | overlay_regime | B | RF_PAR_B2_10_cdarpath 충실구현: 등급 B. 논문기준 SR 0.93 vs 15bps SR 0.97. [무인 병렬 B2_10] cdar_path —… |
+| 1704 | L-RP-20260921_085247 | overlay_regime | B | RF_PAR_B2_13_tiltshrgerber 충실구현: 등급 B. 논문기준 SR 1.14 vs 15bps SR 1.19. [무인 병렬 B2_13] tilt_s… |
+| 1705 | L-RP-20260921_085247 | overlay_regime | B | RF_PAR_B2_12_tiltshrsample 충실구현: 등급 B. 논문기준 SR 1.16 vs 15bps SR 1.20. [무인 병렬 B2_12] tilt_s… |
+| 1706 | L-RP-20260921_085247 | overlay_regime | B | RF_PAR_B2_11_cvartail 충실구현: 등급 B. 논문기준 SR 1.11 vs 15bps SR 1.16. [무인 병렬 B2_11] cvar_tail —… |
+| 1707 | L-RP-20260921_090751 | overlay_regime | C | RF_PAR_B3_11_KQ150 충실구현: 등급 C. 논문기준 SR 0.81 vs 15bps SR 0.80. [무인 병렬 B3_11] KQ150 단독 — B3/… |
+| 1708 | L-RP-20260921_090751 | overlay_regime | B | RF_PAR_B3_14_13 충실구현: 등급 B. 논문기준 SR 0.73 vs 15bps SR 0.82. [무인 병렬 B3_14] 대형주 상위 1/3 — B3/u… |
+| 1709 | L-RP-20260921_090802 | overlay_regime | B | RF_PAR_B3_12_K200 충실구현: 등급 B. 논문기준 SR 0.84 vs 15bps SR 0.93. [무인 병렬 B3_12] K200 단독 — B3/un… |
+| 1710 | L-RP-20260921_090817 | overlay_regime | B | RF_PAR_B3_15_ 충실구현: 등급 B. 논문기준 SR 0.86 vs 15bps SR 0.92. [무인 병렬 B3_15] 섹터 중립 — B3/universe… |
+| 1711 | L-RP-20260921_092128 | overlay_regime | C | RF_PAR_B4_22_LOO 충실구현: 등급 C. 논문기준 SR 0.83 vs 15bps SR 0.84. [무인 병렬 B4_22] 팩터 제외(LOO) — B4/… |
+| 1712 | L-RP-20260921_092148 | overlay_regime | C | RF_PAR_B4_21_4 충실구현: 등급 C. 논문기준 SR 0.86 vs 15bps SR 0.84. [무인 병렬 B4_21] 전 요소 결합(4축) — B4/c… |
+| 1713 | L-RP-20260921_093745 | overlay_regime | B | RF_PAR_B6_34_k30 충실구현: 등급 B. 논문기준 SR 0.81 vs 15bps SR 0.94. [무인 병렬 B6_34] 분기(k=3 · 위상 0) —… |
+| 1714 | L-RP-20260921_093751 | overlay_regime | B | RF_PAR_B6_33_k21 충실구현: 등급 B. 논문기준 SR 0.81 vs 15bps SR 0.88. [무인 병렬 B6_33] 격월(k=2 · 위상 1) —… |
+| 1715 | L-RP-20260921_093752 | overlay_regime | B | RF_PAR_B6_32_k20 충실구현: 등급 B. 논문기준 SR 0.94 vs 15bps SR 1.01. [무인 병렬 B6_32] 격월(k=2 · 위상 0) —… |
+| 1716 | L-RP-20260921_100745 | overlay_regime | B | RF_PAR_B1_1_liqamihud 충실구현: 등급 B. 논문기준 SR 1.07 vs 15bps SR 1.10. [무인 병렬 B1_1] liq_amihud —… |
+| 1717 | L-RP-20260921_100745 | overlay_regime | B | RF_PAR_B1_2_liqturnover252 충실구현: 등급 B. 논문기준 SR 1.10 vs 15bps SR 1.14. [무인 병렬 B1_2] liq_tur… |
+| 1718 | L-RP-20260921_100745 | behavioral | B | RF_PAR_B1_5_flowretailcontra 충실구현: 등급 B. 논문기준 SR 1.07 vs 15bps SR 1.11. [무인 병렬 B1_5] flow_… |
+| 1719 | L-RP-20260921_100745 | overlay_regime | B | RF_PAR_B1_3_liqpricedelay 충실구현: 등급 B. 논문기준 SR 1.11 vs 15bps SR 1.14. [무인 병렬 B1_3] liq_pric… |
+| 1720 | L-RP-20260921_100746 | behavioral | B | RF_PAR_B1_4_flowforeignresid63 충실구현: 등급 B. 논문기준 SR 1.05 vs 15bps SR 1.09. [무인 병렬 B1_4] flo… |
+| 1721 | L-RP-20260921_102116 | overlay_regime | B | RF_PAR_B1_7_crowdidioresid 충실구현: 등급 B. 논문기준 SR 1.04 vs 15bps SR 1.08. [무인 병렬 B1_7] crowd_i… |
+| 1722 | L-RP-20260921_102116 | overlay_regime | B | RF_PAR_B1_6_crowdmomcrowding 충실구현: 등급 B. 논문기준 SR 1.16 vs 15bps SR 1.17. [무인 병렬 B1_6] crowd… |
+| 1723 | L-RP-20260921_102128 | behavioral | B | RF_PAR_B1_8_liqxflow 충실구현: 등급 B. 논문기준 SR 1.03 vs 15bps SR 1.05. [무인 병렬 B1_8] liq_x_flow — … |
+| 1724 | L-RP-20260921_102130 | behavioral | B | RF_PAR_B1_10_flowxcrowd 충실구현: 등급 B. 논문기준 SR 1.08 vs 15bps SR 1.09. [무인 병렬 B1_10] flow_x_cr… |
+| 1725 | L-RP-20260921_102131 | overlay_regime | B | RF_PAR_B1_9_liqxcrowd 충실구현: 등급 B. 논문기준 SR 1.09 vs 15bps SR 1.11. [무인 병렬 B1_9] liq_x_crowd … |
+| 1726 | L-RP-20260921_105001 | overlay_regime | B | RF_PAR_B5_18_ 충실구현: 등급 B. 논문기준 SR 1.11 vs 15bps SR 1.16. [무인 병렬 B5_18] 급락 전담 단독 — 요인 대조(변동… |
+| 1727 | L-RP-20260921_105001 | momentum | B | RF_PAR_B5_16_ 충실구현: 등급 B. 논문기준 SR 1.10 vs 15bps SR 1.16. [무인 병렬 B5_16] 급락 스칼라 × 침식 스칼라 — 형… |
+| 1728 | L-RP-20260921_105002 | momentum | B | RF_PAR_B5_17_ 충실구현: 등급 B. 논문기준 SR 1.10 vs 15bps SR 1.12. [무인 병렬 B5_17] 침식 전담 단독 — 요인 대조(추세… |
+| 1729 | L-RP-20260921_105003 | overlay_regime | B | RF_PAR_B5_19_GLS 충실구현: 등급 B. 논문기준 SR 1.19 vs 15bps SR 1.21. [무인 병렬 B5_19] GLS 합성 상태 — 한 층이… |
+| 1730 | L-RP-20260921_105052 | overlay_regime | B | RF_PAR_B5_31_PG2 충실구현: 등급 B. 논문기준 SR 1.10 vs 15bps SR 1.18. [무인 병렬 B5_31] PG2 리스크 오버레이 상주 … |
+| 1731 | L-RP-20260921_110049 | overlay_regime | B | RF_PAR_B5_20_ 충실구현: 등급 B. 논문기준 SR 1.11 vs 15bps SR 1.14. [무인 병렬 B5_20] 위험지분 균등화 — 타이밍 없는 배… |
+| 1732 | L-RP-20260921_110049 | momentum | B | RF_PAR_B5_22_3 충실구현: 등급 B. 논문기준 SR 1.10 vs 15bps SR 1.16. [무인 병렬 B5_22] 형태 전담 곱 × 위험지분 배분 … |
+| 1733 | L-RP-20260921_110049 | overlay_regime | C | RF_PAR_B5_21_ 충실구현: 등급 C. 논문기준 SR 1.09 vs 15bps SR 1.16. [무인 병렬 B5_21] 변동성 분할 스택 — 급락 스칼라 … |
+| 1734 | L-RP-20260921_112403 | overlay_regime | B | RF_PAR_B2_9_ 충실구현: 등급 B. 논문기준 SR 1.12 vs 15bps SR 1.16. [무인 병렬 B2_9] 잡음제거 군집 — B2/weightin… |
+| 1735 | L-RP-20260921_112403 | overlay_regime | B | RF_PAR_B2_7_ERC 충실구현: 등급 B. 논문기준 SR 1.14 vs 15bps SR 1.18. [무인 병렬 B2_7] ERC(상관 포함) — B2/we… |
+| 1736 | L-RP-20260921_112403 | overlay_regime | B | RF_PAR_B2_8_ 충실구현: 등급 B. 논문기준 SR 1.13 vs 15bps SR 1.14. [무인 병렬 B2_8] 군집 배분 — B2/weighting … |
+| 1737 | L-RP-20260921_112404 | overlay_regime | B | RF_PAR_B2_6_ 충실구현: 등급 B. 논문기준 SR 1.12 vs 15bps SR 1.15. [무인 병렬 B2_6] 역변동성 배분 — B2/weightin… |
+| 1738 | L-RP-20260921_112421 | overlay_regime | B | RF_PAR_B2_10_ 충실구현: 등급 B. 논문기준 SR 0.91 vs 15bps SR 0.96. [무인 병렬 B2_10] 낙폭 직접 표적 — B2/weigh… |
+| 1739 | L-RP-20260921_114209 | overlay_regime | B | RF_PAR_B2_13_ 충실구현: 등급 B. 논문기준 SR 1.15 vs 15bps SR 1.18. [무인 병렬 B2_13] 스코어 집중 대조군 — B2/wei… |
+| 1740 | L-RP-20260921_114209 | overlay_regime | B | RF_PAR_B2_12_ 충실구현: 등급 B. 논문기준 SR 1.07 vs 15bps SR 1.10. [무인 병렬 B2_12] 분산 최소(극단) — B2/weig… |
+| 1741 | L-RP-20260921_114209 | overlay_regime | B | RF_PAR_B2_11_ 충실구현: 등급 B. 논문기준 SR 1.13 vs 15bps SR 1.15. [무인 병렬 B2_11] 꼬리 표적 — B2/weightin… |
+| 1742 | L-RP-20260921_115543 | overlay_regime | C | RF_PAR_B3_11_KQ150 충실구현: 등급 C. 논문기준 SR 0.81 vs 15bps SR 0.80. [무인 병렬 B3_11] KQ150 단독 — B3/… |
+| 1743 | L-RP-20260921_115546 | overlay_regime | C | RF_PAR_B3_14_13 충실구현: 등급 C. 논문기준 SR 0.71 vs 15bps SR 0.78. [무인 병렬 B3_14] 대형주 상위 1/3 — B3/u… |
+| 1744 | L-RP-20260921_115607 | overlay_regime | B | RF_PAR_B3_12_K200 충실구현: 등급 B. 논문기준 SR 0.83 vs 15bps SR 0.91. [무인 병렬 B3_12] K200 단독 — B3/un… |
+| 1745 | L-RP-20260921_115611 | overlay_regime | C | RF_PAR_B3_13_13 충실구현: 등급 C. 논문기준 SR 0.70 vs 15bps SR 0.78. [무인 병렬 B3_13] 소형주 하위 1/3 — B3/u… |
+| 1746 | L-RP-20260921_115620 | overlay_regime | B | RF_PAR_B3_15_ 충실구현: 등급 B. 논문기준 SR 0.86 vs 15bps SR 0.90. [무인 병렬 B3_15] 섹터 중립 — B3/universe… |
+| 1747 | L-RP-20260921_121044 | overlay_regime | B | RF_PAR_B6_34_k30 충실구현: 등급 B. 논문기준 SR 0.83 vs 15bps SR 0.94. [무인 병렬 B6_34] 분기(k=3 · 위상 0) —… |
+| 1748 | L-RP-20260921_121052 | overlay_regime | B | RF_PAR_B6_32_k20 충실구현: 등급 B. 논문기준 SR 0.92 vs 15bps SR 0.98. [무인 병렬 B6_32] 격월(k=2 · 위상 0) —… |
+| 1749 | L-RP-20260921_121053 | overlay_regime | B | RF_PAR_B6_33_k21 충실구현: 등급 B. 논문기준 SR 0.84 vs 15bps SR 0.90. [무인 병렬 B6_33] 격월(k=2 · 위상 1) —… |
+| 1750 | L-RP-20260921_121059 | overlay_regime | B | RF_PAR_B6_35_ 충실구현: 등급 B. 논문기준 SR 0.91 vs 15bps SR 0.97. [무인 병렬 B6_35] 노트레이드 밴드(확장창 중앙값) —… |
+| 1751 | L-RP-20260921_121219 | overlay_regime | B | RF_PAR_B6_36_2nmax 충실구현: 등급 B. 논문기준 SR 1.07 vs 15bps SR 1.10. [무인 병렬 B6_36] 랭크 버퍼(2×n_max … |
+| 1752 | L-RP-20260921_122610 | overlay_regime | C | RF_PAR_B4_22_LOO 충실구현: 등급 C. 논문기준 SR 0.85 vs 15bps SR 0.82. [무인 병렬 B4_22] 팩터 제외(LOO) — B4/… |
+| 1753 | L-RP-20260921_122627 | overlay_regime | C | RF_PAR_B4_21_4 충실구현: 등급 C. 논문기준 SR 0.84 vs 15bps SR 0.82. [무인 병렬 B4_21] 전 요소 결합(4축) — B4/c… |
+| 1754 | L-RP-20260921_125518 | overlay_regime | C | RF_PAR_B1_3_bulklevel 충실구현: 등급 C. 논문기준 SR 0.39 vs 15bps SR 0.51. [무인 병렬 B1_3] bulk_level —… |
+| 1755 | L-RP-20260921_125518 | overlay_regime | C | RF_PAR_B1_4_edgerestored 충실구현: 등급 C. 논문기준 SR 0.41 vs 15bps SR 0.53. [무인 병렬 B1_4] edge_rest… |
+| 1756 | L-RP-20260921_125519 | overlay_regime | C | RF_PAR_B1_1_delayspeed 충실구현: 등급 C. 논문기준 SR 0.42 vs 15bps SR 0.53. [무인 병렬 B1_1] delay_speed… |
+| 1757 | L-RP-20260921_125523 | overlay_regime | F | RF_PAR_B1_5_fourthmoment 충실구현: 등급 F. 논문기준 SR 0.36 vs 15bps SR 0.49. [무인 병렬 B1_5] fourth_mo… |
+| 1758 | L-RP-20260921_125524 | overlay_regime | C | RF_PAR_B1_2_naiveautocorr 충실구현: 등급 C. 논문기준 SR 0.43 vs 15bps SR 0.55. [무인 병렬 B1_2] naive_au… |
+| 1759 | L-RP-20260921_130813 | overlay_regime | C | RF_PAR_B1_7_dirmom 충실구현: 등급 C. 논문기준 SR 0.50 vs 15bps SR 0.65. [무인 병렬 B1_7] dir_mom — B1/mu… |
+| 1760 | L-RP-20260921_130813 | overlay_regime | C | RF_PAR_B1_10_speedxdir 충실구현: 등급 C. 논문기준 SR 0.50 vs 15bps SR 0.63. [무인 병렬 B1_10] speed_x_di… |
+| 1761 | L-RP-20260921_130814 | overlay_regime | C | RF_PAR_B1_6_downtail 충실구현: 등급 C. 논문기준 SR 0.47 vs 15bps SR 0.60. [무인 병렬 B1_6] down_tail — B… |
+| 1762 | L-RP-20260921_130815 | overlay_regime | C | RF_PAR_B1_8_dirrev 충실구현: 등급 C. 논문기준 SR 0.67 vs 15bps SR 0.76. [무인 병렬 B1_8] dir_rev — B1/mu… |
+| 1763 | L-RP-20260921_130857 | overlay_regime | C | RF_PAR_B1_9_dircore3 충실구현: 등급 C. 논문기준 SR 0.72 vs 15bps SR 0.83. [무인 병렬 B1_9] dir_core3 — B… |
+| 1764 | L-RP-20260921_132409 | ml_complexity | C | RF_PAR_B2_7_hrp 충실구현: 등급 C. 논문기준 SR 0.70 vs 15bps SR 0.80. [무인 병렬 B2_7] hrp — B2/weighting… |
+| 1765 | L-RP-20260921_132409 | overlay_regime | C | RF_PAR_B2_9_cvar 충실구현: 등급 C. 논문기준 SR 0.74 vs 15bps SR 0.85. [무인 병렬 B2_9] cvar — B2/weighti… |
+| 1766 | L-RP-20260921_132409 | overlay_regime | C | RF_PAR_B2_10_scoretilt 충실구현: 등급 C. 논문기준 SR 0.73 vs 15bps SR 0.83. [무인 병렬 B2_10] score_tilt… |
+| 1767 | L-RP-20260921_132409 | overlay_regime | C | RF_PAR_B2_6_minvar 충실구현: 등급 C. 논문기준 SR 0.61 vs 15bps SR 0.71. [무인 병렬 B2_6] minvar — B2/wei… |
+| 1768 | L-RP-20260921_132426 | overlay_regime | C | RF_PAR_B2_8_cdar 충실구현: 등급 C. 논문기준 SR 0.58 vs 15bps SR 0.68. [무인 병렬 B2_8] cdar — B2/weighti… |
+| 1769 | L-RP-20260921_134020 | overlay_regime | C | RF_PAR_B2_14_riskparity 충실구현: 등급 C. 논문기준 SR 0.72 vs 15bps SR 0.83. [무인 병렬 B2_14] riskparit… |
+| 1770 | L-RP-20260921_134020 | overlay_regime | C | RF_PAR_B2_13_maxdiv 충실구현: 등급 C. 논문기준 SR 0.59 vs 15bps SR 0.69. [무인 병렬 B2_13] maxdiv — B2/w… |
+| 1771 | L-RP-20260921_134020 | overlay_regime | C | RF_PAR_B2_12_highermoment 충실구현: 등급 C. 논문기준 SR 0.73 vs 15bps SR 0.84. [무인 병렬 B2_12] higher_… |
+| 1772 | L-RP-20260921_134020 | overlay_regime | C | RF_PAR_B2_11_ncotilt 충실구현: 등급 C. 논문기준 SR 0.71 vs 15bps SR 0.81. [무인 병렬 B2_11] nco_tilt — B… |
+| 1773 | L-RP-20260921_135554 | overlay_regime | C | RF_PAR_B3_11_KQ150 충실구현: 등급 C. 논문기준 SR 0.64 vs 15bps SR 0.72. [무인 병렬 B3_11] KQ150 단독 — B3/… |
+| 1774 | L-RP-20260921_135602 | overlay_regime | C | RF_PAR_B3_14_13 충실구현: 등급 C. 논문기준 SR 0.47 vs 15bps SR 0.60. [무인 병렬 B3_14] 대형주(시총 상위 1/3) — … |
+| 1775 | L-RP-20260921_135615 | overlay_regime | C | RF_PAR_B3_12_KOSPI200 충실구현: 등급 C. 논문기준 SR 0.55 vs 15bps SR 0.67. [무인 병렬 B3_12] KOSPI200 단독… |
+| 1776 | L-RP-20260921_135622 | overlay_regime | C | RF_PAR_B3_13_13 충실구현: 등급 C. 논문기준 SR 0.58 vs 15bps SR 0.69. [무인 병렬 B3_13] 소형주(시총 하위 1/3) — … |
+| 1777 | L-RP-20260921_135627 | overlay_regime | C | RF_PAR_B3_15_ 충실구현: 등급 C. 논문기준 SR 0.57 vs 15bps SR 0.65. [무인 병렬 B3_15] 섹터 중립 — B3/universe… |
+| 1778 | L-RP-20260921_141707 | quality_profitability | B | RF_PAR_B1_1_cashprofitability 충실구현: 등급 B. 논문기준 SR 1.13 vs 15bps SR 1.14. [무인 병렬 B1_1] cash… |
+| 1779 | L-RP-20260921_141707 | overlay_regime | B | RF_PAR_B1_4_investmentintensity 충실구현: 등급 B. 논문기준 SR 1.06 vs 15bps SR 1.10. [무인 병렬 B1_4] in… |
+| 1780 | L-RP-20260921_141707 | momentum | B | RF_PAR_B1_5_shortreversal 충실구현: 등급 B. 논문기준 SR 1.05 vs 15bps SR 1.08. [무인 병렬 B1_5] short_re… |
+| 1781 | L-RP-20260921_141709 | quality_earnings | B | RF_PAR_B1_2_accrualquality 충실구현: 등급 B. 논문기준 SR 1.04 vs 15bps SR 1.08. [무인 병렬 B1_2] accrual… |
+| 1782 | L-RP-20260921_141711 | overlay_regime | B | RF_PAR_B1_3_equityissuance 충실구현: 등급 B. 논문기준 SR 1.09 vs 15bps SR 1.12. [무인 병렬 B1_3] equity_… |
+| 1783 | L-RP-20260921_142931 | overlay_regime | B | RF_PAR_B1_7_idioresidual 충실구현: 등급 B. 논문기준 SR 1.00 vs 15bps SR 1.03. [무인 병렬 B1_7] idio_resi… |
+| 1784 | L-RP-20260921_142931 | momentum | B | RF_PAR_B1_6_momentumcrowding 충실구현: 등급 B. 논문기준 SR 1.09 vs 15bps SR 1.10. [무인 병렬 B1_6] momen… |
+| 1785 | L-RP-20260921_142944 | overlay_regime | B | RF_PAR_B1_10_fundamentalpair 충실구현: 등급 B. 논문기준 SR 1.06 vs 15bps SR 1.09. [무인 병렬 B1_10] fund… |
+| 1786 | L-RP-20260921_142945 | overlay_regime | B | RF_PAR_B1_8_crowdpair 충실구현: 등급 B. 논문기준 SR 1.05 vs 15bps SR 1.07. [무인 병렬 B1_8] crowd_pair —… |
+| 1787 | L-RP-20260921_142947 | overlay_regime | B | RF_PAR_B1_9_crowdxprofit 충실구현: 등급 B. 논문기준 SR 1.10 vs 15bps SR 1.11. [무인 병렬 B1_9] crowd_x_p… |
+| 1788 | L-RP-20260921_150344 | momentum | B | RF_PAR_B5_16_ 충실구현: 등급 B. 논문기준 SR 1.21 vs 15bps SR 1.25. [무인 병렬 B5_16] 지평 사다리 게이트 단독 — 지속성… |
+| 1789 | L-RP-20260921_150344 | ml_complexity | B | RF_PAR_B5_17_ 충실구현: 등급 B. 논문기준 SR 1.09 vs 15bps SR 1.12. [무인 병렬 B5_17] 익월 하위분위 확률 게이트 단독 —… |
+| 1790 | L-RP-20260921_150345 | momentum | B | RF_PAR_B5_19_GLS 충실구현: 등급 B. 논문기준 SR 1.20 vs 15bps SR 1.23. [무인 병렬 B5_19] 지평 사다리 × GLS 다변량… |
+| 1791 | L-RP-20260921_150347 | momentum | B | RF_PAR_B5_18_ 충실구현: 등급 B. 논문기준 SR 1.19 vs 15bps SR 1.25. [무인 병렬 B5_18] 지속성 × 학습 즉시성 — 스칼라 … |
+| 1792 | L-RP-20260921_150426 | overlay_regime | B | RF_PAR_B5_31_PG2 충실구현: 등급 B. 논문기준 SR 1.11 vs 15bps SR 1.18. [무인 병렬 B5_31] PG2 리스크 오버레이 상주 … |
+| 1793 | L-RP-20260921_153320 | overlay_regime | B | RF_PAR_B2_10_cvar 충실구현: 등급 B. 논문기준 SR 1.16 vs 15bps SR 1.17. [무인 병렬 B2_10] cvar — B2/weigh… |
+| 1794 | L-RP-20260921_153320 | overlay_regime | B | RF_PAR_B2_6_minvar 충실구현: 등급 B. 논문기준 SR 1.15 vs 15bps SR 1.17. [무인 병렬 B2_6] minvar — B2/wei… |
+| 1795 | L-RP-20260921_153320 | overlay_regime | B | RF_PAR_B2_8_nco 충실구현: 등급 B. 논문기준 SR 1.13 vs 15bps SR 1.16. [무인 병렬 B2_8] nco — B2/weighting… |
+| 1796 | L-RP-20260921_153320 | overlay_regime | B | RF_PAR_B2_9_ncoscore 충실구현: 등급 B. 논문기준 SR 1.17 vs 15bps SR 1.20. [무인 병렬 B2_9] nco+score — B… |
+| 1797 | L-RP-20260921_153338 | overlay_regime | B | RF_PAR_B2_7_CDaRLP 충실구현: 등급 B. 논문기준 SR 1.10 vs 15bps SR 1.08. [무인 병렬 B2_7] CDaR_LP — B2/we… |
+| 1798 | L-RP-20260921_154935 | overlay_regime | C | RF_PAR_B3_14_13 충실구현: 등급 C. 논문기준 SR 0.72 vs 15bps SR 0.79. [무인 병렬 B3_14] 대형주 상위 1/3 — B3/u… |
+| 1799 | L-RP-20260921_154956 | overlay_regime | C | RF_PAR_B3_13_13 충실구현: 등급 C. 논문기준 SR 0.63 vs 15bps SR 0.72. [무인 병렬 B3_13] 소형주 하위 1/3 — B3/u… |
+| 1800 | L-RP-20260921_155001 | overlay_regime | B | RF_PAR_B3_15_ 충실구현: 등급 B. 논문기준 SR 0.84 vs 15bps SR 0.89. [무인 병렬 B3_15] 섹터 중립 — B3/universe… |
+| 1801 | L-RP-20260921_160316 | overlay_regime | B | RF_PAR_B6_34_k30 충실구현: 등급 B. 논문기준 SR 0.86 vs 15bps SR 0.97. [무인 병렬 B6_34] 분기(k=3 · 위상 0) —… |
+| 1802 | L-RP-20260921_160317 | overlay_regime | B | RF_PAR_B6_32_k20 충실구현: 등급 B. 논문기준 SR 0.92 vs 15bps SR 0.98. [무인 병렬 B6_32] 격월(k=2 · 위상 0) —… |
+| 1803 | L-RP-20260921_160319 | overlay_regime | B | RF_PAR_B6_33_k21 충실구현: 등급 B. 논문기준 SR 0.86 vs 15bps SR 0.91. [무인 병렬 B6_33] 격월(k=2 · 위상 1) —… |
+| 1804 | L-RP-20260921_160323 | overlay_regime | B | RF_PAR_B6_35_ 충실구현: 등급 B. 논문기준 SR 0.88 vs 15bps SR 0.98. [무인 병렬 B6_35] 노트레이드 밴드(확장창 중앙값) —… |
+| 1805 | L-RP-20260921_160447 | overlay_regime | B | RF_PAR_B6_36_2nmax 충실구현: 등급 B. 논문기준 SR 1.12 vs 15bps SR 1.13. [무인 병렬 B6_36] 랭크 버퍼(2×n_max … |
+| 1806 | L-RP-20260921_161920 | overlay_regime | C | RF_PAR_B4_22_LOO 충실구현: 등급 C. 논문기준 SR 0.85 vs 15bps SR 0.88. [무인 병렬 B4_22] 팩터 제외(LOO) — B4/… |
+| 1807 | L-RP-20260921_161940 | overlay_regime | C | RF_PAR_B4_21_4 충실구현: 등급 C. 논문기준 SR 0.82 vs 15bps SR 0.86. [무인 병렬 B4_21] 전 요소 결합(4축) — B4/c… |
+| 1808 | L-RP-20260921_164134 | overlay_regime | C | RF_PAR_B6_34_k30 충실구현: 등급 C. 논문기준 SR 0.68 vs 15bps SR 0.77. [무인 병렬 B6_34] 분기(k=3 · 위상 0) —… |
+| 1809 | L-RP-20260921_164139 | overlay_regime | C | RF_PAR_B6_33_k21 충실구현: 등급 C. 논문기준 SR 0.67 vs 15bps SR 0.78. [무인 병렬 B6_33] 격월(k=2 · 위상 1) —… |
+| 1810 | L-RP-20260921_164140 | overlay_regime | C | RF_PAR_B6_32_k20 충실구현: 등급 C. 논문기준 SR 0.68 vs 15bps SR 0.78. [무인 병렬 B6_32] 격월(k=2 · 위상 0) —… |
+| 1811 | L-RP-20260921_164151 | overlay_regime | C | RF_PAR_B6_35_ 충실구현: 등급 C. 논문기준 SR 0.71 vs 15bps SR 0.81. [무인 병렬 B6_35] 노트레이드 밴드(확장창 중앙값) —… |
+| 1812 | L-RP-20260921_185016 | overlay_regime | C | RF_PAR_B6_42_3nmax 충실구현: 등급 C. 논문기준 SR 0.65 vs 15bps SR 0.77. [무인 병렬 B6_42] 랭크 버퍼(3×n_max … |
+| 1813 | L-RP-20260921_185020 | overlay_regime | C | RF_PAR_B6_36_2nmax 충실구현: 등급 C. 논문기준 SR 0.67 vs 15bps SR 0.79. [무인 병렬 B6_36] 랭크 버퍼(2×n_max … |
+| 1814 | L-RP-20260921_192214 | overlay_regime | C | RF_PAR_B5_16_ 충실구현: 등급 C. 논문기준 SR 0.75 vs 15bps SR 0.86. [무인 병렬 B5_16] 급성 스칼라 단독 — 내재 상관 브… |
+| 1815 | L-RP-20260921_192214 | overlay_regime | C | RF_PAR_B5_19_ 충실구현: 등급 C. 논문기준 SR 0.74 vs 15bps SR 0.85. [무인 병렬 B5_19] 침식 선택적 종목 틸트 단독 — B… |
+| 1816 | L-RP-20260921_192214 | momentum | C | RF_PAR_B5_17_ 충실구현: 등급 C. 논문기준 SR 0.72 vs 15bps SR 0.82. [무인 병렬 B5_17] 만성 스칼라 단독 — 추세 아래 연… |
+| 1817 | L-RP-20260921_192214 | momentum | C | RF_PAR_B5_18_ 충실구현: 등급 C. 논문기준 SR 0.75 vs 15bps SR 0.85. [무인 병렬 B5_18] 급성×만성 스칼라 분할 스택 — B… |
+| 1818 | L-RP-20260921_192256 | overlay_regime | C | RF_PAR_B5_31_PG2 충실구현: 등급 C. 논문기준 SR 0.76 vs 15bps SR 0.89. [무인 병렬 B5_31] PG2 리스크 오버레이 상주 … |
+| 1819 | L-RP-20260921_192958 | overlay_regime | C | RF_PAR_B5_21_GLS4 충실구현: 등급 C. 논문기준 SR 0.77 vs 15bps SR 0.89. [무인 병렬 B5_21] 단일 합성 상태(GLS 4축… |
+| 1820 | L-RP-20260921_192958 | overlay_regime | C | RF_PAR_B5_20_ 충실구현: 등급 C. 논문기준 SR 0.78 vs 15bps SR 0.89. [무인 병렬 B5_20] 급성 스칼라 × 침식 종목틸트 — … |
+| 1821 | L-RP-20260921_200111 | overlay_regime | C | RF_PAR_B4_22_LOO 충실구현: 등급 C. 논문기준 SR 0.58 vs 15bps SR 0.64. [무인 병렬 B4_22] 팩터 제외(LOO) — B4/… |
+| 1822 | L-RP-20260921_200227 | overlay_regime | C | RF_PAR_B4_21_4 충실구현: 등급 C. 논문기준 SR 0.67 vs 15bps SR 0.74. [무인 병렬 B4_21] 전 요소 결합(4축) — B4/c… |
+| 1823 | L-RP-20260921_203307 | overlay_regime | C | RF_PAR_B1_3_revmom 충실구현: 등급 C. 논문기준 SR 0.60 vs 15bps SR 0.70. [무인 병렬 B1_3] rev_mom — B1/mu… |
+| 1824 | L-RP-20260921_203307 | overlay_regime | C | RF_PAR_B1_2_momsolo 충실구현: 등급 C. 논문기준 SR 0.59 vs 15bps SR 0.69. [무인 병렬 B1_2] mom_solo — B1/… |
+| 1825 | L-RP-20260921_203307 | overlay_regime | C | RF_PAR_B1_1_revsolo 충실구현: 등급 C. 논문기준 SR 0.47 vs 15bps SR 0.59. [무인 병렬 B1_1] rev_solo — B1/… |
+| 1826 | L-RP-20260921_203415 | overlay_regime | C | RF_PAR_B1_4_coretrio 충실구현: 등급 C. 논문기준 SR 0.62 vs 15bps SR 0.72. [무인 병렬 B1_4] core_trio — B… |
+| 1827 | L-RP-20260921_203442 | overlay_regime | C | RF_PAR_B1_5_core4xfer 충실구현: 등급 C. 논문기준 SR 0.61 vs 15bps SR 0.72. [무인 병렬 B1_5] core4_xfer —… |
+| 1828 | L-RP-20260921_204411 | overlay_regime | C | RF_PAR_B1_10_revidiovol 충실구현: 등급 C. 논문기준 SR 0.49 vs 15bps SR 0.61. [무인 병렬 B1_10] rev_idiov… |
+| 1829 | L-RP-20260921_204412 | overlay_regime | C | RF_PAR_B1_8_revlaborshare 충실구현: 등급 C. 논문기준 SR 0.50 vs 15bps SR 0.62. [무인 병렬 B1_8] rev_labo… |
+| 1830 | L-RP-20260921_204412 | overlay_regime | C | RF_PAR_B1_7_revoplev 충실구현: 등급 C. 논문기준 SR 0.44 vs 15bps SR 0.56. [무인 병렬 B1_7] rev_oplev — B… |
+| 1831 | L-RP-20260921_204412 | overlay_regime | C | RF_PAR_B1_9_revsectordisp 충실구현: 등급 C. 논문기준 SR 0.50 vs 15bps SR 0.60. [무인 병렬 B1_9] rev_sect… |
+| 1832 | L-RP-20260921_204512 | overlay_regime | C | RF_PAR_B1_6_core5xfer 충실구현: 등급 C. 논문기준 SR 0.67 vs 15bps SR 0.77. [무인 병렬 B1_6] core5_xfer —… |
+| 1833 | L-RP-20260921_210429 | defense | C | RF_PAR_B7_38_k8 충실구현: 등급 C. 논문기준 SR 0.61 vs 15bps SR 0.68. [무인 병렬 B7_38] 방어 슬리브 k=8 — 분할 비… |
+| 1834 | L-RP-20260921_210429 | defense | C | RF_PAR_B7_41_k5 충실구현: 등급 C. 논문기준 SR 0.41 vs 15bps SR 0.54. [무인 병렬 B7_41] [부호 반전 대조] 반(反)방어… |
+| 1835 | L-RP-20260921_210429 | defense | C | RF_PAR_B7_37_k5IC1 충실구현: 등급 C. 논문기준 SR 0.62 vs 15bps SR 0.70. [무인 병렬 B7_37] 방어 슬리브 k=5 (약세… |
+| 1836 | L-RP-20260921_210429 | defense | C | RF_PAR_B7_39_k5IC2 충실구현: 등급 C. 논문기준 SR 0.60 vs 15bps SR 0.69. [무인 병렬 B7_39] 방어 슬리브 k=5 (약세… |
+| 1837 | L-RP-20260921_210502 | defense | C | RF_PAR_B7_40_k5 충실구현: 등급 C. 논문기준 SR 0.51 vs 15bps SR 0.62. [무인 병렬 B7_40] [무신호 대조] 베타매칭 무작위… |
+| 1838 | L-RP-20260921_213714 | momentum | C | RF_PAR_B5_16_ 충실구현: 등급 C. 논문기준 SR 0.70 vs 15bps SR 0.81. [무인 병렬 B5_16] 사다리 스칼라 — 예산 균등(타이밍… |
+| 1839 | L-RP-20260921_213714 | overlay_regime | C | RF_PAR_B5_17_ 충실구현: 등급 C. 논문기준 SR 0.66 vs 15bps SR 0.77. [무인 병렬 B5_17] 사다리 예산 고정 — 잔차 취약도 … |
+| 1840 | L-RP-20260921_213714 | momentum | C | RF_PAR_B5_18_dbetabcorrdbetabeta 충실구현: 등급 C. 논문기준 SR 0.71 vs 15bps SR 0.81. [무인 병렬 B5_18] … |
+| 1841 | L-RP-20260921_213714 | overlay_regime | C | RF_PAR_B5_19_4GLStilt 충실구현: 등급 C. 논문기준 SR 0.67 vs 15bps SR 0.76. [무인 병렬 B5_19] 4축 GLS 다변량 … |
+| 1842 | L-RP-20260921_213753 | overlay_regime | C | RF_PAR_B5_31_PG2 충실구현: 등급 C. 논문기준 SR 0.76 vs 15bps SR 0.84. [무인 병렬 B5_31] PG2 리스크 오버레이 상주 … |
+| 1843 | L-RP-20260921_214804 | overlay_regime | C | RF_PAR_B5_23_ 충실구현: 등급 C. 논문기준 SR 0.68 vs 15bps SR 0.78. [무인 병렬 B5_23] 스택: 보유 볼록성 × 사다리 잔차… |
+| 1844 | L-RP-20260921_214804 | momentum | C | RF_PAR_B5_22_tilt 충실구현: 등급 C. 논문기준 SR 0.75 vs 15bps SR 0.86. [무인 병렬 B5_22] 스택: 사다리 스칼라 × 분… |
+| 1845 | L-RP-20260921_214804 | overlay_regime | C | RF_PAR_B5_20_tilt 충실구현: 등급 C. 논문기준 SR 0.69 vs 15bps SR 0.79. [무인 병렬 B5_20] 분산 국면 게이트 — 잔차 … |
+| 1846 | L-RP-20260921_214804 | overlay_regime | C | RF_PAR_B5_21_ 충실구현: 등급 C. 논문기준 SR 0.69 vs 15bps SR 0.77. [무인 병렬 B5_21] 보유 볼록성 브레이크 — 시장 시계… |
+| 1847 | L-RP-20260921_222113 | overlay_regime | C | RF_PAR_B2_8_minvarfullcov 충실구현: 등급 C. 논문기준 SR 0.66 vs 15bps SR 0.78. [무인 병렬 B2_8] minvar_f… |
+| 1848 | L-RP-20260921_222113 | overlay_regime | C | RF_PAR_B2_9_ivoldiag 충실구현: 등급 C. 논문기준 SR 0.66 vs 15bps SR 0.76. [무인 병렬 B2_9] ivol_diag — B… |
+| 1849 | L-RP-20260921_222113 | ml_complexity | C | RF_PAR_B2_10_hrpestrobust 충실구현: 등급 C. 논문기준 SR 0.65 vs 15bps SR 0.76. [무인 병렬 B2_10] hrp_est… |
+| 1850 | L-RP-20260921_222117 | overlay_regime | C | RF_PAR_B2_7_cvartail 충실구현: 등급 C. 논문기준 SR 0.68 vs 15bps SR 0.77. [무인 병렬 B2_7] cvar_tail — B… |
+| 1851 | L-RP-20260921_222128 | overlay_regime | C | RF_PAR_B2_6_cdarpath 충실구현: 등급 C. 논문기준 SR 0.45 vs 15bps SR 0.57. [무인 병렬 B2_6] cdar_path — B… |
+| 1852 | L-RP-20260921_223449 | overlay_regime | C | RF_PAR_B2_11_scoretiltcontrol 충실구현: 등급 C. 논문기준 SR 0.66 vs 15bps SR 0.76. [무인 병렬 B2_11] sco… |
+| 1853 | L-RP-20260921_225037 | overlay_regime | C | RF_PAR_B3_11_KQ150 충실구현: 등급 C. 논문기준 SR 0.68 vs 15bps SR 0.73. [무인 병렬 B3_11] KQ150 단독 — B3/… |
+| 1854 | L-RP-20260921_225100 | overlay_regime | C | RF_PAR_B3_12_K200 충실구현: 등급 C. 논문기준 SR 0.56 vs 15bps SR 0.67. [무인 병렬 B3_12] K200 단독 — B3/un… |
+| 1855 | L-RP-20260921_225101 | overlay_regime | C | RF_PAR_B3_13_13 충실구현: 등급 C. 논문기준 SR 0.45 vs 15bps SR 0.59. [무인 병렬 B3_13] 소형(시총 하위 1/3) — B… |
+| 1856 | L-RP-20260921_225112 | overlay_regime | F | RF_PAR_B3_15_ 충실구현: 등급 F. 논문기준 SR 0.44 vs 15bps SR 0.54. [무인 병렬 B3_15] 섹터 중립 — B3/universe… |
+| 1857 | L-RP-20260921_230733 | overlay_regime | C | RF_PAR_B6_34_k30 충실구현: 등급 C. 논문기준 SR 0.64 vs 15bps SR 0.74. [무인 병렬 B6_34] 분기(k=3 · 위상 0) —… |
+| 1858 | L-RP-20260921_230733 | overlay_regime | C | RF_PAR_B6_33_k21 충실구현: 등급 C. 논문기준 SR 0.58 vs 15bps SR 0.68. [무인 병렬 B6_33] 격월(k=2 · 위상 1) —… |
+| 1859 | L-RP-20260921_230735 | overlay_regime | C | RF_PAR_B6_32_k20 충실구현: 등급 C. 논문기준 SR 0.63 vs 15bps SR 0.73. [무인 병렬 B6_32] 격월(k=2 · 위상 0) —… |
+| 1860 | L-RP-20260921_230855 | overlay_regime | C | RF_PAR_B6_42_3nmax 충실구현: 등급 C. 논문기준 SR 0.47 vs 15bps SR 0.58. [무인 병렬 B6_42] 랭크 버퍼(3×n_max … |
+| 1861 | L-RP-20260921_230902 | overlay_regime | C | RF_PAR_B6_36_2nmax 충실구현: 등급 C. 논문기준 SR 0.52 vs 15bps SR 0.63. [무인 병렬 B6_36] 랭크 버퍼(2×n_max … |
+| 1862 | L-RP-20260921_232251 | overlay_regime | C | RF_PAR_B4_22_LOO 충실구현: 등급 C. 논문기준 SR 0.71 vs 15bps SR 0.76. [무인 병렬 B4_22] 팩터 제외(LOO) — B4/… |
+| 1863 | L-RP-20260921_232422 | overlay_regime | C | RF_PAR_B4_25_LOO3 충실구현: 등급 C. 논문기준 SR 0.77 vs 15bps SR 0.80. [무인 병렬 B4_25] 오버레이 제외(LOO) = … |
+| 1864 | L-RP-20260921_232433 | overlay_regime | C | RF_PAR_B4_23_LOO 충실구현: 등급 C. 논문기준 SR 0.71 vs 15bps SR 0.75. [무인 병렬 B4_23] 비중 제외(LOO) — B4/… |
+| 1865 | L-RP-20260921_232454 | overlay_regime | C | RF_PAR_B4_21_4 충실구현: 등급 C. 논문기준 SR 0.78 vs 15bps SR 0.82. [무인 병렬 B4_21] 전 요소 결합(4축) — B4/c… |
+| 1866 | L-RP-20260921_232522 | overlay_regime | C | RF_PAR_B4_24_LOO 충실구현: 등급 C. 논문기준 SR 0.72 vs 15bps SR 0.81. [무인 병렬 B4_24] 유니버스 제외(LOO) — B… |
+| 1867 | L-RP-20260921_235812 | overlay_regime | B | RF_PAR_B1_3_V14 충실구현: 등급 B. 논문기준 SR 0.76 vs 15bps SR 0.87. [무인 병렬 B1_3] 회계밸류 V14 — B1/mult… |
+| 1868 | L-RP-20260921_235812 | overlay_regime | C | RF_PAR_B1_5_C01 충실구현: 등급 C. 논문기준 SR 0.52 vs 15bps SR 0.61. [무인 병렬 B1_5] 컨센서스 C01 — B1/mult… |
+| 1869 | L-RP-20260921_235820 | overlay_regime | C | RF_PAR_B1_4_Q35 충실구현: 등급 C. 논문기준 SR 0.70 vs 15bps SR 0.76. [무인 병렬 B1_4] 현금수익성 Q35 — B1/mul… |
+| 1870 | L-RP-20260921_235825 | momentum | C | RF_PAR_B1_1_M01 충실구현: 등급 C. 논문기준 SR 0.52 vs 15bps SR 0.65. [무인 병렬 B1_1] 가격장기 M01 — B1/mult… |
+| 1871 | L-RP-20260921_235829 | overlay_regime | C | RF_PAR_B1_2_M11 충실구현: 등급 C. 논문기준 SR 0.45 vs 15bps SR 0.57. [무인 병렬 B1_2] 가격단기 M11 — B1/mult… |
+| 1872 | L-RP-20260922_002442 | overlay_regime | C | RF_PAR_B1_7_S01Size 충실구현: 등급 C. 논문기준 SR 0.68 vs 15bps SR 0.80. [무인 병렬 B1_7] 대조 S01_Size — … |
+| 1873 | L-RP-20260922_002448 | behavioral | C | RF_PAR_B1_6_INV10 충실구현: 등급 C. 논문기준 SR 0.54 vs 15bps SR 0.66. [무인 병렬 B1_6] 수급 INV10 — B1/mu… |
+| 1874 | L-RP-20260922_002513 | overlay_regime | C | RF_PAR_B1_8_3 충실구현: 등급 C. 논문기준 SR 0.77 vs 15bps SR 0.85. [무인 병렬 B1_8] 비가격 3축 — B1/multifac… |
+| 1875 | L-RP-20260922_002518 | overlay_regime | C | RF_PAR_B1_10_ 충실구현: 등급 C. 논문기준 SR 0.71 vs 15bps SR 0.81. [무인 병렬 B1_10] 가격+비가격 혼합 — B1/mult… |
+| 1876 | L-RP-20260922_002544 | behavioral | C | RF_PAR_B1_9_4 충실구현: 등급 C. 논문기준 SR 0.73 vs 15bps SR 0.81. [무인 병렬 B1_9] 비가격+수급 4축 — B1/multi… |
+| 1877 | L-RP-20260922_003258 | overlay_regime | C | RF_PAR_B1_11_5 충실구현: 등급 C. 논문기준 SR 0.67 vs 15bps SR 0.77. [무인 병렬 B1_11] 5축 전체 — B1/multifa… |
+| 1878 | L-RP-20260922_004942 | defense | C | RF_PAR_B7_39_k5IC2 충실구현: 등급 C. 논문기준 SR 0.69 vs 15bps SR 0.79. [무인 병렬 B7_39] 방어 슬리브 k=5 (약세… |
+| 1879 | L-RP-20260922_004942 | defense | C | RF_PAR_B7_38_k8 충실구현: 등급 C. 논문기준 SR 0.72 vs 15bps SR 0.80. [무인 병렬 B7_38] 방어 슬리브 k=8 — 분할 비… |
+| 1880 | L-RP-20260922_004942 | defense | C | RF_PAR_B7_37_k5IC1 충실구현: 등급 C. 논문기준 SR 0.71 vs 15bps SR 0.80. [무인 병렬 B7_37] 방어 슬리브 k=5 (약세… |
+| 1881 | L-RP-20260922_004942 | defense | C | RF_PAR_B7_41_k5 충실구현: 등급 C. 논문기준 SR 0.53 vs 15bps SR 0.64. [무인 병렬 B7_41] [부호 반전 대조] 반(反)방어… |
+| 1882 | L-RP-20260922_004951 | defense | C | RF_PAR_B7_40_k5 충실구현: 등급 C. 논문기준 SR 0.65 vs 15bps SR 0.76. [무인 병렬 B7_40] [무신호 대조] 베타매칭 무작위… |
+| 1883 | L-RP-20260922_011541 | overlay_regime | C | RF_PAR_B5_19_ 충실구현: 등급 C. 논문기준 SR 0.73 vs 15bps SR 0.83. [무인 병렬 B5_19] 이진 게이트 × 채널 틸트 — 소비… |
+| 1884 | L-RP-20260922_011541 | overlay_regime | B | RF_PAR_B5_18_ 충실구현: 등급 B. 논문기준 SR 0.77 vs 15bps SR 0.88. [무인 병렬 B5_18] 낙폭×직전월 부호 이진 게이트 — … |
+| 1885 | L-RP-20260922_011603 | overlay_regime | C | RF_PAR_B5_17_ 충실구현: 등급 C. 논문기준 SR 0.82 vs 15bps SR 0.91. [무인 병렬 B5_17] 다변량 × 보유 화이트닝 틸트 — … |
+| 1886 | L-RP-20260922_011605 | overlay_regime | C | RF_PAR_B5_16_ 충실구현: 등급 C. 논문기준 SR 0.81 vs 15bps SR 0.90. [무인 병렬 B5_16] 다변량 채널 틸트 — 기준(원순위 … |
+| 1887 | L-RP-20260922_011648 | overlay_regime | C | RF_PAR_B5_31_PG2 충실구현: 등급 C. 논문기준 SR 0.78 vs 15bps SR 0.91. [무인 병렬 B5_31] PG2 리스크 오버레이 상주 … |
+| 1888 | L-RP-20260922_012732 | overlay_regime | C | RF_PAR_B5_21_ 충실구현: 등급 C. 논문기준 SR 0.84 vs 15bps SR 0.95. [무인 병렬 B5_21] 내재상관 브레이크 × 분산 틸트 —… |
+| 1889 | L-RP-20260922_012732 | overlay_regime | C | RF_PAR_B5_20_ 충실구현: 등급 C. 논문기준 SR 0.80 vs 15bps SR 0.91. [무인 병렬 B5_20] 횡단면분산 × 특이변동 틸트 — 출… |
+| 1890 | L-RP-20260922_012732 | overlay_regime | C | RF_PAR_B5_22_arm 충실구현: 등급 C. 논문기준 SR 0.74 vs 15bps SR 0.84. [무인 병렬 B5_22] 침식 형태(지속×완만) 틸트 … |
+| 1891 | L-RP-20260922_015249 | overlay_regime | B | RF_PAR_B2_8_ncoscoretilt 충실구현: 등급 B. 논문기준 SR 0.81 vs 15bps SR 0.92. [무인 병렬 B2_8] nco_score… |
+| 1892 | L-RP-20260922_015249 | overlay_regime | B | RF_PAR_B2_10_scoretiltsamplecov 충실구현: 등급 B. 논문기준 SR 0.83 vs 15bps SR 0.93. [무인 병렬 B2_10] s… |
+| 1893 | L-RP-20260922_015249 | ml_complexity | B | RF_PAR_B2_7_hrp 충실구현: 등급 B. 논문기준 SR 0.84 vs 15bps SR 0.94. [무인 병렬 B2_7] hrp — 역행렬 없는 공분산 대… |
+| 1894 | L-RP-20260922_015249 | overlay_regime | C | RF_PAR_B2_6_minvarMDD 충실구현: 등급 C. 논문기준 SR 0.89 vs 15bps SR 0.98. [무인 병렬 B2_6] minvar — 동일가… |
+| 1895 | L-RP-20260922_015300 | overlay_regime | C | RF_PAR_B2_9_CDaRLP 충실구현: 등급 C. 논문기준 SR 0.47 vs 15bps SR 0.57. [무인 병렬 B2_9] CDaR_LP — 낙폭 정보… |
+| 1896 | L-RP-20260922_015942 | overlay_regime | B | RF_PAR_B2_11_scoretiltLedoitWolf 충실구현: 등급 B. 논문기준 SR 0.82 vs 15bps SR 0.92. [무인 병렬 B2_11] … |
+| 1897 | L-RP-20260922_020928 | overlay_regime | C | RF_PAR_B3_15_ 충실구현: 등급 C. 논문기준 SR 0.62 vs 15bps SR 0.71. [무인 병렬 B3_15] 섹터 중립 — B3/universe… |
+| 1898 | L-RP-20260922_020928 | overlay_regime | C | RF_PAR_B3_14_13 충실구현: 등급 C. 논문기준 SR 0.59 vs 15bps SR 0.66. [무인 병렬 B3_14] 대형주 상위 1/3 — B3/u… |
+| 1899 | L-RP-20260922_020928 | overlay_regime | C | RF_PAR_B3_13_13 충실구현: 등급 C. 논문기준 SR 0.75 vs 15bps SR 0.85. [무인 병렬 B3_13] 소형주 하위 1/3 — B3/u… |
+| 1900 | L-RP-20260922_020931 | overlay_regime | C | RF_PAR_B3_12_KOSPI200 충실구현: 등급 C. 논문기준 SR 0.66 vs 15bps SR 0.80. [무인 병렬 B3_12] KOSPI200 단독… |
+| 1901 | L-RP-20260922_022451 | overlay_regime | C | RF_PAR_B6_34_k30 충실구현: 등급 C. 논문기준 SR 0.69 vs 15bps SR 0.82. [무인 병렬 B6_34] 분기(k=3 · 위상 0) —… |
+| 1902 | L-RP-20260922_022455 | overlay_regime | B | RF_PAR_B6_32_k20 충실구현: 등급 B. 논문기준 SR 0.87 vs 15bps SR 0.96. [무인 병렬 B6_32] 격월(k=2 · 위상 0) —… |
+| 1903 | L-RP-20260922_022457 | overlay_regime | B | RF_PAR_B6_33_k21 충실구현: 등급 B. 논문기준 SR 0.82 vs 15bps SR 0.92. [무인 병렬 B6_33] 격월(k=2 · 위상 1) —… |
+| 1904 | L-RP-20260922_022527 | overlay_regime | B | RF_PAR_B6_36_2nmax 충실구현: 등급 B. 논문기준 SR 0.86 vs 15bps SR 0.97. [무인 병렬 B6_36] 랭크 버퍼(2×n_max … |
+| 1905 | L-RP-20260922_022528 | overlay_regime | B | RF_PAR_B6_42_3nmax 충실구현: 등급 B. 논문기준 SR 0.90 vs 15bps SR 0.99. [무인 병렬 B6_42] 랭크 버퍼(3×n_max … |
+| 1906 | L-RP-20260922_023926 | overlay_regime | C | RF_PAR_B4_22_LOO 충실구현: 등급 C. 논문기준 SR 0.58 vs 15bps SR 0.71. [무인 병렬 B4_22] 팩터 제외(LOO) — B4/… |
+| 1907 | L-RP-20260922_023940 | overlay_regime | C | RF_PAR_B4_23_LOO 충실구현: 등급 C. 논문기준 SR 0.63 vs 15bps SR 0.75. [무인 병렬 B4_23] 비중 제외(LOO) — B4/… |
+| 1908 | L-RP-20260922_030926 | overlay_regime | C | RF_PAR_B1_4_yieldfcf 충실구현: 등급 C. 논문기준 SR 0.79 vs 15bps SR 0.85. [무인 병렬 B1_4] yield_fcf — B… |
+| 1909 | L-RP-20260922_030926 | overlay_regime | B | RF_PAR_B1_3_horizonanchor 충실구현: 등급 B. 논문기준 SR 0.95 vs 15bps SR 0.98. [무인 병렬 B1_3] horizon_… |
+| 1910 | L-RP-20260922_030926 | overlay_regime | B | RF_PAR_B1_2_horizonresid 충실구현: 등급 B. 논문기준 SR 0.88 vs 15bps SR 0.93. [무인 병렬 B1_2] horizon_r… |
+| 1911 | L-RP-20260922_030928 | overlay_regime | B | RF_PAR_B1_5_yieldpair 충실구현: 등급 B. 논문기준 SR 0.93 vs 15bps SR 0.98. [무인 병렬 B1_5] yield_pair —… |
+| 1912 | L-RP-20260922_030929 | overlay_regime | B | RF_PAR_B1_1_horizonbeyondwindow 충실구현: 등급 B. 논문기준 SR 0.77 vs 15bps SR 0.84. [무인 병렬 B1_1] ho… |
+| 1913 | L-RP-20260922_032156 | overlay_regime | B | RF_PAR_B1_7_revisionbreadth 충실구현: 등급 B. 논문기준 SR 0.81 vs 15bps SR 0.85. [무인 병렬 B1_7] revisi… |
+| 1914 | L-RP-20260922_032200 | overlay_regime | B | RF_PAR_B1_9_horizonxconfirm 충실구현: 등급 B. 논문기준 SR 0.89 vs 15bps SR 0.94. [무인 병렬 B1_9] horizo… |
+| 1915 | L-RP-20260922_032202 | overlay_regime | C | RF_PAR_B1_6_qualitycashpersist 충실구현: 등급 C. 논문기준 SR 0.74 vs 15bps SR 0.79. [무인 병렬 B1_6] qua… |
+| 1916 | L-RP-20260922_032204 | overlay_regime | B | RF_PAR_B1_10_pathgeometrycm 충실구현: 등급 B. 논문기준 SR 0.96 vs 15bps SR 0.99. [무인 병렬 B1_10] path_… |
+| 1917 | L-RP-20260922_032205 | overlay_regime | B | RF_PAR_B1_8_horizonxyield 충실구현: 등급 B. 논문기준 SR 1.05 vs 15bps SR 1.08. [무인 병렬 B1_8] horizon_… |
+| 1918 | L-RP-20260922_033854 | defense | B | RF_PAR_B7_38_k8 충실구현: 등급 B. 논문기준 SR 0.90 vs 15bps SR 0.94. [무인 병렬 B7_38] 방어 슬리브 k=8 — 분할 비… |
+| 1919 | L-RP-20260922_033854 | defense | B | RF_PAR_B7_39_k5IC2 충실구현: 등급 B. 논문기준 SR 0.96 vs 15bps SR 0.99. [무인 병렬 B7_39] 방어 슬리브 k=5 (약세… |
+| 1920 | L-RP-20260922_033854 | defense | B | RF_PAR_B7_37_k5IC1 충실구현: 등급 B. 논문기준 SR 0.96 vs 15bps SR 0.99. [무인 병렬 B7_37] 방어 슬리브 k=5 (약세… |
+| 1921 | L-RP-20260922_033855 | defense | C | RF_PAR_B7_41_k5 충실구현: 등급 C. 논문기준 SR 0.73 vs 15bps SR 0.80. [무인 병렬 B7_41] [부호 반전 대조] 반(反)방어… |
+| 1922 | L-RP-20260922_033858 | defense | B | RF_PAR_B7_40_k5 충실구현: 등급 B. 논문기준 SR 0.90 vs 15bps SR 0.95. [무인 병렬 B7_40] [무신호 대조] 베타매칭 무작위… |
+| 1923 | L-RP-20260922_040615 | momentum | B | RF_PAR_B5_16_ 충실구현: 등급 B. 논문기준 SR 1.14 vs 15bps SR 1.17. [무인 병렬 B5_16] 사다리 스칼라 — 예산 기준선 — … |
+| 1924 | L-RP-20260922_040615 | overlay_regime | B | RF_PAR_B5_19_ 충실구현: 등급 B. 논문기준 SR 1.05 vs 15bps SR 1.09. [무인 병렬 B5_19] 침식 상태(지속×완만) · 잔차 몫… |
+| 1925 | L-RP-20260922_040615 | momentum | B | RF_PAR_B5_18_ 충실구현: 등급 B. 논문기준 SR 1.12 vs 15bps SR 1.15. [무인 병렬 B5_18] 사다리 · λ 적응 체계축 틸트 —… |
+| 1926 | L-RP-20260922_040615 | overlay_regime | B | RF_PAR_B5_17_ 충실구현: 등급 B. 논문기준 SR 1.12 vs 15bps SR 1.16. [무인 병렬 B5_17] 사다리 예산 · 잔차 몫 집중 배분… |
+| 1927 | L-RP-20260922_040706 | overlay_regime | C | RF_PAR_B5_31_PG2 충실구현: 등급 C. 논문기준 SR 1.01 vs 15bps SR 1.09. [무인 병렬 B5_31] PG2 리스크 오버레이 상주 … |
+| 1928 | L-RP-20260922_041704 | overlay_regime | B | RF_PAR_B5_20_ 충실구현: 등급 B. 논문기준 SR 1.08 vs 15bps SR 1.11. [무인 병렬 B5_20] 내재 평균상관 스칼라 브레이크 — … |
+| 1929 | L-RP-20260922_041704 | momentum | B | RF_PAR_B5_23_ 충실구현: 등급 B. 논문기준 SR 1.15 vs 15bps SR 1.20. [무인 병렬 B5_23] 스칼라 × 스칼라 — 두 에피소드 … |
+| 1930 | L-RP-20260922_041704 | momentum | B | RF_PAR_B5_22_ 충실구현: 등급 B. 논문기준 SR 1.15 vs 15bps SR 1.18. [무인 병렬 B5_22] 사다리 틸트 × 동조 급락 층 — … |
+| 1931 | L-RP-20260922_041704 | overlay_regime | B | RF_PAR_B5_21_ 충실구현: 등급 B. 논문기준 SR 1.10 vs 15bps SR 1.13. [무인 병렬 B5_21] 침식 층 × 동조 급락 층 — 소비… |
+| 1932 | L-RP-20260923_151144 | overlay_regime | B | RF_PAR_B2_9_ 충실구현: 등급 B. 논문기준 SR 1.11 vs 15bps SR 1.13. [무인 병렬 B2_9] robust_mv(classical) … |
+| 1933 | L-RP-20260923_151144 | overlay_regime | B | RF_PAR_B2_7_ 충실구현: 등급 B. 논문기준 SR 1.04 vs 15bps SR 1.07. [무인 병렬 B2_7] entropy(entropy) — B2… |
+| 1934 | L-RP-20260923_151154 | overlay_regime | B | RF_PAR_B2_6_ 충실구현: 등급 B. 논문기준 SR 1.10 vs 15bps SR 1.13. [무인 병렬 B2_6] cvar(tail_aware) — B2… |
+| 1935 | L-RP-20260923_151156 | overlay_regime | B | RF_PAR_B2_8_ 충실구현: 등급 B. 논문기준 SR 1.07 vs 15bps SR 1.10. [무인 병렬 B2_8] factor_rp(risk_parity… |
+| 1936 | L-RP-20260923_151157 | overlay_regime | B | RF_PAR_B2_10_ 충실구현: 등급 B. 논문기준 SR 0.99 vs 15bps SR 1.01. [무인 병렬 B2_10] kelly(growth) — B2/… |
+| 1937 | L-RP-20260923_152748 | overlay_regime | B | RF_PAR_B2_12_A 충실구현: 등급 B. 논문기준 SR 1.05 vs 15bps SR 1.10. [무인 병렬 B2_12] Σ 추정 대조 A(표본) — B2… |
+| 1938 | L-RP-20260923_152748 | overlay_regime | B | RF_PAR_B2_13_B 충실구현: 등급 B. 논문기준 SR 1.06 vs 15bps SR 1.10. [무인 병렬 B2_13] Σ 추정 대조 B(축소추정) — … |
+| 1939 | L-RP-20260923_152751 | overlay_regime | B | RF_PAR_B2_11_ 충실구현: 등급 B. 논문기준 SR 1.09 vs 15bps SR 1.12. [무인 병렬 B2_11] 수익꼬리 표적 대조 — B2/wei… |
+| 1940 | L-RP-20260923_154953 | overlay_regime | C | RF_PAR_B3_11_KQ150 충실구현: 등급 C. 논문기준 SR 0.82 vs 15bps SR 0.80. [무인 병렬 B3_11] KQ150 단독 — B3/… |
+| 1941 | L-RP-20260923_155015 | overlay_regime | C | RF_PAR_B3_13_13 충실구현: 등급 C. 논문기준 SR 0.67 vs 15bps SR 0.75. [무인 병렬 B3_13] 소형주 하위 1/3 — B3/u… |
+| 1942 | L-RP-20260923_155016 | overlay_regime | C | RF_PAR_B3_14_13 충실구현: 등급 C. 논문기준 SR 0.74 vs 15bps SR 0.80. [무인 병렬 B3_14] 대형주 상위 1/3 — B3/u… |
+| 1943 | L-RP-20260923_155018 | overlay_regime | B | RF_PAR_B3_15_ 충실구현: 등급 B. 논문기준 SR 0.81 vs 15bps SR 0.88. [무인 병렬 B3_15] 섹터 중립 — B3/universe… |
+| 1944 | L-RP-20260923_155021 | overlay_regime | B | RF_PAR_B3_12_K200 충실구현: 등급 B. 논문기준 SR 0.88 vs 15bps SR 0.95. [무인 병렬 B3_12] K200 단독 — B3/un… |
+| 1945 | L-RP-20260923_160546 | overlay_regime | C | RF_PAR_B6_34_k30 충실구현: 등급 C. 논문기준 SR 0.67 vs 15bps SR 0.79. [무인 병렬 B6_34] 분기(k=3 · 위상 0) —… |
+| 1946 | L-RP-20260923_160550 | overlay_regime | B | RF_PAR_B6_32_k20 충실구현: 등급 B. 논문기준 SR 0.87 vs 15bps SR 0.94. [무인 병렬 B6_32] 격월(k=2 · 위상 0) —… |
+| 1947 | L-RP-20260923_160552 | overlay_regime | B | RF_PAR_B6_33_k21 충실구현: 등급 B. 논문기준 SR 0.76 vs 15bps SR 0.82. [무인 병렬 B6_33] 격월(k=2 · 위상 1) —… |
+| 1948 | L-RP-20260923_160621 | overlay_regime | B | RF_PAR_B6_42_3nmax 충실구현: 등급 B. 논문기준 SR 0.99 vs 15bps SR 1.04. [무인 병렬 B6_42] 랭크 버퍼(3×n_max … |
+| 1949 | L-RP-20260923_160622 | overlay_regime | B | RF_PAR_B6_36_2nmax 충실구현: 등급 B. 논문기준 SR 1.05 vs 15bps SR 1.08. [무인 병렬 B6_36] 랭크 버퍼(2×n_max … |
+| 1950 | L-RP-20260923_162011 | overlay_regime | C | RF_PAR_B4_22_LOO 충실구현: 등급 C. 논문기준 SR 0.78 vs 15bps SR 0.76. [무인 병렬 B4_22] 팩터 제외(LOO) — B4/… |
 
 ### strategy_rotation
 
 | # | L-code | family | grade | 요지 |
 |---|--------|--------|-------|------|
-| 1941 | L-FR-20260912_170811 | ml_complexity | C | FR_003_armS_lag1 regime rotation 앙상블 실측(essence C): net_SR=0.819 PORT_t(NW lag-3)=0.84 DSR… |
-| 1942 | L-FR-20260912_170855 | ml_complexity | C | FR_003_armC_flooronly regime rotation 앙상블 실측(essence C): net_SR=1.076 PORT_t(NW lag-3)=1.6… |
-| 1943 | L-FR-20260912_171234 | ml_complexity | C | FR_003 (2계층 전략 로테이션) — 방어형 경로 최초 발화. 풀 15→115(방어형 97 · essence B floor 6 · legacy QEPM-A 1… |
-| 1944 | L-FR-20260923_180623 | ml_complexity | C | FR_003_n1 regime rotation 앙상블 실측(essence C): net_SR=0.805 PORT_t(NW lag-3)=1.44 DSR=0.077 … |
-| 1945 | L-FR-20260923_182924 | ml_complexity | C | FR_003_n1_S_lag1 regime rotation 앙상블 실측(essence C): net_SR=0.796 PORT_t(NW lag-3)=1.30 DSR… |
-| 1946 | L-FR-20260923_184043 | ml_complexity | C | FR_003_n1_C_flooronly regime rotation 앙상블 실측(essence C): net_SR=0.926 PORT_t(NW lag-3)=1.9… |
+| 1951 | L-FR-20260912_170811 | ml_complexity | C | FR_003_armS_lag1 regime rotation 앙상블 실측(essence C): net_SR=0.819 PORT_t(NW lag-3)=0.84 DSR… |
+| 1952 | L-FR-20260912_170855 | ml_complexity | C | FR_003_armC_flooronly regime rotation 앙상블 실측(essence C): net_SR=1.076 PORT_t(NW lag-3)=1.6… |
+| 1953 | L-FR-20260912_171234 | ml_complexity | C | FR_003 (2계층 전략 로테이션) — 방어형 경로 최초 발화. 풀 15→115(방어형 97 · essence B floor 6 · legacy QEPM-A 1… |
+| 1954 | L-FR-20260923_180623 | ml_complexity | C | FR_003_n1 regime rotation 앙상블 실측(essence C): net_SR=0.805 PORT_t(NW lag-3)=1.44 DSR=0.077 … |
+| 1955 | L-FR-20260923_182924 | ml_complexity | C | FR_003_n1_S_lag1 regime rotation 앙상블 실측(essence C): net_SR=0.796 PORT_t(NW lag-3)=1.30 DSR… |
+| 1956 | L-FR-20260923_184043 | ml_complexity | C | FR_003_n1_C_flooronly regime rotation 앙상블 실측(essence C): net_SR=0.926 PORT_t(NW lag-3)=1.9… |
 
 ## 강등/아카이브 (뷰 제외 · 참조 영구 보존, 4)
 

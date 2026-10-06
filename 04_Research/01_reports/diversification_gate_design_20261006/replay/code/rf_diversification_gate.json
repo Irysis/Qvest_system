@@ -1,0 +1,84 @@
+{
+  "schema_version": "v0",
+  "_note": "기저 분산성 관문 설정 — 설계 04_Research/01_reports/diversification_gate_design_20261006/README.md · 코드 02_Infrastructure/reinforcement/rf_diversification_gate.R. enabled=false = 레인 미배선(역사 재생 단계). mode: shadow = 판정만 기록·텔레그램 병기(처분은 현행) · enforce = 처분 적용. shadow→enforce 전환은 도훈 승인.",
+  "enabled": false,
+  "mode": "shadow",
+  "benchmark": {
+    "path": ".cache/benchmark.parquet",
+    "basis": "정본 벤치 한 계열(09-18 공표 KOSPI200 포인트 이관판) — 옛 산출물의 bm_xts·05_benchmark_returns 는 이관 전 판일 수 있어 쓰지 않는다"
+  },
+  "pool": {
+    "grades": [
+      "A",
+      "B"
+    ],
+    "grades_basis": "도훈 결정 2026-10-06 — 참조 풀 = B 등급 이상만(+ BOOK). C 계보는 넣지 않는다",
+    "sources": "reinforce_ledger_l1(칸·기저 · 현재 권위 등급 = 09-25 close_t1 rebase 반영) · module_performance(원장 밖 B 이상 — 구 QEPM A 이관·6월 alpha_search) · book_registry",
+    "exclude_vintage_flags": [],
+    "exclude_vintage_flags_note": "역사 재생에서 C1 선정 승계 표식(selection_basis_full_sample_ic·_inherited) 포함판/제외판을 모두 잰다 — 결정 후 기입",
+    "related_rule": "같은 paper_key 또는 결합 논문 집합이 하나라도 겹치는 계보는 비교에서 뺀다(결합이 구성 논문과 닮는 것은 당연하다)"
+  },
+  "series": {
+    "return": "월간 초과수익 a = r − b · r = 순수익(ret_net) 월 복리 · b = 정본 벤치 월 복리 · 월 = 수익 실현 캘린더 월 · 계열 가장자리 부분월 제외",
+    "prefer": "remeasure_close_t1(측정 체제 정본) > native(09-25 이후 신판 = close_t1) > sim_result.rds",
+    "min_overlap_months": 60,
+    "min_overlap_basis": "Fama & MacBeth (1973) — 월간 계수 추정의 60개월 창 https://doi.org/10.1086/260061",
+    "measure": "resid2",
+    "measure_basis": "역사 재생 2026-10-06 §11.1 — 초과수익(a)·1요인 잔차(e)는 베타·사이즈 공통 성분 착시(예측 타당도 0.33·0.00) · 2요인 잔차(e2) 0.63"
+  },
+  "metrics": {
+    "rho_max": "후보 초과수익 vs 풀 구성원 초과수익 상관의 최대(공통 구간 ≥ min_overlap) — 판정",
+    "r2_span": "후보 초과수익을 계보별 최근접 구성원으로 생성 회귀한 수정 R²(설명 변수 = BIC 전진 선택) — 판정(rho_max 와 OR)",
+    "alpha_span": "생성 회귀 절편(월)과 t — 기존 집합으로 설명되지 않는 몫. diversifier 가치 조건",
+    "rho_down": "풀(계보 대표 동일가중) 원수익 < 0 인 달만의 초과수익 상관 — diversifier 조건",
+    "capture_down": "같은 달의 후보 평균 원수익 / 풀 평균 원수익 — 설명",
+    "jaccard": "최근접 구성원과의 월별 보유 종목 Jaccard 평균 — 설명"
+  },
+  "calibration": {
+    "q_dup": 0.9,
+    "q_div": 0.25,
+    "status": "provisional — 도훈 결정 대기(설계 §8-4). 값은 역사 재생 보고서 기준",
+    "null": "역사 기저 후보(원장 L1 비승격 entry 의 충실구현 기저) 각각을 현재 풀(관련 계보 제외)에 댄 최근접 통계의 경험 분포",
+    "thresholds": null,
+    "provisional_values_resid2_all": {
+      "tau_dup_rho": 0.569,
+      "tau_dup_r2": 0.438,
+      "tau_div_rho": 0.228,
+      "tau_div_r2": 0.108,
+      "n_null": 33,
+      "source": "replay/thresholds_provisional.json"
+    }
+  },
+  "evidence": [
+    {
+      "for": "초과수익(활성수익) 기준 겹침",
+      "ref": "Grinold & Kahn (2000) Active Portfolio Management, 2nd ed.",
+      "url": "https://www.mhprofessional.com/active-portfolio-management-a-quantitative-approach-for-producing-superior-returns-and-controlling-risk-9780070248823-usa"
+    },
+    {
+      "for": "상관 기반 전략 군집으로 중복 시도 판정",
+      "ref": "López de Prado & Lewis (2019) Quantitative Finance 19(9)",
+      "url": "https://doi.org/10.1080/14697688.2019.1622311"
+    },
+    {
+      "for": "생성 회귀 R²·절편",
+      "ref": "Huberman & Kandel (1987) Journal of Finance 42(4)",
+      "url": "https://doi.org/10.1111/j.1540-6261.1987.tb03917.x"
+    },
+    {
+      "for": "설명 변수 선택 BIC",
+      "ref": "Schwarz (1978) Annals of Statistics 6(2)",
+      "url": "https://doi.org/10.1214/aos/1176344136"
+    },
+    {
+      "for": "60개월 공통 구간",
+      "ref": "Fama & MacBeth (1973) Journal of Political Economy 81(3)",
+      "url": "https://doi.org/10.1086/260061"
+    }
+  ],
+  "factors": {
+    "path": ".cache/indices.parquet",
+    "ew": "(200·kospi200_ew + 150·kosdaq150_ew)/350 일간 → 월 복리 · 2010-02~",
+    "basis": "유니버스 K200∪KQ150 구성 종목 수 비례 동일가중 — 동일가중 롱온리 공통 사이즈 성분 제거"
+  }
+}

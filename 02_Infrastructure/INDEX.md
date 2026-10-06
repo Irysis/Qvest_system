@@ -1,6 +1,6 @@
 # 02_Infrastructure INDEX
 
-> 자동 생성 2026-10-05 07:48 — 큐레이션 원본: `06_Registry/index_descriptions.json` (role/status/category 수동 보완처) · 재생성: `Rscript 02_Infrastructure/tools/build_artifact_index.R` (daily_refresh 말미 자동). 본 파일 직접 수정 금지 — 재생성 시 덮어씀.
+> 자동 생성 2026-10-06 07:55 — 큐레이션 원본: `06_Registry/index_descriptions.json` (role/status/category 수동 보완처) · 재생성: `Rscript 02_Infrastructure/tools/build_artifact_index.R` (daily_refresh 말미 자동). 본 파일 직접 수정 금지 — 재생성 시 덮어씀.
 
 ## 데이터 (3)
 
@@ -63,7 +63,7 @@
 
 | 항목 | 정체 | status | 최근 | 크기 |
 |---|---|---|---|---|
-| `alpha_search/` | ② alpha-search 모드 실행 계층(91건) — run_alpha_search.R + 논문 복제 드라이버(run_qmj_paper·run_residmom_paper 등)·캐시 빌더·검증 스크립트 | active | 2026-09-25 | 981KB |
+| `alpha_search/` | ② alpha-search 모드 실행 계층(91건) — run_alpha_search.R + 논문 복제 드라이버(run_qmj_paper·run_residmom_paper 등)·캐시 빌더·검증 스크립트 | active | 2026-10-05 | 983KB |
 
 ## 보고 (3)
 
@@ -130,7 +130,7 @@
 | 항목 | 정체 | status | 최근 | 크기 |
 |---|---|---|---|---|
 | `monitoring/` | 라이브 페이퍼트래킹 — noLayer4 일별 마킹(mark_nolayer4_daily.R)·월간(run_nolayer4_monthly.sh)·holdout 대조(monitor_nolayer4_paper.R). 구 faithtrend 스크립트+.bak = deprecated rollback 보존 | active | 2026-09-02 | 60KB |
-| `ops/` | 운영 계층 54건 — bootstrap.sh(/qvest 진입)·cleanup.sh·scheduler/(.bat 태스크)·헬스체크·paper router | active | 2026-10-03 | 3.0MB |
+| `ops/` | 운영 계층 54건 — bootstrap.sh(/qvest 진입)·cleanup.sh·scheduler/(.bat 태스크)·헬스체크·paper router | active | 2026-10-05 | 3.1MB |
 | `telegram/` | 텔레그램 계층 4건 — telegram_notify.R(발송)·telegram_listener.py·telegram_commands.R·start_listener.sh (qvest-telegram SOT의 구현체) | active | 2026-09-24 | 232KB |
 | `tools/` | 운영 도구 16건 — build_artifact_index.R·paper_recharge_daily.R(논문 수집)·debate_helpers 등 | active | 2026-09-23 | 345KB |
 
@@ -191,7 +191,7 @@
 | `ast` | (미분류 — index_descriptions.json에 추가하세요) | - | 2026-09-24 | 223KB |
 | `book` | (미분류 — index_descriptions.json에 추가하세요) | - | 2026-08-30 | 41KB |
 | `methods` | (미분류 — index_descriptions.json에 추가하세요) | - | 2026-08-29 | 210KB |
-| `reinforcement` | (미분류 — index_descriptions.json에 추가하세요) | - | 2026-10-04 | 1.5MB |
+| `reinforcement` | (미분류 — index_descriptions.json에 추가하세요) | - | 2026-10-05 | 1.5MB |
 | `replication` | (미분류 — index_descriptions.json에 추가하세요) | - | 2026-09-24 | 21KB |
 | `utils` | (미분류 — index_descriptions.json에 추가하세요) | - | 2026-08-30 | 13KB |
 
