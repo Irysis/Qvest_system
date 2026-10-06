@@ -214,7 +214,7 @@ rmm_register_measured <- function(out_dir, sim_result = NULL, auth = NULL,
                                   origin_mode = "replication", role = NA_character_,
                                   meta = list(), dry_run = FALSE, floor = "B",
                                   catalog_path = NULL, quarantine_path = NULL,
-                                  journal = TRUE, lock_wait_s = 60) {
+                                  journal = TRUE, lock_wait_s = 60, role_rep_id = NULL) {
   .out <- function(registered, code, reason, adm = NULL, sid = NA_character_, fr = NA) {
     if (isTRUE(journal))
       ## 사건 이름이 셋인 이유: 자격 미달(skipped)·재료/계약 결손(blocked)·모의(dry_run)는
@@ -243,6 +243,18 @@ rmm_register_measured <- function(out_dir, sim_result = NULL, auth = NULL,
 
   ## ① 풀 자격 (등재할 값어치가 있는가) — 계약 술어 경유
   adm <- rmm_admission(auth, floor = floor, defensive_route = TRUE)
+  ## ①' 역할 대표 경로(도훈 2026-10-06 — 2계층 풀 = 역할별 대표). 호출자 진술이 아니라 **레지스트리를 다시 읽어** 확인한다:
+  ##    06_Registry/strategy_roles.json entries[role_rep_id]$pool_rep_roles 가 비어 있지 않을 때만. 계약 floor ②③ 는 그대로 거친다.
+  if (!isTRUE(adm$eligible) && !is.null(role_rep_id)) {
+    rr <- tryCatch(fromJSON(file.path(.rmm_root(), "06_Registry/strategy_roles.json"), simplifyVector = FALSE)$entries[[as.character(role_rep_id)[1]]],
+                   error = function(e) NULL)
+    roles <- unlist(.rmm_get(rr, "pool_rep_roles"))
+    if (length(roles)) {
+      adm$eligible <- TRUE; adm$route <- "role_rep"; adm$code <- "role_rep"
+      adm$reason <- sprintf("역할 대표(%s) — strategy_roles.json · essence %s", paste(roles, collapse = ","), .rmm_c1(adm$grade, "NA"))
+      meta$role_pool_rep <- as.list(roles)
+    }
+  }
   if (!isTRUE(adm$eligible))
     return(.out(FALSE, adm$code, adm$reason, adm))
 
