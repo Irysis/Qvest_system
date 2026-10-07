@@ -453,6 +453,29 @@ tryCatch(system2("Rscript",
   wait = TRUE, stdout = TRUE, stderr = TRUE),
   error = function(e) jlog("factor_autoregister_failed", err = conditionMessage(e)))
 
+# ── ③-b' 역할 카드 (도훈 결정 2026-10-06/07 — 1계층 목표 = 2계층 다양한 풀 · 규칙 기반 분류) ─────────────
+#   측정 직후 기저의 역할(방어·공격·반등·잔차α)을 수익 행동으로 판정해 산출물 옆에 남긴다(role_card.json).
+#   ★처분을 바꾸지 않는다 — 기록·보고 전용. 풀 대표 선정(계보 대표·군집)과 diversifier 는 일일 [8.1r] 일괄 분류가 한다.
+#   ★declared_role(FIDELITY — 구현자가 논문에서 읽은 역할)과 측정 역할이 다르면 불일치 표식만 남긴다(LLM 판정 금지 · 대조용).
+.role_items <- tryCatch({
+  suppressMessages(source(file.path(ROOT, "02_Infrastructure/contracts/strategy_role.R")))
+  .rc <- sr_card_for_series(file.path(dirname(ar), "03_period_returns.csv"), ROOT)
+  if (identical(.rc$status, "ok")) {
+    .gs <- vapply(.rc$roles, function(z) as.character(z$grade), "")
+    .ts <- vapply(.rc$roles, function(z) { v <- suppressWarnings(as.numeric(z$t)); if (length(v) && is.finite(v)) v else NA_real_ }, 0)
+    .decl <- tryCatch(as.character(.fid$declared_role %||% ""), error = function(e) "")
+    .mis <- nzchar(.decl) && !any(vapply(names(.gs)[.gs %in% c("A", "B")], function(r) grepl(r, .decl, ignore.case = TRUE), logical(1)))
+    writeLines(toJSON(c(.rc, list(declared_role = .decl, declared_mismatch = .mis, computed_at = format(Sys.time(), "%Y-%m-%dT%H:%M:%S%z"))),
+                      auto_unbox = TRUE, pretty = TRUE, digits = 6, na = "null", null = "null"), file.path(dirname(ar), "role_card.json"))
+    jlog("role_card", primary = .rc$primary_role, primary_grade = .rc$primary_grade, roles_bplus = paste(.rc$roles_bplus, collapse = ","),
+         declared_role = .decl, declared_mismatch = .mis)
+    c(sprintf("대표 역할: %s %s · 역할 B+: %s", .rc$primary_role, .rc$primary_grade,
+              if (length(.rc$roles_bplus)) paste(.rc$roles_bplus, collapse = ", ") else "없음"),
+      substr(paste(sprintf("%s %s(t %.1f)", names(.gs), .gs, .ts), collapse = " · "), 1, 78),
+      if (nzchar(.decl)) substr(sprintf("논문 신고 역할: %s%s", .decl, if (.mis) " — 측정과 불일치" else ""), 1, 78))
+  } else { jlog("role_card_skipped", status = .rc$status); character(0) }
+}, error = function(e) { jlog("role_card_failed", err = conditionMessage(e)); character(0) })
+
 # ── ③-c 기저 품질 문턱 (도훈 지시 2026-08-30 — PORT_t < 0 기준) ─────────────
 #   ★왜: 강화 20칸은 기저 신호 **위에** 팩터를 얹는다. 기저 알파가 음수면 그 위에서
 #   무엇을 얹어도 20칸이 헛돌 공산이 크다. 어제 JT1993 은 기저 F 였지만 PORT_t 가 0 근처
@@ -666,6 +689,8 @@ tryCatch({ suppressMessages(source(file.path(ROOT, "02_Infrastructure/telegram/t
            body = sprintf("충실구현 기저 등급 %s — 강화 %d칸이 다음 주기부터 무인으로 돕니다", G, .RF_MAXA)),
       list(type = "kv", emoji = "📊", heading = "성과 요약",
            kv = rf_perf_kv(dirname(ar))),
+      list(type = "bullet", emoji = "\U0001F9ED", heading = "역할 카드(2계층 풀 재료)",
+           items = if (length(.role_items)) .role_items else "역할 카드 미산출 — 일일 재분류에서 다시 잽니다"),
       list(type = "bullet", emoji = "\U0001F6A9", heading = "주의",
            items = c(if (identical(.fidelity, "adapted"))
                        substr(sprintf("착안 구현 — 남긴 기전: %s", .fid$kept %||% "?"), 1, 78)

@@ -916,6 +916,19 @@ elif [ "${_wm_rc:-0}" -ne 0 ]; then
   echo "[warn] wiring map rebuild failed rc=$_wm_rc (fail-soft)"
 fi
 
+# [8.1r] 전략 역할 재분류 + 역할 대표 등재 (2026-10-07 도훈 결정 — 2계층 풀 = 역할 대표 · strategy_role.json pool.mode)
+#   왜 매일: [8.2] 풀이 06_Registry/strategy_roles.json 의 대표만 받는다. 재분류가 멈추면 강화 러너가 새로 만든
+#   칸·신규 논문 기저가 풀에 영영 못 들어간다(호출 계기 부재 = [8.2] 의 56일 정지와 같은 기전).
+#   순서: 분류(레지스트리 갱신) → 미등재 대표 카탈로그 등재 → [8.2] 풀 조립. fail-soft(실패해도 직전 레지스트리로 풀은 조립된다).
+_role_log="/tmp/qm_role_classify_$(date +%Y%m%d).log"
+if ( cd "$INFRA/ops" && "$RSCRIPT" -e 'source("rf_role_classify_all.R")' >"$_role_log" 2>&1 && \
+     "$RSCRIPT" -e 'source("rf_role_register_reps.R")' >>"$_role_log" 2>&1 ); then
+  grep -a "분류 \|풀 대표 고유\|레지스트리 기록\|대상 " "$_role_log" | sed 's/^/[8.1r] /' || true
+else
+  echo "[warn] [8.1r] 역할 재분류/등재 실패 (fail-soft — 직전 레지스트리로 풀 조립) — 로그 $_role_log"
+  tail -n 5 "$_role_log" 2>/dev/null || true
+fi
+
 # [8.2] FR 모듈 성능 레지스트리 재생성 (2026-08-08, FQ-056) — screen-tier 재고를
 #   factor-rotation 소비면에 도달시키는 배관. fail-soft.
 #   ★왜 정기 실행이 필요한가: 이 스크립트는 배선돼 있었지만 **on-demand 진입점

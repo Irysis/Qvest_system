@@ -23,71 +23,104 @@ if (is.null(.slotres)) {
                      "   book_state.json / 05_Production 슬롯 구성 확인 필요.\n"), BOOK_ID))
 }
 
-## 1) 최신 배포 홀딩 = admitted 슬롯의 최신 파일 (리밸 date = 파일명)
-##    구판 3중 결함 (도훈 mandate 2026-08-01 "날짜 하드코딩은 다 없애라"):
-##      ① HU 가 슬롯 2-3 고정 → 교체 후 배포되지 않은 북을 매일 마킹
-##      ② 패턴 `_noLayer4_` 고정 → 슬롯 2-4 의 `20260801_M4gAE_...` 을 **0건**으로 보고 종료
-##      ③ `which.max(file.mtime())` → 파일 재생성/복사에 최신 판정이 뒤집힘
-##    → 해석기(정확일치 슬롯 + 파일명 사전순)로 교체. 실패 시 구 경로 폴백 후 경고.
-wf <- if (!is.null(.slotres)) .slotres$holdings else {
-  .w <- list.files(HU, pattern="_weights_cap_0p20\\.csv$", full.names=TRUE)
-  if (length(.w)) .w[order(basename(.w))][length(.w)] else character(0)
+## 1) 보유 파일 체인 (리밸 date = 파일명) — 그날 유효한 북 = reb_date < 그날 인 최신 파일(파일 날짜 다음 거래일부터 적용)
+##    ★2026-10-07 수리(도훈 "YTD 연누적 이상"): 구판은 **최신 파일 하나**로 reb_date 이후를 매수후보유했다.
+##      ① 리밸이 늦으면(10월 비중 10-07 저녁 산출) 'MTD' 가 09-01 부터 쌓여 9·10월이 섞였다.
+##      ② QTD/YTD 원장(book_monthly_ledger.csv)이 슬롯 2-4 이관(08-01) 때 seed 원천 부재로 **빈 파일**이 되고,
+##         월말 append 도 없어 8월부터 YTD = MTD 였다(07-27 YTD +84% → 08-03 +0.27%).
+##    → 일별 북 수익을 보유 기간별로 이어 붙이고(기간 안 = 매수후보유 드리프트), MTD = 이번 달 1일부터.
+##      완료월 수익 = 같은 레인의 live_book_series.csv(월간 러너가 매달 연장 · 15bps 순수익). 없는 달만 일별 체인으로 메운다.
+TAG <- if (!is.null(.slotres)) .slotres$tag else "noLayer4"
+HUD <- if (!is.null(.slotres)) .slotres$holdings_dir else HU
+hf <- data.table(path = list.files(HUD, pattern = sprintf("^\\d{8}_%s_weights_cap_0p20\\.csv$", TAG), full.names = TRUE))
+if (!nrow(hf)) { cat("[nolayer4-daily] 배포 홀딩 없음 — 월간 리밸 선행 필요.\n"); quit(save = "no") }
+hf[, reb := as.Date(substr(basename(path), 1, 8), "%Y%m%d")]; setorder(hf, reb)
+hf <- hf[!is.na(reb)]
+.W <- lapply(hf$path, function(p) { w <- fread(p); w[Ticker != "CASH" & Weight > 0, .(Ticker, Name, Weight)] })
+raw <- as.data.table(read_parquet(file.path(ROOT, ".cache/RAWDATA.parquet"), col_select = c("Date", "Ticker", "Ret")))
+raw[, Date := as.Date(Date)]
+raw <- raw[Ticker %in% unique(unlist(lapply(.W, function(w) w$Ticker))) & Date > min(hf$reb)]
+cal <- sort(unique(raw$Date))
+if (!length(cal)) { cat("[nolayer4-daily] 리밸 이후 신규 거래일 없음 — 데이터 대기.\n"); quit(save = "no") }
+.kof <- function(d) { k <- which(hf$reb < d); if (length(k)) max(k) else NA_integer_ }
+
+## 일별 북 수익 (d_from, d_to] — 기간 k 마다 cash + Σ w·Π(1+r) 경로, 일수익 = nav/전일 nav − 1
+book_daily <- function(d_from, d_to) {
+  days <- cal[cal > d_from & cal <= d_to]
+  if (!length(days)) return(data.table(Date = as.Date(character()), ret = numeric(), k = integer()))
+  ks <- vapply(days, .kof, 1L)
+  out <- list()
+  for (k in unique(ks[!is.na(ks)])) {
+    w <- .W[[k]]; cash <- 1 - sum(w$Weight); dk <- days[ks %in% k]
+    r <- raw[Ticker %in% w$Ticker & Date > hf$reb[k] & Date <= max(dk)]
+    allD <- cal[cal > hf$reb[k] & cal <= max(dk)]
+    g <- CJ(Ticker = w$Ticker, Date = allD); g <- merge(g, r, by = c("Ticker", "Date"), all.x = TRUE)
+    g[is.na(Ret), Ret := 0]; setorder(g, Ticker, Date); g[, cr := cumprod(1 + Ret), by = Ticker]
+    g <- merge(g, w[, .(Ticker, Weight)], by = "Ticker")
+    nav <- g[, .(nav = cash + sum(Weight * cr)), by = Date][order(Date)]
+    nav[, ret := nav / shift(nav, fill = 1) - 1]
+    out[[length(out) + 1L]] <- nav[Date %in% dk, .(Date, ret, k = k)]
+  }
+  rbindlist(out)[order(Date)]
 }
-if(!length(wf)){cat("[nolayer4-daily] 배포 홀딩 없음 — 월간 리밸 선행 필요.\n"); quit(save="no")}
-reb_date <- as.Date(gsub(".*/(\\d{8})_.*","\\1",wf),format="%Y%m%d")
-if (is.na(reb_date)) { cat(sprintf("[nolayer4-daily] 보유 파일명에서 리밸일 파싱 실패: %s\n", basename(wf))); quit(save="no") }
-cat(sprintf("[nolayer4-daily] 마킹 대상: %s (리밸 %s)\n", basename(wf), reb_date))
-W <- fread(wf); stk <- W[Ticker!="CASH" & Weight>0]; invested <- sum(stk$Weight); cash <- 1-invested
 
-## 2) RAWDATA 일별 (리밸 이후) — 신선 캐시
-raw <- as.data.table(read_parquet(file.path(ROOT,".cache/RAWDATA.parquet"),col_select=c("Date","Ticker","Ret")))
-raw[, Date:=as.Date(Date)]; rd <- raw[Ticker %in% stk$Ticker & Date>reb_date]
-if(!nrow(rd)){cat(sprintf("[nolayer4-daily] 리밸(%s) 이후 신규 거래일 없음 — 데이터 대기.\n",reb_date)); quit(save="no")}
-days <- sort(unique(rd$Date)); last_d <- days[length(days)]
-## 종목 누적/전일 수익 → 북 (매수후보유, CASH=0)
-cum <- rd[, .(cum=prod(1+Ret,na.rm=TRUE)-1), by=Ticker]
-lastret <- rd[Date==last_d, .(Ticker,dret=Ret)]
-m <- merge(stk[,.(Ticker,Weight)], cum, by="Ticker", all.x=TRUE); m <- merge(m, lastret, by="Ticker", all.x=TRUE)
-mtd <- sum(m$Weight*m$cum, na.rm=TRUE); dayret <- sum(m$Weight*m$dret, na.rm=TRUE)
-
-## 2b) QTD/YTD (월수익 원장 ledger: 배포前 = 백테 seed, 배포後 = 라이브 월말 append) ─────
-##   DTD=dayret(일간) / MTD=mtd(당월) 는 위에서 산출. QTD/YTD = 원장 완료월 × (1+현 MTD).
-led_path <- file.path(LT, "book_monthly_ledger.csv")
-if (!file.exists(led_path)) {
-  ## 원장 seed 도 admitted 슬롯에서 (구판 슬롯 2-3 고정 — 교체 후 구 북 수익으로 seed 했다)
-  .pr <- if (!is.null(.slotres)) file.path(.slotres$slot_dir,"04_backtest_results/03_period_returns.csv")
-         else file.path(ROOT,"05_Production/2.Factor_Model",paste0("2-3.",PRIOR_BOOK_ID),
-                        "04_backtest_results/03_period_returns.csv")
-  btf <- tryCatch(fread(.pr), error=function(e) NULL)
-  dym <- format(reb_date, "%Y-%m")
-  if (!is.null(btf) && "date" %in% names(btf) && "ret_net" %in% names(btf)) {
-    btf[, ym := substr(as.character(date), 1, 7)]
-    seed <- btf[ym >= paste0(format(reb_date,"%Y"),"-01") & ym < dym, .(ym, ret=ret_net, source="backtest")]
-    fwrite(seed, led_path)
-  } else fwrite(data.table(ym=character(), ret=numeric(), source=character()), led_path)
+mark_day <- function(last_d) {
+  ms <- as.Date(format(last_d, "%Y-%m-01")); pe <- suppressWarnings(max(cal[cal < ms])); if (!is.finite(pe)) pe <- min(hf$reb)
+  bd <- book_daily(pe, last_d)
+  mtd <- prod(1 + bd$ret) - 1; dayret <- if (nrow(bd) && max(bd$Date) == last_d) bd$ret[nrow(bd)] else NA_real_
+  k <- .kof(last_d); w <- .W[[k]]
+  ## 완료월 원장 = live_book_series(return_ym · ret_net) → 없는 달은 일별 체인
+  ser <- tryCatch(fread(file.path(LT, "live_book_series.csv"), select = c("return_ym", "ret_net", "ret_net_source")), error = function(e) NULL)
+  cy <- format(last_d, "%Y"); cym <- format(last_d, "%Y-%m")
+  want <- sprintf("%s-%02d", cy, seq_len(as.integer(format(last_d, "%m")) - 1L))
+  led <- if (!is.null(ser)) ser[return_ym %in% want, .(ym = return_ym, ret = ret_net,
+                                source = fifelse(grepl("^manifest_anchor", ret_net_source), "live", "backtest"))] else data.table(ym = character(), ret = numeric(), source = character())
+  for (m in setdiff(want, led$ym)) {
+    m1 <- as.Date(paste0(m, "-01")); m2 <- seq(m1, by = "month", length.out = 2)[2] - 1
+    p0 <- suppressWarnings(max(cal[cal < m1])); if (!is.finite(p0) || p0 < min(hf$reb)) next
+    x <- book_daily(p0, m2); if (nrow(x)) led <- rbind(led, data.table(ym = m, ret = prod(1 + x$ret) - 1, source = "daily_chain"))
+  }
+  setorder(led, ym)
+  cq <- (as.integer(format(last_d, "%m")) - 1L) %/% 3L + 1L; qmos <- sprintf("%s-%02d", cy, ((cq - 1L) * 3L + 1L):((cq - 1L) * 3L + 3L))
+  qd <- led[ym %in% qmos]; yd <- led
+  list(last_d = last_d, k = k, reb = hf$reb[k], w = w, invested = sum(w$Weight), mtd = mtd, dayret = dayret,
+       qtd = prod(1 + qd$ret) * (1 + mtd) - 1, ytd = prod(1 + yd$ret) * (1 + mtd) - 1, led = led,
+       n_days = nrow(bd), pending = hf$reb[nrow(hf)] < ms, ms = ms, pe = pe)
 }
-led <- fread(led_path)
-cy <- format(last_d,"%Y"); cq <- (as.integer(format(last_d,"%m"))-1L)%/%3L+1L; cym <- format(last_d,"%Y-%m")
-qmos <- sprintf("%s-%02d", cy, ((cq-1L)*3L+1L):((cq-1L)*3L+3L))
-qd <- led[ym %in% qmos & ym < cym]; yd <- led[substr(ym,1,4)==cy & ym < cym]
-qtd <- prod(1+qd$ret, na.rm=TRUE)*(1+mtd)-1; ytd <- prod(1+yd$ret, na.rm=TRUE)*(1+mtd)-1
-cat(sprintf("  DTD %+.2f%% | MTD %+.2f%% | QTD %+.2f%% (완료 %d개월+MTD) | YTD %+.2f%% (백테 %d개월+라이브)\n",
-            dayret*100, mtd*100, qtd*100, nrow(qd), ytd*100, nrow(yd)))
-## KOSPI 비교
-bmk <- as.data.table(read_parquet(file.path(ROOT,".cache/benchmark.parquet"))); bcol<-intersect(c("BM_Ret","Ret"),names(bmk))[1]
-bmk[, Date:=as.Date(Date)]; bmd <- bmk[Date>reb_date & Date<=last_d & is.finite(get(bcol))]
-bm_mtd <- prod(1+bmd[[bcol]],na.rm=TRUE)-1; bm_day <- bmk[Date==last_d, get(bcol)][1]
 
-cat(sprintf("[nolayer4-daily] %s | 리밸 %s 이후 %d거래일\n", last_d, reb_date, length(days)))
-cat(sprintf("  북 MTD %+.2f%% (전일 %+.2f%%) | 노출 %.0f%% 현금 %.0f%% | KOSPI MTD %+.2f%%\n",
-            mtd*100, dayret*100, invested*100, cash*100, bm_mtd*100))
+bmk <- as.data.table(read_parquet(file.path(ROOT, ".cache/benchmark.parquet"))); bcol <- intersect(c("BM_Ret", "Ret"), names(bmk))[1]
+bmk[, Date := as.Date(Date)]
+kospi <- function(pe, d) { x <- bmk[Date > pe & Date <= d & is.finite(get(bcol))]; c(mtd = prod(1 + x[[bcol]]) - 1, day = { v <- bmk[Date == d, get(bcol)]; if (length(v)) v[1] else NA_real_ }) }
 
-## 3) daily_nav.csv append
-dn_path <- file.path(LT,"daily_nav.csv")
-row <- data.table(date=as.character(last_d), reb_date=as.character(reb_date), book_dtd=dayret, book_mtd=mtd, book_qtd=qtd, book_ytd=ytd, book_day=dayret,
-                  invested=invested, cash=cash, kospi_mtd=bm_mtd, kospi_day=bm_day, n_days=length(days))
-if(file.exists(dn_path)){dn<-fread(dn_path, colClasses=list(character=c("date","reb_date"))); dn<-dn[date!=as.character(last_d)]; dn<-rbind(dn,row,fill=TRUE)} else dn<-row
-setorder(dn,date); fwrite(dn,dn_path)
+## 2) 오늘(최신 거래일) 마킹
+last_d <- max(cal); M <- mark_day(last_d)
+reb_date <- M$reb; stk <- M$w; invested <- M$invested; cash <- 1 - invested
+mtd <- M$mtd; dayret <- M$dayret; qtd <- M$qtd; ytd <- M$ytd; days <- seq_len(M$n_days)
+kb <- kospi(M$pe, last_d); bm_mtd <- kb[["mtd"]]; bm_day <- kb[["day"]]
+cum <- raw[Ticker %in% stk$Ticker & Date > reb_date & Date <= last_d][, .(cum = prod(1 + Ret, na.rm = TRUE) - 1), by = Ticker]
+fwrite(M$led, file.path(LT, "book_monthly_ledger.csv"))   # 원장 = 파생 거울(완료월 · 출처 표기)
+n_bt <- sum(M$led$source == "backtest"); n_lv <- sum(M$led$source != "backtest")
+cat(sprintf("[nolayer4-daily] %s | 보유 %s (리밸 %s)%s | 이번 달 %d거래일\n", last_d, basename(hf$path[M$k]), reb_date,
+            if (M$pending) " ★이번 달 리밸 대기 — 직전 보유로 평가" else "", M$n_days))
+cat(sprintf("  DTD %+.2f%% | MTD %+.2f%% | QTD %+.2f%% | YTD %+.2f%% (백테 %d개월 + 라이브 %d개월 + 당월) | KOSPI MTD %+.2f%%\n",
+            dayret * 100, mtd * 100, qtd * 100, ytd * 100, n_bt, n_lv, bm_mtd * 100))
+
+## 3) daily_nav.csv append (★NOLAYER4_BACKFILL=1 이면 기존 행 전부를 같은 산식으로 재계산 — 소급 표식 recalc)
+dn_path <- file.path(LT, "daily_nav.csv")
+.row <- function(MM, note = "") { kk <- kospi(MM$pe, MM$last_d)
+  data.table(date = as.character(MM$last_d), reb_date = as.character(MM$reb), book_dtd = MM$dayret, book_mtd = MM$mtd, book_qtd = MM$qtd,
+             book_ytd = MM$ytd, book_day = MM$dayret, invested = MM$invested, cash = 1 - MM$invested, kospi_mtd = kk[["mtd"]],
+             kospi_day = kk[["day"]], n_days = MM$n_days, recalc = note) }
+row <- .row(M)
+dn <- if (file.exists(dn_path)) fread(dn_path, colClasses = list(character = c("date", "reb_date"))) else NULL
+if (identical(Sys.getenv("NOLAYER4_BACKFILL"), "1") && !is.null(dn)) {
+  tag <- sprintf("backfill_%s(체인·월초 MTD·live_book_series 원장)", format(Sys.Date(), "%Y%m%d"))
+  old <- as.Date(dn$date); old <- old[old > min(hf$reb) & old %in% cal & old != last_d]
+  keep <- dn[!(as.Date(date) %in% old) & date != as.character(last_d)]   # 체인으로 못 재는 행(레인 승계 이전 등)은 원본 유지
+  dn <- rbindlist(c(list(keep), lapply(old, function(d) .row(mark_day(d), tag)), list(row)), fill = TRUE)
+  cat(sprintf("[nolayer4-daily] ★소급 재계산 %d행 (%s)\n", length(old), tag))
+} else if (!is.null(dn)) { dn <- dn[date != as.character(last_d)]; dn <- rbind(dn, row, fill = TRUE) } else dn <- row
+setorder(dn, date); fwrite(dn, dn_path)
 
 ## 4) 모닝브리핑 Telegram (데일리 북 성과)
 if(send_tg) tryCatch({
@@ -102,12 +135,12 @@ if(send_tg) tryCatch({
   }, error = function(e) "BOOK")
   tg_agent_brief(agent="Book", title=sprintf("[BOOK] 트래킹 — %s 일별 (%s)", .bkid, as.character(last_d)),
     sections=list(
-      list(type="summary", emoji="📈", body=sprintf("현 라이브 북 평가 (리밸 %s 이후 %d거래일). 노출 %.0f%%·현금 %.0f%% (Layer4 제거·m4×β_R05).", reb_date, length(days), invested*100, cash*100)),
+      list(type="summary", emoji="📈", body=sprintf("%s 보유 기준 평가 (이번 달 %d거래일)%s. 노출 %.0f%%·현금 %.0f%%.", format(reb_date, "%m월"), length(days), if (isTRUE(M$pending)) " — 이번 달 리밸 대기, 직전 보유로 평가" else "", invested*100, cash*100)),
       list(type="kv", emoji="📊", heading=sprintf("성과 북/KOSPI (기준 %s)", last_d),
         kv=list("DTD 일간"=sprintf("%+.2f%% / %+.2f%%", dayret*100, ifelse(is.na(bm_day),0,bm_day)*100),
                 "MTD 월누적"=sprintf("%+.2f%% / %+.2f%%", mtd*100, bm_mtd*100),
                 "QTD 분기누적"=sprintf("%+.2f%%", qtd*100),
-                "YTD 연누적"=sprintf("%+.2f%% (백테+라이브)", ytd*100),
+                "YTD 연누적"=sprintf("%+.2f%% (백테 %d개월+라이브 %d개월+당월)", ytd*100, n_bt, n_lv),
                 "노출 / 현금"=sprintf("%.0f%% / %.0f%%", invested*100, cash*100))),
       list(type="bullet", emoji="📌", heading="상위 보유",
         items=sprintf("%s %.1f%% (누적 %+.1f%%)", top$Name, top$Weight*100, merge(top[,.(Ticker)],cum,by="Ticker",all.x=TRUE)$cum*100))),

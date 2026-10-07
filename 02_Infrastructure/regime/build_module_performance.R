@@ -92,6 +92,33 @@ RG <- RG[!is.na(regime_lag), .(Date, regime=regime_lag)]   # legacy 정렬(보�
 ##   값어치는 조합 안에서 나오므로, essence 등급이 아니라 **풀 자격에서만** 인정한다.
 ##   ⇒ 2026-08-29 "F-overall specialist 풀 부적격" 을 **방어형에 한해** 되돌린다.
 ##   ★판정은 `ds_pool_eligible()`(계약) 이 낸다 — 이 파일에 사본을 두지 않는다.
+## ── 풀 구성 모드 (도훈 결정 2026-10-06 "2계층 풀 구성 전환") ─────────────────────────
+##   role(기본) = **역할 대표만** — 06_Registry/strategy_roles.json 의 pool_rep_roles 보유 전략(역할별 B+ 를 계보당 1개 →
+##     2요인 잔차 상관 군집 대표). 강화 칸은 같은 계보 안에서 거의 복제본이라 전부 넣으면 풀이 커질 뿐 다양해지지 않는다.
+##     구 방어형 경로(하락월 초과 r−b)는 베타 맞춤 잡음의 61% 가 통과하는 베타 착시로 판명(재생 2026-10-06) — role 모드에서 쓰지 않는다.
+##   legacy = 구판(essence B+ floor ∥ 방어형). 정본 = strategy_role.json pool.mode · env QVEST_L2_POOL_MODE 가 덮는다(호출자 전환·진단용).
+##   ★PIT: 역할 소속은 전기간 판정이다 — 이 풀을 **배합 선택**에 쓰는 2계층 로테이션은 as-of 로 다시 재야 한다(pit.md C1 D-E).
+.SR_CFG <- tryCatch(jsonlite::fromJSON(file.path(PROJ, "06_Registry/strategy_role.json"), simplifyVector = FALSE), error = function(e) NULL)
+.POOL_MODE <- tolower(Sys.getenv("QVEST_L2_POOL_MODE", (.SR_CFG$pool$mode %||% "legacy")))
+.ROLE_REPS <- local({
+  r <- tryCatch(jsonlite::fromJSON(file.path(PROJ, "06_Registry/strategy_roles.json"), simplifyVector = FALSE)$entries, error = function(e) NULL)
+  if (is.null(r)) return(NULL)
+  r <- Filter(function(e) length(unlist(e$pool_rep_roles)) > 0L, r)
+  setNames(lapply(r, function(e) paste(unlist(e$pool_rep_roles), collapse = ";")), names(r))
+})
+if (identical(.POOL_MODE, "role") && !length(.ROLE_REPS))
+  stop("[build_module_performance] ★풀 모드 role 인데 역할 대표 0건 — strategy_roles.json 확인(rf_role_classify_all.R). 빈 풀로 진행하지 않는다.")
+.runid <- function(x) { m <- regmatches(x, regexpr("[0-9]{8}_[0-9]{6}_[0-9]+", x)); if (length(m)) m else NA_character_ }
+.role_of <- function(id, rec = NULL) {
+  if (!length(.ROLE_REPS)) return(NULL)
+  if (!is.null(.ROLE_REPS[[id]])) return(.ROLE_REPS[[id]])
+  k <- .runid(paste(id, rec$meta$artifacts_dir %||% "", rec$bt_result_path %||% ""))
+  if (!is.na(k) && !is.null(.ROLE_REPS[[k]])) return(.ROLE_REPS[[k]])
+  NULL
+}
+cat(sprintf("[build_module_performance] ★풀 모드 = %s%s
+", .POOL_MODE,
+            if (identical(.POOL_MODE, "role")) sprintf(" — 역할 대표 %d건(strategy_roles.json)", length(.ROLE_REPS)) else " — essence B+ floor ∥ 방어형"))
 .DEF_ROUTE <- l2_env_defensive_route()
 .DS_PARAMS <- ds_params(PROJ)
 .def_admitted <- 0L
@@ -178,6 +205,9 @@ if(!is.null(gac) && nrow(gac)) for(i in seq_len(nrow(gac))) {
     #   legacy 예외의 존재이유는 catalog 에 **없는** 구세대 QEPM 전략의 이관이므로 그 범위로 한정.
     if(!is.null(mc) && gac$strategy_id[i] %in% names(mc)) next
     sim_path <- .find_sim(gac$strategy_id[i])
+    ## ★레거시 목록의 id 는 접두(예: STR_1439)이고 실제 폴더는 STR_1439_1047_to_fix — 역할 대조는 폴더명으로도 한다
+    if (identical(.POOL_MODE, "role") && is.null(.role_of(gac$strategy_id[i])) &&
+        (is.na(sim_path) || is.null(.role_of(basename(dirname(sim_path)))))) { .tally("legacy_not_role_rep"); next }
     .verify_module_hash(gac$strategy_id[i], sim_path, NULL)   # legacy = hash 계약 부재 → hash_missing WARN만
     .add_eligible(gac$strategy_id[i], sim_path, gac$grade[i],
                   if("role" %in% names(gac)) gac$role[i] else NA, "qepm",
@@ -186,7 +216,17 @@ if(!is.null(gac) && nrow(gac)) for(i in seq_len(nrow(gac))) {
 }
 if(!is.null(mc)) for(id in names(mc)) {
   .attach(id, mc[[id]]$grade, mc[[id]]$role, mc[[id]]$origin_mode)
-  if(.is_fr_eligible(mc[[id]])) {
+  if(.is_fr_eligible(mc[[id]]) && identical(.POOL_MODE, "role")) {
+    .rl <- .role_of(id, mc[[id]])
+    if (is.null(.rl)) { .tally("not_role_rep"); .floor_excluded <- .floor_excluded + 1L; next }
+    .eg <- l2_essence_grade(mc[[id]])
+    .a <- list(eligible = TRUE, route = "role_rep", code = "role_rep", reason = sprintf("역할 대표(%s) · essence %s", .rl, .eg$grade %||% "NA"),
+               grade_used = .eg$grade, grade_source = .eg$source, grade_emit = as.character(mc[[id]]$grade %||% NA))
+    .tally("role_rep"); assign(id, .a, envir = .adm_meta)
+    sim_path <- file.path(PROJ, mc[[id]]$sim_result_path)
+    if(!.verify_module_hash(id, sim_path, mc[[id]]$module_hash)) next
+    .add_eligible(id, sim_path, .a$grade_used %||% mc[[id]]$grade, .rl, mc[[id]]$origin_mode, "contract_fr_eligible", adm = .a)
+  } else if(.is_fr_eligible(mc[[id]])) {
     ## ★등급 floor 미달이어도 **방어형**이면 편입한다 (도훈 2026-09-04).
     ##   판정 = 계약 함수 ds_pool_eligible (l2_admit 경유). 경로·사유를 산출물에 남긴다.
     .a <- l2_admit(mc[[id]], floor = .L2_FLOOR, defensive_route = .DEF_ROUTE,
@@ -336,6 +376,6 @@ cat(sprintf("module_performance.json written: %d modules (%s · v10 grade floor 
             if (identical(Sys.getenv("QVEST_FR_ALLOW_BROAD_SCAN", "0"), "1")) "광역 진단모드" else "FR allowlist"))
 gtab <- sort(table(vapply(out, function(x) as.character(x$grade %||% "ungraded"), character(1))), decreasing=TRUE)
 cat("grade 분포:", paste(names(gtab), gtab, sep="=", collapse=" "), "\n")
-cat(sprintf("편입 경로: grade_floor=%d · defensive_specialist=%d · legacy_qepm=%d\n",
-            .route_n("grade_floor"), .route_n("defensive_specialist"),
-            kept - .route_n("grade_floor") - .route_n("defensive_specialist")))
+cat(sprintf("편입 경로(풀 모드 %s): role_rep=%d · grade_floor=%d · defensive_specialist=%d · legacy_qepm=%d\n", .POOL_MODE,
+            .route_n("role_rep"), .route_n("grade_floor"), .route_n("defensive_specialist"),
+            kept - .route_n("role_rep") - .route_n("grade_floor") - .route_n("defensive_specialist")))

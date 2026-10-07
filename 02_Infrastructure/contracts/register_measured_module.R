@@ -140,6 +140,7 @@ rmm_gate_note <- function(adm) {
                    .rmm_fmt(100 * .rmm_n1(adm$down_excess), "%+.2f"),
                    .rmm_fmt(adm$down_t, "%.2f"),
                    .rmm_fmt(100 * .rmm_n1(adm$deep_excess), "%+.2f")))
+  if (identical(.rmm_c1(adm$route), "role_rep")) return(.rmm_c1(adm$reason, "역할 대표 등재"))
   sprintf("등급 %s — 등급 floor 통과 등재", .rmm_c1(adm$grade, "NA"))
 }
 
@@ -245,14 +246,16 @@ rmm_register_measured <- function(out_dir, sim_result = NULL, auth = NULL,
   adm <- rmm_admission(auth, floor = floor, defensive_route = TRUE)
   ## ①' 역할 대표 경로(도훈 2026-10-06 — 2계층 풀 = 역할별 대표). 호출자 진술이 아니라 **레지스트리를 다시 읽어** 확인한다:
   ##    06_Registry/strategy_roles.json entries[role_rep_id]$pool_rep_roles 가 비어 있지 않을 때만. 계약 floor ②③ 는 그대로 거친다.
-  if (!isTRUE(adm$eligible) && !is.null(role_rep_id)) {
+  if (!is.null(role_rep_id)) {
     rr <- tryCatch(fromJSON(file.path(.rmm_root(), "06_Registry/strategy_roles.json"), simplifyVector = FALSE)$entries[[as.character(role_rep_id)[1]]],
                    error = function(e) NULL)
     roles <- unlist(.rmm_get(rr, "pool_rep_roles"))
     if (length(roles)) {
-      adm$eligible <- TRUE; adm$route <- "role_rep"; adm$code <- "role_rep"
-      adm$reason <- sprintf("역할 대표(%s) — strategy_roles.json · essence %s", paste(roles, collapse = ","), .rmm_c1(adm$grade, "NA"))
-      meta$role_pool_rep <- as.list(roles)
+      meta$role_pool_rep <- as.list(roles)              # 기존 경로(등급 floor·방어형)로 자격이 있어도 역할 대표 사실은 남긴다
+      if (!isTRUE(adm$eligible)) {
+        adm$eligible <- TRUE; adm$route <- "role_rep"; adm$code <- "role_rep"
+        adm$reason <- sprintf("역할 대표(%s) — strategy_roles.json · essence %s", paste(roles, collapse = ","), .rmm_c1(adm$grade, "NA"))
+      }
     }
   }
   if (!isTRUE(adm$eligible))
