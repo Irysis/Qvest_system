@@ -35,11 +35,6 @@
       "depends_on": [],
       "tier": 1,
       "value_checks": {
-        "abs_ret_max": {
-          "col": "BM_Ret",
-          "threshold": 0.15,
-          "max_violations": 0
-        },
         "required_cols": [
           "Date",
           "Ticker",
@@ -56,14 +51,6 @@
           "Vol",
           "Size"
         ],
-        "parity": {
-          "against": ".cache/benchmark.parquet",
-          "col": "BM_Ret",
-          "against_col": "BM_Ret",
-          "min_monthly_cor": 0.99,
-          "from": "1999-01-01",
-          "_from_note": "2026-10-08 도훈 결정 DATA-SAT-CLOSE — 1990~98 토요장 이슈 종결(복원 안 함). 그 구간은 RAWDATA 월요일 BM_Ret(토→월)과 벤치(금→월)의 정의가 달라 전 구간 상관 0.9798 → 매일 CRITICAL. 1999~ 상관 1.000000. 연구 창 2005~ 무영향."
-        },
         "fill_rate": {
           "cols": ["Size", "BM_Ret"],
           "max_na_rate": 0.05,
@@ -71,7 +58,7 @@
         }
       },
       "_fill_note": "2026-09-23 W-02(도훈 승인 처방 §3): 채움률 축. 신선도(max Date)와 parity/abs_ret(결측을 먼저 지우고 잰다)는 값이 비어도 초록이었다 — Size 09-10~22 100% 결측·BM_Ret 09-07~ 100% 결측이 전부 FRESH/VALUE_PASS 였다. 판정 = 최근 n_dates 거래일의 열별 결측률(!is.finite) > max_na_rate 이면 VALUE_FAIL. max_na_rate 0.05 근거: 정상 구간 실측 Size 결측률 quantiwise 구간 0% · naver 정상일(08-31~09-04) 0.20~0.76%, 사고일 95.66%/100% — 두 모집단 사이 빈 골짜기에 놓은 값(정상 상한의 약 6.6배, 사고 하한의 1/19). 소비자 3 = cache_freshness_audit.R(1b f) · daily_refresh.sh [1] 말미(rawdata_fill_guard.R CLI → DR_FAILED rawdata_size_na) · naver_data_collector.R .naver_size_anchor_date(복원 앵커 선택). 검사 = 08_Tests/data/test_rawdata_size_guard.R",
-      "_value_note": "2026-07-03 감사 DATA-P0-1: BM_Ret +581% 손상값이 신선도-단일축에서 FRESH 판정 → 7월 factor DB 60팩터(M08_Residual_Mom 포함) 결손. threshold 0.15 근거 = 1990~2026 실측 max |BM_Ret| 0.1223 (지수 일수익). required_cols = Layer2 strip 사고(rawdata_sanitize core_cols) 재발 방지"
+      "_value_note": "★2026-10-08 도훈 지시: 벤치 값 검사(abs_ret_max |BM_Ret|>0.15 · RAWDATA↔benchmark parity) 삭제 — 벤치는 최신화(lag·최근일 채움률)만 본다. 계기: 2026-07-31 BM_Ret +19.98%(실제 시장 사건)가 매일 CRITICAL. 아래는 구판 사료. 2026-07-03 감사 DATA-P0-1: BM_Ret +581% 손상값이 신선도-단일축에서 FRESH 판정 → 7월 factor DB 60팩터(M08_Residual_Mom 포함) 결손. threshold 0.15 근거 = 1990~2026 실측 max |BM_Ret| 0.1223 (지수 일수익). required_cols = Layer2 strip 사고(rawdata_sanitize core_cols) 재발 방지"
     },
     {
       "path": ".cache/benchmark.parquet",
@@ -83,11 +70,6 @@
       "depends_on": [],
       "tier": 1,
       "value_checks": {
-        "abs_ret_max": {
-          "col": "BM_Ret",
-          "threshold": 0.15,
-          "max_violations": 0
-        },
         "dtype_checks": {
           "Date": "date32[day]"
         },
@@ -238,7 +220,8 @@
       "entry_fn": "dart_run_pipeline",
       "schedule": "monthly",
       "date_col": null,
-      "max_lag_days": 35,
+      "max_lag_days": null,
+      "_max_lag_note": "2026-10-08 도훈 지시(Cache Freshness Alert 해소): 35 → null. 연간 사업보고서 원시본은 새 보고서가 없으면 파일을 다시 쓰지 않는다(dart_run_pipeline '제출창 기준 수집 대상 연도 없음') — mtime 35일 문턱은 매년 6월~이듬해 3월 상시 CRITICAL 이었다(10-08 lag 74일 · 실제 커버리지 PASS). 내용 도달 = 아래 coverage_check(제출창·grace 45d) 단독 판정. 월간 실행 생존 = 매 실행 재저장되는 .cache/fundamental_dart.parquet(35일)이 감시.",
       "depends_on": [],
       "tier": 2,
       "coverage_check": {
