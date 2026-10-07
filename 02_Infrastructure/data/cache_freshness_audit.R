@@ -386,6 +386,13 @@ cache_freshness_audit <- function(telegram_alert = TRUE,
         viol <- c(viol, sprintf("parity: %s 또는 %s read 실패", c$path, pr$against))
       } else {
         m <- merge(d_self, d_ref, by = "Date", suffixes = c("_a", "_b"))
+        # 대조 창 시작(선택). 2026-10-08 도훈 결정 DATA-SAT-CLOSE: 1990~98 토요장 구간은
+        #   복원하지 않기로 종결 — 그 구간의 월요일 BM_Ret 정의 차이(토→월 vs 금→월)가
+        #   전 구간 상관을 0.98 로 끌어내려 매일 CRITICAL 을 냈다(1999~ 상관 1.000000).
+        if (!is.null(pr$from)) {
+          m <- m[Date >= as.Date(pr$from)]
+          vres$parity_from <- pr$from
+        }
         if (nrow(m) < 60L) {
           viol <- c(viol, sprintf("parity: 공통 날짜 %d건 (<60) — 대조 불가", nrow(m)))
         } else {
