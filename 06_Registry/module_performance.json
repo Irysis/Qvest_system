@@ -1,6 +1,6 @@
 {
   "schema_version": "v3.1",
-  "generated": "2026-10-08",
+  "generated": "2026-10-09",
   "generated_by": "2계층 전략 로테이션 (build_module_performance.R — 계약 floor + v10 grade floor)",
   "regime_source": "unified_regime_signal_daily.parquet Category — C11 가용일 결합(규약 b: 모듈 수익 창 시작까지 가용)",
   "regime_pit_c11": {
@@ -11,7 +11,7 @@
     "site": "build_module_performance",
     "mode": "window_start(b): 모듈 수익 창 시작(직전 행)",
     "extra_lag": 0,
-    "n_rows": 81,
+    "n_rows": 80,
     "n_aligned": null,
     "quarantine": "PITQ-C11-20260924",
     "verdict": "04_Research/01_reports/pit_c11_20260924/PIT_C11_verdict_20260924.md",
@@ -20,19 +20,19 @@
   "regimes": ["RISK_ON", "NEUTRAL", "CAUTION", "CRISIS", "RISK_OFF"],
   "metric_type": "backtested_realized (sim_result NAV, 실측-only)",
   "grade_floor": "B",
-  "n_floor_excluded": 693,
+  "n_floor_excluded": 694,
   "n_defensive_admitted": 0,
   "defensive_route": true,
   "admission_codes": {
     "contract_floor": 191,
     "legacy_not_role_rep": 27,
-    "not_role_rep": 693,
-    "role_rep": 74
+    "not_role_rep": 694,
+    "role_rep": 73
   },
   "admission_predicate": "02_Infrastructure/contracts/defensive_score.R::ds_pool_eligible (l2_pool_admission.R::l2_admit 경유)",
   "grade_axis": "essence_grade > meta.essence_grade > grade(발행 시점 폴백)",
   "note": "입력 2단 게이트(v10 2026-08-29 도훈): ①계약 floor = module_catalog fr_eligible=true(contract_pass+backtested+frozen+hash/build_version, legacy QEPM grade-A 이관 예외) ②grade floor = essence grade B 이상(QVEST_L2_GRADE_FLOOR, OFF=진단) ∥ 방어형 병렬 경로(QVEST_L2_DEFENSIVE_ROUTE). module_hash는 실제 md5 대조(불일치=skip+quarantine, CAP-P1-2). 배치 심사=RCMA. ★2026-09-07: 자격 술어를 계약(ds_pool_eligible)으로 단일화하고 등급 축을 essence 로 정정.",
-  "n_modules": 81,
+  "n_modules": 80,
   "modules": {
     "STR_943_oc_eps_chg": {
       "source_strategy_id": "STR_943_oc_eps_chg",
@@ -3385,67 +3385,6 @@
           "ir": null,
           "mdd": 0.032,
           "mean_ann": 1.4945
-        }
-      },
-      "per_regime_pit_c11": "avail_annotated"
-    },
-    "RP_20260902_205711_24564": {
-      "source_strategy_id": "RP_20260902_205711_24564",
-      "grade": "C",
-      "role": "diversifier",
-      "origin_mode": "replication",
-      "trust_status": "contract_fr_eligible",
-      "admission_route": "role_rep",
-      "admission_code": "role_rep",
-      "admission_reason": "역할 대표(diversifier) · essence C",
-      "grade_emit": "C",
-      "grade_source": "entry",
-      "freq": "daily",
-      "sim_result_path": "04_Research/strategies/RP_20260902_205711_24564/sim_result.rds",
-      "full_sharpe": 0.646,
-      "full_ir": 0.007,
-      "n_days": 4824,
-      "date_range": ["2007-02-05", "2026-09-01"],
-      "per_regime": {
-        "RISK_ON": {
-          "n_days": 3401,
-          "n_months": 162,
-          "sharpe": 0.689,
-          "ir": 0.63,
-          "mdd": 0.322,
-          "mean_ann": 0.1016
-        },
-        "NEUTRAL": {
-          "n_days": 614,
-          "n_months": 29.2,
-          "sharpe": 1.292,
-          "ir": -0.901,
-          "mdd": 0.263,
-          "mean_ann": 0.2408
-        },
-        "CAUTION": {
-          "n_days": 372,
-          "n_months": 17.7,
-          "sharpe": 0.244,
-          "ir": -0.414,
-          "mdd": 0.136,
-          "mean_ann": 0.054
-        },
-        "CRISIS": {
-          "n_days": 424,
-          "n_months": 20.2,
-          "sharpe": 0.478,
-          "ir": -0.863,
-          "mdd": 0.344,
-          "mean_ann": 0.178
-        },
-        "RISK_OFF": {
-          "n_days": 13,
-          "n_months": 0.6,
-          "sharpe": null,
-          "ir": null,
-          "mdd": 0.029,
-          "mean_ann": 0.0524
         }
       },
       "per_regime_pit_c11": "avail_annotated"
