@@ -32,7 +32,14 @@
 #   ④ 단일 창: 평가 창 = [max(포트 시작, 벤치 시작), min(RM 끝, 벤치 끝)] — 벤치를 포트 날짜 격자로 옮겨(같은 달 안에서만,
 #      뒤로 누적) SR·Calmar·CAGR·MDD·PORT_t·OOS 가 **같은 날짜 집합**을 쓴다(구판 = 성과 219월 · 벤치 병합 213월).
 #   ⑤ FR_REGISTER 기본 = 0(등재는 FR_REGISTER=1 명시 때만 — 사전등록 재측정 전 정본 덮어쓰기 방지).
-#   분해 대조 = FR_V4_ABLATE=<daily_grade,dispatch_kr_floor,dead_exclude,single_window|all> (진단 전용 — 등재·L-code 끔 · _v4ablate 태그).
+#   분해 대조 = FR_V4_ABLATE=<daily_grade,dispatch_kr_floor,dead_exclude,single_window,canonical_bench|all> (진단 전용 — 등재·L-code 끔 · _v4ablate 태그).
+#
+# ★v4r2 정본 벤치 + 격자 감사 HARD(2026-10-10 · 감사 2026-10-08 I7 · 설계 l2_role_rotation_redesign_20261010 §4-2):
+#   벤치 = .cache/benchmark.parquet BM_Ret(정본) — 1계층 하네스와 같은 규약(replication_harness.R:317 = 수익일과 **같은 날짜**의
+#   정본 BM_Ret). 구판(2026-06-05 '가장 긴 bm_xts')은 그 모듈의 날짜 라벨을 벤치에 그대로 들였다 — 실측 10-10: 원천 STR_943 의
+#   bm_xts 는 정본 대비 +1일(라벨 d = 정본 d+1 의 수익 · 상관 0.961 · 0일 상관 ≈0) · 레거시 QEPM 7개 전부 +1일. GRID_LAG 는 기록만 했다.
+#   격자 감사 = HARD(fail-closed): 풀 모듈 bm_xts 의 정본 대비 시차(−1/0/+1일 상관 최대)가 0 이 아니거나 판독 불가(NA)면 중단하고,
+#   일간 격자(한국 거래일)에 정본 벤치 관측이 옮겨져야 놓인다면(격자 불일치) 중단한다. 분해 대조 canonical_bench = 구판 재현.
 # =============================================================================
 suppressPackageStartupMessages({ library(data.table); library(arrow); library(jsonlite); library(xts); library(PerformanceAnalytics) })
 PROJ <- Sys.getenv("CLAUDE_PROJECT_DIR", Sys.getenv("QM_ROOT", "G:/Quant_Module_Moltbot")); setwd(PROJ)
@@ -61,7 +68,7 @@ FR_REGISTER <- identical(Sys.getenv("FR_REGISTER", "0"), "1")         # 1 = 레�
 FR_ARM_TAG  <- Sys.getenv("FR_ARM_TAG", "")                            # 진단 산출물 라벨
 # ★v4 분해 대조(진단 전용): 켜진 수리를 하나씩 끈 판을 같은 러너로 재 **구판·신판 차이를 항목별로 분해**한다.
 #   빈 값 = 수리 전부 켬(정본). 알 수 없는 토큰 = 중단(조용한 통과 금지). 끈 판은 등재·L-code 끔 + FR_ID 에 _v4ablate 표식.
-FR_V4_FIXES <- c("daily_grade", "dispatch_kr_floor", "dead_exclude", "single_window")
+FR_V4_FIXES <- c("daily_grade", "dispatch_kr_floor", "dead_exclude", "single_window", "canonical_bench")
 .v4_ab <- trimws(strsplit(Sys.getenv("FR_V4_ABLATE", ""), ",", fixed = TRUE)[[1]]); .v4_ab <- .v4_ab[nzchar(.v4_ab)]
 if (identical(.v4_ab, "all")) .v4_ab <- FR_V4_FIXES
 if (length(setdiff(.v4_ab, FR_V4_FIXES)))
@@ -71,8 +78,8 @@ FIX <- setNames(as.list(!(FR_V4_FIXES %in% .v4_ab)), FR_V4_FIXES)       # TRUE =
 FR_V4_ABLATED <- length(.v4_ab) > 0L
 if (FR_V4_ABLATED) {
   FR_REGISTER <- FALSE
-  ## 태그 = 끈 수리의 한 글자 코드(D 일간등급 · K 결정일 한국거래일 · X 사망모듈 · W 단일창) — 경로 길이(Windows 260자) 안.
-  .v4_code <- c(daily_grade = "D", dispatch_kr_floor = "K", dead_exclude = "X", single_window = "W")
+  ## 태그 = 끈 수리의 한 글자 코드(D 일간등급 · K 결정일 한국거래일 · X 사망모듈 · W 단일창 · B 정본 벤치) — 경로 길이(Windows 260자) 안.
+  .v4_code <- c(daily_grade = "D", dispatch_kr_floor = "K", dead_exclude = "X", single_window = "W", canonical_bench = "B")
   FR_ARM_TAG <- paste0(if (nzchar(FR_ARM_TAG)) paste0(FR_ARM_TAG, "_") else "", "v4ablate-", paste(sort(.v4_code[.v4_ab]), collapse = ""))
   cat(sprintf("[FR v4] ★분해 대조(진단 전용) — 끈 수리: %s · 등재·L-code 끔 · FR_ARM_TAG=%s\n", paste(sort(.v4_ab), collapse = ","), FR_ARM_TAG))
 }
@@ -89,11 +96,16 @@ mod_ids <- names(MP$modules)
 # RCMA context (active 일간 시계열 1회 로드 — compute_rcma(asof)가 슬라이스). WF 멤버십 = PIT.
 RCMA_CTX <- tryCatch(.rcma_load(PROJ), error=function(e){ cat("[RCMA] load 실패:", conditionMessage(e), "\n"); NULL })
 rets <- list(); bmref <- NULL; bmref_src <- NA_character_; bmref_n <- 0L
-# ★v4 격자 감사(진단 · 판정 불개입): 일간 등급은 모듈 간 날짜 격자가 어긋나면(주말 라벨 모듈 — STR_944 계열) 월간보다 민감하다.
+# ★v4 격자 감사: 일간 등급은 모듈 간 날짜 격자가 어긋나면(주말 라벨 모듈 — STR_944 계열) 월간보다 민감하다.
 #   모듈 bm_xts 를 정본 벤치(.cache/benchmark.parquet BM_Ret)와 −1/0/+1일 시차로 상관 → 최대 시차 = 그 모듈 날짜 라벨의 어긋남.
-#   0 이 아닌 모듈이 쓰이면 경고·기록한다(수리는 모듈 rebase 소관 — P0-05/06 · FR-REMEASURE-PREREG 전제).
-.CANON_BM <- tryCatch({ x <- as.data.table(read_parquet(file.path(PROJ, ".cache/benchmark.parquet"), col_select = c("Date", "BM_Ret"), mmap = FALSE))
-  x[, Date := as.Date(Date)]; x[is.finite(BM_Ret)] }, error = function(e) NULL)
+#   ★v4r2(2026-10-10 · I7): 기록만 하던 감사를 **중단**으로 올렸다(아래 [FR bench ★격자]) — 분해 대조 canonical_bench 만 구판(기록만).
+#   (bm_xts 를 쓰는 이유: 순수 벤치 계열이라 맞는 시차에서 상관 ≈1 · 틀린 시차 ≈0 으로 갈린다. 수익 계열 상관은 음(−)베타
+#    모듈(방어형 · 실측 RP_20260902_122546_22268 0일 −0.38)에서 부호 argmax 가 틀린 시차를 고른다.)
+.CANON_BM_PATH <- file.path(PROJ, ".cache/benchmark.parquet")
+.CANON_BM <- tryCatch({ x <- as.data.table(read_parquet(.CANON_BM_PATH, col_select = c("Date", "BM_Ret"), mmap = FALSE))
+  x[, Date := as.Date(Date)]; x <- x[is.finite(BM_Ret)]; setorder(x, Date); x }, error = function(e) NULL)
+if (isTRUE(FIX$canonical_bench) && (is.null(.CANON_BM) || !nrow(.CANON_BM) || anyDuplicated(.CANON_BM$Date)))
+  stop(sprintf("[FR bench] 정본 벤치 %s 판독 불가·빈 파일·중복 날짜 — 모듈 bm_xts 로 대체하지 않는다(fail-closed · 감사 I7)", .CANON_BM_PATH))
 .grid_lag <- function(bx) {
   if (is.null(.CANON_BM) || is.null(bx) || !NROW(bx)) return(NA_integer_)
   b <- data.table(Date = as.Date(index(bx)), v = as.numeric(bx[, 1]))[is.finite(v) & v != 0]
@@ -108,14 +120,33 @@ for(sid in mod_ids){
   d <- as.data.table(s$DAILY_NAV_DT)[, .(Date=as.Date(Date), r=Strategy_Ret)]
   rets[[sid]] <- d
   GRID_LAG[[sid]] <- tryCatch(.grid_lag(s$bm_xts), error = function(e) NA_integer_)
-  # ★ FIX (benchmark 절단 방지, 2026-06-05): 모든 모듈의 bm_xts = 동일 KOSPI200 지수(span만 상이).
+  # (구판 · 분해 대조 canonical_bench 전용) ★ FIX (benchmark 절단 방지, 2026-06-05): 모든 모듈의 bm_xts = 동일 KOSPI200 지수(span만 상이).
   #   "첫 모듈" 휴리스틱은 단기 bm(2016~)을 잡아 FR 평가를 60개월로 silent 절단 → *가장 긴* bm_xts 채택.
-  if(!is.null(s$bm_xts) && nrow(s$bm_xts) > bmref_n){
+  #   ★v4r2: 이 경로는 그 모듈의 날짜 라벨까지 벤치로 들였다(I7) — 정본 경로는 아래에서 .CANON_BM 을 쓴다.
+  if(!isTRUE(FIX$canonical_bench) && !is.null(s$bm_xts) && nrow(s$bm_xts) > bmref_n){
     bmref <- data.table(Date=as.Date(index(s$bm_xts)), bm=as.numeric(s$bm_xts[,1]))
     bmref_n <- nrow(s$bm_xts); bmref_src <- sid }
 }
 mod_ids <- names(rets)
-if(!is.null(bmref)) cat(sprintf("[bm] benchmark source=%s (longest bm_xts) span %s..%s n=%d\n",
+if (isTRUE(FIX$canonical_bench)) {
+  ## ★v4r2 정본 벤치: 1계층 하네스 규약 그대로 — 수익일 d 의 벤치 = 정본 BM_Ret(d). 일간 격자 배치는 §5 (.to_grid · 이동 0 이어야 한다).
+  bmref <- .CANON_BM[, .(Date, bm = BM_Ret)]
+  bmref_n <- nrow(bmref); bmref_src <- "canonical:.cache/benchmark.parquet"
+  ## ★격자 감사 HARD(fail-closed): 풀의 모든 모듈이 정본 격자(시차 0)여야 한다. 판독 불가(bm_xts 없음·상수·겹침 부족 = NA)도 중단 —
+  ##   확인하지 못한 정렬은 정렬이 아니다. 시차 +1 = 라벨 d 가 정본 d+1 의 수익(레거시 QEPM 7개 실측) → 일간 결합·등급이 하루 밀린다.
+  .gl_pool <- GRID_LAG[mod_ids]; names(.gl_pool) <- mod_ids
+  .gl_bad <- mod_ids[is.na(.gl_pool) | .gl_pool != 0L]
+  if (length(.gl_bad))
+    stop(sprintf(paste0("[FR bench ★격자] 풀 모듈 %d/%d개의 날짜 라벨이 정본 벤치 격자와 어긋나거나 확인 불가 — %s%s ",
+                        "(시차 = 모듈 bm_xts 의 정본 BM_Ret 대비 −1/0/+1일 상관 최대 · NA = bm_xts 없음/상수/겹침 부족). ",
+                        "수리 = 풀을 close_t1 단일 규약으로 재조립(build_module_performance.R) · 구판 재현(진단) = FR_V4_ABLATE=canonical_bench"),
+                 length(.gl_bad), length(mod_ids),
+                 paste(sprintf("%s(%s)", head(.gl_bad, 10L), ifelse(is.na(.gl_pool[head(.gl_bad, 10L)]), "NA",
+                                                                     sprintf("%+d일", .gl_pool[head(.gl_bad, 10L)]))), collapse = ", "),
+                 if (length(.gl_bad) > 10L) sprintf(" 외 %d개", length(.gl_bad) - 10L) else ""))
+  cat(sprintf("[bm] benchmark source=%s (정본 · 1계층 하네스 규약 = 같은 날짜 BM_Ret) span %s..%s n=%d · 격자 감사 HARD 통과(풀 모듈 %d개 시차 0)\n",
+              bmref_src, as.character(min(bmref$Date)), as.character(max(bmref$Date)), bmref_n, length(mod_ids)))
+} else if(!is.null(bmref)) cat(sprintf("[bm] ★분해 대조(canonical_bench 끔) benchmark source=%s (longest bm_xts — 구판 · I7 결함 재현) span %s..%s n=%d\n",
   bmref_src, as.character(min(bmref$Date)), as.character(max(bmref$Date)), bmref_n))
 if(is.null(bmref)) stop("benchmark 부재")
 # ★v4 ③ 모듈 데이터 종료일 = 0 이 아닌 유한 수익이 기록된 마지막 날 — 이 날 뒤로는 그 모듈의 수익이 없다
@@ -553,6 +584,11 @@ if (isTRUE(FIX$single_window)) {
   .b <- bmref[Date >= EVAL_START & Date <= EVAL_END & is.finite(bm)]
   .bg <- .to_grid(.b$Date, .b$bm, port_eval$Date)
   N_BENCH_UNPLACED <- .bg$n_dropped; n_moved <- .bg$n_moved_fwd + .bg$n_moved_back
+  ## ★v4r2 격자 불일치 = 중단: 정본 벤치는 한국 거래일 위의 계열이라 일간 격자(한국 거래일)에 **제 날짜 그대로** 놓여야 한다.
+  ##   한 관측이라도 다른 날로 옮겨져야 놓인다면 달력·벤치 판본이 어긋난 것 — 옮겨 누적하면 그 날 포트 수익과 다른 날 벤치를 짝짓는다.
+  if (isTRUE(FIX$canonical_bench) && isTRUE(FIX$daily_grade) && n_moved > 0L)
+    stop(sprintf("[FR bench ★격자] 정본 벤치 %d관측이 한국 거래일 격자에 제 날짜로 놓이지 않는다(앞으로 %d · 뒤로 %d 이동 필요) — trading_calendar·benchmark 판본 점검",
+                 n_moved, .bg$n_moved_fwd, .bg$n_moved_back))
   bm_eval <- merge(data.table(Date = port_eval$Date), setnames(copy(.bg$dt), "r", "bm"), by = "Date", all.x = TRUE); setorder(bm_eval, Date)
   N_PORT_DAYS_NO_BENCH <- sum(is.na(bm_eval$bm)); bm_eval[is.na(bm), bm := 0]
   ## 0 채움은 벤치 기간 **안**의 세션 없는 날만 — 벤치가 끝난 뒤 날짜를 0 으로 지어내면 PORT_t·OOS 창이 다시 갈린다.
@@ -617,7 +653,7 @@ OUT_JSON <- paste0(FR_ID, "_result.json"); OUT_RDS <- paste0(FR_ID, "_bt_result.
 GRADE_FREQ <- if (isTRUE(FIX$daily_grade)) "daily" else "monthly"
 DIAG_FREQ  <- if (GRADE_FREQ == "daily") "monthly" else "daily"
 OUT_RDS_DIAG <- paste0(FR_ID, "_bt_result_", DIAG_FREQ, "_diag.rds")
-FR_CODE_VERSION <- paste0("run_wf_ensemble_v4r1_dailygrade_singlewindow_deadasof_krfloor",
+FR_CODE_VERSION <- paste0("run_wf_ensemble_v4r2_dailygrade_singlewindow_deadasof_krfloor_canonbench",
                           if (FR_V4_ABLATED) paste0("+ablate:", paste(sort(.v4_ab), collapse = ",")) else "")
 spec <- list(strategy_name=paste0(FR_ID, if(REGIME_SOURCE=="forecast") "_fc_proactive_rotation" else "_regime_rotation"),
              signal="regime-conditional module rotation",
@@ -629,7 +665,8 @@ spec <- list(strategy_name=paste0(FR_ID, if(REGIME_SOURCE=="forecast") "_fc_proa
                                          if (isTRUE(FIX$dispatch_kr_floor) && !C11_LEGACY_RUN) " (dispatch decision floored to KR trading day)" else "",
                                          "; module frozen; IS-only weights; walk-forward RCMA admission (compute_rcma asof=prior month-end, annual refit); Return.portfolio (no self-synthesis)",
                                          if (isTRUE(FIX$dead_exclude)) "; dead modules excluded only if ended before the decision close (as-of), mid-month deaths re-weighted at observation-day close" else "",
-                                         if (isTRUE(FIX$single_window)) "; single evaluation window (bench on portfolio date grid)" else ""))
+                                         if (isTRUE(FIX$single_window)) "; single evaluation window (bench on portfolio date grid)" else "",
+                                         if (isTRUE(FIX$canonical_bench)) "; benchmark = canonical .cache/benchmark.parquet BM_Ret on the return date (L1 harness convention), module date-grid lag 0 enforced (fail-closed)" else ""))
 .bt_args <- list(spec, run_id=FR_ID, strategy_id=FR_ID, strategy_version="v2",
         benchmark_id="KOSPI200", benchmark_name="KOSPI 200", transaction_cost_bps=15, slippage_bps=0,
         risk_free_rate=0, universe_id="KR_modules",
@@ -706,14 +743,18 @@ dir.create(file.path(PROJ,"04_Research/factor_rotation/output"), showWarnings=FA
 # ★ A/B 출력 게이트: forecast 변형·대조 arm 은 별도 파일·등재 생략(baseline 보존). FR_ID/OUT_* 는 위에서 확정.
 N_MONTHS_WIN <- uniqueN(format(MM$date, "%Y%m"))
 .gl_used <- GRID_LAG[intersect(all_used_mods, names(GRID_LAG))]
-.bm_lag <- if (!is.na(bmref_src) && bmref_src %in% names(GRID_LAG)) GRID_LAG[[bmref_src]] else NA_integer_
-GRID_AUDIT <- list(method = "모듈 bm_xts vs .cache/benchmark.parquet BM_Ret 상관 최대 시차(−1/0/+1일) — 진단(판정 불개입)",
+## 정본 벤치 = 정의상 시차 0(정본 자신) · 분해 대조(구판) = 최장 bm_xts 모듈의 시차
+.bm_lag <- if (isTRUE(FIX$canonical_bench)) 0L else if (!is.na(bmref_src) && bmref_src %in% names(GRID_LAG)) GRID_LAG[[bmref_src]] else NA_integer_
+GRID_AUDIT <- list(method = if (isTRUE(FIX$canonical_bench))
+                     "모듈 bm_xts vs .cache/benchmark.parquet BM_Ret 상관 최대 시차(−1/0/+1일) — HARD(풀 모듈 시차 ≠0·NA = 중단 · v4r2 I7) · 벤치 = 정본(같은 날짜 BM_Ret)"
+                   else "모듈 bm_xts vs .cache/benchmark.parquet BM_Ret 상관 최대 시차(−1/0/+1일) — ★분해 대조(canonical_bench 끔): 진단 기록만 · 벤치 = 최장 bm_xts(구판)",
+                   enforced = isTRUE(FIX$canonical_bench),
                    canonical_available = !is.null(.CANON_BM), bmref_module = bmref_src, bmref_lag = .bm_lag,
                    used_lag_counts = list(minus1 = sum(.gl_used == -1L, na.rm = TRUE), zero = sum(.gl_used == 0L, na.rm = TRUE),
                                           plus1 = sum(.gl_used == 1L, na.rm = TRUE), na = sum(is.na(.gl_used))),
                    misaligned_used = as.list(names(.gl_used)[!is.na(.gl_used) & .gl_used != 0L]))
 if (length(GRID_AUDIT$misaligned_used) || (!is.na(.bm_lag) && .bm_lag != 0L))
-  cat(sprintf("[v4 격자] ★일간 등급 해석 주의 — 쓰인 모듈 %d개 · 벤치 원천(%s) 시차 %s 가 정본 벤치 날짜와 어긋난다(모듈 rebase P0-05/06 선행 전제 · 기록만)\n",
+  cat(sprintf("[v4 격자] ★일간 등급 해석 주의 — 쓰인 모듈 %d개 · 벤치 원천(%s) 시차 %s 가 정본 벤치 날짜와 어긋난다(분해 대조 canonical_bench 끔 = 구판 재현 · 기록만)\n",
               length(GRID_AUDIT$misaligned_used), bmref_src, as.character(.bm_lag)))
 .es_pick <- function(e) { x <- e$essence %||% list()
   list(net_sharpe = x$net_sharpe %||% NA_real_, portfolio_alpha_t_nw_lag3 = x$portfolio_alpha_t_nw_lag3 %||% NA_real_,

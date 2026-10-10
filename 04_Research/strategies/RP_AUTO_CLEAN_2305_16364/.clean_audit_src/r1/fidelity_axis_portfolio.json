@@ -1,0 +1,24 @@
+{
+  "axis": "portfolio",
+  "verdict": "misdeclared",
+
+  "undeclared_changes": [
+    "[종목선택 softmax 2단을 1단으로 축약] 논문 §4.3 은 attention softmax(식 9)로 A_{p,k} 를 만든 뒤 임계 통과분에 softmax 를 한 번 더 걸어 비중을 낸다(식 10, 2단). engine.R:392 은 식 9 의 softmax 가 없고 LeakyReLU 출력 ZP(로짓)에 softmax 를 단 1회만 건다 — FIDELITY.changed 에 이 축약이 없고, paper_steps '자동 종목선택' note 는 반대로 '입력 이어붙이기·단층·LeakyReLU·생존 종목 softmax 는 논문대로'라고 적어 임계(γ_p)만 바뀐 것으로 신고한다.",
+    "[비중 상한 θ 가 산출 비중에 미적용] 논문 §3 Definition 1 은 제약집합 C 에 0 ≤ w_jt ≤ u 를 둔다. engine.R:397 의 페널티는 지평별 Wt 에만 걸리고, 실제 산출 비중은 engine.R:531 에서 상위 25 부분합으로 재정규화(wv/sum(wv))되어 페널티가 본 적 없는 벡터다 — changed (6)(12)는 '하드 캡 미적용'·'재정규화'를 각각 적지만, 두 단계가 겹쳐 채점 대상과 보유 대상이 분리되는 사실은 신고에 없다."
+  ],
+
+  "signal_mismatch": [
+    "[survivor softmax 입력이 확률 아닌 로짓] 논문 식 (10) W_k^t = softmax(1_{≥γ_p}(A_{p,k}^t)) 의 입력 A_{p,k} 는 식 (9) softmax 출력이라 원소가 (0,1] 확률이다(γ_p ∈ (0,1] 라는 정의역이 이를 확증한다) → 생존 종목 간 비중비는 exp(A_i − A_j) ≤ e ≈ 2.72 로 묶여 사실상 등가중이다. engine.R:374·392 의 입력 z = ZP 는 E_CLIP ±20 으로만 묶인 활성값이라 비중비가 최대 exp(40) 까지 열린다 — 같은 식의 같은 자리에 유계 확률 대신 무계 로짓이 들어간다.",
+    "[논문 n̄ 과 실현 종목수 4배 차이] 논문 §5 Table 1 의 E2E_auto n̄ = 95(CSI1000)/129(CSI500)/103(CSI300) 은 γ_p 임계가 결정하는 **가변** 보유수(논문이 'automatic stock selection' 이라 부르는 것)인데, engine.R:34·380·525 의 N_AXIS = 25 는 매월 고정 상위 25 절단이다. 보유수 자체는 changed (13) 에 정직히 선언됐으나, 보유수가 모형 산출이 아니라 상수로 바뀐 것(= 논문 기여 축의 제거)은 '임계 미명시를 축으로 치환' 한 줄 뒤에 가려진다."
+  ],
+
+  "counterexample": "어떤 신호월의 종목선택 활성 z(= engine.R:370 의 ZP 한 열)가 유니버스 n = 350 에서 상위 3종 (3.0, 2.0, 1.0) · 나머지 347종 0 인 경우. ①구현(engine.R:392-394): w ∝ exp(z) → (20.09, 7.39, 2.72, 1.0×22)/52.2 → 1위 38.5% · 2위 14.2% · 나머지 1.9%. ②논문(식 9→10): A = softmax(z) over 350 = (0.0533, 0.0196, 0.0072, 0.00265×347) → 생존 25종에 softmax → (1.0547, 1.0198, 1.0072, 1.00265×22)/25.14 → 1위 4.20% · 나머지 3.99%(최대/최소 1.05배 = 등가중). 즉 같은 활성에서 1위 비중이 38.5% 대 4.20% 로 9배 갈린다. 활성이 E_CLIP 에 닿는 극단(z 1위 = 20, 나머지 0)에서는 구현이 1종에 ~100%(e^20/(e^20+24))를 싣고 PORTFOLIO 행은 25개를 유지하는 반면, 논문 식 (10) 은 e/(e+24) = 10.2% 가 수학적 상한이다. 일반형: 생존 m 종일 때 논문 상한 = e/(e+m−1), 구현 상한 = 1. (측정 산출물이 비공개여서 holdings 대조 대신 코드 경로로 구성했다 — note 참조)",
+
+  "evidence": "§3 Definition 1(제약 Σ_{j=1}^{n} w_jt = 1 · 0 ≤ w_jt ≤ u, 0 < u ≤ 1 → long-only) · §4.3 'Learn a Deep Portfolio with Automatic Stock Selection' 식 (9) A_{p,k}^t = softmax(LeakyReLU(W_{a,k}^T(C_t || (f_k^t ∘ d_{f,k})))) 와 식 (10) W_k^t = softmax(1_{≥γ_p}(A_{p,k}^t)) · γ_p ∈ (0,1] 및 'If the attention weight of a stock does not satisfy this requirement, then it would not be considered in the portfolio' · §2 Portfolio construction 'we use a soft allocation strategy to simultaneously select attractive stocks and assign them an appropriate weight' · §4.4 L_up 의 θ = 0.10 · §5 Table 1 n̄ 행(고정 n 베이스라인 100/50/30 · S-Best 319/433/272 · E2E_auto 95/129/103) · §5 'dividing stocks into K groups w.r.t of factor exposures and constructing an equally weighted portfolio based on the group with the largest factor exposure ... a stratification of 10 groups'(= ad-hoc 베이스라인 경로)",
+
+  "confidence": "high",
+
+  "checked": "롱온리 여부(§3 Def.1 0≤w + 식 10 softmax ↔ engine.R:531 Leg=\"long\" · 숏 레그 0 — 일치) · Σw=1(§3 Def.1 ↔ engine.R:531 wv/sum(wv) — 일치) · 분위 절단(§5 10분위 등가중은 ad-hoc 베이스라인 전용이고 엔진은 E2E_auto 경로 구현 — 해당 없음) · 비중 방법(§2 soft allocation + 식 9·10 2단 softmax ↔ engine.R:392 단일 softmax — 불일치) · 비중 상한(§3 Def.1 하드 제약 / §4.4 θ=0.10 페널티 ↔ engine.R:397 페널티만 + :531 재정규화 — 불일치) · 종목수(Table 1 n̄ 가변 95~129 ↔ N_AXIS 25 고정 — 선언됨) · 2층 상위 N 절단의 종목수 곱셈 축소(engine.R:380 지평별 상위 25 → :525 평균의 상위 25): 5지평 top-25 합집합이 항상 ≥25종이고 그 전원이 exp(z)>0 이므로 평균 벡터의 양수 원소 ≥25 → 실현 보유 = 정확히 25종, 조용한 축소 없음을 확인",
+
+  "note": "청정 모드로 holdings 산출물이 없어 보유 종목수·레그·비중 분포는 engine.R:372-395(지평별 생존 마스크+softmax) → :520-531(지평 평균 → 상위 25 → 재정규화) 경로 추적으로 대조했다. 발견의 핵심은 '종목수'가 아니라 '비중 방법'이다 — 보유 25종은 선언됐지만, 비중을 만드는 softmax 의 입력이 논문의 확률(유계, 사실상 등가중)에서 로짓(무계, 집중 가능)으로 바뀐 것은 선언되지 않았고 note 는 '논문대로'라고 적는다. 축 밖 1줄: 논문 식 (9) 의 W_{a,k} ∈ R^{n×n}(종목수 차원) ↔ engine.R:364-366 의 공유 벡터 p 는 차원 해석이 다르다 — changed (14) 소관이므로 신호/구조 축에 넘긴다."
+}

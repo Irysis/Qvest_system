@@ -145,8 +145,18 @@ eligible_paths <- character()
   ))
   cand[file.exists(cand)][1] %||% NA_character_
 }
-.add_eligible <- function(id, sim_path, grade, role, origin, trust_status, adm = NULL) {
+.add_eligible <- function(id, sim_path, grade, role, origin, trust_status, adm = NULL, rec = NULL) {
   if(!nzchar(id) || is.na(sim_path) || !file.exists(sim_path)) return(invisible(FALSE))
+  ## ★집행 규약 단일화(2026-10-10): close_t1 계열이 없으면 풀에 넣지 않는다 — 사유를 남긴다(진단 스위치만 등재 sim 으로 포함).
+  ser <- tryCatch(.l2_series(id, rec, sim_path),
+                  error = function(e) list(ok = FALSE, code = "no_close_t1:resolve_error", reason = conditionMessage(e), dir = NA_character_, exec = NA_character_))
+  if (!isTRUE(ser$ok)) {
+    .ct1_exclude(id, ser, trust_status)
+    if (!.INCLUDE_NON_CT1) return(invisible(FALSE))
+    ser <- list(ok = TRUE, source = paste0("registered_sim_non_close_t1:", ser$code %||% "unknown"), path = sim_path,
+                dir = ser$dir %||% NA_character_, exec = ser$exec %||% NA_character_, grade = NA_character_, materialized = FALSE)
+  }
+  assign(.nrm(sim_path), ser, envir = series_lut)
   meta <- list(grade=grade %||% NA, role=role %||% NA, origin=origin %||% NA,
                trust_status=trust_status %||% "unknown",
                ## ★편입 경로를 산출물에 남긴다 — SKILL §3 이 약속한 라벨인데 구판은
@@ -193,6 +203,129 @@ HASH_QUARANTINE_LOG <- file.path(PROJ, "06_Registry/module_hash_quarantine.log")
   root <- normalizePath(PROJ, winslash="/", mustWork=FALSE)
   sub(paste0("^", gsub("([][{}()+*^$.|?\\\\-])", "\\\\\\1", root), "/?"), "", p)
 }
+## ── ★집행 규약 단일화 (2026-10-10 · 감사 2026-10-08 P3/I3 · 설계 l2_role_rotation_redesign_20261010 §4-1) ───────────
+##   풀은 **한 집행 규약**의 계열만 담는다 = close_t1(익일 종가 체결 · 원장 current_axis exec_v2_close_t1 · 결정 EXEC-PRICE).
+##   구판은 등재 시점 sim_result.rds 를 그대로 읽어 close_d(구 체결) 판과 close_t1 판이 한 풀에 섞였다(실측 10-10 풀 80:
+##   close_t1 계약 CSV 재조립 38 · 신판 close_t1 4 · remeasure_close_t1_* 가 있는데 안 쓴 RP 23 · close_d 최상위만 RP 3 ·
+##   STR_AS 5 · 레거시 QEPM 7 — 레거시 7개는 날짜 라벨도 정본 대비 +1일).
+##   판독 = tilt_attribution.R::ta_resolve_artifact · rf_diversification_gate.R::.rfd_series_in_dir 와 같은 축:
+##     ① 산출물 디렉터리(카탈로그 meta.artifacts_dir ▸ bt_result_path 의 디렉터리 · 그 자체가 remeasure_close_t1_* 면 그 판)에
+##        remeasure_close_t1_* 가 하나면 그 판. 둘 이상 = 모호 → 제외(골라 쓰지 않는다).
+##     ② 없으면 디렉터리 자신의 집행 규약(authoritative_remeasure.json measurement_regime.exec_price ▸ 00_manifest.json
+##        cost_model_version 접미 first_hold_day_multiplicative)이 close_t1 일 때만(신판 = 원래 close_t1).
+##     ③ 그 밖(레거시 QEPM = 산출물 없음 · 2026-09-25 이전 측정 · 판독 불가) = 풀 제외 + 사유 코드(no_close_t1:*) 기록.
+##   판 무결성 = 등재기와 같은 계약 floor(auth status OK ∧ metric_type backtested · register_measured_module.R ②).
+##   소비 계열(sim_result_path): 등재 sim 이 바로 그 판의 계약 CSV 재조립(provenance.out_dir 일치)이거나 신판이면 등재 sim 그대로,
+##     아니면 그 판의 계약 CSV(03·05)를 **등재기와 같은 함수**(register_measured_module.R::rmm_sim_from_artifacts — 새 측정 없음)로
+##     04_Research/factor_rotation/l2_pool_series/<id>/sim_result.rds 에 내린다(원천 CSV md5 가 같으면 다시 쓰지 않는다 · 멱등).
+##     등재 sim 은 registered_sim_result_path 로 병기(frozen 해시 대조 대상은 그대로 등재 sim).
+##   진단 스위치 QVEST_L2_INCLUDE_NON_CLOSE_T1=1 = 제외분을 등재 sim 으로 포함(혼합 풀) — QVEST_L2_DRY_RUN=1 과 함께만(정본 덮기 금지).
+.INCLUDE_NON_CT1 <- identical(Sys.getenv("QVEST_L2_INCLUDE_NON_CLOSE_T1", "0"), "1")
+if (.INCLUDE_NON_CT1 && !identical(Sys.getenv("QVEST_L2_DRY_RUN", "0"), "1"))
+  stop("[build_module_performance] QVEST_L2_INCLUDE_NON_CLOSE_T1=1(혼합 규약 진단)은 QVEST_L2_DRY_RUN=1 과 함께만 — 정본 module_performance.json 을 혼합 풀로 덮지 않는다")
+.L2_SERIES_ROOT <- file.path(PROJ, "04_Research/factor_rotation/l2_pool_series")
+.nrm <- function(p) normalizePath(p, winslash = "/", mustWork = FALSE)
+.abs_in_proj <- function(p) {
+  p <- gsub("\\\\", "/", as.character(p %||% "")[1])
+  if (is.na(p) || !nzchar(p)) return(NA_character_)
+  if (grepl("^([A-Za-z]:)?/", p)) p else file.path(PROJ, p)
+}
+## 디렉터리 자신의 집행 규약 — 판정 규칙 = ta_resolve_artifact(auth measurement_regime ▸ manifest cost_model_version 접미)
+.exec_of_dir <- function(dir) {
+  au <- tryCatch(fromJSON(file.path(dir, "authoritative_remeasure.json"), simplifyVector = FALSE), error = function(e) NULL)
+  ep <- as.character(au$measurement_regime$exec_price %||% NA_character_)[1]
+  if (is.na(ep) || !nzchar(ep)) {
+    cmv <- tryCatch(as.character(fromJSON(file.path(dir, "00_manifest.json"))$cost_model_version %||% "")[1], error = function(e) "")
+    ep <- if (grepl("first_hold_day_multiplicative$", cmv)) "close_t1" else if (grepl("exec_day_additive$", cmv)) "close_d_legacy" else
+          if (!is.na(cmv) && nzchar(cmv)) paste0("unlabeled(", cmv, ")") else "unlabeled"
+  }
+  list(exec = ep, auth = au)
+}
+.auth_ok <- function(au) identical(as.character(au$status %||% NA)[1], "OK") && identical(as.character(au$metric_type %||% NA)[1], "backtested")
+.RMM_ISO <- NULL                     # 등재기(register_measured_module.R) 격리 적재 — 재조립이 필요할 때만(사본 금지 · `%||%` 비오염)
+.rmm_sim_fn <- function() {
+  if (is.null(.RMM_ISO)) { e <- new.env(parent = globalenv())
+    sys.source(file.path(PROJ, "02_Infrastructure/contracts/register_measured_module.R"), envir = e); .RMM_ISO <<- e }
+  get("rmm_sim_from_artifacts", envir = .RMM_ISO, inherits = FALSE)
+}
+.series_written <- 0L
+.materialize_series <- function(id, dir) {
+  src <- file.path(dir, c("03_period_returns.csv", "05_benchmark_returns.csv"))
+  md5 <- unname(as.character(tools::md5sum(src)))
+  out <- file.path(.L2_SERIES_ROOT, id, "sim_result.rds")
+  if (file.exists(out)) {
+    old <- tryCatch(as.character(readRDS(out)$provenance$src_md5), error = function(e) NULL)
+    if (identical(old, md5)) return(list(path = out, wrote = FALSE))
+  }
+  fb <- tryCatch(.rmm_sim_fn()(dir), error = function(e) list(sim = NULL, code = paste0("rmm_error(", conditionMessage(e), ")")))
+  if (is.null(fb$sim)) return(list(path = NA_character_, code = as.character(fb$code %||% "unknown")))
+  fb$sim$provenance$src_md5 <- md5
+  fb$sim$provenance$built_by <- "build_module_performance.R — 2계층 풀 close_t1 계열(등재기 rmm_sim_from_artifacts · 새 측정 없음)"
+  dir.create(dirname(out), recursive = TRUE, showWarnings = FALSE)
+  tmp <- paste0(out, ".tmp_", Sys.getpid())
+  saveRDS(fb$sim, tmp)
+  ok <- file.rename(tmp, out)
+  if (!ok) { unlink(out); ok <- file.rename(tmp, out) }
+  if (!ok) { unlink(tmp); return(list(path = NA_character_, code = "write_failed")) }
+  .series_written <<- .series_written + 1L
+  list(path = out, wrote = TRUE)
+}
+## 모듈 1건의 close_t1 계열. rec = 카탈로그 레코드(레거시 QEPM = NULL) · reg = 등재 sim 경로.
+##   반환 ok=TRUE: source(close_t1_remeasure | native_close_t1) · path(소비할 sim) · dir(판 디렉터리) · grade(그 판 essence 등급)
+##   반환 ok=FALSE: code(no_close_t1:* · close_t1_invalid:* · close_t1_ambiguous) · reason
+.l2_series <- function(id, rec, reg) {
+  no <- function(code, reason, dir = NA_character_, exec = NA_character_)
+    list(ok = FALSE, code = code, reason = reason, dir = dir, exec = exec)
+  ad <- .abs_in_proj(rec$meta$artifacts_dir %||% NA_character_)
+  if (is.na(ad) || !dir.exists(ad)) { bp <- .abs_in_proj(rec$bt_result_path %||% NA_character_); ad <- if (!is.na(bp)) dirname(bp) else NA_character_ }
+  if (is.na(ad) || !dir.exists(ad))
+    return(no(if (is.null(rec)) "no_close_t1:legacy_no_artifacts" else "no_close_t1:no_artifacts",
+              "산출물 디렉터리 없음(카탈로그 artifacts_dir·bt_result_path) — close_t1 판을 찾을 곳이 없다"))
+  ad <- .nrm(ad)
+  ct1 <- if (grepl("^remeasure_close_t1_", basename(ad))) ad else {
+    sib <- list.dirs(ad, recursive = FALSE, full.names = TRUE)
+    .nrm(sib[grepl("^remeasure_close_t1_", basename(sib))]) }
+  if (length(ct1) > 1L)
+    return(no("close_t1_ambiguous", sprintf("remeasure_close_t1_* 판 %d개(%s) — 골라 쓰지 않는다", length(ct1), paste(basename(ct1), collapse = ",")), ad, "close_t1"))
+  if (length(ct1) == 1L) {
+    if (!all(file.exists(file.path(ct1, c("03_period_returns.csv", "05_benchmark_returns.csv")))))
+      return(no("close_t1_invalid:no_contract_csv", "03_period_returns.csv·05_benchmark_returns.csv 부재", ct1, "close_t1"))
+    ex <- .exec_of_dir(ct1)
+    if (!identical(ex$exec, "close_t1"))
+      return(no(paste0("close_t1_invalid:exec=", ex$exec), "remeasure_close_t1_* 판의 auth·manifest 가 close_t1 이 아니라고 적는다 — 이름을 믿지 않는다", ct1, ex$exec))
+    if (!.auth_ok(ex$auth))
+      return(no("close_t1_invalid:auth", sprintf("auth status=%s · metric_type=%s — 계약 floor 미충족 판을 싣지 않는다",
+                                                as.character(ex$auth$status %||% "NA")[1], as.character(ex$auth$metric_type %||% "NA")[1]), ct1, "close_t1"))
+    g <- as.character(ex$auth$essence_grade %||% NA_character_)[1]
+    pv <- tryCatch(readRDS(reg)$provenance, error = function(e) NULL)
+    pod <- .abs_in_proj(pv$out_dir %||% NA_character_)
+    if (!is.null(pv) && identical(as.character(pv$built_from %||% "")[1], "contract_csv") && !is.na(pod) && identical(tolower(.nrm(pod)), tolower(ct1)))
+      return(list(ok = TRUE, source = "close_t1_remeasure", path = reg, dir = ct1, exec = "close_t1", grade = g, materialized = FALSE))
+    m <- .materialize_series(id, ct1)
+    if (is.na(m$path)) return(no(paste0("close_t1_invalid:series_", m$code), "계약 CSV → sim 재조립 실패(새 백테 금지 — 제외)", ct1, "close_t1"))
+    return(list(ok = TRUE, source = "close_t1_remeasure", path = m$path, dir = ct1, exec = "close_t1", grade = g, materialized = TRUE))
+  }
+  ex <- .exec_of_dir(ad)
+  if (identical(ex$exec, "close_t1")) {
+    if (!.auth_ok(ex$auth))
+      return(no("close_t1_invalid:auth", sprintf("신판 auth status=%s · metric_type=%s", as.character(ex$auth$status %||% "NA")[1],
+                                                as.character(ex$auth$metric_type %||% "NA")[1]), ad, "close_t1"))
+    return(list(ok = TRUE, source = "native_close_t1", path = reg, dir = ad, exec = "close_t1",
+                grade = as.character(ex$auth$essence_grade %||% NA_character_)[1], materialized = FALSE))
+  }
+  no(paste0("no_close_t1:", if (identical(ex$exec, "close_d_legacy")) "close_d_legacy" else "exec_unlabeled"),
+     sprintf("집행 규약 %s · remeasure_close_t1_* 판 없음(2026-09-25 close_t1 rebase 미포함)", ex$exec), ad, ex$exec)
+}
+series_lut <- new.env(parent = emptyenv())   # 등재 sim 경로(정규화) → 계열 판독 결과
+.ct1_excluded <- list()                         # 집행 규약 제외 — 모듈별 사유(산출물 execution_convention$excluded)
+.ct1_exclude <- function(id, ser, trust_status) {
+  .ct1_excluded[[length(.ct1_excluded) + 1L]] <<- list(id = id, code = ser$code %||% "unknown", reason = ser$reason %||% NA_character_,
+                                                     trust_status = trust_status %||% NA_character_,
+                                                     series_dir = if (is.na(ser$dir %||% NA)) NA_character_ else .rel_path(ser$dir),
+                                                     exec = ser$exec %||% NA_character_)
+  cat(sprintf("[build_module_performance] ★집행 규약 %s %s — %s · %s\n", if (.INCLUDE_NON_CT1) "혼합 포함(진단)" else "제외",
+              id, ser$code %||% "unknown", ser$reason %||% ""))
+}
 mc <- tryCatch(fromJSON(file.path(PROJ,"06_Registry/module_catalog.json"), simplifyVector=FALSE)$modules, error=function(e) NULL)
 gac <- tryCatch(as.data.table(fromJSON(file.path(PROJ,"04_Research/grade_a_catalog.json"))$strategies), error=function(e) NULL)
 if(!is.null(gac) && nrow(gac)) for(i in seq_len(nrow(gac))) {
@@ -225,7 +358,7 @@ if(!is.null(mc)) for(id in names(mc)) {
     .tally("role_rep"); assign(id, .a, envir = .adm_meta)
     sim_path <- file.path(PROJ, mc[[id]]$sim_result_path)
     if(!.verify_module_hash(id, sim_path, mc[[id]]$module_hash)) next
-    .add_eligible(id, sim_path, .a$grade_used %||% mc[[id]]$grade, .rl, mc[[id]]$origin_mode, "contract_fr_eligible", adm = .a)
+    .add_eligible(id, sim_path, .a$grade_used %||% mc[[id]]$grade, .rl, mc[[id]]$origin_mode, "contract_fr_eligible", adm = .a, rec = mc[[id]])
   } else if(.is_fr_eligible(mc[[id]])) {
     ## ★등급 floor 미달이어도 **방어형**이면 편입한다 (도훈 2026-09-04).
     ##   판정 = 계약 함수 ds_pool_eligible (l2_admit 경유). 경로·사유를 산출물에 남긴다.
@@ -241,7 +374,7 @@ if(!is.null(mc)) for(id in names(mc)) {
     ## grade = **편입 축의 등급**(essence). 발행 시점 값은 grade_emit 으로 병기한다 —
     ##   floor 가 essence 를 보는데 산출물이 emit 등급을 실으면 하류가 다른 축을 읽는다.
     .add_eligible(id, sim_path, .a$grade_used %||% mc[[id]]$grade,
-                  mc[[id]]$role, mc[[id]]$origin_mode, "contract_fr_eligible", adm = .a)
+                  mc[[id]]$role, mc[[id]]$origin_mode, "contract_fr_eligible", adm = .a, rec = mc[[id]])
   } else .tally("contract_floor")
 }
 if (.DEF_ROUTE)
