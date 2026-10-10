@@ -1,0 +1,20 @@
+{
+  "run_id": "20261010_190943_33628",
+  "strategy_name": "UNIV_1505_00328_F",
+  "lookahead_prevention": "detect_lookahead(engine) CLEAN [PIT C7 정적 패턴 · 러너 하드 게이트] + 집행 close_t1 — 시그널일 d 확정 비중을 익월 첫 거래일 종가 Close[exec] 에 체결 · 새 보유 수익 (exec, next_exec] · 집행일 수익은 직전 보유(PIT C2 동일봉 체결 없음 · 정본 backtest_harness 와 같은 의미) + 시그널일>RAWDATA 범위 검사",
+  "survivorship_bias_control": "universe=K200_KQ150: 시그널일 당일 RAWDATA 멤버십 플래그(K200|KQ150)로 PIT 시변 필터(.apply_universe) — 사후 생존 조건 없음 · 상장폐지 종목 포함 RAWDATA(폐지 후 수익 행 부재 = 0 처리)",
+  "strategy_idea": "[유니버스 파일럿 arm=F] 논문의 반전(contrarian) 구성 전부 — 매월 t=0 에 전 종목을 과거 J개월 수익률(\"all the stocks are sorted according to their returns in the past J months from t = −J to t = 0\")로 정렬해 decile 로 나누고, 최저 데실 = loser 를 매수·최고 데실 = winner 를 공매도해 K개월 보유하는 CON(J,K)(\"buying the loser portfolio and selling the winner portfolio\"), 등가중(\"equal-weighted average returns per annum\"), 그룹화는 논문이 decile/quintile/tertile 셋을 비교한 뒤 채택한 decile(\"decile grouping outperforms quintile grouping and tertile grouping, which is more evident and robust in the long run\") — 그래서 종목수를 개수가 아니라 분위로 정의한다, baseline 은 형성-보유 사이 skip 없음(1개월 skip 은 논문의 강건성 확인이지 기준선이 아니다), 표본 필터는 상장 첫 달 수익 제외(\"the first-month return data of individual stocks are excluded from our analysis\"). ★논문은 J=K∈{1,6,12,18,24,30,36,42,48} 격자를 보고하고 기준 셀을 지정하지 않아 한 셀을 골라야 했고, 고른 것은 J=K=1 이다: ①초록이 수익성을 긍정한 구간(\"when the estimation and holding horizons are 1 month or longer than 12 months\")이 직접 지목하는 셀이고 ②K>1 이면 JT 중첩 코호트의 기계적 세부(코호트 내 월별 재조정이냐 드리프트냐·코호트 평균 방식)를 논문이 명시하지 않아 우리가 값을 정해야 하는데, K=1 은 그 자유도가 존재하지 않는 유일한 셀이다(성과가 아니라 '지어내지 않기'가 선택 기준). 장기 셀은 이 엔진의 확장이 아니라 강화 레인의 축으로 남긴다. 원문 대조 = PLOS 오픈액세스 게재판 전문(journal.pone.0137892) + arXiv /abs; arXiv /pdf 는 이 환경에서 바이너리로 떨어져 못 읽는다.",
+  "constraint_profile": "replication",
+  "construction": "engine_direct",
+  "weight_method": "paper",
+  "rebalance": "monthly",
+  "universe": "K200_KQ150",
+  "liquidity_filter": "paper_faithful",
+  "n_max": 71,
+  "has_short": true,
+  "source_paper_url": "https://arxiv.org/abs/1505.00328",
+  "benchmark_note": "long_short_vs_long_bm",
+  "factor_engine_path": "C:/Users/99922/OneDrive/Quant_Module_Moltbot/04_Research/strategies/RP_AUTO_1505_00328/engine.R",
+  "exec_price": "close_t1",
+  "cost_model_version": "replication_weight_delta_v1/first_hold_day_multiplicative"
+}

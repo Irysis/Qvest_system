@@ -1,0 +1,147 @@
+{
+  "status": "OK",
+  "strategy_id": "RP_20261010_191603_33628",
+  "strategy_name": "UNIV_1505_00328_W",
+  "remeasured_at": "2026-10-10T19:24:12+0900",
+  "run_id": "20261010_191603_33628",
+  "bt_result_path": "C:/Users/99922/OneDrive/Quant_Module_Moltbot/04_Research/01_reports/universe_fullmkt_pilot_20261010/runs/RP_AUTO_1505_00328_W/20261010_191603_33628/bt_result.rds",
+  "metric_type": "backtested",
+  "essence_grade": "F",
+  "grade_basis": "replication_chain",
+  "essence": {
+    "net_sharpe": 0.022,
+    "net_ir": -0.437,
+    "portfolio_alpha_t_nw_lag3": -2.064,
+    "oos_retention": null,
+    "dsr": null,
+    "mdd": 0.646,
+    "calmar": -0.023,
+    "cagr": -0.015,
+    "drawdown_profile": {
+      "severe45_count": 39,
+      "severe55_count": 43,
+      "severe45_total_periods": 3104,
+      "severe45_max_periods": 1331,
+      "severe45_period_frac": 0.5812,
+      "catastrophic_mdd_threshold": 0.7,
+      "severe45_hard_count": 15,
+      "severe55_hard_count": 6,
+      "severe45_period_hard_frac": 0.25,
+      "severe45_max_hard_periods": 252,
+      "tail_review": false,
+      "structural_hard_fail": true
+    }
+  },
+  "hard_fail": false,
+  "structural_drawdown": true,
+  "selection_type": "chain",
+  "dsr_gate_applied": false,
+  "n_trials_cumulative": 1,
+  "dsr": null,
+  "measurement_regime": {
+    "selection_type": "chain",
+    "n_trials_cumulative": 1,
+    "exec_price": "close_t1",
+    "exec_price_basis": "constraint_defaults.json::execution.exec_price",
+    "exec_price_paper": "close_t1",
+    "cost_model_version": "replication_weight_delta_v1/first_hold_day_multiplicative",
+    "harness_md5": "3e316e9cef23c4b10ea7b088493e2ad4",
+    "data_cutoff": "2026-09-30",
+    "raw_rows_dropped": 12528,
+    "bm_rows_dropped": 5,
+    "raw_max_date_loaded": "2026-10-08",
+    "bm_max_date_loaded": "2026-10-08",
+    "data_fingerprint": {
+      "status": "ok",
+      "scheme": "pin_fp_v2",
+      "digest": "845222c017a6c25f0dc61a0ddd3854f7",
+      "raw_md5": "bce3105880ec717f5d7f85e96bb9064c",
+      "bm_md5": "fb07981a7ff0d20e04dfb57001c82176",
+      "fdb_status": "ok",
+      "fdb_md5": "e4f263a7e6ded519bf1cee3df692c90c",
+      "raw_cols": ["BM_Ret", "Close", "K200", "KQ150", "Open", "Ret", "Sector", "Sector_Lv2", "Size", "Vol", "source"],
+      "bm_cols": ["BM_Close", "BM_Ret"],
+      "why": []
+    }
+  },
+  "grade_base": "F",
+  "recent_regime_rescued": false,
+  "recent_regime_label": null,
+  "rolling_grade": {
+    "status": "ok",
+    "n_points": 225,
+    "window_months": 36,
+    "pass_life": 0,
+    "pass_recent": 0,
+    "current": {
+      "ym": "2026-09",
+      "sharpe": -0.192253,
+      "cagr": -0.053843,
+      "mdd": 0.424095,
+      "calmar": -0.126961,
+      "pass": false
+    },
+    "prior_recoveries": 0,
+    "current_run": 0,
+    "span": ["2008-01", "2026-09"]
+  },
+  "defensive_score": {
+    "status": "ok",
+    "defensive": true,
+    "down": {
+      "n": 110,
+      "excess": 0.038981,
+      "hit": 0.736364,
+      "t": 7.004388,
+      "capture": 0.089369
+    },
+    "mid": {
+      "n": 30,
+      "excess": 0.089711,
+      "hit": 0.933333,
+      "t": 8.533543,
+      "capture": 0.061578
+    },
+    "deep": {
+      "n": 10,
+      "excess": 0.119466,
+      "hit": 1,
+      "t": 5.183941,
+      "capture": 0.211021
+    },
+    "up": {
+      "n": 150,
+      "excess": -0.046526,
+      "hit": 0.26,
+      "t": -6.554956,
+      "capture": 0.06952
+    },
+    "reason": "하락월 110개: 초과 +3.90%/월 (t 7.00 · 적중 74%) · 벤치-10% 이하 10개: 초과 +11.95%/월 · 상승월 초과 -4.65%/월"
+  },
+  "reasons": "non-positive alpha (PORT_t<=0 또는 net_IR<=0); structural_drawdown(판정 아님 — 라우팅 근거): MDD 64.6%, 45%+ episodes=39/15, 55%+ episodes=43/6, 수중 표본비 0.58/0.25",
+  "replication": {
+    "source_paper": {
+      "url": "https://arxiv.org/abs/1505.00328",
+      "paper_key": "1505.00328"
+    },
+    "commission_paper_bps": 0,
+    "paper_basis": {
+      "cagr": 0.052782,
+      "sharpe": 0.274737,
+      "mdd": 0.472436,
+      "n_months": 260
+    },
+    "grade_basis_note": "등급은 15bps 순비용 판 (essence 문턱 15bps 보정 — gross 등급은 인플레)",
+    "fidelity": "universe 치환(K200∪KQ150)만 — 그 외 논문 그대로 (v10 완전 충실구현)",
+    "benchmark_note": "long_short_vs_long_bm",
+    "n_max": 431,
+    "has_short": true
+  },
+  "contract": {
+    "integrity_status": "OK",
+    "cagr": -0.015,
+    "sharpe": 0.022,
+    "mdd": 0.646,
+    "calmar": -0.023
+  }
+}

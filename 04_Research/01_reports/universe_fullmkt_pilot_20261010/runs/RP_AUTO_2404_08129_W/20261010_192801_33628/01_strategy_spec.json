@@ -1,0 +1,20 @@
+{
+  "run_id": "20261010_192801_33628",
+  "strategy_name": "UNIV_2404_08129_W",
+  "lookahead_prevention": "detect_lookahead(engine) CLEAN [PIT C7 정적 패턴 · 러너 하드 게이트] + 집행 close_t1 — 시그널일 d 확정 비중을 익월 첫 거래일 종가 Close[exec] 에 체결 · 새 보유 수익 (exec, next_exec] · 집행일 수익은 직전 보유(PIT C2 동일봉 체결 없음 · 정본 backtest_harness 와 같은 의미) + 시그널일>RAWDATA 범위 검사",
+  "survivorship_bias_control": "universe=K200_KQ150: 시그널일 당일 RAWDATA 멤버십 플래그(K200|KQ150)로 PIT 시변 필터(.apply_universe) — 사후 생존 조건 없음 · 상장폐지 종목 포함 RAWDATA(폐지 후 수익 행 부재 = 0 처리)",
+  "strategy_idea": "[유니버스 파일럿 arm=W] 논문 전부. 식(1) r_it = h(f_t λ_i) + ε_it (f_t>0 · λ_i>0 · h 비모수) · 식(4) argmin Σ_i Σ_t (r_it − Σ_{j=0}^{K} c_j (φ_t l_i)^j)² 제약 {c_j}∈R^{K+1}, {φ_t}∈(0,1]^T, {l_i}∈(0,1]^N · K=4(표 주석 'degree of the polynomial used to approximate the function h(.) equal to 4') · |c_j|≤L 은 논문 실무대로 무제약('In practice, we find that these constraints are not binding if the constant L is chosen large enough') · §2 추정 3단계 그대로: ① 초기값 = T×N 수익률 행렬의 제1 좌/우 특이벡터를 (0,1] 로 shift·scale ② 초기값에서 경사하강으로 국소최소 ③ {φ_t}·{l_i} 각 성분을 번갈아 재최적화, 기준함수 변화가 무시할 만해질 때까지 (c 는 언제나 OLS — 'optimization over {c_j} is easy as it can be implemented via OLS') · 데이터 = 월간 초과수익('Returns are monthly and in excess of the US risk-free rate') · 예측값 = §5.1 식(8) E[h(f_t λ_i)] 의 표본판 (1/T) Σ_t ĥ(φ̂_t l̂_i) · §5.7 그대로: 첫 120개월로 추정 → 예측수익으로 5개 포트폴리오 정렬(앞 4개 = floor(N/5), 마지막 = 나머지; 논문 171 → 34/34/34/34/35) → 등가중 → 다음 6개월 보유 → 추정창을 6개월씩 확장하며 반복 → 반년 리밸('rebalancing at a semi-annual frequency', 'Starting in January 1998' → 형성 1월·7월) · Table 8 의 전략 = P5 롱 / P1 숏(제로코스트) · 논문 보고 = 월 0.689%(연 8.28%) · 월 SR 0.147 (Panel A: P1 0.079% ~ P5 0.769%, n=240 개월).",
+  "constraint_profile": "replication",
+  "construction": "engine_direct",
+  "weight_method": "ew",
+  "rebalance": "semi_annual_formation_JanJul__monthly_ew_reset_rows",
+  "universe": "K200_KQ150",
+  "liquidity_filter": "paper_faithful",
+  "n_max": 807,
+  "has_short": true,
+  "source_paper_url": "https://arxiv.org/abs/2404.08129",
+  "benchmark_note": "long_short_vs_long_bm",
+  "factor_engine_path": "C:/Users/99922/OneDrive/Quant_Module_Moltbot/04_Research/strategies/RP_AUTO_2404_08129/engine.R",
+  "exec_price": "close_t1",
+  "cost_model_version": "replication_weight_delta_v1/first_hold_day_multiplicative"
+}
