@@ -3,9 +3,9 @@
   "dist_id": "DIST-FR-004",
   "cluster_key": "8a9dccba4ae7",
   "candidate_id": "CAND_strategy_rotation_8a9dccba4ae7",
-  "status": "pending_5axis",
-  "statement_refined": null,
-  "retry_condition": null,
+  "status": "proposed",
+  "statement_refined": "market=KR family=ml_complexity mode=strategy_rotation: 2계층 로테이션에서 모듈 풀을 넓히는 것이 배합 규칙의 edge 를 만들지 않는다 — FR_003 측정 6 arm 전부 essence C 이고, 가장 좁은 풀(18모듈 floor-only 대조)이 나머지를 전 축에서 지배한다. 실측: armC_flooronly(풀 18) net_SR 1.076 · PORT_t(NW lag-3) 1.67 · DSR 0.428 · Calmar 0.69 · CAGR 15.6% · MDD 22.6% · oos_retention +0.014 · edge_vs_ew +0.020 / armS_lag1(풀 89) 0.819 · 0.84 · 0.062 · 0.40 · 12.5% · 31.5% · -0.535 · +0.097 / FR_003 방어형 경로 ON(풀 115) 0.825 · 0.853 · 0.065 · 0.399 · 12.6% · 31.5% · -0.521 / n1(풀 561) 0.805 · 1.44 · 0.077 · 0.36 · 14.7% · 41.1% · -0.410 · edge -0.043 / n1_S_lag1(561) 0.796 · 1.30 · 0.064 · 0.35 · 14.3% · 40.6% · -0.485 · edge -0.052 / n1_C_flooronly(272) 0.926 · 1.97 · 0.262 · 0.42 · 17.3% · 41.3% · -0.181 · edge -0.032. 두 가지가 따라 나온다. ①방어형 경로를 켠 처치(115모듈)는 대조 대비 대응표본 -0.192%/월 NW lag-3 t -2.054 p 0.041 로 유의하게 열세다 — 무승부가 아니라 처치가 전 축에서 열세다. ②풀을 561까지 넓힌 arm 들은 같은 풀의 동일가중 기준선조차 넘지 못한다(edge_vs_ew -0.043 · -0.052 · -0.032). OOS retention 이 0 근처인 것은 18모듈 floor-only 하나뿐이고(+0.014) 나머지는 -0.18 ~ -0.54 다.",
+  "retry_condition": "규칙 기반으로 풀을 좁힌 뒤 재측정한다 — 역할 등급 대표 선별(2026-10-07 배선: 1,298 분류 → 역할 B+ 923 → 계보당 1 + 상관 군집 대표 82 → 2계층 풀 711→81, 출처 04_Research/01_reports/strategy_role_grading_20261006/README.md)이 그 첫 장치다. 2계층 레인 재개(l2_auto.enabled=true) 후 같은 국면엔진·배분규칙으로 edge_vs_ew 를 다시 재서 풀 축소가 edge 를 복원하는지 센다.",
   "refined_at": null,
   "refined_by": null,
   "promoted_to_axiom": null,
@@ -170,5 +170,43 @@
     "note": "L-code oos_retention 실값 6건 median (IS65/OOS35 활성SR retention) — oos_months 실값 무 → None 유지 — promote.R essence_score 경유 재확정"
   },
   "cluster_members_count": 6,
-  "expiry": "2026-12-22"
+  "expiry": "2026-12-22",
+  "adversarial_verdict": {
+    "a_exaggeration": "낙관 제거 — floor-only 18모듈의 Calmar 0.69 · MDD 22.6% 를 '성공'으로 쓰지 않았다. 그 arm 도 essence C 이고 edge_vs_ew 는 +0.020(EW 1.056 대비)에 불과하며 DSR 0.428 로 0.5 미달이다. 대조가 처치를 이긴 것은 '풀이 좁아서 좋다'가 아니라 '넓히는 것이 edge 를 만들지 않는다'로만 적었다.",
+    "b_evidence": "근거 — supporting 6건의 essence 기재 수치 그대로이며 metric_type 전건 backtested 다. 대응표본 검정(-0.192%/월 NW3 t -2.054 p 0.041)도 supporting L-FR-20260912_171234 기재값이다. 역할 등급 수치는 statement 가 아니라 retry_condition·frontier 에만 쓰고 출처 경로를 적었다(이 카드의 주장이 아니라 다음 측정 지점).",
+    "c_ax000": "AX-000 — '2계층 로테이션은 불가' 또는 '방어형 경로는 dead-end'로 단정하지 않았다. 측정된 형태는 '풀 크기에 단조 감소하는 edge' 하나이고, 규칙 기반 풀 축소(역할 대표 81) 위 재측정을 retry_condition 으로 열었다. 6 arm 전부 C 라는 사실을 기각 근거가 아니라 현 배합 규칙의 봉투-상대 관측으로 적었다.",
+    "d_firewall": "방화벽 통과 — 모듈 풀 구성은 연구 레버이고 고정 제약이 아니다. 종목수·유동성·long-only·Sum w=1·유니버스·15bps·PIT 를 실패 원인으로 귀속하지 않으며 완화 레버도 제시하지 않는다. 프론티어는 전부 envelope-안(국면 조건부·전략 결합·풀 선별 규칙).",
+    "e_frontier": "프론티어 4종 — 역할 대표 풀 재측정, EW 기준선 대비 증분으로 판정 축 교체, 국면엔진 as-of 재계산, 풀 상관 구조의 직접 관리."
+  },
+  "frontier": [
+    "역할 대표 풀(81) 재측정 — 계보당 1 + 상관 군집 대표 1 규칙으로 좁힌 풀에서 같은 국면엔진·배분규칙의 edge_vs_ew 를 다시 잰다. 풀 축소가 edge 를 복원하면 병목은 선택 자유도다",
+    "판정 축을 EW 기준선 증분으로 고정 — 561모듈 arm 들의 PORT_t 가 1.3~2.0 인데 edge_vs_ew 는 음수다. 절대 PORT_t 가 아니라 같은 풀 EW 대비 증분을 1급 판정 축으로 둔다",
+    "국면엔진 as-of 재계산 — 역할 소속을 배합 선택에 쓸 때 전기간 통계를 그대로 쓰면 C1 D-E 다. as-of 재계산판과 전기간판의 edge 차가 선택 효과의 크기다",
+    "풀 상관 구조 직접 관리 — 풀을 넓힐 때 모듈 간 2요인 잔차 상관이 함께 올라가면 분산 이득이 없다. 상관 상한을 두고 선별한 풀에서 같은 arm 을 측정한다"
+  ],
+  "live_trigger": {
+    "type": "data",
+    "condition": "l2_auto.enabled=true 복귀 ∧ strategy_role.json pool.mode=\"role\"(역할 대표 81) 상태에서 FR arm 1건 이상 재측정",
+    "monitored_source": "06_Registry/reinforce_auto_config.json::l2_auto · 06_Registry/strategy_role.json::pool · 06_Registry/reinforce_ledger_l2.json"
+  },
+  "revival_spec": [
+    {
+      "signal_id": "wall_clock_date",
+      "condition": "x >= as.Date('2026-12-22')",
+      "from_trigger": "expiry",
+      "status": "active"
+    },
+    {
+      "signal_id": "registry_present",
+      "condition": "x == TRUE",
+      "from_trigger": "data",
+      "status": "pending"
+    }
+  ],
+  "constraint_firewall": {
+    "mode": "backstop_passed",
+    "checked_at": "2026-10-10"
+  },
+  "drafted_at": "2026-10-10T11:56:30+0900",
+  "drafted_by": "auto_distill"
 }

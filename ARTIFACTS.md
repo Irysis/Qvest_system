@@ -1,6 +1,6 @@
 # Qvest 산출물 지도 (ARTIFACTS.md)
 
-> 자동 생성 2026-10-09 18:26:54 — 기계가독 원본: `06_Registry/artifact_index.json` · 재생성: `Rscript 02_Infrastructure/tools/build_artifact_index.R` (daily_refresh 말미 자동)
+> 자동 생성 2026-10-10 11:57:59 — 기계가독 원본: `06_Registry/artifact_index.json` · 재생성: `Rscript 02_Infrastructure/tools/build_artifact_index.R` (daily_refresh 말미 자동)
 
 **저장 4원칙**: ① `stage_artifacts/<mode>/<run_id>/` 실험 런(불변·이동금지) ② `outputs/<pipeline>/` canonical 데이터(최신본만) ③ `06_Registry/` 기계가독 상태·큐·인덱스 ④ `04_Research/<topic>/` 사람용 보고서
 
@@ -8,10 +8,10 @@
 
 | 존 | 무엇 | 규모 | 크기 | 최근 활동 | 대표 진입점 |
 |---|---|---|---|---|---|
-| `stage_artifacts/` | 실험 런 원본 (WT·legacy S0~S7·L-code·agent 산출) | 1089항목 / 86,412파일 | 30.0GB | 2026-10-09 (`paper_recharge`) | `reports/` + 최근 WT 디렉토리 |
-| `outputs/` | 파이프라인 canonical 데이터 (최신본) | 5항목 / 484파일 | 1.7GB | 2026-10-09 (`regime`) | `outputs/ramp/` (RAMP 순수팩터·팩터군 parquet) |
-| `06_Registry/` | 기계가독 상태·큐·인덱스 (JSON) | 195항목 / 528파일 | 106.0MB | 2026-10-09 (`hygiene_report.json`) | `module_catalog.json` / `hypothesis_index.json` |
-| `04_Research/` | 사람용 리서치 보고서·분석 (토픽별) | 37항목 / 9,143파일 | 4.1GB | 2026-10-09 (`regime_comparison`) | `01_reports/` / `pg2_forensics/` |
+| `stage_artifacts/` | 실험 런 원본 (WT·legacy S0~S7·L-code·agent 산출) | 1089항목 / 86,422파일 | 30.0GB | 2026-10-10 (`dart_parser_build`) | `reports/` + 최근 WT 디렉토리 |
+| `outputs/` | 파이프라인 canonical 데이터 (최신본) | 5항목 / 485파일 | 1.7GB | 2026-10-10 (`regime`) | `outputs/ramp/` (RAMP 순수팩터·팩터군 parquet) |
+| `06_Registry/` | 기계가독 상태·큐·인덱스 (JSON) | 196항목 / 531파일 | 106.6MB | 2026-10-10 (`distill_manifest_20261010.json`) | `module_catalog.json` / `hypothesis_index.json` |
+| `04_Research/` | 사람용 리서치 보고서·분석 (토픽별) | 37항목 / 9,144파일 | 4.1GB | 2026-10-10 (`01_reports`) | `01_reports/` / `pg2_forensics/` |
 | `qepm/mailbox/worktask/` | QEPM WT 핸드오프 mailbox (불변 기록) | 299 WT | - | 2026-09-24 (`WT-D20260803_006`) | 최근 WT의 `output/` |
 
 `stage_artifacts` mode 구성: legacy_stage_S0_S7 439 · worktask_run 313 · other 200 · agent_artifact 61 · l_code 39 · pg2 17 · ramp 8 · alpha_search 5 · report 4 · axiom 3

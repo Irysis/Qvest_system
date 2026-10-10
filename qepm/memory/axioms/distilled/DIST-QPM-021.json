@@ -3,9 +3,9 @@
   "dist_id": "DIST-QPM-021",
   "cluster_key": "d6dac46a2fa1",
   "candidate_id": "CAND_qepm_legacy_d6dac46a2fa1",
-  "status": "pending_5axis",
-  "statement_refined": null,
-  "retry_condition": null,
+  "status": "proposed",
+  "statement_refined": "market=KR family=behavioral type=methodological: 플로우·행태 계열은 신호의 존재보다 소비 형태가 판정을 지배한다(조건부 규칙). ①회전율이 판정을 먹는다 — Volume_Price_Divergence 는 MDD 59.5% + 회전율 904% 이중 hard fail(SR 0.400 · CAGR 9.4% · max_corr 0.376 · 최근 3Y SR 0.210)이고, 플로우 반전을 S5 돌연변이로 올린 판은 회전율 3205%(상한 5배)에 VT15%+DD5/15 오버레이가 겹쳐 CAGR 1.86% 대 벤치 11.13% 로 끝났다 — 20일 롤링 플로우 신호의 월간 리밸이 원인으로 특정됐다. ②오버레이를 얹으면 잔존 수익이 더 깎인다 — R10_Cokurtosis 하위 10% 제외 게이트 + C19 조합의 base SR 0.209 가 DD 5/15 오버레이 적용 후 0.161 로 내려갔고 CAGR 1.57% · BM_Corr 0.678(분산 이득 없음)이었다. ③팩터 수 증가가 자동 개선이 아니다 — 3팩터(C19+V14+D01)에 L22 를 4번째로 더하면 V14 비중 30%→25% 희석 비용이 L22 의 분산 기여(corr -0.108)를 넘어 SR 0.756 · CAGR 11.24% 로 하락하고 OOS retention 0.52 로 과적합 위험이 섰다. ④설계 단계 의무 — 2-party flow divergence 라벨은 대수적으로 단방향 신호와 같을 수 있다: (z_foreign - z_individual) 과 (-z_individual) 의 횡단면 상관 0.897(중앙 0.919)로 외국인 성분의 설명력이 극소였고 이는 라벨만 새로운 structural hidden clone 이다 — 수식 수준 항등 검사 없이 '신규 축'으로 등재하지 말 것. ⑤반대 방향 사례가 같은 집합에 있다 — 오염된 MRS 가 알파를 억제하고 있었고 수리 후 전 축이 올랐다(SR 1.002→1.099 · CAGR 12.61→14.29% · FMB t 6.682 · FF5 alpha 9.20%/yr t 2.31 · OOS retention 1.28). 측정 결함은 과대평가만 만들지 않는다.",
+  "retry_condition": "플로우·행태 신호를 (a)회전율 관리 형태(신호 평활·히스테리시스 버퍼·집행주기 분리)로 재구성하거나 (b)횡단면 점수 입력이 아니라 노출 수준·국면 식별 입력으로 옮긴 판이 측정되면 이 조건부 규칙을 재판정한다. ④의 항등 검사는 조건이 아니라 상시 의무다.",
   "refined_at": null,
   "refined_by": null,
   "promoted_to_axiom": null,
@@ -69,5 +69,44 @@
     "oos_effect_vs_is": null,
     "note": "promote.R r4_regime_payoff / essence_score 경유 확정"
   },
-  "cluster_members_count": 7
+  "cluster_members_count": 7,
+  "adversarial_verdict": {
+    "a_exaggeration": "낙관 제거 — ⑤의 양(+) 결과를 '플로우가 통한다'로 확장하지 않았다. 그 건은 MRS 오염 수리의 결과이고 플로우 신호 자체의 승리가 아니므로 '측정 결함은 과대평가만 만들지 않는다'는 방법론 문장으로 한정했다. ①~③은 전부 수치와 함께 봉투-상대 사실로 적었다.",
+    "b_evidence": "근거 — supporting L-code 기재 수치 그대로이며 metric_type 은 전건 estimated 다(L-131·L-1571·L-1580·L-160A·L-607·L-623·L-723). 따라서 이 카드는 진단·추정 층이고 어떤 수치도 권위 등급으로 인용하지 않는다. backtested 오라벨 없음.",
+    "c_ax000": "AX-000 — 'KR 개인·외국인 플로우는 알파 원천이 아니다'로 단정하지 않았다. 판정을 '소비 형태 조건부'로 적고 회전율 관리와 노출·국면 소비면 2갈래를 retry_condition 으로 열었다. ④는 금지가 아니라 설계 검사 의무다.",
+    "d_firewall": "방화벽 통과 — 회전율은 전략 구성의 성질이고 15bps 비용 모델·종목수 25·long-only 는 고정 축이다. 초안은 '비용 때문에 실패했다'고 쓰지 않고 '20일 롤링 신호의 월간 리밸이 만든 회전율이 총수익을 먹는다'는 구성 귀속으로 적었다. 제약 완화 레버(비용 인하·회전율 상한 완화·종목수 확대) 제시 없음. 처방은 전부 envelope-안(평활·버퍼·집행주기·노출·국면).",
+    "e_frontier": "프론티어 4종 — 회전율 관리 형태, 노출·국면 조건부 소비면 이동, 항등 검사 상시 배선, 결합 시 희석 비용의 사전 계상."
+  },
+  "expiry": "2027-01-10",
+  "frontier": [
+    "회전율 관리 형태 — 랭크 버퍼(히스테리시스)·신호 평활·집행주기 분리로 같은 신호의 회전율을 낮춘 판. 2026-10 강화 격자 B6 가 랭크 버퍼 2x/3x n_max 칸을 실측하는 자리를 이미 갖고 있다",
+    "노출·국면 조건부 소비면 — 플로우를 횡단면 점수 입력에서 빼고 총노출 또는 국면 식별 입력으로 옮긴 형태. 같은 정보가 선택면에서 비유의하고 노출면에서 기여하는 사례가 다른 격자에서 관측됐다",
+    "대수적 항등 검사 상시 배선 — 신규 축 등재 전 수식 수준 항등 + 횡단면 상관 사전 측정(2-party divergence·차분·비율 계열 전부). TDC pair-wise 상관만으로는 포착되지 않는다",
+    "결합 시 희석 비용 사전 계상 — 팩터 추가의 순이득 = 분산 기여 - 기존 알파 비중 희석. 추가 전에 이 차를 추정해 음수면 추가하지 않는다"
+  ],
+  "live_trigger": {
+    "type": "data",
+    "condition": "플로우·행태 신호를 회전율 관리 형태 또는 노출·국면 조건부로 재구성한 판이 1건이라도 권위 등급을 받으면 조건부 규칙 재판정",
+    "monitored_source": "06_Registry/reinforce_ledger_l1.json(블록 B6 랭크 버퍼·B5 노출 칸) · stage_artifacts/replication/*/authoritative_remeasure.json"
+  },
+  "revival_spec": [
+    {
+      "signal_id": "wall_clock_date",
+      "condition": "x >= as.Date('2027-01-10')",
+      "from_trigger": "expiry",
+      "status": "active"
+    },
+    {
+      "signal_id": "registry_present",
+      "condition": "x == TRUE",
+      "from_trigger": "data",
+      "status": "pending"
+    }
+  ],
+  "constraint_firewall": {
+    "mode": "backstop_passed",
+    "checked_at": "2026-10-10"
+  },
+  "drafted_at": "2026-10-10T11:56:19+0900",
+  "drafted_by": "auto_distill"
 }

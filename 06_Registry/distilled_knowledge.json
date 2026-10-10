@@ -1,10 +1,10 @@
 {
   "schema_version": "distilled_knowledge_v1",
-  "generated_at": "2026-10-10T02:16:19+00:00",
+  "generated_at": "2026-10-10T11:56:34+0900",
   "note": "Axiom 엔진 ②Distilled 계층 통합 인덱스. lifecycle: pending_5axis→[자동초안+적대검증]→proposed→[도훈 배치승인]→distilled→promoted|expired. INV-6(2026-07-04 재정의: 무인 활성화 금지): 주입/truths 소비는 status=distilled만 — proposed·pending_5axis 초안 텍스트 주입 금지(안전속성 보존).",
   "n_entries": 472,
   "n_distilled": 22,
-  "n_proposed": 48,
+  "n_proposed": 56,
   "entries": [
     {
       "dist_id": "DIST-AR-001",
@@ -799,16 +799,47 @@
       "type": "empirical",
       "polarity": "positive",
       "metric_type": "estimated",
-      "status": "pending_5axis",
-      "statement_refined": null,
+      "status": "proposed",
+      "statement_refined": "market=KR family=quality_earnings mode=alpha_research (screen-tier · essence/Judge 층 아님): 같은 가치 축 재료가 결합 형태에 따라 book-marginal 스크린 판정을 가른다. 슬롯 교체형 추가(ADD 14 arms = 7후보 x w{0.15,0.30})는 전부 게이트 미달이었다 — 최선 V14_EBIT_EV w0.30 이 paired NW-t 1.87 · dIR +0.102(holdout 1.76), V07_EV_EBITDA w0.15 이 1.81 · dIR +0.120(holdout 0.39 로 감쇠). 같은 두 지표를 z-blend 로 섞은 Z6(V14_EBIT_EV + V07_EV_EBITDA · w0.30)는 paired NW-t 3.807 · window-matched dIR +0.481 · variant PORT_t 7.60 · net-IR 1.755 · turnover 13.0(+0.5)로 게이트(paired>=2.0 AND dIR>=0.05)를 통과했고 10 arm 중 7개(z-blend 5 + slot-carve 2)가 통과했다. 즉 ADD 와 z-blend 를 가른 것은 재료가 아니라 슬롯 대체 비용이다. 같은 묶음의 음성 결과들이 이 형태 가설을 강화한다 — 비-return 신규 3종(텍스트유사도·제출지연 등)은 survivors 0 이고 placebo p 0.25/0.135 로 신호 구조가 없었고, 회계-포렌식 2종도 survivors 0 이며 수정Jones 는 기존 등재 팩터 AC13(원본 Jones)과 횡단 상관 0.991 로 무증분, Benford FSD 는 placebo p 0.160 · rank-IC t -1.00(가설과 부호 반대)였다. 지수-레벨 Benford 필터는 예측 순서(감사품질 역순 단조증가)와 실측이 Spearman(order,effect) -0.40 으로 역행하고 전 지표 CI 가 0 을 교차했다. crisis 슬리브 예약(slot-carve K in {5,6,8})은 book-marginal paired NW-t -2.8 로 유의 음수이고 crisis 구간(n=6)에서도 d_active 가 음수였다 — 현 book 오버레이(M4xR05 regime-cash)가 crisis 방어를 이미 포화시킨 상태라는 기전과 일치한다.",
       "statement_draft": "[실증 성공 규칙 초안] family=quality_earnings, tags=non_return,survivors_0,sweep, supporting=6건 L-code. (promote.R 5축 검증에서 범위·메커니즘·OOS 확정 필요)",
-      "retry_condition": null,
-      "adversarial_verdict": null,
-      "expiry": null,
-      "frontier": [],
-      "live_trigger": [],
-      "revival_spec": [],
-      "constraint_firewall": null,
+      "retry_condition": "①Z6 는 screen-tier 통과분이므로 essence 계약을 경유한 권위 등급과 Judge(PIT) 판정이 나오면 그 결과로 이 카드를 재판정한다 ②base 대비 dIR 게이트가 슬롯-대체형 결합에 원리적으로 불리하다는 별 진단(정보 0 플라시보도 개입 규모에 비례해 dIR 음)이 있으므로, ADD 의 미달은 게이트 형태 교정 후 재측정해야 확정된다 ③비-return 계열은 다른 시장·다른 기간 재현(외부 타당도)이 들어올 때 재개한다.",
+      "adversarial_verdict": {
+        "a_exaggeration": "낙관 제거 — Z6 의 PORT_t 7.60 을 등급으로 읽지 않도록 'screen-tier · essence/Judge 층 아님'을 statement 머리에 박았다. ADD arms 의 holdout 감쇠(V07 1.81 → 0.39)를 같이 적고, 통과 7/10 도 게이트 문턱(paired>=2.0 AND dIR>=0.05)과 함께 적어 문턱 없는 승리 서술을 막았다. near-miss 축이 independence 라는 점을 retry_condition 에 반영했다.",
+        "b_evidence": "근거 — supporting 6건의 기재 수치 그대로다. metric_type 은 canonical_screen 4건 + estimated 2건이므로 전건을 screen-tier/진단으로 라벨했고 backtested 로 올린 수치는 없다. Z6 수치는 canonical_screen 실측이라고 명시했다.",
+        "c_ax000": "AX-000 — ADD 14 arms 전건 미달을 '슬롯 추가는 불가'로 단정하지 않았다. 미달이 게이트 형태(슬롯 대체 비용) 때문일 수 있다는 별 진단을 retry_condition ②로 걸어 재측정 경로를 열었다. 비-return 계열도 외부 타당도 재현으로 열어 두었다.",
+        "d_firewall": "방화벽 통과 — 종목수 25·유동성·long-only·Sum w=1·유니버스·15bps 를 실패 원인으로 귀속하지 않는다. 'book top-25 슬롯 하나를 밀어내는 비용'은 고정 종목수 제약을 비판하는 말이 아니라 결합 형태의 산술이며, 처방은 제약 완화가 아니라 형태 교체(z-blend)와 게이트 형태 교정이다. 전부 envelope-안 레버(composite·슬리브·오버레이 포화 진단).",
+        "e_frontier": "프론티어 4종 — z-blend 형태의 essence 승격, dIR 게이트의 플라시보 보정, 포화된 방어 축 대체, 비-return 외부 타당도."
+      },
+      "expiry": "2027-01-10",
+      "frontier": [
+        "z-blend 형태의 essence 승격 — screen-tier 통과분(Z6)을 essence 계약에 올려 권위 등급과 Judge(PIT)까지 태운다. screen 과 등급의 일치/불일치 자체가 정보다",
+        "dIR 게이트의 플라시보 보정 — 정보 0 순열을 같은 개입 규모로 넣어 밴드를 만들고 그 밴드 대비 증분으로 판정한다. 현행 절대 문턱(dIR>=0.05)은 슬롯-대체형 결합에서 정보가 있어도 통과 불가일 수 있다",
+        "포화된 방어 축 대체 — crisis 슬리브 예약이 음수인 이유가 현 오버레이 포화라면, 오버레이를 끈 기저 위에서 같은 슬리브를 재측정해 포화 가설을 직접 시험한다",
+        "비-return 외부 타당도 — 텍스트유사도·제출지연·포렌식 계열은 KR 배포 유니버스에서 survivors 0 이었다. 같은 신호의 다른 시장·다른 기간 재현을 먼저 확인한 뒤 KR 재도전 여부를 정한다"
+      ],
+      "live_trigger": {
+        "type": "data",
+        "condition": "Z6 z-blend 가 essence 계약을 경유한 권위 등급을 받거나, dIR 게이트에 플라시보 밴드가 배선되면 재판정",
+        "monitored_source": "stage_artifacts/replication/*/authoritative_remeasure.json · 06_Registry/module_catalog.json · 06_Registry/factor_evidence.json"
+      },
+      "revival_spec": [
+        {
+          "signal_id": "wall_clock_date",
+          "condition": "x >= as.Date('2027-01-10')",
+          "from_trigger": "expiry",
+          "status": "active"
+        },
+        {
+          "signal_id": "stage_artifacts_present",
+          "condition": "x == TRUE",
+          "from_trigger": "data",
+          "status": "pending"
+        }
+      ],
+      "constraint_firewall": {
+        "mode": "backstop_passed",
+        "checked_at": "2026-10-10"
+      },
       "supporting_l_codes": [
         "L-AR-20260710_150153_02",
         "L-AR-20260713_161721",
@@ -823,7 +854,7 @@
       "promoted_to_axiom": null,
       "created_at": "2026-07-18T00:23:16+00:00",
       "refined_at": null,
-      "drafted_at": null,
+      "drafted_at": "2026-10-10T11:56:26+0900",
       "approved_at": null,
       "source_file": "DIST-AR-021.json"
     },
@@ -4131,16 +4162,47 @@
       "type": "empirical",
       "polarity": "negative",
       "metric_type": "backtested",
-      "status": "pending_5axis",
-      "statement_refined": null,
+      "status": "proposed",
+      "statement_refined": "market=KR family=ml_complexity mode=strategy_rotation: 2계층 로테이션에서 모듈 풀을 넓히는 것이 배합 규칙의 edge 를 만들지 않는다 — FR_003 측정 6 arm 전부 essence C 이고, 가장 좁은 풀(18모듈 floor-only 대조)이 나머지를 전 축에서 지배한다. 실측: armC_flooronly(풀 18) net_SR 1.076 · PORT_t(NW lag-3) 1.67 · DSR 0.428 · Calmar 0.69 · CAGR 15.6% · MDD 22.6% · oos_retention +0.014 · edge_vs_ew +0.020 / armS_lag1(풀 89) 0.819 · 0.84 · 0.062 · 0.40 · 12.5% · 31.5% · -0.535 · +0.097 / FR_003 방어형 경로 ON(풀 115) 0.825 · 0.853 · 0.065 · 0.399 · 12.6% · 31.5% · -0.521 / n1(풀 561) 0.805 · 1.44 · 0.077 · 0.36 · 14.7% · 41.1% · -0.410 · edge -0.043 / n1_S_lag1(561) 0.796 · 1.30 · 0.064 · 0.35 · 14.3% · 40.6% · -0.485 · edge -0.052 / n1_C_flooronly(272) 0.926 · 1.97 · 0.262 · 0.42 · 17.3% · 41.3% · -0.181 · edge -0.032. 두 가지가 따라 나온다. ①방어형 경로를 켠 처치(115모듈)는 대조 대비 대응표본 -0.192%/월 NW lag-3 t -2.054 p 0.041 로 유의하게 열세다 — 무승부가 아니라 처치가 전 축에서 열세다. ②풀을 561까지 넓힌 arm 들은 같은 풀의 동일가중 기준선조차 넘지 못한다(edge_vs_ew -0.043 · -0.052 · -0.032). OOS retention 이 0 근처인 것은 18모듈 floor-only 하나뿐이고(+0.014) 나머지는 -0.18 ~ -0.54 다.",
       "statement_draft": "[실증 실패 규칙 초안] family=ml_complexity, tags=T,O,A, supporting=6건 L-code. (promote.R 5축 검증에서 범위·메커니즘·OOS 확정 필요)",
-      "retry_condition": null,
-      "adversarial_verdict": null,
+      "retry_condition": "규칙 기반으로 풀을 좁힌 뒤 재측정한다 — 역할 등급 대표 선별(2026-10-07 배선: 1,298 분류 → 역할 B+ 923 → 계보당 1 + 상관 군집 대표 82 → 2계층 풀 711→81, 출처 04_Research/01_reports/strategy_role_grading_20261006/README.md)이 그 첫 장치다. 2계층 레인 재개(l2_auto.enabled=true) 후 같은 국면엔진·배분규칙으로 edge_vs_ew 를 다시 재서 풀 축소가 edge 를 복원하는지 센다.",
+      "adversarial_verdict": {
+        "a_exaggeration": "낙관 제거 — floor-only 18모듈의 Calmar 0.69 · MDD 22.6% 를 '성공'으로 쓰지 않았다. 그 arm 도 essence C 이고 edge_vs_ew 는 +0.020(EW 1.056 대비)에 불과하며 DSR 0.428 로 0.5 미달이다. 대조가 처치를 이긴 것은 '풀이 좁아서 좋다'가 아니라 '넓히는 것이 edge 를 만들지 않는다'로만 적었다.",
+        "b_evidence": "근거 — supporting 6건의 essence 기재 수치 그대로이며 metric_type 전건 backtested 다. 대응표본 검정(-0.192%/월 NW3 t -2.054 p 0.041)도 supporting L-FR-20260912_171234 기재값이다. 역할 등급 수치는 statement 가 아니라 retry_condition·frontier 에만 쓰고 출처 경로를 적었다(이 카드의 주장이 아니라 다음 측정 지점).",
+        "c_ax000": "AX-000 — '2계층 로테이션은 불가' 또는 '방어형 경로는 dead-end'로 단정하지 않았다. 측정된 형태는 '풀 크기에 단조 감소하는 edge' 하나이고, 규칙 기반 풀 축소(역할 대표 81) 위 재측정을 retry_condition 으로 열었다. 6 arm 전부 C 라는 사실을 기각 근거가 아니라 현 배합 규칙의 봉투-상대 관측으로 적었다.",
+        "d_firewall": "방화벽 통과 — 모듈 풀 구성은 연구 레버이고 고정 제약이 아니다. 종목수·유동성·long-only·Sum w=1·유니버스·15bps·PIT 를 실패 원인으로 귀속하지 않으며 완화 레버도 제시하지 않는다. 프론티어는 전부 envelope-안(국면 조건부·전략 결합·풀 선별 규칙).",
+        "e_frontier": "프론티어 4종 — 역할 대표 풀 재측정, EW 기준선 대비 증분으로 판정 축 교체, 국면엔진 as-of 재계산, 풀 상관 구조의 직접 관리."
+      },
       "expiry": "2026-12-22",
-      "frontier": [],
-      "live_trigger": [],
-      "revival_spec": [],
-      "constraint_firewall": null,
+      "frontier": [
+        "역할 대표 풀(81) 재측정 — 계보당 1 + 상관 군집 대표 1 규칙으로 좁힌 풀에서 같은 국면엔진·배분규칙의 edge_vs_ew 를 다시 잰다. 풀 축소가 edge 를 복원하면 병목은 선택 자유도다",
+        "판정 축을 EW 기준선 증분으로 고정 — 561모듈 arm 들의 PORT_t 가 1.3~2.0 인데 edge_vs_ew 는 음수다. 절대 PORT_t 가 아니라 같은 풀 EW 대비 증분을 1급 판정 축으로 둔다",
+        "국면엔진 as-of 재계산 — 역할 소속을 배합 선택에 쓸 때 전기간 통계를 그대로 쓰면 C1 D-E 다. as-of 재계산판과 전기간판의 edge 차가 선택 효과의 크기다",
+        "풀 상관 구조 직접 관리 — 풀을 넓힐 때 모듈 간 2요인 잔차 상관이 함께 올라가면 분산 이득이 없다. 상관 상한을 두고 선별한 풀에서 같은 arm 을 측정한다"
+      ],
+      "live_trigger": {
+        "type": "data",
+        "condition": "l2_auto.enabled=true 복귀 ∧ strategy_role.json pool.mode=\"role\"(역할 대표 81) 상태에서 FR arm 1건 이상 재측정",
+        "monitored_source": "06_Registry/reinforce_auto_config.json::l2_auto · 06_Registry/strategy_role.json::pool · 06_Registry/reinforce_ledger_l2.json"
+      },
+      "revival_spec": [
+        {
+          "signal_id": "wall_clock_date",
+          "condition": "x >= as.Date('2026-12-22')",
+          "from_trigger": "expiry",
+          "status": "active"
+        },
+        {
+          "signal_id": "registry_present",
+          "condition": "x == TRUE",
+          "from_trigger": "data",
+          "status": "pending"
+        }
+      ],
+      "constraint_firewall": {
+        "mode": "backstop_passed",
+        "checked_at": "2026-10-10"
+      },
       "supporting_l_codes": [
         "L-FR-20260912_170811",
         "L-FR-20260912_170855",
@@ -4155,7 +4217,7 @@
       "promoted_to_axiom": null,
       "created_at": "2026-09-23T10:53:19+00:00",
       "refined_at": null,
-      "drafted_at": null,
+      "drafted_at": "2026-10-10T11:56:30+0900",
       "approved_at": null,
       "source_file": "DIST-FR-004.json"
     },
@@ -4428,16 +4490,47 @@
       "type": "empirical",
       "polarity": "unknown",
       "metric_type": "estimated",
-      "status": "pending_5axis",
-      "statement_refined": null,
+      "status": "proposed",
+      "statement_refined": "family=infra_process type=methodological (진단 층 — 판정 인용 금지): 판정 수치를 만드는 계기 자체가 결론을 만든다. 여섯 건의 method-frontier 진단이 같은 형태를 가리킨다. ①벤치만 바꾼 값을 알파 개선으로 읽는 것 — dual-basis 진단은 포트폴리오가 아니라 benchmark_id 만 교체하므로(ret_net 은 동일 객체) 'EW basis 로는 2.86' 은 같은 포트를 더 쉬운 벤치로 채점한 값이다. 실측: capw-EW 격차가 arm 무관 상수(n=167 · arm 12개 d_alpha_ann sd 0.00106)이고 다른 창(n=96)에서 d 2.46배일 때 |gap| 2.36배로 동반 이동하며 cor(port_t_capw, cap_share_mega) -0.405 로 교차-arm 반대 증거가 같은 표 안에 있었다. ②증분 t 를 원리적으로 못 바꾸는 축에서 최선을 고르는 것 — baseline 을 끝점으로 하는 혼합(shrink/blend) 계열은 a_lambda - a_mom = (1-lambda)(a_capprop - a_mom) 로 양의 스칼라 배이므로 t 가 불변이고, 실측 paired t 가 lambda in {0,.25,.50,.75} 에서 소수 3자리까지 1.307 동일했다(항등의 지문). 그런데 선택 코드가 which.max(port_t) 로 다이얼에만 반응하는 양을 골랐다. ③슬롯-대체형 결합에 절대 dIR 게이트를 거는 것 — 정보 0 인 순열을 북에 결합해도 개입 규모에 비례해 dIR 이 음으로 간다(w 0.05 -0.0066 / 0.10 -0.0006 / 0.20 -0.0413 / 0.30 -0.0609 / 0.50 -0.2164)고, 실측 arm(blend -0.0975 / filter -0.0079 / carve -0.1021)은 전부 그 플라시보 밴드 안 또는 위였다. 기전은 북 top-20 슬롯 하나를 밀어내는 비용 연 -13.7%(무작위 교체 -15.5%)인데 신규 신호가 그중 일부만 회수하는 것(순열 +1.8%p)이다. ④겹침 창·자기 조인이 만든 지속성을 신호로 읽는 것 — 비겹침 21일 창에서 vol-랭크 익월 Spearman 0.587(음수월 0/438)·0.492·0.462 vs ret-랭크 +0.018/-0.015/-0.001(대응차 +0.55 t 64.9)인데, 겹침 60일 창 precheck 의 ret 지속성 0.613 은 전부 창 겹침 아티팩트였고 1차 측정 rho 전원 1.000 은 조인 양쪽을 동일 키로 리라벨한 자기 조인 지문이었다. 같은 명제의 소비면은 negative 다(IV 250d 1.220 / IV_21 1.216 / IV_21rank 1.209 전부 EW 1.269 아래). ⑤정확한 표준이 만들어져 있는데 소비자가 0 인 배선 공백 — TTM 은 .cache/fundamental_xlsx_ttm.parquet(4,133,534행 · TTM non-NA 96.6%)에 정확히 계산돼 있으나 빌더가 TTM_Value 컬럼이 없는 파일을 읽어 소비 조건이 항상 거짓이 되고, 결과로 피드 이음매에서 스케일이 4배 점프한다. ⑥도구 경로의 인코딩이 만든 가짜 언어 결함 — 'R 정규식 워드경계가 한글 혼재 문자열에서 조용히 FALSE' 주장은 당일 전면 정정됐고 진짜 원인은 명령 문자열 JSON 인코딩에서 백슬래시 한 겹이 소비돼 정규식이 백스페이스 문자를 받은 것이었다. 공통 처방 = 플라시보·양성 대조·대수적 항등 검사를 계기 수준에서 먼저 돌리고, 선택 코드가 무엇에 반응하는 양을 고르는지 명시한다.",
       "statement_draft": "[실증 규칙(성과증거 미분류) 초안] family=infra_process, tags=dual_basis,transition_wall,bench_artifact, supporting=6건 L-code. (promote.R 5축 검증에서 범위·메커니즘·OOS 확정 필요)",
-      "retry_condition": null,
-      "adversarial_verdict": null,
-      "expiry": null,
-      "frontier": [],
-      "live_trigger": [],
-      "revival_spec": [],
-      "constraint_firewall": null,
+      "retry_condition": "①~④ 각 형태에 대응하는 계기 가드가 배선된 뒤(벤치 교체 시 자동 공시 · 혼합 계열 항등 검사 · dIR 플라시보 밴드 · 비겹침 창 강제) 같은 진단을 다시 돌려 발화 0 이 재현되면 이 카드는 배선으로 흡수된다. ⑤는 TTM 소비자 배선 후 이음매 스케일 점프 소멸로, ⑥은 쉘 경유 코드 전달 경로 제거로 각각 확인한다.",
+      "adversarial_verdict": {
+        "a_exaggeration": "낙관 제거 — 어느 항목도 성과 개선을 주장하지 않는다. ④는 vol-랭크 예측성이라는 양(+) 결과를 적되 같은 문장에 소비면 negative(IV 계열 전부 EW 아래)를 붙였고, ⑥은 원 주장이 거짓이었다는 정정을 그대로 실었다. '진단 층 — 판정 인용 금지'를 statement 머리에 박았다.",
+        "b_evidence": "근거 — supporting 6건의 기재 수치 그대로이며 metric_type 은 전건 unavailable 또는 estimated(method_frontier/data_integrity/portability 진단)다. 따라서 어떤 수치도 권위 등급·성과 판정으로 인용될 수 없음을 명시했다. backtested 오라벨 없음.",
+        "c_ax000": "AX-000 — 어떤 리서치 방향도 dead-end 로 닫지 않는다. 이 카드가 닫는 것은 '계기를 그대로 믿는 읽기'뿐이고, ④의 vol-랭크 예측성·⑤의 TTM 표준은 오히려 미회수 자산으로 남겼다. retry_condition 은 카드 자체의 소멸 조건이다.",
+        "d_firewall": "방화벽 통과 — 고정 제약과 PIT 를 실패 원인으로 귀속하지 않는다. ③의 '슬롯 하나를 밀어내는 비용'은 종목수 25 제약 비판이 아니라 결합 형태의 산술이고 처방은 게이트 형태 교정이다. 완화 레버 제시 없음.",
+        "e_frontier": "프론티어 4종 — 계기 플라시보 상시화, 항등 검사와 선택 코드 공시, 미회수 표준(TTM)의 소비자 배선, 비겹침 창 강제."
+      },
+      "expiry": "2027-01-10",
+      "frontier": [
+        "계기 플라시보 상시화 — 정보 0 순열·무신호 대조를 판정 계기마다 같은 개입 규모로 돌려 밴드를 만들고, 실측 arm 을 그 밴드 대비로만 판정한다",
+        "항등 검사와 선택 코드 공시 — 혼합·차분·비율 계열은 측정 전에 대수적 항등(증분 t 불변 여부)을 확인하고, 선택 코드가 무엇을 최대화하는지 산출물에 적는다(which.max 대상의 공시)",
+        "미회수 표준의 소비자 배선 — TTM 처럼 정확히 계산된 표준이 소비자 0 으로 남아 있는 경로를 전수 조사한다(wiring_map 계통과 동형의 공백)",
+        "비겹침 창 강제 — 지속성·자기상관 측정은 비겹침 창으로만 하고 조인 키 중복(자기 조인) 검사를 통과해야 산출을 발행한다"
+      ],
+      "live_trigger": {
+        "type": "data",
+        "condition": "계기 가드 4종(벤치 교체 자동 공시 · 혼합 항등 검사 · dIR 플라시보 밴드 · 비겹침 창 강제) 중 하나라도 배선되면 해당 항목 재진단",
+        "monitored_source": "06_Registry/wiring_map.json · 06_Registry/rf_preaudit.json · 02_Infrastructure/validation/"
+      },
+      "revival_spec": [
+        {
+          "signal_id": "wall_clock_date",
+          "condition": "x >= as.Date('2027-01-10')",
+          "from_trigger": "expiry",
+          "status": "active"
+        },
+        {
+          "signal_id": "registry_present",
+          "condition": "x == TRUE",
+          "from_trigger": "data",
+          "status": "pending"
+        }
+      ],
+      "constraint_firewall": {
+        "mode": "backstop_passed",
+        "checked_at": "2026-10-10"
+      },
       "supporting_l_codes": [
         "L-MF-20260808_DUALBASIS_IS_BENCH_NOT_EXPOSURE",
         "L-MF-20260808_FQ087",
@@ -4452,7 +4545,7 @@
       "promoted_to_axiom": null,
       "created_at": "2026-08-09T05:31:45+00:00",
       "refined_at": null,
-      "drafted_at": null,
+      "drafted_at": "2026-10-10T11:56:33+0900",
       "approved_at": null,
       "source_file": "DIST-GEN-009.json"
     },
@@ -5080,16 +5173,47 @@
       "type": "empirical",
       "polarity": "negative",
       "metric_type": "estimated",
-      "status": "pending_5axis",
-      "statement_refined": null,
+      "status": "proposed",
+      "statement_refined": "market=KR family=momentum mode=reinforcement: 2026-08-29 모멘텀 계열 강화 라운드는 서로 다른 게재 설계 3건을 KR 에 이식해 전부 essence C 를 받았고 OOS retention 이 셋 다 음수였다 — EL2022 팩터 모멘텀(PORT_t 1.002 · OOS -0.780 · SR 0.587 · CAGR 13.2% · Calmar 0.216 · MDD 0.610) · GH2004 52주 신고가 근접도(PORT_t 0.6364 · OOS -0.693 · SR 0.688 · CAGR 13.84% · Calmar 0.2516 · MDD 55.03% · beta 0.687 · net_IR 0.138 · DSR 0.152 n_trials 12) · DM2016/BSC2015 모멘텀 크래시 관리(PORT_t 0.7547 · OOS -0.660 · SR 0.5699 · CAGR 13.12% · Calmar 0.1885 · MDD 69.59% · netIR 0.1719 · DSR 0.233). 이 라운드들이 남긴 이전 가능한 결과는 성과가 아니라 방법론 2건이다. ①크래시 관리 오버레이의 한계기여가 권위 층에서 전 축 음수로 재현됐다 — 오버레이를 끈 대조 C2_IV_off(CAGR 14.35% · SR 0.6027 · Calmar 0.2063 · netIR 0.2308 · PORT_t 1.0149)가 채택 arm W2_IV 를 전 구성에서 지배한다. ②낮은 베타 구성의 음(-) PORT_t 는 알파 판정이 아니라 basis 산술이다 — cell1 활성수익 -7.95%/yr = alpha +1.43% + (beta-1)·E[bm] -9.38%(beta 0.199)로 분해되므로 beta-통제 없는 PORT_t 를 저베타 구성의 알파 판정으로 인용하면 안 된다. 신호 축에서는 이익 서프라이즈가 가격 축에 일방 포섭된다(가격 3분위 통제 후 SUE 분위 스프레드 연 +0.23% · NW-t 0.150 · 검정력 100% = powered null · Fama-MacBeth 독립 경로 b 0.00000 t -0.024).",
       "statement_draft": "[실증 실패 규칙 초안] family=momentum, tags=reinforcement,multifactor,momentum, supporting=7건 L-code. (promote.R 5축 검증에서 범위·메커니즘·OOS 확정 필요)",
-      "retry_condition": null,
-      "adversarial_verdict": null,
+      "retry_condition": "①모멘텀 크래시 구간(KOSPI200 6개월 수익 하위 10분위) 재발 시 DM2016/BSC2015 오버레이를 같은 노출 예산의 정적 대조와 짝지어 재측정한다 ②beta-통제 alpha 를 권위 산출물에 병기하는 배선이 생기면 저베타 구성 라운드 전건을 재판정한다 ③LS2000 1급 T1 은 검정력 45.5%(ratio 0.6597)로 미결이므로 표본이나 층화를 바꿔 검정력 80% 이상에서 재검할 수 있을 때 재개한다.",
+      "adversarial_verdict": {
+        "a_exaggeration": "낙관 제거 — 세 설계 전부 C 이고 Calmar 0.19~0.25 · OOS 전부 음수임을 먼저 적었다. DM2016 오버레이는 '개선 없음'이 아니라 '대조가 전 축에서 지배'로 더 강하게 적었고, SUE 포섭 판정은 검정력 100% powered null 이라는 근거를 붙여 '효과 없음'과 '미결'을 구분했다.",
+        "b_evidence": "근거 — EL2022·GH2004·DM2016 수치는 supporting L-code 의 backtested essence 기재값이고, SUE 포섭·4셀 분해는 같은 묶음의 canonical_screen 실측(screen-tier)이다. 두 계층을 섞지 않도록 essence 수치와 screen 수치를 문장에서 분리했다. DGW2014 는 착수 전 검정력 게이트에서 중단돼 측정값이 없으므로 수치를 인용하지 않았다.",
+        "c_ax000": "AX-000 — '모멘텀 계열은 KR 에서 구조적 한계'로 쓰지 않았다. 3건 실패를 각각 봉투-상대 사실로 적고, LS2000 1급은 검정력 45.5% 라 '미결(underpowered)'이며 '효과 없음'이 아니라고 명시했다. retry_condition 3갈래 전부 재도전 경로다.",
+        "d_firewall": "방화벽 통과 — ②의 basis 산술은 충실구현 단계의 롱숏 복제판을 beta=1 벤치로 채점할 때 생기는 측정 회계 사실이며, long-only 고정 축을 실패 원인으로 귀속하거나 공매도 허용을 레버로 제시하지 않는다(충실구현 단계는 논문 그대로가 축이므로 롱숏 자체가 규약 안이다). 실투형 프론티어는 전부 envelope-안 레버(오버레이 상태 변수·노출 축)로 썼다.",
+        "e_frontier": "프론티어 4종 — 추세 상태 노출 축(같은 격자의 B5 에서 위험 분모를 실제로 움직인 유일한 축), 노출 예산을 짝지은 정적 대조, beta-통제 alpha 병기, SUE 를 선택 신호가 아니라 국면·노출 조건부로 소비."
+      },
       "expiry": "2026-12-03",
-      "frontier": [],
-      "live_trigger": [],
-      "revival_spec": [],
-      "constraint_firewall": null,
+      "frontier": [
+        "추세 상태 총노출 스칼라 — 같은 강화 격자(2508.18592 계보 B5)에서 선택·비중·구성·주기 23칸이 못 내린 MDD 하한을 추세 상태 2칸이 0.604→0.417·0.409 로 내렸다(Calmar 0.388·0.386 · CAGR 대가 0.3~0.7pp). 모멘텀 계열 크래시 관리를 이 형태로 재구성한다 (출처 stage_artifacts/l_code/reinforcement/l_code_RP_20261005_170345_8524_adapted_rulefast_B5.json)",
+        "노출 예산을 맞춘 정적 대조 — 오버레이 Calmar 개선이 '노출을 줄인 것'인지 '국면을 맞춘 것'인지 가르는 통제칸. DM2016 라운드에는 이 대조가 없었다",
+        "beta-통제 alpha 병기 — 저베타 구성의 PORT_t 를 알파로 읽지 않도록 권위 산출물 단계에서 alpha 와 (beta-1)·E[bm] 성분을 분리해 함께 남긴다",
+        "SUE 의 국면·노출 조건부 소비 — 가격 축에 포섭된 것은 횡단면 선택 지점이다. 같은 정보를 노출 수준 또는 국면 식별 입력으로 옮긴 형태는 미측정이다"
+      ],
+      "live_trigger": {
+        "type": "regime",
+        "condition": "KOSPI200 6개월 수익이 하위 10분위에 드는 모멘텀 크래시 구간 발생 — 그 구간을 포함해 DM2016/BSC2015 오버레이를 노출 예산 짝 대조와 함께 재측정",
+        "monitored_source": "06_Registry/regime_published/regime_signal_monthly_meta.json · 06_Registry/regime_published/regime_drift_log.jsonl"
+      },
+      "revival_spec": [
+        {
+          "signal_id": "wall_clock_date",
+          "condition": "x >= as.Date('2026-12-03')",
+          "from_trigger": "expiry",
+          "status": "active"
+        },
+        {
+          "signal_id": "regime_category",
+          "condition": "x %in% c('CRISIS','CAUTION')",
+          "from_trigger": "regime",
+          "status": "active"
+        }
+      ],
+      "constraint_firewall": {
+        "mode": "backstop_passed",
+        "checked_at": "2026-10-10"
+      },
       "supporting_l_codes": [
         "L-RF-20260829_142955",
         "L-RF-20260829_152717",
@@ -5105,7 +5229,7 @@
       "promoted_to_axiom": null,
       "created_at": "2026-09-04T06:08:42+00:00",
       "refined_at": null,
-      "drafted_at": null,
+      "drafted_at": "2026-10-10T11:56:12+0900",
       "approved_at": null,
       "source_file": "DIST-GEN-018.json"
     },
@@ -130266,16 +130390,47 @@
       "type": "empirical",
       "polarity": "mixed",
       "metric_type": "backtested",
-      "status": "pending_5axis",
-      "statement_refined": null,
+      "status": "proposed",
+      "statement_refined": "market=KR mode=paper_replication: 유니버스만 K200∪KQ150 으로 치환한 완전 충실구현 73건(모멘텀·ML·가치·네트워크/RMT·결합 혼재)의 권위 등급은 C/F 대역에 모이고 B 는 1건(결합판 RP_AUTO_combo140381252002 — 15bps SR 0.98 · 논문비용 판 1.11), A 는 0건이다. 단일 논문 기저의 15bps SR 최고치는 ML 계열 0.93(2003.02515 Time-varying neural network)·0.80(2002.06975 Cross-sectional DL)이고, 음수 SR 은 중국시장 반전·참조점 선호·네트워크 위험 계열에 몰린다(-0.11 ~ -0.43). ★'논문기준 판 vs 15bps 판' 격차는 비용 회계이지 복제 성공·실패 신호가 아니다 — 부호는 논문이 명시한 수수료가 15bps 보다 큰지에 따라 정해진다(예 2508.18592 commission_paper_bps 30 → 논문기준 SR 0.442 vs 15bps 0.651, 출처 stage_artifacts/replication/20261005_170345_8524/authoritative_remeasure.json). 따라서 이 대역은 '충실구현 단계에서 단일 논문이 KR 에서 내는 봉투-상대 천장'의 관측이고, 이 집합에서 B 를 낸 유일한 형태는 복수 논문 결합이었다.",
       "statement_draft": "[실증 혼재(방향불명) 규칙 초안] family=momentum, tags=P,A,E, supporting=73건 L-code. (promote.R 5축 검증에서 범위·메커니즘·OOS 확정 필요)",
-      "retry_condition": null,
-      "adversarial_verdict": null,
-      "expiry": null,
-      "frontier": [],
-      "live_trigger": [],
-      "revival_spec": [],
-      "constraint_firewall": null,
+      "retry_condition": "declaration gate(rf_preaudit) 통과 + 적대적 충실도 감사에서 adapted 또는 faithful 판정을 받은 청정 충실구현 권위 등급이 8건 이상 누적되면 대역을 재추정한다. 현 73건은 감사 패스 33개 중 28개가 misdeclared 인 집합(기저율 85%)이라 등급 대역에 충실도 결함이 섞여 있다.",
+      "adversarial_verdict": {
+        "a_exaggeration": "낙관 제거 — B 1/73 · A 0 을 헤드라인에 두고 'ML 계열이 최고' 류 서술을 15bps SR 0.93/0.80 실측값으로 고정했다. 결합 B 1건도 '결합이 통한다'가 아니라 '이 집합에서 B 를 낸 유일한 형태'로 강등했다. Judge·BOOK 통과분 0건임을 함의로 남겼다.",
+        "b_evidence": "근거 — 등급·논문기준 SR·15bps SR 은 전부 supporting L-code 기재 수치다(metric_type 전건 backtested · run_paper_replication 체인). 비용 회계 기전만 권위 산출물 1건(authoritative_remeasure.json::replication.commission_paper_bps / paper_basis.sharpe / essence.net_sharpe)으로 확인하고 그 경로를 statement 에 적었다. proxy 를 backtested 로 올린 항목 없음.",
+        "c_ax000": "AX-000 — '단일 논문 복제는 KR 에서 불가'로 단정하지 않았다. 73건이 misdeclared 85% 집합임을 명시하고 청정 8건 누적을 retry_condition 으로 열어 미해결 상태로 유지했다.",
+        "d_firewall": "방화벽 통과 — 유니버스 치환(K200∪KQ150)과 15bps 등급 판은 충실구현 단계의 고정 축이며 초안은 둘을 실패 원인으로 귀속하지 않는다. 비용 두 판의 격차를 '회계'로 명시해 '15bps 가 등급을 깎았다'는 귀속 경로를 차단했다. 서술은 envelope-상대('이 집합에서 관측된 천장')이고 제약 완화 레버 제시 없음.",
+        "e_frontier": "프론티어 4종 — 결합 형태(유일한 B 가 나온 자리), 청정 레인(declaration gate 통과분)으로 대역 재추정, 역할 등급 기반 2계층 편입(단독 A 가 아니어도 역할 B+ 면 풀 재료), 비대칭 표적(분포-표적 학습)."
+      },
+      "expiry": "2027-01-10",
+      "frontier": [
+        "복수 논문 결합 형태 — 73건 중 유일한 B 가 결합판이었다. 결합 설계를 기저 PORT_t 가 부모 최고를 넘는 조건에서만 열고 희석(dilution) 판정 arm 을 같은 묶음에 태운다",
+        "청정 레인 대역 재추정 — declaration gate 통과 + 감사 adapted/faithful 인 판정만으로 C/F 대역을 다시 그린다(현 대역은 충실도 결함이 섞여 있다)",
+        "역할 등급 경로 — 단독 essence 가 C 여도 역할(defensive/offensive/rebound/alpha/diversifier) B+ 면 2계층 풀 재료다. 73건을 역할 축으로 재분류해 단독 등급과 역할 등급의 불일치 분포를 센다",
+        "비대칭 표적(분포-표적 학습) — 평균 예측 대신 수익 분포를 표적으로 두는 소비 형태. 현 73건은 전부 평균-순위 소비면이다"
+      ],
+      "live_trigger": {
+        "type": "data",
+        "condition": "declaration gate 통과 ∧ 충실도 감사 adapted|faithful 인 충실구현 권위 등급 8건 누적",
+        "monitored_source": ".cache/reinforce_auto_log.jsonl::preaudit · stage_artifacts/replication/*/authoritative_remeasure.json"
+      },
+      "revival_spec": [
+        {
+          "signal_id": "wall_clock_date",
+          "condition": "x >= as.Date('2027-01-10')",
+          "from_trigger": "expiry",
+          "status": "active"
+        },
+        {
+          "signal_id": "cache_present",
+          "condition": "x == TRUE",
+          "from_trigger": "data",
+          "status": "pending"
+        }
+      ],
+      "constraint_firewall": {
+        "mode": "backstop_passed",
+        "checked_at": "2026-10-10"
+      },
       "supporting_l_codes": [
         "L-RP-20260829_122633",
         "L-RP-20260830_085437",
@@ -130357,7 +130512,7 @@
       "promoted_to_axiom": null,
       "created_at": "2026-10-05T14:57:45+00:00",
       "refined_at": null,
-      "drafted_at": null,
+      "drafted_at": "2026-10-10T11:56:04+0900",
       "approved_at": null,
       "source_file": "DIST-GEN-317.json"
     },
@@ -131403,16 +131558,47 @@
       "type": "methodological",
       "polarity": "positive",
       "metric_type": "estimated",
-      "status": "pending_5axis",
-      "statement_refined": null,
+      "status": "proposed",
+      "statement_refined": "family=infra_process type=methodological: 등재 라벨과 그 라벨을 정당화하는 산출물은 독립이며, 라벨은 산출물로 재도출해야 한다. 실측 4건이 같은 방향을 가리킨다. ①카탈로그 'Grade A' 34건 재검에서 hurdle 실제 판정이 JUDGE_PASS_A 25 · JUDGE_PASS_LOWER 2 · JUDGE_REJECT 2 · NO_HURDLE 5 로 갈렸고 s6_judge 산출물은 34건 전수 부재였다 — 즉 'Grade A' 라벨 34건 전부가 완전한 Judge 검증 미완 상태였다. ②같은 34건의 PIT C1~C15 전수 재검은 PASS 11 / AMBIGUOUS_PIT_MINOR 12 / AMBIGUOUS_PIT_MAJOR 2 / FAIL 7 로 갈렸고, 3중 오염(C11_FRED+C5_DD+C11_MRS) 2건과 2중 위반(C10_LIQ 당일 거래량 + C1b full-column quantile) 계열이 카탈로그 안에 있었다. ③생산자 자체검사는 PIT 위반과 명세 전달 실패를 체계적으로 탐지하지 못했고(4건 누적 증거), 교차 모델 검증 또는 독립 감사가 mandatory verification layer 로 확립됐다. ④단일 인프라 의존은 프로토콜 전체를 정지시킨다(응답 0바이트 2회 연속 → 합의 프로세스 blocker) 그리고 병행 소비자는 원자적 claim 으로만 직렬화된다(temp/rename 원자쓰기 + mutex 직렬화 + 6h stale 재점유 · 스모크 17/17 PASS). 공통 처방 = 라벨을 쓰는 지점마다 산출물 재도출 + 단일 소스 검증 거부 + 착수 선점 표시.",
       "statement_draft": "[방법론 성공 규칙 초안] family=infra_process, tags=CATALOG_INTEGRITY,NO_JUDGE_SWEEP,HURDLE_VS_JUDGE_SCHEMA, supporting=7건 L-code. (promote.R 5축 검증에서 범위·메커니즘·OOS 확정 필요)",
-      "retry_condition": null,
-      "adversarial_verdict": null,
-      "expiry": null,
-      "frontier": [],
-      "live_trigger": [],
-      "revival_spec": [],
-      "constraint_firewall": null,
+      "retry_condition": "카탈로그·원장 스키마에 라벨과 산출물 경로를 함께 적는 필드가 배선되고(예 hurdle_pass vs judge_pass 분리), 라벨 소비자가 그 경로의 존재를 확인하는 가드를 통과한 뒤에, 같은 전수 재검을 다시 돌려 불일치 건수를 센다. 불일치 0 이 재현되면 이 카드의 처방은 배선으로 흡수된 것이다.",
+      "adversarial_verdict": {
+        "a_exaggeration": "낙관 제거 — '교차 검증이 문제를 해결한다'로 쓰지 않았다. ③은 '탐지하지 못했다'는 음성 결과이고, 성공 주장은 ④의 claim 직렬화 스모크 17/17 하나뿐이며 그 범위를 '착수 직렬화'로 한정했다(판단·삭제는 여전히 사람 감독). 재검 숫자는 전부 분할 분포로 적어 '대부분 통과' 류 요약을 피했다.",
+        "b_evidence": "근거 — supporting L-code 기재 수치 그대로다. metric_type 은 L-142·L-148·L-167 이 estimated(감사 재집계)이고 나머지는 unavailable/estimated 이므로 전건을 진단·감사 재집계로 라벨했다. backtested 로 올린 수치 없고 성과 수치는 이 카드가 주장하지 않는다.",
+        "c_ax000": "AX-000 — 실패를 '구조적'으로 단정하는 문장이 없다. ③의 자체검사 한계는 '단일 소스 검증 거부'라는 처방으로 이어지고, retry_condition 은 배선 후 재검으로 이 카드가 소멸할 수 있는 조건을 적었다.",
+        "d_firewall": "방화벽 통과 — 고정 제약(종목수·유동성·long-only·Sum w=1·유니버스·15bps)과 PIT 를 실패 원인으로 귀속하지 않는다. ②는 PIT 위반이 실제로 발견됐다는 감사 사실이고 PIT 를 제약으로 비판하는 서술이 아니다. 완화 레버 제시 없음(처방은 전부 검증 배선 쪽).",
+        "e_frontier": "프론티어 4종 — 라벨↔산출물 재도출 가드, 기계 사전검사로 판독 불필요 유형 선이동, 단일 인프라 의존의 폴백, claim 프로토콜의 소비자 확장."
+      },
+      "expiry": "2027-01-10",
+      "frontier": [
+        "라벨↔산출물 재도출 가드 — 등급·PASS 라벨을 소비하는 지점마다 근거 산출물 경로 존재를 기계가 확인한다. 현행 a_eligibility_gate 의 consume_hold(발행면이 아니라 소비면 격리)가 같은 원리의 선례다",
+        "기계 사전검사로 판독 불필요 유형 선이동 — 자체검사가 놓치는 유형 중 정규식·AST·산출물 대조로 확정되는 것(미신고 상수·미발행 월·하네스 층 효과)을 감사 전 단계로 옮긴다",
+        "단일 인프라 의존의 폴백 — 교차 모델 검증이 mandatory 가 되면 그 모델 자체가 단일 실패점이 된다. 폴백 모델 또는 오프라인 스냅샷과 '사람 대체 기준'의 공식 규정화",
+        "claim 프로토콜 소비자 확장 — 원자적 claim 이 증류 레인에서 작동했다면 같은 패턴을 다른 병행 소비자(강화 배치·2계층 arm·일일 리프레시)에 적용했을 때 중복 실행이 사라지는지 센다"
+      ],
+      "live_trigger": {
+        "type": "data",
+        "condition": "카탈로그·원장에 라벨↔산출물 경로 분리 필드가 배선된 뒤 전수 재검 1회 — 불일치 건수가 0 으로 재현되면 카드 흡수",
+        "monitored_source": "06_Registry/module_catalog.json · 06_Registry/a_eligibility_gate.json · 06_Registry/decision_register.json"
+      },
+      "revival_spec": [
+        {
+          "signal_id": "wall_clock_date",
+          "condition": "x >= as.Date('2027-01-10')",
+          "from_trigger": "expiry",
+          "status": "active"
+        },
+        {
+          "signal_id": "registry_present",
+          "condition": "x == TRUE",
+          "from_trigger": "data",
+          "status": "pending"
+        }
+      ],
+      "constraint_firewall": {
+        "mode": "backstop_passed",
+        "checked_at": "2026-10-10"
+      },
       "supporting_l_codes": [
         "L-142",
         "L-148",
@@ -131428,7 +131614,7 @@
       "promoted_to_axiom": null,
       "created_at": "2026-07-18T08:47:58+00:00",
       "refined_at": null,
-      "drafted_at": null,
+      "drafted_at": "2026-10-10T11:56:16+0900",
       "approved_at": null,
       "source_file": "DIST-QPM-016.json"
     },
@@ -131562,16 +131748,47 @@
       "type": "methodological",
       "polarity": "conditional",
       "metric_type": "estimated",
-      "status": "pending_5axis",
-      "statement_refined": null,
+      "status": "proposed",
+      "statement_refined": "market=KR family=behavioral type=methodological: 플로우·행태 계열은 신호의 존재보다 소비 형태가 판정을 지배한다(조건부 규칙). ①회전율이 판정을 먹는다 — Volume_Price_Divergence 는 MDD 59.5% + 회전율 904% 이중 hard fail(SR 0.400 · CAGR 9.4% · max_corr 0.376 · 최근 3Y SR 0.210)이고, 플로우 반전을 S5 돌연변이로 올린 판은 회전율 3205%(상한 5배)에 VT15%+DD5/15 오버레이가 겹쳐 CAGR 1.86% 대 벤치 11.13% 로 끝났다 — 20일 롤링 플로우 신호의 월간 리밸이 원인으로 특정됐다. ②오버레이를 얹으면 잔존 수익이 더 깎인다 — R10_Cokurtosis 하위 10% 제외 게이트 + C19 조합의 base SR 0.209 가 DD 5/15 오버레이 적용 후 0.161 로 내려갔고 CAGR 1.57% · BM_Corr 0.678(분산 이득 없음)이었다. ③팩터 수 증가가 자동 개선이 아니다 — 3팩터(C19+V14+D01)에 L22 를 4번째로 더하면 V14 비중 30%→25% 희석 비용이 L22 의 분산 기여(corr -0.108)를 넘어 SR 0.756 · CAGR 11.24% 로 하락하고 OOS retention 0.52 로 과적합 위험이 섰다. ④설계 단계 의무 — 2-party flow divergence 라벨은 대수적으로 단방향 신호와 같을 수 있다: (z_foreign - z_individual) 과 (-z_individual) 의 횡단면 상관 0.897(중앙 0.919)로 외국인 성분의 설명력이 극소였고 이는 라벨만 새로운 structural hidden clone 이다 — 수식 수준 항등 검사 없이 '신규 축'으로 등재하지 말 것. ⑤반대 방향 사례가 같은 집합에 있다 — 오염된 MRS 가 알파를 억제하고 있었고 수리 후 전 축이 올랐다(SR 1.002→1.099 · CAGR 12.61→14.29% · FMB t 6.682 · FF5 alpha 9.20%/yr t 2.31 · OOS retention 1.28). 측정 결함은 과대평가만 만들지 않는다.",
       "statement_draft": "[방법론 조건부 규칙 초안] family=behavioral, tags=s5_mutation,BEHAVIORAL_FAIL,CONTRARIAN_FLOW, supporting=7건 L-code. (promote.R 5축 검증에서 범위·메커니즘·OOS 확정 필요)",
-      "retry_condition": null,
-      "adversarial_verdict": null,
-      "expiry": null,
-      "frontier": [],
-      "live_trigger": [],
-      "revival_spec": [],
-      "constraint_firewall": null,
+      "retry_condition": "플로우·행태 신호를 (a)회전율 관리 형태(신호 평활·히스테리시스 버퍼·집행주기 분리)로 재구성하거나 (b)횡단면 점수 입력이 아니라 노출 수준·국면 식별 입력으로 옮긴 판이 측정되면 이 조건부 규칙을 재판정한다. ④의 항등 검사는 조건이 아니라 상시 의무다.",
+      "adversarial_verdict": {
+        "a_exaggeration": "낙관 제거 — ⑤의 양(+) 결과를 '플로우가 통한다'로 확장하지 않았다. 그 건은 MRS 오염 수리의 결과이고 플로우 신호 자체의 승리가 아니므로 '측정 결함은 과대평가만 만들지 않는다'는 방법론 문장으로 한정했다. ①~③은 전부 수치와 함께 봉투-상대 사실로 적었다.",
+        "b_evidence": "근거 — supporting L-code 기재 수치 그대로이며 metric_type 은 전건 estimated 다(L-131·L-1571·L-1580·L-160A·L-607·L-623·L-723). 따라서 이 카드는 진단·추정 층이고 어떤 수치도 권위 등급으로 인용하지 않는다. backtested 오라벨 없음.",
+        "c_ax000": "AX-000 — 'KR 개인·외국인 플로우는 알파 원천이 아니다'로 단정하지 않았다. 판정을 '소비 형태 조건부'로 적고 회전율 관리와 노출·국면 소비면 2갈래를 retry_condition 으로 열었다. ④는 금지가 아니라 설계 검사 의무다.",
+        "d_firewall": "방화벽 통과 — 회전율은 전략 구성의 성질이고 15bps 비용 모델·종목수 25·long-only 는 고정 축이다. 초안은 '비용 때문에 실패했다'고 쓰지 않고 '20일 롤링 신호의 월간 리밸이 만든 회전율이 총수익을 먹는다'는 구성 귀속으로 적었다. 제약 완화 레버(비용 인하·회전율 상한 완화·종목수 확대) 제시 없음. 처방은 전부 envelope-안(평활·버퍼·집행주기·노출·국면).",
+        "e_frontier": "프론티어 4종 — 회전율 관리 형태, 노출·국면 조건부 소비면 이동, 항등 검사 상시 배선, 결합 시 희석 비용의 사전 계상."
+      },
+      "expiry": "2027-01-10",
+      "frontier": [
+        "회전율 관리 형태 — 랭크 버퍼(히스테리시스)·신호 평활·집행주기 분리로 같은 신호의 회전율을 낮춘 판. 2026-10 강화 격자 B6 가 랭크 버퍼 2x/3x n_max 칸을 실측하는 자리를 이미 갖고 있다",
+        "노출·국면 조건부 소비면 — 플로우를 횡단면 점수 입력에서 빼고 총노출 또는 국면 식별 입력으로 옮긴 형태. 같은 정보가 선택면에서 비유의하고 노출면에서 기여하는 사례가 다른 격자에서 관측됐다",
+        "대수적 항등 검사 상시 배선 — 신규 축 등재 전 수식 수준 항등 + 횡단면 상관 사전 측정(2-party divergence·차분·비율 계열 전부). TDC pair-wise 상관만으로는 포착되지 않는다",
+        "결합 시 희석 비용 사전 계상 — 팩터 추가의 순이득 = 분산 기여 - 기존 알파 비중 희석. 추가 전에 이 차를 추정해 음수면 추가하지 않는다"
+      ],
+      "live_trigger": {
+        "type": "data",
+        "condition": "플로우·행태 신호를 회전율 관리 형태 또는 노출·국면 조건부로 재구성한 판이 1건이라도 권위 등급을 받으면 조건부 규칙 재판정",
+        "monitored_source": "06_Registry/reinforce_ledger_l1.json(블록 B6 랭크 버퍼·B5 노출 칸) · stage_artifacts/replication/*/authoritative_remeasure.json"
+      },
+      "revival_spec": [
+        {
+          "signal_id": "wall_clock_date",
+          "condition": "x >= as.Date('2027-01-10')",
+          "from_trigger": "expiry",
+          "status": "active"
+        },
+        {
+          "signal_id": "registry_present",
+          "condition": "x == TRUE",
+          "from_trigger": "data",
+          "status": "pending"
+        }
+      ],
+      "constraint_firewall": {
+        "mode": "backstop_passed",
+        "checked_at": "2026-10-10"
+      },
       "supporting_l_codes": [
         "L-131",
         "L-1571",
@@ -131587,7 +131804,7 @@
       "promoted_to_axiom": null,
       "created_at": "2026-07-26T08:52:22+00:00",
       "refined_at": null,
-      "drafted_at": null,
+      "drafted_at": "2026-10-10T11:56:19+0900",
       "approved_at": null,
       "source_file": "DIST-QPM-021.json"
     },
@@ -133547,16 +133764,47 @@
       "type": "empirical",
       "polarity": "mixed",
       "metric_type": "estimated",
-      "status": "pending_5axis",
-      "statement_refined": null,
+      "status": "proposed",
+      "statement_refined": "market=KR family=low_vol mode=ramp: Shu-Mulvey 계열 아크(FQ-239)의 소득은 성과가 아니라 회계와 검증이다. ①동월 적용 결함이 확정됐다 — 월말 결정 비중을 같은 달 수익에 곱하는 약 1개월 look-ahead 를 shift A/B(동일 상태·뷰·c 재사용, 타이밍만 교체, 공통윈도 147개월, 5bps)로 분리한 결과 TE1~4 pt_capwt 2.12/2.71/3.46/3.86 → 0.73/0.82/0.98/1.13, IR_vsEW 1.15~1.24 → 0.17~0.28 이고 대응표본 NW-t +5.1~+5.8 이다. 6월 헤드라인의 약 2/3가 결함 산물이며 'HARD 2/3 통과' 판정은 철회됐다. ②논문 원 프로토콜(일별 온라인 필터 + T+2)은 KR 에서 16셀 IR_vsEW 전부 음수(-0.18 ~ -0.56)·턴오버 2배+·MDD 악화로 기각됐고 causal re-tune 으로도 구제되지 않았다. ③노출-스케일 오버레이는 절대위험을 개선하면서 판정 축을 붕괴시킨다 — exposure=1-0.30·signal(자유도 0)에서 MDD 0.322→0.275 · SR 0.650→0.657 인데 PORT_t +1.03 → -0.14 ~ -0.61 · oos -0.95 ~ -3.7 이다. 기전은 cap-w active 채점에서 노출<1 이 상승월 음의 active 를 만드는 것이고, 완전투자 배분 전략의 단독 graduation 그릇에서 노출-스케일은 구조적으로 불리하다(책-레벨 위험예산과는 별개 질문). ④ex-ante 예측 가능한 것은 극단 위기(하위 5%)뿐이고 그 신호는 시장 JM Bear_Prob 하나다 — market_full AUC 0.761 [0.654,0.858] · smv_window 0.760 [0.617,0.906] 두 창 독립 정렬. 하위 10% 완만한 하락은 전 후보 CI 하한이 0.5 미만이라 예측 불가이고 detective AUC 0.87~0.94 는 '감지는 되나 예보는 안 된다'는 구조다. ⑤insider 순매수 클러스터는 per-holding 유지 안전이다(수익 gap NW-t +2.50 · restricted +2.68 · 하방 -7.6% vs -8.3% · 급락 4.7% vs 7.0% · lag1 +1.89) 그러나 cohort-path 악화(MDD -34.5% vs -16.7% · vol 35.5% vs 22.5%)는 분산 아티팩트(2.5종 vs 22.5종)이지 위험 속성이 아니다. ⑥자기검증은 자기 prereg-코드 상충을 보지 못했고 독립 감사가 C8+C1(검증창 자체 적합 + 인샘플 평활 상태 + 사후 상태평균)을 잡았다 — 음성 대조(미래교란 2시점 비트-동일)는 유효했다. ★supporting 7건 중 L-RAMP-20260619_144257 은 corpus 조회 불가라 이 카드 근거에서 제외했다(6건 기반).",
       "statement_draft": "[실증 혼재(방향불명) 규칙 초안] family=low_vol, tags=e,,,r, supporting=7건 L-code. (promote.R 5축 검증에서 범위·메커니즘·OOS 확정 필요)",
-      "retry_condition": null,
-      "adversarial_verdict": null,
-      "expiry": null,
-      "frontier": [],
-      "live_trigger": [],
-      "revival_spec": [],
-      "constraint_firewall": null,
+      "retry_condition": "①보정 회계(월말 결정→익월 적용 · 일별 T+2) 위에서 재측정한 판만 인용한다 ②노출-스케일 오버레이는 단독 graduation 그릇이 아니라 책-레벨 위험예산 그릇에서 다시 묻는다 ③극단 위기 예보가 Bear_Prob 하나라는 사실은 새 상태 변수(추세·상관 수준)가 두 창 독립 정렬로 AUC CI 하한 0.5 를 넘길 때 재검한다.",
+      "adversarial_verdict": {
+        "a_exaggeration": "낙관 제거 — ⑤의 per-holding 양(+) 결과에 cohort-path 악화와 그것이 분산 아티팩트라는 설명을 같은 문장에 묶었다. ③은 'MDD 가 개선됐다'를 PORT_t 붕괴와 함께 적어 절대위험 개선을 단독 인용할 수 없게 했다. 6월 헤드라인 철회를 먼저 적었다.",
+        "b_evidence": "근거 — supporting 6건의 기재 수치 그대로다. metric_type 혼재를 문장에서 구분했다: ①②③은 backtested, ④는 AUC·block bootstrap CI(진단), ⑤는 canonical_screen(screen-tier), ⑥은 감사 판정이다. corpus 미발견 1건을 근거에서 빼고 그 사실을 statement 에 남겼다.",
+        "c_ax000": "AX-000 — 'Shu-Mulvey 계열은 KR 에서 불가'로 단정하지 않았다. ②는 원 프로토콜(일별 케이던스)에 한정한 기각이고, ③은 '그릇이 다르다'로 열어 두었고, ④는 '완만한 하락은 예측 불가'를 '현 후보 집합에서'로 한정했다. retry_condition 3갈래 전부 재도전 경로다.",
+        "d_firewall": "방화벽 통과 — 고정 제약과 PIT 를 실패 원인으로 귀속하지 않는다. ①은 PIT 위반을 스스로 잡아낸 기록이지 PIT 를 비판하는 서술이 아니고, ③의 '구조적으로 불리'는 Sum w=1 완전투자 고정 축을 원인으로 지목하는 것이 아니라 채점 그릇(단독 graduation 의 cap-w active 벤치)과 노출-스케일 처치의 상호작용을 지목하며, 그래서 '책-레벨 위험예산 그릇'이라는 envelope-안 재질문으로 넘겼다. 제약 완화 레버 제시 없음.",
+        "e_frontier": "프론티어 4종 — 보정 회계 위 재측정, 책-레벨 위험예산 그릇, 극단 위기 전용 처치, 독립 감사 상시화."
+      },
+      "expiry": "2027-01-10",
+      "frontier": [
+        "보정 회계 위 재측정 — 월말 결정→익월 적용·일별 T+2 고정판에서만 KR Shu-Mulvey 를 다시 잰다. 보정 전 수치는 사료로만 인용",
+        "책-레벨 위험예산 그릇 — 노출-스케일 처치를 단독 graduation 이 아니라 책 전체 위험예산 배분 문제로 재정식화한다(cap-w active 채점의 상승월 음의 active 가 사라지는 그릇인지 확인)",
+        "극단 위기 전용 처치 — 예보 가능한 구간이 하위 5% 하나라면 처치도 그 구간만 덮는 형태(상시 노출 축소가 아닌 조건부 개입)로 설계하고 평균 노출을 맞춘 대조와 짝짓는다",
+        "독립 감사 상시화 — prereg-코드 상충은 작성자 본인이 보지 못하고 독립 감사가 잡았다. outcome-blind 독립 감사를 라운드 종결 조건으로 배선했을 때 잡히는 결함 유형을 센다"
+      ],
+      "live_trigger": {
+        "type": "data",
+        "condition": "추세 또는 상관 수준 상태 변수가 두 창 독립 정렬로 극단 위기 예측 AUC CI 하한 0.5 를 넘기면 ④를 재검하고 ③의 조건부 처치를 재설계",
+        "monitored_source": "06_Registry/regime_published/regime_signal_daily_meta.json · 04_Research/01_reports/(FQ-239 후속 재생)"
+      },
+      "revival_spec": [
+        {
+          "signal_id": "wall_clock_date",
+          "condition": "x >= as.Date('2027-01-10')",
+          "from_trigger": "expiry",
+          "status": "active"
+        },
+        {
+          "signal_id": "registry_present",
+          "condition": "x == TRUE",
+          "from_trigger": "data",
+          "status": "pending"
+        }
+      ],
+      "constraint_firewall": {
+        "mode": "backstop_passed",
+        "checked_at": "2026-10-10"
+      },
       "supporting_l_codes": [
         "L-RAMP-20260619_144257",
         "L-RAMP-20260715_022534",
@@ -133572,7 +133820,7 @@
       "promoted_to_axiom": null,
       "created_at": "2026-08-22T01:45:31+00:00",
       "refined_at": null,
-      "drafted_at": null,
+      "drafted_at": "2026-10-10T11:56:23+0900",
       "approved_at": null,
       "source_file": "DIST-RAMP-021.json"
     },

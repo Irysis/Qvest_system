@@ -3,9 +3,9 @@
   "dist_id": "DIST-RAMP-021",
   "cluster_key": "af48a4d783cb",
   "candidate_id": "CAND_ramp_af48a4d783cb",
-  "status": "pending_5axis",
-  "statement_refined": null,
-  "retry_condition": null,
+  "status": "proposed",
+  "statement_refined": "market=KR family=low_vol mode=ramp: Shu-Mulvey 계열 아크(FQ-239)의 소득은 성과가 아니라 회계와 검증이다. ①동월 적용 결함이 확정됐다 — 월말 결정 비중을 같은 달 수익에 곱하는 약 1개월 look-ahead 를 shift A/B(동일 상태·뷰·c 재사용, 타이밍만 교체, 공통윈도 147개월, 5bps)로 분리한 결과 TE1~4 pt_capwt 2.12/2.71/3.46/3.86 → 0.73/0.82/0.98/1.13, IR_vsEW 1.15~1.24 → 0.17~0.28 이고 대응표본 NW-t +5.1~+5.8 이다. 6월 헤드라인의 약 2/3가 결함 산물이며 'HARD 2/3 통과' 판정은 철회됐다. ②논문 원 프로토콜(일별 온라인 필터 + T+2)은 KR 에서 16셀 IR_vsEW 전부 음수(-0.18 ~ -0.56)·턴오버 2배+·MDD 악화로 기각됐고 causal re-tune 으로도 구제되지 않았다. ③노출-스케일 오버레이는 절대위험을 개선하면서 판정 축을 붕괴시킨다 — exposure=1-0.30·signal(자유도 0)에서 MDD 0.322→0.275 · SR 0.650→0.657 인데 PORT_t +1.03 → -0.14 ~ -0.61 · oos -0.95 ~ -3.7 이다. 기전은 cap-w active 채점에서 노출<1 이 상승월 음의 active 를 만드는 것이고, 완전투자 배분 전략의 단독 graduation 그릇에서 노출-스케일은 구조적으로 불리하다(책-레벨 위험예산과는 별개 질문). ④ex-ante 예측 가능한 것은 극단 위기(하위 5%)뿐이고 그 신호는 시장 JM Bear_Prob 하나다 — market_full AUC 0.761 [0.654,0.858] · smv_window 0.760 [0.617,0.906] 두 창 독립 정렬. 하위 10% 완만한 하락은 전 후보 CI 하한이 0.5 미만이라 예측 불가이고 detective AUC 0.87~0.94 는 '감지는 되나 예보는 안 된다'는 구조다. ⑤insider 순매수 클러스터는 per-holding 유지 안전이다(수익 gap NW-t +2.50 · restricted +2.68 · 하방 -7.6% vs -8.3% · 급락 4.7% vs 7.0% · lag1 +1.89) 그러나 cohort-path 악화(MDD -34.5% vs -16.7% · vol 35.5% vs 22.5%)는 분산 아티팩트(2.5종 vs 22.5종)이지 위험 속성이 아니다. ⑥자기검증은 자기 prereg-코드 상충을 보지 못했고 독립 감사가 C8+C1(검증창 자체 적합 + 인샘플 평활 상태 + 사후 상태평균)을 잡았다 — 음성 대조(미래교란 2시점 비트-동일)는 유효했다. ★supporting 7건 중 L-RAMP-20260619_144257 은 corpus 조회 불가라 이 카드 근거에서 제외했다(6건 기반).",
+  "retry_condition": "①보정 회계(월말 결정→익월 적용 · 일별 T+2) 위에서 재측정한 판만 인용한다 ②노출-스케일 오버레이는 단독 graduation 그릇이 아니라 책-레벨 위험예산 그릇에서 다시 묻는다 ③극단 위기 예보가 Bear_Prob 하나라는 사실은 새 상태 변수(추세·상관 수준)가 두 창 독립 정렬로 AUC CI 하한 0.5 를 넘길 때 재검한다.",
   "refined_at": null,
   "refined_by": null,
   "promoted_to_axiom": null,
@@ -70,5 +70,44 @@
     "oos_effect_vs_is": null,
     "note": "promote.R r4_regime_payoff / essence_score 경유 확정"
   },
-  "cluster_members_count": 7
+  "cluster_members_count": 7,
+  "adversarial_verdict": {
+    "a_exaggeration": "낙관 제거 — ⑤의 per-holding 양(+) 결과에 cohort-path 악화와 그것이 분산 아티팩트라는 설명을 같은 문장에 묶었다. ③은 'MDD 가 개선됐다'를 PORT_t 붕괴와 함께 적어 절대위험 개선을 단독 인용할 수 없게 했다. 6월 헤드라인 철회를 먼저 적었다.",
+    "b_evidence": "근거 — supporting 6건의 기재 수치 그대로다. metric_type 혼재를 문장에서 구분했다: ①②③은 backtested, ④는 AUC·block bootstrap CI(진단), ⑤는 canonical_screen(screen-tier), ⑥은 감사 판정이다. corpus 미발견 1건을 근거에서 빼고 그 사실을 statement 에 남겼다.",
+    "c_ax000": "AX-000 — 'Shu-Mulvey 계열은 KR 에서 불가'로 단정하지 않았다. ②는 원 프로토콜(일별 케이던스)에 한정한 기각이고, ③은 '그릇이 다르다'로 열어 두었고, ④는 '완만한 하락은 예측 불가'를 '현 후보 집합에서'로 한정했다. retry_condition 3갈래 전부 재도전 경로다.",
+    "d_firewall": "방화벽 통과 — 고정 제약과 PIT 를 실패 원인으로 귀속하지 않는다. ①은 PIT 위반을 스스로 잡아낸 기록이지 PIT 를 비판하는 서술이 아니고, ③의 '구조적으로 불리'는 Sum w=1 완전투자 고정 축을 원인으로 지목하는 것이 아니라 채점 그릇(단독 graduation 의 cap-w active 벤치)과 노출-스케일 처치의 상호작용을 지목하며, 그래서 '책-레벨 위험예산 그릇'이라는 envelope-안 재질문으로 넘겼다. 제약 완화 레버 제시 없음.",
+    "e_frontier": "프론티어 4종 — 보정 회계 위 재측정, 책-레벨 위험예산 그릇, 극단 위기 전용 처치, 독립 감사 상시화."
+  },
+  "expiry": "2027-01-10",
+  "frontier": [
+    "보정 회계 위 재측정 — 월말 결정→익월 적용·일별 T+2 고정판에서만 KR Shu-Mulvey 를 다시 잰다. 보정 전 수치는 사료로만 인용",
+    "책-레벨 위험예산 그릇 — 노출-스케일 처치를 단독 graduation 이 아니라 책 전체 위험예산 배분 문제로 재정식화한다(cap-w active 채점의 상승월 음의 active 가 사라지는 그릇인지 확인)",
+    "극단 위기 전용 처치 — 예보 가능한 구간이 하위 5% 하나라면 처치도 그 구간만 덮는 형태(상시 노출 축소가 아닌 조건부 개입)로 설계하고 평균 노출을 맞춘 대조와 짝짓는다",
+    "독립 감사 상시화 — prereg-코드 상충은 작성자 본인이 보지 못하고 독립 감사가 잡았다. outcome-blind 독립 감사를 라운드 종결 조건으로 배선했을 때 잡히는 결함 유형을 센다"
+  ],
+  "live_trigger": {
+    "type": "data",
+    "condition": "추세 또는 상관 수준 상태 변수가 두 창 독립 정렬로 극단 위기 예측 AUC CI 하한 0.5 를 넘기면 ④를 재검하고 ③의 조건부 처치를 재설계",
+    "monitored_source": "06_Registry/regime_published/regime_signal_daily_meta.json · 04_Research/01_reports/(FQ-239 후속 재생)"
+  },
+  "revival_spec": [
+    {
+      "signal_id": "wall_clock_date",
+      "condition": "x >= as.Date('2027-01-10')",
+      "from_trigger": "expiry",
+      "status": "active"
+    },
+    {
+      "signal_id": "registry_present",
+      "condition": "x == TRUE",
+      "from_trigger": "data",
+      "status": "pending"
+    }
+  ],
+  "constraint_firewall": {
+    "mode": "backstop_passed",
+    "checked_at": "2026-10-10"
+  },
+  "drafted_at": "2026-10-10T11:56:23+0900",
+  "drafted_by": "auto_distill"
 }

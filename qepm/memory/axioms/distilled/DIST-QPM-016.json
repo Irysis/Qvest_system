@@ -3,9 +3,9 @@
   "dist_id": "DIST-QPM-016",
   "cluster_key": "8e51715c6463",
   "candidate_id": "CAND_20260725_qepm_legacy_infra_process_positive_L-142_L-148_L-161A",
-  "status": "pending_5axis",
-  "statement_refined": null,
-  "retry_condition": null,
+  "status": "proposed",
+  "statement_refined": "family=infra_process type=methodological: 등재 라벨과 그 라벨을 정당화하는 산출물은 독립이며, 라벨은 산출물로 재도출해야 한다. 실측 4건이 같은 방향을 가리킨다. ①카탈로그 'Grade A' 34건 재검에서 hurdle 실제 판정이 JUDGE_PASS_A 25 · JUDGE_PASS_LOWER 2 · JUDGE_REJECT 2 · NO_HURDLE 5 로 갈렸고 s6_judge 산출물은 34건 전수 부재였다 — 즉 'Grade A' 라벨 34건 전부가 완전한 Judge 검증 미완 상태였다. ②같은 34건의 PIT C1~C15 전수 재검은 PASS 11 / AMBIGUOUS_PIT_MINOR 12 / AMBIGUOUS_PIT_MAJOR 2 / FAIL 7 로 갈렸고, 3중 오염(C11_FRED+C5_DD+C11_MRS) 2건과 2중 위반(C10_LIQ 당일 거래량 + C1b full-column quantile) 계열이 카탈로그 안에 있었다. ③생산자 자체검사는 PIT 위반과 명세 전달 실패를 체계적으로 탐지하지 못했고(4건 누적 증거), 교차 모델 검증 또는 독립 감사가 mandatory verification layer 로 확립됐다. ④단일 인프라 의존은 프로토콜 전체를 정지시킨다(응답 0바이트 2회 연속 → 합의 프로세스 blocker) 그리고 병행 소비자는 원자적 claim 으로만 직렬화된다(temp/rename 원자쓰기 + mutex 직렬화 + 6h stale 재점유 · 스모크 17/17 PASS). 공통 처방 = 라벨을 쓰는 지점마다 산출물 재도출 + 단일 소스 검증 거부 + 착수 선점 표시.",
+  "retry_condition": "카탈로그·원장 스키마에 라벨과 산출물 경로를 함께 적는 필드가 배선되고(예 hurdle_pass vs judge_pass 분리), 라벨 소비자가 그 경로의 존재를 확인하는 가드를 통과한 뒤에, 같은 전수 재검을 다시 돌려 불일치 건수를 센다. 불일치 0 이 재현되면 이 카드의 처방은 배선으로 흡수된 것이다.",
   "refined_at": null,
   "refined_by": null,
   "promoted_to_axiom": null,
@@ -69,5 +69,44 @@
     "oos_effect_vs_is": null,
     "note": "promote.R r4_regime_payoff / essence_score 경유 확정"
   },
-  "cluster_members_count": 7
+  "cluster_members_count": 7,
+  "adversarial_verdict": {
+    "a_exaggeration": "낙관 제거 — '교차 검증이 문제를 해결한다'로 쓰지 않았다. ③은 '탐지하지 못했다'는 음성 결과이고, 성공 주장은 ④의 claim 직렬화 스모크 17/17 하나뿐이며 그 범위를 '착수 직렬화'로 한정했다(판단·삭제는 여전히 사람 감독). 재검 숫자는 전부 분할 분포로 적어 '대부분 통과' 류 요약을 피했다.",
+    "b_evidence": "근거 — supporting L-code 기재 수치 그대로다. metric_type 은 L-142·L-148·L-167 이 estimated(감사 재집계)이고 나머지는 unavailable/estimated 이므로 전건을 진단·감사 재집계로 라벨했다. backtested 로 올린 수치 없고 성과 수치는 이 카드가 주장하지 않는다.",
+    "c_ax000": "AX-000 — 실패를 '구조적'으로 단정하는 문장이 없다. ③의 자체검사 한계는 '단일 소스 검증 거부'라는 처방으로 이어지고, retry_condition 은 배선 후 재검으로 이 카드가 소멸할 수 있는 조건을 적었다.",
+    "d_firewall": "방화벽 통과 — 고정 제약(종목수·유동성·long-only·Sum w=1·유니버스·15bps)과 PIT 를 실패 원인으로 귀속하지 않는다. ②는 PIT 위반이 실제로 발견됐다는 감사 사실이고 PIT 를 제약으로 비판하는 서술이 아니다. 완화 레버 제시 없음(처방은 전부 검증 배선 쪽).",
+    "e_frontier": "프론티어 4종 — 라벨↔산출물 재도출 가드, 기계 사전검사로 판독 불필요 유형 선이동, 단일 인프라 의존의 폴백, claim 프로토콜의 소비자 확장."
+  },
+  "expiry": "2027-01-10",
+  "frontier": [
+    "라벨↔산출물 재도출 가드 — 등급·PASS 라벨을 소비하는 지점마다 근거 산출물 경로 존재를 기계가 확인한다. 현행 a_eligibility_gate 의 consume_hold(발행면이 아니라 소비면 격리)가 같은 원리의 선례다",
+    "기계 사전검사로 판독 불필요 유형 선이동 — 자체검사가 놓치는 유형 중 정규식·AST·산출물 대조로 확정되는 것(미신고 상수·미발행 월·하네스 층 효과)을 감사 전 단계로 옮긴다",
+    "단일 인프라 의존의 폴백 — 교차 모델 검증이 mandatory 가 되면 그 모델 자체가 단일 실패점이 된다. 폴백 모델 또는 오프라인 스냅샷과 '사람 대체 기준'의 공식 규정화",
+    "claim 프로토콜 소비자 확장 — 원자적 claim 이 증류 레인에서 작동했다면 같은 패턴을 다른 병행 소비자(강화 배치·2계층 arm·일일 리프레시)에 적용했을 때 중복 실행이 사라지는지 센다"
+  ],
+  "live_trigger": {
+    "type": "data",
+    "condition": "카탈로그·원장에 라벨↔산출물 경로 분리 필드가 배선된 뒤 전수 재검 1회 — 불일치 건수가 0 으로 재현되면 카드 흡수",
+    "monitored_source": "06_Registry/module_catalog.json · 06_Registry/a_eligibility_gate.json · 06_Registry/decision_register.json"
+  },
+  "revival_spec": [
+    {
+      "signal_id": "wall_clock_date",
+      "condition": "x >= as.Date('2027-01-10')",
+      "from_trigger": "expiry",
+      "status": "active"
+    },
+    {
+      "signal_id": "registry_present",
+      "condition": "x == TRUE",
+      "from_trigger": "data",
+      "status": "pending"
+    }
+  ],
+  "constraint_firewall": {
+    "mode": "backstop_passed",
+    "checked_at": "2026-10-10"
+  },
+  "drafted_at": "2026-10-10T11:56:16+0900",
+  "drafted_by": "auto_distill"
 }

@@ -3,9 +3,9 @@
   "dist_id": "DIST-GEN-317",
   "cluster_key": "840d13344db6",
   "candidate_id": "CAND_paper_replication_840d13344db6",
-  "status": "pending_5axis",
-  "statement_refined": null,
-  "retry_condition": null,
+  "status": "proposed",
+  "statement_refined": "market=KR mode=paper_replication: 유니버스만 K200∪KQ150 으로 치환한 완전 충실구현 73건(모멘텀·ML·가치·네트워크/RMT·결합 혼재)의 권위 등급은 C/F 대역에 모이고 B 는 1건(결합판 RP_AUTO_combo140381252002 — 15bps SR 0.98 · 논문비용 판 1.11), A 는 0건이다. 단일 논문 기저의 15bps SR 최고치는 ML 계열 0.93(2003.02515 Time-varying neural network)·0.80(2002.06975 Cross-sectional DL)이고, 음수 SR 은 중국시장 반전·참조점 선호·네트워크 위험 계열에 몰린다(-0.11 ~ -0.43). ★'논문기준 판 vs 15bps 판' 격차는 비용 회계이지 복제 성공·실패 신호가 아니다 — 부호는 논문이 명시한 수수료가 15bps 보다 큰지에 따라 정해진다(예 2508.18592 commission_paper_bps 30 → 논문기준 SR 0.442 vs 15bps 0.651, 출처 stage_artifacts/replication/20261005_170345_8524/authoritative_remeasure.json). 따라서 이 대역은 '충실구현 단계에서 단일 논문이 KR 에서 내는 봉투-상대 천장'의 관측이고, 이 집합에서 B 를 낸 유일한 형태는 복수 논문 결합이었다.",
+  "retry_condition": "declaration gate(rf_preaudit) 통과 + 적대적 충실도 감사에서 adapted 또는 faithful 판정을 받은 청정 충실구현 권위 등급이 8건 이상 누적되면 대역을 재추정한다. 현 73건은 감사 패스 33개 중 28개가 misdeclared 인 집합(기저율 85%)이라 등급 대역에 충실도 결함이 섞여 있다.",
   "refined_at": null,
   "refined_by": null,
   "promoted_to_axiom": null,
@@ -206,5 +206,44 @@
     "oos_effect_vs_is": -1.31,
     "note": "L-code oos_retention 실값 47건 median (IS65/OOS35 활성SR retention) — oos_months 실값 무 → None 유지 — promote.R essence_score 경유 재확정"
   },
-  "cluster_members_count": 73
+  "cluster_members_count": 73,
+  "adversarial_verdict": {
+    "a_exaggeration": "낙관 제거 — B 1/73 · A 0 을 헤드라인에 두고 'ML 계열이 최고' 류 서술을 15bps SR 0.93/0.80 실측값으로 고정했다. 결합 B 1건도 '결합이 통한다'가 아니라 '이 집합에서 B 를 낸 유일한 형태'로 강등했다. Judge·BOOK 통과분 0건임을 함의로 남겼다.",
+    "b_evidence": "근거 — 등급·논문기준 SR·15bps SR 은 전부 supporting L-code 기재 수치다(metric_type 전건 backtested · run_paper_replication 체인). 비용 회계 기전만 권위 산출물 1건(authoritative_remeasure.json::replication.commission_paper_bps / paper_basis.sharpe / essence.net_sharpe)으로 확인하고 그 경로를 statement 에 적었다. proxy 를 backtested 로 올린 항목 없음.",
+    "c_ax000": "AX-000 — '단일 논문 복제는 KR 에서 불가'로 단정하지 않았다. 73건이 misdeclared 85% 집합임을 명시하고 청정 8건 누적을 retry_condition 으로 열어 미해결 상태로 유지했다.",
+    "d_firewall": "방화벽 통과 — 유니버스 치환(K200∪KQ150)과 15bps 등급 판은 충실구현 단계의 고정 축이며 초안은 둘을 실패 원인으로 귀속하지 않는다. 비용 두 판의 격차를 '회계'로 명시해 '15bps 가 등급을 깎았다'는 귀속 경로를 차단했다. 서술은 envelope-상대('이 집합에서 관측된 천장')이고 제약 완화 레버 제시 없음.",
+    "e_frontier": "프론티어 4종 — 결합 형태(유일한 B 가 나온 자리), 청정 레인(declaration gate 통과분)으로 대역 재추정, 역할 등급 기반 2계층 편입(단독 A 가 아니어도 역할 B+ 면 풀 재료), 비대칭 표적(분포-표적 학습)."
+  },
+  "expiry": "2027-01-10",
+  "frontier": [
+    "복수 논문 결합 형태 — 73건 중 유일한 B 가 결합판이었다. 결합 설계를 기저 PORT_t 가 부모 최고를 넘는 조건에서만 열고 희석(dilution) 판정 arm 을 같은 묶음에 태운다",
+    "청정 레인 대역 재추정 — declaration gate 통과 + 감사 adapted/faithful 인 판정만으로 C/F 대역을 다시 그린다(현 대역은 충실도 결함이 섞여 있다)",
+    "역할 등급 경로 — 단독 essence 가 C 여도 역할(defensive/offensive/rebound/alpha/diversifier) B+ 면 2계층 풀 재료다. 73건을 역할 축으로 재분류해 단독 등급과 역할 등급의 불일치 분포를 센다",
+    "비대칭 표적(분포-표적 학습) — 평균 예측 대신 수익 분포를 표적으로 두는 소비 형태. 현 73건은 전부 평균-순위 소비면이다"
+  ],
+  "live_trigger": {
+    "type": "data",
+    "condition": "declaration gate 통과 ∧ 충실도 감사 adapted|faithful 인 충실구현 권위 등급 8건 누적",
+    "monitored_source": ".cache/reinforce_auto_log.jsonl::preaudit · stage_artifacts/replication/*/authoritative_remeasure.json"
+  },
+  "revival_spec": [
+    {
+      "signal_id": "wall_clock_date",
+      "condition": "x >= as.Date('2027-01-10')",
+      "from_trigger": "expiry",
+      "status": "active"
+    },
+    {
+      "signal_id": "cache_present",
+      "condition": "x == TRUE",
+      "from_trigger": "data",
+      "status": "pending"
+    }
+  ],
+  "constraint_firewall": {
+    "mode": "backstop_passed",
+    "checked_at": "2026-10-10"
+  },
+  "drafted_at": "2026-10-10T11:56:04+0900",
+  "drafted_by": "auto_distill"
 }

@@ -3,9 +3,9 @@
   "dist_id": "DIST-AR-021",
   "cluster_key": "53e4aad1fbc2",
   "candidate_id": "CAND_alpha_research_53e4aad1fbc2",
-  "status": "pending_5axis",
-  "statement_refined": null,
-  "retry_condition": null,
+  "status": "proposed",
+  "statement_refined": "market=KR family=quality_earnings mode=alpha_research (screen-tier · essence/Judge 층 아님): 같은 가치 축 재료가 결합 형태에 따라 book-marginal 스크린 판정을 가른다. 슬롯 교체형 추가(ADD 14 arms = 7후보 x w{0.15,0.30})는 전부 게이트 미달이었다 — 최선 V14_EBIT_EV w0.30 이 paired NW-t 1.87 · dIR +0.102(holdout 1.76), V07_EV_EBITDA w0.15 이 1.81 · dIR +0.120(holdout 0.39 로 감쇠). 같은 두 지표를 z-blend 로 섞은 Z6(V14_EBIT_EV + V07_EV_EBITDA · w0.30)는 paired NW-t 3.807 · window-matched dIR +0.481 · variant PORT_t 7.60 · net-IR 1.755 · turnover 13.0(+0.5)로 게이트(paired>=2.0 AND dIR>=0.05)를 통과했고 10 arm 중 7개(z-blend 5 + slot-carve 2)가 통과했다. 즉 ADD 와 z-blend 를 가른 것은 재료가 아니라 슬롯 대체 비용이다. 같은 묶음의 음성 결과들이 이 형태 가설을 강화한다 — 비-return 신규 3종(텍스트유사도·제출지연 등)은 survivors 0 이고 placebo p 0.25/0.135 로 신호 구조가 없었고, 회계-포렌식 2종도 survivors 0 이며 수정Jones 는 기존 등재 팩터 AC13(원본 Jones)과 횡단 상관 0.991 로 무증분, Benford FSD 는 placebo p 0.160 · rank-IC t -1.00(가설과 부호 반대)였다. 지수-레벨 Benford 필터는 예측 순서(감사품질 역순 단조증가)와 실측이 Spearman(order,effect) -0.40 으로 역행하고 전 지표 CI 가 0 을 교차했다. crisis 슬리브 예약(slot-carve K in {5,6,8})은 book-marginal paired NW-t -2.8 로 유의 음수이고 crisis 구간(n=6)에서도 d_active 가 음수였다 — 현 book 오버레이(M4xR05 regime-cash)가 crisis 방어를 이미 포화시킨 상태라는 기전과 일치한다.",
+  "retry_condition": "①Z6 는 screen-tier 통과분이므로 essence 계약을 경유한 권위 등급과 Judge(PIT) 판정이 나오면 그 결과로 이 카드를 재판정한다 ②base 대비 dIR 게이트가 슬롯-대체형 결합에 원리적으로 불리하다는 별 진단(정보 0 플라시보도 개입 규모에 비례해 dIR 음)이 있으므로, ADD 의 미달은 게이트 형태 교정 후 재측정해야 확정된다 ③비-return 계열은 다른 시장·다른 기간 재현(외부 타당도)이 들어올 때 재개한다.",
   "refined_at": null,
   "refined_by": null,
   "promoted_to_axiom": null,
@@ -76,5 +76,44 @@
     "oos_effect_vs_is": null,
     "note": "promote.R r4_regime_payoff / essence_score 경유 확정"
   },
-  "cluster_members_count": 6
+  "cluster_members_count": 6,
+  "adversarial_verdict": {
+    "a_exaggeration": "낙관 제거 — Z6 의 PORT_t 7.60 을 등급으로 읽지 않도록 'screen-tier · essence/Judge 층 아님'을 statement 머리에 박았다. ADD arms 의 holdout 감쇠(V07 1.81 → 0.39)를 같이 적고, 통과 7/10 도 게이트 문턱(paired>=2.0 AND dIR>=0.05)과 함께 적어 문턱 없는 승리 서술을 막았다. near-miss 축이 independence 라는 점을 retry_condition 에 반영했다.",
+    "b_evidence": "근거 — supporting 6건의 기재 수치 그대로다. metric_type 은 canonical_screen 4건 + estimated 2건이므로 전건을 screen-tier/진단으로 라벨했고 backtested 로 올린 수치는 없다. Z6 수치는 canonical_screen 실측이라고 명시했다.",
+    "c_ax000": "AX-000 — ADD 14 arms 전건 미달을 '슬롯 추가는 불가'로 단정하지 않았다. 미달이 게이트 형태(슬롯 대체 비용) 때문일 수 있다는 별 진단을 retry_condition ②로 걸어 재측정 경로를 열었다. 비-return 계열도 외부 타당도 재현으로 열어 두었다.",
+    "d_firewall": "방화벽 통과 — 종목수 25·유동성·long-only·Sum w=1·유니버스·15bps 를 실패 원인으로 귀속하지 않는다. 'book top-25 슬롯 하나를 밀어내는 비용'은 고정 종목수 제약을 비판하는 말이 아니라 결합 형태의 산술이며, 처방은 제약 완화가 아니라 형태 교체(z-blend)와 게이트 형태 교정이다. 전부 envelope-안 레버(composite·슬리브·오버레이 포화 진단).",
+    "e_frontier": "프론티어 4종 — z-blend 형태의 essence 승격, dIR 게이트의 플라시보 보정, 포화된 방어 축 대체, 비-return 외부 타당도."
+  },
+  "expiry": "2027-01-10",
+  "frontier": [
+    "z-blend 형태의 essence 승격 — screen-tier 통과분(Z6)을 essence 계약에 올려 권위 등급과 Judge(PIT)까지 태운다. screen 과 등급의 일치/불일치 자체가 정보다",
+    "dIR 게이트의 플라시보 보정 — 정보 0 순열을 같은 개입 규모로 넣어 밴드를 만들고 그 밴드 대비 증분으로 판정한다. 현행 절대 문턱(dIR>=0.05)은 슬롯-대체형 결합에서 정보가 있어도 통과 불가일 수 있다",
+    "포화된 방어 축 대체 — crisis 슬리브 예약이 음수인 이유가 현 오버레이 포화라면, 오버레이를 끈 기저 위에서 같은 슬리브를 재측정해 포화 가설을 직접 시험한다",
+    "비-return 외부 타당도 — 텍스트유사도·제출지연·포렌식 계열은 KR 배포 유니버스에서 survivors 0 이었다. 같은 신호의 다른 시장·다른 기간 재현을 먼저 확인한 뒤 KR 재도전 여부를 정한다"
+  ],
+  "live_trigger": {
+    "type": "data",
+    "condition": "Z6 z-blend 가 essence 계약을 경유한 권위 등급을 받거나, dIR 게이트에 플라시보 밴드가 배선되면 재판정",
+    "monitored_source": "stage_artifacts/replication/*/authoritative_remeasure.json · 06_Registry/module_catalog.json · 06_Registry/factor_evidence.json"
+  },
+  "revival_spec": [
+    {
+      "signal_id": "wall_clock_date",
+      "condition": "x >= as.Date('2027-01-10')",
+      "from_trigger": "expiry",
+      "status": "active"
+    },
+    {
+      "signal_id": "stage_artifacts_present",
+      "condition": "x == TRUE",
+      "from_trigger": "data",
+      "status": "pending"
+    }
+  ],
+  "constraint_firewall": {
+    "mode": "backstop_passed",
+    "checked_at": "2026-10-10"
+  },
+  "drafted_at": "2026-10-10T11:56:26+0900",
+  "drafted_by": "auto_distill"
 }

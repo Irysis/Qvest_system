@@ -1,0 +1,99 @@
+{
+  "schema": "distill_manifest_v2",
+  "generated_at": "2026-10-10 11:56:04",
+  "generator": "02_Infrastructure/ops/cleaner_distill_lib.R (무인 증류 레인)",
+  "week_of": "2026-W41",
+  "digest": {
+    "path": "04_Research/01_reports/weekly/weekly_digest_20261010.md",
+    "exists": true,
+    "bytes": 41050,
+    "ok": true,
+    "note": "OK"
+  },
+  "deleted": [],
+  "rejected": [],
+  "preserved_deferred": [
+    {
+      "path": "0.20",
+      "reason": "참조 779 는 사용이 아니라 짧은 수치 리터럴의 이름 충돌(weight bound 0.20 이 문서·스킬 전반에 적혀 있다). 기계 git_grep_basename 도 같은 이유로 거부하므로 고르지 않는다. 수리 지점은 후보 생성기(artifact_hygiene_audit.R root_unauthorized)이고 하네스 변경이라 본 레인 밖."
+    },
+    {
+      "path": "25",
+      "reason": "참조 4,174 — 같은 이름 충돌(종목수 상한 리터럴 25). 0바이트 파일이지만 기계 참조0 검증을 통과할 수 없다. 5주 연속 같은 후보."
+    },
+    {
+      "path": "cid_smoke.rds",
+      "reason": "참조 2건 실재 — 04_Research/strategies/RP_2301_09173_CID/NOTES.md 와 같은 디렉터리의 diag_cid_market_comovement.R 이 읽는다. 진단 자산이고 ref_check_ignore 글롭(.cache/* · stage_artifacts/* · 04_Research/01_reports/* 등)에 들지 않으므로 소비 참조로 센다. 5.5MB 지만 보존."
+    },
+    {
+      "path": "x.rds",
+      "reason": "참조 5건 실재 — 02_Infrastructure/ops/cleaner_distill_lib.R(증류 레인 자신) · 08_Tests/hooks/test_arm_gen_read_guard.sh · 08_Tests/ops/test_frontier_queue_io.R 픽스처. 이 레인이 쓰는 파일을 이 레인이 지우는 것은 자기 발 밟기."
+    },
+    {
+      "path": "downloads",
+      "reason": "참조 5건 실재 — 02_Infrastructure/ops/paper_router_run.sh(실행코드) + 04_Research/dart_census/census_{pledge_audit,raw}_20260713.json. 디렉터리이고 4.8일 전 수정으로 활성이다."
+    },
+    {
+      "path": "Rplots.pdf",
+      "reason": "참조 1건 = 02_Infrastructure/ops/cleanup.sh(실행코드 · ref_check_ignore 밖) → 기계 재도출에서 rejected_ref_nonzero 가 된다. 6주째 같은 자리에 다시 생기므로 삭제는 증상 처리이고, 수리는 발생원(R 그래픽 디바이스가 루트에 자동 산출하는 경로) 차단이다. 하네스 변경이라 본 레인 밖 — 세션 과제로 올린다."
+    },
+    {
+      "path": "02_Infrastructure/ast/tests/parity_factor_db_result.json",
+      "reason": "참조 2건 실재 — 02_Infrastructure/ast/tests/parity_factor_db.R(패리티 테스트 코드)와 06_Registry/ast_operator_backlog.json(레지스트리). misplaced_outputs 경고는 위치 문제이지 사멸이 아니다. 처분은 삭제가 아니라 산출 경로 이동이고 그건 테스트 코드 변경이라 본 레인 밖."
+    }
+  ],
+  "dist_drafts": [
+    {
+      "dist_id": "DIST-GEN-317",
+      "ok": true,
+      "reason": "proposed"
+    },
+    {
+      "dist_id": "DIST-GEN-018",
+      "ok": true,
+      "reason": "proposed"
+    },
+    {
+      "dist_id": "DIST-QPM-016",
+      "ok": true,
+      "reason": "proposed"
+    },
+    {
+      "dist_id": "DIST-QPM-021",
+      "ok": true,
+      "reason": "proposed"
+    },
+    {
+      "dist_id": "DIST-RAMP-021",
+      "ok": true,
+      "reason": "proposed"
+    },
+    {
+      "dist_id": "DIST-AR-021",
+      "ok": true,
+      "reason": "proposed"
+    },
+    {
+      "dist_id": "DIST-FR-004",
+      "ok": true,
+      "reason": "proposed"
+    },
+    {
+      "dist_id": "DIST-GEN-009",
+      "ok": true,
+      "reason": "proposed"
+    }
+  ],
+  "lcodes": [
+    {
+      "ok": true,
+      "l_code": "발행",
+      "reason": "emitted"
+    },
+    {
+      "ok": true,
+      "l_code": "발행",
+      "reason": "emitted"
+    }
+  ]
+}

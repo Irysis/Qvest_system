@@ -3,9 +3,9 @@
   "dist_id": "DIST-GEN-009",
   "cluster_key": "415ff98f82cb",
   "candidate_id": "CAND_method_frontier_415ff98f82cb",
-  "status": "pending_5axis",
-  "statement_refined": null,
-  "retry_condition": null,
+  "status": "proposed",
+  "statement_refined": "family=infra_process type=methodological (진단 층 — 판정 인용 금지): 판정 수치를 만드는 계기 자체가 결론을 만든다. 여섯 건의 method-frontier 진단이 같은 형태를 가리킨다. ①벤치만 바꾼 값을 알파 개선으로 읽는 것 — dual-basis 진단은 포트폴리오가 아니라 benchmark_id 만 교체하므로(ret_net 은 동일 객체) 'EW basis 로는 2.86' 은 같은 포트를 더 쉬운 벤치로 채점한 값이다. 실측: capw-EW 격차가 arm 무관 상수(n=167 · arm 12개 d_alpha_ann sd 0.00106)이고 다른 창(n=96)에서 d 2.46배일 때 |gap| 2.36배로 동반 이동하며 cor(port_t_capw, cap_share_mega) -0.405 로 교차-arm 반대 증거가 같은 표 안에 있었다. ②증분 t 를 원리적으로 못 바꾸는 축에서 최선을 고르는 것 — baseline 을 끝점으로 하는 혼합(shrink/blend) 계열은 a_lambda - a_mom = (1-lambda)(a_capprop - a_mom) 로 양의 스칼라 배이므로 t 가 불변이고, 실측 paired t 가 lambda in {0,.25,.50,.75} 에서 소수 3자리까지 1.307 동일했다(항등의 지문). 그런데 선택 코드가 which.max(port_t) 로 다이얼에만 반응하는 양을 골랐다. ③슬롯-대체형 결합에 절대 dIR 게이트를 거는 것 — 정보 0 인 순열을 북에 결합해도 개입 규모에 비례해 dIR 이 음으로 간다(w 0.05 -0.0066 / 0.10 -0.0006 / 0.20 -0.0413 / 0.30 -0.0609 / 0.50 -0.2164)고, 실측 arm(blend -0.0975 / filter -0.0079 / carve -0.1021)은 전부 그 플라시보 밴드 안 또는 위였다. 기전은 북 top-20 슬롯 하나를 밀어내는 비용 연 -13.7%(무작위 교체 -15.5%)인데 신규 신호가 그중 일부만 회수하는 것(순열 +1.8%p)이다. ④겹침 창·자기 조인이 만든 지속성을 신호로 읽는 것 — 비겹침 21일 창에서 vol-랭크 익월 Spearman 0.587(음수월 0/438)·0.492·0.462 vs ret-랭크 +0.018/-0.015/-0.001(대응차 +0.55 t 64.9)인데, 겹침 60일 창 precheck 의 ret 지속성 0.613 은 전부 창 겹침 아티팩트였고 1차 측정 rho 전원 1.000 은 조인 양쪽을 동일 키로 리라벨한 자기 조인 지문이었다. 같은 명제의 소비면은 negative 다(IV 250d 1.220 / IV_21 1.216 / IV_21rank 1.209 전부 EW 1.269 아래). ⑤정확한 표준이 만들어져 있는데 소비자가 0 인 배선 공백 — TTM 은 .cache/fundamental_xlsx_ttm.parquet(4,133,534행 · TTM non-NA 96.6%)에 정확히 계산돼 있으나 빌더가 TTM_Value 컬럼이 없는 파일을 읽어 소비 조건이 항상 거짓이 되고, 결과로 피드 이음매에서 스케일이 4배 점프한다. ⑥도구 경로의 인코딩이 만든 가짜 언어 결함 — 'R 정규식 워드경계가 한글 혼재 문자열에서 조용히 FALSE' 주장은 당일 전면 정정됐고 진짜 원인은 명령 문자열 JSON 인코딩에서 백슬래시 한 겹이 소비돼 정규식이 백스페이스 문자를 받은 것이었다. 공통 처방 = 플라시보·양성 대조·대수적 항등 검사를 계기 수준에서 먼저 돌리고, 선택 코드가 무엇에 반응하는 양을 고르는지 명시한다.",
+  "retry_condition": "①~④ 각 형태에 대응하는 계기 가드가 배선된 뒤(벤치 교체 시 자동 공시 · 혼합 계열 항등 검사 · dIR 플라시보 밴드 · 비겹침 창 강제) 같은 진단을 다시 돌려 발화 0 이 재현되면 이 카드는 배선으로 흡수된다. ⑤는 TTM 소비자 배선 후 이음매 스케일 점프 소멸로, ⑥은 쉘 경유 코드 전달 경로 제거로 각각 확인한다.",
   "refined_at": null,
   "refined_by": null,
   "promoted_to_axiom": null,
@@ -70,5 +70,44 @@
     "oos_effect_vs_is": null,
     "note": "promote.R r4_regime_payoff / essence_score 경유 확정"
   },
-  "cluster_members_count": 6
+  "cluster_members_count": 6,
+  "adversarial_verdict": {
+    "a_exaggeration": "낙관 제거 — 어느 항목도 성과 개선을 주장하지 않는다. ④는 vol-랭크 예측성이라는 양(+) 결과를 적되 같은 문장에 소비면 negative(IV 계열 전부 EW 아래)를 붙였고, ⑥은 원 주장이 거짓이었다는 정정을 그대로 실었다. '진단 층 — 판정 인용 금지'를 statement 머리에 박았다.",
+    "b_evidence": "근거 — supporting 6건의 기재 수치 그대로이며 metric_type 은 전건 unavailable 또는 estimated(method_frontier/data_integrity/portability 진단)다. 따라서 어떤 수치도 권위 등급·성과 판정으로 인용될 수 없음을 명시했다. backtested 오라벨 없음.",
+    "c_ax000": "AX-000 — 어떤 리서치 방향도 dead-end 로 닫지 않는다. 이 카드가 닫는 것은 '계기를 그대로 믿는 읽기'뿐이고, ④의 vol-랭크 예측성·⑤의 TTM 표준은 오히려 미회수 자산으로 남겼다. retry_condition 은 카드 자체의 소멸 조건이다.",
+    "d_firewall": "방화벽 통과 — 고정 제약과 PIT 를 실패 원인으로 귀속하지 않는다. ③의 '슬롯 하나를 밀어내는 비용'은 종목수 25 제약 비판이 아니라 결합 형태의 산술이고 처방은 게이트 형태 교정이다. 완화 레버 제시 없음.",
+    "e_frontier": "프론티어 4종 — 계기 플라시보 상시화, 항등 검사와 선택 코드 공시, 미회수 표준(TTM)의 소비자 배선, 비겹침 창 강제."
+  },
+  "expiry": "2027-01-10",
+  "frontier": [
+    "계기 플라시보 상시화 — 정보 0 순열·무신호 대조를 판정 계기마다 같은 개입 규모로 돌려 밴드를 만들고, 실측 arm 을 그 밴드 대비로만 판정한다",
+    "항등 검사와 선택 코드 공시 — 혼합·차분·비율 계열은 측정 전에 대수적 항등(증분 t 불변 여부)을 확인하고, 선택 코드가 무엇을 최대화하는지 산출물에 적는다(which.max 대상의 공시)",
+    "미회수 표준의 소비자 배선 — TTM 처럼 정확히 계산된 표준이 소비자 0 으로 남아 있는 경로를 전수 조사한다(wiring_map 계통과 동형의 공백)",
+    "비겹침 창 강제 — 지속성·자기상관 측정은 비겹침 창으로만 하고 조인 키 중복(자기 조인) 검사를 통과해야 산출을 발행한다"
+  ],
+  "live_trigger": {
+    "type": "data",
+    "condition": "계기 가드 4종(벤치 교체 자동 공시 · 혼합 항등 검사 · dIR 플라시보 밴드 · 비겹침 창 강제) 중 하나라도 배선되면 해당 항목 재진단",
+    "monitored_source": "06_Registry/wiring_map.json · 06_Registry/rf_preaudit.json · 02_Infrastructure/validation/"
+  },
+  "revival_spec": [
+    {
+      "signal_id": "wall_clock_date",
+      "condition": "x >= as.Date('2027-01-10')",
+      "from_trigger": "expiry",
+      "status": "active"
+    },
+    {
+      "signal_id": "registry_present",
+      "condition": "x == TRUE",
+      "from_trigger": "data",
+      "status": "pending"
+    }
+  ],
+  "constraint_firewall": {
+    "mode": "backstop_passed",
+    "checked_at": "2026-10-10"
+  },
+  "drafted_at": "2026-10-10T11:56:33+0900",
+  "drafted_by": "auto_distill"
 }

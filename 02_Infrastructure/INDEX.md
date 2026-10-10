@@ -1,6 +1,6 @@
 # 02_Infrastructure INDEX
 
-> 자동 생성 2026-10-09 18:26 — 큐레이션 원본: `06_Registry/index_descriptions.json` (role/status/category 수동 보완처) · 재생성: `Rscript 02_Infrastructure/tools/build_artifact_index.R` (daily_refresh 말미 자동). 본 파일 직접 수정 금지 — 재생성 시 덮어씀.
+> 자동 생성 2026-10-10 11:57 — 큐레이션 원본: `06_Registry/index_descriptions.json` (role/status/category 수동 보완처) · 재생성: `Rscript 02_Infrastructure/tools/build_artifact_index.R` (daily_refresh 말미 자동). 본 파일 직접 수정 금지 — 재생성 시 덮어씀.
 
 ## 데이터 (3)
 
@@ -191,7 +191,7 @@
 | `ast` | (미분류 — index_descriptions.json에 추가하세요) | - | 2026-09-24 | 223KB |
 | `book` | (미분류 — index_descriptions.json에 추가하세요) | - | 2026-08-30 | 41KB |
 | `methods` | (미분류 — index_descriptions.json에 추가하세요) | - | 2026-08-29 | 210KB |
-| `reinforcement` | (미분류 — index_descriptions.json에 추가하세요) | - | 2026-10-07 | 1.6MB |
+| `reinforcement` | (미분류 — index_descriptions.json에 추가하세요) | - | 2026-10-09 | 1.6MB |
 | `replication` | (미분류 — index_descriptions.json에 추가하세요) | - | 2026-09-24 | 21KB |
 | `utils` | (미분류 — index_descriptions.json에 추가하세요) | - | 2026-08-30 | 13KB |
 
