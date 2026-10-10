@@ -1,0 +1,719 @@
+{
+  "schema": "l2_regime_predictor_pit_audit_v1",
+  "written_at": "2026-10-10T21:20:44+0900",
+  "scope": "Task A — 2계층 역할 로테이션 국면 예측기 후보 PIT 감사(C1·C5·C11·C14)",
+  "categories": ["PIT-clean", "usable-with-lag", "contaminated"],
+  "sources": {
+    "MSM_prod_CrisisProb": {
+      "artifact": ".cache/msm_daily_latest.parquet::Crisis_Prob (+ msm_hybrid_latest Avg_Prob)",
+      "producer": "04_Research/regime_comparison/msm_update.R (daily_refresh.sh:399-415 주 생산자 · cache_registry 등재). ★설계안 §2.2 의 '2-state HMM·30일 재적합'은 폴백 msm_daily_refit.R 이며 현 캐시 생산자가 아니다(저장 열에 HMM_State 없음 · PC2 재계산 일치)",
+      "model": "Calvet-Fisher binomial MSM k=10 · Hamilton 필터(전방)",
+      "verdict": "contaminated",
+      "reason": "C1 — 모수 4개(m0·sigma·b·gamma_1) = K_Fractal_Master_2026-01-20.xlsx 의 전기간 MLE(Last_Trained 2026-01-18 · 표본 1990-01-04~2026-01-16 · MSM.R:173-195 전기간 디민). 위기 상태 정의(s > sigma)도 전기간 sigma. 필터는 평활이 아니라 **필터 확률**이고(msm_update.R C++ extract_msm_path: pi=pi*A → 우도 갱신 → 정규화) 디민도 expanding(2026-08-13 수리) → 시간축 누출은 모수 경로뿐. 지연(lag)으로 해소 불가",
+      "evidence": {
+        "PC2_store_equals_msm_update_recompute": 8.92255369588923e-09,
+        "PC4_prefix_invariance_filter": [
+          {
+            "cut": "2008-09-30",
+            "n": 4601,
+            "max_abs_vs_full": 0,
+            "value_at_cut_trunc": 0.7441229494651,
+            "value_at_cut_full": 0.7441229494651
+          },
+          {
+            "cut": "2011-08-31",
+            "n": 5333,
+            "max_abs_vs_full": 0,
+            "value_at_cut_trunc": 0.918124319490317,
+            "value_at_cut_full": 0.918124319490317
+          },
+          {
+            "cut": "2015-12-30",
+            "n": 6404,
+            "max_abs_vs_full": 0,
+            "value_at_cut_trunc": 0.0096212507883841,
+            "value_at_cut_full": 0.0096212507883841
+          }
+        ],
+        "value_gap_prod_vs_asof_at_decision_dates": {
+          "IS_2005_2015": [
+            {
+              "n": 132,
+              "mean_abs": 0.116701534006351,
+              "median_abs": 0.0557774410902268,
+              "max_abs": 0.412026627060946,
+              "spearman": 0.993759555029141,
+              "share_flip_0.5": 0.121212121212121,
+              "share_flip_0.8": 0.0681818181818182
+            }
+          ],
+          "OOS_2016_2026": [
+            {
+              "n": 129,
+              "mean_abs": 0.051786536573035,
+              "median_abs": 0.0122553457731974,
+              "max_abs": 0.270491907456074,
+              "spearman": 0.994331395348837,
+              "share_flip_0.5": 0.062015503875969,
+              "share_flip_0.8": 0.0387596899224806
+            }
+          ],
+          "by_year_mean_abs": [
+            {
+              "y": "2005",
+              "mean_abs": 0.1419
+            },
+            {
+              "y": "2006",
+              "mean_abs": 0.1384
+            },
+            {
+              "y": "2007",
+              "mean_abs": 0.1444
+            },
+            {
+              "y": "2008",
+              "mean_abs": 0.1914
+            },
+            {
+              "y": "2009",
+              "mean_abs": 0.261
+            },
+            {
+              "y": "2010",
+              "mean_abs": 0.0963
+            },
+            {
+              "y": "2011",
+              "mean_abs": 0.1265
+            },
+            {
+              "y": "2012",
+              "mean_abs": 0.1332
+            },
+            {
+              "y": "2013",
+              "mean_abs": 0.0348
+            },
+            {
+              "y": "2014",
+              "mean_abs": 0.0042
+            },
+            {
+              "y": "2015",
+              "mean_abs": 0.0116
+            },
+            {
+              "y": "2016",
+              "mean_abs": 0.006
+            },
+            {
+              "y": "2017",
+              "mean_abs": 0.0003
+            },
+            {
+              "y": "2018",
+              "mean_abs": 0.0117
+            },
+            {
+              "y": "2019",
+              "mean_abs": 0.0027
+            },
+            {
+              "y": "2020",
+              "mean_abs": 0.1067
+            },
+            {
+              "y": "2021",
+              "mean_abs": 0.0454
+            },
+            {
+              "y": "2022",
+              "mean_abs": 0.0893
+            },
+            {
+              "y": "2023",
+              "mean_abs": 0.0406
+            },
+            {
+              "y": "2024",
+              "mean_abs": 0.0557
+            },
+            {
+              "y": "2025",
+              "mean_abs": 0.124
+            },
+            {
+              "y": "2026",
+              "mean_abs": 0.0989
+            }
+          ]
+        }
+      },
+      "quarantine_hits": []
+    },
+    "MSM_fallback_msm_daily_refit": {
+      "artifact": "02_Infrastructure/regime/msm_daily_refit.R::compute_hmm_daily_signal → 같은 캐시(폴백 시)",
+      "model": "2-state Gaussian HMM (regime_hmm.R::.hmm_em) · refit 30행",
+      "verdict": "contaminated",
+      "reason": "C1 ×2 — (a) Crisis_Prob = fit$gamma = 순방향-역방향 **평활** 확률(regime_hmm.R:150-155 · msm_daily_refit.R:113-114) (b) 매 refit 이 crisis_prob[valid_idx] <- gamma_stress 로 1..end_i 전 이력을 덮어쓰고(msm_daily_refit.R:121-125) 마지막 refit 은 행 n 강제(:91) → 저장 이력 전체 = 전기간 모수·전기간 평활. refit_freq 와 무관하게 성립",
+      "evidence": {
+        "hmm2_contamination_IS_month_ends": {
+          "note": "IS 결정일(2004-12~2015-11 월말 마지막 거래일)에서 비교. smooth_full = 폴백이 최종 저장할 값(전기간 모수·평활) · smooth_2015 = 2015-12-30 까지 자료로 같은 절차",
+          "smooth_full_vs_filtered_asof": {
+            "n": 132,
+            "mean_abs": 0.0685090922876465,
+            "max_abs": 0.813473932373951,
+            "share_side_of_0.5_flips": 0.0606060606060606
+          },
+          "smooth_2015_vs_smooth_full": {
+            "n": 132,
+            "mean_abs": 0.00568315013914825,
+            "max_abs": 0.150258121853085,
+            "share_side_of_0.5_flips": 0
+          },
+          "smooth_2015_vs_filtered_asof": {
+            "n": 132,
+            "mean_abs": 0.0697960906248059,
+            "max_abs": 0.804865877991533,
+            "share_side_of_0.5_flips": 0.0606060606060606
+          }
+        },
+        "smoothed_vs_filtered_same_params": {
+          "params": "EM on data <= 2015-12-30 (fixed, msm_daily_refit inits)",
+          "t": "2011-08-31",
+          "filtered_alpha_trunc_at_t": 0.887628630062916,
+          "filtered_alpha_full_data": 0.887628630062916,
+          "filtered_abs_diff": 0,
+          "smoothed_gamma_t_by_window_end": [
+            {
+              "window_end_plus_trading_days": 0,
+              "window_end": "2011-08-31",
+              "gamma_t": 0.887629
+            },
+            {
+              "window_end_plus_trading_days": 1,
+              "window_end": "2011-09-01",
+              "gamma_t": 0.762877
+            },
+            {
+              "window_end_plus_trading_days": 5,
+              "window_end": "2011-09-07",
+              "gamma_t": 0.990705
+            },
+            {
+              "window_end_plus_trading_days": 21,
+              "window_end": "2011-10-04",
+              "gamma_t": 0.990715
+            },
+            {
+              "window_end_plus_trading_days": 63,
+              "window_end": "2011-12-01",
+              "gamma_t": 0.990715
+            },
+            {
+              "window_end_plus_trading_days": 3709,
+              "window_end": "2026-10-08",
+              "gamma_t": 0.990715
+            }
+          ],
+          "IS_decision_dates_full_window_smoothed_vs_filtered": {
+            "n": 132,
+            "mean_abs": 0.0693295352711642,
+            "max_abs": 0.729181546185305,
+            "share_flip_0.5": 0.053030303030303
+          },
+          "reading": "같은 모수에서 필터 α_t 는 t 이후 자료와 무관(접두 불변), 평활 γ_t 는 창 끝이 t 를 지나면 바뀐다(정보원 = t 이후 수일~수주; 먼 미래 영향은 급감)"
+        }
+      },
+      "current_cache_affected": "아니오(현 캐시 = msm_update.R 산출, PC2) — msm_update.R 실패 시 폴백이 덮어쓴다(daily_refresh.sh:409-415 · self_heal.R:40-47)"
+    },
+    "JM_regime_jump_daily": {
+      "artifact": ".cache/regime_jump_daily.parquet::Bear_Prob · JM_State (+ *_lag)",
+      "model": "Statistical Jump Model K=2 (Shu-Yu-Mulvey 2024 §3.4) · jm_causal:v1",
+      "verdict": "PIT-clean",
+      "lag_note": "형태 (a) 결정일 t 종가 결정·월 보유 = Bear_Prob[t] 그대로. 일간 노출을 r_t(종가→종가)에 곱하는 형태 (b) 는 *_lag(1거래일) 열을 써야 한다(엔진 주석 · usable-with-lag 1d)",
+      "reason": "PIT-C11-JM-C1 수리판 확인 — 모수 = refit 일 r_k 이하 창 [r_k-2999, r_k] 적합·블록 (r_k, r_{k+1}] 적용, 상태 = 고정 모수 전방 DP 종점(역추적 없음), JM_Fit_Date < Date 전 행, VIX_z 입력 = c11_asof_align(가용일 결합 · avail_annotated · epoch c11_avail:2026-09-24.b4). VIX 는 개정 없는 시장 계열(빈티지 무관). 입력 VIX_z_smooth = 756행 rolling/expanding z + 우정렬 MA(regime_engine_daily.R:224-262 · 인과)",
+      "evidence": {
+        "real_data_truncation": [
+          {
+            "cut": "2008-09-30",
+            "identical": true,
+            "n_matched": 4096,
+            "max_abs_Bear_Prob": 0,
+            "n_state_mismatch": 0,
+            "status_stored": "causal",
+            "status_recomputed": "causal",
+            "c11": "avail_annotated"
+          },
+          {
+            "cut": "2011-08-31",
+            "identical": true,
+            "n_matched": 4828,
+            "max_abs_Bear_Prob": 0,
+            "n_state_mismatch": 0,
+            "status_stored": "causal",
+            "status_recomputed": "causal",
+            "c11": "avail_annotated"
+          },
+          {
+            "cut": "2015-12-30",
+            "identical": true,
+            "n_matched": 5899,
+            "max_abs_Bear_Prob": 0,
+            "n_state_mismatch": 0,
+            "status_stored": "causal",
+            "status_recomputed": "causal",
+            "c11": "avail_annotated"
+          },
+          {
+            "cut": "2026-10-08",
+            "identical": true,
+            "n_matched": 8537,
+            "max_abs_Bear_Prob": 0,
+            "n_state_mismatch": 0,
+            "status_stored": "causal",
+            "status_recomputed": "causal",
+            "c11": "avail_annotated"
+          }
+        ],
+        "repo_test_test_jm_causal": "=== 최종: 33 PASS / 0 FAIL / 0 SKIP ===",
+        "jm_causal_attr": "jm_causal:v1",
+        "rows": 8537,
+        "first": "1992-02-07",
+        "fit_date_lt_date_all": true
+      },
+      "quarantine_hits": ["\\bbear_?prob", "\\bregime_jump_model\\b", "\\bregime_jump_daily\\b", "\\bJM_State"],
+      "registry_caveat": "06_Registry/pit_quarantine.json PITQ-C11-20260924 가 아직 status=active 로 regime_jump_daily·JM_State·Bear_Prob·regime_jump_model 을 격리(V-10: 입력 VIX_z 무지연 — 원인은 2단계에서 수리됨). 실증상 PIT-clean 이나 2계층 소비 전 격리 해제(항목 status → released · 사유·주체 기록 = 도훈 결정) 필요"
+    },
+    "forecasters_v1_v1vix_v2_v3": {
+      "artifact": ".cache/regime_forecast_series{,_v1vix,_v2,_v3}.parquet (ym, forecast_regime)",
+      "verdict": "contaminated",
+      "reason": "시점 구조는 walk-forward(월 m 예측 = m-1 월말 정보 · 전이행렬/다항로짓 학습 = t 이하)로 정상이나, 입력이 오염: ① CrisisP = unified MSM_Crisis_Prob = 운영 MSM(전기간 모수 C1 · 아래 unified_msm_equals_prod) ② Category = unified(MSM + FRED_MRS + KTRI) — MSM C1 상속 + FRED_MRS 의 NFCI(Chi_Fin_Cond) 최신 빈티지 ③ regime_daily_v2 의 Claims(ICSA)·v2 의 NFCI·STLFSI·UMCSENT = 개정 계열 최신 빈티지(regime_engine_daily.R 헤더 '값은 최신 빈티지 — C1·C11 미해소 라벨'). 지연으로 해소 불가. 산출물은 범주 argmax 뿐(확률 없음)",
+      "lineage": [
+        {
+          "file": {
+            "path": ".cache/regime_forecast_series.parquet",
+            "exists": true,
+            "mtime": "2026-09-25T11:36:31+0900",
+            "size": 3792,
+            "md5": "c3bd316f70312fec01f42437a9a9549d"
+          },
+          "columns": ["ym", "forecast_regime"],
+          "n": 441,
+          "first_forecast_ym": "199501",
+          "last_ym": "202609",
+          "writer_in_code": "02_Infrastructure/regime/regime_forecaster.R",
+          "cache_registry_producer": "02_Infrastructure/regime/regime_forecaster_v2.R",
+          "quarantine_hits": "\\bregime_forecast"
+        },
+        {
+          "file": {
+            "path": ".cache/regime_forecast_series_v1vix.parquet",
+            "exists": true,
+            "mtime": "2026-09-25T11:36:34+0900",
+            "size": 3187,
+            "md5": "2e28463b7801d4da26ca024533c1dd70"
+          },
+          "columns": ["ym", "forecast_regime"],
+          "n": 316,
+          "first_forecast_ym": "200810",
+          "last_ym": "202609",
+          "writer_in_code": "02_Infrastructure/regime/regime_forecaster_v1tune.R",
+          "cache_registry_producer": "02_Infrastructure/regime/regime_forecaster_v2.R",
+          "quarantine_hits": "\\bregime_forecast"
+        },
+        {
+          "file": {
+            "path": ".cache/regime_forecast_series_v2.parquet",
+            "exists": true,
+            "mtime": "2026-09-25T11:36:37+0900",
+            "size": 3210,
+            "md5": "49d448e8f6e114f2297cd66b13741cab"
+          },
+          "columns": ["ym", "forecast_regime"],
+          "n": 316,
+          "first_forecast_ym": "200810",
+          "last_ym": "202609",
+          "writer_in_code": "02_Infrastructure/regime/regime_forecaster_v2.R",
+          "cache_registry_producer": "02_Infrastructure/regime/regime_forecaster_v3.R",
+          "quarantine_hits": "\\bregime_forecast"
+        },
+        {
+          "file": {
+            "path": ".cache/regime_forecast_series_v3.parquet",
+            "exists": true,
+            "mtime": "2026-09-25T11:36:39+0900",
+            "size": 3017,
+            "md5": "d13da0b76b1bb4eef64a7e213c5b5c45"
+          },
+          "columns": ["ym", "forecast_regime"],
+          "n": 285,
+          "first_forecast_ym": "201105",
+          "last_ym": "202609",
+          "writer_in_code": "02_Infrastructure/regime/regime_forecaster_v3.R",
+          "cache_registry_producer": "02_Infrastructure/regime/regime_forecaster_v4.R",
+          "quarantine_hits": "\\bregime_forecast"
+        }
+      ],
+      "unified_msm_equals_prod": {
+        "n": 9042,
+        "max_abs": 0
+      },
+      "lineage_issues": "① 파일에 계보 속성 없음(ym·forecast_regime 2열) ② cache_registry 생산자 표기가 한 칸씩 어긋남(실제 작성 스크립트와 불일치) ③ 4파일 모두 2026-09-25 11:36 생성 — 입력(unified·regime_daily_v2)은 그 뒤 재빌드(10-10)돼 현 입력으로 재현되는지 미확인 ④ 격리 PITQ-C11 V-10 active"
+    },
+    "AE_lstm": {
+      "artifact": "stage_artifacts/WT_D20260718_007/ae_regime_signal_ext.parquet (ae_regime_monthly.py)",
+      "verdict": "contaminated",
+      "reason": "C11 시간축(가용일 결합 decision_close)은 수리됐으나 빈티지 미해소 — 행 표식 c11_vintage=latest · c11_vintage_unresolved=Chi_Fin_Cond,StL_Fin_Stress(개정 계열을 최신 빈티지로 소급 · ALFRED 안 C 미시행). 부가: 발화 문턱 tau 가 기존 M4 의 전기간 발화율 0.126 에 맞춰짐(ae_regime_walkforward.py M4_FIRE_RATE · 연속 점수 ae_seq 순위에는 무관). IS 커버리지 2008-01~ 뿐",
+      "facts": {
+        "file": {
+          "path": "stage_artifacts/WT_D20260718_007/ae_regime_signal_ext.parquet",
+          "exists": true,
+          "mtime": "2026-10-07T20:20:06+0900",
+          "size": 32171,
+          "md5": "9166d191e12e9ae724f883550e85d5f1"
+        },
+        "n": 226,
+        "first_decision": "2008-01-01",
+        "last_decision": "2026-10-01",
+        "c11_feat_join": "c11_avail_decision_close",
+        "c11_vintage": "latest",
+        "c11_vintage_unresolved": "Chi_Fin_Cond,StL_Fin_Stress",
+        "c11_vintage_resolved": false,
+        "IS_months_covered": 96,
+        "quarantine_hits": ["\\bae_regime_(signal|backfill|extend)", "WT[-_]D20260718_007", "\\bae_regime_"]
+      }
+    },
+    "unified_regime_signal": {
+      "artifact": ".cache/unified_regime_signal(_daily).parquet (MSM_Crisis_Prob·FRED_MRS·KTRI → Regime_Score·Category)",
+      "verdict": "contaminated",
+      "reason": "MSM 성분 = 운영 MSM(C1 전기간 모수) + FRED_MRS 의 NFCI 최신 빈티지. C11 날짜 결합(V-05)은 09-25 재빌드로 가용일 결합 + c11_regime_key 표식. 격리 V-05 active",
+      "quarantine_hits": "\\bunified_regime_signal"
+    }
+  },
+  "candidate_verdicts": {
+    "JM_BearProb": {
+      "verdict": "PIT-clean",
+      "basis": "JM_regime_jump_daily",
+      "as_of_rule": "Bear_Prob at t (row Date == t; JM_Fit_Date < t)",
+      "caveat": "06_Registry/pit_quarantine.json PITQ-C11-20260924 가 아직 status=active 로 regime_jump_daily·JM_State·Bear_Prob·regime_jump_model 을 격리(V-10: 입력 VIX_z 무지연 — 원인은 2단계에서 수리됨). 실증상 PIT-clean 이나 2계층 소비 전 격리 해제(항목 status → released · 사유·주체 기록 = 도훈 결정) 필요"
+    },
+    "MSM_asof_CrisisProb": {
+      "verdict": "PIT-clean",
+      "basis": "driver repair of MSM_prod_CrisisProb",
+      "as_of_rule": "filtered Crisis_Prob at t with params MLE on data <= fit_date (last year-end <= t)",
+      "evidence": {
+        "fit_date_le_date_all": true,
+        "prefix_recompute": [
+          {
+            "cut": "2008-09-30",
+            "fit_date": "2007-12-28",
+            "panel": 0.436989255899948,
+            "recomputed_truncated": 0.43698925589995,
+            "abs_diff": 1.60982338570648e-15
+          },
+          {
+            "cut": "2011-08-31",
+            "fit_date": "2010-12-30",
+            "panel": 0.72911605542885,
+            "recomputed_truncated": 0.729116055428853,
+            "abs_diff": 2.66453525910038e-15
+          },
+          {
+            "cut": "2015-12-30",
+            "fit_date": "2015-12-30",
+            "panel": 0.00456632308917528,
+            "recomputed_truncated": 0.00456632308917511,
+            "abs_diff": 1.70870262383715e-16
+          }
+        ],
+        "PC1_fast_equals_prod_kernel": 1.55431223447522e-14,
+        "PC3_full_sample_mle_vs_pin": [
+          {
+            "tag": "PC3_full_expanding",
+            "fitted": {
+              "m0": 1.28867557059305,
+              "sigma": 0.0178042185936382,
+              "b": 2.74709949312571,
+              "gamma_1": 0.000175863503474213
+            },
+            "negloglik_fitted": -25663.8407632301,
+            "negloglik_at_pinned": -25661.0564375832,
+            "fitted_better_or_equal": true,
+            "convergence": 0,
+            "secs": 194.289849042892
+          },
+          {
+            "tag": "PC3_full_fullmean",
+            "fitted": {
+              "m0": 1.28459414291022,
+              "sigma": 0.0177618160241428,
+              "b": 2.62646178479487,
+              "gamma_1": 0.000196458681123051
+            },
+            "negloglik_fitted": -25655.2411055034,
+            "negloglik_at_pinned": -25653.7484896186,
+            "fitted_better_or_equal": true,
+            "convergence": 0,
+            "secs": 143.2805788517
+          }
+        ],
+        "identification_guard": "degenerate if gamma_1 < 1e-5 or sigma/sd(window) not in [0.8, 1.25]; choose best non-degenerate init optimum; else carry forward previous valid params (decided 2026-10-10 before any AUC; v1 unguarded record = work/msm_asof_fit_v1_unguarded.json)",
+        "guard_actions": [
+          {
+            "fit": "2003-12-30",
+            "action": "mle",
+            "m0": 1.268,
+            "sigma": 0.02055,
+            "b": 2.045,
+            "g1": 0.000922
+          },
+          {
+            "fit": "2004-12-30",
+            "action": "mle",
+            "m0": 1.2678,
+            "sigma": 0.01989,
+            "b": 1.945,
+            "g1": 0.000936
+          },
+          {
+            "fit": "2005-12-29",
+            "action": "best_nondegenerate",
+            "m0": 1.2702,
+            "sigma": 0.01896,
+            "b": 2.027,
+            "g1": 0.000657
+          },
+          {
+            "fit": "2006-12-28",
+            "action": "mle",
+            "m0": 1.2723,
+            "sigma": 0.0185,
+            "b": 2.024,
+            "g1": 0.00059
+          },
+          {
+            "fit": "2007-12-28",
+            "action": "mle",
+            "m0": 1.2707,
+            "sigma": 0.01872,
+            "b": 2.002,
+            "g1": 0.000638
+          },
+          {
+            "fit": "2008-12-30",
+            "action": "mle",
+            "m0": 1.2706,
+            "sigma": 0.01951,
+            "b": 1.833,
+            "g1": 0.000992
+          },
+          {
+            "fit": "2009-12-30",
+            "action": "mle",
+            "m0": 1.2705,
+            "sigma": 0.01901,
+            "b": 1.879,
+            "g1": 0.000884
+          },
+          {
+            "fit": "2010-12-30",
+            "action": "mle",
+            "m0": 1.2712,
+            "sigma": 0.01853,
+            "b": 1.877,
+            "g1": 0.000794
+          },
+          {
+            "fit": "2011-12-29",
+            "action": "best_nondegenerate",
+            "m0": 1.2682,
+            "sigma": 0.01894,
+            "b": 1.796,
+            "g1": 0.00101
+          },
+          {
+            "fit": "2012-12-28",
+            "action": "mle",
+            "m0": 1.2715,
+            "sigma": 0.01848,
+            "b": 1.787,
+            "g1": 0.000928
+          },
+          {
+            "fit": "2013-12-30",
+            "action": "mle",
+            "m0": 1.2753,
+            "sigma": 0.01787,
+            "b": 1.819,
+            "g1": 0.000733
+          },
+          {
+            "fit": "2014-12-30",
+            "action": "mle",
+            "m0": 1.2831,
+            "sigma": 0.01665,
+            "b": 1.974,
+            "g1": 0.000385
+          },
+          {
+            "fit": "2015-12-30",
+            "action": "mle",
+            "m0": 1.2837,
+            "sigma": 0.01639,
+            "b": 2.03,
+            "g1": 0.000322
+          },
+          {
+            "fit": "2016-12-29",
+            "action": "mle",
+            "m0": 1.2889,
+            "sigma": 0.01614,
+            "b": 2.181,
+            "g1": 0.000235
+          },
+          {
+            "fit": "2017-12-28",
+            "action": "mle",
+            "m0": 1.2944,
+            "sigma": 0.01745,
+            "b": 2.974,
+            "g1": 0.000124
+          },
+          {
+            "fit": "2018-12-28",
+            "action": "mle",
+            "m0": 1.2951,
+            "sigma": 0.01748,
+            "b": 3.026,
+            "g1": 0.000122
+          },
+          {
+            "fit": "2019-12-30",
+            "action": "mle",
+            "m0": 1.296,
+            "sigma": 0.01738,
+            "b": 3.175,
+            "g1": 9.89e-05
+          },
+          {
+            "fit": "2020-12-30",
+            "action": "mle",
+            "m0": 1.295,
+            "sigma": 0.01785,
+            "b": 2.888,
+            "g1": 0.000159
+          },
+          {
+            "fit": "2021-12-30",
+            "action": "mle",
+            "m0": 1.2909,
+            "sigma": 0.01775,
+            "b": 2.712,
+            "g1": 0.000187
+          },
+          {
+            "fit": "2022-12-29",
+            "action": "mle",
+            "m0": 1.282,
+            "sigma": 0.01711,
+            "b": 2.137,
+            "g1": 0.000352
+          },
+          {
+            "fit": "2023-12-28",
+            "action": "mle",
+            "m0": 1.283,
+            "sigma": 0.01676,
+            "b": 2.132,
+            "g1": 0.000322
+          },
+          {
+            "fit": "2024-12-27",
+            "action": "mle",
+            "m0": 1.287,
+            "sigma": 0.01774,
+            "b": 2.68,
+            "g1": 0.000187
+          },
+          {
+            "fit": "2025-12-30",
+            "action": "mle",
+            "m0": 1.2887,
+            "sigma": 0.0178,
+            "b": 2.752,
+            "g1": 0.000175
+          }
+        ]
+      },
+      "caveat": "운영 캐시가 아니다 — 2계층 투입 시 엔진 수리(as-of 재추정) 또는 이 드라이버 산출 고정이 필요"
+    },
+    "HMM2_asof_StressProb": {
+      "verdict": "PIT-clean",
+      "basis": "driver repair of MSM_fallback_msm_daily_refit",
+      "as_of_rule": "filtered alpha_t[stress] with params of last 30-row refit <= t (same estimator/grid/warm-start chain)",
+      "evidence": {
+        "fit_date_le_date_all": true,
+        "filter_prefix": {
+          "params": "EM on data <= 2015-12-30 (fixed, msm_daily_refit inits)",
+          "t": "2011-08-31",
+          "filtered_alpha_trunc_at_t": 0.887628630062916,
+          "filtered_alpha_full_data": 0.887628630062916,
+          "filtered_abs_diff": 0,
+          "smoothed_gamma_t_by_window_end": [
+            {
+              "window_end_plus_trading_days": 0,
+              "window_end": "2011-08-31",
+              "gamma_t": 0.887629
+            },
+            {
+              "window_end_plus_trading_days": 1,
+              "window_end": "2011-09-01",
+              "gamma_t": 0.762877
+            },
+            {
+              "window_end_plus_trading_days": 5,
+              "window_end": "2011-09-07",
+              "gamma_t": 0.990705
+            },
+            {
+              "window_end_plus_trading_days": 21,
+              "window_end": "2011-10-04",
+              "gamma_t": 0.990715
+            },
+            {
+              "window_end_plus_trading_days": 63,
+              "window_end": "2011-12-01",
+              "gamma_t": 0.990715
+            },
+            {
+              "window_end_plus_trading_days": 3709,
+              "window_end": "2026-10-08",
+              "gamma_t": 0.990715
+            }
+          ],
+          "IS_decision_dates_full_window_smoothed_vs_filtered": {
+            "n": 132,
+            "mean_abs": 0.0693295352711642,
+            "max_abs": 0.729181546185305,
+            "share_flip_0.5": 0.053030303030303
+          },
+          "reading": "같은 모수에서 필터 α_t 는 t 이후 자료와 무관(접두 불변), 평활 γ_t 는 창 끝이 t 를 지나면 바뀐다(정보원 = t 이후 수일~수주; 먼 미래 영향은 급감)"
+        }
+      },
+      "caveat": "운영 캐시가 아니다(폴백 엔진은 평활·덮어쓰기 그대로)"
+    }
+  },
+  "c5_timing_rule": "결정일 t = 보유월 첫날 이전 마지막 한국 거래일; 값은 Date <= t 만(overlay_pit_guard 의 first-day-of-holding-month 컷오프 정합)",
+  "quarantine_registry": {
+    "file": {
+      "path": "06_Registry/pit_quarantine.json",
+      "exists": true,
+      "mtime": "2026-09-24T10:27:32+0900",
+      "size": 36587,
+      "md5": "aecfa6b5746ab1976cedda750cac876e"
+    },
+    "active_ids": "PITQ-C11-20260924"
+  }
+}

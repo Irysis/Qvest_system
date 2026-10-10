@@ -120,24 +120,55 @@ pc3 <- lapply(c("PC3_full_expanding", "PC3_full_fullmean"), function(tg) {
 })
 out$PC3_full_sample_mle_vs_pin <- pc3
 
-# ── as-of 일별 경로: 블록 [rf_k, rf_{k+1}) 를 θ_k 로 전방 필터(시작부터 블록 끝까지 1회 통과) ──
+# ── 식별 관문(2026-10-10 · AUC 계산 전 고정) ─────────────────────────────────────────────
+#   v1(관문 없음 · work/msm_asof_fit_v1_unguarded.json)에서 2개 refit(2005·2011 말)이 퇴화 모드로 갔다:
+#   gamma_1 ~ 0(최저주파 성분 기대 전환 간격 2/gamma_1 > 2e5 거래일 ≈ 800년 = 표본 안에서 얼어붙은 성분 → 비에르고딕)
+#   → sigma 가 무조건 표준편차(MSM 에서 E[ΠM]=1 ⇒ Var = sigma^2) 의미를 잃는다(2011: sigma 0.148 = 창 표본 sd 의 7.6배).
+#   위기 정의 s > sigma 가 무의미해지므로 그 해 모수는 '검증 실패'로 본다.
+#   규칙: 퇴화 = gamma_1 < 1e-5 또는 sigma/sd(창) ∉ [0.8, 1.25]. 3 초기점 최적점 중 비퇴화 최고 우도 채택 ·
+#   전부 퇴화면 직전 유효 모수 유지(과거 정보라 인과 — regime_jump_model.R 의 'refit 실패 = 직전 성공 모수 유지'와 같은 규칙).
+#   관문 없는 최고 우도 판은 민감도 열 Crisis_Prob_asof_raw 로 함께 남긴다(후보 아님).
+is_degen <- function(par, sdw) par[["gamma_1"]] < 1e-5 || (par[["sigma"]] / sdw) < 0.8 || (par[["sigma"]] / sdw) > 1.25
 asof <- fits[grepl("^asof_", names(fits))]
 asof <- asof[order(vapply(asof, function(f) as.character(f$cut), ""))]
+prev_valid <- NULL
+for (k in seq_along(asof)) {
+  f <- asof[[k]]; sdw <- sd(RT[Date <= as.Date(f$cut)]$r)
+  cand <- lapply(seq_along(f$all_par), function(i) list(par = setNames(as.list(f$all_par[[i]]), c("m0", "sigma", "b", "gamma_1")),
+                                                         nll = f$all_values[i]))
+  dg <- vapply(cand, function(cn) is_degen(cn$par, sdw), logical(1))
+  f$window_sd <- sdw; f$init_degenerate <- dg; f$raw_par <- f$par
+  if (any(!dg)) {
+    j <- which(!dg)[which.min(vapply(cand[!dg], function(cn) cn$nll, 1))]
+    f$guard_par <- cand[[j]]$par; f$guard_nll <- cand[[j]]$nll; f$guard_action <- if (j == which.min(f$all_values)) "mle" else "best_nondegenerate"
+    prev_valid <- f$guard_par
+  } else {
+    f$guard_par <- prev_valid; f$guard_nll <- NA_real_; f$guard_action <- "carry_forward_previous"
+  }
+  asof[[k]] <- f
+}
+stopifnot(all(vapply(asof, function(f) !is.null(f$guard_par), logical(1))))
+
+# ── as-of 일별 경로: 블록 [rf_k, rf_{k+1}) 를 θ_k 로 전방 필터(시작부터 블록 끝까지 1회 통과) ──
 rows <- vector("list", length(asof))
 for (k in seq_along(asof)) {
   f <- asof[[k]]; rf <- as.Date(f$cut)
   rf_next <- if (k < length(asof)) as.Date(asof[[k + 1L]]$cut) else max(RT$Date) + 1L
   end_i <- max(which(RT$Date < rf_next))
-  p <- fk$msm_fast_filter(RT$r[1:end_i], K_BAR, f$par$m0, f$par$sigma, f$par$b, f$par$gamma_1, TRUE)
+  g <- f$guard_par; r0 <- f$raw_par
+  p <- fk$msm_fast_filter(RT$r[1:end_i], K_BAR, g$m0, g$sigma, g$b, g$gamma_1, TRUE)
+  q <- fk$msm_fast_filter(RT$r[1:end_i], K_BAR, r0$m0, r0$sigma, r0$b, r0$gamma_1, TRUE)
   keep <- which(RT$Date[1:end_i] >= rf)
-  rows[[k]] <- data.table(Date = RT$Date[keep], Crisis_Prob_asof = p$crisis_prob[keep], Vol_asof = p$vol[keep], fit_date = rf)
+  rows[[k]] <- data.table(Date = RT$Date[keep], Crisis_Prob_asof = p$crisis_prob[keep], Vol_asof = p$vol[keep],
+                          Crisis_Prob_asof_raw = q$crisis_prob[keep], fit_date = rf, guard_action = f$guard_action)
 }
 AS <- rbindlist(rows)
 stopifnot(!anyDuplicated(AS$Date), all(AS$fit_date <= AS$Date))
-setattr(AS, "msm_asof_spec", "Calvet-Fisher MSM k=10; params = MSM.R estimate_msm_windows procedure on expanding-demeaned log returns with data <= fit_date (annual year-end refit); filter = msm_update.R kernel (Kronecker-factored, PC1)")
+setattr(AS, "msm_asof_spec", "Calvet-Fisher MSM k=10; params = MLE (MSM.R objective/bounds/3 inits + NM restarts + BFGS polish) on expanding-demeaned log returns with data <= fit_date (annual year-end refit); identification guard: degenerate if gamma_1<1e-5 or sigma/sd not in [0.8,1.25] -> best non-degenerate optimum else carry forward previous valid; filter = msm_update.R kernel (Kronecker-factored, PC1). Crisis_Prob_asof_raw = unguarded MLE (sensitivity)")
 write_parquet(AS, file.path(WORK, "msm_asof_daily.parquet"))
 
-out$asof_fits <- lapply(asof, function(f) f[c("tag", "cut", "n_obs", "first", "last", "par", "negloglik", "convergence", "counts", "all_values", "secs")])
+out$asof_fits <- lapply(asof, function(f) f[c("tag", "cut", "n_obs", "first", "last", "par", "negloglik", "counts", "all_values", "all_par", "window_sd", "init_degenerate", "guard_par", "guard_nll", "guard_action", "secs")])
+out$identification_guard <- "degenerate if gamma_1 < 1e-5 or sigma/sd(window) not in [0.8, 1.25]; choose best non-degenerate init optimum; else carry forward previous valid params (decided 2026-10-10 before any AUC; v1 unguarded record = work/msm_asof_fit_v1_unguarded.json)"
 out$asof_daily <- list(path = "04_Research/l2_role_rotation/work/msm_asof_daily.parquet", n = nrow(AS),
                        first = as.character(min(AS$Date)), last = as.character(max(AS$Date)),
                        fit_date_lt_or_eq_date = all(AS$fit_date <= AS$Date))

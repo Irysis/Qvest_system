@@ -11,7 +11,7 @@
     "site": "build_module_performance",
     "mode": "window_start(b): 모듈 수익 창 시작(직전 행)",
     "extra_lag": 0,
-    "n_rows": 80,
+    "n_rows": 65,
     "n_aligned": null,
     "quarantine": "PITQ-C11-20260924",
     "verdict": "04_Research/01_reports/pit_c11_20260924/PIT_C11_verdict_20260924.md",
@@ -20,752 +20,160 @@
   "regimes": ["RISK_ON", "NEUTRAL", "CAUTION", "CRISIS", "RISK_OFF"],
   "metric_type": "backtested_realized (sim_result NAV, 실측-only)",
   "grade_floor": "B",
-  "n_floor_excluded": 694,
+  "n_floor_excluded": 706,
   "n_defensive_admitted": 0,
   "defensive_route": true,
   "admission_codes": {
     "contract_floor": 191,
     "legacy_not_role_rep": 27,
-    "not_role_rep": 694,
+    "not_role_rep": 706,
     "role_rep": 73
+  },
+  "execution_convention": {
+    "rule": "close_t1 단일 — remeasure_close_t1_* 판 ▸ 신판(close_t1) · 그 밖(레거시 QEPM·2026-09-25 이전 close_d·판독 불가) = 풀 제외",
+    "resolver": "tilt_attribution.R::ta_resolve_artifact 와 같은 판독(auth measurement_regime.exec_price ▸ manifest cost_model_version) · 판 무결성 = auth status OK ∧ backtested",
+    "enforced": true,
+    "include_non_close_t1_switch": false,
+    "series_source_counts": {
+      "close_t1_remeasure": 61,
+      "native_close_t1": 4
+    },
+    "n_series_written": 0,
+    "series_root": "04_Research/factor_rotation/l2_pool_series",
+    "n_excluded": 15,
+    "n_included_non_close_t1": 0,
+    "excluded_codes": {
+      "no_close_t1:exec_unlabeled": 8,
+      "no_close_t1:legacy_no_artifacts": 7
+    },
+    "excluded": [
+      {
+        "id": "STR_943",
+        "code": "no_close_t1:legacy_no_artifacts",
+        "reason": "산출물 디렉터리 없음(카탈로그 artifacts_dir·bt_result_path) — close_t1 판을 찾을 곳이 없다",
+        "trust_status": "legacy_qepm_grade_a",
+        "series_dir": null,
+        "exec": null
+      },
+      {
+        "id": "STR_1439",
+        "code": "no_close_t1:legacy_no_artifacts",
+        "reason": "산출물 디렉터리 없음(카탈로그 artifacts_dir·bt_result_path) — close_t1 판을 찾을 곳이 없다",
+        "trust_status": "legacy_qepm_grade_a",
+        "series_dir": null,
+        "exec": null
+      },
+      {
+        "id": "STR_1393_esbr_sue_adaptive",
+        "code": "no_close_t1:legacy_no_artifacts",
+        "reason": "산출물 디렉터리 없음(카탈로그 artifacts_dir·bt_result_path) — close_t1 판을 찾을 곳이 없다",
+        "trust_status": "legacy_qepm_grade_a",
+        "series_dir": null,
+        "exec": null
+      },
+      {
+        "id": "STR_1033_nco",
+        "code": "no_close_t1:legacy_no_artifacts",
+        "reason": "산출물 디렉터리 없음(카탈로그 artifacts_dir·bt_result_path) — close_t1 판을 찾을 곳이 없다",
+        "trust_status": "legacy_qepm_grade_a",
+        "series_dir": null,
+        "exec": null
+      },
+      {
+        "id": "STR_1562",
+        "code": "no_close_t1:legacy_no_artifacts",
+        "reason": "산출물 디렉터리 없음(카탈로그 artifacts_dir·bt_result_path) — close_t1 판을 찾을 곳이 없다",
+        "trust_status": "legacy_qepm_grade_a",
+        "series_dir": null,
+        "exec": null
+      },
+      {
+        "id": "STR_1555_score_blend_3factor",
+        "code": "no_close_t1:legacy_no_artifacts",
+        "reason": "산출물 디렉터리 없음(카탈로그 artifacts_dir·bt_result_path) — close_t1 판을 찾을 곳이 없다",
+        "trust_status": "legacy_qepm_grade_a",
+        "series_dir": null,
+        "exec": null
+      },
+      {
+        "id": "STR_1550_consensus_core_alpha",
+        "code": "no_close_t1:legacy_no_artifacts",
+        "reason": "산출물 디렉터리 없음(카탈로그 artifacts_dir·bt_result_path) — close_t1 판을 찾을 곳이 없다",
+        "trust_status": "legacy_qepm_grade_a",
+        "series_dir": null,
+        "exec": null
+      },
+      {
+        "id": "STR_AS_20260612_124658_77279",
+        "code": "no_close_t1:exec_unlabeled",
+        "reason": "집행 규약 unlabeled · remeasure_close_t1_* 판 없음(2026-09-25 close_t1 rebase 미포함)",
+        "trust_status": "contract_fr_eligible",
+        "series_dir": "stage_artifacts/alpha_search/20260612_124658_77279",
+        "exec": "unlabeled"
+      },
+      {
+        "id": "STR_AS_20260612_132740_321995",
+        "code": "no_close_t1:exec_unlabeled",
+        "reason": "집행 규약 unlabeled · remeasure_close_t1_* 판 없음(2026-09-25 close_t1 rebase 미포함)",
+        "trust_status": "contract_fr_eligible",
+        "series_dir": "stage_artifacts/alpha_search/20260612_132740_321995",
+        "exec": "unlabeled"
+      },
+      {
+        "id": "STR_AS_20260612_143809_686286",
+        "code": "no_close_t1:exec_unlabeled",
+        "reason": "집행 규약 unlabeled · remeasure_close_t1_* 판 없음(2026-09-25 close_t1 rebase 미포함)",
+        "trust_status": "contract_fr_eligible",
+        "series_dir": "stage_artifacts/alpha_search/20260612_143809_686286",
+        "exec": "unlabeled"
+      },
+      {
+        "id": "STR_AS_20260612_154914_1055315",
+        "code": "no_close_t1:exec_unlabeled",
+        "reason": "집행 규약 unlabeled · remeasure_close_t1_* 판 없음(2026-09-25 close_t1 rebase 미포함)",
+        "trust_status": "contract_fr_eligible",
+        "series_dir": "stage_artifacts/alpha_search/20260612_154914_1055315",
+        "exec": "unlabeled"
+      },
+      {
+        "id": "STR_AS_20260709_074129_30048",
+        "code": "no_close_t1:exec_unlabeled",
+        "reason": "집행 규약 unlabeled(unlabeled_pre_v24) · remeasure_close_t1_* 판 없음(2026-09-25 close_t1 rebase 미포함)",
+        "trust_status": "contract_fr_eligible",
+        "series_dir": "stage_artifacts/alpha_search/20260709_074129_30048",
+        "exec": "unlabeled(unlabeled_pre_v24)"
+      },
+      {
+        "id": "RP_20260902_192126_25496",
+        "code": "no_close_t1:exec_unlabeled",
+        "reason": "집행 규약 unlabeled(unlabeled_pre_v24) · remeasure_close_t1_* 판 없음(2026-09-25 close_t1 rebase 미포함)",
+        "trust_status": "contract_fr_eligible",
+        "series_dir": "stage_artifacts/replication/20260902_192126_25496",
+        "exec": "unlabeled(unlabeled_pre_v24)"
+      },
+      {
+        "id": "RP_20260902_193745_33364",
+        "code": "no_close_t1:exec_unlabeled",
+        "reason": "집행 규약 unlabeled(unlabeled_pre_v24) · remeasure_close_t1_* 판 없음(2026-09-25 close_t1 rebase 미포함)",
+        "trust_status": "contract_fr_eligible",
+        "series_dir": "stage_artifacts/replication/20260902_193745_33364",
+        "exec": "unlabeled(unlabeled_pre_v24)"
+      },
+      {
+        "id": "RP_20260902_195404_29468",
+        "code": "no_close_t1:exec_unlabeled",
+        "reason": "집행 규약 unlabeled(unlabeled_pre_v24) · remeasure_close_t1_* 판 없음(2026-09-25 close_t1 rebase 미포함)",
+        "trust_status": "contract_fr_eligible",
+        "series_dir": "stage_artifacts/replication/20260902_195404_29468",
+        "exec": "unlabeled(unlabeled_pre_v24)"
+      }
+    ]
   },
   "admission_predicate": "02_Infrastructure/contracts/defensive_score.R::ds_pool_eligible (l2_pool_admission.R::l2_admit 경유)",
   "grade_axis": "essence_grade > meta.essence_grade > grade(발행 시점 폴백)",
   "note": "입력 2단 게이트(v10 2026-08-29 도훈): ①계약 floor = module_catalog fr_eligible=true(contract_pass+backtested+frozen+hash/build_version, legacy QEPM grade-A 이관 예외) ②grade floor = essence grade B 이상(QVEST_L2_GRADE_FLOOR, OFF=진단) ∥ 방어형 병렬 경로(QVEST_L2_DEFENSIVE_ROUTE). module_hash는 실제 md5 대조(불일치=skip+quarantine, CAP-P1-2). 배치 심사=RCMA. ★2026-09-07: 자격 술어를 계약(ds_pool_eligible)으로 단일화하고 등급 축을 essence 로 정정.",
-  "n_modules": 80,
+  "n_modules": 65,
   "modules": {
-    "STR_943_oc_eps_chg": {
-      "source_strategy_id": "STR_943_oc_eps_chg",
-      "grade": "A",
-      "role": "diversifier",
-      "origin_mode": "qepm",
-      "trust_status": "legacy_qepm_grade_a",
-      "admission_route": null,
-      "admission_code": null,
-      "admission_reason": null,
-      "grade_emit": null,
-      "grade_source": null,
-      "freq": "daily",
-      "sim_result_path": "04_Research/strategies/STR_943_oc_eps_chg/sim_result.rds",
-      "full_sharpe": 1.277,
-      "full_ir": 0.319,
-      "n_days": 5934,
-      "date_range": ["2002-03-06", "2026-03-20"],
-      "per_regime": {
-        "RISK_ON": {
-          "n_days": 3955,
-          "n_months": 188.3,
-          "sharpe": 1.289,
-          "ir": 0.84,
-          "mdd": 0.219,
-          "mean_ann": 0.1606
-        },
-        "NEUTRAL": {
-          "n_days": 870,
-          "n_months": 41.4,
-          "sharpe": 1.65,
-          "ir": -0.842,
-          "mdd": 0.138,
-          "mean_ann": 0.2316
-        },
-        "CAUTION": {
-          "n_days": 568,
-          "n_months": 27,
-          "sharpe": 0.865,
-          "ir": 0.81,
-          "mdd": 0.196,
-          "mean_ann": 0.1225
-        },
-        "CRISIS": {
-          "n_days": 528,
-          "n_months": 25.1,
-          "sharpe": 1.059,
-          "ir": -0.247,
-          "mdd": 0.13,
-          "mean_ann": 0.1478
-        },
-        "RISK_OFF": {
-          "n_days": 13,
-          "n_months": 0.6,
-          "sharpe": null,
-          "ir": null,
-          "mdd": 0.008,
-          "mean_ann": 0.0723
-        }
-      },
-      "per_regime_pit_c11": "avail_annotated"
-    },
-    "STR_1439_1047_to_fix": {
-      "source_strategy_id": "STR_1439_1047_to_fix",
-      "grade": "A",
-      "role": "defensive",
-      "origin_mode": "qepm",
-      "trust_status": "legacy_qepm_grade_a",
-      "admission_route": null,
-      "admission_code": null,
-      "admission_reason": null,
-      "grade_emit": null,
-      "grade_source": null,
-      "freq": "daily",
-      "sim_result_path": "04_Research/strategies/STR_1439_1047_to_fix/sim_result.rds",
-      "full_sharpe": 1.467,
-      "full_ir": 0.296,
-      "n_days": 5605,
-      "date_range": ["2003-07-06", "2026-03-20"],
-      "per_regime": {
-        "RISK_ON": {
-          "n_days": 3955,
-          "n_months": 188.3,
-          "sharpe": 1.343,
-          "ir": 0.802,
-          "mdd": 0.261,
-          "mean_ann": 0.153
-        },
-        "NEUTRAL": {
-          "n_days": 846,
-          "n_months": 40.3,
-          "sharpe": 1.966,
-          "ir": -0.608,
-          "mdd": 0.111,
-          "mean_ann": 0.2374
-        },
-        "CAUTION": {
-          "n_days": 437,
-          "n_months": 20.8,
-          "sharpe": 1.745,
-          "ir": 0.929,
-          "mdd": 0.07,
-          "mean_ann": 0.223
-        },
-        "CRISIS": {
-          "n_days": 354,
-          "n_months": 16.9,
-          "sharpe": 1.317,
-          "ir": -0.643,
-          "mdd": 0.088,
-          "mean_ann": 0.1652
-        },
-        "RISK_OFF": {
-          "n_days": 13,
-          "n_months": 0.6,
-          "sharpe": null,
-          "ir": null,
-          "mdd": 0.014,
-          "mean_ann": -0.1333
-        }
-      },
-      "per_regime_pit_c11": "avail_annotated"
-    },
-    "STR_1393_esbr_sue_adaptive": {
-      "source_strategy_id": "STR_1393_esbr_sue_adaptive",
-      "grade": "A",
-      "role": "diversifier",
-      "origin_mode": "qepm",
-      "trust_status": "legacy_qepm_grade_a",
-      "admission_route": null,
-      "admission_code": null,
-      "admission_reason": null,
-      "grade_emit": null,
-      "grade_source": null,
-      "freq": "daily",
-      "sim_result_path": "04_Research/strategies/STR_1393_esbr_sue_adaptive/sim_result.rds",
-      "full_sharpe": 0.959,
-      "full_ir": 0.426,
-      "n_days": 5199,
-      "date_range": ["2005-03-06", "2026-03-24"],
-      "per_regime": {
-        "RISK_ON": {
-          "n_days": 3772,
-          "n_months": 179.6,
-          "sharpe": 0.84,
-          "ir": 0.777,
-          "mdd": 0.356,
-          "mean_ann": 0.1293
-        },
-        "NEUTRAL": {
-          "n_days": 696,
-          "n_months": 33.1,
-          "sharpe": 1.617,
-          "ir": -0.112,
-          "mdd": 0.155,
-          "mean_ann": 0.3257
-        },
-        "CAUTION": {
-          "n_days": 396,
-          "n_months": 18.9,
-          "sharpe": 0.698,
-          "ir": 0.862,
-          "mdd": 0.224,
-          "mean_ann": 0.1501
-        },
-        "CRISIS": {
-          "n_days": 322,
-          "n_months": 15.3,
-          "sharpe": 1.246,
-          "ir": -0.387,
-          "mdd": 0.146,
-          "mean_ann": 0.3132
-        },
-        "RISK_OFF": {
-          "n_days": 13,
-          "n_months": 0.6,
-          "sharpe": null,
-          "ir": null,
-          "mdd": 0.039,
-          "mean_ann": -0.6771
-        }
-      },
-      "per_regime_pit_c11": "avail_annotated"
-    },
-    "STR_1033_nco": {
-      "source_strategy_id": "STR_1033_nco",
-      "grade": "A",
-      "role": "diversifier",
-      "origin_mode": "qepm",
-      "trust_status": "legacy_qepm_grade_a",
-      "admission_route": null,
-      "admission_code": null,
-      "admission_reason": null,
-      "grade_emit": null,
-      "grade_source": null,
-      "freq": "daily",
-      "sim_result_path": "04_Research/strategies/STR_1033_nco/sim_result.rds",
-      "full_sharpe": 1.316,
-      "full_ir": 0.27,
-      "n_days": 5606,
-      "date_range": ["2003-07-06", "2026-03-21"],
-      "per_regime": {
-        "RISK_ON": {
-          "n_days": 3955,
-          "n_months": 188.3,
-          "sharpe": 1.201,
-          "ir": 0.654,
-          "mdd": 0.294,
-          "mean_ann": 0.1539
-        },
-        "NEUTRAL": {
-          "n_days": 846,
-          "n_months": 40.3,
-          "sharpe": 2.025,
-          "ir": -0.398,
-          "mdd": 0.125,
-          "mean_ann": 0.2608
-        },
-        "CAUTION": {
-          "n_days": 437,
-          "n_months": 20.8,
-          "sharpe": 1.598,
-          "ir": 0.964,
-          "mdd": 0.103,
-          "mean_ann": 0.2429
-        },
-        "CRISIS": {
-          "n_days": 355,
-          "n_months": 16.9,
-          "sharpe": 0.675,
-          "ir": -0.809,
-          "mdd": 0.115,
-          "mean_ann": 0.0957
-        },
-        "RISK_OFF": {
-          "n_days": 13,
-          "n_months": 0.6,
-          "sharpe": null,
-          "ir": null,
-          "mdd": 0.013,
-          "mean_ann": -0.1683
-        }
-      },
-      "per_regime_pit_c11": "avail_annotated"
-    },
-    "STR_1562_gerber_dcc_hrp_c11fix": {
-      "source_strategy_id": "STR_1562_gerber_dcc_hrp_c11fix",
-      "grade": "A",
-      "role": "diversifier",
-      "origin_mode": "qepm",
-      "trust_status": "legacy_qepm_grade_a",
-      "admission_route": null,
-      "admission_code": null,
-      "admission_reason": null,
-      "grade_emit": null,
-      "grade_source": null,
-      "freq": "daily",
-      "sim_result_path": "04_Research/strategies/STR_1562_gerber_dcc_hrp_c11fix/sim_result.rds",
-      "full_sharpe": 1.295,
-      "full_ir": 0.288,
-      "n_days": 5613,
-      "date_range": ["2003-07-06", "2026-03-28"],
-      "per_regime": {
-        "RISK_ON": {
-          "n_days": 3955,
-          "n_months": 188.3,
-          "sharpe": 1.188,
-          "ir": 0.583,
-          "mdd": 0.285,
-          "mean_ann": 0.1398
-        },
-        "NEUTRAL": {
-          "n_days": 846,
-          "n_months": 40.3,
-          "sharpe": 1.884,
-          "ir": -0.367,
-          "mdd": 0.208,
-          "mean_ann": 0.2674
-        },
-        "CAUTION": {
-          "n_days": 437,
-          "n_months": 20.8,
-          "sharpe": 1.99,
-          "ir": 1.486,
-          "mdd": 0.104,
-          "mean_ann": 0.3595
-        },
-        "CRISIS": {
-          "n_days": 362,
-          "n_months": 17.2,
-          "sharpe": 0.441,
-          "ir": -0.762,
-          "mdd": 0.148,
-          "mean_ann": 0.0781
-        },
-        "RISK_OFF": {
-          "n_days": 13,
-          "n_months": 0.6,
-          "sharpe": null,
-          "ir": null,
-          "mdd": 0.025,
-          "mean_ann": -0.4639
-        }
-      },
-      "per_regime_pit_c11": "avail_annotated"
-    },
-    "STR_1555_score_blend_3factor": {
-      "source_strategy_id": "STR_1555_score_blend_3factor",
-      "grade": "A",
-      "role": "diversifier",
-      "origin_mode": "qepm",
-      "trust_status": "legacy_qepm_grade_a",
-      "admission_route": null,
-      "admission_code": null,
-      "admission_reason": null,
-      "grade_emit": null,
-      "grade_source": null,
-      "freq": "daily",
-      "sim_result_path": "04_Research/strategies/STR_1555_score_blend_3factor/sim_result.rds",
-      "full_sharpe": 1.017,
-      "full_ir": 0.745,
-      "n_days": 5219,
-      "date_range": ["2005-02-06", "2026-03-28"],
-      "per_regime": {
-        "RISK_ON": {
-          "n_days": 3788,
-          "n_months": 180.4,
-          "sharpe": 1.029,
-          "ir": 0.936,
-          "mdd": 0.337,
-          "mean_ann": 0.1622
-        },
-        "NEUTRAL": {
-          "n_days": 696,
-          "n_months": 33.1,
-          "sharpe": 1.487,
-          "ir": -0.142,
-          "mdd": 0.245,
-          "mean_ann": 0.3209
-        },
-        "CAUTION": {
-          "n_days": 396,
-          "n_months": 18.9,
-          "sharpe": 0.584,
-          "ir": 0.833,
-          "mdd": 0.216,
-          "mean_ann": 0.1477
-        },
-        "CRISIS": {
-          "n_days": 326,
-          "n_months": 15.5,
-          "sharpe": 1.413,
-          "ir": 0.935,
-          "mdd": 0.343,
-          "mean_ann": 0.6357
-        },
-        "RISK_OFF": {
-          "n_days": 13,
-          "n_months": 0.6,
-          "sharpe": null,
-          "ir": null,
-          "mdd": 0.079,
-          "mean_ann": -0.9921
-        }
-      },
-      "per_regime_pit_c11": "avail_annotated"
-    },
-    "STR_1550_consensus_core_alpha": {
-      "source_strategy_id": "STR_1550_consensus_core_alpha",
-      "grade": "A",
-      "role": "diversifier",
-      "origin_mode": "qepm",
-      "trust_status": "legacy_qepm_grade_a",
-      "admission_route": null,
-      "admission_code": null,
-      "admission_reason": null,
-      "grade_emit": null,
-      "grade_source": null,
-      "freq": "daily",
-      "sim_result_path": "04_Research/strategies/STR_1550_consensus_core_alpha/sim_result.rds",
-      "full_sharpe": 1.017,
-      "full_ir": 0.855,
-      "n_days": 5218,
-      "date_range": ["2005-02-06", "2026-03-27"],
-      "per_regime": {
-        "RISK_ON": {
-          "n_days": 3788,
-          "n_months": 180.4,
-          "sharpe": 1.03,
-          "ir": 1,
-          "mdd": 0.326,
-          "mean_ann": 0.1828
-        },
-        "NEUTRAL": {
-          "n_days": 696,
-          "n_months": 33.1,
-          "sharpe": 1.432,
-          "ir": 0.051,
-          "mdd": 0.231,
-          "mean_ann": 0.347
-        },
-        "CAUTION": {
-          "n_days": 396,
-          "n_months": 18.9,
-          "sharpe": 0.578,
-          "ir": 0.936,
-          "mdd": 0.266,
-          "mean_ann": 0.163
-        },
-        "CRISIS": {
-          "n_days": 325,
-          "n_months": 15.5,
-          "sharpe": 1.435,
-          "ir": 1.253,
-          "mdd": 0.363,
-          "mean_ann": 0.6853
-        },
-        "RISK_OFF": {
-          "n_days": 13,
-          "n_months": 0.6,
-          "sharpe": null,
-          "ir": null,
-          "mdd": 0.077,
-          "mean_ann": -1.4432
-        }
-      },
-      "per_regime_pit_c11": "avail_annotated"
-    },
-    "STR_AS_20260612_124658_77279": {
-      "source_strategy_id": "STR_AS_20260612_124658_77279",
-      "grade": "B",
-      "role": "offensive;alpha",
-      "origin_mode": "alpha_search",
-      "trust_status": "contract_fr_eligible",
-      "admission_route": "role_rep",
-      "admission_code": "role_rep",
-      "admission_reason": "역할 대표(offensive;alpha) · essence B",
-      "grade_emit": "F",
-      "grade_source": "entry",
-      "freq": "daily",
-      "sim_result_path": "04_Research/strategies/STR_AS_20260612_124658_77279/sim_result.rds",
-      "full_sharpe": 0.848,
-      "full_ir": 0.488,
-      "n_days": 5265,
-      "date_range": ["2005-02-04", "2026-06-11"],
-      "per_regime": {
-        "RISK_ON": {
-          "n_days": 3788,
-          "n_months": 180.4,
-          "sharpe": 0.834,
-          "ir": 0.702,
-          "mdd": 0.461,
-          "mean_ann": 0.1948
-        },
-        "NEUTRAL": {
-          "n_days": 696,
-          "n_months": 33.1,
-          "sharpe": 1.423,
-          "ir": 0.345,
-          "mdd": 0.258,
-          "mean_ann": 0.4206
-        },
-        "CAUTION": {
-          "n_days": 398,
-          "n_months": 19,
-          "sharpe": -0.469,
-          "ir": -0.923,
-          "mdd": 0.407,
-          "mean_ann": -0.1474
-        },
-        "CRISIS": {
-          "n_days": 370,
-          "n_months": 17.6,
-          "sharpe": 1.304,
-          "ir": 0.442,
-          "mdd": 0.425,
-          "mean_ann": 0.8307
-        },
-        "RISK_OFF": {
-          "n_days": 13,
-          "n_months": 0.6,
-          "sharpe": null,
-          "ir": null,
-          "mdd": 0.03,
-          "mean_ann": 2.9798
-        }
-      },
-      "per_regime_pit_c11": "avail_annotated"
-    },
-    "STR_AS_20260612_132740_321995": {
-      "source_strategy_id": "STR_AS_20260612_132740_321995",
-      "grade": "B",
-      "role": "rebound;alpha",
-      "origin_mode": "alpha_search",
-      "trust_status": "contract_fr_eligible",
-      "admission_route": "role_rep",
-      "admission_code": "role_rep",
-      "admission_reason": "역할 대표(rebound;alpha) · essence B",
-      "grade_emit": "F",
-      "grade_source": "entry",
-      "freq": "daily",
-      "sim_result_path": "04_Research/strategies/STR_AS_20260612_132740_321995/sim_result.rds",
-      "full_sharpe": 0.813,
-      "full_ir": 0.498,
-      "n_days": 5265,
-      "date_range": ["2005-02-04", "2026-06-11"],
-      "per_regime": {
-        "RISK_ON": {
-          "n_days": 3788,
-          "n_months": 180.4,
-          "sharpe": 0.857,
-          "ir": 0.948,
-          "mdd": 0.325,
-          "mean_ann": 0.1469
-        },
-        "NEUTRAL": {
-          "n_days": 696,
-          "n_months": 33.1,
-          "sharpe": 1.429,
-          "ir": 0.031,
-          "mdd": 0.299,
-          "mean_ann": 0.3338
-        },
-        "CAUTION": {
-          "n_days": 398,
-          "n_months": 19,
-          "sharpe": 0.245,
-          "ir": -0.253,
-          "mdd": 0.269,
-          "mean_ann": 0.07
-        },
-        "CRISIS": {
-          "n_days": 370,
-          "n_months": 17.6,
-          "sharpe": 0.827,
-          "ir": -1.04,
-          "mdd": 0.391,
-          "mean_ann": 0.4
-        },
-        "RISK_OFF": {
-          "n_days": 13,
-          "n_months": 0.6,
-          "sharpe": null,
-          "ir": null,
-          "mdd": 0.049,
-          "mean_ann": 0.3604
-        }
-      },
-      "per_regime_pit_c11": "avail_annotated"
-    },
-    "STR_AS_20260612_143809_686286": {
-      "source_strategy_id": "STR_AS_20260612_143809_686286",
-      "grade": "B",
-      "role": "offensive;rebound;alpha",
-      "origin_mode": "alpha_search",
-      "trust_status": "contract_fr_eligible",
-      "admission_route": "role_rep",
-      "admission_code": "role_rep",
-      "admission_reason": "역할 대표(offensive;rebound;alpha) · essence B",
-      "grade_emit": "F",
-      "grade_source": "entry",
-      "freq": "daily",
-      "sim_result_path": "04_Research/strategies/STR_AS_20260612_143809_686286/sim_result.rds",
-      "full_sharpe": 0.772,
-      "full_ir": 0.505,
-      "n_days": 5265,
-      "date_range": ["2005-02-04", "2026-06-11"],
-      "per_regime": {
-        "RISK_ON": {
-          "n_days": 3788,
-          "n_months": 180.4,
-          "sharpe": 0.62,
-          "ir": 0.581,
-          "mdd": 0.467,
-          "mean_ann": 0.1315
-        },
-        "NEUTRAL": {
-          "n_days": 696,
-          "n_months": 33.1,
-          "sharpe": 1.581,
-          "ir": 0.65,
-          "mdd": 0.362,
-          "mean_ann": 0.4318
-        },
-        "CAUTION": {
-          "n_days": 398,
-          "n_months": 19,
-          "sharpe": 0.532,
-          "ir": 0.405,
-          "mdd": 0.294,
-          "mean_ann": 0.1684
-        },
-        "CRISIS": {
-          "n_days": 370,
-          "n_months": 17.6,
-          "sharpe": 1.068,
-          "ir": -0.034,
-          "mdd": 0.384,
-          "mean_ann": 0.596
-        },
-        "RISK_OFF": {
-          "n_days": 13,
-          "n_months": 0.6,
-          "sharpe": null,
-          "ir": null,
-          "mdd": 0.065,
-          "mean_ann": 0.5525
-        }
-      },
-      "per_regime_pit_c11": "avail_annotated"
-    },
-    "STR_AS_20260612_154914_1055315": {
-      "source_strategy_id": "STR_AS_20260612_154914_1055315",
-      "grade": "B",
-      "role": "offensive;rebound;alpha",
-      "origin_mode": "alpha_search",
-      "trust_status": "contract_fr_eligible",
-      "admission_route": "role_rep",
-      "admission_code": "role_rep",
-      "admission_reason": "역할 대표(offensive;rebound;alpha) · essence B",
-      "grade_emit": "B",
-      "grade_source": "entry",
-      "freq": "daily",
-      "sim_result_path": "04_Research/strategies/STR_AS_20260612_154914_1055315/sim_result.rds",
-      "full_sharpe": 0.933,
-      "full_ir": 0.582,
-      "n_days": 5265,
-      "date_range": ["2005-02-04", "2026-06-11"],
-      "per_regime": {
-        "RISK_ON": {
-          "n_days": 3788,
-          "n_months": 180.4,
-          "sharpe": 1.082,
-          "ir": 1.122,
-          "mdd": 0.314,
-          "mean_ann": 0.1852
-        },
-        "NEUTRAL": {
-          "n_days": 696,
-          "n_months": 33.1,
-          "sharpe": 1.097,
-          "ir": -0.665,
-          "mdd": 0.327,
-          "mean_ann": 0.244
-        },
-        "CAUTION": {
-          "n_days": 398,
-          "n_months": 19,
-          "sharpe": 0.641,
-          "ir": 0.633,
-          "mdd": 0.23,
-          "mean_ann": 0.1836
-        },
-        "CRISIS": {
-          "n_days": 370,
-          "n_months": 17.6,
-          "sharpe": 0.828,
-          "ir": -1.132,
-          "mdd": 0.309,
-          "mean_ann": 0.3614
-        },
-        "RISK_OFF": {
-          "n_days": 13,
-          "n_months": 0.6,
-          "sharpe": null,
-          "ir": null,
-          "mdd": 0.042,
-          "mean_ann": -0.7032
-        }
-      },
-      "per_regime_pit_c11": "avail_annotated"
-    },
-    "STR_AS_20260709_074129_30048": {
-      "source_strategy_id": "STR_AS_20260709_074129_30048",
-      "grade": "B",
-      "role": "offensive;rebound;alpha;diversifier",
-      "origin_mode": "alpha_search",
-      "trust_status": "contract_fr_eligible",
-      "admission_route": "role_rep",
-      "admission_code": "role_rep",
-      "admission_reason": "역할 대표(offensive;rebound;alpha;diversifier) · essence B",
-      "grade_emit": "B",
-      "grade_source": "entry",
-      "freq": "daily",
-      "sim_result_path": "04_Research/strategies/STR_AS_20260709_074129_30048/sim_result.rds",
-      "full_sharpe": 0.871,
-      "full_ir": 0.587,
-      "n_days": 5260,
-      "date_range": ["2005-02-04", "2026-07-08"],
-      "per_regime": {
-        "RISK_ON": {
-          "n_days": 3787,
-          "n_months": 180.3,
-          "sharpe": 0.719,
-          "ir": 0.647,
-          "mdd": 0.577,
-          "mean_ann": 0.1421
-        },
-        "NEUTRAL": {
-          "n_days": 696,
-          "n_months": 33.1,
-          "sharpe": 1.716,
-          "ir": 0.548,
-          "mdd": 0.367,
-          "mean_ann": 0.4458
-        },
-        "CAUTION": {
-          "n_days": 397,
-          "n_months": 18.9,
-          "sharpe": 0.746,
-          "ir": 0.552,
-          "mdd": 0.248,
-          "mean_ann": 0.232
-        },
-        "CRISIS": {
-          "n_days": 367,
-          "n_months": 17.5,
-          "sharpe": 1.188,
-          "ir": 0.538,
-          "mdd": 0.427,
-          "mean_ann": 0.6701
-        },
-        "RISK_OFF": {
-          "n_days": 13,
-          "n_months": 0.6,
-          "sharpe": null,
-          "ir": null,
-          "mdd": 0.074,
-          "mean_ann": 0.071
-        }
-      },
-      "per_regime_pit_c11": "avail_annotated"
-    },
     "RP_20260907_101130_20668": {
       "source_strategy_id": "RP_20260907_101130_20668",
       "grade": "F",
@@ -778,43 +186,48 @@
       "grade_emit": "F",
       "grade_source": "entry",
       "freq": "daily",
-      "sim_result_path": "04_Research/strategies/RP_20260907_101130_20668/sim_result.rds",
-      "full_sharpe": 0.27,
-      "full_ir": -0.195,
-      "n_days": 5325,
-      "date_range": ["2005-02-02", "2026-09-04"],
+      "sim_result_path": "04_Research/factor_rotation/l2_pool_series/RP_20260907_101130_20668/sim_result.rds",
+      "registered_sim_result_path": "04_Research/strategies/RP_20260907_101130_20668/sim_result.rds",
+      "series_source": "close_t1_remeasure",
+      "series_exec_price": "close_t1",
+      "series_dir": "stage_artifacts/replication/20260907_101130_20668/remeasure_close_t1_5562284e",
+      "series_grade": "F",
+      "full_sharpe": 0.276,
+      "full_ir": -0.19,
+      "n_days": 5324,
+      "date_range": ["2005-02-03", "2026-09-04"],
       "per_regime": {
         "RISK_ON": {
-          "n_days": 3789,
+          "n_days": 3788,
           "n_months": 180.4,
-          "sharpe": 0.431,
-          "ir": 0.162,
-          "mdd": 0.494,
-          "mean_ann": 0.083
+          "sharpe": 0.436,
+          "ir": 0.167,
+          "mdd": 0.504,
+          "mean_ann": 0.0839
         },
         "NEUTRAL": {
           "n_days": 696,
           "n_months": 33.1,
-          "sharpe": 0.574,
-          "ir": -0.774,
-          "mdd": 0.27,
-          "mean_ann": 0.1247
+          "sharpe": 0.556,
+          "ir": -0.789,
+          "mdd": 0.267,
+          "mean_ann": 0.1206
         },
         "CAUTION": {
           "n_days": 398,
           "n_months": 19,
-          "sharpe": 0.359,
-          "ir": -0.096,
-          "mdd": 0.204,
-          "mean_ann": 0.0864
+          "sharpe": 0.397,
+          "ir": -0.074,
+          "mdd": 0.205,
+          "mean_ann": 0.0953
         },
         "CRISIS": {
           "n_days": 429,
           "n_months": 20.4,
-          "sharpe": -0.606,
-          "ir": -0.933,
-          "mdd": 0.578,
-          "mean_ann": -0.2645
+          "sharpe": -0.576,
+          "ir": -0.917,
+          "mdd": 0.58,
+          "mean_ann": -0.2522
         },
         "RISK_OFF": {
           "n_days": 13,
@@ -822,7 +235,7 @@
           "sharpe": null,
           "ir": null,
           "mdd": 0.067,
-          "mean_ann": 0.5221
+          "mean_ann": 0.394
         }
       },
       "per_regime_pit_c11": "avail_annotated"
@@ -839,43 +252,48 @@
       "grade_emit": "C",
       "grade_source": "entry",
       "freq": "daily",
-      "sim_result_path": "04_Research/strategies/RP_20260912_181839_14212/sim_result.rds",
-      "full_sharpe": 0.746,
-      "full_ir": 0.428,
-      "n_days": 3568,
-      "date_range": ["2012-03-05", "2026-09-11"],
+      "sim_result_path": "04_Research/factor_rotation/l2_pool_series/RP_20260912_181839_14212/sim_result.rds",
+      "registered_sim_result_path": "04_Research/strategies/RP_20260912_181839_14212/sim_result.rds",
+      "series_source": "close_t1_remeasure",
+      "series_exec_price": "close_t1",
+      "series_dir": "stage_artifacts/replication/20260912_181839_14212/remeasure_close_t1_5562284e",
+      "series_grade": "C",
+      "full_sharpe": 0.769,
+      "full_ir": 0.453,
+      "n_days": 3567,
+      "date_range": ["2012-03-06", "2026-09-11"],
       "per_regime": {
         "RISK_ON": {
-          "n_days": 2841,
-          "n_months": 135.3,
-          "sharpe": 0.417,
-          "ir": 0.422,
-          "mdd": 0.626,
-          "mean_ann": 0.1259
+          "n_days": 2840,
+          "n_months": 135.2,
+          "sharpe": 0.472,
+          "ir": 0.482,
+          "mdd": 0.6,
+          "mean_ann": 0.1436
         },
         "NEUTRAL": {
           "n_days": 391,
           "n_months": 18.6,
-          "sharpe": 2.37,
-          "ir": 0.965,
-          "mdd": 0.171,
-          "mean_ann": 0.8425
+          "sharpe": 2.352,
+          "ir": 0.957,
+          "mdd": 0.172,
+          "mean_ann": 0.8411
         },
         "CAUTION": {
           "n_days": 126,
           "n_months": 6,
-          "sharpe": 1.079,
-          "ir": 0.248,
-          "mdd": 0.269,
-          "mean_ann": 0.4355
+          "sharpe": 0.942,
+          "ir": 0.039,
+          "mdd": 0.276,
+          "mean_ann": 0.3768
         },
         "CRISIS": {
           "n_days": 208,
           "n_months": 9.9,
-          "sharpe": 1.262,
-          "ir": -0.34,
-          "mdd": 0.348,
-          "mean_ann": 0.6527
+          "sharpe": 1.154,
+          "ir": -0.508,
+          "mdd": 0.347,
+          "mean_ann": 0.5946
         },
         "RISK_OFF": {
           "n_days": 2,
@@ -883,7 +301,7 @@
           "sharpe": null,
           "ir": null,
           "mdd": 0.034,
-          "mean_ann": -1.3096
+          "mean_ann": -1.2944
         }
       },
       "per_regime_pit_c11": "avail_annotated"
@@ -900,43 +318,48 @@
       "grade_emit": "C",
       "grade_source": "entry",
       "freq": "daily",
-      "sim_result_path": "04_Research/strategies/RP_20260912_181840_6816/sim_result.rds",
-      "full_sharpe": 0.721,
-      "full_ir": 0.46,
-      "n_days": 3568,
-      "date_range": ["2012-03-05", "2026-09-11"],
+      "sim_result_path": "04_Research/factor_rotation/l2_pool_series/RP_20260912_181840_6816/sim_result.rds",
+      "registered_sim_result_path": "04_Research/strategies/RP_20260912_181840_6816/sim_result.rds",
+      "series_source": "close_t1_remeasure",
+      "series_exec_price": "close_t1",
+      "series_dir": "stage_artifacts/replication/20260912_181840_6816/remeasure_close_t1_5562284e",
+      "series_grade": "C",
+      "full_sharpe": 0.754,
+      "full_ir": 0.498,
+      "n_days": 3567,
+      "date_range": ["2012-03-06", "2026-09-11"],
       "per_regime": {
         "RISK_ON": {
-          "n_days": 2841,
-          "n_months": 135.3,
-          "sharpe": 0.407,
-          "ir": 0.408,
-          "mdd": 0.597,
-          "mean_ann": 0.1172
+          "n_days": 2840,
+          "n_months": 135.2,
+          "sharpe": 0.479,
+          "ir": 0.484,
+          "mdd": 0.562,
+          "mean_ann": 0.1384
         },
         "NEUTRAL": {
           "n_days": 391,
           "n_months": 18.6,
-          "sharpe": 2.444,
-          "ir": 0.922,
-          "mdd": 0.158,
-          "mean_ann": 0.8124
+          "sharpe": 2.471,
+          "ir": 0.958,
+          "mdd": 0.159,
+          "mean_ann": 0.8226
         },
         "CAUTION": {
           "n_days": 126,
           "n_months": 6,
-          "sharpe": 1.105,
-          "ir": 0.267,
-          "mdd": 0.244,
-          "mean_ann": 0.4368
+          "sharpe": 0.982,
+          "ir": 0.072,
+          "mdd": 0.257,
+          "mean_ann": 0.3848
         },
         "CRISIS": {
           "n_days": 208,
           "n_months": 9.9,
-          "sharpe": 1.169,
-          "ir": 0.442,
+          "sharpe": 1.076,
+          "ir": 0.241,
           "mdd": 0.553,
-          "mean_ann": 0.9396
+          "mean_ann": 0.8601
         },
         "RISK_OFF": {
           "n_days": 2,
@@ -944,7 +367,7 @@
           "sharpe": null,
           "ir": null,
           "mdd": 0.045,
-          "mean_ann": -2.1003
+          "mean_ann": -2.085
         }
       },
       "per_regime_pit_c11": "avail_annotated"
@@ -961,51 +384,56 @@
       "grade_emit": "C",
       "grade_source": "entry",
       "freq": "daily",
-      "sim_result_path": "04_Research/strategies/RP_20260913_004317_11696/sim_result.rds",
-      "full_sharpe": 0.697,
-      "full_ir": 0.03,
-      "n_days": 5330,
-      "date_range": ["2005-02-02", "2026-09-11"],
+      "sim_result_path": "04_Research/factor_rotation/l2_pool_series/RP_20260913_004317_11696/sim_result.rds",
+      "registered_sim_result_path": "04_Research/strategies/RP_20260913_004317_11696/sim_result.rds",
+      "series_source": "close_t1_remeasure",
+      "series_exec_price": "close_t1",
+      "series_dir": "stage_artifacts/replication/20260913_004317_11696/remeasure_close_t1_5562284e",
+      "series_grade": "C",
+      "full_sharpe": 0.665,
+      "full_ir": -0.009,
+      "n_days": 5329,
+      "date_range": ["2005-02-03", "2026-09-11"],
       "per_regime": {
         "RISK_ON": {
-          "n_days": 3789,
+          "n_days": 3788,
           "n_months": 180.4,
-          "sharpe": 0.506,
-          "ir": 0.287,
-          "mdd": 0.517,
-          "mean_ann": 0.0798
+          "sharpe": 0.488,
+          "ir": 0.266,
+          "mdd": 0.509,
+          "mean_ann": 0.077
         },
         "NEUTRAL": {
           "n_days": 696,
           "n_months": 33.1,
-          "sharpe": 1.537,
-          "ir": -0.421,
-          "mdd": 0.281,
-          "mean_ann": 0.2985
+          "sharpe": 1.471,
+          "ir": -0.52,
+          "mdd": 0.279,
+          "mean_ann": 0.2852
         },
         "CAUTION": {
           "n_days": 398,
           "n_months": 19,
-          "sharpe": 0.993,
-          "ir": 0.767,
-          "mdd": 0.214,
-          "mean_ann": 0.2573
+          "sharpe": 1.031,
+          "ir": 0.823,
+          "mdd": 0.206,
+          "mean_ann": 0.2642
         },
         "CRISIS": {
           "n_days": 434,
           "n_months": 20.7,
-          "sharpe": 0.79,
-          "ir": -0.696,
-          "mdd": 0.294,
-          "mean_ann": 0.2871
+          "sharpe": 0.712,
+          "ir": -0.765,
+          "mdd": 0.272,
+          "mean_ann": 0.2606
         },
         "RISK_OFF": {
           "n_days": 13,
           "n_months": 0.6,
           "sharpe": null,
           "ir": null,
-          "mdd": 0.032,
-          "mean_ann": -0.6036
+          "mdd": 0.041,
+          "mean_ann": -1.0456
         }
       },
       "per_regime_pit_c11": "avail_annotated"
@@ -1022,43 +450,48 @@
       "grade_emit": "C",
       "grade_source": "entry",
       "freq": "daily",
-      "sim_result_path": "04_Research/strategies/RP_20260913_025126_34484/sim_result.rds",
-      "full_sharpe": 0.825,
-      "full_ir": 0.154,
-      "n_days": 5330,
-      "date_range": ["2005-02-02", "2026-09-11"],
+      "sim_result_path": "04_Research/factor_rotation/l2_pool_series/RP_20260913_025126_34484/sim_result.rds",
+      "registered_sim_result_path": "04_Research/strategies/RP_20260913_025126_34484/sim_result.rds",
+      "series_source": "close_t1_remeasure",
+      "series_exec_price": "close_t1",
+      "series_dir": "stage_artifacts/replication/20260913_025126_34484/remeasure_close_t1_5562284e",
+      "series_grade": "C",
+      "full_sharpe": 0.827,
+      "full_ir": 0.157,
+      "n_days": 5329,
+      "date_range": ["2005-02-03", "2026-09-11"],
       "per_regime": {
         "RISK_ON": {
-          "n_days": 3789,
+          "n_days": 3788,
           "n_months": 180.4,
-          "sharpe": 0.905,
-          "ir": 0.699,
-          "mdd": 0.42,
-          "mean_ann": 0.1452
+          "sharpe": 0.888,
+          "ir": 0.686,
+          "mdd": 0.438,
+          "mean_ann": 0.1432
         },
         "NEUTRAL": {
           "n_days": 696,
           "n_months": 33.1,
-          "sharpe": 1.361,
-          "ir": -0.585,
-          "mdd": 0.285,
-          "mean_ann": 0.2597
+          "sharpe": 1.351,
+          "ir": -0.596,
+          "mdd": 0.295,
+          "mean_ann": 0.2578
         },
         "CAUTION": {
           "n_days": 398,
           "n_months": 19,
-          "sharpe": 1.262,
-          "ir": 0.939,
-          "mdd": 0.133,
-          "mean_ann": 0.3119
+          "sharpe": 1.297,
+          "ir": 0.969,
+          "mdd": 0.129,
+          "mean_ann": 0.3173
         },
         "CRISIS": {
           "n_days": 434,
           "n_months": 20.7,
-          "sharpe": 0.139,
-          "ir": -1.135,
+          "sharpe": 0.188,
+          "ir": -1.1,
           "mdd": 0.294,
-          "mean_ann": 0.0504
+          "mean_ann": 0.0679
         },
         "RISK_OFF": {
           "n_days": 13,
@@ -1066,7 +499,7 @@
           "sharpe": null,
           "ir": null,
           "mdd": 0.033,
-          "mean_ann": -1.1563
+          "mean_ann": -1.0666
         }
       },
       "per_regime_pit_c11": "avail_annotated"
@@ -1083,43 +516,48 @@
       "grade_emit": "B",
       "grade_source": "entry",
       "freq": "daily",
-      "sim_result_path": "04_Research/strategies/RP_20260921_101355_3700/sim_result.rds",
-      "full_sharpe": 1.173,
-      "full_ir": 0.895,
-      "n_days": 5335,
-      "date_range": ["2005-02-02", "2026-09-18"],
+      "sim_result_path": "04_Research/factor_rotation/l2_pool_series/RP_20260921_101355_3700/sim_result.rds",
+      "registered_sim_result_path": "04_Research/strategies/RP_20260921_101355_3700/sim_result.rds",
+      "series_source": "close_t1_remeasure",
+      "series_exec_price": "close_t1",
+      "series_dir": "stage_artifacts/replication/20260921_101355_3700/remeasure_close_t1_5562284e",
+      "series_grade": "B",
+      "full_sharpe": 1.074,
+      "full_ir": 0.751,
+      "n_days": 5334,
+      "date_range": ["2005-02-03", "2026-09-18"],
       "per_regime": {
         "RISK_ON": {
-          "n_days": 3789,
+          "n_days": 3788,
           "n_months": 180.4,
-          "sharpe": 1.083,
-          "ir": 1.131,
-          "mdd": 0.564,
-          "mean_ann": 0.1901
+          "sharpe": 0.951,
+          "ir": 0.949,
+          "mdd": 0.587,
+          "mean_ann": 0.166
         },
         "NEUTRAL": {
           "n_days": 696,
           "n_months": 33.1,
-          "sharpe": 2.031,
-          "ir": 0.874,
-          "mdd": 0.251,
-          "mean_ann": 0.4738
+          "sharpe": 2.022,
+          "ir": 0.868,
+          "mdd": 0.257,
+          "mean_ann": 0.4712
         },
         "CAUTION": {
           "n_days": 398,
           "n_months": 19,
-          "sharpe": 0.847,
-          "ir": 0.806,
-          "mdd": 0.21,
+          "sharpe": 0.848,
+          "ir": 0.787,
+          "mdd": 0.201,
           "mean_ann": 0.2418
         },
         "CRISIS": {
           "n_days": 439,
           "n_months": 20.9,
-          "sharpe": 1.434,
-          "ir": 0.388,
-          "mdd": 0.35,
-          "mean_ann": 0.6677
+          "sharpe": 1.324,
+          "ir": 0.243,
+          "mdd": 0.352,
+          "mean_ann": 0.6199
         },
         "RISK_OFF": {
           "n_days": 13,
@@ -1127,7 +565,7 @@
           "sharpe": null,
           "ir": null,
           "mdd": 0.055,
-          "mean_ann": 0.3643
+          "mean_ann": -0.3762
         }
       },
       "per_regime_pit_c11": "avail_annotated"
@@ -1144,43 +582,48 @@
       "grade_emit": "B",
       "grade_source": "entry",
       "freq": "daily",
-      "sim_result_path": "04_Research/strategies/RP_20260921_104337_35052/sim_result.rds",
-      "full_sharpe": 1.212,
-      "full_ir": 0.729,
-      "n_days": 5335,
-      "date_range": ["2005-02-02", "2026-09-18"],
+      "sim_result_path": "04_Research/factor_rotation/l2_pool_series/RP_20260921_104337_35052/sim_result.rds",
+      "registered_sim_result_path": "04_Research/strategies/RP_20260921_104337_35052/sim_result.rds",
+      "series_source": "close_t1_remeasure",
+      "series_exec_price": "close_t1",
+      "series_dir": "stage_artifacts/replication/20260921_104337_35052/remeasure_close_t1_5562284e",
+      "series_grade": "B",
+      "full_sharpe": 1.13,
+      "full_ir": 0.622,
+      "n_days": 5334,
+      "date_range": ["2005-02-03", "2026-09-18"],
       "per_regime": {
         "RISK_ON": {
-          "n_days": 3789,
+          "n_days": 3788,
           "n_months": 180.4,
-          "sharpe": 1.123,
-          "ir": 1.15,
-          "mdd": 0.479,
-          "mean_ann": 0.1787
+          "sharpe": 1.027,
+          "ir": 1.018,
+          "mdd": 0.489,
+          "mean_ann": 0.1626
         },
         "NEUTRAL": {
           "n_days": 696,
           "n_months": 33.1,
-          "sharpe": 2.204,
-          "ir": 0.553,
-          "mdd": 0.215,
-          "mean_ann": 0.427
+          "sharpe": 2.213,
+          "ir": 0.544,
+          "mdd": 0.204,
+          "mean_ann": 0.425
         },
         "CAUTION": {
           "n_days": 398,
           "n_months": 19,
-          "sharpe": 0.596,
-          "ir": 0.094,
-          "mdd": 0.193,
-          "mean_ann": 0.1389
+          "sharpe": 0.629,
+          "ir": 0.148,
+          "mdd": 0.191,
+          "mean_ann": 0.147
         },
         "CRISIS": {
           "n_days": 439,
           "n_months": 20.9,
-          "sharpe": 1.475,
-          "ir": 0.067,
-          "mdd": 0.206,
-          "mean_ann": 0.5657
+          "sharpe": 1.333,
+          "ir": -0.087,
+          "mdd": 0.214,
+          "mean_ann": 0.5164
         },
         "RISK_OFF": {
           "n_days": 13,
@@ -1188,7 +631,7 @@
           "sharpe": null,
           "ir": null,
           "mdd": 0.041,
-          "mean_ann": 0.241
+          "mean_ann": -0.2875
         }
       },
       "per_regime_pit_c11": "avail_annotated"
@@ -1205,43 +648,48 @@
       "grade_emit": "B",
       "grade_source": "entry",
       "freq": "daily",
-      "sim_result_path": "04_Research/strategies/RP_20260921_113555_29880/sim_result.rds",
-      "full_sharpe": 1.18,
-      "full_ir": 0.88,
-      "n_days": 5335,
-      "date_range": ["2005-02-02", "2026-09-18"],
+      "sim_result_path": "04_Research/factor_rotation/l2_pool_series/RP_20260921_113555_29880/sim_result.rds",
+      "registered_sim_result_path": "04_Research/strategies/RP_20260921_113555_29880/sim_result.rds",
+      "series_source": "close_t1_remeasure",
+      "series_exec_price": "close_t1",
+      "series_dir": "stage_artifacts/replication/20260921_113555_29880/remeasure_close_t1_5562284e",
+      "series_grade": "B",
+      "full_sharpe": 1.098,
+      "full_ir": 0.759,
+      "n_days": 5334,
+      "date_range": ["2005-02-03", "2026-09-18"],
       "per_regime": {
         "RISK_ON": {
-          "n_days": 3789,
+          "n_days": 3788,
           "n_months": 180.4,
-          "sharpe": 1.097,
-          "ir": 1.171,
-          "mdd": 0.485,
-          "mean_ann": 0.1792
+          "sharpe": 1.006,
+          "ir": 1.044,
+          "mdd": 0.49,
+          "mean_ann": 0.1637
         },
         "NEUTRAL": {
           "n_days": 696,
           "n_months": 33.1,
-          "sharpe": 2.103,
-          "ir": 0.773,
-          "mdd": 0.247,
-          "mean_ann": 0.454
+          "sharpe": 2.086,
+          "ir": 0.722,
+          "mdd": 0.239,
+          "mean_ann": 0.4471
         },
         "CAUTION": {
           "n_days": 398,
           "n_months": 19,
-          "sharpe": 0.754,
-          "ir": 0.626,
-          "mdd": 0.222,
-          "mean_ann": 0.2164
+          "sharpe": 0.751,
+          "ir": 0.62,
+          "mdd": 0.24,
+          "mean_ann": 0.2167
         },
         "CRISIS": {
           "n_days": 439,
           "n_months": 20.9,
-          "sharpe": 1.524,
-          "ir": 0.473,
-          "mdd": 0.295,
-          "mean_ann": 0.6934
+          "sharpe": 1.412,
+          "ir": 0.326,
+          "mdd": 0.297,
+          "mean_ann": 0.6456
         },
         "RISK_OFF": {
           "n_days": 13,
@@ -1249,7 +697,7 @@
           "sharpe": null,
           "ir": null,
           "mdd": 0.066,
-          "mean_ann": 0.1489
+          "mean_ann": -0.8095
         }
       },
       "per_regime_pit_c11": "avail_annotated"
@@ -1266,43 +714,48 @@
       "grade_emit": "C",
       "grade_source": "entry",
       "freq": "daily",
-      "sim_result_path": "04_Research/strategies/RP_20260921_131648_18576/sim_result.rds",
-      "full_sharpe": 0.85,
-      "full_ir": 0.371,
-      "n_days": 5335,
-      "date_range": ["2005-02-02", "2026-09-18"],
+      "sim_result_path": "04_Research/factor_rotation/l2_pool_series/RP_20260921_131648_18576/sim_result.rds",
+      "registered_sim_result_path": "04_Research/strategies/RP_20260921_131648_18576/sim_result.rds",
+      "series_source": "close_t1_remeasure",
+      "series_exec_price": "close_t1",
+      "series_dir": "stage_artifacts/replication/20260921_131648_18576/remeasure_close_t1_5562284e",
+      "series_grade": "C",
+      "full_sharpe": 0.843,
+      "full_ir": 0.36,
+      "n_days": 5334,
+      "date_range": ["2005-02-03", "2026-09-18"],
       "per_regime": {
         "RISK_ON": {
-          "n_days": 3789,
+          "n_days": 3788,
           "n_months": 180.4,
-          "sharpe": 0.799,
-          "ir": 0.71,
-          "mdd": 0.48,
-          "mean_ann": 0.1366
+          "sharpe": 0.792,
+          "ir": 0.699,
+          "mdd": 0.457,
+          "mean_ann": 0.1352
         },
         "NEUTRAL": {
           "n_days": 696,
           "n_months": 33.1,
-          "sharpe": 1.604,
-          "ir": 0.015,
-          "mdd": 0.275,
-          "mean_ann": 0.3587
+          "sharpe": 1.585,
+          "ir": -0.026,
+          "mdd": 0.278,
+          "mean_ann": 0.3531
         },
         "CAUTION": {
           "n_days": 398,
           "n_months": 19,
-          "sharpe": 0.977,
-          "ir": 0.973,
-          "mdd": 0.174,
-          "mean_ann": 0.2654
+          "sharpe": 0.986,
+          "ir": 0.996,
+          "mdd": 0.172,
+          "mean_ann": 0.2676
         },
         "CRISIS": {
           "n_days": 439,
           "n_months": 20.9,
-          "sharpe": 0.738,
-          "ir": -0.689,
-          "mdd": 0.334,
-          "mean_ann": 0.3311
+          "sharpe": 0.732,
+          "ir": -0.69,
+          "mdd": 0.339,
+          "mean_ann": 0.3294
         },
         "RISK_OFF": {
           "n_days": 13,
@@ -1310,7 +763,7 @@
           "sharpe": null,
           "ir": null,
           "mdd": 0.044,
-          "mean_ann": -0.6935
+          "mean_ann": -0.6314
         }
       },
       "per_regime_pit_c11": "avail_annotated"
@@ -1327,51 +780,56 @@
       "grade_emit": "C",
       "grade_source": "entry",
       "freq": "daily",
-      "sim_result_path": "04_Research/strategies/RP_20260921_134954_32472/sim_result.rds",
-      "full_sharpe": 0.674,
-      "full_ir": 0.133,
-      "n_days": 5335,
-      "date_range": ["2005-02-02", "2026-09-18"],
+      "sim_result_path": "04_Research/factor_rotation/l2_pool_series/RP_20260921_134954_32472/sim_result.rds",
+      "registered_sim_result_path": "04_Research/strategies/RP_20260921_134954_32472/sim_result.rds",
+      "series_source": "close_t1_remeasure",
+      "series_exec_price": "close_t1",
+      "series_dir": "stage_artifacts/replication/20260921_134954_32472/remeasure_close_t1_5562284e",
+      "series_grade": "C",
+      "full_sharpe": 0.682,
+      "full_ir": 0.143,
+      "n_days": 5334,
+      "date_range": ["2005-02-03", "2026-09-18"],
       "per_regime": {
         "RISK_ON": {
-          "n_days": 3789,
+          "n_days": 3788,
           "n_months": 180.4,
-          "sharpe": 0.546,
-          "ir": 0.391,
-          "mdd": 0.512,
-          "mean_ann": 0.0914
+          "sharpe": 0.574,
+          "ir": 0.43,
+          "mdd": 0.474,
+          "mean_ann": 0.096
         },
         "NEUTRAL": {
           "n_days": 696,
           "n_months": 33.1,
-          "sharpe": 1.55,
-          "ir": -0.056,
-          "mdd": 0.284,
-          "mean_ann": 0.3493
+          "sharpe": 1.501,
+          "ir": -0.137,
+          "mdd": 0.287,
+          "mean_ann": 0.3386
         },
         "CAUTION": {
           "n_days": 398,
           "n_months": 19,
-          "sharpe": 0.666,
-          "ir": 0.49,
-          "mdd": 0.214,
-          "mean_ann": 0.1905
+          "sharpe": 0.641,
+          "ir": 0.432,
+          "mdd": 0.219,
+          "mean_ann": 0.183
         },
         "CRISIS": {
           "n_days": 439,
           "n_months": 20.9,
-          "sharpe": 0.76,
-          "ir": -0.629,
-          "mdd": 0.369,
-          "mean_ann": 0.3498
+          "sharpe": 0.766,
+          "ir": -0.612,
+          "mdd": 0.372,
+          "mean_ann": 0.3531
         },
         "RISK_OFF": {
           "n_days": 13,
           "n_months": 0.6,
           "sharpe": null,
           "ir": null,
-          "mdd": 0.059,
-          "mean_ann": -0.9091
+          "mdd": 0.058,
+          "mean_ann": -0.8646
         }
       },
       "per_regime_pit_c11": "avail_annotated"
@@ -1388,43 +846,48 @@
       "grade_emit": "B",
       "grade_source": "entry",
       "freq": "daily",
-      "sim_result_path": "04_Research/strategies/RP_20260921_154145_5456/sim_result.rds",
-      "full_sharpe": 0.89,
-      "full_ir": 0.445,
-      "n_days": 5335,
-      "date_range": ["2005-02-02", "2026-09-18"],
+      "sim_result_path": "04_Research/factor_rotation/l2_pool_series/RP_20260921_154145_5456/sim_result.rds",
+      "registered_sim_result_path": "04_Research/strategies/RP_20260921_154145_5456/sim_result.rds",
+      "series_source": "close_t1_remeasure",
+      "series_exec_price": "close_t1",
+      "series_dir": "stage_artifacts/replication/20260921_154145_5456/remeasure_close_t1_5562284e",
+      "series_grade": "C",
+      "full_sharpe": 0.811,
+      "full_ir": 0.323,
+      "n_days": 5334,
+      "date_range": ["2005-02-03", "2026-09-18"],
       "per_regime": {
         "RISK_ON": {
-          "n_days": 3789,
+          "n_days": 3788,
           "n_months": 180.4,
-          "sharpe": 0.743,
-          "ir": 0.653,
-          "mdd": 0.597,
-          "mean_ann": 0.1222
+          "sharpe": 0.634,
+          "ir": 0.499,
+          "mdd": 0.602,
+          "mean_ann": 0.1036
         },
         "NEUTRAL": {
           "n_days": 696,
           "n_months": 33.1,
-          "sharpe": 2.211,
-          "ir": 1.074,
-          "mdd": 0.275,
-          "mean_ann": 0.4911
+          "sharpe": 2.083,
+          "ir": 0.839,
+          "mdd": 0.29,
+          "mean_ann": 0.4602
         },
         "CAUTION": {
           "n_days": 398,
           "n_months": 19,
-          "sharpe": 0.606,
-          "ir": 0.349,
-          "mdd": 0.194,
-          "mean_ann": 0.1702
+          "sharpe": 0.593,
+          "ir": 0.314,
+          "mdd": 0.22,
+          "mean_ann": 0.1662
         },
         "CRISIS": {
           "n_days": 439,
           "n_months": 20.9,
-          "sharpe": 0.899,
-          "ir": -0.399,
-          "mdd": 0.35,
-          "mean_ann": 0.4141
+          "sharpe": 0.892,
+          "ir": -0.415,
+          "mdd": 0.351,
+          "mean_ann": 0.4105
         },
         "RISK_OFF": {
           "n_days": 13,
@@ -1432,7 +895,7 @@
           "sharpe": null,
           "ir": null,
           "mdd": 0.054,
-          "mean_ann": 0.0787
+          "mean_ann": -0.1508
         }
       },
       "per_regime_pit_c11": "avail_annotated"
@@ -1449,43 +912,48 @@
       "grade_emit": "B",
       "grade_source": "entry",
       "freq": "daily",
-      "sim_result_path": "04_Research/strategies/RP_20260921_155730_11692/sim_result.rds",
-      "full_sharpe": 1.136,
-      "full_ir": 0.911,
-      "n_days": 5335,
-      "date_range": ["2005-02-02", "2026-09-18"],
+      "sim_result_path": "04_Research/factor_rotation/l2_pool_series/RP_20260921_155730_11692/sim_result.rds",
+      "registered_sim_result_path": "04_Research/strategies/RP_20260921_155730_11692/sim_result.rds",
+      "series_source": "close_t1_remeasure",
+      "series_exec_price": "close_t1",
+      "series_dir": "stage_artifacts/replication/20260921_155730_11692/remeasure_close_t1_5562284e",
+      "series_grade": "B",
+      "full_sharpe": 1.023,
+      "full_ir": 0.733,
+      "n_days": 5334,
+      "date_range": ["2005-02-03", "2026-09-18"],
       "per_regime": {
         "RISK_ON": {
-          "n_days": 3789,
+          "n_days": 3788,
           "n_months": 180.4,
-          "sharpe": 1.036,
-          "ir": 1.106,
-          "mdd": 0.585,
-          "mean_ann": 0.1772
+          "sharpe": 0.893,
+          "ir": 0.899,
+          "mdd": 0.604,
+          "mean_ann": 0.1514
         },
         "NEUTRAL": {
           "n_days": 696,
           "n_months": 33.1,
-          "sharpe": 2.033,
-          "ir": 0.851,
-          "mdd": 0.285,
-          "mean_ann": 0.4631
+          "sharpe": 1.984,
+          "ir": 0.764,
+          "mdd": 0.291,
+          "mean_ann": 0.45
         },
         "CAUTION": {
           "n_days": 398,
           "n_months": 19,
-          "sharpe": 0.804,
-          "ir": 0.796,
-          "mdd": 0.227,
-          "mean_ann": 0.2448
+          "sharpe": 0.762,
+          "ir": 0.704,
+          "mdd": 0.24,
+          "mean_ann": 0.2323
         },
         "CRISIS": {
           "n_days": 439,
           "n_months": 20.9,
-          "sharpe": 1.518,
-          "ir": 0.672,
-          "mdd": 0.371,
-          "mean_ann": 0.7523
+          "sharpe": 1.403,
+          "ir": 0.5,
+          "mdd": 0.372,
+          "mean_ann": 0.6964
         },
         "RISK_OFF": {
           "n_days": 13,
@@ -1493,7 +961,7 @@
           "sharpe": null,
           "ir": null,
           "mdd": 0.069,
-          "mean_ann": 0.0534
+          "mean_ann": -0.7096
         }
       },
       "per_regime_pit_c11": "avail_annotated"
@@ -1510,43 +978,48 @@
       "grade_emit": "C",
       "grade_source": "entry",
       "freq": "daily",
-      "sim_result_path": "04_Research/strategies/RP_20260921_202529_31844/sim_result.rds",
-      "full_sharpe": 0.695,
-      "full_ir": 0.301,
-      "n_days": 5335,
-      "date_range": ["2005-02-02", "2026-09-18"],
+      "sim_result_path": "04_Research/factor_rotation/l2_pool_series/RP_20260921_202529_31844/sim_result.rds",
+      "registered_sim_result_path": "04_Research/strategies/RP_20260921_202529_31844/sim_result.rds",
+      "series_source": "close_t1_remeasure",
+      "series_exec_price": "close_t1",
+      "series_dir": "stage_artifacts/replication/20260921_202529_31844/remeasure_close_t1_5562284e",
+      "series_grade": "C",
+      "full_sharpe": 0.681,
+      "full_ir": 0.282,
+      "n_days": 5334,
+      "date_range": ["2005-02-03", "2026-09-18"],
       "per_regime": {
         "RISK_ON": {
-          "n_days": 3789,
+          "n_days": 3788,
           "n_months": 180.4,
-          "sharpe": 0.73,
-          "ir": 0.66,
-          "mdd": 0.332,
-          "mean_ann": 0.1533
+          "sharpe": 0.717,
+          "ir": 0.642,
+          "mdd": 0.343,
+          "mean_ann": 0.1504
         },
         "NEUTRAL": {
           "n_days": 696,
           "n_months": 33.1,
-          "sharpe": 1.285,
-          "ir": -0.051,
-          "mdd": 0.348,
-          "mean_ann": 0.3475
+          "sharpe": 1.262,
+          "ir": -0.089,
+          "mdd": 0.341,
+          "mean_ann": 0.341
         },
         "CAUTION": {
           "n_days": 398,
           "n_months": 19,
-          "sharpe": 0.51,
-          "ir": 0.222,
-          "mdd": 0.264,
-          "mean_ann": 0.1681
+          "sharpe": 0.489,
+          "ir": 0.187,
+          "mdd": 0.262,
+          "mean_ann": 0.1618
         },
         "CRISIS": {
           "n_days": 439,
           "n_months": 20.9,
-          "sharpe": 0.508,
-          "ir": -0.721,
-          "mdd": 0.541,
-          "mean_ann": 0.2831
+          "sharpe": 0.489,
+          "ir": -0.748,
+          "mdd": 0.542,
+          "mean_ann": 0.2731
         },
         "RISK_OFF": {
           "n_days": 13,
@@ -1554,7 +1027,7 @@
           "sharpe": null,
           "ir": null,
           "mdd": 0.039,
-          "mean_ann": -0.0857
+          "mean_ann": 0.1841
         }
       },
       "per_regime_pit_c11": "avail_annotated"
@@ -1571,43 +1044,48 @@
       "grade_emit": "C",
       "grade_source": "entry",
       "freq": "daily",
-      "sim_result_path": "04_Research/strategies/RP_20260921_221343_24964/sim_result.rds",
-      "full_sharpe": 0.76,
-      "full_ir": 0.335,
-      "n_days": 5335,
-      "date_range": ["2005-02-02", "2026-09-18"],
+      "sim_result_path": "04_Research/factor_rotation/l2_pool_series/RP_20260921_221343_24964/sim_result.rds",
+      "registered_sim_result_path": "04_Research/strategies/RP_20260921_221343_24964/sim_result.rds",
+      "series_source": "close_t1_remeasure",
+      "series_exec_price": "close_t1",
+      "series_dir": "stage_artifacts/replication/20260921_221343_24964/remeasure_close_t1_5562284e",
+      "series_grade": "C",
+      "full_sharpe": 0.74,
+      "full_ir": 0.303,
+      "n_days": 5334,
+      "date_range": ["2005-02-03", "2026-09-18"],
       "per_regime": {
         "RISK_ON": {
-          "n_days": 3789,
+          "n_days": 3788,
           "n_months": 180.4,
-          "sharpe": 0.72,
-          "ir": 0.649,
-          "mdd": 0.41,
-          "mean_ann": 0.1286
+          "sharpe": 0.71,
+          "ir": 0.634,
+          "mdd": 0.42,
+          "mean_ann": 0.1265
         },
         "NEUTRAL": {
           "n_days": 696,
           "n_months": 33.1,
-          "sharpe": 1.578,
-          "ir": 0.185,
-          "mdd": 0.262,
-          "mean_ann": 0.3852
+          "sharpe": 1.477,
+          "ir": 0.025,
+          "mdd": 0.271,
+          "mean_ann": 0.3605
         },
         "CAUTION": {
           "n_days": 398,
           "n_months": 19,
-          "sharpe": 0.353,
-          "ir": -0.095,
-          "mdd": 0.278,
-          "mean_ann": 0.1088
+          "sharpe": 0.296,
+          "ir": -0.195,
+          "mdd": 0.282,
+          "mean_ann": 0.0908
         },
         "CRISIS": {
           "n_days": 439,
           "n_months": 20.9,
           "sharpe": 0.866,
-          "ir": -0.214,
-          "mdd": 0.442,
-          "mean_ann": 0.464
+          "ir": -0.211,
+          "mdd": 0.446,
+          "mean_ann": 0.4647
         },
         "RISK_OFF": {
           "n_days": 13,
@@ -1615,7 +1093,7 @@
           "sharpe": null,
           "ir": null,
           "mdd": 0.052,
-          "mean_ann": 0.2231
+          "mean_ann": 0.5428
         }
       },
       "per_regime_pit_c11": "avail_annotated"
@@ -1632,43 +1110,48 @@
       "grade_emit": "C",
       "grade_source": "entry",
       "freq": "daily",
-      "sim_result_path": "04_Research/strategies/RP_20260921_231732_25592/sim_result.rds",
-      "full_sharpe": 0.803,
-      "full_ir": 0.389,
-      "n_days": 4093,
-      "date_range": ["2010-02-02", "2026-09-18"],
+      "sim_result_path": "04_Research/factor_rotation/l2_pool_series/RP_20260921_231732_25592/sim_result.rds",
+      "registered_sim_result_path": "04_Research/strategies/RP_20260921_231732_25592/sim_result.rds",
+      "series_source": "close_t1_remeasure",
+      "series_exec_price": "close_t1",
+      "series_dir": "stage_artifacts/replication/20260921_231732_25592/remeasure_close_t1_5562284e",
+      "series_grade": "C",
+      "full_sharpe": 0.794,
+      "full_ir": 0.378,
+      "n_days": 4092,
+      "date_range": ["2010-02-03", "2026-09-18"],
       "per_regime": {
         "RISK_ON": {
           "n_days": 3190,
           "n_months": 151.9,
-          "sharpe": 0.644,
-          "ir": 0.611,
-          "mdd": 0.511,
-          "mean_ann": 0.127
+          "sharpe": 0.646,
+          "ir": 0.614,
+          "mdd": 0.525,
+          "mean_ann": 0.1276
         },
         "NEUTRAL": {
-          "n_days": 455,
-          "n_months": 21.7,
-          "sharpe": 2.466,
-          "ir": 0.682,
-          "mdd": 0.154,
-          "mean_ann": 0.7042
+          "n_days": 454,
+          "n_months": 21.6,
+          "sharpe": 2.389,
+          "ir": 0.553,
+          "mdd": 0.158,
+          "mean_ann": 0.6823
         },
         "CAUTION": {
           "n_days": 178,
           "n_months": 8.5,
-          "sharpe": 0.905,
-          "ir": 1.126,
-          "mdd": 0.243,
-          "mean_ann": 0.3195
+          "sharpe": 0.863,
+          "ir": 1.071,
+          "mdd": 0.245,
+          "mean_ann": 0.3046
         },
         "CRISIS": {
           "n_days": 268,
           "n_months": 12.8,
-          "sharpe": 0.384,
-          "ir": -0.987,
-          "mdd": 0.463,
-          "mean_ann": 0.2151
+          "sharpe": 0.401,
+          "ir": -0.966,
+          "mdd": 0.47,
+          "mean_ann": 0.2254
         },
         "RISK_OFF": {
           "n_days": 2,
@@ -1676,7 +1159,7 @@
           "sharpe": null,
           "ir": null,
           "mdd": 0.035,
-          "mean_ann": 0.6675
+          "mean_ann": 0.8905
         }
       },
       "per_regime_pit_c11": "avail_annotated"
@@ -1693,43 +1176,48 @@
       "grade_emit": "B",
       "grade_source": "entry",
       "freq": "daily",
-      "sim_result_path": "04_Research/strategies/RP_20260922_011120_6980/sim_result.rds",
-      "full_sharpe": 0.879,
-      "full_ir": 0.495,
-      "n_days": 5336,
-      "date_range": ["2005-02-02", "2026-09-21"],
+      "sim_result_path": "04_Research/factor_rotation/l2_pool_series/RP_20260922_011120_6980/sim_result.rds",
+      "registered_sim_result_path": "04_Research/strategies/RP_20260922_011120_6980/sim_result.rds",
+      "series_source": "close_t1_remeasure",
+      "series_exec_price": "close_t1",
+      "series_dir": "stage_artifacts/replication/20260922_011120_6980/remeasure_close_t1_5562284e",
+      "series_grade": "B",
+      "full_sharpe": 0.846,
+      "full_ir": 0.447,
+      "n_days": 5335,
+      "date_range": ["2005-02-03", "2026-09-21"],
       "per_regime": {
         "RISK_ON": {
-          "n_days": 3789,
+          "n_days": 3788,
           "n_months": 180.4,
-          "sharpe": 0.826,
-          "ir": 0.795,
-          "mdd": 0.593,
-          "mean_ann": 0.1569
+          "sharpe": 0.807,
+          "ir": 0.774,
+          "mdd": 0.615,
+          "mean_ann": 0.1537
         },
         "NEUTRAL": {
           "n_days": 696,
           "n_months": 33.1,
-          "sharpe": 1.623,
-          "ir": 0.298,
-          "mdd": 0.326,
-          "mean_ann": 0.4039
+          "sharpe": 1.494,
+          "ir": 0.094,
+          "mdd": 0.342,
+          "mean_ann": 0.3719
         },
         "CAUTION": {
           "n_days": 398,
           "n_months": 19,
-          "sharpe": 0.065,
-          "ir": -0.59,
+          "sharpe": -0.001,
+          "ir": -0.693,
           "mdd": 0.316,
-          "mean_ann": 0.021
+          "mean_ann": -0.0002
         },
         "CRISIS": {
           "n_days": 440,
           "n_months": 21,
-          "sharpe": 1.305,
-          "ir": 0.273,
-          "mdd": 0.365,
-          "mean_ann": 0.6603
+          "sharpe": 1.329,
+          "ir": 0.307,
+          "mdd": 0.364,
+          "mean_ann": 0.6732
         },
         "RISK_OFF": {
           "n_days": 13,
@@ -1737,7 +1225,7 @@
           "sharpe": null,
           "ir": null,
           "mdd": 0.082,
-          "mean_ann": 0.5675
+          "mean_ann": 0.043
         }
       },
       "per_regime_pit_c11": "avail_annotated"
@@ -1754,43 +1242,48 @@
       "grade_emit": "C",
       "grade_source": "entry",
       "freq": "daily",
-      "sim_result_path": "04_Research/strategies/RP_20260922_014708_24444/sim_result.rds",
-      "full_sharpe": 0.978,
-      "full_ir": 0.407,
-      "n_days": 5336,
-      "date_range": ["2005-02-02", "2026-09-21"],
+      "sim_result_path": "04_Research/factor_rotation/l2_pool_series/RP_20260922_014708_24444/sim_result.rds",
+      "registered_sim_result_path": "04_Research/strategies/RP_20260922_014708_24444/sim_result.rds",
+      "series_source": "close_t1_remeasure",
+      "series_exec_price": "close_t1",
+      "series_dir": "stage_artifacts/replication/20260922_014708_24444/remeasure_close_t1_5562284e",
+      "series_grade": "C",
+      "full_sharpe": 0.941,
+      "full_ir": 0.372,
+      "n_days": 5335,
+      "date_range": ["2005-02-03", "2026-09-21"],
       "per_regime": {
         "RISK_ON": {
-          "n_days": 3789,
+          "n_days": 3788,
           "n_months": 180.4,
-          "sharpe": 1.18,
-          "ir": 1.089,
-          "mdd": 0.382,
-          "mean_ann": 0.2021
+          "sharpe": 1.13,
+          "ir": 1.036,
+          "mdd": 0.429,
+          "mean_ann": 0.1943
         },
         "NEUTRAL": {
           "n_days": 696,
           "n_months": 33.1,
-          "sharpe": 1.555,
-          "ir": -0.211,
-          "mdd": 0.255,
-          "mean_ann": 0.3218
+          "sharpe": 1.4,
+          "ir": -0.395,
+          "mdd": 0.291,
+          "mean_ann": 0.2903
         },
         "CAUTION": {
           "n_days": 398,
           "n_months": 19,
-          "sharpe": -0.037,
-          "ir": -0.679,
-          "mdd": 0.365,
-          "mean_ann": -0.0102
+          "sharpe": 0.029,
+          "ir": -0.587,
+          "mdd": 0.334,
+          "mean_ann": 0.0079
         },
         "CRISIS": {
           "n_days": 440,
           "n_months": 21,
-          "sharpe": 0.781,
-          "ir": -0.512,
-          "mdd": 0.392,
-          "mean_ann": 0.3264
+          "sharpe": 0.84,
+          "ir": -0.452,
+          "mdd": 0.394,
+          "mean_ann": 0.3554
         },
         "RISK_OFF": {
           "n_days": 13,
@@ -1798,7 +1291,7 @@
           "sharpe": null,
           "ir": null,
           "mdd": 0.064,
-          "mean_ann": 0.0411
+          "mean_ann": -0.4022
         }
       },
       "per_regime_pit_c11": "avail_annotated"
@@ -1815,43 +1308,48 @@
       "grade_emit": "B",
       "grade_source": "entry",
       "freq": "daily",
-      "sim_result_path": "04_Research/strategies/RP_20260922_021919_30860/sim_result.rds",
-      "full_sharpe": 0.919,
-      "full_ir": 0.488,
-      "n_days": 5319,
-      "date_range": ["2005-03-03", "2026-09-21"],
+      "sim_result_path": "04_Research/factor_rotation/l2_pool_series/RP_20260922_021919_30860/sim_result.rds",
+      "registered_sim_result_path": "04_Research/strategies/RP_20260922_021919_30860/sim_result.rds",
+      "series_source": "close_t1_remeasure",
+      "series_exec_price": "close_t1",
+      "series_dir": "stage_artifacts/replication/20260922_021919_30860/remeasure_close_t1_5562284e",
+      "series_grade": "B",
+      "full_sharpe": 0.894,
+      "full_ir": 0.454,
+      "n_days": 5318,
+      "date_range": ["2005-03-04", "2026-09-21"],
       "per_regime": {
         "RISK_ON": {
-          "n_days": 3772,
+          "n_days": 3771,
           "n_months": 179.6,
-          "sharpe": 0.892,
-          "ir": 0.87,
-          "mdd": 0.495,
-          "mean_ann": 0.1619
+          "sharpe": 0.858,
+          "ir": 0.829,
+          "mdd": 0.527,
+          "mean_ann": 0.1556
         },
         "NEUTRAL": {
           "n_days": 696,
           "n_months": 33.1,
-          "sharpe": 1.6,
-          "ir": 0.142,
-          "mdd": 0.246,
-          "mean_ann": 0.3785
+          "sharpe": 1.591,
+          "ir": 0.124,
+          "mdd": 0.239,
+          "mean_ann": 0.3756
         },
         "CAUTION": {
           "n_days": 398,
           "n_months": 19,
-          "sharpe": 0.203,
-          "ir": -0.378,
-          "mdd": 0.333,
-          "mean_ann": 0.061
+          "sharpe": 0.153,
+          "ir": -0.458,
+          "mdd": 0.335,
+          "mean_ann": 0.0457
         },
         "CRISIS": {
           "n_days": 440,
           "n_months": 21,
-          "sharpe": 1.199,
-          "ir": -0.029,
-          "mdd": 0.32,
-          "mean_ann": 0.5435
+          "sharpe": 1.213,
+          "ir": -0.009,
+          "mdd": 0.323,
+          "mean_ann": 0.5511
         },
         "RISK_OFF": {
           "n_days": 13,
@@ -1859,7 +1357,7 @@
           "sharpe": null,
           "ir": null,
           "mdd": 0.076,
-          "mean_ann": 0.7402
+          "mean_ann": 0.4729
         }
       },
       "per_regime_pit_c11": "avail_annotated"
@@ -1876,43 +1374,48 @@
       "grade_emit": "C",
       "grade_source": "entry",
       "freq": "daily",
-      "sim_result_path": "04_Research/strategies/RP_20260923_161713_28512/sim_result.rds",
-      "full_sharpe": 0.751,
-      "full_ir": 0.337,
-      "n_days": 4095,
-      "date_range": ["2010-02-02", "2026-09-22"],
+      "sim_result_path": "04_Research/factor_rotation/l2_pool_series/RP_20260923_161713_28512/sim_result.rds",
+      "registered_sim_result_path": "04_Research/strategies/RP_20260923_161713_28512/sim_result.rds",
+      "series_source": "close_t1_remeasure",
+      "series_exec_price": "close_t1",
+      "series_dir": "stage_artifacts/replication/20260923_161713_28512/remeasure_close_t1_5562284e",
+      "series_grade": "C",
+      "full_sharpe": 0.689,
+      "full_ir": 0.256,
+      "n_days": 4094,
+      "date_range": ["2010-02-03", "2026-09-22"],
       "per_regime": {
         "RISK_ON": {
           "n_days": 3190,
           "n_months": 151.9,
-          "sharpe": 0.458,
-          "ir": 0.408,
-          "mdd": 0.638,
-          "mean_ann": 0.0993
+          "sharpe": 0.382,
+          "ir": 0.315,
+          "mdd": 0.655,
+          "mean_ann": 0.0821
         },
         "NEUTRAL": {
-          "n_days": 455,
-          "n_months": 21.7,
-          "sharpe": 2.533,
-          "ir": 0.877,
-          "mdd": 0.15,
-          "mean_ann": 0.7399
+          "n_days": 454,
+          "n_months": 21.6,
+          "sharpe": 2.388,
+          "ir": 0.65,
+          "mdd": 0.157,
+          "mean_ann": 0.7001
         },
         "CAUTION": {
           "n_days": 178,
           "n_months": 8.5,
-          "sharpe": 0.864,
-          "ir": 1.233,
-          "mdd": 0.231,
-          "mean_ann": 0.3083
+          "sharpe": 0.721,
+          "ir": 0.988,
+          "mdd": 0.232,
+          "mean_ann": 0.2563
         },
         "CRISIS": {
           "n_days": 270,
           "n_months": 12.9,
-          "sharpe": 0.749,
-          "ir": -0.606,
+          "sharpe": 0.848,
+          "ir": -0.488,
           "mdd": 0.277,
-          "mean_ann": 0.3954
+          "mean_ann": 0.4495
         },
         "RISK_OFF": {
           "n_days": 2,
@@ -1920,7 +1423,7 @@
           "sharpe": null,
           "ir": null,
           "mdd": 0.038,
-          "mean_ann": 0.0525
+          "mean_ann": -0.8563
         }
       },
       "per_regime_pit_c11": "avail_annotated"
@@ -1937,43 +1440,48 @@
       "grade_emit": "C",
       "grade_source": "entry",
       "freq": "daily",
-      "sim_result_path": "04_Research/strategies/RP_20260924_003101_6168/sim_result.rds",
-      "full_sharpe": 0.661,
-      "full_ir": 0.116,
-      "n_days": 5258,
-      "date_range": ["2005-06-02", "2026-09-23"],
+      "sim_result_path": "04_Research/factor_rotation/l2_pool_series/RP_20260924_003101_6168/sim_result.rds",
+      "registered_sim_result_path": "04_Research/strategies/RP_20260924_003101_6168/sim_result.rds",
+      "series_source": "close_t1_remeasure",
+      "series_exec_price": "close_t1",
+      "series_dir": "stage_artifacts/replication/20260924_003101_6168/remeasure_close_t1_5562284e",
+      "series_grade": "C",
+      "full_sharpe": 0.646,
+      "full_ir": 0.101,
+      "n_days": 5257,
+      "date_range": ["2005-06-03", "2026-09-23"],
       "per_regime": {
         "RISK_ON": {
-          "n_days": 3713,
+          "n_days": 3712,
           "n_months": 176.8,
-          "sharpe": 0.497,
-          "ir": 0.32,
-          "mdd": 0.608,
-          "mean_ann": 0.096
+          "sharpe": 0.442,
+          "ir": 0.258,
+          "mdd": 0.624,
+          "mean_ann": 0.0856
         },
         "NEUTRAL": {
           "n_days": 692,
           "n_months": 33,
-          "sharpe": 0.888,
-          "ir": -0.673,
-          "mdd": 0.282,
-          "mean_ann": 0.2242
+          "sharpe": 0.953,
+          "ir": -0.594,
+          "mdd": 0.257,
+          "mean_ann": 0.2402
         },
         "CAUTION": {
           "n_days": 398,
           "n_months": 19,
-          "sharpe": 1.004,
-          "ir": 0.77,
+          "sharpe": 1.068,
+          "ir": 0.868,
           "mdd": 0.197,
-          "mean_ann": 0.2816
+          "mean_ann": 0.3012
         },
         "CRISIS": {
           "n_days": 442,
           "n_months": 21,
-          "sharpe": 0.986,
-          "ir": -0.329,
-          "mdd": 0.376,
-          "mean_ann": 0.4225
+          "sharpe": 1,
+          "ir": -0.311,
+          "mdd": 0.375,
+          "mean_ann": 0.431
         },
         "RISK_OFF": {
           "n_days": 13,
@@ -1981,7 +1489,7 @@
           "sharpe": null,
           "ir": null,
           "mdd": 0.023,
-          "mean_ann": 1.1331
+          "mean_ann": 1.1014
         }
       },
       "per_regime_pit_c11": "avail_annotated"
@@ -1998,43 +1506,48 @@
       "grade_emit": "C",
       "grade_source": "entry",
       "freq": "daily",
-      "sim_result_path": "04_Research/strategies/RP_20260924_010554_33120/sim_result.rds",
+      "sim_result_path": "04_Research/factor_rotation/l2_pool_series/RP_20260924_010554_33120/sim_result.rds",
+      "registered_sim_result_path": "04_Research/strategies/RP_20260924_010554_33120/sim_result.rds",
+      "series_source": "close_t1_remeasure",
+      "series_exec_price": "close_t1",
+      "series_dir": "stage_artifacts/replication/20260924_010554_33120/remeasure_close_t1_5562284e",
+      "series_grade": "C",
       "full_sharpe": 0.58,
-      "full_ir": -0.018,
-      "n_days": 5258,
-      "date_range": ["2005-06-02", "2026-09-23"],
+      "full_ir": -0.016,
+      "n_days": 5257,
+      "date_range": ["2005-06-03", "2026-09-23"],
       "per_regime": {
         "RISK_ON": {
-          "n_days": 3713,
+          "n_days": 3712,
           "n_months": 176.8,
-          "sharpe": 0.478,
-          "ir": 0.302,
-          "mdd": 0.483,
-          "mean_ann": 0.0803
+          "sharpe": 0.455,
+          "ir": 0.273,
+          "mdd": 0.492,
+          "mean_ann": 0.0765
         },
         "NEUTRAL": {
           "n_days": 692,
           "n_months": 33,
-          "sharpe": 1.204,
-          "ir": -0.55,
-          "mdd": 0.319,
-          "mean_ann": 0.2756
+          "sharpe": 1.23,
+          "ir": -0.511,
+          "mdd": 0.317,
+          "mean_ann": 0.2814
         },
         "CAUTION": {
           "n_days": 398,
           "n_months": 19,
-          "sharpe": 0.132,
-          "ir": -0.628,
-          "mdd": 0.245,
-          "mean_ann": 0.0371
+          "sharpe": 0.164,
+          "ir": -0.562,
+          "mdd": 0.242,
+          "mean_ann": 0.0461
         },
         "CRISIS": {
           "n_days": 442,
           "n_months": 21,
-          "sharpe": 0.9,
-          "ir": -0.426,
-          "mdd": 0.365,
-          "mean_ann": 0.4075
+          "sharpe": 0.928,
+          "ir": -0.384,
+          "mdd": 0.366,
+          "mean_ann": 0.4231
         },
         "RISK_OFF": {
           "n_days": 13,
@@ -2042,7 +1555,7 @@
           "sharpe": null,
           "ir": null,
           "mdd": 0.051,
-          "mean_ann": 0.0459
+          "mean_ann": 0.1443
         }
       },
       "per_regime_pit_c11": "avail_annotated"
@@ -2059,43 +1572,48 @@
       "grade_emit": "C",
       "grade_source": "entry",
       "freq": "daily",
-      "sim_result_path": "04_Research/strategies/RP_20260924_011953_20788/sim_result.rds",
-      "full_sharpe": 0.759,
-      "full_ir": 0.306,
-      "n_days": 5258,
-      "date_range": ["2005-06-02", "2026-09-23"],
+      "sim_result_path": "04_Research/factor_rotation/l2_pool_series/RP_20260924_011953_20788/sim_result.rds",
+      "registered_sim_result_path": "04_Research/strategies/RP_20260924_011953_20788/sim_result.rds",
+      "series_source": "close_t1_remeasure",
+      "series_exec_price": "close_t1",
+      "series_dir": "stage_artifacts/replication/20260924_011953_20788/remeasure_close_t1_5562284e",
+      "series_grade": "C",
+      "full_sharpe": 0.767,
+      "full_ir": 0.318,
+      "n_days": 5257,
+      "date_range": ["2005-06-03", "2026-09-23"],
       "per_regime": {
         "RISK_ON": {
-          "n_days": 3713,
+          "n_days": 3712,
           "n_months": 176.8,
-          "sharpe": 0.764,
-          "ir": 0.674,
+          "sharpe": 0.778,
+          "ir": 0.692,
           "mdd": 0.67,
-          "mean_ann": 0.1516
+          "mean_ann": 0.1542
         },
         "NEUTRAL": {
           "n_days": 692,
           "n_months": 33,
-          "sharpe": 1.31,
-          "ir": -0.126,
-          "mdd": 0.345,
-          "mean_ann": 0.3352
+          "sharpe": 1.293,
+          "ir": -0.155,
+          "mdd": 0.344,
+          "mean_ann": 0.3303
         },
         "CAUTION": {
           "n_days": 398,
           "n_months": 19,
-          "sharpe": 0.453,
-          "ir": 0.061,
-          "mdd": 0.24,
-          "mean_ann": 0.1363
+          "sharpe": 0.469,
+          "ir": 0.086,
+          "mdd": 0.231,
+          "mean_ann": 0.141
         },
         "CRISIS": {
           "n_days": 442,
           "n_months": 21,
-          "sharpe": 0.73,
-          "ir": -0.458,
+          "sharpe": 0.737,
+          "ir": -0.448,
           "mdd": 0.447,
-          "mean_ann": 0.3697
+          "mean_ann": 0.3737
         },
         "RISK_OFF": {
           "n_days": 13,
@@ -2103,7 +1621,7 @@
           "sharpe": null,
           "ir": null,
           "mdd": 0.062,
-          "mean_ann": 0.4976
+          "mean_ann": 0.6376
         }
       },
       "per_regime_pit_c11": "avail_annotated"
@@ -2120,43 +1638,48 @@
       "grade_emit": "C",
       "grade_source": "entry",
       "freq": "daily",
-      "sim_result_path": "04_Research/strategies/RP_20260924_062712_29928/sim_result.rds",
-      "full_sharpe": 0.871,
-      "full_ir": 0.373,
-      "n_days": 5299,
-      "date_range": ["2005-04-04", "2026-09-23"],
+      "sim_result_path": "04_Research/factor_rotation/l2_pool_series/RP_20260924_062712_29928/sim_result.rds",
+      "registered_sim_result_path": "04_Research/strategies/RP_20260924_062712_29928/sim_result.rds",
+      "series_source": "close_t1_remeasure",
+      "series_exec_price": "close_t1",
+      "series_dir": "stage_artifacts/replication/20260924_062712_29928/remeasure_close_t1_5562284e",
+      "series_grade": "C",
+      "full_sharpe": 0.846,
+      "full_ir": 0.344,
+      "n_days": 5298,
+      "date_range": ["2005-04-06", "2026-09-23"],
       "per_regime": {
         "RISK_ON": {
-          "n_days": 3751,
+          "n_days": 3750,
           "n_months": 178.6,
-          "sharpe": 0.874,
-          "ir": 0.792,
-          "mdd": 0.37,
-          "mean_ann": 0.1661
+          "sharpe": 0.85,
+          "ir": 0.767,
+          "mdd": 0.382,
+          "mean_ann": 0.1622
         },
         "NEUTRAL": {
           "n_days": 695,
           "n_months": 33.1,
-          "sharpe": 0.87,
-          "ir": -0.813,
-          "mdd": 0.389,
-          "mean_ann": 0.2079
+          "sharpe": 0.861,
+          "ir": -0.83,
+          "mdd": 0.385,
+          "mean_ann": 0.2049
         },
         "CAUTION": {
           "n_days": 398,
           "n_months": 19,
-          "sharpe": 1.376,
-          "ir": 1.496,
-          "mdd": 0.233,
-          "mean_ann": 0.4033
+          "sharpe": 1.325,
+          "ir": 1.415,
+          "mdd": 0.226,
+          "mean_ann": 0.3887
         },
         "CRISIS": {
           "n_days": 442,
           "n_months": 21,
-          "sharpe": 0.807,
-          "ir": -0.613,
-          "mdd": 0.291,
-          "mean_ann": 0.3336
+          "sharpe": 0.773,
+          "ir": -0.654,
+          "mdd": 0.3,
+          "mean_ann": 0.3191
         },
         "RISK_OFF": {
           "n_days": 13,
@@ -2164,7 +1687,7 @@
           "sharpe": null,
           "ir": null,
           "mdd": 0.037,
-          "mean_ann": -0.2869
+          "mean_ann": -0.3336
         }
       },
       "per_regime_pit_c11": "avail_annotated"
@@ -2182,6 +1705,11 @@
       "grade_source": "entry",
       "freq": "daily",
       "sim_result_path": "04_Research/strategies/RP_20260925_222711_29284/sim_result.rds",
+      "registered_sim_result_path": "04_Research/strategies/RP_20260925_222711_29284/sim_result.rds",
+      "series_source": "native_close_t1",
+      "series_exec_price": "close_t1",
+      "series_dir": "stage_artifacts/replication/20260925_222711_29284",
+      "series_grade": "C",
       "full_sharpe": 0.817,
       "full_ir": 0.371,
       "n_days": 5298,
@@ -2243,6 +1771,11 @@
       "grade_source": "entry",
       "freq": "daily",
       "sim_result_path": "04_Research/strategies/RP_20260925_222711_34340/sim_result.rds",
+      "registered_sim_result_path": "04_Research/strategies/RP_20260925_222711_34340/sim_result.rds",
+      "series_source": "native_close_t1",
+      "series_exec_price": "close_t1",
+      "series_dir": "stage_artifacts/replication/20260925_222711_34340",
+      "series_grade": "C",
       "full_sharpe": 0.805,
       "full_ir": 0.355,
       "n_days": 5298,
@@ -2304,6 +1837,11 @@
       "grade_source": "entry",
       "freq": "daily",
       "sim_result_path": "04_Research/strategies/RP_20261005_193230_34300/sim_result.rds",
+      "registered_sim_result_path": "04_Research/strategies/RP_20261005_193230_34300/sim_result.rds",
+      "series_source": "native_close_t1",
+      "series_exec_price": "close_t1",
+      "series_dir": "stage_artifacts/replication/20261005_193230_34300",
+      "series_grade": "C",
       "full_sharpe": 0.626,
       "full_ir": 0.012,
       "n_days": 5342,
@@ -2365,6 +1903,11 @@
       "grade_source": "entry",
       "freq": "daily",
       "sim_result_path": "04_Research/strategies/RP_20261005_205951_29712/sim_result.rds",
+      "registered_sim_result_path": "04_Research/strategies/RP_20261005_205951_29712/sim_result.rds",
+      "series_source": "native_close_t1",
+      "series_exec_price": "close_t1",
+      "series_dir": "stage_artifacts/replication/20261005_205951_29712",
+      "series_grade": "C",
       "full_sharpe": 0.777,
       "full_ir": 0.129,
       "n_days": 5342,
@@ -2426,6 +1969,11 @@
       "grade_source": "entry",
       "freq": "daily",
       "sim_result_path": "04_Research/strategies/RP_20260831_155333_28228/sim_result.rds",
+      "registered_sim_result_path": "04_Research/strategies/RP_20260831_155333_28228/sim_result.rds",
+      "series_source": "close_t1_remeasure",
+      "series_exec_price": "close_t1",
+      "series_dir": "stage_artifacts/replication/20260831_155333_28228/remeasure_close_t1_5562284e",
+      "series_grade": "C",
       "full_sharpe": 0.501,
       "full_ir": 0.196,
       "n_days": 4822,
@@ -2487,6 +2035,11 @@
       "grade_source": "entry",
       "freq": "daily",
       "sim_result_path": "04_Research/strategies/RP_20260831_173059_28428/sim_result.rds",
+      "registered_sim_result_path": "04_Research/strategies/RP_20260831_173059_28428/sim_result.rds",
+      "series_source": "close_t1_remeasure",
+      "series_exec_price": "close_t1",
+      "series_dir": "stage_artifacts/replication/20260831_173059_28428/remeasure_close_t1_5562284e",
+      "series_grade": "F",
       "full_sharpe": 0.354,
       "full_ir": -0.092,
       "n_days": 4822,
@@ -2548,6 +2101,11 @@
       "grade_source": "entry",
       "freq": "daily",
       "sim_result_path": "04_Research/strategies/RP_20260924_060803_11288/sim_result.rds",
+      "registered_sim_result_path": "04_Research/strategies/RP_20260924_060803_11288/sim_result.rds",
+      "series_source": "close_t1_remeasure",
+      "series_exec_price": "close_t1",
+      "series_dir": "stage_artifacts/replication/20260924_060803_11288/remeasure_close_t1_5562284e",
+      "series_grade": "C",
       "full_sharpe": 0.642,
       "full_ir": 0.195,
       "n_days": 5298,
@@ -2609,6 +2167,11 @@
       "grade_source": "entry",
       "freq": "daily",
       "sim_result_path": "04_Research/strategies/RP_20260831_212235_30188/sim_result.rds",
+      "registered_sim_result_path": "04_Research/strategies/RP_20260831_212235_30188/sim_result.rds",
+      "series_source": "close_t1_remeasure",
+      "series_exec_price": "close_t1",
+      "series_dir": "stage_artifacts/replication/20260831_212235_30188/remeasure_close_t1_5562284e",
+      "series_grade": "C",
       "full_sharpe": 0.654,
       "full_ir": 0.454,
       "n_days": 3868,
@@ -2670,6 +2233,11 @@
       "grade_source": "entry",
       "freq": "daily",
       "sim_result_path": "04_Research/strategies/RP_20260831_221027_21668/sim_result.rds",
+      "registered_sim_result_path": "04_Research/strategies/RP_20260831_221027_21668/sim_result.rds",
+      "series_source": "close_t1_remeasure",
+      "series_exec_price": "close_t1",
+      "series_dir": "stage_artifacts/replication/20260831_221027_21668/remeasure_close_t1_5562284e",
+      "series_grade": "C",
       "full_sharpe": 0.573,
       "full_ir": 0.199,
       "n_days": 4822,
@@ -2731,6 +2299,11 @@
       "grade_source": "entry",
       "freq": "daily",
       "sim_result_path": "04_Research/strategies/RP_20260831_221027_9820/sim_result.rds",
+      "registered_sim_result_path": "04_Research/strategies/RP_20260831_221027_9820/sim_result.rds",
+      "series_source": "close_t1_remeasure",
+      "series_exec_price": "close_t1",
+      "series_dir": "stage_artifacts/replication/20260831_221027_9820/remeasure_close_t1_5562284e",
+      "series_grade": "C",
       "full_sharpe": 0.507,
       "full_ir": 0.016,
       "n_days": 4822,
@@ -2792,6 +2365,11 @@
       "grade_source": "entry",
       "freq": "daily",
       "sim_result_path": "04_Research/strategies/RP_20260901_145755_5376/sim_result.rds",
+      "registered_sim_result_path": "04_Research/strategies/RP_20260901_145755_5376/sim_result.rds",
+      "series_source": "close_t1_remeasure",
+      "series_exec_price": "close_t1",
+      "series_dir": "stage_artifacts/replication/20260901_145755_5376/remeasure_close_t1_5562284e",
+      "series_grade": "C",
       "full_sharpe": 0.604,
       "full_ir": 0.077,
       "n_days": 5320,
@@ -2853,6 +2431,11 @@
       "grade_source": "entry",
       "freq": "daily",
       "sim_result_path": "04_Research/strategies/RP_20260901_150637_20504/sim_result.rds",
+      "registered_sim_result_path": "04_Research/strategies/RP_20260901_150637_20504/sim_result.rds",
+      "series_source": "close_t1_remeasure",
+      "series_exec_price": "close_t1",
+      "series_dir": "stage_artifacts/replication/20260901_150637_20504/remeasure_close_t1_5562284e",
+      "series_grade": "C",
       "full_sharpe": 0.566,
       "full_ir": 0.211,
       "n_days": 5320,
@@ -2914,6 +2497,11 @@
       "grade_source": "entry",
       "freq": "daily",
       "sim_result_path": "04_Research/strategies/RP_20260901_150637_21116/sim_result.rds",
+      "registered_sim_result_path": "04_Research/strategies/RP_20260901_150637_21116/sim_result.rds",
+      "series_source": "close_t1_remeasure",
+      "series_exec_price": "close_t1",
+      "series_dir": "stage_artifacts/replication/20260901_150637_21116/remeasure_close_t1_5562284e",
+      "series_grade": "C",
       "full_sharpe": 0.546,
       "full_ir": 0.131,
       "n_days": 5320,
@@ -2975,6 +2563,11 @@
       "grade_source": "entry",
       "freq": "daily",
       "sim_result_path": "04_Research/strategies/RP_20260902_122546_22268/sim_result.rds",
+      "registered_sim_result_path": "04_Research/strategies/RP_20260902_122546_22268/sim_result.rds",
+      "series_source": "close_t1_remeasure",
+      "series_exec_price": "close_t1",
+      "series_dir": "stage_artifacts/replication/20260902_122546_22268/remeasure_close_t1_5562284e",
+      "series_grade": "F",
       "full_sharpe": 0.122,
       "full_ir": -0.258,
       "n_days": 5320,
@@ -3036,6 +2629,11 @@
       "grade_source": "entry",
       "freq": "daily",
       "sim_result_path": "04_Research/strategies/RP_20260902_124954_38980/sim_result.rds",
+      "registered_sim_result_path": "04_Research/strategies/RP_20260902_124954_38980/sim_result.rds",
+      "series_source": "close_t1_remeasure",
+      "series_exec_price": "close_t1",
+      "series_dir": "stage_artifacts/replication/20260902_124954_38980/remeasure_close_t1_5562284e",
+      "series_grade": "C",
       "full_sharpe": 0.759,
       "full_ir": 0.209,
       "n_days": 5320,
@@ -3097,6 +2695,11 @@
       "grade_source": "entry",
       "freq": "daily",
       "sim_result_path": "04_Research/strategies/RP_20260902_141641_31428/sim_result.rds",
+      "registered_sim_result_path": "04_Research/strategies/RP_20260902_141641_31428/sim_result.rds",
+      "series_source": "close_t1_remeasure",
+      "series_exec_price": "close_t1",
+      "series_dir": "stage_artifacts/replication/20260902_141641_31428/remeasure_close_t1_5562284e",
+      "series_grade": "C",
       "full_sharpe": 0.744,
       "full_ir": 0.19,
       "n_days": 5320,
@@ -3145,67 +2748,6 @@
       },
       "per_regime_pit_c11": "avail_annotated"
     },
-    "RP_20260902_192126_25496": {
-      "source_strategy_id": "RP_20260902_192126_25496",
-      "grade": "C",
-      "role": "rebound",
-      "origin_mode": "replication",
-      "trust_status": "contract_fr_eligible",
-      "admission_route": "role_rep",
-      "admission_code": "role_rep",
-      "admission_reason": "역할 대표(rebound) · essence C",
-      "grade_emit": "C",
-      "grade_source": "entry",
-      "freq": "daily",
-      "sim_result_path": "04_Research/strategies/RP_20260902_192126_25496/sim_result.rds",
-      "full_sharpe": 0.67,
-      "full_ir": 0.183,
-      "n_days": 5323,
-      "date_range": ["2005-02-02", "2026-09-02"],
-      "per_regime": {
-        "RISK_ON": {
-          "n_days": 3789,
-          "n_months": 180.4,
-          "sharpe": 0.555,
-          "ir": 0.459,
-          "mdd": 0.518,
-          "mean_ann": 0.0974
-        },
-        "NEUTRAL": {
-          "n_days": 696,
-          "n_months": 33.1,
-          "sharpe": 1.817,
-          "ir": 0.648,
-          "mdd": 0.331,
-          "mean_ann": 0.4432
-        },
-        "CAUTION": {
-          "n_days": 398,
-          "n_months": 19,
-          "sharpe": 0.238,
-          "ir": -0.377,
-          "mdd": 0.323,
-          "mean_ann": 0.0746
-        },
-        "CRISIS": {
-          "n_days": 427,
-          "n_months": 20.3,
-          "sharpe": 0.681,
-          "ir": -0.517,
-          "mdd": 0.377,
-          "mean_ann": 0.3261
-        },
-        "RISK_OFF": {
-          "n_days": 13,
-          "n_months": 0.6,
-          "sharpe": null,
-          "ir": null,
-          "mdd": 0.076,
-          "mean_ann": -0.3386
-        }
-      },
-      "per_regime_pit_c11": "avail_annotated"
-    },
     "RP_20260829_230420_29700": {
       "source_strategy_id": "RP_20260829_230420_29700",
       "grade": "C",
@@ -3219,6 +2761,11 @@
       "grade_source": "entry",
       "freq": "daily",
       "sim_result_path": "04_Research/strategies/RP_20260829_230420_29700/sim_result.rds",
+      "registered_sim_result_path": "04_Research/strategies/RP_20260829_230420_29700/sim_result.rds",
+      "series_source": "close_t1_remeasure",
+      "series_exec_price": "close_t1",
+      "series_dir": "04_Research/strategies/RF_B1_3_MomLowVol/stage_artifacts/20260829_230420_29700/remeasure_close_t1_5562284e",
+      "series_grade": "C",
       "full_sharpe": 0.749,
       "full_ir": 0.003,
       "n_days": 5319,
@@ -3267,128 +2814,6 @@
       },
       "per_regime_pit_c11": "avail_annotated"
     },
-    "RP_20260902_193745_33364": {
-      "source_strategy_id": "RP_20260902_193745_33364",
-      "grade": "C",
-      "role": "offensive",
-      "origin_mode": "replication",
-      "trust_status": "contract_fr_eligible",
-      "admission_route": "role_rep",
-      "admission_code": "role_rep",
-      "admission_reason": "역할 대표(offensive) · essence C",
-      "grade_emit": "C",
-      "grade_source": "entry",
-      "freq": "daily",
-      "sim_result_path": "04_Research/strategies/RP_20260902_193745_33364/sim_result.rds",
-      "full_sharpe": 0.663,
-      "full_ir": 0.13,
-      "n_days": 5323,
-      "date_range": ["2005-02-02", "2026-09-02"],
-      "per_regime": {
-        "RISK_ON": {
-          "n_days": 3789,
-          "n_months": 180.4,
-          "sharpe": 0.553,
-          "ir": 0.455,
-          "mdd": 0.407,
-          "mean_ann": 0.093
-        },
-        "NEUTRAL": {
-          "n_days": 696,
-          "n_months": 33.1,
-          "sharpe": 1.825,
-          "ir": 0.553,
-          "mdd": 0.31,
-          "mean_ann": 0.4282
-        },
-        "CAUTION": {
-          "n_days": 398,
-          "n_months": 19,
-          "sharpe": 0.198,
-          "ir": -0.52,
-          "mdd": 0.319,
-          "mean_ann": 0.059
-        },
-        "CRISIS": {
-          "n_days": 427,
-          "n_months": 20.3,
-          "sharpe": 0.655,
-          "ir": -0.592,
-          "mdd": 0.364,
-          "mean_ann": 0.2968
-        },
-        "RISK_OFF": {
-          "n_days": 13,
-          "n_months": 0.6,
-          "sharpe": null,
-          "ir": null,
-          "mdd": 0.066,
-          "mean_ann": -0.4387
-        }
-      },
-      "per_regime_pit_c11": "avail_annotated"
-    },
-    "RP_20260902_195404_29468": {
-      "source_strategy_id": "RP_20260902_195404_29468",
-      "grade": "C",
-      "role": "diversifier",
-      "origin_mode": "replication",
-      "trust_status": "contract_fr_eligible",
-      "admission_route": "role_rep",
-      "admission_code": "role_rep",
-      "admission_reason": "역할 대표(diversifier) · essence C",
-      "grade_emit": "C",
-      "grade_source": "entry",
-      "freq": "daily",
-      "sim_result_path": "04_Research/strategies/RP_20260902_195404_29468/sim_result.rds",
-      "full_sharpe": 0.667,
-      "full_ir": 0.273,
-      "n_days": 3872,
-      "date_range": ["2010-12-02", "2026-09-02"],
-      "per_regime": {
-        "RISK_ON": {
-          "n_days": 3020,
-          "n_months": 143.8,
-          "sharpe": 0.418,
-          "ir": 0.408,
-          "mdd": 0.721,
-          "mean_ann": 0.0906
-        },
-        "NEUTRAL": {
-          "n_days": 419,
-          "n_months": 20,
-          "sharpe": 2.724,
-          "ir": 1.128,
-          "mdd": 0.17,
-          "mean_ann": 0.8034
-        },
-        "CAUTION": {
-          "n_days": 175,
-          "n_months": 8.3,
-          "sharpe": 0.941,
-          "ir": 1.22,
-          "mdd": 0.248,
-          "mean_ann": 0.3366
-        },
-        "CRISIS": {
-          "n_days": 256,
-          "n_months": 12.2,
-          "sharpe": 0.104,
-          "ir": -1.171,
-          "mdd": 0.488,
-          "mean_ann": 0.0551
-        },
-        "RISK_OFF": {
-          "n_days": 2,
-          "n_months": 0.1,
-          "sharpe": null,
-          "ir": null,
-          "mdd": 0.032,
-          "mean_ann": 1.4945
-        }
-      },
-      "per_regime_pit_c11": "avail_annotated"
-    },
     "RP_20260902_215411_25740": {
       "source_strategy_id": "RP_20260902_215411_25740",
       "grade": "C",
@@ -3402,6 +2827,11 @@
       "grade_source": "entry",
       "freq": "daily",
       "sim_result_path": "04_Research/strategies/RP_20260902_215411_25740/sim_result.rds",
+      "registered_sim_result_path": "04_Research/strategies/RP_20260902_215411_25740/sim_result.rds",
+      "series_source": "close_t1_remeasure",
+      "series_exec_price": "close_t1",
+      "series_dir": "stage_artifacts/replication/20260902_215411_25740/remeasure_close_t1_5562284e",
+      "series_grade": "C",
       "full_sharpe": 0.642,
       "full_ir": 0.08,
       "n_days": 4824,
@@ -3463,6 +2893,11 @@
       "grade_source": "entry",
       "freq": "daily",
       "sim_result_path": "04_Research/strategies/RP_20260902_215411_35640/sim_result.rds",
+      "registered_sim_result_path": "04_Research/strategies/RP_20260902_215411_35640/sim_result.rds",
+      "series_source": "close_t1_remeasure",
+      "series_exec_price": "close_t1",
+      "series_dir": "stage_artifacts/replication/20260902_215411_35640/remeasure_close_t1_5562284e",
+      "series_grade": "C",
       "full_sharpe": 0.84,
       "full_ir": 0.326,
       "n_days": 4079,
@@ -3524,6 +2959,11 @@
       "grade_source": "entry",
       "freq": "daily",
       "sim_result_path": "04_Research/strategies/RP_20260902_220158_28824/sim_result.rds",
+      "registered_sim_result_path": "04_Research/strategies/RP_20260902_220158_28824/sim_result.rds",
+      "series_source": "close_t1_remeasure",
+      "series_exec_price": "close_t1",
+      "series_dir": "stage_artifacts/replication/20260902_220158_28824/remeasure_close_t1_5562284e",
+      "series_grade": "C",
       "full_sharpe": 0.869,
       "full_ir": 0.203,
       "n_days": 4079,
@@ -3585,6 +3025,11 @@
       "grade_source": "entry",
       "freq": "daily",
       "sim_result_path": "04_Research/strategies/RP_20260903_081538_1520/sim_result.rds",
+      "registered_sim_result_path": "04_Research/strategies/RP_20260903_081538_1520/sim_result.rds",
+      "series_source": "close_t1_remeasure",
+      "series_exec_price": "close_t1",
+      "series_dir": "stage_artifacts/replication/20260903_081538_1520/remeasure_close_t1_5562284e",
+      "series_grade": "C",
       "full_sharpe": 0.407,
       "full_ir": 0.037,
       "n_days": 5321,
@@ -3646,6 +3091,11 @@
       "grade_source": "entry",
       "freq": "daily",
       "sim_result_path": "04_Research/strategies/RP_20260903_085117_10184/sim_result.rds",
+      "registered_sim_result_path": "04_Research/strategies/RP_20260903_085117_10184/sim_result.rds",
+      "series_source": "close_t1_remeasure",
+      "series_exec_price": "close_t1",
+      "series_dir": "stage_artifacts/replication/20260903_085117_10184/remeasure_close_t1_5562284e",
+      "series_grade": "C",
       "full_sharpe": 0.56,
       "full_ir": 0.075,
       "n_days": 5321,
@@ -3707,6 +3157,11 @@
       "grade_source": "entry",
       "freq": "daily",
       "sim_result_path": "04_Research/strategies/RP_20260903_104237_16496/sim_result.rds",
+      "registered_sim_result_path": "04_Research/strategies/RP_20260903_104237_16496/sim_result.rds",
+      "series_source": "close_t1_remeasure",
+      "series_exec_price": "close_t1",
+      "series_dir": "stage_artifacts/replication/20260903_104237_16496/remeasure_close_t1_5562284e",
+      "series_grade": "C",
       "full_sharpe": 0.445,
       "full_ir": -0.139,
       "n_days": 5322,
@@ -3768,6 +3223,11 @@
       "grade_source": "entry",
       "freq": "daily",
       "sim_result_path": "04_Research/strategies/RP_20260903_153104_33944/sim_result.rds",
+      "registered_sim_result_path": "04_Research/strategies/RP_20260903_153104_33944/sim_result.rds",
+      "series_source": "close_t1_remeasure",
+      "series_exec_price": "close_t1",
+      "series_dir": "stage_artifacts/replication/20260903_153104_33944/remeasure_close_t1_5562284e",
+      "series_grade": "C",
       "full_sharpe": 0.609,
       "full_ir": 0.185,
       "n_days": 5321,
@@ -3829,6 +3289,11 @@
       "grade_source": "entry",
       "freq": "daily",
       "sim_result_path": "04_Research/strategies/RP_20260903_153916_34904/sim_result.rds",
+      "registered_sim_result_path": "04_Research/strategies/RP_20260903_153916_34904/sim_result.rds",
+      "series_source": "close_t1_remeasure",
+      "series_exec_price": "close_t1",
+      "series_dir": "stage_artifacts/replication/20260903_153916_34904/remeasure_close_t1_5562284e",
+      "series_grade": "C",
       "full_sharpe": 0.55,
       "full_ir": 0.068,
       "n_days": 5321,
@@ -3890,6 +3355,11 @@
       "grade_source": "entry",
       "freq": "daily",
       "sim_result_path": "04_Research/strategies/RP_20260903_155504_24320/sim_result.rds",
+      "registered_sim_result_path": "04_Research/strategies/RP_20260903_155504_24320/sim_result.rds",
+      "series_source": "close_t1_remeasure",
+      "series_exec_price": "close_t1",
+      "series_dir": "stage_artifacts/replication/20260903_155504_24320/remeasure_close_t1_5562284e",
+      "series_grade": "C",
       "full_sharpe": 0.663,
       "full_ir": 0.237,
       "n_days": 5321,
@@ -3951,6 +3421,11 @@
       "grade_source": "entry",
       "freq": "daily",
       "sim_result_path": "04_Research/strategies/RP_20260904_081937_804/sim_result.rds",
+      "registered_sim_result_path": "04_Research/strategies/RP_20260904_081937_804/sim_result.rds",
+      "series_source": "close_t1_remeasure",
+      "series_exec_price": "close_t1",
+      "series_dir": "stage_artifacts/replication/20260904_081937_804/remeasure_close_t1_5562284e",
+      "series_grade": "C",
       "full_sharpe": 0.393,
       "full_ir": -0.037,
       "n_days": 4826,
@@ -4012,6 +3487,11 @@
       "grade_source": "entry",
       "freq": "daily",
       "sim_result_path": "04_Research/strategies/RP_20260904_120322_34636/sim_result.rds",
+      "registered_sim_result_path": "04_Research/strategies/RP_20260904_120322_34636/sim_result.rds",
+      "series_source": "close_t1_remeasure",
+      "series_exec_price": "close_t1",
+      "series_dir": "stage_artifacts/replication/20260904_120322_34636/remeasure_close_t1_5562284e",
+      "series_grade": "C",
       "full_sharpe": 0.756,
       "full_ir": 0.26,
       "n_days": 5306,
@@ -4073,6 +3553,11 @@
       "grade_source": "entry",
       "freq": "daily",
       "sim_result_path": "04_Research/strategies/RP_20260905_095537_7692/sim_result.rds",
+      "registered_sim_result_path": "04_Research/strategies/RP_20260905_095537_7692/sim_result.rds",
+      "series_source": "close_t1_remeasure",
+      "series_exec_price": "close_t1",
+      "series_dir": "stage_artifacts/replication/20260905_095537_7692/remeasure_close_t1_5562284e",
+      "series_grade": "B",
       "full_sharpe": 0.925,
       "full_ir": 0.636,
       "n_days": 4082,
@@ -4134,6 +3619,11 @@
       "grade_source": "entry",
       "freq": "daily",
       "sim_result_path": "04_Research/strategies/RP_20260905_102842_6512/sim_result.rds",
+      "registered_sim_result_path": "04_Research/strategies/RP_20260905_102842_6512/sim_result.rds",
+      "series_source": "close_t1_remeasure",
+      "series_exec_price": "close_t1",
+      "series_dir": "stage_artifacts/replication/20260905_102842_6512/remeasure_close_t1_5562284e",
+      "series_grade": "C",
       "full_sharpe": 0.805,
       "full_ir": 0.301,
       "n_days": 4082,
@@ -4195,6 +3685,11 @@
       "grade_source": "entry",
       "freq": "daily",
       "sim_result_path": "04_Research/strategies/RP_20260905_124227_18444/sim_result.rds",
+      "registered_sim_result_path": "04_Research/strategies/RP_20260905_124227_18444/sim_result.rds",
+      "series_source": "close_t1_remeasure",
+      "series_exec_price": "close_t1",
+      "series_dir": "stage_artifacts/replication/20260905_124227_18444/remeasure_close_t1_5562284e",
+      "series_grade": "C",
       "full_sharpe": 0.785,
       "full_ir": 0.395,
       "n_days": 5324,
@@ -4256,6 +3751,11 @@
       "grade_source": "entry",
       "freq": "daily",
       "sim_result_path": "04_Research/strategies/RP_20260905_211516_32128/sim_result.rds",
+      "registered_sim_result_path": "04_Research/strategies/RP_20260905_211516_32128/sim_result.rds",
+      "series_source": "close_t1_remeasure",
+      "series_exec_price": "close_t1",
+      "series_dir": "stage_artifacts/replication/20260905_211516_32128/remeasure_close_t1_5562284e",
+      "series_grade": "C",
       "full_sharpe": 0.955,
       "full_ir": 0.423,
       "n_days": 5324,
@@ -4317,6 +3817,11 @@
       "grade_source": "entry",
       "freq": "daily",
       "sim_result_path": "04_Research/strategies/RP_20260906_211754_1572/sim_result.rds",
+      "registered_sim_result_path": "04_Research/strategies/RP_20260906_211754_1572/sim_result.rds",
+      "series_source": "close_t1_remeasure",
+      "series_exec_price": "close_t1",
+      "series_dir": "stage_artifacts/replication/20260906_211754_1572/remeasure_close_t1_5562284e",
+      "series_grade": "B",
       "full_sharpe": 0.998,
       "full_ir": 0.483,
       "n_days": 5324,
@@ -4378,6 +3883,11 @@
       "grade_source": "entry",
       "freq": "daily",
       "sim_result_path": "04_Research/strategies/RP_20260907_010957_16216/sim_result.rds",
+      "registered_sim_result_path": "04_Research/strategies/RP_20260907_010957_16216/sim_result.rds",
+      "series_source": "close_t1_remeasure",
+      "series_exec_price": "close_t1",
+      "series_dir": "stage_artifacts/replication/20260907_010957_16216/remeasure_close_t1_5562284e",
+      "series_grade": "C",
       "full_sharpe": 0.792,
       "full_ir": 0.226,
       "n_days": 5324,
@@ -4439,6 +3949,11 @@
       "grade_source": "entry",
       "freq": "daily",
       "sim_result_path": "04_Research/strategies/RP_20260907_045335_12800/sim_result.rds",
+      "registered_sim_result_path": "04_Research/strategies/RP_20260907_045335_12800/sim_result.rds",
+      "series_source": "close_t1_remeasure",
+      "series_exec_price": "close_t1",
+      "series_dir": "stage_artifacts/replication/20260907_045335_12800/remeasure_close_t1_5562284e",
+      "series_grade": "C",
       "full_sharpe": 0.806,
       "full_ir": 0.276,
       "n_days": 5324,
@@ -4500,6 +4015,11 @@
       "grade_source": "entry",
       "freq": "daily",
       "sim_result_path": "04_Research/strategies/RP_20260907_051519_4132/sim_result.rds",
+      "registered_sim_result_path": "04_Research/strategies/RP_20260907_051519_4132/sim_result.rds",
+      "series_source": "close_t1_remeasure",
+      "series_exec_price": "close_t1",
+      "series_dir": "stage_artifacts/replication/20260907_051519_4132/remeasure_close_t1_5562284e",
+      "series_grade": "C",
       "full_sharpe": 0.873,
       "full_ir": 0.285,
       "n_days": 5324,
@@ -4561,6 +4081,11 @@
       "grade_source": "entry",
       "freq": "daily",
       "sim_result_path": "04_Research/strategies/RP_20260907_092257_34456/sim_result.rds",
+      "registered_sim_result_path": "04_Research/strategies/RP_20260907_092257_34456/sim_result.rds",
+      "series_source": "close_t1_remeasure",
+      "series_exec_price": "close_t1",
+      "series_dir": "stage_artifacts/replication/20260907_092257_34456/remeasure_close_t1_5562284e",
+      "series_grade": "C",
       "full_sharpe": 0.88,
       "full_ir": 0.397,
       "n_days": 5324,
@@ -4622,6 +4147,11 @@
       "grade_source": "entry",
       "freq": "daily",
       "sim_result_path": "04_Research/strategies/RP_20260912_173947_32640/sim_result.rds",
+      "registered_sim_result_path": "04_Research/strategies/RP_20260912_173947_32640/sim_result.rds",
+      "series_source": "close_t1_remeasure",
+      "series_exec_price": "close_t1",
+      "series_dir": "stage_artifacts/replication/20260912_173947_32640/remeasure_close_t1_5562284e",
+      "series_grade": "C",
       "full_sharpe": 0.6,
       "full_ir": 0.298,
       "n_days": 3237,
@@ -4683,6 +4213,11 @@
       "grade_source": "entry",
       "freq": "daily",
       "sim_result_path": "04_Research/strategies/RP_20260831_075635_10040/sim_result.rds",
+      "registered_sim_result_path": "04_Research/strategies/RP_20260831_075635_10040/sim_result.rds",
+      "series_source": "close_t1_remeasure",
+      "series_exec_price": "close_t1",
+      "series_dir": "stage_artifacts/replication/20260831_075635_10040/remeasure_close_t1_5562284e",
+      "series_grade": "C",
       "full_sharpe": 0.601,
       "full_ir": 0.147,
       "n_days": 5319,
@@ -4744,6 +4279,11 @@
       "grade_source": "entry",
       "freq": "daily",
       "sim_result_path": "04_Research/strategies/RP_20260831_104329_23884/sim_result.rds",
+      "registered_sim_result_path": "04_Research/strategies/RP_20260831_104329_23884/sim_result.rds",
+      "series_source": "close_t1_remeasure",
+      "series_exec_price": "close_t1",
+      "series_dir": "stage_artifacts/replication/20260831_104329_23884/remeasure_close_t1_5562284e",
+      "series_grade": "C",
       "full_sharpe": 0.594,
       "full_ir": 0.367,
       "n_days": 3868,
@@ -4805,6 +4345,11 @@
       "grade_source": "entry",
       "freq": "daily",
       "sim_result_path": "04_Research/strategies/RP_20260921_124842_17696/sim_result.rds",
+      "registered_sim_result_path": "04_Research/strategies/RP_20260921_124842_17696/sim_result.rds",
+      "series_source": "close_t1_remeasure",
+      "series_exec_price": "close_t1",
+      "series_dir": "stage_artifacts/replication/20260921_124842_17696/remeasure_close_t1_5562284e",
+      "series_grade": "C",
       "full_sharpe": 0.517,
       "full_ir": 0.088,
       "n_days": 5334,
@@ -4866,6 +4411,11 @@
       "grade_source": "entry",
       "freq": "daily",
       "sim_result_path": "04_Research/strategies/RP_20260902_124954_8100/sim_result.rds",
+      "registered_sim_result_path": "04_Research/strategies/RP_20260902_124954_8100/sim_result.rds",
+      "series_source": "close_t1_remeasure",
+      "series_exec_price": "close_t1",
+      "series_dir": "stage_artifacts/replication/20260902_124954_8100/remeasure_close_t1_5562284e",
+      "series_grade": "C",
       "full_sharpe": 0.705,
       "full_ir": 0.107,
       "n_days": 5320,

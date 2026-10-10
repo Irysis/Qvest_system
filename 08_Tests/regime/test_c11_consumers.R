@@ -360,10 +360,17 @@ cp_code(PB, c("02_Infrastructure/regime/build_module_performance.R", "02_Infrast
               "02_Infrastructure/data/fred_availability.R", "06_Registry/fred_availability_rules.json"))
 MC <- list(modules = list(
   M1 = list(sim_result_path = "04_Research/strategies/M1/sim_result.rds", fr_eligible = TRUE, metric_type = "backtested",
-            contract = list(contract_pass = TRUE), grade = "B", essence_grade = "B", role = "core", origin_mode = "test"),
+            contract = list(contract_pass = TRUE), grade = "B", essence_grade = "B", role = "core", origin_mode = "test",
+            meta = list(artifacts_dir = "stage_artifacts/replication/M1_run")),
   M2 = list(sim_result_path = "04_Research/strategies/M2/sim_result.rds", fr_eligible = TRUE, metric_type = "backtested",
-            contract = list(contract_pass = TRUE), grade = "B", essence_grade = "B", role = "defensive", origin_mode = "test")))
+            contract = list(contract_pass = TRUE), grade = "B", essence_grade = "B", role = "defensive", origin_mode = "test",
+            meta = list(artifacts_dir = "stage_artifacts/replication/M2_run"))))
 write_json(MC, file.path(PB, "06_Registry/module_catalog.json"), auto_unbox = TRUE, pretty = TRUE)
+## ★2026-10-10 집행 규약 단일화(감사 P3/I3): 풀 = close_t1 계열만. 픽스처 모듈을 신판(close_t1) 산출물로 표식한다 —
+##   빌더는 등재 sim 을 그대로 소비하고(native_close_t1) 기본(강제) 경로가 이 절의 C11 단언을 그대로 탄다. 구판 blob 은 meta 를 안 읽는다.
+for (.r in c("M1_run", "M2_run")) { dir.create(file.path(PB, "stage_artifacts/replication", .r), recursive = TRUE, showWarnings = FALSE)
+  write_json(list(status = "OK", metric_type = "backtested", essence_grade = "B", measurement_regime = list(exec_price = "close_t1")),
+             file.path(PB, "stage_artifacts/replication", .r, "authoritative_remeasure.json"), auto_unbox = TRUE) }
 write_parquet(BMK, file.path(PB, ".cache/benchmark.parquet"))
 bmp_run <- function(script, ann, policy = "", tag) {
   write_parquet(if (ann) UNI else UNI[, .(Date, Category)], file.path(PB, ".cache/unified_regime_signal_daily.parquet"))   # 부모는 PB 를 읽지 않는다(자식만)
@@ -385,6 +392,9 @@ if (!is.null(bA$j)) {
   ok(identical(as.integer(pr2$RISK_OFF$n_days), 1L) && isTRUE(abs(pr2$RISK_OFF$mean_ann - round(r_mar * 12, 4)) < 1e-9),
      "E1c ★월간 모듈 RISK_OFF = 3월 수익(창 시작 2월말 라벨) — 2월 수익 아님")
   ok(identical(bA$j$modules$M1$per_regime_pit_c11, "avail_annotated"), "E1d 모듈별 per_regime_pit_c11")
+  ok(isTRUE(bA$j$execution_convention$enforced) && identical(bA$j$modules$M1$series_source, "native_close_t1") &&
+       identical(bA$j$modules$M2$sim_result_path, "04_Research/strategies/M2/sim_result.rds"),
+     "E1e 집행 규약 강제 경로(close_t1 신판 표식) — 등재 sim 그대로 소비")
 }
 bW <- bmp_run(BN, FALSE, "", "withheld")
 ok(!is.null(bW$j) && is.null(bW$j$modules$M1$per_regime) && identical(bW$j$modules$M1$per_regime_pit_c11, "withheld_legacy_panel") &&
@@ -395,7 +405,9 @@ if (is.na(fo)) skip("E2", "git blob 판독 불가", BLOB[["bmp"]]) else {
   bO <- bmp_run(BO, FALSE, "", "orig")
   strip <- function(j, drop_per = FALSE) {
     j$generated <- NULL; j$regime_source <- NULL; j$regime_pit_c11 <- NULL
-    for (m in names(j$modules)) { j$modules[[m]]$per_regime_pit_c11 <- NULL; if (drop_per) j$modules[[m]]$per_regime <- NULL }
+    j$execution_convention <- NULL                    # ★2026-10-10 집행 규약 기록(구판에 없는 표식 — 풀 구성 비교 밖)
+    for (m in names(j$modules)) { j$modules[[m]]$per_regime_pit_c11 <- NULL; if (drop_per) j$modules[[m]]$per_regime <- NULL
+      for (.k in c("registered_sim_result_path", "series_source", "series_exec_price", "series_dir", "series_grade")) j$modules[[m]][[.k]] <- NULL }
     j }
   ok(!is.null(bO$j) && identical(strip(bO$j, TRUE), strip(bW$j, TRUE)), "E2b 보류판 = 구판과 per_regime 외 전부 동일(풀 구성 불변)")
   bL <- bmp_run(BN, FALSE, "label", "label")
@@ -430,13 +442,15 @@ xm <- function(ym) { y <- as.integer(substr(ym, 1, 4)); m <- as.integer(substr(y
 UW <- data.table(Date = WD, Category = xm(format(WD, "%Y%m")))
 UW[Date %in% WME, Category := "CAUTION"]                                  # 월말 당일만 CAUTION — 날짜 라벨로 읽으면 전부 CAUTION
 UW[, avail_date := c(WD[-1], as.Date(NA))]                                # 다음 거래일 가용
-write_parquet(data.table(Date = WD, BM_Ret = round(rnorm(length(WD), 0.0003, 0.011), 6)), file.path(PW, ".cache/benchmark.parquet"))
+BMF <- round(rnorm(length(WD), 0.0003, 0.011), 6)
+write_parquet(data.table(Date = WD, BM_Ret = BMF), file.path(PW, ".cache/benchmark.parquet"))
 write_parquet(data.table(Date = WD), file.path(PW, ".cache/trading_calendar.parquet"))   # r1: IS 국면 IR 창 시작 = 모듈 직전 행 → 한국 거래일로 내림(달력 필요)
 mods <- list()
 for (k in 1:4) {
   sid <- sprintf("W%d", k); dir.create(file.path(PW, "04_Research/strategies", sid), recursive = TRUE, showWarnings = FALSE)
   r <- round(0.0002 * k + 0.008 * sin(seq_along(WD) / (5 + 2 * k)) + rnorm(length(WD), 0, 0.004), 6)
-  saveRDS(list(DAILY_NAV_DT = data.table(Date = WD, Strategy_Ret = r), bm_xts = xts(rep(0.0003, length(WD)), order.by = WD), freq = "daily"),
+  ## ★v4r2(2026-10-10 · I7): bm_xts = 정본 벤치와 같은 값(시차 0). 구 픽스처의 상수 bm_xts 는 격자 감사가 시차를 판독하지 못해(NA) 중단한다.
+  saveRDS(list(DAILY_NAV_DT = data.table(Date = WD, Strategy_Ret = r), bm_xts = xts(BMF, order.by = WD), freq = "daily"),
           file.path(PW, "04_Research/strategies", sid, "sim_result.rds"))
   mods[[sid]] <- list(sim_result_path = file.path("04_Research/strategies", sid, "sim_result.rds"), grade = "B",
                       role = if (k == 4) "defensive" else "core", freq = "daily", admission_route = "grade_floor")

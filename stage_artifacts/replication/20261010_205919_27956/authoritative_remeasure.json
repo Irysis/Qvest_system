@@ -1,0 +1,131 @@
+{
+  "status": "OK",
+  "strategy_id": "RP_20261010_205919_27956",
+  "strategy_name": "RP_AUTO_230516364",
+  "remeasured_at": "2026-10-10T21:15:04+0900",
+  "run_id": "20261010_205919_27956",
+  "bt_result_path": "C:/Users/99922/OneDrive/Quant_Module_Moltbot/stage_artifacts/replication/20261010_205919_27956/bt_result.rds",
+  "metric_type": "backtested",
+  "essence_grade": "C",
+  "grade_basis": "replication_chain",
+  "essence": {
+    "net_sharpe": 0.63,
+    "net_ir": 0.211,
+    "portfolio_alpha_t_nw_lag3": 0.92,
+    "oos_retention": -0.732,
+    "dsr": null,
+    "mdd": 0.628,
+    "calmar": 0.228,
+    "cagr": 0.143,
+    "drawdown_profile": {
+      "severe45_count": 7,
+      "severe55_count": 3,
+      "severe45_total_periods": 55,
+      "severe45_max_periods": 25,
+      "severe45_period_frac": 0.0103,
+      "catastrophic_mdd_threshold": 0.7,
+      "severe45_hard_count": 15,
+      "severe55_hard_count": 6,
+      "severe45_period_hard_frac": 0.25,
+      "severe45_max_hard_periods": 252,
+      "tail_review": true,
+      "structural_hard_fail": false
+    }
+  },
+  "hard_fail": false,
+  "structural_drawdown": false,
+  "selection_type": "chain",
+  "dsr_gate_applied": false,
+  "n_trials_cumulative": 1,
+  "dsr": null,
+  "measurement_regime": {
+    "selection_type": "chain",
+    "n_trials_cumulative": 1,
+    "exec_price": "close_t1",
+    "exec_price_basis": "constraint_defaults.json::execution.exec_price",
+    "exec_price_paper": "close_t1",
+    "cost_model_version": "replication_weight_delta_v1/first_hold_day_multiplicative",
+    "harness_md5": "3e316e9cef23c4b10ea7b088493e2ad4"
+  },
+  "grade_base": "C",
+  "recent_regime_rescued": false,
+  "recent_regime_label": null,
+  "rolling_grade": {
+    "status": "ok",
+    "n_points": 226,
+    "window_months": 36,
+    "pass_life": 0.3982,
+    "pass_recent": 0.5,
+    "current": {
+      "ym": "2026-10",
+      "sharpe": 0.550473,
+      "cagr": 0.119106,
+      "mdd": 0.387185,
+      "calmar": 0.307619,
+      "pass": false
+    },
+    "prior_recoveries": 11,
+    "current_run": 0,
+    "span": ["2008-01", "2026-10"]
+  },
+  "defensive_score": {
+    "status": "ok",
+    "defensive": true,
+    "down": {
+      "n": 111,
+      "excess": 0.008125,
+      "hit": 0.603604,
+      "t": 1.87072,
+      "capture": 0.809865
+    },
+    "mid": {
+      "n": 30,
+      "excess": -0.003848,
+      "hit": 0.4,
+      "t": -0.387759,
+      "capture": 1.040252
+    },
+    "deep": {
+      "n": 10,
+      "excess": 0.001656,
+      "hit": 0.5,
+      "t": 0.062235,
+      "capture": 0.98906
+    },
+    "up": {
+      "n": 150,
+      "excess": -0.000101,
+      "hit": 0.5,
+      "t": -0.017343,
+      "capture": 0.997982
+    },
+    "reason": "하락월 111개: 초과 +0.81%/월 (t 1.87 · 적중 60%) · 벤치-10% 이하 10개: 초과 +0.17%/월 · 상승월 초과 -0.01%/월"
+  },
+  "reasons": "Ensemble: positive alpha이나 B 미달 (블렌드에서만 가치)",
+  "replication": {
+    "source_paper": {
+      "url": "https://arxiv.org/abs/2305.16364",
+      "title": "E2EAI: End-to-End Deep Learning Framework for Active Investing",
+      "paper_key": "2305.16364"
+    },
+    "commission_paper_bps": 0,
+    "paper_basis": {
+      "cagr": 0.163823,
+      "sharpe": 0.592492,
+      "mdd": 0.620446,
+      "n_months": 261
+    },
+    "grade_basis_note": "등급은 15bps 순비용 판 (essence 문턱 15bps 보정 — gross 등급은 인플레)",
+    "fidelity": "universe 치환(K200∪KQ150)만 — 그 외 논문 그대로 (v10 완전 충실구현)",
+    "benchmark_note": "long_vs_long_bm",
+    "n_max": 25,
+    "has_short": false
+  },
+  "contract": {
+    "integrity_status": "OK",
+    "cagr": 0.143,
+    "sharpe": 0.63,
+    "mdd": 0.628,
+    "calmar": 0.228
+  }
+}

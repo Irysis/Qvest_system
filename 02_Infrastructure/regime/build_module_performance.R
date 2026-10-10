@@ -15,6 +15,8 @@
 #   그 달 수익을 분류했다(동월 누출). 가용일 열 없는 legacy 패널: 풀 조립(계약·등급·해시 — C11 무관)은 계속하고
 #   **국면 분할 성과(per_regime)만** 정책대로 — stop(기본) = 산출 보류(per_regime null) · label = legacy 정렬 산출 + 표식.
 #   실측-only(자체합성 無).
+# ★집행 규약 단일화(2026-10-10 · 감사 P3/I3): 풀 = close_t1 계열만(remeasure_close_t1_* 판 ▸ 신판). 없는 모듈 = 제외 + 사유 기록
+#   (execution_convention). 진단 = QVEST_L2_INCLUDE_NON_CLOSE_T1=1 + QVEST_L2_DRY_RUN=1. 상세 = 아래 '집행 규약 단일화' 절.
 # =============================================================================
 suppressPackageStartupMessages({ library(data.table); library(arrow); library(jsonlite); library(xts) })
 .find_root <- function() {
@@ -392,6 +394,13 @@ if (length(.codes_tbl))
   cat("[build_module_performance] 자격 판정 사유:",
       paste(sprintf("%s=%d", names(.codes_tbl), .codes_tbl), collapse = " · "),
       "  (dscore_absent = 방어형 **미산출** — '아님'이 아니다)\n")
+## ★집행 규약 집계 — 자격(위)과 다른 축이라 admission_codes 에 섞지 않는다(자격 통과 뒤의 계열 판독 결과).
+.ct1_codes <- if (length(.ct1_excluded)) table(vapply(.ct1_excluded, function(x) as.character(x$code), character(1))) else integer(0)
+cat(sprintf("[build_module_performance] ★집행 규약 close_t1 단일%s: 자격 통과 %d → 편입 %d · %s %d%s\n",
+            if (.INCLUDE_NON_CT1) "(★진단 스위치 — 혼합 포함 · dry-run 전용)" else "",
+            length(unique(eligible_paths)) + if (.INCLUDE_NON_CT1) 0L else length(.ct1_excluded), length(unique(eligible_paths)),
+            if (.INCLUDE_NON_CT1) "비 close_t1 포함" else "제외", length(.ct1_excluded),
+            if (length(.ct1_codes)) paste0(" (", paste(sprintf("%s=%d", names(.ct1_codes), as.integer(.ct1_codes)), collapse = " · "), ")") else ""))
 lookup_meta <- function(dirn){
   if(!is.null(eligible_lut[[dirn]])) return(eligible_lut[[dirn]])
   if(!is.null(grade_lut[[dirn]])) return(grade_lut[[dirn]])
@@ -418,7 +427,10 @@ regimes <- c("RISK_ON","NEUTRAL","CAUTION","CRISIS","RISK_OFF")
 out <- list(); kept <- 0
 for(f in sim_files){
   dirn <- basename(dirname(f))
-  s <- tryCatch(readRDS(f), error=function(e) NULL); if(is.null(s)||is.null(s$DAILY_NAV_DT)) next
+  ## ★집행 규약: 소비 계열 = 판독된 close_t1 판(등재 sim 또는 l2_pool_series 재조립). 광역 진단 scan 의 미판독 파일 = 등재 sim(표식).
+  ser <- series_lut[[.nrm(f)]]
+  src <- if (!is.null(ser) && !is.na(ser$path %||% NA)) ser$path else f
+  s <- tryCatch(readRDS(src), error=function(e) NULL); if(is.null(s)||is.null(s$DAILY_NAV_DT)) next
   d <- as.data.table(s$DAILY_NAV_DT); if(!all(c("Date","Strategy_Ret")%in%names(d))) next
   d[, Date:=as.Date(Date)]
   # ★ freq 감지 (월간 DPL 등 비-일간 모듈 정합). s$freq 우선, 없으면 날짜간격 중앙값.
@@ -461,13 +473,34 @@ for(f in sim_files){
     admission_reason = meta$adm_reason %||% NA,
     grade_emit = meta$grade_emit %||% NA, grade_source = meta$grade_source %||% NA,
     freq = freq,
-    sim_result_path = .rel_path(f),
+    sim_result_path = .rel_path(src),                       # ★소비 계열(하류 run_wf_ensemble·RCMA 가 읽는 것) = close_t1 판
+    ## ★집행 규약 표식: 등재 sim(frozen · 해시 대조 대상) · 계열 출처 · 판 디렉터리 · 그 판의 essence 등급(grade = 편입 축 · 별개)
+    registered_sim_result_path = .rel_path(f),
+    series_source = if (is.null(ser)) "registered_sim(unresolved:broad_scan)" else ser$source %||% NA,
+    series_exec_price = if (is.null(ser)) NA else ser$exec %||% NA,
+    series_dir = if (is.null(ser) || is.na(ser$dir %||% NA)) NA else .rel_path(ser$dir),
+    series_grade = if (is.null(ser)) NA else ser$grade %||% NA,
     full_sharpe = round(sr(d$ret,annf),3), full_ir = round(sr(d$active,annf),3),
     n_days = nrow(d), date_range = c(as.character(min(d$Date)), as.character(max(d$Date))),
     per_regime = per,
     per_regime_pit_c11 = .C11G$status)   # avail_annotated | withheld_legacy_panel | unresolved_legacy_panel
   kept <- kept + 1
 }
+## ★집행 규약 기록(산출물) — 소비자가 혼합 풀을 받았는지 파일만 보고 알 수 있게.
+.BROAD <- identical(Sys.getenv("QVEST_FR_ALLOW_BROAD_SCAN", "0"), "1")
+.src_tab <- table(vapply(out, function(x) as.character(x$series_source %||% "NA"), character(1)))
+.EXEC_CONV <- list(
+  rule = "close_t1 단일 — remeasure_close_t1_* 판 ▸ 신판(close_t1) · 그 밖(레거시 QEPM·2026-09-25 이전 close_d·판독 불가) = 풀 제외",
+  resolver = "tilt_attribution.R::ta_resolve_artifact 와 같은 판독(auth measurement_regime.exec_price ▸ manifest cost_model_version) · 판 무결성 = auth status OK ∧ backtested",
+  enforced = !.INCLUDE_NON_CT1 && !.BROAD,
+  include_non_close_t1_switch = .INCLUDE_NON_CT1,
+  series_source_counts = as.list(setNames(as.integer(.src_tab), names(.src_tab))),
+  n_series_written = .series_written,
+  series_root = .rel_path(.L2_SERIES_ROOT),
+  n_excluded = if (.INCLUDE_NON_CT1) 0L else length(.ct1_excluded),
+  n_included_non_close_t1 = if (.INCLUDE_NON_CT1) length(.ct1_excluded) else 0L,
+  excluded_codes = as.list(setNames(as.integer(.ct1_codes), names(.ct1_codes))),
+  excluded = .ct1_excluded)
 res <- list(schema_version="v3.1", generated=as.character(Sys.Date()),
             generated_by="2계층 전략 로테이션 (build_module_performance.R — 계약 floor + v10 grade floor)",
             regime_source=if (.C11_AVAIL) "unified_regime_signal_daily.parquet Category — C11 가용일 결합(규약 b: 모듈 수익 창 시작까지 가용)" else
@@ -481,6 +514,7 @@ res <- list(schema_version="v3.1", generated=as.character(Sys.Date()),
             defensive_route=.DEF_ROUTE,
             ## ★자격 판정 사유 집계 — 부재/거짓/판정불가를 가른 채로 남긴다.
             admission_codes=as.list(.codes_tbl),
+            execution_convention=.EXEC_CONV,             # ★2026-10-10 집행 규약 단일화(감사 P3/I3) — 계열 출처·제외 사유
             admission_predicate="02_Infrastructure/contracts/defensive_score.R::ds_pool_eligible (l2_pool_admission.R::l2_admit 경유)",
             grade_axis="essence_grade > meta.essence_grade > grade(발행 시점 폴백)",
             note="입력 2단 게이트(v10 2026-08-29 도훈): ①계약 floor = module_catalog fr_eligible=true(contract_pass+backtested+frozen+hash/build_version, legacy QEPM grade-A 이관 예외) ②grade floor = essence grade B 이상(QVEST_L2_GRADE_FLOOR, OFF=진단) ∥ 방어형 병렬 경로(QVEST_L2_DEFENSIVE_ROUTE). module_hash는 실제 md5 대조(불일치=skip+quarantine, CAP-P1-2). 배치 심사=RCMA. ★2026-09-07: 자격 술어를 계약(ds_pool_eligible)으로 단일화하고 등급 축을 essence 로 정정.",
@@ -491,10 +525,11 @@ dir.create(file.path(PROJ,"06_Registry"), showWarnings=FALSE)
 .route_n <- function(r) sum(vapply(out, function(x)
   identical(as.character(x$admission_route %||% ""), r), logical(1)))
 if (identical(Sys.getenv("QVEST_L2_DRY_RUN", "0"), "1")) {
-  cat(sprintf("[build_module_performance] ★DRY-RUN — module_performance.json 미기록. 풀 %d건 (grade_floor %d · defensive_specialist %d · legacy_qepm %d · floor 제외 %d · floor=%s · def_route=%s)\n",
-              kept, .route_n("grade_floor"), .route_n("defensive_specialist"),
-              kept - .route_n("grade_floor") - .route_n("defensive_specialist"),
-              .floor_excluded, .L2_FLOOR, .DEF_ROUTE))
+  cat(sprintf("[build_module_performance] ★DRY-RUN — module_performance.json 미기록. 풀 %d건 (role_rep %d · grade_floor %d · defensive_specialist %d · legacy_qepm %d · floor 제외 %d · floor=%s · def_route=%s · 집행 규약 %s · 규약 제외 %d)\n",
+              kept, .route_n("role_rep"), .route_n("grade_floor"), .route_n("defensive_specialist"),
+              kept - .route_n("role_rep") - .route_n("grade_floor") - .route_n("defensive_specialist"),
+              .floor_excluded, .L2_FLOOR, .DEF_ROUTE,
+              if (isTRUE(.EXEC_CONV$enforced)) "close_t1 단일" else "★미강제(진단)", .EXEC_CONV$n_excluded))
   .dp <- Sys.getenv("QVEST_L2_DRY_RUN_OUT", "")
   if (nzchar(.dp)) { write_json(res, .dp, auto_unbox=TRUE, pretty=TRUE, na="null", digits=4)
                      cat(sprintf("[build_module_performance] dry-run 산출 → %s\n", .dp)) }
@@ -505,8 +540,10 @@ write_json(res, file.path(PROJ,"06_Registry/module_performance.json"), auto_unbo
 ##   항상 "광역"이라고 찍었다. allowlist 로 정상 실행해도 로그만 보면 **진단모드 산출물을
 ##   정본에 덮어쓴 것처럼 읽힌다**(실측: 08-08 FQ-056 재실행 때 그렇게 오독할 뻔했고,
 ##   generated_by 필드를 따로 확인하고서야 allowlist 경로였음이 밝혀졌다).
-cat(sprintf("module_performance.json written: %d modules (%s · v10 grade floor 적용)\n", kept,
-            if (identical(Sys.getenv("QVEST_FR_ALLOW_BROAD_SCAN", "0"), "1")) "광역 진단모드" else "FR allowlist"))
+cat(sprintf("module_performance.json written: %d modules (%s · v10 grade floor 적용 · 집행 규약 %s · 계열 %s · 규약 제외 %d)\n", kept,
+            if (.BROAD) "광역 진단모드" else "FR allowlist",
+            if (isTRUE(.EXEC_CONV$enforced)) "close_t1 단일" else "★미강제(진단)",
+            paste(sprintf("%s=%d", names(.src_tab), as.integer(.src_tab)), collapse = " · "), .EXEC_CONV$n_excluded))
 gtab <- sort(table(vapply(out, function(x) as.character(x$grade %||% "ungraded"), character(1))), decreasing=TRUE)
 cat("grade 분포:", paste(names(gtab), gtab, sep="=", collapse=" "), "\n")
 cat(sprintf("편입 경로(풀 모드 %s): role_rep=%d · grade_floor=%d · defensive_specialist=%d · legacy_qepm=%d\n", .POOL_MODE,

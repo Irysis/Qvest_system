@@ -7,8 +7,10 @@
 # 설계 정본: 04_Research/01_reports/l2_role_rotation_redesign_20261010/README.md §2.1
 #
 # 원칙 (통계 동일성 · 구조적 PIT):
-#   - 역할 통계는 **재구현하지 않는다** — 정본 sr_card()(strategy_role.R) · rfd_monthly()(rf_diversification_gate.R)를 그대로 부른다.
-#     as-of 판이 바꾸는 것은 입력 두 가지뿐이다: ① 모든 원자료를 **date < t 로 자른 뒤** 정본 함수에 넣는다
+#   - 역할 통계는 **재구현하지 않는다** — 정본 sr_card()(strategy_role.R)를 그대로 부른다. 월간 수익 (ym, r) 은 정본 rfd_monthly 와
+#     같은 규칙의 빠른 판(sra_monthly_asof — format() 를 한 번만 계산)을 쓰고, 정본 판(sra_monthly_canonical)과의 **비트 동일성**을
+#     생성기가 표본 시점 전 구성원에서 대조한다(build_asof_roles.R §2b · 불일치 = 중단).
+#     as-of 판이 바꾸는 것은 입력 두 가지뿐이다: ① 모든 원자료를 **date < t 로 자른 뒤** 같은 규칙에 넣는다
 #     ② PS 국면은 잘린 벤치로 다시 판정하고 **확정된 구간만** 라벨을 단다(미확정 = NA → sr_card 가 두 국면 어디에도 안 넣는다).
 #   - 결정 시점 t = 달 T 의 첫날. 쓰는 자료 = date < t 인 일간 수익·벤치·사이즈 지수(= Usable_Date ≤ t−1).
 #     ★자른 계열에 정본 rfd_monthly 를 그대로 쓰므로 계열의 마지막 캘린더 달(T−1)은 '부분월 가능'으로 버려진다
@@ -41,8 +43,9 @@
 #   - lt_bear(Lunde-Timmermann 강건성 기록): 등급 입력이 아니므로 NA(as-of 판 미산출).
 #   - 계보 중복 제거·상관 군집 대표 선정(rf_role_classify_all.R ②)은 다시 하지 않는다 — 소속 판정만.
 #
-# 공개: sra_ps_params · sra_ps_asof · sra_phases · sra_regimes_asof · sra_factor_monthly · sra_inputs
-#       sra_month_inputs · sra_card_asof · sra_flatten · sra_labels_at · sra_build · sra_decision_dates
+# 공개: sra_ps_params · sra_ps_asof · sra_phases · sra_regimes_asof · sra_factor_monthly · sra_inputs · sra_add_ym
+#       sra_prep_series · sra_monthly_asof · sra_monthly_canonical · sra_month_inputs · sra_card_asof · sra_flatten
+#       sra_labels_at · sra_build · sra_decision_dates
 # 요구: data.table · jsonlite · arrow · bbdetection · strategy_role.R(→ rf_diversification_gate.R)
 # 사용: 04_Research/l2_role_rotation/build_asof_roles.R
 #==============================================================================
@@ -104,9 +107,10 @@ sra_phases <- function(ym, ps) {
 #' @return data.table(ym, ps_bear, lt_bear(NA), cgh36) · attr phases · attr ps
 sra_regimes_asof <- function(bm_daily, pars, confirm = c("phase", "state")) {
   confirm <- match.arg(confirm)
-  x <- bm_daily[order(date)][, .(date, bm)]
+  x <- bm_daily[order(date)]
+  x <- if ("ym" %in% names(x)) x[, .(date, bm, ym)] else x[, .(date, bm, ym = format(date, "%Y-%m"))]   # ym = 미리 계산한 format(date,"%Y-%m")
   x[, nav := cumprod(1 + bm)]                                               # 정본 sr_regimes 와 같은 구성
-  me <- x[, .(nav = nav[.N]), by = .(ym = format(date, "%Y-%m"))][order(ym)]
+  me <- x[, .(nav = nav[.N]), by = ym][order(ym)]
   ps <- sra_ps_asof(me$nav, pars, confirm)
   me[, ps_bear := ps$ps_bear]
   me[, lt_bear := NA]                                                       # 강건성 기록 필드 — as-of 판 미산출(등급 무관)
@@ -126,13 +130,15 @@ sra_factor_monthly <- function(ix) {
   x[, `:=`(r_k = kospi200_ew / data.table::shift(kospi200_ew) - 1, r_q = kosdaq150_ew / data.table::shift(kosdaq150_ew) - 1)]
   x <- x[is.finite(r_k) & is.finite(r_q)]
   x[, ew := (200 * r_k + 150 * r_q) / 350]
-  m <- x[, .(ew = prod(1 + ew) - 1), by = .(ym = format(Date, "%Y-%m"))]
+  if (!"ym" %in% names(x)) x[, ym := format(Date, "%Y-%m")]
+  m <- x[, .(ew = prod(1 + ew) - 1), by = ym]
   data.table::setorder(m, ym)
   if (nrow(m) > 1L) m <- m[-1L]
   m
 }
 
 #' 원자료 적재(전부 메모리 — 대조 실험에서 t 이후를 교란할 수 있게) + 정본 대조
+#'   ym 열(= format(date, "%Y-%m"))을 한 번만 계산해 붙인다 — 정본 함수들은 매 호출 format 을 다시 돌려 느리다(속도만의 차이).
 sra_inputs <- function(root = NULL) {
   root <- .sra_find_root(root)
   cfg <- sr_cfg(root); dcfg <- .sr_env$rfd_cfg(root)
@@ -140,10 +146,53 @@ sra_inputs <- function(root = NULL) {
   ixp <- .sr_env$.rfd_abs(.sr_env$.rfd_or(dcfg$factors$path, ".cache/indices.parquet"), root)
   ix <- data.table::as.data.table(arrow::read_parquet(ixp, col_select = c("Date", "kospi200_ew", "kosdaq150_ew")))
   ref <- .sr_env$rfd_factor_monthly(root, dcfg)
-  if (!isTRUE(all.equal(as.data.frame(sra_factor_monthly(ix)), as.data.frame(ref), tolerance = 0)))
+  if (!identical(as.data.frame(sra_factor_monthly(ix)), as.data.frame(ref)))
     stop("[strategy_role_asof] sra_factor_monthly ≠ 정본 rfd_factor_monthly — 정본 변경 추적 필요")
-  list(root = root, cfg = cfg, dcfg = dcfg, bm = bm, ix = ix, pars = sra_ps_params(cfg),
-       bench_path = attr(bm, "rfd_path"), bench_mtime = attr(bm, "rfd_mtime"), ix_path = ixp)
+  out <- list(root = root, cfg = cfg, dcfg = dcfg, bm = bm, ix = ix, pars = sra_ps_params(cfg),
+              bench_path = attr(bm, "rfd_path"), bench_mtime = attr(bm, "rfd_mtime"), ix_path = ixp)
+  sra_add_ym(out)
+}
+
+#' 일간 표에 ym 열 부착(교란 실험에서 bm·ix 를 바꾼 뒤에도 다시 부른다)
+sra_add_ym <- function(inp) {
+  inp$bm <- data.table::copy(inp$bm)[, ym := format(date, "%Y-%m")]; data.table::setkey(inp$bm, date)
+  inp$ix <- data.table::copy(inp$ix)[, ym := format(Date, "%Y-%m")]
+  inp
+}
+
+#' 계열 1개 사전 처리(한 번) — 정본 rfd_monthly 의 일간 경로와 같은 벤치 거래일 내부 결합 · ym 부착
+#'   일간: merge(dt, bm, by = "date") 와 같은 행(날짜 정렬) · 월간: ym = 행 일자의 앞 달(.rfd_prev_ym — 행 = 직전 보유월 수익)
+sra_prep_series <- function(ser, bm) {
+  if (is.null(ser) || is.null(ser$dt)) return(NULL)
+  if (identical(ser$freq, "monthly")) {
+    d <- data.table::copy(ser$dt)[, ym := .sr_env$.rfd_prev_ym(date)]
+  } else {
+    d <- merge(ser$dt, bm[, .(date, ym)], by = "date")
+  }
+  list(freq = ser$freq, dt = d[, .(date, ret, ym)])
+}
+
+#' 결정 시점 t 의 월간 원수익 — **date < t 행만**으로, 정본 rfd_monthly 의 (ym, r) 와 같은 규칙:
+#'   일간 = 벤치 거래일과 결합된 날의 월 복리 · 월간 = 행 일자 앞 달로 붙이고 벤치 달과 결합 · 양 끝 캘린더 달(부분월 가능) 제거
+#'   ★잘린 자료의 마지막 달(T−1)도 '끝 달'로 제거된다(정본 규칙 그대로) → t 의 라벨은 t 이후 자료의 존재에도 의존하지 않는다
+sra_monthly_asof <- function(sp, t, bmm_t) {
+  if (is.null(sp)) return(NULL)
+  d <- sp$dt[date < t]
+  if (!nrow(d)) return(NULL)
+  m <- d[, .(r = prod(1 + ret) - 1), by = ym]
+  if (identical(sp$freq, "monthly")) m <- merge(m, bmm_t[, .(ym)], by = "ym")
+  data.table::setorder(m, ym)
+  if (nrow(m) <= 2L) return(NULL)
+  m[-c(1L, nrow(m))]
+}
+
+#' 같은 값을 정본 함수로(검증용 — 느리다): rfd_monthly(잘린 계열, 잘린 벤치, 잘린 사이즈)
+sra_monthly_canonical <- function(ser, M) {
+  st <- list(freq = ser$freq, dt = ser$dt[date < M$t])
+  if (!nrow(st$dt)) return(NULL)
+  bm_plain <- M$bm[, .(date, bm)]; data.table::setkey(bm_plain, date)
+  mm <- .sr_env$rfd_monthly(st, bm_plain, M$fac)
+  if (is.null(mm)) NULL else mm[, .(ym, r)]
 }
 
 #' 결정 시점 목록 — 월초 · from ~ (벤치 마지막 날이 속한 달의 첫날 = 직전 달이 완결된 마지막 결정월)
@@ -156,21 +205,21 @@ sra_decision_dates <- function(bm, from = "2005-01-01") {
 sra_month_inputs <- function(t, inp, confirm = c("phase", "state")) {
   confirm <- match.arg(confirm)
   t <- as.Date(t)
+  if (!"ym" %in% names(inp$bm) || !"ym" %in% names(inp$ix)) inp <- sra_add_ym(inp)
   bm_t <- inp$bm[date < t]
   data.table::setkey(bm_t, date)
   list(t = t, confirm = confirm, bm = bm_t,
-       bmm = bm_t[, .(b = prod(1 + bm) - 1), by = .(ym = format(date, "%Y-%m"))],
+       bmm = bm_t[, .(b = prod(1 + bm) - 1), by = ym],                      # 정본 sr_card_for_series 의 bmm 과 같은 식
        fac = sra_factor_monthly(inp$ix[Date < t]),
        R = sra_regimes_asof(bm_t, inp$pars, confirm))
 }
 
 #' 구성원 1개 · 결정 시점 1개 → 역할 카드(diversifier 제외) — 정본 sr_card_for_series 와 같은 조립, 입력만 잘린 판
-#' @param ser rfd_read_series() 결과(list(freq, dt(date, ret)))
-sra_card_asof <- function(ser, M, cfg) {
-  if (is.null(ser) || is.null(ser$dt)) return(list(status = "series_unreadable"))
-  st <- list(freq = ser$freq, dt = ser$dt[date < M$t])                      # ★date < t — 값·존재 모두 t 이전만
-  if (!nrow(st$dt)) return(list(status = "no_data", n_months = 0L))
-  mm <- .sr_env$rfd_monthly(st, M$bm, M$fac)
+#' @param sp sra_prep_series() 결과 · path = "fast"(기본 — sra_monthly_asof) | "canonical"(rfd_monthly · 검증용, sp 대신 원 계열)
+sra_card_asof <- function(sp, M, cfg, path = c("fast", "canonical")) {
+  path <- match.arg(path)
+  if (is.null(sp) || is.null(sp$dt)) return(list(status = "series_unreadable"))
+  mm <- if (identical(path, "fast")) sra_monthly_asof(sp, M$t, M$bmm) else sra_monthly_canonical(sp, M)   # ★date < t 만
   if (is.null(mm)) return(list(status = "no_data", n_months = 0L))
   m <- merge(merge(mm[, .(ym, r)], M$bmm, by = "ym"), M$fac, by = "ym", all.x = TRUE)
   cd <- sr_card(m, M$R, cfg)
@@ -216,11 +265,11 @@ sra_flatten <- function(card, M, member_id, cfg, roles = c("defensive", "offensi
 }
 
 #' 결정 시점 1개 · 전 구성원
-#' @param series named list: member_id → rfd_read_series() 결과
-sra_labels_at <- function(t, series, inp, confirm = c("phase", "state"), M = NULL) {
+#' @param series named list: member_id → sra_prep_series() 결과(path="canonical" 이면 rfd_read_series() 원 계열)
+sra_labels_at <- function(t, series, inp, confirm = c("phase", "state"), M = NULL, path = "fast") {
   confirm <- match.arg(confirm)
   M <- M %||% sra_month_inputs(t, inp, confirm)
-  data.table::rbindlist(lapply(names(series), function(id) sra_flatten(sra_card_asof(series[[id]], M, inp$cfg), M, id, inp$cfg)))
+  data.table::rbindlist(lapply(names(series), function(id) sra_flatten(sra_card_asof(series[[id]], M, inp$cfg, path), M, id, inp$cfg)))
 }
 
 #' 전 결정 시점

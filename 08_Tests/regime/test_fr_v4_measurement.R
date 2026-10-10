@@ -12,6 +12,8 @@
 #      r0 의 '홀딩월 마지막 평가일' 기준 제외는 결정 시점에 살아 있던 모듈을 그 달 시작부터 뺐다(월중 사망 선견 — A19 가 잡는다).
 #   ④ SR·Calmar(성과 전 행)와 PORT_t·OOS(벤치 병합 행)가 다른 창 → 평가 창 = 벤치 기간 안 · 같은 날짜 집합.
 #   ⑤ FR_REGISTER 기본 = 0(등재는 "1" 명시 때만).
+#   ⑥ (v4r2 · 2026-10-10 · 감사 I7) 벤치를 '가장 긴 bm_xts' 모듈에서 가져와 그 모듈의 날짜 라벨(+1일)을 들였고 격자 어긋남은 기록만 했다
+#      → 벤치 = 정본 .cache/benchmark.parquet BM_Ret(같은 날짜) · 풀 모듈 시차 ≠0/NA = 중단 · 정본 벤치가 거래일 격자에 제 날짜로 안 놓이면 중단(§E).
 # 방법: 합성 샌드박스(평일 = 한국 거래일 · 일요일 월말 행 모듈 · 중도 사망 모듈 · 토요일 가용 국면 행 · 벤치가 먼저 끝남)에서
 #   자식 실행 → 산출(결과 JSON · 진단 CSV · bt_result)을 **검사 대상과 독립인 손 유도**와 대조. 분해 대조(FR_V4_ABLATE)와
 #   돌연변이 7종은 같은 픽스처에서 빨개져야 한다.
@@ -90,13 +92,16 @@ wkdays <- function(a, b) { d <- seq(as.Date(a), as.Date(b), by = "day"); d[as.PO
 WD <- wkdays("2012-01-02", "2019-12-31")                                      # 합성 한국 거래일 = 평일
 write_parquet(data.table(Date = WD), file.path(PW, ".cache/trading_calendar.parquet"))
 BMR <- round(rnorm(length(WD), 0.0003, 0.011), 6)
-write_parquet(data.table(Date = WD, BM_Ret = BMR), file.path(PW, ".cache/benchmark.parquet"))   # 정본 벤치(격자 감사용)
 # 일요일 월말(모듈 W1 에 그 일요일 행을 둔다 → RM 월말 = 일요일)
 ALLD <- seq(as.Date("2012-01-01"), as.Date("2019-12-31"), by = "day")
 MEND <- ALLD[!duplicated(format(ALLD, "%Y%m"), fromLast = TRUE)]
 SUNME <- MEND[as.POSIXlt(MEND)$wday == 0L]
-BM_END <- as.Date("2019-06-28")                                                # 벤치(가장 긴 bm_xts)가 모듈보다 먼저 끝난다(④)
+BM_END <- as.Date("2019-06-28")                                                # 벤치가 모듈보다 먼저 끝난다(④)
 BM_GAP <- WD[seq(40L, length(WD), by = 97L)]; BM_GAP <- BM_GAP[BM_GAP <= BM_END]   # 벤치 세션 결측일(④ 0 채움 대상)
+## ★v4r2(2026-10-10 · I7): 벤치 = 정본 .cache/benchmark.parquet BM_Ret. ④ 픽스처(먼저 끝남 · 세션 결측일)를 **정본 파일**에 싣는다
+##   (구판은 이 성질을 '가장 긴 bm_xts' 모듈 W1 에 실었다). 모듈 bm_xts 는 같은 값(정렬 = 시차 0)이라 격자 감사를 통과한다.
+BMD <- as.Date(setdiff(WD[WD <= BM_END], BM_GAP), origin = "1970-01-01")
+write_parquet(data.table(Date = BMD, BM_Ret = BMR[match(BMD, WD)]), file.path(PW, ".cache/benchmark.parquet"))
 DEAD_END <- as.Date("2018-03-14")                                              # ③ 사망 모듈 데이터 종료(평가 구간 2017-01~ 안 · 월 중간)
 mk_mod <- function(k, d, drift) round(drift + 0.006 * sin(seq_along(d) / (4 + 2 * k)) + rnorm(length(d), 0, 0.004), 6)
 MODS <- list(W1 = sort(c(WD, SUNME)), W2 = WD, W3 = WD, W4 = WD, W5 = WD[WD <= DEAD_END])
@@ -118,6 +123,8 @@ write_mods <- function(pad_zero = FALSE) {
              file.path(PW, "06_Registry/module_performance.json"), auto_unbox = TRUE, pretty = TRUE)
 }
 # W1 bm_xts 는 짧고(BM_END) 결측(BM_GAP)이 있어도 가장 길어야 bmref(가장 긴 bm_xts)가 된다 → 다른 모듈 bm_xts 를 더 짧게.
+#   ★v4r2: 정본 경로는 bm_xts 를 벤치로 쓰지 않는다 — 이 배치는 분해 대조(FR_V4_ABLATE=canonical_bench = 구판 최장 bm_xts)가
+#   정본과 **같은 벤치**(W1 bm_xts = 정본 값)를 집게 해 E5 양성 대조(정렬 픽스처에선 결과 동일)를 만든다.
 write_mods_bm <- function(pad_zero = FALSE) {
   write_mods(pad_zero)
   for (sid in setdiff(names(MODS), "W1")) { f <- file.path(PW, "04_Research/strategies", sid, "sim_result.rds"); z <- readRDS(f)
@@ -312,6 +319,61 @@ for (mu in muts) {
   if (is.na(fm)) { ok(FALSE, sprintf("C %s 돌연변이 대상 줄 부재", mu$tag)); next }
   clean_out(); wm <- wf_run(fm, paste0("FRM", mu$tag))
   ok(isTRUE(mu$chk(wm)), sprintf("C %s ★red (status %d)", mu$tag, wm$r$status))
+}
+
+cat("\n── E. 정본 벤치 · 격자 감사 HARD (v4r2 · 감사 2026-10-08 I7) ──\n")
+## 막는 결함: 벤치를 '가장 긴 bm_xts' 모듈에서 가져와 그 모듈의 날짜 라벨(실측 STR_943 = 정본 대비 +1일)을 들였고,
+##   레거시 QEPM 7개가 하루 밀린 채 풀에 섞여도 GRID_LAG 는 기록만 했다.
+REG_FILE <- file.path(PW, "06_Registry/factor_rotation_registry.json")
+## E1 양성 대조(정렬 픽스처 = A 실행): 벤치 원천 = 정본 · 등급 판 벤치 = 정본 BM_Ret 을 **같은 날짜**에 놓은 값(손 유도 · 결측일 0)
+if (!is.null(A$j) && !is.null(A$bt)) {
+  br <- as.data.table(A$bt$benchmark_returns)[, .(date = as.Date(date), b = as.numeric(benchmark_ret))]
+  exp_b <- ifelse(br$date %in% BMD, BMR[match(br$date, WD)], 0)
+  ok(identical(A$j$eval_window$bench_source, "canonical:.cache/benchmark.parquet") && isTRUE(A$j$grid_audit$enforced) &&
+       nrow(br) > 500L && isTRUE(max(abs(br$b - exp_b)) < 1e-12),
+     sprintf("E1 벤치 = 정본 BM_Ret 같은 날짜(손 유도 %d일 · 최대 차 %.2g) · grid_audit.enforced", nrow(br), max(abs(br$b - exp_b))))
+} else ok(FALSE, "E1 A 실행 산출 부재")
+## 레거시 지문 주입: 라벨을 하루 당긴다(라벨 d 에 d+1 의 수익·벤치 = 정본 대비 시차 +1)
+shift_mod <- function(sid, L = -1L) { f <- file.path(PW, "04_Research/strategies", sid, "sim_result.rds"); z <- readRDS(f)
+  z$DAILY_NAV_DT <- as.data.table(z$DAILY_NAV_DT)[, Date := Date + L]
+  z$bm_xts <- xts(as.numeric(z$bm_xts[, 1]), order.by = as.Date(index(z$bm_xts)) + L); saveRDS(z, f) }
+write_mods_bm(); shift_mod("W3"); clean_out()
+E2 <- wf_run(WN, "FRV4G")
+ok(E2$r$status != 0L && any(grepl("[FR bench ★격자]", E2$r$out, fixed = TRUE)) && any(grepl("W3(+1일)", E2$r$out, fixed = TRUE)) &&
+     !file.exists(REG_FILE) && is.null(E2$j),
+   sprintf("E2 ★위반 주입: +1일 밀린 모듈(W3) → 중단(fail-closed) · 모듈·시차 명시 · 산출·등재 없음 (status %d)", E2$r$status))
+write_mods_bm(); local({ f <- file.path(PW, "04_Research/strategies/W2/sim_result.rds"); z <- readRDS(f); z$bm_xts <- NULL; saveRDS(z, f) }); clean_out()
+E3 <- wf_run(WN, "FRV4G0")
+ok(E3$r$status != 0L && any(grepl("W2(NA)", E3$r$out, fixed = TRUE)),
+   sprintf("E3 bm_xts 없는 모듈(시차 판독 불가 = NA) → 중단 — 확인 못 한 정렬은 정렬이 아니다 (status %d)", E3$r$status))
+write_mods_bm(); shift_mod("W3"); clean_out()
+E4 <- wf_run(WN, "FRV4GB", c(FR_V4_ABLATE = "canonical_bench"))
+ok(E4$r$status == 0L && grepl("v4ablate-B", E4$id %||% "") && "W3" %in% unlist(E4$j$grid_audit$misaligned_used) &&
+     identical(E4$j$grid_audit$enforced, FALSE) && !file.exists(REG_FILE),
+   sprintf("E4 분해 대조(canonical_bench 끔) = 구판 재현: 완주 · 어긋난 W3 기록만 · _v4ablate-B · 등재 없음 (status %d)", E4$r$status))
+write_mods_bm(); clean_out()
+E5 <- wf_run(WN, "FRV4AB", c(FR_V4_ABLATE = "canonical_bench"))
+ok(E5$r$status == 0L && !is.null(A$j) && identical(E5$j$grade, A$j$grade) &&
+     isTRUE(all.equal(E5$j$essence$portfolio_alpha_t_nw_lag3, A$j$essence$portfolio_alpha_t_nw_lag3)) &&
+     isTRUE(all.equal(E5$j$essence$calmar, A$j$essence$calmar)),
+   "E5 양성 대조: 정렬 픽스처(W1 bm_xts = 정본 값)에선 구판 벤치와 등급·PORT_t·Calmar 동일 — 수리는 어긋남이 있을 때만 결과를 바꾼다")
+fm <- mutate_file(WN, "  if (length(.gl_bad))\n", "  if (FALSE)\n", "nogridstop")
+if (is.na(fm)) ok(FALSE, "E6 돌연변이 대상 줄 부재") else {
+  write_mods_bm(); shift_mod("W3"); clean_out()
+  wm <- wf_run(fm, "FRMgrid")
+  ok(wm$r$status == 0L && !is.null(wm$j), sprintf("E6 ★돌연변이 red(격자 중단 줄 삭제): 밀린 W3 를 섞은 채 완주 — 중단은 그 줄이 낸다 (status %d)", wm$r$status))
+}
+fm <- mutate_file(WN, "if (isTRUE(FIX$canonical_bench) && isTRUE(FIX$daily_grade) && n_moved > 0L)", "if (FALSE)", "nobenchgrid")
+if (is.na(fm)) ok(FALSE, "E7 돌연변이 대상 줄 부재") else {
+  ## 정본 벤치에 비거래일(토요일) 관측 1개를 끼운다 — 한국 거래일 격자에 제 날짜로 못 놓인다(격자 불일치)
+  SAT1 <- as.Date("2017-06-10")
+  write_parquet(data.table(Date = sort(c(BMD, SAT1)), BM_Ret = c(BMR[match(BMD, WD)], 0.0123)[order(c(BMD, SAT1))]), file.path(PW, ".cache/benchmark.parquet"))
+  write_mods_bm(); clean_out()
+  E7 <- wf_run(WN, "FRV4S")
+  wm7 <- wf_run(fm, "FRMbgrid")
+  ok(E7$r$status != 0L && any(grepl("제 날짜로 놓이지 않는다", E7$r$out, fixed = TRUE)) && wm7$r$status == 0L,
+     sprintf("E7 정본 벤치 관측이 한국 거래일 격자 밖(토요일) → 중단 · 돌연변이(검사 삭제) red = 완주 (status %d / %d)", E7$r$status, wm7$r$status))
+  write_parquet(data.table(Date = BMD, BM_Ret = BMR[match(BMD, WD)]), file.path(PW, ".cache/benchmark.parquet"))
 }
 
 cat("\n── D. 운영 무쓰기 ──\n")

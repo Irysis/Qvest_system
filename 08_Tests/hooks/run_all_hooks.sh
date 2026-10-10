@@ -1846,6 +1846,10 @@ SUITES=(
   #   (entry_base_flags · 계보·같은 엔진·같은 내용) · 청정 출처 전파 제외(engine_rel·wdir_prefix) · 칸 표식 = 소비 제외 · 기저 표식 = 소비 유지 ·
   #   carry 누락 표식 보류 · 돌연변이 7종 red · tempdir 만 씀
   "08_Tests/reinforcement/test_rf_a_gate_entry_base_flags.R"
+  # 2026-10-10 2계층 선결 수리(감사 2026-10-08 P3/I3 · 설계 l2_role_rotation_redesign_20261010 §4-1) — build_module_performance 풀 = close_t1 단일:
+  #   remeasure 판 계약 CSV 재조립 소비(등재 sim 병기) · 신판 = 등재 sim · close_d/판독 불가/레거시/무결성 미달/모호/산출물 없음 = 제외+사유 코드 ·
+  #   진단 스위치(dry-run 전용) · 멱등 · 돌연변이 3종 red · 운영 무쓰기  (I7 정본 벤치·격자 HARD 는 test_fr_v4_measurement.R §E)
+  "08_Tests/regime/test_l2_pool_close_t1.R"
 )
 
 

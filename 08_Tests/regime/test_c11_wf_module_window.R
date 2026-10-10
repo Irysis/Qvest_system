@@ -72,7 +72,8 @@ UW <- rbind(data.table(Date = WD, Category = CYC[(seq_along(WD) %% 4L) + 1L], av
             data.table(Date = SAT, Category = "SATX", avail_date = SAT))
 setorder(UW, Date)
 write_parquet(UW, file.path(PW, ".cache/unified_regime_signal_daily.parquet"))
-write_parquet(data.table(Date = WD, BM_Ret = round(rnorm(length(WD), 0.0003, 0.011), 6)), file.path(PW, ".cache/benchmark.parquet"))
+BMF <- round(rnorm(length(WD), 0.0003, 0.011), 6)
+write_parquet(data.table(Date = WD, BM_Ret = BMF), file.path(PW, ".cache/benchmark.parquet"))
 # 모듈: W1 전 평일 · W2 수요일 결측(공백) · W3 월 중 일요일 행 추가(월말 3일 제외 — 월간 배분 결정일은 건드리지 않게) · W4 전 평일
 SUN <- seq(as.Date("2012-01-08"), as.Date("2019-12-29"), by = "7 days")
 SUN <- SUN[as.POSIXlt(SUN)$mday <= 25L]
@@ -81,7 +82,8 @@ mods <- list()
 for (k in seq_along(MD)) {
   sid <- names(MD)[k]; d <- MD[[sid]]; dir.create(file.path(PW, "04_Research/strategies", sid), recursive = TRUE, showWarnings = FALSE)
   r <- round(0.0002 * k + 0.008 * sin(seq_along(d) / (5 + 2 * k)) + rnorm(length(d), 0, 0.004), 6)
-  saveRDS(list(DAILY_NAV_DT = data.table(Date = d, Strategy_Ret = r), bm_xts = xts(rep(0.0003, length(WD)), order.by = WD), freq = "daily"),
+  ## ★v4r2(2026-10-10 · I7): bm_xts = 정본 벤치와 같은 값(시차 0) — 상수 bm_xts 는 격자 감사가 판독 불가(NA)로 중단한다.
+  saveRDS(list(DAILY_NAV_DT = data.table(Date = d, Strategy_Ret = r), bm_xts = xts(BMF, order.by = WD), freq = "daily"),
           file.path(PW, "04_Research/strategies", sid, "sim_result.rds"))
   mods[[sid]] <- list(sim_result_path = file.path("04_Research/strategies", sid, "sim_result.rds"), grade = "B",
                       role = if (k == 4) "defensive" else "core", freq = "daily", admission_route = "grade_floor")

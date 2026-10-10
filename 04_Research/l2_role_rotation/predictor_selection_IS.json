@@ -1,0 +1,368 @@
+{
+  "schema": "l2_mc1_predictor_selection_IS_v1",
+  "written_at": "2026-10-10T21:20:54+0900",
+  "stage": "IS_SELECTION (OOS 미열람)",
+  "design_ref": "04_Research/01_reports/l2_role_rotation_redesign_20261010/README.md §2.2·§3",
+  "rule": {
+    "registered_at": "2026-10-10T20:59:09+0900",
+    "registered_note": "규칙·후보 목록은 IS AUC 를 한 번도 계산하기 전에 이 파일에 고정했다(후보 3개의 PIT 판정은 pit_audit.json).",
+    "is_window": ["2005-01", "2015-12"],
+    "decision_date": "보유월 m 의 첫날 이전 마지막 한국 거래일 t(.cache/benchmark.parquet 달력) — 예측기 값 = Date <= t 인 마지막 값(as-of)",
+    "target_direction": "ps_bear[m] — Pagan & Sossounov(2003) https://doi.org/10.1002/jae.664 · bbdetection run_dating_alg 월간 기본값(t_window 8·t_censor 6·t_phase 4·t_cycle 16·max_chng 20) = 02_Infrastructure/contracts/strategy_role.R::sr_regimes 그대로(06_Registry/strategy_role.json regimes.ps_bear). 사후 연대기 = 평가 표적 전용(입력 아님)",
+    "target_variance": "RV[m] = 월 m 일간 로그수익 표준편차 > IS 월(2005-01~2015-12) 2/3 분위수(type 7) = 상위 3분위",
+    "auc": "Mann-Whitney AUC(동률 0.5). 방향은 사전 고정: 점수가 클수록 약세/고변동 — 부호 뒤집기 없음(C13 정신)",
+    "bootstrap": "원형 이동 블록 부트스트랩 · 블록 12개월 · B=5000 · seed 20261010 · 모든 예측기 같은 인덱스(쌍대 비교) · 백분위 CI",
+    "eligibility": "pit_audit 판정 PIT-clean(또는 lag 적용판) ∧ IS 커버리지 >= 95%",
+    "selection": "주 예측기 = 적격 후보 중 IS 방향 AUC 점추정 최대. OOS 는 보지 않는다.",
+    "mc1_pass": "주 예측기의 Bonferroni 보정(K = 적격 후보 수) 양측 블록 부트스트랩 CI 하한 > 0.5 — 즉 백분위 alpha/(2K), alpha = 0.05. 미달 = MC1 FAIL(설계 §3: T 미측정)",
+    "info_only": "비보정 95% CI · 원형 이동 귀무 p(|이동|>=12개월) · 1위-2위 쌍대 ΔAUC CI · 1거래일 lag 강건성 · 분산 표적 AUC · 순진 참조(후보 아님)"
+  },
+  "pit_audit_ref": "04_Research/l2_role_rotation/pit_audit.json",
+  "ineligible_not_measured": ["MSM_prod_CrisisProb(.cache/msm_daily_latest.parquet)", "regime_forecast_series(v1)", "regime_forecast_series_v1vix", "regime_forecast_series_v2", "regime_forecast_series_v3", "AE ae_regime_signal_ext", "unified_regime_signal(_daily) Category/Regime_Score"],
+  "sample": {
+    "months": ["2005-01", "2015-12"],
+    "n_months": 132,
+    "n_bear": 42,
+    "share_bear": 0.318181818181818,
+    "n_highvol": 44,
+    "rv_tercile_threshold_IS": 0.0120505520704594,
+    "first_decision_date": "2004-12-30",
+    "last_decision_date": "2015-11-30",
+    "K_eligible": 3,
+    "bonferroni_percentiles": [0.00833333333333333, 0.991666666666667]
+  },
+  "results": {
+    "JM_BearProb": {
+      "direction": {
+        "auc": 0.674867724867725,
+        "ci95": [0.486606996965453, 0.839236297782536],
+        "ci_bonf": [0.448386615350059, 0.870265143197456],
+        "boot_na": 0,
+        "p_shift_one_sided": 0.0727272727272727,
+        "shift_null_q95": 0.694973544973545,
+        "coverage": 1
+      },
+      "variance": {
+        "auc": 0.756198347107438,
+        "ci95": [0.551956407563025, 0.873713605906465],
+        "ci_bonf": [0.498521064322476, 0.890657415153861],
+        "boot_na": 0,
+        "p_shift_one_sided": 0.00909090909090909,
+        "shift_null_q95": 0.591477272727273,
+        "coverage": 1
+      },
+      "direction_lag1_auc": 0.678571428571429,
+      "variance_lag1_auc": 0.739669421487603,
+      "pit_checks": {
+        "n_na": 0,
+        "src_le_t": true,
+        "src_eq_t": 1,
+        "fit_date_lt_t": true
+      },
+      "spec": {
+        "file": ".cache/regime_jump_daily.parquet",
+        "col": "Bear_Prob",
+        "model": "Statistical Jump Model (Shu-Yu-Mulvey 2024 arXiv 2402.05272 · Nystrup-Kolm-Lindström 2021) jm_causal:v1 운영 캐시",
+        "provenance": "existing_cache",
+        "pit": "PIT-clean"
+      },
+      "diag_JM_State_direction_auc": 0.631746031746032,
+      "diag_JM_State_variance_auc": 0.721590909090909
+    },
+    "MSM_asof_CrisisProb": {
+      "direction": {
+        "auc": 0.499470899470899,
+        "ci95": [0.229474178862366, 0.761967286914765],
+        "ci_bonf": [0.18293464429113, 0.808570745851637],
+        "boot_na": 0,
+        "p_shift_one_sided": 0.572727272727273,
+        "shift_null_q95": 0.660899470899471,
+        "coverage": 1
+      },
+      "variance": {
+        "auc": 0.839617768595041,
+        "ci95": [0.718493691921139, 0.916931466616422],
+        "ci_bonf": [0.685410356575945, 0.930708754127449],
+        "boot_na": 0,
+        "p_shift_one_sided": 0.00909090909090909,
+        "shift_null_q95": 0.597004132231405,
+        "coverage": 1
+      },
+      "direction_lag1_auc": 0.505291005291005,
+      "variance_lag1_auc": 0.84375,
+      "pit_checks": {
+        "n_na": 0,
+        "src_le_t": true,
+        "src_eq_t": 1,
+        "fit_date_le_t": true
+      },
+      "spec": {
+        "file": "04_Research/l2_role_rotation/work/msm_asof_daily.parquet",
+        "col": "Crisis_Prob_asof",
+        "model": "Calvet-Fisher MSM k=10 (msm_update.R 커널) · 모수 = 매년 말 as-of MLE (운영 캐시의 전기간 모수 C1 수리판 · 드라이버 산출)",
+        "provenance": "driver_repair",
+        "pit": "PIT-clean"
+      }
+    },
+    "HMM2_asof_StressProb": {
+      "direction": {
+        "auc": 0.491798941798942,
+        "ci95": [0.271389090565811, 0.713418279106271],
+        "ci_bonf": [0.228317315214843, 0.756340535463897],
+        "boot_na": 0,
+        "p_shift_one_sided": 0.581818181818182,
+        "shift_null_q95": 0.633015873015873,
+        "coverage": 1
+      },
+      "variance": {
+        "auc": 0.814566115702479,
+        "ci95": [0.701933070366611, 0.890166895104199],
+        "ci_bonf": [0.66665943287037, 0.905920845662007],
+        "boot_na": 0,
+        "p_shift_one_sided": 0.00909090909090909,
+        "shift_null_q95": 0.582696280991736,
+        "coverage": 1
+      },
+      "direction_lag1_auc": 0.511111111111111,
+      "variance_lag1_auc": 0.815857438016529,
+      "pit_checks": {
+        "n_na": 0,
+        "src_le_t": true,
+        "src_eq_t": 1,
+        "fit_date_le_t": true
+      },
+      "spec": {
+        "file": "04_Research/l2_role_rotation/work/hmm2_asof_daily.parquet",
+        "col": "Stress_Prob_asof",
+        "model": "2-state Gaussian HMM (Hamilton 1989 · msm_daily_refit.R 추정기·30행 refit) · 필터 확률 as-of (폴백의 평활·덮어쓰기 C1 수리판 · 드라이버 산출)",
+        "provenance": "driver_repair",
+        "pit": "PIT-clean"
+      }
+    },
+    "REF_vol20": {
+      "direction": {
+        "auc": 0.503703703703704,
+        "ci95": [0.248749422071831, 0.755085642688679],
+        "ci_bonf": [0.211649437550073, 0.79887661098381],
+        "boot_na": 0,
+        "p_shift_one_sided": 0.527272727272727,
+        "shift_null_q95": 0.661111111111111,
+        "coverage": 1
+      },
+      "variance": {
+        "auc": 0.820247933884298,
+        "ci95": [0.680611780936158, 0.909440104166667],
+        "ci_bonf": [0.650339325990368, 0.925162868096314],
+        "boot_na": 0,
+        "p_shift_one_sided": 0.00909090909090909,
+        "shift_null_q95": 0.586880165289256,
+        "coverage": 1
+      },
+      "role": "reference_only_not_candidate"
+    },
+    "REF_negret12m": {
+      "direction": {
+        "auc": 0.675132275132275,
+        "ci95": [0.46331587289171, 0.844139252634941],
+        "ci_bonf": [0.410736023296206, 0.878144646314835],
+        "boot_na": 0,
+        "p_shift_one_sided": 0.1,
+        "shift_null_q95": 0.728042328042328,
+        "coverage": 1
+      },
+      "variance": {
+        "auc": 0.471590909090909,
+        "ci95": [0.214784825787628, 0.703242772478717],
+        "ci_bonf": [0.16652130007471, 0.75243356374808],
+        "boot_na": 0,
+        "p_shift_one_sided": 0.663636363636364,
+        "shift_null_q95": 0.630940082644628,
+        "coverage": 1
+      },
+      "role": "reference_only_not_candidate"
+    },
+    "SENS_MSM_asof_raw": {
+      "direction": {
+        "auc": 0.596296296296296,
+        "ci95": [0.349173553719008, 0.822211691059778],
+        "ci_bonf": [0.289088265421029, 0.853486837323621],
+        "boot_na": 0,
+        "p_shift_one_sided": 0.0909090909090909,
+        "shift_null_q95": 0.606984126984127,
+        "coverage": 1
+      },
+      "variance": {
+        "auc": 0.802944214876033,
+        "ci95": [0.642930085882984, 0.9076467595465],
+        "ci_bonf": [0.599315888999803, 0.925265753858235],
+        "boot_na": 0,
+        "p_shift_one_sided": 0.00909090909090909,
+        "shift_null_q95": 0.61301652892562,
+        "coverage": 1
+      },
+      "role": "sensitivity_not_candidate (unguarded MLE)"
+    }
+  },
+  "spearman_IS": [
+    {
+      "var": "JM_BearProb",
+      "JM_BearProb": 1,
+      "MSM_asof_CrisisProb": 0.658,
+      "HMM2_asof_StressProb": 0.566,
+      "REF_vol20": 0.696,
+      "REF_negret12m": 0.336,
+      "SENS_MSM_asof_raw": 0.54,
+      "_row": "JM_BearProb"
+    },
+    {
+      "var": "MSM_asof_CrisisProb",
+      "JM_BearProb": 0.658,
+      "MSM_asof_CrisisProb": 1,
+      "HMM2_asof_StressProb": 0.918,
+      "REF_vol20": 0.952,
+      "REF_negret12m": -0.041,
+      "SENS_MSM_asof_raw": 0.812,
+      "_row": "MSM_asof_CrisisProb"
+    },
+    {
+      "var": "HMM2_asof_StressProb",
+      "JM_BearProb": 0.566,
+      "MSM_asof_CrisisProb": 0.918,
+      "HMM2_asof_StressProb": 1,
+      "REF_vol20": 0.835,
+      "REF_negret12m": -0.036,
+      "SENS_MSM_asof_raw": 0.781,
+      "_row": "HMM2_asof_StressProb"
+    },
+    {
+      "var": "REF_vol20",
+      "JM_BearProb": 0.696,
+      "MSM_asof_CrisisProb": 0.952,
+      "HMM2_asof_StressProb": 0.835,
+      "REF_vol20": 1,
+      "REF_negret12m": 0.013,
+      "SENS_MSM_asof_raw": 0.77,
+      "_row": "REF_vol20"
+    },
+    {
+      "var": "REF_negret12m",
+      "JM_BearProb": 0.336,
+      "MSM_asof_CrisisProb": -0.041,
+      "HMM2_asof_StressProb": -0.036,
+      "REF_vol20": 0.013,
+      "REF_negret12m": 1,
+      "SENS_MSM_asof_raw": -0.115,
+      "_row": "REF_negret12m"
+    },
+    {
+      "var": "SENS_MSM_asof_raw",
+      "JM_BearProb": 0.54,
+      "MSM_asof_CrisisProb": 0.812,
+      "HMM2_asof_StressProb": 0.781,
+      "REF_vol20": 0.77,
+      "REF_negret12m": -0.115,
+      "SENS_MSM_asof_raw": 1,
+      "_row": "SENS_MSM_asof_raw"
+    }
+  ],
+  "pit_audit_md5": "48f11f296188998f1cd3799a489d93ce",
+  "selection": {
+    "eligible": ["JM_BearProb", "MSM_asof_CrisisProb", "HMM2_asof_StressProb"],
+    "primary": "JM_BearProb",
+    "primary_auc_direction": 0.674867724867725,
+    "primary_ci_bonf": [0.448386615350059, 0.870265143197456],
+    "primary_ci95": [0.486606996965453, 0.839236297782536],
+    "mc1_pass": false,
+    "mc1_verdict": "FAIL — 설계 §3: T 미측정",
+    "paired_vs_others": [
+      {
+        "vs": "MSM_asof_CrisisProb",
+        "delta_auc": 0.175396825396825,
+        "ci95": [0.0217706821480407, 0.333893527786808],
+        "share_boot_primary_better": 0.9884
+      },
+      {
+        "vs": "HMM2_asof_StressProb",
+        "delta_auc": 0.183068783068783,
+        "ci95": [0.0401931913116124, 0.316148539187755],
+        "share_boot_primary_better": 0.9938
+      }
+    ],
+    "rule_applied": "주 예측기 = 적격 후보 중 IS 방향 AUC 점추정 최대. OOS 는 보지 않는다."
+  },
+  "inputs": {
+    "benchmark": {
+      "path": ".cache/benchmark.parquet",
+      "exists": true,
+      "mtime": "2026-10-09T17:17:25+0900",
+      "size": 189667,
+      "md5": "48315e297c2af31adf9f8ed4cb8773cf"
+    },
+    "jm": {
+      "path": ".cache/regime_jump_daily.parquet",
+      "exists": true,
+      "mtime": "2026-10-10T11:19:21+0900",
+      "size": 350873,
+      "md5": "652ce2e7ee5bb2a04a41792b47a4e280"
+    },
+    "msm_asof": {
+      "path": "04_Research/l2_role_rotation/work/msm_asof_daily.parquet",
+      "exists": true,
+      "mtime": "2026-10-10T21:13:19+0900",
+      "size": 198685,
+      "md5": "ec1e5b5ae600edcc41e3a494ad928e36"
+    },
+    "hmm2_asof": {
+      "path": "04_Research/l2_role_rotation/work/hmm2_asof_daily.parquet",
+      "exists": true,
+      "mtime": "2026-10-10T21:19:24+0900",
+      "size": 285789,
+      "md5": "03b86b7041a0d23cc79e714e503e75d3"
+    },
+    "code": [
+      {
+        "path": "04_Research/l2_role_rotation/mc1_is_selection.R",
+        "exists": true,
+        "mtime": "2026-10-10T21:06:58+0900",
+        "size": 13480,
+        "md5": "fa3b42052ae7eaafbbc0e08052627376"
+      },
+      {
+        "path": "04_Research/l2_role_rotation/lib_mc1.R",
+        "exists": true,
+        "mtime": "2026-10-10T20:51:19+0900",
+        "size": 7180,
+        "md5": "51404fd2a0a6f39de8f507ffb008f932"
+      },
+      {
+        "path": "04_Research/l2_role_rotation/build_msm_asof.R",
+        "exists": true,
+        "mtime": "2026-10-10T21:06:31+0900",
+        "size": 14592,
+        "md5": "c7414e35228997bf8463ce4f488e5bb8"
+      },
+      {
+        "path": "04_Research/l2_role_rotation/build_hmm2_asof.R",
+        "exists": true,
+        "mtime": "2026-10-10T20:54:44+0900",
+        "size": 8111,
+        "md5": "77f11ffb56086af3966e07b42f308bab"
+      },
+      {
+        "path": "04_Research/l2_role_rotation/msm_fast_kernel.cpp",
+        "exists": true,
+        "mtime": "2026-10-10T20:50:40+0900",
+        "size": 3477,
+        "md5": "d9990c88437c397261cd3c1d1ee6c87c"
+      }
+    ],
+    "strategy_role_contract": {
+      "path": "02_Infrastructure/contracts/strategy_role.R",
+      "exists": true,
+      "mtime": "2026-10-06T13:16:02+0900",
+      "size": 10461,
+      "md5": "70e91e642163844c9d50cc359843ec68"
+    }
+  },
+  "elapsed_sec": 2
+}
