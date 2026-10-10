@@ -1,0 +1,147 @@
+{
+  "status": "OK",
+  "strategy_id": "RP_20261010_201608_33628",
+  "strategy_name": "UNIV_cond_mat_0410079_F",
+  "remeasured_at": "2026-10-10T20:19:53+0900",
+  "run_id": "20261010_201608_33628",
+  "bt_result_path": "C:/Users/99922/OneDrive/Quant_Module_Moltbot/04_Research/01_reports/universe_fullmkt_pilot_20261010/runs/RP_AUTO_cond_mat_0410079_F/20261010_201608_33628/bt_result.rds",
+  "metric_type": "backtested",
+  "essence_grade": "C",
+  "grade_basis": "replication_chain",
+  "essence": {
+    "net_sharpe": 0.596,
+    "net_ir": 0.064,
+    "portfolio_alpha_t_nw_lag3": 0.303,
+    "oos_retention": -0.862,
+    "dsr": null,
+    "mdd": 0.587,
+    "calmar": 0.205,
+    "cagr": 0.121,
+    "drawdown_profile": {
+      "severe45_count": 7,
+      "severe55_count": 4,
+      "severe45_total_periods": 74,
+      "severe45_max_periods": 41,
+      "severe45_period_frac": 0.0139,
+      "catastrophic_mdd_threshold": 0.7,
+      "severe45_hard_count": 15,
+      "severe55_hard_count": 6,
+      "severe45_period_hard_frac": 0.25,
+      "severe45_max_hard_periods": 252,
+      "tail_review": true,
+      "structural_hard_fail": false
+    }
+  },
+  "hard_fail": false,
+  "structural_drawdown": false,
+  "selection_type": "chain",
+  "dsr_gate_applied": false,
+  "n_trials_cumulative": 1,
+  "dsr": null,
+  "measurement_regime": {
+    "selection_type": "chain",
+    "n_trials_cumulative": 1,
+    "exec_price": "close_t1",
+    "exec_price_basis": "constraint_defaults.json::execution.exec_price",
+    "exec_price_paper": "close_t1",
+    "cost_model_version": "replication_weight_delta_v1/first_hold_day_multiplicative",
+    "harness_md5": "3e316e9cef23c4b10ea7b088493e2ad4",
+    "data_cutoff": "2026-09-30",
+    "raw_rows_dropped": 12528,
+    "bm_rows_dropped": 5,
+    "raw_max_date_loaded": "2026-10-08",
+    "bm_max_date_loaded": "2026-10-08",
+    "data_fingerprint": {
+      "status": "ok",
+      "scheme": "pin_fp_v2",
+      "digest": "2f8ac7ef1476ef99579804172c435cf7",
+      "raw_md5": "d49738365f2af9d89f1f6731ce6a20c2",
+      "bm_md5": "fb07981a7ff0d20e04dfb57001c82176",
+      "fdb_status": "ok",
+      "fdb_md5": "e4f263a7e6ded519bf1cee3df692c90c",
+      "raw_cols": ["BM_Ret", "Close", "K200", "KQ150", "Open", "Ret", "Sector", "Sector_Lv2", "Size", "Vol", "source"],
+      "bm_cols": ["BM_Close", "BM_Ret"],
+      "why": []
+    }
+  },
+  "grade_base": "C",
+  "recent_regime_rescued": false,
+  "recent_regime_label": null,
+  "rolling_grade": {
+    "status": "ok",
+    "n_points": 225,
+    "window_months": 36,
+    "pass_life": 0.1333,
+    "pass_recent": 0.75,
+    "current": {
+      "ym": "2026-09",
+      "sharpe": 1.124462,
+      "cagr": 0.287351,
+      "mdd": 0.149796,
+      "calmar": 1.918283,
+      "pass": true
+    },
+    "prior_recoveries": 7,
+    "current_run": 9,
+    "span": ["2008-01", "2026-09"]
+  },
+  "defensive_score": {
+    "status": "ok",
+    "defensive": true,
+    "down": {
+      "n": 110,
+      "excess": 0.00875,
+      "hit": 0.554545,
+      "t": 2.267401,
+      "capture": 0.795586
+    },
+    "mid": {
+      "n": 30,
+      "excess": 0.013134,
+      "hit": 0.5,
+      "t": 1.286421,
+      "capture": 0.862607
+    },
+    "deep": {
+      "n": 10,
+      "excess": 0.031196,
+      "hit": 0.5,
+      "t": 1.157233,
+      "capture": 0.793974
+    },
+    "up": {
+      "n": 150,
+      "excess": -0.005195,
+      "hit": 0.493333,
+      "t": -1.182857,
+      "capture": 0.896115
+    },
+    "reason": "하락월 110개: 초과 +0.88%/월 (t 2.27 · 적중 55%) · 벤치-10% 이하 10개: 초과 +3.12%/월 · 상승월 초과 -0.52%/월"
+  },
+  "reasons": "Ensemble: positive alpha이나 B 미달 (블렌드에서만 가치)",
+  "replication": {
+    "source_paper": {
+      "url": "https://arxiv.org/abs/cond-mat/0410079",
+      "paper_key": "cond-mat/0410079"
+    },
+    "commission_paper_bps": 0,
+    "paper_basis": {
+      "cagr": 0.129616,
+      "sharpe": 0.552902,
+      "mdd": 0.583506,
+      "n_months": 260
+    },
+    "grade_basis_note": "등급은 15bps 순비용 판 (essence 문턱 15bps 보정 — gross 등급은 인플레)",
+    "fidelity": "universe 치환(K200∪KQ150)만 — 그 외 논문 그대로 (v10 완전 충실구현)",
+    "benchmark_note": "long_vs_long_bm",
+    "n_max": 25,
+    "has_short": false
+  },
+  "contract": {
+    "integrity_status": "OK",
+    "cagr": 0.121,
+    "sharpe": 0.596,
+    "mdd": 0.587,
+    "calmar": 0.205
+  }
+}

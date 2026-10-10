@@ -1,0 +1,20 @@
+{
+  "run_id": "20261010_200108_33628",
+  "strategy_name": "UNIV_2505_20608_F",
+  "lookahead_prevention": "detect_lookahead(engine) CLEAN [PIT C7 정적 패턴 · 러너 하드 게이트] + 집행 close_t1 — 시그널일 d 확정 비중을 익월 첫 거래일 종가 Close[exec] 에 체결 · 새 보유 수익 (exec, next_exec] · 집행일 수익은 직전 보유(PIT C2 동일봉 체결 없음 · 정본 backtest_harness 와 같은 의미) + 시그널일>RAWDATA 범위 검사",
+  "survivorship_bias_control": "universe=K200_KQ150: 시그널일 당일 RAWDATA 멤버십 플래그(K200|KQ150)로 PIT 시변 필터(.apply_universe) — 사후 생존 조건 없음 · 상장폐지 종목 포함 RAWDATA(폐지 후 수익 행 부재 = 0 처리)",
+  "strategy_idea": "[유니버스 파일럿 arm=F] 논문의 신호식·정렬·비중·리밸을 원문 수치 그대로 옮겼다 — ① 참조가격(원문): 'At each week t, the reference price for each stock is defined as: RP_t = (1/k) Σ(V_{t-n} ∏(1-V_{t-n+τ})) P_{t-n}' (n=1..T, T=260 weeks (5-year lookback), P_t = weekly closing price, V_t = weekly turnover calculated as trading volume divided by shares outstanding, k normalizes weights to sum to one). 엔진은 이걸 정확히 그 260주 절단합으로 계산한다 — 무한창 근사로 대체하지 않았다. 구현은 등가 재귀 N_j ← V_j·P_j + (1−V_j)·N_{j−1} / K_j ← V_j + (1−V_j)·K_{j−1} 를 창의 가장 오래된 주부터 최신 주(=t−1)까지 260번 돌린 것이고, 그러면 P_{t−1−m} 의 가중치가 정확히 V_{t−1−m}(1−V_{t−m})···(1−V_{t−1}) 가 되며 K 가 곧 논문의 정규화 상수 k 다. 누적곱 c=∏(1−V) 를 명시적으로 들고 다니는 비율형 구현은 260주 뒤 c 가 언더플로해 0 으로 죽는데, 이 재귀는 모든 항이 [0,1] 볼록결합이라 그 실패 모드가 없다. ② CGO(원문): 'CGO_t = (P_{t-1} - RP_t) / P_{t-1}' — 분자·분모의 P_{t−1} 과 RP_t 의 최신항이 같은 주라는 성질까지 그대로 유지. ③ 주간→월간(원문): 'converts weekly values to monthly by selecting the last-week CGO within each month'. ④ 위험 대리변수(원문): Beta = 'rolling 5-year regression of the CAPM model'. 5년을 월간 60개월 격자로 읽은 근거는 논문 내부에 있다 — 같은 표의 RETVOL 이 'standard deviation of the previous 5-year monthly returns' 로 정의돼 이 논문의 5-year 가 월간 격자를 뜻함이 확정된다. ⑤ 종속 이중정렬(원문): 'At the beginning of each month, we divide all firms in our sample into five groups based on lagged CGO, and within each of the CGO groups, we further divide firms into five portfolios based on various lagged risk proxies. This results in a total of 25 portfolios.' — 5분위(CGO) × 그 안에서 다시 5분위(Beta), 독립정렬이 아니라 종속정렬. ⑥ 비중·보유(원문): 'held for one month, value-weighted excess returns calculated' — 칸 내부 시총가중 · 월간 리밸 · 1개월 보유. 종목수 상한을 걸지 않았다(논문은 칸에 든 전 종목을 담는다). ⑦ 논문의 자기반증까지 남겼다: 이 논문은 원논문(Wang·Yan·Yu 2017)이 중국에서 복제되지 않았다고 보고한다 — 이중정렬 P5−P1 이 High-CGO 0.027%(t=0.05) · Low-CGO 0.913%(t=1.92), FM 단독 CGO 계수 0.0023(t=0.89) vs 원논문 1.184(t=7.48), 교차항 PROXY×CGO 가 대리변수 전반에서 음(−)으로 원논문의 'always significant and positive' 와 반대다. 이 엔진은 원논문 가설의 방향(β₃>0)으로 북을 세운다. 한국에서 음이 나오면 그건 구현 실패가 아니라 중국 결과의 한국 표본외 확인이다. ★중국에서 유의했던 쪽(Low-CGO 스프레드 0.913%)을 골라 성과를 만드는 선택은 하지 않았다 — 그건 결과를 보고 고르는 것이고, 이 논문이 보고한 결과는 애초에 복제 실패다. ⑧ 지어낸 대리변수 0개: 논문 P → RAWDATA$Close(수정주가 원장이라 5년 전 가격과 직접 비교 가능 — CGO 가 요구하는 바로 그 성질), 논문 V(volume/shares outstanding) → Vol·Close/Size(Size=시총이므로 shares=Size/Close. 이 저장소 정본 회전율과 같은 식 — compute_liquidity.R:38 est_shares:=Size/Close · :63 turnover:=Vol/est_shares), 논문 CAPM 시장수익 → BM_DT$BM_Ret, 논문 value-weighted → RAWDATA$Size.",
+  "constraint_profile": "replication",
+  "construction": "engine_direct",
+  "weight_method": "paper",
+  "rebalance": "monthly",
+  "universe": "K200_KQ150",
+  "liquidity_filter": "paper_faithful",
+  "n_max": 50,
+  "has_short": true,
+  "source_paper_url": "https://arxiv.org/abs/2505.20608",
+  "benchmark_note": "long_short_vs_long_bm",
+  "factor_engine_path": "C:/Users/99922/OneDrive/Quant_Module_Moltbot/04_Research/strategies/RP_AUTO_2505_20608/engine.R",
+  "exec_price": "close_t1",
+  "cost_model_version": "replication_weight_delta_v1/first_hold_day_multiplicative"
+}

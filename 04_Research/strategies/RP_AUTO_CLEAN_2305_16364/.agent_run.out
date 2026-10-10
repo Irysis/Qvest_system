@@ -5,3 +5,119 @@
 **앞 판 실패 지점의 수리** — 중단 원인은 §4.2 의 두 그래프(업종 `G_I` · 유니버스 `G_U`) 입력, 즉 월말 (멤버 종목 + 업종 라벨) 한 장을 만드는 대목이었습니다. data.table 의 `..` 전달 idiom으로 쓰여 호출 스코프 조회에 실패했으므로(`.ucols` 정의 ↔ `..ucols` 조회), 증상만 지우지 않고 그 대목을 **열을 직접 세우는 형태로 다시 썼습니다** — 모형·축·논문 해석은 불변입니다. 같은 부류의 취약 idiom 3곳을 함께 제거했습니다(`w[, ..cmn]` → `with=FALSE` · `.mature()` 의 `<<-` 비지역 대입 → 명시 반환 · `PXW[, -1L]` → 이름 기반).
 
 **함께 막은 침묵 실패 1건** — 가격 패널을 행렬로 펼치기 전 `(Date,Ticker)` 중복을 접었습니다. 중복이 남으면 `dcast` 가 조용히 `fun.aggregate=length` 로 돌아 **가격 대신 관측 개수**를 깔고 표적 수익 전체가 오염된 채 측정이 끝납니다. 이 건과 나머지 방어코드 5종(호출자 RAWDATA 비파괴 · 미성숙 월 대기열 배제 · Sector 부재 fail-closed · 적격월 0 시 진단 후 중단)을 `FIDELITY.json::changed` (27)~(31) 로 신고했고, 표 1 실측 n̄(고정 n 30/50/100 · E2E_auto 103/129/95)로 종목수 신고를 정밀화했습니다. 정적 검출기 트리거 패턴 23종 대조 — 해당 0.
+SessionEnd hook [DIR=${CLAUDE_PROJECT_DIR:-${QM_ROOT:-$PWD}}; bash "$DIR/02_Infrastructure/hooks/auto_commit_on_stop.sh" 2>>/tmp/auto_commit_on_stop.log || true] failed: Hook JSON output validation failed — hookSpecificOutput.hookEventName: expected one of "PreToolUse" | "UserPromptSubmit" | "UserPromptExpansion" | "SessionStart" | "Setup" | "PreModelSwitch" | …
+
+The hook's output was: {
+  "hookSpecificOutput": {
+    "hookEventName": "SessionEnd",
+    "additionalContext": "[OK] [auto-commit] 2e385497c - 32 files committed → branch=main tree=primary:Quant_Module_Moltbot src=CLAUDE_PROJECT_DIR. Push는 milestone/cron으로 자동."
+  }
+}
+
+Expected schema:
+{
+  "continue": "boolean (optional)",
+  "suppressOutput": "boolean (optional)",
+  "stopReason": "string (optional)",
+  "decision": "\"approve\" | \"block\" (optional)",
+  "reason": "string (optional)",
+  "systemMessage": "string (optional)",
+  "terminalSequence": "string (optional)",
+  "hookSpecificOutput": {
+    "for PreToolUse": {
+      "hookEventName": "\"PreToolUse\"",
+      "permissionDecision": "\"allow\" | \"deny\" | \"ask\" | \"defer\" (optional)",
+      "permissionDecisionReason": "string (optional)",
+      "updatedInput": "object (optional) - Modified tool input to use"
+    },
+    "for PermissionRequest": {
+      "hookEventName": "\"PermissionRequest\"",
+      "decision": {
+        "to allow": {
+          "behavior": "\"allow\"",
+          "updatedInput": "object (optional) - Modified tool input to use",
+          "updatedPermissions": "array (optional) - Permission updates"
+        },
+        "to deny": {
+          "behavior": "\"deny\"",
+          "message": "string (optional)",
+          "interrupt": "boolean (optional)"
+        }
+      }
+    },
+    "for UserPromptSubmit": {
+      "hookEventName": "\"UserPromptSubmit\"",
+      "additionalContext": "string (optional)"
+    },
+    "for PostToolUse": {
+      "hookEventName": "\"PostToolUse\"",
+      "additionalContext": "string (optional)"
+    },
+    "for PostToolBatch": {
+      "hookEventName": "\"PostToolBatch\"",
+      "additionalContext": "string (optional)"
+    },
+    "for Stop / SubagentStop": {
+      "hookEventName": "\"Stop\" | \"SubagentStop\"",
+      "additionalContext": "string (optional) - Feedback for the model; the conversation continues so the model can act on it"
+    }
+  }
+}
+SessionEnd hook [DIR=${CLAUDE_PROJECT_DIR:-${QM_ROOT:-$PWD}}; bash "$DIR/02_Infrastructure/hooks/auto_push_on_stop.sh" 2>>/tmp/auto_push_on_stop.log || true] failed: Hook JSON output validation failed — hookSpecificOutput.hookEventName: expected one of "PreToolUse" | "UserPromptSubmit" | "UserPromptExpansion" | "SessionStart" | "Setup" | "PreModelSwitch" | …
+
+The hook's output was: {
+  "hookSpecificOutput": {
+    "hookEventName": "SessionEnd",
+    "additionalContext": "[OK] [auto-push] main @ 2e385497c - 2 commits pushed."
+  }
+}
+
+Expected schema:
+{
+  "continue": "boolean (optional)",
+  "suppressOutput": "boolean (optional)",
+  "stopReason": "string (optional)",
+  "decision": "\"approve\" | \"block\" (optional)",
+  "reason": "string (optional)",
+  "systemMessage": "string (optional)",
+  "terminalSequence": "string (optional)",
+  "hookSpecificOutput": {
+    "for PreToolUse": {
+      "hookEventName": "\"PreToolUse\"",
+      "permissionDecision": "\"allow\" | \"deny\" | \"ask\" | \"defer\" (optional)",
+      "permissionDecisionReason": "string (optional)",
+      "updatedInput": "object (optional) - Modified tool input to use"
+    },
+    "for PermissionRequest": {
+      "hookEventName": "\"PermissionRequest\"",
+      "decision": {
+        "to allow": {
+          "behavior": "\"allow\"",
+          "updatedInput": "object (optional) - Modified tool input to use",
+          "updatedPermissions": "array (optional) - Permission updates"
+        },
+        "to deny": {
+          "behavior": "\"deny\"",
+          "message": "string (optional)",
+          "interrupt": "boolean (optional)"
+        }
+      }
+    },
+    "for UserPromptSubmit": {
+      "hookEventName": "\"UserPromptSubmit\"",
+      "additionalContext": "string (optional)"
+    },
+    "for PostToolUse": {
+      "hookEventName": "\"PostToolUse\"",
+      "additionalContext": "string (optional)"
+    },
+    "for PostToolBatch": {
+      "hookEventName": "\"PostToolBatch\"",
+      "additionalContext": "string (optional)"
+    },
+    "for Stop / SubagentStop": {
+      "hookEventName": "\"Stop\" | \"SubagentStop\"",
+      "additionalContext": "string (optional) - Feedback for the model; the conversation continues so the model can act on it"
+    }
+  }
+}
