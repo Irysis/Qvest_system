@@ -525,14 +525,18 @@ run_r '
 
 # ──────────────────────────────────────────────────────────────────────────────
 # [5] DART 재무제표 + Quarterly + Insider
-#     (a) Annual 재무제표: 매월 1일만 (45일 lag 분기 발표 후)
+#     (a) Annual 재무제표: 월 1회 — 이번 달에 아직 안 돌았으면(스탬프 .cache/dart/.annual_last_run_ym).
+#         ★2026-10-08 수리: 구판은 '매월 1일만'이라 1일 실행을 놓치면 그 달 전체를 건너뛰었다
+#           (10-01 미실행 → dart_raw_financials·fundamental_merged mtime 74일·38일 → 매일 CRITICAL).
 #     (b) Quarterly 재무제표: 매일 (resume=TRUE incremental, 공시되는대로 즉시 반영)
 #     (c) Insider 거래: 매일 (merge wrapper로 history 보존)
 # ──────────────────────────────────────────────────────────────────────────────
 DAY_OF_MONTH=$(date +%d)
 
-# (a) Annual financials — monthly (1st only)
-if [ "$DAY_OF_MONTH" = "01" ]; then
+# (a) Annual financials — monthly (첫 실행일 · 스탬프 기준)
+DART_ANNUAL_STAMP="$BASE/.cache/dart/.annual_last_run_ym"
+_DART_YM=$(date +%Y%m)
+if [ "$(tr -d '\r\n ' < "$DART_ANNUAL_STAMP" 2>/dev/null)" != "$_DART_YM" ]; then
   echo "[5a/7] DART Annual Financials (monthly)..."
   cd "$INFRA"
   run_r '
@@ -548,10 +552,13 @@ if [ "$DAY_OF_MONTH" = "01" ]; then
   # fundamental_merged 월간 full rebuild (2026-07-17 배선 — registry는 monthly/35d SLA인데
   # 어느 스케줄에도 연결돼 있지 않아 매월 STALE_WARN 재발(반복 알림의 한 축)하던 gap 봉합)
   echo "[5a2/7] fundamental_merged monthly rebuild..."
-  "$RSCRIPT" --no-save "$INFRA/data/build_fundamental_derived.R" \
-    || echo "  [warn] build_fundamental_derived failed (fail-soft — 기존 cache 유지)"
+  if "$RSCRIPT" --no-save "$INFRA/data/build_fundamental_derived.R"; then
+    echo "$_DART_YM" > "$DART_ANNUAL_STAMP"   # 성공한 달만 찍는다 — 실패면 다음 날 재시도
+  else
+    echo "  [warn] build_fundamental_derived failed (fail-soft — 기존 cache 유지 · 스탬프 보류 → 내일 재시도)"
+  fi
 else
-  echo "[5a/7] DART Annual + fundamental_merged skipped (monthly 1st only, today=$DAY_OF_MONTH)"
+  echo "[5a/7] DART Annual + fundamental_merged skipped (이번 달 $_DART_YM 이미 실행)"
 fi
 
 # (b) + (c) Quarterly + Insider — daily incremental (도훈 mandate 2026-05-15)
@@ -805,6 +812,14 @@ else
   DR_FAILED+=("ingest_freshness:no_python")
 fi
 cd "$INFRA"
+
+# ── 데이터 갱신 완료 → 잠금 해제 (2026-10-08 도훈 지시 "업데이트 다 되면 그냥 끝내") ──────────────
+#   이 잠금은 재진입 가드(중복 인스턴스의 DART 쿼터 소진·캐시 경합 방지)이자 무인 레인이 읽는 리프레시
+#   대기 신호다. 둘 다 데이터 적재 구간([0]~[6] · [0c] 적재 감사)만 지키면 된다. 구판은
+#   trap EXIT 로 후처리([7]~[9] 텔레그램·배선 지도·역할 재분류·위생 감사)까지 쥐어 충실구현·강화 레인을
+#   1시간 넘게 막았다(2026-10-08 실측 68분+ · 그 사이 tick 전부 halt_refresh_lock).
+rm -rf "$LOCKDIR"; trap - EXIT
+echo "[lock] 데이터 갱신 완료 — 리프레시 잠금 해제(후처리는 잠금 없이 계속)"
 
 echo "[7/7] Telegram + NAV + Memory..."
 cd "$INFRA"
