@@ -1,0 +1,20 @@
+{
+  "run_id": "20261010_193614_33628",
+  "strategy_name": "UNIV_1707_05552_F",
+  "lookahead_prevention": "detect_lookahead(engine) CLEAN [PIT C7 정적 패턴 · 러너 하드 게이트] + 집행 close_t1 — 시그널일 d 확정 비중을 익월 첫 거래일 종가 Close[exec] 에 체결 · 새 보유 수익 (exec, next_exec] · 집행일 수익은 직전 보유(PIT C2 동일봉 체결 없음 · 정본 backtest_harness 와 같은 의미) + 시그널일>RAWDATA 범위 검사",
+  "survivorship_bias_control": "universe=K200_KQ150: 시그널일 당일 RAWDATA 멤버십 플래그(K200|KQ150)로 PIT 시변 필터(.apply_universe) — 사후 생존 조건 없음 · 상장폐지 종목 포함 RAWDATA(폐지 후 수익 행 부재 = 0 처리)",
+  "strategy_idea": "[유니버스 파일럿 arm=F] §2 Methodology(2-source 축자 일치 — 이 세션 PDF 프록시 재질의로 재확인): 'individual stocks are ranked according to their historical performance during the previous J months. The winner refers to the decile group with the highest past average return and the loser is the decile group with the lowest past average return.' → 직전 J개월 월수익의 산술평균으로 오름차순 10분위, 그룹 1 = 패자, 그룹 10 = 승자. 'By longing the loser (winner) and shorting the winner (loser), the CSCON (CSMOM) portfolio is constructed at the beginning of each month during the whole sample period.' → CSCON = 패자 데실 롱 / 승자 데실 숏, 매월 초 구성(우리 시간축: 월말 시그널 → 익월 첫 거래일 집행). 'To avoid the biased results, we follow the common approach to skip one month between estimation period and the holding period [21,33].' → 형성 = 달 m−J .. m−1, 달 m 스킵, 보유 = 달 m+1(이 문장은 §2 본문의 일반 규정 — J=1 에도 적용). 'we follow the more practical method from Ref. [25] to obtain the buy-and-hold return series rather than exactly follow the process from Ref. [21,22] … K-month buy-and-hold return is obtained by longing or shorting the portfolio formed at the month t and then held for K months.' → K=1 이므로 매월 재구성·중첩 없음. §4.1 1차 설계 'we consider six kinds of CSCON portfolios with different estimation periods J belonging to {1,12,24,36,48,60} month(s), while the holding period K is fixed to 1 month' → 이 엔진 = J=1·K=1 칸. 'Statistically significant positive (negative) return for CSCON portfolios indicates significant CSCON (CSMOM) effect.' → 방향 정의(양의 CSCON 수익 = 반전). §3 Data sets 'we retrieve the monthly data from the RESSET database, including the dividend-adjusted and split-adjusted monthly returns for all A-share individual stocks' → 월간 수익 · 월간 격자 · 전 종목(선별 규칙 없음). 거래비용 서술 없음(gross). 논문 보고(Table 2, CSCON 월평균 수익, Newey-West t): 1990~2014 J=1 0.008(1.91) · J=12 0.004(0.80) · J=24 0.009(1.51) · J=36 0.020(2.64)** · J=48 0.013(2.50)* · J=60 0.015(2.46)* / 1997~2014 J=1 0.008(3.04)** · J=12 0.004(0.88) · J=24 0.010(1.98)* · J=36 0.014(2.72)** · J=48 0.016(2.79)** · J=60 0.017(3.04)**. Table 3(1990~2014, K=1) J=1: CAPM α 0.008(1.48) · FF3 α 0.009(1.66) — 둘 다 별표 없음.",
+  "constraint_profile": "replication",
+  "construction": "engine_direct",
+  "weight_method": "ew",
+  "rebalance": "monthly",
+  "universe": "K200_KQ150",
+  "liquidity_filter": "paper_faithful",
+  "n_max": 71,
+  "has_short": true,
+  "source_paper_url": "https://arxiv.org/abs/1707.05552",
+  "benchmark_note": "long_short_vs_long_bm",
+  "factor_engine_path": "C:/Users/99922/OneDrive/Quant_Module_Moltbot/04_Research/strategies/RP_AUTO_1707_05552/engine.R",
+  "exec_price": "close_t1",
+  "cost_model_version": "replication_weight_delta_v1/first_hold_day_multiplicative"
+}

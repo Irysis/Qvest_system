@@ -17,12 +17,6 @@
 #       **최대 지평의 청산일 <= t** 인 월만이다 — 지평별 분기 없이 한 창.
 #     * 전 표본 통계 0. 월 단위 횡단면 연산(표준화·업종평균·softmax)만 쓴다.
 #     * 학습 파라미터는 매 신호일 t 의 학습창에서만 갱신된다(warm start = 과거 파라미터).
-#
-#   ★앞 판 수정(§2 유니버스·업종 그래프 입력): 월말 멤버 + 업종 라벨 한 장을
-#     만드는 대목이 data.table 의 `..` 전달 idiom 으로 쓰여 호출 스코프 조회에
-#     실패했다(엔진 실행 중단). 그 대목이 구현하려던 것은 §4.2 의 두 그래프
-#     (G_I = 같은 업종 · G_U = 그 달 유니버스) 입력이므로, 전달 idiom 없이 열을
-#     직접 세워 만든다 — 모형·축·논문 해석은 앞 판과 동일하다.
 # =============================================================================
 
 suppressWarnings(suppressMessages(library(data.table)))
@@ -98,15 +92,11 @@ if (!exists("load_month_factors", mode = "function")) {
 # =============================================================================
 # 1. 거래일 격자 · 월말 · 유니버스 · 가격 행렬
 # =============================================================================
-# 호출자 객체를 참조로 고쳐 쓰지 않는다 — 형 보정이 필요할 때만 사본을 만든다.
 RD <- RAWDATA
-if (!inherits(RD$Date, "Date")) RD <- copy(RD)[, Date := as.Date(Date)]
+if (!inherits(RD$Date, "Date")) RD[, Date := as.Date(Date)]
 if (!all(c("K200", "KQ150") %in% names(RD)))
   stop("[E2EAI] RAWDATA 에 K200/KQ150 멤버십 열이 없다 — 유니버스 결합 불가")
-# §4.2 의 업종 그래프는 업종 분류가 있어야 성립한다(논문 CITIC 분류 자리).
-# 라벨이 없으면 C_U 블록이 항등 0 이 되어 심층팩터 입력 1/3 이 죽는다 — fail-closed.
-if (!("Sector" %in% names(RD)))
-  stop("[E2EAI] RAWDATA 에 Sector 열이 없다 — 논문 §4.2 업종 그래프 구성 불가(fail-closed)")
+HAS_SEC <- "Sector" %in% names(RD)
 
 ALLD <- sort(unique(RD$Date))
 nD   <- length(ALLD)
@@ -116,7 +106,6 @@ MEI  <- MEI[ALLD[MEI] >= as.Date(START_LOAD_D)]
 if (!length(MEI)) stop("[E2EAI] 월말 거래일 격자 구성 실패")
 
 KMAX  <- max(KH)
-# 가격 조회용 종목 집합(상위집합) — 선택은 날짜별 UNI 가 하므로 선별 효과 없다.
 uni_tk <- unique(RD[K200 == TRUE | KQ150 == TRUE, Ticker])
 if (!length(uni_tk)) stop("[E2EAI] K200/KQ150 멤버 종목 0")
 
@@ -127,28 +116,19 @@ PXD <- ALLD[sort(unique(.pi))]
 MED <- ALLD[MEI]
 
 PX  <- RD[Date %in% PXD & Ticker %in% uni_tk, .(Date, Ticker, Close)]
-if (!nrow(PX)) stop("[E2EAI] 진입·청산일 가격 0행 — 표적 구성 불가")
-# (Date,Ticker) 중복이 남으면 dcast 가 조용히 fun.aggregate=length 로 돌아
-# 가격 대신 개수를 깔아버린다 — 침묵 실패를 막는 선제 축약.
-PX  <- unique(PX, by = c("Date", "Ticker"))
 PXW <- dcast(PX, Ticker ~ Date, value.var = "Close")
-PXM <- as.matrix(PXW[, setdiff(names(PXW), "Ticker"), with = FALSE])
+PXM <- as.matrix(PXW[, -1L, with = FALSE])
 rownames(PXM) <- PXW$Ticker
 rm(PX, PXW)
 
-# §4.2 relational neutralization 의 두 그래프 입력:
-#   G_I = 같은 업종(논문 CITIC 분류 자리 → RAWDATA$Sector)
-#   G_U = 그 달 유니버스 전체(cross-industry)
-# 월말 신호일마다 (멤버 종목, 업종 라벨) 한 장. 유니버스 = K200 합집합 KQ150(치환).
-UNI <- RD[Date %in% MED & (K200 == TRUE | KQ150 == TRUE),
-          .(Date, Ticker, Sector = as.character(Sector))]
-if (!nrow(UNI)) stop("[E2EAI] 월말 유니버스 0행 — 멤버십 열 확인")
+.ucols <- c("Date", "Ticker", if (HAS_SEC) "Sector")
+UNI <- RD[Date %in% MED & (K200 == TRUE | KQ150 == TRUE), ..ucols]
+if (!HAS_SEC) UNI[, Sector := "ALL"]
+UNI[, Sector := as.character(Sector)]
 UNI[is.na(Sector) | !nzchar(Sector), Sector := "UNKNOWN"]
 UNI <- unique(UNI, by = c("Date", "Ticker"))
 setkey(UNI, Date)
 PXC <- colnames(PXM)
-cat(sprintf("[E2EAI] universe rows %d | tickers %d | sectors %d | month-ends %d\n",
-            nrow(UNI), uniqueN(UNI$Ticker), uniqueN(UNI$Sector), length(MEI)))
 
 # =============================================================================
 # 2. 팩터 풀 — 논문 7군(§5) ↔ 인프라 경제계열 7군. 풀 기준일 = 첫 측정 월말.
@@ -240,7 +220,7 @@ cat(sprintf("[E2EAI] factor pool = %d (anchor %s) | %s\n",
   # 결측은 **표준화 뒤에** 0(= 그 달 횡단면 평균)으로 채운다 — 채운 뒤 표준화하면
   # 대체값이 평균이 아니라 -mu/sd 로 밀려 결측 종목에 인공 신호가 생긴다.
   X <- matrix(NA_real_, nrow = n, ncol = M_DIM, dimnames = list(tk, POOL))
-  X[, cmn] <- as.matrix(w[, cmn, with = FALSE])
+  X[, cmn] <- as.matrix(w[, ..cmn])
   X[!is.finite(X)] <- NA_real_
   for (cc in seq_len(M_DIM)) {
     v  <- X[, cc]
@@ -390,7 +370,7 @@ KN <- length(KH)
       }
     }
     ex <- exp(z); ex[!kp] <- 0.0
-    den <- as.numeric(rowsum(cbind(ex), S$mi, reorder = TRUE))
+    den <- as.numeric(rowsum(ex, S$mi, reorder = TRUE))
     Wt[, k] <- ex / pmax(den[S$mi], EPS)
   }
 
@@ -482,34 +462,31 @@ PEND <- list()
 OUTL <- list()
 EMIT_D <- as.Date(EMIT_START_D)
 
-# 청산일이 확정된 달만 대기열에 둔다 — 최대 지평이 데이터 끝을 넘거나 진입·청산일
-# 가격 열이 없으면 그 달은 영구히 성숙할 수 없어 대기열에 쌓아두지 않는다.
-.park <- function(P, mo) {
-  if (is.null(mo) || is.na(mo$exit_d)) return(P)
-  P[[length(P) + 1L]] <- mo
-  P
-}
-# 최대 지평 청산이 t 이하로 끝난 월만 학습창에 넣는다 (지평별 분기 없음).
-# 대기열과 학습창을 둘 다 돌려준다 — 바깥 변수를 비지역 대입으로 고치지 않는다.
-.mature <- function(P, S, adate) {
-  if (!length(P)) return(list(P = P, S = S))
-  kp <- logical(length(P))
-  for (i in seq_along(P)) {
-    if (P[[i]]$exit_d <= adate) S <- .stk_append(S, P[[i]]) else kp[i] <- TRUE
-  }
-  list(P = P[kp], S = S)
-}
-
 for (j in seq_along(MEI)) {
   adate <- ALLD[MEI[j]]
   mo <- tryCatch(.build_month(j), error = function(e) NULL)
-  PEND <- .park(PEND, mo)
-  .mt  <- .mature(PEND, STK, adate)
-  PEND <- .mt$P
-  STK  <- .mt$S
+  if (!is.null(mo)) PEND[[length(PEND) + 1L]] <- mo
 
-  # 적재 전 구간이거나 그 달 패널이 없다 — 산출 없음(하네스가 직전 보유 이월).
-  if (adate < EMIT_D || is.null(mo)) next
+  if (adate < EMIT_D || is.null(mo)) {
+    # 적재 전 구간이거나 그 달 패널이 없다 — 산출 없음(하네스가 직전 보유 이월).
+    if (length(PEND)) {
+      kp <- logical(length(PEND))
+      for (i in seq_along(PEND)) {
+        e <- PEND[[i]]$exit_d
+        if (!is.na(e) && e <= adate) { STK <- .stk_append(STK, PEND[[i]]) } else kp[i] <- TRUE
+      }
+      PEND <- PEND[kp]
+    }
+    next
+  }
+
+  # 최대 지평 청산이 t 이하로 끝난 월만 학습창에 넣는다 (지평별 분기 없음).
+  kp <- logical(length(PEND))
+  for (i in seq_along(PEND)) {
+    e <- PEND[[i]]$exit_d
+    if (!is.na(e) && e <= adate) { STK <- .stk_append(STK, PEND[[i]]) } else kp[i] <- TRUE
+  }
+  PEND <- PEND[kp]
   if (STK$G < MIN_TRAIN_M) next
 
   first <- is.null(PAR)
@@ -536,12 +513,7 @@ PORTFOLIO <- if (length(OUTL)) rbindlist(OUTL, use.names = TRUE) else
              Weight = numeric(0), Leg = character(0))
 PORTFOLIO <- PORTFOLIO[is.finite(Weight) & Weight > 0]
 setorder(PORTFOLIO, Date, -Weight)
-if (!nrow(PORTFOLIO))
-  stop(sprintf(paste0("[E2EAI] 적격 신호월 0 — PORTFOLIO 공백(fail-closed). ",
-                      "학습 적재월 %d(하한 %d) · 팩터 풀 %d · 월말 %d. ",
-                      "팩터 DB 월 파일 as-of 불일치 또는 학습창 하한 미충족을 보라."),
-               STK$G, MIN_TRAIN_M, M_DIM, length(MEI)))
-cat(sprintf("[E2EAI] PORTFOLIO %d rows | %d dates | n/date %.0f~%.0f | %s~%s | train months %d\n",
+cat(sprintf("[E2EAI] PORTFOLIO %d rows | %d dates | n/date %.1f~%.0f | pool %d\n",
             nrow(PORTFOLIO), uniqueN(PORTFOLIO$Date),
-            min(PORTFOLIO[, .N, by = Date]$N), max(PORTFOLIO[, .N, by = Date]$N),
-            format(min(PORTFOLIO$Date)), format(max(PORTFOLIO$Date)), STK$G))
+            if (nrow(PORTFOLIO)) min(PORTFOLIO[, .N, by = Date]$N) else 0,
+            if (nrow(PORTFOLIO)) max(PORTFOLIO[, .N, by = Date]$N) else 0, M_DIM))
