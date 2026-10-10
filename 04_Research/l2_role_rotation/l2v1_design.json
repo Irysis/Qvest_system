@@ -1,0 +1,117 @@
+{
+  "schema": "l2_rolesleeve_design_v1",
+  "prereg_id": "PR-L2-ROLESLEEVE-V1",
+  "written_at": "2026-10-10T23:00:00+0900",
+  "written_by": "Q (2계층 리서치 1단위 #1 후속 — 도훈 2026-10-10 우선순위 1 '방어 역할을 미래로 이어지게 재설계 → MC2 재측정' · 사양 = Q-Lead 지시)",
+  "status": "frozen_before_measurement",
+  "note": "v1 의 유일한 설계 상수 파일. 사전등록 PR-L2-ROLESLEEVE-V1 초안이 sha256 을 고정한다 — 측정 뒤 이 파일을 고치면 사전등록과 어긋난다(개정 = 새 사전등록).",
+  "follows": {
+    "prereg_id": "PR-L2-ROLESLEEVE-V0",
+    "draft": "06_Registry/prereg/drafts/PR-L2-ROLESLEEVE-V0.draft1.json",
+    "draft_sha256": "6f2781942c2187c706d92ee014c2b65c7fe5a700209acde398e11d84cb57c611",
+    "verdict": "04_Research/l2_role_rotation/verdict/h1_verdict_v0.json",
+    "what_failed": "MC2 — as-of 방어 라벨(사후 확정 약세 국면 β-잔차 t)이 창 안 약세월로 이어지지 않았다(β-잔차 −0.25%/월 · NW t −0.59 · 54개월)",
+    "what_changes": "방어 슬리브 정의만 바꾼다(as-of 하방 베타 하위 삼분위). 공격·반등·α 슬리브 · P · w_hi/w_lo · 구성 · 하네스 = v0 그대로"
+  },
+  "window": {
+    "first_holding_month": "2015-10-01",
+    "last_holding_month": "2026-09-01",
+    "data_cutoff": "2026-09-30",
+    "basis": "v0 와 같은 평가 창을 재사용한다(공개 사항 — v0 MC2 실패를 본 뒤의 재정의 · 완화책 = 문헌에서 고른 단일 정의를 1회만 측정)"
+  },
+  "signal_date_rule": "보유월 m(첫날 = decision_date) 의 시그널일 s_m = RAWDATA 거래일 중 m 첫날보다 엄격히 이전인 마지막 날. 집행 = 하네스 get_execution_date(s_m) = m 첫 거래일 종가(close_t1). 모든 입력은 s_m 이하 자료만(v0 와 같음).",
+  "candidates": {
+    "file": "04_Research/l2_role_rotation/work/l2v0_candidates.csv",
+    "rule": "v0 후보 집합 그대로 — module_performance.json 65 close_t1 모듈 ∩ as-of 구성원 81(대응 = 계열 경로)",
+    "expected_n": 65
+  },
+  "roles": ["defensive", "offensive", "rebound", "alpha"],
+  "defensive_v1": {
+    "definition": "결정일 dd(보유월 첫날)의 방어 슬리브 = v0 후보 중 적격 후보의 as-of 하방 베타 β− 하위 삼분위",
+    "estimator": "β− = cov(r_i, r_m | r_m < μ_m) / var(r_m | r_m < μ_m) — Ang, Chen & Xing (2006) eq.(1) · 조건부 표본 적률(표본 cov·var)",
+    "window_days": 252,
+    "window_rule": "정본 벤치 거래일 중 date < dd 인 마지막 252일(= t−1 에서 끝나는 창 · 결정일 당일·이후 자료 미사용)",
+    "min_obs": 252,
+    "eligibility": "창 252일 전부에 유한한 모듈 일간 ret_net 이 있고 β− 가 유한(창 일부라도 비면 그 결정일 부적격)",
+    "down_day_rule": "BM_Ret < 그 창의 BM_Ret 평균(μ_m) — ACX 정의",
+    "returns": "모듈 = 계열 디렉터리 03_period_returns.csv ret_net(일간 · 15bps 순 · 02_Infrastructure/reinforcement/rf_diversification_gate.R::rfd_read_series) · 시장 = .cache/benchmark.parquet BM_Ret(rfd_bench_daily — 정본 KOSPI200 포인트판). 원수익(무위험 미차감 — 창 안 상수 차감은 cov·var·하락일 집합 불변)",
+    "tercile": "적격 n 중 β− 오름차순(동률 = member_id 오름차순 · C 로캘) 상위 ceiling(n/3) 개 = 하위 삼분위(3분위 등분 1군)",
+    "within_sleeve": "동일가중(v0 within_sleeve 규칙 그대로 — 슬리브 안 1/N)",
+    "refs": [
+      {"cite": "Ang, Chen & Xing (2006) Downside Risk. Review of Financial Studies 19(4)", "url": "https://doi.org/10.1093/rfs/hhj035", "use": "β− 정의(eq.1) · 일간 · 12개월 창 · 하락 = 창 평균 미만"}
+    ],
+    "file": "04_Research/l2_role_rotation/work/l2v1_defensive_labels.parquet",
+    "builder": "04_Research/l2_role_rotation/build_l2v1_labels.R",
+    "lib": "04_Research/l2_role_rotation/lib_l2v1.R",
+    "built_after_lock": true
+  },
+  "diagnostics_not_selectable": {
+    "fp_total_beta": {
+      "definition": "β_TS = ρ̂·σ̂_i/σ̂_m — σ̂ = 1년(252일) 일간 로그수익 sd(최소 120) · ρ̂ = 5년(1260일) 겹치는 3일 로그수익 상관(최소 750) · 창 = date < dd",
+      "ref": {"cite": "Frazzini & Pedersen (2014) Betting against beta. Journal of Financial Economics 111(1) §3.1", "url": "https://doi.org/10.1016/j.jfineco.2013.10.005"},
+      "use": "라벨 수준 진단만(β− 와 순위상관 · 하위 삼분위 겹침 · 슬리브 평균 β_TS). 대안 슬리브로 평가 창 성과를 재지 않는다(분기 경로 차단)"
+    },
+    "v0_label": {
+      "definition": "asof_roles.parquet(ps_confirm phase · role defensive) 의 is_member · t(β-잔차 t) at decision_date = dd",
+      "use": "라벨 수준 진단만(v1 슬리브와 겹침 · 순위상관). 선택 입력 아님"
+    }
+  },
+  "labels_other_roles": {
+    "file": "04_Research/l2_role_rotation/asof_roles.parquet",
+    "ps_confirm": "phase",
+    "roles": ["offensive", "rebound", "alpha"],
+    "member_rule": "is_member == TRUE (= grade_asof ∈ A/B) · decision_date == 보유월 첫날 — v0 그대로"
+  },
+  "predictor": {
+    "file": "04_Research/l2_role_rotation/work/msm_asof_daily.parquet",
+    "column": "Crisis_Prob_asof",
+    "rule": "P(m) = Date <= s_m 인 마지막 Crisis_Prob_asof (v0 그대로 · pit_audit.json PIT-clean)",
+    "lag_stress_months": 1,
+    "forbidden": ".cache/msm_daily_latest.parquet (운영 캐시 — 전기간 모수 C1 오염 · 격리)"
+  },
+  "sleeve_weights": {
+    "w_hi": {"defensive": 0.5, "offensive": 0.0, "rebound": 0.0, "alpha": 0.5},
+    "w_lo": {"defensive": 0.0, "offensive": 0.3333333333333333, "rebound": 0.3333333333333333, "alpha": 0.3333333333333333},
+    "root": "v0 그대로 — 1/N(DeMiguel, Garlappi & Uppal 2009 https://doi.org/10.1093/rfs/hhm075) · 고분산 국면 위험 노출 축소(Moreira & Muir 2017 https://doi.org/10.1111/jofi.12513 · Barroso & Santa-Clara 2015 https://doi.org/10.1016/j.jfineco.2014.11.010)",
+    "mix_rule": "w(m) = P·w_hi + (1−P)·w_lo",
+    "empty_sleeve_rule": "구성원 0 인 슬리브 비중 0 → 남은 슬리브 합 1 로 재정규화(v0 그대로 · 엔진 진단 기록)",
+    "within_sleeve": "동일가중 — 여러 슬리브 소속 모듈은 각 몫 합산(v0 그대로)"
+  },
+  "arms": {
+    "T_var": {"role": "treatment", "order": 1, "weights": "P(m)·w_hi + (1−P(m))·w_lo"},
+    "K": {"role": "control", "order": 2, "weights": "Pbar·w_hi + (1−Pbar)·w_lo · Pbar = 창 132개월 P(m) 산술평균(v0 와 같은 P 계열 → 같은 Pbar) — 실시간 불가 대조(C1 성격 · 후보 아님 · 등급 진단 전용)"},
+    "S": {"role": "control", "order": 3, "weights": "P(m−1)·w_hi + (1−P(m−1))·w_lo — 신호 1개월 추가 지연(C5 lag-1 스트레스)"},
+    "EW_all": {"role": "control", "order": 4, "weights": "슬리브 무시 · 시점 m 가용 후보 모듈 전부 동일가중(v0 EW_all 과 같은 정의 — 같은 판본이면 같은 포트폴리오: 재현 대조)"}
+  },
+  "construction": {
+    "module_holdings": "v0 그대로 — 모듈 04_holdings.csv target_weight · 집행일 이하 마지막 스냅샷",
+    "holdings_panel": "04_Research/l2_role_rotation/work/l2v0_module_holdings.parquet",
+    "aggregate": "종목 비중 = Σ_모듈(모듈 비중 × 모듈 종목 비중) 순합산(롱숏 모듈 음수 포함 — v0 사양 문언) · 롱온리 절단은 합산 뒤",
+    "universe": "시그널일 K200∪KQ150 플래그(06_Registry/reinforce_program.json fixed_axes.universe)",
+    "liquidity": "shift(frollmean(Close×Vol, 20), 1) at s_m >= fixed_axes.liq_adv20_min (C10)",
+    "truncate": "합산 비중 내림차순 상위 fixed_axes.n_max(25) · 동률 Ticker 오름차순",
+    "normalize": "Σw=1 · w>=0 · 비중 상한 없음(v10)",
+    "rebalance": "월 1회 · 하네스 15bps × Σ|Δw| · close_t1",
+    "fixed_axes_source": "06_Registry/reinforce_program.json#fixed_axes"
+  },
+  "mc2_v1": {
+    "role": "관문 — 단계 2. FAIL 이면 단계 3(arm 측정)을 하지 않는다",
+    "months": "평가 창 보유월(2015-10~2026-09) 중 슬리브 구성원 월수익 ≥1 인 달(v0 MC2 포함 규칙) ∩ 벤치 월",
+    "monthly_returns": "rf_diversification_gate.R::rfd_monthly(rfd_read_series(03_period_returns.csv), 정본 벤치) — 각 계열 첫·끝 캘린더 월은 부분월로 버림(정본 규칙)",
+    "sleeve_return": "r_s(m) = 결정일 dd=m 첫날 슬리브 구성원 중 m 월수익 유한한 것의 동일가중",
+    "candidate_return": "r_c(m) = 결정일 dd 적격 후보 중 m 월수익 유한한 것의 동일가중(슬리브 ⊂ 적격)",
+    "bear_months": "06_Registry/strategy_role.json regimes.ps_bear — strategy_role.R::sr_regimes(정본 벤치 전기간) 의 사후 PS 연대기 · 평가 표적 전용(선택 입력 아님)",
+    "primary": "mean_bear(r_s − r_c) > 0 ∧ NW lag-3 t ≥ 1.0 — t = backtest_result_contract.R::.nw_t_mean(약세월 d, lag 3)(v0 MC2 와 같은 계약·문턱) · beta_controlled_alpha(r_s, r_c, 12, 3)$port_t 로 교차 확인(항등)",
+    "nw_lag": 3,
+    "t_threshold": 1.0,
+    "secondary_report_only": [
+      "약세월 실현 β 차 = beta_controlled_alpha((r_s − r_c), b, 12, 3)$beta (= β_s − β_c) · t_beta · 각 β_s·β_c",
+      "v0 식 β-잔차 지표(v1 슬리브) = strategy_role.R::sr_card(슬리브 월수익 · 창 전체 β) 방어 평균 · 평범 t · .nw_t_mean NW t(v0 판정식 병기 — 관문 아님)",
+      "비약세월 d 평균·NW t(방어 비용) · 약세/비약세 평균 r_s·r_c·b · 창 전체 β(슬리브·후보 EW)",
+      "슬리브 크기(적격 n · 하위 1군 k) 결정일별"
+    ],
+    "output": "04_Research/l2_role_rotation/verdict_v1/mc2_v1.json (1회 · 덮어쓰기 거부)"
+  },
+  "control_seed": 20261010,
+  "control_seed_note": "누출 음성 대조 교란 난수의 시드 — 기록용(재현성) · 값 자체 근거 없음 · 결과에 영향 없음(대조는 비트 동일 여부만 본다)"
+}

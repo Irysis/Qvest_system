@@ -1004,7 +1004,23 @@ if (!is.null(E$carry) && !identical(.carry_bi$why, "ok"))
 .blk <- if (!is.null(first)) first$block else "B4"   # 재개분은 스펙이 이미 있어 승자를 다시 안 쓴다
 w1 <- if (!identical(.blk, "B1")) .winner_of("B1", "port_t") else NULL
 if (!length(pending) && !identical(.blk, "B1") && is.null(w1)) {
-  jlog("halt_no_b1_winner", block = .blk); return(1L) }
+  ## ★B1 축 원리적 무처치 — 정지 대신 기저 그대로 진행 (2026-10-10 · 2210.12462 · 2305.16364 연속 교착 수리).
+  ##   기저 엔진이 PORTFOLIO(≤ n_max 종)를 내면 rf_cell_engine 5a 가드가 B1(팩터 재순위) 칸을 **결정론적으로** 거부한다
+  ##   ("후보 ≤ n_max — 랭킹이 멤버십을 못 바꾼다 · 무처치"). 그 계보에서 B1 승자는 원리상 존재하지 않는데 이 분기가
+  ##   매 tick 정지해 B2(비중)·B5(오버레이)·B6(집행 주기)·B7(방어 슬리브) — 좁은 기저에서도 처치가 닿는 축 — 까지 영구 봉쇄됐다.
+  ##   B1 시도 **전부**가 그 무처치 사유로 닫혔을 때만 진행한다(w1 = NULL → 아래 factors 분기가 팩터 없이 기저만 쓴다).
+  ##   그 밖의 이유(일시 실패·규약 혼합 제외 P0-12 등)로 승자가 없으면 구판대로 정지한다.
+  .b1_att <- Filter(function(a) startsWith(as.character(a$cell_code %||% ""), "B1_"), E$attempts %||% list())
+  .b1_why <- vapply(.b1_att, function(a) paste(as.character(a$terminal_reason %||% ""), as.character(a$lessons %||% "")), character(1))
+  .b1_inapplicable <- length(.b1_att) > 0L &&
+    all(vapply(.b1_att, function(a) isTRUE(a$terminal), logical(1))) &&
+    all(grepl("무처치|처치 미전달", .b1_why))
+  if (.b1_inapplicable) {
+    jlog("b1_axis_inapplicable_proceed", block = .blk, n_b1 = length(.b1_att),
+         note = "B1 칸 전부 원리적 무처치(기저 후보 ≤ n_max) — B1 축 없이 기저 그대로 다음 블록 진행")
+  } else {
+    jlog("halt_no_b1_winner", block = .blk); return(1L) }
+}
 ## ★B4 결합 입력 = 축 등록부(rf_spec_axes.R)의 소유 블록마다 승자 하나 (결정 B4-SIX-AXIS-AND-CARRY-AXES · 도훈 2026-09-26)
 ##   승자 기준 = 격자 blocks[].select_winner_by(하드코딩 금지 · 구판은 w2 = B2 port_t · w3 = B3 calmar · w5 = B5 calmar 를 여기 박았다 — 값은 격자와 같다).
 ##   구판은 B6·B7 승자를 아예 안 뽑아 B4 가 집행 주기·방어 슬리브 축을 영영 못 봤다. B1 은 위 w1 을 그대로 쓴다(중복 판정·중복 로그 금지).
@@ -1668,7 +1684,7 @@ for (j in jobs) {
     #      이건 실행 실패가 아니라 **판정**이다 — 미결(미측정)로 닫는다.
     #   ② 일시적 — 워커 미기동·시간초과·자원. 재개가 존재하는 이유. 단 무한은 아니다:
     #      같은 칸이 cell_max_retry 회 실패하면 닫는다(무한 루프는 침묵과 같다).
-    .structural <- grepl("측정 무효|처치 미전달", .err)
+    .structural <- grepl("측정 무효|처치 미전달|무처치", .err)   # '무처치' = rf_cell_engine 5a 가드 문구(2026-10-10 — 구판은 일시 실패로 오분류해 같은 칸을 재시도했다)
     .fc0 <- .fail_count_of(j$n)
     .term <- .structural || (.fc0 + 1L) >= MAX_RETRY
     .reason <- if (.structural) sprintf("구조적 미결(결정론) — %s", .err)

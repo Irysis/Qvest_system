@@ -275,8 +275,15 @@ if (!CORE) {
     reg_kinds <- setdiff(unique(vapply(OC, function(a) as.character(a$kind %||% "")[1], character(1))), c("", "pg2_risk_overlay"))
     armf <- file.path(ROOT, "02_Infrastructure/reinforcement/overlay_arms", c(paste0(reg_kinds, ".R"), paste0(reg_kinds, ".arm.json")))
     armf <- armf[file.exists(armf)]
-    fp_cln <- names(CLN)[vapply(CLN, function(x) length(RE$pitq_source_hits(x, ROOT)) > 0L, logical(1))]
-    fp_arm <- basename(armf)[vapply(armf, function(f) length(RE$pitq_source_hits(readLines(f, warn = FALSE, encoding = "UTF-8"), ROOT)) > 0L, logical(1))]
+    # ★범위 = C11 항목만 (2026-10-10): 운영 목록에 PITQ-C1-MSM-20261010 이 생기면서 msm 패널은 **의도적으로** 막힌다.
+    #   L11b(과잉 봉쇄 없음)·L13(수리 정규식 돌연변이)은 C11 항목의 성질을 재는 검사라 C11 단독 사본에서 잰다 —
+    #   운영 목록 전체를 빌리면 다른 격리 항목이 생길 때마다 이 검사가 깨진다(MSM 항목 자체의 대조는 그 항목 쪽 검사).
+    C11R <- file.path(TMP0, "c11_only_root")
+    QC <- fromJSON(file.path(ROOT, "06_Registry/pit_quarantine.json"), simplifyVector = FALSE)
+    QC$quarantines <- Filter(function(x) identical(x$id, "PITQ-C11-20260924"), QC$quarantines)
+    wj(QC, QP(C11R))
+    fp_cln <- names(CLN)[vapply(CLN, function(x) length(RE$pitq_source_hits(x, C11R)) > 0L, logical(1))]
+    fp_arm <- basename(armf)[vapply(armf, function(f) length(RE$pitq_source_hits(readLines(f, warn = FALSE, encoding = "UTF-8"), C11R)) > 0L, logical(1))]
     chk(!length(fp_cln) && !length(fp_arm) && length(armf) >= 2L,
         sprintf("L11b 대조 — 국내 패널(msm·benchmark·rawdata)과 등재 arm %d파일(pg2 제외)은 0 적중(과잉 봉쇄 없음)", length(armf)),
         paste(c(fp_cln, fp_arm), collapse = ","))
@@ -291,7 +298,7 @@ if (!CORE) {
         paste(c(names(e2e)[!e2e], if (!isTRUE(rcl$ok)) paste("clean:", as.character(rcl$reason %||% ""))), collapse = ","))
     # L13 돌연변이(데이터) — 수리 정규식(amend C11-F1)을 뺀 목록 사본이면 L11 이 red 여야 한다(검사가 수리를 실제로 잰다)
     MR <- file.path(TMP0, "mut_list_root")
-    QM0 <- fromJSON(file.path(ROOT, "06_Registry/pit_quarantine.json"), simplifyVector = FALSE)
+    QM0 <- fromJSON(QP(C11R), simplifyVector = FALSE)   # C11 단독 사본(위 L11b 와 같은 범위)
     QM0$quarantines <- lapply(QM0$quarantines, function(x) {
       x$sources <- Filter(function(s) !identical(s$amend, "C11-F1"), x$sources %||% list()); x })
     wj(QM0, QP(MR))

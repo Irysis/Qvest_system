@@ -869,6 +869,111 @@
           "at_2": "2026-09-24T05:35:48+0900"
         }
       ]
+    },
+    {
+      "id": "PITQ-C1-MSM-20261010",
+      "code": "C1",
+      "flag": "pit_c1_msm",
+      "reason": "pit_invalid:C1",
+      "status": "active",
+      "opened_at": "2026-10-10T22:30:00+0900",
+      "opened_by": "Q-Lead session 87293dd7 (도훈 위임 판단 '내게 묻지말고 자체판단으로 진행' · pit.md 위반 시 처리 1·2단계 — 즉시 중단·결과 무효)",
+      "decision_ref": "06_Registry/decision_register.json#PIT-C1-MSM-PARAMS (open · default_until_decided = 봉쇄)",
+      "judgment": "04_Research/l2_role_rotation/pit_audit.json · 04_Research/01_reports/msm_c1_chain_audit_20261010/README.md",
+      "judgment_summary": "운영 MSM 모수 4개 = 1990~2026-01 전기간 MLE(핀 K_Fractal_Master_2026-01-20) → 2026-01-18 이전 Crisis_Prob 전부 C1(as-of 재추정 대비 평균 |Δ| 0.117 · IS 0.5 경계 반전 12%). unified Layer1·Category 단락·Cash_Pct → module_performance·FR/RCMA·m4(BOOK_0001·pg2) 상속. 폴백 msm_daily_refit = 평활(C1×2). C11 과 독립 — C11 해제와 무관하게 유지. 2026-01-18 이후 결정(전진 보유·표시)은 그 시점 모수라 미래참조 아님.",
+      "factors": [],
+      "sources": [
+        {
+          "regex": "\\bmsm_(daily|hybrid)_latest\\b",
+          "violation": "C1",
+          "why": "운영 MSM 캐시"
+        },
+        {
+          "regex": "\\bmsm_update\\b",
+          "violation": "C1",
+          "why": "생산자 04_Research/regime_comparison/msm_update.R"
+        },
+        {
+          "regex": "\\b(msm_daily_refit|compute_hmm_daily_signal)\\b",
+          "violation": "C1×2",
+          "why": "폴백 — 평활 γ·전 이력 덮어쓰기"
+        },
+        {
+          "regex": "MSM_Crisis_Prob",
+          "violation": "C1",
+          "why": "unified·m4 열(_lag 포함)"
+        },
+        {
+          "regex": "(?<![A-Za-z0-9_])Crisis_?Prob(?!_?asof)\\b",
+          "violation": "C1",
+          "why": "msm 캐시 열·C++ CrisisProb (as-of 판 제외)"
+        },
+        {
+          "regex": "\\b(extract_msm_path|load_msm_(signal|daily))\\b",
+          "violation": "C1",
+          "why": "핀 모수로 필터를 직접 돌리거나 regime_signal.R 로더 호출"
+        },
+        {
+          "regex": "K_Fractal_Master|msm_param_pin|MSM_updated_",
+          "violation": "C1",
+          "why": "전기간 모수 파일·핀·RData 산출"
+        },
+        {
+          "regex": "1-1\\.MSM",
+          "violation": "C1",
+          "why": "load_msm_signal RData 폴백 디렉터리(05_Production/1.Regime_Def_Model/1-1.MSM)"
+        },
+        {
+          "regex": "\\bunified_regime_signal",
+          "violation": "C1 (상속)",
+          "why": "C11 해제 후에도 유지 — Layer1·Category 단락"
+        },
+        {
+          "regex": "\\bREGIME_SIGNAL_CACHE\\b|\\bregime_signal\\.R\\b|\\bbuild_regime_signal_table|\\bregime_current\\b",
+          "violation": "C1 (상속)",
+          "why": "unified 무명 접근·생산자·현재값 파일"
+        },
+        {
+          "regex": "module_performance|\\b(module_regime|regime_module)_admission\\b",
+          "violation": "C1 (상속)",
+          "why": "국면별 성과·RCMA"
+        },
+        {
+          "regex": "\\bregime_forecast",
+          "violation": "C1 (상속)",
+          "why": "CrisisP·Category 입력 예측기·산출"
+        },
+        {
+          "regex": "\\bm4_published\\b|\\bm4_panel|WT[-_]D20260430_001|pg2_risk_overlay|M4gAE",
+          "violation": "C1 (상속)",
+          "why": "m4 Cash_Pct_lag·MSM_Crisis_Prob_lag 경유"
+        }
+      ],
+      "overlay_arms": [
+        {
+          "id": "pg2_risk_overlay_v1",
+          "violation": "C1 (m4 arm)",
+          "means": "이미 suspended(C11) — 재개 조건에 MSM as-of 수리 추가"
+        }
+      ],
+      "modules": "PITQ-C11-20260924.modules 와 같은 15개 — contamination 에 C1 사유 병기(fr_eligible 이미 false)",
+      "lanes": [
+        {
+          "lane": "l2_auto",
+          "violation": "C1 (module_performance·unified Category)",
+          "means": "enabled=false 유지 — C11 해제만으로 재개 금지"
+        }
+      ],
+      "not_in_scope": "BOOK_0001(도훈 결정 — PIT-C11-BOOK0001 표기에 C1 병기) · 05_Production STR_1715 2-1~2-4 · RAMP(RAMP_ARMSM_Q_20260619) · 레거시 STR · 표시층(텔레그램·regime_current)",
+      "ledger_marks": {
+        "writer": "02_Infrastructure/reinforcement/reinforce_ledger.R::rf_mark_vintage_batch",
+        "flag": "pit_c1_msm",
+        "status": "pending",
+        "l1": "15칸 = PITQ-C11 ledger_marks.l1.pg2 목록과 같음 — 현재 pit_c11 표식으로 이미 A 자격·rebase 차단",
+        "l2": "FR_003 base · cell 1 (L2_TSC)",
+        "rule": "PITQ-C11 해제 전에 반드시 이 표식을 먼저 붙인다(C11 해제 = C1 경로 재개방 방지)"
+      },
+      "amendments": []
     }
   ]
 }

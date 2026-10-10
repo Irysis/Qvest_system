@@ -1,0 +1,1575 @@
+{
+  "schema": "rf_prereg_v1",
+  "prereg_id": "PR-L2-ROLESLEEVE-V1",
+  "family_id": "FAM-PR-L2-ROLESLEEVE-02",
+  "status": "draft",
+  "draft_rev": 1,
+  "layer": 2,
+  "lever": "L2 역할 슬리브 로테이션 v1 — 방어 슬리브 = as-of 하방 베타(β−) 하위 삼분위 · MC2_v1 관문 → (PASS 시) v0 와 같은 배분 재측정",
+  "title": "2계층 리서치 1단위 #1 후속 — 역할 슬리브 로테이션 v1 (방어 재정의: as-of 하방 베타 · MC2_v1 → 조건부 H1 재측정)",
+  "created_at": "2026-10-10T23:19:48+0900",
+  "created_by": "Q (2계층 리서치 1단위 #1 후속 — 도훈 2026-10-10 우선순위 1 '방어 역할을 미래로 이어지게 재설계 → MC2 재측정' · 사양 = Q-Lead 지시)",
+  "plan_ref": "04_Research/l2_role_rotation/RESULT_v0.md §10-1 · 04_Research/l2_role_rotation/l2v1_design.json",
+  "decision_refs": [
+    "도훈 2026-10-10 — v0 뒤 우선순위 1: 방어 역할을 미래로 이어지게 재설계한 뒤 MC2 재측정",
+    "도훈 2026-10-10 — 내게 묻지말고 자체판단으로 진행(위임 승계)",
+    "Q-Lead 2026-10-10 — v1 사양(ACX β− 하위 삼분위 · MC2_v1 1차 = 원수익 차 · 조건부 단계 3 · 이 사전등록)"
+  ],
+  "prior_prereg": {
+    "prereg_id": "PR-L2-ROLESLEEVE-V0",
+    "draft": "06_Registry/prereg/drafts/PR-L2-ROLESLEEVE-V0.draft1.json",
+    "draft_sha256": "6f2781942c2187c706d92ee014c2b65c7fe5a700209acde398e11d84cb57c611",
+    "verdict": "04_Research/l2_role_rotation/verdict/h1_verdict_v0.json (H1 undetermined t 0.28 · MC2 FAIL −0.25%/월 t −0.59 · MC3 0.117 · 5 arm C)",
+    "relation": "v0 는 등록되지 않은 초안이라 revision_of(등록본 전용)를 쓸 수 없다 — 결과 뒤 개정 규칙(새 prereg_id·새 family)에 맞춰 새 가족으로 쓰고 선행 단위를 여기 적는다"
+  },
+  "framing": "falsification_attempt",
+  "framing_note": "확증이 아니라 반증 시도 — MC2_v1 은 단계 3 진입 관문(기전 전제 조작 확인)이고, 라벨 4종은 H1 의 판정이지 등급이 아니다.",
+  "hypothesis": {
+    "statement": "방어 슬리브를 as-of 하방 베타(β−, 252일 창 t−1 끝) 하위 삼분위로 재정의한 v1 역할 슬리브(공격·반등·α 는 v0 as-of)를 MSM as-of 고분산 확률 P(t−1)로 기울인 T_var(P·{방어½,α½} + (1−P)·{공격⅓,반등⅓,α⅓})의 일간 순수익이, 같은 슬리브를 T_var 의 시간 평균 비중으로 고정한 K 보다 평균적으로 높다: E[r_T_var − r_K] > 0. 단 이 검정(단계 3)은 MC2_v1(방어 v1 슬리브가 평가 창 약세월에 후보 동일가중보다 덜 잃는다)이 통과할 때만 측정한다.",
+    "mechanism": "v0 MC2 는 β 를 통제한 잔차로 방어를 쟀다 — 그러나 저β 슬리브는 β 를 통해(노출 축소로) 방어하고, Calmar 지향 배분이 필요한 것이 바로 그 노출 축소다. Ang, Chen & Xing (2006) 의 β− 는 시장 하락일(창 평균 미만)의 공변동만 잰다. β 는 지속적이다(Frazzini & Pedersen 2014: 사전 추정 β 가 사후 실현 β 를 예측) → 저 β− 모듈은 다음 약세월에도 덜 잃는다(MC2_v1). 그 위에서 Moreira & Muir (2017) 분산 상태 기울기가 고분산 국면에 노출을 줄인다(H1). ★사전 서술: M&M 의 1차 예측은 위험조정(분산 감소)이지 평균 증가가 아니고, 저β 방어는 비약세월에 상승을 덜 받는다 — H1(평균)은 v0 처럼 미결이 최빈이며 Calmar Δ(보조)가 다른 얼굴을 보일 수 있다.",
+    "prediction": "MC2_v1 PASS(약세월 mean(r_s − r_c) > 0 ∧ NW t ≥ 1.0) → h1_mean_delta(T_var−K) NW lag-3 t ≥ 1.96",
+    "alternatives": {
+      "beta_nonpersistence": "β− 가 지속되지 않는다(하락일 ≈ 절반 표본 · 추정 잡음) → 약세월 실현 β 차 ≈ 0 · MC2_v1 FAIL",
+      "alpha_offset": "저 β− 모듈의 약세월 음(−) 잔차가 β 이득을 상쇄 → 실현 β 차 < 0 인데 d ≤ 0 · MC2_v1 FAIL(2차 β 차·v0식 지표로 구분)",
+      "defense_cost": "MC2_v1 PASS 이나 비약세월 방어 비용(저β 의 상승장 열위)으로 H1 평균 Δ ≈ 0 → undetermined(M&M 1차 예측과 정합 — Calmar Δ 보조)",
+      "wrong_sign": "고분산 직후 반등(Daniel & Moskowitz 2016 류)에서 공격·반등 슬리브가 이겨 T_var 가 진다 → failed",
+      "treatment_dilution": "슬리브 중복·상위 25 절단으로 종목 수준 처치 희석 → MC3b 작음 · 효과 희석"
+    }
+  },
+  "differs_from_prior_negatives": {
+    "PR_L2_ROLESLEEVE_V0": "v0 방어 = 사후 확정 약세 국면 β-잔차 t(as-of) → 평가 창 약세월 β-잔차 −0.25%/월(NW t −0.59) MC2 FAIL. v1 방어 = 하방 공변동(β−) 자체 — 잔차가 아니라 노출로 방어한다(측정축도 원수익 차로 바뀐다 · v0식 지표는 병기)",
+    "DIST_FR_004": "FR_003 계열(모듈별 국면 IR · softmax · 사후 대표 풀) 6 arm 전부 C — 이 단위는 v0 처럼 '국면 확률 → 역할 비중' 사상 하나만 쓴다",
+    "FR_series": "메모리 project-fr-series-invalid-rotation-adds-nothing — 배분기 EW 붕괴 → MC3(처치 전달량 ≥0.05)로 사전 판정(v0 실측 0.117)"
+  },
+  "floors": [
+    {
+      "id": "POOL65",
+      "ref": "없음 — 06_Registry/prereg/reference_floors_v2.json 은 1계층 바닥 전용 · L2 바닥 등재 경로 부재(v0 와 같음)",
+      "status": "not_in_floor_registry",
+      "definition": "v0 후보 그대로 — 06_Registry/module_performance.json 65 close_t1 모듈 ∩ as-of 구성원 81(work/l2v0_candidates.csv)",
+      "selection_basis": "full_sample_representatives(잔여 선택 편향 — 81 대표는 전기간 역할 t + 사후 PS 로 뽑혔다 · 공개)",
+      "measurement_regime": {
+        "exec_price": "close_t1"
+      }
+    }
+  ],
+  "arms_frozen": true,
+  "arms": [
+    {
+      "id": "T_var",
+      "order": 1,
+      "role": "treatment",
+      "on_floor": "POOL65",
+      "selection_basis": "as_of",
+      "conditional_on": {
+        "require": "MC2_v1 PASS(verdict_v1/mc2_v1.json) ∧ sanity_v1 all_pass",
+        "resolved": false,
+        "note": "단계 3 arm — MC2_v1 FAIL 이면 측정하지 않는다(사전등록 관문)"
+      },
+      "spec": {
+        "weights": "P(m)·w_hi + (1−P(m))·w_lo",
+        "design": "04_Research/l2_role_rotation/l2v1_design.json#arms",
+        "design_key": "T_var",
+        "defensive": "v1 — as-of 하방 베타 β− 하위 삼분위(l2v1_design.json#defensive_v1)",
+        "construction": "v0 와 같음(모듈 순합산 → K200∪KQ150·LIQ → 상위 25 → Σw=1)",
+        "runner": "run_paper_replication(engine_direct · data_cutoff 2026-09-30 · start_date 2015-09-01 · chain/2 · out_root runs_v1/<arm>)",
+        "P": "MSM as-of Crisis_Prob_asof at s_m(Date <= 시그널일) — v0 와 같은 계열"
+      }
+    },
+    {
+      "id": "K",
+      "order": 2,
+      "role": "control",
+      "on_floor": "POOL65",
+      "selection_basis": "as_of",
+      "conditional_on": {
+        "require": "MC2_v1 PASS(verdict_v1/mc2_v1.json) ∧ sanity_v1 all_pass",
+        "resolved": false,
+        "note": "단계 3 arm — MC2_v1 FAIL 이면 측정하지 않는다(사전등록 관문)"
+      },
+      "spec": {
+        "weights": "Pbar·w_hi + (1−Pbar)·w_lo · Pbar = 창 132개월 P(m) 산술평균(v0 와 같은 P 계열 → 같은 Pbar) — 실시간 불가 대조(C1 성격 · 후보 아님 · 등급 진단 전용)",
+        "design": "04_Research/l2_role_rotation/l2v1_design.json#arms",
+        "design_key": "K",
+        "defensive": "v1 — as-of 하방 베타 β− 하위 삼분위(l2v1_design.json#defensive_v1)",
+        "construction": "v0 와 같음(모듈 순합산 → K200∪KQ150·LIQ → 상위 25 → Σw=1)",
+        "runner": "run_paper_replication(engine_direct · data_cutoff 2026-09-30 · start_date 2015-09-01 · chain/2 · out_root runs_v1/<arm>)",
+        "note": "노출 맞춤 정적 대조 — Pbar = 창 132개월 P 평균(v0 와 같은 값 0.1499). 실시간 불가(C1 성격) → 후보 아님·등급 진단 전용"
+      }
+    },
+    {
+      "id": "S",
+      "order": 3,
+      "role": "control",
+      "on_floor": "POOL65",
+      "selection_basis": "as_of",
+      "conditional_on": {
+        "require": "MC2_v1 PASS(verdict_v1/mc2_v1.json) ∧ sanity_v1 all_pass",
+        "resolved": false,
+        "note": "단계 3 arm — MC2_v1 FAIL 이면 측정하지 않는다(사전등록 관문)"
+      },
+      "spec": {
+        "weights": "P(m−1)·w_hi + (1−P(m−1))·w_lo — 신호 1개월 추가 지연(C5 lag-1 스트레스)",
+        "design": "04_Research/l2_role_rotation/l2v1_design.json#arms",
+        "design_key": "S",
+        "defensive": "v1 — as-of 하방 베타 β− 하위 삼분위(l2v1_design.json#defensive_v1)",
+        "construction": "v0 와 같음(모듈 순합산 → K200∪KQ150·LIQ → 상위 25 → Σw=1)",
+        "runner": "run_paper_replication(engine_direct · data_cutoff 2026-09-30 · start_date 2015-09-01 · chain/2 · out_root runs_v1/<arm>)",
+        "lag": "P(s_{m−1}) — C5 lag-1 스트레스"
+      }
+    },
+    {
+      "id": "EW_all",
+      "order": 4,
+      "role": "control",
+      "on_floor": "POOL65",
+      "selection_basis": "none",
+      "conditional_on": {
+        "require": "MC2_v1 PASS(verdict_v1/mc2_v1.json) ∧ sanity_v1 all_pass",
+        "resolved": false,
+        "note": "단계 3 arm — MC2_v1 FAIL 이면 측정하지 않는다(사전등록 관문)"
+      },
+      "spec": {
+        "weights": "슬리브 무시 · 시점 m 가용 후보 모듈 전부 동일가중(v0 EW_all 과 같은 정의 — 같은 판본이면 같은 포트폴리오: 재현 대조)",
+        "design": "04_Research/l2_role_rotation/l2v1_design.json#arms",
+        "design_key": "EW_all",
+        "defensive": "v1 — as-of 하방 베타 β− 하위 삼분위(l2v1_design.json#defensive_v1)",
+        "construction": "v0 와 같음(모듈 순합산 → K200∪KQ150·LIQ → 상위 25 → Σw=1)",
+        "runner": "run_paper_replication(engine_direct · data_cutoff 2026-09-30 · start_date 2015-09-01 · chain/2 · out_root runs_v1/<arm>)",
+        "note": "슬리브 무시 · 가용 후보 전부 동일가중 — v0 EW_all 과 같은 정의(같은 판본이면 같은 일간 수익 = 재현 대조)"
+      }
+    }
+  ],
+  "deleted_arms": [],
+  "contrasts": [
+    {
+      "id": "T_var-K",
+      "a": "T_var",
+      "b": "K"
+    },
+    {
+      "id": "S-K",
+      "a": "S",
+      "b": "K"
+    },
+    {
+      "id": "T_var-S",
+      "a": "T_var",
+      "b": "S"
+    },
+    {
+      "id": "T_var-EW_all",
+      "a": "T_var",
+      "b": "EW_all"
+    }
+  ],
+  "se_cells": [],
+  "metrics": [
+    {
+      "id": "h1_mean_delta",
+      "tier": "primary",
+      "contract": "beta_controlled_alpha",
+      "direction": "increase",
+      "targets": [
+        "T_var-K"
+      ],
+      "must_report": true,
+      "field": "02_Infrastructure/contracts/beta_controlled_alpha.R::beta_controlled_alpha(r_T_var, r_K, periods_per_year=252, nw_lag=3) — t = port_t = mean(r_T_var − r_K) 의 NW lag-3 t · value = active_ann/252 · se = value/t · r = bt_result period_returns ret_net(15bps 순 · 같은 날 짝) — v0 와 같은 식(lib_l2v1.R::l2v1_contrast · v0 판정 재현 검사 통과)"
+    },
+    {
+      "id": "h1_mean_delta_lag21",
+      "tier": "secondary",
+      "contract": "beta_controlled_alpha",
+      "direction": "report",
+      "targets": [
+        "T_var-K"
+      ],
+      "field": "같은 계약 nw_lag=21(강건성 보고 전용)"
+    },
+    {
+      "id": "lag1_stress_delta",
+      "tier": "secondary",
+      "contract": "beta_controlled_alpha",
+      "direction": "report",
+      "targets": [
+        "S-K",
+        "T_var-S"
+      ],
+      "field": "같은 계약 nw_lag=3 — S 가 T_var 대비 붕괴하면 동월 누출 의심(pit.md C5 lag1 스트레스)"
+    },
+    {
+      "id": "mean_delta_boot",
+      "tier": "secondary",
+      "contract": "rf_prereg_paired_boot",
+      "direction": "increase",
+      "targets": [
+        "T_var-K"
+      ],
+      "field": "rf_prereg.R::rf_prereg_paired_boot(stat='mean') — 설정 B·seed·블록·ci 0.90 · p_gt0"
+    },
+    {
+      "id": "calmar_delta_boot",
+      "tier": "secondary",
+      "contract": "rf_prereg_paired_boot",
+      "direction": "increase",
+      "targets": [
+        "T_var-K"
+      ],
+      "field": "rf_prereg_paired_boot(stat='calmar') — M&M 기전의 위험조정 얼굴(보고 · 판정 무관)"
+    },
+    {
+      "id": "baseline_delta",
+      "tier": "secondary",
+      "contract": "beta_controlled_alpha",
+      "direction": "report",
+      "targets": [
+        "T_var-EW_all"
+      ],
+      "field": "같은 계약 nw_lag=3 — 단순 결합 대비(보고)"
+    },
+    {
+      "id": "essence",
+      "tier": "safety",
+      "contract": "essence_score",
+      "direction": "report",
+      "targets": [
+        "T_var",
+        "K",
+        "S",
+        "EW_all"
+      ],
+      "must_report": true,
+      "field": "각 arm authoritative_remeasure.json essence_grade · essence(PORT_t·net_sharpe·cagr·mdd·calmar·oos_retention) — 대조 arm 은 선택 후보 아님"
+    }
+  ],
+  "decision_params": [
+    {
+      "id": "t_crit_lo",
+      "value": -1.95996398454005,
+      "status": "fixed_by_instruction",
+      "source": "Q-Lead 지시 2026-10-10 'H1 = v0 규칙(t ≤ −1.96 failed)' — qnorm(0.025) · v0 초안과 같은 값. 산출물 출처 없음 → 등록 차단 사유"
+    },
+    {
+      "id": "t_crit_hi",
+      "value": 1.95996398454005,
+      "status": "fixed_by_instruction",
+      "source": "Q-Lead 지시 2026-10-10 'H1 = v0 규칙(t ≥ 1.96 confirmed)' — qnorm(0.975) · v0 초안과 같은 값"
+    }
+  ],
+  "criteria": {
+    "success": [
+      {
+        "metric": "h1_mean_delta",
+        "target": "T_var-K",
+        "stat": "t",
+        "op": ">=",
+        "rhs": {
+          "param": "t_crit_hi"
+        }
+      }
+    ],
+    "failure": [
+      {
+        "metric": "h1_mean_delta",
+        "target": "T_var-K",
+        "stat": "t",
+        "op": "<=",
+        "rhs": {
+          "param": "t_crit_lo"
+        }
+      }
+    ],
+    "text": {
+      "gate_mc2_v1": "단계 2 관문: MC2_v1 FAIL → 단위 종료(arm 미측정 · H1 라벨 없음 · status stopped:mc2_v1_fail) / PASS → 단계 3",
+      "success": "h1_mean_delta(T_var−K) NW lag-3 t ≥ 1.96 (∧ MC3 통과)",
+      "failure": "t ≤ −1.96",
+      "powered_null": "−1.96 < t < 1.96 ∧ (value − ie)/se ≤ −1.96 (ie = 1%/yr)",
+      "undetermined": "그 밖 · 또는 MC3 미달(처치 미전달)",
+      "invalid": "4 arm 판본(data_cutoff·지문·exec_price) 불일치 또는 잠금 전 측정 → 라벨 없음"
+    }
+  },
+  "labels": [
+    "confirmed",
+    "powered_null",
+    "undetermined",
+    "failed"
+  ],
+  "power": {
+    "primary": {
+      "metric": "h1_mean_delta",
+      "target": "T_var-K"
+    },
+    "ci_level": 0.9,
+    "implied_effect": {
+      "value": 3.96825396825397e-05,
+      "annualized": 0.01,
+      "unit": "일평균 (r_T_var − r_K) 순수익",
+      "source": "SESOI(Lakens 2017 https://doi.org/10.1177/1948550617697177) = 연 1%p — v0 와 같은 판단값(측정 결과로 역산 금지 — Hoenig & Heisey 2001)",
+      "formula": "0.01 / 252"
+    },
+    "se": {
+      "value": null,
+      "source": [
+        "block_bootstrap"
+      ],
+      "status": "not_computable_pre_measurement",
+      "note": "T_var−K(v1) 계열은 측정 전 없다 — v0 의 se(1.95%/yr)는 다른 처치의 값이라 이식하지 않는다(등록 차단 사유 · v0 와 같음)"
+    },
+    "computed": null,
+    "calibration": {
+      "kind": "null_t_quantile",
+      "params": {
+        "t_lo": "t_crit_lo",
+        "t_hi": "t_crit_hi"
+      },
+      "note": "명목 정규 임계(지시) — 경험 귀무 교정 미산출(등록 차단 사유 · v0 와 같음)"
+    },
+    "modal_outcome": "undetermined",
+    "leaves_behind": [
+      "as-of 하방 베타 방어 라벨(work/l2v1_defensive_labels.parquet · 누출 음성 3종·양성 2종 대조 동봉) — 2계층 방어 슬리브 재사용 재료",
+      "MC2_v1(β 를 통한 방어의 지속성) 실측 + v0식 β-잔차 병기 — '방어 = 노출' 과 '방어 = 잔차' 의 분리",
+      "(PASS 시) 4 arm 권위 등급 · H1 판정 — v0 와 같은 틀에서 방어 정의만 바꾼 대조"
+    ]
+  },
+  "se_source": {
+    "methods": [
+      "block_bootstrap"
+    ],
+    "combine": "max",
+    "note": "1차 판정 통계는 NW lag-3 t(계약) · 블록 부트스트랩은 보조 CI·p_gt0"
+  },
+  "budget": {
+    "max_cells": 4,
+    "counted": "arm 4(T_var·K·S·EW_all) — MC2_v1 PASS 일 때만 각 1회 · 재측정 금지 · FAIL 이면 0"
+  },
+  "priors": {
+    "mechanism": 0.25,
+    "success": {
+      "lo": 0.05,
+      "hi": 0.12
+    },
+    "grade_a": 0,
+    "mc2_v1_pass": 0.6,
+    "basis": "판단값: MC2_v1 PASS 0.6 — β 지속성(FP 2014)으로 저 β− 슬리브의 약세월 손실이 작을 공산이 크나, β− 는 하락일 절반 표본이라 총 β 보다 잡음이 크고 저β 모듈의 잔차 알파가 음일 수 있다(v0 에서 β-잔차가 음) · H1 성공 0.05~0.12 — v0 t 0.28 · 방어 정의 교체는 T_var−K 의 (P−Pbar)×(방어 v1 − 나머지) 공분산만 바꾼다 · M&M 1차 예측은 분산 · grade_a 0 = mechanism_only"
+  },
+  "hypothesis_index_lookup": {
+    "status": "attached",
+    "tool": "02_Infrastructure/tools/hypothesis_index.R::lookup_hypothesis(auto_rebuild=FALSE)",
+    "run_at": "2026-10-10T23:19:48+0900",
+    "index_sha256": "0ee5a18b7a88d7c14803b1ee06aefabc37ba85901aec109f2afe1460c1daf6d5",
+    "index_mtime": "2026-10-10T21:39:28+0900",
+    "index_stale_sources": [
+      "stage_artifacts/l_code (원본 L-code)"
+    ],
+    "note": "과거 negative 는 사실 기록이지 금지 목록이 아니다(AX-000) — 새 각도면 재시도 정당",
+    "queries": [
+      {
+        "keywords": [
+          "하방"
+        ],
+        "n_hits": 6,
+        "fallback_single_word": false,
+        "hits": [
+          {
+            "strategy_id": "DIST-GEN-211",
+            "verdict": "DISTILLED",
+            "grade": null,
+            "title": "DIST-GEN-211: [미승인 초안] B1(멀티팩터 선정) 블록 요약 62건 전수에서 essence Grade A 는 0건이다. 블록 최고 ",
+            "date": "2026-09-18",
+            "research_mode": ""
+          },
+          {
+            "strategy_id": "DIST-GEN-155",
+            "verdict": "DISTILLED",
+            "grade": null,
+            "title": "DIST-GEN-155: [미승인 초안] B5(리스크 오버레이)·B4(결합) 블록 48건 실측에서 오버레이의 유효 축은 총노출 스칼라가 아니라 ",
+            "date": "2026-09-12",
+            "research_mode": ""
+          },
+          {
+            "strategy_id": "DIST-RAMP-021",
+            "verdict": "DISTILLED",
+            "grade": null,
+            "title": "DIST-RAMP-021: [미승인 초안] market=KR family=low_vol mode=ramp: Shu-Mulvey 계열 아크(FQ-",
+            "date": "2026-08-22",
+            "research_mode": ""
+          },
+          {
+            "strategy_id": "DIST-AR-055",
+            "verdict": "DISTILLED",
+            "grade": null,
+            "title": "DIST-AR-055: [미승인 초안] 국면·오버레이 방법론 16건(alpha_research) 종합: (1) 오버레이 예측기는 방향이 아니라 ",
+            "date": "2026-08-20",
+            "research_mode": ""
+          },
+          {
+            "strategy_id": "RP_20260925_222711_38440",
+            "verdict": "REGISTERED",
+            "grade": "C",
+            "title": "[무인 병렬 B5_19] 하방베타 순위 단층 — B5/risk_overlay · factor2=none · weighting=catalog · ",
+            "date": "2026-09-25",
+            "research_mode": ""
+          },
+          {
+            "strategy_id": "STR_AS_20260613_020407_216431",
+            "verdict": "PASS",
+            "grade": "B",
+            "title": "하방 베타 팩터 — 시장 하락일만의 베타로 방어 종목 선별",
+            "date": "2026-06-13",
+            "research_mode": ""
+          }
+        ]
+      },
+      {
+        "keywords": [
+          "downside"
+        ],
+        "n_hits": 6,
+        "fallback_single_word": false,
+        "hits": [
+          {
+            "strategy_id": "DIST-GEN-284",
+            "verdict": "DISTILLED_NEG",
+            "grade": null,
+            "title": "DIST-GEN-284: [초안] [실증 실패 규칙 초안] family=defense, tags=reinforcement,rule_grid,b7",
+            "date": "2026-09-21",
+            "research_mode": ""
+          },
+          {
+            "strategy_id": "DIST-GEN-298",
+            "verdict": "DISTILLED",
+            "grade": null,
+            "title": "DIST-GEN-298: [초안] [실증 혼재(방향불명) 규칙 초안] family=defense, tags=reinforcement,rule_g",
+            "date": "2026-09-21",
+            "research_mode": ""
+          },
+          {
+            "strategy_id": "DIST-GEN-211",
+            "verdict": "DISTILLED",
+            "grade": null,
+            "title": "DIST-GEN-211: [미승인 초안] B1(멀티팩터 선정) 블록 요약 62건 전수에서 essence Grade A 는 0건이다. 블록 최고 ",
+            "date": "2026-09-18",
+            "research_mode": ""
+          },
+          {
+            "strategy_id": "DIST-AS-008",
+            "verdict": "DISTILLED_COND",
+            "grade": null,
+            "title": "DIST-AS-008: KR alpha-search fast-validation 후보군(momentum 중심 + value/quality/def",
+            "date": "2026-08-20",
+            "research_mode": ""
+          },
+          {
+            "strategy_id": "DIST-GEN-005",
+            "verdict": "DISTILLED",
+            "grade": null,
+            "title": "DIST-GEN-005: [초안] [실증 규칙(성과증거 미분류) 초안] family=defense, tags=O,_,E, supporting=1",
+            "date": "2026-08-03",
+            "research_mode": ""
+          },
+          {
+            "strategy_id": "DIST-JG-007",
+            "verdict": "DISTILLED_NEG",
+            "grade": null,
+            "title": "DIST-JG-007: [초안] [실증 실패 규칙 초안] family=consensus, tags=HARD_FAIL_MDD,HIGH_SATURA",
+            "date": "2026-07-26",
+            "research_mode": ""
+          }
+        ]
+      },
+      {
+        "keywords": [
+          "저베타"
+        ],
+        "n_hits": 6,
+        "fallback_single_word": false,
+        "hits": [
+          {
+            "strategy_id": "DIST-FR-004",
+            "verdict": "DISTILLED_NEG",
+            "grade": null,
+            "title": "DIST-FR-004: [미승인 초안] market=KR family=ml_complexity mode=strategy_rotation: 2계층",
+            "date": "2026-09-23",
+            "research_mode": ""
+          },
+          {
+            "strategy_id": "DIST-GEN-284",
+            "verdict": "DISTILLED_NEG",
+            "grade": null,
+            "title": "DIST-GEN-284: [초안] [실증 실패 규칙 초안] family=defense, tags=reinforcement,rule_grid,b7",
+            "date": "2026-09-21",
+            "research_mode": ""
+          },
+          {
+            "strategy_id": "DIST-GEN-298",
+            "verdict": "DISTILLED",
+            "grade": null,
+            "title": "DIST-GEN-298: [초안] [실증 혼재(방향불명) 규칙 초안] family=defense, tags=reinforcement,rule_g",
+            "date": "2026-09-21",
+            "research_mode": ""
+          },
+          {
+            "strategy_id": "DIST-GEN-211",
+            "verdict": "DISTILLED",
+            "grade": null,
+            "title": "DIST-GEN-211: [미승인 초안] B1(멀티팩터 선정) 블록 요약 62건 전수에서 essence Grade A 는 0건이다. 블록 최고 ",
+            "date": "2026-09-18",
+            "research_mode": ""
+          },
+          {
+            "strategy_id": "DIST-GEN-155",
+            "verdict": "DISTILLED",
+            "grade": null,
+            "title": "DIST-GEN-155: [미승인 초안] B5(리스크 오버레이)·B4(결합) 블록 48건 실측에서 오버레이의 유효 축은 총노출 스칼라가 아니라 ",
+            "date": "2026-09-12",
+            "research_mode": ""
+          },
+          {
+            "strategy_id": "DIST-GEN-018",
+            "verdict": "DISTILLED_NEG",
+            "grade": null,
+            "title": "DIST-GEN-018: [미승인 초안] market=KR family=momentum mode=reinforcement: 2026-08-29 ",
+            "date": "2026-09-04",
+            "research_mode": ""
+          }
+        ]
+      },
+      {
+        "keywords": [
+          "방어"
+        ],
+        "n_hits": 6,
+        "fallback_single_word": false,
+        "hits": [
+          {
+            "strategy_id": "DIST-FR-004",
+            "verdict": "DISTILLED_NEG",
+            "grade": null,
+            "title": "DIST-FR-004: [미승인 초안] market=KR family=ml_complexity mode=strategy_rotation: 2계층",
+            "date": "2026-09-23",
+            "research_mode": ""
+          },
+          {
+            "strategy_id": "DIST-GEN-284",
+            "verdict": "DISTILLED_NEG",
+            "grade": null,
+            "title": "DIST-GEN-284: [초안] [실증 실패 규칙 초안] family=defense, tags=reinforcement,rule_grid,b7",
+            "date": "2026-09-21",
+            "research_mode": ""
+          },
+          {
+            "strategy_id": "DIST-GEN-298",
+            "verdict": "DISTILLED",
+            "grade": null,
+            "title": "DIST-GEN-298: [초안] [실증 혼재(방향불명) 규칙 초안] family=defense, tags=reinforcement,rule_g",
+            "date": "2026-09-21",
+            "research_mode": ""
+          },
+          {
+            "strategy_id": "DIST-GEN-018",
+            "verdict": "DISTILLED_NEG",
+            "grade": null,
+            "title": "DIST-GEN-018: [미승인 초안] market=KR family=momentum mode=reinforcement: 2026-08-29 ",
+            "date": "2026-09-04",
+            "research_mode": ""
+          },
+          {
+            "strategy_id": "DIST-QPM-043",
+            "verdict": "DISTILLED_COND",
+            "grade": null,
+            "title": "DIST-QPM-043: [미승인 초안] 검증 층은 세 조건을 동시에 만족할 때만 방어선이다 — (1) 위반 주입에 대한 검출력 실증, (2) ",
+            "date": "2026-08-22",
+            "research_mode": ""
+          },
+          {
+            "strategy_id": "DIST-AS-008",
+            "verdict": "DISTILLED_COND",
+            "grade": null,
+            "title": "DIST-AS-008: KR alpha-search fast-validation 후보군(momentum 중심 + value/quality/def",
+            "date": "2026-08-20",
+            "research_mode": ""
+          }
+        ]
+      },
+      {
+        "keywords": [
+          "로테이션"
+        ],
+        "n_hits": 6,
+        "fallback_single_word": false,
+        "hits": [
+          {
+            "strategy_id": "DIST-FR-004",
+            "verdict": "DISTILLED_NEG",
+            "grade": null,
+            "title": "DIST-FR-004: [미승인 초안] market=KR family=ml_complexity mode=strategy_rotation: 2계층",
+            "date": "2026-09-23",
+            "research_mode": ""
+          },
+          {
+            "strategy_id": "DIST-QPM-034",
+            "verdict": "DISTILLED",
+            "grade": null,
+            "title": "DIST-QPM-034: [미승인 초안] 낙폭(DD)·국면 브레이크의 파라미터 조정은 MDD 를 조금 낮추고 수익을 더 많이 깎는 교환으로 일관",
+            "date": "2026-07-26",
+            "research_mode": ""
+          },
+          {
+            "strategy_id": "DIST-AR-026",
+            "verdict": "DISTILLED_POS",
+            "grade": null,
+            "title": "DIST-AR-026: [미승인 초안] 밸류 축의 소비면은 알파-레벨이 아니라 배포-레벨이다 — standalone 선별에서는 반복 미달인데 오",
+            "date": "2026-07-18",
+            "research_mode": ""
+          },
+          {
+            "strategy_id": "STR_AS_20260613_030625_223359",
+            "verdict": "FAIL",
+            "grade": "F",
+            "title": "Tail Hedge 로테이션 — 위기 선행 시 Defense→Quality 전환으로 비대칭 수익",
+            "date": "2026-06-13",
+            "research_mode": ""
+          },
+          {
+            "strategy_id": "STR_AS_20260613_031141_223964",
+            "verdict": "MARGINAL",
+            "grade": "C",
+            "title": "한국 신용 사이클 — 회사채 스프레드 변화율로 팩터 로테이션",
+            "date": "2026-06-13",
+            "research_mode": ""
+          },
+          {
+            "strategy_id": "STR_AS_20260613_072556_248031",
+            "verdict": "FAIL",
+            "grade": "F",
+            "title": "섹터-팩터 로테이션 — 섹터별 최적 팩터로 종목 선정",
+            "date": "2026-06-13",
+            "research_mode": ""
+          }
+        ]
+      },
+      {
+        "keywords": [
+          "BAB"
+        ],
+        "n_hits": 6,
+        "fallback_single_word": false,
+        "hits": [
+          {
+            "strategy_id": "DIST-GEN-284",
+            "verdict": "DISTILLED_NEG",
+            "grade": null,
+            "title": "DIST-GEN-284: [초안] [실증 실패 규칙 초안] family=defense, tags=reinforcement,rule_grid,b7",
+            "date": "2026-09-21",
+            "research_mode": ""
+          },
+          {
+            "strategy_id": "DIST-GEN-298",
+            "verdict": "DISTILLED",
+            "grade": null,
+            "title": "DIST-GEN-298: [초안] [실증 혼재(방향불명) 규칙 초안] family=defense, tags=reinforcement,rule_g",
+            "date": "2026-09-21",
+            "research_mode": ""
+          },
+          {
+            "strategy_id": "DIST-GEN-211",
+            "verdict": "DISTILLED",
+            "grade": null,
+            "title": "DIST-GEN-211: [미승인 초안] B1(멀티팩터 선정) 블록 요약 62건 전수에서 essence Grade A 는 0건이다. 블록 최고 ",
+            "date": "2026-09-18",
+            "research_mode": ""
+          },
+          {
+            "strategy_id": "DIST-GEN-155",
+            "verdict": "DISTILLED",
+            "grade": null,
+            "title": "DIST-GEN-155: [미승인 초안] B5(리스크 오버레이)·B4(결합) 블록 48건 실측에서 오버레이의 유효 축은 총노출 스칼라가 아니라 ",
+            "date": "2026-09-12",
+            "research_mode": ""
+          },
+          {
+            "strategy_id": "DIST-GEN-018",
+            "verdict": "DISTILLED_NEG",
+            "grade": null,
+            "title": "DIST-GEN-018: [미승인 초안] market=KR family=momentum mode=reinforcement: 2026-08-29 ",
+            "date": "2026-09-04",
+            "research_mode": ""
+          },
+          {
+            "strategy_id": "DIST-RAMP-014",
+            "verdict": "DISTILLED_COND",
+            "grade": null,
+            "title": "DIST-RAMP-014: 지수-비중 최적화 계열(Black-Litterman / 팩터 모멘텀 배분)을 KR 배포 형태인 top-25 횡단면으로",
+            "date": "2026-08-22",
+            "research_mode": ""
+          }
+        ]
+      }
+    ]
+  },
+  "pit": {
+    "as_of_selection": true,
+    "c_codes": [
+      "C1",
+      "C2",
+      "C5",
+      "C6",
+      "C10",
+      "C11",
+      "C14"
+    ],
+    "statements": [
+      "C1·C14: 방어 v1 소속 = 결정일 dd(보유월 첫날)마다 β− 창 date < dd(끝 = 직전 거래일 = 시그널일 s_m) · 적격·삼분위는 그 결정일 단면만 · 전기간 통계·사후 PS·전기간 역할 등급 미사용. 빌더가 매 실행 누출 음성 대조 3종(dd 이후 잡음·충격·삭제 → 비트 동일) + 양성 대조 2종(1일·21일 누출 창 → β− 변화 = 계기 발화)을 집행 — 실패 시 중단",
+      "C11: 시장 = .cache/benchmark.parquet BM_Ret(정본 KOSPI200 포인트판 · rfd_bench_daily) · 모듈 일간 = 각 계열 03_period_returns.csv ret_net(close_t1 재측정판 — 65 계열 벤치 달력 결손 0 · 잠금 전 날짜만 실측)",
+      "C11·C14: P = msm_asof_daily Crisis_Prob_asof(pit_audit PIT-clean) · Date <= 시그널일. 운영 캐시 .cache/msm_daily_latest(C1 격리) 미사용",
+      "C5: 시그널일 = 보유월 첫날 이전 마지막 거래일 · 집행 = 보유월 첫 거래일 종가(close_t1) · lag-1 스트레스 arm S 병행",
+      "C2: 모듈 보유 = exec_date <= 집행일 마지막 스냅샷 · C6·C10: 시그널일 K200∪KQ150 시변 · 유동성 1일 지연(v0 와 같음)",
+      "평가 표적: MC2_v1 의 약세월 = 사후 PS 연대기(06_Registry/strategy_role.json — '2계층 as-of 소비 금지') — 결정 입력이 아니라 평가 표적으로만 쓴다(v0 MC2 와 같음)",
+      "진단(FP 총 β · v0 라벨)은 선택 입력 아님 — 대안 슬리브로 평가 창 성과를 재지 않는다(분기 경로 차단)",
+      "C1(공개): arm K Pbar = 창 전체 P 평균(실시간 불가 대조) · 후보 65 = 사후 선정 81 대표의 부분집합 · 1계층 C1 표식 상속(L1FLAGS) — v0 와 같음",
+      "Lockbox 폐지(v10) — 가용 전기간 사용 · essence IS/OOS anchored 분할은 측정 규율로 유지"
+    ]
+  },
+  "measurement_regime": {
+    "exec_price": "close_t1",
+    "current_axis": "exec_v2_close_t1",
+    "pin_tag": null,
+    "data_cutoff": "2026-09-30",
+    "cost_model_version": "replication_weight_delta_v1/first_hold_day_multiplicative",
+    "harness_md5": "3e316e9cef23c4b10ea7b088493e2ad4",
+    "benchmark_sha256_at_lock": "4a7ada492143ab0a845a17277809a39dc93f1556fb8e0734e2517779b1589db8",
+    "module_series_digest_at_lock": "9cc7b7bedfd45ef1365dcfcad76d64374ec56c2f5e64f3c45e06ee5db3b1c25c",
+    "vintage_note": "pin_cache 스냅샷 없음(등록 차단 사유) — 러너 data_cutoff 절단 + arm 별 data_fingerprint · 판정이 4 arm 지문 일치를 요구 · 라벨 원천(벤치·65 계열) 지문은 잠금 시점 값을 여기 · 생성 시점 값을 라벨 매니페스트에 싣는다"
+  },
+  "selection_accounting": {
+    "selection_type": "chain",
+    "n_family": 2,
+    "n_source": "v0 T_var(PR-L2-ROLESLEEVE-V0 · 측정됨 · C) → v1 T_var(방어 슬리브 재정의 · 이 사전등록) — 같은 처치 틀의 체인 2회 · 러너 n_trials_cumulative 2(chain = DSR 진단만)",
+    "forking_paths": {
+      "defensive_redefinition": "★v0 MC2 FAIL 을 본 뒤 방어를 재정의했다. 정의는 문헌 1개(ACX 2006 β−)에서 골랐고 창 252일·삼분위·하위 1군·NW t 문턱 1.0 은 Q-Lead 지시로 고정 — 평가 창 결과로 고르지 않았다. 대안(FP 총 β·v0 라벨)은 진단 전용이며 평가 창 성과를 재지 않는다",
+      "eval_window_reuse": "★v1 은 v0 와 같은 평가 창(2015-10~2026-09)을 재사용한다 — 완화 = 단일 사전 정의 · 1회 측정. 남는 위험 = 같은 창 두 번째 시도",
+      "predictor": "v0 그대로 — IS 분산 AUC 최대(MSM_asof 0.840 > HMM2 0.815 > JM 0.756)",
+      "target_switch": "v0 공개 승계 — 방향 표적 IS 실패 뒤 분산 표적 채택(M&M 2017 · Barroso & Santa-Clara 2015)",
+      "oos_seen": "v0 공개 승계 — predictor_oos_diagnostic.json 이 OOS 분산 AUC 를 사전등록 전에 보였다(순위 불변)",
+      "weights": "w_hi·w_lo = 역할 집합 1/N(DeMiguel et al. 2009) — v0 그대로"
+    },
+    "n_note": "DSR 미적용(chain) — 실효 시행 수는 2 보다 크다(v0 분기 경로 승계). 등록 단계 요구(sweep · n_family ≥ 2)와 다르다 → 등록 차단 사유"
+  },
+  "dependencies": [
+    {
+      "id": "L2-FLOOR-REGISTRY",
+      "what": "reference_floors_v2.json 에 L2 바닥(POOL65) 등재 경로",
+      "status": "unavailable",
+      "note": "v0 와 같음 — 2계층 사전등록은 구조적으로 등록 불가(초안 sha256 잠금으로 대체 · 공개)"
+    },
+    {
+      "id": "ENGINE_V1",
+      "what": "allocator_engine_v1.R(PORTFOLIO 계약 · 방어 원천만 v1)",
+      "status": "available",
+      "file": "04_Research/l2_role_rotation/allocator_engine_v1.R",
+      "sha256": "f4a7551a3e4440a3c703157898ddbc457ff92f9c13a09a4bd428483fe80719a2"
+    },
+    {
+      "id": "LABELS_V1",
+      "what": "work/l2v1_defensive_labels.parquet(잠금 뒤 빌더가 생성 · 매니페스트에 sha256)",
+      "status": "build_after_lock",
+      "file": "04_Research/l2_role_rotation/build_l2v1_labels.R",
+      "sha256": "bf0dcddeb94327467d32fd415f5bd33e4a854fbc96ae895c7d7b7c936ed1fe19"
+    },
+    {
+      "id": "V0_INPUTS",
+      "what": "v0 동결 입력(후보 CSV · 보유 패널 · as-of 역할 · MSM)",
+      "status": "available",
+      "file": "04_Research/l2_role_rotation/work/l2v0_candidates.csv",
+      "sha256": "ec7b9d91c9a467635bf7dde5402aa071d18ed81dd6334779c73f4393a4f024ae"
+    }
+  ],
+  "open_questions": [],
+  "scope": {
+    "label": "mechanism_only",
+    "a_eligible": false,
+    "decision_ref": "L2V0-SCOPE 승계 (Q 위임 판단 2026-10-10)",
+    "statement": "후보 집합(65)이 전기간 통계로 뽑힌 대표의 부분집합이고 모듈 다수가 1계층 C1 표식을 상속한다 → 어느 arm 의 essence 가 Grade A 여도 A 후보가 아니다(Judge·BOOK 경로 없음 · 러너 judge_request 는 *.EXPERIMENT_HOLD.json). 라벨은 H1 기전의 판정일 뿐."
+  },
+  "manipulation_checks": {
+    "MC1": {
+      "rule": "IS 분산 AUC 95% CI 하한 > 0.5",
+      "source": "predictor_selection_IS.json results.MSM_asof_CrisisProb.variance.ci95 (IS 전용 · 기존 산출 · v0 와 같음)",
+      "known_before_registration": true,
+      "value_ci95_lo": 0.718493691921139,
+      "auc": 0.839617768595041,
+      "pass": true
+    },
+    "MC2_v1": {
+      "rule": "평가 창 보유월 중 사후 PS 약세월에서 mean(r_s − r_c) > 0 ∧ NW lag-3 t ≥ 1.0",
+      "definitions": {
+        "months": "평가 창 보유월(2015-10~2026-09) 중 슬리브 구성원 월수익 ≥1 인 달(v0 MC2 포함 규칙) ∩ 벤치 월",
+        "monthly_returns": "rf_diversification_gate.R::rfd_monthly(rfd_read_series(03_period_returns.csv), 정본 벤치) — 각 계열 첫·끝 캘린더 월은 부분월로 버림(정본 규칙)",
+        "sleeve_return": "r_s(m) = 결정일 dd=m 첫날 슬리브 구성원 중 m 월수익 유한한 것의 동일가중",
+        "candidate_return": "r_c(m) = 결정일 dd 적격 후보 중 m 월수익 유한한 것의 동일가중(슬리브 ⊂ 적격)",
+        "bear_months": "06_Registry/strategy_role.json regimes.ps_bear — strategy_role.R::sr_regimes(정본 벤치 전기간) 의 사후 PS 연대기 · 평가 표적 전용(선택 입력 아님)",
+        "primary": "mean_bear(r_s − r_c) > 0 ∧ NW lag-3 t ≥ 1.0 — t = backtest_result_contract.R::.nw_t_mean(약세월 d, lag 3)(v0 MC2 와 같은 계약·문턱) · beta_controlled_alpha(r_s, r_c, 12, 3)$port_t 로 교차 확인(항등)"
+      },
+      "nw_t_threshold": 1,
+      "nw_lag": 3,
+      "threshold_basis": "v0 MC2 와 같은 문턱(비교 가능성 — Q-Lead 지시)",
+      "contract": "backtest_result_contract.R::.nw_t_mean(약세월 d · lag 3) — beta_controlled_alpha.R port_t 로 항등 교차 확인 · β 차 = beta_controlled_alpha(d, b)$beta",
+      "why_raw_difference": "v0 MC2 는 β 를 통제해 '노출로 하는 방어' 를 0 으로 쳤다. 저β 슬리브는 노출로 방어하고 Calmar 배분이 필요한 것이 그 노출 축소다 → 1차 = 원수익 차(β 미통제) · v0식 β-잔차는 2차 병기",
+      "secondary_report_only": [
+        "약세월 실현 β 차 = beta_controlled_alpha((r_s − r_c), b, 12, 3)$beta (= β_s − β_c) · t_beta · 각 β_s·β_c",
+        "v0 식 β-잔차 지표(v1 슬리브) = strategy_role.R::sr_card(슬리브 월수익 · 창 전체 β) 방어 평균 · 평범 t · .nw_t_mean NW t(v0 판정식 병기 — 관문 아님)",
+        "비약세월 d 평균·NW t(방어 비용) · 약세/비약세 평균 r_s·r_c·b · 창 전체 β(슬리브·후보 EW)",
+        "슬리브 크기(적격 n · 하위 1군 k) 결정일별"
+      ],
+      "effect": "관문 — FAIL → 단계 2에서 종료(arm 미측정 · H1 라벨 없음 · status stopped:mc2_v1_fail) / PASS → 단계 3(sanity → arm 4 → H1 1회). H1 라벨 규칙은 바꾸지 않는다",
+      "computed_by": "mc2_l2v1.R(잠금 뒤 1회 · verdict_v1/mc2_v1.json 덮어쓰기 거부)"
+    },
+    "MC3": {
+      "rule": "mean_m ½Σ_r |w_T_var,r(m) − w_K,r| ≥ 0.05 (슬리브 수준 처치 전달량)",
+      "threshold": 0.05,
+      "effect": "미달 → H1 = undetermined(treatment not delivered)",
+      "computed_by": "sanity_l2v1.R(단계 3 측정 전 · 비중만)",
+      "companion": "MC3b = 종목 수준 전달량(보고 전용)"
+    }
+  },
+  "verdict_procedure": {
+    "mc2_script": {
+      "path": "04_Research/l2_role_rotation/mc2_l2v1.R",
+      "sha256": "eff5770db64cf0423915264f98066961407d14b4f979630160d8814e8ba9e1ae"
+    },
+    "script": {
+      "path": "04_Research/l2_role_rotation/verdict_l2v1.R",
+      "sha256": "67bf2b963386c12e15d6fbfa6d9013d90322de07a634b03d51398b530398e194"
+    },
+    "rule_executor": "verdict_l2v1.R — 초안 criteria·decision_params·power.implied_effect·MC3 문턱을 읽어 v0 규칙 그대로 집행(lib_l2v1.R::l2v1_h1_label — v0 라벨·수치 재현 검사 통과)",
+    "rf_prereg_verdict": "미사용 — 등록본 전용. 등록 차단이면 rf_record_decision 기록 없음 · 판정 파일 1회(덮어쓰기 거부)",
+    "vintage_rule": "4 arm 의 data_cutoff·data_fingerprint digest·exec_price 가 모두 같아야 판정(아니면 invalid:vintage_mismatch)",
+    "lock_rule": "arm remeasured_at > 이 초안 색인 written_at · 라벨 매니페스트 lock.draft_sha256 = 이 초안 sha256 · 코드 sha256 = pins",
+    "one_time": true
+  },
+  "run_plan": {
+    "steps": [
+      "1. 이 초안 쓰기(잠금) — 평가 창 계산 0",
+      "2. build_l2v1_labels.R(방어 v1 라벨 · 누출 대조) → mc2_l2v1.R(MC2_v1 1회) → FAIL 이면 여기서 종료",
+      "3. (PASS 시) sanity_l2v1.R(비중·MC3) → run_l2_v1.R(T_var·K·S·EW_all 순차 · 여유 RAM ≥ 8GB · 리프레시 배리어) → verdict_l2v1.R(H1 1회)"
+    ],
+    "order": [
+      "T_var",
+      "K",
+      "S",
+      "EW_all"
+    ],
+    "driver": {
+      "path": "04_Research/l2_role_rotation/run_l2_v1.R",
+      "sha256": "b0276cf0316f732a0eda7076e582ded8d4c67ce7f1966e1c888b60f9585a20bb"
+    },
+    "env": {
+      "QVEST_RP_REGISTER": "0",
+      "QVEST_RP_NO_LCODE": "1",
+      "QVEST_NO_LEDGER_OPEN": "1",
+      "send_telegram": false
+    },
+    "memory_gate": "arm 마다 여유 RAM ≥ 8GB(PowerShell Get-CimInstance) · 리프레시 배리어 대기",
+    "out_root": "04_Research/l2_role_rotation/runs_v1/<arm>",
+    "a_route": "Grade A 시 러너 judge_request*.json → *.EXPERIMENT_HOLD.json(이 단위 A 자격 없음)",
+    "no_side_effects": "BOOK·Judge·등급 재표기·텔레그램 없음(Q-Lead 소관) · git commit 없음"
+  },
+  "pins": {
+    "design": {
+      "path": "04_Research/l2_role_rotation/l2v1_design.json",
+      "sha256": "1ea776da23119f4a3d8f5cac1f62983f1a6be5a016d5693a60b5cbc4dd50b10d"
+    },
+    "lib": {
+      "path": "04_Research/l2_role_rotation/lib_l2v1.R",
+      "sha256": "27ea1e997df2b5a391ab64cf9285fad192c694e60a06c9f9d75b2b8529d45cf6"
+    },
+    "labels_builder": {
+      "path": "04_Research/l2_role_rotation/build_l2v1_labels.R",
+      "sha256": "bf0dcddeb94327467d32fd415f5bd33e4a854fbc96ae895c7d7b7c936ed1fe19"
+    },
+    "mc2": {
+      "path": "04_Research/l2_role_rotation/mc2_l2v1.R",
+      "sha256": "eff5770db64cf0423915264f98066961407d14b4f979630160d8814e8ba9e1ae"
+    },
+    "engine": {
+      "path": "04_Research/l2_role_rotation/allocator_engine_v1.R",
+      "sha256": "f4a7551a3e4440a3c703157898ddbc457ff92f9c13a09a4bd428483fe80719a2"
+    },
+    "sanity": {
+      "path": "04_Research/l2_role_rotation/sanity_l2v1.R",
+      "sha256": "da339f318634e8e54da97ea226c590ec318df0f0c1f55828ab36640c6f36ca15"
+    },
+    "driver": {
+      "path": "04_Research/l2_role_rotation/run_l2_v1.R",
+      "sha256": "b0276cf0316f732a0eda7076e582ded8d4c67ce7f1966e1c888b60f9585a20bb"
+    },
+    "verdict": {
+      "path": "04_Research/l2_role_rotation/verdict_l2v1.R",
+      "sha256": "67bf2b963386c12e15d6fbfa6d9013d90322de07a634b03d51398b530398e194"
+    },
+    "prereg_builder": {
+      "path": "04_Research/l2_role_rotation/prereg_l2v1.R",
+      "sha256": "cdb17b142541474b532fd84bbc003a8567d1904ff498dbb173a40857d7e0abae"
+    },
+    "runner": {
+      "path": "02_Infrastructure/alpha_search/run_paper_replication.R",
+      "sha256": "738e7ec5b98c0aebd7f522a2d7b2985a64fa5faa9ed2fea6dce05cbec16abc46"
+    },
+    "harness": {
+      "path": "02_Infrastructure/replication/replication_harness.R",
+      "sha256": "818eb96bbdbb0e93197991d3d21b246c8e2c3fd216aa846b7956deda2e47dab4"
+    },
+    "contract_beta_controlled_alpha": {
+      "path": "02_Infrastructure/contracts/beta_controlled_alpha.R",
+      "sha256": "1e00fc9f26973aa6f19557c72a30aec636923c2b023b41b1216aa2edc16fae13"
+    },
+    "contract_backtest_result": {
+      "path": "02_Infrastructure/contracts/backtest_result_contract.R",
+      "sha256": "54f7645a71c205b9c9e5a3201df44e030759e55fef2c3294a0fbb44bcb3c9922"
+    },
+    "contract_strategy_role": {
+      "path": "02_Infrastructure/contracts/strategy_role.R",
+      "sha256": "6e75b46e3727188a5dcdbf2bcb9264367b521e6b72d8f1ac7f755260e3096356"
+    },
+    "contract_essence": {
+      "path": "02_Infrastructure/contracts/essence_score.R",
+      "sha256": "40212e6ff7c3b9576ee4bb13a60ba11972e0ae59c8f420f6e151f0f23e682421"
+    },
+    "rf_diversification_gate": {
+      "path": "02_Infrastructure/reinforcement/rf_diversification_gate.R",
+      "sha256": "325ac5b9e57f85fb17d346573318c55ccfed068e88fcbe3549ec1630af0625e3"
+    },
+    "rf_prereg": {
+      "path": "02_Infrastructure/reinforcement/rf_prereg.R",
+      "sha256": "6c961a967befb172ac30b4fd8c7899f3c1beb289408fd6b036c2b5d697bc319e"
+    },
+    "lookahead_detector": {
+      "path": "02_Infrastructure/validation/lookahead_detector.R",
+      "sha256": "799a87a3ed938b644d56606a67caa0e92fd3fabe506f84a67a64e7f3ea536d8b"
+    },
+    "v0_candidates": {
+      "path": "04_Research/l2_role_rotation/work/l2v0_candidates.csv",
+      "sha256": "ec7b9d91c9a467635bf7dde5402aa071d18ed81dd6334779c73f4393a4f024ae"
+    },
+    "v0_holdings_panel": {
+      "path": "04_Research/l2_role_rotation/work/l2v0_module_holdings.parquet",
+      "sha256": "e0df6fb9495626d42f3a279f16f0d356188dea663ea0f32fda843f11409a207b"
+    },
+    "asof_roles": {
+      "path": "04_Research/l2_role_rotation/asof_roles.parquet",
+      "sha256": "914219161fb89a613b612032ae7ff4ca0a49d938df258edcdf45f760d0bf2c98"
+    },
+    "msm_asof_daily": {
+      "path": "04_Research/l2_role_rotation/work/msm_asof_daily.parquet",
+      "sha256": "b917aa0cbecc9dc183ac5ab0cbeb739c086360efe5e7fcd01aad1779a4e6673f"
+    },
+    "benchmark_at_lock": {
+      "path": "C:/qm_cache/benchmark.parquet",
+      "sha256": "4a7ada492143ab0a845a17277809a39dc93f1556fb8e0734e2517779b1589db8"
+    },
+    "strategy_role_cfg": {
+      "path": "06_Registry/strategy_role.json",
+      "sha256": "43b2ef39be3bed61ddd62749b39c49a18c64389b2fc734eaaef07a608b614fb1"
+    },
+    "rf_diversification_cfg": {
+      "path": "06_Registry/rf_diversification_gate.json",
+      "sha256": "be66ac7e59aa5697f2c50981510392b2bd77e4258e3c71786a5f40b852d70c15"
+    },
+    "reinforce_program": {
+      "path": "06_Registry/reinforce_program.json",
+      "sha256": "f021312c58ad6cf78857da5f60742dd1b79dd219f59b4fba2f9d5b2039a43e1a"
+    },
+    "predictor_selection_IS": {
+      "path": "04_Research/l2_role_rotation/predictor_selection_IS.json",
+      "sha256": "bc7a6899f3a24909d1319c1f37acb5d5088b62edf3e6c794575e2a2c13f4e122"
+    },
+    "module_series": {
+      "digest": "9cc7b7bedfd45ef1365dcfcad76d64374ec56c2f5e64f3c45e06ee5db3b1c25c",
+      "n": 65,
+      "items": [
+        {
+          "member_id": "20260829_230420_29700",
+          "path": "04_Research/strategies/RF_B1_3_MomLowVol/stage_artifacts/20260829_230420_29700/remeasure_close_t1_5562284e/03_period_returns.csv",
+          "sha256": "107ca5d0afb8c9bde28bc55b7b7a269f7e683bcc119361b2949e4babe4eb6c7a"
+        },
+        {
+          "member_id": "20260831_075635_10040",
+          "path": "stage_artifacts/replication/20260831_075635_10040/remeasure_close_t1_5562284e/03_period_returns.csv",
+          "sha256": "efef524adb146caa97c71d265764811620dab3e4e81c726d2c4b07fd046659c0"
+        },
+        {
+          "member_id": "20260831_104329_23884",
+          "path": "stage_artifacts/replication/20260831_104329_23884/remeasure_close_t1_5562284e/03_period_returns.csv",
+          "sha256": "033829b33741e19bf0075afe5f55d596a4b0cac1106f6121a8e5108dad6dcf22"
+        },
+        {
+          "member_id": "20260831_155333_28228",
+          "path": "stage_artifacts/replication/20260831_155333_28228/remeasure_close_t1_5562284e/03_period_returns.csv",
+          "sha256": "7ff4da33156d1982f373abe66cf04fbfa96a5774c94c43f149e6209237693ef0"
+        },
+        {
+          "member_id": "20260831_173059_28428",
+          "path": "stage_artifacts/replication/20260831_173059_28428/remeasure_close_t1_5562284e/03_period_returns.csv",
+          "sha256": "1cbfe62d1857164fa39c034863480005fc7d2416238eff27f3465a2449d8dade"
+        },
+        {
+          "member_id": "20260831_212235_30188",
+          "path": "stage_artifacts/replication/20260831_212235_30188/remeasure_close_t1_5562284e/03_period_returns.csv",
+          "sha256": "1aa7d6985e182b86fa8e7e3505b3046bb142448bbbd0a25e08889f29768b3b06"
+        },
+        {
+          "member_id": "20260831_221027_21668",
+          "path": "stage_artifacts/replication/20260831_221027_21668/remeasure_close_t1_5562284e/03_period_returns.csv",
+          "sha256": "af6e1a8148c2d2b14b33efcef4822139d8f0b22af69fda965e7ffc0411a80db1"
+        },
+        {
+          "member_id": "20260831_221027_9820",
+          "path": "stage_artifacts/replication/20260831_221027_9820/remeasure_close_t1_5562284e/03_period_returns.csv",
+          "sha256": "11dee045f0409234c5a2ccbe37acaaf81998f1cb7e89fedde7df1b3aebdfb76c"
+        },
+        {
+          "member_id": "20260901_145755_5376",
+          "path": "stage_artifacts/replication/20260901_145755_5376/remeasure_close_t1_5562284e/03_period_returns.csv",
+          "sha256": "5a64326630d59dc637068fbadb5c416b703e196d0194dd38b455c42fadf3a5c9"
+        },
+        {
+          "member_id": "20260901_150637_20504",
+          "path": "stage_artifacts/replication/20260901_150637_20504/remeasure_close_t1_5562284e/03_period_returns.csv",
+          "sha256": "b695a047e35ccda2f24a84484e09f4d129fea9e36baff4dbe378540b5f840b8c"
+        },
+        {
+          "member_id": "20260901_150637_21116",
+          "path": "stage_artifacts/replication/20260901_150637_21116/remeasure_close_t1_5562284e/03_period_returns.csv",
+          "sha256": "d997f2f22779f7da0fb1c9e7501ca90a6dd87f8b7b14506ae45707091a5246aa"
+        },
+        {
+          "member_id": "20260902_122546_22268",
+          "path": "stage_artifacts/replication/20260902_122546_22268/remeasure_close_t1_5562284e/03_period_returns.csv",
+          "sha256": "4c309e7131209278c31d447597402fb8a43508f5c490b09b8210611d2bb5b52b"
+        },
+        {
+          "member_id": "20260902_124954_38980",
+          "path": "stage_artifacts/replication/20260902_124954_38980/remeasure_close_t1_5562284e/03_period_returns.csv",
+          "sha256": "8d9544fd07dc6ae680248192ed57dc53b02c5280f80f219d7297757ef31dccc1"
+        },
+        {
+          "member_id": "20260902_124954_8100",
+          "path": "stage_artifacts/replication/20260902_124954_8100/remeasure_close_t1_5562284e/03_period_returns.csv",
+          "sha256": "15774112e79453537ac1aef2573dd7a3f44f378a81b562353185a3da8f769ac8"
+        },
+        {
+          "member_id": "20260902_141641_31428",
+          "path": "stage_artifacts/replication/20260902_141641_31428/remeasure_close_t1_5562284e/03_period_returns.csv",
+          "sha256": "5a2c3f65eb2a064c4fc769757e654920d7d7535bec5cca0eacf4500574592890"
+        },
+        {
+          "member_id": "20260902_215411_25740",
+          "path": "stage_artifacts/replication/20260902_215411_25740/remeasure_close_t1_5562284e/03_period_returns.csv",
+          "sha256": "bc112a38113173193d8c47a9f8d9d42cca57428ccea4c332cd96c1a6cdc2a3a4"
+        },
+        {
+          "member_id": "20260902_215411_35640",
+          "path": "stage_artifacts/replication/20260902_215411_35640/remeasure_close_t1_5562284e/03_period_returns.csv",
+          "sha256": "bde3c24bbfede872b1da828b205822d0636fccbbca04c9ecc5712137dd45ad2c"
+        },
+        {
+          "member_id": "20260902_220158_28824",
+          "path": "stage_artifacts/replication/20260902_220158_28824/remeasure_close_t1_5562284e/03_period_returns.csv",
+          "sha256": "c1efa15285940795b7f1a520c9fe3ebfd180d9f5cfc7f7b7003829a2e1ff560e"
+        },
+        {
+          "member_id": "20260903_081538_1520",
+          "path": "stage_artifacts/replication/20260903_081538_1520/remeasure_close_t1_5562284e/03_period_returns.csv",
+          "sha256": "fd48331edb812e76f8d43e57c8d402753dfee4139a8de7dfaa7b2a4d95799284"
+        },
+        {
+          "member_id": "20260903_085117_10184",
+          "path": "stage_artifacts/replication/20260903_085117_10184/remeasure_close_t1_5562284e/03_period_returns.csv",
+          "sha256": "c699ea128fa92b7d9086f759c563d3060c6199c4cf5643f2e641f6eb8523e992"
+        },
+        {
+          "member_id": "20260903_104237_16496",
+          "path": "stage_artifacts/replication/20260903_104237_16496/remeasure_close_t1_5562284e/03_period_returns.csv",
+          "sha256": "6366ae2922f9fe2288d2125fc295581d830766fcb4bf1a6ed22deb77e7ae986c"
+        },
+        {
+          "member_id": "20260903_153104_33944",
+          "path": "stage_artifacts/replication/20260903_153104_33944/remeasure_close_t1_5562284e/03_period_returns.csv",
+          "sha256": "73d43b328850c8399a70a35bac5c5b136bb908b924a51ac002d1548abeb3999f"
+        },
+        {
+          "member_id": "20260903_153916_34904",
+          "path": "stage_artifacts/replication/20260903_153916_34904/remeasure_close_t1_5562284e/03_period_returns.csv",
+          "sha256": "1e3c34ea2cd5e47d53469830df297a01fbc597496c1255b19b21f33f09cb728b"
+        },
+        {
+          "member_id": "20260903_155504_24320",
+          "path": "stage_artifacts/replication/20260903_155504_24320/remeasure_close_t1_5562284e/03_period_returns.csv",
+          "sha256": "bac2907f57f500080d3d4e9110918f8b2338fc90447c3da7c1fdd202df5f950e"
+        },
+        {
+          "member_id": "20260904_081937_804",
+          "path": "stage_artifacts/replication/20260904_081937_804/remeasure_close_t1_5562284e/03_period_returns.csv",
+          "sha256": "5e0f1225d97afaf04c21d482891ceee24f267b7c54d9b6e7fe06fd4e3e907db9"
+        },
+        {
+          "member_id": "20260904_120322_34636",
+          "path": "stage_artifacts/replication/20260904_120322_34636/remeasure_close_t1_5562284e/03_period_returns.csv",
+          "sha256": "abf338bcfbbac1f0f726ddf2a9b4a23a58499103b7b446af12d0e94e7045fabd"
+        },
+        {
+          "member_id": "20260905_095537_7692",
+          "path": "stage_artifacts/replication/20260905_095537_7692/remeasure_close_t1_5562284e/03_period_returns.csv",
+          "sha256": "e5f779dd62f54fcbfb11cd6fae28dde9f34e46d59a2144d7c9d22ec7df5c153b"
+        },
+        {
+          "member_id": "20260905_102842_6512",
+          "path": "stage_artifacts/replication/20260905_102842_6512/remeasure_close_t1_5562284e/03_period_returns.csv",
+          "sha256": "098c3379a6cda95319431edf336be58d38f517730dd6a06a9a46a39c63d8c2c3"
+        },
+        {
+          "member_id": "20260905_124227_18444",
+          "path": "stage_artifacts/replication/20260905_124227_18444/remeasure_close_t1_5562284e/03_period_returns.csv",
+          "sha256": "900b066825c1659da8d5289386b457e6dd4e9812416861166517dcafbb79d234"
+        },
+        {
+          "member_id": "20260905_211516_32128",
+          "path": "stage_artifacts/replication/20260905_211516_32128/remeasure_close_t1_5562284e/03_period_returns.csv",
+          "sha256": "5238fb2285ea0ac299e30bb02151920ffb02afb3f69058ed92ecdbe20e89a65e"
+        },
+        {
+          "member_id": "20260906_211754_1572",
+          "path": "stage_artifacts/replication/20260906_211754_1572/remeasure_close_t1_5562284e/03_period_returns.csv",
+          "sha256": "dad0578f8fc443b43b4630f70f8a94f2d38234cad502d0c6ae92bdcfe14cd6d0"
+        },
+        {
+          "member_id": "20260907_010957_16216",
+          "path": "stage_artifacts/replication/20260907_010957_16216/remeasure_close_t1_5562284e/03_period_returns.csv",
+          "sha256": "5825e7072817845a89604cc6fef8670d721fda4753bd0cdc87adabbb6da53290"
+        },
+        {
+          "member_id": "20260907_045335_12800",
+          "path": "stage_artifacts/replication/20260907_045335_12800/remeasure_close_t1_5562284e/03_period_returns.csv",
+          "sha256": "4d4f5dcad6296424d01116710a3aeaabffb125b89e1af64ee9b8bd619e73e50c"
+        },
+        {
+          "member_id": "20260907_051519_4132",
+          "path": "stage_artifacts/replication/20260907_051519_4132/remeasure_close_t1_5562284e/03_period_returns.csv",
+          "sha256": "d7760061a582a16b2f7c80c35f11fbca2bb4baf5812d4b4dcc0128eabb32a5d3"
+        },
+        {
+          "member_id": "20260907_092257_34456",
+          "path": "stage_artifacts/replication/20260907_092257_34456/remeasure_close_t1_5562284e/03_period_returns.csv",
+          "sha256": "ab09a50502b74f891cc7289bd34c4a70ca9abfac1239d13c972fcb336b28fc9f"
+        },
+        {
+          "member_id": "20260907_101130_20668",
+          "path": "stage_artifacts/replication/20260907_101130_20668/remeasure_close_t1_5562284e/03_period_returns.csv",
+          "sha256": "9c2a43fdff66d64b1cdd3d534b895752edb823cbca1acc6d88800f0cd42c10b8"
+        },
+        {
+          "member_id": "20260912_173947_32640",
+          "path": "stage_artifacts/replication/20260912_173947_32640/remeasure_close_t1_5562284e/03_period_returns.csv",
+          "sha256": "1fb8b9a4bf042f846e5004f90a1e8684613fbbb5e1764ef98535cd1f294322a5"
+        },
+        {
+          "member_id": "20260912_181839_14212",
+          "path": "stage_artifacts/replication/20260912_181839_14212/remeasure_close_t1_5562284e/03_period_returns.csv",
+          "sha256": "adb0e05a7f3e114b5cbb32a368e146e0fdbfb6a47688ca33df1f1b300c0536d0"
+        },
+        {
+          "member_id": "20260912_181840_6816",
+          "path": "stage_artifacts/replication/20260912_181840_6816/remeasure_close_t1_5562284e/03_period_returns.csv",
+          "sha256": "4e0caa0f1a4a7c8112cd2b55d556322a1c9b26d1d18cfd1e01e575b3e2348287"
+        },
+        {
+          "member_id": "20260913_004317_11696",
+          "path": "stage_artifacts/replication/20260913_004317_11696/remeasure_close_t1_5562284e/03_period_returns.csv",
+          "sha256": "13eea1156d6a253ca1d23b4e2111011f6553a3b83136c98adba56d663d495dea"
+        },
+        {
+          "member_id": "20260913_025126_34484",
+          "path": "stage_artifacts/replication/20260913_025126_34484/remeasure_close_t1_5562284e/03_period_returns.csv",
+          "sha256": "304b12faeea68119b9fdc8afbc9329427d1ff357106afe9dce35c57d8237c820"
+        },
+        {
+          "member_id": "20260921_101355_3700",
+          "path": "stage_artifacts/replication/20260921_101355_3700/remeasure_close_t1_5562284e/03_period_returns.csv",
+          "sha256": "4a45446dc2a76f6a6643e23fecd51ba7e6db1f59f8f036ab92a47b12afa5fd42"
+        },
+        {
+          "member_id": "20260921_104337_35052",
+          "path": "stage_artifacts/replication/20260921_104337_35052/remeasure_close_t1_5562284e/03_period_returns.csv",
+          "sha256": "6869d9f5a1bdf364f7677248fa270ab0a3531cfd7794737c13a6f567a022fe0d"
+        },
+        {
+          "member_id": "20260921_113555_29880",
+          "path": "stage_artifacts/replication/20260921_113555_29880/remeasure_close_t1_5562284e/03_period_returns.csv",
+          "sha256": "42d42c695b0e4d05798214e81c01999cfb37cc394e47839e9d3717284ce586b6"
+        },
+        {
+          "member_id": "20260921_124842_17696",
+          "path": "stage_artifacts/replication/20260921_124842_17696/remeasure_close_t1_5562284e/03_period_returns.csv",
+          "sha256": "009f9013164e86d8b042aa2b73a540a3fcf4ca085e728b34365ee1d65166386a"
+        },
+        {
+          "member_id": "20260921_131648_18576",
+          "path": "stage_artifacts/replication/20260921_131648_18576/remeasure_close_t1_5562284e/03_period_returns.csv",
+          "sha256": "20f15dae72ffab2f4b0f3934cdc445e3d992b95d50057b711343cc5e96963225"
+        },
+        {
+          "member_id": "20260921_134954_32472",
+          "path": "stage_artifacts/replication/20260921_134954_32472/remeasure_close_t1_5562284e/03_period_returns.csv",
+          "sha256": "8843ad4740e14121c2354ee93f6a4306dc2d428971786c63c9e3bfbb45b3c51c"
+        },
+        {
+          "member_id": "20260921_154145_5456",
+          "path": "stage_artifacts/replication/20260921_154145_5456/remeasure_close_t1_5562284e/03_period_returns.csv",
+          "sha256": "c949da38441b4570ffd22f97bb454464150ec44a53d53172d3559bb905f5667c"
+        },
+        {
+          "member_id": "20260921_155730_11692",
+          "path": "stage_artifacts/replication/20260921_155730_11692/remeasure_close_t1_5562284e/03_period_returns.csv",
+          "sha256": "c88b04f33491c04f26e41152cf54a8c6b4a3d73b21f9bcb9e871bab7db1d75eb"
+        },
+        {
+          "member_id": "20260921_202529_31844",
+          "path": "stage_artifacts/replication/20260921_202529_31844/remeasure_close_t1_5562284e/03_period_returns.csv",
+          "sha256": "5a564d00ebc675918d483c6914df37dc97c6935a798acb65b1b33b4e0d84d4c1"
+        },
+        {
+          "member_id": "20260921_221343_24964",
+          "path": "stage_artifacts/replication/20260921_221343_24964/remeasure_close_t1_5562284e/03_period_returns.csv",
+          "sha256": "bc7bf5b4b3bbcf764f0491a268abcc3f3e54e4f50ef5e9361567372d75950237"
+        },
+        {
+          "member_id": "20260921_231732_25592",
+          "path": "stage_artifacts/replication/20260921_231732_25592/remeasure_close_t1_5562284e/03_period_returns.csv",
+          "sha256": "c683e4acbc277aaff6b106e172691d8f5ff84e7bb41fb2a4f73612545944ba9f"
+        },
+        {
+          "member_id": "20260922_011120_6980",
+          "path": "stage_artifacts/replication/20260922_011120_6980/remeasure_close_t1_5562284e/03_period_returns.csv",
+          "sha256": "119c37f2f68e9bddc138c535e25b7b18d78e37712e992e97214b5a9531bac1d8"
+        },
+        {
+          "member_id": "20260922_014708_24444",
+          "path": "stage_artifacts/replication/20260922_014708_24444/remeasure_close_t1_5562284e/03_period_returns.csv",
+          "sha256": "8a53ef6470cc88dce904d2bebbf931a226bb16e32f0d2ede19038b8d46130db7"
+        },
+        {
+          "member_id": "20260922_021919_30860",
+          "path": "stage_artifacts/replication/20260922_021919_30860/remeasure_close_t1_5562284e/03_period_returns.csv",
+          "sha256": "f43c16f892f4465250bf03cc338648fafc919ff087248ab25b3df85182144ade"
+        },
+        {
+          "member_id": "20260923_161713_28512",
+          "path": "stage_artifacts/replication/20260923_161713_28512/remeasure_close_t1_5562284e/03_period_returns.csv",
+          "sha256": "c1987096eb34760f8e57ec373182d8a1bc25f75a71985817ebc923d3e216bcc6"
+        },
+        {
+          "member_id": "20260924_003101_6168",
+          "path": "stage_artifacts/replication/20260924_003101_6168/remeasure_close_t1_5562284e/03_period_returns.csv",
+          "sha256": "b90a1bfa15f42c0f01006e738d335e8e96aff371db993be64b2b90e3ea67d5dd"
+        },
+        {
+          "member_id": "20260924_010554_33120",
+          "path": "stage_artifacts/replication/20260924_010554_33120/remeasure_close_t1_5562284e/03_period_returns.csv",
+          "sha256": "9c16328072f3051798036561c97da00ecac73693aa8931f4a8ba7d7414c4c3a8"
+        },
+        {
+          "member_id": "20260924_011953_20788",
+          "path": "stage_artifacts/replication/20260924_011953_20788/remeasure_close_t1_5562284e/03_period_returns.csv",
+          "sha256": "9a40322d4160b6f5a1b979d1251d9d89d81e1f0a813311891466d1d0a21a2675"
+        },
+        {
+          "member_id": "20260924_060803_11288",
+          "path": "stage_artifacts/replication/20260924_060803_11288/remeasure_close_t1_5562284e/03_period_returns.csv",
+          "sha256": "fb27eaea222523ffa237cba8e3e1fd03bc70b45768f8934d86284629f2557382"
+        },
+        {
+          "member_id": "20260924_062712_29928",
+          "path": "stage_artifacts/replication/20260924_062712_29928/remeasure_close_t1_5562284e/03_period_returns.csv",
+          "sha256": "ab4aa8ff5c37bfa2a78e6795a250e67afeb95e9e3f04110c50e4878ae4b0d9f4"
+        },
+        {
+          "member_id": "20260925_222711_29284",
+          "path": "stage_artifacts/replication/20260925_222711_29284/03_period_returns.csv",
+          "sha256": "75331bd375a9d1f93ec853f1932159f87a1ded7162f287c456b91b7ad4f5d71c"
+        },
+        {
+          "member_id": "20260925_222711_34340",
+          "path": "stage_artifacts/replication/20260925_222711_34340/03_period_returns.csv",
+          "sha256": "164c3f1f9b048d5928471062a4bea1dd5c3ba61c17dacfe19bbcb9e707110623"
+        },
+        {
+          "member_id": "20261005_193230_34300",
+          "path": "stage_artifacts/replication/20261005_193230_34300/03_period_returns.csv",
+          "sha256": "b7868f36403ad119a3deaa41c9f0f76954b20c83d8a391dfaf72520a0b1fe73d"
+        },
+        {
+          "member_id": "20261005_205951_29712",
+          "path": "stage_artifacts/replication/20261005_205951_29712/03_period_returns.csv",
+          "sha256": "4ede7bc514c5473e8e3613af9aaa70ee2fcfc6492065cc17db86be46e0aee85d"
+        }
+      ]
+    }
+  },
+  "l1_flag_inheritance": {
+    "method": "v0 와 같은 방법 — 06_Registry/reinforce_ledger_l1.json 재귀 탐색(run_id/strategy_id/base_id/artifacts 문자열에 후보 run id) · vintage_flags(읽기 전용 · 진단 · 누락 가능)",
+    "ledger_sha256": "b4899f41771bdf80c69fcf4a7fe70aafc2857b84e57bfb773f1a70e3a485eff2",
+    "n_candidates": 65,
+    "n_any_flag": 50,
+    "n_selection_basis_full_sample_ic": 28,
+    "n_cross_entry_design_exposure": 33,
+    "n_either_c1_type": 49,
+    "by_member": {
+      "20260901_150637_20504": [
+        "selection_basis_full_sample_ic_inherited"
+      ],
+      "20260902_124954_38980": [
+        "selection_basis_full_sample_ic"
+      ],
+      "20260902_124954_8100": [
+        "selection_basis_full_sample_ic"
+      ],
+      "20260902_141641_31428": [
+        "selection_basis_full_sample_ic_inherited"
+      ],
+      "20260902_215411_25740": [
+        "fdb_202608_v1",
+        "selection_basis_full_sample_ic_inherited"
+      ],
+      "20260902_215411_35640": [
+        "fdb_202608_v1",
+        "selection_basis_full_sample_ic_inherited"
+      ],
+      "20260902_220158_28824": [
+        "fdb_202608_v1",
+        "selection_basis_full_sample_ic_inherited"
+      ],
+      "20260903_085117_10184": [
+        "fdb_202608_v1",
+        "selection_basis_full_sample_ic_inherited"
+      ],
+      "20260903_104237_16496": [
+        "selection_basis_full_sample_ic_inherited"
+      ],
+      "20260903_153104_33944": [
+        "fdb_202608_v1",
+        "selection_basis_full_sample_ic_inherited"
+      ],
+      "20260903_153916_34904": [
+        "fdb_202608_v1",
+        "selection_basis_full_sample_ic_inherited"
+      ],
+      "20260903_155504_24320": [
+        "fdb_202608_v1",
+        "selection_basis_full_sample_ic_inherited"
+      ],
+      "20260904_081937_804": [
+        "fdb_202608_v1",
+        "selection_basis_full_sample_ic_inherited"
+      ],
+      "20260904_120322_34636": [
+        "fdb_inv13_absent"
+      ],
+      "20260905_095537_7692": [
+        "fdb_202608_v1",
+        "selection_basis_full_sample_ic_inherited"
+      ],
+      "20260905_102842_6512": [
+        "selection_basis_full_sample_ic_inherited"
+      ],
+      "20260905_124227_18444": [
+        "fdb_202608_v1",
+        "selection_basis_full_sample_ic_inherited"
+      ],
+      "20260905_211516_32128": [
+        "design_automem_cross_entry_metrics",
+        "design_automem_cross_entry_metrics_inherited",
+        "fdb_202608_v1"
+      ],
+      "20260906_211754_1572": [
+        "design_automem_cross_entry_metrics_inherited",
+        "fdb_202608_v1",
+        "selection_basis_full_sample_ic_inherited"
+      ],
+      "20260907_010957_16216": [
+        "design_automem_cross_entry_metrics",
+        "design_automem_cross_entry_metrics_inherited",
+        "fdb_202608_v1"
+      ],
+      "20260907_045335_12800": [
+        "design_automem_cross_entry_metrics",
+        "design_automem_cross_entry_metrics_inherited",
+        "fdb_202608_v1",
+        "selection_basis_full_sample_ic_inherited"
+      ],
+      "20260907_051519_4132": [
+        "design_automem_cross_entry_metrics",
+        "design_automem_cross_entry_metrics_inherited",
+        "fdb_202608_v1"
+      ],
+      "20260907_092257_34456": [
+        "design_automem_cross_entry_metrics",
+        "design_automem_cross_entry_metrics_inherited",
+        "fdb_202608_v1"
+      ],
+      "20260912_173947_32640": [
+        "design_automem_cross_entry_metrics_inherited",
+        "fdb_202608_v1"
+      ],
+      "20260912_181839_14212": [
+        "design_automem_cross_entry_metrics",
+        "design_automem_cross_entry_metrics_inherited",
+        "fdb_202608_v1"
+      ],
+      "20260912_181840_6816": [
+        "arm_automem_cross_entry_metrics",
+        "design_automem_cross_entry_metrics",
+        "design_automem_cross_entry_metrics_inherited",
+        "fdb_202608_v1"
+      ],
+      "20260913_004317_11696": [
+        "design_automem_cross_entry_metrics",
+        "design_automem_cross_entry_metrics_inherited",
+        "fdb_202608_v1"
+      ],
+      "20260913_025126_34484": [
+        "design_automem_cross_entry_metrics",
+        "fdb_202608_v1",
+        "selection_basis_full_sample_ic_inherited"
+      ],
+      "20260921_101355_3700": [
+        "design_automem_cross_entry_metrics",
+        "design_automem_cross_entry_metrics_inherited",
+        "fdb_202608_v1",
+        "selection_basis_full_sample_ic_inherited"
+      ],
+      "20260921_104337_35052": [
+        "arm_automem_cross_entry_metrics",
+        "design_automem_cross_entry_metrics",
+        "design_automem_cross_entry_metrics_inherited",
+        "fdb_202608_v1",
+        "selection_basis_full_sample_ic_inherited"
+      ],
+      "20260921_113555_29880": [
+        "design_automem_cross_entry_metrics",
+        "design_automem_cross_entry_metrics_inherited",
+        "fdb_202608_v1",
+        "selection_basis_full_sample_ic_inherited"
+      ],
+      "20260921_124842_17696": [
+        "design_automem_cross_entry_metrics",
+        "fdb_202608_v1"
+      ],
+      "20260921_131648_18576": [
+        "design_automem_cross_entry_metrics",
+        "design_automem_cross_entry_metrics_inherited",
+        "fdb_202608_v1",
+        "selection_basis_full_sample_ic_inherited"
+      ],
+      "20260921_134954_32472": [
+        "design_automem_cross_entry_metrics",
+        "design_automem_cross_entry_metrics_inherited",
+        "fdb_202608_v1",
+        "selection_basis_full_sample_ic_inherited"
+      ],
+      "20260921_154145_5456": [
+        "design_automem_cross_entry_metrics",
+        "design_automem_cross_entry_metrics_inherited",
+        "fdb_202608_v1",
+        "selection_basis_full_sample_ic_inherited"
+      ],
+      "20260921_155730_11692": [
+        "design_automem_cross_entry_metrics_inherited",
+        "fdb_202608_v1",
+        "selection_basis_full_sample_ic_inherited"
+      ],
+      "20260921_202529_31844": [
+        "design_automem_cross_entry_metrics",
+        "fdb_202608_v1"
+      ],
+      "20260921_221343_24964": [
+        "design_automem_cross_entry_metrics",
+        "design_automem_cross_entry_metrics_inherited",
+        "fdb_202608_v1",
+        "selection_basis_full_sample_ic_inherited"
+      ],
+      "20260921_231732_25592": [
+        "design_automem_cross_entry_metrics_inherited",
+        "fdb_202608_v1",
+        "selection_basis_full_sample_ic_inherited"
+      ],
+      "20260922_011120_6980": [
+        "design_automem_cross_entry_metrics",
+        "design_automem_cross_entry_metrics_inherited",
+        "fdb_202608_v1"
+      ],
+      "20260922_014708_24444": [
+        "design_automem_cross_entry_metrics",
+        "design_automem_cross_entry_metrics_inherited",
+        "fdb_202608_v1"
+      ],
+      "20260922_021919_30860": [
+        "design_automem_cross_entry_metrics_inherited",
+        "fdb_202608_v1"
+      ],
+      "20260923_161713_28512": [
+        "design_automem_cross_entry_metrics_inherited"
+      ],
+      "20260924_003101_6168": [
+        "design_automem_cross_entry_metrics",
+        "design_automem_cross_entry_metrics_inherited"
+      ],
+      "20260924_010554_33120": [
+        "design_automem_cross_entry_metrics",
+        "design_automem_cross_entry_metrics_inherited"
+      ],
+      "20260924_011953_20788": [
+        "design_automem_cross_entry_metrics_inherited"
+      ],
+      "20260924_060803_11288": [
+        "design_automem_cross_entry_metrics"
+      ],
+      "20260924_062712_29928": [
+        "design_automem_cross_entry_metrics",
+        "design_automem_cross_entry_metrics_inherited"
+      ],
+      "20260925_222711_29284": [
+        "arm_automem_cross_entry_metrics",
+        "design_automem_cross_entry_metrics_inherited",
+        "design_materials_cross_entry_labels"
+      ],
+      "20260925_222711_34340": [
+        "design_automem_cross_entry_metrics_inherited",
+        "design_materials_cross_entry_labels"
+      ]
+    }
+  },
+  "disclosures": {
+    "eval_window_reuse": "v1 은 v0 MC2 실패를 본 뒤 설계됐고 같은 평가 창(2015-10~2026-09)을 다시 쓴다. 완화 = 문헌(ACX 2006)에서 고른 단일 정의 · 창·삼분위·하위 1군은 지시로 고정 · 1회 측정",
+    "seen_before_design": "설계 전 열람: RESULT_v0.md · h1_verdict_v0.json · v0 MC2 파일 머리(v0 방어 슬리브 첫 몇 달). v1 슬리브의 평가 창 성과는 잠금 전 미계산 — 잠금 전 코드 검사는 ①합성 단위 검사 ②평가 창 앞 결정일(2012-01~2015-09) 라벨·MC2 드라이런(MC2 값 미출력) ③엔진 회귀(v0 라벨로 v0 비중 재현 · 비중만) ④판정 회귀(공개된 v0 arm 산출물로 v0 수치 재현)",
+    "pre_lock_label_diagnostics_seen": "드라이런(2012-01~2015-09 결정일) 라벨 수준 진단을 열람했다(β−·FP 총 β 순위상관 중앙 0.63 · 하위 삼분위 겹침 중앙 67% · v0 방어 소속과 겹침 중앙 0 · 슬리브 21~22) — 평가 창 이전 자료 · 정의 변경 없음",
+    "pre_lock_control_fix": "잠금 전 드라이런에서 1일 누출 양성 대조가 한 결정일(2013-11-01)에 발화하지 않았다(β− 는 상승일을 보지 않아 교란된 그날이 상승일로 남으면 불변) → 대조를 1일×충격 교체 · 21일×잡음 교체로 강화. 라벨 정의·계산 불변",
+    "candidate_selection": "v0 와 같음 — 후보 65 = 사후 선정 81 대표의 부분집합(낙관 방향 잔여 편향)",
+    "long_short_modules": "롱숏 모듈 2개(RP_20260902_122546_22268 · RP_20260907_101130_20668)는 β− 가 낮아 방어 v1 슬리브에 들 공산이 크다 — MC2_v1 슬리브 수익엔 그 모듈 수익이 그대로 · 배분 단계에선 음수 비중 순합산(v0 사양)",
+    "end_of_window_ineligibility": "2026-08-28 에 끝나는 계열 8개는 2026-09-01 결정일 창(~2026-08-31)이 252일을 못 채워 부적격 — 마지막 보유월 적격 57 · 하위 1군 19(예상)",
+    "rf_not_subtracted": "β− 는 원수익으로 잰다(ACX 는 초과수익) — 창 안 상수 무위험 차감은 cov·var·하락일 집합을 바꾸지 않는다(합성 검사로 확인)",
+    "mc2_sleeve_virtual": "MC2_v1 슬리브 수익 = 모듈 월수익 동일가중(가상 슬리브) — 배분 단계(합산·상위 25 절단)의 실현 방어와 다를 수 있다(MC3b·kept_share 로 보고)",
+    "stale_snapshots": "v0 와 같음 — 보유 스냅샷이 일찍 끝난 모듈은 마지막 스냅샷 보유(배분 단계)",
+    "k_noncausal": "K 의 Pbar = 창 전체 P 평균 — 실시간 불가 대조(v0 와 같음)",
+    "mean_vs_variance": "H1 은 평균 차를 묻는다 — M&M 1차 예측(분산 감소)은 calmar_delta_boot·arm MDD/Calmar 로 보고만",
+    "n_trials": "러너 n_trials_cumulative = 2(chain: v0 T_var → v1 T_var) — DSR 진단값만 바뀌고 등급(chain = DSR 관문 없음)은 불변. v0 는 1 로 측정",
+    "diversifier_excluded": "diversifier 역할 as-of 라벨 없음 — 제외(v0 와 같음)",
+    "family_new": "가족 FAM-PR-L2-ROLESLEEVE-02 — v0(FAM-…-01)는 미등록 초안이라 revision_of 불가 · 결과 뒤 개정 규칙(새 가족)에 맞춤 · 선행 단위는 prior_prereg"
+  },
+  "reporting_obligations": [
+    "MC2_v1 1차 값·t·PASS/FAIL · 2차(약세월 β 차 · v0식 β-잔차 · 비약세월 d) · 슬리브 크기 추이",
+    "PASS 시: 4 arm essence(PORT_t·SR·CAGR·MDD·Calmar·OOS) · H1 t·라벨 · MC3(+MC3b) · S−K·T−S · calmar_delta_boot · lag21 · EW_all v0 재현",
+    "FAIL 시: 단계 2 종료 — arm 미측정 · H1 라벨 없음(미결을 벽으로 적립하지 않음 · AX-000)",
+    "등록 차단 사유 전부(prereg_registration_attempt_v1.json) · scope mechanism_only"
+  ],
+  "not_a_grade": "등급은 essence 하나 — MC2_v1 은 관문, 라벨 4종은 H1 판정이다"
+}

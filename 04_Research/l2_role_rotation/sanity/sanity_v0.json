@@ -1,0 +1,119 @@
+{
+  "schema": "l2v0_sanity_v1",
+  "prereg_id": "PR-L2-ROLESLEEVE-V0",
+  "at": "2026-10-10T22:25:27+0900",
+  "note": "측정 전 점검 — 엔진 비중만(수익률 미사용). MC3 = 사전등록 처치 전달 타당성(문턱 0.05). MC3b = 종목 수준 전달량(보고 전용).",
+  "engine_sha256": "f8e84c76162e50d03ff604cc9fbc1dd7e5326a7bfc7b02c3853383091071049a",
+  "inputs_manifest_sha256": "ec12fbfc7b8e606bac0127eb4fd1773c649e0bf680ae7961a49803ee6d17207c",
+  "raw": {
+    "path": ".cache/RAWDATA.parquet",
+    "max_date_loaded": "2026-10-08",
+    "cutoff": "2026-09-30"
+  },
+  "detect_lookahead": {
+    "clean": true,
+    "n_violations": 0
+  },
+  "arms": {
+    "T_var": {
+      "n_signal_dates": 132,
+      "first_signal": "2015-09-30",
+      "last_signal": "2026-08-31",
+      "max_abs_sum_minus_1": 4.44089209850063e-16,
+      "min_weight": 0.011845202240154,
+      "max_names": 25,
+      "min_names": 25,
+      "mean_names": 25,
+      "any_na": false,
+      "rows_runner_universe_would_drop": 0,
+      "signal_dates_before_cutoff": true,
+      "max_weight": 0.169510025270161,
+      "pass": true
+    },
+    "K": {
+      "n_signal_dates": 132,
+      "first_signal": "2015-09-30",
+      "last_signal": "2026-08-31",
+      "max_abs_sum_minus_1": 4.44089209850063e-16,
+      "min_weight": 0.0134344223346205,
+      "max_names": 25,
+      "min_names": 25,
+      "mean_names": 25,
+      "any_na": false,
+      "rows_runner_universe_would_drop": 0,
+      "signal_dates_before_cutoff": true,
+      "max_weight": 0.206895971952977,
+      "pass": true
+    },
+    "K_eq": {
+      "n_signal_dates": 132,
+      "first_signal": "2015-09-30",
+      "last_signal": "2026-08-31",
+      "max_abs_sum_minus_1": 4.44089209850063e-16,
+      "min_weight": 0.0140275593580787,
+      "max_names": 25,
+      "min_names": 25,
+      "mean_names": 25,
+      "any_na": false,
+      "rows_runner_universe_would_drop": 0,
+      "signal_dates_before_cutoff": true,
+      "max_weight": 0.197586962336486,
+      "pass": true
+    },
+    "S": {
+      "n_signal_dates": 132,
+      "first_signal": "2015-09-30",
+      "last_signal": "2026-08-31",
+      "max_abs_sum_minus_1": 4.44089209850063e-16,
+      "min_weight": 0.0115400014328836,
+      "max_names": 25,
+      "min_names": 25,
+      "mean_names": 25,
+      "any_na": false,
+      "rows_runner_universe_would_drop": 0,
+      "signal_dates_before_cutoff": true,
+      "max_weight": 0.167159107878663,
+      "pass": true
+    },
+    "EW_all": {
+      "n_signal_dates": 132,
+      "first_signal": "2015-09-30",
+      "last_signal": "2026-08-31",
+      "max_abs_sum_minus_1": 3.33066907387547e-16,
+      "min_weight": 0.0249811759881355,
+      "max_names": 25,
+      "min_names": 25,
+      "mean_names": 25,
+      "any_na": false,
+      "rows_runner_universe_would_drop": 0,
+      "signal_dates_before_cutoff": true,
+      "max_weight": 0.114893896913298,
+      "pass": true
+    }
+  },
+  "all_pass": true,
+  "P": {
+    "n": 132,
+    "mean_P_T": 0.149947505490011,
+    "sd_P_T": 0.252911511070555,
+    "min": 4.3860738305133e-05,
+    "max": 1,
+    "share_gt_0_5": 0.106060606060606,
+    "mean_abs_dev": 0.17504506881469
+  },
+  "MC3": {
+    "value": 0.116696712543126,
+    "threshold": 0.05,
+    "pass": true,
+    "definition": "mean_m ½Σ_r |w_T_var,r(m) − w_K,r| (슬리브 수준 · 132 보유월)"
+  },
+  "MC3b_stock_level": {
+    "T_var_vs_K": 0.103488436449,
+    "S_vs_K": 0.0958416796880905,
+    "T_var_vs_S": 0.0542069573086948,
+    "T_var_vs_K_eq": 0.179606891712702,
+    "T_var_vs_EW_all": 0.48844985426544,
+    "K_vs_K_eq": 0.134948482122722,
+    "definition": "mean_m ½Σ_i |W_a,i(m) − W_b,i(m)| (상위 25 절단·재정규화 뒤 종목 비중 · 보고 전용)"
+  }
+}

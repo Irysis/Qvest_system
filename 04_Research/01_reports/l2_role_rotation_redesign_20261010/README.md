@@ -91,6 +91,27 @@ Q 판단(위임): 고정 축 교체는 헌법 수준 → 먼저 **병행 실험*
 (충실구현 엔진 8 × {K200∪KQ150, 전 시장} · 같은 하네스·같은 데이터 판본(2026-09-30)·같은 유동성 하한 · 권위 등급 대조).
 - 전 시장이 일관되게 낫다 → 2계층 슬리브를 전 시장 판 모듈로 구성하고 2000-06 예열 채택을 도훈께 상정(고정 축 변경은 도훈 확인).
 - 섞이거나 나쁘다 → 고정 축 유지, 2000~2009 는 K200 단독 예열(PIT 시변 정의 그대로).
+- ★**결과(2026-10-10 완료)**: 등급 변화 0/8 · 롱온리 3개 중 악화 2(cond-mat C PORT_t +0.30→−1.05 · 2608.14014 MDD 70%→99%) · 무차이 1 → **고정 축 유지 · 2000~2009 = K200 단독 예열**. 보고서 = `04_Research/01_reports/universe_fullmkt_pilot_20261010/README.md`.
+
+## 7. 진행 기록 (2026-10-10 · 도훈 "2계층 리서치 시작해")
+
+| 단계 | 결과 | 산출 |
+|---|---|---|
+| 선결 수리 ①② | 2계층 러너 벤치 = 정본 `benchmark.parquet`(구판 STR_943 bm_xts +1일 · 1일 어긋나면 중단) · 풀 close_t1 단일 규약 80→65(재조립 23 · 제외 15: 레거시 QEPM 7 · STR_AS 5 · RP 3) · 테스트 50/50 · 21/21 | `run_wf_ensemble.R` v4r2 · `build_module_performance.R` · `08_Tests/regime/test_l2_pool_close_t1.R` |
+| as-of 역할 라벨 | 누출 음성 대조 30/30 비트 동일(양성 대조 검출) · 최종일 등급 일치 85.5%(불일치 = PS 확정 지연) · **개시 = 2012-06**(확정 약세 2회) · 네 슬리브 ≥2 = **2015-10** · 슬리브 중앙값 방어 18 · 공격 43 · 반등 17 · α 52(설계 가정 5~13 보다 크고 겹침) · 분산 역할은 as-of 불가로 제외 | `04_Research/l2_role_rotation/asof_roles.parquet` · `strategy_role_asof.R` |
+| 예측기 PIT 감사 | PIT-clean = 점프 모델 하나(운영 MSM = **전 표본 모수 C1** · 대체 HMM = 평활 C1 · 예측 시계열·AE·통합 신호 = 오염 입력) → as-of 재추정판 MSM_asof · HMM2_asof 신설 | `pit_audit.json` |
+| **MC1(방향)** | **미통과** — IS 최고 JM AUC 0.675 [0.487, 0.839] · 단순 −12개월 추세와 동급 · IS 약세 4회(42개월)라 검정력 낮음 → §2.2 방향 로테이션(T) **측정 안 함** | `predictor_selection_IS.json`(선정 기록이 OOS 보다 먼저) |
+| 분산 판별력 | MSM_asof 0.840 · HMM2_asof 0.815(IS) — "예측기는 방향이 아니라 분산을 맞힌다"가 PIT-clean 판에서 재현 | 같은 파일 |
+| 방향 전환 | 첫 측정 = **T_var**(분산 국면 → 역할 기울이기) vs **K**(노출 짝 정적 혼합) · 분산 표적은 IS 결과를 본 뒤 채택(사전등록에 공시) · 근거 Moreira-Muir(2017) [doi](https://doi.org/10.1111/jofi.12513) · Barroso-Santa-Clara(2015) [doi](https://doi.org/10.1016/j.jfineco.2014.11.010) | 사전등록 `PR-L2-ROLESLEEVE-V0` |
+| 25종 상한 | 구 러너는 모듈 **수익률**만 섞어 보유 기록이 비어 있었다(최종 25종 상한 미집행 — pit.md 위반 형태) → 새 배분기는 모듈 보유를 합산해 상위 25종 · 정본 하네스(close_t1 · 15bps · essence)로 측정 | `allocator_engine.R` |
+| 새 PIT 위반 | 운영 MSM 전 표본 모수(C1) — 신규 발견 · 연쇄 오염 지도 작성 중(BOOK_0001·강화 오버레이 40칸은 미사용 확인) | `04_Research/01_reports/msm_c1_chain_audit_20261010/` |
+
+| **첫 측정 결과** | 5 arm 전부 **C** · T_var PORT_t −1.00 / K −1.13 / **EW_all −0.24(SR 0.67 · CAGR 14% — 최고)** · H1 T_var−K +0.54%/년 **t 0.28 = 미결** · MC1_var 통과 · **MC2 미통과**(as-of 방어 슬리브 약세월 잔차 −0.25%/월, t −0.59) · MC3 통과 0.117(처치 전달) · 후보 49/65 가 1계층 C1류 표식 상속 → mechanism_only | `04_Research/l2_role_rotation/RESULT_v0.md` · 사전등록 초안 sha `6f278194…`(정식 등록은 rf_prereg 가 L2 바닥 부재 등 7건으로 거부 → 초안 고정 + `verdict_l2v0.R` 1회 집행) |
+| MSM 봉쇄 | 격리 `PITQ-C1-MSM-20261010`(대조 탐침 7/7 · 돌연변이 6/6) · 결정 `PIT-C1-MSM-PARAMS` open(권고 = 연말 as-of 재적합) | `06_Registry/pit_quarantine.json` |
+
+**다음 단위(v1) 우선순위**: ① 방어 역할 정의를 미래로 이어지는 형태로 재설계(as-of 하방 β · defensive_score 계열) 후 MC2 재측정 — 역할 기반 2계층의 토대 ② EW_all 우위 분해(역할 구조 vs 전 모듈 분산) ③ 기울기를 역할 라벨 대신 모듈 as-of β 순위에 거는 안 ④ FR 레지스트리·L2 원장 등재 어댑터 + rf_prereg 의 L2 바닥 개념(정식 사전등록 경로).
+
+정정: §2.2 표의 "MSM 위기확률 = 2-state HMM" 은 틀렸다 — 운영 생산자는 `msm_update.R`(전 표본 모수), 2-state HMM 은 실패 시 대체 경로(`msm_daily_refit.R`, 평활 확률)다.
 
 ## 6. 하지 않는 것
 

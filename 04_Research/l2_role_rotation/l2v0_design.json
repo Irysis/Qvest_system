@@ -1,0 +1,63 @@
+{
+  "schema": "l2_rolesleeve_design_v0",
+  "prereg_id": "PR-L2-ROLESLEEVE-V0",
+  "written_at": "2026-10-10T22:30:00+0900",
+  "written_by": "Q (2계층 리서치 1단위 #1 — 도훈 위임 '자체판단으로 진행' 2026-10-10)",
+  "status": "frozen_before_measurement",
+  "note": "allocator_engine.R 가 읽는 유일한 설계 상수 파일. 사전등록(PR-L2-ROLESLEEVE-V0 draft)이 이 파일의 sha256 을 고정한다 — 측정 뒤 이 파일을 고치면 사전등록과 어긋난다(개정 = 새 사전등록).",
+  "window": {
+    "first_holding_month": "2015-10-01",
+    "last_holding_month": "2026-09-01",
+    "data_cutoff": "2026-09-30",
+    "basis": "first_holding_month = as-of 4슬리브(방어·공격·반등·α)가 전부 구성원 ≥2 인 첫 결정월(04_Research/l2_role_rotation/README.md §3(iii) · 65 후보 교집합에서 재확인 2026-10-10: 2015-10-01 · 이후 132개월 전부 ≥2 · 0 인 달 없음). last_holding_month = data_cutoff 의 달."
+  },
+  "signal_date_rule": "보유월 m(첫날 = decision_date) 의 시그널일 s_m = RAWDATA 거래일 중 m 첫날보다 엄격히 이전인 마지막 날(직전 달 마지막 거래일). 집행 = 하네스 get_execution_date(s_m) = m 의 첫 거래일 종가(close_t1). 모든 입력은 s_m 이하 자료만.",
+  "candidates": {
+    "rule": "06_Registry/module_performance.json 의 65 close_t1 모듈 ∩ asof_roles.parquet 구성원 81 — 대응은 계열 경로(module_performance.modules[*].series_dir ≡ member_meta.csv series 의 디렉터리)로 맺는다",
+    "module_performance": "06_Registry/module_performance.json",
+    "member_meta": "04_Research/l2_role_rotation/member_meta.csv",
+    "expected_n": 65
+  },
+  "labels": {
+    "file": "04_Research/l2_role_rotation/asof_roles.parquet",
+    "ps_confirm": "phase",
+    "roles": ["defensive", "offensive", "rebound", "alpha"],
+    "member_rule": "is_member == TRUE (= grade_asof ∈ strategy_role.json pool.route_grades = A/B) · decision_date == 보유월 첫날",
+    "diversifier": "제외 — as-of 라벨 미산출(README §2.3)"
+  },
+  "predictor": {
+    "file": "04_Research/l2_role_rotation/work/msm_asof_daily.parquet",
+    "column": "Crisis_Prob_asof",
+    "rule": "P(m) = Date <= s_m 인 마지막 Crisis_Prob_asof (필터 확률 · 모수 = fit_date(직전 연말) 이하 자료 MLE — pit_audit.json candidate_verdicts.MSM_asof_CrisisProb PIT-clean)",
+    "lag_stress_months": 1,
+    "forbidden": ".cache/msm_daily_latest.parquet (운영 캐시 — 전기간 모수 C1 오염 · pit_audit.json sources.MSM_prod_CrisisProb contaminated)"
+  },
+  "sleeve_weights": {
+    "w_hi": {"defensive": 0.5, "offensive": 0.0, "rebound": 0.0, "alpha": 0.5},
+    "w_lo": {"defensive": 0.0, "offensive": 0.3333333333333333, "rebound": 0.3333333333333333, "alpha": 0.3333333333333333},
+    "w_eq": {"defensive": 0.25, "offensive": 0.25, "rebound": 0.25, "alpha": 0.25},
+    "root": "역할 집합 안 동일 분할 = 1/N — DeMiguel, Garlappi & Uppal (2009) Optimal Versus Naive Diversification. RFS 22(5) https://doi.org/10.1093/rfs/hhm075 · 고분산 국면에서 위험 노출 축소 = Moreira & Muir (2017) Volatility-Managed Portfolios. JF 72(4) https://doi.org/10.1111/jofi.12513 · Barroso & Santa-Clara (2015) Momentum has its moments. JFE 116(1) https://doi.org/10.1016/j.jfineco.2014.11.010",
+    "mix_rule": "w(m) = P·w_hi + (1−P)·w_lo",
+    "empty_sleeve_rule": "구성원 0 인 슬리브의 비중은 0 으로 두고 남은 슬리브 비중을 합 1 로 재정규화(모든 arm 동일 적용 · 창 안 발생 0건 예상 — 발생 시 엔진 진단에 기록)",
+    "within_sleeve": "동일가중(구성원 수로 나눔) — 한 모듈이 여러 슬리브에 속하면 각 슬리브 몫을 합산"
+  },
+  "arms": {
+    "T_var": {"role": "treatment", "order": 1, "weights": "P(m)·w_hi + (1−P(m))·w_lo"},
+    "K": {"role": "control", "order": 2, "weights": "Pbar·w_hi + (1−Pbar)·w_lo · Pbar = 창 132개월 P(m) 의 산술평균(= T_var 슬리브 비중의 시간 평균) — P 계열만으로 계산(성과 미열람) · ★전기간 P 평균을 쓰므로 실시간 실행 불가 대조(C1 성격) — 후보 아님·등급 진단 전용"},
+    "K_eq": {"role": "control", "order": 3, "weights": "w_eq (1/4 씩)"},
+    "S": {"role": "control", "order": 4, "weights": "P(m−1)·w_hi + (1−P(m−1))·w_lo — 신호 1개월 추가 지연(C5 lag-1 스트레스)"},
+    "EW_all": {"role": "control", "order": 5, "weights": "슬리브 무시 · 시점 m 에 가용한 후보 모듈 전부 동일가중"}
+  },
+  "construction": {
+    "module_holdings": "모듈별 04_holdings.csv(target_weight) — 시점 m 에 쓰는 스냅샷 = exec_date <= get_execution_date(s_m) 인 마지막 스냅샷(그 모듈이 보유월 m 동안 실제로 들고 있는 목표 비중 · 모듈 자신의 시그널일 <= s_m). 모듈 가용 = 그런 스냅샷이 있음",
+    "holdings_panel": "04_Research/l2_role_rotation/work/l2v0_module_holdings.parquet",
+    "aggregate": "종목 비중 = Σ_모듈 (모듈 비중 × 모듈 종목 비중) — 순(net) 합산: 롱숏 모듈 2개(RP_20260902_122546_22268 · RP_20260907_101130_20668)의 음수 비중도 그대로 더한다(사양 문언 그대로). 롱온리 절단은 합산 뒤",
+    "universe": "시그널일 s_m 의 K200∪KQ150 멤버(RAWDATA K200/KQ150 플래그 — 러너 .apply_universe 와 같은 식) — 06_Registry/reinforce_program.json fixed_axes.universe",
+    "liquidity": "shift(frollmean(Close×Vol, 20), 1) at s_m >= fixed_axes.liq_adv20_min (C10 t-1 · rf_cell_engine.R 과 같은 식)",
+    "eligible": "합산 비중 > 0 ∧ 유니버스 ∧ 유동성",
+    "truncate": "합산 비중 내림차순 상위 fixed_axes.n_max(25) · 동률은 Ticker 오름차순(자료 무관 결정론)",
+    "normalize": "Σw = 1 · w >= 0 (long-only) · 비중 상한 없음(v10)",
+    "rebalance": "월 1회(s_m) · 비용 = 하네스 15bps × Σ|Δw| · 집행 close_t1",
+    "fixed_axes_source": "06_Registry/reinforce_program.json#fixed_axes (n_max · universe · liq_adv20_min · commission_bps · long_only)"
+  }
+}
