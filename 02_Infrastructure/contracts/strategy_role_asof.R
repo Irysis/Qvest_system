@@ -243,7 +243,8 @@ sra_flatten <- function(card, M, member_id, cfg, roles = c("defensive", "offensi
                      last_ym = as.character(card$last_ym %||% NA_character_), beta = as.numeric(card$beta %||% NA_real_),
                      n_regime_obs = NA_integer_, n_phases = NA_integer_, mean = NA_real_, t = NA_real_, oos = NA_integer_,
                      grade_asof = NA_character_, is_member = FALSE, alpha_basis = NA_character_, both_nonneg = NA,
-                     ps_confirm = M$confirm)
+                     ps_confirm = M$confirm,
+                     ps_confirmed_through = { k <- which(!is.na(M$R$ps_bear)); if (length(k)) M$R$ym[max(k)] else NA_character_ })
   if (!identical(st, "ok")) return(base)
   R <- M$R
   used <- as.character(card$ym_used %||% character(0))                      # sr_card 가 쓴 달(연속 가정 없음)
