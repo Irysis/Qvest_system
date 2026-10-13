@@ -158,6 +158,9 @@ rx_toolbox_md <- function(root = NULL) {
 # 처방 입력 문서 검사(fail-closed) — τ_D 초과 날짜 · 등급 판정 표기가 있으면 멈춘다(R4: 처방 입력엔 τ_D 이전 정보만)
 .rx_assert_clean <- function(txt, root, what) {
   tau <- as.Date(fromJSON(file.path(root, "06_Registry/behavior_card.json"), simplifyVector = TRUE)$tau_d)
+  # 비정상 UTF-8 바이트(pdftotext 산출 등)가 있으면 정규식이 그 문자열을 건너뛴다(경고만 내고 미검사 = 거짓 통과) — 먼저 정리한다
+  txt <- iconv(paste(txt, collapse = "\n"), from = "UTF-8", to = "UTF-8", sub = "")
+  if (is.na(txt)) stop("[rx_round] ", what, " 인코딩 판독 불가 — 검사할 수 없다(fail-closed)")
   d <- regmatches(txt, gregexpr("(19|20)\\d{2}-(0[1-9]|1[0-2])-(0[1-9]|[12]\\d|3[01])", txt))[[1]]
   bad <- d[suppressWarnings(as.Date(d)) > tau]
   ym <- regmatches(txt, gregexpr("(?<![0-9-])(19|20)\\d{2}-(0[1-9]|1[0-2])(?![0-9-])", txt, perl = TRUE))[[1]]
@@ -227,11 +230,11 @@ rx_prepare_lane <- function(lane_dir, files, prompt, root = NULL) {
 
 #' 에이전트 출력의 마지막 ```json 블록
 rx_parse_json <- function(txt) {
-  txt <- paste(txt, collapse = "\n")
-  m <- gregexpr("```json\\s*\\n(.*?)\\n```", txt, perl = TRUE)
+  txt <- gsub("\r\n", "\n", paste(txt, collapse = "\n"), fixed = TRUE)
+  m <- gregexpr("(?s)```json[ \\t]*\\n(.*?)\\n```", txt, perl = TRUE)      # (?s) — 블록은 여러 줄이다
   blk <- regmatches(txt, m)[[1]]
   if (!length(blk)) stop("[rx_round] 출력에 ```json 블록이 없다")
-  body <- sub("^```json\\s*\\n", "", sub("\\n```$", "", blk[length(blk)]))
+  body <- sub("(?s)^```json[ \\t]*\\n", "", sub("(?s)\\n```$", "", blk[length(blk)], perl = TRUE), perl = TRUE)
   fromJSON(body, simplifyVector = FALSE)
 }
 

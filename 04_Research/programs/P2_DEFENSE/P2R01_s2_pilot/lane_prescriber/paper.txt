@@ -1,0 +1,539 @@
+Cross-sectional Stock Price Prediction using Deep
+    Learning for Actual Investment Management
+
+           Masaya Abe                                                            Kei Nakagawa
+
+Nomura Asset Management Co,Ltd.                                        Nomura Asset Management Co,Ltd.
+1-11-1 Nihonbashi, Chuo-ku, Tokyo,                                     1-11-1 Nihonbashi, Chuo-ku, Tokyo,
+
+             103-8260, Japan                                                        103-8260, Japan
+            81 (0)3-4376-6049                                                      81 (0)3-4376-6049
+
+masaya.abe.428@gmail.com                                                  kei.nak.0315@gmail.com
+
+ABSTRACT                                                               to increase prediction accuracy practically. They especially try to
+                                                                       grasp stock price fluctuation patterns by trial and error. These
+Stock price prediction has been an important research theme both       approaches have attracted attention for improving computing
+academically and practically. Various methods to predict stock         capabilities in recent years.
+prices have been studied until now. The feature that explains the
+stock price by a cross-section analysis is called a "factor" in the    The second method performs cross-section (regression) analysis
+field of finance. Many empirical studies in finance have identified    using cross-sectional data such as corporate attributes. The feature
+which stocks having features in the cross-section relatively increase  that explains the stock price by a cross-section analysis is called a
+and which decrease in terms of price. Recently, stock price            "factor" in the field of finance. Many empirical studies in finance
+prediction methods using machine learning, especially deep             have identified which stocks having features in the cross-section
+learning, have been proposed since the relationship between these      relatively increase and which decrease in terms of price. The
+factors and stock prices is complex and non-linear. However, there     representative model that explains the cross-sectional stock prices
+are no practical examples for actual investment management. In         is the Fama-French three-factor model [8,9]. They proposed that
+this paper, therefore, we present a cross-sectional daily stock price  the cross-sectional structure of stock returns can be explained by
+prediction framework using deep learning for actual investment         three factors: beta (market portfolio), size (market capitalization),
+management. For example, we build a portfolio with information         and value (price book-value ratio). Since then, many factors other
+available at the time of market closing and invest at the time of      than those in the Fama-French three-factor model were found one
+market opening the next day. We perform empirical analysis in the      after another. As a result, [10] reported that over 300 factors were
+Japanese stock market and confirm the profitability of our             discovered until 2012. Moreover, most of these factors have been
+framework.                                                             found in the last 10 years.
+
+CCS Concepts                                                           Although the factors that investors should consider are rapidly
+                                                                       increasing, it is so difficult to simultaneously examine over 300
+‚Ä¢ Applied computing‚ûùLaw, social and behavioral sciences‚ûù               factors due to the curse of dimension. Besides, a linear regression
+Economics                                                              model has been used in the financial field because of easy statistical
+                                                                       handling and the robustness of the result. However, since the
+Keywords                                                               relationship between these factors and stock returns is complex [11],
+                                                                       linear regression models have limited prediction accuracy. As non-
+Deep Learning, Stock Return Prediction, Cross-Section, Multi-          parametric cross-sectional stock prediction studies [12-16], they
+factor Model                                                           used deep learning to combine various factors nonlinearly. They
+                                                                       reported that the prediction accuracy and profitability can be
+1. INTRODUCTION                                                        improved by combining non-linearly using deep learning rather
+                                                                       than simply combining various factors by linear regression.
+Stock price prediction has been an important research theme both
+academically and practically. Various methods to predict stock         However, these studies are limited in monthly stock price prediction
+prices have been studied until now. These methods can be roughly       and they are not in line with actual investment management. In this
+divided into two aspects: time-series and cross-section analysis.      study, we present a cross-sectional daily stock price prediction
+                                                                       framework using deep learning for actual investment management.
+The first method analyzes past stock prices as time-series data and    And we perform empirical analysis in the Japanese stock market to
+perform time-series analysis. The financial time-series analysis       confirm the effectiveness of our framework. In order to invest on a
+originally started from a linear model, such as the autoregressive     daily basis, we build a portfolio at a time when we can actually
+(AR) model in which the parameters are uniquely determined [1].        invest. For example, we build a portfolio with information available
+As many nonlinear behaviors have been observed in actual               at the time of market closing and invest at the time of market
+financial time-series data, the generalized autoregressive             opening the next day. In addition, the portfolio turnover rate is
+conditional heteroscedasticity (GARCH [2]) model incorporating         calculated and compared in order to consider the impact of
+the time series structure into volatility has been used as one         transaction costs. A portfolio with a high turnover rate will have
+approach. In recent years, the GARCH model has been expanded           more transaction costs than with a portfolio with a lower rate.
+to multivariate even for many stocks [3,4]. In addition, nonlinear
+models such as k-nearest neighbor [5], neural networks [6] and         The remainder of the paper is organized as follows. Section 2
+support vector machines [7] have been used for stock price             summarizes related works. Section 3 provides a brief description of
+predictions in terms of time-series analysis. These models not only
+strive to grasp economic implications academically but also strive
+our prediction methodology. Section 4 shows the empirical study        investment universe for overseas institutional investors investing in
+in the Japanese stock market. Section 5 concludes the paper.           Japanese stocks. We use the 33 factors listed in Table 1.
+
+2. RELATED WORK                                                                     Table 1 List of Factors
+
+Many studies on stock price prediction in terms of time-series         No.                         Factor
+analysis with machine learning have been published. For example,
+[17,18] showed that the shape of stock price fluctuation is an         1 Return from previous day
+important feature in the prediction of future prices. They proposed
+a method to predict future stock prices with the past fluctuations     2 Return from 2 days ago
+similar to the current with indexing dynamic time warping method
+[19]. [20] created an automatic stock trading system in the            3 Return from 3 days ago
+Australian stock market. They used a neural network that decides
+when to buy or sell the stock. The inputs are four variables arising   4 Return from 5 days ago
+from the fundamental analysis: price-earnings ratio (PER), price
+book-value ratio (PBR), return on equity (ROE) and dividend            5 Return from 10 days ago
+payout ratio. The outputs are a strong signal that represents the
+expected returns of the predicted stock. [21] investigated how to      6 Return from 20 days ago
+predict stock indices by using support vector machines (SVMs) to
+learn the relationship among several technical indicators such as      7 Return from 40 days ago
+several moving averages and the stock index price. They used the
+grid search method to optimize the SVM model parameters. The           8 Return from 60 days ago
+experimental results show that transforming the input data space of
+SVM can bring good performance in finance engineering.                 9 Average trading value over the past 60 days
+
+[22,23] presented a review of the application of several machine       10 Average trading value over the past 5 days/60 days
+learning methods in finance. In their survey, most of these were
+forecasts in terms of time series analysis. However, there is no       11 Average trading value over the past 10 days/60 days
+paper that deals with the prediction method in terms of a multi-
+factor model. There are many studies on daily stock price              12 Average trading value over the past 20 days/60 days
+forecasting from the viewpoint of time series forecasting [24,25].
+However, these studies are not actually investable because they        13 Change in operating income forecast from 5 days ago
+trade at the closing price using information available after closing.
+                                                                       14 Change in operating income forecast from 10 days ago
+In terms of the cross-section analysis, [11] discussed the use of
+multilayer feedforward neural networks for predicting stock returns    15 Change in operating income forecast from 20 days ago
+within the framework of the multi-factor model. [12,13] extended
+this model to deep learning and other machine learning model such      16 Change in target stock price forecast from 5 days ago
+as SVM and Random Forest. They investigated the performance of
+each machine learning method on the Japanese stock market. They        17 Change in target stock price forecast from 10 days ago
+showed that deep neural networks generally outperform shallow
+ones, and the best networks also outperform representative machine     18 Change in target stock price forecast from 20 days ago
+learning models. These works are only for use as a return model,
+and the problem is that the viewpoint of a risk model is lacking.      19 Book-value to Price Ratio
+[14] proposed the application of LRP [26] to decompose the
+attributes of the predicted return as a risk model. [15] extend this   20 Earnings to Price Ratio
+model to a time-varying multi-factor model with LSTM + LRP
+because they do not examine the influence on performance due to        21 Dividend Yield
+the approximation of LRP and not considering the time-
+dependency of factors. [16] proposed a deep transfer learning          22 Sales to Price Ratio
+among multiple stock market regions. They showed that the deep
+transfer learning outperforms not only off-the-shelf machine           23 Cashflow to Price Ratio
+learning methods but also the average return of major equity
+investment funds. However, these studies are limited in monthly        24 Return on Equity
+stock price prediction and they are not in line with actual
+investment management. We implement a daily portfolio                  25 Return on Asset
+construction framework that invests at a time when we can actually
+invest and reduces the impact of rebalancing timing on performance.    26 Return on Invested Capital
+
+3. DATASET AND METHODOLOGY                                             27 Accruals
+
+This section describes cross-sectional daily stock price prediction    28 Total Asset Turnover Rate
+framework using deep learning for actual investment management.
+                                                                       29 Current Ratio
+3.1 Dataset
+                                                                       30 Equity Ratio
+We prepare dataset for TOPIX500 Index constituents. The
+TOPIX500 Index comprises the large and mid-cap segments of the         31 Total Asset Growth Rate
+Japanese stock market. The index is also often used as an
+                                                                       32 Capital Expenditure Growth Rate
+
+                                                                       33 Investment to Asset
+
+                                                                       These are used relatively often in practice. In calculating these
+                                                                       factors, we acquire necessary data from Factset, WorldScope,
+                                                                       Thomson Reuters, I/B/E/S. Forecast data is obtained from I/B/E/S
+                                                                       to calculate No. 13-18. The actual financial data is acquired from
+                                                                       WorldScope and Reuters Fundamentals (WorldScope priority). No.
+                                                                       19-33 are calculated on a monthly basis (at the end of month). The
+                                                                       following are definitions of factors No.19-33.
+
+                                                                        No.19 = Net Assets/Market Value
+No.20 = Net Profits/Market Value                                                      Deep Neural Network (DNN)
+No.21 = Dividends/Market Value                                                        DNN is implemented with an open source machine learning library
+No.22 = Sales/Market Value                                                            TensorFlow [27]. For the hyperparameters, there are 6 patterns in
+No.23 =Operating Cashflow/Market Value                                                total. For the hyperparameter, there are 6 patterns in total shown in
+No.24 =Net Profits/Net Assets                                                         Table 2. There are 3 patterns with hidden layer and 2 patterns with
+No.25 =Net Operating Profits/Total Assets                                             dropout rate and the number of epochs. We use the ReLU function
+No.26=Net Operating Profits After Tax/(Debt + Net Assets)                             [28] as the activation function, and Adam [29] for the optimization
+No.27=-(Changes in Current Assets and Liabilities                                     algorithm. Batch normalization [30] is applied to activation. The
+                                                                                      mini-batch size is set to 500. As for the starting point of the analysis,
+          -Depreciation)/Total Assets                                                 we initialize to generate the network weights from TensorFlow's
+No.28=Sales/Total Assets                                                              function "tf.truncated_normal" set to mean 0 and standard deviation
+No.29=Current Assets/Current Liabilities
+No.30=Net Assets/Total Assets                                                         ‚àö2/Ì†µÌ±Ä" (Ì†µÌ±Ä is the size of the previous layer).
+No.31=Change Rate of Total Assets from the previous period
+No.32=Change Rate of Capital Expenditure                                                     Table 2. The structure of DNN
+
+          from the previous period                                                    Model  Hidden Layers                           Number of
+No.33=Change Rate of Payments for acquisition of Tangible
+                                                                                             (Dropout Rate)                               Epoch
+          Fixed Assets from the previous period/Total Assets
+                                                                                      DNN1   500-200-100-50-10                               20
+
+                                                                                             (50%-40%-30%-20%-10%)
+
+                                                                                      DNN2   500-200-100-50-10                               30
+
+                                                                                             (50%-40%-30%-20%-10%)
+
+                                                                                      DNN3   200-200-100-100-50                              20
+
+                                                                                             (50%-50%-30%-30%-10%)
+
+3.2 Problem Formulation                                                               DNN4   200-200-100-100-50                              30
+
+To define the problem as a regression problem. For example, for                              (50%-50%-30%-30%-10%)
+stock Ì†µÌ±ñ in TOPIX500 Index constituents at day Ì†µÌ±° represented as Ì†µÌ±àÌ†µÌ±°,
+33 factors listed in Table 1 are defined by Ì†µÌ±•Ì†µÌ±ñ,Ì†µÌ±° ‚àà Ì†µÌ±Ö33 as input values.           DNN5   300-300-150-150-50                              20
+The output value is defined by the next 5 day‚Äôs stock return,
+Ì†µÌ±¶Ì†µÌ±ñ,Ì†µÌ±°+5 ‚àà Ì†µÌ±Ö. Note that Ì†µÌ±¶Ì†µÌ±ñ,Ì†µÌ±°+5 is defined as Ì†µÌ±ùÌ†µÌ†µÌ±ñÌ±ê,Ì†µÌ±°+5/Ì†µÌ±ùÌ†µÌ†µÌ±ñÌ±ú,Ì†µÌ±°+1 ‚àí 1 due to         (50%-50%-30%-30%-10%)
+practical tradability. Here, Ì†µÌ±ùÌ†µÌ†µÌ±ñÌ±ê,Ì†µÌ±°+5 denotes the closing price at day
+Ì†µÌ±° + 5 and Ì†µÌ±ùÌ†µÌ†µÌ±ñÌ±ú,Ì†µÌ±°+1 denotes the opening price at day Ì†µÌ±° + 1. We define             DNN6   300-300-150-150-50                              30
+5 days ahead stock return as output value to align with the portfolio
+construction method as describe later (Figure 1).                                            (50%-50%-30%-30%-10%)
+
+For data preprocessing, rescaling is performed so that each input                     Random Forest (RF)
+value is maximally 1 (minimum‚âà0) by ranking each input value in                       Random Forest is implemented with scikit-learn [31] with the class
+                                                                                      "sklearn.ensemble.RandomForestRegressor". For the hyper
+ascending order by stock universe at each day and then dividing by                    parameters, the number of features (max_features) is 11 (= 33/3),
+                                                                                      the number of trees(n_estimators) is 1,000 and the tree depth (max
+the maximum rank value. Similar rescaling is done for output                          depth) is {3, 5, 7}. We denote RF1, RF2 and RF3 in order of
+values Ì†µÌ±¶Ì†µÌ±ñ,Ì†µÌ±°+5, to convert to the cross-sectional stock returns. We                 increasing the tree depth.
+call the dataset (Ì†µÌ±•Ì†µÌ±ñ,Ì†µÌ±°,Ì†µÌ±¶Ì†µÌ±ñ,Ì†µÌ±°+5) as one training data. Note that Ì†µÌ±•Ì†µÌ±ñ,Ì†µÌ±° and
+Ì†µÌ±¶Ì†µÌ±ñ,Ì†µÌ±°+5 are assumed to be the values after data preprocessing. This                 Ridge Rigression(RR)
+procedure is extended to using the latest Ì†µÌ±Å = 1,000 days rather                      Ridge Regression is implemented with scikit-learn with the class
+                                                                                      "sklearn.linear_model.Ridge". For the hyper parameters, we set the
+than the most recent set of training data (one training set).                         regularization strength("alpha") to {0.1, 1, 10}. We denote RR 1,
+                                                                                      RR2 and RR3 in order of increasing the regularization strength.
+Our problem is to find a predictor Ì†µÌ±ì. We use the mean squared error
+                                                                                      We train the model by using the latest 1,000 sets of training data.
+(MSE) as the loss function and define Ì†µÌ±ÄÌ†µÌ±ÜÌ†µÌ∞∏Ì†µÌ±á when training the
+model at Ì†µÌ±á as follows:                                                               To calculate the prediction, we substitute the latest input values into
+
+1 Ì†µÌ±á‚àí5              2                                                                 the model after training has occurred. The cross-sectional
+
+Ì†µÌ±ÄÌ†µÌ±ÜÌ†µÌ∞∏Ì†µÌ±á = Ì†µÌ∞æ ‚àë ‚àë ((Ì†µÌ±¶Ì†µÌ±ñ,Ì†µÌ±°+5 ‚àí Ì†µÌ±ì(Ì†µÌ±•Ì†µÌ±ñ,Ì†µÌ±°; Ì†µÌºÉÌ†µÌ±á)))  (1)                              predictive stock return (score) of stock Ì†µÌ±ñ at day Ì†µÌ±á + 5 is calculated
+
+Ì†µÌ±°=Ì†µÌ±á‚àíÌ†µÌ±Å‚àí4 Ì†µÌ±ñ‚ààÌ†µÌ±àÌ†µÌ±°                                                                    from time Ì†µÌ±á by (2) substituting Ì†µÌ±•Ì†µÌ±ñ,Ì†µÌ±á into the function Ì†µÌ±ì in (2) with
+                                                                                      the parameter Ì†µÌºÉÌ†µ‚àóÌ±á, where Ì†µÌºÉÌ†µ‚àóÌ±á is calculated from (1) with Ì†µÌ±Å = 1,000:
+Ì†µÌ∞æ is the number of all training data. Ì†µÌºÉÌ†µÌ±á is the parameter calculated
+by solving (1) and makes the form of a function Ì†µÌ±ì.                                          Ì†µÌ±ÜÌ†µÌ±êÌ†µÌ±úÌ†µÌ±üÌ†µÌ±íÌ†µÌ±ñ,Ì†µÌ±á+5 = Ì†µÌ±ì(Ì†µÌ±•Ì†µÌ±ñ,Ì†µÌ±á; Ì†µÌºÉÌ†µ‚àóÌ±á)  (2)
+
+3.3 Prediction Models                                                                 We construct investment portfolios with above scores.
+
+We use deep learning as a model of the function Ì†µÌ±ì, and use ridge
+regression and random forest for comparison model. Details are as
+listed below.
+O: open, C: close
+
+Time „Éª„Éª„Éª t-7       t-6  t-5       t-4     t-3          t-2  t-1    t           t+1 t+2 t+3 t+4 t+5 t+6 t+7 t+8 t+9 t+10 t+11 „Éª„Éª„Éª
+
+- „Éª„Éª„Éª O „Éª„Éª„Éª C O „Éª„Éª„Éª C O „Éª„Éª„Éª C O „Éª„Éª„Éª C O „Éª„Éª„Éª C O „Éª„Éª„Éª C O „Éª„Éª„Éª C O „Éª„Éª„Éª C O „Éª„Éª„Éª C O „Éª„Éª„Éª C O „Éª„Éª„Éª C O „Éª„Éª„Éª C O „Éª„Éª„Éª C O „Éª„Éª„Éª C O „Éª„Éª„Éª C O „Éª„Éª„Éª C O „Éª„Éª„Éª C O „Éª„Éª„Éª C O „Éª„Éª„Éª C „Éª„Éª„Éª
+
+Train datesets
+
+1                       Features       Ground truth: 5 day's stock return
+
+2 Features                   Ground truth: 5day's stock return
+
+Ôºö                  Ôºö                      Ôºö                                Train
+
+1000 Ôºö                                 Ôºö                                       ‚Üì
+
+                                                                               ‚Üì
+
+                                                                   Features ‚Üí        Portfolio1 (Fixed holding: 20%)
+
+                                                                             Features ‚Üí  Portfolio2 (Fixed holding: 20%)
+
+                                                                                     Features ‚Üí  Portfolio3 (Fixed holding: 20%)
+
+                                                                                         Features ‚Üí           Portfolio4 (Fixed holding: 20%)
+
+                                                                                                 Features ‚Üí               Portfolio5 (Fixed holding: 20%)
+
+                                               Train datesets
+
+                                                       1           Features       Ground truth: 5 day's stock return
+
+                                                       2 Features          Ground truth: 5day's stock return
+                                                                                           Ôºö
+                                                       Ôºö    Ôºö                                                         Train
+
+                                               1000 Ôºö                             Ôºö                                        ‚Üì                              Rebalance
+
+                                                                                                                           ‚Üì
+
+                                                                                                              Features ‚Üí            Portfolio1 (Fixed holding: 20%)
+
+                                                                                                                      „Éª„Éª„Éª               „Éª„Éª„Éª                           „Éª„Éª„Éª
+
+                                               Figure 1. Our Portfolio Construction Framework.
+
+                                                                                     .   The return from the short portfolio is defined as
+
+3.4 Portfolio Construction Framework                                                                                          Ì†µÌ±ÖÌ†µÌ†µÌ±°Ì∞øÌ†µÌ±Ü = Ì†µÌ±ÖÌ†µÌ†µÌ±°Ì∞ø ‚àí Ì†µÌ±ÖÌ†µÌ†µÌ±°Ì±Ü
+
+In this paper, we consider two investment strategies that are widely                     Note that as shown in Figure 1, we calculate Ì†µÌ±ÖÌ†µÌ†µÌ±°Ì∞ø and Ì†µÌ±ÖÌ†µÌ†µÌ±°Ì∞øÌ†µÌ±Ü for each
+used in the literature of finance [8-10]. Namely, (i) the long                           of the five portfolios and use their average as Ì†µÌ±ÖÌ†µÌ†µÌ±°Ì∞ø and Ì†µÌ±ÖÌ†µÌ†µÌ±°Ì∞øÌ†µÌ±Ü bellow.
+portfolio strategy, and (ii) the long-short portfolio strategy. We
+consider an equally-weighted portfolio, which is simple yet                              Regarding the long portfolio strategy, the annualized return is the
+sometimes outperforms more sophisticated alternatives [32]. (i)                          excess return (Alpha) against the average return of all stocks in the
+The long portfolio strategy considered here buys the top quintile                        universe, the risk (tracking error; TE) is calculated as the standard
+(i.e., one-fifth) scores of the stocks with equal weight aiming to                       deviation of Alpha and risk/return is Alpha/TE (information ratio;
+outperform the average return of all the stocks. (ii) The long-short                     IR).
+portfolio strategy not only buys the top quintile scores of the stocks
+but also sells the bottom quintile scores of the stocks. While the                                                                       Ì†µÌ±á
+long-short portfolio cannot take advantage of the stock market                                                                                              250
+growth, it is robust against a large market crisis (i.e., the financial
+crisis during 2007-2008) because of its market neutral position.                                               Alpha = ‚àè(1 + Ì†µÌªºÌ†µÌ±°) Ì†µÌ±á ‚àí 1
+Figure 1 shows our portfolio construction framework.
+                                                                                                                                        Ì†µÌ±°=1
+
+                                                                                                                      TE   =  ‚àö 250     (Ì†µÌªºÌ†µÌ±°     ‚àí       Ì†µÌºáÌ†µÌªº )2
+                                                                                                                                Ì†µÌ±á ‚àí 1
+
+The performance of portfolios 1 to 5 with different rebalancing                                                               IR = Alpha/TE
+timings in Figure 1 varies depending on the daily stock market
+
+fluctuations. In order to reduce the chances of having no other good                     Here, Ì†µÌªºÌ†µÌ±° = Ì†µÌ±ÖÌ†µÌ†µÌ±°Ì∞ø ‚àí 1/|Ì†µÌ±àÌ†µÌ±°| ‚àëÌ†µÌ±ñ ‚ààÌ†µÌ±àÌ†µÌ±° Ì†µÌ±¶Ì†µÌ±ñ,Ì†µÌ±°, Ì†µÌºáÌ†µÌªº = 1/Ì†µÌ±á ‚àëÌ†µÌ†µÌ±°Ì±á=1 Ì†µÌªºÌ†µÌ±°.
+portfolio by holding only one of the five portfolios, we will hold all
+five portfolios equally. We rebalance one of five portfolios hold                        Likewise, we evaluate the long-short portfolio strategy by its
+20% every business day. The prediction models are updated every                          annualized return (AR), risk as the standard deviation of return
+five business days.                                                                      (RISK), risk/return (R/R) as return divided by risk as for the long
+                                                                                         portfolio strategy.
+3.5 Performance Measures
+                                                                                                                              Ì†µÌ±á                   250
+In evaluating the long portfolio strategy and the long-short portfolio
+strategy, we use the following measures that are widely used in the                                                   AR   =  ‚àè(1   +   Ì†µÌ±ÖÌ†µÌ†µÌ±°Ì∞øÌ†µÌ±Ü  ) Ì†µÌ±á    ‚àí  1
+field of finance [33].
+                                                                                                                              Ì†µÌ±°=1
+
+First, we define the return of long portfolio Ì†µÌ±ÖÌ†µÌ†µÌ±°Ì∞ø and long-short                                           RISK         =  ‚àö 250     (Ì†µÌ±ÖÌ†µÌ†µÌ±°Ì∞øÌ†µÌ±Ü  ‚àí      Ì†µÌºáÌ†µÌ∞øÌ†µÌ±Ü)2
+portfolio Ì†µÌ±ÖÌ†µÌ†µÌ±°Ì∞øÌ†µÌ±Ü . Let Ì†µÌ∞øÌ†µÌ±° ‚äÇ Ì†µÌ±àÌ†µÌ±° : 1/5|Ì†µÌ±àÌ†µÌ±°| be the long portfolio. The                                                     Ì†µÌ±á ‚àí 1
+return from the long portfolio is defined as the average return of Ì†µÌ∞øÌ†µÌ±°.
+                                                                                                                              R/R = AR/RISK
+
+                           Ì†µÌ±ÖÌ†µÌ†µÌ±°Ì∞ø = 1/|Ì†µÌ∞øÌ†µÌ±°| ‚àë Ì†µÌ±¶Ì†µÌ±ñ,Ì†µÌ±°                                   Here, Ì†µÌºáÌ†µÌ∞øÌ†µÌ±Ü = 1/Ì†µÌ±á ‚àëÌ†µÌ†µÌ±°Ì±á=1 Ì†µÌ±ÖÌ†µÌ†µÌ±°Ì∞øÌ†µÌ±Ü.
+
+                                                            Ì†µÌ±ñ ‚ààÌ†µÌ∞øÌ†µÌ±°                     In summary, the return of the long (resp. long-short) portfolio is
+                                                                                         evaluated by Alpha (resp. AR), whereas the risk of the long (resp.
+Let Ì†µÌ±ÜÌ†µÌ±° ‚äÇ Ì†µÌ±àÌ†µÌ±° : 1/5|Ì†µÌ±ÜÌ†µÌ±°| be the short portfolio. The return from the                  long-short) portfolio is evaluated by TE (resp. RISK). We use the
+short portfolio is defined as the average return of Ì†µÌ±ÜÌ†µÌ±°
+
+                        Ì†µÌ±ÖÌ†µÌ†µÌ±°Ì±Ü = 1/|Ì†µÌ±ÜÌ†µÌ±°| ‚àë Ì†µÌ±¶Ì†µÌ±ñ,Ì†µÌ±°                                      risk-normalized return (i.e. IR for the long and R/R for the long-
+                                                                                         short) that gives more reliable measure than the return itself.
+                                             Ì†µÌ±ñ ‚ààÌ†µÌ±ÜÌ†µÌ±°
+We also evaluate maximum drawdown (MaxDD), which is yet                               risk-averse strategies. Overall, RF models have lower TN and DNN
+another widely used risk measures [34], for both of the long                          models have higher TN.
+portfolio strategy and the long-short portfolio strategy: Namely,
+MaxDD is defined as the largest drop from an extremum:                                       Table 3. Performance Summary of Long Portfolio
+
+Ì†µÌ±ÄÌ†µÌ±éÌ†µÌ±•Ì†µÌ∞∑Ì†µÌ∞∑              =   min       (0,  Ì†µÌ±äÌ†µÌ†µÌ±òÌ±ÉÌ†µÌ±úÌ†µÌ±üÌ†µÌ±°             ‚àí  1)             Model Alpha   TE  IR MaxDD                                                            TN
+
+                           Ì†µÌ±ò‚àà[1,Ì†µÌ±á]       max        Ì†µÌ±äÌ†µÌ±óÌ†µÌ±ÉÌ†µÌ±úÌ†µÌ±üÌ†µÌ±°                    DNN1 4.24% 3.06% 1.39 -3.15% 57.25%
+
+                                           Ì†µÌ±ó‚àà[1,Ì†µÌ±ò]
+
+                                                     Ì†µÌ±ò                               DNN2   3.36%  3.07% 1.09  -4.01%                                                      58.19%
+                                                                                      DNN3   5.15%  3.53% 1.46  -3.84%                                                      55.23%
+                        Ì†µÌ±äÌ†µÌ†µÌ±òÌ±ÉÌ†µÌ±úÌ†µÌ±üÌ†µÌ±° = ‚àè(1 + Ì†µÌ±ÖÌ†µÌ†µÌ±ñÌ±ÉÌ†µÌ±úÌ†µÌ±üÌ†µÌ±°)                            DNN4   4.40%  3.21% 1.37  -6.08%                                                      56.40%
+                                                                                      DNN5   5.11%  3.01% 1.70  -3.46%                                                      56.06%
+                                                   Ì†µÌ±ñ=1
+
+where Ì†µÌ±ÖÌ†µÌ†µÌ±ñÌ±ÉÌ†µÌ±úÌ†µÌ±üÌ†µÌ±° = Ì†µÌªºÌ†µÌ±° (resp. Ì†µÌ±ÖÌ†µÌ†µÌ±ñÌ±ÉÌ†µÌ±úÌ†µÌ±üÌ†µÌ±° = Ì†µÌ±ÖÌ†µÌ†µÌ±°Ì∞øÌ†µÌ±Ü ) for the long (resp. long-
+short) strategy.
+
+For evaluating the rebalance amount, we calculate the one-way                         DNN6 4.00% 2.86% 1.40 -4.14% 56.54%
+portfolio turnover (TN), which define as the average percentage of
+stocks traded in each period. TN from the long portfolio defines as                   RF1 3.02% 4.47% 0.68 -8.23% 44.31%
+
+                      1        Ì†µÌ±á‚àí1                                                   RF2 3.02% 4.49% 0.67 -8.75% 46.01%
+                  2(Ì†µÌ±á ‚àí
+Ì†µÌ±áÌ†µÌ±ÅÌ†µÌ∞ø         =           1)  ‚àë      ‚àë ‚ÄñÌ†µÌ±§Ì†µÌ†µÌ±ñ,Ì∞øÌ†µÌ±°+5 ‚àí Ì†µÌ±§Ì†µÌ†µÌ±ñÌ∞ø,Ì†µ+Ì±° ‚Äñ1                  RF3 2.68% 4.46% 0.60 -9.72% 47.54%
+
+                               Ì†µÌ±°=1 Ì†µÌ±ñ ‚ààÌ†µÌ∞øÌ†µÌ±°‚à™Ì†µÌ∞øÌ†µÌ±°+5                                   RR1 5.95% 3.82% 1.56 -4.03% 49.19%
+
+where Ì†µÌ±§Ì†µÌ†µÌ±ñÌ∞ø,Ì†µÌ±°+5 ‚àà Ì†µÌ∞øÌ†µÌ±°+5 is the portfolio weight at Ì†µÌ±° + 5 and Ì†µÌ±§Ì†µÌ†µÌ±ñÌ∞ø,Ì†µ+Ì±° ‚àà Ì†µÌ∞øÌ†µÌ±°    RR2 5.96% 3.82% 1.56 -4.03% 49.18%
+
+is the long portfolio weight after considering stock price fluctuation                RR3 5.95% 3.82% 1.56 -4.04% 49.19%
+
+between Ì†µÌ±° and Ì†µÌ±° + 5.
+
+Likewise, as for TN from the long-short portfolio, we define Ì†µÌ±áÌ†µÌ±ÅÌ†µÌ∞øÌ†µÌ±Ü                 Figure 2 shows the daily cumulative aof the best IR portfolio within
+as                                                                                    DNN, RF and RR. The red line (DNN5) is more stable throughout
+                                                                                      the period than the blue line (RR2) and orange line (RF1).
+                        Ì†µÌ±áÌ†µÌ±ÅÌ†µÌ∞øÌ†µÌ±Ü = Ì†µÌ±áÌ†µÌ±ÅÌ†µÌ∞ø + Ì†µÌ±áÌ†µÌ±ÅÌ†µÌ±Ü
+
+Ì†µÌ±áÌ†µÌ±Å Ì†µÌ±Ü        =      1    1)  Ì†µÌ±á‚àí1   ‚àë              ‚ÄñÌ†µÌ±§Ì†µÌ†µÌ±ñ,Ì±ÜÌ†µÌ±°+5 ‚àí Ì†µÌ±§Ì†µÌ†µÌ±ñ,Ì±ÜÌ†µ+Ì±° ‚Äñ1
+                  2(Ì†µÌ±á ‚àí
+                               ‚àë
+
+                               Ì†µÌ±°=1 Ì†µÌ±ñ ‚ààÌ†µÌ±ÜÌ†µÌ±°‚à™Ì†µÌ±ÜÌ†µÌ±°+5
+
+where Ì†µÌ±§Ì†µÌ†µÌ±ñ,Ì±ÜÌ†µÌ±°+5 ‚àà Ì†µÌ±ÜÌ†µÌ±°+5 is the portfolio weight at Ì†µÌ±° + 5 and Ì†µÌ±§Ì†µÌ†µÌ±ñ,Ì±ÜÌ†µ+Ì±° ‚àà Ì†µÌ±ÜÌ†µÌ±°
+
+is the short portfolio weight after considering stock price
+
+fluctuation between Ì†µÌ±° and Ì†µÌ±° + 5 . Finally, we average all five
+
+portfolio TN.
+
+These performance measures are calculated daily on the basis of
+the opening during the prediction period from 4th January 2013 to
+4th January 2018.
+
+4. EMPIRICAL STUDY                                                                    Figure 2. The Daily Cumulative Alpha of the Best IR Long
+                                                                                                     Portfolio within DNN, RF and RR.
+4.1 Result of Long Portfolio
+                                                                                      4.2    R4 sehsouwlstthoefreLsuolntsgo-fSlohngo-r.shtoPrtoprorttffoolliioostrategies.
+Table 3 shows the results of the long portfolio strategies. The bold
+letters represent the best of each method, and the best value in each                 Table
+column is also underlined.
+                                                                                      The difference in performance within each machine learning model
+The performance within DNN models is more variable than RF and                        tends to be similar to the results of long portfolio strategy; the
+RR models. This is because the high degree of freedom in the                          performance of DNN models is more variable than RF and RR
+construction of DNN architecture with the large number of hyper-                      models.
+parameters. Compared with the number of epochs, the patterns of
+epoch 20 (DNN1, DNN3, DNN5) outperform epoch 30 (DNN2,                                The values of AR, RISK, and TN in all models are higher than long
+DNN4, DNN6) in terms of Alpha and IR. These results show that                         portfolio strategies because of taking more risk with adding a short-
+the models trained until the number of epochs reach 30 tend to be                     selling portfolio to a long portfolio. The values of MaxDD are
+overfitting. The difference in performance within RF models is                        getting worse for the same reason. The results from R/R in DNN
+smaller, and RR models are almost same results because the                            and RF models are better than long portfolio strategies while RR
+number of hyper-parameters to be adjusted is smaller than DNN                         models are worse. These results indicate the patterns of attractive
+models.                                                                               stocks are different between long side and short side, therefore it is
+
+The best Alpha comes from RR2, and RR models outperform DNN
+and RF models. The results from IR are similar to Alpha but the
+best IR comes from DNN5. DNN models have lower TE and
+MaxDD, which indicate DNN models have an advantage in case of
+considered that DNN and RF models, which can take into account          management. We implemented a framework to predict five days
+nonlinearity, can also earn profits on the short side.                  ahead stock prices and build five portfolios rebalancing daily. The
+                                                                        feature of our method is investable portfolio with information
+The best Alpha and IR come from DNN5, and some of DNN                   available at the time of market closing.
+models outperform RR models. The values of RISK and MaxDD
+in all DNN models are lower than RF and RR models. The result           Our conclusions are as follows:
+shows that DNN models are excellent in terms of low risk. Overall,
+RF models have lower TN and DNN models have higher TN, which            -The stock price prediction based on deep learning (DNN) has a
+are shown in long portfolio strategies. These results are consistent    larger performance variation due to the number of parameters than
+with previous researches [12-16] on monthly cross-sectional stock       random forest (RF) and ridge regression (RR).
+price prediction in the with deep learning.
+                                                                        -DNN models have low TE and RISK. Especially, DNNs have
+Table 4. Performance Summary of Long-Short Portfolio                    mostly better R/R than RF and RR models.
+
+Model AR  RISK R/R MaxDD  TN                                            -DNN models are higher turnover ratio than RF and RR models.
+
+DNN1 8.74% 6.04% 1.45 -7.00% 111.39%                                    For further study, we examine how the performance changes in
+                                                                        stock prediction period other than 5 days.
+DNN2 6.83% 5.56% 1.23 -6.01% 114.89%
+                                                                        6. REFERENCES
+DNN3 11.37% 7.23% 1.57 -10.34% 105.04%
+                                                                        [1] Hamilton, J. D. 1994. Time series analysis. Princeton, NJ:
+DNN4 10.00% 6.63% 1.51 -10.40% 108.54%                                        Princeton university press.
+
+DNN5 11.42% 6.46% 1.77 -8.42% 108.07%                                   [2] Bollerslev, T. 1986. Generalized autoregressive conditional
+                                                                              heteroskedasticity. Journal of econometrics, 31(3), 307-327.
+DNN6 8.97% 6.13% 1.46 -8.26% 110.98%                                          DOI=https://doi.org/10.1016/0304-4076(86)90063-1
+
+RF1 7.28% 9.38% 0.78 -20.86% 87.37%                                     [3] Engle, R. F., Ledoit, O., and Wolf, M. 2019. Large dynamic
+                                                                              covariance matrices. Journal of Business & Economic
+RF2 6.69% 9.28% 0.72 -19.56% 92.22%                                           Statistics, 37(2), 363-375. DOI=
+                                                                              https://doi.org/10.1080/07350015.2017.1345683
+RF3 6.86% 9.23% 0.74 -17.88% 94.79%
+                                                                        [4] Nakagawa, K., Imamura, M., and Yoshida, K. 2018. Risk-
+RR1 10.98% 8.50% 1.29 -13.37% 95.36%                                          based portfolios with large dynamic covariance matrices.
+                                                                              International Journal of Financial Studies, 6(2), 52. DOI=
+RR2 10.98% 8.50% 1.29 -13.36% 95.36%                                          https://doi.org/10.3390/ijfs6020052
+
+RR3 10.96% 8.50% 1.29 -13.36% 95.37%                                    [5] Cover, T., and Hart, P. 1967. Nearest neighbor pattern
+                                                                              classification. IEEE transactions on information theory,
+Figure 3 shows the daily cumulative return of the best R/R portfolio          13(1), 21-27.DOI=https://doi.org/10.1109/TIT.1967.1053964
+within DNN, RF and RR. The blue line (RR2) and orange line
+(RF1) fluctuate in return levels. Especially in the second half of the  [6] Rumelhart, D. E., Hinton, G. E., and Williams, R. J. 1988.
+period, the orange line (RF1) is fallen significantly. On the other           Learning representations by back-propagating errors.
+hand, the red line (DNN5) is a stable upward throughout the period.           Cognitive modeling, 5(3), 1.
+
+    Figure 3. The Daily Cumulative Return of the Best R/R               [7] Cortes, C., and Vapnik, V. 1995. Support-vector networks.
+          Long-Short Portfolio within DNN, RF and RR.                         Machine learning, 20(3), 273-
+                                                                              297.DOI=https://doi.org/10.1007/BF00994018
+5. CONCLUSION
+                                                                        [8] Fama, E. F., and French, K. R. 1992. The cross-section of
+In this paper, we implement a .cross-sectional daily stock price              expected stock returns. the Journal of Finance, 47(2), 427-
+prediction framework using deep learning for actual investment                465.DOI=https://doi.org/10.1111/j.1540-
+                                                                              6261.1992.tb04398.x
+
+                                                                        [9] Fama, E. F., and French, K. R. 1993. Common risk factors in
+                                                                              the returns on stocks and bonds. Journal of financial
+                                                                              economics, 33(1), 3-56.DOI=https://doi.org/10.1016/0304-
+                                                                              405X(93)90023-5
+
+                                                                        [10] Harvey, C. R., Liu, Y., and Zhu, H. 2016. ‚Ä¶ and the cross-
+                                                                              section of expected returns. The Review of Financial Studies,
+                                                                              29(1), 5-68.DOI=https://doi.org/10.1093/rfs/hhv059
+
+                                                                        [11] Levin, A. E. 1996. Stock selection via nonlinear multi-factor
+                                                                              models. In Advances in Neural Information Processing
+                                                                              Systems (pp. 966-972).
+
+                                                                        [12] Abe, M., and Nakayama, H. 2018. Deep learning for
+                                                                              forecasting stock returns in the cross-section. In Pacific-Asia
+                                                                              Conference on Knowledge Discovery and Data Mining (pp.
+                                                                              273-284). Springer, Cham.DOI=https://doi.org/10.1007/978-
+                                                                              3-319-93034-3_22
+[13] Sugitomo, S., and Minami, S. 2018. Fundamental Factor            [24] Krauss, C., Do, X. A., & Huck, N. (2017). Deep neural
+      Models Using Machine Learning. Journal of Mathematical                networks, gradient-boosted trees, random forests: Statistical
+      Finance, 8, 111-                                                      arbitrage on the S&P 500. European Journal of Operational
+      118.DOI=https://doi.org/10.4236/jmf.2018.81009                        Research, 259(2), 689-702.
+                                                                            DOI=https://doi.org/10.1016/j.ejor.2016.10.031
+[14] Nakagawa, K., Uchida, T., and Aoshima, T. 2018. Deep
+      factor model. In ECML PKDD 2018 Workshops (pp. 37-50).          [25] Zhong, X., & Enke, D. (2019). Predicting the daily return
+      Springer, Cham. DOI=https://doi.org/10.1007/978-3-030-                direction of the stock market using hybrid machine learning
+      13463-1_3                                                             algorithms. Financial Innovation, 5(1), 4.
+                                                                            DOI=https://doi.org/10.1186/s40854-019-0138-0
+[15] Nakagawa, K., Ito, T., Abe, M., and Izumi, K. 2019. Deep
+      Recurrent Factor Model: Interpretable Non-Linear and Time-      [26] Bach, S., Binder, A., Montavon, G., Klauschen, F., M√ºller,
+      Varying Multi-Factor Model. In AAAI-19 Workshop on                    K. R., and Samek, W. 2015. On pixel-wise explanations for
+      Network Interpretability for Deep Learning. arXiv preprint            non-linear classifier decisions by layer-wise relevance
+      arXiv:1901.11493.                                                     propagation. PloS one, 10(7), e0130140.
+                                                                            DOI=https://doi.org/10.1371/journal.pone.0130140
+[16] Nakagawa, K., Abe, M., and Komiyama, J. 2019. A Robust
+      Transferable Deep Learning Framework for Cross-sectional        [27] Abadi, M Paul Barham, Jianmin Chen, Zhifeng Chen, Andy
+      Investment Strategy. arXiv preprint arXiv:1910.01491.                 Davis, Jeffrey Dean, Matthieu Devin, Sanjay Ghemawat,
+                                                                            Geoffrey Irving, Michael Isard, Manjunath Kudlur, Josh
+[17] Nakagawa, K., Imamura, M., and Yoshida, K. 2019. Stock                 Levenberg, Rajat Monga, Sherry Moore, Derek G. Murray,
+      price prediction using k‚Äêmedoids clustering with indexing             Benoit Steiner, Paul Tucker, Vijay Vasudevan, Pete Warden,
+      dynamic time warping. Electronics and Communications in               Martin Wicke, Yuan Yu, and Xiaoqiang Zheng. 2016.
+      Japan, 102(2), 3-8.                                                   TensorFlow: a system for large-scale machine learning. In
+      DOI=https://doi.org/10.1541/ieejeiss.138.986                          Proceedings of the 12th USENIX conference on Operating
+                                                                            Systems Design and Implementation (OSDI'16). pp.265-283..
+[18] Nakagawa, K., Imamura, M., and Yoshida, K. 2017. Stock
+      Price Prediction with Fluctuation Patterns Using Indexing       [28] Glorot, X., Bordes, A., and Bengio, Y. 2011. Deep sparse
+      Dynamic Time Warping and k* -Nearest Neighbors. In JSAI               rectifier neural networks. In Proceedings of the fourteenth
+      International Symposium on Artificial Intelligence (pp. 97-           international conference on artificial intelligence and
+      111). Springer, Cham. DOI=https://doi.org/10.1007/978-3-              statistics (pp. 315-323).
+      319-93794-6_7
+                                                                      [29] Kingma, D. P., and Ba, J. 2014. Adam: A method for
+[19] Itakura, F. 1975. Minimum prediction residual principle                stochastic optimization. arXiv preprint arXiv:1412.6980.
+      applied to speech recognition. IEEE Transactions on
+      Acoustics, Speech, and Signal Processing, 23(1), 67-72.         [30] Ioffe, S., & Szegedy, C. 2015. Batch Normalization:
+      DOI= https://doi.org/10.1109/TASSP.1975.1162641                       Accelerating Deep Network Training by Reducing Internal
+                                                                            Covariate Shift. In International Conference on Machine
+[20] Vanstone, B. J., Hahn, T., and Finnie, G. 2012. Developing             Learning (pp. 448-456).
+      high-frequency foreign exchange trading systems. In 25th
+      Australasian Finance and Banking Conference.                    [31] Pedregosa, F., Varoquaux, G., Gramfort, A., Michel, V.,
+                                                                            Thirion, B., Grisel, O., ... and Vanderplas, J. 2011. Scikit-
+[21] Chen, J. 2010. SVM application of financial time series                learn: Machine learning in Python. Journal of machine
+      forecasting using empirical technical indicators. In 2010             learning research, 12(Oct), 2825-2830.
+      International Conference on Information, Networking and
+      Automation (ICINA) (Vol. 1, pp. V1-77). IEEE. DOI=              [32] DeMiguel, V., Garlappi, L., and Uppal, R. 2007. Optimal
+      10.1109/ICINA.2010.5636430                                            versus naive diversification: How inefficient is the 1/N
+                                                                            portfolio strategy?. The review of Financial studies, 22(5),
+[22] Bahrammirzaee, A. 2010. A comparative survey of artificial             1915-1953.DOI=https://doi.org/10.1093/rfs/hhm075
+      intelligence applications in finance: artificial neural
+      networks, expert system and hybrid intelligent systems.         [33] Brandt, M. W. 2010. Portfolio choice problems. In
+      Neural Computing and Applications, 19(8), 1165-1195.DOI=              Handbook of financial econometrics: Tools and techniques
+      https://doi.org/10.1007/s00521-010-0362-z                             (pp. 269-336). North-Holland.
+
+[23] Cavalcante, R. C., Brasileiro, R. C., Souza, V. L., Nobrega, J.  [34] Magdon-Ismail, M., and Atiya, A. F. (2004). Maximum
+      P., and Oliveira, A. L. 2016. Computational intelligence and          drawdown. Risk Magazine, 17(10), 99-102.
+      financial markets: A survey and future directions. Expert
+      Systems with Applications, 55, 194-211.
+      DOI=https://doi.org/10.1016/j.eswa.2016.02.006
+

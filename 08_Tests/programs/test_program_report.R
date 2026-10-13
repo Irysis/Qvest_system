@@ -28,7 +28,9 @@ chk("결측은 —", identical(prep_fmt_pct(NA_real_), "—") && identical(prep_
 chk("판정어 사전", identical(prep_verdict_word("strong"), "강함") && identical(prep_verdict_word("??"), "판정 불가"))
 
 cat("\n=== B. 실제 산출물 카드로 1통 조립(dry-run) ===\n")
-art <- sort(list.dirs("stage_artifacts/replication", recursive = FALSE), decreasing = TRUE)[1]
+# 완료된 산출물만 — 측정 중인 최신 디렉터리(수익 · 벤치 파일 미완성)를 고르면 운영 상태에 따라 검사가 흔들린다(10-13 실측: 진행 중 칸)
+art <- Filter(function(d) all(file.exists(file.path(d, c("03_period_returns.csv", "05_benchmark_returns.csv", "authoritative_remeasure.json")))),
+              sort(list.dirs("stage_artifacts/replication", recursive = FALSE), decreasing = TRUE))[[1]]
 card <- bc_card_from_artifacts(art)
 r <- prep_send(program = "방어 엔진", target = "검사용 전략",
                status = list(stage = "P2 방어 엔진 · 라운드 1", position = "측정 1/1", previous = "없음"),

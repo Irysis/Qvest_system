@@ -83,6 +83,10 @@ chk("E5 작업 디렉터리가 R6 성과 경로 정규식에 걸리면 거부", 
 chk("E6 정상 라운드 경로는 04_Research/programs 아래", grepl("/04_Research/programs/P2_DEFENSE/R1/lane_analyst$", rx_paths("P2_DEFENSE", "R1", ROOT)$lane("analyst")))
 chk("E7 출력 마지막 json 블록 판독 · 없으면 오류",
     identical(rx_parse_json("a\n```json\n{\"x\":1}\n```\nb\n```json\n{\"x\":2}\n```")$x, 2L) && err(rx_parse_json("json 없음")))
+ml <- c("# 보고", "```json", "{\"a\": [1,", "  2],", " \"b\": {\"c\": \"d\"}}", "```")
+chk("E8 여러 줄 json 블록(실제 에이전트 출력 형태) 판독 — (?s) 없으면 못 찾던 결함(10-13 실측)",
+    identical(rx_parse_json(ml)$b$c, "d") && length(rx_parse_json(ml)$a) == 2L)
+chk("E9 CRLF 줄끝 출력도 판독", identical(rx_parse_json(paste(ml, collapse = "\r\n"))$b$c, "d"))
 
 cat(sprintf("\n== rx_round: PASS %d · FAIL %d ==\n", PASS, FAIL))
 cat(sprintf('{"test":"rx_round","pass":%d,"fail":%d,"total":%d}\n', PASS, FAIL, PASS + FAIL))

@@ -334,8 +334,10 @@ dp_markdown <- function(pk) {
     " (최악 ", .dp_num(sm$crisis_dd_capture_worst), ") · 강세 상승 포착 중앙 ", .dp_num(sm$bull_up_capture_median),
     " · 자기 낙폭/벤치 ", .dp_num(sm$mdd_vs_bench))
   st <- Bv$stats
+  ro <- Bv$rolling
   a("- 베타 ", .dp_num(st$beta), " (하락장 ", .dp_num(st$beta_down), " · 상승장 ", .dp_num(st$beta_up), ") · CDaR ", .dp_pct(-st$cdar),
-    " · 롤링 36M 통과율 ", .dp_pct(Bv$rolling$pass_life, 0L))
+    " · 롤링 ", .dp_or(ro$window_months, "36"), "M 통과율 전체 ", .dp_pct(ro$pass_life, 0L), " · 최근 ", .dp_pct(ro$pass_recent, 0L),
+    " (판정 ", .dp_or(ro$status, "—"), " · 정의 = rolling_grade.R)")
   cr <- as.data.table(Bv$crises)
   if (nrow(cr)) {
     a(""); a("| 위기(고점→바닥) | 벤치 낙폭 | 전략 낙폭 | 하락 포착 | 크기·노출 짝 | 무작위 5% 분위 | p |"); a("|---|---|---|---|---|---|---|")
@@ -383,6 +385,15 @@ dp_markdown <- function(pk) {
       for (p0 in unique(format(as.Date(bs$peak_date)))) {
         z <- bs[format(as.Date(peak_date)) == p0][order(contrib)][1:min(3L, .N)]
         a("- ", p0, ": ", paste(sprintf("%s %s(%d종)", ifelse(is.na(z$Sector), "업종 미상", z$Sector), vapply(z$contrib, .dp_pct, "", d = 2L), z$n), collapse = " · "))
+      }
+    }
+    bz <- as.data.table(X$by_size_decile)
+    if (nrow(bz)) {
+      a(""); a("위기별 크기 분위 기여 합(위기 시작일 as-of 분위 · 1=최소 10=최대 · 기여 = 일간 비중×수익의 합 · 괄호 = 보유 종목 수):")
+      for (p0 in unique(format(as.Date(bz$peak_date)))) {
+        z <- bz[format(as.Date(peak_date)) == p0][order(size_decile)]
+        a("- ", p0, ": ", paste(sprintf("분위 %s %s(%d)", ifelse(is.na(z$size_decile), "?", z$size_decile),
+                                        vapply(z$contrib, .dp_pct, "", d = 2L), z$n), collapse = " · "))
       }
     }
   }
