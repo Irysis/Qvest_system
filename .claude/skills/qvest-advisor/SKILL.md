@@ -73,7 +73,7 @@ Agent 도구를 **한 메시지에서 병렬**로 부른다. 각 에이전트 �
 | C1·C14 + 결정 D-E | 평가 창 결과를 소비하는 자동 선정 규칙(팩터·arm·슬리브를 전기간 IC·상관으로 고르기) — 선정 통계는 as-of(`Usable_Date <= 결정 시점`)만 |
 | C4 | 재무제표 가용일 = pit.md C4 행 그대로 |
 | C5 | 오버레이 신호 = 홀딩월 시작 전 데이터(`overlay_pit_guard.R::assert_overlay_pit` · lag1 스트레스 · strict A/B) |
-| C6·C10 | 유니버스 PIT 시변 멤버십(K200∪KQ150) · 유동성 t-1 |
+| C6·C10 | 유니버스 PIT 시변 멤버십(측정 축 — 현행 전 종목 + 위생: 관리종목·거래정지·불성실공시 월말 스냅샷 전진 · `contracts/measurement_axis.R` · 구 K200∪KQ150) · 유동성 t-1 |
 | C11 외부·지연 공표 데이터 전반 | 원칙 = 값은 **알 수 있었던 날(가용일)**로 결합한다 — 행의 관측일(`Date`)이 아니다. 가용일 규칙이 없는 원천은 메모에 '가용일 미확정' 사각으로 적고 규칙 추가를 **제안**한다(도훈 승인). 아래 네 줄이 현행 원천이다 |
 | C11 · FRED·ECOS | `02_Infrastructure/data/fred_availability.R::fred_asof_join` 경유만(`macro_fred` 직접 결합 금지) · ECOS 계열도 규칙 정본 `06_Registry/fred_availability_rules.json` 의 id 로 부른다(원/달러 = `ECOS_KRW_USD` — `KRW_USD` 는 DEXKOUS 별칭이라 거부된다) |
 | C11 · 컨센서스 | `.cache/consensus/<metric>.parquet`(`02_Infrastructure/data/consensus_parser.R` · 퀀티와이즈 관측일 `Date`) — 결정 시점 t 에는 `Date < t` 행만 · 실적 연동 지표(`sue` 등)는 실적 공표 가용일(C4)을 앞서지 않는지 원천 의미를 확인한다(관측일 = 가용일 가정은 메모에 명시) |

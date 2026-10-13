@@ -68,7 +68,7 @@ COV_MIN       <- 0.05                       # connector coverage 기본값 (harn
 N_PER_FAM     <- 3L                         # 군별 풀 상한 (supplement)
 POOL_MAX      <- 21L                        # 풀 총 상한 (supplement)
 START_LOAD_D  <- "2000-01-01"               # 학습용 적재 시작 (supplement)
-EMIT_START_D  <- "2005-01-01"               # 측정 시작 = 축 (harness)
+EMIT_START_D  <- if (exists(".RP_START_DATE")) format(.RP_START_DATE) else "2005-01-01"               # 측정 시작 = 축 (harness)
 
 KMAX <- max(KH)                             # 파생 — 학습창 성숙 판정 지평
 KN   <- length(KH)                          # 파생 — paper K

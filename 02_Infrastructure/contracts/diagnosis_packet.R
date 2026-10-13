@@ -228,9 +228,11 @@ dp_scan_dates <- function(x, tau) {
 #' @param cell_spec 셀 사양(spec_*.json) 경로 또는 목록 — 있으면 구성 서술에 축을 싣는다
 #' @param raw / raw_path / bm_path / bm_hist — 시장 데이터(없으면 .cache 정본). 어떤 경우든 τ_D 에서 자른다.
 dp_build <- function(dir, root = NULL, tau_d = NULL, cell_spec = NULL, raw = NULL, raw_path = NULL, bm_path = NULL,
-                     bm_hist = NULL, with_exposure = TRUE) {
+                     bm_hist = NULL, with_exposure = TRUE, bcfg = NULL) {
   root <- .dp_root(root); E <- .dp_deps(root)
-  bcfg <- E$bc_cfg(root); tau <- as.Date(.dp_or(tau_d, bcfg$tau_d)); bcfg$tau_d <- format(tau)
+  # bcfg = 행동 카드 설정 고정판(경로 또는 목록) — 사전등록 당시 정의로 판정해야 하는 라운드(R2)는 그 판을 넘긴다(위기 정의가 바뀌어도 반증 의미 불변)
+  bcfg <- if (is.null(bcfg)) E$bc_cfg(root) else if (is.character(bcfg)) E$bc_cfg(root, path = bcfg) else bcfg
+  tau <- as.Date(.dp_or(tau_d, bcfg$tau_d)); bcfg$tau_d <- format(tau)
   rd <- .dp_read(E, dir)
   prv <- rd$pr[date <= tau][order(date)]; brv <- rd$br[date <= tau][order(date)]; nvv <- rd$nv[date <= tau][order(date)]
   Hv <- rd$H[date <= tau]
@@ -260,10 +262,12 @@ dp_build <- function(dir, root = NULL, tau_d = NULL, cell_spec = NULL, raw = NUL
                     strategy_id = sid, root = root)
   ## ④ MC8 — τ_D 까지의 RAWDATA
   mcfg <- E$mc_cfg(root)
-  if (is.null(raw)) raw <- E$mc_load_raw(root, from = min(Hv$date) - 31L, to = tau, path = raw_path)
-  raw <- as.data.table(raw)[Date <= tau]
   uni <- as.character(.dp_or(rd$spec$universe, .dp_or(rd$man$universe_id, NA_character_)))[1]
   if (is.na(uni) || !nzchar(uni)) stop("[diagnosis_packet] 유니버스 미상")
+  # ★측정 축 ALL_HYG(MC1 · 10-13 전환): 짝 대조는 위생 멤버십(HYG)이 필요하다 — 직접 읽을 때도 켠다(mc_card 와 같은 규칙).
+  #   HYG 는 20일 평균(t−1)이라 자르기 전 전체 시계열에서 계산되고(mc_load_raw), 아래에서 τ_D 로 자른다(PIT · 보는 창).
+  if (is.null(raw)) raw <- E$mc_load_raw(root, from = min(Hv$date) - 31L, to = tau, path = raw_path, hygiene = identical(uni, "ALL_HYG"))
+  raw <- as.data.table(raw)[Date <= tau]
   ctl <- E$mc_controls(Hv, prv, brv, raw, mcfg, rd$src$exec_price, uni)
   card <- E$mc_attribution(card, ctl, brv[, .(date, benchmark_ret)], bcfg, E)
   ## ⑤⑥ 노출 분해 · 위기 귀속

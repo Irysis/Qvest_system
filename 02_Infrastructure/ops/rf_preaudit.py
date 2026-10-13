@@ -148,23 +148,54 @@ def _same_value(code_v, decl_v):
     return a[1] == b[1]
 
 
+def _dig(node, dotted):
+    for k in dotted.split("."):
+        node = node.get(k) if isinstance(node, dict) else None
+    return node
+
+
 def harness_block(root, cfg):
     """하네스 공시 블록(프롬프트 절) — 체결 규약은 하네스 설정에서 그때 읽는다(하네스가 바뀌면 블록도 따라 바뀐다).
+    유니버스 · 지수 플래그 · 표본 · 유동성 문장은 측정 축 정본(measurement_axis.active)의 epoch 문장에서 그때 고른다.
     반환 = (프롬프트 절 텍스트, exec_price). 설정·규약 판독 불능이면 예외(호출자는 블록 없이 진행한다)."""
     H = cfg.get("harness") or {}
     ec = _load_json(os.path.join(root, H.get("exec_config") or "02_Infrastructure/worktask/constraint_defaults.json"))
-    node = ec
-    for k in (H.get("exec_key") or "execution.exec_price").split("."):
-        node = node.get(k) if isinstance(node, dict) else None
-    ep = str(node or "")
+    ep = str(_dig(ec, H.get("exec_key") or "execution.exec_price") or "")
     st = (H.get("exec_statements") or {}).get(ep)
     if not st:
         raise RuntimeError("체결 규약 %r 의 공시 문장이 설정에 없다 — 블록을 지어내지 않는다" % ep)
+    # ★측정 축 epoch 문장 (2026-10-14 실측) — 10-13 축 전환(all_hyg_2000_v1) 뒤에도 블록이 H2 'KQ150 2010~' · H3 '2005~' 를
+    #   공시했다. 구현자는 블록을 FIDELITY 에 그대로 옮기고 감사는 그 공시를 하네스 사실로 읽는다 — 축이 바뀌면 블록도 따라 바뀐다.
+    #   시작일 · 유동성 하한 · 실효 시작 배수는 같은 정본의 epoch 정의에서 채운다. 문장이 없는 epoch 이면 지어내지 않는다.
+    ac = _load_json(os.path.join(root, H.get("epoch_config") or "02_Infrastructure/worktask/constraint_defaults.json"))
+    eid = str(_dig(ac, H.get("epoch_key") or "measurement_axis.active") or "")
+    es = (H.get("epoch_statements") or {}).get(eid)
+    if not isinstance(es, dict) or not es:
+        raise RuntimeError("측정 축 epoch %r 의 공시 문장이 설정에 없다 — 블록을 지어내지 않는다" % eid)
+    edef = _dig(ac, "measurement_axis.epochs." + eid) if eid else None
+    edef = edef if isinstance(edef, dict) else {}
+    vals = {"exec_statement": st, "epoch_id": eid}
+    if edef.get("start_date"):
+        vals["start_date"] = str(edef["start_date"])
+    lv = _dig(ac, str(edef["liq_min_key"])) if edef.get("liq_min_key") else None
+    if isinstance(lv, (int, float)) and not isinstance(lv, bool):
+        vals["liq_min_won"] = "{:,.0f}원".format(lv)
+    bm = _dig(edef, "effective_start.breadth_mult")
+    if isinstance(bm, (int, float)) and not isinstance(bm, bool):
+        vals["breadth_mult"] = "%g" % bm
     body = [H.get("marker") or "[HARNESS-DISCLOSURE v1]"]
     for ln in H.get("lines") or []:
-        body.append("- " + ln.replace("{exec_statement}", st))
+        t = ln
+        for k, v in es.items():
+            t = t.replace("{" + k + "}", str(v))
+        for k, v in vals.items():
+            t = t.replace("{" + k + "}", v)
+        left = sorted(set(re.findall(r"\{[a-z_]+\}", t)))
+        if left:
+            raise RuntimeError("공시 줄에 채우지 못한 자리표시자 %s — 블록을 지어내지 않는다" % ", ".join(left))
+        body.append("- " + t)
     body.append(H.get("end_marker") or "[/HARNESS-DISCLOSURE]")
-    head = (H.get("prompt_head") or "## 하네스 고지") + " · exec=" + ep
+    head = (H.get("prompt_head") or "## 하네스 고지") + " · exec=" + ep + " · epoch=" + eid
     return "\n".join([head, H.get("prompt_guide") or "", ""] + body), ep
 
 

@@ -1,0 +1,412 @@
+{
+  "schema": "rx_prereg_v1",
+  "program": "P0_FRONTIER",
+  "round_id": "P0R01_feasibility_map",
+  "registered_at": "2026-10-13T23:14:22+0900",
+  "purpose": "P0 실현 가능성 지도 — 문헌 표준 단순 부품 × 기존 수익 엔진이 한국 전 종목(측정 축 all_hyg_2000_v1)에서 목표 영역에 닿는가(등록부 P0_FRONTIER thesis)",
+  "hypothesis": "문헌 표준의 단순 부품(추세 현금 규칙 · 변동성 타기팅 · 낙폭 제어 · 저변동/퀄리티 틸트) × 기존 수익 엔진으로 한국 전 종목에서 (상승 포착, 위기 하락 포착, CAGR) 프런티어가 목표 영역에 닿는가",
+  "measurement_axis": {
+    "epoch": "all_hyg_2000_v1",
+    "universe": "ALL_HYG",
+    "start": "2000-01-01",
+    "effective_start_rule": {
+      "rule": "breadth_multiple",
+      "breadth_mult": 2,
+      "window_anchor": "effective_start"
+    }
+  },
+  "tau_d": "2022-12-31",
+  "engines": {
+    "E1": {
+      "id": "E1",
+      "name": "모멘텀 12-1(문헌 표준 · 엔진 내장)",
+      "family": "JT1993_builtin_mom_12_1",
+      "why": "문헌 표준 수익 엔진 — 성과를 보지 않고 고른 기준점(엔진 내장 신호 · shift 21/252 · C2)"
+    },
+    "E2": {
+      "id": "E2",
+      "name": "2002.06975 DNN 엔진(원형 · 25종 롱온리)",
+      "family": "2002.06975",
+      "why": "파일럿 출발점으로 결정된 논문 엔진(GRADE-V3-PROMOTE ③ · S0 눈검사 GRADE-V3-S0-EYECHECK) — 원형 신호만"
+    },
+    "E3": {
+      "id": "E3",
+      "name": "B6_36(2002.06975 계보 기존 최고 셀)",
+      "family": "2002.06975",
+      "why": "같은 계보의 현행형(팩터 3 · 엔트로피 비중 · 순위 버퍼) — P2R01 기저와 같은 사양(측정 축만 새 epoch)"
+    }
+  },
+  "components": {
+    "C0": {
+      "id": "C0",
+      "name": "부품 없음(엔진 그대로)",
+      "delta": [],
+      "basis": "기준"
+    },
+    "C1": {
+      "id": "C1",
+      "name": "추세 현금 규칙(시장 12개월 수익 부호 < 0 → 현금)",
+      "delta": {
+        "overlay": {
+          "kind": "ts_mom_gate",
+          "arm_id": "ts_mom_sign"
+        }
+      },
+      "basis": "Moskowitz, Ooi & Pedersen (2012) Time series momentum, JFE 104(2) doi:10.1016/j.jfineco.2011.11.003 · Hurst, Ooi & Pedersen (2017) JPM 44(1) · Faber (2007) JWM"
+    },
+    "C2": {
+      "id": "C2",
+      "name": "변동성 타기팅(노출 = min(1, 확장창 중앙 실현변동성 / 현재 60일))",
+      "delta": {
+        "overlay": {
+          "kind": "vol_scale",
+          "arm_id": "vol_median"
+        }
+      },
+      "basis": "Moreira & Muir (2017) Volatility-Managed Portfolios, JF 72(4) doi:10.1111/jofi.12513 · Cederburg et al. (2020) JFE 138(1)"
+    },
+    "C3": {
+      "id": "C3",
+      "name": "낙폭 제어(낙폭이 확장창 중앙~90분위 구간에서 선형 축소)",
+      "delta": {
+        "overlay": {
+          "kind": "dd_brake",
+          "arm_id": "dd_brake_q"
+        }
+      },
+      "basis": "Grossman & Zhou (1993) Optimal Investment Strategies for Controlling Drawdowns, Math. Finance 3(3) doi:10.1111/j.1467-9965.1993.tb00044.x"
+    },
+    "C4": {
+      "id": "C4",
+      "name": "저변동 틸트(252일 실현변동성 낮음 — 기저와 rank-z 결합)",
+      "delta": {
+        "factors": [
+          {
+            "kind": "db",
+            "id": "D03_RealVol"
+          }
+        ]
+      },
+      "basis": "Blitz & van Vliet (2007) The Volatility Effect, JPM 34(1) doi:10.3905/jpm.2007.698039 · Frazzini & Pedersen (2014) JFE 111(1)"
+    },
+    "C5": {
+      "id": "C5",
+      "name": "퀄리티 틸트(복합 퀄리티 — 기저와 rank-z 결합)",
+      "delta": {
+        "factors": [
+          {
+            "kind": "db",
+            "id": "Q08_Composite_Quality"
+          }
+        ]
+      },
+      "basis": "Asness, Frazzini & Pedersen (2019) Quality minus junk, RAS 24 doi:10.1007/s11142-018-9470-2"
+    },
+    "C6": {
+      "id": "C6",
+      "name": "추세 현금 + 저변동 틸트(시변 노출 × 방어적 보유)",
+      "delta": {
+        "overlay": {
+          "kind": "ts_mom_gate",
+          "arm_id": "ts_mom_sign"
+        },
+        "factors": [
+          {
+            "kind": "db",
+            "id": "D03_RealVol"
+          }
+        ]
+      },
+      "basis": "C1 + C4 — 비대칭의 원천 ②(시변 노출)와 ③(방어적 보유)의 결합(research-program SKILL 철학)"
+    }
+  },
+  "cells": [
+    {
+      "code": "P0R01_E1_C0",
+      "engine": "E1",
+      "component": "C0",
+      "path": "04_Research/programs/P0_FRONTIER/P0R01_feasibility_map/specs/P0R01_E1_C0.json",
+      "md5": "768249e4059b68bf6da21f143cb791b5",
+      "n_family": 21
+    },
+    {
+      "code": "P0R01_E1_C1",
+      "engine": "E1",
+      "component": "C1",
+      "path": "04_Research/programs/P0_FRONTIER/P0R01_feasibility_map/specs/P0R01_E1_C1.json",
+      "md5": "dd20b7fde4451c68d44a459f8780c478",
+      "n_family": 21
+    },
+    {
+      "code": "P0R01_E1_C2",
+      "engine": "E1",
+      "component": "C2",
+      "path": "04_Research/programs/P0_FRONTIER/P0R01_feasibility_map/specs/P0R01_E1_C2.json",
+      "md5": "b274ad1011045d3cc668a0559b6d0828",
+      "n_family": 21
+    },
+    {
+      "code": "P0R01_E1_C3",
+      "engine": "E1",
+      "component": "C3",
+      "path": "04_Research/programs/P0_FRONTIER/P0R01_feasibility_map/specs/P0R01_E1_C3.json",
+      "md5": "50d02f5f6bcd57b9c94b7f484cbdae20",
+      "n_family": 21
+    },
+    {
+      "code": "P0R01_E1_C4",
+      "engine": "E1",
+      "component": "C4",
+      "path": "04_Research/programs/P0_FRONTIER/P0R01_feasibility_map/specs/P0R01_E1_C4.json",
+      "md5": "aed0386d61ef8903aad19e6bb12e5f0f",
+      "n_family": 21
+    },
+    {
+      "code": "P0R01_E1_C5",
+      "engine": "E1",
+      "component": "C5",
+      "path": "04_Research/programs/P0_FRONTIER/P0R01_feasibility_map/specs/P0R01_E1_C5.json",
+      "md5": "e5c7127a65db9b8d221679c5805fca4a",
+      "n_family": 21
+    },
+    {
+      "code": "P0R01_E1_C6",
+      "engine": "E1",
+      "component": "C6",
+      "path": "04_Research/programs/P0_FRONTIER/P0R01_feasibility_map/specs/P0R01_E1_C6.json",
+      "md5": "63e8e569aab2117802895edac8172b85",
+      "n_family": 21
+    },
+    {
+      "code": "P0R01_E2_C0",
+      "engine": "E2",
+      "component": "C0",
+      "path": "04_Research/programs/P0_FRONTIER/P0R01_feasibility_map/specs/P0R01_E2_C0.json",
+      "md5": "080cfea84f6412c244e0eeecfda689de",
+      "n_family": 216
+    },
+    {
+      "code": "P0R01_E2_C1",
+      "engine": "E2",
+      "component": "C1",
+      "path": "04_Research/programs/P0_FRONTIER/P0R01_feasibility_map/specs/P0R01_E2_C1.json",
+      "md5": "f148adf762c3635d794268e11dd455af",
+      "n_family": 216
+    },
+    {
+      "code": "P0R01_E2_C2",
+      "engine": "E2",
+      "component": "C2",
+      "path": "04_Research/programs/P0_FRONTIER/P0R01_feasibility_map/specs/P0R01_E2_C2.json",
+      "md5": "4fcb30ce9b34d4c0dadcf6e22a24b139",
+      "n_family": 216
+    },
+    {
+      "code": "P0R01_E2_C3",
+      "engine": "E2",
+      "component": "C3",
+      "path": "04_Research/programs/P0_FRONTIER/P0R01_feasibility_map/specs/P0R01_E2_C3.json",
+      "md5": "dada79857679d871dc7bd0bcd122b8a8",
+      "n_family": 216
+    },
+    {
+      "code": "P0R01_E2_C4",
+      "engine": "E2",
+      "component": "C4",
+      "path": "04_Research/programs/P0_FRONTIER/P0R01_feasibility_map/specs/P0R01_E2_C4.json",
+      "md5": "4d69dda82e360a7135c64ad284c728ef",
+      "n_family": 216
+    },
+    {
+      "code": "P0R01_E2_C5",
+      "engine": "E2",
+      "component": "C5",
+      "path": "04_Research/programs/P0_FRONTIER/P0R01_feasibility_map/specs/P0R01_E2_C5.json",
+      "md5": "5f04c3431234759b09c9078008a963a2",
+      "n_family": 216
+    },
+    {
+      "code": "P0R01_E2_C6",
+      "engine": "E2",
+      "component": "C6",
+      "path": "04_Research/programs/P0_FRONTIER/P0R01_feasibility_map/specs/P0R01_E2_C6.json",
+      "md5": "c0d772f43d90225c0f7b1a07fd6822f1",
+      "n_family": 216
+    },
+    {
+      "code": "P0R01_E3_C0",
+      "engine": "E3",
+      "component": "C0",
+      "path": "04_Research/programs/P0_FRONTIER/P0R01_feasibility_map/specs/P0R01_E3_C0.json",
+      "md5": "1b9b405281e0621c3eca84bc4858e213",
+      "n_family": 216
+    },
+    {
+      "code": "P0R01_E3_C1",
+      "engine": "E3",
+      "component": "C1",
+      "path": "04_Research/programs/P0_FRONTIER/P0R01_feasibility_map/specs/P0R01_E3_C1.json",
+      "md5": "f520b0b8a3aba918568e398a0fddafd5",
+      "n_family": 216
+    },
+    {
+      "code": "P0R01_E3_C2",
+      "engine": "E3",
+      "component": "C2",
+      "path": "04_Research/programs/P0_FRONTIER/P0R01_feasibility_map/specs/P0R01_E3_C2.json",
+      "md5": "6d8b9329bbc088d14c1535f93cb75deb",
+      "n_family": 216
+    },
+    {
+      "code": "P0R01_E3_C3",
+      "engine": "E3",
+      "component": "C3",
+      "path": "04_Research/programs/P0_FRONTIER/P0R01_feasibility_map/specs/P0R01_E3_C3.json",
+      "md5": "c0519ac1bb0cc3e859858a00f2d4a998",
+      "n_family": 216
+    },
+    {
+      "code": "P0R01_E3_C4",
+      "engine": "E3",
+      "component": "C4",
+      "path": "04_Research/programs/P0_FRONTIER/P0R01_feasibility_map/specs/P0R01_E3_C4.json",
+      "md5": "54737d9f918ca135b2a9354869593901",
+      "n_family": 216
+    },
+    {
+      "code": "P0R01_E3_C5",
+      "engine": "E3",
+      "component": "C5",
+      "path": "04_Research/programs/P0_FRONTIER/P0R01_feasibility_map/specs/P0R01_E3_C5.json",
+      "md5": "d72fef5c2b788c73e4c31b37267d1c3a",
+      "n_family": 216
+    },
+    {
+      "code": "P0R01_E3_C6",
+      "engine": "E3",
+      "component": "C6",
+      "path": "04_Research/programs/P0_FRONTIER/P0R01_feasibility_map/specs/P0R01_E3_C6.json",
+      "md5": "0893abc328bc68002f0f1f40cfaa780e",
+      "n_family": 216
+    }
+  ],
+  "decisive_test": {
+    "statement": "보는 창(측정 시작~2022-12-31)에서 목표 영역에 닿는 칸이 하나라도 있는가 — 있으면 시험 창(2023-01~)에서 같은 판정을 유지하는가",
+    "target_region": [
+      {
+        "field": "behavior.summary.bull_up_capture_median",
+        "op": ">=",
+        "value_source": "behavior_card_cfg_at_prereg.json::uc_floor",
+        "value": 0.55
+      },
+      {
+        "field": "behavior.summary.crisis_cum_capture_median",
+        "op": "<=",
+        "value_source": "같은 패킷 behavior.dc_strong_max(uc_floor 와 KOSPI200 강세→약세 쌍에서 도출 · behavior_card.R::bc_dc_strong_max)",
+        "value": "derived"
+      },
+      {
+        "field": "performance.strategy.cagr",
+        "op": ">=",
+        "value_source": "research_programs.json::target_spec.cagr_min",
+        "value": 0.16
+      }
+    ],
+    "test_window": "목표 영역 칸만: 전기간 행동 카드(matched_controls.R::mc_card)의 test 블록 상승 포착 · 위기 누적 포착(같은 문턱) + 시험 창 CAGR(grade_v3.R::gv3_window · 2023-01~) — 시험 창에 강세 국면 · 위기가 없으면 그 항목은 '판정 불가'",
+    "kill_or_pivot": "보는 창 목표 영역 칸 0 → 탐색을 늘리지 않고 도훈 안건(목표 또는 축 재검토) — 등록부 P0_FRONTIER kill_or_pivot"
+  },
+  "expectations": {
+    "C1": [
+      {
+        "field": "behavior.summary.crisis_cum_capture_median",
+        "op": "<",
+        "ref": "C0"
+      },
+      {
+        "field": "behavior.summary.bull_up_capture_median",
+        "op": "<=",
+        "ref": "C0"
+      }
+    ],
+    "C2": [
+      {
+        "field": "behavior.summary.crisis_cum_capture_median",
+        "op": "<",
+        "ref": "C0"
+      }
+    ],
+    "C3": [
+      {
+        "field": "behavior.summary.crisis_cum_capture_median",
+        "op": "<",
+        "ref": "C0"
+      },
+      {
+        "field": "behavior.summary.bull_up_capture_median",
+        "op": "<=",
+        "ref": "C0"
+      }
+    ],
+    "C4": [
+      {
+        "field": "behavior.summary.crisis_cum_capture_median",
+        "op": "<",
+        "ref": "C0"
+      },
+      {
+        "field": "behavior.summary.bull_up_capture_median",
+        "op": "<=",
+        "ref": "C0"
+      }
+    ],
+    "C5": [
+      {
+        "field": "behavior.summary.crisis_cum_capture_median",
+        "op": "<",
+        "ref": "C0"
+      }
+    ],
+    "C6": [
+      {
+        "field": "behavior.summary.crisis_cum_capture_median",
+        "op": "<",
+        "ref": "C1"
+      },
+      {
+        "field": "behavior.summary.crisis_cum_capture_median",
+        "op": "<",
+        "ref": "C4"
+      }
+    ]
+  },
+  "final_selection_rule": {
+    "text": "보는 창 목표 영역 칸 중 보는 창 종합점수 S_vis = (Calmar/c0)^w_c × (PORT_t/p0)^w_p 최대 칸 1개(Calmar · PORT_t ≤ 0 이면 S_vis = 0) · 동률(차 < 0.02) → 위기 누적 포착 낮은 칸 → 부품 수 적은 칸. 목표 영역 칸이 0 이면 선택 없음. 상수(c0 · p0 · w_c · w_p)는 등급 v3 정본에서 읽는다 — 보는 창 패킷 필드만 쓴다(τ_D).",
+    "calmar_norm": 0.64,
+    "port_t_norm": 2.95,
+    "w_calmar": 0.6,
+    "w_port_t": 0.4,
+    "tie_eps": 0.02
+  },
+  "axis_audit": "측정 뒤 04_holdings 실보유가 롱온리 · ≤ constraint_defaults.json::tier_soft_deployment.max_names · Σw ≤ 1 인지 — 위반 칸 = 측정 무효(미시험)",
+  "measurement": {
+    "runner": "02_Infrastructure/ops/rf_cell_worker.R → run_paper_replication(close_t1 · 15bps · 측정 축 표식 epoch)",
+    "grade": "essence v3(권위 · 사람 쪽)",
+    "visible": "diagnosis_packet.R::dp_build(bcfg = 사전등록 사본 · 위생 raw)",
+    "full": "matched_controls.R::mc_card(전기간 · 시험 창 블록)"
+  },
+  "selection_accounting": {
+    "E1": 21,
+    "E2": 216,
+    "E3": 216,
+    "note": "sweep — 이 라운드의 선택은 21칸 전체에서 · 2002.06975 계보는 L1 측정 시도 + P2R01 변형을 함께 센다"
+  },
+  "budget": {
+    "variants": 21,
+    "rounds": 1,
+    "note": "등록부 budget rounds 1 · 변형 상한 = 이 사전등록(21)"
+  },
+  "behavior_card_cfg": {
+    "path": "04_Research/programs/P0_FRONTIER/P0R01_feasibility_map/behavior_card_cfg_at_prereg.json",
+    "md5": "6a2a1d21b82858e1ab954fec2085ac32"
+  }
+}

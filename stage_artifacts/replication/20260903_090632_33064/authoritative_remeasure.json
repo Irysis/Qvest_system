@@ -36,7 +36,7 @@
   "structural_drawdown": false,
   "selection_type": "chain",
   "dsr_gate_applied": false,
-  "reasons": "v3: S 0.080 · B 경계 0.488 · 띠 C · CR normal(시험 창 normal) · 노치 +0 · A 아님 사유 floor:port_t,floor:calmar,floor:cagr,floor:sharpe,oos:rolling36_pass_oos | v921 C: Ensemble: positive alpha이나 B 미달 (블렌드에서만 가치)",
+  "reasons": "v3: S 0.080 · B 경계 0.488 · 띠 C · CR normal(시험 창 weak) · 노치 +0 · A 아님 사유 floor:port_t,floor:calmar,floor:cagr,floor:sharpe,oos:test_window_cr_not_weak,oos:rolling36_pass_oos | v921 C: Ensemble: positive alpha이나 B 미달 (블렌드에서만 가치)",
   "replication": {
     "source_paper": {
       "url": "https://arxiv.org/abs/2007.08115",
@@ -134,6 +134,15 @@
     "grade": "C",
     "S": 0.0796,
     "S_B": 0.4879,
+    "rules_version": "v3.1",
+    "crisis_def": "lt_first_passage",
+    "cr_notch_basis": "normal",
+    "mc8": {
+      "status": "not_needed",
+      "label": null,
+      "share_beats_size_exposure": null,
+      "median_placebo_p": null
+    },
     "band": "C",
     "notch": 0,
     "notch_a": false,
@@ -142,6 +151,7 @@
       "floor:calmar",
       "floor:cagr",
       "floor:sharpe",
+      "oos:test_window_cr_not_weak",
       "oos:rolling36_pass_oos"
     ],
     "floors": {
@@ -158,11 +168,11 @@
     },
     "cr": {
       "overall": "normal",
-      "test": "normal",
+      "test": "weak",
       "visible": "normal",
-      "n_crisis": 5,
+      "n_crisis": 7,
       "dd_capture_median": 0.8395,
-      "dd_capture_worst": 1.0669,
+      "dd_capture_worst": 1.232,
       "uc_median": 0.4921,
       "cdar": 0.3888,
       "controls": "not_provided"
@@ -171,7 +181,7 @@
       "tau_d": "2022-12-31",
       "gate": false,
       "parts": {
-        "test_window_cr_not_weak": true,
+        "test_window_cr_not_weak": false,
         "rolling36_pass_oos": false
       },
       "pass_oos": 0.2444,
@@ -186,10 +196,18 @@
     "nav_source": "contract"
   },
   "grade_v3_backfill": {
-    "at": "2026-10-13T15:07:07+0900",
+    "at": "2026-10-13T18:40:42+0900",
     "tool": "02_Infrastructure/programs/grade_v3_backfill.R",
-    "decision": "decision_register GRADE-V3-PROMOTE",
+    "decision": "decision_register GRADE-V3-CR-STRONG-SELECTION · CRISIS-DEF-LT2020(규칙 판 재채점)",
+    "rules_version": "v3.1",
+    "prior_rules_version": "v3.0",
     "prior_essence_grade": "C",
-    "prior_md5": "1c6ac472dec8670a2bd7d898a72cfffa"
+    "prior_md5": "fb0e285d1ad7cf8c00ff1bbd7c937a15",
+    "history": [
+      {
+        "rules_version": "v3.0",
+        "essence_grade": "C"
+      }
+    ]
   }
 }

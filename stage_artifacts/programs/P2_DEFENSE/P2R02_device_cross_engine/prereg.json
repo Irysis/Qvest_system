@@ -1,0 +1,59 @@
+{
+  "schema": "rx_prereg_v1",
+  "program": "P2_DEFENSE",
+  "round_id": "P2R02_device_cross_engine",
+  "registered_at": "2026-10-13T23:19:42+0900",
+  "purpose": "방어 장치(시변 노출 · 방어적 보유)를 여러 수익 엔진에 걸쳐 검증 — 위기 수 × 엔진 수(등록부 P2_DEFENSE thesis)",
+  "data": {
+    "source_round": "P0R01_feasibility_map",
+    "source_prereg_md5": "44f50ab169415c947c00b6b30179a03c",
+    "shared_measurement": true,
+    "note": "새 측정 없음 · 칸 = P0R01 의 21칸(엔진 E1·E2·E3 × 부품 C0~C6) · 평가 재료 = P0R01 평가가 쓴 보는 창 진단 패킷(results/<칸>/visible)",
+    "p0_evaluation_seen_at_registration": false
+  },
+  "tau_d": "2022-12-31",
+  "window": "visible(≤ τ_D) — 판정 · 선택 · 교훈은 보는 창만",
+  "devices": {
+    "C1": "추세 현금(시변 노출)",
+    "C2": "변동성 타기팅(시변 노출)",
+    "C3": "낙폭 제어(시변 노출)",
+    "C4": "저변동 틸트(방어적 보유)",
+    "C5": "퀄리티 틸트(방어적 보유)",
+    "C6": "추세 현금 + 저변동(결합)"
+  },
+  "reference": "같은 엔진의 C0(장치 없음)",
+  "unit": "(엔진, 보는 창 위기) 쌍 — 위기 = 사전등록 행동 카드 설정(LT 20/20 첫 통과 · P0R01 사본)의 보는 창 위기",
+  "rules": {
+    "V1_device_effect": {
+      "text": "장치 칸의 위기 낙폭 포착(dd_capture) < 같은 엔진 C0 의 같은 위기 dd_capture − tol 인 쌍의 비율 > majority_share",
+      "tol_source": "matched_controls.json(.MC_TOL 과 같은 값 — 짝 대조 판정 허용오차)",
+      "majority_share": 0.5
+    },
+    "V2_beyond_controls": {
+      "text": "장치 칸이 그 위기에서 크기 + 평균 노출 짝 플라시보를 이긴(controls.per_crisis.beats) 쌍의 비율 > majority_share",
+      "placebo": {
+        "n": 200,
+        "alpha": 0.05
+      }
+    },
+    "V3_participation": {
+      "text": "장치 칸의 보는 창 상승 포착(bull_up_capture_median) ≥ uc_floor 인 엔진 수 ≥ 엔진 과반(3 중 2)",
+      "uc_floor": 0.55
+    },
+    "verdict": "V1 ∧ V2 ∧ V3 = validated · 아니면 rejected(실패 규칙 코드 기록)",
+    "crisis_type_split": "위기 유형 = 벤치(KOSPI200) 고점→저점 거래일 수가 보는 창 위기들의 중앙값 이하면 급락형 · 초과면 완만형 (중앙값 = 보는 창 위기만으로 · 새 상수 없음) — V1 · V2 비율을 유형별로도 낸다(판정 아닌 보고 · '전천후' 표식 = 두 유형 모두 과반)"
+  },
+  "expectations": {
+    "C1": "완만형 위기에서 V1 비율 > 급락형(추세 신호는 시간이 걸린다)",
+    "C2": "급락형 위기에서 V1 비율 > 완만형(변동성 급등이 먼저 온다)",
+    "C3": "완만형 위기에서 V1 비율 > 급락형(낙폭이 쌓여야 걸린다)",
+    "C4": "급락형 위기에서 V1 비율 > 완만형(저베타 보유가 충격을 덜 받는다)",
+    "C5": "V1 비율 > 0.5(퀄리티 비행이 위기에 나타난다)",
+    "C6": "V1 비율 ≥ max(C1, C4)(두 원천의 결합)"
+  },
+  "selection": "선택 없음 — 검증된 장치 목록이 P4 조립의 방어 후보가 된다(P4 에서 고를 때 이 라운드 6장치를 시행 수로 센다)",
+  "budget": {
+    "rounds": 1,
+    "new_measurements": 0
+  }
+}

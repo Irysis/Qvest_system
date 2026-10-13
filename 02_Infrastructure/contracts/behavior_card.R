@@ -50,6 +50,18 @@ bc_cfg <- function(root = NULL, path = NULL) {
             "weak_capture_floor", "cdar_alpha", "crisis_depth", "strong_mdd_vs_bench_max")
   miss <- setdiff(need, names(cfg))
   if (length(miss)) stop("[behavior_card] 설정 키 누락: ", paste(miss, collapse = ","))
+  # 위기 정의 어휘(2026-10-13 도훈 결정 CRISIS-DEF-LT2020) — 없으면 구판(running_peak_drawdown)이다(구 설정 사본 · 사전등록 판 재현)
+  def <- .bc_or(cfg[["crisis_episode_def"]], "running_peak_drawdown")
+  if (!def %in% c("running_peak_drawdown", "lt_first_passage"))
+    stop("[behavior_card] crisis_episode_def 어휘 밖: ", def, " (running_peak_drawdown | lt_first_passage)")
+  if (identical(def, "lt_first_passage")) {
+    for (k in c("crisis_lambda_down", "crisis_lambda_up")) {
+      v <- cfg[[k]]
+      if (!is.numeric(v) || length(v) != 1L || !is.finite(v) || v <= 0 || v >= 1)
+        stop("[behavior_card] lt_first_passage 는 ", k, " ∈ (0, 1) 가 필요하다")
+    }
+  }
+  cfg$crisis_episode_def <- def
   cfg
 }
 
@@ -123,6 +135,46 @@ bc_crises <- function(bm, depth) {
   if (!length(out)) return(data.table(peak_date = as.Date(character(0)), trough_date = as.Date(character(0)),
                                       recover_date = as.Date(character(0)), depth = numeric(0), ongoing = logical(0)))
   rbindlist(out)
+}
+
+#' 위기 구간 — Lunde & Timmermann(2004) 첫 통과 규칙(2026-10-13 도훈 결정 CRISIS-DEF-LT2020)
+#'   강세 상태에서 국지 고점 대비 λ_down 하락 = 약세 전환(그 고점이 위기 시작) · 약세 상태에서 국지 저점 대비 λ_up 반등 = 강세 전환(그 저점이 위기 바닥).
+#'   구판(bc_crises)과 달리 '이전 고점을 되찾아야' 끝나지 않는다 — 여러 파동이 뭉친 긴 하락(2017-11→2020-03 · 2008)을 반등 기준으로 가른다.
+#'   근거: Lunde, A. & Timmermann, A. (2004) Duration Dependence in Stock Prices: An Analysis of Bull and Bear Markets,
+#'   Journal of Business & Economic Statistics 22(3):253-273 · 알고리즘 서술 = Maheu, McCurdy & Song 의 정리(Ntantamis 2010,
+#'   CREATES RP 2010-51 부록 A 재인용) · 문턱 관례 0.2(같은 문헌: "A conventional value used in the financial press is 0.2 for both thresholds").
+#' @return data.table(peak_date, trough_date, recover_date, depth, ongoing) — bc_crises 와 같은 열
+bc_crises_lt <- function(bm, l_down, l_up) {
+  b <- copy(as.data.table(bm))[order(date)]
+  P <- cumprod(1 + b$r); D <- b$date; n <- length(P)
+  empty <- data.table(peak_date = as.Date(character(0)), trough_date = as.Date(character(0)),
+                      recover_date = as.Date(character(0)), depth = numeric(0), ongoing = logical(0))
+  if (n < 2L) return(empty)
+  out <- list(); st <- 1L; ext <- P[1]; exti <- 1L; pki <- NA_integer_
+  rec <- function(pk, from) { k <- which(P[from:n] >= P[pk]); if (length(k)) D[from + k[1] - 1L] else as.Date(NA) }
+  for (t in 2:n) {
+    if (st == 1L) {
+      if (P[t] >= ext) { ext <- P[t]; exti <- t }
+      else if (P[t] <= (1 - l_down) * ext) { pki <- exti; st <- 0L; ext <- P[t]; exti <- t }
+    } else {
+      if (P[t] <= ext) { ext <- P[t]; exti <- t }
+      else if (P[t] >= (1 + l_up) * ext) {
+        out[[length(out) + 1L]] <- data.table(peak_date = D[pki], trough_date = D[exti], recover_date = rec(pki, exti),
+                                              depth = 1 - P[exti] / P[pki], ongoing = FALSE)
+        st <- 1L; ext <- P[t]; exti <- t
+      }
+    }
+  }
+  if (st == 0L) out[[length(out) + 1L]] <- data.table(peak_date = D[pki], trough_date = D[exti], recover_date = as.Date(NA),
+                                                      depth = 1 - P[exti] / P[pki], ongoing = TRUE)
+  if (!length(out)) return(empty)
+  rbindlist(out)
+}
+
+# 설정이 정한 위기 정의로 위기 구간을 낸다
+.bc_crises_by_cfg <- function(bm, cfg) {
+  if (identical(.bc_or(cfg[["crisis_episode_def"]], "running_peak_drawdown"), "lt_first_passage"))
+    bc_crises_lt(bm, cfg[["crisis_lambda_down"]], cfg[["crisis_lambda_up"]]) else bc_crises(bm, cfg$crisis_depth)
 }
 
 # 수익 경로 → 누적수익 · 경로 최대낙폭(시작 수준 1 포함)
@@ -242,7 +294,7 @@ bc_card <- function(strat, bm, cfg = bc_cfg(), bm_hist = NULL,
   J <- if (daily) merge(Sd[, .(date, s = r)], Kd[, .(date, k = r)], by = "date")[order(date)]
        else M[, .(date = as.Date(paste0(ym, "-28")), s, k)]
   Hc <- if (daily) Hd else Hm[, .(date = as.Date(paste0(ym, "-28")), r)]
-  crises <- bc_crises(Hc, cfg$crisis_depth)
+  crises <- .bc_crises_by_cfg(Hc, cfg)
   cr_rows <- list(); excluded <- list()
   for (i in seq_len(nrow(crises))) {
     p0 <- crises$peak_date[i]; t0 <- crises$trough_date[i]
@@ -298,7 +350,9 @@ bc_card <- function(strat, bm, cfg = bc_cfg(), bm_hist = NULL,
     period = c(M$ym[1], M$ym[nrow(M)]), n_months = nrow(M), crisis_resolution = if (daily) "daily" else "monthly",
     cfg = list(tau_d = cfg$tau_d, uc_floor = cfg$uc_floor, majority_share = cfg$majority_share,
                weak_capture_floor = cfg$weak_capture_floor, cdar_alpha = cfg$cdar_alpha,
-               crisis_depth = cfg$crisis_depth, strong_mdd_vs_bench_max = cfg$strong_mdd_vs_bench_max),
+               crisis_depth = cfg$crisis_depth, strong_mdd_vs_bench_max = cfg$strong_mdd_vs_bench_max,
+               crisis_episode_def = .bc_or(cfg[["crisis_episode_def"]], "running_peak_drawdown"),
+               crisis_lambda_down = .bc_or(cfg[["crisis_lambda_down"]], NA_real_), crisis_lambda_up = .bc_or(cfg[["crisis_lambda_up"]], NA_real_)),
     dc_strong_max = dcs$value, dc_strong_pairs = dcs$n_pairs, dc_strong_table = dcs$pairs,
     overall = .bc_verdict(CR, BU, cfg, dcs$value, MR$overall),
     visible = sub("visible"),

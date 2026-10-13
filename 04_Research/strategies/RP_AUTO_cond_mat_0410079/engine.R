@@ -139,7 +139,7 @@ stopifnot(all(c("Date", "Ticker", "Close", "Vol", "K200", "KQ150") %in% names(RA
                         #   종목만 배제하는 하한.
 .C4_ANNUAL_D  <- 90L    # C4 연간 규약(12월말 → 익년 3/31)의 일수 표현. 재무 가용일
                         #   자체 하한에 쓴다(위 C4 항목 참조).
-.SIG_FROM     <- as.Date("2005-01-01")   # 고정 축 시작
+.SIG_FROM     <- (if (exists(".RP_START_DATE")) .RP_START_DATE else as.Date("2005-01-01"))   # 고정 축 시작
 .PANEL_FROM   <- as.Date("2004-01-01")   # 일별 패널 하한(메모리 경계). adv20 20일창
                                          #   +여유. 신호 산출 범위에 무영향.
 

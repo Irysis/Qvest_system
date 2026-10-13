@@ -36,7 +36,7 @@
   "structural_drawdown": false,
   "selection_type": "chain",
   "dsr_gate_applied": false,
-  "reasons": "v3: S 0.000 · B 경계 0.434 · 띠 F · CR weak(시험 창 normal) · 노치 +0 · A 아님 사유 floor:port_t,floor:calmar,floor:cagr,floor:sharpe,oos:rolling36_pass_oos,cr:weak | v921 C: non-positive alpha (PORT_t<=0 또는 net_IR<=0); [소급 2026-09-04] recent_regime 구제(F->C): 전기간 F 이나 롤링 36개월 기준 최근 12점 중 83% 가 절대문턱 통과 (현재 SR 0.67 · CAGR 20.9% · MDD 32.1% · Calmar 0.65). 생애 충족 8%. ★과거 회복→재붕괴 4회 — 이번 회복이 처음이 아니다",
+  "reasons": "v3: S 0.000 · B 경계 0.434 · 띠 F · CR normal(시험 창 normal) · 노치 +0 · A 아님 사유 floor:port_t,floor:calmar,floor:cagr,floor:sharpe,oos:rolling36_pass_oos | v921 C: non-positive alpha (PORT_t<=0 또는 net_IR<=0); [소급 2026-09-04] recent_regime 구제(F->C): 전기간 F 이나 롤링 36개월 기준 최근 12점 중 83% 가 절대문턱 통과 (현재 SR 0.67 · CAGR 20.9% · MDD 32.1% · Calmar 0.65). 생애 충족 8%. ★과거 회복→재붕괴 4회 — 이번 회복이 처음이 아니다",
   "replication": {
     "source_paper": {
       "title": "Fama & French (1992), The Cross-Section of Expected Stock Returns, JF 47(2)",
@@ -134,6 +134,15 @@
     "grade": "F",
     "S": 0,
     "S_B": 0.434,
+    "rules_version": "v3.1",
+    "crisis_def": "lt_first_passage",
+    "cr_notch_basis": "normal",
+    "mc8": {
+      "status": "not_needed",
+      "label": null,
+      "share_beats_size_exposure": null,
+      "median_placebo_p": null
+    },
     "band": "F",
     "notch": 0,
     "notch_a": false,
@@ -142,8 +151,7 @@
       "floor:calmar",
       "floor:cagr",
       "floor:sharpe",
-      "oos:rolling36_pass_oos",
-      "cr:weak"
+      "oos:rolling36_pass_oos"
     ],
     "floors": {
       "port_t": false,
@@ -158,11 +166,11 @@
       "sharpe": 0.5587
     },
     "cr": {
-      "overall": "weak",
+      "overall": "normal",
       "test": "normal",
       "visible": "weak",
-      "n_crisis": 6,
-      "dd_capture_median": 1.0274,
+      "n_crisis": 10,
+      "dd_capture_median": 1.015,
       "dd_capture_worst": 1.3412,
       "uc_median": 0.9322,
       "cdar": 0.3947,
@@ -187,10 +195,18 @@
     "nav_source": "contract"
   },
   "grade_v3_backfill": {
-    "at": "2026-10-13T15:04:07+0900",
+    "at": "2026-10-13T18:36:48+0900",
     "tool": "02_Infrastructure/programs/grade_v3_backfill.R",
-    "decision": "decision_register GRADE-V3-PROMOTE",
-    "prior_essence_grade": "C",
-    "prior_md5": "b7bdb70865078e6d85b6c43d94817ebe"
+    "decision": "decision_register GRADE-V3-CR-STRONG-SELECTION · CRISIS-DEF-LT2020(규칙 판 재채점)",
+    "rules_version": "v3.1",
+    "prior_rules_version": "v3.0",
+    "prior_essence_grade": "F",
+    "prior_md5": "95bab848243b391ab3be894406a0baf7",
+    "history": [
+      {
+        "rules_version": "v3.0",
+        "essence_grade": "F"
+      }
+    ]
   }
 }

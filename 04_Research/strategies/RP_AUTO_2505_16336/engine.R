@@ -176,7 +176,7 @@ setorder(.ME, Date)
 
 .FORM <- .DT[month(Date) == 6L, .(FormDate = max(Date)), by = yr]
 setorder(.FORM, FormDate)
-.FORM <- .FORM[FormDate >= as.Date("2005-01-01")]    # 축 시작(2005-01-01~)
+.FORM <- .FORM[FormDate >= (if (exists(".RP_START_DATE")) .RP_START_DATE else as.Date("2005-01-01"))]    # 축 시작(2005-01-01~)
 if (nrow(.FORM) == 0L)
   stop("[RP_2505_16336] 6월 형성일 0건 — RAWDATA 날짜 범위 확인")
 

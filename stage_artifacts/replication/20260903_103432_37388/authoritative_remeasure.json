@@ -36,7 +36,7 @@
   "structural_drawdown": false,
   "selection_type": "chain",
   "dsr_gate_applied": false,
-  "reasons": "v3: S 0.000 · B 경계 0.430 · 띠 F · CR normal(시험 창 normal) · 노치 +0 · A 아님 사유 floor:port_t,floor:calmar,floor:cagr,floor:sharpe,oos:rolling36_pass_oos | v921 C: non-positive alpha (PORT_t<=0 또는 net_IR<=0); [소급 2026-09-04] recent_regime 구제(F->C): 전기간 F 이나 롤링 36개월 기준 최근 12점 중 67% 가 절대문턱 통과 (현재 SR 0.84 · CAGR 23.1% · MDD 23.2% · Calmar 1.00). 생애 충족 9%. ★과거 회복→재붕괴 4회 — 이번 회복이 처음이 아니다",
+  "reasons": "v3: S 0.000 · B 경계 0.430 · 띠 F · CR weak(시험 창 normal) · 노치 +0 · A 아님 사유 floor:port_t,floor:calmar,floor:cagr,floor:sharpe,oos:rolling36_pass_oos,cr:weak | v921 C: non-positive alpha (PORT_t<=0 또는 net_IR<=0); [소급 2026-09-04] recent_regime 구제(F->C): 전기간 F 이나 롤링 36개월 기준 최근 12점 중 67% 가 절대문턱 통과 (현재 SR 0.84 · CAGR 23.1% · MDD 23.2% · Calmar 1.00). 생애 충족 9%. ★과거 회복→재붕괴 4회 — 이번 회복이 처음이 아니다",
   "replication": {
     "source_paper": {
       "title": "Moskowitz & Grinblatt (1999), Do Industries Explain Momentum?, JF 54(4)",
@@ -134,6 +134,15 @@
     "grade": "F",
     "S": 0,
     "S_B": 0.4297,
+    "rules_version": "v3.1",
+    "crisis_def": "lt_first_passage",
+    "cr_notch_basis": "weak",
+    "mc8": {
+      "status": "not_needed",
+      "label": null,
+      "share_beats_size_exposure": null,
+      "median_placebo_p": null
+    },
     "band": "F",
     "notch": 0,
     "notch_a": false,
@@ -142,7 +151,8 @@
       "floor:calmar",
       "floor:cagr",
       "floor:sharpe",
-      "oos:rolling36_pass_oos"
+      "oos:rolling36_pass_oos",
+      "cr:weak"
     ],
     "floors": {
       "port_t": false,
@@ -157,12 +167,12 @@
       "sharpe": 0.5517
     },
     "cr": {
-      "overall": "normal",
+      "overall": "weak",
       "test": "normal",
       "visible": "weak",
-      "n_crisis": 6,
-      "dd_capture_median": 0.9673,
-      "dd_capture_worst": 1.1894,
+      "n_crisis": 10,
+      "dd_capture_median": 1.0387,
+      "dd_capture_worst": 1.151,
       "uc_median": 0.7649,
       "cdar": 0.3555,
       "controls": "not_provided"
@@ -186,10 +196,18 @@
     "nav_source": "contract"
   },
   "grade_v3_backfill": {
-    "at": "2026-10-13T15:08:07+0900",
+    "at": "2026-10-13T18:41:44+0900",
     "tool": "02_Infrastructure/programs/grade_v3_backfill.R",
-    "decision": "decision_register GRADE-V3-PROMOTE",
-    "prior_essence_grade": "C",
-    "prior_md5": "ecf030f319ad0541038f1d91444851ae"
+    "decision": "decision_register GRADE-V3-CR-STRONG-SELECTION · CRISIS-DEF-LT2020(규칙 판 재채점)",
+    "rules_version": "v3.1",
+    "prior_rules_version": "v3.0",
+    "prior_essence_grade": "F",
+    "prior_md5": "6782b1883840b7a03aeb3a01f64dcac4",
+    "history": [
+      {
+        "rules_version": "v3.0",
+        "essence_grade": "F"
+      }
+    ]
   }
 }

@@ -103,7 +103,7 @@
     },
     "reason": "하락월 110개: 초과 +1.60%/월 (t 4.28 · 적중 66%) · 벤치-10% 이하 10개: 초과 +0.79%/월 · 상승월 초과 +0.66%/월"
   },
-  "reasons": "v3: S 0.971 · B 경계 0.438 · 띠 B · CR normal(시험 창 normal) · 노치 +0 · A 아님 사유 oos:rolling36_pass_oos | v921 B: Component: PORT_t>=2.0 & net_IR>0.2; A 미달[OOS_ret -0.08<0.7(band fail),Calmar<0.64]",
+  "reasons": "v3: S 0.971 · B 경계 0.438 · 띠 B · CR normal(시험 창 strong) · 노치 +0 · A 아님 사유 oos:rolling36_pass_oos | v921 B: Component: PORT_t>=2.0 & net_IR>0.2; A 미달[OOS_ret -0.08<0.7(band fail),Calmar<0.64]",
   "replication": {
     "source_paper": {
       "url": "https://arxiv.org/abs/2002.06975",
@@ -138,6 +138,15 @@
     "grade": "B",
     "S": 0.9706,
     "S_B": 0.438,
+    "rules_version": "v3.1",
+    "crisis_def": "lt_first_passage",
+    "cr_notch_basis": "normal",
+    "mc8": {
+      "status": "not_needed",
+      "label": null,
+      "share_beats_size_exposure": null,
+      "median_placebo_p": null
+    },
     "band": "B",
     "notch": 0,
     "notch_a": false,
@@ -158,11 +167,11 @@
     },
     "cr": {
       "overall": "normal",
-      "test": "normal",
+      "test": "strong",
       "visible": "normal",
-      "n_crisis": 6,
-      "dd_capture_median": 0.8296,
-      "dd_capture_worst": 1.1235,
+      "n_crisis": 10,
+      "dd_capture_median": 0.9412,
+      "dd_capture_worst": 1.3283,
       "uc_median": 1.0688,
       "cdar": 0.2879,
       "controls": "not_provided"
@@ -186,10 +195,18 @@
     "nav_source": "contract"
   },
   "grade_v3_backfill": {
-    "at": "2026-10-13T15:09:29+0900",
+    "at": "2026-10-13T18:42:46+0900",
     "tool": "02_Infrastructure/programs/grade_v3_backfill.R",
-    "decision": "decision_register GRADE-V3-PROMOTE",
+    "decision": "decision_register GRADE-V3-CR-STRONG-SELECTION · CRISIS-DEF-LT2020(규칙 판 재채점)",
+    "rules_version": "v3.1",
+    "prior_rules_version": "v3.0",
     "prior_essence_grade": "B",
-    "prior_md5": "60d12874703b272d62378335993b320b"
+    "prior_md5": "6622c50f8b6dabad586d29d7b4b04b53",
+    "history": [
+      {
+        "rules_version": "v3.0",
+        "essence_grade": "B"
+      }
+    ]
   }
 }

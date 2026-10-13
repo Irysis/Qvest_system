@@ -35,7 +35,7 @@
   "dsr_gate_applied": false,
   "selection_type": "chain",
   "hard_fail": false,
-  "reasons": "v3: S 0.377 · B 경계 0.421 · 띠 C · CR normal(시험 창 insufficient) · 노치 +0 · A 아님 사유 floor:port_t,floor:cagr,floor:sharpe,oos:rolling36_pass_oos | v921 C: Ensemble: positive alpha이나 B 미달 (블렌드에서만 가치)",
+  "reasons": "v3: S 0.377 · B 경계 0.421 · 띠 C · CR normal(시험 창 normal) · 노치 +0 · A 아님 사유 floor:port_t,floor:cagr,floor:sharpe,oos:rolling36_pass_oos | v921 C: Ensemble: positive alpha이나 B 미달 (블렌드에서만 가치)",
   "contract": {
     "integrity_status": "WARNING",
     "audit_pass": 15,
@@ -55,6 +55,15 @@
     "grade": "C",
     "S": 0.3768,
     "S_B": 0.421,
+    "rules_version": "v3.1",
+    "crisis_def": "lt_first_passage",
+    "cr_notch_basis": "normal",
+    "mc8": {
+      "status": "not_needed",
+      "label": null,
+      "share_beats_size_exposure": null,
+      "median_placebo_p": null
+    },
     "band": "C",
     "notch": 0,
     "notch_a": false,
@@ -78,11 +87,11 @@
     },
     "cr": {
       "overall": "normal",
-      "test": "insufficient",
+      "test": "normal",
       "visible": "normal",
-      "n_crisis": 5,
-      "dd_capture_median": 0.9983,
-      "dd_capture_worst": 1.2844,
+      "n_crisis": 9,
+      "dd_capture_median": 0.9479,
+      "dd_capture_worst": 1.1189,
       "uc_median": 1.1145,
       "cdar": 0.3847,
       "controls": "not_provided"
@@ -106,10 +115,18 @@
     "nav_source": "contract"
   },
   "grade_v3_backfill": {
-    "at": "2026-10-13T15:02:45+0900",
+    "at": "2026-10-13T18:35:19+0900",
     "tool": "02_Infrastructure/programs/grade_v3_backfill.R",
-    "decision": "decision_register GRADE-V3-PROMOTE",
+    "decision": "decision_register GRADE-V3-CR-STRONG-SELECTION · CRISIS-DEF-LT2020(규칙 판 재채점)",
+    "rules_version": "v3.1",
+    "prior_rules_version": "v3.0",
     "prior_essence_grade": "C",
-    "prior_md5": "0bfc20727a1cefa293685cc4e51eeaab"
+    "prior_md5": "7aeee59f912ca9313ae009b95c684fd2",
+    "history": [
+      {
+        "rules_version": "v3.0",
+        "essence_grade": "C"
+      }
+    ]
   }
 }

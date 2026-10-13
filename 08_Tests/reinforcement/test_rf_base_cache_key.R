@@ -56,7 +56,7 @@ make_root <- function(tag) {
   r <- file.path(TMP, tag)
   dir.create(file.path(r, ".cache", "factor_db"), recursive = TRUE, showWarnings = FALSE)
   dir.create(file.path(r, "02_Infrastructure", "reinforcement"), recursive = TRUE, showWarnings = FALSE)
-  for (f in c("rf_rebalance.R", "rf_sleeve.R", "rf_base_cache.R"))
+  for (f in c("rf_rebalance.R", "rf_sleeve.R", "rf_axes.R", "rf_base_cache.R"))   # rf_axes.R = 엔진이 source 하는 고정 축 단정(MC5 10-13)
     file.copy(file.path(ROOT, "02_Infrastructure/reinforcement", f),
               file.path(r, "02_Infrastructure/reinforcement", f), overwrite = TRUE)
   writeBin(as.raw(rep(1L, 1000L)), file.path(r, ".cache", "rawdata.parquet"))

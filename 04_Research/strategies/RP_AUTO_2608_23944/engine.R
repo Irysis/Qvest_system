@@ -123,7 +123,7 @@ stopifnot(all(c("Date", "Ticker", "Close", "Vol", "Ret", "K200", "KQ150")
 .LIQ         <- 2e8           # adv20(t-1) 하한 (KRW) — 고정 축 명시값
 .NMIN        <- 50L           # 월 최소 횡단면. 엣지(PC1) 추정과 상위 25 선택이 의미를
                               #   갖는 하한. 미만인 달은 신호를 내지 않는다.
-.SIG_FROM    <- as.Date("2005-01-01")   # 고정 축 시작
+.SIG_FROM    <- (if (exists(".RP_START_DATE")) .RP_START_DATE else as.Date("2005-01-01"))   # 고정 축 시작
 .PANEL_FROM  <- as.Date("2001-01-01")   # 패널 하한(메모리 경계). 첫 시그널일(2005-01)의
                                         #   추정창 750거래일을 채우려면 ~2002-01 이면 되고
                                         #   여기 1년 여유를 둔다. 신호 산출 범위에 무영향.

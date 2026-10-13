@@ -306,9 +306,11 @@ if (!is.null(.pspec)) jlog("portfolio_spec_from_fidelity",
 res <- tryCatch(do.call(run_paper_replication, c(list(
   strategy_name = paste0("RP_AUTO_", gsub("[^A-Za-z0-9]", "", substr(PKEY, 1, 20))),
   strategy_idea = paste0("[무인 충실구현] ", substr(TITLE, 1, 120)),
-  factor_engine_path = eng, universe = "K200_KQ150",
+  # ★측정 축(2026-10-13 MEASUREMENT-AXIS-SWITCH-ALLHYG2000) — universe · start_date 를 넘기지 않는다 = 활성 epoch
+  #   (constraint_defaults.json::measurement_axis.active — 현재 all_hyg_2000_v1 = 전 종목 + 위생 · 2000-01-01). 구 리터럴(K200_KQ150 · 2005)은 축을 박제했다.
+  factor_engine_path = eng,
   source_paper = list(url = URL, title = TITLE, paper_key = PKEY),
-  commission_paper = .cmsn, start_date = "2005-01-01", send_telegram = FALSE),
+  commission_paper = .cmsn, send_telegram = FALSE),
   if (!is.null(.pspec)) list(portfolio_spec = .pspec) else list())),
   error = function(e) structure(list(err = conditionMessage(e)), class = "rp_err"))
 if (inherits(res, "rp_err")) fail("replication_error", res$err)

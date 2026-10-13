@@ -17,6 +17,7 @@
 #   결정 레지스터 06_Registry/decision_register.json id=EXEC-PRICE — 도훈 2026-09-23
 #   "close_t1 — 익일 종가(정본 backtest_harness 와 같은 의미) · 실현 가능성 논거").
 #   시그널 d(월말) → 집행일 exec = get_execution_date(d) = 익월 첫 거래일(backtest_harness.R:316).
+#   (MC4 2026-10-13) 한 달에 신호가 둘 이상이면 주간 경로 — exec = d 다음 거래일 · ISO 주 1회(아래 rep_rebalance_mode 머리 주석).
 #   비중은 d 시점 확정(forward 정보 무사용). 규약은 **무엇을 어느 가격에 사느냐**만 가른다:
 #   - "close_d_legacy" : 2026-08-29 초판 동작 그대로(비트 동일 — 재현·민감도 전용).
 #       보유창 [exec, next_exec). RAWDATA Ret = Close_t/Close_{t-1}−1 이라 새 보유가 집행일 수익
@@ -155,10 +156,61 @@ rep_exec_statement <- function(exec_price) switch(exec_price,
   out
 }
 
+# ── 리밸런싱 주기 (MC4 · D16 · 2026-10-13 — 설계 §3.9) ────────────────────────────────────────────────
+#   월간(어느 달이든 신호 ≤ 1개) = 구판 그대로: exec = get_execution_date(d) = 익월 첫 거래일. 이 경로는 한 줄도 바뀌지 않는다(비트 동일).
+#   주간(어느 달이든 신호 ≥ 2개): 구판은 같은 달 신호가 모두 같은 집행일(익월 첫 거래일)로 모여 마지막 하나만 보유 창을 갖고
+#     나머지는 침묵 skip 됐다(일간 리밸 논문 = 월말 신호만 산다). 주간 경로는
+#     ① exec = 신호 다음 거래일 ② ISO 주마다 신호 1개(같은 주의 마지막) — 일간은 허용하지 않는다(D16). 일간 신호는 주간으로 바뀌고
+#        diagnostics$rebalance 로 남아 러너가 FIDELITY 에 자동 신고한다 ③ 주간 신호일 거래량 0(또는 그날 행 없음) 종목을 빼고
+#        같은 레그 안에서 비중을 다시 맞춘다(월말 스냅샷 정지 표식의 해상도 보강 · 신호일 데이터만 = PIT · 집행은 다음 거래일).
+#   rebalance = "auto"(기본 · 신호 날짜로 판정) | "monthly"(구판 강제 — 재현 전용) | "weekly"(강제).
+.REP_REBALANCE <- c("auto", "monthly", "weekly")
+
+rep_rebalance_mode <- function(sig_dates, rebalance = "auto") {
+  rb <- if (is.null(rebalance) || !length(rebalance) || is.na(rebalance[1])) "auto" else as.character(rebalance[1])
+  if (!rb %in% .REP_REBALANCE)
+    stop(sprintf("[replication] rebalance='%s' — 허용값 %s", rb, paste(.REP_REBALANCE, collapse = "/")))
+  if (!identical(rb, "auto")) return(rb)
+  per_month <- table(format(as.Date(sig_dates), "%Y-%m"))
+  if (length(per_month) && max(per_month) > 1L) "weekly" else "monthly"
+}
+
+rep_week_key <- function(d) format(as.Date(d), "%G-W%V")          # ISO 연-주
+
+rep_next_trading_day <- function(d, all_dates) {                   # d 보다 뒤 첫 거래일(없으면 NA)
+  i <- findInterval(as.numeric(as.Date(d)), as.numeric(all_dates)) + 1L
+  out <- all_dates[pmin(i, length(all_dates))]
+  out[i > length(all_dates)] <- as.Date(NA)
+  out
+}
+
+# 주간 신호 정리 — ISO 주당 마지막 신호만 · 신호일 거래량 0(행 없음 포함) 종목 제외 + 레그 안 재정규화
+rep_weekly_signals <- function(W, RAWDATA) {
+  if (!"Vol" %in% names(RAWDATA)) stop("[replication] 주간 경로는 RAWDATA$Vol 이 필요하다(신호일 거래량 0 제외 · D16)")
+  S <- data.table(d = sort(unique(W$Date)))
+  S[, wk := rep_week_key(d)]
+  keep <- S[, list(d = max(d)), by = wk]$d
+  n_multi <- S[, .N, by = wk][N > 1L, .N]
+  W2 <- W[Date %in% keep]
+  W2 <- merge(W2, RAWDATA[Date %in% keep, list(Date, Ticker, .vol = Vol)], by = c("Date", "Ticker"), all.x = TRUE)
+  W2[, .side := sign(Weight)]
+  W2[, .g0 := sum(abs(Weight)), by = list(Date, .side)]
+  n_zero <- W2[!(is.finite(.vol) & .vol > 0), .N]
+  W2 <- W2[is.finite(.vol) & .vol > 0]
+  W2[, .g1 := sum(abs(Weight)), by = list(Date, .side)]
+  W2[, Weight := Weight * .g0 / .g1]
+  W2[, c(".vol", ".side", ".g0", ".g1") := NULL]
+  setcolorder(W2, intersect(names(W), names(W2)))
+  list(W = W2, diag = list(n_signal_raw = nrow(S), n_signal_used = uniqueN(W2$Date), n_weeks_multi_signal = n_multi,
+                           n_zero_vol_excluded = n_zero,
+                           n_dates_emptied = length(setdiff(keep, unique(W2$Date)))))
+}
+
 run_replication_simulation <- function(RAWDATA, BM_DT, WEIGHTS,
                                        commission = 0.0015,
                                        start_date = "2005-01-01",
-                                       exec_price = NULL) {
+                                       exec_price = NULL,
+                                       rebalance = "auto") {
   `%||%` <- function(a, b) if (is.null(a) || length(a) == 0L || (length(a) == 1L && is.na(a))) b else a
   exec_price <- rep_resolve_exec_price(exec_price)
   stopifnot(is.data.table(WEIGHTS), all(c("Date", "Ticker", "Weight") %in% names(WEIGHTS)))
@@ -172,6 +224,20 @@ run_replication_simulation <- function(RAWDATA, BM_DT, WEIGHTS,
   all_dates <- sort(unique(RAWDATA$Date))
   sig_dates <- sort(unique(W$Date))
 
+  # ── 리밸런싱 주기 판정(MC4 · 위 머리 주석) — 월간이면 EXEC = get_execution_date 그대로(구판 비트 동일) ──
+  rb_mode <- rep_rebalance_mode(sig_dates, rebalance)
+  rb_diag <- list(mode = rb_mode, requested = as.character(rebalance %||% "auto")[1],
+                  exec_rule = if (identical(rb_mode, "weekly")) "신호 다음 거래일 · ISO 주 1회" else "익월 첫 거래일(get_execution_date)")
+  if (identical(rb_mode, "weekly")) {
+    .wk <- rep_weekly_signals(W, RAWDATA)
+    W <- .wk$W; rb_diag <- c(rb_diag, .wk$diag)
+    if (nrow(W) == 0L) stop("[replication] 주간 정리(거래량 0 제외) 뒤 WEIGHTS 가 비었다")
+    sig_dates <- sort(unique(W$Date))
+    EXEC <- function(s) rep_next_trading_day(s, all_dates)
+  } else {
+    EXEC <- function(s) get_execution_date(s, all_dates)
+  }
+
   # ── open_t1: 집행일 수익 분할표 (Date, Ticker, r_on, r_id, ok) ──
   #   Close_prev = Close/(1+Ret) (Ret 정의 그대로) → r_on = Open(1+Ret)/Close − 1, r_id = Close/Open − 1,
   #   (1+r_on)(1+r_id) = 1+Ret. 가드 불통과(Open 결측·비양수·겹밤 갭 > 제한폭) = r_on := Ret, r_id := 0.
@@ -180,7 +246,7 @@ run_replication_simulation <- function(RAWDATA, BM_DT, WEIGHTS,
   if (identical(exec_price, "open_t1")) {
     if (!all(c("Open", "Close") %in% names(RAWDATA)))
       stop("[replication] exec_price=open_t1 은 RAWDATA$Open·Close 가 필요하다")
-    ex_all <- unique(as.Date(vapply(sig_dates, function(s) as.numeric(get_execution_date(s, all_dates)), numeric(1))))
+    ex_all <- unique(as.Date(vapply(sig_dates, function(s) as.numeric(EXEC(s)), numeric(1))))
     ex_all <- ex_all[!is.na(ex_all)]
     SPLIT <- RAWDATA[Date %in% ex_all & is.finite(Ret), .(Date, Ticker, Ret, Open, Close)]
     SPLIT[, lim := .rep_overnight_limit(Date)]
@@ -231,9 +297,9 @@ run_replication_simulation <- function(RAWDATA, BM_DT, WEIGHTS,
   for (i in seq_along(sig_dates)) {
     d <- sig_dates[i]
     md <- W[Date == d]
-    exec_date <- get_execution_date(d, all_dates)
+    exec_date <- EXEC(d)
     if (is.na(exec_date)) next
-    next_exec <- if (i < length(sig_dates)) get_execution_date(sig_dates[i + 1L], all_dates) else NA
+    next_exec <- if (i < length(sig_dates)) EXEC(sig_dates[i + 1L]) else NA
     # 보유창 — 규약이 가르는 유일한 자리 (위 헤더 참조)
     if (identical(exec_price, "close_d_legacy")) {
       hold_pool <- if (!is.na(next_exec)) all_dates[all_dates < next_exec] else all_dates
@@ -346,11 +412,12 @@ run_replication_simulation <- function(RAWDATA, BM_DT, WEIGHTS,
                             close_t1 = "first holding day multiplicative (Rn = (1-c)(1+Rg)-1)",
                             open_t1 = "exec_date intraday multiplicative (Rn = (1-c)(1+Rg)-1)"),
       n_overlap_days = n_overlap,
-      open_guard = if (identical(exec_price, "open_t1")) og else NULL
+      open_guard = if (identical(exec_price, "open_t1")) og else NULL,
+      rebalance = rb_diag                      # MC4 — 주기 · 집행 규칙 · (주간) 신호 정리 회계
     ),
     strategy_gross_xts = xts(D$Rg, order.by = D$Date),
     cost_model_version = rep_cost_model_version(exec_price)
   )
 }
 
-cat("[replication_harness.R] Loaded (v10 · exec_price 인자화 2026-09-24) — run_replication_simulation(RAWDATA, BM_DT, WEIGHTS, commission, start_date, exec_price)\n")
+cat("[replication_harness.R] Loaded (v10 · exec_price 인자화 2026-09-24 · 주간 경로 MC4 2026-10-13) — run_replication_simulation(RAWDATA, BM_DT, WEIGHTS, commission, start_date, exec_price, rebalance)\n")

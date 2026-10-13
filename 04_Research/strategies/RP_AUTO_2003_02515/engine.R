@@ -75,7 +75,7 @@ if (!all(.REQ %in% names(RAWDATA)))
 .ES_MAX      <- 100L                     # ★changed(9)  Algorithm 2 의 T(최대 반복) 는 논문 미명시 → 상한 100
 .ADAM_B1 <- 0.9; .ADAM_B2 <- 0.999; .ADAM_EPS <- 1e-7    # ★changed(10) ADAM 모멘트 계수 = Keras 기본값(논문 미명시)
 .BN_MOM  <- 0.99; .BN_EPS <- 1e-3                        # ★changed(11) BN momentum/epsilon = Keras 기본값(논문 미명시)
-.OOS_START   <- as.Date("2005-01-01")    # 고정 축(기간 2005-01-01~) — 이 날 이후 시그널만 산출
+.OOS_START   <- (if (exists(".RP_START_DATE")) .RP_START_DATE else as.Date("2005-01-01"))    # 고정 축(기간 2005-01-01~) — 이 날 이후 시그널만 산출
 .MIN_WARM    <- 12L                      # ★changed(13) 워밍업 유효 월 하한(미달 시 OOS 시작을 뒤로 민다 — 로그로 드러난다)
 .SEC_CAP     <- 64L                      # ★changed(6)  업종 더미 슬롯 용량(첫 등장 순 배정 · 초과 업종은 더미 없음)
 .SEED_BASE   <- 2003L                    # ★changed(12) 앙상블 시드 = 2003 + 1..10 (임의 상수 · 재현성)

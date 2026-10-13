@@ -249,6 +249,36 @@ def main():
                       p2.returncode == 0 and "exec=open_t1" in p2.stdout and "시가" in p2.stdout, p2.stdout[:120])
             else:
                 check("H3 unknown exec rule → rc 3 · no fabricated block", p2.returncode == 3 and not p2.stdout.strip(), "rc=%s out=%r" % (p2.returncode, p2.stdout[:80]))
+        # ── H4~H7 측정 축 epoch 문장 (2026-10-14 — 축 전환 뒤에도 블록이 K200∪KQ150 · 2005~ 를 공시하던 결함) ─────────────
+        CD_REAL = J(os.path.join(ROOT, "02_Infrastructure", "worktask", "constraint_defaults.json"))
+        act = (CD_REAL.get("measurement_axis") or {}).get("active")
+        check("H4 block names the active epoch and carries its statements (all_hyg: K200_IDX · no KQ150-2010 · no 2005 start)",
+              ph.returncode == 0 and ("epoch=%s" % act) in hb and
+              (act != "all_hyg_2000_v1" or ("K200_IDX" in hb and "2010-01-29" not in hb and "2005-01-01 이후" not in hb and "{" not in hb.split(mk, 1)[-1])),
+              "act=%s head=%s" % (act, hb[:120]))
+        for eid_try, tag in (("k200kq150_2005_v1", "legacy"), ("no_such_epoch", "unknown")):
+            cd2 = json.loads(json.dumps(CD_REAL))
+            cd2["measurement_axis"]["active"] = eid_try
+            W(os.path.join(cdir, "cd_epoch_%s.json" % tag), cd2)
+            ch = J(CFG)
+            ch["harness"]["epoch_config"] = os.path.join(cdir, "cd_epoch_%s.json" % tag)
+            W(os.path.join(cdir, "cfg_epoch_%s.json" % tag), ch)
+            p3 = subprocess.run([PY, PA, "--harness-block", "--root", ROOT, "--cfg", os.path.join(cdir, "cfg_epoch_%s.json" % tag)],
+                                capture_output=True, text=True, encoding="utf-8")
+            if tag == "legacy":
+                check("H5 legacy epoch → K200∪KQ150 statements (KQ150 2010 · 2005-01-01 start · no-filter liquidity)",
+                      p3.returncode == 0 and "epoch=k200kq150_2005_v1" in p3.stdout and "2010-01-29" in p3.stdout
+                      and "2005-01-01 이후 신호만" in p3.stdout and "K200_IDX" not in p3.stdout, p3.stdout[:160])
+            else:
+                check("H6 unknown epoch → rc 3 · no fabricated block", p3.returncode == 3 and not p3.stdout.strip(),
+                      "rc=%s out=%r" % (p3.returncode, p3.stdout[:80]))
+        ch = J(CFG)
+        ch["harness"]["lines"] = list(ch["harness"]["lines"]) + ["H10 미정: {no_such_placeholder}"]
+        W(os.path.join(cdir, "cfg_placeholder.json"), ch)
+        p4 = subprocess.run([PY, PA, "--harness-block", "--root", ROOT, "--cfg", os.path.join(cdir, "cfg_placeholder.json")],
+                            capture_output=True, text=True, encoding="utf-8")
+        check("H7 unresolved placeholder in a disclosure line → rc 3 · no half-filled block",
+              p4.returncode == 3 and not p4.stdout.strip(), "rc=%s out=%r" % (p4.returncode, p4.stdout[:80]))
         f8a = good_fidelity()
         d8a = make_fx(tmp, "P8a", fid=f8a)
         W(os.path.join(d8a, "prompt.txt"), "프롬프트 본문\n\n" + hb)

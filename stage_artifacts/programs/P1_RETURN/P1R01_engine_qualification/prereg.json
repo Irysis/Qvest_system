@@ -1,0 +1,39 @@
+{
+  "schema": "rx_prereg_v1",
+  "program": "P1_RETURN",
+  "round_id": "P1R01_engine_qualification",
+  "registered_at": "2026-10-13T23:24:34+0900",
+  "purpose": "새 측정 축(전 종목 + 위생 · 2000~)에서 기존 수익 엔진의 자격 판정 — P4 조립의 수익 엔진 후보 목록",
+  "data": {
+    "source_round": "P0R01_feasibility_map",
+    "source_prereg_md5": "44f50ab169415c947c00b6b30179a03c",
+    "shared_measurement": true,
+    "cells": ["P0R01_E1_C0", "P0R01_E2_C0", "P0R01_E3_C0"],
+    "p0_evaluation_seen_at_registration": false
+  },
+  "material_note": "재료 규칙(B 이상)에 맞는 새 엔진 없음 — 1403.8125 · 2404.08129 의 원장 B 는 각색판(현 파일 아님) · 현 파일 기저 F · 결합 B 는 C1 표식 계보. 새 재료는 충실구현 레인(/alpha-search)으로 확보 — 이 라운드는 그 전의 기준선",
+  "tau_d": "2022-12-31",
+  "metrics": {
+    "t_alpha": "beta_controlled_alpha.R::beta_controlled_alpha — 월간 순수익(행동 카드 bc_monthly) vs KOSPI200 · NW lag 3 · 보는 창",
+    "uc": "보는 창 진단 패킷 behavior.summary.bull_up_capture_median",
+    "test_alpha": "같은 계약 · 시험 창(2023-01~) alpha_ann"
+  },
+  "rules": {
+    "qualify": {
+      "text": "보는 창 t(α) ≥ tier_graduation.grade_b_min_portfolio_alpha_t ∧ 보는 창 상승 포착 ≥ uc_floor → '수익 엔진 자격'",
+      "t_alpha_min": 2,
+      "uc_floor": 0.55
+    },
+    "test_window": "자격 엔진만: 시험 창 alpha_ann > 0 이면 '유지'(사람 쪽 보고)",
+    "selection": "선택 없음 — 자격 엔진 목록이 P4 수익 엔진 후보(P4 에서 고를 때 시행 수로 센다)"
+  },
+  "expectations": {
+    "E1": "모멘텀은 한국에서 약하다(문헌 · 과거 negative) — 자격 미달 예상",
+    "E2": "자격 경계",
+    "E3": "자격 예상(계보 최고 셀)"
+  },
+  "budget": {
+    "rounds": 1,
+    "new_measurements": 0
+  }
+}

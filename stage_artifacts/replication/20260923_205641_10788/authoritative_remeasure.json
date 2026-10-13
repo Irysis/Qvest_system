@@ -103,7 +103,7 @@
     },
     "reason": "하락월 110개: 초과 +1.09%/월 (t 2.85 · 적중 60%) · 벤치-10% 이하 10개: 초과 +0.81%/월 · 상승월 초과 +0.21%/월"
   },
-  "reasons": "v3: S 0.523 · B 경계 0.438 · 띠 B · CR normal(시험 창 normal) · 노치 +0 · A 아님 사유 floor:port_t,oos:rolling36_pass_oos,gate:dsr_sweep | v921 C: Ensemble: positive alpha이나 B 미달 (블렌드에서만 가치)",
+  "reasons": "v3: S 0.523 · B 경계 0.438 · 띠 B · CR normal(시험 창 strong) · 노치 +0 · A 아님 사유 floor:port_t,oos:rolling36_pass_oos,gate:dsr_sweep | v921 C: Ensemble: positive alpha이나 B 미달 (블렌드에서만 가치)",
   "replication": {
     "source_paper": {
       "url": "https://arxiv.org/abs/2002.06975",
@@ -138,6 +138,15 @@
     "grade": "B",
     "S": 0.5234,
     "S_B": 0.438,
+    "rules_version": "v3.1",
+    "crisis_def": "lt_first_passage",
+    "cr_notch_basis": "normal",
+    "mc8": {
+      "status": "not_needed",
+      "label": null,
+      "share_beats_size_exposure": null,
+      "median_placebo_p": null
+    },
     "band": "B",
     "notch": 0,
     "notch_a": false,
@@ -160,11 +169,11 @@
     },
     "cr": {
       "overall": "normal",
-      "test": "normal",
+      "test": "strong",
       "visible": "weak",
-      "n_crisis": 6,
+      "n_crisis": 10,
       "dd_capture_median": 0.9829,
-      "dd_capture_worst": 1.2431,
+      "dd_capture_worst": 1.5677,
       "uc_median": 0.8364,
       "cdar": 0.4158,
       "controls": "not_provided"
@@ -188,10 +197,18 @@
     "nav_source": "contract"
   },
   "grade_v3_backfill": {
-    "at": "2026-10-13T15:09:10+0900",
+    "at": "2026-10-13T18:42:26+0900",
     "tool": "02_Infrastructure/programs/grade_v3_backfill.R",
-    "decision": "decision_register GRADE-V3-PROMOTE",
-    "prior_essence_grade": "C",
-    "prior_md5": "4ff9afc7e9b86c2293de39edc209942a"
+    "decision": "decision_register GRADE-V3-CR-STRONG-SELECTION · CRISIS-DEF-LT2020(규칙 판 재채점)",
+    "rules_version": "v3.1",
+    "prior_rules_version": "v3.0",
+    "prior_essence_grade": "B",
+    "prior_md5": "13752e0f6f58447880e14e210493c7c4",
+    "history": [
+      {
+        "rules_version": "v3.0",
+        "essence_grade": "B"
+      }
+    ]
   }
 }

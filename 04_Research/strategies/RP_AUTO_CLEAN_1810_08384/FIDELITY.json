@@ -1,0 +1,80 @@
+{
+  "fidelity": "adapted",
+
+  "kept": "기전 = 신호가 아니라 포트폴리오 구성이 성과를 만든다 — 랭크 균등 예측자 p(12-1 모멘텀)를 상위 k=5 고유모드로 정제한 공분산의 역행렬에 통과시킨 마코위츠 해 x ∝ C^{-1}p (§II 식 2·4 · §III 최고 SR 칸), 롱숏 시장중립 구조와 명시적 중립 제약 부재(순노출 0 근방 변동)까지 그대로.",
+
+  "changed": "① 리밸 일간→월말 거래일(논문 §II 'rebalanced on a daily basis' · 측정 축·하네스는 월간/주간만 지원 — 일간 불가) ② 유니버스 치환: 논문의 '3개월 평균 거래대금 상위 N 종목을 다음 분기 풀로'(US 1000·Europe 1000·Japan 500·Canada/Australia 200)를 쓰지 않고 측정 축 주입 멤버십(K200|KQ150 · epoch all_hyg_2000_v1)만 사용 — 한국 N 값이 논문에 없어 임의 지정 금지 ③ 표본기간 1996-2018(+CRSP 1927~) → .RP_START_DATE(2000-01-01)~ 한국 단일 풀, 월드와이드 지역 평균(§II flat average) 없음 ④ 논문의 '전체 백테스트 평균 리스크 일치' 리스케일은 전표본 통계(C1)라 폐기하고 리밸마다 Σ|w|=1 총노출 정규화로 대체(상수 레버리지는 비율 지표 불변이나 논문의 시변 총노출 정보는 사라진다) ⑤ 식 4 의 ε² 조건을 상관행렬 대각합(Tr R = N → ε² = (N−Σ_{α≤k}λ_α)/N)으로 해석 — 논문은 Tr C = Σσ_i² 로 쓰고 이는 종목별 (v^α_i)² 가중을 무시한 근사다(폐형 근사 신고) ⑥ 식 2·3 대신 Woodbury 항등 닫힌형 x = D^{-1}(1/ε²)(I−VΓV')D^{-1}p 사용(수학적 항등 · 역행렬 미형성), 스칼라 1/ε² 는 ⑦ 정규화에서 소거되어 생략 ⑦ N>T 라 상관행렬 대신 그램행렬(T×T) 고유분해로 상위 k 를 얻음(0 아닌 고유값·고유벡터 항등) ⑧ 보충 상수(constants 참조): 공분산 창 '최소 2년'→500 거래일, 종목별 최소 관측 250, 모멘텀 11개월 전 구간 존재 요건, 최소 횡단면 50종, |일간수익| 상한 0.5(모멘텀·공분산 양쪽 동일 적용), 일간 변동성 1e-4 미만 종목 제외, ε² 하한 1e-6, 양의 고유값 하한 1e-10, 비중 1e-8 미만 행 제거, 사전이력 적재 1500일, 분모 가드 pmax(nobs-1,1) ⑨ 결측 처리: 공분산 창의 결측 거래일은 표준화 후 편차 0 으로 채우고 열 2차모멘트를 (T-1)로 재척도해 상관 대각을 1 로 맞춤(σ_i 는 정직한 표본표준편차 유지) ⑩ 비유한값 0 치환(Z) · eigen() 실패 tryCatch→그 달 산출 없음 ⑪ 어느 달이든 요건 미달(멤버 50종 미만 · 모멘텀/관측 요건 미달 · 고유값 전무 · 총노출 0)이면 그 신호일 산출이 비고, 하네스는 그 달 리밸 없이 직전 보유를 다음 신호까지 이월한다(H5) ⑫ 논문 5개 구성법 중 Markowitz k=5 칸만 구현(FF·Neutral·Beta·Betaopt 4칸 omitted) ⑬ 모멘텀 정의는 §II/§III 의 고전 12-1(누적수익)을 택하고 §V 의 '230일 평균수익' 판은 쓰지 않음 ⑭ 보유 종목수가 고정 축 25종을 크게 초과한다(논문 Markowitz/Neutral 은 전 종목에 포지션 — engine_direct 는 자르지 않는다) ⑮ 팩터 DB 미사용(load_month_factors 호출 없음 · 신호는 RAWDATA$Ret 에서 직접 계산)이라 Z_Score_Aligned 변환·dedup 군집 쟁점 해당 없음 ⑯ SIGNAL_BREADTH 미산출(PORTFOLIO 전용 엔진 — H3 의 breadth_unmeasurable) ⑰ .RP_START_DATE 부재 시 min(RAWDATA$Date) 폴백 ⑱ 논문 §VI 비용 인지형 일반화 마코위츠(예측자 저속화)는 미구현 — 본문에 명세가 없고 참고문헌[1,12]에 위임되어 있다.",
+
+  "paper_original_form": "일간 리밸런싱 주식 시장중립 롱숏 모멘텀 포트폴리오를 5가지 구성법(FF·Neutral·Beta·Betaopt·Markowitz)으로 비교한 월드와이드(US·Canada·Europe·Japan·Australia 로컬 포트폴리오의 flat average) 백테스트 — 산출은 횡단면 종목선택 규칙 자체가 아니라 '같은 신호를 어떻게 구성하느냐'의 비교다(§II~§III · Fig.1 · SR FF 0.34 vs Markowitz k=5 1.19).",
+
+  "portfolio_spec": { "construction": "engine_direct" },
+
+  "commission_paper": null,
+
+  "declared_role": "diversifier — §I·§II 주식 시장중립(시장 전체에 순노출을 갖지 않는 상대가치 롱숏)으로 정의하고, §IV Fig.6 에서 시장이 국소 저점에서 급반등한 직후에도 마코위츠 구성만 양(+)의 성과를 내 모멘텀의 음의 왜도·꼬리 상관을 완화한다고 주장(부차적 defensive 주장).",
+
+  "paper_steps": [
+    { "step": "표본·데이터", "paper_quote": "§II: \"We will use daily stock data in the period 1996-2018 (sources: Bloomberg and Reuters)\" + \"We also independently back-test our strategies on CRSP data, that is US daily data since 1927\"", "status": "changed", "note": "측정 축 epoch all_hyg_2000_v1 · .RP_START_DATE(2000-01-01)~ 한국 단일 풀. 지역 5개 풀·CRSP 장기판 없음. changed ③" },
+    { "step": "투자 풀 선정(유동성 상위 N · 분기 갱신)", "paper_quote": "§II: \"we compute the aggregated Average Daily (dollar) Volume over 3 months and take the 1000 most liquid stocks as our investment pool for the next quarter. This puts us in a realistic, causal set-up. The same liquidity-based procedure is applied to the below pools.\"", "status": "omitted", "note": "지역별 N(1000/1000/500/200/200)만 주어지고 한국 N 이 논문에 없다 — 임의 지정 = 지어내기이므로 적용하지 않았다. 유니버스는 측정 축 주입 멤버십(engine.R MEM · H1 의 20일 평균 거래대금 2e8 하한 t−1 포함). changed ②" },
+    { "step": "월드와이드 집계", "paper_quote": "§II: \"The world-wide portfolio is built as a flat average of the various local portfolios\"", "status": "omitted", "note": "단일 지역(한국) 측정이라 평균할 로컬 포트폴리오가 없다. changed ③" },
+    { "step": "리스크 척도·포트폴리오 리스케일", "paper_quote": "§II: \"each world-wide portfolio has been rescaled in order to have the same average risk over the total back-test period\"", "status": "changed", "note": "전표본 통계 = C1 위반. 리밸마다 Σ|w| = 1 정규화로 대체(engine.R (7)). changed ④" },
+    { "step": "신호 — 12-1 모멘텀", "paper_quote": "§II: \"The signal is usually defined as the cumulative performance of a stock over the past 12 months, where the last month is taken away\"", "status": "implemented", "note": "engine.R (2) — (d−12개월, d−1개월] 누적수익 = 월별 복리수익 11개월 곱(일간 곱과 항등)" },
+    { "step": "신호 1개월 lag", "paper_quote": "§II: \"the momentum signal needs to be lagged by (at least) one month in order to get rid of the mean-reversion effect\"", "status": "implemented", "note": "engine.R (2) MOM_SKIP_M = 1 — 당월(d 가 속한 달) 제외" },
+    { "step": "신호 정의 선택(어느 칸)", "paper_quote": "§II: \"the precise definition of the signal is not important in our study and we will stick to the classical academic definition\" vs §V: \"Momentum: we compute 230 days rolling average returns (lagged by 1 month)\"", "status": "changed", "note": "주 결과(§II·§III·Fig.1~6)가 쓰는 고전 12-1 누적수익 칸을 택했다. §V 의 230일 평균수익 판은 미구현. changed ⑬" },
+    { "step": "예측자 정규화(순위→균등)", "paper_quote": "§II: \"We will assume to have a normalized, ranked predictor p_i on stock i that is uniformly distributed in [-1,+1]\"", "status": "implemented", "note": "engine.R (5) — p = P_LO + (P_HI−P_LO)(rank−0.5)/N. 중앙순위 보정 0.5 와 동순위 평균(ties.method=\"average\")은 논문 미명시(보충). 순위 집합 = 유니버스 ∩ 모멘텀 요건 ∩ 공분산 관측 요건 통과 종목" },
+    { "step": "정렬 방향", "paper_quote": "§V: \"Momentum: ... and rank from lowest to highest\" / §I: \"buying past winners and selling past losers\"", "status": "implemented", "note": "최고 모멘텀 = p 최대 = 롱, 최저 = 숏. C13 해당 없음(부호 반전·NEGATE 없음)" },
+    { "step": "횡단면 분할(시장·거래소·업종별 독립 정렬)", "paper_quote": "§II~§V: 업종·거래소별 독립 정렬 서술 없음 — 섹터 노출은 제약이 아니라 결과로 측정된다(§III Fig.3: \"we manage to better control (albeit indirectly) the average sector exposure\")", "status": "implemented", "note": "풀 전체 단일 횡단면 정렬. 섹터 중성화 제약 없음(논문도 없다 — 상위 고유모드가 간접적으로 처리)" },
+    { "step": "구성법 선택(어느 칸)", "paper_quote": "§III: \"the Markowitz solution, with k=5 statistical factors of the covariance matrix kept before matrix inversion, has the highest Sharpe Ratio (1.19)\" (FF 0.34)", "status": "implemented", "note": "5칸(FF·Neutral·Beta·Betaopt·Markowitz) 중 Markowitz k=5 만 구현. 엔진 1개 = 포트폴리오 1개. changed ⑫" },
+    { "step": "구성법 — FF / Neutral / Beta / Betaopt", "paper_quote": "§II: \"FF: ... top 30% ... positions are taken proportionally to market-cap\" · \"Neutral: x_i ∝ p_i\" · \"Beta: ... rescale them such that the overall β is zero ... simple 1-year statistical regression\" · \"Betaopt: (Eq.1~3)\"", "status": "omitted", "note": "구현한 칸이 Markowitz 이므로 불필요. 시총 비중·1년 β 회귀·지수 비중 w 모두 쓰지 않는다. changed ⑫" },
+    { "step": "공분산 추정", "paper_quote": "§II: \"The covariance matrix is computed empirically from individual stock returns, usually taking at least two years of historical close-to-close daily returns\"", "status": "implemented", "note": "engine.R (3) — 직전 500 거래일(≈2년) 종가-종가 일간수익(RAWDATA$Ret). 거래일 환산값은 보충(constants COV_WINDOW_D)" },
+    { "step": "상관행렬 정제(상위 k 고유모드)", "paper_quote": "§II: \"we only keep the k largest eigenvectors of the covariance matrix, which correspond to the so-called statistical factors\" + Eq.4 \"C_ij ≃ σ_iσ_j(Σ_{α=1}^{k} λ^α v^α_i v^α_j + ε²δ_ij)\"", "status": "implemented", "note": "engine.R (4) — λ,v = 상관행렬 고유값/고유벡터, σ_i = 같은 창 표본표준편차. N>T 라 그램행렬 경유(항등). changed ⑦" },
+    { "step": "ε² 결정", "paper_quote": "§II: \"the diagonal variance term ε² is chosen such that the total variance of the portfolio is unchanged, i.e. Tr C = Σ_i σ_i²\"", "status": "changed", "note": "상관행렬 대각합 보존(Tr R = N)으로 해석해 ε² = (N − Σ_{α≤k}λ_α)/N. 논문 조건을 종목별 (v^α_i)² 가중 없이 집계 수준에서 만족시키는 근사다. changed ⑤" },
+    { "step": "마코위츠 해", "paper_quote": "§II: \"The classical solution to the portfolio construction problem is (at least formally) given by the Markowitz solution, that is x_i ∝ C^{-1}p_i\"", "status": "implemented", "note": "engine.R (6) — Woodbury 닫힌형(수학적 항등, 역행렬 미형성). 스칼라 1/ε² 생략(정규화에서 소거). changed ⑥" },
+    { "step": "마코위츠 칸의 중립 제약 부재", "paper_quote": "§III Fig.3: \"The neutral solution has its net equal to zero by construction, while all the other exhibit fluctuations around zero\"", "status": "implemented", "note": "마코위츠 비중에 β·현금 중립 제약을 추가하지 않았다(그건 Beta·Betaopt 칸). 순노출 Σw 는 0 근방에서 변동한다" },
+    { "step": "리밸런싱 주기", "paper_quote": "§II: \"In any of the above setups, the portfolio is rebalanced on a daily basis\"", "status": "changed", "note": "측정 축·하네스가 월간(신호가 주간이면 주간)만 지원 — 일간 리밸 불가. 월말 거래일 신호 → 익월 첫 거래일 종가 집행. changed ①" },
+    { "step": "비용(선형 — 수수료·하프스프레드)", "paper_quote": "§VI: \"We will take all the linear costs into account: commissions, and half-spread costs\" (수치는 그림으로만 제시 · 본문에 bps 명시 없음)", "status": "omitted", "note": "논문이 왕복비용 수치를 주지 않아 commission_paper = null. 등급판 비용은 하네스 15bps(H7)" },
+    { "step": "비용 인지형 일반화 마코위츠(예측자 저속화)", "paper_quote": "§VI: \"the algorithm finds the optimal frequency at which the predictor should be slowed-down (similar to an exponential moving average)\" + \"the details can be found for instance in [1,12]\"", "status": "omitted", "note": "본문에 구현 가능한 수식·파라미터가 없고 참고문헌에 위임 — 지어내지 않았다. 월간 리밸이 사실상 예측자 저속화의 거친 판으로 작동한다. changed ⑱" },
+    { "step": "전처리 — 결측·이상치", "paper_quote": "논문에 결측 대체·이상치 처리·커버리지 요건 서술 없음", "status": "changed", "note": "보충: |일간수익| ≤ 0.5 절단, 창 내 결측 거래일은 표준화 후 편차 0 + 열 2차모멘트 (T-1) 재척도, 종목별 최소 관측 250, 모멘텀 11개월 전 구간 존재, 일간 변동성 1e-4 미만 제외, 최소 횡단면 50종. changed ⑧⑨⑩" },
+    { "step": "난수·재현", "paper_quote": "해당 없음", "status": "implemented", "note": "set.seed·난수·앙상블·초기값 없음 — 결정적(deterministic) 산출" }
+  ],
+
+  "windows": [
+    { "name": "momentum_window (engine.R (2) mwin)", "paper": "§II — 과거 12개월 누적수익에서 마지막 1개월 제거 = (t−12개월, t−1개월] (11개월, 종점 = t 직전월 말)", "impl": "ym ∈ [ym(d)−11, ym(d)−1] 월말 경계 = (d−12개월, d−1개월] · 당월 d 제외 · 종점 = d 직전월 말 · 11개월 전부 존재 요건" },
+    { "name": "cov_window (engine.R (3) wdt)", "paper": "§II — \"at least two years of historical close-to-close daily returns\", 리밸 시점까지의 과거(종점 미명시 = 결정 시점)", "impl": "all_dates[(idx_d−499) : idx_d] = 직전 500 거래일 · 종점 = 결정일 d 포함(d 종가는 결정 시점에 가용) · 집행은 익월 첫 거래일 종가(close_t1)라 체결봉 기준 t−1 · 창이 짧으면(이력 부족) 가용분만 쓰고 250 거래일 미만이면 그 달 산출 없음" },
+    { "name": "sigma_i window (engine.R (3) csd · 식 4 의 σ_i)", "paper": "§II 식 4 — σ_i 창 길이 미명시", "impl": "공분산 창과 동일 [d−499거래일, d] 표본표준편차(분모 nobs−1 · 결측 제외) · 종점 = d" },
+    { "name": "correlation demean window (engine.R (3) cmu)", "paper": "상관행렬 정의상 필요 · 논문 미명시", "impl": "공분산 창과 동일 [d−499거래일, d] 열 평균 · 종점 = d" },
+    { "name": "universe membership read (engine.R (1) MEM)", "paper": "§II — 유동성 풀은 직전 3개월 거래대금으로 분기마다 갱신(미적용)", "impl": "신호일 d 단일 스냅샷 조회(RAWDATA K200|KQ150) · 롤링 창 아님 · 멤버십 자체의 t−1 지연은 계약이 부여(H1)" },
+    { "name": "history preload bound (engine.R RT)", "paper": "해당 없음", "impl": "Date ≥ .SIG_FROM − 1500일 적재 상한 — 필요 최대 창(500 거래일 ≈ 742일 + 모멘텀 12개월 ≈ 365일)보다 길어 결과 불변" }
+  ],
+
+  "factor_mapping": [],
+
+  "constants": [
+    { "name": "MOM_TOTAL_M", "value": 12, "source": "paper", "note": "§II \"the cumulative performance of a stock over the past 12 months\"" },
+    { "name": "MOM_SKIP_M", "value": 1, "source": "paper", "note": "§II \"where the last month is taken away\" / \"lagged by (at least) one month\"" },
+    { "name": "MOM_WINDOW_M", "value": 11, "source": "paper", "note": "§II 파생 = MOM_TOTAL_M − MOM_SKIP_M — (d−12개월, d−1개월] 폭" },
+    { "name": "MOM_MIN_MONTHS", "value": 11, "source": "supplement", "note": "모멘텀 창 11개월 전부 존재 요건 — 논문은 최소 이력 규칙을 주지 않는다. 엄격 판독(12개월 성과를 말할 수 있어야 한다)을 택했고, 한 달 전체 거래정지 종목은 그 달 제외된다" },
+    { "name": "COV_WINDOW_D", "value": 500, "source": "supplement", "note": "§II \"at least two years of historical close-to-close daily returns\" 의 거래일 환산(2년 ≈ 500 거래일) — 거래일 수는 논문 미명시" },
+    { "name": "COV_MIN_OBS", "value": 250, "source": "supplement", "note": "종목별 최소 유효 관측(창의 절반) + 창 길이 자체의 하한 겸용 — 논문 미명시. 미달 종목은 그 달 포트폴리오에서 제외" },
+    { "name": "K_FACTORS", "value": 5, "source": "paper", "note": "§III \"with k=5 statistical factors ... has the highest Sharpe Ratio (1.19)\" · §II \"we will instead test a few values up to k=5\"" },
+    { "name": "P_LO", "value": -1, "source": "paper", "note": "§II \"predictor p_i ... uniformly distributed in [-1,+1]\" 하한" },
+    { "name": "P_HI", "value": 1, "source": "paper", "note": "§II 같은 문장의 상한" },
+    { "name": "MIN_STOCKS", "value": 50, "source": "supplement", "note": "= 10 × K_FACTORS. k=5 고유분해와 ε² 가 성립할 최소 횡단면 — 논문 미명시(논문 최소 풀은 200종이나 그것은 풀 크기 목표값이지 요건이 아니다). 미달 신호일은 산출 없음 → 하네스 직전 보유 이월" },
+    { "name": "RET_CLIP", "value": 0.5, "source": "supplement", "note": "|일간수익| 상한 치환 — 데이터 오류·미조정 분할 방어. 한국 가격제한폭(±15% 1998~2015 · ±30% 2015~) 밖이라 정상 수익은 불변. 모멘텀·공분산 양쪽에 같은 절단 계열을 쓴다" },
+    { "name": "VOL_MIN_DAILY", "value": 0.0001, "source": "supplement", "note": "일간 변동성 하한 — 미달 종목은 그 달 제외(상관·1/σ 정의 불가: 장기 거래정지·상한가 고정). 논문 미명시" },
+    { "name": "EPS2_MIN", "value": 0.000001, "source": "supplement", "note": "ε² 하한 — Σλ_α ≥ N(수치 경계)일 때 1/(λ+ε²) 분모 0 방지. 논문 미명시" },
+    { "name": "EIG_MIN", "value": 1e-10, "source": "supplement", "note": "양의 고유값 판정 하한 — 0/음수 고유값으로 v = Z'u/sqrt((T−1)λ) 가 발산하는 것을 막는다. 통과분이 1개도 없으면 그 달 산출 없음. 논문 미명시" },
+    { "name": "WEIGHT_MIN", "value": 1e-8, "source": "supplement", "note": "|비중| 하한 — 수치 잔여 행 제거(하네스는 Weight 부호로 다리를 가르므로 정확히 0 인 행은 어차피 버려진다). 논문 미명시" },
+    { "name": "HIST_PAD_D", "value": 1500, "source": "supplement", "note": "신호 시작 이전 이력 적재 상한(메모리) — 필요 최대 창보다 길어 결과 불변" }
+  ],
+
+  "harness_disclosure": "[HARNESS-DISCLOSURE v1]\n- H1 유니버스: 측정 축 = 전 종목 + 위생(epoch all_hyg_2000_v1). 계약(contracts/measurement_axis.R::ma_inject_universe)이 적재 직후 RAWDATA 의 K200 플래그를 위생 멤버십(1/0)으로 바꿔 끼우고 KQ150 은 0 으로 둔다. 위생 멤버 = 20일 평균 거래대금(종가 × 거래량 · 하루 늦춤 t−1) ≥ 200,000,000원 ∧ 관리종목 · 거래정지 · 불성실공시 표식 아님(퀀티와이즈 월말 스냅샷을 다음 스냅샷까지 이월 — 그날까지 알려진 값만). 엔진 산출(FACTORS·PORTFOLIO)은 각 신호일의 이 멤버십과 결합되어 그날 비멤버 행이 제거된다 — PIT 시변 · 사후 생존 조건 없음 · 상장폐지 종목 포함(폐지 뒤 수익 행 부재 = 0 · 행이 없는 날 = 비멤버).\n- H2 지수 플래그: 원래 지수 멤버십(KOSPI200 · KOSDAQ150)은 K200_IDX · KQ150_IDX 열에 보존된다 — 이 축에서 K200 · KQ150 플래그는 지수 멤버십이 아니다(K200 = 위생 멤버 · KQ150 = 0).\n- H3 표본: 신호는 .RP_START_DATE(2000-01-01) 이후만 측정한다. 성과는 실효 시작부터 센다 — 실효 시작 = 신호 폭(유니버스 결합 뒤 점수가 유한한 종목 수 · 엔진이 SIGNAL_BREADTH 를 내면 그 값) ≥ 보유 수 × 2 를 처음 만족한 신호일(MC3 B안 · 첫 통과 = PIT). 그 전 신호일은 측정에서 빠진다(측정 축 규약 · 엔진 변경 아님). PORTFOLIO 만 내는 엔진은 폭을 잴 수 없어 자르지 않는다. 논문 표본기간과 다르다.\n- H4 체결: 신호일 d 에 확정한 비중을 다음 거래일 종가에 체결(close_t1) — 새 보유 수익은 집행 다음 날부터 다음 집행일까지, 집행일 당일 수익은 직전 보유(동일봉 체결 없음).\n- H5 보유: 연속한 두 신호일의 집행 사이 보유창 안에서 buy-and-hold(비중 드리프트) — 다음 신호일 집행 때 목표비중으로 되돌린다. 어떤 달에 엔진 산출이 없으면 그 달은 리밸이 없어 직전 보유가 다음 신호까지 이월된다.\n- H6 비중: FACTORS 면 portfolio_spec(top_n_long 등)으로 신호일마다 유니버스 결합 뒤 점수 순 구성 · PORTFOLIO 면 유니버스 결합 뒤 남은 비중을 그대로 쓴다 — 빠진 종목 몫은 재분배되지 않아 그 다리 총노출이 줄어든다(현금처럼 0 수익). 롱·숏 다리 결합 = GL·L − GS·S(GL·GS = 다리 Σ|w|).\n- H7 비용: 등급판 = 리밸마다 Σ|Δw|×15bps(초기 매수 = Σ|w|) · 논문판 = commission_paper(무명시면 0)로 병기한다.\n- H8 유동성: 러너는 별도 유동성 필터를 걸지 않는다(paper_faithful). 다만 H1 의 위생 멤버십이 20일 평균 거래대금 200,000,000원(t−1) 하한을 이미 포함한다 — 논문에 유동성 규칙이 있으면 엔진이 논문대로 건다(위생 하한과 겹칠 수 있다).\n- H9 벤치마크: KOSPI200.\n[/HARNESS-DISCLOSURE]",
+
+  "source_paper": {
+    "title": "Portfolio Construction Matters",
+    "authors": "Stefano Ciliberti, Stanislao Gualdi",
+    "arxiv": "1810.08384",
+    "version_read": "v1",
+    "url": "https://arxiv.org/abs/1810.08384"
+  }
+}

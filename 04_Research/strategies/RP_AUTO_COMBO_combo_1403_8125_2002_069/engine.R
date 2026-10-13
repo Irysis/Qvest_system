@@ -83,7 +83,7 @@ if (!all(.REQ %in% names(RAWDATA)))
 .N_TRAIN  <- 1000L                                   # "latest N = 1,000 days" 학습집합
 .UPD_EVERY <- 5L                                     # "updated every five business days"
 .QUINT    <- 5L                                      # 'top quintile (i.e., one-fifth)' — [A] 전략 (i) 의 풀
-.START    <- as.Date("2005-01-01")                   # 고정 축 — 이 날 이후 시그널만 발행
+.START    <- (if (exists(".RP_START_DATE")) .RP_START_DATE else as.Date("2005-01-01"))                   # 고정 축 — 이 날 이후 시그널만 발행
 .ANCHOR   <- as.Date("2001-01-01")                   # 5영업일 갱신 격자 앵커(첫 거래일 ≥ 이 날) — 3판 changed(3)
 .GRID_FROM <- as.Date("2000-06-01")                  # 격자 시작(학습창 1,000일 + 특성 창 60일 선행) — 3판 changed(12)
 .CONS_ROLL <- 7L                                     # 컨센서스 관측 → 거래일 격자 캐리 상한(달력일) — 3판 changed(7)

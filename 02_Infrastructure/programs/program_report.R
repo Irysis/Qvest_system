@@ -34,7 +34,7 @@ prep_verdict_word <- function(v) .prep_or(unname(PREP_VERDICT_WORD[v]), "판정 
 
 ## 크기 · 노출 짝 대조 귀속(MC8 · contracts/matched_controls.R::mc_attribution) — 라벨 · 상태를 사람 말로(내부 코드 비노출)
 PREP_DEFENSE_WORD <- c(selection_defense = "선택 방어", size_defense = "크기 방어",
-                       exposure_defense = "노출 방어", insufficient = "판정 불가(위기 2번 미만)")
+                       exposure_defense = "노출 방어", no_defense = "방어 없음", insufficient = "판정 불가(위기 2번 미만)")
 PREP_CONTROL_STATUS_WORD <- c(not_applicable_long_short = "롱숏 전략이라 대조 정의 밖", no_crises = "위기 구간 없음",
                               no_holdings = "보유 기록 없음", no_windows = "보유창에 수익일 없음",
                               no_basket = "크기 바스켓을 못 만듦")
@@ -60,10 +60,11 @@ PREP_CONTROL_STATUS_WORD <- c(not_applicable_long_short = "롱숏 전략이라 �
   if (is.list(aw) && !is.null(aw[["label"]])) {
     a <- suppressWarnings(as.numeric(.prep_or(att[["placebo_alpha"]], NA_real_)))
     top <- if (is.finite(a)) prep_fmt_pct(1 - a, 0L, signed = FALSE) else "대부분"
-    return(sprintf("크기·노출 짝 대조: %s — 같은 크기 분포·평균 노출로 무작위로 고른 포트폴리오의 %s보다 덜 빠진 위기 %s · 같은 평균 노출의 시장보다 덜 빠진 위기 %s (평균 노출 %s)",
+    return(sprintf("크기·노출 짝 대조: %s — 같은 크기 분포·평균 노출로 무작위로 고른 포트폴리오의 %s보다 덜 빠진 위기 %s · 같은 평균 노출의 시장보다 덜 빠진 위기 %s · 시장보다 덜 빠진 위기 %s (평균 노출 %s)",
                    .prep_or(unname(PREP_DEFENSE_WORD[aw[["label"]]]), "판정 불가"), top,
                    prep_fmt_pct(aw[["share_beats_size_exposure"]], 0L, signed = FALSE),
                    prep_fmt_pct(aw[["share_beats_exposure"]], 0L, signed = FALSE),
+                   prep_fmt_pct(aw[["share_beats_bench"]], 0L, signed = FALSE),
                    prep_fmt_ratio(ctrl[["exposure_profile"]][["mean"]])))
   }
   sm <- ctrl[["size_matched"]]

@@ -43,6 +43,7 @@ SPEC <- jsonlite::fromJSON(.rf_spec_path, simplifyVector = FALSE)
 #   ★`[[ ]]` 정확 일치로 읽는다(부분 일치가 다른 키를 집는 사고 이력 — WP-R 2026-09-17).
 suppressMessages(source(file.path(.RF_ROOT, "02_Infrastructure/reinforcement/rf_rebalance.R")))
 suppressMessages(source(file.path(.RF_ROOT, "02_Infrastructure/reinforcement/rf_sleeve.R")))
+suppressMessages(source(file.path(.RF_ROOT, "02_Infrastructure/reinforcement/rf_axes.R")))   # 고정 축 단정(MC5 · Σw ≤ 1)
 .RB <- rf_rb_parse(SPEC[["rebalance"]])
 .SL <- rf_sl_parse(SPEC[["defense_sleeve"]])   # B7 구조적 방어 슬리브(없으면 NULL = 기존 경로)
 # ★PR-L1 cap_core(벤치 인지 코어-위성 · 2026-10-03 CAPCORE-IMPL) — 키가 없거나 k=0 이면 rf_capcore.R 를 적재조차 하지 않는다(기존 칸 비트 동일).
@@ -200,8 +201,25 @@ if (identical(.base$kind, "mom_12_1")) {
 .univ <- SPEC$universe %||% list(kind = "k200_kq150")
 .universe_filter <- function(x) {
   k <- .univ$kind
+  # ★측정 축 주입 측정(K200_IDX 존재 · 2026-10-13 전환): K200 = 위생 멤버십 · K200_IDX/KQ150_IDX = 원 지수 멤버십.
+  #   먼저 측정 유니버스(위생 멤버) 안으로 들이고, 칸의 유니버스 종류는 그 안에서 좁힌다(지수 종류는 원 지수 플래그로).
+  if ("K200_IDX" %in% names(x)) {
+    x <- x[K200 == TRUE | KQ150 == TRUE]
+    if (identical(k, "k200_kq150")) return(x[K200_IDX == TRUE | KQ150_IDX == TRUE])
+    if (identical(k, "index")) {
+      fl <- paste0(.univ$flag, "_IDX"); if (!fl %in% names(x)) stop("[rf_cell_engine] 원 지수 멤버십 열 부재: ", fl)
+      return(x[get(fl) == TRUE])
+    }
+    if (k %in% c("all_hyg", "all_listed")) return(x)
+  }
   if (identical(k, "k200_kq150")) {
     if (!all(c("K200","KQ150") %in% names(x))) stop("[rf_cell_engine] K200/KQ150 멤버십 부재")
+    x <- x[K200 == TRUE | KQ150 == TRUE]
+  } else if (identical(k, "all_hyg")) {
+    # 측정 축 ALL_HYG(MC1 · D11 · 2026-10-13) — 러너가 적재 직후 K200 := 위생 멤버십 · KQ150 := 0 으로 주입했다
+    #   (contracts/measurement_axis.R · 원 플래그 = K200_IDX). 주입 표식이 없으면 처치 미전달이다(구 all_listed 사고와 같은 형태) — 멈춘다.
+    if (!"K200_IDX" %in% names(x))
+      stop("[rf_cell_engine] universe all_hyg 인데 측정 축 주입 표식(K200_IDX) 없음 — 러너 universe='ALL_HYG' 로만 측정(처치 미전달 차단)")
     x <- x[K200 == TRUE | KQ150 == TRUE]
   } else if (identical(k, "index")) {
     fl <- .univ$flag; if (!fl %in% names(x)) stop("[rf_cell_engine] 멤버십 열 부재: ", fl)
@@ -344,6 +362,10 @@ if (is.finite(.w0) && length(.zt)) {
   PANEL[, Score := rowMeans(as.matrix(.SD), na.rm = TRUE), .SDcols = .zcols]
 }
 PANEL <- PANEL[is.finite(Score)]
+# ★신호 폭 보고(MC3 B안 · 2026-10-13 · decision_register MC3-EFFECTIVE-START-B) — 이 엔진은 상위 n_max 만 FACTORS 로 내보내므로
+#   러너가 FACTORS 로 폭을 재면 언제나 n_max 다(실효 시작 규칙 = 폭 ≥ 보유 × 2 가 영영 안 선다). 선정 **전** 후보 폭(유동성 t−1 ·
+#   유니버스 · 점수 유한 뒤)을 그대로 넘긴다 → run_paper_replication §5-b 가 이것을 우선 쓴다(contracts/measurement_axis.R).
+SIGNAL_BREADTH <- PANEL[, list(breadth = uniqueN(Ticker)), by = Date]
 
 # ── 5. 선정 + 비중 ────────────────────────────────────────────────────────────
 .wt <- SPEC$weighting %||% list(kind = "ew")
@@ -371,11 +393,16 @@ if (is.finite(.cand_med) && .cand_med <= .N_MAX) {
 ", .degen))
 }
 
+# ★동점 규칙(MC1 · 설계 §9.4-1 · 2026-10-13) — 측정 축 ALL_HYG(주입 표식 K200_IDX)에서만: 같은 Score 를 행 순서(= 종목코드 순 ·
+#   상장 연차)가 아니라 20일 거래대금(t−1) 높은 순으로 깬다. 구 축은 구판 식 그대로(비트 동일 · rf_axes.R::rf_select_top tie=NULL).
+.tie_liq <- "K200_IDX" %in% names(DT)
+if (.tie_liq) PANEL <- merge(PANEL, DT[, .(Date, Ticker, .tie_adv = .adv20_l1)], by = c("Date", "Ticker"), all.x = TRUE)
 SEL <- if (identical(.univ$kind, "sector_neutral")) {
   .sector_neutral_pick(PANEL, .N_MAX)
 } else {
-  PANEL[order(Date, -Score)][, head(.SD, .N_MAX), by = Date]
+  rf_select_top(PANEL, .N_MAX, tie = if (.tie_liq) ".tie_adv" else NULL)
 }
+if (.tie_liq) { SEL[, .tie_adv := NULL]; PANEL[, .tie_adv := NULL] }
 
 # B6 선정 규칙(rank_buffer) — 보유를 순위 버퍼 안에서 유지한다(규칙 없으면 SEL 그대로)
 SEL <- rf_rb_select(PANEL, SEL, .RB, .N_MAX)
@@ -515,24 +542,25 @@ if (identical(.wt$kind, "ew")) {
     stop("[rf_cell_engine] weighting.kind 미지원: ", .wt$kind))
   PORTFOLIO <- merge(SEL[, .(Date, Ticker)], W, by = c("Date","Ticker"))[
     , .(Date, Ticker, Weight = w, Leg = "LONG")]
-  stopifnot(all(PORTFOLIO$Weight >= 0))
-  .chk <- PORTFOLIO[, .(s = sum(Weight)), by = Date]
-  stopifnot(max(abs(.chk$s - 1)) < 1e-8)
+  rf_assert_axes(PORTFOLIO, .N_MAX, where = " 비중 단계")   # long-only · 0 < Σw ≤ 1(MC5 · D11 — 구판 Σw = 1 단정) · ≤ n_max
 }
 
 # ── 5.4 PR-L1 cap_core — 비중 단계 뒤 코어-위성 합성 (2026-10-03 CAPCORE-IMPL · 정의·근거 = rf_capcore.R 머리) ──
 #   .CC 가 NULL(키 없음 · k=0)이면 이 블록은 아무것도 하지 않는다 → FACTORS/PORTFOLIO 비트 동일(검사 test_rf_capcore.R K0).
 #   위성 = 비중 단계 산출(PORTFOLIO — EW 칸이면 SEL 의 1/|SEL|) 또는 C1 베타매칭 무작위 · 코어 = 시그널일 K200 멤버 t-1 시총 상위 k(t-1 벤치 비중).
-#   ★유니버스 축이 K200∪KQ150 인 칸에서만 정의한다 — 다른 유니버스(KQ150 단독·size_band 등)에 K200 메가캡을 얹으면 유니버스 축을 깬다.
+#   ★유니버스 축이 K200∪KQ150 인 칸 또는 측정 축 all_hyg 칸(코어 = 원 K200 ∧ 위생 멤버 — 유니버스 안 · 2026-10-13)에서만 정의한다 — 다른 유니버스(KQ150 단독·size_band 등)에 K200 메가캡을 얹으면 유니버스 축을 깬다.
 if (!is.null(.CC)) {
-  if (!identical(.univ$kind, "k200_kq150"))
-    stop(sprintf("[rf_cell_engine] cap_core 는 universe k200_kq150 칸에서만 — 이 칸 universe=%s(코어 K200 메가캡이 유니버스 축을 깬다)", .univ$kind))
+  if (!(.univ$kind %in% c("k200_kq150", "all_hyg")))   # all_hyg(전 종목 + 위생)는 K200 의 상위 집합이라 코어를 얹어도 유니버스 안이다
+    stop(sprintf("[rf_cell_engine] cap_core 는 universe k200_kq150 칸에서만(측정 축이 전 종목 + 위생이면 all_hyg 칸도) — 이 칸 universe=%s(코어 K200 메가캡이 유니버스 축을 깬다)", .univ$kind))
   if (!("K200" %in% names(DT))) stop("[rf_cell_engine] cap_core — RAWDATA 에 K200 멤버십 열 부재")
   if (.CC$k >= .N_MAX) stop(sprintf("[rf_cell_engine] cap_core k %d ≥ n_max %d — 위성이 사라진다", .CC$k, .N_MAX))
   .cc_sat <- if (exists("PORTFOLIO")) PORTFOLIO[, .(Date, Ticker, Weight)] else
                SEL[, .(Ticker, Weight = 1 / .N), by = Date][, .(Date, Ticker, Weight)]
   .cc_days <- sort(unique(.cc_sat$Date))
-  .cc_core <- rf_cc_core(DT[Date %in% .cc_days, .(Date, Ticker, K200, .SizeLag, .adv20_l1)], .CC$k, .LIQ_MIN)
+  # 코어 = 원 K200 지수 멤버(주입 측정이면 K200_IDX ∧ 위생 멤버 — K200 열은 위생 멤버십으로 바뀌어 있다)
+  .cc_in <- if ("K200_IDX" %in% names(DT)) DT[Date %in% .cc_days, .(Date, Ticker, K200 = as.numeric(K200_IDX %in% 1 & K200 %in% 1), .SizeLag, .adv20_l1)] else
+             DT[Date %in% .cc_days, .(Date, Ticker, K200, .SizeLag, .adv20_l1)]
+  .cc_core <- rf_cc_core(.cc_in, .CC$k, .LIQ_MIN)
   .cc_rand <- NULL
   if (identical(.CC$satellite, "random_beta_matched")) {
     .cc_pb <- .load_factor(list(kind = .CC$beta_kind, id = .CC$beta_factor), ".zbeta")   # db 면 C15 단일 경유
@@ -542,10 +570,8 @@ if (!is.null(.CC)) {
   }
   .cc <- rf_cc_compose(.cc_sat, .cc_core$core, .N_MAX, PANEL[, .(Date, Ticker, Score)])
   PORTFOLIO <- .cc$portfolio[, .(Date, Ticker, Weight, Leg = "LONG")]
-  # 고정 축 단정 — long-only · Σw=1 · ≤ n_max (합성 함수 안의 불변식을 엔진 산출에서 한 번 더 · 비중 상한 없음 v10)
-  stopifnot(all(PORTFOLIO$Weight >= 0))
-  stopifnot(max(abs(PORTFOLIO[, .(s = sum(Weight)), by = Date]$s - 1)) < 1e-8)
-  stopifnot(max(PORTFOLIO[, .N, by = Date]$N) <= .N_MAX)
+  # 고정 축 단정 — long-only · 0 < Σw ≤ 1(MC5 · D11) · ≤ n_max (합성 함수 안의 불변식을 엔진 산출에서 한 번 더 · 비중 상한 없음 v10)
+  rf_assert_axes(PORTFOLIO, .N_MAX, where = " cap_core")
   if (exists("FACTORS")) rm(FACTORS)   # 러너는 construction=top_n_long 이면 FACTORS 를 우선한다 — 남기면 cap_core 가 버려진다
   .RF_DIAG$cap_core <- list(rule = .CC, compose = .cc$diag, core = .cc_core$core, core_diag = .cc_core$diag, random = .cc_rand,
                             summary = list(k = .CC$k, satellite = .CC$satellite, n_dates = nrow(.cc$diag),
@@ -609,6 +635,12 @@ if (length(.OVC_LIST) && !any(.OV_OWN))
        paste(vapply(.OVC_LIST, .ov_key, character(1)), collapse = ", "))
 if (!identical(.ov_kind, "none")) {
   if (!exists("BM_DT")) stop("[rf_cell_engine] overlay 는 BM_DT 를 요구한다(호출자 env)")
+  # ★주간(월 2회 이상) 처방에는 오버레이를 붙이지 않는다(MC4 · 설계 §3.9) — 이 층의 신호 컷오프 · 노출 적용은 홀딩월 단위다.
+  #   주간 컷오프 도우미(overlay_pit_guard.R::holding_window_cutoff)는 있으나 이 층은 아직 월 단위로 계산한다.
+  #   ⚠ 현재 엔진은 월간 신호만 만들어 이 가드는 발화한 적이 없다(양성 대조 없음 — 엔진 주간 신호 생성을 넣을 때 검사를 함께 붙일 것).
+  .ov_dates <- if (exists("PORTFOLIO")) PORTFOLIO$Date else if (exists("SEL")) SEL$Date else as.Date(character(0))
+  if (length(.ov_dates) && max(table(format(unique(as.Date(.ov_dates)), "%Y-%m"))) > 1L)
+    stop("[rf_cell_engine] 주간(월 2회 이상) 신호에 오버레이 미지원 — 오버레이 층은 홀딩월 단위다(C5 · MC4 · 설계 §3.9)")
   suppressMessages(source(file.path(.RF_ROOT, "02_Infrastructure/validation/overlay_pit_guard.R")))
   .sdna <- function(v) if (anyNA(v)) NA_real_ else stats::sd(v)
   .B <- as.data.table(BM_DT)[is.finite(BM_Ret), .(Date = as.Date(Date), BM_Ret = as.numeric(BM_Ret))]

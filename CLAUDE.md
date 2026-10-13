@@ -50,7 +50,7 @@
 |---|---|
 | 충실구현 | **논문 그대로**(롱숏·종목수·비중·리밸). 등급 = 15bps 순비용 판(논문 기준 병기) |
 | 처방·조립 | long-only(w≥0) · ≤25종 · 15bps(v2.4 delta) · 비중 상한 없음 · LIQ 2e8 |
-| 결정 · 구현 대기 | 유니버스 전 종목 + 위생(D11 · MC1) · Σw≤1 잔여 현금(MC5) · 2000-01-01~(D15 · MC3) · 리밸 주간까지(D16 · MC4). **구현 전 측정 하네스 = K200∪KQ150 · Σw=1 · 2005-01~ · 월간** — 결정과 측정 상태를 섞지 말 것 |
+| 측정 축 (10-13 전환) | **현 측정 축 = epoch `all_hyg_2000_v1`**(정본 `constraint_defaults.json::measurement_axis` · 계약 `contracts/measurement_axis.R` 주입 · decision_register MEASUREMENT-AXIS-SWITCH-ALLHYG2000): 유니버스 전 종목 + 위생(D11 · MC1 — 관리종목·거래정지·불성실공시 제외 + 유동성 t−1 · 월말 스냅샷 전진) · 2000-01-01~(D15 · MC3 ✅ B안 — 실효 시작 = 신호 폭 ≥ 보유 × 2 첫 신호일부터 성과 · A 관문 창 이탈은 그 실효 시작 기준 · decision_register MC3-EFFECTIVE-START-B) · Σw≤1 잔여 현금(MC5 ✅ `reinforcement/rf_axes.R` · 현금을 만드는 층은 아직 오버레이뿐) · 리밸 월간(주간 신호면 주간 — D16 · MC4 ✅ 하네스 · 셀 엔진 주간 신호 생성은 미구현 · 주간 처방 오버레이 금지). ★**등급 비교는 같은 epoch 안에서만** — 구 축(`k200kq150_2005_v1` = K200∪KQ150 · 2005~) 산출물(S0 소급표 · 2계층 풀 · BOOK_0001)과 섞지 말 것 |
 | 공통 | **PIT C1~C15 절대**(`.claude/rules/pit.md`) · 정보 경계 τ_D = **2022-12-31**: 처방 에이전트는 그 이전 성과만 본다(이후 = 강건성 시험 · 사람·등급·Judge·BOOK 은 전기간) |
 
 <!-- FRONTIER_AXES_START -->
@@ -64,7 +64,7 @@
 **권위 등급 = `essence_score.R` 가 내는 등급 v3**(`contracts/grade_v3.R` · 설정 `06_Registry/grade_v3.json` · 2026-10-13 MC7 승격 · decision_register GRADE-V3-PROMOTE). **enum = A/B/C/F.**
 - 종합점수 **S = (Calmar/0.64)^0.6 × (PORT_t/2.95)^0.4**(둘 중 하나라도 0 이하면 S = 0). 띠: A = S ≥ 1 · B = S ≥ S(같은 창 KOSPI200 Calmar, PORT_t 2.0) · C = S > 0 · F = S = 0.
 - **A 하한**(미달 시 A 띠 → B): PORT_t ≥ 2.0 · Calmar ≥ 같은 창 KOSPI200 Calmar · CAGR ≥ 16% · Sharpe ≥ 0.8 · OOS(τ_D 이후 시험 창 위기 복원력 약함 아님 ∧ 롤링 36M 통과율 ≥ 0.5) · 스윕형 선정이면 DSR.
-- **위기 복원력(CR) 노치**(행동 카드 `contracts/behavior_card.R`): 강함 = 한 단계 상향(B→A 는 하한 전부 충족 시만) · 약함 = 한 단계 하향 · A 불가. F 는 노치 없음. 롤링 구제(F→C) 없음.
+- **위기 복원력(CR) 노치**(행동 카드 `contracts/behavior_card.R` · 위기 = Lunde-Timmermann 20/20 첫 통과 구간): 강함 = 한 단계 상향(B→A 는 하한 전부 충족 시만 · **MC8 선택(기전) 방어 동반 시만** — 크기·노출 방어·대조 불가면 상향 없음) · 약함 = 한 단계 하향 · A 불가. F 는 노치 없음. 롤링 구제(F→C) 없음. 규칙 판 **v3.1**(10-13 · GRADE-V3-CR-STRONG-SELECTION · CRISIS-DEF-LT2020 — 저장분은 판 표식으로 재채점).
 - 숫자 정본 = `constraint_defaults.json::tier_graduation`(0.64 · 2.95 · 2.0 · 16% · 0.8) + `grade_v3.json`(6:4 · 경계 규칙). 재보정 = 도훈 권한. 벤치 = 공표 KOSPI200 유지(BENCH-KOSPI-PROPOSAL).
 - `authoritative_remeasure.json::essence_grade` 만 인용 — 손계산 금지. 계약 미경유 = NA · v3 미산출 = NA(미측정). 구 5조건 판정은 `grade_v921`(진단 · 인용 금지). `hurdle` 등급 = 진단(proxy).
 - ★MDD 직접 문턱은 없다. MDD 는 Calmar 와 위기 복원력 노치('강함' = 같은 창 전략 MDD ≤ 벤치 MDD)로만 등급에 닿는다.

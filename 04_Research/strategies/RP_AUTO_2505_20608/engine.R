@@ -173,7 +173,7 @@ stopifnot(all(c("Date", "BM_Ret") %in% names(BM_DT)))
 # ▸ 우리 고정 축
 .LIQ        <- 2e8                    # adv20(t−1) 하한 (KRW)
 .LIQWIN     <- 20L
-.SIG_FROM   <- as.Date("2005-01-01")
+.SIG_FROM   <- (if (exists(".RP_START_DATE")) .RP_START_DATE else as.Date("2005-01-01"))
 .PANEL_FROM <- as.Date("1998-01-01")  # 2005-01 시그널의 260주 창(≈2000-01~)과
                                       #   60개월 Beta 창(2000-01~)을 모두 덮는 여유.
 .WK_ANCHOR  <- as.Date("1997-12-29")  # 월요일. 주 격자를 연속 정수로 만들기 위한 기준점

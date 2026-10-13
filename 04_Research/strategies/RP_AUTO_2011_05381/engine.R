@@ -64,7 +64,7 @@ if (!all(.REQ %in% names(RAWDATA)))
 .RSI_WIN    <- 30L                     # Table 1 rsi = RSI_30D
 .MOM_LONG   <- 12L                     # Table 1 mom = '12-1M momentum' (래그 12 · 래그 1 월말 종가)   ★changed(6)
 .MOM_SHORT  <- 1L
-.OUT_START  <- as.Date("2005-01-01")   # 고정 축(기간 2005-01-01~) — 이 날 이후 시그널만 발행
+.OUT_START  <- (if (exists(".RP_START_DATE")) .RP_START_DATE else as.Date("2005-01-01"))   # 고정 축(기간 2005-01-01~) — 이 날 이후 시그널만 발행
 .MIN_ELIG   <- 20L                     # ★changed(8)  적격 횡단면·풀 후보 하한(미만이면 그 달 발행 없음)
 .FY_MAX_AGE <- 2L                      # ★changed(7)  최신 회계연도가 year(d) − 2 보다 오래되면 결측 취급
 .SEED_CHK   <- 20201110L               # ★changed(11) 양성 대조 시드 = 논문 v1 게재일(임의 상수)

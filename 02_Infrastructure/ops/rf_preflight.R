@@ -371,9 +371,17 @@ rf_essence_diag_backfill <- function(artifact_dir, out = file.path(artifact_dir,
   dg <- ES$essence_diagnostics(bt, root = root)
   arp <- file.path(artifact_dir, "authoritative_remeasure.json")
   AR <- tryCatch(jsonlite::fromJSON(arp, simplifyVector = FALSE), error = function(e) NULL)
-  if (is.null(fixed))
+  if (is.null(fixed)) {
     fixed <- tryCatch(jsonlite::fromJSON(file.path(root, "06_Registry/reinforce_program.json"),
                                          simplifyVector = FALSE)$fixed_axes, error = function(e) NULL)
+    # ★측정 축 전환(2026-10-13 · MEASUREMENT-AXIS-SWITCH-ALLHYG2000): 산출물이 자기 측정 축(epoch)을 기록했으면 그 축으로 잰다.
+    #   전역 고정 축(구 K200_KQ150 · 2005)으로 새 축 보유를 재면 지수 밖 위생 멤버를 '유니버스 이탈'로 오판한다.
+    #   ALL_HYG 는 위 검사기가 유니버스를 판정하지 않는다(NA = 미판정 · 통과 아님) — 위생 멤버십 검증은 MC8 짝 대조 · 통합 확인(I4)이 진다.
+    #   시작일(창 규칙)은 바꾸지 않는다 — A 관문과 같은 기준(diagnostics.window_anchor_date)을 쓰고, 새 축의 창 정렬 규칙은 MC3 도훈 결정 대기.
+    mx <- (AR %||% list())$measurement_axis
+    if (is.list(fixed) && is.list(mx) && nzchar(as.character(mx$epoch %||% "")) && !is.null(mx$universe))
+      fixed$universe <- mx$universe
+  }
   ax <- if (isTRUE(with_axes) && !is.null(fixed))
     tryCatch(rf_preflight_verify_axes(arp, fixed, rawdata = rawdata, root = root),
              error = function(e) list(ok = NA, note = paste("verify 실패:", conditionMessage(e)))) else NULL

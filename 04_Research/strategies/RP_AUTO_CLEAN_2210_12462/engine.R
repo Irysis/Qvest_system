@@ -39,7 +39,7 @@ TRAIN_BLOCK_MONTHS  <- 66L       # paper: 1st training block 2010/1/1~2015/6/30
 GAP_MONTHS          <- 6L        # paper: train end 2015/6/30 -> test start 2016/1/1
 BLOCK_START_MONTHS  <- c(1L, 7L) # paper: six-month test blocks
 SHRINK_LAMBDA       <- 0.5       # supplement: covariance shrink (untuned midpoint)
-START_DATE          <- as.Date("2005-01-01")      # harness H3
+START_DATE          <- (if (exists(".RP_START_DATE")) .RP_START_DATE else as.Date("2005-01-01"))      # harness H3
 COVERAGE_MIN        <- 0.05      # harness: load_month_factors() default
 MIN_XS              <- 30L       # supplement: cross-section floor
 MIN_FACTORS_PRESENT <- 5L        # supplement: covered-column floor

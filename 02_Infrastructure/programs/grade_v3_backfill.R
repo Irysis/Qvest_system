@@ -48,7 +48,10 @@ one <- function(p) tryCatch({
   A <- fromJSON(txt, simplifyVector = FALSE)
   old <- if (is.null(A$essence_grade)) NA_character_ else as.character(A$essence_grade)
   base <- list(path = p, old_grade = old, old_md5 = unname(as.character(tools::md5sum(p))))
-  if (identical(A$grade_scheme, "grade_v3")) return(c(base, status = "already", new_grade = old))
+  # 이미 v3 — 규칙 판이 현행과 같으면 건너뜀(멱등) · 다르면 다시 채점(규칙 개정 소급 · 2026-10-13 GRADE-V3-CR-STRONG-SELECTION · CRISIS-DEF-LT2020)
+  rescore <- identical(A$grade_scheme, "grade_v3")
+  old_rv <- if (rescore) as.character(A$grade_v3$rules_version %||% "v3.0") else NA_character_
+  if (rescore && identical(old_rv, RULES_VER)) return(c(base, status = "already", new_grade = old))
   if (is.na(old)) return(c(base, status = "no_contract", new_grade = NA_character_))
   hf <- isTRUE(A$hard_fail)
   gates <- NULL
@@ -59,6 +62,7 @@ one <- function(p) tryCatch({
   v3 <- if (hf) NULL else gv3_score_dir(dirname(p), ROOT, CTX, gates = gates)
   rec <- if (hf) list(status = "not_applicable", reason = "hard_fail 주입(judge)") else
     E$.essence_v3_record(v3, TRUE, FALSE)
+  rec$rules_version <- RULES_VER                                     # 판 표식(hard_fail 기록에도 — 없으면 매번 다시 채점된다)
   new <- if (hf) "F" else as.character(v3$grade_v3)
   if (!hf && (length(new) != 1L || is.na(new))) return(c(base, status = "v3_na", new_grade = NA_character_))
   pre <- if (hf) "" else sprintf("v3: S %.3f · B 경계 %.3f · 띠 %s · CR %s(시험 창 %s) · 노치 %+d%s | v921 %s: ",
@@ -67,12 +71,20 @@ one <- function(p) tryCatch({
                                   if (length(v3$blocked_by)) paste0(" · A 아님 사유 ", paste(v3$blocked_by, collapse = ",")) else "", old)
   A$essence_grade <- new
   A$grade_scheme <- "grade_v3"
-  A$grade_v921 <- old
+  if (!rescore) A$grade_v921 <- old                                  # 재채점이면 구 5조건 판정 기록은 그대로 둔다
   A$grade_v3 <- rec
-  A$reasons <- paste0(pre, as.character(A$reasons %||% ""))
+  # 재채점이면 앞선 v3 요약 머리(v3: … | v921 X: )를 걷어내고 새 머리를 단다(머리가 겹겹이 쌓이지 않게)
+  rs <- as.character(A$reasons %||% "")
+  if (rescore) rs <- sub("^v3: [^|]*\\| v921 [^:]*: ", "", rs)
+  pre <- if (rescore && !hf) sub("\\| v921 [^:]*: $", paste0("| v921 ", as.character(A$grade_v921 %||% "NA"), ": "), pre) else pre
+  A$reasons <- paste0(pre, rs)
   A$grade_v3_backfill <- list(at = format(Sys.time(), "%Y-%m-%dT%H:%M:%S%z"), tool = "02_Infrastructure/programs/grade_v3_backfill.R",
-                              decision = "decision_register GRADE-V3-PROMOTE", prior_essence_grade = old,
-                              prior_md5 = base$old_md5)
+                              decision = if (rescore) "decision_register GRADE-V3-CR-STRONG-SELECTION · CRISIS-DEF-LT2020(규칙 판 재채점)"
+                                         else "decision_register GRADE-V3-PROMOTE",
+                              rules_version = RULES_VER, prior_rules_version = old_rv,
+                              prior_essence_grade = old, prior_md5 = base$old_md5,
+                              history = c(A$grade_v3_backfill$history %||% list(),
+                                          if (rescore) list(list(rules_version = old_rv, essence_grade = old)) else list()))
   nt <- toJSON(A, auto_unbox = TRUE, pretty = TRUE, digits = NA, null = "null", na = "null")
   chk <- fromJSON(nt, simplifyVector = FALSE)
   if (!identical(as.character(chk$essence_grade), new) || !identical(chk$grade_scheme, "grade_v3"))
@@ -87,6 +99,7 @@ init_worker <- quote({
   .e <- .gv3_deps(ROOT); E <- .e
   CTX <- gv3_ctx(ROOT)
   DSR_MIN <- .e$.graduation_params(refresh = TRUE, root = ROOT)$dsr_min
+  RULES_VER <- as.character(CTX$cfg$rules_version %||% "v3.0")      # 현행 규칙 판(grade_v3.json) — 다른 판의 v3 기록은 다시 채점
   NULL })
 t0 <- Sys.time()
 res <- if (WORKERS > 1L) {

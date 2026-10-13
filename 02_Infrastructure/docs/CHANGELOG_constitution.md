@@ -60,6 +60,81 @@
   `bc_attach_controls(tol=)`(부동소수 동치). 검사 55/0 SUITES 편입. 시운전: S1 · 2002.06975 B6_36 의 2026-06~07 급락 방어 = 무작위 크기 짝 분포 안(크기 효과).
   ⚠ S0 소급표 1,299행 중 97행 = close_t1 비재측정(구 규약) — S0 요약 1,202칸은 무오염. 보고서 = `l1_prescription_redesign_20261013/mc8_matched_controls/README.md`.
 
+### (v10.01 같은 날 저녁) S1 진단 패킷 · S2 파일럿 도구 · 등급 규칙 판 v3.1 (2026-10-13)
+
+- **S1 진단 패킷** `contracts/diagnosis_packet.R::dp_build` — 처방 에이전트 입력. **보는 창(≤ τ_D)만으로 계산**(적재 단계 절단: 수익 · 벤치 · 보유 · 시장 패널 · 벤치 이력 전부 τ_D 에서 자른 뒤 계산 · 산출 전 날짜 전수 검사).
+  행동 카드 · MC8 귀속 · 노출 분해(tilt_attribution 사전 적재 기계) · 위기별 종목/업종/크기 분위 귀속 · 구성 프로필. 종목명 비적재(사전학습 서사 통로). 검사 20/0(τ_D 뒤 세계를 통째로 바꿔도 바이트 동일 · τ_D 를 늦추면 달라짐 = 돌연변이).
+  `bcfg` 인자 = 사전등록 당시 행동 카드 설정 사본으로 판정(R2).
+- **S2 처방 루프 v0 도구**(D7 별도 모듈 · 기존 러너 무수정): `programs/rx_round.R`(도구 상자 · 헌장 · 처방 입력 문서 검사(τ_D 뒤 날짜 · 등급 표기 = 멈춤) · 처방 검증 = **엔진 파서**(rf_sl_parse · rf_rb_parse · rf_cc_parse · 카탈로그) · 사양 컴파일 · json 판독) ·
+  `programs/rx_lane.sh`(무인 단일 진입 rf_llm_agent_run + 청정 표식 QVEST_CLEAN_LANE · R6 읽기 가드 · 읽기 전용 · 레인 SessionEnd 자동 커밋/푸시 건너뜀). 검사 28/0. 첫 라운드 = P2_DEFENSE P2R01(2002.06975 B6_36 · 처방 3건 + 같은 판본 기저 대조 RX0).
+  ⚠ 실측 사고: 레인 종료 훅(auto_commit/push_on_stop)이 부모 세션 도중 작업 트리를 main 에 커밋 · 푸시(3,373 · 26 파일)하고 훅 출력 형식 오류 문구가 레인 산출에 섞였다 → `QVEST_SKIP_AUTO_COMMIT/PUSH=1` 수리.
+- **MC8 귀속 라벨 v2**(decision_register MC8-LABEL-NO-DEFENSE): 노출 방어(현금 덕에 시장보다는 덜 빠짐) ≠ **방어 없음**(시장보다도 과반 위기에서 못 막음) — 평균 노출 1.0 전략이 '노출 방어'로 찍히던 혼동 분리(S1 기저 = 방어 없음). 검사 60/0.
+- **등급 규칙 판 v3.1**(`grade_v3.json` rules_version): ① 행동 카드 위기 정의 = **Lunde-Timmermann 20/20 첫 통과**(decision_register CRISIS-DEF-LT2020 · Lunde & Timmermann 2004 JBES 22(3):253-273 · 관례 0.2) — KOSPI200 보는 창 위기 4→7 · 시험 창 2→3(2008 세 파동 · 2018~19 침식과 2020 급락 분리 · 2024~25 약세 포착)
+  ② CR '강함' 상향 노치 = **MC8 선택(기전) 방어 동반 시만**(GRADE-V3-CR-STRONG-SELECTION · MC8 보고서 §7 · 대조 불가 = 상향 없음). 저장분 = `grade_v3_backfill.R` 판 표식 재채점(원본 gz 보관).
+  검사: 행동 카드 36/0(J1~J8 · `$` 부분 일치 결함 J8 이 적발 · `[[ ]]` 수리) · 등급 v3 47/0(C15~C20).
+  **발효(18:05) · 소급 재채점(18:55)**: 2,964건(시험 실행 21.7분 → 쓰기 22.4분 · 원본 `s0_grade_v3/backfill_originals_20261013_185506.jsonl.gz` · v3.0 매니페스트 보존 `backfill_manifest_v30_20261013_1517.csv`).
+  띠 변화 0 · 등급 변화 207 = 전부 CR 노치 — 약함 신규 175(C→F 127 · B→C 48) · 약함 해제 25(F→C 22 · C→B 3) · 강함 상실 6(LT 로 보통 4 · 강함이나 크기 방어 2) · 강함 신규 1(선택 방어).
+  분포 B 1,266→1,216 · C 943→888 · F 755→860 · A 0 · BOOK 영향 0. CR 강함 26건의 MC8 귀속 = 크기 20 · 선택 6.
+  ⚠ 전환 때 `test_behavior_card.R` J5 가 '구판 위기 정의' 기준을 운영 설정에서 빌려 실패 → 구판 설정을 검사 안에 명시(36/0).
+- **S2 파일럿 P2R01 종료**(P2_DEFENSE · 2002.06975 B6_36 · 처방 3건): 반증 기각 3/3 · 최종 후보 선정 없음(반증 · 선택 = R 기계 적용 · 리뷰어 이견 없음) · 리뷰어 권고 deepen(처방 3 노출 고정판 · 사전등록 지표를 꼬리로).
+  ★처방 2(`rebalance.kind = turnover_cap`)가 **≤25종 축을 깼다** — 엔진(`rf_rebalance.R::rf_rb_emit`)이 직전 보유와 목표를 섞은 뒤 종목 수 상한을 다시 걸지 않아 리밸 261회 중 115회 초과 · 최대 120종 → 측정 무효(미시험).
+  저장 산출물 전수 점검(sweep 칸 1,489) = 위반은 이 1건뿐(과거 격자는 turnover_cap 미사용). 수리 = `rx_round.R::rx_validate` 가 turnover_cap 거부 + 도구 상자에서 제외(검사 B11 · B12 · 30/0) · 라운드 종료 축 감사(04_holdings 실보유 ≤ `constraint_defaults.json::tier_soft_deployment.max_names`).
+  교훈 L-RF-20261013_190349(보는 창 수치만) · 보고서 `stage_artifacts/programs/P2_DEFENSE/P2R01_s2_pilot/ROUND_REPORT.md` · 등록부 라운드 complete · P2_DEFENSE ready(다음 라운드 = 도훈 확인).
+  후속 진단(도훈 '3번' · `diag_rx3_overlay/README.md`): 처방 3 의 2005~2013 미작동 = arm `trend_persist_tilt` 최소 표본 24 를 '추세 아래 개월'로 세는 워밍업 설계 결함(2012-10 에야 충족) + 12개월 추세 상태는 급락형 위기에 바닥 뒤에 켜지는 구조적 한계. `02_nav.csv` gross_exposure 자리표시자(늘 1) 발견 → 별도 작업.
+- **선행 조건(측정 계약) 구현**(도훈 '2번' · 3번 진단과 병렬):
+  · **MC5 ✅ Σw ≤ 1**: `reinforcement/rf_axes.R::rf_assert_axes`(long-only · 0 < Σw ≤ 1 · ≤ n_max)로 엔진 단정 2곳 교체(구 |Σw−1|<1e-8) · 기록 방화벽 문구 Σw≤1.
+    검사 test_rf_axes(현금 통과 · 구판 단정 돌연변이 대조 · 레버리지/음수/26종/빈 포트 거부) · 엔진 실행 37 · capcore 58 · overlay_stack 44 — 엔진을 격리 루트로 복사하는 검사 3개가 새 모듈 누락으로 깨져(9월에도 같은 유형) 복사 목록 수리.
+  · **MC4 ✅ 주간 리밸런싱**: `replication_harness.R` 주간 경로 — 월 2회+ 신호 = 신호 다음 거래일 집행 · ISO 주 1회(일간 → 주 마지막 신호 · D16) · 주간 신호일 거래량 0 제외(레그 재정규화) · 월간은 구 집행일 함수 그대로(git 기준본과 비트 동일).
+    구판은 같은 달 신호를 같은 집행일로 모아 마지막 하나만 썼다(침묵) — 검사로 재현. 러너 = 실현 주기 진술 · FIDELITY 자동 신고 · C5 = `overlay_pit_guard.R::holding_window_cutoff` · 셀 엔진 주간 처방 오버레이 금지(미발화 가드 — 양성 대조 없음) · 충실도 감사 프롬프트에 '하네스 일간→주간 = 변경 아님'.
+    검사 test_replication_weekly 22 · test_overlay_window_cutoff 6 · 회귀(하네스 46 · 패리티 6 · 골든 8 · tilt 47 · c11 97 · 감사 43).
+  · **MC1 · MC3 (기능 완료 · 기본 축 전환 전)**: `constraint_defaults.json::measurement_axis`(epoch — active = k200kq150_2005_v1 · 신 = all_hyg_2000_v1) · `contracts/measurement_axis.R`(위생 멤버십 = 표준 판정식 `factor_z_standard.R::corp_action_member` 정본 리팩터 · RAWDATA 주입 = K200 := 멤버십 · KQ150 := 0 · 원 플래그 K200_IDX) ·
+    러너 universe='ALL_HYG'(주입 · .apply_universe · 생존 진술 · FIDELITY · 권위 기록 measurement_axis + 신호 커버리지 기록) · 셀 엔진 universe all_hyg(주입 표식 없으면 멈춤) · 동점 규칙(새 축에서만 — 거래대금 t−1 · 원값 순위는 후속) · MC8 HYG 멤버십 · grade_v3 위생 raw.
+    순위 z 합성이라 엔진 윈저라이징은 불필요(오히려 동점을 만든다). ⚠ 충실구현 엔진 25/34 가 시작 2005 를 리터럴로 박음 → 계약 시작일이 안 닿는다 — 러너가 `.RP_START_DATE` 를 넘기고 축 전환 때 엔진을 바꾼다.
+    검사 test_measurement_axis 18 · matched_controls 63 · rf_axes 18 · grade_v3 47. 남은 것 = 실데이터 통합 확인 · 같은 기저 구/신 축 비교 · MC3 실효 시작 절단 규칙(도훈) · 방화벽 유니버스 패턴 · active 전환(도훈 확인).
+- **측정 축 전환 — 기본 축 = `all_hyg_2000_v1`**(도훈 "1번은 전환" · decision_register MEASUREMENT-AXIS-SWITCH-ALLHYG2000 · `constraint_defaults.json` v2.8 active):
+  · 배선: 러너 `run_paper_replication(universe = NULL, start_date = NULL)` → 활성 epoch 에서 풀림(fail-closed) · 무인 레인 인자 제거(`rf_replication_verify.R`) · 재구현·감사 프롬프트(유니버스 = 측정 축 플래그 · 기간 = `.RP_START_DATE` · 시작일 리터럴 금지) ·
+    처방 사양 `rx_compile_spec` 이 고정 축 표식(measurement_axis · universe · start_date)을 활성 epoch 로 찍음 · 도구 상자 문구 · 검증기 all_hyg(활성 축일 때만) · 셀 워커 = 사양 표식의 epoch 로 러너 유니버스 · 시작일.
+  · 셀 엔진: 주입 측정이면 모든 유니버스 종류를 위생 멤버 **안에서** 좁힘(k200_kq150 · index = 원 지수 플래그 K200_IDX/KQ150_IDX) · cap_core 를 all_hyg 칸에서도(코어 = 원 K200 ∧ 위생 멤버).
+    충실구현 엔진 24개의 시작 리터럴 `as.Date("2005-01-01")` → `.RP_START_DATE`(러너 밖 단독 실행은 구판 그대로 · 33/33 파싱 · 매니페스트 `mc1_integration/engine_start_patch_manifest.json`).
+  · 방화벽 ⑥ = 전 종목 + 위생: '전종목'은 완화어에서 빠지고 위생 해제(관리종목 · 거래정지 · 불성실공시 편입)가 완화어로(자체 검사 22/22 — 양방향 5건 신설) · 케이스 라이브러리 C5(Σw≤1) · C6 이름 갱신.
+  · 문서: CLAUDE.md · lean-loop 축 표(결정/측정 분리 → '측정 축' 행) · 훅 주입 문구(최악 길이 1977 ≤ 2000) · alpha-search 에이전트·스킬 · advisor C6 · cleaner 고정 제약 문구.
+  · 회귀(전환 뒤 재실행 · 실패 0): 엔진 스모크 37 · overlay_stack 44 · capcore 62(H 절 신설 — all_hyg 코어 = 원 K200 ∧ 멤버 · 지수 밖 멤버 위성 · 주입 표식 없으면 멈춤) · rf_axes 18 · base_cache 38+17 ·
+    holdings_axis 10 · overlay_pit_mask 62 · arm_coverage_basis 12 · prereg 207 · rx_round 35 · 하네스 46 · 주간 22 · 패리티 6 · 골든 8 · A 관문 33 · 선택 회계 42+22 · essence OOS 43 · 짝 대조 63 · 등급 v3 47 · 행동 카드 36 · 충실도 감사 43 외.
+    ⚠ 엔진 소스 문구를 단정하던 검사 1개(holdings_axis — 절단식이 `rf_select_top` 으로 이동)와 엔진을 격리 루트로 복사하는 검사 2개(새 모듈 누락)가 깨져 호출 지점 + 거동 검사 · 복사 목록으로 수리.
+    · 고정 축 재도출 백필(`ops/rf_preflight.R::rf_essence_diag_backfill`) — 기본 고정 축이 전역(구 K200_KQ150)이라 새 축 산출물의 지수 밖 보유를 '유니버스 이탈'로 오판할 자리였다 → 산출물이 epoch 를 기록했으면 그 유니버스로(ALL_HYG = 미판정 NA · 통과 아님) · 창 기준은 A 관문과 같은 2005(MC3 대기) · 검사 B5 양방향(essence OOS 44/0).
+  · 실데이터 종단 확인(기본값 경로 — universe · start_date 미지정 · 통합용 엔진 cond_mat_0410079): I1~I7 PASS — 권위 기록 epoch 블록 · FIDELITY 자동 신고 · 등급 v3.1 산출 ·
+    보유 전부 신호일 위생 멤버(위반 0/6800) · 지수 밖 보유 3099/6800(처치 전달) · 첫 보유 2004-03(엔진 시작 리터럴 패치 전 첫 실행은 2005-02 = I6 FAIL) · MC8 짝 대조 ALL_HYG.
+    산출 = `04_Research/01_reports/l1_prescription_redesign_20261013/mc1_integration/`(integration_defaults.log · integration_summary_defaults.json · card_defaults/). 등록부 MC1 = done.
+  · 남은 것: MC3 A 관문 창 정렬 규칙(도훈 결정 — 그때까지 window_anchor 2005 유지 · 창 차는 부호 있는 월 차라 2005 이전 시작은 보류되지 않는다) · 동점 규칙 ①(원값 순위) · 같은 기저 구/신 축 비교. 구 축 산출물(S0 소급표 · 2계층 풀 · BOOK_0001)은 구 epoch 로 남는다 — 등급 비교는 같은 epoch 안에서만.
+    구 측정 도구(run_alpha_search · 6월 스크리닝 래퍼 driver_ls_generic 등)는 구 축 기본값 그대로 — 권위 1계층 경로(run_paper_replication)만 전환.
+- **MC3 실효 시작 규칙 = B안**(도훈 "B안으로 가자" · decision_register MC3-EFFECTIVE-START-B · `constraint_defaults.json` v2.9 — `measurement_axis.epochs.all_hyg_2000_v1.effective_start`):
+  · 규칙: 실효 시작 = 신호 폭(FACTORS · 유니버스 적용 뒤 점수 유한 종목 수) ≥ 보유 수(그 신호일 비중 ≠ 0) × 2 를 **처음** 만족한 신호일 — 그 전 신호일은 성과에서 뺀다(첫 통과 = 각 날의 판정이 그날 값만 · PIT).
+    시작 뒤 문턱 아래로 내려간 날은 자르지 않고 기록 · PORTFOLIO 만 내는 엔진 = 폭 미측정 표식(자르지 않음) · 한 번도 못 미치면 측정 무효(멈춤) · 구 축 epoch 는 규칙 없음(비트 동일).
+  · A 관문 창 이탈 = 그 전략의 실효 시작 대비(허용 12개월 = 엔진 워밍업) — 러너가 `auth$essence_diag`(창 기준 = 실효 시작 · 전역 기준일 병기)를 쓰고 관문(`rf_cell_window` ②)이 읽는다 ·
+    재도출(④)도 산출물에 기록된 기준을 쓰고 그때는 전역 기준으로 잰 형제 백필 값을 건너뛴다(같은 산출물에 두 기준 금지). 데이터가 늦게 서는 신호(컨센서스 등)가 데이터 사정만으로 자동 보류되지 않는다.
+  · 함께 고친 것: 신호 커버리지 기록이 선정 뒤 보유(WEIGHTS)로 폭을 재 25로 눌려 있었다 → 선정 전 FACTORS(basis 표식) · FIDELITY 자동 신고(실효 시작일 · 제외 수) · 충실도 감사 프롬프트('계약 실효 시작 절단은 변경 아님').
+  · 정본: `contracts/measurement_axis.R::ma_effective_start · ma_window_anchor` · 러너 §5-b · `rf_runner_gates.R::rf_cell_window · .rfg_window_anchor`.
+    검사: test_measurement_axis 28(M11~M18 — 첫 통과 · 뒷날 폭 불변(PIT) · 비중 0 · 점수 결측 · 폭 미측정 · never_met · 창 기준 판독 · 커버리지 basis) · A 관문 37(A9a~d 양방향) · 주간 23(W10f) · a_eligibility 49 외.
+    ⚠ 재도출 함수가 새 기준 인자를 받고도 끝줄에서 전역 기준을 쓰던 것을 작성 중 발견해 고침(A9a 가 그 자리를 잰다).
+  · 잔여 위험(기록): 엔진이 스스로 늦게 시작하면 이 규칙은 그것을 데이터 사정과 구분하지 못한다 — 시작일 리터럴 금지(엔진 규약 · 재구현 프롬프트) · 충실도 감사가 진다.
+- **(10-13 밤) 라운드를 막은 결함 2건 — P0R01 측정 착수 전 발견 · 최소 수리**:
+  · 셀 엔진 후보 폭 보고: 처방 칸은 셀 엔진이 FACTORS 를 이미 보유 수로 자른 뒤 넘겨, 실효 시작 폭이 보유 수로 눌려(폭 ≥ 보유 × 2 불가) 모든 칸이 never_met 으로 멈출 자리였다 →
+    셀 엔진이 선정 전 후보 폭 `SIGNAL_BREADTH`(점수 유한 종목 수 · 신호일별)를 내고 러너가 그 값을 우선(`ma_effective_start` basis engine_reported) ·
+    보고 없이 FACTORS 가 모든 신호일에 보유 수 이하면 미리 잘린 패널로 보고 폭 미측정(factors_pretruncated · 자르지 않음). 검사 capcore K5 · test_measurement_axis M19~M21(31/0).
+  · 진단 패킷 원자료 위생: `dp_build` 가 짝 대조용 원자료를 위생 멤버십 없이 읽어 ALL_HYG 칸의 MC8 짝 대조가 측정 유니버스와 다른 모집단에서 뽑힐 자리였다 →
+    산출물 유니버스를 먼저 판정해 ALL_HYG 면 `mc_load_raw(hygiene = TRUE)`(mc_card 와 같은 규칙). 검사 test_diagnosis_packet E1 · E2(22/0).
+
+### (v10.01 · 버전 미변경) 충실구현 하네스 공시 블록 = 측정 축 epoch 문장 (2026-10-14)
+
+- **결함(세션 감독 중 발견)**: 10-13 측정 축 전환 뒤에도 재구현 프롬프트의 하네스 공시 블록(`06_Registry/rf_preaudit.json::harness.lines`)이
+  H2 'KQ150 플래그 2010-01-29~ · 그 전 K200 단독' · H3 '2005-01-01 이후 신호만' · H8 '유동성 무필터'를 공시했다(1810.08384 청정 레인 1차 프롬프트에서 실측).
+  구현자는 이 블록을 FIDELITY.harness_disclosure 에 그대로 옮기고 감사는 그것을 하네스 사실로 읽는다 — 같은 프롬프트의 '축' 절(전 종목 + 위생 · 2000~)과 모순 → 신고 기록 오염 · 감사 오판 위험.
+- **수리**: `ops/rf_preaudit.py::harness_block` 이 유니버스 · 지수 플래그 · 표본 · 유동성 문장을 측정 축 정본(`measurement_axis.active`)의 epoch 문장(`harness.epoch_statements`)에서 고른다 —
+  체결 규약 문장(exec_statements)과 같은 형. 시작일 · 유동성 하한(liq_min_key) · 실효 시작 배수는 같은 정본의 epoch 정의에서 채운다. 문장이 없는 epoch · 채우지 못한 자리표시자 = 블록을 지어내지 않는다(rc 3).
+  ALL_HYG 문장: K200 := 위생 멤버 · KQ150 = 0 · 원 지수 플래그 = K200_IDX/KQ150_IDX · 위생 = adv20(t−1) ≥ 하한 ∧ 관리종목 · 거래정지 · 불성실공시 아님 · 실효 시작(MC3 B) · 위생 하한이 유동성 하한을 이미 포함.
+- 검사: test_rf_preaudit H4(활성 epoch 문장 · 구 축 문구 없음) · H5(구 epoch 재현) · H6(미지 epoch → rc 3) · H7(미해결 자리표시자 → rc 3) — 54/0 · 돌연변이(문장 치환 제거) → H1 · H2 · H4 · H5 FAIL 확인 뒤 복원.
+- 1차 실행 처분: 요청을 세션 처리(failed_needs_session → pending · auto_retries 미소모 · `session_resets` 기록). 1차 에이전트는 수리 전에 이미 산출 없이 rc=1 로 끝나 있었다(전사가 07:36:14 도구 결과 뒤 끊김 · 원인 미상 — 재실행에서 관찰).
+
 ---
 
 ## (v10.4 유지 · 버전 미변경) 09-26 중단분 배포 · B4 5축 · 유기체 O0a · 청정 레인 · 노출 표식 · 러너 재개 (2026-10-04)

@@ -401,6 +401,26 @@ chk("B3 보호 경로(authoritative_remeasure.json) 로의 기록 거부",
                       error = function(e) e), "error") &&
       identical(unname(tools::md5sum(file.path(bd, "authoritative_remeasure.json"))), md5_before[1]))
 chk("B4 임시 파일 잔재 0(원자 교체)", !length(list.files(bd, pattern = "^\\.essence_diag_.*\\.tmp$", all.files = TRUE)))
+# B5 — 측정 축 전환(2026-10-13): 산출물이 자기 epoch(ALL_HYG)를 기록했으면 기본 고정 축(전역 · 구 K200_KQ150)으로 유니버스를 재지 않는다.
+#   양방향: 같은 보유(지수 밖 T29 포함)라도 epoch 기록이 없으면 구 축 판정(universe_outside)이 그대로 발화해야 한다(대조).
+mk_bf <- function(nm, ma = NULL) {
+  d <- file.path(TMP, nm); dir.create(d, showWarnings = FALSE)
+  saveRDS(bt_b, file.path(d, "bt_result.rds")); fwrite(h5, file.path(d, "04_holdings.csv"))
+  ar <- list(status = "OK", essence_grade = "C", essence = list(oos_retention = 0.3), measurement_regime = list(exec_price = "close_t1"))
+  if (!is.null(ma)) ar$measurement_axis <- ma
+  write_json(ar, file.path(d, "authoritative_remeasure.json"), auto_unbox = TRUE)
+  d
+}
+b5n <- mk_bf("bf_newaxis", list(epoch = "all_hyg_2000_v1", universe = "ALL_HYG", start_date = "2000-01-01"))
+b5o <- mk_bf("bf_oldaxis")
+r5n <- tryCatch(P1$rf_essence_diag_backfill(b5n, rawdata = RAW, root = TROOT), error = function(e) e)
+r5o <- tryCatch(P1$rf_essence_diag_backfill(b5o, rawdata = RAW, root = TROOT), error = function(e) e)
+chk("B5 새 축 산출물(epoch ALL_HYG 기록) → 기본 고정 축으로 지수 밖 보유를 이탈로 재지 않는다 · 같은 보유의 구 축 산출물은 universe_outside(대조)",
+    !inherits(r5n, "error") && !inherits(r5o, "error") &&
+      !("universe_outside" %in% r5n$axes$codes) && is.na(r5n$axes$checks$universe) &&
+      ("universe_outside" %in% r5o$axes$codes),
+    paste(if (inherits(r5n, "error")) conditionMessage(r5n) else paste(r5n$axes$codes, collapse = ","),
+          if (inherits(r5o, "error")) conditionMessage(r5o) else paste(r5o$axes$codes, collapse = ","), sep = " | "))
 
 # ══ M. 돌연변이 ═══════════════════════════════════════════════════════════════
 cat("\n── M. 돌연변이 (전부 red 여야 한다) ─────────────────────────\n")

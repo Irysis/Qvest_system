@@ -64,7 +64,7 @@ if (!all(.REQ %in% names(RAWDATA)))
 # =============================================================================
 # 0. 상수 — 논문 명시값 + 논문이 침묵하는 규약(전부 FIDELITY.json changed 신고)
 # =============================================================================
-.START      <- as.Date("2005-01-01")   # 고정 축 — 이 날 이후 시그널만 발행
+.START      <- (if (exists(".RP_START_DATE")) .RP_START_DATE else as.Date("2005-01-01"))   # 고정 축 — 이 날 이후 시그널만 발행
 .TOP_DIV    <- 3L                      # 논문: "top one third stocks with the highest ranking"
 .MIN_N      <- 6L                      # ★changed(9) 상위 1/3 정의역(n %/% 3 >= 2)
 .CARRY_DAYS <- 400L                    # ★changed(7) 회계 관측 가용일 이후 캐리 상한(달력일)

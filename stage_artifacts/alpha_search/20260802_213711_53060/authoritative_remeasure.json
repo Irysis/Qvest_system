@@ -42,7 +42,7 @@
     "note": "run_alpha_search 1회=1가설 1전략 단일 실행(sweep 아님). 반복 개선 체인의 IS-only 변형선택·holdout 1회 규약 준수는 호출자 책임 (measurement-graduation §3 chain 자격요건 — 미충족 시 sweep 재분류 대상)."
   },
   "hard_fail": false,
-  "reasons": "v3: S 0.000 · B 경계 1.709 · 띠 F · CR strong(시험 창 strong) · 노치 +0 · A 아님 사유 floor:port_t,floor:calmar,oos:rolling36_pass_oos | v921 F: non-positive alpha (PORT_t<=0 또는 net_IR<=0)",
+  "reasons": "v3: S 0.000 · B 경계 1.709 · 띠 F · CR strong(시험 창 strong) · 노치 +0 · A 아님 사유 floor:port_t,floor:calmar,oos:rolling36_pass_oos,cr:strong_without_selection(size_defense) | v921 F: non-positive alpha (PORT_t<=0 또는 net_IR<=0)",
   "contract": {
     "integrity_status": "WARNING",
     "audit_pass": 15,
@@ -62,13 +62,23 @@
     "grade": "F",
     "S": 0,
     "S_B": 1.7088,
+    "rules_version": "v3.1",
+    "crisis_def": "lt_first_passage",
+    "cr_notch_basis": "normal",
+    "mc8": {
+      "status": "ok",
+      "label": "size_defense",
+      "share_beats_size_exposure": 0,
+      "median_placebo_p": 0.49
+    },
     "band": "F",
     "notch": 0,
     "notch_a": false,
     "blocked_by": [
       "floor:port_t",
       "floor:calmar",
-      "oos:rolling36_pass_oos"
+      "oos:rolling36_pass_oos",
+      "cr:strong_without_selection(size_defense)"
     ],
     "floors": {
       "port_t": false,
@@ -112,10 +122,18 @@
     "nav_source": "contract"
   },
   "grade_v3_backfill": {
-    "at": "2026-10-13T15:06:27+0900",
+    "at": "2026-10-13T18:39:26+0900",
     "tool": "02_Infrastructure/programs/grade_v3_backfill.R",
-    "decision": "decision_register GRADE-V3-PROMOTE",
+    "decision": "decision_register GRADE-V3-CR-STRONG-SELECTION · CRISIS-DEF-LT2020(규칙 판 재채점)",
+    "rules_version": "v3.1",
+    "prior_rules_version": "v3.0",
     "prior_essence_grade": "F",
-    "prior_md5": "9c5a3ffaf2cb2e05608d88e3308af58f"
+    "prior_md5": "93d50e0adc13ea58b6ef3a61d2097fe3",
+    "history": [
+      {
+        "rules_version": "v3.0",
+        "essence_grade": "F"
+      }
+    ]
   }
 }

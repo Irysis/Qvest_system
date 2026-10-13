@@ -152,7 +152,7 @@ if (!all(.RQ %in% names(RAWDATA)))
 # ▸ 축(도훈 고정)에서 온 것
 .LIQ      <- 2e8       # adv20(t-1) 하한 (KRW)
 .LIQ_WIN  <- 20L       # 거래일 (D 직전 20 거래일, 종점 = D-1)
-.START    <- as.Date("2005-01-01")
+.START    <- (if (exists(".RP_START_DATE")) .RP_START_DATE else as.Date("2005-01-01"))
 # ▸ 수치 타당성 하한 — 전략 파라미터가 아니다(성과를 보고 고른 값이 아니다)
 .MIN_COV  <- 0.80      # 창 커버리지 하한 = 논문 5년 창 중 4년치. 거래정지 며칠로
                        #   5년 이력이 통째로 버려지는 것을 막는 자리일 뿐이다.

@@ -130,7 +130,7 @@
     },
     "reason": "하락월 110개: 초과 -1.11%/월 (t -2.70 · 적중 44%) · 벤치-10% 이하 10개: 초과 -2.73%/월 · 상승월 초과 +0.44%/월"
   },
-  "reasons": "v3: S 0.000 · B 경계 0.435 · 띠 F · CR normal(시험 창 normal) · 노치 +0 · A 아님 사유 floor:port_t,floor:calmar,floor:cagr,floor:sharpe,oos:rolling36_pass_oos,gate:dsr_sweep | v921 F: non-positive alpha (PORT_t<=0 또는 net_IR<=0); structural_drawdown(판정 아님 — 라우팅 근거): MDD 70.5%, 45%+ episodes=28/15, 55%+ episodes=6/6, 수중 표본비 0.10/0.25",
+  "reasons": "v3: S 0.000 · B 경계 0.435 · 띠 F · CR weak(시험 창 normal) · 노치 +0 · A 아님 사유 floor:port_t,floor:calmar,floor:cagr,floor:sharpe,oos:rolling36_pass_oos,gate:dsr_sweep,cr:weak | v921 F: non-positive alpha (PORT_t<=0 또는 net_IR<=0); structural_drawdown(판정 아님 — 라우팅 근거): MDD 70.5%, 45%+ episodes=28/15, 55%+ episodes=6/6, 수중 표본비 0.10/0.25",
   "remeasure": {
     "version": "remeasure_from_holdings_v1",
     "of_artifact": "C:/Users/99922/OneDrive/Quant_Module_Moltbot/stage_artifacts/replication/20260903_085117_19960",
@@ -218,6 +218,15 @@
     "grade": "F",
     "S": 0,
     "S_B": 0.4348,
+    "rules_version": "v3.1",
+    "crisis_def": "lt_first_passage",
+    "cr_notch_basis": "weak",
+    "mc8": {
+      "status": "not_needed",
+      "label": null,
+      "share_beats_size_exposure": null,
+      "median_placebo_p": null
+    },
     "band": "F",
     "notch": 0,
     "notch_a": false,
@@ -227,7 +236,8 @@
       "floor:cagr",
       "floor:sharpe",
       "oos:rolling36_pass_oos",
-      "gate:dsr_sweep"
+      "gate:dsr_sweep",
+      "cr:weak"
     ],
     "floors": {
       "port_t": false,
@@ -242,12 +252,12 @@
       "sharpe": 0.5615
     },
     "cr": {
-      "overall": "normal",
+      "overall": "weak",
       "test": "normal",
       "visible": "weak",
-      "n_crisis": 6,
-      "dd_capture_median": 1.1282,
-      "dd_capture_worst": 1.3235,
+      "n_crisis": 10,
+      "dd_capture_median": 1.2576,
+      "dd_capture_worst": 1.5243,
       "uc_median": 0.6203,
       "cdar": 0.509,
       "controls": "not_provided"
@@ -271,10 +281,18 @@
     "nav_source": "contract"
   },
   "grade_v3_backfill": {
-    "at": "2026-10-13T15:06:39+0900",
+    "at": "2026-10-13T18:40:11+0900",
     "tool": "02_Infrastructure/programs/grade_v3_backfill.R",
-    "decision": "decision_register GRADE-V3-PROMOTE",
+    "decision": "decision_register GRADE-V3-CR-STRONG-SELECTION · CRISIS-DEF-LT2020(규칙 판 재채점)",
+    "rules_version": "v3.1",
+    "prior_rules_version": "v3.0",
     "prior_essence_grade": "F",
-    "prior_md5": "7b1d8dfeb93a68f9a8d98bcd823f4b6d"
+    "prior_md5": "e1e19dc95fda6ccc3dd12a27b5388e53",
+    "history": [
+      {
+        "rules_version": "v3.0",
+        "essence_grade": "F"
+      }
+    ]
   }
 }

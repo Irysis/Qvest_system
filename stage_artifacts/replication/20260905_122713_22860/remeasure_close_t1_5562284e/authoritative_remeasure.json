@@ -130,7 +130,7 @@
     },
     "reason": "하락월 111개: 초과 +1.74%/월 (t 4.37 · 적중 69%) · 벤치-10% 이하 10개: 초과 +2.28%/월 · 상승월 초과 -0.15%/월"
   },
-  "reasons": "v3: S 0.586 · B 경계 0.432 · 띠 B · CR normal(시험 창 normal) · 노치 +0 · A 아님 사유 floor:port_t,oos:rolling36_pass_oos,gate:dsr_sweep | v921 C: Ensemble: positive alpha이나 B 미달 (블렌드에서만 가치)",
+  "reasons": "v3: S 0.586 · B 경계 0.432 · 띠 B · CR normal(시험 창 strong) · 노치 +0 · A 아님 사유 floor:port_t,oos:rolling36_pass_oos,gate:dsr_sweep | v921 C: Ensemble: positive alpha이나 B 미달 (블렌드에서만 가치)",
   "remeasure": {
     "version": "remeasure_from_holdings_v1",
     "of_artifact": "C:/Users/99922/OneDrive/Quant_Module_Moltbot/stage_artifacts/replication/20260905_122713_22860",
@@ -218,6 +218,15 @@
     "grade": "B",
     "S": 0.5863,
     "S_B": 0.4319,
+    "rules_version": "v3.1",
+    "crisis_def": "lt_first_passage",
+    "cr_notch_basis": "normal",
+    "mc8": {
+      "status": "not_needed",
+      "label": null,
+      "share_beats_size_exposure": null,
+      "median_placebo_p": null
+    },
     "band": "B",
     "notch": 0,
     "notch_a": false,
@@ -240,11 +249,11 @@
     },
     "cr": {
       "overall": "normal",
-      "test": "normal",
+      "test": "strong",
       "visible": "normal",
-      "n_crisis": 6,
-      "dd_capture_median": 0.891,
-      "dd_capture_worst": 1.3573,
+      "n_crisis": 10,
+      "dd_capture_median": 0.8596,
+      "dd_capture_worst": 1.3352,
       "uc_median": 1.163,
       "cdar": 0.4142,
       "controls": "not_provided"
@@ -268,10 +277,18 @@
     "nav_source": "contract"
   },
   "grade_v3_backfill": {
-    "at": "2026-10-13T15:05:21+0900",
+    "at": "2026-10-13T18:38:02+0900",
     "tool": "02_Infrastructure/programs/grade_v3_backfill.R",
-    "decision": "decision_register GRADE-V3-PROMOTE",
-    "prior_essence_grade": "C",
-    "prior_md5": "c5a43ac771ebd51a30fbd59cba5dce32"
+    "decision": "decision_register GRADE-V3-CR-STRONG-SELECTION · CRISIS-DEF-LT2020(규칙 판 재채점)",
+    "rules_version": "v3.1",
+    "prior_rules_version": "v3.0",
+    "prior_essence_grade": "B",
+    "prior_md5": "9660d384697706fec7602ab996b01606",
+    "history": [
+      {
+        "rules_version": "v3.0",
+        "essence_grade": "B"
+      }
+    ]
   }
 }

@@ -130,7 +130,7 @@
     },
     "reason": "하락월 111개: 초과 +1.67%/월 (t 4.77 · 적중 72%) · 벤치-10% 이하 10개: 초과 +2.55%/월 · 상승월 초과 +0.16%/월"
   },
-  "reasons": "v3: S 0.751 · B 경계 0.432 · 띠 B · CR normal(시험 창 normal) · 노치 +0 · A 아님 사유 oos:rolling36_pass_oos | v921 B: Component: PORT_t>=2.0 & net_IR>0.2; A 미달[OOS_ret -0.12<0.7(band fail),Calmar<0.64]",
+  "reasons": "v3: S 0.751 · B 경계 0.432 · 띠 B · CR normal(시험 창 strong) · 노치 +0 · A 아님 사유 oos:rolling36_pass_oos | v921 B: Component: PORT_t>=2.0 & net_IR>0.2; A 미달[OOS_ret -0.12<0.7(band fail),Calmar<0.64]",
   "remeasure": {
     "version": "remeasure_from_holdings_v1",
     "of_artifact": "C:/Users/99922/OneDrive/Quant_Module_Moltbot/stage_artifacts/replication/20260917_121503_32928",
@@ -218,6 +218,15 @@
     "grade": "B",
     "S": 0.7506,
     "S_B": 0.4322,
+    "rules_version": "v3.1",
+    "crisis_def": "lt_first_passage",
+    "cr_notch_basis": "normal",
+    "mc8": {
+      "status": "not_needed",
+      "label": null,
+      "share_beats_size_exposure": null,
+      "median_placebo_p": null
+    },
     "band": "B",
     "notch": 0,
     "notch_a": false,
@@ -238,11 +247,11 @@
     },
     "cr": {
       "overall": "normal",
-      "test": "normal",
-      "visible": "normal",
-      "n_crisis": 6,
-      "dd_capture_median": 0.8373,
-      "dd_capture_worst": 1.3767,
+      "test": "strong",
+      "visible": "weak",
+      "n_crisis": 10,
+      "dd_capture_median": 0.8767,
+      "dd_capture_worst": 1.156,
       "uc_median": 1.0669,
       "cdar": 0.3283,
       "controls": "not_provided"
@@ -266,10 +275,18 @@
     "nav_source": "contract"
   },
   "grade_v3_backfill": {
-    "at": "2026-10-13T15:14:33+0900",
+    "at": "2026-10-13T18:50:09+0900",
     "tool": "02_Infrastructure/programs/grade_v3_backfill.R",
-    "decision": "decision_register GRADE-V3-PROMOTE",
+    "decision": "decision_register GRADE-V3-CR-STRONG-SELECTION · CRISIS-DEF-LT2020(규칙 판 재채점)",
+    "rules_version": "v3.1",
+    "prior_rules_version": "v3.0",
     "prior_essence_grade": "B",
-    "prior_md5": "8a7eff6c55495382ae89e08d669d12ec"
+    "prior_md5": "51e0aef6189146b0a205c03f5c5eaf23",
+    "history": [
+      {
+        "rules_version": "v3.0",
+        "essence_grade": "B"
+      }
+    ]
   }
 }

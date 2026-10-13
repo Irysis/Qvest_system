@@ -137,7 +137,7 @@ stopifnot(all(c("Date", "Ticker", "Close", "Vol", "Ret", "K200", "KQ150")
 
 # ▸ 고정 축(v10)
 .LIQ      <- 2e8                         # adv20(t−1) 하한 (KRW)
-.OOS_FROM <- as.Date("2005-01-01")       # 신호 산출 시작
+.OOS_FROM <- (if (exists(".RP_START_DATE")) .RP_START_DATE else as.Date("2005-01-01"))       # 신호 산출 시작
 .TRAIN_FROM <- as.Date("2000-01-01")     # 첫 반복 학습창 시작 → 정확히 5년(논문 첫 반복과 동형)
 .PANEL_FROM <- as.Date("1997-07-01")     # 피처 워밍업 하한(≈620거래일 여유. 필요 315거래일)
 

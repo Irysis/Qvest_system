@@ -40,7 +40,7 @@ if (!all(.REQ %in% names(RAWDATA)))
 .N_BOT     <- 100L     # 논문 B100
 .EARN_DROP <- 0.30     # 논문 §3.2: 30% of the earnings figures are removed at random before ranking
 
-.SIG_FROM  <- as.Date("2005-01-01")   # 고정 축 시작
+.SIG_FROM  <- (if (exists(".RP_START_DATE")) .RP_START_DATE else as.Date("2005-01-01"))   # 고정 축 시작
 .LIQ       <- 2e8                     # adv20(t−1) 하한 KRW — 고정 축
 
 .VAL_FRAC     <- 0.20            # 학습 표본 중 무작위 검증 비율 (논문 'selected a-priori at random' — 비율 미명시)

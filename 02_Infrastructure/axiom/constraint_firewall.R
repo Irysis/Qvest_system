@@ -18,7 +18,10 @@
 #
 # 고정 제약 7종 (변수 아님):
 #   ① 종목수 max 25  ② 유동성 20일 평균 거래대금 ≥ 2e8 KRW  ③ Long-only(weights≥0)
-#   ④ (v10 폐지 — 구 Weight bounds [0,0.20])  ⑤ Σw=1  ⑥ Universe KOSPI200∪KOSDAQ150
+#   ④ (v10 폐지 — 구 Weight bounds [0,0.20])  ⑤ Σw ≤ 1(레버리지 금지 · 잔여 현금 허용 — D11 · MC5 2026-10-13 · 구 Σw=1)
+#   ⑥ Universe 전 종목 + 위생(측정 축 all_hyg_2000_v1 — D11 · MC1 · 2026-10-13 전환 · 구 KOSPI200∪KOSDAQ150).
+#      위생 = 관리종목·거래정지·불성실공시 제외 + ②유동성. 지수 부분집합으로 *좁히기*는 envelope 안(처방 선택) ·
+#      위생 *해제*(관리종목·거래정지 편입)나 측정 유니버스 밖으로의 *확대*가 완화다.
 #   ⑦ Transaction cost 15bps one-way(v2.4 delta)  + PIT C1~C15
 #
 # envelope-안 레버(프론티어 화이트리스트 — 이것만 정당한 탐색축):
@@ -109,7 +112,11 @@ load_firewall_context <- function(max_cases = 24L, root = .cfw_root()) {
   "롱숏(이면|으로|이 ?되면|허용)", "long[- ]?short ?(이면|으로|허용|되면|가능)",
   ">? ?25 ?종 ?(넘게|이상|초과|필요|허용|늘)", "25 ?종 ?(넘게|이상|초과|넘어)",
   "종목수 ?(늘|확대|상향|초과|제한 ?풀)",
-  "유니버스 ?(확대|넓|늘|전종목|풀|밖)", "universe ?(expand|widen|relax|beyond)",
+  # ⑥ 전환(2026-10-13): '전종목'은 이제 측정 축 자체라 완화어에서 뺐다 — 완화 = 위생 해제·측정 유니버스 밖 확대.
+  "유니버스 ?(확대|넓|늘|풀|밖)", "universe ?(expand|widen|relax|beyond)",
+  "위생 ?(필터|조건|기준)? ?(을|를|은|는)? ?(해제|완화|풀|없애|제거|끄|빼)",
+  "(관리종목|거래정지 ?(종목)?|불성실 ?공시 ?(종목)?) ?(을|를|도|까지)? ?(포함|편입|허용|담)",
+  "hygiene ?(filter ?)?(relax|remov|drop|off|lift)",
   "유동성 ?(기준)?(을|를|은|는| )? ?(완화|낮|풀|내리|하향)", "liquidity ?(threshold ?)?(relax|lower)",
   "비중 ?(상한|한도) ?(완화|풀|올리|상향|초과)", "0\\.2(0)? ?(넘게|초과|상향|완화)",
   "제약 ?없으면", "제약 ?없이", "without (the )?constraint",
@@ -124,6 +131,7 @@ load_firewall_context <- function(max_cases = 24L, root = .cfw_root()) {
 .CFW_CONSTRAINT_TERMS_BACKSTOP <- c(
   "long[- ]?only", "롱온리", "롱 ?온리", "공매도", "종목수", "25 ?종",
   "유동성", "거래대금", "liquidity", "유니버스", "universe", "kospi ?200", "kosdaq ?150",
+  "위생", "hygiene", "관리종목", "거래정지",
   "비중 ?(상한|한도)", "거래비용", "transaction ?cost", "15 ?bps", "pit\\b", "미래참조"
 )
 
@@ -220,8 +228,8 @@ check_constraint_firewall <- function(text, mode = c("semantic", "backstop"), ro
 
   pass <- length(violations) == 0
   suggestion <- if (pass) "" else paste0(
-    "제약 방화벽 backstop 위반 — 고정 제약(종목수≤25·유동성 2e8·long-only·Σw=1·",
-    "K200∪KQ150·15bps·PIT)은 문제의 고정 축이지 변수가 아닙니다. envelope-안 레버",
+    "제약 방화벽 backstop 위반 — 고정 제약(종목수≤25·유동성 2e8·long-only·Σw≤1(레버리지 금지)·",
+    "전 종목+위생·15bps·PIT)은 문제의 고정 축이지 변수가 아닙니다. envelope-안 레버",
     "(overlay·잔차 sleeve·비-return·DPL·regime-conditional·multi-sleeve·composite·ML sizing) ",
     "상대로 재작성하세요. ('봉투 안에서 천장' 정직 서술·'미해결 열어둠'은 허용.)")
 
@@ -320,6 +328,18 @@ append_firewall_case <- function(caught, why, reframed = NULL,
     "overlay와 regime-conditional 배분·잔차 sleeve로 봉투 안에서 프론티어를 연다.",
     mode = "backstop")
   check("backstop: envelope-안 레버 = 통과", isTRUE(h3$pass))
+
+  # D2. ⑥ 측정 축 전환(2026-10-13 전 종목 + 위생) — 양방향
+  u1 <- check_constraint_firewall("측정 유니버스 전종목 기준으로 등급을 다시 냈다.", mode = "backstop")
+  check("backstop: '전종목'은 이제 측정 축 자체 = 통과(전환 전엔 위반)", isTRUE(u1$pass))
+  u2 <- check_constraint_firewall("관리종목을 포함하면 소형 가치 프리미엄을 더 담는다.", mode = "backstop")
+  check("backstop: 관리종목 편입 = 위반", isFALSE(u2$pass))
+  u3 <- check_constraint_firewall("위생 필터를 해제하면 표본이 늘어 IC 가 오른다.", mode = "backstop")
+  check("backstop: 위생 해제 = 위반", isFALSE(u3$pass))
+  u4 <- check_constraint_firewall("유니버스를 KOSPI200 부분집합으로 좁혀 대형주 슬리브를 만든다.", mode = "backstop")
+  check("backstop: 지수 부분집합으로 좁히기 = 통과(envelope 안)", isTRUE(u4$pass))
+  u5 <- check_constraint_firewall("거래정지 종목까지 담으면 회복 반등을 잡는다.", mode = "backstop")
+  check("backstop: 거래정지 편입 = 위반", isFALSE(u5$pass))
 
   # E. 케이스 축적(자기발전): append → few-shot 반영. temp 파일로 격리.
   tmp_root <- file.path(tempdir(), paste0("cfw_test_", as.integer(Sys.time())))

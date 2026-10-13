@@ -22,6 +22,10 @@ cd "$ROOT" || exit 2                         # 훅은 저장소 cwd 기준으로
 rf_llm_resolve rx_lane "$MODEL" "$EFFORT"
 LLM_FALLBACK_MODEL=""                        # 폴백 미탑재(단일 진입 이관 레인 규약)
 STARTED="$(date '+%Y-%m-%dT%H:%M:%S%z')"
+# ★레인은 작업 디렉터리 밖에 부작용이 없어야 한다 — 레인 세션 종료(SessionEnd) 훅의 자동 커밋 · 자동 푸시를 건너뛴다.
+#   10-13 실측: P2R01 분석가 · 처방 담당 레인이 끝날 때마다 훅이 작업 트리 전체를 main 에 커밋 · 푸시했다(3,373 · 26 파일) —
+#   부모 세션 도중의 의도치 않은 커밋이고, 훅의 SessionEnd 출력 형식 오류 문구가 레인 산출(out.md)에 섞였다.
+QVEST_SKIP_AUTO_COMMIT=1 QVEST_SKIP_AUTO_PUSH=1 \
 QVEST_CLEAN_LANE=1 QVEST_CLEAN_WDIR="$LANE" rf_llm_agent_run "$LANE/prompt.md" "$LANE/out.md" "$TMO" \
   --permission-mode default \
   --allowed-tools "Read,Glob,Grep" \

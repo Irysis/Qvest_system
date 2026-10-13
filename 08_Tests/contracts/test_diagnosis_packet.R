@@ -155,6 +155,24 @@ rt <- fromJSON(p[["json"]])
 chk("D3 저장 왕복 — schema · τ_D · 귀속 라벨 보존", identical(rt$schema, "diagnosis_packet_v1") && identical(rt$tau_d, format(TAU)) &&
       identical(rt$controls$attribution$label, KA$controls$attribution$label))
 
+cat("\n=== E. 측정 축 ALL_HYG(MC1 · 10-13 전환) — 직접 읽는 raw 에 위생 멤버십을 켠다 ===\n")
+## 같은 세계 · 유니버스만 ALL_HYG 로 신고 · RAW 에 위생 표식 3열(0) — 수리 전 dp_build 는 위생을 끈 raw 로 짝 대조를 불러 'HYG 없음'으로 멈췄다
+PH <- write_world(WA, HA, file.path(TD, "H"))
+RH <- as.data.table(arrow::read_parquet(PH$raw)); RH[, `:=`(AdminStock = 0, UnfaithfulDisc = 0)]
+arrow::write_parquet(RH, PH$raw)
+for (f in c("01_strategy_spec.json", "00_manifest.json")) {
+  j <- fromJSON(file.path(PH$art, f), simplifyVector = FALSE)
+  if (!is.null(j$universe)) j$universe <- "ALL_HYG"; if (!is.null(j$universe_id)) j$universe_id <- "ALL_HYG"
+  writeLines(toJSON(j, auto_unbox = TRUE), file.path(PH$art, f))
+}
+KH <- tryCatch(build(PH), error = function(e) e)
+chk("E1 ALL_HYG 산출물 → 패킷 산출(위생 raw 로 짝 대조) · 귀속 라벨 존재", !inherits(KH, "error") && !is.null(KH$controls$attribution$label),
+    if (inherits(KH, "error")) conditionMessage(KH) else "")
+KHn <- tryCatch(dp_build(PH$art, root = ROOT, tau_d = TAU, raw = as.data.table(arrow::read_parquet(PH$raw)), bm_path = PH$bm),
+                error = function(e) e)
+chk("E2 [대조] 위생 멤버십 없는 raw 를 직접 넘기면 멈춘다(HYG 없음 — 대조를 지어내지 않는다)",
+    inherits(KHn, "error") && grepl("HYG", conditionMessage(KHn)), if (inherits(KHn, "error")) conditionMessage(KHn) else "멈추지 않음")
+
 cat(sprintf("\n== diagnosis_packet: PASS %d · FAIL %d ==\n", PASS, FAIL))
 cat(sprintf('{"test":"diagnosis_packet","pass":%d,"fail":%d,"total":%d}\n', PASS, FAIL, PASS + FAIL))
 if (FAIL > 0L) quit(status = 1L)

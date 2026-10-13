@@ -145,7 +145,7 @@ stopifnot(all(c("Date", "BM_Ret") %in% names(BM_DT)))
 .LIQ        <- 2e8                      # adv20(t−1) 하한 (KRW)
 .LIQWIN     <- 20L
 .NMIN       <- 25L                      # 월 최소 횡단면 = 고정 축 종목수
-.SIG_FROM   <- as.Date("2005-01-01")
+.SIG_FROM   <- (if (exists(".RP_START_DATE")) .RP_START_DATE else as.Date("2005-01-01"))
 .PANEL_FROM <- as.Date("2002-01-01")    # 패널 하한. 2005-01 시그널의 β(252) · 버킷
                                         #   앵커(2004 말의 ADV252)를 모두 덮는 여유.
 

@@ -118,6 +118,43 @@ chk("I3 [돌연변이] 조건을 끄면(문턱 ∞) 같은 전략이 '강함' �
 chk("I4 창별 자기 낙폭 — visible·test 판정에도 mdd_vs_bench 가 실린다",
     !is.null(c_cr$visible$mdd_vs_bench) && !is.null(c_cr$test$mdd_vs_bench))
 
+cat("\n=== J. 위기 정의 LT 20/20 (Lunde-Timmermann 첫 통과 · CRISIS-DEF-LT2020 · 10-13 도훈 선택) ===\n")
+mk_path <- function(legs, start = as.Date("2001-01-01")) {   # legs = list(c(목표 배율, 일수), …)
+  # 첫날 수익 0 — 두 정의 모두 '첫 관측 = 첫 고점' 관례라, 첫날부터 빠지면 기준점이 1 이 아니다(검사 산술을 1 기준으로 맞춘다)
+  r <- c(0, unlist(lapply(legs, function(l) rep(l[1]^(1 / l[2]) - 1, l[2]))))
+  data.table(date = seq(start, by = "day", length.out = length(r)), r = r)
+}
+two <- mk_path(list(c(0.70, 30), c(1.25, 20), c(0.70, 30), c(1.80, 60)))     # 1 → 0.70 → 0.875 → 0.6125 → 1.1025
+v1 <- bc_crises(two, 0.20); lt <- bc_crises_lt(two, 0.20, 0.20)
+chk("J1 두 파동(사이 +25% 반등 · 이전 고점 미회복): 구판 = 위기 1개 · LT = 2개(반등이 위기를 가른다)",
+    nrow(v1) == 1L && nrow(lt) == 2L, sprintf("(v1 %d · lt %d)", nrow(v1), nrow(lt)))
+chk("J2 LT 두 위기의 깊이 = 각 파동의 국지 고점 대비(0.30 · 0.30)", nrow(lt) == 2L && all(abs(lt$depth - 0.30) < 1e-9),
+    paste(round(lt$depth, 4), collapse = ","))
+one <- mk_path(list(c(0.70, 30), c(1.15, 20), c(0.70, 30), c(1.90, 60)))     # 사이 반등 +15% < 20%
+lt1 <- bc_crises_lt(one, 0.20, 0.20)
+chk("J3 사이 반등이 λ_up(20%) 미만이면 LT 도 한 위기(바닥 = 더 낮은 저점)", nrow(lt1) == 1L && abs(lt1$depth - (1 - 0.7 * 1.15 * 0.7)) < 1e-9,
+    sprintf("(n %d · depth %.4f)", nrow(lt1), lt1$depth[1] %||% NA))
+chk("J4 LT 위기는 전부 λ_down 이상 깊다(정의) · 끝까지 반등 못 하면 ongoing", all(c(lt$depth, lt1$depth) >= 0.20 - 1e-12) &&
+      isTRUE(bc_crises_lt(mk_path(list(c(1.1, 20), c(0.6, 30))), 0.2, 0.2)$ongoing[1]))
+bull <- function(n_m, start) mk_path(list(c(1.015^n_m, 21 * n_m)), start)
+p1 <- bull(24, as.Date("2003-01-01")); p2 <- mk_path(list(c(0.70, 30), c(1.25, 20), c(0.70, 30), c(1.80, 60)), max(p1$date) + 1)
+p3 <- bull(18, max(p2$date) + 1); BJ <- rbind(p1, p2, p3)[, .(date, benchmark_ret = r)]
+## 두 정의를 모두 명시한다 — 운영 설정(behavior_card.json)을 기준으로 빌리면 설정을 바꿀 때 검사가 같이 움직인다(10-13 v3.1 전환 때 실제로 J5 가 그렇게 깨졌다)
+cfg_lt <- cfg; cfg_lt$crisis_episode_def <- "lt_first_passage"; cfg_lt$crisis_lambda_down <- 0.2; cfg_lt$crisis_lambda_up <- 0.2
+cfg_lt$tau_d <- "2009-12-31"
+cfg_v1 <- cfg; cfg_v1$crisis_episode_def <- "running_peak_drawdown"; cfg_v1$crisis_lambda_down <- NULL; cfg_v1$crisis_lambda_up <- NULL
+c_lt <- bc_card(BJ[, .(date, ret_net = benchmark_ret)], BJ, cfg = cfg_lt); c_v1 <- bc_card(BJ[, .(date, ret_net = benchmark_ret)], BJ, cfg = cfg_v1)
+chk("J5 카드가 설정의 위기 정의를 따른다 — 같은 벤치에서 LT 2 · 구판 1 · 카드 설정 사본에 정의가 실린다",
+    nrow(c_lt$crises) == 2L && nrow(c_v1$crises) == 1L && identical(c_lt$cfg$crisis_episode_def, "lt_first_passage") &&
+      identical(c_v1$cfg$crisis_episode_def, "running_peak_drawdown"), sprintf("(lt %d · v1 %d)", nrow(c_lt$crises), nrow(c_v1$crises)))
+tmpj <- tempfile(fileext = ".json"); bj <- fromJSON("06_Registry/behavior_card.json"); bj$crisis_episode_def <- "lt_first_passage"
+bj$crisis_lambda_down <- NULL; bj$crisis_lambda_up <- NULL; writeLines(toJSON(bj, auto_unbox = TRUE), tmpj)
+chk("J6 [위반 주입] LT 인데 λ 없음 → 오류(문턱을 지어내지 않는다)", inherits(tryCatch(bc_cfg(path = tmpj), error = function(e) e), "error"))
+bj$crisis_episode_def <- "rolling_quantile"; writeLines(toJSON(bj, auto_unbox = TRUE), tmpj)
+chk("J7 [위반 주입] 위기 정의 어휘 밖 → 오류", inherits(tryCatch(bc_cfg(path = tmpj), error = function(e) e), "error"))
+bj$crisis_episode_def <- NULL; writeLines(toJSON(bj, auto_unbox = TRUE), tmpj)
+chk("J8 [하위 호환] 정의 키가 없는 구 설정 사본 → 구판 정의(running_peak_drawdown)로 재현", identical(bc_cfg(path = tmpj)$crisis_episode_def, "running_peak_drawdown"))
+
 cat("\n=== H. 저장 왕복 ===\n")
 od <- file.path(tempdir(), "bc_rt"); p <- bc_write(c_h2, od)
 rt <- fromJSON(p)

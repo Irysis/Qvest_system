@@ -36,7 +36,7 @@
   "structural_drawdown": false,
   "selection_type": "chain",
   "dsr_gate_applied": false,
-  "reasons": "v3: S 0.000 · B 경계 0.402 · 띠 F · CR normal(시험 창 normal) · 노치 +0 · A 아님 사유 floor:port_t,floor:cagr,floor:sharpe,oos:rolling36_pass_oos | v921 F: non-positive alpha (PORT_t<=0 또는 net_IR<=0)",
+  "reasons": "v3: S 0.000 · B 경계 0.402 · 띠 F · CR strong(시험 창 normal) · 노치 +0 · A 아님 사유 floor:port_t,floor:cagr,floor:sharpe,oos:rolling36_pass_oos | v921 F: non-positive alpha (PORT_t<=0 또는 net_IR<=0)",
   "replication": {
     "source_paper": {
       "title": "Ang, Hodrick, Xing & Zhang (2006), The Cross-Section of Volatility and Expected Returns, JF 61(1)",
@@ -133,6 +133,15 @@
     "grade": "F",
     "S": 0,
     "S_B": 0.4016,
+    "rules_version": "v3.1",
+    "crisis_def": "lt_first_passage",
+    "cr_notch_basis": "strong",
+    "mc8": {
+      "status": "ok",
+      "label": "selection_defense",
+      "share_beats_size_exposure": 0.7,
+      "median_placebo_p": 0.01
+    },
     "band": "F",
     "notch": 0,
     "notch_a": false,
@@ -155,12 +164,12 @@
       "sharpe": 0.5071
     },
     "cr": {
-      "overall": "normal",
+      "overall": "strong",
       "test": "normal",
-      "visible": "normal",
-      "n_crisis": 6,
-      "dd_capture_median": 0.6235,
-      "dd_capture_worst": 1.0759,
+      "visible": "strong",
+      "n_crisis": 10,
+      "dd_capture_median": 0.5847,
+      "dd_capture_worst": 0.9722,
       "uc_median": 0.6014,
       "cdar": 0.2783,
       "controls": "not_provided"
@@ -184,10 +193,18 @@
     "nav_source": "contract"
   },
   "grade_v3_backfill": {
-    "at": "2026-10-13T15:05:37+0900",
+    "at": "2026-10-13T18:38:43+0900",
     "tool": "02_Infrastructure/programs/grade_v3_backfill.R",
-    "decision": "decision_register GRADE-V3-PROMOTE",
+    "decision": "decision_register GRADE-V3-CR-STRONG-SELECTION · CRISIS-DEF-LT2020(규칙 판 재채점)",
+    "rules_version": "v3.1",
+    "prior_rules_version": "v3.0",
     "prior_essence_grade": "F",
-    "prior_md5": "a0fa2ab54bef16f2d552379f02dad198"
+    "prior_md5": "6bd41b57ab7af55d111ca21e8178bb1e",
+    "history": [
+      {
+        "rules_version": "v3.0",
+        "essence_grade": "F"
+      }
+    ]
   }
 }

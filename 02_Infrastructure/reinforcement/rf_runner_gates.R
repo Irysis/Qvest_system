@@ -412,11 +412,26 @@ rf_cell_window <- function(a, ctx) {
   if (is.finite(d)) return(mk(d, "auth_essence_diag"))
   dir <- .rfg_art_dir(a$artifacts, ctx$root)
   if (is.na(dir)) return(mk(NA_real_, "artifacts_absent"))
-  sib <- .rfg_cached(ctx, paste0("diag|", dir), function() .rfg_json(file.path(dir, "essence_diag.json")))
-  d <- .rfg_num(((sib %||% list())$diagnostics %||% list())$window_deviation_months)
-  if (is.finite(d)) return(mk(d, "sibling_essence_diag"))
-  d <- .rfg_cached(ctx, paste0("win|", dir), function() .rfg_window_derive(dir, ctx))
-  mk(d, if (is.finite(d)) "derived_bt_result" else "undetermined")
+  # ★MC3 B(2026-10-13 · decision_register MC3-EFFECTIVE-START-B): 산출물이 측정 축의 실효 시작을 창 기준으로 기록했으면 그 날짜로 잰다.
+  #   형제 essence_diag.json(백필)은 전역 기준일(diagnostics.window_anchor_date)로 쟀으므로 이때는 건너뛴다(같은 산출물에 두 기준 금지).
+  wa <- .rfg_window_anchor(au)
+  if (is.na(wa)) {
+    sib <- .rfg_cached(ctx, paste0("diag|", dir), function() .rfg_json(file.path(dir, "essence_diag.json")))
+    d <- .rfg_num(((sib %||% list())$diagnostics %||% list())$window_deviation_months)
+    if (is.finite(d)) return(mk(d, "sibling_essence_diag"))
+  }
+  d <- .rfg_cached(ctx, paste0("win|", dir, "|", format(wa)), function() .rfg_window_derive(dir, ctx, anchor = wa))
+  mk(d, if (!is.finite(d)) "undetermined" else if (is.na(wa)) "derived_bt_result" else "derived_bt_result_effective_start")
+}
+#' 산출물이 기록한 창 기준일(MC3 B) — authoritative_remeasure.json::measurement_axis 의 effective_start_rule.window_anchor 가
+#'   effective_start 이고 실효 시작일이 있으면 그 날짜, 아니면 NA(전역 기준일로 떨어진다). 판정이 아니라 기록된 사실의 판독이다.
+.rfg_window_anchor <- function(au) {
+  mx <- (au %||% list())$measurement_axis
+  if (!is.list(mx)) return(as.Date(NA))
+  rl <- mx$effective_start_rule; es <- mx$effective_start
+  if (!is.list(rl) || !is.list(es) || !identical(.rfg_s1(rl$window_anchor), "effective_start")) return(as.Date(NA))
+  d <- tryCatch(as.Date(.rfg_s1(es$date)), error = function(e) as.Date(NA))
+  if (length(d) == 1L) d else as.Date(NA)
 }
 .rfg_es_env <- function(ctx) .rfg_cached(ctx, "ES_ENV", function() {
   p <- file.path(ctx$root, "02_Infrastructure", "contracts", "essence_score.R")
@@ -427,16 +442,17 @@ rf_cell_window <- function(a, ctx) {
                  error = function(err) FALSE)
   if (isTRUE(ok) && exists(".essence_month_diff", envir = e, inherits = FALSE)) e else NULL
 })
-.rfg_window_derive <- function(dir, ctx) {
+.rfg_window_derive <- function(dir, ctx, anchor = as.Date(NA)) {
   ES <- .rfg_es_env(ctx)
-  if (is.null(ES) || is.na(ctx$window_anchor)) return(NA_real_)
+  anc <- if (length(anchor) == 1L && !is.na(anchor)) anchor else ctx$window_anchor   # MC3 B: 산출물 기록 기준 우선 · 없으면 전역
+  if (is.null(ES) || is.na(anc)) return(NA_real_)
   bp <- file.path(dir, "bt_result.rds"); if (!file.exists(bp)) return(NA_real_)
   bt <- tryCatch(readRDS(bp), error = function(e) NULL); if (is.null(bt)) return(NA_real_)
   hd <- tryCatch(ES$.essence_first_holding_date(bt$holdings), error = function(e) as.Date(NA))
   rs <- tryCatch(ES$.essence_return_span(bt$period_returns), error = function(e) list(first = as.Date(NA)))
   cand <- c(hd, rs$first); cand <- cand[!is.na(cand)]
   if (!length(cand)) return(NA_real_)
-  .rfg_num(ES$.essence_month_diff(ctx$window_anchor, min(cand)))
+  .rfg_num(ES$.essence_month_diff(anc, min(cand)))
 }
 
 #' 역할별 검사 축 (정본 표)

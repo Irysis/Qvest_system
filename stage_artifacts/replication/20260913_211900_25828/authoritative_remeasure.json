@@ -93,7 +93,7 @@
     },
     "reason": "하락월 110개: 초과 +2.53%/월 (t 7.20 · 적중 74%) · 벤치-10% 이하 10개: 초과 +6.41%/월 · 상승월 초과 -0.71%/월"
   },
-  "reasons": "v3: S 0.884 · B 경계 0.436 · 띠 B · CR normal(시험 창 normal) · 노치 +0 · A 아님 사유 oos:rolling36_pass_oos | v921 B: Component: PORT_t>=2.0 & net_IR>0.2; A 미달[OOS_ret -0.36<0.7(band fail),Calmar<0.64]",
+  "reasons": "v3: S 0.884 · B 경계 0.436 · 띠 B · CR strong(시험 창 normal) · 노치 +0 · A 아님 사유 oos:rolling36_pass_oos,cr:strong_without_selection(size_defense) | v921 B: Component: PORT_t>=2.0 & net_IR>0.2; A 미달[OOS_ret -0.36<0.7(band fail),Calmar<0.64]",
   "replication": {
     "source_paper": {
       "url": "https://arxiv.org/abs/2002.06975",
@@ -128,11 +128,21 @@
     "grade": "B",
     "S": 0.8843,
     "S_B": 0.4363,
+    "rules_version": "v3.1",
+    "crisis_def": "lt_first_passage",
+    "cr_notch_basis": "normal",
+    "mc8": {
+      "status": "ok",
+      "label": "size_defense",
+      "share_beats_size_exposure": 0.5,
+      "median_placebo_p": 0.0547
+    },
     "band": "B",
     "notch": 0,
     "notch_a": false,
     "blocked_by": [
-      "oos:rolling36_pass_oos"
+      "oos:rolling36_pass_oos",
+      "cr:strong_without_selection(size_defense)"
     ],
     "floors": {
       "port_t": true,
@@ -147,12 +157,12 @@
       "sharpe": 0.5621
     },
     "cr": {
-      "overall": "normal",
+      "overall": "strong",
       "test": "normal",
-      "visible": "normal",
-      "n_crisis": 6,
-      "dd_capture_median": 0.7268,
-      "dd_capture_worst": 0.8603,
+      "visible": "strong",
+      "n_crisis": 10,
+      "dd_capture_median": 0.613,
+      "dd_capture_worst": 0.9027,
       "uc_median": 0.8521,
       "cdar": 0.2666,
       "controls": "not_provided"
@@ -176,10 +186,18 @@
     "nav_source": "contract"
   },
   "grade_v3_backfill": {
-    "at": "2026-10-13T15:12:28+0900",
+    "at": "2026-10-13T18:46:52+0900",
     "tool": "02_Infrastructure/programs/grade_v3_backfill.R",
-    "decision": "decision_register GRADE-V3-PROMOTE",
+    "decision": "decision_register GRADE-V3-CR-STRONG-SELECTION · CRISIS-DEF-LT2020(규칙 판 재채점)",
+    "rules_version": "v3.1",
+    "prior_rules_version": "v3.0",
     "prior_essence_grade": "B",
-    "prior_md5": "639a29fda54f3c8b24cdc3f19ea3d710"
+    "prior_md5": "c5b13833520501109e2dc2877165b314",
+    "history": [
+      {
+        "rules_version": "v3.0",
+        "essence_grade": "B"
+      }
+    ]
   }
 }

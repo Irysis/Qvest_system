@@ -35,7 +35,7 @@
   "dsr_gate_applied": false,
   "selection_type": "chain",
   "hard_fail": false,
-  "reasons": "v3: S 0.479 · B 경계 0.421 · 띠 B · CR weak(시험 창 insufficient) · 노치 -1 · A 아님 사유 floor:port_t,floor:sharpe,oos:rolling36_pass_oos,cr:weak | v921 C: Ensemble: positive alpha이나 B 미달 (블렌드에서만 가치)",
+  "reasons": "v3: S 0.479 · B 경계 0.421 · 띠 B · CR weak(시험 창 normal) · 노치 -1 · A 아님 사유 floor:port_t,floor:sharpe,oos:rolling36_pass_oos,cr:weak | v921 C: Ensemble: positive alpha이나 B 미달 (블렌드에서만 가치)",
   "contract": {
     "integrity_status": "WARNING",
     "audit_pass": 15,
@@ -55,6 +55,15 @@
     "grade": "C",
     "S": 0.4788,
     "S_B": 0.421,
+    "rules_version": "v3.1",
+    "crisis_def": "lt_first_passage",
+    "cr_notch_basis": "weak",
+    "mc8": {
+      "status": "not_needed",
+      "label": null,
+      "share_beats_size_exposure": null,
+      "median_placebo_p": null
+    },
     "band": "B",
     "notch": -1,
     "notch_a": false,
@@ -78,11 +87,11 @@
     },
     "cr": {
       "overall": "weak",
-      "test": "insufficient",
+      "test": "normal",
       "visible": "weak",
-      "n_crisis": 5,
-      "dd_capture_median": 1.0548,
-      "dd_capture_worst": 1.1096,
+      "n_crisis": 9,
+      "dd_capture_median": 1.0278,
+      "dd_capture_worst": 1.3678,
       "uc_median": 0.9618,
       "cdar": 0.497,
       "controls": "not_provided"
@@ -106,10 +115,18 @@
     "nav_source": "contract"
   },
   "grade_v3_backfill": {
-    "at": "2026-10-13T15:03:27+0900",
+    "at": "2026-10-13T18:36:04+0900",
     "tool": "02_Infrastructure/programs/grade_v3_backfill.R",
-    "decision": "decision_register GRADE-V3-PROMOTE",
+    "decision": "decision_register GRADE-V3-CR-STRONG-SELECTION · CRISIS-DEF-LT2020(규칙 판 재채점)",
+    "rules_version": "v3.1",
+    "prior_rules_version": "v3.0",
     "prior_essence_grade": "C",
-    "prior_md5": "3581f42407f5790f4c733dc56f827ddd"
+    "prior_md5": "f12c1f70e5f5520ba0a44b8114e5d3a2",
+    "history": [
+      {
+        "rules_version": "v3.0",
+        "essence_grade": "C"
+      }
+    ]
   }
 }

@@ -40,6 +40,19 @@ holdings_signal_cutoff <- function(panel_date) {
   as.Date(sprintf("%04d-%02d-01", y2, m2))
 }
 
+# 주간 일반화(MC4 · 2026-10-13 · 설계 §3.9): 보유 '창' 시작 컷오프 = 집행일(신호 다음 거래일).
+#   오버레이 신호 데이터는 Date < 이 값만 — 곧 신호일 d 까지의 데이터다(집행은 d 다음 거래일 종가 · close_t1).
+#   월말 신호에서는 집행일 = 익월 첫 거래일이라 overlay_signal_cutoff(홀딩월 1일)와 같은 거래일 집합을 남긴다(검사 test_overlay_window_cutoff.R).
+#   주간 보유에 오버레이를 붙일 때 이 컷오프로 assert_overlay_pit 를 태운다. ★엔진(rf_cell_engine) 오버레이 층은 아직 월 단위라
+#   주간 처방에는 붙이지 않는다(엔진이 막는다). 위 C5 함수 4종은 그대로 둔다(본문 보존 단정 대상).
+holding_window_cutoff <- function(signal_dates, all_dates) {
+  ad <- sort(unique(as.Date(all_dates)))
+  i <- findInterval(as.numeric(as.Date(signal_dates)), as.numeric(ad)) + 1L
+  out <- ad[pmin(i, length(ad))]
+  out[i > length(ad)] <- as.Date(NA)
+  out
+}
+
 # HARD assert: 사용한 신호 컷오프가 홀딩월 시작 이후면 = look-ahead → stop()
 assert_overlay_pit <- function(used_cutoff_dates, holding_month_start_dates, label = "overlay") {
   u <- as.Date(used_cutoff_dates); h <- as.Date(holding_month_start_dates)

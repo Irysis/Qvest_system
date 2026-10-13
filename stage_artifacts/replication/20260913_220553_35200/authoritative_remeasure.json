@@ -6,7 +6,7 @@
   "run_id": "20260913_220553_35200",
   "bt_result_path": "C:/Users/99922/OneDrive/Quant_Module_Moltbot/stage_artifacts/replication/20260913_220553_35200/bt_result.rds",
   "metric_type": "backtested",
-  "essence_grade": "B",
+  "essence_grade": "C",
   "grade_basis": "replication_chain",
   "essence": {
     "net_sharpe": 0.745,
@@ -93,7 +93,7 @@
     },
     "reason": "하락월 86개: 초과 +2.19%/월 (t 5.11 · 적중 72%) · 벤치-10% 이하 7개: 초과 +4.16%/월 · 상승월 초과 -1.18%/월"
   },
-  "reasons": "v3: S 0.479 · B 경계 0.498 · 띠 C · CR strong(시험 창 normal) · 노치 +1 · A 아님 사유 floor:port_t,floor:cagr,floor:sharpe,oos:rolling36_pass_oos | v921 C: Ensemble: positive alpha이나 B 미달 (블렌드에서만 가치)",
+  "reasons": "v3: S 0.479 · B 경계 0.498 · 띠 C · CR strong(시험 창 normal) · 노치 +0 · A 아님 사유 floor:port_t,floor:cagr,floor:sharpe,oos:rolling36_pass_oos,cr:strong_without_selection(size_defense) | v921 C: Ensemble: positive alpha이나 B 미달 (블렌드에서만 가치)",
   "replication": {
     "source_paper": {
       "url": "https://arxiv.org/abs/2002.06975",
@@ -125,17 +125,27 @@
   "grade_v3": {
     "status": "ok",
     "schema": "grade_v3_v1",
-    "grade": "B",
+    "grade": "C",
     "S": 0.4794,
     "S_B": 0.4979,
+    "rules_version": "v3.1",
+    "crisis_def": "lt_first_passage",
+    "cr_notch_basis": "normal",
+    "mc8": {
+      "status": "ok",
+      "label": "size_defense",
+      "share_beats_size_exposure": 0.4286,
+      "median_placebo_p": 0.0945
+    },
     "band": "C",
-    "notch": 1,
+    "notch": 0,
     "notch_a": false,
     "blocked_by": [
       "floor:port_t",
       "floor:cagr",
       "floor:sharpe",
-      "oos:rolling36_pass_oos"
+      "oos:rolling36_pass_oos",
+      "cr:strong_without_selection(size_defense)"
     ],
     "floors": {
       "port_t": false,
@@ -152,10 +162,10 @@
     "cr": {
       "overall": "strong",
       "test": "normal",
-      "visible": "strong",
-      "n_crisis": 5,
+      "visible": "normal",
+      "n_crisis": 7,
       "dd_capture_median": 0.8244,
-      "dd_capture_worst": 0.9241,
+      "dd_capture_worst": 0.9832,
       "uc_median": 0.9065,
       "cdar": 0.2599,
       "controls": "not_provided"
@@ -179,10 +189,18 @@
     "nav_source": "contract"
   },
   "grade_v3_backfill": {
-    "at": "2026-10-13T15:13:16+0900",
+    "at": "2026-10-13T18:48:17+0900",
     "tool": "02_Infrastructure/programs/grade_v3_backfill.R",
-    "decision": "decision_register GRADE-V3-PROMOTE",
-    "prior_essence_grade": "C",
-    "prior_md5": "1429ec79b6d6c280767fb6942a23c3c0"
+    "decision": "decision_register GRADE-V3-CR-STRONG-SELECTION · CRISIS-DEF-LT2020(규칙 판 재채점)",
+    "rules_version": "v3.1",
+    "prior_rules_version": "v3.0",
+    "prior_essence_grade": "B",
+    "prior_md5": "f01fd459312b711299506ed1c4fe1c95",
+    "history": [
+      {
+        "rules_version": "v3.0",
+        "essence_grade": "B"
+      }
+    ]
   }
 }

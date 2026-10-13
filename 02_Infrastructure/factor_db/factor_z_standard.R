@@ -74,10 +74,18 @@ z_safe_robust <- function(x) {
 ## ─────────────────────────────────────────────────────
 universe_corp_action_filter <- function(sig_snap, sig_date,
                                          liq_threshold = 2e8) {
-  sig_snap[Date == sig_date & !is.na(LIQ_20d) & LIQ_20d >= liq_threshold &
-            (is.na(AdminStock) | AdminStock == 0) &
-            (is.na(TradingHalt) | TradingHalt == 0) &
-            (is.na(UnfaithfulDisc) | UnfaithfulDisc == 0)]
+  sig_snap[Date == sig_date & corp_action_member(LIQ_20d, AdminStock, TradingHalt, UnfaithfulDisc, liq_threshold)]
+}
+
+## corp_action_member — 위 필터의 판정식 **단일 정본**(벡터 · 행 단위). 2026-10-13 MC1 리팩터(판정 불변):
+##   측정 계약(contracts/measurement_axis.R)이 전 거래일 멤버십을 한 번에 계산할 때 같은 식을 쓰도록 꺼냈다
+##   (신호일 하나씩 거르는 필터를 날짜 수만큼 부르지 않게 · 재구현 금지 — 설계 §9.4).
+##   LIQ_20d >= liq_threshold(결측 = 탈락) ∧ 세 표식 모두 0 또는 NA.
+corp_action_member <- function(LIQ_20d, AdminStock, TradingHalt, UnfaithfulDisc, liq_threshold = 2e8) {
+  !is.na(LIQ_20d) & LIQ_20d >= liq_threshold &
+    (is.na(AdminStock) | AdminStock == 0) &
+    (is.na(TradingHalt) | TradingHalt == 0) &
+    (is.na(UnfaithfulDisc) | UnfaithfulDisc == 0)
 }
 
 ## ─────────────────────────────────────────────────────
@@ -94,4 +102,4 @@ build_standard_sig_snap <- function(rawdata, all_sig_dates) {
 
 cat("[factor_z_standard] Loaded — Qvest outlier 처리 표준 (Variant A 2026-04-29).\n")
 cat("  Functions: winsorize_1_99 / winsorize_pq / z_safe_winsorize /\n")
-cat("             z_safe_robust / universe_corp_action_filter / build_standard_sig_snap\n")
+cat("             z_safe_robust / universe_corp_action_filter / corp_action_member / build_standard_sig_snap\n")

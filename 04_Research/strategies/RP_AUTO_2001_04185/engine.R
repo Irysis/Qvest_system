@@ -57,7 +57,7 @@ if (!all(.REQ %in% names(RAWDATA)))
 .A_SCALE    <- 1 - .LAMBDA                         # 식(1) 의 A — 정상상태 이득 1                        ★changed(4)
 .MOM_LONG   <- 12L * .DAYS_MONTH                   # 252: Carhart(1997) PR1YR / FF prior 2-12 의 12개월  ★changed(2)
 .MOM_SKIP   <- 1L * .DAYS_MONTH                    # 21: 최근 1개월 건너뛰기                             ★changed(2)
-.OUT_START  <- as.Date("2005-01-01")               # 고정 축(기간 2005-01-01~) — 이 날 이후 월말만 발행
+.OUT_START  <- (if (exists(".RP_START_DATE")) .RP_START_DATE else as.Date("2005-01-01"))               # 고정 축(기간 2005-01-01~) — 이 날 이후 월말만 발행
 .DIAG_D     <- c(5L, 10L, 21L, 42L, 63L, 84L, 126L, 189L, 252L, 504L)   # 진단 전용 D 격자(거래일)      ★changed(9)
 .DIAG_GRP   <- c("Institutional", "Foreign", "Individual")              # 진단 전용 거래주체(순매수대금)  ★changed(9)
 

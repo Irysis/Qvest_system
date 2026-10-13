@@ -36,7 +36,7 @@
   "structural_drawdown": true,
   "selection_type": "chain",
   "dsr_gate_applied": false,
-  "reasons": "v3: S 0.246 · B 경계 0.434 · 띠 C · CR weak(시험 창 normal) · 노치 -1 · A 아님 사유 floor:port_t,floor:calmar,floor:cagr,floor:sharpe,oos:rolling36_pass_oos,cr:weak | v921 C: Ensemble: positive alpha이나 B 미달 (블렌드에서만 가치); structural_drawdown(판정 아님 — 라우팅 근거): MDD 69.6%, 45%+ episodes=39/15, 55%+ episodes=21/6, 수중 표본비 0.16/0.25",
+  "reasons": "v3: S 0.246 · B 경계 0.434 · 띠 C · CR weak(시험 창 weak) · 노치 -1 · A 아님 사유 floor:port_t,floor:calmar,floor:cagr,floor:sharpe,oos:test_window_cr_not_weak,oos:rolling36_pass_oos,cr:weak | v921 C: Ensemble: positive alpha이나 B 미달 (블렌드에서만 가치); structural_drawdown(판정 아님 — 라우팅 근거): MDD 69.6%, 45%+ episodes=39/15, 55%+ episodes=21/6, 수중 표본비 0.16/0.25",
   "replication": {
     "source_paper": {
       "title": "Moskowitz & Grinblatt (1999), Do Industries Explain Momentum?, JF 54(4)",
@@ -133,6 +133,15 @@
     "grade": "F",
     "S": 0.2457,
     "S_B": 0.434,
+    "rules_version": "v3.1",
+    "crisis_def": "lt_first_passage",
+    "cr_notch_basis": "weak",
+    "mc8": {
+      "status": "not_needed",
+      "label": null,
+      "share_beats_size_exposure": null,
+      "median_placebo_p": null
+    },
     "band": "C",
     "notch": -1,
     "notch_a": false,
@@ -141,6 +150,7 @@
       "floor:calmar",
       "floor:cagr",
       "floor:sharpe",
+      "oos:test_window_cr_not_weak",
       "oos:rolling36_pass_oos",
       "cr:weak"
     ],
@@ -158,11 +168,11 @@
     },
     "cr": {
       "overall": "weak",
-      "test": "normal",
+      "test": "weak",
       "visible": "weak",
-      "n_crisis": 6,
-      "dd_capture_median": 1.2485,
-      "dd_capture_worst": 1.5698,
+      "n_crisis": 10,
+      "dd_capture_median": 1.1576,
+      "dd_capture_worst": 1.9832,
       "uc_median": 0.6681,
       "cdar": 0.6143,
       "controls": "not_provided"
@@ -171,7 +181,7 @@
       "tau_d": "2022-12-31",
       "gate": false,
       "parts": {
-        "test_window_cr_not_weak": true,
+        "test_window_cr_not_weak": false,
         "rolling36_pass_oos": false
       },
       "pass_oos": 0.25,
@@ -186,10 +196,18 @@
     "nav_source": "contract"
   },
   "grade_v3_backfill": {
-    "at": "2026-10-13T15:08:32+0900",
+    "at": "2026-10-13T18:41:37+0900",
     "tool": "02_Infrastructure/programs/grade_v3_backfill.R",
-    "decision": "decision_register GRADE-V3-PROMOTE",
-    "prior_essence_grade": "C",
-    "prior_md5": "7bc54129eaf6a7df0501e5d505297217"
+    "decision": "decision_register GRADE-V3-CR-STRONG-SELECTION · CRISIS-DEF-LT2020(규칙 판 재채점)",
+    "rules_version": "v3.1",
+    "prior_rules_version": "v3.0",
+    "prior_essence_grade": "F",
+    "prior_md5": "683d525f683ca8c24ad4bba497e84487",
+    "history": [
+      {
+        "rules_version": "v3.0",
+        "essence_grade": "F"
+      }
+    ]
   }
 }

@@ -109,9 +109,17 @@ rx_paths <- function(program, round_id, root = NULL) {
   out[category != "custom"]
 }
 
+# 활성 측정 축 epoch(constraint_defaults.json::measurement_axis · contracts/measurement_axis.R 정본) — 도구 상자 · 검증 · 컴파일이 같은 것을 본다
+.rx_epoch <- function(root = NULL) {
+  if (!exists("ma_epoch", mode = "function"))
+    sys.source(file.path(.rx_root(root), "02_Infrastructure/contracts/measurement_axis.R"), envir = environment(), keep.source = FALSE)
+  ma_epoch(root = .rx_root(root))
+}
+
 #' 처방 도구 상자(마크다운) — 셀 사양 축 어휘 · 설명문 수치는 가린다
 rx_toolbox_md <- function(root = NULL) {
-  root <- .rx_root(root); en <- .rx_engine(root)
+  root <- .rx_root(root); en <- .rx_engine(root); ep <- .rx_epoch(root)
+  hyg <- identical(ep$universe, "ALL_HYG")
   ov <- .rx_overlay_vocab(root); wt <- .rx_weight_vocab(root); fa <- .rx_factor_vocab(root)
   R <- function(x) .rx_redact(x, root)
   L <- character(0); a <- function(...) L <<- c(L, paste0(...))
@@ -119,7 +127,10 @@ rx_toolbox_md <- function(root = NULL) {
   a(""); a("> 처방의 **구현**은 아래 축의 값만 바꿀 수 있다(셀 사양 delta). 바꾸지 않은 축은 기저 그대로다.",
          " 설명문 안의 숫자는 가렸다(<stat>) — 과거 측정 수치는 처방 입력이 아니다.")
   a(""); a("## 0. 바꿀 수 없는 것 (고정 축 · 헌법)")
-  a("- 롱온리(w ≥ 0) · 보유 ≤ 25종 · 측정 유니버스 K200∪KQ150(시점별 멤버십) · 비용 15bps · 유동성 하한(20일 평균 거래대금 t-1) · 시그널 = 월말(리밸은 월간 이하 빈도로만 바꿀 수 있다) · 집행 close_t1",
+  a("- 롱온리(w ≥ 0) · 보유 ≤ 25종 · 측정 유니버스 ",
+    if (hyg) "전 종목 + 위생(관리종목 · 거래정지 · 불성실공시 제외 + 유동성 하한 · 시점별 멤버십)" else "K200∪KQ150(시점별 멤버십)",
+    " · 측정 시작 ", format(ep$start_date), "(신호가 그보다 늦게 생기면 그때부터)",
+    " · 비용 15bps · 유동성 하한(20일 평균 거래대금 t-1) · 시그널 = 월말(리밸은 월간 이하 빈도로만 바꿀 수 있다) · 집행 close_t1",
     " · 기저 신호(논문 엔진)와 그 가중(base_weight) · PIT C1~C15")
   a("- 노출 축소(현금)는 오버레이 층으로만 생긴다(Σw ≤ 1). 다른 축은 Σw = 1 이다.")
   a(""); a("## 1. factors — 기저 신호에 결합할 팩터 목록(0개 이상 · 팩터 DB id)")
@@ -133,11 +144,14 @@ rx_toolbox_md <- function(root = NULL) {
   a(""); a("| catalog_id | 계열 | 라벨 |"); a("|---|---|---|")
   for (i in seq_len(nrow(wt))) a("| ", wt$catalog_id[i], " | ", wt$family[i], " | ", wt$label[i], " |")
   a(""); a("## 3. universe — 후보 범위(측정 유니버스 안에서만 좁힌다)")
-  a("- `{\"kind\": \"k200_kq150\"}`(기본) · `{\"kind\": \"index\", \"flag\": \"K200\"|\"KQ150\"}` · `{\"kind\": \"size_band\", \"q_lo\": a, \"q_hi\": b}`(그날 횡단면 t-1 시총 분위 (a, b]) · `{\"kind\": \"sector_neutral\"}`(업종별 선정)")
+  if (hyg) a("- `{\"kind\": \"all_hyg\"}`(기본 · 측정 유니버스 전체) · `{\"kind\": \"k200_kq150\"}`(원 지수 합집합으로 좁힘) · `{\"kind\": \"index\", \"flag\": \"K200\"|\"KQ150\"}`(원 지수 멤버)",
+             " · `{\"kind\": \"size_band\", \"q_lo\": a, \"q_hi\": b}`(그날 횡단면 t-1 시총 분위 (a, b]) · `{\"kind\": \"sector_neutral\"}`(업종별 선정) — 어느 것이든 위생 멤버 안이다")
+  else a("- `{\"kind\": \"k200_kq150\"}`(기본) · `{\"kind\": \"index\", \"flag\": \"K200\"|\"KQ150\"}` · `{\"kind\": \"size_band\", \"q_lo\": a, \"q_hi\": b}`(그날 횡단면 t-1 시총 분위 (a, b]) · `{\"kind\": \"sector_neutral\"}`(업종별 선정)")
   a(""); a("## 4. rebalance — 집행 주기 · 회전 통제")
   a("- `{\"kind\": \"interval\", \"k\": ≥2, \"phase\": 0..k-1}`(k개월마다) · `{\"kind\": \"rank_buffer\", \"mult\": >1}`(보유 종목은 순위가 mult×25 밖으로 밀릴 때까지 유지)",
-    " · `{\"kind\": \"no_trade_band\" | \"turnover_cap\", \"stat\": \"expanding_median\"|\"expanding_quantile\", \"q\": (0,1), \"min_hist\": ≥3}`(자기 과거 거리의 확장창 통계 문턱)",
-    " · 지원 kind(엔진 정본): ", paste(en$RF_RB_KINDS, collapse = ", "))
+    " · `{\"kind\": \"no_trade_band\", \"stat\": \"expanding_median\"|\"expanding_quantile\", \"q\": (0,1), \"min_hist\": ≥3}`(자기 과거 거리의 확장창 통계 문턱 아래면 미체결)",
+    " · 지원 kind(엔진 정본): ", paste(setdiff(en$RF_RB_KINDS, "turnover_cap"), collapse = ", "))
+  a("- ⚠ `turnover_cap` 은 쓰지 않는다 — 직전 보유와 목표를 섞은 뒤 종목 수 상한을 다시 걸지 않아 보유가 25종을 넘는다(검증기가 거부한다).")
   a(""); a("## 5. overlay — 시변 노출(현금) 층 · 여러 층을 곱할 수 있다")
   a("- 형식: `\"overlay\": {\"kind\": \"<kind>\", \"arm_id\": \"<arm_id>\"}` 또는 층 목록 `[{...}, {...}]`. 신호는 보유 시작 전 데이터만(C5 · 엔진이 집행).")
   a("- 오버레이 처방은 노출 짝 대조(같은 평균 노출의 벤치 · R5)를 넘어야 '기전 방어'다 — 노출을 줄였을 뿐이면 '노출 방어'로 기록된다.")
@@ -262,12 +276,18 @@ rx_validate <- function(impl, root = NULL) {
   }
   if (!is.null(impl$universe)) {
     k <- as.character(.rx_or(impl$universe$kind, ""))
-    if (!k %in% c("k200_kq150", "index", "size_band", "sector_neutral")) add("universe.kind 미지원(이 기저): ", k)
+    uk <- c(if (identical(.rx_epoch(root)$universe, "ALL_HYG")) "all_hyg", "k200_kq150", "index", "size_band", "sector_neutral")
+    if (!k %in% uk) add("universe.kind 미지원(이 기저 · 이 측정 축): ", k)
     if (identical(k, "index") && !(as.character(.rx_or(impl$universe$flag, "")) %in% c("K200", "KQ150"))) add("universe.flag 는 K200|KQ150")
     if (identical(k, "size_band")) { lo <- suppressWarnings(as.numeric(impl$universe$q_lo)); hi <- suppressWarnings(as.numeric(impl$universe$q_hi))
       if (!(is.finite(lo) && is.finite(hi) && lo >= 0 && hi <= 1 && lo < hi)) add("size_band 는 0 ≤ q_lo < q_hi ≤ 1") }
   }
-  if (!is.null(impl$rebalance)) { e <- tryCatch({ en$rf_rb_parse(impl$rebalance); NULL }, error = function(z) conditionMessage(z)); if (!is.null(e)) add(e) }
+  if (!is.null(impl$rebalance)) { e <- tryCatch({ en$rf_rb_parse(impl$rebalance); NULL }, error = function(z) conditionMessage(z)); if (!is.null(e)) add(e)
+    ## ★turnover_cap 은 직전 보유와 목표를 섞은 뒤 종목 수 상한을 다시 걸지 않는다(rf_rebalance.R::rf_rb_emit) —
+    ##   처방 · 조립 축(≤ max_names 종)을 깬다. 10-13 P2R01 RX2 실측: 리밸 261회 중 115회 초과 · 최대 120종 → 측정 무효.
+    ##   엔진이 상한을 다시 걸기 전에는 받지 않는다(파서 통과 ≠ 축 준수).
+    if (identical(as.character(.rx_or(impl$rebalance$kind, "")), "turnover_cap"))
+      add("rebalance.kind = turnover_cap 은 보유 종목 수 상한(≤25)을 깬다 — 엔진 수리 전 사용 불가(interval · no_trade_band · rank_buffer 는 가능)") }
   if (!is.null(impl$defense_sleeve)) { e <- tryCatch({ en$rf_sl_parse(impl$defense_sleeve); NULL }, error = function(z) conditionMessage(z)); if (!is.null(e)) add(e) }
   if (!is.null(impl$cap_core)) { e <- tryCatch({ en$rf_cc_parse(impl$cap_core); NULL }, error = function(z) conditionMessage(z)); if (!is.null(e)) add(e) }
   if (!is.null(impl$overlay)) {
@@ -284,12 +304,20 @@ rx_validate <- function(impl, root = NULL) {
 }
 
 #' 기저 셀 사양 + delta → 처방 셀 사양(기저 신호 · 고정 축은 그대로)
-rx_compile_spec <- function(base_spec, delta, code, label, idea, selection_accounting, root_paper = NULL) {
+rx_compile_spec <- function(base_spec, delta, code, label, idea, selection_accounting, root_paper = NULL, epoch = NULL, root = NULL) {
   s <- base_spec
   for (k in names(delta)) s[[k]] <- delta[[k]]
   s$code <- code; s$label <- label; s$block <- "RX"; s$idea <- idea
   s$selection_accounting <- selection_accounting
   if (!is.null(root_paper)) s$root_paper <- root_paper
   s$preflight <- NULL                          # 구 격자 사전 점검 블록(기저 칸 것) — 처방 칸에는 사전등록이 정본
+  # ★측정 축(2026-10-13 MEASUREMENT-AXIS-SWITCH-ALLHYG2000) — 고정 축은 처방도 기저 사양도 아니라 **활성 epoch** 가 정한다.
+  #   기저 사양에 박힌 구 축 값(universe K200_KQ150 · start 2005)을 물려받으면 새 라운드가 구 축에서 측정된다.
+  #   워커는 fixed_axes$measurement_axis 로 러너 유니버스를 정하고, 처방이 유니버스를 좁히지 않았으면 셀 유니버스 = all_hyg.
+  if (is.null(epoch)) epoch <- .rx_epoch(root)
+  s$fixed_axes$measurement_axis <- epoch$id
+  s$fixed_axes$universe <- epoch$universe
+  s$fixed_axes$start_date <- format(epoch$start_date)
+  if (identical(epoch$universe, "ALL_HYG") && is.null(delta[["universe"]])) s$universe <- list(kind = "all_hyg")
   s
 }

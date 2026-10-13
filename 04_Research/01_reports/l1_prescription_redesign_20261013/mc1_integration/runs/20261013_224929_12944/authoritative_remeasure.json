@@ -1,0 +1,494 @@
+{
+  "status": "OK",
+  "strategy_id": "RP_20261013_224929_12944",
+  "strategy_name": "MC3_INTEG_thin_start_SYNTH",
+  "remeasured_at": "2026-10-13T22:52:52+0900",
+  "run_id": "20261013_224929_12944",
+  "bt_result_path": "C:/Users/99922/OneDrive/Quant_Module_Moltbot/04_Research/01_reports/l1_prescription_redesign_20261013/mc1_integration/runs/20261013_224929_12944/bt_result.rds",
+  "metric_type": "backtested",
+  "essence_grade": "F",
+  "grade_basis": "replication_chain",
+  "essence": {
+    "net_sharpe": -0.689,
+    "net_ir": -1.159,
+    "portfolio_alpha_t_nw_lag3": -5.19,
+    "oos_retention": null,
+    "dsr": null,
+    "mdd": 1,
+    "calmar": -0.29,
+    "cagr": -0.29,
+    "drawdown_profile": {
+      "severe45_count": 9,
+      "severe55_count": 4,
+      "severe45_total_periods": 5326,
+      "severe45_max_periods": 5125,
+      "severe45_period_frac": 0.9117,
+      "catastrophic_mdd_threshold": 0.7,
+      "severe45_hard_count": 15,
+      "severe55_hard_count": 6,
+      "severe45_period_hard_frac": 0.25,
+      "severe45_max_hard_periods": 252,
+      "tail_review": false,
+      "structural_hard_fail": true
+    }
+  },
+  "hard_fail": false,
+  "structural_drawdown": true,
+  "selection_type": "chain",
+  "dsr_gate_applied": false,
+  "n_trials_cumulative": 1,
+  "dsr": null,
+  "measurement_regime": {
+    "selection_type": "chain",
+    "n_trials_cumulative": 1,
+    "exec_price": "close_t1",
+    "exec_price_basis": "constraint_defaults.json::execution.exec_price",
+    "exec_price_paper": "close_t1",
+    "cost_model_version": "replication_weight_delta_v1/first_hold_day_multiplicative",
+    "harness_md5": "3cc66c3a6e87919758a589429440ead9"
+  },
+  "grade_base": "F",
+  "recent_regime_rescued": false,
+  "recent_regime_label": null,
+  "rolling_grade": {
+    "status": "ok",
+    "n_points": 250,
+    "window_months": 36,
+    "pass_life": 0,
+    "pass_recent": 0,
+    "current": {
+      "ym": "2026-10",
+      "sharpe": -0.909696,
+      "cagr": -0.340361,
+      "mdd": 0.732619,
+      "calmar": -0.46458,
+      "pass": false
+    },
+    "prior_recoveries": 0,
+    "current_run": 0,
+    "span": ["2006-01", "2026-10"]
+  },
+  "defensive_score": {
+    "status": "ok",
+    "defensive": false,
+    "down": {
+      "n": 118,
+      "excess": -0.016736,
+      "hit": 0.398305,
+      "t": -2.116044,
+      "capture": 1.385133
+    },
+    "mid": {
+      "n": 34,
+      "excess": -0.030601,
+      "hit": 0.294118,
+      "t": -2.26686,
+      "capture": 1.32985
+    },
+    "deep": {
+      "n": 10,
+      "excess": -0.027114,
+      "hit": 0.3,
+      "t": -0.997072,
+      "capture": 1.179069
+    },
+    "up": {
+      "n": 167,
+      "excess": -0.043879,
+      "hit": 0.257485,
+      "t": -4.86061,
+      "capture": 0.125748
+    },
+    "reason": "하락월 118개: 초과 -1.67%/월 (t -2.12 · 적중 40%) · 벤치-10% 이하 10개: 초과 -2.71%/월 · 상승월 초과 -4.39%/월"
+  },
+  "reasons": "v3: S 0.000 · B 경계 0.458 · 띠 F · CR weak(시험 창 weak) · 노치 +0 · A 아님 사유 floor:port_t,floor:calmar,floor:cagr,floor:sharpe,oos:test_window_cr_not_weak,oos:rolling36_pass_oos,cr:weak | v921 F: non-positive alpha (PORT_t<=0 또는 net_IR<=0); structural_drawdown(판정 아님 — 라우팅 근거): MDD 100.0%, 45%+ episodes=9/15, 55%+ episodes=4/6, 수중 표본비 0.91/0.25",
+  "grade_scheme": "grade_v3",
+  "grade_v921": "F",
+  "grade_v3": {
+    "status": "ok",
+    "schema": "grade_v3_v1",
+    "grade": "F",
+    "S": 0,
+    "S_B": 0.4576,
+    "rules_version": "v3.1",
+    "crisis_def": "lt_first_passage",
+    "cr_notch_basis": "weak",
+    "mc8": {
+      "status": "not_needed",
+      "label": null,
+      "share_beats_size_exposure": null,
+      "median_placebo_p": null
+    },
+    "band": "F",
+    "notch": 0,
+    "notch_a": false,
+    "blocked_by": [
+      "floor:port_t",
+      "floor:calmar",
+      "floor:cagr",
+      "floor:sharpe",
+      "oos:test_window_cr_not_weak",
+      "oos:rolling36_pass_oos",
+      "cr:weak"
+    ],
+    "floors": {
+      "port_t": false,
+      "calmar": false,
+      "cagr": false,
+      "sharpe": false
+    },
+    "bench": {
+      "calmar": 0.2253,
+      "cagr": 0.1192,
+      "mdd": 0.5292,
+      "sharpe": 0.597
+    },
+    "cr": {
+      "overall": "weak",
+      "test": "weak",
+      "visible": "weak",
+      "n_crisis": 11,
+      "dd_capture_median": 1.4331,
+      "dd_capture_worst": 2.3167,
+      "uc_median": -0.679,
+      "cdar": 0.9995,
+      "controls": "not_provided"
+    },
+    "oos": {
+      "tau_d": "2022-12-31",
+      "gate": false,
+      "parts": {
+        "test_window_cr_not_weak": false,
+        "rolling36_pass_oos": false
+      },
+      "pass_oos": 0,
+      "pass_min": 0.5,
+      "pass_life": 0,
+      "S_is": 0,
+      "S_oos": 0,
+      "retention_calmar": null,
+      "retention_sharpe": null
+    },
+    "parity_max_abs": 0,
+    "nav_source": "contract"
+  },
+  "replication": {
+    "source_paper": {
+      "url": "https://doi.org/10.1111/j.1540-6261.1993.tb04702.x",
+      "paper_key": "JT1993_wiring_test"
+    },
+    "commission_paper_bps": 0,
+    "paper_basis": {
+      "cagr": -0.263712,
+      "sharpe": -0.670101,
+      "mdd": 0.999326,
+      "n_months": 285
+    },
+    "grade_basis_note": "등급은 15bps 순비용 판 (essence 문턱 15bps 보정 — gross 등급은 인플레)",
+    "fidelity": "universe = 전 종목 + 위생(하우스 규칙 · 계약 주입 — 20일 거래대금(t−1) ≥ 하한 · 관리종목 · 거래정지 · 불성실공시 제외) · 실효 시작 2003-01-30(신호 폭 ≥ 보유 × 2 첫 신호일 — 계약 규칙 MC3 · 앞 신호일 36개 제외) — 그 외 논문 그대로",
+    "rebalance": {
+      "mode": "monthly",
+      "requested": "auto",
+      "exec_rule": "익월 첫 거래일(get_execution_date)"
+    },
+    "benchmark_note": "long_vs_long_bm",
+    "n_max": 25,
+    "has_short": false
+  },
+  "contract": {
+    "integrity_status": "OK",
+    "cagr": -0.29,
+    "sharpe": -0.689,
+    "mdd": 1,
+    "calmar": -0.29
+  },
+  "measurement_axis": {
+    "epoch": "all_hyg_2000_v1",
+    "universe": "ALL_HYG",
+    "start_date": "2000-01-01",
+    "hygiene": true,
+    "liq_min": 200000000,
+    "excluded_flags": ["AdminStock", "TradingHalt", "UnfaithfulDisc"],
+    "active_epoch": true,
+    "membership": {
+      "mode": "injected",
+      "epoch": "all_hyg_2000_v1",
+      "universe": "ALL_HYG",
+      "liq_min": 200000000,
+      "excluded_flags": ["AdminStock", "TradingHalt", "UnfaithfulDisc"],
+      "member_rows": 9560963,
+      "index_member_rows": 2389616,
+      "members_per_day_median": 1068,
+      "index_members_per_day_median": 199
+    },
+    "source": "결정 D11(유니버스 전 종목 + 위생) · D15(시작 2000-01-01) — 설계 §9.4 · §3.5 · 위생 = QEPM 공통 헌장 §11 Variant A(factor_z_standard.R::universe_corp_action_filter — 관리종목 · 거래정지 · 불성실공시 제외 + 20일 거래대금 하한). 상장폐지 수익률 규칙(D14)은 도훈 결정으로 제외.",
+    "effective_start_rule": {
+      "rule": "breadth_multiple",
+      "breadth_mult": 2,
+      "window_anchor": "effective_start"
+    },
+    "start_date_used": "2000-01-01",
+    "epoch_pure": true,
+    "effective_start": {
+      "rule": "breadth_multiple",
+      "breadth_mult": 2,
+      "window_anchor": "effective_start",
+      "first_signal_date": "2000-01-31",
+      "n_signal_dates": 322,
+      "status": "ok",
+      "basis": "factors",
+      "date": "2003-01-30",
+      "n_dates_cut": 36,
+      "breadth_at_start": 708,
+      "holdings_at_start": 25,
+      "n_dates_below_after": 0
+    },
+    "signal_coverage": {
+      "status": "ok",
+      "basis": "factors",
+      "first_signal_date": "2000-01-31",
+      "last_signal_date": "2026-10-08",
+      "n_signal_dates": 322,
+      "by_year": [
+        {
+          "yr": "2000",
+          "breadth_median": 30,
+          "universe_median": 798,
+          "n_dates": 12
+        },
+        {
+          "yr": "2001",
+          "breadth_median": 30,
+          "universe_median": 926,
+          "n_dates": 12
+        },
+        {
+          "yr": "2002",
+          "breadth_median": 30,
+          "universe_median": 850.5,
+          "n_dates": 12
+        },
+        {
+          "yr": "2003",
+          "breadth_median": 713.5,
+          "universe_median": 714,
+          "n_dates": 12
+        },
+        {
+          "yr": "2004",
+          "breadth_median": 623,
+          "universe_median": 624.5,
+          "n_dates": 12
+        },
+        {
+          "yr": "2005",
+          "breadth_median": 1024.5,
+          "universe_median": 1025.5,
+          "n_dates": 12
+        },
+        {
+          "yr": "2006",
+          "breadth_median": 1091,
+          "universe_median": 1091,
+          "n_dates": 12
+        },
+        {
+          "yr": "2007",
+          "breadth_median": 1231,
+          "universe_median": 1231.5,
+          "n_dates": 12
+        },
+        {
+          "yr": "2008",
+          "breadth_median": 945,
+          "universe_median": 946,
+          "n_dates": 12
+        },
+        {
+          "yr": "2009",
+          "breadth_median": 1076.5,
+          "universe_median": 1077,
+          "n_dates": 12
+        },
+        {
+          "yr": "2010",
+          "breadth_median": 1092.5,
+          "universe_median": 1094,
+          "n_dates": 12
+        },
+        {
+          "yr": "2011",
+          "breadth_median": 1079.5,
+          "universe_median": 1080.5,
+          "n_dates": 12
+        },
+        {
+          "yr": "2012",
+          "breadth_median": 1130,
+          "universe_median": 1130.5,
+          "n_dates": 12
+        },
+        {
+          "yr": "2013",
+          "breadth_median": 1151,
+          "universe_median": 1151,
+          "n_dates": 12
+        },
+        {
+          "yr": "2014",
+          "breadth_median": 1219,
+          "universe_median": 1219.5,
+          "n_dates": 12
+        },
+        {
+          "yr": "2015",
+          "breadth_median": 1435,
+          "universe_median": 1435.5,
+          "n_dates": 12
+        },
+        {
+          "yr": "2016",
+          "breadth_median": 1534.5,
+          "universe_median": 1534.5,
+          "n_dates": 12
+        },
+        {
+          "yr": "2017",
+          "breadth_median": 1532.5,
+          "universe_median": 1532.5,
+          "n_dates": 12
+        },
+        {
+          "yr": "2018",
+          "breadth_median": 1620.5,
+          "universe_median": 1620.5,
+          "n_dates": 12
+        },
+        {
+          "yr": "2019",
+          "breadth_median": 1601,
+          "universe_median": 1601.5,
+          "n_dates": 12
+        },
+        {
+          "yr": "2020",
+          "breadth_median": 1817,
+          "universe_median": 1817.5,
+          "n_dates": 12
+        },
+        {
+          "yr": "2021",
+          "breadth_median": 2020.5,
+          "universe_median": 2021,
+          "n_dates": 12
+        },
+        {
+          "yr": "2022",
+          "breadth_median": 1915.5,
+          "universe_median": 1916.5,
+          "n_dates": 12
+        },
+        {
+          "yr": "2023",
+          "breadth_median": 1888.5,
+          "universe_median": 1889,
+          "n_dates": 12
+        },
+        {
+          "yr": "2024",
+          "breadth_median": 1767,
+          "universe_median": 1767,
+          "n_dates": 12
+        },
+        {
+          "yr": "2025",
+          "breadth_median": 1783,
+          "universe_median": 1783,
+          "n_dates": 12
+        },
+        {
+          "yr": "2026",
+          "breadth_median": 1894.5,
+          "universe_median": 1894.5,
+          "n_dates": 10
+        }
+      ]
+    }
+  },
+  "essence_diag": {
+    "version": "essence_diag_v1",
+    "status": "ok",
+    "note": "등급 밖 진단(P0-02) — 판정·문턱과 무관. 정의 = essence_score.R 진단 절 · 설정 = constraint_defaults.json::diagnostics",
+    "oos_components": [
+      {
+        "split": 0.55,
+        "n_is": 3213,
+        "n_oos": 2629,
+        "is_ir": -1.246471,
+        "oos_ir": -1.05963,
+        "retention": null
+      },
+      {
+        "split": 0.65,
+        "n_is": 3797,
+        "n_oos": 2045,
+        "is_ir": -1.082153,
+        "oos_ir": -1.293297,
+        "retention": null
+      },
+      {
+        "split": 0.75,
+        "n_is": 4381,
+        "n_oos": 1461,
+        "is_ir": -1.0348,
+        "oos_ir": -1.506381,
+        "retention": null
+      }
+    ],
+    "oos_is_ir_median": -1.082153,
+    "oos_oos_ir_median": -1.293297,
+    "oos_retention_calendar": null,
+    "oos_calendar_components": [
+      {
+        "split_date": "2016-11-30",
+        "n_is": 3429,
+        "n_oos": 2413,
+        "is_ir": -1.210288,
+        "oos_ir": -1.094553,
+        "retention": null
+      },
+      {
+        "split_date": "2019-02-11",
+        "n_is": 3963,
+        "n_oos": 1879,
+        "is_ir": -1.101581,
+        "oos_ir": -1.272846,
+        "retention": null
+      },
+      {
+        "split_date": "2021-04-08",
+        "n_is": 4497,
+        "n_oos": 1345,
+        "is_ir": -1.026293,
+        "oos_ir": -1.571549,
+        "retention": null
+      }
+    ],
+    "effective_start": "2003-02-03",
+    "effective_start_source": "holdings",
+    "first_holding_date": "2003-02-03",
+    "first_return_date": "2003-02-04",
+    "effective_end": "2026-10-08",
+    "window_months": 285,
+    "window_anchor_date": "2003-01-30",
+    "window_deviation_months": 1,
+    "window_allowance_months": 12,
+    "window_exceeds_allowance": false,
+    "params": {
+      "source": "C:/Users/99922/OneDrive/Quant_Module_Moltbot/02_Infrastructure/worktask/constraint_defaults.json",
+      "missing_keys": []
+    },
+    "window_anchor_basis": "measurement_axis.effective_start (MC3 B — decision_register MC3-EFFECTIVE-START-B)",
+    "window_anchor_date_global": "2005-01-01"
+  }
+}

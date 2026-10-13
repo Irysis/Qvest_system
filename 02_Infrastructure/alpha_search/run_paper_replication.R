@@ -67,6 +67,7 @@ source(file.path(.RP_INFRA, "contracts", "audit_bt_result.R"))
 source(file.path(.RP_INFRA, "contracts", "essence_score.R"))
 source(file.path(.RP_INFRA, "contracts", "save_bt_result.R"))
 source(file.path(.RP_INFRA, "axiom", "lcode_emit.R"))
+source(file.path(.RP_INFRA, "contracts", "measurement_axis.R"))   # MC1 · MC3 측정 축 epoch(universe='ALL_HYG' 일 때만 주입)
 
 `%||%` <- function(a, b) if (is.null(a) || length(a) == 0L || (length(a) == 1L && is.na(a))) b else a
 
@@ -176,6 +177,24 @@ source(file.path(.RP_INFRA, "axiom", "lcode_emit.R"))
   if (is.na(p) || !nzchar(p)) return(NA_character_)
   if (grepl("^([A-Za-z]:)?[/\\\\]", p)) p else file.path(getwd(), p)   # 정규화 함수 금지(한글 경로)
 }
+# FIDELITY 문구 — 하네스 실현 주기에서 만든다(MC4 · 2026-10-13). 월간 = 구판 문구 그대로(비트 동일한 manifest).
+#   eff = ma_effective_start() 결과(MC3 B) — 계약이 얇은 초기 신호일을 잘랐으면 그 사실을 계약이 자동 신고한다(감사가 기간 변경을 미신고로 잡지 않게).
+.rp_fidelity_text <- function(rb, universe = NULL, eff = NULL) {
+  base <- "universe 치환(K200∪KQ150)만 — 그 외 논문 그대로 (v10 완전 충실구현)"
+  uni_txt <- ma_fidelity_universe(universe)            # K200_KQ150 · NULL = 구판 문구 "universe 치환(K200∪KQ150)"
+  if (is.list(eff) && identical(eff$status, "ok") && isTRUE(as.integer(eff$n_dates_cut %||% 0L) > 0L))
+    uni_txt <- paste0(uni_txt, sprintf(" · 실효 시작 %s(신호 폭 ≥ 보유 × %s 첫 신호일 — 계약 규칙 MC3 · 앞 신호일 %d개 제외)",
+                                       eff$date, format(eff$breadth_mult), as.integer(eff$n_dates_cut)))
+  weekly <- !is.null(rb) && identical(rb$mode, "weekly")
+  if (!weekly && identical(uni_txt, "universe 치환(K200∪KQ150)")) return(base)   # 구 축 월간 = 구판 문구 그대로(비트 동일)
+  if (!weekly) return(paste0(uni_txt, " — 그 외 논문 그대로"))
+  multi <- as.integer(rb$n_weeks_multi_signal %||% 0L); zero <- as.integer(rb$n_zero_vol_excluded %||% 0L)
+  paste0(uni_txt, " · 주간 집행(신호 다음 거래일 · ISO 주 1회 — D16)",
+         if (multi > 0L) sprintf(" · ★일간(주 내 복수) 신호 → 주 마지막 신호로 변환(%d주 · 신호 %d→%d)", multi,
+                                as.integer(rb$n_signal_raw %||% NA), as.integer(rb$n_signal_used %||% NA)) else "",
+         if (zero > 0L) sprintf(" · 주간 신호일 거래량 0 종목 제외 %d건(레그 비중 재정규화)", zero) else "",
+         " — 그 외 논문 그대로")
+}
 .rp_strategy_spec <- function(strategy_name, strategy_idea, portfolio_spec, universe,
                               sim_grade, sp_url, factor_engine_path) {
   `%||%` <- function(a, b) if (is.null(a) || length(a) == 0L || (length(a) == 1L && is.na(a))) b else a
@@ -191,7 +210,7 @@ source(file.path(.RP_INFRA, "axiom", "lcode_emit.R"))
       rep_exec_statement(ep), " + 시그널일>RAWDATA 범위 검사"),
     construction = portfolio_spec$construction %||% "top_n_long",
     weight_method = portfolio_spec$weighting %||% "paper",
-    rebalance = portfolio_spec$rebalance %||% "monthly",
+    rebalance = sim_grade$diagnostics$rebalance$mode %||% portfolio_spec$rebalance %||% "monthly",   # 실현 주기(MC4) 우선
     universe = universe, liquidity_filter = "paper_faithful",
     n_max = sim_grade$diagnostics$n_max, has_short = sim_grade$diagnostics$has_short,
     source_paper_url = sp_url,
@@ -202,6 +221,10 @@ source(file.path(.RP_INFRA, "axiom", "lcode_emit.R"))
     survivorship_bias_control = if (!is.null(universe) && universe %in% c("K200_KQ150", "INDEX"))
       paste0("universe=", universe, ": 시그널일 당일 RAWDATA 멤버십 플래그(K200|KQ150)로 PIT 시변 필터",
              "(.apply_universe) — 사후 생존 조건 없음 · 상장폐지 종목 포함 RAWDATA(폐지 후 수익 행 부재 = 0 처리)")
+      else if (identical(universe, "ALL_HYG"))
+      paste0("universe=ALL_HYG: 시그널일 당일 측정 축 멤버십(20일 거래대금 t−1 ≥ 하한 ∧ 관리 · 정지 · 불성실공시 아님 — ",
+             "contracts/measurement_axis.R 주입)으로 PIT 시변 필터(.apply_universe) — 사후 생존 조건 없음 · 상장폐지 종목 포함 RAWDATA",
+             "(폐지 후 수익 행 부재 = 0 처리 · 폐지 수익률 규칙 없음 — D14)")
       else NA_character_
   )
 }
@@ -213,7 +236,8 @@ source(file.path(.RP_INFRA, "axiom", "lcode_emit.R"))
 #     B07 뒤 관문 경유 이관 예정" 이라 적었는데 그 이관을 소유한 항목이 없었다(B07=P0-07 범위 밖 확인 → 플랜 P0-13 이 소유).
 #   ★수리: 충실구현 A 는 **같은 관문 술어**를 탄다 — 판정은 정본 함수 그대로(사본·재구현 없음), 여기는 입력 어댑터만:
 #     entry 없음(계보·승계 층 없음) · 칸 코드 없음(B5 자기 층 없음) · 규약·회계 = 방금 쓴 authoritative_remeasure.json ·
-#     창(effective_start·window_deviation) = 방금 쓴 bt_result.rds 에서 관문이 재도출(essence_score.R 같은 부품 · rf_cell_window ④) ·
+#     창(effective_start·window_deviation) = 방금 쓴 bt_result.rds 에서 관문이 재도출(essence_score.R 같은 부품 · rf_cell_window ④) —
+#     ★MC3 B(10-13): 측정 축에 실효 시작 규칙이 있으면 러너가 auth$essence_diag(창 기준 = 그 전략의 실효 시작)를 써서 관문이 ② 로 읽는다 ·
 #     빈티지 표식 없음(표식은 원장 칸에 사후로 붙는다) · 회계 요건 = a_eligibility_gate.json
 #     holds.accounting_fail.replication_required_selection_type(충실구현 = 논문 1안 chain/1 — 강화 요건 sweep 을 빌리면 모든 충실구현
 #     A 가 보류된다 · 부재·빈값 = gate_config 보류 fail-closed).
@@ -399,11 +423,13 @@ run_paper_replication <- function(strategy_name, strategy_idea, factor_engine_pa
                                   #   자동 판정이 그 명시를 덮었다(2026-08-31: 롱온리 판을 요청했는데
                                   #   engine_direct 로 측정돼 롱숏 결과가 나왔다). 부재는 값이 아니다.
                                   portfolio_spec = NULL,
-                                  universe = "K200_KQ150",
+                                  # ★측정 축 기본값(2026-10-13 · decision_register MEASUREMENT-AXIS-SWITCH-ALLHYG2000) — NULL = 활성 epoch
+                                  #   (constraint_defaults.json::measurement_axis.active · 못 읽으면 멈춘다). 명시 = 그 값(구 사양 재현 · 분해 진단).
+                                  universe = NULL,
                                   source_paper = NULL,
                                   require_source_paper = TRUE,   # ★강화 레인만 FALSE (2026-09-03 해제)
                                   commission_paper = NULL,   # NULL = 논문 무명시 → gross(0)
-                                  start_date = "2005-01-01",
+                                  start_date = NULL,         # NULL = 활성 epoch 시작일(위 universe 와 같은 규약)
                                   out_root = NULL,
                                   send_telegram = TRUE, tg_dry_run = FALSE,
                                   factor_analysis = TRUE,
@@ -429,6 +455,14 @@ run_paper_replication <- function(strategy_name, strategy_idea, factor_engine_pa
                                   data_cutoff = NULL) {
   `%||%` <- function(a, b) if (is.null(a) || length(a) == 0L || (length(a) == 1L && is.na(a))) b else a
   stopifnot(file.exists(factor_engine_path))
+  # 측정 축 기본값 해석 — 넘기지 않은 축은 활성 epoch 에서(설정 정본 · fail-closed). 엔진 · 데이터 적재 전에 확정한다.
+  if (is.null(universe) || is.null(start_date)) {
+    .ep_act <- ma_epoch(root = .RP_ROOT)
+    if (is.null(universe)) universe <- .ep_act$universe
+    if (is.null(start_date)) start_date <- format(.ep_act$start_date)
+    cat(sprintf("[replication] 측정 축 기본값 = 활성 epoch %s (universe %s · 시작 %s)\n", .ep_act$id, universe, start_date))
+    rm(.ep_act)
+  }
   selection_type <- match.arg(as.character(selection_type)[1], c("chain", "sweep"))
   n_trials_cumulative <- suppressWarnings(as.integer(n_trials_cumulative)[1])
   if (!is.finite(n_trials_cumulative) || n_trials_cumulative < 1L)
@@ -473,6 +507,24 @@ run_paper_replication <- function(strategy_name, strategy_idea, factor_engine_pa
                 data_vintage$raw_max_date_loaded, data_vintage$data_fingerprint$digest %||% data_vintage$data_fingerprint$status))
   }
 
+  # ---- 1-c. 측정 축 주입 (MC1 · MC3 · 2026-10-13 — contracts/measurement_axis.R) ----
+  #   universe = "ALL_HYG" 일 때만: K200 := 위생 멤버십(20일 거래대금 t−1 ≥ 하한 ∧ 관리 · 정지 · 불성실공시 아님) · KQ150 := 0
+  #   (원 플래그 = K200_IDX/KQ150_IDX). 엔진 32/32 가 이 두 플래그로 유니버스를 자르므로 처치가 엔진까지 간다(10-10 파일럿 방식의 계약판).
+  #   그 밖 유니버스는 이 블록이 아무것도 하지 않는다(비트 동일 · auth 키 추가 0). 기저 캐시 키는 패널 지문이라 주입 판과 섞이지 않는다.
+  ma_rec <- NULL
+  if (identical(universe, "ALL_HYG")) {
+    .ep <- ma_epoch_by_universe("ALL_HYG", root = .RP_ROOT)
+    .inj <- ma_inject_universe(RAWDATA, .ep)
+    RAWDATA <- .inj$RAWDATA
+    ma_rec <- ma_record(.ep, .inj$diag)
+    ma_rec$start_date_used <- as.character(start_date)
+    ma_rec$epoch_pure <- identical(as.Date(start_date), .ep$start_date)     # 시작일까지 epoch 그대로인가(분해 진단이면 FALSE)
+    cat(sprintf("[replication] 측정 축 %s 주입 — 멤버 하루 중앙 %s종(지수 멤버 %s종) · 하한 %.0f원 · 시작 %s%s\n",
+                .ep$id, format(.inj$diag$members_per_day_median), format(.inj$diag$index_members_per_day_median), .ep$liq_min,
+                as.character(start_date), if (isTRUE(ma_rec$epoch_pure)) "" else sprintf(" (★epoch 시작 %s 와 다름 — 분해 진단)", format(.ep$start_date))))
+    rm(.inj, .ep)
+  }
+
   # ---- 2. Engine → FACTORS 또는 PORTFOLIO ----
   # ★기저 캐시 시드 (2026-10-05 · 도훈 지시 "빠른 리서치") — 이 측정이 강화 entry 의 기저가 되면 첫 블록 셀들이 같은 엔진을
   #   각자 다시 돌린다(무거운 엔진은 첫 블록 40~50분). 엔진을 돌리기 **전에** 셀과 같은 캐시 키를 재고, 원산출을 셀 모양으로
@@ -490,6 +542,10 @@ run_paper_replication <- function(strategy_name, strategy_idea, factor_engine_pa
   }
   fe_env <- new.env(parent = environment())
   fe_env$RAWDATA <- RAWDATA; fe_env$BM_DT <- BM_DT
+  # ★계약 시작일(MC3 · 2026-10-13) — 충실구현 엔진 25/34 가 시작일을 리터럴로 박아(예: .SIG_FROM <- as.Date("2005-01-01"))
+  #   측정 축 시작(2000-01-01)이 엔진까지 안 간다(유니버스 플래그와 같은 형태). 엔진이 읽을 값을 넘긴다 — 지금 엔진은 안 읽으므로 무영향,
+  #   축 전환 때 엔진이 이 값을 쓰도록 바꾼다(보고서 mc1_integration · 신규 엔진 프롬프트 규약).
+  fe_env$.RP_START_DATE <- as.Date(start_date)
   source(factor_engine_path, local = fe_env)
   has_pf <- exists("PORTFOLIO", envir = fe_env, inherits = FALSE) && is.data.table(fe_env$PORTFOLIO)
   has_fx <- exists("FACTORS", envir = fe_env, inherits = FALSE) && is.data.table(fe_env$FACTORS)
@@ -497,6 +553,8 @@ run_paper_replication <- function(strategy_name, strategy_idea, factor_engine_pa
     stop("[replication] engine 이 FACTORS 도 PORTFOLIO 도 생성하지 않았습니다.")
   FACTORS <- if (has_fx) fe_env$FACTORS else NULL
   PORTFOLIO <- if (has_pf) fe_env$PORTFOLIO else NULL
+  # ★엔진이 보고한 선정 전 후보 폭(MC3 B · 셀 엔진처럼 상위 N 만 FACTORS 로 내는 엔진) — 실효 시작 규칙이 FACTORS 대신 이것을 쓴다(§5-b)
+  SIGNAL_BREADTH <- if (exists("SIGNAL_BREADTH", envir = fe_env, inherits = FALSE) && is.data.table(fe_env$SIGNAL_BREADTH)) fe_env$SIGNAL_BREADTH else NULL
   rm(fe_env); gc(verbose = FALSE)
   if (!is.null(.seed_ck)) {
     .sv <- tryCatch(rf_base_cache_seed_save(FACTORS, PORTFOLIO, .seed_ck, root = .RP_ROOT,
@@ -519,17 +577,20 @@ run_paper_replication <- function(strategy_name, strategy_idea, factor_engine_pa
     }
   }
 
-  # ---- 3. 유니버스 치환 (유일한 변경 — K200∪KQ150 PIT 시변 멤버십) ----
+  # ---- 3. 유니버스 치환 (유일한 변경 — 측정 축 유니버스 · PIT 시변 멤버십 · 현행 ALL_HYG = 1-c 에서 주입한 위생 멤버십 · 구 K200∪KQ150) ----
   .apply_universe <- function(dt) {
-    if (is.null(universe) || !universe %in% c("K200_KQ150", "INDEX")) return(dt)
+    if (is.null(universe) || !universe %in% c("K200_KQ150", "INDEX", "ALL_HYG")) return(dt)
     if (!all(c("K200", "KQ150") %in% names(RAWDATA)))
       stop("[replication] universe=K200_KQ150 requires RAWDATA K200/KQ150 membership")
+    # ALL_HYG = 1-c 에서 주입한 위생 멤버십이 K200 에 실려 있다(주입 표식 K200_IDX 없으면 처치 미전달 — 멈춘다)
+    if (identical(universe, "ALL_HYG") && !"K200_IDX" %in% names(RAWDATA))
+      stop("[replication] universe=ALL_HYG 인데 측정 축 주입 표식(K200_IDX) 없음 — 처치 미전달")
     .mem <- unique(RAWDATA[Date %in% unique(dt$Date) & (K200 == TRUE | KQ150 == TRUE),
                            .(Date, Ticker)])
     n0 <- uniqueN(dt$Ticker)
     out <- merge(dt, .mem, by = c("Date", "Ticker"))
-    cat(sprintf("[replication] universe=K200_KQ150 (PIT 시변): tickers %d->%d\n",
-                n0, uniqueN(out$Ticker)))
+    cat(sprintf("[replication] universe=%s (PIT 시변): tickers %d->%d\n",
+                if (identical(universe, "ALL_HYG")) "ALL_HYG(전 종목 + 위생)" else "K200_KQ150", n0, uniqueN(out$Ticker)))
     out
   }
   if (!is.null(FACTORS))   { stopifnot(all(c("Date","Ticker","Score") %in% names(FACTORS)))
@@ -598,6 +659,27 @@ run_paper_replication <- function(strategy_name, strategy_idea, factor_engine_pa
   # Weight 패널 날짜 정합 sanity: 시그널일이 미래로 튀면 중단
   if (max(WEIGHTS$Date) > max(RAWDATA$Date))
     stop("[replication] WEIGHTS 시그널일이 RAWDATA 범위 밖 (미래 날짜) — PIT 의심")
+
+  # ---- 5-b. 실효 시작 (MC3 · 도훈 B안 10-13 · decision_register MC3-EFFECTIVE-START-B — contracts/measurement_axis.R) ----
+  #   측정 축 epoch 에 규칙이 있을 때만(구 축 = 규칙 없음 → 아무것도 안 함 · 비트 동일). 실효 시작 = 신호 폭(FACTORS · 유니버스 적용 뒤
+  #   점수 유한 종목 수) ≥ 보유 수(그 신호일 WEIGHTS 비중 ≠ 0) × 배수를 **처음** 만족한 신호일 — 그 전 신호일을 성과에서 뺀다
+  #   (첫 통과 = 각 날의 판정이 그날 값만 씀 · PIT). PORTFOLIO 만 내는 엔진은 폭을 못 재 자르지 않고 표식만(breadth_unmeasurable).
+  #   한 번도 못 미치면(never_met) 선정이 성립한 신호일이 없다 — 측정 무효로 멈춘다.
+  if (!is.null(ma_rec) && !is.null(ma_rec$effective_start_rule)) {
+    .es <- ma_effective_start(FACTORS, WEIGHTS, ma_rec$effective_start_rule,
+                              breadth = if (!is.null(SIGNAL_BREADTH)) SIGNAL_BREADTH[Date >= as.Date(start_date)] else NULL)
+    if (identical(.es$status, "never_met"))
+      stop(sprintf("[replication] 실효 시작 미도달(MC3) — 신호 폭이 보유 수 × %s 에 한 번도 못 미쳤다(최대 폭 %s · 보유 중앙 %s) — 측정 무효",
+                   format(.es$breadth_mult), format(.es$breadth_max), format(.es$holdings_median)))
+    if (identical(.es$status, "ok") && .es$n_dates_cut > 0L) WEIGHTS <- WEIGHTS[Date >= as.Date(.es$date)]
+    ma_rec$effective_start <- .es
+    cat(sprintf("[replication] 실효 시작(MC3 B) — %s · %s%s\n", .es$status, .es$date,
+                if (identical(.es$status, "ok"))
+                  sprintf(" (폭 %d ≥ 보유 %d × %s · 앞 신호일 %d개 제외 · 시작 뒤 문턱 아래 %d개는 유지)", as.integer(.es$breadth_at_start),
+                          as.integer(.es$holdings_at_start), format(.es$breadth_mult), as.integer(.es$n_dates_cut), as.integer(.es$n_dates_below_after))
+                else sprintf(" (%s)", .es$note %||% "")))
+    rm(.es)
+  }
 
   # ---- 6. 이중 시뮬레이션 (논문 기준 + 15bps 등급 기준) ----
   comm_paper <- commission_paper %||% 0
@@ -740,7 +822,10 @@ run_paper_replication <- function(strategy_name, strategy_idea, factor_engine_pa
       commission_paper_bps = comm_paper * 1e4,
       paper_basis = paper_sum,
       grade_basis_note = "등급은 15bps 순비용 판 (essence 문턱 15bps 보정 — gross 등급은 인플레)",
-      fidelity = "universe 치환(K200∪KQ150)만 — 그 외 논문 그대로 (v10 완전 충실구현)",
+      ## ★FIDELITY 는 실현값으로 — 하네스가 일간 신호를 주간으로 바꾸면 그 사실을 계약이 자동 신고한다(MC4 · D16 · 설계 §3.9 —
+      ##   감사가 이 차이를 미신고 변경(misdeclared)으로 잡지 않게). 월간이면 구판 문구 그대로.
+      fidelity = .rp_fidelity_text(sim_grade$diagnostics$rebalance, universe, eff = (ma_rec %||% list())$effective_start),
+      rebalance = sim_grade$diagnostics$rebalance,
       benchmark_note = strategy_spec$benchmark_note,
       n_max = sim_grade$diagnostics$n_max, has_short = sim_grade$diagnostics$has_short
     ),
@@ -748,6 +833,29 @@ run_paper_replication <- function(strategy_name, strategy_idea, factor_engine_pa
                     cagr = es$essence$cagr, sharpe = es$essence$net_sharpe,
                     mdd = es$essence$mdd, calmar = es$essence$calmar)
   )
+  # 측정 축 기록(MC1 · MC3) — 주입한 측정에만 덧붙인다(구 축 = 키 추가 0 · 부재 = k200kq150_2005_v1 로 읽는다).
+  #   signal_coverage = 측정에 들어간 신호 패널(선정 전 FACTORS · 없으면 보유)의 연도별 폭 · 멤버 수 · effective_start = 위 5-b 결과.
+  if (!is.null(ma_rec)) auth$measurement_axis <- c(ma_rec, list(signal_coverage = tryCatch(
+    if (!is.null(SIGNAL_BREADTH)) ma_signal_coverage(NULL, RAWDATA, breadth = SIGNAL_BREADTH[Date >= as.Date(start_date)]) else
+    if (!is.null(FACTORS) && nrow(FACTORS)) ma_signal_coverage(FACTORS, RAWDATA, basis = "factors") else ma_signal_coverage(WEIGHTS, RAWDATA, basis = "holdings"),
+    error = function(e) list(status = paste("error:", conditionMessage(e))))))
+  # ★창 진단(MC3 B) — 실효 시작 규칙이 창 기준을 정하면(window_anchor = effective_start) essence 진단의 창 이탈을 그 기준으로 다시 잰다
+  #   (essence_score.R 같은 부품 .essence_month_diff · 허용 = 같은 설정). A 관문(rf_cell_window ②)이 이것을 읽는다 — 전역 기준일(2005)로
+  #   재면 데이터가 늦게 서는 신호(컨센서스 등)가 데이터 사정만으로 자동 보류된다. 규칙이 없으면 쓰지 않는다(구판 동작 = ④ 재도출).
+  .wa <- if (!is.null(ma_rec)) ma_window_anchor(ma_rec) else as.Date(NA)
+  if (!is.na(.wa) && is.list(es$diagnostics)) {
+    .dg <- es$diagnostics
+    .eff <- tryCatch(as.Date(as.character(.dg$effective_start %||% NA)), error = function(e) as.Date(NA))
+    .dev <- .essence_month_diff(.wa, .eff)
+    .alw <- suppressWarnings(as.numeric(.dg$window_allowance_months %||% NA))
+    .dg$window_anchor_date <- format(.wa)
+    .dg$window_anchor_basis <- "measurement_axis.effective_start (MC3 B — decision_register MC3-EFFECTIVE-START-B)"
+    .dg$window_anchor_date_global <- format(.essence_diag_params(root = .RP_ROOT)$window_anchor_date)
+    .dg$window_deviation_months <- .dev
+    .dg$window_exceeds_allowance <- if (is.na(.dev) || !is.finite(.alw)) NA else (.dev > .alw)
+    auth$essence_diag <- .dg
+    rm(.dg, .eff, .dev, .alw)
+  }
   saveRDS(bt, file.path(OUT_DIR, "bt_result.rds"))
   write_json(auth, file.path(OUT_DIR, "authoritative_remeasure.json"),
              auto_unbox = TRUE, pretty = TRUE, digits = 6, na = "null")

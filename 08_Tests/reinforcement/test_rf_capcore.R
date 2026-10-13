@@ -201,6 +201,10 @@ w0k <- run_cell(base_spec(weighting = list(kind = "inv_vol", window = 60L), cap_
 chk(is.null(w0$err) && !is.null(w0$pf) && bit_same(w0$pf, w0k$pf), "K2 비EW(inv_vol) 칸 — k=0 PORTFOLIO identical", "K2", c(w0$err, w0k$err))
 chk(!file.exists(file.path(DGD, "rf_engine_diag.json")), "K3 k=0·B7 없음 → 엔진 진단 파일 0(기존 칸 산출 디렉터리 무변화)")
 chk(!any(grepl("cap_core", e0k$logs)), "K4 k=0 → cap_core 로그 줄 0(단계 미실행)")
+sb0 <- if (exists("SIGNAL_BREADTH", envir = e0$env, inherits = FALSE)) get("SIGNAL_BREADTH", envir = e0$env) else NULL
+fx_n <- if (!is.null(e0$fx)) e0$fx[, .N, by = Date] else NULL
+chk(!is.null(sb0) && !is.null(fx_n) && all(fx_n$N <= 25L) && all(merge(fx_n, sb0, by = "Date")[, breadth >= N]) && any(sb0$breadth > 25L),
+    "K5 (MC3 B) 엔진이 선정 전 후보 폭(SIGNAL_BREADTH)을 내보낸다 — 상위 25 로 잘린 FACTORS 보다 넓다(실효 시작 규칙의 폭 원천)", "K5")
 
 cat("== E. 엔진 통합 k=2 · k=1 ==\n")
 OD <- file.path(TMPD, "outdir_a1"); dir.create(OD, showWarnings = FALSE)
@@ -264,6 +268,29 @@ chk(grepl("weight_stage", e9$err %||% "") && grepl("weight_stage", e9b$err %||% 
     "E9 최상위 weight_stage(draft3 형식 · cap_core 키 유무 무관) → stop(엔진이 읽지 않는 처치 키 = 조용한 무처치 차단)", "E9",
     c(e9$err %||% "멈추지 않음", e9b$err %||% "멈추지 않음"))
 
+cat("== H. 측정 축 주입(all_hyg · 10-13 전환) — 코어 = 원 K200 지수 ∧ 위생 멤버 · 위성은 위생 멤버 전체 ==\n")
+sect("H", {
+  # 주입 픽스처(러너 ma_inject_universe 모사): 원 플래그 → K200_IDX/KQ150_IDX · K200 := 위생 멤버십 · KQ150 := 0.
+  #   멤버십 = 전 종목(지수 밖 T041~T050 포함)에서 바닥 칸(A1)의 코어 이름을 뺀 것 → 주입 코어가 A1 코어와 겹치면 멤버십을 안 본 것이다(양성)
+  core_a1 <- unique(indep_core(FIX, 2L, sort(unique(a1$pf$Date)))$Ticker)
+  FXI <- copy(FIX)[, `:=`(K200_IDX = K200, KQ150_IDX = KQ150)][, `:=`(K200 = !(Ticker %in% core_a1), KQ150 = FALSE)]
+  h1 <- run_cell(base_spec(universe = list(kind = "all_hyg"), cap_core = list(k = 2)), fixture = FXI)
+  chk(is.null(h1$err) && !is.null(h1$pf), "H1 all_hyg 칸에서 cap_core 가 돈다(구판은 k200_kq150 칸에서만)", "H1", h1$err)
+  if (!is.null(h1$pf)) {
+    HP <- h1$pf; hs <- sort(unique(HP$Date))
+    IH <- indep_core(copy(FXI)[, K200 := K200_IDX & K200], 2L, hs)        # 독립 재계산 — 코어 후보 = 원 K200 ∧ 멤버
+    hm <- merge(IH, HP, by = c("Date", "Ticker"), all.x = TRUE)
+    chk(nrow(IH) == 2L * length(hs) && all(!is.na(hm$Weight)) && all(hm$Weight >= hm$cw - 1e-12) && !any(IH$Ticker %in% core_a1),
+        sprintf("H2 코어 = 원 K200 지수 ∧ 위생 멤버의 t-1 시총 상위 2(독립 재계산 · %d 시그널일 · 비멤버가 된 바닥 코어 %d종은 못 들어온다)", length(hs), length(core_a1)))
+    hj <- merge(HP[, .(Date, Ticker)], FXI[, .(Date, Ticker, K200, K200_IDX)], by = c("Date", "Ticker"), all.x = TRUE)
+    agg <- HP[, .(s = sum(Weight), n = .N, mn = min(Weight)), by = Date]
+    chk(all(hj$K200 %in% TRUE) && any(hj$K200_IDX %in% FALSE) && max(abs(agg$s - 1)) < 1e-10 && min(agg$mn) >= 0 && max(agg$n) <= 25L,
+        sprintf("H3 보유 전부 위생 멤버 · 지수 밖 멤버도 위성으로 들어온다(%d행 · 측정 유니버스 = 전 종목 + 위생) · Σw=1 · ≤25", sum(hj$K200_IDX %in% FALSE)))
+  }
+  h4 <- run_cell(base_spec(universe = list(kind = "all_hyg"), cap_core = list(k = 2)), fixture = FIX)
+  chk(grepl("K200_IDX", h4$err %||% ""), "H4 [대조] 주입 표식 없는 원자료로 all_hyg 칸 → stop(처치 미전달 차단)", "H4", h4$err %||% "멈추지 않음")
+})
+
 cat("== P. PIT 섭동 ==\n")
 sig_all <- sort(unique(a1$pf$Date))
 FP1 <- copy(FIX); FP1[Date %in% sig_all, Size := Size * runif(.N, 0.01, 100)]               # 시그널일 당일 시총 교란
@@ -287,7 +314,7 @@ cat("== X. B7 exclude=base_factors 엔진 배선 · 전달량 진단 → 계약 
 # 임시 루트: 등록부 = 방어 후보 XDEF(as-of 1위) · lowvol60(2위). 기저 팩터에 XDEF(null_perm — 값 무관 · id 만)를 둔다.
 #   제외가 걸리면 슬리브 = lowvol60(price 원천으로 적재 가능) → 엔진 완주. 제외가 무시되면 XDEF 를 price 로 적재하려다 멈춘다(양방향).
 XR <- file.path(TMPD, "xroot"); for (dd in c("02_Infrastructure/reinforcement", "06_Registry", "02_Infrastructure/contracts")) dir.create(file.path(XR, dd), recursive = TRUE, showWarnings = FALSE)
-for (f in c("rf_rebalance.R", "rf_sleeve.R", "rf_capcore.R", "rf_cell_engine.R"))
+for (f in c("rf_rebalance.R", "rf_sleeve.R", "rf_axes.R", "rf_capcore.R", "rf_cell_engine.R"))   # rf_axes.R = 엔진이 source 하는 고정 축 단정(MC5 10-13)
   file.copy(file.path(ROOT, "02_Infrastructure/reinforcement", f), file.path(XR, "02_Infrastructure/reinforcement", f), overwrite = TRUE)
 write(toJSON(list(factors = list(XDEF = list(category = "defense", lifecycle_status = "active"),
                                  lowvol60 = list(category = "risk", lifecycle_status = "active"))), auto_unbox = TRUE),

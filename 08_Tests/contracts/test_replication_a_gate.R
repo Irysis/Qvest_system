@@ -140,13 +140,16 @@ CELL_ENGINE  <- file.path(S, "02_Infrastructure/reinforcement/rf_cell_engine.R")
 dir.create(dirname(PAPER_ENGINE), recursive = TRUE, showWarnings = FALSE); writeLines("FACTORS <- NULL", PAPER_ENGINE)
 writeLines("# stub", CELL_ENGINE)
 CELL_SPEC <- file.path(S, "cell_spec.json"); writeLines('{"code":"B1_1"}', CELL_SPEC)
-mk_art <- function(base, tag, exec = CUR, sel = REQ_REPL, nt = 1L, dsr = NULL, start = ANCHOR, mr = TRUE) {
+mk_art <- function(base, tag, exec = CUR, sel = REQ_REPL, nt = 1L, dsr = NULL, start = ANCHOR, mr = TRUE, extra = NULL, sibling_dev = NULL) {
   d <- file.path(base, "stage_artifacts", "replication", tag); dir.create(d, recursive = TRUE, showWarnings = FALSE)
   au <- list(status = "OK", strategy_id = paste0("RP_T_", tag), essence_grade = "A", metric_type = "backtested",
              selection_type = sel, n_trials_cumulative = nt, dsr = dsr, essence = list(dsr = dsr, cagr = 0.2, calmar = 0.9),
              measurement_regime = if (isTRUE(mr)) list(selection_type = sel, n_trials_cumulative = nt, exec_price = exec,
                                                         exec_price_basis = "argument", cost_model_version = "synthetic") else NULL)
   if (!isTRUE(mr)) au$measurement_regime <- NULL
+  if (is.list(extra)) au <- c(au, extra)                      # MC3 B 검사 — measurement_axis · essence_diag 블록(러너가 쓰는 모양)
+  if (!is.null(sibling_dev))                                  # 형제 백필(전역 기준일로 잰 값) 모양
+    write(toJSON(list(diagnostics = list(window_deviation_months = sibling_dev)), auto_unbox = TRUE), file.path(d, "essence_diag.json"))
   write(toJSON(au, auto_unbox = TRUE, null = "null", pretty = TRUE), file.path(d, "authoritative_remeasure.json"))
   dates <- seq(as.Date(start), by = "month", length.out = 24L)
   saveRDS(list(holdings = data.table(date = dates, ticker = "A000001", weight = 1),
@@ -235,6 +238,24 @@ battery <- function(R, a11, tag) {
   a <- R$.rp_a_route(d, grade = "A", strategy_id = basename(d), engine_path = PAPER_ENGINE, cell = FALSE,
                      gate = function(...) list(eligible = NA), gx = GX, root = S)
   r$A8_na_verdict_hold <- identical(a$action, "hold") && identical(as.character(a$codes), "gate_error") && only_file(d, R$.RP_JR_HELD)
+  # A9 MC3 B(도훈 10-13 · MC3-EFFECTIVE-START-B) — 창 기준 = 산출물이 기록한 그 전략의 실효 시작. 같은 늦은 시작(A3 와 같은 날)이라도
+  #   기준이 실효 시작이면 0개월 → 발행 · 기준이 전역(diagnostics)이면 A3 처럼 보류(양방향) · 러너가 쓴 essence_diag(②)가 우선 ·
+  #   기준이 실효 시작일 때 전역 기준으로 잰 형제 백필 값은 쓰지 않는다(같은 산출물에 두 기준 금지)
+  ma_b <- function(kind, d0) list(measurement_axis = list(epoch = "all_hyg_2000_v1",
+                                                          effective_start_rule = list(rule = "breadth_multiple", breadth_mult = 2, window_anchor = kind),
+                                                          effective_start = list(status = "ok", date = format(d0))))
+  d <- mk_art(B, "mc3b_derive", start = late, extra = ma_b("effective_start", late)); a <- route(R, d, S); j <- jr(d, R$.RP_JR_ELIGIBLE)
+  r$A9a_mc3b_effective_start_publish <- identical(a$action, "publish") && !is.null(j) &&
+    identical(j$a_eligibility$facts$window_source, "derived_bt_result_effective_start") && identical(as.numeric(j$a_eligibility$facts$window_dev), 0)
+  d <- mk_art(B, "mc3b_global", start = late, extra = ma_b("diagnostics", late)); a <- route(R, d, S)
+  r$A9b_mc3b_global_anchor_hold <- identical(a$action, "hold") && "window_deviation" %in% a$codes && held_has(d, "window_deviation")
+  d <- mk_art(B, "mc3b_auth", start = late, extra = c(ma_b("effective_start", late), list(essence_diag = list(window_deviation_months = 1L))))
+  a <- route(R, d, S); j <- jr(d, R$.RP_JR_ELIGIBLE)
+  r$A9c_mc3b_auth_diag_first <- identical(a$action, "publish") && identical(j$a_eligibility$facts$window_source, "auth_essence_diag") &&
+    identical(as.numeric(j$a_eligibility$facts$window_dev), 1)
+  d <- mk_art(B, "mc3b_sibling", start = late, extra = ma_b("effective_start", late), sibling_dev = ALLOW + 24); a <- route(R, d, S)
+  j <- jr(d, R$.RP_JR_ELIGIBLE)
+  r$A9d_mc3b_ignores_global_sibling <- identical(a$action, "publish") && identical(j$a_eligibility$facts$window_source, "derived_bt_result_effective_start")
   # B1 §11 실블록 — 무인 충실구현 레인 모양(스위치만 · RF_CELL_SPEC 없음 · 논문 엔진) → 관문 경유 발행
   set_mode(nlo = "1"); d <- mk_art(B, "b1_verify_lane"); a <- run_a11(R, a11, d, PAPER_ENGINE, S)
   r$B1_verify_lane_gated <- identical(files_of(d), R$.RP_JR_ELIGIBLE %||% "judge_request.eligible.json") && identical((a %||% list())$mode, "replication")
@@ -284,6 +305,10 @@ LABEL <- c(
   A6_nogate_gate_error = "A6 관문 정본 부재(적재 실패) → gate_error 보류(fail-closed)",
   A7_same_as_canon = "A7 라우터 보류 코드 = 정본 rf_a_eligibility 직접 호출 코드(판정 사본 없음 · legacy+window 동시)",
   A8_na_verdict_hold = "A8 관문 술어가 eligible=NA(비논리) → gate_error 보류만(isTRUE 만 발행 — fail-closed)",
+  A9a_mc3b_effective_start_publish = "A9a MC3 B — 창 기준 = 기록된 실효 시작(A3 와 같은 늦은 시작) → 0개월 · 발행 · 출처 derived_bt_result_effective_start",
+  A9b_mc3b_global_anchor_hold = "A9b [대조] 같은 산출물 · 창 기준 규칙이 diagnostics(전역) → A3 처럼 held:window_deviation",
+  A9c_mc3b_auth_diag_first = "A9c 러너가 쓴 auth essence_diag(실효 시작 기준 창 이탈 1개월)가 재도출보다 우선 → 발행 · 출처 auth_essence_diag",
+  A9d_mc3b_ignores_global_sibling = "A9d 실효 시작 기준 산출물은 전역 기준으로 잰 형제 백필 값(허용+24)을 쓰지 않는다 → 재도출로 발행",
   B1_verify_lane_gated = "B1 §11 실블록 · 무인 충실구현 레인 모양(QVEST_NO_LEDGER_OPEN=1 · RF_CELL_SPEC 없음) → 관문 경유 발행",
   B1b_verify_lane_hold = "B1b 같은 모양 · 보류 칸 → held 만(발행 없음)",
   B2_cell_legacy_unchanged = "B2 §11 실블록 · 강화 셀 → 구판 judge_request.json 만 · 구판 블록 출력과 바이트 동일(requested_at 제외) · 관문 정본 없는 루트에서도 같다",

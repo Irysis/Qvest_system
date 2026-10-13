@@ -1,0 +1,188 @@
+{
+  "schema": "rx_prereg_v1",
+  "program": "P3_CONSTRUCTION",
+  "round_id": "P3R01_construction_map",
+  "registered_at": "2026-10-13T23:21:34+0900",
+  "purpose": "구성(비중 · 회전)만 바꿨을 때 낙폭 제약 아래 복리가 나아지는가 — 등록부 P3_CONSTRUCTION",
+  "measurement_axis": {
+    "epoch": "all_hyg_2000_v1"
+  },
+  "tau_d": "2022-12-31",
+  "reference_cells": {
+    "E1": {
+      "code": "P0R01_E1_C0",
+      "round": "P0R01_feasibility_map"
+    },
+    "E2": {
+      "code": "P0R01_E2_C0",
+      "round": "P0R01_feasibility_map"
+    }
+  },
+  "variants": {
+    "K1": {
+      "name": "역변동성 비중",
+      "delta": {
+        "weighting": {
+          "kind": "catalog",
+          "catalog_id": "lean:ivol",
+          "label": "ivol"
+        }
+      },
+      "basis": "Kirby & Ostdiek (2012) It's All in the Timing, JFQA 47(2) doi:10.1017/S0022109012000117"
+    },
+    "K2": {
+      "name": "최소분산 비중",
+      "delta": {
+        "weighting": {
+          "kind": "catalog",
+          "catalog_id": "lean:minvar",
+          "label": "minvar"
+        }
+      },
+      "basis": "Clarke, de Silva & Thorley (2006) Minimum-Variance Portfolios in the U.S. Equity Market, JPM 33(1) doi:10.3905/jpm.2006.661366"
+    },
+    "K3": {
+      "name": "낙폭 제약(CDaR LP) 비중",
+      "delta": {
+        "weighting": {
+          "kind": "catalog",
+          "catalog_id": "qepm:CDaR_LP",
+          "label": "CDaR_LP"
+        }
+      },
+      "basis": "Chekhlov, Uryasev & Zabarankin (2005) Drawdown Measure in Portfolio Optimization, IJTAF 8(1) doi:10.1142/S0219024905002767"
+    },
+    "K4": {
+      "name": "켈리(성장 최적) 비중",
+      "delta": {
+        "weighting": {
+          "kind": "catalog",
+          "catalog_id": "lean:kelly",
+          "label": "kelly"
+        }
+      },
+      "basis": "Busseti, Ryu & Boyd (2016) Risk-Constrained Kelly Gambling, J. Investing 25(3) arXiv:1603.06183"
+    },
+    "K5": {
+      "name": "순위 버퍼 2배(회전 통제)",
+      "delta": {
+        "rebalance": {
+          "kind": "rank_buffer",
+          "mult": 2
+        }
+      },
+      "basis": "Novy-Marx & Velikov (2016) A Taxonomy of Anomalies and Their Trading Costs, RFS 29(1) doi:10.1093/rfs/hhv063"
+    }
+  },
+  "cells": [
+    {
+      "code": "P3R01_E1_K1",
+      "engine": "E1",
+      "component": "K1",
+      "path": "04_Research/programs/P3_CONSTRUCTION/P3R01_construction_map/specs/P3R01_E1_K1.json",
+      "md5": "839666a40fa4186159e53b69d0f55266",
+      "n_family": 31
+    },
+    {
+      "code": "P3R01_E1_K2",
+      "engine": "E1",
+      "component": "K2",
+      "path": "04_Research/programs/P3_CONSTRUCTION/P3R01_construction_map/specs/P3R01_E1_K2.json",
+      "md5": "5f4913e1ed20f0d209c959e29ccb53d3",
+      "n_family": 31
+    },
+    {
+      "code": "P3R01_E1_K3",
+      "engine": "E1",
+      "component": "K3",
+      "path": "04_Research/programs/P3_CONSTRUCTION/P3R01_construction_map/specs/P3R01_E1_K3.json",
+      "md5": "2b998344a63f7a4c3172c424b8b5a65c",
+      "n_family": 31
+    },
+    {
+      "code": "P3R01_E1_K4",
+      "engine": "E1",
+      "component": "K4",
+      "path": "04_Research/programs/P3_CONSTRUCTION/P3R01_construction_map/specs/P3R01_E1_K4.json",
+      "md5": "2a20b08ed50f3c76eb495ef570c4c60b",
+      "n_family": 31
+    },
+    {
+      "code": "P3R01_E1_K5",
+      "engine": "E1",
+      "component": "K5",
+      "path": "04_Research/programs/P3_CONSTRUCTION/P3R01_construction_map/specs/P3R01_E1_K5.json",
+      "md5": "68491a16ada674553b9339b64f476458",
+      "n_family": 31
+    },
+    {
+      "code": "P3R01_E2_K1",
+      "engine": "E2",
+      "component": "K1",
+      "path": "04_Research/programs/P3_CONSTRUCTION/P3R01_construction_map/specs/P3R01_E2_K1.json",
+      "md5": "823caf0b077e6ece6d5aece6c4fbb305",
+      "n_family": 226
+    },
+    {
+      "code": "P3R01_E2_K2",
+      "engine": "E2",
+      "component": "K2",
+      "path": "04_Research/programs/P3_CONSTRUCTION/P3R01_construction_map/specs/P3R01_E2_K2.json",
+      "md5": "d76bf885a16d772094c5de0f1f767611",
+      "n_family": 226
+    },
+    {
+      "code": "P3R01_E2_K3",
+      "engine": "E2",
+      "component": "K3",
+      "path": "04_Research/programs/P3_CONSTRUCTION/P3R01_construction_map/specs/P3R01_E2_K3.json",
+      "md5": "78c781f4e7667c61b5a8db3f8d2640df",
+      "n_family": 226
+    },
+    {
+      "code": "P3R01_E2_K4",
+      "engine": "E2",
+      "component": "K4",
+      "path": "04_Research/programs/P3_CONSTRUCTION/P3R01_construction_map/specs/P3R01_E2_K4.json",
+      "md5": "fb37b0d3b08e79a7c1f1a78a360e573d",
+      "n_family": 226
+    },
+    {
+      "code": "P3R01_E2_K5",
+      "engine": "E2",
+      "component": "K5",
+      "path": "04_Research/programs/P3_CONSTRUCTION/P3R01_construction_map/specs/P3R01_E2_K5.json",
+      "md5": "dee2e315776feead54d7ec54bdf42f05",
+      "n_family": 226
+    }
+  ],
+  "rules": {
+    "improve": "칸이 같은 엔진 기준(EW · P0R01 C0)보다 보는 창 CDaR(behavior.stats.cdar) 낮음 ∧ 보는 창 S_vis ≥ 기준 S_vis",
+    "program_verdict": "두 엔진 모두에서 improve 인 구성 변형이 하나라도 있으면 '구성 레버 있음' · 없으면 '이 엔진들에선 EW 를 넘는 구성 없음'",
+    "selection": "두 엔진 모두 improve 인 변형 중 두 엔진 평균 S_vis 최대(동률 < tie_eps → 평균 CDaR 낮은 쪽) · 없으면 EW 유지(선택 없음)",
+    "test_window": "선택 변형만: 시험 창 Calmar(gv3_window) · 전기간 카드 CDaR 를 기준과 비교(사람 쪽 보고 · 선택 규칙 입력 아님)"
+  },
+  "expectations": {
+    "K1": "CDaR ↓ · CAGR ≈",
+    "K2": "CDaR ↓ · CAGR ↓",
+    "K3": "CDaR ↓(직접 표적)",
+    "K4": "CAGR ↑ · CDaR ↑(성장 최적은 낙폭을 키울 수 있다)",
+    "K5": "회전 · 비용 ↓ · S_vis ↑"
+  },
+  "final_selection_rule": {
+    "calmar_norm": 0.64,
+    "port_t_norm": 2.95,
+    "w_calmar": 0.6,
+    "w_port_t": 0.4,
+    "tie_eps": 0.02
+  },
+  "axis_audit": "측정 뒤 04_holdings 실보유가 롱온리 · ≤ max_names · Σw ≤ 1 — 위반 칸 = 측정 무효",
+  "behavior_card_cfg": {
+    "path": "04_Research/programs/P3_CONSTRUCTION/P3R01_construction_map/behavior_card_cfg_at_prereg.json",
+    "md5": "6a2a1d21b82858e1ab954fec2085ac32"
+  },
+  "budget": {
+    "variants": 10,
+    "rounds": 1
+  }
+}

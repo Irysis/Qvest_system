@@ -6,7 +6,7 @@
   "run_id": "20260924_020009_4024",
   "bt_result_path": "C:/Users/99922/OneDrive/Quant_Module_Moltbot/stage_artifacts/replication/20260924_020009_4024/bt_result.rds",
   "metric_type": "backtested",
-  "essence_grade": "B",
+  "essence_grade": "C",
   "grade_basis": "replication_sweep",
   "essence": {
     "net_sharpe": 0.838,
@@ -103,7 +103,7 @@
     },
     "reason": "하락월 107개: 초과 +2.13%/월 (t 4.19 · 적중 64%) · 벤치-10% 이하 10개: 초과 +6.18%/월 · 상승월 초과 -0.98%/월"
   },
-  "reasons": "v3: S 0.407 · B 경계 0.425 · 띠 C · CR strong(시험 창 normal) · 노치 +1 · A 아님 사유 floor:port_t,floor:cagr,oos:rolling36_pass_oos,gate:dsr_sweep | v921 C: Ensemble: positive alpha이나 B 미달 (블렌드에서만 가치)",
+  "reasons": "v3: S 0.407 · B 경계 0.425 · 띠 C · CR normal(시험 창 normal) · 노치 +0 · A 아님 사유 floor:port_t,floor:cagr,oos:rolling36_pass_oos,gate:dsr_sweep | v921 C: Ensemble: positive alpha이나 B 미달 (블렌드에서만 가치)",
   "replication": {
     "source_paper": {
       "url": "https://arxiv.org/abs/2511.12129",
@@ -135,11 +135,20 @@
   "grade_v3": {
     "status": "ok",
     "schema": "grade_v3_v1",
-    "grade": "B",
+    "grade": "C",
     "S": 0.4073,
     "S_B": 0.4245,
+    "rules_version": "v3.1",
+    "crisis_def": "lt_first_passage",
+    "cr_notch_basis": "normal",
+    "mc8": {
+      "status": "not_needed",
+      "label": null,
+      "share_beats_size_exposure": null,
+      "median_placebo_p": null
+    },
     "band": "C",
-    "notch": 1,
+    "notch": 0,
     "notch_a": false,
     "blocked_by": [
       "floor:port_t",
@@ -160,12 +169,12 @@
       "sharpe": 0.5469
     },
     "cr": {
-      "overall": "strong",
+      "overall": "normal",
       "test": "normal",
       "visible": "normal",
-      "n_crisis": 6,
-      "dd_capture_median": 0.6372,
-      "dd_capture_worst": 0.9963,
+      "n_crisis": 10,
+      "dd_capture_median": 0.6543,
+      "dd_capture_worst": 1.2978,
       "uc_median": 0.6897,
       "cdar": 0.3597,
       "controls": "not_provided"
@@ -189,10 +198,18 @@
     "nav_source": "contract"
   },
   "grade_v3_backfill": {
-    "at": "2026-10-13T15:12:05+0900",
+    "at": "2026-10-13T18:45:27+0900",
     "tool": "02_Infrastructure/programs/grade_v3_backfill.R",
-    "decision": "decision_register GRADE-V3-PROMOTE",
-    "prior_essence_grade": "C",
-    "prior_md5": "eb6b88499bb69568e8304585e498a5ec"
+    "decision": "decision_register GRADE-V3-CR-STRONG-SELECTION · CRISIS-DEF-LT2020(규칙 판 재채점)",
+    "rules_version": "v3.1",
+    "prior_rules_version": "v3.0",
+    "prior_essence_grade": "B",
+    "prior_md5": "d6452824585f01581ff9f4a11a409de1",
+    "history": [
+      {
+        "rules_version": "v3.0",
+        "essence_grade": "B"
+      }
+    ]
   }
 }

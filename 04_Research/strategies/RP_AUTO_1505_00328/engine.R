@@ -112,7 +112,7 @@ stopifnot(.J == 1L, .K == 1L, .SKIP == 0L)
 
 # ▸ 우리 고정 축(유니버스 치환에 딸린 것)
 .LIQ      <- 2e8                        # adv20(t-1) 하한 (KRW)
-.SIG_FROM <- as.Date("2005-01-01")      # 측정 시작
+.SIG_FROM <- (if (exists(".RP_START_DATE")) .RP_START_DATE else as.Date("2005-01-01"))      # 측정 시작
 
 # ▸ 계산 경계(논문 미명시 — 성과를 보고 고르지 않았다)
 .NMIN       <- 30L                      # 월 최소 횡단면. decile 이 성립하려면 10 이상이어야

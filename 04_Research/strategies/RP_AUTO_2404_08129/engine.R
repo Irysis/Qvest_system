@@ -65,7 +65,7 @@ if (!all(.REQ %in% names(RAWDATA)))
 .HOLD    <- 6L                    # 논문 §5.7: following six months · semi-annual
 .FORM_M  <- c(6L, 12L)            # 시그널 월 = 6월·12월 말 (형성 = 1월·7월, "Starting in January")
 
-.SIG_FROM <- as.Date("2005-01-01")   # 고정 축 시작
+.SIG_FROM <- (if (exists(".RP_START_DATE")) .RP_START_DATE else as.Date("2005-01-01"))   # 고정 축 시작
 .LIQ      <- 2e8                     # adv20(t−1) 하한 KRW — 고정 축
 
 .EPS       <- 1e-6      # 열린구간 (0,1] 의 닫힌 근사 [EPS, 1] (사영·근 탐색용)

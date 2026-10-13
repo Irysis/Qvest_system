@@ -36,7 +36,7 @@
   "structural_drawdown": false,
   "selection_type": "chain",
   "dsr_gate_applied": false,
-  "reasons": "v3: S 0.000 · B 경계 0.430 · 띠 F · CR strong(시험 창 normal) · 노치 +0 · A 아님 사유 floor:port_t,floor:cagr,floor:sharpe,oos:rolling36_pass_oos | v921 F: non-positive alpha (PORT_t<=0 또는 net_IR<=0)",
+  "reasons": "v3: S 0.000 · B 경계 0.430 · 띠 F · CR normal(시험 창 normal) · 노치 +0 · A 아님 사유 floor:port_t,floor:cagr,floor:sharpe,oos:rolling36_pass_oos | v921 F: non-positive alpha (PORT_t<=0 또는 net_IR<=0)",
   "replication": {
     "source_paper": {
       "url": "https://arxiv.org/abs/2301.09173",
@@ -135,6 +135,15 @@
     "grade": "F",
     "S": 0,
     "S_B": 0.4297,
+    "rules_version": "v3.1",
+    "crisis_def": "lt_first_passage",
+    "cr_notch_basis": "normal",
+    "mc8": {
+      "status": "not_needed",
+      "label": null,
+      "share_beats_size_exposure": null,
+      "median_placebo_p": null
+    },
     "band": "F",
     "notch": 0,
     "notch_a": false,
@@ -157,12 +166,12 @@
       "sharpe": 0.5517
     },
     "cr": {
-      "overall": "strong",
+      "overall": "normal",
       "test": "normal",
-      "visible": "strong",
-      "n_crisis": 6,
-      "dd_capture_median": 0.6277,
-      "dd_capture_worst": 0.9535,
+      "visible": "normal",
+      "n_crisis": 10,
+      "dd_capture_median": 0.6021,
+      "dd_capture_worst": 1.3834,
       "uc_median": 0.5723,
       "cdar": 0.3257,
       "controls": "not_provided"
@@ -186,10 +195,18 @@
     "nav_source": "contract"
   },
   "grade_v3_backfill": {
-    "at": "2026-10-13T15:03:13+0900",
+    "at": "2026-10-13T18:35:49+0900",
     "tool": "02_Infrastructure/programs/grade_v3_backfill.R",
-    "decision": "decision_register GRADE-V3-PROMOTE",
+    "decision": "decision_register GRADE-V3-CR-STRONG-SELECTION · CRISIS-DEF-LT2020(규칙 판 재채점)",
+    "rules_version": "v3.1",
+    "prior_rules_version": "v3.0",
     "prior_essence_grade": "F",
-    "prior_md5": "5b1c46ccae8626eca4498cc2cdf356f0"
+    "prior_md5": "c71e8f5faba8f4d72d6942f2b997abd3",
+    "history": [
+      {
+        "rules_version": "v3.0",
+        "essence_grade": "F"
+      }
+    ]
   }
 }

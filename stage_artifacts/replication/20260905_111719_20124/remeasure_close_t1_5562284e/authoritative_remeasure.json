@@ -130,7 +130,7 @@
     },
     "reason": "하락월 111개: 초과 +1.30%/월 (t 3.16 · 적중 63%) · 벤치-10% 이하 10개: 초과 +0.27%/월 · 상승월 초과 +0.28%/월"
   },
-  "reasons": "v3: S 0.592 · B 경계 0.422 · 띠 B · CR normal(시험 창 normal) · 노치 +0 · A 아님 사유 oos:rolling36_pass_oos,gate:dsr_sweep | v921 B: Component: PORT_t>=2.0 & net_IR>0.2; A 미달[OOS_ret -0.20<0.7(band fail),Calmar<0.64,DSR<0.5(sweep)]",
+  "reasons": "v3: S 0.592 · B 경계 0.422 · 띠 B · CR normal(시험 창 weak) · 노치 +0 · A 아님 사유 oos:test_window_cr_not_weak,oos:rolling36_pass_oos,gate:dsr_sweep | v921 B: Component: PORT_t>=2.0 & net_IR>0.2; A 미달[OOS_ret -0.20<0.7(band fail),Calmar<0.64,DSR<0.5(sweep)]",
   "remeasure": {
     "version": "remeasure_from_holdings_v1",
     "of_artifact": "C:/Users/99922/OneDrive/Quant_Module_Moltbot/stage_artifacts/replication/20260905_111719_20124",
@@ -218,10 +218,20 @@
     "grade": "B",
     "S": 0.5924,
     "S_B": 0.4218,
+    "rules_version": "v3.1",
+    "crisis_def": "lt_first_passage",
+    "cr_notch_basis": "normal",
+    "mc8": {
+      "status": "not_needed",
+      "label": null,
+      "share_beats_size_exposure": null,
+      "median_placebo_p": null
+    },
     "band": "B",
     "notch": 0,
     "notch_a": false,
     "blocked_by": [
+      "oos:test_window_cr_not_weak",
       "oos:rolling36_pass_oos",
       "gate:dsr_sweep"
     ],
@@ -239,11 +249,11 @@
     },
     "cr": {
       "overall": "normal",
-      "test": "normal",
+      "test": "weak",
       "visible": "normal",
-      "n_crisis": 6,
-      "dd_capture_median": 0.9627,
-      "dd_capture_worst": 1.378,
+      "n_crisis": 10,
+      "dd_capture_median": 0.9836,
+      "dd_capture_worst": 1.3815,
       "uc_median": 1.347,
       "cdar": 0.4078,
       "controls": "not_provided"
@@ -252,7 +262,7 @@
       "tau_d": "2022-12-31",
       "gate": false,
       "parts": {
-        "test_window_cr_not_weak": true,
+        "test_window_cr_not_weak": false,
         "rolling36_pass_oos": false
       },
       "pass_oos": 0.1333,
@@ -267,10 +277,18 @@
     "nav_source": "contract"
   },
   "grade_v3_backfill": {
-    "at": "2026-10-13T15:04:04+0900",
+    "at": "2026-10-13T18:36:42+0900",
     "tool": "02_Infrastructure/programs/grade_v3_backfill.R",
-    "decision": "decision_register GRADE-V3-PROMOTE",
+    "decision": "decision_register GRADE-V3-CR-STRONG-SELECTION · CRISIS-DEF-LT2020(규칙 판 재채점)",
+    "rules_version": "v3.1",
+    "prior_rules_version": "v3.0",
     "prior_essence_grade": "B",
-    "prior_md5": "d734a17346807b0b9fc3aef454a5fc0e"
+    "prior_md5": "c477d94fc8804bb9561ac1985d402858",
+    "history": [
+      {
+        "rules_version": "v3.0",
+        "essence_grade": "B"
+      }
+    ]
   }
 }

@@ -263,6 +263,13 @@ SUITES=(
   # 2026-09-24 플랜 P0-04(집행 규약 close_t1 · 결정 EXEC-PRICE) · P0-03(회계): ↑ 하네스 검사가 ⑧~⑯ 실현 귀속·비용 기장·첫 행 ret_gross·cost_sign·설정 fail-closed·open 가드·spec 진술·러너 배선.
   #   정본 run_monthly_simulation 과 일간 수익 귀속 패리티(비용 0 · 사전 선언 1e-9 · legacy/창>= 돌연변이 red · 정본 파일 읽기만)
   "08_Tests/contracts/test_replication_exec_parity.R"
+  # 2026-10-13 MC4(D16 · 주간 리밸런싱): 하네스 주간 경로 — 월간 구판 비트 동일(git HEAD 기준본) · 일간→주간 · 구판 침묵 붕괴 대조 ·
+  #   거래량 0 제외 · PIT 섭동 · 비용 · 러너 FIDELITY 자동 신고 / C5 컷오프 주간 일반화(holding_window_cutoff · 월말 동치 · 월 규칙 오용 차단)
+  "08_Tests/contracts/test_replication_weekly.R"
+  "08_Tests/validation/test_overlay_window_cutoff.R"
+  # 2026-10-13 MC1 · MC3(D11 · D15): 측정 축 epoch 계약 — 설정 · t−1 거래대금 · 위생 멤버십 · PIT 섭동 · 주입(원 플래그 보존 · 구 축 무변경) ·
+  #   fail-closed · 표준 필터 리팩터 동치 · 커버리지 기록
+  "08_Tests/contracts/test_measurement_axis.R"
   #   골든 20260921_100007_6876: legacy 비트 재현(ret_net·nav·metrics identical · essence=authoritative) + P0-03 첫 행·integrity PASS
   #   + close_t1 구조 단정 — 읽기 전용(쓰기 0) · RAWDATA 캐시/픽스처 부재 = SKIP · 약 3분(RAWDATA 3열 적재 + 계약 경유 1회)
   "08_Tests/contracts/test_replication_exec_golden.R"
@@ -1579,6 +1586,8 @@ SUITES=(
   #   k=0 비트 동일 · 코어 = K200 t-1 시총 상위 k(독립 재계산) · union_truncation · 고정 축 · PIT 섭동(당일·t-1·미래) · C1 무작위 위성 · 서명 ·
   #   B7 exclude=base_factors 엔진 배선(양방향 픽스처) · 전달량 진단 → 계약 왕복 — tempdir 만 씀 · 약 1분
   "08_Tests/reinforcement/test_rf_capcore.R"
+  # 2026-10-13 MC5(D11 · Σw ≤ 1 잔여 현금): 엔진 고정 축 단정 rf_axes.R — 현금 통과 · 구판 Σw=1 단정 돌연변이 대조 · 레버리지/음수/26종/빈 포트/결측 거부 · 엔진 배선
+  "08_Tests/reinforcement/test_rf_axes.R"
   #   처치 전달량 계약(contracts/sleeve_delivery.R · value = δ 풀링): 재도출 · 입력 계약(변조·규약·불변식) · 소비자 왕복(rf_prereg — 배포 순서 무관:
   #   미등재 거부 · 등재판(이 계약 file · preregfix 형식 rf_sleeve.R file) 수락 · 규약·regime·손 수치·바뀐 파일·다른 대상 거부) · 돌연변이 M1~M5
   "08_Tests/contracts/test_sleeve_delivery.R"

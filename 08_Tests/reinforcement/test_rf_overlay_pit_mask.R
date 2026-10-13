@@ -95,6 +95,7 @@ for (dd in c("02_Infrastructure/validation", "02_Infrastructure/reinforcement/ov
   dir.create(file.path(STUB, dd), recursive = TRUE, showWarnings = FALSE)
 for (f in c("02_Infrastructure/validation/overlay_pit_guard.R", "02_Infrastructure/reinforcement/rf_rebalance.R",
             "02_Infrastructure/reinforcement/rf_sleeve.R", "02_Infrastructure/backtest_harness.R",
+            "02_Infrastructure/reinforcement/rf_axes.R",   # 엔진이 무조건 source 하는 고정 축 단정(MC5 10-13)
             "02_Infrastructure/portfolio/weight_catalog.R",
             "02_Infrastructure/reinforcement/overlay_arms/dbeta_tilt.R",
             "02_Infrastructure/reinforcement/overlay_arms/gen_20260906_174032.R",

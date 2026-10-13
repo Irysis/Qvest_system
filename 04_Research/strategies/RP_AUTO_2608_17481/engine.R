@@ -116,7 +116,7 @@ stopifnot(all(c("Date", "Ticker", "Close", "Vol", "Ret", "K200", "KQ150")
 .LIQ        <- 2e8                      # adv20(t−1) 하한 (KRW)
 .NMIN       <- 25L                      # 월 최소 횡단면 = 고정 축 종목수. 미만이면 선택
                                         #   자체가 성립하지 않는다(실측상 200+ 라 무구속).
-.SIG_FROM   <- as.Date("2005-01-01")
+.SIG_FROM   <- (if (exists(".RP_START_DATE")) .RP_START_DATE else as.Date("2005-01-01"))
 .PANEL_FROM <- as.Date("1999-01-01")    # 패널 하한. 첫 시그널일(2005-01)의 1260 거래일
                                         #   창은 ~2000-01 까지 필요하고, 그 시점에 σ^14·u
                                         #   가 이미 정의돼 있으려면 +15 거래일 여유가

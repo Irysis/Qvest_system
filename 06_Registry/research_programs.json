@@ -1,8 +1,8 @@
 {
   "schema": "research_programs_v1",
   "_doc": "v10.01 목표 역산형 3엔진 리서치의 정본 등록부(2026-10-13 도훈 지시 '이 리서치 프로세스를 지속가능하게 운영할 인프라'). 쓰기는 02_Infrastructure/programs/program_registry.R 경유만(원자적 · 스키마 검사). 설계 = 04_Research/01_reports/l1_prescription_redesign_20261013/README.md(§대안 설계 · §2 등급 v3 · §3 처방 루프 · §9 유니버스 · §10 에이전트).",
-  "version": 7,
-  "updated_at": "2026-10-13T16:15:55+0900",
+  "version": 25,
+  "updated_at": "2026-10-13T23:24:34+0900",
   "target_spec": {
     "_doc": "0단계 목표 명세 — 설계는 이 행동 목표로 한다. 등급(essence v3)은 결과 보고 문턱. 수치 출처를 단다(하드코딩 금지).",
     "upside_capture_min": {
@@ -53,25 +53,29 @@
         "id": "MC1",
         "name": "유니버스 전 종목 주입(엔진이 자르지 않는다) + 위생 단계(헌장 §11 universe_corp_action_filter · 구성 점수 윈저라이징 · 동점 규칙)",
         "decision": "D11 · §9.4",
-        "status": "todo"
+        "status": "done",
+        "artifact": "완료 10-13(측정 축 전환 · 도훈 '1번은 전환' · decision_register MEASUREMENT-AXIS-SWITCH-ALLHYG2000): constraint_defaults.json::measurement_axis active = all_hyg_2000_v1(v2.8) · contracts/measurement_axis.R(위생 멤버십 · 주입 · 기록) · 러너 universe/start_date NULL = 활성 epoch · rx_compile_spec 측정 축 표식 · 셀 워커 표식 epoch · 셀 엔진 위생 멤버 안 좁힘 · cap_core all_hyg · 충실구현 엔진 24개 시작 리터럴 → .RP_START_DATE(매니페스트 04_Research/01_reports/l1_prescription_redesign_20261013/mc1_integration/engine_start_patch_manifest.json) · 방화벽 ⑥ 전 종목 + 위생 · rf_preflight 백필 epoch 인지. 실데이터 종단 확인(기본값 경로) I1~I7 PASS = mc1_integration/integration_defaults.log · integration_summary_defaults.json · card_defaults/. 검사: test_measurement_axis 18 · capcore 62(H 절) · rx_round 35 · essence OOS 44(B5) · 방화벽 22 외 회귀 실패 0. 남은 후속(차단 아님): 동점 규칙 ①(원값 순위 — 커넥터 원값 부재) · 같은 기저 구/신 축 비교."
       },
       {
         "id": "MC3",
         "name": "시작일 2000-01-01 · 신호별 실효 시작 커버리지 판정",
         "decision": "D15",
-        "status": "todo"
+        "status": "done",
+        "artifact": "완료 10-13(도훈 \"B안으로 가자\" · decision_register MC3-EFFECTIVE-START-B · constraint_defaults v2.9 measurement_axis.epochs.all_hyg_2000_v1.effective_start): 실효 시작 = 신호 폭(FACTORS · 유니버스 뒤 점수 유한) ≥ 보유 × 2 첫 신호일부터 성과(첫 통과 = PIT · 시작 뒤 문턱 아래는 기록만 · PORTFOLIO 만 내는 엔진 = 폭 미측정 표식) · A 관문 창 이탈 = 그 실효 시작 기준(러너 auth$essence_diag → rf_cell_window ② · 재도출 ④ 도 기록 기준 · 전역 형제 백필 건너뜀). 정본 contracts/measurement_axis.R(ma_effective_start · ma_window_anchor) · run_paper_replication §5-b · rf_runner_gates.R. 커버리지 기록 폭 = 선정 전 FACTORS(basis). 검사 measurement_axis 28 · A 관문 37 · 주간 23 · a_eligibility 49. 실데이터 합성 통합 확인 = 04_Research/01_reports/l1_prescription_redesign_20261013/mc1_integration/mc3_thin_start.log · mc3_thin_start_summary.json."
       },
       {
         "id": "MC4",
         "name": "주간 리밸런싱 — 집행일 함수 일반화(get_execution_date) · 주간 신호일 거래량 0 제외 · C5 컷오프 일반화",
         "decision": "D16 · §3.9",
-        "status": "todo"
+        "status": "done",
+        "artifact": "replication/replication_harness.R(주간 경로 · rep_rebalance_mode · rep_weekly_signals · 월간 구판 비트 동일) · alpha_search/run_paper_replication.R(실현 주기 진술 · FIDELITY 자동 신고) · validation/overlay_pit_guard.R::holding_window_cutoff · rf_cell_engine 주간 오버레이 차단 · ops/rf_fidelity_audit.sh(일간→주간 = 변경 아님) · 검사 test_replication_weekly 21/0 · test_overlay_window_cutoff 6/0 · 회귀 하네스 46 · 패리티 6 · 골든 8 · tilt 47 · c11 97 · 감사 43 · 엔진 37/44"
       },
       {
         "id": "MC5",
         "name": "Σw ≤ 1 (잔여 현금) 엔진 단정 개정",
         "decision": "D11",
-        "status": "todo"
+        "status": "done",
+        "artifact": "02_Infrastructure/reinforcement/rf_axes.R(rf_assert_axes · 엔진 비중 단계 · cap_core 단정 교체) · 08_Tests/reinforcement/test_rf_axes.R(12/0 · SUITES) · 엔진 스모크 37/0 · capcore 58/0 · overlay_stack 44/0"
       },
       {
         "id": "MC6",
@@ -115,7 +119,7 @@
       "thesis": "문헌 표준의 단순 부품(추세 현금 규칙 · 변동성 타기팅 · 낙폭 제어 · 저변동/퀄리티 틸트) × 기존 수익 엔진으로 한국 전 종목에서 (상승 포착, 위기 하락 포착, CAGR) 프런티어가 목표 영역에 닿는가",
       "decisive_test": "보는 창(2000-01~2022-12)에서 목표 영역(상승 ≥ 0.55 · 위기 누적 포착 ≤ 도출 문턱 · CAGR ≥ 0.16)에 닿는 조합이 하나라도 있는가 — 있으면 시험 창(2023~)에서 같은 판정을 유지하는가",
       "kill_or_pivot": "보는 창에서도 목표 영역 조합이 0이면 탐색을 늘리지 않고 도훈 안건(목표 또는 축 재검토)으로 올린다",
-      "status": "blocked",
+      "status": "active",
       "blocked_by": [
         "MC1",
         "MC3",
@@ -138,8 +142,42 @@
         "Blitz & van Vliet (2007) The Volatility Effect, J. Portfolio Management",
         "Hurst, Ooi & Pedersen (2017) A Century of Evidence on Trend-Following Investing, J. Portfolio Management 44(1)"
       ],
-      "rounds": [],
-      "queue": []
+      "rounds": [
+        {
+          "round_id": "P0R01_feasibility_map",
+          "prereg": "stage_artifacts/programs/P0_FRONTIER/P0R01_feasibility_map/prereg.json",
+          "prereg_md5": "44f50ab169415c947c00b6b30179a03c",
+          "status": "registered",
+          "n_variants": 21,
+          "variants": [
+            "P0R01_E1_C0",
+            "P0R01_E1_C1",
+            "P0R01_E1_C2",
+            "P0R01_E1_C3",
+            "P0R01_E1_C4",
+            "P0R01_E1_C5",
+            "P0R01_E1_C6",
+            "P0R01_E2_C0",
+            "P0R01_E2_C1",
+            "P0R01_E2_C2",
+            "P0R01_E2_C3",
+            "P0R01_E2_C4",
+            "P0R01_E2_C5",
+            "P0R01_E2_C6",
+            "P0R01_E3_C0",
+            "P0R01_E3_C1",
+            "P0R01_E3_C2",
+            "P0R01_E3_C3",
+            "P0R01_E3_C4",
+            "P0R01_E3_C5",
+            "P0R01_E3_C6"
+          ],
+          "recorded_at": "2026-10-13T23:14:22+0900"
+        }
+      ],
+      "queue": [],
+      "status_reason": "라운드 P0R01_feasibility_map 사전등록(21칸 · 측정 축 all_hyg_2000_v1)",
+      "status_at": "2026-10-13T23:14:22+0900"
     },
     {
       "id": "P1_RETURN",
@@ -148,10 +186,23 @@
       "thesis": "상승 포착과 알파(모든 국면에서 더해지는 초과수익)를 키우는 횡단면 선택 엔진을 확보한다",
       "decisive_test": "β-통제 알파 t · 상승 포착 · 시험 창 유지 — 행동 카드 + 등급 v3",
       "kill_or_pivot": "엔진별 사전등록 반증 조건",
-      "status": "idle",
+      "status": "active",
       "material": "논문 라우터가 return 으로 분류한 논문 + 충실구현 레인 산출(B 이상) + 기존 B 풀(새 측정 축으로 재측정)",
-      "rounds": [],
-      "queue": []
+      "rounds": [
+        {
+          "round_id": "P1R01_engine_qualification",
+          "prereg": "stage_artifacts/programs/P1_RETURN/P1R01_engine_qualification/prereg.json",
+          "prereg_md5": "5d577e5d3156706103cfbaa2d0d11c53",
+          "status": "registered",
+          "n_variants": 3,
+          "variants": ["E1", "E2", "E3"],
+          "shared_with": "P0R01_feasibility_map",
+          "recorded_at": "2026-10-13T23:24:34+0900"
+        }
+      ],
+      "queue": [],
+      "status_reason": "라운드 P1R01_engine_qualification 사전등록(P0R01 C0 칸 공유 · 엔진 3)",
+      "status_at": "2026-10-13T23:24:34+0900"
     },
     {
       "id": "P2_DEFENSE",
@@ -160,10 +211,152 @@
       "thesis": "위기 하락 포착을 줄이되 상승 포착 비용이 작은 장치(시변 노출 · 방어적 보유)를 확보한다. 장치는 전략 하나가 아니라 여러 수익 엔진에 걸쳐 검증한다(위기 수 × 엔진 수)",
       "decisive_test": "여러 수익 엔진에 붙였을 때 크기 짝 · 노출 짝 대조보다 위기 낙폭 포착이 낮은 비율이 과반 · 급락형/완만형 위기를 나눠 본다",
       "kill_or_pivot": "장치별 사전등록 반증 조건",
-      "status": "idle",
+      "status": "active",
       "material": "논문 라우터가 defense 로 분류한 논문 + 메커니즘 지도",
-      "rounds": [],
-      "queue": []
+      "rounds": [
+        {
+          "round_id": "P2R01_s2_pilot",
+          "prereg": "stage_artifacts/programs/P2_DEFENSE/P2R01_s2_pilot/prereg.json",
+          "prereg_md5": "2f7e8d39686adbffbe7778768e804c93",
+          "status": "complete",
+          "base": "2002.06975 B6_36(close_t1)",
+          "n_variants": 3,
+          "control": "P2R01_RX0",
+          "variants": [
+            "P2R01_RX1",
+            "P2R01_RX2",
+            "P2R01_RX3"
+          ],
+          "recorded_at": "2026-10-13T19:03:49+0900",
+          "results": {
+            "RX0": {
+              "code": "P2R01_RX0",
+              "grade": "B",
+              "S": 0.7793,
+              "rules_version": "v3.1",
+              "cr": "normal",
+              "cr_test": "strong",
+              "attribution": "size_defense",
+              "falsified": false,
+              "undetermined": false,
+              "artifacts": "stage_artifacts/replication/20261013_165251_20896",
+              "axis": {
+                "ok": true,
+                "max_names": 25,
+                "n_max": 25,
+                "n_mean": 25,
+                "n_over": 0,
+                "n_rebal": 261
+              },
+              "validity": "valid"
+            },
+            "RX1": {
+              "code": "P2R01_RX1",
+              "grade": "B",
+              "S": 0.6702,
+              "rules_version": "v3.1",
+              "cr": "normal",
+              "cr_test": "normal",
+              "attribution": "size_defense",
+              "falsified": true,
+              "undetermined": false,
+              "artifacts": "stage_artifacts/replication/20261013_172019_37396",
+              "axis": {
+                "ok": true,
+                "max_names": 25,
+                "n_max": 25,
+                "n_mean": 25,
+                "n_over": 0,
+                "n_rebal": 261
+              },
+              "validity": "valid"
+            },
+            "RX2": {
+              "code": "P2R01_RX2",
+              "grade": "B",
+              "S": 0.7519,
+              "rules_version": "v3.1",
+              "cr": "normal",
+              "cr_test": "normal",
+              "attribution": "size_defense",
+              "falsified": true,
+              "undetermined": false,
+              "artifacts": "stage_artifacts/replication/20261013_173703_35308",
+              "axis": {
+                "ok": false,
+                "max_names": 25,
+                "n_max": 120,
+                "n_mean": 41.3,
+                "n_over": 115,
+                "n_rebal": 261
+              },
+              "validity": "invalid_axis_violation"
+            },
+            "RX3": {
+              "code": "P2R01_RX3",
+              "grade": "B",
+              "S": 0.7833,
+              "rules_version": "v3.1",
+              "cr": "normal",
+              "cr_test": "normal",
+              "attribution": "size_defense",
+              "falsified": true,
+              "undetermined": false,
+              "artifacts": "stage_artifacts/replication/20261013_175043_25968",
+              "axis": {
+                "ok": true,
+                "max_names": 25,
+                "n_max": 25,
+                "n_mean": 25,
+                "n_over": 0,
+                "n_rebal": 261
+              },
+              "validity": "valid"
+            }
+          },
+          "selected": "none",
+          "selection_reason": "① · ② 를 통과한 처방 없음 — 선정 없음",
+          "reviewer": {
+            "next_move": "deepen",
+            "next_move_reasoning": "세 처방 중 RX3 만 책 수준 기전이 겨냥한 방향으로 움직였고(하락장 베타 1.1549→1.06 · 상승장 베타 0.99 유지 · 상승 포착 1.9042·CAGR 20.53% 무손실 · Calmar 0.3922→0.4121 · 최악 포착 1.25→1.19), 그 실패가 정확히 한 군데로 특정된다 — 개선을 평균 노출 축소(1.00→0.95)로 조달해 짝 기준이 같이 내려갔고(2007 p 0.025→0.075 · 2011 창 기준선 1.00→0.95 뒤집힘) 귀속이 exposure_defense 로 하향됐다. 동시에 2021 창은 그 짝을 넘었다(포착 0.45 · 짝 0.85 · p 0.005) → 배분 성분이 존재한다는 양성 증거가 1건 있다. 노출을 1.00 에 고정한 판에서 같은 기전을 다시 내면 개선분이 전부 기전 방어로 계상되고, 사전등록 지표를 꼬리(최악 포착·CDaR·창별 포착)로 옮기면 효과가 나타나는 자리를 측정한다. R7(stop)을 쓰지 않는 근거: 이 라운드는 '잡음 이내'가 아니라 방향 일관 소득 1건(RX3) + 특정된 기각 1건(RX1 → W2 의 종목축 형태 기각) + 미시행 1건(RX2 → 기전 미발화·축 이탈)이다. 단 A 까지 거리는 크다 — 헌장 §2 의 R 산술(PORT_t 3.938 기준 필요 Calmar 0.528) 대비 최선 Calmar 0.4121, 롤링 36M 44~51%(PORT_t 4.0072 에서의 정확한 필요 Calmar 는 측정 필요).",
+            "lessons": [
+              "운반(carry)은 점수 축에서 고쳐지지 않는다 — 하방 비대칭 팩터를 결합 점수 1/8 가중으로 넣은 RX1 은 시장 적재(0.99 불변)·하락장 베타(1.1549→1.1411)를 못 움직이고 크기 적재(0.94→0.88)와 MDD 창 선택 성분(+9.3%→−3.1%)만 바꿨다. 운반은 노출·배분 층에서 다루고 점수 축에는 선택 알파의 정의역을 지켜라.",
+              "노출을 깎아 얻은 방어는 짝이 같이 내려가 R5 에서 상쇄된다 — RX3 는 하락장 베타 1.1549→1.06 · 최악 포착 1.25→1.19 · Calmar 0.3922→0.4121 을 얻고도 귀속이 exposure_defense 로 하향됐고, 전략 경로가 완전히 동일한 2007 창의 p 가 0.025→0.075 로 사라졌다(짝 1.06→1.02 · 5% 분위 0.95→0.91). 방어 처방은 평균 노출 고정판을 함께 내라.",
+              "4개 위기의 중앙값은 꼬리 개선에 둔감하다 — RX3 는 양 극단(1.25→1.19 · 0.60→0.45)을 개선했는데 중앙 포착(0.9529)과 비대칭(1.9982)은 소수 4자리까지 기저와 동일했다. 사전등록 지표는 기전이 움직이는 자리(최악 포착 · CDaR · 창별 포착 · 하락장 베타)로 잡아라.",
+              "delta 가 등록한 방향으로 움직였는지 먼저 확인하라 — RX2 는 회전 15.43→17.25 · 비용 2.33→2.60% · 4창 전부 비용 악화로 기전이 발화하지 않았고(버퍼 교체 상쇄가 역전으로 실현) 평균 보유 25.0→43.2종(최대 120종)으로 축도 벗어났다. 기전 미발화·축 이탈은 '기각'이 아니라 '미시험'이다."
+            ],
+            "next_hypotheses": [
+              "RX3 노출 고정판 — 상태 조건부 횡단면 재배분을 평균 노출 1.00 에 묶고(현금 축소 0) 시장베타 순위 상·하위 간 비중만 교환한다. 노출 짝 기준이 1.00 에 고정되므로 개선은 전부 기전 방어로 계상되고, 2011 형 미발화 창에서 기준선이 내려가 손해 보는 일(0.99 불변인데 돌파에서 빠짐)도 없어진다.",
+              "RX3 상태 변수의 발화 범위 분리 — 2005~2013 완전 미발화(연도별 수익·2007·2011 위기 성분이 기저와 동일)가 확장창 경험분위의 워밍업 때문인지, 추세-지속 상태가 급락형(2011 5개월)을 못 잡는 것인지. 전자라면 보는 창 전반의 증거는 처방 효과가 아니라 침묵이다.",
+              "W3 재시험(축 안에서) — 회전 상한을 ≤25종 축에서 다시 재고 지지 조건을 사전등록대로 읽는다(회전↓ · 선택 성분 유지 · 4창 전부 비용 절대값 감소). 이번 판은 회전 15.43→17.25 · 비용 2.33→2.60% 로 기전이 발화하지 않았다.",
+              "폭(breadth) 축 단독 시험 — RX2 가 우연히 건드린 축(평균 보유 25.0→43.2 · 유효 23.9→25.0)이 MDD 창 초과 −3.8→+0.5%(선택 9.3→15.3%)와 롤링 36M 45→51% 의 원인인지. 정체 관문을 움직인 유일한 관측이므로 회전 축과 섞지 말고 단독으로 재야 한다.",
+              "RX3 의 2015 참여 손실(39.5→30.4% · −9.1%p) 출처 — 강세 구간 오발화라면 상태 해제 조건을 다듬는 것이 노출 고정판보다 먼저다."
+            ]
+          },
+          "report": "stage_artifacts/programs/P2_DEFENSE/P2R01_s2_pilot/ROUND_REPORT.md",
+          "completed_at": "2026-10-13T19:03:49+0900"
+        },
+        {
+          "round_id": "P2R02_device_cross_engine",
+          "prereg": "stage_artifacts/programs/P2_DEFENSE/P2R02_device_cross_engine/prereg.json",
+          "prereg_md5": "b0d14135c68222295ea5a44022243e73",
+          "status": "registered",
+          "n_variants": 6,
+          "variants": [
+            "C1",
+            "C2",
+            "C3",
+            "C4",
+            "C5",
+            "C6"
+          ],
+          "shared_with": "P0R01_feasibility_map",
+          "recorded_at": "2026-10-13T23:19:42+0900"
+        }
+      ],
+      "queue": [],
+      "status_reason": "라운드 P2R02_device_cross_engine 사전등록(P0R01 측정 공유 · 장치 6 × 엔진 3)",
+      "status_at": "2026-10-13T23:19:42+0900"
     },
     {
       "id": "P3_CONSTRUCTION",
@@ -172,10 +365,33 @@
       "thesis": "비중 · 집중 · 회전 · 용량을 '낙폭 제약 아래 복리 극대화'로 정한다(Busseti, Ryu & Boyd 2016 Risk-Constrained Kelly Gambling · Grossman & Zhou 1993 · Palomar 낙폭 기반 포트폴리오)",
       "decisive_test": "같은 엔진·같은 방어에서 구성만 바꿨을 때 CDaR · 시험 창 유지가 개선되는가",
       "kill_or_pivot": "사전등록 반증 조건",
-      "status": "idle",
+      "status": "active",
       "material": "논문 라우터가 construction 으로 분류한 논문 + weight_catalog",
-      "rounds": [],
-      "queue": []
+      "rounds": [
+        {
+          "round_id": "P3R01_construction_map",
+          "prereg": "stage_artifacts/programs/P3_CONSTRUCTION/P3R01_construction_map/prereg.json",
+          "prereg_md5": "dd47cbe52412a9ed364d010efa63540a",
+          "status": "registered",
+          "n_variants": 10,
+          "variants": [
+            "P3R01_E1_K1",
+            "P3R01_E1_K2",
+            "P3R01_E1_K3",
+            "P3R01_E1_K4",
+            "P3R01_E1_K5",
+            "P3R01_E2_K1",
+            "P3R01_E2_K2",
+            "P3R01_E2_K3",
+            "P3R01_E2_K4",
+            "P3R01_E2_K5"
+          ],
+          "recorded_at": "2026-10-13T23:21:34+0900"
+        }
+      ],
+      "queue": [],
+      "status_reason": "라운드 P3R01_construction_map 사전등록(10칸 · 기준 = P0R01 EW 칸)",
+      "status_at": "2026-10-13T23:21:34+0900"
     },
     {
       "id": "P4_ASSEMBLY",

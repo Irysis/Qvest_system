@@ -68,7 +68,80 @@ gv3_cfg <- function(root = NULL, path = NULL) {
       !identical(cfg$b_boundary$port_t, "tier_graduation.grade_b_min_portfolio_alpha_t"))
     stop("[grade_v3] b_boundary 규칙 어휘 밖 — 기대 S_at_corner(same_window_benchmark_calmar · grade_b_min_portfolio_alpha_t)")
   if (!identical(cfg$c_boundary$rule, "S_gt_zero")) stop("[grade_v3] c_boundary 규칙 어휘 밖 — 기대 S_gt_zero")
+  sr <- .gv3_or(cfg$cr_notch$strong_requires, "none")
+  if (!sr %in% c("none", "mc8_selection_defense"))
+    stop("[grade_v3] cr_notch.strong_requires 어휘 밖: ", sr, " (none | mc8_selection_defense)")
   cfg
+}
+
+#' CR '강함' 상향 노치의 MC8 조건(decision_register GRADE-V3-CR-STRONG-SELECTION · 도훈 10-13 · MC8 보고서 §7)
+#'   설정 cr_notch.strong_requires = "mc8_selection_defense" 면 '강함'은 MC8 귀속(전체 창)이 선택(기전) 방어일 때만 강함으로 쓰고
+#'   아니면(크기 방어 · 노출 방어 · 방어 없음 · 판정 불가 · 대조 불가 · 오류) 보통으로 낮춘다 — 크기 방어 착시(헌장 §7.3)로 상향하지 않는다.
+#'   약함 · 보통 · 판정 불가는 그대로다(하향 노치는 대조와 무관).
+gv3_cr_for_notch <- function(cr, mc8_label, cfg) {
+  req <- .gv3_or(cfg$cr_notch$strong_requires, "none")
+  if (!identical(cr, "strong") || identical(req, "none")) return(cr)
+  if (identical(req, "mc8_selection_defense")) return(if (identical(mc8_label, "selection_defense")) "strong" else "normal")
+  stop("[grade_v3] cr_notch.strong_requires 어휘 밖: ", req)
+}
+
+# MC8 계약(matched_controls.R)을 사적 환경에 싣는다 — 행동 카드 계약은 .gv3_deps 환경 것을 넘긴다
+.gv3_mc_env <- function(root) {
+  if (isTRUE(.GV3$mc_loaded) && identical(.GV3$mc_root, root)) return(.GV3$mc_e)
+  m <- new.env(parent = globalenv())
+  p <- file.path(root, "02_Infrastructure/contracts/matched_controls.R")
+  if (!file.exists(p)) stop("[grade_v3] matched_controls.R 없음: ", p)
+  invisible(utils::capture.output(suppressMessages(sys.source(p, envir = m, keep.source = FALSE))))
+  .GV3$mc_e <- m; .GV3$mc_root <- root; .GV3$mc_loaded <- TRUE
+  m
+}
+
+# MC8 대조용 RAWDATA — 측정 프로세스 메모리에 RAWDATA 가 있으면 그것(측정과 같은 판본), 없으면 파일에서 한 번 읽어 재사용(지문으로 무효화)
+.gv3_mc_raw <- function(root, m, universe = NULL) {
+  hyg <- identical(universe, "ALL_HYG")       # 측정 축 ALL_HYG(MC1) — 대조 유니버스에 위생 멤버십이 필요하다
+  g <- if (exists("RAWDATA", envir = globalenv(), inherits = FALSE)) get("RAWDATA", envir = globalenv()) else NULL
+  if (is.data.frame(g) && all(c("Date", "Ticker", "K200", "KQ150", "Size", "Ret") %in% names(g)) &&
+      (!hyg || "K200_IDX" %in% names(g)))     # ALL_HYG 면 측정 축이 주입된 프로세스 RAWDATA 만 같은 판본으로 쓴다
+    return(list(raw = data.table::as.data.table(g), source = "process_RAWDATA"))
+  p <- file.path(root, ".cache/RAWDATA.parquet"); fi <- file.info(p)
+  fp <- paste(fi$size, format(fi$mtime, "%Y-%m-%dT%H:%M:%OS3"), if (hyg) "hyg" else "base")
+  slot <- if (hyg) "mc_raw_hyg" else "mc_raw"; fslot <- paste0(slot, "_fp")
+  if (!identical(.GV3[[fslot]], fp)) {
+    .GV3[[slot]] <- m$mc_load_raw(root, from = "2000-01-01", hygiene = hyg)
+    .GV3[[fslot]] <- fp
+  }
+  list(raw = .GV3[[slot]], source = paste("RAWDATA.parquet", fp))
+}
+
+# 채점 입력의 보유 · 집행 규약 · 유니버스(디렉터리판 = 산출물 파일 · bt 판 = bt_result 구성 요소)
+.gv3_mc_inputs <- function(X) {
+  if (!is.null(X$H)) return(X)
+  d <- X$dir
+  if (is.null(d) || is.na(d) || !file.exists(file.path(d, "04_holdings.csv"))) return(X)
+  X$H <- data.table::fread(file.path(d, "04_holdings.csv"), colClasses = list(character = "ticker"))
+  rj <- function(n) { p <- file.path(d, n); if (file.exists(p)) tryCatch(fromJSON(p, simplifyVector = TRUE), error = function(e) list()) else list() }
+  sp <- rj("01_strategy_spec.json"); mn <- rj("00_manifest.json")
+  X$spec <- list(exec_price = sp[["exec_price"]], universe = .gv3_or(sp[["universe"]], mn[["universe_id"]]))
+  X
+}
+
+# MC8 귀속(전체 창) — CR '강함' 일 때만 부른다(그 밖은 노치에 쓰이지 않는다)
+.gv3_mc8 <- function(X, card, ctx, root, e) {
+  X <- .gv3_mc_inputs(X)
+  if (is.null(X$H) || !NROW(X$H)) return(list(status = "no_holdings", label = NA_character_))
+  m <- .gv3_mc_env(root)
+  uni <- as.character(.gv3_or(X$spec$universe, NA_character_))[1]
+  if (is.na(uni) || !nzchar(uni)) return(list(status = "no_universe", label = NA_character_))
+  H <- data.table::as.data.table(X$H)[, .(date = as.Date(date), ticker = as.character(ticker), target_weight = as.numeric(target_weight))]
+  ep <- m$.mc_exec_price(list(exec_price = X$spec$exec_price), X$pr$date, H$date)
+  rw <- .gv3_mc_raw(root, m, uni)
+  ctl <- m$mc_controls(H, X$pr, X$br, rw$raw, m$mc_cfg(root), ep$value, uni)
+  k <- m$mc_attribution(card, ctl, X$br[, .(date, benchmark_ret)], ctx$bc_cfg, e)
+  a <- k$controls$attribution$overall
+  list(status = .gv3_or(k$controls$status, ctl$status), label = .gv3_or(a$label, NA_character_),
+       share_beats_size_exposure = .gv3_or(a$share_beats_size_exposure, NA_real_),
+       share_beats_exposure = .gv3_or(a$share_beats_exposure, NA_real_), share_beats_bench = .gv3_or(a$share_beats_bench, NA_real_),
+       median_placebo_p = .gv3_or(a$median_placebo_p, NA_real_), exec_price = ep$value, universe = uni, raw_source = rw$source)
 }
 
 #' A·B 문턱 — essence 와 같은 로더로 tier_graduation 정본을 읽는다. 정본 미해소(리터럴 폴백)면 멈춘다.
@@ -139,6 +212,11 @@ gv3_S <- function(calmar, port_t, th, w) {
   X <- .gv3_prep(bt$period_returns, bt$benchmark_returns, nv, bt$metrics, bt$benchmark_compare,
                  list(strategy_id = sid, essence_grade = NA_character_))
   X$nav_source <- nav_src
+  # MC8(CR '강함' 일 때만 쓰인다) 입력 — 보유 · 집행 규약 · 유니버스
+  if (!is.null(bt$holdings) && NROW(bt$holdings)) X$H <- data.table::as.data.table(bt$holdings)
+  sp <- if (is.list(bt$strategy_spec)) bt$strategy_spec else list()
+  mn <- if (is.list(bt$manifest)) bt$manifest else list()
+  X$spec <- list(exec_price = .gv3_or(sp[["exec_price"]], NULL), universe = .gv3_or(sp[["universe"]], mn[["universe_id"]]))
   X
 }
 
@@ -271,6 +349,7 @@ gv3_score_bt <- function(bt, root = NULL, ctx = NULL, gates = NULL) {
   root <- .gv3_root(root); e <- .gv3_deps(root)
   if (is.null(ctx)) ctx <- gv3_ctx(root)
   cfg <- ctx$cfg; th <- ctx$th
+  if (!is.null(dir) && !is.na(dir)) X$dir <- dir
   es <- X$ar[["essence"]]          # [[ ]] = 정확 일치 — $ 는 부분 일치라 bt 경로의 essence_grade 를 집어 온다
   if (!is.list(es)) es <- NULL
   num <- function(z) suppressWarnings(as.numeric(.gv3_or(z, NA_real_))[1])
@@ -321,8 +400,15 @@ gv3_score_bt <- function(bt, root = NULL, ctx = NULL, gates = NULL) {
   oos_gate <- all(oos_parts)
 
   S_B <- gv3_S(bench$calmar, th$port_t_b, th, cfg$weights)        # B 경계 = 같은 창 벤치 Calmar · 현행 B PORT_t 모서리의 S
-  dec <- gv3_decide(S, S_B, fl, oos_parts, cs$cr, cfg, gates = gates)
+  # CR '강함' 상향 노치의 MC8 조건(GRADE-V3-CR-STRONG-SELECTION) — 강함일 때만 대조를 잰다 · 실패 = 상향 없음(fail-closed)
+  mc8 <- list(status = "not_needed", label = NA_character_)
+  if (identical(cs$cr, "strong") && !identical(.gv3_or(cfg$cr_notch$strong_requires, "none"), "none"))
+    mc8 <- tryCatch(.gv3_mc8(X, card, ctx, root, e),
+                    error = function(err) list(status = "error", label = NA_character_, err = conditionMessage(err)))
+  cr_notch <- gv3_cr_for_notch(cs$cr, mc8$label, cfg)
+  dec <- gv3_decide(S, S_B, fl, oos_parts, cr_notch, cfg, gates = gates)
   grade <- dec$grade; why <- dec$blocked_by
+  if (identical(cs$cr, "strong") && !identical(cr_notch, "strong")) why <- c(why, paste0("cr:strong_without_selection(", .gv3_or(mc8$label, mc8$status), ")"))
 
   list(schema = "grade_v3_v1", mode = cfg$mode, dir = dir, nav_source = .gv3_or(X$nav_source, "contract"),
        strategy_id = as.character(.gv3_or(X$ar$strategy_id, NA)),
@@ -338,7 +424,9 @@ gv3_score_bt <- function(bt, root = NULL, ctx = NULL, gates = NULL) {
                   rolling_status = rr$status, pass_life = .gv3_or(rr$pass_life, NA_real_),
                   pass_recent = .gv3_or(rr$pass_recent, NA_real_), pass_oos = pass_oos, pass_min = pass_min,
                   pass_min_status = cfg$oos$rolling_pass_min_status, parts = as.list(oos_parts), gate = oos_gate),
-       S_B = S_B, band = dec$band, notch = dec$notch, notch_a = dec$notch_a,
+       S_B = S_B, band = dec$band, notch = dec$notch, notch_a = dec$notch_a, cr_notch = cr_notch, mc8 = mc8,
+       rules_version = as.character(.gv3_or(cfg$rules_version, "v3.0")),
+       crisis_def = as.character(.gv3_or(ctx$bc_cfg$crisis_episode_def, "running_peak_drawdown")),
        grade_v3 = grade, blocked_by = why)
 }
 

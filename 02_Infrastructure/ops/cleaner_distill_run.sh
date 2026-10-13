@@ -101,7 +101,7 @@ $(cat "$MAT")
  (b) **근거** — 결론이 supporting L-code 실측에 실제로 뒷받침되는가? (proxy 를 backtested 로 오라벨 금지)
  (c) **AX-000** — 3~4회 실패를 '구조적 한계/dead-end' 로 단정하는가? → 재작성(미해결 열어둠은 허용).
  (d) **제약 방화벽(의미 판정)** — 위 §4 컨텍스트를 읽고, 초안이 고정 제약(종목수≤25·유동성 2e8·
-     long-only·Σw=1·K200∪KQ150·15bps)이나 PIT 를 **실패 원인으로 귀속**하거나 **완화를 레버로
+     long-only·Σw≤1·전 종목+위생·15bps)이나 PIT 를 **실패 원인으로 귀속**하거나 **완화를 레버로
      제시**하는지 의미로 판정하라. 정규식이 아니라 원리다 — 임의 패러프레이즈·영어도 잡는다.
      위반이면 envelope-안 레버(overlay·잔차 sleeve·비-return·DPL·regime-conditional·multi-sleeve·
      composite·ML sizing) 상대로 재작성. ('이 경로는 봉투 안에서 천장' 정직 서술은 위반 아님)

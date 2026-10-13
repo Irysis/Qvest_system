@@ -176,7 +176,7 @@ setorder(.rd, Ticker, Date)
 .rd[, ymk := format(Date, "%Y-%m")]
 .month_ends <- sort(.rd[, .(D = max(Date)), by = ymk]$D)
 .rd[, ymk := NULL]
-.sig_dates <- .month_ends[.month_ends >= as.Date("2005-01-01")]   # 러너 절단선과 정합
+.sig_dates <- .month_ends[.month_ends >= (if (exists(".RP_START_DATE")) .RP_START_DATE else as.Date("2005-01-01"))]   # 러너 절단선과 정합
 .all_dates <- sort(unique(.rd$Date))
 setkey(.rd, Date, Ticker)
 

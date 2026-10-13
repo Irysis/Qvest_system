@@ -1,0 +1,57 @@
+{
+  "code": "P0R01_E1_C6",
+  "label": "모멘텀 12-1(문헌 표준 · 엔진 내장) × 추세 현금 + 저변동 틸트(시변 노출 × 방어적 보유)",
+  "block": "RX",
+  "fixed_axes": {
+    "long_only": true,
+    "n_max": 25,
+    "commission_bps": 15,
+    "liq_adv20_min": 200000000,
+    "weight_cap": null,
+    "base_weight": 0.5,
+    "measurement_axis": "all_hyg_2000_v1",
+    "universe": "ALL_HYG",
+    "start_date": "2000-01-01"
+  },
+  "base_signal": {
+    "kind": "mom_12_1"
+  },
+  "base_weight": 0.5,
+  "factors": [
+    {
+      "kind": "db",
+      "id": "D03_RealVol"
+    }
+  ],
+  "weighting": {
+    "kind": "ew"
+  },
+  "defense_sleeve": null,
+  "root_paper": {
+    "url": "https://doi.org/10.1111/j.1540-6261.1993.tb04702.x",
+    "title": "Jegadeesh & Titman (1993) Returns to Buying Winners and Selling Losers, JF 48(1)",
+    "paper_key": "JT1993"
+  },
+  "root_papers": [
+    {
+      "url": "https://doi.org/10.1111/j.1540-6261.1993.tb04702.x",
+      "title": "Jegadeesh & Titman (1993) Returns to Buying Winners and Selling Losers, JF 48(1)",
+      "paper_key": "JT1993"
+    }
+  ],
+  "overlay": {
+    "kind": "ts_mom_gate",
+    "arm_id": "ts_mom_sign"
+  },
+  "idea": "[P0R01 실현 가능성 지도 · E1 × C6] C1 + C4 — 비대칭의 원천 ②(시변 노출)와 ③(방어적 보유)의 결합(research-program SKILL 철학)",
+  "selection_accounting": {
+    "selection_type": "sweep",
+    "family_root": "JT1993_builtin_mom_12_1",
+    "lineage": "RX_P0R01_feasibility_map",
+    "n_family_at_registration": 21,
+    "n_trials_basis": "P0R01: 계보 측정 시도 0 + 앞 라운드 변형 0 + 이 라운드 칸 21(엔진 3 × 부품 7 · 선택은 21칸 전체에서)"
+  },
+  "universe": {
+    "kind": "all_hyg"
+  }
+}

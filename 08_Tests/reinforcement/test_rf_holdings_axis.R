@@ -93,11 +93,22 @@ if (same) {
 }
 
 # ── (4) 엔진이 여전히 상위 N 을 자르는가 (전제 확인) ────────────────────────
+#   (MC1 · MC5 2026-10-13) 절단식은 reinforcement/rf_axes.R::rf_select_top 으로 옮겨졌다(동점 규칙 인자 추가).
+#   그래서 엔진 소스 문구 대신 **호출 지점 + 함수 거동**을 본다 — 소스 문구 단정은 리팩터가 옮기는 좌표를 못박는다.
 e <- rd("02_Infrastructure/reinforcement/rf_cell_engine.R")
-if (grepl("head(.SD, .N_MAX), by = Date", e, fixed = TRUE)) {
-  ok("엔진이 상위 N_MAX 를 잘라 내보낸다 (이중 선정 전제 — 러너는 다시 자르면 안 된다)")
+.sel_ok <- tryCatch({
+  suppressPackageStartupMessages(library(data.table))
+  .ax <- new.env(); sys.source(file.path(ROOT, "02_Infrastructure/reinforcement/rf_axes.R"), envir = .ax)
+  .P <- data.table(Date = rep(as.Date(c("2020-01-31", "2020-02-28")), each = 40L), Ticker = rep(sprintf("T%02d", 1:40), 2L), Score = c(40:1, 1:40))
+  .S <- .ax$rf_select_top(.P, 25L)
+  all(.S[, .N, by = Date]$N == 25L) && identical(.S[Date == as.Date("2020-01-31")]$Ticker, sprintf("T%02d", 1:25)) &&
+    identical(.S[Date == as.Date("2020-02-28")]$Ticker, sprintf("T%02d", 40:16))
+}, error = function(z) FALSE)
+if (grepl("rf_select_top(PANEL, .N_MAX", e, fixed = TRUE) && .sel_ok) {
+  ok("엔진이 상위 N_MAX 를 잘라 내보낸다 (rf_select_top 호출 + 날짜별 상위 25 거동 · 이중 선정 전제 — 러너는 다시 자르면 안 된다)")
 } else {
-  ng("엔진의 상위 N 절단이 사라졌다 — 이 검사의 전제가 바뀌었다(검사기 갱신 필요)")
+  ng("엔진의 상위 N 절단이 사라졌다 — 이 검사의 전제가 바뀌었다(검사기 갱신 필요)",
+     sprintf("호출=%s · 거동=%s", grepl("rf_select_top(PANEL, .N_MAX", e, fixed = TRUE), .sel_ok))
 }
 
 # ── (5) long_only 축 — 엔진이 숏 레그를 만들 수 있는가 ──────────────────────

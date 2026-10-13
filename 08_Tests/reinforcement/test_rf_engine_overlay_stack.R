@@ -91,8 +91,9 @@ invisible(file.copy(file.path(ROOT, "02_Infrastructure/validation/overlay_pit_gu
 # ★픽스처 보강(2026-09-24 · P0-09) — 09-21 B6/B7 이후 엔진은 머리에서 rf_rebalance.R·rf_sleeve.R 을 source 한다.
 #   스텁 루트에 두 파일이 없어 '0 기저' 가 "cannot open the connection" 으로 죽고 전 항목이 돌지 않았다(09-21~).
 #   backtest_harness.R 은 엔진이 get_execution_date 정의만 parse 해 홀딩 시작을 잡는다(P0-09 assert 입력) — 없으면 달력만.
+#   (재발 10-13 MC5: 엔진이 rf_axes.R 을 source 하자 같은 이유로 죽었다 — 엔진에 source 를 더하면 이 목록 · test_rf_capcore X · test_rf_base_cache_key 도 함께)
 for (.f in c("02_Infrastructure/reinforcement/rf_rebalance.R", "02_Infrastructure/reinforcement/rf_sleeve.R",
-             "02_Infrastructure/backtest_harness.R"))
+             "02_Infrastructure/reinforcement/rf_axes.R", "02_Infrastructure/backtest_harness.R"))
   if (!file.copy(file.path(ROOT, .f), file.path(STUB, .f), overwrite = TRUE)) stop("스텁 루트 사본 실패: ", .f)
 .arm <- function(kind, body) writeLines(body, file.path(STUB, "02_Infrastructure/reinforcement/overlay_arms", paste0(kind, ".R")))
 .arm("stub_scal", c(

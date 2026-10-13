@@ -2991,7 +2991,140 @@
       "registered_at": "2026-10-13T14:44:15+0900",
       "recorded_by": "Q session 7a34e194 (도훈 채팅 지시 기록)",
       "evidence": "도훈 채팅 2026-10-13 '벤치는 그래 그대로 두자.'"
+    },
+    {
+      "id": "MC8-LABEL-NO-DEFENSE",
+      "title": "MC8 귀속 라벨 v2 — '노출 방어'와 '방어 없음' 분리",
+      "status": "resolved",
+      "opened_at": "2026-10-13T17:24:21+0900",
+      "options": [
+        "v1 유지(노출 짝을 못 넘으면 전부 노출 방어)",
+        "v2 — 시장(벤치) 자체도 과반 위기에서 못 넘으면 '방어 없음'(no_defense) · 시장은 넘고 노출 짝은 못 넘으면 '노출 방어'"
+      ],
+      "recommendation": "v2 — 평균 노출 1.0 전략은 노출 짝 = 시장이라 노출 방어가 정의상 나올 수 없는데 v1 은 '노출 방어'로 찍었다(S1 기저: 위기 6번 중 시장보다 덜 빠진 것 2번)",
+      "default_until_decided": "v1",
+      "blocks": [],
+      "owner": "dohoon",
+      "source": "Q 답변(10-13 세션 — 세 방어 라벨의 의미) 제안 2",
+      "decision": "v2 반영 — contracts/matched_controls.R mc_attribution(label_rule nested_majority_placebo_v2 · share_beats_bench) · 06_Registry/matched_controls.json · 보고 문장(program_report.R) · 검사 test_matched_controls.R N1~N4 · K3b",
+      "decided_by": "dohoon",
+      "decided_at": "2026-10-13T17:24:22+0900",
+      "note": "구현 = 같은 날 Q",
+      "registered_at": "2026-10-13T17:24:21+0900",
+      "recorded_by": "Q session 7a34e194 (도훈 채팅 지시 기록)",
+      "evidence": "도훈 채팅 2026-10-13 'MC8 보고서 §7 등급규칙 개정 적용해줘. 2번은 반영해줘.'"
+    },
+    {
+      "id": "GRADE-V3-CR-STRONG-SELECTION",
+      "title": "등급 v3 위기 복원력 '강함' 노치에 MC8 선택(기전) 방어 요구(MC8 보고서 §7)",
+      "status": "resolved",
+      "opened_at": "2026-10-13T17:24:23+0900",
+      "options": [
+        "현행 — 행동 카드 CR '강함'이면 노치 상향(크기 · 노출 방어만으로도 가능)",
+        "개정 — '강함' 상향 노치는 MC8 귀속(전체 창)이 선택(기전) 방어일 때만 · 아니면 '보통'으로 취급(대조 불가 = 상향 없음 · fail-closed)"
+      ],
+      "recommendation": "개정 — 요구하지 않으면 처방 루프가 '초대형주 덜 들기'(크기 방어 착시 · 헌장 §7.3)를 방어로 학습한다. MC8 시운전: S1 · B6_36 의 2026-06~07 급락 방어 = 무작위 크기 짝 분포 안",
+      "default_until_decided": "현행",
+      "blocks": [],
+      "owner": "dohoon",
+      "source": "04_Research/01_reports/l1_prescription_redesign_20261013/mc8_matched_controls/README.md §7",
+      "decision": "개정 적용 — CR '강함' 상향 노치 = MC8 선택(기전) 방어 동반 시만. 구현 = grade_v3 노치 판정 + 저장분 소급(강함 칸만 MC8 재계산). 진행 중 측정(P2R01 처방 칸)이 끝난 뒤 적용 → 그 라운드 칸 전체를 같은 규칙으로 재채점",
+      "decided_by": "dohoon",
+      "decided_at": "2026-10-13T17:24:23+0900",
+      "note": "적용 시점 = 진행 중 셀 측정 종료 후(라운드 안 채점 규칙 혼재 방지 · Q 판단)",
+      "registered_at": "2026-10-13T17:24:23+0900",
+      "recorded_by": "Q session 7a34e194 (도훈 채팅 지시 기록)",
+      "evidence": "도훈 채팅 2026-10-13 'MC8 보고서 §7 등급규칙 개정 적용해줘. 2번은 반영해줘.'"
+    },
+    {
+      "id": "CRISIS-DEF-LT2020",
+      "title": "행동 카드 위기 정의를 더 촘촘하게 — Lunde-Timmermann 첫 통과 규칙",
+      "status": "resolved",
+      "opened_at": "2026-10-13T17:41:53+0900",
+      "options": [
+        "LT 20/20(고점 대비 20% 하락 = 시작 · 저점 대비 20% 반등 = 끝 · 금융 언론 관례) — KOSPI200 보는 창 4→7 · 시험 창 2→3",
+        "진입 20% · 반등 10% 종료 — 7 · 3",
+        "LT 15/15 — 12 · 5(6일짜리 조각 포함)",
+        "현행 유지(이전 고점 회복까지 · 깊이 20%+) — 4 · 2"
+      ],
+      "recommendation": "LT 20/20 — 다파동 하락 분리(2008 세 파동 · 2018~19 침식과 2020 급락) · 2024~25 약세 포착 · 모든 위기 20%+ 라 잡음 없음 · 근거 Lunde & Timmermann (2004) JBES 22(3):253-273",
+      "default_until_decided": "현행 유지",
+      "blocks": [],
+      "owner": "dohoon",
+      "source": "도훈 질문 '위기를 좀 더 촘촘하게 정의해줄 수 있니?'(10-13) · Q 비교 = 스크래치 crisis_defs.R(KOSPI200 공표 · 벤치 데이터만)",
+      "decision": "LT 20/20 채택 — behavior_card.json crisis_episode_def = lt_first_passage · crisis_lambda_down = crisis_lambda_up = 0.2 · 등급 규칙 판 v3.1(GRADE-V3-CR-STRONG-SELECTION 과 함께) · 저장분 재채점 · 진행 중 라운드 P2R01 은 사전등록 당시 정의(구판)로 반증 판정(R2)",
+      "decided_by": "dohoon",
+      "decided_at": "2026-10-13T17:41:54+0900",
+      "note": "적용 시점 = P2R01 처방 칸 측정 종료 후(라운드 안 채점 규칙 혼재 방지)",
+      "registered_at": "2026-10-13T17:41:53+0900",
+      "recorded_by": "Q session 7a34e194 (도훈 채팅 질의 응답 기록)",
+      "evidence": "도훈 선택 2026-10-13 — 질의 '위기(행동 카드 · CR · MC8 판정 단위)를 어떤 정의로 바꿀까요?' 응답 'LT 20/20 (Recommended)'"
+    },
+    {
+      "id": "MEASUREMENT-AXIS-SWITCH-ALLHYG2000",
+      "title": "기본 측정 축 전환 — k200kq150_2005_v1 → all_hyg_2000_v1(전 종목 + 위생 · 2000-01-01)",
+      "status": "resolved",
+      "opened_at": "2026-10-13T21:35:30+0900",
+      "options": [
+        "전환 — measurement_axis.active = all_hyg_2000_v1 · 러너 · 처방 사양 · 엔진이 활성 축을 따른다",
+        "보류 — 같은 기저 구/신 축 비교 뒤"
+      ],
+      "recommendation": "전환(MC1 · MC3 기능 + 실데이터 통합 확인 통과: PIT 위반 0/6,525 · 지수 밖 보유 2,924 · MC8 정상) — MC3 실효 시작 절단 규칙은 별도 결정",
+      "default_until_decided": "구 축 유지",
+      "blocks": [],
+      "owner": "dohoon",
+      "source": "D11 · D15 구현(MC1 · MC3) · 통합 확인 04_Research/01_reports/l1_prescription_redesign_20261013/mc1_integration",
+      "decision": "전환 — active = all_hyg_2000_v1. 기존 구 축 측정은 그 축 라벨로 남기고(부재 = k200kq150_2005_v1) 비교는 같은 축 안에서만. MC3 실효 시작 절단 규칙 · A 관문 창 이탈 기준은 별도 결정 전까지 기록만(창 기준일 2005 유지 — 거짓 보류 없음)",
+      "decided_by": "dohoon",
+      "decided_at": "2026-10-13T21:35:31+0900",
+      "note": "전환 범위 = 설정 active · 러너 기본값 · 처방 사양 컴파일 · 셀 엔진 유니버스 종류(위생 안에서 좁힘) · 엔진 리터럴 시작 · 기록 방화벽 · 헌법 문서",
+      "registered_at": "2026-10-13T21:35:30+0900",
+      "recorded_by": "Q session 7a34e194 (도훈 채팅 지시 기록)",
+      "evidence": "도훈 2026-10-13 채팅 \"1번은 전환. MC3은 뭔지 설명좀\" — 1번 = 기본 측정 축을 새 축(전 종목 + 위생 · 2000년)으로 전환할지"
+    },
+    {
+      "id": "MC3-EFFECTIVE-START-B",
+      "title": "MC3 — 측정 축 all_hyg_2000_v1 의 신호별 실효 시작 규칙 · A 관문 창 이탈 기준",
+      "status": "resolved",
+      "opened_at": "2026-10-13T22:41:55+0900",
+      "options": [
+        "A안 — 자르지 않음(첫 신호일부터)",
+        "B안 — 신호 폭(점수가 있는 종목 수) ≥ 보유 수 × 2 인 첫 신호일부터 성과를 센다 · 창 이탈은 그 전략의 실효 시작부터(12개월 허용 = 엔진 워밍업)",
+        "C안 — 그 전략 성숙기 폭 대비 x% 이상인 첫 달부터(기준을 뒷날의 폭에서 잡음)"
+      ],
+      "recommendation": "B안 — 엔진의 선정 축 유효성 검사(후보 수 ≤ 보유 수면 선정 무의미)를 여유 2배로 측정 시작에 적용 · 첫 통과 시각이라 PIT 안전(C안은 뒷날 폭을 기준으로 삼아 미래 정보)",
+      "default_until_decided": "기록만 · 창 기준 2005(diagnostics.window_anchor_date) 유지",
+      "blocks": [],
+      "owner": "dohoon",
+      "source": "설계 l1_prescription_redesign_20261013 D15 · 측정 계약 MC3 · 세션 설명(10-13 '1번은 전환. MC3은 뭔지 설명좀' 응답)",
+      "decision": "B안 — 실효 시작 = 신호 폭(유니버스 적용 뒤 점수가 유한한 종목 수) ≥ 보유 수(그 신호일 비중 ≠ 0 종목 수) × 2 를 처음 만족한 신호일. 그 전 신호일은 성과에서 뺀다(첫 통과 — 그날까지 알려진 값만 · 시작 뒤 문턱 아래로 내려간 날은 자르지 않고 기록). A 관문 창 이탈 = 그 전략의 실효 시작 대비 첫 보유 월 차(허용 12개월 = 엔진 워밍업). PORTFOLIO 만 내는 엔진은 신호 폭을 잴 수 없어 자르지 않고 '폭 미측정' 표식(실효 시작 = 첫 신호일). 규칙은 측정 축 epoch all_hyg_2000_v1 에만(구 축 = 비트 동일).",
+      "decided_by": "dohoon",
+      "decided_at": "2026-10-13T22:41:56+0900",
+      "note": "배수 2 = 새 숫자(도훈 승인) · 정본 constraint_defaults.json::measurement_axis.epochs.all_hyg_2000_v1.effective_start",
+      "registered_at": "2026-10-13T22:41:55+0900",
+      "recorded_by": "Q session 7a34e194 (도훈 채팅 지시 기록)",
+      "evidence": "도훈 2026-10-13 채팅 \"B안으로 가자\" — 직전 세션 보고의 MC3 선택지(A 자르지 않음 / B 폭 문턱 + 실효 시작 기준 · 추천 / C 상대 커버리지)에 대한 답"
+    },
+    {
+      "id": "P0R01-PREREG-KEEP-A",
+      "title": "P0R01 — DNN 기저(E2_C0) 장기 계산 중 사전등록 처분: 유지(A) vs 결과 보기 전 E2·E3 제외 개정(B)",
+      "status": "resolved",
+      "opened_at": "2026-10-14T07:56:32+0900",
+      "options": [
+        "A — 사전등록 유지 · DNN 기저 계산(261개월 · 30~50시간) 완료까지 대기 · E2·E3 14칸은 캐시 재사용으로 측정",
+        "B — 결과를 보기 전에 사전등록 개정 · E2·E3 14칸 제외 · E1 7칸으로 P0 판정"
+      ],
+      "recommendation": "A — 개정 없는 쪽이 R2 에 가장 안전하다(Q 권고). 측정 로그에서 P3R01 E1 칸의 등급 기록 줄이 의도치 않게 노출됐고 1810.08384 도 모멘텀이라 B 의 '결과 보기 전' 전제가 약해졌다",
+      "default_until_decided": "A(사전등록 그대로 · 대기)",
+      "blocks": [],
+      "owner": "dohoon",
+      "source": "세션 2026-10-14 — 밤샘 파이프라인이 DNN 기저 계산(새 축 전 종목 위생 유니버스 ≈ 3배)에 막힘 · 브리핑에서 A/B 상정",
+      "decision": "A — P0R01 사전등록 유지. DNN 기저(E2_C0) 완료까지 대기하고, P0 평가 · P1R01 · P2R02 · P3R01 E2 칸은 사전등록 순서대로 그 뒤에 진행",
+      "decided_by": "dohoon",
+      "decided_at": "2026-10-14T07:56:33+0900",
+      "note": "도훈 'P0는 A안으로 가자'(2026-10-14). Q 고지 사항 기록: P3R01 E1 등급 기록 줄이 측정 로그(reinforce_auto_log.jsonl module_register)에서 Q 에게 노출 — 사전등록 개정이 없으므로 R2 영향 없음",
+      "registered_at": "2026-10-14T07:56:32+0900"
     }
   ],
-  "last_updated": "2026-10-13T14:44:17+0900"
+  "last_updated": "2026-10-14T07:56:34+0900"
 }

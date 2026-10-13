@@ -567,7 +567,13 @@ essence_diagnostics <- function(bt_result, oos_stat_version = "v2", root = NULL)
   if (is.null(v3)) return(list(status = "not_run"))
   if (!is.null(v3$error)) return(list(status = "error", error = v3$error))
   r4 <- function(x) { v <- suppressWarnings(as.numeric(x)[1]); if (length(v) && is.finite(v)) round(v, 4) else NA_real_ }
+  mc <- if (is.list(v3$mc8)) v3$mc8 else list()
   list(status = "ok", schema = v3$schema, grade = v3$grade_v3, S = r4(v3$S), S_B = r4(v3$S_B),
+       rules_version = if (is.null(v3$rules_version)) "v3.0" else v3$rules_version,
+       crisis_def = if (is.null(v3$crisis_def)) NA_character_ else v3$crisis_def,
+       cr_notch_basis = if (is.null(v3$cr_notch)) NA_character_ else v3$cr_notch,
+       mc8 = list(status = if (is.null(mc$status)) NA_character_ else mc$status, label = if (is.null(mc$label)) NA_character_ else mc$label,
+                  share_beats_size_exposure = r4(mc$share_beats_size_exposure), median_placebo_p = r4(mc$median_placebo_p)),
        band = v3$band, notch = v3$notch, notch_a = isTRUE(v3$notch_a), blocked_by = as.list(v3$blocked_by),
        floors = v3$floors, bench = lapply(v3$bench, r4),
        cr = list(overall = v3$card$cr, test = v3$card$cr_test, visible = v3$card$cr_visible,

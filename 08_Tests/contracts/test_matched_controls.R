@@ -134,6 +134,19 @@ chk("D3 전략 = 노출 짝이면 노출 방어 — 시가총액 가중 표류�
       identical(att(rD2)$label, "exposure_defense"),
     sprintf("(ex=%.2f · se=%.2f · label=%s)", att(rD2)$share_beats_exposure, att(rD2)$share_beats_size_exposure, att(rD2)$label))
 
+cat("\n=== N. 방어 없음 — 시장보다도 못 막았다(v2 · 10-13 도훈 '2번 반영') ===\n")
+rN1 <- run(mkH(function(d) setNames(rep(0.1, 10), MEGA)))           # 초대형만 · Σw = 1 → 위기마다 −50% vs 벤치 ≈ −38%
+chk("N1 평균 노출 1 · 시장보다 더 빠짐 → no_defense(구판이면 exposure_defense 로 찍혔다)",
+    identical(att(rN1)$label, "no_defense") && isTRUE(att(rN1)$share_beats_bench == 0),
+    sprintf("(label=%s · bench=%.2f)", att(rN1)$label, att(rN1)$share_beats_bench %||% NA))
+rN2 <- run(mkH(function(d) { s <- szat(d); s / sum(s) }))          # 전 종목 시가총액 가중 · Σw = 1 = 벤치 그 자체
+chk("N2 [양성 대조] 전략 = 벤치면 시장을 넘은 위기 0 → no_defense", identical(att(rN2)$label, "no_defense") &&
+      isTRUE(att(rN2)$share_beats_bench == 0), sprintf("(label=%s)", att(rN2)$label))
+chk("N3 현금 절반(D1)은 시장보다는 덜 빠진다 → exposure_defense 유지(노출 방어 ≠ 방어 없음)",
+    identical(att(rD1)$label, "exposure_defense") && isTRUE(att(rD1)$share_beats_bench == 1))
+chk("N4 평균 노출 1 이면 노출 짝 = 시장 — 노출 방어는 정의상 나오지 않는다",
+    isTRUE(abs(rN1$ctl$exposure$mean - 1) < 1e-12) && !identical(att(rN1)$label, "exposure_defense"))
+
 cat("\n=== E. 노출 타이밍 — 기전 방어로 세되 순수 선택과 구분한다 ===\n")
 tm <- vapply(seq_along(EX), function(k) { hi <- if (k < length(EX)) EX[k + 1L] else max(days)
                                           any(in_cr[days > EX[k] & days <= hi]) }, logical(1))
@@ -217,7 +230,8 @@ chk("H4 size_buckets = 2.5 → 오류", bad(function(x) { x$size_buckets <- 2.5;
 chk("H5 정본 설정은 통과 · 분위 수는 출처 문장과 함께 있다", identical(mcfg$size_buckets, 10L) && nzchar(cj$size_buckets_source %||% ""))
 chk("H6 placebo_alpha = 0.5 → 오류", bad(function(x) { x$placebo_alpha <- 0.5; x }))
 chk("H7 placebo_n × alpha < 1(분위가 표본 밖) → 오류", bad(function(x) { x$placebo_n <- 10; x }))
-chk("H8 판정 규칙 어휘 밖(평균 비교 nested_majority) → 오류", bad(function(x) { x$label_rule <- "nested_majority"; x }))
+chk("H8 판정 규칙 어휘 밖(평균 비교 nested_majority · 구판 v1) → 오류", bad(function(x) { x$label_rule <- "nested_majority"; x }) &&
+      bad(function(x) { x$label_rule <- "nested_majority_placebo"; x }))
 
 cat("\n=== I. 보유창 규약 ===\n")
 d6 <- as.Date("2020-01-01") + 0:5
@@ -236,6 +250,8 @@ cat("\n=== K. 보고 소비자(program_report.R) ===\n")
 chk("K1 크기 방어 문장", grepl("크기 방어", prep_card_digest(rB$card)$controls))
 chk("K2 선택 방어 문장", grepl("선택 방어", prep_card_digest(rC$card)$controls))
 chk("K3 노출 방어 문장", grepl("노출 방어", prep_card_digest(rD1$card)$controls))
+chk("K3b 방어 없음 문장 · 시장 대비 비율이 실린다", grepl("방어 없음", prep_card_digest(rN1$card)$controls) &&
+      grepl("시장보다 덜 빠진 위기 0%", prep_card_digest(rN1$card)$controls, fixed = TRUE))
 chk("K4 위기 줄에 크기+노출 짝 포착률이 붙는다", all(grepl("크기·노출 짝 [0-9]", prep_card_digest(rB$card)$lines)))
 chk("K5 대조 미제공 카드 → '대조 없음'", grepl("대조 없음", prep_card_digest(bc_card(rB$S, rB$B, cfg = bcfg))$controls))
 chk("K6 창 선택이 귀속 창을 따른다(시험 창 문장도 라벨을 낸다)", grepl("크기 방어", prep_card_digest(rB$card, "test")$controls))
@@ -257,6 +273,23 @@ chk("L3 저장 왕복 — schema · 귀속 라벨 · 평균 노출 보존", iden
 writeLines(toJSON(list(exec_price = "close_t1"), auto_unbox = TRUE), file.path(od, "01_strategy_spec.json"))
 chk("L4 유니버스 미상(명세 · 매니페스트 없음) → 오류(대조 유니버스를 지어내지 않는다)",
     inherits(tryCatch(mc_card(od, root = ROOT, raw = RAW, bm_hist = BM_ALL, bcfg = bcfg), error = function(e) e), "error"))
+
+cat("\n=== MA. 측정 축 ALL_HYG(MC1 · 2026-10-13) — 대조 유니버스 = 위생 멤버십 ===\n")
+## $univ 는 전략 보유가 속한 분위의 종목만 담는다 — 유니버스 전체는 diag$n_universe 로, 특정 종목 포함은 그 종목을 직접 보유해 본다
+nu_at <- function(r, uni, H = HF) mc_size_basket(H, r, mcfg, uni)$diag[exec_date == eF]$n_universe
+H60 <- data.table(date = eF, ticker = "T060", target_weight = 1)
+in_own_bucket <- function(r, uni, H) { u <- mc_size_basket(H, r, mcfg, uni)$univ; H$ticker[1] %in% u[exec_date == eF]$Ticker }
+RH <- copy(RAW); RH[, HYG := TRUE]
+RH[Ticker == "T060", K200 := 0]                                      # 지수 비멤버지만 위생 멤버
+RH[Ticker %in% c("T070", "T071") & Date == aF, HYG := FALSE]         # 지수 멤버지만 as-of 날 위생 탈락
+chk("MA1 ALL_HYG 는 지수 플래그가 아니라 위생 멤버십(HYG)으로 대조 유니버스를 정한다(지수 99 · 위생 98 · T060 은 위생에만 포함)",
+    nu_at(RH, "K200_KQ150") == 99L && nu_at(RH, "ALL_HYG") == 98L && !in_own_bucket(RH, "K200_KQ150", H60) && in_own_bucket(RH, "ALL_HYG", H60),
+    sprintf("(지수 %s · 위생 %s)", nu_at(RH, "K200_KQ150"), nu_at(RH, "ALL_HYG")))
+RI <- copy(RAW); RI[, K200_IDX := K200]; RI[Ticker == "T060" & Date == aF, K200 := 0]   # 러너 주입 판(K200 = 위생 멤버십)
+chk("MA2 러너가 주입한 RAWDATA(K200_IDX 존재)는 K200 을 위생 멤버십으로 읽는다(as-of 날 탈락 = 유니버스 99)",
+    nu_at(RI, "ALL_HYG") == 99L && !in_own_bucket(RI, "ALL_HYG", H60))
+chk("MA3 위생 멤버십(HYG · 주입 표식)이 없으면 멈춘다 — 위생 없는 전 종목으로 조용히 바뀌지 않는다",
+    inherits(tryCatch(mc_size_basket(HF, copy(RAW), mcfg, "ALL_HYG"), error = function(e) e), "error"))
 
 cat(sprintf("\n== matched_controls: PASS %d · FAIL %d ==\n", PASS, FAIL))
 cat(sprintf('{"test":"matched_controls","pass":%d,"fail":%d,"total":%d}\n', PASS, FAIL, PASS + FAIL))   # 배터리 요약 계약(run_all_hooks.sh _last_summary_json)

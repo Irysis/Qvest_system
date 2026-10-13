@@ -77,7 +77,14 @@ Sys.setenv(QVEST_RB_ENGINE_RECHECK = "1")
 
 res <- tryCatch({
   suppressMessages(source(file.path(ROOT, "02_Infrastructure/alpha_search/run_paper_replication.R")))
-  UNIV <- if (identical(SPEC$universe$kind, "k200_kq150")) "K200_KQ150" else toupper(SPEC$universe$kind)
+  # ★측정 축(2026-10-13 MEASUREMENT-AXIS-SWITCH) — 사양에 축 표식(fixed_axes$measurement_axis)이 있으면 그 epoch 의 유니버스로 러너를 부른다
+  #   (셀 유니버스 종류는 엔진이 그 안에서 좁힌다). 표식 없는 구 사양 = 구 축 그대로 재현(구 매핑 · 비트 동일).
+  #   표식 · 시작일은 **칸 사양**(SPEC$fixed_axes — rx_compile_spec 이 활성 epoch 로 찍는다)에서 읽는다 · AX(reinforce_program.json)는 구 전역 축.
+  .ma_id <- as.character(SPEC$fixed_axes$measurement_axis %||% "")[1]
+  .ma_ep <- if (nzchar(.ma_id)) ma_epoch(.ma_id, root = ROOT) else NULL
+  UNIV <- if (!is.null(.ma_ep)) .ma_ep$universe else
+          if (identical(SPEC$universe$kind, "k200_kq150")) "K200_KQ150" else toupper(SPEC$universe$kind)
+  START <- if (!is.null(.ma_ep)) format(.ma_ep$start_date) else AX$start_date
   run_paper_replication(
     strategy_name = SNAME, strategy_idea = SPEC$idea %||% SPEC$label %||% SPEC$code,
     factor_engine_path = file.path(ROOT, "02_Infrastructure/reinforcement/rf_cell_engine.R"),
@@ -91,7 +98,7 @@ res <- tryCatch({
                           weighting = SPEC$weighting$kind, rebalance = "monthly"),
     universe = UNIV, source_paper = SPEC$root_paper,
     require_source_paper = FALSE,   # ★강화 레인 — 근거 의무 해제(2026-09-03). 있으면 그대로 기록된다.
-    commission_paper = AX$commission_bps / 10000, start_date = AX$start_date,
+    commission_paper = AX$commission_bps / 10000, start_date = START,   # 축 표식 사양 = epoch 시작 · 구 사양 = AX(구판 그대로)
     send_telegram = FALSE,
     selection_type = SEL_TYPE, n_trials_cumulative = N_TRIALS,
     measurement_tags = list(n_trials_basis = N_BASIS,

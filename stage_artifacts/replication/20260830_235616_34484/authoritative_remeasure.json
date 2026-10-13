@@ -36,7 +36,7 @@
   "structural_drawdown": true,
   "selection_type": "chain",
   "dsr_gate_applied": false,
-  "reasons": "v3: S 0.344 · B 경계 0.434 · 띠 C · CR weak(시험 창 normal) · 노치 -1 · A 아님 사유 floor:port_t,floor:calmar,floor:cagr,floor:sharpe,oos:rolling36_pass_oos,cr:weak | v921 C: Ensemble: positive alpha이나 B 미달 (블렌드에서만 가치); structural_drawdown(판정 아님 — 라우팅 근거): MDD 68.0%, 45%+ episodes=43/15, 55%+ episodes=9/6, 수중 표본비 0.10/0.25",
+  "reasons": "v3: S 0.344 · B 경계 0.434 · 띠 C · CR weak(시험 창 weak) · 노치 -1 · A 아님 사유 floor:port_t,floor:calmar,floor:cagr,floor:sharpe,oos:test_window_cr_not_weak,oos:rolling36_pass_oos,cr:weak | v921 C: Ensemble: positive alpha이나 B 미달 (블렌드에서만 가치); structural_drawdown(판정 아님 — 라우팅 근거): MDD 68.0%, 45%+ episodes=43/15, 55%+ episodes=9/6, 수중 표본비 0.10/0.25",
   "replication": {
     "source_paper": {
       "title": "Banz (1981), The Relationship Between Return and Market Value of Common Stocks, JFE 9(1)",
@@ -133,6 +133,15 @@
     "grade": "F",
     "S": 0.3438,
     "S_B": 0.434,
+    "rules_version": "v3.1",
+    "crisis_def": "lt_first_passage",
+    "cr_notch_basis": "weak",
+    "mc8": {
+      "status": "not_needed",
+      "label": null,
+      "share_beats_size_exposure": null,
+      "median_placebo_p": null
+    },
     "band": "C",
     "notch": -1,
     "notch_a": false,
@@ -141,6 +150,7 @@
       "floor:calmar",
       "floor:cagr",
       "floor:sharpe",
+      "oos:test_window_cr_not_weak",
       "oos:rolling36_pass_oos",
       "cr:weak"
     ],
@@ -158,11 +168,11 @@
     },
     "cr": {
       "overall": "weak",
-      "test": "normal",
+      "test": "weak",
       "visible": "weak",
-      "n_crisis": 6,
-      "dd_capture_median": 1.2162,
-      "dd_capture_worst": 1.5994,
+      "n_crisis": 10,
+      "dd_capture_median": 1.2596,
+      "dd_capture_worst": 1.708,
       "uc_median": 0.8621,
       "cdar": 0.5138,
       "controls": "not_provided"
@@ -171,7 +181,7 @@
       "tau_d": "2022-12-31",
       "gate": false,
       "parts": {
-        "test_window_cr_not_weak": true,
+        "test_window_cr_not_weak": false,
         "rolling36_pass_oos": false
       },
       "pass_oos": 0,
@@ -186,10 +196,18 @@
     "nav_source": "contract"
   },
   "grade_v3_backfill": {
-    "at": "2026-10-13T15:02:14+0900",
+    "at": "2026-10-13T18:34:48+0900",
     "tool": "02_Infrastructure/programs/grade_v3_backfill.R",
-    "decision": "decision_register GRADE-V3-PROMOTE",
-    "prior_essence_grade": "C",
-    "prior_md5": "cd7f1f242d80134914a273d367603042"
+    "decision": "decision_register GRADE-V3-CR-STRONG-SELECTION · CRISIS-DEF-LT2020(규칙 판 재채점)",
+    "rules_version": "v3.1",
+    "prior_rules_version": "v3.0",
+    "prior_essence_grade": "F",
+    "prior_md5": "578559051cb72420fd57455fe919cbb0",
+    "history": [
+      {
+        "rules_version": "v3.0",
+        "essence_grade": "F"
+      }
+    ]
   }
 }

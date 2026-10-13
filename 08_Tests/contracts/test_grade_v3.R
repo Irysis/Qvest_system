@@ -105,6 +105,26 @@ chk("C12 [돌연변이] 노치 적용 범위를 끄면 C7 이 C 에 머문다 �
 cfg_b <- cfg; cfg_b$cr_notch$a_blocked_to <- "C"
 chk("C13 [돌연변이] A 띠 차단 행선을 C 로 바꾸면 C2 가 C — 차단 규칙이 설정에서 온다", identical(g(1.2, fl = f2, cf = cfg_b)$grade, "C"))
 chk("C14 산출 어휘 ⊂ {A, B, C, F}", all(vapply(list(d1, d2, d3, d4, d5, d6, d7, d8, d9), function(d) d$grade, "") %in% c("A", "B", "C", "F")))
+## '강함' 상향 노치 = MC8 선택(기전) 방어 동반 시만(GRADE-V3-CR-STRONG-SELECTION · 도훈 10-13 · MC8 보고서 §7)
+cfg_s <- cfg; cfg_s$cr_notch$strong_requires <- "mc8_selection_defense"
+crn <- function(cr, lab, cf = cfg_s) gv3_cr_for_notch(cr, lab, cf)
+chk("C15 강함 + 선택 방어 → 강함 유지 · 크기 방어 · 노출 방어 · 방어 없음 · 판정 불가 · 대조 불가(NA) → 보통",
+    identical(crn("strong", "selection_defense"), "strong") &&
+      all(vapply(c("size_defense", "exposure_defense", "no_defense", "insufficient", NA_character_),
+                 function(l) identical(crn("strong", l), "normal"), logical(1))))
+chk("C16 약함 · 보통 · 판정 불가는 대조와 무관하게 그대로(하향 노치는 MC8 을 보지 않는다)",
+    identical(crn("weak", "selection_defense"), "weak") && identical(crn("weak", NA_character_), "weak") &&
+      identical(crn("normal", "size_defense"), "normal") && identical(crn("insufficient", NA_character_), "insufficient"))
+chk("C17 [하위 호환] 요구 키가 없으면(구 설정) 강함이 그대로 통과", identical(gv3_cr_for_notch("strong", "size_defense", cfg), if (is.null(cfg$cr_notch$strong_requires) || identical(cfg$cr_notch$strong_requires, "none")) "strong" else "normal"))
+gs <- function(S, lab) g(S, crn("strong", lab), cf = cfg_s)
+chk("C18 C 띠 · CR 강함: 선택 방어면 B(+1) · 크기 방어면 C 에 머문다 — 크기 방어 착시로 오르지 않는다",
+    identical(gs(0.3, "selection_defense")$grade, "B") && identical(gs(0.3, "size_defense")$grade, "C") && identical(gs(0.3, "size_defense")$notch, 0L))
+chk("C19 B 띠 · CR 강함 · 하한 · OOS 충족: 선택 방어면 A(노치) · 방어 없음이면 B",
+    identical(gs(0.9, "selection_defense")$grade, "A") && isTRUE(gs(0.9, "selection_defense")$notch_a) &&
+      identical(gs(0.9, "no_defense")$grade, "B") && !isTRUE(gs(0.9, "no_defense")$notch_a))
+ps <- file.path(TD, "gv3_sr.json"); cj <- fromJSON(file.path(ROOT, "06_Registry/grade_v3.json"), simplifyVector = FALSE)
+cj$cr_notch$strong_requires <- "bogus"; writeLines(toJSON(cj, auto_unbox = TRUE, null = "null", digits = NA), ps)
+chk("C20 [위반 주입] strong_requires 어휘 밖 → 멈춘다", throws(gv3_cfg(ROOT, path = ps)))
 
 cat("=== D. 실측 산출물 (재사용 경로 양성 대조 · 위반 주입) ===\n")
 DIR <- file.path(ROOT, "stage_artifacts/replication/20260905_095537_1276/remeasure_close_t1_5562284e")

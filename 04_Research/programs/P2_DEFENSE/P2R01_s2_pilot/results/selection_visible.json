@@ -1,0 +1,46 @@
+{
+  "rule": "① 반증을 통과한 처방만 후보로 둔다. ② R6 지속성 필터 — 처방 패킷 3절 위기 표에서 '하락 포착이 같은 데이터 판본으로 다시 잰 기저 대비 0.03 이상 개선된 위기'가 2건 이상인 처방만 남긴다(한 창 맞춤 배제). 남는 처방이 없으면 선정 없음. ③ 남은 후보 중 performance.strategy.calmar 가 가장 높은 처방 1건을 고른다(등급 S 의 위험 축). ④ Calmar 차가 0.02 이내로 동률이면 performance.strategy.cagr 가 높은 쪽, 그다음 performance.strategy.port_t 가 높은 쪽. ⑤ ③④로도 가르지 못하면 선정 없음 — 다음 라운드로 넘긴다. 모든 비교는 보는 창(≤2022-12-29) 수치만 쓰고 τ_D 이후는 쓰지 않는다. 최대 1건 선정.",
+  "constants": {
+    "gain": 0.03,
+    "min_crises": 2,
+    "tie": 0.02
+  },
+  "base_ref": "RX0(같은 판본 재측정)",
+  "per_prescription": [
+    {
+      "id": "RX1",
+      "stage": "measured",
+      "falsification_passed": false,
+      "n_crises_matched": 4,
+      "n_crises_improved": 1,
+      "survive": false,
+      "calmar": 0.32466873008785,
+      "cagr": 0.179268914674438,
+      "port_t": 3.67812354181159
+    },
+    {
+      "id": "RX2",
+      "stage": "measured",
+      "falsification_passed": false,
+      "n_crises_matched": 4,
+      "n_crises_improved": 2,
+      "survive": false,
+      "calmar": 0.395752767989218,
+      "cagr": 0.199878243985333,
+      "port_t": 3.88306202288761
+    },
+    {
+      "id": "RX3",
+      "stage": "measured",
+      "falsification_passed": false,
+      "n_crises_matched": 4,
+      "n_crises_improved": 2,
+      "survive": false,
+      "calmar": 0.412130131302066,
+      "cagr": 0.205252547081746,
+      "port_t": 4.00715825296909
+    }
+  ],
+  "selected": "none",
+  "reason": "① · ② 를 통과한 처방 없음 — 선정 없음"
+}
