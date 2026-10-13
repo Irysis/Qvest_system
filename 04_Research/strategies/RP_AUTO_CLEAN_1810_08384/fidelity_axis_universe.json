@@ -1,0 +1,11 @@
+{
+  "axis": "universe",
+  "verdict": "adapted",
+  "undeclared_changes": [],
+  "signal_mismatch": [],
+  "counterexample": "논문 방법: 3개월 평균 거래대금 상위 N(지역별 1000/500/200 등)만 풀에 넣고 분기 갱신, 그 외 선별 기준(관리종목·거래정지·불성실공시 등 기업 상태) 없음(§II). 구현(engine.R:49 MEM, H1): 절대 임계 20일 평균 거래대금(t−1) ≥ 2e8원 '이상이면 전부' 포함(상위 N 개수 제한·분기 창 없음) + 관리종목·거래정지·불성실공시 표식 종목은 거래대금과 무관하게 제외. 구체적 반례 — 월 거래대금이 상위 1000위 안에 드는 고유동성 종목이라도 그 시점 관리종목으로 지정돼 있으면: 논문 규칙대로라면 풀에 남아야 하지만 구현은 그 신호일에 제외한다. 역으로 거래대금이 간신히 2e8원을 넘는 종목은 논문의 '상위 N' 절삭에서는 순위가 N 밖이라 탈락할 수 있는데 구현은 절삭이 없어 포함된다. 두 경우 모두 그 신호일의 유니버스 집합(와 그 집합에 의존하는 모멘텀 랭크 p·그램행렬 Nn)이 서로 달라진다.",
+  "evidence": "§II (arXiv 1810.08384v1 전문, 'SETTING THE STAGE: DATA, SIGNAL, RISK, AND METHODOLOGY' 절): 'we compute the aggregated Average Daily (dollar) Volume over 3 months and take the 1000 most liquid stocks as our investment pool for the next quarter. This puts us in a realistic, causal set-up. The same liquidity-based procedure is applied to the below pools.' — 지역마다 고정 개수(US 1000·Canada 200(500 대형주 중)·Europe 1000(2000 대형주 중)·Japan 500·Australia 200(500 대형주 중))의 상대 순위 절삭이며, 기업 거버넌스 상태(관리종목·거래정지·불성실공시)에 의한 제외는 본문 어디에도 서술되지 않는다. §II~§V 전체에 그런 거버넌스 필터·가격 하한·금융주 제외 언급 없음.",
+  "confidence": "high",
+  "checked": "engine.R:48-50(MEM 구성) · FIDELITY.json changed②·paper_steps[투자 풀 선정]·harness_disclosure H1/H8 대 §II 투자풀 단락(유동성 상위 N·분기 갱신 서술) 전수 대조 — 가격 하한·금융주 제외는 논문에 없음을 확인(해당 없음)",
+  "note": "유니버스를 K200∪KQ150(실제로는 '전 종목+위생' epoch all_hyg_2000_v1)으로 바꾸는 것 자체는 과제 지시상 허용된 변경. 그 위에 얹힌 나머지 필터(절대 임계 vs 상위 N 절삭·관리종목/거래정지/불성실공시 거버넌스 제외·분기→월말 갱신)는 논문과 다르지만 FIDELITY.json changed②·paper_steps[투자 풀 선정]=omitted·harness_disclosure H1/H8 에 일관되게 선언돼 있어 misdeclared 근거는 없다."
+}
