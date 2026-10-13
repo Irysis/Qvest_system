@@ -7,7 +7,7 @@
   "remeasured_at": "2026-09-25T15:08:44+0900",
   "bt_result_path": "C:/Users/99922/OneDrive/Quant_Module_Moltbot/stage_artifacts/replication/20260922_011120_6980/remeasure_close_t1_5562284e/bt_result.rds",
   "metric_type": "backtested",
-  "essence_grade": "B",
+  "essence_grade": "C",
   "grade_basis": "remeasure_sweep",
   "essence": {
     "net_sharpe": 0.851,
@@ -63,7 +63,11 @@
       },
       "raw_nrow": 14121332,
       "raw_max_date": "2026-09-23",
-      "raw_cols": ["Date", "Ticker", "Ret"],
+      "raw_cols": [
+        "Date",
+        "Ticker",
+        "Ret"
+      ],
       "bm_nrow": 9035,
       "bm_max_date": "2026-09-23"
     },
@@ -88,7 +92,10 @@
     },
     "prior_recoveries": 9,
     "current_run": 3,
-    "span": ["2008-01", "2026-09"]
+    "span": [
+      "2008-01",
+      "2026-09"
+    ]
   },
   "defensive_score": {
     "status": "ok",
@@ -123,7 +130,7 @@
     },
     "reason": "하락월 110개: 초과 +1.16%/월 (t 2.55 · 적중 65%) · 벤치-10% 이하 10개: 초과 +2.16%/월 · 상승월 초과 +0.36%/월"
   },
-  "reasons": "Component: PORT_t>=2.0 & net_IR>0.2; A 미달[OOS_ret -0.30<0.7(band fail),Calmar<0.64,DSR<0.5(sweep)]",
+  "reasons": "v3: S 0.597 · B 경계 0.438 · 띠 B · CR weak(시험 창 normal) · 노치 -1 · A 아님 사유 oos:rolling36_pass_oos,gate:dsr_sweep,cr:weak | v921 B: Component: PORT_t>=2.0 & net_IR>0.2; A 미달[OOS_ret -0.30<0.7(band fail),Calmar<0.64,DSR<0.5(sweep)]",
   "remeasure": {
     "version": "remeasure_from_holdings_v1",
     "of_artifact": "C:/Users/99922/OneDrive/Quant_Module_Moltbot/stage_artifacts/replication/20260922_011120_6980",
@@ -202,5 +209,69 @@
     "sharpe": 0.851,
     "mdd": 0.584,
     "calmar": 0.34
+  },
+  "grade_scheme": "grade_v3",
+  "grade_v921": "B",
+  "grade_v3": {
+    "status": "ok",
+    "schema": "grade_v3_v1",
+    "grade": "C",
+    "S": 0.5974,
+    "S_B": 0.4383,
+    "band": "B",
+    "notch": -1,
+    "notch_a": false,
+    "blocked_by": [
+      "oos:rolling36_pass_oos",
+      "gate:dsr_sweep",
+      "cr:weak"
+    ],
+    "floors": {
+      "port_t": true,
+      "calmar": true,
+      "cagr": true,
+      "sharpe": true
+    },
+    "bench": {
+      "calmar": 0.2097,
+      "cagr": 0.111,
+      "mdd": 0.5292,
+      "sharpe": 0.5664
+    },
+    "cr": {
+      "overall": "weak",
+      "test": "normal",
+      "visible": "weak",
+      "n_crisis": 6,
+      "dd_capture_median": 1.0181,
+      "dd_capture_worst": 1.3992,
+      "uc_median": 1.5612,
+      "cdar": 0.3894,
+      "controls": "not_provided"
+    },
+    "oos": {
+      "tau_d": "2022-12-31",
+      "gate": false,
+      "parts": {
+        "test_window_cr_not_weak": true,
+        "rolling36_pass_oos": false
+      },
+      "pass_oos": 0.2444,
+      "pass_min": 0.5,
+      "pass_life": 0.4089,
+      "S_is": 0.6882,
+      "S_oos": 0,
+      "retention_calmar": 4.0095,
+      "retention_sharpe": 1.224
+    },
+    "parity_max_abs": 3.99680288865056e-15,
+    "nav_source": "contract"
+  },
+  "grade_v3_backfill": {
+    "at": "2026-10-13T15:09:57+0900",
+    "tool": "02_Infrastructure/programs/grade_v3_backfill.R",
+    "decision": "decision_register GRADE-V3-PROMOTE",
+    "prior_essence_grade": "B",
+    "prior_md5": "668accf0681b2deb55dd9946a0041b37"
   }
 }

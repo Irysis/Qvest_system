@@ -25,6 +25,7 @@ ng <- function(m, why = "") { FAIL <<- FAIL + 1L; cat("  FAIL", m, if (nzchar(wh
 ROOT <- Sys.getenv("QM_ROOT", "C:/Users/99922/OneDrive/Quant_Module_Moltbot")
 PY   <- Sys.getenv("QVEST_PY", file.path(ROOT, ".venv_qvest_ml/Scripts/python.exe"))
 SH   <- file.path(ROOT, "02_Infrastructure/ops/rf_replication_auto.sh")
+LLM_ENV <- file.path(ROOT, "02_Infrastructure/ops/rf_llm_env.sh")   # 한도 정규식·판정 함수 정본(분류 블록이 부른다)
 SBX  <- file.path(tempdir(), sprintf("rpenv_%d", Sys.getpid()))
 dir.create(SBX, recursive = TRUE, showWarnings = FALSE)
 
@@ -62,7 +63,10 @@ run_classifier <- function(body, log_text, tag) {
   lf <- file.path(SBX, sprintf("log_%s.txt", tag))
   writeLines(log_text, lf, useBytes = TRUE)
   sf <- file.path(SBX, sprintf("cls_%s.sh", tag))
-  writeLines(c("#!/usr/bin/env bash", "LOG=\"$1\"", body, 'printf %s "$ENV_FAIL"'), sf, useBytes = TRUE)
+  ## (10-13 수리) 분류 블록은 09-24(P0-M1) 이후 "$RUN_OUT" 을 읽고 rf_llm_env.sh::rf_llm_limit_hit 를 부른다 — 장치가 둘 다 대 주지
+  ##   않아 블록이 "command not found" 로 죽었고 A1~B2 가 상시 FAIL 이었다(검사 장치 결함 · 레인은 정상). 정의는 정본 파일을 그대로 싣는다(사본 금지).
+  writeLines(c("#!/usr/bin/env bash", sprintf(". %s", shQuote(LLM_ENV)), "LOG=\"$1\"", "RUN_OUT=\"$1\"", body, 'printf %s "$ENV_FAIL"'),
+             sf, useBytes = TRUE)
   out <- suppressWarnings(system2("bash", c(shQuote(sf), shQuote(lf)), stdout = TRUE, stderr = TRUE))
   paste(out %||% "", collapse = "")
 }
@@ -204,7 +208,8 @@ if (any(grepl("env_retry_after_epoch", SRC, fixed = TRUE)) &&
 gi <- which(grepl("halt_env_cooldown", SRC, fixed = TRUE))[1]
 pi <- which(grepl("no_pending_request", SRC, fixed = TRUE))
 pi <- pi[pi > 100L][1]
-ci <- which(grepl("timeout 3000 claude -p", SRC, fixed = TRUE))[1]
+## 모델 호출 = 단일 진입 rf_llm_agent_run(09-17 fa895d2c6 이관 — 구 표적 'timeout 3000 claude -p' 는 레인에 없어 F2 가 상시 FAIL · 10-13 이설)
+ci <- which(grepl("rf_llm_agent_run \"$PF\"", SRC, fixed = TRUE))[1]
 if (all(is.finite(c(gi, pi, ci))) && gi > pi && gi < ci)
   ok("F2 게이트가 pending 판정 뒤·모델 호출 앞에 있다") else
   ng("F2 게이트 위치가 어긋난다 — 도달 불가하거나 예산을 이미 쓴 뒤",

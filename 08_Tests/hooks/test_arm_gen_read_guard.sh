@@ -18,9 +18,9 @@
 #   G. 생성 표식(QVEST_ARM_GEN=1) 회귀 — 구판 검사 5종 그대로
 #   H. 출력 JSON 유효성(역슬래시 경로 포함 · 구판 결함) · fail-closed(판정기 부재 → 측정 경로 Read·범위 도구 block)
 #   I. 표본 자기일관성(AGRG_SELFTEST) — 구역 표본 전부가 R1 정규식에 걸리고 · junction 실경로가 구역에 든다
-#   J. 레인 배선(정적) — 설계 레인 3종: rf_llm_agent_run 호출에 QVEST_DESIGN_LANE=1 · --disallowed-tools ⊇ {Bash,PowerShell} ·
-#      --allowed-tools ∌ 둘 / 생성 레인(rf_overlay_propose.sh) 동일 / ops 전수: 표식을 싣는 호출은 모두 같은 조건 · export 금지
-#   K. 레인 배선(동적) — 설계 레인 3종의 실제 호출 블록을 가짜 claude 로 재생: claude 프로세스에 표식 3종
+#   J. 레인 배선(정적) — ops 전수: 표식(QVEST_DESIGN_LANE · QVEST_ARM_GEN)을 싣는 호출은 모두 rf_llm_agent_run · --disallowed-tools ⊇ 셸 통로 ·
+#      --allowed-tools ∌ 셸 · export 금지. (v10.01) 표식 레인 4종 퇴역 → 판별력은 합성 레인(퇴역 레인과 같은 호출 형태)으로 잰다
+#   K. 레인 배선(동적) — 합성 설계 레인의 호출 블록을 가짜 claude 로 재생: claude 프로세스에 표식 3종
 #      (QVEST_DESIGN_LANE · QVEST_UNATTENDED_LANE · CLAUDE_CODE_DISABLE_AUTO_MEMORY)과 PowerShell 금지가 실리고 · 호출 뒤 셸에 표식이 안 남는다
 #   L. 돌연변이 — 규칙을 하나씩 끈 훅·레인 사본에서 해당 사례가 뚫린다(판별력) · 오차단 교정 2종을 끄면 다시 막힌다
 #   M. 등록 — settings.json 에 arm_gen_read_guard.sh 가 PreToolUse Read|Grep|Glob 로 걸려 있다(읽기만)
@@ -45,7 +45,7 @@
 # 격리: 훅을 임시 루트로 복사 · 가짜 HOME(기억 디렉터리) · CLAUDE_PROJECT_DIR·QM_ROOT = 임시 루트 · 로그 = 임시 파일.
 #   운영 원장·기억 디렉터리는 읽지도 쓰지도 않는다(판정 대상 경로는 전부 임시 루트 안이다).
 # 대상 교체: QVEST_AGRG_HOOK(훅) · QVEST_AGRG_POLICY(R2 순회 설정 — 기본 = 훅 옆 policies/) · QVEST_AGRG_OPS(레인 셸·rf_llm_env.sh 디렉터리) ·
-#   QVEST_AGRG_SETTINGS · QVEST_AGRG_RX(R5 가림 정본 rf_b1_design_lib.R) — 스테이징 판 검증용
+#   QVEST_AGRG_SETTINGS · QVEST_AGRG_RX(R5 가림 정본 programs/stat_redactor.R · v10.01 이관) — 스테이징 판 검증용
 #==============================================================================
 set -uo pipefail
 ROOT="${QM_ROOT:-C:/Users/99922/OneDrive/Quant_Module_Moltbot}"
@@ -73,10 +73,10 @@ cp "$SRC_HOOK" "$SBX/02_Infrastructure/hooks/arm_gen_read_guard.sh"
 HOOK="$SBX/02_Infrastructure/hooks/arm_gen_read_guard.sh"
 if [ -f "$SRC_POL" ]; then mkdir -p "$SBX/02_Infrastructure/hooks/policies"; cp "$SRC_POL" "$SBX/02_Infrastructure/hooks/policies/arm_gen_read_guard.json"
 else ng "R2 순회 설정 부재" "$SRC_POL"; fi
-# (§Q · D-E-CATALOG-BASIS) R5 가림 규칙 정본 — 훅이 policies catalog_view.redactor_source(훅 디렉터리 기준 ../ops/rf_b1_design_lib.R)에서 이름으로 싣는다
-SRC_RX="${QVEST_AGRG_RX:-$ROOT/02_Infrastructure/ops/rf_b1_design_lib.R}"
-mkdir -p "$SBX/02_Infrastructure/ops"
-if [ -f "$SRC_RX" ]; then cp "$SRC_RX" "$SBX/02_Infrastructure/ops/rf_b1_design_lib.R"; else ng "R5 가림 규칙 정본 부재" "$SRC_RX"; fi
+# (§Q · D-E-CATALOG-BASIS) R5 가림 규칙 정본 — 훅이 policies catalog_view.redactor_source(훅 디렉터리 기준 ../programs/stat_redactor.R)에서 이름으로 싣는다
+SRC_RX="${QVEST_AGRG_RX:-$ROOT/02_Infrastructure/programs/stat_redactor.R}"
+mkdir -p "$SBX/02_Infrastructure/ops" "$SBX/02_Infrastructure/programs"
+if [ -f "$SRC_RX" ]; then cp "$SRC_RX" "$SBX/02_Infrastructure/programs/stat_redactor.R"; else ng "R5 가림 규칙 정본 부재" "$SRC_RX"; fi
 
 # ── 픽스처 트리 — 측정 구역 + 정당 경로 + 가짜 기억 디렉터리 ────────────────────────────────
 mk(){ mkdir -p "$(dirname "$1")"; printf '%s\n' "${2:-x}" > "$1"; }
@@ -167,7 +167,7 @@ fs = ['06_Registry/overlay_catalog.json', '06_Registry/weight_catalog.json.bak_q
       '06_Registry/reinforce_program.json', '02_Infrastructure/factor_db/factor_registry.json',
       '02_Infrastructure/reinforcement/overlay_arms/num_arm.arm.json', '02_Infrastructure/reinforcement/overlay_arms/plain_arm.arm.json',
       '.claude/worktrees/w1/06_Registry/reinforce_program.json', '.cache/rf_b5_design/c/design_r1.json', '.cache/rf_b5_design/c/run_r1.out',
-      '.cache/rf_lcode_mech/RP_y_B2.mechanism.json', '.cache/rf_block_design/RP_y_B5.json', '02_Infrastructure/ops/rf_b1_design_lib.R',
+      '.cache/rf_lcode_mech/RP_y_B2.mechanism.json', '.cache/rf_block_design/RP_y_B5.json', '02_Infrastructure/programs/stat_redactor.R',
       '.cache/factor_db/factor_registry.json', '.cache/_dk_backup.json']
 try:
     print(' '.join(hashlib.sha256(open(os.path.join(r, f), 'rb').read()).hexdigest()[:16] for f in fs))
@@ -512,12 +512,17 @@ if [ "$JUNCTION" = 1 ]; then [ "${4:-}" = J ] && ok "I3 junction 실경로(.cach
 else sk "I3 junction" "mklink /J 불가"; fi
 
 # ── J. 레인 배선(정적) ──────────────────────────────────────────────────────────────
+# (v10.01 2026-10-13) 표식을 싣던 레인 4종(설계 rf_b1_design · rf_b5_design · rf_lcode_mechanism / 생성 rf_overlay_propose)은
+#   고정 격자 강화 러너와 함께 퇴역했다. 그래서 J1 은 '현행 ops 전수 — 표식을 싣는 호출이 있으면 모두 같은 조건'만 요구한다
+#   (지금 표식 레인 0곳 = 훅 대기 상태 · 처방 루프 레인이 표식을 싣는 순간 같은 조건이 걸린다).
+#   판별력(J2)·동적 재생(K)은 검사 안에서 만든 합성 레인 — 퇴역 레인의 호출 블록과 같은 형태 — 으로 잰다(판정 규칙 불변).
 echo "--- J. 레인 배선(정적) ---"
-lane_scan(){ "$PY" - "$(wp "$1")" <<'PYEOF'
+lane_scan(){ AGRG_REQ="${2:-}" "$PY" - "$(wp "$1")" <<'PYEOF'
 import io, os, re, sys
 ops = sys.argv[1]
-REQ = {'rf_b1_design.sh': 'QVEST_DESIGN_LANE', 'rf_b5_design.sh': 'QVEST_DESIGN_LANE',
-       'rf_lcode_mechanism.sh': 'QVEST_DESIGN_LANE', 'rf_overlay_propose.sh': 'QVEST_ARM_GEN'}
+REQ = {}   # (v10.01) 요구 레인 = 환경변수 AGRG_REQ 'file=MARK,file=MARK' — 현행 ops 는 요구 레인 0(표식 레인 4종 퇴역)
+for kv in [x for x in os.environ.get('AGRG_REQ', '').split(',') if x]:
+    k, v = kv.split('=', 1); REQ[k] = v
 def blocks(lines, i):
     b = [lines[i]]; j = i
     while lines[j].rstrip().endswith('\\') and j + 1 < len(lines):
@@ -563,29 +568,54 @@ PYEOF
 }
 js="$(lane_scan "$OPS" | tr -d '\r')"
 jp="$(printf '%s\n' "$js" | grep -c '^PROBLEM' || true)"
-[ "$jp" = 0 ] && ok "J1 설계 레인 3종·생성 레인 1종 — 표식 호출 $(printf '%s' "$js" | sed -n 's/^MARKED //p')곳 전부 셸 통로 7종($AGRG_SHELL_TOOLS) 금지 · export 0" \
+jm="$(printf '%s' "$js" | sed -n 's/^MARKED //p')"
+[ "$jp" = 0 ] && ok "J1 현행 ops 전수 — 표식 호출 ${jm}곳 전부 셸 통로 7종 금지 · export 0 (v10.01 표식 레인 4종 퇴역 — 0곳이면 훅은 대기 상태)" \
   || ng "J1 레인 배선" "$(printf '%s\n' "$js" | grep '^PROBLEM' | head -4 | tr '\n' ' ')"
+# 합성 레인 — 퇴역 레인(rf_b1_design.sh · rf_overlay_propose.sh)의 호출 블록과 같은 형태
+JFX="$T/jfx"; mkdir -p "$JFX"
+cat > "$JFX/fx_design.sh" <<'EOF'
+#!/usr/bin/env bash
+QVEST_DESIGN_LANE=1 LLM_FALLBACK_MODEL="" rf_llm_agent_run "$PF" "$RUN_OUT" 1800 \
+  --permission-mode acceptEdits \
+  --allowed-tools "Read,Write,Edit,Glob,Grep,WebFetch,WebSearch" \
+  --disallowed-tools "Bash,PowerShell,Monitor,REPL,Workflow,CronCreate,RemoteTrigger,Agent" \
+  --add-dir "$DDIR"
+ARC=$LLM_RC
+EOF
+cat > "$JFX/fx_gen.sh" <<'EOF'
+#!/usr/bin/env bash
+QVEST_ARM_GEN=1 LLM_FALLBACK_MODEL="" rf_llm_agent_run "$PF" "$LOG.this" 1800 \
+  --permission-mode acceptEdits \
+  --allowed-tools "Read,Write,Edit,Glob,Grep" \
+  --disallowed-tools "Bash,PowerShell,Monitor,REPL,Workflow,CronCreate,RemoteTrigger,Agent" \
+  --add-dir "$ADIR"
+EOF
+FXREQ="fx_design.sh=QVEST_DESIGN_LANE,fx_gen.sh=QVEST_ARM_GEN"
+jf="$(lane_scan "$JFX" "$FXREQ" | tr -d '\r')"
+if [ "$(printf '%s\n' "$jf" | grep -c '^PROBLEM' || true)" = 0 ] && [ "$(printf '%s' "$jf" | sed -n 's/^MARKED //p')" = 2 ]; then
+  ok "J1b [양성 대조] 합성 레인 2종(설계 · 생성 표식) — 표식 호출 2곳 · 문제 0"
+else ng "J1b 합성 레인" "$(printf '%s' "$jf" | tr '\n' ' ')"; fi
 mkdir -p "$T/jm1" "$T/jm2" "$T/jm3" "$T/jm4" "$T/jm5"
-for f in rf_b1_design.sh rf_b5_design.sh rf_lcode_mechanism.sh rf_overlay_propose.sh; do for k in 1 2 3 4 5; do cp "$OPS/$f" "$T/jm$k/"; done; done
-sed -i 's/"Bash,PowerShell,Monitor,/"Bash,Monitor,/' "$T/jm1/rf_b5_design.sh"
-sed -i 's/^QVEST_DESIGN_LANE=1 LLM_FALLBACK_MODEL="" rf_llm_agent_run/LLM_FALLBACK_MODEL="" rf_llm_agent_run/' "$T/jm2/rf_lcode_mechanism.sh"
-printf '\nexport QVEST_DESIGN_LANE=1\n' >> "$T/jm3/rf_b1_design.sh"
-sed -i 's/"Bash,PowerShell,Monitor,/"Bash,PowerShell,/' "$T/jm4/rf_b1_design.sh"             # (B-1) Monitor 금지 삭제 = 09-17 실측 통로
-sed -i 's/"Bash,PowerShell,Monitor,/"Bash,PowerShell,/' "$T/jm5/rf_overlay_propose.sh"       # (B-1) 생성 레인도 같은 조건
-if cmp -s "$T/jm1/rf_b5_design.sh" "$OPS/rf_b5_design.sh" || cmp -s "$T/jm2/rf_lcode_mechanism.sh" "$OPS/rf_lcode_mechanism.sh" \
-   || cmp -s "$T/jm4/rf_b1_design.sh" "$OPS/rf_b1_design.sh" || cmp -s "$T/jm5/rf_overlay_propose.sh" "$OPS/rf_overlay_propose.sh"; then
+for k in 1 2 3 4 5; do cp "$JFX/fx_design.sh" "$JFX/fx_gen.sh" "$T/jm$k/"; done
+sed -i 's/"Bash,PowerShell,Monitor,/"Bash,Monitor,/' "$T/jm1/fx_design.sh"
+sed -i 's/^QVEST_DESIGN_LANE=1 LLM_FALLBACK_MODEL="" rf_llm_agent_run/LLM_FALLBACK_MODEL="" rf_llm_agent_run/' "$T/jm2/fx_design.sh"
+printf '\nexport QVEST_DESIGN_LANE=1\n' >> "$T/jm3/fx_design.sh"
+sed -i 's/"Bash,PowerShell,Monitor,/"Bash,PowerShell,/' "$T/jm4/fx_design.sh"             # (B-1) Monitor 금지 삭제 = 09-17 실측 통로
+sed -i 's/"Bash,PowerShell,Monitor,/"Bash,PowerShell,/' "$T/jm5/fx_gen.sh"                # (B-1) 생성 레인도 같은 조건
+if cmp -s "$T/jm1/fx_design.sh" "$JFX/fx_design.sh" || cmp -s "$T/jm2/fx_design.sh" "$JFX/fx_design.sh" \
+   || cmp -s "$T/jm4/fx_design.sh" "$JFX/fx_design.sh" || cmp -s "$T/jm5/fx_gen.sh" "$JFX/fx_gen.sh"; then
   ng "J2 돌연변이" "sed 무변화(좌표 낡음)"
 else
-  m1="$(lane_scan "$T/jm1" | grep -c 'rf_b5_design.sh.*누락 PowerShell' || true)"
-  m2="$(lane_scan "$T/jm2" | grep -c 'rf_lcode_mechanism.sh: QVEST_DESIGN_LANE=1' || true)"
-  m3="$(lane_scan "$T/jm3" | grep -c 'rf_b1_design.sh.*export' || true)"
-  m4="$(lane_scan "$T/jm4" | grep -c 'rf_b1_design.sh.*누락 Monitor' || true)"
-  m5="$(lane_scan "$T/jm5" | grep -c 'rf_overlay_propose.sh.*누락 Monitor' || true)"
+  m1="$(lane_scan "$T/jm1" "$FXREQ" | grep -c 'fx_design.sh.*누락 PowerShell' || true)"
+  m2="$(lane_scan "$T/jm2" "$FXREQ" | grep -c 'fx_design.sh: QVEST_DESIGN_LANE=1' || true)"
+  m3="$(lane_scan "$T/jm3" "$FXREQ" | grep -c 'fx_design.sh.*export' || true)"
+  m4="$(lane_scan "$T/jm4" "$FXREQ" | grep -c 'fx_design.sh.*누락 Monitor' || true)"
+  m5="$(lane_scan "$T/jm5" "$FXREQ" | grep -c 'fx_gen.sh.*누락 Monitor' || true)"
   [ "$m1" -ge 1 ] && [ "$m2" -ge 1 ] && [ "$m3" -ge 1 ] && [ "$m4" -ge 1 ] && [ "$m5" -ge 1 ] \
     && ok "J2 돌연변이 5종 검출 — PowerShell 금지 삭제 · 설계 표식 삭제 · export 누출 · Monitor 금지 삭제(설계·생성)" || ng "J2 판별력" "m1=$m1 m2=$m2 m3=$m3 m4=$m4 m5=$m5"
 fi
 
-# ── K. 레인 배선(동적) — 실제 호출 블록을 가짜 claude 로 재생 ─────────────────────────────
+# ── K. 레인 배선(동적) — 합성 설계 레인의 호출 블록(퇴역 레인과 같은 형태)을 가짜 claude 로 재생 ─────────────────────────────
 echo "--- K. 레인 배선(동적) ---"
 cat > "$T/fake_claude.sh" <<'EOF'
 #!/usr/bin/env bash
@@ -595,8 +625,8 @@ chmod +x "$T/fake_claude.sh"; printf 'prompt\n' > "$T/pf.txt"
 if [ ! -f "$OPS/rf_llm_env.sh" ] || ! grep -q '^rf_llm_agent_run()' "$OPS/rf_llm_env.sh"; then
   sk "K 동적 재생" "rf_llm_env.sh::rf_llm_agent_run 부재"
 else
-  for lane in rf_b1_design.sh rf_b5_design.sh rf_lcode_mechanism.sh; do
-    blk="$("$PY" - "$(wp "$OPS/$lane")" <<'PYEOF'
+  for lane in fx_design.sh; do
+    blk="$("$PY" - "$(wp "$JFX/$lane")" <<'PYEOF'
 import io, re, sys
 lines = io.open(sys.argv[1], encoding='utf-8', errors='replace').read().splitlines()
 for i, l in enumerate(lines):
@@ -862,8 +892,8 @@ PYEOF
 out2="$(fire design "$T/cases/Q22a.json")"
 [ "$(verdict "$out")" = block ] && [ "$(verdict "$out2")" = block ] && ok "Q22a 원본 수정 전후 모두 R5 block" || ng "Q22a" "$out | $out2"
 vchk Q22b 06_registry__weight_catalog.json.bak_q2 "$SBX/06_Registry/weight_catalog.json.bak_q2" 'paper:Fresh2|paper:Fresh"' '7.123|6.047'
-# Q23~Q26 설정·가림 규칙 축 — 대체 설정은 훅 사본 디렉터리로 준다(가림 정본 = 사본 디렉터리 ../ops)
-mkdir -p "$T/ops"; cp "$SBX/02_Infrastructure/ops/rf_b1_design_lib.R" "$T/ops/rf_b1_design_lib.R"
+# Q23~Q26 설정·가림 규칙 축 — 대체 설정은 훅 사본 디렉터리로 준다(가림 정본 = 사본 디렉터리 ../programs)
+mkdir -p "$T/programs"; cp "$SBX/02_Infrastructure/programs/stat_redactor.R" "$T/programs/stat_redactor.R"
 altq(){ # $1 이름 $2 훅 원본 $3 파이썬 수정식(d = 설정 dict · nopol = 파일 없음) → 훅 사본 경로
   local d="$T/altq_$1"; mkdir -p "$d"; cp "$2" "$d/arm_gen_read_guard.sh"
   if [ "$3" != nopol ]; then mkdir -p "$d/policies"
@@ -892,20 +922,20 @@ qchk "Q24b catalog_view 부재 + 엔진 .R Read(C02) → pass — 데이터 파�
 qchk "Q24c catalog_view 부재 + 내용 Grep 범위(Q13) → block(fail-closed)" block "$HQ_NOCV" Q13 design R5_catalog_policy
 qchk "Q24d catalog_view 부재 + files_with_matches Grep(Q15) → pass" pass "$HQ_NOCV" Q15 design
 qchk "Q24e catalog_view 부재 + 내용 Grep glob=*.R(Q14) → pass — 코드만 필터" pass "$HQ_NOCV" Q14 design
-HQ_NORX="$(altq norx "$HOOK" "d['catalog_view']['redactor_source']='../no_such/rf_b1_design_lib.R'")"
+HQ_NORX="$(altq norx "$HOOK" "d['catalog_view']['redactor_source']='../no_such/stat_redactor.R'")"
 qchk "Q25a 가림 정본 부재 + 카탈로그 Read(Q01) → block(R5_catalog_redactor)" block "$HQ_NORX" Q01 design R5_catalog_redactor
 qchk "Q25b 가림 정본 부재 + 수치 없는 대상(Q08b) → block — 판별 불능이면 대상은 막는다" block "$HQ_NORX" Q08b design R5_catalog_redactor
 qchk "Q25c 가림 정본 부재 + 엔진 .R(C02) → pass — 대상 밖 영향 없음" pass "$HQ_NORX" C02 design
-mkdir -p "$T/ops_bad"; "$PY" - "$(wp "$T/ops/rf_b1_design_lib.R")" "$(wp "$T/ops_bad/rf_b1_design_lib.R")" <<'PYEOF'
+mkdir -p "$T/programs_bad"; "$PY" - "$(wp "$T/programs/stat_redactor.R")" "$(wp "$T/programs_bad/stat_redactor.R")" <<'PYEOF'
 import io, sys
 s = io.open(sys.argv[1], encoding='utf-8', newline='').read()
 old = 'dec = "(?<![A-Za-z0-9_.])'
 s2 = s.replace(old, 'dec = "(?<![A-Za-z0-9_.])ZZZNEVER', 1) if s.count(old) == 1 else s
 io.open(sys.argv[2], 'w', encoding='utf-8', newline='').write(s2)
 PYEOF
-if cmp -s "$T/ops/rf_b1_design_lib.R" "$T/ops_bad/rf_b1_design_lib.R"; then ng "Q26 가림 정본 돌연변이" "dec 규칙 좌표 낡음"
+if cmp -s "$T/programs/stat_redactor.R" "$T/programs_bad/stat_redactor.R"; then ng "Q26 가림 정본 돌연변이" "dec 규칙 좌표 낡음"
 else
-  HQ_BADRX="$(altq badrx "$HOOK" "d['catalog_view']['redactor_source']='../ops_bad/rf_b1_design_lib.R'")"
+  HQ_BADRX="$(altq badrx "$HOOK" "d['catalog_view']['redactor_source']='../programs_bad/stat_redactor.R'")"
   qchk "Q26 가림 정본의 소수 규칙을 무력화 → 카나리아가 잡아 block(R5_catalog_redactor) — 적재 양성 대조" block "$HQ_BADRX" Q01 design R5_catalog_redactor
 fi
 # Q27 판정기 부재 — bash 거울 CATALOG_FALLBACK_RE
@@ -962,7 +992,7 @@ h <- vapply(xs, function(s) isTRUE(en$rf_b1_has_stats(s)), logical(1), USE.NAMES
 writeLines(enc2utf8(as.character(toJSON(list(redacted = r, has = h), auto_unbox = FALSE))), a[3], useBytes = TRUE)
 REOF
   (cd "$T" && R_ENVIRON_USER="$(wp "$T/empty.Renviron")" R_PROFILE_USER="$(wp "$T/empty.Renviron")" "$RS" "$(wp "$T/q29.R")" \
-    "$(wp "$SBX/02_Infrastructure/ops/rf_b1_design_lib.R")" "$(wp "$T/q29_strings.json")" "$(wp "$T/q29_r.json")" >/dev/null 2>&1)
+    "$(wp "$SBX/02_Infrastructure/programs/stat_redactor.R")" "$(wp "$T/q29_strings.json")" "$(wp "$T/q29_r.json")" >/dev/null 2>&1)
   q29="$("$PY" - "$(wp "$T/q29_py.json")" "$(wp "$T/q29_r.json")" <<'PYEOF' 2>&1 | tr -d '\r'
 import io, json, sys
 try:

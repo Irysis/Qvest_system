@@ -13,6 +13,8 @@ paths:
 **§1~§3·§5~§7 = 측정 무결성 정본** — 등급을 산출하는 모든 리서치 1단위(1계층 충실구현·강화, 2계층 로테이션)에 적용된다. 이 분할·게이트(OOS anchored·DSR selection 경계·holdout falsification)는 폐지된 lockbox 가 아니라 **측정 규율**이다 — 불변. **§4 = BOOK 등록 규범**(구 governor admission 대체). HARD 값 정본 = `constraint_defaults.json::tier_graduation`, 재보정 = 도훈 권한(INV-7 '완화 제안 금지').
 구 v9 문구("자본 층 = Grade A 지명 후 6-agent dossier")는 v10 에서 **Judge(PIT 전담) + BOOK 등록**으로 대체됐다 — Grade A → Judge 검증 6축 → PASS → `register_book_entry`(도훈 confirm).
 
+★**(v10.01 2026-10-13 · MC7 승격 · decision_register GRADE-V3-PROMOTE) 권위 등급 enum(A/B/C/F) = 등급 v3** — 종합점수 S = (Calmar/0.64)^0.6 × (PORT_t/2.95)^0.4 + 하한 + 위기 복원력 노치 + τ_D OOS(정의 = CLAUDE.md 등급 절 · `contracts/grade_v3.R` · `06_Registry/grade_v3.json`). 아래 §3 HARD 3종은 (a) v3 의 정규화 문턱(Calmar 0.64 · PORT_t 2.95)과 B 경계·하한(PORT_t 2.0)으로 재사용되고 (b) 동결된 QEPM WT 배포 경로 훅(`discovery_graduation_gate.sh`)의 문턱으로 남는다. 구 5조건 AND 판정은 `grade_v921`(진단 · 인용 금지). §1·§2(실측 의무 · PORT_t 정의 · β 통제 α 병기)와 DSR 적용경계(스윕형 선정 → v3 A 의 gates)는 그대로다.
+
 **발효**: 2026-05-29 (v8.x WS1/2/3, 도훈 mandate "한 번 재설계하고 가자"). **위반 = AX-002 동급**(proxy 수치로 게이트 통과 = 프로세스 우회 = 미래참조).
 **근거**: 16-cycle 리서치가 "alpha/risk/optimizer가 proxy 손계산 수치로 graduation PASS 선언"하는 구조결함 노출 (Cycle 5 QVALUE "5/5 PASS"가 전부 proxy). E2E 입증: FLOW proxy portfolio-α t 3.55 → forge 실측 2.35 (Cycle 2 D 4.31→2.31 재현).
 

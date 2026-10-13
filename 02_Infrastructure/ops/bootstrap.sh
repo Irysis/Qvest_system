@@ -58,7 +58,7 @@ case "${QVEST_BOOT_SANITIZED:-}" in
   *)      echo "[boot] WARN: utf8_output_guard INACTIVE (python3/guard 부재 또는 외부 QVEST_BOOT_SANITIZED 선점) — 이모지 포함 출력 시 API 400 위험" ;;
 esac
 
-echo "=== Qvest v10.4 부트스트랩 — health_full 전용 (Fable 5 · 2계층 리서치(팩터전략/전략로테이션)) ==="
+echo "=== Qvest v10.01 부트스트랩 — health_full 전용 (Opus 5.5 · 목표 역산형 1계층 리서치 · 2계층 로테이션) ==="
 
 # 1. (제거됨 v8.0 2026-05-29) tmux rc telegram inbound listener — outbound tg_agent_brief()는
 #    영향 없음. inbound 명령 listener 불필요 판단(도훈). 필요 시 persistent_remote_control.sh 수동 기동.
@@ -1160,6 +1160,7 @@ printf '{"ts":"%s","ts_epoch":%s,"boot_fails":%s}\n' "$(date '+%Y-%m-%dT%H:%M:%S
 if [ -n "$PG2_INFO" ]; then
   echo "$PG2_INFO"
 fi
+echo "v10.01:     목표 역산형 1계층 리서치(도훈 2026-10-13 · D1~D16) — 3엔진 프로그램(P0 지도 · P1 수익 · P2 방어 · P3 구성 · P4 조립) · 행동 카드(위기 방어) · 고정 격자 강화 러너 퇴역 · 레인 D12 편성(판단 opus · 실행 sonnet)"
 echo "v10.4:      강화 격자의 LLM 설계·적응 순서·승격 사슬·롤링/방어형 구제(2026-09-04) — B1 = 블록 진입 시 LLM 설계 1회(검증 실패 = 규칙 폴백) · 충실도 6축 팬아웃 · SKILL §0.3 정본"
 echo "v10.2:      강화 LLM 재귀 루프(2026-09-03) — 오버레이 노출 종목별 벡터화 · 기전 지도 포화감지 · arm 생성 레인 + 오프라인 probe · 생성 세션 성과 열람 차단(arm_gen_read_guard)"
 echo "v10.1:      2계층 리서치(도훈 2026-08-29) + v9 잔재 하네스 정리(2026-09-03) — 1계층 충실구현+강화 · 2계층 로테이션 무한강화 · lockbox/governor 폐지 · Judge=PIT 전담 · BOOK · 무인=수집+강화"

@@ -8,9 +8,10 @@
 # 수리(선택 · 설정으로 켠다): a_eligibility_gate.json::holds.vintage_flag.consume_hold {flags, verdicts} 에 걸린 표식 칸 = 소비 후보 아님.
 #   C1 설정 있음 → 표식 칸(possible) 제외 · 다른 flag(pit_c11) 칸 · 무표식 칸 유지 · 로그 사유 vintage_hold
 #   C2 설정 없음(키 부재) → 전부 유지(현행 거동 · 항등)
-#   C3 승격 best(rf_promote_best) — 설정 있음: PORT_t 최고인 표식 칸 대신 다음 칸 · 없음: 표식 칸
 #   C4 [사실 기록] 표식 칸의 층을 물려받은 칸(무표식)은 어느 설정에서도 후보 술어가 막지 않는다 — 막는 자리는 원천 칸의 소비다
 #   M1 [돌연변이] 술어의 표식 검사 삭제 → C1 red
+# (v10.01 2026-10-13) 고정 격자 러너 퇴역으로 C3a·C3b(승격 best rf_promote_best — rf_promote.R) 삭제 — 대상 코드가 없다
+#   (롤백 태그 pre-v10.01-prescription-20261013). 후보 술어(rf_candidates_keep·rf_candidate_facts — rf_runner_gates.R)는 그대로 잰다.
 # 실행: QM_ROOT=<저장소> Rscript --no-environ 08_Tests/reinforcement/test_rf_consume_hold.R   (약 10초)
 #==============================================================================
 suppressPackageStartupMessages({ library(jsonlite) })
@@ -43,8 +44,7 @@ load_env <- function(S) {
     sys.source(file.path(S, "02_Infrastructure/reinforcement/reinforce_ledger.R"), envir = e)
     sys.source(file.path(S, "02_Infrastructure/reinforcement/rf_spec_sig.R"), envir = e)
     sys.source(file.path(S, "02_Infrastructure/reinforcement/rf_block_design.R"), envir = e)
-    sys.source(file.path(S, "02_Infrastructure/reinforcement/rf_runner_gates.R"), envir = e)
-    sys.source(file.path(S, "02_Infrastructure/reinforcement/rf_promote.R"), envir = e) })))
+    sys.source(file.path(S, "02_Infrastructure/reinforcement/rf_runner_gates.R"), envir = e) })))
   e
 }
 CUR <- as.character(fromJSON(file.path(ROOT, "02_Infrastructure/worktask/constraint_defaults.json"), simplifyVector = FALSE)$execution$exec_price)
@@ -73,14 +73,9 @@ w1 <- e1$rf_candidates_keep(A1, ctx1, role = "winner_B5", log = lg, base_id = "T
 chk(identical(codes(k1), c("B2_10", "B1_4", "B4_21")) && identical(codes(w1), c("B2_10", "B1_4", "B4_21")),
     "C1a 설정 있음 — 표식 칸(B5_17 · possible) 제외(바닥·승자 역할) · pit_c11 칸·무표식 칸 유지", paste(codes(k1), collapse = ","))
 chk(any(vapply(logs, function(x) grepl("vintage_hold", as.character(x$by_reason %||% "")), logical(1))), "C1b 제외 사유 = vintage_hold(candidates_excluded 로그)")
-E1 <- list(base_id = "T_CH", attempts = A1)
-pb1 <- e1$rf_promote_best(E1, ctx1)
-chk(identical(A1[[pb1$i]]$cell_code, "B4_21") && "B5_17" %in% names(pb1$excluded), "C3a 설정 있음 — 승격 best = 다음 칸(B4_21) · B5_17 제외 기록", paste(names(pb1$excluded), collapse = ","))
 S2 <- mk_root("off", FALSE); e2 <- load_env(S2); ctx2 <- e2$rf_runner_ctx(S2); A2 <- cases(S2)
 k2 <- e2$rf_candidates_keep(A2, ctx2, role = "floor")
 chk(identical(codes(k2), c("B5_17", "B2_10", "B1_4", "B4_21")) && !length(ctx2$consume_hold$flags), "C2 설정 없음 — 전부 유지(현행 거동 · 항등)")
-pb2 <- e2$rf_promote_best(list(base_id = "T_CH", attempts = A2), ctx2)
-chk(identical(A2[[pb2$i]]$cell_code, "B5_17"), "C3b 설정 없음 — 승격 best = PORT_t 최고 표식 칸(B5_17 · 현행 = 소비됨)")
 chk(!length(e1$rf_candidate_facts(A1[[4]], ctx1)$fail) && !length(e2$rf_candidate_facts(A2[[4]], ctx2)$fail),
     "C4 [사실] 표식 칸의 층을 물려받은 무표식 칸(B4_21)은 어느 설정에서도 술어가 막지 않는다 — 표식은 승계되지 않는다(막는 자리 = 원천 칸의 소비)")
 

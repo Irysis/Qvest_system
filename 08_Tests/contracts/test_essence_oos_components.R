@@ -75,6 +75,15 @@ mutate_src <- function(path, old, new, name) {
   p <- file.path(TMP, name); writeLines(sub(old, new, s, fixed = TRUE), p, useBytes = TRUE); p
 }
 drop_diag <- function(x) x[setdiff(names(x), "diagnostics")]
+## (v10.01 2026-10-13 MC7) 권위 grade 는 등급 v3 가 됐다. R1 은 'P0-02 가 구 판정 경로를 안 바꿨다'를 지키므로
+##   새 출력을 구 판정 관점으로 되돌려 비교한다: grade ← grade_v921 · 사유의 v3 접두 제거 · 끝에 붙은 v3 3필드 제외.
+V3_TAIL <- c("grade_basis", "grade_v921", "grade_v3")
+to_v921 <- function(nw) {
+  x <- drop_diag(nw); x <- x[setdiff(names(x), V3_TAIL)]
+  x$grade <- nw$grade_v921
+  x$reasons <- sub("^.*? \\| v921 (NA|[A-F]): ", "", nw$reasons)
+  x
+}
 
 cat("=== P0-02 essence 진단 필드 · 고정 축 재도출 ===\n")
 E1 <- tryCatch(src_env(ES_NEW), error = function(e) { ng("신판 essence_score 적재", conditionMessage(e)); NULL })
@@ -164,7 +173,7 @@ if (is.null(E0)) {
     badl <- character(0)
     for (k in names(grp$fx)) {
       o <- run_es(E0, grp$fx[[k]]); nw <- run_es(E1, grp$fx[[k]]); NEWRES[[k]] <- nw
-      same <- identical(o, drop_diag(nw)) && identical(names(nw), c(names(o), "diagnostics"))
+      same <- identical(o, to_v921(nw)) && identical(names(nw), c(names(o), "diagnostics", V3_TAIL))
       if (!same) badl <- c(badl, k)
     }
     chk(sprintf("R1 %s %d종 — 변경 전 판본과 grade·essence·사유·전 필드 identical(진단 칸만 끝에 추가)",

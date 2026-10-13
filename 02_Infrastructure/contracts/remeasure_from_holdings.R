@@ -576,6 +576,9 @@ rfh_remeasure <- function(artifact_dir, exec_price, raw = NULL, out_dir = NULL, 
     grade_base = es$grade_base, recent_regime_rescued = es$recent_regime_rescued,
     recent_regime_label = es$recent_regime_label, rolling_grade = es$rolling_grade,
     defensive_score = es$defensive_score, reasons = es$reasons,
+    ## ★등급 v3(MC7 · 2026-10-13) — essence_grade = v3 권위 등급. 근거 블록과 구 5조건 판정(진단)을 함께 싣는다(골라 쓰는 쓰기라 빼면 사라진다)
+    grade_scheme = es$grade_basis %||% NA_character_, grade_v921 = es$grade_v921 %||% NA_character_,
+    grade_v3 = es$grade_v3,
     remeasure = list(
       version = RFH_VERSION, of_artifact = inp$dir, of_run_id = inp$run_id,
       method = "holdings_replay — 저장 보유(시그널일 확정 비중) → replication_harness → build_bt_result → audit → essence",

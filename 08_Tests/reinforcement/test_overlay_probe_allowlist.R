@@ -60,9 +60,14 @@ if (isTRUE(AL$ok) && !isTRUE(AL$fallback)) ok(sprintf("A1 레지스트리 적재
 J <- fromJSON(REG, simplifyVector = FALSE)
 src_k <- vapply(J$source_arms, function(a) a$kind, character(1))
 cf <- canon(); ck <- sub("[.]R$", "", basename(cf))
-if (length(src_k) && setequal(src_k, ck)) ok(sprintf("A1b 레지스트리 출처 arm %d종 = overlay_arms 정본 %d종(집합 일치)", length(src_k), length(ck))) else
-  ng("A1b 출처 arm 집합 불일치 — 정본이 바뀌었으면 레지스트리 재검토", sprintf("레지스트리만 %s · 디렉터리만 %s",
-     paste(setdiff(src_k, ck), collapse = ","), paste(setdiff(ck, src_k), collapse = ",")))
+# (v10.01 10-13) 레지스트리는 동결 목록이다(note — 새 arm 이 들어와도 자동 확장하지 않는다 · 후보가 자기 허가를 만들면 안 된다).
+#   그래서 동결 뒤 새 arm 이 디렉터리에 생기는 것은 설계대로다 — 그 arm 은 동결 목록으로 A2 에서 판정된다(A4·LOO 도 exclude 로 이미 감안).
+#   결함은 반대 방향만이다: 레지스트리가 적은 출처 arm 파일이 사라졌으면 빌더 재현(A4)이 성립하지 않는다.
+if (length(src_k) && all(src_k %in% ck)) ok(sprintf("A1b 레지스트리 출처 arm %d종 전부 디렉터리에 있음 · 동결 뒤 새 arm %d종(동결 목록으로 A2 판정)%s",
+                                                    length(src_k), length(setdiff(ck, src_k)),
+                                                    if (length(setdiff(ck, src_k))) paste0(" — ", paste(setdiff(ck, src_k), collapse = ",")) else "")) else
+  ng("A1b 레지스트리 출처 arm 이 디렉터리에 없다 — 빌더 재현 불가 · 레지스트리 재검토", sprintf("레지스트리만 %s",
+     paste(setdiff(src_k, ck), collapse = ",")))
 res <- rbindlist(lapply(cf, function(f) { k <- sub("[.]R$", "", basename(f))
   r <- pN$overlay_probe_allowlist_scan(f, kind = k, al = AL); data.table(kind = k, ok = r$ok, grant = r$grant, why = r$reason %||% "") }))
 if (nrow(res) && all(res$ok)) ok(sprintf("A2 정본 arm %d종 전부 ③d 통과 (개별 허가 적용 %d종: %s)", nrow(res), sum(grepl("개별 허가", res$grant) & !grepl("무효", res$grant)),

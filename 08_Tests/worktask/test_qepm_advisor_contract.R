@@ -440,10 +440,13 @@ desc_ok <- function(desc, gated = g_fa_gated) {
 for (d in c(JDG, ASK, AAG)) chk(sprintf("G6c %s description = 현행 트리거(관문 경유=%s → 정본 rf_a_eligibility · 통과 %s / 미경유면 관문 전·트리거 아님·도훈 지시·B07)",
                                         d, g_fa_gated, g_fa_elig),
                                 desc_ok(fm_desc_of(rd(d))), substr(fm_desc_of(rd(d)), 1L, 120L))
-rf_line_ok <- function(txt) { L <- lines_of(gsub("\r", "", txt, fixed = TRUE)); b <- L[grepl("^- 보고 단위 = \\*\\*블록\\*\\*", L, perl = TRUE)]
-  length(b) == 1L && has_all(b, c("rf_a_eligibility", "judge_request_<BID>_<n>.json", "트리거 아님", ".claude/agents/judge.md")) }
-chk("G6d reinforce SKILL 보고 단위 줄 = 관문 통과분 후보별 요청만 Judge 트리거 · description 도 관문 경유",
-    rf_line_ok(RFSt) && has_all(fm_desc_of(gsub("\r", "", RFSt, fixed = TRUE)), c("rf_a_eligibility", "judge.md")))
+## (v10.01 2026-10-13) 1계층 고정 격자 강화 러너 퇴역 — reinforce SKILL 은 2계층 강화 + 도구 상자만 다룬다. 구 G6d(블록 보고 단위 줄의
+##   후보별 요청 트리거)는 대상이 사라졌다. 대신: reinforce SKILL 이 1계층 Judge 트리거(후보별 요청)를 **현행으로 주장하지 않고** 1계층을
+##   research-program SKILL 로 위임하는가 — 퇴역 경로가 문서로 되살아나면 Q-Lead 가 없는 요청 파일을 기다린다.
+rf_no_l1_claim <- function(txt) { t <- gsub("\r", "", txt, fixed = TRUE); d <- fm_desc_of(t)
+  !has(d, "judge_request_<BID>_<n>.json") && !has(d, "1계층 = A 자격 관문") && has(d, "퇴역") && has(t, "research-program") }
+chk("G6d reinforce SKILL — 1계층 후보별 요청 트리거를 현행으로 주장하지 않는다(퇴역 명시 · 1계층 = research-program SKILL 위임)",
+    rf_no_l1_claim(RFSt))
 # ── G6e~g 2계층 트리거 — rf_l2_auto.R 가 essence A 면 관문 없이 l2_judge_request.json 을 쓴다(코드 재도출) → reinforce SKILL 두 면
 #    (description · 시도 절차 §8 Grade A 줄) · judge.md ② 가 계층별로 같은 말을 하는가(1계층 관문 규칙을 강화 전체로 전칭하지 않는다) ──
 L2A <- rd("02_Infrastructure/ops/rf_l2_auto.R")
@@ -451,19 +454,19 @@ g_l2_emit  <- has(L2A, "file.path(ROOT, \"06_Registry/l2_judge_request.json\")")
 g_l2_gated <- grepl("rf_a_eligibility|grade_a_queue", L2A, perl = TRUE)
 cat(sprintf("       (재도출: 2계층 A → l2_judge_request.json 발행=%s · 관문 경유=%s)\n", g_l2_emit, g_l2_gated))
 gate_word_ok <- function(x, gated) if (isTRUE(gated)) !has(x, "관문 없음") else has(x, "관문 없음")
+## (v10.01) 2계층만 남았다 — description 과 시도 절차 8단계(분기) 줄이 2계층 트리거·관문 여부를 코드와 같게 말하는가
 rf_layer_ok <- function(txt, gated = g_l2_gated) {
   t <- gsub("\r", "", txt, fixed = TRUE); d <- fm_desc_of(t); L <- lines_of(t)
-  g <- L[grepl("^   - \\*\\*Grade A\\*\\* → ", L, perl = TRUE)]
-  d_ok <- has_all(d, c("1계층 = A 자격 관문(rf_a_eligibility)", "2계층 = l2_judge_request.json", "judge.md")) && gate_word_ok(d, gated)
-  g_ok <- length(g) == 1L && has_all(g, c("**1계층** = A 자격 관문(`rf_a_eligibility`)", "`judge_request_<BID>_<n>.json`",
-                                          "**2계층** = `06_Registry/l2_judge_request.json`", "rf_l2_auto.R", ".claude/agents/judge.md")) &&
+  g <- L[grepl("^8\\. \\*\\*분기\\*\\* — Grade A → ", L, perl = TRUE)]
+  d_ok <- has_all(d, c("2계층 = l2_judge_request.json", "judge.md")) && gate_word_ok(d, gated)
+  g_ok <- length(g) == 1L && has_all(g, c("**2계층** = `06_Registry/l2_judge_request.json`", "rf_l2_auto.R", ".claude/agents/judge.md")) &&
     gate_word_ok(g, gated)
   d_ok && g_ok
 }
 jdg_l2_ok <- function(txt, gated = g_l2_gated) { L <- lines_of(gsub("\r", "", txt, fixed = TRUE)); b <- L[grepl("^  ② \\*\\*2계층\\*\\* = ", L, perl = TRUE)]
   length(b) == 1L && has_all(b, c("06_Registry/l2_judge_request.json", "rf_l2_auto.R")) && gate_word_ok(b, gated) }
 chk("G6e 2계층 트리거 재도출 — rf_l2_auto.R 가 essence A 면 06_Registry/l2_judge_request.json 발행", g_l2_emit)
-chk("G6f reinforce SKILL description · §8 Grade A 줄 = 계층별 트리거(1계층 = 관문 통과분 후보별 요청 · 2계층 = l2_judge_request.json · 관문 여부 = 코드 재도출)",
+chk("G6f reinforce SKILL description · 8단계 분기 줄 = 2계층 트리거(l2_judge_request.json · rf_l2_auto.R · 관문 여부 = 코드 재도출)",
     rf_layer_ok(RFSt))
 chk("G6g judge.md ② 2계층 줄 = l2_judge_request.json(rf_l2_auto.R) · 관문 여부 = 코드 재도출", jdg_l2_ok(JDGt))
 
@@ -553,9 +556,9 @@ chk("MG5b 코드가 등재를 멈춘 가상 상태(cat_fact=FALSE) → 현 문�
 chk("MG5c lookup 이 재빌드를 멈춘 가상 상태(idx_fact=FALSE) → 현 문서가 red", !write_doc_ok(SKLt, xf = FALSE))
 chk("MG6 judge.md 구 description('어떤 리서치 모드든 … 직후에만 스폰') 재주입 → red",
     length(univ_hits(paste(JDGt, "description: Judge Agent (v10) — 어떤 리서치 모드든(1계층 충실구현·강화 / 2계층 로테이션) essence Grade A 확정 직후에만 스폰"))) > 0L)
-chk("MG6b reinforce '보고 단위' 줄 구 문언('Grade A 발생 시 즉시 Judge.') 재주입 → red",
-    length(univ_hits(paste(RFSt, "- 보고 단위 = **블록**(시도 5건 등급 일괄 텔레그램 + L-code 1건). Grade A 발생 시 즉시 Judge."))) > 0L &&
-      !rf_line_ok(sub("(?m)^- 보고 단위 = \\*\\*블록\\*\\*[^\n]*", "- 보고 단위 = **블록**(시도 5건 등급 일괄 텔레그램 + L-code 1건). Grade A 발생 시 즉시 Judge.", gsub("\r", "", RFSt, fixed = TRUE), perl = TRUE)))
+## (v10.01) 블록 보고 단위 줄은 퇴역 러너와 함께 문서에서 빠졌다 — 전칭 'A 면 Judge' 문언 재주입을 G6b 판정기가 잡는지만 잰다
+chk("MG6b reinforce 에 구 문언('Grade A 발생 시 즉시 Judge.') 재주입 → red",
+    length(univ_hits(paste(RFSt, "- 보고 단위 = **블록**(시도 5건 등급 일괄 텔레그램 + L-code 1건). Grade A 발생 시 즉시 Judge."))) > 0L)
 chk("MG6c alpha-search SKILL 구 description('A → Judge(PIT).') 재주입 → red",
     !desc_ok("description: 1계층 알파 서칭 (v10) — … A 미달 → 강화 원장 open / A → Judge(PIT). 의미있는 실패만 L-code 적립."))
 chk("MG6d 충실구현이 관문 우회로 되돌아간 가상 상태(g_fa_gated=FALSE) → 현 description 3종(관문 경유 서술)이 red(문서-코드 불일치 검출 · P0-13)",
@@ -569,16 +572,17 @@ chk("MG6d3 주석에만 관문 이름을 남긴 §11 되돌림 → 미경유로 
            g_strip_c("# ---- 11. 라우팅\n  if (identical(grade, \"A\")) {\n    # rf_a_eligibility 는 나중에\n    write_json(x, file.path(OUT_DIR, \"judge_request.json\"))\n  } else if"),
            perl = TRUE))
 RFn <- gsub("\r", "", RFSt, fixed = TRUE)
-OLD_RF_DESC <- "A 달성 시 A 자격 관문(rf_a_eligibility) 통과분만 후보별 요청 → Judge(PIT) — 트리거 정본 = judge.md §스폰 조건."
-OLD_RF_GA <- "   - **Grade A** → A 자격 관문(`rf_a_eligibility`) 통과분(후보별 요청 `judge_request_<BID>_<n>.json` ∧ `grade_a_queue` `awaiting_judge`)만 Judge(PIT 전담) 스폰 (`.claude/agents/judge.md` §스폰 조건 · 보류 = 스폰 없음) →"
-chk("MG6e reinforce description 에 1계층 관문 전칭('A 자격 관문 … 통과분만 후보별 요청 → Judge') 재주입 → red",
-    !rf_layer_ok(sub("A 달성 시 [^\n]*?§스폰 조건\\.", OLD_RF_DESC, RFn, perl = TRUE)))
-chk("MG6f reinforce §8 Grade A 줄에 1계층 관문 전칭 재주입(2계층 트리거 누락) → red",
-    !rf_layer_ok(sub("(?m)^   - \\*\\*Grade A\\*\\* → [^\n]*", OLD_RF_GA, RFn, perl = TRUE)))
+## (v10.01) 위반 주입 — ①description 에 퇴역 1계층 후보별 요청 트리거 재주입 → G6d red ②8단계 줄에서 2계층 트리거 파일 삭제 → G6f red
+mg_e <- sub("트리거 정본 = judge.md §스폰 조건)", "트리거 정본 = judge.md §스폰 조건 · 1계층 = A 자격 관문(rf_a_eligibility) 통과분 후보별 요청 judge_request_<BID>_<n>.json)", RFn, fixed = TRUE)
+chk("MG6e reinforce description 에 퇴역 1계층 후보별 요청 트리거 재주입 → G6d red",
+    !identical(mg_e, RFn) && !rf_no_l1_claim(mg_e))
+mg_f <- sub("**2계층** = `06_Registry/l2_judge_request.json`", "**2계층** = (삭제)", RFn, fixed = TRUE)
+chk("MG6f reinforce 8단계 분기 줄에서 2계층 트리거 파일 삭제 → G6f red",
+    !identical(mg_f, RFn) && !rf_layer_ok(mg_f))
 chk("MG6g 2계층이 관문 경유로 바뀐 가상 상태(g_l2_gated=TRUE) → 현 reinforce SKILL · judge.md ② 의 '관문 없음' 이 red",
     !rf_layer_ok(RFSt, gated = TRUE) && !jdg_l2_ok(JDGt, gated = TRUE))
-mg_L <- lines_of(RFn); mg_i <- grep("^   - \\*\\*Grade A\\*\\* → ", mg_L, perl = TRUE); mg_L[mg_i] <- gsub("관문 없음", "", mg_L[mg_i], fixed = TRUE)
-chk("MG6h reinforce §8 Grade A 줄의 2계층 '관문 없음' 삭제 → red", length(mg_i) == 1L && !rf_layer_ok(paste(mg_L, collapse = "\n")))
+mg_L <- lines_of(RFn); mg_i <- grep("^8\\. \\*\\*분기\\*\\* — Grade A → ", mg_L, perl = TRUE); mg_L[mg_i] <- gsub("관문 없음", "", mg_L[mg_i], fixed = TRUE)
+chk("MG6h reinforce 8단계 분기 줄의 2계층 '관문 없음' 삭제 → red", length(mg_i) == 1L && !rf_layer_ok(paste(mg_L, collapse = "\n")))
 chk("MG6i judge.md ② 의 l2_judge_request.json 삭제 → red", !jdg_l2_ok(gsub("06_Registry/l2_judge_request.json", "(삭제)", JDGt, fixed = TRUE)))
 
 cat(sprintf("\n== test_qepm_advisor_contract: %d pass · %d fail ==\n", P, F))

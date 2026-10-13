@@ -15,8 +15,8 @@
 #      하나라도 어기면 원장에 열지 않고 세션 대기로 되돌린다(조용한 통과 없음).
 #   ④ 실패는 실패로 기록한다 — 텔레그램 + 요청 파일 status=failed_needs_session.
 #
-# 흐름: replication_request.json(pending) → claude -p 헤드리스 → 검증 → rf_open_entry → 강화 재개
-# 호출: 스케줄러(tick) 또는 수동. kill switch 는 강화 러너와 공유한다.
+# 흐름: replication_request.json(pending) → claude -p 헤드리스 → 검증 → 행동 카드 · 리서치 프로그램 재료 큐(v10.01 · 구 강화 재개 퇴역)
+# 호출: 스케줄러(tick) 또는 수동. 스위치 = config replication_lane.enabled(v10.01 — 퇴역 러너의 전역 enabled 와 분리).
 # ★청정 모드(결정 FA-CLEAN-BASE-PATH · 2026-09-26): 모드 해석 → RP_AUTO_CLEAN_<slug> 작업 디렉터리 → 가드 표식(QVEST_CLEAN_LANE)으로
 #   성과 열람 차단 · 재구현 피드백 가림 · 출처 기록(lane_provenance.json) — 아래 "청정 모드 해석" 절과 rf_clean_lane.py 가 정본.
 #==============================================================================
@@ -46,8 +46,9 @@ print('[rp_auto] '+sys.argv[1])" "$@" ; }
 # ── 게이트 ────────────────────────────────────────────────────────────────────
 EN=$("$PY" -c "
 import io,json
-try: print(json.loads(io.open(r'$CFG','rb').read().decode('utf-8')).get('enabled'))
+try: print((json.loads(io.open(r'$CFG','rb').read().decode('utf-8')).get('replication_lane') or {}).get('enabled'))
 except Exception: print('False')" 2>/dev/null)
+# ★v10.01 (2026-10-13): 전역 enabled 는 퇴역한 고정 격자 러너의 스위치다 — 충실구현 레인은 replication_lane.enabled 만 본다
 [ "$EN" = "True" ] || { jl halt_disabled; exit 0; }
 # ── ★리프레시 배리어 — 레인 진입 (도훈 결정 OPS-RUNNER-REFRESH-BARRIER · 2026-09-24) ─────────────────────
 #   이 레인의 RAWDATA 읽기는 검증기(rf_replication_verify.R → run_paper_replication → load_rawdata)다.
@@ -63,36 +64,8 @@ if [ -f "$RB_SH" ] && . "$RB_SH"; then
 else
   jl halt_refresh_lock "state=error" "reason=barrier_helper_missing"; exit 0
 fi
-# ── ★강화가 도는 동안 새 논문을 돌리지 않는다 (도훈 지적 2026-09-04) ────────
-#   가드가 **한쪽에만** 있었다: reinforce_auto_next_paper.R 은 active entry 를 보고
-#   halt_active_exists 로 멈추는데, 이 레인은 그걸 안 봐서 대기 중인 요청을
-#   그대로 집었다. 실사고: 2511.12490 이 18:34~19:15 에 에이전트+측정+감사 한 바퀴를
-#   강화(1403.8125 구제분)와 **나란히** 돌았다.
-#   ★요청을 지우지 않는다 — pending 으로 두면 강화가 끝난 뒤 그대로 집힌다.
-if [ "${QVEST_RP_ALLOW_CONCURRENT:-0}" != "1" ]; then
-  ACT_ALL=$("$PY" -c "
-import io,json
-try:
-    d=json.loads(io.open(r'$ROOT/06_Registry/reinforce_ledger_l1.json','rb').read().decode('utf-8'))
-    n=sum(1 for e in d.get('entries',[]) if e.get('status')=='active')
-    print(n)
-except Exception: print(0)" 2>/dev/null)
-  # ★차단 active 만 센다 (P1-08 · 결정 D-G 레인 순서 · 감사 D8-02 · 2026-09-25): 반사실(lanes.nonblocking_priorities — idle_only)·사전등록
-  #   실험 entry 는 신규 논문을 막지 않는다(반사실 active 1건이 신규 요청을 16시간 막았다). 술어 = rf_lane_rules.R::rf_blocking_active
-  #   (러너·next_paper 와 같은 함수 · 파이썬 사본 없음). 러너는 요청이 진행 중인 동안 비차단 entry 로 원장을 쓰지 않는다(양보) —
-  #   그래서 이 레인의 원장 개설과 겹치지 않는다. R 판정 실패 = 구판 계수(active 전부)로 폴백한다(막는 쪽).
-  ACT=$(QM_ROOT="$ROOT" QVEST_LANE_CFG="$CFG" Rscript -e 'suppressMessages(source(file.path(Sys.getenv("QM_ROOT"), "02_Infrastructure/reinforcement/rf_lane_rules.R"))); L <- rf_lane_cfg(tryCatch(jsonlite::fromJSON(Sys.getenv("QVEST_LANE_CFG"), simplifyVector = FALSE), error = function(e) list())); d <- jsonlite::fromJSON(file.path(Sys.getenv("QM_ROOT"), "06_Registry/reinforce_ledger_l1.json"), simplifyVector = FALSE); cat(sprintf("ACT_BLOCKING=%d\n", length(rf_blocking_active(d$entries, L))))' 2>/dev/null | tr -d '\r' | sed -n 's/^ACT_BLOCKING=\([0-9][0-9]*\)$/\1/p' | tail -1)
-  if [ -z "$ACT" ]; then
-    ACT="$ACT_ALL"
-    jl lane_blocking_fallback "n=$ACT_ALL" "note=차단 술어(R) 판정 실패 — 구판 계수(active 전부)로 막는다"
-  elif [ "${ACT_ALL:-0}" != "$ACT" ]; then
-    jl reinforce_active_nonblocking "n_active=$ACT_ALL" "n_blocking=$ACT" "note=반사실·실험 entry 는 신규 논문 충실구현을 막지 않는다(레인 순서)"
-  fi
-  if [ "${ACT:-0}" != "0" ]; then
-    jl halt_reinforce_active "n=$ACT" "note=강화 entry 가 활성이다 — 새 논문 충실구현을 보류한다(요청은 pending 으로 보존)"
-    exit 0
-  fi
-fi
+# ── (v10.01 2026-10-13) 구 '강화 active entry 가 있으면 보류' 게이트 삭제 — 고정 격자 강화 러너가 퇴역해 active entry 를
+#   소진할 주체가 없다(그대로 두면 첫 성공 뒤 레인이 영구 정지 · 삭제 지도 §0-3). 검증기는 entry 를 소비 기록으로만 남기고 바로 접는다.
 # ── ★고아 claim 회수는 **상태 판정보다 먼저** 한다 (2026-09-01 수리) ────────────
 #   구판은 이 블록이 pending 게이트 *뒤에* 있었다. 그런데 아래 재시도 로직은 in_progress 를
 #   되살릴 때 "claim 이 없으면 죽은 실행" 이라는 조건을 쓴다 — 고아 claim 이 남아 있으면
@@ -206,7 +179,7 @@ if pk and not any(e.get("paper_key") == pk for e in sk.get("entries") or []):
                   "★판정 철회는 status=revoked 로 (AX-000 — 새 각도면 재시도 정당)." % (d.get("failure") or "no_engine")})
     io.open(SKP, "wb").write(json.dumps(sk, ensure_ascii=False, indent=1).encode("utf-8"))
 PYSKIP
-  Rscript "$ROOT/02_Infrastructure/ops/reinforce_auto_next_paper.R" >> "$LOG" 2>&1
+  Rscript "$ROOT/02_Infrastructure/programs/next_replication.R" --root "$ROOT" >> "$LOG" 2>&1
   exit 0
 fi
 
@@ -256,7 +229,7 @@ import io,json,time
 d=json.loads(io.open(r'$REQ','rb').read().decode('utf-8'))
 d['status']='skipped_by_skiplist'; d['skipped_at']=time.strftime('%Y-%m-%dT%H:%M:%S%z')
 io.open(r'$REQ','wb').write(json.dumps(d,ensure_ascii=False,indent=1).encode('utf-8'))"
-  Rscript "$ROOT/02_Infrastructure/ops/reinforce_auto_next_paper.R" >> "$LOG" 2>&1
+  Rscript "$ROOT/02_Infrastructure/programs/next_replication.R" --root "$ROOT" >> "$LOG" 2>&1
   exit 0
 fi
 

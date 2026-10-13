@@ -8,9 +8,12 @@
 #   C 차단 active(반사실·실험 비차단)                         D FIFO(exhausted_at 오름차순 · 이월·실험 제외 · 판독 불가 뒤로)
 #   E 승격 세대 하한(D-G ≥1 · 결합·실험 미계수 · 시도 요청 계수)  F 구조 상태(B3 diag · 결합 ③⑤ · 진입 동결 · 불변식 ①④⑤ 항등)
 #   G D-G B5 축소(연속 compose_only ≥ K · 유효 pass 복원 · 표식 pass 미계수 · 진입 동결 · ④)
-#   H 예산 가산 차단(최종 B5 칸 수 · 축소분 재가산 없음 · 구판 산식 호환)   I 배선(러너·next_paper·레인 셸이 정본 함수를 부른다 — AST)
+#   H 예산 가산 차단(최종 B5 칸 수 · 축소분 재가산 없음 · 구판 산식 호환)
 #   M 돌연변이 12종
 # 쓰기 = tempdir() 뿐. ROOT = QM_ROOT(샌드박스·배포 미러) — 픽스처는 합성(운영 원장·상태를 빌리지 않는다).
+# (v10.01 2026-10-13) 고정 격자 러너 퇴역으로 I절(배선 I1~I7 — reinforce_auto_parallel.R · reinforce_auto_next_paper.R 의 AST 호출 ·
+#   rf_replication_auto.sh 의 rf_blocking_active 차단 게이트) 삭제 — 대상 코드가 없다(롤백 태그 pre-v10.01-prescription-20261013).
+#   정본 함수(rf_lane_rules.R · rf_runner_gates.R::rf_budget_auto)의 A~H 거동과 M 돌연변이는 그대로 잰다.
 #==============================================================================
 suppressMessages(library(jsonlite))
 .slash <- function(p) sub("/+$", "", gsub("\\\\", "/", p))   # 경로 정규화 함수 대신 구분자만 통일(저장소 규칙 — 한글 경로)
@@ -314,27 +317,7 @@ chk(h$blocked_standing, "H2 설계 3 + 상주 1 = 4칸(슬롯 안) → 구판 +1
 chk(h$blocked_trim, "H3 D-G 축소(설계 8 → 최종 3칸) → 구판 +4 · 새 산식 +0(축소분 재가산 차단)")
 chk(h$b1_kept, "H4 B1 설계 초과는 그대로 더한다(09-04 지시 · B1 칸 수 제한 없음)")
 
-## ── I 배선(AST) — 소비자가 정본 함수를 실제로 부른다 ─────────────────────────────────────────────
-calls_of <- function(path) { pd <- getParseData(parse(path, encoding = "UTF-8", keep.source = TRUE)); pd$text[pd$token == "SYMBOL_FUNCTION_CALL"] }
-syms_of <- function(path) { pd <- getParseData(parse(path, encoding = "UTF-8", keep.source = TRUE)); pd }
-RUN <- file.path(ROOT, "02_Infrastructure/ops/reinforce_auto_parallel.R"); NP <- file.path(ROOT, "02_Infrastructure/ops/reinforce_auto_next_paper.R")
-cr <- calls_of(RUN); cn <- calls_of(NP)
-chk(all(c("rf_lane_select", "rf_blocking_active", "rf_request_inflight", "rf_structure_cells", "rf_b5_budget_decide", "rf_b5_budget_cells",
-          "rf_block_cell_count") %in% cr), "I1 러너가 정본 함수 7종을 부른다(레인 선택 · 양보 · 구조 · D-G · 예산 칸 수)")
-pr <- syms_of(RUN)
-ln_of <- function(pd, fn) min(pd$line1[pd$token == "SYMBOL_FUNCTION_CALL" & pd$text == fn])
-chk(ln_of(pr, "rf_structure_cells") < ln_of(pr, "rf_budget_auto") && ln_of(pr, "rf_b5_budget_cells") < ln_of(pr, "rf_budget_auto") &&
-    ln_of(pr, "rf_standing_decision") < ln_of(pr, "rf_structure_cells"),
-    "I2 러너 순서 — 상주 삽입 → 구조 상태 → D-G B5 → 예산 재도출(예산이 최종 칸 목록을 센다)")
-ba <- pr[pr$token == "SYMBOL_SUB" & pr$text == "n_b5_cells", ]
-chk(nrow(ba) >= 1L, "I3 러너 예산 호출이 n_b5_cells 를 넘긴다(가산 차단 배선)")
-chk(all(c("rf_fifo_exhausted", "rf_blocking_active", "rf_generation_gate", "rf_claim_acquire") %in% cn), "I4 next_paper 가 FIFO · 차단 · 세대 하한 · 러너 claim 을 부른다")
-pn <- syms_of(NP)
-lifo <- grepl("ex[[length(ex)]]", paste(deparse(parse(NP, encoding = "UTF-8", keep.source = FALSE)), collapse = " "), fixed = TRUE)   # 주석 제외(코드만)
-chk(!lifo, "I5 next_paper 에 LIFO(ex[[length(ex)]]) 없음")
-chk(ln_of(pn, "rf_mark_summarized") < ln_of(pn, "rf_blocking_active"), "I6 halt 위치 — 요약 표식이 차단 판정보다 앞(개설 직전 halt)")
-sh <- readLines(file.path(ROOT, "02_Infrastructure/ops/rf_replication_auto.sh"), warn = FALSE, encoding = "UTF-8")
-chk(any(grepl("rf_blocking_active(d$entries, L)", sh, fixed = TRUE)), "I7 충실구현 레인 ACT = rf_blocking_active(파이썬 사본 없음)")
+## (v10.01 2026-10-13) I절(배선 AST — 러너 · next_paper · 충실구현 레인 차단 게이트) 삭제 — 대상 코드 퇴역.
 
 ## ── M 돌연변이 — 가드를 끈 사본이 해당 절에서 red ────────────────────────────────────────────────
 mut <- function(path, from, to) {

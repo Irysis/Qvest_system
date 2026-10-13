@@ -731,6 +731,10 @@ run_paper_replication <- function(strategy_name, strategy_idea, factor_engine_pa
     recent_regime_label = es$recent_regime_label,
     rolling_grade = es$rolling_grade, defensive_score = es$defensive_score,
     reasons = es$reasons,
+    ## ★등급 v3(MC7 · 2026-10-13 · GRADE-V3-PROMOTE) — essence_grade 는 v3 권위 등급이다. 근거 블록(S · B 경계 · 띠 · 노치 ·
+    ##   하한 · 위기 복원력 · OOS)과 구 5조건 판정(grade_v921 · 진단)을 함께 싣는다 — 골라 쓰는 쓰기라 빼면 조용히 사라진다(위 09-04 사고와 같은 형태).
+    grade_scheme = es$grade_basis %||% NA_character_, grade_v921 = es$grade_v921 %||% NA_character_,
+    grade_v3 = es$grade_v3,
     replication = list(
       source_paper = source_paper,
       commission_paper_bps = comm_paper * 1e4,
@@ -883,7 +887,10 @@ run_paper_replication <- function(strategy_name, strategy_idea, factor_engine_pa
       #   ★절단했을 때만 인자를 더한다 — 기본 경로의 호출 모양은 구판과 같다(원장 판본이 어긋나도 미지 인자로 개설이 죽지 않게).
       if (!is.null(data_vintage)) .oe_args$data_cutoff <- data_vintage$data_cutoff
       do.call(rf_open_entry, .oe_args)
-      cat("[replication] 강화 원장 open — reinforce_ledger_l1.json (≤20회)\n")
+      ## ★v10.01 (2026-10-13): 고정 격자 강화 러너 퇴역 — entry 는 소비 기록(selector 가 원장 paper_key 로 소비를 판단)으로만
+      ##   남기고 바로 접는다. active 로 두면 소진할 주체가 없어 충실구현 레인이 영구 정지한다(삭제 지도 §0-3).
+      rf_park_entry(1L, strategy_id, reason = "v10.01 — 고정 격자 강화 퇴역(2026-10-13). 측정 결과는 리서치 프로그램 재료로 넘어간다", root = PROJECT_ROOT)
+      cat("[replication] 원장 소비 기록(parked) — reinforce_ledger_l1.json · v10.01 리서치 프로그램 재료\n")
     }, error = function(e)
       cat("[replication] 강화 원장 등록 실패(비치명 — 세션이 수동 등록):", conditionMessage(e), "\n"))
   }

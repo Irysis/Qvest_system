@@ -118,8 +118,8 @@ SOT: `.claude/skills/qvest-telegram/SKILL.md` (v6.5). `tg_agent_brief(agent=...)
 
 ## 비중방법론 논문 소비 경로 (v10 — 강화 격자 R3 어댑터 층)
 
-★v10 2026-08-29: mode_queue optimizer 레인은 **폐지**(morning_run [0.57] 퇴역). 비중방법론 논문은 강화 프로세스
-`keyword_axis=weighting`(reinforce SKILL · 원장 root_papers)으로 소비한다. 아래 등재 절차(new_adapter → `methods/adapters/<name>.R`
+★v10 2026-08-29: mode_queue optimizer 레인은 **폐지**(morning_run [0.57] 퇴역). ★v10.01(2026-10-13): 비중방법론 논문은 라우터 v5 가
+구성 엔진(P3_CONSTRUCTION) 재료로 분류해 리서치 프로그램이 소비한다(고정 격자 강화 퇴역 · 도구 = reinforce SKILL §3). 아래 등재 절차(new_adapter → `methods/adapters/<name>.R`
 adapter_kind=weight → register_method → `06_Registry/method_registry.json`)는 **살아 있다** — `weight_catalog.R`(R3 층)이 색인해
 `rf_weight_arms` 격자 arm 이 된다. 구 큐 인입 문구만 사료다.
 

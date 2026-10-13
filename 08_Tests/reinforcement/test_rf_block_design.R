@@ -11,6 +11,9 @@
 # 이 검사가 지키는 것: ①카탈로그 밖 항목 거부 ②중복 거부 ③B4 는 설계 대상 아님(LOO 계약)
 #   ④설계가 러너 셀로 변환 ⑤집행 판정이 실제로 갈린다(executed/partial/ignored)
 #   ⑥설계 없으면 규칙 폴백 — 조용한 통과 없음.
+# (v10.01 2026-10-13) 고정 격자 러너 퇴역으로 F절(배선 F1~F7 — 러너 reinforce_auto_parallel.R 의 설계 소비 ·
+#   기전 에이전트 rf_lcode_mechanism.sh/_lib.R 의 카탈로그·검증·집행 판정·프롬프트) 삭제 — 대상 코드가 없다
+#   (롤백 태그 pre-v10.01-prescription-20261013). rf_block_design.R 자체의 A~E·G 절은 그대로 잰다.
 #==============================================================================
 suppressMessages({ library(jsonlite) })
 `%||%` <- function(a, b) if (is.null(a) || length(a) == 0L) b else a
@@ -187,21 +190,7 @@ r9 <- tryCatch(rfbd_action_status(TMP, "T_ACT", "B5", a9, carry = NULL), error =
 if (is.list(r9)) ok(sprintf("G21 arm_id 없는 층(kind 만)도 던지지 않는다 → %s", r9$status)) else ng("G21 kind-only 층", as.character(r9))
 unlink(TMP, recursive = TRUE, force = TRUE)
 
-cat("\n=== F. 배선 (주석 제외) ===\n")
-co <- function(f) paste(sub("#.*$", "", readLines(file.path(ROOT, f), warn = FALSE)), collapse = "\n")
-par <- co("02_Infrastructure/ops/reinforce_auto_parallel.R")
-mlib <- co("02_Infrastructure/ops/rf_lcode_mechanism_lib.R")
-sh <- paste(readLines(file.path(ROOT, "02_Infrastructure/ops/rf_lcode_mechanism.sh"), warn = FALSE), collapse = "\n")
-if (grepl("rfbd_cells", par, fixed = TRUE)) ok("F1 러너가 설계를 소비") else ng("F1 러너 미소비")
-if (grepl('is.null(.blk_design[["B2"]])', par, fixed = TRUE) &&
-    grepl('is.null(.blk_design[["B5"]])', par, fixed = TRUE))
-  ok("F2 설계가 있으면 규칙 픽커를 안 부른다(이중 선정 차단)") else ng("F2 이중 선정")
-if (grepl("rfbd_catalog", mlib, fixed = TRUE)) ok("F3 기전 재료에 다음 블록 카탈로그") else ng("F3 카탈로그 미제공")
-if (grepl("rfbd_verify", mlib, fixed = TRUE)) ok("F4 저장 전 검증") else ng("F4 검증 없이 저장")
-if (grepl("prior_action_status", mlib, fixed = TRUE)) ok("F5 집행 판정을 L-code 에 남긴다") else ng("F5 집행 판정 미기록")
-if (grepl("next_block_design", sh, fixed = TRUE)) ok("F6 프롬프트가 설계를 요구") else ng("F6 프롬프트 미요구")
-if (grepl("LOO 가 계약", sh, fixed = TRUE) || grepl("LOO 가 계약", mlib, fixed = TRUE))
-  ok("F7 B4 는 설계 대상 아님을 프롬프트/재료가 명시") else ng("F7 B4 예외 미명시")
+## (v10.01 2026-10-13) F절(배선 — 러너·기전 에이전트 소비) 삭제: 대상 코드(reinforce_auto_parallel.R · rf_lcode_mechanism.sh/_lib.R) 퇴역.
 
 cat(sprintf("\n합계: 통과 %d · 실패 %d\n", PASS, FAIL))
 cat(sprintf('{"test":"rf_block_design","pass":%d,"fail":%d,"total":%d}\n', PASS, FAIL, PASS + FAIL))

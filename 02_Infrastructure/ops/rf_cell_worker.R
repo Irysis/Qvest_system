@@ -4,8 +4,8 @@
 #
 # 왜 분리했나: 병렬 실행에서 원장(reinforce_ledger_l1.json)에 동시 쓰기가 나면
 #   read-modify-write 경합으로 갱신이 조용히 유실된다. 그래서 워커는 **원장을 만지지 않는다** —
-#   실행하고 결과를 자기 JSON 에만 쓴다. 원장 기입은 부모(reinforce_auto_parallel.R)가
-#   전부 끝난 뒤 **순차로** 한다.
+#   실행하고 결과를 자기 JSON 에만 쓴다. 원장 기입은 호출자가 전부 끝난 뒤 **순차로** 한다
+#   (v10.01: 구 부모 reinforce_auto_parallel.R 퇴역 — 현 호출자 = rf_overlay_adversary.R G2 · 프로그램 라운드 측정 어댑터).
 #
 # 사용: Rscript rf_cell_worker.R <spec_json> <n> <strategy_name> <result_json>
 # 출력: result_json = {n, code, ok, grade, essence{...}, artifacts, err}
@@ -23,7 +23,7 @@ Sys.setenv(QVEST_NO_LEDGER_OPEN = "1")
 # ★강화 셀은 '충실구현' L-code 를 발행하지 않는다 (2026-09-23 · 감사 D6-03 · 플랜 P0-M3).
 #   구판은 이 스위치가 없어 셀마다 run_paper_replication 이 mode="paper_replication" L-code 를 냈다 —
 #   셀 1,106건(재라벨 실측 · 감사 시점 908)이 '충실구현' 교훈으로 적립돼 corpus 47%·hypothesis_index 33% 를 오염시켰다.
-#   셀의 교훈은 블록 L-code(rf_block_lcode.R · mode=reinforcement)가 정본이다. 스위치 소비자 = run_paper_replication.R §10.
+#   셀의 교훈은 호출자(v10.01 = 프로그램 라운드의 교훈 단계)가 정본이다(구 블록 L-code 발행기 퇴역). 스위치 소비자 = run_paper_replication.R §10.
 Sys.setenv(QVEST_RP_NO_LCODE = "1")
 
 wr <- function(o) write(toJSON(o, auto_unbox = TRUE, pretty = TRUE, null = "null"), OUT_P)
@@ -54,7 +54,7 @@ SEL_TYPE <- .SEL$selection_type; N_TRIALS <- .SEL$n_trials_cumulative; N_BASIS <
 ##   진행 중인 tick 이 잠금 생성 **뒤에** 이 워커를 띄운 경우(앞 레인이 오래 도는 사이 daily_refresh 가 시작) —
 ##   RAWDATA 를 읽는 러너(load_rawdata) **직전**에 판정한다. held 면 rb_cell_wait_s()(기본 600초 · 근거는
 ##   refresh_barrier.R 머리) 동안 기다리고, 그래도 held 면 측정·등급 기록 없이 끝낸다:
-##   ok=FALSE · deferred="refresh_lock" → 부모(reinforce_auto_parallel.R ③)가 원장에 아무것도 쓰지 않는다
+##   ok=FALSE · deferred="refresh_lock" → 호출자가 원장에 아무것도 쓰지 않는다(v10.01: 구 부모 러너 ③ 퇴역)
 ##   (등록만 된 칸 = pending → 다음 tick 재개 · fail_count 무증가 · 시도 예산 무소모). F·NA 등급 기록 금지.
 ##   판정기 불능(error)도 막는다(fail-closed). 잠금 없음이면 아무것도 안 하고 지나간다.
 ##   ★판정과 load_rawdata 사이 틈은 엔진이 적재 직후 한 번 더 본다(QVEST_RB_ENGINE_RECHECK — rf_cell_engine.R).

@@ -86,9 +86,9 @@ if direct_calls and not has_brief:
     detected = ", ".join(direct_calls)
     reason = (
         f"[telegram_direct_call_guard v3] 직접 호출 차단: {detected} — "
-        "반드시 tg_agent_brief(agent, title, sections) 단일 진입점 사용. "
-        "표 nrow≥2 ncol≥2 + emoji 5+ + sections 4+ + bytes ≥1200 자동 강제. "
-        "차트는 charts=c(...) 인자만. 참조: .claude/skills/qvest-telegram/SKILL.md (v7 SOT)."
+        "반드시 tg_agent_brief(agent, title, sections) 단일 진입점 사용(1계층 v10.01 보고는 "
+        "02_Infrastructure/programs/program_report.R::prep_send). 평상 보고는 mute=TRUE. "
+        "차트는 이름 붙인 charts=c('무엇을 보는가'=경로). 참조: .claude/skills/qvest-telegram/SKILL.md §0(v10.01)."
     )
     print(json.dumps({
         "hookSpecificOutput": {

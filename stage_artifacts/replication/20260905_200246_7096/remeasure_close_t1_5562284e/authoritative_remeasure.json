@@ -7,7 +7,7 @@
   "remeasured_at": "2026-09-25T13:26:04+0900",
   "bt_result_path": "C:/Users/99922/OneDrive/Quant_Module_Moltbot/stage_artifacts/replication/20260905_200246_7096/remeasure_close_t1_5562284e/bt_result.rds",
   "metric_type": "backtested",
-  "essence_grade": "C",
+  "essence_grade": "F",
   "grade_basis": "remeasure_sweep",
   "essence": {
     "net_sharpe": 0.59,
@@ -63,7 +63,11 @@
       },
       "raw_nrow": 14121332,
       "raw_max_date": "2026-09-23",
-      "raw_cols": ["Date", "Ticker", "Ret"],
+      "raw_cols": [
+        "Date",
+        "Ticker",
+        "Ret"
+      ],
       "bm_nrow": 9035,
       "bm_max_date": "2026-09-23"
     },
@@ -88,7 +92,10 @@
     },
     "prior_recoveries": 5,
     "current_run": 3,
-    "span": ["2008-01", "2026-09"]
+    "span": [
+      "2008-01",
+      "2026-09"
+    ]
   },
   "defensive_score": {
     "status": "ok",
@@ -123,7 +130,7 @@
     },
     "reason": "하락월 111개: 초과 +0.93%/월 (t 2.30 · 적중 59%) · 벤치-10% 이하 10개: 초과 +2.31%/월 · 상승월 초과 -0.68%/월"
   },
-  "reasons": "non-positive alpha (PORT_t<=0 또는 net_IR<=0); recent_regime 구제(F->C): 전기간 F 이나 롤링 36개월 기준 최근 12점 중 58% 가 절대문턱 통과 (현재 SR 1.04 · CAGR 24.6% · MDD 15.5% · Calmar 1.59). 생애 충족 12%. ★과거 회복→재붕괴 5회 — 이번 회복이 처음이 아니다",
+  "reasons": "v3: S 0.000 · B 경계 0.432 · 띠 F · CR normal(시험 창 normal) · 노치 +0 · A 아님 사유 floor:port_t,floor:calmar,floor:cagr,floor:sharpe,oos:rolling36_pass_oos,gate:dsr_sweep | v921 C: non-positive alpha (PORT_t<=0 또는 net_IR<=0); recent_regime 구제(F->C): 전기간 F 이나 롤링 36개월 기준 최근 12점 중 58% 가 절대문턱 통과 (현재 SR 1.04 · CAGR 24.6% · MDD 15.5% · Calmar 1.59). 생애 충족 12%. ★과거 회복→재붕괴 5회 — 이번 회복이 처음이 아니다",
   "remeasure": {
     "version": "remeasure_from_holdings_v1",
     "of_artifact": "C:/Users/99922/OneDrive/Quant_Module_Moltbot/stage_artifacts/replication/20260905_200246_7096",
@@ -202,5 +209,72 @@
     "sharpe": 0.59,
     "mdd": 0.61,
     "calmar": 0.181
+  },
+  "grade_scheme": "grade_v3",
+  "grade_v921": "C",
+  "grade_v3": {
+    "status": "ok",
+    "schema": "grade_v3_v1",
+    "grade": "F",
+    "S": 0,
+    "S_B": 0.4319,
+    "band": "F",
+    "notch": 0,
+    "notch_a": false,
+    "blocked_by": [
+      "floor:port_t",
+      "floor:calmar",
+      "floor:cagr",
+      "floor:sharpe",
+      "oos:rolling36_pass_oos",
+      "gate:dsr_sweep"
+    ],
+    "floors": {
+      "port_t": false,
+      "calmar": false,
+      "cagr": false,
+      "sharpe": false
+    },
+    "bench": {
+      "calmar": 0.2046,
+      "cagr": 0.1083,
+      "mdd": 0.5292,
+      "sharpe": 0.5565
+    },
+    "cr": {
+      "overall": "normal",
+      "test": "normal",
+      "visible": "normal",
+      "n_crisis": 6,
+      "dd_capture_median": 0.924,
+      "dd_capture_worst": 1.3385,
+      "uc_median": 1.0153,
+      "cdar": 0.3881,
+      "controls": "not_provided"
+    },
+    "oos": {
+      "tau_d": "2022-12-31",
+      "gate": false,
+      "parts": {
+        "test_window_cr_not_weak": true,
+        "rolling36_pass_oos": false
+      },
+      "pass_oos": 0.1556,
+      "pass_min": 0.5,
+      "pass_life": 0.1156,
+      "S_is": 0.2913,
+      "S_oos": 0,
+      "retention_calmar": 6.5044,
+      "retention_sharpe": 1.8208
+    },
+    "parity_max_abs": 6.93889390390723e-16,
+    "nav_source": "contract"
+  },
+  "grade_v3_backfill": {
+    "at": "2026-10-13T15:07:44+0900",
+    "tool": "02_Infrastructure/programs/grade_v3_backfill.R",
+    "decision": "decision_register GRADE-V3-PROMOTE",
+    "prior_essence_grade": "C",
+    "prior_md5": "c54ead5b35b61f7e8ec3e8e2d6fd5f16"
   }
 }

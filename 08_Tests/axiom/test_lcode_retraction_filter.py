@@ -208,6 +208,7 @@ for f in os.listdir(lcdir):
             continue
         if r.get("l_code") in RETRACTED + [NEG_CONTROL]:
             src[r["l_code"]] = r
+            r["_file"] = f
 chk("S1 철회 5건 원천 파일 전부 발견", set(RETRACTED) <= set(src), str(sorted(set(RETRACTED) - set(src))))
 chk("S2 철회 5건 원천에 표식(판정 함수 기준)", all(LV.lcode_invalidation(src.get(k, {})) for k in RETRACTED))
 chk("S3 표식은 추가만 — 원 필드(lesson_text·grade) 보존", all(src[k].get("lesson_text") and src[k].get("grade")
@@ -220,11 +221,33 @@ civ = {x["l_code"] for x in pc.get("invalidated_lcodes", [])}
 chk("S5 운영 corpus.lcodes 에 철회 5건 부재", not (cids & set(RETRACTED)), str(sorted(cids & set(RETRACTED))))
 chk("S6 운영 corpus.invalidated_lcodes 에 철회 5건 기록", set(RETRACTED) <= civ, str(sorted(set(RETRACTED) - civ)))
 chk("S7 음성 대조: V5 는 corpus.lcodes 에 존재", NEG_CONTROL in cids)
-for rel, lab in (("06_Registry/hypothesis_index.json", "S8 hypothesis_index"),
-                 ("06_Registry/knowledge_index.json", "S9 knowledge_index")):
-    txt = io.open(os.path.join(ROOT, rel), encoding="utf-8").read()
-    hit = [k for k in RETRACTED if k in txt]
-    chk(f"{lab} 에 철회 5건 부재(재빌드 반영)", not hit, str(hit))
+# (v10.01 2026-10-13) S8·S9 는 '항목의 정체'로 판정한다 — 파일 전체 문자열 검색은 다른 항목 본문의 언급까지 잡았다.
+#   실측: 10-10 증류 카드 DIST-RAMP-021 본문 "★supporting 7건 중 L-RAMP-20260619_144257 은 corpus 조회 불가라 이 카드 근거에서
+#   제외했다" 가 '철회 L-code 잔존' 으로 걸렸다(오탐 — 제외했다는 서술이다). 정체 = hypothesis_index 항목의 원천 파일(source_paths 의
+#   파일명)·strategy_id / knowledge_index 의 lcode_corpus id. 본문 언급은 음성 대조(S8n)로 남기고, 철회 원천 파일을 가리키는 항목을
+#   주입하면 발화하는지(S8m)로 판별력을 잰다.
+RET_FILES = {src[k]["_file"].lower() for k in RETRACTED if k in src}
+RET_SIDS = {str(src[k].get("strategy_id") or "") for k in RETRACTED if k in src} - {""}
+def hi_carriers(entries):
+    out = []
+    for e in entries:
+        names = {os.path.basename(str(p).replace("\\", "/")).lower() for p in (e.get("source_paths") or [])}
+        if (names & RET_FILES) or e.get("strategy_id") in set(RETRACTED) | RET_SIDS:
+            out.append(e.get("strategy_id"))
+    return out
+HI = json.load(io.open(os.path.join(ROOT, "06_Registry/hypothesis_index.json"), encoding="utf-8"))
+hit8 = hi_carriers(HI.get("entries") or [])
+chk("S8 hypothesis_index 에 철회 5건을 원천으로 하는 항목 부재(재빌드 반영)", bool(RET_FILES) and not hit8, str(hit8))
+mention = [e.get("strategy_id") for e in HI.get("entries") or [] if any(k in json.dumps(e, ensure_ascii=False) for k in RETRACTED)]
+fake_m = {"strategy_id": "DIST-FAKE", "title": "근거 7건 중 %s 은 corpus 조회 불가라 제외했다" % RETRACTED[0],
+          "source_paths": ["06_Registry/distilled_knowledge.json"]}
+chk("S8n [음성 대조] 본문 언급만 있는 합성 항목(제외 서술)은 잔존이 아니다 — 정체 판정이 잡지 않는다 (운영 언급 %d건: %s)"
+    % (len(mention), ",".join(map(str, mention))), hi_carriers([fake_m]) == [])
+fake = {"strategy_id": "FAKE", "source_paths": ["stage_artifacts\\l_code\\ramp\\" + sorted(RET_FILES)[0]]} if RET_FILES else {}
+chk("S8m [위반 주입] 철회 원천 파일을 가리키는 항목 1건 주입 → 발화", bool(fake) and hi_carriers([fake]) == ["FAKE"])
+KI = json.load(io.open(os.path.join(ROOT, "06_Registry/knowledge_index.json"), encoding="utf-8"))
+hit9 = [x.get("id") for x in KI.get("lcode_corpus") or [] if x.get("id") in RETRACTED]
+chk("S9 knowledge_index.lcode_corpus 에 철회 5건 부재(재빌드 반영)", not hit9, str(hit9))
 
 shutil.rmtree(SB, ignore_errors=True)
 print(f"\nTOTAL: {PASS} pass / {FAIL} fail")

@@ -1,0 +1,204 @@
+{
+  "schema": "research_programs_v1",
+  "_doc": "v10.01 목표 역산형 3엔진 리서치의 정본 등록부(2026-10-13 도훈 지시 '이 리서치 프로세스를 지속가능하게 운영할 인프라'). 쓰기는 02_Infrastructure/programs/program_registry.R 경유만(원자적 · 스키마 검사). 설계 = 04_Research/01_reports/l1_prescription_redesign_20261013/README.md(§대안 설계 · §2 등급 v3 · §3 처방 루프 · §9 유니버스 · §10 에이전트).",
+  "version": 7,
+  "updated_at": "2026-10-13T16:15:55+0900",
+  "target_spec": {
+    "_doc": "0단계 목표 명세 — 설계는 이 행동 목표로 한다. 등급(essence v3)은 결과 보고 문턱. 수치 출처를 단다(하드코딩 금지).",
+    "upside_capture_min": {
+      "value": 0.55,
+      "source": "도훈 2026-10-13 '강세장 55% 수준' (06_Registry/behavior_card.json::uc_floor)"
+    },
+    "crisis_cum_capture_strong": {
+      "value": "derived",
+      "source": "behavior_card.R::bc_dc_strong_max — uc_floor 와 KOSPI200 강세→약세 쌍(2000-01~2022-12)에서 도출. 10-13 실측 0.541"
+    },
+    "crisis_dd_capture_for_mdd25": {
+      "value": "derived",
+      "source": "MDD 25%(제2목표)를 최악 위기에서 지키는 낙폭 포착 상한 = 0.25 / 벤치 위기 깊이. 2000~01 −56.6% → 0.44 · 2008 −52.9% → 0.47 (개선안 §대안 1)"
+    },
+    "cagr_min": {
+      "value": 0.16,
+      "source": "CLAUDE.md 제2목표 · constraint_defaults.json::tier_graduation (A 조건)"
+    },
+    "grade_a": {
+      "value": "S >= 1 (S = (Calmar/0.64)^0.6 * (PORT_t/2.95)^0.4) + 하한 + CR 노치",
+      "source": "도훈 확정 10-13 D1·D2 (개선안 §2)"
+    },
+    "information_boundary": {
+      "value": "2022-12-31",
+      "source": "도훈 확정 10-13 D6 — 에이전트 입력 · 후보 선택 · 교훈 카드는 이 날짜 이전 성과만"
+    },
+    "period_start": {
+      "value": "2000-01-01",
+      "source": "도훈 확정 10-13 D15"
+    },
+    "rebalance_min": {
+      "value": "weekly",
+      "source": "도훈 확정 10-13 D16 — 일간 불허"
+    },
+    "universe": {
+      "value": "all_listed_common + hygiene",
+      "source": "도훈 확정 10-13 D11 · 위생 = 헌장 §11 factor_z_standard.R"
+    },
+    "weights": {
+      "value": "long_only, sum<=1 (잔여 현금), n<=25, 종목별 상한 없음",
+      "source": "D11 · v10 상한 폐지(08-29)"
+    }
+  },
+  "measurement_contract": {
+    "_doc": "프런티어 연구(P0)의 선행 조건 — 측정 계약 개정 항목. status: todo / done. 끝나기 전 전 종목 측정은 판정에 쓰지 않는다(개선안 §9.6).",
+    "items": [
+      {
+        "id": "MC1",
+        "name": "유니버스 전 종목 주입(엔진이 자르지 않는다) + 위생 단계(헌장 §11 universe_corp_action_filter · 구성 점수 윈저라이징 · 동점 규칙)",
+        "decision": "D11 · §9.4",
+        "status": "todo"
+      },
+      {
+        "id": "MC3",
+        "name": "시작일 2000-01-01 · 신호별 실효 시작 커버리지 판정",
+        "decision": "D15",
+        "status": "todo"
+      },
+      {
+        "id": "MC4",
+        "name": "주간 리밸런싱 — 집행일 함수 일반화(get_execution_date) · 주간 신호일 거래량 0 제외 · C5 컷오프 일반화",
+        "decision": "D16 · §3.9",
+        "status": "todo"
+      },
+      {
+        "id": "MC5",
+        "name": "Σw ≤ 1 (잔여 현금) 엔진 단정 개정",
+        "decision": "D11",
+        "status": "todo"
+      },
+      {
+        "id": "MC6",
+        "name": "행동 카드 계약(위기별 포착률 · 상승 포착 · CR · CDaR · τ_D 분할)",
+        "decision": "D2 · D3 · D9",
+        "status": "done",
+        "artifact": "02_Infrastructure/contracts/behavior_card.R · 08_Tests/contracts/test_behavior_card.R"
+      },
+      {
+        "id": "MC7",
+        "name": "등급 v3 (essence) — S 기하평균 · 하한 · CR 노치 · OOS τ_D 단일 분할",
+        "decision": "D1 · D2 · D4 · D5",
+        "status": "done",
+        "artifact": "02_Infrastructure/contracts/grade_v3.R(권위 · essence_score 경유) · 06_Registry/grade_v3.json(mode authoritative) · 08_Tests/contracts/test_grade_v3.R · programs/grade_v3_retro.R · grade_v3_plates.R · grade_v3_backfill.R · decision_register GRADE-V3-S0-BANDS/EYECHECK/PROMOTE"
+      },
+      {
+        "id": "MC8",
+        "name": "크기 짝 · 노출 짝 대조 생성기(보유 기록 기반)",
+        "decision": "D6 조건 · R5",
+        "status": "done",
+        "artifact": "02_Infrastructure/contracts/matched_controls.R(mc_card · 플라시보 분위 판정) · 06_Registry/matched_controls.json · 08_Tests/contracts/test_matched_controls.R(55/0 · SUITES 편입) · 04_Research/01_reports/l1_prescription_redesign_20261013/mc8_matched_controls/README.md"
+      }
+    ],
+    "dropped": [
+      {
+        "id": "MC2",
+        "name": "상장폐지 수익률 규칙 + 거래정지 보유 매도 불가",
+        "decision": "D14",
+        "dropped_reason": "D14 상장폐지 수익률 규칙(+거래정지 보유 매도 불가) — 도훈 2026-10-13 'D14(상장폐지 수익률 규칙)은 필요없어'",
+        "dropped_by": "dohoon",
+        "dropped_at": "2026-10-13T12:33:41+0900",
+        "status_before": "todo"
+      }
+    ]
+  },
+  "programs": [
+    {
+      "id": "P0_FRONTIER",
+      "name": "실현 가능성 지도",
+      "stage": 1,
+      "thesis": "문헌 표준의 단순 부품(추세 현금 규칙 · 변동성 타기팅 · 낙폭 제어 · 저변동/퀄리티 틸트) × 기존 수익 엔진으로 한국 전 종목에서 (상승 포착, 위기 하락 포착, CAGR) 프런티어가 목표 영역에 닿는가",
+      "decisive_test": "보는 창(2000-01~2022-12)에서 목표 영역(상승 ≥ 0.55 · 위기 누적 포착 ≤ 도출 문턱 · CAGR ≥ 0.16)에 닿는 조합이 하나라도 있는가 — 있으면 시험 창(2023~)에서 같은 판정을 유지하는가",
+      "kill_or_pivot": "보는 창에서도 목표 영역 조합이 0이면 탐색을 늘리지 않고 도훈 안건(목표 또는 축 재검토)으로 올린다",
+      "status": "blocked",
+      "blocked_by": [
+        "MC1",
+        "MC3",
+        "MC4",
+        "MC5",
+        "MC7",
+        "MC8"
+      ],
+      "budget": {
+        "rounds": 1,
+        "variants_max": "사전등록에서 확정(수십 개 이내)"
+      },
+      "literature": [
+        "Faber (2007) A Quantitative Approach to Tactical Asset Allocation, J. Wealth Management",
+        "Moreira & Muir (2017) Volatility-Managed Portfolios, J. Finance 72(4) doi:10.1111/jofi.12513",
+        "Cederburg, O'Doherty, Wang & Yan (2020) On the performance of volatility-managed portfolios, JFE 138(1)",
+        "Grossman & Zhou (1993) Optimal Investment Strategies for Controlling Drawdowns, Mathematical Finance 3(3)",
+        "Frazzini & Pedersen (2014) Betting against beta, JFE 111(1)",
+        "Asness, Frazzini & Pedersen (2019) Quality minus junk, Review of Accounting Studies 24",
+        "Blitz & van Vliet (2007) The Volatility Effect, J. Portfolio Management",
+        "Hurst, Ooi & Pedersen (2017) A Century of Evidence on Trend-Following Investing, J. Portfolio Management 44(1)"
+      ],
+      "rounds": [],
+      "queue": []
+    },
+    {
+      "id": "P1_RETURN",
+      "name": "수익 엔진",
+      "stage": 2,
+      "thesis": "상승 포착과 알파(모든 국면에서 더해지는 초과수익)를 키우는 횡단면 선택 엔진을 확보한다",
+      "decisive_test": "β-통제 알파 t · 상승 포착 · 시험 창 유지 — 행동 카드 + 등급 v3",
+      "kill_or_pivot": "엔진별 사전등록 반증 조건",
+      "status": "idle",
+      "material": "논문 라우터가 return 으로 분류한 논문 + 충실구현 레인 산출(B 이상) + 기존 B 풀(새 측정 축으로 재측정)",
+      "rounds": [],
+      "queue": []
+    },
+    {
+      "id": "P2_DEFENSE",
+      "name": "방어 엔진",
+      "stage": 2,
+      "thesis": "위기 하락 포착을 줄이되 상승 포착 비용이 작은 장치(시변 노출 · 방어적 보유)를 확보한다. 장치는 전략 하나가 아니라 여러 수익 엔진에 걸쳐 검증한다(위기 수 × 엔진 수)",
+      "decisive_test": "여러 수익 엔진에 붙였을 때 크기 짝 · 노출 짝 대조보다 위기 낙폭 포착이 낮은 비율이 과반 · 급락형/완만형 위기를 나눠 본다",
+      "kill_or_pivot": "장치별 사전등록 반증 조건",
+      "status": "idle",
+      "material": "논문 라우터가 defense 로 분류한 논문 + 메커니즘 지도",
+      "rounds": [],
+      "queue": []
+    },
+    {
+      "id": "P3_CONSTRUCTION",
+      "name": "구성",
+      "stage": 2,
+      "thesis": "비중 · 집중 · 회전 · 용량을 '낙폭 제약 아래 복리 극대화'로 정한다(Busseti, Ryu & Boyd 2016 Risk-Constrained Kelly Gambling · Grossman & Zhou 1993 · Palomar 낙폭 기반 포트폴리오)",
+      "decisive_test": "같은 엔진·같은 방어에서 구성만 바꿨을 때 CDaR · 시험 창 유지가 개선되는가",
+      "kill_or_pivot": "사전등록 반증 조건",
+      "status": "idle",
+      "material": "논문 라우터가 construction 으로 분류한 논문 + weight_catalog",
+      "rounds": [],
+      "queue": []
+    },
+    {
+      "id": "P4_ASSEMBLY",
+      "name": "조립 · 처방 루프",
+      "stage": 3,
+      "thesis": "P0 이 고정한 골격의 빈칸(수익 엔진 교체 · 방어 파라미터 · 구성)을 처방 루프(분석가 → 처방 담당 → 측정 → 리뷰어)가 채운다",
+      "decisive_test": "행동 목표 + 등급 v3 A · τ_D 홀드아웃 · PBO · 크기 짝 대조 · Judge",
+      "kill_or_pivot": "R7 — 리뷰어가 연속으로 '개선이 잡음 이내'로 판독하면 종료",
+      "status": "blocked",
+      "blocked_by": [
+        "P0_FRONTIER"
+      ],
+      "rounds": [],
+      "queue": []
+    }
+  ],
+  "paper_routing": {
+    "_doc": "새 논문은 '어느 엔진을 개선하나'로 분류해 프로그램 큐에 넣는다(논문 1편 = 리서치 단위가 아니다). 라우터 = Sonnet high(개선안 §10.4). 루브릭 정본 = 02_Infrastructure/programs/paper_route_rubric.md",
+    "labels": [
+      "return",
+      "defense",
+      "construction",
+      "not_relevant"
+    ]
+  }
+}

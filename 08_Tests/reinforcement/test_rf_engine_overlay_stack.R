@@ -22,6 +22,10 @@
 #   7 overlay_strict        — 전 arm 에 ctx$strict 전달
 #   8 회귀                  — 단층 스펙 7종의 산출이 기준본(git 985d17aa1)과 비트 동일
 #
+# (v10.01 2026-10-13) 고정 격자 러너 퇴역으로 3b(러너 reinforce_auto_parallel.R 의 결정론 실패 패턴 `측정 무효|처치 미전달`)·
+#   4d(장부 파서 rf_arm_compat.R::rac_parse_coverage) 삭제 — 대상 코드가 없다(롤백 태그 pre-v10.01-prescription-20261013).
+#   엔진이 내는 문자열 자체는 3a(정지 문자열 완전 일치)·4a(커버리지 문자열 정규식 · basis=held_rows · arm_id)가 그대로 잰다.
+#
 # ★기준본은 커밋 해시로 고정한다 — HEAD 는 자동 커밋이 몇 분마다 옮기므로 "HEAD 와 같다" 는 곧 자기 자신과의
 #   비교가 된다. 블롭 sha(ac084711…)를 함께 대조해 엉뚱한 판본을 기준으로 삼지 않는다.
 #   덮어쓰기: QVEST_RF_ENGINE_BASE_REF=<ref>  (기본 985d17aa1)
@@ -237,7 +241,6 @@ MSG_ONE <- "[rf_cell_engine] overlay 층 stub_one_x 처치 미전달(항상 1) �
 r3 <- run_cell(base_spec(overlay = list(L_SCAL, L_ONE)))
 if (!is.null(r3$err) && identical(r3$err, MSG_ONE)) ok("3a 정지 문자열이 정확히 계약과 같다(층 이름 = arm_id · 단일 토큰)") else
   ng("3a 죽은 층이 산 층 뒤에 숨는다(유령 처치)", r3$err %||% "오류 없음")
-if (!is.null(r3$err) && grepl("측정 무효|처치 미전달", r3$err)) ok("3b 러너의 결정론 실패 패턴(측정 무효|처치 미전달)에 걸린다") else ng("3b 러너 패턴 불일치", r3$err %||% "")
 r3s <- run_cell(base_spec(overlay = L_ONE))
 if (!is.null(r3s$err) && identical(r3s$err, MSG_ONE)) ok("3c 단층이어도 같은 층별 문자열") else ng("3c 단층 죽은 층", r3s$err %||% "오류 없음")
 r3c <- run_cell(base_spec(overlay = list(L_ONE, L_SCAL), overlay_cell = list(L_SCAL)))
@@ -261,10 +264,6 @@ if (!is.null(r4$err) && grepl(RE_COV, r4$err)) ok("4a 스칼라+부분벡터 →
 if (!is.null(r4$err) && !grepl("+", r4$err, fixed = TRUE) && !grepl("stub_scal", r4$err, fixed = TRUE)) ok("4b '+' 결합 없음 · 이웃 층 이름 없음") else ng("4b 이웃 층이 문자열에 섞인다", r4$err %||% "")
 r4v <- run_cell(base_spec(overlay = list(L_VEC90, L_PART)))
 if (!is.null(r4v$err) && grepl(RE_COV, r4v$err)) ok("4c 벡터 두 층 중 못 덮은 층(stub_partial_x)만 지목 — vec90(0.90) 은 통과") else ng("4c 두 벡터 층 귀속", r4v$err %||% "오류 없음")
-suppressMessages(source(file.path(ROOT, "02_Infrastructure/reinforcement/rf_arm_compat.R"), local = TRUE))
-pc <- if (is.null(r4$err)) NULL else rac_parse_coverage(r4$err)
-if (!is.null(pc) && identical(pc$basis, "held_rows") && identical(pc$kind, "overlay") && identical(pc$id, "stub_partial_x"))
-  ok("4d 장부 파서 rac_parse_coverage → basis=held_rows · overlay · id=stub_partial_x") else ng("4d 장부 파서", if (is.null(pc)) "오류 없음" else paste(pc$basis, pc$kind, pc$id))
 if (HAVE_OLD) {
   r4o <- run_cell(base_spec(overlay = list(L_SCAL, L_PART)), engine = OLD)
   if (!is.null(r4o$err) && grepl("stub_scal+stub_partial", r4o$err, fixed = TRUE)) ok("4e 구판 빨강 — 같은 스펙의 실패 문자열이 '+' 라벨(stub_scal+stub_partial)을 싣는다(D2 재현)") else

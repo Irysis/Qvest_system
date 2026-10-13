@@ -35,7 +35,7 @@
   "dsr_gate_applied": false,
   "selection_type": "chain",
   "hard_fail": false,
-  "reasons": "Ensemble: positive alpha이나 B 미달 (블렌드에서만 가치)",
+  "reasons": "v3: S 0.205 · B 경계 0.421 · 띠 C · CR normal(시험 창 insufficient) · 노치 +0 · A 아님 사유 floor:port_t,floor:cagr,floor:sharpe,oos:rolling36_pass_oos | v921 C: Ensemble: positive alpha이나 B 미달 (블렌드에서만 가치)",
   "contract": {
     "integrity_status": "WARNING",
     "audit_pass": 15,
@@ -46,5 +46,70 @@
     "mdd": 0.571252,
     "calmar": 0.201695
   },
-  "note": "build_bt_result+audit_bt_result+essence_score 계약 경유 실측 (proxy hurdle와 별도 권위값)"
+  "note": "build_bt_result+audit_bt_result+essence_score 계약 경유 실측 (proxy hurdle와 별도 권위값)",
+  "grade_scheme": "grade_v3",
+  "grade_v921": "C",
+  "grade_v3": {
+    "status": "ok",
+    "schema": "grade_v3_v1",
+    "grade": "C",
+    "S": 0.2054,
+    "S_B": 0.421,
+    "band": "C",
+    "notch": 0,
+    "notch_a": false,
+    "blocked_by": [
+      "floor:port_t",
+      "floor:cagr",
+      "floor:sharpe",
+      "oos:rolling36_pass_oos"
+    ],
+    "floors": {
+      "port_t": false,
+      "calmar": true,
+      "cagr": false,
+      "sharpe": false
+    },
+    "bench": {
+      "calmar": 0.1961,
+      "cagr": 0.107,
+      "mdd": 0.5454,
+      "sharpe": 0.5935
+    },
+    "cr": {
+      "overall": "normal",
+      "test": "insufficient",
+      "visible": "normal",
+      "n_crisis": 5,
+      "dd_capture_median": 0.9956,
+      "dd_capture_worst": 1.2437,
+      "uc_median": 1.0699,
+      "cdar": 0.3983,
+      "controls": "not_provided"
+    },
+    "oos": {
+      "tau_d": "2022-12-31",
+      "gate": false,
+      "parts": {
+        "test_window_cr_not_weak": true,
+        "rolling36_pass_oos": false
+      },
+      "pass_oos": 0,
+      "pass_min": 0.5,
+      "pass_life": 0.2928,
+      "S_is": 0.3815,
+      "S_oos": 0,
+      "retention_calmar": 4.4514,
+      "retention_sharpe": 1.4783
+    },
+    "parity_max_abs": 4.66293670342566e-15,
+    "nav_source": "contract"
+  },
+  "grade_v3_backfill": {
+    "at": "2026-10-13T15:06:05+0900",
+    "tool": "02_Infrastructure/programs/grade_v3_backfill.R",
+    "decision": "decision_register GRADE-V3-PROMOTE",
+    "prior_essence_grade": "C",
+    "prior_md5": "58ade99d58e382916cd6291e7b6f8e5d"
+  }
 }

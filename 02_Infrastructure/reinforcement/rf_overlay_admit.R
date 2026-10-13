@@ -105,7 +105,7 @@ rf_overlay_admit <- function(kind, target = NULL, n_siblings = 1L,
 }
 
 #' 방출 원장 레코드 — 등재 경로(rf_overlay_admit)와 기록 전용 경로(rf_overlay_record_emission)가 **같은 형태**를 쓴다 (WP-C 2026-09-17).
-#'   두 벌이면 한쪽만 고쳐지고 집계기(rf_overlay_ledger_count.py)가 한쪽을 못 센다.
+#'   두 벌이면 한쪽만 고쳐진다(v10.01: 집계기 rf_overlay_ledger_count.py 는 생성 레인과 함께 퇴역 — 형태 동일 원칙은 유지).
 .rfa_emission_record <- function(kind, target, n_siblings, generator_model, source, meta, pr) {
   arm_id <- as.character(meta$id %||% paste0(kind, "_v1"))
   fam    <- as.character(meta$family %||% (if (identical(pr$axis, "cross_sectional")) "cross_sectional" else "multivar"))

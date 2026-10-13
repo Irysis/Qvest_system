@@ -1,11 +1,16 @@
 #==============================================================================
 # test_rf_overlay_admit_source.R — 등재 출처(source) 기록 + 일간 상한이 레인 몫만 세는가 (v10.4 2026-09-17)
 #
-# 대상: rf_overlay_admit.R(source 인자) · rf_overlay_admit_cli.R(6번째 인자/QVEST_ARM_SOURCE) ·
-#       rf_overlay_ledger_count.py(레인 몫 집계) · rf_overlay_propose.sh(배선)
+# 대상: rf_overlay_admit.R(source 인자) · rf_overlay_admit_cli.R(6번째 인자/QVEST_ARM_SOURCE)
 # ★왜: 일간 상한은 원장에서 "오늘 방출 수" 를 센다. 출처가 안 남으면 세션 수동 등재·B5 설계 레인의
 #   방출 1건이 그날 레인을 halt_daily_cap 으로 죽인다. 출처는 **원장과 카탈로그 양쪽**에 남아야 하고,
 #   집계는 overlay_propose + 필드 부재(구판) 만 레인 몫으로 세야 한다.
+# (v10.01 2026-10-13) 고정 격자 러너 퇴역으로 C(일간 상한 집계 rf_overlay_ledger_count.py C1~C4)·D(생성 레인
+#   rf_overlay_propose.sh 배선 D1~D3) 삭제 — 대상 코드가 없다(롤백 태그 pre-v10.01-prescription-20261013).
+#   등재기·CLI 는 남으므로 A·B·E 는 그대로 잰다.
+#   ★퇴역 직후 이 파일이 ng() 안에서 죽은 원인: C1 이 지워진 집계기를 불러 python 이 rc 2(파일 없음)·stdout 0줄 →
+#   cnt() = integer(0) → sprintf("n=%s", integer(0)) 가 character(0) 으로 붕괴 → ng() 의 if (nzchar(d)) 가 길이 0 조건으로 정지.
+#   정지 지점이 .cleanup() 앞이라 샌드박스(.cache/_test_…_<pid>)가 남았다 — ng() 가 길이 0 상세를 "" 로 접게 했다(실패는 실패로 센다).
 # 격리: 샌드박스 루트(.cache/_test_…/<pid>)에 probe·admit·weight_catalog 사본 + 빈 카탈로그·원장 —
 #   운영 원장·카탈로그에는 한 줄도 쓰지 않는다. 종료 시 샌드박스 삭제.
 #==============================================================================
@@ -15,7 +20,9 @@ ROOT <- Sys.getenv("QM_ROOT", "C:/Users/99922/OneDrive/Quant_Module_Moltbot"); s
 PY   <- Sys.getenv("QVEST_PY", file.path(ROOT, ".venv_qvest_ml/Scripts/python.exe"))
 PASS <- 0L; FAIL <- 0L
 ok <- function(m) { PASS <<- PASS + 1L; cat(sprintf("  OK   %s\n", m)) }
-ng <- function(m, d = "") { FAIL <<- FAIL + 1L; cat(sprintf("  FAIL %s%s\n", m, if (nzchar(d)) paste0(" — ", d) else "")) }
+## 상세가 길이 0(sprintf 붕괴 등)이어도 보고기가 죽지 않는다 — 죽으면 .cleanup() 전에 멈춰 샌드박스가 남는다(v10.01 실측)
+ng <- function(m, d = "") { FAIL <<- FAIL + 1L; d <- paste(as.character(d), collapse = " ")
+  cat(sprintf("  FAIL %s%s\n", m, if (nzchar(d)) paste0(" — ", d) else "")) }
 
 # ── 샌드박스 루트 ──────────────────────────────────────────────────────────────
 SB <- file.path(ROOT, ".cache", sprintf("_test_rf_overlay_admit_source_%d", Sys.getpid()))
@@ -133,40 +140,6 @@ if (identical(as.integer(rc), 0L) && identical(rec$source, "arg_src"))
 mk_arm("zz_src_h", "zz_src_h_v1", bad = TRUE)
 rc <- run_cli(c("zz_src_h", "scalar_exposure", "vol", "stub", "1", "b5_design"))
 if (identical(as.integer(rc), 3L)) ok("B5 거부 = rc 3 (구판 종료 코드 계약 유지)") else ng("B5", sprintf("rc=%s", rc))
-
-cat("\n=== C. 일간 상한 집계 — 레인 몫(overlay_propose + 필드 부재)만 센다 ===\n")
-CNT <- file.path(ROOT, "02_Infrastructure/ops/rf_overlay_ledger_count.py")
-today <- "2026-09-17"
-fx <- file.path(SB, "fixture_ledger.jsonl")
-recs <- list(
-  list(record_type = "arm_emission", kind = "k1", emitted_at = paste0(today, "T09:00:00+0900"), source = "overlay_propose"),
-  list(record_type = "arm_emission", kind = "k2", emitted_at = paste0(today, "T10:00:00+0900")),                      # 구판(필드 부재)
-  list(record_type = "arm_emission", kind = "k3", emitted_at = paste0(today, "T11:00:00+0900"), source = "manual_session"),
-  list(record_type = "arm_emission", kind = "k4", emitted_at = paste0(today, "T12:00:00+0900"), source = "b5_design"),
-  list(record_type = "arm_emission", kind = "k5", emitted_at = "2026-09-16T12:00:00+0900", source = "overlay_propose"),  # 어제
-  list(record_type = "other",        kind = "k6", emitted_at = paste0(today, "T13:00:00+0900"), source = "overlay_propose"))
-writeLines(c(vapply(recs, function(r) as.character(toJSON(r, auto_unbox = TRUE)), character(1)), "", "{not json"), fx)
-cnt <- function(...) { o <- system2(PY, c(shQuote(CNT), ...), stdout = TRUE, stderr = FALSE)
-  suppressWarnings(as.integer(gsub("[^0-9]", "", tail(o, 1)))) }
-n <- cnt(shQuote(fx), today)
-if (identical(n, 2L)) ok("C1 오늘 6건 중 레인 몫 2건(overlay_propose 1 + 구판 1) — manual/b5/어제/타 레코드 제외 ★핵심") else
-  ng("C1", sprintf("n=%s", n))
-n <- cnt(shQuote(fx), today, "overlay_propose,b5_design")
-if (identical(n, 3L)) ok("C2 source 집합 인자로 다른 레인 몫도 셀 수 있다") else ng("C2", sprintf("n=%s", n))
-n <- cnt(shQuote(file.path(SB, "nope.jsonl")), today)
-if (identical(n, 0L)) ok("C3 원장 부재 = 0 (상한 판정이 인프라 오류로 레인을 죽이지 않는다)") else ng("C3", sprintf("n=%s", n))
-n <- cnt(shQuote(LED), format(Sys.Date(), "%Y-%m-%d"))
-# 위 A·B 에서 오늘 샌드박스 원장에 실린 레인 몫 = A1·A5·B1 (overlay_propose) 3건. manual/b5/arg/env 는 제외.
-if (identical(n, 3L)) ok("C4 실제 등재기가 쓴 원장에서도 레인 몫만 3건") else ng("C4", sprintf("n=%s", n))
-
-cat("\n=== D. 레인 배선 ===\n")
-lane <- paste(readLines(file.path(ROOT, "02_Infrastructure/ops/rf_overlay_propose.sh"), warn = FALSE), collapse = "\n")
-if (grepl("rf_overlay_ledger_count.py", lane, fixed = TRUE) && !grepl("startswith(d)", lane, fixed = TRUE))
-  ok("D1 일간 상한이 집계 파일을 태우고 인라인 사본이 남지 않았다") else ng("D1 인라인 집계 잔존 또는 미배선")
-if (grepl("rf_overlay_admit_cli.R\" \"\\$KIND\" \"\\$ACT\" \"\\$ST\" \"\\$RP_MODEL\" 1 overlay_propose", lane))
-  ok("D2 레인이 등재기에 source=overlay_propose 를 명시한다") else ng("D2 source 미명시")
-rc <- system2("bash", c("-n", shQuote(file.path(ROOT, "02_Infrastructure/ops/rf_overlay_propose.sh"))), stdout = NULL, stderr = NULL)
-if (identical(as.integer(rc), 0L)) ok("D3 레인 문법") else ng("D3 bash -n 실패")
 
 # ── 운영 파일 무오염 ───────────────────────────────────────────────────────────
 real_led <- file.path(ROOT, "06_Registry/overlay_arm_ledger.jsonl")

@@ -1,0 +1,93 @@
+{
+  "code": "B6_36",
+  "label": "랭크 버퍼(2×n_max 히스테리시스)",
+  "block": "B6",
+  "fixed_axes": {
+    "long_only": true,
+    "n_max": 25,
+    "universe": "K200_KQ150",
+    "start_date": "2005-01-01",
+    "commission_bps": 15,
+    "liq_adv20_min": 200000000,
+    "weight_cap": null,
+    "base_weight": 0.5,
+    "base_weight_note": "기저(논문) 신호 가중. 등가중이면 팩터 n개에서 1/(1+n) 로 떨어져 결합 깊이와 기저 희석이 교락된다(실측 2026-08-31: 1/2->1/3 희석만으로 B1 다섯 칸 전부 기준선 미달). 고정하면 깊이가 순수 축이 된다. 1팩터일 때 0.5 는 등가중과 수치적으로 동일하다."
+  },
+  "base_signal": {
+    "kind": "engine",
+    "path": "C:\\Users\\99922\\OneDrive\\Quant_Module_Moltbot/04_Research/strategies/RP_AUTO_2002_06975/engine.R"
+  },
+  "base_weight": 0.5,
+  "factors": [
+    {
+      "kind": "db",
+      "id": "M01_Mom_12_1"
+    },
+    {
+      "kind": "db",
+      "id": "V10_FCF_Yield"
+    },
+    {
+      "kind": "db",
+      "id": "M08_Residual_Mom"
+    }
+  ],
+  "weighting": {
+    "kind": "catalog",
+    "catalog_id": "lean:entropy",
+    "label": "entropy"
+  },
+  "universe": {
+    "kind": "k200_kq150"
+  },
+  "rebalance": {
+    "kind": "rank_buffer",
+    "mult": 2,
+    "label": "buffer_2x"
+  },
+  "defense_sleeve": null,
+  "root_paper": {
+    "url": "https://arxiv.org/abs/2002.06975",
+    "title": "Cross-sectional Stock Price Prediction using Deep Learning for Actual Investment Management",
+    "paper_key": "2002.06975"
+  },
+  "root_papers": [
+    {
+      "url": "https://arxiv.org/abs/2002.06975",
+      "title": "Cross-sectional Stock Price Prediction using Deep Learning for Actual Investment Management",
+      "paper_key": "2002.06975"
+    },
+    {
+      "title": "Chan, Jegadeesh & Lakonishok (1996), Momentum Strategies, JF 51(5)",
+      "url": "https://onlinelibrary.wiley.com/doi/10.1111/j.1540-6261.1996.tb05222.x"
+    },
+    {
+      "title": "Fama & French (1992), The Cross-Section of Expected Stock Returns, JF 47(2)",
+      "url": "https://onlinelibrary.wiley.com/doi/10.1111/j.1540-6261.1992.tb04398.x"
+    }
+  ],
+  "root_paper_families": ["momentum", "value"],
+  "unmapped_families": [],
+  "idea": "[무인 병렬 B6_36] 랭크 버퍼(2×n_max 히스테리시스) — B6/execution_cadence · factor2=none · weighting=catalog · universe=k200_kq150 · overlay=none",
+  "preflight": {
+    "keywords": ["M01_Mom_12_1", "V10_FCF_Yield", "M08_Residual_Mom", "momentum", "value", "catalog"],
+    "dead_precedents": {
+      "M01_Mom_12_1": "[hypothesis_index] 30 hits (FAIL 0 · DISTILLED_NEG 22 · PASS 4 · MARGINAL 0) top: DIST-GEN-310(DISTILLED) DIST-GEN-211 DIST-GEN-048 — 상세: lo",
+      "V10_FCF_Yield": "[hypothesis_index] 1 hits (FAIL 0 · DISTILLED_NEG 0 · PASS 0 · MARGINAL 0) top: STR_V10_FCF_Yield_LO_top25(REGISTERED) — 상세: lookup_hypothes",
+      "M08_Residual_Mom": "[hypothesis_index] 30 hits (FAIL 0 · DISTILLED_NEG 22 · PASS 4 · MARGINAL 0) top: DIST-GEN-310(DISTILLED) DIST-GEN-211 DIST-GEN-048 — 상세: lo",
+      "momentum": "[hypothesis_index] 30 hits (FAIL 0 · DISTILLED_NEG 22 · PASS 4 · MARGINAL 0) top: DIST-GEN-310(DISTILLED) DIST-GEN-211 DIST-GEN-048 — 상세: lo"
+    },
+    "recent_attempts": ["n=30 B3_15 Grade B · PORT_t 2.261", "n=31 B3_12 Grade B · PORT_t 2.321", "n=32 B3_13 Grade C · PORT_t 1.207"],
+    "axioms": ["AX-000: 한계는 대개 법칙이 아니라 방법의 한계다. 모든 목표는 충분한 엄밀함·창의성·반복으로 달성 가능하다는 전제로 임한다. 소수(3~4회)의 실험 실패를 '구조적 한계'나 'dead-end'로 단정하는 ", "AX-001: 방어형 전략·팩터의 처분(기각·폐기)을 전기간 등급 단독으로 내리지 않는다. 방어형 판정 계약 = defensive_score(자격 기준은 무신호 대조 통과 후 확정).", "AX-002: 프로세스 우회 = 판단의 미래참조. 하네스 내 성과만 유효.", "AX-008: 결정에 영향을 주는 수치(등급·PORT_t·Calmar 등)는 R 계약 산출만 인용한다 — 손계산·재구성·추정 금지. 독립 검증 = Judge(PIT 전담, essence Grade A 확정 후)."],
+    "axiom_injected": true,
+    "note": "★차단하지 않는다 — 죽은 선례는 사실 기록이지 금지 목록이 아니다(AX-000). 실행은 진행하고 기록만 남긴다. 같은 구성이 반복되면 이 블록이 그 사실을 드러낸다.",
+    "axiom_injection": "무인 러너는 에이전트를 스폰하지 않아 axiom_context_inject(PreToolUse[Agent])가 발화하지 않는다. 그래서 ★레인이 직접 active 공리를 읽어 이 블록에 넣는다 (적재 4건). 고정 축은 엔진·계약이 강제하고, 실행 후 rf_preflight_verify_axes() 가 산출물에서 재도출해 확인한다."
+  },
+  "selection_accounting": {
+    "selection_type": "sweep",
+    "family_root": "RP_20260913_084807_skipped_base",
+    "lineage": ["RP_20260913_084807_skipped_base_promo1", "RP_20260913_084807_skipped_base"],
+    "n_family_at_registration": 81,
+    "n_trials_basis": "base1+lineage_measured(excl_inherited)+batch_size"
+  }
+}

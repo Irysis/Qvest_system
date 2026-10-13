@@ -1,7 +1,7 @@
 # Qvest Index
 
 **3개월 후 도훈이 즉시 찾을 수 있게** — 1 page navigation + debug map.
-**v10.4 — 2계층 리서치(팩터전략/전략로테이션) · BOOK · Judge=PIT 전담 · 강화 LLM 재귀 루프(횡단면 오버레이 축)** (2026-09-03 갱신. 직전 v10.1, 전문은 `CHANGELOG_constitution.md`)
+**v10.01 — 목표 역산형 1계층 리서치 · 2계층 로테이션 · BOOK · Judge=PIT 전담 · 행동 카드(위기 방어)** (2026-10-13 갱신. 직전 v10.4, 전문은 `CHANGELOG_constitution.md` · 1계층 절차 = `.claude/skills/research-program/SKILL.md`)
 
 > ★**숫자 박제 금지** — 이 문서가 v8.1에서 2개월 낙후된 기전이 "8 axioms / 30 hook / 203 paper notes" 같은 **개수 하드코딩**이었다. 개수·목록은 아래 *확인 명령*으로 위임하고, 본문은 **어디를 보는지**만 적는다.
 

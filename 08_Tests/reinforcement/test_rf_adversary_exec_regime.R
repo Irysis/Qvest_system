@@ -18,7 +18,9 @@
 #       돌연변이(고정을 무시하는 워커) → 실현 규약 불일치 → T1 error(비교 거부) · 설정 부재 → 재실행 없이 error · env 복원
 #   E ★2026-09-24 수리 — G-F1 바닥 출처(floor_source carry/none → 바닥 없음 · PORT_t 폴백 금지 · 돌연변이 구판 식별 red) ·
 #       I2 rebase 칸 산출물 = 원장 표식 형제 판(돌연변이 구판 판독 = regime_conflict red) · 규약 거부 error 재검정 술어
-#       rf_adversary_rerun_blocks(rebase 뒤만 · 돌연변이 구 술어 red) · 러너 배선 블록 추출 실행(돌연변이 구 술어 red)
+#       rf_adversary_rerun_blocks(rebase 뒤만 · 돌연변이 구 술어 red)
+# (v10.01 2026-10-13) 고정 격자 러너 퇴역으로 E10·E11(러너 재실행 배선 블록 추출 실행 · 돌연변이 구 술어) 삭제 — 대상 코드가 없다
+#   (롤백 태그 pre-v10.01-prescription-20261013). rf_adversary_rerun_blocks 술어 자체(E8·E9)는 그대로 잰다(실소비자 없음 — 배선 재표적 대상 없음).
 # 부작용 없음: 픽스처 전부 tempdir. 운영 원장·설정·산출물 무접촉. 자식 Rscript 는 R_ENVIRON_USER=빈 파일.
 #==============================================================================
 suppressMessages({ library(data.table); library(jsonlite) })
@@ -397,32 +399,6 @@ chk(identical(r1$blocks, "B5") && grepl("regime_rebased:B5_16", r1$why$B5) && !l
     "E8 ★I2 재검정 술어 — 규약 거부 error 가 그 뒤 rebase 로 풀릴 수 있을 때만 재실행(판정 뒤 rebase ○ · 앞 rebase × · rebase 없음 × · 연기분 ○ · fail × · 검정 단계 규약 거부 ○)")
 old_pred <- function(E) unique(unlist(lapply(E$attempts, function(a) if (identical(as.character((a$adversary %||% list())$verdict %||% "")[1], "deferred_refresh_lock")) "B5" else NULL)))
 chk(!length(old_pred(eR(at0, at1))), "E9 [돌연변이] 구판 술어(연기분만)는 rebase 뒤 규약 거부 칸을 다시 검정하지 않는다 — E8 이 잡는다")
-# 러너 배선 — 재실행 블록을 러너 소스에서 떼어 실행(스텁 적대검증 · 스텁 원장)
-RSRC <- readLines(file.path(ROOT, "02_Infrastructure/ops/reinforce_auto_parallel.R"), warn = FALSE, encoding = "UTF-8")
-i0 <- grep("^\\.adv_def_blk <- unique\\(", RSRC)
-i1 <- if (length(i0) == 1L) i0 + which(grepl("^\\}$", RSRC[(i0 + 1L):length(RSRC)]))[1] else NA
-if (length(i0) != 1L || is.na(i1)) ng("E10 러너 재실행 블록 추출 실패") else {
-  RR <- file.path(TD, "rr"); dir.create(file.path(RR, "02_Infrastructure/reinforcement"), recursive = TRUE, showWarnings = FALSE)
-  writeLines(c("rf_overlay_adversary_run <- function(bid, block, layer, root) { .CALLS <<- c(.CALLS, paste(bid, block))",
-               "  data.table::data.table(code = 'B5_16', verdict = 'pass') }"), file.path(RR, "02_Infrastructure/reinforcement/rf_overlay_adversary.R"))
-  run_blk <- function(E0) { env <- new.env(parent = globalenv()); env$E <- E0; env$BID <- "X"; env$ROOT <- RR; env$EV <- character(0)
-    assign(".CALLS", character(0), envir = globalenv())
-    env$jlog <- function(event, ...) env$EV <- c(env$EV, event)
-    env$rf_load <- function(layer, root) list(entries = list(E0))
-    eval(parse(text = RSRC[i0:i1]), envir = env); list(calls = get(".CALLS", envir = globalenv()), ev = env$EV) }
-  w1 <- run_blk(eR(at0, at1)); w2 <- run_blk(eR(at1, at0))
-  chk(identical(w1$calls, "X B5") && "adversary_rerun_regime" %in% w1$ev && !length(w2$calls),
-      "E10 러너 배선 — rebase 뒤 규약 거부 칸이 있으면 tick 시작에 적대검증을 다시 부른다(없으면 안 부른다)", paste(w1$ev, collapse = ","))
-  # 돌연변이 — 러너가 구판 술어(연기분만)를 쓰면 같은 칸을 다시 부르지 않는다
-  blk_m <- RSRC[i0:i1]
-  im <- grep("^\\.adv_rr <- rf_adversary_rerun_blocks\\(E", blk_m)
-  blk_m[im] <- ".adv_rr <- list(blocks = character(0), why = list())"   # 구판 러너 = 연기분 술어만(규약 거부 재검정 없음)
-  wm <- tryCatch({ env <- new.env(parent = globalenv()); E0 <- eR(at0, at1); env$E <- E0; env$BID <- "X"; env$ROOT <- RR
-    assign(".CALLS", character(0), envir = globalenv()); env$jlog <- function(event, ...) invisible(NULL)
-    env$rf_load <- function(layer, root) list(entries = list(E0)); eval(parse(text = blk_m), envir = env); get(".CALLS", envir = globalenv()) },
-    error = function(e) paste("ERR", conditionMessage(e)))
-  chk(length(im) == 1L && !length(wm), "E11 [돌연변이] 러너가 구판 술어(연기분만)로 돌면 rebase 뒤 규약 거부 칸을 다시 부르지 않는다 — E10 이 잡는다", paste(wm, collapse = ","))
-}
 
 unlink(TD, recursive = TRUE, force = TRUE)
 if (is.na(.old_renv)) Sys.unsetenv("R_ENVIRON_USER") else Sys.setenv(R_ENVIRON_USER = .old_renv)

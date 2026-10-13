@@ -723,24 +723,9 @@ run_step("axiom_weekly_cycle", {
   invisible(TRUE)
 })
 
-# [3.5b] 리서치 디렉터 방향 결정 주간 채점 (2026-09-21 도훈 승인 플랜 Part 3 · D4)
-#   rf_decisions.jsonl(kind=direction · 행동 실행분)에 실현 결과(L2 원장·결합 entry)를 붙여 Δbind·규칙 재현(양성)·항상-B5(음성)를 낸다.
-#   결과 붙은 행동 결정 < 8 이면 verdict=insufficient(보류 · NO-GO 아님). 산출 = review_log/direction_replay_<date>.{json,md}.
-#   DRY 는 --dry-run(쓰기 0). 자식 Rscript 라 실패해도 스윕은 계속(run_step fail-soft) — 마지막 줄만 pending 에 남긴다.
-direction_replay_summary <- NULL
-run_step("director_policy_replay", {
-  ## ★2026-09-21 도훈 지시: 채점은 일간(부팅 시점·아침 디렉터)이다 — 여기서는 --archive 로 주간 날짜 파일만 보존한다.
-  .dr <- file.path(root, "02_Infrastructure/axiom/replay/run_direction_score.R")
-  if (!file.exists(.dr)) { cat("[cleaner] direction_replay skip (스크립트 없음)\n"); direction_replay_summary <<- list(status = "absent") }
-  else {
-    .o <- suppressWarnings(system2("Rscript", c(shQuote(.dr), "--archive", if (DRY) "--dry-run" else character(0)), stdout = TRUE, stderr = TRUE, timeout = 300))
-    .v <- grep("^\\[direction_replay\\] verdict=", .o, value = TRUE)
-    direction_replay_summary <<- list(status = if (length(.v)) "ran" else "no_verdict_line", verdict_line = if (length(.v)) .v[length(.v)] else NA_character_,
-                                      report = sprintf("qepm/memory/axioms/review_log/direction_replay_%s.md", format(Sys.Date(), "%Y%m%d")))
-    cat(sprintf("[cleaner] direction_replay: %s\n", if (length(.v)) .v[length(.v)] else "verdict 줄 없음 (fail-soft)"))
-  }
-  invisible(TRUE)
-})
+# [3.5b] (v10.01 · 2026-10-13) 구 리서치 디렉터 방향 결정 주간 채점(run_direction_score.R --archive)은 디렉터와 함께 퇴역했다.
+#   채점 입력(rf_decisions.jsonl kind=direction)을 만들던 디렉터·고정 격자 러너가 없다. 요약 키는 퇴역 표식으로 남긴다.
+direction_replay_summary <- list(status = "retired_v10_01")
 
 # [3.6] 지식 순차 인덱스 재생성 (2026-07-05 도훈 — "1부터 차례대로·증류돼도 구멍 없이")
 #   안정 ID 불변, 활성 집합(Law/Distilled/L-code)을 1..N 뷰로 갱신. blast radius 0.

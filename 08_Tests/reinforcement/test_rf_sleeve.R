@@ -10,6 +10,11 @@
 #   ④ 대조군 2칸(베타매칭 무작위 · 부호 반전)이 격자에 실제로 있다. 이게 없으면
 #      B5 가 137칸을 태우고 아무것도 주장 못 한 것과 같은 결말이 된다.
 #
+# (v10.01 2026-10-13) 고정 격자 러너 퇴역으로 G8(러너 reinforce_auto_parallel.R 가 SPEC 에 defense_sleeve 를 싣는가 —
+#   AST 파싱 · 헬퍼 .has/.calls/.ax_ds) 삭제 — 대상 코드가 없다(롤백 태그 pre-v10.01-prescription-20261013).
+#   rf_axes_cell_init 은 이제 호출자가 없고, 그 defense_sleeve 승계는 test_rf_spec_axes.R I1(격자 B7 칸 포함 전 칸 · 구판 리터럴과
+#   JSON 동일)이 잰다 · 등록부 defense_sleeve 항목 삭제 돌연변이는 같은 파일 I4(rf_axes_same_as_carry).
+#
 # ★R 문법: 최상위 `if` 다음 줄 `else` 는 파싱이 깨진다 — 단정은 chk() 한 줄로.
 # 실행: cd <ROOT> && Rscript 08_Tests/reinforcement/test_rf_sleeve.R
 #==============================================================================
@@ -280,39 +285,6 @@ if (length(b7) == 1L) {
 LED <- readLines(file.path(ROOT, "02_Infrastructure/reinforcement/reinforce_ledger.R"), warn = FALSE)
 chk(any(grepl("structural_defense", LED)),
     "G7 원장 축 허용목록에 structural_defense (없으면 블록 등록이 거부된다)", "G7 축 미등록")
-
-NP <- parse(file.path(ROOT, "02_Infrastructure/ops/reinforce_auto_parallel.R"))
-.has <- function(exprs, want) {
-  hit <- FALSE
-  walk <- function(x) {
-    if (is.call(x)) {
-      nm <- names(as.list(x))
-      if (length(nm) && want %in% nm) hit <<- TRUE
-      for (i in seq_along(x)) if (!is.null(x[[i]])) try(walk(x[[i]]), silent = TRUE)
-    } else if (is.pairlist(x) || is.list(x)) {
-      for (i in seq_along(x)) if (!is.null(x[[i]])) try(walk(x[[i]]), silent = TRUE)
-    }
-  }
-  for (e in exprs) walk(e)
-  hit
-}
-## ★B4-SIX-AXIS(2026-09-26 · 10-03 차등 회귀): 교체 축(비중·유니버스·집행 주기·방어 슬리브)은 축 등록부(rf_spec_axes.R::rf_axes_cell_init)로 싣는다 —
-##   직접 인자(구판) **또는** 러너가 rf_axes_cell_init 을 부르고 등록부가 셀의 defense_sleeve 를 그대로 싣는다(행동 대조). 등록부에서 축을 지우면 red.
-.calls <- function(exprs, fn) {
-  hit <- FALSE
-  walk <- function(x) {
-    if (is.call(x)) { if (identical(x[[1]], as.name(fn))) hit <<- TRUE
-      for (i in seq_along(x)) if (!is.null(x[[i]])) try(walk(x[[i]]), silent = TRUE)
-    } else if (is.pairlist(x) || is.list(x)) for (i in seq_along(x)) if (!is.null(x[[i]])) try(walk(x[[i]]), silent = TRUE)
-  }
-  for (e in exprs) walk(e)
-  hit
-}
-.ax_ds <- local({ f <- file.path(ROOT, "02_Infrastructure/reinforcement/rf_spec_axes.R")
-  if (!file.exists(f)) FALSE else tryCatch({ ae <- new.env(); sys.source(f, envir = ae); ds <- list(kind = "factor_topk", k = 5L, select = "ic_bad_rank_asof")
-    identical(ae$rf_axes_cell_init(list(code = "B7_37", defense_sleeve = ds))[["defense_sleeve"]], ds) }, error = function(e) FALSE) })
-chk(.has(NP, "defense_sleeve") || (.calls(NP, "rf_axes_cell_init") && isTRUE(.ax_ds)),
-    "G8 러너가 SPEC 에 defense_sleeve 를 싣는다(직접 또는 축 등록부 rf_axes_cell_init — 안 실으면 엔진은 알파 단독)", "G8 러너 미배선")
 
 cat(sprintf("\n== 결과: %d PASS / %d FAIL ==\n", .pass, .fail))
 # 배터리 요약 계약(run_all_hooks.sh — 요약 JSON 없으면 UNMEASURED) · 2026-09-25 SUITES 편입과 함께 추가

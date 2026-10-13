@@ -62,7 +62,8 @@ i_f <- regexpr("FAILFB=", src, fixed = TRUE)
 i_a <- regexpr("AUDFB=", src, fixed = TRUE)
 if (i_f > 0 && i_a > 0) ok("D2 두 피드백이 같은 자리에서 조립된다(한쪽만 사는 구조 아님)") else
   ng("D2 조립 위치")
-i_p <- regexpr("timeout 3000 claude", src, fixed = TRUE)
+## 에이전트 호출 = 단일 진입 rf_llm_agent_run(P0-M1 2026-09-17 fa895d2c6 이관 — 구 표적 'timeout 3000 claude' 는 레인에 없어 D3 가 상시 FAIL 이었다 · 10-13 표적 이설)
+i_p <- regexpr("rf_llm_agent_run \"$PF\"", src, fixed = TRUE)
 if (i_f > 0 && i_p > 0 && i_f < i_p)
   ok("D3 피드백이 에이전트 호출 **앞**에서 조립된다") else ng("D3 조립 순서")
 

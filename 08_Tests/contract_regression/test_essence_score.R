@@ -10,6 +10,8 @@
 #   - oos band [0.5, 0.7) escalation 2/3 evidence, <0.5 unconditional FAIL
 #   - grade F (non-positive alpha), uncertain (contract not passed),
 #     structural drawdown hard fail, tail_review non-fail
+#   ★(v10.01 2026-10-13 MC7) 권위 등급(grade)은 이제 등급 v3 다 — 이 회귀는 구 5조건 판정 경로를 지키므로
+#     단언 대상을 grade_v921(진단 보존 필드)로 옮겼다. v3 판정·경계·통합 검사 = 08_Tests/contracts/test_grade_v3.R
 # ============================================================================
 
 suppressPackageStartupMessages({ library(data.table) })
@@ -71,6 +73,10 @@ t_check("essence:ES02_v2_median_and_band_pass",
         identical(res_v2$oos_band_status, "pass") &&
         identical(res_v2$oos_stat_version, "v2"))
 
+t_check("essence:ES02b_authoritative_grade_is_v3_and_v921_preserved",
+        identical(res_v2$grade_basis, "grade_v3") && !is.null(res_v2$grade_v3$status) &&
+        res_v2$grade_v921 %in% c("A", "B", "C", "F"))
+
 # --- ES03: v1 legacy single 65/35 split --------------------------------------
 res_v1 <- essence_score(mk_bt(a_block), oos_stat_version = "v1")
 t_check("essence:ES03_v1_single_split",
@@ -86,57 +92,57 @@ res_chain <- essence_score(mk_bt(a_block), n_trials_cumulative = 50,
 t_check("essence:ES04_chain_gate_exempt_dsr_diagnostic",
         identical(res_chain$dsr_gate_applied, FALSE) &&
         is.finite(res_chain$essence$dsr) && res_chain$essence$dsr < 0.5 &&
-        identical(res_chain$grade, "A"))
+        identical(res_chain$grade_v921, "A"))
 
 res_sweep <- essence_score(mk_bt(a_block), n_trials_cumulative = 50,
                            selection_type = "sweep")
 t_check("essence:ES05_sweep_gate_blocks_A",
         identical(res_sweep$dsr_gate_applied, TRUE) &&
-        identical(res_sweep$grade, "B") &&
+        identical(res_sweep$grade_v921, "B") &&
         any(grepl("DSR<0.5(sweep)", res_sweep$reasons, fixed = TRUE)))
 
 res_legacy <- essence_score(mk_bt(a_block), n_trials_cumulative = 50,
                             selection_type = NULL)
 t_check("essence:ES06_legacy_ntrials_heuristic_sweep",
         identical(res_legacy$dsr_gate_applied, TRUE) &&
-        identical(res_legacy$grade, "B"))
+        identical(res_legacy$grade_v921, "B"))
 
 res_single <- essence_score(mk_bt(a_block))  # no trials, no selection_type
 t_check("essence:ES07_single_trial_no_gate_dsr_na",
         identical(res_single$dsr_gate_applied, FALSE) &&
         is.na(res_single$essence$dsr) &&
-        identical(res_single$grade, "A"))
+        identical(res_single$grade_v921, "A"))
 
 # --- ES08-ES11: PORT_t 2.95 / Calmar 0.64 HARD boundaries --------------------
 t_check("essence:ES08_port_t_at_2.95_passes_A",
-        identical(essence_score(mk_bt(a_block, port_t = 2.95))$grade, "A"))
+        identical(essence_score(mk_bt(a_block, port_t = 2.95))$grade_v921, "A"))
 t_check("essence:ES09_port_t_below_2.95_drops_to_B",
-        identical(essence_score(mk_bt(a_block, port_t = 2.9499))$grade, "B"))
+        identical(essence_score(mk_bt(a_block, port_t = 2.9499))$grade_v921, "B"))
 t_check("essence:ES10_calmar_at_0.64_passes_A",
-        identical(essence_score(mk_bt(a_block, calmar = 0.64))$grade, "A"))
+        identical(essence_score(mk_bt(a_block, calmar = 0.64))$grade_v921, "A"))
 t_check("essence:ES11_calmar_below_0.64_drops_to_B",
-        identical(essence_score(mk_bt(a_block, calmar = 0.6399))$grade, "B"))
+        identical(essence_score(mk_bt(a_block, calmar = 0.6399))$grade_v921, "B"))
 
 # --- ES12-ES15: oos_retention 0.7 boundary + band escalation -----------------
 ev_full <- list(trailing_port_t = 1.2, placebo_p = 0.01,
                 book_marginal_delta_sr = 0.08, cor_vs_book = 0.10)
 res12 <- essence_score(mk_bt(a_block), oos_is_ratio_override = 0.70)
 t_check("essence:ES12_oos_at_0.70_passes_A",
-        identical(res12$grade, "A") && identical(res12$oos_band_status, "pass"))
+        identical(res12$grade_v921, "A") && identical(res12$oos_band_status, "pass"))
 res13 <- essence_score(mk_bt(a_block), oos_is_ratio_override = 0.69)
 t_check("essence:ES13_band_no_evidence_fails_to_B",
-        identical(res13$grade, "B") &&
+        identical(res13$grade_v921, "B") &&
         identical(res13$oos_band_status, "band_fail") &&
         any(grepl("OOS_ret", res13$reasons, fixed = TRUE)))
 res14 <- essence_score(mk_bt(a_block), oos_is_ratio_override = 0.69,
                        escalation_evidence = ev_full)
 t_check("essence:ES14_band_escalated_2of3_passes_A",
-        identical(res14$grade, "A") &&
+        identical(res14$grade_v921, "A") &&
         identical(res14$oos_band_status, "band_escalated"))
 res15 <- essence_score(mk_bt(a_block), oos_is_ratio_override = 0.49,
                        escalation_evidence = ev_full)
 t_check("essence:ES15_below_band_unconditional_fail",
-        identical(res15$grade, "B") && identical(res15$oos_band_status, "fail"))
+        identical(res15$grade_v921, "B") && identical(res15$oos_band_status, "fail"))
 
 # weak evidence (1/3) must not escalate
 ev_weak <- list(trailing_port_t = 1.2, placebo_p = 0.50,
@@ -144,17 +150,17 @@ ev_weak <- list(trailing_port_t = 1.2, placebo_p = 0.50,
 res15b <- essence_score(mk_bt(a_block), oos_is_ratio_override = 0.69,
                         escalation_evidence = ev_weak)
 t_check("essence:ES15b_band_weak_evidence_1of3_fails",
-        identical(res15b$grade, "B") &&
+        identical(res15b$grade_v921, "B") &&
         identical(res15b$oos_band_status, "band_fail"))
 
 # --- ES16: Sharpe A-core boundary --------------------------------------------
 t_check("essence:ES16_sharpe_below_0.8_drops_to_B",
-        identical(essence_score(mk_bt(a_block, sharpe = 0.79))$grade, "B"))
+        identical(essence_score(mk_bt(a_block, sharpe = 0.79))$grade_v921, "B"))
 
 # --- ES17/ES18: F non-positive alpha / uncertain (no contract) ---------------
 res17 <- essence_score(mk_bt(a_block, port_t = -0.5))
 t_check("essence:ES17_nonpositive_alpha_F",
-        identical(res17$grade, "F") &&
+        identical(res17$grade_v921, "F") &&
         any(grepl("non-positive alpha", res17$reasons, fixed = TRUE)))
 ## ★v9.21 §1-b — 등급 enum 을 A/B/C/F 4값으로 일원화했다. 계약 미경유는 **등급 미발행(NA)**
 ##   이고 "왜 없는지"는 metric_type='uncertain' 이 보존한다(같은 사실을 두 필드에 중복
@@ -162,12 +168,12 @@ t_check("essence:ES17_nonpositive_alpha_F",
 ##   사라지고, metric_type 만 보면 등급 오염을 못 잡는다.
 res18 <- essence_score(mk_bt(a_block, drop_port_t = TRUE))
 t_check("essence:ES18_no_contract_grade_NA",
-        is.na(res18$grade) &&
+        is.na(res18$grade_v921) &&
         identical(res18$metric_type, "uncertain"))
 ## ★enum 정합 단방향 검사 — 등급이 A/B/C/F/NA 밖의 값을 내면 lcode_schema.R:57 의
 ##   LCODE_VALID_GRADES 가 validate_lcode 에서 적립을 통째로 막는다. 그 재발을 여기서 잡는다.
 t_check("essence:ES18b_grade_enum_4values",
-        is.na(res18$grade) || res18$grade %in% c("A", "B", "C", "F"))
+        is.na(res18$grade_v921) || res18$grade_v921 %in% c("A", "B", "C", "F"))
 
 # --- ES19: ★MDD 는 등급을 접지 않는다 (2026-08-24 도훈 지시 — 판정 방향 반전) ----
 #   구 ES19 는 "catastrophic MDD >= 70% -> grade F" 를 단언했다. 그 단언이 곧
@@ -181,7 +187,7 @@ t_check("essence:ES18b_grade_enum_4values",
 a_cat <- c(rep(-0.20, 6), rep(0.02, 54))   # nav trough 0.8^6 = 0.262 -> dd 73.8%
 res19 <- essence_score(mk_bt(a_cat, mdd = 0.74))
 t_check("essence:ES19_catastrophic_mdd_does_not_grade_F",
-        !identical(res19$grade, "F") || !isTRUE(res19$hard_fail))
+        !identical(res19$grade_v921, "F") || !isTRUE(res19$hard_fail))
 t_check("essence:ES19b_mdd_not_hard_fail_and_source_none",
         identical(res19$hard_fail, FALSE) &&
         identical(res19$hard_fail_source, "none"))
@@ -194,7 +200,7 @@ t_check("essence:ES19d_structural_reason_survives_in_text",
 #   되살린 판(hard_fail 주입 = 추론 결과와 동일 입력)이 F 를 내야 위 단언이 무언가를 재고 있다.
 res19m <- essence_score(mk_bt(a_cat, mdd = 0.74), hard_fail = TRUE)
 t_check("essence:ES19e_mutation_control_reinstated_inference_flips",
-        identical(res19m$grade, "F") && identical(res19m$hard_fail_source, "injected"))
+        identical(res19m$grade_v921, "F") && identical(res19m$hard_fail_source, "injected"))
 
 # --- ES20: single deep episode -> tail_review, NOT hard fail -----------------
 a_tail <- c(rep(-0.108, 6), rep(0.04, 54)) # trough dd ~49.6%, one episode
@@ -203,10 +209,10 @@ res20 <- essence_score(mk_bt(a_tail, mdd = 0.496, calmar = 0.70),
 t_check("essence:ES20_tail_review_single_episode_not_hard_fail",
         identical(res20$hard_fail, FALSE) &&
         isTRUE(res20$essence$drawdown_profile$tail_review) &&
-        identical(res20$grade, "A"))
+        identical(res20$grade_v921, "A"))
 
 # --- ES21: externally injected hard_fail wins --------------------------------
 t_check("essence:ES21_injected_hard_fail_F",
-        identical(essence_score(mk_bt(a_block), hard_fail = TRUE)$grade, "F"))
+        identical(essence_score(mk_bt(a_block), hard_fail = TRUE)$grade_v921, "F"))
 
 t_summary("test_essence_score")

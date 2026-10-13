@@ -6,7 +6,7 @@
 #       02_Infrastructure/ops/rf_factor_arms.R::rf_factor_pool / rf_pick_factor_sets (B1 후보 풀 격리)
 #       02_Infrastructure/reinforcement/rf_overlay_admit.R::rf_overlay_admit (생성 arm 격리 원천 참조 거부)
 #       + 운영 봉쇄 상태(격리 목록이 active 일 때만): pg2 arm suspended · 카탈로그 15모듈 fr_eligible 해제 ·
-#         l2_auto 정지 · 원장 pit_c11 표식 · b1_verify 가 격리 팩터 설계를 기각
+#         l2_auto 정지 · 원장 pit_c11 표식 (구 b1_verify 설계 기각 검사는 v10.01 에서 B1 레인과 함께 퇴역)
 # 왜: pit.md '위반 시 처리' 1·2단계(즉시 중단·결과 무효)를 코드 수리 전에 목록 파일로 집행한다. 목록을 아무도
 #   안 읽으면 봉쇄는 선언뿐이다 — 소비자가 실제로 빼는지(양성 대조)와, 빼는 줄을 지우면 이 검사가 죽는지
 #   (돌연변이 red)를 같이 잰다.
@@ -23,7 +23,7 @@
 #      수리 정규식(amend C11-F1)을 뺀 목록 사본이면 red(데이터 돌연변이)
 #   M  돌연변이(자식 Rscript · PITQ_SRC_* = 변형 사본 · PITQ_CORE_ONLY=1 로 F/A 만) — 필터 줄 삭제 · 판독기 부재 fail-open ·
 #      파손 fail-open · status 필터 제거 · 대소문자 구분 · 등재 관문 제거 · 관문이 .arm.json 을 안 읽음(M7) → red. 원본 사본(대조) → green.
-# 격리: F/A 는 tempdir 픽스처만 쓴다. L 은 운영 파일을 **읽기만** 한다(b1_verify 자식의 jlog 는 임시 파일).
+# 격리: F/A 는 tempdir 픽스처만 쓴다. L 은 운영 파일을 **읽기만** 한다.
 # env: PITQ_SRC_FACTOR_ARMS · PITQ_SRC_READER · PITQ_SRC_ADMIT (검사 대상 소스 · 기본 운영 파일) · PITQ_CORE_ONLY=1
 #==============================================================================
 suppressMessages({ library(jsonlite); library(data.table) })
@@ -218,23 +218,8 @@ if (!CORE) {
     chk(length(fr) == 1L && hasf(fr[[1]]$base_vintage_flags) &&
           hasf((Filter(function(a) identical(as.integer(a$n), 1L), fr[[1]]$attempts)[[1]])$vintage_flags),
         "L9 L2 FR_003 n=1·base pit_c11 표식")
-    # b1_verify 자식 — 격리 팩터 설계는 기각, 풀 팩터 설계는 통과(대조)
-    ren <- file.path(TMP0, "empty.Renviron"); writeLines(character(0), ren)
-    JL <- file.path(TMP0, "b1_jlog.jsonl")
-    old <- Sys.getenv(c("R_ENVIRON_USER", "QVEST_RP_JLOG", "QVEST_RF_ROOT"), unset = NA)
-    Sys.setenv(R_ENVIRON_USER = ren, QVEST_RP_JLOG = JL, QVEST_RF_ROOT = ROOT)     # Windows system2(env=) 는 무시된다
-    vdes <- function(f) { p <- file.path(TMP0, sprintf("b1_%s.json", f))
-      wj(list(cells = list(list(label = "fixture", factors = list(f)))), p)
-      system2("Rscript", c(shQuote(file.path(ROOT, "02_Infrastructure/ops/rf_b1_design_lib.R")), "verify", "PITQ_TEST_BID", shQuote(p)),
-              stdout = FALSE, stderr = FALSE) }
-    rc_bad <- vdes("D32_Beta_VIX")
-    ctl <- setdiff(PL$pool$id, QF)[1]
-    rc_ok <- vdes(ctl)
-    for (k in names(old)) if (is.na(old[[k]])) Sys.unsetenv(k) else do.call(Sys.setenv, setNames(list(old[[k]]), k))
-    jl <- if (file.exists(JL)) readLines(JL, warn = FALSE) else character(0)
-    chk(!identical(as.integer(rc_bad), 0L) && any(grepl("design_rejected", jl) & grepl("D32_Beta_VIX", jl, fixed = TRUE)),
-        "L10 b1_verify — D32_Beta_VIX 설계 기각(등록부에 없는 팩터)", sprintf("rc=%s", rc_bad))
-    chk(identical(as.integer(rc_ok), 0L), sprintf("L10b 대조 — 풀 팩터(%s) 설계는 통과", ctl), sprintf("rc=%s", rc_ok))
+    # (v10.01 · 2026-10-13) 구 L10/L10b(b1_verify 자식 — 격리 팩터 설계 기각)는 B1 설계 레인(ops/rf_b1_design_lib.R)과 함께 퇴역했다.
+    #   격리 팩터 배제는 L2(rf_factor_pool · B1 풀 원천 = v10.01 팩터 빌더가 빌려 쓰는 함수)가 계속 잰다.
     # ── C11-F1 수리 재현 (적대 검증 1 F1 BLOCKING · 2026-09-24) ──────────────────
     #   구 목록은 실제 FRED 저장소(fred_macro*)·pg2 arm 파일 자체·파생 국면 패널(regime_jump_daily 등)을 못 잡아
     #   샌드박스 E2E 에서 우회 arm 3종이 ADMIT 됐다(scratchpad/c11_contain_verify_coverage/t_gate.R). 운영 목록으로 다시 잰다.

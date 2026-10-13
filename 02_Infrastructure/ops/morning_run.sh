@@ -210,6 +210,23 @@ stage_result() {   # $1=표시명 $2=exit코드 $3=경보 컴포넌트명
     echo "      paper_router skip (missing)"
   fi
 
+  # ── v10.01 (2026-10-13 도훈 지시 "이 리서치 프로세스를 지속가능하게") — 논문은 리서치 단위가 아니라 엔진 재료다 ──
+  #   [0.51] 라우팅 v5 산출 → 프로그램 재료 큐(결정론 · 멱등) / [0.52] 메커니즘 지도 추출(LLM 제안 → R 검증 후 기록)
+  echo "[0.51/3] program_paper_sync.R (v10.01 — 엔진별 논문 → 프로그램 재료 큐)"
+  if [ -f "$BASE/02_Infrastructure/programs/program_paper_sync.R" ]; then
+    (cd "$BASE" && QM_ROOT="$BASE" Rscript 02_Infrastructure/programs/program_paper_sync.R --root "$BASE") >> /tmp/qm_program_sync.log 2>&1
+    stage_result "program_paper_sync" "$?" ""
+  else
+    echo "      program_paper_sync skip (missing)"
+  fi
+  echo "[0.52/3] paper_atlas_run.sh (v10.01 — 메커니즘 지도 추출 · 게이트 QVEST_PAPER_ATLAS_ENABLE=1)"
+  if [ -f "$BASE/02_Infrastructure/ops/paper_atlas_run.sh" ]; then
+    bash "$BASE/02_Infrastructure/ops/paper_atlas_run.sh" >> /tmp/qm_paper_atlas.log 2>&1
+    stage_result "paper_atlas" "$?" "paper_atlas"
+  else
+    echo "      paper_atlas skip (missing)"
+  fi
+
   # ── ★v10 (2026-08-29 도훈 결정): 무인 파이프라인은 **수집(중복제거·큐 적재)까지만** ──
   #   [0.55] factor_deep_recheck / [0.56] alpha_search_queue(claude -p 자동 리서치) /
   #   [0.57] mode_queue ×2 / [0.6] paper_research_dispatch+backfill 은 **퇴역** —
@@ -272,14 +289,8 @@ stage_result() {   # $1=표시명 $2=exit코드 $3=경보 컴포넌트명
     echo "      mrs_daily exit=$?"
   fi
 
-  # (2026-09-21 도훈 승인 플랜 Part 3 · D0) [3/3] 리서치 디렉터 — 프로그램 수준 진단. 측정 0 · 원장 쓰기 0 · 주말에도 돈다
-  #   (데이터 refresh 가 아니라 원장·카탈로그·레지스트리를 읽는다). 산출 = .cache/rf_director_latest.json(부팅 6번째 줄이 읽음)
-  #   + 06_Registry/layer_bottleneck_map.md. 실패는 stage_result 가 마커로 남긴다 — exit 0 위장 없음.
-  echo "[3/3] rf_director.R (리서치 디렉터 — 진단·권고 · 측정 0)"
-  mkdir -p "$BASE/.cache/scheduler_logs" 2>/dev/null
-  timeout 300 Rscript "$BASE/02_Infrastructure/ops/rf_director.R" --unattended \
-    >> "$BASE/.cache/scheduler_logs/rf_director_$(date +%Y%m%d).log" 2>&1
-  stage_result "rf_director" "$?" "rf_director"
+  # (v10.01 · 2026-10-13) 구 [3/3] 리서치 디렉터(rf_director.R — 고정 격자 러너 진단)는 러너와 함께 퇴역했다.
+  #   1계층 상태는 리서치 프로그램 등록부(06_Registry/research_programs.json · pr_status_lines)가 대신한다.
 
   echo "================ morning_run done @ $(date) ================"
 } >> "$LOG" 2>&1

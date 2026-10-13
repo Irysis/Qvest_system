@@ -130,13 +130,13 @@ res <- run_paper_replication(
                               n_trials_basis = "advisor_lineage:<slug>:1"))
 ```
 
-- **인용** = `<res$out_dir>/authoritative_remeasure.json` 의 `essence_grade`·`essence`(CAGR·SR·MDD·Calmar·PORT_t·oos_retention)·`selection_type`·`n_trials_cumulative`·`measurement_regime` 만. 손계산·재구성 금지 · `hurdle` 등급 = 진단(인용 금지) · MDD 는 등급을 접지 않는다(위험 축 = Calmar).
+- **인용** = `<res$out_dir>/authoritative_remeasure.json` 의 `essence_grade`·`essence`(CAGR·SR·MDD·Calmar·PORT_t·oos_retention)·`selection_type`·`n_trials_cumulative`·`measurement_regime` 만. 손계산·재구성 금지 · `hurdle` 등급 = 진단(인용 금지) · 등급 = 등급 v3(2026-10-13 MC7 · `grade_v3` 근거 블록 · 구 판정 `grade_v921` 인용 금지) · MDD 직접 문턱 없음(Calmar 와 위기 복원력 노치로만).
 - **시행 기록** `trials.jsonl` 에 1줄 append — `{k, run_id, out_dir, strategy_id, selection_type, n_trials_cumulative, n_trials_basis, measured_at, approval}`. 등급은 적지 않는다(정본 = auth 경로). 원장이 아니라 계보 N 의 원천이다.
 - **운영 쓰기 경로(투명화 — 어드바이저가 손으로 쓰지 않지만 정본 계약을 경유하면 생긴다)**: ① 측정 1회 = `stage_artifacts/replication/<run_id>/`(bt_result.rds·authoritative_remeasure.json·차트 · A 면 러너 §11 A 자격 관문 산출 `judge_request.eligible.json`(통과) 또는 `judge_request.held.json`(보류 · P0-13)) + `paper_replication` L-code(`stage_artifacts/l_code/paper_replication/`) + 텔레그램 1회 + **essence B 이상(A·B) 또는 방어형 자격이면 `06_Registry/module_catalog.json` 등재**(러너 §7-c `register_measured_module.R::rmm_register_measured` · 자격 = `ds_pool_eligible` — 2계층 모듈 풀 공급. 끄는 스위치 `QVEST_RP_REGISTER=0` 은 계약 경로를 끊으므로 쓰지 않는다) · 억제 줄을 빼면 강화 원장 auto-open. ② `hypothesis_index.R lookup <kw>` = 원천(L-code·module_catalog 등)이 인덱스보다 새로우면 `06_Registry/hypothesis_index.json` 을 **인라인 재생성**한다(`lookup_hypothesis(auto_rebuild = TRUE)` 기본) — 측정 직후 조회가 인덱스를 다시 쓰는 것은 정상 경로다. 이 쓰기들은 계약 writer 의 것이다 — 어드바이저가 고치거나 되돌리지 않고, 보고에 '운영 쓰기 발생'(등재 여부 = 러너 로그 `모듈 등재:` 줄)으로 적는다.
 - **보고** = lean-loop 3줄 양식(① 등급·CAGR·SR·MDD·n_max — 출처 auth ② 기전 1줄 + 논문 기준 병기 ③ 다음).
 - **분기**
   - **Grade A** → 자동 Judge 스폰 금지. 1계층과 같은 경로만: `rf_a_eligibility` 관문(`02_Infrastructure/reinforcement/rf_runner_gates.R` · 설정 `06_Registry/a_eligibility_gate.json`) → 통과분의 후보별 요청 → Judge(PIT) → PASS → BOOK(도훈 confirm). Judge 스폰 조건의 정본은 `.claude/agents/judge.md` "스폰 조건" 이다. 러너 §11 이 A 면 같은 관문을 충실구현 어댑터로 태운다(P0-13) — 통과 = 산출 디렉터리 `judge_request.eligible.json`, 보류 = `judge_request.held.json`(사유 코드). Q 는 그 결과(반환 `res$a_gate` · 통과/보류 코드)를 "A — 관문 통과" 또는 "A — 관문 보류(<코드>)" 로 보고하고, Judge 는 통과여도 도훈 지시로만 진행한다. 보류 파일과 강화 셀 산출물 `judge_request.json` 은 트리거가 아니다. 충실구현 회계 요건 = 관문 설정 `accounting_fail.replication_required_selection_type`(현행 `chain`) — 이 측정의 `selection_type` 과 다르면(결과를 본 뒤 바꾼 두 번째 판부터 `sweep`) 관문 보류(`accounting_fail`)가 난다. 회계를 관문에 맞춰 바꾸지 않는다.
-  - **B/C/F** → 보고 + 다음 행동 제안. 강화 이관은 도훈 선택 — 승인되면 1계층 강화 경로(`Skill(reinforce)`)가 자기 writer 로 원장을 연다. 어드바이저가 원장을 직접 쓰지 않는다.
+  - **B/C/F** → 보고 + 다음 행동 제안. 재료 이관은 도훈 선택 — 승인되면 리서치 프로그램 재료 큐(`programs/program_registry.R::pr_enqueue` · `Skill(research-program)`)에 넣는다(v10.01 — 1계층 고정 격자 강화 퇴역). 어드바이저가 원장을 직접 쓰지 않는다.
   - **PIT 위반**(러너 중단 게이트 포함) → 등급 무관 절대 기각 — 결과 무효 · 원인 기록 · 재설계.
 - **텔레그램** = 러너가 `[1계층]` 표제로 1회 보낸다(`send_telegram` 기본 · 손발송 금지). 메모만 끝난 요청은 보내지 않는다.
 

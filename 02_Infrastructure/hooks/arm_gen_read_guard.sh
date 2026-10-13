@@ -61,7 +61,7 @@
 #       (키 목록·문턱·열어 두는 경로 = 코드·설정 트리 02_Infrastructure · 공리 원천 qepm/memory/axioms · .claude 규칙 문서 — 근거 병기).
 #       설정 판독 불능 = 데이터 파일 Read 는 block(R1_content_policy · fail-closed).
 #   열어 두는 것(설계 레인이 정당하게 쓰는 의미 정보): factor_registry.json(이름·정의·계열) · 카탈로그(overlay·weight) ·
-#     격자(reinforce_program) · 설정 · 공리 · 설계 레인 자기 작업 디렉터리 · 코드. 교차 entry 교훈의 수치는 재료 쪽(rf_b1_design_lib)이 가린다.
+#     격자(reinforce_program) · 설정 · 공리 · 설계 레인 자기 작업 디렉터리 · 코드. 교차 entry 교훈의 수치는 재료 쪽(가림 정본 programs/stat_redactor.R)이 가린다.
 #     ★(D-E-CATALOG-BASIS 2026-09-25) 위 "의미 정보" 파일은 **수치를 가린 사본으로** 연다 — 아래 R5.
 #   (R2 적대 검증 수리 2026-09-25) 운영 실경로로 통과가 실증된 우회 넷을 닫는다 —
 #     ① 좁힌 glob 디렉터리 Grep: 순회(_walk)가 이름만 봐서 R1_content 가 Read 에서 막는 파일을 통과시켰다 → 순회도 내용 판정(R2_walk_content)
@@ -87,7 +87,7 @@
 #     · 판정 = 대상 파일의 사본이 정본과 다를 때(= 가릴 수치가 있을 때)만 막는다 — 수치 없는 대상(arm json 20/24)은 정본 그대로 연다.
 #       Read · 파일 Grep(내용 모드) → R5_catalog · 디렉터리 Grep(내용 모드)이 수치 있는 대상을 덮으면 → R5_catalog_scope.
 #       files_with_matches·count 모드는 이름·개수만 돌려준다 — 막지 않는다(코드 위치 찾기 Grep 이 레인 Grep 의 대부분이다 · 남은 위험: 신탁).
-#     · 가림 = 정본 규칙 rf_b1_design_lib.R 의 RF_B1_STAT_* 를 **이름으로** 싣는다(사본 없음 · B5M 과 같은 적재 양성 대조 카나리아).
+#     · 가림 = 정본 규칙 programs/stat_redactor.R(v10.01 · 구 rf_b1_design_lib.R 에서 원문 이관)의 RF_B1_STAT_* 를 **이름으로** 싣는다(사본 없음 · B5M 과 같은 적재 양성 대조 카나리아).
 #       JSON 문자열 = 전부 가림(keep_keys = 이름·정의·계열 등 정의 필드만 그대로) · JSON 수치 = 성과·통계 키(content_guard.keys ∪ stat_keys)만.
 #       비 JSON(실행 출력 .out·.tsv) = 줄마다 가림. 가린 뒤 잔존 수치가 있으면 사본을 내지 않고 막는다(R5_catalog_residual).
 #     · 사본 = <루트>/<view_dir>/<상대경로의 / → __> (머리 _design_view = 원본 경로·sha256·가린 곳 수) · 사본 디렉터리는 content_guard 열린 경로.
@@ -714,7 +714,7 @@ def content_hit(fs):
 
 
 # ── (D-E-CATALOG-BASIS 2026-09-25) R5 카탈로그 사본 — 정본은 닫고 수치를 가린 사본을 연다 ─────────────────────────────
-#   가림 규칙 = rf_b1_design_lib.R 의 RF_B1_STAT_* (R2 정본) 를 **이름으로** 싣는다 — 파이썬 사본 규칙을 두지 않는다(두 벌이 갈리면
+#   가림 규칙 = programs/stat_redactor.R 의 RF_B1_STAT_* (R2 정본 · v10.01 이관) 를 **이름으로** 싣는다 — 파이썬 사본 규칙을 두지 않는다(두 벌이 갈리면
 #   한쪽만 새는 구멍이 된다 · B5M .b5_redactor 와 같은 원칙). 아래는 R 문자열 리터럴 해석기 + 같은 알고리즘(보호 → 규칙 → 지표 정수 → 복원)이고,
 #   동치성은 검사 §Q(Q29 — 같은 문자열을 R rf_b1_redact_stats 와 이 판정기에 넣어 대조)가 잰다.
 _RX_NAMES = ('RF_B1_STAT_PROTECT', 'RF_B1_STAT_RULES', 'RF_B1_STAT_METRIC', 'RF_B1_STAT_MASK')
@@ -981,7 +981,7 @@ def _cv_view(root, rel, src, cv):
         obj = json.loads(t)
     except Exception:
         obj = None
-    note = ('D-E-CATALOG-BASIS: 수치는 %s 로 가렸다(정본 규칙 rf_b1_design_lib.R RF_B1_STAT_*). 이름·정의·계열(keep_keys)은 그대로. '
+    note = ('D-E-CATALOG-BASIS: 수치는 %s 로 가렸다(정본 규칙 stat_redactor.R RF_B1_STAT_*). 이름·정의·계열(keep_keys)은 그대로. '
             '정본 경로는 설계·생성 레인에서 열리지 않는다 — 이 사본을 조회하라.') % R['mask']
     if obj is not None:
         body = _cv_mask_obj(obj, None, cv, R, st)

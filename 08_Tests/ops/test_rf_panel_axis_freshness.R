@@ -108,4 +108,5 @@ if (is.null(.body)) ng("T6 main 본문 파싱 실패") else {
 }
 
 cat(sprintf("\n== 결과: %d PASS / %d FAIL ==\n", .pass, .fail))
+cat(sprintf('{"test":"rf_panel_axis_freshness","pass":%d,"fail":%d,"total":%d}\n', .pass, .fail, .pass + .fail))
 if (.fail > 0L) quit(status = 1L)

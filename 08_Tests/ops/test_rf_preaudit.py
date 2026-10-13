@@ -337,6 +337,7 @@ def main():
         shutil.rmtree(tmp, ignore_errors=True)
     n_fail = sum(1 for _, ok in RESULTS if not ok)
     print("== %d checks · %d failed" % (len(RESULTS), n_fail))
+    print(json.dumps({"test": "rf_preaudit", "pass": len(RESULTS) - n_fail, "fail": n_fail, "total": len(RESULTS)}))
     return 1 if n_fail else 0
 
 

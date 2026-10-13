@@ -10,6 +10,11 @@
 #   ⇒ 그래서 이 검사에서 가장 중요한 항목은 **감사가 소비보다 앞에 서는가**(C절)다.
 #
 # 양방향: 정상 판정은 통과하는가 + 근거 없는 기각·형식 위반을 실제로 잡는가.
+#
+# (v10.01 2026-10-13) G 절(모델 정본 — 레인이 설정에서 읽는가)의 대상 4종 중 rf_b1_design.sh · rf_overlay_propose.sh 가
+#   고정 격자 강화와 함께 퇴역(코드 삭제) — 살아 있는 D12 레인 2종(cleaner_distill_run.sh · paper_atlas_run.sh)으로 바꿔
+#   "네 레인" 을 유지했다(paper_router 등 나머지 해석기 배선은 08_Tests/ops/test_llm_lane_wiring.sh C 절이 잰다).
+#   롤백 태그 pre-v10.01-prescription-20261013
 #==============================================================================
 suppressMessages({ library(jsonlite) })
 `%||%` <- function(a, b) if (is.null(a) || length(a) == 0L) b else a
@@ -142,7 +147,8 @@ if (grepl("판정을 먼저 정하고 근거를 모으지 마라", sh, fixed = T
 cat("\n=== G. 모델 정본 — 네 레인이 설정에서 읽는가 (2026-09-04) ===\n")
 # ★구판은 레인마다 `:-opus` / `:-max` 를 들고 있었고 config 의 llm 블록은 **읽는 코드가 0건**이었다.
 #   정책을 적어 둔 문서를 아무도 소비하지 않는 상태 — 한 곳을 바꿔도 나머지가 그대로 남는다.
-LANES <- c("rf_fidelity_audit.sh", "rf_b1_design.sh", "rf_replication_auto.sh", "rf_overlay_propose.sh")
+## (v10.01 2026-10-13) 퇴역 2종(rf_b1_design.sh · rf_overlay_propose.sh) → 살아 있는 D12 레인 2종(주간 증류 · 메커니즘 지도)
+LANES <- c("rf_fidelity_audit.sh", "rf_replication_auto.sh", "cleaner_distill_run.sh", "paper_atlas_run.sh")
 for (f in LANES) {
   b <- code_of(file.path("02_Infrastructure/ops", f))
   if (grepl("rf_llm_resolve", b, fixed = TRUE)) ok(sprintf("G %s — 설정 정본에서 읽는다", f)) else

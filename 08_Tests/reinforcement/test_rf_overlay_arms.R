@@ -6,6 +6,9 @@
 #   "안 붙은 이유는 계약 충돌이 아니라 아무도 한 줄을 안 썼기 때문").
 #   그래서 격자는 축만 선언하고 칸은 등록부에서 뽑는다. 이 검사는 그 배선이 살아있는지,
 #   그리고 선정 규칙(계열 다양성·제외 회전)이 실제로 작동하는지 양방향으로 본다.
+# (v10.01 2026-10-13) 고정 격자 러너 퇴역으로 '러너가 배치 시점에 등록부에서 다시 뽑는다'(reinforce_auto_parallel.R 의
+#   rf_pick_overlay_arms 호출 grep) 삭제 — 대상 코드가 없다(롤백 태그 pre-v10.01-prescription-20261013).
+#   픽커(rf_overlay_arms.R)는 도구로 남고 이 검사의 나머지(등록부·선정 규칙·격자 B5 선언)는 그대로 잰다.
 # 부작용 없음.
 #==============================================================================
 ROOT <- Sys.getenv("QM_ROOT", "C:/Users/99922/OneDrive/Quant_Module_Moltbot")
@@ -101,16 +104,12 @@ if (!is.null(p2) && !any(ex %in% p2$picked_ids)) {
              paste(setdiff(p2$picked_ids, p$picked_ids), collapse = "/")))
 } else ng("제외 미작동", "이미 측정한 팔을 또 뽑는다")
 
-# 격자가 등록부를 소비한다고 선언하는가 + 러너가 배치 시점에 다시 뽑는가
+# 격자가 등록부를 소비한다고 선언하는가
 g <- jsonlite::fromJSON(file.path(ROOT, "06_Registry/reinforce_program.json"), simplifyVector = FALSE)
 b5 <- Filter(function(b) identical(b$id, "B5"), g$blocks)
 if (length(b5) && identical(b5[[1]]$source, "overlay_catalog")) {
   ok("격자 B5 가 등록부 소비를 선언")
 } else ng("B5 source 선언 부재", "격자에 박힌 값이 정본으로 오인된다")
-rr <- readLines(file.path(ROOT, "02_Infrastructure/ops/reinforce_auto_parallel.R"), warn = FALSE)
-if (any(grepl("rf_pick_overlay_arms", rr, fixed = TRUE))) {
-  ok("러너가 배치 시점에 등록부에서 다시 뽑는다")
-} else ng("런타임 선정 미배선", "격자 스냅샷이 사실상 고정 목록이 된다")
 
 writeLines("")
 writeLines(sprintf("합계: 통과 %d · 실패 %d", PASS, FAIL))

@@ -6,7 +6,7 @@
 #   state_transitions JUDGE_* 허용 목록).
 #
 #   T. 트리거 사실을 **발행 코드에서 재도출**해 문서와 대조한다(문서 문구를 정답으로 쓰지 않는다):
-#      강화 = reinforce_auto_parallel.R 의 후보별 요청 파일명·status · 2계층 = rf_l2_auto.R · 충실구현 = run_paper_replication.R §11
+#      강화 = 후보별 요청 발행자 수(v10.01 퇴역 — 아래) · 2계층 = rf_l2_auto.R · 충실구현 = run_paper_replication.R §11
 #      이 관문(rf_a_eligibility·grade_a_queue)을 거치는가. ★충실구현이 관문을 거치게 바뀌면(B07) '관문 전 파일' 문서가 red 가 된다.
 #      ★P0-13(2026-09-25) 이관 완료 — §11 이 A 면 관문 정본(rf_a_eligibility)을 충실구현 어댑터로 태운다(통과 judge_request.eligible.json ·
 #      보류 judge_request.held.json · 강화 셀 = 구판 judge_request.json). 대조는 양방향 그대로다: 관문 경유 판정은 **주석을 뺀 코드**에서
@@ -14,6 +14,12 @@
 #      (관문 우회 · M2c 실코드 돌연변이) 현 문서가 red, 구 문서(관문 없음 · B07)를 재주입하면 현 코드에서 red.
 #   D. 휴면 진입로 표지 + state_transitions 의 JUDGE_* 허용 목록이 남아 있으면 동결 주석과 실재 가드(state_machine.R)가 함께 있어야 한다.
 #   M. 돌연변이 — 구 문언 재주입 · 코드 관문 가상 이관 · 주석 삭제 사본에서 각 검사기가 red 를 내는가.
+#
+# (v10.01 2026-10-13) 고정 격자 러너 퇴역으로 T0 '강화 발행'(reinforce_auto_parallel.R 의 후보별 요청 파일명·status 대조) ·
+#   T0 park 대조(강화 러너 .a_art_request 의 live/held 이름) · M2e(park 이름 어긋남 돌연변이) 삭제 — 대상 코드가 없다
+#   (롤백 태그 pre-v10.01-prescription-20261013). 대신 T0 이 발행 후보 디렉터리 코드(주석 제외)에서 후보별 요청 발행자 수를
+#   재도출하고(0곳 = 퇴역), T1 은 judge.md ① 절이 그 사실대로 '퇴역' 을 말하는지 본다(M1b·M1c 양방향). judge.md v10.01 ③ 머리
+#   '1계층 충실구현 · 프로그램 라운드' 를 절 추출이 받는다.
 #
 # 쓰기 0: 운영 파일은 읽기만 한다. 돌연변이는 전부 메모리 안 문자열이다.
 # 실행: Rscript 08_Tests/worktask/test_qepm_freeze_residual.R
@@ -45,12 +51,9 @@ first_match <- function(txt, pat) { m <- regmatches(txt, regexpr(pat, txt, perl 
 
 # ═════════════════════════════ T0. 발행 코드에서 트리거 사실 재도출 ═════════════════════════════
 cat("=== T0. 트리거 사실 재도출(코드) ===\n")
-EMI <- rd("02_Infrastructure/ops/reinforce_auto_parallel.R")
 RPR <- rd("02_Infrastructure/alpha_search/run_paper_replication.R")
 L2A <- rd("02_Infrastructure/ops/rf_l2_auto.R")
-emi_ok <- has(EMI, "judge_request_%s_%d.json") && has(EMI, 'status = "pending"') && has(EMI, 'status = "awaiting_judge"') &&
-  has(EMI, "rf_a_eligibility")
-chk("T0 강화 발행 = 후보별 judge_request_%s_%d.json(pending) + grade_a_queue awaiting_judge + rf_a_eligibility 관문", emi_ok)
+## (v10.01 2026-10-13) 구 T0 '강화 발행'(reinforce_auto_parallel.R 대조) 삭제 — 대상 코드 퇴역. 후보별 요청 발행자 수는 아래(strip_c 뒤)에서 재도출한다.
 # 충실구현 §11 라우팅 블록 — '# ---- 11.' 머리부터 미달 분기('} else if') 전까지
 RP11 <- first_match(RPR, "(?s)# ---- 11\\.[^\n]*\n.*?\n  \\} else if")
 chk("T0 run_paper_replication.R §11 라우팅 블록 추출(검사 드리프트 방지)", nzchar(RP11), "블록 머리/꼬리 표지가 바뀌었으면 이 검사도 옮겨라")
@@ -59,6 +62,20 @@ strip_c <- function(x) paste(sub("(^|[[:space:]])#.*$", "\\1", strsplit(x, "\n",
 gated_of <- function(rpr) { b <- first_match(rpr, "(?s)# ---- 11\\.[^\n]*\n.*?\n  \\} else if")
   nzchar(b) && grepl("rf_a_eligibility|grade_a_queue|judge_request_%s", strip_c(b), perl = TRUE) }
 fa_gated <- gated_of(RPR)
+# ★(v10.01) 1계층 강화 후보별 요청(judge_request_%s_%d · grade_a_queue status = "awaiting_judge" 쓰기)의 발행자를 발행 후보 디렉터리
+#   코드(주석 제외)에서 센다 — 0곳 = 퇴역(T1: judge.md ① 은 '퇴역' 이어야 한다) · 되살아나면 현역 서술을 요구한다(M1b·M1c 양방향).
+#   앵커는 구 발행자의 sprintf 형식 그대로다(다른 형식으로 다시 짜면 이 계수가 못 본다 — 그때 앵커를 옮겨라).
+EMIT_DIRS <- c("02_Infrastructure/ops", "02_Infrastructure/reinforcement", "02_Infrastructure/alpha_search", "02_Infrastructure/programs")
+EMIT_FILES <- unlist(lapply(file.path(ROOT, EMIT_DIRS), list.files, pattern = "[.](R|sh|py)$", recursive = TRUE, full.names = TRUE))
+emits_cand <- function(x) { x <- strip_c(x); has(x, "judge_request_%s_%d") || has(x, 'status = "awaiting_judge"') }
+CAND_EMIT <- Filter(function(f) emits_cand(paste(readLines(f, warn = FALSE, encoding = "UTF-8"), collapse = "\n")), EMIT_FILES)
+cand_live <- length(CAND_EMIT) > 0L
+chk(sprintf("T0 강화 후보별 요청 발행자 = %d곳(v10.01 퇴역 · 발행 후보 디렉터리 %d파일 주석 제외 재도출)", length(CAND_EMIT), length(EMIT_FILES)),
+    length(EMIT_FILES) > 0L && !cand_live, paste(basename(CAND_EMIT), collapse = ","))
+chk("T0 발행자 계수기 양방향 — 구 발행 줄(sprintf 후보별 요청 · awaiting_judge 쓰기)은 잡고 주석 속 언급은 안 잡는다",
+    emits_cand('p <- file.path(MB, sprintf("judge_request_%s_%d.json", BID, n))') &&
+      emits_cand('q$entries[[k]] <- list(base_id = BID, status = "awaiting_judge")') &&
+      !emits_cand("# 구 발행 judge_request_%s_%d.json · status = \"awaiting_judge\" — v10.01 퇴역"))
 # 파일 이름 = 러너 상수(parse) — 문서 대조의 정답을 문서가 아니라 코드에서 가져온다
 RP_EX <- tryCatch(parse(text = RPR, keep.source = FALSE), error = function(e) NULL)
 def_of <- function(nm) { for (e in RP_EX) if (is.call(e) && identical(e[[1]], as.name("<-")) && identical(e[[2]], as.name(nm))) return(e[[3]]); NULL }
@@ -71,10 +88,7 @@ route_ok <- function(src) nzchar(src) && all(vapply(c(".RP_JR_ELIGIBLE", ".RP_JR
                                                       ".rp_a_gate_inputs(", "isTRUE(cell)"), function(k) has(src, k), logical(1)))
 chk("T0 라우터 .rp_a_route = 셀이면 구판 이름 · 아니면 관문 술어 호출 → 통과/보류 이름으로 가른다(상수 3종 실재)",
     route_ok(ROUTE) && !anyNA(c(FA_ELIG, FA_HELD, FA_LEG)) && length(unique(c(FA_ELIG, FA_HELD, FA_LEG))) == 3L)
-# 강화 러너가 park/restore 하는 이름 = 셀 구판 이름 · 보류 이름(두 레인이 같은 뜻의 같은 이름을 쓴다)
-park_ok <- function(emi, leg = FA_LEG, held = FA_HELD) !anyNA(c(leg, held)) &&
-  has(emi, sprintf('file.path(d, "%s")', leg)) && has(emi, sprintf('file.path(d, "%s")', held))
-chk("T0 셀 구판 이름·보류 이름 = 강화 러너 .a_art_request 의 live/held 이름(셀 모드 불변의 전제)", park_ok(EMI))
+## (v10.01 2026-10-13) 구 T0 park 대조(강화 러너 .a_art_request 의 live/held 이름) 삭제 — 대상 코드 퇴역.
 l2_ok <- has(L2A, "l2_judge_request.json") && grepl('schema = "l2_judge_request_v1", status = "pending"', L2A, fixed = TRUE)
 chk("T0 2계층 발행 = 06_Registry/l2_judge_request.json(status=pending) · rf_l2_auto.R", l2_ok)
 
@@ -82,15 +96,26 @@ chk("T0 2계층 발행 = 06_Registry/l2_judge_request.json(status=pending) · rf
 cat("\n=== T1. judge.md 스폰 조건 = 코드 사실 ===\n")
 JD <- rd(".claude/agents/judge.md")
 spawn_sec <- function(txt) first_match(txt, "(?s)## 스폰 조건[^\n]*\n.*?(?=\n## )")
-JKEYS <- c("Grade A 확정 직후에만", "judge_request_<BID>_<n>.json", "status=pending", "grade_a_queue", "awaiting_judge", "rf_a_eligibility",
+## ★(v10.01) 필수 키에서 구 강화 후보별 요청 키(judge_request_<BID>_<n>.json · grade_a_queue · awaiting_judge)를 뺐다 — 그 경로는 발행자가
+##   없다(T0 cand_live). 대신 ① 절이 코드 사실대로 서술되는지(발행자 0곳 = '퇴역' 표기) 아래 judge_ok 가 본다.
+JKEYS <- c("Grade A 확정 직후에만", "status=pending", "rf_a_eligibility",
            "l2_judge_request.json", "rf_l2_auto.R", "run_paper_replication.R", "트리거가 아니다", "QEPM-R0-FREEZE", "재상정")
 # ③ 충실구현 절만 떼어 본다(P0-13) — ② 2계층 줄은 코드 사실대로 '관문 없음' 을 말해야 하므로(test_qepm_advisor_contract G6g) 절 전체에
-#   '관문 없음' 부재를 요구하면 관문 경유 상태에서 영원히 red 다. 절 = '  ③ **1계층 충실구현**' 줄부터 다음 '- ' 항목 전까지.
-fa_clause <- function(s) first_match(s, "(?s)\n  ③ \\*\\*1계층 충실구현\\*\\*.*?(?=\n- |\\z)")
-judge_ok <- function(txt, gated = fa_gated, elig = FA_ELIG, held = FA_HELD) {
+#   '관문 없음' 부재를 요구하면 관문 경유 상태에서 영원히 red 다. 절 = '  ③ **1계층 충실구현…**' 줄부터 다음 '- ' 항목 전까지
+#   (v10.01 머리 '1계층 충실구현 · 프로그램 라운드' 포함 — 굵은 표지 안 꼬리를 받는다).
+fa_clause <- function(s) first_match(s, "(?s)\n  ③ \\*\\*1계층 충실구현[^*\n]*\\*\\*.*?(?=\n- |\\z)")
+# ① 구 1계층 강화 후보별 요청 절 = '  ① ' 줄부터 다음 '  ② ' · '- ' 항목 전까지
+c1_clause <- function(s) first_match(s, "(?s)\n  ① .*?(?=\n  ② |\n- |\\z)")
+c1_ok <- function(s, cand = cand_live) {
+  c1 <- c1_clause(s); mentions <- has(s, "judge_request_<BID>_<n>.json")
+  if (cand) nzchar(c1) && all_has(c1, c("judge_request_<BID>_<n>.json", "awaiting_judge")) && !has(c1, "퇴역")   # 발행자 실재 = 현역 서술
+  else !mentions || (nzchar(c1) && has(c1, "judge_request_<BID>_<n>.json") && has(c1, "퇴역"))           # 발행자 0곳 = 언급하면 ① 에서 '퇴역'
+}
+judge_ok <- function(txt, gated = fa_gated, elig = FA_ELIG, held = FA_HELD, cand = cand_live) {
   s <- spawn_sec(txt)
   if (!nzchar(s) || !all_has(s, JKEYS)) return(FALSE)
   if (has(s, "어느 리서치 모드든 동일")) return(FALSE)   # 구판 모순의 전칭 주장(충실구현 A 도 스폰)
+  if (!c1_ok(s, cand)) return(FALSE)
   c3 <- fa_clause(s)
   if (!nzchar(c3)) return(FALSE)
   # 충실구현 절 = 코드가 관문을 안 거치면 '관문 없음 · 스폰하지 않고 · B07' 을 말해야 하고,
@@ -100,8 +125,9 @@ judge_ok <- function(txt, gated = fa_gated, elig = FA_ELIG, held = FA_HELD) {
     !has(c3, "관문 없음") && !has(c3, "B07")
   if (gated) claim_gated else claim_ungated
 }
-chk("T1 스폰 조건 = 강화(후보별 요청 ∧ awaiting_judge) · 2계층(l2) · 충실구현(§11 관문 경유 → 통과 eligible·보류 held · P0-13) · 동결",
-    judge_ok(JD), paste(missing_of(spawn_sec(JD), JKEYS), substr(fa_clause(spawn_sec(JD)), 1, 120)))
+chk(sprintf("T1 스폰 조건 = 2계층(l2) · 충실구현·프로그램 라운드(§11 관문 경유 → 통과 eligible·보류 held · P0-13) · 강화 후보별 요청 ① = 코드 사실(발행자 %d곳 → %s) · 동결",
+            length(CAND_EMIT), if (cand_live) "현역" else "퇴역 표기"),
+    judge_ok(JD), paste(missing_of(spawn_sec(JD), JKEYS), "· ①:", substr(c1_clause(spawn_sec(JD)), 1, 80), "· ③:", substr(fa_clause(spawn_sec(JD)), 1, 80)))
 
 # ═════════════════════════════ T2. 충실구현 A 분기 문서 5곳 + Judge 프롬프트 ═════════════════════════════
 cat("\n=== T2. 충실구현 A 분기 문서 = 코드 사실 ===\n")
@@ -115,8 +141,10 @@ fa_line_ok <- function(lines, gated = fa_gated, elig = FA_ELIG, held = FA_HELD) 
     !has(x, "관문 전 파일") && !has(x, "관문 없음") && !has(x, "B07")
   if (gated) says_gated else says_pre_gate
 }
+## ★(v10.01) lean-loop A 줄은 목록 항목('   - **Grade A** → ')에서 본문 줄('Grade A → A 자격 관문 → …')로 바뀌었다 — 두 모양을 다 받는다(내용 요구는 그대로).
+LL_A_PAT <- "^(   - \\*\\*Grade A\\*\\* → |Grade A → )"
 FA_SITES <- list(
-  list(rel = ".claude/rules/lean-loop.md",           pat = "^   - \\*\\*Grade A\\*\\* → "),
+  list(rel = ".claude/rules/lean-loop.md",           pat = LL_A_PAT),
   list(rel = ".claude/commands/alpha-search.md",     pat = "^7\\. \\*\\*Grade A"),
   list(rel = ".claude/agents/alpha-search.md",       pat = "Judge 는 essence Grade A 확정 시에만"),
   list(rel = ".claude/skills/alpha-search/SKILL.md", pat = "^→ 분기\\(A → "),
@@ -127,10 +155,15 @@ for (s in FA_SITES) {
       fa_line_ok(L), if (length(L) != 1L) sprintf("표지 줄 %d개", length(L)) else substr(L[1], 1, 140))
 }
 JI <- line_by("02_Infrastructure/prompts/judge_init.md", "을 소화해$")
-ji_ok <- function(ji, gated = fa_gated, elig = FA_ELIG)
-  length(ji) == 1L && has(ji, "judge_request_<BID>_<n>.json") && has(ji, "l2_judge_request.json") && has(ji, "트리거가 아니다") &&
-    (!gated || (!is.na(elig) && has(ji, elig)))
-chk("T2 judge_init.md 소화 대상 = 후보별 요청·(관문 경유면) 충실구현 통과 요청·l2 요청(강화 셀 산출물 judge_request.json·보류는 트리거 아님)",
+## ★(v10.01) 강화 후보별 요청은 발행자가 있을 때만(T0 cand_live) 소화 대상으로 요구한다 — 발행자 0곳이면 그 요청을 현역 트리거로
+##   적으면 안 된다(언급하려면 '퇴역' 표기). 구판은 그 언급을 무조건 요구해, 퇴역 경로를 지우는 올바른 문서 수정을 red 로 막았다.
+ji_ok <- function(ji, gated = fa_gated, elig = FA_ELIG, cand = cand_live) {
+  if (length(ji) != 1L) return(FALSE)
+  cand_ok <- if (cand) has(ji, "judge_request_<BID>_<n>.json") else (!has(ji, "judge_request_<BID>_<n>.json") || has(ji, "퇴역"))
+  cand_ok && has(ji, "l2_judge_request.json") && has(ji, "트리거가 아니다") && (!gated || (!is.na(elig) && has(ji, elig)))
+}
+chk(sprintf("T2 judge_init.md 소화 대상 = (발행자 %d곳 → 강화 후보별 요청 %s)·(관문 경유면) 충실구현 통과 요청·l2 요청(강화 셀 산출물 judge_request.json·보류는 트리거 아님)",
+            length(CAND_EMIT), if (cand_live) "포함" else "현역 표기 없음"),
     ji_ok(JI), paste(JI, collapse = " / "))
 # T3 frontmatter description 3종(judge.md · alpha-search SKILL · 에이전트) — 코드가 관문을 거치면 '관문 전/없는 파일 · B07 뒤' 가 없고 통과 이름을 말한다
 fm_desc <- function(rel) { l <- rl(rel); d <- l[grepl("^description: ", l)]; if (length(d)) d[1] else "" }
@@ -187,6 +220,13 @@ OLD_JUDGE <- paste0("## 스폰 조건 (유일)\n- **essence Grade A 확정 직�
   "- 산출 디렉터리의 `judge_request.json`(`run_paper_replication.R`)은 **트리거가 아니다**. `QEPM-R0-FREEZE` — 재상정.\n")
 JD_M1 <- sub("(?s)## 스폰 조건[^\n]*\n.*?(?=\n## )", gsub("\\\\", "\\\\\\\\", OLD_JUDGE), JD, perl = TRUE)
 chk("M1 judge.md 구 스폰 조건(전칭 '어느 모드든 동일' + 충실구현 절 없음) 재주입 → red", !judge_ok(JD_M1))
+# M1b — ① 절의 '퇴역' 표기를 지운 사본(현역 트리거처럼 서술) → 발행자 0곳인 현 코드에서 red · 발행자가 있는 가상 코드에서는 green(양성 대조)
+C1_now <- c1_clause(spawn_sec(JD))
+JD_M1b <- if (nzchar(C1_now)) sub(C1_now, gsub("퇴역", "현역", C1_now, fixed = TRUE), JD, fixed = TRUE) else ""
+chk("M1b judge.md ① '퇴역' 표기 삭제(현역 서술) 사본 → 발행자 0곳인 현 코드에서 red · 발행자 실재 가상 코드에서는 green(양성 대조)",
+    nzchar(JD_M1b) && !identical(JD_M1b, JD) && !judge_ok(JD_M1b) && judge_ok(JD_M1b, cand = TRUE))
+# M1c — 코드에 후보별 발행자가 되살아난 가상 상태 → 현 judge.md(① 퇴역 서술)가 red(문서-코드 불일치 검출)
+chk("M1c 후보별 요청 발행자가 되살아난 가상 상태 → 현 judge.md(① 퇴역 서술) 가 red", !judge_ok(JD, cand = TRUE))
 chk("M2 코드가 관문 우회로 되돌아간 가상 상태 → 현 judge.md(관문 경유 서술) 가 red(문서-코드 불일치 검출)", !judge_ok(JD, gated = FALSE))
 # M2b — P0-13 직전 판 ③ 절(관문 없음 · B07 · 스폰하지 않고) 재주입 → 현 코드(관문 경유)에서 red
 OLD_J3 <- paste0("\n  ③ **1계층 충실구현**(`run_paper_replication` 단독 실행 · 어드바이저 측정 포함) = 러너가 산출 디렉터리에 `judge_request.json` 만 쓴다\n",
@@ -220,22 +260,34 @@ RPR_D <- sub("  if (identical(grade, \"A\")) {\n", "  if (identical(grade, \"A\"
 chk("M2d 주석에만 'rf_a_eligibility' 를 남긴 되돌림 → 미경유로 재도출(주석은 증거 아님) · 구판 판정(주석 포함)은 경유로 속는다(대조)",
     nzchar(RPR_D) && !identical(RPR_D, RPR_M) && !gated_of(RPR_D) &&
       grepl("rf_a_eligibility", first_match(RPR_D, "(?s)# ---- 11\\.[^\n]*\n.*?\n  \\} else if"), fixed = TRUE))
-# M2e — 셀 구판 이름을 강화 러너 park 이름과 어긋나게 바꾼 가상 러너 → T0 park 대조 red(셀 모드 불변 전제 붕괴 검출)
-chk("M2e 셀 구판 이름이 강화 러너 park 이름과 어긋나면 red · 보류 이름도 같다",
-    !park_ok(EMI, leg = "judge_request.cell.json") && !park_ok(EMI, held = "judge_request.hold.json") && !park_ok(EMI, leg = NA_character_))
+## (v10.01 2026-10-13) M2e(강화 러너 park 이름 어긋남) 삭제 — 대상 코드(reinforce_auto_parallel.R) 퇴역.
 OLD_LL <- "   - **Grade A** → **Judge(PIT 전담) 스폰**(`judge_request.json` 발행됨) → PASS → BOOK 등록 후보(도훈 confirm) / FAIL → 결과 무효·수리·재측정."
 chk("M3 lean-loop 구 A 분기('judge_request.json 발행됨 → 스폰') 재주입 → red", !fa_line_ok(OLD_LL))
 OLD_CMD <- "7. **Grade A → `judge_request.json` 발행 → Judge(PIT 6축) → PASS 시 BOOK 등록 후보(도훈 confirm)**."
 chk("M3 /alpha-search 구 7단계 재주입 → red", !fa_line_ok(OLD_CMD))
-LL_now <- line_by(".claude/rules/lean-loop.md", "^   - \\*\\*Grade A\\*\\* → ")
-chk("M4 코드 되돌림(관문 우회) 가상 상태 → 현 lean-loop A 분기(관문 경유 서술)가 red", !fa_line_ok(LL_now, gated = FALSE))
+LL_now <- line_by(".claude/rules/lean-loop.md", LL_A_PAT)
+## ★(v10.01) A 줄이 실재해야 이 돌연변이가 공허하지 않다 — 줄이 없으면 fa_line_ok 가 무조건 FALSE 라 늘 '통과' 였다.
+chk("M4 코드 되돌림(관문 우회) 가상 상태 → 현 lean-loop A 분기(관문 경유 서술)가 red", length(LL_now) == 1L && !fa_line_ok(LL_now, gated = FALSE),
+    sprintf("A 줄 %d개", length(LL_now)))
+## 양성 대조(v10.01) — 현 lean-loop A 줄에 통과·보류 파일 이름(러너 상수)만 덧붙인 사본은 green: T2 lean-loop red 의 원인이 그 이름 부재 하나임을 보인다
+LL_fix <- if (length(LL_now) == 1L && !anyNA(c(FA_ELIG, FA_HELD))) sub("A 자격 관문", sprintf("A 자격 관문(통과 `%s` · 보류 `%s`)", FA_ELIG, FA_HELD), LL_now, fixed = TRUE) else ""
+chk("M4' 양성 대조 — 현 lean-loop A 줄 + 통과·보류 파일 이름 사본 = green(관문 경유 코드) · 미경유 코드에서는 red",
+    nzchar(LL_fix) && !identical(LL_fix, LL_now) && fa_line_ok(LL_fix) && !fa_line_ok(LL_fix, gated = FALSE))
 OLD_LL_PRE <- paste0("   - **Grade A** → 러너가 산출물 `judge_request.json` 을 쓰지만 **관문 전 파일이라 Judge 트리거가 아니다**(충실구현 러너엔 A 자격 관문 없음 · ",
   "관문 경유 이관 = B07 배포 뒤) → `[1계층]` A 후보로 도훈 보고. 트리거가 서면 Judge(PIT 전담) → PASS → BOOK 등록 후보(도훈 confirm) / FAIL → 결과 무효·수리·재측정. ",
   "트리거 정본 = `judge.md` §스폰 조건.")
 chk("M4b P0-13 직전 lean-loop A 분기('관문 전 파일 · B07') → 현 코드(관문 경유)에서 red · 미경유 코드에서는 green(양성 대조)",
     !fa_line_ok(OLD_LL_PRE) && fa_line_ok(OLD_LL_PRE, gated = FALSE))
 OLD_JI <- "트리거 요청 1건(1계층 강화 = `qepm/mailbox/judge_request_<BID>_<n>.json` judge_request_v2 · 2계층 = `06_Registry/l2_judge_request.json` — 정본 `.claude/agents/judge.md` §스폰 조건 · 산출물 `judge_request.json` 은 트리거가 아니다)을 소화해"
-chk("M4c P0-13 직전 judge_init 소화 줄(충실구현 통과 요청 부재) → 현 코드에서 red · 미경유 코드에서는 green", !ji_ok(OLD_JI) && ji_ok(OLD_JI, gated = FALSE))
+## (v10.01) 그 시절 코드 = 미경유 ∧ 후보별 요청 발행자 실재 — 양성 대조는 그 두 사실로 잰다(cand = TRUE)
+chk("M4c P0-13 직전 judge_init 소화 줄(충실구현 통과 요청 부재) → 현 코드에서 red · 그 시절 코드(미경유 · 후보별 발행자 실재)에서는 green",
+    !ji_ok(OLD_JI) && ji_ok(OLD_JI, gated = FALSE, cand = TRUE))
+## M4d(v10.01) — 퇴역 경로 언급의 양방향: 현 judge_init 줄에서 '1계층 강화 = …judge_request_<BID>_<n>.json…' 조각만 뺀 사본 = green(현 코드) ·
+##   그 사본은 후보별 발행자가 되살아난 가상 코드에서는 red(요구 언급 부재) — T2 judge_init red 의 원인이 그 조각 하나임을 보인다
+##   (10-13 수리 반영) judge_init 소화 줄은 이제 퇴역 경로를 '퇴역' 표기와 함께만 언급한다 — 그 표기를 지우면 후보별 요청이 현역처럼 읽힌다.
+JI_mut <- if (length(JI) == 1L) gsub("v10.01 퇴역", "", JI, fixed = TRUE) else ""
+chk("M4d judge_init 소화 줄의 퇴역 표기 삭제 사본(후보별 요청이 현역처럼 읽힘) → red(현 코드 · 후보별 발행자 없음) · 원본 = green",
+    nzchar(JI_mut) && !identical(JI_mut, JI) && ji_ok(JI) && !ji_ok(JI_mut))
 chk("M5 kr-inverse 구 문언('정밀 편입 → `/worktask create`(WT-R).') 재주입 → red",
     !kr_ok(c(KRL, "등재 후 착수는 진입점 경유: 정밀 편입 → `/worktask create`(WT-R). 착수 전 큐 확인")))
 chk("M6 factor-db-discovery 구 문언('PASS 후보는 dossier(qvest-dossier-pipeline)로.') 재주입 → red",

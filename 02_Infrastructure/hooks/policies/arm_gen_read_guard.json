@@ -144,8 +144,8 @@
    "([a-z0-9]+_)*(cor|corr|rho|spearman|pearson|ic|icir|ir|sr|dsr|sharpe|sortino|calmar|cagr|mdd|port_t|oos|retention|hit_rate|t_stat|tstat)(_[a-z0-9]+)*"
   ],
   "stat_keys_basis": "JSON **수치** 값을 가리는 키 = content_guard.keys ∪ 이 목록(밑줄 토큰 단위 — best_port_t·oos_retention·median_abs_cor·rho_before 는 걸리고 score·dir·src 는 안 걸린다). 그 밖의 수치(est_cost_min·n_trials_family·max_abs_dev_from_ew·설정 파라미터)는 사양이라 그대로 둔다. 상관(cor·rho) 포함 근거 = pit.md C1 D-E '팩터·arm·슬리브를 전기간 IC·ic_bad·**상관**으로 고르면' — factor_registry dedup.evidence 의 전기간 median_abs_cor·max_pair_abs_cor(258개월) 76+곳.",
-  "redactor_source": "../ops/rf_b1_design_lib.R",
-  "redactor_basis": "가림 규칙 정본 = rf_b1_design_lib.R 의 RF_B1_STAT_PROTECT·RULES·METRIC·MASK(R2 · B5M 이 이름으로 싣는 같은 파일 · 이 훅 디렉터리 기준 상대경로). 훅은 네 이름의 최상위 리터럴 대입만 읽고(평가 없음) B5M 과 같은 카나리아로 적재 양성 대조한다 — 실패 = 대상 전부 block(R5_catalog_redactor). 파이썬↔R 가림 동치 = 검사 §Q Q29.",
+  "redactor_source": "../programs/stat_redactor.R",
+  "redactor_basis": "가림 규칙 정본 = programs/stat_redactor.R 의 RF_B1_STAT_PROTECT·RULES·METRIC·MASK(이 훅 디렉터리 기준 상대경로). ★v10.01(2026-10-13): 구 정본 ops/rf_b1_design_lib.R(B1 설계 레인 · 퇴역)에서 상수·함수를 원문 그대로 이관했다 — 이관 전후 네 상수와 두 함수 identical() 확인. 훅은 네 이름의 최상위 리터럴 대입만 읽고(평가 없음) B5M 과 같은 카나리아로 적재 양성 대조한다 — 실패 = 대상 전부 block(R5_catalog_redactor). 파이썬↔R 가림 동치 = 검사 §Q Q29.",
   "redact_passes": 3,
   "redact_passes_basis": "가림 반복 상한 — 정본 가림을 잔존 0 이 될 때까지 거듭한다(멱등). 한 번이면 세 마디 판본 '2.1.170' 이 '<stat>.170' 을 남긴다(09-25 운영: 설정 reinforce_auto_config 5곳 · 격자 reinforce_program DOI 1곳 — 전부 두 번째에 0). 3 = 실측 최대 2회 + 1회 여유. 그래도 남으면 사본을 내지 않고 막는다(R5_catalog_residual).",
   "max_views_per_call": 300,

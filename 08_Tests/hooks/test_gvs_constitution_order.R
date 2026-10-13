@@ -31,8 +31,14 @@ d <- gv_apply_constitution_order(root = ROOT)
 if (identical(d$asymmetry_distribution_target$priority, 1L))
   ok("v8.4 ① 비대칭 표적이 priority 1") else
   ng(sprintf("비대칭이 1순위 아님 (prio=%s) — 정본 ① 반영 실패", d$asymmetry_distribution_target$priority))
-if (isTRUE(d$screen_tier_recovery$priority < d$overlay_refinement$priority))
-  ok("②screen-tier 가 ③overlay 보다 앞") else ng("정본 ②③ 순서 미반영")
+## (v10.01 2026-10-13) 정본 줄 = ① 비대칭 표적 ② 방어 엔진(시변 노출 overlay·방어적 보유) ③ 구성 ④ 국면식별 —
+##   조준기 방향 중 정본에 열거되는 것은 비대칭(①)·overlay(②) 둘이다. screen-tier 는 더 이상 레버로 열거되지 않는다(강등).
+if (identical(d$overlay_refinement$priority, 2L) && identical(d$overlay_refinement$constitution, "listed_current"))
+  ok("② 방어 엔진(overlay)이 priority 2 · 정본 열거") else
+  ng(sprintf("정본 ② 순서 미반영 (overlay prio=%s)", d$overlay_refinement$priority))
+if (identical(d$screen_tier_recovery$status, "demoted_by_constitution"))
+  ok("screen-tier 는 v10.01 정본 미열거로 강등") else
+  ng(sprintf("screen-tier status=%s — v10.01 정본 미반영", d$screen_tier_recovery$status))
 if (identical(d$asymmetry_distribution_target$constitution, "listed_current"))
   ok("정본 열거 표식(listed_current) 부착") else ng("정본 열거 표식 부재")
 
@@ -70,11 +76,11 @@ cat("== [D] 박제 아님 — 정본 순서 변경이 전파 ==\n")
 #   음성 대조는 자기 조작이 유효함을 먼저 증명해야 결론을 낼 자격이 생긴다.
 i_lv <- grep("조건-안 레버만 프론티어", cm)[1]
 orig <- cm[i_lv]
-# (v10 2026-08-29) 정본 줄 개편 반영 — ② 가 '강화 3축' 이 되고 screen-tier 는 ③ 으로 밀렸다.
-#   치환 = ①(비대칭)과 ③(screen-tier) 자리 교환 (②는 그대로 — 파생 순위 대조 축은 두 개면 족하다).
+# (v10.01 2026-10-13) 정본 줄 개편 반영 — 치환 = ①(비대칭)과 ②(방어 엔진 · overlay) 자리 교환.
+#   (구 패턴 '② 강화 3축 · ③ screen-tier' 는 v10 4축 개편 때부터 원문과 어긋나 선행검증이 상시 FAIL 이었다.)
 swapped_line <- sub(
-  "① \\*\\*비대칭 표적\\*\\*(.+?) ② 강화 3축\\(멀티팩터·비중방법론·리스크오버레이\\) ③ screen-tier 재고 회수\\(overlay 큐\\)",
-  "① screen-tier 재고 회수(overlay 큐) ② 강화 3축(멀티팩터·비중방법론·리스크오버레이) ③ **비대칭 표적**\\1",
+  "① \\*\\*비대칭 표적\\*\\*(.+?) ② 방어 엔진\\(시변 노출 overlay·방어적 보유\\)",
+  "① 방어 엔진(시변 노출 overlay·방어적 보유) ② **비대칭 표적**\\1",
   orig, perl = TRUE)
 if (identical(swapped_line, orig)) {
   ng("[선행검증] 정본 줄 치환 실패 — 이 축은 판정 불가(테스트 패턴이 원문과 어긋남)")
@@ -83,10 +89,10 @@ if (identical(swapped_line, orig)) {
   cm2 <- cm; cm2[i_lv] <- swapped_line
   writeLines(cm2, file.path(TMP, "CLAUDE.md"), useBytes = TRUE)
   d3 <- suppressWarnings(gv_apply_constitution_order(root = TMP))
-  if (isTRUE(d3$screen_tier_recovery$priority < d3$asymmetry_distribution_target$priority))
+  if (isTRUE(d3$overlay_refinement$priority < d3$asymmetry_distribution_target$priority))
     ok("정본에서 순서를 바꾸니 파생 순위도 바뀜 (하드코딩 아님)") else
-    ng(sprintf("정본 변경 미전파 — 어딘가 아직 박제 (screen=%s asym=%s)",
-               d3$screen_tier_recovery$priority, d3$asymmetry_distribution_target$priority))
+    ng(sprintf("정본 변경 미전파 — 어딘가 아직 박제 (overlay=%s asym=%s)",
+               d3$overlay_refinement$priority, d3$asymmetry_distribution_target$priority))
 }
 unlink(TMP, recursive = TRUE)
 

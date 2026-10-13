@@ -50,12 +50,19 @@ cat("\n=== D. 호출 지점이 전부 relaxed 인가 (재도출) ===\n")
 cnt <- function(f) { s <- readLines(file.path(ROOT, f), warn = FALSE, encoding = "UTF-8")
   c(all = sum(grepl("tg_agent_brief(agent = ", s, fixed = TRUE)),
     rel = sum(grepl("tg_agent_brief(agent = ", s, fixed = TRUE) & grepl("relaxed = TRUE", s, fixed = TRUE))) }
-for (f in c("02_Infrastructure/ops/rf_replication_verify.R", "02_Infrastructure/ops/reinforce_auto_next_paper.R")) {
-  k <- cnt(f)
-  if (k[["all"]] >= 1L && k[["all"]] == k[["rel"]]) ok(sprintf("D %s 호출 %d/%d relaxed", basename(f), k[["rel"]], k[["all"]])) else
-    ng(sprintf("D %s", basename(f)), sprintf("relaxed %d / 호출 %d", k[["rel"]], k[["all"]]))
-}
+## v10.01(2026-10-13): 검증기의 보고는 전부 .v1001_report → prep_send(02_Infrastructure/programs/program_report.R) 한 곳을 거친다.
+##   구 이월 스크립트(reinforce_auto_next_paper.R)는 퇴역 — 그 호출 지점은 사라졌다. 판정 축 = relaxed 가 발송기 한 곳에서 보장되는가.
+k <- cnt("02_Infrastructure/ops/rf_replication_verify.R")
+vs0 <- readLines(file.path(ROOT, "02_Infrastructure/ops/rf_replication_verify.R"), warn = FALSE, encoding = "UTF-8")
+n_rep <- sum(grepl(".v1001_report(", sub("#.*$", "", vs0), fixed = TRUE))
+if (k[["all"]] == 0L && n_rep >= 1L) ok(sprintf("D rf_replication_verify.R — 직접 발송 0 · 발송기 경유 %d곳", n_rep)) else
+  ng("D rf_replication_verify.R 발송 경로", sprintf("직접 %d · 발송기 %d", k[["all"]], n_rep))
+pr <- paste(readLines(file.path(ROOT, "02_Infrastructure/programs/program_report.R"), warn = FALSE, encoding = "UTF-8"), collapse = "\n")
+i_b <- regexpr("tg_agent_brief(agent = ", pr, fixed = TRUE)
+seg <- if (i_b > 0) substr(pr, i_b, i_b + 400L) else ""
+if (nzchar(seg) && grepl("relaxed = TRUE", seg, fixed = TRUE)) ok("D prep_send 의 tg_agent_brief 호출이 relaxed = TRUE") else ng("D prep_send relaxed 미보장")
 vs <- paste(readLines(file.path(ROOT, "02_Infrastructure/ops/rf_replication_verify.R"), warn = FALSE, encoding = "UTF-8"), collapse = "\n")
 if (!grepl("substr(.disp$feedback, 1, 500)", vs, fixed = TRUE)) ok("D summary 에 500자 feedback 을 넣던 줄이 없다") else ng("D 구판 summary 줄 잔존")
 cat(sprintf("\n== test_rp_telegram_relaxed: %d pass · %d fail ==\n", P, F))
+cat(sprintf('{"test":"rp_telegram_relaxed","pass":%d,"fail":%d,"total":%d}\n', P, F, P + F))   # 배터리 요약 계약(미발행 = 미측정)
 if (F > 0L) quit(status = 1L)

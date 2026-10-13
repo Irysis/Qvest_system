@@ -47,9 +47,11 @@ SRC_INJ="$ROOT/02_Infrastructure/hooks/axiom_context_inject.sh"
 SRC_OPS="$ROOT/02_Infrastructure/ops"
 SRC_LANECFG="$ROOT/06_Registry/replication_clean_lane.json"
 SRC_RULECFG="$ROOT/06_Registry/prereg/clean_base_rule.config.json"
+# v10.01(2026-10-13): R5 가림 정본 = programs/stat_redactor.R (구 ops/rf_b1_design_lib.R 에서 원문 이관 · 훅 설정 catalog_view.redactor_source)
+SRC_RX="$ROOT/02_Infrastructure/programs/stat_redactor.R"
 for f in "$SRC_HOOK" "$SRC_POL" "$SRC_INJ" "$SRC_OPS/rf_replication_auto.sh" "$SRC_OPS/rf_clean_lane.py" "$SRC_OPS/rf_clean_lane_lib.R" \
          "$SRC_OPS/rf_replication_verify.R" "$SRC_OPS/rf_fidelity_audit.sh" "$SRC_OPS/rf_fidelity_fanout.sh" "$SRC_OPS/rf_llm_env.sh" \
-         "$SRC_OPS/rf_axiom_brief.sh" "$SRC_OPS/refresh_barrier.sh" "$SRC_OPS/rf_b1_design_lib.R" "$SRC_LANECFG" "$SRC_RULECFG"; do
+         "$SRC_OPS/rf_axiom_brief.sh" "$SRC_OPS/refresh_barrier.sh" "$SRC_RX" "$SRC_LANECFG" "$SRC_RULECFG"; do
   [ -f "$f" ] || { ng "원천 부재" "$f"; summary; exit 1; }
 done
 case "$(wp "${TMPDIR:-/tmp}")" in *Quant_Module_Moltbot*|*OneDrive*) ng "TMPDIR 가 운영 트리 안" "${TMPDIR:-}"; summary; exit 1;; esac
@@ -104,9 +106,9 @@ sv(){ printf '%s\n' "$sres" | tr -d '\r' | awk -v k="$1" '$1==k{print $2}'; }
 # ═══ G 가드 ═══
 echo "--- G. 가드(청정 표식) ---"
 SBX="$T/root"; HOMEF="$T/home"
-mkdir -p "$SBX/02_Infrastructure/hooks/policies" "$SBX/02_Infrastructure/ops" "$T/cases" "$T/gb"
+mkdir -p "$SBX/02_Infrastructure/hooks/policies" "$SBX/02_Infrastructure/ops" "$SBX/02_Infrastructure/programs" "$T/cases" "$T/gb"
 cp "$SRC_HOOK" "$SBX/02_Infrastructure/hooks/arm_gen_read_guard.sh"; cp "$SRC_POL" "$SBX/02_Infrastructure/hooks/policies/arm_gen_read_guard.json"
-cp "$SRC_OPS/rf_b1_design_lib.R" "$SBX/02_Infrastructure/ops/rf_b1_design_lib.R"
+cp "$SRC_RX" "$SBX/02_Infrastructure/programs/stat_redactor.R"
 HOOK="$SBX/02_Infrastructure/hooks/arm_gen_read_guard.sh"
 mk(){ mkdir -p "$(dirname "$1")"; printf '%s\n' "${2:-x}" > "$1"; }
 WD="$SBX/04_Research/strategies/RP_AUTO_CLEAN_9901_00050"
@@ -209,10 +211,11 @@ out="$(gfire clean "$T/cases/CP05.json" "$T/hk2/02_Infrastructure/hooks/arm_gen_
 case "$out" in *'R6_policy'*) ok "G4 fail-closed: clean_lane 설정 부재 → 허용 목록 파일도 block(R6_policy)" ;; *) ng "G4 설정 부재" "${out:0:200}" ;; esac
 # 차등 회귀 — 설계 표식 출력은 구판 훅(QVEST_CL_BASE_HOOK)과 바이트 동일
 if [ -n "${QVEST_CL_BASE_HOOK:-}" ] && [ -f "$QVEST_CL_BASE_HOOK" ]; then
-  mkdir -p "$T/hk0/02_Infrastructure/hooks/policies" "$T/hk0/02_Infrastructure/ops"
+  mkdir -p "$T/hk0/02_Infrastructure/hooks/policies" "$T/hk0/02_Infrastructure/ops" "$T/hk0/02_Infrastructure/programs"
   cp "$QVEST_CL_BASE_HOOK" "$T/hk0/02_Infrastructure/hooks/arm_gen_read_guard.sh"
   cp "${QVEST_CL_BASE_POLICY:-$SRC_POL}" "$T/hk0/02_Infrastructure/hooks/policies/arm_gen_read_guard.json"
-  cp "$SRC_OPS/rf_b1_design_lib.R" "$T/hk0/02_Infrastructure/ops/"
+  # 구판 설정(../ops/rf_b1_design_lib.R)·신판 설정(../programs/stat_redactor.R) 어느 쪽이든 같은 정본을 싣게 두 이름으로 둔다(상수 이름 동일)
+  cp "$SRC_RX" "$T/hk0/02_Infrastructure/programs/stat_redactor.R"; cp "$SRC_RX" "$T/hk0/02_Infrastructure/ops/rf_b1_design_lib.R"
   diffs=""; n=0
   while IFS=$'\t' read -r id want desc; do
     n=$((n+1)); a="$(gfire design "$T/cases/$id.json" "$T/hk0/02_Infrastructure/hooks/arm_gen_read_guard.sh")"; b="$(gfire design "$T/cases/$id.json")"
@@ -384,7 +387,8 @@ printf '# stub verify — 실제 호출은 가짜 Rscript 가 기록한다\n' > 
 cp "$SRC_HOOK" "$SRC_INJ" "$LR/02_Infrastructure/hooks/"; cp "$SRC_POL" "$LR/02_Infrastructure/hooks/policies/"
 cp "$SRC_RULECFG" "$LR/06_Registry/prereg/"; cp "$SRC_LANECFG" "$LR/06_Registry/"
 cp "$MR/../iroot/qepm/memory/axioms/active/AX-000.json" "$LR/qepm/memory/axioms/active/" 2>/dev/null || true
-printf '%s' '{"enabled":true,"claim_stale_hours":6,"llm":{"model":"opus","effort":"low","lanes":{"replication":{"model":"opus","effort":"low"}}}}' > "$LR/06_Registry/reinforce_auto_config.json"
+# v10.01(2026-10-13): 레인 스위치 = replication_lane.enabled · 전역 enabled(퇴역 러너 스위치)는 false 로 둬 분리를 함께 잰다
+printf '%s' '{"enabled":false,"replication_lane":{"enabled":true},"claim_stale_hours":6,"llm":{"model":"opus","effort":"low","lanes":{"replication":{"model":"opus","effort":"low"}}}}' > "$LR/06_Registry/reinforce_auto_config.json"
 printf '%s' '{"schema_version":1,"entries":[]}' > "$LR/06_Registry/reinforce_ledger_l1.json"
 printf '# CLAUDE\n' > "$LR/CLAUDE.md"; mkdir -p "$LR/.claude/rules"; printf '# pit\n' > "$LR/.claude/rules/pit.md"
 cat > "$FB/claude" <<'EOF'
@@ -575,9 +579,9 @@ vv(){ printf '%s\n' "$vres" | awk -v k="$1" '$1==k{print $2}'; }
 # ═══ L 돌연변이 ═══
 echo "--- L. 돌연변이 ---"
 mut_hook(){ # $1 이름 $2 python 치환(구 → 신) 파일
-  local d="$T/mh_$1"; mkdir -p "$d/02_Infrastructure/hooks/policies" "$d/02_Infrastructure/ops"
+  local d="$T/mh_$1"; mkdir -p "$d/02_Infrastructure/hooks/policies" "$d/02_Infrastructure/ops" "$d/02_Infrastructure/programs"
   cp "$HOOK" "$d/02_Infrastructure/hooks/arm_gen_read_guard.sh"; cp "$SBX/02_Infrastructure/hooks/policies/arm_gen_read_guard.json" "$d/02_Infrastructure/hooks/policies/"
-  cp "$SBX/02_Infrastructure/ops/rf_b1_design_lib.R" "$d/02_Infrastructure/ops/"
+  cp "$SBX/02_Infrastructure/programs/stat_redactor.R" "$d/02_Infrastructure/programs/"
   echo "$d/02_Infrastructure/hooks/arm_gen_read_guard.sh"
 }
 sub_file(){ "$PY" - "$(wp "$1")" "$2" "$3" <<'PYEOF'

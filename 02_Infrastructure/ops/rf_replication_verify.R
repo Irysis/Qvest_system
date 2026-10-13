@@ -30,11 +30,7 @@ ROOT <- Sys.getenv("QM_ROOT", "C:/Users/99922/OneDrive/Quant_Module_Moltbot")
   jlog(if (isTRUE(okm)) "queue_done_mirrored" else "queue_done_mirror_skip",
        paper_key = as.character(pk %||% ""), note = why)
 }, error = function(e) jlog("queue_done_mirror_failed", err = conditionMessage(e)))
-# ★강화 칸 상한은 원장(reinforce_ledger_l1.json::max_attempts)이 정본이다. 메시지에 숫자를
-#   박으면 상한을 바꿔도 안 따라온다 — 2026-08-31 도훈 지적: 상한이 25 인데 알림이 "20칸".
-.RF_MAXA <- tryCatch(as.integer(fromJSON(file.path(ROOT, "06_Registry/reinforce_ledger_l1.json"),
-                                         simplifyVector = FALSE)$max_attempts), error = function(e) NA_integer_)
-if (!is.finite(.RF_MAXA)) .RF_MAXA <- 20L
+## (v10.01 2026-10-13) 구 .RF_MAXA(강화 칸 상한 — 알림 문구용) 삭제: 고정 격자 강화 퇴역으로 쓰는 곳이 없다.
 setwd(ROOT); Sys.setenv(QM_ROOT = ROOT, CLAUDE_PROJECT_DIR = ROOT)
 WDIR  <- Sys.getenv("RP_WDIR"); URL <- Sys.getenv("RP_URL")
 TITLE <- Sys.getenv("RP_TITLE"); PKEY <- Sys.getenv("RP_KEY")
@@ -127,23 +123,80 @@ fail <- function(why, detail = "") {
   d <- tryCatch(fromJSON(REQ, simplifyVector = FALSE), error = function(e) list())
   d$status <- "failed_needs_session"; d$failure <- why; d$failure_detail <- substr(detail, 1, 400)
   write(toJSON(d, auto_unbox = TRUE, pretty = TRUE, null = "null"), REQ)
-  tryCatch({ suppressMessages(source(file.path(ROOT, "02_Infrastructure/telegram/telegram_notify.R")))
-    tg_agent_brief(agent = "AlphaSearch", relaxed = TRUE, glossary = FALSE, decode_jargon = FALSE, decode_mode = "off", title = "[1계층] 무인 충실구현 실패 — 세션 착수 필요",
-      lock_scope = sprintf("rf_replication_fail_%s", PKEY %||% "unknown"),
-      sections = list(
-        list(type = "bullet", emoji = "\U0001F3AF", heading = "현재 리서치 상황",
-             items = c("단계: 1계층 충실구현 — 무인 시도", .tg_target_items(TITLE, PKEY),
-                       "위치: 검증 게이트에서 차단 — 원장 미개설", sprintf("직전 판정: %s", why))),
-        list(type = "summary", emoji = "\U0001F4CC",
-             body = sprintf("무인 충실구현이 검증을 통과하지 못했습니다 — 사유 %s", why)),
-        list(type = "bullet", emoji = "\U0001F6A9", heading = "주의",
-             items = c("조용한 통과를 막았습니다 — 원장에 열지 않았습니다",
-                       "세션이 착수하면 그 다음부터 강화는 다시 무인으로 돕니다")),
-        list(type = "bullet", emoji = "\u27A1\uFE0F", heading = "다음",
-             items = c("처분: 자본 배정 없음 · 강화 미개시",
-                       "대기 파일: 06_Registry/replication_request.json")))) },
+  ## v10.01 발송 규칙 §0(2026-10-13): 1단위 1통 · 판정 먼저 · 실패 원인을 숫자/단어 중간에서 자르지 않는다(감사 10-13 #2)
+  tryCatch(.v1001_report(target = .tg_target_label(TITLE, PKEY),
+                       status = list(stage = "충실구현 — 무인 시도", position = "검증 게이트에서 차단 · 원장 미개설", previous = why),
+                       verdict_line = sprintf("무인 충실구현이 검증을 통과하지 못했다 — %s%s", why,
+                                              if (nzchar(detail)) paste0(": ", .v1001_clip_words(detail, 300L)) else ""),
+                       next_step = "세션이 원인을 확인해 다시 착수한다(요청 파일: 06_Registry/replication_request.json)",
+                       push = TRUE),
     error = function(e) jlog("telegram_failed", err = conditionMessage(e)))
   quit(status = 1)
+}
+
+## ── v10.01 인계 · 보고 (2026-10-13 · 개선안 §3 · 발송 규칙 v10.01 §0) ───────────────────────────────────────
+##   구판은 성공하면 강화 원장에 active entry 를 열고 "강화 N칸이 무인으로 돈다"고 보고했다. 고정 격자 강화 러너가 퇴역해
+##   그 entry 를 소진할 주체가 없다 — entry 는 소비 기록으로만 남기고 바로 접는다(selector 가 원장 paper_key 로 소비를 판단).
+##   측정 결과는 리서치 프로그램 재료로 넘기고(행동 카드 + 등록부 큐), 보고는 v10.01 발송기 1통이다.
+.v1001_clip_words <- function(x, n) {
+  x <- gsub("[[:space:]]+", " ", as.character(x %||% ""))
+  if (nchar(x) <= n) return(x)
+  cut <- substr(x, 1L, n); sp <- regexpr(" [^ ]*$", cut)
+  paste0(if (sp > n / 2) substr(cut, 1L, sp - 1L) else cut, " …(전문은 요청 파일)")
+}
+.V1001_PROG_NAME <- c(P1_RETURN = "수익 엔진", P2_DEFENSE = "방어 엔진", P3_CONSTRUCTION = "구성")
+.v1001_report <- function(target, status, verdict_line = NULL, card = NULL, next_step = NULL, artifact = NULL,
+                        program = "충실구현", push = TRUE, charts = NULL, extra = NULL) {
+  if (!exists("tg_agent_brief", mode = "function"))
+    suppressMessages(source(file.path(ROOT, "02_Infrastructure/telegram/telegram_notify.R")))
+  if (!exists("prep_send", mode = "function"))
+    source(file.path(ROOT, "02_Infrastructure/programs/program_report.R"))
+  prep_send(program = program, target = target, status = status, card = card, verdict_line = verdict_line,
+            next_step = next_step, artifact = artifact, push = push, charts = charts, extra = extra, root = ROOT)
+}
+## 등급 근거 — 행동 카드가 싣지 않는 등급 입력(PORT_t · SR · OOS 유지율 · DSR)과 구성 사실(보유 수 · 회전율)을 계약 산출물에서 그대로 옮긴다
+##   (rf_perf_summary.R::rf_perf_kv — authoritative_remeasure.json·06_metrics.csv 읽기 전용 · 손계산 0 · AX-008).
+##   지표명 = 정통 원표기(발송 규칙 §0 — 한 지표 한 이름). CAGR·최대낙폭·Calmar 는 행동 카드 핵심 수치에 이미 있어 싣지 않는다.
+.V1001_GRADE_KV <- c("다중검정 t값" = "PORT_t", "샤프지수" = "SR", "표본외 유지율" = "OOS 유지율", "감가샤프지수" = "DSR",
+                     "회전율" = "연 회전율", "유니버스" = "유니버스")
+## 차트 = 이름 붙인 것만(발송 규칙 §0.5 — 캡션이 무엇을 보는 차트인지 말한다). 파일 선택·빈 그림 제외는 rf_perf_charts 정본 그대로.
+.V1001_CHART_CAP <- c(equity_curve.png = "누적수익 — 전략과 벤치마크", annual_returns.png = "연도별 수익률", drawdown.png = "낙폭 — 고점 대비")
+.v1001_charts <- function(dir) {
+  p <- tryCatch(rf_perf_charts(dir), error = function(e) character(0))
+  if (!length(p)) return(NULL)
+  cap <- .V1001_CHART_CAP[basename(p)]
+  setNames(p, ifelse(is.na(cap), basename(p), cap))
+}
+.v1001_grade_extra <- function(dir) {
+  kv <- tryCatch(rf_perf_kv(dir), error = function(e) list())
+  keep <- intersect(names(.V1001_GRADE_KV), names(kv))
+  if (!length(keep)) return(NULL)
+  out <- setNames(kv[keep], unname(.V1001_GRADE_KV[keep]))
+  out <- lapply(out, function(v) sub("^-", "−", as.character(v)))   # 음수 표기 = 유니코드 마이너스(행동 카드 수치와 같은 형식 · 발송 규칙 §0)
+  list(list(type = "kv", emoji = "\U0001F4CF", heading = "등급 근거(계약 산출물)", kv = out))
+}
+## 측정 산출물 → 행동 카드 · 프로그램 재료. kind = "engine"(재료로 등록) | "skipped"(소비만 · 재료 아님)
+.v1001_handoff <- function(art_dir, base_id, grade, kind = "engine") {
+  out <- list(card = NULL, program = "P1_RETURN")
+  out$card <- tryCatch({
+    source(file.path(ROOT, "02_Infrastructure/contracts/behavior_card.R"))
+    cd <- bc_card_from_artifacts(art_dir, root = ROOT); bc_write(cd, art_dir); cd
+  }, error = function(e) { jlog("v1001_behavior_card_failed", err = conditionMessage(e)); NULL })
+  tryCatch({
+    source(file.path(ROOT, "02_Infrastructure/programs/program_registry.R"))
+    reg <- pr_load(ROOT)
+    pg <- pr_find_key(reg, PKEY %||% "")
+    if (!is.na(pg)) { out$program <- pg; pr_consume_key(pg, PKEY, consumer = paste0("replication:", base_id), root = ROOT) }
+    if (identical(kind, "engine"))
+      pr_enqueue(out$program, list(key = paste0("engine:", base_id), kind = "engine", title = TITLE %||% "",
+                                   paper_key = PKEY %||% "", base_id = base_id, grade = grade, fidelity = .fidelity,
+                                   artifacts = art_dir, engine_path = eng,
+                                   cr_verdict = if (!is.null(out$card)) out$card$overall$verdict else NA_character_),
+                 root = ROOT)
+    jlog("v1001_handoff", base_id = base_id, program = out$program, kind = kind,
+         cr = if (!is.null(out$card)) out$card$overall$verdict else "card_missing")
+  }, error = function(e) jlog("v1001_handoff_failed", err = conditionMessage(e)))
+  out
 }
 
 eng <- file.path(WDIR, "engine.R")
@@ -371,25 +424,12 @@ if (identical(.disp$action, "audit_required")) {
   d <- tryCatch(fromJSON(REQ, simplifyVector = FALSE), error = function(e) list())
   d$status <- "failed_needs_session"; d$failure <- "audit_not_run"; d$failure_detail <- substr(.why, 1, 400)
   write(toJSON(d, auto_unbox = TRUE, pretty = TRUE, null = "null"), REQ)
-  tryCatch({ suppressMessages(source(file.path(ROOT, "02_Infrastructure/telegram/telegram_notify.R")))
-    tg_agent_brief(agent = "AlphaSearch", relaxed = TRUE, glossary = FALSE, decode_jargon = FALSE, decode_mode = "off",
-      lock_scope = sprintf("rf_fidelity_notrun_%s", PKEY %||% "unknown"),
-      title = sprintf("[1계층] 충실도 감사 미실행 — 개설 보류 (측정 등급 %s)", .Gs),
-      sections = list(
-        list(type = "bullet", emoji = "\U0001F50D", heading = "현재 리서치 상황",
-             items = c("단계: 1계층 무인 충실구현 — 적대적 충실도 감사",
-                       .tg_target_items(TITLE, PKEY),
-                       sprintf("판정: 감사 미실행 · 스폰 %d회 전부 산출 없음", as.integer(.gate$spawns)),
-                       "처분: 개설 보류 — 감사 없이는 소비도 entry 개설도 하지 않는다")),
-        list(type = "summary", emoji = "\U0001F4CC",
-             body = sprintf("충실도 감사 미실행 — 스폰 %d회 산출 없음 · 소비·개설 보류", as.integer(.gate$spawns))),
-        ## ★본문은 짧게 (도훈 지시 2026-09-07). 왜 보류하는지의 논거는 코드 주석과 인계 문서에 있고,
-        ##   통지에 필요한 것은 사유 한 줄 · 다음 동작 한 줄 · 어디를 볼지 한 줄이다.
-        list(type = "text", emoji = "\U0001F4DD", heading = "미실행 사유와 다음",
-             body = substr(paste0(
-               "사유: ", .why, "\n",
-               "다음: 엔진은 그대로 두고 검증기(측정+감사)만 재시도한다(3회 규약).\n",
-               "레인이 죽었으면 저널 fidelity_audit_retry / merge_failed / halt_* 을 먼저 보라."), 1, 420)))) },
+  tryCatch(.v1001_report(target = .tg_target_label(TITLE, PKEY),
+                       status = list(stage = "충실구현 — 적대적 충실도 감사", previous = sprintf("측정 등급 %s", .Gs),
+                                     position = sprintf("감사 스폰 %d회 전부 산출 없음", as.integer(.gate$spawns))),
+                       verdict_line = paste0("충실도 감사 미실행 — 소비 · 재료 등록 보류. 사유: ", .v1001_clip_words(.why, 240L)),
+                       next_step = "엔진은 그대로 두고 검증기(측정 + 감사)만 재시도한다(3회 규약). 레인이 죽었으면 저널 fidelity_audit_retry 를 먼저 본다",
+                       push = TRUE),
     error = function(e) jlog("telegram_failed", err = conditionMessage(e)))
   quit(status = 0)
 }
@@ -412,29 +452,16 @@ if (identical(.disp$action, "reimplement")) {
   write(toJSON(d, auto_unbox = TRUE, pretty = TRUE, null = "null"), REQ)
   jlog("fidelity_reimplement_requested", paper_key = PKEY %||% "", grade = G,
        note = "충실도 기각 — 소비 보류. 다음 tick 이 지적사항을 안고 재구현한다")
-  tryCatch({ suppressMessages(source(file.path(ROOT, "02_Infrastructure/telegram/telegram_notify.R")))
-    tg_agent_brief(agent = "AlphaSearch", relaxed = TRUE, glossary = FALSE, decode_jargon = FALSE, decode_mode = "off",
-      lock_scope = sprintf("rf_fidelity_%s", PKEY %||% "unknown"),
-      title = sprintf("[1계층] 충실도 감사 기각 — 재구현 (측정 등급 %s)", G),
-      sections = list(
-        list(type = "bullet", emoji = "\U0001F50D", heading = "현재 리서치 상황",
-             items = c("단계: 1계층 무인 충실구현 — 적대적 충실도 감사",
-                       .tg_target_items(TITLE, PKEY, suffix = sprintf(" (측정 등급 %s)", G)),
-                       "처분: 소비 보류 + 자동 재구현 1회 — 논문을 잘못된 이유로 버리지 않는다")),
-        ## ★summary 는 [20,100]자 헤드라인 계약이고 relaxed 로도 안 풀린다 — 500자 지적을 여기 넣어
-        ##   오늘 3/3 유실됐다(13:56·16:16·17:28). 지적은 text 섹션(relaxed 면 길이 면제)으로.
-        list(type = "summary", emoji = "\U0001F4CC",
-             body = sprintf("충실도 감사 기각 — %s · 지적 %d건 · 자동 재구현 1회",
-                            substr(as.character(.aud$verdict %||% "?"), 1, 20),
-                            length(.aud$undeclared_changes %||% list()) +
-                              length(.aud$signal_mismatch %||% list()))),
-        ## ★지적은 **요약만** 싣는다 (도훈 지시 2026-09-07 "텔레 보내는 양식 자체를 수정해줘").
-        ##   구판은 재구현 프롬프트용 feedback 을 1500자로 잘라 그대로 실었는데, 그 문자열은
-        ##   에이전트가 읽는 것이라 원문 인용·행번호가 붙어 사람이 폰에서 읽을 물건이 아니었다
-        ##   (실측 0806.2606 1500자 → 요약 315자 · 2006.04639 175자). 원문은 감사 파일에 그대로
-        ##   있고 재구현 프롬프트도 전문을 받는다 — 짧아지는 것은 통지 표면뿐이다.
-        list(type = "text", emoji = "\U0001F4DD", heading = "감사 지적 요약",
-             body = rf_audit_tg_brief(.aud, audit_path = sub(paste0("^", ROOT, "/?"), "", .aud_p))))) },
+  tryCatch({
+    .n_find <- length(.aud$undeclared_changes %||% list()) + length(.aud$signal_mismatch %||% list())
+    .v1001_report(target = .tg_target_label(TITLE, PKEY),
+                status = list(stage = "충실구현 — 적대적 충실도 감사", previous = sprintf("측정 등급 %s", G),
+                              position = "감사 기각 · 소비 보류 · 자동 재구현 1회"),
+                verdict_line = sprintf("충실도 감사 기각(%s) — 지적 %d건. 논문을 잘못된 이유로 버리지 않도록 지적을 안고 다시 구현한다",
+                                       as.character(.aud$verdict %||% "?"), .n_find),
+                extra = list(list(type = "text", emoji = "📝", heading = "감사 지적 요약",
+                                  body = rf_audit_tg_brief(.aud, audit_path = sub(paste0("^", ROOT, "/?"), "", .aud_p)))),
+                next_step = "다음 tick 이 지적사항을 안고 재구현한다", push = FALSE) },
     error = function(e) jlog("telegram_failed", err = conditionMessage(e)))
   quit(status = 0)
 }
@@ -549,9 +576,9 @@ if (is.finite(.base_pt) && .base_pt < .min_pt && !.resc_ok) {
   #   소비를 판단하므로 같은 논문을 영원히 다시 집는다 — 8분마다 LLM 에이전트가 재실행된다.
   #   실사고 2026-08-31: 2608.23944 를 19:14~20:34 사이 **5회** 반복 구현했다.
   #   요청 파일(status=done_no_reinforce)만 닫는 것으로는 부족하다. selector 는 그 파일을 안 본다.
+  .bid_sk <- sprintf("RP_%s_skipped_base", format(Sys.time(), "%Y%m%d_%H%M%S"))
   tryCatch({
     suppressMessages(source(file.path(ROOT, "02_Infrastructure/reinforcement/reinforce_ledger.R")))
-    .bid_sk <- sprintf("RP_%s_skipped_base", format(Sys.time(), "%Y%m%d_%H%M%S"))
     rf_open_entry(1L, .bid_sk, base_grade = G, paper_key = PKEY %||% "", paper_id = "",
                   base_artifacts = dirname(ar), engine_path = eng,
                   count_paper = COUNT_PAPER, root = ROOT)
@@ -568,45 +595,23 @@ if (is.finite(.base_pt) && .base_pt < .min_pt && !.resc_ok) {
   d$base_port_t <- .base_pt; d$artifacts <- dirname(ar)
   d$skip_reason <- sprintf("기저 PORT_t %.3f < %.2f — 음수 알파 위의 강화는 헛돈다", .base_pt, .min_pt)
   write(toJSON(d, auto_unbox = TRUE, pretty = TRUE, null = "null"), REQ)
-  tryCatch({ suppressMessages(source(file.path(ROOT, "02_Infrastructure/telegram/telegram_notify.R")))
-    tg_agent_brief(agent = "AlphaSearch", relaxed = TRUE, glossary = FALSE, decode_jargon = FALSE, decode_mode = "off",
-      lock_scope = sprintf("rf_replication_%s", PKEY %||% "unknown"),
-      title = sprintf("[1계층] 무인 %s 완료 — 등급 %s · 강화 생략",
-                      if (identical(.fidelity, "adapted")) "변형구현(착안)" else "충실구현", G),
-      sections = list(
-        list(type = "bullet", emoji = "🎯", heading = "현재 리서치 상황",
-             items = c("단계: 1계층 충실구현 — 무인 완주",
-                       .tg_target_items(TITLE, PKEY),
-                       sprintf("위치: 검증 통과 · 기저 다중검정 t값 %.3f", .base_pt),
-                       sprintf("직전 판정: 등급 %s · 충실도 %s", G,
-                               if (identical(.fidelity, "adapted")) "착안(변형)" else "충실"))),
-        list(type = "summary", emoji = "📌",
-             body = sprintf("기저 알파가 음수라 강화 %d칸을 생략하고 다음 논문으로 넘어갑니다", .RF_MAXA)),
-        list(type = "kv", emoji = "📊", heading = "성과 요약",
-             kv = rf_perf_kv(dirname(ar))),
-        list(type = "bullet", emoji = "🚩", heading = "주의/약점",
-             items = rf_perf_weak(dirname(ar))),
-        list(type = "bullet", emoji = "💡", heading = "판단",
-             items = c("음수 알파는 약한 게 아니라 반대로 작동한다는 뜻입니다",
-                       sprintf("그 위에 팩터를 얹으면 %d칸이 헛돌 공산이 큽니다", .RF_MAXA),
-                       "측정 결과는 기록에 남아 다음 라운드가 참조합니다")),
-        list(type = "bullet", emoji = "➡️", heading = "다음",
-             items = c("처분: 자본 배정 없음 · 강화 미개시",
-                       # ★방어형이면 버리지 않고 2계층 풀 후보로 등재했다는 사실을 1줄로 남긴다.
-                       if (length(.adm_note) == 1L && nzchar(.adm_note))
-                         paste0("2계층 풀: ", substr(.adm_note, 1, 110)) else NULL,
-                       "큐 다음 논문으로 이월합니다"))),
-                         charts = rf_perf_charts(dirname(ar)))
-    # ★[팩터 분석] — FF3/FF5/Carhart 알파 + Fama-MacBeth. 산출물이 있을 때만 보낸다.
-    #   정본 = telegram_notify.R::tg_pass_analysis (구 알파 서칭과 동일 함수 — 재구현 아님).
-    if (file.exists(file.path(dirname(ar), "analysis_multifactor.csv")) ||
-        file.exists(file.path(dirname(ar), "analysis_fmb_summary.csv")))
-      tryCatch(tg_pass_analysis(.tg_target_label(TITLE, PKEY), dirname(ar)),
-               error = function(e) jlog("factor_tg_failed", err = conditionMessage(e)))
-    else jlog("factor_analysis_absent", dir = dirname(ar),
-              note = "FF/FMB 산출물 없음 — FACTORS 부재이거나 분석 실패") },
-    error = function(e) jlog("telegram_failed", err = conditionMessage(e)))
-  system2("Rscript", shQuote(file.path(ROOT, "02_Infrastructure/ops/reinforce_auto_next_paper.R")), wait = TRUE)
+  ## v10.01 (2026-10-13): 강화가 없으니 '강화 생략' 이 아니라 '재료로 쓰지 않는다' 다. 행동 카드는 남긴다(방어형 판단 근거).
+  .ho <- .v1001_handoff(dirname(ar), .bid_sk %||% "skipped", G, kind = "skipped")
+  tryCatch(.v1001_report(target = .tg_target_label(TITLE, PKEY),
+                       status = list(stage = sprintf("%s 완료", if (identical(.fidelity, "adapted")) "변형구현(착안)" else "충실구현"),
+                                     position = "검증 4관문 통과", previous = sprintf("등급 %s(권위)", G)),
+                       verdict_line = sprintf("등급 %s · 기저 PORT_t %s(문턱 %s 미만) — 알파가 반대로 작동해 수익 엔진 재료로 쓰지 않는다%s",
+                                              G, formatC(.base_pt, format = "f", digits = 2), formatC(.min_pt, format = "f", digits = 2),
+                                              if (length(.adm_note) == 1L && nzchar(.adm_note)) paste0(". 2계층 풀: ", .adm_note) else ""),
+                       card = .ho$card, artifact = dirname(ar),
+                       next_step = "큐 다음 논문 충실구현으로 넘어간다", push = TRUE,
+                       charts = .v1001_charts(dirname(ar)), extra = .v1001_grade_extra(dirname(ar))),
+           error = function(e) jlog("telegram_failed", err = conditionMessage(e)))
+  # ★[팩터 분석] — 산출물이 있을 때만 보낸다 · 없으면 사유를 남긴다(침묵 누락 금지 · 정본 telegram_notify.R::tg_pass_analysis)
+  if (file.exists(file.path(dirname(ar), "analysis_multifactor.csv")) || file.exists(file.path(dirname(ar), "analysis_fmb_summary.csv")))
+    tryCatch(tg_pass_analysis(.tg_target_label(TITLE, PKEY), dirname(ar)), error = function(e) jlog("factor_tg_failed", err = conditionMessage(e)))
+  else jlog("factor_analysis_absent", dir = dirname(ar), note = "FF/FMB 산출물 없음 — FACTORS 부재이거나 분석 실패")
+  system2("Rscript", c(shQuote(file.path(ROOT, "02_Infrastructure/programs/next_replication.R")), "--root", shQuote(ROOT)), wait = TRUE)
   quit(status = 0)
 }
 
@@ -620,7 +625,12 @@ tryCatch(rf_open_entry(1L, BID, base_grade = G, paper_key = PKEY,
                        base_artifacts = dirname(ar), engine_path = eng,
                        count_paper = COUNT_PAPER, root = ROOT),
          error = function(e) fail("ledger_open_failed", conditionMessage(e)))
-.qmirror(PKEY, sprintf("강화 entry 개설 (기저 %s)", G), BID)
+.qmirror(PKEY, sprintf("측정 완료 — 프로그램 재료 (기저 %s)", G), BID)
+## ★v10.01 (2026-10-13): 고정 격자 강화 러너 퇴역 — entry 는 소비 기록(selector 가 원장 paper_key 로 소비 판단)으로만 남기고 바로 접는다.
+##   active 로 두면 소진할 주체가 없어 충실구현 레인이 영구 정지한다(삭제 지도 §0-3).
+tryCatch(rf_park_entry(1L, BID, reason = "v10.01 — 고정 격자 강화 퇴역(2026-10-13). 측정 결과는 리서치 프로그램 재료로 넘어간다(06_Registry/research_programs.json)", root = ROOT),
+         error = function(e) jlog("v1001_park_failed", err = conditionMessage(e)))
+.HO <- .v1001_handoff(dirname(ar), BID, G, kind = "engine")
 
 # ★결합이면 원장 entry 에 앵커와 **희석 판정**을 남긴다 (2026-09-04).
 #   구판은 이 판정을 "첫 셀(B1_1)이 부모를 넘는가" 로 대리했는데, B1_1 은 순수 기저가
@@ -673,41 +683,23 @@ if (!isTRUE(.own$written))
        base_id = BID, grade = G,
        note = "요청이 다른 논문으로 바뀌었다 — 이 실행 결과로 남의 요청을 닫지 않는다(요청 상태는 현 소유 실행이 쓴다)")
 
-tryCatch({ suppressMessages(source(file.path(ROOT, "02_Infrastructure/telegram/telegram_notify.R")))
-  tg_agent_brief(agent = "AlphaSearch", relaxed = TRUE, glossary = FALSE, decode_jargon = FALSE, decode_mode = "off",
-    lock_scope = sprintf("rf_replication_%s", PKEY %||% "unknown"),
-    title = sprintf("[1계층] 무인 %s 완료 — 등급 %s · 강화 개시",
-                    if (identical(.fidelity, "adapted")) "변형구현(착안)" else "충실구현", G),
-    sections = list(
-      list(type = "bullet", emoji = "\U0001F3AF", heading = "현재 리서치 상황",
-           items = c("단계: 1계층 충실구현 — 무인 완주",
-                     .tg_target_items(TITLE, PKEY),
-                     sprintf("위치: 검증 4관문 통과 · 강화 원장 개설 %s", substr(BID, 1, 30)),
-                     sprintf("직전 판정: 기저 등급 %s · 충실도 %s", G,
-                             if (identical(.fidelity, "adapted")) "착안(변형)" else "충실"))),
-      list(type = "summary", emoji = "\U0001F4CC",
-           body = sprintf("충실구현 기저 등급 %s — 강화 %d칸이 다음 주기부터 무인으로 돕니다", G, .RF_MAXA)),
-      list(type = "kv", emoji = "📊", heading = "성과 요약",
-           kv = rf_perf_kv(dirname(ar))),
-      list(type = "bullet", emoji = "\U0001F9ED", heading = "역할 카드(2계층 풀 재료)",
-           items = if (length(.role_items)) .role_items else "역할 카드 미산출 — 일일 재분류에서 다시 잽니다"),
-      list(type = "bullet", emoji = "\U0001F6A9", heading = "주의",
-           items = c(if (identical(.fidelity, "adapted"))
-                       substr(sprintf("착안 구현 — 남긴 기전: %s", .fid$kept %||% "?"), 1, 78)
-                     else "논문 그대로 구현 — 유니버스만 치환",
-                     "등급은 계약 산출값만 인용 — 에이전트 진술은 근거가 아닙니다",
-                     "고정 축·PIT 는 기계가 산출물에서 재도출해 확인했습니다")),
-      list(type = "bullet", emoji = "\u27A1\uFE0F", heading = "다음",
-           items = c("처분: 자본 배정 없음 — 강화 프로세스로 진입",
-                     sprintf("강화 %d칸은 블록당 5개씩 병렬로 무인 실행됩니다", .RF_MAXA)))),
-                       charts = rf_perf_charts(dirname(ar)))
-    # ★[팩터 분석] — FF3/FF5/Carhart 알파 + Fama-MacBeth. 산출물이 있을 때만 보낸다.
-    #   정본 = telegram_notify.R::tg_pass_analysis (구 알파 서칭과 동일 함수 — 재구현 아님).
-    if (file.exists(file.path(dirname(ar), "analysis_multifactor.csv")) ||
-        file.exists(file.path(dirname(ar), "analysis_fmb_summary.csv")))
-      tryCatch(tg_pass_analysis(.tg_target_label(TITLE, PKEY), dirname(ar)),
-               error = function(e) jlog("factor_tg_failed", err = conditionMessage(e)))
-    else jlog("factor_analysis_absent", dir = dirname(ar),
-              note = "FF/FMB 산출물 없음 — FACTORS 부재이거나 분석 실패") },
-  error = function(e) jlog("telegram_failed", err = conditionMessage(e)))
+## v10.01 발송 규칙 §0 — 1단위 1통: 등급(권위) · 위기 방어 판정 · 위기별 낙폭 · 핵심 수치 · 다음
+tryCatch(.v1001_report(target = .tg_target_label(TITLE, PKEY),
+                     program = .V1001_PROG_NAME[[.HO$program]] %||% "수익 엔진",
+                     status = list(stage = sprintf("%s 완료", if (identical(.fidelity, "adapted")) "변형구현(착안)" else "충실구현"),
+                                   position = "검증 4관문 통과 · 프로그램 재료로 등록",
+                                   previous = sprintf("등급 %s(권위) · 충실도 %s%s", G,
+                                                      if (identical(.fidelity, "adapted")) "착안(변형)" else "충실",
+                                                      if (isTRUE(.aud_suspect)) " · 구현 의심 꼬리표" else "")),
+                     verdict_line = sprintf("등급 %s(권위 · 15bps 순비용) — %s재료로 등록했다",
+                                            G, if (identical(.fidelity, "adapted")) paste0("착안 구현(남긴 기전: ", .v1001_clip_words(.fid$kept %||% "?", 120L), ") · ") else ""),
+                     card = .HO$card, artifact = dirname(ar),
+                     next_step = "프로그램 큐에서 조립 단계(실현 가능성 지도 이후)가 쓴다 · 큐 다음 논문으로 넘어간다",
+                     push = TRUE, charts = .v1001_charts(dirname(ar)), extra = .v1001_grade_extra(dirname(ar))),
+         error = function(e) jlog("telegram_failed", err = conditionMessage(e)))
+# ★[팩터 분석] — 산출물이 있을 때만 보낸다 · 없으면 사유를 남긴다(침묵 누락 금지 · 정본 telegram_notify.R::tg_pass_analysis)
+if (file.exists(file.path(dirname(ar), "analysis_multifactor.csv")) || file.exists(file.path(dirname(ar), "analysis_fmb_summary.csv"))) {
+  tryCatch(tg_pass_analysis(.tg_target_label(TITLE, PKEY), dirname(ar)), error = function(e) jlog("factor_tg_failed", err = conditionMessage(e)))
+} else jlog("factor_analysis_absent", dir = dirname(ar), note = "FF/FMB 산출물 없음 — FACTORS 부재이거나 분석 실패")
+system2("Rscript", c(shQuote(file.path(ROOT, "02_Infrastructure/programs/next_replication.R")), "--root", shQuote(ROOT)), wait = TRUE)
 quit(status = 0)

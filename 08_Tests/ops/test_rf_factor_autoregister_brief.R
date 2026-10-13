@@ -159,4 +159,5 @@ if (is.null(BS)) {
 }
 
 cat(sprintf("\n== 결과: %d PASS / %d FAIL ==\n", .pass, .fail))
+cat(sprintf('{"test":"rf_factor_autoregister_brief","pass":%d,"fail":%d,"total":%d}\n', .pass, .fail, .pass + .fail))
 if (.fail > 0L) quit(status = 1L)

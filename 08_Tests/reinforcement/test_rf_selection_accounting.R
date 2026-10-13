@@ -7,7 +7,9 @@
 ##   B. 워커 인자 함수(.rf_sel_args) — 회계 있음 → sweep·N / 없음 → sweep·1·unknown 라벨(추정 금지 · fail-closed)
 ##   C. 계약: 워커가 넘기는 이름 ⊆ run_paper_replication formals · 기본값 chain/1(충실구현 비트 동일) ·
 ##      essence 호출이 리터럴이 아니라 인자를 쓴다 (돌연변이 사본으로 red 확인)
-##   D. 원장 재도출 — 실제 계보에서 N 이 단조·양수이고 러너가 이 함수들을 부른다
+##   D. 원장 재도출 — 실제 계보에서 N 이 단조·양수 · 실소비자(rf_prereg.R::rf_prereg_lineage_n)가 정본 정의로 회계를 낸다
+## (v10.01 2026-10-13) 고정 격자 러너 퇴역으로 D1(러너 reinforce_auto_parallel.R 가 회계를 spec 에 싣는 줄 grep) 대상이 없어졌다(롤백 태그
+##   pre-v10.01-prescription-20261013) — D1 을 남은 실소비자 rf_prereg_lineage_n 의 행동 대조(샌드박스 root · 정본 파일 돌연변이)로 재표적했다.
 suppressMessages(library(jsonlite))
 ROOT <- Sys.getenv("QM_ROOT", "C:/Users/99922/OneDrive/Quant_Module_Moltbot")
 P <- 0L; F <- 0L
@@ -17,7 +19,7 @@ ng <- function(m, d = "") { F <<- F + 1L; cat(sprintf("  NG   %s%s\n", m, if (nz
 GATES  <- file.path(ROOT, "02_Infrastructure/reinforcement/rf_runner_gates.R")
 WORKER <- file.path(ROOT, "02_Infrastructure/ops/rf_cell_worker.R")
 RPR    <- file.path(ROOT, "02_Infrastructure/alpha_search/run_paper_replication.R")
-RUNNER <- file.path(ROOT, "02_Infrastructure/ops/reinforce_auto_parallel.R")
+PREREG <- file.path(ROOT, "02_Infrastructure/reinforcement/rf_prereg.R")   # 회계 정의의 남은 실소비자(v10.01 — 러너 퇴역)
 
 ## 파일에서 `name <- function(...)` 정의 식 하나만 꺼내 평가한다(스크립트 본문은 실행하지 않는다)
 .def_from <- function(path, name, env = new.env(parent = globalenv())) {
@@ -144,11 +146,29 @@ m7 <- sub("exec_price = sim_grade$diagnostics$exec_price", 'exec_price = "close_
 if (!identical(m7, rtxt) && !.c7(m7)) ok("C7m 위반 주입: 리터럴 close_d_legacy 복원 사본은 C7 에서 걸린다") else
   ng("C7m 판별력 없음(또는 대상 줄 부재)")
 
-cat("\n=== D. 원장 재도출 + 러너 배선 ===\n")
-rsrc <- readLines(RUNNER, warn = FALSE, encoding = "UTF-8"); rcode <- rsrc[!grepl("^\\s*#", rsrc)]
-if (any(grepl("rf_lineage_ids(led$entries, BID)", rcode, fixed = TRUE)) &&
-    any(grepl("SPEC$selection_accounting <- rf_selection_accounting(", rcode, fixed = TRUE)))
-  ok("D1 러너가 정본 함수로 회계를 spec 에 싣는다") else ng("D1 러너 배선 부재")
+cat("\n=== D. 원장 재도출 + 실소비자 배선 ===\n")
+## D1 (v10.01 재표적) 실소비자 rf_prereg.R::rf_prereg_lineage_n — 정본(rf_runner_gates.R)의 정의를 파싱해 회계를 낸다.
+##   샌드박스 root(설정 스텁 + 정본 사본 + A 절 합성 원장)에서 A5 와 같은 N 을 내고, 정본 파일의 정의를 바꾸면 따라 바뀐다(사본·리터럴 아님).
+SB <- file.path(tempdir(), sprintf("rf_selacc_%d", Sys.getpid())); unlink(SB, recursive = TRUE, force = TRUE)
+for (d in c("02_Infrastructure/reinforcement", "06_Registry")) dir.create(file.path(SB, d), recursive = TRUE, showWarnings = FALSE)
+writeLines("# stub — rf_prereg 루트 판정용(02_Infrastructure/config.R 존재)", file.path(SB, "02_Infrastructure/config.R"))
+invisible(file.copy(GATES, file.path(SB, "02_Infrastructure/reinforcement/rf_runner_gates.R"), overwrite = TRUE))
+writeLines(toJSON(list(entries = ents), auto_unbox = TRUE, null = "null", na = "null", digits = NA), file.path(SB, "06_Registry/reinforce_ledger_l1.json"))
+pe <- new.env(parent = globalenv())
+pe_err <- tryCatch({ invisible(capture.output(suppressMessages(sys.source(PREREG, envir = pe)))); "" }, error = function(e) conditionMessage(e))
+lin_n <- function() tryCatch(pe$rf_prereg_lineage_n("R_p2", 3L, root = SB), error = function(e) list(err = paste("rf_prereg 적재/호출 실패:", pe_err, conditionMessage(e))))
+p1 <- lin_n()
+## 돌연변이 — 정본 파일 끝에 A6 돌연변이(미측정까지 셈) 정의를 덧붙이면 실소비자 N 이 따라 바뀌어야 한다(9 → 12)
+cat("\nrf_lineage_measured <- function(entries, ids, exclude_codes = character(0)) sum(vapply(Filter(function(x) x$base_id %in% ids, entries), function(x) length(x$attempts), numeric(1)))\n",
+    file = file.path(SB, "02_Infrastructure/reinforcement/rf_runner_gates.R"), append = TRUE)
+p2 <- lin_n()
+if (is.null(p1$err) && identical(p1$n_family_at_registration, sa$n_family_at_registration) && identical(p1$family_root, "R") &&
+    identical(as.numeric(p1$n_lineage_measured), 5) && is.null(p2$err) && !identical(p2$n_family_at_registration, p1$n_family_at_registration))
+  ok(sprintf("D1 실소비자 rf_prereg_lineage_n 이 정본 정의로 회계를 낸다(합성 원장 N = %d = A5) · 정본 파일 돌연변이 → N %d(따라 바뀜 · 사본 아님)",
+             p1$n_family_at_registration, p2$n_family_at_registration %||% NA_integer_)) else
+  ng("D1 실소비자 배선", paste(p1$err %||% "", p2$err %||% "", toJSON(p1[c("n_family_at_registration", "family_root", "n_lineage_measured")], auto_unbox = TRUE),
+                             toJSON(p2["n_family_at_registration"], auto_unbox = TRUE)))
+unlink(SB, recursive = TRUE, force = TRUE)
 L <- tryCatch(fromJSON(file.path(ROOT, "06_Registry/reinforce_ledger_l1.json"), simplifyVector = FALSE), error = function(e) NULL)
 if (is.null(L)) ng("D2 원장 읽기 실패") else {
   deep <- Filter(function(e) !is.null(e$parent$base_id), L$entries)

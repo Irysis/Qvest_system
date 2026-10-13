@@ -42,7 +42,7 @@
     "note": "run_alpha_search 1회=1가설 1전략 단일 실행(sweep 아님). 반복 개선 체인의 IS-only 변형선택·holdout 1회 규약 준수는 호출자 책임 (measurement-graduation §3 chain 자격요건 — 미충족 시 sweep 재분류 대상)."
   },
   "hard_fail": false,
-  "reasons": "non-positive alpha (PORT_t<=0 또는 net_IR<=0)",
+  "reasons": "v3: S 0.000 · B 경계 1.709 · 띠 F · CR normal(시험 창 normal) · 노치 +0 · A 아님 사유 floor:port_t,floor:calmar,oos:rolling36_pass_oos | v921 F: non-positive alpha (PORT_t<=0 또는 net_IR<=0)",
   "contract": {
     "integrity_status": "WARNING",
     "audit_pass": 15,
@@ -53,5 +53,69 @@
     "mdd": 0.397888,
     "calmar": 1.385298
   },
-  "note": "build_bt_result+audit_bt_result+essence_score 계약 경유 실측 (proxy hurdle와 별도 권위값)"
+  "note": "build_bt_result+audit_bt_result+essence_score 계약 경유 실측 (proxy hurdle와 별도 권위값)",
+  "grade_scheme": "grade_v3",
+  "grade_v921": "F",
+  "grade_v3": {
+    "status": "ok",
+    "schema": "grade_v3_v1",
+    "grade": "F",
+    "S": 0,
+    "S_B": 1.7088,
+    "band": "F",
+    "notch": 0,
+    "notch_a": false,
+    "blocked_by": [
+      "floor:port_t",
+      "floor:calmar",
+      "oos:rolling36_pass_oos"
+    ],
+    "floors": {
+      "port_t": false,
+      "calmar": false,
+      "cagr": true,
+      "sharpe": true
+    },
+    "bench": {
+      "calmar": 2.0254,
+      "cagr": 0.8292,
+      "mdd": 0.4094,
+      "sharpe": 1.4894
+    },
+    "cr": {
+      "overall": "normal",
+      "test": "normal",
+      "visible": "insufficient",
+      "n_crisis": 2,
+      "dd_capture_median": 0.649,
+      "dd_capture_worst": 0.6683,
+      "uc_median": 0.4498,
+      "cdar": 0.2783,
+      "controls": "not_provided"
+    },
+    "oos": {
+      "tau_d": "2022-12-31",
+      "gate": false,
+      "parts": {
+        "test_window_cr_not_weak": true,
+        "rolling36_pass_oos": false
+      },
+      "pass_oos": null,
+      "pass_min": 0.5,
+      "pass_life": null,
+      "S_is": null,
+      "S_oos": 0,
+      "retention_calmar": null,
+      "retention_sharpe": null
+    },
+    "parity_max_abs": 1.77635683940025e-15,
+    "nav_source": "contract"
+  },
+  "grade_v3_backfill": {
+    "at": "2026-10-13T15:06:26+0900",
+    "tool": "02_Infrastructure/programs/grade_v3_backfill.R",
+    "decision": "decision_register GRADE-V3-PROMOTE",
+    "prior_essence_grade": "F",
+    "prior_md5": "96c4b088d6997be2d4b5489a2a075f1a"
+  }
 }

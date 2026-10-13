@@ -105,6 +105,9 @@ mkdir -p "$TE/02_Infrastructure/hooks" "$TE/02_Infrastructure/ops" "$TE/06_Regis
 : > "$TE/02_Infrastructure/hooks/qvest_hook_router.py"
 cp "$ROOT/02_Infrastructure/ops/paper_id_norm.py" "$TE/02_Infrastructure/ops/"
 cp "$ROOT/02_Infrastructure/ops/paper_router_prompt.md" "$TE/02_Infrastructure/ops/"
+# (v10.01 10-13) mkfx 와 같은 이유 — 러너가 $BASE/…/rf_llm_env.sh 를 읽는다. E 픽스처만 이 줄이 빠져 claude 호출 전에
+#   '명령 없음' 으로 끝났고, E2 가 09-25 이후 상시 빨강이었다(라우터 결함이 아니라 픽스처 누락).
+cp "$ROOT/02_Infrastructure/ops/rf_llm_env.sh" "$TE/02_Infrastructure/ops/"
 printf '[{"id":"P9001","path":"01_Literature/Alpha_Search_Recharge/%s/mcp_arxiv/MCP_2609_03552.pdf","title":"Self Match Paper","source":"https://arxiv.org/pdf/2609.03552","date_added":"%s","paper_key":null,"arxiv_id":null,"duplicate_of":null}]\n' "$TODAY" "$TODAY" > "$TE/06_Registry/paper_registry.json"
 printf '{"date":"%s","candidates":[{"arxiv_id":"2609.03552","title":"Self Match Paper"}]}\n' "$TODAY" > "$TE/stage_artifacts/paper_recharge/mcp_discovery_${TODAY}.json"
 printf 'downloaded=1\nmcp_candidates=1\n' > "$TE/stage_artifacts/paper_recharge/paper_recharge_${TODAY}.done"

@@ -531,7 +531,7 @@ tg_format_table <- function(df, separator = "-",
 # auto_sanitize=TRUE면 &quot; → " (U+0022), 그리고 지원 안 되는 다른 entity 경고.
 tg_send_rich <- function(msg, silent = FALSE,
                           validate_emoji = TRUE, emoji_min = 1L,
-                          auto_sanitize = TRUE) {
+                          auto_sanitize = TRUE, mute = FALSE) {
   if (isTRUE(auto_sanitize)) {
     original <- msg
     # 1) Telegram HTML는 &lt; / &gt; / &amp; 만 공식 지원. &quot;는 raw " 로 대체.
@@ -605,7 +605,7 @@ tg_send_rich <- function(msg, silent = FALSE,
     }
   }
   tg_send(msg, parse_mode = "HTML", silent = silent,
-          validate_emoji = validate_emoji, emoji_min = emoji_min)
+          validate_emoji = validate_emoji, emoji_min = emoji_min, mute = mute)
 }
 
 # HTML-safe escape 헬퍼 (표 밖 일반 텍스트에 < > & 있을 때 사용)
@@ -1186,7 +1186,11 @@ tg_agent_brief <- function(agent,
                              #   최상단을 평문이 점유하던 v7 설계의 마지막 잔재였다.
                              #   ★본문 inline 풀이는 그대로다 — decode_mode="inline_first"(첫 등장 1회).
                              #   NULL = relaxed 에서 파생. TRUE/FALSE 는 caller 명시 override.
-                             glossary = NULL) {
+                             glossary = NULL,
+                             # v10.01 (2026-10-13 · 발송 규칙 v10.01 §3) — TRUE 면 푸시 없이 채팅에만 남긴다(Telegram
+                             #   disable_notification). 평상 진행 보고는 무음, 판정 변화 · 실패 · 단위 종료만 푸시.
+                             #   기본 FALSE = 기존 호출자 요청 바이트 불변.
+                             mute = FALSE) {
   if (!isTRUE(dry_run) && .tg_serial_enabled() && !.tg_lock_held()) {
     return(tg_with_serial_lock(
       scope = sprintf("tg_agent_brief_%s", agent),
@@ -1206,7 +1210,8 @@ tg_agent_brief <- function(agent,
         decode_mode = decode_mode,
         smart_break = smart_break,
         relaxed = relaxed,
-        glossary = glossary
+        glossary = glossary,
+        mute = mute
       )
     ))
   }
@@ -1485,29 +1490,41 @@ tg_agent_brief <- function(agent,
     if (regexpr(c, s, fixed = TRUE) < 0) n <- n + 1L
     if (n > 0) paste0(s, strrep(c, n)) else s
   }
+  ## ★v10.01 (2026-10-13 · 발송 규칙 v10.01 §2) — 절삭이 포인터를 지우지 않게 한다. 텔레그램 감사(10-13)에서 절삭 27건
+  ##   전부가 섹션 꼬리의 L-code 포인터("처방·회피 전문: L-RF-…")를 잃었다. 섹션의 포인터 줄(L-code · 산출물 ·
+  ##   원장 경로)은 잘라낸 뒤 다시 붙인다(이미 남아 있으면 중복하지 않는다). <pre>/<code> 짝도 맞춘다.
+  .TG_PTR_RE <- "(L-[A-Z]+-[0-9]|전문[:：]|산출물[:：]|원장[:：]|stage_artifacts/|04_Research/)"
   .tg_fit_parts <- function(parts, limit = .TG_FIT_CHARS) {
     for (.k in seq_len(20L)) {
       .over <- nchar(paste(parts, collapse = "\n\n"), type = "chars") - limit
       if (.over <= 0L || length(parts) < 2L) return(parts)
       .idx <- 1L + which.max(nchar(parts[-1L], type = "chars"))
       .p <- parts[.idx]
-      .keep <- max(200L, nchar(.p, type = "chars") - .over - 60L)
+      .lines <- strsplit(.p, "\n", fixed = TRUE)[[1]]
+      .ptr <- utils::tail(.lines[grepl(.TG_PTR_RE, .lines, perl = TRUE)], 2L)
+      .ptr_len <- sum(nchar(.ptr, type = "chars")) + length(.ptr)
+      .keep <- max(200L, nchar(.p, type = "chars") - .over - 60L - .ptr_len)
       .cut <- substr(.p, 1L, .keep)
       .nl <- regexpr("\n[^\n]*$", .cut)
       if (.nl > 200L) .cut <- substr(.cut, 1L, .nl - 1L)
       .cut <- sub("<[^>]*$", "", .cut)
       .cut <- .tg_balance(.tg_balance(.cut, "<b>", "</b>"), "<i>", "</i>")
-      parts[.idx] <- paste0(.cut, "\n<i>… (길이 한계로 절삭 — 전문은 산출물·L-code)</i>")
+      .cut <- .tg_balance(.tg_balance(.cut, "<pre>", "</pre>"), "<code>", "</code>")
+      .ptr <- .ptr[!vapply(.ptr, function(l) grepl(l, .cut, fixed = TRUE), logical(1))]
+      parts[.idx] <- paste0(.cut, "\n<i>… (길이 한계로 일부 생략)</i>",
+                            if (length(.ptr)) paste0("\n", paste(.ptr, collapse = "\n")) else "")
     }
     parts
   }
-  parts <- .tg_fit_parts(parts)
-  msg <- paste(parts, collapse = "\n\n")
-
-  # ── 3.5. v6 SOT 약어 풀이 (default inline_first, 첫 등장 1회) ─────────────────
-  if (isTRUE(decode_jargon) && decode_mode != "off") {
-    msg <- tg_decode_jargon(msg, mode = decode_mode)
-  }
+  ## ── 3.5. v6 SOT 약어 풀이 (default inline_first, 첫 등장 1회) ─────────────────
+  ##   ★v10.01: 풀이는 본문을 늘린다. 구판은 맞춘 **뒤** 풀어 한계를 다시 넘길 수 있었다(감사 10-13 ·
+  ##   telegram_notify.R 구 :1504→1508). 풀이 증가분만큼 여유를 두고 맞춘 뒤 푼다.
+  .tg_dec <- function(m) if (isTRUE(decode_jargon) && decode_mode != "off") tg_decode_jargon(m, mode = decode_mode) else m
+  .joined <- paste(parts, collapse = "\n\n")
+  .grow <- tryCatch(max(0L, nchar(.tg_dec(.joined), type = "chars") - nchar(.joined, type = "chars")),
+                    error = function(e) 0L)
+  parts <- .tg_fit_parts(parts, limit = .TG_FIT_CHARS - .grow)
+  msg <- .tg_dec(paste(parts, collapse = "\n\n"))
 
   # ── 3.6. v7 자동 용어 풀이 footer (SKILL.md §5.5 — 비전공자 가독, 도훈 mandate 2026-07-10) ──
   # 메시지 4096 byte 근접 시 glossary 우선 절삭 (본문 보호).
@@ -1618,7 +1635,7 @@ tg_agent_brief <- function(agent,
     #   실제로 유실됐는데 발신자는 전부 성공으로 남겼다. 아무도 모른 채 9건이 사라졌다.
     #   ★ok=FALSE 면 아래 5.5 에서 lock 을 만들지 않는다 → 다음 tick 이 자연히 재발송한다
     #     (429 는 수십 초면 풀린다). 정직한 판정이 재시도까지 겸한다.
-    .r  <- tg_send_rich(msg, emoji_min = emoji_min)
+    .r  <- tg_send_rich(msg, emoji_min = emoji_min, mute = mute)
     .ok <- if (is.list(.r) && !is.null(.r$ok)) isTRUE(.r$ok) else TRUE
     list(ok = .ok, bytes = msg_bytes,
          error = if (.ok) NULL else sprintf('%s/%s: %s', .r$kind %||% '?',
@@ -1658,9 +1675,14 @@ tg_agent_brief <- function(agent,
 
   # ── 6. Charts (text 발송 후 이어서) ──────────────────────────────────────────
   if (!is.null(charts) && length(charts) > 0) {
-    for (chart in charts) {
+    ## ★v10.01 (2026-10-13 · 발송 규칙 v10.01 §4): 이름 붙은 charts(c("누적수익 — 위기 구간 음영" = path))는 이름을 캡션으로 쓴다.
+    ##   감사(10-13): 캡션이 파일명("auto_port_t.png")뿐이라 무엇을 보는 차트인지 알 수 없었다. 이름 없으면 구판 그대로.
+    .cn <- names(charts)
+    for (.ci in seq_along(charts)) {
+      chart <- charts[[.ci]]
       if (file.exists(chart)) {
-        cap <- sprintf("[%s] %s", agent, basename(chart))
+        .lab <- if (!is.null(.cn) && nzchar(.cn[.ci])) .cn[.ci] else basename(chart)
+        cap <- sprintf("[%s] %s", agent, .lab)
         tg_send_photo(chart, caption = cap)
       }
     }
@@ -2092,7 +2114,8 @@ tg_pass_analysis <- function(strategy_name, output_dir) {
 
   msg <- sprintf("[팩터 분석] %s\n─────────────\n%s",
                  strategy_name, paste(lines_out, collapse = "\n"))
-  tg_send(msg)
+  ## v10.01 (2026-10-13 · 발송 규칙 v10.01 §3): 평상 진단이라 무음 — 감사(10-13)가 블록당 푸시 4~5건 중 하나로 지목
+  tg_send(msg, mute = TRUE)
 }
 
 # ─── DART 수집 진행률 ──────────────────────────────────────────────────────────

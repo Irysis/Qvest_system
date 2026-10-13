@@ -109,8 +109,9 @@ if (!anyNA(c(i_req, i_quit))) {
   if (grepl("failed_needs_session", blk, fixed = TRUE) && grepl('"audit_not_run"', blk, fixed = TRUE))
     ok("B4 분기가 요청을 failed_needs_session/audit_not_run 으로 쓴다") else ng("B4 요청 상태 배선")
   if (grepl("fidelity_audit_not_run", blk, fixed = TRUE)) ok("B5 저널 fidelity_audit_not_run") else ng("B5 저널 없음")
-  if (grepl('tg_agent_brief(agent = "AlphaSearch", relaxed = TRUE', blk, fixed = TRUE) &&
-      grepl("충실도 감사 미실행", blk, fixed = TRUE)) ok("B6 텔레그램 [1계층] 미실행 표제(relaxed)") else ng("B6 텔레그램")
+  ## v10.01(2026-10-13): 보고는 .v1001_report → prep_send(relaxed 보장 — test_rp_telegram_relaxed.R §D) 한 곳을 거친다
+  if (grepl(".v1001_report(", blk, fixed = TRUE) &&
+      grepl("충실도 감사 미실행", blk, fixed = TRUE)) ok("B6 텔레그램 미실행 보고(v10.01 발송기 경유)") else ng("B6 텔레그램")
   if (!grepl("rf_open_entry", blk, fixed = TRUE) && !grepl(".qmirror", blk, fixed = TRUE) &&
       !grepl("ledger_consumed", blk, fixed = TRUE) && !grepl("rf_park_entry", blk, fixed = TRUE))
     ok("B7 분기 안에 원장 개설·소비·큐 미러가 없다 ★") else ng("B7 분기 안에 개설/소비 코드")
@@ -126,7 +127,8 @@ au <- readLines(file.path(ROOT, "02_Infrastructure/ops/rf_replication_auto.sh"),
 ac <- sub("#.*$", "", au)
 i_fn  <- which(grepl("^rp_verify()", ac))[1]
 i_vo  <- which(grepl('"$PREV_FAIL" = "audit_not_run"', ac, fixed = TRUE) & grepl('-s "$WDIR/engine.R"', ac, fixed = TRUE))[1]
-i_cl  <- which(grepl("claude -p", ac, fixed = TRUE))[1]
+## 에이전트 호출 = 단일 진입 rf_llm_agent_run(P0-M1 2026-09-24 이관 — 구 표적 "claude -p" 는 레인에 없다 · 10-13 표적 이설)
+i_cl  <- which(grepl("rf_llm_agent_run ", ac, fixed = TRUE) & !grepl("rf_llm_agent_run()", ac, fixed = TRUE))[1]
 i_wd  <- which(grepl('WDIR="$ROOT/04_Research/strategies/RP_AUTO_${SLUG}"', ac, fixed = TRUE))[1]
 calls <- which(grepl("^\\s*rp_verify; exit", ac))
 if (!is.na(i_fn)) ok("C1 verify 호출이 함수 rp_verify 하나로 모였다") else ng("C1 rp_verify 없음")

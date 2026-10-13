@@ -311,12 +311,12 @@ cands = d.get('candidates') or []
 novel = [c for c in cands if not (key_of(c) and key_of(c) in seen)]
 print(len(novel))
 if cands and not novel:
-    stub = {"date": today, "schema_version": "paper_router_v4", "generated_by": "prefilter",
-            "note": "prefilter: all mcp candidates matched a known paper_key (registry / route history / queue_done) - claude triage not invoked, no telegram (v10 2026-09-02)",
-            "counts_by_route": {"replication": 0, "skip": len(cands)}, "n_factor_candidates": 0,
+    stub = {"date": today, "schema_version": "paper_router_v5", "generated_by": "prefilter",
+            "note": "prefilter: all mcp candidates matched a known paper_key (registry / route history / queue_done) - claude triage not invoked, no telegram (v10 2026-09-02 · v5 engine field 2026-10-13)",
+            "counts_by_route": {"replication": 0, "skip": len(cands)}, "counts_by_engine": {}, "n_factor_candidates": 0,
             "papers": [{"title": c.get('title'), "id": pn.norm_id(c.get('arxiv_id') or c.get('id') or ''),
                         "paper_key": key_of(c), "source": "arxiv", "route": "skip", "factor_candidate": None,
-                        "verdict": "redundant",
+                        "engine": None, "engine_secondary": [], "verdict": "redundant",
                         "reason": "redundant - prefilter: paper_key already in registry/route history/queue_done"}
                        for c in cands]}
     out = os.path.join(R, 'alpha_search_route_%s.json' % today)

@@ -1,6 +1,11 @@
 {
   "schema": "reinforce_auto_config_v1",
-  "enabled": true,
+  "enabled": false,
+  "replication_lane": {
+    "enabled": true,
+    "source": "v10.01 2026-10-13 — 충실구현 무인 레인(rf_replication_auto.sh)의 자기 스위치. 구판은 전역 enabled(퇴역 러너 스위치)를 같이 봐서 러너 퇴역이 레인까지 세웠다(삭제 지도 §0-1). ★예약작업(Qvest_ReinforceAutoLoop)은 2026-10-13 현재 꺼져 있다 — 켜는 것은 도훈."
+  },
+  "retired_v10_01":"2026-10-13 도훈 지시 — 1계층 고정 격자 강화 러너 퇴역(v10.01 목표 역산형 3엔진 리서치로 교체 · 설계 04_Research/01_reports/l1_prescription_redesign_20261013/README.md · 롤백 태그 pre-v10.01-prescription-20261013). enabled=false 는 러너 영구 정지. 이 파일에 남는 키는 다른 레인(llm.lanes · factor_autoregister · replication)이 읽는 것뿐이다.",
   "deploy_window_20260925": "Q 배포 창 22:58~23:4x 종료 — PREREG·V6·B5LAB·CATB 배포(23:35~23:38) · B5_16~20 possible 표식 후 true 복원. 남은 창: R3R_rb·ALLOWP(러너 tick 사이 또는 다음 창)",
   "deploy_window_20260926": "Q 배포 창 2026-09-26T11:16:35+0900 ~ 2026-10-04T08:16:45+0900 종료 — 10-04 08:1x 배포 창 종료 — AXIS·HUMAN·CORE·AGRG·CLEAN·EXPO 관문/표식 1387·7308 park·PREREG fix·LEVER·1505 청정 요청 배포 완료(결정 ENTRY-7308-DISPOSITION 등) · 복원 enabled=True · b5_design.enabled=True",
   "paused_reason": "(해제) 2026-09-25 21:3x 재개 — 도훈 결정 RUNNER-RESTART-AFTER-P0-14 · RUNNER-RESTART-RELAX(P0-14 19:37 · B07 21:29 배포 뒤 현행 격자로 재개 · 유기체 live 0). 선행 배포: P0-05/06 epoch exec_v2_close_t1 · C11 2단계 · P0-08/09 · M1M2 · P0-13 · R2 · B08 상한 · B5M. 뒤따름: R3R(B09 probe·safety_guard) · V6 · 프롬프트 허용 목록 · B5 라벨 · 카탈로그 차단. (직전 정지: 2026-09-24 10:2x 도훈 지시 '무인 1계층 리서치는 멈춰줘' — PIT C11 봉쇄·수리)",
@@ -171,7 +176,7 @@
       "QVEST_RP_EFFORT"
     ],
     "rationale": "★2026-09-04 도훈 결정 — 모델 claude-fable-5-1 · 노력수준은 **레인마다 다르게**. 하나로 정하면 손해다: 레인마다 한 번 실패의 대가가 다르다. 실측(9월 로그): replication 은 28회 착수에 재구현 10회이고 한 번 실패가 에이전트 12분 + 측정 + 팬아웃 6축을 다시 태운다 -> max. b1_design/lcode_mechanism/overlay_propose 는 단발이고 폴백·probe 가 뒤에 있어 실패가 싸다 -> high. fidelity_audit 은 팬아웃으로 축이 좁아져(6축 각자 논문 한 절) 요구 깊이가 줄었다 -> xhigh. ★구 근거(2026-08-29 '최고 산출이 전부 깊은 opus 단일 에이전트에서 나왔다')는 사실 기록으로 남지만 Fable 5.1 이 이 레인에 붙기 전 관측이다 — 재보는 것이 맞다. 설정이 중앙화돼 있어 한 줄씩 되돌릴 수 있다.",
-    "consumed_by": "02_Infrastructure/ops/rf_llm_env.sh::rf_llm_resolve — 다섯 레인(replication·overlay_propose·b1_design·fidelity_audit·cleaner_distill)이 여기서 읽는다. ★2026-09-04 이전에는 이 블록을 **읽는 코드가 0건**이었고 각 레인이 자기 기본값(:-opus/:-max)을 들고 있었다 — 정책을 적어 둔 문서를 아무도 소비하지 않는 상태였다.",
+    "consumed_by": "02_Infrastructure/ops/rf_llm_env.sh::rf_llm_resolve — 무인 레인(replication · fidelity_audit · overlay_audit · cleaner_distill · paper_router · paper_atlas)이 여기서 모델·노력을 읽는다(v10.01 D12 편성 · 설정에 없는 레인은 llm.model/effort 로 떨어진다). ★2026-09-04 이전에는 이 블록을 **읽는 코드가 0건**이었고 각 레인이 자기 기본값(:-opus/:-max)을 들고 있었다 — 정책을 적어 둔 문서를 아무도 소비하지 않는 상태였다.",
     "fable_limit_fallback": {
       "model": "opus",
       "effort": "max",
@@ -186,62 +191,38 @@
       },
       "fidelity_audit": {
         "model": "opus",
-        "effort": "max",
-        "note": "★팬아웃 축별 모델은 06_Registry/rf_fidelity_axes.json 이 정본. 이 값은 단일 감사자 폴백용."
-      },
-      "b1_design": {
-        "model": "opus",
-        "effort": "max"
-      },
-      "lcode_mechanism": {
-        "model": "opus",
-        "effort": "max"
-      },
-      "overlay_propose": {
-        "model": "opus",
-        "effort": "max"
+        "effort": "xhigh",
+        "note": "★v10.01 D12(도훈 채택 2026-10-13): 감사 = Opus xhigh(축 하나씩 좁은 정밀 검사 · 6개 병렬). 팬아웃 축별 모델은 06_Registry/rf_fidelity_axes.json 이 정본 — 이 값은 단일 감사자 폴백용."
       },
       "overlay_audit": {
         "model": "opus",
-        "effort": "max",
-        "note": "★2026-09-17 G1 적대적 설계시점 감사(rf_overlay_audit.sh · 축 정본 06_Registry/rf_overlay_adversary_axes.json). 설계자(B5 레인)가 fable 이므로 감사자는 다른 계열(opus)이어야 한다 — 같은 모델이 자기 설계를 감사하면 같은 맹점을 공유한다. 축별 model/effort 가 이 값을 덮고, 환경변수 QVEST_OA_MODEL/QVEST_OA_EFFORT 가 최우선. 병합은 R(rf_overlay_audit_merge.R · 결정론)이 근거를 재도출해 판정한다."
-      },
-      "b5_design": {
-        "model": "opus",
-        "effort": "max",
-        "note": "★도훈 지시 2026-09-17 — B5 오버레이 자체 설계 레인(rf_b5_design.sh). entry 의 측정표·바닥 낙폭 해부·앞선 논문 B5 교훈·arm 이력을 읽고 스택 배합과 새 arm 코드를 함께 내는 판독+생성 복합 문제라 가장 깊은 설정(fable/max). ★Fable 한도 → llm.fable_limit_fallback(opus/max)으로 처음부터 1회 재실행(직전 훅이 1차 실행의 arm·설계 파일을 치운다 — 두 모델 합작 금지). 설계자가 fable 이므로 G1 감사자(overlay_audit)는 opus 계열 — 같은 모델이 자기 설계를 감사하면 같은 맹점을 공유한다. 환경변수 QVEST_B5_MODEL/QVEST_B5_EFFORT 가 최우선."
+        "effort": "xhigh",
+        "note": "★v10.01 D12: 코드 감사(새 팩터 · 새 arm 의 누출 · 퇴화 · 중복 — G1 승계) = Opus xhigh. 축별 model/effort(06_Registry/rf_overlay_adversary_axes.json)가 이 값을 덮고, 환경변수 QVEST_OA_MODEL/QVEST_OA_EFFORT 가 최우선. 병합은 R(rf_overlay_audit_merge.R · 결정론)이 근거를 재도출해 판정한다."
       },
       "cleaner_distill": {
-        "model": "opus",
-        "effort": "max",
-        "note": "단발 회차이고 뒤에 기계 검증 + 일간 재시도가 있어 한 번 실패가 싸다(b1_design 과 같은 성격). 다만 digest 실측 추적과 적대검증 5체크가 길어 xhigh 로 올릴 여지는 있다 — 백로그 드레인 품질을 보고 재보정."
+        "model": "sonnet",
+        "effort": "high",
+        "note": "★v10.01 D12: 주간 증류 = 정형 증류(명확한 사양 실행) → Sonnet. 다음 에이전트가 읽는 기억이라 medium 보다 한 단계 위(high)."
       },
       "paper_router": {
-        "model": "opus",
-        "effort": "max",
-        "note": "★2026-09-23 도훈 지시 '무인실행에서 LLM 개입부 모두 opus max' — 이전엔 rf_llm_resolve 를 거치지 않고 CLI 기본 모델로 돌던 레인. 이제 설정이 정본"
+        "model": "sonnet",
+        "effort": "high",
+        "note": "★v10.01 D12: 논문 트리아지 = 루브릭 분류(paper_router_prompt.md v5 엔진 분류) → Sonnet high. 틀려도 큐 순서 문제이고 판독 단계가 다시 본다."
       },
-      "alpha_search_queue": {
+      "paper_atlas": {
         "model": "opus",
-        "effort": "max",
-        "note": "★2026-09-23 도훈 지시 '무인실행에서 LLM 개입부 모두 opus max' — 이전엔 rf_llm_resolve 를 거치지 않고 CLI 기본 모델로 돌던 레인. 이제 설정이 정본"
+        "effort": "xhigh",
+        "note": "★v10.01(2026-10-13) 메커니즘 지도 추출(paper_atlas_run.sh) — 원문 판독 · 수치 위치 확인이라 판단형(Opus). 산출은 스테이징뿐이고 R 검증기가 위치 없는 수치를 거부하므로 max 까지는 불필요(xhigh)."
       },
-      "mode_queue_research": {
-        "model": "opus",
-        "effort": "max",
-        "note": "★2026-09-23 도훈 지시 '무인실행에서 LLM 개입부 모두 opus max' — 이전엔 rf_llm_resolve 를 거치지 않고 CLI 기본 모델로 돌던 레인. 이제 설정이 정본"
-      },
-      "factor_deep_recheck": {
-        "model": "opus",
-        "effort": "max",
-        "note": "★2026-09-23 도훈 지시 '무인실행에서 LLM 개입부 모두 opus max' — 이전엔 rf_llm_resolve 를 거치지 않고 CLI 기본 모델로 돌던 레인. 이제 설정이 정본"
-      },
-      "grid_propose": {
-        "model": "opus",
-        "effort": "max",
-        "note": "★2026-09-23 도훈 지시 '무인실행에서 LLM 개입부 모두 opus max' — 이전엔 rf_llm_resolve 를 거치지 않고 CLI 기본 모델로 돌던 레인. 이제 설정이 정본"
-      }
+      "analyst": {"model": "opus", "effort": "max", "note": "★v10.01 D12 — 전략 분석가(전략 이해서). 레인 스크립트는 처방 루프 구축 단계에서 생긴다(개선안 §10.4)."},
+      "prescriber": {"model": "opus", "effort": "max", "note": "★v10.01 D12 — 처방 담당(처방전 1~3건)."},
+      "reviewer": {"model": "opus", "effort": "max", "note": "★v10.01 D12 — 리뷰어(사전 가설 대비 기전 판독 · 다음 수). 정보 경계 τ_D 2022-12-31."},
+      "steward": {"model": "opus", "effort": "max", "note": "★v10.01 D12 — 철학 감독관(의견 · 보류 요청만 · 등급 권한 없음)."},
+      "factor_definer": {"model": "opus", "effort": "xhigh", "note": "★v10.01 D12 — 팩터 정의자(논문 근거 → 정의서)."},
+      "coder": {"model": "sonnet", "effort": "high", "note": "★v10.01 D12 — 엔진 · 처방 · 팩터 코더(사양서 → 코드). PIT 는 모델이 아니라 미래값 섭동 검사가 지킨다."},
+      "report_writer": {"model": "sonnet", "effort": "medium", "note": "★v10.01 D12 — 보고 작성(정형 데이터 → 문장). 판정에 닿지 않는다."}
     },
+    "policy_20261013": "★v10.01 D12(도훈 채택 2026-10-13) — 역할별 재배정: 판단(판독 · 분석 · 처방 · 리뷰 · 감사 · 감독 · Judge) = Opus · 명확한 사양 실행(코딩 · 분류 · 요약) = Sonnet · Fable 미사용(llm.fable_limit_fallback 은 Fable 레인이 없어 비활성). 퇴역 레인 키 삭제: b1_design · lcode_mechanism · overlay_propose · b5_design · alpha_search_queue · mode_queue_research · factor_deep_recheck · grid_propose(구 강화 격자 · v10 퇴역 레인). replication 은 판독(Opus max) / 코딩(Sonnet high) 분할 전까지 opus/max 단일. 설계 = 04_Research/01_reports/l1_prescription_redesign_20261013/README.md §10.",
     "policy_20260923": "★도훈 지시 2026-09-23 '무인실행에서 LLM 개입부 모두 opus max 노력으로' — 전 레인 opus/max. 해석기 밖 레인 5종(paper_router·alpha_search_queue·mode_queue_research·factor_deep_recheck·grid_propose)도 rf_llm_resolve 로 배선. 축별 모델 파일(06_Registry/rf_fidelity_axes.json · rf_overlay_adversary_axes.json)도 opus/max. ⚠트레이드오프: 설계자(B5)와 G1 감사자가 같은 계열(opus)이 되어 '다른 계열로 감사' 원칙(overlay_audit note)이 약해진다 — 되돌리기 = prev_setting_20260923.",
     "prev_setting_20260923": {"replication": ["fable", "max"], "fidelity_audit": ["opus", "xhigh"], "b1_design": ["opus", "high"], "lcode_mechanism": ["opus", "high"], "overlay_propose": ["opus", "high"], "overlay_audit": ["opus", "xhigh"], "b5_design": ["fable", "max"], "cleaner_distill": ["opus", "high"]},
     "prev_setting": {
@@ -333,18 +314,14 @@
     "source": "qepm/memory/axioms/active/AX-*.json (rf_preflight 와 같은 정본)",
     "lanes": [
       "replication",
-      "fidelity_audit",
-      "b1_design",
-      "lcode_mechanism"
+      "fidelity_audit"
     ],
+    "lanes_v10_01": "2026-10-13 v10.01: b1_design · lcode_mechanism 제거(레인 코드 삭제). 살아 있는 주입 지점 = 충실구현 프롬프트(replication) · 충실도 감사(fidelity_audit · 6축 팬아웃 포함) — rf_axiom_brief.sh 단일 지점. 검사 = test_rf_axiom_inject.R E2.",
     "note": "★도훈 지시 2026-09-04 — 공리 주입 경로가 둘 있었는데 둘 다 판단 지점에 안 닿았다. axiom_context_inject 는 PreToolUse[Agent] 훅인데 무인 레인은 Agent 를 0개 스폰하고, rf_preflight 는 셀 스펙에 싣지만 rf_cell_engine 이 preflight 를 한 번도 참조하지 않는다. 그래서 규칙이 도는 자리에만 실리고 LLM 네 지점은 비어 있었다. rf_axiom_brief.sh 가 단일 지점.",
     "framing": "공리는 전제이지 지시가 아니다. 어긋나는 결론을 낼 수 있되 무엇이 전제를 뒤집는 증거인지 적게 한다. 특히 AX-000(소수 실패를 구조적 한계로 단정 금지)이 없으면 기전 에이전트가 세 칸 보고 축을 닫아 버린다.",
     "no_truncation": "110자 절단은 원장 기록용이다. 판단에 쓰려면 문장이 온전해야 한다."
   },
-  "distill_on_block": {
-    "enabled": true,
-    "note": "★도훈 지시 2026-09-04 — corpus(lcode_harvester)는 부팅마다, 증류(cluster_extractor)는 주간 cleaner 안에서만 돌았다. 강화는 하루 블록 L-code 5~6건이라 주기가 안 맞았다: 실측으로 강화 75건이 corpus 에 있는데 distilled 0건 → 수동 실행하자 후보 7건 즉시 생성. 이제 블록 L-code 발행 직후 같이 돈다."
-  },
+  "retired_keys_v10_01": "2026-10-13 v10.01: distill_on_block 삭제(발화 지점 = 퇴역 러너 블록 L-code 직후뿐). 그 밖의 퇴역 러너 키(combination · b1_design · b5_design · b5_budget · promote_* · daily_cap · parallel_cells · resume_state 등)는 읽는 코드가 없는 사료다 — 롤백 태그 pre-v10.01-prescription-20261013 와 짝.",
   "paused_at": "2026-09-04T22:22:17+09:00",
   "mode_note": "★퇴역 키 (2026-09-05 도훈 지시 '분기 제거 — parallel 로 단일화'). reinforce_auto_tick.sh 는 더 이상 이 값을 읽지 않고 항상 reinforce_auto_parallel.R 을 쓴다. 구판은 mode!=parallel 이면 reinforce_auto_run.R 로 갈랐는데, 그 러너에는 B1 LLM 설계·블록 전이 설계·entry 예산 상향(25+max(0,B1칸-5))이 없어 폴백 5칸·예산 25 고정 레인이 됐다. 순차 실행은 parallel_cells=1.",
   "resumed_at": "2026-09-05T08:56:29+0900",

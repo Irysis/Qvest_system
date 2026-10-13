@@ -414,7 +414,6 @@ SUITES=(
   #   (최종 승자)이 **한 쌍**이다. 막기만 배포하면 강화가 전략 로테이션 풀에 영원히
   #   못 들어가고, 열기만 하면 ③칸이 자기 산출을 먹는다(자기입력 루프). 두 방향을
   #   같은 검사기에서 보고, 돌연변이 통제 2종(env 전환 · 호출부 삭제)으로 발화를 실증한다.
-  "08_Tests/contracts/test_ladder_pool_entry.R"
   # 2026-08-24 신설(v9.21 축 1): 등급 일원화 계약. 이 저장소는 등급이 둘 병존한 게 아니라
   #   hurdle_gate 가 2026-05-31 에 이미 DEMOTED 됐는데 **문서가 강등을 안 따라간** 상태였고,
   #   배선은 더 나빴다 — 강등된 proxy 등급이 권위 등급 계산 여부를 정하는 순환 의존이라
@@ -1276,42 +1275,28 @@ SUITES=(
   #   "미편입 18/218 — 배터리가 이 파일들을 한 번도 돌리지 않는다" 로 잡고 있던 것.
   #   08_Tests/reinforcement/ 는 v10 의 실제 리서치 레인(격자 25칸·원장·셀 엔진)을 지키는
   #   자리인데 디렉터리 통째로 배터리 밖에 있었다 — 계기가 있어도 안 돌면 방어선이 아니다.
-  "08_Tests/ops/test_reinforce_auto.sh"
+  # v10.01(2026-10-13): 구 test_reinforce_auto.sh(고정 격자 러너 + 레인 혼합 1,068줄)를 레인·진입점·공급 절만 남겨 이관 —
+  #   스위치 분리(replication_lane.enabled) · 공급기 next_replication.R · 고아 claim 순서 · 레인 안전장치 · 백틱 양성 대조
+  "08_Tests/ops/test_replication_lane.sh"
   "08_Tests/reinforcement/test_rf_backfill_idempotence.R"
-  "08_Tests/reinforcement/test_rf_base_weight.R"
-  "08_Tests/reinforcement/test_rf_block_lcode.R"
-  "08_Tests/reinforcement/test_rf_carry_treatment.R"
   "08_Tests/reinforcement/test_rf_cell_engine_smoke.R"
   "08_Tests/reinforcement/test_rf_claim.R"
-  "08_Tests/reinforcement/test_rf_combination_launch.R"
   "08_Tests/reinforcement/test_rf_grid_contract.R"
   "08_Tests/reinforcement/test_rf_holdings_axis.R"
   "08_Tests/reinforcement/test_rf_overlay_arms.R"
   "08_Tests/reinforcement/test_rf_pick_key.py"
-  "08_Tests/reinforcement/test_rf_promote.R"
   "08_Tests/reinforcement/test_rf_root_papers.R"
-  "08_Tests/reinforcement/test_rf_send_verdict.R"
-  "08_Tests/reinforcement/test_rf_spec_dedup.R"
-  "08_Tests/reinforcement/test_rf_terminal_retry.R"
   "08_Tests/reinforcement/test_rp_portfolio_spec.R"
   # 2026-09-03 v10.2 — LLM 재귀 루프 계약 4종. 전부 위반 주입 동반.
   "08_Tests/reinforcement/test_overlay_probe.R"
   "08_Tests/reinforcement/test_rf_mechanism_map.R"
-  "08_Tests/reinforcement/test_rf_lesson.R"
   "08_Tests/hooks/test_arm_gen_read_guard.sh"
-  "08_Tests/reinforcement/test_rf_coverage.R"
-  "08_Tests/reinforcement/test_rf_block_order.R"
-  "08_Tests/reinforcement/test_rf_notify_overlay_axis.R"
   # 2026-09-04 — 격자 커서. 등록 거부 1건이 격자 위치를 영구히 어긋내던 자리(양방향).
-  "08_Tests/reinforcement/test_rf_grid_cursor.R"
   # 2026-09-04 — 결합 레인: 설계(LLM) → 측정 1회 → base 게이트 (양방향).
-  "08_Tests/reinforcement/test_rf_combination_design.R"
   # 2026-09-04 — B1 블록 설계(LLM 1회): 등록부 실재성·중복·상한·폴백 (양방향).
-  "08_Tests/reinforcement/test_rf_b1_design.R"
   # 2026-09-04 — 적대적 충실도 감사: 스키마·처분·**소비보다 앞**에 서는가 (양방향).
   "08_Tests/reinforcement/test_rf_fidelity_audit.R"
   # 2026-09-04 — 강화 누적 구조: 블록 승계·다음블록 설계·집행 판정 (양방향).
-  "08_Tests/reinforcement/test_rf_block_accumulate.R"
   "08_Tests/reinforcement/test_rf_block_design.R"
   # 2026-09-04 — 공리가 판단 지점(LLM 레인 4종)에 닿는가 + 증류 주기.
   "08_Tests/reinforcement/test_rf_axiom_inject.R"
@@ -1323,28 +1308,19 @@ SUITES=(
   # 2026-09-07 도훈 결정 — 볼록성 플래그 폐기(무신호 52% vs 실제 32% · 진짜 볼록 0/179 · 심도월 10개 중 2개가 2026)
   "08_Tests/contracts/test_ds_convex_retired.R"
   "08_Tests/reinforcement/test_rf_block_design_schema.R"
-  "08_Tests/reinforcement/test_rf_mechanism_tone.R"
   # 2026-09-04 — 논문 명시 비용의 전달: 무명시를 15bps 로 덮으면 병기판이 등급판과 같아진다.
   "08_Tests/ops/test_rp_commission_basis.R"
   # 2026-09-04 — 1계층 파이프라인 점검 수리 5종: count_paper · relaxed 텔레그램 · 소진 요약 1회 · jlog 격리 · 승계 arm 강등
   "08_Tests/ops/test_rp_count_paper.R"
   "08_Tests/ops/test_rp_telegram_relaxed.R"
-  "08_Tests/reinforcement/test_rf_summarize_once.R"
   "08_Tests/reinforcement/test_rf_jlog_isolation.R"
-  "08_Tests/reinforcement/test_rf_carry_degrade.R"
   # 2026-09-04 — 승격·결합 레인 정합(stdin 프롬프트 · carry overlay · B1 재료 상한 · 기전 백필) + '알게 된 것' 규칙 생성기
-  "08_Tests/reinforcement/test_rf_lane_parity.R"
-  "08_Tests/reinforcement/test_rf_block_insights.R"
-  "08_Tests/reinforcement/test_rf_skill_reflects_runtime.R"
   # 2026-09-05 — 승격·결합 entry 의 B1 설계가 승계를 알고 예산 규칙을 아는가(충실구현과 같은 구조)
-  "08_Tests/reinforcement/test_rf_b1_carry_aware.R"
   # 2026-09-05 — 블록 L-code 의 "다음 격자 축" 이 러너의 **적응 순서**를 가리키는가 (양방향).
   #   구판은 선언 순서 k+1 을 적어 부팅 `Last:` 줄이 틀린 축을 echo 했다(L-RF-20260904_223318).
-  "08_Tests/reinforcement/test_rf_block_lcode_next.R"
   # 2026-09-05 — **같은 결함이 재료 생성기에도** 있었다: entry$block_order 부재 시 정적 목록
   #   c("B1","B2","B3","B5","B4") 폴백 → 설계자에게 rfbd_catalog("B2") 를 넘기는데 러너는 B5 로 갔다.
   #   양방향(적응 축 + 그 축 카탈로그 / 구판 리졸버 주입).
-  "08_Tests/reinforcement/test_rf_materials_next_block.R"
   # 2026-09-06 — 적대적 충실도 감사 레인 결함 3종(역슬래시 QM_ROOT 병합 즉사 · 병합 실패 exit 0 · 미실행=unverifiable→proceed):
   #   병합 단계 ROOT 정규화·실패 전파(셸 · claude 미호출) · 처분 audit_required · 감사 없이 개설 불가(rf_audit_gate + 배선 재도출).
   "08_Tests/ops/test_rf_fanout_merge_root.sh"
@@ -1358,29 +1334,20 @@ SUITES=(
   "08_Tests/ops/test_boot_lean_rf_budget.R"
   # 2026-09-21 리서치 디렉터 (도훈 승인 플랜 Part 3 · D0): 진단 계약(essence 항등·규칙 양방향·날짜 0·샌드박스 e2e) ·
   #   부팅 6번째 줄(캐시 읽기만 · stale 표식) · 아침 체인 [3/3] 배선(stage_result·순서·timeout)
-  "08_Tests/ops/test_rf_director_contract.R"
-  "08_Tests/ops/test_boot_lean_director_line.R"
-  "08_Tests/ops/test_morning_run_director_stage.sh"
   # D1: 결정 기록 writer(append-only · chosen⊆후보 · essence 객체 거부) · 디렉터 1일 1회 기록 + [무인] 텔레그램 on_change
   "08_Tests/reinforcement/test_rf_record_decision.R"
-  "08_Tests/ops/test_rf_director_tg.R"
   # D2: 2계층 무인 레인 — 셸 게이트(disabled/not_due/R1 미결/gate_pass/tick 등록) · 드라이버 샌드박스 e2e(스텁 러너·빌더 ·
   #   claim 직렬화 · MC1 라벨 금지 · floor-only 변형 풀) · 러너 env 4줄 기본값=구동작
   "08_Tests/ops/test_rf_l2_auto.sh"
   "08_Tests/ops/test_rf_l2_driver.R"
   "08_Tests/ops/test_run_wf_env_defaults.R"
   # D3: 디렉터 실행기(act=false 무행동 · L2 요청 발행/슬롯 busy · 지시 결합 --directed 적격/부적격/dry) · B5 재료 (2b) 컨텍스트 절
-  "08_Tests/ops/test_rf_director_actions.R"
-  "08_Tests/ops/test_rf_b5_materials_context.R"
   # D4: 방향 결정 주간 채점(결과 귀속·Δbind·규칙 재현 양성 대조·insufficient 보류·dry 쓰기 0·Cleaner 배선)
-  "08_Tests/axiom/test_direction_replay.R"
   # D5: 정책 상태기계(proposed→shadow→live 자동(도훈 ①)→강등→tombstone · 조건별 돌연변이 · 킬스위치 2종 · 되돌리기 동봉)
   "08_Tests/axiom/test_policy_auto_live_rule.R"
   # 2026-09-21 도훈 "규칙 채점 데일리로 · Qvest 실행 시점에": 부팅 7번째 줄(Rules: 캐시 읽기만 · stale)
-  "08_Tests/ops/test_boot_lean_rules_line.R"
   # 2026-09-24 도훈 DIR-PHASE0: director.enabled 실배선(동결 = 산출 5종 0 · 양성 대조 · 게이트 제거 돌연변이 · 운영 config 3스위치) ·
   #   W3 지도 넛지는 동결 중 침묵(양성 대조 · config 부재는 종전 · 돌연변이)
-  "08_Tests/ops/test_rf_director_freeze.R"
   "08_Tests/hooks/test_continuity_w3_director_freeze.py"
   "08_Tests/ops/test_rf_prompt_quote_parity.R"
   # 2026-09-07 실사고: 프롬프트 예시의 "24%" 가 파이썬 포맷을 깨 계획 미생성 → 감사 3회 스폰 전부 halt_no_plan.
@@ -1393,22 +1360,9 @@ SUITES=(
   #   같은 블록의 인증만료 알림은 따옴표 헤레독+생짜 개행으로 한 번도 나간 적이 없었다.
   "08_Tests/ops/test_rp_env_failure_classify.R"
   "08_Tests/ops/test_rf_verify_extract_pkgs.R"
-  "08_Tests/reinforcement/test_rf_avoid_target.R"
   "08_Tests/reinforcement/test_rf_block_design_catalog_parity.R"
   "08_Tests/reinforcement/test_rf_block_design_code_follows_pick.R"
   "08_Tests/reinforcement/test_rf_claim_pid_reuse.R"
-  "08_Tests/reinforcement/test_rf_combo_launch_gated_by_review.R"
-  "08_Tests/reinforcement/test_rf_exhaust_delegate.R"
-  "08_Tests/reinforcement/test_rf_grid_consumed_exhausts.R"
-  "08_Tests/reinforcement/test_rf_next_paper_halts_on_pending_request.R"
-  "08_Tests/reinforcement/test_rf_no_active_delegates_next_paper.R"
-  "08_Tests/reinforcement/test_rf_notify_fit_length.R"
-  "08_Tests/reinforcement/test_rf_notify_rank_distinct.R"
-  "08_Tests/reinforcement/test_rf_overlay_stack.R"
-  "08_Tests/reinforcement/test_rf_promote_carry_universe_reset.R"
-  "08_Tests/reinforcement/test_rf_promote_child_exists.R"
-  "08_Tests/reinforcement/test_rf_resume_cell_by_code.R"
-  "08_Tests/reinforcement/test_rf_resume_reuse_result.R"
   # 2026-09-07: 원인이 수리로 제거된 terminal 칸을 되살리는 writer(rf_reopen_attempt) — 사유 필수·이력 누적·측정된 칸 거부
   "08_Tests/reinforcement/test_rf_reopen_attempt.R"
   "08_Tests/reinforcement/test_rf_weight_arms_explore.R"
@@ -1462,7 +1416,6 @@ SUITES=(
   #   P0-01 시행 회계: 강화 셀 sweep + 계보 누적 측정 N 배선 · formals 계약 · 구판 하드코딩 돌연변이 red
   "08_Tests/reinforcement/test_rf_selection_accounting.R"
   #   P0-M4 worktree 고립 수리 이식: .look1(원자 벡터 [[ 폴백) · 키 집합 대조(setequal) — 수리 전 red 실증
-  "08_Tests/reinforcement/test_rf_materials_cell_lookup.R"
   "08_Tests/ops/test_rf_verify_tg_target.R"
   #   P3-07 결정 대기 레지스터 + 부팅 Director 줄 부기 — owner 거부 · 재결정 거부 · 파손=명시 오류 · 필터 돌연변이 red
   "08_Tests/ops/test_decision_register.R"
@@ -1612,12 +1565,10 @@ SUITES=(
   # 같은 관문의 실물 러너·이월 샌드박스 e2e(약 4분): legacy A 보류(held:legacy_regime · mailbox 0 · 산출물 요청 치움 · entry active) →
   #   다음 tick 칸 소비 → rebase 표식 뒤 tick 시작 재평가 발행+졸업 · 현행 규약 A 즉시 발행(후보별 judge_request_<BID>_<n>.json) ·
   #   이월 defer/승격/부모 기준선 마스킹 — 돌연변이 M1 관문 우회 enqueue · M2 graduate 항상 TRUE red · 운영 파일 md5 불변
-  "08_Tests/reinforcement/test_rf_runner_a_gate_e2e.R"
   # 2026-09-24 P0-05→06 rebase 드라이버(통합 검증 I1·I2 수리 · rf_rebase_driver.R) 종단(약 1~2분 · 골든·B6 사본 샌드박스):
   #   계획(D-A N · C11 skip · native 제외 · 명시 root 고정) → 실제 P0-05 재측정(sweep/N · 캐시) → 항목(키 regime · 정본 조립기 ·
   #   scoring_mismatch) → rebase(계획 뒤 원장 변경 거부 · 측정 키 전부 형제 값) → 적대검증 규약 판독(형제 판 declared_verified) ·
   #   A 회계 원천 → epoch(부분·승계 0 거부) · 러너 폴백 3곳이 remeasure_* 형제 판을 집지 않음 — 돌연변이(채점 대조 제거 · 폴백 필터 삭제) red
-  "08_Tests/reinforcement/test_rf_rebase_driver.R"
   # 2026-09-25 P0-08 선정층 as-of(B1 규칙 선정기 rf_factor_arms.R · B7 rf_sleeve.R::rf_sl_conditional_ic_asof · 감사 D4-02·D4-05·D10-05):
   #   PIT 섭동(as-of 뒤 IC·벤치 교란 → 신판 불변 · 구판 변함) · tier 어휘 재도출(S1/S2/S3 · 등록부 전 팩터 일치) · 약세 보유월 정렬 ·
   #   확장창 분위 · Ret/100 제거 · 퇴역 select 거부 — 돌연변이 M1~M8 red (감사 수치 재현 E 절 = RF_ASOF_REALDATA=1 일 때만 · 기본 SKIP)
@@ -1646,7 +1597,6 @@ SUITES=(
   "08_Tests/ops/test_cert_backfill_main_guard.R"
   #   Q14 rf_auto_notify.R Grade A 문구 = rf_grade_a_disposition(대기열 재도출: 발행 후보별 judge_request_<BID>_<n>.json · 보류 held:<코드> · entry active · 기록 없음)
   #   — 발행자 파일명 규칙 AST 대조 · 요약 길이 계약(.TG_CONFIG) · 구 문구 0 · 스텁 텔레그램 렌더 배선 · 돌연변이(구판·파일명·고정 문자열·보류 분기·요약 가변 길이·경로 폴백) red
-  "08_Tests/reinforcement/test_rf_notify_grade_a_disposition.R"
   # <<< QEPM-IMMEDIATE-FIXES
   # >>> C11-P2 통합 배포(deploy.sh · 2026-09-25 · 판정서 pit_c11_20260924 · 결정 PIT-C11-REMEDIATION·JM-C1·AE-1003·P2-AUX·CALMAR-FREQ-DAILY·FR-REMEASURE-PREREG)
   #   JM: regime_jump_model C1 수리(jm_causal v1 · 원문 Shu-Yu-Mulvey 2024 §3.4.1-2 전방 필터) — 미래 섭동·접두 불변 스윕(전환일 −3~+1)·출력 계약·VIX C11 관문
@@ -1689,7 +1639,6 @@ SUITES=(
   #   — 돌연변이(구 문언·관문 가상 이관·표지 삭제·구 가드·정체 판정 제거·info 복원·후속 가드 제거) red · tempdir 만 씀
   "08_Tests/worktask/test_qepm_freeze_residual.R"
   "08_Tests/portfolio/test_mba_main_guard.R"
-  "08_Tests/reinforcement/test_rf_notify_winner_section.R"
   # <<< QEPM 동결 잔여 수리
   # 2026-09-24 P0-M1 무인 레인 AutoMem 차단 + 기억 쓰기 가드 + inbox:
   #   단일 진입 — 무인 claude -p 전수 parse(6언어 · 미경유 0 · 허용 = rf_llm_agent_run 함수 단위) · 픽스처 19종 양방향 ·
@@ -1710,11 +1659,9 @@ SUITES=(
   # 2026-09-25 R2 — B1 설계 재료의 교차 entry 전기간 수치 가림(pit.md C1 D-E): 가림 규칙 양방향(식별자 보존) ·
   #   재료 교차 절 수치 0(검사 자체 판별기) · 기저 절 보존 · 돌연변이 3종(가림 삭제 → 발송 전 게이트가 멈춤 ·
   #   가림+게이트 삭제 → 잔존 red · dec 규칙 무력화 red) — 운영 무접촉(QVEST_RF_ROOT·QVEST_RP_JLOG = tempdir)
-  "08_Tests/reinforcement/test_rf_b1_materials_redact.R"
   # 2026-09-25 de_follow B5M — B5 설계 재료의 교차 entry 전기간 수치 가림(D-E-B5-MATERIALS · pit.md C1 D-E):
   #   적재기(정본 rf_b1_design_lib.R 이름 적재 · 부수효과 0 · 결손/중복/무력 = fail-closed) · 교차 절 수치 0(검사 자체 판별기) ·
   #   자기 절 보존 · (3) arm_id 순 · 돌연변이 4종(가림 끔 → 게이트 · 가림+게이트 끔 → 잔존 red · 순위 복원 red · 적재 실패 중단)
-  "08_Tests/reinforcement/test_rf_b5_materials_redact.R"
   # 2026-09-25 P0-14 A 자격 관문 시점 계보 표식 재도출(rf_lineage_flags.R · P0-08 derive 와 같은 술어) — 합성 원장(표식 부모 carry·손자 보류 ·
   #   as-of 재선정·as-of 자식 통과 · C11 격리 팩터·정지 arm·격리 엔진·격리 기저 보류) · 실원장 사본 parity(재도출 = self∪inherited·pit_c11 표식) ·
   #   22632 계보 새 칸 모사 보류 · 러너 SPEC selection_basis 부기 · 충실구현 어댑터 격리 엔진 보류 · 돌연변이 6종 red · tempdir 만 씀 ·
@@ -1747,7 +1694,6 @@ SUITES=(
   #   as-of 방향(C14) · 미래 IC 주입 불변 + 창 안 주입 양성 대조 · R3 상한 가드 생존 · as-of 절단 무력화 돌연변이 red · 제외 술어(PIT 표식·규약·축·
   #   적대검증·Q④ 노출) · Q④ 검출기(식별자 보호 돌연변이) · 적대검증 정본 술어 위임 · 쓰기 불변성 · 핀 대조 · 설정 fail-closed · tempdir 만 씀
   #   (적대검증 수리) 기저 엔진 설계 노출(결합 엔진 프롬프트 교차 entry 수치 · 실데이터 양성/음성 대조) · 사전등록 관문(필수 결정 · 해제 문구 · fail-closed)
-  "08_Tests/reinforcement/test_rf_floor_v2.R"
   # 2026-09-25 P2-01 사전등록 레버 실험 계약(rf_prereg.R): 설정 fail-closed · 스키마 위반 주입 17 + 등록 차단 13 · writer(덮어쓰기 거부·
   #   rev·가족·색인 묘비·변조 검출) · 검정력 3종(measurement-graduation 표 항등·required_effect 단일 출처) · SE(짝지은 블록 부트스트랩·
   #   null 희석·위상쌍 거부) · 판정(라벨 4종·멈춤 집행·손계산/sha/규약 거부·1회만·AX-008) · 드라이런 쓰기 0 · 적대 검증 수리(수치=산출물 재도출·
@@ -1761,21 +1707,16 @@ SUITES=(
   # 2026-09-25 de_follow2 B5LAB — B5 설계 재료의 교차 entry 결과 라벨 가림(D-E-B5-LABELS · pit.md C1 D-E):
   #   어휘 재도출(원장 G2 기록·RFM_VCLASSES·ADV_DEFERRED_VERDICT·rf_target_brief 리터럴·디렉터 상태 · 결손 = fail-closed) · 교차 절 라벨 0(검사 자체 판별기) ·
   #   (2b)(4b)(5)(6) 원천 표식·(6) (action,state) 순 · 자기 절 바이트 불변 · 돌연변이 8종(조립 가림 끔 → 게이트 · 전부 끔 → 판별기 · 순서·개수·사인·디렉터·극성 복원 · 적재 실패)
-  "08_Tests/reinforcement/test_rf_b5_materials_labels.R"
   # 2026-09-25 de_follow2 ALLOWP — 오버레이 arm 생성 프롬프트의 probe ③d 허용 함수 목록(도훈 결정 B09-ALLOWLIST-PROMPT):
   #   렌더러(probe 적재기 경유 · 키별 집합 = 레지스트리 · 변경 반영 · 부재/파손/스키마/능력 오염/적재기 부재 = 미제공 rc 3 · 렌더 ⇔ probe 판정) ·
   #   B5 재료 (7) 목록 · 미제공 = (7)·(8) 명시 · 생성 레인 실제 프롬프트(가짜 claude) · 미제공 = LLM 호출 0 — 운영 무접촉(tempdir)
-  "08_Tests/ops/test_rf_allowlist_prompt.R"
   # >>> B5FIX 7308 B5 설계 우선순위·경계 백필 (2026-09-26 · 도훈 "1번 진행" · 러너 본체 예외 승인 · 사고 09-25 22:07~22:55)
   #   저장 관문(rf_lcode_mechanism_lib.R::lcm_design_guard): 레인 산출(원장 b5_design.rounds · 파일 source)이 있으면 기전 B5 설계 거부 +
   #   백업 · B2/B3 사후 설계 금지 · 원장 판독 불가 = 기존 파일 보존 · 반대 방향(레인이 기전을 덮음) 불변 — 실물 레인·merge · 돌연변이 4종 red
-  "08_Tests/reinforcement/test_rf_b5_design_priority.R"
   #   경계 백필 + 격자 재도출 대조(reinforce_auto_parallel.R · rf_boundary_backfill.R): 실물 러너 샌드박스 — 사고 재현(경계 1회) · 사고 뒤
   #   상태 백필(G2 → L-code → 기전 → 지연 텔레그램) · 멱등 · 격자 소진(예산 > 격자) · G2 실패 상한 · 대조가 낡은 격자 tick 을 닫는다 ·
   #   돌연변이 4종 red (약 15~20분)
-  "08_Tests/reinforcement/test_rf_boundary_backfill.R"
   #   지연 블록 텔레그램 = 그 블록 시점 표(rf_auto_notify n 까지 · delayed 표기) · 정상 경로 불변 — 드라이런
-  "08_Tests/reinforcement/test_rf_notify_block_asof.R"
   # <<< B5FIX
   # >>> B5FIX-C 소비 보류 표식 (2026-09-26 · 도훈 결정 항목 (c) · a_eligibility_gate.json holds.vintage_flag.consume_hold)
   #   표식 칸(design_materials_cross_entry_labels · possible)은 블록 승자·바닥·carry 기준선·승격 best 에서 제외 · 설정 없으면 항등 — 돌연변이 red
@@ -1785,7 +1726,6 @@ SUITES=(
   #   삽입 판정 8 · 제외 술어(승자·바닥·승격·A always-on·N) + 양성 대조 · 러너 격자·예산·등록 루프 추출 실행 · 면제 제거 돌연변이 3종 →
   #   재현 칸 측정 0회 = E3 red · E3 판정 11 · 기준선 해석 5 · null 판독기(→ rf_prereg_se_null 사슬) · 엔진 null_perm(결정론·접두 안정·난수 복원) ·
   #   축포·블록 L-code 제외 — tempdir 만 씀
-  "08_Tests/reinforcement/test_rf_control_cells.R"
   # 2026-09-25 P2 통합 구현(INTEG) ② b_ewcw 짝지은 Δ 계약(contracts/b_ewcw_paired.R · PR-L1 1차 지표): NW 패리티(정본 .nw_t_mean) ·
   #   알려진 Δ 주입 회수(value·se·CI 정확 이동 · −4SE → t=−4) · 구조 주입(tilt .ta_roll_ols·.ta_shrink → 회수비 ≈ Vasicek w) ·
   #   귀무 보정(교환 가능 무작위 쌍 T=5400 · fixed-b 위양성률 ∈ 띠 · t≤−3 꼬리 · CI 0 제외율) · 입력 계약(규약·설정·데이터 지문·창·주입·겹침) ·
@@ -1806,13 +1746,9 @@ SUITES=(
   #   정본 rf_lane_rules.R — 레인 순위·차단·FIFO·세대 하한·구조 상태(불변식 ①④⑤ · 진입 동결)·D-G B5 축소 + 예산 가산 차단(rf_budget_auto n_b5_cells) · 돌연변이 12종
   "08_Tests/reinforcement/test_rf_lane_rules.R"
   #   next_paper 종단(합성 원장 샌드박스): FIFO · 개설 직전 halt · 세대 하한(미룸·면제·충족 · 미룬 부모 미이월) · 실험 제외 · 러너 claim — 돌연변이 5종
-  "08_Tests/reinforcement/test_rf_next_paper_fifo.R"
   #   러너 active 선택 절 추출 실행: 레인 순위 · 반사실 선위임 · 반사실 양보(원장 동시 쓰기 차단) · 실험 제외 — 돌연변이 2종
-  "08_Tests/reinforcement/test_rf_runner_lane_select.R"
   #   arm 생성 레인 G1 적대 감사 경유(D-G 성과 비소비 분기): pass/reject/unavailable · probe 먼저 · kill switch — 돌연변이 2종
-  "08_Tests/ops/test_rf_overlay_propose_g1.sh"
   #   충실구현 레인 ACT = 차단 active 만(반사실·실험 비차단 · 판정 불능 폴백) — 돌연변이 1종
-  "08_Tests/ops/test_rf_replication_lane_act.sh"
   # <<< O0a HUMAN 사람 규칙
   # >>> O0a 유기적 강화 기질(회계·기록·봉쇄) (2026-09-25 · 설계 04_Research/01_reports/organic_reinforce_20260925/organic_design_final.md §8.1 O0a · 결정 REINFORCE-ORGANIC-AUTONOMY·ORGANIC-SCOPE)
   #   결정 레지스터 G7: 기계 포인터 행(M-ORG- · resolved · scope 허용목록 · 헌법 경계 거부 · 권한 결정 · 주간 상한) · 네임스페이스 · 기계/무인 문맥 stop ·
@@ -1823,7 +1759,6 @@ SUITES=(
   #   시행 로그 정본(P1-02): writer · 거부 · 결정↔시행 조인 · decision_id 밀리초+순번+해시(구판 초 단위 돌연변이 = 중복) · attempt$design
   "08_Tests/reinforcement/test_rf_trial_log.R"
   #   생산자 7곳 종단(샌드박스 러너·이월·결합 · 스텁 워커/픽커): 조인 100% · 원장 재도출 대조 · reopen 종단 · 돌연변이 2종 red(약 5분)
-  "08_Tests/reinforcement/test_rf_trial_log_producers.R"
   #   소진 entry 되살리기(사람 호출): exhausted→active · 멱등 · 거부 · 문맥 봉쇄 · CAS — 돌연변이 3종 red
   "08_Tests/reinforcement/test_rf_reopen_entry.R"
   #   유기체 정책 사전등록(rf_prereg.R 확장 · P2-01 writer 재사용): 관문 shadow_ok/미결 전용/refused · sha 재계산 · 문맥 봉쇄 — 돌연변이 3종 red
@@ -1833,14 +1768,12 @@ SUITES=(
   #   원장 투영 어댑터 열 허용목록(config organic.view.columns) · fail-closed · 값 누출 0 · 돌연변이 red
   "08_Tests/reinforcement/test_rf_organic_adapter_columns.R"
   #   칸 단위 설계 출처(E3) · B1 재료 교차 entry 노출 파일별 도출 — 돌연변이 2종 red
-  "08_Tests/reinforcement/test_rf_design_source.R"
   # <<< O0a 유기적 강화 기질
   # >>> CLEANLANE FA-CLEAN-BASE-PATH 청정 충실구현 레인 (2026-09-26 · 결정 FA-CLEAN-BASE-PATH · FLOOR-BASE-ENGINE-Q4)
   #   가드 청정 표식(R6 대상·허용 목록·저장소 밖 · 증명 표식 · fail-closed · 설계 레인 바이트 동일) · 주입 훅 성과 문맥 제외 · 모드 해석 ·
   #   피드백 가림(사후 재검 fail-closed) · 레인 동적(가짜 claude) · 감사 셸 청정 분기 · 검증기 도우미 · 돌연변이 8종 red
   "08_Tests/ops/test_rf_clean_lane.sh"
   #   F_A 청정 기저 선정 계약 + 청정 레인 출처 기록 대조(전사 증명·sha·감사 원천) + 숨은 로더 흐름(2001.04185 위양성 수리)
-  "08_Tests/reinforcement/test_rf_clean_base.R"
   # <<< CLEANLANE
   # 2026-09-26/10-03 AUTOMEM-EXPOSED-CELLS-DISPOSITION · B5FIX-CONSUME-HOLD · PROMO1-CARRY-OMISSION-FLAG — A 관문 ⑤ entry 기저 표식 전파
   #   (entry_base_flags · 계보·같은 엔진·같은 내용) · 청정 출처 전파 제외(engine_rel·wdir_prefix) · 칸 표식 = 소비 제외 · 기저 표식 = 소비 유지 ·
@@ -1850,6 +1783,55 @@ SUITES=(
   #   remeasure 판 계약 CSV 재조립 소비(등재 sim 병기) · 신판 = 등재 sim · close_d/판독 불가/레거시/무결성 미달/모호/산출물 없음 = 제외+사유 코드 ·
   #   진단 스위치(dry-run 전용) · 멱등 · 돌연변이 3종 red · 운영 무쓰기  (I7 정본 벤치·격자 HARD 는 test_fr_v4_measurement.R §E)
   "08_Tests/regime/test_l2_pool_close_t1.R"
+  # >>> v10.01 리서치 프로그램 (2026-10-13 · 1계층 목표 역산형 재설계 · 롤백 태그 pre-v10.01-prescription-20261013)
+  #   행동 카드 계약(위기 낙폭 포착 · 상승 포착 · CR 판정 · τ_D 분할 · 크기 짝 대조 — 오라클 양성 대조 · 시장/정적 절반 위반 주입)
+  "08_Tests/contracts/test_behavior_card.R"
+  #   리서치 프로그램 등록부 writer(큐 중복 차단 · 사전등록 강제 · 상태 어휘 · 선행 조건 · 운영 등록부 md5 불변)
+  "08_Tests/programs/test_program_registry.R"
+  #   논문 라우팅 v5 → 프로그램 재료 큐 동기화(멱등 · v4 이하 건너뜀)
+  "08_Tests/programs/test_program_paper_sync.R"
+  #   v10.01 보고 발송기 prep_send(판정 먼저 · 숫자 안 자름 · 절대경로·내부 코드 없음 · dry-run)
+  "08_Tests/programs/test_program_report.R"
+  #   메커니즘 지도 적재(필수 필드 · 엔진 어휘 · 근거 없는 수치 주장 거부 · 원자 쓰기)
+  "08_Tests/programs/test_mechanism_atlas.R"
+  #   논문 지도 LLM 레인(스위치 · 잠금 · DRYRUN 무쓰기 · 샌드박스 --root)
+  "08_Tests/programs/test_paper_atlas_run.sh"
+  #   부팅 Programs 줄(구 Director·Rules 대체 · 블록 패턴 추출 · 부재/파손/schema ? · R 판독 재도출 · 돌연변이)
+  "08_Tests/ops/test_boot_lean_programs_line.R"
+  #   요청 종결 소유 대조(늦게 끝난 실행이 남의 요청을 닫지 않는다) — 구 test_reinforce_auto.sh §28b 가 안에서 돌리던 것을 독립 편입
+  "08_Tests/ops/test_rf_request_guard.R"
+  # <<< v10.01
+  # >>> 편입 드리프트 수리 (2026-10-13 · v10.01) — suite_enrollment E2 가 잡던 미편입 14건 + 등급 v3 계약
+  #   각 검사를 단독 실행해 통과를 확인한 뒤 올렸다. 요약 JSON 이 없던 4건(strategy_role · factor_autoregister_brief ·
+  #   panel_axis_freshness · rf_preaudit)은 요약 줄을 더했고, 허용목록 A1b 는 등록부의 동결 설계(새 arm 은 동결 목록으로
+  #   판정 · 자동 확장 금지)에 맞춰 '등록부 출처 arm ⊆ 디렉터리' 판정으로 고쳤다(반대 방향 = 빌더 재현 불가만 결함).
+  "08_Tests/contracts/test_strategy_role.R"
+  "08_Tests/data/test_benchmark_axis_rebuild.py"
+  "08_Tests/data/test_incremental_update_file_guards.R"
+  "08_Tests/data/test_quantiwise_fetch.py"
+  "08_Tests/ops/test_rf_factor_autoregister_brief.R"
+  "08_Tests/ops/test_rf_overlay_audit.sh"
+  "08_Tests/ops/test_rf_panel_axis_freshness.R"
+  "08_Tests/ops/test_rf_preaudit.py"
+  "08_Tests/reinforcement/test_overlay_probe_allowlist.R"
+  "08_Tests/reinforcement/test_overlay_probe_calendar.R"
+  "08_Tests/reinforcement/test_rf_base_cache_seed.R"
+  "08_Tests/reinforcement/test_rf_overlay_admit_source.R"
+  "08_Tests/reinforcement/test_rf_overlay_adversary.R"
+  "08_Tests/reinforcement/test_rf_rebalance.R"
+  #   등급 v3 진단 계약(MC7 · S0) — S 정의 고정점 · 교환 관계 · 정의역 · 문턱 정본 폴백 거부 · 결정표 · 재현 대조 위반 주입
+  "08_Tests/contracts/test_grade_v3.R"
+  # <<< 편입 드리프트 수리
+  # MC8 크기 짝 · 노출 짝 무신호 대조(2026-10-13 · v10.01) — 양성 대조(전략 = 바스켓 · 벤치 × Ē 정확 일치) · 크기 착시(노출 짝만이면
+  #   selection 오판 돌연변이) · 플라시보 분위 판정(운 좋은 한 종목 = 평균 비교 오판 돌연변이) · 타이밍 경로 진단 · PIT as-of 위반 주입 ·
+  #   롱숏 닫힘 · 설정 어휘 · 보고 소비자(program_report.R) · 디렉터리판 저장 왕복
+  "08_Tests/contracts/test_matched_controls.R"
+  # S1 진단 패킷(2026-10-13 · v10.01 처방 루프 입력) — τ_D 불변(τ_D 뒤 세계를 통째로 바꿔도 바이트 동일) · τ_D 를 늦추면 달라짐(돌연변이) ·
+  #   날짜 검사기 위반 주입 3종 · 노출 분해 항등식 · 위기 귀속 합 · 종목명 비적재 · 롱숏 닫힘 · 저장 왕복
+  "08_Tests/contracts/test_diagnosis_packet.R"
+  # 처방 루프 v0 라운드 도구(2026-10-13 · S2) — 처방 delta 를 엔진 파서로 검증(위반 주입 10종) · 사양 컴파일 고정 축 보존 ·
+  #   처방 입력 문서 검사(τ_D 뒤 날짜 · 등급 표기) · 도구 상자 custom 제외 · 오버레이 빌트인 = 엔진 정본 · R6 경로
+  "08_Tests/programs/test_rx_round.R"
 )
 
 

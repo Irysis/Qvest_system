@@ -1,7 +1,7 @@
 #!/bin/bash
 #==============================================================================
-# boot_lean.sh — Qvest v10.4 부팅 (2026-08-23 신설 · 2026-09-05 v10 mode 정합)
-#   상태 5줄만 출력. 검사 0 · 수리 0 · R 실행 0 · 테스트 0 · 백그라운드 0 · 항상 exit 0.
+# boot_lean.sh — Qvest 부팅 (2026-08-23 신설 · 2026-09-05 v10 mode 정합 · 2026-10-13 v10.01 프로그램 줄)
+#   상태 6줄만 출력(Data · Queue · Last · Book · Alerts/Budget · Programs). 검사 0 · 수리 0 · R 실행 0 · 테스트 0 · 백그라운드 0 · 항상 exit 0.
 #   ★필드가 안 읽히면 '?' 로 두고 계속한다(fail-soft) — 부팅이 세션을 막지 않는다.
 #   전수 점검(구 bootstrap.sh 전문)은 주간/수동 ops/health_full.sh 로 분리됐다.
 #==============================================================================
@@ -20,7 +20,7 @@ DG_AGE=$(( ( $(date +%s) - $(stat -c %Y "$DG" 2>/dev/null || echo 0) ) / 3600 ))
 if [ ! -f "$DG" ] || [ "$DG_AGE" -ge 6 ]; then
   bash "$PROJECT/02_Infrastructure/ops/alerts_digest_build.sh" >/dev/null 2>&1 || true
 fi
-PROJECT="$CLAUDE_PROJECT_DIR" PY="$CLAUDE_PROJECT_DIR/.venv_qvest_ml/Scripts/python.exe" "$PY" - <<'PYEOF' 2>/dev/null || printf 'Data: ?\nQueue: ?\nLast: ?\nBook: ?\nAlerts/Budget: ? (status 산출 실패 — venv python 확인)\nDirector: ?\nRules: ?\n'
+PROJECT="$CLAUDE_PROJECT_DIR" PY="$CLAUDE_PROJECT_DIR/.venv_qvest_ml/Scripts/python.exe" "$PY" - <<'PYEOF' 2>/dev/null || printf 'Data: ?\nQueue: ?\nLast: ?\nBook: ?\nAlerts/Budget: ? (status 산출 실패 — venv python 확인)\nPrograms: ?\n'
 import json,os,re,glob,time,subprocess,datetime as dt
 P=os.environ["PROJECT"]; PY=os.environ["PY"]; o=[]
 R=lambda *a: os.path.join(P,*a)
@@ -100,16 +100,8 @@ def PEND():
     aq=J("06_Registry/grade_a_queue.json")
     na=sum(1 for e in ((aq or {}).get("entries") or []) if (e.get("status") if isinstance(e,dict) else None)=="awaiting_judge")
     if na: z.append("★A등급 대기 %d(Judge/BOOK confirm)"%na)
-    cc=J("06_Registry/combination_candidates.json")
-    nc=len((cc or {}).get("candidates") or [])
-    if nc: z.append("결합후보 %d"%nc)
-    # ★결합 검토 '의무' (2026-09-05) — 후보 수(candidates)와 다른 양이다. lean-loop 는
-    #   "논문 3편 소비마다 Q-Lead 가 결합 기회를 검토·기록"(착수 무관 의무)이라 못박는데,
-    #   부팅은 후보 개수만 보여줘 의무가 발동해도 아무 데서도 안 보였다. 원장이 정본.
-    _cr=(J("06_Registry/reinforce_ledger_l1.json") or {}).get("combination_review") or {}
-    _ps=S(lambda: int(_cr.get("papers_since_last_review")))
-    if _ps is not None and _ps>=3:
-        z.append("★결합검토 의무 %d/3(최종 %s)"%(_ps,str(_cr.get("last_review_date") or "?")))
+    # (v10.01 · 2026-10-13) 구 '결합후보 n' · '★결합검토 의무 n/3' 표시는 결합 레인(rf_combination_*)과 함께 퇴역 —
+    #   논문 간 결합은 리서치 프로그램 P4_ASSEMBLY 가 맡는다(Programs 줄).
     # 공리 리뷰(건식) 미소비 보고서 — 기계가 산출하고 세션이 판단한다(cleaner 선례).
     #   반증 축적분은 자동 deprecate 되지 않는다(metric_type=estimated 는 human-review 강제).
     rv=sorted(glob.glob(R("qepm","memory","axioms","review_log","dryrun","review_dryrun_*.json")))
@@ -117,7 +109,8 @@ def PEND():
         age=(time.time()-os.path.getmtime(rv[-1]))/86400.0
         if age<=8: z.append("공리리뷰 %s(%.0f일)"%(os.path.basename(rv[-1])[14:22],age))
     return (" | "+" · ".join(z)) if z else ""
-o.append("Queue: alpha-pending %s · %s | 강화 L1 %s·L2 %s active · data-pipe %s%s"%(q," / ".join(fq) if fq else "frontier open 0",RF(1),RF(2),dp,S(PEND,"")))
+# ★v10.01 (2026-10-13): 1계층 고정 격자 강화는 퇴역 — L1 원장은 소비 기록(active 즉시 park)이라 표시하지 않는다. L2 강화만.
+o.append("Queue: alpha-pending %s · %s | 강화 L2 %s active · data-pipe %s%s"%(q," / ".join(fq) if fq else "frontier open 0",RF(2),dp,S(PEND,"")))
 # ③ Last — 최신 리서치 1단위 L-code (다음 라운드의 출발점)
 #   ★v10 mode 정합 (2026-09-05): 구판은 `alpha_search/` 한 폴더만 봤다. v10 의 리서치
 #     1단위는 충실구현(`paper_replication/` — lean-loop 5단계가 명시한 mode)과 강화
@@ -169,35 +162,33 @@ def CTX():
             u=(j.get("message") or {}).get("usage") or {}
             return sum(int(u.get(k) or 0) for k in ("input_tokens","cache_creation_input_tokens","cache_read_input_tokens"))
 o.append("Alerts/Budget: open %s · %s · built %s | CLAUDE.md %s · rules %s · hooks %s · ctx %s"%(op,today_txt,bt,BG(S(lambda: os.path.getsize(R("CLAUDE.md"))),8192),BG(rb,25600),BG(hk,13),BG(S(CTX),50000)))
-# ⑥ Director — 리서치 디렉터 판정 (2026-09-21 도훈 승인 플랜 Part 3 · D0). **읽기만** — 캐시는 아침 체인
-#   morning_run.sh [3/3] rf_director.R 이 쓴다(원장·카탈로그·레지스트리 진단 · 측정 0). 30h 초과·stale 표식이면 ★stale.
-#   부재면 '?' 와 원인 1줄(부팅 계약: R 0 · 수리 0 · 항상 진행). 검사: 08_Tests/ops/test_boot_lean_director_line.R (블록 패턴 추출).
-#   ★부재와 파손은 다른 사실이다(v10.4 2026-09-24 · 칩 task_19342c25). 구판은 J() 가 UnicodeDecodeError 를 삼켜 둘 다
-#   '미실행'으로 찍었다 — 실측 09-24: MorningReboot.bat 의 LC_ALL=C.UTF-8 로 R 이 C 로케일에 떨어져 rf_director 가
-#   boot_line 을 바이트 단위로 잘라 '회'(ED 9A 8C) 중간에서 끊긴 캐시를 썼고(오프셋 13417), 실제로는 돌았는데 부팅은
-#   '미실행'이라 했다. 이제 바이트로 읽어 대체문자(U+FFFD)로 복원해 내용을 보여 주고 파손을 따로 표시한다.
-#   ★DIR-PHASE0 (2026-09-24 도훈): config director.enabled 가 **명시적 false** 면 캐시를 보이지 않는다 — 동결된 디렉터의
-#   마지막 캐시는 정정 전 수치(close_d_legacy · C11 오염 칸 포함)와 막힌 권고를 담고 있어 '현재 판정'처럼 보이면 해롭다.
-#   config 판독 불가는 '?' + 원인(동결로 접지 않는다). 키 부재·true 는 종전 경로(캐시 전재).
-def DIRECTOR():
-    cf=S(lambda: json.load(io.open(R("06_Registry","reinforce_auto_config.json"),encoding="utf-8-sig")))
-    if not isinstance(cf,dict): return "Director: ? (reinforce_auto_config 판독 불가 — 동결 여부 미확인)"
-    dc=cf.get("director")
-    if isinstance(dc,dict) and dc.get("enabled") is False:
-        return "Director: 동결(흡수 대기 · DIR-ABSORB — 진단·기록은 P1-01·P3-01·P3-05·P3-07 로 이관)"
-    p=R(".cache","rf_director_latest.json"); da=AG(".cache/rf_director_latest.json")
-    if not os.path.exists(p): return "Director: ? (rf_director 미실행 — morning_run [3/3] 또는 Rscript 02_Infrastructure/ops/rf_director.R)"
-    raw=S(lambda: open(p,"rb").read(),b""); bad=False
-    try: txt=raw.decode("utf-8-sig")
-    except UnicodeDecodeError: txt=raw.decode("utf-8-sig","replace"); bad=True
-    dj=S(lambda: json.loads(txt))
-    if not isinstance(dj,dict) or not dj: return "Director: ? (캐시 파손 — %s · 다음 아침 체인이 재생성 · 즉시: Rscript 02_Infrastructure/ops/rf_director.R)"%("UTF-8 깨짐" if bad else "JSON 판독 불가")
-    bl=str(dj.get("boot_line") or "?")
-    if bl.startswith("Director:"): bl=bl[len("Director:"):].strip()
-    st=(" ★stale "+HH(da)) if (da is None or da>=30 or dj.get("stale")) else ""
-    return "Director: %s%s%s"%(bl,st," ※캐시 UTF-8 파손(대체문자 표시 · 다음 체인이 재생성)" if bad else "")
+# ⑥ Programs — v10.01 1계층 리서치 프로그램 등록부(06_Registry/research_programs.json · writer = 02_Infrastructure/programs/program_registry.R).
+#   **읽기만**. 부팅 계약(R 0)이라 pr_status_lines 를 부르지 않고 같은 필드를 한 줄로 접는다:
+#   측정 계약 완료 n/N(남은 id) | 프로그램별 상태(재료·라운드가 있으면 수). 구 Director(rf_director.R — 고정 격자 진단)는 러너와 함께 퇴역.
+#   판독 실패는 0 으로 접지 않고 '?(<원인>)' — 빈 등록부와 못 읽은 등록부는 다른 사실이다. 부팅은 계속.
+#   검사: 08_Tests/ops/test_boot_lean_programs_line.R (블록 패턴 추출 · 픽스처 · 돌연변이).
+def PROGRAMS():
+    p=R("06_Registry","research_programs.json")
+    if not os.path.exists(p): return "Programs: ?(등록부 부재)"
+    try: d=json.load(io.open(p,encoding="utf-8-sig"))
+    except Exception as e: return "Programs: ?(파손 JSON %s)"%type(e).__name__
+    if not isinstance(d,dict) or d.get("schema")!="research_programs_v1":
+        return "Programs: ?(schema %s)"%(str(d.get("schema"))[:24] if isinstance(d,dict) else type(d).__name__)
+    mc=(d.get("measurement_contract") or {}).get("items")
+    pg=d.get("programs")
+    if not isinstance(mc,list) or not isinstance(pg,list): return "Programs: ?(items/programs 형식)"
+    nd=sum(1 for m in mc if isinstance(m,dict) and m.get("status")=="done")
+    todo=[str(m.get("id") or "?") for m in mc if isinstance(m,dict) and m.get("status")!="done"]
+    ps=[]
+    for g in pg:
+        if not isinstance(g,dict): continue
+        nq=len(g.get("queue") or []); nr=len(g.get("rounds") or [])
+        ps.append("%s %s%s"%(str(g.get("id") or "?").split("_")[0],g.get("status") or "?",
+                              "(재료 %d·라운드 %d)"%(nq,nr) if (nq or nr) else ""))
+    return "Programs: 측정계약 %d/%d%s | %s"%(nd,len(mc)," (남은 "+" ".join(todo)+")" if todo else "",
+                                            " · ".join(ps) if ps else "프로그램 0")
 # ⑥-b 대기 결정 — 결정 대기 레지스터 부기 (P3-07 · 2026-09-23 플랜 qvest-1-drifting-eclipse). **읽기만** — writer =
-#   reinforce_ledger.R::dr_open/dr_resolve(원자 쓰기 · owner 만 resolve). 새 줄을 만들지 않고 Director 줄 끝에 붙는다(부팅 줄 수 불변).
+#   reinforce_ledger.R::dr_open/dr_resolve(원자 쓰기 · owner 만 resolve). 새 줄을 만들지 않고 Programs 줄 끝에 붙는다(v10.01 · 구 Director 줄).
 #   ★왜: R1 → l2_auto.enabled → director.act 사슬이 2계층 A 경로·자기개선 채점기를 막는데 부팅 어디에도 안 보였다(감사 D7-04·D8-05).
 #   status=="open" 만 센다(resolved 를 세면 이미 끝난 결정이 최고령으로 떠 대기가 영원히 안 줄어든다).
 #   차단 = open 항목의 blocks "lane:" 을 막는 항목 수 내림차순(동률은 오래된 항목 순) 상위 3 + 나머지 수.
@@ -229,24 +220,8 @@ def DECISIONS():
     ln=sorted(cnt,key=lambda k:-cnt[k])
     lanes=("·".join(ln[:3])+(" +%d"%(len(ln)-3) if len(ln)>3 else "")) if ln else "없음"
     return " · 대기결정 %d · 최고령 %s(%sd) · 차단 %s"%(len(op),op[0].get("id") or "?",ag,lanes)
-o.append(S(DIRECTOR,"Director: ?")+S(DECISIONS," · 대기결정 ?(표시 예외)"))
-# ⑦ Rules — 방향 규칙 일간 채점 (도훈 2026-09-21 "데일리로 · Qvest 실행 시점에"). **읽기만** — 캐시는 /qvest 1a 단계에서 세션이
-#   run_direction_score.R --quiet 로 방금 쓰고, 아침 체인의 rf_director 도 매일 쓴다. 30h 초과면 ★stale. 부재면 '?' + 원인.
-#   검사: 08_Tests/ops/test_boot_lean_rules_line.R (블록 패턴 추출).
-#   ★DIR-DIRECTION-SCORE (2026-09-24 도훈 '폐기'): 채점기의 입력(결정·행동·결과)은 디렉터가 만든다. director.enabled 가
-#   명시적 false 면 낡은 채점 캐시를 전재하지 않고 폐기 표식만 — 줄 자체의 삭제는 흡수 Phase 2(부팅 줄 수 계약과 함께).
-def RULES():
-    cf=S(lambda: json.load(io.open(R("06_Registry","reinforce_auto_config.json"),encoding="utf-8-sig")))
-    dc=cf.get("director") if isinstance(cf,dict) else None
-    if isinstance(dc,dict) and dc.get("enabled") is False:
-        return "Rules: 폐기(DIR-DIRECTION-SCORE · 디렉터 동결로 입력 없음 — 줄 삭제 = 흡수 Phase 2)"
-    rj=J(".cache/rf_direction_score_latest.json") or {}; ra=AG(".cache/rf_direction_score_latest.json")
-    if not rj: return "Rules: ? (run_direction_score 미실행 — /qvest 1a 또는 Rscript 02_Infrastructure/axiom/replay/run_direction_score.R --quiet)"
-    ln=str(rj.get("line") or "?")
-    if ln.startswith("Rules:"): ln=ln[len("Rules:"):].strip()
-    st=(" ★stale "+HH(ra)) if (ra is None or ra>=30) else ""
-    return "Rules: %s%s"%(ln,st)
-o.append(S(RULES,"Rules: ?"))
+o.append(S(PROGRAMS,"Programs: ?(표시 예외)")+S(DECISIONS," · 대기결정 ?(표시 예외)"))
+# (v10.01 · 2026-10-13) 구 ⑦ Rules(방향 규칙 일간 채점 — 디렉터 입력)는 디렉터와 함께 퇴역.
 print("\n".join(o))
 PYEOF
 mkdir -p "$PROJECT/.cache" 2>/dev/null || true

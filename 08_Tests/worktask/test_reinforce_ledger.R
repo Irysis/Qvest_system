@@ -3,6 +3,9 @@
 # 계약: ①root_papers 없는 attempt 거부 ②L1 20회 상한 stop + exhausted 전이
 #       ③L2 무한(21회째 허용) ④Grade A → graduated ⑤논문 3편 → 결합 검토 플래그·기록
 #       ⑥PIT FAIL → 재활성화 ⑦원자 쓰기 왕복 (재로드 파싱)
+# (v10.01 2026-10-13) 고정 격자 러너 퇴역으로 ⑧ 끝의 '무인 러너 2종(reinforce_auto_parallel.R · reinforce_auto_run.R)이
+#   idea 조각을 .s1() 로 강제' 정적 검사 2건 삭제 — 대상 코드가 없다(롤백 태그 pre-v10.01-prescription-20261013).
+#   같은 계약을 살아 있는 무인 원장 호출자 rf_l2_auto.R(2계층 레인 · .l2_chr)로 옮겨 잰다(정적 1 + 거동 1).
 # 실행: Rscript 08_Tests/worktask/test_reinforce_ledger.R
 
 # 앵커 = self-first (r-portability 금칙 ④-b: 테스트 러너는 자기 위치 1순위 — env 는 폴백)
@@ -148,14 +151,29 @@ if (length(sprintf("a=%s b=%s", "A", NULL)) == 0L)
   ok("⑧ 함정 재현 — sprintf 는 인자 하나가 NULL 이면 character(0) 을 낸다") else
   ng("⑧ sprintf 영길이 붕괴가 재현되지 않는다 — 이 계약의 전제가 바뀌었다(검사기 갱신 필요)")
 
-# 무인 러너 2종이 조립 전에 조각을 길이 1로 강제하는가 (정적 — 원장 가드에 도달하기 전 단계)
-for (.f in c("02_Infrastructure/ops/reinforce_auto_parallel.R", "02_Infrastructure/ops/reinforce_auto_run.R")) {
-  .repo <- Sys.getenv("QM_ROOT", "C:/Users/99922/OneDrive/Quant_Module_Moltbot")
-  .s <- tryCatch(paste(readLines(file.path(.repo, .f), warn = FALSE), collapse = "\n"), error = function(e) "")
-  if (grepl(".s1(CELL$code)", .s, fixed = TRUE))
-    ok(sprintf("⑧ %s — idea 조각을 .s1() 로 강제", basename(.f))) else
-    ng(sprintf("⑧ %s — idea 조립이 무방비(영길이 붕괴 재발 경로)", basename(.f)))
-}
+# 무인 원장 호출자가 넘기기 전에 idea 를 길이 1로 강제하는가 (원장 가드에 도달하기 전 단계)
+#   ★(v10.01 2026-10-13) 구 대상 = 무인 러너 2종(reinforce_auto_parallel.R · reinforce_auto_run.R 의 .s1(CELL$code)) — 퇴역.
+#     rf_append_attempt 의 살아 있는 무인 호출자 = 2계층 레인 rf_l2_auto.R 로 옮긴다.
+.l2a <- tryCatch(readLines(file.path(root, "02_Infrastructure/ops/rf_l2_auto.R"), warn = FALSE, encoding = "UTF-8"),
+                 error = function(e) character(0))
+.l2a <- paste(sub("#.*$", "", .l2a), collapse = "\n")   # 주석 제외(코드만)
+.n_call <- lengths(regmatches(.l2a, gregexpr("rf_append_attempt\\(", .l2a, perl = TRUE)))
+.n_cast <- lengths(regmatches(.l2a, gregexpr("rf_append_attempt\\([^)]*idea\\s*=\\s*\\.l2_chr\\(", .l2a, perl = TRUE)))
+if (.n_call >= 1L && .n_cast == .n_call)
+  ok(sprintf("⑧ rf_l2_auto.R — 원장 호출 %d곳 전부 idea 를 .l2_chr() 로 강제", .n_call)) else
+  ng(sprintf("⑧ rf_l2_auto.R — idea 조립이 무방비(영길이 붕괴 재발 경로) · 호출 %d · 강제 %d", .n_call, .n_cast))
+# 거동 — .l2_chr(rf_l2_lib.R) 가 실제로 길이 1로 접고, 접힌 공백은 원장(L2)이 거부한다(조용한 붕괴 없음 · 위반 주입)
+.L2 <- new.env(parent = globalenv())
+.l2ok <- tryCatch({ sys.source(file.path(root, "02_Infrastructure/ops/rf_l2_lib.R"), envir = .L2); is.function(.L2$.l2_chr) },
+                  error = function(e) FALSE)
+.fold <- if (isTRUE(.l2ok)) lapply(list(NULL, character(0), NA_character_, c("첫 서술", "둘째")), .L2$.l2_chr) else list()
+.len1 <- length(.fold) == 4L && all(vapply(.fold, function(v) is.character(v) && length(v) == 1L, logical(1))) &&
+  identical(.fold[[4]], "첫 서술")
+.rej2 <- if (isTRUE(.l2ok)) tryCatch({ rf_append_attempt(2L, "FR_T1", .L2$.l2_chr(NULL), "regime_identification", pp, root = R); "no_stop" },
+                                     error = function(e) conditionMessage(e)) else ""
+if (.len1 && grepl("idea 가 비었다", .rej2))
+  ok("⑧ .l2_chr 는 NULL·character(0)·NA·다중값을 길이 1로 접고 · 접힌 공백은 원장(L2)이 거부한다") else
+  ng(sprintf("⑧ .l2_chr 강제 실패 또는 접힌 공백 통과 — 길이1=%s · 원장=%s", .len1, substr(.rej2, 1, 40)))
 
 unlink(TMP, recursive = TRUE, force = TRUE)
 cat(sprintf("결과: PASS=%d FAIL=%d\n", pass, fail))

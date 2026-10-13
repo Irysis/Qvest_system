@@ -82,11 +82,12 @@ N_MODE=$(printf '%s' "$AV_LINE" | grep -oE '[0-9]+-Mode' | head -1)
 STRUCT=$(printf '%s' "$AV_LINE" \
   | sed -E 's/^\*\*Qvest v[0-9.]+ (—|-) //; s/\*\*.*$//' \
   | awk -F'·' '{print $1}' | sed -E 's/^[[:space:]]+//; s/[[:space:]]+$//')
-# 모델 패밀리 라벨: claude-fable-5 → "Fable 5" (첫 글자 대문자 + 숫자)
+# 모델 패밀리 라벨: claude-fable-5 → "Fable 5" · claude-opus-5-5 → "Opus 5.5" (첫 글자 대문자 + 버전 마디를 점으로)
+#   (v10.01 2026-10-13 수리: 구판은 끝 마디 하나만 떼어 claude-opus-5-5 를 "Opus-5 5" 로 냈다)
 MODEL_LABEL=""
 if [ -n "$MODEL_ID" ]; then
-  _fam=$(printf '%s' "$MODEL_ID" | sed 's/^claude-//;s/-[0-9]*$//')
-  _num=$(printf '%s' "$MODEL_ID" | grep -oE '[0-9]+$')
+  _fam=$(printf '%s' "$MODEL_ID" | sed -E 's/^claude-([a-z]+).*$/\1/')
+  _num=$(printf '%s' "$MODEL_ID" | sed -E 's/^claude-[a-z]+-//; s/-/./g')
   MODEL_LABEL="$(printf '%s' "${_fam^}") ${_num}"
 fi
 

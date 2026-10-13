@@ -65,7 +65,10 @@
     },
     "prior_recoveries": 6,
     "current_run": 0,
-    "span": ["2016-03", "2026-09"]
+    "span": [
+      "2016-03",
+      "2026-09"
+    ]
   },
   "defensive_score": {
     "status": "ok",
@@ -100,7 +103,7 @@
     },
     "reason": "하락월 70개: 초과 +1.31%/월 (t 1.98 · 적중 59%) · 벤치-10% 이하 6개: 초과 +0.15%/월 · 상승월 초과 -1.11%/월"
   },
-  "reasons": "non-positive alpha (PORT_t<=0 또는 net_IR<=0)",
+  "reasons": "v3: S 0.000 · B 경계 0.527 · 띠 F · CR normal(시험 창 normal) · 노치 +0 · A 아님 사유 floor:port_t,floor:calmar,floor:cagr,floor:sharpe,oos:rolling36_pass_oos,gate:dsr_sweep | v921 F: non-positive alpha (PORT_t<=0 또는 net_IR<=0)",
   "replication": {
     "source_paper": {
       "url": "https://arxiv.org/abs/2202.05702",
@@ -126,5 +129,72 @@
     "sharpe": 0.485,
     "mdd": 0.55,
     "calmar": 0.184
+  },
+  "grade_scheme": "grade_v3",
+  "grade_v921": "F",
+  "grade_v3": {
+    "status": "ok",
+    "schema": "grade_v3_v1",
+    "grade": "F",
+    "S": 0,
+    "S_B": 0.5268,
+    "band": "F",
+    "notch": 0,
+    "notch_a": false,
+    "blocked_by": [
+      "floor:port_t",
+      "floor:calmar",
+      "floor:cagr",
+      "floor:sharpe",
+      "oos:rolling36_pass_oos",
+      "gate:dsr_sweep"
+    ],
+    "floors": {
+      "port_t": false,
+      "calmar": false,
+      "cagr": false,
+      "sharpe": false
+    },
+    "bench": {
+      "calmar": 0.285,
+      "cagr": 0.1174,
+      "mdd": 0.4119,
+      "sharpe": 0.5954
+    },
+    "cr": {
+      "overall": "normal",
+      "test": "normal",
+      "visible": "weak",
+      "n_crisis": 4,
+      "dd_capture_median": 1.0014,
+      "dd_capture_worst": 1.2465,
+      "uc_median": 0.9459,
+      "cdar": 0.3918,
+      "controls": "not_provided"
+    },
+    "oos": {
+      "tau_d": "2022-12-31",
+      "gate": false,
+      "parts": {
+        "test_window_cr_not_weak": true,
+        "rolling36_pass_oos": false
+      },
+      "pass_oos": 0.0444,
+      "pass_min": 0.5,
+      "pass_life": 0.0709,
+      "S_is": 0.315,
+      "S_oos": 0,
+      "retention_calmar": 1.9867,
+      "retention_sharpe": 1.2488
+    },
+    "parity_max_abs": 2.69576028166796e-15,
+    "nav_source": "contract"
+  },
+  "grade_v3_backfill": {
+    "at": "2026-10-13T15:14:09+0900",
+    "tool": "02_Infrastructure/programs/grade_v3_backfill.R",
+    "decision": "decision_register GRADE-V3-PROMOTE",
+    "prior_essence_grade": "F",
+    "prior_md5": "a7330cb873cafaf7123178773357c0da"
   }
 }

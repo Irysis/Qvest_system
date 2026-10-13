@@ -4,7 +4,7 @@
 # 배경: 사후 충실도 감사 misdeclared 논문의 재구현을 도훈이 승인했는데(2026-09-06) replication_request.json 은
 #   슬롯이 하나라 두 번째 논문은 06_Registry/reimplement_queue.json(schema reimplement_queue_v1)에 **예약만** 됐고
 #   소비자가 없었다 — 생산자만 있는 계기(이 저장소의 반복 형태).
-# 소비자 = reinforce_auto_next_paper.R §1.8 — 활성 entry 0 · 요청 종결 뒤, 큐 상단 논문(rf_next_paper_pick.py)보다
+# 소비자 = 02_Infrastructure/programs/next_replication.R (v10.01 · 구 reinforce_auto_next_paper.R §1.8 승계) — 활성 entry 0 · 요청 종결 뒤, 큐 상단 논문(rf_next_paper_pick.py)보다
 #   **먼저** 집는다. ★selector 의 소비 술어는 그대로다(원장에 있는 논문 = 소비됨). 대기열은 그 술어에 대한 명시적
 #   override 다 — 도훈 결정으로 reserved 된 항목만 들어오고, issued 로 바뀌면 다시 집지 않는다.
 # 발행 형태 = rf_replication_verify.R 의 reimplement 분기와 같은 키(status=pending · audit_retries · audit_verdict ·
@@ -95,7 +95,7 @@ rf_reimplement_queue_take <- function(root, req_path, prev = NULL, jlog = functi
   ## 4) 요청 본문 — verify 의 reimplement 분기와 같은 키. ★sprintf 인자는 전부 길이 1 보장(길이 0 이면 문자열 전체가 빈다)
   req_new <- list(
     requested_at = now,
-    source = "reinforce_auto_next_paper(reimplement_queue)",
+    source = "next_replication(reimplement_queue)",
     reason = sprintf("재구현 대기열 order %s — 사후 충실도 감사 %s 재구현(%s). 원장 소비 술어 override: 도훈 예약 항목만 · issued 후 재집기 없음",
                      as.character(e$order %||% "?"), as.character(e$audit_verdict %||% "misdeclared"),
                      as.character(e$decided_by %||% "예약자 미기재")),
@@ -113,7 +113,7 @@ rf_reimplement_queue_take <- function(root, req_path, prev = NULL, jlog = functi
   qd$entries[[pick_i]]$status         <- "issued"
   qd$entries[[pick_i]]$issued_at      <- now
   qd$entries[[pick_i]]$issued_request <- "06_Registry/replication_request.json"
-  qd$entries[[pick_i]]$issued_by      <- "reinforce_auto_next_paper(rf_reimplement_queue_take)"
+  qd$entries[[pick_i]]$issued_by      <- "next_replication(rf_reimplement_queue_take)"
   wq <- tryCatch({ .rq_write_json(qd, qp); TRUE },
                  error = function(err) { jlog("reimplement_queue_write_failed", stage = "queue", err = conditionMessage(err)); FALSE })
   if (!isTRUE(wq)) return(list(issued = FALSE, reason = "queue_write_failed"))

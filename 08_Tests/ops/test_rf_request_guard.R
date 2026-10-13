@@ -6,10 +6,12 @@ ROOT <- Sys.getenv("QM_ROOT", "C:/Users/99922/OneDrive/Quant_Module_Moltbot")
 suppressWarnings(suppressMessages(library(jsonlite)))
 source(file.path(ROOT, "02_Infrastructure/ops/rf_request_guard.R"))
 
-n_fail <- 0L
+n_fail <- 0L; n_pass <- 0L
 chk <- function(cond, label) {
-  if (isTRUE(cond)) cat("PASS", label, "\n") else { cat("FAIL", label, "\n"); n_fail <<- n_fail + 1L }
+  if (isTRUE(cond)) { cat("PASS", label, "\n"); n_pass <<- n_pass + 1L } else { cat("FAIL", label, "\n"); n_fail <<- n_fail + 1L }
 }
+## 배터리 요약 계약(run_all_hooks.sh _last_summary_json) — v10.01 독립 편입(구 test_reinforce_auto.sh §28b 안에서만 돌았다)
+summ <- function() cat(sprintf('{"test":"rf_request_guard","pass":%d,"fail":%d,"total":%d}\n', n_pass, n_fail, n_pass + n_fail))
 tmp <- tempfile("rfreq_"); dir.create(tmp)
 mkreq <- function(key, status = "in_progress") {
   p <- file.path(tmp, sprintf("req_%s.json", gsub("[^A-Za-z0-9]", "_", key)))
@@ -77,5 +79,6 @@ chk(direct_done == 0L, sprintf("verify.R 직접 status<-'done' 0건 (실측 %d)"
 chk(guard_calls >= 1L, sprintf("verify.R 가 가드 writer 경유 (호출 %d)", guard_calls))
 
 unlink(tmp, recursive = TRUE)
-if (n_fail > 0L) { cat(sprintf("FAIL rf_request_guard %d건\n", n_fail)); quit(status = 1) }
-cat("rf_request_guard 10/10 PASS — retargeted 거부 · 소유 기록 · combo · 판별불가 기존동작 · 배선\n")
+if (n_fail > 0L) { cat(sprintf("FAIL rf_request_guard %d건\n", n_fail)); summ(); quit(status = 1) }
+cat(sprintf("rf_request_guard %d/%d PASS — retargeted 거부 · 소유 기록 · combo · 판별불가 기존동작 · 배선\n", n_pass, n_pass + n_fail))
+summ()

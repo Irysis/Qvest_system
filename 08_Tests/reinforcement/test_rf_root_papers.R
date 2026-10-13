@@ -16,7 +16,11 @@
 #   ③ 매핑 없는 계열은 **버리지 않고 이름으로 남는다**; 그것만 있고 기저도 없으면 원장이 거부한다
 #      (기존 가드 rf_append_attempt 가 이 모양의 입력을 실제로 막는지 — 양성 대조)
 #   ④ 기저 논문이 첫 항목, 셀 자체 처치 논문이 둘째 (source_paper 폴백 순서와 정합)
-#   ⑤ 정적: 두 러너에 구 패턴이 없고 새 헬퍼가 배선돼 있다; B5 는 method 항목을 선두에 둔다
+#   ⑤ (삭제 — 아래 v10.01 줄)
+#   ⑥ 근거 의무 해제가 측정 계약(run_paper_replication.R)·강화 워커(rf_cell_worker.R)까지 배선됐는가
+# (v10.01 2026-10-13) 고정 격자 러너 퇴역으로 ⑤(reinforce_auto_parallel.R·reinforce_auto_run.R 정적 배선 — 구 패턴 부재 ·
+#   rf_root_papers_for 배선 · 기저 우선 · B5 method 선두) 삭제 — 대상 코드가 없다(롤백 태그 pre-v10.01-prescription-20261013).
+#   헬퍼 rf_root_papers_for 자체는 ①~④ 가 그대로 잰다.
 # 부작용 없음 — 원장에 쓰지 않는다(거부 경로는 원장 로드 전에 stop 한다).
 #==============================================================================
 suppressMessages({ library(jsonlite) })
@@ -112,19 +116,6 @@ if (length(f3) == 3L) {
   # 위반 주입: kind != db 는 계열 조회에서 빠져야 한다 (엔진 내장 신호에 계열을 지어내지 않는다)
   r3 <- rf_root_papers_for(list(factors = list(list(kind = "builtin", id = "lowvol60"))), root = ROOT)
   if (!length(r3$papers) && !length(r3$families)) ok("④' builtin 신호 → 계열·논문 0(날조 없음)") else ng("④' builtin 에 계열/논문이 붙었다")
-}
-
-# ── ⑤ 정적 배선 ───────────────────────────────────────────────────────────
-for (f in c("02_Infrastructure/ops/reinforce_auto_parallel.R", "02_Infrastructure/ops/reinforce_auto_run.R")) {
-  src <- readLines(f, warn = FALSE)
-  code <- src[!grepl("^[[:space:]]*#", src)]           # 주석 제외 — 회귀 가드는 코드만 본다
-  old <- any(grepl("rp <- CELL$root_paper %||% w1$root_paper", code, fixed = TRUE))
-  new <- any(grepl("rf_root_papers_for(SPEC", code, fixed = TRUE)) &&
-         any(grepl("rp <- .base_paper %||% CELL$root_paper", code, fixed = TRUE)) &&
-         any(grepl('identical(CELL$axis, "risk_overlay")', code, fixed = TRUE)) &&
-         any(grepl("list(method = CELL$basis", code, fixed = TRUE))
-  if (!old && new) ok(sprintf("⑤ %s — 구 패턴 0 · 헬퍼 배선 · 기저 우선 · B5 method 선두", basename(f)))
-  else ng(sprintf("⑤ %s — old=%s new=%s", basename(f), old, new))
 }
 
 # ── ⑥ 근거 의무 해제가 **측정 계약까지** 배선됐는가 (2026-09-03 실사고) ──────

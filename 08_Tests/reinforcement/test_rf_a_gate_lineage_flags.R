@@ -16,18 +16,20 @@
 #      기저 측정 표식(base_vintage_flags) → 보류 / 깨끗한 엔진·서술 속 'VIX' → 통과
 #   R  실원장 **사본** — 재도출 parity(선정 기저: 재도출 = self∪inherited 표식 · C11: 재도출 = pit_c11 표식) · 22632 계보 새 칸 모사 → 보류 ·
 #      표식 없는 계보 새 칸 모사 → 통과
-#   X  러너 SPEC 선정 기저 부기(블록 추출 실행) · .spec_sig 서명 불변
+#   X  .spec_sig 서명 불변(선정 기저 부기 필드는 서명에 안 들어간다)
 #   Q  충실구현 어댑터(R1 · run_paper_replication.R) — 격리 원천을 읽는 엔진 A → 보류 · 깨끗한 엔진 → 발행
 #   L  원장 기록 — 러너 claim 을 쥔 프로세스의 rf_mark_vintage_batch 는 거부된다(재진입 불가 실증 → tick 안 기록 불채택) ·
 #      idle 계획(rflf_marks_plan) + writer → 신규 기록 · 재실행 멱등 · 보호 투영 불변 · policy/source 'P0-14 derived'
 #   P  수리 2판(적대검증 BLOCKING) — P1 집합 단위 면제({FA} 만 as-of 증명 · carry·바닥 {FA,FB} → 보류 / 원소 전부 증명 → 통과) ·
 #      P2~P4 검사 공백(as-of 칸의 carry 몫 · n 순서 · 부모 증명 ∩ carry) · P5 부모 증명은 carry 출처 칸까지(source_spec → source_cell · 못 찾으면 보수) ·
 #      P6~P7 격자 스냅샷 폴백 칸(실격자 B1 cells) 자기 표식 보류 · 그 승격 자식 보류(S 의 표식 없는 규칙 라벨 칸) · P8 carry 출처 판독 불가(부모 칸·entry
-#      원장 부재) = 보류 · X3 러너 폴백 분기 부기(소스 추출 실행) ·
+#      원장 부재) = 보류 ·
 #      Q3~Q7 재도출 입력 판독 불가(spec 부재·파손 · spec·engine_path 없음 · 엔진 부재) = 보류 · P9 L2 전용 오염 집합 · P10 tick 캐시 entries 갱신 ·
 #      P11 격리 팩터 id 단독 경로(합성 격리 목록) · Q8 spec 부재 + engine_path 있음 → 보류
 #   M  돌연변이 — 재도출 제거(A1·R2 새어 나감) · 술어 사본화(parity red) · as-of 면제 제거 · 계보 재귀 제거 · C11 재도출 제거 · 어댑터 engine_path 누락
-#      (본문 텍스트 돌연변이 — 집합 단위 면제·판독 불가 보류·출처 경계·폴백 부기 제거 등 — 는 외부 실행기가 이 검사를 돌려 red 를 잰다)
+#      (본문 텍스트 돌연변이 — 집합 단위 면제·판독 불가 보류·출처 경계 제거 등 — 는 외부 실행기가 이 검사를 돌려 red 를 잰다)
+# (v10.01 2026-10-13) 고정 격자 러너 퇴역으로 X1(러너 SPEC 선정 기저 부기 블록 추출 실행) · X3(러너 격자 스냅샷 폴백 부기 블록 추출 실행)
+#   삭제 — 대상 코드가 없다(롤백 태그 pre-v10.01-prescription-20261013). 관문 자기 표식 판정(P6·P7 · 격자 B1 cells 픽스처)은 그대로 잰다.
 # 부작용: 쓰기는 tempdir 샌드박스뿐(루트는 읽기 전용 원천 — 전후 md5 대조). 수리 전 코드(rf_lineage_flags.R 부재)에서는 A1·R2·Q2 가 red.
 # 실행: QM_ROOT=<루트> Rscript --no-environ 08_Tests/reinforcement/test_rf_a_gate_lineage_flags.R
 #==============================================================================
@@ -304,20 +306,7 @@ if (!is.null(RL)) {
   }
 }
 
-cat("\n=== X. 러너 SPEC 선정 기저 부기 · 서명 불변 ===\n")
-RUN <- sub("\r$", "", readLines(file.path(ROOT, "02_Infrastructure/ops/reinforce_auto_parallel.R"), warn = FALSE, encoding = "UTF-8"))
-i0 <- grep("P0-14(2026-09-25) 선정 기저 부기", RUN, fixed = TRUE)
-if (length(i0) != 1L) ng("X1 러너 SPEC 선정 기저 부기 블록(앵커 1개)", sprintf("앵커 %d개 — 수리 전 러너", length(i0))) else {
-  j0 <- i0 + which(grepl("^  if \\(!is.null\\(CELL\\[\\[\"selection_basis\"\\]\\]\\)\\) \\{", RUN[(i0 + 1L):(i0 + 6L)]))[1]
-  j1 <- j0 + which(RUN[(j0 + 1L):(j0 + 4L)] == "  }")[1]
-  blk <- parse(text = paste(RUN[j0:j1], collapse = "\n"), keep.source = FALSE)
-  xe <- new.env(); xe$SPEC <- list(code = "B1_1", factors = fz("FA")); xe$CELL <- list(code = "B1_1", selection_basis = "asof_ic", selection_asof = "2005-01-01")
-  eval(blk, xe)
-  ye <- new.env(); ye$SPEC <- list(code = "B1_2", factors = fz("FA")); ye$CELL <- list(code = "B1_2", label = "설계 칸")
-  eval(blk, ye)
-  chk(identical(xe$SPEC$selection_basis, "asof_ic") && identical(xe$SPEC$selection_asof, "2005-01-01") && !("selection_basis" %in% names(ye$SPEC)),
-      "X1 러너 블록(소스 추출 실행) — 규칙 선정 칸만 selection_basis·selection_asof 를 싣고, 필드 없는 칸은 키를 만들지 않는다")
-}
+cat("\n=== X. 서명 불변 (러너 부기 블록 X1 은 v10.01 삭제) ===\n")
 sp_real <- NULL
 if (!is.null(RL)) for (e in rev(RL$entries)) { for (a in rev(e$attempts %||% list())) { s <- t_spec(a); if (!is.null(s) && length(s$factors)) { sp_real <- s; break } }
   if (!is.null(sp_real)) break }
@@ -522,28 +511,6 @@ if (!length(G1)) sk("P6~P8 격자 스냅샷", "reinforce_program.json B1 cells �
   chk(vfhold(p8a) && cu(p8a) && vfhold(p8b) && cu(p8b),
       "P8 [주입·PIT C3 원형] 폴백 승자 승격 자식인데 부모 칸이 원장에 없음 · 부모 entry 없음 → carry 출처 판독 불가 = 보류(구판 통과)",
       c(codes(p8a), codes(p8b), unlist(p8a$detail)[1]))
-  # X3 — 러너 폴백 분기(소스 추출 실행): 격자 칸에 selection_basis=full_sample_ic · selection_asof=substrate 일자 → SPEC 부기 → 관문 자기 표식
-  k0 <- grep("P0-14 수리 2판(2026-09-25 · 적대검증 PIT B1)", RUN, fixed = TRUE)
-  if (length(k0) != 1L) ng("X3 러너 격자 스냅샷 폴백 부기 블록(앵커 1개)", sprintf("앵커 %d개 — 수리 2판 이전 러너", length(k0))) else {
-    f0 <- k0 + which(grepl("^    for \\(\\.j in seq_along\\(batch\\)\\) \\{", RUN[(k0 + 1L):(k0 + 8L)]))[1]
-    f1 <- f0 + which(RUN[(f0 + 1L):(f0 + 8L)] == "    }")[1]
-    fb <- parse(text = paste(RUN[f0:f1], collapse = "\n"), keep.source = FALSE)
-    fe <- new.env(); fe$`%||%` <- `%||%`; fe$batch <- G1; eval(fb, fe)
-    sb_ok <- all(vapply(fe$batch, function(c) identical(c$selection_basis, "full_sample_ic") && grepl("^[0-9]{4}-[0-9]{2}-[0-9]{2}$|^grid_snapshot$", c$selection_asof %||% ""), logical(1)))
-    i0x <- grep("P0-14(2026-09-25) 선정 기저 부기", RUN, fixed = TRUE)
-    j0x <- i0x + which(grepl("^  if \\(!is.null\\(CELL\\[\\[\"selection_basis\"\\]\\]\\)\\) \\{", RUN[(i0x + 1L):(i0x + 6L)]))[1]
-    j1x <- j0x + which(RUN[(j0x + 1L):(j0x + 4L)] == "  }")[1]
-    ab <- parse(text = paste(RUN[j0x:j1x], collapse = "\n"), keep.source = FALSE)
-    ae <- new.env(); ae$CELL <- fe$batch[[2]]; ae$SPEC <- list(code = ae$CELL$code, label = ae$CELL$label, factors = ae$CELL$factors,
-                                                             weighting = list(kind = "ew"), universe = list(kind = "k200_kq150"), overlay_cell = list())
-    eval(ab, ae)
-    sx <- file.path(S, ".cache/rf_parallel", sprintf("spec_%s__P_GFR.json", ae$SPEC$code)); writeLines(toJSON(ae$SPEC, auto_unbox = TRUE, null = "null"), sx)
-    GFR <- ent2("P_GFR"); px <- elig(GFR, mk_att(2, ae$SPEC$code, sx), c(ENTS, list(GFR)))
-    chk(sb_ok && identical(ae$SPEC$selection_basis, "full_sample_ic") && held_by(px, "selection_basis_full_sample_ic") &&
-          any(grepl("selection_basis=full_sample_ic", dflags(px), fixed = TRUE)),
-        sprintf("X3 러너 폴백 분기(소스 추출 실행) → 격자 %d칸 selection_basis=full_sample_ic · asof=%s → SPEC 부기 → 관문 자기 표식 보류",
-                length(fe$batch), fe$batch[[1]]$selection_asof %||% "?"), c(codes(px), dflags(px)))
-  }
 }
 # ④ 재도출 입력 판독 불가 = 보류(적대검증 PIT B2 · 시스템 2) — 재평가 경로(spec 인자 NULL → 원장 essence$spec 파일)
 gone <- file.path(S, ".cache/rf_parallel/spec_gone_P.json"); badj <- file.path(S, ".cache/rf_parallel/spec_bad_P.json"); writeLines("{ corrupt", badj)
@@ -608,9 +575,17 @@ if (HAS_LIB) {
   # M1 재도출 제거 → 구판 관문(원장 표식만)
   assign("rflf_gate_flags", function(...) list(flags = list(), selection = NULL, c11 = NULL, S_unknown = character(0)), envir = globalenv())
   m1a <- elig(CH, a1, ENTS)
-  m1r <- if (exists("E22")) rf_a_eligibility(E22, a22, NULL, rf_a_ctx(rf_runner_ctx(LC), RL$entries, E22$base_id)) else list(eligible = TRUE)
+  ## (10-13 수리) 09-26 entry 기저 표식 전파(AUTOMEM · entry_base_flags)가 R2 계보를 **다른 경로로도** 보류해, 재도출만 지운 돌연변이에서
+  ##   R2 칸이 새지 않았다(M1 상시 FAIL · 태그 판 동일). M1 은 재도출 경로 하나를 재는 돌연변이다 — 탐침에서 기저 표식을 걷어 그 경로만 남긴다.
+  strip_base <- function(e) { e$base_vintage_flags <- NULL; e }
+  RLs <- lapply(RL$entries %||% list(), strip_base); E22s <- if (exists("E22")) strip_base(E22) else NULL
+  m1r <- if (!is.null(E22s)) rf_a_eligibility(E22s, a22, NULL, rf_a_ctx(rf_runner_ctx(LC), RLs, E22s$base_id)) else list(eligible = TRUE)
   restore()
-  chk(isTRUE(m1a$eligible) && isTRUE(m1r$eligible), "M1 [돌연변이] 재도출 제거 → A1 합성·R2 22632 새 칸이 통과로 샌다(= A1·R2 가 잡는다)", c(codes(m1a), codes(m1r)))
+  chk(isTRUE(m1a$eligible) && isTRUE(m1r$eligible), "M1 [돌연변이] 재도출 제거 → A1 합성·R2 22632 새 칸(기저 표식 걷은 탐침)이 통과로 샌다(= A1·R2 가 잡는다)", c(codes(m1a), codes(m1r)))
+  m1c <- if (!is.null(E22s)) rf_a_eligibility(E22s, a22, NULL, rf_a_ctx(rf_runner_ctx(LC), RLs, E22s$base_id)) else NULL
+  chk(!is.null(m1c) && !isTRUE(m1c$eligible) && held_by(m1c, "selection_basis_full_sample_ic_inherited"),
+      "M1b 대조 — 같은 탐침(기저 표식 걷음)에서 재도출을 되살리면 보류(선정 기저 승계) — 탐침이 보류를 공짜로 없앤 게 아니다",
+      if (is.null(m1c)) "E22 없음" else codes(m1c))
   # M2 술어 사본화(드리프트 사본: 포함 → 교집합) → parity red
   if (!is.null(RL)) {
     assign("rflf_inherits", function(f, sets) Filter(function(sx) any(sx %in% f), sets %||% list()), envir = globalenv())

@@ -68,7 +68,10 @@
     },
     "prior_recoveries": 10,
     "current_run": 0,
-    "span": ["2008-01", "2026-10"]
+    "span": [
+      "2008-01",
+      "2026-10"
+    ]
   },
   "defensive_score": {
     "status": "ok",
@@ -96,14 +99,14 @@
     },
     "up": {
       "n": 150,
-      "excess": -0.00006,
+      "excess": -6e-05,
       "hit": 0.506667,
       "t": -0.010391,
       "capture": 0.998798
     },
     "reason": "하락월 111개: 초과 +0.94%/월 (t 2.21 · 적중 59%) · 벤치-10% 이하 10개: 초과 +1.26%/월 · 상승월 초과 -0.01%/월"
   },
-  "reasons": "Ensemble: positive alpha이나 B 미달 (블렌드에서만 가치)",
+  "reasons": "v3: S 0.394 · B 경계 0.430 · 띠 C · CR normal(시험 창 normal) · 노치 +0 · A 아님 사유 floor:port_t,floor:cagr,floor:sharpe,oos:rolling36_pass_oos,gate:dsr_sweep | v921 C: Ensemble: positive alpha이나 B 미달 (블렌드에서만 가치)",
   "replication": {
     "source_paper": {
       "url": "https://arxiv.org/abs/2305.16364",
@@ -129,5 +132,71 @@
     "sharpe": 0.679,
     "mdd": 0.598,
     "calmar": 0.258
+  },
+  "grade_scheme": "grade_v3",
+  "grade_v921": "C",
+  "grade_v3": {
+    "status": "ok",
+    "schema": "grade_v3_v1",
+    "grade": "C",
+    "S": 0.3942,
+    "S_B": 0.43,
+    "band": "C",
+    "notch": 0,
+    "notch_a": false,
+    "blocked_by": [
+      "floor:port_t",
+      "floor:cagr",
+      "floor:sharpe",
+      "oos:rolling36_pass_oos",
+      "gate:dsr_sweep"
+    ],
+    "floors": {
+      "port_t": false,
+      "calmar": true,
+      "cagr": false,
+      "sharpe": false
+    },
+    "bench": {
+      "calmar": 0.2031,
+      "cagr": 0.1075,
+      "mdd": 0.5292,
+      "sharpe": 0.5528
+    },
+    "cr": {
+      "overall": "normal",
+      "test": "normal",
+      "visible": "normal",
+      "n_crisis": 6,
+      "dd_capture_median": 0.8127,
+      "dd_capture_worst": 1.3634,
+      "uc_median": 1.3191,
+      "cdar": 0.3609,
+      "controls": "not_provided"
+    },
+    "oos": {
+      "tau_d": "2022-12-31",
+      "gate": false,
+      "parts": {
+        "test_window_cr_not_weak": true,
+        "rolling36_pass_oos": false
+      },
+      "pass_oos": 0.1739,
+      "pass_min": 0.5,
+      "pass_life": 0.4159,
+      "S_is": 0.585,
+      "S_oos": 0,
+      "retention_calmar": 0.8979,
+      "retention_sharpe": 0.7058
+    },
+    "parity_max_abs": 4.21884749357559e-15,
+    "nav_source": "contract"
+  },
+  "grade_v3_backfill": {
+    "at": "2026-10-13T15:17:11+0900",
+    "tool": "02_Infrastructure/programs/grade_v3_backfill.R",
+    "decision": "decision_register GRADE-V3-PROMOTE",
+    "prior_essence_grade": "C",
+    "prior_md5": "fb064fec8f66bb2fbd4137f3d9f6eaae"
   }
 }

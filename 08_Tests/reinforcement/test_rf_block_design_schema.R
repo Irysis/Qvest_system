@@ -14,7 +14,11 @@
 #   ① 두 경로가 **같은 모양**을 낸다 (설계 ↔ 카탈로그)
 #   ② overlay.kind 가 실재하는 arm 으로 해석된다 (내장 10종 또는 overlay_arms/*.R)
 #   ③ 카탈로그에 없는 id 는 조용히 통과하지 않는다
-#   ④ 강화 활성 중에는 새 논문 충실구현이 안 돈다 (가드가 한쪽에만 있었다)
+#   (구 ④ 강화 활성 중에는 새 논문 충실구현이 안 돈다 — v10.01 에서 삭제, 아래)
+# (v10.01 2026-10-13) 고정 격자 러너 퇴역으로 E절(동시 실행 가드 E1~E4 — rf_replication_auto.sh 의 halt_reinforce_active
+#   게이트는 러너와 함께 삭제됐고 reinforce_auto_next_paper.R 도 퇴역) · F절(캐시 스펙 resume 경로 — reinforce_auto_parallel.R) ·
+#   G절(기전 회피 집행 G1~G5 — reinforce_auto_parallel.R · rf_b1_design_lib.R) 삭제 — 대상 코드가 없다
+#   (롤백 태그 pre-v10.01-prescription-20261013). 설계 스키마(A~D — rf_block_design.R · rf_cell_engine.R · rf_overlay_arms.R)는 그대로 잰다.
 #==============================================================================
 suppressMessages({ library(jsonlite) })
 `%||%` <- function(a, b) if (is.null(a) || length(a) == 0L) b else a
@@ -128,52 +132,8 @@ if (!length(Filter(Negate(is.null), cs2)))
   ng("D1 없는 arm 이 셀이 됐다")
 unlink(c(dp, paste0(dp, ".bak")), force = TRUE)
 
-cat("\n=== E. 동시 실행 가드 — 강화 중 새 논문 금지 ===\n")
-rsrc <- paste(readLines("02_Infrastructure/ops/rf_replication_auto.sh", warn = FALSE), collapse = "\n")
-if (grepl("halt_reinforce_active", rsrc, fixed = TRUE))
-  ok("E1 충실구현 레인에 강화-활성 가드 ★실사고(2511.12490 이 강화와 나란히 돌았다)") else
-  ng("E1 가드 없음", "가드가 next_paper 한쪽에만 있으면 레인이 그냥 집는다")
-if (grepl("QVEST_RP_ALLOW_CONCURRENT", rsrc, fixed = TRUE))
-  ok("E2 해제 스위치 존재") else ng("E2 스위치 없음")
-if (grepl("pending", rsrc, fixed = TRUE) && grepl("보류", rsrc, fixed = TRUE))
-  ok("E3 요청을 지우지 않고 보류한다(강화 후 그대로 집힌다)") else
-  ng("E3 요청 처분 불명")
-nsrc <- paste(readLines("02_Infrastructure/ops/reinforce_auto_next_paper.R", warn = FALSE), collapse = "\n")
-if (grepl("halt_active_exists", nsrc, fixed = TRUE))
-  ok("E4 next_paper 쪽 가드 보존(회귀)") else ng("E4 구 가드 손상")
-
-cat("\n=== F. 캐시 스펙이 수리를 무력화하지 않는가 ===\n")
-psrc <- paste(readLines("02_Infrastructure/ops/reinforce_auto_parallel.R", warn = FALSE), collapse = "\n")
-if (grepl("resume_pending", psrc, fixed = TRUE))
-  ok("F1 resume 경로 존재 — 이 경로가 옛 스펙을 재사용했다(사실 고정)") else
-  cat("  SKIP resume 경로 없음\n")
-cat("  NOTE 코드 수리 후에는 .cache/rf_parallel/spec_<code>__<base>.json 을 지울 것 —\n")
-cat("       2026-09-04 19:21 재기동이 19:15 자 스펙을 재사용해 같은 오류로 두 번째 죽었다.\n")
-
-cat("
-=== G. 기전 회피 목록이 집행되는가 ===
-")
-## 실측 2026-09-04: avoid 를 읽는 코드가 rf_b1_design_lib.R **하나뿐**이었다(B1 설계
-##   프롬프트). 칸을 고르는 러너는 안 읽으므로 격자 기본 칸에는 원리상 안 걸렸다 —
-##   기전이 "B3_11 은 측정 무효 사유" 라고 적었는데 그대로 돌았다.
-psrc2 <- paste(readLines("02_Infrastructure/ops/reinforce_auto_parallel.R", warn = FALSE), collapse = "
-")
-if (grepl("avoid_enforced", psrc2, fixed = TRUE))
-  ok("G1 러너가 회피를 집행한다 ★실사고") else ng("G1 러너가 avoid 를 안 읽는다")
-if (grepl("측정 무효|편의|편향|누출", psrc2))
-  ok("G2 **측정 무효 사유**만 건너뛴다") else ng("G2 사유 구분 없음")
-if (grepl("avoid_noted", psrc2, fixed = TRUE) && grepl("AX-000", psrc2, fixed = TRUE))
-  ok("G3 성과 사유는 로그만 — 사실 기록이지 금지 목록이 아니다(AX-000)") else
-  ng("G3 성과 사유까지 막는다", "3~4회 실패로 한계 단정 금지와 충돌")
-lsrc <- paste(readLines("02_Infrastructure/ops/rf_b1_design_lib.R", warn = FALSE), collapse = "
-")
-if (grepl("avoid", lsrc, fixed = TRUE))
-  ok("G4 설계 프롬프트 주입은 보존(회귀)") else ng("G4 구 경로 손상")
-## ★승격이 구성은 물려받는데 교훈은 안 물려받았다 — 회피가 부모 L-code 에 있어서
-##   promo1 에서 안 걸렸고 그 칸이 두 번 돌아 terminal 이 됐다(2026-09-04 21:50).
-if (grepl(".chain <- BID", psrc2, fixed = TRUE) && grepl("parent", psrc2, fixed = TRUE))
-  ok("G5 회피 조회가 **부모 사슬**을 탄다 ★실사고") else
-  ng("G5 현재 entry 만 본다", "승격 세대마다 교훈이 리셋된다")
+## (v10.01 2026-10-13) E절(동시 실행 가드) · F절(캐시 스펙 resume) · G절(기전 회피 집행) 삭제 — 대상 코드 퇴역
+##   (rf_replication_auto.sh 의 halt_reinforce_active 게이트 · reinforce_auto_next_paper.R · reinforce_auto_parallel.R · rf_b1_design_lib.R).
 
 cat(sprintf("\n합계: 통과 %d · 실패 %d\n", PASS, FAIL))
 cat(sprintf('{"test":"rf_block_design_schema","pass":%d,"fail":%d,"total":%d}\n', PASS, FAIL, PASS + FAIL))

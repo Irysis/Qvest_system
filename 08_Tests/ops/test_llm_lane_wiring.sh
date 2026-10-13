@@ -77,25 +77,35 @@ printf '\ntimeout 60 claude -p < "$PF" >> "$LOG" 2>&1\n' >> "$T/paper_router_run
 out4=$(scan "$T" | tr -d '\r' | grep paper_router || true)
 [ -n "$out4" ] && ok "B3 레인에 주입한 모델 없는 맨 호출을 잡는다" || ng "B3 판별력 없음(레인 맨 호출)"
 
-echo "=== C. 새 배선 5 레인 — 해석기 호출 · 설정 lane 일치 ==="
-for pair in paper_router_run.sh:paper_router alpha_search_queue_run.sh:alpha_search_queue \
-            mode_queue_research_run.sh:mode_queue_research factor_deep_recheck_run.sh:factor_deep_recheck \
-            rf_grid_propose.sh:grid_propose; do
+# (v10.01 2026-10-13) rf_grid_propose.sh 는 고정 격자와 함께 퇴역 · 새 레인 paper_atlas_run.sh(메커니즘 지도) 편입.
+#   alpha_search_queue · mode_queue_research · factor_deep_recheck 는 v10 퇴역 러너(스케줄 밖) — 스크립트 배선은 계속 재되
+#   설정 lanes 에서는 빠졌다(D12 · 해석기 기본값 opus/max 로 떨어진다).
+echo "=== C. 레인 해석기 호출 · 설정 lane 일치 (v10.01 D12 편성) ==="
+for pair in paper_router_run.sh:paper_router paper_atlas_run.sh:paper_atlas alpha_search_queue_run.sh:alpha_search_queue \
+            mode_queue_research_run.sh:mode_queue_research factor_deep_recheck_run.sh:factor_deep_recheck; do
   f="${pair%%:*}"; lane="${pair#*:}"
   if grep -q "^rf_llm_resolve $lane " "$OPS/$f"; then ok "C $f → rf_llm_resolve $lane"; else ng "C $f" "rf_llm_resolve $lane 부재"; fi
 done
 lanes=$("$PY" -c "import io,json;c=json.loads(io.open(r'$ROOT/06_Registry/reinforce_auto_config.json','rb').read().decode('utf-8'));print(' '.join(sorted((c.get('llm') or {}).get('lanes',{}).keys())))" | tr -d '\r')
+# D12 편성(개선안 §10.4 · 2026-10-13 도훈): 판단 = opus · 지시 수행 = sonnet · fable 미사용. 퇴역 레인은 설정에 남지 않는다.
 miss=""
-for l in paper_router alpha_search_queue mode_queue_research factor_deep_recheck grid_propose; do
+for l in replication fidelity_audit overlay_audit cleaner_distill paper_router paper_atlas analyst prescriber reviewer steward factor_definer coder report_writer; do
   case " $lanes " in *" $l "*) ;; *) miss="$miss $l" ;; esac
 done
-[ -z "$miss" ] && ok "C6 설정 llm.lanes 에 5 레인 등재" || ng "C6 설정 누락" "$miss"
-for f in paper_router_run.sh alpha_search_queue_run.sh mode_queue_research_run.sh factor_deep_recheck_run.sh rf_grid_propose.sh; do
+[ -z "$miss" ] && ok "C6 설정 llm.lanes 에 D12 편성 13 레인 등재" || ng "C6 설정 누락" "$miss"
+stale=""
+for l in b1_design b5_design lcode_mechanism overlay_propose grid_propose alpha_search_queue mode_queue_research factor_deep_recheck; do
+  case " $lanes " in *" $l "*) stale="$stale $l" ;; esac
+done
+[ -z "$stale" ] && ok "C6b 퇴역 레인 설정 잔존 0" || ng "C6b 퇴역 레인이 설정에 남았다" "$stale"
+fab=$("$PY" -c "import io,json;c=json.loads(io.open(r'$ROOT/06_Registry/reinforce_auto_config.json','rb').read().decode('utf-8'));L=(c.get('llm') or {}).get('lanes',{});print(' '.join(sorted(k for k,v in L.items() if 'fable' in str((v or {}).get('model','')).lower())))" | tr -d '\r')
+[ -z "$fab" ] && ok "C6c fable 배정 레인 0(D12 — Opus 로 대체)" || ng "C6c fable 레인 잔존" "$fab"
+for f in paper_router_run.sh paper_atlas_run.sh alpha_search_queue_run.sh mode_queue_research_run.sh factor_deep_recheck_run.sh; do
   bash -n "$OPS/$f" || ng "C7 문법 $f"
 done
 ok "C7 5 레인 문법(bash -n)"
 # C8 (P0-M1) — 5 레인의 호출은 단일 진입을 거친다: 해석값(LLM_MODEL/LLM_EFFORT)이 rf_llm_agent_run 으로 흘러간다
-for f in paper_router_run.sh alpha_search_queue_run.sh mode_queue_research_run.sh factor_deep_recheck_run.sh rf_grid_propose.sh; do
+for f in paper_router_run.sh paper_atlas_run.sh alpha_search_queue_run.sh mode_queue_research_run.sh factor_deep_recheck_run.sh; do
   if grep -q 'rf_llm_agent_run ' "$OPS/$f"; then ok "C8 $f → rf_llm_agent_run"; else ng "C8 $f" "단일 진입 미경유"; fi
 done
 

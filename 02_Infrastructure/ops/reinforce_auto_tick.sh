@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
-# reinforce_auto_tick.sh — 강화 무인 러너 스케줄 진입점 (2026-08-30)
-#   스케줄러가 이 파일만 부른다. 러너 자체는 kill switch·claim·daily_cap 을 스스로 본다.
-#   1 tick = 1 칸(백테스트 ~15분). daily_cap 이 하루 총량을 막는다.
+# reinforce_auto_tick.sh — 1계층·2계층 무인 레인 스케줄 진입점 (2026-08-30 · ★v10.01 2026-10-13 재편)
+#   스케줄러(Qvest_ReinforceAutoLoop)가 이 파일만 부른다 — 경로를 유지해 예약작업을 고치지 않아도 되게 했다.
+#   ★v10.01: 고정 격자 강화 러너(reinforce_auto_parallel.R)와 블록 설계 레인(B1 · B5 · arm 생성)은 퇴역했다.
+#   남는 것 = 충실구현 레인(rf_replication_auto.sh · 자기 스위치 replication_lane.enabled) + 2계층 레인(rf_l2_auto.sh · l2_auto.enabled).
 set -uo pipefail
 ROOT="${QM_ROOT:-C:/Users/99922/OneDrive/Quant_Module_Moltbot}"
 cd "$ROOT" || exit 1
@@ -54,38 +55,16 @@ mkdir -p "$(dirname "$LOG")"
     echo "=== $(date -Iseconds) tick 종료 rc=0 (배리어 판정기 부재) ==="
     exit 0
   fi
-  # ★충실구현 대기가 있으면 먼저 처리한다 — active entry 없이는 강화가 못 돈다.
-  #   자체 claim/게이트를 갖고 있어 대기가 없으면 즉시 종료한다.
+  # ★충실구현 레인 — 대기 요청이 있으면 처리한다(자체 스위치 · claim · 게이트 · 대기가 없으면 즉시 종료).
+  #   (v10.01) 구 주석 'active entry 없이는 강화가 못 돈다' 는 고정 격자 러너와 함께 퇴역 — 결과는 리서치 프로그램 재료 큐로 간다.
   bash "$ROOT/02_Infrastructure/ops/rf_replication_auto.sh"
-  # ★arm 생성 레인 (v10.2) — 기전 지도가 미측정 칸을 지목할 때만 발화한다.
-  #   자체 claim·일 상한(1건)·포화 게이트를 갖고 있어 조건이 없으면 즉시 종료한다.
-  bash "$ROOT/02_Infrastructure/ops/rf_overlay_propose.sh"
-  # ★B1 설계 레인 (2026-09-04) — 활성 entry 의 B1 이 아직 안 열렸을 때만 1회 발화한다.
-  #   자체 claim·게이트·검증을 갖고 있어 조건이 없으면 즉시 종료한다. 실패하면 러너가
-  #   규칙 선정으로 돌므로 루프가 서지 않는다.
-  bash "$ROOT/02_Infrastructure/ops/rf_b1_design.sh"
-  # ★B5 설계 레인 (2026-09-17 · WP-R 선배선) — 스택 설계·재설계 라운드(원장 b5_redesign)는 별도 레인이 연다.
-  #   레인 파일은 후속 패키지가 만든다 — 없으면 건너뛴다(레인 부재 = 러너가 규칙 선정·기존 설계로 돈다).
-  [ -f "$ROOT/02_Infrastructure/ops/rf_b5_design.sh" ] && bash "$ROOT/02_Infrastructure/ops/rf_b5_design.sh"
+  # (v10.01 2026-10-13) arm 생성 · B1 설계 · B5 설계 레인 호출 삭제 — 고정 격자 강화와 함께 퇴역(롤백 태그 pre-v10.01-prescription-20261013).
   # ★2계층 무인 레인 (2026-09-21 도훈 승인 플랜 Part 3 · D2) — 06_Registry/l2_unit_request.json 이 pending 이고
-  #   config l2_auto.enabled + R1(selection_type) 결정이 기록됐을 때만 발화한다. 드라이버(rf_l2_auto.R)가 러너 claim 을
-  #   쥐어 L1 배치와 직렬화한다(그동안 아래 러너는 halt_claimed · ≤75분/일). 레인 파일 부재/조건 미충족 = 즉시 종료.
+  #   config l2_auto.enabled + R1(selection_type) 결정이 기록됐을 때만 발화한다. 드라이버(rf_l2_auto.R)는 구 러너 claim 을
+  #   그대로 쥔다(v10.01: 그 claim 을 같이 쥐던 고정 격자 러너는 퇴역 — 지금은 2계층 실행끼리의 중복 방지만 한다).
+  #   레인 파일 부재/조건 미충족 = 즉시 종료. 순서 = 충실구현 → 2계층(검사 test_rf_l2_auto.sh ⑤).
   [ -f "$ROOT/02_Infrastructure/ops/rf_l2_auto.sh" ] && bash "$ROOT/02_Infrastructure/ops/rf_l2_auto.sh"
-  # ★러너 단일화 (2026-09-05 도훈 지시 "분기 제거 — parallel 로 단일화").
-  #   구판은 config 의 mode 로 두 러너를 갈랐다. 그런데 v10.4 의 핵심 3종
-  #   (B1 LLM 설계 · 블록 전이 설계 · entry 예산 상향 = 25 + max(0, B1칸 − 5))이
-  #   parallel 러너에만 들어갔고 순차 러너에는 **같은 도훈 지시를 인용한 주석만** 남았다.
-  #   회귀 가드 8종이 두 러너를 문자열로 대조하고 있었는데도 못 막았다 — 그 가드들은
-  #   "구판이 남았나"는 보지만 "신판이 안 왔나"는 안 본다. config 가 한 글자 바뀌면
-  #   예산 25 고정 · 설계 없는 레인으로 조용히 내려앉는 구조라 분기 자체를 없앤다.
-  #   순차 실행이 필요하면 reinforce_auto_config.json::parallel_cells 를 1 로 둔다.
-  # ★강화 셀 등재 잠금 해제 (도훈 결정 2026-09-07). 2026-09-07 오전에 판정률 93% 를 이유로
-  #   QVEST_RP_REGISTER=0 을 걸었었는데, 그 판단이 층을 섞었다: **방어형 라벨은 사실 기록**이고
-  #   (벤치 하락월에 초과수익이 양수이며 유의했다) 배합에서 몇 개를 쓸지는 배분기가 정한다.
-  #   카탈로그가 큰 것 자체는 결함이 아니다 — 실측으로 대표 12건이 전량 82건과 상관 0.989 였으니
-  #   고르는 것이 가능하다. 재료를 안 쌓는 방식으로 배합 문제를 푸는 것은 해결이 아니라 은폐다.
-  #   남은 실제 과제는 배분기 하이퍼 재캘리브(5~10 모듈 기준 · 풀 91에서 희석 예고)이고,
-  #   그건 2계층을 처음 돌릴 때 풀 크기를 보고 정한다.
-  Rscript "$ROOT/02_Infrastructure/ops/reinforce_auto_parallel.R"
+  # (v10.01 2026-10-13) 강화 러너(reinforce_auto_parallel.R) 호출 삭제 — 1계층은 리서치 프로그램(06_Registry/research_programs.json) 단위로
+  #   세션이 돌린다(.claude/skills/research-program/SKILL.md). 무인 부분 = 위 두 레인 + 아침 체인의 논문 수집 · 트리아지 · 재료 동기화 · 메커니즘 지도.
   echo "=== $(date -Iseconds) tick 종료 rc=$? ==="
 } >> "$LOG" 2>&1

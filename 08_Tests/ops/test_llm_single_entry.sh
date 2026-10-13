@@ -124,11 +124,11 @@ done
 
 echo "--- C. 실레인 주입 · 함수 단위 허용 ---"
 mkdir -p "$T/lane/02_Infrastructure/ops"
-cp "$OPS/rf_b1_design.sh" "$T/lane/02_Infrastructure/ops/rf_b1_design.sh"
-printf '\ntimeout 1800 claude -p < "$PF" --add-dir "$DDIR" >> "$LOG" 2>&1\n' >> "$T/lane/02_Infrastructure/ops/rf_b1_design.sh"
+cp "$OPS/cleaner_distill_run.sh" "$T/lane/02_Infrastructure/ops/cleaner_distill_run.sh"
+printf '\ntimeout 1800 claude -p < "$PF" --add-dir "$DDIR" >> "$LOG" 2>&1\n' >> "$T/lane/02_Infrastructure/ops/cleaner_distill_run.sh"
 cp "$OPS/rf_llm_env.sh" "$T/lane/02_Infrastructure/ops/rf_llm_env.sh"
-g1="$("$PY" "$(winp "$SCANNER")" "$(winp "$T/lane")" --paths 02_Infrastructure/ops/rf_b1_design.sh 02_Infrastructure/ops/rf_llm_env.sh 2>&1 | tr -d '\r')"
-printf '%s\n' "$g1" | grep -q '^VIOLATION 02_Infrastructure/ops/rf_b1_design.sh:' && ok "C1 실레인 사본에 주입한 맨 호출 검출" || ng "C1 실레인 주입 미검출" "$(printf '%s' "$g1" | tail -1)"
+g1="$("$PY" "$(winp "$SCANNER")" "$(winp "$T/lane")" --paths 02_Infrastructure/ops/cleaner_distill_run.sh 02_Infrastructure/ops/rf_llm_env.sh 2>&1 | tr -d '\r')"
+printf '%s\n' "$g1" | grep -q '^VIOLATION 02_Infrastructure/ops/cleaner_distill_run.sh:' && ok "C1 실레인 사본에 주입한 맨 호출 검출" || ng "C1 실레인 주입 미검출" "$(printf '%s' "$g1" | tail -1)"
 printf '%s\n' "$g1" | grep -q '^VIOLATION 02_Infrastructure/ops/rf_llm_env.sh' && ng "C2 정본이 위반으로 잡혔다" "$g1" || ok "C2 정본 rf_llm_agent_run 본문은 허용"
 sed -i 's/^rf_llm_agent_run() {/rf_llm_agent_run_shadow() {/' "$T/lane/02_Infrastructure/ops/rf_llm_env.sh"
 g2="$("$PY" "$(winp "$SCANNER")" "$(winp "$T/lane")" --paths 02_Infrastructure/ops/rf_llm_env.sh 2>&1 | tr -d '\r')"
@@ -223,7 +223,8 @@ done
 echo "--- G. 한도 폴백 배선 — 허용 목록 밖 호출자는 LLM_FALLBACK_MODEL=\"\" (2차 · 2026-09-25) ---"
 # 폴백을 싣는 호출자 = 이관 전부터 이 함수를 쓰던 셋(반쪽 산출물 청소 훅 rf_llm_before_fallback 또는 감사 레인).
 # P0-M1 이관 레인은 구판처럼 폴백 없이 뜬다 — 새 호출자는 둘 중 하나를 명시적으로 골라야 한다.
-FB_ALLOW="rf_replication_auto.sh,rf_b5_design.sh,rf_overlay_audit.sh"
+# (v10.01 2026-10-13) rf_b5_design.sh 퇴역 — 허용 목록에서 뺐다. 직접 레인 돌연변이 표본 = cleaner_distill_run.sh(구 rf_b1_design.sh)
+FB_ALLOW="rf_replication_auto.sh,rf_overlay_audit.sh"
 cat > "$T/g_scan.py" <<'PYG'
 import io, os, re, sys
 ops = sys.argv[1]; allow = set(sys.argv[2].split(','))
@@ -258,11 +259,11 @@ gs="$(printf '%s\n' "$g" | sed -n 's/^SEEN=//p')"; gb="$(printf '%s\n' "$g" | se
 [ "${gs:-0}" -ge 4 ] 2>/dev/null && ok "G1 호출 지점 ${gs}곳을 본다(검사기 생존)" || ng "G1 호출 지점" "seen=${gs:-?} — $g"
 [ -z "$gb" ] && [ -n "$gs" ] && ok "G2 허용 목록 밖 호출자 전부 폴백 미탑재" || ng "G2 폴백 배선" "위반=[$gb]"
 mkdir -p "$T/gops"
-cp "$OPS/rf_b1_design.sh" "$OPS/paper_router_run.sh" "$T/gops/"
-sed -i 's/LLM_FALLBACK_MODEL="" rf_llm_agent_run/rf_llm_agent_run/; s/LLM_MODEL="\$_model" LLM_FALLBACK_MODEL="" \\/LLM_MODEL="$_model" \\/' "$T/gops/rf_b1_design.sh" "$T/gops/paper_router_run.sh"
-if cmp -s "$OPS/rf_b1_design.sh" "$T/gops/rf_b1_design.sh" || cmp -s "$OPS/paper_router_run.sh" "$T/gops/paper_router_run.sh"; then ng "G3 돌연변이" "sed 무변화(좌표 낡음)"; else
+cp "$OPS/cleaner_distill_run.sh" "$OPS/paper_router_run.sh" "$T/gops/"
+sed -i 's/LLM_FALLBACK_MODEL="" rf_llm_agent_run/rf_llm_agent_run/; s/LLM_MODEL="\$_model" LLM_FALLBACK_MODEL="" \\/LLM_MODEL="$_model" \\/' "$T/gops/cleaner_distill_run.sh" "$T/gops/paper_router_run.sh"
+if cmp -s "$OPS/cleaner_distill_run.sh" "$T/gops/cleaner_distill_run.sh" || cmp -s "$OPS/paper_router_run.sh" "$T/gops/paper_router_run.sh"; then ng "G3 돌연변이" "sed 무변화(좌표 낡음)"; else
   g3="$("$PY" "$(winp "$T/g_scan.py")" "$(winp "$T/gops")" "$FB_ALLOW" 2>&1 | tr -d '\r' | sed -n 's/^BAD=//p')"
-  case "$g3" in *rf_b1_design.sh:*paper_router_run.sh:*|*paper_router_run.sh:*rf_b1_design.sh:*) ok "G3 비움을 지운 돌연변이 2종(직접 레인·_run_claude) 검출" ;; *) ng "G3 판별력" "검출=[$g3]" ;; esac
+  case "$g3" in *cleaner_distill_run.sh:*paper_router_run.sh:*|*paper_router_run.sh:*cleaner_distill_run.sh:*) ok "G3 비움을 지운 돌연변이 2종(직접 레인·_run_claude) 검출" ;; *) ng "G3 판별력" "검출=[$g3]" ;; esac
 fi
 
 echo

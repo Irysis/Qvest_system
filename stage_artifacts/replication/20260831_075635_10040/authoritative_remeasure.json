@@ -36,7 +36,7 @@
   "structural_drawdown": false,
   "selection_type": "chain",
   "dsr_gate_applied": false,
-  "reasons": "Ensemble: positive alpha이나 B 미달 (블렌드에서만 가치)",
+  "reasons": "v3: S 0.300 · B 경계 0.434 · 띠 C · CR normal(시험 창 normal) · 노치 +0 · A 아님 사유 floor:port_t,floor:cagr,floor:sharpe,oos:rolling36_pass_oos | v921 C: Ensemble: positive alpha이나 B 미달 (블렌드에서만 가치)",
   "replication": {
     "source_paper": {
       "title": "Amihud (2002), Illiquidity and Stock Returns, JFM 5(1)",
@@ -78,7 +78,10 @@
     },
     "prior_recoveries": 6,
     "current_run": 1,
-    "span": ["2008-01", "2026-08"]
+    "span": [
+      "2008-01",
+      "2026-08"
+    ]
   },
   "defensive_score": {
     "status": "ok",
@@ -121,5 +124,70 @@
     "grade_before": "C",
     "grade_after": "C",
     "note": "롤링 등급 지표·방어형 스코어 소급 산출 + F 구제 적용. 원값은 grade_base 보존."
+  },
+  "grade_scheme": "grade_v3",
+  "grade_v921": "C",
+  "grade_v3": {
+    "status": "ok",
+    "schema": "grade_v3_v1",
+    "grade": "C",
+    "S": 0.3,
+    "S_B": 0.434,
+    "band": "C",
+    "notch": 0,
+    "notch_a": false,
+    "blocked_by": [
+      "floor:port_t",
+      "floor:cagr",
+      "floor:sharpe",
+      "oos:rolling36_pass_oos"
+    ],
+    "floors": {
+      "port_t": false,
+      "calmar": true,
+      "cagr": false,
+      "sharpe": false
+    },
+    "bench": {
+      "calmar": 0.2063,
+      "cagr": 0.1092,
+      "mdd": 0.5292,
+      "sharpe": 0.5587
+    },
+    "cr": {
+      "overall": "normal",
+      "test": "normal",
+      "visible": "normal",
+      "n_crisis": 6,
+      "dd_capture_median": 0.9845,
+      "dd_capture_worst": 1.2676,
+      "uc_median": 1.0599,
+      "cdar": 0.3855,
+      "controls": "not_provided"
+    },
+    "oos": {
+      "tau_d": "2022-12-31",
+      "gate": false,
+      "parts": {
+        "test_window_cr_not_weak": true,
+        "rolling36_pass_oos": false
+      },
+      "pass_oos": 0.2727,
+      "pass_min": 0.5,
+      "pass_life": 0.1161,
+      "S_is": 0.3347,
+      "S_oos": 0,
+      "retention_calmar": 5.8513,
+      "retention_sharpe": 2.3689
+    },
+    "parity_max_abs": 1.11022302462516e-15,
+    "nav_source": "contract"
+  },
+  "grade_v3_backfill": {
+    "at": "2026-10-13T15:02:36+0900",
+    "tool": "02_Infrastructure/programs/grade_v3_backfill.R",
+    "decision": "decision_register GRADE-V3-PROMOTE",
+    "prior_essence_grade": "C",
+    "prior_md5": "21a5be853d92efc25271e088ef9060f9"
   }
 }

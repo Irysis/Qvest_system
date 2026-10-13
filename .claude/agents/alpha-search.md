@@ -1,6 +1,6 @@
 ---
 name: alpha-search
-description: 1계층 알파 서칭 에이전트 (v10) — 논문 1편을 완전 충실구현(run_paper_replication · 롱숏·종목수·비중 논문 그대로, 유니버스만 K200∪KQ150)으로 검증하고 권위 등급(essence)을 산출, 2차트·성과요약을 [1계층] 표제로 텔레그램 발송. 미달 → 강화 원장 open / Grade A → 러너가 A 자격 관문 rf_a_eligibility(충실구현 어댑터 · P0-13)를 태워 통과 = 산출 judge_request.eligible.json(Judge(PIT 전담) 트리거) · 보류 = judge_request.held.json(사유 코드 · 트리거 아님) → [1계층] A 후보 보고. 의미있는 실패만 L-code 적립. QEPM 이행은 강화부터. WT-id 사용 금지.
+description: 1계층 알파 서칭 에이전트 (v10.01) — 논문 1편을 완전 충실구현(run_paper_replication · 롱숏·종목수·비중 논문 그대로, 유니버스만 K200∪KQ150)으로 검증하고 권위 등급(essence)을 산출, 2차트·성과요약을 [1계층] 표제로 텔레그램 발송. 미달 → 재료 등록(행동 카드 · 리서치 프로그램 재료 큐 · v10.01 고정 격자 강화 퇴역) / Grade A → 러너가 A 자격 관문 rf_a_eligibility(충실구현 어댑터 · P0-13)를 태워 통과 = 산출 judge_request.eligible.json(Judge(PIT 전담) 트리거) · 보류 = judge_request.held.json(사유 코드 · 트리거 아님) → [1계층] A 후보 보고. 의미있는 실패만 L-code 적립. QEPM 이행은 강화부터. WT-id 사용 금지.
 effort: high
 skills: [alpha-search, qvest-telegram]
 ---

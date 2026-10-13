@@ -9,6 +9,12 @@
 #   실제 모델 호출 0 · 한도 소모 0. 실모델 별칭 확인은 RF_LLM_LIVE=1 일 때만(G절, 한도를 조금 쓴다).
 #
 # 실행: bash 08_Tests/ops/test_rf_llm_fallback.sh      (부작용 없음 — .cache/_test_rf_llm_fallback.<pid> 만 쓰고 지운다)
+#
+# (v10.01 2026-10-13) LLM 레인 정책 D12(도훈 채택 — 판단 = Opus · 명확한 사양 실행 = Sonnet · Fable 미사용 · 퇴역 레인 8종 키 삭제)에
+#   맞춰 E3 를 다시 썼다: 구판 "13 레인 전부 opus/max" → E3(D12 편성표 13 레인 해석) · E3b(설정의 모든 레인이 명시 model/effort 로
+#   해석 · fable 0 · 폴백 0 — 목록은 설정에서 재도출) · E3c(퇴역 레인 = 해석기 기본값 llm.model/effort 낙하) · E3m(E3b 돌연변이).
+#   A·C 절 합성 픽스처의 Opus 레인 이름을 퇴역 b1_design → 살아 있는 fidelity_audit 로 바꿨다(합성값 · 거동 불변).
+#   Fable 한도 폴백 기제(A~C)는 그대로 잰다. 롤백 태그 pre-v10.01-prescription-20261013
 #==============================================================================
 set -uo pipefail
 ROOT="${QM_ROOT:-C:/Users/99922/OneDrive/Quant_Module_Moltbot}"
@@ -29,17 +35,17 @@ echo "=== A. 해석기 ==="
 cat > "$T/cfg.json" <<'EOF'
 {"llm": {"model": "opus", "effort": "max",
   "fable_limit_fallback": {"model": "opus", "effort": "max"},
-  "lanes": {"replication": {"model": "fable", "effort": "max"},
-            "b1_design":   {"model": "opus",  "effort": "high"}}}}
+  "lanes": {"replication":    {"model": "fable", "effort": "max"},
+            "fidelity_audit": {"model": "opus",  "effort": "high"}}}}
 EOF
 export QVEST_RF_CONFIG="$T/cfg.json"
 rf_llm_resolve replication "" ""
 r="$LLM_MODEL/$LLM_EFFORT/$LLM_FALLBACK_MODEL/$LLM_FALLBACK_EFFORT"
 [ "$r" = "fable/max/opus/max" ] && ok "A1 Fable 레인 → 폴백 opus/max 가 실린다" || ng "A1" "$r"
-rf_llm_resolve b1_design "" ""
+rf_llm_resolve fidelity_audit "" ""
 [ -z "$LLM_FALLBACK_MODEL" ] && [ "$LLM_MODEL/$LLM_EFFORT" = "opus/high" ] \
   && ok "A2 Opus 레인 → 폴백 없음(같은 계열 재실행은 무의미)" || ng "A2" "$LLM_MODEL/$LLM_EFFORT/$LLM_FALLBACK_MODEL"
-rf_llm_resolve b1_design "claude-fable-5-1" ""
+rf_llm_resolve fidelity_audit "claude-fable-5-1" ""
 [ "$LLM_FALLBACK_MODEL" = "opus" ] && ok "A3 환경변수로 Fable ID 를 넣어도 계열로 판정 → 폴백 실림" || ng "A3" "[$LLM_FALLBACK_MODEL]"
 QVEST_LLM_FALLBACK=off rf_llm_resolve replication "" ""
 [ -z "$LLM_FALLBACK_MODEL" ] && ok "A4 QVEST_LLM_FALLBACK=off → 폴백 꺼짐" || ng "A4" "[$LLM_FALLBACK_MODEL]"
@@ -119,7 +125,7 @@ if [ "$(ncalls)" = 2 ] && [ "$LLM_RC" = 1 ] && [ "$LLM_FELL_BACK" = 1 ] && rf_ll
   ok "C3 폴백까지 한도 → 재실행은 1회뿐 · 최종 출력에 한도 문구가 남아 레인이 환경 실패로 잡는다"
 else ng "C3" "calls=$(ncalls) rc=$LLM_RC fb=$LLM_FELL_BACK"; fi
 
-run_case opus_limit b1_design
+run_case opus_limit fidelity_audit
 if [ "$(ncalls)" = 1 ] && [ "$LLM_FELL_BACK" = 0 ] && ! grep -q -- "--fallback-model" "$STUB_CALLS"; then
   ok "C4 [위반 주입] Opus 레인이 한도에 걸려도 폴백하지 않는다(정책 = Fable 한도 한정)"
 else ng "C4" "calls=$(ncalls) fb=$LLM_FELL_BACK"; fi
@@ -191,13 +197,64 @@ unset QVEST_RF_CONFIG
 ## ★2026-09-23 도훈 지시 "무인실행에서 LLM 개입부 모두 opus max" — 구판 E3 는 운영 설정의 replication = fable 을 단정했다.
 ##   정책이 바뀌었으므로 운영 설정 단정은 **전 레인 opus/max · opus 레인엔 폴백 미부착**으로 옮긴다.
 ##   Fable 폴백 기제 자체는 위 C 절(합성 픽스처)이 계속 잰다 — 운영 상태를 빌리지 않는다.
-_e3_bad=""
-for _l in replication fidelity_audit b1_design lcode_mechanism overlay_propose overlay_audit b5_design cleaner_distill \
-          paper_router alpha_search_queue mode_queue_research factor_deep_recheck grid_propose; do
+## ★(v10.01 2026-10-13) D12(도훈 채택) 역할별 재배정 — 판단(판독·분석·처방·리뷰·감사·감독) = Opus · 명확한 사양 실행(코딩·분류·요약) =
+##   Sonnet · Fable 미사용. 퇴역 레인 키 8종은 llm.lanes 에서 빠져 해석기 기본값(llm.model/effort = opus/max)으로 떨어진다.
+##   정신은 그대로다 — 운영 설정의 모든 레인이 **명시값**으로 해석되고 fable(따라서 한도 폴백)이 없다.
+D12="replication=opus/max fidelity_audit=opus/xhigh overlay_audit=opus/xhigh cleaner_distill=sonnet/high paper_router=sonnet/high
+     paper_atlas=opus/xhigh analyst=opus/max prescriber=opus/max reviewer=opus/max steward=opus/max factor_definer=opus/xhigh
+     coder=sonnet/high report_writer=sonnet/medium"
+_e3_bad=""; _e3_n=0
+for _p in $D12; do
+  _l="${_p%%=*}"; _want="${_p#*=}"; _e3_n=$((_e3_n+1))
   rf_llm_resolve "$_l" "" ""
-  [ "$LLM_MODEL/$LLM_EFFORT/${LLM_FALLBACK_MODEL:-none}" = "opus/max/none" ] || _e3_bad="$_e3_bad $_l=$LLM_MODEL/$LLM_EFFORT/${LLM_FALLBACK_MODEL:-none}"
+  [ "$LLM_MODEL/$LLM_EFFORT/${LLM_FALLBACK_MODEL:-none}" = "$_want/none" ] || _e3_bad="$_e3_bad $_l=$LLM_MODEL/$LLM_EFFORT/${LLM_FALLBACK_MODEL:-none}(기대 $_want/none)"
 done
-[ -z "$_e3_bad" ] && ok "E3 운영 설정 해석: 13 레인 전부 opus/max · 폴백 미부착(opus 레인)" || ng "E3" "$_e3_bad"
+[ -z "$_e3_bad" ] && ok "E3 운영 설정 해석 = D12 편성 ${_e3_n} 레인(판단 opus · 사양 실행 sonnet · fable 0) · 폴백 미부착" || ng "E3" "$_e3_bad"
+# E3b — 목록을 설정에서 재도출한다(편성표 밖 레인이 새로 생겨도 같은 규율을 받는다). $1 = 설정 → 위반 목록(없으면 빈 줄)
+_lanes_of(){ "$PY" -c "import io,json,sys
+c=json.loads(io.open(sys.argv[1],'rb').read().decode('utf-8'))
+for k,v in sorted(((c.get('llm') or {}).get('lanes') or {}).items()):
+    v=v if isinstance(v,dict) else {}
+    print('%s|%s|%s'%(k,v.get('model') or '',v.get('effort') or ''))" "$1" | tr -d '\r'; }
+lane_policy_check(){   # 암묵값(model/effort 미기재) · 해석 불일치 · fable · 폴백 부착
+  local cfg="$1" bad="" l m e
+  while IFS='|' read -r l m e; do
+    [ -n "$l" ] || continue
+    if [ -z "$m" ] || [ -z "$e" ]; then bad="$bad $l:implicit($m/$e)"; continue; fi
+    QVEST_RF_CONFIG="$cfg" rf_llm_resolve "$l" "" ""
+    [ "$LLM_MODEL/$LLM_EFFORT" = "$m/$e" ] || bad="$bad $l:resolved=$LLM_MODEL/$LLM_EFFORT(설정 $m/$e)"
+    rf_llm_is_fable "$LLM_MODEL" && bad="$bad $l:fable"
+    [ -z "$LLM_FALLBACK_MODEL" ] || bad="$bad $l:fallback=$LLM_FALLBACK_MODEL"
+  done < <(_lanes_of "$cfg")
+  printf '%s' "$bad"
+}
+LIVE_CFG="$ROOT/06_Registry/reinforce_auto_config.json"
+_n_cfg=$(_lanes_of "$LIVE_CFG" | grep -c '|')
+w=$(lane_policy_check "$LIVE_CFG")
+[ -z "$w" ] && [ "${_n_cfg:-0}" -ge 1 ] && ok "E3b 설정 llm.lanes 의 모든 레인(${_n_cfg}) — 명시 model/effort 그대로 해석 · fable 0 · 폴백 부착 0" || ng "E3b" "n=$_n_cfg [$w]"
+# E3c — 퇴역 레인(D12 키 삭제 8종)은 설정에 없고 해석기 기본값으로 떨어진다(alpha_search_queue 등 스크립트가 남은 레인 포함)
+_gm=$("$PY" -c "import io,json,sys
+c=json.loads(io.open(sys.argv[1],'rb').read().decode('utf-8')); l=c.get('llm') or {}
+print('%s/%s'%(l.get('model') or '',l.get('effort') or ''))" "$LIVE_CFG" | tr -d '\r')
+_rt_bad=""
+for _l in b1_design b5_design lcode_mechanism overlay_propose grid_propose alpha_search_queue mode_queue_research factor_deep_recheck; do
+  _lanes_of "$LIVE_CFG" | grep -q "^$_l|" && _rt_bad="$_rt_bad $_l:in_lanes"
+  rf_llm_resolve "$_l" "" ""
+  [ "$LLM_MODEL/$LLM_EFFORT/${LLM_FALLBACK_MODEL:-none}" = "$_gm/none" ] || _rt_bad="$_rt_bad $_l=$LLM_MODEL/$LLM_EFFORT/${LLM_FALLBACK_MODEL:-none}"
+done
+[ "$_gm" = "opus/max" ] && [ -z "$_rt_bad" ] && ok "E3c 퇴역 레인 8종 — llm.lanes 에 없고 해석기 기본값 llm.model/effort($_gm)로 떨어진다 · 폴백 0" || ng "E3c" "llm=$_gm [$_rt_bad]"
+# E3m — 돌연변이: E3b 검사기가 fable 배정·암묵값을 실제로 잡는가(판별력)
+"$PY" - "$LIVE_CFG" "$T/cfg_lane_mut.json" <<'PYM'
+import io, json, sys
+c = json.loads(io.open(sys.argv[1], 'rb').read().decode('utf-8'))
+c['llm']['lanes']['paper_router']['model'] = 'fable'   # 사양 실행 레인 하나를 fable 로
+c['llm']['lanes']['coder'].pop('effort', None)          # 다른 레인의 effort 를 지운다(해석기 기본값 max 로 조용히 떨어진다)
+io.open(sys.argv[2], 'w', encoding='utf-8').write(json.dumps(c, ensure_ascii=False))
+PYM
+w=$(lane_policy_check "$T/cfg_lane_mut.json")
+if printf '%s' "$w" | grep -q "paper_router:fable" && printf '%s' "$w" | grep -q "paper_router:fallback=" && printf '%s' "$w" | grep -q "coder:implicit"; then
+  ok "E3m [돌연변이] 레인 하나를 fable 로 · 다른 레인의 effort 를 지우면 E3b 검사가 잡는다(fable 폴백 부착까지)"
+else ng "E3m" "[$w]"; fi
 
 #── G. (선택) 실모델 별칭 확인 — RF_LLM_LIVE=1 일 때만. 한도를 조금 쓴다 ─────────────────────
 echo "=== G. 실모델 별칭 (RF_LLM_LIVE=1 일 때만) ==="

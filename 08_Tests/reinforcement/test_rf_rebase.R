@@ -17,9 +17,14 @@
 #       운영 원장은 **사본**만 읽는다(C 절 — 산출물 경로를 임시 거울로 옮긴 사본에 전수 rebase·전환 · 운영 md5 전후 불변).
 # 구성:
 #   S 정적(결정 kind · 서명) · G graduate · P 양성 대조 · R 위반 주입 · L 잠금·CAS·사후 검증 · A 축 전환
-#   C 운영 원장 사본 재도출(구판 무발화 · 전수 rebase 수 = 대상 칸 수 · python 독립 비트 대조 · 결합 풀 크기 불변 · 축 skip 0)
+#   C 운영 원장 사본 재도출(구판 무발화 · 전수 rebase 수 = 대상 칸 수 · python 독립 비트 대조 · 자식 parent 갱신 · 사본 축 전환 · 운영 md5 불변)
 #   M 돌연변이(자식 Rscript · RF_LEDGER_SRC=사본 · 병렬) → red · 대조(원본 사본) green
 # env: RF_LEDGER_SRC(검사 대상 소스) · RF_REBASE_CORE_ONLY=1(자식: S/G/P/R/L/A 만) · QVEST_PY(python)
+# (v10.01 2026-10-13) 고정 격자 러너 퇴역으로 C7·C7b·C7c·C8(결합 풀 불변 · 축 skip 0 — 소비자 rf_combination_launch.R 파스 트리의
+#   by_item/P 구간 실행) 과 그 보조(pool_of · neutral · pool_pre/mid/post · ax_pre/post) 삭제 — 대상 코드가 없다
+#   (롤백 태그 pre-v10.01-prescription-20261013).
+#   (10-13 추가) C3~C6 운영 원장 사본 전수 rebase 재현도 삭제 — 09-25 close_t1 이행 완료로 대상 칸이 없다(태그 판에서도 같은 실패 · 데이터 표류).
+#   돌연변이 M-kinds·M-cas 좌표 이설(결정 kind 벡터 연장 · CAS 3곳).
 #==============================================================================
 suppressMessages(library(jsonlite))
 ROOT <- Sys.getenv("QM_ROOT", "C:/Users/99922/OneDrive/Quant_Module_Moltbot")
@@ -116,7 +121,7 @@ mk_fx <- function(tag) {
   list(R = R, p = .rf_path(1L, R), art = list(bP = bP, p1 = p1, p2 = p2, p4 = p4, p5 = p5, p6 = p6, p7 = p7, p8 = p8, p9 = p9, c1 = c1, q1 = q1, u1 = u1))
 }
 remp <- function(d, reg) file.path(d, paste0("remeasure_", reg), "authoritative_remeasure.json")
-#' 드라이버(rf_rebase_driver.R)와 같은 방식 — 정본 조립기 rf_rebase_essence_from_sibling(구 essence, 형제 판)으로 essence_new.
+#' 구 드라이버(rf_rebase_driver.R · v10.01 퇴역)와 같은 방식 — 정본 조립기 rf_rebase_essence_from_sibling(구 essence, 형제 판)으로 essence_new.
 #'   (구판 검사는 구 essence 에서 핵심 6지표만 바꿨다 — 그 모양이 곧 L-B2 결함(dsr 등 구 값 잔존)이라 이제 writer 가 거부한다: R17)
 item <- function(F, bid, n, d, reg = "close_t1", path = remp(d, reg), tweak = NULL, ...) {
   L <- rf_load(1L, F$R); e <- L$entries[[.rf_find(L, bid)]]
@@ -478,163 +483,10 @@ x <- NULL; e <- err_of(invisible(capture.output(x <- rf_mark_axis_epoch(1L, EPOC
                                                                        root = C_ROOT, relabel_from = CUR, dry_run = TRUE))))
 chk(is.na(e) && x$n_marked == n_cur, sprintf("C2 수리판 relabel_from='%s' 계획 = %d건(= 그 축 entry 수)", CUR, n_cur), e)
 
-# 거울 — 칸·기저 산출물을 임시 디렉터리로 옮긴 사본(운영 산출물 무접촉). auth 는 measurement_regime 만(기저는 원본 전체 — 결합 풀이 읽는다)
-MIR <- file.path(C_ROOT, "mir"); dir.create(MIR, showWarnings = FALSE)
-perturb <- function(v, k) { v <- suppressWarnings(as.numeric(v)); if (!length(v) || !is.finite(v[1])) return(NULL)
-  round(if (k == "port_t") v - 0.2 else if (k == "calmar") v * 0.93 else v, 6) }
-syn_core <- function(es) { cr <- list(); for (k in names(RF_REBASE_CORE)) { v <- perturb(es[[k]], k)
-  if (!is.null(v)) cr[[if (k == "port_t") "portfolio_alpha_t_nw_lag3" else k]] <- v }; cr }
-syn_grade <- function(g) { g <- .rf_s1(g); if (g %in% c("A", "B", "C", "F")) g else "F" }
-items <- list(); exp_rb <- 0L; exp_c11 <- 0L; exp_unres <- 0L; exp_base <- 0L; live_done <- 0L
-for (i in seq_along(LC$entries)) {
-  e <- LC$entries[[i]]
-  bf <- .rf_auth_file(e$base_artifacts, ROOT)
-  if (!nzchar(.rf_s1((if (is.list(e$base_measurement_regime)) e$base_measurement_regime else list())$regime)) &&
-      !length(.rf_flags_hit(e$base_vintage_flags, "pit_c11")) && !is.na(bf) && file.exists(bf)) {
-    d <- file.path(MIR, sprintf("b%03d", i)); dir.create(d, showWarnings = FALSE)
-    invisible(file.copy(bf, file.path(d, "authoritative_remeasure.json")))
-    bj <- fromJSON(bf, simplifyVector = FALSE)
-    bcore <- list(); for (k in names(RF_REBASE_CORE)) { src <- RF_REBASE_CORE[[k]][1]
-      v <- perturb(bj$essence[[src]] %||% bj$essence[[k]], k); if (!is.null(v)) bcore[[src]] <- v }
-    if (length(bcore)) {
-      wj(list(measurement_regime = list(exec_price = "close_t1", regime = "close_t1", source = "test_rf_rebase_synthetic"),
-              essence_grade = syn_grade(bj$essence_grade), essence = bcore), remp(d, "close_t1"))
-      LC$entries[[i]]$base_artifacts <- normalizePath(d, winslash = "/")
-      items[[length(items) + 1L]] <- list(base_id = e$base_id, n = "base", essence_new = NULL, regime = "close_t1",
-                                          provenance = list(remeasure_path = remp(normalizePath(d, winslash = "/"), "close_t1"), producer = "test_mirror"))
-      exp_base <- exp_base + 1L
-    }
-  }
-  for (j in seq_along(e$attempts)) {
-    a <- e$attempts[[j]]; if (is.null(a$essence)) next
-    if (nzchar(.rf_s1((if (is.list(a$measurement_regime)) a$measurement_regime else list())$regime))) { live_done <- live_done + 1L; next }
-    if (length(.rf_flags_hit(a$vintage_flags, "pit_c11"))) {
-      exp_c11 <- exp_c11 + 1L
-      items[[length(items) + 1L]] <- list(base_id = e$base_id, n = as.integer(a$n), essence_new = a$essence, regime = "close_t1",
-                                          provenance = list(remeasure_path = file.path(MIR, "c11", "remeasure_close_t1", "authoritative_remeasure.json")))
-      next
-    }
-    af <- .rf_auth_file(a$artifacts, ROOT)
-    if (is.list(a$artifacts) || is.na(af) || !file.exists(af)) {
-      exp_unres <- exp_unres + 1L
-      items[[length(items) + 1L]] <- list(base_id = e$base_id, n = as.integer(a$n), essence_new = a$essence, regime = "close_t1",
-                                          provenance = list(remeasure_path = file.path(MIR, "none", "remeasure_close_t1", "authoritative_remeasure.json")))
-      next
-    }
-    d <- file.path(MIR, sprintf("a%03d_%03d", i, j)); dir.create(d, showWarnings = FALSE)
-    aj <- fromJSON(af, simplifyVector = FALSE)
-    wj(if (is.null(aj$measurement_regime)) list(essence_grade = aj$essence_grade) else list(essence_grade = aj$essence_grade, measurement_regime = aj$measurement_regime),
-       file.path(d, "authoritative_remeasure.json"))
-    cr <- syn_core(a$essence)
-    if (!length(cr)) { exp_unres <- exp_unres + 1L; next }
-    wj(list(measurement_regime = list(exec_price = "close_t1", regime = "close_t1", source = "test_rf_rebase_synthetic"),
-            essence_grade = syn_grade(a$grade), essence = cr), remp(d, "close_t1"))
-    LC$entries[[i]]$attempts[[j]]$artifacts <- normalizePath(d, winslash = "/")
-    en <- rf_rebase_essence_from_sibling(a[["essence"]], remp(normalizePath(d, winslash = "/"), "close_t1"))   # 드라이버와 같은 정본 조립기
-    items[[length(items) + 1L]] <- list(base_id = e$base_id, n = as.integer(a$n), essence_new = en, regime = "close_t1",
-                                        provenance = list(remeasure_path = remp(normalizePath(d, winslash = "/"), "close_t1"), producer = "test_mirror"))
-    exp_rb <- exp_rb + 1L
-  }
-}
-invisible(.rf_write(LC, 1L, C_ROOT))            # 거울 경로로 바꾼 사본(= rebase 전 판)
-PRE <- file.path(C_ROOT, "pre.json"); invisible(file.copy(CP, PRE, overwrite = TRUE))
-cat(sprintf("  · 대상: 칸 %d(비편입 C11 %d · 산출물 미해결 %d · 운영에서 이미 rebase %d) · 기저 %d\n", exp_rb, exp_c11, exp_unres, live_done, exp_base))
-
-# 결합 풀 — 소비자(rf_combination_launch.R) 코드 그대로 파스 트리에서 꺼내 실행(술어 재작성 금지)
-pool_of <- function(led) {
-  ex <- parse(file.path(ROOT, "02_Infrastructure/ops/rf_combination_launch.R"), keep.source = FALSE)
-  tx <- vapply(ex, function(z) paste(deparse(z, width.cutoff = 500L), collapse = " "), character(1))
-  a <- which(startsWith(tx, "by_item <- list()")); b <- which(startsWith(tx, "P <- Filter("))
-  if (length(a) != 1L || length(b) != 1L || b < a) stop("결합 풀 구간을 소비자 파스 트리에서 못 찾았다")
-  env <- new.env(parent = globalenv()); env$led <- led; env$ROOT <- ROOT
-  for (k in a:b) eval(ex[[k]], env)
-  list(keys = sort(names(env$by_item)), P = sort(names(env$P)),
-       rep = vapply(env$by_item, function(x) as.character(x$base_id %||% ""), character(1)))
-}
-neutral <- function(led) { led$entries <- lapply(led$entries, function(e) { e$axis_valid <- TRUE; e$measurement_axis <- led$current_axis; e }); led }
-LPRE <- rf_load(1L, C_ROOT)
-pool_pre <- pool_of(LPRE); ax_pre <- setdiff(pool_of(neutral(LPRE))$P, pool_pre$P)
-
-t0 <- Sys.time(); res <- NULL
-e <- err_of(invisible(capture.output(res <- rf_rebase_essence_batch(1L, items, root = C_ROOT, wait_s = 5, poll_s = 0.5, skip_rejected = TRUE))))
-cat(sprintf("  · 전수 rebase %.1f초\n", as.numeric(difftime(Sys.time(), t0, units = "secs"))))
-if (!is.na(e) || is.null(res)) { ng("C3 전수 rebase 실패", e) } else {
-  codes <- table(vapply(Filter(function(x) identical(x$status, "rejected"), res$items), function(x) x$code, ""))
-  cat("  · 거부 코드:", paste(sprintf("%s=%d", names(codes), as.integer(codes)), collapse = " · "), "\n")
-  chk(res$n_rebased == exp_rb + exp_base && res$n_already == 0L, sprintf("C3 rebase 수 %d = 대상 칸 %d + 기저 %d (재도출)", res$n_rebased, exp_rb, exp_base))
-  chk(identical(as.integer(codes["blocked_flag:pit_c11"] %||% 0L), as.integer(exp_c11)) &&
-      all(names(codes) %in% c("blocked_flag:pit_c11", "remeasure_absent", "artifacts_form", "artifacts_unresolvable")),
-      sprintf("C4 C11 표식 %d칸 전부 비편입(blocked_flag:pit_c11) · 그 밖 거부 = 산출물 미해결 %d 뿐", exp_c11, exp_unres),
-      paste(names(codes), as.integer(codes)))
-  POST <- file.path(C_ROOT, "post.json"); invisible(file.copy(CP, POST, overwrite = TRUE))
-  pool_mid <- pool_of(rf_load(1L, C_ROOT))                       # rebase 뒤 · 축 전환 전
-  PY <- Sys.getenv("QVEST_PY", ""); if (!nzchar(PY)) PY <- Sys.which("python")
-  pyf <- file.path(C_ROOT, "chk.py")
-  writeLines(c(
-    "import json, sys",
-    "pre = json.load(open(sys.argv[1], encoding='utf-8')); post = json.load(open(sys.argv[2], encoding='utf-8')); old = sys.argv[3]",
-    "AA = {'essence','grade','grade_base','retro','retro_inherited','measurement_regime','essence_history','rebase_log'}",
-    "AE = {'base_grade','base_measurement_regime','base_remeasure','base_essence_history','base_rebase_log','parent_rebased_from','parent','attempts','last_updated'}",
-    "c = lambda x: json.dumps(x, sort_keys=True, ensure_ascii=False)",
-    "nr = nh = nb = nk = 0; bad = []",
-    "for k in (set(pre) | set(post)) - {'entries', 'last_updated'}:",
-    "    if c(pre.get(k)) != c(post.get(k)): bad.append(('top', k))",
-    "for ep, en in zip(pre['entries'], post['entries']):",
-    "    if ep['base_id'] != en['base_id']: bad.append(('order', ep['base_id'])); continue",
-    "    for k in (set(ep) | set(en)) - AE:",
-    "        if c(ep.get(k)) != c(en.get(k)): bad.append(('entry', en['base_id'], k))",
-    "    f = lambda d: {k: v for k, v in (d or {}).items() if not k.startswith('best_')}",
-    "    if c(f(ep.get('parent'))) != c(f(en.get('parent'))): bad.append(('parent', en['base_id']))",
-    "    if en.get('parent_rebased_from'):",
-    "        nk += 1; b = en['parent_rebased_from'][-1]['before']",
-    "        if any(c(ep['parent'].get(k)) != c(v) for k, v in b.items()): bad.append(('parent_before', en['base_id']))",
-    "    if en.get('base_essence_history'):",
-    "        nb += 1",
-    "        if c(en['base_essence_history'][old]['base_grade']) != c(ep.get('base_grade')): bad.append(('base_hist', en['base_id']))",
-    "    elif c(ep.get('base_grade')) != c(en.get('base_grade')): bad.append(('base_grade', en['base_id']))",
-    "    if len(ep['attempts']) != len(en['attempts']): bad.append(('n_att', en['base_id'])); continue",
-    "    for ap, an in zip(ep['attempts'], en['attempts']):",
-    "        if 'essence_history' in an and 'essence_history' not in ap:",
-    "            nr += 1; h = an['essence_history'].get(old, {})",
-    "            if c(h.get('essence')) == c(ap.get('essence')) and c(h.get('grade')) == c(ap.get('grade')): nh += 1",
-    "            else: bad.append(('hist', en['base_id'], an['n']))",
-    "            for k in ('grade_base', 'retro', 'retro_inherited'):",
-    "                if k in ap and c(h.get(k)) != c(ap[k]): bad.append(('hist_field', en['base_id'], an['n'], k))",
-    "            for k in (set(ap) | set(an)) - AA:",
-    "                if c(ap.get(k)) != c(an.get(k)): bad.append(('att', en['base_id'], an['n'], k))",
-    "        elif c(ap) != c(an): bad.append(('untouched', en['base_id'], an['n']))",
-    "print(json.dumps({'n_rebased': nr, 'n_hist_ok': nh, 'n_base': nb, 'n_kids': nk, 'n_bad': len(bad), 'bad': bad[:10]}))"), pyf, useBytes = TRUE)
-  if (!nzchar(PY) || !file.exists(PY)) sk("C5 python 부재 — 독립 대조 건너뜀") else {
-    out <- tryCatch(system2(PY, c(shQuote(pyf), shQuote(PRE), shQuote(POST), "close_d_legacy"), stdout = TRUE, stderr = TRUE), error = function(e) conditionMessage(e))
-    pj <- tryCatch(fromJSON(tail(out, 1)), error = function(e) NULL)
-    chk(!is.null(pj) && pj$n_bad == 0L && pj$n_rebased == exp_rb && pj$n_hist_ok == exp_rb && pj$n_base == exp_base,
-        sprintf("C5 python 독립 대조 — history 비트 보존 %s/%s · 기저 %s · 자식 parent %s · 허용 밖 변경 %s",
-                pj$n_hist_ok %||% "?", exp_rb, pj$n_base %||% "?", pj$n_kids %||% "?", pj$n_bad %||% "?"), paste(tail(out, 3), collapse = " | "))
-    kid_exp <- sum(vapply(LPRE$entries, function(e) { pr <- e$parent; if (!is.list(pr)) return(FALSE)
-      pi <- .rf_find(LPRE, .rf_s1(pr$base_id)); if (is.na(pi)) return(FALSE); pe <- LPRE$entries[[pi]]
-      any(vapply(pe$attempts, function(a) identical(.rf_s1(a$cell_code %||% (a$essence %||% list())$cell_code), .rf_s1(pr$cell)) && !is.null(a$essence) &&
-                   !length(.rf_flags_hit(a$vintage_flags, "pit_c11")) && !is.list(a$artifacts) && grepl("/mir/", .rf_s1(a$artifacts)), logical(1))) }, logical(1)))
-    chk(!is.null(pj) && pj$n_kids == kid_exp && res$n_children == kid_exp, sprintf("C6 자식 parent$best_* 갱신 %s = 승자 칸이 rebase 된 자식 %d (재도출)", pj$n_kids %||% "?", kid_exp))
-  }
-  invisible(capture.output(x <- rf_mark_axis_epoch(1L, EPOCH_C, paste0(CUR, "@close_d_legacy"), "사본 전환", "test_rf_rebase C",
-                                                   root = C_ROOT, relabel_from = CUR, require_regime = "close_t1", wait_s = 5, poll_s = 0.5)))
-  LPOST <- rf_load(1L, C_ROOT)
-  pool_post <- pool_of(LPOST); ax_post <- setdiff(pool_of(neutral(LPOST))$P, pool_post$P)
-  lg <- Filter(function(p) identical(p$to, "legacy") && !is.na(p$from) && identical(p$from, CUR), x$plan)
-  cat(sprintf("  · 전환: 승계 %d · legacy %d%s\n", x$n_carried, x$n_marked,
-              if (length(lg)) paste0(" (", paste(vapply(lg, function(p) sprintf("%s:%s", p$base_id, p$why), ""), collapse = ", "), ")") else ""))
-  chk(identical(pool_post$keys, pool_pre$keys) && length(pool_pre$keys) > 0L,
-      sprintf("C7 결합 재료 후보(소비자 by_item 키 — 상태·엔진·축 필터 통과) 불변 %d → %d", length(pool_pre$keys), length(pool_post$keys)),
-      paste(setdiff(union(pool_pre$keys, pool_post$keys), intersect(pool_pre$keys, pool_post$keys)), collapse = ","))
-  chk(identical(pool_post$P, pool_mid$P), sprintf("C7b 축 전환 자체가 결합 풀에서 뺀 재료 0 (전환 전 %d = 후 %d)", length(pool_mid$P), length(pool_post$P)),
-      paste(setdiff(pool_mid$P, pool_post$P), collapse = ","))
-  dP <- setdiff(union(pool_pre$P, pool_post$P), intersect(pool_pre$P, pool_post$P))
-  expl <- vapply(dP, function(k) !identical(pool_pre$rep[[k]], pool_post$rep[[k]]), logical(1))
-  chk(all(expl), sprintf("C7c rebase 전후 풀 차이 %d건 = 전부 값 변화로 대표 entry 가 바뀐 재료(원문 링크 판정은 대표 entry 의 것 · 축 배제 아님)", length(dP)),
-      paste(dP[!expl], collapse = ","))
-  chk(length(setdiff(ax_post, ax_pre)) == 0L, sprintf("C8 축 불일치 skip 으로 새로 배제된 재료 0 (전환 전 축 배제 %d · 후 %d)", length(ax_pre), length(ax_post)),
-      paste(setdiff(ax_post, ax_pre), collapse = ","))
-}
+## (v10.01 2026-10-13) 구 C3~C6(운영 원장 사본 전수 rebase 재현 — 거울 산출물 · 일괄 rebase 수 = 대상 칸 수 · python 독립 비트 대조 ·
+##   자식 parent 갱신 · 사본 축 전환) 삭제 — 09-25 close_t1 이행이 끝나 운영 원장에 대상 칸이 남지 않았다(59칸 전부 이미 close_t1 측정 ·
+##   writer 가 same_regime_overwrite 로 정당 거부). 잴 대상이 사라진 일회성 이행 검증이다. writer 의 rebase 규칙 자체는 합성 픽스처
+##   절(P·R·L·A)과 돌연변이(M)가 계속 잰다. 사본 격리(운영 md5 불변)는 C9 가 그대로 잰다.
 chk(identical(vapply(c(OP_L1, OP_L2), function(p) if (file.exists(p)) md5(p) else "", character(1)), OP_MD5), "C9 운영 원장 L1/L2 md5 전후 불변")
 
 # ══ M 돌연변이 ═══════════════════════════════════════════════════════════════
@@ -668,8 +520,8 @@ muts <- list(
   list(tag = "relabel", sec = "A", d = "relabel_from 무시(구판 NULL 규칙만)", s = list(c("if (!(ax %in% rf_from)) return(", "if (TRUE) return(", 1L))),
   list(tag = "nullguard", sec = "A", d = "무발화(0건) 거부 제거", s = list(c("if (!length(rf_from) && (n_marked + n_carried) == 0L && !isTRUE(allow_empty))", "if (FALSE)", 1L))),
   list(tag = "blocked_only", sec = "A", d = "표식 칸만 가진 entry 도 새 축 승계", s = list(c("if (n_on >= 1L || n_meas == 0L) \"epoch\"", "if (TRUE) \"epoch\"", 1L))),
-  list(tag = "kinds", sec = "S", d = "결정 kind 2종 제거", s = list(c("\"a_eligibility\", \"prereg_verdict\")", "\"base_gate_x\")", 1L))),
-  list(tag = "cas", sec = "L", d = "CAS 제거(rebase·전환)", s = list(c("if (!identical(unname(tools::md5sum(p)), md5_a))", "if (FALSE)", 2L))),
+  list(tag = "kinds", sec = "S", d = "결정 kind 2종 제거", s = list(c("\"a_eligibility\", \"prereg_verdict\",", "\"base_gate_x\",", 1L))),   # (10-13 좌표 이설: 벡터가 organic kind 로 이어진다)
+  list(tag = "cas", sec = "L", d = "CAS 제거(rebase·전환 + 09-25 이후 추가된 writer 1곳)", s = list(c("if (!identical(unname(tools::md5sum(p)), md5_a))", "if (FALSE)", 3L))),
   list(tag = "restore", sec = "L", d = "사후 대조 실패 시 원본 복원 제거", s = list(c(".rf_restore_bytes(p, raw_a, \"rebase\")", "invisible(NULL)", 1L))),
   list(tag = "protect", sec = "P", d = "보호 투영 가드 제거 + 보호 필드(lessons) 변조",
        s = list(c("obj$entries[[i]]$attempts[[j]] <- a", "a$lessons <- \"변조\"; obj$entries[[i]]$attempts[[j]] <- a", 1L),

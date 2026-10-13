@@ -377,9 +377,16 @@ cat("--- E. 문언 ---\n")
 pit <- readLines(PITMD, warn = FALSE, encoding = "UTF-8")
 sec <- function(h) { i <- which(startsWith(pit, h)); if (length(i) != 1L) return(character(0)); j <- which(startsWith(pit, "## ") & seq_along(pit) > i)
   pit[(i + 1L):(if (length(j)) j[1] - 1L else length(pit))] }
-ORG <- "- ★예외(ORGANIC-DE 2026-09-25 도훈 승인): 유기적 강화 컨트롤러의 **자동 결정 입력**에 한해 τ_D 이후 성과를 제외한다(기계 입력 holdout · B08 대비 완화 명시). 사람·등급·Judge·BOOK·전략 구현·격자 선택은 전기간 그대로."
+# (v10.01 2026-10-13) ORGANIC-DE(09-25) 컨트롤러 한정 예외는 D6(10-13 도훈 확정 — τ_D = 2022-12-31 고정 · 처방 에이전트 입력까지 확장)이
+#   승계했다(설계 정본 04_Research/01_reports/l1_prescription_redesign_20261013/README.md §3.5 '연동 변경'). 그래서 E1 은 구 결정문 글자가 아니라
+#   새 결정의 핵심 요소(τ_D 고정값 · 승계 표기 · 사람 쪽 판정은 전기간 · 1회 · 구 문장 잔존 0)를 본다.
+ORG_OLD <- "- ★예외(ORGANIC-DE 2026-09-25 도훈 승인): 유기적 강화 컨트롤러의 **자동 결정 입력**에 한해 τ_D 이후 성과를 제외한다(기계 입력 holdout · B08 대비 완화 명시). 사람·등급·Judge·BOOK·전략 구현·격자 선택은 전기간 그대로."
 lb <- sec("## Lockbox — 폐지"); lb <- lb[nzchar(trimws(lb))]
-chk(sum(pit == ORG) == 1L && length(lb) && identical(lb[length(lb)], ORG), "E1 pit.md Lockbox 절 끝 = ORGANIC-DE 예외 문장(결정문 그대로 · 1회)")
+tau_l <- which(startsWith(pit, "- ★정보 경계 τ_D = **2022-12-31**"))
+last <- if (length(lb)) lb[length(lb)] else ""
+chk(length(tau_l) == 1L && identical(last, pit[tau_l]) && grepl("ORGANIC-DE", last, fixed = TRUE) &&
+      grepl("사람·등급·Judge·BOOK·전략 구현은 전기간 그대로", last, fixed = TRUE) && !any(pit == ORG_OLD),
+    "E1 pit.md Lockbox 절 끝 = 정보 경계 τ_D 2022-12-31 결정문(D6 · ORGANIC-DE 승계 · 사람 쪽 판정 전기간 · 1회 · 구 문장 잔존 0)")
 v6 <- sec("## V6 Gap-Directed")
 chk(any(grepl("Usable_Date <= 결정 시점`의 조건부 IC", v6, fixed = TRUE)) && any(grepl("as-of 판 미제공 시 사용 안 함", v6, fixed = TRUE)) &&
       !any(grepl("conditional_ic_matrix.csv` → 조건부 IC 높은 팩터 우선", v6, fixed = TRUE)),

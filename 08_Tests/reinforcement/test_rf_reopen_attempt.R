@@ -2,6 +2,8 @@
 # test_rf_reopen_attempt.R — 닫힌 칸 되살리기 (2026-09-07 · CDaR_LP 솔버 수리로 원인이 제거된 terminal 칸)
 #   양방향: 양성(원인 제거 후 reopen → 재개 대상 복귀 · 이력 보존) + 위반 주입(사유 없음 · 이미 측정된 칸 ·
 #   없는 n · 없는 entry). 격리 root 픽스처만 쓴다 — 운영 원장·저널 무접촉.
+# (v10.01 2026-10-13) 고정 격자 러너 퇴역으로 C1(러너 reinforce_auto_parallel.R 의 pending 정의가 terminal 을 본다) 삭제 —
+#   대상 코드가 없다(롤백 태그 pre-v10.01-prescription-20261013). writer(rf_reopen_attempt)의 A·B 거동과 C2(writer 위치)는 그대로 잰다.
 `%||%` <- function(a, b) if (is.null(a) || length(a) == 0L) b else a
 PASS <- 0L; FAIL <- 0L
 ok <- function(m) { PASS <<- PASS + 1L; cat("  OK  ", m, "\n") }
@@ -34,7 +36,7 @@ mk <- function() {
 }
 rd <- function() fromJSON(file.path(SBX, "06_Registry", "reinforce_ledger_l1.json"), simplifyVector = FALSE)
 att <- function(o, n) Filter(function(a) identical(as.integer(a$n), n), o$entries[[1]]$attempts)[[1]]
-# 러너의 재개 술어 정본(reinforce_auto_parallel.R): essence$port_t 없음 ∧ !terminal
+# 재개 술어: essence$port_t 없음 ∧ !terminal (구 러너 reinforce_auto_parallel.R 의 정의 · v10.01 퇴역 — 같은 식이 rf_spec_sig.R::rf_grid_consumed 에 남아 있다)
 is_pending <- function(a) (is.null(a$essence) || is.null(a$essence$port_t)) && !isTRUE(a$terminal)
 
 cat("=== A. 양성 대조 — 원인 제거 후 reopen ===\n")
@@ -85,12 +87,8 @@ b4 <- tryCatch({ rf_reopen_attempt(1L, "RP_NOPE", 2L, reason = "없는 entry", r
                error = function(e) e)
 if (inherits(b4, "error") && grepl("entry 부재", conditionMessage(b4))) ok("B4 없는 entry 는 거부") else ng("B4 없는 entry 가 통과")
 
-cat("=== C. 배선 — 러너의 재개 술어와 같은 축인가 ===\n")
-src <- readLines(file.path(ROOT, "02_Infrastructure/ops/reinforce_auto_parallel.R"), encoding = "UTF-8", warn = FALSE)
-src <- sub("#.*$", "", src)
-if (any(grepl("!isTRUE(a$terminal)", src, fixed = TRUE)))
-  ok("C1 러너 pending 정의가 terminal 을 보므로 reopen 이 곧 재개다") else
-  ng("C1 러너가 terminal 을 안 본다 — reopen 이 재개로 이어지지 않는다")
+cat("=== C. 배선 — writer 위치 ===\n")
+## (v10.01 2026-10-13) C1(러너 pending 정의) 삭제 — 대상 코드(reinforce_auto_parallel.R) 퇴역.
 led_src <- readLines(file.path(ROOT, "02_Infrastructure/reinforcement/reinforce_ledger.R"), encoding = "UTF-8", warn = FALSE)
 led_src <- sub("#.*$", "", led_src)
 if (any(grepl("rf_reopen_attempt <- function", led_src, fixed = TRUE)))

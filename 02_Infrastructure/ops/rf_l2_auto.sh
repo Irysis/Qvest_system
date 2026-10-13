@@ -26,7 +26,7 @@ read -r EN R1 <<<"$("$PY" -c "
 import io,json
 try:
     c=json.loads(io.open(r'$CFG','rb').read().decode('utf-8')); l=c.get('l2_auto') or {}
-    en='1' if c.get('enabled') and l.get('enabled') else '0'
+    en='1' if l.get('enabled') else '0'   # v10.01 2026-10-13: 전역 enabled(퇴역 러너 스위치)와 분리 — 2계층은 자기 스위치만
     r1='1' if (l.get('selection_type') in ('chain','sweep') and l.get('decided_by') and l.get('decided_at')) else '0'
     print(en, r1)
 except Exception: print('0 0')" 2>/dev/null)"

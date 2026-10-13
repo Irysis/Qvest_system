@@ -15,6 +15,12 @@
 #
 # 양방향: 브리프가 실제 내용을 담는가 + 네 레인이 전부 그것을 프롬프트에 넣는가
 #   + 절단이 없는가 + "전제이지 지시가 아니다" 프레이밍이 살아 있는가.
+#
+# (v10.01 2026-10-13) 고정 격자 강화 퇴역으로 브리프 소비 레인 중 rf_b1_design.sh · rf_lcode_mechanism.sh 가 삭제됐다 —
+#   C 절은 살아 있는 소비자 3종(충실구현 rf_replication_auto.sh · 충실도 감사 rf_fidelity_audit.sh 와 그 6축 팬아웃
+#   rf_fidelity_fanout.sh)을 재고, E2 는 "레인 4종 명시"(개수) 대신 그 레인들이 설정 axiom_inject.lanes 에 적혀 있는지(포함)를 본다.
+#   E3(블록 단위 증류 distill_on_block)은 발화 지점이 퇴역 러너(reinforce_auto_parallel.R 블록 L-code 직후)뿐이라 삭제.
+#   롤백 태그 pre-v10.01-prescription-20261013
 #==============================================================================
 suppressMessages({ library(jsonlite) })
 `%||%` <- function(a, b) if (is.null(a) || length(a) == 0L) b else a
@@ -58,9 +64,11 @@ if (grepl("전제 — 지시가 아니다", br, fixed = TRUE)) ok("B1 전제 프
 if (grepl("뒤집는 증거", br, fixed = TRUE))
   ok("B2 반증 여지를 남긴다(공리가 결론을 강제하지 않는다)") else ng("B2 반증 여지 부재")
 
-cat("\n=== C. 배선 — 네 레인이 전부 받는가 ===\n")
-LANES <- c("rf_replication_auto.sh", "rf_fidelity_audit.sh", "rf_b1_design.sh", "rf_lcode_mechanism.sh")
-for (f in LANES) {
+cat("\n=== C. 배선 — 살아 있는 소비 레인이 전부 받는가 (v10.01: 3종) ===\n")
+## 파일 → 설정 레인 이름(E2 가 같은 짝을 설정 쪽에서 본다). 팬아웃은 감사 레인(fidelity_audit)이 exec 로 넘기는 6축 판본이다.
+LANES <- c(rf_replication_auto.sh = "replication", rf_fidelity_audit.sh = "fidelity_audit",
+           rf_fidelity_fanout.sh = "fidelity_audit")
+for (f in names(LANES)) {
   src <- paste(readLines(file.path(ROOT, "02_Infrastructure/ops", f), warn = FALSE), collapse = "\n")
   if (grepl("rf_axiom_brief", src, fixed = TRUE)) ok(sprintf("C %s — 브리프 로드", f)) else
     ng(sprintf("C %s — 브리프 미로드", f))
@@ -85,10 +93,17 @@ cat("\n=== E. 설정 기록 ===\n")
 cfg <- tryCatch(fromJSON(file.path(ROOT, "06_Registry/reinforce_auto_config.json"), simplifyVector = FALSE),
                 error = function(e) list())
 if (isTRUE(cfg$axiom_inject$enabled)) ok("E1 axiom_inject 활성") else ng("E1 설정 부재")
-if (length(cfg$axiom_inject$lanes %||% list()) == 4L) ok("E2 레인 4종 명시") else
-  ng("E2 레인 명시", as.character(length(cfg$axiom_inject$lanes %||% list())))
-if (isTRUE(cfg$distill_on_block$enabled)) ok("E3 블록 단위 증류 활성(주간 주기 불일치 해소)") else
-  ng("E3 증류 주기 설정 부재")
+## (v10.01) 개수 단정("4종") → 포함 단정: C 절의 살아 있는 소비 레인이 설정에 적혀 있는가. 퇴역 레인 이름 잔존은 세지 않고 알리기만 한다
+##   (설정 정리는 이 검사 범위 밖 — 이름이 남아도 소비 코드가 없으면 주입은 일어나지 않는다).
+.ai_l <- as.character(unlist(cfg$axiom_inject$lanes %||% list()))
+.ai_miss <- setdiff(unique(unname(LANES)), .ai_l)
+if (!length(.ai_miss)) ok(sprintf("E2 살아 있는 주입 레인(%s) 전부 설정 axiom_inject.lanes 에 명시",
+                                 paste(unique(unname(LANES)), collapse = "·"))) else
+  ng("E2 주입 레인 설정 누락", paste(.ai_miss, collapse = ","))
+.ai_stale <- intersect(.ai_l, c("b1_design", "lcode_mechanism", "b5_design", "overlay_propose", "grid_propose"))
+if (length(.ai_stale)) cat(sprintf("  NOTE 설정 axiom_inject.lanes 에 퇴역 레인 이름 잔존: %s (소비 코드 삭제 — 비계상)\n",
+                                   paste(.ai_stale, collapse = ",")))
+## (v10.01) 구 E3 "블록 단위 증류 활성(distill_on_block)" 삭제 — 발화 지점이 퇴역 러너뿐이었다(설정 키는 소비자 없이 남는다).
 
 cat(sprintf("\n합계: 통과 %d · 실패 %d\n", PASS, FAIL))
 cat(sprintf('{"test":"rf_axiom_inject","pass":%d,"fail":%d,"total":%d}\n', PASS, FAIL, PASS + FAIL))

@@ -1,73 +1,58 @@
-# 1계층 루프 — 팩터전략 리서치 (Level 0 · v10 루프 정본)
+# 1계층 루프 — 목표 역산형 리서치 프로그램 (Level 0 · v10.01 루프 정본)
 
-**발효**: 2026-08-29 (도훈 지시 — 2계층 재편. 구 v9 lean loop 2026-08-23 은 git 사료 `pre-v10-2layer`).
+**발효**: 2026-10-13 (도훈 지시 — 1계층 처방 재설계 D1~D16. 구 v10 루프(충실구현 → 고정 격자 강화)는 git 사료 · 롤백 태그 `pre-v10.01-prescription-20261013`).
 **원칙**: 루프가 기본 상태다. 세션은 인프라가 아니라 라운드로 시작해 라운드로 끝난다.
-**적용 범위**: 1계층(팩터전략 리서치) 전 라운드. 2계층 = `strategy-rotation` SKILL. BOOK = `/book`.
-**페르소나**: `02_Infrastructure/docs/rules/quant-identity.md` — 최정상급 퀀트 · 냉소는 방법론을 향한다 · 리서치는 지난하다.
+**절차 정본**: `.claude/skills/research-program/SKILL.md` · 설계 = `04_Research/01_reports/l1_prescription_redesign_20261013/README.md`.
+**철학**: 남들 다 깨질 때 덜 잃고(위기 하락 포착↓) 강세를 충분히 따라가(상승 포착 ≥0.55) 복리를 지킨다 — 비대칭이 필요조건(정적 노출 축소로는 안 된다).
 
-## 입력
+## 입력 — 등록부가 정한다
 
-- **큐 상단 1건** — `/qvest` 부팅 `Queue:` 줄의 최상단(미소비 논문 또는 frontier `open`). 재검색·재정렬로 고르지 않는다. 단 **강화 원장 L1 에 active entry 가 있으면 그 강화가 우선**이다(새 논문은 그 다음).
-- ★`parked_reason = dohoon_decision` 항목은 세션 임의 착수 금지.
-- 데이터가 없으면 "구현 불가"가 아니다 — `data_pipeline_queue.json` 적재 → 파이프라인 구축(도훈 승인) → 재개.
+- 부팅 `Programs:` 줄 = `06_Registry/research_programs.json`(writer `programs/program_registry.R`). 재검색·재정렬로 고르지 않는다.
+- 순서: ① blocked 프로그램의 **선행 조건(측정 계약 MC1~MC8)** — 이것이 라운드를 여는 일이다(D7 제한적 예외 · 등록부 `pr_mc_set` 로 계상) ② ready/active 프로그램 라운드 ③ 재료 확보 = 큐 논문 충실구현(무인 레인 · 세션은 `/alpha-search`).
+- ★`parked_reason = dohoon_decision` 항목은 세션 임의 착수 금지. 데이터가 없으면 `data_pipeline_queue.json` 적재 → 파이프라인(도훈 승인) → 재개.
 
-## 축 2층 (v10 — 고정 축이 단계별로 다르다)
+## 축 — 결정과 측정 상태를 섞지 않는다
 
 | 단계 | 축 |
 |---|---|
-| **충실구현 라운드(최초)** | **논문 그대로** — 롱숏·종목수·비중방법·리밸 전부 복제. 유일한 변경 = 유니버스 K200∪KQ150(PIT 시변 멤버십). 유동성 필터 = 논문 우선(`paper_faithful`). 비용 = 논문 명시값 병기 + **등급은 15bps 순비용 판** |
-| **강화 프로세스(그 이후)** | **실투형** — long-only(w≥0) · ≤25종 · K200∪KQ150 · 2005-01-01~ · 15bps(v2.4 delta) · Σw=1 · **비중 상한 없음(v10 폐지)** |
-| 공통 | **PIT C1~C15 — 계층·단계 무관 절대** |
+| 충실구현 | **논문 그대로**(롱숏·종목수·비중·리밸). 등급 = 15bps 순비용 판(논문 기준 병기) |
+| 처방·조립 | long-only(w≥0) · ≤25종 · 15bps(v2.4 delta) · 비중 상한 없음 · LIQ 2e8 |
+| 결정(구현 대기) | 전 종목+위생(D11·MC1) · 2000-01-01~(D15·MC3) · 주간 리밸까지(D16·MC4) · Σw≤1(MC5) — 구현 전 하네스 = K200∪KQ150 · Σw=1 · 2005-01~ · 월간 |
+| 공통 | **PIT C1~C15 절대** · 정보 경계 τ_D = 2022-12-31(아래) |
 
-## 라운드 6단계 (충실구현)
+## 라운드 (모든 프로그램 공통 — 세부 = SKILL §2)
 
-1. **읽기** — 논문 1건에서 ①신호 정의 ②비중 방법 ③유니버스 ④리밸 주기 ⑤저자 주장 성과. 원문 링크 확보(필수 — 러너가 거부한다).
-2. **구현** — engine 1파일 (`FACTORS(Date,Ticker,Score)` 또는 `PORTFOLIO(Date,Ticker,Weight,Leg)`). 논문 명시값 그대로, t-1 규약. 하드 게이트 = `detect_lookahead`.
-3. **실행** — `run_paper_replication(name, idea, engine, portfolio_spec=<논문값>, source_paper=list(url=...))` (`02_Infrastructure/alpha_search/run_paper_replication.R`).
-4. **판정** — **권위 등급**(`authoritative_remeasure.json::essence_grade`)만 인용(손계산·재구성 금지). Grade A = PORT_t ≥2.95 ∧ OOS retention ∧ SR ≥0.8 ∧ CAGR ≥16% ∧ Calmar ≥0.64. 계약 미경유 = 등급 미발행(NA — 실패가 아니라 미측정). ★MDD 는 등급을 접지 않는다(위험 축 = Calmar 하나). PIT 위반은 등급 무관 절대 기각.
-5. **교훈** — 의미있는 실패(기전이 특정되는 실패)만 L-code 적립(mode=`paper_replication`).
-6. **분기** —
-   - **Grade A** → 러너 §11 이 **A 자격 관문**(`rf_runner_gates.R::rf_a_eligibility` · 충실구현 어댑터 · P0-13)을 태운다. 통과 = 산출물 `judge_request.eligible.json`(`status=pending` = Judge 트리거) → Judge(PIT 전담) → PASS → BOOK 등록 후보(도훈 confirm) / FAIL → 결과 무효·수리·재측정. 보류 = 산출물 `judge_request.held.json`(사유 코드 · 요청 미발행 · 등급 불변) → `[1계층]` A 후보(보류 사유 병기)로 도훈 보고. 트리거 정본 = `judge.md` §스폰 조건.
-   - **미달(B/C/F)** → **강화 프로세스**(`Skill(reinforce)` — 원장 `reinforce_ledger_l1.json` open 자동). 논문당 상한 = 원장 `max_attempts`(격자 = `reinforce_program.json` blocks — 현행 6블록×5 + B4 7칸 = 37 · 축 목록 정본 = `rf_spec_axes.R`), 축 = 멀티팩터/비중방법론/유니버스/집행주기/리스크오버레이/구조방어/결합. 매 시도 = 규칙 기반 셀 엔진(`rf_cell_engine.R`) + `run_paper_replication`(실투형) → 권위 등급 · L-code 는 블록 단위(QEPM WT 체인 = 동결 `QEPM-R0-FREEZE`). ★근거 논문은 **의무 아님**(도훈 2026-09-03 해제) — 있으면 기록하고 없으면 `evidence=none` 으로 남긴다. 상한 소진 → exhausted → 큐 다음 논문.
-     ★현행(2026-09-04): B1 = 블록 진입 시 LLM 설계 1회(검증 실패 = 규칙 폴백) · 블록 순서 적응(Calmar 미달 → 위험 축 먼저) ·
-       블록 누적 · 소진 시 B+ 승자는 부모를 넘으면 승격 사슬(깊이 ≤ 3) · F 도 롤링 구제 시 강화 개시. 정본 = reinforce SKILL §0.3.
-   - **논문 3편 소비마다** Q-Lead 가 논문 간 아이디어 결합 기회를 검토·기록(`rf_record_combination_review` — 착수 무관 의무).
+1. **사전등록**(측정 전 · 파일) — 가설 · 기대 방향(행동 카드 지표) · 반증 조건 · 변형 수 상한 · 최종 후보 선택 규칙. `pr_record_round` 로 등록(결과 뒤 변경 = writer 거부).
+2. **측정** — 정본 계약만(`run_paper_replication` → essence). 손계산 금지(AX-008).
+3. **행동 카드** — `contracts/matched_controls.R::mc_card(dir)`(행동 카드 `behavior_card.R` + MC8 크기·노출 짝 대조 · 귀속 = 선택/크기/노출 방어 · 판정은 무작위 짝 플라시보의 분위). 방어 주장 = 귀속 라벨과 함께(크기 방어 · 노출 방어를 '실력'으로 쓰지 않는다).
+4. **판정** — 사전등록한 반증 조건으로. 권위 등급(`authoritative_remeasure.json::essence_grade`)만 인용 — **등급 v3**(종합점수 S = Calmar 6 : PORT_t 4 가중 기하평균 + 하한 + 위기 복원력 노치 + τ_D OOS · 2026-10-13 MC7 승격). MDD 직접 문턱 없음(Calmar 와 CR 노치로만 닿는다).
+5. **보고** — 리서치 1단위 = 1통 `prep_send`(`programs/program_report.R` · 발송 규칙 = qvest-telegram SKILL §0).
+6. **교훈** — 기전이 특정되는 실패만 L-code · next_probes ≥2 · 교훈 카드엔 τ_D 이전 수치만.
 
-## 예산 (라운드 1건)
+Grade A → A 자격 관문(`run_paper_replication` §11 · `rf_a_eligibility`) — 통과 = 산출물 `judge_request.eligible.json`(Judge 트리거) · 보류 = `judge_request.held.json`(사유 코드 · 스폰 없이 도훈 보고) → Judge(PIT 전담) → PASS → BOOK 후보(도훈 confirm). 미달 = 그 프로그램의 다음 라운드(고정 격자 강화는 퇴역).
 
-| 축 | 상한 |
-|---|---|
-| 시간 | ≤40분 (충실구현) — 강화 시도는 셀 단위라 별도 |
-| 토큰 | ≤120K |
-| 하네스 파일 쓰기 | **0** (훅·테스트·계약·룰·부팅 스크립트) |
+## 정보 경계 τ_D = 2022-12-31 (R4 · D6 — 절대)
 
-초과하면 라운드를 접고 상태 1줄. 하네스 결함은 그 라운드를 실제로 막을 때만 최소 수리.
+분석가 · 처방 담당 · 팩터 정의자 · 리뷰어 · 최종 후보 선택 규칙 · 교훈 카드는 2022-12-31 까지의 성과·위기만 본다. 2023-01~ = 강건성 시험 구간 — 등급 · 철학 감독관 · Judge · BOOK(사람 쪽 판정)에만 쓴다. 2026-06~07 KOSPI200 급락은 실제 사건(재상정 금지).
 
-## 연속성 계약
+## 예산
 
-- L-code 발행 1지점: **next_probes ≥ 2**(B/C/F) + 부활 조건 `live_trigger`. 미충족 = WARN 후 발행(차단 아님).
-- 턴 종료는 자유다. Stop 차단 훅 0.
-- 강화 시도는 원장(`rf_append_attempt`)이 사전 등록을 강제한다 — 원장 밖 강화는 없다.
+- 프로그램 라운드 = **목표 축** 예산(R7): 리뷰어가 K회 연속 "S·위기 방어 개선이 잡음 이내"로 판독하면 종료 · 논문당 총 상한 별도. 충실구현 1편 ≤40분 · ≤120K 토큰.
+- 하네스 파일 쓰기(훅·테스트·계약·룰·부팅) = 0 — 예외는 등록부에 계상된 측정 계약(MC) 작업뿐. 하네스 결함은 그 라운드를 실제로 막을 때만 최소 수리.
 
-## 하지 않는 것 (1계층 라운드)
+## 하지 않는 것
 
-사전등록·검정력 계약·무신호 대조·β-통제 α·FF 회귀·`register_module`·`close_round()` 의무 —
-전부 선택 도구이지 부과 의무가 아니다. 부팅 WARN 즉시 수리 금지 · Grade A 전 Judge 스폰 금지 ·
-BOOK 자동 등록 금지.
-★면제되지 않는 것: PIT · 축 2층 · `dohoon_decision` 임의 착수 금지 · 하드코딩 금지(수치는 격자·등록부에서 온다).
-★2026-09-03 해제: **강화 레인 근거 논문 의무** — 원장이 더는 거부하지 않는다(충실구현은 불변).
+고정 격자 강화 러너 부활 · 결과를 본 뒤 사전등록 수정 · τ_D 이후 성과를 처방 입력으로 쓰기 · Grade A 전 Judge 스폰 · BOOK 자동 등록 · 부팅 WARN 즉시 수리.
+★면제되지 않는 것: PIT · 축 · `dohoon_decision` 임의 착수 금지 · 하드코딩 금지(수치는 등록부·논문에서 온다 · 처방 레인 근거 논문 의무는 해제 — `evidence` 기록).
 
-## 보고 형식 (3줄)
+## 보고 형식 (3줄 · 세션 응답)
 
 ```
-① <전략명> · Grade <A/B/C/F> · CAGR x% · SR x · MDD x% · n_max <최대 보유종목수>  (출처: authoritative_remeasure.json — 권위 등급 · 15bps 판)
+① <대상> · Grade <A/B/C/F> · 위기 방어 <강함/보통/약함> · CAGR x% · Calmar x · 위기 하락 포착 x · 상승 포착 x  (출처: authoritative_remeasure.json · behavior_card.json)
 ② 기전 1줄 — 무엇이 켜졌고 무엇이 꺼졌나 (+ 논문 기준 성과 병기)
-③ 다음 — <next_probe 1건 또는 강화 n/25 축> · 큐 다음 항목 <id>
+③ 다음 — <프로그램 다음 라운드 또는 MC 항목> · 큐 다음 재료 <id>
 ```
-
-텔레그램 표제 = `[1계층] 알파 서칭 — …` / `[1계층·강화 n/25] …` (qvest-telegram SKILL 정본).
 
 ## 참조
 
-`pit.md`(C1~C15) · `.claude/skills/reinforce/SKILL.md`(강화) · `.claude/agents/judge.md`(PIT 검증) ·
-`.claude/skills/alpha-search/SKILL.md`(절차) · `02_Infrastructure/book/book_registry.R`(BOOK) · `CLAUDE.md`(v10 헌법)
+`pit.md`(C1~C15) · research-program SKILL(절차) · `.claude/agents/judge.md`(PIT 검증) · `.claude/skills/alpha-search/SKILL.md`(충실구현) · `02_Infrastructure/book/book_registry.R`(BOOK) · `CLAUDE.md`(v10.01 헌법)

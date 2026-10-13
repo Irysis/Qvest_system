@@ -3,13 +3,20 @@
 # test_refresh_barrier.sh — 리프레시 배리어 **양방향** 검사 (도훈 결정 OPS-RUNNER-REFRESH-BARRIER · 2026-09-24)
 #
 # 대상: 02_Infrastructure/ops/refresh_barrier.sh(판정 정본) · refresh_barrier.R(래퍼) 와 그 소비자
-#   틱(reinforce_auto_tick.sh) · 러너(reinforce_auto_parallel.R 진입 + 수집 절) · 워커(rf_cell_worker.R) ·
+#   틱(reinforce_auto_tick.sh) · 워커(rf_cell_worker.R) ·
 #   엔진 재판정(rf_cell_engine.R) · 충실구현 레인(rf_replication_auto.sh 진입 + rp_verify) · 2계층 드라이버(rf_l2_auto.R) ·
 #   적대검증(rf_overlay_adversary.R) · 아침 writer 잠금(morning_briefing.sh).
 #
+# (v10.01 2026-10-13) 고정 격자 강화 러너(reinforce_auto_parallel.R) 퇴역(코드 삭제)으로 러너가 대상인 절을 지웠다 —
+#   C6(러너 수집 절: 미측정 결과 원장 무기록) · C7(러너 진입 배리어) · G8~G8m(러너의 적대검증 연기분 재실행 · 표식 문자열 패리티).
+#   C5 는 엔진 재판정 블록(유지 코드)을 그대로 재되, 메시지를 읽는 소비자를 퇴역 러너의 구조적 판정 정규식(.structural)에서
+#   살아 있는 워커(rf_cell_worker.R)의 미측정 접기 술어로 옮겼다(+ C5e 리터럴 패리티 돌연변이). E 절 격리 설정은 레인 스위치
+#   이관(전역 enabled → replication_lane.enabled)을 따르고, '강화 active 보류' 게이트와 함께 사라진 QVEST_RP_ALLOW_CONCURRENT 를 뺐다.
+#   롤백 태그 pre-v10.01-prescription-20261013
+#
 # ★부작용 없음 — 잠금 경로는 전부 주입(QM_REFRESH_LOCKDIR · QM_RAWDATA_WRITER_LOCKDIR)이고 임시 디렉터리 안이다.
 #   운영 잠금(/tmp/qm_daily_refresh.lock)·원장·.cache/reinforce_auto_log.jsonl 을 만들거나 지우지 않는다.
-#   러너·틱·레인 실행은 샌드박스 ROOT(임시) 또는 격리 env(QVEST_RF_CONFIG·QVEST_RP_*·QVEST_RF_CLAIM)로만 돈다.
+#   워커·틱·레인 실행은 샌드박스 ROOT(임시) 또는 격리 env(QVEST_RF_CONFIG·QVEST_RP_*)로만 돈다.
 #   자식 Rscript 는 R_ENVIRON_USER=<빈 파일> — ~/.Renviron 의 QM_ROOT 가 샌드박스를 덮지 않게(system2(env=) 는 Windows 에서 무시).
 # ★각 가드마다 ①양성 대조(정상 경로가 지나간다) ②위반 주입(막아야 할 것을 막는다) ③돌연변이(가드를 지우면 빨개진다)를 건다.
 #==============================================================================
@@ -191,7 +198,7 @@ printf '#!/usr/bin/env bash\necho garbage\n' > "$T/stub_rb.sh"
 r=$(QVEST_RB_SH="$TM/stub_rb.sh" Rscript "$T/b.R" status 2>/dev/null | tr -d '\r')
 [ "$r" = "error:no_status_line::TRUE" ] && ok "B4 [주입] 판정기가 판정 줄을 못 내면 error · blocking(fail-closed)" || ng "B4 fail-closed" "$r"
 
-echo "=== C. 워커 · 엔진 재판정 · 러너 (샌드박스 실행 + 블록 추출) ==="
+echo "=== C. 워커 · 엔진 재판정 (샌드박스 실행 + 블록 추출) ==="
 SBX="$T/sbx"; SBXM="$TM/sbx"; mkdir -p "$SBX/06_Registry" "$SBX/02_Infrastructure/ops" "$SBX/02_Infrastructure/alpha_search" "$SBX/.cache"
 cp 06_Registry/reinforce_program.json "$SBX/06_Registry/"; cp "$RW" "$SBX/02_Infrastructure/ops/"
 printf '{"code":"B1_1","block":"B1","label":"t","idea":"t","universe":{"kind":"k200_kq150"},"weighting":{"kind":"ew"}}\n' > "$SBX/spec.json"
@@ -223,58 +230,36 @@ a <- commandArgs(trailingOnly = TRUE); src <- readLines(a[1], warn = FALSE, enco
 i0 <- grep('^if \\(identical\\(Sys.getenv\\("QVEST_RB_ENGINE_RECHECK"', src)[1]; i1 <- i0 + which(grepl("^\\}", src[(i0 + 1):length(src)]))[1]
 if (is.na(i0) || is.na(i1)) { cat("NOBLOCK\n"); quit(status = 0) }
 blk <- src[i0:i1]; if (identical(a[3], "mut")) blk <- c("{", blk[-1])       # 돌연변이: 스위치 조건 제거(무조건 재판정)
-pat <- sub('^.*grepl\\("([^"]+)", \\.err\\).*$', "\\1", grep("\\.structural <- grepl\\(", readLines(a[2], warn = FALSE, encoding = "UTF-8"), value = TRUE)[1])
+# (v10.01 2026-10-13) 메시지를 읽는 소비자 = 워커(rf_cell_worker.R)의 미측정 접기 술어 grepl("<표식>", res$err, fixed = TRUE) —
+#   설치본에서 표식 리터럴을 뽑아 엔진의 실제 메시지에 댄다. 구판은 퇴역 러너(reinforce_auto_parallel.R)의 구조적 판정
+#   정규식(.structural)에 **안** 걸리는지를 봤다(terminal 방지) — 그 러너가 없어져 살아 있는 소비자로 옮겼다.
+wk <- grep('grepl\\("[^"]+", res\\$err, fixed = TRUE\\)', readLines(a[2], warn = FALSE, encoding = "UTF-8"), value = TRUE)
+if (length(wk) != 1L) { cat("NOWORKER\n"); quit(status = 0) }
+lit <- sub('^.*grepl\\("([^"]+)", res\\$err, fixed = TRUE\\).*$', "\\1", wk)
 e <- new.env(); e$`%||%` <- function(x, y) if (is.null(x) || length(x) == 0L) y else x; e$.RF_ROOT <- a[4]
 r <- tryCatch({ eval(parse(text = paste(blk, collapse = "\n")), envir = e); "NOSTOP" }, error = function(z) conditionMessage(z))
-cat(if (identical(r, "NOSTOP")) "NOSTOP" else if (startsWith(r, "[refresh_barrier]") && !grepl(pat, r)) "STOP_BARRIER" else paste("STOP_OTHER", r), "\n")
+cat(if (identical(r, "NOSTOP")) "NOSTOP" else if (startsWith(r, "[refresh_barrier]") && grepl(lit, r, fixed = TRUE)) "STOP_BARRIER" else paste("STOP_OTHER", r), "\n")
 EOF
-c5(){ Rscript "$T/c5.R" "$ROOT/02_Infrastructure/reinforcement/rf_cell_engine.R" "$OPS/reinforce_auto_parallel.R" "${1:-}" "$SBXM" 2>/dev/null | tr -d '\r' | sed 's/ *$//'; }
+c5(){ Rscript "$T/c5.R" "$ROOT/02_Infrastructure/reinforcement/rf_cell_engine.R" "${C5_WORKER:-$OPS/rf_cell_worker.R}" "${1:-}" "$SBXM" 2>/dev/null | tr -d '\r' | sed 's/ *$//'; }
+# C5e 용 돌연변이 워커 — 접기 술어의 표식 리터럴만 어긋낸다(엔진 메시지 ↔ 워커 술어 패리티의 발화 실증)
+"$PY" - "$OPS/rf_cell_worker.R" "$T/worker_mut.R" <<'PYW'
+import io,sys
+s=io.open(sys.argv[1],encoding='utf-8').read(); o='grepl("[refresh_barrier]", res$err, fixed = TRUE)'
+if s.count(o)!=1: sys.exit(3)
+io.open(sys.argv[2],'w',encoding='utf-8',newline='').write(s.replace(o,'grepl("[refresh_barrier_X]", res$err, fixed = TRUE)'))
+PYW
+WMUT=$?
 hold
 r1=$(QVEST_RB_ENGINE_RECHECK= c5); r2=$(QVEST_RB_ENGINE_RECHECK=1 c5); r3=$(QVEST_RB_ENGINE_RECHECK= c5 mut)
+r5=$( [ "$WMUT" = 0 ] && QVEST_RB_ENGINE_RECHECK=1 C5_WORKER="$TM/worker_mut.R" c5 || echo NOMUT)
 [ "$r1" = "NOSTOP" ] && ok "C5a [양성] 스위치 없음(엔진 단독 검사·세션) → held 라도 비트 동일(재판정 안 함)" || ng "C5a" "$r1"
-[ "$r2" = "STOP_BARRIER" ] && ok "C5b [주입] 스위치=1 + held → [refresh_barrier] 로 멈춘다 · 러너 구조적 판정 정규식에 안 걸린다(terminal 방지)" || ng "C5b" "$r2"
+[ "$r2" = "STOP_BARRIER" ] && ok "C5b [주입] 스위치=1 + held → [refresh_barrier] 로 멈춘다 · 워커 미측정 접기 술어(설치본 리터럴)가 그 메시지를 잡는다(deferred · F/NA 기록 아님)" || ng "C5b" "$r2"
 [ "$r3" = "STOP_BARRIER" ] && ok "C5c 돌연변이(스위치 조건 제거) → 단독 경로도 멈춘다 = 스위치가 실제로 가른다" || ng "C5c" "$r3"
+case "$r5" in "STOP_OTHER [refresh_barrier]"*) ok "C5e 돌연변이(워커 표식 리터럴 불일치) → 접기 술어가 메시지를 놓친다(STOP_OTHER = 일반 실패로 샌다) · 리터럴 패리티가 가른다";; *) ng "C5e" "$r5";; esac
 unhold
 r4=$(QVEST_RB_ENGINE_RECHECK=1 c5); [ "$r4" = "NOSTOP" ] && ok "C5d [양성] 스위치=1 + 잠금 없음 → 통과" || ng "C5d" "$r4"
-# C6 러너 수집 절 추출 실행 — 미측정 종료는 원장에 아무것도 안 쓴다
-cat > "$T/c6.R" <<'EOF'
-a <- commandArgs(trailingOnly = TRUE); src <- readLines(a[1], warn = FALSE, encoding = "UTF-8")
-i0 <- grep("^  R <- fromJSON\\(j\\$out, simplifyVector = FALSE\\)$", src)[1]
-ic <- grep('^    jlog\\("cell_error"', src); ic <- ic[ic > i0][1]; i1 <- ic + which(grepl("^  \\}$", src[(ic + 1):length(src)]))[1]
-if (is.na(i0) || is.na(i1)) { cat("NOBLOCK\n"); quit(status = 0) }
-blk <- src[i0:i1]
-if (identical(a[2], "mut")) { d0 <- grep('^  if \\(identical\\(as.character\\(R\\$deferred', blk)[1]; d1 <- d0 + which(grepl("^  \\}$", blk[(d0 + 1):length(blk)]))[1]
-  if (is.na(d0)) { cat("NOMUT\n"); quit(status = 0) }; blk <- blk[-(d0:d1)] }
-`%||%` <- function(x, y) if (is.null(x) || length(x) == 0L) y else x
-REC <- list(); LOG <- character(0); REACHED <- FALSE
-rf_record_result <- function(...) REC[[length(REC) + 1L]] <<- list(...)
-jlog <- function(ev, ...) LOG <<- c(LOG, ev)
-.fail_count_of <- function(n) 0L; MAX_RETRY <- 2L; ROOT <- tempdir(); WDIR <- tempdir(); BID <- "T"
-out <- file.path(tempdir(), "res.json")
-writeLines(if (identical(a[3], "deferred")) '{"n":1,"code":"B1_1","ok":false,"deferred":"refresh_lock","waited_s":600,"barrier":{"state":"held","lock":"refresh","pid":"1","reason":"alive"},"err":"[refresh_barrier] x"}'
-           else '{"n":1,"code":"B1_1","ok":false,"err":"boom"}', out)
-library(jsonlite); jobs <- list(list(n = 1L, code = "B1_1", spec = "", out = out))
-eval(parse(text = paste(c("for (j in jobs) {", blk, "REACHED <- TRUE", "}"), collapse = "\n")))
-cat(sprintf("rec=%d log=%s", length(REC), paste(LOG, collapse = ",")), "\n")
-EOF
-c6(){ Rscript "$T/c6.R" "$OPS/reinforce_auto_parallel.R" "$1" "$2" 2>/dev/null | tr -d '\r' | sed 's/ *$//'; }
-r=$(c6 cur deferred); [ "$r" = "rec=0 log=cell_deferred_refresh_lock" ] && ok "C6a [주입] 미측정 결과 → rf_record_result 0회 · cell_deferred_refresh_lock (pending 유지 · fail_count 무증가)" || ng "C6a" "$r"
-r=$(c6 cur fail); [ "$r" = "rec=1 log=cell_error" ] && ok "C6b [대조] 일반 실패 → 기존대로 NA 기록 1회 + cell_error (계기가 기록을 본다)" || ng "C6b" "$r"
-r=$(c6 mut deferred); [ "$r" = "rec=1 log=cell_error" ] && ok "C6c 돌연변이(미측정 분기 삭제) → 원장에 NA·fail_count 가 쓰인다 = 분기가 막고 있다" || ng "C6c" "$r"
-# C7 러너 진입 배리어 — claim 전. 살아 있는 claim 으로 '배리어 통과'를 관측한다(통과하면 halt_claimed)
-mkdir -p "$SBX/02_Infrastructure/ops"; cp "$OPS/rf_claim.R" "$SBX/02_Infrastructure/ops/"
-printf '{"enabled":true,"daily_cap":999,"parallel_cells":1,"claim_stale_hours":6}\n' > "$T/rcfg.json"
-sleep 300 & CLP=$!; BG+=("$CLP"); CLW=$(cat /proc/$CLP/winpid)
-mkclaim(){ rm -rf "$T/claim"; mkdir -p "$T/claim"; printf '{"pid":%s,"started_at":"x","host":"t"}\n' "$CLW" > "$T/claim/owner.json"; }
-prun(){ rm -f "$SBX/.cache/reinforce_auto_log.jsonl"; mkclaim; env -u QVEST_RF_CLAIM_HELD QM_ROOT="$SBXM" CLAUDE_PROJECT_DIR="$SBXM" QVEST_RF_CONFIG="$TM/rcfg.json" QVEST_RF_CLAIM="$TM/claim" \
-        timeout 120 Rscript "$OPS/reinforce_auto_parallel.R" >/dev/null 2>&1; last_event "$SBX/.cache/reinforce_auto_log.jsonl"; }
-hold; r=$(prun); o=$(cat "$T/claim/owner.json" 2>/dev/null)
-[ "$r" = "halt_refresh_lock" ] && printf '%s' "$o" | grep -q "\"pid\":$CLW" && ok "C7a [주입] 러너 진입 held → halt_refresh_lock · claim 무접촉(사전 등록 전)" || ng "C7a" "event=$r"
-unhold; r=$(prun); [ "$r" = "halt_claimed" ] && ok "C7b [양성] 잠금 없음 → 배리어 통과(다음 가드 halt_claimed 도달)" || ng "C7b" "event=$r"
-mkdir -p "$QM_REFRESH_LOCKDIR"; bash -c 'echo $$ > "$1/pid"' _ "$QM_REFRESH_LOCKDIR"
-r=$(prun); g=$(grep -c '"event":"refresh_lock_stale"' "$SBX/.cache/reinforce_auto_log.jsonl" 2>/dev/null)
-[ "$r" = "halt_claimed" ] && [ "${g:-0}" -ge 1 ] && ok "C7c [주입] stale → 대기 없이 진행 + refresh_lock_stale 로그" || ng "C7c" "event=$r stale_lines=$g"
-rm -rf "$QM_REFRESH_LOCKDIR"
+# (v10.01 2026-10-13) C6(러너 수집 절 — 미측정 결과 원장 무기록 · pending 유지) · C7(러너 진입 배리어 — claim 전 halt) 삭제:
+#   대상 reinforce_auto_parallel.R 퇴역(코드 삭제). 워커 deferred 를 읽는 살아 있는 부모 = 적대검증 재실행(.adv_rerun) — G6/G6b 가 잰다.
 
 echo "=== D. 틱 (샌드박스 ROOT 실행) ==="
 TK="$OPS/reinforce_auto_tick.sh"; ST="$T/tick"; mkdir -p "$ST/.cache/scheduler_logs"; STM="$TM/tick"
@@ -292,7 +277,7 @@ rm -rf "$QM_REFRESH_LOCKDIR"
 "$PY" - "$TK" "$T/tick_mut.sh" <<'PYM'
 import io,re,sys
 s=io.open(sys.argv[1],encoding='utf-8').read()
-a=s.index('  RB_SH="$(dirname'); b=s.index('  # ★충실구현 대기가 있으면 먼저 처리한다')
+a=s.index('  RB_SH="$(dirname'); b=s.index('  bash "$ROOT/02_Infrastructure/ops/rf_replication_auto.sh"')   # (v10.01) 주석이 아니라 실행 줄을 끝 앵커로 — 주석 개정에 깨지지 않는다
 io.open(sys.argv[2],'w',encoding='utf-8',newline='').write(s[:a]+s[b:])
 PYM
 cp "$T/tick_mut.sh" "$T/tick_mut_run.sh"; hold; L=$(trun "$T/tick_mut_run.sh")
@@ -303,10 +288,13 @@ nc=$(sed 's/#.*$//' "$TK"); lb=$(printf '%s\n' "$nc" | grep -n 'rb_status' | hea
 
 echo "=== E. 충실구현 레인 (격리 요청·claim·jlog·config) ==="
 RPA="$OPS/rf_replication_auto.sh"; E="$T/rp"; mkdir -p "$E"; EM="$TM/rp"
-"$PY" -c "import io,json,os;d=json.loads(io.open(os.path.join(r'$ROOT','06_Registry','reinforce_auto_config.json'),'rb').read().decode('utf-8'));d['enabled']=True;io.open(r'$EM/cfg.json','w',encoding='utf-8').write(json.dumps(d,ensure_ascii=False))"
+# (v10.01 2026-10-13) 레인 스위치 = replication_lane.enabled(구판 = 전역 enabled · 퇴역 러너 스위치) — 격리 사본에서 레인 스위치만 켠다
+#   (전역 enabled 는 운영값 false 그대로 → 레인이 퇴역 스위치와 무관하게 돈다 · 운영 설정의 레인 상태를 빌리지 않는다).
+#   구판 rprun 의 QVEST_RP_ALLOW_CONCURRENT=1 은 '강화 active 보류' 게이트를 비켜 가던 것 — 게이트 삭제로 뺐다.
+"$PY" -c "import io,json,os;d=json.loads(io.open(os.path.join(r'$ROOT','06_Registry','reinforce_auto_config.json'),'rb').read().decode('utf-8'));rl=d.get('replication_lane');rl=rl if isinstance(rl,dict) else {};rl['enabled']=True;d['replication_lane']=rl;io.open(r'$EM/cfg.json','w',encoding='utf-8').write(json.dumps(d,ensure_ascii=False))"
 mkreq(){ printf '{"requested_at":"2026-01-01T00:00:00+0900","source":"test","paper":{"title":"t","paper_title":"t","url":"http://x","paper_key":"TEST_RB","source":"arxiv"},"status":"%s"}\n' "$1" > "$E/req.json"; }
 mkdir -p "$E/.cache/scheduler_logs"
-rprun(){ rm -f "$E/jlog.jsonl"; QM_ROOT="$EM" QVEST_PY="$PY" QVEST_RP_REQUEST="$EM/req.json" QVEST_RP_CLAIM="$EM/claim" QVEST_RP_JLOG="$EM/jlog.jsonl" QVEST_RF_CONFIG="$EM/cfg.json" QVEST_RP_ALLOW_CONCURRENT=1 \
+rprun(){ rm -f "$E/jlog.jsonl"; QM_ROOT="$EM" QVEST_PY="$PY" QVEST_RP_REQUEST="$EM/req.json" QVEST_RP_CLAIM="$EM/claim" QVEST_RP_JLOG="$EM/jlog.jsonl" QVEST_RF_CONFIG="$EM/cfg.json" \
          timeout 120 bash "$RPA" >/dev/null 2>&1; last_event "$E/jlog.jsonl"; }
 mkreq pending; h0=$(md5sum < "$E/req.json"); hold; r=$(rprun)
 [ "$r" = "halt_refresh_lock" ] && [ "$(md5sum < "$E/req.json")" = "$h0" ] && [ ! -d "$E/claim" ] && ok "E1 [주입] 레인 진입 held → halt_refresh_lock · 요청 바이트 불변 · claim 미생성(auto_retries 무소모)" || ng "E1" "event=$r"
@@ -346,7 +334,7 @@ fr(){ Rscript "$T/f.R" "$OPS/rf_l2_auto.R" "$ROOT" "$SBXM" 2>/dev/null | tr -d '
 hold; r=$(fr); [ "$r" = "__QUIT__|halt_refresh_lock|order=TRUE" ] && ok "F1 [주입] held → halt_refresh_lock 후 종료 · 블록이 claim·원장 append 앞" || ng "F1" "$r"
 unhold; r=$(fr); [ "$r" = "GO||order=TRUE" ] && ok "F2 [양성] 잠금 없음 → 로그 0 · 진행" || ng "F2" "$r"
 
-echo "=== G. 적대검증 (착수 대기 · 재실행 미측정 · 연기 표식 · 러너 재실행) ==="
+echo "=== G. 적대검증 (착수 대기 · 재실행 미측정 · 연기 표식) ==="
 # ★2026-09-24 수리: 초판 G1/G5 는 "판정 미기록(rec=0)"을 정답으로 단정했다 — 그런데 표식 없음 = rf_adversary_ok TRUE(구 attempt 호환)라
 #   검증 안 된 B5 칸이 승자·B4 바닥·승격 carry 로 소비됐다(적대검증 3인 BLOCKING · fail-open). 이제 정답 = 블록 칸 전부에
 #   verdict "deferred_refresh_lock"(소비 보류) + 러너가 다음 tick 에 재실행. 구판 동작은 돌연변이(G1m·G5o)로 빨개짐을 보인다.
@@ -447,52 +435,9 @@ r=$(QVEST_RB_CELL_WAIT_S=2 g7); [ "$r" = "E2E|err=BARRIER|pre=T,F,T|post=T,F,F|v
 unhold
 r=$(g7); [ "$r" = "E2E|err=NONE|pre=T,F,T|post=T,F,F|v=,not_candidate,not_candidate|b5_consumable=0|floor=1|hold=TRUE|hist3=pass" ] && ok "G7b [양성·실물 원장] 잠금 없음 → 표식 0 · 기존 판정 경로(spec 부재 = not_candidate)" || ng "G7b" "$r"
 
-# G8 — 러너 연기분 재실행(설치본 블록 추출 실행) · 순서(entry 선택 뒤 · 예산/소진·승자 해석 앞) · 표식 문자열 패리티
-RP="$OPS/reinforce_auto_parallel.R"
-SB8="$T/adv8"; SB8M="$TM/adv8"; mkdir -p "$SB8/02_Infrastructure/reinforcement"
-cat > "$SB8/02_Infrastructure/reinforcement/rf_overlay_adversary.R" <<'EOF'
-rf_overlay_adversary_run <- function(base_id, block = "B5", layer = 1L, root = NULL, ...) {
-  G8$calls <<- c(G8$calls, paste0(base_id, ":", block))
-  if (nzchar(Sys.getenv("G8_FAIL"))) stop("[refresh_barrier] stub held again")
-  G8$verdict <<- "pass"
-  data.table::data.table(code = "B5_2", verdict = "pass") }
-EOF
-cat > "$T/g8.R" <<'EOF'
-a <- commandArgs(trailingOnly = TRUE); RP <- a[1]; ROOTC <- a[2]; ROOT <- a[3]; mode <- a[4]; mut <- identical(a[5], "mut")
-`%||%` <- function(x, y) if (is.null(x) || length(x) == 0L) y else x
-src <- readLines(RP, warn = FALSE, encoding = "UTF-8")
-# 2026-09-24(통합 검증 I2): 블록이 rebase 뒤 규약 거부 재검정 술어(rf_runner_gates.R::rf_adversary_rerun_blocks)를 부른다 — 실물 적재
-Sys.setenv(QM_ROOT = ROOTC)
-invisible(capture.output(suppressMessages({ library(data.table); library(jsonlite)
-  source(file.path(ROOTC, "02_Infrastructure/reinforcement/reinforce_ledger.R"))
-  source(file.path(ROOTC, "02_Infrastructure/reinforcement/rf_spec_sig.R"))
-  source(file.path(ROOTC, "02_Infrastructure/reinforcement/rf_runner_gates.R")) })))
-av <- readLines(file.path(ROOTC, "02_Infrastructure/reinforcement/rf_overlay_adversary.R"), warn = FALSE, encoding = "UTF-8")
-DV <- local({ e <- new.env(); eval(parse(text = grep("^ADV_DEFERRED_VERDICT <- ", av, value = TRUE)), envir = e); e$ADV_DEFERRED_VERDICT })
-i0 <- grep("^\\.adv_def_blk <- unique\\(", src)[1]
-i1 <- if (is.na(i0)) NA else i0 - 1L + which(src[i0:length(src)] == "}")[1]
-ie <- grep("^E <- act\\[\\[1\\]\\]; BID <- E\\$base_id", src)[1]; iu <- grep("^used <- as.integer\\(E\\$attempts_used", src)[1]
-iw <- grep('^(w5 <- \\.winner_of\\("B5"|\\.b4_win <- rf_axes_block_winners\\()', src)[1]; ix <- grep('\\.exhaust_and_delegate\\("budget"\\)', src)[1]   # B4-SIX(2026-09-26): 승자 해석 = 등록부 승자 맵
-if (is.na(i0) || is.na(i1)) { cat("G8|NOBLOCK\n"); quit(status = 0) }
-blk <- src[i0:i1]
-if (mut) blk <- gsub('"deferred_refresh_lock"', '"deferred_X"', blk, fixed = TRUE)
-G8 <- list(calls = character(0), verdict = if (mode == "none") "pass" else DV)
-EV <- character(0); jlog <- function(ev, ...) EV <<- c(EV, ev)
-mkE <- function(v) list(base_id = "B", status = "active", attempts = list(
-  list(n = 1L, cell_code = "B4_1", essence = list(port_t = 1)),
-  list(n = 2L, cell_code = "B5_2", essence = list(port_t = 1), adversary = list(verdict = v, block = "B5"))))
-rf_load <- function(layer, root) list(entries = list(mkE(G8$verdict)))
-BID <- "B"; E <- mkE(G8$verdict); E0 <- E
-eval(parse(text = paste(blk, collapse = "\n")))
-cat(sprintf("G8|ev=%s|calls=%s|E_v=%s|same=%s|order=%s\n", paste(EV, collapse = ","), paste(G8$calls, collapse = ","),
-            E$attempts[[2]]$adversary$verdict, identical(E, E0),
-            isTRUE(ie < i0 && i1 < iu && i1 < iw && i1 < ix)))
-EOF
-g8(){ Rscript "$T/g8.R" "$RP" "$ROOT" "$SB8M" "$@" 2>/dev/null | tr -d '\r' | grep '^G8|' | tail -n 1; }
-r=$(g8 marker); [ "$r" = "G8|ev=adversary_rerun_deferred,adversary_rerun_done|calls=B:B5|E_v=pass|same=FALSE|order=TRUE" ] && ok "G8 [주입] 표식 있는 entry → 승자 해석·예산 판정 앞에서 적대검증 재실행 · E 재적재(판정 반영)" || ng "G8" "$r"
-r=$(g8 none); [ "$r" = "G8|ev=|calls=|E_v=pass|same=TRUE|order=TRUE" ] && ok "G8b [양성] 표식 없음 → 호출 0 · 로그 0 · E 불변(잠금 없음 경로 비트 동일)" || ng "G8b" "$r"
-r=$(G8_FAIL=1 g8 marker); [ "$r" = "G8|ev=adversary_rerun_deferred,adversary_rerun_failed|calls=B:B5|E_v=deferred_refresh_lock|same=TRUE|order=TRUE" ] && ok "G8c [주입] 재실행도 막힘 → 로그 · 표식 유지(소비 보류 지속 · 다음 tick 재시도)" || ng "G8c" "$r"
-r=$(g8 marker mut); [ "$r" = "G8|ev=|calls=|E_v=deferred_refresh_lock|same=TRUE|order=TRUE" ] && ok "G8m 돌연변이(러너 표식 문자열 불일치) → 재실행 0 = 영구 보류 · 문자열 패리티가 막고 있다" || ng "G8m" "$r"
+# (v10.01 2026-10-13) G8~G8m(러너의 연기분 적대검증 재실행 블록 · 러너↔적대검증 표식 문자열 패리티) 삭제:
+#   대상 reinforce_auto_parallel.R 퇴역(코드 삭제). 표식(ADV_DEFERRED_VERDICT) → 소비 술어(rf_runner_gates.R::rf_adversary_ok)
+#   패리티는 G7/G7b(실물 원장 writer + 실물 술어)가 계속 잰다.
 
 echo "=== H. 아침 writer 잠금 · daily_refresh 무변경 ==="
 MB="$OPS/morning_briefing.sh"; nc=$(sed 's/#.*$//' "$MB")

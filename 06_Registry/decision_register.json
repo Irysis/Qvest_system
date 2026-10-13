@@ -2886,7 +2886,112 @@
       "registered_at": "2026-10-10T22:50:00+0900",
       "recorded_by": "Q session 87293dd7 (도훈 위임 판단 — 결정은 도훈)",
       "evidence": "as-of 재추정 대비 평균 |Δ| 0.117 · IS 0.5 경계 반전 22/132개월 · 격리 대조: MSM 경로 탐침 7/7 차단 · 돌연변이 6/6 · C11 검사 40/40"
+    },
+    {
+      "id": "GRADE-V3-S0-BANDS",
+      "title": "등급 v3 B·C 경계(D1 잔여) · OOS 롤링 문턱 · 롤링 구제 · CR 강함 자기 낙폭 조건 (S0)",
+      "status": "resolved",
+      "opened_at": "2026-10-13T14:04:15+0900",
+      "options": [
+        "D1 ① B = S >= 0.856 ('A Calmar + 현행 B PORT_t' 모서리) — S0 소급 B 1칸",
+        "D1 ② B = PORT_t >= 2.0 AND Calmar >= 같은 창 벤치 (현행 B + 시장 하한) — 212칸",
+        "D1 ③ B = S >= S(같은 창 KOSPI200 Calmar, 현행 B PORT_t 2.0) ≈ 0.435 — 533칸 · C = 0 < S < B · F = S = 0",
+        "OOS 롤링 문턱 = pass_oos >= rolling_grade.json::rescue_min_recent_pass(0.5) 확정",
+        "롤링 구제(F→C) v3 미탑재",
+        "CR '강함'에 전략 전체 창 MDD <= 같은 창 벤치 MDD 추가"
+      ],
+      "recommendation": "D1 ③ + 롤링 문턱 0.5 확정 + 구제 미탑재 + CR 강함 자기 낙폭 조건 추가",
+      "default_until_decided": "v3 진단 모드 · B·C 미정(below_A_pending_D1)",
+      "blocks": [
+        "item:MC7 등급 v3 B·C 경계 기입",
+        "item:MC6 행동 카드 CR 강함 자기 낙폭 조건"
+      ],
+      "owner": "dohoon",
+      "source": "S0 진단 04_Research/01_reports/l1_prescription_redesign_20261013/s0_grade_v3/README.md §5 (2026-10-13)",
+      "decision": "수용 — ① D1 = 안 ③: B = S >= S(같은 창 KOSPI200 Calmar, tier_graduation.grade_b_min_portfolio_alpha_t) · C = 0 < S < B 경계 · F = S = 0 · CR 노치는 S > 0 안에서만(F 는 노치 없음). ② OOS 롤링 문턱 = pass_oos(끝 월이 τ_D 이후인 36M 창의 절대 문턱 통과율) >= rolling_grade.json::rescue_min_recent_pass — 잠정에서 확정. ③ 롤링 구제(F→C)는 v3 에 싣지 않는다. ④ CR '강함'에 전략 전체 창 MDD <= 같은 창 벤치 MDD 조건 추가(행동 카드 MC6 개정 · 헌장 원칙 3 시장 대비). 곡선 눈검사 판정은 철학 감독관 교정 자료로 쓴다 — 판정 자체는 아직 받지 않았다(MC7 권위 승격의 남은 관문).",
+      "decided_by": "dohoon",
+      "decided_at": "2026-10-13T14:04:16+0900",
+      "note": "등급 v3 는 MC7 권위 승격(essence 개정 · 헌법 등급 절 · test_grade_unification B4~B6) 전까지 진단 모드",
+      "registered_at": "2026-10-13T14:04:15+0900",
+      "recorded_by": "Q session 7a34e194 (도훈 채팅 지시 기록)",
+      "evidence": "도훈 채팅 2026-10-13 '권고 수용. 지금 논의 하는건 점수체계 인거지?' — S0 보고 §5 Q 권고 4건에 대한 응답"
+    },
+    {
+      "id": "GRADE-V3-S0-EYECHECK",
+      "title": "S0 곡선 눈검사 — 등급 v3 S 상위 10 · 위기 복원력 강함 3 중 철학에 가까운 곡선",
+      "status": "resolved",
+      "opened_at": "2026-10-13T14:33:37+0900",
+      "options": [
+        "S 상위 쪽(강한 알파 · 시장 동행 낙폭)",
+        "CR 강함 쪽(위기 방어 · 장기 정체)",
+        "둘 다 아님",
+        "특정 곡선 지정"
+      ],
+      "recommendation": "판정을 철학 감독관 교정 자료로 쓴다(개선안 §8)",
+      "default_until_decided": "MC7 권위 승격 보류(눈검사 관문)",
+      "blocks": [
+        "item:MC7 등급 v3 권위 승격 관문(눈검사)"
+      ],
+      "owner": "dohoon",
+      "source": "S0 눈검사 위젯(10-13 세션) · 04_Research/01_reports/l1_prescription_redesign_20261013/s0_grade_v3/plates/",
+      "decision": "S1(결합 6편 기저 · S 0.873 · CAGR 25.1% · PORT_t 3.78 · 상승 포착 1.77 · MDD 58% · 위기 복원력 약함)과 같은 곡선에서 낙폭이 방어되는 것이 철학에 가장 가까움 — 수익 엔진은 S1 모양, 위기 낙폭은 방어. 등급 v3 구조와 정합: S1 은 CR 약함 노치로 C 이고, 같은 엔진에 방어가 붙으면 Calmar 와 CR 이 함께 올라 A 경로에 든다. 단 S1 계보는 C1 표식(selection_basis_full_sample_ic_inherited — 전기간 IC 팩터 선정)이라 모양 기준으로만 쓰고 출발점으로 쓰지 않는다.",
+      "decided_by": "dohoon",
+      "decided_at": "2026-10-13T14:33:38+0900",
+      "note": "철학 감독관 교정 사례 = 개선안 §8.1 · 처방 파일럿 출발점 후보 = C1 표식 없는 같은 모양 계보(2002.06975)",
+      "registered_at": "2026-10-13T14:33:37+0900",
+      "recorded_by": "Q session 7a34e194 (도훈 채팅 지시 기록)",
+      "evidence": "도훈 채팅 2026-10-13 'S1과 같은 곡선에서 낙폭이 방어되는게 내 철학에 가장 가까운 답이야'"
+    },
+    {
+      "id": "GRADE-V3-PROMOTE",
+      "title": "등급 v3 권위 승격(MC7) · CR 약함 C→F 노치 유지 · 처방 파일럿 출발점",
+      "status": "resolved",
+      "opened_at": "2026-10-13T14:39:55+0900",
+      "options": [
+        "① v3 를 권위 등급으로 승격 — essence 개정 · 헌법 등급 절 · 등급 검사 · 2계층 풀 · A 자격 관문 · 원장 소급",
+        "② CR 약함 노치 C→F 유지 / C 에서 멈춤",
+        "③ S2 처방 파일럿 출발점 = 2002.06975 계보(C1 표식 없음 · S1 과 같은 모양)"
+      ],
+      "recommendation": "① 진행 · ② 현행 유지 · ③ 2002.06975 계보",
+      "default_until_decided": "v3 진단 모드 · 파일럿 미착수",
+      "blocks": [
+        "item:MC7 등급 v3 권위 승격",
+        "item:S2 처방 파일럿"
+      ],
+      "owner": "dohoon",
+      "source": "S0 눈검사 뒤 Q 질의 3건(10-13 세션) · GRADE-V3-S0-BANDS · GRADE-V3-S0-EYECHECK",
+      "decision": "수용 — ① 등급 v3 를 권위 등급으로 승격(MC7): essence_score 개정 · 헌법 등급 절 · test_grade_unification · 2계층 풀(B+) · A 자격 관문 · 원장 소급. ② CR 약함 노치는 현행 규칙 그대로(C→F 포함 · 한 단계 하향). ③ S2 처방 파일럿 출발점 = 2002.06975 계보(C1 표식 없음 · S1 과 같은 모양) — S1 은 목표 모양 기준으로만.",
+      "decided_by": "dohoon",
+      "decided_at": "2026-10-13T14:39:56+0900",
+      "note": "② 는 질의 '그대로 둘까요?' 에 대한 수용 = 현행 유지로 해석(Q 기록)",
+      "registered_at": "2026-10-13T14:39:55+0900",
+      "recorded_by": "Q session 7a34e194 (도훈 채팅 지시 기록)",
+      "evidence": "도훈 채팅 2026-10-13 '1,2,3, 모두 수용'"
+    },
+    {
+      "id": "BENCH-KOSPI-PROPOSAL",
+      "title": "등급 벤치마크 코스피200 → 코스피(종합) 전환 제안(유니버스 전 종목 개정에 맞춤)",
+      "status": "resolved",
+      "opened_at": "2026-10-13T14:44:15+0900",
+      "options": [
+        "코스피(종합)로 전환",
+        "코스피200 유지(유니버스 불일치는 크기·노출 짝 대조 MC8 이 처리)"
+      ],
+      "recommendation": "코스피200 유지 — 07-04 감사 실측: 코스피(IKS001)가 코스피200 대비 연 −1.32%p(2005+) · −2.13%p(2014+) 낮아 벤치 상대 성과가 체계적으로 관대해진다(PORT_t 약 +0.4 · 21년 · 추적오차 14.7% 기준)",
+      "default_until_decided": "코스피200",
+      "blocks": [
+        "item:MC1 유니버스 개정 epoch 의 벤치 축"
+      ],
+      "owner": "dohoon",
+      "source": "도훈 제안 2026-10-13 세션 · 근거 04_Research/01_reports/knowledge_provenance_audit_20260704.md DEF-01 · S3",
+      "decision": "코스피200 유지 — 등급(PORT_t · Calmar 하한 · CR 위기 연대기) 벤치는 공표 코스피200 그대로. 전 종목 유니버스와의 크기 불일치는 MC8(크기·노출 짝 대조)이 가른다.",
+      "decided_by": "dohoon",
+      "decided_at": "2026-10-13T14:44:16+0900",
+      "note": "Q 가 제안한 '코스피·전 종목 시총가중 대비 진단 병기'는 채택되지 않음(그대로 두자)",
+      "registered_at": "2026-10-13T14:44:15+0900",
+      "recorded_by": "Q session 7a34e194 (도훈 채팅 지시 기록)",
+      "evidence": "도훈 채팅 2026-10-13 '벤치는 그래 그대로 두자.'"
     }
   ],
-  "last_updated": "2026-10-10T22:50:00+0900"
+  "last_updated": "2026-10-13T14:44:17+0900"
 }

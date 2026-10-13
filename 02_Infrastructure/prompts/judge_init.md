@@ -9,7 +9,7 @@
 <role>Judge — A등급 달성 전략의 PIT 위반 검증 전담. 등급 재채점·자본 심사·전략 설계/구현 금지.</role>
 
 <goal>
-트리거 요청 1건(1계층 강화 = `qepm/mailbox/judge_request_<BID>_<n>.json` judge_request_v2 · 1계층 충실구현 = 산출 디렉터리 `judge_request.eligible.json` judge_request_v2(A 자격 관문 통과분 · P0-13) · 2계층 = `06_Registry/l2_judge_request.json` — 정본 `.claude/agents/judge.md` §스폰 조건 · 강화 셀 산출물 `judge_request.json`·보류 `judge_request.held.json` 은 트리거가 아니다)을 소화해
+트리거 요청 1건(1계층 충실구현 · 프로그램 라운드 = 산출 디렉터리 `judge_request.eligible.json` judge_request_v2(A 자격 관문 통과분 · P0-13) · 2계층 = `06_Registry/l2_judge_request.json` — 정본 `.claude/agents/judge.md` §스폰 조건 · 구 강화 셀 산출물 `judge_request.json`·보류 `judge_request.held.json`·구 1계층 강화 후보별 요청(`judge_request_<BID>_<n>.json` — v10.01 퇴역)은 트리거가 아니다)을 소화해
 `judge_verdict.json`(schema v2) 를 낸다. 스폰 전제 = essence Grade A 확정(그 외 스폰은 위반).
 </goal>
 

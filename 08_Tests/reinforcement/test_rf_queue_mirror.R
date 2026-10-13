@@ -14,6 +14,10 @@
 #
 # ★경계 검사(가장 중요): 미러는 **표시용**이다. 소비 판정의 정본은 강화 원장 그대로다.
 #   두 곳에서 각자 판정하게 되면 언젠가 갈리고, 갈린 뒤엔 어느 쪽이 맞는지 아무도 모른다.
+#
+# (v10.01 2026-10-13) 고정 격자 러너 퇴역으로 D절(예산 — entry 에서 나오는가 D1~D3: reinforce_auto_next_paper.R 의
+#   소진 entry 예산 재도출 · 그 의미 조건인 운영 원장 실측) 삭제 — 대상 코드가 없다(롤백 태그 pre-v10.01-prescription-20261013).
+#   후속 공급자 programs/next_replication.R 은 강화 소진·예산을 다루지 않는다. 미러(A·B)·경계(C — 선택기·검증기 소비 지점)는 그대로 잰다.
 #==============================================================================
 suppressMessages({ library(jsonlite) })
 `%||%` <- function(a, b) if (is.null(a) || length(a) == 0L) b else a
@@ -80,28 +84,7 @@ if (grepl("qmirror", vsrc, fixed = TRUE) && length(gregexpr("\\.qmirror\\(", vsr
 if (grepl("isTRUE(COUNT_PAPER)", vsrc, fixed = TRUE))
   ok("C4 count_paper 규약을 미러도 따른다") else ng("C4 규약 불일치")
 
-cat("\n=== D. 예산 — entry 에서 나오는가 ===\n")
-np <- paste(readLines(file.path(ROOT, "02_Infrastructure/ops/reinforce_auto_next_paper.R"),
-                      warn = FALSE), collapse = "\n")
-if (grepl("E$max_attempts", np, fixed = TRUE))
-  ok("D1 소진 entry 의 예산을 읽는다 ★전역 25 가 아니다") else
-  ng("D1 전역 max_attempts 만 읽는다", "B1 설계로 늘어난 예산과 어긋난다")
-## ★P1-08 FIFO(HUMAN · 10-03 최종 통합 INTEG-TF) — 집는 식이 ex[[length(ex)]](LIFO) → ex[[1]](FIFO)로 바뀌었다. 재는 것은 순서(집은 뒤 예산)라
-##   앵커를 두 판 공통 접두로 둔다.
-i_e <- regexpr("E <- ex[[", np, fixed = TRUE)
-i_m <- regexpr("MAXA <- as.integer(E$max_attempts", np, fixed = TRUE)
-if (i_e > 0 && i_m > 0 && i_e < i_m)
-  ok("D2 entry 를 집은 **뒤에** 예산을 재도출한다(순서)") else ng("D2 재도출 순서")
-led <- tryCatch(fromJSON(file.path(ROOT, "06_Registry/reinforce_ledger_l1.json"), simplifyVector = FALSE),
-                error = function(e) list())
-ent <- Filter(function(e) !is.null(e$max_attempts), led$entries %||% list())
-if (length(ent)) {
-  e1 <- ent[[length(ent)]]
-  if (!identical(as.integer(e1$max_attempts), as.integer(led$max_attempts %||% 25L)))
-    ok(sprintf("D3 실측: entry 예산 %d ≠ 전역 %d — 이 검사가 의미를 갖는다",
-               as.integer(e1$max_attempts), as.integer(led$max_attempts %||% 25L))) else
-    cat("  SKIP entry 예산이 전역과 같아 구분 불가\n")
-} else cat("  SKIP entry 별 예산 기록이 아직 없다\n")
+## (v10.01 2026-10-13) D절(예산 — reinforce_auto_next_paper.R 의 소진 entry 예산 재도출 D1~D3) 삭제 — 대상 코드 퇴역.
 
 cat(sprintf("\n합계: 통과 %d · 실패 %d\n", PASS, FAIL))
 cat(sprintf('{"test":"rf_queue_mirror","pass":%d,"fail":%d,"total":%d}\n', PASS, FAIL, PASS + FAIL))

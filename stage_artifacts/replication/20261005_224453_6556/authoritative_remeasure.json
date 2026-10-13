@@ -68,7 +68,10 @@
     },
     "prior_recoveries": 9,
     "current_run": 11,
-    "span": ["2008-01", "2026-10"]
+    "span": [
+      "2008-01",
+      "2026-10"
+    ]
   },
   "defensive_score": {
     "status": "ok",
@@ -103,7 +106,7 @@
     },
     "reason": "하락월 110개: 초과 +0.84%/월 (t 2.35 · 적중 62%) · 벤치-10% 이하 10개: 초과 +0.20%/월 · 상승월 초과 -0.15%/월"
   },
-  "reasons": "Ensemble: positive alpha이나 B 미달 (블렌드에서만 가치); structural_drawdown(판정 아님 — 라우팅 근거): MDD 62.8%, 45%+ episodes=6/15, 55%+ episodes=7/6, 수중 표본비 0.04/0.25",
+  "reasons": "v3: S 0.342 · B 경계 0.438 · 띠 C · CR normal(시험 창 normal) · 노치 +0 · A 아님 사유 floor:port_t,floor:cagr,floor:sharpe,oos:rolling36_pass_oos,gate:dsr_sweep | v921 C: Ensemble: positive alpha이나 B 미달 (블렌드에서만 가치); structural_drawdown(판정 아님 — 라우팅 근거): MDD 62.8%, 45%+ episodes=6/15, 55%+ episodes=7/6, 수중 표본비 0.04/0.25",
   "replication": {
     "source_paper": {
       "url": "https://arxiv.org/abs/2508.18592",
@@ -129,5 +132,71 @@
     "sharpe": 0.678,
     "mdd": 0.628,
     "calmar": 0.227
+  },
+  "grade_scheme": "grade_v3",
+  "grade_v921": "C",
+  "grade_v3": {
+    "status": "ok",
+    "schema": "grade_v3_v1",
+    "grade": "C",
+    "S": 0.3422,
+    "S_B": 0.4376,
+    "band": "C",
+    "notch": 0,
+    "notch_a": false,
+    "blocked_by": [
+      "floor:port_t",
+      "floor:cagr",
+      "floor:sharpe",
+      "oos:rolling36_pass_oos",
+      "gate:dsr_sweep"
+    ],
+    "floors": {
+      "port_t": false,
+      "calmar": true,
+      "cagr": false,
+      "sharpe": false
+    },
+    "bench": {
+      "calmar": 0.2092,
+      "cagr": 0.1107,
+      "mdd": 0.5292,
+      "sharpe": 0.5652
+    },
+    "cr": {
+      "overall": "normal",
+      "test": "normal",
+      "visible": "weak",
+      "n_crisis": 6,
+      "dd_capture_median": 0.9949,
+      "dd_capture_worst": 1.4122,
+      "uc_median": 1.1093,
+      "cdar": 0.4855,
+      "controls": "not_provided"
+    },
+    "oos": {
+      "tau_d": "2022-12-31",
+      "gate": false,
+      "parts": {
+        "test_window_cr_not_weak": true,
+        "rolling36_pass_oos": false
+      },
+      "pass_oos": 0.3043,
+      "pass_min": 0.5,
+      "pass_life": 0.2743,
+      "S_is": 0.4159,
+      "S_oos": 0,
+      "retention_calmar": 3.5921,
+      "retention_sharpe": 1.4181
+    },
+    "parity_max_abs": 2.1094237467878e-15,
+    "nav_source": "contract"
+  },
+  "grade_v3_backfill": {
+    "at": "2026-10-13T15:16:19+0900",
+    "tool": "02_Infrastructure/programs/grade_v3_backfill.R",
+    "decision": "decision_register GRADE-V3-PROMOTE",
+    "prior_essence_grade": "C",
+    "prior_md5": "e1b0144928e752cdb8d9d835efe13024"
   }
 }

@@ -3,6 +3,65 @@
 > CLAUDE.md는 "현재 유효한 헌법"만 담는다. 버전 연혁·릴리스 상세는 본 파일이 SOT.
 > 최신 릴리스 상세: `qvest_v8_4_asymmetry_ml_sot.md` (**v8.4 — 주력 SOT**) · `qvest_v8_3_alpha_discovery_sot.md` (v8.3) · `qvest_v8_1_sot.md` (v8.1) · `qvest_v8_0_upgrade_plan.md` (v8.0)
 
+## v10.01 — 목표 역산형 1계층 리서치 · 고정 격자 강화 러너 퇴역 (2026-10-13)
+
+**도훈**: "1계층 리서치의 강화러너 프로세스를 재설계" → 투자철학("남들 다 깨질 때 방어해 복리 극대화 — 꾸준한 수익률로 결국 이긴다") 반영 ·
+결정 D1~D16(D13 보류 · D14 불필요 — 도훈 10-13 · MC2 제외) · "이 리서치 프로세스를 지속가능하게 운영할 인프라" · "텔레그램 가독성·용어·잘림 점검 + 발송 규칙" ·
+"설계와 무관한 기존 1계층 프로세스는 코드레벨에서 과감하게 삭제" · "버전은 v10.01로 명명". 설계 정본 =
+`04_Research/01_reports/l1_prescription_redesign_20261013/README.md` · 롤백 태그 `pre-v10.01-prescription-20261013`.
+
+- **왜**: 고정 37칸 좌표 하강이 Calmar·낙폭 목표 영역에 닿지 못했다(1,101칸 중 Calmar ≥0.64 = 0 · MDD <25% = 0) · 승자 = PORT_t 원시 최댓값 ·
+  설계 에이전트에 논문 이해가 전달되지 않았다(제목·URL 만) · 충실구현 레인 46편 중 faithful 0.
+- **결정(요지)**: D1 등급 v3 S = (Calmar/0.64)^0.6 × (PORT_t/2.95)^0.4(가중 기하평균 · 상한 없음) · D2 CR 노치 · D3 위기 = 고점 대비 −20% 구간 + 과반 ·
+  '강함' 문턱은 강세 참여 55% 에서 도출(실측 0.541) · D4 OOS = τ_D 단일 분할 · D6 τ_D = 2022-12-31(처방 에이전트 정보 경계 · 크기 짝 대조 필수) ·
+  D9 현금 방어 인정 · 시장 대비 · 강세 참여 ≥55% · 철학 감독관 · D11 유니버스 전 종목(충실구현·처방 모두) + 위생(헌장 §11) · Σw≤1 ·
+  D12 판단 = opus · 사양 실행 = sonnet · fable 미사용 · D15 시작 2000-01-01 · D16 리밸 주간까지(일간 불허).
+  ★D11·D15·D16·Σw 는 측정 계약 MC1~MC5 구현 전까지 **결정**이다 — 하네스 현행(K200∪KQ150 · Σw=1 · 2005-01~ · 월간)과 섞지 않는다.
+- **신설(인프라)**: 행동 카드 계약 `contracts/behavior_card.R` + 설정 `06_Registry/behavior_card.json`(MC6 완료 · 24/0) ·
+  리서치 프로그램 등록부 `06_Registry/research_programs.json` + writer `programs/program_registry.R`(P0~P4 · MC1~MC8 · 18/0) ·
+  라우터 v5(엔진 분류) → `programs/program_paper_sync.R`(9/0) · 메커니즘 지도 `programs/mechanism_atlas.R` + 레인 `ops/paper_atlas_run.sh`(11/0 · 5/0) ·
+  보고 발송기 `programs/program_report.R::prep_send`(15/0) · 논문 공급기 `programs/next_replication.R`(재구현 대기열 우선 · 큐 판독 불가 ≠ 빈 큐) ·
+  가림 규칙 정본 이관 `programs/stat_redactor.R`(훅 R5 · 상수·함수 identical) · 부팅 6번째 줄 `Programs:`(구 Director·Rules 대체 · 12/0) ·
+  스킬 `research-program`(1계층 절차) · reinforce SKILL 재작성(2계층 강화 + 처방 도구 상자).
+- **텔레그램**: qvest-telegram SKILL §0(1단위 1통 · 판정 먼저 · 지표명 하나 · 숫자 안 자름 · 평상 무음 · 정정 표기) · 포인터 보존 절단 ·
+  약어 풀이 여유 확보 · `[1계층·<프로그램>]` 표제 · `[1계층·강화 n/25]` 퇴역.
+- **삭제(코드 38 · 검사 79 — git rm)**: 러너(reinforce_auto_parallel/run/next_paper · reinforce_ladder · rf_cycle_time) · 블록 기계(block_lcode · block_insights ·
+  auto_notify · grade_fanfare · round_review · lcode_mechanism · mech_backfill · lesson · coverage · avoid · arm_compat · boundary_backfill · trial_producers ·
+  promote · rebase_driver) · LLM 설계·결합(b1/b5_design · grid_propose · overlay_propose · combination_launch/review · overlay_allowlist_prompt ·
+  overlay_ledger_count) · 디렉터·방향 채점(rf_director · run_direction_score · direction_world) · floor_v2 · clean_base. 아침 체인 [3/3] 디렉터 · 주간 스윕 방향 채점 제거.
+- **승계(보관)**: 셀 엔진·슬리브·관문(rf_runner_gates — 단독 추출은 MC7 뒤)·원장 writer·오버레이 신설 검증(admit · probe · G1 · G2)·팩터/비중/오버레이 픽커 ·
+  유기적 강화 부품(guard · writer · adapter · cmd) · 격자 `reinforce_program.json`(블록 = 도구 상자 어휘 · 순서·칸 수 강제 폐지).
+- **배선 분리**: 충실구현 레인 스위치 = `replication_lane.enabled` · 2계층 = `l2_auto.enabled`(전역 `enabled` = 퇴역 러너) · L1 active 게이트 삭제(교착 해소) ·
+  검증기·세션 경로가 L1 entry 를 열고 즉시 park(소비 기록) · tick = 충실구현 + 2계층만.
+- **수리(검사가 잡은 실결함)**: 검증기 `factor_analysis_absent` 분기 복원(재작성 중 누락) · `next_replication.R` 파이썬 부재 시 fatal → `halt_queue_unreadable` ·
+  `check_prompt_backticks.py` 한 줄 대입을 프롬프트 시작으로 오인(게이트 블록 삭제로 노출) · 부팅 모델 라벨 `claude-opus-5-5` → "Opus 5.5" ·
+  `prep_send` 판정·다음 줄이 1줄 헤드라인 길이(20~100자) 밖이면 1통 전체가 죽던 것 → 길이별 섹션(긴 판정 = 문단 · 짧은 줄 = 맥락 부착) ·
+  검증기 보고에서 빠졌던 차트(이름 붙임 §0.5)와 등급 근거(PORT_t · SR · OOS 유지율 · DSR — 계약 산출물 그대로) 복원.
+- **레인 편성(D12) 마감**: 충실도 감사 축 = 판독형 opus/xhigh · 대조형 sonnet/high · 오버레이 감사 축 opus/xhigh · 설정 `axiom_inject.lanes` 퇴역 레인 제거 ·
+  `distill_on_block` 삭제(퇴역 키 목록 = `retired_keys_v10_01`). 검사 묶음: 퇴역 대상만 재던 절 삭제 · 살아 있는 소비자로 표적 이설 · 새 검사 8종 편입.
+- **남은 선행 실패(v10.01 무관 — 태그 판에서도 실패)**: `test_rp_env_failure_classify`(추출 블록 함수 미적재) · `test_rf_a_gate_lineage_flags` R1·M1(09-25 이후 칸 표식 기록기 없음) ·
+  `test_rf_rebase` C3~C6·M-kinds·M-cas(데이터·좌표 표류) · suite_enrollment E2(미편입 14).
+- **세션 모델 정본** `claude-fable-5` → `claude-opus-5-5`(D12). 스케줄(Qvest 예약작업)은 전부 Disabled — 재가동은 도훈 설정.
+
+### (v10.01 같은 날 후반) S0 · 등급 v3 권위 승격 MC7 · 벤치 유지 (2026-10-13)
+
+- **S0(진단)**: 등급 v3 계약 `contracts/grade_v3.R` + 설정 `06_Registry/grade_v3.json` · close_t1 1,202칸 소급(재현 대조 1.2e-14) — S ≥ 1 0칸 · 구속 축 = Calmar(최대 0.535) ·
+  눈검사 도판(`04_Research/01_reports/l1_prescription_redesign_20261013/s0_grade_v3/`). 결정 = `decision_register` GRADE-V3-S0-BANDS(B = S(같은 창 KOSPI200 Calmar, PORT_t 2.0) ·
+  C = 0 < S < B · F = S = 0 · 롤링 문턱 확정 · 롤링 구제 미탑재 · CR '강함'에 같은 창 전략 MDD ≤ 벤치 MDD) · GRADE-V3-S0-EYECHECK("S1 같은 곡선 + 낙폭 방어" = 철학 정답 ·
+  감독관 교정 사례 = 설계 §8.1) · GRADE-V3-PROMOTE(① 권위 승격 ② CR 약함 C→F 노치 유지 ③ 처방 파일럿 출발점 = 2002.06975 계보).
+- **MC7 권위 승격**: `essence_score.R` 이 `grade_v3.R::gv3_score_bt` 로 권위 grade 를 낸다(구 5조건 판정 = `grade_v921` 진단 · 계약 미경유 NA · judge hard_fail 주입 F ·
+  스윕형 선정 DSR = v3 A 관문 · v3 미산출 = NA). `run_paper_replication.R`·`remeasure_from_holdings.R` 가 `grade_scheme`·`grade_v921`·`grade_v3` 근거 블록을 산출물에 싣는다.
+  헌법 등급 절 · lean-loop · measurement-graduation · 스킬 4종 개정. 저장 산출물 소급 = `programs/grade_v3_backfill.R`(원본 gz 보관 · 원자 교체 · 멱등).
+  CR 판정은 측정 마지막 날 이후 벤치 이력을 쓰지 않는다(재현성). ★2계층 풀(모듈 카탈로그 등급 · `module_performance.json`) 재구성은 L2 레인 봉쇄(PIT-C1-MSM-PARAMS) 해제 때 함께.
+- **벤치마크**: 코스피(종합) 전환 제안 → **코스피200 유지**(BENCH-KOSPI-PROPOSAL · 07-04 감사 실측 코스피가 연 −1.32%p 낮아 벤치 상대 성과가 관대해진다).
+- **MC8 크기·노출 짝 대조**(측정 계약 · 등급 무변경): `contracts/matched_controls.R` + `06_Registry/matched_controls.json` — 집행일 전 거래일 크기 10분위 바스켓(DGTW 1997 특성 짝)
+  · 벤치 × 평균 노출(R5) · 판정 = 같은 크기 분포 · 평균 노출의 무작위 포트폴리오 200개의 α 0.05 분위(Kothari-Warner 2001 모의 포트폴리오 · 09-21 노출 짝 플라시보 관례 —
+  평균 비교는 운을 실력으로 센다: 검사 P 돌연변이). 귀속 = 선택 방어 / 크기 방어 / 노출 방어(전체 · 보는 창 · 시험 창). 정본 경로 `mc_card(dir)` · 보고 `prep_card_digest` 귀속 문장 ·
+  `bc_attach_controls(tol=)`(부동소수 동치). 검사 55/0 SUITES 편입. 시운전: S1 · 2002.06975 B6_36 의 2026-06~07 급락 방어 = 무작위 크기 짝 분포 안(크기 효과).
+  ⚠ S0 소급표 1,299행 중 97행 = close_t1 비재측정(구 규약) — S0 요약 1,202칸은 무오염. 보고서 = `l1_prescription_redesign_20261013/mc8_matched_controls/README.md`.
+
+---
+
 ## (v10.4 유지 · 버전 미변경) 09-26 중단분 배포 · B4 5축 · 유기체 O0a · 청정 레인 · 노출 표식 · 러너 재개 (2026-10-04)
 
 **도훈**: `ORGANIC-EVIDENCE-SCOPE`([위임] 불인정 + 주제 결속) · `B4SIX-INHERIT-ORDER`(바닥 > carry) · `B4SIX-LEANLOOP-DOC` ·

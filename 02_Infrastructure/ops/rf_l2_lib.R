@@ -36,7 +36,9 @@ l2_jlog <- function(event, ..., root) {
 l2_cfg <- function(root) {
   cp <- Sys.getenv("QVEST_RF_CONFIG", file.path(root, "06_Registry/reinforce_auto_config.json"))
   c0 <- .l2_rj(cp) %||% list(); l <- c0$l2_auto %||% list()
-  list(loop_enabled = isTRUE(c0$enabled), enabled = isTRUE(l$enabled),
+  ## ★v10.01 (2026-10-13): 전역 enabled 는 퇴역한 1계층 고정 격자 러너의 스위치였다(지금 false 고정). 2계층 레인은
+  ##   자기 스위치(l2_auto.enabled)만 본다 — 구판은 두 스위치의 AND 라 러너 퇴역이 2계층까지 세웠다(삭제 지도 §0-1).
+  list(loop_enabled = TRUE, enabled = isTRUE(l$enabled),
        selection_type = .l2_chr(l$selection_type), decided_by = .l2_chr(l$decided_by), decided_at = .l2_chr(l$decided_at),
        arm_timeout_min = .l2_num(l$arm_timeout_min %||% 40), min_free_gb = .l2_num(l$min_free_gb %||% 6),
        fallback_max_modules = as.integer(l$fallback_max_modules %||% 200L), stale_pool_days = .l2_num(l$stale_pool_days %||% 7),

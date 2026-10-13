@@ -14,7 +14,11 @@
 #   C 돌연변이  — 분모를 구판(.sig_dates)으로 되돌린 사본은 B 를 반드시 떨어뜨린다(= 이 검사가 방어선이다)
 #   D 진짜 결손 — 선정이 있는 달의 25% 를 못 내는 arm 은 지지 완전·지지 늦음 **둘 다에서** 여전히 멈춘다
 #   E 무변경    — 지지가 완전한 유니버스에선 신판과 구판 분모의 PORTFOLIO 가 비트 동일
-#   F 채널      — 엔진이 실제로 낸 오류 문자열을 장부 파서가 [basis=…] · arm 으로 읽는다(오버레이 가드 포함)
+#   F 문자열    — 엔진이 실제로 낸 가드 문자열이 실패한 arm(비중 = catalog id · 오버레이 = 층 arm_id)과
+#                 [basis=…] 토큰을 싣는다(오버레이 가드 포함)
+#
+# (v10.01 2026-10-13) 고정 격자 러너 퇴역으로 F 의 장부 파서·귀속 단정(rf_arm_compat.R::rac_parse_coverage ·
+#   .rac_attribute) 삭제 — 대상 코드가 없다(롤백 태그 pre-v10.01-prescription-20261013). F 는 파서 없이 엔진 문자열만 직접 잰다.
 #
 # 스텁: 임시 QM_ROOT 에 backtest_harness.R(로드 확인용) · portfolio/weight_catalog.R(스텁 arm 2종) ·
 #   validation/overlay_pit_guard.R(정본 사본) · reinforcement/overlay_arms/stub_partial.R 만 둔다.
@@ -176,26 +180,23 @@ if (length(hit) == 1L) {
     ng("E 정상 arm 산출이 바뀌었다", sprintf("err=%s / %s", rE$err %||% "-", rEm$err %||% "-"))
 }
 
-writeLines("=== F. 채널 — 엔진이 낸 실제 문자열을 장부가 읽는다 ===")
-suppressMessages(source(file.path(ROOT, "02_Infrastructure/reinforcement/rf_arm_compat.R"), local = TRUE))
+writeLines("=== F. 문자열 — 엔진 가드 문자열이 실패한 arm 과 [basis=…] 토큰을 싣는다 ===")
+## (v10.01) 구판 F 는 이 문자열을 장부 파서(rac_parse_coverage)로 읽고 귀속(.rac_attribute)까지 쟀다 — 장부 퇴역으로
+##   파서·귀속 단정은 지우고, 엔진이 내는 문자열(유지 코드)만 파서 없이 직접 잰다.
 for (nm in c("rD1", "rD2")) {
   e <- get(nm)$err
-  pc <- if (is.null(e)) NULL else rac_parse_coverage(e)
-  if (!is.null(pc) && identical(pc$basis, "sel_dates") && identical(pc$kind, "weight") && identical(pc$id, "stub:flaky"))
-    ok(sprintf("F %s 비중 가드 문자열 → basis=sel_dates · weight:stub:flaky", nm)) else
-    ng(sprintf("F %s 파싱", nm), if (is.null(pc)) "오류 없음" else sprintf("%s/%s/%s", pc$basis, pc$kind, pc$id))
+  if (!is.null(e) && startsWith(e, "[rf_cell_engine] arm stub:flaky 커버리지 ") && grepl("[basis=sel_dates ", e, fixed = TRUE))
+    ok(sprintf("F %s 비중 가드 문자열 → 실패 arm stub:flaky · [basis=sel_dates …]", nm)) else
+    ng(sprintf("F %s 비중 가드 문자열", nm), e %||% "오류 없음")
 }
 OVS <- base_spec(overlay = list(kind = "stub_partial", arm_id = "stub_partial_x"))
 rF <- run_cell(OVS, bm = BMF)
-pcF <- if (is.null(rF$err)) NULL else rac_parse_coverage(rF$err)
 ## ★2026-09-17 계약: 엔진은 **실패한 층 하나**를 arm_id(없으면 kind)로 단일 토큰으로 싣는다 — 구판은 스택 kind 를 "+" 로 이었다.
-##   파서는 그 토큰을 id 로 읽고, 귀속(.rac_attribute)이 arm_id 또는 kind 로 그 층에만 맞춘다.
-if (!is.null(pcF) && grepl("종목 커버리지", rF$err, fixed = TRUE) && identical(pcF$basis, "held_rows") &&
-    identical(pcF$kind, "overlay") && pcF$id %in% c("stub_partial_x", "stub_partial"))
-  ok(sprintf("F 오버레이 가드 문자열 → basis=held_rows · overlay 이름 %s (신판 = arm_id · 구판 = kind)", pcF$id)) else
-  ng("F 오버레이 가드 채널", rF$err %||% "오류 없음(가드 미발화)")
-if (!is.null(pcF) && identical(.rac_attribute(OVS, pcF), "overlay:stub_partial_x"))
-  ok("F 오버레이 실패는 그 층의 arm_id 로 귀속된다") else ng("F 오버레이 귀속", "arm_id 매핑 실패")
+##   단층 스펙이라 '+' 결합 부재는 여기서 가를 것이 없다 — 스택 판정은 test_rf_engine_overlay_stack.R 4b.
+if (!is.null(rF$err) && startsWith(rF$err, "[rf_cell_engine] overlay stub_partial_x 종목 커버리지 ") &&
+    grepl("[basis=held_rows]", rF$err, fixed = TRUE))
+  ok("F 오버레이 가드 문자열 → 층 arm_id(stub_partial_x · kind 아님) · [basis=held_rows]") else
+  ng("F 오버레이 가드 문자열", rF$err %||% "오류 없음(가드 미발화)")
 
 unlink(STUB, recursive = TRUE, force = TRUE)
 writeLines("")

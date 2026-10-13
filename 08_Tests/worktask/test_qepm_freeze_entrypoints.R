@@ -8,8 +8,16 @@
 #   B. /worktask promote 경로(state_machine.R::sm_validated_advance) — 임시 루트에서 FORGE_DONE→JUDGE_PASSED/FAILED 가
 #      waiver 무관 '동결' 로 거부 · 비-JUDGE 전이는 동결 문구 없이 기존 규칙대로 · 가드 줄 삭제 돌연변이 = FAIL 판정서로
 #      JUDGE_PASSED 가 다시 열린다(감사 Q01 결함 재현 → red).
-#   C. judge.md — 트리거 = 후보별 judge_request_<BID>_<n>.json(pending) ∧ grade_a_queue awaiting_judge(발행 코드와 대조) ·
+#   C. judge.md — 트리거 = 발행 코드 사실(v10.01: 충실구현·프로그램 라운드 관문 통과 요청 · 2계층 l2 요청 · 구 강화 후보별 요청 = 퇴역) ·
 #      emit_lcode 호출 인자를 lcode_emit.R 형식인자(parse)와 대조(Q16) · C11 도구 명시.
+#      (v10.01 2026-10-13) 고정 격자 러너 퇴역으로 C2 첫 검사('문서 트리거 = 발행 코드와 일치' — 발행자 reinforce_auto_parallel.R 의
+#      judge_request_%s_%d.json · status pending/awaiting_judge 대조) 삭제 — 대상 코드가 없다(롤백 태그 pre-v10.01-prescription-20261013).
+#      대신 C0 이 살아 있는 발행 코드(run_paper_replication.R §11 상수 · rf_l2_auto.R)와 후보별 요청 발행자 수(0곳 = 퇴역)를 재도출하고,
+#      C1 은 v10.01 judge.md(① 퇴역 표기 · ② l2 · ③ 충실구현·프로그램 라운드 관문 통과 요청)를 그 사실과 대조한다(M-C1b·M-C1c 양방향).
+#      C2 는 SKILL 재작성으로 사라진 1계층 강화 A 줄 대신 남은 A 분기(§2-8 · 2계층 l2_judge_request)를 코드 사실과 대조한다(M-C2).
+#      D3 은 CLAUDE.md 명령표에서 /worktask 행이 빠진 v10.01 모양을 받는다(행이 있으면 동결 · 'QEPM WT … 동결' 표지 실재 · M-D3).
+#      E3 4건(1계층 강화 실행 경로 문서) 삭제 — 대상 경로 퇴역 · E4 는 SKILL '블록 어휘' 행으로 재지정(M-E4).
+#      동결 집행(A dossier 워크플로 · B state_machine 가드)과 나머지 진입점·문서 검사는 그대로 잰다.
 #   D. 동결 표지 + 해제 경로(재상정) 문구 · 결정 레지스터에 QEPM-R0-FREEZE 실재.
 #   E. '강화 매 시도 = QEPM' 문언 소거 + 격자 수를 reinforce_program.json·원장 max_attempts 에서 재도출해 문서 수치와 대조.
 #      ★B4-SIX-AXIS(2026-09-26): 격자가 균일하지 않다(축 블록 × 5 + 결합 B4 = 1 + 축 블록 수). 모양 = 축 등록부 계약(rf_axes_grid_contract) ·
@@ -182,18 +190,48 @@ if (length(gi) != 1L) ng("B4 돌연변이 대상(가드 줄) 부재/중복 — �
 # ═════════════════════════════ C. judge.md — 트리거(Q15) · emit_lcode 인자(Q16) · C11 도구 ═════════════════════════════
 cat("\n=== C. judge.md ===\n")
 JD <- rd(".claude/agents/judge.md")
+## ★(v10.01 2026-10-13) 트리거 사실 = 살아 있는 발행 코드에서 재도출(구 C2 첫 검사의 대상 reinforce_auto_parallel.R 은 퇴역):
+##   충실구현·프로그램 라운드 = run_paper_replication.R §11 상수(.RP_JR_ELIGIBLE 통과 · .RP_JR_HELD 보류) · 2계층 = rf_l2_auto.R(l2_judge_request.json pending).
+##   1계층 강화 후보별 요청(judge_request_%s_%d · grade_a_queue status = "awaiting_judge" 쓰기)의 발행자는 발행 후보 디렉터리 코드(주석 제외)에서 센다 — 0곳 = 퇴역.
+RPX <- tryCatch(parse(file.path(ROOT, "02_Infrastructure/alpha_search/run_paper_replication.R"), keep.source = FALSE, encoding = "UTF-8"), error = function(e) NULL)
+cst <- function(nm) { for (e in RPX) if (is.call(e) && identical(e[[1]], as.name("<-")) && identical(e[[2]], as.name(nm)) && is.character(e[[3]])) return(e[[3]])
+  NA_character_ }
+J_ELIG <- cst(".RP_JR_ELIGIBLE"); J_HELD <- cst(".RP_JR_HELD")
+L2S <- rd("02_Infrastructure/ops/rf_l2_auto.R")
+l2_live <- has(L2S, "l2_judge_request.json") && has(L2S, 'schema = "l2_judge_request_v1", status = "pending"')
+nocm <- function(x) paste(sub("(^|[[:space:]])#.*$", "\\1", strsplit(x, "\n", fixed = TRUE)[[1]]), collapse = "\n")
+EMF <- unlist(lapply(file.path(ROOT, c("02_Infrastructure/ops", "02_Infrastructure/reinforcement", "02_Infrastructure/alpha_search", "02_Infrastructure/programs")),
+                     list.files, pattern = "[.](R|sh|py)$", recursive = TRUE, full.names = TRUE))
+emits_cand <- function(x) { x <- nocm(x); has(x, "judge_request_%s_%d") || has(x, 'status = "awaiting_judge"') }
+CAND <- Filter(function(f) emits_cand(paste(readLines(f, warn = FALSE, encoding = "UTF-8"), collapse = "\n")), EMF)
+cand_live <- length(CAND) > 0L
+chk(sprintf("C0 발행 코드 재도출 — 충실구현 §11 통과 = %s · 보류 = %s · 2계층 = l2_judge_request.json(pending) · 1계층 강화 후보별 요청 발행자 %d곳(%d파일 · 퇴역)",
+            J_ELIG, J_HELD, length(CAND), length(EMF)),
+    !anyNA(c(J_ELIG, J_HELD)) && l2_live && length(EMF) > 0L && !cand_live, paste(basename(CAND), collapse = ","))
 spawn_sec <- function(txt) { m <- regmatches(txt, regexpr("(?s)## 스폰 조건[^\n]*\n(.*?)(?=\n## )", txt, perl = TRUE)); if (length(m)) m else "" }
-chk_trigger <- function(txt) { s <- spawn_sec(txt)
-  nzchar(s) && all(vapply(c("judge_request_<BID>_<n>.json", "status=pending", "grade_a_queue", "awaiting_judge", "트리거가 아니다", "QEPM-R0-FREEZE"),
-                          function(k) has(s, k), logical(1))) }
-chk("C1 스폰 조건 = 후보별 요청(pending) ∧ grade_a_queue awaiting_judge · 산출물 judge_request.json 은 트리거 아님", chk_trigger(JD))
+c1_clause <- function(s) { m <- regmatches(s, regexpr("(?s)\n  ① .*?(?=\n  ② |\n- |\\z)", s, perl = TRUE)); if (length(m)) m else "" }
+## 현역 트리거(코드 사실) 키가 다 있고 · ① 구 강화 후보별 요청 절은 발행자 0곳이면(언급 시) '퇴역' 표기 · 발행자가 있으면 현역 서술
+chk_trigger <- function(txt, cand = cand_live) { s <- spawn_sec(txt)
+  if (!nzchar(s) || anyNA(c(J_ELIG, J_HELD))) return(FALSE)
+  keys <- c(J_ELIG, J_HELD, "status=pending", "rf_a_eligibility", "l2_judge_request.json", "rf_l2_auto.R", "트리거가 아니다", "QEPM-R0-FREEZE")
+  if (!all(vapply(keys, function(k) has(s, k), logical(1)))) return(FALSE)
+  c1 <- c1_clause(s)
+  if (cand) nzchar(c1) && has(c1, "judge_request_<BID>_<n>.json") && has(c1, "awaiting_judge") && !has(c1, "퇴역")
+  else !has(s, "judge_request_<BID>_<n>.json") || (nzchar(c1) && has(c1, "judge_request_<BID>_<n>.json") && has(c1, "퇴역")) }
+chk(sprintf("C1 스폰 조건 = 코드 사실 — 충실구현·프로그램 라운드 관문 통과 요청(%s · pending) · 보류(%s) · 2계층 l2 요청 · ① 강화 후보별 요청 = %s · 동결",
+            J_ELIG, J_HELD, if (cand_live) "현역" else "퇴역 표기"), chk_trigger(JD), substr(c1_clause(spawn_sec(JD)), 1, 100))
 chk("C1 'Grade A 확정 직후에만' 불변(test_judge_verdict_v2 계약)", has(JD, "Grade A 확정 직후에만"))
-EMI <- rd("02_Infrastructure/ops/reinforce_auto_parallel.R")
-chk("C2 문서 트리거 = 발행 코드와 일치(judge_request_%s_%d.json · status=\"pending\" · status=\"awaiting_judge\")",
-    has(EMI, "judge_request_%s_%d.json") && grepl('status = "pending"', EMI, fixed = TRUE) && grepl('status = "awaiting_judge"', EMI, fixed = TRUE))
-SKA <- grep("^현행: A → ", rl(".claude/skills/reinforce/SKILL.md"), value = TRUE)
-chk("C2 reinforce SKILL A 분기(:71) = 관문 통과 시 후보별 요청 + awaiting_judge (Q15 문서분)",
-    length(SKA) == 1L && has(SKA, "rf_a_eligibility") && has(SKA, "awaiting_judge") && !grepl("적재 + `judge_request.json` 발행", SKA, fixed = TRUE))
+## (v10.01) C2 재지정 — 구 대상(reinforce SKILL 의 1계층 강화 A 줄 '현행: A → …' = 퇴역 러너의 후보별 요청 경로)은 SKILL 재작성으로 사라졌다.
+##   SKILL 에 남은 A 분기(§2 시도 절차 8 · 2계층)를 발행 코드 사실과 대조한다(Q15 문서분 — 트리거 문서 = 코드).
+SKL <- rl(".claude/skills/reinforce/SKILL.md")
+ska_ok <- function(lines, l2 = l2_live, cand = cand_live) {
+  a <- grep("^8\\. \\*\\*분기\\*\\* — Grade A → ", lines, value = TRUE)
+  length(a) == 1L && l2 && has(a, "l2_judge_request.json") && has(a, "status=pending") && has(a, "rf_l2_auto.R") &&
+    !grepl("적재 + `judge_request.json` 발행", a, fixed = TRUE) && (cand || !any(has(lines, "judge_request_<BID>_<n>.json"))) }
+chk("C2 reinforce SKILL A 분기(§2-8 · 2계층) = 발행 코드 사실(l2_judge_request.json · pending · rf_l2_auto.R) · 퇴역 후보별 요청 언급 0 (Q15 문서분)",
+    ska_ok(SKL), paste(substr(grep("Grade A", SKL, value = TRUE), 1, 80), collapse = " | "))
+chk("M-C2 돌연변이(SKILL 에 구 1계층 A 줄 '관문 통과 시 후보별 judge_request_<BID>_<n>.json + awaiting_judge' 재주입 · 2계층 발행자 부재 가상) → red",
+    !ska_ok(c(SKL, "현행: A → rf_a_eligibility 관문 통과 시 후보별 `judge_request_<BID>_<n>.json` + grade_a_queue awaiting_judge")) && !ska_ok(SKL, l2 = FALSE))
 ex <- parse(file.path(ROOT, "02_Infrastructure/axiom/lcode_emit.R"), keep.source = FALSE)
 fdef <- NULL
 for (e in ex) if (is.call(e) && identical(e[[1]], as.name("<-")) && identical(e[[2]], as.name("emit_lcode"))) fdef <- e[[3]]
@@ -217,6 +255,13 @@ chk("C4 judge.md 도구에 C11 가용시점 층(fred_availability.R · fred_join
 chk("M-C1 돌연변이(구 트리거 문단 복원) → red",
     !chk_trigger(sub("(?s)## 스폰 조건[^\n]*\n(.*?)(?=\n## )",
                      "## 스폰 조건 (유일)\n- 러너/세션이 산출 디렉터리에 `judge_request.json` 을 남기고 Q-Lead 가 Agent 스폰.\n", JD, perl = TRUE)))
+## (v10.01) ① 퇴역 표기의 양방향 — 표기를 지운 사본(현역 서술)은 발행자 0곳인 현 코드에서 red · 발행자 실재 가상 코드에서는 green ·
+##   현 judge.md(① 퇴역)는 발행자가 되살아난 가상 코드에서 red
+C1N <- c1_clause(spawn_sec(JD))
+JD_C1b <- if (nzchar(C1N)) sub(C1N, gsub("퇴역", "현역", C1N, fixed = TRUE), JD, fixed = TRUE) else ""
+chk("M-C1b 돌연변이(① '퇴역' 표기 삭제 = 현역 서술) → 현 코드에서 red · 후보별 발행자 실재 가상 코드에서는 green(양성 대조)",
+    nzchar(JD_C1b) && !identical(JD_C1b, JD) && !chk_trigger(JD_C1b) && chk_trigger(JD_C1b, cand = TRUE))
+chk("M-C1c 후보별 요청 발행자가 되살아난 가상 상태 → 현 judge.md(① 퇴역 서술) red", !chk_trigger(JD, cand = TRUE))
 
 # ═════════════════════════════ D. 동결 표지 + 해제 경로 ═════════════════════════════
 cat("\n=== D. 동결 표지 · 해제 경로 ===\n")
@@ -226,8 +271,15 @@ chk("D1 /worktask 명령 description = 동결 표지", grepl("QEPM-R0-FREEZE", f
 WK <- rd(".claude/commands/worktask.md"); SK <- rd(".claude/skills/qvest-worktask/SKILL.md")
 chk("D2 /worktask promote 줄 = 봉쇄 표기 · 해제 = 재상정", grepl("promote \\{WT_id\\}` — ★\\*\\*봉쇄\\(QEPM-R0-FREEZE\\)", WK) && has(WK, "재상정"))
 chk("D2 qvest-worktask 머리 표지 + 해제 = 재상정 + 살아 있는 부품 유지", has(SK, "동결(사료) — 도훈 결정 `QEPM-R0-FREEZE`") && has(SK, "재상정") && has(SK, "BOOK writer"))
-chk("D3 CLAUDE.md·qvest.md /worktask 행 = 동결", grepl("\\| `/worktask` \\| QEPM WT 체인 — 동결", rd("CLAUDE.md")) &&
+## ★(v10.01 2026-10-13) CLAUDE.md 명령표가 압축되며 `/worktask` 행이 빠지고 동결은 본문 'QEPM WT = 동결.' 로 남았다 — 표지 요구를 모양에서 뜻으로:
+##   CLAUDE.md 에 `/worktask` 명령 행이 **있으면** 전부 동결 표기 · 'QEPM WT … 동결' 표지 실재. qvest.md 명령 행 요구는 그대로.
+d3_cm_ok <- function(cm) { rows <- regmatches(cm, gregexpr("\\| `/worktask` \\|[^\n]*", cm, perl = TRUE))[[1]]
+  all(grepl("동결", rows, fixed = TRUE)) && grepl("QEPM WT[^\n]*동결", cm) }
+CMD <- rd("CLAUDE.md")
+chk("D3 CLAUDE.md /worktask 명령 행(있으면) = 동결 · 'QEPM WT … 동결' 표지 실재 · qvest.md /worktask 행 = 동결", d3_cm_ok(CMD) &&
       grepl("\\| `/worktask` \\| QEPM WT 체인 — \\*\\*동결\\*\\*", rd(".claude/commands/qvest.md")))
+chk("M-D3 돌연변이(CLAUDE.md 에 미동결 /worktask 행 재주입 · 동결 표지 삭제) → red",
+    !d3_cm_ok(paste(CMD, "| `/worktask` | QEPM WT 체인 |", sep = "\n")) && !d3_cm_ok(gsub("동결", "", CMD, fixed = TRUE)))
 DR <- tryCatch(fromJSON(file.path(ROOT, "06_Registry/decision_register.json"), simplifyVector = FALSE), error = function(e) NULL)
 fr <- if (is.null(DR)) NULL else Filter(function(x) identical(x$id, "QEPM-R0-FREEZE"), DR$items)
 chk("D4 결정 레지스터에 QEPM-R0-FREEZE(resolved · 동결) 실재 — 표지가 가리키는 결정", length(fr) == 1L &&
@@ -282,16 +334,18 @@ for (d in DOCS) {
               STALE_GRID[vapply(STALE_GRID, function(s) has(tx, s), logical(1))]), collapse = " | "))
 }
 LL <- rd(".claude/rules/lean-loop.md"); SKR <- rd(".claude/skills/reinforce/SKILL.md"); CM <- rd("CLAUDE.md")
-chk("E3 lean-loop 미달 분기 = 셀 엔진 + run_paper_replication", has(LL, "rf_cell_engine.R") && has(LL, "run_paper_replication") && has(LL, "QEPM-R0-FREEZE"))
-st4 <- regmatches(SKR, regexpr("(?s)\n4\\. \\*\\*실행 \\(1계층\\)\\*\\*.*?\n\n", SKR, perl = TRUE))
-chk("E3 reinforce SKILL 시도 절차 4 = §0 과 같은 실행(셀 엔진 + run_paper_replication · WT 미사용) + 구 경로 동결",
-    length(st4) == 1L && has(st4, "rf_cell_engine.R") && has(st4, "run_paper_replication") && has(st4, "WT 미사용") && has(st4, "QEPM-R0-FREEZE"))
-chk("E3 SKILL §0 실행 줄(:112-113 정본)과 절차 4 가 같은 계약을 말한다",
-    has(SKR, "`run_paper_replication(portfolio_spec=실투형)`") && length(st4) == 1L && has(st4, "`run_paper_replication(portfolio_spec=실투형)`"))
-chk("E3 CLAUDE.md 파이프라인 = 셀 엔진+run_paper_replication · §0.3/LLM설계 불변(test_rf_skill_reflects_runtime 계약)",
-    has(CM, "셀 엔진+run_paper_replication") && has(CM, "§0.3") && has(CM, "LLM설계"))
-blk_rows <- vapply(PROG$blocks, function(b) grepl(sprintf("\n| %s (", b$id), SKR, fixed = TRUE), logical(1))
-chk(sprintf("E4 SKILL 구조표에 격자 블록 %d종 전부 행이 있다", NB), all(blk_rows), paste(vapply(PROG$blocks, `[[`, "", "id")[!blk_rows], collapse = ","))
+## (v10.01 2026-10-13) E3 4건(lean-loop 미달 분기 · reinforce SKILL 시도 절차 4 · SKILL §0 실행 줄 · CLAUDE.md 파이프라인 = 1계층 강화가
+##   셀 엔진+run_paper_replication 으로 돈다 · §0.3/LLM설계 — test_rf_skill_reflects_runtime 계약) 삭제: 대상인 1계층 고정 격자 강화 실행 경로가
+##   퇴역했고(러너·B1 설계·승격 사슬 코드 삭제) 인용 계약 검사도 같은 변경에서 삭제됐다. 'QEPM 실행' 문언 부재는 E1 이 계속 잰다.
+## E4 재지정 — 구 구조표('| B1 (' 행 — 고정 격자 러너의 블록 순서표)는 SKILL 재작성으로 '블록 어휘' 행 하나가 됐다. 그 행이 격자 정본 블록을 전부 든다.
+voc_row <- function(txt) grep("^\\| 블록 어휘 \\|", strsplit(txt, "\n", fixed = TRUE)[[1]], value = TRUE)
+voc_ok <- function(row) length(row) == 1L && all(vapply(PROG$blocks, function(b) grepl(sprintf("(^|[^0-9A-Za-z_])%s ", b$id), row, perl = TRUE), logical(1)))
+VOC <- voc_row(SKR)
+chk(sprintf("E4 reinforce SKILL 블록 어휘 행에 격자 정본 블록 %d종 전부(reinforce_program.json 재도출 · v10.01 구조표 대체)", NB), voc_ok(VOC),
+    if (length(VOC) != 1L) sprintf("어휘 행 %d개", length(VOC)) else
+      paste(vapply(PROG$blocks, `[[`, "", "id")[!vapply(PROG$blocks, function(b) grepl(sprintf("(^|[^0-9A-Za-z_])%s ", b$id), VOC, perl = TRUE), logical(1))], collapse = ","))
+chk("M-E4 돌연변이(어휘 행에서 블록 하나 삭제 · B1 을 B10 으로) → red",
+    length(VOC) == 1L && !voc_ok(sub(sprintf("%s ", PROG$blocks[[length(PROG$blocks)]]$id), "", VOC, fixed = TRUE)) && !voc_ok(sub("B1 ", "B10 ", VOC, fixed = TRUE)))
 chk("M-E1 돌연변이(lean-loop 에 '매 시도 = QEPM(…)' 재주입) → red", !chk_qepm(paste(LL, "매 시도 = QEPM(alpha→risk→optimizer→forge→등급) + L-code.")))
 chk("M-E2 돌연변이(CLAUDE.md 에 '격자 6블록×5' 재주입) → red", !chk_grid(paste(CM, "L1 ≤30회(원장 l1 · 격자 6블록×5)")))
 ## ★B4-SIX-AXIS 양방향 — 격자에서 만든 문구는 green(검사기가 비지 않았다) · 구판 균일 문구·결합 칸 틀린 문구는 red · E0 모양 계약 돌연변이

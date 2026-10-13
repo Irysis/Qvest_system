@@ -1,0 +1,35 @@
+{
+  "schema": "matched_controls_cfg_v1",
+  "_doc": "MC8 크기 짝 · 노출 짝 무신호 대조 설정 정본 — 계약 02_Infrastructure/contracts/matched_controls.R 이 읽는다. 설계 = 04_Research/01_reports/l1_prescription_redesign_20261013/README.md §3.4 R5 · §3.5(D6 조건) · §7.3(크기 방어 착시). 모든 값에 출처를 단다. 재보정 = 도훈 권한.",
+
+  "size_buckets": 10,
+  "size_buckets_source": "Fama & French (1992) 'The Cross-Section of Expected Stock Returns', Journal of Finance 47(2):427-465, doi:10.1111/j.1540-6261.1992.tb04398.x — 시가총액 10분위(size deciles) 관례",
+
+  "universe": "measurement_membership",
+  "universe_source": "측정과 같은 유니버스 — RAWDATA 멤버십 플래그(K200 | KQ150)가 참인 종목(run_paper_replication.R .apply_universe 와 같은 정의 · PIT 시변). 거래정지(TradingHalt) · 시가총액 결측 종목은 뺀다",
+
+  "asof": "previous_trading_day",
+  "asof_source": "PIT — 보유 기록의 date 는 집행일이다(build_holdings: Exec_Date → date). 크기 · 멤버십 · 거래정지는 그 전 거래일(보유 시작 전) 값으로만 정한다",
+
+  "within_bucket_weight": "equal",
+  "within_bucket_weight_source": "무신호 기댓값 — 분위 안에서 종목을 고르지 않는다(분위 구성 종목 전부 동일가중 = 분위 안 무작위 선택의 기댓값). 분위 사이 비중 = 전략 목표 비중의 분위별 합. 특성 짝 벤치마크: Daniel, Grinblatt, Titman & Wermers (1997) 'Measuring Mutual Fund Performance with Characteristic-Based Benchmarks', Journal of Finance 52(3):1035-1058, https://ideas.repec.org/a/bla/jfinan/v52y1997i3p1035-58.html",
+
+  "holding": "buy_and_hold_between_rebalances",
+  "holding_source": "전략과 같은 보유 규약 — 집행 엔진(replication_harness.R run_replication_simulation)의 창 (집행일, 다음 집행일] 매수후보유 · 결측 수익 = 0",
+
+  "exposure": "static_mean",
+  "exposure_source": "README §3.4 R5 '같은 평균 노출의 정적 축소' · §3.5 D6 '같은 평균 노출 · 같은 크기 분포의 무신호 포트폴리오'. 노출 = 리밸런싱별 롱 Σ target_weight(집행 엔진이 레그 수익에 매일 곱하는 GL · 나머지 = 현금 수익 0)를 보유 일수로 가중 평균",
+
+  "costs": "none",
+  "costs_source": "대조는 위기 낙폭 비교용이다 — 무신호 대조에 회전 비용을 물리지 않는다. 전략 쪽은 15bps 순수익 그대로라 비교는 전략에 보수적이다",
+
+  "placebo_n": 200,
+  "placebo_alpha": 0.05,
+  "placebo_source": "판정은 평균이 아니라 분위 — 02_Infrastructure/reinforcement/rf_overlay_adversary.R .adv_cfg 의 T3 노출 짝 플라시보 관례(alpha 0.05 · n_placebo 200 · obs > quantile(placebo, 1-alpha)). 설계 §3.4 R5 의 선례(오버레이 22칸 노출 짝 플라시보 0 pass · 09-21)와 같은 규약. 플라시보 = 리밸마다 분위별로 전략이 그 분위에 든 종목 수만큼 분위 멤버를 무작위로 뽑아 전략 비중을 그대로 얹는다(분위 몫 · 비중 분포 보존 · 분위 안 선택만 무작위) — 모의 포트폴리오 귀무: Kothari & Warner (2001) 'Evaluating Mutual Fund Performance', Journal of Finance 56(5):1985-2010, doi:10.1111/0022-1082.00397",
+
+  "placebo_seed": 20261013,
+  "placebo_seed_source": "재현성 — 결정 수치 아님(같은 입력이면 같은 플라시보 · 같은 판정)",
+
+  "label_rule": "nested_majority_placebo",
+  "label_rule_source": "과반 = behavior_card.json::majority_share(D3). 위기마다 (1) 크기+노출 짝: 전략 낙폭 포착률 < 플라시보 포착률의 alpha 분위 → 넘음 (2) 노출 짝: 전략 낙폭 포착률 < 벤치 × 평균 노출의 포착률 → 넘음. (1)을 과반 위기에서 넘으면 선택 방어 · 아니고 (2)를 과반에서 넘으면 크기 방어 · 둘 다 아니면 노출 방어 · 위기 2번 미만 = 판정 불가"
+}

@@ -15,9 +15,12 @@
 #   신호가 약해서가 아니라 **분산이 없어서**일 수 있었다.
 #
 # 검사:
-#   (1) 계약 — 셀 실행 경로 2종이 n_long/n_max 를 넘긴다 (읽히지 않는 `n =` 금지)
+#   (1) 계약 — 셀 실행 경로(rf_cell_worker.R)가 n_long/n_max 를 넘긴다 (읽히지 않는 `n =` 금지)
 #   (2) 산술 — 엔진이 25를 건네면 25가 담긴다 (구판 술어 주입 시 3 = 양성 대조)
 #   (3) 얇은 달 — 후보가 12개면 버리지 않고 12종을 담는다 (n_long 명시가 달을 죽이지 않는다)
+#
+# (v10.01 2026-10-13) 고정 격자 러너 퇴역으로 (1) 의 reinforce_auto_run.R 경로 삭제 — 대상 코드가 없다
+#   (롤백 태그 pre-v10.01-prescription-20261013). 남은 셀 실행 경로 = rf_cell_worker.R 하나.
 #
 # 실행: Rscript 08_Tests/reinforcement/test_rf_holdings_axis.R  · 부작용 없음
 #==============================================================================
@@ -29,7 +32,7 @@ rd <- function(f) tryCatch(paste(readLines(file.path(ROOT, f), warn = FALSE), co
                            error = function(e) "")
 
 # ── (1) 계약 ────────────────────────────────────────────────────────────────
-for (f in c("02_Infrastructure/ops/rf_cell_worker.R", "02_Infrastructure/ops/reinforce_auto_run.R")) {
+for (f in c("02_Infrastructure/ops/rf_cell_worker.R")) {
   s <- rd(f)
   has_new <- grepl("n_long =", s, fixed = TRUE) && grepl("n_max =", s, fixed = TRUE)
   # 읽히지 않는 구 키가 portfolio_spec 안에 남아 있으면 안 된다

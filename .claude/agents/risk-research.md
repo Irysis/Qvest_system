@@ -67,7 +67,7 @@ SOT: `.claude/skills/qvest-telegram/SKILL.md` (v6.5). `tg_agent_brief(agent=...)
 
 ## (사료) 논문 소비 경로 — mode_queue risk 레인 (v10 2026-08-29 폐지)
 
-★v10: mode_queue 폐지. 리스크오버레이 논문은 강화 프로세스 `keyword_axis=risk_overlay`(소비 = `rf_overlay_arms.R`)로 소비한다.
+★v10: mode_queue 폐지. ★v10.01: 리스크오버레이 논문은 라우터 v5 가 방어 엔진(P2_DEFENSE) 재료로 분류해 리서치 프로그램이 소비한다(도구 = `rf_overlay_arms.R` · 오버레이 등록부 — reinforce SKILL §3).
 Σ 추정기 어댑터(`adapter_kind=sigma`)는 현재 살아있는 소비자가 없다(Σ-A/B 배터리 호출자 0 · `weight_catalog.R` 은 weight kind 만 색인).
 비중 어댑터(`adapter_kind=weight`) 등재는 `optimizer-research.md` 의 살아있는 절을 따른다. 아래는 사료.
 

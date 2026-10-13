@@ -540,6 +540,47 @@ essence_diagnostics <- function(bt_result, oos_stat_version = "v2", root = NULL)
   )
 }
 
+## ── 등급 v3 연결 (MC7 · 2026-10-13) ────────────────────────────────────────────────────────────────
+##   grade_v3.R 를 사적 환경에 한 번 싣고 채점 컨텍스트(설정 · 문턱 · 카드 설정 · 롤링 설정 · 긴 벤치 이력)를 캐시한다.
+##   ★캐시 수명 = R 세션(.graduation_params 와 같은 규약) — 설정을 고친 뒤에는 새 세션에서 돌리거나 .essence_v3_reset().
+##   루트 = .graduation_root()(marker 검증) → 실패 시 QM_ROOT. 둘 다 없으면 멈춘다(호출부가 NA 등급으로 받는다).
+.ESS_V3 <- new.env(parent = emptyenv())
+.essence_v3_reset <- function() { rm(list = ls(.ESS_V3, all.names = TRUE), envir = .ESS_V3); invisible(TRUE) }
+.essence_v3 <- function(bt_result, gates = NULL) {
+  root <- .graduation_root()
+  if (is.na(root)) { r0 <- gsub("\\\\", "/", Sys.getenv("QM_ROOT", unset = "")); if (nzchar(r0)) root <- r0 }
+  if (is.na(root) || !nzchar(root)) stop("[essence_v3] 프로젝트 루트 해석 실패")
+  if (is.null(.ESS_V3$e) || !identical(.ESS_V3$root, root)) {
+    p <- file.path(root, "02_Infrastructure", "contracts", "grade_v3.R")
+    if (!file.exists(p)) stop("[essence_v3] 등급 v3 계약 없음: ", p)
+    e <- new.env(parent = globalenv())
+    invisible(utils::capture.output(suppressMessages(sys.source(p, envir = e, keep.source = FALSE))))
+    .ESS_V3$e <- e; .ESS_V3$root <- root; .ESS_V3$ctx <- NULL
+  }
+  if (is.null(.ESS_V3$ctx)) .ESS_V3$ctx <- .ESS_V3$e$gv3_ctx(root)
+  .ESS_V3$e$gv3_score_bt(bt_result, root = root, ctx = .ESS_V3$ctx, gates = gates)
+}
+## 반환 기록(JSON 직렬화 가능한 요약) — 등급 근거를 authoritative_remeasure.json 에 남긴다
+.essence_v3_record <- function(v3, contract_ok, hard_fail) {
+  if (!isTRUE(contract_ok)) return(list(status = "not_applicable", reason = "계약 미경유"))
+  if (isTRUE(hard_fail)) return(list(status = "not_applicable", reason = "hard_fail 주입(judge)"))
+  if (is.null(v3)) return(list(status = "not_run"))
+  if (!is.null(v3$error)) return(list(status = "error", error = v3$error))
+  r4 <- function(x) { v <- suppressWarnings(as.numeric(x)[1]); if (length(v) && is.finite(v)) round(v, 4) else NA_real_ }
+  list(status = "ok", schema = v3$schema, grade = v3$grade_v3, S = r4(v3$S), S_B = r4(v3$S_B),
+       band = v3$band, notch = v3$notch, notch_a = isTRUE(v3$notch_a), blocked_by = as.list(v3$blocked_by),
+       floors = v3$floors, bench = lapply(v3$bench, r4),
+       cr = list(overall = v3$card$cr, test = v3$card$cr_test, visible = v3$card$cr_visible,
+                 n_crisis = v3$card$n_crisis, dd_capture_median = r4(v3$card$dd_capture_median),
+                 dd_capture_worst = r4(v3$card$dd_capture_worst), uc_median = r4(v3$card$uc_median),
+                 cdar = r4(v3$card$cdar), controls = v3$card$controls),
+       oos = list(tau_d = v3$oos$tau_d, gate = isTRUE(v3$oos$gate), parts = v3$oos$parts,
+                  pass_oos = r4(v3$oos$pass_oos), pass_min = r4(v3$oos$pass_min), pass_life = r4(v3$oos$pass_life),
+                  S_is = r4(v3$oos$S_is), S_oos = r4(v3$oos$S_oos), retention_calmar = r4(v3$oos$retention_calmar),
+                  retention_sharpe = r4(v3$oos$retention_sharpe)),
+       parity_max_abs = v3$parity_max_abs, nav_source = v3$nav_source)
+}
+
 essence_score <- function(bt_result, n_trials_cumulative = NULL,
                           # (v9 §3.3) 기본값 정본 = constraint_defaults.json::tier_graduation.
                           #   R 기본인자는 지연 평가라 호출자가 명시 전달하면 그 값이 우선한다
@@ -784,11 +825,43 @@ essence_score <- function(bt_result, n_trials_cumulative = NULL,
     ##   실패가 사유에 안 남으면 '산출 안 됨'과 '산출 실패'가 같은 얼굴이 된다.
     reasons <<- paste0(reasons, "; rolling/defensive 산출 실패: ", conditionMessage(e)))
 
+  ## ── 등급 v3 = 권위 등급 (MC7 · 2026-10-13 도훈 수용 · decision_register GRADE-V3-PROMOTE) ──────────────
+  ##   v3 = 종합점수 S(Calmar 6 : PORT_t 4 가중 기하평균) + 하한 + 위기 복원력(CR) 노치 + τ_D 단일 분할 OOS.
+  ##   계약 = contracts/grade_v3.R · 설정 = 06_Registry/grade_v3.json · 설계 = 04_Research/01_reports/
+  ##   l1_prescription_redesign_20261013/README.md §2 · S0 소급 = 같은 폴더 s0_grade_v3/.
+  ##   ★위 판정(5조건 AND + 롤링 구제)은 grade_v921 로 보존한다 — 진단 · 롤백 대조용이며 판정에 인용하지 않는다.
+  ##   ★v3 에는 롤링 구제가 없다(GRADE-V3-S0-BANDS ③). 계약 미경유 = NA · judge hard_fail 주입 = F 는 그대로다.
+  ##   ★스윕형 선정의 DSR 관문(measurement-graduation §3)은 측정 무결성 규칙이라 v3 의 A 에도 건다(gates).
+  ##   ★v3 를 못 재면 등급은 NA(미측정)다 — 구 판정으로 조용히 떨어지지 않는다(단일 등급 원칙).
+  .grade_v921 <- grade
+  .v3 <- NULL
+  if (hard_fail) {
+    ## judge 주입 F 는 v3 에서도 F 다 — 위 롤링 구제(v921 계열)가 F→C 로 올렸어도 권위 등급에는 싣지 않는다
+    grade <- "F"
+  } else if (contract_ok) {
+    .v3 <- tryCatch(.essence_v3(bt_result, gates = if (is_sweep) c(dsr_sweep = isTRUE(dsr_ok)) else NULL),
+                    error = function(e) list(error = conditionMessage(e)))
+    if (is.null(.v3$error) && length(.v3$grade_v3) == 1L && !is.na(.v3$grade_v3)) {
+      grade <- .v3$grade_v3
+      reasons <- paste0(sprintf("v3: S %.3f · B 경계 %.3f · 띠 %s · CR %s(시험 창 %s) · 노치 %+d%s",
+                                .v3$S, .v3$S_B, .v3$band, as.character(.v3$card$cr), as.character(.v3$card$cr_test),
+                                as.integer(.v3$notch),
+                                if (length(.v3$blocked_by)) paste0(" · A 아님 사유 ", paste(.v3$blocked_by, collapse = ",")) else ""),
+                        " | v921 ", if (is.na(.grade_v921)) "NA" else .grade_v921, ": ", reasons)
+    } else {
+      grade <- NA_character_
+      reasons <- paste0("등급 v3 산출 실패 — 미발행(미측정): ",
+                        if (!is.null(.v3$error)) .v3$error else "v3 grade NA",
+                        " | v921 ", if (is.na(.grade_v921)) "NA" else .grade_v921, ": ", reasons)
+    }
+  }
+
   ## ★구조 drawdown 은 **판정에서 빠졌지만 사유에서 빠지지 않는다**(2026-08-24).
   ##   hurdle_gate.R:466-468 이 세운 규약과 같다 — "fail_reasons 는 그대로 남긴다. 이 문장이
   ##   사라지면 하류 소비자가 '구조 사유'를 식별할 근거를 잃고, 결합 층으로 보낼 재료와
   ##   그냥 약한 신호가 같은 라벨이 된다." 등급이 B/C 여도 이 문장이 오버레이 라우팅의 근거다.
-  if (structural_drawdown && !is.na(grade) && !hard_fail) {
+  ## (v10.01 MC7) 조건은 계약 경유 여부(= v921 등급 비결측)로 본다 — v3 미산출(NA)이어도 구조 사유는 남긴다
+  if (structural_drawdown && !is.na(.grade_v921) && !hard_fail) {
     ## ★`%||%` 를 쓰지 않는다 — 이 파일은 그것을 정의하지 않는다(:590 의 같은 경고 참조).
     ##   그리고 `.essence_drawdown_profile` 의 폴백 분지는 일부 필드를 내지 않으므로
     ##   sprintf 에 NULL 이 들어가면 **여기서 죽는다**. 안전 추출로 감싼다.
@@ -890,6 +963,12 @@ essence_score <- function(bt_result, n_trials_cumulative = NULL,
     .essence_diag_build(bt_result, .act, af, .comps, .essence_diag_params()),
     error = function(e) list(version = .ESSENCE_DIAG_VERSION, status = "error",
                              error = conditionMessage(e)))
+
+  ## ── 등급 v3 기록 (MC7) — 반환 객체 **끝**에 덧붙인다(위치로 읽는 소비자 보호 · P0-02 규약과 같다) ──
+  ##   grade = v3(권위) · grade_v921 = 구 5조건 판정(구제 포함 · 진단) · grade_base/recent_regime_* 는 구 판정 계열 기록이다.
+  .res$grade_basis <- "grade_v3"
+  .res$grade_v921 <- .grade_v921
+  .res$grade_v3 <- .essence_v3_record(.v3, contract_ok, hard_fail)
 
   # ── AST v1.1 Step 4 사이드카 (SOT §5) — append-only, 채점 무관여, fail-soft ──
   #  2026-08-02 수리: 인라인 writer → 단일 writer ast_sidecar_log() 위임.

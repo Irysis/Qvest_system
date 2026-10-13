@@ -7,7 +7,7 @@
 # 판정: 배포된 RF 블록을 **패턴으로 추출**해(좌표 단정 없음) 격리 원장 픽스처에 대고 실행 — 결과값으로만 판정.
 #   F1 루트 25 · entry 30 → "/30"   F2 entry 값 없음 → "/25" 폴백   F3 승격 depth 꼬리 보존   F4 active 0 → "0"   F5 둘 다 없음 → "∞"
 #   M  변이(구판 mx=d.get(...) 로 되돌림) → F1 픽스처에서 "/25" — 검사가 병을 본다(양성 대조)
-#   C  Queue 줄이 RF(1)·RF(2) 를 실제로 소비한다(소비자 재도출)
+#   C  Queue 줄이 RF(2) 를 실제로 소비한다(소비자 재도출) — v10.01(2026-10-13): L1 고정 격자 강화 퇴역으로 RF(1) 표시는 뺐다
 # boot_lean.sh 자체는 실행하지 않는다(부팅 5줄은 운영 상태를 읽는다). 운영 원장 무접촉.
 #==============================================================================
 `%||%` <- function(a, b) if (is.null(a) || length(a) == 0L) b else a
@@ -71,5 +71,5 @@ if (length(k) == 1L) {
 
 cat("\n=== 소비자 재도출 ===\n")
 qline <- grep("Queue:", L, fixed = TRUE, value = TRUE)
-if (length(qline) >= 1L && any(grepl("RF(1)", qline, fixed = TRUE)) && any(grepl("RF(2)", qline, fixed = TRUE))) ok("C Queue 줄이 RF(1)·RF(2) 를 소비한다") else ng("C Queue 줄이 RF 를 안 쓴다")
+if (length(qline) >= 1L && any(grepl("RF(2)", qline, fixed = TRUE)) && !any(grepl("RF(1)", qline, fixed = TRUE))) ok("C Queue 줄이 RF(2) 를 소비한다(L1 표시 없음 — v10.01)") else ng("C Queue 줄 RF 소비 계약 위반")
 finish()
