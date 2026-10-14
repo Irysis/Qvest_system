@@ -63,6 +63,16 @@ if [ "${QVEST_SKIP_AUTO_COMMIT:-0}" = "1" ]; then
   echo '{}'; exit 0
 fi
 
+# ★레인은 커밋하지 않는다 (2026-10-14 도훈 "커밋 규칙 수정해줘") — 무인·헤드리스 레인(claude -p)이 끝날 때마다 이 SessionEnd 훅이 발화해
+#   세션이 작업 중이던 파일까지 '미서술 변경'으로 묶어 커밋·푸시했다(실측: 61095bae1 = 1810.08384 재구현 레인 종료 08:01:48 · 3321 files).
+#   커밋은 대화형 세션의 몫이다 — Q 가 작업 단위마다 그 경로만 서술형으로 커밋하고, 이 훅은 대화형 세션 종료 때의 안전망만 맡는다(CLAUDE.md 커밋 규칙).
+#   표식 = rf_llm_agent_run 의 QVEST_UNATTENDED_LANE · 청정 레인 QVEST_CLEAN_LANE · 헤드리스 CLI 의 CLAUDE_CODE_ENTRYPOINT=sdk-cli.
+#   검사 격리용 우회 = QVEST_AC_LANE_CHECK=0.
+if [ "${QVEST_AC_LANE_CHECK:-1}" != "0" ] && { [ "${QVEST_UNATTENDED_LANE:-0}" = "1" ] || [ "${QVEST_CLEAN_LANE:-0}" = "1" ] || [ "${CLAUDE_CODE_ENTRYPOINT:-}" = "sdk-cli" ]; }; then
+  echo "$TS SKIP_LANE entry=${CLAUDE_CODE_ENTRYPOINT:-} unattended=${QVEST_UNATTENDED_LANE:-0} clean=${QVEST_CLEAN_LANE:-0}" >> "$LOG"
+  echo '{}'; exit 0
+fi
+
 # ★AC_ROOT_SRC 의 기본 바인딩은 반드시 sentinel 블록 **밖**에 둔다 (2026-08-03).
 #   이 파일은 `set -u` + ERR 트랩(즉시 `echo {}; exit 0`) 아래에서 돈다. 검사기의 위반
 #   주입은 sentinel 블록을 통째로 들어내는데, 유일한 정의가 블록 안에 있으면 변종은
@@ -306,15 +316,23 @@ if [ -n "$GUARDED" ]; then
                 "$(printf '%s\n' "$GUARDED" | sed 's/^/    - /' | head -20)")"
 fi
 
+# ★영역 요약 (2026-10-14) — 구판 제목은 '미서술 변경' 한 마디라 이력에서 무엇이 바뀌었는지 찾을 수 없었다.
+#   제목 = 상위 경로별 파일 수(많은 순 6개) · 본문 = 기계 산출물 밖 주요 파일 8개. 사연은 여전히 없다 — 사연 커밋은 Q 의 몫(CLAUDE.md 커밋 규칙).
+AC_AREA="$(git diff --cached --name-only 2>/dev/null | awk -F/ '{a=(NF>1)?$1:"(루트)"; c[a]++} END{for(k in c) printf "%s %d\n", k, c[k]}' \
+           | sort -k2,2nr | head -6 | awk '{printf "%s%s %s", (NR>1?" · ":""), $1, $2}' || true)"
+AC_NOTABLE="$(git diff --cached --name-only 2>/dev/null \
+              | grep -vE '^(stage_artifacts|\.cache|qepm/observability|qepm/memory/axioms|06_Registry)/' | head -8 | sed 's|^|  - |' || true)"
 git commit -m "$(cat <<COMMIT_EOF
-[auto-commit] $TS — $STAGED files ($([ "$_MACHINE_ONLY" = "1" ] && echo "무인 산출물" || echo "미서술 변경"))
+[auto-commit] $TS — $STAGED files ($([ "$_MACHINE_ONLY" = "1" ] && echo "무인 산출물" || echo "미서술 변경")) · ${AC_AREA:-}
 
 $SUMMARY
+주요 파일(기계 산출물 제외 · 최대 8):
+${AC_NOTABLE:-  (없음 — 기계 산출물뿐)}
 $GUARD_NOTE
-자동 생성 (Stop hook). $SESSION_TAG 세션 변경분 보존.
-Secret 스캔 통과. Push는 milestone hook 또는 daily cron.
+자동 생성 (SessionEnd 안전망 — 대화형 세션 종료 · 무인 레인은 커밋하지 않는다). $SESSION_TAG 세션 변경분 보존.
+Secret 스캔 통과. Push = auto_push_on_stop.sh(같은 SessionEnd 그룹).
 
-Co-Authored-By: Claude Code (Stop hook) <noreply@anthropic.com>
+Co-Authored-By: Claude Code (SessionEnd hook) <noreply@anthropic.com>
 COMMIT_EOF
 )" > /tmp/auto_commit_last.log 2>&1
 

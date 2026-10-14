@@ -41,6 +41,13 @@ if [ "${QVEST_SKIP_AUTO_PUSH:-0}" = "1" ]; then
   echo '{}'; exit 0
 fi
 
+# ★레인은 푸시하지 않는다 (2026-10-14 · auto_commit_on_stop.sh 같은 절과 짝) — 무인·헤드리스 레인 종료마다 푸시가 따라붙었다.
+#   검사 격리용 우회 = QVEST_AC_LANE_CHECK=0.
+if [ "${QVEST_AC_LANE_CHECK:-1}" != "0" ] && { [ "${QVEST_UNATTENDED_LANE:-0}" = "1" ] || [ "${QVEST_CLEAN_LANE:-0}" = "1" ] || [ "${CLAUDE_CODE_ENTRYPOINT:-}" = "sdk-cli" ]; }; then
+  echo "$TS SKIP_LANE entry=${CLAUDE_CODE_ENTRYPOINT:-} unattended=${QVEST_UNATTENDED_LANE:-0} clean=${QVEST_CLEAN_LANE:-0}" >> "$LOG"
+  echo '{}'; exit 0
+fi
+
 # ★AP_ROOT_SRC 기본 바인딩은 sentinel 블록 **밖**에 (형제 훅 2종과 동일 이유 — `set -u`
 #   + ERR 트랩 아래에서 주입이 블록을 들어내면 변종이 구 결함 재현 전에 unbound 로 죽는다).
 AP_ROOT_SRC="legacy_glob"
