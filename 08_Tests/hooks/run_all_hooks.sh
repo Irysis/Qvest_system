@@ -1154,12 +1154,9 @@ SUITES=(
   "08_Tests/hooks/test_inject_usage_ranking.sh"
   "08_Tests/hooks/test_weight_bound_basis.sh"
   # ── 2026-08-20 추가: 잔여 3건 — 편입 드리프트 0 달성 ──────────────────────
-  #   test_gate3_4 는 testthat 계열이라 카운터가 없다 → 파일 단위 입도(완주=통과,
-  #   실패는 예외로 죽어 러너 UNREPORTED 가 +1 FAIL 로 잡는다). 단언별 수치가
-  #   필요하면 카운터 도입이 선행 과제.
   "08_Tests/hooks/test_benchmark_values_plausible.R"
   "08_Tests/hooks/test_blunt_anchor_failclosed.R"
-  "08_Tests/ramp/test_gate3_4.R"
+  # (2026-10-14 정리) test_gate3_4 — 퇴역 RAMP 게이트 검사 · 대상 코드와 함께 보관소행
   # 2026-08-16 추가: 연속성 마커의 **정체 검사** 차단 실효 (교차-세션 누수).
   #   원 결함 = `marker_fresh` 가 `.cache/last_round_closure.json` 의 **mtime 만** 봤다.
   #   그 파일은 루트 단일 파일이고(main 의 `.cache` 는 `/c/qm_cache` 심볼릭 링크 = 머신 공유)
