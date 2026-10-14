@@ -23,6 +23,17 @@ cat(sprintf("[P3R01 평가] 칸 평가 %d/%d\n", n_done, length(EVS)))
 if (CELLS_ONLY) quit(status = 0)
 P0R <- file.path(ROOT, "04_Research/programs/P0_FRONTIER/P0R01_feasibility_map/results")
 REF <- lapply(pre$reference_cells, function(r) fromJSON(file.path(P0R, r$code, "eval.json"), simplifyVector = FALSE))
+## ★기준 CDaR 출처(2026-10-15 수리 · P3R02 격리 교차 점검이 발견) — P0R01 칸 평가(eval.json)의 visible 목록에는 cdar 가 없다
+##   (P0R01 evaluate.R · round_kit 이전 판). 구판은 그 NA 를 그대로 받아 improve 가 전부 FALSE → 결과와 무관하게
+##   'no_lever_over_ew' 로 떨어졌다. 사전등록 문구의 필드(보는 창 behavior.stats.cdar)를 같은 기준 칸의 보는 창 진단 패킷에서 읽는다
+##   — 규칙 개정이 아니라 문구대로의 구현이다. 그래도 못 읽으면 판정하지 않고 멈춘다(침묵 'EW 유지' 금지).
+for (eng in names(REF)) if (!is.finite(as.numeric(REF[[eng]]$visible$cdar %||% NA))) {
+  pk <- file.path(P0R, pre$reference_cells[[eng]]$code, "visible", "diagnosis_packet.json")
+  REF[[eng]]$visible$cdar <- if (file.exists(pk)) rk_getf(fromJSON(pk, simplifyVector = FALSE), "behavior.stats.cdar") else NA_real_
+  REF[[eng]]$visible$cdar_source <- "visible/diagnosis_packet.json::behavior.stats.cdar"
+}
+bad_ref <- names(REF)[!vapply(REF, function(r) is.finite(as.numeric(r$visible$cdar %||% NA)), logical(1))]
+if (length(bad_ref)) stop("[P3R01 평가] 기준 칸 보는 창 CDaR 을 못 읽었다(", paste(bad_ref, collapse = ","), ") — 판정하지 않는다(improve 가 전부 FALSE 로 접히는 것을 막는다)")
 FS <- pre$final_selection_rule
 row <- function(e, eng, k) data.table(engine = eng, variant = k, code = e$code, status = e$status,
   cdar = as.numeric(e$visible$cdar %||% NA), calmar = as.numeric(e$visible$calmar %||% NA), port_t = as.numeric(e$visible$port_t %||% NA),

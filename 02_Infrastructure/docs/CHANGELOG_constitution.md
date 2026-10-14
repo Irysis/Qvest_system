@@ -204,6 +204,12 @@
 - **검사(양방향 · 돌연변이 사본)**: rf_fidelity_audit 64/0 · rf_fidelity_fanout 37/0(H7~H9 음성 + M1 구판 채택 조건 사본) · rf_reimplement_queue 40/0 · rolling_defensive 52/0 · module_admission_seam 38/0 · l2_pool_admission 30/0 · program_paper_sync 23/0(F1 · F2 위반 주입) · boot_lean_programs_line 13/0(P6) · program_registry 23/0(위 선행 실패 2건 = 운영 상태를 빌리지 않게 고쳐 해소) · audit_not_run 40/0 · retry_feedback 14/0 · quote_parity 4/0 · replication_lane 70/0 · clean_lane 107/0 · backticks · bash -n.
 - **사고 기록**: 돌연변이 검사 중 Q 가 운영 `essence_score.R` 를 약 10초 바꿨다가 되돌렸다(밤 파이프라인 측정 중) — 돌연변이는 사본에서만 한다(이 보록의 검사는 전부 사본 · 픽스처).
 
+#### A안 실행 (2026-10-15) — SUPERVISION-1810-CORRECTIONS
+도훈 "A안 진행". ① 카탈로그 2건 격리 ② 1810.08384 재료 → P3_CONSTRUCTION 큐 ③ P3R02 사전등록(고유모드 정제 공분산 최소분산 구성).
+- **어댑터** `methods/adapters/eigen_clean_markowitz.R`(카탈로그 `paper:EigenCleanMarkowitz` · k = 5 · p = 1): 격리 교차 점검 ②(revise)가 운영 경로의 결함을 짚었다 — 카탈로그 래퍼가 상한 0.20 을 **사후 재분배**로 걸고(셀 엔진은 ub = 1 을 넘긴다), 양수 ≤4종 해는 래퍼 단언 실패 → 엔진 `tryCatch → NULL` 이 그 신호일을 **기록 없이 버린다**. 어댑터는 상한을 2차 계획 안에 넣고(x_i ≤ c·Σx) · n·c = 1 은 유일해 EW · n·c < 1 은 호명 후 EW 폴백 · 척도 정규화 · 미세 잔차 0 · 호출마다 `[ecm]` 진단 줄. 검사 24/0(운영 경로 · 구판 사본 양방향 · 상한 드리프트 대조). 하네스 근본 수리(WC_UB 0.20 ↔ 축 '상한 없음')는 측정 뒤 별도 과제(도훈 결정 사안).
+- **P3R02 사전등록**: v1 → 교차 점검 ②(필수 6) → v2 → 범위 좁힌 재점검(register · 권고 13) → v3. 같은 배치 기준 재측정 RX0 2칸 · 쌍 판본 지문 · 공통 창 사본 규칙 · 위기별 과반 · β 대조 귀속 꼬리표 · 처치 전달률 0.9 · 이력 탈락 꼬리표 0.10 · 판정 구현(evaluate.R · 픽스처 22/0) · 운영 25파일 md5 를 결과 전에 고정 · 검토판 2개 보존 · 등록 전 커밋 강제.
+- **★밤 파이프라인 결함 수리**: P3R01 `evaluate.R` 가 기준 CDaR 을 못 읽어(P0R01 eval.json visible 에 cdar 없음) 결과와 무관하게 'no_lever_over_ew' 로 떨어질 상태였다 → 사전등록 문구대로 기준 칸 보는 창 패킷에서 읽고, 못 읽으면 멈춤(기록 = P3R01 폴더 `evaluate_fix_20261015.md`).
+
 ---
 
 ## (v10.4 유지 · 버전 미변경) 09-26 중단분 배포 · B4 5축 · 유기체 O0a · 청정 레인 · 노출 표식 · 러너 재개 (2026-10-04)

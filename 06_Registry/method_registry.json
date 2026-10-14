@@ -293,7 +293,7 @@
         "delta_ir": -0.1182,
         "mdd": -0.4074,
         "bare_mdd": -0.4074,
-        "delta_mdd": 0.0,
+        "delta_mdd": 0,
         "abs_sr": 1.3601,
         "abs_cagr": 0.3826,
         "avg_exposure": 0.9258,
@@ -974,6 +974,45 @@
         "REVIVAL: if/when the risk registry adds an overlay/regime adapter_kind (emit a C5-timed systemic scalar consumed by factor-rotation regime-engine or an optimizer risk-budget/de-risk trigger), re-route m- there. Compute m- on the FULL K200+KQ150 cross-section (~350 names), NOT the 25-name held set, to keep MP asymptotics valid; use w=1000, lambda=0.01, delta=0.7 per paper OOS config, PIT via Date < first-day-of-holding-month.",
         "SCREEN-TIER PROBE (no dispatch needed): validate KR predictive content of m- as a tail-risk early-warning — regress future 1-month KOSPI/KOSDAQ realized vol and 1% VaR on lagged m-; evaluate against std/VaR (not mean return), consistent with paper claim that m- predicts dispersion/turbulence (both tails). If it predicts KR turbulence, it becomes a candidate crowding/absorption-style risk diagnostic input."
       ]
+    },
+    {
+      "method_id": "EigenCleanMarkowitz",
+      "route": "optimizer",
+      "adapter_kind": "weight",
+      "paper_id": "arxiv:1810.08384",
+      "paper_title": "Portfolio Construction Matters",
+      "routed_on": "2026-10-15 · decision_register SUPERVISION-1810-CORRECTIONS ③ · 10-15 재검증(P3R02 교차 점검 R1~R3)",
+      "mechanism": "마코위츠 x ∝ C⁻¹p 를 상관행렬 상위 k(=5) 고유모드만 남기고 나머지는 총분산 보존 ε² 로 평평하게 정제한 공분산으로 푼다(§II 식 4 · §III k=5 최고 SR — 1000종 풀 결과 · 25종에선 상위 5 모드 = 스펙트럼 20%). 기전 = 신호가 아니라 구성법(위험 모델로 신호를 비중으로 바꾸는 방식)이 성과를 만든다",
+      "kr_mapping": "롱온리 · ≤25종: 엔진이 고른 종목 안에서 argmin_{x≥0, x_i≤c·Σx} ½xᵀΣ̃x − pᵀx(상한 c = 카탈로그 하네스 상한 WC_UB 0.20 을 계획 안에 — 래퍼의 사후 재분배 휴리스틱 · 양수 ≤4종 해의 단언 실패(신호일 무기록 탈락)를 막는다 · n·c<1 이면 이름을 부르고 래퍼 EW 폴백) · p = 1(보유 종목의 전 종목 순위 예측자 ∈ [1−48/(N−1), 1] · 척도 불변이라 원문 사상의 근사 — 원문 그대로 = ctx$mu) ⇒ 해 = Σ̃ 의 상한 롱온리 최소분산(KKT 동치 · 원문의 롱숏 요인 중립화는 작동하지 않음 · 결론 범위 = 정제 공분산 최소분산 구성) · 측정 경로 = rf_cell_engine catalog 분기(Date < 신호일 · 직전 252행 · 이력 완전 종목만 — P3R01 빌트인 K1 60 · K2 120 · K4 120 과 창이 다르다) · 호출마다 [ecm] 진단 줄(n · active · capbind)",
+      "adapter": "02_Infrastructure/methods/adapters/eigen_clean_markowitz.R",
+      "entrypoint": "method_weights",
+      "verdict": "implemented",
+      "registration": {
+        "verified_by": "register_method.R (production wrapper 경유 · 합성 fixture)",
+        "checks": {
+          "file_exists": true,
+          "sources": true,
+          "entrypoint": "method_weights",
+          "deterministic": true,
+          "non_degenerate": "max|w-EW|=0.1065",
+          "constraints": "sum=1.000000 max=0.2000",
+          "nearest_arm": "SchurDamping (max|dw|=0.0744 · 비교 4건)"
+        },
+        "failure_reason": null,
+        "unverified_on_fixture": false,
+        "unverified_reason": null,
+        "fixture": "rm_fixture(n_assets=8, n_obs=260, seed=20260813)",
+        "scope_note": "계약 준수 검증이지 성과 검증이 아니다. 성과는 dispatch Σ-A/B 가 잰다."
+      },
+      "screen_axes": {
+        "shrinkage_builtin": "yes",
+        "statistic_order": "second",
+        "screen_priority": "P3 구성 라운드"
+      },
+      "selection_type": "chain",
+      "free_params": null,
+      "measured": false,
+      "similar_to": []
     }
   ],
   "cross_method_synthesis": {

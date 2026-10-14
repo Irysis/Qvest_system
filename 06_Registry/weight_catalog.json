@@ -1,7 +1,7 @@
 {
   "_doc": "비중 결정 방법론 통합 색인 — **파생 파일**(손편집 금지). 재생성 = source('02_Infrastructure/portfolio/weight_catalog.R'); sync_catalog(). 엔트리는 리졸버만 적는다(구현 복사 금지). 정규형 = wrap_adapter(method_registry.R:55).",
   "generator": "02_Infrastructure/portfolio/weight_catalog.R::sync_catalog",
-  "generated_at": "2026-10-14T07:44:32+0900",
+  "generated_at": "2026-10-15T00:12:51+0900",
   "status_vocab": {
     "retired": 0,
     "blocked_inputs": 1,
@@ -13,10 +13,10 @@
   "counts": {
     "generated": 9,
     "lean_builtin": 23,
-    "paper_adapter": 6,
+    "paper_adapter": 7,
     "qepm_registry": 14
   },
-  "n_entries": 52,
+  "n_entries": 53,
   "entries": [
     {
       "catalog_id": "lean:ivol",
@@ -1334,6 +1334,30 @@
         "reason": null,
         "log": "[TailConformalBand] p=25 · 하방폭 중앙 0.02860 · 최대/최소 4.88"
       }
+    },
+    {
+      "catalog_id": "paper:EigenCleanMarkowitz",
+      "label": "EigenCleanMarkowitz",
+      "origin": "paper_adapter",
+      "family": "optimizer",
+      "status": "active",
+      "notes": null,
+      "resolver": {
+        "kind": "adapter_file",
+        "adapter": "02_Infrastructure/methods/adapters/eigen_clean_markowitz.R",
+        "entrypoint": "method_weights",
+        "paper_id": "arxiv:1810.08384"
+      },
+      "screen_axes": {
+        "shrinkage_builtin": "yes",
+        "statistic_order": "second",
+        "screen_priority": "P3 구성 라운드"
+      },
+      "selection_type": "chain",
+      "trial_family_id": null,
+      "n_trials_family": 1,
+      "prior_measured": null,
+      "est_cost_min": 10
     },
     {
       "catalog_id": "gen:lean_score_tilt__shr_gerber_rmt",

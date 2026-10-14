@@ -1,0 +1,105 @@
+{
+  "schema": "rx_prereg_v1",
+  "program": "P3_CONSTRUCTION",
+  "round_id": "P3R02_eigen_markowitz",
+  "status": "draft",
+  "drafted_at": "2026-10-15T00:14:29+0900",
+  "drafted_before": {
+    "p3r01_evaluation_exists": false,
+    "p0r01_evaluation_exists": false
+  },
+  "purpose": "구성(비중)만 '고유모드 정제 공분산 마코위츠'로 바꿨을 때 같은 엔진의 EW 보다 위기 하락 포착이 낮아지고 강세 참여는 지키는가 — 등록부 P3_CONSTRUCTION",
+  "source_material": {
+    "paper_key": "1810.08384",
+    "queue_key": "engine:RP_20261014_204929_skipped_base",
+    "decision": "SUPERVISION-1810-CORRECTIONS ③",
+    "why_not_faithful_grade": "충실구현 등급 F 는 이 구성법의 판정이 아니다 — 롱숏 시장중립을 KOSPI200 대비로 쟀고(PORT_t 구조적 음수) · 일간→주간 · 15bps 가 섞였다. 이 라운드는 기전(구성법)만 우리 축에서 잰다"
+  },
+  "measurement_axis": {
+    "epoch": "all_hyg_2000_v1"
+  },
+  "tau_d": "2022-12-31",
+  "reference_cells": {
+    "E1": {
+      "code": "P0R01_E1_C0",
+      "round": "P0R01_feasibility_map"
+    },
+    "E2": {
+      "code": "P0R01_E2_C0",
+      "round": "P0R01_feasibility_map"
+    }
+  },
+  "variants": {
+    "M5": {
+      "name": "고유모드 정제 공분산 마코위츠 비중(k = 5 · p = 1)",
+      "delta": {
+        "weighting": {
+          "kind": "catalog",
+          "catalog_id": "paper:EigenCleanMarkowitz",
+          "label": "EigenCleanMarkowitz"
+        }
+      },
+      "basis": "arXiv 1810.08384 Portfolio Construction Matters(2018) §II 식 (4) · §III(k = 5 최고 SR) — 원문 대조 = 감독 기록 교차 점검 ①",
+      "adapter": {
+        "path": "02_Infrastructure/methods/adapters/eigen_clean_markowitz.R",
+        "md5": "5feb6b3e18e6cfdb1b6967105b7b994e"
+      }
+    }
+  },
+  "adaptations": [
+    "예측자 p = 1(상수) — 논문 p 는 전 종목 순위 [-1, +1] · 엔진이 고른 ≤25종의 그 값은 1 에 붙어 있다(유니버스 N 에서 상위 25 위 안 = p ≥ 1 − 48/N). 신호는 선택 단계에 들어 있다",
+    "롱온리 마코위츠 = argmin_{x≥0} ½xᵀΣ̃x − pᵀx(부등식 제약 2차 계획 · 음수 사후 절단 아님) — 제약이 묶이면 실보유가 선택 수보다 적을 수 있다(기록: 실보유 수)",
+    "추정 창 = 하네스 공통 252 거래일(논문 '최소 2년') — P3R01 의 다른 비중 변형과 같은 창으로 구성법만 비교",
+    "정제 대상 = 선택 종목(≤25)의 상관행렬(논문 = 투자 풀 1000종) — k = min(5, n−1) · ε² = 공분산 총분산 보존(식 4)",
+    "롱숏 · 종목수 무제한 · 일간 리밸 → 우리 축(롱온리 · ≤25 · Σw ≤ 1 · 엔진 리밸 주기 · 15bps)"
+  ],
+  "cells": [
+    {
+      "code": "P3R02_E1_M5",
+      "engine": "E1",
+      "component": "M5",
+      "path": "04_Research/programs/P3_CONSTRUCTION/P3R02_eigen_markowitz/specs/P3R02_E1_M5.json",
+      "md5": "402275f692b36abb0d55307dbe653c18",
+      "n_family": 33
+    },
+    {
+      "code": "P3R02_E2_M5",
+      "engine": "E2",
+      "component": "M5",
+      "path": "04_Research/programs/P3_CONSTRUCTION/P3R02_eigen_markowitz/specs/P3R02_E2_M5.json",
+      "md5": "0d2e0a32039540588bd756cfbf446655",
+      "n_family": 228
+    }
+  ],
+  "rules": {
+    "decisive": "칸이 같은 엔진 기준(EW · P0R01 C0)보다 보는 창 위기 누적 포착 중앙값(behavior.summary.crisis_cum_capture_median) 낮음 ∧ 보는 창 강세 참여 중앙값(behavior.summary.bull_up_capture_median) ≥ uc_floor(behavior_card_cfg_at_prereg.json)",
+    "falsified": "두 엔진 중 하나라도 decisive 불충족 = 반증(도훈 결정 문구: 위기 포착 개선 없음 ∨ 강세 참여 < 0.55)",
+    "per_crisis": "보는 창 위기별 누적 포착 — 기준 대비 개선된 위기 수 · 최악 위기 포착 · CDaR(behavior.stats.cdar)를 함께 기록(중앙값은 가운데 위기만 본다 — P2R01 교훈) · 판정 입력은 decisive 만",
+    "attribution": "방어 주장은 MC8 귀속 라벨과 함께만(선택 방어 / 크기 방어 / 노출 방어) — 크기 · 노출 귀속이면 '개선(크기·노출 귀속)'으로 적고 기전 방어로 쓰지 않는다",
+    "selection": "두 엔진 모두 decisive 충족 ∧ 두 엔진 평균 S_vis ≥ 기준 평균 S_vis − tie_eps 면 P4 조립 구성 부품 후보로 넘긴다 · 아니면 선택 없음(EW 유지)",
+    "test_window": "후보면: 시험 창(2023-01~) Calmar(gv3_window) · 위기 포착을 기준과 비교(사람 쪽 보고 · 선택 규칙 입력 아님)",
+    "record": "실보유 종목 수 · 유효 종목 수(1/Σw²) · 연 회전율 · 2차 계획 실패(EW 폴백) 횟수 — 어댑터가 이름을 부른 폴백은 측정 로그에서 센다"
+  },
+  "expectations": {
+    "M5": "위기 누적 포착 ↓(정제 공분산의 위험 처리 — 고잡음 종목 비중 ↓) · 강세 참여 ↓ 가능(저위험 쏠림) · 집중 ↑(실보유 수 ↓) · CDaR ↓"
+  },
+  "final_selection_rule": {
+    "calmar_norm": 0.64,
+    "port_t_norm": 2.95,
+    "w_calmar": 0.6,
+    "w_port_t": 0.4,
+    "tie_eps": 0.02,
+    "uc_floor": 0.55
+  },
+  "axis_audit": "측정 뒤 04_holdings 실보유가 롱온리 · ≤ max_names · Σw ≤ 1 — 위반 칸 = 측정 무효",
+  "behavior_card_cfg": {
+    "path": "04_Research/programs/P3_CONSTRUCTION/P3R02_eigen_markowitz/behavior_card_cfg_at_prereg.json",
+    "md5": "6a2a1d21b82858e1ab954fec2085ac32"
+  },
+  "design_inputs": "논문 원문(감독 기록 교차 점검 ① 인용) · 하네스 규약(backtest_harness.R 카탈로그 분기) · P3R01 사전등록 형식 — 성과 수치 미사용(P0R01 · P3R01 평가 미생성 시점)",
+  "budget": {
+    "variants": 2,
+    "rounds": 1
+  },
+  "changes_after_draft": []
+}
