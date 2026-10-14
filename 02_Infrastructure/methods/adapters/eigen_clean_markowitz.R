@@ -25,13 +25,12 @@
 #      원문의 롱숏 통계 요인(시장 · 업종) 중립화는 이 사상에서 작동하지 않는다 — 남는 기전은 선택 집합 안의 위험 분산이다.
 #      결론 범위 = '고유모드 정제 공분산 최소분산 구성'(가장 가까운 비교군 = P3R01 K2 LW 최소분산). 이 상수는 기전 서술이지
 #      튜닝이 아니다(성과를 보고 고르지 않았다).
-#   ④ 상한 c = ECM_WEIGHT_CAP(아래) — 카탈로그 하네스 상한과 같은 값. 하네스는 이 산출을 as_ctx_adapter → wrap_adapter(ub = WC_UB)
-#      로 감싸 상한을 **사후**에 건다(normalize_long_only = 자른 몫을 남은 양수 종목에 비례 재분배하는 휴리스틱 · 최적해 아님).
-#      셀 엔진은 ctx$ub = 1 을 넘기지만 래퍼는 그 값을 쓰지 않는다. 양수 비중이 4종 이하인 해는 0.20 을 만족할 길이 없어 래퍼
-#      단언이 깨지고, 엔진이 그 오류를 삼켜 그 신호일이 기록 없이 빠졌다(P3R02 격리 교차 점검 R1 · 2026-10-15). 상한을 계획 안에 넣으면
-#      해가 참 최적해이고 양수 비중은 언제나 ⌈1/c⌉ = 5종 이상이다. 받은 종목이 n·c < 1 이면 어떤 비중도 상한을 못 지킨다 —
-#      이름을 부르고 멈춘다(래퍼가 EW 로 폴백하고 그 사실을 로그에 남긴다 · 엔진은 EW 폴백으로 센다).
-#      ★축(처방 축 '비중 상한 없음')과 다르다 — 상한은 카탈로그 하네스 조건이고 P3R01 카탈로그 arm 과 같은 조건이다(사전등록에 변경 신고).
+#   ④ 상한 c = 축 값(ctx$ub) — 고정 축 '비중 상한 없음'(2026-10-15 도훈 "고정축 비중상한 없음으로 진행하자" · 셀 엔진 ctx$ub = 1 ·
+#      카탈로그 하네스 WC_UB = 1). 그래서 운영 경로에서는 상한 제약이 없다(롱온리 최소분산 그대로 — 소수 종목 집중 가능).
+#      구판(10-15 오전)은 하네스 상한 0.20 을 계획 안에 넣었다 — 하네스가 사후 재분배(휴리스틱)로 상한을 걸고 양수 ≤4종 해는 래퍼 단언
+#      실패 → 엔진이 그 신호일을 기록 없이 버렸기 때문이다(P3R02 격리 교차 점검 R1). 하네스 상한이 축대로 풀리면서 그 결함도 사라졌다.
+#      ctx$ub < 1 을 넘기는 호출자가 있으면 그 상한은 계획 **안**에 넣는다(x_i ≤ c·Σx · 사후 재분배 휴리스틱 회피) — n·c = 1 이면
+#      유일 가능해 EW, n·c < 1 이면 이름을 부르고 멈춘다(래퍼 EW 폴백 · 그 사실이 로그에 남는다).
 #
 # 측정 경로(P3R02 RX 칸 · rf_cell_engine.R catalog 분기 — backtest_harness.R 카탈로그 분기가 아니다):
 #   신호일 d 의 선정 종목 중 직전 252 거래일(Date < d) 일별 수익이 **결측 없이 완전한** 종목만 ctx$assets 로 온다(이력 불완전 종목은
@@ -44,7 +43,6 @@
 # 반환: 선호 벡터(이름 = ctx$assets). long-only · Σw = 1 은 wrap_adapter(method_registry.R)가 강제한다.
 
 EIG_K_MODES <- 5L   # 논문 §II~§III — 'test a few values up to k = 5' · k = 5 = 최고 SR 칸(근거 = arXiv 1810.08384 §III). 스윕 아님(단일 사전 고정)
-ECM_WEIGHT_CAP <- 0.20   # = weight_catalog.R::WC_UB(카탈로그 하네스 상한 · 머리 주석 ④) — 검사 E1 이 두 값의 일치를 잰다(드리프트 대조)
 
 .ecm_clean_cov <- function(X, k = EIG_K_MODES) {
   n <- ncol(X)
@@ -63,10 +61,10 @@ ECM_WEIGHT_CAP <- 0.20   # = weight_catalog.R::WC_UB(카탈로그 하네스 상�
   list(Sigma = (s %o% s) * Cc, k = k, eps2 = eps2, sd = s)
 }
 
-## 적용 상한 — 하네스 상한(ECM_WEIGHT_CAP)과 ctx$ub 중 작은 값(ctx$ub 가 유한 · 양수일 때만 · 셀 엔진은 1 을 넘긴다)
+## 적용 상한 = 축 값(ctx$ub · 유한 · 양수일 때만 · 1 이상이면 상한 없음) — 머리 주석 ④
 .ecm_cap <- function(ub) {
   u <- suppressWarnings(as.numeric(ub)[1])
-  min(ECM_WEIGHT_CAP, if (length(u) && is.finite(u) && u > 0) u else 1)
+  if (length(u) && is.finite(u) && u > 0) min(u, 1) else 1
 }
 
 method_weights <- function(ctx) {
@@ -81,15 +79,15 @@ method_weights <- function(ctx) {
   }
   X <- ctx$R[, a, drop = FALSE]
   cc <- .ecm_clean_cov(X)
-  if (n * cap < 1 + 1e-12) {
+  if (cap < 1 && n * cap < 1 + 1e-12) {
     ## n·c = 1(예: 5종 × 0.20) — 가능해는 EW 하나뿐이다. 상한 제약 n 개의 법선 합이 0 이라 일차종속 → quadprog 가 반올림으로
     ##   'constraints are inconsistent' 를 던질 수 있어(재점검 권고 · 10-15) 계획을 풀지 않고 그 유일해를 낸다(진단 줄은 그대로)
     x <- rep(1, n)
   } else {
     p <- rep(1, n)                                          # 머리 주석 ③ — 보유 종목의 전 종목 순위 예측자 ≈ 1
-    Am <- cbind(diag(n), cap * matrix(1, n, n) - diag(n))   # x ≥ 0 · c·Σx − x_i ≥ 0(상한을 계획 안에 — 머리 주석 ④)
+    Am <- if (cap < 1) cbind(diag(n), cap * matrix(1, n, n) - diag(n)) else diag(n)   # x ≥ 0 (· 상한이 있으면 c·Σx − x_i ≥ 0 — 머리 주석 ④)
     s0 <- mean(diag(cc$Sigma))                              # 척도 정규화(Σ̃/s0) — 해는 비례만 바뀌어 정규화 뒤 같다 · quadprog 절대 허용오차를 1/σ² 척도에서 떼어 낸다
-    sol <- quadprog::solve.QP(Dmat = cc$Sigma / s0, dvec = p, Amat = Am, bvec = rep(0, 2L * n))
+    sol <- quadprog::solve.QP(Dmat = cc$Sigma / s0, dvec = p, Amat = Am, bvec = rep(0, ncol(Am)))
     x <- pmax(sol$solution, 0)
     x[x < 1e-10 * sum(x)] <- 0                              # 0 에 묶인 종목의 ±1e-17 급 잔차 — 하네스(Weight != 0)가 보유로 세어 MC3 보유 수 · 축 감사 n 을 부풀린다
   }

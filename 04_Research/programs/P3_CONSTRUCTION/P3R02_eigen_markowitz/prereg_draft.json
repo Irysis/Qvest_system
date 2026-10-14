@@ -3,8 +3,8 @@
   "program": "P3_CONSTRUCTION",
   "round_id": "P3R02_eigen_markowitz",
   "status": "draft",
-  "draft_version": 3,
-  "drafted_at": "2026-10-15T01:48:37+0900",
+  "draft_version": 4,
+  "drafted_at": "2026-10-15T07:19:50+0900",
   "reviewed_drafts": [
     {
       "version": 1,
@@ -168,8 +168,8 @@
       "assessment": "둘 다 등급 1글자 · 칸(변형) 미식별 — 이 라운드의 판정 지표(위기 누적 포착 · 강세 참여 · CDaR)를 담지 않는다. 변형(M5 · k = 5 · p = 1)은 논문과 도훈 A안 결정이 정했고 규칙은 P3R01 · P2R02 사전등록 형식과 교차 점검 · 재점검 지적에서 왔다 — 노출은 설계 입력이 아니다"
     }
   ],
-  "purpose": "구성(비중)만 '고유모드 정제 공분산 최소분산(상한 0.20 계획 안 · p = 1)'으로 바꿨을 때 같은 엔진 · 같은 배치 EW(RX0)보다 보는 창 위기 하락 포착이 낮아지고 강세 참여는 지키는가 — 등록부 P3_CONSTRUCTION",
-  "conclusion_scope": "p = 1 ⇒ 해 = Σ̃ 의 상한 0.20 롱온리 최소분산(KKT 동치). 결론 범위 = '고유모드 정제 공분산 최소분산 구성'이다 — '논문 구성법(롱숏 · 통계 요인 중립 마코위츠)이 KR 롱온리에서 통한다/안 통한다'가 아니다(롱온리 · p = 1 에선 시장 모드 중립화가 작동하지 않고 선택 집합 안 위험 분산만 남는다). 위기 포착 개선은 저베타 · 노출 효과일 공산이 크다 — MC8 귀속 라벨과 β 대조(선택 기여 짝 과반)로 가른다. 가장 가까운 비교군 = P3R01 K2(LW 최소분산 · 같은 엔진)",
+  "purpose": "구성(비중)만 '고유모드 정제 공분산 최소분산(상한 없음 · p = 1)'으로 바꿨을 때 같은 엔진 · 같은 배치 EW(RX0)보다 보는 창 위기 하락 포착이 낮아지고 강세 참여는 지키는가 — 등록부 P3_CONSTRUCTION",
+  "conclusion_scope": "p = 1 ⇒ 해 = Σ̃ 의 롱온리 최소분산(KKT 동치 · 비중 상한 없음 — 소수 종목 집중 가능). 결론 범위 = '고유모드 정제 공분산 최소분산 구성'이다 — '논문 구성법(롱숏 · 통계 요인 중립 마코위츠)이 KR 롱온리에서 통한다/안 통한다'가 아니다(롱온리 · p = 1 에선 시장 모드 중립화가 작동하지 않고 선택 집합 안 위험 분산만 남는다). 위기 포착 개선은 저베타 · 노출 효과일 공산이 크다 — MC8 귀속 라벨과 β 대조(선택 기여 짝 과반)로 가른다. 가장 가까운 비교군 = P3R01 K2(LW 최소분산 · 같은 엔진)",
   "source_material": {
     "paper_key": "1810.08384",
     "queue_key": "engine:RP_20261014_204929_skipped_base",
@@ -187,7 +187,7 @@
   },
   "variants": {
     "M5": {
-      "name": "고유모드 정제 공분산 최소분산(k = 5 · p = 1 · 상한 0.20 계획 안)",
+      "name": "고유모드 정제 공분산 최소분산(k = 5 · p = 1 · 상한 없음)",
       "delta": {
         "weighting": {
           "kind": "catalog",
@@ -198,15 +198,15 @@
       "basis": "arXiv 1810.08384 Portfolio Construction Matters(2018) §II 식 (4) · §III(k = 5 최고 SR) — 원문 대조 = 감독 기록 교차 점검 ① · k = 5 는 1000종 풀(모드 비율 0.5%)의 결과 — 25종 상관행렬(T = 252)에선 상위 5 모드 = 스펙트럼 20% · 잡음 상한 (1+√(25/252))² ≈ 1.73 근처 모드가 섞일 수 있다(풀 크기가 달라 k 의 의미가 다르다 · 스윕 없음)",
       "adapter": {
         "path": "02_Infrastructure/methods/adapters/eigen_clean_markowitz.R",
-        "md5": "f9be79e21479bc74676e993112f4bb89"
+        "md5": "4739e57b71ec5704be19652ce48b6242"
       }
     }
   },
   "adaptations": [
-    "예측자 p = 1(상수) — 논문 p 는 전 종목 순위 [-1, +1] · 엔진이 고른 ≤25종의 그 값은 [1 − 48/(N−1), 1](N = 그날 후보 폭 · N = 1000 이면 상대 차 ≤ 4.8% · 초기 연도처럼 N 이 작으면 더 크다). 해는 p 의 척도에 불변이라 p = 1 은 원문 사상의 근사다(원문 그대로 = ctx$mu 패널 rank-Z) — p = 1 ⇒ Σ̃ 의 상한 롱온리 최소분산(KKT 동치)",
-    "롱온리 + 상한을 2차 계획 안에: argmin_{x≥0, x_i ≤ c·Σx} ½xᵀΣ̃x − pᵀx · c = 0.20 = 카탈로그 하네스 상한(weight_catalog.R::WC_UB — as_ctx_adapter → wrap_adapter(ub = WC_UB) · P3R01 카탈로그 arm 과 같은 조건) · ★처방 축 '비중 상한 없음'과 다르다(하네스 조건) · 양수 비중 ≥ ⌈1/c⌉ = 5종 · n·c = 1(5종)이면 유일 가능해 EW · 받은 종목 n·c < 1 이면 이름을 부르고 래퍼 EW 폴백(엔진 EW 폴백 집계) · 계획은 Σ̃/평균 분산으로 척도 정규화(해 불변) · 1e-10·Σx 미만 잔차는 0",
+    "예측자 p = 1(상수) — 논문 p 는 전 종목 순위 [-1, +1] · 엔진이 고른 ≤25종의 그 값은 [1 − 48/(N−1), 1](N = 그날 후보 폭 · N = 1000 이면 상대 차 ≤ 4.8% · 초기 연도처럼 N 이 작으면 더 크다). 해는 p 의 척도에 불변이라 p = 1 은 원문 사상의 근사다(원문 그대로 = ctx$mu 패널 rank-Z) — p = 1 ⇒ Σ̃ 의 롱온리 최소분산(KKT 동치)",
+    "롱온리 · 비중 상한 없음(고정 축 — 2026-10-15 도훈 확정 · 카탈로그 하네스 WC_UB = 1 · 빌트인 max_w = 축 값): argmin_{x≥0} ½xᵀΣ̃x − pᵀx(부등식 제약 2차 계획 · 음수 사후 절단 아님) · 소수 종목 집중 가능(실보유 하한 없음) · 상한을 주는 호출자(ctx$ub < 1)에겐 상한을 계획 안에(x_i ≤ c·Σx · n·c = 1 이면 EW · n·c < 1 이면 호명 후 래퍼 EW 폴백) — 이 라운드 측정 경로(셀 엔진 ctx$ub = 1)에선 쓰이지 않는다 · 계획은 Σ̃/평균 분산으로 척도 정규화(해 불변) · 1e-10·Σx 미만 잔차는 0",
     "측정 경로 = rf_cell_engine.R catalog 분기(backtest_harness.R 카탈로그 분기가 아니다): 창 = Date < 신호일 직전 252행 · 그 창에 결측 없는 선정 종목만 비중 계산 · 보유(이력 불완전 종목은 빠진다 — 기준 EW 는 선정 전부를 보유하므로 선택 교락 · 아래 record ③ 과 꼬리표 규칙으로 센다) · 0 비중 행은 하네스가 시뮬레이션 전에 버린다",
-    "추정 창 252 거래일(셀 사양 lookback 기본값 · 논문 '최소 2년'에서 변경) — P3R01 의 다른 비중 변형과 창이 같지 않다: 빌트인 K1 ivol 60 · K2 minvar 120(Ledoit-Wolf · 계획 안 상한 0.15) · K4 kelly 120(상한 0.15)",
+    "추정 창 252 거래일(셀 사양 lookback 기본값 · 논문 '최소 2년'에서 변경) — P3R01 의 다른 비중 변형과 창이 같지 않다: 빌트인 K1 ivol 60 · K2 minvar 120(Ledoit-Wolf) · K4 kelly 120 — 빌트인 내부 상한(max_w 0.15)은 10-15 축 결정으로 폐지(P3R01 E2 칸 · 재측정 E1 칸부터 상한 없음)",
     "정제 대상 = 받은 종목(≤25 · 이력 완전)의 상관행렬(논문 = 투자 풀 1000종) — k = min(5, n−1) · ε² = 공분산 총분산 보존(식 4)",
     "롱숏 · 종목수 무제한 · 일간 리밸 → 우리 축(롱온리 · ≤25 · Σw ≤ 1 · 엔진 리밸 주기 · 15bps)"
   ],
@@ -216,7 +216,7 @@
       "engine": "E1",
       "component": "M5",
       "path": "04_Research/programs/P3_CONSTRUCTION/P3R02_eigen_markowitz/specs/P3R02_E1_M5.json",
-      "md5": "9d0fe811d76aab4eb542974ec91472d8",
+      "md5": "181e5cd83b87c7777bf318a254d5a060",
       "n_family": 33,
       "reference": false
     },
@@ -235,7 +235,7 @@
       "engine": "E2",
       "component": "M5",
       "path": "04_Research/programs/P3_CONSTRUCTION/P3R02_eigen_markowitz/specs/P3R02_E2_M5.json",
-      "md5": "1ade46b4cf7c80c93a603c650c98e9c5",
+      "md5": "c411f3d4c5be487fac9fb6be38c7e991",
       "n_family": 228,
       "reference": false
     },
@@ -261,10 +261,10 @@
     "attribution": "귀속 = 보는 창 패킷 라벨(controls.attribution.label — matched_controls.R mc_attribution: selection_defense · size_defense · exposure_defense · no_defense · insufficient · 대조 실패면 라벨 없음) + β 대조: 같은 위기(패킷 exposure.crises 의 peak · trough 로 짝)에서 M5 selection_sum − RX0 selection_sum > 0 인 비율 > majority_share 이면 '선택 기여 개선'(MC8 짝은 크기 · 비중 · 총노출만 맞추고 β 는 안 맞춘다 — 저β 구성은 라벨만으로 기전 방어가 아니다) · behavior.stats.beta 는 두 칸 병기 · 전기간 귀속(mc_card full)은 사람 쪽 보고 · 방어 주장은 귀속과 함께만 — 크기 · 노출 귀속이면 '개선(크기·노출 귀속)'으로 적고 기전 방어로 쓰지 않는다",
     "selection": "두 엔진 모두 tested ∧ decisive ∧ 비열등이면 P4 조립 구성 부품 후보로 넘긴다 — 꼬리표 없는 '구성 부품 후보' = 두 엔진 모두 기전 방어(selection_defense ∧ β 대조 선택 기여 개선) · 그 밖(insufficient · 라벨 없음 · NA · 두 엔진 불일치 포함)은 '노출(β) 레버 — 기전 방어 아님' 꼬리표 · 이력 탈락 꼬리표 규칙(record ③)에 걸리면 '선택 교락(이력 탈락)' 꼬리표를 더한다 · 아니면 선택 없음(EW 유지) · P4 에서 고를 때 P3R01(10) · P3R02(2) 구성 변형 전체를 시행 수로 센다",
     "test_window": "후보면: 시험 창(2023-01~) Calmar(gv3_window) · 위기 포착을 RX0 와 비교(사람 쪽 보고 · 선택 규칙 입력 아님)",
-    "record": "판정 입력 아님(③ 의 꼬리표만 선택 꼬리표에 닿는다): ① 커버리지 = 엔진 요약 줄 '[rf_cell_engine] catalog … 커버리지 (선정일 n_hit/n_try)' · 미산출(이월) 신호일 = n_try − n_hit · 폴백은 '[method:paper:EigenCleanMarkowitz] 어댑터 실패' 줄을 사유별로 나눠 센다(상한 불능 · 자산 3종 미만 · 기타 = 계획 오류 등) ② 진단 줄 '[ecm] d=… n=… active=… capbind=… infeasible=…'(셀 로그 results/<code>.log)로 신호일별 활성 종목 수 · 상한 구속 수 · 상한 불능 수 ③ 이력 불완전 탈락 = 신호일 d 의 RX0 선정 수(d 다음 첫 집행일의 EW 보유 수) − [ecm] n · 그 몫(탈락 / 선정 = 탈락 종목의 EW 기준 비중 합) — 전기간 평균 · 최대와 보는 창 위기 보유 집행일(위기마다 고점 이하 마지막 집행일 ∪ (고점, 저점] 안 집행일) 평균 · 위기 평균 몫 > drop_tag_share 이면 결론에 '선택 교락(이력 탈락)' 꼬리표 ④ 실보유 수(w > 1e-8 — 어댑터가 1e-10·Σx 미만 잔차를 0 으로 둔다 · [ecm] active 와 같은 문턱) · 유효 종목 수(1/Σw²) · 연 회전율 ⑤ M5 대 P3R01 K2(같은 엔진 · P3R01 칸 평가)의 보는 창 위기 누적 포착 · CDaR · S_vis — 차이 = 공분산 추정(고유모드 대 LW) · 창(252 대 120) · 상한(0.20 대 0.15 계획 안) · 실효 시작 · 데이터 · 하네스 판본(P3R01 E1 = 10-14 아침 · E2 = 밤 파이프라인 · M5 = 이 배치) ⑥ RX0 대 P0R01 C0 보는 창 지표 차(판본 대조) · 칸별 데이터 지문"
+    "record": "판정 입력 아님(③ 의 꼬리표만 선택 꼬리표에 닿는다): ① 커버리지 = 엔진 요약 줄 '[rf_cell_engine] catalog … 커버리지 (선정일 n_hit/n_try)' · 미산출(이월) 신호일 = n_try − n_hit · 폴백은 '[method:paper:EigenCleanMarkowitz] 어댑터 실패' 줄을 사유별로 나눠 센다(상한 불능 · 자산 3종 미만 · 기타 = 계획 오류 등) ② 진단 줄 '[ecm] d=… n=… active=… capbind=… infeasible=…'(셀 로그 results/<code>.log)로 신호일별 활성 종목 수 · 상한 구속 수 · 상한 불능 수 ③ 이력 불완전 탈락 = 신호일 d 의 RX0 선정 수(d 다음 첫 집행일의 EW 보유 수) − [ecm] n · 그 몫(탈락 / 선정 = 탈락 종목의 EW 기준 비중 합) — 전기간 평균 · 최대와 보는 창 위기 보유 집행일(위기마다 고점 이하 마지막 집행일 ∪ (고점, 저점] 안 집행일) 평균 · 위기 평균 몫 > drop_tag_share 이면 결론에 '선택 교락(이력 탈락)' 꼬리표 ④ 실보유 수(w > 1e-8 — 어댑터가 1e-10·Σx 미만 잔차를 0 으로 둔다 · [ecm] active 와 같은 문턱) · 유효 종목 수(1/Σw²) · 연 회전율 ⑤ M5 대 P3R01 K2(같은 엔진 · P3R01 칸 평가)의 보는 창 위기 누적 포착 · CDaR · S_vis — 차이 = 공분산 추정(고유모드 대 LW) · 창(252 대 120) · 상한(둘 다 없음 — 10-15 축 결정 뒤 측정분만 비교 · 그 전 상한 측정분과 섞지 않는다) · 실효 시작 · 데이터 · 하네스 판본(P3R01 E1 = 10-14 아침 · E2 = 밤 파이프라인 · M5 = 이 배치) ⑥ RX0 대 P0R01 C0 보는 창 지표 차(판본 대조) · 칸별 데이터 지문"
   },
   "expectations": {
-    "M5": "위기 누적 포착 ↓(정제 공분산 최소분산의 위험 처리 — 고잡음 · 고베타 종목 비중 ↓) · 강세 참여 ↓ 가능(저위험 쏠림) · 집중 ↑(실보유 수 ↓ · 하한 5) · CDaR ↓ · 귀속은 노출(β) 방어일 공산"
+    "M5": "위기 누적 포착 ↓(정제 공분산 최소분산의 위험 처리 — 고잡음 · 고베타 종목 비중 ↓) · 강세 참여 ↓ 가능(저위험 쏠림) · 집중 ↑(실보유 수 ↓ · 하한 없음 — 1~4종 집중 신호일 가능) · CDaR ↓ · 귀속은 노출(β) 방어일 공산"
   },
   "final_selection_rule": {
     "calmar_norm": 0.64,
@@ -292,11 +292,11 @@
     "files": [
       {
         "path": "02_Infrastructure/methods/adapters/eigen_clean_markowitz.R",
-        "md5": "f9be79e21479bc74676e993112f4bb89"
+        "md5": "4739e57b71ec5704be19652ce48b6242"
       },
       {
         "path": "02_Infrastructure/portfolio/weight_catalog.R",
-        "md5": "f64e3b98610990e006f4d350e935555e"
+        "md5": "4965fb81166c491def4e98498f85c430"
       },
       {
         "path": "02_Infrastructure/methods/method_registry.R",
@@ -428,8 +428,8 @@
   "tests": [
     {
       "path": "08_Tests/methods/test_eigen_clean_markowitz.R",
-      "md5": "df9e7ba30b2be821af64f5aa1c4d662d",
-      "pass": 24,
+      "md5": "35d64d709de4d22928f9d1719a5c90b1",
+      "pass": 27,
       "fail": 0
     },
     {
@@ -563,6 +563,18 @@
       "item": "⑭P3R01 수리 기록(범위 밖)",
       "change": "P3R01 폴더 evaluate_fix_20261015.md — 변경 시각 · 사유 · P3R01 칸 결과 미열람 선언",
       "reason": "R2 감사 흔적이 P3R02 초안에만 있었다"
+    }
+  ],
+  "changes_after_registration": [
+    {
+      "item": "축 결정 — 비중 상한 없음(도훈 2026-10-15)",
+      "change": "카탈로그 하네스 WC_UB 0.20 → 1(상한 없음) · 빌트인 calc_*_weights 를 축 값 max_w 로 호출(구판 기본값 0.15) · 어댑터 v3 — 고정 상수 0.20 삭제, 상한 = 호출자 ctx$ub(셀 엔진 1 → 상한 없음 · ctx$ub < 1 이면 계획 안 상한 유지) · 검사 27/0(운영 경로 = 상한 없음 · 구판 하네스 사본 회귀 대조 · 상한 호출자 경로 · 돌연변이) · 이름 · purpose · conclusion_scope · adaptations · expectations · record ⑤ 에서 상한 0.20 서술 삭제",
+      "reason": "도훈 \"고정축 비중상한 없음으로 진행하자\" — 하네스 상한은 v10(2026-08-29 [0, 0.20] 폐지) 이전 잔재였고 P0R01 · P3R01 사전등록도 상한을 적지 않았다(축 = 상한 없음 전제). v3 는 측정 전이라 대체한다(R2 — 결과 0)"
+    },
+    {
+      "item": "판정 규칙 · 문턱 · 칸 · 기준",
+      "change": "변경 없음 — decisive · 비열등 · 선택 · 꼬리표 · delivery_min · drop_tag_share · RX0 · 쌍 지문 · 공통 창 그대로",
+      "reason": "축 결정은 처치(비중법)의 상한만 바꾼다 — 규칙은 결과 전 v3 그대로"
     }
   ]
 }

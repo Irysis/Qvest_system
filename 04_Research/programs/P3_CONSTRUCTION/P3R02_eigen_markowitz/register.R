@@ -1,11 +1,12 @@
-## P3R02 고유모드 정제 공분산 최소분산 구성(k = 5 · p = 1 · 상한 0.20 계획 안) — 같은 엔진 · 같은 판본(배치)의 EW 보다
+## P3R02 고유모드 정제 공분산 최소분산 구성(k = 5 · p = 1 · 비중 상한 없음 — 고정 축) — 같은 엔진 · 같은 판본(배치)의 EW 보다
 ##   보는 창 위기 하락 포착이 낮아지고 강세 참여는 지키는가
 ##   재료 = 1810.08384 「Portfolio Construction Matters」(충실구현 산출 · P3 큐 engine:RP_20261014_204929_skipped_base) ·
 ##   결정 = decision_register SUPERVISION-1810-CORRECTIONS ③(도훈 A안 2026-10-15) · 방법 = 카탈로그 paper:EigenCleanMarkowitz
 ## 판 이력:
 ##   v1 초안 00:14(md5 baf0c9a1…) → 격리 교차 점검 ②(revise · 필수 R1~R6 · 권고 13) →
 ##   v2 초안 01:09(md5 e185de6d…) → 범위 좁힌 격리 재점검(register · 필수 0 · 권고 13) →
-##   v3 초안(이 생성기 · changes_after_draft = v1→v2 · changes_after_review2 = v2→v3 항목별 변경과 사유)
+##   v3 등록 01:49(md5 9fba96b8 · 측정 전) → 도훈 축 결정(10-15 "고정축 비중상한 없음으로 진행하자") → v4(이 생성기 · 상한 없음 ·
+##   changes_after_registration = v3→v4). v3 등록판은 prereg_superseded_v3_9fba96b8.json 으로 보존(측정 결과가 없을 때만 대체 — R2)
 ##   검토판 원본 = prereg_draft_reviewed_baf0c9a1.json · prereg_draft_reviewed2_e185de6d.json(md5 고정 · 등록판에 연결)
 ## 실행:
 ##   Rscript register.R --draft      v3 초안(어댑터 검사 · 평가 픽스처를 실제로 돌려 통과 수를 싣는다 · 실패면 초안을 쓰지 않는다)
@@ -35,7 +36,12 @@ P3R01_EVAL <- file.path(P3R01_DIR, "results/evaluation.json")
 P0R <- file.path(ROOT, "04_Research/programs/P0_FRONTIER/P0R01_feasibility_map/results")
 P0R01_EVAL <- file.path(P0R, "evaluation.json")
 rel <- function(p) sub(paste0("^", ROOT, "/"), "", p)
-if (file.exists(PR)) stop("[P3R02] 사전등록이 이미 있다(R2)")
+## 대체 등록(v3 → v4) — 측정 결과(칸 json)가 하나라도 있으면 사전등록을 바꾸지 않는다(R2). 대체 대상은 v3 등록판(md5 고정)만
+SUPERSEDE <- list(md5 = "9fba96b82e8951435ef2417c9db87a43", copy = "prereg_superseded_v3_9fba96b8.json",
+                  reason = "도훈 축 결정(2026-10-15 \"고정축 비중상한 없음으로 진행하자\") — 카탈로그 하네스 상한 0.20 · 빌트인 max_w 0.15 폐지 → 어댑터 · 서술 · 핀 갱신(측정 전)")
+.measured_any <- function() length(Sys.glob(file.path(RD, "results", "P3R02_*.json"))) > 0L
+if (file.exists(PR) && .measured_any()) stop("[P3R02] 측정 결과가 생긴 뒤에는 사전등록을 바꿀 수 없다(R2)")
+if (file.exists(PR) && !identical(rk_md5(PR), SUPERSEDE$md5)) stop("[P3R02] 사전등록이 이미 있고 대체 대상(v3 9fba96b8)이 아니다(R2)")
 if (file.exists(P3R01_EVAL)) stop("[P3R02] P3R01 평가가 이미 있다 — 가장 가까운 비교군(K2 최소분산) 결과 뒤의 사전등록이 된다 · 등록하지 않는다")
 for (rv in REVIEWED) if (!file.exists(rv$path) || !identical(rk_md5(rv$path), rv$md5))
   stop("[P3R02] 검토판 v", rv$version, " 보존본이 없거나 바뀌었다 — 검토판 ↔ 등록판 연결 불가")
@@ -89,9 +95,10 @@ COMMIT_PATHS <- c("02_Infrastructure/methods/adapters/eigen_clean_markowitz.R", 
 if (MODE == "register") {
   if (!file.exists(DR)) stop("[P3R02] 초안이 없다 — --draft 먼저")
   pre <- fromJSON(DR, simplifyVector = FALSE)
-  if (!identical(as.integer(pre$draft_version), 3L)) stop("[P3R02] 초안 판 ≠ 3")
+  if (!identical(as.integer(pre$draft_version), 4L)) stop("[P3R02] 초안 판 ≠ 4")
   if (!identical(vapply(pre$reviewed_drafts, function(z) z$md5, ""), vapply(REVIEWED, function(z) z$md5, ""))) stop("[P3R02] 초안이 검토판 2개에 연결되지 않았다")
-  if (!length(pre$changes_after_draft) || !length(pre$changes_after_review2)) stop("[P3R02] 검토 반영 기록(changes_after_draft · changes_after_review2)이 비었다")
+  if (!length(pre$changes_after_draft) || !length(pre$changes_after_review2) || !length(pre$changes_after_registration))
+    stop("[P3R02] 반영 기록(changes_after_draft · changes_after_review2 · changes_after_registration)이 비었다")
   for (c in pre$cells) if (!identical(rk_md5(file.path(ROOT, c$path)), c$md5)) stop("[P3R02] 사양 md5 ≠ 초안: ", c$code)
   now <- .ops_pins()
   for (f in pre$operational_pins$files) {
@@ -107,6 +114,11 @@ if (MODE == "register") {
   pre$draft_md5 <- rk_md5(DR)
   pre$registered_before <- list(result_files = .result_files(), declaration = "칸 단위 결과 파일은 존재 · 수정 시각만 확인했고 내용은 열지 않았다")
   pre$git_head_at_register <- tryCatch(system2("git", c("-C", ROOT, "rev-parse", "HEAD"), stdout = TRUE), error = function(e) NA_character_)
+  if (file.exists(PR)) {   # v3 등록판 보존(같은 이름 두 곳) — 대체 사실을 등록판에 싣는다
+    for (d in c(P$prereg_dir, RD)) file.copy(PR, file.path(d, SUPERSEDE$copy), overwrite = FALSE)
+    pre$supersedes <- list(md5 = SUPERSEDE$md5, path = rel(file.path(P$prereg_dir, SUPERSEDE$copy)), reason = SUPERSEDE$reason,
+                           measured_before = FALSE, declaration = "대체 시점에 이 라운드의 측정 결과는 없었다(.measured_any = FALSE)")
+  }
   dir.create(P$prereg_dir, recursive = TRUE, showWarnings = FALSE)
   writeLines(toJSON(pre, auto_unbox = TRUE, pretty = TRUE, null = "null", digits = NA), PR, useBytes = TRUE)
   file.copy(PR, file.path(RD, "prereg.json"), overwrite = TRUE)
@@ -127,7 +139,7 @@ nf_prior <- function(eng) max(vapply(Filter(function(z) identical(z$engine, eng)
 ENGINES <- list(E1 = list(ref = "P0R01_E1_C0", n_prior = nf_prior("E1")), E2 = list(ref = "P0R01_E2_C0", n_prior = nf_prior("E2")))
 AD <- "02_Infrastructure/methods/adapters/eigen_clean_markowitz.R"
 VAR <- list(M5 = list(
-  name = "고유모드 정제 공분산 최소분산(k = 5 · p = 1 · 상한 0.20 계획 안)",
+  name = "고유모드 정제 공분산 최소분산(k = 5 · p = 1 · 상한 없음)",
   delta = list(weighting = list(kind = "catalog", catalog_id = "paper:EigenCleanMarkowitz", label = "EigenCleanMarkowitz")),
   basis = paste0("arXiv 1810.08384 Portfolio Construction Matters(2018) §II 식 (4) · §III(k = 5 최고 SR) — 원문 대조 = 감독 기록 교차 점검 ① · ",
                  "k = 5 는 1000종 풀(모드 비율 0.5%)의 결과 — 25종 상관행렬(T = 252)에선 상위 5 모드 = 스펙트럼 20% · 잡음 상한 (1+√(25/252))² ≈ 1.73 근처 모드가 섞일 수 있다(풀 크기가 달라 k 의 의미가 다르다 · 스윕 없음)"),
@@ -174,7 +186,7 @@ MC_TOL <- get(".MC_TOL", envir = mce)
 
 ch <- function(item, change, reason) list(item = item, change = change, reason = reason)
 pre <- list(
-  schema = "rx_prereg_v1", program = PROGRAM, round_id = ROUND, status = "draft", draft_version = 3L,
+  schema = "rx_prereg_v1", program = PROGRAM, round_id = ROUND, status = "draft", draft_version = 4L,
   drafted_at = format(Sys.time(), "%Y-%m-%dT%H:%M:%S%z"),
   reviewed_drafts = lapply(REVIEWED, function(rv) list(version = rv$version, path = rel(rv$path), md5 = rv$md5, review = rv$review,
                                                         verdict = rv$verdict, findings = rv$findings)),
@@ -186,8 +198,8 @@ pre <- list(
          source = "같은 감독 기록 '노출 기록' 절 — 그 시각 측정 중이던 라운드 = P0R01(밤 파이프라인 19:40~) · 칸 미식별"),
     list(assessment = paste0("둘 다 등급 1글자 · 칸(변형) 미식별 — 이 라운드의 판정 지표(위기 누적 포착 · 강세 참여 · CDaR)를 담지 않는다. ",
                              "변형(M5 · k = 5 · p = 1)은 논문과 도훈 A안 결정이 정했고 규칙은 P3R01 · P2R02 사전등록 형식과 교차 점검 · 재점검 지적에서 왔다 — 노출은 설계 입력이 아니다"))),
-  purpose = "구성(비중)만 '고유모드 정제 공분산 최소분산(상한 0.20 계획 안 · p = 1)'으로 바꿨을 때 같은 엔진 · 같은 배치 EW(RX0)보다 보는 창 위기 하락 포착이 낮아지고 강세 참여는 지키는가 — 등록부 P3_CONSTRUCTION",
-  conclusion_scope = paste0("p = 1 ⇒ 해 = Σ̃ 의 상한 0.20 롱온리 최소분산(KKT 동치). 결론 범위 = '고유모드 정제 공분산 최소분산 구성'이다 — ",
+  purpose = "구성(비중)만 '고유모드 정제 공분산 최소분산(상한 없음 · p = 1)'으로 바꿨을 때 같은 엔진 · 같은 배치 EW(RX0)보다 보는 창 위기 하락 포착이 낮아지고 강세 참여는 지키는가 — 등록부 P3_CONSTRUCTION",
+  conclusion_scope = paste0("p = 1 ⇒ 해 = Σ̃ 의 롱온리 최소분산(KKT 동치 · 비중 상한 없음 — 소수 종목 집중 가능). 결론 범위 = '고유모드 정제 공분산 최소분산 구성'이다 — ",
                             "'논문 구성법(롱숏 · 통계 요인 중립 마코위츠)이 KR 롱온리에서 통한다/안 통한다'가 아니다(롱온리 · p = 1 에선 시장 모드 중립화가 작동하지 않고 선택 집합 안 위험 분산만 남는다). ",
                             "위기 포착 개선은 저베타 · 노출 효과일 공산이 크다 — MC8 귀속 라벨과 β 대조(선택 기여 짝 과반)로 가른다. 가장 가까운 비교군 = P3R01 K2(LW 최소분산 · 같은 엔진)"),
   source_material = list(paper_key = "1810.08384", queue_key = "engine:RP_20261014_204929_skipped_base",
@@ -200,10 +212,10 @@ pre <- list(
     vintage_record = "RX0 대 P0R01 C0(원 측정) 보는 창 지표 차와 데이터 지문(칸별 측정 시작 · 종료 RAWDATA · 벤치 캐시 크기 · mtime)을 기록한다(판정 입력 아님)"),
   variants = lapply(VAR, function(v) list(name = v$name, delta = v$delta, basis = v$basis, adapter = v$adapter)),
   adaptations = list(
-    "예측자 p = 1(상수) — 논문 p 는 전 종목 순위 [-1, +1] · 엔진이 고른 ≤25종의 그 값은 [1 − 48/(N−1), 1](N = 그날 후보 폭 · N = 1000 이면 상대 차 ≤ 4.8% · 초기 연도처럼 N 이 작으면 더 크다). 해는 p 의 척도에 불변이라 p = 1 은 원문 사상의 근사다(원문 그대로 = ctx$mu 패널 rank-Z) — p = 1 ⇒ Σ̃ 의 상한 롱온리 최소분산(KKT 동치)",
-    "롱온리 + 상한을 2차 계획 안에: argmin_{x≥0, x_i ≤ c·Σx} ½xᵀΣ̃x − pᵀx · c = 0.20 = 카탈로그 하네스 상한(weight_catalog.R::WC_UB — as_ctx_adapter → wrap_adapter(ub = WC_UB) · P3R01 카탈로그 arm 과 같은 조건) · ★처방 축 '비중 상한 없음'과 다르다(하네스 조건) · 양수 비중 ≥ ⌈1/c⌉ = 5종 · n·c = 1(5종)이면 유일 가능해 EW · 받은 종목 n·c < 1 이면 이름을 부르고 래퍼 EW 폴백(엔진 EW 폴백 집계) · 계획은 Σ̃/평균 분산으로 척도 정규화(해 불변) · 1e-10·Σx 미만 잔차는 0",
+    "예측자 p = 1(상수) — 논문 p 는 전 종목 순위 [-1, +1] · 엔진이 고른 ≤25종의 그 값은 [1 − 48/(N−1), 1](N = 그날 후보 폭 · N = 1000 이면 상대 차 ≤ 4.8% · 초기 연도처럼 N 이 작으면 더 크다). 해는 p 의 척도에 불변이라 p = 1 은 원문 사상의 근사다(원문 그대로 = ctx$mu 패널 rank-Z) — p = 1 ⇒ Σ̃ 의 롱온리 최소분산(KKT 동치)",
+    "롱온리 · 비중 상한 없음(고정 축 — 2026-10-15 도훈 확정 · 카탈로그 하네스 WC_UB = 1 · 빌트인 max_w = 축 값): argmin_{x≥0} ½xᵀΣ̃x − pᵀx(부등식 제약 2차 계획 · 음수 사후 절단 아님) · 소수 종목 집중 가능(실보유 하한 없음) · 상한을 주는 호출자(ctx$ub < 1)에겐 상한을 계획 안에(x_i ≤ c·Σx · n·c = 1 이면 EW · n·c < 1 이면 호명 후 래퍼 EW 폴백) — 이 라운드 측정 경로(셀 엔진 ctx$ub = 1)에선 쓰이지 않는다 · 계획은 Σ̃/평균 분산으로 척도 정규화(해 불변) · 1e-10·Σx 미만 잔차는 0",
     "측정 경로 = rf_cell_engine.R catalog 분기(backtest_harness.R 카탈로그 분기가 아니다): 창 = Date < 신호일 직전 252행 · 그 창에 결측 없는 선정 종목만 비중 계산 · 보유(이력 불완전 종목은 빠진다 — 기준 EW 는 선정 전부를 보유하므로 선택 교락 · 아래 record ③ 과 꼬리표 규칙으로 센다) · 0 비중 행은 하네스가 시뮬레이션 전에 버린다",
-    "추정 창 252 거래일(셀 사양 lookback 기본값 · 논문 '최소 2년'에서 변경) — P3R01 의 다른 비중 변형과 창이 같지 않다: 빌트인 K1 ivol 60 · K2 minvar 120(Ledoit-Wolf · 계획 안 상한 0.15) · K4 kelly 120(상한 0.15)",
+    "추정 창 252 거래일(셀 사양 lookback 기본값 · 논문 '최소 2년'에서 변경) — P3R01 의 다른 비중 변형과 창이 같지 않다: 빌트인 K1 ivol 60 · K2 minvar 120(Ledoit-Wolf) · K4 kelly 120 — 빌트인 내부 상한(max_w 0.15)은 10-15 축 결정으로 폐지(P3R01 E2 칸 · 재측정 E1 칸부터 상한 없음)",
     "정제 대상 = 받은 종목(≤25 · 이력 완전)의 상관행렬(논문 = 투자 풀 1000종) — k = min(5, n−1) · ε² = 공분산 총분산 보존(식 4)",
     "롱숏 · 종목수 무제한 · 일간 리밸 → 우리 축(롱온리 · ≤25 · Σw ≤ 1 · 엔진 리밸 주기 · 15bps)"),
   cells = unname(cells),
@@ -238,9 +250,9 @@ pre <- list(
                     "③ 이력 불완전 탈락 = 신호일 d 의 RX0 선정 수(d 다음 첫 집행일의 EW 보유 수) − [ecm] n · 그 몫(탈락 / 선정 = 탈락 종목의 EW 기준 비중 합) — 전기간 평균 · 최대와 보는 창 위기 보유 집행일(위기마다 고점 이하 마지막 집행일 ∪ (고점, 저점] 안 집행일) 평균 · ",
                     "위기 평균 몫 > drop_tag_share 이면 결론에 '선택 교락(이력 탈락)' 꼬리표 ",
                     "④ 실보유 수(w > 1e-8 — 어댑터가 1e-10·Σx 미만 잔차를 0 으로 둔다 · [ecm] active 와 같은 문턱) · 유효 종목 수(1/Σw²) · 연 회전율 ",
-                    "⑤ M5 대 P3R01 K2(같은 엔진 · P3R01 칸 평가)의 보는 창 위기 누적 포착 · CDaR · S_vis — 차이 = 공분산 추정(고유모드 대 LW) · 창(252 대 120) · 상한(0.20 대 0.15 계획 안) · 실효 시작 · 데이터 · 하네스 판본(P3R01 E1 = 10-14 아침 · E2 = 밤 파이프라인 · M5 = 이 배치) ",
+                    "⑤ M5 대 P3R01 K2(같은 엔진 · P3R01 칸 평가)의 보는 창 위기 누적 포착 · CDaR · S_vis — 차이 = 공분산 추정(고유모드 대 LW) · 창(252 대 120) · 상한(둘 다 없음 — 10-15 축 결정 뒤 측정분만 비교 · 그 전 상한 측정분과 섞지 않는다) · 실효 시작 · 데이터 · 하네스 판본(P3R01 E1 = 10-14 아침 · E2 = 밤 파이프라인 · M5 = 이 배치) ",
                     "⑥ RX0 대 P0R01 C0 보는 창 지표 차(판본 대조) · 칸별 데이터 지문")),
-  expectations = list(M5 = "위기 누적 포착 ↓(정제 공분산 최소분산의 위험 처리 — 고잡음 · 고베타 종목 비중 ↓) · 강세 참여 ↓ 가능(저위험 쏠림) · 집중 ↑(실보유 수 ↓ · 하한 5) · CDaR ↓ · 귀속은 노출(β) 방어일 공산"),
+  expectations = list(M5 = "위기 누적 포착 ↓(정제 공분산 최소분산의 위험 처리 — 고잡음 · 고베타 종목 비중 ↓) · 강세 참여 ↓ 가능(저위험 쏠림) · 집중 ↑(실보유 수 ↓ · 하한 없음 — 1~4종 집중 신호일 가능) · CDaR ↓ · 귀속은 노출(β) 방어일 공산"),
   final_selection_rule = list(calmar_norm = TD$min_calmar, port_t_norm = TD$min_portfolio_alpha_t_nw, w_calmar = GV$weights$calmar, w_port_t = GV$weights$port_t,
                               tie_eps = 0.02, tie_eps_role = "비열등 여유(P3R01 승계)", uc_floor = BC$uc_floor, crisis_tol = MC_TOL,
                               crisis_tol_source = "02_Infrastructure/contracts/matched_controls.R .MC_TOL",
@@ -292,8 +304,12 @@ pre <- list(
     ch("⑪미세 양수 비중", "어댑터 — 1e-10·Σx 미만 잔차 0 · record ④ 실보유 문턱 1e-8 · 검사 E9", "하네스 Weight != 0 이 잔차를 보유로 세어 MC3 보유 수 · 축 감사 n 을 부풀린다"),
     ch("⑫n = 5 경계 · 폴백 분리", "어댑터 — n·c = 1 이면 유일 가능해 EW(계획 생략) · Σ̃/평균 분산 척도 정규화(해 불변 · E11) · 검사 E8 · E10(꼭짓점) · record ① 폴백 사유별", "일차종속 상한 제약에서 quadprog 반올림 오류 → 진단 줄 없는 폴백"),
     ch("⑬상수 출처 · 검토 연결", "majority_share = 행동 카드 사본 값(출처 동봉) · reviewed_drafts = v1 · v2 보존본 md5 · --register 가 두 보존본을 대조", "리터럴 0.5 · 2차 검토 미연결"),
-    ch("⑭P3R01 수리 기록(범위 밖)", "P3R01 폴더 evaluate_fix_20261015.md — 변경 시각 · 사유 · P3R01 칸 결과 미열람 선언", "R2 감사 흔적이 P3R02 초안에만 있었다")))
+    ch("⑭P3R01 수리 기록(범위 밖)", "P3R01 폴더 evaluate_fix_20261015.md — 변경 시각 · 사유 · P3R01 칸 결과 미열람 선언", "R2 감사 흔적이 P3R02 초안에만 있었다")),
+  changes_after_registration = list(
+    ch("축 결정 — 비중 상한 없음(도훈 2026-10-15)", "카탈로그 하네스 WC_UB 0.20 → 1(상한 없음) · 빌트인 calc_*_weights 를 축 값 max_w 로 호출(구판 기본값 0.15) · 어댑터 v3 — 고정 상수 0.20 삭제, 상한 = 호출자 ctx$ub(셀 엔진 1 → 상한 없음 · ctx$ub < 1 이면 계획 안 상한 유지) · 검사 27/0(운영 경로 = 상한 없음 · 구판 하네스 사본 회귀 대조 · 상한 호출자 경로 · 돌연변이) · 이름 · purpose · conclusion_scope · adaptations · expectations · record ⑤ 에서 상한 0.20 서술 삭제",
+       "도훈 \"고정축 비중상한 없음으로 진행하자\" — 하네스 상한은 v10(2026-08-29 [0, 0.20] 폐지) 이전 잔재였고 P0R01 · P3R01 사전등록도 상한을 적지 않았다(축 = 상한 없음 전제). v3 는 측정 전이라 대체한다(R2 — 결과 0)"),
+    ch("판정 규칙 · 문턱 · 칸 · 기준", "변경 없음 — decisive · 비열등 · 선택 · 꼬리표 · delivery_min · drop_tag_share · RX0 · 쌍 지문 · 공통 창 그대로", "축 결정은 처치(비중법)의 상한만 바꾼다 — 규칙은 결과 전 v3 그대로")))
 writeLines(toJSON(pre, auto_unbox = TRUE, pretty = TRUE, null = "null", digits = NA), DR, useBytes = TRUE)
-cat(sprintf("[P3R02] 초안 v3 %s (md5 %s) · 칸 %d(처방 %d + 기준 재측정 %d) · 검사 %s · P3R01 평가 %s · P0R01 평가 %s\n", DR, rk_md5(DR), length(cells), N_ROUND,
+cat(sprintf("[P3R02] 초안 v4 %s (md5 %s) · 칸 %d(처방 %d + 기준 재측정 %d) · 검사 %s · P3R01 평가 %s · P0R01 평가 %s\n", DR, rk_md5(DR), length(cells), N_ROUND,
             length(ENGINES), paste(vapply(TESTS, function(t) sprintf("%s %s/%s", basename(t$path), t$pass, t$fail), ""), collapse = " · "),
             if (file.exists(P3R01_EVAL)) "있음" else "없음", if (file.exists(P0R01_EVAL)) "있음" else "없음"))

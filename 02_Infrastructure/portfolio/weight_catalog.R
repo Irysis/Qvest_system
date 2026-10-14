@@ -73,7 +73,11 @@ suppressWarnings(suppressMessages({
 
 WEIGHT_CATALOG_PATH   <- file.path("06_Registry", "weight_catalog.json")
 WC_GEN_ADAPTER_DIR    <- file.path("02_Infrastructure", "methods", "adapters", "gen")
-WC_UB                 <- 0.20
+## 종목별 비중 상한 = 고정 축 '비중 상한 없음'(v10 2026-08-29 도훈 mandate [0, 0.20] 폐지 · 2026-10-15 도훈 확인 "고정축 비중상한 없음으로 진행하자").
+##   구판 0.20 은 v10 이전 잔재였다 — as_ctx_adapter 가 모든 카탈로그 arm 을 wrap_adapter(ub = 0.20)로 감싸 사후 재분배했고
+##   (셀 엔진은 ctx$ub = 1 을 넘기는데도), 양수 ≤4종 해는 래퍼 단언 실패 → 셀 엔진이 그 신호일을 기록 없이 버렸다(P3R02 교차 점검 · 10-15).
+##   1.0 = 상한 없음(롱온리 · Σw = 1 만 — wrap_adapter 기본값과 같다). 빌트인(calc_*_weights)의 내부 max_w 도 이 값을 받는다(.wc_lean_carrier_fn).
+WC_UB                 <- 1.0
 
 `%|.|%` <- function(a, b) if (!is.null(a) && length(a) > 0 && !all(is.na(a))) a else b
 
@@ -227,6 +231,9 @@ WC_LEAN_BUILTIN <- list(
     } else NULL
     # ★부재 문장은 .WC_INSTRUMENT_MARK 를 품는다 — sync_catalog 가 이 문장으로 '계기 실패' 를 가려
     #   이전 probe 를 보존한다(arm 의 증거가 아니므로). 문장을 바꾸려면 상수를 바꿔라.
+    ## 축 상한 — 빌트인의 내부 기본 max_w(0.15 · STR_1715 production 시절 값)를 쓰지 않고 축 값(ctx$ub · 없으면 WC_UB = 상한 없음)을 넘긴다
+    ##   (2026-10-15 도훈 "고정축 비중상한 없음으로 진행하자" — 구판은 기본값 호출이라 카탈로그 빌트인 arm 이 전부 0.15 에 묶였다)
+    ub <- suppressWarnings(as.numeric(ctx$ub %|.|% WC_UB)[1]); if (!is.finite(ub) || ub <= 0) ub <- WC_UB
     res <- if (identical(spec$name, "score_pure")) {
       if (!exists("calc_score_tilt_weights", mode = "function"))
         stop(sprintf("[wcat] 빌트인 함수 부재: calc_score_tilt_weights (%s?)", .WC_INSTRUMENT_MARK))
@@ -235,7 +242,8 @@ WC_LEAN_BUILTIN <- list(
       if (!exists(fname, mode = "function"))
         stop(sprintf("[wcat] 빌트인 함수 부재: %s (%s?)", fname, .WC_INSTRUMENT_MARK))
       fn <- get(fname, mode = "function")
-      if (is.null(sc)) fn(a, rd) else fn(a, sc, rd)
+      mx <- if ("max_w" %in% names(formals(fn))) list(max_w = ub) else list()
+      if (is.null(sc)) do.call(fn, c(list(a, rd), mx)) else do.call(fn, c(list(a, sc, rd), mx))
     }
     # ★위치 기반 이름 부여 — 하네스 계약과 **자구 동일**하게 맞춘다.
     #   backtest_harness.R:1186 이 `names(w) <- selected` 를 무조건 수행한다. 즉 production

@@ -75,13 +75,13 @@ if (!nrow(A)) ng("arms 0행") else {
     if (length(w) == 1L && is.na(w)) { bad <- c(bad, sprintf("%s(예외)", A$catalog_id[i])); next }
     ran <- ran + 1L
     v <- as.numeric(w)
-    if (!(all(is.finite(v)) && all(v >= -1e-9) && all(v <= 0.20 + 1e-9) && abs(sum(v) - 1) < 1e-6))
+    if (!(all(is.finite(v)) && all(v >= -1e-9) && all(v <= WC_UB + 1e-9) && abs(sum(v) - 1) < 1e-6))   # 축 상한 = WC_UB(2026-10-15 상한 없음 = 1)
       bad <- c(bad, sprintf("%s(sum=%.6f max=%.4f)", A$catalog_id[i], sum(v), max(v)))
   }
   # ★어떤 arm 도 **예외로 죽지 않고**, 산 arm 은 전부 제약 안이어야 한다.
   #   (wrap_adapter 가 실패를 EW 로 내려앉히므로 '제약 통과'는 자명참에 가깝다 —
   #    그래서 아래 돌연변이 통제로 이 검사가 실제로 무언가를 재는지 확인한다.)
-  if (!length(bad)) ok(sprintf("arm %d종 전부 제약 통과 (long-only · Σw=1 · w≤0.20)", ran)) else
+  if (!length(bad)) ok(sprintf("arm %d종 전부 제약 통과 (long-only · Σw=1 · w≤%.2f = 축 상한)", ran, WC_UB)) else
     ng("제약 위반/예외", utils::head(bad, 6))
 }
 # 돌연변이 통제 — 계약을 깨는 어댑터는 실제로 잡히는가(자명참 아님을 증명)
