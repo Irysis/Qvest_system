@@ -92,7 +92,7 @@ CHANGELOG.md  CLAUDE.md   (+ ARTIFACTS.md 대시보드)
 
 | 구경로 | 신경로 | 내용 | 작성 시점 상태 |
 |---|---|---|---|
-| `docs/adr/` | `00_Lawbook/K_RAMP/adr/` (RAMP SOT 동거 — 확정 설계) | RAMP ADR 2건 | **이동 완료 2026-07-04** (참조 갱신: ccs_evaluator.R·ramp_required_artifacts.json·K_RAMP 가이드 2편) |
+| `docs/adr/` | `00_Lawbook/K_RAMP(10-14 정리로 보관소행 · C:/qm_archive/reorg_20261014 · 태그 pre-reorg-20261014)/adr/` (RAMP SOT 동거 — 확정 설계) | RAMP ADR 2건 | **이동 완료 2026-07-04** (참조 갱신: ccs_evaluator.R·ramp_required_artifacts.json·K_RAMP 가이드 2편) |
 | `tests/baseline/` · `tests/ramp/` | `08_Tests/baseline/` · `08_Tests/ramp/` | 테스트 스위트 | **이동 완료 2026-07-04** (baseline git mv·ramp untracked mv, ccs RS·required_artifacts 갱신, test_gate3_4.R 15 tests PASS) |
 | `scripts/ramp/` | `02_Infrastructure/ramp/debug/` (확정 설계 — 디렉토리 통째, `_cache_pool.rds` 18MB 동반) | RAMP 디버그·검증 스크립트 | **이동 완료 2026-07-04** (tracked git mv·rds/log mv, 스크립트 내부 sink/cache 자기참조 + run_ramp_gate3_4.R CACHE_POOL 갱신) |
 | `examples/` | `02_Infrastructure/docs/examples/` | qvest_workflows 예제 3종 | **이동 완료 2026-07-04** (git mv. 참조 갱신: search/_query.py·qvest_search·build_index.R 주석/help, qvest-kernel-ci.yml schema_validate ex_root, 00_Lawbook/INDEX.md, examples README replay 경로, v7_2_1 SOT 병기 1줄) |

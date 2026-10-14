@@ -426,7 +426,7 @@ bt_result <- list(
 - STR_1631_SYN_06 + STR_1715: 즉시 retrofit (V1.0 도입 검증용)
 - 나머지 178개: 사용 시점 wave-by-wave (미등록 상태 허용)
 
-**상세 SOT**: `00_Lawbook/Multi_Agent/backtest_result_contract.md` v1.0 (26 sections + 변경 이력)
+**상세 SOT**: `00_Lawbook/specs/backtest_result_contract.md` v1.0 (26 sections + 변경 이력)
 
 ---
 
@@ -487,7 +487,7 @@ alpha_type:
 - 즉시: 다음 alpha discovery cycle (Phase 4 cross-family WT)
 - 본 cycle (WT-D20260430_001) — Charter v1.6 발효 후 Governor 단계 정식 적용 가능 (이미 ADMIT_CONDITIONAL_WITH_WAIVER 처리, 본 §14는 영구 명문화)
 
-**상세 SOT**: `00_Lawbook/Multi_Agent/ax001_v21_meta_allocation_amendment.md` v2.1 (본 §14가 Charter 본문 정식 통합)
+**상세 SOT**: `00_Lawbook/specs/ax001_v21_meta_allocation_amendment.md` v2.1 (본 §14가 Charter 본문 정식 통합)
 
 ---
 

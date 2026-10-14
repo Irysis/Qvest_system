@@ -3,7 +3,7 @@
 # answer_principles_grep.sh — PostToolUse[Write/Edit] Hook (Level 2 soft)
 #
 # Qvest 답변 원칙 8원칙 + 5금지 enforcement (lawbook v1.0 2026-04-29)
-# Reference: 00_Lawbook/Multi_Agent/qvest_answer_principles.md
+# Reference: 00_Lawbook/specs/qvest_answer_principles.md
 #
 # 검사 대상 (비단순 산출물 패턴):
 #   - methodology_active.md / methodology_*.md
@@ -111,7 +111,7 @@ if [ $ADJ_EVASION -ge 3 ] && [ $EVIDENCE_COUNT -eq 0 ]; then
   echo "[$TS] ⚠️  ANSWER PRINCIPLES VIOLATION SUSPECTED" >> "$LOG"
   echo "[$TS]    file: $FILE_PATH" >> "$LOG"
   echo "[$TS]    회피 표현 ${ADJ_EVASION}건, 검증 증거 0건" >> "$LOG"
-  echo "[$TS]    lawbook: 00_Lawbook/Multi_Agent/qvest_answer_principles.md §6" >> "$LOG"
+  echo "[$TS]    lawbook: 00_Lawbook/specs/qvest_answer_principles.md §6" >> "$LOG"
 fi
 
 # Soft alert — never block. Always allow.

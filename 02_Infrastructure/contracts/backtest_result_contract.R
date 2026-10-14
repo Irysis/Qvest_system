@@ -1,6 +1,6 @@
 ## ============================================================================
 ## Backtest Result Contract v1.0 — Schema + Builder + Validator
-## Lawbook: 00_Lawbook/Multi_Agent/backtest_result_contract.md
+## Lawbook: 00_Lawbook/specs/backtest_result_contract.md
 ## 발효: 2026-04-29 (도훈 명시 지침, Session 73)
 ## 정합: Charter v1.4 §9/§11/§12 + Plan §"백테스트 자체 합성 금지" + 답변 원칙 v1.0
 ## ============================================================================

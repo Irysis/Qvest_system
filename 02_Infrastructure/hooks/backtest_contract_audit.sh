@@ -3,7 +3,7 @@
 # backtest_contract_audit.sh — PreToolUse[Write] L3 hard block
 #
 # Backtest Result Contract v1.0 §20 enforcement
-# Reference: 00_Lawbook/Multi_Agent/backtest_result_contract.md §20
+# Reference: 00_Lawbook/specs/backtest_result_contract.md §20
 #
 # 차단 대상 (audit_status != PASS 시 deny):
 #   - qepm/registry/backtest_registry.csv 등재 시도
@@ -101,7 +101,7 @@ if [ "$INTEGRITY" = "FAIL" ]; then
   echo "[$TS]   target: $FILE_PATH" >> "$LOG"
   echo "[$TS]   source: $LATEST_RDS" >> "$LOG"
   cat <<EOF
-{"decision": "block", "reason": "Backtest Result Contract v1.0 §20 — bt_result.rds integrity=FAIL. Audit critical FAIL → official metrics 등재 차단. Lawbook: 00_Lawbook/Multi_Agent/backtest_result_contract.md"}
+{"decision": "block", "reason": "Backtest Result Contract v1.0 §20 — bt_result.rds integrity=FAIL. Audit critical FAIL → official metrics 등재 차단. Lawbook: 00_Lawbook/specs/backtest_result_contract.md"}
 EOF
   exit 0
 fi

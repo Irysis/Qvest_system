@@ -40,7 +40,7 @@
 # 하위호환: 구 L-code(스키마 v1, lcode_schema_version 필드 부재)는 읽기/재검증 시
 #   strict=FALSE로 통과 (required_for_promotion은 WARN까지만). 정직 원장 보존.
 #
-# r7 정합 필드(00_Lawbook/Axiom_아키텍처/r7_axiom_design.md):
+# r7 정합 필드(00_Lawbook/specs/r7_axiom_design.md):
 #   construction_type   — Independence 축(같은 construction = 상관 1건)
 #   mechanism_hypothesis — Mechanism 축(경제적 설명, 없으면 unknown)
 #   falsification_attempts — Falsification 축(적극 반증 기록)

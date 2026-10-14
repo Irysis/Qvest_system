@@ -100,7 +100,7 @@ write_excel_report <- function(bt_result, xlsx_path) {
               "PIT 검증", "자체 합성 금지", "Cost 처리", "Trades 처리"),
     Value = c(
       "Backtest Result Contract v1.0",
-      "00_Lawbook/Multi_Agent/backtest_result_contract.md",
+      "00_Lawbook/specs/backtest_result_contract.md",
       "AX-002 (프로세스 우회 = 미래참조 동급)",
       "Charter v1.4 §12 학술 표준 Sharpe = mean(ER)/sd(ER)*sqrt(N)",
       paste("strategy_spec$lookahead_prevention:",

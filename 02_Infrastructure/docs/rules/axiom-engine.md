@@ -1,6 +1,6 @@
 # Axiom Engine — 4-Mode 2-Tier · 3층 산출물 모델 (Level 0 SOT)
 
-**v2 (2026-07-04 엔진 재설계 — 도훈 mandate "L-code 전수점검 증류 + 엔진 사상부터 재설계 + 4모드 실가동 재배선"). 원전 r7(`00_Lawbook/Axiom_아키텍처/r7_axiom_design.md`) 5축 보존 + 4-mode 2-tier + Distilled 소비층 + 회수(retrieval) 1급.**
+**v2 (2026-07-04 엔진 재설계 — 도훈 mandate "L-code 전수점검 증류 + 엔진 사상부터 재설계 + 4모드 실가동 재배선"). 원전 r7(`00_Lawbook/specs/r7_axiom_design.md`) 5축 보존 + 4-mode 2-tier + Distilled 소비층 + 회수(retrieval) 1급.**
 **위반 = AX-002 동급.** 상위 헌법: `.claude/rules/axioms.md`(global 공리 본문) / `measurement-graduation.md`(metric_type).
 
 **재설계 전제 (A1·A2·A3 3진단 통합)**: 승격 0의 인과는 문턱이 아니라 **emit 입력 결측**(falsification 0/598 · portfolio_alpha_t 98% 결측). 따라서 v2는 **문턱·INV 일절 불변** — ①emit이 축을 채우게(스키마 v2) ②Ledger와 Law 사이 Distilled 소비층 신설 ③4모드 회수 배선 완결이 전부다. E2E 실증: 필수필드 완비 emit 1건 → 5축 전부 실입력 도달 → hurdles PPPPP (sandbox 2026-07-04).

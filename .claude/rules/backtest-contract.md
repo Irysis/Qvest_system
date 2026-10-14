@@ -59,6 +59,6 @@ paths:
 
 ## 참조
 
-- `00_Lawbook/Multi_Agent/backtest_result_contract.md` v1.0
+- `00_Lawbook/specs/backtest_result_contract.md` v1.0
 - `_shared_prefix.md::<backtest_contract>`
 - L-248 사례

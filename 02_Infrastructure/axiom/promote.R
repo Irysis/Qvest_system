@@ -1,6 +1,6 @@
 # promote.R — 5-Axis Promoter (v8.0: 원전 r7 복원 + 2-tier + INV-1/4/6/7)
 #
-# 원전 00_Lawbook/Axiom_아키텍처/r7_axiom_design.md 5축 boolean-AND 복원:
+# 원전 00_Lawbook/specs/r7_axiom_design.md 5축 boolean-AND 복원:
 #   Independence(construction 다양성) / Rigor(metric_type 게이트) / Falsification(적극 반증)
 #   / External(OOS) / Mechanism. 현 구현의 열화(weighted-sum / strategy_id 착시 /
 #   negative auto-bonus)를 교정한다.

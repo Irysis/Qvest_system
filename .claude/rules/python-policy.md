@@ -66,7 +66,7 @@ PIT/자체합성 위반은 **언어 무관 AX-002 동급**. 즉시 중단 → �
 ## 참조
 - `.claude/rules/pit.md` / `backtest-contract.md` / `data_table_shift_convention.md` / `02_Infrastructure/docs/rules/answer-principles.md`
 - `02_Infrastructure/contracts/` (R bridge — build/audit/save/register)
-- `02_Infrastructure/docs/qvest_v8_0_upgrade_plan.md` WS1
+- `02_Infrastructure/docs/qvest_v8_0_upgrade_plan.md(10-14 정리로 보관소행 · C:/qm_archive/reorg_20261014 · 태그 pre-reorg-20261014)` WS1
 
 ## Change log
 - 2026-07-03: §5 갱신 — hook `.py` 확장 적용됨으로 반영 + "Codex Round로 보강" 문구를 Self-Adversarial Challenge(v8.2)로 교체.

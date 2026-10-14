@@ -55,4 +55,4 @@ user-invocable: true
 - 리서치 프로그램 = `06_Registry/research_programs.json`(writer `programs/program_registry.R`) · 원장 L2 = `06_Registry/reinforce_ledger_l2.json` · L1 = 충실구현 소비 기록
 - alerts = `.cache/alerts_digest.md` · 헌법 = `CLAUDE.md` (예산 ≤8KB)
 - 페르소나 = `02_Infrastructure/docs/rules/quant-identity.md`
-- 구 v8.4 본문 전문 = `02_Infrastructure/docs/CHANGELOG_qvest_command.md` 최상단 절
+- 구 v8.4 본문 전문 = `02_Infrastructure/docs/CHANGELOG_qvest_command.md(10-14 정리로 보관소행 · C:/qm_archive/reorg_20261014 · 태그 pre-reorg-20261014)` 최상단 절

@@ -73,7 +73,7 @@ PerformanceAnalytics 표준 함수만:
 
 ## 참조
 
-- `00_Lawbook/Multi_Agent/qvest_answer_principles.md`
+- `00_Lawbook/specs/qvest_answer_principles.md`
 - `_shared_prefix.md::<answer_principles>`
 - L-247 사례
 - `02_Infrastructure/hooks/answer_principles_grep.sh` (PostToolUse Level 2 soft alert)

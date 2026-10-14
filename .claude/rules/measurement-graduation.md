@@ -87,7 +87,7 @@ paths:
   근거 = 2026-08-22 라운드 4건 실측: WT-009 **착수됨** ratio 0.038/검정력 3.2% · WT-010 **통과 후 소급무효** 0.0445/3.3% · 국면조건부 probe **차단됨** 0.060/3.7% · FQ-245 **통과** 0.5502/33.8%. **넷 다 '미결 최빈' 구간인데 그중 셋이 통과 또는 착수됐다** — 문턱 하나가 '가망 없는 라운드 차단'과 '결론 가능한 라운드 선별' 두 목적을 덮은 것이 결함이었다. L-code `L-AR-20260822_215840_02`(순열 MDE) · `WT-D20260822_012_gate_calibration`(3단 재교정).
 - 검정력 계약 2종 (착수 **전** 호출): `contracts/required_effect_size.R`(평균·DiD 축) · `contracts/cluster_power.R`(상관·군집 축, 2026-08-10 신설). **base 간 상관을 주장하는 설계는 묶이는 단위가 관측 수가 아니라 군집(계열) 수** — 팩터 331종을 다 써도 **선언 계열은 15종**(`factor_registry.json` 의 `category`/`economic_family`)이라 계열-군집 유의엔 |rho| ≥ 0.514 가 필요하다 — 계열 수를 **이름 접두로 유추하지 말 것**(2026-08-10 실측: 휴리스틱 19 vs 선언 15, 판정이 뒤집힘). 근거: FQ-170 에서 계열-간 상관이 하루 4회 미달(P9c/P17a/P19b/P20a) vs base-내부 설계 5회 결정적(순열 통제 4/4 + P21a) — **설계 유형이 성패를 갈랐다**. ⇒ **묶이는 단위(군집)를 피할 수 있는 내부 설계가 있으면 그것을 먼저 쓴다**: 같은 가설을 base-내부 시계열(52 base × 228 월 관측)로 물으니 유의 음수 1.9% · 유의 양수 1.9% = **양 꼬리가 정확히 귀무 비율** ⇒ '미결(검정력 부족)' 이 아니라 **'효과 없음' 으로 종결**됐다. ★★그리고 그것이 교차-계열 rho 0.41~0.50 의 정체를 설명한다 — base **내부**엔 기전이 없는데 base **간**엔 상관이 있으면 그건 **구성(composition) 효과이지 인과가 아니다**. ★**'미결(underpowered)' 과 '종결(powered null)' 은 처분이 다르므로 라벨을 구분할 것.** 검사 `08_Tests/hooks/test_cluster_power.R`(25/25, 상수↔레지스트리 드리프트 대조 포함).
 - 메모리: [[learning-gate-calibration-longonly]] / [[reference-alpha-trends-2024-2026]] / [[reference-str1715-structure]]
-- SOT: `02_Infrastructure/docs/qvest_v8_0_upgrade_plan.md`
+- SOT: `02_Infrastructure/docs/qvest_v8_0_upgrade_plan.md(10-14 정리로 보관소행 · C:/qm_archive/reorg_20261014 · 태그 pre-reorg-20261014)`
 
 ## Change log
 - 전체 개정 경위(13건, 2026-05-29~07-10)는 `02_Infrastructure/docs/rules/measurement-graduation-changelog.md`로 이관 (2026-07-24 autoload 다이어트 — 규범 본문 무변경, 신규 개정 경위는 그 파일에 append).

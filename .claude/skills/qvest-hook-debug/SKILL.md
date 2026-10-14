@@ -120,7 +120,7 @@ ROLE_INFO=$("$PY" "$ROUTER" classify --file-path "$FILE_PATH")   # 정규식 중
 
 ## 참조
 
-- `02_Infrastructure/docs/qvest_v8_1_sot.md` + `02_Infrastructure/docs/qvest_modes_sot.md` (Active SOT)
+- `02_Infrastructure/docs/qvest_v8_1_sot.md(10-14 정리로 보관소행 · C:/qm_archive/reorg_20261014 · 태그 pre-reorg-20261014)` + `02_Infrastructure/docs/qvest_modes_sot.md(10-14 정리로 보관소행 · C:/qm_archive/reorg_20261014 · 태그 pre-reorg-20261014)` (Active SOT)
 - `02_Infrastructure/hooks/qvest_hook_router.py` + `policies/router_dispatch.json`
 - `02_Infrastructure/worktask/state_machine.R` · `cert_rules.R`
 - `02_Infrastructure/ops/hook_e2e_battery.py` (정본 배터리)

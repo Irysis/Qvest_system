@@ -238,7 +238,7 @@ wt_check_graduation("WT-D20260501_NNN")  # legacy cert 파일 존재 검사(file
 
 ## 참조
 
-- `02_Infrastructure/docs/qvest_v8_1_sot.md` + `02_Infrastructure/docs/qvest_modes_sot.md` (active SOT)
+- `02_Infrastructure/docs/qvest_v8_1_sot.md(10-14 정리로 보관소행 · C:/qm_archive/reorg_20261014 · 태그 pre-reorg-20261014)` + `02_Infrastructure/docs/qvest_modes_sot.md(10-14 정리로 보관소행 · C:/qm_archive/reorg_20261014 · 태그 pre-reorg-20261014)` (active SOT)
 - `02_Infrastructure/worktask/worktask_manager.R` (wt_create / wt_advance / wt_check_graduation)
 - `02_Infrastructure/worktask/common_charter.md` v1.7
 - `02_Infrastructure/worktask/red_flag_rules.md`
