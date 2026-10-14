@@ -21,4 +21,4 @@
 여기 바로 아래에 새 주제 폴더를 만들지 않는다.
 
 **옮긴 것(10-14)**: v10 이전 실험 20개 폴더(composition_search · korea_research · method_frontier · pg2_* · ramp · meta · 02_experiments …)와
-코드가 인용하지 않는 보고서 53건 → `C:/qm_archive/reorg_20261014/` · 목록 = `00_Lawbook/reorg_20261014_manifest.json` · 추적 파일 복원 = `git checkout pre-reorg-20261014 -- <경로>`.
+코드가 인용하지 않는 보고서 53건 → `99_Archive/reorg_20261014/` · 목록 = `00_Lawbook/reorg_20261014_manifest.json` · 추적 파일 복원 = `git checkout pre-reorg-20261014 -- <경로>`.

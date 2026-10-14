@@ -130,7 +130,7 @@
   (`QVEST_UNATTENDED_LANE` · `QVEST_CLEAN_LANE` · `sdk-cli` · 우회 `QVEST_AC_LANE_CHECK=0`) · 자동 커밋 제목 = 상위 경로별 파일 수. 실측 원인: 레인 종료마다 세션 작업 파일까지 '미서술 변경' 커밋·푸시(61095bae1 등).
   검사 샌드박스 L1~L6 · auto_commit_valve 19/0 · worktree_target 28/0. 커밋 51d7f4659.
 - **프로젝트 정리(도훈 "누적 설계안·패치안 과감히 삭제, 폴더 직관적으로")**: 108항목(옛 SOT v6.4~v8.3 · 법전 옛 판 · RAMP · v10 이전 실험 20폴더 · 미인용 보고서 53건 · 루트 잔재)을
-  `C:/qm_archive/reorg_20261014` 로 · 태그 `pre-reorg-20261014` · 원장 `00_Lawbook/reorg_20261014_manifest.json` · 법전 = 지도(`INDEX.md`) + 명세(`specs/`) · `04_Research/README.md` 새 지도.
+  `99_Archive/reorg_20261014` 로 · 태그 `pre-reorg-20261014` · 원장 `00_Lawbook/reorg_20261014_manifest.json` · 법전 = 지도(`INDEX.md`) + 명세(`specs/`) · `04_Research/README.md` 새 지도.
   `decision_framework` 는 1차 조사가 변수 접두 경로를 놓쳐 옮겼다가 되돌림(부팅 점검 · 아침 브리핑이 읽는다). boot_currency 15/0 · 관련 검사 통과. 커밋 026fc691e.
 - **리밸 주기 고지(H10)**: 하네스 공시 · 재구현 프롬프트 · 시점 축 감사 규칙 — 일간 논문을 월말로 줄이는 것은 엔진 변경(e8cd75d6f).
 

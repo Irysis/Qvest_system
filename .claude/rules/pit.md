@@ -68,7 +68,7 @@
 - **PIT C1~C15 는 계층 무관 불변** — lockbox 폐지는 미래참조 허용이 아니다. 검증 주체 = Judge(PIT 전담 에이전트, A등급 후 스폰).
 - ⚠혼동 금지: C5 오버레이 신호 타이밍의 `overlay_signal_cutoff()`(`overlay_pit_guard.R`) + 등록 훅 `overlay_pit_grep.sh`는 lockbox 가 아니라 **살아있는 PIT 기계** — 불변.
 - IS/OOS anchored 분할(`essence_score.R` oos_retention)도 lockbox 가 아니라 측정 규율 — 불변.
-- 구 제도 전문·훅 계층 사연(2026-08-24 "세 층이 동시에 비어 있었다" 정정 포함) = `02_Infrastructure/docs/rules/lockbox-scope.md(10-14 정리로 보관소행 · C:/qm_archive/reorg_20261014 · 태그 pre-reorg-20261014)`(RETIRED 사료) + git 태그 `pre-v10-2layer`.
+- 구 제도 전문·훅 계층 사연(2026-08-24 "세 층이 동시에 비어 있었다" 정정 포함) = `02_Infrastructure/docs/rules/lockbox-scope.md(10-14 정리로 보관소행 · 99_Archive/reorg_20261014 · 태그 pre-reorg-20261014)`(RETIRED 사료) + git 태그 `pre-v10-2layer`.
 - (존치 교훈) **양성 대조 없는 계기는 방어선으로 세지 않는다** — 발화 실증(위반 주입 + 돌연변이 통제) 없는 훅·검사기를 방어선 목록에 올리지 말 것.
 - ★정보 경계 τ_D = **2022-12-31**(v10.01 D6 · 2026-10-13 도훈 확정 — 구 ORGANIC-DE 09-25 의 컨트롤러 한정 예외를 승계·확장): 처방 에이전트(분석가·처방 담당·팩터 정의자·리뷰어) · 최종 후보 선택 규칙 · 교훈 카드는 τ_D 이전 성과·위기만 본다. 2023-01~ = 강건성 시험 구간. 사람·등급·Judge·BOOK·전략 구현은 전기간 그대로. 경계는 수치 튜닝만 막는다 — LLM 사전학습의 서사 지식(Glasserman & Lin 2023, arXiv:2309.17322)은 막지 못하므로 시험 구간 판정은 크기 짝 대조와 함께 읽는다.
 

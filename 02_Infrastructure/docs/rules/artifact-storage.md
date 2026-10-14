@@ -92,7 +92,7 @@ CHANGELOG.md  CLAUDE.md   (+ ARTIFACTS.md 대시보드)
 
 | 구경로 | 신경로 | 내용 | 작성 시점 상태 |
 |---|---|---|---|
-| `docs/adr/` | `00_Lawbook/K_RAMP(10-14 정리로 보관소행 · C:/qm_archive/reorg_20261014 · 태그 pre-reorg-20261014)/adr/` (RAMP SOT 동거 — 확정 설계) | RAMP ADR 2건 | **이동 완료 2026-07-04** (참조 갱신: ccs_evaluator.R·ramp_required_artifacts.json·K_RAMP 가이드 2편) |
+| `docs/adr/` | `00_Lawbook/K_RAMP(10-14 정리로 보관소행 · 99_Archive/reorg_20261014 · 태그 pre-reorg-20261014)/adr/` (RAMP SOT 동거 — 확정 설계) | RAMP ADR 2건 | **이동 완료 2026-07-04** (참조 갱신: ccs_evaluator.R·ramp_required_artifacts.json·K_RAMP 가이드 2편) |
 | `tests/baseline/` · `tests/ramp/` | `08_Tests/baseline/` · `08_Tests/ramp/` | 테스트 스위트 | **이동 완료 2026-07-04** (baseline git mv·ramp untracked mv, ccs RS·required_artifacts 갱신, test_gate3_4.R 15 tests PASS) |
 | `scripts/ramp/` | `02_Infrastructure/ramp/debug/` (확정 설계 — 디렉토리 통째, `_cache_pool.rds` 18MB 동반) | RAMP 디버그·검증 스크립트 | **이동 완료 2026-07-04** (tracked git mv·rds/log mv, 스크립트 내부 sink/cache 자기참조 + run_ramp_gate3_4.R CACHE_POOL 갱신) |
 | `examples/` | `02_Infrastructure/docs/examples/` | qvest_workflows 예제 3종 | **이동 완료 2026-07-04** (git mv. 참조 갱신: search/_query.py·qvest_search·build_index.R 주석/help, qvest-kernel-ci.yml schema_validate ex_root, 00_Lawbook/INDEX.md, examples README replay 경로, v7_2_1 SOT 병기 1줄) |
@@ -122,7 +122,7 @@ CHANGELOG.md  CLAUDE.md   (+ ARTIFACTS.md 대시보드)
   - **불변**: `proposed` → `distilled` 활성화는 도훈 승인(INV-6). `/cleaner` 스킬은 폴백 + 사후 검토 경로로 남는다.
   - kill switch: `06_Registry/reinforce_auto_config.json::cleaner_distill.enabled=false` / dry-run: `QVEST_CLEANER_DRY=1` / 텔레그램 억제: `QVEST_CLEANER_NO_TG=1`.
 
-이력: 2026-07-04 6월-동결 스윕 — 죽은 코드·중복·캐시 일괄 정리(untracked 데이터는 `C:/qm_archive/20260704/` 경유, git-tracked는 git rm으로 이력 보존) + 본 집행 체계 가동 (첫 실행: 빈 디렉토리 421건 정리, 실측 2026-07-04).
+이력: 2026-07-04 6월-동결 스윕 — 죽은 코드·중복·캐시 일괄 정리(untracked 데이터는 `99_Archive/20260704/` 경유, git-tracked는 git rm으로 이력 보존) + 본 집행 체계 가동 (첫 실행: 빈 디렉토리 421건 정리, 실측 2026-07-04).
 
 ## 참조
 - `CLAUDE.md` Key Paths / Safety Rules · `.claude/rules/backtest-contract.md`(save_bt_result 산출 위치) · `02_Infrastructure/docs/rules/artifact-naming.md`(파일명 규약 — 본 문서는 *위치*, 그쪽은 *이름*) · `02_Infrastructure/contracts/registry_writer.R`

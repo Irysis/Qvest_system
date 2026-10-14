@@ -83,6 +83,6 @@
 
 - 도훈 "삭제할 건 과감하게 삭제하고 폴더를 직관적으로" — 옛 설계 SOT(v6.4~v8.3) · 법전 옛 판(admission v3.x · v1.4 · v55 · v6 개정) · RAMP · v7 DEPRECATION/VERSIONING ·
   v10 이전 실험 폴더 21개 · 코드가 인용하지 않는 보고서 53건 · 루트 잔재를 프로젝트 밖으로 옮겼다.
-- 목록과 사유 = `00_Lawbook/reorg_20261014_manifest.json` · 보관소 = `C:/qm_archive/reorg_20261014/<원래 경로>` · 추적 파일 복원 = `git checkout pre-reorg-20261014 -- <경로>`.
+- 목록과 사유 = `00_Lawbook/reorg_20261014_manifest.json` · 보관소 = `99_Archive/reorg_20261014/<원래 경로>` · 추적 파일 복원 = `git checkout pre-reorg-20261014 -- <경로>`.
 - 계약 명세 5건은 `00_Lawbook/Multi_Agent/` · `Axiom_아키텍처/` 에서 `00_Lawbook/specs/` 로 옮기고 참조를 고쳤다.
 - 보관소는 확인 뒤 지워도 된다(도훈 판단) — 지우면 미추적 산출물(실험 출력 parquet 등)은 되살릴 수 없다.

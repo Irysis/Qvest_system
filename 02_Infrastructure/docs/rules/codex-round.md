@@ -20,8 +20,8 @@ AX-008 Verification Triangulation의 Codex source는 self-adversarial로 치환:
 
 ## 별개 시스템 (본 제거와 무관 — 절대 건드리지 말 것)
 - **S0 Debate codex_critic** (`02_Infrastructure/hooks/s0_enforcer/`, `stage_artifacts/r2_codex_verdict_*`): 가설토론 검증 — 별개 서브시스템. ★**v10 2026-09-03 퇴역**(DEPRECATION.md 철회 각주): 이 제거와는 다른 사유 — v10 은 S0~S7 스테이지 기계를 쓰지 않아 소비 경로가 소멸했다. 파일은 ★RETIRED 헤더 부여 후 사료 존치.
-- **RAMP "Codex"** (`.claude/agents/ramp-orchestrator.md`, `00_Lawbook/K_RAMP(10-14 정리로 보관소행 · C:/qm_archive/reorg_20261014 · 태그 pre-reorg-20261014)/K_RAMP_Codex_*`): Q-Lead+에이전트 오케스트레이터 역할명(외부 critic 아님).
+- **RAMP "Codex"** (`.claude/agents/ramp-orchestrator.md`, `00_Lawbook/K_RAMP(10-14 정리로 보관소행 · 99_Archive/reorg_20261014 · 태그 pre-reorg-20261014)/K_RAMP_Codex_*`): Q-Lead+에이전트 오케스트레이터 역할명(외부 critic 아님).
 
 ## 참조
 - `02_Infrastructure/hooks/_archive_codex_round_v8_2/` (archived 구현)
-- `02_Infrastructure/docs/CHANGELOG_constitution.md` (v8.2 entry) · `00_Lawbook/DEPRECATION.md(10-14 정리로 보관소행 · C:/qm_archive/reorg_20261014 · 태그 pre-reorg-20261014)`
+- `02_Infrastructure/docs/CHANGELOG_constitution.md` (v8.2 entry) · `00_Lawbook/DEPRECATION.md(10-14 정리로 보관소행 · 99_Archive/reorg_20261014 · 태그 pre-reorg-20261014)`
