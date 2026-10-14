@@ -74,11 +74,18 @@ cat(sprintf("[backfill] 대상 모듈 %d건 (catalog n=%d)\n", length(ids), leng
   .i1 <- function(v) { z <- suppressWarnings(as.integer(v)[1]); if (length(z) == 1L) z else NA_integer_ }
   .sg <- function(s) if (is.null(s) || !is.list(s)) NULL else
     list(n = .i1(s$n), excess = .n1(s$excess), hit = .n1(s$hit), t = .n1(s$t), capture = .n1(s$capture))
-  list(status = .c1(ds$status),
+  out <- list(status = .c1(ds$status),
        defensive = if (is.null(ds$defensive) || length(ds$defensive) == 0L) NA else as.logical(ds$defensive)[1],
        n_months = .i1(ds$n_months),   # convex 폐기 2026-09-07
        down = .sg(ds$down), deep = .sg(ds$deep), mid = .sg(ds$mid), up = .sg(ds$up),
        reason = .c1(ds$reason), source = src, backfilled_at = STAMP)
+  ## (2026-10-14) 귀속(기전/노출) · β · β 잔차 하락월 — 풀 술어가 방어형 경로를 이 값으로 가른다(register_module.R::.rm_compact_dscore 와 같은 필드)
+  if (!is.na(.c1(ds$attribution))) {
+    out$attribution <- .c1(ds$attribution)
+    out$defensive_selection <- if (is.null(ds$defensive_selection)) NA else as.logical(ds$defensive_selection)[1]
+    out$beta <- .n1(ds$beta); out$down_resid <- .sg(ds$down_resid)
+  }
+  out
 }
 
 LOG <- vector("list", length(ids)); k <- 0L
@@ -104,7 +111,10 @@ for (id in ids) {
   ## ── 방어형 스코어 ─────────────────────────────────────────────────────────
   ds <- NULL; ds_src <- NA_character_; ds_reason <- NA_character_
   a_ds <- if (is.null(aj)) NULL else aj$defensive_score
-  if (!is.null(a_ds) && is.list(a_ds) && length(a_ds)) {
+  ## (2026-10-14) 산출물 사본에 귀속이 없으면(구판 ds_score) 저장 계열로 다시 잰다 — 귀속 없는 방어형은 풀 술어가 받지 않는다
+  ##   (dscore_unattributed). 재산출이 안 되면 구판 사본을 그대로 쓰고 출처에 그 사실을 남긴다.
+  a_ok <- !is.null(a_ds) && is.list(a_ds) && length(a_ds)
+  if (a_ok && !is.null(a_ds$attribution)) {
     ds <- a_ds; ds_src <- "artifact"
   } else if (DERIVE && !is.na(dir)) {
     fr <- file.path(dir, "03_period_returns.csv"); fb <- file.path(dir, "05_benchmark_returns.csv")
@@ -119,11 +129,12 @@ for (id in ids) {
       else ds_reason <- "no_benchmark_returns"
   } else if (is.na(dir)) ds_reason <- "no_artifact_path"
     else ds_reason <- "derive_disabled"
+  if (is.null(ds) && a_ok) { ds <- a_ds; ds_src <- "artifact_unattributed" }   # 재산출 실패 → 구판 사본(귀속 없음)
 
   cds <- .compact(ds, ds_src)
   code <- if (is.null(cds)) paste0("absent:", .or(ds_reason, "unknown"))
           else if (!identical(cds$status, "ok")) paste0("not_ok:", .or(cds$status, "unknown"))
-          else if (isTRUE(cds$defensive)) "defensive_TRUE" else "defensive_FALSE"
+          else if (isTRUE(cds$defensive)) paste0("defensive_TRUE:", .or(cds$attribution, "unattributed")) else "defensive_FALSE"
 
   k <- k + 1L
   LOG[[k]] <- data.table(

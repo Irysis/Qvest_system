@@ -83,6 +83,7 @@ rf_audit_read <- function(audit_p) {
        ## 축별 판정 — 팬아웃 산출에만 있다. 텔레그램 요약이 "어느 축이 기각을 만들었나" 를
        ## 말하려면 이 값이 필요하다(항목 본문의 자유 서술로 추정하면 감사자 문체에 의존한다).
        axis_verdicts = A$axis_verdicts %||% list(),
+       prior_review = A$prior_review %||% list(),   # 재감사의 앞 회차 지적 확인/번복 — 처분이 감사 상충을 가른다
        note = as.character(A$note %||% ""))
 }
 
@@ -184,8 +185,21 @@ rf_audit_tg_brief <- function(aud, audit_path = NULL, n_max = 4L,
   out
 }
 
+#' 재감사가 앞 회차 지적을 원문 근거와 함께 번복한 항목 — 병합기의 n_overturned 를 믿지 않고 prior_review 에서 다시 고른다.
+#'   처분(.n_overturned)과 검증기의 감사 상충 기록이 같은 술어를 쓰게 하는 한 자리다(사본 금지).
+rf_audit_overturned <- function(aud) {
+  pr <- aud$prior_review %||% list()
+  if (!is.list(pr) || !length(pr)) return(list())
+  Filter(function(z) {
+    if (!is.list(z)) return(FALSE)
+    st <- tolower(trimws(as.character(z$status %||% "")[1])); ev <- as.character(z$evidence %||% "")[1]
+    isTRUE(st == "overturned") && !is.na(ev) && nzchar(trimws(ev))
+  }, pr)
+}
+.n_overturned <- function(aud) length(rf_audit_overturned(aud))
+
 #' 처분 — 도훈 선택 2026-09-04: **자동 재구현 1회 + 소비 보류**
-#' @return list(action = "audit_required"|"proceed"|"reimplement"|"proceed_suspect", feedback = <재구현 지적사항>)
+#' @return list(action = "audit_required"|"proceed"|"reimplement"|"proceed_suspect"|"audit_conflict", feedback = <재구현 지적사항>)
 rf_audit_disposition <- function(aud, retries_done = 0L) {
   # ★미실행·파손 ≠ 판독 실패 (2026-09-05~06 실사고). 구판은 파일 부재를 감사자의 unverifiable 과 같은 칸
   #   (proceed)에 넣었다 — 킬스위치·CLI 부재·병합 즉사('\U')로 감사가 **안 돈** 논문 3건이 감사 없이
@@ -203,6 +217,10 @@ rf_audit_disposition <- function(aud, retries_done = 0L) {
   fb <- paste(c(items, if (nzchar(.ev)) paste0("원문 근거: ", .ev)), collapse = "\n")
   if (as.integer(retries_done) < 1L)
     list(action = "reimplement", feedback = fb)
+  else if (.n_overturned(aud) > 0L)
+    # ★감사 상충(2026-10-14 · 1810.08384 실측): 재감사가 앞 회차 지적을 원문 근거로 **번복**했다면, 재구현은 틀린 지적을
+    #   따른 것이다 — 그 기각을 구현자 몫(proceed_suspect · 소비)으로 셀 수 없다. 소비하지 않고 세션 판정으로 넘긴다.
+    list(action = "audit_conflict", feedback = fb, n_overturned = .n_overturned(aud))
   else
     # ★재구현도 기각되면 소비하되 꼬리표를 단다. 무한 재시도는 예산을 태우고,
     #   조용한 소비는 논문을 잘못된 이유로 버린다 — 둘 다 피한다.
@@ -217,10 +235,26 @@ rf_audit_disposition <- function(aud, retries_done = 0L) {
 #' @param max_retries  첫 스폰 뒤 추가 스폰 상한(총 스폰 = 1 + max_retries)
 #' @param retries_done 재구현 횟수(요청 파일 audit_retries) — rf_audit_disposition 에 그대로 넘긴다
 #' @param log_fn       jlog 형 함수(event, ...) — 재스폰마다 fidelity_audit_retry · 스폰 예외는 fidelity_audit_spawn_failed
+#' @param ruling       세션 판정(요청의 audit_ruling · 감사 상충 뒤 · alpha-search SKILL §5) — list(action = proceed|proceed_suspect, by, decision, feedback)
 #' @return list(aud, disp, spawns, retries, last_rc, reason) — reason 은 최종이 audit_required 일 때만
-rf_audit_gate <- function(wdir, spawn_fn, max_retries = 2L, retries_done = 0L, log_fn = NULL) {
+rf_audit_gate <- function(wdir, spawn_fn, max_retries = 2L, retries_done = 0L, log_fn = NULL, ruling = NULL) {
   aud_p <- file.path(wdir, "fidelity_audit.json")
   .log <- function(...) if (is.function(log_fn)) log_fn(...)
+  ## ★세션 판정(2026-10-14) — 감사 상충을 세션이 원문으로 판정해 proceed|proceed_suspect 로 정했으면 감사를 다시 사지 않는다
+  ##   (같은 감사를 또 사면 같은 상충이 난다). 남은 감사 파일로 처분한다. 허용 처분이 아니거나 감사 파일이 없으면 판정을
+  ##   적용하지 않고 정상 관문으로 간다 — "감사 없이 개설 불가" 는 판정 경로에서도 그대로다(이 함수가 그 한 자리다).
+  r_act <- if (is.list(ruling)) as.character(ruling$action %||% "")[1] else ""
+  if (length(r_act) == 1L && !is.na(r_act) && nzchar(r_act)) {
+    if (r_act %in% c("proceed", "proceed_suspect") && file.exists(aud_p)) {
+      aud <- rf_audit_read(aud_p)
+      .log("fidelity_audit_ruled", action = r_act, by = as.character(ruling$by %||% "session")[1],
+           decision = as.character(ruling$decision %||% "")[1], verdict = aud$verdict)
+      return(list(aud = aud, disp = list(action = r_act, feedback = as.character(ruling$feedback %||% "")[1], ruled = TRUE),
+                  spawns = 0L, retries = 0L, last_rc = 0L, reason = NULL))
+    }
+    .log("fidelity_audit_ruling_ignored", action = r_act, has_audit = file.exists(aud_p),
+         note = "세션 판정을 적용하지 못했다(허용 처분 proceed|proceed_suspect · 남은 감사 파일 필요) — 정상 관문으로 간다")
+  }
   .spawn <- function() {
     unlink(aud_p, force = TRUE)
     rc <- tryCatch(suppressWarnings(as.integer(spawn_fn())[1]),

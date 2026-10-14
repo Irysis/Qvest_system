@@ -321,13 +321,23 @@ MODULE_QUARANTINE_PATH <- file.path(.RM_ROOT(), "06_Registry", "module_quarantin
     list(n = .i1(s$n), excess = .n1(s$excess), hit = .n1(s$hit),
          t = .n1(s$t), capture = .n1(s$capture))
   st <- suppressWarnings(as.character(ds$status)[1])
-  list(status = if (length(st) == 1L && !is.na(st)) st else NA_character_,
+  att <- suppressWarnings(as.character(ds$attribution)[1])
+  out <- list(status = if (length(st) == 1L && !is.na(st)) st else NA_character_,
        defensive = if (is.null(ds$defensive) || length(ds$defensive) == 0L) NA else as.logical(ds$defensive)[1],
        n_months = .i1(ds$n_months),
        down = .seg(ds$down), deep = .seg(ds$deep), mid = .seg(ds$mid), up = .seg(ds$up),
        reason = { r <- suppressWarnings(as.character(ds$reason)[1])
                   if (length(r) == 1L && !is.na(r)) r else NA_character_ },
        source = source)
+  ## (2026-10-14) 귀속(기전/노출) · β · β 잔차 하락월 — 풀 술어(ds_pool_eligible)가 방어형 경로를 이 값으로 가른다.
+  ##   구판 산출에는 없다 → 싣지 않는다(부재 = 귀속 미산출 · 소비자가 dscore_unattributed 로 가른다).
+  if (length(att) == 1L && !is.na(att) && nzchar(att)) {
+    out$attribution <- att
+    out$defensive_selection <- if (is.null(ds$defensive_selection)) NA else as.logical(ds$defensive_selection)[1]
+    out$beta <- .n1(ds$beta)
+    out$down_resid <- .seg(ds$down_resid)
+  }
+  out
 }
 .rm_read_auth <- function(path) {
   if (is.null(path) || !nzchar(path) || !file.exists(path)) return(list())

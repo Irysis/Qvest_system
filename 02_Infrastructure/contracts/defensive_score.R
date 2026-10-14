@@ -37,12 +37,13 @@ ds_params <- function(root = Sys.getenv("QM_ROOT", getwd())) {
   out
 }
 
-.ds_seg <- function(d) {
+.ds_seg <- function(d, col = "ex") {
   if (nrow(d) < 3L) return(list(n = nrow(d), excess = NA_real_, hit = NA_real_,
                                 t = NA_real_, capture = NA_real_))
-  sdv <- stats::sd(d$ex)
-  list(n = nrow(d), excess = mean(d$ex), hit = mean(d$ex > 0),
-       t = if (is.finite(sdv) && sdv > 0) mean(d$ex)/(sdv/sqrt(nrow(d))) else NA_real_,
+  x <- d[[col]]
+  sdv <- stats::sd(x)
+  list(n = nrow(d), excess = mean(x), hit = mean(x > 0),
+       t = if (is.finite(sdv) && sdv > 0) mean(x)/(sdv/sqrt(nrow(d))) else NA_real_,
        capture = if (mean(d$k) != 0) mean(d$s)/mean(d$k) else NA_real_)
 }
 
@@ -63,18 +64,35 @@ ds_score <- function(period_returns, benchmark_returns, params = ds_params()) {
   x[, ym := format(date, "%Y-%m")]
   m <- x[, .(s = prod(1+ret_net)-1, k = prod(1+benchmark_ret)-1), by = ym][order(ym)]
   m[, ex := s - k]
+  ## ★귀속 — 기전 방어 vs 노출 방어 (2026-10-14 · 1810.08384 감독 실측). 하락월 초과(r−b)는 β<1 이면 기전 없이 양수다:
+  ##   시장중립 롱숏(β 0.026)이 하락월 t 12.99 · 적중 94% 로 방어형 등재됐는데, 같은 측정의 역할 카드(β 잔차 · strategy_role.R)는
+  ##   방어 F(t −1.35)였다 — 10-06 역할 등급 재생의 '베타 맞춤 잡음 61% 가 구 방어형 B+' 와 같은 형태. 헌장(CLAUDE.md · lean-loop ③)은
+  ##   노출 방어를 실력으로 쓰지 않는다. ⇒ 역할 카드와 같은 구성(전기간 월간 β 하나 · e = r − β·b · α 포함)으로 하락월 잔차를 같은
+  ##   문턱(min_excess · min_t · min_hit — 새 수치 없음)으로 재고, 원 판정(defensive · r−b)은 그대로 둔 채 귀속 라벨을 붙인다.
+  ##   PIT: 전기간 β 는 essence · 하락월 r−b 와 같은 성격의 기록 통계다(풀 자격 = 기록 · 시점 t 보유 결정에 쓰지 않는다).
+  ##   2계층이 배합 선택에 쓸 때는 as-of 로 다시 잰다(pit.md C1 D-E · strategy_role.R 머리 주석과 같은 규약). 이 귀속은 술어를 조이기만 한다.
+  vb <- stats::var(m$k)
+  beta <- if (is.finite(vb) && vb > 0) stats::cov(m$s, m$k) / vb else NA_real_
+  m[, er := if (is.finite(beta)) s - beta * k else NA_real_]
 
   down <- .ds_seg(m[k < 0]); up <- .ds_seg(m[k >= 0])
   mid  <- .ds_seg(m[k < params$mid_threshold])
   deep <- .ds_seg(m[k < params$deep_threshold])
+  down_resid <- .ds_seg(m[k < 0], col = "er")
 
   if (!is.finite(down$n) || down$n < as.integer(params$min_down_months))
     return(c(na(sprintf("하락월 %d < %d — 판정 불가", down$n, params$min_down_months)),
-             list(down = down, up = up, mid = mid, deep = deep)))
+             list(down = down, up = up, mid = mid, deep = deep, beta = beta, down_resid = down_resid)))
 
   ok <- is.finite(down$excess) && down$excess > params$min_excess &&
         is.finite(down$t) && down$t >= params$min_t &&
         is.finite(down$hit) && down$hit >= params$min_hit
+  ok_sel <- is.finite(down_resid$excess) && down_resid$excess > params$min_excess &&
+            is.finite(down_resid$t) && down_resid$t >= params$min_t &&
+            is.finite(down_resid$hit) && down_resid$hit >= params$min_hit
+  ## 귀속: 하락월 아웃퍼폼(ok)이 없으면 none · 있고 β 잔차도 같은 문턱을 넘으면 selection(기전) · 아니면 exposure(β<1 로 설명됨)
+  attribution <- if (!ok) "none" else if (ok_sel) "selection" else "exposure"
+  att_kr <- c(none = "방어 없음", selection = "기전 방어", exposure = "노출 방어")[[attribution]]
   ## ★볼록성 플래그 폐기 (도훈 결정 2026-09-07) — 구판: convex <- deep$excess > down$excess
   ##   폐기 사유는 실측이다:
   ##   ①**무신호에서 더 잘 켜진다** — 실제 전략 57/179(32%) vs 무작위 25종 대조 25/48(52%).
@@ -88,13 +106,16 @@ ds_score <- function(period_returns, benchmark_returns, params = ds_params()) {
   ##   ⇒ 새 산출에는 이 필드를 넣지 않는다. 과거 산출물의 convex 값은 기록으로 그대로 둔다(지우지 않는다).
   ##     심도 축을 다시 세우려면 표본을 늘리거나(일별·주별 붕괴 구간) HM γ 같은 한계반응 지표를 쓸 것.
   list(status = "ok", defensive = ok,
+       defensive_selection = ok && ok_sel, attribution = attribution, beta = beta, down_resid = down_resid,
        down = down, mid = mid, deep = deep, up = up,
        n_months = nrow(m),
        reason = sprintf(paste0("하락월 %d개: 초과 %+.2f%%/월 (t %.2f · 적중 %.0f%%) · ",
-                               "벤치%.0f%% 이하 %d개: 초과 %+.2f%%/월 · 상승월 초과 %+.2f%%/월"),
+                               "벤치%.0f%% 이하 %d개: 초과 %+.2f%%/월 · 상승월 초과 %+.2f%%/월 · ",
+                               "β %.2f · β 잔차 하락월 %+.2f%%/월 (t %.2f) → %s"),
                         down$n, 100*down$excess, down$t, 100*down$hit,
                         100*params$deep_threshold, deep$n,
-                        100*(deep$excess %||% NA_real_), 100*(up$excess %||% NA_real_)))
+                        100*(deep$excess %||% NA_real_), 100*(up$excess %||% NA_real_),
+                        beta, 100*down_resid$excess, down_resid$t, att_kr))
 }
 `%||%` <- function(a, b) if (is.null(a) || length(a) == 0L) b else a
 
@@ -124,9 +145,10 @@ ds_score <- function(period_returns, benchmark_returns, params = ds_params()) {
 #'   `QVEST_L2_GRADE_FLOOR` 를 **호출자가** 넘긴다(이 함수가 env 를 읽지 않는다 —
 #'   읽으면 검사가 운영 env 를 빌리게 된다).
 #' @param defensive_route 방어형 병렬 경로 on/off (kill switch `QVEST_L2_DEFENSIVE_ROUTE`).
+#' @param has_short 산출이 롱숏인가(auth replication$has_short · 카탈로그 meta$has_short). NA = 미상(구판 기록) — 축 판정을 건너뛴다.
 #' @return list(eligible, route, code, reason)
 ds_pool_eligible <- function(grade, dscore, params = ds_params(),
-                             floor = "B", defensive_route = TRUE) {
+                             floor = "B", defensive_route = TRUE, has_short = NA) {
   ## sprintf 는 인자 하나가 길이 0이면 문자열 전체를 없앤다 — 스칼라화를 강제한다.
   .one <- function(x, alt = "NA") {
     v <- suppressWarnings(as.character(x)[1])
@@ -135,6 +157,13 @@ ds_pool_eligible <- function(grade, dscore, params = ds_params(),
   g  <- .one(grade %||% NA)
   fl <- toupper(.one(floor, "B"))
   floor_set <- if (identical(fl, "A")) "A" else c("A", "B")
+
+  ## ★축(2026-10-14) — 2계층은 long-only(w≥0) · ≤25종 축이다(strategy-rotation SKILL Production Constraints · CLAUDE.md 처방·조립 축).
+  ##   롱숏 산출은 등급 · 방어형 경로와 무관하게 그 축에서 보유할 수 없다. 실측: 시장중립 롱숏(1810.08384 · β 0.026)이 하락월 r−b 로
+  ##   방어형 등재됐다. 카탈로그 방어형 411건 중 롱숏 23건이 같은 형태였다(등급 floor 283건은 롱숏 0건).
+  if (isTRUE(as.logical(has_short)[1]))
+    return(list(eligible = FALSE, route = NA_character_, code = "axis_long_short",
+                reason = sprintf("등급 %s · 롱숏 산출 — 2계층 축(long-only)에서 보유할 수 없다(경로 무관)", g)))
 
   if (identical(fl, "OFF"))
     return(list(eligible = TRUE, route = "grade_floor", code = "floor_off",
@@ -152,9 +181,20 @@ ds_pool_eligible <- function(grade, dscore, params = ds_params(),
   if (!identical(st, "ok"))
     return(list(eligible = FALSE, route = NA_character_, code = "dscore_not_ok",
                 reason = sprintf("등급 %s · 방어형 판정 불가(%s)", g, st)))
-  if (isTRUE(dscore$defensive))
-    return(list(eligible = TRUE, route = "defensive_specialist", code = "defensive_specialist",
-                reason = sprintf("등급 %s 이나 방어형 자격 — %s", g, .one(dscore$reason, "사유 미기록"))))
+  if (isTRUE(dscore$defensive)) {
+    ## ★귀속(2026-10-14) — 방어형 경로는 **기전 방어**(β 잔차로도 하락월 아웃퍼폼)만 연다. 노출 방어(β<1 로 설명됨)는 2계층
+    ##   오버레이 층이 만드는 것이라 모듈 실력으로 세지 않는다(헌장 · lean-loop ③). 귀속이 없는 구판 산출은 둘을 가를 수 없다 —
+    ##   '방어형 아님' 과 다른 사유 코드로 남긴다(재산출 = backfill_module_defensive.R).
+    att <- .one(dscore$attribution, "")
+    if (!nzchar(att))
+      return(list(eligible = FALSE, route = NA_character_, code = "dscore_unattributed",
+                  reason = sprintf("등급 %s · 하락월 아웃퍼폼은 있으나 귀속(기전/노출) 미산출 — 구판 산출은 β 잔차가 없어 노출 방어와 구분되지 않는다(재산출 필요)", g)))
+    if (identical(att, "selection"))
+      return(list(eligible = TRUE, route = "defensive_specialist", code = "defensive_specialist",
+                  reason = sprintf("등급 %s 이나 방어형(기전) 자격 — %s", g, .one(dscore$reason, "사유 미기록"))))
+    return(list(eligible = FALSE, route = NA_character_, code = "exposure_defense",
+                reason = sprintf("등급 %s · 노출 방어 — %s", g, .one(dscore$reason, "사유 미기록"))))
+  }
   list(eligible = FALSE, route = NA_character_, code = "not_defensive",
        reason = sprintf("등급 %s · 방어형 아님 — %s", g, .one(dscore$reason, "사유 미기록")))
 }

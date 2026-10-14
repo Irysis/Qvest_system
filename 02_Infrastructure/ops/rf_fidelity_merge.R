@@ -37,6 +37,10 @@ RANK <- c(faithful = 0L, unverifiable = 1L, adapted = 2L, misdeclared = 3L)
 }
 
 rows <- list(); mergedU <- character(0); mergedS <- character(0); evid <- character(0)
+# ★이전 회차 지적 재확인(2026-10-14 · 1810.08384 실측) — 재감사가 앞 회차 지적을 원문으로 confirmed/overturned 로 적는다.
+#   1차 감사의 신호 축이 §I 채택 문장을 근거에 싣고도 반대 결론을 냈고, 재구현은 그 지적을 따랐으며, 2차 감사가 그 수정을
+#   다시 지적했다 — 감사 상충이 구현자 몫(proceed_suspect)으로 소비됐다. 번복은 근거(원문 위치)가 있을 때만 센다.
+prior <- list()
 for (ax in AXES) {
   k <- ax$key
   f <- file.path(WDIR, sprintf("fidelity_axis_%s.json", k))
@@ -48,6 +52,14 @@ for (ax in AXES) {
       reason = if (file.exists(f)) "축 산출물 파손" else "축 미산출(레인 실패·타임아웃)",
       confidence = "", checked = "", counterexample = "")
     next
+  }
+  for (z in if (is.list(A$prior_review)) A$prior_review else list()) {   # 형식 위반(문자열 등)은 병합을 죽이지 않고 건너뛴다
+    if (!is.list(z)) next
+    st <- tolower(trimws(as.character(z$status %||% "")[1]))
+    if (is.na(st) || !st %in% c("confirmed", "overturned")) next
+    zev <- as.character(z$evidence %||% "")[1]; if (is.na(zev)) zev <- ""
+    prior[[length(prior) + 1L]] <- list(axis = k, item = as.character(z$item %||% "")[1], status = st,
+                                        evidence = zev, admissible = nzchar(trimws(zev)))
   }
   v <- as.character(A$verdict %||% "unverifiable")[1]
   if (!v %in% names(RANK)) v <- "unverifiable"
@@ -94,6 +106,8 @@ if (sum(reqok) < nreq)
   flags <- c(flags, sprintf("required 축 %d/%d 만 원문 확인 — 나머지는 판정 근거가 없다", sum(reqok), nreq))
 ninadm <- sum(!vapply(rows, function(r) isTRUE(r$admissible), logical(1)))
 if (ninadm > 0L) flags <- c(flags, sprintf("불채택 축 %d건(근거 없는 기각 또는 미산출)", ninadm))
+n_over <- sum(vapply(prior, function(z) identical(z$status, "overturned") && isTRUE(z$admissible), logical(1)))
+if (n_over > 0L) flags <- c(flags, sprintf("이전 회차 지적 %d건 번복(근거 있음) — 감사 상충 · 구현자 몫으로 세지 않는다(세션 판정)", n_over))
 
 out <- list(
   verdict = FIN,
@@ -110,6 +124,8 @@ out <- list(
                  paste(effs, collapse = "/")),
   mode = "fanout",
   axis_verdicts = rows,      # ★무엇을 안 봤는지가 남는 자리
+  prior_review = prior,      # 이전 회차 지적의 확인/번복(재감사에서만 채워진다)
+  n_overturned = n_over,
   flags = as.list(flags),
   merged_at = format(Sys.time(), "%Y-%m-%dT%H:%M:%S%z"))
 

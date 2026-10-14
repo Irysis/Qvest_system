@@ -175,9 +175,38 @@ fail <- function(why, detail = "") {
   out <- lapply(out, function(v) sub("^-", "−", as.character(v)))   # 음수 표기 = 유니코드 마이너스(행동 카드 수치와 같은 형식 · 발송 규칙 §0)
   list(list(type = "kv", emoji = "\U0001F4CF", heading = "등급 근거(계약 산출물)", kv = out))
 }
-## 측정 산출물 → 행동 카드 · 프로그램 재료. kind = "engine"(재료로 등록) | "skipped"(소비만 · 재료 아님)
-.v1001_handoff <- function(art_dir, base_id, grade, kind = "engine") {
-  out <- list(card = NULL, program = "P1_RETURN")
+## 재료의 프로그램 = 라우팅 정본에서만 온다(2026-10-14 · 1810.08384 감독 실측). 구판은 등록부에 없으면 'P1_RETURN' 을 기본값으로 적어
+##   구성(P3) 논문이 '수익 엔진'으로 보고됐고, 기저 음수(kind=skipped)라 어느 큐에도 들어가지 않았다. 순서:
+##   ① 등록부 큐 · 소비 기록(라우터 동기화가 넣은 논문 키) ② 라우터 v5 산출의 engine(program_paper_sync.R::pps_engine_map — 판정 무관)
+##   ③ 둘 다 없으면 미분류(UNROUTED) — 프로그램을 추측하지 않고 보류한다(pr_hold_unrouted · 분류가 생기면 동기화가 큐로 옮긴다).
+##   키는 정본(1810.08384)과 라우터 표기(axv:1810.08384)를 함께 본다(rf_next_paper_pick.py probe_keys 와 같은 병).
+.v1001_key_forms <- function(k) {
+  k <- as.character(k %||% "")[1]
+  if (is.na(k) || !nzchar(k)) return(character(0))
+  b <- sub("^(axv|arxiv):", "", k, ignore.case = TRUE)
+  unique(c(k, b, paste0("axv:", b)))
+}
+.v1001_route <- function(reg) {
+  forms <- .v1001_key_forms(PKEY)
+  for (f in forms) { pg <- pr_find_key(reg, f); if (!is.na(pg)) return(list(program = pg, routed_by = "program_queue", key = f)) }
+  ps <- new.env(parent = globalenv())
+  sys.source(file.path(ROOT, "02_Infrastructure/programs/program_paper_sync.R"), envir = ps)
+  em <- ps$pps_engine_map(Sys.glob(file.path(ROOT, "stage_artifacts/paper_recharge/alpha_search_route_*.json")))
+  b <- if (length(forms)) sub("^(axv|arxiv):", "", forms[1], ignore.case = TRUE) else ""
+  if (nzchar(b) && b %in% names(em))
+    return(list(program = if (identical(em[[b]], "NOT_RELEVANT")) NA_character_ else em[[b]],
+                routed_by = if (identical(em[[b]], "NOT_RELEVANT")) "router_v5_not_relevant" else "router_v5", key = b))
+  list(program = NA_character_, routed_by = "unrouted", key = b)
+}
+.v1001_prog_name <- function(p) {   # 이름 있는 원자 벡터의 [[ 는 없는 이름에 던진다 — 미분류(NA)를 먼저 가른다
+  p <- as.character(p %||% NA_character_)[1]
+  if (!is.na(p) && p %in% names(.V1001_PROG_NAME)) .V1001_PROG_NAME[[p]] else "미분류"
+}
+## 측정 산출물 → 행동 카드 · 프로그램 재료. kind = "engine"(기저 문턱 통과) | "skipped"(기저 PORT_t 문턱 미달)
+##   ★둘 다 재료다(alpha-search SKILL '미달 → 재료 등록') — 구판은 skipped 를 소비만 하고 재료로 넣지 않았다(구 강화 격자의
+##   '음수 알파 위의 강화는 헛돈다' 사유는 격자 퇴역으로 소멸). 기저 상태 · 구현 의심 · 롱숏 여부는 flags 로 싣고 쓰임은 프로그램이 정한다.
+.v1001_handoff <- function(art_dir, base_id, grade, kind = "engine", flags = list()) {
+  out <- list(card = NULL, program = NA_character_, routed_by = "unrouted", enqueued = FALSE, held = FALSE)
   out$card <- tryCatch({
     source(file.path(ROOT, "02_Infrastructure/contracts/behavior_card.R"))
     cd <- bc_card_from_artifacts(art_dir, root = ROOT); bc_write(cd, art_dir); cd
@@ -185,19 +214,67 @@ fail <- function(why, detail = "") {
   tryCatch({
     source(file.path(ROOT, "02_Infrastructure/programs/program_registry.R"))
     reg <- pr_load(ROOT)
-    pg <- pr_find_key(reg, PKEY %||% "")
-    if (!is.na(pg)) { out$program <- pg; pr_consume_key(pg, PKEY, consumer = paste0("replication:", base_id), root = ROOT) }
-    if (identical(kind, "engine"))
-      pr_enqueue(out$program, list(key = paste0("engine:", base_id), kind = "engine", title = TITLE %||% "",
-                                   paper_key = PKEY %||% "", base_id = base_id, grade = grade, fidelity = .fidelity,
-                                   artifacts = art_dir, engine_path = eng,
-                                   cr_verdict = if (!is.null(out$card)) out$card$overall$verdict else NA_character_),
-                 root = ROOT)
-    jlog("v1001_handoff", base_id = base_id, program = out$program, kind = kind,
+    rt <- .v1001_route(reg)
+    out$program <- rt$program; out$routed_by <- rt$routed_by
+    if (identical(rt$routed_by, "program_queue"))
+      pr_consume_key(rt$program, rt$key, consumer = paste0("replication:", base_id), root = ROOT)
+    item <- c(list(key = paste0("engine:", base_id), kind = "engine", base_status = kind, title = TITLE %||% "",
+                   paper_key = PKEY %||% "", base_id = base_id, grade = grade, fidelity = .fidelity,
+                   artifacts = art_dir, engine_path = eng, routed_by = rt$routed_by,
+                   cr_verdict = if (!is.null(out$card)) out$card$overall$verdict else NA_character_), flags)
+    if (!is.na(out$program)) {
+      out$enqueued <- isTRUE(pr_enqueue(out$program, item, root = ROOT))
+    } else if (!identical(rt$routed_by, "router_v5_not_relevant")) {
+      out$held <- isTRUE(pr_hold_unrouted(item, root = ROOT))
+      jlog("v1001_unrouted", base_id = base_id, paper_key = PKEY %||% "", held = out$held,
+           note = "라우터 v5 분류 없음 — 프로그램을 추측하지 않고 미분류 재료로 보류(paper_routing.unrouted · 동기화 · 세션이 분류)")
+    }
+    jlog("v1001_handoff", base_id = base_id, program = if (is.na(out$program)) "UNROUTED" else out$program,
+         routed_by = rt$routed_by, kind = kind, enqueued = out$enqueued, held = out$held,
          cr = if (!is.null(out$card)) out$card$overall$verdict else "card_missing")
   }, error = function(e) jlog("v1001_handoff_failed", err = conditionMessage(e)))
   out
 }
+.v1001_num <- function(x, d = 2L) {   # 음수 = 유니코드 마이너스(발송 규칙 §0 — 행동 카드 수치와 같은 형식)
+  x <- suppressWarnings(as.numeric(x)[1])
+  if (!is.finite(x)) "NA" else sub("^-", "−", formatC(x, format = "f", digits = d))
+}
+## 관문 줄 — 실제로 지난 것만 적는다(2026-10-14). 구판 '검증 4관문 통과' 는 충실도 감사 기각 · 구현 의심도 통과로 읽혔고,
+##   고정 축 관문은 충실구현 축(롱숏 · 종목수 논문 그대로)에서 판정하지 않는다(러너가 replication$ 아래에 쓰는 값을 읽지 않는 것도 그 때문).
+.v1001_gate_line <- function() sprintf("검증 관문 통과(계약 · PIT 구조) · 충실도 감사 %s%s",
+  as.character(.aud$verdict %||% "?")[1],
+  if (isTRUE(.aud_suspect)) " — 재구현 뒤에도 기각: 구현 의심(implementation_suspect)" else "")
+## β · β 통제 α — measurement-graduation §2(PORT_t 를 보고할 때 병기 의무). 값 = 역할 카드(contracts/strategy_role.R · role_card.json)
+##   ★PORT_t 는 KOSPI200 대비 초과수익 t 라 β<1(시장중립 · 저베타)이면 상승장 미참여만으로도 음수다 — 알파 판단은 t(α) 로 한다.
+.v1001_beta_alpha <- function(dir) tryCatch({
+  rc <- fromJSON(file.path(dir, "role_card.json"), simplifyVector = FALSE)
+  b <- suppressWarnings(as.numeric(rc$beta)[1]); a <- rc$roles$alpha
+  at <- suppressWarnings(as.numeric(a$t)[1])
+  if (!is.finite(b) && !is.finite(at)) "" else
+    sprintf("β %s · β 통제 α t %s(%s)", .v1001_num(b), .v1001_num(at),
+            if (identical(as.character(a$basis %||% "")[1], "2f")) "2요인" else "1요인")
+}, error = function(e) "")
+## 보고 줄 — 재료가 어디로 갔는지(프로그램 · 미분류 보류 · 해당 없음)를 그대로 적는다
+.v1001_material_line <- function(ho) {
+  if (is.null(ho)) return("재료 인계 실패(저널 v1001_handoff_failed)")
+  if (!is.na(ho$program)) return(sprintf("%s(%s) 재료 큐%s", .v1001_prog_name(ho$program), ho$program,
+                                         if (isTRUE(ho$enqueued)) "에 등록" else " — 이미 등록됨"))
+  if (identical(ho$routed_by, "router_v5_not_relevant")) return("라우터가 어느 엔진 재료도 아니라고 분류 — 큐에 넣지 않음")
+  if (isTRUE(ho$held)) "라우터 미분류 — 미분류 재료로 보류(분류되면 프로그램 큐로 옮긴다)" else "라우터 미분류 — 보류 기록 실패(저널 확인)"
+}
+## 2계층 모듈 등재 — **감사 처분 뒤에만** 부른다(2026-10-14 · 러너 §7-c 는 이 레인에서 QVEST_RP_REGISTER=0 으로 꺼져 있다).
+##   자격은 계약 술어(rmm_admission → ds_pool_eligible — 축 long-only · 등급 floor · 기전 방어)가 낸다. 자격 미달은 등재하지 않는다.
+##   메모리 sim 이 없으므로 등재기가 계약 CSV(03 · 05 — 일간)로 재조립한다(새 측정 없음). 실패해도 검증은 계속한다.
+.v1001_register_module <- function(origin_mode, meta = list()) tryCatch({
+  .rmm <- new.env(parent = globalenv())     # 전역 %||% 오염 방지 — 격리 적재
+  sys.source(file.path(ROOT, "02_Infrastructure/contracts/register_measured_module.R"), envir = .rmm)
+  adm <- .rmm$rmm_admission(.rmm$rmm_read_auth(dirname(ar)))
+  reg <- if (isTRUE(adm$eligible))
+    .rmm$rmm_register_measured(dirname(ar), origin_mode = origin_mode,
+      meta = c(list(paper_key = as.character(PKEY %||% ""), source_paper_url = URL, fidelity = .fidelity,
+                    implementation_suspect = isTRUE(.aud_suspect), registered_after_audit = TRUE), meta)) else NULL
+  list(adm = adm, reg = reg, note = .rmm$rmm_gate_note(adm))
+}, error = function(e) { jlog("module_register_failed", err = conditionMessage(e)); NULL })
 
 eng <- file.path(WDIR, "engine.R")
 if (!file.exists(eng) || file.info(eng)$size < 200) fail("engine_too_small", eng)
@@ -278,6 +355,10 @@ if (length(.missing)) {
 
 # ── ① 계약 실행 ───────────────────────────────────────────────────────────────
 Sys.setenv(QVEST_NO_LEDGER_OPEN = "1")   # 개설은 아래에서 검증 후 직접 한다
+# ★2계층 모듈 등재도 감사 뒤로 미룬다(2026-10-14 · 1810.08384 감독 실측) — 러너 §7-c 는 측정 직후 등재해, 충실도 감사에서
+#   기각(재구현)될 1차 구현이 감사 10분 전에 카탈로그에 올랐다(08:18 등재 · 08:28 기각). 이 레인의 등재는 소비 분기
+#   (.v1001_register_module — 감사 처분 proceed/proceed_suspect 뒤)가 한다. 결합 · 프로그램 라운드 등 다른 러너 호출은 그대로다.
+Sys.setenv(QVEST_RP_REGISTER = "0")
 # ★기저 캐시 시드 (2026-10-05) — 이 측정이 강화 entry 의 기저가 되면 첫 블록 셀들이 이 엔진 산출을 캐시에서 바로 쓴다
 #   (셀마다 엔진 재실행 → 무거운 엔진은 첫 블록 40~50분). 정본 = reinforcement/rf_base_cache.R '기저 캐시 시드'.
 #   이 프로세스(검증기)에서만 켠다 — 셀 워커는 별도 프로세스라 상속하지 않는다.
@@ -395,11 +476,28 @@ if (identical(Sys.getenv("RP_LANE_MODE", "normal"), "clean") && !.CLEAN)
   r <- if (.CLEAN) rcl_with_env(rcl_clean_env(WDIR), .run()) else .run()
   as.integer(attr(r, "status") %||% 0L)
 }
+# ★재감사 — 앞 회차 지적 전문을 감사 레인에 넘긴다(2026-10-14 · 1810.08384 감사 상충 실측). 재구현이 받은 피드백 그대로이고,
+#   감사 레인이 항목마다 confirmed/overturned 를 적는다 → 번복(근거 있음)이면 처분이 audit_conflict(세션 판정)로 보낸다.
+#   청정 레인은 청정 감사의 지적만 넘긴다(레인이 재구현 프롬프트에 싣는 조건과 같다 — rf_replication_auto.sh '청정 모드' 절).
+.prior_p  <- file.path(WDIR, ".prior_audit_findings.md")
+.prior_fb <- as.character(.rq0$audit_feedback %||% "")[1]; if (is.na(.prior_fb)) .prior_fb <- ""
+.prior_ok <- .aud_tries >= 1L && nzchar(trimws(.prior_fb)) &&
+             (!.CLEAN || identical(as.character(.rq0$audit_feedback_mode %||% "")[1], "clean"))
+if (.prior_ok) writeLines(enc2utf8(.prior_fb), .prior_p, useBytes = TRUE) else unlink(.prior_p, force = TRUE)
+if (.aud_tries >= 1L && !.prior_ok)
+  jlog("prior_audit_findings_withheld", retries = .aud_tries, has_feedback = nzchar(trimws(.prior_fb)),
+       note = "재감사인데 앞 회차 지적을 넘기지 못했다(피드백 없음 또는 비청정 감사 지적) — 감사 상충은 탐지되지 않는다")
 # ★감사 없이는 개설하지 않는다 (2026-09-06 — 09-05 실사고 3건: 킬스위치·CLI 부재·병합 즉사로 감사가
 #   안 돌았는데 그 부재를 unverifiable 로 읽어 전부 proceed 했다). 관문은 rf_audit_gate 하나다:
 #   스폰 → 읽기 → 처분, 미실행이면 최대 2회 더 스폰(사이 rc 는 fidelity_audit_retry 저널로 남는다).
-.gate <- rf_audit_gate(WDIR, .spawn_audit, max_retries = 2L, retries_done = .aud_tries, log_fn = jlog)
+#   ★ruling = 세션 판정(감사 상충 뒤 · alpha-search SKILL §5 — 요청의 audit_ruling · 레인은 failure=audit_ruled 면 검증기만 돈다)
+.gate <- rf_audit_gate(WDIR, .spawn_audit, max_retries = 2L, retries_done = .aud_tries, log_fn = jlog,
+                       ruling = .rq0$audit_ruling)
 .aud <- .gate$aud; .disp <- .gate$disp
+.n_ov <- .n_overturned(.aud)
+if (.n_ov > 0L && !identical(.disp$action, "audit_conflict"))
+  jlog("fidelity_prior_overturned", n = .n_ov, action = .disp$action,
+       note = "재감사가 앞 회차 지적을 번복했다 — 이번 판정이 기각이 아니어서 상충 보류는 없다(기록만)")
 jlog("fidelity_audit_verdict", verdict = .aud$verdict, action = .disp$action,
      undeclared = length(.aud$undeclared_changes %||% list()),
      mismatch = length(.aud$signal_mismatch %||% list()), retries = .aud_tries,
@@ -433,6 +531,63 @@ if (identical(.disp$action, "audit_required")) {
                        next_step = "엔진은 그대로 두고 검증기(측정 + 감사)만 재시도한다(3회 규약). 레인이 죽었으면 저널 fidelity_audit_retry 를 먼저 본다",
                        push = TRUE),
     error = function(e) jlog("telegram_failed", err = conditionMessage(e)))
+  quit(status = 0)
+}
+
+if (identical(.disp$action, "audit_conflict")) {
+  # ★감사 상충(2026-10-14 · 1810.08384 실측) — 재감사가 앞 회차 지적을 원문 근거로 번복했다. 재구현이 틀린 지적을 따랐을 수 있어
+  #   이 기각을 구현자 몫(proceed_suspect = 소비 + 꼬리표)으로 세지 않는다. 소비 · 재료 등록 · 큐 미러 없이 이 논문만 보류하고
+  #   (스킵리스트 held_audit_conflict — 선택기 rf_next_paper_pick.py 와 레인 스킵 관문이 revoked 아닌 항목을 집지 않는다)
+  #   레인은 다음 논문으로 간다 — 무인 레인에 사람 대기 종점을 만들지 않는다(재시도 장치 주석 2026-08-30 규약).
+  #   판정 절차 = alpha-search SKILL §5(재구현 예약 = reimplement_queue · suspect 수용 · 진행 = 요청의 audit_ruling + failure=audit_ruled).
+  .Gs  <- as.character(G %||% "NA")[1]
+  .rel <- function(p) {   # 접두 고정 문자열 비교 — ROOT 를 정규식에 넣지 않는다(역슬래시 경로의 '\U' 즉사 전례)
+    p <- gsub("\\", "/", p, fixed = TRUE); r <- paste0(sub("/+$", "", gsub("\\", "/", ROOT, fixed = TRUE)), "/")
+    if (startsWith(p, r)) substring(p, nchar(r) + 1L) else p
+  }
+  .ov  <- rf_audit_overturned(.aud)   # 처분과 같은 술어(lib 한 자리) — 근거 있는 번복만
+  .cf_p <- file.path(WDIR, "audit_conflict.json")
+  .now <- format(Sys.time(), "%Y-%m-%dT%H:%M:%S%z")
+  tryCatch(writeLines(toJSON(list(schema = "audit_conflict_v1", at = .now, paper_key = PKEY %||% "", url = URL, title = TITLE,
+                                  wdir = .rel(WDIR), audit = .rel(.aud_p), audit_retries = .aud_tries, grade = .Gs,
+                                  artifacts = .rel(dirname(ar)), n_overturned = length(.ov), overturned = .ov,
+                                  prior_feedback = .prior_fb, current_feedback = .disp$feedback %||% ""),
+                             auto_unbox = TRUE, pretty = TRUE, null = "null", na = "null"), .cf_p, useBytes = TRUE),
+           error = function(e) jlog("audit_conflict_write_failed", err = conditionMessage(e)))
+  .skp <- file.path(ROOT, "06_Registry/replication_skiplist.json")
+  tryCatch({
+    sk <- if (file.exists(.skp)) fromJSON(.skp, simplifyVector = FALSE) else list(schema = "replication_skiplist_v1", entries = list())
+    live <- vapply(sk$entries %||% list(), function(e) identical(as.character(e$paper_key %||% ""), PKEY) &&
+                     !identical(as.character(e$status %||% ""), "revoked"), logical(1))
+    if (nzchar(PKEY %||% "") && !any(live)) {
+      sk$entries <- c(sk$entries %||% list(), list(list(
+        paper_key = PKEY, status = "held_audit_conflict", added_at = .now, detail = .rel(.cf_p),
+        reason = sprintf("감사 상충 — 재감사가 앞 회차 지적 %d건을 원문 근거로 번복(재구현 %d회). 소비 · 재료 등록 보류 · 세션 판정 대기. ★보류 해제는 status=revoked", length(.ov), .aud_tries))))
+      .tmp <- paste0(.skp, ".tmp", Sys.getpid())
+      writeLines(toJSON(sk, auto_unbox = TRUE, pretty = TRUE, null = "null", na = "null"), .tmp, useBytes = TRUE)
+      if (!file.rename(.tmp, .skp)) { unlink(.tmp); stop("스킵리스트 교체 실패") }
+    }
+  }, error = function(e) jlog("audit_conflict_skiplist_failed", err = conditionMessage(e)))
+  d <- tryCatch(fromJSON(REQ, simplifyVector = FALSE), error = function(e) list())
+  d$status <- "held_audit_conflict"; d$failure <- "audit_conflict"; d$audit_conflict <- .rel(.cf_p)
+  d$failure_detail <- substr(sprintf("재감사 번복 %d건: %s", length(.ov),
+                                     paste(vapply(.ov, function(z) as.character(z$item %||% "")[1], character(1)), collapse = " / ")), 1, 400)
+  write(toJSON(d, auto_unbox = TRUE, pretty = TRUE, null = "null"), REQ)
+  jlog("fidelity_audit_conflict", paper_key = PKEY %||% "", grade = .Gs, n_overturned = length(.ov), retries = .aud_tries,
+       detail = .rel(.cf_p), note = "감사 상충 — 구현자 몫으로 세지 않는다(소비 · 재료 등록 보류 · 스킵리스트 held_audit_conflict · 세션 판정)")
+  tryCatch(.v1001_report(target = .tg_target_label(TITLE, PKEY),
+                       status = list(stage = "충실구현 — 적대적 충실도 감사(재감사)", previous = sprintf("측정 등급 %s · 재구현 %d회", .Gs, .aud_tries),
+                                     position = "감사 상충 · 소비 보류 · 다음 논문 진행"),
+                       verdict_line = sprintf("재감사가 앞 회차 지적 %d건을 원문 근거로 번복했다 — 재구현이 틀린 지적을 따랐을 수 있어 이 기각을 구현 실패로 세지 않는다",
+                                              length(.ov)),
+                       extra = list(list(type = "text", emoji = "📝", heading = "번복된 앞 회차 지적",
+                                         body = paste(vapply(head(.ov, 4L), function(z) sprintf("• %s — %s", .tg_clip(z$item %||% "", 60L),
+                                                                                                 .tg_clip(z$evidence %||% "", 140L)), character(1)),
+                                                      collapse = "\n"))),
+                       next_step = sprintf("세션이 원문으로 판정한다(%s) — 재구현 예약 또는 suspect 수용", .rel(.cf_p)),
+                       push = TRUE),
+    error = function(e) jlog("telegram_failed", err = conditionMessage(e)))
+  system2("Rscript", c(shQuote(file.path(ROOT, "02_Infrastructure/programs/next_replication.R")), "--root", shQuote(ROOT)), wait = TRUE)
   quit(status = 0)
 }
 
@@ -543,31 +698,29 @@ if (is.finite(.base_pt) && .base_pt < .min_pt && !.resc_ok) {
   #   ★판정은 계약 술어(ds_pool_eligible) 가 낸다 — 여기에 사본을 두지 않는다.
   .adm_note <- ""
   tryCatch({
-    .rmm <- new.env(parent = globalenv())     # 전역 %||% 오염 방지 — 격리 적재
-    sys.source(file.path(ROOT, "02_Infrastructure/contracts/register_measured_module.R"), envir = .rmm)
-    .adm <- .rmm$rmm_admission(.rmm$rmm_read_auth(dirname(ar)))
-    ## 텔레그램 줄은 **편입됐을 때**와 **방어형이 미산출일 때**만 낸다.
-    ##   전자는 처분이 바뀐 사실이고, 후자는 배선/측정 결손 신호다. 평범한 비방어형
-    ##   (not_defensive)은 매 라운드 반복되는 정상 결과라 소음이 된다 — 저널에만 남긴다.
-    if (isTRUE(.adm$eligible) || identical(as.character(.adm$code)[1], "dscore_absent"))
-      .adm_note <- .rmm$rmm_gate_note(.adm)
+    .rg <- .v1001_register_module("replication_skipped_base",
+             meta = list(skipped_base_port_t = .base_pt, base_min_port_t = .min_pt,
+                         admitted_by = "base_below_threshold defensive route (도훈 2026-09-07)"))
+    if (is.null(.rg)) stop("등재 도우미 실패(저널 module_register_failed)")
+    .adm <- .rg$adm; .reg <- .rg$reg
+    ## 텔레그램 줄은 **편입됐을 때** · **방어형이 미산출일 때** · **방어형 경로가 축/귀속으로 막혔을 때**만 낸다.
+    ##   앞 둘은 처분 변경과 배선 결손 신호다. 축(롱숏)·노출 방어 차단은 '하락월 아웃퍼폼이 있었는데 왜 안 들어갔나'에 답한다
+    ##   (2026-10-14 — 1810.08384 는 이 줄 없이 '방어형 등재'로 보고됐다). 평범한 비방어형(not_defensive)은 저널에만 남긴다.
+    if (isTRUE(.adm$eligible) || as.character(.adm$code)[1] %in% c("dscore_absent", "axis_long_short", "exposure_defense"))
+      .adm_note <- .rg$note
     if (isTRUE(.adm$eligible)) {
-      .reg <- .rmm$rmm_register_measured(
-        dirname(ar), origin_mode = "replication_skipped_base",
-        meta = list(skipped_base_port_t = .base_pt, base_min_port_t = .min_pt,
-                    paper_key = as.character(PKEY %||% ""), fidelity = .fidelity,
-                    admitted_by = "base_below_threshold defensive route (도훈 2026-09-07)"))
       jlog(if (identical(as.character(.adm$route)[1], "defensive_specialist"))
              "defensive_admitted" else "pool_admitted",
            route = as.character(.adm$route)[1], grade = as.character(.adm$grade)[1],
            down_n = .adm$n_down, down_t = .adm$down_t, down_excess = .adm$down_excess,
            deep_excess = .adm$deep_excess,   # convex 폐기 2026-09-07(도훈)
            registered = isTRUE(.reg$registered), strategy_id = .reg$strategy_id,
-           code = .reg$code, port_t = .base_pt,
+           code = .reg$code, port_t = .base_pt, attribution = .adm$attribution, beta = .adm$beta,
            note = "기저 음수여도 2계층 풀 후보로 등재 — 1계층 강화는 생략(현행 유지)")
     } else {
       jlog("defensive_not_admitted", code = as.character(.adm$code)[1],
            grade = as.character(.adm$grade)[1], has_dscore = isTRUE(.adm$has_dscore),
+           has_short = .adm$has_short, attribution = .adm$attribution, beta = .adm$beta,
            reason = substr(as.character(.adm$reason)[1], 1, 200),
            note = "부재(dscore_absent)와 거짓(not_defensive)은 다르다 — 한 칸에 합치지 않는다")
     }
@@ -585,29 +738,40 @@ if (is.finite(.base_pt) && .base_pt < .min_pt && !.resc_ok) {
                   base_artifacts = dirname(ar), engine_path = eng,
                   count_paper = COUNT_PAPER, root = ROOT)
     rf_park_entry(1L, .bid_sk, sprintf(
-      "skipped_base_quality — 기저 PORT_t %.3f < %.2f. 음수 알파 위의 강화는 헛돈다(측정·기록은 보존). 논문 소비 처리.",
-      .base_pt, .min_pt), root = ROOT)
-    jlog("ledger_consumed", base_id = .bid_sk, paper_key = PKEY %||% "",
+      "skipped_base_quality — 기저 PORT_t %.3f < %.2f. 논문 소비 처리(측정 · 기록 보존 · 측정 산출물은 프로그램 재료로 인계)%s",
+      .base_pt, .min_pt,
+      if (isTRUE(.aud_suspect)) " · implementation_suspect(충실도 감사 — 재구현 뒤에도 기각)" else ""), root = ROOT)
+    jlog("ledger_consumed", base_id = .bid_sk, paper_key = PKEY %||% "", implementation_suspect = isTRUE(.aud_suspect),
          note = "소비 기록 — selector 가 이 논문을 다시 집지 않는다")
     .qmirror(PKEY, sprintf("skipped_base_quality (PORT_t %.3f)", .base_pt), .bid_sk)
   }, error = function(e) jlog("ledger_consume_failed", err = conditionMessage(e),
        note = "★소비 기록 실패 — 같은 논문이 재선택될 수 있다"))
+  ## (2026-10-14) 기저 문턱 미달도 재료다(alpha-search SKILL '미달 → 재료 등록') — 구판은 소비만 하고 어느 큐에도 넣지 않았다.
+  ##   기저 상태 · 구현 의심 · 롱숏은 flags 로 싣는다(쓰임은 프로그램 분석가가 정한다 · 라우팅은 .v1001_route).
+  .hs <- isTRUE(AR$replication$has_short %||% AR$has_short)
+  .ho <- .v1001_handoff(dirname(ar), .bid_sk %||% "skipped", G, kind = "skipped",
+                        flags = list(base_below_threshold = TRUE, base_port_t = .base_pt, base_min_port_t = .min_pt,
+                                     implementation_suspect = isTRUE(.aud_suspect), has_short = .hs,
+                                     audit_verdict = as.character(.aud$verdict %||% "")[1]))
   d <- tryCatch(fromJSON(REQ, simplifyVector = FALSE), error = function(e) list())
   d$status <- "done_no_reinforce"; d$grade <- G; d$fidelity <- .fidelity
   d$base_port_t <- .base_pt; d$artifacts <- dirname(ar)
-  d$skip_reason <- sprintf("기저 PORT_t %.3f < %.2f — 음수 알파 위의 강화는 헛돈다", .base_pt, .min_pt)
+  d$implementation_suspect <- isTRUE(.aud_suspect); d$audit_verdict <- as.character(.aud$verdict %||% "")[1]
+  d$program <- if (is.na(.ho$program)) "UNROUTED" else .ho$program; d$material <- .v1001_material_line(.ho)
+  d$skip_reason <- sprintf("기저 PORT_t %.3f < %.2f — 수익 엔진 문턱 미달(측정 산출물은 재료로 인계)", .base_pt, .min_pt)
   write(toJSON(d, auto_unbox = TRUE, pretty = TRUE, null = "null"), REQ)
-  ## v10.01 (2026-10-13): 강화가 없으니 '강화 생략' 이 아니라 '재료로 쓰지 않는다' 다. 행동 카드는 남긴다(방어형 판단 근거).
-  .ho <- .v1001_handoff(dirname(ar), .bid_sk %||% "skipped", G, kind = "skipped")
+  .ba <- .v1001_beta_alpha(dirname(ar))
   tryCatch(.v1001_report(target = .tg_target_label(TITLE, PKEY),
                        status = list(stage = sprintf("%s 완료", if (identical(.fidelity, "adapted")) "변형구현(착안)" else "충실구현"),
-                                     position = "검증 4관문 통과", previous = sprintf("등급 %s(권위)", G)),
-                       verdict_line = sprintf("등급 %s · 기저 PORT_t %s(문턱 %s 미만) — 알파가 반대로 작동해 수익 엔진 재료로 쓰지 않는다%s",
-                                              G, formatC(.base_pt, format = "f", digits = 2), formatC(.min_pt, format = "f", digits = 2),
+                                     position = .v1001_gate_line(), previous = sprintf("등급 %s(권위)", G)),
+                       verdict_line = sprintf("등급 %s · 기저 PORT_t %s(KOSPI200 대비 초과수익 t · 문턱 %s 미만)%s — 재료: %s%s",
+                                              G, .v1001_num(.base_pt), .v1001_num(.min_pt),
+                                              if (nzchar(.ba)) paste0(" · ", .ba) else "", .v1001_material_line(.ho),
                                               if (length(.adm_note) == 1L && nzchar(.adm_note)) paste0(". 2계층 풀: ", .adm_note) else ""),
                        card = .ho$card, artifact = dirname(ar),
-                       next_step = "큐 다음 논문 충실구현으로 넘어간다", push = TRUE,
-                       charts = .v1001_charts(dirname(ar)), extra = .v1001_grade_extra(dirname(ar))),
+                       next_step = paste0("큐 다음 논문 충실구현으로 넘어간다",
+                                          if (is.na(.ho$program)) " · 미분류 재료는 라우터 v5 동기화 또는 세션이 프로그램을 정한다" else ""),
+                       push = TRUE, charts = .v1001_charts(dirname(ar)), extra = .v1001_grade_extra(dirname(ar))),
            error = function(e) jlog("telegram_failed", err = conditionMessage(e)))
   # ★[팩터 분석] — 산출물이 있을 때만 보낸다 · 없으면 사유를 남긴다(침묵 누락 금지 · 정본 telegram_notify.R::tg_pass_analysis)
   if (file.exists(file.path(dirname(ar), "analysis_multifactor.csv")) || file.exists(file.path(dirname(ar), "analysis_fmb_summary.csv")))
@@ -632,7 +796,14 @@ tryCatch(rf_open_entry(1L, BID, base_grade = G, paper_key = PKEY,
 ##   active 로 두면 소진할 주체가 없어 충실구현 레인이 영구 정지한다(삭제 지도 §0-3).
 tryCatch(rf_park_entry(1L, BID, reason = "v10.01 — 고정 격자 강화 퇴역(2026-10-13). 측정 결과는 리서치 프로그램 재료로 넘어간다(06_Registry/research_programs.json)", root = ROOT),
          error = function(e) jlog("v1001_park_failed", err = conditionMessage(e)))
-.HO <- .v1001_handoff(dirname(ar), BID, G, kind = "engine")
+.HO <- .v1001_handoff(dirname(ar), BID, G, kind = "engine",
+                      flags = list(implementation_suspect = isTRUE(.aud_suspect), has_short = isTRUE(AR$replication$has_short %||% AR$has_short),
+                                   audit_verdict = as.character(.aud$verdict %||% "")[1]))
+## 2계층 모듈 등재 — 감사 뒤(2026-10-14 · 러너 §7-c 이관). 자격 미달은 등재기가 저널(module_register_skipped)만 남긴다.
+.RG <- .v1001_register_module("replication", meta = list(base_id = BID, strategy_name = as.character(AR$strategy_name %||% "")))
+if (!is.null(.RG)) jlog("module_register_after_audit", eligible = isTRUE(.RG$adm$eligible), code = as.character(.RG$adm$code)[1],
+                        registered = isTRUE(.RG$reg$registered), strategy_id = as.character(.RG$reg$strategy_id %||% "")[1],
+                        attribution = .RG$adm$attribution, has_short = .RG$adm$has_short)
 
 # ★결합이면 원장 entry 에 앵커와 **희석 판정**을 남긴다 (2026-09-04).
 #   구판은 이 판정을 "첫 셀(B1_1)이 부모를 넘는가" 로 대리했는데, B1_1 은 순수 기저가
@@ -679,24 +850,29 @@ source(file.path(ROOT, "02_Infrastructure/ops/rf_request_guard.R"))
 .own <- rf_request_mark_done(REQ, PKEY, list(
   base_id = BID, grade = G, artifacts = dirname(ar),
   fidelity = .fidelity, fidelity_detail = .fid,
-  fidelity_audit = .aud, implementation_suspect = isTRUE(.aud_suspect)))
+  fidelity_audit = .aud, implementation_suspect = isTRUE(.aud_suspect),
+  program = if (is.na(.HO$program)) "UNROUTED" else .HO$program, material = .v1001_material_line(.HO)))
 if (!isTRUE(.own$written))
   jlog("request_done_skipped_retargeted", run_key = .own$run_key, req_key = .own$req_key,
        base_id = BID, grade = G,
        note = "요청이 다른 논문으로 바뀌었다 — 이 실행 결과로 남의 요청을 닫지 않는다(요청 상태는 현 소유 실행이 쓴다)")
 
 ## v10.01 발송 규칙 §0 — 1단위 1통: 등급(권위) · 위기 방어 판정 · 위기별 낙폭 · 핵심 수치 · 다음
+.BA <- .v1001_beta_alpha(dirname(ar))
 tryCatch(.v1001_report(target = .tg_target_label(TITLE, PKEY),
-                     program = .V1001_PROG_NAME[[.HO$program]] %||% "수익 엔진",
+                     program = .v1001_prog_name(.HO$program),   # 미분류면 '미분류' — 구판은 'P1_RETURN'/'수익 엔진' 을 기본값으로 적었다
                      status = list(stage = sprintf("%s 완료", if (identical(.fidelity, "adapted")) "변형구현(착안)" else "충실구현"),
-                                   position = "검증 4관문 통과 · 프로그램 재료로 등록",
+                                   position = .v1001_gate_line(),
                                    previous = sprintf("등급 %s(권위) · 충실도 %s%s", G,
                                                       if (identical(.fidelity, "adapted")) "착안(변형)" else "충실",
                                                       if (isTRUE(.aud_suspect)) " · 구현 의심 꼬리표" else "")),
-                     verdict_line = sprintf("등급 %s(권위 · 15bps 순비용) — %s재료로 등록했다",
-                                            G, if (identical(.fidelity, "adapted")) paste0("착안 구현(남긴 기전: ", .v1001_clip_words(.fid$kept %||% "?", 120L), ") · ") else ""),
+                     verdict_line = sprintf("등급 %s(권위 · 15bps 순비용)%s — %s재료: %s",
+                                            G, if (nzchar(.BA)) paste0(" · ", .BA) else "",
+                                            if (identical(.fidelity, "adapted")) paste0("착안 구현(남긴 기전: ", .v1001_clip_words(.fid$kept %||% "?", 120L), ") · ") else "",
+                                            .v1001_material_line(.HO)),
                      card = .HO$card, artifact = dirname(ar),
-                     next_step = "프로그램 큐에서 조립 단계(실현 가능성 지도 이후)가 쓴다 · 큐 다음 논문으로 넘어간다",
+                     next_step = paste0("프로그램 큐에서 조립 단계(실현 가능성 지도 이후)가 쓴다 · 큐 다음 논문으로 넘어간다",
+                                        if (is.na(.HO$program)) " · 미분류 재료는 라우터 v5 동기화 또는 세션이 프로그램을 정한다" else ""),
                      push = TRUE, charts = .v1001_charts(dirname(ar)), extra = .v1001_grade_extra(dirname(ar))),
          error = function(e) jlog("telegram_failed", err = conditionMessage(e)))
 # ★[팩터 분석] — 산출물이 있을 때만 보낸다 · 없으면 사유를 남긴다(침묵 누락 금지 · 정본 telegram_notify.R::tg_pass_analysis)

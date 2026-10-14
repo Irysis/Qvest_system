@@ -56,6 +56,75 @@ a3 <- pps_run(root = sb, registry_path = reg_p)
 chk("소비한 재료도 되살아나지 않는다", length(a3) == 0L || sum(a3) == 0L)
 chk("등록부 스키마 유지", length(pr_validate(pr_load(path = reg_p))) == 0L)
 
+cat("\n=== D. 미분류 재료 — 검증기 보류분을 v5 분류로 큐에 옮긴다(2026-10-14 · 1810.08384 감독 실측) ===\n")
+em <- pps_engine_map(Sys.glob(file.path(sb, "stage_artifacts/paper_recharge/alpha_search_route_*.json")))
+chk("engine map: 판정 무관(redundant 도 분류) · axv: 제거 키 · not_relevant 표식 · 어휘 밖 · v4 제외",
+    identical(em[["5"]], "P2_DEFENSE") && identical(em[["3"]], "P3_CONSTRUCTION") && identical(em[["4"]], "NOT_RELEVANT") &&
+      !("6" %in% names(em)) && !("9" %in% names(em)), paste(names(em), em, collapse = " "))
+h1 <- pr_hold_unrouted(list(key = "engine:RP_X", kind = "engine", paper_key = "5", base_id = "RP_X"), path = reg_p)
+h2 <- pr_hold_unrouted(list(key = "engine:RP_X", kind = "engine", paper_key = "5"), path = reg_p)
+h3 <- pr_hold_unrouted(list(key = "engine:RP_Y", kind = "engine", paper_key = "77", base_id = "RP_Y"), path = reg_p)
+chk("보류 1회 · 같은 key 재보류 거부", isTRUE(h1) && isFALSE(h2) && isTRUE(h3))
+chk("부팅 줄에 미분류 재료 수가 뜬다", any(grepl("미분류 재료 2", pr_status_lines(pr_load(path = reg_p)), fixed = TRUE)))
+pps_run(root = sb, registry_path = reg_p)
+R1 <- pr_load(path = reg_p)
+q2 <- Filter(function(q) identical(q$key, "engine:RP_X"), pr_get(R1, "P2_DEFENSE")$queue)
+chk("v5 분류된 보류분(논문 5 → defense)은 P2 큐로 · routed_by=router_v5",
+    length(q2) == 1L && identical(q2[[1]]$routed_by, "router_v5"))
+chk("분류 없는 보류분은 그대로 남는다(추측 배정 없음)",
+    length(R1$paper_routing$unrouted) == 1L && identical(R1$paper_routing$unrouted[[1]]$key, "engine:RP_Y"))
+mv <- pr_route_unrouted("engine:RP_Y", "P3_CONSTRUCTION", routed_by = "session", path = reg_p)
+R2 <- pr_load(path = reg_p)
+chk("세션 분류(pr_route_unrouted) → P3 큐 · 보류 비움",
+    isTRUE(mv) && identical(pr_find_key(R2, "engine:RP_Y"), "P3_CONSTRUCTION") && !length(R2$paper_routing$unrouted))
+chk("등록부 스키마 유지(보류 포함)", length(pr_validate(R2)) == 0L)
+
+cat("\n=== E. 검증기 재료 배정 — 기본값 없이 라우팅 정본에서만(검증기 소스의 정의를 잘라 실행) ===\n")
+## 구판: 등록부에 없으면 'P1_RETURN' 기본값 · 기저 음수(skipped)면 어느 큐에도 안 넣음 → 구성(P3) 논문이 '수익 엔진'으로 보고됐다.
+VL <- readLines(file.path(ROOT, "02_Infrastructure/ops/rf_replication_verify.R"), warn = FALSE)
+.take <- function(nm) {
+  i <- grep(paste0(nm, " <- function("), VL, fixed = TRUE)[1]
+  if (is.na(i)) return(NULL)
+  for (j in i:min(length(VL), i + 200L)) {
+    e <- tryCatch(parse(text = VL[i:j]), error = function(e) NULL)
+    if (!is.null(e)) return(e)
+  }
+  NULL
+}
+DEFS <- lapply(c(".v1001_key_forms", ".v1001_route", ".v1001_prog_name", ".v1001_handoff", ".v1001_material_line"), .take)
+dir.create(file.path(sb, "02_Infrastructure/programs"), recursive = TRUE, showWarnings = FALSE)
+for (f in c("program_registry.R", "program_paper_sync.R"))
+  file.copy(file.path(ROOT, "02_Infrastructure/programs", f), file.path(sb, "02_Infrastructure/programs", f), overwrite = TRUE)
+.handoff <- function(pkey, kind = "engine") {
+  ev <- new.env(parent = globalenv()); J <- character(0)
+  ev$ROOT <- sb; ev$PKEY <- pkey; ev$TITLE <- paste("t", pkey); ev$.fidelity <- "faithful"; ev$eng <- "x/engine.R"
+  ev$.V1001_PROG_NAME <- c(P1_RETURN = "수익 엔진", P2_DEFENSE = "방어 엔진", P3_CONSTRUCTION = "구성")
+  ev$jlog <- function(event, ...) J <<- c(J, event)
+  for (d in DEFS) eval(d, envir = ev)
+  ho <- ev$.v1001_handoff(file.path(sb, "art"), paste0("RP_T_", gsub("[^0-9]", "", pkey)), "F", kind = kind,
+                          flags = list(base_below_threshold = identical(kind, "skipped")))
+  list(ho = ho, J = J, line = ev$.v1001_material_line(ho))
+}
+if (any(vapply(DEFS, is.null, logical(1)))) chk("E0 검증기 도우미 정의 추출", FALSE, "정의 이름이 바뀌었으면 재조준") else {
+  e3 <- .handoff("3")              # 큐에 axv:3 (B 절 동기화) — 정본 키 '3' 으로 찾는다
+  chk("E1 큐의 axv: 키를 정본 키로 찾는다 → P3 · 소비 · 엔진 재료 등록",
+      identical(e3$ho$program, "P3_CONSTRUCTION") && identical(e3$ho$routed_by, "program_queue") && isTRUE(e3$ho$enqueued),
+      paste(e3$ho$program, e3$ho$routed_by, paste(e3$J, collapse = ",")))
+  e5 <- .handoff("5", kind = "skipped")   # v5 redundant → 큐에는 없지만 엔진 분류는 있다 · 기저 미달도 재료다
+  chk("E2 큐에 없어도 v5 분류(판정 무관)로 배정 · 기저 미달(skipped)도 재료로 등록",
+      identical(e5$ho$program, "P2_DEFENSE") && identical(e5$ho$routed_by, "router_v5") && isTRUE(e5$ho$enqueued))
+  e4 <- .handoff("4")
+  chk("E3 v5 not_relevant → 큐 · 보류 둘 다 없음(사유 줄)",
+      is.na(e4$ho$program) && !isTRUE(e4$ho$enqueued) && !isTRUE(e4$ho$held) && grepl("어느 엔진 재료도 아니", e4$line))
+  e8 <- .handoff("88", kind = "skipped")
+  R3 <- pr_load(path = reg_p)
+  chk("E4 분류 없음 → P1 기본값이 아니라 미분류 보류 · 보고 줄이 그 사실을 말한다 ★1810 재현",
+      is.na(e8$ho$program) && isTRUE(e8$ho$held) && "v1001_unrouted" %in% e8$J &&
+        any(vapply(R3$paper_routing$unrouted, function(u) identical(u$paper_key, "88"), logical(1))) &&
+        grepl("미분류", e8$line) && !grepl("수익 엔진", e8$line), e8$line)
+  chk("E5 등록부 스키마 유지", length(pr_validate(R3)) == 0L)
+}
+
 cat("\n=== C. 운영 등록부는 그대로 ===\n")
 chk("검사가 운영 등록부를 바꾸지 않았다", identical(unname(tools::md5sum(pr_path())), unname(live_md5)))
 

@@ -7,7 +7,8 @@
 # 원칙: 쓰기 = 검사 통과 후 원자적 교체(임시 파일 → 이름 바꾸기). 검사 실패 = 멈춤(부분 쓰기 없음).
 #   큐 중복은 전 프로그램에 걸쳐 key 로 막는다(같은 논문이 두 엔진 큐에 동시에 서지 않는다).
 # 공개: pr_path · pr_load · pr_validate · pr_save · pr_get · pr_set_status · pr_enqueue · pr_dequeue ·
-#       pr_record_round · pr_mc_set · pr_mc_drop · pr_refresh_blocks · pr_status_lines
+#       pr_record_round · pr_mc_set · pr_mc_drop · pr_refresh_blocks · pr_status_lines ·
+#       pr_hold_unrouted · pr_route_unrouted(미분류 재료 — 2026-10-14)
 # 검사: 08_Tests/programs/test_program_registry.R
 #==============================================================================
 suppressPackageStartupMessages({ library(jsonlite) })
@@ -59,7 +60,12 @@ pr_validate <- function(reg) {
       keys <- c(keys, k)
     }
   }
-  if (anyDuplicated(keys)) e <- c(e, paste("큐 key 중복(프로그램 간 포함):", paste(unique(keys[duplicated(keys)]), collapse = ",")))
+  for (q in .pr_or(reg$paper_routing$unrouted, list())) {     # 미분류 보류(2026-10-14) — 큐와 같은 key 규약
+    k <- .pr_or(q$key, "")
+    if (!nzchar(k)) e <- c(e, "key 없는 미분류 보류 항목")
+    keys <- c(keys, k)
+  }
+  if (anyDuplicated(keys)) e <- c(e, paste("큐 key 중복(프로그램 간 · 미분류 보류 포함):", paste(unique(keys[duplicated(keys)]), collapse = ",")))
   e
 }
 
@@ -140,6 +146,37 @@ pr_dequeue <- function(id, consumer = "", root = NULL, path = NULL) {
   reg$programs[[i]]$consumed <- c(.pr_or(reg$programs[[i]]$consumed, list()), list(head))
   pr_save(reg, root, path)
   head
+}
+
+#' 미분류 재료 보류 — 라우터(v5)가 엔진을 정하지 않은 측정 재료(충실구현 산출)를 프로그램을 추측하지 않고 둔다(2026-10-14).
+#'   실측(1810.08384): 구판 검증기는 등록부에 없으면 'P1_RETURN' 을 기본값으로 적어, 구성(P3) 논문이 '수익 엔진'으로 보고됐고
+#'   어느 큐에도 들어가지 않았다. 자리 = paper_routing$unrouted · 분류가 생기면 pr_route_unrouted 가 프로그램 큐로 옮긴다.
+#' @return 넣었으면 TRUE · 같은 key 가 이미 보류 · 큐 · 소비 기록에 있으면 FALSE
+pr_hold_unrouted <- function(item, root = NULL, path = NULL) {
+  if (is.null(item$key) || !nzchar(item$key)) stop("[program_registry] 보류 항목에 key 가 없다")
+  reg <- pr_load(root, path)
+  for (q in .pr_or(reg$paper_routing$unrouted, list())) if (identical(q$key, item$key)) return(invisible(FALSE))
+  for (p in reg$programs) for (q in c(.pr_or(p$queue, list()), .pr_or(p$consumed, list())))
+    if (identical(q$key, item$key)) return(invisible(FALSE))
+  item$held_at <- .pr_or(item$held_at, format(Sys.time(), "%Y-%m-%dT%H:%M:%S%z"))
+  reg$paper_routing$unrouted <- c(.pr_or(reg$paper_routing$unrouted, list()), list(item))
+  pr_save(reg, root, path)
+  invisible(TRUE)
+}
+
+#' 미분류 재료 → 프로그램 큐(라우터 v5 분류 · 세션 분류 공용). routed_by 를 항목에 남긴다.
+#' @return 옮겼으면 TRUE · 보류 목록에 없으면 FALSE
+pr_route_unrouted <- function(key, id, routed_by = "session", root = NULL, path = NULL) {
+  reg <- pr_load(root, path)
+  U <- .pr_or(reg$paper_routing$unrouted, list())
+  j <- which(vapply(U, function(x) identical(x$key, key), logical(1)))
+  if (!length(j)) return(invisible(FALSE))
+  i <- .pr_idx(reg, id)
+  it <- U[[j[1]]]; it$routed_by <- routed_by; it$routed_at <- format(Sys.time(), "%Y-%m-%dT%H:%M:%S%z")
+  reg$paper_routing$unrouted <- U[-j[1]]
+  reg$programs[[i]]$queue <- c(.pr_or(reg$programs[[i]]$queue, list()), list(it))
+  pr_save(reg, root, path)
+  invisible(TRUE)
 }
 
 #' key 가 어느 프로그램의 큐(또는 소비 기록)에 있는지 — 없으면 NA
@@ -250,5 +287,7 @@ pr_status_lines <- function(reg = NULL, root = NULL) {
     L <- c(L, sprintf("%s %s — %s · 재료 %d · 라운드 %d%s", p$id, p$name, p$status, nq, nr,
                       if (identical(p$status, "blocked") && length(rem)) paste0(" (남은 선행: ", paste(rem, collapse = " "), ")") else ""))
   }
+  nu <- length(.pr_or(reg$paper_routing$unrouted, list()))
+  if (nu > 0L) L <- c(L, sprintf("미분류 재료 %d — 라우터 v5 분류 또는 세션 분류 대기(paper_routing.unrouted · pr_route_unrouted)", nu))
   L
 }

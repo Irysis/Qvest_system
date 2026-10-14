@@ -114,11 +114,20 @@ rmm_admission <- function(auth, floor = "B", defensive_route = TRUE, params = NU
   }
   ds <- .rmm_get(auth, "defensive_score")
   if (!is.null(ds) && !is.list(ds)) ds <- NULL          # 스칼라/NA 잔재 = 미산출
+  ## 롱숏 여부 = 러너가 쓴 자리(replication$has_short) · 구판 최상위 · 카탈로그 meta 순 — 없으면 NA(축 판정 건너뜀)
+  hs <- NULL   # ★`%||%` 를 쓰지 않는다 — 이 파일은 그것을 정의하지 않는다(파일 끝 주석)
+  for (cand in list(.rmm_get(.rmm_get(auth, "replication"), "has_short"), .rmm_get(auth, "has_short"),
+                    .rmm_get(.rmm_get(auth, "meta"), "has_short")))
+    if (is.null(hs) && !is.null(cand) && length(cand)) hs <- cand
+  hs <- if (is.null(hs)) NA else suppressWarnings(as.logical(hs)[1])
   r <- .RMM_ENV$ds_pool_eligible(eg, ds,
          params = if (is.null(params)) .RMM_ENV$ds_params(.rmm_root()) else params,
-         floor = floor, defensive_route = defensive_route)
+         floor = floor, defensive_route = defensive_route, has_short = hs)
   dn <- .rmm_get(ds, "down"); dp <- .rmm_get(ds, "deep")
   r$grade       <- eg
+  r$has_short   <- hs
+  r$attribution <- .rmm_c1(.rmm_get(ds, "attribution"))
+  r$beta        <- .rmm_n1(.rmm_get(ds, "beta"))
   r$has_dscore  <- !is.null(ds)
   r$ds_status   <- .rmm_c1(.rmm_get(ds, "status"))
   r$n_down      <- .rmm_n1(.rmm_get(dn, "n"))
@@ -135,10 +144,12 @@ rmm_gate_note <- function(adm) {
   if (identical(.rmm_c1(adm$route), "defensive_specialist"))
     ## ★"볼록" 문구 제거 (도훈 결정 2026-09-07) — 그 플래그는 무신호에서 더 잘 켜졌고(52% vs 32%)
     ##   실제 한계반응은 전부 오목이었다. 심층 초과는 표본(심도월 10개)이 얇아 참고값으로만 적는다.
-    return(sprintf("방어형 등재 — 하락월 %s개 초과 %s%%/월 (t %s) · 심층 %s%%/월(n 얇음)",
+    ##   (2026-10-14) 방어형 경로는 기전 방어(β 잔차)만 연다 — β 를 함께 적어 노출과 구분되게 한다.
+    return(sprintf("방어형(기전) 등재 — 하락월 %s개 초과 %s%%/월 (t %s) · β %s · 심층 %s%%/월(n 얇음)",
                    .rmm_fmt(adm$n_down, "%.0f"),
                    .rmm_fmt(100 * .rmm_n1(adm$down_excess), "%+.2f"),
                    .rmm_fmt(adm$down_t, "%.2f"),
+                   .rmm_fmt(adm$beta, "%.2f"),
                    .rmm_fmt(100 * .rmm_n1(adm$deep_excess), "%+.2f")))
   if (identical(.rmm_c1(adm$route), "role_rep")) return(.rmm_c1(adm$reason, "역할 대표 등재"))
   sprintf("등급 %s — 등급 floor 통과 등재", .rmm_c1(adm$grade, "NA"))
@@ -223,7 +234,8 @@ rmm_register_measured <- function(out_dir, sim_result = NULL, auth = NULL,
       rmm_journal(if (isTRUE(registered)) "module_registered" else
                   if (identical(.rmm_c1(code, ""), "dry_run")) "module_register_dry_run" else
                   if (.rmm_c1(code, "") %in%
-                      c("not_defensive", "dscore_absent", "dscore_not_ok", "route_off"))
+                      c("not_defensive", "dscore_absent", "dscore_not_ok", "route_off",
+                        "axis_long_short", "exposure_defense", "dscore_unattributed"))
                     "module_register_skipped" else "module_register_blocked",
                   code = .rmm_c1(code, "unknown"), reason = substr(.rmm_c1(reason, ""), 1, 300),
                   out_dir = .rmm_rel(out_dir), strategy_id = .rmm_c1(sid, ""),
@@ -252,7 +264,8 @@ rmm_register_measured <- function(out_dir, sim_result = NULL, auth = NULL,
     roles <- unlist(.rmm_get(rr, "pool_rep_roles"))
     if (length(roles)) {
       meta$role_pool_rep <- as.list(roles)              # 기존 경로(등급 floor·방어형)로 자격이 있어도 역할 대표 사실은 남긴다
-      if (!isTRUE(adm$eligible)) {
+      ## (2026-10-14) 축은 역할 대표도 넘지 못한다 — 롱숏 산출은 2계층 long-only 축에서 보유할 수 없다(ds_pool_eligible axis_long_short)
+      if (!isTRUE(adm$eligible) && !identical(.rmm_c1(adm$code, ""), "axis_long_short")) {
         adm$eligible <- TRUE; adm$route <- "role_rep"; adm$code <- "role_rep"
         adm$reason <- sprintf("역할 대표(%s) — strategy_roles.json · essence %s", paste(roles, collapse = ","), .rmm_c1(adm$grade, "NA"))
       }
@@ -310,6 +323,9 @@ rmm_register_measured <- function(out_dir, sim_result = NULL, auth = NULL,
   meta$admission_reason <- substr(.rmm_c1(adm$reason, ""), 1, 400)
   meta$artifacts_dir <- .rmm_rel(out_dir)
   meta$essence_grade <- .rmm_c1(adm$grade)     # 구세대 소비자(meta 축)도 같은 값을 본다
+  ## (2026-10-14) 축 · 귀속을 레코드에 남긴다 — 카탈로그 소비자(l2_admit)가 산출물을 다시 열지 않고 같은 판정을 낸다
+  meta$has_short <- if (is.null(adm$has_short) || isTRUE(is.na(adm$has_short))) NULL else isTRUE(adm$has_short)
+  meta$defense_attribution <- .rmm_c1(adm$attribution, NULL)
   r <- tryCatch(
     .RMM_ENV$sr_with_lock(cp, {
       .RMM_ENV$register_module(

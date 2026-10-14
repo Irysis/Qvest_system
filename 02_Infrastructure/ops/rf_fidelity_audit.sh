@@ -87,6 +87,20 @@ AXB="$(rf_axiom_brief)"
 #   검증기가 이 스폰에만 싣는다(아래 --disallowed-tools 청정 판도 그 표식을 본다).
 if [ -n "$ART" ]; then ARTLINE="- 측정 산출물: ${ART}"
 else ARTLINE="- 측정 산출물: (청정 모드 — 비공개. 논문과 코드만 대조하라. 산출물을 보라는 대조 지시는 코드 경로 추적으로 대신하고 그 사실을 note 에 적어라. 산출물이 없다는 이유만으로 unverifiable 을 내지 마라 — unverifiable 은 원문을 못 읽었을 때만이다)"; fi
+# ★재감사 — 앞 회차 지적 확인/번복(2026-10-14 · 팬아웃 판과 같은 규약 · 근거 = rf_fidelity_fanout.sh 같은 자리 주석).
+PRIORSEC=""
+if [ -s "$WDIR/.prior_audit_findings.md" ]; then
+  PRIORTXT="$(cat "$WDIR/.prior_audit_findings.md")"
+  PRIORSEC="
+## ★재감사다 — 앞 회차 감사 지적을 원문으로 다시 판정하라
+이 구현은 앞 회차 감사의 지적을 받고 재구현됐다. 감사 지적도 원문 판독이라 **틀릴 수 있다**.
+항목마다 prior_review 에 \`confirmed\`(원문이 지적을 뒷받침) 또는 \`overturned\`(원문이 지적과 반대 · evidence 에 원문 위치와 짧은 인용 필수)를 적어라.
+판정은 원문으로만 한다. 앞 회차 지적을 따른 변경을 다시 지적하려면 그 앞 회차 항목을 먼저 \`overturned\` 로 적어라.
+
+### 앞 회차 지적 전문
+${PRIORTXT}
+"
+fi
 
 PROMPT="너는 **적대적 검증자**다. 아래 구현이 논문과 다르다는 것을 **입증하라.**
 
@@ -115,7 +129,7 @@ ${HTMLLINE}
 - 구현: ${WDIR}/engine.R
 - 자기신고: ${WDIR}/FIDELITY.json   ← **이 진술을 믿지 마라. 대조 대상이다.**
 ${ARTLINE}
-
+${PRIORSEC}
 ## 원문 접근 (실측된 함정 — 2026-09-02)
 - \`arxiv.org/abs/…\` 는 **초록만** 준다. 초록만 읽고 판정하면 정의역을 틀린다.
 - \`arxiv.org/pdf/…\` 는 이 환경에서 못 읽는다.
@@ -155,6 +169,7 @@ ${ARTLINE}
   \"signal_mismatch\": [\"논문 식 (3) 의 부호는 …, engine.R:NN 은 …\"],
   \"evidence\": \"원문에서 근거를 찾은 위치(절·식 번호·표)\",
   \"confidence\": \"high|medium|low\",
+  \"prior_review\": [{\"item\": \"앞 회차 지적의 대괄호 요약\", \"status\": \"confirmed|overturned\", \"evidence\": \"원문 위치 + 짧은 인용\"}],
   \"_배열 규약\": \"undeclared_changes·signal_mismatch 는 **발견만** 담는다. 없으면 빈 배열 [] 로 두고, '불일치 없음' 같은 비발견을 항목으로 넣지 마라 — 근거 게이트가 배열 길이로 서므로 채움 항목이 게이트를 통과시킨다. 확인한 일치는 note 에 적어라.\",
   \"note\": \"1~2줄\"
 }

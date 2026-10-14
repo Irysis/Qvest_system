@@ -55,16 +55,22 @@ suppressMessages(sys.source(file.path(ROOT, "02_Infrastructure/contracts/registe
 `%||%` <- function(a, b) if (is.null(a) || length(a) == 0L) b else a
 
 # ── 합성 산출물 (계약 산출물과 **같은 배치·같은 파일명**) ─────────────────────
-.ds <- function(defensive, status = "ok", t = 6.16, ex = 0.0474)
-  list(status = status, defensive = defensive, n_months = 240L,   # convex 폐기 2026-09-07
-       down = list(n = 111L, excess = ex, hit = 0.61, t = t, capture = 0.4),
-       deep = list(n = 10L, excess = 0.1915, hit = 0.9, t = 3.1, capture = 0.2),
-       mid = list(n = 30L, excess = 0.06, hit = 0.7, t = 2.2, capture = 0.3),
-       up = list(n = 129L, excess = -0.004, hit = 0.45, t = -0.8, capture = 0.9),
-       reason = "합성 픽스처 — 하락월 111개")
+## (2026-10-14) 귀속 필드 — 현행 ds_score 는 attribution(selection|exposure|none) · beta · down_resid 를 함께 낸다.
+##   방어형 경로는 selection(기전 방어)만 연다. attribution = NULL 이면 구판 산출(귀속 없음) 픽스처다.
+.ds <- function(defensive, status = "ok", t = 6.16, ex = 0.0474,
+                attribution = if (isTRUE(defensive)) "selection" else if (identical(defensive, FALSE)) "none" else NULL)
+  c(list(status = status, defensive = defensive, n_months = 240L,   # convex 폐기 2026-09-07
+         down = list(n = 111L, excess = ex, hit = 0.61, t = t, capture = 0.4),
+         deep = list(n = 10L, excess = 0.1915, hit = 0.9, t = 3.1, capture = 0.2),
+         mid = list(n = 30L, excess = 0.06, hit = 0.7, t = 2.2, capture = 0.3),
+         up = list(n = 129L, excess = -0.004, hit = 0.45, t = -0.8, capture = 0.9),
+         reason = "합성 픽스처 — 하락월 111개"),
+    if (!is.null(attribution)) list(attribution = attribution, beta = 0.85,
+                                    defensive_selection = identical(attribution, "selection"),
+                                    down_resid = list(n = 111L, excess = 0.02, hit = 0.58, t = 2.4, capture = 0.4)))
 
 .mk <- function(tag, grade = "F", ds = .ds(TRUE), metric_type = "backtested",
-                status = "OK", with_csv = TRUE, with_auth = TRUE) {
+                status = "OK", with_csv = TRUE, with_auth = TRUE, has_short = NULL) {
   d <- file.path(TD, tag); dir.create(d, recursive = TRUE, showWarnings = FALSE)
   sid <- paste0("RP_FIX_", tag)
   if (with_auth) {
@@ -72,6 +78,7 @@ suppressMessages(sys.source(file.path(ROOT, "02_Infrastructure/contracts/registe
               run_id = paste0("run_", tag), metric_type = metric_type,
               essence_grade = grade, grade_basis = "replication_chain",
               bt_result_path = file.path(d, "bt_result.rds"))
+    if (!is.null(has_short)) a$replication <- list(has_short = has_short, n_max = if (isTRUE(has_short)) 1986L else 25L)   # 러너가 쓰는 자리
     if (!is.null(ds)) a$defensive_score <- ds
     write(toJSON(a, auto_unbox = TRUE, pretty = TRUE, null = "null", na = "null"),
           file.path(d, "authoritative_remeasure.json"))
@@ -90,7 +97,7 @@ suppressMessages(sys.source(file.path(ROOT, "02_Infrastructure/contracts/registe
            file.path(d, "05_benchmark_returns.csv"))
   }
   saveRDS(list(fixture = TRUE), file.path(d, "bt_result.rds"))
-  list(dir = d, sid = sid)
+  list(dir = d, sid = sid, has_short = isTRUE(has_short))
 }
 
 .jl <- function() {                       # 검사 저널 판독 (event 순서 보존)
@@ -123,6 +130,22 @@ chk(!isTRUE(A4$eligible) && identical(A4$code, "dscore_not_ok"),
 A5 <- .adm_of(.mk("A5", "B", .ds(FALSE)))
 chk(isTRUE(A5$eligible) && identical(as.character(A5$route)[1], "grade_floor"),
     "A5 essence B → grade_floor 편입(방어형 무관)", paste(A5$eligible, A5$code))
+## (2026-10-14 · 1810.08384 감독 실측) 귀속 · 축 — 하락월 r−b 의 베타 착시를 경로가 받지 않는다
+A6 <- .adm_of(.mk("A6", "F", .ds(TRUE, attribution = "exposure")))
+chk(!isTRUE(A6$eligible) && identical(A6$code, "exposure_defense"),
+    "A6 하락월 아웃퍼폼이 β<1 로 설명됨(노출 방어) → 미편입(exposure_defense) ★1810 형태", paste(A6$eligible, A6$code))
+A7 <- .adm_of(.mk("A7", "F", .ds(TRUE, attribution = NULL)))
+chk(!isTRUE(A7$eligible) && identical(A7$code, "dscore_unattributed"),
+    "A7 구판 산출(귀속 없음) → dscore_unattributed(노출과 구분 불가 · '방어형 아님'과 다른 칸)", paste(A7$eligible, A7$code))
+A8 <- .adm_of(.mk("A8", "F", .ds(TRUE), has_short = TRUE))
+chk(!isTRUE(A8$eligible) && identical(A8$code, "axis_long_short") && isTRUE(A8$has_short),
+    "A8 롱숏 산출 + 기전 방어 → axis_long_short(2계층 = long-only 축)", paste(A8$eligible, A8$code))
+A9 <- .adm_of(.mk("A9", "B", .ds(FALSE), has_short = TRUE))
+chk(!isTRUE(A9$eligible) && identical(A9$code, "axis_long_short"),
+    "A9 롱숏 산출은 등급 floor(B) 경로도 막힌다(경로 무관 축 판정)", paste(A9$eligible, A9$code))
+A10 <- .adm_of(.mk("A10", "F", .ds(TRUE), has_short = FALSE))
+chk(isTRUE(A10$eligible) && identical(as.character(A10$route)[1], "defensive_specialist"),
+    "A10 롱온리(has_short=FALSE) + 기전 방어 → defensive_specialist(축 판정이 정상을 막지 않는다) ★음성", paste(A10$eligible, A10$code))
 
 # ── 러너 소스에서 **블록을 잘라 실제로 eval** 한다 ───────────────────────────
 #   좌표를 못박지 않는다: 의미 앵커(게이트 비교식)로 찾고, R 파서가 완결되는 지점까지 취한다.
@@ -140,15 +163,21 @@ VL  <- readLines(VFY, warn = FALSE)
 i_gate <- grep(".base_pt < .min_pt", VL, fixed = TRUE)
 i_gate <- i_gate[grepl("if (", VL[i_gate], fixed = TRUE)]
 GATE <- if (length(i_gate)) .take_expr(VL, i_gate[1]) else NULL
+## (2026-10-14) 등재는 감사 뒤 도우미(.v1001_register_module)가 한다 — 그 **정의도** 소스에서 잘라 샌드박스에 싣는다(재구현 아님)
+i_reg <- grep(".v1001_register_module <- function(", VL, fixed = TRUE)
+REG_DEF <- if (length(i_reg)) .take_expr(VL, i_reg[1]) else NULL
+## 보고 · 기록 도우미(2026-10-14 — 관문 줄 · β 통제 α · 재료 줄)도 정의를 잘라 싣는다 — 분기가 실제로 부르는 문장을 잰다
+.def_of <- function(nm) { i <- grep(paste0(nm, " <- function("), VL, fixed = TRUE); if (length(i)) .take_expr(VL, i[1]) else NULL }
+HELP_DEFS <- lapply(c(".v1001_num", ".v1001_gate_line", ".v1001_beta_alpha", ".v1001_material_line", ".v1001_prog_name"), .def_of)
 
 cat("\n[B] 게이트 블록 — 러너의 진짜 코드를 잘라 구동한다\n")
-if (is.null(GATE)) {
-  ng("B0 게이트 블록을 찾지 못했다",
-     "앵커 '.base_pt < .min_pt' 를 가진 if 문 — 이름이 바뀌었으면 이 검사를 재조준할 것")
+if (is.null(GATE) || is.null(REG_DEF) || any(vapply(HELP_DEFS, is.null, logical(1)))) {
+  ng("B0 게이트 블록 또는 등재 · 보고 도우미 정의를 찾지 못했다",
+     "앵커 '.base_pt < .min_pt' 를 가진 if 문 · '.v1001_register_module <- function(' — 이름이 바뀌었으면 이 검사를 재조준할 것")
 } else {
   ok(sprintf("B0 게이트 블록 추출 (%d줄)", GATE$last - GATE$first + 1L))
 
-  .run_gate <- function(fix, base_pt = -0.639, min_pt = 0, mutate = NULL) {
+  .run_gate <- function(fix, base_pt = -0.639, min_pt = 0, mutate = NULL, suspect = FALSE) {
     unlink(TLOG, force = TRUE)
     txt <- GATE$text
     if (!is.null(mutate)) txt <- sub(mutate[1], mutate[2], txt, fixed = TRUE)
@@ -178,11 +207,25 @@ if (is.null(GATE)) {
     sb$system2 <- function(...) invisible("")
     sb$quit <- function(...) stop(structure(class = c("qvest_quit", "error", "condition"),
                                             list(message = "quit", call = NULL)))
+    ## 감사 뒤 등재 도우미 · 보고 도우미 — 검증기 소스의 정의 그대로(샌드박스가 클로저 환경이 된다 · 운영 카탈로그 대신 TCAT)
+    eval(REG_DEF$expr[[1]], envir = sb)
+    for (hd in HELP_DEFS) eval(hd$expr[[1]], envir = sb)
+    sb$URL <- "http://fixture"; sb$.aud_suspect <- isTRUE(suspect)
+    sb$.aud <- list(verdict = if (isTRUE(suspect)) "misdeclared" else "adapted")
+    sb$AR <- list(replication = list(has_short = isTRUE(fix$has_short)))
+    sb$.V1001_PROG_NAME <- c(P1_RETURN = "수익 엔진", P2_DEFENSE = "방어 엔진", P3_CONSTRUCTION = "구성")
+    ## 인계는 이 검사의 축이 아니다 — 가린다(미분류 보류로 돌려준다 · 분기가 quit 까지 닿게). 발송은 인자를 기록한다.
+    sb$.v1001_handoff <- function(...) list(card = NULL, program = NA_character_, routed_by = "unrouted", enqueued = FALSE, held = TRUE)
+    sb$.v1001_report <- function(...) { REC$report <- list(...); invisible(TRUE) }
+    sb$.v1001_charts <- function(...) NULL
+    sb$.v1001_grade_extra <- function(...) NULL
+    sb$.tg_target_label <- function(t, k, ...) t
     err <- NULL
     tryCatch(eval(ex[[1]], envir = sb),
              qvest_quit = function(e) invisible(NULL),
              error = function(e) err <<- conditionMessage(e))
-    list(err = err, ev = REC$ev, args = REC$args,
+    list(err = err, ev = REC$ev, args = REC$args, report = REC$report,
+         req = tryCatch(fromJSON(sb$REQ, simplifyVector = FALSE), error = function(e) list()),
          note = if (exists(".adm_note", envir = sb, inherits = FALSE)) sb$.adm_note else "")
   }
 
@@ -235,10 +278,33 @@ if (is.null(GATE)) {
   ## B5 — 위반 주입(양성 대조): 등재 호출을 깨면 defensive_admitted 가 사라져야 한다.
   ##      사라지지 않으면 위 B1 초록은 검출력이 없다는 뜻이다.
   r5 <- .run_gate(.mk("B5", "F", .ds(TRUE)),
-                  mutate = c("rmm_admission(", "rmm_admission_REMOVED("))
+                  mutate = c(".v1001_register_module(", ".v1001_register_module_REMOVED("))
   chk(!("defensive_admitted" %in% r5$ev),
       "B5 위반 주입(등재 호출 제거) → defensive_admitted 소실 = B1 에 검출력이 있다",
       paste(r5$ev, collapse = ","))
+
+  ## B6 — 1810.08384 형태(롱숏 · 하락월 r−b 강함): 등재 없이 소비 · 사유 axis_long_short · 텔레그램 줄이 왜 안 들어갔는지 말한다
+  r6 <- .run_gate(.mk("B6", "F", .ds(TRUE, t = 12.99), has_short = TRUE))
+  c6 <- if (length(r6$args)) vapply(r6$args, function(a) as.character(a$code %||% "")[1], "") else ""
+  chk(!("defensive_admitted" %in% r6$ev) && ("ledger_consumed" %in% r6$ev) && any(c6 == "axis_long_short") &&
+      grepl("롱숏", paste(r6$note, collapse = "")),
+      "B6 롱숏 + 하락월 r−b 강함 → 등재 없음 · 사유 axis_long_short · 보고 줄에 롱숏 축 사유 ★1810 재현",
+      paste(paste(r6$ev, collapse = ","), paste(c6, collapse = ","), paste(r6$note, collapse = "|")))
+
+  ## B7 — 기록 · 보고(2026-10-14 · 1810.08384 감독 실측): 구현 의심 꼬리표가 요청에 남고, 보고는 관문 · 재료 · β 통제 α 를 사실대로 적는다
+  ##   (구판: 요청에 꼬리표 없음 · '검증 4관문 통과' · '알파가 반대로 작동해 수익 엔진 재료로 쓰지 않는다' · 재료는 어느 큐에도 없음)
+  f7 <- .mk("B7", "F", .ds(TRUE, t = 12.99), has_short = TRUE)
+  writeLines(toJSON(list(beta = 0.0242, roles = list(alpha = list(t = 0.2463, basis = "2f"))), auto_unbox = TRUE),
+             file.path(f7$dir, "role_card.json"))
+  r7 <- .run_gate(f7, base_pt = -2.308, suspect = TRUE)
+  vl <- as.character(r7$report$verdict_line %||% "")[1]; ps <- as.character(r7$report$status$position %||% "")[1]
+  chk(isTRUE(r7$req$implementation_suspect) && identical(r7$req$program, "UNROUTED") && nzchar(as.character(r7$req$material %||% "")),
+      "B7a 요청에 implementation_suspect · 재료 배정(UNROUTED · 보류 줄)이 남는다", paste(names(r7$req), collapse = ","))
+  chk(nzchar(ps) && !grepl("4관문", ps, fixed = TRUE) && grepl("구현 의심", ps, fixed = TRUE) && grepl("misdeclared", ps, fixed = TRUE),
+      "B7b 관문 줄 = 지난 것만(계약 · PIT 구조 · 감사 판정 · 구현 의심) — '4관문 통과' 없음", ps)
+  chk(nzchar(vl) && !grepl("반대로 작동", vl, fixed = TRUE) && grepl("β 0.02", vl, fixed = TRUE) && grepl("β 통제 α t 0.25", vl, fixed = TRUE) &&
+      grepl("미분류", vl, fixed = TRUE) && grepl("−2.31", vl, fixed = TRUE),
+      "B7c 판정 줄 = PORT_t(KOSPI200 대비) + β · β 통제 α t 병기 + 재료 행방(미분류 보류) · 해석 문구('반대로 작동') 없음", vl)
 }
 
 cat("\n[C] 생산 레인 등재 — 계약 floor 를 우회하지 않고, 못 넣으면 사유가 남는다\n")

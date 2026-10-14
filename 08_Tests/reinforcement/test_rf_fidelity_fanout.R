@@ -17,6 +17,8 @@
 suppressMessages({ library(jsonlite) })
 `%||%` <- function(a, b) if (is.null(a) || length(a) == 0L) b else a
 ROOT <- Sys.getenv("QM_ROOT", "C:/Users/99922/OneDrive/Quant_Module_Moltbot"); setwd(ROOT)
+## ★E1 의 verify 자식 프로세스가 운영 저널에 audit_verified 를 남겼다(2026-10-14 실측 — 검사 실행마다 가짜 감사 기록 1줄) — 검사 싱크로 돌린다
+Sys.setenv(QVEST_RP_JLOG = file.path(tempdir(), sprintf("fo_jlog_%d.jsonl", Sys.getpid())))
 PASS <- 0L; FAIL <- 0L
 ok <- function(m) { PASS <<- PASS + 1L; cat(sprintf("  OK   %s\n", m)) }
 ng <- function(m, d = "") { FAIL <<- FAIL + 1L; cat(sprintf("  FAIL %s%s\n", m, if (nzchar(d)) paste0(" — ", d) else "")) }
@@ -184,6 +186,30 @@ r <- .run(f)
 if (!is.null(r) && !identical(r$verdict, "misdeclared"))
   ok("G3 항목 전체가 비발견이면 여전히 걸러낸다(공백·불릿 포함)") else
   ng("G3 채움이 통과했다")
+
+cat("\n=== H. 재감사 번복 — 병합기가 앞 회차 확인/번복을 모으는가 (2026-10-14 · 1810.08384 감사 상충 실측) ===\n")
+# 실측: 두 회차 감사가 같은 신호 정의를 반대로 말했는데 아무 데도 안 남았고, 2회차 기각이 구현자 몫(소비 + suspect)이 됐다.
+f <- .all_faith(); f[[REQ[1]]] <- list(axis = REQ[1], verdict = "misdeclared",
+  undeclared_changes = list("[12-1 누적 아님] 논문 §I 채택 정의는 12-1 누적인데 구현은 §V 230일 평균"), signal_mismatch = list(),
+  evidence = "§I 마지막 단락", confidence = "high", checked = "신호", note = "",
+  prior_review = list(list(item = "[모멘텀 식 — 일별 평균]", status = "overturned",
+                           evidence = "§I 'we will stick to the classical academic definition'"),
+                      list(item = "[관측 하한]", status = "confirmed", evidence = "§V")))
+f[[OPT[1]]]$prior_review <- list(list(item = "[인용 오기]", status = "overturned", evidence = ""))   # 근거 없는 번복
+r <- .run(f)
+pr <- r$prior_review %||% list()
+if (length(pr) == 3L) ok("H1 축별 prior_review 를 전부 모은다(근거 없는 번복은 admissible=FALSE 로)") else ng("H1", length(pr))
+if (identical(as.integer(r$n_overturned %||% -1L), 1L)) ok("H2 n_overturned = 근거 있는 번복만(1)") else
+  ng("H2", as.character(r$n_overturned %||% "NULL"))
+if (any(grepl("번복", unlist(r$flags %||% list()), fixed = TRUE))) ok("H3 번복이 flags 로 표면화") else ng("H3 flags 침묵")
+d <- rf_audit_disposition(r, 1L)
+if (identical(d$action, "audit_conflict")) ok("H4 병합 산출 → 재감사 처분 = audit_conflict ★양성") else ng("H4", as.character(d$action))
+r0 <- .run(.all_faith())
+if (identical(as.integer(r0$n_overturned %||% -1L), 0L) && !length(r0$prior_review %||% list()) &&
+    !any(grepl("번복", unlist(r0$flags %||% list()), fixed = TRUE)))
+  ok("H5 초회 감사(번복 칸 없음) → n_overturned 0 · 번복 flag 없음 ★음성") else ng("H5 초회 감사에 번복 흔적")
+if (grepl(".prior_audit_findings.md", fsrc, fixed = TRUE) && grepl('"prior_review"', fsrc, fixed = TRUE))
+  ok("H6 축 프롬프트가 앞 회차 지적 파일을 싣고 prior_review 를 요구한다") else ng("H6 재감사 프롬프트 배선 부재")
 
 cat(sprintf("\n합계: 통과 %d · 실패 %d\n", PASS, FAIL))
 cat(sprintf('{"test":"rf_fidelity_fanout","pass":%d,"fail":%d,"total":%d}\n', PASS, FAIL, PASS + FAIL))

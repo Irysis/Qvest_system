@@ -41,6 +41,42 @@ pps_collect <- function(route_files) {
   out
 }
 
+.pps_base_key <- function(k) sub("^(axv|arxiv):", "", as.character(.pps_or(k, ""))[1], ignore.case = TRUE)
+
+#' 라우터 v5 산출 → 논문(정본 키 — axv: 접두 제거)별 프로그램. 판정(verdict) 무관 — 이미 측정된 논문의 엔진 분류를 묻는 용도다
+#'   (2026-10-14 · 충실구현 검증기의 재료 배정 · 미분류 보류 해소). 같은 논문이 여러 날 분류됐으면 마지막 파일이 정본.
+#'   engine = not_relevant 는 "NOT_RELEVANT"(어느 엔진 재료도 아님)로 돌려준다.
+pps_engine_map <- function(route_files) {
+  out <- character(0)
+  for (f in sort(route_files)) {
+    d <- tryCatch(fromJSON(f, simplifyVector = FALSE), error = function(e) NULL)
+    if (is.null(d) || !identical(d$schema_version, "paper_router_v5")) next
+    for (p in .pps_or(d$papers, list())) {
+      eng <- as.character(.pps_or(p$engine, ""))[1]
+      k <- .pps_base_key(.pps_or(p$paper_key, .pps_or(p$id, "")))
+      if (is.na(k) || !nzchar(k)) next
+      if (eng %in% names(PPS_ENGINE_PROGRAM)) out[[k]] <- unname(PPS_ENGINE_PROGRAM[eng])
+      else if (identical(eng, "not_relevant")) out[[k]] <- "NOT_RELEVANT"
+    }
+  }
+  out
+}
+
+#' 미분류 재료(검증기 보류분 · paper_routing$unrouted) 중 v5 가 분류한 논문을 그 프로그램 큐로 옮긴다
+#' @return 옮긴 건수
+pps_resolve_unrouted <- function(emap, root = NULL, path = NULL) {
+  reg <- pr_load(root, path)
+  U <- .pps_or(reg$paper_routing$unrouted, list())
+  n <- 0L
+  for (u in U) {
+    b <- .pps_base_key(u$paper_key)
+    pg <- if (!is.na(b) && nzchar(b) && b %in% names(emap)) emap[[b]] else NA_character_
+    if (is.na(pg) || identical(pg, "NOT_RELEVANT")) next
+    if (isTRUE(pr_route_unrouted(u$key, pg, routed_by = "router_v5", root = root, path = path))) n <- n + 1L
+  }
+  n
+}
+
 pps_run <- function(root = NULL, dry_run = FALSE, registry_path = NULL) {
   rt <- .pps_or(root, Sys.getenv("QM_ROOT", getwd()))
   if (!exists("pr_enqueue_many", mode = "function"))
@@ -52,8 +88,9 @@ pps_run <- function(root = NULL, dry_run = FALSE, registry_path = NULL) {
     return(invisible(items))
   }
   added <- pr_enqueue_many(items, root = rt, path = registry_path)
-  cat(sprintf("[program_paper_sync] 후보 %d건 · 새로 넣음 %s\n", length(items),
-              if (length(added)) paste(sprintf("%s %d", names(added), added), collapse = " · ") else "0"))
+  moved <- pps_resolve_unrouted(pps_engine_map(files), root = rt, path = registry_path)
+  cat(sprintf("[program_paper_sync] 후보 %d건 · 새로 넣음 %s · 미분류 재료 분류 %d\n", length(items),
+              if (length(added)) paste(sprintf("%s %d", names(added), added), collapse = " · ") else "0", moved))
   invisible(added)
 }
 

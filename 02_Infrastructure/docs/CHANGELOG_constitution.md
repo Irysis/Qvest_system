@@ -145,6 +145,55 @@
 - 검사: test_rf_preaudit H4(활성 epoch 문장 · 구 축 문구 없음) · H5(구 epoch 재현) · H6(미지 epoch → rc 3) · H7(미해결 자리표시자 → rc 3) — 54/0 · 돌연변이(문장 치환 제거) → H1 · H2 · H4 · H5 FAIL 확인 뒤 복원.
 - 1차 실행 처분: 요청을 세션 처리(failed_needs_session → pending · auto_retries 미소모 · `session_resets` 기록). 1차 에이전트는 수리 전에 이미 산출 없이 rc=1 로 끝나 있었다(전사가 07:36:14 도구 결과 뒤 끊김 · 원인 미상 — 재실행에서 관찰).
 
+### (v10.01 · 버전 미변경) 감독 개선 3건 — 감사 상충 · 방어형 귀속/축 · 재료 배정과 보고 (2026-10-14)
+
+도훈 "감독하면서 잡은 것 3가지 개선해봐". 근거 = 1810.08384 루프 감독 기록(`04_Research/programs/_supervision/1810_08384_loop_supervision.md`) + 격리 교차 점검 ①.
+
+1. **감사 상충은 구현자 몫이 아니다**
+   - 실측: 1차 감사의 신호 축이 §I 채택 문장("stick to the classical academic definition")을 근거에 싣고도 '§V 식이 유일한 명시식'이라 판정했다. 재구현은 그 지적을 따랐고, 2차 감사가 그 수정을 다시 지적했다. 그 결과가 `proceed_suspect`(소비 + 꼬리표)로 처리됐다.
+   - 수리:
+     - 검증기가 재감사 직전에 앞 회차 지적 전문(재구현이 받은 피드백)을 `<wdir>/.prior_audit_findings.md` 로 넘긴다. 청정 레인에서는 청정 감사의 지적만 넘긴다.
+     - 축 프롬프트에 '재감사다' 절을 넣었다. 항목마다 `prior_review` confirmed/overturned 를 적게 하고, 번복할 때는 원문 근거를 필수로 한다. 인용 오기는 발견이 아니라 note 로 적는다.
+     - 병합기가 `prior_review` · `n_overturned` 를 모은다.
+     - 처분(`rf_audit_disposition`): 재감사 ∧ misdeclared ∧ 근거 있는 번복이면 `audit_conflict` 다.
+     - 검증기 분기: 소비 · 재료 · 등재를 하지 않는다. 스킵리스트와 요청에 `held_audit_conflict` 를 남기고 `audit_conflict.json` 을 쓴다. 푸시 1통을 보내고 다음 논문으로 간다(사람 대기 종점 없음).
+     - 세션 판정 경로 = alpha-search SKILL §5. 재구현 예약은 `reimplement_queue` 로 한다. suspect 수용 · 진행은 `audit_ruling` + `failure=audit_ruled` 다. 이때 레인은 검증기만 돌리고, 감사 관문 `rf_audit_gate(ruling=)` 은 감사를 다시 사지 않는다.
+     - 재구현 프롬프트에 반박 통로 `FIDELITY.audit_disputes` 를 열었다.
+   - 검사: rf_fidelity_audit 56/0(C6~C14 · 분기 샌드박스 실행 D7) · rf_fidelity_fanout 33/0(H1~H6) · audit_not_run 40/0 · retry_feedback 14/0.
+2. **방어형 경로의 베타 착시**
+   - 실측: 시장중립 롱숏(β 0.024)이 하락월 r−b t 12.99 로 `defensive_specialist` 등재됐다. 같은 측정의 역할 카드는 방어 F(β 잔차 t −1.35)였다.
+   - 카탈로그 방어형 411건을 β 잔차로 다시 재면(읽기 전용) 다음과 같다.
+     - **노출 방어 379건(92% · β 중앙 0.67)**
+     - 기전 방어 32건(롱숏 7 포함)
+     - 롱숏 23건
+   - 수리:
+     - `ds_score` 가 역할 카드와 같은 구성으로 β · β 잔차 하락월 세그먼트를 잰다. 구성은 전기간 월간 β 하나, e = r − β·b(α 포함)이고, 문턱은 같은 문턱을 쓴다(새 수치 없음).
+     - 귀속 라벨(selection/exposure/none)을 붙인다. `defensive` 원 판정은 그대로 둔다.
+     - `ds_pool_eligible`:
+       - 롱숏 산출은 경로와 무관하게 `axis_long_short` 다(2계층 = long-only 축).
+       - 방어형 경로는 기전 방어만 연다(`exposure_defense`).
+       - 귀속이 없는 구판 산출은 `dscore_unattributed` 다.
+     - 등재기 · 카탈로그 사본 · l2_admit · 백필이 같은 필드를 싣는다.
+     - 충실구현 레인의 2계층 모듈 등재를 **감사 뒤**로 옮겼다(러너 §7-c 는 레인에서 `QVEST_RP_REGISTER=0`). 감사에서 기각될 1차 구현이 감사 10분 전에 카탈로그에 오르던 것을 막는다.
+   - 검사: module_admission_seam 38/0(A6~A10 · B6 · B7) · rolling_defensive 50/0(E5~E12 — 시장중립 · 저베타는 노출, 비대칭은 기전) · l2_pool_admission 30/0.
+3. **재료 배정 · 보고**
+   - 실측: 검증기가 등록부에 없으면 `P1_RETURN` 을 기본값으로 적었다(라우터 v5 분류 0건 · 키 표기 axv: 불일치). 기저 PORT_t<0(kind=skipped)은 어느 큐에도 넣지 않았다. 구현 의심 꼬리표는 요청에 남지 않았다. 보고는 '검증 4관문 통과' · '알파가 반대로 작동'이었다.
+   - 수리:
+     - 배정 = ① 등록부 큐(정본 · axv: 키 둘 다) ② 라우터 v5 engine(`pps_engine_map` · 판정 무관) ③ 미분류 보류(`pr_hold_unrouted` → `paper_routing.unrouted`)다. 동기화가 v5 분류를 찾으면 큐로 옮기고(`pps_resolve_unrouted`), 세션은 `pr_route_unrouted` 로 옮긴다. 부팅 `Programs:` 줄에 미분류 수가 뜬다.
+     - 기저 미달도 재료로 넣는다. flags 는 base_below_threshold · base_port_t · implementation_suspect · has_short · audit_verdict 다.
+     - 요청 · 원장 park 사유에 implementation_suspect · program · material 을 남긴다.
+     - 보고:
+       - 관문 줄 = 실제로 지난 것(계약 · PIT 구조 · 감사 판정 · 구현 의심)이다.
+       - 판정 줄 = PORT_t(KOSPI200 대비) + β · β 통제 α t(역할 카드 · measurement-graduation §2 병기)다.
+       - 재료 행방(프로그램 · 미분류 보류 · 해당 없음)을 적는다.
+       - 미분류 표제는 '미분류'로 적는다(구판 '수익 엔진' 기본값).
+   - 검사: program_paper_sync 21/0(D · E — 검증기 정의를 잘라 실행) · replication_lane 70/0 · clean_lane · reimplement_queue · request_guard 등 22종 회귀 통과.
+- **데이터 교정은 하지 않았다(도훈 결정 대기)**:
+  - 카탈로그 2건 — 1차 기각 구현 `RP_20261014_080311_33184`, 2차 롱숏 방어형 `RP_20261014_194112_8700`.
+  - 1810.08384 재료의 프로그램 배정(교차 점검 = 구성 P3).
+  - 카탈로그 구판 방어형 411건 귀속 재산출(`backfill_module_defensive.R --write` · 기본 역할 모드 풀에는 영향 없음).
+- **선행 실패(이번 변경과 무관 · HEAD 판으로 재현)**: `test_program_registry` 2건(라운드 덮어쓰기 · P0 ready — 운영 등록부 상태를 빌린다) · `test_l2_pool_grade_floor` ②(운영 module_performance 의 역할 대표 F/C 수록).
+
 ---
 
 ## (v10.4 유지 · 버전 미변경) 09-26 중단분 배포 · B4 5축 · 유기체 O0a · 청정 레인 · 노출 표식 · 러너 재개 (2026-10-04)

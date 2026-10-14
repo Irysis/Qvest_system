@@ -340,10 +340,14 @@ PREV_FAIL=$("$PY" -c "
 import io,json
 try: print((json.loads(io.open(r'$REQ','rb').read().decode('utf-8')).get('failure') or '').strip())
 except Exception: print('')" 2>/dev/null)
-if { [ "$PREV_FAIL" = "audit_not_run" ] || [ "$PREV_FAIL" = "refresh_lock_deferred" ]; } && [ -s "$WDIR/engine.R" ]; then
+if { [ "$PREV_FAIL" = "audit_not_run" ] || [ "$PREV_FAIL" = "refresh_lock_deferred" ] || [ "$PREV_FAIL" = "audit_ruled" ]; } && [ -s "$WDIR/engine.R" ]; then
   # ★refresh_lock_deferred(2026-09-24) — 검증기 직전 리프레시 배리어로 측정 없이 연기된 요청. 엔진은 멀쩡하다 → 검증기만.
+  # ★audit_ruled(2026-10-14) — 감사 상충을 세션이 판정해 suspect 수용 · 진행으로 정한 요청(요청의 audit_ruling). 엔진은 그대로 →
+  #   검증기만(감사도 다시 사지 않는다 — 감사 관문이 남은 감사 파일 + 판정 처분으로 간다 · alpha-search SKILL §5).
   if [ "$PREV_FAIL" = "refresh_lock_deferred" ]; then
     jl verify_only_retry "paper=$P_KEY" "note=리프레시 배리어 연기분 재시도 — 에이전트 없이 검증기(측정+감사)만 재실행(엔진 보존)"
+  elif [ "$PREV_FAIL" = "audit_ruled" ]; then
+    jl verify_only_retry "paper=$P_KEY" "note=감사 상충 세션 판정 반영 — 에이전트 · 감사 재스폰 없이 검증기만(엔진 보존)"
   else
   jl verify_only_retry "paper=$P_KEY" "note=감사 미실행 재시도 — 에이전트 없이 검증기(측정+감사)만 재실행(엔진 보존)"
   fi
@@ -653,7 +657,11 @@ $AUDFB
 
 앞 판은 ${WDIR}/engine.rejected*.R 로 남아 있다. 무엇이 틀렸는지 보고, 지적된 지점을
 논문 원문으로 되돌려라. 지적이 부당하다고 판단하면 FIDELITY.json 의 changed 에
-**왜 그것이 논문과 일치하는지** 원문 근거로 적어라 — 침묵으로 넘기지 마라."
+**왜 그것이 논문과 일치하는지** 원문 근거로 적어라 — 침묵으로 넘기지 마라.
+★감사 지적도 원문 판독이라 **틀릴 수 있다**(2026-10-14 실측 — 감사가 원문의 채택 문장을 근거에 싣고도 반대 결론을 냈고,
+재구현이 그 지적을 따랐다). 지적을 따르기 전에 그 지적이 댄 원문 위치를 직접 읽어라. 원문이 지적과 반대면 따르지 말고
+FIDELITY.json 의 audit_disputes 에 [{\"item\": 지적 요약, \"paper_quote\": 원문 위치 + 인용, \"why\": 한 줄}] 로 적어라 —
+재감사가 그 반박을 원문으로 판정한다(앞 회차 지적이 번복되면 그 기각은 구현 실패로 세지 않는다)."
 fi
 
 # ★모델·노력수준 명시 (도훈 지적 2026-08-30 — 구판은 미지정이라 CLI 기본값에 의존했다).

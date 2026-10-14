@@ -94,6 +94,28 @@ if not A:
          '산출물이 없다는 이유만으로 unverifiable 을 내지 마라 — unverifiable 은 원문을 못 읽었을 때만이다)')
 htmlline = ("- 원문 전문(이 주소로 읽어라): " + os.environ['HTMLU']) if os.environ['HTMLU'] else \
            "- ★arxiv id 를 못 뽑았다. 원문 전문을 못 읽으면 verdict 는 unverifiable 이다."
+# ★재감사 — 앞 회차 지적 전문(검증기가 재구현 판 감사 직전에 WDIR/.prior_audit_findings.md 로 쓴다 = 재구현이 받은 피드백 그대로).
+#   실측(2026-10-14 · 1810.08384): 1차 감사의 신호 축이 §I 채택 문장을 근거에 싣고도 반대 결론을 냈고, 재구현은 그 지적을 따랐고,
+#   2차 감사가 그 수정을 다시 지적했다 — 두 회차가 같은 항목을 반대로 말했는데 아무 데도 안 남았고, 기각은 구현자 몫(소비 + suspect)이 됐다.
+#   재감사가 앞 회차 항목마다 confirmed/overturned 를 적게 하고, 번복(근거 있음)은 병합기 → 처분(audit_conflict)이 세션 판정으로 넘긴다.
+prior_p = os.path.join(W, '.prior_audit_findings.md')
+prior_txt = io.open(prior_p, encoding='utf-8').read().strip() if os.path.isfile(prior_p) else ''
+priorsec = ''
+if prior_txt:
+    priorsec = """
+## ★재감사다 — 앞 회차 감사 지적을 원문으로 다시 판정하라
+이 구현은 앞 회차 감사의 지적을 받고 재구현됐다. 감사 지적도 원문 판독이라 **틀릴 수 있다** — 실측(2026-10-14): 1차 감사가
+원문의 채택 문장을 근거에 싣고도 반대 결론을 냈고, 재구현이 그 지적을 따랐고, 2차 감사가 그 수정을 다시 지적했다.
+- 아래 항목 중 **네 축에 해당하는 것**마다 prior_review 에 한 줄씩 적어라 — `confirmed`(원문이 그 지적을 뒷받침한다) ·
+  `overturned`(원문이 그 지적과 반대다 · evidence 에 반대 근거의 원문 위치와 짧은 인용 필수). 네 축이 아닌 항목은 적지 마라.
+- 구현자가 FIDELITY.json(changed · audit_disputes)에서 그 지적을 반박했으면 그 반박도 원문으로 판정해 같은 줄에 반영하라.
+- 판정은 **원문으로만** 한다 — 재구현이 지적을 따랐는지, 성과가 어떤지와 무관하다.
+- 앞 회차 지적을 따른 변경을 네가 다시 지적하려면 그 앞 회차 항목을 먼저 `overturned` 로 적어라 — 두 회차가 같은 항목을
+  반대로 말하는 것을 숨기지 마라(그 상충은 구현자 몫이 아니라 세션 판정으로 간다).
+
+### 앞 회차 지적 전문
+%s
+""" % prior_txt
 rows = []
 for ax in axes:
     k = ax['key']
@@ -120,6 +142,8 @@ for ax in axes:
 - **네 축에서 아무것도 못 찾는 것은 정상이고, 정직한 결과다.** 없는 것을 만들어 내지 마라 —
   축 6개 중 발견이 있는 축은 보통 소수다. 빈손으로 돌아오는 것이 이 설계의 기본값이다.
 - **네 축 밖의 것을 보고하지 마라.** 다른 축에서 이상한 것이 눈에 띄면 note 에 한 줄만 남겨라.
+- **인용 오기는 발견이 아니다.** FIDELITY 의 절·식·표 번호가 틀렸어도 코드가 하는 일이 논문과 같으면 지적 항목이 아니다 —
+  note 에 한 줄로 적어라. 발견 = 코드가 하는 일이 논문과 다르거나, 선언이 코드가 하는 일과 다른 것.
 
 ## 대상
 - 논문: %s
@@ -127,7 +151,7 @@ for ax in axes:
 - 구현: %s/engine.R
 - 자기신고: %s/FIDELITY.json   ← **이 진술을 믿지 마라. 대조 대상이다.**
 - 측정 산출물: %s
-
+%s
 ## 원문 접근 (실측된 함정 — 2026-09-02)
 - `arxiv.org/abs/...` 는 **초록만** 준다. 초록만 읽고 판정하면 정의역을 틀린다.
 - `arxiv.org/pdf/...` 는 이 환경에서 못 읽는다.
@@ -153,8 +177,9 @@ for ax in axes:
   "evidence": "원문에서 근거를 찾은 위치(절·식 번호·표)",
   "confidence": "high|medium|low",
   "checked": "이 축에서 실제로 대조한 항목들 - 한 줄",
+  "prior_review": [{"item": "앞 회차 지적의 대괄호 요약 그대로", "status": "confirmed|overturned", "evidence": "원문 위치 + 짧은 인용(overturned 면 필수)"}],
   "_항목 서술 규약": "★모든 항목은 대괄호 **한 줄 요약**으로 시작한다 - 12~30자 · 그 항목만 읽고도 무엇이 어긋났는지 아는 문장 · 원문 인용이나 파일:행을 요약에 넣지 마라(뒤 본문에 적는다). 이 요약이 통지에 그대로 실리고 본문은 안 실린다 - 요약이 없으면 사람은 잘린 원문 조각을 받는다. 예: '[숏 레그 그로스 익스포저 24%% 미달]' · '[유니버스 탈락분 비중 재분배 없음]' · '[은닉층 순환 구조 미구현]'. ★용어는 그 분야의 정통 표기를 쓴다 - 임의 한글 조어를 만들지 말고, 원문 용어가 영문이면 통용 표기를 그대로(gross exposure · long/short leg · winsorize · lookback), 우리 지표는 정본 표기를 그대로(PORT_t · Calmar · MDD · OOS retention). 뜻이 통해도 조어면 읽는 사람이 두 번 해석한다.",
-  "_배열 규약": "undeclared_changes·signal_mismatch 는 **발견만** 담는다. 없으면 빈 배열 [] 로 두고 '불일치 없음' 같은 비발견을 항목으로 넣지 마라 - 근거 게이트가 배열 길이로 선다.",
+  "_배열 규약": "undeclared_changes·signal_mismatch 는 **발견만** 담는다. 없으면 빈 배열 [] 로 두고 '불일치 없음' 같은 비발견을 항목으로 넣지 마라 - 근거 게이트가 배열 길이로 선다. prior_review 는 재감사(위 '재감사다' 절이 있을 때)에서 네 축 항목만 - 아니면 빈 배열 [].",
   "note": "1~2줄"
 }
 
@@ -165,7 +190,7 @@ for ax in axes:
 
 축 파일을 쓰고 1줄로 판정만 보고하라.""" % (
         os.environ['AXB'], ax['title'], ax.get('tier',''), ax['focus'], ax['counterexample'],
-        os.environ['PURL'], htmlline, W, W, A, out, k, W)
+        os.environ['PURL'], htmlline, W, W, A, priorsec, out, k, W)
     pf = "%s/.audit_prompt_%s.txt" % (W, k)
     io.open(pf, 'w', encoding='utf-8', newline='').write(p)
     rows.append("\t".join([k, ax['model'], ax['effort'], pf, out]))

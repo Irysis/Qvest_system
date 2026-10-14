@@ -103,6 +103,34 @@ if (!grepl("regime_label|국면엔진 라벨 기준이다", src) && grepl("실�
   ok("E4 정의가 실현 하락월 — 국면 라벨을 참조하지 않는다") else
   ng("E4 국면 라벨 의존 잔존")
 
+cat("\n=== E2. 귀속 — 하락월 아웃퍼폼이 β 로 설명되면 노출 방어다 (2026-10-14 · 1810.08384 감독 실측) ===\n")
+# 실측: 시장중립 롱숏(β 0.026)이 하락월 r−b t 12.99 로 방어형 등재됐다 — 같은 측정의 역할 카드(β 잔차)는 방어 F 였다.
+set.seed(11); n2 <- 240L
+bm2    <- rnorm(n2, 0.006, 0.055)
+st_mn  <- rnorm(n2, 0.000, 0.03)                                          # 시장중립(β≈0 · α 0) — 1810 형태
+st_low <- 0.5 * bm2 + rnorm(n2, 0.000, 0.02)                              # 정적 노출 축소(β 0.5 · α 0)
+st_sel <- 0.9 * bm2 + ifelse(bm2 < 0, 0.012, -0.002) + rnorm(n2, 0, 0.015) # 하락월에만 추가 수익(비대칭 · 기전)
+st_hi  <- 1.3 * bm2 + rnorm(n2, 0.001, 0.02)                              # 고베타
+.sc <- function(s) { x <- .mk(s, bm2); ds_score(x$pr, x$br, DP) }
+dmn <- .sc(st_mn); dlo <- .sc(st_low); dse <- .sc(st_sel); dhi <- .sc(st_hi)
+if (isTRUE(dmn$defensive) && identical(dmn$attribution, "exposure") && abs(dmn$beta) < 0.2)
+  ok(sprintf("E5 시장중립: 하락월 r−b 는 방어형(t %.1f)이나 β %.2f · β 잔차 t %.2f → 노출 방어 ★1810 재현", dmn$down$t, dmn$beta, dmn$down_resid$t)) else
+  ng("E5 시장중립 귀속", paste(dmn$attribution, dmn$reason))
+if (isTRUE(dlo$defensive) && identical(dlo$attribution, "exposure"))
+  ok(sprintf("E6 정적 노출 축소(β %.2f) → 노출 방어", dlo$beta)) else ng("E6 저베타 귀속", paste(dlo$attribution, dlo$reason))
+if (isTRUE(dse$defensive) && identical(dse$attribution, "selection") && isTRUE(dse$defensive_selection))
+  ok(sprintf("E7 하락월 비대칭 수익 → 기전 방어(β 잔차 하락월 %+.2f%%/월 · t %.2f) ★음성 — 귀속이 진짜 방어를 막지 않는다",
+             100 * dse$down_resid$excess, dse$down_resid$t)) else ng("E7 기전 방어 귀속", paste(dse$attribution, dse$reason))
+if (!isTRUE(dhi$defensive) && identical(dhi$attribution, "none")) ok("E8 고베타 → 방어 없음") else ng("E8", paste(dhi$attribution))
+if (grepl("노출 방어", dmn$reason, fixed = TRUE) && grepl("β", dmn$reason, fixed = TRUE))
+  ok("E9 사유 문장에 β · 귀속이 실린다(보고에 '방어형 등재'만 남지 않는다)") else ng("E9 사유 문장", dmn$reason)
+g_mn <- ds_pool_eligible("F", dmn, DP); g_se <- ds_pool_eligible("F", dse, DP)
+g_sh <- ds_pool_eligible("F", dse, DP, has_short = TRUE); g_bs <- ds_pool_eligible("B", dse, DP, has_short = TRUE)
+if (!isTRUE(g_mn$eligible) && identical(g_mn$code, "exposure_defense")) ok("E10 풀 자격: 노출 방어 → 방어형 경로 미편입(exposure_defense)") else ng("E10", g_mn$code)
+if (isTRUE(g_se$eligible) && identical(g_se$route, "defensive_specialist")) ok("E11 풀 자격: 기전 방어 → defensive_specialist") else ng("E11", g_se$code)
+if (!isTRUE(g_sh$eligible) && identical(g_sh$code, "axis_long_short") && !isTRUE(g_bs$eligible) && identical(g_bs$code, "axis_long_short"))
+  ok("E12 롱숏 산출은 기전 방어 · 등급 B 여도 axis_long_short(2계층 long-only 축 · 경로 무관)") else ng("E12", paste(g_sh$code, g_bs$code))
+
 cat("\n=== F. 표본 부족 = '아님'이 아니라 '판정 불가' ===\n")
 Ss <- .mk(rnorm(70, 0.01, 0.02), c(rep(0.02, 62), rep(-0.03, 8)))   # 하락월 8개
 ds8 <- ds_score(Ss$pr, Ss$br, DP)
@@ -167,7 +195,8 @@ suppressMessages(source("02_Infrastructure/regime/l2_pool_admission.R"))
                      metric_type = "backtested", contract = list(contract_pass = TRUE)),
             d = list(grade = "F", essence_grade = "F", fr_eligible = TRUE,
                      metric_type = "backtested", contract = list(contract_pass = TRUE),
-                     defensive_score = list(status = "ok", defensive = TRUE, reason = "fx")))
+                     defensive_score = list(status = "ok", defensive = TRUE, reason = "fx",
+                                            attribution = "selection")))   # 2026-10-14~ 방어형 경로 = 기전 방어(귀속)만
 .on  <- l2_admit_catalog(.fx, floor = "B", defensive_route = TRUE)
 .off <- l2_admit_catalog(.fx, floor = "B", defensive_route = FALSE)
 if (grepl("grade_floor", .bcode, fixed = TRUE) &&

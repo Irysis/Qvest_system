@@ -34,21 +34,27 @@ MD5_BEFORE  <- if (file.exists(OPS_CATALOG)) unname(tools::md5sum(OPS_CATALOG)) 
 suppressMessages(source(file.path(ROOT, "02_Infrastructure/regime/l2_pool_admission.R")))
 
 # ── 합성 defensive_score (ds_score 반환 형태) ────────────────────────────────
-.ds <- function(defensive, status = "ok", n = 40L, excess = 0.015, t = 3.1, hit = 0.66)
-  list(status = status, defensive = defensive, convex = TRUE, n_months = 200L,
-       down = list(n = n, excess = excess, hit = hit, t = t, capture = 0.6),
-       deep = list(n = 9L, excess = excess, hit = hit, t = 1.6, capture = 0.9),
-       reason = "합성 픽스처")
+## (2026-10-14) 현행 ds_score 는 귀속(attribution · β · β 잔차 하락월)을 함께 낸다 — 방어형 경로는 selection(기전)만 연다.
+##   attribution = NULL 이면 구판 산출(귀속 없음) 픽스처다.
+.ds <- function(defensive, status = "ok", n = 40L, excess = 0.015, t = 3.1, hit = 0.66,
+                attribution = if (isTRUE(defensive)) "selection" else if (identical(defensive, FALSE)) "none" else NULL)
+  c(list(status = status, defensive = defensive, convex = TRUE, n_months = 200L,
+         down = list(n = n, excess = excess, hit = hit, t = t, capture = 0.6),
+         deep = list(n = 9L, excess = excess, hit = hit, t = 1.6, capture = 0.9),
+         reason = "합성 픽스처"),
+    if (!is.null(attribution)) list(attribution = attribution, beta = 0.8,
+                                    down_resid = list(n = n, excess = 0.006, hit = 0.6, t = 1.9, capture = 0.6)))
 
 # ── 합성 카탈로그 (운영 파일 미사용 — tempdir 사본으로만) ────────────────────
 .contract <- list(contract_pass = TRUE)
 .mod <- function(grade = "F", essence = NULL, meta_essence = NULL, ds = NULL,
-                 fr = TRUE, metric = "backtested") {
+                 fr = TRUE, metric = "backtested", has_short = NULL) {
   e <- list(strategy_id = "X", grade = grade, fr_eligible = fr, metric_type = metric,
             contract = .contract, sim_result_path = "x/sim_result.rds")
   if (!is.null(essence))      e$essence_grade <- essence
   if (!is.null(meta_essence)) e$meta <- list(essence_grade = meta_essence,
                                              essence_regrade_ref = "fixture_regrade")
+  if (!is.null(has_short))    e$meta <- c(e$meta, list(has_short = has_short))   # 등재기가 meta 에 남긴다(2026-10-14~)
   if (!is.null(ds))           e$defensive_score <- ds
   e
 }
@@ -61,7 +67,11 @@ MODS <- list(
                            ds = .ds(NA, status = "하락월 10 < 12 — 판정 불가")),
   m_emitF_essB      = .mod(grade = "F", essence = "B", ds = NULL),         # ⑦ 축 회귀
   m_emitF_metaB     = .mod(grade = "F", meta_essence = "B", ds = NULL),    # ⑦ 축 회귀
-  m_contract_fail   = .mod(grade = "F", essence = "F", ds = .ds(TRUE), fr = FALSE)
+  m_contract_fail   = .mod(grade = "F", essence = "F", ds = .ds(TRUE), fr = FALSE),
+  ## ⑧ 귀속 · 축(2026-10-14 · 1810.08384 감독 실측) — 하락월 r−b 의 베타 착시를 방어형 경로가 받지 않는다
+  m_F_exposure      = .mod(grade = "F", essence = "F", ds = .ds(TRUE, attribution = "exposure")),
+  m_F_legacy        = .mod(grade = "F", essence = "F", ds = .ds(TRUE, attribution = NULL)),
+  m_F_short         = .mod(grade = "F", essence = "F", ds = .ds(TRUE), has_short = TRUE)
 )
 TD <- file.path(tempdir(), sprintf("l2pool_%d", Sys.getpid()))
 dir.create(TD, recursive = TRUE, showWarnings = FALSE)
@@ -89,6 +99,12 @@ if (identical(.code("m_F_ds_notok"), "dscore_not_ok"))
 if (identical(.code("m_contract_fail"), "contract_floor") && is.na(R$routes[["m_contract_fail"]]))
   ok("A6 계약 floor 미달은 방어형이어도 편입 안 됨 — 다른 층의 거절로 따로 센다") else
   ng("A6", .code("m_contract_fail"))
+if (is.na(R$routes[["m_F_exposure"]]) && identical(.code("m_F_exposure"), "exposure_defense"))
+  ok("A7 ⑧ 하락월 아웃퍼폼이 β<1 로 설명됨(노출 방어) → 제외(exposure_defense)") else ng("A7", .code("m_F_exposure"))
+if (is.na(R$routes[["m_F_legacy"]]) && identical(.code("m_F_legacy"), "dscore_unattributed"))
+  ok("A8 ⑧ 구판 산출(귀속 없음) → 제외(dscore_unattributed — '방어형 아님'과 다른 칸)") else ng("A8", .code("m_F_legacy"))
+if (is.na(R$routes[["m_F_short"]]) && identical(.code("m_F_short"), "axis_long_short"))
+  ok("A9 ⑧ 카탈로그 meta.has_short=TRUE → 제외(axis_long_short — 2계층 long-only 축)") else ng("A9", .code("m_F_short"))
 
 cat("\n=== B. ④ 집계에 사유가 실제로 남는가 ===\n")
 tl <- R$tally
@@ -143,8 +159,9 @@ if (isFALSE(d_off) && isTRUE(d_on)) ok("D4 env 해석기 양방향 (OFF/ON)") el
 Sys.setenv(QVEST_L2_GRADE_FLOOR = "OFF")
 if (identical(l2_env_floor(), "OFF")) ok("D5 floor OFF 해석") else ng("D5 floor 해석")
 R_fo <- l2_admit_catalog(MODS, floor = "OFF", defensive_route = TRUE)
-if (R_fo$n_admitted == 7L && !is.null(R_fo$tally[["floor_off"]]))
-  ok(sprintf("D6 floor=OFF 진단판 = 계약 통과분 전량 편입 %d건", R_fo$n_admitted)) else
+## 계약 통과 10건 중 롱숏 1건(m_F_short)은 진단판에서도 축으로 빠진다(축은 등급 문제가 아니다) → 9건
+if (R_fo$n_admitted == 9L && !is.null(R_fo$tally[["floor_off"]]) && identical(as.character(R_fo$codes[["m_F_short"]]), "axis_long_short"))
+  ok(sprintf("D6 floor=OFF 진단판 = 계약 통과분 중 축(롱숏) 제외 전량 편입 %d건", R_fo$n_admitted)) else
   ng("D6 floor OFF", as.character(R_fo$n_admitted))
 if (is.na(.old_route)) Sys.unsetenv("QVEST_L2_DEFENSIVE_ROUTE") else
   Sys.setenv(QVEST_L2_DEFENSIVE_ROUTE = .old_route)
@@ -155,7 +172,7 @@ cat("\n=== E. ⑥ 술어가 계약을 **런타임에** 경유하는가 (sentinel
 ## 소스 문자열이 아니라 동작으로 재도출한다 — 사본을 들고 있으면 sentinel 이 안 먹는다.
 .real <- ds_pool_eligible
 assign("ds_pool_eligible",
-       function(grade, dscore, params = NULL, floor = "B", defensive_route = TRUE)
+       function(grade, dscore, params = NULL, floor = "B", defensive_route = TRUE, ...)   # ... = has_short(2026-10-14~)
          list(eligible = TRUE, route = "SENTINEL", code = "sentinel", reason = "주입"),
        envir = globalenv())
 R_s <- l2_admit_catalog(MODS, floor = "B", defensive_route = TRUE)

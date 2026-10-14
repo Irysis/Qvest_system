@@ -96,9 +96,12 @@ l2_admit <- function(rec, floor = "B", defensive_route = TRUE, params = NULL) {
   eg <- l2_essence_grade(rec)
   ds <- .l2_get(rec, "defensive_score")
   if (!is.null(ds) && !is.list(ds)) ds <- NULL          # 스칼라/NA 잔재는 미산출로 본다
+  ## 롱숏 여부 = 등재기가 meta 에 남긴 값(2026-10-14~) — 구판 레코드는 없다(NA = 축 판정 건너뜀 · 방어형은 귀속 미산출로 걸린다)
+  hs <- .l2_get(.l2_get(rec, "meta"), "has_short")
+  hs <- if (is.null(hs) || !length(hs)) NA else suppressWarnings(as.logical(hs)[1])
   r <- ds_pool_eligible(eg$grade, ds,
                         params = if (is.null(params)) ds_params() else params,
-                        floor = floor, defensive_route = defensive_route)
+                        floor = floor, defensive_route = defensive_route, has_short = hs)
   r$grade_used   <- eg$grade
   r$grade_source <- eg$source
   r$has_dscore   <- !is.null(ds)

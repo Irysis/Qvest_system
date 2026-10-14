@@ -102,6 +102,43 @@ d2 <- rf_audit_disposition(list(verdict = "misdeclared", undeclared_changes = li
 if (identical(d2$action, "proceed_suspect"))
   ok("C5 재구현도 기각 → 소비하되 꼬리표(무한 재시도 아님)") else ng("C5 2회차 처분", d2$action)
 
+cat("\n=== C2. 감사 상충 — 재감사가 앞 회차 지적을 번복하면 구현자 몫이 아니다 (2026-10-14 · 1810.08384 실측) ===\n")
+# 실측: 1차 감사의 신호 축이 §I 채택 문장을 근거에 싣고도 반대 결론을 냈고, 재구현이 그 지적을 따랐고, 2차 감사가 그 수정을
+#   다시 지적했다. 구판 처분은 2회차 misdeclared 를 그대로 proceed_suspect(소비 + 꼬리표)로 냈다 — 감사의 오독이 구현자 몫이 됐다.
+.mk <- function(pr) list(verdict = "misdeclared", undeclared_changes = list("u1"), evidence = "§I", prior_review = pr)
+.pr <- function(st, ev) list(list(item = "[모멘텀 식 — 일별 평균]", status = st, evidence = ev))
+d3 <- rf_audit_disposition(.mk(.pr("overturned", "§I 'we will stick to the classical academic definition'")), 1L)
+if (identical(d3$action, "audit_conflict") && identical(as.integer(d3$n_overturned), 1L))
+  ok("C6 재감사 번복(근거 있음) → audit_conflict(소비 보류 · 세션 판정) ★양성") else ng("C6 번복 처분", d3$action)
+d4 <- rf_audit_disposition(.mk(.pr("overturned", "  ")), 1L)
+if (identical(d4$action, "proceed_suspect")) ok("C7 근거 없는 번복은 세지 않는다 → 구판 처분(suspect)") else ng("C7 근거 없는 번복", d4$action)
+d5 <- rf_audit_disposition(.mk(.pr("confirmed", "§V")), 1L)
+if (identical(d5$action, "proceed_suspect")) ok("C8 앞 회차 지적 확인(confirmed) → 구현자 몫(suspect) 그대로 ★음성") else ng("C8 확인 처분", d5$action)
+d6 <- rf_audit_disposition(.mk(.pr("overturned", "§I")), 0L)
+if (identical(d6$action, "reimplement")) ok("C9 초회 감사는 번복 칸이 있어도 재구현(상충은 재감사에서만)") else ng("C9 초회 처분", d6$action)
+d7 <- rf_audit_disposition(list(verdict = "adapted", prior_review = .pr("overturned", "§I")), 1L)
+if (identical(d7$action, "proceed")) ok("C10 기각이 아니면 번복이 있어도 진행(검증기는 fidelity_prior_overturned 로 기록만)") else
+  ng("C10 비기각 번복 처분", d7$action)
+wr(c(.mk(.pr("OVERTURNED ", "§I")), list(note = "n")))   # 파일 왕복 — rf_audit_read 가 prior_review 를 버리면 처분이 번복을 못 본다
+d8 <- rf_audit_disposition(rf_audit_read(AP), 1L)
+if (identical(d8$action, "audit_conflict")) ok("C11 파일 왕복 — rf_audit_read 가 prior_review 를 싣고 대소문자·공백을 접는다") else
+  ng("C11 파일 왕복", d8$action)
+## 세션 판정(ruling) — 상충 뒤 세션이 정한 처분은 감사를 다시 사지 않고 관문 한 자리에서 적용된다
+.ns <- 0L; .sp <- function() { .ns <<- .ns + 1L; 0L }
+GW <- file.path(TMP, "gate_w"); dir.create(GW, showWarnings = FALSE)
+write(toJSON(.mk(.pr("overturned", "§I")), auto_unbox = TRUE, null = "null"), file.path(GW, "fidelity_audit.json"))
+g1 <- rf_audit_gate(GW, .sp, retries_done = 1L, ruling = list(action = "proceed_suspect", by = "session", decision = "T-1"))
+if (identical(g1$disp$action, "proceed_suspect") && .ns == 0L && file.exists(file.path(GW, "fidelity_audit.json")))
+  ok("C12 판정(proceed_suspect) + 남은 감사 파일 → 재스폰 0 · 판정 처분") else ng("C12 판정 적용", sprintf("%s spawns=%d", g1$disp$action, .ns))
+.ns <- 0L
+g2 <- rf_audit_gate(GW, .sp, max_retries = 0L, retries_done = 1L, ruling = list(action = "reimplement"))
+if (.ns == 1L) ok("C13 허용 밖 판정(reimplement)은 적용하지 않고 정상 관문(스폰 1) ★음성") else ng("C13 허용 밖 판정", sprintf("spawns=%d", .ns))
+.ns <- 0L   # 직전 관문이 감사 파일을 지웠다(스폰 전 삭제 규약) — 파일 없는 판정은 감사 없이 개설로 가지 않는다
+g3 <- rf_audit_gate(GW, .sp, max_retries = 0L, retries_done = 1L, ruling = list(action = "proceed"))
+if (.ns == 1L && identical(g3$disp$action, "audit_required"))
+  ok("C14 감사 파일 없는 판정은 적용하지 않는다 → 정상 관문 · 미실행이면 audit_required(감사 없이 개설 불가 유지)") else
+  ng("C14 파일 없는 판정", sprintf("%s spawns=%d", g3$disp$action, .ns))
+
 cat("\n=== D. 조립 순서 — 감사가 **소비보다 앞**에 서는가 (이 검사의 핵심) ===\n")
 vf <- readLines(file.path(ROOT, "02_Infrastructure/ops/rf_replication_verify.R"), warn = FALSE)
 code <- sub("#.*$", "", vf)
@@ -118,6 +155,57 @@ if (!is.na(i_aud) && !is.na(i_opn) && i_aud < i_opn)
 if (any(grepl('identical(.disp$action, "reimplement")', code, fixed = TRUE)) &&
     any(grepl("quit(status = 0)", code, fixed = TRUE)))
   ok("D3 재구현이면 조기 종료 — 원장에 아무것도 열지 않는다") else ng("D3 조기 종료 배선")
+## 감사 상충 분기(2026-10-14) — 소비 앞 · 분기 안에 소비/재료 등록이 없고 · 보류 표식 + 다음 논문으로 간다
+i_cf <- which(grepl('if (identical(.disp$action, "audit_conflict"))', code, fixed = TRUE))[1]   # 분기 머리(번복 기록 줄의 !identical 과 구분)
+if (!is.na(i_cf) && !is.na(i_con) && i_cf < i_con) {
+  q_cf <- which(grepl("quit(status = 0)", code, fixed = TRUE) & seq_along(code) > i_cf)[1]
+  seg <- paste(code[i_cf:q_cf], collapse = "\n")
+  if (!grepl("ledger_consumed|v1001_handoff|pr_enqueue|rmm_register|qmirror", seg))
+    ok(sprintf("D4 감사 상충 분기(%d행)가 소비 앞이고 분기 안에 소비·재료 등록이 없다", i_cf)) else
+    ng("D4 감사 상충 분기가 소비·재료 등록을 부른다")
+  if (grepl("held_audit_conflict", seg, fixed = TRUE) && grepl("next_replication.R", seg, fixed = TRUE))
+    ok("D5 상충 = 이 논문만 보류(스킵리스트 held_audit_conflict) + 레인은 다음 논문(사람 대기 종점 없음)") else
+    ng("D5 보류 표식 또는 다음 논문 발행 누락")
+} else ng("D4 감사 상충 분기가 없거나 소비 뒤", sprintf("cf=%s con=%s", i_cf, i_con))
+## D7 — 분기 코드를 샌드박스에서 **실행**한다(정적 검사는 분기가 도는지를 못 잰다). 운영 스킵리스트·요청·텔레그램·다음 논문 발행은 전부 대역.
+if (!is.na(i_cf)) {
+  q_cf <- which(grepl("quit(status = 0)", code, fixed = TRUE) & seq_along(code) > i_cf)[1]
+  SB <- file.path(TMP, "cf_sandbox"); dir.create(file.path(SB, "06_Registry"), recursive = TRUE, showWarnings = FALSE)   # 역슬래시 섞인 경로 그대로(분기가 견뎌야 한다)
+  dir.create(file.path(SB, "w"), showWarnings = FALSE); dir.create(file.path(SB, "art"), showWarnings = FALSE)
+  writeLines('{"schema":"replication_skiplist_v1","entries":[{"paper_key":"9999.00001","status":"revoked"}]}', file.path(SB, "06_Registry/replication_skiplist.json"))
+  writeLines('{"status":"in_progress","paper":{"paper_key":"9999.00001"}}', file.path(SB, "06_Registry/replication_request.json"))
+  ev <- new.env(parent = globalenv()); sent <- list(); called <- character(0)
+  ev$ROOT <- SB; ev$REQ <- file.path(SB, "06_Registry/replication_request.json"); ev$WDIR <- file.path(SB, "w")
+  ev$PKEY <- "9999.00001"; ev$URL <- "https://arxiv.org/abs/9999.00001"; ev$TITLE <- "샌드박스 논문"
+  ev$G <- "F"; ev$ar <- file.path(SB, "art/authoritative_remeasure.json"); ev$.aud_p <- file.path(SB, "w/fidelity_audit.json")
+  ev$.aud_tries <- 1L; ev$.prior_fb <- "- 신호 불일치: [signal] [모멘텀 식 — 일별 평균] …"
+  ev$.disp <- list(action = "audit_conflict", feedback = "- 미신고 변경: [signal] [12-1 누적 아님] …", n_overturned = 1L)
+  ev$.aud <- list(verdict = "misdeclared", prior_review = list(
+    list(item = "[모멘텀 식 — 일별 평균]", status = "overturned", evidence = "§I 'we will stick to the classical academic definition'"),
+    list(item = "[근거 없음]", status = "overturned", evidence = "")))
+  ev$jlog <- function(event, ...) called <<- c(called, event)
+  ev$.v1001_report <- function(...) { sent[[length(sent) + 1L]] <<- list(...); invisible(TRUE) }
+  ev$.tg_target_label <- function(t, k) t
+  ev$.tg_clip <- function(x, cap) substr(as.character(x), 1L, cap)
+  ev$system2 <- function(cmd, args, ...) { called <<- c(called, paste("system2", paste(args, collapse = " "))); 0L }
+  ev$quit <- function(...) stop(structure(class = c("quit_called", "condition"), list(message = "quit", call = NULL)))
+  quitted <- tryCatch({ eval(parse(text = vf[i_cf:(q_cf + 1L)]), envir = ev); FALSE },
+                      quit_called = function(e) TRUE, error = function(e) { cat("    eval 오류:", conditionMessage(e), "\n"); NA })
+  sk  <- fromJSON(file.path(SB, "06_Registry/replication_skiplist.json"), simplifyVector = FALSE)
+  rq  <- fromJSON(file.path(SB, "06_Registry/replication_request.json"), simplifyVector = FALSE)
+  cfj <- file.path(SB, "w/audit_conflict.json")
+  held <- Filter(function(e) identical(e$status, "held_audit_conflict"), sk$entries)
+  if (isTRUE(quitted) && length(held) == 1L && identical(rq$status, "held_audit_conflict") && file.exists(cfj) &&
+      identical(fromJSON(cfj, simplifyVector = FALSE)$n_overturned, 1L) && length(sent) == 1L && isTRUE(sent[[1]]$push) &&
+      any(grepl("next_replication.R", called, fixed = TRUE)) && "fidelity_audit_conflict" %in% called)
+    ok("D7 분기 실행 — 보류 1건(revoked 옛 항목 옆) · 요청 held · audit_conflict.json(근거 있는 번복 1) · 푸시 1통 · 다음 논문 발행") else
+    ng("D7 분기 실행", sprintf("quit=%s held=%d req=%s cf=%s sent=%d calls=%s", quitted, length(held), rq$status %||% "?",
+                             file.exists(cfj), length(sent), paste(called, collapse = ",")))
+}
+i_pw <- which(grepl(".prior_audit_findings.md", code, fixed = TRUE))[1]
+i_gt <- which(grepl("rf_audit_gate(", code, fixed = TRUE))[1]
+if (!is.na(i_pw) && !is.na(i_gt) && i_pw < i_gt) ok("D6 앞 회차 지적 파일을 감사 관문 앞에서 쓴다(재감사가 확인/번복할 대상)") else
+  ng("D6 앞 회차 지적 전달 배선", sprintf("pw=%s gate=%s", i_pw, i_gt))
 
 cat("\n=== E. 배선 (주석 제외) ===\n")
 code_of <- function(f) paste(sub("#.*$", "", readLines(file.path(ROOT, f), warn = FALSE)), collapse = "\n")
