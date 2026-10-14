@@ -53,14 +53,6 @@ for (ax in AXES) {
       confidence = "", checked = "", counterexample = "")
     next
   }
-  for (z in if (is.list(A$prior_review)) A$prior_review else list()) {   # 형식 위반(문자열 등)은 병합을 죽이지 않고 건너뛴다
-    if (!is.list(z)) next
-    st <- tolower(trimws(as.character(z$status %||% "")[1]))
-    if (is.na(st) || !st %in% c("confirmed", "overturned")) next
-    zev <- as.character(z$evidence %||% "")[1]; if (is.na(zev)) zev <- ""
-    prior[[length(prior) + 1L]] <- list(axis = k, item = as.character(z$item %||% "")[1], status = st,
-                                        evidence = zev, admissible = nzchar(trimws(zev)))
-  }
   v <- as.character(A$verdict %||% "unverifiable")[1]
   if (!v %in% names(RANK)) v <- "unverifiable"
   u <- .chr(A$undeclared_changes); s <- .chr(A$signal_mismatch)
@@ -71,6 +63,17 @@ for (ax in AXES) {
     # 근거 없는 기각은 감사가 아니라 잡음이다 — 판정을 끌고 가지 못하게 막는다
     if (!nzchar(ev)) { adm <- FALSE; rsn <- "misdeclared 인데 원문 근거가 없다" }
     else if (!length(u) && !length(s)) { adm <- FALSE; rsn <- "misdeclared 인데 실제 지적 항목이 0건(채움 문장 제외 후)" }
+  }
+  ## 앞 회차 지적 확인/번복 — 번복 채택 = 원문 근거가 채움 문장이 아니고(.filler) · 이 축이 채택(adm)됐고 · 원문을 읽은 축(unverifiable 아님)
+  ##   (2026-10-14 리뷰 U8 — 근거 비공백 하나로는 채움 문자열 · 원문을 못 읽은 축의 번복도 소비 보류를 열었다)
+  for (z in if (is.list(A$prior_review)) A$prior_review else list()) {   # 형식 위반(문자열 등)은 병합을 죽이지 않고 건너뛴다
+    if (!is.list(z)) next
+    st <- tolower(trimws(as.character(z$status %||% "")[1]))
+    if (is.na(st) || !st %in% c("confirmed", "overturned")) next
+    zev <- as.character(z$evidence %||% "")[1]; if (is.na(zev)) zev <- ""
+    ev_ok <- nzchar(trimws(zev)) && !isTRUE(.filler(zev))
+    prior[[length(prior) + 1L]] <- list(axis = k, item = as.character(z$item %||% "")[1], status = st, evidence = zev,
+                                        admissible = ev_ok && isTRUE(adm) && !identical(v, "unverifiable"))
   }
   if (adm) {
     if (length(u)) mergedU <- c(mergedU, sprintf("[%s] %s", k, u))
@@ -107,7 +110,7 @@ if (sum(reqok) < nreq)
 ninadm <- sum(!vapply(rows, function(r) isTRUE(r$admissible), logical(1)))
 if (ninadm > 0L) flags <- c(flags, sprintf("불채택 축 %d건(근거 없는 기각 또는 미산출)", ninadm))
 n_over <- sum(vapply(prior, function(z) identical(z$status, "overturned") && isTRUE(z$admissible), logical(1)))
-if (n_over > 0L) flags <- c(flags, sprintf("이전 회차 지적 %d건 번복(근거 있음) — 감사 상충 · 구현자 몫으로 세지 않는다(세션 판정)", n_over))
+if (n_over > 0L) flags <- c(flags, sprintf("이전 회차 지적 %d건 번복(근거 있음) — 재감사 판정이 misdeclared · adapted 면 감사 상충(소비 보류 · 세션 판정) · faithful 이면 기록만", n_over))
 
 out <- list(
   verdict = FIN,

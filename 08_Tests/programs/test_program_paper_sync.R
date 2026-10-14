@@ -24,6 +24,11 @@ live_md5 <- tools::md5sum(pr_path())
 sb <- file.path(tempdir(), "pps_sb"); dir.create(file.path(sb, "stage_artifacts/paper_recharge"), recursive = TRUE, showWarnings = FALSE)
 dir.create(file.path(sb, "06_Registry"), showWarnings = FALSE)
 file.copy(pr_path(), file.path(sb, "06_Registry/research_programs.json"), overwrite = TRUE)
+## 사본의 미분류 보류는 비운다 — 운영 보류 건수를 빌리면 아래 개수 단정이 운영 상태에 따라 깨진다(2026-10-14 리뷰 U2)
+local({ f <- file.path(sb, "06_Registry/research_programs.json"); r0 <- fromJSON(f, simplifyVector = FALSE)
+  if (is.null(r0$paper_routing)) r0$paper_routing <- list()
+  r0$paper_routing$unrouted <- list()
+  writeLines(toJSON(r0, auto_unbox = TRUE, pretty = TRUE, null = "null", na = "null", digits = NA), f, useBytes = TRUE) })
 mk <- function(key, engine, verdict) list(title = paste("t", key), id = key, paper_key = key, source = "arxiv",
                                           engine = engine, engine_secondary = list(), verdict = verdict,
                                           route = if (verdict == "testable") "replication" else "skip", reason = "r")
@@ -107,9 +112,13 @@ for (f in c("program_registry.R", "program_paper_sync.R"))
 }
 if (any(vapply(DEFS, is.null, logical(1)))) chk("E0 검증기 도우미 정의 추출", FALSE, "정의 이름이 바뀌었으면 재조준") else {
   e3 <- .handoff("3")              # 큐에 axv:3 (B 절 동기화) — 정본 키 '3' 으로 찾는다
-  chk("E1 큐의 axv: 키를 정본 키로 찾는다 → P3 · 소비 · 엔진 재료 등록",
-      identical(e3$ho$program, "P3_CONSTRUCTION") && identical(e3$ho$routed_by, "program_queue") && isTRUE(e3$ho$enqueued),
-      paste(e3$ho$program, e3$ho$routed_by, paste(e3$J, collapse = ",")))
+  R_e1 <- pr_load(path = reg_p)
+  consumed_e1 <- any(vapply(pr_get(R_e1, "P3_CONSTRUCTION")$consumed %||% list(), function(q) identical(q$key, "axv:3"), logical(1)))
+  still_q <- any(vapply(pr_get(R_e1, "P3_CONSTRUCTION")$queue %||% list(), function(q) identical(q$key, "axv:3"), logical(1)))
+  chk("E1 큐의 axv: 키를 정본 키로 찾는다 → P3 · 논문 항목 소비(큐 → 소비 기록) · 엔진 재료 등록",
+      identical(e3$ho$program, "P3_CONSTRUCTION") && identical(e3$ho$routed_by, "program_queue") && isTRUE(e3$ho$enqueued) &&
+        consumed_e1 && !still_q,
+      paste(e3$ho$program, e3$ho$routed_by, consumed_e1, still_q, paste(e3$J, collapse = ",")))
   e5 <- .handoff("5", kind = "skipped")   # v5 redundant → 큐에는 없지만 엔진 분류는 있다 · 기저 미달도 재료다
   chk("E2 큐에 없어도 v5 분류(판정 무관)로 배정 · 기저 미달(skipped)도 재료로 등록",
       identical(e5$ho$program, "P2_DEFENSE") && identical(e5$ho$routed_by, "router_v5") && isTRUE(e5$ho$enqueued))
@@ -124,6 +133,19 @@ if (any(vapply(DEFS, is.null, logical(1)))) chk("E0 검증기 도우미 정의 �
         grepl("미분류", e8$line) && !grepl("수익 엔진", e8$line), e8$line)
   chk("E5 등록부 스키마 유지", length(pr_validate(R3)) == 0L)
 }
+
+cat("\n=== F. 새 불변식 위반 주입(2026-10-14 리뷰 U14) ===\n")
+Rv <- pr_load(path = reg_p)
+Rv$paper_routing$unrouted <- c(Rv$paper_routing$unrouted %||% list(), list(list(key = "engine:RP_T_3", paper_key = "dup")))   # E1 이 P3 큐에 넣은 키와 같다
+chk("F1 미분류 보류와 프로그램 큐의 같은 key → pr_validate 가 중복을 잡는다(쓰기 거부 사유)",
+    any(grepl("중복", pr_validate(Rv), fixed = TRUE)), paste(pr_validate(Rv), collapse = " | "))
+h4 <- pr_hold_unrouted(list(key = "engine:RP_NR", kind = "engine", paper_key = "4"), path = reg_p)   # v5 가 not_relevant 로 분류한 논문
+pps_run(root = sb, registry_path = reg_p)
+Rn <- pr_load(path = reg_p)
+nr_left <- any(vapply(Rn$paper_routing$unrouted %||% list(), function(u) identical(u$key, "engine:RP_NR"), logical(1)))
+nr_moved <- !is.na(pr_find_key(Rn, "engine:RP_NR"))
+chk("F2 not_relevant 논문의 보류분은 동기화가 프로그램 큐로 옮기지 않는다(NOT_RELEVANT 건너뛰기)", isTRUE(h4) && nr_left && !nr_moved,
+    paste(h4, nr_left, nr_moved))
 
 cat("\n=== C. 운영 등록부는 그대로 ===\n")
 chk("검사가 운영 등록부를 바꾸지 않았다", identical(unname(tools::md5sum(pr_path())), unname(live_md5)))

@@ -86,9 +86,7 @@ for (dd in ds) {
       pass_life = round(roll$pass_life, 4), pass_recent = round(roll$pass_recent, 4),
       current = roll$current, prior_recoveries = roll$history$prior_recoveries,
       current_run = roll$history$current_run, span = roll$span)
-    aj$defensive_score <- if (is.null(defn) || !identical(defn$status, "ok")) NULL else list(
-      status = defn$status, defensive = defn$defensive,   # convex 폐기 2026-09-07
-      down = defn$down, mid = defn$mid, deep = defn$deep, up = defn$up, reason = defn$reason)
+    aj$defensive_score <- if (is.null(defn) || !identical(defn$status, "ok")) NULL else ds_record(defn)   # 생산자 단일 모양(귀속 포함 · 2026-10-14 리뷰 C3)
     aj$recent_regime_rescued <- isTRUE(resc$rescued)
     aj$retro <- list(version = "rolling_defensive_v1", applied_at = STAMP,
                      grade_before = g0, grade_after = g1,

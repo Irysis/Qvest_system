@@ -192,6 +192,7 @@ rf_audit_overturned <- function(aud) {
   if (!is.list(pr) || !length(pr)) return(list())
   Filter(function(z) {
     if (!is.list(z)) return(FALSE)
+    if (identical(z$admissible, FALSE)) return(FALSE)        # 병합기가 불채택으로 판정한 번복(채움 근거 · 원문 못 읽은 축) — 리뷰 U8
     st <- tolower(trimws(as.character(z$status %||% "")[1])); ev <- as.character(z$evidence %||% "")[1]
     isTRUE(st == "overturned") && !is.na(ev) && nzchar(trimws(ev))
   }, pr)
@@ -206,6 +207,11 @@ rf_audit_disposition <- function(aud, retries_done = 0L) {
   #   소비·개설됐다. 감사자가 원문을 못 읽어 낸 unverifiable(reason 없음)은 정직한 판정이라 proceed 를 유지한다.
   if (identical(aud$verdict, "unverifiable") && !is.null(aud$reason))
     return(list(action = "audit_required", reason = as.character(aud$reason)[1]))
+  ## ★adapted + 근거 있는 번복도 상충이다(2026-10-14 리뷰 C7). 재구현이 틀린 지적을 따르고 그 변경을 changed 에 신고하면 재감사 판정은
+  ##   정의상 adapted('선언된 차이')가 된다 — misdeclared 에만 서면 번복된 해석의 엔진이 꼬리표 없이 소비된다. faithful + 번복은 진행한다
+  ##   (지금 엔진이 논문과 같다 = 틀린 지적을 따르지 않았다).
+  if (identical(aud$verdict, "adapted") && as.integer(retries_done) >= 1L && .n_overturned(aud) > 0L)
+    return(list(action = "audit_conflict", feedback = "", n_overturned = .n_overturned(aud)))
   if (!identical(aud$verdict, "misdeclared")) return(list(action = "proceed"))
   items <- c(vapply(aud$undeclared_changes %||% list(), function(x) paste0("- 미신고 변경: ", as.character(x)), character(1)),
              vapply(aud$signal_mismatch    %||% list(), function(x) paste0("- 신호 불일치: ", as.character(x)), character(1)))
@@ -243,17 +249,34 @@ rf_audit_gate <- function(wdir, spawn_fn, max_retries = 2L, retries_done = 0L, l
   ## ★세션 판정(2026-10-14) — 감사 상충을 세션이 원문으로 판정해 proceed|proceed_suspect 로 정했으면 감사를 다시 사지 않는다
   ##   (같은 감사를 또 사면 같은 상충이 난다). 남은 감사 파일로 처분한다. 허용 처분이 아니거나 감사 파일이 없으면 판정을
   ##   적용하지 않고 정상 관문으로 간다 — "감사 없이 개설 불가" 는 판정 경로에서도 그대로다(이 함수가 그 한 자리다).
+  ##   ★판정은 **엔진에 묶인다**(2026-10-14 리뷰 C1): ruling$engine_md5 = 상충 당시 engine.R 지문(audit_conflict.json). 지금 엔진과
+  ##     다르면(판정 뒤 엔진이 바뀌었다 — 재구현 · 재실행 경로) 판정을 적용하지 않는다 — 그 엔진은 감사를 다시 받는다.
+  ##     감사 파일이 파손(rf_audit_read reason)이어도 적용하지 않는다. 형식 위반 판정도 무시 기록을 남긴다.
+  if (!is.null(ruling) && !is.list(ruling))
+    .log("fidelity_audit_ruling_ignored", why = "판정 형식 위반(객체 아님)", note = "정상 관문으로 간다")
   r_act <- if (is.list(ruling)) as.character(ruling$action %||% "")[1] else ""
   if (length(r_act) == 1L && !is.na(r_act) && nzchar(r_act)) {
-    if (r_act %in% c("proceed", "proceed_suspect") && file.exists(aud_p)) {
+    r_md5 <- as.character(ruling$engine_md5 %||% "")[1]; if (is.na(r_md5)) r_md5 <- ""
+    eng_p <- file.path(wdir, "engine.R")
+    cur_md5 <- if (file.exists(eng_p)) unname(tools::md5sum(eng_p)) else ""
+    why <- if (!(r_act %in% c("proceed", "proceed_suspect"))) "허용 처분 아님(proceed|proceed_suspect)"
+           else if (!file.exists(aud_p)) "남은 감사 파일 없음"
+           else if (!nzchar(r_md5)) "판정에 엔진 지문(engine_md5) 없음"
+           else if (!identical(r_md5, cur_md5)) "엔진 지문 불일치 — 판정 뒤 엔진이 바뀌었다"
+           else ""
+    if (!nzchar(why)) {
       aud <- rf_audit_read(aud_p)
-      .log("fidelity_audit_ruled", action = r_act, by = as.character(ruling$by %||% "session")[1],
-           decision = as.character(ruling$decision %||% "")[1], verdict = aud$verdict)
-      return(list(aud = aud, disp = list(action = r_act, feedback = as.character(ruling$feedback %||% "")[1], ruled = TRUE),
-                  spawns = 0L, retries = 0L, last_rc = 0L, reason = NULL))
+      if (is.null(aud$reason)) {
+        .log("fidelity_audit_ruled", action = r_act, by = as.character(ruling$by %||% "session")[1],
+             decision = as.character(ruling$decision %||% "")[1], verdict = aud$verdict, engine_md5 = cur_md5)
+        return(list(aud = aud, disp = list(action = r_act, feedback = as.character(ruling$feedback %||% "")[1], ruled = TRUE,
+                                           ruling = ruling),
+                    spawns = 0L, retries = 0L, last_rc = 0L, reason = NULL))
+      }
+      why <- paste0("감사 파일 파손: ", as.character(aud$reason)[1])
     }
-    .log("fidelity_audit_ruling_ignored", action = r_act, has_audit = file.exists(aud_p),
-         note = "세션 판정을 적용하지 못했다(허용 처분 proceed|proceed_suspect · 남은 감사 파일 필요) — 정상 관문으로 간다")
+    .log("fidelity_audit_ruling_ignored", action = r_act, why = why,
+         note = "세션 판정을 적용하지 않는다 — 정상 관문으로 간다(감사 없이 개설 불가 유지)")
   }
   .spawn <- function() {
     unlink(aud_p, force = TRUE)

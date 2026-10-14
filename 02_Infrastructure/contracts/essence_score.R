@@ -921,10 +921,9 @@ essence_score <- function(bt_result, n_trials_cumulative = NULL,
       current_run = .roll$history$current_run, span = .roll$span),
     ## 방어형 — 벤치가 **실제로 마이너스를 기록한 국면**에서 아웃퍼폼했는가(국면 라벨 비의존).
     ##   ★essence 등급을 건드리지 않는다. 소비는 2계층 로테이션 풀 자격이다.
-    defensive_score = if (is.null(.defn)) NULL else list(
-      status = .defn$status, defensive = .defn$defensive,   # convex 폐기 2026-09-07(무신호에서 더 잘 켜졌다 · 진짜 볼록 0/179)
-      down = .defn$down, mid = .defn$mid, deep = .defn$deep, up = .defn$up,
-      reason = .defn$reason),
+    ##   ★모양 = defensive_score.R::ds_record(생산자 단일 모양 — 귀속 attribution · β · β 잔차 포함 · 2026-10-14 리뷰 C3).
+    ##     구판은 여기서 7개 필드만 골라 복사해 귀속이 권위 산출물에 안 실렸다(새 측정 전부 dscore_unattributed).
+    defensive_score = if (is.null(.defn)) NULL else ds_record(.defn),
     hard_fail = hard_fail,
     ## ★신설(2026-08-24): `hard_fail` 에서 MDD 를 걷어냈으므로 구조 정보를 담을 필드가
     ##   따로 필요하다. 없으면 22건의 구조 사유가 **조용히 사라진다**(하류가 오버레이

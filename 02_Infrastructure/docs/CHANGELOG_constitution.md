@@ -194,6 +194,16 @@
   - 카탈로그 구판 방어형 411건 귀속 재산출(`backfill_module_defensive.R --write` · 기본 역할 모드 풀에는 영향 없음).
 - **선행 실패(이번 변경과 무관 · HEAD 판으로 재현)**: `test_program_registry` 2건(라운드 덮어쓰기 · P0 ready — 운영 등록부 상태를 빌린다) · `test_l2_pool_grade_floor` ②(운영 module_performance 의 역할 대표 F/C 수록).
 
+#### 보록 (2026-10-15) — 적대 검토(b6e952ed7) · 확정 결함 수리
+
+도훈 "돌려주고 …"(울트라코드 리뷰 워크플로 · 12 에이전트) — 발견 26 → 중복 제거 22 → **확정 8(C1~C8)** · 미검증 14(U1~U14).
+- **C3(가장 컸다)**: 생산자 `essence_score.R` · `retro_rolling_defensive.R` 가 방어형 기록을 7개 필드로 골라 복사해 새 귀속(attribution · β · β 잔차)이 권위 산출물에 안 실렸다 → **새 측정이 전부 `dscore_unattributed` 로 막혔다**(조용한 실패). 위 2절 직후 Q 는 이를 '혼합 판'으로 오귀속했다. 수리 = `defensive_score.R::ds_record()`(생산자 단일 모양) · 검사 = essence_score 경유 생산자 e2e(rolling_defensive H2 · H3).
+- **C1 · C2 · C5 · C6(세션 판정 운반)**: 판정이 엔진에 안 묶였다 → `audit_ruling$engine_md5`(상충 당시 지문 · `audit_conflict_v2`) ≠ 지금 엔진이면 관문이 적용하지 않는다. 판정 · 재구현 예약 모두 `rf_reimplement_queue_reserve()`(검사 · 중복 거부 · order · lane_mode 유도 · 원자 기록) → `take()` 가 kind(reimplement | ruling) · lane_mode · 보류 해제(held_audit_conflict → revoked)를 요청에 싣는다. 유휴 레인이 reserved 예약을 보면 공급기를 부른다. 판정 요청인데 엔진이 없으면 재구현으로 떨어지지 않고 보류(`halt_ruling_without_engine`).
+- **C4**: 레인의 스킵리스트 추가 술어가 revoked 를 '있음'으로 봐 같은 논문이 무한 재선택될 수 있었다 → revoked = 없음. **C7**: adapted + 근거 있는 번복도 상충(재구현이 틀린 지적을 따르고 changed 에 신고하면 재감사는 정의상 adapted). **C8**(롱숏의 2계층 역할 대표 제외)은 별도 과제 칩.
+- **미검증 수리**: U1(인계 실패 보고) · U4(부팅 줄 미분류 수 — 구판은 pr_status_lines 를 안 불렀다) · U5(보류 기록 실패 시 다음 논문으로 안 감 · fail-closed) · U6(audit_conflict.json 에 등급 · 산출물 경로 미기록 — 청정 구현자 노출) · U7(보류 해제) · U8(번복 채택 = 채움 아님 ∧ 축 채택 ∧ 원문 판독) · U10(등재 메타 strategy_idea · name) · U12(미분류 ≠ 해당 없음) · U13(판정 적용 사실을 요청 · 원장 · 보고 · 메타에). U2 · U11 · U14 = 검사 보강 · U3 · U9 = 보류.
+- **검사(양방향 · 돌연변이 사본)**: rf_fidelity_audit 64/0 · rf_fidelity_fanout 37/0(H7~H9 음성 + M1 구판 채택 조건 사본) · rf_reimplement_queue 40/0 · rolling_defensive 52/0 · module_admission_seam 38/0 · l2_pool_admission 30/0 · program_paper_sync 23/0(F1 · F2 위반 주입) · boot_lean_programs_line 13/0(P6) · program_registry 23/0(위 선행 실패 2건 = 운영 상태를 빌리지 않게 고쳐 해소) · audit_not_run 40/0 · retry_feedback 14/0 · quote_parity 4/0 · replication_lane 70/0 · clean_lane 107/0 · backticks · bash -n.
+- **사고 기록**: 돌연변이 검사 중 Q 가 운영 `essence_score.R` 를 약 10초 바꿨다가 되돌렸다(밤 파이프라인 측정 중) — 돌연변이는 사본에서만 한다(이 보록의 검사는 전부 사본 · 픽스처).
+
 ---
 
 ## (v10.4 유지 · 버전 미변경) 09-26 중단분 배포 · B4 5축 · 유기체 O0a · 청정 레인 · 노출 표식 · 러너 재개 (2026-10-04)

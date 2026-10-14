@@ -170,7 +170,9 @@ try:
     sk = json.loads(io.open(SKP, "rb").read().decode("utf-8"))
 except Exception:
     sk = {"schema": "replication_skiplist_v1", "entries": []}
-if pk and not any(e.get("paper_key") == pk for e in sk.get("entries") or []):
+# ★revoked 항목은 '없는 것'이다(선택기 · 착수 관문 · 감사 상충 분기와 같은 술어 · 2026-10-14 리뷰 C4) — 구판은 상태를 안 보는
+#   any() 라, 보류를 해제(revoked)한 논문이 다시 소진되면 새 항목을 못 달아 같은 논문이 무한 재선택됐다.
+if pk and not any(e.get("paper_key") == pk and (e.get("status") or "") != "revoked" for e in sk.get("entries") or []):
     sk.setdefault("entries", []).append({
         "paper_key": pk, "status": "unreproducible",
         "added_at": time.strftime("%Y-%m-%dT%H:%M:%S%z"),
@@ -187,7 +189,19 @@ fi
 import io,json,sys
 try: d=json.loads(io.open(r'$REQ','rb').read().decode('utf-8'))
 except Exception: sys.exit(1)
-sys.exit(0 if d.get('status')=='pending' else 1)" 2>/dev/null || { jl no_pending_request; exit 0; }
+sys.exit(0 if d.get('status')=='pending' else 1)" 2>/dev/null || {
+  # ★유휴 레인 — 요청이 pending 이 아닌데 재구현 대기열에 reserved 예약이 있으면 공급기를 부른다(2026-10-14 리뷰 C5: 큐가 비어 레인이
+  #   쉬면 next_replication 을 부르는 주체가 없어 세션 판정 예약이 영영 발행되지 않았다). 공급기가 바쁜 요청은 건드리지 않는다.
+  NRES=$("$PY" -c "
+import io,json
+try: q=json.loads(io.open(r'$ROOT/06_Registry/reimplement_queue.json','rb').read().decode('utf-8'))
+except Exception: print(0); raise SystemExit
+print(sum(1 for e in (q.get('entries') or []) if isinstance(e,dict) and e.get('status')=='reserved'))" 2>/dev/null | tr -d '\r')
+  if [ "${NRES:-0}" -gt 0 ] 2>/dev/null; then
+    jl reimplement_queue_issue_on_idle "reserved=$NRES"
+    Rscript "$ROOT/02_Infrastructure/programs/next_replication.R" --root "$ROOT" >> "$LOG" 2>&1
+  fi
+  jl no_pending_request; exit 0; }
 # ── ★환경 실패 백오프 게이트 (2026-09-07) ───────────────────────
 #   모델 한도 소진은 사람도 리트라이도 못 고친다. 게이트가 없으면 매 tick(≈4분) 빈 CLI
 #   호출이 쌓이고 로그가 오염된다. epoch 로 비교한다 — 문자열 시각은 시간대 표기에 깨진다.
@@ -340,13 +354,20 @@ PREV_FAIL=$("$PY" -c "
 import io,json
 try: print((json.loads(io.open(r'$REQ','rb').read().decode('utf-8')).get('failure') or '').strip())
 except Exception: print('')" 2>/dev/null)
-if { [ "$PREV_FAIL" = "audit_not_run" ] || [ "$PREV_FAIL" = "refresh_lock_deferred" ] || [ "$PREV_FAIL" = "audit_ruled" ]; } && [ -s "$WDIR/engine.R" ]; then
+# ★세션 판정이 실린 요청(audit_ruling)은 실패 표식이 지워진 뒤의 재실행(검증기 사망 → in_progress 복원 등)에서도 검증기만 돈다 —
+#   판정 대상 엔진을 에이전트가 덮어쓰지 않게(2026-10-14 리뷰 C1 ③ · 판정은 감사 관문이 엔진 지문으로 다시 묶는다)
+HAS_RULING=$("$PY" -c "
+import io,json
+try: d=json.loads(io.open(r'$REQ','rb').read().decode('utf-8'))
+except Exception: d={}
+r=d.get('audit_ruling'); print('1' if isinstance(r,dict) and r else '0')" 2>/dev/null | tr -d '\r')
+if { [ "$PREV_FAIL" = "audit_not_run" ] || [ "$PREV_FAIL" = "refresh_lock_deferred" ] || [ "$PREV_FAIL" = "audit_ruled" ] || [ "$HAS_RULING" = "1" ]; } && [ -s "$WDIR/engine.R" ]; then
   # ★refresh_lock_deferred(2026-09-24) — 검증기 직전 리프레시 배리어로 측정 없이 연기된 요청. 엔진은 멀쩡하다 → 검증기만.
   # ★audit_ruled(2026-10-14) — 감사 상충을 세션이 판정해 suspect 수용 · 진행으로 정한 요청(요청의 audit_ruling). 엔진은 그대로 →
   #   검증기만(감사도 다시 사지 않는다 — 감사 관문이 남은 감사 파일 + 판정 처분으로 간다 · alpha-search SKILL §5).
   if [ "$PREV_FAIL" = "refresh_lock_deferred" ]; then
     jl verify_only_retry "paper=$P_KEY" "note=리프레시 배리어 연기분 재시도 — 에이전트 없이 검증기(측정+감사)만 재실행(엔진 보존)"
-  elif [ "$PREV_FAIL" = "audit_ruled" ]; then
+  elif [ "$PREV_FAIL" = "audit_ruled" ] || [ "$HAS_RULING" = "1" ]; then
     jl verify_only_retry "paper=$P_KEY" "note=감사 상충 세션 판정 반영 — 에이전트 · 감사 재스폰 없이 검증기만(엔진 보존)"
   else
   jl verify_only_retry "paper=$P_KEY" "note=감사 미실행 재시도 — 에이전트 없이 검증기(측정+감사)만 재실행(엔진 보존)"
@@ -357,6 +378,18 @@ d=json.loads(io.open(r'$REQ','rb').read().decode('utf-8'))
 d['failure']=''; d['failure_detail']=''; d['verify_only_at']=time.strftime('%Y-%m-%dT%H:%M:%S%z')
 io.open(r'$REQ','wb').write(json.dumps(d,ensure_ascii=False,indent=1).encode('utf-8'))"
   rp_verify; exit $?
+fi
+# ★판정이 실린 요청인데 판정 대상 엔진이 없다 — 에이전트 재구현으로 떨어지지 않는다(리뷰 C2: 구판은 모드 · 작업 디렉터리가 어긋나면
+#   새 디렉터리에서 재구현이 돌아 판정하지 않은 엔진이 소비될 수 있었다). 요청을 보류로 되돌리고 다음 논문으로 간다(세션 확인).
+if [ "$PREV_FAIL" = "audit_ruled" ] || [ "$HAS_RULING" = "1" ]; then
+  jl halt_ruling_without_engine "paper=$P_KEY" "wdir=$WDIR" "lane_mode=$LANE_MODE" "note=판정 대상 engine.R 부재 — 재구현으로 떨어지지 않는다(세션이 작업 디렉터리 · 모드 확인)"
+  "$PY" -c "
+import io,json,time
+d=json.loads(io.open(r'$REQ','rb').read().decode('utf-8'))
+d['status']='held_audit_conflict'; d['failure']='ruling_engine_missing'; d['held_at']=time.strftime('%Y-%m-%dT%H:%M:%S%z')
+io.open(r'$REQ','wb').write(json.dumps(d,ensure_ascii=False,indent=1).encode('utf-8'))"
+  Rscript "$ROOT/02_Infrastructure/programs/next_replication.R" --root "$ROOT" >> "$LOG" 2>&1
+  exit 0
 fi
 
 # ── 헤드리스 에이전트 (권한 축소 · 산출물은 엔진 1개) ────────────────────────

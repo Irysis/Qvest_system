@@ -60,6 +60,12 @@ if (startsWith(g, enc2utf8("Programs: ?(파손 JSON"))) ok(sprintf("P3 파손 JS
 SBs <- mk_root("s"); writeLines('{"schema":"other_v9","measurement_contract":{"items":[]},"programs":[]}', file.path(SBs, "06_Registry/research_programs.json"))
 g <- run_prog(blk, SBs)
 if (identical(g, enc2utf8("Programs: ?(schema other_v9)"))) ok("P4 schema 불일치 → '?(schema other_v9)'") else ng("P4 schema", g)
+## P6 — 미분류 재료(paper_routing.unrouted · 2026-10-14 리뷰 U4: 부팅이 pr_status_lines 를 안 불러 '미분류 수가 뜬다'가 사실이 아니었다)
+SBu <- mk_root("u"); fx_u <- sub('"programs":[', '"paper_routing":{"unrouted":[{"key":"engine:A"},{"key":"engine:B"}]},"programs":[', FIX, fixed = TRUE)
+writeLines(fx_u, file.path(SBu, "06_Registry/research_programs.json"))
+g <- run_prog(blk, SBu)
+if (identical(g, enc2utf8(paste0(EXP1, " · 미분류 재료 2")))) ok("P6 미분류 재료 2 → 줄 끝에 '미분류 재료 2' (P1 은 미분류 없음 → 꼬리 없음 · 음성 대조)") else ng("P6 미분류 표시", g)
+unlink(SBu, recursive = TRUE)
 
 cat("\n=== P5 운영 등록부 재도출(R writer 판독과 대조 · 읽기만) ===\n")
 if (!file.exists(REAL)) ng("P5 운영 등록부 부재", REAL) else {

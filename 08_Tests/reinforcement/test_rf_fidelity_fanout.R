@@ -31,12 +31,12 @@ REQ  <- KEYS[vapply(AX, function(a) isTRUE(a$required), logical(1))]
 OPT  <- setdiff(KEYS, REQ)
 
 # ★시나리오마다 **별도 디렉터리** — 픽스처 별칭으로 검사가 서로를 오염시킨 전례가 있다
-.run <- function(files) {
+.run <- function(files, mrg = MRG) {
   w <- file.path(tempdir(), sprintf("fo_%d_%d", Sys.getpid(), as.integer(runif(1, 1, 1e8))))
   dir.create(w, recursive = TRUE, showWarnings = FALSE)
   for (k in names(files)) write(toJSON(files[[k]], auto_unbox = TRUE, null = "null"),
                                 file.path(w, sprintf("fidelity_axis_%s.json", k)))
-  system2("Rscript", c("-e", shQuote(sprintf("source('%s')", MRG)), shQuote(w), shQuote(AXP)),
+  system2("Rscript", c("-e", shQuote(sprintf("source('%s')", mrg)), shQuote(w), shQuote(AXP)),
           stdout = NULL, stderr = NULL)
   p <- file.path(w, "fidelity_audit.json")
   if (!file.exists(p)) return(NULL)
@@ -210,6 +210,45 @@ if (identical(as.integer(r0$n_overturned %||% -1L), 0L) && !length(r0$prior_revi
   ok("H5 초회 감사(번복 칸 없음) → n_overturned 0 · 번복 flag 없음 ★음성") else ng("H5 초회 감사에 번복 흔적")
 if (grepl(".prior_audit_findings.md", fsrc, fixed = TRUE) && grepl('"prior_review"', fsrc, fixed = TRUE))
   ok("H6 축 프롬프트가 앞 회차 지적 파일을 싣고 prior_review 를 요구한다") else ng("H6 재감사 프롬프트 배선 부재")
+## H7~H9 — 번복 채택 조건의 음성 대조(2026-10-14 리뷰 U8: 근거 비공백 하나로는 채움 문자열 · 원문을 못 읽은 축 · 불채택 축의 번복도
+##   소비 보류(audit_conflict)를 열었다). 각 시나리오는 번복 1건만 싣고, 그 번복이 세지지 않아 처분이 상충으로 가지 않아야 한다.
+.mis <- function() list(axis = REQ[1], verdict = "misdeclared", undeclared_changes = list("[창] 논문 12-1 · 구현 6-1"),
+                        signal_mismatch = list(), evidence = "§I", confidence = "high", checked = "신호", note = "")
+f7 <- .all_faith(); f7[[REQ[1]]] <- .mis()
+f7[[REQ[1]]]$prior_review <- list(list(item = "[창]", status = "overturned", evidence = "없음"))          # 채움 문장 근거
+r7 <- .run(f7); d7 <- rf_audit_disposition(r7, 1L)
+if (identical(as.integer(r7$n_overturned %||% -1L), 0L) && !identical(d7$action, "audit_conflict"))
+  ok(sprintf("H7 채움 문장('없음')을 근거로 단 번복은 세지 않는다 → 처분 %s ★음성", d7$action)) else
+  ng("H7 채움 근거 번복이 상충을 열었다", paste(r7$n_overturned, d7$action))
+f8 <- .all_faith(); f8[[REQ[1]]] <- .mis()
+f8[[OPT[1]]] <- c(.faith(OPT[1])[setdiff(names(.faith(OPT[1])), "verdict")], list(verdict = "unverifiable",
+  prior_review = list(list(item = "[창]", status = "overturned", evidence = "§II 표 1"))))               # 원문을 못 읽은 축의 번복
+r8 <- .run(f8); d8 <- rf_audit_disposition(r8, 1L)
+if (identical(as.integer(r8$n_overturned %||% -1L), 0L) && !identical(d8$action, "audit_conflict"))
+  ok(sprintf("H8 unverifiable 축(원문 미판독)의 번복은 세지 않는다 → 처분 %s ★음성", d8$action)) else
+  ng("H8 원문 미판독 축의 번복이 상충을 열었다", paste(r8$n_overturned, d8$action))
+f9 <- .all_faith(); f9[[REQ[1]]] <- .mis()
+f9[[OPT[1]]] <- list(axis = OPT[1], verdict = "misdeclared", undeclared_changes = list("뭔가 다르다"), signal_mismatch = list(),
+  evidence = "", confidence = "low", checked = "", note = "",                                             # 근거 없는 기각 = 불채택 축
+  prior_review = list(list(item = "[창]", status = "overturned", evidence = "§III 식 (2)")))
+r9 <- .run(f9); d9 <- rf_audit_disposition(r9, 1L)
+if (identical(as.integer(r9$n_overturned %||% -1L), 0L) && !identical(d9$action, "audit_conflict"))
+  ok(sprintf("H9 불채택 축(근거 없는 misdeclared)의 번복은 세지 않는다 → 처분 %s ★음성", d9$action)) else
+  ng("H9 불채택 축의 번복이 상충을 열었다", paste(r9$n_overturned, d9$action))
+## M — 돌연변이(병합기 사본): 채택 조건을 구판 '근거 비공백' 하나로 되돌리면 H7 · H8 · H9 가 붉어져야 한다(검사가 조건을 실제로 잰다)
+msrc <- readLines(MRG, warn = FALSE, encoding = "UTF-8")
+hit <- grepl("admissible = ev_ok && isTRUE(adm) && !identical(v, \"unverifiable\")", msrc, fixed = TRUE)
+if (sum(hit) == 1L) {
+  mut <- msrc; mut[hit] <- sub("admissible = ev_ok && isTRUE(adm) && !identical(v, \"unverifiable\")",
+                               "admissible = nzchar(trimws(zev))", mut[hit], fixed = TRUE)
+  ## tempdir() 는 역슬래시 경로다 — source('C:\Users…') 의 '\U' 가 자식 R 을 죽인다(병합 즉사와 같은 병) → 슬래시로
+  mp <- normalizePath(file.path(tempdir(), sprintf("merge_mut_%d.R", Sys.getpid())), winslash = "/", mustWork = FALSE)
+  writeLines(mut, mp, useBytes = TRUE)
+  red <- vapply(list(f7, f8, f9), function(fx) identical(as.integer(.run(fx, mrg = mp)$n_overturned %||% -1L), 1L), logical(1))
+  if (all(red)) ok("M1 구판 채택 조건 사본 → H7 · H8 · H9 시나리오가 전부 번복 1로 센다(검사가 돌연변이를 잡는다)") else
+    ng("M1 돌연변이를 못 잡는 시나리오", paste(c("H7", "H8", "H9")[!red], collapse = ","))
+  unlink(mp)
+} else ng("M1 주입 실패 — 채택 조건 문장이 바뀌었으면 재조준", sprintf("일치 %d줄", sum(hit)))
 
 cat(sprintf("\n합계: 통과 %d · 실패 %d\n", PASS, FAIL))
 cat(sprintf('{"test":"rf_fidelity_fanout","pass":%d,"fail":%d,"total":%d}\n', PASS, FAIL, PASS + FAIL))

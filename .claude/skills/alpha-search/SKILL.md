@@ -70,15 +70,24 @@ run_paper_replication(
 ### 5. 감사 상충 — 세션 판정 (2026-10-14 · 1810.08384 실측)
 재구현 판의 재감사가 앞 회차 지적을 **원문 근거로 번복**(`prior_review` overturned)했는데 판정이 misdeclared 이면, 검증기는 그 기각을 구현 실패(`proceed_suspect`)로 세지 않는다.
 대신 그 논문만 보류한다. 보류 표식은 셋이다: 스킵리스트 `held_audit_conflict`, 요청 `held_audit_conflict`, `<wdir>/audit_conflict.json`. 소비와 재료 등록은 하지 않고, 레인은 다음 논문으로 간다.
-- **판정 = 원문으로만**: 어느 회차가 원문과 맞는지만 가린다(성과를 보지 않는다). 대조는 격리 읽기 전용 에이전트에 맡겨도 된다. `audit_conflict.json` 에 번복 항목 · 근거 · 두 회차 피드백 전문이 있다.
-- **앞 회차가 오독이었다(재구현이 틀린 지적을 따랐다)**:
-  - `06_Registry/reimplement_queue.json` 에 reserved 항목을 둔다. `audit_feedback` 은 판정한 지적만 담고, `audit_retries` 는 1, `decided_by` 를 기재한다.
-  - 스킵리스트 항목은 `status=revoked` 로 바꾼다.
-  - 다음 발행이 재구현을 집는다.
-- **재감사의 번복이 오독이었다 · 남은 지적이 경미하다**:
-  - 요청 슬롯이 비었을 때 그 논문 요청을 `status=pending` · `failure=audit_ruled` · `audit_ruling={action: proceed|proceed_suspect, by, decision, feedback}` 로 쓴다.
-  - 스킵리스트 항목은 `revoked` 로 바꾼다.
-  - 레인은 에이전트 없이 검증기만 돈다. 감사 관문(`rf_audit_gate(ruling=)`)이 감사를 다시 사지 않고 남은 감사 파일로 처분한다.
+- 상충은 재감사 판정이 misdeclared 이거나 adapted(틀린 지적을 따르고 신고한 경우)일 때 난다. faithful + 번복은 기록만 하고 진행한다.
+- **판정 = 원문으로만**: 어느 회차가 원문과 맞는지만 가린다(성과를 보지 않는다). 대조는 격리 읽기 전용 에이전트에 맡겨도 된다.
+  `audit_conflict.json` 에 번복 항목 · 근거 · 두 회차 피드백 전문 · `engine_md5`(판정 대상 엔진 지문) · `lane_mode` · `wdir` 가 있다.
+  등급 · 산출물 경로는 싣지 않는다(청정 작업 디렉터리에 남는 파일이다).
+- **실행 = 재구현 대기열 예약 하나**(`02_Infrastructure/ops/rf_reimplement_queue.R::rf_reimplement_queue_reserve` · 손으로 JSON 을 고치지 않는다).
+  요청 슬롯을 기다리지 않는다. 공급기가 큐 상단보다 먼저 집고, 레인이 쉬고 있어도 다음 틱에 발행한다.
+  발행은 감사 상충 보류(스킵리스트 `held_audit_conflict`)를 함께 풀고, `lane_mode` 를 요청에 실어 같은 작업 디렉터리 · 같은 레인 모드로 돈다.
+  - **앞 회차가 오독이었다(재구현이 틀린 지적을 따랐다)** → `kind = "reimplement"`:
+    - `audit_feedback` 에는 판정한 지적만 담는다.
+    - `audit_feedback_mode = "clean"` 은 원문 판정만 담은 경우에만 적는다(청정 레인은 이 표식이 없으면 피드백을 싣지 않는다).
+    - `source = "audit_conflict"`: 발행이 지금 engine.R 을 다음 `engine.rejected<N>.R` 로 옮긴다.
+    - `decided_by` · `decision` 을 적는다.
+  - **재감사의 번복이 오독이었다 · 남은 지적이 경미하다** → `kind = "ruling"`:
+    - `audit_ruling = list(action = "proceed" | "proceed_suspect", engine_md5 = <audit_conflict.json 값>, decision, by)`.
+    - 레인은 에이전트 없이 검증기만 돈다.
+    - 감사 관문 `rf_audit_gate(ruling=)` 은 지금 engine.R 지문이 `engine_md5` 와 같고 감사 파일이 멀쩡할 때만 판정을 적용한다. 다르면 감사를 다시 산다(판정은 그 엔진에만).
+    - 판정 대상 엔진이 없으면 레인은 재구현으로 떨어지지 않고 보류(`ruling_engine_missing`)한다.
+    - 적용 사실은 요청 · 원장 보고 · 카탈로그 메타에 `audit_ruling_applied` / `audit_ruling` 으로 남는다.
 - 판정은 decision_register 에 남긴다. 재감사 지시문 = 축 프롬프트의 '재감사다' 절(`rf_fidelity_fanout.sh`), 재구현 반박 통로 = FIDELITY `audit_disputes`.
 
 ## L-code 적립 (PASS + 의미있는 실패만)

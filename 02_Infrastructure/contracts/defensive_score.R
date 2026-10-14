@@ -119,6 +119,21 @@ ds_score <- function(period_returns, benchmark_returns, params = ds_params()) {
 }
 `%||%` <- function(a, b) if (is.null(a) || length(a) == 0L) b else a
 
+#' 권위 산출물(authoritative_remeasure.json · 소급본)에 싣는 방어형 기록 — **생산자의 단일 모양**(2026-10-14 리뷰 C3).
+#'   구판은 essence_score.R · retro_rolling_defensive.R 이 각자 7개 필드를 골라 복사해, ds_score 가 새로 낸 귀속
+#'   (attribution · defensive_selection · beta · down_resid)이 권위 산출물에 실리지 않았다 → 새 측정이 전부
+#'   dscore_unattributed 로 막혔다(조용한 실패). 필드를 더하면 이 함수 하나만 고친다.
+ds_record <- function(d) {
+  if (is.null(d)) return(NULL)
+  out <- list(status = d$status, defensive = d$defensive,   # convex 폐기 2026-09-07
+              down = d$down, mid = d$mid, deep = d$deep, up = d$up, reason = d$reason)
+  if (!is.null(d$attribution)) {                            # 판정 불가(표본 부족) 판에는 귀속이 없다 — 지어 넣지 않는다
+    out$attribution <- d$attribution; out$defensive_selection <- d$defensive_selection
+    out$beta <- d$beta; out$down_resid <- d$down_resid
+  }
+  out
+}
+
 #==============================================================================
 # 2계층 로테이션 풀 자격 (도훈 선택 2026-09-04 · 소비자 배선 2026-09-07)
 #

@@ -138,6 +138,61 @@ if (isTRUE(r11$issued) && identical(r11$stale_engine$action, "none") && !("reimp
   ok("A8 engine.R 부재(정상 기각 상태) → none · 저널 소음 없음") else ng("A8 부재 처리", r11$stale_engine$action %||% "")
 unlink(S, recursive = TRUE)
 
+## A9 — 감사 상충 세션 판정 운반(2026-10-14 리뷰 C2 · C5 · C6 · U7): 레인 모드를 싣고 · 보류를 풀고 · 판정(ruling)은 엔진을 옮기지 않는다
+mk_clean <- function(S, key, engine_txt = "# conflict engine v2", rejected_txt = "# rejected engine v1") {
+  W <- file.path(S, sprintf("04_Research/strategies/RP_AUTO_CLEAN_%s", slug(key))); dir.create(W, recursive = TRUE, showWarnings = FALSE)
+  writeLines(rejected_txt, file.path(W, "engine.rejected1.R")); if (!is.null(engine_txt)) writeLines(engine_txt, file.path(W, "engine.R")); W }
+mk_skip <- function(S, key, status) writeLines(as.character(toJSON(list(schema = "replication_skiplist_v1", entries = list(
+  list(paper_key = key, status = status, added_at = "2026-10-14T00:00:00+0900"))), auto_unbox = TRUE, pretty = TRUE)),
+  file.path(S, "06_Registry/replication_skiplist.json"))
+S <- newdir("rq_fn6"); RQ <- file.path(S, "06_Registry/replication_request.json"); QP <- file.path(S, "06_Registry/reimplement_queue.json")
+writeLines(mk_req("held_audit_conflict"), RQ); W <- mk_clean(S, "1810.08384"); mk_skip(S, "1810.08384", "held_audit_conflict")
+emd5 <- unname(tools::md5sum(file.path(W, "engine.R")))
+er <- mk_entry(1, "1810.08384"); er$wdir <- "04_Research/strategies/RP_AUTO_CLEAN_1810_08384"; er$kind <- "ruling"
+er$audit_ruling <- list(action = "proceed_suspect", engine_md5 = emd5, decision = "T-RULING", by = "fixture")
+writeLines(mk_queue(list(er)), QP, useBytes = TRUE)
+col <- ev_collect(); ra <- rf_reimplement_queue_take(S, RQ, jlog = col$fn); rqa <- rj(RQ); ska <- rj(file.path(S, "06_Registry/replication_skiplist.json"))
+if (isTRUE(ra$issued) && identical(rqa$failure, "audit_ruled") && identical(rqa$audit_ruling$engine_md5, emd5) && identical(rqa$lane_mode, "clean") &&
+    identical(ska$entries[[1]]$status, "revoked") && file.exists(file.path(W, "engine.R")) && identical(unname(tools::md5sum(file.path(W, "engine.R"))), emd5) &&
+    "reimplement_queue_hold_lifted" %in% evnames(col))
+  ok("A9a 수용 판정 발행 → failure=audit_ruled · audit_ruling(엔진 지문) · lane_mode=clean(청정 디렉터리) · 보류 해제 · 엔진 그대로") else
+  ng("A9a 수용 판정 운반", paste(ra$reason %||% "", rqa$failure %||% "-", rqa$lane_mode %||% "-", ska$entries[[1]]$status %||% "-", file.exists(file.path(W, "engine.R"))))
+unlink(S, recursive = TRUE)
+S <- newdir("rq_fn7"); RQ <- file.path(S, "06_Registry/replication_request.json"); QP <- file.path(S, "06_Registry/reimplement_queue.json")
+writeLines(mk_req("done"), RQ); W <- mk_clean(S, "1810.08384"); mk_skip(S, "1810.08384", "held_audit_conflict")
+ei <- mk_entry(1, "1810.08384"); ei$wdir <- "04_Research/strategies/RP_AUTO_CLEAN_1810_08384"; ei$source <- "audit_conflict"; ei$audit_feedback_mode <- "clean"
+writeLines(mk_queue(list(ei)), QP, useBytes = TRUE)
+col <- ev_collect(); rb <- rf_reimplement_queue_take(S, RQ, jlog = col$fn); rqb <- rj(RQ)
+if (isTRUE(rb$issued) && identical(rb$stale_engine$action, "moved_conflict") && !file.exists(file.path(W, "engine.R")) &&
+    file.exists(file.path(W, "engine.rejected2.R")) && identical(rqb$lane_mode, "clean") && identical(rqb$audit_feedback_mode, "clean") && is.null(rqb$failure))
+  ok("A9b 상충 뒤 재구현 발행 → 엔진을 engine.rejected2.R 로(레인 전제 · 보존) · lane_mode=clean · audit_feedback_mode 운반") else
+  ng("A9b 재구현 운반", paste(rb$stale_engine$action %||% "", file.exists(file.path(W, "engine.R")), rqb$lane_mode %||% "-", rqb$audit_feedback_mode %||% "-"))
+unlink(S, recursive = TRUE)
+S <- newdir("rq_fn8"); RQ <- file.path(S, "06_Registry/replication_request.json"); QP <- file.path(S, "06_Registry/reimplement_queue.json")
+writeLines(mk_req("done"), RQ); W <- mk_clean(S, "1810.08384"); mk_skip(S, "1810.08384", "unreproducible")
+writeLines(mk_queue(list(ei)), QP, useBytes = TRUE); b0 <- fbytes(QP)
+col <- ev_collect(); rc <- rf_reimplement_queue_take(S, RQ, jlog = col$fn)
+if (!isTRUE(rc$issued) && identical(rc$reason, "blocked_by_skiplist") && identical(b0, fbytes(QP)) && file.exists(file.path(W, "engine.R")))
+  ok("A9c 스킵리스트 활성 항목(재현 불가)이면 발행하지 않는다 · 대기열 · 엔진 불변 ★음성") else ng("A9c 차단", paste(rc$reason %||% "", identical(b0, fbytes(QP))))
+er2 <- er; er2$audit_ruling$engine_md5 <- NULL; writeLines(mk_queue(list(er2)), QP, useBytes = TRUE); unlink(file.path(S, "06_Registry/replication_skiplist.json"))
+col <- ev_collect(); rd <- rf_reimplement_queue_take(S, RQ, jlog = col$fn)
+if (!isTRUE(rd$issued) && "reimplement_queue_entry_invalid" %in% evnames(col)) ok("A9d 엔진 지문 없는 수용 판정 예약 = 무효(건너뜀 · 저널)") else ng("A9d 무효 판정", rd$reason %||% "")
+## 예약 쓰기(rf_reimplement_queue_reserve) — 검사 · 중복 거부 · order · lane_mode 유도
+unlink(QP)
+er3 <- er; er3$order <- NULL; er3$status <- NULL; er3$audit_ruling$engine_md5 <- "deadbeef"; er3$decision <- "T"; er3$decided_by <- "fixture"
+e_mm <- tryCatch({ rf_reimplement_queue_reserve(S, er3); "no_error" }, error = function(e) conditionMessage(e))
+er3$audit_ruling$engine_md5 <- unname(tools::md5sum(file.path(W, "engine.R")))
+r_ok <- tryCatch(rf_reimplement_queue_reserve(S, er3), error = function(e) list(ok = FALSE, err = conditionMessage(e)))
+e_dup <- tryCatch({ rf_reimplement_queue_reserve(S, er3); "no_error" }, error = function(e) conditionMessage(e))
+ei2 <- ei; ei2$order <- NULL; ei2$status <- NULL; ei2$paper_key <- "9999.00009"; ei2$audit_feedback <- ""
+e_fb <- tryCatch({ rf_reimplement_queue_reserve(S, ei2); "no_error" }, error = function(e) conditionMessage(e))
+qr <- rj(QP)
+if (grepl("지문", e_mm) && isTRUE(r_ok$ok) && identical(as.numeric(r_ok$order), 1) && grepl("이미", e_dup) && grepl("audit_feedback", e_fb) &&
+    length(qr$entries) == 1L && identical(qr$entries[[1]]$status, "reserved") && identical(qr$entries[[1]]$lane_mode, "clean"))
+  ok("A9e 예약 쓰기 — 지문 불일치 · 중복 · 피드백 없는 재구현 거부 · 유효 예약 = reserved · order 1 · lane_mode 유도(clean)") else
+  ng("A9e 예약 쓰기", paste(substr(e_mm, 1, 40), r_ok$ok %||% r_ok$err, substr(e_dup, 1, 30), substr(e_fb, 1, 30)))
+unlink(S, recursive = TRUE)
+
 cat("\n=== B. 샌드박스 e2e (programs/next_replication.R --root · v10.01) ===\n")
 sbx <- function(req_status = "done", queue = NULL, ledger_entries = list()) {
   S <- newdir("rq_sbx")

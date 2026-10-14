@@ -117,8 +117,13 @@ if (identical(d5$action, "proceed_suspect")) ok("C8 앞 회차 지적 확인(con
 d6 <- rf_audit_disposition(.mk(.pr("overturned", "§I")), 0L)
 if (identical(d6$action, "reimplement")) ok("C9 초회 감사는 번복 칸이 있어도 재구현(상충은 재감사에서만)") else ng("C9 초회 처분", d6$action)
 d7 <- rf_audit_disposition(list(verdict = "adapted", prior_review = .pr("overturned", "§I")), 1L)
-if (identical(d7$action, "proceed")) ok("C10 기각이 아니면 번복이 있어도 진행(검증기는 fidelity_prior_overturned 로 기록만)") else
-  ng("C10 비기각 번복 처분", d7$action)
+if (identical(d7$action, "audit_conflict")) ok("C10 adapted + 근거 있는 번복(재감사) → audit_conflict — 틀린 지적을 따르고 신고한 엔진도 꼬리표 없이 소비되지 않는다(리뷰 C7)") else
+  ng("C10 adapted 번복 처분", d7$action)
+d7b <- rf_audit_disposition(list(verdict = "faithful", prior_review = .pr("overturned", "§I")), 1L)
+if (identical(d7b$action, "proceed")) ok("C10b faithful + 번복 → 진행(지금 엔진이 논문과 같다 · 기록만) ★음성") else ng("C10b faithful 번복 처분", d7b$action)
+d7c <- rf_audit_disposition(list(verdict = "misdeclared", undeclared_changes = list("u1"), evidence = "§I",
+                                 prior_review = list(list(item = "[x]", status = "overturned", evidence = "§I", admissible = FALSE))), 1L)
+if (identical(d7c$action, "proceed_suspect")) ok("C10c 병합기가 불채택(admissible=FALSE)으로 표시한 번복은 세지 않는다(리뷰 U8)") else ng("C10c 불채택 번복", d7c$action)
 wr(c(.mk(.pr("OVERTURNED ", "§I")), list(note = "n")))   # 파일 왕복 — rf_audit_read 가 prior_review 를 버리면 처분이 번복을 못 본다
 d8 <- rf_audit_disposition(rf_audit_read(AP), 1L)
 if (identical(d8$action, "audit_conflict")) ok("C11 파일 왕복 — rf_audit_read 가 prior_review 를 싣고 대소문자·공백을 접는다") else
@@ -126,15 +131,33 @@ if (identical(d8$action, "audit_conflict")) ok("C11 파일 왕복 — rf_audit_r
 ## 세션 판정(ruling) — 상충 뒤 세션이 정한 처분은 감사를 다시 사지 않고 관문 한 자리에서 적용된다
 .ns <- 0L; .sp <- function() { .ns <<- .ns + 1L; 0L }
 GW <- file.path(TMP, "gate_w"); dir.create(GW, showWarnings = FALSE)
-write(toJSON(.mk(.pr("overturned", "§I")), auto_unbox = TRUE, null = "null"), file.path(GW, "fidelity_audit.json"))
-g1 <- rf_audit_gate(GW, .sp, retries_done = 1L, ruling = list(action = "proceed_suspect", by = "session", decision = "T-1"))
-if (identical(g1$disp$action, "proceed_suspect") && .ns == 0L && file.exists(file.path(GW, "fidelity_audit.json")))
-  ok("C12 판정(proceed_suspect) + 남은 감사 파일 → 재스폰 0 · 판정 처분") else ng("C12 판정 적용", sprintf("%s spawns=%d", g1$disp$action, .ns))
+writeLines("## 판정 대상 엔진(픽스처)\nFACTORS <- NULL", file.path(GW, "engine.R"))
+EMD5 <- unname(tools::md5sum(file.path(GW, "engine.R")))
+.wa <- function() write(toJSON(.mk(.pr("overturned", "§I")), auto_unbox = TRUE, null = "null"), file.path(GW, "fidelity_audit.json"))
+.wa()
+## 판정은 엔진에 묶인다(리뷰 C1) — 지문이 다르거나 감사 파일이 깨졌거나 형식이 틀리면 적용하지 않는다
+.ns <- 0L
+g0 <- rf_audit_gate(GW, .sp, max_retries = 0L, retries_done = 1L, ruling = list(action = "proceed_suspect", engine_md5 = "deadbeef"))
+if (.ns == 1L && !isTRUE(g0$disp$ruled)) ok("C15 엔진 지문 불일치(판정 뒤 엔진이 바뀌었다) → 판정 미적용 · 감사를 다시 산다 ★양성") else
+  ng("C15 지문 불일치 판정", sprintf("spawns=%d ruled=%s", .ns, isTRUE(g0$disp$ruled)))
+.wa(); .ns <- 0L
+g0b <- rf_audit_gate(GW, .sp, max_retries = 0L, retries_done = 1L, ruling = list(action = "proceed_suspect"))
+if (.ns == 1L && !isTRUE(g0b$disp$ruled)) ok("C16 엔진 지문 없는 판정 → 미적용") else ng("C16 지문 없는 판정", sprintf("spawns=%d", .ns))
+writeLines("{not json", file.path(GW, "fidelity_audit.json")); .ns <- 0L
+g0c <- rf_audit_gate(GW, .sp, max_retries = 0L, retries_done = 1L, ruling = list(action = "proceed_suspect", engine_md5 = EMD5))
+if (.ns == 1L && !isTRUE(g0c$disp$ruled)) ok("C17 감사 파일 파손 → 지문이 맞아도 판정 미적용(감사를 다시 산다)") else ng("C17 파손 감사 판정", sprintf("spawns=%d", .ns))
+.wa(); .ns <- 0L; .lg <- character(0)
+g0d <- rf_audit_gate(GW, .sp, max_retries = 0L, retries_done = 1L, ruling = "proceed", log_fn = function(ev, ...) .lg <<- c(.lg, ev))
+if (.ns == 1L && "fidelity_audit_ruling_ignored" %in% .lg) ok("C18 객체가 아닌 판정 → 무시 기록을 남기고 정상 관문") else ng("C18 형식 위반 판정", paste(.lg, collapse = ","))
+.wa(); .ns <- 0L
+g1 <- rf_audit_gate(GW, .sp, retries_done = 1L, ruling = list(action = "proceed_suspect", by = "session", decision = "T-1", engine_md5 = EMD5))
+if (identical(g1$disp$action, "proceed_suspect") && .ns == 0L && file.exists(file.path(GW, "fidelity_audit.json")) && isTRUE(g1$disp$ruled))
+  ok("C12 판정(proceed_suspect) + 같은 엔진 지문 + 남은 감사 파일 → 재스폰 0 · 판정 처분") else ng("C12 판정 적용", sprintf("%s spawns=%d", g1$disp$action, .ns))
 .ns <- 0L
 g2 <- rf_audit_gate(GW, .sp, max_retries = 0L, retries_done = 1L, ruling = list(action = "reimplement"))
 if (.ns == 1L) ok("C13 허용 밖 판정(reimplement)은 적용하지 않고 정상 관문(스폰 1) ★음성") else ng("C13 허용 밖 판정", sprintf("spawns=%d", .ns))
 .ns <- 0L   # 직전 관문이 감사 파일을 지웠다(스폰 전 삭제 규약) — 파일 없는 판정은 감사 없이 개설로 가지 않는다
-g3 <- rf_audit_gate(GW, .sp, max_retries = 0L, retries_done = 1L, ruling = list(action = "proceed"))
+g3 <- rf_audit_gate(GW, .sp, max_retries = 0L, retries_done = 1L, ruling = list(action = "proceed", engine_md5 = EMD5))
 if (.ns == 1L && identical(g3$disp$action, "audit_required"))
   ok("C14 감사 파일 없는 판정은 적용하지 않는다 → 정상 관문 · 미실행이면 audit_required(감사 없이 개설 불가 유지)") else
   ng("C14 파일 없는 판정", sprintf("%s spawns=%d", g3$disp$action, .ns))
@@ -173,9 +196,11 @@ if (!is.na(i_cf)) {
   SB <- file.path(TMP, "cf_sandbox"); dir.create(file.path(SB, "06_Registry"), recursive = TRUE, showWarnings = FALSE)   # 역슬래시 섞인 경로 그대로(분기가 견뎌야 한다)
   dir.create(file.path(SB, "w"), showWarnings = FALSE); dir.create(file.path(SB, "art"), showWarnings = FALSE)
   writeLines('{"schema":"replication_skiplist_v1","entries":[{"paper_key":"9999.00001","status":"revoked"}]}', file.path(SB, "06_Registry/replication_skiplist.json"))
-  writeLines('{"status":"in_progress","paper":{"paper_key":"9999.00001"}}', file.path(SB, "06_Registry/replication_request.json"))
+  writeLines('{"status":"in_progress","paper":{"paper_key":"9999.00001"},"audit_ruling":{"action":"proceed","engine_md5":"old"}}', file.path(SB, "06_Registry/replication_request.json"))
+  writeLines("## 상충 판정 대상 엔진(픽스처)\nFACTORS <- NULL", file.path(SB, "w/engine.R"))
   ev <- new.env(parent = globalenv()); sent <- list(); called <- character(0)
   ev$ROOT <- SB; ev$REQ <- file.path(SB, "06_Registry/replication_request.json"); ev$WDIR <- file.path(SB, "w")
+  ev$eng <- file.path(SB, "w/engine.R"); ev$.CLEAN <- TRUE; ev$.rq0 <- list(lane_mode = "clean")
   ev$PKEY <- "9999.00001"; ev$URL <- "https://arxiv.org/abs/9999.00001"; ev$TITLE <- "샌드박스 논문"
   ev$G <- "F"; ev$ar <- file.path(SB, "art/authoritative_remeasure.json"); ev$.aud_p <- file.path(SB, "w/fidelity_audit.json")
   ev$.aud_tries <- 1L; ev$.prior_fb <- "- 신호 불일치: [signal] [모멘텀 식 — 일별 평균] …"
@@ -201,6 +226,23 @@ if (!is.na(i_cf)) {
     ok("D7 분기 실행 — 보류 1건(revoked 옛 항목 옆) · 요청 held · audit_conflict.json(근거 있는 번복 1) · 푸시 1통 · 다음 논문 발행") else
     ng("D7 분기 실행", sprintf("quit=%s held=%d req=%s cf=%s sent=%d calls=%s", quitted, length(held), rq$status %||% "?",
                              file.exists(cfj), length(sent), paste(called, collapse = ",")))
+  ## 리뷰 C1 · C2 · U6 — 판정 재료에 엔진 지문 · 레인 모드가 실리고, 청정 작업 디렉터리 파일에 등급 · 산출물 경로가 없고, 앞 판정은 지워진다
+  cfo <- if (file.exists(cfj)) fromJSON(cfj, simplifyVector = FALSE) else list()
+  if (identical(cfo$engine_md5, unname(tools::md5sum(file.path(SB, "w/engine.R")))) && identical(cfo$lane_mode, "clean") &&
+      is.null(cfo$grade) && is.null(cfo$artifacts) && is.null(rq$audit_ruling))
+    ok("D7b audit_conflict.json = 엔진 지문 · lane_mode 실음 · 등급 · 산출물 경로 없음(청정 디렉터리) · 요청의 앞 판정 제거") else
+    ng("D7b 판정 재료", sprintf("md5=%s lm=%s grade=%s ruling=%s", cfo$engine_md5 %||% "-", cfo$lane_mode %||% "-",
+                               !is.null(cfo$grade), !is.null(rq$audit_ruling)))
+  ## D8 — 보류 기록(스킵리스트)이 실패하면 다음 논문으로 넘어가지 않는다(fail-closed · 리뷰 U5) — 스킵리스트 자리에 디렉터리를 둔다
+  unlink(file.path(SB, "06_Registry/replication_skiplist.json")); dir.create(file.path(SB, "06_Registry/replication_skiplist.json"))
+  writeLines('{"status":"in_progress","paper":{"paper_key":"9999.00001"}}', file.path(SB, "06_Registry/replication_request.json"))
+  sent <- list(); called <- character(0)
+  q8 <- tryCatch({ eval(parse(text = vf[i_cf:(q_cf + 1L)]), envir = ev); FALSE }, quit_called = function(e) TRUE,
+                 error = function(e) { cat("    eval 오류:", conditionMessage(e), "\n"); NA })
+  if (isTRUE(q8) && "audit_conflict_skiplist_failed" %in% called && !any(grepl("next_replication.R", called, fixed = TRUE)) &&
+      length(sent) == 1L && grepl("멈춘다", as.character(sent[[1]]$next_step %||% ""), fixed = TRUE))
+    ok("D8 보류 기록 실패 → 다음 논문 발행 안 함 · 보고가 멈춤을 알린다(같은 논문 즉시 재발행 방지) ★양성") else
+    ng("D8 보류 실패 처리", paste(called, collapse = ","))
 }
 i_pw <- which(grepl(".prior_audit_findings.md", code, fixed = TRUE))[1]
 i_gt <- which(grepl("rf_audit_gate(", code, fixed = TRUE))[1]

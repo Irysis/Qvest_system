@@ -168,7 +168,7 @@ i_reg <- grep(".v1001_register_module <- function(", VL, fixed = TRUE)
 REG_DEF <- if (length(i_reg)) .take_expr(VL, i_reg[1]) else NULL
 ## 보고 · 기록 도우미(2026-10-14 — 관문 줄 · β 통제 α · 재료 줄)도 정의를 잘라 싣는다 — 분기가 실제로 부르는 문장을 잰다
 .def_of <- function(nm) { i <- grep(paste0(nm, " <- function("), VL, fixed = TRUE); if (length(i)) .take_expr(VL, i[1]) else NULL }
-HELP_DEFS <- lapply(c(".v1001_num", ".v1001_gate_line", ".v1001_beta_alpha", ".v1001_material_line", ".v1001_prog_name"), .def_of)
+HELP_DEFS <- lapply(c(".v1001_num", ".v1001_gate_line", ".v1001_ruling", ".v1001_beta_alpha", ".v1001_material_line", ".v1001_prog_name", ".v1001_prog_code"), .def_of)
 
 cat("\n[B] 게이트 블록 — 러너의 진짜 코드를 잘라 구동한다\n")
 if (is.null(GATE) || is.null(REG_DEF) || any(vapply(HELP_DEFS, is.null, logical(1)))) {

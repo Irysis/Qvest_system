@@ -155,6 +155,28 @@ for (k in c("rolling_grade", "defensive_score", "grade_base", "recent_regime_res
 if (grepl("rg_rescue", esrc, fixed = TRUE)) ok("H 구제 호출 배선") else ng("H 구제 미배선")
 if (grepl("reasons <<-", esrc, fixed = TRUE))
   ok("H 실패가 사유에 남는다(<<- · 최상위 <- 는 조용한 no-op)") else ng("H 실패 침묵")
+## H2 — 생산자 종단(2026-10-14 리뷰 C3): essence_score() 를 실제로 돌려 권위 기록에 귀속(attribution · β · β 잔차)이 실리는지 잰다.
+##   구판은 essence 가 7개 필드만 골라 복사해 귀속이 사라졌고, 등재 술어가 새 측정을 전부 dscore_unattributed 로 막았다.
+##   (문자열 grep 은 이 결함을 못 잡았다 — 픽스처가 귀속을 auth 에 직접 넣었기 때문이다.)
+suppressMessages(source("02_Infrastructure/contracts/essence_score.R"))
+.mk_bt <- function(s, b) {
+  n <- length(s); d <- seq(as.Date("2008-01-15"), by = "month", length.out = n)
+  list(metrics = data.table(metric_name = c("Sharpe", "CAGR", "MDD", "Calmar"), metric_value = c(0.5, 0.08, 0.30, 0.27)),
+       benchmark_compare = data.table(metric_name = c("Information_Ratio", "Portfolio_Alpha_t_NW_lag3"), active_value = c(0.1, 0.5)),
+       period_returns = data.table(date = d, ret_net = s), benchmark_returns = data.table(date = d, benchmark_ret = b))
+}
+set.seed(23); nh <- 180L; bh <- rnorm(nh, 0.006, 0.055)
+es_exp <- tryCatch(essence_score(.mk_bt(0.5 * bh + rnorm(nh, 0, 0.02), bh)), error = function(e) list(err = conditionMessage(e)))
+es_sel <- tryCatch(essence_score(.mk_bt(0.9 * bh + ifelse(bh < 0, 0.012, -0.002) + rnorm(nh, 0, 0.015), bh)), error = function(e) list(err = conditionMessage(e)))
+dx <- es_exp$defensive_score; dsl <- es_sel$defensive_score
+if (identical(dx$attribution, "exposure") && is.finite(as.numeric(dx$beta %||% NA)) && !is.null(dx$down_resid) &&
+    identical(dsl$attribution, "selection"))
+  ok("H2 essence_score 산출 = 귀속 실림(노출 판 exposure · 비대칭 판 selection · β · β 잔차) ★생산자 종단") else
+  ng("H2 생산자가 귀속을 버린다", paste(es_exp$err %||% "", dx$attribution %||% "NULL", dsl$attribution %||% "NULL"))
+g_x <- ds_pool_eligible("F", dx, DP); g_s <- ds_pool_eligible("F", dsl, DP)
+if (identical(g_x$code, "exposure_defense") && identical(g_s$route, "defensive_specialist"))
+  ok("H3 생산자 산출 그대로 풀 술어에 넣으면 노출 = exposure_defense · 기전 = defensive_specialist(dscore_unattributed 아님)") else
+  ng("H3 생산자 → 술어 왕복", paste(g_x$code, g_s$code))
 
 cat("\n=== I. 설정이 정본인가 (하드코딩 금지) ===\n")
 for (f in c("06_Registry/rolling_grade.json", "06_Registry/defensive_score.json")) {

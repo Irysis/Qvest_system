@@ -185,8 +185,11 @@ def PROGRAMS():
         nq=len(g.get("queue") or []); nr=len(g.get("rounds") or [])
         ps.append("%s %s%s"%(str(g.get("id") or "?").split("_")[0],g.get("status") or "?",
                               "(재료 %d·라운드 %d)"%(nq,nr) if (nq or nr) else ""))
-    return "Programs: 측정계약 %d/%d%s | %s"%(nd,len(mc)," (남은 "+" ".join(todo)+")" if todo else "",
-                                            " · ".join(ps) if ps else "프로그램 0")
+    # 미분류 재료(검증기가 라우터 분류 없이 보류한 측정 재료 · paper_routing.unrouted · 2026-10-14) — 있을 때만 붙인다(세션 분류 대기)
+    un=(d.get("paper_routing") or {}).get("unrouted") if isinstance(d.get("paper_routing"),dict) else None
+    nu=len(un) if isinstance(un,list) else 0
+    return "Programs: 측정계약 %d/%d%s | %s%s"%(nd,len(mc)," (남은 "+" ".join(todo)+")" if todo else "",
+                                            " · ".join(ps) if ps else "프로그램 0", " · 미분류 재료 %d"%nu if nu else "")
 # ⑥-b 대기 결정 — 결정 대기 레지스터 부기 (P3-07 · 2026-09-23 플랜 qvest-1-drifting-eclipse). **읽기만** — writer =
 #   reinforce_ledger.R::dr_open/dr_resolve(원자 쓰기 · owner 만 resolve). 새 줄을 만들지 않고 Programs 줄 끝에 붙는다(v10.01 · 구 Director 줄).
 #   ★왜: R1 → l2_auto.enabled → director.act 사슬이 2계층 A 경로·자기개선 채점기를 막는데 부팅 어디에도 안 보였다(감사 D7-04·D8-05).

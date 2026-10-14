@@ -47,7 +47,8 @@ cat("\n=== C. 라운드 — 사전등록 강제(R2) ===\n")
 chk("prereg 없는 라운드는 거부(위반 주입)", errs(pr_record_round("P0_FRONTIER", list(round_id = "R1"), path = tmp)))
 pr_record_round("P0_FRONTIER", list(round_id = "R1", prereg = "x/prereg.json"), path = tmp)
 pr_record_round("P0_FRONTIER", list(round_id = "R1", prereg = "x/prereg.json", verdict = "reached"), path = tmp)
-r <- pr_get(pr_load(path = tmp), "P0_FRONTIER")$rounds
+## 운영 사본에는 이미 라운드(P0R01 등)가 있다 — 개수는 이 검사가 쓴 round_id 로만 센다(운영 상태를 빌리면 라운드가 기록될 때 깨진다 · 2026-10-15)
+r <- Filter(function(x) identical(x$round_id, "R1"), pr_get(pr_load(path = tmp), "P0_FRONTIER")$rounds)
 chk("같은 round_id 결과는 덮어 쓴다(한 줄 유지)", length(r) == 1L && identical(r[[1]]$verdict, "reached"))
 chk("결과 뒤 사전등록 변경은 거부(위반 주입)",
     errs(pr_record_round("P0_FRONTIER", list(round_id = "R1", prereg = "y/other.json"), path = tmp)))
@@ -55,6 +56,13 @@ chk("결과 뒤 사전등록 변경은 거부(위반 주입)",
 cat("\n=== D. 상태 · 선행 조건 ===\n")
 chk("어휘 밖 상태는 거부(위반 주입)", errs(pr_set_status("P1_RETURN", "running", path = tmp)))
 reg <- pr_load(path = tmp)
+## 운영 P0 는 이미 active 일 수 있다 — 전이를 재려면 사본에서 blocked 로 되돌린 뒤 잰다(선행 조건 = 측정 계약 전부)
+i0 <- which(vapply(reg$programs, function(p) identical(p$id, "P0_FRONTIER"), logical(1)))
+reg$programs[[i0]]$status <- "blocked"
+reg$programs[[i0]]$blocked_by <- lapply(reg$measurement_contract$items, function(m) m$id)
+chk("측정 계약이 하나라도 남으면 P0 는 blocked 유지(음성 대조)",
+    length(reg$measurement_contract$items) == 0L ||
+      { rr <- reg; rr$measurement_contract$items[[1]]$status <- "todo"; identical(pr_get(pr_refresh_blocks(rr), "P0_FRONTIER")$status, "blocked") })
 for (m in seq_along(reg$measurement_contract$items)) reg$measurement_contract$items[[m]]$status <- "done"
 reg <- pr_refresh_blocks(reg)
 chk("측정 계약이 다 끝나면 P0 는 ready", identical(pr_get(reg, "P0_FRONTIER")$status, "ready"))
