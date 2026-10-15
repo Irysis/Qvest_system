@@ -1,0 +1,2536 @@
+{
+  "schema": "diagnosis_packet_v1",
+  "label": "진단 — 등급 대체 아님 · 보는 창(≤ τ_D)만으로 계산 · 처방 에이전트 입력 전용",
+  "tau_d": "2022-12-31",
+  "window": ["2005-02-02", "2022-12-29"],
+  "created_at": "2026-10-15T08:47:32+0900",
+  "identity": {
+    "strategy_name": "P3R01_E2_K2",
+    "paper_url": "https://arxiv.org/abs/2002.06975",
+    "construction": "top_n_long",
+    "weight_method": "catalog",
+    "rebalance": "monthly",
+    "universe": "ALL_HYG",
+    "n_max": 25,
+    "has_short": false,
+    "exec_price": "close_t1",
+    "idea": "[P3R01 구성 지도 · E2 × K2] Clarke, de Silva & Thorley (2006) Minimum-Variance Portfolios in the U.S. Equity Market, JPM 33(1) doi:10.3905/jpm.2006.661366",
+    "cell_axes": {
+      "base_signal": {
+        "kind": "engine",
+        "path": "C:/Users/99922/OneDrive/Quant_Module_Moltbot/04_Research/strategies/RP_AUTO_2002_06975/engine.R"
+      },
+      "base_weight": 0.5,
+      "factors": [],
+      "weighting": "minvar",
+      "rebalance": null,
+      "universe": "all_hyg",
+      "overlay": "none",
+      "defense_sleeve": "none"
+    }
+  },
+  "performance": {
+    "strategy": {
+      "n_obs": 4429,
+      "calmar": 0.365883101398212,
+      "cagr": 0.201180986973317,
+      "sharpe": 1.01712404644723,
+      "mdd": 0.549850447327329,
+      "port_t": 3.4092473850821
+    },
+    "benchmark": {
+      "n_obs": 4429,
+      "calmar": 0.097970261391842,
+      "cagr": 0.051843937498433,
+      "sharpe": 0.350389398127494,
+      "mdd": 0.529180352914216
+    },
+    "annual": [
+      {
+        "year": "2005",
+        "strategy": 0.895506004442334,
+        "bench": 0.478583333333333,
+        "active": 0.416922671109,
+        "n_days": 227
+      },
+      {
+        "year": "2006",
+        "strategy": 0.100270472282956,
+        "bench": 0.0448627627796867,
+        "active": 0.055407709503269,
+        "n_days": 247
+      },
+      {
+        "year": "2007",
+        "strategy": 0.465419327295236,
+        "bench": 0.301418630994123,
+        "active": 0.164000696301113,
+        "n_days": 246
+      },
+      {
+        "year": "2008",
+        "strategy": -0.322145722865441,
+        "bench": -0.393418162224894,
+        "active": 0.0712724393594524,
+        "n_days": 248
+      },
+      {
+        "year": "2009",
+        "strategy": 0.776134457459052,
+        "bench": 0.515954902630679,
+        "active": 0.260179554828373,
+        "n_days": 253
+      },
+      {
+        "year": "2010",
+        "strategy": 0.365247742572422,
+        "bench": 0.222347426304876,
+        "active": 0.142900316267546,
+        "n_days": 251
+      },
+      {
+        "year": "2011",
+        "strategy": 0.103315544718635,
+        "bench": -0.122091522548766,
+        "active": 0.225407067267401,
+        "n_days": 248
+      },
+      {
+        "year": "2012",
+        "strategy": 0.112145927523861,
+        "bench": 0.108534946236559,
+        "active": 0.00361098128730108,
+        "n_days": 248
+      },
+      {
+        "year": "2013",
+        "strategy": 0.30884752975728,
+        "bench": 0.00121248863291745,
+        "active": 0.307635041124362,
+        "n_days": 247
+      },
+      {
+        "year": "2014",
+        "strategy": 0.203774429633508,
+        "bench": -0.0764078110808358,
+        "active": 0.280182240714344,
+        "n_days": 245
+      },
+      {
+        "year": "2015",
+        "strategy": 0.518383754607444,
+        "bench": -0.0150379020692482,
+        "active": 0.533421656676692,
+        "n_days": 248
+      },
+      {
+        "year": "2016",
+        "strategy": -0.0214705858850316,
+        "bench": 0.0816623679174615,
+        "active": -0.103132953802493,
+        "n_days": 246
+      },
+      {
+        "year": "2017",
+        "strategy": 0.135322706579189,
+        "bench": 0.248951963386023,
+        "active": -0.113629256806834,
+        "n_days": 243
+      },
+      {
+        "year": "2018",
+        "strategy": -0.0212329670819543,
+        "bench": -0.193262302149412,
+        "active": 0.172029335067458,
+        "n_days": 244
+      },
+      {
+        "year": "2019",
+        "strategy": -0.0149685609037217,
+        "bench": 0.121345140850447,
+        "active": -0.136313701754169,
+        "n_days": 246
+      },
+      {
+        "year": "2020",
+        "strategy": 0.0315667594937825,
+        "bench": 0.325152330054125,
+        "active": -0.293585570560343,
+        "n_days": 248
+      },
+      {
+        "year": "2021",
+        "strategy": 0.417638310323379,
+        "bench": 0.0125870173906346,
+        "active": 0.405051292932745,
+        "n_days": 248
+      },
+      {
+        "year": "2022",
+        "strategy": 0.111643455476686,
+        "bench": -0.261523630736448,
+        "active": 0.373167086213134,
+        "n_days": 246
+      }
+    ]
+  },
+  "behavior": {
+    "verdict": "normal",
+    "summary": {
+      "n_crisis": 7,
+      "n_bull": 5,
+      "crisis_cum_capture_median": 0.456854566194696,
+      "crisis_dd_capture_median": 0.753559734581014,
+      "crisis_dd_capture_worst": 1.30858313429694,
+      "bull_up_capture_median": 1.42968459851072,
+      "share_crisis_strong": 0.571428571428571,
+      "share_crisis_weak": 0.285714285714286,
+      "asymmetry": 1.897241231056,
+      "mdd_vs_bench": 1.03906058548713,
+      "verdict": "normal"
+    },
+    "crises": [
+      {
+        "peak_date": "2007-10-11",
+        "trough_date": "2008-03-17",
+        "ongoing": false,
+        "window": "visible",
+        "bm_depth_hist": 0.23733862959285,
+        "bm_cum": -0.23733862959285,
+        "st_cum": -0.108429236663885,
+        "bm_dd": 0.23733862959285,
+        "st_dd": 0.17884883472181,
+        "cum_capture": 0.456854566194696,
+        "dd_capture": 0.753559734581014,
+        "st_recovery_obs": 432,
+        "st_recovery_censored": false,
+        "bm_recovery_obs": 791,
+        "bm_recovery_censored": false
+      },
+      {
+        "peak_date": "2008-05-16",
+        "trough_date": "2008-10-24",
+        "ongoing": false,
+        "window": "visible",
+        "bm_depth_hist": 0.493840847499384,
+        "bm_cum": -0.493840847499384,
+        "st_cum": -0.497816594656125,
+        "bm_dd": 0.493840847499384,
+        "st_dd": 0.530882675640157,
+        "cum_capture": 1.00805066485867,
+        "dd_capture": 1.07500762305981,
+        "st_recovery_obs": 300,
+        "st_recovery_censored": false,
+        "bm_recovery_obs": 598,
+        "bm_recovery_censored": false
+      },
+      {
+        "peak_date": "2008-11-05",
+        "trough_date": "2008-11-20",
+        "ongoing": false,
+        "window": "visible",
+        "bm_depth_hist": 0.20260762925192,
+        "bm_cum": -0.20260762925192,
+        "st_cum": -0.0805496757625205,
+        "bm_dd": 0.20260762925192,
+        "st_dd": 0.0922705496805397,
+        "cum_capture": 0.397564869891281,
+        "dd_capture": 0.455414981268111,
+        "st_recovery_obs": 38,
+        "st_recovery_censored": false,
+        "bm_recovery_obs": 41,
+        "bm_recovery_censored": false
+      },
+      {
+        "peak_date": "2011-05-02",
+        "trough_date": "2011-09-26",
+        "ongoing": false,
+        "window": "visible",
+        "bm_depth_hist": 0.274826477061114,
+        "bm_cum": -0.274826477061114,
+        "st_cum": -0.155852203290472,
+        "bm_dd": 0.274826477061114,
+        "st_dd": 0.190186627940959,
+        "cum_capture": 0.567093116198605,
+        "dd_capture": 0.692024400176941,
+        "st_recovery_obs": 162,
+        "st_recovery_censored": false,
+        "bm_recovery_obs": 2276,
+        "bm_recovery_censored": false
+      },
+      {
+        "peak_date": "2017-11-03",
+        "trough_date": "2019-08-07",
+        "ongoing": false,
+        "window": "visible",
+        "bm_depth_hist": 0.256264203287785,
+        "bm_cum": -0.256264203287785,
+        "st_cum": -0.0803548487054265,
+        "bm_dd": 0.256264203287785,
+        "st_dd": 0.237524425488537,
+        "cum_capture": 0.31356251741172,
+        "dd_capture": 0.926873213040204,
+        "st_recovery_obs": 764,
+        "st_recovery_censored": false,
+        "bm_recovery_obs": 745,
+        "bm_recovery_censored": false
+      },
+      {
+        "peak_date": "2020-01-22",
+        "trough_date": "2020-03-19",
+        "ongoing": false,
+        "window": "visible",
+        "bm_depth_hist": 0.348928384736017,
+        "bm_cum": -0.348928384736017,
+        "st_cum": -0.447704521987178,
+        "bm_dd": 0.348928384736017,
+        "st_dd": 0.456601799343024,
+        "cum_capture": 1.28308427050408,
+        "dd_capture": 1.30858313429694,
+        "st_recovery_obs": 162,
+        "st_recovery_censored": false,
+        "bm_recovery_obs": 134,
+        "bm_recovery_censored": false
+      },
+      {
+        "peak_date": "2021-06-25",
+        "trough_date": "2022-09-30",
+        "ongoing": true,
+        "window": "visible",
+        "bm_depth_hist": 0.361126248864669,
+        "bm_cum": -0.361126248864669,
+        "st_cum": 0.0417069608988339,
+        "bm_dd": 0.361126248864669,
+        "st_dd": 0.142004914151293,
+        "cum_capture": -0.115491358022173,
+        "dd_capture": 0.393227893562811,
+        "st_recovery_obs": 49,
+        "st_recovery_censored": false,
+        "bm_recovery_obs": null,
+        "bm_recovery_censored": true
+      }
+    ],
+    "bull_phases": [
+      {
+        "start_ym": "2009-03",
+        "end_ym": "2011-04",
+        "n_months": 26,
+        "window": "visible",
+        "bm_cum": 1.1032085174187,
+        "st_cum": 1.57724022629936,
+        "up_capture": 1.42968459851072
+      },
+      {
+        "start_ym": "2011-10",
+        "end_ym": "2013-02",
+        "n_months": 17,
+        "window": "visible",
+        "bm_cum": 0.16318736165965,
+        "st_cum": 0.369801669982415,
+        "up_capture": 2.26611709523001
+      },
+      {
+        "start_ym": "2013-07",
+        "end_ym": "2014-07",
+        "n_months": 13,
+        "window": "visible",
+        "bm_cum": 0.113138234201511,
+        "st_cum": 0.332313221430322,
+        "up_capture": 2.93723181889545
+      },
+      {
+        "start_ym": "2016-02",
+        "end_ym": "2017-10",
+        "n_months": 21,
+        "window": "visible",
+        "bm_cum": 0.437182249030587,
+        "st_cum": 0.137704323650767,
+        "up_capture": 0.314981507039946
+      },
+      {
+        "start_ym": "2020-04",
+        "end_ym": "2021-06",
+        "n_months": 15,
+        "window": "visible",
+        "bm_cum": 0.853052951608819,
+        "st_cum": 0.92702360699777,
+        "up_capture": 1.08671285322845
+      }
+    ],
+    "stats": {
+      "cagr": 0.198593471321536,
+      "mdd": 0.456990620892264,
+      "calmar": 0.434567936938809,
+      "cdar": 0.346262085313698,
+      "beta": 0.80773120948851,
+      "beta_down": 1.02203245247921,
+      "beta_up": 0.667182125074706
+    },
+    "rolling": {
+      "status": "ok",
+      "pass_life": 0.494444444444444,
+      "pass_recent": 0.166666666666667,
+      "window_months": 36
+    },
+    "dc_strong_max": 0.517266211062281
+  },
+  "controls": {
+    "status": "ok",
+    "attribution": {
+      "label": "selection_defense",
+      "n_crisis": 7,
+      "share_beats_size_exposure": 0.714285714285714,
+      "share_beats_exposure": 0.714285714285714,
+      "share_beats_bench": 0.714285714285714,
+      "median_placebo_p": 0.0298507462686567,
+      "median_gap_size_exposure": 0.355246368663626,
+      "median_gap_exposure": 0.246440265418986,
+      "share_beats_size_exposure_path": null
+    },
+    "placebo_alpha": 0.05,
+    "exposure_profile": {
+      "mean": 1,
+      "varies": false,
+      "min": 0.999999999999999,
+      "max": 1
+    },
+    "per_crisis": [
+      {
+        "peak_date": "2007-10-11",
+        "window": "visible",
+        "strategy_dd_capture": 0.753559734581014,
+        "placebo_q": 0.876844753672031,
+        "placebo_median": 1.27614092304386,
+        "placebo_p": 0.0199004975124378,
+        "beats": true
+      },
+      {
+        "peak_date": "2008-05-16",
+        "window": "visible",
+        "strategy_dd_capture": 1.07500762305981,
+        "placebo_q": 0.911524396729336,
+        "placebo_median": 1.09227679611102,
+        "placebo_p": 0.462686567164179,
+        "beats": false
+      },
+      {
+        "peak_date": "2008-11-05",
+        "window": "visible",
+        "strategy_dd_capture": 0.455414981268111,
+        "placebo_q": 0.50682676302527,
+        "placebo_median": 0.997105410672799,
+        "placebo_p": 0.0298507462686567,
+        "beats": true
+      },
+      {
+        "peak_date": "2011-05-02",
+        "window": "visible",
+        "strategy_dd_capture": 0.692024400176941,
+        "placebo_q": 0.71364311900213,
+        "placebo_median": 1.01396525554625,
+        "placebo_p": 0.0447761194029851,
+        "beats": true
+      },
+      {
+        "peak_date": "2017-11-03",
+        "window": "visible",
+        "strategy_dd_capture": 0.926873213040204,
+        "placebo_q": 1.06875266432967,
+        "placebo_median": 1.48647352662096,
+        "placebo_p": 0.00995024875621891,
+        "beats": true
+      },
+      {
+        "peak_date": "2020-01-22",
+        "window": "visible",
+        "strategy_dd_capture": 1.30858313429694,
+        "placebo_q": 0.924167350458389,
+        "placebo_median": 1.23328269151782,
+        "placebo_p": 0.776119402985075,
+        "beats": false
+      },
+      {
+        "peak_date": "2021-06-25",
+        "window": "visible",
+        "strategy_dd_capture": 0.393227893562811,
+        "placebo_q": 0.750009970074738,
+        "placebo_median": 1.10802754595737,
+        "placebo_p": 0.00497512437810945,
+        "beats": true
+      }
+    ],
+    "basket_capture": [
+      {
+        "peak_date": "2007-10-11",
+        "window": "visible",
+        "strategy_dd_capture": 0.753559734581014,
+        "control_dd_capture": 1.10880610324464,
+        "beats_control": true
+      },
+      {
+        "peak_date": "2008-05-16",
+        "window": "visible",
+        "strategy_dd_capture": 1.07500762305981,
+        "control_dd_capture": 1.08296802967963,
+        "beats_control": true
+      },
+      {
+        "peak_date": "2008-11-05",
+        "window": "visible",
+        "strategy_dd_capture": 0.455414981268111,
+        "control_dd_capture": 0.981308208837297,
+        "beats_control": true
+      },
+      {
+        "peak_date": "2011-05-02",
+        "window": "visible",
+        "strategy_dd_capture": 0.692024400176941,
+        "control_dd_capture": 0.960357700437008,
+        "beats_control": true
+      },
+      {
+        "peak_date": "2017-11-03",
+        "window": "visible",
+        "strategy_dd_capture": 0.926873213040204,
+        "control_dd_capture": 1.29517230983805,
+        "beats_control": true
+      },
+      {
+        "peak_date": "2020-01-22",
+        "window": "visible",
+        "strategy_dd_capture": 1.30858313429694,
+        "control_dd_capture": 1.19550781386362,
+        "beats_control": false
+      },
+      {
+        "peak_date": "2021-06-25",
+        "window": "visible",
+        "strategy_dd_capture": 0.393227893562811,
+        "control_dd_capture": 0.974674831943236,
+        "beats_control": true
+      }
+    ],
+    "exposure_capture": [
+      {
+        "peak_date": "2007-10-11",
+        "window": "visible",
+        "strategy_dd_capture": 0.753559734581014,
+        "control_dd_capture": 1,
+        "beats_control": true
+      },
+      {
+        "peak_date": "2008-05-16",
+        "window": "visible",
+        "strategy_dd_capture": 1.07500762305981,
+        "control_dd_capture": 1,
+        "beats_control": false
+      },
+      {
+        "peak_date": "2008-11-05",
+        "window": "visible",
+        "strategy_dd_capture": 0.455414981268111,
+        "control_dd_capture": 1,
+        "beats_control": true
+      },
+      {
+        "peak_date": "2011-05-02",
+        "window": "visible",
+        "strategy_dd_capture": 0.692024400176941,
+        "control_dd_capture": 1,
+        "beats_control": true
+      },
+      {
+        "peak_date": "2017-11-03",
+        "window": "visible",
+        "strategy_dd_capture": 0.926873213040204,
+        "control_dd_capture": 1,
+        "beats_control": true
+      },
+      {
+        "peak_date": "2020-01-22",
+        "window": "visible",
+        "strategy_dd_capture": 1.30858313429694,
+        "control_dd_capture": 1,
+        "beats_control": false
+      },
+      {
+        "peak_date": "2021-06-25",
+        "window": "visible",
+        "strategy_dd_capture": 0.393227893562811,
+        "control_dd_capture": 1,
+        "beats_control": true
+      }
+    ]
+  },
+  "exposure": {
+    "label": "진단 — 등급 대체 아님 · 노출 = t-1 까지 사전 적재(tilt_attribution 기계) · 위기 합 = 일간 기여의 산술합",
+    "window": ["2005-02-02", "2022-12-29"],
+    "n_days": 4429,
+    "years": 17.5753968253968,
+    "loadings": {
+      "beta_m_mean": 0.8150809656094,
+      "beta_e_mean": 0.762615147119707,
+      "beta_n_mean": -0.0444404074160669,
+      "GL_mean": 1
+    },
+    "summary": [
+      {
+        "component": "active",
+        "ann_mean": 0.134190543564597,
+        "share_of_active": 1
+      },
+      {
+        "component": "market_beta",
+        "ann_mean": -0.0146869687155217,
+        "share_of_active": -0.109448611842396
+      },
+      {
+        "component": "ew_cw",
+        "ann_mean": 0.032100875105749,
+        "share_of_active": 0.239218608502738
+      },
+      {
+        "component": "tilt_nsc",
+        "ann_mean": -0.00251967398229606,
+        "share_of_active": -0.0187768371404139
+      },
+      {
+        "component": "selection",
+        "ann_mean": 0.153354480879101,
+        "share_of_active": 1.14281138450921
+      },
+      {
+        "component": "cost",
+        "ann_mean": -0.0340581697224354,
+        "share_of_active": -0.253804544029143
+      },
+      {
+        "component": "recon",
+        "ann_mean": 6.87124457049746e-16,
+        "share_of_active": 5.12051325523527e-15
+      }
+    ],
+    "crises": [
+      {
+        "peak_date": "2007-10-11",
+        "trough_date": "2008-03-17",
+        "n_days": 105,
+        "strategy_sum": -0.0989969437014656,
+        "bench_sum": -0.25366771273084,
+        "active_sum": 0.154670769029374,
+        "market_beta_sum": 0.0609402312713949,
+        "ew_cw_sum": 0.0256493318482294,
+        "tilt_nsc_sum": 0.00975525923565904,
+        "selection_sum": 0.0722739578569914,
+        "cost_sum": -0.0139480111829,
+        "GL_mean": 1
+      },
+      {
+        "peak_date": "2008-05-16",
+        "trough_date": "2008-10-24",
+        "n_days": 111,
+        "strategy_sum": -0.655617339819559,
+        "bench_sum": -0.645390235526777,
+        "active_sum": -0.0102271042927817,
+        "market_beta_sum": 0.102157888054053,
+        "ew_cw_sum": -0.00695908643206626,
+        "tilt_nsc_sum": -0.00661927770897454,
+        "selection_sum": -0.0849673179814335,
+        "cost_sum": -0.01383931022436,
+        "GL_mean": 1
+      },
+      {
+        "peak_date": "2008-11-05",
+        "trough_date": "2008-11-20",
+        "n_days": 11,
+        "strategy_sum": -0.0814756701513594,
+        "bench_sum": -0.2186106168483,
+        "active_sum": 0.13713494669694,
+        "market_beta_sum": 0.0684248615937505,
+        "ew_cw_sum": 0.00789840271476979,
+        "tilt_nsc_sum": -0.000603774100302052,
+        "selection_sum": 0.061415456488722,
+        "cost_sum": 0,
+        "GL_mean": 1
+      },
+      {
+        "peak_date": "2011-05-02",
+        "trough_date": "2011-09-26",
+        "n_days": 99,
+        "strategy_sum": -0.154209107972989,
+        "bench_sum": -0.301760853533054,
+        "active_sum": 0.147551745560065,
+        "market_beta_sum": 0.0367428529951081,
+        "ew_cw_sum": 0.0711643485110398,
+        "tilt_nsc_sum": -0.0111858837965674,
+        "selection_sum": 0.0643707867112123,
+        "cost_sum": -0.0135403588607282,
+        "GL_mean": 1
+      },
+      {
+        "peak_date": "2017-11-03",
+        "trough_date": "2019-08-07",
+        "n_days": 431,
+        "strategy_sum": -0.0634699682698064,
+        "bench_sum": -0.278552233037206,
+        "active_sum": 0.215082264767399,
+        "market_beta_sum": 0.0509714242773703,
+        "ew_cw_sum": 0.0114549000997674,
+        "tilt_nsc_sum": -0.0202652905944268,
+        "selection_sum": 0.232993114509271,
+        "cost_sum": -0.0600718835245834,
+        "GL_mean": 1
+      },
+      {
+        "peak_date": "2020-01-22",
+        "trough_date": "2020-03-19",
+        "n_days": 39,
+        "strategy_sum": -0.56348480317759,
+        "bench_sum": -0.41728967112851,
+        "active_sum": -0.14619513204908,
+        "market_beta_sum": 0.0391496122033682,
+        "ew_cw_sum": -0.058195412937159,
+        "tilt_nsc_sum": -0.00384428329753507,
+        "selection_sum": -0.117358917566304,
+        "cost_sum": -0.0059461304514501,
+        "GL_mean": 1
+      },
+      {
+        "peak_date": "2021-06-25",
+        "trough_date": "2022-09-30",
+        "n_days": 312,
+        "strategy_sum": 0.0596883632767639,
+        "bench_sum": -0.428944460337991,
+        "active_sum": 0.488632823614755,
+        "market_beta_sum": 0.111572782178653,
+        "ew_cw_sum": 0.0568786189967471,
+        "tilt_nsc_sum": -0.00479535317022259,
+        "selection_sum": 0.366184458694124,
+        "cost_sum": -0.0412076830845476,
+        "GL_mean": 1
+      }
+    ],
+    "top_losers": [
+      {
+        "peak_date": "2007-10-11",
+        "Ticker": "A047040",
+        "Sector": "건설,건축관련",
+        "size_decile": 9,
+        "contrib": -0.026449086190618,
+        "market": -0.00675107813743915,
+        "size_ew": -0.000457984219236498,
+        "nsc": -0.000570032813191403,
+        "selection": -0.018669991020751,
+        "days_held": 22,
+        "w_mean": 0.0652105237596354
+      },
+      {
+        "peak_date": "2007-10-11",
+        "Ticker": "A035000",
+        "Sector": "미디어,교육",
+        "size_decile": 1,
+        "contrib": -0.0205394407273955,
+        "market": -0.00741640473058886,
+        "size_ew": -0.000751686084293835,
+        "nsc": 0.000192835028091081,
+        "selection": -0.0125641849406039,
+        "days_held": 22,
+        "w_mean": 0.0939823780818287
+      },
+      {
+        "peak_date": "2007-10-11",
+        "Ticker": "A037350",
+        "Sector": "반도체",
+        "size_decile": 1,
+        "contrib": -0.0191784562284666,
+        "market": -0.00424702396293854,
+        "size_ew": 0.0012952093107621,
+        "nsc": 0.000309498546227527,
+        "selection": -0.0165361401225177,
+        "days_held": 10,
+        "w_mean": 0.0912048394044128
+      },
+      {
+        "peak_date": "2007-10-11",
+        "Ticker": "A005090",
+        "Sector": "비철,목재등",
+        "size_decile": 2,
+        "contrib": -0.0182992395574419,
+        "market": -0.0060400806675671,
+        "size_ew": -6.56677542152806e-05,
+        "nsc": -0.0015402807953577,
+        "selection": -0.0106532103403018,
+        "days_held": 22,
+        "w_mean": 0.110859884585566
+      },
+      {
+        "peak_date": "2007-10-11",
+        "Ticker": "A005320",
+        "Sector": "화장품,의류,완구",
+        "size_decile": 1,
+        "contrib": -0.0172843029814122,
+        "market": -0.00264266386775686,
+        "size_ew": 3.88186362253291e-05,
+        "nsc": 0.00073196266858638,
+        "selection": -0.015412420418467,
+        "days_held": 32,
+        "w_mean": 0.0326723520029536
+      },
+      {
+        "peak_date": "2008-05-16",
+        "Ticker": "A023530",
+        "Sector": "소매(유통)",
+        "size_decile": 9,
+        "contrib": -0.198425295008997,
+        "market": -0.0696843191169062,
+        "size_ew": -0.0065582144544863,
+        "nsc": -0.00261255562602693,
+        "selection": -0.119570205811577,
+        "days_held": 37,
+        "w_mean": 0.272647335315429
+      },
+      {
+        "peak_date": "2008-05-16",
+        "Ticker": "A005300",
+        "Sector": "필수소비재",
+        "size_decile": 6,
+        "contrib": -0.0614315447348949,
+        "market": -0.0388637112470595,
+        "size_ew": -0.00523951616927446,
+        "nsc": -0.00133942743082018,
+        "selection": -0.0159888898877408,
+        "days_held": 16,
+        "w_mean": 0.161400496936755
+      },
+      {
+        "peak_date": "2008-05-16",
+        "Ticker": "A000140",
+        "Sector": "필수소비재",
+        "size_decile": 7,
+        "contrib": -0.0546462644731256,
+        "market": -0.013277714370831,
+        "size_ew": -0.00205406452035947,
+        "nsc": -0.000485230073643443,
+        "selection": -0.0388292555082916,
+        "days_held": 20,
+        "w_mean": 0.19831921321073
+      },
+      {
+        "peak_date": "2008-05-16",
+        "Ticker": "A035250",
+        "Sector": "호텔,레저서비스",
+        "size_decile": 8,
+        "contrib": -0.0508922207906114,
+        "market": 0.00389440203940326,
+        "size_ew": 0.00140891474735466,
+        "nsc": 0.000238436579857573,
+        "selection": -0.0564339741572268,
+        "days_held": 21,
+        "w_mean": 0.171855326467537
+      },
+      {
+        "peak_date": "2008-05-16",
+        "Ticker": "A004940",
+        "Sector": "은행",
+        "size_decile": 9,
+        "contrib": -0.0322125040057738,
+        "market": -0.0502842786132058,
+        "size_ew": -0.00271668660511459,
+        "nsc": -0.000646756939662384,
+        "selection": 0.0214352181522089,
+        "days_held": 36,
+        "w_mean": 0.163207488409242
+      },
+      {
+        "peak_date": "2008-11-05",
+        "Ticker": "A004940",
+        "Sector": "은행",
+        "size_decile": 9,
+        "contrib": -0.0392837600724592,
+        "market": -0.016028419338301,
+        "size_ew": 0.000710066456477084,
+        "nsc": -0.000329166286834916,
+        "selection": -0.0236362409038003,
+        "days_held": 11,
+        "w_mean": 0.0886636433666587
+      },
+      {
+        "peak_date": "2008-11-05",
+        "Ticker": "A000060",
+        "Sector": "보험",
+        "size_decile": 5,
+        "contrib": -0.0158062375690917,
+        "market": -0.00664710618080947,
+        "size_ew": 0.000523577751951123,
+        "nsc": -0.000136551940469347,
+        "selection": -0.00954615719976399,
+        "days_held": 11,
+        "w_mean": 0.0303851611364656
+      },
+      {
+        "peak_date": "2008-11-05",
+        "Ticker": "A005280",
+        "Sector": "은행",
+        "size_decile": 6,
+        "contrib": -0.0110198018746997,
+        "market": -0.00750229866476767,
+        "size_ew": 0.000393184495094999,
+        "nsc": -0.000143596912531886,
+        "selection": -0.00376709079249516,
+        "days_held": 11,
+        "w_mean": 0.0377427320509929
+      },
+      {
+        "peak_date": "2008-11-05",
+        "Ticker": "A018670",
+        "Sector": "유틸리티",
+        "size_decile": 4,
+        "contrib": -0.00993799358156967,
+        "market": -0.0166571365950084,
+        "size_ew": 0.000908979689339234,
+        "nsc": -0.000182569156790787,
+        "selection": 0.00599273248089031,
+        "days_held": 11,
+        "w_mean": 0.0989185166832655
+      },
+      {
+        "peak_date": "2008-11-05",
+        "Ticker": "A005940",
+        "Sector": "증권",
+        "size_decile": 7,
+        "contrib": -0.00714899114676105,
+        "market": -0.00302209764746255,
+        "size_ew": 0.000112778904991153,
+        "nsc": -4.64810931703861e-05,
+        "selection": -0.00419319131111927,
+        "days_held": 11,
+        "w_mean": 0.0133447142995072
+      },
+      {
+        "peak_date": "2011-05-02",
+        "Ticker": "A053000",
+        "Sector": "은행",
+        "size_decile": 10,
+        "contrib": -0.0326189231068436,
+        "market": -0.0199991165172478,
+        "size_ew": 0.00463316118691256,
+        "nsc": -1.51122314661636e-05,
+        "selection": -0.0172378555450422,
+        "days_held": 43,
+        "w_mean": 0.106198836153375
+      },
+      {
+        "peak_date": "2011-05-02",
+        "Ticker": "A000660",
+        "Sector": "반도체",
+        "size_decile": 10,
+        "contrib": -0.0286412755252006,
+        "market": -0.00656261944913013,
+        "size_ew": 0.000193924175070781,
+        "nsc": -0.00151695657877314,
+        "selection": -0.0207556236723681,
+        "days_held": 62,
+        "w_mean": 0.0595212472284054
+      },
+      {
+        "peak_date": "2011-05-02",
+        "Ticker": "A004800",
+        "Sector": "화학",
+        "size_decile": 8,
+        "contrib": -0.021929052179803,
+        "market": -0.0208529732195194,
+        "size_ew": 0.0135929318441691,
+        "nsc": -0.00262080118540182,
+        "selection": -0.0120482096190509,
+        "days_held": 43,
+        "w_mean": 0.110214811349686
+      },
+      {
+        "peak_date": "2011-05-02",
+        "Ticker": "A004960",
+        "Sector": "건설,건축관련",
+        "size_decile": 1,
+        "contrib": -0.0176875862955486,
+        "market": -0.00726889358624525,
+        "size_ew": -0.00324574500406925,
+        "nsc": -0.000439063566955099,
+        "selection": -0.00673388413827901,
+        "days_held": 15,
+        "w_mean": 0.0912608325972292
+      },
+      {
+        "peak_date": "2011-05-02",
+        "Ticker": "A038060",
+        "Sector": "디스플레이",
+        "size_decile": 5,
+        "contrib": -0.0135029183733344,
+        "market": -0.00498955617097298,
+        "size_ew": -0.00244902500640732,
+        "nsc": -0.000497018278327456,
+        "selection": -0.00556731891762664,
+        "days_held": 20,
+        "w_mean": 0.101876106376418
+      },
+      {
+        "peak_date": "2017-11-03",
+        "Ticker": "A003920",
+        "Sector": "필수소비재",
+        "size_decile": 3,
+        "contrib": -0.0291679764248314,
+        "market": -0.00979451199765791,
+        "size_ew": -0.0158724098578937,
+        "nsc": -0.00512494486610406,
+        "selection": 0.00162389029682433,
+        "days_held": 101,
+        "w_mean": 0.178357827334942
+      },
+      {
+        "peak_date": "2017-11-03",
+        "Ticker": "A094190",
+        "Sector": "IT하드웨어",
+        "size_decile": 1,
+        "contrib": -0.0228810651392801,
+        "market": -0.000426329355574068,
+        "size_ew": 0.00313714646110065,
+        "nsc": 2.17908857096975e-06,
+        "selection": -0.0255940613333776,
+        "days_held": 17,
+        "w_mean": 0.0560981460604618
+      },
+      {
+        "peak_date": "2017-11-03",
+        "Ticker": "A014200",
+        "Sector": "자동차",
+        "size_decile": 1,
+        "contrib": -0.0143184546497091,
+        "market": -0.000606037469877716,
+        "size_ew": -0.0014027454055363,
+        "nsc": 0.000321825456442745,
+        "selection": -0.0126314972307379,
+        "days_held": 20,
+        "w_mean": 0.0948939130079808
+      },
+      {
+        "peak_date": "2017-11-03",
+        "Ticker": "A004370",
+        "Sector": "필수소비재",
+        "size_decile": 7,
+        "contrib": -0.0137791152807267,
+        "market": 0.00177499365220809,
+        "size_ew": -0.00061359517028753,
+        "nsc": -5.03088462420893e-07,
+        "selection": -0.0149400106741848,
+        "days_held": 22,
+        "w_mean": 0.12458916033754
+      },
+      {
+        "peak_date": "2017-11-03",
+        "Ticker": "A002300",
+        "Sector": "비철,목재등",
+        "size_decile": 1,
+        "contrib": -0.0132777919265276,
+        "market": -0.00562639313612527,
+        "size_ew": 0.00013851716304231,
+        "nsc": -0.000225801920864148,
+        "selection": -0.00756411403258048,
+        "days_held": 43,
+        "w_mean": 0.091827974742654
+      },
+      {
+        "peak_date": "2020-01-22",
+        "Ticker": "A217620",
+        "Sector": "호텔,레저서비스",
+        "size_decile": 1,
+        "contrib": -0.0980383648586655,
+        "market": -0.0585560772779573,
+        "size_ew": -0.0148296164269506,
+        "nsc": 9.05331518446166e-05,
+        "selection": -0.0247432043056022,
+        "days_held": 13,
+        "w_mean": 0.21717564951281
+      },
+      {
+        "peak_date": "2020-01-22",
+        "Ticker": "A036460",
+        "Sector": "유틸리티",
+        "size_decile": 8,
+        "contrib": -0.0758317441593977,
+        "market": -0.0414280142455085,
+        "size_ew": -0.00596133236115966,
+        "nsc": -0.000622288789387045,
+        "selection": -0.0278201087633425,
+        "days_held": 13,
+        "w_mean": 0.160824920628808
+      },
+      {
+        "peak_date": "2020-01-22",
+        "Ticker": "A215000",
+        "Sector": "소프트웨어",
+        "size_decile": 2,
+        "contrib": -0.0702718950203241,
+        "market": -0.0362254334642027,
+        "size_ew": -0.00698301120107294,
+        "nsc": 0.00030303739465899,
+        "selection": -0.0273664877497075,
+        "days_held": 13,
+        "w_mean": 0.159198049293392
+      },
+      {
+        "peak_date": "2020-01-22",
+        "Ticker": "A184230",
+        "Sector": "소프트웨어",
+        "size_decile": 1,
+        "contrib": -0.0610379047450411,
+        "market": -0.0252358058926018,
+        "size_ew": -0.00690133606993585,
+        "nsc": 0.000772954811377012,
+        "selection": -0.0296737175938804,
+        "days_held": 13,
+        "w_mean": 0.0794153140165587
+      },
+      {
+        "peak_date": "2020-01-22",
+        "Ticker": "A012450",
+        "Sector": "상사,자본재",
+        "size_decile": 7,
+        "contrib": -0.04825007446243,
+        "market": -0.0248138559555041,
+        "size_ew": -0.00292032189686276,
+        "nsc": -0.000339057549140468,
+        "selection": -0.0201768390609228,
+        "days_held": 13,
+        "w_mean": 0.0896837104103226
+      },
+      {
+        "peak_date": "2021-06-25",
+        "Ticker": "A272550",
+        "Sector": "비철,목재등",
+        "size_decile": 1,
+        "contrib": -0.0347890501823336,
+        "market": -0.0115965762252349,
+        "size_ew": -0.0022492624208426,
+        "nsc": 0.000171252289958772,
+        "selection": -0.0211144638262148,
+        "days_held": 41,
+        "w_mean": 0.111400876098253
+      },
+      {
+        "peak_date": "2021-06-25",
+        "Ticker": "A049800",
+        "Sector": "기계",
+        "size_decile": 1,
+        "contrib": -0.0299916198364496,
+        "market": -0.0108193662780531,
+        "size_ew": -0.00128707536089141,
+        "nsc": -0.000218024839633921,
+        "selection": -0.0176671533578712,
+        "days_held": 20,
+        "w_mean": 0.0976147406801466
+      },
+      {
+        "peak_date": "2021-06-25",
+        "Ticker": "A034120",
+        "Sector": "미디어,교육",
+        "size_decile": 3,
+        "contrib": -0.0128395320018559,
+        "market": -0.00601724693733335,
+        "size_ew": -0.00126262380756168,
+        "nsc": 0.000123641712260636,
+        "selection": -0.00568330296922155,
+        "days_held": 19,
+        "w_mean": 0.0686208799659674
+      },
+      {
+        "peak_date": "2021-06-25",
+        "Ticker": "A011760",
+        "Sector": "상사,자본재",
+        "size_decile": 1,
+        "contrib": -0.0115992799370869,
+        "market": -0.000902137731903089,
+        "size_ew": -0.00275362226024986,
+        "nsc": -0.000764020315779277,
+        "selection": -0.00717949962915464,
+        "days_held": 22,
+        "w_mean": 0.0637087395941588
+      },
+      {
+        "peak_date": "2021-06-25",
+        "Ticker": "A000240",
+        "Sector": "자동차",
+        "size_decile": 6,
+        "contrib": -0.0113349268371248,
+        "market": -0.00937020658324453,
+        "size_ew": 0.00160643966869271,
+        "nsc": 0.000763863545233866,
+        "selection": -0.00433502346780681,
+        "days_held": 57,
+        "w_mean": 0.0558819248852398
+      }
+    ],
+    "by_sector": [
+      {
+        "Sector": "은행",
+        "contrib": -0.0642980073039982,
+        "n": 8,
+        "peak_date": "2007-10-11"
+      },
+      {
+        "Sector": "미디어,교육",
+        "contrib": -0.0372792548241082,
+        "n": 4,
+        "peak_date": "2007-10-11"
+      },
+      {
+        "Sector": "화장품,의류,완구",
+        "contrib": -0.0307581468713949,
+        "n": 5,
+        "peak_date": "2007-10-11"
+      },
+      {
+        "Sector": "비철,목재등",
+        "contrib": -0.0305541764824238,
+        "n": 4,
+        "peak_date": "2007-10-11"
+      },
+      {
+        "Sector": "필수소비재",
+        "contrib": -0.0185047495317542,
+        "n": 4,
+        "peak_date": "2007-10-11"
+      },
+      {
+        "Sector": "운송",
+        "contrib": -0.0184007277184826,
+        "n": 4,
+        "peak_date": "2007-10-11"
+      },
+      {
+        "Sector": "IT하드웨어",
+        "contrib": -0.0166861649264703,
+        "n": 3,
+        "peak_date": "2007-10-11"
+      },
+      {
+        "Sector": "반도체",
+        "contrib": -0.0108404924621554,
+        "n": 4,
+        "peak_date": "2007-10-11"
+      },
+      {
+        "Sector": "화학",
+        "contrib": -0.0052419432274051,
+        "n": 7,
+        "peak_date": "2007-10-11"
+      },
+      {
+        "Sector": "디스플레이",
+        "contrib": -0.00328310319216759,
+        "n": 2,
+        "peak_date": "2007-10-11"
+      },
+      {
+        "Sector": "건강관리",
+        "contrib": -0.00321760876847841,
+        "n": 4,
+        "peak_date": "2007-10-11"
+      },
+      {
+        "Sector": "유틸리티",
+        "contrib": -0.00308369676730538,
+        "n": 2,
+        "peak_date": "2007-10-11"
+      },
+      {
+        "Sector": "증권",
+        "contrib": -0.000870983428352882,
+        "n": 5,
+        "peak_date": "2007-10-11"
+      },
+      {
+        "Sector": "자동차",
+        "contrib": -0.000688366961642565,
+        "n": 3,
+        "peak_date": "2007-10-11"
+      },
+      {
+        "Sector": "상사,자본재",
+        "contrib": -0.000335601342938591,
+        "n": 1,
+        "peak_date": "2007-10-11"
+      },
+      {
+        "Sector": "기계",
+        "contrib": -2.79453551719391e-20,
+        "n": 1,
+        "peak_date": "2007-10-11"
+      },
+      {
+        "Sector": "철강",
+        "contrib": 0.000557358944732518,
+        "n": 1,
+        "peak_date": "2007-10-11"
+      },
+      {
+        "Sector": "조선",
+        "contrib": 0.00140097292232967,
+        "n": 4,
+        "peak_date": "2007-10-11"
+      },
+      {
+        "Sector": "소매(유통)",
+        "contrib": 0.00411489932664869,
+        "n": 4,
+        "peak_date": "2007-10-11"
+      },
+      {
+        "Sector": "보험",
+        "contrib": 0.00430266583979053,
+        "n": 3,
+        "peak_date": "2007-10-11"
+      },
+      {
+        "Sector": "소프트웨어",
+        "contrib": 0.0078189381075725,
+        "n": 3,
+        "peak_date": "2007-10-11"
+      },
+      {
+        "Sector": "에너지",
+        "contrib": 0.0122164301177554,
+        "n": 1,
+        "peak_date": "2007-10-11"
+      },
+      {
+        "Sector": "통신서비스",
+        "contrib": 0.0402355978434429,
+        "n": 6,
+        "peak_date": "2007-10-11"
+      },
+      {
+        "Sector": "건설,건축관련",
+        "contrib": 0.0883472281882404,
+        "n": 10,
+        "peak_date": "2007-10-11"
+      },
+      {
+        "Sector": "소매(유통)",
+        "contrib": -0.218626268773909,
+        "n": 4,
+        "peak_date": "2008-05-16"
+      },
+      {
+        "Sector": "필수소비재",
+        "contrib": -0.121447028914203,
+        "n": 5,
+        "peak_date": "2008-05-16"
+      },
+      {
+        "Sector": "호텔,레저서비스",
+        "contrib": -0.103628437141373,
+        "n": 5,
+        "peak_date": "2008-05-16"
+      },
+      {
+        "Sector": "은행",
+        "contrib": -0.0384758878648457,
+        "n": 9,
+        "peak_date": "2008-05-16"
+      },
+      {
+        "Sector": "소프트웨어",
+        "contrib": -0.0323386883320518,
+        "n": 2,
+        "peak_date": "2008-05-16"
+      },
+      {
+        "Sector": "IT하드웨어",
+        "contrib": -0.0289858949072228,
+        "n": 7,
+        "peak_date": "2008-05-16"
+      },
+      {
+        "Sector": "디스플레이",
+        "contrib": -0.0283932335751074,
+        "n": 5,
+        "peak_date": "2008-05-16"
+      },
+      {
+        "Sector": "비철,목재등",
+        "contrib": -0.0273826584601755,
+        "n": 3,
+        "peak_date": "2008-05-16"
+      },
+      {
+        "Sector": "상사,자본재",
+        "contrib": -0.0158705987509355,
+        "n": 1,
+        "peak_date": "2008-05-16"
+      },
+      {
+        "Sector": "기계",
+        "contrib": -0.0154623758937742,
+        "n": 4,
+        "peak_date": "2008-05-16"
+      },
+      {
+        "Sector": "건설,건축관련",
+        "contrib": -0.015315182743301,
+        "n": 7,
+        "peak_date": "2008-05-16"
+      },
+      {
+        "Sector": "반도체",
+        "contrib": -0.0122380986595928,
+        "n": 4,
+        "peak_date": "2008-05-16"
+      },
+      {
+        "Sector": "증권",
+        "contrib": -0.0107053770501941,
+        "n": 5,
+        "peak_date": "2008-05-16"
+      },
+      {
+        "Sector": "화학",
+        "contrib": -0.00642660389398502,
+        "n": 5,
+        "peak_date": "2008-05-16"
+      },
+      {
+        "Sector": "자동차",
+        "contrib": -0.00625122049142113,
+        "n": 5,
+        "peak_date": "2008-05-16"
+      },
+      {
+        "Sector": "운송",
+        "contrib": -0.00621250561827348,
+        "n": 3,
+        "peak_date": "2008-05-16"
+      },
+      {
+        "Sector": "유틸리티",
+        "contrib": -0.00489953379434067,
+        "n": 1,
+        "peak_date": "2008-05-16"
+      },
+      {
+        "Sector": "조선",
+        "contrib": 2.30054251343074e-18,
+        "n": 1,
+        "peak_date": "2008-05-16"
+      },
+      {
+        "Sector": "에너지",
+        "contrib": 0.00234664358867764,
+        "n": 3,
+        "peak_date": "2008-05-16"
+      },
+      {
+        "Sector": "미디어,교육",
+        "contrib": 0.00363086805426004,
+        "n": 2,
+        "peak_date": "2008-05-16"
+      },
+      {
+        "Sector": "건강관리",
+        "contrib": 0.00499888137974609,
+        "n": 4,
+        "peak_date": "2008-05-16"
+      },
+      {
+        "Sector": "화장품,의류,완구",
+        "contrib": 0.00925443024642921,
+        "n": 1,
+        "peak_date": "2008-05-16"
+      },
+      {
+        "Sector": "철강",
+        "contrib": 0.0306507420003941,
+        "n": 6,
+        "peak_date": "2008-05-16"
+      },
+      {
+        "Sector": "은행",
+        "contrib": -0.0503035619471589,
+        "n": 5,
+        "peak_date": "2008-11-05"
+      },
+      {
+        "Sector": "보험",
+        "contrib": -0.0158062375690917,
+        "n": 2,
+        "peak_date": "2008-11-05"
+      },
+      {
+        "Sector": "유틸리티",
+        "contrib": -0.00993799358156967,
+        "n": 1,
+        "peak_date": "2008-11-05"
+      },
+      {
+        "Sector": "증권",
+        "contrib": -0.00714899114676105,
+        "n": 1,
+        "peak_date": "2008-11-05"
+      },
+      {
+        "Sector": "IT하드웨어",
+        "contrib": -0.0036359466235452,
+        "n": 1,
+        "peak_date": "2008-11-05"
+      },
+      {
+        "Sector": "반도체",
+        "contrib": -0.00137853416151508,
+        "n": 1,
+        "peak_date": "2008-11-05"
+      },
+      {
+        "Sector": "건설,건축관련",
+        "contrib": -9.89058338872437e-19,
+        "n": 1,
+        "peak_date": "2008-11-05"
+      },
+      {
+        "Sector": "통신서비스",
+        "contrib": 0.00673559487828202,
+        "n": 3,
+        "peak_date": "2008-11-05"
+      },
+      {
+        "Sector": "반도체",
+        "contrib": -0.035840350853009,
+        "n": 7,
+        "peak_date": "2011-05-02"
+      },
+      {
+        "Sector": "은행",
+        "contrib": -0.0328093788533337,
+        "n": 2,
+        "peak_date": "2011-05-02"
+      },
+      {
+        "Sector": "디스플레이",
+        "contrib": -0.0308659156081856,
+        "n": 3,
+        "peak_date": "2011-05-02"
+      },
+      {
+        "Sector": "건설,건축관련",
+        "contrib": -0.025147179257284,
+        "n": 3,
+        "peak_date": "2011-05-02"
+      },
+      {
+        "Sector": "기계",
+        "contrib": -0.0237254632805383,
+        "n": 4,
+        "peak_date": "2011-05-02"
+      },
+      {
+        "Sector": "화학",
+        "contrib": -0.0161682452498822,
+        "n": 8,
+        "peak_date": "2011-05-02"
+      },
+      {
+        "Sector": "자동차",
+        "contrib": -0.014768209853052,
+        "n": 6,
+        "peak_date": "2011-05-02"
+      },
+      {
+        "Sector": "유틸리티",
+        "contrib": -0.0134986602462017,
+        "n": 2,
+        "peak_date": "2011-05-02"
+      },
+      {
+        "Sector": "철강",
+        "contrib": -0.0133798386951614,
+        "n": 3,
+        "peak_date": "2011-05-02"
+      },
+      {
+        "Sector": "미디어,교육",
+        "contrib": -0.00802025357367784,
+        "n": 4,
+        "peak_date": "2011-05-02"
+      },
+      {
+        "Sector": "건강관리",
+        "contrib": -0.00493902667051478,
+        "n": 1,
+        "peak_date": "2011-05-02"
+      },
+      {
+        "Sector": "조선",
+        "contrib": -0.00320280412460626,
+        "n": 2,
+        "peak_date": "2011-05-02"
+      },
+      {
+        "Sector": "IT가전",
+        "contrib": -0.00217096903286434,
+        "n": 2,
+        "peak_date": "2011-05-02"
+      },
+      {
+        "Sector": "화장품,의류,완구",
+        "contrib": -0.00115739362284714,
+        "n": 2,
+        "peak_date": "2011-05-02"
+      },
+      {
+        "Sector": "호텔,레저서비스",
+        "contrib": -0.000556502259188334,
+        "n": 1,
+        "peak_date": "2011-05-02"
+      },
+      {
+        "Sector": "운송",
+        "contrib": -7.8116552822593e-19,
+        "n": 3,
+        "peak_date": "2011-05-02"
+      },
+      {
+        "Sector": "비철,목재등",
+        "contrib": 0.000485465947307957,
+        "n": 3,
+        "peak_date": "2011-05-02"
+      },
+      {
+        "Sector": "증권",
+        "contrib": 0.000531660627620717,
+        "n": 1,
+        "peak_date": "2011-05-02"
+      },
+      {
+        "Sector": "통신서비스",
+        "contrib": 0.00147323713375413,
+        "n": 1,
+        "peak_date": "2011-05-02"
+      },
+      {
+        "Sector": "필수소비재",
+        "contrib": 0.00224391002995534,
+        "n": 7,
+        "peak_date": "2011-05-02"
+      },
+      {
+        "Sector": "IT하드웨어",
+        "contrib": 0.00584787042702176,
+        "n": 4,
+        "peak_date": "2011-05-02"
+      },
+      {
+        "Sector": "에너지",
+        "contrib": 0.00618919223166524,
+        "n": 3,
+        "peak_date": "2011-05-02"
+      },
+      {
+        "Sector": "보험",
+        "contrib": 0.00717114261677923,
+        "n": 4,
+        "peak_date": "2011-05-02"
+      },
+      {
+        "Sector": "소프트웨어",
+        "contrib": 0.0180829075189993,
+        "n": 3,
+        "peak_date": "2011-05-02"
+      },
+      {
+        "Sector": "상사,자본재",
+        "contrib": 0.0186879471807609,
+        "n": 5,
+        "peak_date": "2011-05-02"
+      },
+      {
+        "Sector": "소매(유통)",
+        "contrib": 0.0248681083542206,
+        "n": 2,
+        "peak_date": "2011-05-02"
+      },
+      {
+        "Sector": "IT하드웨어",
+        "contrib": -0.0605298986250218,
+        "n": 35,
+        "peak_date": "2017-11-03"
+      },
+      {
+        "Sector": "건설,건축관련",
+        "contrib": -0.0380498365605755,
+        "n": 13,
+        "peak_date": "2017-11-03"
+      },
+      {
+        "Sector": "소프트웨어",
+        "contrib": -0.0367549032325666,
+        "n": 21,
+        "peak_date": "2017-11-03"
+      },
+      {
+        "Sector": "은행",
+        "contrib": -0.0319745319985338,
+        "n": 11,
+        "peak_date": "2017-11-03"
+      },
+      {
+        "Sector": "필수소비재",
+        "contrib": -0.0284656356069175,
+        "n": 14,
+        "peak_date": "2017-11-03"
+      },
+      {
+        "Sector": "기계",
+        "contrib": -0.0238780335114944,
+        "n": 19,
+        "peak_date": "2017-11-03"
+      },
+      {
+        "Sector": "디스플레이",
+        "contrib": -0.0231720689300087,
+        "n": 19,
+        "peak_date": "2017-11-03"
+      },
+      {
+        "Sector": "통신서비스",
+        "contrib": -0.00949142168022629,
+        "n": 1,
+        "peak_date": "2017-11-03"
+      },
+      {
+        "Sector": "증권",
+        "contrib": -0.00724986583948982,
+        "n": 3,
+        "peak_date": "2017-11-03"
+      },
+      {
+        "Sector": "소매(유통)",
+        "contrib": -0.00599354484446761,
+        "n": 8,
+        "peak_date": "2017-11-03"
+      },
+      {
+        "Sector": "조선",
+        "contrib": -0.00411459519538902,
+        "n": 7,
+        "peak_date": "2017-11-03"
+      },
+      {
+        "Sector": "철강",
+        "contrib": -0.00180505622402597,
+        "n": 5,
+        "peak_date": "2017-11-03"
+      },
+      {
+        "Sector": "호텔,레저서비스",
+        "contrib": 6.18812568387306e-05,
+        "n": 3,
+        "peak_date": "2017-11-03"
+      },
+      {
+        "Sector": "자동차",
+        "contrib": 0.00210647201721423,
+        "n": 24,
+        "peak_date": "2017-11-03"
+      },
+      {
+        "Sector": "에너지",
+        "contrib": 0.00331739904247805,
+        "n": 3,
+        "peak_date": "2017-11-03"
+      },
+      {
+        "Sector": "화학",
+        "contrib": 0.00384609161151889,
+        "n": 17,
+        "peak_date": "2017-11-03"
+      },
+      {
+        "Sector": "IT가전",
+        "contrib": 0.00691761565489278,
+        "n": 5,
+        "peak_date": "2017-11-03"
+      },
+      {
+        "Sector": "보험",
+        "contrib": 0.00840541939441897,
+        "n": 6,
+        "peak_date": "2017-11-03"
+      },
+      {
+        "Sector": "상사,자본재",
+        "contrib": 0.0112286988458955,
+        "n": 4,
+        "peak_date": "2017-11-03"
+      },
+      {
+        "Sector": "화장품,의류,완구",
+        "contrib": 0.0121662908666472,
+        "n": 19,
+        "peak_date": "2017-11-03"
+      },
+      {
+        "Sector": "비철,목재등",
+        "contrib": 0.0176644591943358,
+        "n": 9,
+        "peak_date": "2017-11-03"
+      },
+      {
+        "Sector": "유틸리티",
+        "contrib": 0.0189861463766499,
+        "n": 7,
+        "peak_date": "2017-11-03"
+      },
+      {
+        "Sector": "운송",
+        "contrib": 0.0208034368088937,
+        "n": 4,
+        "peak_date": "2017-11-03"
+      },
+      {
+        "Sector": "미디어,교육",
+        "contrib": 0.0270213275155858,
+        "n": 15,
+        "peak_date": "2017-11-03"
+      },
+      {
+        "Sector": "건강관리",
+        "contrib": 0.0293941331553614,
+        "n": 34,
+        "peak_date": "2017-11-03"
+      },
+      {
+        "Sector": null,
+        "contrib": 0.0497760074510094,
+        "n": 5,
+        "peak_date": "2017-11-03"
+      },
+      {
+        "Sector": "반도체",
+        "contrib": 0.056385928311753,
+        "n": 18,
+        "peak_date": "2017-11-03"
+      },
+      {
+        "Sector": "소프트웨어",
+        "contrib": -0.138736236565118,
+        "n": 5,
+        "peak_date": "2020-01-22"
+      },
+      {
+        "Sector": "호텔,레저서비스",
+        "contrib": -0.0980383648586655,
+        "n": 1,
+        "peak_date": "2020-01-22"
+      },
+      {
+        "Sector": "유틸리티",
+        "contrib": -0.0831825338270708,
+        "n": 3,
+        "peak_date": "2020-01-22"
+      },
+      {
+        "Sector": "상사,자본재",
+        "contrib": -0.04825007446243,
+        "n": 1,
+        "peak_date": "2020-01-22"
+      },
+      {
+        "Sector": "철강",
+        "contrib": -0.0445156469203314,
+        "n": 2,
+        "peak_date": "2020-01-22"
+      },
+      {
+        "Sector": "화장품,의류,완구",
+        "contrib": -0.0311007661974324,
+        "n": 6,
+        "peak_date": "2020-01-22"
+      },
+      {
+        "Sector": "화학",
+        "contrib": -0.0237326634581295,
+        "n": 3,
+        "peak_date": "2020-01-22"
+      },
+      {
+        "Sector": "IT하드웨어",
+        "contrib": -0.0228502852758604,
+        "n": 9,
+        "peak_date": "2020-01-22"
+      },
+      {
+        "Sector": "기계",
+        "contrib": -0.0204950326086656,
+        "n": 3,
+        "peak_date": "2020-01-22"
+      },
+      {
+        "Sector": "반도체",
+        "contrib": -0.0192165574203562,
+        "n": 4,
+        "peak_date": "2020-01-22"
+      },
+      {
+        "Sector": "디스플레이",
+        "contrib": -0.0128800943430259,
+        "n": 7,
+        "peak_date": "2020-01-22"
+      },
+      {
+        "Sector": "자동차",
+        "contrib": -0.00776421329001566,
+        "n": 2,
+        "peak_date": "2020-01-22"
+      },
+      {
+        "Sector": "에너지",
+        "contrib": -0.00662655736693988,
+        "n": 1,
+        "peak_date": "2020-01-22"
+      },
+      {
+        "Sector": "은행",
+        "contrib": -0.0052960868210221,
+        "n": 1,
+        "peak_date": "2020-01-22"
+      },
+      {
+        "Sector": "미디어,교육",
+        "contrib": -0.00470391784333131,
+        "n": 1,
+        "peak_date": "2020-01-22"
+      },
+      {
+        "Sector": "건강관리",
+        "contrib": -0.00333997176556772,
+        "n": 1,
+        "peak_date": "2020-01-22"
+      },
+      {
+        "Sector": "건설,건축관련",
+        "contrib": -0.00128109546182573,
+        "n": 5,
+        "peak_date": "2020-01-22"
+      },
+      {
+        "Sector": "조선",
+        "contrib": -1.08442979056165e-19,
+        "n": 1,
+        "peak_date": "2020-01-22"
+      },
+      {
+        "Sector": "보험",
+        "contrib": 0.00185991241068112,
+        "n": 2,
+        "peak_date": "2020-01-22"
+      },
+      {
+        "Sector": "비철,목재등",
+        "contrib": 0.0126115133489671,
+        "n": 4,
+        "peak_date": "2020-01-22"
+      },
+      {
+        "Sector": "상사,자본재",
+        "contrib": -0.0276176592964362,
+        "n": 12,
+        "peak_date": "2021-06-25"
+      },
+      {
+        "Sector": "비철,목재등",
+        "contrib": -0.0262196242614854,
+        "n": 8,
+        "peak_date": "2021-06-25"
+      },
+      {
+        "Sector": "미디어,교육",
+        "contrib": -0.0169764660156262,
+        "n": 12,
+        "peak_date": "2021-06-25"
+      },
+      {
+        "Sector": "기계",
+        "contrib": -0.0147101596681076,
+        "n": 10,
+        "peak_date": "2021-06-25"
+      },
+      {
+        "Sector": "화학",
+        "contrib": -0.0127131366504139,
+        "n": 11,
+        "peak_date": "2021-06-25"
+      },
+      {
+        "Sector": "통신서비스",
+        "contrib": -0.0121894119719439,
+        "n": 3,
+        "peak_date": "2021-06-25"
+      },
+      {
+        "Sector": "운송",
+        "contrib": -0.00971067005810056,
+        "n": 5,
+        "peak_date": "2021-06-25"
+      },
+      {
+        "Sector": "증권",
+        "contrib": -0.00675893290094932,
+        "n": 4,
+        "peak_date": "2021-06-25"
+      },
+      {
+        "Sector": "보험",
+        "contrib": -0.00492180938823141,
+        "n": 4,
+        "peak_date": "2021-06-25"
+      },
+      {
+        "Sector": "철강",
+        "contrib": -0.00321268014538428,
+        "n": 6,
+        "peak_date": "2021-06-25"
+      },
+      {
+        "Sector": "은행",
+        "contrib": -0.00191039822920747,
+        "n": 5,
+        "peak_date": "2021-06-25"
+      },
+      {
+        "Sector": "에너지",
+        "contrib": -0.00124721828656016,
+        "n": 2,
+        "peak_date": "2021-06-25"
+      },
+      {
+        "Sector": "건설,건축관련",
+        "contrib": -0.00119638014069062,
+        "n": 11,
+        "peak_date": "2021-06-25"
+      },
+      {
+        "Sector": "조선",
+        "contrib": 5.01365818507942e-20,
+        "n": 1,
+        "peak_date": "2021-06-25"
+      },
+      {
+        "Sector": "IT가전",
+        "contrib": 0.00539926803446512,
+        "n": 3,
+        "peak_date": "2021-06-25"
+      },
+      {
+        "Sector": "반도체",
+        "contrib": 0.0064459622333271,
+        "n": 12,
+        "peak_date": "2021-06-25"
+      },
+      {
+        "Sector": "소매(유통)",
+        "contrib": 0.00680999776200358,
+        "n": 6,
+        "peak_date": "2021-06-25"
+      },
+      {
+        "Sector": "호텔,레저서비스",
+        "contrib": 0.00701485204230244,
+        "n": 2,
+        "peak_date": "2021-06-25"
+      },
+      {
+        "Sector": "화장품,의류,완구",
+        "contrib": 0.00724829768551155,
+        "n": 8,
+        "peak_date": "2021-06-25"
+      },
+      {
+        "Sector": "IT하드웨어",
+        "contrib": 0.00983837582855076,
+        "n": 23,
+        "peak_date": "2021-06-25"
+      },
+      {
+        "Sector": "소프트웨어",
+        "contrib": 0.0147285396052722,
+        "n": 16,
+        "peak_date": "2021-06-25"
+      },
+      {
+        "Sector": "디스플레이",
+        "contrib": 0.0166616561769692,
+        "n": 10,
+        "peak_date": "2021-06-25"
+      },
+      {
+        "Sector": "자동차",
+        "contrib": 0.0169966946963925,
+        "n": 11,
+        "peak_date": "2021-06-25"
+      },
+      {
+        "Sector": "건강관리",
+        "contrib": 0.0172337492917648,
+        "n": 32,
+        "peak_date": "2021-06-25"
+      },
+      {
+        "Sector": null,
+        "contrib": 0.0177403775895472,
+        "n": 2,
+        "peak_date": "2021-06-25"
+      },
+      {
+        "Sector": "필수소비재",
+        "contrib": 0.0470382816502143,
+        "n": 11,
+        "peak_date": "2021-06-25"
+      },
+      {
+        "Sector": "유틸리티",
+        "contrib": 0.0671245407781274,
+        "n": 3,
+        "peak_date": "2021-06-25"
+      }
+    ],
+    "by_size_decile": [
+      {
+        "size_decile": 1,
+        "contrib": -0.0937609016413465,
+        "n": 23,
+        "peak_date": "2007-10-11"
+      },
+      {
+        "size_decile": 2,
+        "contrib": -0.0535319750927277,
+        "n": 7,
+        "peak_date": "2007-10-11"
+      },
+      {
+        "size_decile": 3,
+        "contrib": -0.0172213777718489,
+        "n": 5,
+        "peak_date": "2007-10-11"
+      },
+      {
+        "size_decile": 4,
+        "contrib": -0.0272126004891387,
+        "n": 6,
+        "peak_date": "2007-10-11"
+      },
+      {
+        "size_decile": 5,
+        "contrib": 0.0207090780779213,
+        "n": 6,
+        "peak_date": "2007-10-11"
+      },
+      {
+        "size_decile": 6,
+        "contrib": -0.0119441587083266,
+        "n": 9,
+        "peak_date": "2007-10-11"
+      },
+      {
+        "size_decile": 7,
+        "contrib": -0.00761266548138071,
+        "n": 10,
+        "peak_date": "2007-10-11"
+      },
+      {
+        "size_decile": 8,
+        "contrib": 0.113230660123818,
+        "n": 8,
+        "peak_date": "2007-10-11"
+      },
+      {
+        "size_decile": 9,
+        "contrib": -0.01997240768416,
+        "n": 10,
+        "peak_date": "2007-10-11"
+      },
+      {
+        "size_decile": 10,
+        "contrib": 0.0122674161486242,
+        "n": 9,
+        "peak_date": "2007-10-11"
+      },
+      {
+        "size_decile": 1,
+        "contrib": -0.0410126139099905,
+        "n": 30,
+        "peak_date": "2008-05-16"
+      },
+      {
+        "size_decile": 2,
+        "contrib": -0.0269530309120744,
+        "n": 5,
+        "peak_date": "2008-05-16"
+      },
+      {
+        "size_decile": 3,
+        "contrib": -0.0107059241822934,
+        "n": 8,
+        "peak_date": "2008-05-16"
+      },
+      {
+        "size_decile": 4,
+        "contrib": -0.0473891995267827,
+        "n": 6,
+        "peak_date": "2008-05-16"
+      },
+      {
+        "size_decile": 5,
+        "contrib": -0.0655494187875756,
+        "n": 5,
+        "peak_date": "2008-05-16"
+      },
+      {
+        "size_decile": 6,
+        "contrib": -0.0849996434494406,
+        "n": 7,
+        "peak_date": "2008-05-16"
+      },
+      {
+        "size_decile": 7,
+        "contrib": -0.0785571522792904,
+        "n": 7,
+        "peak_date": "2008-05-16"
+      },
+      {
+        "size_decile": 8,
+        "contrib": -0.0681592757440541,
+        "n": 7,
+        "peak_date": "2008-05-16"
+      },
+      {
+        "size_decile": 9,
+        "contrib": -0.213281175344066,
+        "n": 13,
+        "peak_date": "2008-05-16"
+      },
+      {
+        "size_decile": 10,
+        "contrib": -0.00517059545963072,
+        "n": 4,
+        "peak_date": "2008-05-16"
+      },
+      {
+        "size_decile": 1,
+        "contrib": -0.00501448078506028,
+        "n": 2,
+        "peak_date": "2008-11-05"
+      },
+      {
+        "size_decile": 4,
+        "contrib": -0.00993799358156967,
+        "n": 1,
+        "peak_date": "2008-11-05"
+      },
+      {
+        "size_decile": 5,
+        "contrib": -0.0158062375690917,
+        "n": 1,
+        "peak_date": "2008-11-05"
+      },
+      {
+        "size_decile": 6,
+        "contrib": -0.0110198018746997,
+        "n": 3,
+        "peak_date": "2008-11-05"
+      },
+      {
+        "size_decile": 7,
+        "contrib": -0.0110091188060581,
+        "n": 3,
+        "peak_date": "2008-11-05"
+      },
+      {
+        "size_decile": 8,
+        "contrib": -0.00257369197757389,
+        "n": 1,
+        "peak_date": "2008-11-05"
+      },
+      {
+        "size_decile": 9,
+        "contrib": -0.0261143455573063,
+        "n": 3,
+        "peak_date": "2008-11-05"
+      },
+      {
+        "size_decile": 10,
+        "contrib": -5.77668946960099e-18,
+        "n": 1,
+        "peak_date": "2008-11-05"
+      },
+      {
+        "size_decile": 1,
+        "contrib": -0.0377694767662308,
+        "n": 7,
+        "peak_date": "2011-05-02"
+      },
+      {
+        "size_decile": 2,
+        "contrib": -0.000758405318274585,
+        "n": 5,
+        "peak_date": "2011-05-02"
+      },
+      {
+        "size_decile": 3,
+        "contrib": -0.00107735327989448,
+        "n": 1,
+        "peak_date": "2011-05-02"
+      },
+      {
+        "size_decile": 4,
+        "contrib": -0.0104758572538869,
+        "n": 6,
+        "peak_date": "2011-05-02"
+      },
+      {
+        "size_decile": 5,
+        "contrib": -0.0388980916336884,
+        "n": 7,
+        "peak_date": "2011-05-02"
+      },
+      {
+        "size_decile": 6,
+        "contrib": 0.000644082119500281,
+        "n": 6,
+        "peak_date": "2011-05-02"
+      },
+      {
+        "size_decile": 7,
+        "contrib": 0.0698360701598609,
+        "n": 11,
+        "peak_date": "2011-05-02"
+      },
+      {
+        "size_decile": 8,
+        "contrib": -0.0476671262613211,
+        "n": 19,
+        "peak_date": "2011-05-02"
+      },
+      {
+        "size_decile": 9,
+        "contrib": 0.00698492660039414,
+        "n": 13,
+        "peak_date": "2011-05-02"
+      },
+      {
+        "size_decile": 10,
+        "contrib": -0.0814875174787205,
+        "n": 11,
+        "peak_date": "2011-05-02"
+      },
+      {
+        "size_decile": 1,
+        "contrib": -0.0149122362763291,
+        "n": 166,
+        "peak_date": "2017-11-03"
+      },
+      {
+        "size_decile": 2,
+        "contrib": -0.0169164449004898,
+        "n": 25,
+        "peak_date": "2017-11-03"
+      },
+      {
+        "size_decile": 3,
+        "contrib": 0.0429784664737042,
+        "n": 20,
+        "peak_date": "2017-11-03"
+      },
+      {
+        "size_decile": 4,
+        "contrib": -0.0186016579055304,
+        "n": 22,
+        "peak_date": "2017-11-03"
+      },
+      {
+        "size_decile": 5,
+        "contrib": 0.0312084090376527,
+        "n": 20,
+        "peak_date": "2017-11-03"
+      },
+      {
+        "size_decile": 6,
+        "contrib": 0.000903017707542338,
+        "n": 11,
+        "peak_date": "2017-11-03"
+      },
+      {
+        "size_decile": 7,
+        "contrib": -0.00838531154186448,
+        "n": 17,
+        "peak_date": "2017-11-03"
+      },
+      {
+        "size_decile": 8,
+        "contrib": -0.030644610461456,
+        "n": 13,
+        "peak_date": "2017-11-03"
+      },
+      {
+        "size_decile": 9,
+        "contrib": 0.0041145712039131,
+        "n": 13,
+        "peak_date": "2017-11-03"
+      },
+      {
+        "size_decile": 10,
+        "contrib": 0.0108162382020689,
+        "n": 20,
+        "peak_date": "2017-11-03"
+      },
+      {
+        "size_decile": null,
+        "contrib": -0.00395852628443538,
+        "n": 2,
+        "peak_date": "2017-11-03"
+      },
+      {
+        "size_decile": 1,
+        "contrib": -0.249773891779615,
+        "n": 36,
+        "peak_date": "2020-01-22"
+      },
+      {
+        "size_decile": 2,
+        "contrib": -0.0795348509396329,
+        "n": 4,
+        "peak_date": "2020-01-22"
+      },
+      {
+        "size_decile": 3,
+        "contrib": -0.0136181797733403,
+        "n": 3,
+        "peak_date": "2020-01-22"
+      },
+      {
+        "size_decile": 4,
+        "contrib": -0.0202849731937308,
+        "n": 4,
+        "peak_date": "2020-01-22"
+      },
+      {
+        "size_decile": 5,
+        "contrib": 0.00236939381110259,
+        "n": 2,
+        "peak_date": "2020-01-22"
+      },
+      {
+        "size_decile": 6,
+        "contrib": -0.0211140623082323,
+        "n": 4,
+        "peak_date": "2020-01-22"
+      },
+      {
+        "size_decile": 7,
+        "contrib": -0.066458913429336,
+        "n": 4,
+        "peak_date": "2020-01-22"
+      },
+      {
+        "size_decile": 8,
+        "contrib": -0.0758317441593977,
+        "n": 1,
+        "peak_date": "2020-01-22"
+      },
+      {
+        "size_decile": 9,
+        "contrib": -0.0332914509539574,
+        "n": 4,
+        "peak_date": "2020-01-22"
+      },
+      {
+        "size_decile": 1,
+        "contrib": 0.0693660729665971,
+        "n": 125,
+        "peak_date": "2021-06-25"
+      },
+      {
+        "size_decile": 2,
+        "contrib": 0.00473404774401706,
+        "n": 18,
+        "peak_date": "2021-06-25"
+      },
+      {
+        "size_decile": 3,
+        "contrib": 0.0138708949106791,
+        "n": 12,
+        "peak_date": "2021-06-25"
+      },
+      {
+        "size_decile": 4,
+        "contrib": -0.000115743124523447,
+        "n": 11,
+        "peak_date": "2021-06-25"
+      },
+      {
+        "size_decile": 5,
+        "contrib": 0.00101177156463259,
+        "n": 8,
+        "peak_date": "2021-06-25"
+      },
+      {
+        "size_decile": 6,
+        "contrib": -0.0155988559007907,
+        "n": 17,
+        "peak_date": "2021-06-25"
+      },
+      {
+        "size_decile": 7,
+        "contrib": -0.00377807475737512,
+        "n": 9,
+        "peak_date": "2021-06-25"
+      },
+      {
+        "size_decile": 8,
+        "contrib": 0.00616588986795641,
+        "n": 8,
+        "peak_date": "2021-06-25"
+      },
+      {
+        "size_decile": 9,
+        "contrib": -0.0115209896948356,
+        "n": 12,
+        "peak_date": "2021-06-25"
+      },
+      {
+        "size_decile": 10,
+        "contrib": 0.0367610327849534,
+        "n": 13,
+        "peak_date": "2021-06-25"
+      }
+    ],
+    "state": {
+      "cal_first": "2002-01-02",
+      "cal_last": "2022-12-29",
+      "n_tickers": 1542,
+      "nU_median": 323
+    }
+  },
+  "profile": {
+    "n_rebalances": 215,
+    "n_mean": 20.5023255813954,
+    "eff_n_mean": 10.8995668106123,
+    "gl_mean": 1,
+    "turnover_per_rebalance_mean": 1.85647947928753,
+    "turnover_annual": 22.6047020453867,
+    "cost_drag_annual": 0.0340581697224354
+  },
+  "provenance": {
+    "source_dir": "C:/Users/99922/OneDrive/Quant_Module_Moltbot/stage_artifacts/replication/20261015_083431_14732",
+    "artifact": "C:/Users/99922/OneDrive/Quant_Module_Moltbot/stage_artifacts/replication/20261015_083431_14732",
+    "exec_price": "close_t1",
+    "universe": "ALL_HYG",
+    "contracts": ["behavior_card.R", "matched_controls.R", "grade_v3.R(gv3_window)", "tilt_attribution.R"],
+    "data_cut": "적재 단계 절단 — 수익 · 벤치 · 보유 · 시장 패널 · 벤치 이력 모두 ≤ τ_D"
+  }
+}

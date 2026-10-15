@@ -18,8 +18,13 @@ E <- .dp_deps(ROOT)
 P0R <- file.path(ROOT, "04_Research/programs/P0_FRONTIER/P0R01_feasibility_map/results")
 mon <- function(d, col) E$bc_monthly(d[, .(date, r = get(col))], "r")    # 행동 카드 계약의 월 집계(복리)
 rows <- list()
-for (e in names(pre$data$cells)) {
-  code <- pre$data$cells[[e]]
+## 셀 목록 = 사전등록 data.cells(이름 없는 배열 — P0R01 C0 셀 코드). 엔진 = 코드의 E 자리(2026-10-15 수리 · evaluate_fix_20261015.md —
+##   구판은 names() 로 순회해 0행 → 'status' 열 없음으로 멈췄다 · 판정 규칙 불변)
+.cells <- unlist(pre$data$cells)
+.eng <- if (!is.null(names(pre$data$cells)) && all(nzchar(names(pre$data$cells)))) names(pre$data$cells) else sub("^P0R01_(E[0-9]+)_C0$", "\\1", .cells)
+if (!length(.cells) || any(!grepl("^E[0-9]+$", .eng))) stop("[P1R01 평가] 사전등록 data.cells 에서 엔진을 못 읽었다: ", paste(.cells, collapse = ","))
+for (k in seq_along(.cells)) {
+  e <- .eng[k]; code <- .cells[k]
   ev <- tryCatch(fromJSON(file.path(P0R, code, "eval.json"), simplifyVector = FALSE), error = function(z) NULL)
   if (is.null(ev) || !identical(ev$status, "evaluated")) { rows[[e]] <- data.table(engine = e, code = code, status = ev$status %||% "not_evaluated"); next }
   rd <- .dp_read(E, ev$artifacts)
