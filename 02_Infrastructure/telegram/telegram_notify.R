@@ -1159,6 +1159,15 @@ tg_format_summary <- function(text, emoji = "\U0001F4CC") {
   ")\\b"
 )
 
+# 중복 발송 차단 키(제목 기반) — ASCII 골격 + 제목 전체(UTF-8)의 짧은 해시(2026-10-15 수리).
+#   구판은 gsub("[^A-Za-z0-9]", "_", substr(title, 1, 40)) 만 써서 한글이 전부 밑줄로 접혔다 → 서로 다른 '[1계층] …'
+#   제목이 같은 키가 되어 30분 안의 정상 발송이 '중복'으로 막혔다(10-15 실측: 다음 리서치 브리핑이 18분 전 용어집 게시와 충돌).
+#   같은 제목은 여전히 같은 키(진짜 중복은 계속 막는다) · 다른 제목은 다른 키. 해시 = openssl md5 앞 10자(openssl = httr 의존 — 이 파일이 적재되면 있다).
+.tg_title_scope <- function(agent, title) {
+  t <- enc2utf8(as.character(title)[1])
+  sprintf("%s_%s_%s", agent, gsub("[^A-Za-z0-9]", "_", substr(t, 1, 40)), substr(as.character(openssl::md5(t)), 1L, 10L))
+}
+
 tg_agent_brief <- function(agent,
                              title,
                              sections = list(),
@@ -1236,8 +1245,7 @@ tg_agent_brief <- function(agent,
       if (length(wt_match) > 0 && nzchar(wt_match[1])) {
         sprintf("%s_%s", agent, wt_match[1])
       } else {
-        sprintf("%s_%s", agent,
-                 gsub("[^A-Za-z0-9]", "_", substr(title, 1, 40)))
+        .tg_title_scope(agent, title)
       }
     }
     # tg lock: /tmp(Windows는 C:/tmp로 해석·TTL 없어 영구잔존) → 프로젝트 .cache/tg_locks + TTL.
