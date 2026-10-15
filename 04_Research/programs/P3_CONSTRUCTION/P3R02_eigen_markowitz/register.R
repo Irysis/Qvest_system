@@ -7,10 +7,14 @@
 ##   v2 초안 01:09(md5 e185de6d…) → 범위 좁힌 격리 재점검(register · 필수 0 · 권고 13) →
 ##   v3 등록 01:49(md5 9fba96b8 · 측정 전) → 도훈 축 결정(10-15 "고정축 비중상한 없음으로 진행하자") → v4(이 생성기 · 상한 없음 ·
 ##   changes_after_registration = v3→v4). v3 등록판은 prereg_superseded_v3_9fba96b8.json 으로 보존(측정 결과가 없을 때만 대체 — R2)
+##   → v5 = 핀 전용 재핀(--repin · 2026-10-15 도훈 승인 "핀만 재핀 허용"): 성능 수정(결과 동일 · 커밋 4aea904da)으로 바뀐 운영 · 평가
+##   경로 md5 와 검사 기록만 갱신 · 나머지 필드는 v4 와 기계 대조로 동일 · v4 는 prereg_superseded_v4_c8b680ec.json 으로 보존
 ##   검토판 원본 = prereg_draft_reviewed_baf0c9a1.json · prereg_draft_reviewed2_e185de6d.json(md5 고정 · 등록판에 연결)
 ## 실행:
 ##   Rscript register.R --draft      v3 초안(어댑터 검사 · 평가 픽스처를 실제로 돌려 통과 수를 싣는다 · 실패면 초안을 쓰지 않는다)
 ##   Rscript register.R --register   등록 — 검토판 2개 보존 · 사양 · 운영 · 평가 경로 md5 · quadprog · R 판 · 커밋 상태(git)를 확인한 뒤에만
+##   Rscript register.R --repin      핀 전용 재핀(v4 → v5) — 사양 · 설정 사본 md5 불변 · 핀 파일 목록 불변 · 검사 통과 · 커밋 상태 확인 ·
+##                                   허용 필드(핀 · 검사 · 판 · 기록) 밖이 v4 와 다르면 거부 · 쓴 파일을 다시 읽어 같은 대조
 ##   ★R2: 등록은 P3R01 평가(가장 가까운 비교군 K2 LW 최소분산 결과 포함)가 생기기 전에만 한다(파일 존재로 확인).
 suppressPackageStartupMessages({ library(data.table); library(jsonlite) })
 ROOT <- "C:/Users/99922/OneDrive/Quant_Module_Moltbot"
@@ -20,7 +24,8 @@ source("02_Infrastructure/programs/program_registry.R")
 source("02_Infrastructure/contracts/measurement_axis.R")
 source(file.path(ROOT, "04_Research/programs/_lib/round_kit.R"))
 args <- commandArgs(trailingOnly = TRUE)
-MODE <- if ("--register" %in% args) "register" else if ("--draft" %in% args) "draft" else stop("usage: register.R --draft | --register")
+MODE <- if ("--register" %in% args) "register" else if ("--draft" %in% args) "draft" else if ("--repin" %in% args) "repin" else
+  stop("usage: register.R --draft | --register | --repin")
 PROGRAM <- "P3_CONSTRUCTION"; ROUND <- "P3R02_eigen_markowitz"
 P <- rx_paths(PROGRAM, ROUND, ROOT); RD <- P$round_dir
 PR <- file.path(P$prereg_dir, "prereg.json"); DR <- file.path(RD, "prereg_draft.json")
@@ -39,10 +44,15 @@ rel <- function(p) sub(paste0("^", ROOT, "/"), "", p)
 ## 대체 등록(v3 → v4) — 측정 결과(칸 json)가 하나라도 있으면 사전등록을 바꾸지 않는다(R2). 대체 대상은 v3 등록판(md5 고정)만
 SUPERSEDE <- list(md5 = "9fba96b82e8951435ef2417c9db87a43", copy = "prereg_superseded_v3_9fba96b8.json",
                   reason = "도훈 축 결정(2026-10-15 \"고정축 비중상한 없음으로 진행하자\") — 카탈로그 하네스 상한 0.20 · 빌트인 max_w 0.15 폐지 → 어댑터 · 서술 · 핀 갱신(측정 전)")
+## 핀 전용 재핀(v4 → v5) — 대상은 v4 등록판(md5 고정)만 · 과학 필드는 손대지 않는다(아래 --repin 절)
+REPIN_FROM <- list(md5 = "c8b680ec4ca59ecb4a25e64398df9b2b", copy = "prereg_superseded_v4_c8b680ec.json",
+                   reason = "성능 수정(결과 동일 — 산출물 대조 · 회귀 테스트 · 커밋 4aea904da)으로 고정 운영 · 평가 경로 md5 가 바뀌어 precheck 가 측정을 막는다 — 핀만 갱신(도훈 2026-10-15 승인 \"핀만 재핀 허용\")")
 .measured_any <- function() length(Sys.glob(file.path(RD, "results", "P3R02_*.json"))) > 0L
 if (file.exists(PR) && .measured_any()) stop("[P3R02] 측정 결과가 생긴 뒤에는 사전등록을 바꿀 수 없다(R2)")
-if (file.exists(PR) && !identical(rk_md5(PR), SUPERSEDE$md5)) stop("[P3R02] 사전등록이 이미 있고 대체 대상(v3 9fba96b8)이 아니다(R2)")
-if (file.exists(P3R01_EVAL)) stop("[P3R02] P3R01 평가가 이미 있다 — 가장 가까운 비교군(K2 최소분산) 결과 뒤의 사전등록이 된다 · 등록하지 않는다")
+if (MODE != "repin") {
+  if (file.exists(PR) && !identical(rk_md5(PR), SUPERSEDE$md5)) stop("[P3R02] 사전등록이 이미 있고 대체 대상(v3 9fba96b8)이 아니다(R2)")
+  if (file.exists(P3R01_EVAL)) stop("[P3R02] P3R01 평가가 이미 있다 — 가장 가까운 비교군(K2 최소분산) 결과 뒤의 사전등록이 된다 · 등록하지 않는다")
+}
 for (rv in REVIEWED) if (!file.exists(rv$path) || !identical(rk_md5(rv$path), rv$md5))
   stop("[P3R02] 검토판 v", rv$version, " 보존본이 없거나 바뀌었다 — 검토판 ↔ 등록판 연결 불가")
 
@@ -90,6 +100,79 @@ COMMIT_PATHS <- c("02_Infrastructure/methods/adapters/eigen_clean_markowitz.R", 
   if (length(tot)) { n <- as.integer(regmatches(tot[length(tot)], gregexpr("[0-9]+", tot[length(tot)]))[[1]])
                      return(list(path = rel(path), md5 = rk_md5(path), pass = n[1], fail = n[2])) }
   list(path = rel(path), md5 = rk_md5(path), pass = NA, fail = NA)
+}
+
+## ── 핀 전용 재핀(v4 → v5 · 2026-10-15 도훈 승인 "핀만 재핀 허용") ─────────────────────────────────────────────
+##   등록된 v4 를 그대로 읽어 operational_pins$files · evaluation$files · tests 만 다시 재고 판(draft_version) · 기록 필드를 더한다.
+##   나머지 필드(가설 · 셀 · 사양 md5 · 규칙 · 문턱 · 선택 규칙 · 설정 사본 · 노출 · 검토판 연결)는 v4 와 identical 이어야 하며,
+##   쓴 파일을 다시 읽어 같은 대조를 한 번 더 한다(직렬화 왕복). P3R01 종합 판정은 파이프라인 v2 순서 실수(Q)로 이미 있다 —
+##   내용은 열지 않고 존재 · 수정 시각만 기록한다.
+if (MODE == "repin") {
+  if (!file.exists(PR) || !identical(rk_md5(PR), REPIN_FROM$md5)) stop("[P3R02] 재핀 대상(v4 ", REPIN_FROM$md5, ")이 아니다")
+  v4 <- fromJSON(PR, simplifyVector = FALSE)
+  if (!identical(v4$status, "registered") || !identical(as.integer(v4$draft_version), 4L)) stop("[P3R02] v4 등록판이 아니다")
+  for (c in v4$cells) if (!identical(rk_md5(file.path(ROOT, c$path)), c$md5)) stop("[P3R02] 사양 md5 ≠ v4 — 사양이 바뀌면 핀 전용 재핀이 아니다: ", c$code)
+  if (!identical(rk_md5(file.path(ROOT, v4$behavior_card_cfg$path)), v4$behavior_card_cfg$md5)) stop("[P3R02] 행동 카드 설정 사본 md5 ≠ v4")
+  TESTS <- list(.run_test(file.path(ROOT, "08_Tests/methods/test_eigen_clean_markowitz.R")), .run_test(file.path(RD, "evaluate_fixture.R")))
+  for (t in TESTS) if (!identical(as.integer(t$fail), 0L) || !is.finite(as.numeric(t$pass))) stop("[P3R02] 검사 실패 — 재핀하지 않는다: ", t$path, " (", t$pass, "/", t$fail, ")")
+  now <- .ops_pins(); ev <- .eval_pins()
+  paths <- function(x) vapply(x, function(z) z$path, character(1))
+  if (!identical(paths(now$files), paths(v4$operational_pins$files))) stop("[P3R02] 운영 핀 파일 목록 ≠ v4")
+  if (!identical(paths(ev), paths(v4$evaluation$files))) stop("[P3R02] 평가 핀 파일 목록 ≠ v4")
+  if (!identical(now$catalog_entry, v4$operational_pins$catalog_entry) || !identical(now$quadprog, v4$operational_pins$quadprog) ||
+      !identical(now$r_version, v4$operational_pins$r_version)) stop("[P3R02] 카탈로그 엔트리 · quadprog · R 판 ≠ v4 — 핀 전용 재핀이 아니다")
+  unc <- .uncommitted()
+  if (length(unc)) stop("[P3R02] 커밋되지 않은 고정 대상이 있다 — 커밋 뒤 재핀:\n", paste(unc, collapse = "\n"))
+  changed <- function(old, new) unname(Filter(Negate(is.null), Map(function(o, n) if (!identical(o$md5, n$md5))
+    list(path = o$path, md5_v4 = o$md5, md5_v5 = n$md5) else NULL, old, new)))
+  ch <- function(item, change, reason) list(item = item, change = change, reason = reason)
+  v5 <- v4
+  v5$draft_version <- 5L
+  v5$operational_pins$files <- now$files
+  v5$evaluation$files <- ev
+  v5$tests <- TESTS
+  v5$changes_after_registration <- c(v4$changes_after_registration, list(
+    ch("v4 → v5 핀 전용 재핀(도훈 2026-10-15 승인)", "operational_pins.files · evaluation.files md5 와 tests 기록만 갱신 — 가설 · 셀 · 사양 · 규칙 · 문턱 · 선택 규칙 · 설정 사본 불변(기계 대조)",
+       REPIN_FROM$reason)))
+  v5$repin <- list(kind = "pin_only", from_md5 = REPIN_FROM$md5, approved = "도훈 2026-10-15 세션 승인 — \"핀만 재핀 허용\"",
+    changed_operational = changed(v4$operational_pins$files, now$files), changed_evaluation = changed(v4$evaluation$files, ev),
+    verification = "성능 수정 결과 동일 — P0R01_E2_C4 재측정 산출 18종 identical(02~09 CSV · analysis_*.csv · 권위 기록 · 분석 보고서) · test_fdc_read_fastpath 13/0 · matched_controls 67/0 · replication_harness 46/0 · round_kit_shard 17/0 · program_registry 29/0(CHANGELOG 2026-10-15 1계층 실행 속도 절)",
+    p3r01_evaluation = list(path = rel(P3R01_EVAL), exists = file.exists(P3R01_EVAL),
+                            mtime = if (file.exists(P3R01_EVAL)) format(file.mtime(P3R01_EVAL), "%Y-%m-%dT%H:%M:%S%z") else NA_character_, opened = FALSE,
+                            declaration = "파이프라인 v2 순서 실수(Q)로 재핀 전에 생겼다 — 내용은 열지 않았다 · 이 재핀은 과학 필드를 바꾸지 않는다(기계 대조)"),
+    result_files = .result_files(), at = format(Sys.time(), "%Y-%m-%dT%H:%M:%S%z"))
+  v5$supersede_history <- c(v4$supersede_history %||% list(), if (!is.null(v4$supersedes)) list(v4$supersedes) else list())
+  v5$supersedes <- list(md5 = REPIN_FROM$md5, path = rel(file.path(P$prereg_dir, REPIN_FROM$copy)), reason = REPIN_FROM$reason,
+                        measured_before = FALSE, declaration = "대체 시점에 이 라운드의 측정 결과는 없었다(.measured_any = FALSE)")
+  v5$registered_at <- format(Sys.time(), "%Y-%m-%dT%H:%M:%S%z")
+  v5$git_head_at_register <- tryCatch(system2("git", c("-C", ROOT, "rev-parse", "HEAD"), stdout = TRUE), error = function(e) NA_character_)
+  ## 기계 대조 — 허용 필드 밖 identical · 허용 필드 안에서도 핀 목록 밖 · v4 기록 접두는 보존
+  ALLOWED <- c("draft_version", "operational_pins", "evaluation", "tests", "changes_after_registration", "repin", "supersedes",
+               "supersede_history", "registered_at", "git_head_at_register")
+  .same_sci <- function(a, b) {
+    identical(a[setdiff(names(a), ALLOWED)], b[setdiff(names(b), ALLOWED)]) &&
+      identical(a$operational_pins[setdiff(names(a$operational_pins), "files")], b$operational_pins[setdiff(names(b$operational_pins), "files")]) &&
+      identical(a$evaluation[setdiff(names(a$evaluation), "files")], b$evaluation[setdiff(names(b$evaluation), "files")]) &&
+      identical(b$changes_after_registration[seq_along(a$changes_after_registration)], a$changes_after_registration)
+  }
+  if (!.same_sci(v4, v5)) stop("[P3R02] 핀 전용 재핀 위반 — 허용 필드 밖이 v4 와 다르다")
+  for (d in c(P$prereg_dir, RD)) if (!file.exists(file.path(d, REPIN_FROM$copy))) file.copy(PR, file.path(d, REPIN_FROM$copy))
+  if (!identical(rk_md5(file.path(P$prereg_dir, REPIN_FROM$copy)), REPIN_FROM$md5)) stop("[P3R02] v4 보존본 md5 불일치")
+  tmp <- paste0(PR, ".v5tmp")
+  writeLines(toJSON(v5, auto_unbox = TRUE, pretty = TRUE, null = "null", digits = NA), tmp, useBytes = TRUE)
+  if (!.same_sci(fromJSON(file.path(P$prereg_dir, REPIN_FROM$copy), simplifyVector = FALSE), fromJSON(tmp, simplifyVector = FALSE))) {
+    unlink(tmp); stop("[P3R02] 직렬화 왕복 뒤 과학 필드가 v4 와 다르다 — 재핀하지 않는다")
+  }
+  if (!file.rename(tmp, PR)) stop("[P3R02] 등록판 교체 실패")
+  file.copy(PR, file.path(RD, "prereg.json"), overwrite = TRUE)
+  pr_record_round(PROGRAM, list(round_id = ROUND, prereg = rel(PR), prereg_md5 = rk_md5(PR), status = "registered",
+                                n_variants = length(Filter(function(z) !isTRUE(z$reference), v5$cells)),
+                                variants = unname(vapply(v5$cells, function(z) z$code, character(1))),
+                                supersedes = list(md5 = REPIN_FROM$md5, reason = REPIN_FROM$reason)), root = ROOT)
+  cat(sprintf("[P3R02] 핀 전용 재핀 v5 %s (md5 %s) · 운영 핀 변경 %d · 평가 핀 변경 %d · 검사 %s · HEAD %s\n", PR, rk_md5(PR),
+              length(v5$repin$changed_operational), length(v5$repin$changed_evaluation),
+              paste(vapply(TESTS, function(t) sprintf("%s %s/%s", basename(t$path), t$pass, t$fail), ""), collapse = " · "), v5$git_head_at_register))
+  quit(status = 0)
 }
 
 if (MODE == "register") {
