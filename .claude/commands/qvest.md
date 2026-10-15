@@ -16,8 +16,10 @@ user-invocable: true
    - `Book:` — ★v10 BOOK 등록 수·최신 엔트리·트래킹일 (`06_Registry/book/book_registry.json` 정본. **쓰기 = writer 경유 + 도훈 confirm**).
    - `Alerts/Budget:` — 경보 digest + 예산 4종 `값/상한 ✓|✗`.
    - `Programs:` — ★v10.01 1계층 리서치 프로그램 등록부(`06_Registry/research_programs.json`): 측정 계약 완료 n/8(남은 MC id) | P0~P4 상태(재료·라운드 수) + 대기 결정 부기(`대기결정 N · 최고령 · 차단`). 판독 실패 = `?(<원인>)`.
-2. 6줄을 **그대로 1회 전재**. 해석·수리·후속 점검 금지. `Data`에 `?`/부재가 있으면 1줄 보고 후 도훈 판단 대기.
+   - `Resume:` — ★(2026-10-15 도훈 "세션이 예기치않게 종료됐을 때 새로운 세션에서도 이어질 수 있도록") 진행 중 작업(`06_Registry/session_resume.json` · writer `02_Infrastructure/programs/session_resume.py`) 최신 1건의 단계 n/m · 현재 단계 · 다음 할 일 · 갱신 시각 + 등록부의 '등록됐지만 끝나지 않은 라운드'(저널과 별개 자동 신호). 없으면 `진행 중 작업 없음`.
+2. 7줄을 **그대로 1회 전재**. 해석·수리·후속 점검 금지. `Data`에 `?`/부재가 있으면 1줄 보고 후 도훈 판단 대기.
 3. **★진행 계층을 도훈에게 묻는다** (v10 규칙 "Qvest 실행 시 어떤 계층으로 진행할 것인지 사용자에게 물을 것") — AskUserQuestion. 선택지 순서 = ①②③④ 고정(★2026-09-24 `DIR-PHASE0`: 구 'Director 권고를 첫 선택지로 · human_override 기록' 규칙 삭제 — 권고가 정정 전 수치와 C11 로 막힌 2계층 개설을 가리켰다).
+   - **⓪ 이전 세션 리서치 재개**(★2026-10-15 · `Resume:` 줄에 진행 중 작업이 있을 때만 맨 앞에 둔다): `python -X utf8 02_Infrastructure/programs/session_resume.py show` 로 재개 브리핑(목표 · 단계 · 다음 할 일 · 먼저 읽을 것 · 백그라운드 · 결정 대기)을 읽고, '먼저 읽을 것'을 읽은 뒤 **다음 할 일**부터 이어 간다. 백그라운드 항목은 로그 · 센티널로 살아 있는지 먼저 확인한다(죽었으면 그 단계를 다시 띄운다).
    - **① 1계층 — 목표 역산형 리서치**: `Skill(research-program)` — 등록부 순서(선행 조건 MC → 프로그램 라운드 → 재료 충실구현 `/alpha-search`). 룰 = `.claude/rules/lean-loop.md`.
    - **② 2계층 — 전략 로테이션 리서치**: `Skill(strategy-rotation)` — 논문 온디맨드 착수 → FR 단위 등급 → 강화 무한.
    - **③ BOOK 관리**: `/book` — 등록 목록·온디맨드 트래킹.

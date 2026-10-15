@@ -20,7 +20,7 @@ DG_AGE=$(( ( $(date +%s) - $(stat -c %Y "$DG" 2>/dev/null || echo 0) ) / 3600 ))
 if [ ! -f "$DG" ] || [ "$DG_AGE" -ge 6 ]; then
   bash "$PROJECT/02_Infrastructure/ops/alerts_digest_build.sh" >/dev/null 2>&1 || true
 fi
-PROJECT="$CLAUDE_PROJECT_DIR" PY="$CLAUDE_PROJECT_DIR/.venv_qvest_ml/Scripts/python.exe" "$PY" - <<'PYEOF' 2>/dev/null || printf 'Data: ?\nQueue: ?\nLast: ?\nBook: ?\nAlerts/Budget: ? (status 산출 실패 — venv python 확인)\nPrograms: ?\n'
+PROJECT="$CLAUDE_PROJECT_DIR" PY="$CLAUDE_PROJECT_DIR/.venv_qvest_ml/Scripts/python.exe" "$PY" - <<'PYEOF' 2>/dev/null || printf 'Data: ?\nQueue: ?\nLast: ?\nBook: ?\nAlerts/Budget: ? (status 산출 실패 — venv python 확인)\nPrograms: ?\nResume: ?\n'
 import json,os,re,glob,time,subprocess,datetime as dt
 P=os.environ["PROJECT"]; PY=os.environ["PY"]; o=[]
 R=lambda *a: os.path.join(P,*a)
@@ -224,6 +224,15 @@ def DECISIONS():
     lanes=("·".join(ln[:3])+(" +%d"%(len(ln)-3) if len(ln)>3 else "")) if ln else "없음"
     return " · 대기결정 %d · 최고령 %s(%sd) · 차단 %s"%(len(op),op[0].get("id") or "?",ag,lanes)
 o.append(S(PROGRAMS,"Programs: ?(표시 예외)")+S(DECISIONS," · 대기결정 ?(표시 예외)"))
+# ⑦ Resume(2026-10-15 도훈 "세션이 예기치않게 종료됐을 때 새로운 세션에서도 이 프로세스가 이어질 수 있도록") —
+#   진행 중 작업(06_Registry/session_resume.json · writer = programs/session_resume.py) 최신 1건의 단계 · 다음 할 일 +
+#   등록부에서 등록됐지만 끝나지 않은 라운드(저널과 별개 자동 신호). 로직은 도구 한 곳(boot_line) — 여기서는 불러 쓰기만.
+def RESUME():
+    import importlib.util as _iu
+    _sp=_iu.spec_from_file_location("session_resume",R("02_Infrastructure","programs","session_resume.py"))
+    _m=_iu.module_from_spec(_sp); _sp.loader.exec_module(_m)
+    return _m.boot_line(P)
+o.append(S(RESUME,"Resume: ?(표시 예외)"))
 # (v10.01 · 2026-10-13) 구 ⑦ Rules(방향 규칙 일간 채점 — 디렉터 입력)는 디렉터와 함께 퇴역.
 print("\n".join(o))
 PYEOF
