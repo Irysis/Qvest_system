@@ -40,6 +40,18 @@ if (length(.hpos) && .hpos[1] > 0L) {
   if (nzchar(.carry)) .out <- c(.out, .carry)
   body <- paste(.out, collapse = "")
 }
+## 그림 내장 — 로컬 이미지(<img src="상대 경로 · 절대 경로 · file:///">)를 base64 data URI 로 바꿔 PDF 를 한 파일로 만든다(경로 · 권한 무관)
+.img_dir <- dirname(src)
+.imgs <- unique(regmatches(body, gregexpr('<img src="[^"]+"', body, perl = TRUE))[[1]])
+for (.tag in .imgs) {
+  .u <- sub('^<img src="', "", sub('"$', "", .tag))
+  if (grepl("^(https?:|data:)", .u)) next
+  .p <- sub("^file:///", "", utils::URLdecode(.u))
+  if (!file.exists(.p)) .p <- file.path(.img_dir, .p)
+  if (!file.exists(.p)) stop("[pdf] 그림 파일 없음: ", .u)
+  .mime <- switch(tolower(tools::file_ext(.p)), png = "image/png", jpg = , jpeg = "image/jpeg", svg = "image/svg+xml", "application/octet-stream")
+  body <- gsub(.tag, sprintf('<img src="data:%s;base64,%s"', .mime, jsonlite::base64_enc(readBin(.p, "raw", file.size(.p)))), body, fixed = TRUE)
+}
 ## 검사 기대값 — 표마다 머리 행 문자열(갈린 표는 다음 쪽에 머리 행이 반복된다)
 .th <- regmatches(body, gregexpr("(?s)<thead>.*?</thead>", body, perl = TRUE))[[1]]
 expect_tables <- vapply(.th, function(x) gsub("<[^>]+>", "", x), character(1), USE.NAMES = FALSE)
@@ -72,6 +84,7 @@ pre code { background: none; padding: 0; font-size: 1em; }
 strong code, th code { font-weight: 700; }
 blockquote { margin: 3pt 0; padding: 2pt 8pt; border-left: 3px solid #bbb; color: #333; }
 hr { border: 0; border-top: 0.6pt solid #bbb; margin: 8pt 0; }
+img { display: block; max-width: 100%%; max-height: 168mm; margin: 2pt auto 0 auto; }
 ', fonts_css, orient)
 html <- sprintf('<!doctype html><html lang="ko"><head><meta charset="utf-8"><title>%s</title><style>%s</style></head><body>%s</body></html>',
                 title, css, body)
@@ -93,7 +106,7 @@ cat(sprintf("[pdf] %s · %.0f KB\n", out, file.size(out) / 1024))
 py <- Sys.getenv("QVEST_PY")
 if (nzchar(py) && file.exists(py)) {
   ej <- file.path(tempdir(), "pdf_expect.json")
-  writeLines(jsonlite::toJSON(list(tables = expect_tables, fonts_allowed = c("Consolas", "HDH")), auto_unbox = TRUE), ej, useBytes = TRUE)
+  writeLines(jsonlite::toJSON(list(tables = as.list(expect_tables), fonts_allowed = c("Consolas", "HDH")), auto_unbox = TRUE), ej, useBytes = TRUE)
   chk_py <- file.path(dirname(normalizePath(sub("--file=", "", grep("^--file=", commandArgs(FALSE), value = TRUE)[1]), winslash = "/")), "pdf_check.py")
   res <- suppressWarnings(system2(py, c(shQuote(chk_py), shQuote(normalizePath(out, winslash = "/")), shQuote(ej)), stdout = TRUE, stderr = TRUE))
   cat("[pdf-check]", tail(res, 1), "\n")
