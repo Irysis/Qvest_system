@@ -24,6 +24,25 @@ fonts_css <- paste(face("L", 300), face("M", 500), face("B", 700), sep = "\n")
 md <- paste(readLines(src, warn = FALSE, encoding = "UTF-8"), collapse = "\n")
 body <- commonmark::markdown_html(md, extensions = TRUE, smart = FALSE)
 title <- sub("^#\\s+", "", regmatches(md, regexpr("(?m)^#\\s+[^\n]+", md, perl = TRUE)))
+## 쪽 나눔 금지 블록 — 제목(h1~h4)부터 다음 제목 전까지를 한 블록(section.blk · break-inside: avoid)으로 묶는다.
+##   제목만 있는 조각(예: h2 바로 뒤 h3)은 다음 블록에 붙인다 — 제목이 쪽 끝에 홀로 남지 않게. 한 쪽보다 긴 블록은 브라우저가
+##   어쩔 수 없이 나누므로 문서 쪽에서 표를 쪼갠다 — 생성 뒤 pdf_check.py 가 갈린 표를 잡는다.
+.hpos <- as.integer(gregexpr("<h[1-4][ >]", body, perl = TRUE)[[1]])
+if (length(.hpos) && .hpos[1] > 0L) {
+  .st <- unique(c(1L, .hpos)); .en <- c(.st[-1] - 1L, nchar(body))
+  .segs <- substring(body, .st, .en); .out <- character(0); .carry <- ""
+  for (.sg in .segs) {
+    .rest <- sub("^\\s*<h([1-4])[^>]*>.*?</h\\1>", "", .sg, perl = TRUE)
+    if (grepl("^\\s*<h[1-4]", .sg, perl = TRUE) && !nzchar(trimws(.rest))) { .carry <- paste0(.carry, .sg); next }
+    .x <- paste0(.carry, .sg); .carry <- ""
+    .out <- c(.out, if (grepl("^\\s*<h[1-4]", .x, perl = TRUE)) paste0('<section class="blk">', .x, "</section>") else .x)
+  }
+  if (nzchar(.carry)) .out <- c(.out, .carry)
+  body <- paste(.out, collapse = "")
+}
+## 검사 기대값 — 표마다 머리 행 문자열(갈린 표는 다음 쪽에 머리 행이 반복된다)
+.th <- regmatches(body, gregexpr("(?s)<thead>.*?</thead>", body, perl = TRUE))[[1]]
+expect_tables <- vapply(.th, function(x) gsub("<[^>]+>", "", x), character(1), USE.NAMES = FALSE)
 css <- sprintf('
 %s
 @page { size: A4 %s; margin: 11mm 10mm 12mm 10mm; }
@@ -37,7 +56,8 @@ h3 { font-size: 10.4pt; margin: 9pt 0 3pt 0; break-after: avoid; }
 h4 { font-size: 9.4pt; margin: 7pt 0 2pt 0; break-after: avoid; }
 p, li { margin: 2pt 0; }
 ul, ol { margin: 2pt 0 2pt 0; padding-left: 16pt; }
-table { border-collapse: collapse; width: 100%%; margin: 4pt 0 6pt 0; table-layout: auto; }
+section.blk { break-inside: avoid; }
+table { border-collapse: collapse; width: 100%%; margin: 4pt 0 6pt 0; table-layout: auto; break-inside: avoid; }
 thead { display: table-header-group; }
 tr { break-inside: avoid; }
 th, td { border: 0.6pt solid #9a9a9a; padding: 2.2pt 3.5pt; vertical-align: top; text-align: left; word-break: keep-all; overflow-wrap: anywhere; }
@@ -69,3 +89,13 @@ rc <- system2(edge, c("--headless=new", "--disable-gpu", "--no-pdf-header-footer
                       paste0("--print-to-pdf=", shQuote(out_abs)), url), stdout = TRUE, stderr = TRUE)
 if (!file.exists(out)) { cat(rc, sep = "\n"); stop("PDF 생성 실패") }
 cat(sprintf("[pdf] %s · %.0f KB\n", out, file.size(out) / 1024))
+## 생성 뒤 검사(서식 규칙) — 갈린 표 · 대체 글꼴. QVEST_PY(PyMuPDF) 가 없으면 건너뛴다고 적는다.
+py <- Sys.getenv("QVEST_PY")
+if (nzchar(py) && file.exists(py)) {
+  ej <- file.path(tempdir(), "pdf_expect.json")
+  writeLines(jsonlite::toJSON(list(tables = expect_tables, fonts_allowed = c("Consolas", "HDH")), auto_unbox = TRUE), ej, useBytes = TRUE)
+  chk_py <- file.path(dirname(normalizePath(sub("--file=", "", grep("^--file=", commandArgs(FALSE), value = TRUE)[1]), winslash = "/")), "pdf_check.py")
+  res <- suppressWarnings(system2(py, c(shQuote(chk_py), shQuote(normalizePath(out, winslash = "/")), shQuote(ej)), stdout = TRUE, stderr = TRUE))
+  cat("[pdf-check]", tail(res, 1), "\n")
+  if (!is.null(attr(res, "status")) && attr(res, "status") != 0L) stop("[pdf-check] 실패 — 갈린 표 또는 대체 글꼴(위 JSON). md 에서 표를 쪼개거나 글꼴을 확인할 것")
+} else cat("[pdf-check] 건너뜀 — QVEST_PY 없음(갈린 표 · 글꼴 검사 미실행)\n")

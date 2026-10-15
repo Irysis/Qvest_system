@@ -112,11 +112,18 @@ P0R01_E2_C4  =  P0 실현 가능성 지도 · 1라운드 · 엔진 E2(2002.06975
 
 처방 셀은 엔진 자리 없이 `<라운드>_RX<n>`(기저가 하나뿐). P3R02 는 `<라운드>_<엔진>_<M5 또는 RX0>`.
 
+#### c-1) 엔진 — `E1`~`E3`
+
 | 코드 | 이름 | 쓰는 라운드 | 하는 일(사양 delta) | 담당 | 정본 파일 |
 |---|---|---|---|---|---|
 | `E1` | 모멘텀 12-1 | P0R01 · P1R01 · P3R01 · P3R02 | 셀 엔진 내장 12-1 신호(shift 21/252) 상위 25종 EW. Jegadeesh-Titman 1993. 성과를 보지 않고 고른 기준점 | R(셀 엔진) | `P0R01/round_def.R::p0_engines` |
 | `E2` | 2002.06975 DNN 원형 | 〃 | 논문 DNN 예측 점수 상위 25종 EW(31특성 · DNN5 · 5거래일 갱신) | R | 〃 · `04_Research/strategies/RP_AUTO_2002_06975/engine.R` |
 | `E3` | B6_36 | P0R01 · P1R01 | 같은 계보 기존 최고 셀. DNN 점수 + 팩터 3(M01_Mom_12_1 · V10_FCF_Yield · M08_Residual_Mom) rank-z 결합(기저 가중 0.5) · 엔트로피 비중 · 순위 버퍼 2배 | R | `P2R01_s2_pilot/base/base_cell_spec.json` |
+
+#### c-2) P0R01 구성요소 — `C0`~`C6`(P2R02 에선 같은 기호가 '방어 장치')
+
+| 코드 | 이름 | 쓰는 라운드 | 하는 일(사양 delta) | 담당 | 정본 파일 |
+|---|---|---|---|---|---|
 | `C0` | 구성요소 없음 | P0R01 | 엔진 그대로(기준) | — | `round_def.R::p0_components` |
 | `C1` | 추세 현금 | P0R01 · P2R02 | 시장 12개월 수익 < 0 → 현금(오버레이 `ts_mom_sign`). Moskowitz-Ooi-Pedersen 2012 · Faber 2007 | R | 〃 |
 | `C2` | 변동성 타기팅 | 〃 | 노출 = min(1, 확장창 중앙 실현변동성 ÷ 현재 60일 변동성)(`vol_median`). Moreira-Muir 2017 | R | 〃 |
@@ -124,6 +131,11 @@ P0R01_E2_C4  =  P0 실현 가능성 지도 · 1라운드 · 엔진 E2(2002.06975
 | `C4` | 저변동 틸트 | 〃 | 252일 실현변동성 낮은 쪽(`D03_RealVol`) 기저와 rank-z 결합. Blitz-van Vliet 2007 | R | 〃 |
 | `C5` | 퀄리티 틸트 | 〃 | 복합 퀄리티(`Q08_Composite_Quality`) 결합. Asness-Frazzini-Pedersen 2019 | R | 〃 |
 | `C6` | 추세 현금 + 저변동 | 〃 | C1 + C4(시변 노출 × 방어적 보유) | R | 〃 |
+
+#### c-3) P3 구성 변형 — `K0`~`K5` · `M5`
+
+| 코드 | 이름 | 쓰는 라운드 | 하는 일(사양 delta) | 담당 | 정본 파일 |
+|---|---|---|---|---|---|
 | `K0` | EW 기준 | P3R01 | `P0R01_E?_C0` 측정 재사용(새 측정 없음) | — | `P3R01/register.R` |
 | `K1` | 역변동성 | P3R01 | `lean:ivol`(추정 창 60일). Kirby-Ostdiek 2012 | R | 〃 |
 | `K2` | 최소분산 | P3R01 | `lean:minvar`(Ledoit-Wolf · 창 120일). Clarke-de Silva-Thorley 2006 | R | 〃 |
@@ -131,6 +143,11 @@ P0R01_E2_C4  =  P0 실현 가능성 지도 · 1라운드 · 엔진 E2(2002.06975
 | `K4` | 켈리 | P3R01 | `lean:kelly`(창 120일). Busseti-Ryu-Boyd 2016 | R | 〃 |
 | `K5` | 순위 버퍼 2배 | P3R01 | 회전 통제. Novy-Marx-Velikov 2016 | R | 〃 |
 | `M5` | 고유모드 정제 공분산 최소분산 | P3R02 | `paper:EigenCleanMarkowitz`. 1810.08384 §II 식 4 · 상위 k = 5 모드 · p = 1 · 비중 상한 없음 · 추정 창 252일 | R(어댑터) | `02_Infrastructure/methods/adapters/eigen_clean_markowitz.R` |
+
+#### c-4) 기준 재측정 · 처방전 — `RX0`~`RX3`
+
+| 코드 | 이름 | 쓰는 라운드 | 하는 일(사양 delta) | 담당 | 정본 파일 |
+|---|---|---|---|---|---|
 | `RX0` | 같은 판본 기준 재측정 | P2R01 · P3R02 | 처방 아님 · 시행 수 미산입. 데이터 판본이 바뀌었으면 기준을 같은 사양으로 다시 측정. P2R01 = B6_36, P3R02 = `P0R01_E?_C0`(카탈로그 미등재) | R | research-program SKILL §2 |
 | `RX1`~`RX3` | 처방전 번호 | P2R01(P4R01 에선 `P4R01_<처방 id>`) | RX1 = 하방 비대칭 팩터 D07 추가 · RX2 = 회전 상한(≤25 축 위반으로 측정 무효) · RX3 = 추세 지속성 상태 → 보유 베타 순위 오버레이 | 처방 담당 Opus/max → R 측정 | `P2R01_s2_pilot/specs/*.json` · `prereg.json` |
 
@@ -152,22 +169,44 @@ P0R01_E2_C4  =  P0 실현 가능성 지도 · 1라운드 · 엔진 E2(2002.06975
 
 ### e) 레인 · 에이전트 — 누가, 어떤 모델 · 노력으로, 얼마나 자주
 
+#### e-1) 세션 · 재료 레인
+
 | 코드(키) | 이름 | 단계 | 하는 일 | 모델/노력 · 호출 빈도 | 정본 파일 |
 |---|---|---|---|---|---|
 | Q | 세션(오케스트레이터) | 전 단계 | 스크립트 실행 · 결정 기록 · 보고 · 커밋. 수치를 직접 내지 않는다(AX-008) | `claude-opus-5-5` · max(세션 설정) · 상시 | `CLAUDE.md` |
 | `paper_router` | 논문 라우터 v5 | 재료 | 신규 논문을 return · defense · construction · not_relevant 로 분류 | Sonnet/high · 아침 체인 하루 1회(예약 작업 비활성) | `ops/paper_router_run.sh` · `reinforce_auto_config.json::llm.lanes` |
 | `paper_atlas` | 메커니즘 지도 추출 | 재료 | 논문 주장(시장 · 기간 · 효과 · 위기 행동) 추출 → R 검증 → 지도 | Opus/xhigh · `QVEST_PAPER_ATLAS_ENABLE=1` 일 때만 | `ops/paper_atlas_run.sh` · `programs/mechanism_atlas.R` |
+
+#### e-2) 충실구현 레인
+
+| 코드(키) | 이름 | 단계 | 하는 일 | 모델/노력 · 호출 빈도 | 정본 파일 |
+|---|---|---|---|---|---|
 | `replication` | 충실구현 레인(청정 재구현) | 충실구현 | 논문만 읽고 engine.R · FIDELITY.json 작성(성과 열람 차단) | Opus/max · tick 당 최대 1편(≤40분). 예약 작업(8분 간격)은 비활성 → 세션이 `run_tick_once.sh` 로 1회씩 실행 | `ops/rf_replication_auto.sh` |
 | `fidelity_audit` 팬아웃 | 충실도 감사 6축 | 충실구현 | 축별 논문 ↔ 코드 대조 → R 병합 → faithful · adapted · misdeclared | 판독형 필수 3축(signal · portfolio · undeclared) = Opus/xhigh · 대조형 3축(timing · universe · cost) = Sonnet/high · 편당 1회 6병렬 | `ops/rf_fidelity_fanout.sh` · `06_Registry/rf_fidelity_axes.json` |
 | (기계 · R) | 사전검사 · 측정 · 검증기 | 충실구현 | 신고 구조 확인 → 측정 · 등급 → 고정 축 · PIT · 감사 관문 재도출 → 행동 카드 · 재료 큐 · 보고 | LLM 없음 · 편당 | `ops/rf_preaudit.py` · `alpha_search/run_paper_replication.R` · `ops/rf_replication_verify.R` |
 | `alpha-search` 에이전트 | 세션 충실구현 | 충실구현(세션) | 같은 일을 세션에서(논문 지정 가능) | 세션 모델 상속 · high · `/alpha-search` 때 | `.claude/agents/alpha-search.md` |
+
+#### e-3) 처방 루프 · 교차 점검
+
+| 코드(키) | 이름 | 단계 | 하는 일 | 모델/노력 · 호출 빈도 | 정본 파일 |
+|---|---|---|---|---|---|
 | `analyst` | 전략 분석가 | 라운드 ①(처방 루프) | 보는 창 진단 패킷 · 논문 · 헌장 → 전략 이해서(엣지 원천 · 국면 · 지킬 강점 · 약점 가설) | Opus/max · 라운드당 1회(P2R01 16분) | `programs/rx_lane.sh` · `<라운드>/prepare_analyst.R` |
 | `prescriber` | 처방 담당 | 라운드 ① | 처방전 1~3건(가설 · 기대 방향 · 기계 판정형 반증 조건 · 구현 delta) + 최종 선택 규칙 | Opus/max · 라운드당 1회(14분) | `rx_lane.sh` · `prepare_prescriber.R` |
 | `reviewer` | 리뷰어 | 라운드 ④ | 사전 가설 대비 기전 판독 · 다음 수 · 교훈 | Opus/max · 라운드당 1회(14분) | `rx_lane.sh` · `evaluate.R` |
 | 범용 에이전트 | 격리 교차 점검 | 라운드 ① | 결과를 열지 않고 사전등록 초안의 결함 지적(필수 · 권고) | 세션 상속(opus-5-5 · max) · 초안마다(P3R02 는 2회) | P3R02 `prereg.json::reviewed_drafts` |
+
+#### e-4) 라운드 실행(R 계약 · 파이프라인)
+
+| 코드(키) | 이름 | 단계 | 하는 일 | 모델/노력 · 호출 빈도 | 정본 파일 |
+|---|---|---|---|---|---|
 | (R 계약) | 셀 측정 | 라운드 ② | 사양 → 백테스트(close_t1 · 15bps · epoch 표기) → 권위 등급 | LLM 없음 · 셀당 1회(결과 있으면 skip) · 3-way 병렬 | `ops/rf_cell_worker.R` |
 | (R 계약) | 셀 평가 | 라운드 ③ | 축 감사 + 보는 창 진단 패킷 + 전기간 카드 + 시험 창 | LLM 없음 · 셀당 1회(eval.json 캐시) · 샤딩 K = 여유 메모리 GB ÷ 4(최대 6) | `_lib/round_kit.R` · `_lib/eval_parallel.sh` |
 | 재시작 파이프라인 v2 | 일괄 실행 | ②~④ | Rcpp 사전 컴파일 → 측정 3-way 병렬 ‖ 팩터×월 파티션 캐시 프리페치 → P0R01 셀 평가 샤딩 + 종합 판정 → P2R02 · P1R01 ‖ P3R01 셀 평가 샤딩 + 종합 → P3R02 재핀 센티널 대기 → `pipeline.done` | R · 1회성(10-15 분리 실행) | `_lib/pipeline_v2_20261015.sh`(로그 `_lib/pipeline_v2.log`) |
+
+#### e-5) A 경로 · BOOK
+
+| 코드(키) | 이름 | 단계 | 하는 일 | 모델/노력 · 호출 빈도 | 정본 파일 |
+|---|---|---|---|---|---|
 | `judge` | Judge(PIT 전담) | A 경로 | PIT C1~C15 · 재현 검증 → `judge_verdict_v2`. 등급 재채점 안 함 | Opus/max(10-15 도훈 지시로 xhigh → max · 설계 §10.4 상향안 반영) · `judge_request.eligible.json` pending 일 때만 | `.claude/agents/judge.md` |
 | BOOK writer | BOOK 등록 | A 경로 | A + PIT PASS → 등록. 자동 등록 금지 · 도훈 confirm 뒤 | LLM 없음 · 사건마다 | `02_Infrastructure/book/book_registry.R` |
 | `book-tracker` | BOOK 트래킹 | BOOK 뒤 | 등록 전략을 고정 사양 그대로 재실행 · drift 경보 | Opus/high · `/book` 때 | `.claude/agents/book-tracker.md` |
@@ -176,6 +215,8 @@ P0R01_E2_C4  =  P0 실현 가능성 지도 · 1라운드 · 엔진 E2(2002.06975
 그 밖의 무인 레인: `overlay_audit`(새 팩터 · arm 코드 감사, Opus/xhigh — 이번 라운드 사용 여부 미확인) · `cleaner_distill`(주간 증류, Sonnet/high).
 
 ### f) 판정 용어
+
+#### f-1) 등급 · 점수
 
 | 코드 | 이름 | 단계 | 뜻 | 산출 | 정본 |
 |---|---|---|---|---|---|
@@ -187,6 +228,11 @@ P0R01_E2_C4  =  P0 실현 가능성 지도 · 1라운드 · 엔진 E2(2002.06975
 | `PORT_t` | 포트폴리오 알파 t | 〃 | KOSPI200 대비 순 초과수익의 Newey-West(lag 3) t | 결과 계약 | `measurement-graduation.md` §2 |
 | `t(α)` | β-통제 알파 t | P1R01 | r = α + β·r_bm 회귀의 α t(NW lag 3). 알파 존재 주장은 이것으로만 | `contracts/beta_controlled_alpha.R` | P1R01 prereg |
 | `Calmar` | 위험조정 수익 | 등급 | CAGR ÷ 최대낙폭(월간). 0.64 = 16% ÷ 25% | 결과 계약 | 〃 |
+
+#### f-2) 행동 카드 지표
+
+| 코드 | 이름 | 단계 | 뜻 | 산출 | 정본 |
+|---|---|---|---|---|---|
 | `CDaR` | 조건부 낙폭 위험 | P3 판정 | 낙폭 분포 상위 5% 꼬리 평균(α 0.95) | `behavior_card.R` | `behavior_card.json::cdar_alpha` |
 | 위기 | LT 20/20 위기 | 행동 카드 | KOSPI200 일간 기준 국지 고점 대비 −20% 시작 · 국지 저점 대비 +20% 종료(first passage). 저점 ≤ τ_D → 보는 창 · 고점 > τ_D → 시험 창 | 〃 | `behavior_card.json::crisis_episode_def` |
 | `dd_capture` | 위기 하락 포착 | 〃 | 위기 구간 전략 최대낙폭 ÷ 벤치 최대낙폭(≥ 1 = 시장만큼 또는 더 하락) | 〃 | 〃 |
@@ -195,6 +241,14 @@ P0R01_E2_C4  =  P0 실현 가능성 지도 · 1라운드 · 엔진 E2(2002.06975
 | `dc_strong` | '강함' 누적 포착 문턱 | 〃 | uc_floor 와 KOSPI200 강세→약세 쌍(2000-01~2022-12)에서 도출(새로 정한 숫자 아님) | `bc_dc_strong_max` | `behavior_card.R` |
 | CR `strong·normal·weak·insufficient` | 위기 방어 판정 | 〃 | 아래 목록 | `.bc_verdict` | `behavior_card.json` |
 | MC8 귀속 | 방어 귀속 라벨 | 카드 · 판정 | 아래 목록. 크기 방어 · 노출 방어는 '실력'으로 쓰지 않는다 | `matched_controls.R::mc_attribution` | `matched_controls.json` |
+
+**CR 판정**(위에서부터 먼저 맞는 것): ① insufficient = 위기 2개 미만 ② weak = `dd_capture ≥ 1` 위기가 과반 ③ strong = 누적 포착 ≤ `dc_strong` 위기 과반 ∧ 상승 포착 ≥ 0.55 ∧ 최악 `dd_capture` < 1 ∧ 전략 MDD ≤ 벤치 MDD ④ normal = 나머지.
+**MC8 귀속 라벨**(위기 과반 기준 · 위에서부터): ① `selection_defense`(기전 방어) = 크기 · 노출을 맞춘 무작위 포트 200개의 5% 분위보다 덜 하락 ② `size_defense` = 위가 아니고 노출 매칭 대조보다 덜 하락 ③ `exposure_defense` = 위가 아니고 시장보다 덜 하락 ④ `no_defense` = 시장보다도 덜 하락하지 못함 ⑤ `insufficient` = 위기 2개 미만.
+
+#### f-3) 측정 축 · 판정 절차
+
+| 코드 | 이름 | 단계 | 뜻 | 산출 | 정본 |
+|---|---|---|---|---|---|
 | `τ_D` | 정보 경계 2022-12-31 | 전 단계 | 보는 창(측정 시작~τ_D) = 처방 에이전트 · 선택 규칙 · 교훈. 시험 창(2023-01~) = 등급 · Judge · BOOK · 사람만 | — | lean-loop · `behavior_card.json::tau_d` |
 | `all_hyg_2000_v1` | 현 측정 축(epoch) | 전 단계 | 전 상장 + 위생 · 2000-01-01~ · 롱온리 ≤ 25종 · Σw ≤ 1 · 15bps. 등급은 같은 epoch 끼리만 비교(구 `k200kq150_2005_v1` 과 혼용 금지) | `measurement_axis.R` | `constraint_defaults.json::measurement_axis` |
 | 실효 시작 | MC3 B안 | 측정 | 신호 폭 ≥ 보유 수 × 2 첫 신호일부터 성과 집계 | `ma_effective_start` | `authoritative_remeasure.json::measurement_axis.effective_start` |
@@ -205,10 +259,10 @@ P0R01_E2_C4  =  P0 실현 가능성 지도 · 1라운드 · 엔진 E2(2002.06975
 | `deepen·combine·switch·stop` | 리뷰어의 다음 수 | ④ | 심화(같은 기전 정교화) · 결합 · 전환(새 약점 가설) · 종료(R7) | 리뷰어 | `lane_reviewer/prompt.md` |
 | `close_t1` · 15bps | 체결 · 비용 | ② | 신호 다음 거래일 종가 체결. 등급은 15bps 순비용 판 | 셀 워커 | prereg `measurement` |
 
-**CR 판정**(위에서부터 먼저 맞는 것): ① insufficient = 위기 2개 미만 ② weak = `dd_capture ≥ 1` 위기가 과반 ③ strong = 누적 포착 ≤ `dc_strong` 위기 과반 ∧ 상승 포착 ≥ 0.55 ∧ 최악 `dd_capture` < 1 ∧ 전략 MDD ≤ 벤치 MDD ④ normal = 나머지.
-**MC8 귀속 라벨**(위기 과반 기준 · 위에서부터): ① `selection_defense`(기전 방어) = 크기 · 노출을 맞춘 무작위 포트 200개의 5% 분위보다 덜 하락 ② `size_defense` = 위가 아니고 노출 매칭 대조보다 덜 하락 ③ `exposure_defense` = 위가 아니고 시장보다 덜 하락 ④ `no_defense` = 시장보다도 덜 하락하지 못함 ⑤ `insufficient` = 위기 2개 미만.
 
 ### g) 파일 · 산출물
+
+#### g-1) 사전등록 · 측정
 
 | 파일 | 이름 | 단계 | 담는 것 | 쓰는 주체 | 위치 |
 |---|---|---|---|---|---|
@@ -218,12 +272,22 @@ P0R01_E2_C4  =  P0 실현 가능성 지도 · 1라운드 · 엔진 E2(2002.06975
 | `results/<셀>.json` | 측정 결과 | ② | ok · grade · artifacts 경로 · err(+ .log · .err.log) | 셀 워커 | `<라운드>/results/` |
 | `<시각>_<pid>/` | 측정 산출 디렉터리 | ② | 02_nav · 03_period_returns · 04_holdings · 05_benchmark_returns · authoritative_remeasure.json · analysis_*.csv | `run_paper_replication` | `stage_artifacts/replication/` |
 | `authoritative_remeasure.json` | 권위 기록 | ② | essence_grade · grade_v3(S · 규칙 판) · 측정 축 · 실효 시작. **등급 인용은 여기서만** | 〃 | 산출 디렉터리 |
+
+#### g-2) 평가 · 보고
+
+| 파일 | 이름 | 단계 | 담는 것 | 쓰는 주체 | 위치 |
+|---|---|---|---|---|---|
 | `eval.json` | 셀 평가 | ③ | status(evaluated · axis_violation · not_measured · measure_failed) · axis · visible · test · full. P0R01 판 visible 에는 cdar 없음(CDaR 은 패킷에서) | `rk_eval_cell`(P0R01 은 자체 판) | `<라운드>/results/<셀>/` |
 | `diagnosis_packet.{json,md}` | 보는 창 진단 패킷 | ③ | τ_D 에서 적재를 끊고 만든 성과 · 행동 카드 · MC8 귀속 · 노출 분해 · 위기 귀속 · 구성 프로필. 처방 에이전트에겐 md 만 | `dp_build` | `…/results/<셀>/visible/` |
 | `behavior_card.json` | 전기간 행동 카드 | ③ | 카드 + MC8 대조. test 블록 = 시험 창 · 사람 쪽 | `mc_card` | `…/results/<셀>/full/` |
 | `evaluation.json` | 라운드 판정 | ④ | 사전등록 규칙 기계 적용 결과(+ evaluation_table.csv) | `evaluate.R` | `<라운드>/results/` |
 | `ROUND_REPORT.md` | 라운드 보고서 | ⑤ | 사람 쪽 전기간 표 · 판정 · 다음 할 일 | `close_round.R` · `_lib/close_light_rounds.R` | `stage_artifacts/programs/<P>/<R>/` |
 | `prompt.md · out.md · run.log` | 레인 입출력 | ①④ | 레인 입력(md) · 최종 응답 · rc · 모델 · 노력 | `rx_lane.sh` | `<라운드>/lane_analyst · lane_prescriber · lane_reviewer/` |
+
+#### g-3) 운영 · 캐시 · 레인
+
+| 파일 | 이름 | 단계 | 담는 것 | 쓰는 주체 | 위치 |
+|---|---|---|---|---|---|
 | `night_state/<단계>.done` | 파이프라인 센티널 | ②~④ | `p0_measured` · `v2_prefetch` · `v2_measured` · `p3_measured` · `p0_cells_evaluated` · `p0_evaluated` · `p2r02_evaluated` · `p1r01_evaluated` · `p3r01_evaluated` · `p3r02_repinned` · `pipeline` · `p3r02_measured` | 파이프라인 · measure.sh · 세션 | `04_Research/programs/_lib/night_state/` |
 | `precheck.json` · `<셀>.fp_start/.fp_end` | P3R02 측정 전 대조 · 데이터 지문 | ② | 사양 · 운영 경로 md5 · quadprog · R 판 · RAWDATA · 벤치 캐시 크기 · mtime | `precheck.R` · `measure.sh` | `P3R02/results/` |
 | `factor_db_partcache/v1/<팩터>/<월>.rds` | 팩터×월 파티션 캐시 | ② | `load_month_factors` 의 팩터 지정 읽기 결과(무효화 키 = 월 파일명 · 크기 · mtime · 컬럼) | `factor_db_connector.R` | `.cache/`(= `C:/qm_cache`) |
