@@ -55,6 +55,8 @@
 | 요청 | 먼저 볼 곳 |
 |---|---|
 | 지금 상태 · 다음 할 일 | `/qvest` 부팅 · `Rscript -e "source('02_Infrastructure/programs/program_registry.R'); writeLines(pr_status_lines())"` |
+| 셀 · 라운드 · 레인 코드의 뜻 · 표준 용어 | `00_Lawbook/GLOSSARY.md`(1계층 용어집 — 단계 · 하는 일 · 담당 에이전트 · 모델/노력) |
+| 인쇄용 PDF 만들기 | `Rscript 00_Lawbook/tools/md_to_print_pdf.R <in.md>` · 서식 규칙 `02_Infrastructure/docs/rules/pdf-output-style.md`(현대하모니 L · M · B) |
 | 1계층 라운드 진행 · 처방 루프 | research-program SKILL · `04_Research/programs/<프로그램>/<라운드>/` · 사전등록 `stage_artifacts/programs/` |
 | 논문 충실구현 | alpha-search SKILL · 요청 `06_Registry/replication_request.json` · 레인 `02_Infrastructure/ops/rf_replication_auto.sh` |
 | 등급 · 성과 수치 | 산출 디렉터리의 `authoritative_remeasure.json`(손계산 금지) · 행동 카드 `behavior_card.json` |

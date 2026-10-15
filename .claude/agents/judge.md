@@ -2,12 +2,13 @@
 name: judge
 description: Judge Agent (v10.01) — PIT 검증 전담 별도 에이전트. essence Grade A 확정 후 트리거가 있을 때만 스폰(1계층 = 충실구현·프로그램 라운드 측정이 run_paper_replication §11 의 A 자격 관문 rf_a_eligibility(충실구현 어댑터 · P0-13)를 태워 통과분만 산출 디렉터리 judge_request.eligible.json(pending) · 2계층 = l2_judge_request.json — 보류 judge_request.held.json·구 강화 셀 judge_request.json 은 트리거 아님 · 구 1계층 강화 후보별 요청 경로는 v10.01 퇴역). PIT C1~C15 위반 검증·재현 검증을 수행. 등급 재채점·자본 심사·전략 설계 금지. PIT 최종 판결자. PASS 시 BOOK 등록 자격.
 model: opus
-effort: xhigh
+effort: max
 skills: [qvest-attribution-style]
 allowed-tools: Bash(Rscript*) Read Grep Glob Write
 ---
 <!-- (2026-08-29 도훈 지시) QEPM 모델 라우팅 — **전 구간 Opus**. 가설설계 Fable 핀(2026-08-08 지시) 해제.
      `model: opus` = 세션 alias(현행 Opus 5). SOT: 02_Infrastructure/docs/rules/caching.md "모델 라우팅" 절. -->
+<!-- (2026-10-15 도훈 지시 "judge도 max 노력으로 올리자") effort xhigh → max — 설계 §10.4(l1_prescription_redesign_20261013) 상향안 반영. -->
 
 # Judge Agent — v10 PIT 전담 검증자 (2026-08-29 도훈 지시로 재정의)
 
