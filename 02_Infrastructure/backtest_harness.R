@@ -64,7 +64,7 @@ tryCatch(
     "02_Infrastructure/portfolio/weight_engine.cpp"
   )
   if (file.exists(cpp_path)) {
-    Rcpp::sourceCpp(cpp_path)
+    Rcpp::sourceCpp(cpp_path, cacheDir = file.path(Sys.getenv("CLAUDE_PROJECT_DIR", Sys.getenv("QM_ROOT", ".")), ".cache", "rcpp_build"))   # 영구 캐시(2026-10-15 속도 — 프로세스마다 재컴파일 ≈3.5초 · 소스 해시가 같으면 재사용)
     cat("[backtest_harness] weight_engine.cpp loaded (Rcpp).\n")
     TRUE
   } else {
@@ -87,7 +87,7 @@ cat("[backtest_harness] Loaded.\n")
     "02_Infrastructure/portfolio/sim_engine_nav.cpp"
   )
   if (file.exists(nav_cpp_path)) {
-    Rcpp::sourceCpp(nav_cpp_path)
+    Rcpp::sourceCpp(nav_cpp_path, cacheDir = file.path(Sys.getenv("CLAUDE_PROJECT_DIR", Sys.getenv("QM_ROOT", ".")), ".cache", "rcpp_build"))   # 영구 캐시(2026-10-15 속도)
     cat("[backtest_harness] sim_engine_nav.cpp loaded (Rcpp NAV 4x speedup).\n")
     TRUE
   } else {

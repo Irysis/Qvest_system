@@ -211,7 +211,10 @@ mc_size_basket <- function(H, R, cfg, universe) {
   A <- data.table(exec_date = ex, asof = cal[ifelse(i >= 1L, i, NA_integer_)])
   if (any(A$asof >= A$exec_date, na.rm = TRUE)) stop("[matched_controls] PIT — as-of 가 집행일 이후다")
   col <- function(nm) if (nm %in% names(R)) R[[nm]] else rep(NA_real_, nrow(R))
-  sel <- R$Date %in% A$asof[!is.na(A$asof)]
+  ## ★정수 일 번호로 비교한다(2026-10-15 속도 수리 · 결과 비트 동일) — Date 의 %in% · match 는 양쪽을 문자열로 서식화(mtfrm →
+  ##   as.character.Date → sprintf)해서 1,200만 행을 매번 문자열로 바꿨다. 같은 날 ⇔ 같은 일 번호(정수 값 Date)라 고른 행이 같다.
+  if (!inherits(R$Date, "Date")) stop("[matched_controls] R$Date 는 Date 여야 한다 — 정수 일 번호 비교(POSIXct 면 초 단위라 아무 행도 안 골라진다)")
+  sel <- as.integer(R$Date) %in% as.integer(A$asof[!is.na(A$asof)])
   SZ <- data.table(Date = R$Date[sel], Ticker = R$Ticker[sel], Size = R$Size[sel],
                    K200 = col("K200")[sel], KQ150 = col("KQ150")[sel], TradingHalt = col("TradingHalt")[sel])
   if (identical(universe, "ALL_HYG")) set(SZ, j = "HYG", value = .mc_hyg_col(R)[sel])   # MC1 — 위생 멤버십(측정 유니버스와 같게)
@@ -278,14 +281,21 @@ mc_size_basket <- function(H, R, cfg, universe) {
   W <- win[exec_date %in% exs][order(date)]
   if (!nrow(W)) return(NULL)
   RT <- R[Ticker %in% unique(univ$Ticker) & Date >= min(W$date) & Date <= max(W$date), .(Ticker, Date, Ret)]
+  ## ★속도 수리(2026-10-15 · 결과 비트 동일) — 구판 `RT[Date %in% dd & Ticker %in% tk]` 는 리밸마다(≈300회) RT 전체(수백만~천만 행)의
+  ##   Date 를 문자열로 서식화했다(mtfrm) — 평가 시간의 95%(프로파일 실측 · 칸당 ≈ 90분). 정수 일 번호로 먼저 날짜를 좁히고(부분집합의
+  ##   부분집합 = 원래 행 순서 보존) 그 안에서 종목을 거른다 → 고른 행 · 순서가 구판과 같다. 난수 호출(sample.int) 순서는 손대지 않는다.
+  if (!inherits(RT$Date, "Date") || !inherits(W$date, "Date"))
+    stop("[matched_controls] 날짜 열은 Date 여야 한다 — 정수 일 번호 비교(POSIXct 면 초 단위라 아무 행도 안 골라진다)")
+  RT[, .di := as.integer(Date)]
   out <- .mc_with_seed(seed, lapply(exs, function(e) {
     dd <- W[exec_date == e]$date
     if (!length(dd)) return(NULL)
     hk <- hold[exec_date == e]; uk <- univ[exec_date == e]
     tk <- unique(uk$Ticker)
-    sub <- RT[Date %in% dd & Ticker %in% tk]
+    ddi <- as.integer(dd)
+    sub <- RT[.di %in% ddi][Ticker %in% tk]
     Rm <- matrix(0, length(dd), length(tk))
-    if (nrow(sub)) Rm[cbind(match(sub$Date, dd), match(sub$Ticker, tk))] <- ifelse(is.finite(sub$Ret), sub$Ret, 0)
+    if (nrow(sub)) Rm[cbind(match(sub$.di, ddi), match(sub$Ticker, tk))] <- ifelse(is.finite(sub$Ret), sub$Ret, 0)
     cum <- apply(1 + Rm, 2, cumprod)
     if (!is.matrix(cum)) cum <- matrix(cum, nrow = length(dd))
     Wm <- matrix(0, length(tk), n)

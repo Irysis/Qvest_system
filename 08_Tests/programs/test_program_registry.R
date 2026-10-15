@@ -53,6 +53,35 @@ chk("같은 round_id 결과는 덮어 쓴다(한 줄 유지)", length(r) == 1L &
 chk("결과 뒤 사전등록 변경은 거부(위반 주입)",
     errs(pr_record_round("P0_FRONTIER", list(round_id = "R1", prereg = "y/other.json"), path = tmp)))
 
+cat("\n=== C2. 사전등록 내용(md5) 가드 — 경로가 같아도 내용 교체를 잰다(2026-10-15 권고 수용) ===\n")
+sbr <- file.path(tempdir(), "pr_md5_root"); dir.create(file.path(sbr, "06_Registry"), recursive = TRUE, showWarnings = FALSE)
+file.copy(tmp, file.path(sbr, "06_Registry/research_programs.json"), overwrite = TRUE)
+pf <- file.path(sbr, "pre/R9.json"); dir.create(dirname(pf), showWarnings = FALSE)
+writeLines('{"v":1}', pf); m1 <- unname(tools::md5sum(pf))
+pr_record_round("P1_RETURN", list(round_id = "R9", prereg = "pre/R9.json", prereg_md5 = m1, status = "registered"), root = sbr)
+writeLines('{"v":2}', pf); m2 <- unname(tools::md5sum(pf))
+chk("같은 경로 · 다른 md5 · supersedes 없음 → 거부(위반 주입)",
+    errs(pr_record_round("P1_RETURN", list(round_id = "R9", prereg = "pre/R9.json", prereg_md5 = m2, status = "registered"), root = sbr)))
+chk("supersedes$md5 가 옛 md5 와 다르면 거부(위반 주입)",
+    errs(pr_record_round("P1_RETURN", list(round_id = "R9", prereg = "pre/R9.json", prereg_md5 = m2, status = "registered",
+                                           supersedes = list(md5 = "deadbeef", reason = "x")), root = sbr)))
+ok_sup <- !errs(pr_record_round("P1_RETURN", list(round_id = "R9", prereg = "pre/R9.json", prereg_md5 = m2, status = "registered",
+                                                  supersedes = list(md5 = m1, reason = "측정 전 대체")), root = sbr))
+r9 <- Filter(function(x) identical(x$round_id, "R9"), pr_get(pr_load(root = sbr), "P1_RETURN")$rounds)[[1]]
+chk("결과 전 · supersedes$md5 = 옛 md5 → 대체 허용 · 이력(from → to) 기록 · supersedes 필드는 남기지 않음",
+    ok_sup && identical(r9$prereg_md5, m2) && length(r9$supersede_history) == 1L && identical(r9$supersede_history[[1]]$from_md5, m1) && is.null(r9$supersedes))
+pr_record_round("P1_RETURN", list(round_id = "R9", prereg = "pre/R9.json", prereg_md5 = m2, status = "complete", verdict = "x"), root = sbr)
+chk("결과 · 종료가 기록된 뒤 md5 교체는 supersedes 가 있어도 거부(위반 주입)",
+    errs(pr_record_round("P1_RETURN", list(round_id = "R9", prereg = "pre/R9.json", prereg_md5 = m1, status = "complete",
+                                           supersedes = list(md5 = m2, reason = "x")), root = sbr)))
+writeLines('{"v":3}', pf)
+chk("등록 뒤 파일이 바뀌면 결과 기록 거부(파일 실제 md5 ≠ 기록 md5 · 위반 주입)",
+    errs(pr_record_round("P1_RETURN", list(round_id = "R9", prereg = "pre/R9.json", status = "complete", verdict = "y"), root = sbr)))
+writeLines('{"v":2}', pf)
+chk("파일이 기록 md5 와 같으면 결과 기록 허용(음성 대조)",
+    !errs(pr_record_round("P1_RETURN", list(round_id = "R9", prereg = "pre/R9.json", status = "complete", verdict = "y"), root = sbr)))
+unlink(sbr, recursive = TRUE)
+
 cat("\n=== D. 상태 · 선행 조건 ===\n")
 chk("어휘 밖 상태는 거부(위반 주입)", errs(pr_set_status("P1_RETURN", "running", path = tmp)))
 reg <- pr_load(path = tmp)

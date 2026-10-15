@@ -5,6 +5,17 @@ suppressPackageStartupMessages({ library(data.table); library(jsonlite) })
 `%||%` <- function(a, b) if (is.null(a) || length(a) == 0L) b else a
 rk_md5 <- function(f) unname(as.character(tools::md5sum(f)))
 
+## 칸 평가 분할(병렬 · 2026-10-15) — 인자 `--shard=i/K` 가 있으면 칸 목록의 i 번째 몫(1-based · 교차 배정 = 칸 순서상
+##   (j−1) mod K = i−1 — 엔진 · 부품이 몫마다 고르게 섞인다)만 돌려준다. 없으면 전부. 몫들은 서로 겹치지 않고 합치면 전부다.
+##   칸 평가는 칸마다 results/<code>/ 에만 쓰므로 몫끼리 경합하지 않는다. 종합 판정(--cells-only 아님)에는 쓰지 않는다.
+rk_shard <- function(cells, args = commandArgs(trailingOnly = TRUE)) {
+  a <- grep("^--shard=", args, value = TRUE)
+  if (!length(a)) return(cells)
+  v <- suppressWarnings(as.integer(strsplit(sub("^--shard=", "", a[1]), "/", fixed = TRUE)[[1]]))
+  if (length(v) != 2L || anyNA(v) || v[2] < 1L || v[1] < 1L || v[1] > v[2]) stop("[round_kit] --shard=i/K 형식 오류: ", a[1])
+  cells[(seq_along(cells) - 1L) %% v[2] == (v[1] - 1L)]
+}
+
 ## 칸 1개 측정 — 사양 md5 = 사전등록 값이어야 한다(R2) · 결과가 있으면 건너뜀
 rk_measure_cell <- function(root, round_dir, prereg_path, code) {
   spec <- file.path(round_dir, "specs", paste0(code, ".json"))

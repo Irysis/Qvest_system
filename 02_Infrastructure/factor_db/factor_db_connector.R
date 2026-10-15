@@ -239,6 +239,55 @@ FACTOR_REG_PATH <- file.path(FACTOR_DB_DIR, "factor_registry.json")
 
 
 #==============================================================================
+# 0b. 월 파티션 읽기 (v2.5 — 2026-10-15 성능 수정 · 결과 동일)
+#==============================================================================
+# 월 파일의 Arrow 스키마 메타데이터("r")에 빌더가 쓴 data.table 자동 인덱스 속성(index/__Factor_Name 등 — 파일 전체 행 수
+# 길이의 정수 순열, 64만~88만)이 직렬화돼 있다. 구 경로(open_dataset → filter → collect)는 호출마다 이 메타데이터를
+# 역직렬화·재직렬화했고(측정 1셀 팩터 적재 ~200s 의 대부분 — 10-15 Rprof) 필터 뒤 테이블에 행 수가 다른 stale index 를
+# 붙여 반환했다(load_month_factors 의 행 서브셋에서 제거돼 결과에는 영향 없음). 신 경로: Arrow Table 로 읽기(mmap 없음) →
+# R 메타데이터 제거 → Arrow 컴퓨트 커널(is_in)로 predicate 필터 → 필터된 행만 R 로 변환.
+# 결과 동일성 = 08_Tests/factor_db/test_fdc_read_fastpath.R(load_month_factors 구 경로 대조 identical · 속성 포함).
+.fdc_read_month <- function(fpath, req_cols, factor_names = NULL) {
+  ## mmap = FALSE — 메모리 매핑 핸들을 유지하지 않는다(Windows 는 매핑된 파일의 덮어쓰기를 거부 → 측정 프로세스가 월간 DB 재빌드를 막지 않게)
+  tb <- read_parquet(fpath, col_select = c(all_of(req_cols), any_of("Date")), as_data_frame = FALSE, mmap = FALSE)
+  tb$metadata$r <- NULL
+  if (length(factor_names)) {
+    vs <- Array$create(factor_names)
+    ## dplyr 바인딩(%in% → is_in)과 같은 의미론 — value_set 을 열 타입으로 캐스트(실패 시 원형) · null 입력은 불일치(skip_nulls)
+    fty <- tb$schema$GetFieldByName("Factor_Name")$type
+    if (!vs$type$Equals(fty)) vs <- tryCatch(vs$cast(fty), error = function(e) vs)
+    tb <- tb$Filter(call_function("is_in", tb$Factor_Name, options = list(value_set = vs, skip_nulls = TRUE)))
+  }
+  as.data.table(as.data.frame(tb))
+}
+
+# 팩터×월 파티션 캐시 — 같은 팩터를 여러 셀·여러 라운드가 같은 월마다 반복해 읽는다(P0R01 21셀 중 16셀이 DB 팩터 사용).
+# 캐시 엔트리 = .fdc_read_month 반환값(값·행 순서 동일)의 RDS. 무효화 키 = (월 파일명 · 크기 · mtime · 컬럼 목록) — 월 파일이
+# 재빌드되면 크기·mtime 이 바뀌어 자동 무효화. 쓰기 = 같은 디렉터리 임시 파일 → atomic rename(병렬 워커 안전 · 실패 시 무시하고
+# 원 경로 결과 반환). 비활성화 = 환경변수 QVEST_FDB_PARTCACHE=0. 팩터 지정 경로만 캐시(전 팩터 읽기는 DB 복제가 된다).
+# C15: 소비자는 여전히 load_month_factors() 만 경유 — 파티션 캐시는 커넥터 경계 안쪽의 materialized 사본이다.
+.fdc_partcache_dir <- function() file.path(CACHE_DIR, "factor_db_partcache", "v1")
+.fdc_read_month_cached <- function(fpath, req_cols, factor_names = NULL) {
+  fkey <- paste(sort(unique(factor_names)), collapse = "+")
+  if (!length(factor_names) || identical(Sys.getenv("QVEST_FDB_PARTCACHE", "1"), "0") ||
+      nchar(fkey) > 150L || grepl("[^A-Za-z0-9_.+-]", fkey))
+    return(.fdc_read_month(fpath, req_cols, factor_names))
+  fi <- file.info(fpath, extra_cols = FALSE)
+  ikey <- sprintf("%s|%.0f|%.6f|%s", basename(fpath), fi$size, as.numeric(fi$mtime), paste(req_cols, collapse = ","))
+  path <- file.path(.fdc_partcache_dir(), fkey, sub("\\.parquet$", ".rds", basename(fpath)))
+  hit <- if (file.exists(path)) tryCatch(readRDS(path), error = function(e) NULL) else NULL
+  if (is.list(hit) && identical(hit$ikey, ikey) && is.data.frame(hit$dt)) return(as.data.table(hit$dt))
+  dt <- .fdc_read_month(fpath, req_cols, factor_names)
+  tryCatch({
+    dir.create(dirname(path), recursive = TRUE, showWarnings = FALSE)
+    tmp <- tempfile(pattern = ".part_", tmpdir = dirname(path), fileext = ".tmp")
+    saveRDS(list(ikey = ikey, dt = as.data.frame(dt)), tmp, compress = FALSE)
+    if (!suppressWarnings(file.rename(tmp, path))) unlink(tmp)
+  }, error = function(e) NULL)
+  dt
+}
+
+#==============================================================================
 # 1. load_month_factors()
 #==============================================================================
 
@@ -286,30 +335,15 @@ load_month_factors <- function(sig_date, coverage_min = 0.05, factor_names = NUL
   }
 
   # v2.2: when caller requests specific factors, push the Factor_Name filter
-  # through Arrow before collect(). This keeps the PIT-safe connector boundary
+  # through Arrow before conversion. This keeps the PIT-safe connector boundary
   # while avoiding full monthly factor DB materialization for combo runners.
   # v2.4: Date 는 **선택(any_of)**, 나머지는 필수(all_of). 구 vintage 파케이가 Date 를
   # 안 담고 있어도 로드는 살고, as-of 만 NA 로 정직하게 결손 보고된다(소비자 fail-closed).
   # 필수 컬럼에 any_of 를 쓰면 결손이 조용히 통과하므로 섞지 않는다.
+  # v2.5 (2026-10-15 성능 수정 · 결과 동일): 읽기 = .fdc_read_month(Arrow Table · R 메타데이터 제거 · Arrow predicate 필터)
+  #   + 팩터 지정 경로의 팩터×월 파티션 캐시(.fdc_read_month_cached). 근거·테스트는 두 함수 머리 주석.
   .req_cols <- c("Ticker", "Factor_Name", "Z_Score", "Coverage")
-  dt <- if (!is.null(factor_names) && length(factor_names)) {
-    as.data.table(
-      open_dataset(fpath, format = "parquet") %>%
-        select(all_of(.req_cols), any_of("Date")) %>%
-        filter(Factor_Name %in% factor_names) %>%
-        collect()
-    )
-  } else {
-    # v2.1: col_select — only columns needed downstream (Coverage filter + direction
-    # alignment). Raw_Value/Z_Sector/Rank_Pct unused here → IO/메모리 절감.
-    # v2.4: Date 재포함 — 패널 as-of(실제 vintage) 보고용. 월당 단일값 date32 라
-    # IO 비용 실측 무의미(콜드 139→150ms/file, 웜 역전 — 측정 오차 내), 대신
-    # 소비자의 라벨 합성을 없앤다.
-    as.data.table(read_parquet(
-      fpath,
-      col_select = c(all_of(.req_cols), any_of("Date"))
-    ))
-  }
+  dt <- .fdc_read_month_cached(fpath, .req_cols, factor_names)
 
   # v2.4 (2026-08-02): 패널 as-of = 월 파일의 Date 컬럼(빌더가 기록한 계산 기준일 =
   # 거래일 월말). 필터 이전 값으로 확정한다 — coverage/factor 필터로 0행이 돼도

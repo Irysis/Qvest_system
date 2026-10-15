@@ -200,6 +200,14 @@ pr_consume_key <- function(id, key, consumer = "", root = NULL, path = NULL) {
 }
 
 #' 라운드 기록 — round_id · prereg(사전등록 경로) 필수. 결과는 나중에 같은 round_id 로 덮어 쓴다
+#'   ★R2 — 경로만이 아니라 **내용(md5)**도 잰다(2026-10-15 도훈 권고 수용 · 구판은 경로만 비교해 같은 경로의 내용 교체를 못 막았다):
+#'   ① 기록된 prereg_md5 와 다른 md5 로 갱신 = 사전등록 교체 — 결과 전(status = registered)이고 round$supersedes$md5 가 옛 md5 와 같을 때만
+#'   ② 결과 · 종료 기록(status ≠ registered)은 그 경로 파일의 실제 md5 가 기록된 md5 와 같아야 한다(등록 뒤 파일이 바뀌었으면 거부)
+.pr_file_md5 <- function(root, rel) {
+  if (is.null(rel) || !nzchar(rel)) return(NA_character_)
+  p <- if (grepl("^([A-Za-z]:|/)", rel)) rel else file.path(.pr_root(root), rel)
+  if (file.exists(p)) unname(as.character(tools::md5sum(p))) else NA_character_
+}
 pr_record_round <- function(id, round, root = NULL, path = NULL) {
   if (is.null(round$round_id) || !nzchar(round$round_id)) stop("[program_registry] round_id 없음")
   if (is.null(round$prereg) || !nzchar(round$prereg)) stop("[program_registry] 사전등록 경로(prereg) 없음 — R2: 측정 전 등록")
@@ -211,6 +219,23 @@ pr_record_round <- function(id, round, root = NULL, path = NULL) {
   if (is.na(j)) R <- c(R, list(round)) else {
     old <- R[[j]]
     if (!identical(old$prereg, round$prereg)) stop("[program_registry] 사전등록을 결과 뒤에 바꿀 수 없다(R2): ", round$round_id)
+    om <- as.character(.pr_or(old$prereg_md5, NA_character_))[1]; nm <- as.character(.pr_or(round$prereg_md5, NA_character_))[1]
+    if (!is.na(om) && !is.na(nm) && !identical(om, nm)) {
+      has_result <- !identical(as.character(.pr_or(old$status, "registered"))[1], "registered")
+      if (has_result) stop("[program_registry] 결과 · 종료가 기록된 라운드의 사전등록 내용(md5)을 바꿀 수 없다(R2): ", round$round_id)
+      sp <- as.character(.pr_or(round$supersedes$md5, NA_character_))[1]
+      if (!identical(sp, om)) stop("[program_registry] 사전등록 내용(md5)이 바뀌었다 — 결과 전 대체는 supersedes$md5 = 옛 md5 를 적어야 한다(R2): ", round$round_id)
+      round$supersede_history <- c(.pr_or(old$supersede_history, list()),
+                                   list(list(from_md5 = om, to_md5 = nm, at = round$recorded_at, reason = .pr_or(round$supersedes$reason, ""))))
+      round$supersedes <- NULL
+    }
+    st_new <- as.character(.pr_or(round$status, .pr_or(old$status, "registered")))[1]
+    if (!identical(st_new, "registered")) {
+      want <- if (!is.na(nm)) nm else om
+      have <- .pr_file_md5(root, round$prereg)
+      if (!is.na(want) && !is.na(have) && !identical(want, have))
+        stop("[program_registry] 사전등록 파일이 등록 뒤 바뀌었다(기록 md5 ", substr(want, 1, 8), " ≠ 파일 ", substr(have, 1, 8), ") — 결과를 기록하지 않는다(R2): ", round$round_id)
+    }
     R[[j]] <- modifyList(old, round)
   }
   reg$programs[[i]]$rounds <- R

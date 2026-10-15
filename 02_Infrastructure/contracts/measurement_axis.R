@@ -177,7 +177,8 @@ ma_signal_coverage <- function(dt, RAWDATA = NULL, basis = "holdings", breadth =
   }
   if (!nrow(br)) return(list(status = "empty", basis = basis))
   if (!is.null(RAWDATA) && all(c("K200", "KQ150") %in% names(RAWDATA))) {
-    un <- RAWDATA[Date %in% br$Date & (K200 %in% c(1, TRUE) | KQ150 %in% c(1, TRUE)), list(universe_n = .N), by = Date]
+    if (!inherits(RAWDATA$Date, "Date") || !inherits(br$Date, "Date")) stop("[measurement_axis] 날짜 열은 Date 여야 한다(정수 일 번호 비교)")
+    un <- RAWDATA[as.integer(Date) %in% as.integer(br$Date) & (K200 %in% c(1, TRUE) | KQ150 %in% c(1, TRUE)), list(universe_n = .N), by = Date]   # 정수 일 번호(2026-10-15 속도 · 결과 동일 — Date %in% 은 전 행 문자열 서식화)
     br <- merge(br, un, by = "Date", all.x = TRUE)
   } else br[, universe_n := NA_integer_]
   br[, yr := format(Date, "%Y")]

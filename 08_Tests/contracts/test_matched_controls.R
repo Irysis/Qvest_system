@@ -291,6 +291,31 @@ chk("MA2 러너가 주입한 RAWDATA(K200_IDX 존재)는 K200 을 위생 멤버�
 chk("MA3 위생 멤버십(HYG · 주입 표식)이 없으면 멈춘다 — 위생 없는 전 종목으로 조용히 바뀌지 않는다",
     inherits(tryCatch(mc_size_basket(HF, copy(RAW), mcfg, "ALL_HYG"), error = function(e) e), "error"))
 
+cat("\n=== S. 속도 수리 동치(2026-10-15) — 정수 일 번호 비교 = 구판 Date 비교(출력 전체 identical) ===\n")
+## 구판 = 지금 소스를 역치환해 재구성(Date %in% · match(Date)) — 치환 성사를 단정한 뒤 같은 입력에서 출력 전체를 비교한다
+src_mc <- paste(readLines(file.path(ROOT, "02_Infrastructure/contracts/matched_controls.R"), warn = FALSE, encoding = "UTF-8"), collapse = "\n")
+rev_pairs <- list(c("sel <- as.integer(R$Date) %in% as.integer(A$asof[!is.na(A$asof)])", "sel <- R$Date %in% A$asof[!is.na(A$asof)]"),
+                  c("sub <- RT[.di %in% ddi][Ticker %in% tk]", "sub <- RT[Date %in% dd & Ticker %in% tk]"),
+                  c("Rm[cbind(match(sub$.di, ddi), match(sub$Ticker, tk))]", "Rm[cbind(match(sub$Date, dd), match(sub$Ticker, tk))]"))
+src_old <- src_mc; hit_all <- TRUE
+for (p in rev_pairs) { hit_all <- hit_all && grepl(p[1], src_old, fixed = TRUE); src_old <- sub(p[1], p[2], src_old, fixed = TRUE) }
+if (!hit_all) chk("S0 역치환 대상 문장이 소스에 없다 — 재조준", FALSE) else {
+  Eold <- new.env(parent = globalenv()); eval(parse(text = src_old), envir = Eold)
+  hB <- mkH(function(d) setNames(rep(1 / 90, 90), TK[11:100]))
+  hP <- mkH(function(d) setNames(rep(1 / 9, 9), PICK))
+  Sb <- eng(hB); Bb <- BM_ALL[date %in% Sb$date]; Sp <- eng(hP); Bp <- BM_ALL[date %in% Sp$date]
+  new_b <- mc_controls(hB, Sb, Bb, RAW, mcfg, "close_t1", "K200_KQ150"); old_b <- Eold$mc_controls(hB, Sb, Bb, RAW, mcfg, "close_t1", "K200_KQ150")
+  new_p <- mc_controls(hP, Sp, Bp, RAW, mcfg, "close_t1", "K200_KQ150"); old_p <- Eold$mc_controls(hP, Sp, Bp, RAW, mcfg, "close_t1", "K200_KQ150")
+  chk("S1 무선택 크기 바스켓 — 신판 출력 = 구판 출력(identical · 플라시보 경로 · 바스켓 · 진단 전부)", identical(new_b, old_b))
+  chk("S2 선택 전략(PICK) — 신판 출력 = 구판 출력(identical)", identical(new_p, old_p))
+  chk("S3 동치 검사가 빈 비교가 아니다 — 플라시보 경로가 실제로 만들어졌다(행 > 0 · 열 = placebo_n)",
+      is.matrix(new_p$placebo$P) && nrow(new_p$placebo$P) > 0L && ncol(new_p$placebo$P) == mcfg$placebo_n)
+  ## S4 위반 주입 — 날짜가 POSIXct 로 들어오면 정수 비교가 초 단위라 아무 행도 안 골라진다 → 조용히 지나가지 않고 멈춘다
+  RAWp <- copy(RAW)[, Date := as.POSIXct(Date)]
+  e4 <- tryCatch({ mc_size_basket(hB, RAWp, mcfg, "K200_KQ150"); "no_error" }, error = function(e) conditionMessage(e))
+  chk("S4 POSIXct 날짜 → 크기 분위 단계에서 이름을 부르고 멈춘다(침묵 0행 금지)", grepl("Date 여야", e4, fixed = TRUE), e4)
+}
+
 cat(sprintf("\n== matched_controls: PASS %d · FAIL %d ==\n", PASS, FAIL))
 cat(sprintf('{"test":"matched_controls","pass":%d,"fail":%d,"total":%d}\n', PASS, FAIL, PASS + FAIL))   # 배터리 요약 계약(run_all_hooks.sh _last_summary_json)
 if (FAIL > 0L) quit(status = 1L)

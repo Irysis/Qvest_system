@@ -17,7 +17,8 @@ BCFG <- file.path(ROOT, pre$behavior_card_cfg$path)
 if (!identical(rk_md5(BCFG), pre$behavior_card_cfg$md5)) stop("[P3R01 평가] 행동 카드 설정 사본 변경")
 TAU <- as.Date(pre$tau_d)
 env <- new.env(); env$E <- .dp_deps(ROOT); env$BCFG_L <- env$E$bc_cfg(ROOT, path = BCFG); env$raw <- NULL
-EVS <- lapply(pre$cells, function(cl) rk_eval_cell(ROOT, RD, cl, env, TAU)); names(EVS) <- vapply(pre$cells, function(z) z$code, character(1))
+CELLS <- if (CELLS_ONLY) rk_shard(pre$cells) else pre$cells   # 병렬 칸 평가(2026-10-15 · _lib/eval_parallel.sh) — 종합 판정은 전부
+EVS <- lapply(CELLS, function(cl) rk_eval_cell(ROOT, RD, cl, env, TAU)); names(EVS) <- vapply(CELLS, function(z) z$code, character(1))
 n_done <- sum(vapply(EVS, function(e) e$status %in% c("evaluated", "axis_violation"), logical(1)))
 cat(sprintf("[P3R01 평가] 칸 평가 %d/%d\n", n_done, length(EVS)))
 if (CELLS_ONLY) quit(status = 0)

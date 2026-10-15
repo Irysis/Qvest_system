@@ -585,7 +585,8 @@ run_paper_replication <- function(strategy_name, strategy_idea, factor_engine_pa
     # ALL_HYG = 1-c 에서 주입한 위생 멤버십이 K200 에 실려 있다(주입 표식 K200_IDX 없으면 처치 미전달 — 멈춘다)
     if (identical(universe, "ALL_HYG") && !"K200_IDX" %in% names(RAWDATA))
       stop("[replication] universe=ALL_HYG 인데 측정 축 주입 표식(K200_IDX) 없음 — 처치 미전달")
-    .mem <- unique(RAWDATA[Date %in% unique(dt$Date) & (K200 == TRUE | KQ150 == TRUE),
+    if (!inherits(RAWDATA$Date, "Date") || !inherits(dt$Date, "Date")) stop("[replication] 날짜 열은 Date 여야 한다(정수 일 번호 비교)")
+    .mem <- unique(RAWDATA[as.integer(Date) %in% as.integer(unique(dt$Date)) & (K200 == TRUE | KQ150 == TRUE),   # 정수 일 번호(2026-10-15 속도 · 결과 동일)
                            .(Date, Ticker)])
     n0 <- uniqueN(dt$Ticker)
     out <- merge(dt, .mem, by = c("Date", "Ticker"))

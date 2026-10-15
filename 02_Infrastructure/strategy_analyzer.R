@@ -37,7 +37,8 @@ if (!exists("rolling_sharpe_cpp")) {
     }
     .sa_cpp_path <- file.path(.sa_infra_dir, "hurdle_gate_perf.cpp")
     if (file.exists(.sa_cpp_path)) {
-      Rcpp::sourceCpp(.sa_cpp_path, verbose = FALSE, rebuild = FALSE)
+      Rcpp::sourceCpp(.sa_cpp_path, verbose = FALSE, rebuild = FALSE,   # 영구 빌드 캐시(2026-10-15 성능 — backtest_harness 와 같은 디렉터리 · 소스 해시가 같으면 재사용)
+                      cacheDir = file.path(Sys.getenv("CLAUDE_PROJECT_DIR", Sys.getenv("QM_ROOT", ".")), ".cache", "rcpp_build"))
       cat("[strategy_analyzer] Rcpp 가속 로드 완료\n")
     }
   }, error = function(e) {
@@ -122,6 +123,22 @@ run_analysis <- function(sim, FACTORS, RAWDATA, BM_DT,
   data.table::setindexv(RAWDATA, c("Date", "Ticker"))
   gc(verbose = FALSE)
 
+  ## 날짜 구간 행 조회(2026-10-15 성능 수정 · 결과 동일) — IC · FMB 루프가 신호일마다 `Date >= a & Date <= b & Ticker %in% x`
+  ##   full scan(수백만 행 × 신호일 수 · 측정 1셀 run_analysis 68s 의 대부분)을 하던 것을, 정수 일 번호를 한 번 정렬해 두고
+  ##   binary search 로 구간 행 번호를 찾은 뒤 원래 행 순서로 되돌린다(sort). 같은 행 집합 · 같은 행 순서 → by 그룹 순서와
+  ##   prod 곱셈 순서까지 동일. 정수 일 번호 전제(Date 가 정수값)를 먼저 확인한다 — 아니면 중단(조용한 근사 금지).
+  .rd_di <- as.integer(RAWDATA$Date)
+  if (!inherits(RAWDATA$Date, "Date") || any(.rd_di != unclass(RAWDATA$Date), na.rm = TRUE))
+    stop("[analyzer] RAWDATA$Date 가 정수 일 번호 Date 가 아니다 — 구간 조회 전제 위반")
+  .rd_ok <- which(!is.na(.rd_di))
+  .rd_o  <- .rd_ok[order(.rd_di[.rd_ok])]          # radix 정렬 = 안정 정렬
+  .rd_ds <- .rd_di[.rd_o]
+  .rows_between <- function(lo, hi) {               # lo <= Date <= hi 인 행 번호(오름차순 = 원래 순서)
+    a <- findInterval(as.integer(lo) - 1L, .rd_ds) + 1L
+    z <- findInterval(as.integer(hi), .rd_ds)
+    if (z < a) integer(0) else sort(.rd_o[a:z])
+  }
+
   # ── 1. Factor IC / ICIR ──────────────────────────────────────────────────
   # IC = rank correlation between Score and next-period return
   ic_rows <- list()
@@ -141,7 +158,7 @@ run_analysis <- function(sim, FACTORS, RAWDATA, BM_DT,
 
     fac   <- FACTORS[Date == sig_d, .(Ticker, Score)]
     # Compute return from exec_d to next_exec
-    rets <- RAWDATA[Date >= exec_d & Date <= next_exec & Ticker %in% fac$Ticker,
+    rets <- RAWDATA[.rows_between(exec_d, next_exec)][Ticker %in% fac$Ticker,
                     .(Period_Ret = prod(1 + Ret, na.rm=TRUE) - 1), by = Ticker]
     merged <- merge(fac, rets, by = "Ticker")
     if (nrow(merged) < 10) next
@@ -182,14 +199,14 @@ run_analysis <- function(sim, FACTORS, RAWDATA, BM_DT,
     if (is.na(next_exec)) next
 
     fac <- FACTORS[Date == sig_d, .(Ticker, Score)]
-    rets <- RAWDATA[Date >= exec_d & Date <= next_exec & Ticker %in% fac$Ticker,
+    rets <- RAWDATA[.rows_between(exec_d, next_exec)][Ticker %in% fac$Ticker,
                     .(Period_Ret = prod(1 + Ret, na.rm=TRUE) - 1), by = Ticker]
 
     # Controls: ln(Size) at signal date, trailing 12M return
     size_dt <- RAWDATA[Date == sig_d & Ticker %in% fac$Ticker, .(Ticker, Size)]
     idx_fmb <- which(all_dates_fmb == sig_d)
     lb_fmb  <- all_dates_fmb[max(1, idx_fmb - 252)]
-    mom_dt  <- RAWDATA[Date >= lb_fmb & Date <= sig_d & Ticker %in% fac$Ticker,
+    mom_dt  <- RAWDATA[.rows_between(lb_fmb, sig_d)][Ticker %in% fac$Ticker,
                        .(Ret_12m = prod(1 + Ret, na.rm=TRUE) - 1), by = Ticker]
 
     m <- merge(fac, rets, by = "Ticker")
@@ -456,15 +473,25 @@ run_analysis <- function(sim, FACTORS, RAWDATA, BM_DT,
   if (!is.null(hold_log) && nrow(hold_log) > 0 && "Ticker" %in% names(hold_log)) {
     tryCatch({
       liq_rows <- list()
+      ## 종목별 날짜순 행 번호(2026-10-15 성능 수정 · 결과 동일) — 보유일마다 `Ticker %in% x & Date <= d` full scan 뒤
+      ##   order(Date) · tail(.SD, 20) 하던 것을, 종목별 안정 정렬 행 번호의 접두 구간 마지막 20행으로. 종목 안 행 순서(날짜순 ·
+      ##   동률은 원래 순서)가 같아 20행 선택과 평균 합산 순서가 동일하다. vol_20d 의 종목 행 순서만 다를 수 있으나 아래 소비
+      ##   (quantile · sum · median)는 순서 무관.
+      if (!all(c("Vol", "Close") %in% names(RAWDATA))) stop("Vol · Close 열 없음")
+      .tk_rows <- lapply(split(seq_len(nrow(RAWDATA)), RAWDATA$Ticker), function(r) r[order(RAWDATA$Date[r])])
+      .lq_date <- RAWDATA$Date; .lq_vol <- RAWDATA$Vol; .lq_close <- RAWDATA$Close
       for (sd in sort(unique(hold_log$Signal_Date))) {
         sd_date <- as.Date(sd, origin = "1970-01-01")
         tickers <- hold_log[Signal_Date == sd_date, Ticker]
 
-        # 20-day average volume at signal date
-        vol_20d <- RAWDATA[Ticker %in% tickers & Date <= sd_date][
-          order(Date), tail(.SD, 20), by = Ticker][
-          , .(AvgVol20 = mean(Vol, na.rm = TRUE),
-              AvgTurnover20 = mean(Vol * Close, na.rm = TRUE)), by = Ticker]
+        # 20-day average volume at signal date — 종목별 그 날까지 마지막 20행
+        vol_20d <- rbindlist(lapply(intersect(unique(tickers), names(.tk_rows)), function(tk) {
+          r <- .tk_rows[[tk]]; r <- r[which(.lq_date[r] <= sd_date)]
+          if (!length(r)) return(NULL)
+          r <- tail(r, 20)
+          data.table(Ticker = tk, AvgVol20 = mean(.lq_vol[r], na.rm = TRUE),
+                     AvgTurnover20 = mean(.lq_vol[r] * .lq_close[r], na.rm = TRUE))
+        }))
 
         if (nrow(vol_20d) > 0) {
           # Flag: bottom 10% of volume → illiquid

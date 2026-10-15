@@ -97,8 +97,11 @@ eval_cell <- function(cell) {
               ev$target$in_region, ax$ok, ev$eval_seconds))
   ev
 }
-EVS <- lapply(pre$cells, eval_cell)
-names(EVS) <- vapply(pre$cells, function(z) z$code, character(1))
+## 병렬 칸 평가(2026-10-15) — --cells-only 에 --shard=i/K 가 있으면 그 몫만(_lib/eval_parallel.sh 가 K 개를 띄운다) · 종합 판정은 전부
+source(file.path(ROOT, "04_Research/programs/_lib/round_kit.R"))
+CELLS <- if (CELLS_ONLY) rk_shard(pre$cells, ARGS) else pre$cells
+EVS <- lapply(CELLS, eval_cell)
+names(EVS) <- vapply(CELLS, function(z) z$code, character(1))
 n_done <- sum(vapply(EVS, function(e) identical(e$status, "evaluated") || identical(e$status, "axis_violation"), logical(1)))
 cat(sprintf("[P0R01 평가] 칸 평가 %d/%d\n", n_done, length(EVS)))
 if (CELLS_ONLY) quit(status = 0)

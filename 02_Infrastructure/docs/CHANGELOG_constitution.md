@@ -210,6 +210,24 @@
 - **P3R02 사전등록**: v1 → 교차 점검 ②(필수 6) → v2 → 범위 좁힌 재점검(register · 권고 13) → v3. 같은 배치 기준 재측정 RX0 2칸 · 쌍 판본 지문 · 공통 창 사본 규칙 · 위기별 과반 · β 대조 귀속 꼬리표 · 처치 전달률 0.9 · 이력 탈락 꼬리표 0.10 · 판정 구현(evaluate.R · 픽스처 22/0) · 운영 25파일 md5 를 결과 전에 고정 · 검토판 2개 보존 · 등록 전 커밋 강제.
 - **★밤 파이프라인 결함 수리**: P3R01 `evaluate.R` 가 기준 CDaR 을 못 읽어(P0R01 eval.json visible 에 cdar 없음) 결과와 무관하게 'no_lever_over_ew' 로 떨어질 상태였다 → 사전등록 문구대로 기준 칸 보는 창 패킷에서 읽고, 못 읽으면 멈춤(기록 = P3R01 폴더 `evaluate_fix_20261015.md`).
 
+### (v10.01 · 버전 미변경) 1계층 실행 속도 — 결과 동일 성능 수정 · 셀 평가 샤딩 · 재시작 파이프라인 v2 (2026-10-15)
+
+도훈 "실행속도를 코드 작성(파이썬 활용 등 고려) 및 병렬실행으로 추후에도 빠르게 검증되게 코드 리뷰 및 수정부터 진행하고 재시작해줘" · "1계층 리서치의 전 프로세스를 검토해서 결과물 퀄리티를 유지하는 가운데 실행속도를 극대화". 원칙 = **결과 비트 동일**(산출물 대조 · 회귀 테스트) — 근사 · 표본 축소 없음. 파이썬 이식은 MC8 플라시보의 R `sample.int` 난수 계열을 바꿔 등록 산출이 달라지므로 채택하지 않았다.
+
+- **원인(Rprof)**: ① R `Date` 의 `%in%` · `match` · `format` 이 `mtfrm → as.character.Date`(sprintf)로 1,200만 행을 호출마다 문자열화 ② 신호일 · 리밸마다 전 행 full scan ③ 팩터 DB 월 파일의 Arrow 스키마 R 메타데이터(data.table 자동 인덱스 = 행 수 길이 정수 순열)를 호출마다 역직렬화 · 재직렬화 ④ Rcpp 프로세스마다 재컴파일.
+- **수정**:
+  - 셀 평가 MC8 플라시보(`contracts/matched_controls.R`) — 정수 일 번호 비교 · 난수 호출 순서 불변 → 셀당 ~90분 → ~50초.
+  - 측정 경로 — `rf_cell_engine.R`(월말 신호일 · 패널 · 카탈로그 창 Ticker 키 조인) · `replication_harness.R`(.leg_daily 키 조인 · 분할 · 주간) · `measurement_axis.R` · `run_paper_replication.R`(유니버스 멤버십) — 정수 일 번호(Date 형식 가드) · 키 조인(dcast 정렬로 행 순서 무관).
+  - 팩터 커넥터 v2.5(`factor_db/factor_db_connector.R`) — Arrow Table 읽기(mmap 없음 — 월간 DB 재빌드를 막지 않게) · R 메타데이터 제거 · Arrow `is_in` predicate 필터 · 팩터×월 파티션 캐시(무효화 키 = 월 파일명 · 크기 · mtime · 컬럼 · atomic rename · `QVEST_FDB_PARTCACHE=0` 비활성) · C15 경계 불변(소비자는 `load_month_factors()` 만).
+  - `strategy_analyzer.R::run_analysis` — IC · FMB · 보유 유동성 반복 full scan → binary search 구간 조회(같은 행 집합 · 같은 순서) · Rcpp `cacheDir`. `backtest_harness.R` — Rcpp `cacheDir`(`.cache/rcpp_build`).
+  - 병렬 — `round_kit::rk_shard` + `_lib/eval_parallel.sh`(셀 평가 샤딩 · K = 여유 메모리/4GB · 최대 6) · `_lib/fdb_partcache_prefetch.R`(캐시 워밍) · `_lib/pipeline_v2_20261015.sh`(Rcpp 사전 컴파일 → 측정 3-way ‖ 프리페치 → 셀 평가 샤딩 → 종합 판정 → P3R02 재핀 센티널).
+  - 등록부 writer(`programs/program_registry.R::pr_record_round`) — 사전등록 md5 가 바뀌는 재기록은 status registered + `supersedes`(구 md5 일치)일 때만 · `supersede_history` 기록 · 비등록 상태 기록은 파일 실 md5 대조(재핀 지원).
+- **실측(결과 동일 확인)**: P0R01_E2_C4 측정 942s → 361s → **80s**(산출 18종 identical — 02~09 CSV · analysis_*.csv · 권위 기록 · 분석 보고서) · P0R01 셀 평가 15셀 = 3분 38초(샤드 4) · 재시작 파이프라인 v2 = 15셀 측정 8분 46초(DB 팩터 3~4종 셀 1.4~1.6분) + 25셀 평가 + 라운드 판정 4건 = **14분 50초**.
+- **유지(계약 우선)**: `build_rolling_metrics`(rollapply + PerformanceAnalytics `maxDrawdown` ≈ 10s — numeric 창으로 바꿔도 같은 값 · 같은 속도 · 직접 구현은 결과 계약 '표준 함수만' 위반) · `load_rawdata` 사본(3s — P3R02 핀 대상 · ALTREP/mmap 핸들 위험).
+- **검사**: fdc_read_fastpath 13/0(구 경로 대조 44+3건 identical · 캐시 양성 대조 · 무효화 · 뮤테이션) · round_kit_shard 17/0 · matched_controls 67/0 · program_registry 29/0 · replication_harness 46/0 · replication_exec_golden 8/0 · replication_exec_parity 6/0 · factor_dedup_consumption 16/0 · build_hash_provenance 17/0 · ast_monthly_asof_label 21/0 · c15_load_path_scan 8/0. 선행 실패(무관 · HEAD 커넥터로 재현): emission_identity_axes 2건(C15_Forecast_Error_Trend 죽은 배출 단정 — 운영 팩터 DB 상태를 빌린다).
+- **운영 설정**: Judge 노력 xhigh → max(도훈 10-15 · 설계 §10.4 상향안). 용어집 `00_Lawbook/GLOSSARY.md`(+ 인쇄본 · PDF 서식 규칙 `docs/rules/pdf-output-style.md` = 현대하모니 L · M · B).
+- **사고 기록**: 파이프라인 v2 가 P3R01 종합 판정을 P3R02 재핀보다 먼저 돌려 P3R02 등록 스크립트의 R2 가드(비교군 판정 뒤 등록 거부)에 걸렸다(순서 설계 실수 · Q). 도훈 승인(10-15 "핀만 재핀 허용")으로 핀 전용 재핀 경로(`register.R --repin` — 과학 필드 byte 동일 기계 대조 · P3R01 판정 미열람 선언)를 둔다.
+
 ---
 
 ## (v10.4 유지 · 버전 미변경) 09-26 중단분 배포 · B4 5축 · 유기체 O0a · 청정 레인 · 노출 표식 · 러너 재개 (2026-10-04)

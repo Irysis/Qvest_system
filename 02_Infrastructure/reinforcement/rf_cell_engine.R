@@ -194,7 +194,10 @@ if (identical(.base$kind, "mom_12_1")) {
 } else stop("[rf_cell_engine] base_signal.kind 미지원: ", .base$kind)
 
 # 시그널일 = 월말 거래일
-.sig_dates <- DT[Date >= .START, .(d = max(Date)), by = .(ym = format(Date, "%Y%m"))]$d
+## ★속도 수리(2026-10-15 · 결과 동일) — 구판은 1,200만 행 전체의 Date 를 format("%Y%m") 로 서식화해 월별 max 를 냈다(측정 시간의 27%).
+##   그 달 max(Date) = 정렬된 유일 날짜(시작일 이후)에서 그 연월의 마지막 날 — 같은 집합을 수천 개 유일 날짜만 서식화해 얻는다.
+.ud <- sort(unique(DT$Date[DT$Date >= .START]))
+.sig_dates <- .ud[!duplicated(format(.ud, "%Y%m"), fromLast = TRUE)]
 .sig_dates <- sort(unique(.sig_dates))
 
 # ── 2. 셀별 유니버스 (엔진이 자른다 — 러너는 K200_KQ150/INDEX 외 라벨을 통과시킨다) ──
@@ -251,7 +254,8 @@ if (identical(.base$kind, "mom_12_1")) {
 }
 
 DT[, .SizeLag := shift(Size, 1L), by = Ticker]
-PANEL <- DT[Date %in% .sig_dates & !is.na(.base_sig) &
+## 정수 일 번호 비교(2026-10-15 속도 수리 · 결과 동일 — Date 의 %in% 은 1,200만 행을 문자열로 서식화한다(mtfrm))
+PANEL <- DT[as.integer(Date) %in% as.integer(.sig_dates) & !is.na(.base_sig) &
             !is.na(.adv20_l1) & .adv20_l1 >= .LIQ_MIN]
 PANEL <- .universe_filter(PANEL)
 
@@ -287,7 +291,7 @@ if (is.null(.flist)) {
       DT[, .sd60_l1 := shift(frollapply(.ret, 60L, function(v) if (anyNA(v)) NA_real_ else sd(v),
                                         align = "right"), 1L), by = Ticker]
     }
-    out <- DT[Date %in% .sig_dates & !is.na(.sd60_l1) & .sd60_l1 > 0, .(Date, Ticker, v = -.sd60_l1)]
+    out <- DT[as.integer(Date) %in% as.integer(.sig_dates) & !is.na(.sd60_l1) & .sd60_l1 > 0, .(Date, Ticker, v = -.sd60_l1)]   # 정수 일 번호(속도 · 결과 동일)
     setnames(out, "v", tag); out
   } else if (identical(fs$kind, "null_perm")) {
     # ★P1-06 null-factor 희석 통제 칸 (2026-09-25 · 격자 정본 reinforce_program.json standing_cells[control=null_factor]).
@@ -485,10 +489,14 @@ if (identical(.wt$kind, "ew")) {
       .LB  <- as.integer(.wt$lookback_days %||% 252L)
       if (!".ret" %in% names(DT)) DT[, .ret := Close / shift(Close, 1L) - 1, by = Ticker]
       .nEW <- 0L; .nOK <- 0L
+      ## ★종목 키 색인(2026-10-15 속도 수리 · 결과 동일) — 구판은 신호일마다(≈300회) DT 전체(1,200만 행)를 Ticker %in% 로 훑었다.
+      ##   같은 행 집합(그 종목들 · Date < d)을 키 조인으로 꺼낸다 — 아래 dcast 가 Date · Ticker 로 정렬하므로 행 순서는 결과와 무관 ·
+      ##   조인 키는 unique(nm)(중복 종목이 행을 복제하지 않게 — 구판 %in% 와 같은 집합)
+      .RTK <- DT[, .(Date, Ticker, .ret)]; setkey(.RTK, Ticker)
       W <- rbindlist(lapply(.sig_dates, function(d) {
         nm <- SEL[Date == d, Ticker]
         if (length(nm) < 2L) return(NULL)
-        H <- DT[Ticker %in% nm & Date < d, .(Date, Ticker, .ret)]   # C2: 창 종점 t-1
+        H <- .RTK[.(unique(nm)), nomatch = NULL][Date < d]   # C2: 창 종점 t-1
         if (!nrow(H)) return(NULL)
         M <- utils::tail(dcast(H, Date ~ Ticker, value.var = ".ret"), .LB)
         R <- as.matrix(M[, -1L, with = FALSE])

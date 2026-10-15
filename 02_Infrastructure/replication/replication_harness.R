@@ -192,7 +192,8 @@ rep_weekly_signals <- function(W, RAWDATA) {
   keep <- S[, list(d = max(d)), by = wk]$d
   n_multi <- S[, .N, by = wk][N > 1L, .N]
   W2 <- W[Date %in% keep]
-  W2 <- merge(W2, RAWDATA[Date %in% keep, list(Date, Ticker, .vol = Vol)], by = c("Date", "Ticker"), all.x = TRUE)
+  if (!inherits(RAWDATA$Date, "Date") || !inherits(keep, "Date")) stop("[replication] 날짜 열은 Date 여야 한다(정수 일 번호 비교)")
+  W2 <- merge(W2, RAWDATA[as.integer(Date) %in% as.integer(keep), list(Date, Ticker, .vol = Vol)], by = c("Date", "Ticker"), all.x = TRUE)   # 정수 일 번호(속도 · 결과 동일)
   W2[, .side := sign(Weight)]
   W2[, .g0 := sum(abs(Weight)), by = list(Date, .side)]
   n_zero <- W2[!(is.finite(.vol) & .vol > 0), .N]
@@ -222,6 +223,10 @@ run_replication_simulation <- function(RAWDATA, BM_DT, WEIGHTS,
 
   if (!inherits(RAWDATA$Date, "Date")) RAWDATA[, Date := as.Date(Date)]
   all_dates <- sort(unique(RAWDATA$Date))
+  ## ★종목 키 색인(2026-10-15 속도 수리 · 결과 동일) — 구판 .leg_daily 는 리밸마다(≈300회) RAWDATA 전체(1,200만 행)를
+  ##   Ticker %in% · Date 범위 · is.finite(Ret) 로 훑었다(측정 시간의 31%). 같은 행 집합을 키 조인으로 꺼낸다 — 뒤의 dcast 가
+  ##   Date · Ticker 로 정렬하고 창 경계 분할도 행별 대입이라 행 순서는 결과와 무관하다.
+  .RK <- RAWDATA[is.finite(Ret), .(Date, Ticker, Ret)]; setkey(.RK, Ticker)
   sig_dates <- sort(unique(W$Date))
 
   # ── 리밸런싱 주기 판정(MC4 · 위 머리 주석) — 월간이면 EXEC = get_execution_date 그대로(구판 비트 동일) ──
@@ -248,7 +253,7 @@ run_replication_simulation <- function(RAWDATA, BM_DT, WEIGHTS,
       stop("[replication] exec_price=open_t1 은 RAWDATA$Open·Close 가 필요하다")
     ex_all <- unique(as.Date(vapply(sig_dates, function(s) as.numeric(EXEC(s)), numeric(1))))
     ex_all <- ex_all[!is.na(ex_all)]
-    SPLIT <- RAWDATA[Date %in% ex_all & is.finite(Ret), .(Date, Ticker, Ret, Open, Close)]
+    SPLIT <- RAWDATA[as.integer(Date) %in% as.integer(ex_all) & is.finite(Ret), .(Date, Ticker, Ret, Open, Close)]   # 정수 일 번호(속도 · 결과 동일)
     SPLIT[, lim := .rep_overnight_limit(Date)]
     SPLIT[, r_on := Open * (1 + Ret) / Close - 1]
     SPLIT[, r_id := Close / Open - 1]
@@ -262,8 +267,7 @@ run_replication_simulation <- function(RAWDATA, BM_DT, WEIGHTS,
     wv <- if (side == "long") md[Weight > 0] else md[Weight < 0]
     if (nrow(wv) == 0L) return(NULL)
     gross <- sum(abs(wv$Weight))
-    sub <- RAWDATA[Ticker %in% wv$Ticker & Date >= wv$win_lo[1] & Date <= wv$win_hi[1] &
-                     is.finite(Ret), .(Date, Ticker, Ret)]
+    sub <- .RK[.(unique(wv$Ticker)), nomatch = NULL][Date >= wv$win_lo[1] & Date <= wv$win_hi[1]]   # 키 조인(속도 · 같은 행 집합)
     if (nrow(sub) == 0L) return(NULL)
     if (!is.null(SPLIT)) {                     # open_t1 — 창 경계일 수익 분할
       f1 <- wv$split_first[1]; l1 <- wv$split_last[1]

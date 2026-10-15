@@ -138,7 +138,8 @@ pc <- file.path(RD, "results", "precheck.json")
 if (!file.exists(pc) || !isTRUE(fromJSON(pc)$ok)) stop("[P3R02 평가] precheck 통과 기록이 없다 — 측정 조건 미확인")
 TAU <- as.Date(pre$tau_d); FS <- pre$final_selection_rule
 env <- new.env(); env$E <- .dp_deps(ROOT); env$BCFG_L <- env$E$bc_cfg(ROOT, path = BCFG); env$raw <- NULL
-EVS <- lapply(pre$cells, function(cl) rk_eval_cell(ROOT, RD, cl, env, TAU)); names(EVS) <- vapply(pre$cells, function(z) z$code, character(1))
+CELLS <- if (CELLS_ONLY) rk_shard(pre$cells) else pre$cells   # 병렬 칸 평가(2026-10-15 · _lib/eval_parallel.sh) — 종합 판정은 전부
+EVS <- lapply(CELLS, function(cl) rk_eval_cell(ROOT, RD, cl, env, TAU)); names(EVS) <- vapply(CELLS, function(z) z$code, character(1))
 cat(sprintf("[P3R02 평가] 칸 평가 %d/%d\n", sum(vapply(EVS, function(e) e$status %in% c("evaluated", "axis_violation"), logical(1))), length(EVS)))
 if (CELLS_ONLY) quit(status = 0)
 
