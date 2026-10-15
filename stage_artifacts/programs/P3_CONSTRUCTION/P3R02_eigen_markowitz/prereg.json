@@ -3,7 +3,7 @@
   "program": "P3_CONSTRUCTION",
   "round_id": "P3R02_eigen_markowitz",
   "status": "registered",
-  "draft_version": 4,
+  "draft_version": 5,
   "drafted_at": "2026-10-15T07:19:50+0900",
   "reviewed_drafts": [
     {
@@ -308,7 +308,7 @@
       },
       {
         "path": "02_Infrastructure/reinforcement/rf_cell_engine.R",
-        "md5": "e70a7fe1587a066a9b3f2f8c0aa64dea"
+        "md5": "7aebffbc86ffe30c4d264c86b6d2568d"
       },
       {
         "path": "02_Infrastructure/reinforcement/rf_base_cache.R",
@@ -332,15 +332,15 @@
       },
       {
         "path": "02_Infrastructure/alpha_search/run_paper_replication.R",
-        "md5": "943b767f40e290d6836bf070d970a588"
+        "md5": "c05c48845d4e1b9f6cffb4f4b2e5c6f4"
       },
       {
         "path": "02_Infrastructure/replication/replication_harness.R",
-        "md5": "3cc66c3a6e87919758a589429440ead9"
+        "md5": "7cb3fbd5dbf4f4d382701c6c11b6b7ef"
       },
       {
         "path": "02_Infrastructure/backtest_harness.R",
-        "md5": "2252a085b7fe4242a8dbce7a3647e68a"
+        "md5": "12b6c29128877c01cd64f1d635716b06"
       },
       {
         "path": "02_Infrastructure/config.R",
@@ -348,7 +348,7 @@
       },
       {
         "path": "02_Infrastructure/contracts/measurement_axis.R",
-        "md5": "b268295957690d11f36f86f198f7842f"
+        "md5": "ce024eb8ae76493360c118c42b557c99"
       },
       {
         "path": "02_Infrastructure/contracts/behavior_card.R",
@@ -360,7 +360,7 @@
       },
       {
         "path": "02_Infrastructure/contracts/matched_controls.R",
-        "md5": "27909ee7923cb7cf54ff195a3131bcc8"
+        "md5": "1b9d8152255231b2e77401f598bbcf14"
       },
       {
         "path": "02_Infrastructure/contracts/grade_v3.R",
@@ -384,7 +384,7 @@
       },
       {
         "path": "04_Research/programs/_lib/round_kit.R",
-        "md5": "92fb117cf030b14244863dc5d82b90e7"
+        "md5": "15f911fb28dc6615ec1a7d6e66eaf9f9"
       },
       {
         "path": "04_Research/programs/_lib/measure_round_cell.R",
@@ -408,7 +408,7 @@
     "files": [
       {
         "path": "04_Research/programs/P3_CONSTRUCTION/P3R02_eigen_markowitz/evaluate.R",
-        "md5": "78b44eb67d937f4de292d2ccbf531442"
+        "md5": "128da8410578138e43ba7fb23e2ed941"
       },
       {
         "path": "04_Research/programs/P3_CONSTRUCTION/P3R02_eigen_markowitz/evaluate_fixture.R",
@@ -575,9 +575,14 @@
       "item": "판정 규칙 · 문턱 · 칸 · 기준",
       "change": "변경 없음 — decisive · 비열등 · 선택 · 꼬리표 · delivery_min · drop_tag_share · RX0 · 쌍 지문 · 공통 창 그대로",
       "reason": "축 결정은 처치(비중법)의 상한만 바꾼다 — 규칙은 결과 전 v3 그대로"
+    },
+    {
+      "item": "v4 → v5 핀 전용 재핀(도훈 2026-10-15 승인)",
+      "change": "operational_pins.files · evaluation.files md5 와 tests 기록만 갱신 — 가설 · 셀 · 사양 · 규칙 · 문턱 · 선택 규칙 · 설정 사본 불변(기계 대조)",
+      "reason": "성능 수정(결과 동일 — 산출물 대조 · 회귀 테스트 · 커밋 4aea904da)으로 고정 운영 · 평가 경로 md5 가 바뀌어 precheck 가 측정을 막는다 — 핀만 갱신(도훈 2026-10-15 승인 \"핀만 재핀 허용\")"
     }
   ],
-  "registered_at": "2026-10-15T07:20:31+0900",
+  "registered_at": "2026-10-15T09:08:54+0900",
   "draft_md5": "2500922a9a8f0b3c5157bd343e0ae534",
   "registered_before": {
     "result_files": [
@@ -709,12 +714,331 @@
     ],
     "declaration": "칸 단위 결과 파일은 존재 · 수정 시각만 확인했고 내용은 열지 않았다"
   },
-  "git_head_at_register": "a0c469aa3ad88c7a04ee7d29d9d6b72660c84895",
+  "git_head_at_register": "9a5e08aad009cca74def2b283537a1c3e32ee757",
   "supersedes": {
-    "md5": "9fba96b82e8951435ef2417c9db87a43",
-    "path": "stage_artifacts/programs/P3_CONSTRUCTION/P3R02_eigen_markowitz/prereg_superseded_v3_9fba96b8.json",
-    "reason": "도훈 축 결정(2026-10-15 \"고정축 비중상한 없음으로 진행하자\") — 카탈로그 하네스 상한 0.20 · 빌트인 max_w 0.15 폐지 → 어댑터 · 서술 · 핀 갱신(측정 전)",
+    "md5": "c8b680ec4ca59ecb4a25e64398df9b2b",
+    "path": "stage_artifacts/programs/P3_CONSTRUCTION/P3R02_eigen_markowitz/prereg_superseded_v4_c8b680ec.json",
+    "reason": "성능 수정(결과 동일 — 산출물 대조 · 회귀 테스트 · 커밋 4aea904da)으로 고정 운영 · 평가 경로 md5 가 바뀌어 precheck 가 측정을 막는다 — 핀만 갱신(도훈 2026-10-15 승인 \"핀만 재핀 허용\")",
     "measured_before": false,
     "declaration": "대체 시점에 이 라운드의 측정 결과는 없었다(.measured_any = FALSE)"
-  }
+  },
+  "repin": {
+    "kind": "pin_only",
+    "from_md5": "c8b680ec4ca59ecb4a25e64398df9b2b",
+    "approved": "도훈 2026-10-15 세션 승인 — \"핀만 재핀 허용\"",
+    "changed_operational": [
+      {
+        "path": "02_Infrastructure/reinforcement/rf_cell_engine.R",
+        "md5_v4": "e70a7fe1587a066a9b3f2f8c0aa64dea",
+        "md5_v5": "7aebffbc86ffe30c4d264c86b6d2568d"
+      },
+      {
+        "path": "02_Infrastructure/alpha_search/run_paper_replication.R",
+        "md5_v4": "943b767f40e290d6836bf070d970a588",
+        "md5_v5": "c05c48845d4e1b9f6cffb4f4b2e5c6f4"
+      },
+      {
+        "path": "02_Infrastructure/replication/replication_harness.R",
+        "md5_v4": "3cc66c3a6e87919758a589429440ead9",
+        "md5_v5": "7cb3fbd5dbf4f4d382701c6c11b6b7ef"
+      },
+      {
+        "path": "02_Infrastructure/backtest_harness.R",
+        "md5_v4": "2252a085b7fe4242a8dbce7a3647e68a",
+        "md5_v5": "12b6c29128877c01cd64f1d635716b06"
+      },
+      {
+        "path": "02_Infrastructure/contracts/measurement_axis.R",
+        "md5_v4": "b268295957690d11f36f86f198f7842f",
+        "md5_v5": "ce024eb8ae76493360c118c42b557c99"
+      },
+      {
+        "path": "02_Infrastructure/contracts/matched_controls.R",
+        "md5_v4": "27909ee7923cb7cf54ff195a3131bcc8",
+        "md5_v5": "1b9d8152255231b2e77401f598bbcf14"
+      },
+      {
+        "path": "04_Research/programs/_lib/round_kit.R",
+        "md5_v4": "92fb117cf030b14244863dc5d82b90e7",
+        "md5_v5": "15f911fb28dc6615ec1a7d6e66eaf9f9"
+      }
+    ],
+    "changed_evaluation": [
+      {
+        "path": "04_Research/programs/P3_CONSTRUCTION/P3R02_eigen_markowitz/evaluate.R",
+        "md5_v4": "78b44eb67d937f4de292d2ccbf531442",
+        "md5_v5": "128da8410578138e43ba7fb23e2ed941"
+      }
+    ],
+    "verification": "성능 수정 결과 동일 — P0R01_E2_C4 재측정 산출 18종 identical(02~09 CSV · analysis_*.csv · 권위 기록 · 분석 보고서) · test_fdc_read_fastpath 13/0 · matched_controls 67/0 · replication_harness 46/0 · round_kit_shard 17/0 · program_registry 29/0(CHANGELOG 2026-10-15 1계층 실행 속도 절)",
+    "p3r01_evaluation": {
+      "path": "04_Research/programs/P3_CONSTRUCTION/P3R01_construction_map/results/evaluation.json",
+      "exists": true,
+      "mtime": "2026-10-15T08:47:50+0900",
+      "opened": false,
+      "declaration": "파이프라인 v2 순서 실수(Q)로 재핀 전에 생겼다 — 내용은 열지 않았다 · 이 재핀은 과학 필드를 바꾸지 않는다(기계 대조)"
+    },
+    "result_files": [
+      {
+        "path": "04_Research/programs/P3_CONSTRUCTION/P3R01_construction_map/results/evaluation.json",
+        "exists": true,
+        "mtime": "2026-10-15T08:47:50+0900"
+      },
+      {
+        "path": "04_Research/programs/P3_CONSTRUCTION/P3R01_construction_map/results/P3R01_E1_K1.json",
+        "exists": true,
+        "mtime": "2026-10-15T07:45:58+0900"
+      },
+      {
+        "path": "04_Research/programs/P3_CONSTRUCTION/P3R01_construction_map/results/P3R01_E1_K2.json",
+        "exists": true,
+        "mtime": "2026-10-15T08:34:28+0900"
+      },
+      {
+        "path": "04_Research/programs/P3_CONSTRUCTION/P3R01_construction_map/results/P3R01_E1_K3.json",
+        "exists": true,
+        "mtime": "2026-10-15T08:35:12+0900"
+      },
+      {
+        "path": "04_Research/programs/P3_CONSTRUCTION/P3R01_construction_map/results/P3R01_E1_K4.json",
+        "exists": true,
+        "mtime": "2026-10-15T08:34:28+0900"
+      },
+      {
+        "path": "04_Research/programs/P3_CONSTRUCTION/P3R01_construction_map/results/P3R01_E1_K5.json",
+        "exists": true,
+        "mtime": "2026-10-14T07:09:27+0900"
+      },
+      {
+        "path": "04_Research/programs/P3_CONSTRUCTION/P3R01_construction_map/results/P3R01_E2_K1.json",
+        "exists": true,
+        "mtime": "2026-10-15T08:35:48+0900"
+      },
+      {
+        "path": "04_Research/programs/P3_CONSTRUCTION/P3R01_construction_map/results/P3R01_E2_K2.json",
+        "exists": true,
+        "mtime": "2026-10-15T08:35:46+0900"
+      },
+      {
+        "path": "04_Research/programs/P3_CONSTRUCTION/P3R01_construction_map/results/P3R01_E2_K3.json",
+        "exists": true,
+        "mtime": "2026-10-15T08:36:54+0900"
+      },
+      {
+        "path": "04_Research/programs/P3_CONSTRUCTION/P3R01_construction_map/results/P3R01_E2_K4.json",
+        "exists": true,
+        "mtime": "2026-10-15T08:37:02+0900"
+      },
+      {
+        "path": "04_Research/programs/P3_CONSTRUCTION/P3R01_construction_map/results/P3R01_E2_K5.json",
+        "exists": true,
+        "mtime": "2026-10-15T08:39:12+0900"
+      },
+      {
+        "path": "04_Research/programs/P3_CONSTRUCTION/P3R01_construction_map/results/P3R01_E1_K1.err.log",
+        "exists": true,
+        "mtime": "2026-10-15T07:45:58+0900"
+      },
+      {
+        "path": "04_Research/programs/P3_CONSTRUCTION/P3R01_construction_map/results/P3R01_E1_K1.log",
+        "exists": true,
+        "mtime": "2026-10-15T07:45:58+0900"
+      },
+      {
+        "path": "04_Research/programs/P3_CONSTRUCTION/P3R01_construction_map/results/P3R01_E1_K2.err.log",
+        "exists": true,
+        "mtime": "2026-10-15T08:34:28+0900"
+      },
+      {
+        "path": "04_Research/programs/P3_CONSTRUCTION/P3R01_construction_map/results/P3R01_E1_K2.log",
+        "exists": true,
+        "mtime": "2026-10-15T08:34:28+0900"
+      },
+      {
+        "path": "04_Research/programs/P3_CONSTRUCTION/P3R01_construction_map/results/P3R01_E1_K3.err.log",
+        "exists": true,
+        "mtime": "2026-10-15T08:35:12+0900"
+      },
+      {
+        "path": "04_Research/programs/P3_CONSTRUCTION/P3R01_construction_map/results/P3R01_E1_K3.log",
+        "exists": true,
+        "mtime": "2026-10-15T08:35:12+0900"
+      },
+      {
+        "path": "04_Research/programs/P3_CONSTRUCTION/P3R01_construction_map/results/P3R01_E1_K4.err.log",
+        "exists": true,
+        "mtime": "2026-10-15T08:34:28+0900"
+      },
+      {
+        "path": "04_Research/programs/P3_CONSTRUCTION/P3R01_construction_map/results/P3R01_E1_K4.log",
+        "exists": true,
+        "mtime": "2026-10-15T08:34:28+0900"
+      },
+      {
+        "path": "04_Research/programs/P3_CONSTRUCTION/P3R01_construction_map/results/P3R01_E1_K5.err.log",
+        "exists": true,
+        "mtime": "2026-10-14T07:09:27+0900"
+      },
+      {
+        "path": "04_Research/programs/P3_CONSTRUCTION/P3R01_construction_map/results/P3R01_E1_K5.log",
+        "exists": true,
+        "mtime": "2026-10-14T07:09:27+0900"
+      },
+      {
+        "path": "04_Research/programs/P3_CONSTRUCTION/P3R01_construction_map/results/P3R01_E2_K1.err.log",
+        "exists": true,
+        "mtime": "2026-10-15T08:35:48+0900"
+      },
+      {
+        "path": "04_Research/programs/P3_CONSTRUCTION/P3R01_construction_map/results/P3R01_E2_K1.log",
+        "exists": true,
+        "mtime": "2026-10-15T08:35:48+0900"
+      },
+      {
+        "path": "04_Research/programs/P3_CONSTRUCTION/P3R01_construction_map/results/P3R01_E2_K2.err.log",
+        "exists": true,
+        "mtime": "2026-10-15T08:35:46+0900"
+      },
+      {
+        "path": "04_Research/programs/P3_CONSTRUCTION/P3R01_construction_map/results/P3R01_E2_K2.log",
+        "exists": true,
+        "mtime": "2026-10-15T08:35:46+0900"
+      },
+      {
+        "path": "04_Research/programs/P3_CONSTRUCTION/P3R01_construction_map/results/P3R01_E2_K3.err.log",
+        "exists": true,
+        "mtime": "2026-10-15T08:36:54+0900"
+      },
+      {
+        "path": "04_Research/programs/P3_CONSTRUCTION/P3R01_construction_map/results/P3R01_E2_K3.log",
+        "exists": true,
+        "mtime": "2026-10-15T08:36:54+0900"
+      },
+      {
+        "path": "04_Research/programs/P3_CONSTRUCTION/P3R01_construction_map/results/P3R01_E2_K4.err.log",
+        "exists": true,
+        "mtime": "2026-10-15T08:37:02+0900"
+      },
+      {
+        "path": "04_Research/programs/P3_CONSTRUCTION/P3R01_construction_map/results/P3R01_E2_K4.log",
+        "exists": true,
+        "mtime": "2026-10-15T08:37:02+0900"
+      },
+      {
+        "path": "04_Research/programs/P3_CONSTRUCTION/P3R01_construction_map/results/P3R01_E2_K5.err.log",
+        "exists": true,
+        "mtime": "2026-10-15T08:39:12+0900"
+      },
+      {
+        "path": "04_Research/programs/P3_CONSTRUCTION/P3R01_construction_map/results/P3R01_E2_K5.log",
+        "exists": true,
+        "mtime": "2026-10-15T08:39:12+0900"
+      },
+      {
+        "path": "04_Research/programs/P3_CONSTRUCTION/P3R01_construction_map/results/P3R01_E1_K1/eval.json",
+        "exists": true,
+        "mtime": "2026-10-15T08:46:54+0900"
+      },
+      {
+        "path": "04_Research/programs/P3_CONSTRUCTION/P3R01_construction_map/results/P3R01_E1_K2/eval.json",
+        "exists": true,
+        "mtime": "2026-10-15T08:46:54+0900"
+      },
+      {
+        "path": "04_Research/programs/P3_CONSTRUCTION/P3R01_construction_map/results/P3R01_E1_K3/eval.json",
+        "exists": true,
+        "mtime": "2026-10-15T08:46:47+0900"
+      },
+      {
+        "path": "04_Research/programs/P3_CONSTRUCTION/P3R01_construction_map/results/P3R01_E1_K4/eval.json",
+        "exists": true,
+        "mtime": "2026-10-15T08:46:50+0900"
+      },
+      {
+        "path": "04_Research/programs/P3_CONSTRUCTION/P3R01_construction_map/results/P3R01_E1_K5/eval.json",
+        "exists": true,
+        "mtime": "2026-10-15T08:46:52+0900"
+      },
+      {
+        "path": "04_Research/programs/P3_CONSTRUCTION/P3R01_construction_map/results/P3R01_E2_K1/eval.json",
+        "exists": true,
+        "mtime": "2026-10-15T08:47:49+0900"
+      },
+      {
+        "path": "04_Research/programs/P3_CONSTRUCTION/P3R01_construction_map/results/P3R01_E2_K2/eval.json",
+        "exists": true,
+        "mtime": "2026-10-15T08:47:47+0900"
+      },
+      {
+        "path": "04_Research/programs/P3_CONSTRUCTION/P3R01_construction_map/results/P3R01_E2_K3/eval.json",
+        "exists": true,
+        "mtime": "2026-10-15T08:47:30+0900"
+      },
+      {
+        "path": "04_Research/programs/P3_CONSTRUCTION/P3R01_construction_map/results/P3R01_E2_K4/eval.json",
+        "exists": true,
+        "mtime": "2026-10-15T08:47:38+0900"
+      },
+      {
+        "path": "04_Research/programs/P3_CONSTRUCTION/P3R01_construction_map/results/P3R01_E2_K5/eval.json",
+        "exists": true,
+        "mtime": "2026-10-15T08:47:47+0900"
+      },
+      {
+        "path": "04_Research/programs/P0_FRONTIER/P0R01_feasibility_map/results/evaluation.json",
+        "exists": true,
+        "mtime": "2026-10-15T08:45:26+0900"
+      },
+      {
+        "path": "04_Research/programs/P0_FRONTIER/P0R01_feasibility_map/results/P0R01_E1_C0.json",
+        "exists": true,
+        "mtime": "2026-10-13T23:25:15+0900"
+      },
+      {
+        "path": "04_Research/programs/P0_FRONTIER/P0R01_feasibility_map/results/P0R01_E2_C0.json",
+        "exists": true,
+        "mtime": "2026-10-14T22:12:18+0900"
+      },
+      {
+        "path": "04_Research/programs/P0_FRONTIER/P0R01_feasibility_map/results/P0R01_E1_C0.log",
+        "exists": true,
+        "mtime": "2026-10-13T23:25:15+0900"
+      },
+      {
+        "path": "04_Research/programs/P0_FRONTIER/P0R01_feasibility_map/results/P0R01_E2_C0.log",
+        "exists": true,
+        "mtime": "2026-10-14T22:12:18+0900"
+      },
+      {
+        "path": "04_Research/programs/P0_FRONTIER/P0R01_feasibility_map/results/P0R01_E1_C0/eval.json",
+        "exists": true,
+        "mtime": "2026-10-15T01:36:37+0900"
+      },
+      {
+        "path": "04_Research/programs/P0_FRONTIER/P0R01_feasibility_map/results/P0R01_E2_C0/eval.json",
+        "exists": true,
+        "mtime": "2026-10-15T08:42:51+0900"
+      },
+      {
+        "path": "04_Research/programs/P0_FRONTIER/P0R01_feasibility_map/results/P0R01_E1_C0/visible/diagnosis_packet.json",
+        "exists": true,
+        "mtime": "2026-10-15T00:42:49+0900"
+      },
+      {
+        "path": "04_Research/programs/P0_FRONTIER/P0R01_feasibility_map/results/P0R01_E2_C0/visible/diagnosis_packet.json",
+        "exists": true,
+        "mtime": "2026-10-15T08:42:35+0900"
+      }
+    ],
+    "at": "2026-10-15T09:08:54+0900"
+  },
+  "supersede_history": [
+    {
+      "md5": "9fba96b82e8951435ef2417c9db87a43",
+      "path": "stage_artifacts/programs/P3_CONSTRUCTION/P3R02_eigen_markowitz/prereg_superseded_v3_9fba96b8.json",
+      "reason": "도훈 축 결정(2026-10-15 \"고정축 비중상한 없음으로 진행하자\") — 카탈로그 하네스 상한 0.20 · 빌트인 max_w 0.15 폐지 → 어댑터 · 서술 · 핀 갱신(측정 전)",
+      "measured_before": false,
+      "declaration": "대체 시점에 이 라운드의 측정 결과는 없었다(.measured_any = FALSE)"
+    }
+  ]
 }
