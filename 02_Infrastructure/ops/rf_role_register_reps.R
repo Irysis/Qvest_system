@@ -28,6 +28,10 @@ for (id in names(reg)) {
 }
 R <- rbindlist(res, fill = TRUE)
 cat(sprintf("대상 %d · %s\n", nrow(R), if (DRY) "dry-run" else "등재 실행"))
-print(R[, .N, by = code])
-print(R[, .(member_id, kind, lineage, roles, code, reason)])
-fwrite(R, file.path(.root, "04_Research/01_reports/strategy_role_grading_20261006/classify_20261006", sprintf("register_reps_%s.csv", if (DRY) "dry" else "run")))
+## 대상 0건 = 정상(등재할 미등록 대표 없음). 0행 · 0열 표에 by=code 를 걸면 'object code not found' 로 멈춰 데이터 갱신이 [8.1r] 실패를
+##   매일 거짓으로 적었다(2026-10-16 데이터 갱신 전담 Superfan 진단 R1 — 대상 0 인 날 10-09 · 10-10 · 10-16 전부 같은 오류)
+if (nrow(R)) {
+  print(R[, .N, by = code])
+  print(R[, .(member_id, kind, lineage, roles, code, reason)])
+  fwrite(R, file.path(.root, "04_Research/01_reports/strategy_role_grading_20261006/classify_20261006", sprintf("register_reps_%s.csv", if (DRY) "dry" else "run")))
+}
