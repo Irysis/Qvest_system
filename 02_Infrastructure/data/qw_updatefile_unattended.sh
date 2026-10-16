@@ -43,8 +43,45 @@ if [ -n "${QWUF_REFRESH_CMD:-}" ]; then
 else
   CMD=(powershell.exe -NoProfile -ExecutionPolicy Bypass -File "$(cygpath -w "$BASE/02_Infrastructure/ops/qw_refresh.ps1")")
 fi
-timeout "$TMO" "${CMD[@]}" -SkipLogin -Only "$ONLY" -MaxRounds 2 2>&1 | sed 's/^/  [qw] /'
-rc=${PIPESTATUS[0]}
+# ★진행 인지 상한(2026-10-17) — 기본 상한(TMO)이 지나도 이 실행이 띄운 수급 Excel 이 일하고 있으면(CPU 누적 증가) 기다리고,
+#   STALL_N 번 연속 늘지 않으면(멈춤) 또는 절대 상한(HARD)에서 끝낸다. 끝낼 때는 지휘 셸과 **이 실행이 띄운** Excel(시작 시각 ≥ 이 실행)만 닫는다
+#   — 고아 Excel 이 다음 수급을 막는다 · 사람이 연 Excel 은 건드리지 않는다.
+#   10-17 실측: Universe_Support 49일치가 40분 고정 상한에 잘렸다(지휘만 죽고 Excel 은 조회를 계속 · 저장할 주체 없음) → 세션이 그 Excel 을 닫아
+#   46분을 버렸다. 수동 기록 08-29: 1개월분 ≈ 60분(qw_refresh_state.json OHLCVS 18:00 → Universe_Support 18:59). 절대 상한 기본 2시간 =
+#   그 실측의 2배(월초 하루만 리프레시를 늦춘다 · 06:00 아침 체인 전). 검사 주입: QWUF_PROGRESS_CMD · QWUF_CLEANUP_CMD · QWUF_POLL_S · QWUF_STALL_N · QWUF_HARD_TIMEOUT
+HARD="${QWUF_HARD_TIMEOUT:-7200}"; POLL="${QWUF_POLL_S:-60}"; STALL_N="${QWUF_STALL_N:-5}"
+T0_ISO=$(date '+%Y-%m-%d %H:%M:%S')
+progress() {
+  if [ -n "${QWUF_PROGRESS_CMD:-}" ]; then bash -c "$QWUF_PROGRESS_CMD" 2>/dev/null | tr -d '\r'; return; fi
+  powershell.exe -NoProfile -Command "\$t=[datetime]'$T0_ISO'; \$p=Get-Process EXCEL -ErrorAction SilentlyContinue | Where-Object { \$_.StartTime -ge \$t }; if (\$p) { [int](\$p | Measure-Object -Property CPU -Sum).Sum }" 2>/dev/null | tr -d '\r'
+}
+cleanup() {
+  if [ -n "${QWUF_CLEANUP_CMD:-}" ]; then bash -c "$QWUF_CLEANUP_CMD" 2>/dev/null; return; fi
+  powershell.exe -NoProfile -Command "\$t=[datetime]'$T0_ISO'; Get-Process EXCEL -ErrorAction SilentlyContinue | Where-Object { \$_.StartTime -ge \$t } | Stop-Process -Force" >/dev/null 2>&1
+}
+QW_OUT=$(mktemp)
+"${CMD[@]}" -SkipLogin -Only "$ONLY" -MaxRounds 2 > "$QW_OUT" 2>&1 &
+qpid=$!
+t0=$(date +%s); last=-1; stall=0; cut=""
+while kill -0 "$qpid" 2>/dev/null; do
+  w=0; while [ "$w" -lt "$POLL" ] && kill -0 "$qpid" 2>/dev/null; do sleep 1; w=$((w + 1)); done
+  kill -0 "$qpid" 2>/dev/null || break
+  el=$(( $(date +%s) - t0 )); [ "$el" -lt "$TMO" ] && continue
+  cpu=$(progress)
+  if [[ "$cpu" =~ ^[0-9]+$ ]] && [ "$cpu" -gt "$last" ]; then
+    stall=0; last=$cpu; echo "[qwuf] 기본 상한 ${TMO}초 경과(${el}초) — 수급 Excel 일하는 중(CPU ${cpu}초) · 기다린다(절대 상한 ${HARD}초)"
+  else stall=$((stall + 1)); fi
+  if [ "$el" -ge "$HARD" ] || [ "$stall" -ge "$STALL_N" ]; then
+    cut=$([ "$el" -ge "$HARD" ] && echo hard || echo stall)
+    echo "[qwuf] ★수급 종료($cut · ${el}초) — 지휘 셸과 이 실행이 띄운 수급 Excel 을 닫는다"
+    wp=$(cat "/proc/$qpid/winpid" 2>/dev/null); kill "$qpid" 2>/dev/null
+    [ -n "$wp" ] && taskkill //PID "$wp" //T //F >/dev/null 2>&1
+    cleanup; break
+  fi
+done
+wait "$qpid" 2>/dev/null; rc=$?
+[ -n "$cut" ] && rc=124
+sed 's/^/  [qw] /' "$QW_OUT"; rm -f "$QW_OUT"
 after=$(snap)
 adv=0
 IFS=';' read -r -a B <<< "$before"; IFS=';' read -r -a A <<< "$after"
