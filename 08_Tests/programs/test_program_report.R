@@ -66,6 +66,25 @@ chk("100자 초과 판정 · 1자 다음 단계도 조립된다(stop 없음)", n
 chk("긴 판정 문장은 자르지 않고 문단으로 싣는다", grepl("행동 카드는 남긴다", m3, fixed = TRUE))
 chk("짧은 다음 단계는 프로그램 맥락을 붙여 1줄로", grepl("다음(수익 엔진", m3, fixed = TRUE))
 
+cat("\n=== E. 위기 차트 모드(crisis = \"chart\" · 도훈 10-16 '위기별 낙폭은 시각화 자료로 대체') ===\n")
+tdir <- gsub("\\\\", "/", file.path(tempdir(), "prep_chart_test")); unlink(tdir, recursive = TRUE); dir.create(tdir)
+long_title <- "Regime-Dependent Predictive Structure Between Equity Factors: Evidence from Granger Causality and Rolling Windows in Korea"
+r4 <- prep_send(program = "충실구현", target = long_title, status = list(stage = "충실구현 완료", position = "검사", previous = "없음"),
+                card = card, next_step = "큐 다음 논문으로 넘어간다", artifact = tdir, push = FALSE, crisis = "chart")
+m4 <- r4$msg %||% ""; png4 <- file.path(tdir, "crisis_drawdown.png")
+chk("차트 모드 — 위기별 낙폭 글줄 섹션이 없다", !grepl("위기별 낙폭 (시장 대비)", m4, fixed = TRUE))
+chk("차트 모드 — 위기 차트를 산출물 폴더에 그렸다(빈 그림 아님)", file.exists(png4) && file.info(png4)$size > 20000, if (file.exists(png4)) file.info(png4)$size else "없음")
+chk("차트 모드 — 대조 1줄은 '위기 방어 귀속'으로 남는다", grepl("위기 방어 귀속", m4, fixed = TRUE) && grepl("짝 대조", m4, fixed = TRUE))
+chk("긴 논문명이 제목 · 대상 줄에 잘리지 않고 들어간다", grepl(long_title, m4, fixed = TRUE) && !grepl("Granger Causa…", m4, fixed = TRUE))
+.real_chart <- prep_crisis_chart
+prep_crisis_chart <- function(...) stop("주입 실패")                                   # 차트가 실패하면 글줄로 돌아간다(1통 보존)
+r5 <- prep_send(program = "충실구현", target = "검사용 전략", status = list(stage = "충실구현 완료", position = "검사", previous = "없음"),
+                card = card, artifact = tdir, push = FALSE, crisis = "chart")
+prep_crisis_chart <- .real_chart
+chk("차트 실패 → 위기별 낙폭 글줄로 되돌아간다", grepl("위기별 낙폭 (시장 대비)", r5$msg %||% "", fixed = TRUE))
+r6 <- prep_send(program = "방어 엔진", target = "검사용 전략", status = list(stage = "P2", position = "측정", previous = "없음"), card = card, artifact = tdir, push = FALSE)
+chk("기본값(글줄) 호출자는 그대로 — 위기 표 섹션 유지", grepl("위기별 낙폭 (시장 대비)", r6$msg %||% "", fixed = TRUE))
+
 cat(sprintf("\n== program_report: PASS %d · FAIL %d ==\n", PASS, FAIL))
 cat(sprintf('{"test":"program_report","pass":%d,"fail":%d,"total":%d}\n', PASS, FAIL, PASS + FAIL))   # 배터리 요약 계약(run_all_hooks.sh _last_summary_json)
 if (FAIL > 0L) quit(status = 1L)

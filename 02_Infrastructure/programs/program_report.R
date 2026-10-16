@@ -140,9 +140,62 @@ prep_card_digest <- function(card, window = c("overall", "visible", "test"), max
 #' @param verdict_line 판정 1~2줄(평문) — 없으면 카드 헤드라인
 #' @param push TRUE = 푸시(판정 변화 · 실패 · 종료), FALSE = 무음
 #' @param extra 추가 섹션 목록(선택)
+## 위기별 낙폭 차트(2026-10-16 도훈 "위기별 낙폭 (시장 대비)은 시각화 자료로 대체") — 행동 카드 위기마다 시장(KOSPI200) 낙폭 vs 전략 낙폭 막대 ·
+##   하락 포착률 라벨 · 보는 창 / 시험 창 / 걸침 구분 · 진행 중 표시. 수치 = 행동 카드(계약 산출 · AX-008) 그대로 — 손계산 없음. 글꼴 = 현대하모니 M(§0.7).
+##   반환 = 그린 파일 경로(그릴 위기가 없으면 NULL).
+prep_crisis_chart <- function(card, path, window = "overall") {
+  cr <- card$crises
+  if (is.null(cr) || !NROW(cr)) return(NULL)
+  cr <- data.table::as.data.table(cr)
+  w_sel <- window
+  if (!identical(w_sel, "overall")) cr <- cr[cr$window == w_sel]      # data.table 안에서 window 는 열 이름 — 인자는 w_sel 로
+  if (!nrow(cr)) return(NULL)
+  for (p in c("ggplot2", "ragg", "systemfonts")) if (!requireNamespace(p, quietly = TRUE)) stop("[prep_crisis_chart] 패키지 없음: ", p)
+  fam <- ""
+  fdir <- c(file.path(Sys.getenv("LOCALAPPDATA"), "Microsoft", "Windows", "Fonts"), file.path(Sys.getenv("WINDIR", "C:/Windows"), "Fonts"))
+  fM <- file.path(fdir, "현대하모니+M.ttf"); fM <- fM[file.exists(fM)][1]
+  if (!is.na(fM)) { try(systemfonts::register_font(name = "HDHM", plain = fM), silent = TRUE); fam <- "HDHM" }
+  lab_w <- c(visible = "보는 창", test = "시험 창", straddle = "걸침")
+  cr[, key := sprintf("%s~%s\n%s%s", format(as.Date(peak_date), "%y.%m"), format(as.Date(trough_date), "%y.%m"),
+                      .prep_or_vec(lab_w[as.character(window)], "?"), ifelse(.prep_true_vec(ongoing), " · 진행 중", ""))]
+  cr[, key := factor(key, levels = unique(key[order(as.Date(peak_date))]))]
+  L <- data.table::rbindlist(list(cr[, .(key, who = "시장(KOSPI200)", v = -abs(as.numeric(bm_dd)))], cr[, .(key, who = "전략", v = -abs(as.numeric(st_dd)))]))
+  L[, who := factor(who, levels = c("시장(KOSPI200)", "전략"))]
+  capl <- cr[, .(key, y = -pmax(abs(as.numeric(bm_dd)), abs(as.numeric(st_dd)), na.rm = TRUE),
+                 lab = paste0("포착 ", vapply(as.numeric(dd_capture), prep_fmt_ratio, character(1))))]
+  pct <- function(x) vapply(x, function(z) prep_fmt_pct(z, 0L), character(1))
+  g <- ggplot2::ggplot(L, ggplot2::aes(key, v, fill = who)) +
+    ggplot2::geom_col(position = ggplot2::position_dodge(0.78), width = 0.72) +
+    ggplot2::geom_text(ggplot2::aes(label = pct(v)), position = ggplot2::position_dodge(0.78), vjust = 1.3, size = 3.1, family = fam) +
+    ggplot2::geom_text(data = capl, ggplot2::aes(key, y, label = lab), inherit.aes = FALSE, vjust = 3.0, size = 3.3, family = fam, colour = "#333333") +
+    ggplot2::geom_hline(yintercept = 0, colour = "#444444", linewidth = 0.4) +
+    ggplot2::scale_fill_manual(values = c("시장(KOSPI200)" = "#9e9e9e", "전략" = "#1f77b4")) +
+    ggplot2::scale_y_continuous(labels = function(x) pct(x), expand = ggplot2::expansion(mult = c(0.22, 0.05))) +
+    ggplot2::labs(title = "위기별 낙폭 — 시장(KOSPI200) vs 전략",
+                  subtitle = "막대 = 위기 구간 고점→저점 낙폭 · 포착 = 전략 낙폭 ÷ 시장 낙폭(낮을수록 방어)",
+                  caption = "위기 = KOSPI200 Lunde-Timmermann 20/20 · 수치 = 행동 카드(계약 산출)", x = NULL, y = NULL) +
+    ggplot2::theme_minimal(base_family = fam, base_size = 12) +
+    ggplot2::theme(legend.position = "bottom", legend.title = ggplot2::element_blank(), panel.grid.minor = ggplot2::element_blank(),
+                   plot.title = ggplot2::element_text(size = 15), plot.subtitle = ggplot2::element_text(size = 10, colour = "#555555"),
+                   plot.caption = ggplot2::element_text(size = 8.5, colour = "#777777"))
+  dir.create(dirname(path), recursive = TRUE, showWarnings = FALSE)
+  ggplot2::ggsave(path, g, width = max(8, 1.25 * nrow(cr) + 3), height = 5.8, dpi = 150, device = ragg::agg_png)
+  path
+}
+.prep_or_vec <- function(x, d) { x <- as.character(x); x[is.na(x) | !nzchar(x)] <- d; x }
+.prep_true_vec <- function(x) !is.na(x) & as.logical(x) %in% TRUE
+## 차트 저장 위치 — 그 리서치 단위의 산출물 폴더(§0.5) · 산출물이 파일이면 그 폴더 · 없으면 임시 파일
+.prep_chart_path <- function(artifact, name = "crisis_drawdown.png") {
+  if (is.null(artifact) || !nzchar(artifact)) return(tempfile("crisis_drawdown_", fileext = ".png"))
+  d <- if (dir.exists(artifact)) artifact else dirname(artifact)
+  file.path(d, name)
+}
+
 prep_send <- function(program, target, status, card = NULL, verdict_line = NULL, next_step = NULL,
                       artifact = NULL, charts = NULL, push = FALSE, window = "overall", extra = NULL,
-                      dry_run = identical(Sys.getenv("QVEST_TG_DRY_RUN", ""), "1"), root = NULL) {
+                      dry_run = identical(Sys.getenv("QVEST_TG_DRY_RUN", ""), "1"), root = NULL, crisis = c("lines", "chart")) {
+  ## crisis = "chart"(충실구현 보고 · 도훈 10-16) — 위기별 낙폭 글줄 대신 위기 차트를 붙이고 대조 1줄만 남긴다 · 차트 실패면 글줄로 돌아간다(1통 보존)
+  crisis <- match.arg(crisis)
   if (!exists("tg_agent_brief", mode = "function")) {
     rt <- .prep_or(root, Sys.getenv("QM_ROOT", getwd()))
     suppressMessages(source(file.path(rt, "02_Infrastructure/telegram/telegram_notify.R")))
@@ -155,7 +208,15 @@ prep_send <- function(program, target, status, card = NULL, verdict_line = NULL,
                                    .prep_or(status$stage, "—"), target, .prep_or(status$position, "—"),
                                    .prep_or(status$previous, "—"))),
                .prep_line("판정", .prep_or(verdict_line, if (!is.null(D)) D$headline else "—"), "🎯", program, target))
-  if (!is.null(D) && length(D$lines))
+  cp <- if (!is.null(D) && length(D$lines) && identical(crisis, "chart"))
+    tryCatch(prep_crisis_chart(card, .prep_chart_path(artifact), window), error = function(e) { message("[prep_send] 위기 차트 실패 — 글줄로: ", conditionMessage(e)); NULL })
+  else NULL
+  if (!is.null(cp) && file.exists(cp)) {
+    charts <- c(stats::setNames(cp, "위기별 낙폭 — 시장(KOSPI200) vs 전략"), charts)
+    ctl <- D$controls[nzchar(.prep_or(D$controls, ""))]
+    if (length(ctl)) secs[[length(secs) + 1L]] <- if (length(ctl) >= 2L) list(heading = "위기 방어 귀속", type = "bullet", items = ctl) else
+      list(heading = "위기 방어 귀속", type = "text", body = ctl[1])                    # 글머리표는 2줄 이상만 받는다(tg_agent_brief)
+  } else if (!is.null(D) && length(D$lines))
     secs[[length(secs) + 1L]] <- list(heading = "위기별 낙폭 (시장 대비)", type = "bullet",
                                       items = c(D$lines,
                                                 if (D$omitted > 0L) sprintf("앞선 위기 %d건은 산출물에 있다", D$omitted),
@@ -170,6 +231,8 @@ prep_send <- function(program, target, status, card = NULL, verdict_line = NULL,
   tg_agent_brief(agent = "AlphaSearch", title = title, sections = secs, footer = footer, charts = charts,
                  relaxed = TRUE, force = TRUE, decode_jargon = FALSE, glossary = FALSE,
                  mute = !isTRUE(push), dry_run = dry_run,
-                 lock_scope = sprintf("prep_%s_%s_%s", gsub("[^A-Za-z0-9가-힣]", "_", program),
-                                      gsub("[^A-Za-z0-9가-힣]", "_", target), format(Sys.time(), "%Y%m%d%H%M%S")))
+                 ## 잠금 · 본문 보관 파일 이름 — 대상 앞 40자 + 해시(긴 논문명이 Windows 260자 경로를 넘어 중복 차단 · 보관이 조용히 빠지던 위험 · 10-16)
+                 lock_scope = sprintf("prep_%s_%s_%s_%s", gsub("[^A-Za-z0-9가-힣]", "_", program),
+                                      substr(gsub("[^A-Za-z0-9가-힣]", "_", target), 1L, 40L), substr(as.character(openssl::md5(enc2utf8(target))), 1L, 8L),
+                                      format(Sys.time(), "%Y%m%d%H%M%S")))
 }

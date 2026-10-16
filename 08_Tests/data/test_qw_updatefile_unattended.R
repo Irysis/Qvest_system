@@ -9,7 +9,7 @@ ok <- function(m) { PASS <<- PASS + 1L; cat("  OK  ", m, "\n") }
 ng <- function(m, d = "") { FAIL <<- FAIL + 1L; cat("  FAIL", m, d, "\n") }
 SH <- file.path(ROOT, "02_Infrastructure/data/qw_updatefile_unattended.sh")
 PY <- file.path(ROOT, ".venv_qvest_ml/Scripts/python.exe")
-td <- normalizePath(file.path(tempdir(), "qwuf"), winslash = "/", mustWork = FALSE); unlink(td, recursive = TRUE); dir.create(td)
+td <- gsub("\\\\", "/", file.path(tempdir(), "qwuf")); unlink(td, recursive = TRUE); dir.create(td)
 ux <- function(p) sub("^([A-Za-z]):", "/\\L\\1", p, perl = TRUE)                       # C:/x → /c/x (bash)
 st0 <- '{"Investor_Act":{"ymd":"20261002","ts":"x"},"Consensus":{"ymd":"20261002","ts":"x"},"Universe_Support":{"ymd":"20260828","ts":"x"}}'
 st1 <- '{"Investor_Act":{"ymd":"20261016","ts":"y"},"Consensus":{"ymd":"20261016","ts":"y"},"Universe_Support":{"ymd":"20260828","ts":"x"}}'
