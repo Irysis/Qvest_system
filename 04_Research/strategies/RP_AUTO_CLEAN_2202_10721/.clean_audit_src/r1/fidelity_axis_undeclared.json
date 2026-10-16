@@ -1,0 +1,30 @@
+{
+  "axis": "undeclared",
+  "verdict": "misdeclared",
+
+  "undeclared_changes": [
+    "[정상국면 Σ_t 가 점프 주를 그대로 포함] 논문 §4.3 은 리밸런싱 시점마다 '정상 국면의 공분산행렬 Σ_t' 를 추정하는데, 그 추정기는 두 가지뿐이다 — (a) π·μ~·Σ~ 를 고정한 혼합분포 우도의 (μ_t, Σ_t) 최대화, (b) 선호 경로인 필터링법(Appendix A.9): 롤링창 각 시점의 사후 점프확률 π̂_{t−s} 를 구하고 **π̂ ≤ π̄ 인 시점만** 써서 Σ̂_t 를 만든다(π* = 30%). engine.R:346 은 `S1 <- .sk_ridge(cov(Yn), .COV_RIDGE)` — 최근 52주 전부(점프 주 포함)의 단순 표본공분산이다. 점프 제외도, 혼합 우도 최대화도 없다. FIDELITY.changed 26개 항목 어디에도 Σ_t 추정기 교체가 없고, windows 1번 항목은 창의 끝점(52행·wend ≤ d)만 선언하면서 그 대상을 'Sigma_t (normal-regime covariance)' 로 부른다. 그 결과 코드의 Σ_1 은 정상국면 공분산이 아니라 혼합분포 공분산이며, Σ_2 = cov(Yn) + Σ~ 로 점프 분산을 이중계상한다. engine.R:228 의 EM 은 사후확률 가중 정상국면 공분산 S1 을 실제로 산출하지만 engine.R:231 에서 버린다.",
+    "[양의 추정 μ~ 영점 제약 미구현] 논문 §4.1 은 최종 주간 모형을 확정할 때 '채권은 점프 성분이 없다는 제약을 도입한다 — 앞선 추정들이 이 자산군의 기대 점프가 양수임을 시사하고, 또한 통계적으로 유의하지 않기 때문' 이라고 적고 Table 9 에서 채권 행을 μ~ = 0.00 · σ̃ = 0.00 으로 못박는다(Table 21 monthly 동일). 즉 추정된 기대 점프가 양수인 자산은 점프 성분을 0 으로 제약하는 것이 논문 최종 모형의 절차다. engine.R:231 은 `mu_tilde = mu2 - mu1` 을 성분별 부호 제약 없이 그대로 쓴다 — 어떤 슬리브의 μ~ 성분이 양수로 추정되면 §2.3 의 sgn γ₁ 관계에 따라 그 슬리브의 왜도 기여 부호가 뒤집히고 ES 가 **낮아져** 비중이 늘어난다. FIDELITY 에는 이 제약에 대응하는 paper_steps 항목도, changed 항목도 없다(changed(10) 은 Σ~ 의 PSD 사영만 선언하고 μ~ 의 부호는 다루지 않는다).",
+    "[비유한 기울기 시 0 반환 — 미신고 수치 가드] engine.R:166 `if (is.null(r) || !all(is.finite(r$grad))) return(rep(0, n))` — 기울기가 비유한일 때 영벡터를 반환하므로 BFGS 는 그 지점을 정류점으로 보고 조기 종료한다. FIDELITY.changed(10)·(11) 은 수치 가드를 전수 열거한다고 선언하면서(ridge 2종 · NUM_FLOOR · VAR 브래킷·tries·tol · OPT_MAXIT·RELTOL · 비가행 스텝의 .OPT_PENALTY) 이 기울기 가드만 빠져 있다. 논문 §3.3.2 는 프로그램만 제시하고 알고리즘을 지정하지 않으므로 논문 쪽 근거도 없다."
+  ],
+
+  "signal_mismatch": [
+    "[A.9 점프 제외 지시함수 미적용] 논문 Appendix A.9 식: Σ̂_{i,j,t} dt = (1/n_t) Σ_{s=0}^{n_rw−1} 1{π̂_{t−s} ≤ π̄}·(y_{i,t−s} − μ̂_{i,t})(y_{j,t−s} − μ̂_{j,t}), n_t = Σ 1{π̂_{t−s} ≤ π̄}. engine.R:346 은 `cov(Yn)` 로 n_t = n_rw = 52 · 지시함수 ≡ 1 로 계산하고, 평균도 점프 주를 포함한 52주 표본평균을 뺀다(논문은 점프 제외 표본의 μ̂_{i,t}). 두 식이 같아지는 경우는 창 안에 π̂ > π̄ 인 주가 하나도 없을 때뿐이다."
+  ],
+
+  "counterexample": "2008-10 처럼 어떤 슬리브(예: size)가 주간 −15% 를 찍은 주 w* 를 가정한다. engine.R 경로: w* 는 이후 52개 신호일의 `Yn` 에 그대로 남아 `diag(cov(Yn))` 의 해당 성분을 키우고(Σ_1 상승), 동시에 `.sk_em` 이 w* 를 점프 관측으로 잡아 Σ~·μ~ 에도 반영하므로 Σ_2 = cov(Yn) + Σ~ 에서 같은 사건이 두 번 계상된다 → ES 상승 → ERC 가 그 슬리브 비중을 급감시키고, 정확히 52주 뒤 w* 가 롤링창을 빠져나가면 비중이 다시 급등한다. 논문 A.9 경로: w* 는 π̂_{w*} ≥ π* 로 판정되어 Σ̂_t 계산에서 **제외**되므로 Σ̂_t 는 사실상 변하지 않고, 비중 축소는 느리게 움직이는 점프 증분만을 통해 일어난다. 이 차이는 부호나 소수점이 아니라 논문의 표제 결과 그 자체다 — §4.3 은 '점프가 롤링창을 빠져나갈 때 1년 뒤 배분이 양의 점프를 보이고 그 결과 높은 회전율을 얻는다' 를 **변동성 기반 ERC 의 결함**으로 지목하고, §4.4 는 왜도 기반 ERC 의 연 회전율이 변동성 기반 대비 40% 낮다(31.45% vs 53.19%)고 보고한다. 코드의 Σ_t 는 변동성 기반 ERC 와 동일한 점프 민감도를 가지므로 이 회전율 개선 기전이 구조적으로 재현될 수 없다. 둘째 반례: 위기 주간에 상승한 저변동성(low beta) 슬리브는 `mu2 - mu1` 성분이 양수로 추정될 수 있고, changed(10) 스스로 'Σ~ 는 PSD 사영 뒤 0 근처가 되어 왜도는 주로 x'μ~ 로 들어온다' 고 인정하므로, 그 슬리브의 ES 는 논문 Table 9 의 영점 제약판보다 낮게 나와 비중이 더 커진다 — 논문이 바로 그 상황을 제약으로 배제했다.",
+
+  "evidence": "§4.3 'At each rebalancing date, we have to estimate the covariance matrix Σ_t for the normal regime' + 'estimating the covariance matrix in the normal regime by maximum likelihood is not our preferred approach. Instead ... we estimate the parameters μ̂_t and Σ̂_t by only considering the dates of the rolling window, which do not correspond to a jump' (π* = 30%); Appendix A.9 steps 2–3 (점프 제외 지시함수 1{π̂_{t−s} ≤ π̄} 와 n_t 를 쓴 μ̂_t · Σ̂_t 명시식); §4.2 Figure 13 '[1년 롤링 변동성] estimate largely overestimates the volatility of the carry risk premium in normal periods' (단순 롤링 공분산이 제거 대상 편의라는 선언); §4.3 Figure 14 서술(점프 직후 급감 · 1년 뒤 급등 · 높은 회전율) 과 §4.4 (회전율 53.19% vs 31.45%); §4.1 Table 9 (채권 μ~ = 0.00 · σ̃ = 0.00) 와 그 본문 'we also introduce the constraint that bonds have no jump component, because the previous estimations suggest that the expected jump is positive for this asset class. Moreover, it is not statistically significant.' + Table 21; §2.3 sgn γ₁ 관계식; §3.3.2 (log-barrier 프로그램만 제시 · 알고리즘 미지정); §5.1 전문(논문 쪽 근거 확인 — 수치·표·데이터원·구성법이 전무하여 FIDELITY 의 '§5.1 은 구성법을 주지 않는다' 주장은 사실).",
+
+  "confidence": "high",
+
+  "checked": "engine.R 전 행(1–373)을 FIDELITY.changed 26항 · paper_steps 21항 · windows 7항 · constants 24항과 1:1 대조 — Σ_t 추정기 · EM M-step/E-step 식 · log-sum-exp · PSD 사영 · ridge 2종 · NUM_FLOOR · VaR 브래킷·tol · BFGS 설정·penalty·기울기 가드 · RC_TOL 폴백 · 주간 wkid/ wend/ asof 구성 · .ME_OK 게이트 · 16(a)~(g) 스킵 조건 · dedup=FALSE · coverage_min · SIGNAL_BREADTH 미발행 · 비중 집계·영비중 제거·재정규화 · μ~ 부호 처리. 추가로 eq.4 ES · VaR 정의식 · eq.5 RC 를 손으로 재도출해 코드 식과 대조(결과: 일치).",
+
+  "prior_review": [],
+
+  "_항목 서술 규약": "★모든 항목은 대괄호 **한 줄 요약**으로 시작한다 - 12~30자 · 그 항목만 읽고도 무엇이 어긋났는지 아는 문장 · 원문 인용이나 파일:행을 요약에 넣지 마라(뒤 본문에 적는다). 이 요약이 통지에 그대로 실리고 본문은 안 실린다 - 요약이 없으면 사람은 잘린 원문 조각을 받는다. 예: '[숏 레그 그로스 익스포저 24% 미달]' · '[유니버스 탈락분 비중 재분배 없음]' · '[은닉층 순환 구조 미구현]'. ★용어는 그 분야의 정통 표기를 쓴다 - 임의 한글 조어를 만들지 말고, 원문 용어가 영문이면 통용 표기를 그대로(gross exposure · long/short leg · winsorize · lookback), 우리 지표는 정본 표기를 그대로(PORT_t · Calmar · MDD · OOS retention). 뜻이 통해도 조어면 읽는 사람이 두 번 해석한다.",
+
+  "_배열 규약": "undeclared_changes·signal_mismatch 는 **발견만** 담는다. 없으면 빈 배열 [] 로 두고 '불일치 없음' 같은 비발견을 항목으로 넣지 마라 - 근거 게이트가 배열 길이로 선다. prior_review 는 재감사(위 '재감사다' 절이 있을 때)에서 네 축 항목만 - 아니면 빈 배열 [].",
+
+  "note": "청정 모드 — 측정 산출물을 보지 않고 engine.R 코드 경로 추적(.sk_em → jm$Sigma_tilde → S1=cov(Yn) → S2=S1+Σ~ → .sk_rb → .OUT)으로 대조했다. 축 밖 한 줄: FIDELITY 의 인용 좌표 2건이 어긋나지만 코드가 하는 일은 논문과 같으므로 지적 항목이 아니다 — π=0.5% 를 changed(5)·constants 가 'Table 11' 로 적었는데 실제 출처는 §4.1 Figure 11 / Table 9(Table 11 은 MV·ERC·MES 비교표)이고, paper_steps 의 'No special structure on the jump covariance' 와 3자산 데이터 항목의 paper_quote 는 원문 문장이 아닌 자작 요약이다. 반대로 changed(12)(eq.5 의 dVaR/dx 항이 Σ_j π_j φ(h_j) dh_j/dx = 0 으로 소거된다)는 논문 δ_1·δ_2 를 ϖ 가중 합산해 손으로 검산한 결과 정확했다 — 코드 기울기는 eq.5 와 동일하다."
+}

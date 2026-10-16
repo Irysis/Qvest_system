@@ -1,11 +1,13 @@
 {
   "axis": "cost",
-  "verdict": "adapted",
-  "undeclared_changes": [],
+  "verdict": "misdeclared",
+  "undeclared_changes": [
+    "[주간 리밸 전환이 비용엔 중립이 아님] FIDELITY changed①은 일간→주간 리밸 전환을 '산출 동일·계산량만 절감'으로만 선언했는데, §VI 는 바로 이 셀(기본 Markowitz)이 **일간 리밸의 높은 turnover 때문에** 비용 하에서 음의 SR 로 무너진다고 명시하고, 그 해법도 '예측자를 느리게(slowed-down)'하는 정교한 재최적화(generalized Markowitz)라고 적는다 — 즉 논문 자신이 리밸 빈도=비용 결과의 결정 변수라고 선언한 그 변수를, 이 구현은 아무 재최적화 없이 하네스 접기(H10/D16)로 낮춰놓고 비용측 영향은 선언하지 않았다"
+  ],
   "signal_mismatch": [],
-  "counterexample": "구성 못 했다. 논문 §VI 는 비용 수치(bps·%·통화)를 본문·그림 캡션 어디에도 제시하지 않는다(commissions + half-spread 를 쓴다는 서술만 있고, 결과는 Sharpe 1.19→1.15(비용인지 전)→1.0(비용인지 후) 등 사후 성과로만 보고된다) — 그래서 '논문 비용값과 구현 비용값이 다르다'는 수치 반례 자체가 성립할 여지가 없다. FIDELITY.json 은 이를 정직하게 commission_paper=null 로 반영했고, H7 은 등급판(15bps, Σ|Δw| 턴오버 기준)과 논문판(commission_paper, null→0 취급)을 분리해 병기한다고 선언한다 — 두 열이 섞여 paper 헤드라인 수치(SR 1.19, §II~III 는 애초에 무비용 설정)에 15bps 가 잘못 들어가는 지점을 찾지 못했다.",
-  "evidence": "§VI(Introducing transaction costs) 서문 — 이전 절(§II~§III, Fig.1~6 의 SR FF 0.34 / Markowitz k=5 1.19)은 일간 리밸 무비용 가정이었음을 명시하고, 이 절에서 처음 'commissions, and half-spread costs'(선형 비용)를 도입하되 neglect slippage(시장충격 제외)라고만 서술 — 수치(bps 등) 명시 없음. 비용 적용 후 전 구성법 SR 이 음수가 되고, 비용인지형 일반화 마코위츠만 1.15→1.0 유지된다는 서술도 수치는 있으나 '비용 단가'는 여전히 안 준다.",
+  "counterexample": "모멘텀 순위가 주중(월~금) 두 번 뒤집히는 구간을 가정하면: 논문의 일간 리밸은 매일 그 작은 Δw 를 실제로 거래해 매 거래일 15bps(또는 논문 자신의 commission+half-spread)를 지불한다(§II 'the portfolio is rebalanced on a daily basis'). 이 구현은 그 주의 **마지막 거래일에만** 포지션을 계산·집행하므로(engine.R:82-99 sig_idx — ISO 주 마지막 거래일만 산출) 주중의 왕복 드리프트는 전혀 과금되지 않고 순(net) Δw 에만 15bps 가 붙는다(H7). 삼각부등식상 Σ_일간|Δw_d| ≥ |Σ_일간 Δw_d| = |Δw_주| 가 항상 성립하므로, 이 구현의 등급판(15bps) 비용 총량은 같은 신호를 일간으로 집행했을 때보다 구조적으로 작거나 같고, 신호가 주중에 흔들리는 구간에서는 엄격히 작다 — §VI 가 지적한 바로 그 메커니즘(일간 turnover 가 비용을 지배)에서 벗어나 있는데 FIDELITY 는 이를 비용 차이로 선언하지 않았다.",
+  "evidence": "§II 'In any of the above setups, the portfolio is rebalanced on a daily basis.' / §VI 'We will take all the linear costs into account: commissions, and half-spread costs' + 'we will neglect slippage costs' + (daily rebalancing 의 높은 turnover 때문에 비용 적용 시 FF·Neutral·Beta·Betaopt·기본 Markowitz 포함 모든 구성법이 negative Sharpe 가 되고, generalized Markowitz(예측자를 느리게 하는 재최적화)로만 완화된다는 서술 — 정확한 원문 축자 인용은 저작권 제약으로 모델이 거부했으나 핵심 주장(일간 turnover → 비용 하 전원 음의 SR → 빈도 재최적화로 완화)은 WebFetch 요약 2회 교차 확인) / FIDELITY.json changed① · H7 · H10",
   "confidence": "high",
-  "checked": "engine.R 에 비용 계산 코드 없음(비용은 하네스 레벨 H7 소관) 확인 · FIDELITY.json commission_paper/paper_steps[15]/harness_disclosure H7 대조 · 논문 §VI 전문(WebFetch 2회, 서로 다른 질의)에서 commissions·half-spread·bps·%·currency 수치 부재 재확인.",
-  "note": "엔진 자체는 비용 로직을 갖지 않는다(engine_direct, PORTFOLIO 비중만 산출) — 비용은 하네스 공통 15bps(v2.4 delta) 규약이 전담하며 이는 CLAUDE.md 가 모든 프로그램에 거는 측정 축 규약이라 이 리플리케이션 고유의 편차가 아니다."
+  "checked": "논문의 명시 비용 서술(§VI commissions+half-spread, slippage 제외, bps 미명시) vs FIDELITY commission_paper=null·H7 15bps 선언을 대조(불일치 없음) 후, 비용 결과를 좌우하는 변수인 리밸 빈도(일간 vs 주간 접기)가 FIDELITY 에서 '비용 중립'으로 선언된 것이 §VI 의 자체 주장과 맞는지 대조",
+  "note": "리밸 주기 자체는 harness D16/H10(repo 전역 측정 축 제약)이 강제한 것이고 이 엔진만의 선택이 아니다 — 축 범위상 지적하는 것은 그 변경의 '비용 영향 없음' 선언 자체이며, 리밸 주기 변경 그 자체의 선언 여부는 다른 축(construction/timing) 몫일 수 있어 그쪽 검증자 참조용으로 한 줄만 남긴다."
 }

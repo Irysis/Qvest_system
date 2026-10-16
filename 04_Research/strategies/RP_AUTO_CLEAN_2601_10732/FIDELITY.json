@@ -1,0 +1,238 @@
+{
+  "fidelity": "adapted",
+  "kept": "기전 = 위기 국면에서만 HML 이 SMB 를 9거래일 선행한다 — 다변량 Student-t HMM(K=3)으로 위기 국면을 판정하고(평균 ‖x‖ 최대 상태 = Crisis) 그 국면에서만 직전 9일 HML 누적수익의 부호로 SMB 스프레드를 롱(+)/숏(−), 비위기는 무포지션(§5.2 · Table 6).",
+  "changed": "① 원천 치환(adapted 의 이유): 논문의 6계열은 Kenneth French 미국 일간 팩터인데 엔진 입력에 미국 FF 패널이 없다 — 측정 축(한국 유니버스) 횡단면에서 FF 2x3 VW 정렬로 6계열(MKT·SMB·HML·RMW·CMA·MOM)을 재구성했다 ② 거래 대상 치환: 논문은 FF SMB **수익계열**에 부호를 적용하고, 우리는 그 SMB 를 종목 스프레드 포트폴리오로 만들어 거래한다(롱 = 소형 9칸 Σw=+1 · 숏 = 대형 9칸 Σw=−1 · 칸당 1/9 · 칸 안 VW). ★단일 규모 분할(⑤)이므로 한 종목의 size 라벨이 그 보유월에 유일하고(세 정렬이 같은 6월 형성일의 같은 분기점을 쓴다) 세 정렬 기여의 부호가 같다 — 롱·숏 동시 편입과 다리 간 상쇄가 **구조적으로 불가능**하다. 18칸(3정렬 x 6버킷)이 전부 비지 않는 신호일만 포지션을 내므로(㉚) 다리별 Σ|w| = 1 이 정확히 성립한다(엔진이 실행 로그에 다리 총노출 범위와 '양다리 동시 편입 종목일' 수 = 0 을 찍는다 · **엔진**은 비중 재정규화를 하지 않는다 — 하네스 쪽 처리는 H6·H10 공시가 정본이다) ③ 유니버스 치환 = 전 종목 + 위생(계약 주입 K200 플래그 · H1) ④ 표본기간: 논문 1990-01-02~2024-12-31(8,817일 · 거래 1995~2024) vs 우리 .RP_START_DATE(2000-01-01)~ · 실제 신호 시작은 6계열 가용 첫날 + 번인 1260 관측 뒤로 **데이터가 정한다**(팩터 DB 시작월이 상한 — 빈 달을 지어내지 않는다) ⑤ ★분기점(r1 기각 수정): FF 는 NYSE 전용 분기점, 우리는 그 형성일 유니버스 분기점이다. **규모 분기점은 형성일당 1개**(engine.R §3-c `SZBP` · `by = Date`)를 산출해 BM·OP·INV·MOM **전 정렬에 공통** 적용한다 — §3.1 이 원천으로 지목한 Ken French 규약이 형성일당 단일 규모 분기점(6월 말 NYSE 중위 ME 하나를 세 2x3 정렬에 공통 · 모멘텀은 월말 중위)이고 그래서 'SMB ... the average return on the nine small stock portfolios minus the average return on the nine big stock portfolios' 가 성립하기 때문이다. 분기점 모집단 = 그 형성일 위생 멤버 ∩ finite Size > 0 — 정렬·특성 가용성·수익 가용성과 무관한 **단일 모집단**이고 n < .MIN_FORM_N 이면 그 형성일의 전 정렬이 무효다. (r1 은 이 분기점을 `by = .(Date, SORT)` 로 잡아 정렬마다 중위가 갈렸고 그것이 기각 사유였다 — r2 가 원문 원천 규약으로 되돌렸다.) 특성 30/70 분기점은 정렬마다 그 정렬의 모집단(형성일 위생 멤버 ∩ 거래가능 패널 ∩ 그 팩터 Z 가용 ∩ n ≥ .MIN_FORM_N)에서 따로 잡는다 — 원천도 특성별 분기점은 그 특성이 가용한 모집단에서 나오므로 이것은 단일 규모 분할과 충돌하지 않는다 ⑥ SMB 칸 선택: French 파일 중 SMB·HML·RMW·CMA 를 한 묶음으로 주는 5팩터 2x3 일간 파일 규약을 골라 SMB = BM·OP·INV 세 정렬의 SMB 평균 = avg(9 small) − avg(9 big) 으로 썼다(3팩터 파일의 BM 정렬 단독 SMB 가 다른 칸이다 — 논문은 어느 파일인지 적지 않는다) ⑦ 특성 치환: HML←V01_BM · RMW←Q01_GPA(매출총이익/총자산 ≠ FF 영업수익성/자기자본) · CMA←Q06_Asset_Growth(등록부가 이미 부호 반전해 상위분위 = Conservative) · FF 의 BE(t−1)/ME(전년 12월) 시점 규약 대신 등록부 가용일 규칙(quarterly+45d;annual_3/31) ⑧ 팩터 DB 값은 원값이 아니라 Z_Score_Aligned(횡단면 절단·z-score·방향 정렬 — C13/C15) 이고, 확장 IC 부호가 바뀌면 특성 **방향이 뒤집힐 수 있다**(그 달 정렬이 역전) ⑨ MOM 특성은 팩터 DB 가 아니라 RAWDATA 월수익(log1p 합)으로 계산했다 — FF prior(2-12) 와 창이 일치하고, 11개월 중 결측월이 있는 종목은 그 정렬에서 제외된다(CJ 로 월 격자를 채우고 비유한 누적은 버린다) ⑩ VW 가중 = 전일 시총 ME_{t−1}(형성시점 ME + 가격 드리프트 대신) · RF 패널이 없어 .RF_DAILY = 0 이므로 MKT 는 초과수익이 아니라 유니버스 VW 수익이다 ⑪ HMM 적합: 논문은 전표본 1회 적합 + 전표본 라벨(§3.2·§3.3)인데 그것은 C1 위반이라 **확장창 재적합**(번인 1260 관측 직후 1회 + 매년 첫 관측일)과 **필터 상태**(MAP · 동점은 첫 상태)로 바꿨다 — 평활·Viterbi 를 쓰지 않는다 ⑫ HMM 초기화 = ‖x‖ 3분위 결정론 분할(논문 미명세) → 난수 없음 · set.seed 불필요 ⑬ HMM 수치 가드: 공분산 ridge 1e-10 · chol 실패 시 jitter 1e-6×(1+평균대각) · 자유도는 t 1차조건의 uniroot 구간 [2.1, 100](해 없으면 직전 ν 유지) · 상태 사후질량 < 1e-6 이면 그 상태 모수 갱신 생략(직전 유지) · 스케일 분모 바닥 1e-300 · 방출은 행최대 스케일 후 지수화 · 전이 누적행렬의 비유한·음수 성분은 0 으로 치환하고 행합이 0 이면 1 로 두어 정규화 · 상태확률 행합이 0 인 날은 1 로 두고 필터는 그날 방출 갱신 없이 전이만 전파 · EM 상한 200회 · 상대 허용오차 1e-5(미수렴이면 200회에서 멈춘 모수를 쓴다) ⑭ 위기 상태 지정 = 적합창 안 γ 가중 평균 ‖x‖ 최대(Table 1 기준) · 재적합마다 다시 정한다 ⑮ 6계열 표준화·윈저화 없음(논문 미명세 · 위치-척도 모형이라 부호 규칙에 척도 무관) · 단위는 소수(논문 Table 1 의 ‖x‖ 수치는 % 로 보인다) ⑯ 9일 누적 HML = 일별 스프레드 수익의 **단순합**(복리 아님 · 논문 미명세 · 부호만 쓴다) · 달력일이 아니라 **유효 관측일 9개** ⑰ 창 종점: 논문 규칙은 수익일 t 에 [t−9, t−1] 인데 우리는 신호일 d 에 [d−8, d] 를 쓰고 집행이 close d+1(H4) 이라 첫 수익일 t = d+2 ⇒ 실질 [t−10, t−2] — close_t1 아래 최소 지연 선택 ⑱ 9일 누적이 정확히 0 이면 무포지션(논문은 >0 · <0 만 규정) ⑲ 무포지션 표현: 하네스가 Weight==0 행을 버리므로(replication_harness.R:220) 위생 상위 2종목에 ±1e-6 상쇄 쌍을 낸다 — 결합 수익 ≈ 0(잔차 ≤ 1e-6×두 종목 수익차 ≈ 1e-8/일) · 추가 회전 ≈ 0. 이 토큰이 없으면 직전 보유가 이월돼(H5) 전략이 평생 포지션을 들고 있게 된다 · 그날 적격 종목(위생 멤버 ∧ finite Size>0 ∧ finite Ret ∧ Vol>0)이 1개뿐이면 `min(.FLAT_N, .N)` 가드로 +1e-6 한 종목만 나간다(그날 순노출 +1e-6) ⑳ 산출이 비는 날: 6계열 완전관측·국면·9일 창 중 하나라도 없는 거래일은 신호를 내지 않고 그날은 리밸이 없어 **직전 보유가 이월된다**(H5) — 주로 계열 시작 구간 ㉑ Granger 검정(§3.4)은 구현하지 않았다 — 논문의 증거 단계이고 매매 신호에 들어가지 않는다. 그 산출물(방향 HML→SMB · L=9 · Table 3)만 상수로 수입했다(우리 자료로 재검정·재선택하면 평가 창 결과를 소비한다 — C1/C14) ㉒ 국면 경계 배제(§3.4 ẑ_{t−ℓ}=k)는 검정 표본 필터라 매매에 걸지 않았다(§5.2 규칙대로 신호일 당일 위기 판정만) ㉓ 형성 요건: 그 형성일에 규모 분기점 모집단 ≥30 이어야 하고(미달 = 그 형성일 전 정렬 없음) · 한 정렬은 그 정렬 모집단 ≥30 ∧ 6버킷 전부 비지 않아야 성립하며(미달 = 그 보유기간 그 정렬 없음 → 6계열 결손 → 신호 없음) · 일별 버킷 수익도 6버킷 전부 있는 날만 · SMB 는 세 정렬 전부 있는 날만 ㉔ 형성 뒤 위생 유니버스를 벗어난 종목은 그날 버킷에서 빠지고 버킷 안 VW 비중이 **재정규화**된다(FF 는 다음 형성까지 보유) ㉕ 패널 행 요건 = is.finite(Ret) ∧ ME_{t−1} > 0 — 거래정지·수익 결측일의 종목은 그날 버킷에서 빠지고, 형성일이 그런 날이면 그 종목은 그 기간 정렬에서 제외된다(단 ⑤ 의 분기점 모집단은 이 요건을 걸지 않는다) ㉖ 신호는 논문대로 **일간**으로 내지만 하네스가 ISO 주 1회(그 주 마지막 신호)로 접으므로(H10 · D16) 주 안의 부호 반전은 사라진다 ㉗ 비용: 논문은 미반영(§5.2 'Transaction costs: Not modeled') → commission_paper = 0 · 등급판은 15bps(H7) ㉘ 팩터 DB 호출 규약: 적재 실패 또는 패널 기준일(factor_db_asof_date) > 형성일이면 그 형성년을 **건너뛴다**(tryCatch → NULL · fail-closed) → 그 보유기간은 6계열이 결손돼 신호가 없다 · coverage_min 은 연결자 기본값 0.05 를 명시로 고정했고(그 달 커버리지 미달 팩터는 패널에서 빠진다 → 그 정렬 결손) · dedup 은 기본값 FALSE 지만 군집이 겹치지 않게 id 를 하나씩만 요청했다(Q06 의 DUPC-023 partner GR03 미사용) ㉙ 엔진은 유동성 필터를 걸지 않는다(논문에 유동성 규칙이 없다 — H8) · 관리종목·거래정지·불성실공시 플래그도 직접 읽지 않는다(H1 의 위생 멤버십이 처리한다) · 예외로 무포지션 토큰만 그날 Vol > 0 을 요구한다(체결 가능한 종목에 싣기 위해) ㉚ 거래일 18칸 요건: 그 신호일에 3정렬 x 6버킷 = 18칸이 전부 비지 않아야 포지션을 낸다(engine.R `n_cell == .N_SMB_CELLS`). 미달이면 그 신호일 POS 가 비고 리밸이 없어 직전 보유가 이월된다(H5). 실제로는 SMB 계열 자체가 세 정렬 6버킷 완전 요건 아래 산출되므로(㉓) 거래일은 이미 이 요건을 만족한다 — 다리 Σ|w| = 1 을 코드 구조로 보장하려고 명시 요건으로 둔 것이다 ㉛ 분기점 수치 규약(논문·원천 모두 미명세): quantile 보간형 = 7(R 기본값을 .QTL_TYPE 으로 명시 고정) · 규모 동점(Size == 분기점)은 Small, 특성 동점(CH == 30/70 분기점)은 낮은 분위로 간다(`Size > sz_bp` · `CH > c_lo` · `CH > c_hi`) ㉜ 형성일 = 그 달 패널 **마지막 거래일**(6월 형성은 6월 마지막 거래일 · 모멘텀은 매월 마지막 거래일) — 달력 월말이 비거래일이면 그 직전 거래일이다. 규모 분기점은 그 형성일 당일 Size 로 잡는다(보유는 익월부터라 PIT 유효 · windows size_bp).",
+  "paper_original_form": "포트폴리오 산출이 아니라 시계열 통계 연구다 — 미국 FF 일간 6팩터(1990-2024)에 Student-t HMM 으로 3국면을 분해하고 국면별 Granger 인과(30 방향쌍 · Bonferroni)를 검정해 위기 국면 HML→SMB(9일 지연 · Table 3 p=1.89e-5)를 보고한 뒤, §5.2/Table 6 에서 그 선행을 쓰는 매매 규칙 1개를 비용 미반영으로 1995~2024 백테스트해 **수익이 없음**(연 −6.1% · SR −0.75 · MDD −97.5% vs SMB 바이앤홀드 +1.9%/0.27)을 보고하고, 9일 선행은 방향성 매매가 아니라 위기 국면의 리스크 관리 정보라고 결론한다(§6).",
+  "portfolio_spec": { "construction": "engine_direct" },
+  "commission_paper": null,
+  "declared_role": "diversifier — §6: \"For practitioners, the finding suggests that during detected crisis regimes, monitoring Value factor movements may provide information relevant to Size factor risk management.\" + \"Whether this translates to practical hedging value remains to be demonstrated.\" · §5.2 는 'statistical predictability ≠ economic predictability' 로 방향성 매매 수익을 명시적으로 부정한다(Table 6 연 −6.1% · SR −0.75). 논문이 주장하는 역할을 그대로 옮긴 것이고 판정은 측정이 한다.",
+  "paper_steps": [
+    {
+      "step": "표본 · 기간",
+      "paper_quote": "§3.1: \"January 2, 1990 – December 31, 2024 (8,817 trading days)\" · Table 6 캡션: \"Trading Strategy Backtest (1995–2024)\"",
+      "status": "changed",
+      "note": "측정 축 .RP_START_DATE(2000-01-01)~ 로 바꿨고, 실제 신호 시작은 6계열 가용 + 번인 1260 관측 뒤로 데이터가 정한다(changed ④). 논문 거래구간 1995~2024 와 다르다."
+    },
+    {
+      "step": "원천 — FF 일간 6팩터",
+      "paper_quote": "§3.1: \"We use daily returns for the Fama-French six factors from Kenneth French's data library: Market excess return (MKT-RF), Size (SMB), Value (HML), Profitability (RMW), Investment (CMA), and Momentum (MOM).\"",
+      "status": "changed",
+      "note": "미국 FF 패널이 엔진 입력에 없다 — engine.R §3~4 가 한국 유니버스 횡단면에서 FF 2x3 VW 정렬로 6계열을 재구성한다(changed ①⑤⑥⑦). 이 치환이 fidelity=adapted 의 근거다."
+    },
+    {
+      "step": "전처리(결측·이상치·표준화)",
+      "paper_quote": "§3.1·§3.2: 전처리·표준화·윈저화·결측 처리 명세 없음(원문에 서술이 없다 — 기구축 팩터 계열을 그대로 쓴다)",
+      "status": "omitted",
+      "note": "논문이 서술하지 않은 전처리를 넣지 않았다 — 6계열에 표준화·윈저화·절단 없음(changed ⑮). 결측은 우리 패널 요건으로만 발생하고 그 요건은 changed ⑨㉓㉕ 에 적었다."
+    },
+    {
+      "step": "국면 수 선택 K=3",
+      "paper_quote": "§3.2: \"The number of regimes (K=3) was selected by the Bayesian Information Criterion, which favored three regimes over two (ΔBIC=847) or four (ΔBIC=312)\"",
+      "status": "changed",
+      "note": "K=3 을 논문값으로 **고정**했다(.K_REGIMES). 우리 자료로 BIC 재선택하면 평가 창 전체 통계를 쓰는 선택이 되어 C1 이다."
+    },
+    {
+      "step": "국면 모형 — 다변량 Student-t HMM · EM",
+      "paper_quote": "§3.2: \"Transition model: P(z_t=k|z_{t−1}=j)=A_jk\" · \"Emission model (multivariate Student-t) ... δ_k(x_t)=(x_t−μ_k)^T Σ_k^{−1}(x_t−μ_k)\" · Table 1: \"Transition probabilities estimated via Expectation-Maximization\"",
+      "status": "implemented",
+      "note": "engine.R `.mvt_ld`(다변량 t 로그밀도) + `.hmm_fit`(forward-backward · t 잠재 척도 u_tk = (ν+d)/(ν+δ) · ν 는 uniroot). 상태별 μ·Σ·ν 전부 추정."
+    },
+    {
+      "step": "국면 적합 범위 — 전표본",
+      "paper_quote": "§3.3/§5.4: \"regime labels are identified using the full sample, then Granger tests are conducted within those regimes\" · 한계로 \"a fully rigorous approach would fit the HMM on a training period and freeze regime boundaries for a held-out test period\"",
+      "status": "changed",
+      "note": "전표본 적합·라벨은 C1 위반이라 확장창 재적합(번인 1260 관측 + 매년 첫 관측일) + 필터 상태로 대체했다(changed ⑪ · windows hmm_fit/hmm_filter)."
+    },
+    {
+      "step": "국면 라벨 — 위기 지정",
+      "paper_quote": "§3.2 Table 1: Normal/Elevated/Crisis 의 \"Mean ‖x‖\" = 0.83 / 1.49 / 3.33 (ν = 12.1 / 6.9 / 3.8 · 비중 42.2% / 43.4% / 14.4%)",
+      "status": "implemented",
+      "note": "위기 = γ 가중 평균 ‖x‖ 최대 상태(engine.R `.hmm_fit` 의 mean_norm·crisis). 적합창 안 값만 쓴다 — 척도 불변이라 % 단위 차이에 영향받지 않는다."
+    },
+    {
+      "step": "Granger 인과 검정",
+      "paper_quote": "§3.4: \"H₀: r_{j,t} ⊥ {r_{i,t−ℓ}}_{ℓ=1}^{L} | {r_{j,t−ℓ}}_{ℓ=1}^{L}\" · \"Significance threshold: α=0.01 with Bonferroni correction across 30 directed factor pairs (effective α=0.00033)\"",
+      "status": "omitted",
+      "note": "검정은 논문의 증거 단계이고 매매 신호에 들어가지 않는다 — 산출물(HML→SMB · L=9)만 상수로 수입했다. 우리 자료로 재검정해 쌍·지연을 다시 고르면 그 선택이 평가 창 결과를 소비한다(C1/C14). changed ㉑."
+    },
+    {
+      "step": "국면 경계 관측 배제",
+      "paper_quote": "§3.4: 국면 k 의 관측은 최대 지연 L 에 대해 ẑ_{t−ℓ}=k (ℓ∈{1,…,L}) 를 요구",
+      "status": "omitted",
+      "note": "검정 표본 필터다. §5.2 매매 규칙에는 그 요건이 없어 신호일 당일 위기 판정만 쓴다(changed ㉒)."
+    },
+    {
+      "step": "팩터쌍 선택",
+      "paper_quote": "§4.3 Table 3: \"Crisis: HML → SMB [p=] 1.89×10⁻⁵, Lag 9, Significant: Yes\" · \"Normal regime: Neither direction significant\"",
+      "status": "omitted",
+      "note": "논문이 끝낸 선택(HML→SMB · 위기 국면 한정)을 그대로 승계했다. 우리 쪽에서 다시 고르지 않는다."
+    },
+    {
+      "step": "지연 선택 L=9",
+      "paper_quote": "§5.3: \"Optimal lags were selected by BIC within each regime. The 9-day crisis lag is stable across maximum lag choices (L=5,10,15,20)\"",
+      "status": "changed",
+      "note": ".GC_LAG_DAYS = 9 를 논문값으로 고정했다(우리 자료로 BIC 재선택하지 않는다 — 위 omitted 와 같은 이유)."
+    },
+    {
+      "step": "매매 규칙",
+      "paper_quote": "§5.2 · Table 6 캡션: \"During Crisis regime, go long SMB when HML return over the past 9 days is positive, short SMB when negative\" · \"Strategy trades SMB based on 9-day lagged HML signal during Crisis regimes only.\"",
+      "status": "implemented",
+      "note": "engine.R §6(SIG · pos ∈ {+1,0,−1}). 창 종점·집행 지연은 windows hml_9d 와 H4, 누적 정의는 changed ⑯, 부호 0 처리는 changed ⑱."
+    },
+    {
+      "step": "비위기 보유 — 무포지션",
+      "paper_quote": "Table 6 캡션: \"during Crisis regimes only\"",
+      "status": "changed",
+      "note": "하네스가 Weight==0 을 버려 무포지션을 ±1e-6 상쇄 쌍으로 표현했다(changed ⑲). 토큰 없이는 직전 보유가 이월된다(H5)."
+    },
+    {
+      "step": "포지션 크기 · 리밸 주기",
+      "paper_quote": "§5.2: 포지션 크기·레버리지·리밸 주기 명세 없음(WebFetch 확인: \"Position sizing and holding periods are not specified\")",
+      "status": "changed",
+      "note": "FF 스프레드 규약으로 다리별 Σ|w| = 1(.LEG_GROSS)로 정했고, 신호는 일간으로 내되 하네스가 ISO 주 1회로 접는다(changed ②㉖ · H10)."
+    },
+    {
+      "step": "FF 2x3 포트폴리오 구성(원천 정의 · 논문 본문에는 구성식이 없다)",
+      "paper_quote": "§3.1 이 원천으로 지목한 Ken French 라이브러리 규약 — 5팩터(2x3) 페이지: \"SMB (Small Minus Big) is the average return on the nine small stock portfolios minus the average return on the nine big stock portfolios\" · \"SMB = 1/3 ( SMB(B/M) + SMB(OP) + SMB(INV) )\" · 모멘텀 페이지: \"The portfolios, which are formed monthly, are the intersections of 2 portfolios formed on size (market equity, ME) and 3 portfolios formed on prior (2-12) return\" · \"The monthly size breakpoint is the median NYSE market equity\" · \"The monthly prior (2-12) return breakpoints are the 30th and 70th NYSE percentiles\"",
+      "status": "changed",
+      "note": "6월 말 형성 · **형성일당 단일** 규모 중위 분할(전 정렬 공통 — 그래서 '아홉 개 소형 포트폴리오' 가 성립한다) · 특성 30/70 · value-weighted · 7월~익년 6월 보유 · 모멘텀만 월말 형성(그 월말 규모 분기점)을 그대로 따랐다. 바꾼 것은 분기점 모집단(NYSE → 그 형성일 위생 유니버스 ∩ finite Size>0 · changed ⑤)과 VW 가중 시점(형성 ME → ME_{t−1} · changed ⑩)이고, 보간형·동점 규칙은 changed ㉛ 이다. 관련 상수는 전부 constants 에 source=supplement 로 적었다."
+    },
+    {
+      "step": "거래비용",
+      "paper_quote": "§5.2: \"Transaction costs: Not modeled, but would further erode returns.\"",
+      "status": "changed",
+      "note": "논문이 비용을 어떤 수치로도 명시하지 않아 commission_paper = null 로 적었다(논문판 = 비용 0 으로 측정된다) · 등급판은 하네스가 15bps 로 잰다(H7)."
+    },
+    {
+      "step": "대조 — SMB 바이앤홀드",
+      "paper_quote": "Table 6: \"Buy-and-Hold SMB +1.9%\" (Sharpe 0.27 · MDD −39.8%)",
+      "status": "omitted",
+      "note": "엔진 산출은 전략 1개뿐이다. 벤치는 하네스가 KOSPI200 으로 잡는다(H9) — SMB 바이앤홀드 대조는 측정·감사 층 소관."
+    },
+    {
+      "step": "스트레스 사건 검증",
+      "paper_quote": "초록: \"validating across 5 of 6 historical stress events (2008, 2011, 2015, 2018, 2020)\" · \"detects moderate crises such as 2011 (69%) that Gaussian models miss entirely (0%)\"",
+      "status": "omitted",
+      "note": "미국 사건 목록이라 한국 패널로 그대로 이식되지 않는다. 위기 판정의 사건 대조는 측정 층(행동 카드 · Lunde-Timmermann 구간)에서 한다."
+    }
+  ],
+  "windows": [
+    {
+      "name": "size_bp (규모 분기점)",
+      "paper": "원천 규약: 6월 말 NYSE 중위 ME **1개**(그 형성일 횡단면 1개 관측) · 모멘텀은 그 월말 NYSE 중위 ME",
+      "impl": "형성일 d 횡단면 1개 관측 s∈[d, d](종점 = d = 형성일 당일 Size · d 이후 관측 미사용 · 보유는 d 의 익월부터라 PIT 유효) · `by = Date` 하나만 산출해 전 정렬 공통 적용(engine.R `SZBP`)"
+    },
+    {
+      "name": "char_bp (특성 분기점 30/70)",
+      "paper": "원천 규약: 그 형성일 NYSE 30/70 백분위(형성일 횡단면 1개 관측)",
+      "impl": "형성일 d 의 정렬별 횡단면 1개 관측 s∈[d, d](종점 = d) — 6월 정렬은 `load_month_factors(d)` 월 패널(attr factor_db_asof_date ≤ d · 초과면 그 형성년 건너뜀), 모멘텀은 그 형성일의 prior(2-12) 값"
+    },
+    {
+      "name": "vw_weight (버킷 안 VW 가중)",
+      "paper": "FF 라이브러리 규약 = value-weighted(형성시점 ME 로 가중 후 보유기간 가격 드리프트)",
+      "impl": "ME_{t−1} — 수익일 t 의 가중치 창 s∈[t−1, t−1](단일 관측 · 종점 = t−1 = 패널상 직전 관측일 · 당일 t 시총 미사용) · engine.R `.SZ[, w_vw := shift(Size, 1L), by = Ticker]`"
+    },
+    {
+      "name": "mom_char (prior 2-12)",
+      "paper": "보유월 t 에 대해 s∈[t−12, t−2] 누적수익(최근 1개월 건너뜀)",
+      "impl": "형성월 m 에서 월수익 로그합 s∈[m−11, m−1](종점 = m−1 · 당월 m 제외) → 보유월 t = m+1 이라 논문 지수로 [t−12, t−2] — 논문 원천 창과 동일 · 11개월 중 결측월이 있으면 NA"
+    },
+    {
+      "name": "hml_9d (매매 신호)",
+      "paper": "수익일 t 기준 s∈[t−9, t−1] (§3.4 지연 ℓ=1..9 구조와 동일 · §5.2 는 '과거 9일' 의 종점을 명시하지 않는다)",
+      "impl": "신호일 d 기준 유효 관측일 9개 s∈[d−8, d] 단순합(종점 = d · 신호일 당일 포함) · 집행 close d+1(H4) · 첫 수익일 t = d+2 ⇒ 논문 지수로 [t−10, t−2]"
+    },
+    {
+      "name": "hmm_fit (모수 적합창)",
+      "paper": "전표본 [1990-01-02, 2024-12-31] 1회 적합",
+      "impl": "확장창 s∈[첫 관측, i0−1] 1회 EM(종점 = i0−1 = 적합시점 i0 직전 관측일 · 적합일 당일 i0 과 이후 관측 제외) · 적합시점 i0 = 번인 1260 관측 직후 1회 + 매년 첫 관측일"
+    },
+    {
+      "name": "hmm_filter (상태 확률)",
+      "paper": "명시 없음 — 전표본 라벨(ẑ_t)이므로 평활 해석",
+      "impl": "필터 α_t — 신호일 d 의 상태는 s∈[첫 관측, d] 관측만 사용(종점 = d · 신호일 당일 포함 · d 이후 관측 미사용 = 평활·Viterbi 금지) · 모수는 그 해 시작 전 적합분 · 상태 = max.col(ties 'first')"
+    },
+    {
+      "name": "hmm_burnin",
+      "paper": "자료 1990 시작 · 거래 1995 시작(5년 간격)",
+      "impl": "s∈[첫 관측, 1260번째 관측] 구간은 신호 없음(종점 = 번인 마지막 관측일 = 6계열 완전관측 1260번째 · 판정은 그 다음 관측일 1261번째부터 · ≈5년)"
+    },
+    {
+      "name": "ann_hold (6월 형성 보유창)",
+      "paper": "FF: 6월 말 형성 → 7월~익년 6월 보유",
+      "impl": "동일 — 형성월 m(6월)의 보유월 지수 s∈[m+1, m+12](종점 = m+12 = 익년 6월 · 형성월 당월 m 제외)"
+    },
+    {
+      "name": "mom_hold (모멘텀 보유창)",
+      "paper": "FF 모멘텀: 월말 형성 → 익월 보유",
+      "impl": "동일 — 형성월 m(월말)의 보유월 s∈[m+1, m+1](1개월 · 종점 = m+1 = 익월 말 · 형성월 당월 m 제외)"
+    },
+    {
+      "name": "monthly_ret (월수익 집계)",
+      "paper": "FF 월수익(달 전체)",
+      "impl": "월지수 m 의 일수익 log1p 단순합 s∈[m 첫 거래일, m 마지막 거래일](종점 = 그 달 마지막 거래일 · 당월 m 전체 포함 · 다음 달 관측 미사용) · 이 값은 mom_char 에서 shift(1) 로 소비되어 그 창 종점은 m−1 이 된다(당월 제외) · 거래일이 적은 달도 그 달 값으로 쓴다"
+    }
+  ],
+  "factor_mapping": [
+    {
+      "factor_id": "V01_BM",
+      "paper_item": "HML 의 정렬 변수 = book-to-market equity (FF: BE(회계연도 t−1) / ME(전년 12월))",
+      "registry_definition": "TotalEquity / MarketCap. Ratio of book value to market capitalization.",
+      "deviation": "ME 시점이 다르다(등록부 = 패널 기준월 시총 · FF = 전년 12월 ME) · 소비값은 원값이 아니라 Z_Score_Aligned(횡단면 절단·z-score·방향 정렬 — 확장 IC 부호가 바뀌면 특성 방향이 뒤집힐 수 있다) · 재무 가용일은 등록부 availability(quarterly+45d;annual_3/31)를 그대로 쓴다 · dedup 선언 없음"
+    },
+    {
+      "factor_id": "Q01_GPA",
+      "paper_item": "RMW 의 정렬 변수 = operating profitability (FF: (매출−매출원가−판관비−이자)/BE)",
+      "registry_definition": "GrossProfit / TotalAssets. Asset utilization efficiency.",
+      "deviation": "분자가 매출총이익으로 판관비·이자를 차감하지 않고 분모가 총자산이다(FF 는 자기자본) — Novy-Marx 형 총수익성 대리 · Z_Score_Aligned 변환 · dedup 선언 없음"
+    },
+    {
+      "factor_id": "Q06_Asset_Growth",
+      "paper_item": "CMA 의 정렬 변수 = total asset growth (보수적 − 공격적)",
+      "registry_definition": "-(dTA / lag TA). Negate: low asset growth = conservative = better.",
+      "deviation": "등록부 정의가 이미 부호를 반전해 '높을수록 보수적' 이므로 상위 분위(lev=3)가 FF 의 Conservative 다 — 엔진은 추가 부호 조작을 하지 않는다(C13) · Z_Score_Aligned 변환 · dedup.cluster = DUPC-023(partner GR03_Asset_Growth · role redundant · needs_review). 같은 군집에서 **하나만**(Q06) 쓴다 — GR03 은 쓰지 않아 가중이 겹치지 않는다"
+    }
+  ],
+  "constants": [
+    { "name": ".K_REGIMES", "value": 3, "source": "paper", "note": "§3.2 — \"The number of regimes (K=3) was selected by the Bayesian Information Criterion\"" },
+    { "name": ".GC_LAG_DAYS", "value": 9, "source": "paper", "note": "§5.2 매매 규칙의 'past 9 days' · §4.3 Table 3 의 9일 지연(p=1.89e-5)" },
+    { "name": ".FORM_MONTH", "value": 6, "source": "supplement", "note": "원천(Ken French 라이브러리)의 6월 말 형성 규약 — 논문 본문은 구성식을 적지 않는다(§3.1 원천 지목만)" },
+    { "name": ".SIZE_BP", "value": 0.5, "source": "supplement", "note": "FF 2x3 규모 중위 분할 — ★형성일당 1개만 산출해 전 정렬에 공통 적용한다(by = Date · changed ⑤). 분기점 모집단은 NYSE 가 아니라 그 형성일 위생 유니버스 ∩ finite Size>0" },
+    { "name": ".CHAR_BP_LO", "value": 0.3, "source": "supplement", "note": "FF 2x3 특성 30분위 — 정렬별로 그 정렬 모집단에서 산출(changed ⑤)" },
+    { "name": ".CHAR_BP_HI", "value": 0.7, "source": "supplement", "note": "FF 2x3 특성 70분위 — 정렬별로 그 정렬 모집단에서 산출(changed ⑤)" },
+    { "name": ".QTL_TYPE", "value": 7, "source": "supplement", "note": "quantile 보간형 — R 기본값(type 7 선형보간)을 조용히 상속하지 않고 명시로 고정했다(논문·원천 모두 보간형 미명세 · changed ㉛)" },
+    { "name": ".MOM_WIN_MONTHS", "value": 11, "source": "supplement", "note": "FF prior(2-12) = 11개월 창" },
+    { "name": ".MOM_SKIP_MONTHS", "value": 1, "source": "supplement", "note": "FF prior(2-12) 의 1개월 건너뜀" },
+    { "name": ".N_BUCKETS", "value": 6, "source": "supplement", "note": "2 규모 x 3 특성 — 정렬 성립 요건(6버킷 전부 비지 않아야 한다)" },
+    { "name": ".N_LEVELS", "value": 3, "source": "supplement", "note": "특성 3분할 — 스프레드는 lev3 − lev1(S·B 두 반쪽 등가중)" },
+    { "name": ".N_SMB_CELLS", "value": 18, "source": "supplement", "note": "거래일 요건 — 3정렬 x 6버킷이 전부 비지 않아야 포지션을 낸다(미달 = 그 신호일 산출 없음 → 직전 보유 이월 · changed ㉚)" },
+    { "name": ".N_SMB_LEG_CELLS", "value": 9, "source": "supplement", "note": "SMB 다리당 칸 수(3정렬 x 3특성) — 원천 규약 'average return on the nine small stock portfolios' 의 9. 칸당 비중 = 1/9 이라 다리별 Σ|w| = 1" },
+    { "name": ".MIN_FORM_N", "value": 30, "source": "supplement", "note": "최소 종목수 — ① 규모 분기점 모집단(미달이면 그 형성일 전 정렬 무효) ② 정렬별 특성 모집단(미달이면 그 정렬 무효). 논문·원천 모두 값 없음(changed ㉓)" },
+    { "name": ".HOLD_MONTHS_ANN", "value": 12, "source": "supplement", "note": "6월 형성 정렬의 보유 개월(7월~익년 6월)" },
+    { "name": ".HOLD_MONTHS_MOM", "value": 1, "source": "supplement", "note": "월말 형성 모멘텀 정렬의 보유 개월" },
+    { "name": ".RF_DAILY", "value": 0, "source": "supplement", "note": "엔진 입력에 무위험 일수익 패널이 없다 — MKT-RF 의 RF 를 0 으로 두어 MKT = 유니버스 VW 수익(changed ⑩)" },
+    { "name": ".HMM_BURNIN_DAYS", "value": 1260, "source": "supplement", "note": "논문의 자료 시작(1990) → 거래 시작(1995) 5년 간격을 거래일로 옮긴 값 — 그 전에는 신호 없음" },
+    { "name": ".HMM_MAX_ITER", "value": 200, "source": "supplement", "note": "EM 반복 상한(논문 미명세) — 미수렴이면 200회 모수를 쓴다" },
+    { "name": ".HMM_TOL", "value": 1e-5, "source": "supplement", "note": "EM 상대 수렴 허용오차(논문 미명세)" },
+    { "name": ".HMM_RIDGE", "value": 1e-10, "source": "supplement", "note": "상태 공분산 특이성 방지 ridge(수치 가드)" },
+    { "name": ".HMM_NU_INIT", "value": 8, "source": "supplement", "note": "Student-t 자유도 초기값(논문 미명세 · Table 1 의 추정 ν 3.8~12.1 범위 안)" },
+    { "name": ".HMM_NU_LO", "value": 2.1, "source": "supplement", "note": "자유도 하한 — 2 이하면 분산이 유한하지 않다" },
+    { "name": ".HMM_NU_HI", "value": 100, "source": "supplement", "note": "자유도 상한(사실상 정규) · uniroot 구간 끝" },
+    { "name": ".HMM_MIN_STATE_W", "value": 1e-6, "source": "supplement", "note": "상태 사후질량 하한 — 미달이면 그 상태 모수를 갱신하지 않고 직전 값을 유지(상태 소멸 가드)" },
+    { "name": ".HMM_A_DIAG", "value": 0.98, "source": "supplement", "note": "전이행렬 초기 대각(국면 지속성 초기값 · 논문 미명세 · Table 1 의 추정 지속성 0.968~0.991 범위 안)" },
+    { "name": ".HMM_CHOL_JITTER", "value": 1e-6, "source": "supplement", "note": "chol 실패 시 더하는 상대 jitter(수치 가드)" },
+    { "name": ".HMM_EPS", "value": 1e-300, "source": "supplement", "note": "스케일 분모 0 방지 바닥(수치 가드)" },
+    { "name": ".FLAT_W", "value": 1e-6, "source": "harness", "note": "무포지션 표현 — 하네스가 Weight==0 행을 버리므로(replication_harness.R:220) ± 상쇄 쌍의 크기. 결합 수익 ≈ 0 이 되도록 작게 잡았다" },
+    { "name": ".FLAT_N", "value": 2, "source": "harness", "note": "무포지션 토큰 종목수 — 같은 (Date,Ticker) 중복 키를 만들지 않으려고 위생 상위 2종목에 ±1e-6 을 나눠 싣는다" },
+    { "name": ".LEG_GROSS", "value": 1, "source": "supplement", "note": "FF 스프레드 규약 — 다리별 Σ|w| = 1(논문은 포지션 크기를 적지 않는다). 단일 규모 분할 + 18칸 요건 아래 정확히 성립한다(changed ②㉚)" },
+    { "name": ".FDB_COV_MIN", "value": 0.05, "source": "supplement", "note": "팩터 DB 커버리지 하한 — load_month_factors 연결자 기본값(0.05)을 조용히 상속하지 않고 명시로 고정했다(미달 팩터는 그 달 패널에서 빠진다 → 그 정렬 결손)" },
+    { "name": ".FDB_HML", "value": "V01_BM", "source": "supplement", "note": "HML 정렬 변수의 팩터 DB 대응(factor_mapping 참조)" },
+    { "name": ".FDB_RMW", "value": "Q01_GPA", "source": "supplement", "note": "RMW 정렬 변수의 팩터 DB 대응(factor_mapping 참조)" },
+    { "name": ".FDB_CMA", "value": "Q06_Asset_Growth", "source": "supplement", "note": "CMA 정렬 변수의 팩터 DB 대응(factor_mapping 참조)" },
+    { "name": ".SORT_ANN", "value": ["HML", "RMW", "CMA"], "source": "supplement", "note": "6월 형성 정렬 3종의 내부 라벨 — SMB 는 이 세 정렬의 SMB 평균 = avg(9 small) − avg(9 big)(5팩터 파일 규약)" },
+    { "name": ".SORT_MOM", "value": "MOM", "source": "supplement", "note": "월말 형성 모멘텀 정렬의 내부 라벨" },
+    { "name": ".sig_from", "value": ".RP_START_DATE", "source": "harness", "note": "측정 축 시작일을 호출자가 환경으로 넣는다(리터럴 금지) — 현행 2000-01-01" }
+  ],
+  "audit_disputes": [],
+  "harness_disclosure": "[HARNESS-DISCLOSURE v1]\n- H1 유니버스: 측정 축 = 전 종목 + 위생(epoch all_hyg_2000_v1). 계약(contracts/measurement_axis.R::ma_inject_universe)이 적재 직후 RAWDATA 의 K200 플래그를 위생 멤버십(1/0)으로 바꿔 끼우고 KQ150 은 0 으로 둔다. 위생 멤버 = 20일 평균 거래대금(종가 × 거래량 · 하루 늦춤 t−1) ≥ 200,000,000원 ∧ 관리종목 · 거래정지 · 불성실공시 표식 아님(퀀티와이즈 월말 스냅샷을 다음 스냅샷까지 이월 — 그날까지 알려진 값만). 엔진 산출(FACTORS·PORTFOLIO)은 각 신호일의 이 멤버십과 결합되어 그날 비멤버 행이 제거된다 — PIT 시변 · 사후 생존 조건 없음 · 상장폐지 종목 포함(폐지 뒤 수익 행 부재 = 0 · 행이 없는 날 = 비멤버).\n- H2 지수 플래그: 원래 지수 멤버십(KOSPI200 · KOSDAQ150)은 K200_IDX · KQ150_IDX 열에 보존된다 — 이 축에서 K200 · KQ150 플래그는 지수 멤버십이 아니다(K200 = 위생 멤버 · KQ150 = 0).\n- H3 표본: 신호는 .RP_START_DATE(2000-01-01) 이후만 측정한다. 성과는 실효 시작부터 센다 — 실효 시작 = 신호 폭(유니버스 결합 뒤 점수가 유한한 종목 수 · 엔진이 SIGNAL_BREADTH 를 내면 그 값) ≥ 보유 수 × 2 를 처음 만족한 신호일(MC3 B안 · 첫 통과 = PIT). 그 전 신호일은 측정에서 빠진다(측정 축 규약 · 엔진 변경 아님). PORTFOLIO 만 내는 엔진은 폭을 잴 수 없어 자르지 않는다. 논문 표본기간과 다르다.\n- H4 체결: 신호일 d 에 확정한 비중을 다음 거래일 종가에 체결(close_t1) — 새 보유 수익은 집행 다음 날부터 다음 집행일까지, 집행일 당일 수익은 직전 보유(동일봉 체결 없음).\n- H5 보유: 연속한 두 신호일의 집행 사이 보유창 안에서 buy-and-hold(비중 드리프트) — 다음 신호일 집행 때 목표비중으로 되돌린다. 어떤 달에 엔진 산출이 없으면 그 달은 리밸이 없어 직전 보유가 다음 신호까지 이월된다.\n- H6 비중: FACTORS 면 portfolio_spec(top_n_long 등)으로 신호일마다 유니버스 결합 뒤 점수 순 구성 · PORTFOLIO 면 유니버스 결합 뒤 남은 비중을 그대로 쓴다 — 빠진 종목 몫은 재분배되지 않아 그 다리 총노출이 줄어든다(현금처럼 0 수익). 롱·숏 다리 결합 = GL·L − GS·S(GL·GS = 다리 Σ|w|).\n- H7 비용: 등급판 = 리밸마다 Σ|Δw|×15bps(초기 매수 = Σ|w|) · 논문판 = commission_paper(무명시면 0)로 병기한다.\n- H8 유동성: 러너는 별도 유동성 필터를 걸지 않는다(paper_faithful). 다만 H1 의 위생 멤버십이 20일 평균 거래대금 200,000,000원(t−1) 하한을 이미 포함한다 — 논문에 유동성 규칙이 있으면 엔진이 논문대로 건다(위생 하한과 겹칠 수 있다).\n- H9 벤치마크: KOSPI200.\n- H10 리밸 주기: 엔진 신호일이 어느 달이든 둘 이상이면 주간 경로 — 신호 다음 거래일 집행 · ISO 주마다 마지막 신호 1개 · 그 신호일 거래량 0 종목 제외 뒤 다리 안 재정규화. 일간 신호는 주간으로 접히고 계약이 FIDELITY 에 자동 신고한다(일간 집행은 지원하지 않는다 — D16). 모든 달이 신호 1개 이하면 월간 경로(익월 첫 거래일 집행).\n[/HARNESS-DISCLOSURE]"
+}

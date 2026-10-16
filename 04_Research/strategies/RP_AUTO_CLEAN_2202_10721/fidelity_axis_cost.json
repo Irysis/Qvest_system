@@ -1,0 +1,12 @@
+{
+  "axis": "cost",
+  "verdict": "adapted",
+  "undeclared_changes": [],
+  "signal_mismatch": [],
+  "counterexample": "구성 못 했다. 논문은 거래비용을 수치 모형으로 전혀 제시하지 않는다(section 5 서두는 동기 서술뿐, 수치·bps·commission 없음; section 4.4 footnote 15 는 연간 회전율 53.19%(변동성 기반) vs 31.45%(왜도 기반)만 비교하며 이는 비용이 아니라 회전율이다). FIDELITY.commission_paper = null · changed(34) · harness_disclosure H7('논문판 = commission_paper(무명시면 0)로 병기')이 이 부재를 정확히 반영해 논문쪽 병기값을 0으로 처리한다 - 논문 비용으로 계산되지 않은 수치를 논문 수치인 것처럼 병기하는 지점이 없다. engine.R 자체에는 bps·commission·slippage 관련 코드가 전혀 없다(비용은 엔진이 아니라 하네스 H7 등급판에서만 적용) - 엔진이 자체적으로 유리한 비용 가정을 심을 지점도 없다.",
+  "evidence": "arXiv:2202.10721v1 section 5 opening ('This is particularly true if we consider transaction costs. Indeed, the volatility-based risk parity portfolio reduces dramatically the allocation of one asset immediately after the jump...') - 동기 서술뿐, 수치 없음. Section 4.4 footnote 15: 'The turnover is equal to 53.19% for the volatility-based ERC allocation and 31.45% for the skewness-based ERC allocation.' - 회전율 비교이지 거래비용 모형이 아니다. 본문·부록 A 전체에 bps·commission·liquidity-cost 수치 모형 없음.",
+  "confidence": "high",
+  "checked": "FIDELITY.commission_paper(=null) · changed(34) · paper_steps 'Transaction costs'(status omitted) · harness_disclosure H7 서술 대 논문 section 5 서두 및 section 4.4/footnote 15 turnover 문장 대조; engine.R 전체(소스 전문)에 비용·수수료·슬리피지 관련 코드 존재 여부 확인(없음) - 측정 산출물은 청정 모드로 보지 않음.",
+  "prior_review": [],
+  "note": "FIDELITY 의 '53.19%/31.45%'는 section 4.4 본문이 아니라 footnote 15 소재지만(인용 위치 오기), 수치 자체는 원문과 일치하고 코드 동작에 영향이 없는 인용 오기이므로 발견으로 올리지 않았다. 회전율(turnover) 축은 할당 범위 밖 - 본 축은 거래비용·집행가정만 판정했다."
+}

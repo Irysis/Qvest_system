@@ -1,0 +1,12 @@
+{
+  "axis": "cost",
+  "verdict": "faithful",
+  "undeclared_changes": [],
+  "signal_mismatch": [],
+  "counterexample": "구성하지 못했다 — 논문 전문(arxiv.org/html/2604.16773v1)에 거래비용·수수료·슬리피지·시장충격·회전율 서술이 0건이고(WebFetch 로 전문 재확인), eq 8-13 의 배분 공식 자체에 비용 항이 없다. FIDELITY.json 은 이를 commission_paper=null·declared_role 의 '성과가 아니라 서술만 옮긴 대조용 기록' 으로 정직히 반영하고, run_paper_replication.R:431,686 은 NULL→0 으로 논문판 시뮬레이션을 돌린다(논문 공식과 비트 동일하게 무비용). 등급판 15bps(run_paper_replication.R:707, build_bt_result transaction_cost_bps=15)는 CLAUDE.md/pit.md 가 명시한 저장소 공통 채점 관행이고 FIDELITY.json H7·paper_steps 의 '거래비용' 항목에 분리 신고돼 있어 논문값과 혼동되지 않는다. 집행가격도 exec_price_paper <- portfolio_spec$exec_price %||% exec_price(run_paper_replication.R:473) 로 논문이 집행 규약을 안 주므로 등급판과 같은 기본 규약을 쓰고, 이는 paper-sim 쪽에 유리한 차등 집행가를 주지 않는다. 비용 산식도 Σ|Δw_target|×commission(replication_harness.R:341-360)로 H7 신고와 일치하며 왕복 이중과금·편측 할인 등 비용 축에 유리하게 기운 지점을 찾지 못했다.",
+  "evidence": "arxiv.org/html/2604.16773v1 전문(WebFetch 재확인) — transaction cost/commission/fee/slippage/market impact/turnover 언급 0건. §5.1 Step 1-6(eq 8-13)의 배분 공식에 비용 항 부재. §5.1 Step 2 는 세 가지 root 규칙만 제시(값 미명시) · §5.1 Step 3 은 rho∈[0,1] 범위만(기본값 미명시) · §5.1 Step 6 은 L>0 target gross leverage 만(값 미명시) — 모두 비용과 무관한 자유 파라미터이고 FIDELITY.json constants 에 선택 근거와 함께 신고돼 있다.",
+  "confidence": "high",
+  "checked": "paper 전문 재조회로 비용·수수료·슬리피지·회전율 언급 유무 확인 · FIDELITY.json commission_paper/declared_role/H7/paper_steps(거래비용) 대조 · run_paper_replication.R 의 comm_paper 해석(NULL→0)·exec_price_paper 폴백·sim_paper/sim_grade 이중 시뮬레이션 경로 추적 · replication_harness.R 의 Σ|Δw|×commission 비용 산식과 H7 신고 일치 확인 · engine.R 자체에는 비용 로직이 없음(배분기만) 확인",
+  "prior_review": [],
+  "note": "엔진 자체(engine.R)는 포트폴리오 배분기일 뿐 비용 계산을 하지 않는다 — 비용은 전부 하네스(run_paper_replication.R·replication_harness.R) 쪽 책임이고 이 축의 대조 대상도 그쪽이다. 리밸 주기(월간 채택)·종목수 상한 초과(engine_direct 비중 그대로 유지)는 다른 축(집행 주기·유니버스/종목수) 소관이라 note 로만 남긴다."
+}

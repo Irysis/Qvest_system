@@ -1,0 +1,53 @@
+{
+  "axis": "signal",
+  "verdict": "adapted",
+
+  "undeclared_changes": [],
+
+  "signal_mismatch": [
+    "[팩터 다리 방향이 IC 부호로 시점마다 반전] 논문 §5.1 의 다섯 다리는 방향 고정 long-only 다('size, value, momentum, low beta and quality'). engine.R:371 은 order(-Z_Score_Aligned, Ticker) 상위 5종을 뽑고, Z_Score_Aligned = Z_Score * ic_sign(factor_db_connector.R:684)의 ic_sign 은 factor_db_connector.R:638-648 에서 **IC 추정 부호가 1차 분기**이고 레지스트리 방향은 ic_sign 이 NA 인 행에만 적용되는 2차 대체다(638: `if (!is.null(ic_dir) && nrow(ic_dir[!is.na(ic_sign)]) > 0)` → 640 IC merge → 647-648 registry 는 is.na(ic_sign) 행만). 따라서 D02_Beta 슬리브는 실현 IC 가 양수인 구간에서 논문의 'low beta' 가 아니라 고베타 다리가 되고, S01_Size 는 대형주 다리가 된다. ★이 차이는 FIDELITY.changed(8) 에 정직하게 신고돼 있다(이전 판이 레지스트리 방향을 '보장'으로 서술한 것이 틀렸다고 명시) — 그래서 misdeclared 가 아니라 adapted 다. 신고가 코드와 일치함을 연결자 코드로 확인했다.",
+    "[μ~ 영점 제약을 5개 슬리브 전체로 일반화 — 양의 왜도 분기 소멸] 논문 §4.1 은 **채권 한 자산군**에 대해 'we also introduce the constraint that bonds have no jump component, because the previous estimations suggest that the expected jump is positive for this asset class. Moreover, it is not statistically significant.' 로 제약을 걸고 Table 9 채권 행을 μ̃ = 0.00% · σ̃ = 0.00% 로 못박는다. engine.R:329·333 은 `which(mu_tilde > 0)` 로 **부호만** 보고 어느 슬리브든 기계적으로 영점화한다(유의성 시험 없음 · 논문의 제약부 최대우도 재추정 대신 2차 EM 패스 + 하드 강제 · 제약 집합을 리프레시마다 재계산). 결과적으로 μ~ ≤ 0 이 성분별로 항상 성립해, §2.3 의 γ₁ = [(λ−λ²)((1−2λ)(x'μ̃)³ + 3(x'μ̃)(x'Σ̃x))] / [·]^{3/2} 에서 x ≥ 0 이면 x'μ̃ ≤ 0 — 논문이 '…the skewness is then positive' 로 인정하는 **양의 왜도 분기가 구조적으로 발생할 수 없다**. ★FIDELITY.changed(10) 이 (a) 유의성 미시험 (b) 제약부 ML 미재현 (c) 제약 집합 비고정 세 가지를 모두 신고하고, 'a positive x'mu~ ... can no longer arise' 라는 귀결까지 스스로 적어 두었다 — 신고가 코드와 일치한다."
+  ],
+
+  "counterexample": "두 건 구성했다. ①(다리 부호) 신호일 d 를 D02_Beta 의 확장창 평균 IC(36개월 번인 · Usable_Date ≤ d)가 **양수**인 달로 잡는다(고베타가 선행한 2005~2007 강세 구간이 그런 창이다). 그러면 factor_db_connector.R:638-648 의 1차 분기가 성립해 ic_sign(D02_Beta) = +1 이 되고(레지스트리 lower_better = −1 은 적용되지 않는다), Z_Score_Aligned = +Z_Score(252일 롤링 CAPM 베타)가 된다. engine.R:371 의 order(-Z_Score_Aligned, Ticker) 는 그 달에 **베타 최상위 5종**을 슬리브 4 에 넣는다 — 논문 §5.1 의 넷째 다리는 'low beta' 다. 이후 engine.R:413 이 만드는 그 슬리브의 주간 수익열은 고베타 열이므로 engine.R:462 의 Σ̂_t 대각이 커지고, engine.R:478 의 ERC 해는 그 다리에 **더 작은** 비중을 준다 — 보유 종목과 배분 방향이 논문 다리와 동시에 반대가 된다. 같은 기전으로 실현 size IC 가 음수인 창에서는 S01_Size 가 대형주 다리가 된다. ②(Σ̂_t) 52주 창에서 1{π̂ ≤ 0.30} 을 통과한 주가 **정확히 5주**인 리밸 주 t 를 잡는다. 논문 A.9 step 3 은 n_t 에 하한을 두지 않아 그 5개 날짜로 μ̂_t · Σ̂_t 를 만들지만, engine.R:459 는 `sum(keep) >= .MIN_OBS_COV`(=6) 이 아니면 갱신을 건너뛰고 (μ̂_{t−1}, Σ̂_{t−1}) 을 그대로 이월한다 — 그 리밸 날짜의 Σ̂_t 와 ERC 비중이 논문 식과 달라진다(FIDELITY.changed(13) 에 신고됨).",
+
+  "evidence": "arxiv.org/html/2202.10721v1 — §2.2 eq.(3): μ₁(x)=x⊤μ · σ₁²(x)=x⊤Σx · μ₂(x)=x⊤(μ+μ̃) · σ₂²(x)=x⊤(Σ+Σ̃)x; §3.1 VaR 꼬리식 '(1−λ)Φ((VaR_α(x)+μ₁(x))/σ₁(x)) + λΦ((VaR_α(x)+μ₂(x))/σ₂(x)) = α' + eq.(4) 'ES_α(x)=(1−λ)φ(VaR_α(x),μ₁(x),σ₁(x))+λφ(VaR_α(x),μ₂(x),σ₂(x))' · 'φ(a,b,c)=(c/(1−α))φ((a+b)/c)−(b/(1−α))Φ(−(a+b)/c)'; §3.2 'h_i(x)=σ_i(x)⁻¹(VaR_α(x)+μ_i(x))' · 'ϖ_i(x)=π_i σ_i(x)⁻¹φ(h_i(x))' · 'π₁=1−λ and π₂=λ' · eq.(5) 'RC(x)=(ϖ₁/(1−α))(x∘δ₁)+(ϖ₂/(1−α))(x∘δ₂)−(1/(1−α))[(1−λ)(x∘μ)Φ(−h₁)+λ(x∘(μ+μ̃))Φ(−h₂)]' + δ₁ = (1+h₁/σ₁·VaR)Σx − VaR[ϖ₁(h₁/σ₁)Σx+ϖ₂((h₂/σ₂)(Σ+Σ̃)x−μ̃)]/(ϖ₁+ϖ₂) · δ₂ = (1+h₂/σ₂·VaR)(Σ+Σ̃)x − VaR[ϖ₁((h₁/σ₁)Σx+μ̃)+ϖ₂(h₂/σ₂)(Σ+Σ̃)x]/(ϖ₁+ϖ₂); §2.3 γ₁ 식과 'the skewness is then positive'(x'μ̃>0) / 'if x⊤μ̃<0, the skewness is generally negative, except if the frequency λ is high and the variance x⊤Σ̃x of the portfolio's jump is low'; §2.4 EM E-step 'π_{j,t}^{(k)}=π_j^{(k)}ϕ_n(R_t;μ_j^{(k)},Σ_j^{(k)})/Σ_s π_s^{(k)}ϕ_n(R_t;μ_s^{(k)},Σ_s^{(k)})' · M-step 'π_j^{(k+1)}=Σ_t π_{j,t}^{(k)}/T'(= M-step 이 π 를 갱신한다) · 'Starting from initial values ... the EM algorithm generally converges'(초기화·반복상한·수렴기준 미지정); §4.1 'We have selected π=0.5%, because the expected drawdown is about −10.5% for π=0.5% when the return period is between 10 and 20 years'(주간 셀) vs 'We have selected π=1.0%, because the expected drawdown is about −22%'(월간 셀 · Table 21) · 'we also introduce the constraint that bonds have no jump component, because the previous estimations suggest that the expected jump is positive for this asset class' · Table 9(weekly, π=0.5%) 채권 행 μ̃=0.00% · σ̃=0.00%; §4.2 'we assume that the expected returns μ_i are equal to zero' + 99% expected shortfall; §4.3 'it is common to consider a monthly rebalancing based on a one-year rolling covariance matrix' · 주간 모형 사용 · 'we will say that we observe a jump at time t when the posterior probability is larger than a threshold π*: J_t=1 ⟺ π̂_t ≥ π*' · π* = 30% · 'we estimate the parameters μ̂_t and Σ̂_t by only considering the dates of the rolling window, which do not correspond to a jump' · 'The only difficulty is the initialization of the covariance matrix. For that, we consider that there is no jump in the first rolling window'; §5.1 'building a diversified portfolio using the more relevant long-only equity risk factors (size, value, momentum, low beta and quality)'.",
+
+  "confidence": "high",
+
+  "checked": "eq.(3) 모멘트(engine.R:115-122) · VaR 꼬리식 보수형(125-143) · eq.(4) ES 폐형(154-155) · h_i(150-151) · ϖ_i(159-160) · A.5 d_xVaR(164-165) · δ₁·δ₂(167-168) · eq.(5) RC=x∘MR(170-171) — §3.2 표시식과 μ=0 대입으로 **대수적 동일성까지 손으로 전개해 확인**(dvar+μ̃ 가 논문 δ₂ 괄호와 항별 일치) · 부호 규약(VaR·ES 가 양의 손실 · h_i 분자 +μ_i) · A.9 step2 사후확률이 (μ̂_{t−1},Σ̂_{t−1}) 을 쓰는지(257-269 · 456) · step3 점프배제 keep 마스크와 1/n_t 제수(235-238 · 459-464) · 룩백 창 길이·종점(453: [t−51,t] t 포함 · 438: wend ≤ d 인 마지막 주) · 초기화(448-451 창 [1,52] 가우시안 ML) · π=0.005 주간 셀 · π*=0.30 경계(457) · α=0.99 · μ=0 배분(435·478) · μ~=mu2−mu1 · Σ~=PSD(S2−S1) · EM M-step 가중식(240-245 vs A.3 eq.19-20) · π 고정(314) · 영점 제약(283-336) · 슬리브 랭킹·표준화(371 · connector:684-692 winsorize→z→방향정렬→sd=1 재표준화) · ic_sign 분기 우선순위(connector:638-664) · 상수 35개 전수 대조(FIDELITY.constants 에 누락 0건)",
+
+  "prior_review": [
+    {
+      "item": "[정상국면 Σ_t 점프 배제 필터 미구현]",
+      "status": "confirmed",
+      "evidence": "§4.3: 'we estimate the parameters μ̂_t and Σ̂_t by only considering the dates of the rolling window, which do not correspond to a jump' · 'we will say that we observe a jump at time t when the posterior probability is larger than a threshold π*: J_t=1 ⟺ π̂_t ≥ π*' · π* = 30%. 논문은 점프일 배제를 명시적으로 요구하므로 전체 52주 단순 표본공분산은 논문 추정기가 아니다. 현 판은 engine.R:454-464(.sk_post_jump → keep ← π̂ ≤ .PI_STAR → .sk_mlcov(Wk))로 구현됐고 FIDELITY paper_steps 에 'THIS IS THE STEP THE PREVIOUS REJECTED ENGINE OMITTED' 로 적혀 있다."
+    },
+    {
+      "item": "[정상국면 Σ_t 가 점프 주를 그대로 포함]",
+      "status": "confirmed",
+      "evidence": "위와 같은 §4.3 문장 + §4.3 의 Σ_t 추정기 두 경로(혼합 우도 최대화 / 선호 경로인 필터링) 서술. 구 판의 cov(Yn) 은 둘 중 어느 것도 아니다. 현 판은 필터링 경로만 구현하고 ML 경로 생략을 FIDELITY.changed(16) 에 신고했는데, 논문이 ML 을 'not our preferred approach' 로 스스로 물린 쪽이므로 생략은 논문 정합이다."
+    },
+    {
+      "item": "[A.9 점프 제외 지시함수 미적용]",
+      "status": "confirmed",
+      "evidence": "§4.3 본문의 'only considering the dates of the rolling window, which do not correspond to a jump' + π* = 30% 로 배제 요건이 원문에 선다. ★단서: Appendix A.9 자체(지시함수 1{π̂_{t−s} ≤ π̄} 와 n_t 의 명시식)는 내가 **직접 읽지 못했다**(arxiv.org/html 과 ar5iv 모두 마크다운 변환이 Appendix A.2 이전에서 잘린다) — 배제 요건은 §4.3 본문으로, δ_i 는 A.5 대신 §3.2 표시식으로 확인했다. 현 판의 1/n_t 제수(.sk_mlcov) 는 §4.3 본문만으로는 n_t 대 n_t−1 을 가릴 수 없어 FIDELITY.changed(25) 의 신고를 코드와만 대조했다."
+    },
+    {
+      "item": "[양의 추정 μ~ 영점 제약 미구현]",
+      "status": "confirmed",
+      "evidence": "§4.1: 'we also introduce the constraint that bonds have no jump component, because the previous estimations suggest that the expected jump is positive for this asset class. Moreover, it is not statistically significant.' + Table 9(weekly) 채권 행 μ̃ = 0.00% · σ̃ = 0.00%. 지적대로 원문에 제약 단계가 있다. 현 판은 engine.R:283-336 으로 구현했고, 일반화·유의성 미시험·제약부 ML 미재현을 changed(10) 에 신고했다(위 signal_mismatch 2 번 참조)."
+    },
+    {
+      "item": "[팩터 다리 부호를 IC 가 결정]",
+      "status": "confirmed",
+      "evidence": "§5.1: 'building a diversified portfolio using the more relevant long-only equity risk factors (size, value, momentum, low beta and quality)' — 'low beta' 는 방향이 고정된 다리명이다. 코드 쪽 지적도 재확인됨: factor_db_connector.R:638 이 IC 분기를 1차로 세우고 647-648 이 레지스트리를 is.na(ic_sign) 행에만 적용한다. 구 판의 '보장' 서술은 틀렸고, 현 판 FIDELITY.changed(8) 는 반전 가능성을 명시 신고하며 'the previous rejected engine declared the registry direction as a guarantee - that declaration was wrong' 고 적었다 — 지적은 유효했고 선언 결함은 해소됐다(코드 동작은 그대로)."
+    }
+  ],
+
+  "_항목 서술 규약": "★모든 항목은 대괄호 **한 줄 요약**으로 시작한다 - 12~30자 · 그 항목만 읽고도 무엇이 어긋났는지 아는 문장 · 원문 인용이나 파일:행을 요약에 넣지 마라(뒤 본문에 적는다). 이 요약이 통지에 그대로 실리고 본문은 안 실린다 - 요약이 없으면 사람은 잘린 원문 조각을 받는다. 예: '[숏 레그 그로스 익스포저 24% 미달]' · '[유니버스 탈락분 비중 재분배 없음]' · '[은닉층 순환 구조 미구현]'. ★용어는 그 분야의 정통 표기를 쓴다 - 임의 한글 조어를 만들지 말고, 원문 용어가 영문이면 통용 표기를 그대로(gross exposure · long/short leg · winsorize · lookback), 우리 지표는 정본 표기를 그대로(PORT_t · Calmar · MDD · OOS retention). 뜻이 통해도 조어면 읽는 사람이 두 번 해석한다.",
+
+  "_배열 규약": "undeclared_changes·signal_mismatch 는 **발견만** 담는다. 없으면 빈 배열 [] 로 두고 '불일치 없음' 같은 비발견을 항목으로 넣지 마라 - 근거 게이트가 배열 길이로 선다. prior_review 는 재감사(위 '재감사다' 절이 있을 때)에서 네 축 항목만 - 아니면 빈 배열 [].",
+
+  "note": "청정 모드 — 측정 산출물은 보지 않았고 지시대로 코드 경로 추적으로 대신했다(Σ̂_t·μ~·x 의 실제 값 대조 없음 · 반례 ①②는 기전 추적으로 구성한 것이고 실측 발화 확인은 아니다). 내 축에서 **미신고 변경은 0건**이다: eq.(3)(4)(5)·h_i·ϖ_i·δ₁·δ₂·d_xVaR 는 §3.2 표시식과 대수적으로 동일하고(μ=0 대입 전개로 항별 확인), A.9 필터링 구조·π*=30%·π=0.5%(주간 셀)·α=99%·μ=0·52주 창(종점 t 포함)도 원문과 일치하며, 신호층의 모든 이탈(슬리브 구성·IC 부호·Z_Score_Aligned 표준화·μ~·Σ~ 확장창·π 고정·EM 초기화와 조기종료·PSD 사영·n_t 하한·워밍업)은 changed(4)(7)(8)(10)(11)(12)(13)(14)(15)(25) 와 constants 35개에 신고돼 있다 → adapted. 축 밖 1줄: 앞 회차의 [비유한 기울기 시 0 반환] 지적은 내 축이 아니지만 engine.R:196 이 stop() 으로 바뀌어 해소되고 changed(23) 에 신고됐다."
+}

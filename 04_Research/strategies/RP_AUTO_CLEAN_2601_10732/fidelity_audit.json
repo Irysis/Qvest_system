@@ -1,0 +1,130 @@
+{
+  "verdict": "adapted",
+  "undeclared_changes": [],
+  "signal_mismatch": [],
+  "evidence": "[signal] §3.1(전문): \"We use daily returns for the Fama-French six factors from Kenneth French's data library: Market excess return (MKT-RF), Size (SMB), Value (HML), Profitability (RMW), Investment (CMA), and Momentum (MOM). Sample: January 2, 1990 – December 31, 2024 (8,817 trading days).\" — 원문 §3.1 에 전처리·표준화·윈저화·단위(% vs 소수) 서술이 **없다**(WebFetch 3회 어휘검색: standardized · winsorized · demeaned · scaled · percentage · basis points · cumulative · sum of returns 전부 부재). 따라서 engine.R 이 6계열에 표준화·윈저화·절단을 넣지 않은 것은 원문과 일치(FIDELITY ⑮ · paper_steps '전처리' omitted). §5.2: \"during Crisis regime, go long SMB when HML return over the past 9 days is positive, short SMB when negative\" — 부호 규칙. §3.4: \"H₀: r_{j,t} ⊥ {r_{i,t−ℓ}}_{ℓ=1}^{L} | {r_{j,t−ℓ}}_{ℓ=1}^{L}\" (지연 ℓ=1..L). §5.3: \"The 9-day crisis lag is stable across maximum lag choices (L=5,10,15,20).\" → L=9. §4.3 Table 3: Crisis HML→SMB p = 1.89e−5 · Lag 9 · Significant Yes (SMB→HML p = 0.165 · Lag 4 · No) → 방향은 HML→SMB 단방향. §3.2 Table 1: Mean ‖x‖ = 0.83 / 1.49 / 3.33 (ν = 12.1 / 6.9 / 3.8) · \"Regimes are labeled by mean ‖x‖ magnitude\" · ‖x‖ = 6팩터 일간수익 벡터의 Euclidean norm. §3.3: \"regime labels are identified using the full sample\" (엔진은 확장창 재적합 + 필터로 대체 — changed ⑪). SMB·HML·RMW·CMA·MOM 구성식은 원문 본문에 **없고** §3.1 이 원천(Ken French 라이브러리)만 지목한다 — 그 라이브러리 규약(5팩터 2x3: SMB = avg(9 small) − avg(9 big) = 1/3(SMB_BM+SMB_OP+SMB_INV) · 형성일당 단일 규모 중위 분기점 · 특성 30/70 · value-weighted · 6월 말 형성 7월~익년 6월 보유 · 모멘텀만 월말 형성 prior(2-12))이 비교 기준이고 FIDELITY 도 같은 기준을 쓴다. / [timing] §5.2 'go long SMB when HML return over the past 9 days is positive, short SMB when negative'(9일 랙만 명시) · §5.3 'Optimal lags were selected by BIC within each regime. The 9-day crisis lag is stable across maximum lag choices (L=5,10,15,20)' · §3.1 'We use daily returns for the Fama-French six factors from Kenneth French's data library' 뿐 — 구성식·형성월·보유월·리밸 주기·스킵월 서술 전무(직접 재확인: 'No methodology descriptions, rebalancing frequencies, or constituent definitions appear in the paper. Readers must consult French's original source documentation'). 모멘텀 11개월 형성+1개월 스킵, 연간 정렬 6월 형성·12개월 보유(7월~익년 6월)는 Ken French 공개 라이브러리 관행이지 논문 서술이 아니다. / [universe] §3.1 전문(위 인용) — 유니버스·필터 서술의 전부. 어휘 검색으로 거래소/금융주/가격/유동성/최소종목수 관련 문장 부재 확인. / [portfolio] arXiv:2601.10732v1 전문(arxiv MCP 로 23,503자 전량 · 절 구성 = 1 Introduction / 2 Related Work / 3 Methodology(3.1 Data · 3.2 Student-t HMM · 3.3 Sample Overlap · 3.4 Per-Regime Granger · 3.5 Factor Pair Selection) / 4 Results / 5 Discussion(5.1~5.4) / 6 Conclusion — 포트폴리오 구성 절·부록 부재). §3.1 전문: \"We use daily returns for the Fama-French six factors from Kenneth French's data library: Market excess return (MKT-RF), Size (SMB), Value (HML), Profitability (RMW), Investment (CMA), and Momentum (MOM). Sample: January 2, 1990 – December 31, 2024 (8,817 trading days).\" — 이것이 구성에 관한 서술의 전부다. §5.2: \"we evaluate whether the predictive relationship translates to profits via a simple strategy: during Crisis regime, go long SMB when HML return over the past 9 days is positive, short SMB when negative\" · Table 6 캡션: \"Trading Strategy Backtest (1995–2024). Strategy trades SMB based on 9-day lagged HML signal during Crisis regimes only.\" (행 = Annual Return / Sharpe Ratio / Max Drawdown 뿐 — 종목수·노출·회전 지표 없음). §5.2 (4): \"Transaction costs: Not modeled\" — 포지션 크기·레버리지·리밸 주기에 대한 서술도 전무. 따라서 2x3 정렬 · 규모 중위 · 특성 30/70 · 칸당 1/9 · 칸 안 VW · 다리 Σ|w|=1 은 전부 §3.1 이 지목한 원천(Ken French 라이브러리) 규약의 보충이고, FIDELITY 가 해당 상수 전부(.SIZE_BP · .CHAR_BP_LO · .CHAR_BP_HI · .N_BUCKETS · .N_LEVELS · .N_SMB_LEG_CELLS · .LEG_GROSS · .FORM_MONTH)를 source=supplement 로 적었다. 원천 치환(미국 기구축 SMB 계열 → 한국 유니버스 종목 스프레드 포트폴리오)은 changed ①②⑤⑥ 에 선언돼 있다 — 이것이 adapted 의 근거다. / [cost] §5.2 원문(WebFetch 확인): \"Transaction costs: Not modeled, but would further erode returns.\" — bps·왕복·시장충격 중 어느 것도 수치로 명시하지 않는다. Table 6(Strategy 연 −6.1%/SR −0.75/MDD −97.5% · Buy-and-Hold SMB +1.9%/0.27/−39.8%)은 이 비용 미반영 가정 위에서 산출됐다. / [undeclared] 원문 전문(arxiv 2601.10732v1) 통독. §3.1 데이터 서술 전부 = \"We use daily returns for the Fama-French six factors from Kenneth French's data library: Market excess return (MKT-RF), Size (SMB), Value (HML), Profitability (RMW), Investment (CMA), and Momentum (MOM).\" + \"January 2, 1990 – December 31, 2024 (8,817 trading days)\" — 종목 정렬·분기점·EW/VW·형성월·보유기간·종목수·포지션 크기·레버리지·리밸 주기에 관한 서술이 어떤 절·표에도 없다(저자가 종목을 정렬하는 절 자체가 없다 · 어느 French 파일인지도 식별하지 않는다). §3.2 = Student-t HMM(식 (1) · δ_k 정의) · K=3 by BIC(ΔBIC 847 / 312) · EM · Table 1(Mean ‖x‖ 0.83/1.49/3.33 · ν 12.1/6.9/3.8 · 지속성 0.988/0.991/0.968 · 비중 42.2/43.4/14.4%). §3.3 = 전표본 라벨 + \"a fully rigorous approach would fit the HMM on a training period and freeze regime boundaries for a held-out test period\". §3.4 = H₀ 식(ℓ=1..L) · α=0.01 Bonferroni 30쌍(=0.00033) · 국면 경계 ẑ_{t−ℓ}=k 요건(≈8% 배제). §3.5 = 30쌍 사전 스크리닝 후 HML–SMB 선택. §4.3 Table 3 = Crisis HML→SMB p=1.89e-5 · Lag 9. §5.2 = \"during Crisis regime, go long SMB when HML return over the past 9 days is positive, short SMB when negative\" · \"(3) Regime detection lag: The HMM assigns regimes using filtered (smoothed) probabilities.\" · \"(4) Transaction costs: Not modeled, but would further erode returns.\" · Table 6(1995–2024 · −6.1% / −0.75 / −97.5% vs B&H SMB +1.9% / 0.27 / −39.8%). §5.3 = \"The 9-day crisis lag is stable across maximum lag choices (L=5,10,15,20)\". §6 = \"monitoring Value factor movements may provide information relevant to Size factor risk management\" · \"Whether this translates to practical hedging value remains to be demonstrated.\" 따라서 이 축의 대조 기준은 ①논문이 고정하는 것(6계열 원천 · K=3 · lag 9 · 위기 한정 롱/숏 SMB · 비용 미반영 · 표본기간)과 ②§3.1 이 원천으로 지목한 Ken French 라이브러리 규약(FIDELITY 와 앞 회차 감사가 공유하는 기준)이고, 그 밖의 구성 명세는 전부 보충이다 — FIDELITY 가 .SIZE_BP·.CHAR_BP_LO·.CHAR_BP_HI·.N_BUCKETS·.N_LEVELS·.N_SMB_LEG_CELLS·.LEG_GROSS·.FORM_MONTH·.MIN_FORM_N·.QTL_TYPE 등을 source=supplement 로 적었다.",
+  "confidence": "medium",
+  "note": "축 팬아웃 6개(판독형 opus 3 · 대조형 sonnet 3) — 발견 0건. adapted/adapted/adapted/adapted/faithful/adapted",
+  "mode": "fanout",
+  "axis_verdicts": [
+    {
+      "axis": "signal",
+      "required": true,
+      "model": "opus",
+      "verdict": "adapted",
+      "admissible": true,
+      "reason": "",
+      "confidence": "high",
+      "checked": "부호 전경로(§5.2 규칙 → engine.R:336~337 pos ∈ {+1,0,−1} → 350 side(S=+1/B=−1) → 353 Weight = side·w_in/9 → 356 Weight·pos : long SMB ⇔ h9>0 일치, 반전 없음) · 룩백 길이 9(.GC_LAG_DAYS=9L, engine.R:56·332 = §5.3 L=9) · 룩백 종점([d−8,d] vs §3.4 ℓ=1..9 의 [d−9,d−1] — changed ⑰ 선언) · 누적 정의(단순합 vs 복리 · 원문 미명세 · changed ⑯) · 9일 창 단위(달력일 아님 · FSX 유효 관측일 9개 · changed ⑯) · h9 == 0 처리(pos=0 · changed ⑱) · 표준화·윈저화 유무(6계열 무변환 = 원문 미명세와 일치 · changed ⑮) · 단위 척도(소수 vs Table 1 % · HMM 은 위치-척도 모형이고 crisis = argmax mean_norm 이라 척도 불변 · changed ⑮) · 위기 상태 지정식(engine.R:242 nrm = sqrt(rowSums(X·X)) = Table 1 ‖x‖ · 290~291 γ가중 mean_norm 최대 = Table 1 라벨 규약 일치 · changed ⑭) · 6계열 구성식 대조(engine.R:211 lev3−lev1 = 1/2(S_hi+B_hi)−1/2(S_lo+B_lo) · 213~214 SMB = 세 정렬 평균 = avg(9 small)−avg(9 big) · MOM 정렬은 SMB 에서 제외(.SORT_ANN) = French 5팩터 파일 규약) · 특성 부호 방향 4종(V01_BM lev3=Value→HML=V−G · Q01_GPA lev3=Robust→RMW=R−W · Q06_Asset_Growth 등록부 선부호반전 lev3=Conservative→CMA=C−A · MOM lev3=Winner→W−L · engine.R 추가 부호조작 없음 = C13) · 특성 정렬 변환의 순위보존성(factor_db_connector.R:683~691 Z_Score_Aligned = Z_Score × ic_sign 후 sd 재정규화 — 양의 아핀은 30/70 분위 배정 불변 · 단 ic_sign = −1 이면 정렬 역전 · changed ⑧ 선언) · ic_sign 의 as-of 성(connector:370 sig_date 전달 · 확장 IC) · MOM 특성 창(engine.R:139 frollsum(shift(lr,1),11) = 형성월 m 의 [m−11,m−1] → 보유월 t=m+1 기준 [t−12,t−2] = French prior(2-12) 와 동일 · expm1(Σlog1p) = Π(1+r)−1 로 단순누적 일치) · 규모·특성 분기점 산출 단위(engine.R:147~149 SZBP by=Date 단일 · 167~168 c_lo/c_hi by=(Date,SORT)) · 신호계열과 거래대상의 동일성(h9 의 HML = SPR[SORT=='HML'] · 거래 SMB 다리 = 9칸 1/9 등가중 = 213~214 SMB 계열과 대수적으로 동일) · 필터 상태 인과성(engine.R:294~308 α_t 가 1..t 만 사용 · 평활/Viterbi 부재)",
+      "counterexample": "[룩백 창 종점 1일 전진 — 같은 위기일에 반대 포지션] 논문 §3.4 의 지연 규약(ℓ=1..L)대로 읽으면 결정일 d 의 '과거 9일' 은 [d−9, d−1] 이지만 engine.R:332 `frollsum(FSX$HML, 9L)` 는 data.table 기본 align='right' 이므로 [d−8, d] 를 합산한다(FSX 는 engine.R:223 `setorder(FS, Date)` 로 시간순). 수치 반례: 위기 판정일 d 에서 일별 HML 스프레드가 HML[d−9] = +0.10% · Σ HML[d−8..d−1] = −0.50% · HML[d] = +0.80% 라면 — 논문 창 합 = +0.10% − 0.50% = −0.40% < 0 → 'short SMB'(engine 부호 규약으로 pos = −1 · 소형 다리 −1/9 · 대형 다리 +1/9), 엔진 창 합 = −0.50% + 0.80% = +0.30% > 0 → engine.R:336 `SIG[crisis & h9 > 0, pos := 1L]` 로 'long SMB'(소형 +1/9 · 대형 −1/9). 즉 같은 날 같은 자료에서 다리 부호가 정반대로 갈린다. 조건은 'HML[d] 의 크기가 [d−8, d−1] 합의 절대값보다 크고 부호가 그 합과 반대' 로 위기 국면(일별 ‖x‖ 가 평상 대비 4배 — Table 1 Mean ‖x‖ 3.33 vs 0.83) 에서는 흔히 성립한다. 단 이 차이는 FIDELITY.changed ⑰ 및 windows.hml_9d 에 창 지수까지 명시 선언돼 있고(논문 §5.2 가 종점을 명시하지 않음 — WebFetch 재확인: 'The paper does not specify ... whether the window ends at t−1 or t'), 집행이 close d+1(H4)이라 미래참조는 아니다. 두 번째 반례(부호 역전) = 특성 방향 정렬: V01_BM 의 `ic_sign` 이 확장 IC 로 −1 이 되는 달에는 engine.R:167~169, 211 의 lev3−lev1 이 Value−Growth 가 아니라 Growth−Value 가 되어 h9 부호가 통째로 뒤집히고 그 달 전 위기일의 포지션이 논문 규칙과 반대가 된다 — 이것도 changed ⑧ · factor_mapping V01_BM deviation 에 선언돼 있다.",
+      "n_findings": 0
+    },
+    {
+      "axis": "timing",
+      "required": false,
+      "model": "sonnet",
+      "verdict": "adapted",
+      "admissible": true,
+      "reason": "",
+      "confidence": "high",
+      "checked": "L=9 랙(engine.R:56 .GC_LAG_DAYS) · 6월 형성·12개월 보유(engine.R:57,69,186~189 .FORM_MONTH/.HOLD_MONTHS_ANN) · 모멘텀 11개월 형성+1개월 스킵(engine.R:62~63 .MOM_WIN_MONTHS/.MOM_SKIP_MONTHS · engine.R:139 frollsum(shift(lr,1),11)) · 모멘텀 1개월 보유(engine.R:70 .HOLD_MONTHS_MOM) · 일간 신호 대비 하네스 주간 체결 폴드(FIDELITY harness_disclosure H10). 원문을 직접 재조회해 형성/보유/리밸/스킵 서술 부재를 1차로 확인.",
+      "counterexample": "구성 못 했다 — 논문이 형성/보유/리밸/스킵 수치를 어디에도 명시하지 않아(WebFetch 직접 확인: \"No formation period, holding period, rebalancing frequency, or skip-month specifications are provided\") 어긋날 기준값 자체가 없다. 유일한 명시 타이밍값(9일 랙)은 engine.R:56 .GC_LAG_DAYS=9L 로 정확히 일치.",
+      "n_findings": 0
+    },
+    {
+      "axis": "universe",
+      "required": false,
+      "model": "sonnet",
+      "verdict": "adapted",
+      "admissible": true,
+      "reason": "",
+      "confidence": "high",
+      "checked": "engine.R:101-103(PX 패널 K200|KQ150 & finite Ret & w_vw>0) · 146(.SIZE_POP K200|KQ150 & finite Size>0) · 149,164(.MIN_FORM_N=30 모집단 하한) · 366-369(FLAT 토큰 Vol>0) 를 FIDELITY changed⑤㉓㉙ · constants(.MIN_FORM_N·.FDB_COV_MIN) · harness_disclosure H1/H2/H8 과 대조 — 전부 논문에 없는 추가 선별 규칙이며 전부 FIDELITY/하네스 공시에 선언돼 있다. 금융주 제외·가격 하한은 코드에도 없고 선언에도 없어 일치.",
+      "counterexample": "구성 못 했다 — 논문 §3.1 은 'We use daily returns for the Fama-French six factors from Kenneth French's data library... Sample: January 2, 1990 – December 31, 2024 (8,817 trading days)' 외에 거래소·금융주 제외·가격 하한·유동성 필터·최소 종목수에 대한 어떤 규칙도 적지 않는다(WebFetch 전문 검색 — NYSE·exchange·financial firm·price·minimum·liquidity·listed·delisting·survivorship 어휘 전부 미등장). 논문이 어떤 선별 규칙도 고정하지 않으므로, 구현이 그 규칙과 다른 값을 내는 상황을 구성할 수 없다 — 비교 대상 자체가 없다.",
+      "n_findings": 0
+    },
+    {
+      "axis": "portfolio",
+      "required": true,
+      "model": "opus",
+      "verdict": "adapted",
+      "admissible": true,
+      "reason": "",
+      "confidence": "high",
+      "checked": "롱숏 vs 롱온리(§5.2 'go long SMB … short SMB' ↔ engine.R:350·356·379) · 다리 정의와 부호 반전 · 분위 수(2규모×3특성 = 6버킷 · lev 3분할 engine.R:167~172) · 규모 분기점 단일성(engine.R:143~166 `by = Date` ↔ 정렬별 분기점 금지) · SMB 식 avg(9 small) − avg(9 big)(engine.R:213~214) · 스프레드 식 lev3−lev1 의 S/B 등가중(engine.R:211) · EW/VW 층 구분(칸 간 1/9 등가중 · 칸 안 ME_{t−1} VW engine.R:349) · 다리별 Σ|w| = 1 과 18칸 요건(engine.R:347~353) · 롱·숏 동시 편입 가능성(engine.R:351~354) · 보유월 전개 중복(engine.R:187~195) · 실현 종목수 경로(두 층 상위 N 절단 없음 · .MIN_FORM_N 30 은 모집단 하한) · 무포지션 2종목 토큰(engine.R:366~375) · 고정 축(long-only·≤25종) 충돌의 선언 여부(changed ② · 충실구현 레인 축 = 논문 그대로)",
+      "counterexample": "이 축에서 논문과 갈리는 반례를 구성하지 못했다 — 논문 전문(23,503자 전량 판독)에 포트폴리오 구성 명세가 존재하지 않기 때문이다. §3.1 은 'We use daily returns for the Fama-French six factors from Kenneth French's data library' 로 기구축 팩터 계열을 그대로 쓰고, 종목 정렬·분기점·EW/VW·버킷 수·종목수·포지션 크기·레버리지·dollar-neutrality 를 어떤 절·식·표·부록에서도 서술하지 않는다(저자가 종목을 정렬하는 절 자체가 없다). 논문이 이 축에서 고정하는 것은 §5.2/Table 6 의 'go long SMB when HML return over the past 9 days is positive, short SMB when negative' — 즉 ① 롱숏(롱온리 아님) ② 거래 대상 = 단일 SMB 계열 ③ 신호 부호에 따른 다리 반전뿐이고, 셋 다 코드가 일치한다: engine.R:350 `side = ifelse(substr(grp,1,1)=='S', 1, -1)`(소형 롱 · 대형 숏 = Small Minus Big) · engine.R:356 `Weight := Weight * pos`(pos=−1 이면 다리 전면 반전 = short SMB) · engine.R:336~337(비위기 = pos 0 → 무포지션 토큰). 반례 후보로 두 경로를 추적했으나 둘 다 갈리지 않았다: ⒜ 다리 총노출 — engine.R:348 의 18칸 완전 요건(n_cell == .N_SMB_CELLS) 아래 다리당 칸이 정확히 9개이고 engine.R:349 의 `w_in := w_vw/sum(w_vw), by=.(Date,SORT,grp)` 로 칸 안 합이 1, engine.R:353 이 1/9 를 곱하므로 다리별 Σ|w| = 9×(1/9) = 1 이 정확히 성립한다(선언 .LEG_GROSS 와 일치). ⒝ 롱·숏 동시 편입 — engine.R:146~149 의 규모 분기점이 `by = Date` 단일값이고 engine.R:166 `sz_hi := Size > sz_bp` 가 그 하나만 쓰므로 한 종목의 size 라벨이 형성일당 유일하고, 거래 다리는 6월 형성 3정렬(engine.R:346 `ASG[SORT %in% .SORT_ANN]`)만 쓰므로 세 정렬 기여 부호가 같다 — engine.R:354 의 `by=.(Date,Ticker)` 합산에서 다리 간 상쇄가 발생할 수 없다(엔진이 .n_mix 진단으로 자기검사까지 둔다). 보유월 전개(engine.R:187~195)도 6월 형성 12개월·월말 형성 1개월로 겹치지 않아 같은 (mi,Ticker,SORT) 중복 배정이 없다.",
+      "n_findings": 0
+    },
+    {
+      "axis": "cost",
+      "required": false,
+      "model": "sonnet",
+      "verdict": "faithful",
+      "admissible": true,
+      "reason": "",
+      "confidence": "high",
+      "checked": "FIDELITY paper_steps '거래비용' 항목(status=changed, note) · constants/harness_disclosure H7 의 commission_paper↔15bps 병기 규약 · engine.R 전체(비용 계산 코드 부재 확인) · §5.2 원문 재조회",
+      "counterexample": "구성하지 못했다 — engine.R 은 비용을 전혀 계산하지 않는다(거래비용 로직이 이 파일에 없다). FIDELITY.commission_paper=null 과 harness_disclosure H7('논문판 = commission_paper(무명시면 0)로 병기')이 논문의 '비용 미반영'(§5.2) 과 정확히 같은 값(0)을 논문 기준 병기치에 쓴다고 선언하므로, 병기값이 논문 비용과 다르게 계산되는 경로를 찾지 못했다.",
+      "n_findings": 0
+    },
+    {
+      "axis": "undeclared",
+      "required": true,
+      "model": "opus",
+      "verdict": "adapted",
+      "admissible": true,
+      "reason": "",
+      "confidence": "high",
+      "checked": "engine.R 전 행 열거 대조: 필터 20종(L101 위생∩finite Ret · L102 w_vw>0 · L124 factor_db asof fail-closed · L129 finite CH · L134 finite Ret · L140 finite cum11 · L146 finite Size>0 · L149 n_pop≥30 · L161 SZBP merge · L164 n_f≥30 · L172/L212/L214 6버킷·3정렬 완전 · L224 6계열 완전 · L312 번인 · L334 sig_from∩crisis∩h9 · L348 18칸 · L363/L378 Weight≠0 · L367~368 플랫 토큰 적격)과 선언 ③⑤⑨⑱⑳㉓㉕㉘㉙㉚, constants 36개 전수(.K_REGIMES~.sig_from · 코드 L55~93 과 1:1), windows 11개 전수(size_bp L147 · char_bp L167~168 · vw_weight L100 · mom_char L139 · hml_9d L332 · hmm_fit L320 · hmm_filter L294~308/L321 · hmm_burnin L312~313 · ann_hold/mom_hold L189~191 · monthly_ret L134), 6계열 구성식(L211 lev3−lev1 · L213~214 avg9S−avg9B · L215 MKT−RF=0), HMM 수치 가드 11종(L232 jitter · L247/L282 ridge · L254~255 행최대 스케일 · L260/L305 전이만 전파 · L264/L268 분모 바닥 · L266 행합 0 · L270~272 전이 누적 음수·비유한 · L276 상태질량 하한 · L285 ν uniroot [2.1,100] · L287 tol · L251 max_iter)과 선언 ⑪⑫⑬⑭, 거래 다리(L344~364)와 선언 ②㉔㉚·.LEG_GROSS, 플랫 토큰(L366~375)과 선언 ⑲, RAWDATA 참조열 7종(Date·Ticker·Size·Ret·K200·KQ150·Vol) 전부 선언 대응. 측정 산출물은 청정 모드로 비공개여서 코드 경로 추적으로 대신했다.",
+      "counterexample": "구성하지 못했다. 이 축의 반례는 '엔진이 하는데 changed·constants·windows·paper_steps·harness_disclosure 어디에도 없는 동작'이어야 한다. engine.R 의 모든 필터·분기점·가중·창·수치 가드를 1행씩 열거해 대조했고(아래 checked), 행동 결과를 바꾸는 항목은 전부 대응 선언을 찾았다. 특히 r1 기각 사유였던 분기점 경로를 재추적했다 — engine.R:146~149 가 `.SIZE_POP` 에서 `by = Date` 로 형성일당 분기점 1개만 내고 engine.R:161 이 그 1개를 merge 로 전 정렬에 붙이므로, 같은 형성일의 세 연간 정렬(HML·RMW·CMA)은 같은 `sz_bp` 와 같은 `Size`(engine.R:166)를 써 한 종목의 `sz_hi` 가 유일하다. engine.R:344~346 의 거래 다리는 `.SORT_ANN` 3정렬만 쓰고 `.expand`(engine.R:187~194)가 6월 형성당 12개월 비중첩 보유창을 내므로 한 보유월에 한 종목의 (SORT,grp) 행은 최대 3개·전부 같은 side 다 → engine.R:354 의 `sum(Weight)` 에서 다리 간 상쇄가 일어날 (Date,Ticker) 조합을 만들 수 없다. engine.R:349 의 `w_in` 이 (Date,SORT,grp) 안에서 1 로 정규화되고 engine.R:348 이 18칸 전부 비지 않음을 요구하므로 롱 다리 Σ|w| = 9 x (1/9) = 1 이 정확히 성립한다(선언 ②·.LEG_GROSS 와 일치). 선언이 사실보다 넓은 쪽(하지도 않은 변경 신고)으로도 constants 36개·windows 11개를 각각 코드 행에 대응시켜 확인했고, 코드가 안 하는 동작을 신고한 항목은 찾지 못했다.",
+      "n_findings": 0
+    }
+  ],
+  "prior_review": [
+    {
+      "axis": "signal",
+      "item": "[세 정렬의 size 분기점이 서로 달라 SMB 가 단일 size 분할이 아님]",
+      "status": "confirmed",
+      "evidence": "§3.1 이 구성식을 적지 않고 원천만 지목하므로(\"from Kenneth French's data library\") 비교 기준은 그 라이브러리 규약이고, 그 규약은 형성일당 단일 규모 분기점(6월 말 NYSE 중위 ME 하나를 B/M·OP·INV 2x3 세 정렬에 공통) 위에서 \"SMB ... the average return on the nine small stock portfolios minus the average return on the nine big stock portfolios\" 와 \"SMB = 1/3(SMB(B/M)+SMB(OP)+SMB(INV))\" 를 동시에 성립시킨다 — 정렬별 분기점이면 '아홉 개 소형 포트폴리오' 가 하나의 Small 집합을 가리키지 못한다. 앞 회차 지적이 원문 원천 규약과 합치한다. r2 는 engine.R:146~149(`SZBP ... by = Date`) · 161(`merge(F1, SZBP, by = 'Date')`) · 166(`sz_hi := Size > sz_bp`)로 형성일당 분기점 1개를 전 정렬에 공통 적용하고, 분기점 모집단도 정렬·특성 가용성과 무관한 단일 모집단(위생 멤버 ∩ finite Size>0)으로 바꿨다. Size 와 sz_bp 가 모두 (Date,Ticker)·Date 수준 값이므로 한 종목의 size 라벨이 그 형성일에 유일하고, 세 연간 정렬이 같은 6월 형성일을 공유하며 보유창 [m+1,m+12] 이 겹치지 않아(engine.R:187~195) 보유월당 분할도 유일하다 — 지적된 결함은 해소됐고 FIDELITY changed ⑤ · constants .SIZE_BP note 가 선언한다.",
+      "admissible": true
+    },
+    {
+      "axis": "signal",
+      "item": "[규모 분기점을 정렬별로 따로 산출 — 선언은 단일 유니버스 분기점]",
+      "status": "confirmed",
+      "evidence": "같은 원문 근거(§3.1 의 원천 지목 + Ken French 5팩터 2x3 규약의 단일 6월 ME 중위 분기점). 앞 회차 지적대로 r1 의 `by = .(Date, SORT)` 는 분기점을 정렬 3종마다 갈라 HMM 입력 6계열 전부(SMB 뿐 아니라 engine.R:211 의 lev3−lev1 스프레드가 S/B 두 반쪽을 등가중하므로 HML·RMW·CMA 까지)를 공통분기점 판과 다르게 만들었고, 그 사실이 changed·constants·windows 어디에도 없었다. r2 는 코드를 원천 규약으로 되돌리고(위 줄) 선언도 맞췄다 — changed ⑤ 가 '규모 분기점은 형성일당 1개(by = Date)를 전 정렬에 공통 적용' 과 모집단('그 형성일 위생 멤버 ∩ finite Size > 0 — 정렬·특성 가용성·수익 가용성과 무관한 단일 모집단')을 명시하고, 특성 30/70 만 정렬별 모집단에서 잡는다고 분리 선언한다(engine.R:167~168 과 일치). 잔존 치환(NYSE → 그 형성일 위생 유니버스)은 changed ⑤ · .SIZE_BP source=supplement 로 선언돼 있다.",
+      "admissible": true
+    },
+    {
+      "axis": "portfolio",
+      "item": "[규모 분기점을 정렬별로 따로 산출 — 선언은 단일 유니버스 분기점]",
+      "status": "confirmed",
+      "evidence": "논문 본문에는 분기점 규약이 없고(§3.1 이 'Kenneth French's data library' 원천 지목만 한다) 그래서 이 축의 판단 기준은 그 지목된 원천 규약이다 — 그 규약은 형성일당 단일 규모 분기점이고, 그 단일 분할 위에서만 'SMB … the average return on the nine small stock portfolios minus the average return on the nine big stock portfolios' 가 정의된다. r1 의 `by = .(Date, SORT)` 는 이 요건을 깼고 r2 는 engine.R:146~149(`SZBP … by = Date`) + :161(전 정렬 공통 merge) + :166(`Size > sz_bp`)로 되돌렸다 — FIDELITY changed ⑤ · .SIZE_BP note 도 '형성일당 1개 · 전 정렬 공통' 으로 코드와 일치한다. ★이 confirmed 는 논문 산문이 아니라 논문이 지목한 원천 규약에 근거한다(논문 자체는 이 축에 침묵).",
+      "admissible": true
+    },
+    {
+      "axis": "portfolio",
+      "item": "[한 종목이 롱·숏 양 다리에 동시 편입 가능 — 다리 Σ|w| = 1 선언 붕괴]",
+      "status": "confirmed",
+      "evidence": "논문은 노출 크기를 어디에도 적지 않으므로(§5.2 는 'go long SMB … short SMB' 만 · Table 6 에 노출·종목수 행 없음) 이 지적은 논문-코드 불일치가 아니라 선언-코드 불일치였고, r1 코드에서는 성립했다(정렬별 분기점 → 한 종목의 side 가 정렬마다 갈림 → `by=.(Date,Ticker)` 합산 상쇄 → 다리 총노출 < 1). r2 에서는 단일 분기점(engine.R:146~166)으로 side 가 종목·형성일당 유일해지고 거래 다리가 6월 형성 3정렬만 쓰므로(engine.R:346) 상쇄가 구조적으로 불가능하며, 18칸 요건(engine.R:348)과 칸당 1/9(engine.R:353) 아래 다리별 Σ|w| = 1 이 정확히 성립한다 — 선언(changed ② · .LEG_GROSS)과 코드가 일치한다.",
+      "admissible": true
+    },
+    {
+      "axis": "undeclared",
+      "item": "[규모 분기점을 정렬별로 따로 산출 — 선언은 단일 유니버스 분기점]",
+      "status": "confirmed",
+      "evidence": "논문 본문에는 구성 명세가 없고(§3.1 서술 전부 = \"We use daily returns for the Fama-French six factors from Kenneth French's data library\" + 표본기간), 기준은 §3.1 이 원천으로 지목한 Ken French 라이브러리 규약이다 — 그 규약이 6월 말 단일 규모 분기점을 B/M·OP·INV 세 2x3 정렬에 공통 적용하고 그래서 \"SMB ... the average return on the nine small stock portfolios minus the average return on the nine big stock portfolios\" 가 성립한다. FIDELITY 자신도 paper_steps 'FF 2x3 포트폴리오 구성' 에서 같은 기준을 세우고 changed ⑥ 가 '세 정렬의 SMB 평균' 으로 그 규약을 승계하므로, 정렬별 분기점은 그 기준과 어긋나고 r1 의 changed·constants·windows 에 선언이 없었다는 지적이 성립한다. 구현자 반박 없음(audit_disputes = [] · changed ⑤ 가 \"r1 은 이 분기점을 by = .(Date, SORT) 로 잡아 정렬마다 중위가 갈렸고 그것이 기각 사유였다\" 로 지적을 수용). r2 는 engine.R:146~149 `by = Date` + L161 merge + L166 `Size > sz_bp` 로 형성일당 1개를 전 정렬에 공통 적용하고 changed ⑤ 에 선언했다 — 재감사에서 이 경로를 다시 추적해 수정이 실제로 그 지적을 해소함을 확인했다.",
+      "admissible": true
+    },
+    {
+      "axis": "undeclared",
+      "item": "[한 종목이 롱·숏 양 다리에 동시 편입 가능 — 다리 Σ|w| = 1 선언 붕괴]",
+      "status": "confirmed",
+      "evidence": "논문에는 포지션 크기 서술이 없으므로(§5.2 가 고정하는 것은 \"go long SMB ... short SMB when negative\" 뿐 · Table 6 캡션도 지표 3행뿐) 다리 Σ|w| = 1 은 원천 규약 보충이고, 그 값은 앞 항목의 단일 규모 분기점 위에서만 성립한다 — Ken French 규약의 '아홉 개 소형 포트폴리오 / 아홉 개 대형 포트폴리오' 가 하나의 Small/Big 분할을 전제하기 때문이다. 따라서 정렬별 분기점 아래서 한 종목의 side 가 정렬마다 갈려 `sum(Weight)` 로 상쇄되고 다리 총노출이 선언값 1 에 못 미친다는 지적은 성립하고, r1 은 그 상쇄 경로를 선언하지 않았다. 구현자 반박 없음. r2 에서는 engine.R:344~354(`.SORT_ANN` 3정렬 · 공통 sz_bp · `.expand` 비중첩 12개월 보유창)로 한 (Date,Ticker)의 side 가 유일해져 상쇄 경로 자체가 사라지고, L348 의 18칸 요건 + L349 의 칸 내 정규화로 롱·숏 각 Σ|w| = 1 이 정확히 성립한다 — changed ②·㉚·.LEG_GROSS 의 선언과 일치함을 재추적으로 확인했다.",
+      "admissible": true
+    }
+  ],
+  "n_overturned": 0,
+  "flags": [],
+  "merged_at": "2026-10-16T22:10:17+0900"
+}

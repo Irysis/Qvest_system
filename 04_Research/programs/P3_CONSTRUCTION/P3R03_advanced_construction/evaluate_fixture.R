@@ -224,6 +224,31 @@ if (identical(o1$verdict, "untested") && grepl("평가 상태 measure_failed", o
     identical(o2$verdict, "untested") && grepl("처치 전달률", o2$why) && isTRUE(all.equal(o2$delivery, 2 / 258)) && identical(o2$tbl$excluded, FALSE))
   ok("16 판정 1칸 — 평가 상태 실패 · 전달률 2/258 < 0.9 → 미시험(표 행 tested = FALSE)") else ng("16", paste(o1$why, "/", o2$why))
 
+## 17) 판정 1칸 안전 호출(v3) — 이름 붙은 분기 밖 오류(계약 환경 없음 → 실효 시작 판독에서 오류)도 그 칸만 미시험 · 표 행 · 오류 문구
+esc <- function(expr) tryCatch(expr, error = function(e) list(verdict = "error_escaped", why = conditionMessage(e), tbl = NULL))
+o17 <- esc(p3_eval_pair_safe(X16, "E3", "HRP", list(code = "Z_HRP"), list(code = "Z_RX0"), list(status = "evaluated", artifacts = "x"), list(status = "evaluated", artifacts = "y"),
+                             opts = list(log = file.path(X16$res, "Z_HRP.log"))))
+X17 <- modifyList(X16, list(fs = modifyList(X16$fs, list(delivery_min = 0.001))))
+o17b <- esc(p3_eval_pair_safe(X17, "E3", "HRP", list(code = "Z_HRP"), list(code = "Z_RX0"), list(status = "evaluated", artifacts = "x"), list(status = "evaluated", artifacts = "y")))
+if (identical(o17$verdict, "untested") && identical(o17b$verdict, "untested") && grepl("^평가 오류:", o17b$why) && identical(o17b$tbl$tested, FALSE) &&
+    identical(o17b$engine, "E3") && identical(o17b$cell, "Z_HRP") && identical(nrow(rbindlist(list(o17$tbl, o17b$tbl))), 2L))
+  ok("17 안전 호출 — 전달률 통과 뒤 계약 오류도 그 칸 미시험(‘평가 오류: …’) · 표 행 tested = FALSE · 라운드 표 결합 가능") else ng("17", paste(o17b$why))
+
+## 18) 이력 탈락 꼬리표(v3) — 판독 불가 = 미측정(통과로 접지 않음)
+h1 <- p3_history_drop_eval(data.table(drop_share = c(0.2, 0.15)), 0.10); h2 <- p3_history_drop_eval(data.table(drop_share = c(0.02, 0.05)), 0.10)
+h3 <- p3_history_drop_eval(data.table(drop_share = numeric(0)), 0.10); h4 <- p3_history_drop_eval(data.table(drop_share = c(NA_real_, NaN)), 0.10)
+h5 <- p3_history_drop_eval(data.table(drop_share = 0.5), 0.10, has_holdings = FALSE)
+if (identical(h1, list(status = "ok", tag = TRUE)) && identical(h2, list(status = "ok", tag = FALSE)) && identical(h3$status, "unmeasured") &&
+    identical(h4$status, "unmeasured") && identical(h5$status, "unmeasured") && !h3$tag && !h4$tag)
+  ok("18 이력 탈락 — 몫 평균 > 0.10 꼬리표 · 이하 없음 · 위기 집행 행 없음 · 몫 비유한 · 보유 판독 실패 = 미측정") else ng("18")
+
+## 19) 핀 재대조(v3) — 행동 카드 설정 사본 md5
+writeLines("cfg", file.path(tr, "bc.json")); unlink(file.path(tr, "e.R")); writeLines("e", file.path(tr, "e.R"))
+pre19 <- pre15; pre19$behavior_card_cfg <- list(path = "bc.json", md5 = m5("bc.json"))
+cat('{"entries":[{"catalog_id":"x:1","status":"active","resolver":{"kind":"k","notes":null,"n":2}}]}', file = file.path(tr, "06_Registry/weight_catalog.json"))
+q0 <- p3_pin_mismatches(pre19, tr); writeLines("cfg2", file.path(tr, "bc.json")); q1 <- p3_pin_mismatches(pre19, tr)
+if (!length(q0) && identical(q1, "행동 카드 설정 사본 md5")) ok("19 핀 재대조 — 행동 카드 설정 사본이 바뀌면 잡는다") else ng("19", paste(c(q0, "/", q1), collapse = " "))
+
 cat(sprintf("\n합계: 통과 %d · 실패 %d\n", PASS, FAIL))
 cat(sprintf('{"test":"p3r03_evaluate_fixture","pass":%d,"fail":%d,"total":%d}\n', PASS, FAIL, PASS + FAIL))
 quit(status = if (FAIL > 0L) 1L else 0L)

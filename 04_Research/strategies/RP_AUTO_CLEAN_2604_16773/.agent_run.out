@@ -1,0 +1,5 @@
+엔진과 FIDELITY 를 작업 디렉터리에 썼습니다.
+
+**구현한 것** — TRP Variant I(rooted-MST allocator) 전부: 활동 필터(eq 8) → 상관 전처리(클립·NaN→0·대칭화) → Mantegna 거리(eq 9) → MST(Prim) → hub 루트(최대 차수) → α_u=(1−ρ)+ρ/b(u)(eq 10) → 경로곱 위상 인자 g(eq 11–12) → x=s·g(원신호) → L1 총노출 정규화(eq 13)로 `PORTFOLIO(Date,Ticker,Weight,Leg)` 롱숏 비중을 직접 산출(`portfolio_spec = engine_direct`).
+
+**fidelity = adapted** — 논문은 *배분기*만 정의하고 신호 s·표본·리밸 주기를 주지 않아(실증 절 없는 방법론 논문) 신호를 보충했고(상관창과 같은 252거래일 누적 로그수익의 횡단면 중심화 = 논문이 말한 L/S trend·signed cross-sectional), Variant II(SPY + XL* 섹터 ETF 2계층 + eq 14 clip/η)는 해당 자산이 없어 미구현입니다. ρ=1 은 Appendix B·Remark 2·Prop 3b 가 "topological risk parity" 라는 이름을 보수적 등분할 칸에 한정한 데 따랐고, 커버리지 하한 0.8·결측 0 치환·비유한 가드·최소 활성 2종·빈 달 이월 등 논문 밖 코드는 전부 `changed`(①~⑳)·`paper_steps`·`constants` 에 신고했습니다.

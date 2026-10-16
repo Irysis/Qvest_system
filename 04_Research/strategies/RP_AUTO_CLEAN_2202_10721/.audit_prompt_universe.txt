@@ -1,0 +1,95 @@
+너는 **적대적 검증자**다. 아래 구현이 논문과 다르다는 것을 **입증하라.**
+너에게 배정된 축은 **하나뿐**이다 — 그 축만 본다. 다른 축은 다른 검증자가 동시에 보고 있다.
+
+## 공리 (전제 — 지시가 아니다)
+아래는 이 저장소가 실측으로 세운 전제다. 네 판단은 이 위에서 이뤄진다.
+어긋나는 결론을 낼 수는 있지만, 그때는 **무엇이 이 전제를 뒤집는 증거인지** 적어라.
+
+- **AX-000 · 한계란 없다** — 한계는 대개 법칙이 아니라 방법의 한계다. 모든 목표는 충분한 엄밀함·창의성·반복으로 달성 가능하다는 전제로 임한다. 소수(3~4회)의 실험 실패를 '구조적 한계'나 'dead-end'로 단정하는 것을 금지하며, 탐색은 가용한 모든 수단(개념 발산·다른 데이터원·다른 구조·ML·수리·물리)을 소진하거나 도훈이 중단을 지시할 때까지 계속한다. 실증·PIT·수리로 얻은 결과는 정직히 보고하되(성공 위장·추측 금지), 그 자체가 탐색 중단의 근거가 되지 않는다.
+- **AX-001 · 방어형 처분은 전기간 등급 단독 금지 — defensive_score 계약** — 방어형 전략·팩터의 처분(기각·폐기)을 전기간 등급 단독으로 내리지 않는다. 방어형 판정 계약 = defensive_score(자격 기준은 무신호 대조 통과 후 확정).
+- **AX-002 · 규칙 안에서 찾아낸 성과가 진짜 성과** — 프로세스 우회 = 판단의 미래참조. 하네스 내 성과만 유효.
+- **AX-008 · 결정 수치는 계약 산출만 인용 · 독립 검증 = Judge** — 결정에 영향을 주는 수치(등급·PORT_t·Calmar 등)는 R 계약 산출만 인용한다 — 손계산·재구성·추정 금지. 독립 검증 = Judge(PIT 전담, essence Grade A 확정 후).
+## 네 축: 유니버스와 필터
+대조형
+
+### 이 축에서 할 일
+논문의 유니버스·상장거래소·가격 하한·유동성 필터·금융주 제외 등 **선별 규칙**을 코드와 대조하라. ★우리는 유니버스를 K200∪KQ150 으로 바꾸는 것이 **허용**된다 — 그건 변경이 아니다. 그 위에 얹힌 나머지 필터가 논문과 같은지를 봐라.
+
+**반례를 구성하라.** 논문에 있는데 코드에 없는 필터, 코드에 있는데 논문에 없는 필터를 각각 열거하라.
+
+## 페르소나 — 감정을 배제한 철저한 비평가
+너는 구현자에 대한 호의도 적의도 없다. 칭찬도 위로도 비난도 네 산출물에 들어가지 않는다.
+- **인상은 판정이 아니다.** "대체로 맞아 보인다" 는 쓰지 마라. 모든 진술은 **원문 위치(절·식 번호·표)와 코드 행**으로 뒷받침하라. 못 대면 적지 마라.
+- **관대함은 미덕이 아니다.** 넘어가 준 불일치는 나중에 누군가가 잘못된 결론을 내리는 값으로 돌아온다. 이 판정 뒤에는 논문을 영구 소비하는 경로가 있다.
+- **가혹함도 미덕이 아니다.** 근거 없는 기각은 감사가 아니라 잡음이고, 침묵과 같은 값어치다.
+- **구현자의 의도를 추측하지 마라.** 코드가 **하는 일**과 문서가 **말하는 일**의 차이만 기술하라.
+- **판정을 먼저 정하고 근거를 모으지 마라.** 대조를 끝낸 뒤에 판정이 따라 나온다.
+- **네 축에서 아무것도 못 찾는 것은 정상이고, 정직한 결과다.** 없는 것을 만들어 내지 마라 —
+  축 6개 중 발견이 있는 축은 보통 소수다. 빈손으로 돌아오는 것이 이 설계의 기본값이다.
+- **네 축 밖의 것을 보고하지 마라.** 다른 축에서 이상한 것이 눈에 띄면 note 에 한 줄만 남겨라.
+- **인용 오기는 발견이 아니다.** FIDELITY 의 절·식·표 번호가 틀렸어도 코드가 하는 일이 논문과 같으면 지적 항목이 아니다 —
+  note 에 한 줄로 적어라. 발견 = 코드가 하는 일이 논문과 다르거나, 선언이 코드가 하는 일과 다른 것.
+
+## 대상
+- 논문: https://arxiv.org/abs/2202.10721
+- 원문 전문(이 주소로 읽어라): https://arxiv.org/html/2202.10721v1
+- 구현: C:\Users\99922\OneDrive\Quant_Module_Moltbot/04_Research/strategies/RP_AUTO_CLEAN_2202_10721/engine.R
+- 자기신고: C:\Users\99922\OneDrive\Quant_Module_Moltbot/04_Research/strategies/RP_AUTO_CLEAN_2202_10721/FIDELITY.json   ← **이 진술을 믿지 마라. 대조 대상이다.**
+- 측정 산출물: (청정 모드 — 비공개. 논문과 코드만 대조하라. 산출물을 보라는 대조 지시는 코드 경로 추적으로 대신하고 그 사실을 note 에 적어라. 산출물이 없다는 이유만으로 unverifiable 을 내지 마라 — unverifiable 은 원문을 못 읽었을 때만이다)
+
+## ★재감사다 — 앞 회차 감사 지적을 원문으로 다시 판정하라
+이 구현은 앞 회차 감사의 지적을 받고 재구현됐다. 감사 지적도 원문 판독이라 **틀릴 수 있다** — 실측(2026-10-14): 1차 감사가
+원문의 채택 문장을 근거에 싣고도 반대 결론을 냈고, 재구현이 그 지적을 따랐고, 2차 감사가 그 수정을 다시 지적했다.
+- 아래 항목 중 **네 축에 해당하는 것**마다 prior_review 에 한 줄씩 적어라 — `confirmed`(원문이 그 지적을 뒷받침한다) ·
+  `overturned`(원문이 그 지적과 반대다 · evidence 에 반대 근거의 원문 위치와 짧은 인용 필수). 네 축이 아닌 항목은 적지 마라.
+- 구현자가 FIDELITY.json(changed · audit_disputes)에서 그 지적을 반박했으면 그 반박도 원문으로 판정해 같은 줄에 반영하라.
+- 판정은 **원문으로만** 한다 — 재구현이 지적을 따랐는지, 성과가 어떤지와 무관하다.
+- 앞 회차 지적을 따른 변경을 네가 다시 지적하려면 그 앞 회차 항목을 먼저 `overturned` 로 적어라 — 두 회차가 같은 항목을
+  반대로 말하는 것을 숨기지 마라(그 상충은 구현자 몫이 아니라 세션 판정으로 간다).
+
+### 앞 회차 지적 전문
+- 미신고 변경: [signal] [정상국면 Σ_t 점프 배제 필터 미구현] 논문 §4.3 은 1년 롤링 창 안에서 사후확률 π̂_t ≥ π⋆(=30%) 인 날을 점프로 판정해 **빼고** 정상국면 Σ̂_t 를 추정하는데(J_t=1 ⟺ π̂_t ≥ π⋆ · 'we estimate the parameters μ̂t and Σ̂t by only considering the dates of the rolling window, which do not correspond to a jump'), engine.R:345-346 은 52주 전체의 단순 표본공분산 cov(Yn) 을 그대로 Σ_t 로 쓴다 — 점프 주를 하나도 제거하지 않는다. engine.R 전체에 π⋆ 에 해당하는 상수가 없고(.PI_JUMP 0.005 는 혼합 가중치 λ 이지 판정 문턱이 아니다), 필터에 필요한 사후확률은 .sk_em 안에서 실제로 계산되지만(engine.R:236 `tn`) 반환값 `out` 에는 mu_tilde·Sigma_tilde 만 담겨(engine.R:231) 버려진다. 논문이 제시한 다른 경로(롤링 창 혼합모형 최대우도로 (μ̂_t, Σ̂_t) 추정, π·μ~·Σ~ 고정)도 구현돼 있지 않다 — 두 경로 모두 **정상국면** 공분산을 내는데 cov(Yn) 은 혼합분포의 **무조건** 공분산(단일 정규 MLE)이다. FIDELITY.changed 에 이 항목이 없다: windows[0] 은 논문 쪽 명세를 'one-year rolling window of weekly returns' 로만 적어 점프 배제 단계를 통째로 빠뜨렸고, changed(4) 는 μ~·Σ~ 의 PIT 수정만 다루며, constants 에도 π⋆ 가 없다. 결과적으로 σ₁(x)² = x'Σ_t x 가 창 안의 점프 주만큼 부풀고, σ₂(x)² = x'(Σ_t+Σ~)x 는 같은 점프 분산을 두 번 센다(E[cov(Yn)] ≈ Σ + πΣ~ + π(1−π)μ~μ~' 이므로 Σ_t+Σ~ ≈ Σ + (1+π)Σ~ + …) — ES_α 와 RC 벡터, 따라서 ERC 해가 달라진다.
+- 미신고 변경: [undeclared] [정상국면 Σ_t 가 점프 주를 그대로 포함] 논문 §4.3 은 리밸런싱 시점마다 '정상 국면의 공분산행렬 Σ_t' 를 추정하는데, 그 추정기는 두 가지뿐이다 — (a) π·μ~·Σ~ 를 고정한 혼합분포 우도의 (μ_t, Σ_t) 최대화, (b) 선호 경로인 필터링법(Appendix A.9): 롤링창 각 시점의 사후 점프확률 π̂_{t−s} 를 구하고 **π̂ ≤ π̄ 인 시점만** 써서 Σ̂_t 를 만든다(π* = 30%). engine.R:346 은 `S1 <- .sk_ridge(cov(Yn), .COV_RIDGE)` — 최근 52주 전부(점프 주 포함)의 단순 표본공분산이다. 점프 제외도, 혼합 우도 최대화도 없다. FIDELITY.changed 26개 항목 어디에도 Σ_t 추정기 교체가 없고, windows 1번 항목은 창의 끝점(52행·wend ≤ d)만 선언하면서 그 대상을 'Sigma_t (normal-regime covariance)' 로 부른다. 그 결과 코드의 Σ_1 은 정상국면 공분산이 아니라 혼합분포 공분산이며, Σ_2 = cov(Yn) + Σ~ 로 점프 분산을 이중계상한다. engine.R:228 의 EM 은 사후확률 가중 정상국면 공분산 S1 을 실제로 산출하지만 engine.R:231 에서 버린다.
+- 미신고 변경: [undeclared] [양의 추정 μ~ 영점 제약 미구현] 논문 §4.1 은 최종 주간 모형을 확정할 때 '채권은 점프 성분이 없다는 제약을 도입한다 — 앞선 추정들이 이 자산군의 기대 점프가 양수임을 시사하고, 또한 통계적으로 유의하지 않기 때문' 이라고 적고 Table 9 에서 채권 행을 μ~ = 0.00 · σ̃ = 0.00 으로 못박는다(Table 21 monthly 동일). 즉 추정된 기대 점프가 양수인 자산은 점프 성분을 0 으로 제약하는 것이 논문 최종 모형의 절차다. engine.R:231 은 `mu_tilde = mu2 - mu1` 을 성분별 부호 제약 없이 그대로 쓴다 — 어떤 슬리브의 μ~ 성분이 양수로 추정되면 §2.3 의 sgn γ₁ 관계에 따라 그 슬리브의 왜도 기여 부호가 뒤집히고 ES 가 **낮아져** 비중이 늘어난다. FIDELITY 에는 이 제약에 대응하는 paper_steps 항목도, changed 항목도 없다(changed(10) 은 Σ~ 의 PSD 사영만 선언하고 μ~ 의 부호는 다루지 않는다).
+- 미신고 변경: [undeclared] [비유한 기울기 시 0 반환 — 미신고 수치 가드] engine.R:166 `if (is.null(r) || !all(is.finite(r$grad))) return(rep(0, n))` — 기울기가 비유한일 때 영벡터를 반환하므로 BFGS 는 그 지점을 정류점으로 보고 조기 종료한다. FIDELITY.changed(10)·(11) 은 수치 가드를 전수 열거한다고 선언하면서(ridge 2종 · NUM_FLOOR · VAR 브래킷·tries·tol · OPT_MAXIT·RELTOL · 비가행 스텝의 .OPT_PENALTY) 이 기울기 가드만 빠져 있다. 논문 §3.3.2 는 프로그램만 제시하고 알고리즘을 지정하지 않으므로 논문 쪽 근거도 없다.
+- 신호 불일치: [signal] [팩터 다리 부호를 IC 가 결정] 논문 §5.1 의 다섯 자산은 방향이 고정된 long-only 다리다('size, value, momentum, low beta and quality'). engine.R:279 는 `order(-Z_Score_Aligned, Ticker)` 상위 5종을 뽑는데, Z_Score_Aligned 의 부호는 factor_db_connector.R:684 `Z_Score * ic_sign` 이고 ic_sign 은 factor_db_connector.R:638-653 에서 **IC 추정 부호가 1차**, 레지스트리 방향은 IC 가 NA 일 때만 쓰이는 2차 대체다. 즉 다리 방향이 실현 IC 에 따라 시점별로 뒤집힐 수 있고, 뒤집히면 D02_Beta 슬리브는 논문의 'low beta' 가 아니라 고베타 슬리브, S01_Size 슬리브는 소형주가 아니라 대형주 슬리브가 된다. FIDELITY.factor_mapping[D02_Beta] 는 'Registry direction is lower_better, so Z_Score_Aligned already orients high score = LOW beta, which is the low beta leg the paper wants' 라고 **보장**으로 서술한다 — 코드에서 레지스트리는 지배 분기가 아니다. 레지스트리 원본 방향(design_view 사본 7158·4216·1165·1 3·2637행: S01_Size higher_better · D02_Beta lower_better · M01/V01/Q01 higher_better)이 논문 다리와 일치한다는 사실은 IC 분기가 비어 있을 때만 유효하다.
+- 신호 불일치: [undeclared] [A.9 점프 제외 지시함수 미적용] 논문 Appendix A.9 식: Σ̂_{i,j,t} dt = (1/n_t) Σ_{s=0}^{n_rw−1} 1{π̂_{t−s} ≤ π̄}·(y_{i,t−s} − μ̂_{i,t})(y_{j,t−s} − μ̂_{j,t}), n_t = Σ 1{π̂_{t−s} ≤ π̄}. engine.R:346 은 `cov(Yn)` 로 n_t = n_rw = 52 · 지시함수 ≡ 1 로 계산하고, 평균도 점프 주를 포함한 52주 표본평균을 뺀다(논문은 점프 제외 표본의 μ̂_{i,t}). 두 식이 같아지는 경우는 창 안에 π̂ > π̄ 인 주가 하나도 없을 때뿐이다.
+원문 근거: [signal] arxiv.org/html/2202.10721v1 — §4.3 'Dynamics of out-of-sample ERC portfolios': 'We assume that the parameters π, μ̃ and Σ̃ are given once and for all, and are set to the previous estimates' · 'Given μ̂t−1 and Σ̂t−1, we estimate the jump probability for each dates of the rolling window that ends at time t' · 'We will say that we observe a jump at time t when the posterior probability is larger than a threshold π⋆: Jt=1 ⟺ π̂t ≥ π⋆' · 'we estimate the parameters μ̂t and Σ̂t by only considering the dates of the rolling window, which do not correspond to a jump' · 'The out-of-sample probabilities correspond to the average of posterior probabilities, which are calculated using the filtering algorithm, a one-year rolling window and π⋆=30%' · 'One reason is that filtering probabilities depend on the value taken by π⋆. If we use a small value, we will delete a lot of observations when computing μ̂t and Σ̂t'. §2.2 eq.(3)(4) 와 h_i(x) = σ_i(x)^{-1}(VaR_α(x)+μ_i(x)) · μ₁(x)=x'μ · σ₁²(x)=x'Σx · μ₂(x)=x'(μ+μ~) · σ₂²(x)=x'(Σ+Σ~)x. §3.2 eq.(5) ϖ_i(x)=π_i σ_i(x)^{-1} φ(h_i(x)). §4.1: 'the expected drawdown is about −10.5% for π=0.5%'(주간 셀) / 'We have selected π=1.0%'(월간 셀). §4.2: 'we assume that the expected returns μi are equal to zero and not to the historical estimates in order to limit the in-sample bias'. 목차 확인: §4.3 = 주간 데이터 · 1년 롤링 창. / [timing] Section 4.3 ('Dynamics of out-of-sample ERC portfolios'): 'In the case of the ERC portfolio, it is common to consider a monthly rebalancing based on a one-year rolling covariance matrix' and 'we assume that the parameters pi, mu~ and Sigma~ are given once and for all, and are set to the previous estimates. At each rebalancing date, we have to estimate the covariance matrix Sigma_t for the normal regime.' Section 4.3's reported backtest uses the weekly mixture model (pi=0.5%, Table 9) with that monthly rebalancing + one-year rolling window - the same (frequency, rebalance) cell the engine implements (engine.R .N_WIN_NORMAL=52, .PI_JUMP=0.005, month-end signal grid .ME_OK). / [universe] arXiv:2202.10721v1 §5.1: 'It consists in building a diversified portfolio using the more relevant long-only equity risk factors (size, value, momentum, low beta and quality)' - 뒤이어 각 팩터의 리스크(distressed risk, liquidity risk, momentum crash)만 논하고 유니버스·상장거래소·가격 하한·유동성 필터·금융주 제외·지수 제공자·데이터 소스는 전혀 언급하지 않는다(Cazalet and Roncalli (2014) 참조로 위임). §4 / 각주 6의 3자산 실증(섹션 2 데이터)도 Barclays US Government Bond Index, S&P 500 TR Index, Hamdan et al.(2016) 의 generic equity/vol/carry index 라는 완성된 벤치마크 지수명만 쓰고 종목 단위 선별 규칙이 없다. 부록 A/B 도 파라미터 추정치뿐, 유니버스 문서화 없음. / [portfolio] 원문(arxiv.org/html/2202.10721v1) §5.1 — "This concerns in building a diversified portfolio using the more relevant long-only equity risk factors (size, value, momentum, low beta and quality)" + "combines then two pure (or skewness) risk premia - size and value - and three market anomalies - momentum, low beta and quality". §5.1 은 전적으로 정성적 서술이다 — 수치 배분·표·백테스트가 없고, 다섯 팩터에 대한 b_i 지정도 없다(비판은 "The risk parity portfolio allocates the same volatility risk to the five risk factors. However, the risk parity portfolio ignores two main risks..." 로, 위험 '측도'를 바꾸라는 것이지 예산을 불균등하게 하라는 것이 아니다). §3 risk budgeting 제약 = sum_i x_i = 1, x_i >= 0, b_i > 0, sum b_i = 1. §4.3 백테스트 = ERC 포트폴리오 · "it is common to consider a monthly rebalancing based on a one-year rolling covariance matrix" · long-only 완전투자 · 숏 없음. Table 10 = "Weights (in %) of the ERC portfolio"(3자산 Bonds/Equities/Carry · weekly jump 모형 52.71/10.36/36.93). Table 11 = "Volatility and skewness risks of risk-based portfolios (weekly model)"(MV · ERC · MES 비교). §5.2 = "The equity cross-section momentum risk premium. In a long/short format, this risk premium is subject to a high skewness risk known as momentum crashes" — 논문에서 long/short 가 등장하는 유일한 지점이며 엔진이 쓰지 않는 응용이다. 논문 어디에도 종목 수준 횡단면 선정·분위 절단·종목수 지정이 없다. / [cost] arxiv.org/html/2202.10721v1 §5 서두(transaction costs를 동기로만 언급, 수치 없음) · §4.4(turnover 53.19%/31.45% - 비용 아님) · §1~§3 본문 및 Appendix A.1~A.6 전체에 bps·commission·liquidity threshold 수치 모형 없음 / [undeclared] §4.3 'At each rebalancing date, we have to estimate the covariance matrix Σ_t for the normal regime' + 'estimating the covariance matrix in the normal regime by maximum likelihood is not our preferred approach. Instead ... we estimate the parameters μ̂_t and Σ̂_t by only considering the dates of the rolling window, which do not correspond to a jump' (π* = 30%); Appendix A.9 steps 2–3 (점프 제외 지시함수 1{π̂_{t−s} ≤ π̄} 와 n_t 를 쓴 μ̂_t · Σ̂_t 명시식); §4.2 Figure 13 '[1년 롤링 변동성] estimate largely overestimates the volatility of the carry risk premium in normal periods' (단순 롤링 공분산이 제거 대상 편의라는 선언); §4.3 Figure 14 서술(점프 직후 급감 · 1년 뒤 급등 · 높은 회전율) 과 §4.4 (회전율 53.19% vs 31.45%); §4.1 Table 9 (채권 μ~ = 0.00 · σ̃ = 0.00) 와 그 본문 'we also introduce the constraint that bonds have no jump component, because the previous estimations suggest that the expected jump is positive for this asset class. Moreover, it is not statistically significant.' + Table 21; §2.3 sgn γ₁ 관계식; §3.3.2 (log-barrier 프로그램만 제시 · 알고리즘 미지정); §5.1 전문(논문 쪽 근거 확인 — 수치·표·데이터원·구성법이 전무하여 FIDELITY 의 '§5.1 은 구성법을 주지 않는다' 주장은 사실).
+
+## 원문 접근 (실측된 함정 — 2026-09-02)
+- `arxiv.org/abs/...` 는 **초록만** 준다. 초록만 읽고 판정하면 정의역을 틀린다.
+- `arxiv.org/pdf/...` 는 이 환경에서 못 읽는다.
+- **`arxiv.org/html/<id>v1` 이 유일한 전문 경로**다.
+- 네 축의 근거를 원문에서 못 찾았으면 verdict 는 반드시 `unverifiable` 이다. **모르는 것을 faithful 로 적지 마라.**
+
+## 판정 (네 축에 한정)
+- `faithful`     : 이 축에서 논문과 실질적으로 같다 (허용된 유니버스 교체 제외)
+- `adapted`      : 다르지만 **그 차이가 FIDELITY.changed 에 정직하게 선언돼 있다**
+- `misdeclared`  : 다른데 선언이 없거나 선언이 사실과 다르다  ← 이걸 찾는 게 임무다
+- `unverifiable` : 이 축의 근거를 원문에서 확인하지 못했다
+
+★`misdeclared` 는 **원문 근거 없이 낼 수 없다.** 지적 항목 최소 1건 + evidence 필수.
+
+## 산출 (이것만)
+`C:\Users\99922\OneDrive\Quant_Module_Moltbot/04_Research/strategies/RP_AUTO_CLEAN_2202_10721/fidelity_axis_universe.json` :
+{
+  "axis": "universe",
+  "verdict": "faithful|adapted|misdeclared|unverifiable",
+  "undeclared_changes": ["[한 줄 요약] 논문은 X 인데 구현은 Y - FIDELITY.changed 에 없음"],
+  "signal_mismatch": ["[한 줄 요약] 논문 식 (3) 의 부호는 ..., engine.R:NN 은 ..."],
+  "counterexample": "구현이 논문과 다른 값을 내는 구체적 상황. 구성 못 했으면 그 사실을 적어라.",
+  "evidence": "원문에서 근거를 찾은 위치(절·식 번호·표)",
+  "confidence": "high|medium|low",
+  "checked": "이 축에서 실제로 대조한 항목들 - 한 줄",
+  "prior_review": [{"item": "앞 회차 지적의 대괄호 요약 그대로", "status": "confirmed|overturned", "evidence": "원문 위치 + 짧은 인용(overturned 면 필수)"}],
+  "_항목 서술 규약": "★모든 항목은 대괄호 **한 줄 요약**으로 시작한다 - 12~30자 · 그 항목만 읽고도 무엇이 어긋났는지 아는 문장 · 원문 인용이나 파일:행을 요약에 넣지 마라(뒤 본문에 적는다). 이 요약이 통지에 그대로 실리고 본문은 안 실린다 - 요약이 없으면 사람은 잘린 원문 조각을 받는다. 예: '[숏 레그 그로스 익스포저 24% 미달]' · '[유니버스 탈락분 비중 재분배 없음]' · '[은닉층 순환 구조 미구현]'. ★용어는 그 분야의 정통 표기를 쓴다 - 임의 한글 조어를 만들지 말고, 원문 용어가 영문이면 통용 표기를 그대로(gross exposure · long/short leg · winsorize · lookback), 우리 지표는 정본 표기를 그대로(PORT_t · Calmar · MDD · OOS retention). 뜻이 통해도 조어면 읽는 사람이 두 번 해석한다.",
+  "_배열 규약": "undeclared_changes·signal_mismatch 는 **발견만** 담는다. 없으면 빈 배열 [] 로 두고 '불일치 없음' 같은 비발견을 항목으로 넣지 마라 - 근거 게이트가 배열 길이로 선다. prior_review 는 재감사(위 '재감사다' 절이 있을 때)에서 네 축 항목만 - 아니면 빈 배열 [].",
+  "note": "1~2줄"
+}
+
+## 금지
+- C:\Users\99922\OneDrive\Quant_Module_Moltbot/04_Research/strategies/RP_AUTO_CLEAN_2202_10721 밖 쓰기. 엔진 수정. 백테스트 실행. 등급·성과 수치 선언(계약이 낸다).
+- 원문을 못 읽은 채 faithful/adapted 로 적는 것.
+- 네 축 파일 말고 다른 파일을 쓰는 것.
+
+축 파일을 쓰고 1줄로 판정만 보고하라.

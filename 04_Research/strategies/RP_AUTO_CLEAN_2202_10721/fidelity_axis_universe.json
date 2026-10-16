@@ -1,0 +1,12 @@
+{
+  "axis": "universe",
+  "verdict": "faithful",
+  "undeclared_changes": [],
+  "signal_mismatch": [],
+  "counterexample": "구성하지 못했다 - 논문 §5.1 은 size/value/momentum/low beta/quality 다섯 팩터로 '다변화된 포트폴리오를 구축한다'는 정성적 서술만 내고, 유니버스·상장거래소·가격 하한·유동성 필터·금융주 제외·지수 제공자·데이터 소스를 전혀 지정하지 않으며 구성을 Cazalet and Roncalli (2014) 참조로 위임한다. §4/각주6의 3자산 실증(Barclays US Government Bond Index·S&P 500 TR Index·Hamdan et al.(2016) 산출 지수)도 완성된 벤치마크 지수명뿐 종목 단위 선별 규칙이 없다. 부록 A/B 도 파라미터 추정치뿐이다. 선별 규칙이 하나도 없으니 '논문에 있는데 코드에 없는 필터'도 '논문에 없는데 코드에 있는 필터'도 구성할 수 없다. engine.R:349-351 은 측정 축이 주입한 멤버십 플래그(K200/KQ150, 현 epoch all_hyg_2000_v1 = 전종목+위생)만 걸고(이 유니버스 교체는 과제 지시상 허용 대상) 그 위에 거래소·가격·금융주·지수제공자 등 추가 선별 코드를 두지 않는다 - 코드가 하는 일(축 멤버십만 결합)과 선언(FIDELITY.changed(2), paper_steps '다섯 팩터 포트폴리오 구성' 항목, harness_disclosure H1/H8)이 일치한다.",
+  "evidence": "arxiv.org/html/2202.10721v1 §5.1 전문: 'Equity factor investing is a typical example of skewness risk. It consists in building a diversified portfolio using the more relevant long-only equity risk factors (size, value, momentum, low beta and quality). This portfolio combines then two pure (or skewness) risk premia - size and value - and three market anomalies - momentum, low beta and quality (Cazalet and Roncalli, 2014).' 이어지는 문단은 각 팩터의 리스크(distressed risk, liquidity risk, momentum crash)만 논하고 선별 규칙은 없다. §4/각주6: 'We use the Barclays US Government Bond Index, the S&P 500 TR Index and the generic equities/volatility/carry/US index calculated by Hamdan et al. (2016)' - 지수명뿐, 종목 선별 없음.",
+  "confidence": "high",
+  "checked": "paper §5.1 전문(팩터 설명 문단 포함) · §4/각주6 3자산 데이터 서술 · FIDELITY.changed(2)(유니버스 치환 선언) · changed(40)(유동성 필터 미탑재 선언) · paper_steps '다섯 팩터 포트폴리오 구성' 항목(status=changed, paper_quote='(none)') · harness_disclosure H1/H8(위생 멤버십 = 거래대금 하한+관리종목/거래정지/불성실공시 제외, 엔진 외부 계약) · engine.R:96-104(RAWDATA K200/KQ150 요구)·349-353(.UNI 멤버십 결합 로직)",
+  "prior_review": [],
+  "note": "앞 회차 지적 전문의 [universe] 태그 항목은 '지적'이 아니라 다른 항목들을 지지하는 원문 인용 블록으로, 이 축에 대한 별도 재감사 대상 발견이 없어 prior_review 를 비웠다."
+}

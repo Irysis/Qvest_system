@@ -1,0 +1,21 @@
+{
+  "axis": "portfolio",
+  "verdict": "adapted",
+  "undeclared_changes": [],
+  "signal_mismatch": [],
+  "counterexample": "구성했으나 발견으로 올리지 않는다(선언 안에 있다). 최대 중첩 반례: 다섯 슬리브가 같은 5개 티커를 뽑는 달에는 engine.R:485-490 의 집계가 각 티커에 w = Σ_k x_k/5 = 1/5 을 주어, 어떤 ERC 해 x 라도 20% 등비중으로 붕괴한다 — 논문의 식별 산출물인 불균등 ERC 비중(Table 11 의 52.71/10.36/36.93 같은 형태)이 체결 포트폴리오에서 관측 불가능해지고, 부분 중첩에서는 그만큼 감쇠한다. 다만 이 거동은 FIDELITY.changed(6) 의 'aggregated across sleeve overlap and renormalised to 1' 규칙이 그대로 산출하는 것이므로 미신고 변경이 아니다. 레그·종목수 쪽 반례는 구성되지 않았다: x = y/Σy 가 engine.R:217-218 에서 양수·합1 로 강제되고 Leg 는 engine.R:492 에서 'LONG' 단일, 슬리브당 min(.TOP_N_SLEEVE=5, nrow) 로 잘려 합집합이 25종을 넘는 경로가 없다. 산출물(holdings)은 청정 모드로 비공개여서 코드 경로 추적(engine.R:355-375 슬리브 형성 → 481-493 비중 집계)으로 대체했다.",
+  "evidence": "arxiv.org/html/2202.10721v1 — §3.3 식(6): 'RC_i(x) = b_i R(x), b_i > 0, x_i >= 0, Σ_{i=1}^{n} b_i = 1, Σ_{i=1}^{n} x_i = 1'(long-only · 완전투자). §3.3.1 Theorem 1 식(7) 제약 '1^T x = 1'. §3.3.2: 'To find the numerical solution of the RB portfolio, we use the following optimization program: y* = arg min ES_α(y) − Σ_{i=1}^{n} b_i ln y_i u.c. y ≥ 0' + 'x*_i = y*_i / Σ_j y*_j' + 'We consider the equal risk contribution (ERC) portfolio where the risk budgets are the same for all the assets'. §5.1 전문: 'It consists in building a diversified portfolio using the more relevant long-only equity risk factors (size, value, momentum, low beta and quality). This portfolio combines then two pure (or skewness) risk premia – size and value – and three market anomalies – momentum, low beta and quality' + 'The risk parity portfolio allocates the same volatility risk to the five risk factors' — 표·수치 배분·b_i 지정·유니버스·종목수·분위 절단·EW/VW 규정이 전무하다(정성 서술만). §5.2: 'Another example concerns the equity cross-section momentum risk premium. In a long/short format, this risk premium is subject to a high skewness risk known as momentum crashes' — 논문에서 long/short 가 등장하는 유일한 지점이며 엔진이 구현하지 않는 응용이다. §4(각주)·Table 11: 실증 대상은 3자산(Bonds/Equities/Carry)이고 ERC 혼합모형 비중은 52.71%/10.36%/36.93% — 종목 수준 횡단면 선정은 논문 전체에 없다.",
+  "confidence": "high",
+  "checked": "논문 §3.3 식(6)·§3.3.1 식(7)·§3.3.2 로그배리어·ERC b_i=1/n·§5.1 다섯 팩터·§5.2 long/short 범위·§4 3자산 Table 11 대 engine.R:53-54(.TOP_N_SLEEVE=5·.MIN_SLEEVE_NAMES=3)·83-84(.N_SLEEVE=5·.RISK_BUDGET=0.2×5)·185-222(.sk_solve: y=exp(z)·x=y/Σy·x≥0 검사)·367-374(슬리브별 top-N 절단)·371(정렬 키)·481-493(x_k/nmem 집계·중첩 합산·재정규화·Weight>0 드롭·Leg='LONG') 및 산출 객체 전수(PORTFOLIO 단독 · FACTORS·SIGNAL_BREADTH 미배출) 대조. factor_db_connector.R:605-664 로 ic_sign 우선순위(IC 1차·레지스트리 2차)를 실제 분기에서 확인.",
+  "prior_review": [
+    {
+      "item": "[팩터 다리 부호를 IC 가 결정]",
+      "status": "confirmed",
+      "evidence": "§5.1 'the more relevant long-only equity risk factors (size, value, momentum, low beta and quality)' — 논문의 다섯 다리는 방향이 고정된 long-only 다리('low beta'·'size')이고 실현 IC 로 시점별 재평가되지 않는다. factor_db_connector.R:638-653 에서 ic_sign 은 IC 가 1차·레지스트리가 2차임을 재확인 — 앞 회차 판독이 맞다. 단 선언 결함은 해소됐다: FIDELITY.changed(8) 와 factor_mapping[D02_Beta] 가 이제 '보장' 서술을 철회하고 'This is NOT a guarantee ... declared as a deviation' 로 적는다(앞 회차가 지적한 보장 문구는 제거됨). 따라서 이 축에서 misdeclared 가 아니라 adapted."
+    }
+  ],
+  "_항목 서술 규약": "★모든 항목은 대괄호 **한 줄 요약**으로 시작한다 - 12~30자 · 그 항목만 읽고도 무엇이 어긋났는지 아는 문장 · 원문 인용이나 파일:행을 요약에 넣지 마라(뒤 본문에 적는다). 이 요약이 통지에 그대로 실리고 본문은 안 실린다 - 요약이 없으면 사람은 잘린 원문 조각을 받는다. 예: '[숏 레그 그로스 익스포저 24% 미달]' · '[유니버스 탈락분 비중 재분배 없음]' · '[은닉층 순환 구조 미구현]'. ★용어는 그 분야의 정통 표기를 쓴다 - 임의 한글 조어를 만들지 말고, 원문 용어가 영문이면 통용 표기를 그대로(gross exposure · long/short leg · winsorize · lookback), 우리 지표는 정본 표기를 그대로(PORT_t · Calmar · MDD · OOS retention). 뜻이 통해도 조어면 읽는 사람이 두 번 해석한다.",
+  "_배열 규약": "undeclared_changes·signal_mismatch 는 **발견만** 담는다. 없으면 빈 배열 [] 로 두고 '불일치 없음' 같은 비발견을 항목으로 넣지 마라 - 근거 게이트가 배열 길이로 선다. prior_review 는 재감사(위 '재감사다' 절이 있을 때)에서 네 축 항목만 - 아니면 빈 배열 [].",
+  "note": "이 축에서 발견 없음. 논문 쪽 구성 규정(long-only·완전투자·ERC b_i=1/n·n=5)은 코드와 일치하고, 논문이 침묵하는 층(슬리브당 top-5·슬리브 내 등비중·합집합 ≤25종·중첩 합산·재정규화·0비중 드롭)은 FIDELITY.changed(6)(21)(28) 및 paper_steps 의 '종목 수준 횡단면 선정/분위 절단' 항목(status=changed)에 전수 선언돼 있다. 축 밖 한 줄: 같은 중첩 집계가 슬리브별 1/5 위험예산을 종목 층에서 희석시키는 정도는 어느 축에도 수치로 선언돼 있지 않다(측정 산출물 비공개로 정량 확인 불가).",
+  "paper_read": "arxiv.org/html/2202.10721v1 전문 중 §2.3~§3.3.2 · §4~§4.4 · §5.1~§5.3 · §6 을 원문 그대로 판독(캐시된 arXiv HTML 추출)."
+}

@@ -1,6 +1,6 @@
 {
   "schema_version": "v3.1",
-  "generated": "2026-10-10",
+  "generated": "2026-10-16",
   "generated_by": "2계층 전략 로테이션 (build_module_performance.R — 계약 floor + v10 grade floor)",
   "regime_source": "unified_regime_signal_daily.parquet Category — C11 가용일 결합(규약 b: 모듈 수익 창 시작까지 가용)",
   "regime_pit_c11": {
@@ -11,7 +11,7 @@
     "site": "build_module_performance",
     "mode": "window_start(b): 모듈 수익 창 시작(직전 행)",
     "extra_lag": 0,
-    "n_rows": 65,
+    "n_rows": 67,
     "n_aligned": null,
     "quarantine": "PITQ-C11-20260924",
     "verdict": "04_Research/01_reports/pit_c11_20260924/PIT_C11_verdict_20260924.md",
@@ -20,14 +20,14 @@
   "regimes": ["RISK_ON", "NEUTRAL", "CAUTION", "CRISIS", "RISK_OFF"],
   "metric_type": "backtested_realized (sim_result NAV, 실측-only)",
   "grade_floor": "B",
-  "n_floor_excluded": 706,
+  "n_floor_excluded": 737,
   "n_defensive_admitted": 0,
   "defensive_route": true,
   "admission_codes": {
     "contract_floor": 191,
     "legacy_not_role_rep": 27,
-    "not_role_rep": 706,
-    "role_rep": 73
+    "not_role_rep": 737,
+    "role_rep": 74
   },
   "execution_convention": {
     "rule": "close_t1 단일 — remeasure_close_t1_* 판 ▸ 신판(close_t1) · 그 밖(레거시 QEPM·2026-09-25 이전 close_d·판독 불가) = 풀 제외",
@@ -36,14 +36,14 @@
     "include_non_close_t1_switch": false,
     "series_source_counts": {
       "close_t1_remeasure": 61,
-      "native_close_t1": 4
+      "native_close_t1": 6
     },
     "n_series_written": 0,
     "series_root": "04_Research/factor_rotation/l2_pool_series",
-    "n_excluded": 15,
+    "n_excluded": 14,
     "n_included_non_close_t1": 0,
     "excluded_codes": {
-      "no_close_t1:exec_unlabeled": 8,
+      "no_close_t1:exec_unlabeled": 7,
       "no_close_t1:legacy_no_artifacts": 7
     },
     "excluded": [
@@ -158,21 +158,13 @@
         "trust_status": "contract_fr_eligible",
         "series_dir": "stage_artifacts/replication/20260902_193745_33364",
         "exec": "unlabeled(unlabeled_pre_v24)"
-      },
-      {
-        "id": "RP_20260902_195404_29468",
-        "code": "no_close_t1:exec_unlabeled",
-        "reason": "집행 규약 unlabeled(unlabeled_pre_v24) · remeasure_close_t1_* 판 없음(2026-09-25 close_t1 rebase 미포함)",
-        "trust_status": "contract_fr_eligible",
-        "series_dir": "stage_artifacts/replication/20260902_195404_29468",
-        "exec": "unlabeled(unlabeled_pre_v24)"
       }
     ]
   },
   "admission_predicate": "02_Infrastructure/contracts/defensive_score.R::ds_pool_eligible (l2_pool_admission.R::l2_admit 경유)",
   "grade_axis": "essence_grade > meta.essence_grade > grade(발행 시점 폴백)",
   "note": "입력 2단 게이트(v10 2026-08-29 도훈): ①계약 floor = module_catalog fr_eligible=true(contract_pass+backtested+frozen+hash/build_version, legacy QEPM grade-A 이관 예외) ②grade floor = essence grade B 이상(QVEST_L2_GRADE_FLOOR, OFF=진단) ∥ 방어형 병렬 경로(QVEST_L2_DEFENSIVE_ROUTE). module_hash는 실제 md5 대조(불일치=skip+quarantine, CAP-P1-2). 배치 심사=RCMA. ★2026-09-07: 자격 술어를 계약(ds_pool_eligible)으로 단일화하고 등급 축을 essence 로 정정.",
-  "n_modules": 65,
+  "n_modules": 67,
   "modules": {
     "RP_20260907_101130_20668": {
       "source_strategy_id": "RP_20260907_101130_20668",
@@ -257,7 +249,7 @@
       "series_source": "close_t1_remeasure",
       "series_exec_price": "close_t1",
       "series_dir": "stage_artifacts/replication/20260912_181839_14212/remeasure_close_t1_5562284e",
-      "series_grade": "C",
+      "series_grade": "B",
       "full_sharpe": 0.769,
       "full_ir": 0.453,
       "n_days": 3567,
@@ -389,7 +381,7 @@
       "series_source": "close_t1_remeasure",
       "series_exec_price": "close_t1",
       "series_dir": "stage_artifacts/replication/20260913_004317_11696/remeasure_close_t1_5562284e",
-      "series_grade": "C",
+      "series_grade": "F",
       "full_sharpe": 0.665,
       "full_ir": -0.009,
       "n_days": 5329,
@@ -441,12 +433,12 @@
     "RP_20260913_025126_34484": {
       "source_strategy_id": "RP_20260913_025126_34484",
       "grade": "C",
-      "role": "offensive;rebound;alpha;diversifier",
+      "role": "offensive;rebound;alpha",
       "origin_mode": "replication",
       "trust_status": "contract_fr_eligible",
       "admission_route": "role_rep",
       "admission_code": "role_rep",
-      "admission_reason": "역할 대표(offensive;rebound;alpha;diversifier) · essence C",
+      "admission_reason": "역할 대표(offensive;rebound;alpha) · essence C",
       "grade_emit": "C",
       "grade_source": "entry",
       "freq": "daily",
@@ -500,6 +492,72 @@
           "ir": null,
           "mdd": 0.033,
           "mean_ann": -1.0666
+        }
+      },
+      "per_regime_pit_c11": "avail_annotated"
+    },
+    "RP_20260913_032301_8748": {
+      "source_strategy_id": "RP_20260913_032301_8748",
+      "grade": "C",
+      "role": "diversifier",
+      "origin_mode": "replication",
+      "trust_status": "contract_fr_eligible",
+      "admission_route": "role_rep",
+      "admission_code": "role_rep",
+      "admission_reason": "역할 대표(diversifier) · essence C",
+      "grade_emit": "C",
+      "grade_source": "entry",
+      "freq": "daily",
+      "sim_result_path": "04_Research/factor_rotation/l2_pool_series/RP_20260913_032301_8748/sim_result.rds",
+      "registered_sim_result_path": "04_Research/strategies/RP_20260913_032301_8748/sim_result.rds",
+      "series_source": "close_t1_remeasure",
+      "series_exec_price": "close_t1",
+      "series_dir": "stage_artifacts/replication/20260913_032301_8748/remeasure_close_t1_5562284e",
+      "series_grade": "C",
+      "full_sharpe": 0.82,
+      "full_ir": 0.167,
+      "n_days": 5329,
+      "date_range": ["2005-02-03", "2026-09-11"],
+      "per_regime": {
+        "RISK_ON": {
+          "n_days": 3788,
+          "n_months": 180.4,
+          "sharpe": 0.824,
+          "ir": 0.637,
+          "mdd": 0.507,
+          "mean_ann": 0.1367
+        },
+        "NEUTRAL": {
+          "n_days": 696,
+          "n_months": 33.1,
+          "sharpe": 1.311,
+          "ir": -0.544,
+          "mdd": 0.313,
+          "mean_ann": 0.2691
+        },
+        "CAUTION": {
+          "n_days": 398,
+          "n_months": 19,
+          "sharpe": 1.213,
+          "ir": 0.98,
+          "mdd": 0.166,
+          "mean_ann": 0.3098
+        },
+        "CRISIS": {
+          "n_days": 434,
+          "n_months": 20.7,
+          "sharpe": 0.319,
+          "ir": -1.121,
+          "mdd": 0.296,
+          "mean_ann": 0.1079
+        },
+        "RISK_OFF": {
+          "n_days": 13,
+          "n_months": 0.6,
+          "sharpe": null,
+          "ir": null,
+          "mdd": 0.029,
+          "mean_ann": -0.6477
         }
       },
       "per_regime_pit_c11": "avail_annotated"
@@ -702,6 +760,72 @@
       },
       "per_regime_pit_c11": "avail_annotated"
     },
+    "RP_20260921_122140_34576": {
+      "source_strategy_id": "RP_20260921_122140_34576",
+      "grade": "C",
+      "role": "diversifier",
+      "origin_mode": "replication",
+      "trust_status": "contract_fr_eligible",
+      "admission_route": "role_rep",
+      "admission_code": "role_rep",
+      "admission_reason": "역할 대표(diversifier) · essence C",
+      "grade_emit": "C",
+      "grade_source": "entry",
+      "freq": "daily",
+      "sim_result_path": "04_Research/factor_rotation/l2_pool_series/RP_20260921_122140_34576/sim_result.rds",
+      "registered_sim_result_path": "04_Research/strategies/RP_20260921_122140_34576/sim_result.rds",
+      "series_source": "close_t1_remeasure",
+      "series_exec_price": "close_t1",
+      "series_dir": "stage_artifacts/replication/20260921_122140_34576/remeasure_close_t1_5562284e",
+      "series_grade": "B",
+      "full_sharpe": 0.79,
+      "full_ir": 0.367,
+      "n_days": 4092,
+      "date_range": ["2010-02-03", "2026-09-18"],
+      "per_regime": {
+        "RISK_ON": {
+          "n_days": 3190,
+          "n_months": 151.9,
+          "sharpe": 0.62,
+          "ir": 0.59,
+          "mdd": 0.636,
+          "mean_ann": 0.1212
+        },
+        "NEUTRAL": {
+          "n_days": 454,
+          "n_months": 21.6,
+          "sharpe": 2.132,
+          "ir": 0.049,
+          "mdd": 0.161,
+          "mean_ann": 0.5819
+        },
+        "CAUTION": {
+          "n_days": 178,
+          "n_months": 8.5,
+          "sharpe": 0.533,
+          "ir": 0.624,
+          "mdd": 0.214,
+          "mean_ann": 0.1775
+        },
+        "CRISIS": {
+          "n_days": 268,
+          "n_months": 12.8,
+          "sharpe": 0.865,
+          "ir": -0.41,
+          "mdd": 0.291,
+          "mean_ann": 0.4772
+        },
+        "RISK_OFF": {
+          "n_days": 2,
+          "n_months": 0.1,
+          "sharpe": null,
+          "ir": null,
+          "mdd": 0.035,
+          "mean_ann": 0.6044
+        }
+      },
+      "per_regime_pit_c11": "avail_annotated"
+    },
     "RP_20260921_131648_18576": {
       "source_strategy_id": "RP_20260921_131648_18576",
       "grade": "C",
@@ -719,7 +843,7 @@
       "series_source": "close_t1_remeasure",
       "series_exec_price": "close_t1",
       "series_dir": "stage_artifacts/replication/20260921_131648_18576/remeasure_close_t1_5562284e",
-      "series_grade": "C",
+      "series_grade": "B",
       "full_sharpe": 0.843,
       "full_ir": 0.36,
       "n_days": 5334,
@@ -834,72 +958,6 @@
       },
       "per_regime_pit_c11": "avail_annotated"
     },
-    "RP_20260921_154145_5456": {
-      "source_strategy_id": "RP_20260921_154145_5456",
-      "grade": "B",
-      "role": "diversifier",
-      "origin_mode": "replication",
-      "trust_status": "contract_fr_eligible",
-      "admission_route": "role_rep",
-      "admission_code": "role_rep",
-      "admission_reason": "역할 대표(diversifier) · essence B",
-      "grade_emit": "B",
-      "grade_source": "entry",
-      "freq": "daily",
-      "sim_result_path": "04_Research/factor_rotation/l2_pool_series/RP_20260921_154145_5456/sim_result.rds",
-      "registered_sim_result_path": "04_Research/strategies/RP_20260921_154145_5456/sim_result.rds",
-      "series_source": "close_t1_remeasure",
-      "series_exec_price": "close_t1",
-      "series_dir": "stage_artifacts/replication/20260921_154145_5456/remeasure_close_t1_5562284e",
-      "series_grade": "C",
-      "full_sharpe": 0.811,
-      "full_ir": 0.323,
-      "n_days": 5334,
-      "date_range": ["2005-02-03", "2026-09-18"],
-      "per_regime": {
-        "RISK_ON": {
-          "n_days": 3788,
-          "n_months": 180.4,
-          "sharpe": 0.634,
-          "ir": 0.499,
-          "mdd": 0.602,
-          "mean_ann": 0.1036
-        },
-        "NEUTRAL": {
-          "n_days": 696,
-          "n_months": 33.1,
-          "sharpe": 2.083,
-          "ir": 0.839,
-          "mdd": 0.29,
-          "mean_ann": 0.4602
-        },
-        "CAUTION": {
-          "n_days": 398,
-          "n_months": 19,
-          "sharpe": 0.593,
-          "ir": 0.314,
-          "mdd": 0.22,
-          "mean_ann": 0.1662
-        },
-        "CRISIS": {
-          "n_days": 439,
-          "n_months": 20.9,
-          "sharpe": 0.892,
-          "ir": -0.415,
-          "mdd": 0.351,
-          "mean_ann": 0.4105
-        },
-        "RISK_OFF": {
-          "n_days": 13,
-          "n_months": 0.6,
-          "sharpe": null,
-          "ir": null,
-          "mdd": 0.054,
-          "mean_ann": -0.1508
-        }
-      },
-      "per_regime_pit_c11": "avail_annotated"
-    },
     "RP_20260921_155730_11692": {
       "source_strategy_id": "RP_20260921_155730_11692",
       "grade": "B",
@@ -966,72 +1024,6 @@
       },
       "per_regime_pit_c11": "avail_annotated"
     },
-    "RP_20260921_202529_31844": {
-      "source_strategy_id": "RP_20260921_202529_31844",
-      "grade": "C",
-      "role": "diversifier",
-      "origin_mode": "replication",
-      "trust_status": "contract_fr_eligible",
-      "admission_route": "role_rep",
-      "admission_code": "role_rep",
-      "admission_reason": "역할 대표(diversifier) · essence C",
-      "grade_emit": "C",
-      "grade_source": "entry",
-      "freq": "daily",
-      "sim_result_path": "04_Research/factor_rotation/l2_pool_series/RP_20260921_202529_31844/sim_result.rds",
-      "registered_sim_result_path": "04_Research/strategies/RP_20260921_202529_31844/sim_result.rds",
-      "series_source": "close_t1_remeasure",
-      "series_exec_price": "close_t1",
-      "series_dir": "stage_artifacts/replication/20260921_202529_31844/remeasure_close_t1_5562284e",
-      "series_grade": "C",
-      "full_sharpe": 0.681,
-      "full_ir": 0.282,
-      "n_days": 5334,
-      "date_range": ["2005-02-03", "2026-09-18"],
-      "per_regime": {
-        "RISK_ON": {
-          "n_days": 3788,
-          "n_months": 180.4,
-          "sharpe": 0.717,
-          "ir": 0.642,
-          "mdd": 0.343,
-          "mean_ann": 0.1504
-        },
-        "NEUTRAL": {
-          "n_days": 696,
-          "n_months": 33.1,
-          "sharpe": 1.262,
-          "ir": -0.089,
-          "mdd": 0.341,
-          "mean_ann": 0.341
-        },
-        "CAUTION": {
-          "n_days": 398,
-          "n_months": 19,
-          "sharpe": 0.489,
-          "ir": 0.187,
-          "mdd": 0.262,
-          "mean_ann": 0.1618
-        },
-        "CRISIS": {
-          "n_days": 439,
-          "n_months": 20.9,
-          "sharpe": 0.489,
-          "ir": -0.748,
-          "mdd": 0.542,
-          "mean_ann": 0.2731
-        },
-        "RISK_OFF": {
-          "n_days": 13,
-          "n_months": 0.6,
-          "sharpe": null,
-          "ir": null,
-          "mdd": 0.039,
-          "mean_ann": 0.1841
-        }
-      },
-      "per_regime_pit_c11": "avail_annotated"
-    },
     "RP_20260921_221343_24964": {
       "source_strategy_id": "RP_20260921_221343_24964",
       "grade": "C",
@@ -1049,7 +1041,7 @@
       "series_source": "close_t1_remeasure",
       "series_exec_price": "close_t1",
       "series_dir": "stage_artifacts/replication/20260921_221343_24964/remeasure_close_t1_5562284e",
-      "series_grade": "C",
+      "series_grade": "B",
       "full_sharpe": 0.74,
       "full_ir": 0.303,
       "n_days": 5334,
@@ -1115,7 +1107,7 @@
       "series_source": "close_t1_remeasure",
       "series_exec_price": "close_t1",
       "series_dir": "stage_artifacts/replication/20260921_231732_25592/remeasure_close_t1_5562284e",
-      "series_grade": "C",
+      "series_grade": "B",
       "full_sharpe": 0.794,
       "full_ir": 0.378,
       "n_days": 4092,
@@ -1247,7 +1239,7 @@
       "series_source": "close_t1_remeasure",
       "series_exec_price": "close_t1",
       "series_dir": "stage_artifacts/replication/20260922_014708_24444/remeasure_close_t1_5562284e",
-      "series_grade": "C",
+      "series_grade": "B",
       "full_sharpe": 0.941,
       "full_ir": 0.372,
       "n_days": 5335,
@@ -1362,68 +1354,68 @@
       },
       "per_regime_pit_c11": "avail_annotated"
     },
-    "RP_20260923_161713_28512": {
-      "source_strategy_id": "RP_20260923_161713_28512",
-      "grade": "C",
+    "RP_20260922_040113_31932": {
+      "source_strategy_id": "RP_20260922_040113_31932",
+      "grade": "B",
       "role": "diversifier",
       "origin_mode": "replication",
       "trust_status": "contract_fr_eligible",
       "admission_route": "role_rep",
       "admission_code": "role_rep",
-      "admission_reason": "역할 대표(diversifier) · essence C",
-      "grade_emit": "C",
+      "admission_reason": "역할 대표(diversifier) · essence B",
+      "grade_emit": "B",
       "grade_source": "entry",
       "freq": "daily",
-      "sim_result_path": "04_Research/factor_rotation/l2_pool_series/RP_20260923_161713_28512/sim_result.rds",
-      "registered_sim_result_path": "04_Research/strategies/RP_20260923_161713_28512/sim_result.rds",
+      "sim_result_path": "04_Research/factor_rotation/l2_pool_series/RP_20260922_040113_31932/sim_result.rds",
+      "registered_sim_result_path": "04_Research/strategies/RP_20260922_040113_31932/sim_result.rds",
       "series_source": "close_t1_remeasure",
       "series_exec_price": "close_t1",
-      "series_dir": "stage_artifacts/replication/20260923_161713_28512/remeasure_close_t1_5562284e",
-      "series_grade": "C",
-      "full_sharpe": 0.689,
-      "full_ir": 0.256,
-      "n_days": 4094,
-      "date_range": ["2010-02-03", "2026-09-22"],
+      "series_dir": "stage_artifacts/replication/20260922_040113_31932/remeasure_close_t1_5562284e",
+      "series_grade": "B",
+      "full_sharpe": 1,
+      "full_ir": 0.539,
+      "n_days": 5335,
+      "date_range": ["2005-02-03", "2026-09-21"],
       "per_regime": {
         "RISK_ON": {
-          "n_days": 3190,
-          "n_months": 151.9,
-          "sharpe": 0.382,
-          "ir": 0.315,
-          "mdd": 0.655,
-          "mean_ann": 0.0821
+          "n_days": 3788,
+          "n_months": 180.4,
+          "sharpe": 0.938,
+          "ir": 0.821,
+          "mdd": 0.408,
+          "mean_ann": 0.1418
         },
         "NEUTRAL": {
-          "n_days": 454,
-          "n_months": 21.6,
-          "sharpe": 2.388,
-          "ir": 0.65,
-          "mdd": 0.157,
-          "mean_ann": 0.7001
+          "n_days": 696,
+          "n_months": 33.1,
+          "sharpe": 1.595,
+          "ir": -0.082,
+          "mdd": 0.276,
+          "mean_ann": 0.346
         },
         "CAUTION": {
-          "n_days": 178,
-          "n_months": 8.5,
-          "sharpe": 0.721,
-          "ir": 0.988,
-          "mdd": 0.232,
-          "mean_ann": 0.2563
+          "n_days": 398,
+          "n_months": 19,
+          "sharpe": 0.783,
+          "ir": 0.647,
+          "mdd": 0.212,
+          "mean_ann": 0.2246
         },
         "CRISIS": {
-          "n_days": 270,
-          "n_months": 12.9,
-          "sharpe": 0.848,
-          "ir": -0.488,
-          "mdd": 0.277,
-          "mean_ann": 0.4495
+          "n_days": 440,
+          "n_months": 21,
+          "sharpe": 1.368,
+          "ir": 0.199,
+          "mdd": 0.305,
+          "mean_ann": 0.6184
         },
         "RISK_OFF": {
-          "n_days": 2,
-          "n_months": 0.1,
+          "n_days": 13,
+          "n_months": 0.6,
           "sharpe": null,
           "ir": null,
-          "mdd": 0.038,
-          "mean_ann": -0.8563
+          "mdd": 0.048,
+          "mean_ann": 0.0389
         }
       },
       "per_regime_pit_c11": "avail_annotated"
@@ -1511,7 +1503,7 @@
       "series_source": "close_t1_remeasure",
       "series_exec_price": "close_t1",
       "series_dir": "stage_artifacts/replication/20260924_010554_33120/remeasure_close_t1_5562284e",
-      "series_grade": "C",
+      "series_grade": "F",
       "full_sharpe": 0.58,
       "full_ir": -0.016,
       "n_days": 5257,
@@ -1643,7 +1635,7 @@
       "series_source": "close_t1_remeasure",
       "series_exec_price": "close_t1",
       "series_dir": "stage_artifacts/replication/20260924_062712_29928/remeasure_close_t1_5562284e",
-      "series_grade": "C",
+      "series_grade": "B",
       "full_sharpe": 0.846,
       "full_ir": 0.344,
       "n_days": 5298,
@@ -1692,72 +1684,6 @@
       },
       "per_regime_pit_c11": "avail_annotated"
     },
-    "RP_20260925_222711_29284": {
-      "source_strategy_id": "RP_20260925_222711_29284",
-      "grade": "C",
-      "role": "diversifier",
-      "origin_mode": "replication",
-      "trust_status": "contract_fr_eligible",
-      "admission_route": "role_rep",
-      "admission_code": "role_rep",
-      "admission_reason": "역할 대표(diversifier) · essence C",
-      "grade_emit": "C",
-      "grade_source": "entry",
-      "freq": "daily",
-      "sim_result_path": "04_Research/strategies/RP_20260925_222711_29284/sim_result.rds",
-      "registered_sim_result_path": "04_Research/strategies/RP_20260925_222711_29284/sim_result.rds",
-      "series_source": "native_close_t1",
-      "series_exec_price": "close_t1",
-      "series_dir": "stage_artifacts/replication/20260925_222711_29284",
-      "series_grade": "C",
-      "full_sharpe": 0.817,
-      "full_ir": 0.371,
-      "n_days": 5298,
-      "date_range": ["2005-04-06", "2026-09-23"],
-      "per_regime": {
-        "RISK_ON": {
-          "n_days": 3750,
-          "n_months": 178.6,
-          "sharpe": 0.734,
-          "ir": 0.629,
-          "mdd": 0.342,
-          "mean_ann": 0.1279
-        },
-        "NEUTRAL": {
-          "n_days": 695,
-          "n_months": 33.1,
-          "sharpe": 1.248,
-          "ir": -0.433,
-          "mdd": 0.334,
-          "mean_ann": 0.2903
-        },
-        "CAUTION": {
-          "n_days": 398,
-          "n_months": 19,
-          "sharpe": 0.857,
-          "ir": 0.847,
-          "mdd": 0.27,
-          "mean_ann": 0.2658
-        },
-        "CRISIS": {
-          "n_days": 442,
-          "n_months": 21,
-          "sharpe": 1.076,
-          "ir": -0.16,
-          "mdd": 0.364,
-          "mean_ann": 0.5106
-        },
-        "RISK_OFF": {
-          "n_days": 13,
-          "n_months": 0.6,
-          "sharpe": null,
-          "ir": null,
-          "mdd": 0.055,
-          "mean_ann": 0.1447
-        }
-      },
-      "per_regime_pit_c11": "avail_annotated"
-    },
     "RP_20260925_222711_34340": {
       "source_strategy_id": "RP_20260925_222711_34340",
       "grade": "C",
@@ -1775,7 +1701,7 @@
       "series_source": "native_close_t1",
       "series_exec_price": "close_t1",
       "series_dir": "stage_artifacts/replication/20260925_222711_34340",
-      "series_grade": "C",
+      "series_grade": "B",
       "full_sharpe": 0.805,
       "full_ir": 0.355,
       "n_days": 5298,
@@ -1890,72 +1816,6 @@
       },
       "per_regime_pit_c11": "avail_annotated"
     },
-    "RP_20261005_205951_29712": {
-      "source_strategy_id": "RP_20261005_205951_29712",
-      "grade": "C",
-      "role": "offensive;alpha",
-      "origin_mode": "replication",
-      "trust_status": "contract_fr_eligible",
-      "admission_route": "role_rep",
-      "admission_code": "role_rep",
-      "admission_reason": "역할 대표(offensive;alpha) · essence C",
-      "grade_emit": "C",
-      "grade_source": "entry",
-      "freq": "daily",
-      "sim_result_path": "04_Research/strategies/RP_20261005_205951_29712/sim_result.rds",
-      "registered_sim_result_path": "04_Research/strategies/RP_20261005_205951_29712/sim_result.rds",
-      "series_source": "native_close_t1",
-      "series_exec_price": "close_t1",
-      "series_dir": "stage_artifacts/replication/20261005_205951_29712",
-      "series_grade": "C",
-      "full_sharpe": 0.777,
-      "full_ir": 0.129,
-      "n_days": 5342,
-      "date_range": ["2005-02-03", "2026-10-02"],
-      "per_regime": {
-        "RISK_ON": {
-          "n_days": 3788,
-          "n_months": 180.4,
-          "sharpe": 0.712,
-          "ir": 0.518,
-          "mdd": 0.626,
-          "mean_ann": 0.1103
-        },
-        "NEUTRAL": {
-          "n_days": 696,
-          "n_months": 33.1,
-          "sharpe": 1.393,
-          "ir": -0.51,
-          "mdd": 0.29,
-          "mean_ann": 0.2779
-        },
-        "CAUTION": {
-          "n_days": 398,
-          "n_months": 19,
-          "sharpe": 0.512,
-          "ir": -0.004,
-          "mdd": 0.195,
-          "mean_ann": 0.1242
-        },
-        "CRISIS": {
-          "n_days": 447,
-          "n_months": 21.3,
-          "sharpe": 0.927,
-          "ir": -0.477,
-          "mdd": 0.235,
-          "mean_ann": 0.3628
-        },
-        "RISK_OFF": {
-          "n_days": 13,
-          "n_months": 0.6,
-          "sharpe": null,
-          "ir": null,
-          "mdd": 0.021,
-          "mean_ann": 0.1654
-        }
-      },
-      "per_regime_pit_c11": "avail_annotated"
-    },
     "RP_20260831_155333_28228": {
       "source_strategy_id": "RP_20260831_155333_28228",
       "grade": "C",
@@ -1973,7 +1833,7 @@
       "series_source": "close_t1_remeasure",
       "series_exec_price": "close_t1",
       "series_dir": "stage_artifacts/replication/20260831_155333_28228/remeasure_close_t1_5562284e",
-      "series_grade": "C",
+      "series_grade": "F",
       "full_sharpe": 0.501,
       "full_ir": 0.196,
       "n_days": 4822,
@@ -2220,72 +2080,6 @@
       },
       "per_regime_pit_c11": "avail_annotated"
     },
-    "RP_20260831_221027_21668": {
-      "source_strategy_id": "RP_20260831_221027_21668",
-      "grade": "C",
-      "role": "diversifier",
-      "origin_mode": "replication",
-      "trust_status": "contract_fr_eligible",
-      "admission_route": "role_rep",
-      "admission_code": "role_rep",
-      "admission_reason": "역할 대표(diversifier) · essence C",
-      "grade_emit": "C",
-      "grade_source": "entry",
-      "freq": "daily",
-      "sim_result_path": "04_Research/strategies/RP_20260831_221027_21668/sim_result.rds",
-      "registered_sim_result_path": "04_Research/strategies/RP_20260831_221027_21668/sim_result.rds",
-      "series_source": "close_t1_remeasure",
-      "series_exec_price": "close_t1",
-      "series_dir": "stage_artifacts/replication/20260831_221027_21668/remeasure_close_t1_5562284e",
-      "series_grade": "C",
-      "full_sharpe": 0.573,
-      "full_ir": 0.199,
-      "n_days": 4822,
-      "date_range": ["2007-02-05", "2026-08-28"],
-      "per_regime": {
-        "RISK_ON": {
-          "n_days": 3401,
-          "n_months": 162,
-          "sharpe": 0.223,
-          "ir": 0.159,
-          "mdd": 0.583,
-          "mean_ann": 0.0447
-        },
-        "NEUTRAL": {
-          "n_days": 614,
-          "n_months": 29.2,
-          "sharpe": 2.003,
-          "ir": 0.875,
-          "mdd": 0.318,
-          "mean_ann": 0.5093
-        },
-        "CAUTION": {
-          "n_days": 372,
-          "n_months": 17.7,
-          "sharpe": 0.757,
-          "ir": 0.817,
-          "mdd": 0.253,
-          "mean_ann": 0.2411
-        },
-        "CRISIS": {
-          "n_days": 422,
-          "n_months": 20.1,
-          "sharpe": 0.769,
-          "ir": -0.458,
-          "mdd": 0.411,
-          "mean_ann": 0.421
-        },
-        "RISK_OFF": {
-          "n_days": 13,
-          "n_months": 0.6,
-          "sharpe": null,
-          "ir": null,
-          "mdd": 0.087,
-          "mean_ann": 0.4946
-        }
-      },
-      "per_regime_pit_c11": "avail_annotated"
-    },
     "RP_20260831_221027_9820": {
       "source_strategy_id": "RP_20260831_221027_9820",
       "grade": "C",
@@ -2303,7 +2097,7 @@
       "series_source": "close_t1_remeasure",
       "series_exec_price": "close_t1",
       "series_dir": "stage_artifacts/replication/20260831_221027_9820/remeasure_close_t1_5562284e",
-      "series_grade": "C",
+      "series_grade": "F",
       "full_sharpe": 0.507,
       "full_ir": 0.016,
       "n_days": 4822,
@@ -2435,7 +2229,7 @@
       "series_source": "close_t1_remeasure",
       "series_exec_price": "close_t1",
       "series_dir": "stage_artifacts/replication/20260901_150637_20504/remeasure_close_t1_5562284e",
-      "series_grade": "C",
+      "series_grade": "F",
       "full_sharpe": 0.566,
       "full_ir": 0.211,
       "n_days": 5320,
@@ -3012,72 +2806,6 @@
       },
       "per_regime_pit_c11": "avail_annotated"
     },
-    "RP_20260903_081538_1520": {
-      "source_strategy_id": "RP_20260903_081538_1520",
-      "grade": "C",
-      "role": "diversifier",
-      "origin_mode": "replication",
-      "trust_status": "contract_fr_eligible",
-      "admission_route": "role_rep",
-      "admission_code": "role_rep",
-      "admission_reason": "역할 대표(diversifier) · essence C",
-      "grade_emit": "C",
-      "grade_source": "entry",
-      "freq": "daily",
-      "sim_result_path": "04_Research/strategies/RP_20260903_081538_1520/sim_result.rds",
-      "registered_sim_result_path": "04_Research/strategies/RP_20260903_081538_1520/sim_result.rds",
-      "series_source": "close_t1_remeasure",
-      "series_exec_price": "close_t1",
-      "series_dir": "stage_artifacts/replication/20260903_081538_1520/remeasure_close_t1_5562284e",
-      "series_grade": "C",
-      "full_sharpe": 0.407,
-      "full_ir": 0.037,
-      "n_days": 5321,
-      "date_range": ["2005-02-03", "2026-09-01"],
-      "per_regime": {
-        "RISK_ON": {
-          "n_days": 3788,
-          "n_months": 180.4,
-          "sharpe": 0.129,
-          "ir": -0.059,
-          "mdd": 0.77,
-          "mean_ann": 0.0332
-        },
-        "NEUTRAL": {
-          "n_days": 696,
-          "n_months": 33.1,
-          "sharpe": 1.298,
-          "ir": 0.367,
-          "mdd": 0.426,
-          "mean_ann": 0.4315
-        },
-        "CAUTION": {
-          "n_days": 398,
-          "n_months": 19,
-          "sharpe": -0.084,
-          "ir": -0.754,
-          "mdd": 0.503,
-          "mean_ann": -0.0342
-        },
-        "CRISIS": {
-          "n_days": 426,
-          "n_months": 20.3,
-          "sharpe": 1.036,
-          "ir": 0.528,
-          "mdd": 0.485,
-          "mean_ann": 0.7502
-        },
-        "RISK_OFF": {
-          "n_days": 13,
-          "n_months": 0.6,
-          "sharpe": null,
-          "ir": null,
-          "mdd": 0.1,
-          "mean_ann": 0.6843
-        }
-      },
-      "per_regime_pit_c11": "avail_annotated"
-    },
     "RP_20260903_085117_10184": {
       "source_strategy_id": "RP_20260903_085117_10184",
       "grade": "C",
@@ -3161,7 +2889,7 @@
       "series_source": "close_t1_remeasure",
       "series_exec_price": "close_t1",
       "series_dir": "stage_artifacts/replication/20260903_104237_16496/remeasure_close_t1_5562284e",
-      "series_grade": "C",
+      "series_grade": "F",
       "full_sharpe": 0.445,
       "full_ir": -0.139,
       "n_days": 5322,
@@ -3210,72 +2938,6 @@
       },
       "per_regime_pit_c11": "avail_annotated"
     },
-    "RP_20260903_153104_33944": {
-      "source_strategy_id": "RP_20260903_153104_33944",
-      "grade": "C",
-      "role": "diversifier",
-      "origin_mode": "replication",
-      "trust_status": "contract_fr_eligible",
-      "admission_route": "role_rep",
-      "admission_code": "role_rep",
-      "admission_reason": "역할 대표(diversifier) · essence C",
-      "grade_emit": "C",
-      "grade_source": "entry",
-      "freq": "daily",
-      "sim_result_path": "04_Research/strategies/RP_20260903_153104_33944/sim_result.rds",
-      "registered_sim_result_path": "04_Research/strategies/RP_20260903_153104_33944/sim_result.rds",
-      "series_source": "close_t1_remeasure",
-      "series_exec_price": "close_t1",
-      "series_dir": "stage_artifacts/replication/20260903_153104_33944/remeasure_close_t1_5562284e",
-      "series_grade": "C",
-      "full_sharpe": 0.609,
-      "full_ir": 0.185,
-      "n_days": 5321,
-      "date_range": ["2005-02-03", "2026-09-01"],
-      "per_regime": {
-        "RISK_ON": {
-          "n_days": 3788,
-          "n_months": 180.4,
-          "sharpe": 0.382,
-          "ir": 0.235,
-          "mdd": 0.5,
-          "mean_ann": 0.0761
-        },
-        "NEUTRAL": {
-          "n_days": 696,
-          "n_months": 33.1,
-          "sharpe": 1.709,
-          "ir": 0.662,
-          "mdd": 0.354,
-          "mean_ann": 0.4538
-        },
-        "CAUTION": {
-          "n_days": 398,
-          "n_months": 19,
-          "sharpe": 0.282,
-          "ir": -0.207,
-          "mdd": 0.332,
-          "mean_ann": 0.0913
-        },
-        "CRISIS": {
-          "n_days": 426,
-          "n_months": 20.3,
-          "sharpe": 0.903,
-          "ir": -0.102,
-          "mdd": 0.435,
-          "mean_ann": 0.5115
-        },
-        "RISK_OFF": {
-          "n_days": 13,
-          "n_months": 0.6,
-          "sharpe": null,
-          "ir": null,
-          "mdd": 0.068,
-          "mean_ann": 0.6969
-        }
-      },
-      "per_regime_pit_c11": "avail_annotated"
-    },
     "RP_20260903_153916_34904": {
       "source_strategy_id": "RP_20260903_153916_34904",
       "grade": "C",
@@ -3293,7 +2955,7 @@
       "series_source": "close_t1_remeasure",
       "series_exec_price": "close_t1",
       "series_dir": "stage_artifacts/replication/20260903_153916_34904/remeasure_close_t1_5562284e",
-      "series_grade": "C",
+      "series_grade": "F",
       "full_sharpe": 0.55,
       "full_ir": 0.068,
       "n_days": 5321,
@@ -3425,7 +3087,7 @@
       "series_source": "close_t1_remeasure",
       "series_exec_price": "close_t1",
       "series_dir": "stage_artifacts/replication/20260904_081937_804/remeasure_close_t1_5562284e",
-      "series_grade": "C",
+      "series_grade": "F",
       "full_sharpe": 0.393,
       "full_ir": -0.037,
       "n_days": 4826,
@@ -3477,12 +3139,12 @@
     "RP_20260904_120322_34636": {
       "source_strategy_id": "RP_20260904_120322_34636",
       "grade": "C",
-      "role": "offensive",
+      "role": "offensive;diversifier",
       "origin_mode": "replication",
       "trust_status": "contract_fr_eligible",
       "admission_route": "role_rep",
       "admission_code": "role_rep",
-      "admission_reason": "역할 대표(offensive) · essence C",
+      "admission_reason": "역할 대표(offensive;diversifier) · essence C",
       "grade_emit": "C",
       "grade_source": "entry",
       "freq": "daily",
@@ -3491,7 +3153,7 @@
       "series_source": "close_t1_remeasure",
       "series_exec_price": "close_t1",
       "series_dir": "stage_artifacts/replication/20260904_120322_34636/remeasure_close_t1_5562284e",
-      "series_grade": "C",
+      "series_grade": "B",
       "full_sharpe": 0.756,
       "full_ir": 0.26,
       "n_days": 5306,
@@ -3543,12 +3205,12 @@
     "RP_20260905_095537_7692": {
       "source_strategy_id": "RP_20260905_095537_7692",
       "grade": "B",
-      "role": "alpha;diversifier",
+      "role": "alpha",
       "origin_mode": "replication",
       "trust_status": "contract_fr_eligible",
       "admission_route": "role_rep",
       "admission_code": "role_rep",
-      "admission_reason": "역할 대표(alpha;diversifier) · essence B",
+      "admission_reason": "역할 대표(alpha) · essence B",
       "grade_emit": "B",
       "grade_source": "entry",
       "freq": "daily",
@@ -3623,7 +3285,7 @@
       "series_source": "close_t1_remeasure",
       "series_exec_price": "close_t1",
       "series_dir": "stage_artifacts/replication/20260905_102842_6512/remeasure_close_t1_5562284e",
-      "series_grade": "C",
+      "series_grade": "B",
       "full_sharpe": 0.805,
       "full_ir": 0.301,
       "n_days": 4082,
@@ -3689,7 +3351,7 @@
       "series_source": "close_t1_remeasure",
       "series_exec_price": "close_t1",
       "series_dir": "stage_artifacts/replication/20260905_124227_18444/remeasure_close_t1_5562284e",
-      "series_grade": "C",
+      "series_grade": "B",
       "full_sharpe": 0.785,
       "full_ir": 0.395,
       "n_days": 5324,
@@ -3755,7 +3417,7 @@
       "series_source": "close_t1_remeasure",
       "series_exec_price": "close_t1",
       "series_dir": "stage_artifacts/replication/20260905_211516_32128/remeasure_close_t1_5562284e",
-      "series_grade": "C",
+      "series_grade": "B",
       "full_sharpe": 0.955,
       "full_ir": 0.423,
       "n_days": 5324,
@@ -3870,72 +3532,6 @@
       },
       "per_regime_pit_c11": "avail_annotated"
     },
-    "RP_20260907_010957_16216": {
-      "source_strategy_id": "RP_20260907_010957_16216",
-      "grade": "C",
-      "role": "diversifier",
-      "origin_mode": "replication",
-      "trust_status": "contract_fr_eligible",
-      "admission_route": "role_rep",
-      "admission_code": "role_rep",
-      "admission_reason": "역할 대표(diversifier) · essence C",
-      "grade_emit": "C",
-      "grade_source": "entry",
-      "freq": "daily",
-      "sim_result_path": "04_Research/strategies/RP_20260907_010957_16216/sim_result.rds",
-      "registered_sim_result_path": "04_Research/strategies/RP_20260907_010957_16216/sim_result.rds",
-      "series_source": "close_t1_remeasure",
-      "series_exec_price": "close_t1",
-      "series_dir": "stage_artifacts/replication/20260907_010957_16216/remeasure_close_t1_5562284e",
-      "series_grade": "C",
-      "full_sharpe": 0.792,
-      "full_ir": 0.226,
-      "n_days": 5324,
-      "date_range": ["2005-02-03", "2026-09-04"],
-      "per_regime": {
-        "RISK_ON": {
-          "n_days": 3788,
-          "n_months": 180.4,
-          "sharpe": 0.981,
-          "ir": 0.78,
-          "mdd": 0.508,
-          "mean_ann": 0.1728
-        },
-        "NEUTRAL": {
-          "n_days": 696,
-          "n_months": 33.1,
-          "sharpe": 1.197,
-          "ir": -0.529,
-          "mdd": 0.301,
-          "mean_ann": 0.2583
-        },
-        "CAUTION": {
-          "n_days": 398,
-          "n_months": 19,
-          "sharpe": 0.21,
-          "ir": -0.324,
-          "mdd": 0.237,
-          "mean_ann": 0.0557
-        },
-        "CRISIS": {
-          "n_days": 429,
-          "n_months": 20.4,
-          "sharpe": 0.448,
-          "ir": -0.762,
-          "mdd": 0.359,
-          "mean_ann": 0.2019
-        },
-        "RISK_OFF": {
-          "n_days": 13,
-          "n_months": 0.6,
-          "sharpe": null,
-          "ir": null,
-          "mdd": 0.033,
-          "mean_ann": -0.0919
-        }
-      },
-      "per_regime_pit_c11": "avail_annotated"
-    },
     "RP_20260907_045335_12800": {
       "source_strategy_id": "RP_20260907_045335_12800",
       "grade": "C",
@@ -4005,12 +3601,12 @@
     "RP_20260907_051519_4132": {
       "source_strategy_id": "RP_20260907_051519_4132",
       "grade": "C",
-      "role": "alpha",
+      "role": "alpha;diversifier",
       "origin_mode": "replication",
       "trust_status": "contract_fr_eligible",
       "admission_route": "role_rep",
       "admission_code": "role_rep",
-      "admission_reason": "역할 대표(alpha) · essence C",
+      "admission_reason": "역할 대표(alpha;diversifier) · essence C",
       "grade_emit": "C",
       "grade_source": "entry",
       "freq": "daily",
@@ -4019,7 +3615,7 @@
       "series_source": "close_t1_remeasure",
       "series_exec_price": "close_t1",
       "series_dir": "stage_artifacts/replication/20260907_051519_4132/remeasure_close_t1_5562284e",
-      "series_grade": "C",
+      "series_grade": "B",
       "full_sharpe": 0.873,
       "full_ir": 0.285,
       "n_days": 5324,
@@ -4085,7 +3681,7 @@
       "series_source": "close_t1_remeasure",
       "series_exec_price": "close_t1",
       "series_dir": "stage_artifacts/replication/20260907_092257_34456/remeasure_close_t1_5562284e",
-      "series_grade": "C",
+      "series_grade": "B",
       "full_sharpe": 0.88,
       "full_ir": 0.397,
       "n_days": 5324,
@@ -4151,7 +3747,7 @@
       "series_source": "close_t1_remeasure",
       "series_exec_price": "close_t1",
       "series_dir": "stage_artifacts/replication/20260912_173947_32640/remeasure_close_t1_5562284e",
-      "series_grade": "C",
+      "series_grade": "F",
       "full_sharpe": 0.6,
       "full_ir": 0.298,
       "n_days": 3237,
@@ -4283,7 +3879,7 @@
       "series_source": "close_t1_remeasure",
       "series_exec_price": "close_t1",
       "series_dir": "stage_artifacts/replication/20260831_104329_23884/remeasure_close_t1_5562284e",
-      "series_grade": "C",
+      "series_grade": "F",
       "full_sharpe": 0.594,
       "full_ir": 0.367,
       "n_days": 3868,
@@ -4332,74 +3928,272 @@
       },
       "per_regime_pit_c11": "avail_annotated"
     },
-    "RP_20260921_124842_17696": {
-      "source_strategy_id": "RP_20260921_124842_17696",
+    "RP_20261010_143711_11372": {
+      "source_strategy_id": "RP_20261010_143711_11372",
       "grade": "C",
-      "role": "diversifier",
+      "role": "alpha",
       "origin_mode": "replication",
       "trust_status": "contract_fr_eligible",
       "admission_route": "role_rep",
       "admission_code": "role_rep",
-      "admission_reason": "역할 대표(diversifier) · essence C",
+      "admission_reason": "역할 대표(alpha) · essence C",
       "grade_emit": "C",
       "grade_source": "entry",
       "freq": "daily",
-      "sim_result_path": "04_Research/strategies/RP_20260921_124842_17696/sim_result.rds",
-      "registered_sim_result_path": "04_Research/strategies/RP_20260921_124842_17696/sim_result.rds",
-      "series_source": "close_t1_remeasure",
+      "sim_result_path": "04_Research/strategies/RP_20261010_143711_11372/sim_result.rds",
+      "registered_sim_result_path": "04_Research/strategies/RP_20261010_143711_11372/sim_result.rds",
+      "series_source": "native_close_t1",
       "series_exec_price": "close_t1",
-      "series_dir": "stage_artifacts/replication/20260921_124842_17696/remeasure_close_t1_5562284e",
-      "series_grade": "C",
-      "full_sharpe": 0.517,
-      "full_ir": 0.088,
-      "n_days": 5334,
-      "date_range": ["2005-02-03", "2026-09-18"],
+      "series_dir": "stage_artifacts/replication/20261010_143711_11372",
+      "series_grade": "F",
+      "full_sharpe": 0.807,
+      "full_ir": -0.011,
+      "n_days": 5345,
+      "date_range": ["2005-02-03", "2026-10-08"],
       "per_regime": {
         "RISK_ON": {
           "n_days": 3788,
           "n_months": 180.4,
-          "sharpe": 0.215,
-          "ir": -0.012,
-          "mdd": 0.601,
-          "mean_ann": 0.0431
+          "sharpe": 0.878,
+          "ir": 0.574,
+          "mdd": 0.309,
+          "mean_ann": 0.1143
         },
         "NEUTRAL": {
           "n_days": 696,
           "n_months": 33.1,
-          "sharpe": 1.86,
-          "ir": 1.12,
-          "mdd": 0.361,
-          "mean_ann": 0.511
+          "sharpe": 1.089,
+          "ir": -1.259,
+          "mdd": 0.263,
+          "mean_ann": 0.1752
         },
         "CAUTION": {
           "n_days": 398,
           "n_months": 19,
-          "sharpe": 0.024,
-          "ir": -0.825,
-          "mdd": 0.419,
-          "mean_ann": 0.0082
+          "sharpe": 0.609,
+          "ir": -0.019,
+          "mdd": 0.17,
+          "mean_ann": 0.1215
         },
         "CRISIS": {
-          "n_days": 439,
-          "n_months": 20.9,
-          "sharpe": 0.908,
-          "ir": 0.016,
-          "mdd": 0.402,
-          "mean_ann": 0.5486
+          "n_days": 450,
+          "n_months": 21.4,
+          "sharpe": 0.63,
+          "ir": -0.866,
+          "mdd": 0.278,
+          "mean_ann": 0.1769
         },
         "RISK_OFF": {
           "n_days": 13,
           "n_months": 0.6,
           "sharpe": null,
           "ir": null,
-          "mdd": 0.09,
-          "mean_ann": 0.6203
+          "mdd": 0.031,
+          "mean_ann": -0.036
         }
       },
       "per_regime_pit_c11": "avail_annotated"
     },
-    "RP_20260902_124954_8100": {
-      "source_strategy_id": "RP_20260902_124954_8100",
+    "RP_20261010_143711_16360": {
+      "source_strategy_id": "RP_20261010_143711_16360",
+      "grade": "C",
+      "role": "offensive",
+      "origin_mode": "replication",
+      "trust_status": "contract_fr_eligible",
+      "admission_route": "role_rep",
+      "admission_code": "role_rep",
+      "admission_reason": "역할 대표(offensive) · essence C",
+      "grade_emit": "C",
+      "grade_source": "entry",
+      "freq": "daily",
+      "sim_result_path": "04_Research/strategies/RP_20261010_143711_16360/sim_result.rds",
+      "registered_sim_result_path": "04_Research/strategies/RP_20261010_143711_16360/sim_result.rds",
+      "series_source": "native_close_t1",
+      "series_exec_price": "close_t1",
+      "series_dir": "stage_artifacts/replication/20261010_143711_16360",
+      "series_grade": "C",
+      "full_sharpe": 0.902,
+      "full_ir": 0.048,
+      "n_days": 5345,
+      "date_range": ["2005-02-03", "2026-10-08"],
+      "per_regime": {
+        "RISK_ON": {
+          "n_days": 3788,
+          "n_months": 180.4,
+          "sharpe": 0.838,
+          "ir": 0.536,
+          "mdd": 0.287,
+          "mean_ann": 0.1031
+        },
+        "NEUTRAL": {
+          "n_days": 696,
+          "n_months": 33.1,
+          "sharpe": 1.529,
+          "ir": -0.825,
+          "mdd": 0.214,
+          "mean_ann": 0.2435
+        },
+        "CAUTION": {
+          "n_days": 398,
+          "n_months": 19,
+          "sharpe": 0.851,
+          "ir": 0.25,
+          "mdd": 0.169,
+          "mean_ann": 0.1679
+        },
+        "CRISIS": {
+          "n_days": 450,
+          "n_months": 21.4,
+          "sharpe": 0.889,
+          "ir": -0.731,
+          "mdd": 0.203,
+          "mean_ann": 0.2398
+        },
+        "RISK_OFF": {
+          "n_days": 13,
+          "n_months": 0.6,
+          "sharpe": null,
+          "ir": null,
+          "mdd": 0.022,
+          "mean_ann": -0.1538
+        }
+      },
+      "per_regime_pit_c11": "avail_annotated"
+    },
+    "RP_20261010_232444_8340": {
+      "source_strategy_id": "RP_20261010_232444_8340",
+      "grade": "C",
+      "role": "alpha",
+      "origin_mode": "replication",
+      "trust_status": "contract_fr_eligible",
+      "admission_route": "role_rep",
+      "admission_code": "role_rep",
+      "admission_reason": "역할 대표(alpha) · essence C",
+      "grade_emit": "C",
+      "grade_source": "entry",
+      "freq": "daily",
+      "sim_result_path": "04_Research/strategies/RP_20261010_232444_8340/sim_result.rds",
+      "registered_sim_result_path": "04_Research/strategies/RP_20261010_232444_8340/sim_result.rds",
+      "series_source": "native_close_t1",
+      "series_exec_price": "close_t1",
+      "series_dir": "stage_artifacts/replication/20261010_232444_8340",
+      "series_grade": "C",
+      "full_sharpe": 0.679,
+      "full_ir": 0.254,
+      "n_days": 5345,
+      "date_range": ["2005-02-03", "2026-10-08"],
+      "per_regime": {
+        "RISK_ON": {
+          "n_days": 3788,
+          "n_months": 180.4,
+          "sharpe": 0.555,
+          "ir": 0.423,
+          "mdd": 0.428,
+          "mean_ann": 0.1073
+        },
+        "NEUTRAL": {
+          "n_days": 696,
+          "n_months": 33.1,
+          "sharpe": 1.437,
+          "ir": 0.05,
+          "mdd": 0.353,
+          "mean_ann": 0.3654
+        },
+        "CAUTION": {
+          "n_days": 398,
+          "n_months": 19,
+          "sharpe": 0.708,
+          "ir": 0.517,
+          "mdd": 0.218,
+          "mean_ann": 0.2306
+        },
+        "CRISIS": {
+          "n_days": 450,
+          "n_months": 21.4,
+          "sharpe": 0.813,
+          "ir": -0.152,
+          "mdd": 0.435,
+          "mean_ann": 0.4467
+        },
+        "RISK_OFF": {
+          "n_days": 13,
+          "n_months": 0.6,
+          "sharpe": null,
+          "ir": null,
+          "mdd": 0.078,
+          "mean_ann": -0.1622
+        }
+      },
+      "per_regime_pit_c11": "avail_annotated"
+    },
+    "RP_20261010_232444_2508": {
+      "source_strategy_id": "RP_20261010_232444_2508",
+      "grade": "C",
+      "role": "rebound",
+      "origin_mode": "replication",
+      "trust_status": "contract_fr_eligible",
+      "admission_route": "role_rep",
+      "admission_code": "role_rep",
+      "admission_reason": "역할 대표(rebound) · essence C",
+      "grade_emit": "C",
+      "grade_source": "entry",
+      "freq": "daily",
+      "sim_result_path": "04_Research/strategies/RP_20261010_232444_2508/sim_result.rds",
+      "registered_sim_result_path": "04_Research/strategies/RP_20261010_232444_2508/sim_result.rds",
+      "series_source": "native_close_t1",
+      "series_exec_price": "close_t1",
+      "series_dir": "stage_artifacts/replication/20261010_232444_2508",
+      "series_grade": "C",
+      "full_sharpe": 0.68,
+      "full_ir": 0.258,
+      "n_days": 5345,
+      "date_range": ["2005-02-03", "2026-10-08"],
+      "per_regime": {
+        "RISK_ON": {
+          "n_days": 3788,
+          "n_months": 180.4,
+          "sharpe": 0.57,
+          "ir": 0.443,
+          "mdd": 0.424,
+          "mean_ann": 0.1102
+        },
+        "NEUTRAL": {
+          "n_days": 696,
+          "n_months": 33.1,
+          "sharpe": 1.415,
+          "ir": 0.022,
+          "mdd": 0.357,
+          "mean_ann": 0.3605
+        },
+        "CAUTION": {
+          "n_days": 398,
+          "n_months": 19,
+          "sharpe": 0.681,
+          "ir": 0.48,
+          "mdd": 0.23,
+          "mean_ann": 0.2216
+        },
+        "CRISIS": {
+          "n_days": 450,
+          "n_months": 21.4,
+          "sharpe": 0.809,
+          "ir": -0.154,
+          "mdd": 0.431,
+          "mean_ann": 0.4463
+        },
+        "RISK_OFF": {
+          "n_days": 13,
+          "n_months": 0.6,
+          "sharpe": null,
+          "ir": null,
+          "mdd": 0.081,
+          "mean_ann": -0.2702
+        }
+      },
+      "per_regime_pit_c11": "avail_annotated"
+    },
+    "RP_20260831_204638_33436": {
+      "source_strategy_id": "RP_20260831_204638_33436",
       "grade": "C",
       "role": "diversifier",
       "origin_mode": "replication",
@@ -4410,56 +4204,386 @@
       "grade_emit": "C",
       "grade_source": "entry",
       "freq": "daily",
-      "sim_result_path": "04_Research/strategies/RP_20260902_124954_8100/sim_result.rds",
-      "registered_sim_result_path": "04_Research/strategies/RP_20260902_124954_8100/sim_result.rds",
+      "sim_result_path": "04_Research/strategies/RP_20260831_204638_33436/sim_result.rds",
+      "registered_sim_result_path": "04_Research/strategies/RP_20260831_204638_33436/sim_result.rds",
       "series_source": "close_t1_remeasure",
       "series_exec_price": "close_t1",
-      "series_dir": "stage_artifacts/replication/20260902_124954_8100/remeasure_close_t1_5562284e",
+      "series_dir": "stage_artifacts/replication/20260831_204638_33436/remeasure_close_t1_5562284e",
       "series_grade": "C",
-      "full_sharpe": 0.705,
-      "full_ir": 0.107,
+      "full_sharpe": 0.616,
+      "full_ir": 0.427,
+      "n_days": 4822,
+      "date_range": ["2007-02-05", "2026-08-28"],
+      "per_regime": {
+        "RISK_ON": {
+          "n_days": 3401,
+          "n_months": 162,
+          "sharpe": 0.51,
+          "ir": 0.497,
+          "mdd": 0.742,
+          "mean_ann": 0.2026
+        },
+        "NEUTRAL": {
+          "n_days": 614,
+          "n_months": 29.2,
+          "sharpe": 1.476,
+          "ir": 0.66,
+          "mdd": 0.366,
+          "mean_ann": 0.5963
+        },
+        "CAUTION": {
+          "n_days": 372,
+          "n_months": 17.7,
+          "sharpe": 0.501,
+          "ir": 0.323,
+          "mdd": 0.401,
+          "mean_ann": 0.217
+        },
+        "CRISIS": {
+          "n_days": 422,
+          "n_months": 20.1,
+          "sharpe": 0.483,
+          "ir": -0.392,
+          "mdd": 0.62,
+          "mean_ann": 0.3743
+        },
+        "RISK_OFF": {
+          "n_days": 13,
+          "n_months": 0.6,
+          "sharpe": null,
+          "ir": null,
+          "mdd": 0.074,
+          "mean_ann": 2.6499
+        }
+      },
+      "per_regime_pit_c11": "avail_annotated"
+    },
+    "RP_20260902_141641_14244": {
+      "source_strategy_id": "RP_20260902_141641_14244",
+      "grade": "C",
+      "role": "diversifier",
+      "origin_mode": "replication",
+      "trust_status": "contract_fr_eligible",
+      "admission_route": "role_rep",
+      "admission_code": "role_rep",
+      "admission_reason": "역할 대표(diversifier) · essence C",
+      "grade_emit": "C",
+      "grade_source": "entry",
+      "freq": "daily",
+      "sim_result_path": "04_Research/strategies/RP_20260902_141641_14244/sim_result.rds",
+      "registered_sim_result_path": "04_Research/strategies/RP_20260902_141641_14244/sim_result.rds",
+      "series_source": "close_t1_remeasure",
+      "series_exec_price": "close_t1",
+      "series_dir": "stage_artifacts/replication/20260902_141641_14244/remeasure_close_t1_5562284e",
+      "series_grade": "C",
+      "full_sharpe": 0.747,
+      "full_ir": 0.132,
       "n_days": 5320,
       "date_range": ["2005-02-03", "2026-08-31"],
       "per_regime": {
         "RISK_ON": {
           "n_days": 3788,
           "n_months": 180.4,
-          "sharpe": 0.667,
-          "ir": 0.511,
-          "mdd": 0.524,
-          "mean_ann": 0.1137
+          "sharpe": 0.696,
+          "ir": 0.542,
+          "mdd": 0.414,
+          "mean_ann": 0.1153
         },
         "NEUTRAL": {
           "n_days": 696,
           "n_months": 33.1,
-          "sharpe": 1.362,
-          "ir": -0.354,
-          "mdd": 0.263,
-          "mean_ann": 0.3028
+          "sharpe": 1.262,
+          "ir": -0.577,
+          "mdd": 0.258,
+          "mean_ann": 0.2716
         },
         "CAUTION": {
           "n_days": 398,
           "n_months": 19,
-          "sharpe": 0.155,
-          "ir": -0.505,
-          "mdd": 0.205,
-          "mean_ann": 0.0411
+          "sharpe": 0.402,
+          "ir": -0.142,
+          "mdd": 0.174,
+          "mean_ann": 0.1017
         },
         "CRISIS": {
           "n_days": 425,
           "n_months": 20.2,
-          "sharpe": 0.772,
-          "ir": -0.544,
-          "mdd": 0.377,
-          "mean_ann": 0.3117
+          "sharpe": 0.898,
+          "ir": -0.449,
+          "mdd": 0.312,
+          "mean_ann": 0.353
         },
         "RISK_OFF": {
           "n_days": 13,
           "n_months": 0.6,
           "sharpe": null,
           "ir": null,
-          "mdd": 0.046,
-          "mean_ann": 0.8932
+          "mdd": 0.037,
+          "mean_ann": 0.5608
+        }
+      },
+      "per_regime_pit_c11": "avail_annotated"
+    },
+    "RP_20260903_110631_16700": {
+      "source_strategy_id": "RP_20260903_110631_16700",
+      "grade": "F",
+      "role": "diversifier",
+      "origin_mode": "replication",
+      "trust_status": "contract_fr_eligible",
+      "admission_route": "role_rep",
+      "admission_code": "role_rep",
+      "admission_reason": "역할 대표(diversifier) · essence F",
+      "grade_emit": "F",
+      "grade_source": "entry",
+      "freq": "daily",
+      "sim_result_path": "04_Research/strategies/RP_20260903_110631_16700/sim_result.rds",
+      "registered_sim_result_path": "04_Research/strategies/RP_20260903_110631_16700/sim_result.rds",
+      "series_source": "close_t1_remeasure",
+      "series_exec_price": "close_t1",
+      "series_dir": "stage_artifacts/replication/20260903_110631_16700/remeasure_close_t1_5562284e",
+      "series_grade": "F",
+      "full_sharpe": 0.621,
+      "full_ir": 0.241,
+      "n_days": 5321,
+      "date_range": ["2005-02-03", "2026-09-01"],
+      "per_regime": {
+        "RISK_ON": {
+          "n_days": 3788,
+          "n_months": 180.4,
+          "sharpe": 0.411,
+          "ir": 0.292,
+          "mdd": 0.47,
+          "mean_ann": 0.0839
+        },
+        "NEUTRAL": {
+          "n_days": 696,
+          "n_months": 33.1,
+          "sharpe": 1.603,
+          "ir": 0.523,
+          "mdd": 0.374,
+          "mean_ann": 0.4359
+        },
+        "CAUTION": {
+          "n_days": 398,
+          "n_months": 19,
+          "sharpe": 0.167,
+          "ir": -0.425,
+          "mdd": 0.36,
+          "mean_ann": 0.0574
+        },
+        "CRISIS": {
+          "n_days": 426,
+          "n_months": 20.3,
+          "sharpe": 1.023,
+          "ir": 0.157,
+          "mdd": 0.462,
+          "mean_ann": 0.6094
+        },
+        "RISK_OFF": {
+          "n_days": 13,
+          "n_months": 0.6,
+          "sharpe": null,
+          "ir": null,
+          "mdd": 0.069,
+          "mean_ann": 1.1477
+        }
+      },
+      "per_regime_pit_c11": "avail_annotated"
+    },
+    "RP_20260905_125848_7364": {
+      "source_strategy_id": "RP_20260905_125848_7364",
+      "grade": "B",
+      "role": "diversifier",
+      "origin_mode": "replication",
+      "trust_status": "contract_fr_eligible",
+      "admission_route": "role_rep",
+      "admission_code": "role_rep",
+      "admission_reason": "역할 대표(diversifier) · essence B",
+      "grade_emit": "B",
+      "grade_source": "entry",
+      "freq": "daily",
+      "sim_result_path": "04_Research/strategies/RP_20260905_125848_7364/sim_result.rds",
+      "registered_sim_result_path": "04_Research/strategies/RP_20260905_125848_7364/sim_result.rds",
+      "series_source": "close_t1_remeasure",
+      "series_exec_price": "close_t1",
+      "series_dir": "stage_artifacts/replication/20260905_125848_7364/remeasure_close_t1_5562284e",
+      "series_grade": "B",
+      "full_sharpe": 0.865,
+      "full_ir": 0.342,
+      "n_days": 5324,
+      "date_range": ["2005-02-03", "2026-09-04"],
+      "per_regime": {
+        "RISK_ON": {
+          "n_days": 3788,
+          "n_months": 180.4,
+          "sharpe": 0.928,
+          "ir": 0.847,
+          "mdd": 0.367,
+          "mean_ann": 0.1662
+        },
+        "NEUTRAL": {
+          "n_days": 696,
+          "n_months": 33.1,
+          "sharpe": 1.442,
+          "ir": -0.19,
+          "mdd": 0.31,
+          "mean_ann": 0.3294
+        },
+        "CAUTION": {
+          "n_days": 398,
+          "n_months": 19,
+          "sharpe": 0.09,
+          "ir": -0.64,
+          "mdd": 0.331,
+          "mean_ann": 0.0243
+        },
+        "CRISIS": {
+          "n_days": 429,
+          "n_months": 20.4,
+          "sharpe": 0.819,
+          "ir": -0.676,
+          "mdd": 0.319,
+          "mean_ann": 0.3127
+        },
+        "RISK_OFF": {
+          "n_days": 13,
+          "n_months": 0.6,
+          "sharpe": null,
+          "ir": null,
+          "mdd": 0.038,
+          "mean_ann": -0.3542
+        }
+      },
+      "per_regime_pit_c11": "avail_annotated"
+    },
+    "RP_20260906_211754_10256": {
+      "source_strategy_id": "RP_20260906_211754_10256",
+      "grade": "B",
+      "role": "diversifier",
+      "origin_mode": "replication",
+      "trust_status": "contract_fr_eligible",
+      "admission_route": "role_rep",
+      "admission_code": "role_rep",
+      "admission_reason": "역할 대표(diversifier) · essence B",
+      "grade_emit": "B",
+      "grade_source": "entry",
+      "freq": "daily",
+      "sim_result_path": "04_Research/strategies/RP_20260906_211754_10256/sim_result.rds",
+      "registered_sim_result_path": "04_Research/strategies/RP_20260906_211754_10256/sim_result.rds",
+      "series_source": "close_t1_remeasure",
+      "series_exec_price": "close_t1",
+      "series_dir": "stage_artifacts/replication/20260906_211754_10256/remeasure_close_t1_5562284e",
+      "series_grade": "B",
+      "full_sharpe": 0.886,
+      "full_ir": 0.355,
+      "n_days": 5324,
+      "date_range": ["2005-02-03", "2026-09-04"],
+      "per_regime": {
+        "RISK_ON": {
+          "n_days": 3788,
+          "n_months": 180.4,
+          "sharpe": 1.008,
+          "ir": 0.904,
+          "mdd": 0.529,
+          "mean_ann": 0.1906
+        },
+        "NEUTRAL": {
+          "n_days": 696,
+          "n_months": 33.1,
+          "sharpe": 1.446,
+          "ir": 0.001,
+          "mdd": 0.289,
+          "mean_ann": 0.3569
+        },
+        "CAUTION": {
+          "n_days": 398,
+          "n_months": 19,
+          "sharpe": 0.002,
+          "ir": -0.675,
+          "mdd": 0.249,
+          "mean_ann": 0.0005
+        },
+        "CRISIS": {
+          "n_days": 429,
+          "n_months": 20.4,
+          "sharpe": 0.562,
+          "ir": -0.81,
+          "mdd": 0.329,
+          "mean_ann": 0.2171
+        },
+        "RISK_OFF": {
+          "n_days": 13,
+          "n_months": 0.6,
+          "sharpe": null,
+          "ir": null,
+          "mdd": 0.041,
+          "mean_ann": -0.2359
+        }
+      },
+      "per_regime_pit_c11": "avail_annotated"
+    },
+    "RP_20260912_185620_10072": {
+      "source_strategy_id": "RP_20260912_185620_10072",
+      "grade": "C",
+      "role": "diversifier",
+      "origin_mode": "replication",
+      "trust_status": "contract_fr_eligible",
+      "admission_route": "role_rep",
+      "admission_code": "role_rep",
+      "admission_reason": "역할 대표(diversifier) · essence C",
+      "grade_emit": "C",
+      "grade_source": "entry",
+      "freq": "daily",
+      "sim_result_path": "04_Research/strategies/RP_20260912_185620_10072/sim_result.rds",
+      "registered_sim_result_path": "04_Research/strategies/RP_20260912_185620_10072/sim_result.rds",
+      "series_source": "close_t1_remeasure",
+      "series_exec_price": "close_t1",
+      "series_dir": "stage_artifacts/replication/20260912_185620_10072/remeasure_close_t1_5562284e",
+      "series_grade": "C",
+      "full_sharpe": 0.745,
+      "full_ir": 0.52,
+      "n_days": 3567,
+      "date_range": ["2012-03-06", "2026-09-11"],
+      "per_regime": {
+        "RISK_ON": {
+          "n_days": 2840,
+          "n_months": 135.2,
+          "sharpe": 0.663,
+          "ir": 0.678,
+          "mdd": 0.619,
+          "mean_ann": 0.2796
+        },
+        "NEUTRAL": {
+          "n_days": 391,
+          "n_months": 18.6,
+          "sharpe": 1.438,
+          "ir": 0.34,
+          "mdd": 0.3,
+          "mean_ann": 0.708
+        },
+        "CAUTION": {
+          "n_days": 126,
+          "n_months": 6,
+          "sharpe": 0.343,
+          "ir": -0.426,
+          "mdd": 0.374,
+          "mean_ann": 0.1846
+        },
+        "CRISIS": {
+          "n_days": 208,
+          "n_months": 9.9,
+          "sharpe": 0.762,
+          "ir": -0.672,
+          "mdd": 0.353,
+          "mean_ann": 0.4889
+        },
+        "RISK_OFF": {
+          "n_days": 2,
+          "n_months": 0.1,
+          "sharpe": null,
+          "ir": null,
+          "mdd": 0.044,
+          "mean_ann": -0.2063
         }
       },
       "per_regime_pit_c11": "avail_annotated"

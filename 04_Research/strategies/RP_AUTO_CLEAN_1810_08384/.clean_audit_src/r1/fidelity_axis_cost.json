@@ -1,0 +1,11 @@
+{
+  "axis": "cost",
+  "verdict": "adapted",
+  "undeclared_changes": [],
+  "signal_mismatch": [],
+  "counterexample": "구성 못 했다. 논문 §VI 는 비용 수치(bps·%·통화)를 본문·그림 캡션 어디에도 제시하지 않는다(commissions + half-spread 를 쓴다는 서술만 있고, 결과는 Sharpe 1.19→1.15(비용인지 전)→1.0(비용인지 후) 등 사후 성과로만 보고된다) — 그래서 '논문 비용값과 구현 비용값이 다르다'는 수치 반례 자체가 성립할 여지가 없다. FIDELITY.json 은 이를 정직하게 commission_paper=null 로 반영했고, H7 은 등급판(15bps, Σ|Δw| 턴오버 기준)과 논문판(commission_paper, null→0 취급)을 분리해 병기한다고 선언한다 — 두 열이 섞여 paper 헤드라인 수치(SR 1.19, §II~III 는 애초에 무비용 설정)에 15bps 가 잘못 들어가는 지점을 찾지 못했다.",
+  "evidence": "§VI(Introducing transaction costs) 서문 — 이전 절(§II~§III, Fig.1~6 의 SR FF 0.34 / Markowitz k=5 1.19)은 일간 리밸 무비용 가정이었음을 명시하고, 이 절에서 처음 'commissions, and half-spread costs'(선형 비용)를 도입하되 neglect slippage(시장충격 제외)라고만 서술 — 수치(bps 등) 명시 없음. 비용 적용 후 전 구성법 SR 이 음수가 되고, 비용인지형 일반화 마코위츠만 1.15→1.0 유지된다는 서술도 수치는 있으나 '비용 단가'는 여전히 안 준다.",
+  "confidence": "high",
+  "checked": "engine.R 에 비용 계산 코드 없음(비용은 하네스 레벨 H7 소관) 확인 · FIDELITY.json commission_paper/paper_steps[15]/harness_disclosure H7 대조 · 논문 §VI 전문(WebFetch 2회, 서로 다른 질의)에서 commissions·half-spread·bps·%·currency 수치 부재 재확인.",
+  "note": "엔진 자체는 비용 로직을 갖지 않는다(engine_direct, PORTFOLIO 비중만 산출) — 비용은 하네스 공통 15bps(v2.4 delta) 규약이 전담하며 이는 CLAUDE.md 가 모든 프로그램에 거는 측정 축 규약이라 이 리플리케이션 고유의 편차가 아니다."
+}

@@ -1,0 +1,12 @@
+{
+  "axis": "universe",
+  "verdict": "adapted",
+  "undeclared_changes": [],
+  "signal_mismatch": [],
+  "counterexample": "구성 못 했다 — 논문 §3.1 은 'We use daily returns for the Fama-French six factors from Kenneth French's data library... Sample: January 2, 1990 – December 31, 2024 (8,817 trading days)' 외에 거래소·금융주 제외·가격 하한·유동성 필터·최소 종목수에 대한 어떤 규칙도 적지 않는다(WebFetch 전문 검색 — NYSE·exchange·financial firm·price·minimum·liquidity·listed·delisting·survivorship 어휘 전부 미등장). 논문이 어떤 선별 규칙도 고정하지 않으므로, 구현이 그 규칙과 다른 값을 내는 상황을 구성할 수 없다 — 비교 대상 자체가 없다.",
+  "evidence": "§3.1 전문(위 인용) — 유니버스·필터 서술의 전부. 어휘 검색으로 거래소/금융주/가격/유동성/최소종목수 관련 문장 부재 확인.",
+  "confidence": "high",
+  "checked": "engine.R:101-103(PX 패널 K200|KQ150 & finite Ret & w_vw>0) · 146(.SIZE_POP K200|KQ150 & finite Size>0) · 149,164(.MIN_FORM_N=30 모집단 하한) · 366-369(FLAT 토큰 Vol>0) 를 FIDELITY changed⑤㉓㉙ · constants(.MIN_FORM_N·.FDB_COV_MIN) · harness_disclosure H1/H2/H8 과 대조 — 전부 논문에 없는 추가 선별 규칙이며 전부 FIDELITY/하네스 공시에 선언돼 있다. 금융주 제외·가격 하한은 코드에도 없고 선언에도 없어 일치.",
+  "prior_review": [],
+  "note": "앞 회차 지적 3건(정렬별 분기점 분산 · 양다리 동시편입)은 FF 2x3 breakpoint 모집단 방식(signal/portfolio 구성)에 관한 것이고 K200∪KQ150 위에 얹는 거래소·가격·유동성·금융주 선별 규칙과는 다른 문제라 내 축 밖으로 보고 적지 않았다(해당 두 지적은 r2 engine.R:146-149 의 `by = Date` 단일 분기점으로 이미 수정돼 반영돼 있다는 점만 참고로 남긴다)."
+}

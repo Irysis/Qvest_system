@@ -1,0 +1,26 @@
+{
+  "axis": "signal",
+  "verdict": "adapted",
+
+  "undeclared_changes": [],
+
+  "signal_mismatch": [
+    "[횡단면 표준화 무영향 선언 성립 안 함] 논문 Prop 6(scale symmetry, w(cs)=w(s) for c>0)의 증명은 x(cs)=cx(s)·‖x(cs)‖₁=|c|‖x(s)‖₁ 뿐으로 활성집합 A 와 트리가 고정된 경우만 덮는다 — 그런데 eq (8) A={i: m_i>ε, |s_i|>τ}는 τ=10⁻³ 라는 절대 문턱으로 신호의 척도를 직접 소비하고, engine.R:148 `act <- (m_i > .TRP_EPS_ACT) & (abs(s_i) > .TRP_TAU)` 이 그것을 그대로 구현한다. 따라서 FIDELITY.changed ① 의 '횡단면 표준화는 Prop 6 척도불변으로 무영향이라 생략' 은 이 코드에 대해 거짓이다(척도를 바꾸면 A → MST → root·b(u) → g → w 가 전부 바뀐다). 논문 자신도 Remark 5('does not claim global continuity across changes in the MST, root, or active set')와 §7.2-2('MST instability matters')로 Prop 6 의 무조건 서술에 선을 긋는다. 같은 FIDELITY 의 changed ⑬('tau=1e-3 은 신호 단위에 의존한다')과도 상충한다 — ①과 ⑬ 이 동시에 참일 수 없다. ★코드가 하는 일은 논문과 어긋나지 않는다(논문은 s 를 정의하지 않는다) — 어긋난 것은 생략의 근거 진술이다."
+  ],
+
+  "counterexample": "신호일 d, 커버리지 통과 후보 3종, 중심화된 s=(+0.3000, −0.2995, −0.0005). (1) 코드 그대로: |s₃|=0.0005 < τ=10⁻³ → 3번은 비활성, A={1,2}, n_A=2 → MST 는 간선 {1,2} 하나, deg=(1,1) → hub 루트 = 노드1(동점 최소 인덱스, engine.R:92 which.max), b(1)=1 → α=1/1=1(ρ=1), g=(1,1), x=(0.3000,−0.2995), ‖x‖₁=0.5995 → w=(+0.5004, −0.4996). (2) FIDELITY ① 이 '무영향' 이라고 말한 횡단면 표준화를 추가: 표본 sd=0.29975 → s'=(+1.00084, −0.99917, −0.00167) 로 |s'₃|=0.00167 > τ → 3번이 활성, A={1,2,3}, n_A=3. 이 달의 상관이 MST 를 3−1−2 경로로 만들면 deg=(2,1,1) → 루트 = 노드1, b(1)=2 → α=1/2, g=(1, 0.5, 0.5), x=(1.00084, −0.49959, −0.00083), ‖x‖₁=1.50126 → w=(+0.6667, −0.3328, −0.00056). 같은 날 같은 원시 신호인데 롱 비중이 0.5004 → 0.6667 로 바뀐다(MST 가 1−3−2 경로일 때도 w=(+0.4996, −0.4988, −0.00167) 로 (1)과 다르다). 즉 신호 척도는 이 구현에서 결과를 바꾸는 입력이다. ★논문의 s 자체와 다른 값을 내는 반례는 구성할 수 없다 — §4 는 s_i 를 'the current signed signal' 이라는 외생 입력으로만 두고 어떤 식도 주지 않으므로 대조할 논문 신호가 존재하지 않는다(FIDELITY ① 의 '알파 귀속은 충실구현이 아니라 착안이다' 와 같은 사실).",
+
+  "evidence": "§4(s_i = the current signed signal · R_i=(r_i1..r_iT) — s 정의 없음) · §4.1 eq (8)(m_i := (1/k)Σ_{t=T−k+1}^{T}|r_it| · A={i: m_i>ε, |s_i|>τ} · 'In our baseline specification we take τ=10⁻³' · 'a minimum recent-magnitude threshold ε>0' · 'Fix a lookback window k ≤ T') · §4.2(C=corr(R^(A)) · clips to [−1,1], replaces NaNs by zero, symmetrizes) · eq (9) D_ij=sqrt((1−C_ij)/2) = §2·eq (1) Mantegna 거리 · Prop 1(0≤D≤1) · §5.1 Step 3 eq (10) α_u=(1−ρ)+ρ/b(u) · Step 4 eq (11)(12) g_r=1, g_v=α_pa(v)g_pa(v)=Π_{u∈Path(r,v)}α_u · Step 5(uses the original signal, not a volatility-rescaled signal: x_v=s_v^(A)g_v) · Step 6 eq (13) w_v=L x_v/‖x‖₁ · Appendix A eq (16) w_i=L s_i g_i/Σ_j|s_j|g_j · Prop 5(sign(w_v)=sign(s_v^(A)) since g_v>0) · Prop 6 + 증명(positive rescalings cancel) · Remark 5(conditional · not global across changes in MST/root/active set) · §7.2-1·2(Root dependence matters · MST instability matters) · Abstract·§1(designed for signed cross-sectional signals · L/S trend-type strategies).",
+
+  "confidence": "high",
+
+  "checked": "s 의 논문 정의 존재 여부(§4 외생 입력) · 공급 신호 식(Σlog1p(Ret) 252d · engine.R:140) · 부호 방향(누적수익 양수 = 롱 = 논문 'L/S trend-type' 과 동방향 · 반전 아님) · 횡단면 중심화(engine.R:146)와 그 중심화 집합 · 표준화·winsorize 유무(없음 · 논문도 요구 없음) · eq (8) m_i 식·분모 k=252(engine.R:139) · 룩백 길이 252 와 종점 d 포함(engine.R:130 rws=seq.int(i−251,i) · 논문 종점 T=최신 관측과 정합 · 체결 익일) · k=T 통일 · τ=10⁻³ 그대로(engine.R:148) · ε=0 이 논문 'ε>0' 도메인 밖임(선언 ⑭) · C=corr(활성 종목만)·NaN→0·클립·대칭화 순서(engine.R:153-157) · eq (9) 거리 · eq (10)~(13)·eq (16) 식 대조(engine.R:113,115,164,167) · Prop 5 부호 보존 · Prop 6 적용 범위 · 결측 0 치환이 m_i·s_0 에 들어가는 경로(engine.R:137) · 비유한 신호 중심화 전 제외(engine.R:143-145).",
+
+  "prior_review": [],
+
+  "_항목 서술 규약": "★모든 항목은 대괄호 **한 줄 요약**으로 시작한다 - 12~30자 · 그 항목만 읽고도 무엇이 어긋났는지 아는 문장 · 원문 인용이나 파일:행을 요약에 넣지 마라(뒤 본문에 적는다). 이 요약이 통지에 그대로 실리고 본문은 안 실린다 - 요약이 없으면 사람은 잘린 원문 조각을 받는다. 예: '[숏 레그 그로스 익스포저 24% 미달]' · '[유니버스 탈락분 비중 재분배 없음]' · '[은닉층 순환 구조 미구현]'. ★용어는 그 분야의 정통 표기를 쓴다 - 임의 한글 조어를 만들지 말고, 원문 용어가 영문이면 통용 표기를 그대로(gross exposure · long/short leg · winsorize · lookback), 우리 지표는 정본 표기를 그대로(PORT_t · Calmar · MDD · OOS retention). 뜻이 통해도 조어면 읽는 사람이 두 번 해석한다.",
+
+  "_배열 규약": "undeclared_changes·signal_mismatch 는 **발견만** 담는다. 없으면 빈 배열 [] 로 두고 '불일치 없음' 같은 비발견을 항목으로 넣지 마라 - 근거 게이트가 배열 길이로 선다. prior_review 는 재감사(위 '재감사다' 절이 있을 때)에서 네 축 항목만 - 아니면 빈 배열 [].",
+
+  "note": "원문 전문 경로: 지시된 html(arxiv.org/html/2604.16773v1)은 이 세션에서 HTTP 402(jina 잔액 부족)로 막혀 arXiv PDF 텍스트 추출(read_arxiv_paper 2604.16773)로 전문 15쪽 전체를 읽었다 — 초록만 읽은 판정이 아니다. 청정 모드로 측정 산출물은 보지 않았고 모든 대조는 engine.R 코드 경로 추적으로만 했다. 내 축에서 코드가 하는 일과 논문이 어긋나는 항목은 없다: 논문은 s 를 정의하지 않고(§4), 공급 신호·창 길이·종점·중심화·skip 없음·표준화 생략은 전부 FIDELITY.changed ①④⑨⑪⑫⑬⑭ 와 windows 에 선언돼 있고 코드와 글자 단위로 일치한다(그래서 adapted). 유일한 지적은 생략의 **근거** 진술이 코드 거동과 다른 점이다. 타 축 한 줄: ρ=1 + 깊은 트리에서 g 언더플로로 w=0 이 되어 행이 버려지는 경로(engine.R:168, FIDELITY ⑯)는 논문 Prop 5 부호 보존·Prop 9 하한 (1/B)^d 와 수치적으로 충돌하므로 exposure/parameter 축이 보는 것이 맞다."
+}

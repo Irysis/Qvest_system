@@ -1,0 +1,12 @@
+{
+  "axis": "timing",
+  "verdict": "adapted",
+  "undeclared_changes": [],
+  "signal_mismatch": [],
+  "counterexample": "신호일 d 에 crisis=TRUE·h9(=frollsum(HML,9) 종점 d)>0 이 성립해 SIG$pos=1 이 찍혀도, 집행은 close d+1(H4)이라 그 포지션이 실제로 수익을 버는 첫 거래일은 t=d+2 다. 논문 색인으로 보면 그 수익일 t 의 '과거 9일'은 [t-9,t-1] 이어야 하는데, 구현이 실제로 쓴 데이터는 [d-8,d] = [t-10,t-2] 다 — 즉 논문이 요구하는 가장 최근 2일(t-2, t-1 중 t-1 쪽 1일)의 HML 관측을 쓰지 않고 그보다 하루 더 오래된 데이터로 부호를 정한다. 추가로 같은 달에 신호가 2일 이상이면 하네스가 ISO 주의 마지막 신호만 남기므로(H10), 예컨대 한 주 안에서 월·화는 h9>0(롱 SMB), 목·금은 h9<0(숏 SMB)로 부호가 반전되는 주라면 그 주 전체는 금요일 부호 하나로만 거래되고 월·화의 반대 부호 구간은 포트폴리오에 전혀 나타나지 않는다 — 논문의 '매일 재평가' 규칙과 수치가 다르다. 두 가지 모두 FIDELITY.changed ⑰⑱㉖·windows.hml_9d·harness_disclosure H4/H10 에 선언돼 있어 misdeclared 는 아니다.",
+  "evidence": "§5.2(엔진 주석·FIDELITY 양쪽이 인용한 원문): \"During Crisis regime, go long SMB when HML return over the past 9 days is positive, short SMB when negative\" — '과거 9일'의 창 종점을 수익일 t 기준 명시하지 않음(엔진 자체 주석도 동일 인용). §3.4 H0 식 r_{j,t} ⟂ {r_{i,t-ℓ}}_{ℓ=1}^{L} | {r_{j,t-ℓ}}_{ℓ=1}^{L} — lag ℓ=1..L 규약(t-1 이 가장 최근 관측). §5.3: \"Optimal lags were selected by BIC within each regime. The 9-day crisis lag is stable across maximum lag choices (L=5,10,15,20)\" — L=9 가 논문 값. §3.1: 전표본 1990-01-02~2024-12-31, 거래 백테스트 1995~2024(5년 유예 — lag 계산에 충분한 과거 확보 목적). 논문은 포지션 크기·레버리지·리밸 주기·모멘텀 skip 등을 직접 서술하지 않는다(WebFetch 확인: 'The paper does not specify traditional formation or holding periods... No rebalancing frequency is defined').",
+  "confidence": "high",
+  "checked": "GC_LAG_DAYS=9(§5.2/Table 3·§5.3 L=9 고정) · hml_9d 창 종점(논문 [t-9,t-1] vs 구현 [d-8,d]→실질 [t-10,t-2], H4 집행지연 1일 반영) · 리밸 주기(논문 미명세·일간 함의 vs 하네스 H10 주간 폴드) · 모멘텀 skip 1개월·prior(2-12)=11개월(FF 표준 — 논문 본문 미서술, supplement 로 정직 표기) · 6월 형성→7월~익년6월 보유·월말 형성 모멘텀→익월 보유(Ken French 라이브러리 규약 — 논문이 서술하지 않음) · HMM burn-in 1260관측(1990→1995 5년)이 §3.1 거래시작 1995 와 정합",
+  "prior_review": [],
+  "note": "이 축에서 유일한 숫자 축(L=9, §5.2/§5.3)은 코드·FIDELITY 모두 일치하고 집행지연·주간폴드로 인한 1~수일 창 이동은 changed ⑰⑱㉖·H4·H10 에 선언돼 misdeclared 대상이 아니다. FF6팩터 자체의 형성/보유(6월·월말, 7월~익년6월)는 논문 본문이 서술하지 않는 Ken French 외부 규약이라 '논문과 다르다'는 비교 자체가 성립하지 않고, FIDELITY 도 이를 source=supplement 로 정직히 구분해 두었다."
+}

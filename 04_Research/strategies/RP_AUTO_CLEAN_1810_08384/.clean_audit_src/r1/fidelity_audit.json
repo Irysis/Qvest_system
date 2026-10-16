@@ -1,0 +1,92 @@
+{
+  "verdict": "misdeclared",
+  "undeclared_changes": [
+    "[signal] [모멘텀 창 월별 관측 하한 없음] 논문은 일간 수익 시계열을 그대로 평균/누적하는데(§V '230 days rolling average returns'), 구현은 월 단위 존재 여부만 센다 — engine.R:58 이 (Ticker, ym) 별로 mret 을 만들고 engine.R:80-82 가 nmo >= MOM_MIN_MONTHS(11) 만 요구하므로 거래일이 1일뿐인 달도 '완전한 달'로 계상된다. 공분산 레그에는 종목별 250/500 거래일 하한(engine.R:103 COV_MIN_OBS)이 있는데 모멘텀 레그에는 대응하는 거래일 하한이 없다. FIDELITY.constants MOM_MIN_MONTHS 는 '엄격 판독(12개월 성과를 말할 수 있어야 한다)'·'한 달 전체 거래정지 종목은 그 달 제외'까지만 선언하고, 부분 거래월이 통과한다는 사실과 그로 인해 11개월 창의 실효 수익 구간이 종목마다 달라진다는 점은 changed 에 없다."
+  ],
+  "signal_mismatch": [
+    "[signal] [모멘텀 식 — 일별 평균수익 아니라 복리누적] 논문이 모멘텀에 대해 제시한 유일한 계산식은 §V 의 'Momentum: we compute 230 days rolling average returns (lagged by 1 month) and rank from lowest to highest' = 230 거래일 구간 **일별 수익의 산술평균**(1개월 지연)이다. engine.R:58 + engine.R:80-81 은 prod(1 + mret) - 1 로 11 캘린더월 **복리 누적수익**을 계산한다. 두 함수는 같은 창에서 서로 다른 값을 내고, 변동성이 다른 종목 사이에서 횡단면 순위가 역전된다(평균 ≈ (1/T)ln(1+누적) + var/2 — Jensen 갭이 변동성에 비례). p 가 순위 균등 변환(engine.R:134-135)이므로 순위 역전은 p 부호 역전, 즉 다리(long/short) 배정의 역전으로 직결된다.",
+    "[signal] [논문 주 결과 모멘텀 식 출처 주장 사실 아님] FIDELITY.changed ⑬ 과 paper_steps '신호 정의 선택(어느 칸)' note 는 '주 결과(§II·§III·Fig.1~6)가 쓰는 고전 12-1 누적수익 칸을 택했다' 고 적지만, §II(SETTING THE STAGE)는 데이터·풀·예측자 p·5개 구성법·Eq.(1)~(4)만 정의하고 §III(RESULTS FOR THE MOMENTUM STRATEGY)는 결과 서술뿐 — **어느 쪽도 모멘텀 계산식을 주지 않는다.** 누적수익 서술은 §I 에 있고 그것도 'The signal is **usually** defined as ...' 라는 문헌 관행 서술이다. 반대로 §V 는 'We have back-tested (using the same data and the **same approach as before**) ...' 로 열고 그 목록 안의 Momentum 항에 230일 평균수익을 명시하며, Fig.7 의 Momentum 칸은 §III 의 SR(FF 0.34 / Markowitz k=5 1.19 — '같은 접근')과 같은 산출로 읽힌다. 즉 선언은 '논문의 주 결과가 구현과 같은 식을 쓴다'고 말하는데 원문이 그것을 뒷받침하지 않고, 유일한 명시식은 구현이 쓰지 않은 쪽이다. 편차 자체는 선언돼 있으나 편차의 크기를 축소 서술한다.",
+    "[signal] [모멘텀 정의 인용 절 번호 오기] FIDELITY.paper_steps 의 '신호 — 12-1 모멘텀'·'신호 1개월 lag'·'신호 정의 선택' 세 항목과 windows 의 momentum_window 는 paper_quote 를 모두 '§II' 로 귀속하지만, 'the cumulative performance of a stock over the past 12 months, where the last month is taken away' · 'the momentum signal needs to be lagged by (at least) one month' · 'the precise definition of the signal is not important in our study and we will stick to the classical academic definition' 세 문장은 전부 §I INTRODUCTION 마지막 단락에 있다. §II 에는 없다.",
+    "[undeclared] [자기신고가 대체 대상 식번호를 오기] FIDELITY.changed ⑥ 은 \"식 2·3 대신 Woodbury 항등 닫힌형 x = D^{-1}(1/ε²)(I−VΓV')D^{-1}p 사용\" 이라고 선언하고 kept 도 마코위츠 해를 \"§II 식 2·4\" 로 인용하지만, 원문 §II 의 식 (2)·(3) 은 Betaopt 칸의 β-중립 해(x = p − (β·p)/(β^T C^{-1}β) C^{-1}β → x = p − (w^T C p)/(w^T C w) w, 원문 주석 \"where no matrix inversion is needed\")이고 마코위츠 해 x_i ∝ C^{-1}p_i 는 §II 에서 번호가 붙지 않은 식이다. engine.R:137-143 이 닫힌형으로 푸는 것은 번호 없는 마코위츠 해이며, 식 (2)·(3) 의 Betaopt 칸은 ⑫ 에서 omitted 로 따로 선언돼 있다 — 즉 ⑥ 은 엔진이 한 적 없는 '식 2·3 대체'를 변경 항목으로 신고한 것이다. 같은 항목의 \"스칼라 1/ε² 는 ⑦ 정규화에서 소거\" 도 상호참조 오류다(총노출 정규화는 ④ · 코드 단계 (7) engine.R:149-151 이고 ⑦ 은 그램행렬 항목이다). 수치 영향 없음 — Woodbury 는 (VΛV'+ε²I)^{-1} = (1/ε²)(I−VΓV'), Γ = diag(λ/(λ+ε²)) 로 V'V = I 에서 성립하는 정확한 항등이고 engine.R:140-143 은 그것을 그대로 계산한다."
+  ],
+  "evidence": "[signal] arXiv:1810.08384v1 전문(§I~§VII, 참고문헌까지) 통독. ▸§I 마지막 단락: 'The signal is usually defined as the cumulative performance of a stock over the past 12 months, where the last month is taken away [5]' + 'the momentum signal needs to be lagged by (at least) one month' + 'the precise definition of the signal is not important in our study and we will stick to the classical academic definition mentioned above'. ▸§II: 'We will assume to have a normalized, ranked predictor p_i on stock i that is uniformly distributed in [-1,+1]' · Markowitz 항 'x_i ∝ C^{-1}p_i' + 'we only keep the k largest eigenvectors of the covariance matrix' · 'at least two years of historical close-to-close daily returns' · 'we will instead test a few values up to k = 5' · Eq.(4) C_ij ≃ σ_iσ_j(Σ_{α=1}^{k} λ^α v^α_i v^α_j + ε²δ_ij) 과 그 직후 'λα, and vα are respectively eigenvalues and eigenvectors of the **correlation matrix**, and the diagonal variance term ε² is chosen such that the total variance of the portfolio is unchanged, i.e. Tr C = Σ_i σ_i²'. ▸§III: 'the Markowitz solution, with k=5 statistical factors ... has the highest Sharpe Ratio (1.19)' (FF 0.34) — 모멘텀 계산식 없음. ▸§V: 'We have back-tested (using the same data and the same approach as before) many other fundamental equity factors ... We apply standard definitions of factors as can be found in the literature:' → 'Momentum: we compute 230 days rolling average returns (lagged by 1 month) and rank from lowest to highest' (대조군: 'Low Vol: ... rank from highest to lowest' · 'Low Beta: ... ranked from highest to lowest' · 'Size: ... rank from highest to lowest' — 'lowest to highest' = 오름차순이므로 모멘텀 최고치가 p 최대, 즉 승자 long 이 확인된다) + Fig.7 캡션 'The world-wide Sharpe Ratio for the main equity factors, and for all the portfolio constructions' 와 본문 'In some good cases, like for Momentum or the Accrual anomaly, the effect is quite spectacular'. / [timing] §II (arxiv.org/html/1810.08384v1): 'In any of the above setups, the portfolio is rebalanced on a daily basis.' / §I: 'The signal is usually defined as the cumulative performance of a stock over the past 12 months, where the last month is taken away.' / §I: 'the momentum signal needs to be lagged by (at least) one month in order to get rid of the mean-reversion effect.' 논문은 J/K 복수 조합을 비교하지 않는다 — §II 의 k 는 모멘텀 K 가 아니라 §III 마코위츠 고유모드 개수(k=5)다. / [universe] §II (arXiv 1810.08384v1 전문, 'SETTING THE STAGE: DATA, SIGNAL, RISK, AND METHODOLOGY' 절): 'we compute the aggregated Average Daily (dollar) Volume over 3 months and take the 1000 most liquid stocks as our investment pool for the next quarter. This puts us in a realistic, causal set-up. The same liquidity-based procedure is applied to the below pools.' — 지역마다 고정 개수(US 1000·Canada 200(500 대형주 중)·Europe 1000(2000 대형주 중)·Japan 500·Australia 200(500 대형주 중))의 상대 순위 절삭이며, 기업 거버넌스 상태(관리종목·거래정지·불성실공시)에 의한 제외는 본문 어디에도 서술되지 않는다. §II~§V 전체에 그런 거버넌스 필터·가격 하한·금융주 제외 언급 없음. / [portfolio] arXiv:1810.08384v1 §II 구성법 목록 — FF: \"we put on the buy-list the top 30% of the stocks, on the sell-list the bottom 30% ... These positions are taken proportionally to market-cap\" / Neutral: \"We take a position x_i on all the stocks i, proportionally to the predictor: x_i ∝ p_i. The resulting portfolio is cash neutral by construction\" / Beta: \"compute the aggregate β of the long and short legs separately, and rescale them such that the overall β is zero\" / Betaopt: 식 (1) \"min_x (p−x)^T C (p−x) s.t. β·x = 0\" + 식 (2)(3) / Markowitz: \"x_i ∝ C^{-1} p_i\" (정제 = 상위 k 고유벡터 유지, 식 (4)). §II 투자 풀 = \"the 1000 most liquid stocks as our investment pool for the next quarter\"(US·Europe 1000 · Japan 500 · Canada·Australia 200 · CRSP 1000, 직전 3개월 거래대금, 분기 갱신). §II 리밸 \"the portfolio is rebalanced on a daily basis\". §II 리스케일 \"rescaled in order to have the same average risk over the total back-test period\". §III Fig.3 \"The neutral solution has its net equal to zero by construction, while all the other exhibit fluctuations around zero\"(net-over-gross). 원문 확인 결과 ★Markowitz 칸에는 분위 절단·종목수 상한·비중 상한·EW/VW 규정이 **없다**(FF 의 30% 가 유일한 분위 컷, 시총비중은 FF 전용, '1/N' 은 §I 선행연구 언급일 뿐 구성법 아님) · 특정 보유 종목수(25·50·100 등) 명시 없음 · 탈락·상장폐지 시 비중 재분배 서술 없음. / [cost] §VI(Introducing transaction costs) 서문 — 이전 절(§II~§III, Fig.1~6 의 SR FF 0.34 / Markowitz k=5 1.19)은 일간 리밸 무비용 가정이었음을 명시하고, 이 절에서 처음 'commissions, and half-spread costs'(선형 비용)를 도입하되 neglect slippage(시장충격 제외)라고만 서술 — 수치(bps 등) 명시 없음. 비용 적용 후 전 구성법 SR 이 음수가 되고, 비용인지형 일반화 마코위츠만 1.15→1.0 유지된다는 서술도 수치는 있으나 '비용 단가'는 여전히 안 준다. / [undeclared] 원문 전문(arXiv:1810.08384v1, arxiv.org/html 경로가 402 를 내 arxiv MCP 캐시 full text 로 전문 32,434자 확보): §I(모멘텀 = 승자 매수·패자 매도 · 시장중립 롱숏) · §II(1996-2018 Bloomberg/Reuters 일간 + CRSP 1927~ · 지역별 유동성 풀 US 1000·Canada 200·Europe 1000·Japan 500·Australia 200 · 3개월 ADV 분기 갱신 · 12-1 누적수익 신호 · 1개월 lag · \"the precise definition of the signal is not important\" · ranked predictor p ∈ [-1,+1] 균등 · FF/Neutral/Beta/Betaopt/Markowitz 5칸 · 식(1) Betaopt 목적함수 · 식(2)(3) Betaopt 해 · \"Markowitz: ... x_i ∝ C^{-1}p_i\"(번호 없음) · \"we only keep the k largest eigenvectors\" · \"at least two years of historical close-to-close daily returns\" · 식(4) C_ij ≃ σ_iσ_j(Σ_{α≤k}λ^α v^α_i v^α_j + ε²δ_ij) 에서 λ,v = 상관행렬 고유값·고유벡터 · \"ε² is chosen such that the total variance of the portfolio is unchanged, i.e. Tr C = Σ_i σ_i²\" · \"the portfolio is rebalanced on a daily basis\" · \"flat average of the various local portfolios\" · \"rescaled in order to have the same average risk over the total back-test period\") · §III(FF SR 0.34 vs Markowitz k=5 SR 1.19 · Fig.3 \"The neutral solution has its net equal to zero by construction, while all the other exhibit fluctuations around zero\") · §IV(Fig.5 9주 국소최저 + n×주간변동성 · Fig.6 반등 후 마코위츠만 소폭 양) · §V(팩터 11종 정의 · Momentum = 230일 평균수익 · \"rank from lowest to highest\") · §VI(commissions + half-spread · bps 수치 없음 · 일반화 마코위츠는 \"the details can be found for instance in [1,12]\").",
+  "confidence": "medium",
+  "note": "축 팬아웃 6개(판독형 opus 3 · 대조형 sonnet 3) — 발견 5건. misdeclared/adapted/adapted/adapted/adapted/adapted",
+  "mode": "fanout",
+  "axis_verdicts": [
+    {
+      "axis": "signal",
+      "required": true,
+      "model": "opus",
+      "verdict": "misdeclared",
+      "admissible": true,
+      "reason": "",
+      "confidence": "medium",
+      "checked": "모멘텀 식(복리누적 vs §V 230일 산술평균) · 룩백 창 폭·종점(engine.R:79 mwin = ym_d-11..ym_d-1 = (d-12m, d-1m] · 당월 제외 = §I 1개월 lag 와 일치) · 부호·정렬 방향(engine.R:134 rank 오름차순 → 최고 모멘텀 = p 최대 = long · §V 'lowest to highest' + §I 'buying past winners and selling past losers' 와 일치 · NEGATE/FLIP 없음 = C13 해당 없음) · 예측자 표준화(engine.R:135 p = -1 + 2(r-0.5)/N → [-1,+1] 균등 · 평균 정확히 0 · 동점 average · winsorize 없음 = §II 'normalized, ranked predictor ... uniformly distributed in [-1,+1]' 와 일치) · 순위 집합 범위(engine.R:133 tks = 유니버스 ∩ 모멘텀 ∩ 관측 요건 통과분 · 선언됨) · 상관행렬 vs 공분산행렬 고유분해(engine.R:111-126 상관 — Eq.(4) 직후 'eigenvalues and eigenvectors of the correlation matrix' 와 일치) · 그램행렬 경유 고유벡터 정규화 v = Z'u/sqrt((T-1)λ) 단위노름 검산 · Woodbury 닫힌형 (1/ε²)(I - VΓV'), Γ = λ/(λ+ε²) 대수 검산(engine.R:140-143 = D^{-1}(I-VΓV')D^{-1}p 로 Eq.(4) 와 항등) · ε² 조건(engine.R:129 (N-Σλ)/N = Tr R = N 판 vs 논문 Tr C = Σσ_i² 의 σ² 가중판 — 선언 ⑤) · σ_i·demean 창 종점(engine.R:87,99-101 = d 포함 · 선언됨) · RET_CLIP 0.5 가 모멘텀에 선적용되는 경로(engine.R:55→58→81 · 선언 ⑧) · 결측일 영치환 + (T-1) 재척도가 상관 대각을 정확히 1 로 만드는지 검산(engine.R:111-113 · 선언 ⑨).",
+      "counterexample": "구성했다. 신호일 d = 2020-06-30(ym_d), 모멘텀 창 = ym_d-11 .. ym_d-1 = 2019-07 ~ 2020-05(거래일 ≈ 230일), 두 종목 A·B 가 모두 유니버스·관측 요건을 통과한다고 두자. A = 230 거래일 전부 일간 +0.08%. B = 같은 230 거래일 중 115일 +10.5% · 115일 -9.5%(교대 — 2015년 이후 한국 가격제한폭 ±30% 안이고 RET_CLIP 0.5 에 걸리지 않는다). ▸논문 §V 식(일별 수익 산술평균): A = 0.080%/일 · B = (115x0.105 + 115x(-0.095))/230 = 0.500%/일 → **B > A**. ▸engine.R 식(11개월 복리누적): A = 1.0008^230 - 1 = +20.19% · B = (1.105 x 0.905)^115 - 1 = +0.345% → **A > B**. 순위가 역전되므로 engine.R:134-135 의 p 에서 A·B 의 상대 부호가 뒤집힌다 — 두 종목만 있는 극단에서는 A 가 long·B 가 short 인 구현과 B 가 long·A 가 short 인 논문식이 정확히 반대 포지션을 낸다. 일반화: 복리 누적이 같고 변동성만 다른 두 종목은 구현에서 동점이지만 논문식에서는 고변동성 종목이 항상 상위로 간다(평균 - 로그누적/T = var/2). 한국 시장에서 일간 변동성이 2~3배 차이나는 종목 쌍은 흔하므로 이 재배열은 매월 다수 종목에서 발생한다.",
+      "n_findings": 4
+    },
+    {
+      "axis": "timing",
+      "required": false,
+      "model": "sonnet",
+      "verdict": "adapted",
+      "admissible": true,
+      "reason": "",
+      "confidence": "high",
+      "checked": "engine.R MOM_TOTAL_M=12·MOM_SKIP_M=1·mwin(ym_d-11..ym_d-1)을 홀딩월 F=ym_d+1 기준으로 환산해 [F-12,F-2] 표준 12-1 스킵월 정의와 숫자로 대조(일치) · sig_dates(월말) vs 논문 'rebalanced on a daily basis' 대조(불일치·선언됨) · §V 230일 평균수익 대안 판은 미채택(FIDELITY 에 별도 선언, 이 축의 주 결과 판은 §II/§III 고전 12-1)",
+      "counterexample": "논문대로 일간 리밸이면, 어느 종목의 모멘텀 순위가 월 중순(예: 실적 쇼크로 d+15일)에 상위→하위로 급변할 때 그날부터 비중이 줄거나 숏으로 전환된다. engine.R 은 월말 신호일에만 산출하고(sig_dates = ME 월말 거래일) 하네스(H5)가 다음 신호일까지 직전 목표비중을 buy-and-hold 로 이월하므로, 월중 랭크 급변은 다음 월말까지 포트폴리오에 반영되지 않는다 — 같은 입력 수익률 경로에서 두 구현의 월중 PnL·노출이 갈린다. 다만 이 차이는 FIDELITY.json 에 선언돼 있어 misdeclared 대상은 아니다.",
+      "n_findings": 0
+    },
+    {
+      "axis": "universe",
+      "required": false,
+      "model": "sonnet",
+      "verdict": "adapted",
+      "admissible": true,
+      "reason": "",
+      "confidence": "high",
+      "checked": "engine.R:48-50(MEM 구성) · FIDELITY.json changed②·paper_steps[투자 풀 선정]·harness_disclosure H1/H8 대 §II 투자풀 단락(유동성 상위 N·분기 갱신 서술) 전수 대조 — 가격 하한·금융주 제외는 논문에 없음을 확인(해당 없음)",
+      "counterexample": "논문 방법: 3개월 평균 거래대금 상위 N(지역별 1000/500/200 등)만 풀에 넣고 분기 갱신, 그 외 선별 기준(관리종목·거래정지·불성실공시 등 기업 상태) 없음(§II). 구현(engine.R:49 MEM, H1): 절대 임계 20일 평균 거래대금(t−1) ≥ 2e8원 '이상이면 전부' 포함(상위 N 개수 제한·분기 창 없음) + 관리종목·거래정지·불성실공시 표식 종목은 거래대금과 무관하게 제외. 구체적 반례 — 월 거래대금이 상위 1000위 안에 드는 고유동성 종목이라도 그 시점 관리종목으로 지정돼 있으면: 논문 규칙대로라면 풀에 남아야 하지만 구현은 그 신호일에 제외한다. 역으로 거래대금이 간신히 2e8원을 넘는 종목은 논문의 '상위 N' 절삭에서는 순위가 N 밖이라 탈락할 수 있는데 구현은 절삭이 없어 포함된다. 두 경우 모두 그 신호일의 유니버스 집합(와 그 집합에 의존하는 모멘텀 랭크 p·그램행렬 Nn)이 서로 달라진다.",
+      "n_findings": 0
+    },
+    {
+      "axis": "portfolio",
+      "required": true,
+      "model": "opus",
+      "verdict": "adapted",
+      "admissible": true,
+      "reason": "",
+      "confidence": "high",
+      "checked": "롱숏 여부(논문 §II 롱숏 시장중립 Markowitz vs engine.R:155-156 부호비중+Leg — 일치) · 분위 절단 유무(논문 Markowitz 칸 컷 없음 vs engine.R 상위 N 절단 없음 — 일치, FF 30% 칸은 미구현·⑫ 신고) · 비중 방법(논문 x ∝ C^{-1}p vs engine.R:137-143 Woodbury 닫힌형 — EW·시총비중 아님, 일치) · 종목수 상한(논문 없음 · 고정 축 25종 vs engine.R 무절단 + run_paper_replication.R:643-652 engine_direct 무절단 로그 + .RP_NMAX_DEFAULT=25 미적용 — FIDELITY ⑭ 신고와 코드 일치) · 이중 절단 여부(portfolio_spec=engine_direct → runner 가 FACTORS top-N 재구성 경로를 타지 않음, run_paper_replication.R:633-655 — 곱셈 축소 없음) · 유니버스 재결합의 비중 영향(run_paper_replication.R:581-595 .apply_universe 내부조인, 엔진이 같은 멤버십으로 이미 필터 → 무연산) · 순노출 제약(논문 Markowitz 칸 중립 제약 없음 vs engine.R:146-151 Σw 미강제 — 일치) · 총노출 정규화(논문 전표본 1회 리스케일 vs engine.R:149-151 리밸별 Σ|w|=1 — 다름, changed ④ 신고) · 보유 횡단면 축소 요건(MIN_STOCKS 50 · COV_MIN_OBS 250 · VOL_MIN_DAILY · MOM_MIN_MONTHS 11 → engine.R:76,83,104,153 `next` = 그 달 산출 없음 — 논문 미명시 보충, changed ⑧⑪ 신고) · 레그 분해 규약(replication_harness.R:262-289 Weight 부호 분해 · 레그 gross 보존 — engine 산출과 정합)",
+      "counterexample": "총노출 정규화(FIDELITY changed ④)가 논문과 다른 수익 경로를 만드는 지점 — 논문 §II 는 x_i ∝ C^{-1}p_i 를 그대로 보유하고 백테스트 **전체에 하나의 상수** 배율만 곱한다(\"each world-wide portfolio has been rescaled in order to have the same average risk over the total back-test period\"). 따라서 논문 포트폴리오의 총노출 Σ|x| 는 시간에 따라 변한다 — 정제 공분산의 고유값이 작은 국면(1/(λ+ε²) 와 1/σ_i 가 커지는 저변동 국면)에서 커지고 고변동 국면에서 작아진다. engine.R:149-151 은 `gs <- sum(abs(xv)); w <- xv / gs` 로 **리밸 날짜마다** Σ|w| = 1 을 강제한다. 구체적으로 신호일 d1 에서 Σ|x| = 10, d2 에서 Σ|x| = 100 인 경우(공분산 척도가 10배 수축한 국면 전환) 논문은 d2 에 d1 대비 10배 큰 총노출을 보유하는데 구현은 두 날 모두 정확히 1 을 보유한다. 두 계열은 상수배 관계가 아니라 Σ|x| 가 자기 평균에서 벗어나는 **모든 달에서** 달라지므로, 비율 지표(Sharpe·Calmar)와 MDD 까지 갈린다. 이 편차는 FIDELITY.changed ④ 에 그 결과까지(\"상수 레버리지는 비율 지표 불변이나 논문의 시변 총노출 정보는 사라진다\") 신고돼 있어 adapted 이고 misdeclared 가 아니다. — 보유 종목수 쪽 반례는 구성하지 못했다: 논문도 구현도 상위 N 분위 절단이 없고(Markowitz 칸 = 풀 전 종목), run_paper_replication.R:643-652 의 engine_direct 분기가 25종 절단을 하지 않고 로그만 남기는 것을 코드로 확인했으므로 '층이 각자 상위 N 을 잘라 실현 종목수가 곱해져 줄어드는' 형태가 성립하지 않는다.",
+      "n_findings": 0
+    },
+    {
+      "axis": "cost",
+      "required": false,
+      "model": "sonnet",
+      "verdict": "adapted",
+      "admissible": true,
+      "reason": "",
+      "confidence": "high",
+      "checked": "engine.R 에 비용 계산 코드 없음(비용은 하네스 레벨 H7 소관) 확인 · FIDELITY.json commission_paper/paper_steps[15]/harness_disclosure H7 대조 · 논문 §VI 전문(WebFetch 2회, 서로 다른 질의)에서 commissions·half-spread·bps·%·currency 수치 부재 재확인.",
+      "counterexample": "구성 못 했다. 논문 §VI 는 비용 수치(bps·%·통화)를 본문·그림 캡션 어디에도 제시하지 않는다(commissions + half-spread 를 쓴다는 서술만 있고, 결과는 Sharpe 1.19→1.15(비용인지 전)→1.0(비용인지 후) 등 사후 성과로만 보고된다) — 그래서 '논문 비용값과 구현 비용값이 다르다'는 수치 반례 자체가 성립할 여지가 없다. FIDELITY.json 은 이를 정직하게 commission_paper=null 로 반영했고, H7 은 등급판(15bps, Σ|Δw| 턴오버 기준)과 논문판(commission_paper, null→0 취급)을 분리해 병기한다고 선언한다 — 두 열이 섞여 paper 헤드라인 수치(SR 1.19, §II~III 는 애초에 무비용 설정)에 15bps 가 잘못 들어가는 지점을 찾지 못했다.",
+      "n_findings": 0
+    },
+    {
+      "axis": "undeclared",
+      "required": true,
+      "model": "opus",
+      "verdict": "adapted",
+      "admissible": true,
+      "reason": "",
+      "confidence": "high",
+      "checked": "engine.R 전 159행을 수치·행동 결정 단위로 분해해 changed ①~⑱ · constants 16개 · windows 6개 · paper_steps 20개와 전수 대조했다 — 코드 상수 16개(MOM_TOTAL_M·MOM_SKIP_M·MOM_WINDOW_M·MOM_MIN_MONTHS·COV_WINDOW_D·COV_MIN_OBS·K_FACTORS·P_LO·P_HI·MIN_STOCKS·RET_CLIP·VOL_MIN_DAILY·EPS2_MIN·EIG_MIN·WEIGHT_MIN·HIST_PAD_D) ↔ constants 16개 집합 일치 · 코드 내 미명명 수치(L101/L113 pmax(nobs−1,1) 분모 가드 → ⑧ · L112 Z 비유한값 0 → ⑩ · L113 sqrt((Tn−1)/(nobs−1)) 재척도 → ⑨ · L129 (Nn−Σλ)/Nn → ⑤ · L135 (r−0.5)/Nn 중앙순위 보정과 ties.method=\"average\" → paper_steps '예측자 정규화' · L118 tryCatch → ⑩ · L120 kmax 상한 → 미선언·무력) · 각 next 분기 6곳(L76·L83·L89·L92·L104·L123·L150·L153) → ⑪ · L46 .SIG_FROM 폴백 → ⑰ · L49 K200|KQ150 멤버십 → ②·H1·H2 · L53 is.finite(Ret) 행 제거 → ⑨ · L55 RET_CLIP 양측 절단(MONR 이 RT 파생이라 모멘텀·공분산 동일 절단 적용 — ⑧ 주장과 일치) · L58 월별 복리 → paper_steps · L64-65 월말 거래일 신호 → ① · L79 mwin = ym_d−11..ym_d−1 → windows momentum_window · L87 직전 500 거래일 → windows cov_window · L117-126 그램행렬 항등(R = Z'Z/(T−1), G = ZZ'/(T−1), v = Z'u/sqrt((T−1)λ), V'V = I 검산) → ⑦ · L140-143 Woodbury 검산 → ⑥ · L149-151 Σ|w| = 1 → ④ · L152 WEIGHT_MIN → ⑧ · L155-156 Leg = sign(w) · L160-168 산출. 역방향으로 changed ①~⑱ 18개 전부가 실제 코드에 존재하는지 1:1 재확인했고(하지 않은 변경의 신고는 ⑥ 의 식번호 오기 1건 외 없음), 디렉터리를 글롭해 engine.R 이 유일한 코드 경로임을 확인했다(source()·외부 설정 파일 없음).",
+      "counterexample": "이 축에서 산출값이 갈리는 반례를 구성하지 못했다. 지적한 1건은 선언 문서의 식번호 오기일 뿐 코드 경로가 아니므로 어떤 입력에서도 비중이 달라지지 않는다(Woodbury 는 정확한 항등 · V'V = I 는 engine.R:125-126 의 v^α = Z'u^α/sqrt((T−1)λ_α) 정규화로 성립). 코드 쪽에서는 FIDELITY 에 없는 수치 결정을 1건만 찾았는데 그것도 증명 가능하게 무력하다 — engine.R:120 의 kmax <- min(K_FACTORS, Tn−1L, Nn−1L) 상한은 constants·changed 어디에도 없지만, 그 앞 engine.R:89 가 Tn ≥ COV_MIN_OBS = 250, engine.R:104 가 Nn ≥ MIN_STOCKS = 50 을 이미 강제하므로 min 은 항상 K_FACTORS = 5 를 돌려주고 k 가 5 미만으로 깎이는 경로가 존재하지 않는다. 따라서 반례 없음.",
+      "n_findings": 1
+    }
+  ],
+  "flags": [],
+  "merged_at": "2026-10-14T08:28:08+0900"
+}

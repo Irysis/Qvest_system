@@ -1,0 +1,23 @@
+{
+  "axis": "undeclared",
+  "verdict": "adapted",
+
+  "undeclared_changes": [],
+
+  "signal_mismatch": [],
+
+  "counterexample": "구성하지 못했다. engine.R 의 모든 실행 경로(상수 10종 · 수치 리터럴 전수 · 분기 6종 · 함수 2종)를 논문 §4~§5.1 · Appendix A eq 16 과 FIDELITY.changed ①~⑳ 에 각각 대조했고, 논문에도 changed 에도 근거가 없으면서 **출력 비중을 바꾸는** 코드는 찾지 못했다. 근거 없는 것으로 남은 단 하나(engine.R:157 diag(Cm) <- 1)는 반례 구성을 시도했으나 산출 불변임이 증명된다: 대각 성분을 소비할 수 있는 지점은 .trp_mst 의 dcur <- Dm[1L,] (engine.R:73) 과 dj <- Dm[j,] (engine.R:80) 두 곳뿐이고, 전자는 다음 줄 dcur[inT] <- Inf (inT[1L]=TRUE) 로, 후자는 upd <- !inT & ... (engine.R:81 · 직전 줄에서 inT[j] <- TRUE) 로 각각 마스킹된다 — 무변동 열이 들어와 cor() 가 NA 를 내고 NaN→0 이 대각을 0(D_ii=0.707)으로 바꾸는 최악의 경우에도 MST 간선 집합·g·w 가 동일하다. 따라서 '값이 달라지는 상황' 자체가 존재하지 않는다.",
+
+  "evidence": "원문 전문 = arXiv:2604.16773v1 (§1 Introduction · §2 Related background · §3 MSTs and Passive/Factor Flows eq 1-7 · §4 Setup and notation · §4.1 Activity filter eq 8 · §4.2 Correlation distance and the MST eq 9 + Prop 1 + Remark 1 · §5.1 Variant I Step 1-6 eq 10-13 + Remark(independence from subtree-mass exponent) · §5.2 Variant II Step 1-2 Case A/B eq 14 + Remark 2 · §6 Prop 2-8 Cor 1-2 eq 15 + Table 1 · §7.1 항목 1-8 · §7.2 항목 1-5 · §7.3 항목 1-4 · §8 · Appendix A eq 16 · Appendix B 용어 권고 · Appendix C Prop 9-10 eq 17 + Thm 1 eq 18 · References [1]-[5]). 대조 결과: (a) 코드가 하는 일 중 논문 근거가 있는 것 = eq 8(engine.R:139,148) · §4.2 전처리 3연산(154-156) · eq 9(158) · MST(160 · 참조 [4] Prim) · §5.1 Step 2 hub mode(92) + 부모 맵 'any traversal can be used to recover it'(94-108 BFS) + b(u)=|Ch(u)|(110) · eq 10(113) · eq 11-12(114-115) · Step 5 'uses the original signal, not a volatility-rescaled signal'(164) · eq 13 = Appendix A eq 16 의 분모 Σ_{j∈A}|s_j|g_j 와 sum(abs(xv)) 동치(165-167 · g>0 이므로 Prop 5) · 'Inactive assets receive zero weight'(산출 행 부재). (b) 논문 근거가 없는 것 = changed ①(s 공급 · §4 가 s 를 정의하지 않음) ②(Variant II · §5.2) ③④(§1 (i)-(iv) 목표 선언 · 실증 절·성과표·표본 부재) ⑤(ρ 기준값 부재 · §5.1 Step 3 'Fix a parameter ρ∈[0,1]') ⑥(§5.1 Step 6 'Let L>0 be the target gross leverage' 값 부재) ⑦(§5.1 Step 2 3안 중 선택) ⑧(알고리즘·동점 규칙 부재) ⑨(§4.1 'Fix a lookback window k≤T' · k·T 값 부재) ⑩⑪⑫⑮⑯(논문 밖 가드 — 자기신고도 '논문 밖'으로 표기) ⑬⑭(§4.1 τ=10^-3 은 기준값 · ε>0 은 값 부재) ⑰(리밸 주기 서술 0건) ⑱(종목수 상한 서술 0건 · eq 16 은 A 전체에 비중) ⑲(비용·수수료·회전율 서술 0건) ⑳ — 20건 전부 changed 에 선언돼 있다. (c) changed 에 없고 논문에도 없는 잔여 = engine.R:157 diag(Cm) <- 1 단 1건, 산출 불변(counterexample 참조) + FIDELITY paper_steps '상관 행렬 전처리' note 에 코드 그대로 기재돼 있어 은닉도 아니다.",
+
+  "confidence": "high",
+
+  "checked": "engine.R 전 189행 역방향 전수 — 상수 10종(.TRP_RHO/.TRP_LEVERAGE/.TRP_TAU/.TRP_EPS_ACT/.TRP_WIN_DAYS/.TRP_MIN_OBS_FRAC/.TRP_MIN_ACTIVE/.TRP_ROOT_MODE/.SIG_FROM/.TRP_MIN_OBS) · 수치 리터럴 전수(36-45,72,74,113,114,130,155,157,158,166) · 데이터 변형 5종(0치환 137 · 커버리지 133-136 · 비유한신호 143-145 · 중심화 146 · diag 157) · 조기이탈 분기 6종(127,135,142,149,162,166,169) · 함수 2종(.trp_mst Prim 정확성·동점 규칙 · .trp_factors deg/adj/BFS/b(u)/α/g 재귀 순서) · 신호일 격자(57-62) · 유니버스(65-67) · 창 색인(130-131) · 산출 스키마(171-179) 를 논문 §4~§5.1·App A eq 16 과 changed ①~⑳ 에 1:1 매핑. 역방향(선언→코드) 20건도 전수 확인 — ①~⑳ 모두 코드에 실재(미실행 선언 = 0). 미구현 선언 2종(Variant II · eq 14)은 SPY/XL/clip/η 토큰 부재로 확인.",
+
+  "prior_review": [],
+
+  "_항목 서술 규약": "★모든 항목은 대괄호 **한 줄 요약**으로 시작한다 - 12~30자 · 그 항목만 읽고도 무엇이 어긋났는지 아는 문장 · 원문 인용이나 파일:행을 요약에 넣지 마라(뒤 본문에 적는다). 이 요약이 통지에 그대로 실리고 본문은 안 실린다 - 요약이 없으면 사람은 잘린 원문 조각을 받는다. 예: '[숏 레그 그로스 익스포저 24% 미달]' · '[유니버스 탈락분 비중 재분배 없음]' · '[은닉층 순환 구조 미구현]'. ★용어는 그 분야의 정통 표기를 쓴다 - 임의 한글 조어를 만들지 말고, 원문 용어가 영문이면 통용 표기를 그대로(gross exposure · long/short leg · winsorize · lookback), 우리 지표는 정본 표기를 그대로(PORT_t · Calmar · MDD · OOS retention). 뜻이 통해도 조어면 읽는 사람이 두 번 해석한다.",
+  "_배열 규약": "undeclared_changes·signal_mismatch 는 **발견만** 담는다. 없으면 빈 배열 [] 로 두고 '불일치 없음' 같은 비발견을 항목으로 넣지 마라 - 근거 게이트가 배열 길이로 선다. prior_review 는 재감사(위 '재감사다' 절이 있을 때)에서 네 축 항목만 - 아니면 빈 배열 [].",
+
+  "note": "청정 모드로 측정 산출물을 열지 못해 코드 경로 추적으로 대조했다(Grep 도 디렉터리 밖 차단 — 논문 전문은 jina 잔액 소진으로 arxiv MCP 로 v1 전문 33,423자 전량 확보). 지적 항목 아닌 잔여 4건: ① engine.R:157 diag(Cm) <- 1 은 §4.2 가 말한 3연산(clip·NaN→0·symmetrize) 밖이지만 산출 불변이고 paper_steps note 에 기재됨 ② .TRP_ROOT_MODE(engine.R:43)는 어디서도 참조되지 않는 사문 상수 — root <- which.max(deg)(92)가 hub 를 하드코딩하며, constants 도 이를 '표식'으로 정직히 적었다 ③ declared_role 의 Abstract 인용 'offering enhanced resilience during macroeconomic disruptions' 은 원문 어구가 아니라 'much more robust to macroeconomic shocks and crises' 의 의역 — 인용 오기이고 취지는 일치 ④ changed ⑯ 이 상정한 g 언더플로는 경로상 Π b(u) > 1e308 을 요구해 수백 노드 규모에서 발현 불가(가드로만 기능 · 선언도 발현을 주장하지 않음). 타 축 한 줄: 엔진이 숏에 **음수 Weight** + Leg='short' 를 동시에 내보내는데(engine.R:171-174) H6 은 다리 결합을 GL·L − GS·S 로 서술한다 — 소비 측이 Leg 로 재부호화하면 이중 부호가 된다. portfolio 축 소관."
+}

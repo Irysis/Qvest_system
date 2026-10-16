@@ -1,0 +1,12 @@
+{
+  "axis": "universe",
+  "verdict": "adapted",
+  "undeclared_changes": [],
+  "signal_mismatch": [],
+  "counterexample": "구성 못 함 — 논문이 §3.1 외에 유니버스·거래소·가격·금융주 제외·최소 종목수 규칙을 전혀 서술하지 않아(원문 전체에 'exchange'·'NYSE'·'NASDAQ'·'price filter'·'shares outstanding'·'listed firms'·'universe' 어휘 자체가 없다), 코드의 어떤 필터값과도 대조할 논문측 수치가 없다. engine.R 의 모든 유니버스·형성 필터(.MIN_FORM_N=30 · SIZE_BP=0.5 · CHAR_BP_LO/HI=0.3/0.7 · K200|KQ150 위생 멤버십)는 FIDELITY.json 이 전부 source=supplement/harness 로 자진 신고했고, 이는 이 과제가 허용한 유니버스 교체(K200∪KQ150) 범위 안에 든다.",
+  "evidence": "§3.1 원문 전문: \"We use daily returns for the Fama-French six factors from Kenneth French's data library\" + \"January 2, 1990 – December 31, 2024 (8,817 trading days)\" 가 유니버스·필터에 관한 서술의 전부다. 거래소·금융주 제외·가격 하한·최소 종목수·분기점 모집단에 대한 언급이 원문 어디에도 없음(전문 어휘 검색으로 확인).",
+  "confidence": "high",
+  "checked": "원문 §3.1(데이터 출처·표본기간) 전체 및 전문 어휘 검색('financial'·'exchange'·'NYSE'·'NASDAQ'·'price filter'·'shares outstanding'·'listed firms'·'universe') vs engine.R 의 PX 구성 필터(K200|KQ150 멤버십·w_vw>0)·.sort_23 형성 필터(.MIN_FORM_N·SIZE_BP·CHAR_BP_LO/HI)·FLAT 토큰 필터(Vol>0 추가) 및 FIDELITY.json changed ①④⑤⑥⑦㉙·constants·harness_disclosure H1/H8 대조.",
+  "prior_review": [],
+  "note": "논문이 이 축에 관해 자체 규칙을 전혀 제시하지 않는다(FF 라이브러리 인용뿐) — 그래서 '다른데 선언 없음'이라는 misdeclared 구도 자체가 성립하지 않는다. 코드의 모든 유니버스 필터는 FIDELITY 가 supplement/harness 로 명시했고 허용된 유니버스 교체 범위 안이라 adapted 로 판정한다."
+}

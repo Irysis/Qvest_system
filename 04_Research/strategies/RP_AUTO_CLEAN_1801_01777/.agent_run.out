@@ -1,0 +1,5 @@
+엔진과 FIDELITY 선언을 썼습니다.
+
+**구현 (충실구현 · faithful)** — Abe & Nakayama (2018, arXiv:1801.01777)의 DNN8_3(8층 · 은닉 120-120-70-70-20-20 · tanh · dropout 50% · Adam · truncated_normal(0,1/√M) · 바이어스 0 · 미니배치 = 시점별 횡단면 · 100 epochs)을 순수 R 행렬 연산으로 재구현했습니다. 입력은 팩터 24종을 3개월 간격 5시점으로 쌓아 횡단면 순위/최대순위로 재척도한 120차원, 목표는 다음 달 수익의 같은 재척도값, 손실은 직전 120개월 학습셋 MSE이며, 매월 예측점수 상·하위 quintile을 등가중 net-zero 롱숏으로 내보냅니다(`PORTFOLIO` · `construction: engine_direct` · 논문 비용 0).
+
+**주요 신고 사항** — 논문 Table 1 No.14 `Investment growth`는 등록부에 자본투자 증가율 대응 지표가 없어 대입하지 않고 **omitted**(입력 125→120차원, 필요 데이터는 FIDELITY에 명시). 계산량 때문에 재적합을 매월→**12개월 주기 + warm start 20 epochs**(첫 적합만 100)로 줄이고 학습 횡단면을 336종(논문 Table 2 월평균값)으로 상한했으며, 분위 규칙(상·하위 20%)은 유지해 다리 종목수가 치환 유니버스에 비례해 커집니다. 그 밖에 `Z_Score_Aligned`의 절단·z-score·시변 IC 방향 정렬, No.12 자기자본비율의 역수 대입(자본잠식 구간에서 역전 깨짐), No.18/24의 Barra→실현 추정치 대체, No.21의 1개월 skip, 결측 임계 62/125 비율 환산, 수치 가드 전량을 `changed`·`paper_steps`·`factor_mapping`·`constants`에 적었습니다.

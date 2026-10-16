@@ -18,10 +18,10 @@ cd $ROOT || exit 2
 export QM_ROOT=C:/Users/99922/OneDrive/Quant_Module_Moltbot
 mkdir -p "$ST" "$ROOT/$RDR/results"
 sentinel() { echo "status=$2 rc=$3 at=$(date +%F' '%T) ${4:-}" > "$ST/$1"; }
-n0=$(grep -c "=== Daily Refresh v2 Done" "$LOG" 2>/dev/null || echo 0)
+n0=$(grep -c "=== Daily Refresh v2 Done" "$LOG" 2>/dev/null || true); n0=${n0:-0}   # 일치 0건이면 grep -c 가 0 을 찍고 rc=1 — '|| echo 0' 은 0 두 줄을 만든다(v2 점검 권고 5)
 echo "== $(date +%F' '%T) 데이터 갱신 완료 대기(현재 완료 줄 $n0 · 마감 06:00) =="
 while :; do
-  n=$(grep -c "=== Daily Refresh v2 Done" "$LOG" 2>/dev/null || echo 0)
+  n=$(grep -c "=== Daily Refresh v2 Done" "$LOG" 2>/dev/null || true); n=${n:-0}
   [ "$n" -gt "$n0" ] && { echo "== $(date +%F' '%T) 갱신 완료 줄 확인($n0 → $n) =="; break; }
   hh=$(date +%H); [ "$hh" -ge 6 ] && [ "$hh" -lt 12 ] && { echo "== $(date +%F' '%T) 마감 06:00 — 현 배치로 진행 =="; break; }
   sleep 120

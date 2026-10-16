@@ -1,0 +1,12 @@
+{
+  "axis": "cost",
+  "verdict": "faithful",
+  "undeclared_changes": [],
+  "signal_mismatch": [],
+  "counterexample": "구성하지 못했다 — engine.R 은 비용을 전혀 계산하지 않는다(거래비용 로직이 이 파일에 없다). FIDELITY.commission_paper=null 과 harness_disclosure H7('논문판 = commission_paper(무명시면 0)로 병기')이 논문의 '비용 미반영'(§5.2) 과 정확히 같은 값(0)을 논문 기준 병기치에 쓴다고 선언하므로, 병기값이 논문 비용과 다르게 계산되는 경로를 찾지 못했다.",
+  "evidence": "§5.2 원문(WebFetch 확인): \"Transaction costs: Not modeled, but would further erode returns.\" — bps·왕복·시장충격 중 어느 것도 수치로 명시하지 않는다. Table 6(Strategy 연 −6.1%/SR −0.75/MDD −97.5% · Buy-and-Hold SMB +1.9%/0.27/−39.8%)은 이 비용 미반영 가정 위에서 산출됐다.",
+  "confidence": "high",
+  "checked": "FIDELITY paper_steps '거래비용' 항목(status=changed, note) · constants/harness_disclosure H7 의 commission_paper↔15bps 병기 규약 · engine.R 전체(비용 계산 코드 부재 확인) · §5.2 원문 재조회",
+  "prior_review": [],
+  "note": "engine.R 자체는 비용을 다루지 않는다(측정 계약 소관) — 이 축의 판정은 FIDELITY 선언과 harness_disclosure H7 의 일치 여부에 근거했다. 15bps 등급판 자체는 CLAUDE.md 가 명시한 하우스 규약(변경이 아님)이라 지적 대상이 아니다."
+}

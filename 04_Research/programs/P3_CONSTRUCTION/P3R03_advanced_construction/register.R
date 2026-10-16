@@ -24,7 +24,7 @@ PR <- file.path(P$prereg_dir, "prereg.json"); DR <- file.path(RD, "prereg_draft.
 ## 격리 교차 점검을 받은 초안 보존본(있으면 등록판에 연결 — 없으면 --register 거부)
 REVIEWED <- Filter(function(z) file.exists(z$path), list(
   list(version = 1L, path = file.path(RD, "prereg_draft_reviewed_v1.json"), review = "격리 교차 점검(결과 미열람 · 범용 에이전트) — revise(필수 5 · 권고 13)"),
-  list(version = 2L, path = file.path(RD, "prereg_draft_reviewed_v2.json"), review = "격리 변경분 점검(v1 → v2 · 결과 미열람 · 범용 에이전트)")))
+  list(version = 2L, path = file.path(RD, "prereg_draft_reviewed_v2.json"), review = "격리 변경분 점검(v1 → v2 · 결과 미열람 · 범용 에이전트) — pass(필수 5 재도출 fixed · 권고 5 · 선택 1)")))
 rel <- function(p) sub(paste0("^", ROOT, "/"), "", p)
 .measured_any <- function() length(Sys.glob(file.path(RD, "results", "P3R03_*.json"))) > 0L
 if (.measured_any()) stop("[P3R03] 측정 결과가 생긴 뒤에는 사전등록을 바꿀 수 없다(R2)")
@@ -99,7 +99,9 @@ if (MODE == "register") {
   for (e in pre$operational_pins$catalog_entries) if (!any(vapply(now$catalog_entries, function(z) identical(z$catalog_id, e$catalog_id) &&
       identical(toJSON(z, auto_unbox = TRUE, null = "null"), toJSON(e, auto_unbox = TRUE, null = "null")), logical(1)))) stop("[P3R03] 카탈로그 엔트리 ≠ 초안: ", e$catalog_id)
   rh <- .rehearsal()
-  if (!identical(rh$evaluate_md5, pre$rehearsal$evaluate_md5) || !identical(rh$summary$md5, pre$rehearsal$summary$md5)) stop("[P3R03] 리허설 기록 ≠ 초안")
+  if (!identical(rh$evaluate_md5, pre$rehearsal$evaluate_md5) || !identical(rh$summary$md5, pre$rehearsal$summary$md5) ||
+      !identical(rh$script$md5, pre$rehearsal$script$md5)) stop("[P3R03] 리허설 기록(evaluate · 요약 · 리허설 스크립트 md5) ≠ 초안")
+  if (!identical(rk_md5(file.path(ROOT, pre$behavior_card_cfg$path)), pre$behavior_card_cfg$md5)) stop("[P3R03] 행동 카드 설정 사본 md5 ≠ 초안")
   unc <- .uncommitted()
   if (length(unc)) stop("[P3R03] 커밋되지 않은 고정 대상이 있다 — 커밋 뒤 등록:\n", paste(unc, collapse = "\n"))
   pre$status <- "registered"; pre$registered_at <- format(Sys.time(), "%Y-%m-%dT%H:%M:%S%z"); pre$draft_md5 <- rk_md5(DR)
@@ -190,7 +192,7 @@ GV <- fromJSON(file.path(ROOT, "06_Registry/grade_v3.json"), simplifyVector = FA
 BC <- fromJSON(BCP, simplifyVector = FALSE)
 ch <- function(item, change, reason) list(item = item, change = change, reason = reason)
 pre <- list(
-  schema = "rx_prereg_v1", program = PROGRAM, round_id = ROUND, status = "draft", draft_version = 2L,
+  schema = "rx_prereg_v1", program = PROGRAM, round_id = ROUND, status = "draft", draft_version = 3L,
   drafted_at = format(Sys.time(), "%Y-%m-%dT%H:%M:%S%z"),
   judgments = list(round_selection = "J-20261016-001", candidates = "J-20261016-002", priority = "J-20261016-003",
                    ledger = "06_Registry/q_judgment_ledger.json", superfan_philosophy_p1 = "R-20261016-001(04_Research/programs/_supervision/superfan/philosophy/20261016_2100_P1_P3R03.md)"),
@@ -245,7 +247,8 @@ pre <- list(
                        "재측정 전에 그 칸의 옛 칸 평가 캐시(results/<code>/) · 지문을 지운다. 평가는 모든 칸에서 칸 평가 캐시의 산출물 경로 = 현 측정 결과의 산출물 경로를 단정한다(다르면 평가 중단)"),
     vintage_group = paste0("같은 엔진의 6칸(방법 5 + RX0)은 함께 잰다(measure.sh — E2 묶음 → E3 묶음 · RX0 먼저 단독 · 방법 5칸 3병렬) · 칸마다 측정 시작 · 종료 데이터 지문(fingerprint.sh equality — ",
                            "RAWDATA · 벤치 · 재무 원값 · 컨센서스 · 팩터 DB 월 스냅샷 · 팩터 레지스트리 · 빌드 해시 / DNN 캐시는 기록만) — 묶음 안 지문이 모두 같아야 판정 · ",
-                           "다르면 measure.sh 가 배리어 대기 뒤 그 묶음을 1회 재측정 · 그래도 다르면 판정하지 않는다. 평가 시점 지문을 함께 기록한다(측정 지문과 다르면 표기)"),
+                           "다르면 measure.sh 가 배리어 대기 뒤 그 묶음을 1회 재측정 · 그래도 다르면 evaluate.R 이 평가 전체를 멈춘다(그 묶음 결과를 지우고 measure.sh 로 재측정한 뒤 다시 평가 — ",
+                           "한 묶음만 판정하지 않는다). 평가 시점 지문을 함께 기록한다(측정 지문과 다르면 표기)"),
     common_window = paste0("변형과 RX0 의 실효 시작이 같으면 원 산출 · 다르면 공통 창 사본(P3R02 와 같은 절차 — 늦게 시작한 칸의 첫 기간수익일 · 4파일 절단 · NAV · 벤치 재기준)에 같은 계약을 적용. ",
                            "사본 · 패킷 생성이 실패하면 그 칸은 미시험(실패 의미 사전 고정 · 리허설 rehearse.R 로 두 경로 실행 확인)"),
     pins_at_evaluation = "evaluate.R 은 시작부(셀 평가 샤드 포함)에서 precheck.R 과 같은 함수(p3_pin_mismatches)로 사양 · 운영 경로 · 카탈로그 엔트리 · 패키지 · R 판 · 평가 경로를 전부 재대조한다 — 하나라도 다르면 평가하지 않는다",
@@ -270,8 +273,10 @@ pre <- list(
                        "여럿이면 두 엔진 평균 위기 누적 포착 개선 순. 한 엔진만이면 기록(후보 아님). P4 에서 고를 때 구성 변형 시행 수 22(P3R01 10 · P3R02 2 · P3R03 10)를 센다"),
     round_verdict = paste0("supported = 두 엔진 통과 ∧ 제외 아님인 방법 ≥ 1 · partial = 한 엔진 통과 또는 두 엔진 통과지만 집중 손실(미측정 포함) 제외 · falsified = 판정된 칸 중 통과 0 · ",
                            "untested = 판정된 칸 0 — 판정은 '판정(판정 칸/전체 칸)' 으로 적는다(예: falsified(판정 3/10))"),
-    failure_semantics = paste0("사전 고정: 평가 상태 · 전달률 · 실효 시작 · 같은 선정 집합 · 공통 창 · 패킷 · 위기 짝 · 판정 입력 실패 = 그 칸 미시험(반증 아님) / β 사본 실패 = 'β 대조 미측정' / ",
-                               "집중 손실 표 결손 = '집중 손실 미측정'(후보 제외) / RX0 보유 판독 실패 = '선택 교락 미측정' / 핀 · 지문 · 칸 평가 캐시 불일치 = 평가 중단"),
+    failure_semantics = paste0("사전 고정: 평가 상태 · 전달률 · 실효 시작 · 같은 선정 집합 · 공통 창 · 패킷 · 위기 짝 · 판정 입력 실패 = 그 칸 미시험(반증 아님) / ",
+                               "그 밖의 예기치 않은 평가 오류 = 그 칸 미시험(오류 문구 기록 · 라운드 평가는 계속 — p3_eval_pair_safe) / β 사본 실패 = 'β 대조 미측정' / ",
+                               "집중 손실 표 결손 = '집중 손실 미측정'(후보 제외) / 이력 탈락 판독 불가(RX0 보유 · 위기 집행 행 없음 · 탈락 몫 비유한) = '선택 교락 미측정' / ",
+                               "핀 · 행동 카드 사본 · 지문 · 칸 평가 캐시 불일치 = 평가 중단"),
     test_window = "시험 창(2023-01~) 증분 알파 · 위기 포착은 사람 쪽 보고만(선택 · 판정 입력 아님)",
     record = paste0("판정 입력 아님: 커버리지 · 폴백 사유 · 진단 줄(effn 중앙 · maxw 최대 · effn ≤ 4 신호일) · 이력 탈락(위기 보유 평균 몫 > drop_tag_share 면 꼬리표) · ",
                     "위기별 회복 관측 · 롤링 36M 통과율 · 음수 해 수 · 크기 분위 기여(exposure.by_size_decile — 유동성 3분위는 미측정) · 상승 포착 비(변형/RX0) · 하락장 · 상승장 β · 상승장 β 비 · ",
@@ -331,8 +336,17 @@ pre <- list(
     ch("권고 6 · 8 · 9 · 12 기록", "상승장 β 비 · 증분 알파 표준오차 · 여유/표준오차 · 데이터 지문 확대(재무 원값 · 컨센서스 · 팩터 DB 월 스냅샷 · 레지스트리 · 빌드 해시 / DNN 캐시는 기록만) · 평가 시점 지문 · 판정 칸 수 표기",
        "β 짝 k 의 순환성 · 알파 기준의 검정력 · 판본 비교 범위 · 판정 해석"),
     ch("권고 10 · 13", "커밋 확인 범위 = 고정 대상 전부 · adaptations 문구(E2 만 이력 교락 · lean:entropy ≈ EW 실측)", "수용"),
-    ch("불채택 · 조정", "팩터 DB 폴더 전체 지문(권고 9 일부)", "ic_direction_cache_v1 · _asof 등 실행 중 쓰이는 캐시가 같은 판본에서도 지문을 가른다 — 월 스냅샷 · 레지스트리 · 빌드 해시로 좁혔다")))
+    ch("불채택 · 조정", "팩터 DB 폴더 전체 지문(권고 9 일부)", "ic_direction_cache_v1 · _asof 등 실행 중 쓰이는 캐시가 같은 판본에서도 지문을 가른다 — 월 스냅샷 · 레지스트리 · 빌드 해시로 좁혔다"),
+    ## v3 = v2(pass) + v2 변경분 점검 권고 그대로(판정 의미 불변 — 오류 · 미측정을 미시험 · 꼬리표로 접는 방향만)
+    ch("v2 점검 권고 1(중) 본 실행 루프 일괄 오류 처리", "판정 1칸을 p3_eval_pair_safe 로 부른다 — 이름 붙은 분기 밖 오류도 그 칸만 미시험(오류 문구) · rules.failure_semantics 에 명시 · 픽스처 17",
+       "평가 전체가 멈추면 샤드가 이미 보는 창 지표를 찍은 뒤라 '고정 파일 수정(R2) 또는 라운드 정지' 경로가 남는다(E3 쌍 · 새 방법 5종 실제 로그는 리허설 밖)"),
+    ch("v2 점검 권고 2(낮음) 묶음 지문 규칙 문장", "rules.vintage_group 를 코드에 맞춤 — 재측정 뒤에도 다르면 평가 전체 중단 · 그 묶음 재측정 뒤 다시 평가", "코드는 stop(전체) 인데 문장은 '그 묶음 판정 안 함'이었다(둘 다 fail-closed)"),
+    ch("v2 점검 권고 3(낮음) 이력 탈락 꼬리표", "p3_history_drop_eval — 위기 집행 행 없음 · 탈락 몫 비유한 · 보유 판독 실패 = '선택 교락 미측정' · 픽스처 18", "조용히 FALSE(통과 쪽)로 접혔다"),
+    ch("v2 점검 권고 4(낮음) 대조 위치", "행동 카드 설정 사본 md5 를 p3_pin_mismatches(precheck · 평가 시작)에 · --register 가 리허설 스크립트 md5 · 행동 카드 사본 md5 재대조", "등록 뒤 사본이 바뀌면 측정은 다 돌고 평가에서야 멈췄다"),
+    ch("v2 점검 권고 5(낮음) measure.sh 완료 줄 세기", "grep -c … || true · 빈 값 0 — 일치 0건에서 '0' 두 줄이 되던 결함", "실해는 없었으나(완료 줄 64) 로그 교체 시 06:00 마감 경로로만 빠진다"),
+    ch("v2 점검 선택 6 불채택", "측정 사슬의 핀 밖 파일(audit_bt_result · lookahead_detector · refresh_barrier.R · weight_method_registry · QT_to_xts · defensive_score)",
+       "판정에 쓰는 02~05 CSV 를 건드리지 않는다(점검 추적 결과) — 바뀌어 측정이 깨지면 미시험 · 재측정으로 드러난다 · 측정 직전 핀이 늘수록 무관한 수정이 오늘 밤 측정을 막는다")))
 writeLines(toJSON(pre, auto_unbox = TRUE, pretty = TRUE, null = "null", digits = NA), DR, useBytes = TRUE)
-cat(sprintf("[P3R03] 초안 v2 %s (md5 %s) · 칸 %d(처방 %d + 기준 %d) · 검사 %s · 시행 회계 E2 %d · E3 %d\n", DR, rk_md5(DR), length(cells), N_ROUND, length(ENGINES),
+cat(sprintf("[P3R03] 초안 v3 %s (md5 %s) · 칸 %d(처방 %d + 기준 %d) · 검사 %s · 시행 회계 E2 %d · E3 %d\n", DR, rk_md5(DR), length(cells), N_ROUND, length(ENGINES),
             paste(vapply(TESTS, function(t) sprintf("%s %s/%s", basename(t$path), t$pass, t$fail), ""), collapse = " · "),
             ENGINES$E2$n_prior + N_ROUND, ENGINES$E3$n_prior + N_ROUND))

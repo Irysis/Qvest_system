@@ -267,7 +267,13 @@ p3_pin_mismatches <- function(pre, root) {
   }
   if (!identical(R.version.string, op$r_version)) bad <- c(bad, "R 판")
   for (f in pre$evaluation$files %||% list()) if (!identical(md5(f$path), f$md5)) bad <- c(bad, paste("평가 경로 md5:", f$path))
+  if (!is.null(pre$behavior_card_cfg) && !identical(md5(pre$behavior_card_cfg$path), pre$behavior_card_cfg$md5)) bad <- c(bad, "행동 카드 설정 사본 md5")
   bad
+}
+## 이력 탈락 꼬리표(선택 교락) — 판독할 위기 집행 행이 없거나 탈락 몫이 전부 비유한이면 미측정(통과로 접지 않는다 · v2 점검 권고 3)
+p3_history_drop_eval <- function(hd_cr, drop_tag_share, has_holdings = TRUE) {
+  if (!isTRUE(has_holdings) || is.null(hd_cr) || !nrow(hd_cr) || !any(is.finite(hd_cr$drop_share))) return(list(status = "unmeasured", tag = FALSE))
+  list(status = "ok", tag = mean(hd_cr$drop_share, na.rm = TRUE) > drop_tag_share)
 }
 ## 데이터 지문(fingerprint.sh — measure.sh 와 같은 정의) · 줄을 '|' 로 잇는다
 p3_fingerprint <- function(rd, mode = "equality") {
@@ -430,10 +436,10 @@ p3_eval_pair <- function(X, eng, mth, cm, cr, em, er, opts = list()) {
                             concentration_loss_tag = identical(cst, "breach"), unmeasured_tag = identical(cst, "unmeasured"))
   ## 이력 탈락(선택 교락) — E2 기준(EW)은 선정 전부 보유 · E3 기준(lean:entropy)은 변형과 같은 이력 필터를 거친다(rf_cell_engine 카탈로그 경로)
   hd <- if (nrow(Hr)) p3_history_drops(pl$diag, Hr) else data.table()
-  out$history_drop_status <- if (nrow(Hr)) "ok" else "unmeasured"
   cx <- if (nrow(hd)) p3_crisis_execs(hd$exec, crr) else as.Date(character(0))
   hd_cr <- if (nrow(hd)) hd[exec %in% cx] else hd
-  out$history_drop_tag <- nrow(hd_cr) > 0L && mean(hd_cr$drop_share, na.rm = TRUE) > as.numeric(FS$drop_tag_share)
+  hde <- p3_history_drop_eval(hd_cr, as.numeric(FS$drop_tag_share), has_holdings = nrow(Hr) > 0L)
+  out$history_drop_status <- hde$status; out$history_drop_tag <- hde$tag
   ann <- .p3_rows_dt(PM$performance$annual %||% list())
   rec <- tryCatch({ R0 <- .p3_rows_dt(crm); as.list(R0[, intersect(c("peak_date", "st_recovery_obs", "st_recovery_censored"), names(R0)), with = FALSE]) },
                   error = function(e) NULL)
@@ -451,6 +457,12 @@ p3_eval_pair <- function(X, eng, mth, cm, cr, em, er, opts = list()) {
   out$tbl <- data.table(engine = eng, method = mth, tested = TRUE, pass = out$pass, excluded = !identical(cst, "clear"))
   out
 }
+## 판정 1칸 안전 호출(v2 점검 권고 1) — 이름 붙은 분기 밖의 예기치 않은 오류도 그 칸만 미시험으로 접는다(오류 문구 기록 · 라운드 평가는 계속).
+##   평가 전체가 멈추면 '결과를 본 뒤 고정된 evaluate.R 을 고치거나(R2 위반) 라운드가 멈추는' 경로가 남는다
+p3_eval_pair_safe <- function(X, eng, mth, cm, cr, em, er, opts = list())
+  tryCatch(p3_eval_pair(X, eng, mth, cm, cr, em, er, opts),
+           error = function(e) .p3_untested(list(engine = eng, method = mth, cell = cm$code, rx0 = cr$code, status = em$status %||% NA, status_rx0 = er$status %||% NA),
+                                            paste("평가 오류:", conditionMessage(e))))
 
 if (sys.nframe() == 0L) {   # ── 본 실행(스크립트로 불렸을 때만 — 픽스처 · 리허설은 위 함수만 적재) ──
 source("02_Infrastructure/contracts/diagnosis_packet.R")
@@ -501,7 +513,7 @@ for (eng in ENGINES) {
   FPG[[eng]] <- list(measure = fps[1], eval_matches_measure = identical(fps[1], FP_EVAL))
   for (mth in METHODS) {
     cm <- cell_of(eng, mth)
-    out <- p3_eval_pair(X, eng, mth, cm, cr, EVS[[cm$code]], EVS[[cr$code]])
+    out <- p3_eval_pair_safe(X, eng, mth, cm, cr, EVS[[cm$code]], EVS[[cr$code]])
     TBL[[cm$code]] <- out$tbl; out$tbl <- NULL; OUT[[cm$code]] <- out
   }
 }

@@ -1,0 +1,12 @@
+{
+  "axis": "universe",
+  "verdict": "adapted",
+  "undeclared_changes": [],
+  "signal_mismatch": [],
+  "counterexample": "신규상장 뒤 150거래일만 지난 종목(유동성·비관리·비정지 등 위생 조건은 모두 통과)을 가정한다. 논문 §4 는 R_i=(r_i1,…,r_iT)∈R^T 을 완전한 길이-T 이력으로 전제하고(eq 8 의 m_i 에 결측 처리 규정이 없다), 식 그대로라면 가용한 150개 관측만으로도 m_i 를 계산해 활성 여부를 판정했을 것이다. engine.R:133-136 의 커버리지 하한(nob>=202, 즉 252거래일 중 80% 이상 유한 관측)은 이 종목을 그 달 후보에서 완전히 제거한다 — 논문식을 문언대로 따랐다면 나왔을 활성 판정과 다른 결과를 낸다. 다만 이 가드는 FIDELITY.json constants(.TRP_MIN_OBS_FRAC) 와 changed ⑩ 에 '논문 밖' 으로 명시돼 있어 misdeclared 가 아니라 adapted 사례다.",
+  "evidence": "§4(Setup and notation): R_i=(r_i1,…,r_iT)∈R^T — 길이-T 완전 이력 전제, 결측 처리 규정 없음. §4.1 eq(8): m_i:=(1/k)Σ_{t=T-k+1}^{T}|r_it|, A:={i: m_i>eps, |s_i|>tau}, baseline tau=10^{-3} — 이것이 논문이 정의하는 유일한 선별(필터) 규칙이다. §5.2(Variant II Step 2): X={i∈A: ticker_i begins with XL} — sector ETF 식별 규칙(Variant I 에는 해당 없음). 논문 전문(§1~Appendix C)에 실증 표본·거래소 상장 요건·가격 하한·금융주 제외·유동성 규칙이 전혀 없다(§1 의 fourfold goal 에 실증 성과 항목이 없고, 전문에 backtest/sample 절이 없음 — §5.2 의 SPY+XLK/XLF/XLE 가 유일한 자산 예시).",
+  "confidence": "high",
+  "checked": "eq(8) 활동 필터(m_i, tau, eps) 코드 대조(engine.R:139,148) · Variant II 의 XL* 섹터 ETF 식별 규칙과 미구현 처리(FIDELITY changed②) · 유니버스 결합 순서(UNI K200|KQ150 멤버십 → 활동 필터, engine.R:65-66,148) · 하네스 유동성/위생 주입(H1,H8) 이 논문 유래가 아니라 축 레벨 주입임을 확인 · 커버리지 하한(.TRP_MIN_OBS_FRAC)·최소 활성수(.TRP_MIN_ACTIVE) 가 논문 밖 가드로 정직하게 신고됐는지 대조 · 논문 전문에 거래소상장/가격하한/금융주제외/유동성 규칙이 존재하는지 전수 탐색(없음 확인)",
+  "prior_review": [],
+  "note": "논문은 실증 유니버스·필터를 전혀 정의하지 않는 순수 방법론 논문이다(백테스트 절 없음) — 이 축에서 비교 대상은 사실상 eq(8) 활동 필터 하나뿐이며 그것은 코드와 일치한다. 신호 공급(s_i 정의)·창 길이(k=T=252)·rho·L 값 등은 다른 축(신호/파라미터) 관할로 간주해 본 보고서에 담지 않았다."
+}

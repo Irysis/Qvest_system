@@ -1,0 +1,530 @@
+{
+ "schema": "q_judgment_ledger_v1",
+ "updated_at": "2026-10-16T22:23:22+0900",
+ "judgments": [
+  {
+   "id": "J-20261016-001",
+   "at": "2026-10-16T20:44:12+0900",
+   "op": "OP-20261015-P3R03",
+   "kind": "round_selection",
+   "summary": "다음 라운드 = P3R03 고도화 구성 — 원문대로 구현한 비중 결정법이 알파 손실 없이 급락기 낙폭을 줄이는가",
+   "rationale": "병목: 자격 엔진(E2 DNN 원형 · E3 B6_36) 보는 창 Calmar 0.37 · 0.46 이 S ≥ 1 을 막고 원인은 2008 급락기 MDD(시장 수준). P0R01 구속 축 = 위기 누적 포착(21/21 미달). 1차 라운드: 붙인 장치 12종 증분 알파 0 · 추세 현금 계열은 알파 유의 감소 · 역변동성(K1)만 알파 중립에 Calmar 소폭 개선 → 남은 레버 = 비중 구성(체계 §2-3 · 여섯 기준: 목표 격차 직결 · 기전(공분산 · 꼬리 위험 반영 배분) · 새로움(원문 고도화 구성 미시험) · 검정력(보는 창 위기 7) · 비용 12셀 · 충실도 = 원문 구현 선행). 도훈 P0 결정(탐색 확장)도 이 축을 지지.",
+   "framework_refs": [
+    "§2-3 병목 라운드",
+    "§7 지금 적용"
+   ],
+   "evidence": [
+    "00_Lawbook/specs/q_autonomy_decision_framework.md",
+    "stage_artifacts/programs/P0_FRONTIER/P0R01_feasibility_map/ROUND_REPORT.md"
+   ],
+   "alternatives": [
+    "P2 방어 엔진 라운드(오버레이) — 1차에서 추세 현금이 알파를 깎아 후순위",
+    "P1 새 수익 엔진 — 충실구현 레인 재료 대기(병행)",
+    "MSM 안 A 수리 — 2계층 봉쇄 해제 · 1계층 무영향(병행)"
+   ],
+   "expectation": "5개 방법 중 1개 이상이 E2 또는 E3 에서 보는 창 위기 누적 포착 < 같은 배치 RX0 ∧ 증분 β-통제 알파 비열등 ∧ 상승 포착 ≥ 0.55",
+   "confidence": 0.5,
+   "status": "reviewed",
+   "reviews": [
+    "R-20261016-001"
+   ],
+   "supersedes": null,
+   "superseded_by": null
+  },
+  {
+   "id": "J-20261016-002",
+   "at": "2026-10-16T20:44:12+0900",
+   "op": "OP-20261015-P3R03",
+   "kind": "candidate_selection",
+   "summary": "P3R03 후보 5 = HRP · NCO · Michaud 재표집 최소분산 · CVaR LP · ERC × 엔진 E2 · E3 + 같은 배치 RX0 2 = 12셀",
+   "rationale": "원리별 대표: 계층적 위험 배분 = HRP(López de Prado 2016 원문 — 단일 연결 · 거리의 거리 · 준대각화 · 재귀 이분 · IVP 군집 분산 · 창 252) · 군집 최적화 + 잡음 제거 = NCO(2019 — MP 잡음 제거 + KMeans 실루엣 군집 + 군집 내 · 간 롱온리 최소분산) · 추정 오차 재표집 = Michaud(정규 모수 재표집 · 최소분산 해 평균 · 신호일 결정론 시드) · 꼬리 위험 LP = CVaR(Rockafellar-Uryasev 2000 · β 0.95 · 과거 252일 시나리오) · 위험 기여 균등 = ERC(Maillard-Roncalli-Teïletche 2010 · qepm:ERC 원문 충실 — 순환 좌표 하강) — ERC 는 1차에서 유일하게 Calmar 를 올린 역변동성의 공분산 일반형. 제외: 강건 최적화(최소분산 목적에선 공분산 불확실 집합 최악 = 팽창 공분산 최소분산 → P3R01 K2 · P3R02 M5 와 원리 중복 · μ 불확실 집합은 기대수익 입력 필요 — 엔진 점수를 μ 로 쓰면 알파 사이징이 섞여 구성 단독 효과 판정 불가 · 반경 κ 에 KR 근거 없음) · CDaR LP(P3R01 K3 시험 — 새로움) · lean:hrp · lean:nco · lean:resampled · lean:cvar · qepm:CVaR_LP · qepm:HRP(원문과 다른 근사 · EW 폴백 — 충실도) · HERC(원리 중복) · CVaR β 0.99(252 표본 꼬리 2.5개 — 추정 불안정). 엔진 E1 제외(P1R01 자격 탈락 · 보는 창 CAGR 음수).",
+   "framework_refs": [
+    "§3 후보 · 선정 · 제외 사유",
+    "§3 충실도"
+   ],
+   "evidence": [
+    "06_Registry/weight_catalog.json",
+    "02_Infrastructure/portfolio/frontier_hrp/dynamic_regime_rp.R"
+   ],
+   "alternatives": [
+    "4방법(ERC 제외) 10셀",
+    "강건 최적화 포함 12셀(ERC 대신)"
+   ],
+   "expectation": "등록 전 원문 대조 검사 통과 · 처치 전달률(차별화 신호일 비율) ≥ 0.9",
+   "confidence": 0.6,
+   "status": "reviewed",
+   "reviews": [
+    "R-20261016-001"
+   ],
+   "supersedes": null,
+   "superseded_by": null
+  },
+  {
+   "id": "J-20261016-003",
+   "at": "2026-10-16T20:44:12+0900",
+   "op": "OP-20261015-P3R03",
+   "kind": "priority",
+   "summary": "원문 어댑터(HRP · NCO · Michaud · CVaR LP) 구현 · 원문 대조 검사를 P3R03 측정 전에",
+   "rationale": "카탈로그 근사 5종(lean:cvar 역-ES · qepm:CVaR_LP 근사 배선 · lean:nco 군집 역분산 · lean:resampled 시드 없는 sample+절단 · lean:robust_mv 축소+절단) + qepm:HRP EW 폴백(Superfan 10-16 지적) — 그대로 재면 원문 방법을 시험했다고 말할 수 없다(측정 신뢰 결함 §2-1). register_method 통과는 충실도를 가르지 못하므로 원문 수치 예제 · 해석해 대조 검사를 붙인다(Superfan C-20261016-006 권고 반영).",
+   "framework_refs": [
+    "§2-1"
+   ],
+   "evidence": [
+    "04_Research/programs/_supervision/superfan/controls/20261015_control_T1.md"
+   ],
+   "alternatives": [],
+   "expectation": "어댑터 4종 원문 대조 검사 통과",
+   "confidence": 0.8,
+   "status": "open",
+   "reviews": [],
+   "supersedes": null,
+   "superseded_by": null
+  },
+  {
+   "id": "J-20261016-004",
+   "at": "2026-10-16T20:44:12+0900",
+   "op": "OP-20261015-P3R03",
+   "kind": "ops",
+   "summary": "10-15 10:05 아침 체인 수동 따라잡기 실행(Qvest_MorningBrief)",
+   "rationale": "10-10~10-15 예약 작업 비활성으로 당일 아침 브리핑 · 데이터 갱신이 빠졌다 — 도훈 '예약작업들도 원래 보내던 텔레그램들 잘 보내줘'. 시스템 자체의 따라잡기 경로(MorningReboot 과 같음)라 새 절차가 아니다. 위험: 장중 데이터 갱신이 측정 배치와 겹침 → P3R03 측정은 갱신 뒤 같은 배치로.",
+   "framework_refs": [
+    "§6 운영"
+   ],
+   "evidence": [
+    ".cache/scheduler_logs/morning_run.log"
+   ],
+   "alternatives": [
+    "다음 날 07:10 정시까지 대기"
+   ],
+   "expectation": "브리핑 · 국면 · BOOK 텔레그램 발송 · 데이터 신선도 회복",
+   "confidence": 0.7,
+   "status": "open",
+   "reviews": [],
+   "supersedes": null,
+   "superseded_by": null
+  },
+  {
+   "id": "J-20261016-005",
+   "at": "2026-10-16T20:44:12+0900",
+   "op": "OP-20261015-MSM-A",
+   "kind": "priority",
+   "summary": "MSM 안 A 실행은 P3R03 측정이 백그라운드로 도는 동안",
+   "rationale": "PIT-C1-MSM-PARAMS 는 2계층 · BOOK 봉쇄 해제(측정 신뢰 결함)지만 1계층 라운드에는 닿지 않는다. 라운드 우선(세션 라운드 ≥ 60% · 인프라 ≤ 30%)과 측정 신뢰 우선(§2-1)을 함께 지키려면 라운드 측정의 대기 시간에 끼운다.",
+   "framework_refs": [
+    "§2-1",
+    "라운드 우선 운영 규칙(10-04)"
+   ],
+   "evidence": [
+    "04_Research/01_reports/msm_c1_chain_audit_20261010/README.md"
+   ],
+   "alternatives": [
+    "지금 바로 착수(P3R03 지연)"
+   ],
+   "expectation": "P3R03 일정 지연 없이 MSM 생산자 · 원장 재발행 진행",
+   "confidence": 0.6,
+   "status": "open",
+   "reviews": [],
+   "supersedes": null,
+   "superseded_by": null
+  },
+  {
+   "id": "J-20261016-006",
+   "at": "2026-10-16T20:44:13+0900",
+   "op": "OP-20261015-SUPERFAN",
+   "kind": "harness_change",
+   "summary": "Superfan 3종(판단 · 구성요소 · 철학) 구축 — 세션 시간의 큰 몫을 인프라에 씀",
+   "rationale": "도훈 직접 지시 4건(10-15 판단 감사 · 10-16 구성요소 1:1 · 철학 과제별 · 평소 무음 문제 시 알림). 라운드 우선 규칙 대비 인프라 비중이 크다는 사실을 기록한다. 최소화: 감시는 결정론(LLM 0) · 진단만 LLM · 실행 빈도 기본값으로 주간 한도 관리.",
+   "framework_refs": [
+    "§6 하네스 변경"
+   ],
+   "evidence": [
+    "00_Lawbook/specs/superfan_protocol.md"
+   ],
+   "alternatives": [
+    "판단 Superfan 만 만들고 라운드로 복귀"
+   ],
+   "expectation": "검사 통과 · 양성 대조 통과 · 다음 라운드부터 P1 · P2 · T3 가 돈다",
+   "confidence": 0.7,
+   "status": "open",
+   "reviews": [],
+   "supersedes": null,
+   "superseded_by": null
+  },
+  {
+   "id": "J-20261016-007",
+   "at": "2026-10-16T20:44:13+0900",
+   "op": "OP-20261015-SUPERFAN",
+   "kind": "design",
+   "summary": "구성요소 감시 = 결정론 감시기(눈) + 이상 시 전담 LLM 진단(머리) · 무인 간격 1시간 제안(10분 → 정정) · 상태 .cache",
+   "rationale": "LLM 상시 폴링은 비용(리뷰 1회 ≈ 21만 토큰)과 신뢰도(같은 입력 같은 답) 모두 불리. 간격은 '얼마나 빨리 알아야 조치할 수 있나'로 정한다 — 일 1회 작업이 대부분이고 레인은 틱마다 자가 재시도라 1시간이면 충분. 10분 제안은 레인 틱 주기에서 온 추정이었다(도훈 질의로 정정).",
+   "framework_refs": [
+    "§6"
+   ],
+   "evidence": [
+    "02_Infrastructure/programs/superfan_watch.py"
+   ],
+   "alternatives": [
+    "10분 간격",
+    "기존 예약 작업 안에 끼우기(감시 대상이 죽으면 감시도 죽음 — 기각)"
+   ],
+   "expectation": "실패 이상 1시간 안 감지 · 평상시 LLM 비용 0",
+   "confidence": 0.7,
+   "status": "open",
+   "reviews": [],
+   "supersedes": null,
+   "superseded_by": null
+  },
+  {
+   "id": "J-20261016-008",
+   "at": "2026-10-16T22:23:22+0900",
+   "op": "OP-20261015-P3R03",
+   "kind": "design",
+   "summary": "P3R03 격리 교차 점검 v1 revise 수용 — 필수 5 전부 · 권고 13 중 12 채택 · 1 조정(팩터 DB 지문 = 월 스냅샷 · 레지스트리 · 빌드 해시로 좁힘) → 초안 v2(ad5576ae)",
+   "rationale": "R2 — 등록 · 측정 뒤엔 evaluate.R 을 못 고친다. 지적된 결함(사이클 짝 오적용 · 재측정 뒤 옛 캐시 · 핀 밖 판정 경로 · 새 경로 무실행 · NA 통과 접힘)은 측정 뒤 드러나면 R2 위반 수리나 라운드 정지로만 끝난다. 팩터 DB 폴더 전체 지문은 실행 중 캐시(ic_direction_cache_v1 · _asof)가 같은 판본에서도 지문을 갈라 묶음 판정을 거짓으로 막는다(10-15 08:35 · 10-16 08:15 쓰기 실측).",
+   "framework_refs": [
+    "commit 53bce362d · 04_Research/programs/P3_CONSTRUCTION/P3R03_advanced_construction/prereg_draft.json(changes_after_review)"
+   ],
+   "evidence": [
+    "픽스처 45/0 · 뮤테이션 6/6 · 리허설 2/2(P3R02_E2_M5 vs RX0 — 원 창 · 강제 공통 창 k 0.9) · 어댑터 35/0 · 증분 알파 5/0"
+   ],
+   "alternatives": [
+    "v1 그대로 등록 후 측정 뒤 수리(R2 위반 — 기각) · 팩터 DB 폴더 전체 지문(거짓 불일치 — 기각)"
+   ],
+   "expectation": "v2 변경분 격리 점검 pass → 등록 → 오늘 밤 갱신 뒤 측정 · 판정 무오류",
+   "confidence": 0.8,
+   "status": "open",
+   "reviews": [],
+   "supersedes": null,
+   "superseded_by": null
+  },
+  {
+   "id": "J-20261016-009",
+   "at": "2026-10-16T22:23:22+0900",
+   "op": "OP-20261015-P3R03",
+   "kind": "design",
+   "summary": "등록 전 v1→v2 변경분 격리 점검을 한 번 더 돌린다(범용 에이전트 · 결과 미열람 · 약 25분)",
+   "rationale": "v2 는 판정 본류를 p3_eval_pair 로 다시 썼다. 리허설은 실행 무오류만 보고 의미 결함(분기 · NA · 경계)은 못 본다. 측정 뒤 의미 결함이 드러나면 R2 로 고칠 수 없다 — 비용(토큰 · 25분) < 라운드 정지 위험. 갱신 완료(≈03:00)까지 시간이 있어 측정 일정은 밀리지 않는다.",
+   "framework_refs": [],
+   "evidence": [],
+   "alternatives": [
+    "리허설 통과로 바로 등록(빠름 · 의미 결함 위험)"
+   ],
+   "expectation": "pass 또는 소수 수정 뒤 등록 · 측정은 오늘 밤 그대로",
+   "confidence": 0.7,
+   "status": "open",
+   "reviews": [],
+   "supersedes": null,
+   "superseded_by": null
+  }
+ ],
+ "reviews": [
+  {
+   "id": "R-20261016-001",
+   "at": "2026-10-16T21:06:21+0900",
+   "role": "philosophy",
+   "trigger": "P1",
+   "scope": [
+    "J-20261016-001",
+    "J-20261016-002"
+   ],
+   "file": "04_Research/programs/_supervision/superfan/philosophy/20261016_2100_P1_P3R03.md",
+   "round": "P3R03",
+   "direction": null,
+   "challenges": [
+    "C-20261016-001",
+    "C-20261016-002",
+    "C-20261016-003",
+    "C-20261016-004",
+    "C-20261016-005",
+    "C-20261016-006",
+    "C-20261016-007",
+    "C-20261016-008",
+    "C-20261016-009",
+    "C-20261016-010",
+    "C-20261016-011"
+   ]
+  }
+ ],
+ "challenges": [
+  {
+   "id": "C-20261016-001",
+   "at": "2026-10-16T21:07:41+0900",
+   "review": "R-20261016-001",
+   "target": "J-20261016-001",
+   "grade": "challenge",
+   "rule": null,
+   "claim": "성공 기준(위기 누적 포착 중앙값)이 병목(급락기 MDD → Calmar · 체계 §2 표 · §3 ①)과 다르다. 보는 창 P3R02 E2 M5 는 중앙 0.742→0.364 · 과반 6/7 로 decisive 를 통과했지만 MDD 0.534→0.579 · CDaR 0.316→0.392 · 자기 낙폭/벤치 1.01→1.09 이고, 깊은 두 위기(2008-05~10 · 2020-01~03) 누적 포착은 0.985→0.979 · 1.253→1.227 로 그대로였다. 최적화형 K2 · K3 · M5 모두 여진(2008-11)과 완만한 약세만 막고 깊은 첫 급락은 못 막았다(헌장 §1 · 원칙 1 · §4 지표 게이밍)",
+   "evidence": [
+    "04_Research/programs/P3_CONSTRUCTION/P3R02_eigen_markowitz/results/evaluation.json",
+    "04_Research/programs/P3_CONSTRUCTION/P3R02_eigen_markowitz/results/P3R02_E2_M5/visible/diagnosis_packet.md",
+    "04_Research/programs/P3_CONSTRUCTION/P3R01_construction_map/results/P3R01_E2_K2/visible/diagnosis_packet.md",
+    "04_Research/programs/P3_CONSTRUCTION/P3R01_construction_map/results/P3R01_E2_K3/visible/diagnosis_packet.md",
+    "00_Lawbook/specs/q_autonomy_decision_framework.md"
+   ],
+   "alternative": "decisive = 중앙값 ∧ 과반 ∧ (a) 깊은 위기 항목: 벤치 낙폭이 보는 창 위기 벤치 낙폭 중앙값 이상인 위기(벤치 사실로 결정 · 전략 성과 미사용)에서 낙폭 포착 < RX0 인 위기가 과반 ∧ (b) 복리 경로 비악화: 자기 낙폭/벤치 ≤ RX0 ∧ CDaR ≤ RX0(P3R01 improve 규칙 · 행동 카드 강함의 자기 낙폭 조건 승계 — 새 숫자 없음). 중앙값만 통과한 칸은 '완만한 약세 · 여진 방어'로 기록하고 '급락기 방어'라 쓰지 않는다",
+   "falsifier": "P3R03 에서 '중앙값 ∧ 과반' 통과 칸이 모두 (a)(b)도 통과하면(괴리 0) 추가 항목은 중복이었다. P3R01 · P3R02 보는 창에서 중앙값 개선 칸 중 (b) 악화 칸이 없다는 계약 산출이 나오면 근거 부분 철회",
+   "status": "accepted",
+   "role": "philosophy",
+   "hold_request": false,
+   "responses": [
+    {
+     "at": "2026-10-16T21:19:29+0900",
+     "by": "Q",
+     "kind": "accept",
+     "text": "수용 — 중앙값은 깊은 첫 급락을 재지 않는다",
+     "change": "사전등록 decisive (d) 깊은 위기 과반(벤치 낙폭 ≥ 중앙값 위기에서 낙폭 포착 개선 > 0.03) · (e) 복리 경로 비악화(mdd_vs_bench · CDaR ≤ RX0) 추가 · (a)(b) 만 통과 = '완만한 약세 · 여진 방어'(통과 아님) — 04_Research/programs/P3_CONSTRUCTION/P3R03_advanced_construction/prereg_draft.json(v1 md5 249713be) · evaluate.R · 픽스처 33/0"
+    }
+   ],
+   "outcome": null,
+   "outcome_note": null
+  },
+  {
+   "id": "C-20261016-002",
+   "at": "2026-10-16T21:07:41+0900",
+   "review": "R-20261016-001",
+   "target": "J-20261016-002",
+   "grade": "challenge",
+   "rule": null,
+   "claim": "최소분산 · LP 후보(NCO · Michaud · CVaR LP)는 상한 없는 축에서 집중해 깊은 위기의 단일 종목 손실을 만든다. 후보 선정에 집중의 사전 기대 · 판정 경로가 없다. 보는 창 E2 에서 유효 N 5.3 · 6.4 · 8.7 · 10.9 칸(K3 · M5 · K4 · K2)의 자기 낙폭/벤치는 1.12 · 1.09 · 1.07 · 1.04 이다(RX0 25.0 → 1.01 · K1 22.7 → 0.98). 2008-05~10 단일 종목 손실 1위는 K2 −19.84% · M5 −21.50% · K3 −21.09% vs RX0 −4.64% · K1 −3.99% 이고, K2 와 M5 는 추정기가 다른데 같은 종목(A023530)에 몰렸다(헌장 §4 집중 · §1 — 나만 깨지는 손실)",
+   "evidence": [
+    "04_Research/programs/P3_CONSTRUCTION/P3R02_eigen_markowitz/results/P3R02_E2_M5/visible/diagnosis_packet.md",
+    "04_Research/programs/P3_CONSTRUCTION/P3R01_construction_map/results/P3R01_E2_K2/visible/diagnosis_packet.md",
+    "04_Research/programs/P3_CONSTRUCTION/P3R01_construction_map/results/P3R01_E2_K3/visible/diagnosis_packet.md",
+    "04_Research/programs/P3_CONSTRUCTION/P3R01_construction_map/results/P3R01_E2_K1/visible/diagnosis_packet.md",
+    "00_Lawbook/specs/investment_philosophy_charter.md"
+   ],
+   "alternative": "상한은 레버로 제안하지 않는다(고정 축 · INV-7). (a) expectations 에 후보별 집중 사전 기대(CVaR LP · NCO 높음 · Michaud 중간 · HRP · ERC 낮음) (b) 기록: 신호일별 유효 종목 수 · 최대 비중 · 실보유 수 · 양수 ≤4종 신호일 수와 처치 전달률 · 보는 창 위기별 단일 종목 손실 1위와 상위 3종 합 (c) 선택 규칙 꼬리표: 깊은 위기에서 RX0 보다 나쁘고 그 위기의 단일 종목 손실 1위가 RX0 보다 크면 '집중 손실' → P4 구성 부품 후보 제외",
+   "falsifier": "유효 종목 수가 가장 작은 두 후보가 깊은 위기 과반에서 RX0 이하로 깨지고 CDaR 도 나빠지지 않으면, 이 축에서 집중은 해롭지 않았다",
+   "status": "accepted",
+   "role": "philosophy",
+   "hold_request": false,
+   "responses": [
+    {
+     "at": "2026-10-16T21:19:29+0900",
+     "by": "Q",
+     "kind": "accept",
+     "text": "수용 — 상한은 제안하지 않고(고정 축) 집중 손실을 판정 경로에",
+     "change": "집중 손실 꼬리표(깊은 위기 한 종목 기여 < −10% → P4 후보 제외 · 문턱 evidence · 헌장 빈칸 표시) · 유효 종목 수 · 최대 비중 · effn ≤ 4 신호일 · 위기별 1위 · 상위 3 합 기록 · 후보별 집중 사전 기대 — 04_Research/programs/P3_CONSTRUCTION/P3R03_advanced_construction/prereg_draft.json(v1 md5 249713be)"
+    }
+   ],
+   "outcome": null,
+   "outcome_note": null
+  },
+  {
+   "id": "C-20261016-003",
+   "at": "2026-10-16T21:07:41+0900",
+   "review": "R-20261016-001",
+   "target": "J-20261016-002",
+   "grade": "challenge",
+   "rule": null,
+   "claim": "후보 대부분의 방어 기전은 정적 β 축소다. lean-loop '비대칭이 필요조건(정적 노출 축소로는 안 된다)' · 헌장 원칙 4 · 5 에 비추면, MC8 은 β 를 짝짓지 않고 설계 R5 노출 짝은 총노출(Σw = 1) 기준이라 이 라운드에서 노출 방어를 가르지 못한다. 보는 창에서 K2 · M5 는 β 0.81 · 0.79(RX0 1.07)인데 하락장 β 1.02 · 1.05 가 상승장 β 0.67 · 0.65 보다 높아 비대칭이 없다. 그런데도 MC8 은 selection_defense 로 표시했고, P3R02 의 β 대조는 4/7 로 위기 하나 차이 과반이었다",
+   "evidence": [
+    "04_Research/programs/P3_CONSTRUCTION/P3R02_eigen_markowitz/results/P3R02_E2_M5/visible/diagnosis_packet.md",
+    "04_Research/programs/P3_CONSTRUCTION/P3R01_construction_map/results/P3R01_E2_K2/visible/diagnosis_packet.md",
+    "04_Research/programs/P3_CONSTRUCTION/P3R02_eigen_markowitz/prereg.json",
+    ".claude/rules/lean-loop.md",
+    "04_Research/01_reports/l1_prescription_redesign_20261013/README.md"
+   ],
+   "alternative": "(a) β 짝 기준: RX0 월 수익을 칸의 보는 창 β 비율로 낮춘 계산상 대조(보유 아님 · MC8 노출 짝의 β 판)를 깊은 위기 포함 과반의 위기 낙폭 포착에서 이기고 강세 상승 포착에서 지지 않을 때만 '구성 방어(기전)'. 아니면 '노출(β) 방어 — 오버레이 층이 명시적 현금으로 같은 것을 살 수 있다'(P3R02 꼬리표 승계) (b) 하락장 β · 상승장 β 를 칸 · RX0 병기하고 비대칭 여부를 결론에 (c) MC8 라벨은 병기하되 '선택 방어' 서술은 (a) 통과 시만",
+   "falsifier": "후보가 깊은 위기 포함 과반에서 β 짝 기준을 이기고 하락장 β ≤ 상승장 β 를 보이면, 정적 β 축소가 아닌 구성 기전이 있다",
+   "status": "accepted",
+   "role": "philosophy",
+   "hold_request": false,
+   "responses": [
+    {
+     "at": "2026-10-16T21:19:29+0900",
+     "by": "Q",
+     "kind": "accept",
+     "text": "수용 — β 짝 기준을 계약 경로로",
+     "change": "β 짝 사본(RX0 기간수익 · NAV · 보유를 k = β 변형/β RX0 배 노출로 낮춘 사본 · 같은 dp_build) 대비 (a) · (d) 를 넘어야 '구성 방어' · 못 넘으면 '노출(β) 방어' 꼬리표 · 하락장 · 상승장 β 기록 — 04_Research/programs/P3_CONSTRUCTION/P3R03_advanced_construction/prereg_draft.json(v1 md5 249713be) · p3_beta_scaled_copy 픽스처"
+    }
+   ],
+   "outcome": null,
+   "outcome_note": null
+  },
+  {
+   "id": "C-20261016-004",
+   "at": "2026-10-16T21:07:41+0900",
+   "review": "R-20261016-001",
+   "target": "J-20261016-001",
+   "grade": "challenge",
+   "rule": null,
+   "claim": "강세 참여 ≥ 0.55 는 DNN 엔진에서 걸리지 않는 문턱이라 엔진 강점을 지키지 못한다(보는 창 상승 포착 E2 RX0 1.34 · E3 1.84). P3R01 K3 는 1.34→0.63 으로 절반 넘게 잃고도 통과했는데, 이는 헌장 §4 현금 기계 신호 그대로다. 헌장 §5 S0 는 0.55 가 아니라 엔진의 모양을 지키라고 한다. 체계 §3 ② 의 비열등 여유 · t 하한도 J-001 에 없다",
+   "evidence": [
+    "04_Research/programs/P3_CONSTRUCTION/P3R02_eigen_markowitz/results/P3R02_E2_RX0/visible/diagnosis_packet.md",
+    "04_Research/programs/P0_FRONTIER/P0R01_feasibility_map/results/P0R01_E3_C0/visible/diagnosis_packet.md",
+    "04_Research/programs/P3_CONSTRUCTION/P3R01_construction_map/results/P3R01_E2_K3/visible/diagnosis_packet.md",
+    "00_Lawbook/specs/investment_philosophy_charter.md",
+    "00_Lawbook/specs/q_autonomy_decision_framework.md"
+   ],
+   "alternative": "(a) 사이클 복리 검정: behavior_card.R bc_dc_strong_max 의 벤치 강세→약세 쌍(창 2000-01~2022-12)마다 칸과 RX0 의 사이클 누적 수익을 비교해, 칸 ≥ RX0 인 사이클이 과반(헌장 §3 식을 RX0 에 대해 · 새 숫자 없음) (b) 상승 포착 비(칸/RX0)와 강세 국면 누적 수익 기록 · 0.55 는 하한 유지 (c) 증분 β-통제 알파의 비열등 여유 · t 하한을 결과 전에 숫자로 고정. 1요인 절편이라 저β 프리미엄(Frazzini-Pedersen 2014)이 섞일 수 있음을 결론 범위에 적는다",
+   "falsifier": "P3R03 에서 사이클 검정에 떨어지는 칸이 모두 알파 비열등에서도 떨어지거나, 사이클 검정이 한 칸도 가르지 못하면 (a)는 중복이었다",
+   "status": "accepted",
+   "role": "philosophy",
+   "hold_request": false,
+   "responses": [
+    {
+     "at": "2026-10-16T21:19:29+0900",
+     "by": "Q",
+     "kind": "accept",
+     "text": "수용 — 엔진 강점을 상대 기준으로",
+     "change": "decisive (c) 에 사이클 복리 과반(앞 강세 국면 짝 사이클 수익 변형 ≥ RX0) 추가 · 상승 포착 비 기록 · 알파 비열등 = t > −2 ∧ 증분 ≥ −0.2 × 엔진 자체 보는 창 β-통제 알파(결과 전 고정 · 헌장 빈칸 '엔진 강점의 상대 기준' 표시) — 04_Research/programs/P3_CONSTRUCTION/P3R03_advanced_construction/prereg_draft.json(v1 md5 249713be)"
+    }
+   ],
+   "outcome": null,
+   "outcome_note": null
+  },
+  {
+   "id": "C-20261016-005",
+   "at": "2026-10-16T21:07:41+0900",
+   "review": "R-20261016-001",
+   "target": "J-20261016-001",
+   "grade": "challenge",
+   "rule": null,
+   "claim": "기대 '1개 이상이 E2 또는 E3 에서'는 처치 10칸 중 한 칸의 통과를 성공으로 읽는다. 원칙 2 '방어는 매번' · 설계 R6 는 위기 축과 엔진 축의 반복을 요구한다. P3R02 의 위기별 과반은 허용오차 1e-9 라 2008-05~10(0.985→0.979) · 2020-01~03(1.253→1.227)도 개선으로 세졌다. 같은 계열 선례는 실질 문턱을 썼다: P2R01 R6 0.03 · P2R02 V2 위기별 플라시보 통과",
+   "evidence": [
+    "04_Research/programs/P3_CONSTRUCTION/P3R02_eigen_markowitz/results/evaluation.json",
+    "04_Research/programs/P2_DEFENSE/P2R01_s2_pilot/prereg.json",
+    "04_Research/programs/P2_DEFENSE/P2R02_device_cross_engine/prereg.json",
+    "00_Lawbook/specs/investment_philosophy_charter.md"
+   ],
+   "alternative": "(a) 선택(P4 구성 부품 후보) = 두 엔진 모두 decisive ∧ 비열등(P3R02 승계) · 한 엔진만이면 '단일 엔진 — 미확증'으로 기록 (b) 위기별 '개선' 문턱 = P2R01 0.03 또는 P2R02 위기별 플라시보 통과 중 결과 전 택1(새 숫자 없음) (c) P4 선택 때 시행 수 P3R01 10 + P3R02 2 + P3R03 10 (설계 R3)",
+   "falsifier": "다섯 방법의 E2 · E3 판정이 모두 같은 방향이고 실질 문턱을 써도 위기별 과반 판정이 하나도 바뀌지 않으면 실익이 없었다",
+   "status": "accepted",
+   "role": "philosophy",
+   "hold_request": false,
+   "responses": [
+    {
+     "at": "2026-10-16T21:19:29+0900",
+     "by": "Q",
+     "kind": "accept",
+     "text": "수용 — 실질 문턱 · 두 엔진 · 시행 수",
+     "change": "위기별 개선 문턱 0.03(P2R01 R6 승계 · dd_capture) · 선택 = 두 엔진 통과 ∧ 집중 손실 없음 · round_verdict 정의(supported/partial/falsified/untested) · P4 시행 수 22 — 04_Research/programs/P3_CONSTRUCTION/P3R03_advanced_construction/prereg_draft.json(v1 md5 249713be)"
+    }
+   ],
+   "outcome": null,
+   "outcome_note": null
+  },
+  {
+   "id": "C-20261016-006",
+   "at": "2026-10-16T21:07:41+0900",
+   "review": "R-20261016-001",
+   "target": "J-20261016-001",
+   "grade": "note",
+   "rule": null,
+   "claim": "지표 게이밍 · 꾸준함 · 회복 속도가 미측정이다. P3R02 E2 M5 의 2016~2020 음수 해는 셋(−7.2% · −11.7% · −2.2%)이고 RX0 는 하나(−4.3%)다(헌장 §5 '장기 정체' 모양). 2020 연간은 M5 −2.2% vs RX0 +15.6% 로, 저β 구성이 V자 반등을 덜 따라간다(원칙 1 '빨리 회복')",
+   "evidence": [
+    "04_Research/programs/P3_CONSTRUCTION/P3R02_eigen_markowitz/results/P3R02_E2_M5/visible/diagnosis_packet.md",
+    "04_Research/programs/P3_CONSTRUCTION/P3R02_eigen_markowitz/results/P3R02_E2_RX0/visible/diagnosis_packet.md"
+   ],
+   "alternative": "기록: 최장 수중 기간 · 위기별 저점→직전 고점 회복 기간 · 위기 뒤 첫 강세 국면 상승 포착 · 롤링 36M 통과율 · 연도별 음수 해 수(칸 · RX0). 판정 입력은 C-20261016-001 (b)로 충분",
+   "falsifier": "",
+   "status": "closed_note",
+   "role": "philosophy",
+   "hold_request": false,
+   "responses": [],
+   "outcome": null,
+   "outcome_note": null
+  },
+  {
+   "id": "C-20261016-007",
+   "at": "2026-10-16T21:07:41+0900",
+   "review": "R-20261016-001",
+   "target": "J-20261016-002",
+   "grade": "note",
+   "rule": null,
+   "claim": "소형주 착시 = 미측정(설계 §9.4-4 유동성 구간 귀속 표준 산출 없음). 공분산 추정 최적화는 비동시 거래로 분산 · 상관이 낮게 잡힌 비유동 종목을 선호한다(Scholes & Williams 1977) — 전 종목 + LIQ 2e8 축에서 최소분산 계열이 유동성 하단에 몰릴 수 있다",
+   "evidence": [
+    "04_Research/01_reports/l1_prescription_redesign_20261013/README.md"
+   ],
+   "alternative": "칸 · RX0 마다 신호일별 비중의 adv20(t−1) 3분위 몫 · 위기 손실 기여의 유동성 3분위 몫을 기록 · 산출이 없으면 '미측정'(0 으로 접지 않음)",
+   "falsifier": "",
+   "status": "closed_note",
+   "role": "philosophy",
+   "hold_request": false,
+   "responses": [],
+   "outcome": null,
+   "outcome_note": null
+  },
+  {
+   "id": "C-20261016-008",
+   "at": "2026-10-16T21:07:41+0900",
+   "review": "R-20261016-001",
+   "target": "J-20261016-002",
+   "grade": "note",
+   "rule": null,
+   "claim": "획일화 징후(프로그램 단위): 후보 5 중 4가 분산 추정 기반이다. P3R01 · P3R02 에 이어 세 라운드째 같은 방어 형태(추정 위험으로 재가중)이고, K2 · M5 가 같은 종목에 수렴했다. 급락 상관 수렴(Longin & Solnik 2001 · Ang & Chen 2002) 때문에 구성 레버가 깊은 첫 급락을 막을 사전 확률은 낮다",
+   "evidence": [
+    "04_Research/programs/P3_CONSTRUCTION/P3R01_construction_map/prereg.json",
+    "04_Research/programs/P3_CONSTRUCTION/P3R02_eigen_markowitz/prereg.json"
+   ],
+   "alternative": "신호일별 후보 비중과 K1(역분산) 비중의 상관 기록(ERC · HRP 가 K1 과 같은 처치인지). 사전등록에 정직한 사전 기대를 적고, 반증이면 '구성 레버의 깊은 위기 한계' L-code · 다음 경로 = P2(노출 · 선택 방어)",
+   "falsifier": "",
+   "status": "closed_note",
+   "role": "philosophy",
+   "hold_request": false,
+   "responses": [],
+   "outcome": null,
+   "outcome_note": null
+  },
+  {
+   "id": "C-20261016-009",
+   "at": "2026-10-16T21:07:41+0900",
+   "review": "R-20261016-001",
+   "target": "J-20261016-001",
+   "grade": "note",
+   "rule": null,
+   "claim": "결론 범위 문장 제안 — 지금 질문은 '방어'만 말하고 '복리'를 말하지 않는다(헌장 §1 '방어해 복리를 극대화')",
+   "evidence": [],
+   "alternative": "구성(비중)만 바꾼 효과 · 같은 엔진 · 같은 선정 집합 · 롱온리 Σw=1 · 상한 없음 · 창 252일 · 원문 충실 어댑터 판. '급락기 방어'는 깊은 위기 항목 ∧ 복리 경로 비악화 통과 시만 쓰고, 중앙값만이면 '완만한 약세 · 여진 방어'. 방어는 귀속(선택 · 크기 · β 노출)과 함께만 · β 짝 기준 미통과 = '노출(β) 방어' · 엔진 강점 = 상승 포착 비 · 사이클 복리 · 증분 알파. 결론은 방법 일반이 아니라 이 축 · 이 선정 집합의 원문 구현에 대한 것",
+   "falsifier": "",
+   "status": "closed_note",
+   "role": "philosophy",
+   "hold_request": false,
+   "responses": [],
+   "outcome": null,
+   "outcome_note": null
+  },
+  {
+   "id": "C-20261016-010",
+   "at": "2026-10-16T21:07:42+0900",
+   "review": "R-20261016-001",
+   "target": "J-20261016-001",
+   "grade": "endorse",
+   "rule": null,
+   "claim": "질문(원문대로 구현한 비중 결정법이 알파 손실 없이 급락기 낙폭을 줄이는가)은 헌장 §1 · 원칙 1 · §5 S0('엔진을 지키면서 위기 낙폭만 막는다')와 같은 말이다. 같은 배치 RX0 기준과 E1 제외(보는 창 CAGR 음수 — 지킬 복리 엔진 없음 · 원칙 6)도 철학과 맞다. 유지",
+   "evidence": [
+    "00_Lawbook/specs/investment_philosophy_charter.md"
+   ],
+   "alternative": "",
+   "falsifier": "",
+   "status": "closed_note",
+   "role": "philosophy",
+   "hold_request": false,
+   "responses": [],
+   "outcome": null,
+   "outcome_note": null
+  },
+  {
+   "id": "C-20261016-011",
+   "at": "2026-10-16T21:07:42+0900",
+   "review": "R-20261016-001",
+   "target": "J-20261016-002",
+   "grade": "endorse",
+   "rule": null,
+   "claim": "HRP · ERC 포함은 철학 위험이 가장 낮다. 보는 창에서 낙폭 경로를 개선한 유일한 구성 K1(CDaR 0.316→0.303 · 자기 낙폭/벤치 1.01→0.98 · 유효 N 22.7)과 같은 분산 보존 계열(전 종목 양의 비중)이다. 유지 — 단 K1 동일 처치 여부는 획일화 note 의 기록으로 가린다",
+   "evidence": [
+    "04_Research/programs/P3_CONSTRUCTION/P3R01_construction_map/results/evaluation.json",
+    "04_Research/programs/P3_CONSTRUCTION/P3R01_construction_map/results/P3R01_E2_K1/visible/diagnosis_packet.md"
+   ],
+   "alternative": "",
+   "falsifier": "",
+   "status": "closed_note",
+   "role": "philosophy",
+   "hold_request": false,
+   "responses": [],
+   "outcome": null,
+   "outcome_note": null
+  }
+ ]
+}

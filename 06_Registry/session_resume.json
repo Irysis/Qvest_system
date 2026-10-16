@@ -1,6 +1,6 @@
 {
  "schema": "session_resume_v1",
- "updated_at": "2026-10-15T10:26:15+0900",
+ "updated_at": "2026-10-16T22:40:12+0900",
  "operations": [
   {
    "id": "OP-20261015-P3R03",
@@ -8,7 +8,7 @@
    "goal": "HRP · NCO · 리샘플링 최소분산 · CVaR LP(원문 충실 구현)를 DNN 원형 · B6_36 에 적용해 보는 창 MDD · 위기 낙폭 포착이 줄고 증분 β-통제 알파 손실이 없는지(사전등록 · 같은 배치 RX0 대비)",
    "status": "in_progress",
    "started_at": "2026-10-15T09:53:09+0900",
-   "updated_at": "2026-10-15T10:26:14+0900",
+   "updated_at": "2026-10-16T22:23:23+0900",
    "steps": [
     {
      "id": "S0",
@@ -33,26 +33,28 @@
     {
      "id": "S2",
      "title": "원문 어댑터 4종 구현 · 검사(HRP 2016 · NCO 2019 · Michaud 1998 결정론 시드 · Rockafellar-Uryasev 2000 LP)",
-     "status": "in_progress",
-     "note": "",
-     "artifacts": [],
-     "updated_at": "2026-10-15T10:05:53+0900"
+     "status": "done",
+     "note": "어댑터 5종(ERC 추가 — qepm:ERC EW 폴백) · 원문 대조 35/0 · 등재 · 카탈로그 paper:* active",
+     "artifacts": [
+      "08_Tests/methods/test_p3r03_adapters.R"
+     ],
+     "updated_at": "2026-10-16T21:02:36+0900"
     },
     {
      "id": "S3",
      "title": "증분 β-통제 알파 표준 지표(round_kit) · 검사",
-     "status": "pending",
-     "note": "",
+     "status": "done",
+     "note": "rk_pair_alpha · rk_concentration · 검사 5/0",
      "artifacts": [],
-     "updated_at": null
+     "updated_at": "2026-10-16T21:04:26+0900"
     },
     {
      "id": "S4",
      "title": "사전등록 초안(후보 · 제외 사유 · 기계 판정 규칙) → 격리 교차 점검 → 등록",
-     "status": "pending",
-     "note": "",
+     "status": "in_progress",
+     "note": "교차 점검 v1 revise 반영 → 초안 v2 ad5576ae(커밋 53bce362d · 픽스처 45/0 · 뮤테이션 6/6 · 리허설 2/2) · v2 변경분 격리 점검 실행 중",
      "artifacts": [],
-     "updated_at": null
+     "updated_at": "2026-10-16T22:23:23+0900"
     },
     {
      "id": "S5",
@@ -71,7 +73,7 @@
      "updated_at": null
     }
    ],
-   "next_action": "S2: 원문 충실 어댑터 4종(HRP 단일 연결 · NCO 잡음 제거 · Michaud 재표집 최소분산 · CVaR LP) — 02_Infrastructure/methods/adapters/ · eigen_clean_markowitz.R 규격 · 검사 · 카탈로그 등록",
+   "next_action": "v2 변경분 점검 결과 반영 → prereg_draft_reviewed_v2.json 보존 → register.R --register → measure.sh 분리 실행(갱신 완료 전 · 06:00 마감)",
    "context_files": [
     "C:/Users/99922/.claude/projects/C--Users-99922-OneDrive-Quant-Module-Moltbot/memory/project-l1-round1-results-and-speed-20261015.md",
     "04_Research/01_reports/l1_round1_results_20261015/README.md",
@@ -79,7 +81,9 @@
     "02_Infrastructure/methods/adapters/eigen_clean_markowitz.R(어댑터 본보기)"
    ],
    "background": [],
-   "decisions": [],
+   "decisions": [
+    "QW-UPDATEFILE-UNATTENDED(퀀티 무인 수급 R4 · 권고 A) · 퀀티 단말 로그인(도훈 조치)"
+   ],
    "log": [
     {
      "at": "2026-10-15T09:53:09+0900",
@@ -132,6 +136,46 @@
     {
      "at": "2026-10-15T10:26:14+0900",
      "text": "결정 해소: PIT-C1-MSM-PARAMS(A′ 권고 · BOOK 사양 변경) → 도훈 10-15: 안 A(as-of 연말 재적합 · 원장 재발행 · BOOK 핀 교체 · C11 재측정과 한 번에) — 결정 기록부 resolved"
+    },
+    {
+     "at": "2026-10-16T21:02:36+0900",
+     "text": "S2 → done · 어댑터 5종(ERC 추가 — qepm:ERC EW 폴백) · 원문 대조 35/0 · 등재 · 카탈로그 paper:* active"
+    },
+    {
+     "at": "2026-10-16T21:02:36+0900",
+     "text": "S3 → in_progress"
+    },
+    {
+     "at": "2026-10-16T21:02:36+0900",
+     "text": "다음: S3: 증분 β-통제 알파를 round_kit 표준 지표로(beta_controlled_alpha · 셀 평가 계약) + 철학 Superfan P1 · 데이터 갱신 전담 팬 결과 반영 → S4 사전등록 초안(집중 지"
+    },
+    {
+     "at": "2026-10-16T21:04:26+0900",
+     "text": "S3 → done · rk_pair_alpha · rk_concentration · 검사 5/0"
+    },
+    {
+     "at": "2026-10-16T21:04:26+0900",
+     "text": "S4 → in_progress"
+    },
+    {
+     "at": "2026-10-16T21:22:18+0900",
+     "text": "결정 대기: QW-UPDATEFILE-UNATTENDED(퀀티 무인 수급 R4 · 권고 A) · 퀀티 단말 로그인(도훈 조치)"
+    },
+    {
+     "at": "2026-10-16T21:22:18+0900",
+     "text": "S4 → in_progress · 초안 v1 249713be · 철학 P1 수용 5 · 격리 교차 점검 실행 중"
+    },
+    {
+     "at": "2026-10-16T21:22:18+0900",
+     "text": "다음: 격리 교차 점검 결과 반영 → register.R --draft(v2) → 커밋 → --register → measure.sh 분리 실행(오늘 밤 갱신 뒤 · 06:00 마감)"
+    },
+    {
+     "at": "2026-10-16T22:23:23+0900",
+     "text": "S4 → in_progress · 교차 점검 v1 revise 반영 → 초안 v2 ad5576ae(커밋 53bce362d · 픽스처 45/0 · 뮤테이션 6/6 · 리허설 2/2) · v2 변경분 격리 점검 실행 중"
+    },
+    {
+     "at": "2026-10-16T22:23:23+0900",
+     "text": "다음: v2 변경분 점검 결과 반영 → prereg_draft_reviewed_v2.json 보존 → register.R --register → measure.sh 분리 실행(갱신 완료 전 · 06:00 마감)"
     }
    ]
   },
@@ -141,7 +185,7 @@
    "goal": "자율 판단 체계가 설계 의도대로 돌아가는지 감사 · Q 와 논쟁 · 병목 아님(도훈 10-15)",
    "status": "in_progress",
    "started_at": "2026-10-15T10:26:14+0900",
-   "updated_at": "2026-10-15T10:26:15+0900",
+   "updated_at": "2026-10-16T21:22:18+0900",
    "steps": [
     {
      "id": "S1",
@@ -162,18 +206,18 @@
     {
      "id": "S3",
      "title": "양성 대조(심은 결함 탐지 · 깨끗한 판단 무발화)",
-     "status": "in_progress",
-     "note": "",
+     "status": "done",
+     "note": "양성 대조 통과(심은 결함 3 · 깨끗한 판단 지지 · 실결함 2 발견)",
      "artifacts": [],
-     "updated_at": "2026-10-15T10:26:15+0900"
+     "updated_at": "2026-10-16T21:02:36+0900"
     },
     {
      "id": "S4",
      "title": "첫 실전 리뷰(오늘 판단 기록 → T1+T3) · 응답",
-     "status": "pending",
-     "note": "",
+     "status": "in_progress",
+     "note": "철학 P1(P3R03) · 데이터 갱신 전담 팬 진단 실행 중",
      "artifacts": [],
-     "updated_at": null
+     "updated_at": "2026-10-16T21:02:37+0900"
     },
     {
      "id": "S5",
@@ -190,7 +234,9 @@
     ".claude/agents/superfan.md"
    ],
    "background": [],
-   "decisions": [],
+   "decisions": [
+    "무인 상시 감시(1시간 예약 · 무인 진단 · 텔레그램 야간 무음) 승인 여부"
+   ],
    "log": [
     {
      "at": "2026-10-15T10:26:14+0900",
@@ -207,6 +253,18 @@
     {
      "at": "2026-10-15T10:26:15+0900",
      "text": "S3 → in_progress"
+    },
+    {
+     "at": "2026-10-16T21:02:36+0900",
+     "text": "S3 → done · 양성 대조 통과(심은 결함 3 · 깨끗한 판단 지지 · 실결함 2 발견)"
+    },
+    {
+     "at": "2026-10-16T21:02:37+0900",
+     "text": "S4 → in_progress · 철학 P1(P3R03) · 데이터 갱신 전담 팬 진단 실행 중"
+    },
+    {
+     "at": "2026-10-16T21:22:18+0900",
+     "text": "결정 대기: 무인 상시 감시(1시간 예약 · 무인 진단 · 텔레그램 야간 무음) 승인 여부"
     }
    ]
   },
@@ -216,15 +274,17 @@
    "goal": "PIT-C1-MSM-PARAMS 해소(도훈 10-15 안 A) — 2계층 · BOOK 봉쇄 해제",
    "status": "in_progress",
    "started_at": "2026-10-15T10:26:15+0900",
-   "updated_at": "2026-10-15T10:26:15+0900",
+   "updated_at": "2026-10-16T22:40:12+0900",
    "steps": [
     {
      "id": "S1",
      "title": "생산자(원형 build_msm_asof.R → 운영 · 식별 가드 · 모수 일정 원장 · 양성 대조 PC1~PC5)",
-     "status": "pending",
-     "note": "",
-     "artifacts": [],
-     "updated_at": null
+     "status": "in_progress",
+     "note": "운영 라이브러리 02_Infrastructure/regime/msm_asof.R(원형 이전 · 적용 구간 (r_k, r_{k+1}] 결정문대로) · 커널 사본 · 생산자 msm_asof_update.R · 검사 8/0 · 뮤테이션 5/5 · 이력 23회 적합 실행 중(24병렬)",
+     "artifacts": [
+      "02_Infrastructure/regime/msm_asof.R"
+     ],
+     "updated_at": "2026-10-16T22:40:12+0900"
     },
     {
      "id": "S2",
@@ -259,7 +319,7 @@
      "updated_at": null
     }
    ],
-   "next_action": "P3R03 측정이 백그라운드로 도는 동안 착수(라운드 우선 규칙 — 인프라 ≤30%)",
+   "next_action": "이력 적합 결과 확인(원장 23행 · 가드 행동 · PC3) → 검사 9(운영 원장 · 캐시 PC2) → 커밋 → S2 소비 경로 지도(regime_signal · m4 · msm_hybrid) · 재발행 런북 dry-run",
    "context_files": [
     "04_Research/01_reports/msm_c1_chain_audit_20261010/README.md",
     "04_Research/l2_role_rotation/build_msm_asof.R"
@@ -270,6 +330,14 @@
     {
      "at": "2026-10-15T10:26:15+0900",
      "text": "시작"
+    },
+    {
+     "at": "2026-10-16T22:40:12+0900",
+     "text": "S1 → in_progress · 운영 라이브러리 02_Infrastructure/regime/msm_asof.R(원형 이전 · 적용 구간 (r_k, r_{k+1}] 결정문대로) · 커널 사본 · 생산자 msm_asof_update.R · 검사 8/0 · 뮤테이션 5/5 · 이력 23회 적합 실행 중(24병렬)"
+    },
+    {
+     "at": "2026-10-16T22:40:12+0900",
+     "text": "다음: 이력 적합 결과 확인(원장 23행 · 가드 행동 · PC3) → 검사 9(운영 원장 · 캐시 PC2) → 커밋 → S2 소비 경로 지도(regime_signal · m4 · msm_hybrid) · 재발행 런북 dr"
     }
    ]
   }

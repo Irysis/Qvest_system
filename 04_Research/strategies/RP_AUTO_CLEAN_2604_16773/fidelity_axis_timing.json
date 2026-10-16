@@ -1,0 +1,12 @@
+{
+  "axis": "timing",
+  "verdict": "adapted",
+  "undeclared_changes": [],
+  "signal_mismatch": [],
+  "counterexample": "구성하지 못했다 — 논문이 k·T·리밸 주기·보유 기간·스킵 월에 숫자를 전혀 주지 않아(§4.1: \"Fix a lookback window k≤T\" 만 정의, 값 없음 · §4: \"the current signed signal\" 로 1회 배분기 서술) 코드의 252거래일 창·월간 리밸·스킵 없음이 논문의 특정 숫자와 불일치하는 상황을 만들 수 없다. 코드가 만드는 모든 숫자(252·월간·스킵 0)는 FIDELITY.json changed ⑨⑰ 와 constants[.TRP_WIN_DAYS]·windows[] 에 그대로 신고돼 있다.",
+  "evidence": "§4.1 eq(8) 원문: 'Fix a lookback window k≤T, a minimum recent-magnitude threshold ε>0, and a signal threshold τ>0' — k·T 둘 다 기준값 없음(τ=1e-3 만 baseline 명시). §4 Setup: 's_i ∈ R be the current signed signal' — 외생·1회성 신호로, 리밸 주기·보유 기간·포메이션 윈도·스킵 월에 대한 서술이 전문에 없음(§5.1·§5.2·Appendix A/B 포함 재확인 — rebalancing/holding/skip 토큰 전무).",
+  "confidence": "high",
+  "checked": "§4.1(eq 8 활성필터 창 k) · §4(입력 s 의 '현재' 신호 서술) · §5.1 Step1-6 · §5.2 Variant II · Appendix A/B 전체에서 lookback/window/rebalanc/holding/skip/trading days/252/monthly/weekly 토큰 검색 — 숫자 0건. engine.R:40(.TRP_WIN_DAYS=252L) · :56-60(월말 신호일 선택 로직) · :130(rws 창) · :139(m_i 창) 과 FIDELITY.json changed⑨(k=T 통일)·changed⑰(월간 리밸)·windows[] 대조.",
+  "prior_review": [],
+  "note": "논문은 이 축에 숫자를 하나도 주지 않는 방법론 논문(실증 백테스트 절 없음)이라 '틀렸다'를 구성할 지점이 없다 — FIDELITY 가 이미 '논문 무명시'로 정확히 신고했다. H10 하네스 주간/월간 분기 서술도 이 엔진은 월 1신호만 내 월간 경로로만 타는 것을 확인."
+}

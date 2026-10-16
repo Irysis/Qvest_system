@@ -1,0 +1,9 @@
+엔진과 FIDELITY를 새로 썼습니다.
+
+**무엇을 구현했는가** — arXiv:2601.10732v1 §5.2 매매 규칙(위기 국면에서만 직전 9일 HML 누적수익 부호로 SMB 스프레드 롱/숏, 비위기 무포지션)을 한국 유니버스 횡단면에서 재구성한 FF 2x3 6계열 + 다변량 Student-t HMM(K=3, 확장창 재적합·필터 상태) 위에 올려 `PORTFOLIO(Date,Ticker,Weight,Leg)`(engine_direct)로 낸다 — fidelity=adapted(원천이 미국 FF 기구축 계열이라 6계열 재구성이 치환).
+
+**기각 지점 수정** — 세 지적 모두 하나의 결함(정렬별 규모 분기점)이었고, §3.1이 원천으로 지목한 Ken French 규약을 직접 읽어 확인했습니다(5팩터 페이지 원문: *"SMB (Small Minus Big) is the average return on the **nine** small stock portfolios minus the average return on the **nine** big stock portfolios"* · 모멘텀 페이지: *"The monthly size breakpoint is the median NYSE market equity"*) — 단일 규모 분할이 전제입니다. 지적이 옳아 따랐습니다(`audit_disputes: []`).
+
+- `SZBP`를 **형성일당 1개**(`by = Date`)만 산출해 BM·OP·INV·MOM 전 정렬에 공통 적용. 분기점 모집단 = 그 형성일 위생 멤버 ∩ finite Size>0 (정렬·특성·수익 가용성과 무관한 단일 모집단).
+- 그 결과 한 종목의 size 라벨이 보유월에 유일 → **롱·숏 동시 편입과 다리 간 상쇄가 구조적으로 불가능**하고, 18칸(3정렬×6버킷) 완전 요건 아래 다리별 Σ|w| = 1이 정확히 성립(실행 로그에 다리 총노출 범위와 양다리 종목일 수=0를 찍습니다).
+- 신고 추가: ⑤(단일 분기점·모집단·r1 대비 수정) · ②(다리 총노출 구조 보장) · ㉚(18칸 요건과 미달 시 이월) · ㉛(quantile 보간형 7·동점 규칙) · ㉜(형성일 = 그 달 마지막 거래일) · windows `size_bp`/`char_bp` 2종 · constants `.QTL_TYPE`/`.N_SMB_CELLS`/`.N_SMB_LEG_CELLS` 3종. `commission_paper`는 §5.2가 비용을 어떤 수치로도 명시하지 않으므로 `null`로 정정했습니다.
