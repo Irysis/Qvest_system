@@ -1013,6 +1013,201 @@
       "free_params": null,
       "measured": false,
       "similar_to": []
+    },
+    {
+      "method_id": "HRPLdP2016",
+      "route": "optimizer",
+      "adapter_kind": "weight",
+      "paper_id": "ssrn:2708678",
+      "paper_title": "Building Diversified Portfolios that Outperform Out-of-Sample",
+      "routed_on": "2026-10-16 · P3R03 원문 충실 구성(측정 신뢰 결함 수리 — 카탈로그 근사 · EW 폴백 대체) · 검사 08_Tests/methods/test_p3r03_adapters.R",
+      "mechanism": "계층적 위험 균등 — 상관 거리 d=√(½(1−ρ)) · 거리의 거리 d̃ · 단일 연결 군집 · 준대각화 · 재귀 이분(군집 분산 = IVP 분산 · α = 1 − V0/(V0+V1)). 역행렬 없이 공분산 구조를 쓰는 분산 배분(원문 부록 A.3 코드 직역)",
+      "kr_mapping": "원문이 롱온리 · 합 1 — 사상 없음 · 엔진이 고른 ≤25종 안 비중 · 창 = 직전 252 거래일(원문 260) · 표본 공분산 · 상관 · 측정 경로 = rf_cell_engine catalog 분기 · 진단 줄 [hrp](maxw · effn)",
+      "adapter": "02_Infrastructure/methods/adapters/hrp_lopez_de_prado_2016.R",
+      "entrypoint": "method_weights",
+      "verdict": "implemented",
+      "registration": {
+        "verified_by": "register_method.R (production wrapper 경유 · 합성 fixture)",
+        "checks": {
+          "file_exists": true,
+          "sources": true,
+          "entrypoint": "method_weights",
+          "deterministic": true,
+          "non_degenerate": "max|w-EW|=0.2028",
+          "constraints": "sum=1.000000 max=0.3278",
+          "nearest_arm": "EigenCleanMarkowitz (max|dw|=0.0427 · 비교 5건)"
+        },
+        "failure_reason": null,
+        "unverified_on_fixture": false,
+        "unverified_reason": null,
+        "fixture": "rm_fixture(n_assets=8, n_obs=260, seed=20260813)",
+        "scope_note": "계약 준수 검증이지 성과 검증이 아니다. 성과는 dispatch Σ-A/B 가 잰다."
+      },
+      "screen_axes": {
+        "shrinkage_builtin": "no",
+        "statistic_order": "second",
+        "screen_priority": "P3 구성 라운드"
+      },
+      "selection_type": "chain",
+      "free_params": null,
+      "measured": false,
+      "similar_to": []
+    },
+    {
+      "method_id": "NCOLdP2019",
+      "route": "optimizer",
+      "adapter_kind": "weight",
+      "paper_id": "ssrn:3469961",
+      "paper_title": "A Robust Estimator of the Efficient Frontier",
+      "routed_on": "2026-10-16 · P3R03 원문 충실 구성(측정 신뢰 결함 수리 — 카탈로그 근사 · EW 폴백 대체) · 검사 08_Tests/methods/test_p3r03_adapters.R",
+      "mechanism": "군집 중첩 최적화 — MP 잡음 제거(상수 잔여 고유값 · KDE 0.01 · σ² 경계 최소화) → K-평균 실루엣 t 군집(상한 n/2 · 초기값 10) → 군집 내 최적화 → 축약 공분산 → 군집 간 최적화(특허 US20210081828A1 코드 5)",
+      "kr_mapping": "원문 optPort(무제약 최소분산)를 롱온리 · 합 1 최소분산(2차 계획)으로 사상 — NCO 는 최적화기를 바꿔 끼우는 메타 알고리즘 · mu = None(최소분산 판) · k-means++ + Lloyd · 신호일 결정론 시드(전역 난수 보존) · n < 4 면 군집 1 · 진단 줄 [nco](nfacts · k · effn)",
+      "adapter": "02_Infrastructure/methods/adapters/nco_lopez_de_prado_2019.R",
+      "entrypoint": "method_weights",
+      "verdict": "implemented",
+      "registration": {
+        "verified_by": "register_method.R (production wrapper 경유 · 합성 fixture)",
+        "checks": {
+          "file_exists": true,
+          "sources": true,
+          "entrypoint": "method_weights",
+          "deterministic": true,
+          "non_degenerate": "max|w-EW|=0.2088",
+          "constraints": "sum=1.000000 max=0.3338",
+          "nearest_arm": "HRPLdP2016 (max|dw|=0.0076 · 비교 6건)"
+        },
+        "failure_reason": null,
+        "unverified_on_fixture": false,
+        "unverified_reason": null,
+        "fixture": "rm_fixture(n_assets=8, n_obs=260, seed=20260813)",
+        "scope_note": "계약 준수 검증이지 성과 검증이 아니다. 성과는 dispatch Σ-A/B 가 잰다."
+      },
+      "screen_axes": {
+        "shrinkage_builtin": "yes",
+        "statistic_order": "second",
+        "screen_priority": "P3 구성 라운드"
+      },
+      "selection_type": "chain",
+      "free_params": null,
+      "measured": false,
+      "similar_to": []
+    },
+    {
+      "method_id": "MichaudResampledMinVar",
+      "route": "optimizer",
+      "adapter_kind": "weight",
+      "paper_id": "joim:2008-6-1-michaud",
+      "paper_title": "Estimation Error and Portfolio Optimization: A Resampling Solution",
+      "routed_on": "2026-10-16 · P3R03 원문 충실 구성(측정 신뢰 결함 수리 — 카탈로그 근사 · EW 폴백 대체) · 검사 08_Tests/methods/test_p3r03_adapters.R",
+      "mechanism": "재표집 효율 최소분산 끝점 — 점추정(평균 · 공분산)의 다변량 정규에서 원 자료 길이만큼 모의 이력 B=500 회 → 각 모의 추정의 롱온리 최소분산 → 비중 평균(원문 Step 1~4 · 각주 14 · p.6 정의)",
+      "kr_mapping": "원문이 롱온리 · 합 1 — 사상 없음 · 기대수익 입력 없음(최소분산 끝점 — 엔진 점수를 μ 로 쓰지 않음) · 신호일 결정론 시드(전역 난수 보존) · 진단 줄 [michaud](mcse · effn)",
+      "adapter": "02_Infrastructure/methods/adapters/michaud_resampled_minvar.R",
+      "entrypoint": "method_weights",
+      "verdict": "implemented",
+      "registration": {
+        "verified_by": "register_method.R (production wrapper 경유 · 합성 fixture)",
+        "checks": {
+          "file_exists": true,
+          "sources": true,
+          "entrypoint": "method_weights",
+          "deterministic": true,
+          "non_degenerate": "max|w-EW|=0.1994",
+          "constraints": "sum=1.000000 max=0.3244",
+          "nearest_arm": "HRPLdP2016 (max|dw|=0.0105 · 비교 7건)"
+        },
+        "failure_reason": null,
+        "unverified_on_fixture": false,
+        "unverified_reason": null,
+        "fixture": "rm_fixture(n_assets=8, n_obs=260, seed=20260813)",
+        "scope_note": "계약 준수 검증이지 성과 검증이 아니다. 성과는 dispatch Σ-A/B 가 잰다."
+      },
+      "screen_axes": {
+        "shrinkage_builtin": "no",
+        "statistic_order": "second",
+        "screen_priority": "P3 구성 라운드"
+      },
+      "selection_type": "chain",
+      "free_params": null,
+      "measured": false,
+      "similar_to": []
+    },
+    {
+      "method_id": "CVaRLPRU2000",
+      "route": "optimizer",
+      "adapter_kind": "weight",
+      "paper_id": "doi:10.21314/JOR.2000.038",
+      "paper_title": "Optimization of Conditional Value-at-Risk",
+      "routed_on": "2026-10-16 · P3R03 원문 충실 구성(측정 신뢰 결함 수리 — 카탈로그 근사 · EW 폴백 대체) · 검사 08_Tests/methods/test_p3r03_adapters.R",
+      "mechanism": "CVaR 최소화 선형계획 — F_β(x,α) = α + (q(1−β))⁻¹ Σ(손실 − α)⁺ 를 (x, α) 에 대해 최소화(정리 2 · 시나리오 근사) · β 0.95 · 손실 = −r_tᵀw",
+      "kr_mapping": "롱온리 · 합 1 · 기대수익 제약 없음(최소 CVaR 끝점) · 시나리오 = 창의 과거 일별 수익 252 개 · lpSolve 단체법(결정론) · 종목별 상한 없음(고정 축) — 꼭짓점 해 집중 가능 · 진단 줄 [cvar](active · maxw · effn)",
+      "adapter": "02_Infrastructure/methods/adapters/cvar_lp_rockafellar_uryasev_2000.R",
+      "entrypoint": "method_weights",
+      "verdict": "implemented",
+      "registration": {
+        "verified_by": "register_method.R (production wrapper 경유 · 합성 fixture)",
+        "checks": {
+          "file_exists": true,
+          "sources": true,
+          "entrypoint": "method_weights",
+          "deterministic": true,
+          "non_degenerate": "max|w-EW|=0.1427",
+          "constraints": "sum=1.000000 max=0.2677",
+          "nearest_arm": "SchurDamping (max|dw|=0.0565 · 비교 8건)"
+        },
+        "failure_reason": null,
+        "unverified_on_fixture": false,
+        "unverified_reason": null,
+        "fixture": "rm_fixture(n_assets=8, n_obs=260, seed=20260813)",
+        "scope_note": "계약 준수 검증이지 성과 검증이 아니다. 성과는 dispatch Σ-A/B 가 잰다."
+      },
+      "screen_axes": {
+        "shrinkage_builtin": "no",
+        "statistic_order": "tail",
+        "screen_priority": "P3 구성 라운드"
+      },
+      "selection_type": "chain",
+      "free_params": null,
+      "measured": false,
+      "similar_to": []
+    },
+    {
+      "method_id": "ERCMRT2010",
+      "route": "optimizer",
+      "adapter_kind": "weight",
+      "paper_id": "ssrn:1271972",
+      "paper_title": "The Properties of Equally Weighted Risk Contribution Portfolios",
+      "routed_on": "2026-10-16 · P3R03 원문 충실 구성(측정 신뢰 결함 수리 — 카탈로그 근사 · EW 폴백 대체) · 검사 08_Tests/methods/test_p3r03_adapters.R",
+      "mechanism": "위험 기여 균등 — x_i(Σx)_i 균등 · 롱온리 · 합 1 · 순환 좌표 하강(Griveau-Billion · Richard · Roncalli 2013) · 역변동성(K1)의 공분산 일반형",
+      "kr_mapping": "원문이 롱온리 · 합 1 — 사상 없음 · 표본 공분산(창 252) · qepm:ERC(카탈로그 경로 EW 폴백 · 실효 강등)를 대체 · 진단 줄 [erc](rc_dev · effn)",
+      "adapter": "02_Infrastructure/methods/adapters/erc_maillard_roncalli_teiletche_2010.R",
+      "entrypoint": "method_weights",
+      "verdict": "implemented",
+      "registration": {
+        "verified_by": "register_method.R (production wrapper 경유 · 합성 fixture)",
+        "checks": {
+          "file_exists": true,
+          "sources": true,
+          "entrypoint": "method_weights",
+          "deterministic": true,
+          "non_degenerate": "max|w-EW|=0.09472",
+          "constraints": "sum=1.000000 max=0.2197",
+          "nearest_arm": "SchurDamping (max|dw|=0.06 · 비교 9건)"
+        },
+        "failure_reason": null,
+        "unverified_on_fixture": false,
+        "unverified_reason": null,
+        "fixture": "rm_fixture(n_assets=8, n_obs=260, seed=20260813)",
+        "scope_note": "계약 준수 검증이지 성과 검증이 아니다. 성과는 dispatch Σ-A/B 가 잰다."
+      },
+      "screen_axes": {
+        "shrinkage_builtin": "no",
+        "statistic_order": "second",
+        "screen_priority": "P3 구성 라운드"
+      },
+      "selection_type": "chain",
+      "free_params": null,
+      "measured": false,
+      "similar_to": []
     }
   ],
   "cross_method_synthesis": {

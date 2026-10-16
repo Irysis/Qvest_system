@@ -1,7 +1,7 @@
 {
   "_doc": "비중 결정 방법론 통합 색인 — **파생 파일**(손편집 금지). 재생성 = source('02_Infrastructure/portfolio/weight_catalog.R'); sync_catalog(). 엔트리는 리졸버만 적는다(구현 복사 금지). 정규형 = wrap_adapter(method_registry.R:55).",
   "generator": "02_Infrastructure/portfolio/weight_catalog.R::sync_catalog",
-  "generated_at": "2026-10-15T07:16:17+0900",
+  "generated_at": "2026-10-16T21:00:00+0900",
   "status_vocab": {
     "retired": 0,
     "blocked_inputs": 1,
@@ -13,10 +13,10 @@
   "counts": {
     "generated": 9,
     "lean_builtin": 23,
-    "paper_adapter": 7,
+    "paper_adapter": 12,
     "qepm_registry": 14
   },
-  "n_entries": 53,
+  "n_entries": 58,
   "entries": [
     {
       "catalog_id": "lean:ivol",
@@ -1350,6 +1350,126 @@
       },
       "screen_axes": {
         "shrinkage_builtin": "yes",
+        "statistic_order": "second",
+        "screen_priority": "P3 구성 라운드"
+      },
+      "selection_type": "chain",
+      "trial_family_id": null,
+      "n_trials_family": 1,
+      "prior_measured": null,
+      "est_cost_min": 10
+    },
+    {
+      "catalog_id": "paper:HRPLdP2016",
+      "label": "HRPLdP2016",
+      "origin": "paper_adapter",
+      "family": "optimizer",
+      "status": "active",
+      "notes": null,
+      "resolver": {
+        "kind": "adapter_file",
+        "adapter": "02_Infrastructure/methods/adapters/hrp_lopez_de_prado_2016.R",
+        "entrypoint": "method_weights",
+        "paper_id": "ssrn:2708678"
+      },
+      "screen_axes": {
+        "shrinkage_builtin": "no",
+        "statistic_order": "second",
+        "screen_priority": "P3 구성 라운드"
+      },
+      "selection_type": "chain",
+      "trial_family_id": null,
+      "n_trials_family": 1,
+      "prior_measured": null,
+      "est_cost_min": 10
+    },
+    {
+      "catalog_id": "paper:NCOLdP2019",
+      "label": "NCOLdP2019",
+      "origin": "paper_adapter",
+      "family": "optimizer",
+      "status": "active",
+      "notes": null,
+      "resolver": {
+        "kind": "adapter_file",
+        "adapter": "02_Infrastructure/methods/adapters/nco_lopez_de_prado_2019.R",
+        "entrypoint": "method_weights",
+        "paper_id": "ssrn:3469961"
+      },
+      "screen_axes": {
+        "shrinkage_builtin": "yes",
+        "statistic_order": "second",
+        "screen_priority": "P3 구성 라운드"
+      },
+      "selection_type": "chain",
+      "trial_family_id": null,
+      "n_trials_family": 1,
+      "prior_measured": null,
+      "est_cost_min": 10
+    },
+    {
+      "catalog_id": "paper:MichaudResampledMinVar",
+      "label": "MichaudResampledMinVar",
+      "origin": "paper_adapter",
+      "family": "optimizer",
+      "status": "active",
+      "notes": null,
+      "resolver": {
+        "kind": "adapter_file",
+        "adapter": "02_Infrastructure/methods/adapters/michaud_resampled_minvar.R",
+        "entrypoint": "method_weights",
+        "paper_id": "joim:2008-6-1-michaud"
+      },
+      "screen_axes": {
+        "shrinkage_builtin": "no",
+        "statistic_order": "second",
+        "screen_priority": "P3 구성 라운드"
+      },
+      "selection_type": "chain",
+      "trial_family_id": null,
+      "n_trials_family": 1,
+      "prior_measured": null,
+      "est_cost_min": 10
+    },
+    {
+      "catalog_id": "paper:CVaRLPRU2000",
+      "label": "CVaRLPRU2000",
+      "origin": "paper_adapter",
+      "family": "optimizer",
+      "status": "active",
+      "notes": null,
+      "resolver": {
+        "kind": "adapter_file",
+        "adapter": "02_Infrastructure/methods/adapters/cvar_lp_rockafellar_uryasev_2000.R",
+        "entrypoint": "method_weights",
+        "paper_id": "doi:10.21314/JOR.2000.038"
+      },
+      "screen_axes": {
+        "shrinkage_builtin": "no",
+        "statistic_order": "tail",
+        "screen_priority": "P3 구성 라운드"
+      },
+      "selection_type": "chain",
+      "trial_family_id": null,
+      "n_trials_family": 1,
+      "prior_measured": null,
+      "est_cost_min": 10
+    },
+    {
+      "catalog_id": "paper:ERCMRT2010",
+      "label": "ERCMRT2010",
+      "origin": "paper_adapter",
+      "family": "optimizer",
+      "status": "active",
+      "notes": null,
+      "resolver": {
+        "kind": "adapter_file",
+        "adapter": "02_Infrastructure/methods/adapters/erc_maillard_roncalli_teiletche_2010.R",
+        "entrypoint": "method_weights",
+        "paper_id": "ssrn:1271972"
+      },
+      "screen_axes": {
+        "shrinkage_builtin": "no",
         "statistic_order": "second",
         "screen_priority": "P3 구성 라운드"
       },
