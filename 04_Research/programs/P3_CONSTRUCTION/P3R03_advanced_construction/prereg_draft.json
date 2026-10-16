@@ -3,8 +3,8 @@
   "program": "P3_CONSTRUCTION",
   "round_id": "P3R03_advanced_construction",
   "status": "draft",
-  "draft_version": 3,
-  "drafted_at": "2026-10-16T22:55:14+0900",
+  "draft_version": 4,
+  "drafted_at": "2026-10-16T23:04:52+0900",
   "judgments": {
     "round_selection": "J-20261016-001",
     "candidates": "J-20261016-002",
@@ -294,13 +294,13 @@
     "remeasure": "인프라 실패(측정 결과 ok ≠ true — 워커 연기 · 실패 · 산출 없음) 칸은 measure.sh 가 같은 사양으로 1회 기계 재측정한다(RX0 먼저 단독 → 방법 5칸). 재측정 전에 그 칸의 옛 칸 평가 캐시(results/<code>/) · 지문을 지운다. 평가는 모든 칸에서 칸 평가 캐시의 산출물 경로 = 현 측정 결과의 산출물 경로를 단정한다(다르면 평가 중단)",
     "vintage_group": "같은 엔진의 6칸(방법 5 + RX0)은 함께 잰다(measure.sh — E2 묶음 → E3 묶음 · RX0 먼저 단독 · 방법 5칸 3병렬) · 칸마다 측정 시작 · 종료 데이터 지문(fingerprint.sh equality — RAWDATA · 벤치 · 재무 원값 · 컨센서스 · 팩터 DB 월 스냅샷 · 팩터 레지스트리 · 빌드 해시 / DNN 캐시는 기록만) — 묶음 안 지문이 모두 같아야 판정 · 다르면 measure.sh 가 배리어 대기 뒤 그 묶음을 1회 재측정 · 그래도 다르면 evaluate.R 이 평가 전체를 멈춘다(그 묶음 결과를 지우고 measure.sh 로 재측정한 뒤 다시 평가 — 한 묶음만 판정하지 않는다). 평가 시점 지문을 함께 기록한다(측정 지문과 다르면 표기)",
     "common_window": "변형과 RX0 의 실효 시작이 같으면 원 산출 · 다르면 공통 창 사본(P3R02 와 같은 절차 — 늦게 시작한 칸의 첫 기간수익일 · 4파일 절단 · NAV · 벤치 재기준)에 같은 계약을 적용. 사본 · 패킷 생성이 실패하면 그 칸은 미시험(실패 의미 사전 고정 · 리허설 rehearse.R 로 두 경로 실행 확인)",
-    "pins_at_evaluation": "evaluate.R 은 시작부(셀 평가 샤드 포함)에서 precheck.R 과 같은 함수(p3_pin_mismatches)로 사양 · 운영 경로 · 카탈로그 엔트리 · 패키지 · R 판 · 평가 경로를 전부 재대조한다 — 하나라도 다르면 평가하지 않는다",
+    "pins_at_evaluation": "evaluate.R 은 시작부(셀 평가 샤드 포함)에서 precheck.R 과 같은 함수(p3_pin_mismatches)로 사양 · 운영 경로 · 카탈로그 엔트리 · 패키지 · R 판 · 평가 경로 · 행동 카드 설정 사본을 전부 재대조한다 — 하나라도 다르면 평가하지 않는다",
     "decisive": "방법 × 엔진(보는 창 패킷): (a) 위기 누적 포착 중앙값 < RX0 ∧ (b) 위기별 과반 — 두 칸 모두의 위기(peak · trough 짝)에서 낙폭 포착(dd_capture)이 RX0 − crisis_improve_min 보다 낮은 위기 비율 > majority_share ∧ (c) 강세 참여 중앙값 ≥ uc_floor ∧ 사이클 복리 과반 — 위기를 고점 순으로 놓고 위기마다 '직전 위기 바닥 연월 이후(같은 달 포함) 시작해 이 위기 고점 연월까지(같은 달 포함) 끝난 강세 국면 중 마지막'과 짝짓고(강세 1개는 1번만 · 짝 없는 위기는 기록) 사이클 수익 (1+강세 st_cum)(1+위기 st_cum) − 1 이 RX0 이상인 사이클 비율 > majority_share · 두 칸의 같은 (위기, 강세) 짝만 비교 · 짝 2 미만이면 미시험 ∧ (d) 깊은 위기 — 짝 위기 중 벤치 낙폭(bm_dd) 크기가 그 집합 중앙값 이상인 위기에서 (b) 와 같은 과반 ∧ (e) 복리 경로 비악화 — mdd_vs_bench ≤ RX0 ∧ CDaR ≤ RX0. (a)(b) 만 통과하고 (d) 또는 (e) 를 못 넘으면 '완만한 약세 · 여진 방어'(통과 아님)",
     "non_inferiority": "(S) RX0 의 S_vis > 0 이면 S_vis(변형) ≥ S_vis(RX0) − tie_eps · 0 이면 Calmar 비교 ∧ (알파) 보는 창 증분 β-통제 알파(rk_pair_alpha — 변형 − RX0 월 차이 · 벤치 대비 · NW lag 3) t > alpha_t_floor ∧ 증분 ≥ −alpha_margin_frac × max(엔진 자체 보는 창 β-통제 알파(RX0 대 벤치), 0)",
     "beta_matched": "β 짝 대조(철학 C-003) — k = 변형 β / RX0 β(보는 창 behavior.stats.beta) < 1 이면 RX0 기간수익 · NAV · 보유를 k 배 노출로 낮춘 사본(잔여 현금)에 같은 계약(dp_build)을 적용하고 변형이 그 사본보다 (a) 중앙값이 낮고 (d) 깊은 위기 과반(짝 ≥ 2)을 넘어야 '구성 방어' — 못 넘으면 '노출(β) 방어' 꼬리표(판정 탈락 아님 · 하락장 · 상승장 β 와 상승장 β 비 병기). k ≥ 1 이면 β 로 산 방어가 아니므로 대조 불필요. k 비유한 · 사본 · 패킷 실패 · 사본 판정 입력 NA 이면 꼬리표 'β 대조 미측정'(통과로 접지 않는다)",
     "concentration": "집중 손실(철학 C-002) — 깊은 위기 중 한 종목 최악 기여(exposure.top_losers contrib)가 single_name_loss_floor 보다 나쁜 위기가 하나라도 있으면 '집중 손실' 꼬리표 → P4 구성 부품 후보에서 제외(두 엔진 통과여도). 손실 표가 없거나 깊은 위기 하나라도 표에 빠지면(위반이 없어도) '집중 손실 미측정' → 같은 제외(통과로 접지 않는다). 유효 종목 수 · 최대 비중 · effn ≤ 4 신호일 수 · 위기별 1위 · 상위 3 합은 기록",
     "attribution": "MC8 귀속 라벨(보는 창) + β 대조(exposure.crises selection_sum 짝 과반) — 둘 다 '선택' 이어야 '기전(선택) 방어' · 아니면 꼬리표 '기전(선택) 방어 미확인'",
-    "selection": "방법이 두 엔진 모두 pass(decisive ∧ S 비열등 ∧ 알파 비열등) ∧ 집중 손실 · 집중 손실 미측정 꼬리표 없음이면 P4 조립 구성 부품 후보 — 꼬리표: β 대조 미측정 · 노출(β) 방어 · 기전(선택) 방어 미확인 · 선택 교락(이력 탈락) · 선택 교락 미측정(RX0 보유 판독 실패). 여럿이면 두 엔진 평균 위기 누적 포착 개선 순. 한 엔진만이면 기록(후보 아님). P4 에서 고를 때 구성 변형 시행 수 22(P3R01 10 · P3R02 2 · P3R03 10)를 센다",
+    "selection": "방법이 두 엔진 모두 pass(decisive ∧ S 비열등 ∧ 알파 비열등) ∧ 집중 손실 · 집중 손실 미측정 꼬리표 없음이면 P4 조립 구성 부품 후보 — 꼬리표: β 대조 미측정 · 노출(β) 방어 · 기전(선택) 방어 미확인 · 선택 교락(이력 탈락) · 선택 교락 미측정(이력 탈락 판독 불가 — RX0 보유 · 위기 집행 행 없음 · 탈락 몫 비유한). 여럿이면 두 엔진 평균 위기 누적 포착 개선 순. 한 엔진만이면 기록(후보 아님). P4 에서 고를 때 구성 변형 시행 수 22(P3R01 10 · P3R02 2 · P3R03 10)를 센다",
     "round_verdict": "supported = 두 엔진 통과 ∧ 제외 아님인 방법 ≥ 1 · partial = 한 엔진 통과 또는 두 엔진 통과지만 집중 손실(미측정 포함) 제외 · falsified = 판정된 칸 중 통과 0 · untested = 판정된 칸 0 — 판정은 '판정(판정 칸/전체 칸)' 으로 적는다(예: falsified(판정 3/10))",
     "failure_semantics": "사전 고정: 평가 상태 · 전달률 · 실효 시작 · 같은 선정 집합 · 공통 창 · 패킷 · 위기 짝 · 판정 입력 실패 = 그 칸 미시험(반증 아님) / 그 밖의 예기치 않은 평가 오류 = 그 칸 미시험(오류 문구 기록 · 라운드 평가는 계속 — p3_eval_pair_safe) / β 사본 실패 = 'β 대조 미측정' / 집중 손실 표 결손 = '집중 손실 미측정'(후보 제외) / 이력 탈락 판독 불가(RX0 보유 · 위기 집행 행 없음 · 탈락 몫 비유한) = '선택 교락 미측정' / 핀 · 행동 카드 사본 · 지문 · 칸 평가 캐시 불일치 = 평가 중단",
     "test_window": "시험 창(2023-01~) 증분 알파 · 위기 포착은 사람 쪽 보고만(선택 · 판정 입력 아님)",
@@ -649,8 +649,8 @@
       "fail": 0
     }
   ],
-  "precheck": "측정 직전 precheck.R 가 evaluate.R 의 p3_pin_mismatches 로 사양 · 운영 경로 md5 · 카탈로그 엔트리 6종(방법 5 + lean:entropy) · quadprog · lpSolve · bbdetection · R 판 · 평가 경로 md5 를 다시 대조 — 다르면 측정하지 않는다 · 데이터 지문(equality · record) 기록",
-  "data_note": "데이터 갱신 전담 Superfan 진단(2026-10-16 · components/daily_refresh/20261016_2100_diagnosis.md): 퀀티 세션 무응답으로 consensus · investor_act(10-02~) · universe_support(08-28~)가 낡았다 — 측정 축 위생 표식은 2026-09-30 신호일부터 8월 말 값(시험 창 끝 · 보는 창 판정 무관). measure.sh 는 오늘 밤 갱신 뒤 같은 배치로 잰다",
+  "precheck": "측정 직전 precheck.R 가 evaluate.R 의 p3_pin_mismatches 로 사양 · 운영 경로 md5 · 카탈로그 엔트리 6종(방법 5 + lean:entropy) · quadprog · lpSolve · bbdetection · R 판 · 평가 경로 md5 · 행동 카드 설정 사본 md5 를 다시 대조 — 다르면 측정하지 않는다 · 데이터 지문(equality · record) 기록",
+  "data_note": "데이터 갱신 전담 Superfan 진단(2026-10-16 · components/daily_refresh/20261016_2100_diagnosis.md): 퀀티 세션 무응답으로 consensus · investor_act(10-02~) · universe_support(08-28~)가 낡았다 — 측정 축 위생 표식은 2026-09-30 신호일부터 8월 말 값(시험 창 끝 · 보는 창 판정 무관). 도훈 단말 로그인 뒤에는 무인 수급(안 A · 커밋 7ad631802)이 오늘 밤 갱신에서 받을 수 있다 — 받든 못 받든 measure.sh 는 갱신 뒤 같은 배치로 재고 지문에 남긴다",
   "design_inputs": "원문 5편(어댑터 머리 주석 인용) · 측정 · 평가 계약 코드 · P3R02 사전등록 형식 · 판단 원장 J-20261016-001~003 · 철학 Superfan P1 리뷰(보는 창 산출만) — 시험 창 성과 미사용",
   "budget": {
     "variants": 10,
@@ -774,6 +774,11 @@
       "item": "v2 점검 권고 5(낮음) measure.sh 완료 줄 세기",
       "change": "grep -c … || true · 빈 값 0 — 일치 0건에서 '0' 두 줄이 되던 결함",
       "reason": "실해는 없었으나(완료 줄 64) 로그 교체 시 06:00 마감 경로로만 빠진다"
+    },
+    {
+      "item": "v3 점검 문구 2건(v4 · 판정 의미 불변)",
+      "change": "rules.selection 의 '선택 교락 미측정' 조건을 v3 판독 불가 조건 전체로 · pins_at_evaluation · precheck 문장에 행동 카드 설정 사본 · data_note 에 무인 수급(안 A) 가능성",
+      "reason": "등록하면 문장이 고정되므로 코드와 문장 범위를 맞춘다(v3 점검 지적)"
     },
     {
       "item": "v2 점검 선택 6 불채택",

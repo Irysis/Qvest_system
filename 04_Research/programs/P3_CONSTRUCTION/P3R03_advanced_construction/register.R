@@ -24,7 +24,8 @@ PR <- file.path(P$prereg_dir, "prereg.json"); DR <- file.path(RD, "prereg_draft.
 ## 격리 교차 점검을 받은 초안 보존본(있으면 등록판에 연결 — 없으면 --register 거부)
 REVIEWED <- Filter(function(z) file.exists(z$path), list(
   list(version = 1L, path = file.path(RD, "prereg_draft_reviewed_v1.json"), review = "격리 교차 점검(결과 미열람 · 범용 에이전트) — revise(필수 5 · 권고 13)"),
-  list(version = 2L, path = file.path(RD, "prereg_draft_reviewed_v2.json"), review = "격리 변경분 점검(v1 → v2 · 결과 미열람 · 범용 에이전트) — pass(필수 5 재도출 fixed · 권고 5 · 선택 1)")))
+  list(version = 2L, path = file.path(RD, "prereg_draft_reviewed_v2.json"), review = "격리 변경분 점검(v1 → v2 · 결과 미열람 · 범용 에이전트) — pass(필수 5 재도출 fixed · 권고 5 · 선택 1)"),
+  list(version = 3L, path = file.path(RD, "prereg_draft_reviewed_v3.json"), review = "격리 변경분 점검(v2 → v3 · 좁은 범위) — pass(권고 1~5 반영 맞음 · 기능 결함 없음 · 문구 2건)")))
 rel <- function(p) sub(paste0("^", ROOT, "/"), "", p)
 .measured_any <- function() length(Sys.glob(file.path(RD, "results", "P3R03_*.json"))) > 0L
 if (.measured_any()) stop("[P3R03] 측정 결과가 생긴 뒤에는 사전등록을 바꿀 수 없다(R2)")
@@ -192,7 +193,7 @@ GV <- fromJSON(file.path(ROOT, "06_Registry/grade_v3.json"), simplifyVector = FA
 BC <- fromJSON(BCP, simplifyVector = FALSE)
 ch <- function(item, change, reason) list(item = item, change = change, reason = reason)
 pre <- list(
-  schema = "rx_prereg_v1", program = PROGRAM, round_id = ROUND, status = "draft", draft_version = 3L,
+  schema = "rx_prereg_v1", program = PROGRAM, round_id = ROUND, status = "draft", draft_version = 4L,
   drafted_at = format(Sys.time(), "%Y-%m-%dT%H:%M:%S%z"),
   judgments = list(round_selection = "J-20261016-001", candidates = "J-20261016-002", priority = "J-20261016-003",
                    ledger = "06_Registry/q_judgment_ledger.json", superfan_philosophy_p1 = "R-20261016-001(04_Research/programs/_supervision/superfan/philosophy/20261016_2100_P1_P3R03.md)"),
@@ -251,7 +252,7 @@ pre <- list(
                            "한 묶음만 판정하지 않는다). 평가 시점 지문을 함께 기록한다(측정 지문과 다르면 표기)"),
     common_window = paste0("변형과 RX0 의 실효 시작이 같으면 원 산출 · 다르면 공통 창 사본(P3R02 와 같은 절차 — 늦게 시작한 칸의 첫 기간수익일 · 4파일 절단 · NAV · 벤치 재기준)에 같은 계약을 적용. ",
                            "사본 · 패킷 생성이 실패하면 그 칸은 미시험(실패 의미 사전 고정 · 리허설 rehearse.R 로 두 경로 실행 확인)"),
-    pins_at_evaluation = "evaluate.R 은 시작부(셀 평가 샤드 포함)에서 precheck.R 과 같은 함수(p3_pin_mismatches)로 사양 · 운영 경로 · 카탈로그 엔트리 · 패키지 · R 판 · 평가 경로를 전부 재대조한다 — 하나라도 다르면 평가하지 않는다",
+    pins_at_evaluation = "evaluate.R 은 시작부(셀 평가 샤드 포함)에서 precheck.R 과 같은 함수(p3_pin_mismatches)로 사양 · 운영 경로 · 카탈로그 엔트리 · 패키지 · R 판 · 평가 경로 · 행동 카드 설정 사본을 전부 재대조한다 — 하나라도 다르면 평가하지 않는다",
     decisive = paste0("방법 × 엔진(보는 창 패킷): (a) 위기 누적 포착 중앙값 < RX0 ∧ ",
                       "(b) 위기별 과반 — 두 칸 모두의 위기(peak · trough 짝)에서 낙폭 포착(dd_capture)이 RX0 − crisis_improve_min 보다 낮은 위기 비율 > majority_share ∧ ",
                       "(c) 강세 참여 중앙값 ≥ uc_floor ∧ 사이클 복리 과반 — 위기를 고점 순으로 놓고 위기마다 '직전 위기 바닥 연월 이후(같은 달 포함) 시작해 이 위기 고점 연월까지(같은 달 포함) 끝난 ",
@@ -269,7 +270,7 @@ pre <- list(
                            "유효 종목 수 · 최대 비중 · effn ≤ 4 신호일 수 · 위기별 1위 · 상위 3 합은 기록"),
     attribution = "MC8 귀속 라벨(보는 창) + β 대조(exposure.crises selection_sum 짝 과반) — 둘 다 '선택' 이어야 '기전(선택) 방어' · 아니면 꼬리표 '기전(선택) 방어 미확인'",
     selection = paste0("방법이 두 엔진 모두 pass(decisive ∧ S 비열등 ∧ 알파 비열등) ∧ 집중 손실 · 집중 손실 미측정 꼬리표 없음이면 P4 조립 구성 부품 후보 — 꼬리표: β 대조 미측정 · 노출(β) 방어 · ",
-                       "기전(선택) 방어 미확인 · 선택 교락(이력 탈락) · 선택 교락 미측정(RX0 보유 판독 실패). ",
+                       "기전(선택) 방어 미확인 · 선택 교락(이력 탈락) · 선택 교락 미측정(이력 탈락 판독 불가 — RX0 보유 · 위기 집행 행 없음 · 탈락 몫 비유한). ",
                        "여럿이면 두 엔진 평균 위기 누적 포착 개선 순. 한 엔진만이면 기록(후보 아님). P4 에서 고를 때 구성 변형 시행 수 22(P3R01 10 · P3R02 2 · P3R03 10)를 센다"),
     round_verdict = paste0("supported = 두 엔진 통과 ∧ 제외 아님인 방법 ≥ 1 · partial = 한 엔진 통과 또는 두 엔진 통과지만 집중 손실(미측정 포함) 제외 · falsified = 판정된 칸 중 통과 0 · ",
                            "untested = 판정된 칸 0 — 판정은 '판정(판정 칸/전체 칸)' 으로 적는다(예: falsified(판정 3/10))"),
@@ -306,8 +307,8 @@ pre <- list(
   rehearsal = .rehearsal(),
   tests = TESTS,
   precheck = paste0("측정 직전 precheck.R 가 evaluate.R 의 p3_pin_mismatches 로 사양 · 운영 경로 md5 · 카탈로그 엔트리 6종(방법 5 + lean:entropy) · quadprog · lpSolve · bbdetection · R 판 · ",
-                    "평가 경로 md5 를 다시 대조 — 다르면 측정하지 않는다 · 데이터 지문(equality · record) 기록"),
-  data_note = "데이터 갱신 전담 Superfan 진단(2026-10-16 · components/daily_refresh/20261016_2100_diagnosis.md): 퀀티 세션 무응답으로 consensus · investor_act(10-02~) · universe_support(08-28~)가 낡았다 — 측정 축 위생 표식은 2026-09-30 신호일부터 8월 말 값(시험 창 끝 · 보는 창 판정 무관). measure.sh 는 오늘 밤 갱신 뒤 같은 배치로 잰다",
+                    "평가 경로 md5 · 행동 카드 설정 사본 md5 를 다시 대조 — 다르면 측정하지 않는다 · 데이터 지문(equality · record) 기록"),
+  data_note = "데이터 갱신 전담 Superfan 진단(2026-10-16 · components/daily_refresh/20261016_2100_diagnosis.md): 퀀티 세션 무응답으로 consensus · investor_act(10-02~) · universe_support(08-28~)가 낡았다 — 측정 축 위생 표식은 2026-09-30 신호일부터 8월 말 값(시험 창 끝 · 보는 창 판정 무관). 도훈 단말 로그인 뒤에는 무인 수급(안 A · 커밋 7ad631802)이 오늘 밤 갱신에서 받을 수 있다 — 받든 못 받든 measure.sh 는 갱신 뒤 같은 배치로 재고 지문에 남긴다",
   design_inputs = "원문 5편(어댑터 머리 주석 인용) · 측정 · 평가 계약 코드 · P3R02 사전등록 형식 · 판단 원장 J-20261016-001~003 · 철학 Superfan P1 리뷰(보는 창 산출만) — 시험 창 성과 미사용",
   budget = list(variants = N_ROUND, reference_remeasure = length(ENGINES), rounds = 1L),
   changes_after_superfan = list(
@@ -344,9 +345,11 @@ pre <- list(
     ch("v2 점검 권고 3(낮음) 이력 탈락 꼬리표", "p3_history_drop_eval — 위기 집행 행 없음 · 탈락 몫 비유한 · 보유 판독 실패 = '선택 교락 미측정' · 픽스처 18", "조용히 FALSE(통과 쪽)로 접혔다"),
     ch("v2 점검 권고 4(낮음) 대조 위치", "행동 카드 설정 사본 md5 를 p3_pin_mismatches(precheck · 평가 시작)에 · --register 가 리허설 스크립트 md5 · 행동 카드 사본 md5 재대조", "등록 뒤 사본이 바뀌면 측정은 다 돌고 평가에서야 멈췄다"),
     ch("v2 점검 권고 5(낮음) measure.sh 완료 줄 세기", "grep -c … || true · 빈 값 0 — 일치 0건에서 '0' 두 줄이 되던 결함", "실해는 없었으나(완료 줄 64) 로그 교체 시 06:00 마감 경로로만 빠진다"),
+    ch("v3 점검 문구 2건(v4 · 판정 의미 불변)", "rules.selection 의 '선택 교락 미측정' 조건을 v3 판독 불가 조건 전체로 · pins_at_evaluation · precheck 문장에 행동 카드 설정 사본 · data_note 에 무인 수급(안 A) 가능성",
+       "등록하면 문장이 고정되므로 코드와 문장 범위를 맞춘다(v3 점검 지적)"),
     ch("v2 점검 선택 6 불채택", "측정 사슬의 핀 밖 파일(audit_bt_result · lookahead_detector · refresh_barrier.R · weight_method_registry · QT_to_xts · defensive_score)",
        "판정에 쓰는 02~05 CSV 를 건드리지 않는다(점검 추적 결과) — 바뀌어 측정이 깨지면 미시험 · 재측정으로 드러난다 · 측정 직전 핀이 늘수록 무관한 수정이 오늘 밤 측정을 막는다")))
 writeLines(toJSON(pre, auto_unbox = TRUE, pretty = TRUE, null = "null", digits = NA), DR, useBytes = TRUE)
-cat(sprintf("[P3R03] 초안 v3 %s (md5 %s) · 칸 %d(처방 %d + 기준 %d) · 검사 %s · 시행 회계 E2 %d · E3 %d\n", DR, rk_md5(DR), length(cells), N_ROUND, length(ENGINES),
+cat(sprintf("[P3R03] 초안 v4 %s (md5 %s) · 칸 %d(처방 %d + 기준 %d) · 검사 %s · 시행 회계 E2 %d · E3 %d\n", DR, rk_md5(DR), length(cells), N_ROUND, length(ENGINES),
             paste(vapply(TESTS, function(t) sprintf("%s %s/%s", basename(t$path), t$pass, t$fail), ""), collapse = " · "),
             ENGINES$E2$n_prior + N_ROUND, ENGINES$E3$n_prior + N_ROUND))
