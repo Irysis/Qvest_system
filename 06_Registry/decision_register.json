@@ -3241,7 +3241,7 @@
     {
       "id": "QW-UPDATEFILE-UNATTENDED",
       "title": "퀀티 Update_File(consensus · investor_act · universe_support) 무인 수급 — 벤치 수급이 성공한 밤에만 qw_refresh -SkipLogin",
-      "status": "open",
+      "status": "resolved",
       "opened_at": "2026-10-16T21:22:17+0900",
       "options": [
         "A — 허용: 벤치 수급 rc=0(세션 살아 있음)인 밤에만 qw_refresh.ps1 -SkipLogin -Only Universe_Support,Investor_Act,Consensus → [0b] 적재 1회 더(로그인 클릭 없음 = 계정 잠금 위험 경로 닫힘)",
@@ -3257,12 +3257,66 @@
       ],
       "owner": "dohoon",
       "source": "데이터 갱신 전담 Superfan 진단 2026-10-16(04_Research/programs/_supervision/superfan/components/daily_refresh/20261016_2100_diagnosis.md R4)",
-      "decision": null,
-      "decided_by": null,
-      "decided_at": null,
-      "note": null,
-      "registered_at": "2026-10-16T21:22:17+0900"
+      "decision": "안 A — 벤치 정본 수급이 같은 실행에서 rc=0 으로 전진한 밤에만 qw_refresh.ps1 -SkipLogin -Only Investor_Act,Consensus(+ 직전 월말이 Universe_Support 최신일보다 뒤면 Universe_Support) -MaxRounds 2 · 시간 상한 40분 · 전진분이 있으면 [0b] 재적재 · 실패해도 리프레시 계속. 구현 = 02_Infrastructure/data/qw_updatefile_unattended.sh + daily_refresh.sh [1pre-qw] · 검사 08_Tests/data/test_qw_updatefile_unattended.R 8/0 · 끄기 QVEST_QW_UPDATEFILE_UNATTENDED=0. 퀀티 단말 로그인은 도훈 조치(1번)",
+      "decided_by": "dohoon",
+      "decided_at": "2026-10-16T22:57:53+0900",
+      "note": "로그인 클릭 · 자격 점검 · 단말 재기동이 없는 -SkipLogin 경로만 연다 — 08-29 계정 잠금 경로는 그대로 닫혀 있다",
+      "registered_at": "2026-10-16T21:22:17+0900",
+      "recorded_by": "Q(세션 7a34e194)",
+      "evidence": "도훈 채팅 2026-10-16 23시대 — '1번은 내가 조치할 테니 나머지 2,3,4 실행'(Q 보고의 2번 = QW-UPDATEFILE-UNATTENDED 권고 A)"
+    },
+    {
+      "id": "CHARTER-GAPS-20261016",
+      "title": "투자철학 헌장 빈칸 5곳 — 집중 문턱 · 위기의 무게 · β 로 산 방어 · 엔진 강점 기준 · 회복 속도",
+      "status": "resolved",
+      "opened_at": "2026-10-16T23:19:10+0900",
+      "options": [
+        "1 집중: A 깊은 위기 한 종목 −10% · B 유효 종목 수 하한 · C 둘 다 · D 기록만",
+        "2 위기의 무게: A 같은 무게 · B 깊은 위기에서도 과반 · C 낙폭 가중 · D 가장 깊은 위기 필수",
+        "3 β 방어: A 노출 방어로 인정 · B 하락 β < 상승 β 일 때만 · C 불인정",
+        "4 엔진 강점: A 0.55 만 · B 기준 대비 비율 하한 · C 증분 알파 비열등",
+        "5 회복 속도: A 기록만 · B 기준보다 길면 꼬리표 · C 수중 기간 지표 판정"
+      ],
+      "recommendation": "1 A · 2 B · 3 B · 4 B+C(80%) · 5 B",
+      "default_until_decided": "헌장 빈칸 — 철학 Superfan 은 의견만(교정 사례 없음)",
+      "blocks": [
+        "item:next_round_prereg_rules",
+        "item:superfan_philosophy_calibration"
+      ],
+      "owner": "dohoon",
+      "source": "철학 Superfan P1 R-20261016-001 '헌장의 빈칸' · 사례 04_Research/01_reports/charter_gaps_20261016/(보는 창 실제 곡선)",
+      "decision": "권고안 수용 — 1 A(깊은 위기 한 종목 기여 < −10% = 집중 · 후보 제외 · 미측정도 제외) · 2 B(깊은 위기에서도 과반 · 짝 ≥ 2) · 3 B(β 로 산 방어는 하락장 β < 상승장 β 일 때만) · 4 B+C(강세 상승 포착 중앙값 ≥ 같은 엔진 기준의 80% ∧ 증분 β-통제 알파 비열등) · 5 B(위기별 회복이 기준보다 긴 위기가 과반이면 '회복 지연' 꼬리표 · 등급 미반영). 헌장 §5 · §4 · §8 반영 · 다음 라운드 사전등록부터 판정 규칙",
+      "decided_by": "dohoon",
+      "decided_at": "2026-10-16T23:19:11+0900",
+      "note": "P3R03(등록 뒤)은 1 · 2 만 같은 규칙 — 3 · 4(B) · 5 는 기록으로만(R2)",
+      "registered_at": "2026-10-16T23:19:10+0900",
+      "recorded_by": "Q(세션 7a34e194)",
+      "evidence": "도훈 채팅 2026-10-16 23시대 — '선택지는 권고안 수용'"
+    },
+    {
+      "id": "SUPERFAN-WATCH-UNATTENDED-20261016",
+      "title": "Superfan 무인 상시 감시 — ① 매시 결정론 감시 + ③ 감시기 직접 텔레그램(새 실패만 · 야간 무음 · 사건당 1통) · ② 무인 LLM 진단은 끔",
+      "status": "resolved",
+      "opened_at": "2026-10-16T20:36:00+0900",
+      "options": [
+        "① 예약 작업 매시 결정론 감시(superfan_watch.py scan)",
+        "② 이상 시 무인 LLM 진단(구성요소 Superfan 자동 스폰)",
+        "③ 감시기가 직접 보내는 텔레그램(새 실패 이상만)"
+      ],
+      "recommendation": "① + ③ — 눈(결정론)은 상시 · 머리(LLM 진단)는 알림을 본 세션에서. ② 는 1회 비용이 커 주간 한도를 잠식",
+      "default_until_decided": "세션 부팅 줄로만 이상 확인",
+      "blocks": [],
+      "owner": "dohoon",
+      "source": "Superfan 설계 의도(도훈 10-16 20:34 '평소엔 조용히 모니터링만 하다가 문제가 생기면 내게 알려주는거지') · Q 상신 20:36(예약 작업 · 새 알림 종류 = 상신 대상)",
+      "decision": "① + ③ 가동 — 예약 작업 Qvest_SuperfanWatch(매시 17분) → superfan_watch.py scan --notify --quiet · 새 fail 이상만 구성요소마다 1통 · 23:00~06:59 무음 · 처음 켤 때 --baseline. ② 끔. 구현 ba9053bc3 · 규약 §10",
+      "decided_by": "dohoon",
+      "decided_at": "2026-10-16T22:39:00+0900",
+      "note": "10-17 판단 Superfan T3(C-20261017-002) 뒤 생존 · 상태 3규칙(replication_lane.lane_alive · request_state · book_tracking.mtm_fresh)을 fail 로 승격 — 조용한 정지도 알림(Q 판단 J-20261017-005 · 사전 확인 없이 시행 · 보고 고지)",
+      "registered_at": "2026-10-17T00:37:18+0900",
+      "opened_at_basis": "소급 — 세션 대화 기록(상신 시각)",
+      "recorded_by": "Q(세션 7a34e194) — 소급(T3 C-20261017-004 ⑤)",
+      "evidence": "도훈 채팅 2026-10-16 22:39 — '1번은 내가 조치할 테니 나머지 2,3,4 실행하고'(3번 = 무인 감시 ①+③)"
     }
   ],
-  "last_updated": "2026-10-16T21:22:17+0900"
+  "last_updated": "2026-10-17T00:37:19+0900"
 }

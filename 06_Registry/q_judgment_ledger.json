@@ -1,6 +1,6 @@
 {
  "schema": "q_judgment_ledger_v1",
- "updated_at": "2026-10-16T22:23:22+0900",
+ "updated_at": "2026-10-17T00:46:30+0900",
  "judgments": [
   {
    "id": "J-20261016-001",
@@ -75,8 +75,10 @@
    "alternatives": [],
    "expectation": "어댑터 4종 원문 대조 검사 통과",
    "confidence": 0.8,
-   "status": "open",
-   "reviews": [],
+   "status": "reviewed",
+   "reviews": [
+    "R-20261017-001"
+   ],
    "supersedes": null,
    "superseded_by": null
   },
@@ -98,8 +100,10 @@
    ],
    "expectation": "브리핑 · 국면 · BOOK 텔레그램 발송 · 데이터 신선도 회복",
    "confidence": 0.7,
-   "status": "open",
-   "reviews": [],
+   "status": "reviewed",
+   "reviews": [
+    "R-20261017-001"
+   ],
    "supersedes": null,
    "superseded_by": null
   },
@@ -122,8 +126,10 @@
    ],
    "expectation": "P3R03 일정 지연 없이 MSM 생산자 · 원장 재발행 진행",
    "confidence": 0.6,
-   "status": "open",
-   "reviews": [],
+   "status": "reviewed",
+   "reviews": [
+    "R-20261017-001"
+   ],
    "supersedes": null,
    "superseded_by": null
   },
@@ -145,8 +151,10 @@
    ],
    "expectation": "검사 통과 · 양성 대조 통과 · 다음 라운드부터 P1 · P2 · T3 가 돈다",
    "confidence": 0.7,
-   "status": "open",
-   "reviews": [],
+   "status": "reviewed",
+   "reviews": [
+    "R-20261017-001"
+   ],
    "supersedes": null,
    "superseded_by": null
   },
@@ -169,8 +177,10 @@
    ],
    "expectation": "실패 이상 1시간 안 감지 · 평상시 LLM 비용 0",
    "confidence": 0.7,
-   "status": "open",
-   "reviews": [],
+   "status": "reviewed",
+   "reviews": [
+    "R-20261017-001"
+   ],
    "supersedes": null,
    "superseded_by": null
   },
@@ -192,8 +202,10 @@
    ],
    "expectation": "v2 변경분 격리 점검 pass → 등록 → 오늘 밤 갱신 뒤 측정 · 판정 무오류",
    "confidence": 0.8,
-   "status": "open",
-   "reviews": [],
+   "status": "reviewed",
+   "reviews": [
+    "R-20261017-001"
+   ],
    "supersedes": null,
    "superseded_by": null
   },
@@ -211,6 +223,183 @@
    ],
    "expectation": "pass 또는 소수 수정 뒤 등록 · 측정은 오늘 밤 그대로",
    "confidence": 0.7,
+   "status": "reviewed",
+   "reviews": [
+    "R-20261017-001"
+   ],
+   "supersedes": null,
+   "superseded_by": null
+  },
+  {
+   "id": "J-20261016-010",
+   "at": "2026-10-16T23:16:38+0900",
+   "op": "OP-20261015-SUPERFAN",
+   "kind": "design",
+   "summary": "도훈 2·3번 실행 설계 — 퀀티 무인 수급은 벤치 정본 rc=0 인 밤에만 -SkipLogin · 40분 상한 · 실패해도 리프레시 계속 / Superfan 알림은 새 'fail'만 · warn 미발송 · 구성요소당 1통 · 23~07 무음 · 무인 LLM 진단 미가동",
+   "rationale": "08-29 잠금 경로(로그인 클릭 · 단말 재기동)를 열지 않는 경로만 자동화하고, 오늘 밤 P3R03 측정이 기대는 리프레시를 새 단계가 멈추지 못하게 했다. 알림은 '문제가 생기면'(도훈) = fail 로 한정해 소음을 막고, 비용(1회 ≈ 44만 토큰) 때문에 무인 진단은 켜지 않았다(권고안 그대로).",
+   "framework_refs": [
+    "커밋 7ad631802 · ba9053bc3"
+   ],
+   "evidence": [
+    "스텁 검사 8/0 · 감시기 검사 33/0 · 건식 발송 · 작업 등록 확인"
+   ],
+   "alternatives": [
+    "warn 도 알림(소음 · 이미 아는 정체 2건이 매시간 울림) · 수급 실패 시 리프레시 중단(측정 지장)"
+   ],
+   "expectation": "퀀티 로그인 뒤 첫 밤에 세 패널이 전진 · 새 실패가 생긴 시간에만 텔레그램",
+   "confidence": 0.75,
+   "status": "reviewed",
+   "reviews": [
+    "R-20261017-001"
+   ],
+   "supersedes": null,
+   "superseded_by": null
+  },
+  {
+   "id": "J-20261016-011",
+   "at": "2026-10-16T23:16:38+0900",
+   "op": "OP-20261015-P3R03",
+   "kind": "design",
+   "summary": "헌장 빈칸 5 질문의 Q 권고 — 1 A(깊은 위기 한 종목 −10%) · 2 B(깊은 위기도 과반) · 3 B(하락 β < 상승 β 일 때만) · 4 B+C(기준 대비 80% + 알파 비열등) · 5 B(회복 꼬리표)",
+   "rationale": "철학이 막으려는 해를 직접 재는 쪽(손실 · 깊은 위기 · 비대칭)을 고르고, 새 숫자(80%)는 근거가 약해 도훈 지정으로 남겼다. 시험 창 미사용 사례 · 같은 엔진 칸으로만.",
+   "framework_refs": [
+    "04_Research/01_reports/charter_gaps_20261016/README.md · 커밋 f4c5b8210"
+   ],
+   "evidence": [],
+   "alternatives": [
+    "유효 종목 수 하한(구조 기준) · 낙폭 크기 가중(가중치 근거 필요)"
+   ],
+   "expectation": "도훈 답 → 헌장 §5 교정 사례 · 다음 라운드 판정 규칙",
+   "confidence": 0.6,
+   "status": "reviewed",
+   "reviews": [
+    "R-20261017-001"
+   ],
+   "supersedes": null,
+   "superseded_by": null
+  },
+  {
+   "id": "J-20261017-001",
+   "at": "2026-10-17T00:36:28+0900",
+   "op": "세션 7a34e194 · 소급(T3 C-20261017-004 ①)",
+   "kind": "harness_change",
+   "summary": "[8.1r] 역할 대표 등재 — 대상 0건이면 정상 종료(b5dd7b155 · 10-16 21:20)",
+   "rationale": "데이터 갱신 전담 Superfan 진단 R1: 대상 0건인 날마다 [8.1r] 이 실패로 끝나 일일 갱신에 거짓 실패가 찍혔다 — 측정 신뢰(거짓 실패가 진짜 실패를 묻는다) 결함이라 최소 수리(0건 = 정상 종료 · 7줄)",
+   "framework_refs": [
+    "체계 §6 하네스 변경",
+    "CLAUDE.md 존재의의 ② 측정 신뢰 훼손"
+   ],
+   "evidence": [
+    "commit b5dd7b155",
+    "04_Research/programs/_supervision/superfan/components/daily_refresh/20261016_2100_diagnosis.md R1"
+   ],
+   "alternatives": [
+    "그대로 두기(매일 거짓 실패 · 감시기 fail 소음)"
+   ],
+   "expectation": "[8.1r] 거짓 실패 0 · 진짜 실패는 그대로 실패",
+   "confidence": 0.85,
+   "status": "open",
+   "reviews": [],
+   "supersedes": null,
+   "superseded_by": null
+  },
+  {
+   "id": "J-20261017-002",
+   "at": "2026-10-17T00:36:28+0900",
+   "op": "세션 7a34e194 · 소급(T3 C-20261017-004 ②)",
+   "kind": "ops",
+   "summary": "SessionEnd 자동 커밋 1eb18b24d(10-16 22:52 · 461파일)가 세션 중 발화 — 이력 재작성 안 함 · 발화 원인 조사는 우선순위 낮음",
+   "rationale": "이력 재작성은 되돌리기 어려운 공유 기록 변경이고 내용 손실은 없었다. 다만 당시 '우선순위 낮음'은 사전등록 기록이 결과와 한 묶음에 섞일 위험을 고려하지 않았다(T3 C-003) — 원인 조사 대신 '등록 → 커밋 → 측정' 절차로 그 위험을 닫는다(c7166d2ca · research-program SKILL 1단계)",
+   "framework_refs": [
+    "CLAUDE.md 커밋 규칙(10-14)"
+   ],
+   "evidence": [
+    "commit 1eb18b24d",
+    "기억 reference-sessionend-autocommit-can-fire-mid-session-20261016"
+   ],
+   "alternatives": [
+    "이력 재작성(서술형 커밋으로 분해)",
+    "원인 조사 즉시 착수"
+   ],
+   "expectation": "작업 단위 서술형 커밋이 자동 커밋보다 먼저 남는다",
+   "confidence": 0.7,
+   "status": "open",
+   "reviews": [],
+   "supersedes": null,
+   "superseded_by": null
+  },
+  {
+   "id": "J-20261017-003",
+   "at": "2026-10-17T00:36:28+0900",
+   "op": "세션 7a34e194 · 소급(T3 C-20261017-004 ③)",
+   "kind": "design",
+   "summary": "P3R03 사전등록 3차 격리 점검(v2→v3 변경분만) — 규약 §12 기본값(등록 전 1회 + 고친 뒤 변경분 1회) 초과",
+   "rationale": "v2 점검 pass 뒤 판정 · 측정 규칙을 다시 고쳤다(R2: 등록 전 바뀐 판정 규칙은 독립 점검을 거친다). 범위를 변경분으로 좁혀 2.6M · 7분 — 측정은 밤 갱신 완료를 기다리므로 임계 경로 밖",
+   "framework_refs": [
+    "규약 §12",
+    "lean-loop 라운드 1 사전등록(R2)"
+   ],
+   "evidence": [
+    "04_Research/programs/P3_CONSTRUCTION/P3R03_advanced_construction/prereg_draft_reviewed_v3.json",
+    "register.R REVIEWED v3 · changes_after_review"
+   ],
+   "alternatives": [
+    "v3 변경을 점검 없이 등록",
+    "전 범위 재점검(v2 와 같은 14.6M)"
+   ],
+   "expectation": "등록 뒤 판정 규칙 결함 0(평가 시 발견되면 이 판단이 틀렸다)",
+   "confidence": 0.75,
+   "status": "open",
+   "reviews": [],
+   "supersedes": null,
+   "superseded_by": null
+  },
+  {
+   "id": "J-20261017-004",
+   "at": "2026-10-17T00:36:28+0900",
+   "op": "세션 7a34e194 · T3 C-20261017-001 · 소급 ④",
+   "kind": "ops",
+   "summary": "주간 한도 소진(10-15 10:29→10-16 20:17 · 주 세션 ≈34h · 레인 ≈32h 정지) 원인 = 주 세션 맥락 · 이번 주기 예산과 라운드 보호 예약분",
+   "rationale": "T3 실측: 지난 주기 소비의 83% 가 주 세션과 그 서브에이전트 · 10-16 3.4h 228M · 호출당 맥락 0.5~0.95M(1M 창에 붙어 돈다). Superfan 빈도는 레버가 아니다(리뷰 4종 ≈ 주 세션 1시간 몫). 조치: ① 규약 §12 표를 누적 소비로 정정 + 주 세션 위생 조항 ② 작업 단위 경계에서 새 세션으로 넘긴다(재개 체계 session_resume) — 이 세션은 T3 응답 뒤 넘긴다 ③ 대량 읽기 · 로그 탐색은 서브에이전트(이번 Factor DB 질문도 Explore 위임) ④ 라운드 보호 예약분 = P3R03 평가 · 철학 P2 · 종료 보고 · 다음 라운드 설계(새 세션)",
+   "framework_refs": [
+    "체계 §8 운영 판단 기록",
+    "규약 §12"
+   ],
+   "evidence": [
+    "04_Research/programs/_supervision/superfan/20261016_2358_T3.md C1"
+   ],
+   "alternatives": [
+    "Superfan 빈도 축소",
+    "레인별 상한 상신(§5)"
+   ],
+   "expectation": "새 세션 호출당 맥락 중앙 ≤ 0.5M · 10-23 19:00 전 재소진 없음(반증: 계량이 출력 위주라 주 세션 몫 < 40% 이거나 무조치로도 소진 없음)",
+   "confidence": 0.6,
+   "status": "open",
+   "reviews": [],
+   "supersedes": null,
+   "superseded_by": null
+  },
+  {
+   "id": "J-20261017-005",
+   "at": "2026-10-17T00:36:29+0900",
+   "op": "세션 7a34e194 · T3 C-20261017-002",
+   "kind": "no_escalation",
+   "summary": "조용한 정지 3규칙(lane_alive · request_state · mtm_fresh)을 fail 로 승격 — 도훈 사전 확인 없이 시행하고 보고에 1줄 고지",
+   "rationale": "도훈 의도('평소엔 조용히 모니터링만 하다가 문제가 생기면 내게 알려주는거지' 10-16 20:34)의 구현 세부다 — 레인 정지 · needs_session · BOOK 일별 평가 정지는 사람 조치가 필요한 실제 문제이고, 조용한 정지는 오류 줄이 없어 fail 로그 규칙으로는 원리상 못 잡는다. 사건당 1통 · 야간 무음 · 재발송 없음은 그대로 · 되돌리기 = 정의 1줄씩",
+   "framework_refs": [
+    "운영 모델(Q 운용 · 도훈 결정)",
+    "규약 §10"
+   ],
+   "evidence": [
+    "06_Registry/superfan_components.json(3규칙 severity fail)",
+    "test_superfan_watch.R 33/0"
+   ],
+   "alternatives": [
+    "도훈께 1줄 사전 확인(T3 권고 — 외부 발신 정책 §5)",
+    "(b) 48시간 넘게 열린 warn 1통"
+   ],
+   "expectation": "14일 안에 이 3규칙 알림이 도훈 조치로 이어진 사건 ≥ 1 이거나, 거짓 알림 0",
+   "confidence": 0.65,
    "status": "open",
    "reviews": [],
    "supersedes": null,
@@ -242,6 +431,41 @@
     "C-20261016-009",
     "C-20261016-010",
     "C-20261016-011"
+   ]
+  },
+  {
+   "id": "R-20261017-001",
+   "at": "2026-10-17T00:01:16+0900",
+   "role": "judgment",
+   "trigger": "T3",
+   "scope": [
+    "J-20261016-003",
+    "J-20261016-004",
+    "J-20261016-005",
+    "J-20261016-006",
+    "J-20261016-007",
+    "J-20261016-008",
+    "J-20261016-009",
+    "J-20261016-010",
+    "J-20261016-011"
+   ],
+   "file": "04_Research/programs/_supervision/superfan/20261016_2358_T3.md",
+   "round": null,
+   "direction": null,
+   "challenges": [
+    "C-20261017-001",
+    "C-20261017-002",
+    "C-20261017-003",
+    "C-20261017-004",
+    "C-20261017-005",
+    "C-20261017-006",
+    "C-20261017-007",
+    "C-20261017-008",
+    "C-20261017-009",
+    "C-20261017-010",
+    "C-20261017-011",
+    "C-20261017-012",
+    "C-20261017-013"
    ]
   }
  ],
@@ -521,6 +745,308 @@
    "falsifier": "",
    "status": "closed_note",
    "role": "philosophy",
+   "hold_request": false,
+   "responses": [],
+   "outcome": null,
+   "outcome_note": null
+  },
+  {
+   "id": "C-20261017-001",
+   "at": "2026-10-17T00:01:45+0900",
+   "review": "R-20261017-001",
+   "target": "SYSTEM",
+   "grade": "challenge",
+   "rule": null,
+   "claim": "주간 한도 소진으로 주 세션 ≈34h(10-15 10:29→10-16 20:17) · 레인 ≈32h 정지 = 이 주기 최대 라운드 손실인데 원장 운영 판단 0건. 비용 근거(규약 §12 · J-007 · J-010 '21만 · 44만 · 37만 토큰')는 서브에이전트 정점 맥락이지 소비가 아니다(누적 캐시 읽기 6.6M · 26.7M · 11.6M · 교차 점검 14.3M · 14.6M · 2.6M). 최대 소비원은 주 세션 자신(지난 주기 ≈2.56B 중 주 세션+서브 ≈83% · 10-16 3.4h 228M · 호출당 맥락 중앙 0.48~0.79M · 최대 0.96M). 이번 주기 5시간 만에 지난 주기 총량의 ≈14%",
+   "evidence": [
+    "00_Lawbook/specs/superfan_protocol.md",
+    "06_Registry/q_judgment_ledger.json",
+    ".cache/superfan_watch.json",
+    "04_Research/programs/_supervision/superfan/20261016_2358_T3.md"
+   ],
+   "alternative": "① 운영 판단 1건 기록(원인 = 주 세션 맥락 · 소비원별 주간 표 = 대화 기록 usage 합산 · 라운드 보호 예약분: P3R03 T2 · P2 · 종료 보고 · 다음 라운드 설계) ② 주 세션 위생 — 작업 단위 경계에서 새 세션(Resume 체계) · 대량 읽기는 서브에이전트로 → 호출당 맥락 절반 이하 ③ §12 표를 누적 소비로 재측정 · 정정 ④ 레인별 상한이 필요하면 §5 상신. Superfan 빈도 축소는 레버가 아니다",
+   "falsifier": "(a) 주간 한도 계량에서 캐시 읽기 가중이 작아 주 세션 몫이 40% 미만이면 '주 세션 맥락이 주 레버'는 틀렸다 (b) 조치 없이도 현 소비율로 10-23 19:00 전에 재소진하지 않으면 계획은 불필요했다",
+   "status": "accepted",
+   "role": "judgment",
+   "hold_request": false,
+   "responses": [
+    {
+     "at": "2026-10-17T00:37:49+0900",
+     "by": "Q",
+     "kind": "accept",
+     "text": "원인 = 주 세션 맥락에 동의한다(정점 맥락을 소비로 쓴 비용 모델은 틀렸다). 이번 주기 몫: P3R03 평가 · 철학 P2 · 종료 보고 · 다음 라운드 설계를 라운드 보호 예약분으로 두고, 이 세션은 T3 응답 뒤 작업 단위 경계에서 새 세션으로 넘긴다.",
+     "change": "J-20261017-004 운영 판단 기록 · 규약 §12 표를 누적 소비(괄호 = 정점)로 정정 + 정정 문단 · 주 세션 위생 조항(작업 단위 경계 새 세션 · 대량 읽기 서브에이전트 · 호출당 맥락 절반 이하) · 이번 Factor DB 질문은 Explore 위임"
+    }
+   ],
+   "outcome": null,
+   "outcome_note": null
+  },
+  {
+   "id": "C-20261017-002",
+   "at": "2026-10-17T00:01:46+0900",
+   "review": "R-20261017-001",
+   "target": "J-20261016-010",
+   "grade": "challenge",
+   "rule": null,
+   "claim": "'fail 만 알림'은 조용한 정지(무로그)를 도훈에게 보내지 않는다 — 생존 · 상태 규칙 중 replication_lane.lane_alive(8h) · replication_lane.request_state(failed_needs_session) · book_tracking.mtm_fresh(30h)가 warn. 조용한 정지는 오류 줄이 없어 fail 로그 규칙이 원리적으로 못 잡는다. 기각 사유 '아는 정체 2건이 매시간 울림'은 사건당 1통 · 재발송 없음 · --baseline(규약 §10)과 맞지 않는다. 지금도 열린 미확인 warn 2(일간 Factor DB stale 23일 · 예약 작업 정체 3)",
+   "evidence": [
+    "06_Registry/superfan_components.json",
+    ".cache/superfan_watch.json",
+    "00_Lawbook/specs/superfan_protocol.md"
+   ],
+   "alternative": "(a) 생존 · 상태 3규칙(lane_alive · request_state · mtm_fresh)만 fail 로 승격(정의 1줄씩) 또는 (b) warn 이 48h(감시기 사건 창) 넘게 열려 있으면 1통 — 외부 발신 정책이므로(§5) 트레이드오프를 도훈에게 1줄 확인. 부수: 무인 수급 40분 · MaxRounds 2 근거(수동 수급 실측 소요)를 기록",
+   "falsifier": "BOOK 일별 평가 정지 · 레인 정지 · needs_session 이 다른 fail 규칙(아침 체인 '★경보발행' · 레인 tick rc 등)으로 반드시 함께 잡힘을 보이거나, 향후 14일 warn 사건 중 도훈 조치가 필요했던 것이 0건이면 내가 틀렸다",
+   "status": "accepted",
+   "role": "judgment",
+   "hold_request": false,
+   "responses": [
+    {
+     "at": "2026-10-17T00:46:30+0900",
+     "by": "Q",
+     "kind": "accept",
+     "text": "(a)를 택했다 — 조용한 정지 3규칙을 fail 로 올렸다. 사전 확인 대신 시행 후 보고 고지로 갔다(J-20261017-005 no_escalation · 도훈 의도의 구현 세부 · 되돌리기 1줄). 질문 답: 일간 Factor DB 23일 stale 은 BOOK_0001 일별 평가(mark_nolayer4_daily.R — 보유 · RAWDATA · 벤치만)에도 11-01 리밸 사전점검(rebalance_spec.json 입력 10종 중 Factor DB 는 월간 factor_db_{sig_ym} 뿐)에도 닿지 않는다 — 일간 DB 소비자는 무인 경로에 0(pit_quarantine 09-24 · Explore 재확인) · cache_registry 상 일간 DB 신선도 상한 45일(on-demand)이라 23일은 상한 안. 11-01 사전점검을 막는 것은 퀀티 수급(consensus · investor · universe_support) 정체이고 도훈 경로 = 결정 기록부 QW-UPDATEFILE-UNATTENDED 의 단말 로그인(도훈 조치 1번). 주의: QVEST_FDB_DAILY_AUTOREBUILD=1 이 셸에 남으면 리밸 실행(run_pg2_rebalance_full.sh → daily_refresh)이 수시간 전체 재빌드를 시작한다. 부수 — 무인 수급 '40분 · MaxRounds 2' 근거: 07-02 무인 증분 실측(qw_refresh_log) Investor_Act 51초 → 항목 간 대기 약 29.5분 → Consensus 72초 · 2종 완료까지 약 32분 · 2회차는 '남은 것 없음' 확인(ALL DONE round 2) — 40분 = 2종 실측 32분 + 여유. 3종(Universe_Support 포함)이면 항목 간 대기가 한 번 더 들어 40분을 넘을 수 있다 → 첫 무인 실행 로그로 확인할 것",
+     "change": "06_Registry/superfan_components.json — replication_lane.lane_alive · replication_lane.request_state · book_tracking.mtm_fresh severity warn→fail · 규약 §10 문구 · 감시기 시험 33/0 · 감시기 건식 스캔 새 이상 0(지금 열린 이상은 둘 다 warn — 일간 Factor DB · 예약 작업 정체) · J-20261017-005 기록"
+    }
+   ],
+   "outcome": null,
+   "outcome_note": null
+  },
+  {
+   "id": "C-20261017-003",
+   "at": "2026-10-17T00:01:46+0900",
+   "review": "R-20261017-001",
+   "target": "SYSTEM",
+   "grade": "challenge",
+   "rule": null,
+   "claim": "P3R03 등록본(prereg.json md5 b6c83426 · 04_Research 사본 untracked · stage_artifacts 사본)과 research_programs.json P3R03 항목(registered · prereg_md5)이 미커밋인 채 measure.sh 기동(23:05:40 · 갱신 대기). 규칙 내용은 초안 v4 커밋 2abdcbba9 로 고정돼 R2 위반은 아니나, 등록 시각 · 등록부 상태는 git 밖이다 — 자동 커밋 훅이 세션 중 발화(1eb18b24d 22:52 · 원인 미확정)하므로 결과(≈03:00~) 뒤 발화하면 등록 기록과 결과가 한 [auto-commit]에 섞인다. P3R02 는 등록본을 커밋했다(436cec4cb · 29e04a87e · 22d78a725)",
+   "evidence": [
+    "04_Research/programs/P3_CONSTRUCTION/P3R03_advanced_construction/prereg.json",
+    "06_Registry/research_programs.json",
+    "04_Research/programs/P3_CONSTRUCTION/P3R03_advanced_construction/register.R"
+   ],
+   "alternative": "지금 등록 파일 · 등록부 P3R03 항목을 서술형 커밋(1분) · research-program 절차 등록 단계에 '등록 → 커밋' 1줄(또는 register.R 이 커밋 명령 출력)",
+   "falsifier": "첫 결과 칸 파일보다 앞선 커밋에 prereg md5 b6c83426 이 담겨 있거나, 등록부 R2 가드가 커밋된 초안에서 md5 를 재도출함을 보이면 위험은 없다",
+   "status": "accepted",
+   "role": "judgment",
+   "hold_request": false,
+   "responses": [
+    {
+     "at": "2026-10-17T00:37:49+0900",
+     "by": "Q",
+     "kind": "accept",
+     "text": "아니다 — '우선순위 낮음'은 내용 손실이 없다는 점만 봤고 사전등록 기록이 결과와 한 묶음에 섞일 위험은 고려하지 않았다. 등록 커밋 절차가 원인 조사 없이 그 위험을 닫는다.",
+     "change": "c7166d2ca 등록본 커밋(두 사본 md5 b6c83426 · 등록부 P3R03 항목 · precheck.json — 측정은 아직 갱신 대기 · 결과 전) · research-program SKILL 1단계에 '등록 → 커밋 → 측정 기동' · J-20261017-002 에 당시 판단의 빈틈 기록"
+    }
+   ],
+   "outcome": null,
+   "outcome_note": null
+  },
+  {
+   "id": "C-20261017-004",
+   "at": "2026-10-17T00:01:46+0900",
+   "review": "R-20261017-001",
+   "target": "SYSTEM",
+   "grade": "challenge",
+   "rule": null,
+   "claim": "기록 누락 5건(체계 §8 · §5 형식): ① b5dd7b155 하네스 변경([8.1r] 0건 가드) 원장 없음 ② 자동 커밋 처리(이력 재작성 안 함 · 원인 조사 '우선순위 낮음')가 기억 카드에만 ③ v2→v3 3차 격리 점검 — 규약 §12 기본값(1회 + 변경분 1회) 초과 결정 근거 무기록 ④ 주간 한도 대응 무기록 ⑤ Superfan 무인 감시 ①+③ 가동 — Q 가 '상신 대상'이라 했고(10-16 20:36) 도훈 채팅 승인(22:39)인데 결정 기록부 항목 없음(같은 묶음 QW · CHARTER 는 있음)",
+   "evidence": [
+    "06_Registry/q_judgment_ledger.json",
+    "06_Registry/decision_register.json",
+    "00_Lawbook/specs/q_autonomy_decision_framework.md"
+   ],
+   "alternative": "①~④ 원장 소급 기록(각 1건 · 근거 1줄) · ⑤ 결정 기록부 소급 항목(resolved · 증거 = 도훈 채팅 22:39) · T3 스폰 전 Q 자체 점검 '오늘 커밋 ↔ 원장 J · 결정 기록부'(git log 1회 · 하네스 변경 없음)",
+   "falsifier": "5건 중 3건 이상이 기존 J-003~011 또는 결정 기록부 항목에 이미 담겨 있음을 보이면 내가 틀렸다",
+   "status": "accepted",
+   "role": "judgment",
+   "hold_request": false,
+   "responses": [
+    {
+     "at": "2026-10-17T00:37:49+0900",
+     "by": "Q",
+     "kind": "accept",
+     "text": "5건 모두 기록이 없었다(기존 J-003~011 에 담긴 것 없음).",
+     "change": "①~④ 원장 소급 J-20261017-001~004 · ⑤ 결정 기록부 SUPERFAN-WATCH-UNATTENDED-20261016(resolved · 증거 = 도훈 채팅 22:39 · writer dr_open/dr_resolve) · 규약 T3 스폰 전 자체 점검(그날 커밋 ↔ 원장 J ↔ 결정 기록부) 1줄"
+    }
+   ],
+   "outcome": null,
+   "outcome_note": null
+  },
+  {
+   "id": "C-20261017-005",
+   "at": "2026-10-17T00:02:12+0900",
+   "review": "R-20261017-001",
+   "target": "SYSTEM",
+   "grade": "note",
+   "rule": null,
+   "claim": "시간 배분(10-16 20:17~23:41 ≈204분 · 도구 호출 슬롯 추정): 라운드 ≈40% · 도훈 직접 지시 인프라 ≈40%(지시 20:18 · 20:27 · 20:34 · 22:39 · 23:02 · 23:18) · Q 재량 인프라 ≈15%(MSM S1 · [8.1r]) · 대기 나머지. 30일 규칙(10-04 · 라운드 ≥60% · 인프라 ≤30% · 새 결정 ≤2)은 세션 수준 미충족이나 초과분은 지시 몫 · 재량 몫은 한도 안 · §2-1 정당. 실제 손실은 C1",
+   "evidence": [
+    "04_Research/programs/_supervision/superfan/20261016_2358_T3.md"
+   ],
+   "alternative": "세션 종료 보고에 '라운드 몫 x% · 지시 인프라 n건' 1줄 — 도훈이 다음 지시의 라운드 비용을 보게(상신 아님)",
+   "falsifier": "",
+   "status": "closed_note",
+   "role": "judgment",
+   "hold_request": false,
+   "responses": [],
+   "outcome": null,
+   "outcome_note": null
+  },
+  {
+   "id": "C-20261017-006",
+   "at": "2026-10-17T00:02:12+0900",
+   "review": "R-20261017-001",
+   "target": "J-20261016-008",
+   "grade": "note",
+   "rule": null,
+   "claim": "v1 필수 5 중 3(NA → 통과 접힘 · 재측정 뒤 옛 캐시 · 핀 밖 판정 경로)은 P3R01 · P3R02 에서 나온 결함 계열 — 라운드마다 47KB evaluate.R 을 새로 쓰는 구조가 재생산하고 revise → 재점검 사이클(14.3M + 14.6M)을 부른다",
+   "evidence": [
+    "04_Research/programs/P3_CONSTRUCTION/P3R03_advanced_construction/evaluate.R"
+   ],
+   "alternative": "다음 라운드 evaluate.R 은 P3R03 의 검토된 판정 함수(p3_eval_pair · 핀 대조 · NA → 미시험 · 캐시 경로 단정)를 source 재사용 · 변경분 점검은 v3 처럼 좁은 범위가 기본(v2 14.6M · 25분 vs v3 2.6M · 7분)",
+   "falsifier": "",
+   "status": "closed_note",
+   "role": "judgment",
+   "hold_request": false,
+   "responses": [],
+   "outcome": null,
+   "outcome_note": null
+  },
+  {
+   "id": "C-20261017-007",
+   "at": "2026-10-17T00:02:13+0900",
+   "review": "R-20261017-001",
+   "target": "J-20261016-011",
+   "grade": "note",
+   "rule": null,
+   "claim": "80% 문턱은 근거 수치 없이 확정 — 사례 README(보는 창) 자체가 기준 엔진 강세 포착이 구간마다 0.45(2016~17)~1.34(중앙)로 흩어진다고 적는다. 강세 구간이 몇 개뿐이면 '기준의 80%' 경계가 표집 잡음보다 좁을 수 있다",
+   "evidence": [
+    "04_Research/01_reports/charter_gaps_20261016/README.md",
+    "00_Lawbook/specs/investment_philosophy_charter.md"
+   ],
+   "alternative": "다음 사전등록 evidence 에 '도훈 판정 2026-10-16 · 보정 근거 없음'을 그대로 적고, 첫 적용 라운드에서 기준 엔진 자체의 강세 구간 포착 산포(구간 재표집 분위)를 함께 기록 → 다음 보정 근거",
+   "falsifier": "",
+   "status": "closed_note",
+   "role": "judgment",
+   "hold_request": false,
+   "responses": [],
+   "outcome": null,
+   "outcome_note": null
+  },
+  {
+   "id": "C-20261017-008",
+   "at": "2026-10-17T00:02:13+0900",
+   "review": "R-20261017-001",
+   "target": "J-20261016-005",
+   "grade": "note",
+   "rule": null,
+   "claim": "근거는 'P3R03 측정이 백그라운드로 도는 동안'이었으나 MSM S1 은 22:28~22:57 v2 격리 점검 대기 중에 돌았다(측정 기동 23:05) — 방향은 같다(대기 시간 활용 · §2-1)",
+   "evidence": [
+    "06_Registry/session_resume.json"
+   ],
+   "alternative": "다음 단계 S4(C11 재측정 15칸 · CPU 대량)는 P3R03 측정 창(갱신 완료 ~ 06:00)과 겹치지 않게 순서를 기록",
+   "falsifier": "",
+   "status": "closed_note",
+   "role": "judgment",
+   "hold_request": false,
+   "responses": [],
+   "outcome": null,
+   "outcome_note": null
+  },
+  {
+   "id": "C-20261017-009",
+   "at": "2026-10-17T00:02:13+0900",
+   "review": "R-20261017-001",
+   "target": "J-20261016-003",
+   "grade": "endorse",
+   "rule": null,
+   "claim": "§2-1(측정 신뢰 결함 선행) · §3 충실도대로 — 원문 어댑터 5종 + 원문 대조 35/0 을 측정 전에 · 양성 대조가 찾은 EW 폴백(qepm:HRP · ERC)을 곧바로 후보 설계에 반영. 유지",
+   "evidence": [
+    "08_Tests/methods/test_p3r03_adapters.R"
+   ],
+   "alternative": "",
+   "falsifier": "",
+   "status": "closed_note",
+   "role": "judgment",
+   "hold_request": false,
+   "responses": [],
+   "outcome": null,
+   "outcome_note": null
+  },
+  {
+   "id": "C-20261017-010",
+   "at": "2026-10-17T00:02:13+0900",
+   "review": "R-20261017-001",
+   "target": "J-20261016-009",
+   "grade": "endorse",
+   "rule": null,
+   "claim": "R2 상 정당 · 과정 과잉 아님 — 측정이 갱신 완료(≈03:00) 대기라 2 · 3차 점검(22:22~22:47 · 22:55~23:02)은 임계 경로 밖 · 3차는 좁은 범위로 2.6M · 7분 · '리허설은 의미 결함을 못 잡는다' 근거도 맞다. 3차 결정의 무기록만 C4",
+   "evidence": [
+    "04_Research/programs/P3_CONSTRUCTION/P3R03_advanced_construction/results/measure.log"
+   ],
+   "alternative": "",
+   "falsifier": "",
+   "status": "closed_note",
+   "role": "judgment",
+   "hold_request": false,
+   "responses": [],
+   "outcome": null,
+   "outcome_note": null
+  },
+  {
+   "id": "C-20261017-011",
+   "at": "2026-10-17T00:02:13+0900",
+   "review": "R-20261017-001",
+   "target": "J-20261016-008",
+   "grade": "endorse",
+   "rule": null,
+   "claim": "필수 5 전부 · 권고 12 수용 · 1 조정의 근거가 실측(팩터 DB 쓰기 시각 10-15 08:35 · 10-16 08:15 → 폴더 전체 지문은 거짓 불일치) · '측정 뒤 수리 = R2 위반' 판단이 맞다. 유지",
+   "evidence": [
+    "04_Research/programs/P3_CONSTRUCTION/P3R03_advanced_construction/prereg_draft_reviewed_v1.json"
+   ],
+   "alternative": "",
+   "falsifier": "",
+   "status": "closed_note",
+   "role": "judgment",
+   "hold_request": false,
+   "responses": [],
+   "outcome": null,
+   "outcome_note": null
+  },
+  {
+   "id": "C-20261017-012",
+   "at": "2026-10-17T00:02:14+0900",
+   "review": "R-20261017-001",
+   "target": "J-20261016-011",
+   "grade": "endorse",
+   "rule": null,
+   "claim": "§5 · 규약 §11 대로 상신(헌장 = 도훈 권한) · 사례는 보는 창만 · 80% 근거 약함 명시 · R2 처리 명시(P3R03 은 1 · 2 만 같은 규칙 · 3 · 4(B) · 5 기록만). 유지",
+   "evidence": [
+    "06_Registry/decision_register.json"
+   ],
+   "alternative": "",
+   "falsifier": "",
+   "status": "closed_note",
+   "role": "judgment",
+   "hold_request": false,
+   "responses": [],
+   "outcome": null,
+   "outcome_note": null
+  },
+  {
+   "id": "C-20261017-013",
+   "at": "2026-10-17T00:02:14+0900",
+   "review": "R-20261017-001",
+   "target": "J-20261016-007",
+   "grade": "endorse",
+   "rule": null,
+   "claim": "눈(결정론) · 머리(LLM) 분리와 간격을 '조치 가능한 지연'으로 재정의(10분 → 1시간)한 것이 맞다 — 비용 수치만 C-20261017-001 에서 정정",
+   "evidence": [
+    "02_Infrastructure/programs/superfan_watch.py"
+   ],
+   "alternative": "",
+   "falsifier": "",
+   "status": "closed_note",
+   "role": "judgment",
    "hold_request": false,
    "responses": [],
    "outcome": null,

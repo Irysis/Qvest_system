@@ -74,9 +74,9 @@
       {"severity": "fail", "regex": "failed_needs_session|rate_limit|weekly limit|HTTP 429|authentication_error", "label": "레인 정지 사유"},
       {"severity": "warn", "regex": "audit_conflict", "label": "감사 상충"},
       {"severity": "warn", "regex": "refresh_lock_stale", "label": "리프레시 잠금 stale"}]},
-    {"id": "lane_alive", "kind": "freshness", "file": ".cache/scheduler_logs/reinforce_auto_{YYYYMMDD}.log", "max_age_h": 8, "severity": "warn"},
+    {"id": "lane_alive", "kind": "freshness", "file": ".cache/scheduler_logs/reinforce_auto_{YYYYMMDD}.log", "max_age_h": 8, "severity": "fail"},
     {"id": "request_state", "kind": "json_field", "file": "06_Registry/replication_request.json", "path": "status",
-     "bad_values": ["failed_needs_session", "failed"], "severity": "warn"}
+     "bad_values": ["failed_needs_session", "failed"], "severity": "fail"}
    ]
   },
   {
@@ -125,7 +125,7 @@
      "patterns": [
       {"severity": "warn", "regex": "\\[nolayer4-daily\\] skip", "label": "일별 평가 건너뜀"},
       {"severity": "fail", "regex": "\\[nolayer4-daily\\].*(Error|FAIL|실패)", "label": "일별 평가 실패"}]},
-    {"id": "mtm_fresh", "kind": "freshness", "file": "~/AppData/Local/Temp/qm_morning.log", "max_age_h": 30, "weekdays_only": true, "severity": "warn"}
+    {"id": "mtm_fresh", "kind": "freshness", "file": "~/AppData/Local/Temp/qm_morning.log", "max_age_h": 30, "weekdays_only": true, "severity": "fail"}
    ]
   },
   {

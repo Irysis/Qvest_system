@@ -71,6 +71,8 @@ Rscript -e "source('02_Infrastructure/programs/program_registry.R'); writeLines(
 
 1. **사전등록**(R2) — 측정 **전에** 파일로: 가설 · 기대 방향(행동 카드 지표로) · 반증 조건 · 변형 목록(수 상한) · 최종 후보 선택 규칙(보는 창 정보만).
    `stage_artifacts/programs/<프로그램>/<round_id>/prereg.json`. 그리고 `pr_record_round(id, list(round_id=, prereg=<경로>))`.
+   **등록 → 커밋 → 측정 기동** 순서다 — 등록본(두 사본) · 등록부 항목 · 등록 시점 핀 점검을 서술형 커밋으로 남긴 **뒤에** 측정을 띄운다
+   ('결과 전 등록'을 git 이 증명한다 · 세션 중 자동 커밋이 결과와 한 묶음으로 쓸어 담지 않게 — 2026-10-17 판단 Superfan T3 C-20261017-003 · P3R03 c7166d2ca).
 2. **측정** — 정본 계약만(`run_paper_replication` → essence). 손계산 · 재구성 금지(AX-008).
 3. **행동 카드** — 측정 산출물마다(카드 + MC8 크기·노출 짝 대조 · 롱온리 처방 정의 · 디렉터리당 약 16초):
    ```r
