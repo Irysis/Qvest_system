@@ -47,8 +47,9 @@ fi
 #   STALL_N 번 연속 늘지 않으면(멈춤) 또는 절대 상한(HARD)에서 끝낸다. 끝낼 때는 지휘 셸과 **이 실행이 띄운** Excel(시작 시각 ≥ 이 실행)만 닫는다
 #   — 고아 Excel 이 다음 수급을 막는다 · 사람이 연 Excel 은 건드리지 않는다.
 #   10-17 실측: Universe_Support 49일치가 40분 고정 상한에 잘렸다(지휘만 죽고 Excel 은 조회를 계속 · 저장할 주체 없음) → 세션이 그 Excel 을 닫아
-#   46분을 버렸다. 수동 기록 08-29: 1개월분 ≈ 60분(qw_refresh_state.json OHLCVS 18:00 → Universe_Support 18:59). 절대 상한 기본 2시간 =
-#   그 실측의 2배(월초 하루만 리프레시를 늦춘다 · 06:00 아침 체인 전). 검사 주입: QWUF_PROGRESS_CMD · QWUF_CLEANUP_CMD · QWUF_POLL_S · QWUF_STALL_N · QWUF_HARD_TIMEOUT
+#   46분을 버렸다. 실측: 08-29 수동 1개월분 ≈ 60분(qw_refresh_state.json OHLCVS 18:00 → Universe_Support 18:59) · 10-17 재수급 49일치(33거래일)
+#   = 64.5분(01:51:11 → 02:55:39 · 조회 자체는 1분 남짓 · 484MB 통합문서 저장 · 2회차 확인이 대부분). 절대 상한 기본 2시간 = 그 실측의 약 2배
+#   (월초 하루만 리프레시를 늦춘다 · 06:00 아침 체인 전). 검사 주입: QWUF_PROGRESS_CMD · QWUF_CLEANUP_CMD · QWUF_POLL_S · QWUF_STALL_N · QWUF_HARD_TIMEOUT
 HARD="${QWUF_HARD_TIMEOUT:-7200}"; POLL="${QWUF_POLL_S:-60}"; STALL_N="${QWUF_STALL_N:-5}"
 T0_ISO=$(date '+%Y-%m-%d %H:%M:%S')
 progress() {
