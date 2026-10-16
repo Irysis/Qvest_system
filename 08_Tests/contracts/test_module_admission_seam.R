@@ -219,6 +219,7 @@ if (is.null(GATE) || is.null(REG_DEF) || any(vapply(HELP_DEFS, is.null, logical(
     sb$.v1001_report <- function(...) { REC$report <- list(...); invisible(TRUE) }
     sb$.v1001_charts <- function(...) NULL
     sb$.v1001_grade_extra <- function(...) NULL
+    sb$.v1001_factor_section <- function(...) NULL   # 사후 분석 = 별도 Rscript(부작용) — 가린다(10-16 보고 1통의 섹션)
     sb$.tg_target_label <- function(t, k, ...) t
     err <- NULL
     tryCatch(eval(ex[[1]], envir = sb),

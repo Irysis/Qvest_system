@@ -200,8 +200,12 @@ echo "=== 13. 성과 요약 · 팩터 분석 발송 ==="
 grep -qE "06_metrics.csv|07_benchmark_compare.csv" 02_Infrastructure/ops/rf_perf_summary.R && ! grep -qE "sd\(|mean\(ret|cumprod|Return\.annualized" 02_Infrastructure/ops/rf_perf_summary.R \
   && ok "계약 산출물 읽기 전용(자체 계산 없음)" || ng "헬퍼가 성과를 자체 계산한다"
 grep -q "run_analysis(.sim_fa" 02_Infrastructure/alpha_search/run_paper_replication.R && ok "FF3/FF5/Carhart + FMB 생산 배선" || ng "팩터 회귀 미생산"
-sed 's/#.*$//' "$VERIFY" | grep -q "tg_pass_analysis" && ok "[팩터 분석] 소비자 = 검증기(발송 1곳)" || ng "생산만 하고 발송 없음"
-grep -q "factor_analysis_absent" "$VERIFY" && ok "산출물 부재 시 사유 기록" || ng "부재가 조용히 넘어간다"
+## 2026-10-16 도훈 "파마맥베스 … 메세지 다시 살려줘" — [팩터 분석]은 보고 1통의 섹션(비중형 엔진은 사후 분석 · 점수 = 보유 비중)
+VNC=$(sed 's/#.*$//' "$VERIFY")
+printf '%s' "$VNC" | grep -q "replication_factor_analysis.R" && [ "$(printf '%s' "$VNC" | grep -c 'extra = c(.v1001_grade_extra(dirname(ar)), .v1001_factor_section(dirname(ar)))')" = "2" ] \
+  && ok "[팩터 분석] = 검증기 보고 1통의 섹션(성공 분기 2곳 · 사후 분석 배선)" || ng "팩터 분석 섹션 미배선"
+printf '%s' "$VNC" | grep -q 'jlog("factor_analysis"' && ok "분석 상태 기록(근거 · 상태 · 사유 · 소요)" || ng "분석 상태가 조용히 넘어간다"
+! printf '%s' "$VNC" | grep -q "tg_pass_analysis" && ok "[팩터 분석] 별도 발송 없음(1단위 1통)" || ng "팩터 분석을 따로 또 보낸다"
 
 echo "=== 14. v10.01 보고·인계 — 검증기가 행동 카드 · 프로그램 큐 · 발송기를 탄다 ==="
 VC=$(sed 's/#.*$//' "$VERIFY")

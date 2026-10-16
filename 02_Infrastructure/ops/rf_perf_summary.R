@@ -44,8 +44,15 @@ suppressMessages({ library(jsonlite) })
 .nm <- function(x, d = 2) if (is.null(x) || !is.finite(x)) "n/a" else sprintf(paste0("%.", d, "f"), x)
 
 #' 성과 요약 kv — 예전 알파 서치 포맷. 전부 계약 산출값 읽기.
-rf_perf_kv <- function(dir, universe = "K200\u222aKQ150") {
+#'   유니버스 표기 = 그 산출물의 측정 축(authoritative_remeasure.json::measurement_axis$universe · 계약 기록) — 축 블록 없는 구판 = K200∪KQ150.
+#'   (2026-10-17: 축 전환(10-13) 뒤에도 기본값 'K200∪KQ150' 이 전 종목+위생 산출물 보고에 찍혔다)
+.RFP_UNIVERSE_LABEL <- c(ALL_HYG = "\uc804 \uc885\ubaa9+\uc704\uc0dd", K200_KQ150 = "K200\u222aKQ150", INDEX = "K200\u222aKQ150")
+rf_perf_kv <- function(dir, universe = NULL) {
   m <- .rfp_metrics(dir); b <- .rfp_bench(dir); a <- .rfp_auth(dir)
+  if (is.null(universe)) {
+    u <- as.character(a$measurement_axis$universe %||% "K200_KQ150")[1]
+    universe <- if (u %in% names(.RFP_UNIVERSE_LABEL)) .RFP_UNIVERSE_LABEL[[u]] else u
+  }
   es <- a$essence %||% list()
   kv <- list()
   kv[["\uc720\ub2c8\ubc84\uc2a4"]]        <- sprintf("%s \u00b7 \ud3c9\uade0 %s\uc885\ubaa9",

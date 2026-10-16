@@ -85,6 +85,22 @@ chk("차트 실패 → 위기별 낙폭 글줄로 되돌아간다", grepl("위�
 r6 <- prep_send(program = "방어 엔진", target = "검사용 전략", status = list(stage = "P2", position = "측정", previous = "없음"), card = card, artifact = tdir, push = FALSE)
 chk("기본값(글줄) 호출자는 그대로 — 위기 표 섹션 유지", grepl("위기별 낙폭 (시장 대비)", r6$msg %||% "", fixed = TRUE))
 
+cat("\n=== F. 핵심 수치 = 산출물 권위 기록(essence)이 있으면 그 값 — 카드 월간 값과 등급 값 불일치(10-17 1801.01777) ===\n")
+fdir <- gsub("\\\\", "/", file.path(tempdir(), "prep_auth_test")); unlink(fdir, recursive = TRUE); dir.create(fdir)
+jsonlite::write_json(list(essence = list(cagr = 0.361, mdd = 0.393, calmar = 0.918)), file.path(fdir, "authoritative_remeasure.json"), auto_unbox = TRUE)
+kv_has <- function(m, k, v) grepl(paste0(k, "</b>: ", v), m, fixed = TRUE)
+chk("F0 판별력 전제 — 검사 카드 값이 권위 값과 다르다",
+    !identical(prep_fmt_pct(card$stats$cagr), prep_fmt_pct(0.361)) && !identical(prep_fmt_ratio(card$stats$calmar), prep_fmt_ratio(0.918)))
+m7 <- prep_send(program = "충실구현", target = "검사용 전략", status = list(stage = "충실구현 완료", position = "검사", previous = "없음"),
+                card = card, artifact = fdir, push = FALSE)$msg %||% ""
+chk("F1 권위 기록이 있으면 CAGR · 최대낙폭 · Calmar = essence 값",
+    kv_has(m7, "CAGR", prep_fmt_pct(0.361)) && kv_has(m7, "최대낙폭", prep_fmt_pct(-0.393)) && kv_has(m7, "Calmar", prep_fmt_ratio(0.918)),
+    substr(m7, 1, 400))
+m8 <- prep_send(program = "충실구현", target = "검사용 전략", status = list(stage = "충실구현 완료", position = "검사", previous = "없음"),
+                card = card, artifact = tdir, push = FALSE)$msg %||% ""
+chk("F2 권위 기록이 없으면 카드 값 그대로(CDaR · 베타는 늘 카드)",
+    kv_has(m8, "CAGR", prep_fmt_pct(card$stats$cagr)) && kv_has(m8, "Calmar", prep_fmt_ratio(card$stats$calmar)))
+
 cat(sprintf("\n== program_report: PASS %d · FAIL %d ==\n", PASS, FAIL))
 cat(sprintf('{"test":"program_report","pass":%d,"fail":%d,"total":%d}\n', PASS, FAIL, PASS + FAIL))   # 배터리 요약 계약(run_all_hooks.sh _last_summary_json)
 if (FAIL > 0L) quit(status = 1L)

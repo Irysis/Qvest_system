@@ -76,7 +76,8 @@ COUNT_PAPER <- !identical(Sys.getenv("RP_COUNT_PAPER", "1"), "0")
 
 # 차트 캡션처럼 **한 줄만** 받는 자리용 압축 라벨 — 결합이면 키를 전부 남긴다
 # (제목 연접을 60자로 자르면 재료 2·3편이 사라지지만, 키는 3편이라야 42자다).
-.tg_target_label <- function(title, pkey, cap = 60L) {
+## 2026-10-16 도훈 "논문명은 안 잘렸으면" — 상한 해제(표제 · 대상 줄 = prep_send relaxed). 개행만 공백(.tg_clip). 결합이면 키 전부.
+.tg_target_label <- function(title, pkey, cap = Inf) {
   keys <- if (grepl("^combo:", pkey %||% ""))
     trimws(strsplit(sub("^combo:", "", pkey), "+", fixed = TRUE)[[1]]) else character(0)
   keys <- keys[nzchar(keys)]
@@ -152,7 +153,8 @@ fail <- function(why, detail = "") {
   if (!exists("prep_send", mode = "function"))
     source(file.path(ROOT, "02_Infrastructure/programs/program_report.R"))
   prep_send(program = program, target = target, status = status, card = card, verdict_line = verdict_line,
-            next_step = next_step, artifact = artifact, push = push, charts = charts, extra = extra, root = ROOT)
+            next_step = next_step, artifact = artifact, push = push, charts = charts, extra = extra, root = ROOT,
+            crisis = if (is.null(card)) "lines" else "chart")   # 도훈 10-16 "위기별 낙폭은 시각화 자료로 대체"
 }
 ## 등급 근거 — 행동 카드가 싣지 않는 등급 입력(PORT_t · SR · OOS 유지율 · DSR)과 구성 사실(보유 수 · 회전율)을 계약 산출물에서 그대로 옮긴다
 ##   (rf_perf_summary.R::rf_perf_kv — authoritative_remeasure.json·06_metrics.csv 읽기 전용 · 손계산 0 · AX-008).
@@ -166,6 +168,37 @@ fail <- function(why, detail = "") {
   if (!length(p)) return(NULL)
   cap <- .V1001_CHART_CAP[basename(p)]
   setNames(p, ifelse(is.na(cap), basename(p), cap))
+}
+## Judge 트리거 보류 — 측정(러너 §11)이 감사 **전에** 낸 judge_request.eligible.json(pending)을 judge_request.held.json(status held:<코드>)으로
+##   옮긴다. 러너의 관문 보류와 같은 파일 이름 · 같은 status 형식(트리거 아님 · 스폰 없이 도훈 보고) · 원 요청 필드는 그대로 둔다.
+##   (2026-10-17 1801.01777 실측: A 판이 감사에서 기각돼 engine.R 이 개명됐는데 트리거는 pending 으로 남아 그 경로를 가리켰다)
+.v1001_hold_judge <- function(dir, code, ...) {
+  src <- file.path(dir, "judge_request.eligible.json")
+  if (!file.exists(src)) return(invisible(FALSE))
+  ok <- tryCatch({
+    j <- fromJSON(src, simplifyVector = FALSE)
+    j$status <- paste0("held:", code)
+    j$held_after_publish <- c(list(code = code, at = format(Sys.time(), "%Y-%m-%dT%H:%M:%S%z"), by = "rf_replication_verify.R"), list(...))
+    write(toJSON(j, auto_unbox = TRUE, pretty = TRUE, null = "null"), file.path(dir, "judge_request.held.json"))
+    file.remove(src)
+  }, error = function(e) FALSE)
+  jlog(if (isTRUE(ok)) "judge_request_held" else "judge_hold_failed", dir = dir, code = code)
+  invisible(isTRUE(ok))
+}
+## 팩터 분석(파마-맥베스 · FF3/FF5/Carhart) = 같은 1통의 섹션(도훈 10-16 "파마맥베스 … 메세지 누락된거 다시 살려줘" · 발송 규칙 §0.1 1단위 1통).
+##   러너가 점수형 엔진에서 이미 분석했으면 그 산출물을, 비중형이면 사후 분석(alpha_search/replication_factor_analysis.R — 별도 프로세스 ·
+##   점수 = 신호일 보유 비중 · 비보유 0)을 돌린 뒤 rfa_section 으로 섹션 1개를 만든다. 실패해도 보고는 나간다(섹션에 사유 1줄 · jlog).
+.v1001_factor_section <- function(dir) {
+  rfa <- file.path(ROOT, "02_Infrastructure/alpha_search/replication_factor_analysis.R")
+  if (!file.exists(rfa)) return(NULL)
+  t0 <- Sys.time()
+  rc <- tryCatch(system2("Rscript", c(shQuote(rfa), shQuote(dir)), stdout = file.path(dir, "analysis_rfa.log"), stderr = file.path(dir, "analysis_rfa.err.log")),
+                 error = function(e) -1L)
+  b <- tryCatch(fromJSON(file.path(dir, "analysis_basis.json"), simplifyVector = FALSE), error = function(e) list())
+  jlog("factor_analysis", dir = dir, rc = rc, basis = b$basis %||% NA, status = b$status %||% NA, reason = b$reason %||% NA,
+       secs = round(as.numeric(difftime(Sys.time(), t0, units = "secs"))))
+  e <- new.env(parent = globalenv())
+  tryCatch({ sys.source(rfa, envir = e); e$rfa_section(dir) }, error = function(err) { jlog("factor_section_failed", err = conditionMessage(err)); NULL })
 }
 .v1001_grade_extra <- function(dir) {
   kv <- tryCatch(rf_perf_kv(dir), error = function(e) list())
@@ -518,6 +551,9 @@ jlog("fidelity_audit_verdict", verdict = .aud$verdict, action = .disp$action,
      undeclared = length(.aud$undeclared_changes %||% list()),
      mismatch = length(.aud$signal_mismatch %||% list()), retries = .aud_tries,
      spawns = .gate$spawns, last_rc = .gate$last_rc, audit_mode = .AUD_MODE)
+# 감사가 이 측정을 받지 않으면(미실행 · 상충 · 재구현) 측정이 먼저 낸 Judge 트리거도 보류한다 — 그 엔진은 재측정 · 보류 · 교체된다
+if (isTRUE(as.character(.disp$action %||% "")[1] %in% c("audit_required", "audit_conflict", "reimplement")))
+  .v1001_hold_judge(dirname(ar), code = paste0("fidelity_", .disp$action), verdict = as.character(.aud$verdict %||% "")[1])
 # ★출처 기록(FA-CLEAN-BASE-PATH) — 감사 1건(모드 · 산출물 비공개 여부 · 판정). 청정 재구현이면 아래 분기가 원천 사본 위치를 더한다.
 .aud_src <- NULL
 if (identical(.disp$action, "reimplement") && .CLEAN)
@@ -802,12 +838,9 @@ if (is.finite(.base_pt) && .base_pt < .min_pt && !.resc_ok) {
                        card = .ho$card, artifact = dirname(ar),
                        next_step = paste0("큐 다음 논문 충실구현으로 넘어간다",
                                           if (identical(.v1001_prog_code(.ho), "UNROUTED")) " · 미분류 재료는 라우터 v5 동기화 또는 세션이 프로그램을 정한다" else ""),
-                       push = TRUE, charts = .v1001_charts(dirname(ar)), extra = .v1001_grade_extra(dirname(ar))),
+                       push = TRUE, charts = .v1001_charts(dirname(ar)), extra = c(.v1001_grade_extra(dirname(ar)), .v1001_factor_section(dirname(ar)))),
            error = function(e) jlog("telegram_failed", err = conditionMessage(e)))
-  # ★[팩터 분석] — 산출물이 있을 때만 보낸다 · 없으면 사유를 남긴다(침묵 누락 금지 · 정본 telegram_notify.R::tg_pass_analysis)
-  if (file.exists(file.path(dirname(ar), "analysis_multifactor.csv")) || file.exists(file.path(dirname(ar), "analysis_fmb_summary.csv")))
-    tryCatch(tg_pass_analysis(.tg_target_label(TITLE, PKEY), dirname(ar)), error = function(e) jlog("factor_tg_failed", err = conditionMessage(e)))
-  else jlog("factor_analysis_absent", dir = dirname(ar), note = "FF/FMB 산출물 없음 — FACTORS 부재이거나 분석 실패")
+  # [팩터 분석] = 위 보고 1통의 섹션(.v1001_factor_section · 10-16) — 따로 보내지 않는다(발송 규칙 §0.1) · 상태는 jlog factor_analysis
   system2("Rscript", c(shQuote(file.path(ROOT, "02_Infrastructure/programs/next_replication.R")), "--root", shQuote(ROOT)), wait = TRUE)
   quit(status = 0)
 }
@@ -904,11 +937,8 @@ tryCatch(.v1001_report(target = .tg_target_label(TITLE, PKEY),
                      card = .HO$card, artifact = dirname(ar),
                      next_step = paste0("프로그램 큐에서 조립 단계(실현 가능성 지도 이후)가 쓴다 · 큐 다음 논문으로 넘어간다",
                                         if (identical(.v1001_prog_code(.HO), "UNROUTED")) " · 미분류 재료는 라우터 v5 동기화 또는 세션이 프로그램을 정한다" else ""),
-                     push = TRUE, charts = .v1001_charts(dirname(ar)), extra = .v1001_grade_extra(dirname(ar))),
+                     push = TRUE, charts = .v1001_charts(dirname(ar)), extra = c(.v1001_grade_extra(dirname(ar)), .v1001_factor_section(dirname(ar)))),
          error = function(e) jlog("telegram_failed", err = conditionMessage(e)))
-# ★[팩터 분석] — 산출물이 있을 때만 보낸다 · 없으면 사유를 남긴다(침묵 누락 금지 · 정본 telegram_notify.R::tg_pass_analysis)
-if (file.exists(file.path(dirname(ar), "analysis_multifactor.csv")) || file.exists(file.path(dirname(ar), "analysis_fmb_summary.csv"))) {
-  tryCatch(tg_pass_analysis(.tg_target_label(TITLE, PKEY), dirname(ar)), error = function(e) jlog("factor_tg_failed", err = conditionMessage(e)))
-} else jlog("factor_analysis_absent", dir = dirname(ar), note = "FF/FMB 산출물 없음 — FACTORS 부재이거나 분석 실패")
+# [팩터 분석] = 위 보고 1통의 섹션(.v1001_factor_section · 10-16) — 따로 보내지 않는다(발송 규칙 §0.1) · 상태는 jlog factor_analysis
 system2("Rscript", c(shQuote(file.path(ROOT, "02_Infrastructure/programs/next_replication.R")), "--root", shQuote(ROOT)), wait = TRUE)
 quit(status = 0)

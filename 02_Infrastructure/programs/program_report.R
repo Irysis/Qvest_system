@@ -158,32 +158,50 @@ prep_crisis_chart <- function(card, path, window = "overall") {
   lab_w <- c(visible = "보는 창", test = "시험 창", straddle = "걸침")
   cr[, key := sprintf("%s~%s\n%s%s", format(as.Date(peak_date), "%y.%m"), format(as.Date(trough_date), "%y.%m"),
                       .prep_or_vec(lab_w[as.character(window)], "?"), ifelse(.prep_true_vec(ongoing), " · 진행 중", ""))]
-  cr[, key := factor(key, levels = unique(key[order(as.Date(peak_date))]))]
+  ## 세로 배치(10-17) — 위기 = 행(위 = 오래된 위기) · 가로 막대. 위기 15개를 가로로 늘어놓으면 3262×870 이 돼 휴대폰 텔레그램에서 글자가 안 보였다.
+  ##   폭 고정(7.2in · 150dpi ≈ 1080px) · 높이 = 위기 수에 비례. 포착률은 0 오른쪽 여백에 행마다 1개.
+  cr[, key := factor(key, levels = rev(unique(key[order(as.Date(peak_date))])))]
   L <- data.table::rbindlist(list(cr[, .(key, who = "시장(KOSPI200)", v = -abs(as.numeric(bm_dd)))], cr[, .(key, who = "전략", v = -abs(as.numeric(st_dd)))]))
-  L[, who := factor(who, levels = c("시장(KOSPI200)", "전략"))]
-  capl <- cr[, .(key, y = -pmax(abs(as.numeric(bm_dd)), abs(as.numeric(st_dd)), na.rm = TRUE),
-                 lab = paste0("포착 ", vapply(as.numeric(dd_capture), prep_fmt_ratio, character(1))))]
+  L[, who := factor(who, levels = c("전략", "시장(KOSPI200)"))]                      # 뒤집힌 축에서 행 안 위 = 시장 · 아래 = 전략
+  m <- max(abs(L$v), na.rm = TRUE); if (!is.finite(m) || m <= 0) m <- 0.1
+  capl <- cr[, .(key, lab = paste0("포착 ", vapply(as.numeric(dd_capture), prep_fmt_ratio, character(1))))]
   pct <- function(x) vapply(x, function(z) prep_fmt_pct(z, 0L), character(1))
   g <- ggplot2::ggplot(L, ggplot2::aes(key, v, fill = who)) +
-    ggplot2::geom_col(position = ggplot2::position_dodge(0.78), width = 0.72) +
-    ggplot2::geom_text(ggplot2::aes(label = pct(v)), position = ggplot2::position_dodge(0.78), vjust = 1.3, size = 3.1, family = fam) +
-    ggplot2::geom_text(data = capl, ggplot2::aes(key, y, label = lab), inherit.aes = FALSE, vjust = 3.0, size = 3.3, family = fam, colour = "#333333") +
+    ggplot2::geom_col(position = ggplot2::position_dodge(0.8), width = 0.76) +
+    ggplot2::geom_text(ggplot2::aes(y = v - 0.015 * m, label = pct(v)), position = ggplot2::position_dodge(0.8), hjust = 1, size = 3.3, family = fam) +
+    ggplot2::geom_text(data = capl, ggplot2::aes(key, 0.04 * m, label = lab), inherit.aes = FALSE, hjust = 0, size = 3.5, family = fam, colour = "#333333") +
     ggplot2::geom_hline(yintercept = 0, colour = "#444444", linewidth = 0.4) +
-    ggplot2::scale_fill_manual(values = c("시장(KOSPI200)" = "#9e9e9e", "전략" = "#1f77b4")) +
-    ggplot2::scale_y_continuous(labels = function(x) pct(x), expand = ggplot2::expansion(mult = c(0.22, 0.05))) +
+    ggplot2::coord_flip(clip = "off") +
+    ggplot2::scale_fill_manual(values = c("시장(KOSPI200)" = "#9e9e9e", "전략" = "#1f77b4"), breaks = c("시장(KOSPI200)", "전략")) +
+    ggplot2::scale_y_continuous(breaks = function(l) { b <- pretty(l); b[b <= 0] }, labels = function(x) pct(x),
+                                limits = c(-1.3 * m, 0.45 * m), expand = ggplot2::expansion(mult = 0)) +   # 0 오른쪽 = 포착 라벨 자리(눈금 없음)
     ggplot2::labs(title = "위기별 낙폭 — 시장(KOSPI200) vs 전략",
-                  subtitle = "막대 = 위기 구간 고점→저점 낙폭 · 포착 = 전략 낙폭 ÷ 시장 낙폭(낮을수록 방어)",
+                  subtitle = "막대 = 위기 구간 고점→저점 낙폭\n포착 = 전략 낙폭 ÷ 시장 낙폭(낮을수록 방어)",
                   caption = "위기 = KOSPI200 Lunde-Timmermann 20/20 · 수치 = 행동 카드(계약 산출)", x = NULL, y = NULL) +
-    ggplot2::theme_minimal(base_family = fam, base_size = 12) +
-    ggplot2::theme(legend.position = "bottom", legend.title = ggplot2::element_blank(), panel.grid.minor = ggplot2::element_blank(),
-                   plot.title = ggplot2::element_text(size = 15), plot.subtitle = ggplot2::element_text(size = 10, colour = "#555555"),
-                   plot.caption = ggplot2::element_text(size = 8.5, colour = "#777777"))
+    ggplot2::theme_minimal(base_family = fam, base_size = 12.5) +
+    ggplot2::theme(legend.position = "top", legend.justification = "left", legend.title = ggplot2::element_blank(),
+                   panel.grid.minor = ggplot2::element_blank(), panel.grid.major.y = ggplot2::element_blank(),
+                   axis.text.y = ggplot2::element_text(size = 11, colour = "#222222"),
+                   plot.title = ggplot2::element_text(size = 16), plot.subtitle = ggplot2::element_text(size = 10.5, colour = "#555555"),
+                   plot.caption = ggplot2::element_text(size = 8.5, colour = "#777777"), plot.title.position = "plot")
   dir.create(dirname(path), recursive = TRUE, showWarnings = FALSE)
-  ggplot2::ggsave(path, g, width = max(8, 1.25 * nrow(cr) + 3), height = 5.8, dpi = 150, device = ragg::agg_png)
+  ggplot2::ggsave(path, g, width = 7.2, height = 2.2 + 0.5 * nrow(cr), dpi = 150, device = ragg::agg_png)
   path
 }
 .prep_or_vec <- function(x, d) { x <- as.character(x); x[is.na(x) | !nzchar(x)] <- d; x }
 .prep_true_vec <- function(x) !is.na(x) & as.logical(x) %in% TRUE
+## 핵심 수치의 CAGR · 최대낙폭 · Calmar = 산출물 권위 기록(authoritative_remeasure.json::essence — 등급이 쓴 값)이 있으면 그 값.
+##   카드 값은 월간 수익으로 잰 것이라 같은 전략이 등급과 다른 Calmar 로 보였다(10-17 1801.01777: 카드 0.93 · 등급 0.918). 없으면 카드 값.
+.prep_auth_kv <- function(kv, artifact) {
+  if (is.null(artifact) || !nzchar(artifact)) return(kv)
+  d <- if (dir.exists(artifact)) artifact else dirname(artifact)
+  es <- tryCatch(jsonlite::fromJSON(file.path(d, "authoritative_remeasure.json"))$essence, error = function(e) NULL)
+  num <- function(x) { v <- suppressWarnings(as.numeric(x)); if (length(v) == 1L && is.finite(v)) v else NA_real_ }
+  if (is.finite(num(es$cagr)))   kv[["CAGR"]] <- prep_fmt_pct(num(es$cagr))
+  if (is.finite(num(es$mdd)))    kv[["최대낙폭"]] <- prep_fmt_pct(-abs(num(es$mdd)))
+  if (is.finite(num(es$calmar))) kv[["Calmar"]] <- prep_fmt_ratio(num(es$calmar))
+  kv
+}
 ## 차트 저장 위치 — 그 리서치 단위의 산출물 폴더(§0.5) · 산출물이 파일이면 그 폴더 · 없으면 임시 파일
 .prep_chart_path <- function(artifact, name = "crisis_drawdown.png") {
   if (is.null(artifact) || !nzchar(artifact)) return(tempfile("crisis_drawdown_", fileext = ".png"))
@@ -201,6 +219,7 @@ prep_send <- function(program, target, status, card = NULL, verdict_line = NULL,
     suppressMessages(source(file.path(rt, "02_Infrastructure/telegram/telegram_notify.R")))
   }
   D <- if (!is.null(card)) prep_card_digest(card, window) else NULL
+  if (!is.null(D)) D$kv <- .prep_auth_kv(D$kv, artifact)
   vword <- if (!is.null(D)) prep_verdict_word(D$verdict) else ""
   title <- sprintf("[1계층·%s] %s%s", program, target, if (nzchar(vword)) paste0(" — 위기 방어 ", vword) else "")
   secs <- list(list(heading = "현재 리서치 상황", type = "text",

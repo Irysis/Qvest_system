@@ -276,16 +276,18 @@ chk(all(st %in% c("full", "clipped_visible")), "B7 5편 결합 재료 줄: 온�
 chk(!length(misattributed(B7, P5)) && all(key_counts(B7, P5$key) == 1L) && all(titled(B7, P5)),
     "B8 5편 결합: 키 5개 한 줄씩 · 제목은 제 키에 (제목 없는 재료는 키만)", show(B7, 6L))
 chk(sum(grepl(SUF5, B7, fixed = TRUE)) == 1L && endsWith(B7[1], SUF5), "B9 suffix 는 첫 줄 꼬리에 한 번", show(B7, 1L))
+## 대상 라벨(.tg_target_label) = 보고 표제 · '대상:' 줄(prep_send · relaxed) — 2026-10-16 도훈 "논문명은 안 잘렸으면" → 상한 없음(개행만 공백)
 lab3 <- safe(label(TITLE3, PKEY3)); lab5 <- safe(label(TITLE5, PKEY5))
 labs <- c(safe(label(T_LONG, KEY1)), safe(label(T_SHORT, KEY1)))
-POOL <- c(POOL, lab3, lab5, labs)
 chk(all(key_counts(lab3, P3$key) == 1L) && !any(grepl(ELL, lab3, fixed = TRUE)),
     "B10 3편 결합 캡션 = 키 3개 전부 (구판은 제목 연접 절단에 2·3편이 사라졌다)", show(lab3))
 kp <- key_counts(lab5, P5$key) == 1L
-chk(length(lab5) == 1L && (all(kp) || (endsWith(lab5, ELL) && any(kp))),
-    sprintf("B11 5편 결합 캡션: 키 %d/%d · 못 담은 키는 '…' 로 드러난다", sum(kp), length(kp)), show(lab5))
-chk(identical(render_state(labs[1], T_LONG), "clipped_visible") && identical(render_state(labs[2], T_SHORT), "full"),
-    "B12 단독 캡션: 긴 제목 '…' · 짧은 제목 온전", show(labs))
+chk(length(lab5) == 1L && all(kp) && !endsWith(lab5, ELL),
+    sprintf("B11 5편 결합 캡션: 키 %d/%d 전부 · 잘림 없음(10-16 상한 해제)", sum(kp), length(kp)), show(lab5))
+chk(identical(render_state(labs[1], T_LONG), "full") && identical(render_state(labs[2], T_SHORT), "full") &&
+      identical(labs[1], gsub("[\r\n]+", " ", T_LONG)),
+    "B12 단독 캡션: 긴 제목도 온전 — 잘림 0(도훈 10-16 '논문명은 안 잘렸으면')", show(labs))
+chk(!any(grepl("[\r\n]", c(lab3, lab5, labs))), "B13 캡션 안 개행 0(표제 한 줄)", show(c(lab3, lab5, labs)))
 
 cat("\n=== C. 줄 길이 ===\n")
 POOL <- c(POOL, safe(items(T_LONG, "jegadeesh_titman_1993", suffix = " · 강화 25회 소진 (측정 등급 C)")),
