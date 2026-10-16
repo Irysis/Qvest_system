@@ -231,7 +231,9 @@ _RPD="$T/rp"; mkdir -p "$_RPD"; : > "$_RPD/jlog.jsonl"
 _mkreq(){ printf '%s\n' "{\"requested_at\":\"2026-01-01T00:00:00+0900\",\"source\":\"test\",\"paper\":{\"title\":\"t\",\"paper_title\":\"t\",\"url\":\"\",\"paper_key\":\"TEST\",\"source\":\"arxiv\"},\"status\":\"$1\",\"started_at\":\"2026-01-01T00:00:00+0900\"}" > "$_RPD/req.json"; }
 # $1 = 전역 enabled(퇴역 러너) · $2 = replication_lane.enabled · _RP_STALE = claim_stale_hours 덮기
 _mkcfg(){ "$PY" -c "import io,json,os,sys;src=os.path.join(os.environ['QM_ROOT'] if os.environ.get('QM_ROOT') else '.','06_Registry','reinforce_auto_config.json');d=json.loads(io.open(src,'rb').read().decode('utf-8'));d['enabled']=(sys.argv[1]=='1');d['replication_lane']={'enabled':sys.argv[2]=='1'};s=os.environ.get('_RP_STALE','');d.update({'claim_stale_hours':int(s)} if s else {});io.open(r'$_RPD/config.json','w',encoding='utf-8',newline='').write(json.dumps(d,ensure_ascii=False))" "$1" "$2"; }
+# 갱신 잠금도 격리 경로로(10-17) — 밤 갱신이 실제 잠금을 잡은 동안 C1 · C4 가 halt_refresh_lock 으로 빨개졌다(운영 상태 차용)
 _rprun(){ QVEST_RP_REQUEST="$_RPD/req.json" QVEST_RP_CLAIM="$_RPD/claim" QVEST_RP_JLOG="$_RPD/jlog.jsonl" QVEST_RF_CONFIG="$_RPD/config.json" \
+          QM_REFRESH_LOCKDIR="$_RPD/refresh.lock" QM_RAWDATA_WRITER_LOCKDIR="$_RPD/writer.lock" \
           bash "$LANE" >/dev/null 2>&1; }
 _st(){ "$PY" -c "
 import io,json
@@ -258,6 +260,10 @@ _mkclaim_aged(){ rm -rf "$_RPD/claim"; mkdir -p "$_RPD/claim"; echo $$ > "$_RPD/
 # (C4) 양성 대조: 생존 소유자라도 나이 ≥ stale 이면 회수
 : > "$_RPD/jlog.jsonl"; _mkreq in_progress; _mkclaim_aged 7; export _RP_STALE=6; _mkcfg 0 1; _rprun; unset _RP_STALE
 [ "$(_st)" = "pending" ] && grep -q '"stale_h": "6"' "$_RPD/jlog.jsonl" && grep -q '"alive": "1"' "$_RPD/jlog.jsonl" && ok "C4 7h ≥ 6h 생존 claim 회수(alive=1 표식)" || ng "C4 stale 상한" "status=$(_st) $(_ev)"
+# (R0) 양성 대조: 격리 잠금 경로가 실제로 읽힌다 — 방금 만든 빈 잠금 디렉터리(held:empty_pid) → halt_refresh_lock
+#      요청은 done 으로 둔다(잠금이 무시되면 no_pending_request 로 끝난다 — 에이전트를 띄우지 않는다)
+: > "$_RPD/jlog.jsonl"; rm -rf "$_RPD/claim"; _mkreq done; mkdir -p "$_RPD/refresh.lock"; _mkcfg 0 1; _rprun; rm -rf "$_RPD/refresh.lock"
+grep -q '"halt_refresh_lock"' "$_RPD/jlog.jsonl" && ok "R0 갱신 잠금 격리 경로가 읽힌다(빈 잠금 → halt_refresh_lock) — C1 · C4 초록은 격리 덕이다" || ng "R0 격리 잠금 경로 미배선" "$(_ev)"
 
 echo
 printf '합계: 통과 %d · 실패 %d\n' "$PASS" "$FAIL"
