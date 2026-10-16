@@ -100,6 +100,40 @@ rk_eval_cell <- function(root, round_dir, cell, env, tau) {
   ev
 }
 
+## 증분 β-통제 알파(2026-10-16 · '알파 손실 없음' 표준 판정 지표 · 자율 판단 체계 §3) — 개선 칸과 같은 배치 기준 칸(RX0)의
+##   월 수익 차이(행동 카드 계약 bc_monthly 월 복리)를 벤치 월 수익에 대해 β-통제 알파(계약 beta_controlled_alpha · NW lag 3 · 연율)로 잰다.
+##   보는 창 = ym ≤ τ_D 의 달 · 시험 창 = 그 뒤(보고 전용 — 선택 · 판정 규칙에 쓰지 않는다). 1차 라운드 시각 보고(round_visual_report.R ②)와 같은 계산.
+rk_pair_alpha <- function(E, var_dir, base_dir, tau) {
+  if (!exists("beta_controlled_alpha", mode = "function"))
+    invisible(capture.output(suppressMessages(source(file.path(Sys.getenv("QM_ROOT", "C:/Users/99922/OneDrive/Quant_Module_Moltbot"),
+                                                                "02_Infrastructure/contracts/beta_controlled_alpha.R")))))
+  v <- .dp_read(E, var_dir); b <- .dp_read(E, base_dir)
+  mon <- function(d, col) E$bc_monthly(d[, .(date, r = get(col))], "r")
+  S <- merge(mon(v$pr[, .(date, ret_net)], "ret_net")[, .(ym, s = r)], mon(b$pr[, .(date, ret_net)], "ret_net")[, .(ym, b = r)], by = "ym")
+  K <- mon(b$br[, .(date, benchmark_ret)], "benchmark_ret")[, .(ym, k = r)]
+  D <- merge(S, K, by = "ym")[order(ym)]; tym <- format(as.Date(tau), "%Y-%m")
+  one <- function(d) {
+    a <- tryCatch(beta_controlled_alpha(d$s - d$b, d$k, periods_per_year = 12, nw_lag = 3L), error = function(e) NULL)
+    list(d_alpha = a$alpha_ann %||% NA_real_, t = a$t_alpha %||% NA_real_, n = a$n %||% NA_integer_,
+         window = if (nrow(d)) c(d$ym[1], d$ym[nrow(d)]) else NA)
+  }
+  list(visible = one(D[ym <= tym]), test = one(D[ym > tym]))
+}
+
+## 보유 집중(2026-10-16 · 철학 헌장 실패 형태 '집중' — 종목별 상한 없음 축의 기록 지표) — 04_holdings 의 리밸일별 최대 비중 · 유효 종목 수
+##   (1/Σ(w/Σw)² — 현금 몫은 빼고 보유 안에서) · 보는 창(date ≤ τ_D)과 전기간 요약. 판정 문턱은 사전등록이 정한다(여기는 측정만).
+rk_concentration <- function(dir, tau) {
+  H <- fread(file.path(dir, "04_holdings.csv"))
+  wc <- intersect(c("target_weight", "actual_weight"), names(H))[1]
+  H[, w := as.numeric(get(wc))]; H <- H[is.finite(w) & w > 0]
+  H[, date := as.Date(date)]
+  per <- H[, .(n = .N, maxw = max(w) / sum(w), effn = 1 / sum((w / sum(w))^2)), by = date]
+  f <- function(p) if (!nrow(p)) list(n_dates = 0L) else
+    list(n_dates = nrow(p), maxw_median = stats::median(p$maxw), maxw_max = max(p$maxw),
+         effn_median = stats::median(p$effn), effn_min = min(p$effn), names_median = stats::median(p$n))
+  list(visible = f(per[date <= as.Date(tau)]), full = f(per))
+}
+
 ## 보는 창 종합점수 S_vis(등급 v3 의 S 식 · 상수는 사전등록이 정본에서 옮긴 값)
 rk_S <- function(calmar, port_t, fs) ifelse(is.finite(calmar) & is.finite(port_t) & calmar > 0 & port_t > 0,
                                            (calmar / fs$calmar_norm)^fs$w_calmar * (port_t / fs$port_t_norm)^fs$w_port_t, 0)
