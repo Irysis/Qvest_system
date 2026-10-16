@@ -174,8 +174,9 @@ prep_crisis_chart <- function(card, path, window = "overall", root = NULL) {
   if (!is.na(fM)) { try(systemfonts::register_font(name = "HDHM", plain = fM), silent = TRUE); fam <- "HDHM" }
   cr <- cr[order(as.Date(peak_date))]
   nm <- .prep_event_names(cr$peak_date, root)
-  l2 <- trimws(paste0(nm, ifelse(.prep_true_vec(cr$ongoing), ifelse(nzchar(nm), " · 진행 중", "진행 중"), "")))
-  cr[, key := paste0(format(as.Date(peak_date), "%y.%m"), "~", format(as.Date(trough_date), "%y.%m"), ifelse(nzchar(l2), paste0("\n", l2), ""))]
+  ## 첫 줄 = 날짜(+ 진행 중) · 둘째 줄 = 사건명 — 진행 중 표식을 날짜 줄에 둬 이름 줄이 길어지지 않게(왼쪽 축 폭 = 막대 폭을 먹는다)
+  cr[, key := paste0(format(as.Date(peak_date), "%y.%m"), "~", format(as.Date(trough_date), "%y.%m"),
+                     ifelse(.prep_true_vec(ongoing), " · 진행 중", ""), ifelse(nzchar(nm), paste0("\n", nm), ""))]
   ## 세로 배치(10-17) — 위기 = 행(위 = 오래된 위기) · 가로 막대. 위기 15개를 가로로 늘어놓으면 3262×870 이 돼 휴대폰 텔레그램에서 글자가 안 보였다.
   ##   폭 고정(7.2in · 150dpi ≈ 1080px) · 높이 = 위기 수에 비례. 포착률은 0 오른쪽 여백에 행마다 1개.
   cr[, key := factor(key, levels = rev(unique(key)))]
