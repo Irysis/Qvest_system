@@ -197,6 +197,22 @@ else
   echo "  python 미발견 - benchmark 갱신 skipped (기존 cache 유지)"
 fi
 
+# --- [1pre-qw] 퀀티 Update_File 무인 수급 (도훈 결정 QW-UPDATEFILE-UNATTENDED 안 A · 2026-10-16) ---------------
+#   벤치 정본 수급이 이 실행에서 rc=0 으로 전진했을 때만(= 퀀티 세션 생존 양성 대조) 로그인 클릭 없이(-SkipLogin) Investor_Act · Consensus
+#   (+ 직전 월말이 Universe_Support 최신일보다 뒤면 Universe_Support)를 받는다 — 08-29 계정 잠금 경로(로그인 클릭 · 단말 재기동)는 열리지 않는다.
+#   전진한 파일이 있으면 [0b] 적재를 한 번 더 돈다. 실패해도 리프레시는 계속(시간 상한 40분 · 경보 줄). 끄기: QVEST_QW_UPDATEFILE_UNATTENDED=0
+#   검사: 08_Tests/data/test_qw_updatefile_unattended.R(스텁 — 운영 퀀티 · .cache 무접촉)
+bash "$INFRA/data/qw_updatefile_unattended.sh" "${_qw_rc:-1}" "$QVENV_PY"
+if [ $? -eq 0 ]; then
+  echo "[0b'/7] Update_File 재적재 (무인 수급 전진분)..."
+  cd "$INFRA"
+  run_r '
+    source("config.R")
+    source("data/incremental_update_file.R")
+    incremental_update_all()
+  '
+fi
+
 # --- BMG-01 거래일 지평선 게이트 (2026-08-20 신설) ---------------------------
 #   trading_calendar.R 은 RAWDATA 자기참조의 순환오염을 끊으려고 .cache/benchmark.parquet
 #   **하나만을** 거래일 권위로 삼는다(L45/L137). ★2026-09-18 정정: 그 파일의 writer 는
