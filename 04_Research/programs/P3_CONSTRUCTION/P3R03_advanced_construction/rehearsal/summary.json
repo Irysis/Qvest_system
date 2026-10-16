@@ -1,0 +1,97 @@
+{
+  "schema": "p3r03_rehearsal_v1",
+  "at": "2026-10-16T22:21:12+0900",
+  "evaluate_md5": "9e1fcc655cb95cc80798315363c2c20e",
+  "inputs": {
+    "variant": "P3R02_E2_M5",
+    "rx0": "P3R02_E2_RX0",
+    "tag": "ecm",
+    "forced_start": "2005-03-02",
+    "forced_k": 0.9,
+    "note": "P3R02 의 같은 엔진 · 같은 배치 두 칸 — 새 경로(공통 창 사본 · β 짝 사본 · 패킷 · 위기 짝 · 사이클 짝 · 선정 집합 · 집중 상태)의 무오류 실행 확인용"
+  },
+  "runs": {
+    "R1": {
+      "tested": true,
+      "why": null,
+      "window": "original",
+      "packet_window": null,
+      "same_selection": {
+        "status": "ok",
+        "n_checked": 216,
+        "n_violate": 0,
+        "n_missing": 0
+      },
+      "crisis_pairs": {
+        "n_pair": 7,
+        "unpaired": 0,
+        "n_deep": 4
+      },
+      "cycle": {
+        "n_pair": 3,
+        "unpaired": ["2007-10-11 2008-03-17", "2008-05-16 2008-10-24", "2008-11-05 2008-11-20", "2020-01-22 2020-03-19"],
+        "pair_mismatch": 0
+      },
+      "fields": [true, true, true, true, true, true, true],
+      "ok_flags_are_logical": true,
+      "alpha_se_finite": true,
+      "beta": {
+        "status": "ok",
+        "k_forced": false,
+        "k_up_finite": true,
+        "scaled_present": true
+      },
+      "concentration": {
+        "status": "breach",
+        "missing_deep": []
+      },
+      "history_drop_status": "ok",
+      "verdict_class": "mild_only",
+      "seconds": 36
+    },
+    "R2": {
+      "tested": true,
+      "why": null,
+      "window": "common_from_2005-03-02",
+      "packet_window": {
+        "variant": ["2005-03-02", "2022-12-29"],
+        "rx0": ["2005-03-02", "2022-12-29"],
+        "rx0_beta": ["2005-03-02", "2022-12-29"]
+      },
+      "same_selection": {
+        "status": "ok",
+        "n_checked": 216,
+        "n_violate": 0,
+        "n_missing": 0
+      },
+      "crisis_pairs": {
+        "n_pair": 7,
+        "unpaired": 0,
+        "n_deep": 4
+      },
+      "cycle": {
+        "n_pair": 3,
+        "unpaired": ["2007-10-11 2008-03-17", "2008-05-16 2008-10-24", "2008-11-05 2008-11-20", "2020-01-22 2020-03-19"],
+        "pair_mismatch": 0
+      },
+      "fields": [true, true, true, true, true, true, true],
+      "ok_flags_are_logical": true,
+      "alpha_se_finite": true,
+      "beta": {
+        "status": "ok",
+        "k_forced": true,
+        "k_up_finite": true,
+        "scaled_present": true
+      },
+      "concentration": {
+        "status": "breach",
+        "missing_deep": []
+      },
+      "history_drop_status": "ok",
+      "verdict_class": "mild_only",
+      "seconds": 83
+    }
+  },
+  "pass": true,
+  "seconds": 119
+}
