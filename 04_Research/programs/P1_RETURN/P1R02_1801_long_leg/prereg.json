@@ -1,0 +1,54 @@
+{
+  "schema": "program_prereg_v1",
+  "program": "P1_RETURN",
+  "round_id": "P1R02_1801_long_leg",
+  "registered_at": "2026-10-17T02:20:39+0900",
+  "requested_by": "도훈 2026-10-17 02시 '그럼 딴 건 하지말고 롱 레그만 판부터 사전등록해서 측정해줘'",
+  "purpose": "1801.01777(Abe & Nakayama 2018 · DNN 횡단면 예측) 충실구현 롱숏은 측정 축 all_hyg_2000_v1 에서 처음 나온 권위 A 다(1차 구현 · 감사 기각 뒤 고정 팩터 지도로 재구현 · 재검증 중). 한국은 2020-03~2025-03 대부분 소형주 공매도가 불가능해 숏 레그(하위 분위)는 구현이 어렵다. 이 라운드는 그 알파가 롱 레그(상위 분위 동일가중)에서도 나오는지를 분해한다 — 롱온리 경로(현행 처방 축)의 가능성 판정.",
+  "variants": [
+    {
+      "code": "P1R02_LONG",
+      "engine": "04_Research/programs/P1_RETURN/P1R02_1801_long_leg/long_leg_engine.R",
+      "definition": "재검증판 engine.R(md5 fead7df9787aebb8aa7b554e88e361bc)의 신호일별 PORTFOLIO 에서 양(+) 비중 종목만 남기고 그 안에서 Σw = 1 로 다시 맞춘다(논문 §3.4 상위 분위 동일가중 = 롱 레그). 숏 레그 · 현금 없음(완전 투자).",
+      "measurement": "run_paper_replication(정본 계약 · engine_direct · 측정 축 활성 epoch · 15bps 순비용 등급 · commission_paper = 0 은 논문 기준 병기판 · 리밸 = 엔진 신호일 = 월간 · 종목 수 = 상위 분위(≤25 처방 축 아님 — 분해 진단)). 소비 기록 · 2계층 등재 없음(QVEST_NO_LEDGER_OPEN = 1 · QVEST_RP_REGISTER = 0) · A 라우팅 트리거가 생기면 judge_request.held.json(held:p1r02_diagnostic)으로 돌린다(분해 진단은 Judge 대상 아님)."
+    }
+  ],
+  "n_variants": 1,
+  "variant_cap": 1,
+  "baseline": {
+    "role": "같은 엔진 · 같은 데이터 판의 롱숏(충실구현 재검증판)",
+    "identify": "stage_artifacts/replication/* 중 authoritative_remeasure.json 의 strategy_name 이 'RP_AUTO_180101777' 이고 remeasured_at ≥ 2026-10-17T02:02 인 가장 최근 산출물(레인 재검증 · 검증기만 재실행)",
+    "same_vintage_rule": "롱 레그 래퍼의 기저 신호 출처가 'base_cache:'(캐시 키 = 엔진 md5 + RAWDATA · 벤치 · 팩터 DB · 보조 도장 + 데이터 지문 + 시작일 일치)면 같은 판이다. 'engine_rerun:' 이면 판 일치 미증명 — M3(몫)는 '판 불일치'로 보고만 하고 판정은 M1 단독"
+  },
+  "tau_d": "2022-12-31",
+  "metrics": {
+    "M1": "롱 레그 β 통제 알파(연율)와 t — 계약 beta_controlled_alpha(월 수익 = 행동 카드 계약 bc_monthly(03_period_returns ret_net) · 벤치 = bc_monthly(05_benchmark_returns benchmark_ret) · NW lag 3 · 12/년) · 보는 창 = ym ≤ 2022-12",
+    "M2": "롱숏(기준 산출물) β 통제 알파와 t — 같은 함수 · 같은 창",
+    "M3": "롱 레그 몫 = M1 알파 / M2 알파(M2 알파 > 0 일 때만 · 아니면 NA)",
+    "report_only": "권위 등급 v3(authoritative_remeasure.json::essence_grade · grade_v3.S) · 시험 창(2023-01~) M1 · M2 · 행동 카드 위기 방어 판정 · β — 판정에 쓰지 않는다(τ_D)"
+  },
+  "rules": {
+    "hypothesis": "H1 — 롱 레그만으로도 β 통제 알파가 유의하다: 보는 창 M1 t ≥ 2.0",
+    "threshold_basis": "2.0 = 등급 v3 의 A 하한 PORT_t 2.0(constraint_defaults.json::tier_graduation) 과 같은 수 · 양측 약 5% 관례 — 사전 고정",
+    "falsification": "보는 창 M1 t < 2.0 이면 H1 기각 → '롱 레그 알파 유의하지 않음 — 이 롱숏 알파는 숏 레그 의존'으로 판정하고 롱온리 경로는 후순위",
+    "share_bands": "M3 ≥ 0.5 = '알파 과반이 롱 레그' · 0.2 ≤ M3 < 0.5 = '혼합' · M3 < 0.2 = '숏 레그 의존' — 서술 구간(판정은 H1)",
+    "failure_semantics": "기준 산출물을 못 찾거나 산출물 판독 오류 = '미시험'(통과로 접지 않는다) · M1 계산 불가 = '미시험' · 기준 판 불일치 = M3 보고만",
+    "selection_rule": "없음 — 단일 변형 · 후보 선택 없음",
+    "next_if_holds": "H1 성립 → 처방 축 롱온리 ≤25종판(같은 신호 상위 25 · 현행 축) 라운드 설계(이 라운드 밖)",
+    "next_if_rejected": "H1 기각 → 숏 레그 의존 — 숏 대체(지수 헤지 · 인버스)는 축 결정(도훈) 사항으로 상신 재료"
+  },
+  "expectations": {
+    "beta": "0.8~1.1(완전 투자 롱 레그 · 시장 성분 공유)",
+    "crisis_defense": "약함~보통(롱온리 완전 투자 — 방어 엔진 아님)",
+    "alpha_direction": "양(+) — 상위 분위 선택력이 있으면"
+  },
+  "exposures": "설계자(Q)는 롱숏 1차 구현(감사 기각판)의 전기간 성과(시험 창 S_oos = 0 포함)를 보았다 — 이 라운드의 판정 규칙(M1 보는 창 t ≥ 2.0)은 그 값을 쓰지 않으며 롱 레그 성과는 아직 보지 않았다(측정 전 등록). 등록 전 평가 경로 리허설(evaluate.R 의 mon · al 그대로)로 1차 롱숏 판의 보는 창 β 통제 α t 7.46 · β −0.02 를 보았다 — 규칙 문턱은 그 전에 정했고 바꾸지 않았다.",
+  "budget": {
+    "variants": 1,
+    "remeasure": 0,
+    "note": "기저 캐시 적중이면 수 분 · 엔진 재실행이면 약 1시간"
+  },
+  "engine_md5_at_registration": "fead7df9787aebb8aa7b554e88e361bc",
+  "wrapper_md5": "099f59db853980d0a588dd3894315d26",
+  "evaluate_md5": "8c00ed8b3dffd18bd60efce8bd909f82"
+}
