@@ -22,10 +22,10 @@
 
 ## 라운드 (모든 프로그램 공통 — 세부 = SKILL §2)
 
-1. **사전등록**(측정 전 · 파일) — 가설 · 기대 방향(행동 카드 지표) · 반증 조건 · 변형 수 상한 · 최종 후보 선택 규칙. `pr_record_round` 로 등록(결과 뒤 변경 = writer 거부).
+1. **사전등록**(측정 전 · 파일) — 가설 · 기대 방향(행동 카드 지표) · 반증 조건 · 변형 수 상한 · 최종 후보 선택 규칙. `pr_record_round` 로 등록(결과 뒤 변경 = writer 거부). 설계안이 정해지면 **철학 Superfan P1**(투자철학 정렬 · 백그라운드 · 기다리지 않음 — 10-16 도훈 지시) 의견을 반영해 등록한다.
 2. **측정** — 정본 계약만(`run_paper_replication` → essence). 손계산 금지(AX-008).
 3. **행동 카드** — `contracts/matched_controls.R::mc_card(dir)`(행동 카드 `behavior_card.R` · 위기 = Lunde-Timmermann 20/20 첫 통과 구간 + MC8 크기·노출 짝 대조 · 귀속 = 선택/크기/노출 방어/방어 없음 · 판정은 무작위 짝 플라시보의 분위). 방어 주장 = 귀속 라벨과 함께(크기 방어 · 노출 방어를 '실력'으로 쓰지 않는다 · CR '강함' 등급 노치도 선택 방어 동반 시만).
-4. **판정** — 사전등록한 반증 조건으로. 권위 등급(`authoritative_remeasure.json::essence_grade`)만 인용 — **등급 v3**(종합점수 S = Calmar 6 : PORT_t 4 가중 기하평균 + 하한 + 위기 복원력 노치 + τ_D OOS · 2026-10-13 MC7 승격). MDD 직접 문턱 없음(Calmar 와 CR 노치로만 닿는다).
+4. **판정** — 사전등록한 반증 조건으로. 판정 직후 **철학 Superfan P2**가 방향 판정(향함 · 중립 · 역행)을 남기고 보고에 1줄로 실린다(규약 `00_Lawbook/specs/superfan_protocol.md` §11). 권위 등급(`authoritative_remeasure.json::essence_grade`)만 인용 — **등급 v3**(종합점수 S = Calmar 6 : PORT_t 4 가중 기하평균 + 하한 + 위기 복원력 노치 + τ_D OOS · 2026-10-13 MC7 승격). MDD 직접 문턱 없음(Calmar 와 CR 노치로만 닿는다).
 5. **보고** — 리서치 1단위 = 1통 `prep_send`(`programs/program_report.R` · 발송 규칙 = qvest-telegram SKILL §0).
 6. **교훈** — 기전이 특정되는 실패만 L-code · next_probes ≥2 · 교훈 카드엔 τ_D 이전 수치만.
 

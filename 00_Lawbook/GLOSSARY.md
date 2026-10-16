@@ -194,6 +194,9 @@ P0R01_E2_C4  =  P0 실현 가능성 지도 · 1라운드 · 엔진 E2(2002.06975
 | `prescriber` | 처방 담당 | 라운드 ① | 처방전 1~3건(가설 · 기대 방향 · 기계 판정형 반증 조건 · 구현 delta) + 최종 선택 규칙 | Opus/max · 라운드당 1회(14분) | `rx_lane.sh` · `prepare_prescriber.R` |
 | `reviewer` | 리뷰어 | 라운드 ④ | 사전 가설 대비 기전 판독 · 다음 수 · 교훈 | Opus/max · 라운드당 1회(14분) | `rx_lane.sh` · `evaluate.R` |
 | 범용 에이전트 | 격리 교차 점검 | 라운드 ① | 결과를 열지 않고 사전등록 초안의 결함 지적(필수 · 권고) | 세션 상속(opus-5-5 · max) · 초안마다(P3R02 는 2회) | P3R02 `prereg.json::reviewed_drafts` |
+| `superfan-philosophy` | 철학 Superfan(= 설계 §8 철학 감독관) | P1 설계안 뒤 · P2 판정 직후 · P3 후보 확정 · P4 라운드 3개마다 | 과제마다 투자철학 헌장(원칙 7 · 실패 형태 7 · 도훈 교정 사례) 정렬 리뷰 · P2 방향 판정(향함 · 중립 · 역행) · P3 전기간 의견서(도훈용) · 의견과 보류 요청까지만 | Opus/max · 라운드당 2회 + 후보 확정 · 주기 | `.claude/agents/superfan-philosophy.md` · 헌장 `00_Lawbook/specs/investment_philosophy_charter.md` |
+| `superfan-component` | 구성요소 Superfan(1 구성요소 = 1 전담 팬) | 감시기가 실패 이상을 잡을 때 | 그 구성요소의 로그 · 코드 · 상태 · dossier 로 근본 원인 재도출 · 영향 · 수리안 · 확인 처리 권고 — 읽기 전용(수리는 Q) | Opus/max · 이상 때만(구성요소당 하루 1회 상한) | `.claude/agents/superfan-component.md` · 정의 `06_Registry/superfan_components.json` |
+| `superfan` | Superfan(판단 감사 · 논쟁) | 라운드 전 구간(T1 선택 직후 · T2 해석 직후 · T3 세션 마감 · T4 요청) | Q 의 판단 기록을 자율 판단 체계와 대조해 도전(stop · challenge · note · endorse · 대안 · 반증 조건 필수) · Q 와 논쟁(재반박 1회). 거부권 · 상신권 없음 · Q 는 기다리지 않음 · τ_D 이후 수치 미열람 | Opus/max · 트리거마다(백그라운드) | `.claude/agents/superfan.md` · 규약 `00_Lawbook/specs/superfan_protocol.md` |
 
 #### e-4) 라운드 실행(R 계약 · 파이프라인)
 
@@ -296,6 +299,10 @@ P0R01_E2_C4  =  P0 실현 가능성 지도 · 1라운드 · 엔진 E2(2002.06975
 | `RP_AUTO_CLEAN_<slug>/` | 청정 재구현 작업 디렉터리 | 충실구현 | engine.R · FIDELITY.json · fidelity_axis_<축>.json · fidelity_audit.json · lane_provenance.json · (audit_conflict.json) | 레인 · 감사 | `04_Research/strategies/` |
 | `judge_request.eligible.json` / `.held.json` | Judge 트리거 / 보류 | A 경로 | A 관문 통과(pending) / 보류 사유 코드(트리거 아님) | `run_paper_replication` §11 | 산출 디렉터리 |
 | `research_programs.json` | 프로그램 등록부 | 전 단계 | 프로그램 · 라운드 · MC · 재료 큐 · 미분류 보류 | `program_registry.R` 만 | `06_Registry/` |
+| `q_judgment_ledger.json` | 판단 원장 | 전 단계 | Q 판단(J-) · Superfan 리뷰(R- · 역할 judgment T1~T4 / philosophy P1~P4 · 방향 판정) · 도전(C-)과 응답 · 재반박 · 종결 · 보류 요청 · 사후 채점 | `programs/q_judgment_ledger.py` 만 | `06_Registry/` |
+| `superfan_components.json` | 구성요소 Superfan 정의 | 운영 | 구성요소 8개의 코드 · 로그 · 일정 · 감시 규칙(log_patterns · freshness · expect_today · json_field) · dossier 경로 | 사람 편집 · 감시기가 검증 | `06_Registry/` |
+| `superfan_watch.json` | 감시 상태 | 운영 | 로그 오프셋(구성요소 · 규칙별) · 이상(키 · 심각도 · 상태 open/acked/expired/resolved · 사건 시각 · 횟수) | `programs/superfan_watch.py` 만 | `.cache/`(OneDrive 미동기화) |
+| `session_resume.json` | 세션 재개 저널 | 전 단계 | 진행 중 작업의 단계 · 다음 할 일 · 백그라운드 · 결정 대기(부팅 `Resume:` 줄 · 꼬리에 Superfan 대기) | `programs/session_resume.py` 만 | `06_Registry/` |
 
 ### 헷갈리기 쉬운 코드
 

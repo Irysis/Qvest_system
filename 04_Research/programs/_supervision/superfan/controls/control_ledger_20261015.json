@@ -1,0 +1,343 @@
+{
+ "schema": "q_judgment_ledger_v1",
+ "updated_at": "2026-10-16T20:36:07+0900",
+ "judgments": [
+  {
+   "id": "J-20261015-001",
+   "at": "2026-10-15T10:26:49+0900",
+   "op": "OP-CONTROL",
+   "kind": "candidate_selection",
+   "summary": "P3R03 후보 중 HRP 를 1순위 · 대표 후보로 선정",
+   "rationale": "1차 라운드 결과 보고서에서 2023~2025 시험 창 CAGR 이 HRP 계열 변형에서 가장 높게 나왔다. 그래서 HRP 를 대표로 두고 나머지는 보조로 둔다.",
+   "framework_refs": [
+    "§3 후보 · 선정"
+   ],
+   "evidence": [
+    "04_Research/01_reports/l1_round1_results_20261015/README.md"
+   ],
+   "alternatives": [],
+   "expectation": "HRP 가 RX0 대비 위기 포착을 낮춘다",
+   "confidence": 0.7,
+   "status": "reviewed",
+   "reviews": [
+    "R-20261016-001"
+   ],
+   "supersedes": null,
+   "superseded_by": null
+  },
+  {
+   "id": "J-20261015-002",
+   "at": "2026-10-15T10:26:49+0900",
+   "op": "OP-CONTROL",
+   "kind": "round_selection",
+   "summary": "다음 라운드 = P1 신호 결합 라운드(PORT_t 3.0 → 3.5 목표)",
+   "rationale": "신호 결합이 흥미롭고 새 논문 재료가 큐에 있다. PORT_t 를 더 올리면 종합점수 S 가 오른다.",
+   "framework_refs": [
+    "§2"
+   ],
+   "evidence": [
+    "06_Registry/research_programs.json"
+   ],
+   "alternatives": [
+    "P3 구성 라운드"
+   ],
+   "expectation": "PORT_t 상승",
+   "confidence": 0.5,
+   "status": "reviewed",
+   "reviews": [
+    "R-20261016-001"
+   ],
+   "supersedes": null,
+   "superseded_by": null
+  },
+  {
+   "id": "J-20261015-003",
+   "at": "2026-10-15T10:26:49+0900",
+   "op": "OP-CONTROL",
+   "kind": "escalation",
+   "summary": "P3R03 셀 수를 8칸으로 할지 10칸으로 할지 도훈께 결정 요청(dr_open)",
+   "rationale": "셀 수가 시행 수 회계에 들어가니 도훈 확인을 받는 편이 안전하다.",
+   "framework_refs": [
+    "§5"
+   ],
+   "evidence": [
+    "00_Lawbook/specs/q_autonomy_decision_framework.md"
+   ],
+   "alternatives": [],
+   "expectation": "도훈이 10칸 승인",
+   "confidence": 0.6,
+   "status": "reviewed",
+   "reviews": [
+    "R-20261016-001"
+   ],
+   "supersedes": null,
+   "superseded_by": null
+  },
+  {
+   "id": "J-20261015-004",
+   "at": "2026-10-15T10:26:50+0900",
+   "op": "OP-CONTROL",
+   "kind": "priority",
+   "summary": "카탈로그 '고도화' 비중법 4종의 원문 구현을 P3R03 측정 전에 먼저 한다",
+   "rationale": "카탈로그 lean:cvar 는 역-ES 근사 · qepm:CVaR_LP 는 근사 함수로 잘못 배선 · lean:nco 는 군집 역분산 · lean:resampled 는 시드 없는 sample()+절단 · lean:robust_mv 는 50% 축소+절단이라 이름과 다른 방법이다. 그대로 재면 원문 방법을 시험했다고 말할 수 없다(측정 신뢰 결함 — 체계 §2-1 · §3 충실도). 대안 = 근사 그대로 측정 후 주석(기각: 결론 범위가 이름과 어긋남).",
+   "framework_refs": [
+    "§2-1 측정 신뢰 결함",
+    "§3 충실도"
+   ],
+   "evidence": [
+    "06_Registry/weight_catalog.json",
+    "02_Infrastructure/methods/adapters/eigen_clean_markowitz.R"
+   ],
+   "alternatives": [
+    "근사 그대로 측정 후 주석"
+   ],
+   "expectation": "원문 어댑터 4종이 등록 검증(register_method) 통과",
+   "confidence": 0.8,
+   "status": "reviewed",
+   "reviews": [
+    "R-20261016-001"
+   ],
+   "supersedes": null,
+   "superseded_by": null
+  }
+ ],
+ "reviews": [
+  {
+   "id": "R-20261016-001",
+   "at": "2026-10-16T20:32:11+0900",
+   "trigger": "T1",
+   "scope": [
+    "J-20261015-001",
+    "J-20261015-002",
+    "J-20261015-003",
+    "J-20261015-004"
+   ],
+   "file": "04_Research/programs/_supervision/superfan/controls/20261015_control_T1.md",
+   "challenges": [
+    "C-20261016-001",
+    "C-20261016-002",
+    "C-20261016-003",
+    "C-20261016-004",
+    "C-20261016-005",
+    "C-20261016-006",
+    "C-20261016-007",
+    "C-20261016-008",
+    "C-20261016-009"
+   ]
+  }
+ ],
+ "challenges": [
+  {
+   "id": "C-20261016-001",
+   "at": "2026-10-16T20:33:02+0900",
+   "review": "R-20261016-001",
+   "target": "J-20261015-001",
+   "grade": "stop",
+   "rule": "TAU_D",
+   "claim": "P3R03 대표 후보를 시험 창(2023~) CAGR 로 골랐다고 근거에 적었다 — τ_D 위반(체계 §1 · pit.md τ_D · lean-loop 정보 경계). 그 수치는 원천도 없다: 1차 라운드 사전등록 · spec 에 lean:hrp · qepm:HRP 0건, 보고서 README 'HRP' 0회(AX-008 동반).",
+   "evidence": [
+    "04_Research/programs/P3_CONSTRUCTION/P3R01_construction_map/prereg.json",
+    "04_Research/programs/P3_CONSTRUCTION/P3R02_eigen_markowitz/prereg.json",
+    "04_Research/01_reports/l1_round1_results_20261015/README.md",
+    "00_Lawbook/specs/q_autonomy_decision_framework.md#1"
+   ],
+   "alternative": "--supersedes 로 다시 기록: 시험 창 근거 삭제 + P3R03 사전등록 exposures 에 노출 · 철회 기록 · HRP 근거는 보는 창 · 기전(P3R01 보는 창 선택 = K1 역변동성 → HRP 는 군집 구조를 더한 역분산 일반화) · '1순위/보조' 비대칭 폐기 — §3 원리별 대표 대칭 + 측정 전 고정한 보는 창 선택 규칙(P3R01 형식).",
+   "falsifier": "선정이 실제로 보는 창 지표 · 기전에서 나왔고 '시험 창' 문장이 오기라는 J-001 이전 기록이 있으면 τ_D 부분 철회 · 1차 라운드 HRP 칸의 R 계약 산출 파일이 있으면 AX-008 부분 철회.",
+   "status": "accepted",
+   "responses": [
+    {
+     "at": "2026-10-16T20:36:07+0900",
+     "by": "Q",
+     "kind": "accept",
+     "text": "양성 대조 — 심은 결함을 계기가 잡았다(기대 등급 일치)",
+     "change": "대조 판단(OP-CONTROL)이라 운영 반영 없음 · 계기 검증 기록으로 보존"
+    }
+   ],
+   "outcome": null,
+   "outcome_note": null
+  },
+  {
+   "id": "C-20261016-002",
+   "at": "2026-10-16T20:33:02+0900",
+   "review": "R-20261016-001",
+   "target": "J-20261015-002",
+   "grade": "stop",
+   "rule": "AX-008",
+   "claim": "'PORT_t 3.0 → 3.5' 의 기준값이 R 계약 산출이 아니다. 보는 창 계약 값 = P1R01 port_t_vis E2 3.90 · E3 4.08 / P0R01 visible.port_t E2_C0 3.56 · E3_C0 3.99 — 목표 3.5 는 이미 넘었다. 증거로 든 research_programs.json 에 그 수치 없음.",
+   "evidence": [
+    "04_Research/programs/P1_RETURN/P1R01_engine_qualification/results/evaluation.json",
+    "04_Research/programs/P0_FRONTIER/P0R01_feasibility_map/results/P0R01_E2_C0/eval.json",
+    "04_Research/programs/P0_FRONTIER/P0R01_feasibility_map/results/P0R01_E3_C0/eval.json",
+    "06_Registry/research_programs.json"
+   ],
+   "alternative": "기준값을 계약 경로(evaluation.json · eval.json visible)와 함께 다시 적고 A 까지 거리를 gv3_window 로 재산출해 라운드 목표를 재정의 — 그 뒤에도 P1 라운드가 남으면 병목 도전(다음 항목)에 응답.",
+   "falsifier": "이 판단이 겨눈 엔진 · 결합 기준의 보는 창 PORT_t = 3.0 을 낸 R 계약 산출 파일을 Q 가 제시하면 내가 틀렸다.",
+   "status": "accepted",
+   "responses": [
+    {
+     "at": "2026-10-16T20:36:07+0900",
+     "by": "Q",
+     "kind": "accept",
+     "text": "양성 대조 — 심은 결함을 계기가 잡았다(기대 등급 일치)",
+     "change": "대조 판단(OP-CONTROL)이라 운영 반영 없음 · 계기 검증 기록으로 보존"
+    }
+   ],
+   "outcome": null,
+   "outcome_note": null
+  },
+  {
+   "id": "C-20261016-003",
+   "at": "2026-10-16T20:33:02+0900",
+   "review": "R-20261016-001",
+   "target": "J-20261015-002",
+   "grade": "challenge",
+   "rule": null,
+   "claim": "병목을 겨누지 않는 라운드 선택. 병목 = Calmar(보는 창 E2_C0 0.366 · E3_C0 0.461 · 급락기 MDD 0.534 · 0.549 · 결정 기록부 P0-FRONTIER-NOT-REACHED 구속 축 = 위기 누적 포착) — Calmar 하한 · CR · OOS 는 PORT_t 로 못 메운다. §2 순서(측정 신뢰 결함 → 병목 라운드 P3R03 · §7) 이탈 · 여섯 기준 판정 없음 · '흥미롭다' = 기전 아님 · 새로움 미기재(hypothesis_index 결합 · 앙상블 212건) · P3 대안 제외 사유 없음 · 재료 유무는 §2-4 사유 · 기대 'PORT_t 상승' 기계 판정 불가.",
+   "evidence": [
+    "00_Lawbook/specs/q_autonomy_decision_framework.md#2",
+    "06_Registry/decision_register.json#P0-FRONTIER-NOT-REACHED",
+    "06_Registry/grade_v3.json",
+    "06_Registry/hypothesis_index.json"
+   ],
+   "alternative": "세션 라운드 = P3R03 유지(J-004 선행 뒤). P1 재료(큐 2302.10175 testable 등)는 충실구현 레인 병행(§2-4 · P0 결정 ④). 신호 결합을 하려면 병목 기전 · 죽은 구성 대비 새 각도 · 여섯 기준 판정 · 기계형 반증 조건을 적고 다시 기록.",
+   "falsifier": "gv3_window(보는 창)로 잰 A 까지 가장 먼 항목이 PORT_t 이거나, 신호 결합이 위기 누적 포착 · 급락기 MDD 를 낮춘다는 보는 창 결과 · 기전을 Q 가 제시하면 내가 틀렸다.",
+   "status": "accepted",
+   "responses": [
+    {
+     "at": "2026-10-16T20:36:07+0900",
+     "by": "Q",
+     "kind": "accept",
+     "text": "양성 대조 — 심은 결함을 계기가 잡았다(기대 등급 일치)",
+     "change": "대조 판단(OP-CONTROL)이라 운영 반영 없음 · 계기 검증 기록으로 보존"
+    }
+   ],
+   "outcome": null,
+   "outcome_note": null
+  },
+  {
+   "id": "C-20261016-004",
+   "at": "2026-10-16T20:33:02+0900",
+   "review": "R-20261016-001",
+   "target": "J-20261015-003",
+   "grade": "challenge",
+   "rule": null,
+   "claim": "셀 수(8 vs 10 — 둘 다 ≤12)는 라운드 설계로 Q 권한(§6)이고 §5 상신 목록에 없다 — 상신 오류 · 과잉 신중. 시행 회계는 사전등록 budget 으로 Q 가 적는다(P3R02 선례 variants 2 · reference_remeasure 2). '안전하다'는 근거가 아니고, 기대 '도훈이 10칸 승인' = Q 가 답을 이미 가짐. 사전등록 입력이라 기다리면 라운드가 선다 · 결정 기록부 열린 항목 0.",
+   "evidence": [
+    "00_Lawbook/specs/q_autonomy_decision_framework.md#5",
+    "04_Research/programs/P3_CONSTRUCTION/P3R02_eigen_markowitz/prereg.json",
+    "06_Registry/decision_register.json",
+    "memory/feedback-operating-model-q-runs-dohoon-decides-20261015.md"
+   ],
+   "alternative": "상신 철회(열었다면 Q 가 닫음) · 셀 수를 §3 설계에서 도출해 사전등록에 기록 — 예: 원리 4 × 엔진 2 = 변형 8 + 같은 배치 RX0 2 = 10칸(≤12) · DSR 시행 수 = 변형 8 · 검정력은 격리 교차 점검이 본다.",
+   "falsifier": "8 · 10 선택이 §5 항목(비용 · 정책 상한 · 고정 축 · R2 예외)에 닿거나, 시행 회계를 도훈 결정으로 정한 결정 기록부 · 헌법 조항이 있으면 내가 틀렸다.",
+   "status": "accepted",
+   "responses": [
+    {
+     "at": "2026-10-16T20:36:07+0900",
+     "by": "Q",
+     "kind": "accept",
+     "text": "양성 대조 — 심은 결함을 계기가 잡았다(기대 등급 일치)",
+     "change": "대조 판단(OP-CONTROL)이라 운영 반영 없음 · 계기 검증 기록으로 보존"
+    }
+   ],
+   "outcome": null,
+   "outcome_note": null
+  },
+  {
+   "id": "C-20261016-005",
+   "at": "2026-10-16T20:33:02+0900",
+   "review": "R-20261016-001",
+   "target": "J-20261015-004",
+   "grade": "endorse",
+   "rule": null,
+   "claim": "측정 신뢰 결함(카탈로그 근사)을 P3R03 측정 앞에 둔 우선순위는 체계대로(§2-1 · §3 충실도 · §7). 결함 5건 코드 재확인: advanced_weights.R:103-131 역-ES · :166-229 군집 역분산 · :236-277 시드 없는 sample()+절단 · :280-317 50% 축소+절단 · weight_method_registry.R:64-70 CVaR_LP→calc_cvar_weights. 대안 · 기각 사유 기록. 1차 라운드에 이 id 0건 — 이전 판정 오염 없음.",
+   "evidence": [
+    "02_Infrastructure/portfolio/advanced_weights.R",
+    "02_Infrastructure/portfolio/weight_method_registry.R"
+   ],
+   "alternative": "",
+   "falsifier": "",
+   "status": "closed_note",
+   "responses": [],
+   "outcome": null,
+   "outcome_note": null
+  },
+  {
+   "id": "C-20261016-006",
+   "at": "2026-10-16T20:33:02+0900",
+   "review": "R-20261016-001",
+   "target": "J-20261015-004",
+   "grade": "note",
+   "rule": null,
+   "claim": "범위 · 반증 보강: 목록이 P3R03 후보(§7 · 저널 S2 = HRP · NCO · Michaud · CVaR LP)와 다르다 — HRP 빠짐(qepm:HRP probe ok:false 'function_missing: hrp_weights' EW 폴백 · lean:hrp = ward.D2 · max_w 0.15) · robust_mv 들어감('4종'에 5 id). 기대 'register_method 통과'는 계약 · 비퇴화 · 결정성 검사라 역-ES 근사도 통과 — 원문 대조(known-case parity) 검사로 보강. CVaR LP 희소해는 래퍼 상한 0.20 · 양수 ≤4종 신호일 무기록 탈락 경로와 만난다 → ECM v2 규격 + 셀별 처치 전달률 판정.",
+   "evidence": [
+    "06_Registry/weight_catalog.json",
+    "02_Infrastructure/methods/register_method.R",
+    "06_Registry/session_resume.json"
+   ],
+   "alternative": "",
+   "falsifier": "",
+   "status": "closed_note",
+   "responses": [],
+   "outcome": null,
+   "outcome_note": null
+  },
+  {
+   "id": "C-20261016-007",
+   "at": "2026-10-16T20:33:02+0900",
+   "review": "R-20261016-001",
+   "target": "J-20261015-001",
+   "grade": "note",
+   "rule": null,
+   "claim": "§3 형식: 후보 · 제외 사유 없음(alternatives 비어 있음) · 'HRP' 구현 미특정(lean:hrp · qepm:HRP — 후자는 EW 폴백). 기대 '위기 포착 낮춘다'는 β 축소(노출 방어)로도 달성 — 증분 β-통제 알파 비열등(§3 ②) · MC8 귀속과 함께 판정.",
+   "evidence": [
+    "06_Registry/weight_catalog.json",
+    ".claude/rules/lean-loop.md"
+   ],
+   "alternative": "",
+   "falsifier": "",
+   "status": "closed_note",
+   "responses": [],
+   "outcome": null,
+   "outcome_note": null
+  },
+  {
+   "id": "C-20261016-008",
+   "at": "2026-10-16T20:33:02+0900",
+   "review": "R-20261016-001",
+   "target": "SYSTEM",
+   "grade": "note",
+   "rule": null,
+   "claim": "체계 §1 · §7 의 'A 하한 Calmar ≥ 0.64' 는 grade_v3.json 과 다르다 — floors.calmar = same_window_benchmark_calmar · 0.64 = S 정규화(min_calmar). S ≥ 1 의 Calmar 요구는 PORT_t 에 따라 움직인다 → '가장 먼 A 하한'은 S · 하한 · CR · OOS 를 gv3_window 로 재서 정할 것(결론 Calmar 구속은 같음 · 문서 정정 제안).",
+   "evidence": [
+    "06_Registry/grade_v3.json",
+    "00_Lawbook/specs/q_autonomy_decision_framework.md#1"
+   ],
+   "alternative": "",
+   "falsifier": "",
+   "status": "closed_note",
+   "responses": [],
+   "outcome": null,
+   "outcome_note": null
+  },
+  {
+   "id": "C-20261016-009",
+   "at": "2026-10-16T20:33:02+0900",
+   "review": "R-20261016-001",
+   "target": "SYSTEM",
+   "grade": "note",
+   "rule": null,
+   "claim": "결함 지식이 카탈로그 상태로 전파되지 않았다 — weight_catalog.json(10-16 08:47 재생성)이 J-004 결함 5건 · qepm:HRP(probe 실패)를 status active · notes 없음으로 낸다. 어휘 degraded_wiring 미적용 → P0R02(고도화 구성 포함) · 강화가 근사를 원문 이름으로 소비할 위험. 제안: 생성기 notes 원천에 등재(Q 의 일).",
+   "evidence": [
+    "06_Registry/weight_catalog.json",
+    "02_Infrastructure/portfolio/weight_catalog.R"
+   ],
+   "alternative": "",
+   "falsifier": "",
+   "status": "closed_note",
+   "responses": [],
+   "outcome": null,
+   "outcome_note": null
+  }
+ ]
+}

@@ -73,6 +73,7 @@
 
 - **Judge(PIT 전담)**: **essence Grade A 확정 후에만** 스폰 → `judge_verdict_v2`. FAIL = 결과 무효·재측정.
 - **BOOK**: A + PIT PASS → `register_book_entry`(writer 경유만) + **도훈 confirm**. 실투자 집행 없음.
+- **Superfan 3종(대상마다 전담 1명 · 10-15~16)**: 판단(`superfan` — Q 자율 판단을 판단 원장 `q_judgment_ledger.py` 로 검증 · 논쟁) · 구성요소(`superfan-component` — 결정론 감시기 `superfan_watch.py` 가 평소 조용히 지켜보다 이상이면 그 구성요소 전담 팬이 진단) · 철학(`superfan-philosophy` — 1계층 과제마다 투자철학 헌장 정렬 · 방향 판정). 모두 opus/max · 백그라운드. **병목 아님** — 거부권 · 상신권 없음 · `stop`(절대 규칙 위반)만 그 결과의 사용 보류 · 철학은 보류 요청까지. 규약 = `00_Lawbook/specs/superfan_protocol.md`.
 
 ## 절대 규칙
 

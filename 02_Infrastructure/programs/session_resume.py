@@ -11,6 +11,7 @@
   python … next   --id OP-… --text "다음 세션이 바로 할 일(명령 · 파일)"
   python … bg     --id OP-… --what … [--log 경로] [--sentinel 경로] [--pid N]
   python … decide --id OP-… --text "도훈 결정 대기 항목(결정 기록부 id)"
+  python … resolve --id OP-… --text "대기 항목 앞부분" --outcome "결정 내용"   # 결정이 나면 대기에서 뺀다
   python … note   --id OP-… --text "짧은 진행 기록"
   python … done   --id OP-… --outcome …     |   abandon --id OP-… --reason …
   python … show   [--id OP-…]               # 재개 브리핑(markdown) — 진행 중 전체 또는 1건
@@ -119,6 +120,15 @@ def cmd_decide(a, d):
     _log(o, "결정 대기: " + a.text[:120])
 
 
+def cmd_resolve(a, d):
+    o = _op(d, a.id)
+    hit = [x for x in o["decisions"] if x == a.text or x.startswith(a.text)]
+    if not hit:
+        raise SystemExit("[session_resume] 대기 결정 없음: %r (대기 %s)" % (a.text, o["decisions"]))
+    o["decisions"] = [x for x in o["decisions"] if x not in hit]
+    _log(o, "결정 해소: %s → %s" % (" · ".join(hit)[:100], a.outcome[:120]))
+
+
 def cmd_note(a, d):
     _log(_op(d, a.id), a.text)
 
@@ -153,6 +163,24 @@ def _open_rounds(root):
         return ["?(%s)" % type(e).__name__]
 
 
+def _superfan_fragment(root):
+    """Superfan 대기 상태 — 판단 원장(q_judgment_ledger.py) · 구성요소 감시(superfan_watch.py)의 boot_fragment.
+    없으면 '' · 실패는 0 으로 접지 않는다(그 도구 이름과 예외 종류를 보인다)."""
+    import importlib.util
+    out = []
+    for mod, label in (("q_judgment_ledger", "Superfan"), ("superfan_watch", "Superfan 감시")):
+        try:
+            p = os.path.join(os.path.dirname(os.path.abspath(__file__)), mod + ".py")
+            spec = importlib.util.spec_from_file_location(mod, p)
+            m = importlib.util.module_from_spec(spec); spec.loader.exec_module(m)
+            f = m.boot_fragment(root)
+        except Exception as e:
+            f = "%s ?(%s)" % (label, type(e).__name__)
+        if f:
+            out.append(f)
+    return " | ".join(out)
+
+
 def boot_line(root=None):
     root = root or _root()
     try:
@@ -162,6 +190,8 @@ def boot_line(root=None):
     ops = [o for o in d["operations"] if o.get("status") in ("in_progress", "blocked")]
     rounds = _open_rounds(root)
     rtxt = (" | 열린 라운드 " + " · ".join(rounds[:4]) + (" +%d" % (len(rounds) - 4) if len(rounds) > 4 else "")) if rounds else ""
+    sf = _superfan_fragment(root)
+    rtxt += (" | " + sf) if sf else ""
     if not ops:
         return "Resume: 진행 중 작업 없음" + rtxt
     ops.sort(key=lambda o: o.get("updated_at") or "", reverse=True)
@@ -203,6 +233,9 @@ def show(root=None, oid=None):
     rounds = _open_rounds(root)
     if rounds:
         L.append("열린 라운드(등록부 · 저널과 별개 자동 신호): " + " · ".join(rounds))
+    sf = _superfan_fragment(root)
+    if sf:
+        L.append(sf + " — 상세: python -X utf8 02_Infrastructure/programs/q_judgment_ledger.py show --open (규약 00_Lawbook/specs/superfan_protocol.md)")
     if d.get("history"):
         L.append("최근 종료 작업: " + " · ".join("%s(%s)" % (h["id"], h["status"]) for h in d["history"][-5:]))
     return "\n".join(L)
@@ -219,6 +252,8 @@ def main(argv=None):
         x = sp.add_parser(nm); x.add_argument("--id", required=True); x.add_argument("--text", required=True)
     g = sp.add_parser("bg"); g.add_argument("--id", required=True); g.add_argument("--what", required=True)
     g.add_argument("--log"); g.add_argument("--sentinel"); g.add_argument("--pid", type=int)
+    rs = sp.add_parser("resolve"); rs.add_argument("--id", required=True); rs.add_argument("--text", required=True)
+    rs.add_argument("--outcome", required=True)
     dn = sp.add_parser("done"); dn.add_argument("--id", required=True); dn.add_argument("--outcome", required=True)
     ab = sp.add_parser("abandon"); ab.add_argument("--id", required=True); ab.add_argument("--reason", required=True)
     sh = sp.add_parser("show"); sh.add_argument("--id")
@@ -230,7 +265,8 @@ def main(argv=None):
         print(show(oid=a.id)); return 0
     path = state_path()
     d = load(path)
-    {"begin": cmd_begin, "step": cmd_step, "next": cmd_next, "bg": cmd_bg, "decide": cmd_decide, "note": cmd_note}.get(a.cmd, lambda *_: None)(a, d)
+    {"begin": cmd_begin, "step": cmd_step, "next": cmd_next, "bg": cmd_bg, "decide": cmd_decide, "resolve": cmd_resolve,
+     "note": cmd_note}.get(a.cmd, lambda *_: None)(a, d)
     if a.cmd == "done": _close(d, a.id, "done", a.outcome)
     if a.cmd == "abandon": _close(d, a.id, "abandoned", a.reason)
     save(path, d)

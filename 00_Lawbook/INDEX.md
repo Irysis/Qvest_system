@@ -57,6 +57,8 @@
 | 지금 상태 · 다음 할 일 | `/qvest` 부팅 · `Rscript -e "source('02_Infrastructure/programs/program_registry.R'); writeLines(pr_status_lines())"` |
 | 셀 · 라운드 · 레인 코드의 뜻 · 표준 용어 | `00_Lawbook/GLOSSARY.md`(1계층 용어집 — 단계 · 하는 일 · 담당 에이전트 · 모델/노력) |
 | Q 가 스스로 정하는 것 · 도훈에게 올리는 것(자율 판단 근거) | `00_Lawbook/specs/q_autonomy_decision_framework.md` |
+| Superfan 3종 — 판단 감사 · 구성요소 감시 · 투자철학 정렬 | 규약 `00_Lawbook/specs/superfan_protocol.md` · 에이전트 `.claude/agents/superfan*.md` · 판단 원장 `python -X utf8 02_Infrastructure/programs/q_judgment_ledger.py show --open` · 감시 `python -X utf8 02_Infrastructure/programs/superfan_watch.py show --open` |
+| 투자철학 헌장 · 도훈 교정 사례 | `00_Lawbook/specs/investment_philosophy_charter.md` |
 | 세션이 끊긴 작업 이어 가기 | 부팅 `Resume:` 줄 · `python -X utf8 02_Infrastructure/programs/session_resume.py show` |
 | 인쇄용 PDF 만들기 | `Rscript 00_Lawbook/tools/md_to_print_pdf.R <in.md>` · 서식 규칙 `02_Infrastructure/docs/rules/pdf-output-style.md`(현대하모니 L · M · B) |
 | 1계층 라운드 진행 · 처방 루프 | research-program SKILL · `04_Research/programs/<프로그램>/<라운드>/` · 사전등록 `stage_artifacts/programs/` |

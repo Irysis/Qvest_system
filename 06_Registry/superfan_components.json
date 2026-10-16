@@ -1,0 +1,147 @@
+{
+ "schema": "superfan_components_v1",
+ "default_max_event_age_h": 48,
+ "doc": "구성요소 Superfan 정의(2026-10-16 도훈 지시 '1개 컴포넌트 - 1개 에이전트 매칭') — 구성요소마다 전담 Superfan 1명(.claude/agents/superfan-component.md)이 이 정의의 로그 · 에러 · 상태 규칙과 자기 dossier 로 그 구성요소만 추적한다. 감시 = 02_Infrastructure/programs/superfan_watch.py(결정론 · LLM 0) · 상태 = .cache/superfan_watch.json(운영 캐시 · OneDrive 미동기화) · 규약 = 00_Lawbook/specs/superfan_protocol.md §10. 규칙 종류: log_patterns(새 줄 정규식) · freshness(갱신 나이) · expect_today(오늘 완료 표식) · json_field(상태 필드). 경로: 저장소 상대 · ~ 확장 · {YYYYMMDD}(오늘 · 어제) · 와일드카드.",
+ "components": [
+  {
+   "id": "daily_refresh",
+   "name": "데이터 갱신(Qvest_DailyRefresh · daily_refresh.sh)",
+   "fan": "데이터 갱신 전담 Superfan",
+   "dossier": "04_Research/programs/_supervision/superfan/components/daily_refresh/dossier.md",
+   "schedule": "Qvest_DailyRefresh 매일 00:03 · 아침 체인 ensure_data_current 가 stale 이면 재실행",
+   "code": ["02_Infrastructure/data/daily_refresh.sh", "02_Infrastructure/ops/ensure_data_current.sh", "02_Infrastructure/ops/refresh_barrier.sh", "02_Infrastructure/ops/scheduler/Qvest_DailyRefresh.bat"],
+   "knowledge": ["memory:reference-quantiwise-refresh-is-a-local-excel-addin-not-a-website-20260918.md", "memory:reference-data-corruption-lives-at-source-seams-not-in-loading-20260907.md", "memory:feedback-freshness-must-be-measured-at-the-consumption-panel.md"],
+   "rules": [
+    {"id": "run_failed", "kind": "log_patterns", "files": ".cache/scheduler_logs/daily_refresh.log",
+     "patterns": [
+      {"severity": "fail", "regex": "=== Daily Refresh v2 Done — ★실패", "label": "실패 스텝"},
+      {"severity": "fail", "regex": "\\[FATAL\\]", "label": "치명"},
+      {"severity": "fail", "regex": "^Error in |Execution halted", "label": "R 오류"},
+      {"severity": "warn", "regex": "\\[0c\\] ★적재 미달", "label": "적재 신선도 미달"},
+      {"severity": "warn", "regex": "^\\[warn\\] \\[8\\.1r\\]", "label": "역할 재분류 실패"}]},
+    {"id": "log_fresh", "kind": "freshness", "file": ".cache/scheduler_logs/daily_refresh.log", "max_age_h": 26, "severity": "fail"}
+   ]
+  },
+  {
+   "id": "factor_db",
+   "name": "팩터 DB(월간 빌드 · 일간 DB · 신규 팩터 백필 — 데이터 갱신 [6a]~[6d])",
+   "fan": "팩터 DB 전담 Superfan",
+   "dossier": "04_Research/programs/_supervision/superfan/components/factor_db/dossier.md",
+   "schedule": "데이터 갱신 안의 [6a]~[6d] 단계",
+   "code": ["02_Infrastructure/factor_db/factor_db_connector.R", "02_Infrastructure/data/daily_refresh.sh"],
+   "knowledge": ["memory:project-l1-round1-results-and-speed-20261015.md"],
+   "rules": [
+    {"id": "build_gate", "kind": "log_patterns", "files": ".cache/scheduler_logs/daily_refresh.log",
+     "patterns": [
+      {"severity": "fail", "regex": "\\[6a-gate\\].*회귀 [1-9]", "label": "배출 회귀"},
+      {"severity": "fail", "regex": "\\[6[a-d]\\].*(FAIL|실패)", "label": "빌드 실패"},
+      {"severity": "warn", "regex": "\\[6b\\]\\[WARN\\]", "label": "일간 DB stale"}]}
+   ]
+  },
+  {
+   "id": "morning_chain",
+   "name": "아침 체인(Qvest_MorningBrief · MorningReboot → morning_run.sh)",
+   "fan": "아침 체인 전담 Superfan",
+   "dossier": "04_Research/programs/_supervision/superfan/components/morning_chain/dossier.md",
+   "schedule": "Qvest_MorningBrief 매일 07:10(주말 = 논문 파이프라인만) · Qvest_MorningReboot 부팅 시 따라잡기",
+   "code": ["02_Infrastructure/ops/morning_run.sh", "02_Infrastructure/ops/morning_briefing.sh"],
+   "knowledge": [],
+   "rules": [
+    {"id": "run_alerts", "kind": "log_patterns", "files": ".cache/scheduler_logs/morning_run.log",
+     "block_header": "^================ morning_run @", "skip_block_header": "trigger=test",
+     "patterns": [
+      {"severity": "fail", "regex": "★경보발행", "label": "단계 경보(fail-soft)"},
+      {"severity": "fail", "regex": "재시도 상한 도달 \\([0-9]+/[1-9]", "label": "재시도 소진"},
+      {"severity": "warn", "regex": "★재시도 진입", "label": "재시도"},
+      {"severity": "fail", "regex": "^Error in |Execution halted", "label": "R 오류"}]},
+    {"id": "done_today", "kind": "expect_today", "file": ".cache/scheduler_logs/morning_run.log", "after": "11:00", "weekdays_only": true,
+     "pattern": "morning_run done @ {dow} {mon} {dd2}", "severity": "fail"}
+   ]
+  },
+  {
+   "id": "replication_lane",
+   "name": "충실구현 레인(Qvest_ReinforceAutoLoop → reinforce_auto_tick · rf_replication_auto.sh)",
+   "fan": "충실구현 레인 전담 Superfan",
+   "dossier": "04_Research/programs/_supervision/superfan/components/replication_lane/dossier.md",
+   "schedule": "Qvest_ReinforceAutoLoop 수 분 간격 틱(실행 중이면 다음 틱 거부 0x800710E0 = 정상)",
+   "code": ["02_Infrastructure/ops/rf_replication_auto.sh", "02_Infrastructure/ops/reinforce_auto_tick.sh", "02_Infrastructure/alpha_search/run_paper_replication.R"],
+   "knowledge": ["memory:project-unattended-replication-lane-reclaims-live-runs-at-2h-20260913.md", "memory:reference-session-launched-lanes-inherit-desktop-auth-env-20261010.md", "memory:project-audit-conflict-material-routing-fixes-20261014.md"],
+   "rules": [
+    {"id": "lane_errors", "kind": "log_patterns", "files": [".cache/scheduler_logs/replication_auto_{YYYYMMDD}.log", ".cache/scheduler_logs/reinforce_auto_{YYYYMMDD}.log"],
+     "patterns": [
+      {"severity": "fail", "regex": "tick 종료 rc=[1-9]", "label": "틱 비정상 종료"},
+      {"severity": "fail", "regex": "^Error in |Execution halted", "label": "R 오류"},
+      {"severity": "fail", "regex": "failed_needs_session|rate_limit|weekly limit|HTTP 429|authentication_error", "label": "레인 정지 사유"},
+      {"severity": "warn", "regex": "audit_conflict", "label": "감사 상충"},
+      {"severity": "warn", "regex": "refresh_lock_stale", "label": "리프레시 잠금 stale"}]},
+    {"id": "lane_alive", "kind": "freshness", "file": ".cache/scheduler_logs/reinforce_auto_{YYYYMMDD}.log", "max_age_h": 8, "severity": "warn"},
+    {"id": "request_state", "kind": "json_field", "file": "06_Registry/replication_request.json", "path": "status",
+     "bad_values": ["failed_needs_session", "failed"], "severity": "warn"}
+   ]
+  },
+  {
+   "id": "round_pipeline",
+   "name": "1계층 라운드 파이프라인(측정 · 셀 평가 · 판정)",
+   "fan": "라운드 파이프라인 전담 Superfan",
+   "dossier": "04_Research/programs/_supervision/superfan/components/round_pipeline/dossier.md",
+   "schedule": "세션이 띄우는 분리 실행(pipeline_v2 · measure.sh · eval_parallel.sh)",
+   "code": ["04_Research/programs/_lib/round_kit.R", "04_Research/programs/_lib/eval_parallel.sh", "02_Infrastructure/reinforcement/rf_cell_engine.R", "02_Infrastructure/contracts/matched_controls.R"],
+   "knowledge": ["memory:project-catalog-cap-post-hoc-silent-date-drop-and-p3r01-eval-cdar-20261015.md", "memory:project-l1-round1-results-and-speed-20261015.md"],
+   "rules": [
+    {"id": "pipeline_errors", "kind": "log_patterns",
+     "files": ["04_Research/programs/_lib/pipeline_v2*.log", "04_Research/programs/_lib/night_pipeline.log", "04_Research/programs/*/*/measure.log", "04_Research/programs/*/*/evaluate*.log", "04_Research/programs/*/*/results/*.err.log"],
+     "patterns": [
+      {"severity": "fail", "regex": "^Error in |Execution halted", "label": "R 오류"},
+      {"severity": "fail", "regex": "측정 무효|처치 미전달|침묵 부분측정", "label": "측정 무효"},
+      {"severity": "fail", "regex": "R2 가드|등록 거부|재결정 거부", "label": "사전등록 가드"}]}
+   ]
+  },
+  {
+   "id": "telegram_emitter",
+   "name": "텔레그램 발신기(telegram_notify.R · tg_agent_brief · prep_send)",
+   "fan": "텔레그램 발신기 전담 Superfan",
+   "dossier": "04_Research/programs/_supervision/superfan/components/telegram_emitter/dossier.md",
+   "schedule": "모든 레인 · 세션의 발송",
+   "code": ["02_Infrastructure/telegram/telegram_notify.R", "02_Infrastructure/programs/program_report.R"],
+   "knowledge": ["memory:feedback-emitter-contract-must-be-checked-against-formals-20260921.md", "memory:feedback-fix-the-emitter-dont-hand-send-substitutes-20260905.md"],
+   "rules": [
+    {"id": "send_failures", "kind": "log_patterns", "files": "qepm/observability/telegram_send_failures.jsonl",
+     "exclude": ["injection probe", "No emoji here at all", "Briefing 📈 ready"],
+     "patterns": [{"severity": "fail", "regex": "\"live\":\\s*true", "label": "실발송 실패"}]},
+    {"id": "dup_blocks", "kind": "log_patterns", "files": ".cache/tg_locks/_duplicate_dispatch.log",
+     "patterns": [{"severity": "warn", "regex": "BLOCKED duplicate dispatch", "label": "중복 차단"}]}
+   ]
+  },
+  {
+   "id": "book_tracking",
+   "name": "BOOK 트래킹(아침 체인 nolayer4 일별 평가 · /book)",
+   "fan": "BOOK 트래킹 전담 Superfan",
+   "dossier": "04_Research/programs/_supervision/superfan/components/book_tracking/dossier.md",
+   "schedule": "아침 체인 [3b] 평일",
+   "code": ["02_Infrastructure/monitoring/mark_nolayer4_daily.R", "02_Infrastructure/book/book_registry.R"],
+   "knowledge": ["memory:project-book-ytd-was-mtd-after-lane-migration-20261007.md"],
+   "rules": [
+    {"id": "mtm_errors", "kind": "log_patterns", "files": "~/AppData/Local/Temp/qm_morning.log",
+     "patterns": [
+      {"severity": "warn", "regex": "\\[nolayer4-daily\\] skip", "label": "일별 평가 건너뜀"},
+      {"severity": "fail", "regex": "\\[nolayer4-daily\\].*(Error|FAIL|실패)", "label": "일별 평가 실패"}]},
+    {"id": "mtm_fresh", "kind": "freshness", "file": "~/AppData/Local/Temp/qm_morning.log", "max_age_h": 30, "weekdays_only": true, "severity": "warn"}
+   ]
+  },
+  {
+   "id": "scheduler",
+   "name": "예약 작업(Windows 작업 스케줄러 · scheduler_task_health.sh)",
+   "fan": "예약 작업 전담 Superfan",
+   "dossier": "04_Research/programs/_supervision/superfan/components/scheduler/dossier.md",
+   "schedule": "아침 체인 [0.7] · Qvest_StrandedRepairs",
+   "code": ["02_Infrastructure/ops/scheduler_task_health.sh", "02_Infrastructure/ops/scheduler/"],
+   "knowledge": ["memory:reference-desktop-app-msix-virtualizes-appdata-writes-scheduler-sees-real-disk-20260905.md"],
+   "rules": [
+    {"id": "task_health", "kind": "log_patterns", "files": ".cache/scheduler_logs/task_health.log",
+     "patterns": [
+      {"severity": "fail", "regex": "신규실패 [1-9]", "label": "새 실패"},
+      {"severity": "warn", "regex": "★정체:", "label": "정체 작업"}]}
+   ]
+  }
+ ]
+}

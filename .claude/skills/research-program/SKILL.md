@@ -29,6 +29,17 @@ Rscript -e "source('02_Infrastructure/programs/program_registry.R'); writeLines(
 - **다음 할 일은 다음 세션이 그대로 실행할 수 있게** 쓴다(명령 · 파일 · 확인할 센티널). 세션이 갑자기 끊겨도 부팅 `Resume:` 줄과 `/qvest` ⓪ 재개가 여기서 이어 간다.
 - 저널에 안 적은 진행 상태도 부팅이 등록부에서 '등록됐지만 끝나지 않은 라운드'로 따로 보여 준다(자동 신호).
 
+### 판단 기록 · Superfan 감사 (2026-10-15 도훈 지시 — "Q 의 모든 판단을 모니터링해서 검증 · Q 와 논쟁 · 병목이 아니라 Q 가 제대로 기능하게")
+- **판단 기록**: 자율 판단 체계가 다스리는 판단(라운드 선택 · 후보 선정과 제외 · 설계 · 판정 해석 · 상신 여부 · 중단과 계속 · 하네스 변경 · 우선순위 · 운영)마다
+  `python -X utf8 02_Infrastructure/programs/q_judgment_ledger.py record --op OP-… --kind … --summary … --rationale … --ref "§…" --evidence … --alt … --expect … --confidence …` 1건.
+- **Superfan 스폰(백그라운드 · 기다리지 않는다)**: T1 라운드 선택 직후 · T2 판정 해석 직후 · T3 세션 마감 전(또는 미검토 판단 10건) · T4 큰 판단 전 임의.
+  `Agent(subagent_type="superfan", run_in_background=true, prompt="트리거 T? · 범위 J-… · 세션 시작 시각 …")`.
+- **응답**: `challenge` 는 `respond --kind accept --change …` 또는 `--kind rebut`(근거) · `stop` 은 그 결과를 쓰기 전에 해소(수용 · 철회 · 상신) · 이견은 라운드 보고 1줄.
+  부팅 `Resume:` 줄 꼬리(`Superfan: Q 응답 대기 n · Superfan 차례 m · 미검토 판단 k · 보류 요청 h`)가 할 일을 보여 준다. 규약 = `00_Lawbook/specs/superfan_protocol.md`.
+- **철학 Superfan(10-16 도훈 지시 — 과제마다 투자철학 정렬)**: 라운드마다 P1(설계안이 정해진 뒤 · 등록 전) · P2(판정 직후 · 방향 판정) · 후보 확정 때 P3(전기간 의견서 — 도훈 confirm 첨부) · 라운드 3개마다 P4. `superfan-philosophy`(백그라운드). 기준 = `00_Lawbook/specs/investment_philosophy_charter.md`. 라운드 보고에 '철학: <방향 판정> · 실패 형태 <…>' 1줄.
+- **구성요소 Superfan(10-16 — 1 구성요소 = 1 전담 팬)**: `Resume:` 꼬리에 `Superfan 감시: 이상 n` 이 보이면 `python -X utf8 02_Infrastructure/programs/superfan_watch.py show --open` → 실패 이상의 구성요소마다 `superfan-component`(백그라운드 · `구성요소: <id>`) → 진단 반영 · 수리 · `ack`. 라운드 파이프라인을 돌리는 동안에는 세션이 직접 지켜본다.
+- 세션 시작 뒤 추가된 에이전트 정의는 그 세션 목록에 없다 — 범용 에이전트에 '정의 파일을 먼저 읽고 따르라' + opus · max 로 띄운다.
+
 ## 1. 프로그램 (정본 = 등록부)
 
 | id | 이름 | 단계 | 하는 일 |

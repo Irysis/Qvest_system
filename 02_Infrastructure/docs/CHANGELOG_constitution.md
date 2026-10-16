@@ -241,6 +241,22 @@
 - **텔레그램 중복 발송 키 수리**: `tg_agent_brief` 의 제목 기반 잠금 키가 영숫자 밖 문자를 전부 밑줄로 접어 서로 다른 한글 제목이 같은 키가 됐다 → 30분 안 정상 발송이 '중복'으로 막혔다
   (10-15 실측: 다음 리서치 브리핑이 18분 전 용어집 게시와 충돌). `.tg_title_scope` = ASCII 골격 + 제목 전체 UTF-8 md5 앞 10자 — 같은 제목 = 같은 키(진짜 중복은 계속 막는다). 검사 tg_scope_key 6/0(구판 공식 충돌 양성 대조) 외 텔레그램 4종(커밋 4af1d800b).
 
+### (v10.01 · 버전 미변경) Superfan 3종 — 판단 감사 · 구성요소 감시 · 투자철학 정렬 (2026-10-15~16)
+
+도훈 "Q 자율 판단 체계가 돌아가는지 감사하는 외부감시자 혹은 Superfan · Q 와 논쟁 · 병목이 아니라 Q 가 제대로 기능하게"(10-15) · "1개 컴포넌트 - 1개 에이전트 매칭 · 모든 로그 · 에러 · 상태 변화를 추적"(10-16) ·
+"1계층 리서치 프로세스에서 투자철학대로 설계 · 개선하는지 각 테스크마다 모니터링"(10-16) · "평소에는 백그라운드에서 조용히 모니터링 · 문제가 생기면 알려주는 것"(10-16).
+
+- **판단 Superfan**(`.claude/agents/superfan.md` · opus/max): Q 의 자율 판단을 판단 원장(`06_Registry/q_judgment_ledger.json` · writer `programs/q_judgment_ledger.py`)에서 검증 · 논쟁.
+  등급 stop(절대 규칙 — 그 결과의 사용만 보류) · challenge(응답 의무 · 진행은 계속) · note · endorse · 대안 · 반증 조건 필수 · 리뷰당 5건 상한 · 재반박 1회 · stop 은 이견 종결 불가 · 사후 채점(적중률).
+  **양성 대조(10-16)**: 심은 결함 3(시험 창 수치 선택 · 병목 미겨냥 · Q 권한 상신)을 기대 등급대로 잡고 깨끗한 판단은 지지 — 덤으로 실결함 2건 발견(자율 체계 문서의 'A 하한 Calmar 0.64' 오기 = 정규화 상수 · 카탈로그 근사 5종 + qepm:HRP EW 폴백 active).
+- **구성요소 Superfan**(`superfan-component`): 결정론 감시기 `programs/superfan_watch.py`(정의 `06_Registry/superfan_components.json` 8개 · 상태 `.cache/superfan_watch.json`) — 새 줄 증분 · 증상 묶기 · 사건 시각 48h · 만료 · 재발 재개방 · 상태형 자동 해소 · 1회 1초 미만 · LLM 0.
+  이상이 잡힌 구성요소만 전담 팬이 진단(읽기 전용 · dossier `04_Research/programs/_supervision/superfan/components/<id>/`). 무인 상시 감시(1시간 간격 · 무인 진단 · 텔레그램 · 야간 무음)는 도훈 승인 대상으로 상신.
+  첫 운영 스캔: 실이상 15건(실패 6) — 확인 처리 8 · 진단 대상 7(데이터 갱신 10-16 적재 신선도 실패 · 역할 재분류 R 오류 · 일간 팩터 DB 23일 지연 · 주간 작업 정체).
+- **철학 Superfan**(`superfan-philosophy` = 설계 §8 철학 감독관 구현): 헌장 운영 정본 `00_Lawbook/specs/investment_philosophy_charter.md`(README §7 · §8.1 이관 + 실패 형태별 '재는 곳' + 과제별 시점) — P1 설계안 · P2 판정 방향 판정 · P3 후보 확정 전기간 의견서(도훈용) · P4 주기. 의견과 보류 요청까지만.
+- **배선**: 부팅 `Resume:` 꼬리(판단 대기 · Superfan 차례 · 미검토 판단 · 보류 요청 · 감시 이상) · `session_resume.py resolve`(결정 해소) · research-program SKILL · lean-loop 라운드 1 · 4단계 · 자율 판단 체계 §8 · INDEX · GLOSSARY · CLAUDE.md 1줄.
+- **검사**: q_judgment_ledger 50/0(위반 주입 — 규칙 없는 stop · 대안 없는 도전 · 상한 · 재반박 2회 · stop 이견 종결 · 역할/트리거/방향 판정) · superfan_watch 26/0(증분 · 묶기 · 시험 블록 · 사건 시각 · 만료 · 재개방 · 잘림 · 정의 검증 · 사건 시각 필터 뮤테이션 대조) · session_resume 13/0.
+- **도훈 결정 2건(10-15)**: P0-FRONTIER-NOT-REACHED = ③ 탐색 확장 + ④ 새 엔진 뒤 재시도 + P4 조건부 개방(골격 E2 × C4) · PIT-C1-MSM-PARAMS = 안 A. 등록부 P0 · P4 = ready.
+
 ---
 
 ## (v10.4 유지 · 버전 미변경) 09-26 중단분 배포 · B4 5축 · 유기체 O0a · 청정 레인 · 노출 표식 · 러너 재개 (2026-10-04)
