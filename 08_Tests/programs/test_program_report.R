@@ -101,6 +101,19 @@ m8 <- prep_send(program = "충실구현", target = "검사용 전략", status = 
 chk("F2 권위 기록이 없으면 카드 값 그대로(CDaR · 베타는 늘 카드)",
     kv_has(m8, "CAGR", prep_fmt_pct(card$stats$cagr)) && kv_has(m8, "Calmar", prep_fmt_ratio(card$stats$calmar)))
 
+cat("\n=== G. 위기 차트 사건명 — 등록부(crisis_event_names.json) 고점 월 짝짓기(도훈 10-17 '보는창/시험창을 해당 시점 하락 이벤트 명칭으로') ===\n")
+groot <- gsub("\\\\", "/", file.path(tempdir(), "prep_event_root")); unlink(groot, recursive = TRUE); dir.create(file.path(groot, "06_Registry"), recursive = TRUE)
+jsonlite::write_json(list(match = list(by = "peak_month", tolerance_months = 2L),
+                          events = list(list(peak = "2008-05", name = "금융위기"), list(peak = "2008-11", name = "2차 급락"))),
+                     file.path(groot, "06_Registry", "crisis_event_names.json"), auto_unbox = TRUE)
+en <- .prep_event_names(c("2008-05-30", "2008-07-01", "2008-08-15", "2008-12-01", "2026-06-15"), root = groot)
+chk("G1 고점 월 ±2개월 안 = 가장 가까운 사건명 · 밖 = 빈칸(이름을 지어내지 않는다)",
+    identical(en, c("금융위기", "금융위기", "", "2차 급락", "")), paste(en, collapse = "|"))
+chk("G2 등록부가 없으면 전부 빈칸(날짜만)", all(!nzchar(.prep_event_names(c("2008-05-30"), root = file.path(groot, "none")))))
+gpng <- file.path(groot, "g.png")
+chk("G3 사건명 차트가 그려진다(빈 그림 아님)", !is.null(tryCatch(prep_crisis_chart(card, gpng, root = groot), error = function(e) NULL)) &&
+      file.exists(gpng) && file.info(gpng)$size > 20000)
+
 cat(sprintf("\n== program_report: PASS %d · FAIL %d ==\n", PASS, FAIL))
 cat(sprintf('{"test":"program_report","pass":%d,"fail":%d,"total":%d}\n', PASS, FAIL, PASS + FAIL))   # 배터리 요약 계약(run_all_hooks.sh _last_summary_json)
 if (FAIL > 0L) quit(status = 1L)

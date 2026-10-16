@@ -141,9 +141,26 @@ prep_card_digest <- function(card, window = c("overall", "visible", "test"), max
 #' @param push TRUE = 푸시(판정 변화 · 실패 · 종료), FALSE = 무음
 #' @param extra 추가 섹션 목록(선택)
 ## 위기별 낙폭 차트(2026-10-16 도훈 "위기별 낙폭 (시장 대비)은 시각화 자료로 대체") — 행동 카드 위기마다 시장(KOSPI200) 낙폭 vs 전략 낙폭 막대 ·
-##   하락 포착률 라벨 · 보는 창 / 시험 창 / 걸침 구분 · 진행 중 표시. 수치 = 행동 카드(계약 산출 · AX-008) 그대로 — 손계산 없음. 글꼴 = 현대하모니 M(§0.7).
+##   하락 포착률 라벨 · 사건명(06_Registry/crisis_event_names.json — 도훈 10-17 '보는창/시험창을 해당 시점 하락 이벤트 명칭으로') · 보는 창 / 시험 창은
+##   행마다 적지 않고 경계선 1줄 · 진행 중 표시. 수치 = 행동 카드(계약 산출 · AX-008) 그대로 — 손계산 없음. 글꼴 = 현대하모니 M(§0.7).
 ##   반환 = 그린 파일 경로(그릴 위기가 없으면 NULL).
-prep_crisis_chart <- function(card, path, window = "overall") {
+## 사건명 — 위기 고점 월에 가장 가까운 등록 항목(허용 ±tolerance_months) · 없으면 "" (이름을 지어내지 않는다 · 등록부 부재 = 전부 "")
+.prep_event_names <- function(peak_dates, root = NULL) {
+  rt <- .prep_or(root, Sys.getenv("QM_ROOT", getwd()))
+  reg <- tryCatch(jsonlite::fromJSON(file.path(rt, "06_Registry/crisis_event_names.json"), simplifyVector = FALSE), error = function(e) NULL)
+  out <- rep("", length(peak_dates))
+  if (is.null(reg) || !length(reg$events)) return(out)
+  tol <- as.integer(.prep_or(reg$match$tolerance_months, 2L))
+  mon <- function(d) { d <- as.Date(d); as.integer(format(d, "%Y")) * 12L + as.integer(format(d, "%m")) }
+  ev_m <- vapply(reg$events, function(e) mon(paste0(e$peak, "-01")), integer(1))
+  ev_n <- vapply(reg$events, function(e) as.character(e$name), character(1))
+  for (i in seq_along(peak_dates)) {
+    gap <- abs(ev_m - mon(peak_dates[i]))
+    if (length(gap) && is.finite(min(gap)) && min(gap) <= tol) out[i] <- ev_n[which.min(gap)]
+  }
+  out
+}
+prep_crisis_chart <- function(card, path, window = "overall", root = NULL) {
   cr <- card$crises
   if (is.null(cr) || !NROW(cr)) return(NULL)
   cr <- data.table::as.data.table(cr)
@@ -155,12 +172,16 @@ prep_crisis_chart <- function(card, path, window = "overall") {
   fdir <- c(file.path(Sys.getenv("LOCALAPPDATA"), "Microsoft", "Windows", "Fonts"), file.path(Sys.getenv("WINDIR", "C:/Windows"), "Fonts"))
   fM <- file.path(fdir, "현대하모니+M.ttf"); fM <- fM[file.exists(fM)][1]
   if (!is.na(fM)) { try(systemfonts::register_font(name = "HDHM", plain = fM), silent = TRUE); fam <- "HDHM" }
-  lab_w <- c(visible = "보는 창", test = "시험 창", straddle = "걸침")
-  cr[, key := sprintf("%s~%s\n%s%s", format(as.Date(peak_date), "%y.%m"), format(as.Date(trough_date), "%y.%m"),
-                      .prep_or_vec(lab_w[as.character(window)], "?"), ifelse(.prep_true_vec(ongoing), " · 진행 중", ""))]
+  cr <- cr[order(as.Date(peak_date))]
+  nm <- .prep_event_names(cr$peak_date, root)
+  l2 <- trimws(paste0(nm, ifelse(.prep_true_vec(cr$ongoing), ifelse(nzchar(nm), " · 진행 중", "진행 중"), "")))
+  cr[, key := paste0(format(as.Date(peak_date), "%y.%m"), "~", format(as.Date(trough_date), "%y.%m"), ifelse(nzchar(l2), paste0("\n", l2), ""))]
   ## 세로 배치(10-17) — 위기 = 행(위 = 오래된 위기) · 가로 막대. 위기 15개를 가로로 늘어놓으면 3262×870 이 돼 휴대폰 텔레그램에서 글자가 안 보였다.
   ##   폭 고정(7.2in · 150dpi ≈ 1080px) · 높이 = 위기 수에 비례. 포착률은 0 오른쪽 여백에 행마다 1개.
-  cr[, key := factor(key, levels = rev(unique(key[order(as.Date(peak_date))])))]
+  cr[, key := factor(key, levels = rev(unique(key)))]
+  ## 보는 창 / 시험 창 경계 — 시간순 첫 '보는 창 아닌' 위기 위에 선 1줄(전체 창이고 둘 다 있을 때만)
+  k_first <- if (identical(w_sel, "overall")) which(as.character(cr$window) != "visible")[1] else NA_integer_
+  div_x <- if (is.finite(k_first) && k_first > 1L) nrow(cr) - k_first + 1.5 else NA_real_
   L <- data.table::rbindlist(list(cr[, .(key, who = "시장(KOSPI200)", v = -abs(as.numeric(bm_dd)))], cr[, .(key, who = "전략", v = -abs(as.numeric(st_dd)))]))
   L[, who := factor(who, levels = c("전략", "시장(KOSPI200)"))]                      # 뒤집힌 축에서 행 안 위 = 시장 · 아래 = 전략
   m <- max(abs(L$v), na.rm = TRUE); if (!is.finite(m) || m <= 0) m <- 0.1
@@ -171,13 +192,15 @@ prep_crisis_chart <- function(card, path, window = "overall") {
     ggplot2::geom_text(ggplot2::aes(y = v - 0.015 * m, label = pct(v)), position = ggplot2::position_dodge(0.8), hjust = 1, size = 3.3, family = fam) +
     ggplot2::geom_text(data = capl, ggplot2::aes(key, 0.04 * m, label = lab), inherit.aes = FALSE, hjust = 0, size = 3.5, family = fam, colour = "#333333") +
     ggplot2::geom_hline(yintercept = 0, colour = "#444444", linewidth = 0.4) +
+    (if (is.finite(div_x)) ggplot2::geom_vline(xintercept = div_x, linetype = "dashed", colour = "#888888", linewidth = 0.45) else NULL) +
     ggplot2::coord_flip(clip = "off") +
     ggplot2::scale_fill_manual(values = c("시장(KOSPI200)" = "#9e9e9e", "전략" = "#1f77b4"), breaks = c("시장(KOSPI200)", "전략")) +
     ggplot2::scale_y_continuous(breaks = function(l) { b <- pretty(l); b[b <= 0] }, labels = function(x) pct(x),
                                 limits = c(-1.3 * m, 0.45 * m), expand = ggplot2::expansion(mult = 0)) +   # 0 오른쪽 = 포착 라벨 자리(눈금 없음)
     ggplot2::labs(title = "위기별 낙폭 — 시장(KOSPI200) vs 전략",
-                  subtitle = "막대 = 위기 구간 고점→저점 낙폭\n포착 = 전략 낙폭 ÷ 시장 낙폭(낮을수록 방어)",
-                  caption = "위기 = KOSPI200 Lunde-Timmermann 20/20 · 수치 = 행동 카드(계약 산출)", x = NULL, y = NULL) +
+                  subtitle = paste0("막대 = 위기 구간 고점→저점 낙폭\n포착 = 전략 낙폭 ÷ 시장 낙폭(낮을수록 방어)",
+                                    if (is.finite(div_x)) sprintf("\n점선 위 = 보는 창 · 아래 = 시험 창(정보 경계 %s 이후)", .prep_or(card$cfg$tau_d, "τ_D")) else ""),
+                  caption = "위기 = KOSPI200 Lunde-Timmermann 20/20 · 수치 = 행동 카드(계약 산출) · 사건명 = 06_Registry/crisis_event_names.json", x = NULL, y = NULL) +
     ggplot2::theme_minimal(base_family = fam, base_size = 12.5) +
     ggplot2::theme(legend.position = "top", legend.justification = "left", legend.title = ggplot2::element_blank(),
                    panel.grid.minor = ggplot2::element_blank(), panel.grid.major.y = ggplot2::element_blank(),
@@ -228,7 +251,7 @@ prep_send <- function(program, target, status, card = NULL, verdict_line = NULL,
                                    .prep_or(status$previous, "—"))),
                .prep_line("판정", .prep_or(verdict_line, if (!is.null(D)) D$headline else "—"), "🎯", program, target))
   cp <- if (!is.null(D) && length(D$lines) && identical(crisis, "chart"))
-    tryCatch(prep_crisis_chart(card, .prep_chart_path(artifact), window), error = function(e) { message("[prep_send] 위기 차트 실패 — 글줄로: ", conditionMessage(e)); NULL })
+    tryCatch(prep_crisis_chart(card, .prep_chart_path(artifact), window, root = root), error = function(e) { message("[prep_send] 위기 차트 실패 — 글줄로: ", conditionMessage(e)); NULL })
   else NULL
   if (!is.null(cp) && file.exists(cp)) {
     charts <- c(stats::setNames(cp, "위기별 낙폭 — 시장(KOSPI200) vs 전략"), charts)
