@@ -1,6 +1,6 @@
 {
  "schema": "q_judgment_ledger_v1",
- "updated_at": "2026-10-17T00:46:30+0900",
+ "updated_at": "2026-10-17T03:24:31+0900",
  "judgments": [
   {
    "id": "J-20261016-001",
@@ -404,6 +404,34 @@
    "reviews": [],
    "supersedes": null,
    "superseded_by": null
+  },
+  {
+   "id": "J-20261017-006",
+   "at": "2026-10-17T02:41:12+0900",
+   "op": "세션 7a34e194 · P1R02(C-20261017-020 소급)",
+   "kind": "design",
+   "summary": "P1R02 = 1801.01777 롱 레그만(상위 분위 EW · 완전 투자) 분해 · 단일 변형 · H1 보는 창 β 통제 α t ≥ 2.0 · 기저 캐시 적중으로 같은 판",
+   "rationale": "도훈 10-17 '딴 건 하지말고 롱 레그만 판부터' — 첫 권위 A(롱숏)의 숏 레그는 한국 공매도 금지(2020-03~2025-03 대부분)로 구현 불가라 롱온리 경로의 관문이 롱 레그 알파다. 측정 = 정본 계약 · 판정 = 계약 beta_controlled_alpha · 문턱 2.0 = 등급 A 하한 PORT_t 와 같은 수(사전 고정)",
+   "framework_refs": [
+    "lean-loop 라운드(사전등록 → 측정 → 행동 카드 → 판정)",
+    "measurement-graduation §2 β 통제 α 병기"
+   ],
+   "evidence": [
+    "stage_artifacts/programs/P1_RETURN/P1R02_1801_long_leg/prereg.json(md5 bec5a1c4)",
+    "commit 615c4a73e"
+   ],
+   "alternatives": [
+    "롱 + 지수 헤지 · 공매도 금지 기간 숏 0 판을 함께(도훈이 롱 레그만 먼저로 좁힘)",
+    "처방 축 ≤25 롱온리판 직행"
+   ],
+   "expectation": "롱 레그 β 0.8~1.1 · 위기 방어 약함~보통 · α 양(+)",
+   "confidence": 0.5,
+   "status": "reviewed",
+   "reviews": [
+    "R-20261017-003"
+   ],
+   "supersedes": null,
+   "superseded_by": null
   }
  ],
  "reviews": [
@@ -466,6 +494,45 @@
     "C-20261017-011",
     "C-20261017-012",
     "C-20261017-013"
+   ]
+  },
+  {
+   "id": "R-20261017-002",
+   "at": "2026-10-17T02:39:06+0900",
+   "role": "philosophy",
+   "trigger": "P1",
+   "scope": [],
+   "file": "04_Research/programs/_supervision/superfan/philosophy/20261017_0235_P1_P1R02.md",
+   "round": "P1R02_1801_long_leg",
+   "direction": null,
+   "challenges": [
+    "C-20261017-014",
+    "C-20261017-015",
+    "C-20261017-016",
+    "C-20261017-017",
+    "C-20261017-018",
+    "C-20261017-019",
+    "C-20261017-020",
+    "C-20261017-021"
+   ]
+  },
+  {
+   "id": "R-20261017-003",
+   "at": "2026-10-17T03:22:06+0900",
+   "role": "philosophy",
+   "trigger": "P2",
+   "scope": [
+    "J-20261017-006"
+   ],
+   "file": "04_Research/programs/_supervision/superfan/philosophy/20261017_0317_P2_P1R02.md",
+   "round": "P1R02_1801_long_leg",
+   "direction": "neutral",
+   "challenges": [
+    "C-20261017-022",
+    "C-20261017-023",
+    "C-20261017-024",
+    "C-20261017-025",
+    "C-20261017-026"
    ]
   }
  ],
@@ -1047,6 +1114,344 @@
    "falsifier": "",
    "status": "closed_note",
    "role": "judgment",
+   "hold_request": false,
+   "responses": [],
+   "outcome": null,
+   "outcome_note": null
+  },
+  {
+   "id": "C-20261017-014",
+   "at": "2026-10-17T02:39:06+0900",
+   "review": "R-20261017-002",
+   "target": "SYSTEM",
+   "grade": "challenge",
+   "rule": null,
+   "claim": "H1(KOSPI200 1요인 β-통제 알파 t ≥ 2.0)은 이 축에서 선택력과 동일가중 · 크기 프리미엄을 가르지 못한다 — 롱 레그 = 전 종목+위생 상위 20% 동일가중(다리당 100종+ · 논문은 대·중형 68종)이라 유니버스 동일가중의 KOSPI200 대비 α 가 M1 에만 남는다(롱숏은 상쇄). 프리미엄이 양이면 선택 없이 H1 성립(≤25 라운드가 크기 효과 위에 선다) · 음이면 선택이 있어도 기각(잘못된 '숏 레그 의존' 상신) — 양방향. 몫 M3 도 같은 오염(1 초과 가능)",
+   "evidence": [
+    "stage_artifacts/programs/P1_RETURN/P1R02_1801_long_leg/prereg.json",
+    "04_Research/strategies/RP_AUTO_CLEAN_1801_01777/engine.R",
+    "04_Research/strategies/RP_AUTO_CLEAN_1801_01777/fidelity_axis_portfolio.json",
+    "04_Research/strategies/RP_AUTO_CLEAN_1801_01777/fidelity_axis_universe.json",
+    "02_Infrastructure/contracts/matched_controls.R",
+    "02_Infrastructure/contracts/tilt_attribution_config.json",
+    "00_Lawbook/specs/investment_philosophy_charter.md §4 소형주 착시 · §5 S0"
+   ],
+   "alternative": "판정 불변 · report_only('등록 뒤 · 평가 전 추가' 표식 · 보는 창 ≤ τ_D · 계약 함수만): (a) MC8 mc_controls 의 size_matched(측정 축 ALL_HYG · 크기 10분위) 계열 β-통제 α·t (b) (롱 레그 − size_matched) 차이 계열 β-통제 α·t = 크기 차감 선택 알파 (c) 롱 레그 t(α) 의 크기 짝 플라시보 200 경로 분위(placebo_alpha 0.05) (d) M3' = (b)α/M2α 병기 · M3 > 1 꼬리표 (e) 결론 범위: '롱 레그 선택 알파'는 (b) t ≥ 2.0 ∧ (c) 상위 5% 일 때만 — 아니면 'H1 성립 — 크기 · 동일가중 프리미엄과 구별 불가' / 'H1 기각 — 크기 역풍 여부 미확인'",
+   "falsifier": "(a) 의 α 가 0 과 구별되지 않고(|t| < 1) (b) t 와 M1 t 가 H1 문턱 2.0 의 같은 쪽이면 크기 성분은 결론을 바꾸지 않았다 — 이 도전은 실익이 없었다",
+   "status": "accepted",
+   "role": "philosophy",
+   "hold_request": false,
+   "responses": [
+    {
+     "at": "2026-10-17T02:41:13+0900",
+     "by": "Q",
+     "kind": "accept",
+     "text": "맞다 — 전 종목 상위 20% EW(신호일당 중앙 215종)는 크기 · 동일가중 프리미엄을 싣는다. 판정(H1)은 R2 로 고정하되, 보고에 MC8 크기 짝 묶음을 '등록 뒤 추가 · 보고 전용'으로 붙이고 '선택 알파' 서술은 크기 뺀 t ≥ 2.0 ∧ 플라시보 상위 5% 일 때만 쓴다.",
+     "change": "평가 뒤 report_extras.R(계약 mc_card · bc_monthly · beta_controlled_alpha): ① 크기 짝 바구니 α · t ② (롱 레그 − 크기 짝) α · t ③ 플라시보 경로별 α t 분위(경로가 카드에 없으면 미측정) ④ M3 보정판 + M3 > 1 꼬리표 — 보는 창만"
+    }
+   ],
+   "outcome": "refuted",
+   "outcome_note": "반증 조건 충족(P2 R-20261017-003) — 보는 창 크기 짝 바구니 α −0.05%(t −0.02 · |t| < 1) · 크기 뺀 선택 t −1.32 와 M1 t −0.62 가 문턱 2.0 의 같은 쪽 → 크기 성분은 H1 결론을 바꾸지 않았다(이 엔진에서 실익 없음). 플라시보 위치(전 경로 ≥ 롱 레그 t)와 분기 ③/④ 구분은 이 계기에서 나왔으나 결론 불변.",
+   "outcome_at": "2026-10-17T03:22:56+0900"
+  },
+  {
+   "id": "C-20261017-015",
+   "at": "2026-10-17T02:39:06+0900",
+   "review": "R-20261017-002",
+   "target": "SYSTEM",
+   "grade": "challenge",
+   "rule": null,
+   "claim": "next_if_rejected 의 '숏 대체(지수 헤지 · 인버스)'는 M1 이 이미 그 답이다 — 지수 헤지판 r_L − β̂·r_K200 의 평균 = M1 의 α̂(OLS 항등식)이라 H1 기각 = 헤지판도 비유의(비용 · 인버스 감가는 더 깎음) · 숏 레그 알파는 지수 숏으로 옮겨지지 않는다. 철학상 정적 β 제거 = 빈칸 3 '노출(β) 방어 — 비대칭 없음' · 원칙 5 저변동 기계 위험 · 롱숏 = 2계층 축 밖 · INV-7(고정 축 완화를 레버로 제시 금지)",
+   "evidence": [
+    "stage_artifacts/programs/P1_RETURN/P1R02_1801_long_leg/prereg.json",
+    "00_Lawbook/specs/investment_philosophy_charter.md §5 빈칸 3 · 원칙 5",
+    ".claude/rules/lean-loop.md 철학 줄",
+    "CLAUDE.md 축 · INV-7"
+   ],
+   "alternative": "평가 전에 Q 판단(J)으로 다음 단계 4분기를 남긴다(사전등록 규칙 불변 · 기준 (b) = 크기 차감 선택 알파 t): ① H1 성립 ∧ (b) ≥ 2.0 → ≤25 롱온리 라운드 ② H1 성립 ∧ (b) < 2.0 → '크기 프리미엄' — ≤25 엔진 라운드 열지 않음 ③ H1 기각 ∧ (b) ≥ 2.0 → '크기 역풍에 가려진 선택' — 축 안 구성(크기 분위 중립 선택)으로 경로 유지 ④ 둘 다 미달 → 롱온리 수익 엔진 후보 아님 · 숏 대체 상신 없음 · 지수 도구는 P2 시변 · 비대칭 방어 오버레이로만",
+   "falsifier": "'숏 대체'가 국면 조건부(시변) 헤지였고 그 비대칭(하락장 β < 상승장 β)을 사전등록할 계획이었다면 철회(그건 P2 라운드) · 도훈이 시장 중립 롱숏을 철학의 답으로 판정(교정 사례)하면 철학 근거 부분 철회",
+   "status": "accepted",
+   "role": "philosophy",
+   "hold_request": false,
+   "responses": [
+    {
+     "at": "2026-10-17T02:41:13+0900",
+     "by": "Q",
+     "kind": "accept",
+     "text": "맞다 — 정적 β 헤지판의 평균은 M1 α 와 같아(OLS) 새 정보가 없고, 정적 β 제거는 비대칭 방어가 아니다. 평가 전에 다음 4분기를 고정한다: ① H1 성립 ∧ 크기 뺀 t ≥ 2 → 처방 축 ≤25 롱온리 라운드 ② H1 성립 ∧ 크기 뺀 t < 2 → '크기 프리미엄' — 엔진 라운드 열지 않음 ③ H1 기각 ∧ 크기 뺀 t ≥ 2 → 크기 분위 중립 구성으로 롱온리 경로 유지 ④ 둘 다 미달 → 롱온리 후보 아님. 숏 대체는 상신하지 않는다 · 지수 도구는 P2 의 시변 · 비대칭 오버레이로만.",
+     "change": "사전등록 next_if_rejected 의 '숏 대체 상신' 문장은 이 4분기로 대체(보고서에 '등록 뒤 정정' 표기 · 판정 규칙 H1 불변)"
+    }
+   ],
+   "outcome": "vindicated",
+   "outcome_note": "H1 기각(M1 t −0.62) — 원 사전등록 분기였다면 숏 대체(지수 헤지 · 인버스)가 상신됐다. 정적 헤지판 α = M1 α(−2.38%/년 · OLS 항등식)라 상신 재료 없음 · 평가 전 고정한 4분기가 ④(롱온리 후보 아님 · 숏 대체 상신 없음)로 닫았다.",
+   "outcome_at": "2026-10-17T03:22:56+0900"
+  },
+  {
+   "id": "C-20261017-016",
+   "at": "2026-10-17T02:39:07+0900",
+   "review": "R-20261017-002",
+   "target": "SYSTEM",
+   "grade": "challenge",
+   "rule": null,
+   "claim": "이 라운드는 τ_D 안쪽의 철학 기록을 남기지 않는다 — evaluate.R report_only 는 시험 창 M1·M2 + authoritative(전기간) 등급 · CR 뿐이고 보는 창 행동 카드(위기별 낙폭 포착 · 상승 포착 · 하락/상승 β · 회복 · CDaR · 롤링 36M) · MC8 귀속 · 구성 프로필이 없다. 이 엔진의 롱온리 '같은 엔진 기준'(빈칸 2~5 · 특히 4(B) 80%)의 유일한 출처가 이 롱 레그인데(롱숏 β ≈ 0 은 상승 포착 기준 불가), 다음 설계가 기준 없이 가거나 τ_D 밖 수치로 채워진다",
+   "evidence": [
+    "04_Research/programs/P1_RETURN/P1R02_1801_long_leg/evaluate.R",
+    "02_Infrastructure/contracts/diagnosis_packet.R",
+    "02_Infrastructure/contracts/behavior_card.R",
+    "00_Lawbook/specs/investment_philosophy_charter.md §4 재는 곳 · §5 빈칸 2~5",
+    "00_Lawbook/specs/superfan_protocol.md §11"
+   ],
+   "alternative": "(a) dp_build(롱 레그 산출물, tau_d = 2022-12-31) → results/P1R02_LONG/visible/ report_only(판정 불변 · 롱온리라 적용 가능 · 적재 단계 절단) (b) 시험 창 · 전기간 블록은 results/full/(audience 도훈)로 분리 — 안 하면 다음 사전등록 exposures 에 'P1R02 evaluation.json 시험 창 M1·M2 · 전기간 등급 · CR 열람' 기록 (c) 보고의 철학 1줄은 (a) 보는 창 값만 · 위기 방어 언급은 MC8 귀속 라벨과 함께",
+   "falsifier": "롱 레그 산출물에 보유 기록이 없어 dp_build 가 구조적으로 못 돌면 (a) 철회 — 대신 결론에 '위기 · 상승 포착 · β 비대칭 미측정'을 적는다",
+   "status": "accepted",
+   "role": "philosophy",
+   "hold_request": false,
+   "responses": [
+    {
+     "at": "2026-10-17T02:41:13+0900",
+     "by": "Q",
+     "kind": "accept",
+     "text": "맞다 — 이 롱 레그가 이 엔진 롱온리 '같은 엔진 기준'의 첫 출처다. 보는 창 진단 패킷을 따로 남긴다.",
+     "change": "report_extras.R: dp_build(롱 레그, tau_d = 2022-12-31) → dp_write → results/P1R02_LONG/visible/ (위기별 포착 · 강세 상승 포착 · 하락/상승 β · MC8 귀속 · 회복 · 롤링 · 연도별 · 크기 분위 · 유효 종목 수 · 최대 비중) · 전기간 · 시험 창 블록은 results/full/ 로 분리"
+    }
+   ],
+   "outcome": "vindicated",
+   "outcome_note": "보는 창 패킷(results/P1R02_LONG/visible)이 이 라운드 철학 사실 전부(β 역비대칭 1.28 > 0.91 · 깊은 위기 0/6 · 회복 지연 7/10 · MC8 no_defense · 상승 포착 0.76)를 냈다 — 없었다면 보고의 철학 1줄은 전기간 CR(report_only)로 쓰였다.",
+   "outcome_at": "2026-10-17T03:22:56+0900"
+  },
+  {
+   "id": "C-20261017-017",
+   "at": "2026-10-17T02:39:07+0900",
+   "review": "R-20261017-002",
+   "target": "SYSTEM",
+   "grade": "note",
+   "rule": null,
+   "claim": "헌장 빈칸 적용(물음 3): 판정 규칙으로는 비적용(처치 없는 분해 · R2). 기록으로는 2(위기표 + 깊은 위기 표시) · 3(하락/상승 β · 비대칭 방향 — 같은 DNN 계열 E2 RX0 보는 창 1.31 > 0.99 역방향) · 4(상승 포착 중앙 · β-통제 α·t · 크기 차감 α = 이 엔진 롱온리 경로의 기준값) · 5(위기별 회복 거래일 · 최장 수중) 필수. 1(집중)은 구조상 해당 없음(최대 비중 1% 안팎 — 유효 N · 최대 비중만 기록)",
+   "evidence": [
+    "00_Lawbook/specs/investment_philosophy_charter.md §5 빈칸 1~5",
+    "04_Research/programs/_supervision/superfan/philosophy/20261016_2100_P1_P3R03.md"
+   ],
+   "alternative": "",
+   "falsifier": "",
+   "status": "closed_note",
+   "role": "philosophy",
+   "hold_request": false,
+   "responses": [],
+   "outcome": null,
+   "outcome_note": null
+  },
+  {
+   "id": "C-20261017-018",
+   "at": "2026-10-17T02:39:07+0900",
+   "review": "R-20261017-002",
+   "target": "SYSTEM",
+   "grade": "note",
+   "rule": null,
+   "claim": "next_if_holds(≤25 롱온리)를 철학 쪽으로: 자격 = P1R01 qualify(보는 창 t(α) ≥ 2.0 ∧ 상승 포착 ≥ 0.55 — P1R02 H1 은 상승 포착을 뺐다) + 크기 짝 선택 알파 · 무신호 대조 방향 주의(measurement-graduation §3 시총 상위 N cap-w 는 대형주 착시용 — 전 종목 상위 25 동일가중에는 MC8 크기 짝 플라시보) · β 비대칭 기록 · E2/E3 잔차 상관(같은 DNN-팩터 계열 사본이면 P4 다변화 아님) · 동일가중 N ≥ 10 이면 빈칸 1 은 걸리지 않음(기록만)",
+   "evidence": [
+    "stage_artifacts/programs/P1_RETURN/P1R01_engine_qualification/prereg.json",
+    ".claude/rules/measurement-graduation.md §3 무신호 대조",
+    "02_Infrastructure/contracts/matched_controls.R"
+   ],
+   "alternative": "",
+   "falsifier": "",
+   "status": "closed_note",
+   "role": "philosophy",
+   "hold_request": false,
+   "responses": [],
+   "outcome": null,
+   "outcome_note": null
+  },
+  {
+   "id": "C-20261017-019",
+   "at": "2026-10-17T02:39:07+0900",
+   "review": "R-20261017-002",
+   "target": "SYSTEM",
+   "grade": "note",
+   "rule": null,
+   "claim": "노출 분해 · 무신호 대조 · 분산성 관문의 EW 요인이 아직 구 축 K200∪KQ150(tilt_attribution_config universe.membership_flags · rf_diversification_gate ew = (200·K200 EW + 150·KQ150 EW)/350 · no_signal_control ALL_HYG 분기 없음) — ALL_HYG 롱 레그의 패킷 ⑤ '선택' 성분은 상한으로만 읽는다. 측정 축을 아는 대조는 MC8 뿐(구성요소 수리는 라운드 밖 — 측정 신뢰 결함 후보)",
+   "evidence": [
+    "02_Infrastructure/contracts/tilt_attribution_config.json",
+    "02_Infrastructure/reinforcement/rf_diversification_gate.R",
+    "02_Infrastructure/contracts/no_signal_control.R",
+    "02_Infrastructure/contracts/matched_controls.R"
+   ],
+   "alternative": "",
+   "falsifier": "",
+   "status": "closed_note",
+   "role": "philosophy",
+   "hold_request": false,
+   "responses": [],
+   "outcome": null,
+   "outcome_note": null
+  },
+  {
+   "id": "C-20261017-020",
+   "at": "2026-10-17T02:39:07+0900",
+   "review": "R-20261017-002",
+   "target": "SYSTEM",
+   "grade": "note",
+   "rule": null,
+   "claim": "절차: P1 이 등록(02:20:39) · 측정(02:28) 뒤에 도착(도훈 직접 지시라 속도는 정당하나 철학 의견은 판정에 못 들어간다 — lean-loop 1 'P1 의견을 반영해 등록') · P1R02 설계 판단(J) 원장 기록 없음(자율 판단 체계 §8 — 판단 Superfan 몫) · 롱숏 A(재검증판)가 A 자격 관문 · Judge 로 가면 P3 의견서(전기간 · audience 도훈) 대상",
+   "evidence": [
+    "stage_artifacts/programs/P1_RETURN/P1R02_1801_long_leg/prereg.json",
+    "06_Registry/research_programs.json P1R02 recorded_at",
+    ".claude/rules/lean-loop.md 라운드 1"
+   ],
+   "alternative": "",
+   "falsifier": "",
+   "status": "closed_note",
+   "role": "philosophy",
+   "hold_request": false,
+   "responses": [],
+   "outcome": null,
+   "outcome_note": null
+  },
+  {
+   "id": "C-20261017-021",
+   "at": "2026-10-17T02:39:07+0900",
+   "review": "R-20261017-002",
+   "target": "SYSTEM",
+   "grade": "endorse",
+   "rule": null,
+   "claim": "정직한 기대(위기 방어 '약함~보통 — 방어 엔진 아님' 사전 공시) · 단일 변형 · 선택 없음(원칙 7 경로 없음) · 진단 등급 A 라우팅 보류(held:p1r02_diagnostic) · 2계층 등재 없음 · 실패 의미(미시험을 통과로 접지 않음 — 헌장 §4 '0 으로 접지 않는다') · 같은 판 규칙 · 리허설 노출 공시. 유지",
+   "evidence": [
+    "stage_artifacts/programs/P1_RETURN/P1R02_1801_long_leg/prereg.json",
+    "04_Research/programs/P1_RETURN/P1R02_1801_long_leg/measure.R"
+   ],
+   "alternative": "",
+   "falsifier": "",
+   "status": "closed_note",
+   "role": "philosophy",
+   "hold_request": false,
+   "responses": [],
+   "outcome": null,
+   "outcome_note": null
+  },
+  {
+   "id": "C-20261017-022",
+   "at": "2026-10-17T03:22:55+0900",
+   "review": "R-20261017-003",
+   "target": "SYSTEM",
+   "grade": "challenge",
+   "rule": null,
+   "claim": "'1차 A 의 원천 = 동적 IC 부호 층'은 분리되지 않은 귀속이고, 그 층의 유일한 보는 창 증거(1차 롱숏 t 7.46 · β −0.02)는 롱숏이라 철학(롱온리 위기 포착 · 상승 포착 · β 비대칭)에 대해 말하지 않는다 — 코드 차이는 둘이다: (a) 부호 = 커넥터 3단 as-of(expanding IC ≥36개월 → 등록부 → +1) vs 등록부 정적 방향 (b) 학습 표본 = 학습 월마다 336종 추출(TRAIN_XS_CAP) vs 전 횡단면 미니배치 336(TRAIN_BATCH_MAX) + 난수 경로. 재구현 롱숏 t 1.14 로의 하락이 어느 쪽인지 미측정. 층은 축 안(신호층 · C13/C14 as-of · 느린 방향 학습 — 팩터 타이밍 아님)이지만, 커넥터 기본 동작이라 알파 원천이면 엔진 간 공통 원천일 수 있다(획일화).",
+   "evidence": [
+    "04_Research/strategies/RP_AUTO_CLEAN_1801_01777/engine.rejected1.R ↔ engine.R(주석 제외 diff: .orient · TRAIN_XS_CAP → TRAIN_BATCH_MAX)",
+    "02_Infrastructure/factor_db/factor_db_connector.R:216-221(expanding · min 36) · factor_db_builder.R:1984(Usable_Date = 다음 신호일)",
+    "stage_artifacts/programs/P1_RETURN/P1R02_1801_long_leg/prereg.json exposures(1차 보는 창 t 7.46 · β −0.02)",
+    "evaluation.json visible M2(t 1.14 · β 0.07 · M3 −0.44)",
+    "04_Research/programs/_supervision/superfan/philosophy/20261017_0317_P2_P1R02.md"
+   ],
+   "alternative": "재료로 부르기 전 단일 변경 A/B(보는 창): 재구현 엔진(고정 방향) vs 재구현 + 커넥터 as-of 부호 — 부호만 바꾸고 학습 표본 구성 · 시드 정책 동일 · 두 팔 모두 롱 레그(상위 20% EW)와 롱숏 · 관문 = 이 라운드 그대로(H1 · 크기 뺀 선택 t ≥ 2 · 플라시보 상위 5%) · 철학 기록 = 하락장 β < 상승장 β 인가(기준 1.28 > 0.91) · 깊은 위기 과반 · 상승 포착 ≥ 0.76 의 80% · 회복 vs 기준 · 부호 lag1 판 병기(동월 누출 의심 닫기 · 의무 아님). 롱 레그 관문 통과 = P1 수익 재료 · 그 위에 하락장 β < 상승장 β ∧ 깊은 위기 과반 ∧ MC8 선택 귀속 = 철학(방어) 재료.",
+   "falsifier": "A/B 에서 부호 층 단독으로 롱 레그 크기 뺀 선택 t ≥ 2 와 하락장 β ≤ 상승장 β 가 나오면 '철학 재료 아님'을 철회 · (b) 단독 A/B 로 학습 표본 변경 효과가 0 임이 보이면 귀속 부분 철회.",
+   "status": "accepted",
+   "role": "philosophy",
+   "hold_request": false,
+   "responses": [
+    {
+     "at": "2026-10-17T03:24:31+0900",
+     "by": "Q",
+     "kind": "accept",
+     "text": "맞다 — 1차 판과 재구현 사이 행동 차이는 둘(동적 부호 층 · 학습 표본 336종 추출 → 전 횡단면 미니배치)이라 'A 원천 = 부호 층'은 분리되지 않았다.",
+     "change": "종료 보고 · 텔레그램의 '핵심 발견'을 '원천 미분리 · 단일 차이 A/B 로 가른다'로 정정 · 탐침 1 = 부호만 · 표본만 A/B 를 롱 레그 관문 + 철학 기록으로"
+    }
+   ],
+   "outcome": null,
+   "outcome_note": null
+  },
+  {
+   "id": "C-20261017-023",
+   "at": "2026-10-17T03:22:55+0900",
+   "review": "R-20261017-003",
+   "target": "SYSTEM",
+   "grade": "challenge",
+   "rule": "TAU_D",
+   "claim": "부호 층 변형(≈ 1차 구현 · 차이는 학습 표본뿐)의 시험 창은 이미 노출됐다 — 사전등록 exposures 가 'Q 는 1차 구현 전기간(시험 창 포함) 성과를 보았다'고 적는다. 이 층을 고르는 근거에 1차 구현의 전기간 권위 A 가 섞이면 τ_D 이후 성과가 처방 입력이 되고, 그 변형의 시험 창 결과는 원칙 7('처방이 못 본 위기')의 증명력이 없다. 아직 위반은 없다(설계 전) — 다음 설계의 조건이다.",
+   "evidence": [
+    "stage_artifacts/programs/P1_RETURN/P1R02_1801_long_leg/prereg.json exposures",
+    ".claude/rules/lean-loop.md '하지 않는 것' · 정보 경계",
+    "00_Lawbook/specs/investment_philosophy_charter.md §2 원칙 7",
+    "04_Research/programs/_supervision/superfan/philosophy/20261017_0317_P2_P1R02.md"
+   ],
+   "alternative": "(a) 다음 사전등록 근거 = 보는 창만(1차 롱숏 t 7.46 vs 재구현 1.14 · 이 라운드 롱 레그 기준값) (b) exposures 에 '1차 구현 전기간 · 시험 창을 보았다 — 이 층 변형의 시험 창은 노출됨' (c) 그 변형이 A 후보에 이르면 P3 의견서 · 보고에 '노출된 변형 — 시험 창은 강건성 증명 아님' 표기 (d) 층의 강건성 근거는 층을 처음 붙이는 엔진의 시험 창 등 다른 출처에서.",
+   "falsifier": "다음 설계가 이 층을 쓰지 않으면 moot · A/B 에서 1차 A 의 원천이 학습 표본 쪽으로 드러나 부호 층 변형이 Q 가 본 것과 다른 물체가 되면 moot.",
+   "status": "accepted",
+   "role": "philosophy",
+   "hold_request": false,
+   "responses": [
+    {
+     "at": "2026-10-17T03:24:31+0900",
+     "by": "Q",
+     "kind": "accept",
+     "text": "맞다 — 부호 층 변형의 시험 창은 Q 가 1차 판 전기간을 본 '노출된 변형'이다.",
+     "change": "탐침 1 사전등록에 exposures(1차 판 전기간 열람) 기록 · 근거는 보는 창만 · 시험 창은 '노출된 변형'으로 표기(보고서 반영)"
+    }
+   ],
+   "outcome": null,
+   "outcome_note": null
+  },
+  {
+   "id": "C-20261017-024",
+   "at": "2026-10-17T03:22:55+0900",
+   "review": "R-20261017-003",
+   "target": "SYSTEM",
+   "grade": "note",
+   "rule": null,
+   "claim": "기준값(이 엔진 롱온리 · 상위 20% EW · 고정 방향 · 보는 창 2001-02~2022-12) — 빈칸2: 위기 11 · 낙폭 포착 중앙 1.13(최악 1.59) · 깊은 위기(벤치 낙폭 ≥ 27.5%) 6곳 1.04~1.34 → 0/6 · 빈칸3: β 1.01 · 하락장 1.28 > 상승장 0.91(역행) · 빈칸4: 강세 상승 포착 중앙 0.76(8구간) · β-통제 α −2.38%(t −0.62) · 크기 짝 α −0.05%(t −0.02) · 크기 뺀 선택 α −2.32%(t −1.32) · 빈칸5: 회복 거래일 1970 · 3748 · 1597 · 2265 · 미회복 · 3105 · 101 · 2199 · 631 · 80 · 미회복(벤치 122 · 458 · 173 · 200 · 791 · 598 · 41 · 2276 · 745 · 134 · 미회복) → 벤치보다 긴 위기 7/10 · CDaR −64.8% · 빈칸1: 유효 종목 수 210 · 한 종목 위기 최대 −1.35%. 읽기 주의 (i) 패킷 §4 크기 분위 경계 = 구 축(nU 중앙 300 · C-019) → '분위 1' = 지수 밖 중소형주 · 선택 −7.02% 도 구 축 EW 기준(축에 맞는 값 = MC8) (ii) 플라시보 · 크기 짝 바구니는 무비용(롱 레그 비용 연 1.24%) → 보고 문장은 '크기 짝 무작위 바구니(무비용)보다 낮다'(DNN 선택이 무작위보다 나쁘다 아님) · 선택 α 절대값 > 비용이라 부호는 비용만으로 설명되지 않음.",
+   "evidence": [
+    "04_Research/programs/P1_RETURN/P1R02_1801_long_leg/results/P1R02_LONG/visible/diagnosis_packet.json",
+    "04_Research/programs/P1_RETURN/P1R02_1801_long_leg/results/report_extras.json(visible)",
+    "04_Research/programs/_supervision/superfan/philosophy/20261017_0317_P2_P1R02.md"
+   ],
+   "alternative": "",
+   "falsifier": "",
+   "status": "closed_note",
+   "role": "philosophy",
+   "hold_request": false,
+   "responses": [],
+   "outcome": null,
+   "outcome_note": null
+  },
+  {
+   "id": "C-20261017-025",
+   "at": "2026-10-17T03:22:55+0900",
+   "review": "R-20261017-003",
+   "target": "SYSTEM",
+   "grade": "note",
+   "rule": null,
+   "claim": "헌장 빈칸 상신 — 빈칸4(C) '감소 ≤ 엔진 알파의 20%'는 엔진 알파 > 0 을 전제한다: 이 기준은 −2.38%(t −0.62)라 지킬 강점이 없고 어떤 처치든 비열등이 자명해진다 → 제안: 4(C)는 P1 자격(보는 창 t(α) ≥ 2.0) 기준에만 적용 · 아니면 '해당 없음'(절대 하한 0.55 · P1 자격만). 빈칸5 '기준보다 긴 회복'은 기준이 미회복(2007-10 수준 · 약 15년 중도절단)이면 판정 불가 → 제안: 기준이 중도절단인 위기는 KOSPI200 회복을 병기 기준으로. 둘 다 도훈 교정 사례 필요(사례 후보 = 이 롱 레그 위기표 · 회복표 · 보는 창).",
+   "evidence": [
+    "00_Lawbook/specs/investment_philosophy_charter.md §5 빈칸 4 · 5",
+    "04_Research/programs/P1_RETURN/P1R02_1801_long_leg/results/P1R02_LONG/visible/diagnosis_packet.json",
+    "04_Research/programs/_supervision/superfan/philosophy/20261017_0317_P2_P1R02.md"
+   ],
+   "alternative": "",
+   "falsifier": "",
+   "status": "closed_note",
+   "role": "philosophy",
+   "hold_request": false,
+   "responses": [],
+   "outcome": null,
+   "outcome_note": null
+  },
+  {
+   "id": "C-20261017-026",
+   "at": "2026-10-17T03:22:56+0900",
+   "review": "R-20261017-003",
+   "target": "J-20261017-006",
+   "grade": "endorse",
+   "rule": null,
+   "claim": "P1 도전 3건을 평가 전에 수용(02:41 < 평가 02:58) · 4분기를 코드로 고정(report_extras.R:56-58 · 02:42) · 보는 창 / 시험 창 · 전기간 파일 분리(report_extras.R:61-64 → results/full/) · H1 판정 문장 불변 · 숏 대체 상신 없음 — 이 P2 가 보는 창만으로 끝까지 판정할 수 있었다. 유지.",
+   "evidence": [
+    "04_Research/programs/P1_RETURN/P1R02_1801_long_leg/report_extras.R",
+    "06_Registry/q_judgment_ledger.json C-20261017-014~016 응답",
+    "04_Research/programs/_supervision/superfan/philosophy/20261017_0317_P2_P1R02.md"
+   ],
+   "alternative": "",
+   "falsifier": "",
+   "status": "closed_note",
+   "role": "philosophy",
    "hold_request": false,
    "responses": [],
    "outcome": null,

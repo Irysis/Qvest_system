@@ -1,8 +1,8 @@
 {
   "schema": "research_programs_v1",
   "_doc": "v10.01 목표 역산형 3엔진 리서치의 정본 등록부(2026-10-13 도훈 지시 '이 리서치 프로세스를 지속가능하게 운영할 인프라'). 쓰기는 02_Infrastructure/programs/program_registry.R 경유만(원자적 · 스키마 검사). 설계 = 04_Research/01_reports/l1_prescription_redesign_20261013/README.md(§대안 설계 · §2 등급 v3 · §3 처방 루프 · §9 유니버스 · §10 에이전트).",
-  "version": 50,
-  "updated_at": "2026-10-17T02:20:39+0900",
+  "version": 53,
+  "updated_at": "2026-10-17T03:24:57+0900",
   "target_spec": {
     "_doc": "0단계 목표 명세 — 설계는 이 행동 목표로 한다. 등급(essence v3)은 결과 보고 문턱. 수치 출처를 단다(하드코딩 금지).",
     "upside_capture_min": {
@@ -252,12 +252,21 @@
           "round_id": "P1R02_1801_long_leg",
           "prereg": "stage_artifacts/programs/P1_RETURN/P1R02_1801_long_leg/prereg.json",
           "prereg_md5": "bec5a1c492d0d9f45e416df2f53bcb0f",
-          "status": "registered",
+          "status": "complete",
           "n_variants": 1,
           "variants": [
             "P1R02_LONG"
           ],
-          "recorded_at": "2026-10-17T02:20:39+0900"
+          "recorded_at": "2026-10-17T03:24:56+0900",
+          "verdict": {
+            "H1": "rejected",
+            "M1_t": -0.62,
+            "band": "숏 레그 의존",
+            "branch": "④ 롱온리 후보 아님",
+            "note": "재검증 롱숏(고정 방향) = F · 1차 A 의 원천(동적 부호 층 · 학습 표본) 미분리 — 단일 차이 A/B 가 다음 탐침"
+          },
+          "philosophy_p2": "neutral (R-20261017-003)",
+          "report": "stage_artifacts/programs/P1_RETURN/P1R02_1801_long_leg/ROUND_REPORT.md"
         }
       ],
       "queue": [
@@ -746,21 +755,6 @@
           "enqueued_at": "2026-10-15T10:22:05+0900"
         },
         {
-          "key": "axv:1801.01777",
-          "kind": "paper",
-          "title": "Deep Learning for Forecasting Stock Returns in the Cross-Section",
-          "id": "1801.01777",
-          "source": "arxiv",
-          "engine": "return",
-          "engine_secondary": [],
-          "verdict": "testable",
-          "crisis_evidence": "not_reported",
-          "reason": "Well-known cross-sectional DNN return-ranking paper forming long-short decile portfolios from predicted returns on standard price/fundamental inputs; mechanism is clear and reconstructable on Korean all-listed-stock data.",
-          "route_date": "20261015",
-          "route_file": "alpha_search_route_20261015.json",
-          "enqueued_at": "2026-10-15T10:22:05+0900"
-        },
-        {
           "key": "axv:1707.05552",
           "kind": "paper",
           "title": "Wax and wane of the cross-sectional momentum and contrarian effects: Evidence from the Chinese stock markets",
@@ -913,10 +907,50 @@
           "route_date": "20261015",
           "route_file": "alpha_search_route_20261015.json",
           "enqueued_at": "2026-10-15T10:22:05+0900"
+        },
+        {
+          "key": "engine:RP_20261017_031622_skipped_base",
+          "kind": "engine",
+          "base_status": "skipped",
+          "title": "Deep Learning for Forecasting Stock Returns in the Cross-Section",
+          "paper_key": "1801.01777",
+          "base_id": "RP_20261017_031622_skipped_base",
+          "grade": "F",
+          "fidelity": "faithful",
+          "artifacts": "C:/Users/99922/OneDrive/Quant_Module_Moltbot/stage_artifacts/replication/20261017_020206_6396",
+          "engine_path": "C:\\Users\\99922\\OneDrive\\Quant_Module_Moltbot/04_Research/strategies/RP_AUTO_CLEAN_1801_01777/engine.R",
+          "routed_by": "program_queue",
+          "cr_verdict": "normal",
+          "base_below_threshold": true,
+          "base_port_t": -1.434,
+          "base_min_port_t": 0,
+          "implementation_suspect": true,
+          "has_short": true,
+          "audit_verdict": "misdeclared",
+          "enqueued_at": "2026-10-17T03:17:05+0900"
         }
       ],
       "status_reason": "P1R01 완료 — 자격 2/3",
-      "status_at": "2026-10-15T09:20:45+0900"
+      "status_at": "2026-10-15T09:20:45+0900",
+      "consumed": [
+        {
+          "key": "axv:1801.01777",
+          "kind": "paper",
+          "title": "Deep Learning for Forecasting Stock Returns in the Cross-Section",
+          "id": "1801.01777",
+          "source": "arxiv",
+          "engine": "return",
+          "engine_secondary": [],
+          "verdict": "testable",
+          "crisis_evidence": "not_reported",
+          "reason": "Well-known cross-sectional DNN return-ranking paper forming long-short decile portfolios from predicted returns on standard price/fundamental inputs; mechanism is clear and reconstructable on Korean all-listed-stock data.",
+          "route_date": "20261015",
+          "route_file": "alpha_search_route_20261015.json",
+          "enqueued_at": "2026-10-15T10:22:05+0900",
+          "consumed_at": "2026-10-17T03:17:05+0900",
+          "consumer": "replication:RP_20261017_031622_skipped_base"
+        }
+      ]
     },
     {
       "id": "P2_DEFENSE",
