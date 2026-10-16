@@ -149,6 +149,52 @@ txt_ok <- vapply(anyA("alpha"), `[[`, "", "text")
 chk("⑫ 치환 성사(1곳) · 돌연변이는 옛 사건을 셈 · 원본은 안 셈", length(hit) == 1L && any(grepl("ancient", txt_mut)) && !any(grepl("ancient", txt_ok)),
     sprintf("hit=%d mut=%s ok=%s", length(hit), paste(txt_mut, collapse = ";"), paste(txt_ok, collapse = ";")))
 
+## ⑬ 무인 알림(10-16 승인 ①+③) — 스텁 발신기(QVEST_SUPERFAN_NOTIFY_CMD) · 새 '실패'만 · 구성요소별 1통 · 다시 안 보냄 · warn 미발송 · 재발 재발송 ·
+##    발신 실패 = 표식 안 함(다음에 다시) · 기준선(처음 켤 때) · 야간 무음(22~07시)
+STUB <- file.path(TMP, "stub_notify.py")
+writeLines(c("import json, os, sys, glob",
+             "p = sys.argv[1]; d = json.load(open(p, encoding='utf-8'))",
+             "n = len(glob.glob(os.path.join(os.environ['STUB_DIR'], 'payload_*.json')))",
+             "json.dump(d, open(os.path.join(os.environ['STUB_DIR'], 'payload_%03d.json' % n), 'w', encoding='utf-8'), ensure_ascii=False)",
+             "for g in d['groups']: print('SFN\\t%s\\t%s' % (g['component'], 'fail' if os.environ.get('STUB_FAIL') == '1' else 'ok'))"), STUB)
+SD <- file.path(TMP, "stub_out"); dir.create(SD)
+Sys.setenv(QVEST_SUPERFAN_NOTIFY_CMD = paste(PY, STUB), STUB_DIR = SD, QVEST_SUPERFAN_NOW = "2026-10-16 12:00")
+pl <- function() sort(Sys.glob(file.path(SD, "payload_*.json")))
+lastp <- function() { f <- pl(); if (length(f)) jsonlite::fromJSON(f[length(f)], simplifyVector = FALSE) else NULL }
+gtext <- function(p) unlist(lapply(p$groups, function(g) vapply(g$anomalies, function(a) a$text, "")))
+unlink(WST); w8(LOG, c("=== run @ Fri Oct 16 08:00:00 2026 (trigger=cron) ===", "Error in base_line(x) : boom"), append = FALSE); w8(LOGB, "x", append = FALSE)
+rb <- run("scan", "--baseline")
+fails_open <- Filter(function(a) identical(a$status, "open") && identical(a$severity, "fail"), st()$anomalies)
+chk("⑬ 기준선 — 지금 열린 실패를 보내지 않고 표식 · 발신기 미호출", length(pl()) == 0L && length(fails_open) >= 1L &&
+      all(vapply(fails_open, function(a) isTRUE(a$notified$baseline), logical(1))), paste(rb$out, collapse = " | "))
+w8(LOG, c("=== run @ Fri Oct 16 11:00:00 2026 (trigger=cron) ===", "Error in brand_new(x) : boom"))
+r13 <- run("scan", "--notify"); p1 <- lastp()
+comps <- vapply(p1$groups %||% list(), function(g) g$component, "")
+chk("⑬ 새 실패 → 구성요소별 1통(같은 로그를 보는 alpha · beta 각 1) · 새 것만 · 낮 = 푸시",
+    length(pl()) == 1L && identical(sort(comps), c("alpha", "beta")) && all(grepl("brand_new", gtext(p1))) && identical(p1$mute, FALSE),
+    paste(r13$out, collapse = " | "))
+invisible(run("scan", "--notify"))
+chk("⑬ 새 줄 없음 → 다시 안 보냄", length(pl()) == 1L)
+w8(LOG, "WARN only a warning")
+invisible(run("scan", "--notify"))
+chk("⑬ warn 은 보내지 않음", length(pl()) == 1L)
+bn <- Filter(function(a) grepl("brand_new", a$text) && identical(a$component, "alpha"), st()$anomalies)[[1]]
+invisible(run("ack", "--key", bn$key, "--kind", "fixed", "--note", "test"))
+w8(LOG, c("=== run @ Fri Oct 16 11:30:00 2026 (trigger=cron) ===", "Error in brand_new(x) : boom"))
+invisible(run("scan", "--notify")); p2 <- lastp()
+reo <- Filter(function(g) identical(g$component, "alpha"), p2$groups)
+chk("⑬ 확인한 이상이 재발 → 1통 더(재발 표시)", length(pl()) == 2L && length(reo) == 1L && any(vapply(reo[[1]]$anomalies, function(a) a$reopened >= 1L, logical(1))))
+Sys.setenv(STUB_FAIL = "1"); w8(LOG, c("=== run @ Fri Oct 16 11:40:00 2026 (trigger=cron) ===", "Error in send_fails(x) : boom"))
+invisible(run("scan", "--notify")); n_after_fail <- length(pl())
+sf <- Filter(function(a) grepl("send_fails", a$text), st()$anomalies)
+Sys.unsetenv("STUB_FAIL"); invisible(run("scan", "--notify")); p3 <- lastp()
+chk("⑬ 발신 실패 → 표식 안 함 · 다음 실행에 다시 보냄", n_after_fail == 3L && all(vapply(sf, function(a) is.null(a$notified), logical(1))) &&
+      length(pl()) == 4L && any(grepl("send_fails", gtext(p3))))
+Sys.setenv(QVEST_SUPERFAN_NOW = "2026-10-16 23:30"); w8(LOG, c("=== run @ Fri Oct 16 23:00:00 2026 (trigger=cron) ===", "Error in night_owl(x) : boom"))
+invisible(run("scan", "--notify")); p4 <- lastp()
+chk("⑬ 야간(23:30) → 무음", isTRUE(p4$mute) && any(grepl("night_owl", gtext(p4))))
+Sys.unsetenv(c("QVEST_SUPERFAN_NOTIFY_CMD", "STUB_DIR")); Sys.setenv(QVEST_SUPERFAN_NOW = "2026-10-16 12:00")
+
 Sys.unsetenv(c("QVEST_SUPERFAN_REGISTRY_PATH", "QVEST_SUPERFAN_WATCH_PATH", "QVEST_SUPERFAN_NOW", "QVEST_SESSION_RESUME_PATH", "QVEST_JUDGMENT_LEDGER_PATH"))
 unlink(TMP, recursive = TRUE)
 cat(sprintf("\n== superfan_watch: PASS %d · FAIL %d ==\n", PASS, FAIL))

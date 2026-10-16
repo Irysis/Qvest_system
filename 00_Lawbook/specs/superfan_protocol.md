@@ -132,7 +132,7 @@ Superfan 도전 ─→ Q 응답 ─┬─ 수용(바꾼 것 기록) ────
 - **상태**: `.cache/superfan_watch.json`(운영 캐시 · OneDrive 미동기화). 서술형 이력의 정본 = 구성요소 dossier(`04_Research/programs/_supervision/superfan/components/<id>/dossier.md`).
 - **수명주기**: 새 이상(open) → 전담 팬 진단(원인 · 영향 · 수리안 · 확인 처리 권고) → Q 수리 · `ack --kind fixed|known|noise --note …` → 같은 사건이 새 줄에 다시 나오면 **재개방**(재발 = 아직 고장). 상태형 규칙(신선도 · 완료 표식 · 상태 필드)은 정상으로 돌아오면 자동 해소.
 - **세션에서**: 부팅 `Resume:` 줄 꼬리(`Superfan 감시: 이상 n (실패 k) — 구성요소 …`)가 보이면 Q 가 `superfan_watch.py scan` → 실패 이상의 구성요소마다 `superfan-component`(백그라운드 · `구성요소: <id>`)를 띄운다. 라운드 파이프라인을 돌리는 동안에는 세션이 직접 지켜본다.
-- **무인 상시 감시 — 도훈 승인 대상(예약 작업 · 무인 LLM 비용 · 새 알림)**: ① 1시간 간격 독립 예약 작업(결정론 · 감시 대상 안에 끼우지 않는다 — 그 대상이 죽으면 감시도 죽는다) ② 새 '실패' 이상만 전담 팬 무인 진단(구성요소당 하루 1회 상한) ③ 텔레그램 알림(평상 무음 · 사건당 1통 · 야간 23:00~07:00 무음 → 아침에 모아서). 승인 전에는 세션 경로만 쓴다.
+- **무인 상시 감시 — ① + ③ 가동(도훈 2026-10-16 승인 · '나머지 2,3,4 실행')**: ① 예약 작업 `Qvest_SuperfanWatch`(매시 17분 · 독립 작업 — 감시 대상 안에 끼우지 않는다, 그 대상이 죽으면 감시도 죽는다 · `ops/scheduler/Qvest_SuperfanWatch.bat` → `superfan_watch.py scan --notify --quiet` · 로그 `.cache/scheduler_logs/superfan_watch.log` · 작업 정의 백업 `ops/scheduler/_task_xml_backup/Qvest_SuperfanWatch.xml`) ③ 감시기가 직접 보내는 텔레그램(`programs/superfan_notify.R` → 정본 발송기 · 발신 이름 '감시(Monitoring)' · 새 **실패** 이상만 · 구성요소마다 1통 · 같은 이상은 다시 안 보내고 재발하면 1통 · 23:00~06:59 무음(채팅에는 남는다) · 발신 실패면 표식하지 않고 다음 시간에 다시 · 처음 켤 때 `--baseline` 으로 열린 옛 이상을 소음 없이 표식). 'warn' 은 보내지 않는다(부팅 줄 · 세션). ② 무인 LLM 진단은 켜지 않는다(1회 ≈ 44만 토큰 — 주간 한도) — 진단은 알림을 본 세션에서 Q 가 전담 팬으로 한다. 검사 `08_Tests/programs/test_superfan_watch.R` ⑬(스텁 발신 7종).
 - **권한**: 전담 팬은 읽기 전용 진단만 한다 — 코드 · 등록부 · 설정 · 예약 작업 수정, 재수집, 다른 구성요소 진단을 하지 않는다. 쓰기 = 자기 dossier · 진단 보고서.
 
 ---

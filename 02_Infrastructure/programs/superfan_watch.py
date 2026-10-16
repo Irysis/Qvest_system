@@ -411,6 +411,80 @@ def open_anoms(W):
     return [a for a in W.get("anomalies", {}).values() if a["status"] == "open"]
 
 
+# ── 무인 알림(도훈 2026-10-16 승인 — ① 1시간 결정론 감시 + ③ 감시기가 직접 보내는 텔레그램 · 야간 무음 · 사건당 1통) ──────────
+#   대상 = 열린 'fail' 이상 중 아직 안 알린 것(재발로 재개방되면 다시 1통). 'warn' 은 알리지 않는다(부팅 줄 · 세션에서 본다).
+#   구성요소마다 1통(같은 실행에서 같은 구성요소의 새 이상은 한 통에 묶는다). 23:00~06:59 은 무음(채팅에는 남고 알림 소리만 없다).
+#   발신 = 02_Infrastructure/programs/superfan_notify.R(정본 발송기 tg_agent_brief) — 보낸 것이 확인된 구성요소만 '알림 완료' 표식(실패면 다음 시간에 다시).
+NOTIFY_SEV = ("fail",)
+QUIET_HOURS = (23, 7)
+
+
+def pending_notify(W):
+    out = []
+    for a in W.get("anomalies", {}).values():
+        if a["status"] != "open" or a["severity"] not in NOTIFY_SEV:
+            continue
+        n = a.get("notified")
+        if n is None or int(n.get("reopened", 0)) < int(a.get("reopened", 0)):
+            out.append(a)
+    return out
+
+
+def _send(root, payload):
+    """payload → 발신기(기본 Rscript superfan_notify.R · 검사 주입 QVEST_SUPERFAN_NOTIFY_CMD). 반환 = {구성요소: 보냄 여부}."""
+    fd, p = tempfile.mkstemp(prefix="superfan_notify_", suffix=".json")
+    with io.open(fd, "w", encoding="utf-8") as f:
+        json.dump(payload, f, ensure_ascii=False)
+    cmd = os.environ.get("QVEST_SUPERFAN_NOTIFY_CMD", "").split() or ["Rscript", os.path.join(root, "02_Infrastructure", "programs", "superfan_notify.R")]
+    import subprocess
+    try:
+        r = subprocess.run(cmd + [p], capture_output=True, text=True, encoding="utf-8", errors="replace", timeout=300)
+        out = r.stdout or ""
+    except Exception as ex:                                            # 발신 실패 = 아무것도 보내지 않은 것으로(다음 시간에 다시)
+        out = ""; sys.stderr.write("[superfan_watch] 발신 실패 %s: %s\n" % (type(ex).__name__, ex))
+    finally:
+        try:
+            os.remove(p)
+        except OSError:
+            pass
+    res = {}
+    for ln in out.splitlines():
+        f = ln.split("\t")
+        if len(f) == 3 and f[0] == "SFN":
+            res[f[1]] = (f[2].strip() == "ok")
+    return res
+
+
+def notify(root, W, now, baseline=False):
+    """보낼 이상을 구성요소별로 묶어 발신 · 보낸 것만 표식. baseline = 지금 열린 것을 보내지 않고 '알린 것'으로 표식(처음 켤 때 옛 이상 소음 방지)."""
+    pend = pending_notify(W)
+    if not pend:
+        return []
+    if baseline:
+        for a in pend:
+            a["notified"] = {"at": _iso(now), "reopened": int(a.get("reopened", 0)), "baseline": True}
+        return [("baseline", len(pend), None)]
+    reg = _read_json(registry_path(root))
+    names = {c["id"]: c.get("name", c["id"]) for c in reg.get("components", [])}
+    groups = {}
+    for a in pend:
+        groups.setdefault(a["component"], []).append(a)
+    mute = now.hour >= QUIET_HOURS[0] or now.hour < QUIET_HOURS[1]
+    keys = ("key", "rule", "text", "count", "first_seen", "last_seen", "event_time", "reopened")
+    payload = {"at": _iso(now), "mute": mute,
+               "groups": [{"component": cid, "name": names.get(cid, cid),
+                           "anomalies": [{k: a.get(k) for k in keys} for a in sorted(L, key=lambda x: x["last_seen"])]}
+                          for cid, L in sorted(groups.items())]}
+    res = _send(root, payload)
+    sent = []
+    for cid, L in sorted(groups.items()):
+        if res.get(cid):
+            for a in L:
+                a["notified"] = {"at": _iso(now), "reopened": int(a.get("reopened", 0)), "mute": mute}
+        sent.append((cid, len(L), bool(res.get(cid))))
+    return sent
+
+
 def boot_fragment(root=None):
     """부팅 Resume 줄 꼬리 — 열린 이상이 없으면 ''(소음 없음) · 판독 실패는 0 으로 접지 않는다(스캔은 하지 않는다 — 읽기만)."""
     try:
@@ -471,6 +545,7 @@ def main(argv=None):
     ap = argparse.ArgumentParser(prog="superfan_watch")
     sp = ap.add_subparsers(dest="cmd", required=True)
     s = sp.add_parser("scan"); s.add_argument("--component"); s.add_argument("--quiet", action="store_true")
+    s.add_argument("--notify", action="store_true"); s.add_argument("--baseline", action="store_true")
     sh = sp.add_parser("show"); sh.add_argument("--open", action="store_true")
     b = sp.add_parser("brief"); b.add_argument("--component", required=True)
     k = sp.add_parser("ack"); k.add_argument("--key", required=True); k.add_argument("--kind", required=True); k.add_argument("--note", required=True)
@@ -488,6 +563,14 @@ def main(argv=None):
             print("[superfan_watch] 스캔 — 새 · 재개방 %d · 열린 이상 %d(실패 %d)" % (len(ev), len(op), sum(1 for x in op if x["severity"] == "fail")))
             for e in ev[:40]:
                 print("  " + e)
+        if a.notify or a.baseline:
+            sent = notify(_root(), W, _now(), baseline=a.baseline)
+            _save(watch_path(), W)
+            for cid, n, ok in sent:
+                if cid == "baseline":
+                    print("[superfan_watch] 알림 기준선 — 지금 열린 실패 %d건은 보내지 않고 '알림 완료'로 표식" % n)
+                else:
+                    print("[superfan_watch] 알림 %s — %s %d건" % ("보냄" if ok else "발신 실패(다음 시간에 다시)", cid, n))
         return 0
     W = _read_json(watch_path(), default={"schema": SCHEMA_WATCH, "anomalies": {}, "components": {}})
     if a.cmd == "show":

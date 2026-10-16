@@ -1,0 +1,6 @@
+@echo off
+REM Qvest_SuperfanWatch - component Superfan deterministic watch (hourly at :17, unattended, LLM cost 0)
+REM 2026-10-16 new (dohoon approved: (1) hourly deterministic watch + (3) watcher-sent telegram, night mute 23-07, 1 message per event)
+REM Scans component logs/state defined in 06_Registry/superfan_components.json -> new 'fail' anomalies -> telegram 1 per component.
+REM 'warn' anomalies are not sent (boot line / session). Same anomaly is not resent; a recurrence sends 1 more. State: .cache/superfan_watch.json
+"C:\Program Files\Git\bin\bash.exe" -c "export PATH='/c/Users/99922/AppData/Local/Programs/Python/Python312:/c/Program Files/R/R-4.5.2/bin:'$PATH; export CLAUDE_PROJECT_DIR=C:/Users/99922/OneDrive/Quant_Module_Moltbot; export QM_ROOT=C:/Users/99922/OneDrive/Quant_Module_Moltbot; export QVEST_UNATTENDED=1; export PYTHONUTF8=1; cd /c/Users/99922/OneDrive/Quant_Module_Moltbot && { echo \"== $(date '+%%F %%T') superfan_watch scan --notify\"; /c/Users/99922/OneDrive/Quant_Module_Moltbot/.venv_qvest_ml/Scripts/python.exe -X utf8 02_Infrastructure/programs/superfan_watch.py scan --notify --quiet; echo \"   rc=$?\"; } >> /c/Users/99922/OneDrive/Quant_Module_Moltbot/.cache/scheduler_logs/superfan_watch.log 2>&1"
