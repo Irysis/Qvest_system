@@ -361,7 +361,9 @@ import io,json
 try: d=json.loads(io.open(r'$REQ','rb').read().decode('utf-8'))
 except Exception: d={}
 r=d.get('audit_ruling'); print('1' if isinstance(r,dict) and r else '0')" 2>/dev/null | tr -d '\r')
-if { [ "$PREV_FAIL" = "audit_not_run" ] || [ "$PREV_FAIL" = "refresh_lock_deferred" ] || [ "$PREV_FAIL" = "audit_ruled" ] || [ "$HAS_RULING" = "1" ]; } && [ -s "$WDIR/engine.R" ]; then
+# ★session_reverify(2026-10-17) — 세션이 '엔진 결함이 아니라 검증 계기 결함'으로 판정해 고친 뒤 붙이는 표식(예: 1801.01777 재구현판 —
+#   PIT 정적 검사기가 주석 속 함수 이름을 호출로 오탐 · 검사기 수리 뒤). 재구현 에이전트를 다시 사지 않고 검증기만.
+if { [ "$PREV_FAIL" = "audit_not_run" ] || [ "$PREV_FAIL" = "refresh_lock_deferred" ] || [ "$PREV_FAIL" = "audit_ruled" ] || [ "$PREV_FAIL" = "session_reverify" ] || [ "$HAS_RULING" = "1" ]; } && [ -s "$WDIR/engine.R" ]; then
   # ★refresh_lock_deferred(2026-09-24) — 검증기 직전 리프레시 배리어로 측정 없이 연기된 요청. 엔진은 멀쩡하다 → 검증기만.
   # ★audit_ruled(2026-10-14) — 감사 상충을 세션이 판정해 suspect 수용 · 진행으로 정한 요청(요청의 audit_ruling). 엔진은 그대로 →
   #   검증기만(감사도 다시 사지 않는다 — 감사 관문이 남은 감사 파일 + 판정 처분으로 간다 · alpha-search SKILL §5).
@@ -369,6 +371,8 @@ if { [ "$PREV_FAIL" = "audit_not_run" ] || [ "$PREV_FAIL" = "refresh_lock_deferr
     jl verify_only_retry "paper=$P_KEY" "note=리프레시 배리어 연기분 재시도 — 에이전트 없이 검증기(측정+감사)만 재실행(엔진 보존)"
   elif [ "$PREV_FAIL" = "audit_ruled" ] || [ "$HAS_RULING" = "1" ]; then
     jl verify_only_retry "paper=$P_KEY" "note=감사 상충 세션 판정 반영 — 에이전트 · 감사 재스폰 없이 검증기만(엔진 보존)"
+  elif [ "$PREV_FAIL" = "session_reverify" ]; then
+    jl verify_only_retry "paper=$P_KEY" "note=세션 판정 — 검증 계기 결함 수리 뒤 재검증(엔진 보존 · 에이전트 재스폰 없음)"
   else
   jl verify_only_retry "paper=$P_KEY" "note=감사 미실행 재시도 — 에이전트 없이 검증기(측정+감사)만 재실행(엔진 보존)"
   fi

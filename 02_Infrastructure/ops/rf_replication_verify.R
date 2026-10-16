@@ -433,6 +433,15 @@ if (!.cmsn_known) .cmsn <- NULL
 if (!is.null(.pspec)) jlog("portfolio_spec_from_fidelity",
                            construction = .pspec$construction %||% "?",
                            commission = if (.cmsn_known) .cmsn else "무명시(gross 병기)")
+# ★정적 PIT 사전 점검(2026-10-17) — 러너(§4)는 detect_lookahead 를 엔진을 다 돌린 **뒤에** 해서, 1801.01777 재구현판은
+#   DNN 26회 학습을 끝낸 뒤 주석 속 함수 이름 오탐 1건으로 측정을 통째로 버렸다. 같은 함수를 실행 **전에** 먼저 돌린다(수 초).
+#   러너 안의 검사는 그대로 둔다(러너 = P3R03 핀 · 이중 확인). 위반이면 엔진을 돌리지 않고 같은 실패 경로로 보고한다.
+.pre_pit <- tryCatch(detect_lookahead(eng, verbose = FALSE), error = function(e) list(clean = NA, err = conditionMessage(e)))
+if (!isTRUE(.pre_pit$clean)) {
+  .pv <- vapply(.pre_pit$violations %||% list(), function(v) sprintf("line %s [%s] %s", v$line %||% "?", v$check %||% "?", v$msg %||% ""), "")
+  fail("pit_preflight", paste(c(.pre_pit$err, .pv), collapse = "; "))
+}
+jlog("pit_preflight_clean", engine = eng)
 res <- tryCatch(do.call(run_paper_replication, c(list(
   strategy_name = paste0("RP_AUTO_", gsub("[^A-Za-z0-9]", "", substr(PKEY, 1, 20))),
   strategy_idea = paste0("[무인 충실구현] ", substr(TITLE, 1, 120)),

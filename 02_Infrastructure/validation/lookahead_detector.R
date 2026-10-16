@@ -406,12 +406,16 @@ detect_lookahead <- function(run_all_path, verbose = TRUE) {
     # Pattern: align_factor_direction( called directly without sig_date arg
     # Exception: load_month_factors internal call (line 123) passes sig_date automatically
     # =========================================================================
-    if (grepl("align_factor_direction\\s*\\(", line_trimmed)) {
-      is_internal_def <- grepl("^align_factor_direction\\s*<-\\s*function|^function.*sig_date", line_trimmed)
+    ## (2026-10-17) 판정은 그 줄의 **코드 부분**으로만 — 뒤붙은 주석 · 문자열 안의 함수 이름은 호출이 아니다.
+    ##   1801.01777 재구현판: `MIN_IC_MONTHS <- 36L  # align_factor_direction() default …` 주석 언급을 호출로 잡아 측정 1회를 통째로 버렸다.
+    ##   같은 이유로 sig_date 도 코드 부분에서만 찾는다 — 주석에 'sig_date =' 를 적어 우회하는 길도 막힌다(아래 has_sig_date).
+    line_code <- trimws(.la_c11_strip(line, keep_strings = FALSE))
+    if (grepl("align_factor_direction\\s*\\(", line_code)) {
+      is_internal_def <- grepl("^align_factor_direction\\s*<-\\s*function|^function.*sig_date", line_code)
       is_load_month   <- any(grepl("load_month_factors", lines[max(1, i-10):i]))
       is_commented    <- grepl("^#", line_trimmed)
       if (!is_internal_def && !is_load_month && !is_commented) {
-        has_sig_date <- grepl("sig_date\\s*=|sig_date\\s*,|,\\s*sig_date", line_trimmed)
+        has_sig_date <- grepl("sig_date\\s*=|sig_date\\s*,|,\\s*sig_date", line_code)
         # context window 검사 폐기 — 주석으로 우회 가능한 false negative 방지 (v3.5.4 patch)
         if (!has_sig_date) {
           add_violation("C17_INFRA_PIT_DIRECTION", i, line_trimmed,
