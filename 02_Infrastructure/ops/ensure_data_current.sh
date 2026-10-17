@@ -28,6 +28,12 @@
 # ★진행 중인 리프레시가 있으면 **기다린다**. daily_refresh.sh 의 락은 중복 인스턴스를
 #   `exit 0` 으로 끝내므로, 그냥 호출하면 "돌렸다"고 착각한 채 즉시 반환된다.
 #
+# ★부팅 규칙(도훈 2026-10-17 "복잡하게 가지말고 부팅시점에 최신화 안되어있으면 퀀티로그인해서 최신화시킨다로 정리해" ·
+#   "공휴일정보 찾아서 붙여" · 결정 BOOT-QW-LOGIN-REFRESH-20261017): 위 감사에 **퀀티 최신성** 한 축을 더 본다 —
+#   벤치 최신일 < 직전 거래일(KRX 공식 휴장일 06_Registry/krx_holidays.json · krx_holidays.py)이면 리프레시 대상('qw')이고,
+#   리프레시(daily_refresh.sh [1pre])의 퀀티 수급이 단말을 띄우고 로그인한다. 호출 지점 = PC 부팅(morning_run.sh reboot ·
+#   주말 포함) · 아침 브리핑 [0/5] · /qvest 부팅(백그라운드).
+#
 # 종료코드: 0 = 최신 보장됨(또는 no-op) / 3 = 리프레시 후에도 stale 잔존(브리핑은
 #   계속하되 그 사실이 보고돼야 한다) / 1 = 실행 불가(루트/스크립트 부재)
 #
@@ -155,9 +161,30 @@ _log "사전 감사: as_of=$AS_OF stale=$PRE_STALE (리프레시 대상 ${PRE_AC
 # 판단은 '리프레시가 고칠 수 있는' 항목으로만 한다. 단 PRE_STALE 은 보고에 계속 쓴다.
 [ "$PRE_STALE" = "NA" ] || PRE_STALE="$PRE_ACT_N"
 
+# ── 2b) 퀀티 최신성 — 부팅 규칙(BOOT-QW-LOGIN-REFRESH-20261017) ─────────────────
+# ★퀀티 단일에서는 거래일 캘린더(= 벤치)도 퀀티가 늘린다 — 퀀티가 멈추면 위 감사의 as_of 도 같이 멈춰 '최신'으로 읽힌다(순환).
+#   그래서 캘린더를 안 쓰는 기준을 하나 더 본다: 벤치 최신일 < 직전 거래일(KRX 공식 휴장일) → 리프레시 대상 'qw'.
+#   가드(3b) · 스탬프의 영업일 키도 KRX 직전 거래일로 둔다 — 퀀티가 멈춰도 다음 거래일엔 키가 바뀌어 다시 시도한다.
+#   판정 불가(휴장일 미수록 · 판독 실패)는 이 축만 '미측정'으로 적고 위 감사 판정을 그대로 쓴다.
+# venv 우선 — daily_refresh.sh [1pre] 와 같은 순서(사용자 환경변수 QVEST_PY 는 시스템 Python312 라 pandas · pyarrow 가 없다 · 10-17 실측)
+PYX="$BASE/.venv_qvest_ml/Scripts/python.exe"; [ -x "$PYX" ] || PYX="${QVEST_PY:-python}"
+_qw_state() { # → stdout: "<behind 0|1|NA>|<bench_max>|<expected 또는 사유>" — 판정 정본 = krx_holidays.py bench_currency
+  local s; s="$("$PYX" "$BASE/02_Infrastructure/data/krx_holidays.py" currency 2>/dev/null | tr -d '\r' | tail -n 1)"
+  case "$s" in [01]\|*|NA\|*) echo "$s" ;; *) echo "NA|?|판정기 무응답" ;; esac
+}
+QW="$(_qw_state)"; QW_BEHIND="${QW%%|*}"; _qr="${QW#*|}"; QW_BM="${_qr%%|*}"; QW_EXP="${_qr#*|}"
+case "$QW_BEHIND" in
+  1) _log "★퀀티 최신 아님 — 벤치 최신일 $QW_BM < 직전 거래일 $QW_EXP(KRX 휴장일 기준) → 리프레시 대상 'qw'(퀀티 로그인 · 최신화)"
+     [ "$PRE_STALE" = "NA" ] || PRE_STALE=$((PRE_STALE + 1))
+     PRE_ACT="${PRE_ACT}${PRE_ACT:+,}qw" ;;
+  0) _log "퀀티 최신 — 벤치 최신일 $QW_BM ≥ 직전 거래일 $QW_EXP" ;;
+  *) _log "⚠ 퀀티 최신성 미측정(직전 거래일=$QW_EXP · 벤치=$QW_BM) — 위 감사 판정만 쓴다" ;;
+esac
+case "$QW_EXP" in [0-9][0-9][0-9][0-9]-*) AS_OF="$QW_EXP" ;; esac
+
 _stamp() { # $1=verdict $2=stale $3=note
-  printf '{"ran_at":"%s","as_of":"%s","verdict":"%s","stale_count":%s,"note":"%s"}\n' \
-    "$(_ts)" "$AS_OF" "$1" "${2:-0}" "$3" > "$STAMP" 2>/dev/null || true
+  printf '{"ran_at":"%s","as_of":"%s","verdict":"%s","stale_count":%s,"note":"%s","qw":"%s"}\n' \
+    "$(_ts)" "$AS_OF" "$1" "${2:-0}" "$3" "${QW:-NA}" > "$STAMP" 2>/dev/null || true
 }
 
 # ── 3) 이미 최신이면 실행하지 않는다 (도훈 지시의 가드) ──────────────────────
@@ -181,6 +208,7 @@ if [ -f "$STAMP" ]; then
   if [ "$_prev_as_of" = "$AS_OF" ] && [ "$_prev_verdict" = "stale_after_refresh" ]; then
     _log "⚠ as_of=$AS_OF 는 이미 리프레시했으나 stale=$PRE_STALE 잔존 — **재시도하지 않음**"
     _log "   (리프레시로 고쳐지지 않는 항목이다. 생산자 배선을 봐야 한다: qepm/observability/morning_freshness_latest.json 의 stale_items)"
+    [ "$QW_BEHIND" = "1" ] && _log "   ★qw = 이 거래일($QW_EXP)의 퀀티 로그인 · 수급이 이미 한 번 실패했다 — 단말 로그인 확인(daily_refresh.log [1pre] · .cache/quantiwise_fetch_status.json). 다음 거래일 또는 00:03 밤 리프레시가 다시 시도한다"
     _stamp "stale_unfixable_by_refresh" "$PRE_STALE" "재시도 생략(같은 영업일 재발)"
     exit 3
   fi
@@ -213,6 +241,12 @@ POST_ACT_N="$(printf '%s' "$_PACT" | cut -d'|' -f1)"
 POST_ACT="$(printf '%s' "$_PACT" | cut -d'|' -f2)"
 _log "사후 감사: stale=$POST_STALE (리프레시 대상 잔여 ${POST_ACT_N}건${POST_ACT:+: $POST_ACT})"
 [ "$POST_STALE" = "NA" ] || POST_STALE="$POST_ACT_N"
+QW="$(_qw_state)"; QW_BEHIND="${QW%%|*}"; _qr="${QW#*|}"; QW_BM="${_qr%%|*}"
+case "$QW_EXP" in [0-9][0-9][0-9][0-9]-*) AS_OF="$QW_EXP" ;; esac
+if [ "$QW_BEHIND" = "1" ]; then
+  _log "⚠ 리프레시 후에도 퀀티 최신 아님 — 벤치 $QW_BM < 직전 거래일 $QW_EXP (퀀티 로그인 실패 또는 원격 미갱신 · daily_refresh.log [1pre] · .cache/quantiwise_fetch_status.json)"
+  [ "$POST_STALE" = "NA" ] || POST_STALE=$((POST_STALE + 1))
+fi
 if [ "$POST_STALE" = "0" ]; then
   _log "✅ 리프레시 후 최신 확보 (as_of=$AS_OF)"
   _stamp "refreshed_current" 0 "refresh rc=$RRC"

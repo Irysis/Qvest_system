@@ -10,7 +10,7 @@ user-invocable: true
 > ★v10.01(2026-10-13): 구 디렉터(rf_director.R)·방향 규칙 채점(run_direction_score.R)·고정 격자 강화 러너는 퇴역(코드 삭제 · 롤백 태그 `pre-v10.01-prescription-20261013`). 1계층 상태는 리서치 프로그램 등록부가 대신한다.
 
 1. `bash 02_Infrastructure/ops/boot_lean.sh` (≈5초 · 테스트 0 · 수리 0 · 백그라운드 0 · Rscript 0). 출력 6줄:
-   - `Data:` — 키 캐시 4종 severity + 신선도 감사 나이(>36h면 `★audit stale`) + rawdata/benchmark mtime + K200/KQ150 멤버십 열(schema만). 결손 시에만 `→ daily_refresh` 조치.
+   - `Data:` — 키 캐시 4종 severity + 신선도 감사 나이(>36h면 `★audit stale`) + rawdata/benchmark mtime + K200/KQ150 멤버십 열(schema만) + **퀀티 최신성**(벤치 최신일 vs KRX 직전 거래일 · 휴장일 정본 `06_Registry/krx_holidays.json` — `퀀티 MM-DD ✓` / `★퀀티 미최신 a<b` / 미수록 해 `퀀티 ?(…)`). 결손 시에만 `→ daily_refresh` 조치 · 퀀티 미최신이면 `→ 부팅 규칙` 조치.
    - `Queue:` — 미소비 논문 수(`alpha-pending`. 안 읽히면 `UNREPORTED` — **0으로 접지 않는다**) + frontier `open` 상위 2건 + 2계층 강화 원장 L2 active + data-pipeline open 수 + 충실구현 대기·A 대기.
    - `Last:` — 최신 **리서치 1단위** L-code(`[RP]` 충실구현 / `[RF]` 강화 / `[AS]` 사료 — 세 mode 중 최신) · 등급 · 나이 · `next_probe` 1항.
    - `Book:` — ★v10 BOOK 등록 수·최신 엔트리·트래킹일 (`06_Registry/book/book_registry.json` 정본. **쓰기 = writer 경유 + 도훈 confirm**).
@@ -18,6 +18,7 @@ user-invocable: true
    - `Programs:` — ★v10.01 1계층 리서치 프로그램 등록부(`06_Registry/research_programs.json`): 측정 계약 완료 n/8(남은 MC id) | P0~P4 상태(재료·라운드 수) + 대기 결정 부기(`대기결정 N · 최고령 · 차단`). 판독 실패 = `?(<원인>)`.
    - `Resume:` — ★(2026-10-15 도훈 "세션이 예기치않게 종료됐을 때 새로운 세션에서도 이어질 수 있도록") 진행 중 작업(`06_Registry/session_resume.json` · writer `02_Infrastructure/programs/session_resume.py`) 최신 1건의 단계 n/m · 현재 단계 · 다음 할 일 · 갱신 시각 + 등록부의 '등록됐지만 끝나지 않은 라운드'(저널과 별개 자동 신호). 없으면 `진행 중 작업 없음`.
 2. 7줄을 **그대로 1회 전재**. 해석·수리·후속 점검 금지. `Data`에 `?`/부재가 있으면 1줄 보고 후 도훈 판단 대기.
+   - ★**부팅 규칙**(도훈 2026-10-17 "부팅시점에 최신화 안되어있으면 퀀티로그인해서 최신화시킨다" · 결정 BOOT-QW-LOGIN-REFRESH-20261017): `Data`에 `★퀀티 미최신`이 있으면 `bash 02_Infrastructure/ops/ensure_data_current.sh` 를 **백그라운드로 1회** 띄운다(리프레시의 퀀티 수급이 단말을 띄우고 로그인 · 최신화 · 결과 = `.cache/data_currency_stamp.json`). 기다리지 않고 1줄 보고 후 3으로 진행. PC 부팅(로그온 3분 뒤 `morning_run.sh reboot` · 주말 포함)과 아침 브리핑 [0/5] 는 같은 진입점을 스스로 부른다.
 3. **★진행 계층을 도훈에게 묻는다** (v10 규칙 "Qvest 실행 시 어떤 계층으로 진행할 것인지 사용자에게 물을 것") — AskUserQuestion. 선택지 순서 = ①②③④ 고정(★2026-09-24 `DIR-PHASE0`: 구 'Director 권고를 첫 선택지로 · human_override 기록' 규칙 삭제 — 권고가 정정 전 수치와 C11 로 막힌 2계층 개설을 가리켰다).
    - **⓪ 이전 세션 리서치 재개**(★2026-10-15 · `Resume:` 줄에 진행 중 작업이 있을 때만 맨 앞에 둔다): `python -X utf8 02_Infrastructure/programs/session_resume.py show` 로 재개 브리핑(목표 · 단계 · 다음 할 일 · 먼저 읽을 것 · 백그라운드 · 결정 대기)을 읽고, '먼저 읽을 것'을 읽은 뒤 **다음 할 일**부터 이어 간다. 백그라운드 항목은 로그 · 센티널로 살아 있는지 먼저 확인한다(죽었으면 그 단계를 다시 띄운다).
    - **① 1계층 — 목표 역산형 리서치**: `Skill(research-program)` — 등록부 순서(선행 조건 MC → 프로그램 라운드 → 재료 충실구현 `/alpha-search`). 룰 = `.claude/rules/lean-loop.md`.

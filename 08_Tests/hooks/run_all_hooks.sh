@@ -1850,6 +1850,9 @@ SUITES=(
   #   뮤테이션) · 밤 · 아침 체인 주가 보충 호출 0(정적 · 양성 대조)
   "08_Tests/data/test_qw_updatefile_unattended.R"
   "08_Tests/data/test_daily_refresh_qw_block.sh"
+  #   부팅 규칙(BOOT-QW-LOGIN-REFRESH-20261017) — KRX 직전 거래일 · 퀀티 최신성 축(벤치 < 직전 거래일 → 리프레시 · 같은 거래일 재시도 안 함 ·
+  #   다음 거래일 재시도 · 대체공휴일 다음 날 최신 · 미수록 해 미측정 · 뮤테이션) · /qvest Data 줄 퀀티 칸
+  "08_Tests/ops/test_ensure_data_current_qw.sh"
   # <<< 10-17
 )
 

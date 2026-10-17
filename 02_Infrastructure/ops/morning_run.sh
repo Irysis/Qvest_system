@@ -278,7 +278,12 @@ stage_result() {   # $1=표시명 $2=exit코드 $3=경보 컴포넌트명
   fi
 
   if [ "$IS_WEEKEND" = "1" ]; then
-    echo "[1-2/3] 주말 — morning_briefing/mrs_daily(브리핑·데이터refresh·P3·regime) skip (논문 파이프라인만 매일)"
+    echo "[1-2/3] 주말 — morning_briefing/mrs_daily(브리핑·P3·regime) skip (논문 파이프라인만 매일)"
+    # ★(2026-10-17 · 결정 BOOT-QW-LOGIN-REFRESH-20261017) 부팅 규칙 — 주말 부팅도 데이터 최신성은 본다: 최신이 아니면(벤치 최신일 <
+    #   KRX 직전 거래일) 퀀티 로그인 · 최신화(daily_refresh). 평일은 morning_briefing [0/5] 가 같은 진입점을 부른다. 최신이면 no-op.
+    echo "[1w/3] ensure_data_current.sh (주말 — 데이터 최신성만 · 부팅 규칙)"
+    bash "$BASE/02_Infrastructure/ops/ensure_data_current.sh" >> /tmp/qm_morning.log 2>&1
+    echo "      ensure_data_current exit=$?"
   else
     echo "[1/3] morning_briefing.sh (데이터 refresh + P3 brief)"
     bash "$BASE/02_Infrastructure/ops/morning_briefing.sh" >> /tmp/qm_morning.log 2>&1

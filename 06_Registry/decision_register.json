@@ -3468,7 +3468,53 @@
       "registered_at": "2026-10-17T16:08:50+0900",
       "recorded_by": "Q(세션 7a34e194)",
       "evidence": "도훈 채팅 2026-10-17 — '벤치마크도 퀀티 단일로 바꿔줘.' (같은 날 RAWDATA-QW-ONLY-20261017 직후)"
+    },
+    {
+      "id": "BOOT-QW-LOGIN-REFRESH-20261017",
+      "title": "부팅 규칙 — 최신이 아니면(벤치 최신일 < KRX 직전 거래일) 퀀티 로그인해서 최신화 · KRX 공식 휴장일 등록부",
+      "status": "resolved",
+      "opened_at": "2026-10-17T17:17:17+0900",
+      "options": [
+        "A 부팅 시점 점검 하나(ensure_data_current) + KRX 휴장일 정본 — 최신 아니면 daily_refresh(퀀티 수급이 로그인)",
+        "B 휴장일 기반 경보 축을 게이트에 신설(Q 제안 — 도훈 '복잡하게 가지말고'로 기각)"
+      ],
+      "recommendation": "도훈 지시 그대로 A",
+      "default_until_decided": "구판(캘린더 기준 감사만 — 퀀티가 멈추면 캘린더도 멈춰 '최신'으로 읽힘)",
+      "blocks": [
+        "item:boot_data_currency"
+      ],
+      "owner": "dohoon",
+      "source": "10-17 벤치 퀀티 단일(BENCHMARK-QW-ONLY-20261017) 뒤 남은 사각 — 애드인 캐시 정체 rc=2 는 축 B(7일)까지 조용 · 중복 로그인 '예' 무인 복구 3/3 실패",
+      "decision": "A — ① 06_Registry/krx_holidays.json(2009~2027 · 276일 · 원천 KRX Open 휴장일 조회 · 수급기 02_Infrastructure/data/krx_holidays.py fetch · 미수록 해는 expected 가 한 번 받아 본다) ② ensure_data_current.sh 퀀티 최신성 축: 벤치 최신일 < KRX 직전 거래일 → 리프레시 대상 'qw' → daily_refresh.sh([1pre] 퀀티 수급이 단말을 띄우고 로그인) · 가드 · 스탬프 키 = KRX 직전 거래일(같은 거래일 재실패는 재시도 안 함 · 다음 거래일 재시도) ③ 호출 지점 = PC 부팅(morning_run.sh reboot — 주말도 [1w/3]) · 아침 브리핑 [0/5] · /qvest 부팅(Data 줄 '★퀀티 미최신' → 백그라운드 1회 · qvest.md) ④ qw_excel_refresh.ps1 로그인 뒤 안정 대기 WaitSessionStable(로그인 창 재출현 → 도우미 재호출 ≤2 · 같은 pid 주 창 20초 · 상한 180초 — 중복 로그인 '예' 뒤 단말 재기동 흡수 · 구판 5초 1회 확인) ⑤ daily_refresh.sh [1pre] 정본 xlsx 가 benchmark.parquet 보다 앞서면 수급 rc 와 무관하게 재생성 (실측 10-17 00:56 xlsx 10-16 이 parquet 에 안 실렸던 경로). 휴장일 기준이라 휴일 아침 헛리프레시 없음(10-06 대체공휴일 다음 날 = 최신).",
+      "decided_by": "dohoon",
+      "decided_at": "2026-10-17T17:17:18+0900",
+      "note": "검사: test_ensure_data_current_qw.sh 20/0(KRX 직전 거래일 6 · 실제 스크립트 샌드박스 B1~B6 · 미수록 해 미측정 · 뮤테이션 · Data 줄 퀀티 칸 D1~D4) · test_daily_refresh_qw_block.sh 32/0(P1~P4 정본 앞섬 재생성 + 뮤테이션 · W1~W5 로그인 안정 대기 가짜 시계 + 뮤테이션) · krx_holidays.py verify = 2009-01-01~2026-10-16 벤치 거래일 = 평일 − KRX 휴장일, 차이 2024-12-30 하루(별건 CAL-20241230-REAL-SESSION)",
+      "registered_at": "2026-10-17T17:17:17+0900",
+      "recorded_by": "Q(세션 7a34e194)",
+      "evidence": "도훈 채팅 2026-10-17 — '복잡하게 가지말고 부팅시점에 최신화 안되어있으면 퀀티로그인해서 최신화시킨다로 정리해' · (작업 중) '공휴일정보 찾아서 붙여' — 직전 제안(휴장일 기반 경보 축 신설)의 대안 지시"
+    },
+    {
+      "id": "CAL-20241230-REAL-SESSION",
+      "title": "2024-12-30 은 실제 거래일 — 벤치 격자 · 거래일 캘린더 · RAWDATA 에서 빠져 있다(08-03 '유령' 제거 판정의 재검토)",
+      "status": "open",
+      "opened_at": "2026-10-17T17:17:19+0900",
+      "options": [
+        "A 복원 — benchmark 격자에 퀀티 값(KOSPI200 317.82) 삽입 · trading_calendar.R 수동 휴장 목록에서 2024-12-30 삭제 · 그날 RAWDATA 를 퀀티 원본에서 재적재(원본 수록 여부 확인 포함) · 영향 산출물 재측정 범위 보고",
+        "B 현행 유지(2024-12-27 → 2025-01-02 수익이 하루치를 합쳐 담는다 · 2024-12 월말 = 12-27)"
+      ],
+      "recommendation": "A. 새 근거 둘이 서로 독립이다: ① KRX 공식 휴장일 목록(2024)에 12-30 이 없고 12-31 이 연말 휴장일 ② 퀀티 정본 xlsx 에 12-30 세션(코스피200 317.82 — 12-27 319.03 · 01-02 317.77 과 다른 값). 08-03 판정은 '네이버 차트 덧댐이 만든 유령'이었으나 퀀티 원본에도 있다. 영향 = 2024-12 월간 수익 하루 누락(01 월로 이월) · 그날 신호 · 월말 리밸 일자",
+      "default_until_decided": "B(현행 — 캘린더 권위 파일 변경은 도훈 몫)",
+      "blocks": [
+        "item:trading_calendar_20241230"
+      ],
+      "owner": "dohoon",
+      "source": "10-17 krx_holidays.py verify — 2009-01-01~2026-10-16 대조에서 유일한 차이",
+      "decision": null,
+      "decided_by": null,
+      "decided_at": null,
+      "note": null,
+      "registered_at": "2026-10-17T17:17:19+0900"
     }
   ],
-  "last_updated": "2026-10-17T16:08:51+0900"
+  "last_updated": "2026-10-17T17:17:19+0900"
 }

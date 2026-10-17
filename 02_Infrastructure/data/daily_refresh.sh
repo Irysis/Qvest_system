@@ -180,6 +180,19 @@ if [ -n "$QVENV_PY" ]; then
        _bm_rc=3 ;;   # (10-17 퀀티 단일) 구판은 네이버가 메워 실패로 세지 않았다 — 이제 그날 밤 축 A 가 실패로 신고한다
     *) echo "!! 정본 수급 실패 rc=$_qw_rc — 기존 xlsx 유지"; _bm_rc=$_qw_rc ;;
   esac
+  # ★(2026-10-17 · 부팅 규칙 BOOT-QW-LOGIN-REFRESH-20261017) 이번 수급이 새 정본을 안 가져왔어도(rc≠0), 정본 xlsx 가
+  #   benchmark.parquet 보다 앞서 있으면 재생성한다. 구판은 rc=0 일 때만 재생성해, 다른 경로로 들어온 정본(실측 10-17 00:56
+  #   xlsx 10-16 · 이전 런 중도 사망 · 수동 갱신)이 parquet 에 안 실린 채 남았다(그땐 네이버 이어붙이기가 덮어 안 보였다).
+  #   갱신기 rc(_bm_rc)는 그대로 둔다 — 세션 문제는 세션 문제대로 축 A 가 신고한다.
+  if [ "$_qw_rc" != "0" ]; then
+    _xl_max=$("$QVENV_PY" -c "import json;print(json.load(open(r'$BASE/.cache/quantiwise_fetch_status.json',encoding='utf-8')).get('before',{}).get('date_max',''))" 2>/dev/null | tr -d '\r')
+    _pq_max=$("$QVENV_PY" -c "import pyarrow.parquet as pq,pandas as pd;print(pd.to_datetime(pq.read_table(r'$BASE/.cache/benchmark.parquet',columns=['Date']).to_pandas()['Date']).max().date())" 2>/dev/null | tr -d '\r')
+    if [[ -n "$_xl_max" && -n "$_pq_max" && "$_xl_max" > "$_pq_max" ]]; then
+      echo "  ★정본 xlsx($_xl_max)가 benchmark.parquet($_pq_max)보다 앞서 있다 — benchmark/indices 재생성"
+      _bx=0; ( cd "$INFRA" && "$QVENV_PY" data/build_index_cache.py ) || _bx=$?
+      [ "$_bx" -ne 0 ] && _bm_rc=$_bx
+    fi
+  fi
 
   # ③ (퇴역 10-17 · BENCHMARK-QW-ONLY-20261017) 네이버 이어붙이기 · 검증 호출 0 — 정본이 안 들어오면 기존 cache 그대로(퀀티 단일)
   if [ "$_bm_rc" -ne 0 ]; then

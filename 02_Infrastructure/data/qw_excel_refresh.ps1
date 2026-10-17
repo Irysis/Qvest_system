@@ -115,6 +115,34 @@ if (-not (Test-Path $Source))   { Finish 1 'no_source' "원본 부재: $Source" 
 #   (초판은 'Quantiwise' 만 기다리다 180초를 헛돌았다. 실측 2026-09-18: 런처 종료 · qwMain 상주)
 function QwProc { Get-Process -Name 'qwMain', 'Quantiwise' -ErrorAction SilentlyContinue |
                   Sort-Object { $_.MainWindowHandle -ne 0 } -Descending | Select-Object -First 1 }
+# ★(2026-10-17 · 결정 BOOT-QW-LOGIN-REFRESH-20261017 — 도훈 '부팅시점에 최신화 안되어있으면 퀀티로그인해서 최신화') 로그인 뒤 안정 대기.
+#   중복 로그인 '예' 뒤 단말은 스스로 재기동한다(qwMain pid 교체 · 실측 10-17 29092→32864). 구판은 5초 뒤 한 번만 보고 끝내
+#   재기동의 로그인 창을 실패로 읽었고(10-06 · 10-17 rc=3) 재기동 중인 세션으로 엑셀을 열어 응답 없음을 받았다(10-07).
+#   ⇒ 로그인 창이 없고 단말 주 창이 **같은 pid** 로 $stableSec 초 유지되면 참 · 로그인 창이 다시 뜨면 도우미를 다시 부른다(최대 $maxReclick 회).
+#   숫자 근거: 상한 180초 = 아래 단말 기동 대기 · 안정 20초 = 아래 '로그인·세션 수립 여유' · 재호출 2회 = 실측 재기동 1회 + 여유 1회.
+function Invoke-QwClicker($clicker) {   # 도우미 출력은 로그로 흘리고(Out-Host) 종료코드만 돌려준다 — 함수 반환값에 섞이지 않게
+  & powershell -NoProfile -ExecutionPolicy Bypass -File $clicker -WaitSec 120 | Out-Host
+  return $LASTEXITCODE
+}
+function WaitSessionStable($clicker, [int]$maxSec, [int]$stableSec, [int]$maxReclick) {
+  $deadline = (Get-Date).AddSeconds($maxSec); $seenPid = $null; $since = $null; $re = 0
+  while ((Get-Date) -lt $deadline) {
+    Start-Sleep -Seconds 3
+    if (LoginWindowOpen) {
+      $seenPid = $null; $since = $null
+      if ($re -lt $maxReclick) {
+        $re++; Say ("로그인 창 재출현 — 클릭 도우미 재호출 ({0}/{1})" -f $re, $maxReclick)
+        if ((Invoke-QwClicker $clicker) -eq 3) { Finish 3 'otp_required' '2단계 인증 대기 — 인증번호는 사람 몫이다(이 배관은 거기서 멈춘다)' }
+      }
+      continue
+    }
+    $p = QwProc
+    if (-not $p -or $p.MainWindowHandle -eq 0) { $seenPid = $null; $since = $null; continue }
+    if ($p.Id -ne $seenPid) { $seenPid = $p.Id; $since = Get-Date; continue }
+    if (((Get-Date) - $since).TotalSeconds -ge $stableSec) { Say ("단말 안정 — pid={0} · 재호출 {1}회" -f $seenPid, $re); return $true }
+  }
+  return $false
+}
 $proc = QwProc
 if (-not $proc) {
   Say '단말 미기동 — 시작(저장된 자격으로 자동 로그인)'
@@ -139,12 +167,11 @@ if (LoginWindowOpen) {
   $clicker = Join-Path (Split-Path -Parent $PSCommandPath) 'qw_login_click.ps1'
   if (Test-Path $clicker) {
     Say '로그인 창 감지 — qw_login_click.ps1 로 세션을 연다'
-    & powershell -NoProfile -ExecutionPolicy Bypass -File $clicker -WaitSec 120
-    $lrc = $LASTEXITCODE
+    $lrc = Invoke-QwClicker $clicker
     if ($lrc -eq 3) { Finish 3 'otp_required' '2단계 인증 대기 — 인증번호는 사람 몫이다(이 배관은 거기서 멈춘다)' }
     if ($lrc -ne 0) { Finish 3 'login_failed' ('로그인 자동화 실패 rc=' + $lrc + ' — 자격 만료·인증 대기일 수 있다. 단말에서 한 번 수동 로그인해 볼 것') }
-    Start-Sleep -Seconds 5
-    if (LoginWindowOpen) { Finish 3 'login_required' '로그인 자동화 뒤에도 로그인 창이 남아 있다' }
+    # ★(10-17 부팅 규칙) 5초 뒤 한 번만 보던 구판 대신 안정 대기(위 WaitSessionStable — 재기동 · 로그인 창 재출현 흡수).
+    if (-not (WaitSessionStable $clicker 180 20 2)) { Finish 3 'login_required' '로그인 자동화 뒤 180초 안에 단말이 안정되지 않았다(로그인 창 재출현 · 재기동 반복) — 단말에서 수동 로그인 필요' }
     Say '세션 열림'
   } else {
     Finish 3 'login_required' ('퀀티 단말에 로그인 창이 떠 있고 클릭 도우미가 없다: ' + $clicker)

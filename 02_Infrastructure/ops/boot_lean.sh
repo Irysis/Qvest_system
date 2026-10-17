@@ -63,7 +63,20 @@ def _fgap():
     except Exception:
         return "팩터 ?"
 import io
-o.append("Data: 키캐시 %d/4%s · audit %s · rawdata %s · bench %s · %s · %s%s"%(4-len(bad)," ["+", ".join(bad)+"]" if bad else " OK",ra,HH(AG(".cache/rawdata.parquet")),HH(AG(".cache/benchmark.parquet")),mem,_fgap(),"  → bash 02_Infrastructure/data/daily_refresh.sh" if bad else ""))
+# ★부팅 규칙(2026-10-17 도훈 "부팅시점에 최신화 안되어있으면 퀀티로그인해서 최신화" · 결정 BOOT-QW-LOGIN-REFRESH-20261017) —
+#   퀀티 최신성 = 벤치 최신일 vs KRX 직전 거래일(06_Registry/krx_holidays.json · 오프라인 · 미수록 해 = ?).
+#   퀀티 단일에선 캘린더도 퀀티가 늘리므로 위 감사(캘린더 기준)로는 퀀티 정체가 안 보인다 — 이 칸이 그것을 보인다.
+def _qwcur():
+    try:
+        import sys as _s; _s.path.insert(0, R("02_Infrastructure","data")); import krx_holidays as _kh
+        st, bm, exp = _kh.bench_currency(dt.date.today(), allow_fetch=False)   # 판정 정본(ensure_data_current 와 같은 함수)
+        if st == "NA": return ("퀀티 ?(%s)" % exp, False)
+        if st == "1": return ("★퀀티 미최신 %s<%s" % (bm.strftime("%m-%d"), exp.strftime("%m-%d")), True)
+        return ("퀀티 %s ✓" % bm.strftime("%m-%d"), False)
+    except Exception:
+        return ("퀀티 ?", False)
+_qw, _qwb = _qwcur()
+o.append("Data: 키캐시 %d/4%s · audit %s · rawdata %s · bench %s · %s · %s · %s%s"%(4-len(bad)," ["+", ".join(bad)+"]" if bad else " OK",ra,HH(AG(".cache/rawdata.parquet")),HH(AG(".cache/benchmark.parquet")),mem,_fgap(),_qw,"  → 부팅 규칙: bash 02_Infrastructure/ops/ensure_data_current.sh (백그라운드 · 퀀티 로그인 · 최신화)" if _qwb else ("  → bash 02_Infrastructure/data/daily_refresh.sh" if bad else "")))
 # ② Queue — 미소비 논문 수(비숫자면 UNREPORTED, 0 으로 접지 않음) + frontier open 상위 2
 #   ★v10 (2026-08-29): 강화 원장 active(L1 n/25 · L2 무한) + data-pipeline open 병기 (fail-soft ?)
 _r=S(lambda: subprocess.run([PY,R("02_Infrastructure","ops","research_pool_predicates.py"),"alpha-pending",R("stage_artifacts","paper_recharge")],capture_output=True,text=True,timeout=90).stdout.strip())

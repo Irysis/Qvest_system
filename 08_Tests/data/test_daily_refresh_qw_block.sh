@@ -132,6 +132,71 @@ if git show pre-rawdata-qw-only-20261017:"$DRV" 2>/dev/null | blk_of > "$T/nr_ol
   [ "$n3" = "2|no_change" ] && ok "NM 뮤테이션(구판 분기) → 응답 없음도 rc=2 로 접힌다 — N1 은 수리의 발화다(검출력)" || ng "NM 뮤테이션 판독" "$n3"
 else ng "NM 구판 분기 판독 실패(태그 pre-rawdata-qw-only-20261017)"; fi
 
+## ⑦ [1pre] 정본 xlsx 가 benchmark.parquet 보다 앞서면 수급 rc 와 무관하게 재생성(10-17 부팅 규칙 · 실측 10-17 00:56 xlsx 가 parquet 에 안 실림)
+#   실제 [1pre] 블록을 잘라 수급기 · 재생성기를 스텁으로 바꿔 돌린다(퀀티 · 엑셀 · 운영 .cache 무접촉).
+awk '/^echo "\[1pre\/7\] Benchmark/{f=1} /^# --- \[1pre-qw\]/{f=0} f' "$DR" > "$T/pre_blk.sh"
+mkdir -p "$T/pre/infra/data" "$T/pre/base/.cache"
+printf 'import os, sys\nsys.exit(int(os.environ.get("STUB_QW_RC", "2")))\n' > "$T/pre/infra/data/quantiwise_fetch.py"
+printf 'import os\nopen(os.environ["STUB_BIC_LOG"], "a").write("called\\n")\n' > "$T/pre/infra/data/build_index_cache.py"
+run_pre(){ # $1 = 블록 · $2 = 수급 rc · $3 = 정본 xlsx date_max · $4 = parquet 최신일 → "BIC=<재생성 호출 수>|BM_RC=<갱신기 rc>"
+  "$PYV" -c "import json,sys,pandas as pd; json.dump({'before':{'date_max':sys.argv[2]},'message':'stub'}, open(sys.argv[1]+'/quantiwise_fetch_status.json','w')); pd.DataFrame({'Date':pd.to_datetime(['2026-09-30',sys.argv[3]])}).to_parquet(sys.argv[1]+'/benchmark.parquet')" "$T/pre/base/.cache" "$3" "$4"
+  rm -f "$T/pre/bic.log"
+  { printf 'set -uo pipefail\nBASE="%s"; INFRA="%s"; QVEST_PY="%s"\nexport STUB_QW_RC="%s" STUB_BIC_LOG="%s"\n' "$T/pre/base" "$T/pre/infra" "$PYV" "$2" "$T/pre/bic.log"
+    printf '. "%s" >/dev/null 2>&1\nprintf "BM_RC=%%s\\n" "$_bm_rc"\n' "$1"; } > "$T/pre/h.sh"
+  local r n; r=$(bash "$T/pre/h.sh" 2>/dev/null | tail -n 1); n=$(cat "$T/pre/bic.log" 2>/dev/null | grep -c called)
+  echo "BIC=$n|$r"; }
+if [ -s "$T/pre_blk.sh" ] && grep -q 'quantiwise_fetch.py' "$T/pre_blk.sh"; then
+  p1=$(run_pre "$T/pre_blk.sh" 2 2026-10-16 2026-10-15); [ "$p1" = "BIC=1|BM_RC=0" ] && ok "P1 수급 rc=2(무변화)인데 정본 10-16 > parquet 10-15 → 재생성 1회" || ng "P1" "$p1"
+  p2=$(run_pre "$T/pre_blk.sh" 2 2026-10-16 2026-10-16); [ "$p2" = "BIC=0|BM_RC=0" ] && ok "P2 [양성] 정본 = parquet → 재생성 없음" || ng "P2" "$p2"
+  p3=$(run_pre "$T/pre_blk.sh" 3 2026-10-16 2026-10-15); [ "$p3" = "BIC=1|BM_RC=3" ] && ok "P3 수급 rc=3(세션 없음)이어도 앞선 정본은 싣는다 · 갱신기 실패(rc=3)는 그대로 신고" || ng "P3" "$p3"
+  p4=$(run_pre "$T/pre_blk.sh" 0 2026-10-16 2026-10-15); [ "$p4" = "BIC=1|BM_RC=0" ] && ok "P4 [양성] 수급 rc=0 → 종전대로 재생성 1회(중복 없음)" || ng "P4" "$p4"
+  sed 's/"\$_xl_max" > "\$_pq_max"/"$_xl_max" > "9999-12-31"/' "$T/pre_blk.sh" > "$T/pre_mut.sh"
+  if ! cmp -s "$T/pre_blk.sh" "$T/pre_mut.sh"; then
+    pm=$(run_pre "$T/pre_mut.sh" 2 2026-10-16 2026-10-15); [ "$pm" = "BIC=0|BM_RC=0" ] && ok "PM 뮤테이션(앞섬 비교 무력화) → P1 이 침묵 — P1 은 그 비교의 발화다(검출력)" || ng "PM 뮤테이션 판독" "$pm"
+  else ng "PM 뮤테이션 치환 실패"; fi
+else ng "P0 [1pre] 블록 추출 실패"; fi
+
+## ⑧ 벤치 드라이버 로그인 안정 대기(WaitSessionStable · 10-17 부팅 규칙) — 실제 함수 텍스트 + 가짜 시계(Start-Sleep · Get-Date 섀도잉)
+#   relaunch = 중복 로그인 '예' 뒤 재기동(로그인 창 재출현 → 재호출 1회로 닫힘 · pid 교체) · stuck = 창이 안 닫힘 · otp = 2단계 인증 · loop = pid 계속 교체
+fn_ws(){ awk '/^function WaitSessionStable\(/{f=1} f{print} f&&/^\}$/{exit}'; }
+fn_ws < "$DRV" > "$T/ws_fn.ps1"
+run_ws(){ # $1 = 함수 파일 · $2 = 시나리오 · $3 = 처음 로그인 창($true/$false)
+  { printf '\xef\xbb\xbf'
+    cat <<'PSH'
+$script:t0 = [datetime]'2026-10-17T07:00:00'; $script:now = $script:t0
+function Get-Date { $script:now }
+function Start-Sleep { param([int]$Seconds) $script:now = $script:now.AddSeconds($Seconds) }
+function Say($m) { }
+function Finish([int]$code, [string]$res, [string]$msg) { Write-Output ("FINISH|{0}|{1}|clicks={2}" -f $code, $res, $script:clicks); exit 0 }
+$script:clicks = 0; $script:qpid = 100
+function LoginWindowOpen { $script:login }
+function QwProc {
+  if ($script:mode -eq 'loop') { $script:qpid++; return [pscustomobject]@{ Id = $script:qpid; MainWindowHandle = 1 } }
+  if ($script:login) { return [pscustomobject]@{ Id = 100; MainWindowHandle = 0 } }
+  return [pscustomobject]@{ Id = $script:qpid; MainWindowHandle = 1 }
+}
+function Invoke-QwClicker($c) {
+  $script:clicks++
+  switch ($script:mode) { 'relaunch' { $script:login = $false; $script:qpid = 200; return 0 } 'stuck' { return 0 } 'otp' { return 3 } default { $script:login = $false; return 0 } }
+}
+PSH
+    printf '$script:mode = "%s"; $script:login = %s\n' "$2" "$3"
+    cat "$1"
+    printf '$r = WaitSessionStable "stub" 180 20 2\nWrite-Output ("RESULT|{0}|clicks={1}|t={2}" -f $r, $script:clicks, [int]($script:now - $script:t0).TotalSeconds)\n'
+  } > "$T/ws_run.ps1"
+  powershell.exe -NoProfile -ExecutionPolicy Bypass -File "$(cygpath -w "$T/ws_run.ps1")" 2>&1 | tr -d '\r' | tail -n 1; }
+if [ -s "$T/ws_fn.ps1" ]; then
+  w1=$(run_ws "$T/ws_fn.ps1" relaunch '$true'); [ "$w1" = "RESULT|True|clicks=1|t=27" ] && ok "W1 재기동(로그인 창 재출현 → 재호출 1회 · pid 100→200) → 같은 pid 20초 안정 뒤 참(t=27s)" || ng "W1" "$w1"
+  w2=$(run_ws "$T/ws_fn.ps1" stable '$false'); [ "$w2" = "RESULT|True|clicks=0|t=24" ] && ok "W2 [양성] 처음부터 안정 → 재호출 0 · 20초 뒤 참" || ng "W2" "$w2"
+  w3=$(run_ws "$T/ws_fn.ps1" stuck '$true'); [ "$w3" = "RESULT|False|clicks=2|t=180" ] && ok "W3 로그인 창이 안 닫힘 → 재호출 상한 2회 · 180초 뒤 거짓(→ login_required rc=3)" || ng "W3" "$w3"
+  w4=$(run_ws "$T/ws_fn.ps1" otp '$true'); [ "$w4" = "FINISH|3|otp_required|clicks=1" ] && ok "W4 2단계 인증 → 즉시 otp_required rc=3(인증번호는 사람 몫)" || ng "W4" "$w4"
+  w5=$(run_ws "$T/ws_fn.ps1" loop '$false'); [ "$w5" = "RESULT|False|clicks=0|t=180" ] && ok "W5 재기동 반복(pid 계속 교체) → 안정 못 함 · 거짓" || ng "W5" "$w5"
+  sed 's/if (\$re -lt \$maxReclick) {/if ($false) {/' "$T/ws_fn.ps1" > "$T/ws_mut.ps1"
+  if ! cmp -s "$T/ws_fn.ps1" "$T/ws_mut.ps1"; then
+    wm=$(run_ws "$T/ws_mut.ps1" relaunch '$true'); [ "$wm" = "RESULT|False|clicks=0|t=180" ] && ok "WM 뮤테이션(재호출 삭제) → 재기동 시나리오가 실패로 끝난다 — W1 은 재호출의 발화다(검출력)" || ng "WM 뮤테이션 판독" "$wm"
+  else ng "WM 뮤테이션 치환 실패"; fi
+else ng "W0 WaitSessionStable 함수 추출 실패($DRV)"; fi
+
 echo ""
 echo "결과: PASS=$PASS FAIL=$FAIL"
 printf '{"test":"daily_refresh_qw_block","pass":%d,"fail":%d,"total":%d}\n' "$PASS" "$FAIL" "$((PASS+FAIL))"
