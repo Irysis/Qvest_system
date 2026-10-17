@@ -306,12 +306,12 @@ cut_block <- function(start_pat, end_pat) {
   j <- j[j > i][1]; if (is.na(j)) return(NULL)
   DR[i:(j - 1L)]
 }
-blk_sz <- cut_block("^# ── \\[1z\\]", '^echo "\\[2/7\\]')
+blk_sz <- cut_block("^# ── \\[1z\\]", '^echo "\\[3/7\\]')   # (10-17) 구 [2/7] KRX 퇴역 — [1z] 다음 실행 단계 = [3/7]
 blk_eg <- cut_block("^# ── \\[6a-gate\\]", '^echo "\\[6b/7\\]')
-i1 <- grep('^echo "\\[1/7\\]', DR); i2 <- grep('^echo "\\[2/7\\]', DR); iz <- grep("^# ── \\[1z\\]", DR)
+i1 <- grep("echo \"\\[0b'/7\\]", DR); i2 <- grep('^echo "\\[3/7\\]', DR); iz <- grep("^# ── \\[1z\\]", DR)   # (10-17) [0b'] 퀀티 적재 뒤 · [3/7] 앞
 i6 <- grep('^echo "\\[6a/7\\]', DR); i6b <- grep('^echo "\\[6b/7\\]', DR); ig <- grep("^# ── \\[6a-gate\\]", DR)
-chk("G0_blocks_in_place", !is.null(blk_sz) && !is.null(blk_eg) && length(iz) == 1L && iz > i1 && iz < i2 &&
-      length(ig) == 1L && ig > i6 && ig < i6b, "[1z] = [1] 과 [2] 사이 · [6a-gate] = [6a] 와 [6b] 사이")
+chk("G0_blocks_in_place", !is.null(blk_sz) && !is.null(blk_eg) && length(iz) == 1L && length(i1) == 1L && length(i2) == 1L && iz > i1 && iz < i2 &&
+      length(ig) == 1L && ig > i6 && ig < i6b, "[1z] = [0b'] 퀀티 적재 뒤 · [3/7] 앞(10-17 퀀티 단일) · [6a-gate] = [6a] 와 [6b] 사이")
 RSCRIPT <- file.path(R.home("bin"), "Rscript.exe"); if (!file.exists(RSCRIPT)) RSCRIPT <- file.path(R.home("bin"), "Rscript")
 # ★Git bash 우선 — PATH 의 bash 가 WSL 이면 Windows 경로를 못 읽는다(미측정을 실패로 오판)
 BASH <- ""

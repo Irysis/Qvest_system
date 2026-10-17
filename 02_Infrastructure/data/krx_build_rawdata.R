@@ -1,6 +1,11 @@
 #==============================================================================
 # KRX Build RAWDATA — Transform KRX API data into RAWDATA format
 #
+# ★★ 퇴역 (2026-10-17 · 결정 RAWDATA-QW-ONLY-20261017) — 일일 체인 [2/7] KRX gap-fill · 아침 [1/5] KRX 호출 0 ★★
+#   RAWDATA 주가 원천 = 퀀티 Update_File 단일(daily_refresh.sh [1pre-qw] → [0b'] · 미완료는 DR_FAILED · 보충 원천 없음).
+#   KRX 지수 · 파생 수집(krx_data_collector.R — [4/7] Arrow · VKOSPI)은 계속 쓰인다. 이 파일은 사료 · 시험 배선 대조용으로만 남긴다
+#   (복원 = git · 태그 pre-rawdata-qw-only-20261017) — 새 호출을 붙이지 말 것.
+#
 # Pipeline: detect gap → collect via API → transform → merge → update cache
 #
 # Usage:

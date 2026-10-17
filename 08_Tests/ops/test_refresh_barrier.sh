@@ -442,11 +442,14 @@ r=$(g7); [ "$r" = "E2E|err=NONE|pre=T,F,T|post=T,F,F|v=,not_candidate,not_candid
 echo "=== H. 아침 writer 잠금 · daily_refresh 무변경 ==="
 MB="$OPS/morning_briefing.sh"; nc=$(sed 's/#.*$//' "$MB")
 ln(){ printf '%s\n' "$nc" | grep -nF -- "$1" | head -1 | cut -d: -f1; }
-a1=$(ln 'rb_writer_acquire "krx_update+naver_supplement"'); k=$(ln 'morning_steps/krx_update.R'); nv=$(ln 'morning_steps/naver_supplement.R'); ar=$(ln 'morning_steps/arrow_extend.R')
-r1=$(printf '%s\n' "$nc" | grep -n '^rb_writer_release$' | cut -d: -f1 | head -1); r2=$(printf '%s\n' "$nc" | grep -n '^rb_writer_release$' | cut -d: -f1 | sed -n 2p)
+## (10-17 · 결정 RAWDATA-QW-ONLY-20261017) 아침 KRX · Naver 보충 퇴역 — H1 = 아침 체인 실행 코드에 RAWDATA 주가 보충 호출 0(양성 대조 포함)
+PRICE_RE='morning_steps/krx_update\.R|morning_steps/naver_supplement\.R|naver_run_pipeline|krx_run_pipeline'
+r2=$(printf '%s\n' "$nc" | grep -n '^rb_writer_release$' | cut -d: -f1 | head -1)
 a2=$(ln 'rb_writer_acquire "self_heal"'); sh=$(ln 'morning_steps/self_heal.R')
-if [ -n "$a1" ] && [ -n "$k" ] && [ -n "$nv" ] && [ -n "$r1" ] && [ -n "$ar" ] && [ "$a1" -lt "$k" ] && [ "$k" -lt "$nv" ] && [ "$nv" -lt "$r1" ] && [ "$r1" -lt "$ar" ]; then
-  ok "H1 krx_update·naver_supplement 가 writer 잠금 안($a1<$k<$nv<$r1) · arrow 전에 해제"; else ng "H1 writer 잠금 범위" "$a1 $k $nv $r1 $ar"; fi
+SHNC=$(sed 's/#.*$//' "$OPS/morning_steps/self_heal.R")
+if ! printf '%s\n' "$nc" | grep -qE "$PRICE_RE" && ! printf '%s\n' "$SHNC" | grep -qE "$PRICE_RE" \
+   && printf 'Rscript --no-save -e %s\n' "'source(\"02_Infrastructure/ops/morning_steps/naver_supplement.R\")'" | grep -qE "$PRICE_RE"; then
+  ok "H1 아침 체인 · self_heal 실행 코드에 RAWDATA 주가 보충 호출 0(퀀티 단일 · 10-17) · 검사기 양성 대조 발화"; else ng "H1 아침 주가 보충 호출 잔존" "$(printf '%s\n' "$nc$SHNC" | grep -oE "$PRICE_RE" | head -2 | tr '\n' ' ')"; fi
 [ -n "$a2" ] && [ -n "$sh" ] && [ -n "$r2" ] && [ "$a2" -lt "$sh" ] && [ "$sh" -lt "$r2" ] && ok "H2 self_heal 이 writer 잠금 안($a2<$sh<$r2)" || ng "H2 self_heal 범위" "$a2 $sh $r2"
 grep -q "trap 'rb_writer_release' EXIT" <<<"$nc" && ok "H3 비정상 종료에도 해제(EXIT trap)" || ng "H3 EXIT trap"
 ! grep -q "qm_daily_refresh.lock" <<<"$nc" && ok "H4 writer 는 리프레시 잠금을 쥐지 않는다(쥐면 그 사이 뜬 daily_refresh 가 '이미 실행 중' 으로 종료)" || ng "H4 리프레시 잠금 공유"

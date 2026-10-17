@@ -5,9 +5,9 @@
 #
 # 파이프라인 (v2 — Universe xlsx 의존 제거, Factor DB 연결):
 #   [0] QuantiWise xlsx 증분 (OHLCVS/Consensus/Fundamental/Investor/Support)
-#   [1] KRX API gap-fill (항상 실행)
-#   [2] Naver T+0 보완
-#   [3] Universe 갱신 (KRX API 기반) + RAWDATA 메타 매핑
+#   [1pre] 벤치(KOSPI200 · 퀀티 정본) → [1pre-qw] 퀀티 Update_File 4종 매일 수급 → [0b'] 적재
+#   ★(2026-10-17 도훈 · 결정 RAWDATA-QW-ONLY-20261017) RAWDATA 주가 원천 = 퀀티 단일 — 구 [1] Naver T+0 · [2] KRX gap-fill 퇴역(호출 0)
+#   [3] Universe 갱신 (RAWDATA 월말 활성) + RAWDATA 메타 매핑
 #   [4] Arrow/FRED/KTRI/Regime
 #   [5] DART (월 1회)
 #   [6] Factor DB 갱신
@@ -197,13 +197,27 @@ else
   echo "  python 미발견 - benchmark 갱신 skipped (기존 cache 유지)"
 fi
 
-# --- [1pre-qw] 퀀티 Update_File 무인 수급 (도훈 결정 QW-UPDATEFILE-UNATTENDED 안 A · 2026-10-16) ---------------
-#   벤치 정본 수급이 이 실행에서 rc=0 으로 전진했을 때만(= 퀀티 세션 생존 양성 대조) 로그인 클릭 없이(-SkipLogin) Investor_Act · Consensus
-#   (+ 직전 월말이 Universe_Support 최신일보다 뒤면 Universe_Support)를 받는다 — 08-29 계정 잠금 경로(로그인 클릭 · 단말 재기동)는 열리지 않는다.
-#   전진한 파일이 있으면 [0b] 적재를 한 번 더 돈다. 실패해도 리프레시는 계속(시간 상한 40분 · 경보 줄). 끄기: QVEST_QW_UPDATEFILE_UNATTENDED=0
-#   검사: 08_Tests/data/test_qw_updatefile_unattended.R(스텁 — 운영 퀀티 · .cache 무접촉)
-bash "$INFRA/data/qw_updatefile_unattended.sh" "${_qw_rc:-1}" "$QVENV_PY"
-if [ $? -eq 0 ]; then
+# --- [1pre-qw] 퀀티 Update_File 4종 매일 수급 — RAWDATA 주가 원천 = 퀀티 단일 (2026-10-17 · 결정 RAWDATA-QW-ONLY-20261017) -------------
+#   도훈 10-17 "이제 퀀티 실행 문제없이 되니까 주가관련 복잡한 규칙들 모두 없애고 Universe update 에 있는 파일들 매일 데이터 리프레시할 때
+#   퀀티로 최신화시켜는걸로 Rawdata 관리하자" · "Consensus_update, Investor_Act_update 이것도 매일해". (구 QW-UPDATEFILE-UNATTENDED 안 A 의 확장)
+#   로그인 클릭 없이(-SkipLogin — 08-29 계정 잠금 경로 없음) OHLCVS → Universe_Support → Investor_Act → Consensus 를 받는다(목표일 = 직전 거래일에
+#   이미 닿은 파일은 드라이버가 건너뜀 — 주말 · 휴일은 곧바로 끝난다). 벤치 수급 rc=3(로그인 창 · 애드인 미등록)이면 건너뛴다.
+#   ★보충 원천이 없다(네이버 · KRX 퇴역) — 미완료(done D<N · rc≠0)와 건너뜀은 DR_FAILED 로 싣는다(그날 RAWDATA 정체를 조용히 넘기지 않는다).
+#   전진한 파일이 있으면 [0b'] 적재. 끄기: QVEST_QW_UPDATEFILE_UNATTENDED=0 · 검사: 08_Tests/data/test_qw_updatefile_unattended.R(스텁)
+_qwuf_log="$(mktemp /tmp/qm_qwuf_XXXX.log)"
+bash "$INFRA/data/qw_updatefile_unattended.sh" "${_qw_rc:-1}" "$QVENV_PY" 2>&1 | tee "$_qwuf_log"; _qwuf_rc=${PIPESTATUS[0]}
+_qwuf_line="$(grep '^QWUF' "$_qwuf_log" | tail -n 1)"; rm -f "$_qwuf_log"
+_qwuf_state="$(printf '%s' "$_qwuf_line" | sed -n 's/.*state=\([^[:space:]]*\).*/\1/p')"
+_qwuf_done="$(printf '%s' "$_qwuf_line" | sed -n 's/.*done=\([^[:space:]]*\).*/\1/p')"
+_qwuf_inc="$(printf '%s' "$_qwuf_line" | sed -n 's/.*incomplete=\([0-9]*\).*/\1/p')"
+if [ "$_qwuf_state" = "skipped" ]; then
+  DR_FAILED+=("qw_updatefile_skipped(bench_rc=${_qw_rc:-?})")
+  echo "!! [1pre-qw] ★퀀티 Update_File 수급 건너뜀 — 오늘 RAWDATA 주가가 전진하지 않는다(보충 원천 없음 · 단말 로그인 확인)"
+elif [ "${_qwuf_inc:-0}" = "1" ]; then
+  DR_FAILED+=("qw_updatefile_incomplete(done=${_qwuf_done:-?})")
+  echo "!! [1pre-qw] ★퀀티 Update_File 미완료(done=${_qwuf_done:-?}) — 목표일 미달 파일은 오늘 정체(다음 밤 같은 구간을 다시 받는다)"
+fi
+if [ "$_qwuf_rc" -eq 0 ]; then
   echo "[0b'/7] Update_File 재적재 (무인 수급 전진분)..."
   cd "$INFRA"
   run_r '
@@ -251,25 +265,10 @@ if [ "$_bg_rc" -ne 0 ]; then
   echo "!! [1pre] ★거래일 지평선 이상 - 하류 gap 판정이 무의미해진다 (위 [bm-gate] 사유 참조)"
 fi
 
-# ──────────────────────────────────────────────────────────────────────────────
-# [1] Naver T+0 (PRIMARY — KRX T+1 lag 회피, 2026-04-24 변경)
-#     Naver가 장중/장마감 직후 전일 종가 즉시 반영. RAWDATA 최신화 주력.
-# ──────────────────────────────────────────────────────────────────────────────
-echo "[1/7] Naver T+0 Primary Pipeline..."
-cd "$INFRA"
-run_r '
-  source("config.R")
-  source("data/trading_calendar.R")   # [Track R fix 2026-06-12] 거래일 가드 활성화 (필수)
-  source("data/naver_data_collector.R")
-  suppressPackageStartupMessages({library(data.table); library(arrow)})
-  before <- tryCatch(max(as.Date(as.data.table(read_parquet(RAWDATA_CACHE))$Date), na.rm=TRUE), error=function(e) NA)
-  tryCatch(naver_run_pipeline(),
-    error = function(e) cat(sprintf("Naver pipeline failed: %s\n", e$message)))
-  # [v8.0 fix] 병합 실패 silent swallow 방지 — RAWDATA 미전진 시 명시 WARNING (07:10 self-heal 전 조기 감지)
-  after <- tryCatch(max(as.Date(as.data.table(read_parquet(RAWDATA_CACHE))$Date), na.rm=TRUE), error=function(e) NA)
-  if (is.na(after) || (!is.na(before) && after <= before && as.integer(Sys.Date() - after) > 1))
-    cat(sprintf("[WARN] Naver RAWDATA NOT advanced (before=%s after=%s) — KRX fallback/self-heal 의존\n", before, after))
-'
+# ── [1/7] Naver T+0 — 퇴역 (2026-10-17 도훈 '주가관련 복잡한 규칙들 모두 없애고 … 퀀티로 최신화' · 결정 RAWDATA-QW-ONLY-20261017) ──
+#   RAWDATA 주가 원천 = 퀀티 Update_File 단일([1pre-qw] → [0b']). 구 경로(naver_run_pipeline · 수정주가 재조정 · 시총 스냅샷)는 호출 0 —
+#   10-17 실측: 09-14 이후 네이버 종가가 퀀티 공식 종가와 종목·일 81% 에서 어긋났다(일치 19% · 일간 수익률 0.5%p 초과 차 52~73%).
+#   모듈 data/naver_data_collector.R 은 퇴역 표기만 남긴다(복원 = git · 태그 pre-rawdata-qw-only-20261017).
 
 # ── [1z] RAWDATA 최근일 Size 채움률 경보 (2026-09-23 W-02 · 도훈 승인 처방 §3) ─────────
 #   사고: Naver 시총 스냅샷이 09-12 부터 매 실행 디코드 예외로 죽어 RAWDATA.Size 가
@@ -288,33 +287,9 @@ case "$_sz_rc" in
      DR_FAILED+=("rawdata_size_na:unmeasured") ;;
 esac
 
-# ──────────────────────────────────────────────────────────────────────────────
-# [2] KRX gap-fill (FALLBACK — Naver 미처리 gap만 보충)
-#     KRX API는 T+1 lag 있으므로 Naver 이후 남은 gap만 채움.
-# ──────────────────────────────────────────────────────────────────────────────
-echo "[2/7] KRX gap-fill (fallback)..."
-cd "$INFRA"
-run_r '
-  source("config.R")
-  source("data/trading_calendar.R")   # [Track R fix 2026-06-12] interior gap 감지 + 거래일 가드 활성화
-  source("data/krx_data_collector.R")
-  source("data/krx_build_rawdata.R")
-  gap <- krx_detect_gap()
-  # [v8.0 fix 2026-05-29 B4] interior gap 감지 추가 — Naver T+0가 최신 스냅샷만 추가해
-  # 중간 영업일(예: 5/28) 누락 시 trailing gap은 작아도 hole 발생. interior 있으면 KRX backfill.
-  interior <- tryCatch(krx_detect_interior_gaps(60L), error = function(e) character(0))
-  cat(sprintf("Post-Naver gap: %s → %s (%d days) | interior gaps: %d\n",
-              gap$last_rawdata_date, gap$end, gap$n_calendar_days, length(interior)))
-  if (gap$n_calendar_days > 1 || length(interior) > 0) {
-    # trailing 2일+ OR 중간 누락 → KRX fallback (trailing 1일은 정상 — 당일 미발행이라 미트리거)
-    cat(sprintf("KRX fallback 실행 (trailing=%d days, interior=%d)\n",
-                gap$n_calendar_days, length(interior)))
-    tryCatch(krx_run_pipeline(),
-             error = function(e) cat(sprintf("KRX skipped: %s\n", e$message)))
-  } else {
-    cat("Naver로 gap 충분 해소 (trailing + interior clean) — KRX skip\n")
-  }
-'
+# ── [2/7] KRX gap-fill — 퇴역 (2026-10-17 · 결정 RAWDATA-QW-ONLY-20261017) ──────────────────────────────────────────
+#   보충 원천을 두지 않는다 — 퀀티 수급 미완료는 [1pre-qw] 가 DR_FAILED 로 싣고, 다음 밤 같은 구간(기준일 다음 날부터 전 구간)을 다시 받는다.
+#   모듈 data/krx_build_rawdata.R 은 퇴역 표기만(KRX 지수 · 파생 수집 data/krx_data_collector.R 은 [4/7] Arrow · VKOSPI 가 계속 쓴다).
 
 # ──────────────────────────────────────────────────────────────────────────────
 # [3] Universe 갱신 + RAWDATA 메타 매핑

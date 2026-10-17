@@ -3420,7 +3420,31 @@
       "registered_at": "2026-10-17T14:25:38+0900",
       "recorded_by": "Q(세션 7a34e194)",
       "evidence": "도훈 채팅 2026-10-17 — (점검 보고 04_Research/01_reports/negative_cagr_omission_audit_20261017 §3 결정 필요 열에 대해) '1. 대표칸만 / 2. 논문당 계산 시간 상한 없음 / 3. 포트폴리오 구성이 가능하다면 구현하여 성과 측정 / … / 6. 4번 해결 후 재측정 승인' · 앞서 '왜 MLP만 썼지? 논문 충실 구현이면 모든 방법론을 다 써야지'"
+    },
+    {
+      "id": "RAWDATA-QW-ONLY-20261017",
+      "title": "RAWDATA 주가 원천 = 퀀티 단일 — 네이버 T+0 · KRX 갭필 · 아침 보충 · self-heal 네이버 재수집 퇴역 · Update_File 4종 매일 퀀티 수급",
+      "status": "resolved",
+      "opened_at": "2026-10-17T15:06:01+0900",
+      "options": [
+        "A 퀀티 단일(보충 원천 없음 · 미완료 = DR_FAILED 경보 · 다음 밤 재수급)",
+        "B 퀀티 주 + 네이버 · KRX 보충 유지(구판)"
+      ],
+      "recommendation": "도훈 지시 그대로 A. 벤치(KOSPI200 지수 · 거래일 캘린더 권위)는 주가가 아니라 이번 범위 밖(퀀티 정본 + 네이버 캘린더 이어붙이기 그대로) — 같은 방식 전환은 별도 결정",
+      "default_until_decided": "B(구판)",
+      "blocks": [
+        "item:daily_refresh_rawdata_source"
+      ],
+      "owner": "dohoon",
+      "source": "10-17 퀀티 OHLCVS 적재 검증 — 09-14 이후 네이버 종가가 퀀티 공식 종가와 종목·일 81% 에서 어긋남(일간 수익률 0.5%p 초과 차 52~73%)",
+      "decision": "A — daily_refresh.sh [1/7] Naver T+0 · [2/7] KRX gap-fill 퇴역(호출 0) · morning_briefing.sh [1/5] KRX · [1.5/5] Naver 보충 퇴역(래퍼 2개 삭제) · self_heal.R 네이버 재수집 → 경보 줄. [1pre-qw] qw_updatefile_unattended.sh = OHLCVS → Universe_Support → Investor_Act → Consensus 매일 (-SkipLogin · 목표일 도달 파일은 드라이버가 건너뜀 · 관문 = 벤치 수급 rc=3 만 · 절대 상한 26400초 = 4종 실측 합 220분의 약 2배 · 정체 감지 그대로) · 미완료 · 건너뜀 = DR_FAILED(qw_updatefile_incomplete · qw_updatefile_skipped). 퀀티 적재 보호 장치(적재 관문 · 이음매 검사 · 채움률 · BM_Ret 동기화)는 유지. 모듈 naver_data_collector.R · krx_build_rawdata.R 은 퇴역 표기만(복원 태그 pre-rawdata-qw-only-20261017) · krx_data_collector.R(KRX 지수 · 파생)은 계속 사용.",
+      "decided_by": "dohoon",
+      "decided_at": "2026-10-17T15:06:02+0900",
+      "note": "검사: test_qw_updatefile_unattended.R 12/0 · test_daily_refresh_qw_block.sh 11/0(신규 · 실제 블록 실행 · 뮤테이션) · test_refresh_barrier.sh 80/0 · test_rawdata_bm_ret_sync.R 48/0 · test_rawdata_size_guard.R 36/0 · test_daily_refresh_r_blocks.R 31/0",
+      "registered_at": "2026-10-17T15:06:01+0900",
+      "recorded_by": "Q(세션 7a34e194)",
+      "evidence": "도훈 채팅 2026-10-17 — '이제 퀀티 실행 문제없이 되니까 주가관련 복잡한 규칙들 모두 없애고 Universe update에 있는 파일들 매일 데이터 리프레시할 때 퀀티로 최신화시켜는걸로 Rawdata 관리하자' · 'Consensus_update, Investor_Act_update 이것도 매일해.'"
     }
   ],
-  "last_updated": "2026-10-17T14:25:40+0900"
+  "last_updated": "2026-10-17T15:06:02+0900"
 }

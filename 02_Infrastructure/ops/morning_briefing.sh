@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 #==============================================================================
 # Morning Regime Briefing — 매일 아침 7시
-# 1) 데이터 최신화 (KRX + Naver T+0 + Arrow + KTRI + FRED + Regime Signal)
+# 1) 데이터 최신화 (Arrow + KTRI + FRED + Regime Signal — RAWDATA 주가는 밤 퀀티 Update_File 단일 · 10-17 아침 KRX · Naver 보충 퇴역)
 # 2) 텔레그램 레짐 브리핑 발송
 #
 # crontab: 10 7 * * 1-5 bash "/c/Users/99922/OneDrive/Quant_Module_Moltbot/02_Infrastructure/morning_briefing.sh"
@@ -15,8 +15,9 @@ source "$(dirname "${BASH_SOURCE[0]:-$0}")/resolve_project.sh"
 INFRA="$BASE/02_Infrastructure"
 
 # ── RAWDATA writer 잠금 (도훈 결정 OPS-RUNNER-REFRESH-BARRIER · 2026-09-24) ─────────────────────────────
-#   [1/5] krx_update · [1.5/5] naver_supplement · [4.5/5] self_heal 은 잠금 없이 RAWDATA 를 쓴다(naver 쓰기는 삭제 후
-#   rename — Windows 비원자). 강화 러너의 리프레시 배리어(refresh_barrier.sh)가 이 창도 held 로 보도록 writer 잠금을 쥔다.
+#   [4.5/5] self_heal 창에 writer 잠금을 쥔다(강화 러너의 리프레시 배리어 refresh_barrier.sh 가 held 로 본다).
+#   (10-17 · 결정 RAWDATA-QW-ONLY-20261017) 구 [1/5] krx_update · [1.5/5] naver_supplement 는 퇴역했고 self_heal 의 네이버 재수집도 뺐다 —
+#   지금 아침 체인에 RAWDATA 를 쓰는 단계는 없다. self_heal 잠금은 MSM 재적합 창을 배리어에 보이게 남겨 둔 것이다(무해 · 짧다).
 #   ★daily_refresh 잠금(/tmp/qm_daily_refresh.lock)과는 **다른** 잠금이다 — 같은 잠금을 쥐면 그 사이 뜬 daily_refresh 가
 #     "이미 실행 중" 으로 종료해 버린다(daily_refresh.sh 무변경이 결정 조건).
 #   판정기 부재면 no-op(브리핑은 그대로 돈다 — 막는 쪽인 배리어가 fail-closed 다). 보유자 = 이 셸($$) · EXIT 에서 해제.
@@ -48,19 +49,10 @@ else
   echo "[0/5] ⚠ ensure_data_current.sh 부재 — 최신성 미보장 상태로 진행"
 fi
 
-# 1. KRX 데이터 최신화
-echo "[1/5] KRX Data Update..."
-cd "$BASE"
-rb_writer_acquire "krx_update+naver_supplement" || echo "[1/5] ⚠ RAWDATA writer 잠금 획득 실패 — 갱신은 계속(배리어 미표시)"
-Rscript --no-save -e 'source("02_Infrastructure/ops/morning_steps/krx_update.R")'
-
-# 1.5 Naver T+0 보완 (KRX T+1 발행지연 gap을 Naver로 채움)
-# ★외부화 2026-06-19(도훈): 기존 인라인 멀티라인 -e가 첫 줄 invisible(NULL)만 실행되는 no-op 트랩이라
-#   naver_run_pipeline()이 한 번도 안 돌았음 → 단일줄 source로 수리.
-echo "[1.5/5] Naver T+0 Supplement..."
-cd "$BASE"
-Rscript --no-save -e 'source("02_Infrastructure/ops/morning_steps/naver_supplement.R")'
-rb_writer_release
+# 1 · 1.5 — 퇴역 (2026-10-17 도훈 '주가관련 복잡한 규칙들 모두 없애고 … 퀀티로 최신화' · 결정 RAWDATA-QW-ONLY-20261017)
+#   구 [1/5] KRX Data Update(krx_run_pipeline) · [1.5/5] Naver T+0 Supplement(naver_run_pipeline). RAWDATA 주가 원천 = 퀀티 Update_File 단일
+#   (밤 daily_refresh.sh [1pre-qw] → [0b']). 아침 보충 원천은 없다 — 밤 수급이 미완료면 위 [0/5] ensure_data_current 가 stale 을 보고한다.
+echo "[1/5] (퇴역 10-17) RAWDATA 주가 = 퀀티 Update_File 단일 — 아침 KRX · Naver 보충 없음"
 
 # 2. Arrow + KTRI 연장 (외부화 2026-06-19 — 동일 no-op 트랩 수리)
 echo "[2/5] Arrow + KTRI..."
@@ -77,7 +69,7 @@ Rscript --no-save -e 'source("02_Infrastructure/ops/morning_steps/fred_regime.R"
 
 # 4. 레짐 브리핑 발송 — 제거됨 (2026-05-13 도훈 mandate, 2-fire 해소)
 # mrs_daily_briefing.sh (07:30) 가 tg_regime_briefing() 단일 송신 담당.
-# 본 morning_briefing.sh (07:10) 는 데이터 갱신만 (KRX/Naver/Arrow/KTRI/FRED/Regime).
+# 본 morning_briefing.sh (07:10) 는 데이터 갱신만 (Arrow/KTRI/FRED/Regime — RAWDATA 주가는 밤 퀀티 단일 · 10-17).
 # 07:10 갱신 → 07:30 송신 20분 buffer 로 차트 최신화 보장.
 echo "[4/5] Regime briefing — skipped (mrs_daily_briefing.sh 07:30 SOT)"
 

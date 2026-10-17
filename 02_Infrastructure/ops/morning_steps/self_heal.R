@@ -12,17 +12,12 @@ is_stale <- function(path, col, max_lag) {
   as.integer(today - last_d) > max_lag
 }
 
-# RAWDATA(입력) freshness 선검증 — stale면 Naver refresh 먼저 (downstream MSM refit이 stale 입력 방지).
+# RAWDATA(입력) freshness 판독 — (2026-10-17 · 결정 RAWDATA-QW-ONLY-20261017) 네이버 재수집 퇴역. RAWDATA 주가 원천 = 밤 퀀티 Update_File 단일
+#   (daily_refresh.sh [1pre-qw] → [0b']) — 여기서 다른 원천으로 덧붙이지 않는다. stale 이면 경보 줄만 남기고(정본 감사 = [0/5] ensure_data_current ·
+#   [5/5] freshness_audit) refit 은 그대로 진행한다(입력이 stale 이라는 사실이 로그에 남는다).
 rawdata_stale <- is_stale(RAWDATA_CACHE, "Date", 1L)
 if (rawdata_stale) {
-  cat("  RAWDATA STALE -> Naver refresh 선행 (downstream refit이 stale 입력으로 도는 것 방지)\n")
-  tryCatch({
-    source("02_Infrastructure/data/naver_data_collector.R")
-    naver_run_pipeline()
-    cat(sprintf("  RAWDATA Naver refresh PASS (max=%s)\n",
-                max(as.Date(as.data.table(read_parquet(RAWDATA_CACHE))$Date), na.rm = TRUE)))
-  }, error = function(e)
-    cat(sprintf("  [ALERT] RAWDATA refresh FAIL: %s — refit이 stale 입력으로 진행됨\n", e$message)))
+  cat("  [ALERT] RAWDATA STALE — 보충 수집 없음(퀀티 단일 · 10-17). 밤 리프레시 [1pre-qw] 퀀티 수급 결과를 확인 · refit 은 stale 입력으로 진행\n")
 } else {
   cat("  RAWDATA FRESH (refit 입력 정상)\n")
 }

@@ -284,9 +284,11 @@ i3b <- grep("^# ── \\[3b\\] RAWDATA BM_Ret 동기화", DRS)
 iend <- if (length(i3b)) i3b[1] - 1L + grep("^esac$", DRS[i3b[1]:length(DRS)])[1] else NA
 pos <- function(pat) grep(pat, DRS, fixed = TRUE)[1]
 chk("F1_block_present_once", length(i3b) == 1L && is.finite(iend))
+## (10-17 · RAWDATA-QW-ONLY-20261017) RAWDATA 쓰기 단계 = [0b] · [0b'](퀀티 Update_File 적재) · [3/7](매핑) — 구 [1/7] Naver · [2/7] KRX 퇴역
 chk("F2_block_after_rawdata_writers_before_6a",
-    length(i3b) == 1L && all(c(pos('echo "[1/7]'), pos('echo "[2/7]'), pos('echo "[3/7]')) < i3b) &&
-      i3b < pos('echo "[6a/7]'))
+    length(i3b) == 1L && all(is.finite(c(pos('echo "[0b/7]'), pos("echo \"[0b'/7]"), pos('echo "[3/7]')))) &&
+      all(c(pos('echo "[0b/7]'), pos("echo \"[0b'/7]"), pos('echo "[3/7]')) < i3b) && i3b < pos('echo "[6a/7]') &&
+      is.na(pos('echo "[1/7]')) && is.na(pos('echo "[2/7]')))
 blk <- if (length(i3b) == 1L) DRS[i3b:iend] else character(0)
 chk("F3_block_calls_single_writer_apply", any(grepl("data/rawdata_bm_ret_sync.R\" --apply", blk, fixed = TRUE)))
 BASH <- Sys.which("bash")

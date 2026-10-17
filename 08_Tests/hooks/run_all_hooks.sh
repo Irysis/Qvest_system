@@ -1846,6 +1846,10 @@ SUITES=(
   "08_Tests/ops/test_rf_paper_text.py"
   "08_Tests/contracts/test_bt_contract_exposure.R"
   "08_Tests/ops/test_rf_verify_variants.R"
+  #   RAWDATA 퀀티 단일(RAWDATA-QW-ONLY-20261017) — 무인 수급 4종 매일 · 관문 rc=3 · 완료 수 보고(스텁) · 밤 [1pre-qw] 블록 실행(DR_FAILED · 재적재 ·
+  #   뮤테이션) · 밤 · 아침 체인 주가 보충 호출 0(정적 · 양성 대조)
+  "08_Tests/data/test_qw_updatefile_unattended.R"
+  "08_Tests/data/test_daily_refresh_qw_block.sh"
   # <<< 10-17
 )
 
