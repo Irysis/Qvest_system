@@ -72,7 +72,7 @@ long_title <- "Regime-Dependent Predictive Structure Between Equity Factors: Evi
 r4 <- prep_send(program = "충실구현", target = long_title, status = list(stage = "충실구현 완료", position = "검사", previous = "없음"),
                 card = card, next_step = "큐 다음 논문으로 넘어간다", artifact = tdir, push = FALSE, crisis = "chart")
 m4 <- r4$msg %||% ""; png4 <- file.path(tdir, "crisis_drawdown.png")
-chk("차트 모드 — 위기별 낙폭 글줄 섹션이 없다", !grepl("위기별 낙폭 (시장 대비)", m4, fixed = TRUE))
+chk("차트 모드 — 위기별 낙폭 글줄 섹션이 없다", !grepl("위기별 낙폭 — 시장 → 전략", m4, fixed = TRUE))
 chk("차트 모드 — 위기 차트를 산출물 폴더에 그렸다(빈 그림 아님)", file.exists(png4) && file.info(png4)$size > 20000, if (file.exists(png4)) file.info(png4)$size else "없음")
 chk("차트 모드 — 대조 1줄은 '위기 방어 귀속'으로 남는다", grepl("위기 방어 귀속", m4, fixed = TRUE) && grepl("짝 대조", m4, fixed = TRUE))
 chk("긴 논문명이 제목 · 대상 줄에 잘리지 않고 들어간다", grepl(long_title, m4, fixed = TRUE) && !grepl("Granger Causa…", m4, fixed = TRUE))
@@ -81,9 +81,22 @@ prep_crisis_chart <- function(...) stop("주입 실패")                        
 r5 <- prep_send(program = "충실구현", target = "검사용 전략", status = list(stage = "충실구현 완료", position = "검사", previous = "없음"),
                 card = card, artifact = tdir, push = FALSE, crisis = "chart")
 prep_crisis_chart <- .real_chart
-chk("차트 실패 → 위기별 낙폭 글줄로 되돌아간다", grepl("위기별 낙폭 (시장 대비)", r5$msg %||% "", fixed = TRUE))
+chk("차트 실패 → 위기별 낙폭 글줄로 되돌아간다", grepl("위기별 낙폭 — 시장 → 전략", r5$msg %||% "", fixed = TRUE))
 r6 <- prep_send(program = "방어 엔진", target = "검사용 전략", status = list(stage = "P2", position = "측정", previous = "없음"), card = card, artifact = tdir, push = FALSE)
-chk("기본값(글줄) 호출자는 그대로 — 위기 표 섹션 유지", grepl("위기별 낙폭 (시장 대비)", r6$msg %||% "", fixed = TRUE))
+chk("기본값(글줄) 호출자는 그대로 — 위기 표 섹션 유지", grepl("위기별 낙폭 — 시장 → 전략", r6$msg %||% "", fixed = TRUE))
+
+cat("\n=== I. 하락노출 표기 — 이름은 머리 1번 · 줄에는 값만(도훈 10-17 '포착을 하락노출로 · 같은 텍스트 반복 별로') ===\n")
+Dn <- prep_card_digest(card, "overall")
+chk("I1 섹션 머리 = '위기별 낙폭 — 시장 → 전략 · 하락노출' · 글줄 보고에 그대로", grepl("하락노출", Dn$lines_heading, fixed = TRUE) &&
+      grepl("위기별 낙폭 — 시장 → 전략 · 하락노출", r6$msg %||% "", fixed = TRUE), Dn$lines_heading)
+chk("I2 줄마다 반복되던 이름(포착 · 시장 · 전략) 0 — 값만", length(Dn$lines) > 0L && !any(grepl("포착|시장 |전략 ", Dn$lines)), paste(head(Dn$lines, 2), collapse = " | "))
+chk("I3 판정 헤드라인 = '하락노출 중앙 …(최악 …)'", grepl("하락노출 중앙", Dn$headline, fixed = TRUE) && !grepl("하락 포착률", Dn$headline, fixed = TRUE), Dn$headline)
+cc <- card; pk <- as.data.table(card$crises)$peak_date
+cc$controls <- list(size_exposure_matched = list(per_crisis = data.frame(peak_date = as.character(pk), control_dd_capture = rep(0.62, length(pk)))))
+Dc <- prep_card_digest(cc, "overall")
+chk("I4 짝 대조가 있으면 값만 괄호로 · 머리에 '(괄호 = 크기·노출 짝 대조)' 1번 ★양방향(없으면 괄호 · 머리 꼬리 없음)",
+    all(grepl(" (0.62)", Dc$lines, fixed = TRUE)) && grepl("(괄호 = 크기·노출 짝 대조)", Dc$lines_heading, fixed = TRUE) &&
+      !any(grepl("(0.62)", Dn$lines, fixed = TRUE)) && !grepl("괄호", Dn$lines_heading, fixed = TRUE), paste(head(Dc$lines, 1)))
 
 cat("\n=== F. 핵심 수치 = 산출물 권위 기록(essence)이 있으면 그 값 — 카드 월간 값과 등급 값 불일치(10-17 1801.01777) ===\n")
 fdir <- gsub("\\\\", "/", file.path(tempdir(), "prep_auth_test")); unlink(fdir, recursive = TRUE); dir.create(fdir)

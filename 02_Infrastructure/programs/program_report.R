@@ -6,7 +6,7 @@
 #   이 발송기는 그 반대로 짠다(규칙 정본 = .claude/skills/qvest-telegram/SKILL.md §v10.01).
 # 규칙(요약):
 #   ① 리서치 1단위 = 메시지 1통. 첫 줄 = 이번 결과의 판정어(강함/보통/약함/판정 불가 · 등급).
-#   ② 지표 이름은 하나: 하락 포착률(위기) · 상승 포착률(강세) · 위기 방어 판정 · CAGR · 최대낙폭 · Calmar · CDaR · PORT_t.
+#   ② 지표 이름은 하나: 하락노출(위기 — 구 '하락 포착률' · 도훈 10-17 개명) · 상승 포착률(강세) · 위기 방어 판정 · CAGR · 최대낙폭 · Calmar · CDaR · PORT_t.
 #      낙폭은 음수 %(−41.2%), 수익률은 부호 있는 %, 비율은 소수 둘째 자리.
 #   ③ 숫자를 자르지 않는다 — 넘칠 것 같으면 행 단위로 덜어내고 "외 N건"과 산출물 경로를 남긴다.
 #   ④ 내부 코드(셀 코드 · entry id · 함수명 · 절대경로)를 본문에 쓰지 않는다. 경로는 마지막 '산출물:' 한 줄만.
@@ -39,7 +39,7 @@ PREP_CONTROL_STATUS_WORD <- c(not_applicable_long_short = "롱숏 전략이라 �
                               no_holdings = "보유 기록 없음", no_windows = "보유창에 수익일 없음",
                               no_basket = "크기 바스켓을 못 만듦")
 
-# 위기 줄에 붙일 크기+노출 짝 대조의 하락 포착률(없으면 빈 문자열)
+# 위기 줄에 붙일 크기+노출 짝 대조의 하락노출 — 값만 괄호로(이름은 섹션 머리 1번 · 도훈 10-17) · 없으면 빈 문자열
 .prep_ctrl_capture <- function(ctrl, peaks) {
   out <- rep("", length(peaks))
   pc <- if (is.list(ctrl) && is.list(ctrl[["size_exposure_matched"]])) ctrl[["size_exposure_matched"]][["per_crisis"]] else NULL
@@ -47,7 +47,7 @@ PREP_CONTROL_STATUS_WORD <- c(not_applicable_long_short = "롱숏 전략이라 �
   pc <- as.data.table(pc)
   j <- match(as.Date(peaks), as.Date(pc$peak_date))
   ok <- !is.na(j)
-  if (any(ok)) out[ok] <- paste0(" · 크기·노출 짝 ", vapply(pc$control_dd_capture[j[ok]], prep_fmt_ratio, character(1)))
+  if (any(ok)) out[ok] <- paste0(" (", vapply(pc$control_dd_capture[j[ok]], prep_fmt_ratio, character(1)), ")")
   out
 }
 
@@ -88,23 +88,26 @@ prep_card_digest <- function(card, window = c("overall", "visible", "test"), max
   window <- match.arg(window)
   V <- card[[window]]
   cr <- card$crises
-  head <- sprintf("위기 %d번 · 하락 포착률 중앙 %s(최악 %s) · 강세 상승 포착률 중앙 %s → 위기 방어 %s",
+  head <- sprintf("위기 %d번 · 하락노출 중앙 %s(최악 %s) · 강세 상승 포착률 중앙 %s → 위기 방어 %s",
                   .prep_or(V$n_crisis, 0L), prep_fmt_ratio(V$crisis_dd_capture_median),
                   prep_fmt_ratio(V$crisis_dd_capture_worst), prep_fmt_ratio(V$bull_up_capture_median),
                   prep_verdict_word(V$verdict))
   ## 위기 1개 = 1줄(글머리표). 공용 표 렌더러는 모바일 가독성 때문에 2열 상한이라 5열 표를 못 쓴다.
-  lines <- character(0); omitted <- 0L
+  ##   줄에는 값만 — 열 이름(시장 → 전략 · 하락노출 · 괄호 = 짝 대조)은 섹션 머리에 1번(도훈 10-17 "같은 텍스트가 계속 들어가면 별로")
+  lines <- character(0); omitted <- 0L; has_ctrl <- FALSE
   if (!is.null(cr) && nrow(cr)) {
     cr <- as.data.table(cr)
     w_sel <- window
     if (w_sel != "overall") cr <- cr[cr$window == w_sel]
     lab_w <- c(visible = "보는 창", test = "시험 창", straddle = "걸침")
-    if (nrow(cr)) lines <- sprintf("%s~%s(%s) 시장 %s → 전략 %s · 포착 %s%s%s",
+    ctl <- if (nrow(cr)) .prep_ctrl_capture(card$controls, cr$peak_date) else character(0)
+    has_ctrl <- any(nzchar(ctl))
+    if (nrow(cr)) lines <- sprintf("%s~%s(%s) %s → %s · %s%s%s",
       format(as.Date(cr$peak_date), "%y.%m"), format(as.Date(cr$trough_date), "%y.%m"), unname(lab_w[cr$window]),
       vapply(-cr$bm_dd, prep_fmt_pct, character(1), digits = 0L),
       vapply(-cr$st_dd, prep_fmt_pct, character(1), digits = 0L),
       vapply(cr$dd_capture, prep_fmt_ratio, character(1)),
-      .prep_ctrl_capture(card$controls, cr$peak_date),
+      ctl,
       ifelse(cr$ongoing, " · 진행 중", ""))
     if (length(lines) > max_rows) { omitted <- length(lines) - max_rows; lines <- utils::tail(lines, max_rows) }
   }
@@ -117,7 +120,8 @@ prep_card_digest <- function(card, window = c("overall", "visible", "test"), max
     "베타 하락장 / 상승장" = sprintf("%s / %s", prep_fmt_ratio(S$beta_down), prep_fmt_ratio(S$beta_up)),
     "롤링 3년 통과율" = if (is.finite(.prep_or(card$rolling$pass_life, NA_real_))) prep_fmt_pct(card$rolling$pass_life, 0L, signed = FALSE) else "—")
   ctrl_line <- .prep_controls_line(card$controls, window)
-  list(headline = head, lines = lines, omitted = omitted, kv = kv, controls = ctrl_line,
+  lines_heading <- paste0("위기별 낙폭 — 시장 → 전략 · 하락노출", if (has_ctrl) "(괄호 = 크기·노출 짝 대조)" else "")
+  list(headline = head, lines = lines, lines_heading = lines_heading, omitted = omitted, kv = kv, controls = ctrl_line,
        verdict = .prep_or(V$verdict, "insufficient"))
 }
 
@@ -141,7 +145,7 @@ prep_card_digest <- function(card, window = c("overall", "visible", "test"), max
 #' @param push TRUE = 푸시(판정 변화 · 실패 · 종료), FALSE = 무음
 #' @param extra 추가 섹션 목록(선택)
 ## 위기별 낙폭 차트(2026-10-16 도훈 "위기별 낙폭 (시장 대비)은 시각화 자료로 대체") — 행동 카드 위기마다 시장(KOSPI200) 낙폭 vs 전략 낙폭 막대 ·
-##   하락 포착률 라벨 · 사건명(06_Registry/crisis_event_names.json — 도훈 10-17 '보는창/시험창을 해당 시점 하락 이벤트 명칭으로') · 보는 창 / 시험 창은
+##   하락노출 값(행마다 숫자만 · 열 머리 1번) · 사건명(06_Registry/crisis_event_names.json — 도훈 10-17 '보는창/시험창을 해당 시점 하락 이벤트 명칭으로') · 보는 창 / 시험 창은
 ##   행마다 적지 않고 경계선 1줄 · 진행 중 표시. 수치 = 행동 카드(계약 산출 · AX-008) 그대로 — 손계산 없음. 글꼴 = 현대하모니 M(§0.7).
 ##   반환 = 그린 파일 경로(그릴 위기가 없으면 NULL).
 ## 사건명 — 위기 고점 월에 가장 가까운 등록 항목(허용 ±tolerance_months) · 없으면 "" (이름을 지어내지 않는다 · 등록부 부재 = 전부 "")
@@ -178,7 +182,7 @@ prep_crisis_chart <- function(card, path, window = "overall", root = NULL) {
   cr[, key := paste0(format(as.Date(peak_date), "%y.%m"), "~", format(as.Date(trough_date), "%y.%m"),
                      ifelse(.prep_true_vec(ongoing), " · 진행 중", ""), ifelse(nzchar(nm), paste0("\n", nm), ""))]
   ## 세로 배치(10-17) — 위기 = 행(위 = 오래된 위기) · 가로 막대. 위기 15개를 가로로 늘어놓으면 3262×870 이 돼 휴대폰 텔레그램에서 글자가 안 보였다.
-  ##   폭 고정(7.2in · 150dpi ≈ 1080px) · 높이 = 위기 수에 비례. 포착률은 0 오른쪽 여백에 행마다 1개.
+  ##   폭 고정(7.2in · 150dpi ≈ 1080px) · 높이 = 위기 수에 비례. 하락노출은 0 오른쪽 여백에 행마다 숫자 1개 · 열 머리 1번.
   cr[, key := factor(key, levels = rev(unique(key)))]
   ## 보는 창 / 시험 창 경계 — 시간순 첫 '보는 창 아닌' 위기 위에 선 1줄(전체 창이고 둘 다 있을 때만)
   k_first <- if (identical(w_sel, "overall")) which(as.character(cr$window) != "visible")[1] else NA_integer_
@@ -186,20 +190,22 @@ prep_crisis_chart <- function(card, path, window = "overall", root = NULL) {
   L <- data.table::rbindlist(list(cr[, .(key, who = "시장(KOSPI200)", v = -abs(as.numeric(bm_dd)))], cr[, .(key, who = "전략", v = -abs(as.numeric(st_dd)))]))
   L[, who := factor(who, levels = c("전략", "시장(KOSPI200)"))]                      # 뒤집힌 축에서 행 안 위 = 시장 · 아래 = 전략
   m <- max(abs(L$v), na.rm = TRUE); if (!is.finite(m) || m <= 0) m <- 0.1
-  capl <- cr[, .(key, lab = paste0("포착 ", vapply(as.numeric(dd_capture), prep_fmt_ratio, character(1))))]
+  capl <- cr[, .(key, lab = vapply(as.numeric(dd_capture), prep_fmt_ratio, character(1)))]
   pct <- function(x) vapply(x, function(z) prep_fmt_pct(z, 0L), character(1))
   g <- ggplot2::ggplot(L, ggplot2::aes(key, v, fill = who)) +
     ggplot2::geom_col(position = ggplot2::position_dodge(0.8), width = 0.76) +
     ggplot2::geom_text(ggplot2::aes(y = v - 0.015 * m, label = pct(v)), position = ggplot2::position_dodge(0.8), hjust = 1, size = 3.3, family = fam) +
     ggplot2::geom_text(data = capl, ggplot2::aes(key, 0.04 * m, label = lab), inherit.aes = FALSE, hjust = 0, size = 3.5, family = fam, colour = "#333333") +
+    ggplot2::annotate("text", x = nrow(cr) + 0.85, y = 0.04 * m, label = "하락노출", hjust = 0, size = 3.5, family = fam, colour = "#333333", fontface = "bold") +
     ggplot2::geom_hline(yintercept = 0, colour = "#444444", linewidth = 0.4) +
     (if (is.finite(div_x)) ggplot2::geom_vline(xintercept = div_x, linetype = "dashed", colour = "#888888", linewidth = 0.45) else NULL) +
     ggplot2::coord_flip(clip = "off") +
+    ggplot2::scale_x_discrete(expand = ggplot2::expansion(add = c(0.6, 1.2))) +          # 맨 위 = 열 머리 '하락노출' 자리
     ggplot2::scale_fill_manual(values = c("시장(KOSPI200)" = "#9e9e9e", "전략" = "#1f77b4"), breaks = c("시장(KOSPI200)", "전략")) +
     ggplot2::scale_y_continuous(breaks = function(l) { b <- pretty(l); b[b <= 0] }, labels = function(x) pct(x),
-                                limits = c(-1.3 * m, 0.45 * m), expand = ggplot2::expansion(mult = 0)) +   # 0 오른쪽 = 포착 라벨 자리(눈금 없음)
+                                limits = c(-1.3 * m, 0.45 * m), expand = ggplot2::expansion(mult = 0)) +   # 0 오른쪽 = 하락노출 값 자리(눈금 없음)
     ggplot2::labs(title = "위기별 낙폭 — 시장(KOSPI200) vs 전략",
-                  subtitle = paste0("막대 = 위기 구간 고점→저점 낙폭\n포착 = 전략 낙폭 ÷ 시장 낙폭(낮을수록 방어)",
+                  subtitle = paste0("막대 = 위기 구간 고점→저점 낙폭\n하락노출(오른쪽 숫자) = 전략 낙폭 ÷ 시장 낙폭 — 1.00 = 시장만큼 · 낮을수록 방어",
                                     if (is.finite(div_x)) sprintf("\n점선 위 = 보는 창 · 아래 = 시험 창(정보 경계 %s 이후)", .prep_or(card$cfg$tau_d, "τ_D")) else ""),
                   caption = "위기 = KOSPI200 Lunde-Timmermann 20/20 · 수치 = 행동 카드(계약 산출) · 사건명 = 06_Registry/crisis_event_names.json", x = NULL, y = NULL) +
     ggplot2::theme_minimal(base_family = fam, base_size = 12.5) +
@@ -260,7 +266,7 @@ prep_send <- function(program, target, status, card = NULL, verdict_line = NULL,
     if (length(ctl)) secs[[length(secs) + 1L]] <- if (length(ctl) >= 2L) list(heading = "위기 방어 귀속", type = "bullet", items = ctl) else
       list(heading = "위기 방어 귀속", type = "text", body = ctl[1])                    # 글머리표는 2줄 이상만 받는다(tg_agent_brief)
   } else if (!is.null(D) && length(D$lines))
-    secs[[length(secs) + 1L]] <- list(heading = "위기별 낙폭 (시장 대비)", type = "bullet",
+    secs[[length(secs) + 1L]] <- list(heading = .prep_or(D$lines_heading, "위기별 낙폭 — 시장 → 전략 · 하락노출"), type = "bullet",
                                       items = c(D$lines,
                                                 if (D$omitted > 0L) sprintf("앞선 위기 %d건은 산출물에 있다", D$omitted),
                                                 D$controls))
