@@ -28,7 +28,7 @@ qw_excel_refresh.ps1 — QuantiWise 정본 xlsx 를 **우리 인프라 안에서
 사용:
   powershell -NoProfile -ExecutionPolicy Bypass -File qw_excel_refresh.ps1
       -Source <원본 xlsx> -Out <결과 xlsx> [-TimeoutSec 1800] [-Visible] [-JsonOut <file>]
-종료코드: 0=갱신됨 / 2=갱신 없음(이미 최신·무변화) / 3=전제 부재(단말·애드인·자동로그인 미설정) / 1=실패
+종료코드: 0=갱신됨 / 2=갱신 없음(이미 최신·무변화) / 3=전제 부재(단말·애드인·자동로그인 미설정 · 애드인 응답 없음 — 2026-10-17 퀀티 단일) / 1=실패
 #>
 [CmdletBinding()]
 param(
@@ -270,6 +270,12 @@ try {
 
   if ($adv.Count -eq 0) {
     $wb.Close($false) | Out-Null; $wb = $null
+    # ★(2026-10-17 · BENCHMARK-QW-ONLY-20261017) 퀀티 단일 — 어느 시트도 **응답이 없었다**(대기 상한 내내 스탬프 · 행 불변 = 갱신이 일어나지 않았다)면
+    #   '원격에 새 값 없음'(주말 · 휴장 — 이때는 스탬프가 새로 찍힌다)이 아니라 세션 · 애드인 고장이다(실측 10-07 밤: 중복 로그인 '예' 뒤 Connect=True · 응답 없음).
+    #   구판은 rc=2 로 접어도 네이버가 거래일 캘린더를 이어 줬다 — 이제는 그날 밤이 조용히 멈추므로 rc=3(전제 부재 · 사람 로그인)으로 올린다.
+    if (@($res | Where-Object { $_.responded }).Count -eq 0) {
+      Finish 3 'no_response' ("애드인 응답 없음 — 시트 {0}개 전부 갱신 스탬프 불변(세션 · 애드인 고장 — 단말 로그인 확인)" -f $res.Count)
+    }
     Finish 2 'no_change' ("지평선 불변 — 시트 {0}개 전부 그대로다. 세션이 없거나(로그인 창·인증 만료) 원격에 새 값이 없다." -f $res.Count)
   }
   Say ("저장 중 — 전진 시트 {0}/{1}" -f $adv.Count, $res.Count)

@@ -109,6 +109,29 @@ if git show pre-rawdata-qw-only-20261017:"$PS1" 2>/dev/null | fn_of > "$T/gt_old
   [ "$g3" = "20261016" ] && ok "TM 뮤테이션(구판 RAWDATA 기준 함수) → 20261016 — T1 은 수리의 발화다(검출력)" || ng "TM 뮤테이션 판독" "$g3"
 else ng "TM 구판 함수 판독 실패(태그 pre-rawdata-qw-only-20261017)"; fi
 
+## ⑥ 벤치 드라이버 — 애드인 응답 없음 = rc=3 no_response(10-17 퀀티 단일 · 실측 10-07 밤). 응답은 왔는데 전진이 없으면 rc=2 no_change(주말 · 휴장)
+#   실제 qw_excel_refresh.ps1 의 무전진 분기를 잘라 Finish · 통합문서를 스텁으로 바꿔 실행한다(단말 · 엑셀 호출 0).
+DRV=02_Infrastructure/data/qw_excel_refresh.ps1
+blk_of(){ awk '/^  if \(\$adv\.Count -eq 0\) \{/{f=1} f{print} f&&/^  \}$/{exit}'; }
+blk_of < "$DRV" > "$T/nr_blk.ps1"
+run_nr(){ # $1 = 분기 파일 · $2 = 시트 응답 여부($true/$false)
+  { printf '\xef\xbb\xbf'
+    printf 'function Finish([int]$code, [string]$res, [string]$msg) { Write-Output ("{0}|{1}" -f $code, $res); exit 0 }\n'
+    printf '$wb = New-Object PSObject; $wb | Add-Member -MemberType ScriptMethod -Name Close -Value { param($x) }\n'
+    printf '$res = @(@{ name = "Benchmarks"; responded = %s; advanced = $false }); $adv = @($res | Where-Object { $_.advanced })\n' "$2"
+    cat "$1"; printf 'Write-Output "fallthrough"\n'; } > "$T/nr_run.ps1"
+  powershell.exe -NoProfile -ExecutionPolicy Bypass -File "$(cygpath -w "$T/nr_run.ps1")" 2>&1 | tr -d '\r' | tail -n 1; }
+if [ -s "$T/nr_blk.ps1" ]; then
+  n1=$(run_nr "$T/nr_blk.ps1" '$false')
+  [ "$n1" = "3|no_response" ] && ok "N1 애드인 응답 없음(스탬프 불변) → rc=3 no_response(그날 밤 축 A 실패 · Update_File 건너뜀)" || ng "N1 응답 없음" "$n1"
+  n2=$(run_nr "$T/nr_blk.ps1" '$true')
+  [ "$n2" = "2|no_change" ] && ok "N2 [양성] 응답은 왔는데 전진 없음 → rc=2 no_change(주말 · 휴장은 실패로 세지 않는다)" || ng "N2 무변화" "$n2"
+else ng "N0 무전진 분기 추출 실패($DRV)"; fi
+if git show pre-rawdata-qw-only-20261017:"$DRV" 2>/dev/null | blk_of > "$T/nr_old.ps1" && [ -s "$T/nr_old.ps1" ]; then
+  n3=$(run_nr "$T/nr_old.ps1" '$false')
+  [ "$n3" = "2|no_change" ] && ok "NM 뮤테이션(구판 분기) → 응답 없음도 rc=2 로 접힌다 — N1 은 수리의 발화다(검출력)" || ng "NM 뮤테이션 판독" "$n3"
+else ng "NM 구판 분기 판독 실패(태그 pre-rawdata-qw-only-20261017)"; fi
+
 echo ""
 echo "결과: PASS=$PASS FAIL=$FAIL"
 printf '{"test":"daily_refresh_qw_block","pass":%d,"fail":%d,"total":%d}\n' "$PASS" "$FAIL" "$((PASS+FAIL))"
