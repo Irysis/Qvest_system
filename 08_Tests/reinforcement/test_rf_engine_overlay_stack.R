@@ -354,6 +354,12 @@ if (HAVE_OLD) {
 
 writeLines("=== 8. 회귀 — 단층 스펙의 산출이 기준본과 비트 동일 ===")
 same_port <- function(a, b) !is.null(a) && !is.null(b) && identical(a$Date, b$Date) && identical(a$Ticker, b$Ticker) && identical(a$Weight, b$Weight)
+# ★전액 현금 신호일(2026-10-17 · test_rf_overlay_full_cash.R): 구판은 노출 0 달의 신호일을 지웠고(하네스가 직전 보유를 이월) 신판은
+#   표현 하한(Σw ≤ 1e-8)으로 남긴다. 그 날짜를 뺀 나머지가 비트 동일이면 회귀 없음 — 늘어난 날짜 수를 함께 적는다.
+cash_extra <- function(a, b) { x <- setdiff(unique(a$Date), unique(b$Date)); if (!length(x)) return(0L)
+                               s <- a[Date %in% x, .(s = sum(Weight)), by = Date]$s; if (all(s > 0 & s <= 1e-8)) length(x) else NA_integer_ }
+same_port_cash <- function(a, b) { if (is.null(a) || is.null(b)) return(FALSE); k <- cash_extra(a, b)
+                                   !is.na(k) && same_port(a[Date %in% unique(b$Date)], b) }
 if (HAVE_OLD) {
   REG <- list(
     list(nm = "no overlay(FACTORS)",      spec = base_spec(),                                              root = STUB),
@@ -371,6 +377,8 @@ if (HAVE_OLD) {
       if (!is.null(b$fac) && identical(a$fac$Date, b$fac$Date) && identical(a$fac$Ticker, b$fac$Ticker) && identical(a$fac$Score, b$fac$Score))
         ok(sprintf("8 %s — FACTORS %d행 비트 동일", g$nm, nrow(a$fac))) else ng(sprintf("8 %s FACTORS 상이", g$nm))
     } else if (same_port(a$port, b$port)) ok(sprintf("8 %s — PORTFOLIO %d행 비트 동일", g$nm, nrow(a$port))) else
+    if (same_port_cash(a$port, b$port)) ok(sprintf("8 %s — 구판 날짜 PORTFOLIO 비트 동일 + 현금 집행 %d신호일(구판이 지우던 노출 0 달)",
+                                                 g$nm, cash_extra(a$port, b$port))) else
       ng(sprintf("8 %s PORTFOLIO 상이", g$nm), sprintf("신 %d행 / 구 %d행", nrow(a$port %||% data.table()), nrow(b$port %||% data.table())))
   }
 } else ng("8 회귀", "기준본 없음")

@@ -1134,18 +1134,37 @@ if (!identical(.ov_kind, "none")) {
   } else {
     PORTFOLIO <- merge(PORTFOLIO, .EX, by = "Date")
   }
+  PORTFOLIO[, .w0 := Weight]
   PORTFOLIO[, Weight := Weight * oe]
   PORTFOLIO[, oe := NULL]
+  # ── ★전액 현금 신호일 (2026-10-17 · 침묵 실패 수리) ─────────────────────────────
+  #   그 달 노출이 보유 전 종목 0 이면(게이트 0 · 문턱 이상 낙폭/난기류) 아래 필터가 그 신호일의 행을 모두 지워 신호일 자체가
+  #   사라졌다. 집행 하네스(replication_harness.R::run_replication_simulation)의 신호일 집합 = unique(WEIGHTS$Date)라 직전
+  #   신호일의 보유창이 그 달까지 늘어나 '현금'이 '직전 보유 이월'로 측정됐다 — P0R01_E2_C1(ts_mom_gate) 완전현금 95/261개월이
+  #   전부 수익 ≠ 0(2008-07~11 포함). 처치가 가장 세게 걸리는 위기 달에서 처치가 빠졌다(ts_mom_gate · dd_recovery · turbulence ·
+  #   vol_x_turb · dd_brake · vol_x_dd 의 0 노출 달).
+  #   수리 = 그 신호일의 보유를 표현 하한(.CASH_EPS × 원 비중)으로 남긴다 — 하네스가 그 달을 리밸(전량 매도 비용 기장)하고
+  #   수익 ≈ 0 으로 잰다(노출 1e-9). 하한은 결정 수치가 아니라 표현 여유다(matched_controls.R .MC_TOL 과 같은 성격).
+  #   전액 현금 신호일이 없으면 비트 동일. 검사 = 08_Tests/reinforcement/test_rf_overlay_full_cash.R
+  .CASH_EPS <- 1e-9
+  .cash_d <- PORTFOLIO[, .(s = sum(Weight[is.finite(Weight)]), w0 = sum(.w0[is.finite(.w0) & .w0 > 0])), by = Date][s <= 0 & w0 > 0, Date]
+  if (length(.cash_d)) PORTFOLIO[Date %in% .cash_d & is.finite(.w0) & .w0 > 0, Weight := .w0 * .CASH_EPS]
+  .d_pre <- unique(PORTFOLIO[is.finite(.w0) & .w0 > 0, Date])
+  PORTFOLIO[, .w0 := NULL]
   PORTFOLIO <- PORTFOLIO[is.finite(Weight) & Weight > 0]
   if (!nrow(PORTFOLIO)) stop("[rf_cell_engine] overlay 적용 후 보유가 비었다: ", .ov_kind)
+  .d_lost <- setdiff(.d_pre, unique(PORTFOLIO$Date))
+  if (length(.d_lost))
+    stop(sprintf("[rf_cell_engine] overlay %s 적용 후 신호일 %d개가 사라졌다(첫 %s) — 하네스가 직전 보유를 이월한다 · 측정 무효",
+                 .ov_kind, length(.d_lost), format(min(.d_lost))))
   stopifnot(all(PORTFOLIO$Weight >= 0))
   stopifnot(max(PORTFOLIO[, .(s = sum(Weight)), by = Date]$s) <= 1 + 1e-8)   # Sigma w <= 1
   if (exists("FACTORS")) rm(FACTORS)
-  cat(sprintf("[rf_cell_engine] overlay %s | 축 %s | 평균노출 %.3f · 최소 %.3f · 완전현금 %d/%d개월%s",
+  cat(sprintf("[rf_cell_engine] overlay %s | 축 %s | 평균노출 %.3f · 최소 %.3f · 완전현금 %d/%d개월%s · 현금 집행(표현 하한) %d신호일",
               .ov_kind, if (.VEC) "종목별" else "스칼라",
               mean(.expo, na.rm = TRUE), min(.expo, na.rm = TRUE),
               sum(.expo <= 1e-12, na.rm = TRUE), .N,
-              if (.VEC) sprintf(" · 횡단면 sd 최대 %.3f", .x_var) else ""), fill = TRUE)
+              if (.VEC) sprintf(" · 횡단면 sd 최대 %.3f", .x_var) else "", length(.cash_d)), fill = TRUE)
 }
 
 # ── B6 배출 규칙 — 리밸 시점을 정한다 (하네스는 배출 날짜를 리밸로 읽고 사이를 드리프트) ──
