@@ -94,6 +94,10 @@ if not A:
          '산출물이 없다는 이유만으로 unverifiable 을 내지 마라 — unverifiable 은 원문을 못 읽었을 때만이다)')
 htmlline = ("- 원문 전문(이 주소로 읽어라): " + os.environ['HTMLU']) if os.environ['HTMLU'] else \
            "- ★arxiv id 를 못 뽑았다. 원문 전문을 못 읽으면 verdict 는 unverifiable 이다."
+# ★원문 축자본(10-17 · rf_paper_text.py) — 있으면 그것이 대조 정본(구현자가 읽은 같은 파일 · 판 일치 · WebFetch 는 요약기)
+_ptxt = os.path.join(W, '.clean_paper', 'paper.md')
+if os.path.isfile(_ptxt) and os.path.getsize(_ptxt) > 0:
+    htmlline += "\n- 원문 축자본(구현자가 읽은 같은 파일 — 레인이 받은 원문 그대로): " + _ptxt + "   ← ★이 파일을 Read 로 끝까지 읽고 대조하라"
 # ★재감사 — 앞 회차 지적 전문(검증기가 재구현 판 감사 직전에 WDIR/.prior_audit_findings.md 로 쓴다 = 재구현이 받은 피드백 그대로).
 #   실측(2026-10-14 · 1810.08384): 1차 감사의 신호 축이 §I 채택 문장을 근거에 싣고도 반대 결론을 냈고, 재구현은 그 지적을 따랐고,
 #   2차 감사가 그 수정을 다시 지적했다 — 두 회차가 같은 항목을 반대로 말했는데 아무 데도 안 남았고, 기각은 구현자 몫(소비 + suspect)이 됐다.
@@ -152,10 +156,10 @@ for ax in axes:
 - 자기신고: %s/FIDELITY.json   ← **이 진술을 믿지 마라. 대조 대상이다.**
 - 측정 산출물: %s
 %s
-## 원문 접근 (실측된 함정 — 2026-09-02)
-- `arxiv.org/abs/...` 는 **초록만** 준다. 초록만 읽고 판정하면 정의역을 틀린다.
-- `arxiv.org/pdf/...` 는 이 환경에서 못 읽는다.
-- **`arxiv.org/html/<id>v1` 이 유일한 전문 경로**다.
+## 원문 접근 (실측된 함정 — 2026-09-02 · 10-17 갱신)
+- 위 '원문 축자본' 파일이 있으면 **그것이 대조 정본**이다 — 구현자도 같은 파일을 읽었다(판 일치). Read 로 끝까지 읽어라.
+- WebFetch 는 페이지를 소형 모델이 요약해 돌려주는 도구다(인용 125자 상한) — 원문 대용이 아니다.
+- 축자본이 없을 때만: `arxiv.org/abs/...` 는 **초록만** 준다 · `arxiv.org/html/<id>v1`(없는 편도 있다) 또는 arxiv MCP download_paper → read_paper 를 끝까지.
 - 네 축의 근거를 원문에서 못 찾았으면 verdict 는 반드시 `unverifiable` 이다. **모르는 것을 faithful 로 적지 마라.**
 
 ## 판정 (네 축에 한정)

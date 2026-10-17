@@ -255,8 +255,14 @@ def cmd_prompt_section(a):
          '- 작업 디렉터리: `%s` (네 산출물만 있다)' % a.get('wdir', '')]
     for it in items:
         L.append('- `%s` — %s' % (it.get('path'), it.get('why')))
+    # ★원문 = 레인이 받은 축자본(10-17 · rf_paper_text.py) — WebFetch 는 페이지를 소형 모델이 요약해 돌려주는 도구(인용 125자 상한)라
+    #   원문 대용이 아니다(1차 기각 원인 1위 '전문 미열람' 32% — 04_Research/01_reports/first_pass_rejection_rootcause_20261017/).
+    ptxt = os.path.join(a.get('wdir', '') or '', '.clean_paper', 'paper.md')
+    src = ('논문 원문 = 작업 디렉터리의 `.clean_paper/paper.md`(레인이 받은 원문 그대로 · 감사자도 이 파일로 대조한다) — Read 로 끝까지 읽어라.'
+           if os.path.isfile(ptxt) else
+           '논문 원문은 arxiv MCP 로 끝까지 읽어라(download_paper → read_paper 를 next_start 가 null 이 될 때까지).')
     L += ['Glob(이름 열거)은 저장소 안에서 열려 있지만 내용은 위 목록 밖에서 열리지 않는다 — 막히면 경로를 바꾸지 말고 이 목록 안에서 찾아라.',
-          '논문 원문은 WebFetch 로 읽어라. 셸·Agent·Skill 도구는 이 실행에 없다.']
+          src + ' WebFetch 는 요약기라 원문 대용이 아니다. 셸·Agent·Skill 도구는 이 실행에 없다.']
     wf = lane.get('web_forbidden') or []
     if wf:
         L.append('★이 저장소의 웹 사본(%s)을 열지 마라 — 원격 사본도 같은 원장·산출물이다.' % ' · '.join(wf))

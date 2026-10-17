@@ -309,6 +309,18 @@ WDIR="$ROOT/04_Research/strategies/RP_AUTO_${SLUG}"
 [ "${IS_COMBO:-0}" = "1" ] && WDIR="$ROOT/04_Research/strategies/RP_AUTO_COMBO_${SLUG}"
 [ "$LANE_MODE" = "clean" ] && WDIR="$ROOT/04_Research/strategies/${LANE_WDIR_PREFIX}${SLUG}"
 mkdir -p "$WDIR"
+# ── ★원문 축자본 선수집 (2026-10-17 도훈 '사전 코드 감사로 기각되는 상황을 만들지 않는 게 최우선') ─────────────────────
+#   1차 기각 원인 1위 = 전문 미열람(지적 74건 중 24건 · 32% — 전부 요약만 읽은 편 · 04_Research/01_reports/first_pass_rejection_rootcause_20261017/).
+#   WebFetch 는 페이지를 소형 모델이 요약하는 도구(인용 125자 상한)라 원문이 안 들어온다. rf_paper_text.py 가 <WDIR>/.clean_paper/paper.md
+#   (html v1 → e-print v1 → pdf v1 · 판 · sha256 = manifest.json)를 만들고 구현자 · 감사자가 **같은 파일**을 Read 로 끝까지 읽는다
+#   (감사 프롬프트도 이 파일을 가리킨다 · 청정 규칙 레인 파일 '^\.clean_' — 사전등록 핀 무수정). 검증기만 재실행 경로도 같은 파일을 쓰게
+#   작업 디렉터리 직후에 둔다. 이미 있으면 재사용 · 못 받으면 프롬프트가 대체 지시(arxiv MCP 끝까지)로 진행. 결합 요청은 제외.
+PT_OUT=""; P_TEXT_OK=0
+if [ "${IS_COMBO:-0}" != "1" ]; then
+  PT_OUT="$("$PY" "$ROOT/02_Infrastructure/ops/rf_paper_text.py" --url "$P_URL" --wdir "$WDIR" 2>>"$LOG" | tail -n 1 | tr -d '\r')"
+  case "$PT_OUT" in "ok "*) P_TEXT_OK=1 ;; esac
+  jl paper_text "paper=$P_KEY" "ok=$P_TEXT_OK" "result=$PT_OUT"
+fi
 jl start "paper=$P_KEY" "url=$P_URL" "wdir=$WDIR" "lane_mode=$LANE_MODE" "lane_mode_src=$LANE_MODE_SOURCE" "lane_mode_why=$LANE_MODE_WHY"
 # ★상태 전이 pending → in_progress (cleaner 의 distill_status 선례).
 #   claim 이 1차 방어지만, 검증이 20분 넘게 돌 수 있어 그 사이 다른 소비자가 들어오면
@@ -429,6 +441,18 @@ fi
 #     정본에서 그때 만든다(사본 없음). 생성 실패 = 절 없이 진행 + 저널 self_audit_block_absent. 결합 요청은 제외(결합 꼬리에 안 실린다).
 P_AXID=$(printf '%s' "$P_URL" | sed -n 's#.*arxiv\.org/\(abs\|html\|pdf\)/\([0-9v.]*\).*#\2#p'); P_AXID="${P_AXID%v[0-9]*}"
 P_HTMLLINE=""; [ -n "$P_AXID" ] && P_HTMLLINE="원문 전문: https://arxiv.org/html/${P_AXID}v1   ← ★이 주소로 읽어라(감사자도 이 전문으로 대조한다)"
+# 축자본이 있으면 그 파일이 원문이다(아래 '원문 접근' 절) — 없을 때만 html 주소 줄 + arxiv MCP 대체 지시
+if [ "$P_TEXT_OK" = "1" ]; then
+  _pt_kind=$(printf '%s' "$PT_OUT" | sed -n 's/.* kind=\([^ ]*\).*/\1/p'); _pt_ver=$(printf '%s' "$PT_OUT" | sed -n 's/.* version=\([^ ]*\).*/\1/p')
+  _pt_chars=$(printf '%s' "$PT_OUT" | sed -n 's/.* chars=\([0-9]*\).*/\1/p')
+  P_TEXTLINE="원문 축자본: ${WDIR}/.clean_paper/paper.md   ← ★레인이 받은 원문 그대로(${_pt_kind} · 판 ${_pt_ver} · ${_pt_chars}자 · 요약 아님) — 감사자도 이 파일로 대조한다"
+  P_ACCESS="- **위 축자본을 Read 로 처음부터 마지막 줄까지 읽어라**(2000줄씩 offset 으로 이어 읽기). 수식은 LaTeX(\$…\$ 또는 원천 그대로)다. PDF 추출본이면 줄 끝 하이픈이 갈라져 있을 수 있다.
+- WebFetch 는 페이지를 소형 모델이 요약해 돌려주는 도구다(인용 125자 상한) — 원문 대용이 아니다. 축자본에 빠진 그림 · 표 값을 확인할 때만 보조로 써라."
+else
+  P_TEXTLINE="${P_HTMLLINE}"
+  P_ACCESS="- 레인이 축자본을 받지 못했다(${PT_OUT:-결합 · 미시도}). arxiv MCP 로 전문을 끝까지 읽어라 — download_paper → read_paper(start=next_start 를 null 이 될 때까지).
+- WebFetch 는 페이지를 소형 모델이 요약해 돌려주는 도구다(인용 125자 상한) — 원문 대용이 아니다. 초록 페이지(\`arxiv.org/abs/…\`)는 초록만 준다."
+fi
 SELF_AUDIT_SEC=""
 if [ "${IS_COMBO:-0}" != "1" ]; then
   SELF_AUDIT_SEC="$("$PY" "$ROOT/02_Infrastructure/ops/rf_preaudit.py" --self-audit-block --root "$ROOT" 2>>"$LOG" | tr -d '\r')"
@@ -441,15 +465,15 @@ PROMPT="논문 1편의 **충실구현**을 수행하라. 산출은 **엔진 R �
 ## 논문
 제목: ${P_TITLE}
 원문: ${P_URL}
-${P_HTMLLINE}
+${P_TEXTLINE}
 트리아지가 뽑은 후보 팩터: ${P_FNAME}
 정의 초안: ${P_FDEF}
 
-## ★원문 접근 — 감사자와 같은 전문을 끝까지 읽은 뒤에 구현한다 (2026-10-17)
-- arXiv 논문의 \`arxiv.org/abs/…\` 는 **초록만** 준다. 초록으로 쓴 구현은 정의역 · 창 · 부호를 틀리고 감사에서 기각된다.
-- 감사자는 **\`arxiv.org/html/<id>v1\`** 전문으로 대조한다 — 같은 판을 읽어라(안 열리면 \`ar5iv.labs.arxiv.org/html/<id>\`).
-  PDF 를 받았으면 Read 로 쪽 단위로 읽어도 되지만 최신판일 수 있다 — v1 과 다른 판을 따랐으면 changed 에 판 번호와 이유를 적어라.
+## ★원문 접근 — 감사자와 같은 원문 파일을 끝까지 읽은 뒤에 구현한다 (2026-10-17)
+${P_ACCESS}
 - 신호 식 · 표본 · 포트폴리오 구성 · 리밸 · 비용이 적힌 절(방법론 · 실험 설정 · 부록)을 **전부** 읽은 뒤에 engine.R 을 쓴다.
+- 논문이 사양을 다른 출처(원천 데이터 라이브러리 규약 · 상위 논문 · 소프트웨어 기본값)에 맡기면 그 출처를 읽고 인용하라. 못 읽었으면
+  'X 와 같다' 고 단정하지 말고 '미확인 재현' 으로 changed 에 적어라(1차 기각 실측: Ken French 2x3 규약 · 상위 논문 정의 · Keras 기본값 단정).
 - 전문을 끝내 못 읽으면 지어내지 말고 \`${WDIR}/ABORT.txt\` 에 시도한 주소와 응답을 적고 멈춰라.
 
 ## 판정 순서 (★2026-08-30 도훈 지시 — 어떤 논문이라도 팩터 전략으로 변형 가능한

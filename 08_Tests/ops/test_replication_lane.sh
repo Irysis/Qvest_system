@@ -310,13 +310,30 @@ _axid(){ ( P_URL="$1"; eval "$_AXL"; printf '%s' "$P_AXID" ); }
 [ -n "$_AXL" ] && [ "$(_axid https://arxiv.org/abs/1908.01112)" = "1908.01112" ] && [ "$(_axid https://arxiv.org/abs/2411.08864v2)" = "2411.08864" ] \
   && [ -z "$(_axid https://papers.ssrn.com/sol3/papers.cfm?abstract_id=1)" ] \
   && ok "J1 원문 전문 id 추출 — abs · 판 접미사 제거 · arXiv 아님 = 빈 값" || ng "J1 전문 id 추출" "$(_axid https://arxiv.org/abs/2411.08864v2)"
-printf '%s' "$LNC" | grep -q 'https://arxiv.org/html/${P_AXID}v1' && grep -q '^\${P_HTMLLINE}$' "$LANE" && grep -q '^\${SELF_AUDIT_SEC}$' "$LANE" \
-  && ok "J2 프롬프트 = 전문 주소 줄 + 자가 감사 절(축 정본 생성) 배선" || ng "J2 프롬프트 배선 누락"
+printf '%s' "$LNC" | grep -q 'https://arxiv.org/html/${P_AXID}v1' && grep -q '^\${P_TEXTLINE}$' "$LANE" && grep -q '^\${P_ACCESS}$' "$LANE" && grep -q '^\${SELF_AUDIT_SEC}$' "$LANE" \
+  && ok "J2 프롬프트 = 원문 줄(축자본 · 없으면 전문 주소) + 읽는 법 + 자가 감사 절(축 정본 생성) 배선" || ng "J2 프롬프트 배선 누락"
 printf '%s' "$LNC" | grep -q 'rf_preaudit.py" --self-audit-block' && printf '%s' "$LNC" | grep -q 'jl self_audit_block_absent' \
   && ok "J3 자가 감사 절 = rf_preaudit.py --self-audit-block(사본 없음) · 생성 실패는 저널" || ng "J3 절 생성 배선"
 _sa_line=$(grep -n '^\${SELF_AUDIT_SEC}$' "$LANE" | head -1 | cut -d: -f1); _out_line=$(grep -n '^## 산출 (이것만)$' "$LANE" | head -1 | cut -d: -f1)
 [ -n "$_sa_line" ] && [ -n "$_out_line" ] && [ "$_sa_line" -lt "$_out_line" ] && [ "$(grep -c '^## 산출 (이것만)$' "$LANE")" = "1" ] \
   && ok "J4 자가 감사 절이 산출 절 앞(결합 꼬리에는 안 실린다) · 산출 머리 1개" || ng "J4 절 위치" "sa=$_sa_line out=$_out_line"
+# J5~J7 — 원문 축자본 선수집(10-17 · 1차 기각 원인 1위 '전문 미열람' 32% · WebFetch = 요약기)
+_mk=$(grep -n '^mkdir -p "\$WDIR"$' "$LANE" | head -1 | cut -d: -f1); _pt=$(grep -n 'rf_paper_text.py" --url "\$P_URL" --wdir "\$WDIR"' "$LANE" | head -1 | cut -d: -f1)
+_pv=$(grep -n '^PREV_FAIL=' "$LANE" | head -1 | cut -d: -f1)
+[ -n "$_mk" ] && [ -n "$_pt" ] && [ -n "$_pv" ] && [ "$_mk" -lt "$_pt" ] && [ "$_pt" -lt "$_pv" ] && printf '%s' "$LNC" | grep -q 'jl paper_text' \
+  && ok "J5 축자본 선수집 = 작업 디렉터리 직후 · 검증기만 재실행 경로보다 앞(두 경로가 같은 파일) · 저널 paper_text" || ng "J5 선수집 배선" "mk=$_mk pt=$_pt pv=$_pv"
+! grep -q 'PDF 를 받았으면 Read' "$LANE" && grep -q '미확인 재현' "$LANE" && printf '%s' "$LNC" | grep -q 'download_paper → read_paper' \
+  && ok "J6 잘못된 PDF-Read 안내 제거(pdftoppm 부재) · 위임 사양 규칙 · 대체 경로 = arxiv MCP 끝까지" || ng "J6 원문 접근 문구"
+_PB="$T/prompt_block.sh"; _a=$(grep -n '^P_AXID=' "$LANE" | head -1 | cut -d: -f1); _b=$(grep -n '^엔진을 쓰고 1~2줄로 무엇을 구현했는지만 보고하라."$' "$LANE" | head -1 | cut -d: -f1)
+if [ -n "$_a" ] && [ -n "$_b" ]; then
+  sed -n "${_a},${_b}p" "$LANE" > "$_PB"
+  _render(){ ( ROOT="$ROOT"; LOG="$T/pb.log"; IS_COMBO=0; P_KEY=T1; P_URL=https://arxiv.org/abs/1908.01112; P_TITLE=t; P_FNAME=x; P_FDEF=y; WDIR=W
+               jl(){ :; }; P_TEXT_OK="$1"; PT_OUT="$2"; . "$_PB"; printf '%s' "$PROMPT" ) 2>/dev/null; }
+  _r1=$(_render 1 "ok kind=html version=v1 chars=45234 path=.clean_paper/paper.md cached=0"); _r0=$(_render 0 "fail why=x")
+  printf '%s' "$_r1" | grep -q '^원문 축자본: W/.clean_paper/paper.md' && ! printf '%s' "$_r1" | grep -q '^원문 전문: ' \
+    && printf '%s' "$_r0" | grep -q '^원문 전문: https://arxiv.org/html/1908.01112v1' && printf '%s' "$_r0" | grep -q 'arxiv MCP 로 전문을 끝까지' \
+    && ok "J7 렌더 양방향 — 축자본 있음 = 축자본 줄(주소 줄 없음) · 없음 = 전문 주소 + arxiv MCP 대체 지시" || ng "J7 렌더" "$(printf '%s' "$_r1" | sed -n '4,6p')"
+else ng "J7 프롬프트 블록 경계 없음"; fi
 
 echo
 printf '합계: 통과 %d · 실패 %d\n' "$PASS" "$FAIL"

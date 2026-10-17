@@ -79,6 +79,10 @@ HTMLU=""
 # ★전문 주소 줄은 미리 조립한다 — 큰따옴 안 $( ) 중첩은 셀 파서를 깨뜨린다.
 HTMLLINE=""
 [ -n "$HTMLU" ] && HTMLLINE="- 원문 전문(이 주소로 읽어라): $HTMLU"
+# ★원문 축자본(10-17 · rf_paper_text.py — 레인이 받은 원문 그대로 · 구현자가 읽은 같은 파일) — 있으면 그것이 대조 정본이다
+#   (1차 기각 원인 분석: WebFetch 는 요약기 · html v1 이 없는 편 3/13 — 04_Research/01_reports/first_pass_rejection_rootcause_20261017/).
+PAPERLINE=""
+[ -s "$WDIR/.clean_paper/paper.md" ] && PAPERLINE="- 원문 축자본(구현자가 읽은 같은 파일 — 레인이 받은 원문 그대로): ${WDIR}/.clean_paper/paper.md   ← ★이 파일을 Read 로 끝까지 읽고 대조하라"
 
 . "$ROOT/02_Infrastructure/ops/rf_axiom_brief.sh"
 AXB="$(rf_axiom_brief)"
@@ -126,14 +130,15 @@ ${AXB}
 ## 대상
 - 논문: ${PURL}
 ${HTMLLINE}
+${PAPERLINE}
 - 구현: ${WDIR}/engine.R
 - 자기신고: ${WDIR}/FIDELITY.json   ← **이 진술을 믿지 마라. 대조 대상이다.**
 ${ARTLINE}
 ${PRIORSEC}
-## 원문 접근 (실측된 함정 — 2026-09-02)
-- \`arxiv.org/abs/…\` 는 **초록만** 준다. 초록만 읽고 판정하면 정의역을 틀린다.
-- \`arxiv.org/pdf/…\` 는 이 환경에서 못 읽는다.
-- **\`arxiv.org/html/<id>v1\` 이 유일한 전문 경로**다. 위에 그 주소를 적어 두었다.
+## 원문 접근 (실측된 함정 — 2026-09-02 · 10-17 갱신)
+- 위 '원문 축자본' 파일이 있으면 **그것이 대조 정본**이다 — 구현자도 같은 파일을 읽었다(판 일치). Read 로 끝까지 읽어라.
+- WebFetch 는 페이지를 소형 모델이 요약해 돌려주는 도구다(인용 125자 상한) — 원문 대용이 아니다.
+- 축자본이 없을 때만: \`arxiv.org/abs/…\` 는 **초록만** 준다 · \`arxiv.org/html/<id>v1\`(없는 편도 있다) 또는 arxiv MCP download_paper → read_paper 를 끝까지.
 - 전문을 못 읽었으면 verdict 는 반드시 \`unverifiable\` 이다. **모르는 것을 faithful 로 적지 마라.**
 
 ## 대조할 축 (각각 논문 원문에서 근거를 찾아라)
