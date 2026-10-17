@@ -265,6 +265,59 @@ _mkclaim_aged(){ rm -rf "$_RPD/claim"; mkdir -p "$_RPD/claim"; echo $$ > "$_RPD/
 : > "$_RPD/jlog.jsonl"; rm -rf "$_RPD/claim"; _mkreq done; mkdir -p "$_RPD/refresh.lock"; _mkcfg 0 1; _rprun; rm -rf "$_RPD/refresh.lock"
 grep -q '"halt_refresh_lock"' "$_RPD/jlog.jsonl" && ok "R0 갱신 잠금 격리 경로가 읽힌다(빈 잠금 → halt_refresh_lock) — C1 · C4 초록은 격리 덕이다" || ng "R0 격리 잠금 경로 미배선" "$(_ev)"
 
+echo "=== 18. 기각 → 즉시 재구현 연쇄 (2026-10-17 · 함수 격리 실행 · 양방향 + 뮤테이션) ==="
+# 레인의 rp_chain_reimplement 정의를 떼어 격리 셸에서 돌린다 — exec 대상 = 기록용 대역(RP_CHAIN_SELF). 운영 요청·claim 무접촉.
+_CH="$T/chain"; mkdir -p "$_CH"
+"$PY" - "$LANE" "$_CH/fn.sh" <<'PYCH'
+import io, re, sys
+s = io.open(sys.argv[1], "rb").read().decode("utf-8")
+m = re.search(r"^rp_chain_reimplement\(\) \{\n.*?^\}\n", s, re.S | re.M)
+io.open(sys.argv[2], "wb").write((m.group(0) if m else "").encode("utf-8"))
+PYCH
+printf '%s\n' '#!/usr/bin/env bash' 'echo "exec depth=${RP_CHAIN_DEPTH:-} claim_gone=$([ -d "$CLAIM_PATH" ] && echo 0 || echo 1)" > "$CHAIN_REC"' > "$_CH/stub.sh"
+# $1 함수 파일 · $2 rc · $3 요청 status · $4 요청 key · $5 P_KEY · $6 RP_CHAIN_DEPTH
+_chrun(){ rm -f "$_CH/rec"; : > "$_CH/j.log"; mkdir -p "$_CH/claim"
+  printf '{"status":"%s","paper":{"paper_key":"%s"}}' "$3" "$4" > "$_CH/req.json"
+  ( REQ="$_CH/req.json"; CLAIM="$_CH/claim"; P_KEY="$5"
+    jl(){ echo "$1" >> "$_CH/j.log"; }
+    export CHAIN_REC="$_CH/rec" CLAIM_PATH="$_CH/claim" RP_CHAIN_SELF="$_CH/stub.sh" RP_CHAIN_DEPTH="$6"
+    . "$1"; rp_chain_reimplement "$2"; echo returned >> "$_CH/j.log" ) >/dev/null 2>&1; }
+if [ -s "$_CH/fn.sh" ]; then
+  _chrun "$_CH/fn.sh" 0 pending TEST TEST ""
+  grep -q "exec depth=1 claim_gone=1" "$_CH/rec" 2>/dev/null && grep -q reimplement_chain "$_CH/j.log" && ! grep -q returned "$_CH/j.log" \
+    && ok "K1 같은 논문 pending + rc 0 → claim 반납 후 레인 재실행(exec · 깊이 1)" || ng "K1 연쇄 미발화" "$(cat "$_CH/rec" 2>/dev/null) $(tr '\n' ' ' < "$_CH/j.log")"
+  _chrun "$_CH/fn.sh" 1 pending TEST TEST ""
+  [ ! -f "$_CH/rec" ] && [ -d "$_CH/claim" ] && grep -q returned "$_CH/j.log" && ok "K2 rc ≠ 0(검증 실패 · 리프레시 연기) → 잇지 않는다" || ng "K2 실패에도 연쇄"
+  _chrun "$_CH/fn.sh" 0 pending OTHER TEST ""
+  [ ! -f "$_CH/rec" ] && grep -q returned "$_CH/j.log" && ok "K3 다음 논문 pending(키 다름 · 소비 뒤 공급기 발행) → 잇지 않는다(재구현만 잇는다)" || ng "K3 다른 논문으로 연쇄"
+  _chrun "$_CH/fn.sh" 0 done_no_reinforce TEST TEST ""
+  [ ! -f "$_CH/rec" ] && grep -q returned "$_CH/j.log" && ok "K4 pending 아님(소비 · 보류) → 잇지 않는다" || ng "K4 종결 요청으로 연쇄"
+  _chrun "$_CH/fn.sh" 0 pending TEST TEST 3
+  [ ! -f "$_CH/rec" ] && grep -q reimplement_chain_cap "$_CH/j.log" && grep -q returned "$_CH/j.log" && ok "K5 연쇄 상한(깊이 3) → 멈추고 기록(reimplement_chain_cap · 다음 tick 이 잇는다)" || ng "K5 상한 무시"
+  sed 's/\[ "\$nxt" = "pending|\$P_KEY" \]/true/' "$_CH/fn.sh" > "$_CH/fn_mut.sh"
+  if ! cmp -s "$_CH/fn.sh" "$_CH/fn_mut.sh"; then
+    _chrun "$_CH/fn_mut.sh" 0 pending OTHER TEST ""
+    [ -f "$_CH/rec" ] && ok "K6 뮤테이션(같은 논문 조건 제거)판은 다른 논문으로 연쇄 → K3 가 잡는다(검출력)" || ng "K6 뮤테이션이 탐지되지 않는다"
+  else ng "K6 뮤테이션 치환 불발(소스 텍스트)"; fi
+else ng "K0 레인에 rp_chain_reimplement 정의가 없다"; fi
+LNC=$(sed 's/#.*$//' "$LANE")
+[ "$(printf '%s' "$LNC" | grep -c 'rp_chain_reimplement "\$VRC"')" = "2" ] && printf '%s' "$LNC" | grep -q 'rp_chain_reimplement 0' \
+  && ok "K7 연쇄 배선 = 검증 2곳(verify-only 재실행 · 정상 끝) + 사전검사 기각 1곳" || ng "K7 연쇄 배선 누락"
+
+echo "=== 19. 구현자 = 감사자와 같은 원문 · 같은 축 (2026-10-17 · 원문 전문 경로 + 제출 전 자가 감사) ==="
+_AXL=$(grep -E '^P_AXID=' "$LANE")
+_axid(){ ( P_URL="$1"; eval "$_AXL"; printf '%s' "$P_AXID" ); }
+[ -n "$_AXL" ] && [ "$(_axid https://arxiv.org/abs/1908.01112)" = "1908.01112" ] && [ "$(_axid https://arxiv.org/abs/2411.08864v2)" = "2411.08864" ] \
+  && [ -z "$(_axid https://papers.ssrn.com/sol3/papers.cfm?abstract_id=1)" ] \
+  && ok "J1 원문 전문 id 추출 — abs · 판 접미사 제거 · arXiv 아님 = 빈 값" || ng "J1 전문 id 추출" "$(_axid https://arxiv.org/abs/2411.08864v2)"
+printf '%s' "$LNC" | grep -q 'https://arxiv.org/html/${P_AXID}v1' && grep -q '^\${P_HTMLLINE}$' "$LANE" && grep -q '^\${SELF_AUDIT_SEC}$' "$LANE" \
+  && ok "J2 프롬프트 = 전문 주소 줄 + 자가 감사 절(축 정본 생성) 배선" || ng "J2 프롬프트 배선 누락"
+printf '%s' "$LNC" | grep -q 'rf_preaudit.py" --self-audit-block' && printf '%s' "$LNC" | grep -q 'jl self_audit_block_absent' \
+  && ok "J3 자가 감사 절 = rf_preaudit.py --self-audit-block(사본 없음) · 생성 실패는 저널" || ng "J3 절 생성 배선"
+_sa_line=$(grep -n '^\${SELF_AUDIT_SEC}$' "$LANE" | head -1 | cut -d: -f1); _out_line=$(grep -n '^## 산출 (이것만)$' "$LANE" | head -1 | cut -d: -f1)
+[ -n "$_sa_line" ] && [ -n "$_out_line" ] && [ "$_sa_line" -lt "$_out_line" ] && [ "$(grep -c '^## 산출 (이것만)$' "$LANE")" = "1" ] \
+  && ok "J4 자가 감사 절이 산출 절 앞(결합 꼬리에는 안 실린다) · 산출 머리 1개" || ng "J4 절 위치" "sa=$_sa_line out=$_out_line"
+
 echo
 printf '합계: 통과 %d · 실패 %d\n' "$PASS" "$FAIL"
 printf '{"test":"replication_lane","pass":%d,"fail":%d,"total":%d}\n' "$PASS" "$FAIL" "$((PASS+FAIL))"

@@ -343,6 +343,32 @@ io.open(r'$REQ','wb').write(json.dumps(d,ensure_ascii=False,indent=1).encode('ut
   jl verify_done "rc=$VRC"
   return $VRC
 }
+# ── ★기각 → 즉시 재구현 (2026-10-17 도훈 '사전 충실도 감사 기각 시 다시 코드 재작성하는 로직도 넣어줘') ──────────────────
+#   측정 전 사전검사(아래 declaration gate)와 측정 전 충실도 감사(검증기 — 같은 날 감사 선행)가 기각하면 요청이 **같은 논문 pending** 으로
+#   돌아온다(지적은 요청에 실린다 — failure=declaration_gate · audit_feedback). 구판은 다음 tick(예약 작업 Qvest_ReinforceAutoLoop · 8분
+#   간격)을 기다렸다. 이제 이 실행이 claim 을 놓고 레인을 처음부터 다시 연다 — 관문(스위치 · 리프레시 배리어 · 재시도 예산 · 스킵리스트 ·
+#   claim)과 재구현 프롬프트 조립(지적 · 청정 가림 · 출처 기록)을 그대로 지난다. exec 라 pid 가 같아 tick 은 연쇄가 끝날 때까지 기다린다.
+#   재구현 횟수는 처분 규칙이 정한다(사전검사 회차 = rf_preaudit.json · 감사 재구현 1회 = rf_audit_disposition — 도훈 09-04).
+#   RP_CHAIN_MAX 는 그 규칙이 깨졌을 때의 무한 연쇄 방지선이다(정상 최대 3 = 사전검사 보정 + 감사 재구현 + 재구현판 보정).
+#   rc ≠ 0(검증 실패 · 리프레시 연기 75)은 잇지 않는다. 검사 = 08_Tests/ops/test_replication_lane.sh §18.
+rp_chain_reimplement() {
+  [ "${1:-1}" = "0" ] || return 0
+  local nxt depth cap
+  nxt=$("$PY" -c "
+import io,json
+try: d=json.loads(io.open(r'$REQ','rb').read().decode('utf-8'))
+except Exception: raise SystemExit
+print('%s|%s' % (d.get('status') or '', (d.get('paper') or {}).get('paper_key') or ''))" 2>/dev/null | tr -d '\r')
+  { [ -n "${P_KEY:-}" ] && [ "$nxt" = "pending|$P_KEY" ]; } || return 0
+  depth="${RP_CHAIN_DEPTH:-0}"; cap="${RP_CHAIN_MAX:-3}"
+  case "$depth$cap" in *[!0-9]*) depth=0; cap=3 ;; esac
+  if [ "$depth" -ge "$cap" ]; then
+    jl reimplement_chain_cap "paper=$P_KEY" "depth=$depth" "cap=$cap" "note=연쇄 상한 — 다음 tick 이 잇는다"; return 0
+  fi
+  jl reimplement_chain "paper=$P_KEY" "depth=$((depth + 1))" "note=기각 직후 재구현 — 다음 tick 을 기다리지 않는다"
+  rm -rf "$CLAIM" 2>/dev/null; trap - EXIT
+  RP_CHAIN_DEPTH=$((depth + 1)) exec bash "${RP_CHAIN_SELF:-${BASH_SOURCE[0]:-$0}}"
+}
 # ── ★감사 미실행 재시도 = 검증기만 (2026-09-06 실사고) ─────────────────────────
 #   audit_not_run 은 엔진의 결함이 아니라 감사 레인의 결함이다(역슬래시 QM_ROOT 병합 즉사 · 킬스위치 · CLI 부재).
 #   검증기가 그 사유로 failed_needs_session 을 내면 위 auto_retries 가 pending 으로 되살리는데, 그때 30분짜리
@@ -381,7 +407,7 @@ import io,json,time
 d=json.loads(io.open(r'$REQ','rb').read().decode('utf-8'))
 d['failure']=''; d['failure_detail']=''; d['verify_only_at']=time.strftime('%Y-%m-%dT%H:%M:%S%z')
 io.open(r'$REQ','wb').write(json.dumps(d,ensure_ascii=False,indent=1).encode('utf-8'))"
-  rp_verify; exit $?
+  rp_verify; VRC=$?; rp_chain_reimplement "$VRC"; exit $VRC
 fi
 # ★판정이 실린 요청인데 판정 대상 엔진이 없다 — 에이전트 재구현으로 떨어지지 않는다(리뷰 C2: 구판은 모드 · 작업 디렉터리가 어긋나면
 #   새 디렉터리에서 재구현이 돌아 판정하지 않은 엔진이 소비될 수 있었다). 요청을 보류로 되돌리고 다음 논문으로 간다(세션 확인).
@@ -396,14 +422,35 @@ io.open(r'$REQ','wb').write(json.dumps(d,ensure_ascii=False,indent=1).encode('ut
   exit 0
 fi
 
+# ── ★원문 전문 경로 + 제출 전 자가 감사 (2026-10-17 도훈 '사전 코드 감사로 기각되는 상황을 만들지 않는 게 최우선') ─────────────
+#   ①감사 프롬프트(rf_fidelity_audit.sh · rf_fidelity_fanout.sh)는 '/abs = 초록뿐 · /pdf = 이 환경에서 못 읽음 · /html/<id>v1 = 유일한 전문'을
+#     싣는데 구현자 프롬프트는 /abs 링크만 줬다 — 같은 논문을 다른 정보로 읽는 비대칭이다. 추출식은 감사 레인과 같다(판 접미사 vN 은 뗀다).
+#   ②감사자 6명이 받는 축 지시(축 정본 06_Registry/rf_fidelity_axes.json)를 구현자도 제출 전에 그대로 수행한다 — 절은 rf_preaudit.py 가
+#     정본에서 그때 만든다(사본 없음). 생성 실패 = 절 없이 진행 + 저널 self_audit_block_absent. 결합 요청은 제외(결합 꼬리에 안 실린다).
+P_AXID=$(printf '%s' "$P_URL" | sed -n 's#.*arxiv\.org/\(abs\|html\|pdf\)/\([0-9v.]*\).*#\2#p'); P_AXID="${P_AXID%v[0-9]*}"
+P_HTMLLINE=""; [ -n "$P_AXID" ] && P_HTMLLINE="원문 전문: https://arxiv.org/html/${P_AXID}v1   ← ★이 주소로 읽어라(감사자도 이 전문으로 대조한다)"
+SELF_AUDIT_SEC=""
+if [ "${IS_COMBO:-0}" != "1" ]; then
+  SELF_AUDIT_SEC="$("$PY" "$ROOT/02_Infrastructure/ops/rf_preaudit.py" --self-audit-block --root "$ROOT" 2>>"$LOG" | tr -d '\r')"
+  [ -n "$SELF_AUDIT_SEC" ] || jl self_audit_block_absent "paper=$P_KEY"
+fi
+
 # ── 헤드리스 에이전트 (권한 축소 · 산출물은 엔진 1개) ────────────────────────
 PROMPT="논문 1편의 **충실구현**을 수행하라. 산출은 **엔진 R 파일 하나**다.
 
 ## 논문
 제목: ${P_TITLE}
 원문: ${P_URL}
+${P_HTMLLINE}
 트리아지가 뽑은 후보 팩터: ${P_FNAME}
 정의 초안: ${P_FDEF}
+
+## ★원문 접근 — 감사자와 같은 전문을 끝까지 읽은 뒤에 구현한다 (2026-10-17)
+- arXiv 논문의 \`arxiv.org/abs/…\` 는 **초록만** 준다. 초록으로 쓴 구현은 정의역 · 창 · 부호를 틀리고 감사에서 기각된다.
+- 감사자는 **\`arxiv.org/html/<id>v1\`** 전문으로 대조한다 — 같은 판을 읽어라(안 열리면 \`ar5iv.labs.arxiv.org/html/<id>\`).
+  PDF 를 받았으면 Read 로 쪽 단위로 읽어도 되지만 최신판일 수 있다 — v1 과 다른 판을 따랐으면 changed 에 판 번호와 이유를 적어라.
+- 신호 식 · 표본 · 포트폴리오 구성 · 리밸 · 비용이 적힌 절(방법론 · 실험 설정 · 부록)을 **전부** 읽은 뒤에 engine.R 을 쓴다.
+- 전문을 끝내 못 읽으면 지어내지 말고 \`${WDIR}/ABORT.txt\` 에 시도한 주소와 응답을 적고 멈춰라.
 
 ## 판정 순서 (★2026-08-30 도훈 지시 — 어떤 논문이라도 팩터 전략으로 변형 가능한
 ##   형태인지부터 판단하는 게 참된 리서치의 자세다. 인사이트가 중요한 거니까)
@@ -490,7 +537,8 @@ engine.R 과 FIDELITY.json 만 보고 아래를 확인한다. 빠지면 측정 �
 - engine.R 의 clip·pmax/pmin 상수 · 결측/비유한값 처리 · set.seed · tryCatch 폴백 · 최소 개수 하한 · 유동성 하한 ·
   상태 플래그(관리종목·거래정지) · 커버리지 하한 · 1e-x 분모 가드가 각각 changed 또는 paper_steps note 에 적혀 있는가.
 
-## 산출 (이것만)
+${SELF_AUDIT_SEC}
+
 ## 산출 (이것만)
 \`${WDIR}/engine.R\` — source 되면 \`FACTORS(Date,Ticker,Score)\` 또는
 \`PORTFOLIO(Date,Ticker,Weight,Leg)\` 를 만드는 R 스크립트. 호출자가 환경에 \`RAWDATA\`·\`BM_DT\` 를 넣어준다.
@@ -855,9 +903,12 @@ PA_OUT="$("$PY" "$ROOT/02_Infrastructure/ops/rf_preaudit.py" --gate --req "$REQ"
 PA_OUT="$(printf '%s' "$PA_OUT" | tail -n 1 | tr -d '\r')"
 jl preaudit "rc=$PA_RC" "result=$PA_OUT" "paper=$P_KEY"
 if [ "$PA_RC" = "10" ]; then
-  jl preaudit_reimplement_requested "paper=$P_KEY" "note=측정·감사 생략 — 다음 tick 보정 패스가 사전검사 지적(failure=declaration_gate)을 받는다"
+  jl preaudit_reimplement_requested "paper=$P_KEY" "note=측정·감사 생략 — 보정 패스가 사전검사 지적(failure=declaration_gate)을 받는다(즉시 연쇄 · 상한이면 다음 tick)"
+  rp_chain_reimplement 0
   exit 0
 fi
 
 # ── 측정 + 검증 (계약이 판정한다 — 에이전트 진술은 근거가 아니다) — rp_verify(위 정의) ──
-rp_verify; exit $?
+rp_verify; VRC=$?
+rp_chain_reimplement "$VRC"
+exit $VRC
