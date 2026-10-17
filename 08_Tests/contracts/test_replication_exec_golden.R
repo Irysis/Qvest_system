@@ -108,16 +108,25 @@ t1 <- Sys.time(); L <- quiet(run_all("close_d_legacy")); tL <- as.numeric(diffti
 
 # ── ③ legacy 비트 재현 ──
 pr1 <- L$bt$period_returns; pr0 <- as.data.table(bt0$period_returns)
+## 10-17 단위 수리(계약 backtest_result_contract.R — 낙폭 지속 · 회복이 기간 수(일간 = 거래일)를 months 로 적던 것 → 달력 개월) — 두 지표만 비트 대조에서 빼고 아래 ③u 로 잰다
+DD_UNIT <- c("Max_DD_Duration_Months", "Average_Recovery_Months")
+m1 <- as.data.table(L$bt$metrics); m0 <- as.data.table(bt0$metrics)
 bit <- c(
   ret_net   = identical(pr1$ret_net, pr0$ret_net) && identical(pr1$date, pr0$date),
   nav_net   = identical(L$bt$nav$nav_net, bt0$nav$nav_net),
-  metrics   = identical(L$bt$metrics$metric_value, bt0$metrics$metric_value),
+  metrics   = identical(m1[!metric_name %in% DD_UNIT]$metric_value, m0[!metric_name %in% DD_UNIT]$metric_value) &&
+              identical(m1$metric_name, m0$metric_name),
   benchmark = identical(L$bt$benchmark_returns$benchmark_ret, bt0$benchmark_returns$benchmark_ret),
   bench_cmp = identical(L$bt$benchmark_compare$strategy_value, bt0$benchmark_compare$strategy_value))
 dmx <- if (nrow(pr1) == nrow(pr0)) max(abs(pr1$ret_net - pr0$ret_net)) else NA_real_
 if (all(bit)) ok(sprintf("③ legacy 비트 재현: ret_net·nav_net·metrics·benchmark·benchmark_compare identical (%d일 · %.0fs)", nrow(pr1), tL)) else
   ng(sprintf("③ 비트 불일치 — %s · ret_net max|Δ| %s (빈티지 개정이면 ≤1e-12 수준)",
              paste(names(bit)[!bit], collapse = ","), format(dmx)))
+dd1 <- m1[metric_name == "Max_DD_Duration_Months"]$metric_value; dd0 <- m0[metric_name == "Max_DD_Duration_Months"]$metric_value
+span_m <- as.numeric(difftime(max(pr1$date), min(pr1$date), units = "days")) / (365.25 / 12)
+if (length(dd1) == 1L && length(dd0) == 1L && is.finite(dd1) && dd1 > 0 && dd1 <= span_m + 1 && abs(dd1 - dd0 / 21) <= max(3, 0.15 * dd1))
+  ok(sprintf("③u 낙폭 지속 = 달력 개월 %.1f(구판 기간 수 %s ≈ 거래일 ÷ 21 · 전체 %.0f개월 이하) — 10-17 단위 수리", dd1, format(dd0), span_m)) else
+  ng(sprintf("③u 낙폭 지속 단위 — 신 %s · 구 %s · 전체 %.0f개월", format(dd1), format(dd0), span_m))
 es0 <- quiet(essence_score(bt0, n_trials_cumulative = 1L, selection_type = "chain", sidecar_log = FALSE))
 keys <- c("cagr", "net_sharpe", "mdd", "calmar", "portfolio_alpha_t_nw_lag3", "oos_retention", "net_ir")
 v1 <- unlist(L$es$essence[keys]); v0 <- unlist(es0$essence[keys]); va <- unlist(auth$essence[keys])

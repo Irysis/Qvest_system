@@ -166,7 +166,10 @@ build_strategy_spec_tbl <- function(spec_list, run_id) {
 }
 
 #' Build nav table
-build_nav <- function(sim_result, run_id, strategy_id) {
+#' @param holdings_tbl build_holdings() 결과(선택) — 시뮬레이터가 net_exposure 를 주지 않으면 보유 비중 합(Σw)을 리밸일마다 재고
+#'   다음 리밸까지 이어 붙인다(첫 리밸 전 = 0). 구판은 gross_exposure(1 − 현금)로 채워 롱숏 장부도 순노출 1 로 적었다
+#'   (2026-10-17 2604.16773 점검 — 실제 순노출 중앙 −0.51). 보유가 없으면 구판 그대로.
+build_nav <- function(sim_result, run_id, strategy_id, holdings_tbl = NULL) {
   nav_dt <- copy(sim_result$DAILY_NAV_DT)
   if (!"NAV_gross" %in% names(nav_dt)) nav_dt[, NAV_gross := NAV]  # fallback
   setnames(nav_dt, c("NAV_gross", "NAV"), c("nav_gross", "nav_net"), skip_absent = TRUE)
@@ -174,7 +177,15 @@ build_nav <- function(sim_result, run_id, strategy_id) {
   # cash_weight, exposure, leverage, drawdown은 sim_result에서 derive
   if (!"cash_weight" %in% names(nav_dt)) nav_dt[, cash_weight := 0]
   if (!"gross_exposure" %in% names(nav_dt)) nav_dt[, gross_exposure := 1 - cash_weight]
-  if (!"net_exposure" %in% names(nav_dt)) nav_dt[, net_exposure := gross_exposure]
+  if (!"net_exposure" %in% names(nav_dt)) {
+    hw <- if (!is.null(holdings_tbl) && NROW(holdings_tbl) && all(c("date", "target_weight") %in% names(holdings_tbl)))
+      as.data.table(holdings_tbl)[!is.na(date) & is.finite(target_weight), .(net = sum(target_weight)), by = date][order(date)] else NULL
+    dcol <- intersect(c("Date", "date"), names(nav_dt))[1]          # 이 함수 끝에서야 Date → date 로 바꾼다
+    if (!is.null(hw) && nrow(hw) && !is.na(dcol)) {
+      k <- findInterval(as.numeric(as.Date(nav_dt[[dcol]])), as.numeric(as.Date(hw$date)))   # 그날까지 마지막 리밸(같은 날 포함)
+      nav_dt[, net_exposure := ifelse(k > 0L, hw$net[pmax(k, 1L)], 0)]
+    } else nav_dt[, net_exposure := gross_exposure]
+  }
   if (!"leverage" %in% names(nav_dt)) nav_dt[, leverage := gross_exposure]
 
   # drawdown_net via PerformanceAnalytics-style cummax
@@ -466,15 +477,20 @@ build_metrics <- function(nav_tbl, period_returns_tbl, holdings_tbl,
              "nav", "PerformanceAnalytics::maxDrawdown")
   dd_table <- tryCatch(table.Drawdowns(ret_xts, top = 100), error = function(e) NULL)
   if (!is.null(dd_table) && nrow(dd_table) > 0) {
+    # ★단위(10-17 수리): table.Drawdowns 의 Length · Recovery 는 '기간 수'(일간이면 거래일)다 — 구판은 그 수를 months 로 적었다
+    #   (2604.16773 · 2411.13555 산출에 4465 · 6185 '개월'). 같은 표의 날짜로 달력 개월을 잰다(진행 중 낙폭 = 마지막 날까지).
+    .mon <- function(a, b) as.numeric(difftime(as.Date(b), as.Date(a), units = "days")) / (365.25 / 12)
+    dd_end <- as.Date(dd_table$To); dd_end[is.na(dd_end)] <- as.Date(max(index(ret_xts)))
     add_metric("drawdown", "Max_DD_Duration_Months",
-               as.numeric(max(dd_table$Length, na.rm = TRUE)),
-               "months", "drawdowns", "PerformanceAnalytics::table.Drawdowns")
+               as.numeric(max(.mon(dd_table$From, dd_end), na.rm = TRUE)),
+               "months", "drawdowns", "max(From→To 또는 마지막 날) 달력 개월 [table.Drawdowns 날짜]")
     add_metric("drawdown", "Average_Drawdown",
                as.numeric(mean(dd_table$Depth, na.rm = TRUE)),
                "ratio", "drawdowns", "mean(Depth) [PerformanceAnalytics]")
+    rec_m <- .mon(dd_table$Trough, dd_table$To)              # 회복 못 한 낙폭(To = NA) = NA
     add_metric("drawdown", "Average_Recovery_Months",
-               as.numeric(mean(dd_table$Recovery, na.rm = TRUE)),
-               "months", "drawdowns", "mean(Recovery)")
+               if (any(is.finite(rec_m))) mean(rec_m, na.rm = TRUE) else NA_real_,
+               "months", "drawdowns", "mean(Trough→To) 달력 개월 [table.Drawdowns 날짜 · 회복분만]")
   }
 
   # 13.5 거래 (cost 제외)
@@ -751,11 +767,11 @@ build_bt_result <- function(sim_result, strategy_spec,
   # Component 2: strategy_spec
   spec_tbl <- build_strategy_spec_tbl(strategy_spec, run_id)
 
-  # Component 3: nav
-  nav_tbl <- build_nav(sim_result, run_id, strategy_id)
-
-  # Component 5: holdings (먼저 — turnover 계산 input)
+  # Component 5: holdings (먼저 — turnover 계산 · nav 순노출 input)
   holdings_tbl <- build_holdings(sim_result, run_id, strategy_id)
+
+  # Component 3: nav (순노출 = 시뮬레이터 값, 없으면 보유 Σw — 10-17)
+  nav_tbl <- build_nav(sim_result, run_id, strategy_id, holdings_tbl = holdings_tbl)
 
   # Component 4: period_returns (turnover 포함)
   period_returns_tbl <- build_period_returns(sim_result, run_id, strategy_id,
