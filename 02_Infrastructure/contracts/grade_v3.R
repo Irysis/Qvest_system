@@ -69,8 +69,11 @@ gv3_cfg <- function(root = NULL, path = NULL) {
     stop("[grade_v3] b_boundary 규칙 어휘 밖 — 기대 S_at_corner(same_window_benchmark_calmar · grade_b_min_portfolio_alpha_t)")
   if (!identical(cfg$c_boundary$rule, "S_gt_zero")) stop("[grade_v3] c_boundary 규칙 어휘 밖 — 기대 S_gt_zero")
   sr <- .gv3_or(cfg$cr_notch$strong_requires, "none")
-  if (!sr %in% c("none", "mc8_selection_defense"))
-    stop("[grade_v3] cr_notch.strong_requires 어휘 밖: ", sr, " (none | mc8_selection_defense)")
+  if (!sr %in% c("none", "mc8_selection_defense", "mc8_selection_or_timing_evidence"))
+    stop("[grade_v3] cr_notch.strong_requires 어휘 밖: ", sr, " (none | mc8_selection_defense | mc8_selection_or_timing_evidence)")
+  te <- cfg$cr_notch$timing_evidence
+  if (identical(sr, "mc8_selection_or_timing_evidence") && !(is.character(te) && length(te) == 1L && nzchar(te)))
+    stop("[grade_v3] strong_requires = mc8_selection_or_timing_evidence 는 cr_notch.timing_evidence(증거 등록부 경로)를 요구한다")
   cfg
 }
 
@@ -78,11 +81,82 @@ gv3_cfg <- function(root = NULL, path = NULL) {
 #'   설정 cr_notch.strong_requires = "mc8_selection_defense" 면 '강함'은 MC8 귀속(전체 창)이 선택(기전) 방어일 때만 강함으로 쓰고
 #'   아니면(크기 방어 · 노출 방어 · 방어 없음 · 판정 불가 · 대조 불가 · 오류) 보통으로 낮춘다 — 크기 방어 착시(헌장 §7.3)로 상향하지 않는다.
 #'   약함 · 보통 · 판정 불가는 그대로다(하향 노치는 대조와 무관).
-gv3_cr_for_notch <- function(cr, mc8_label, cfg) {
+#'   ★v3.2(10-18 · 헌장 §5 빈칸 9 A′ · decision_register CHARTER-GAPS-3-20261017): strong_requires = "mc8_selection_or_timing_evidence" 면
+#'   MC8 selection_defense 를 선택 / 타이밍으로 가른다 — MC8 판정 플라시보는 평균 노출만 맞추므로 위기 타이밍(시변 노출)도 selection_defense 가 된다.
+#'   선택 = 노출 경로가 고정이거나(타이밍 성분 없음) 노출 경로까지 맞춘 짝(size_exposure_path)을 과반에서 이김 → 강함.
+#'   타이밍 = 경로 짝은 못 이김 → 타이밍 방어 증거 기록((a) 같은 β 현금 사본을 깊은 위기 · 빠른 급락 과반에서 이김 (b) 두 엔진 확인
+#'   (c) 느린 약세 개선이 한 달 지연에서도 유지 — 라운드 평가가 남긴다)이 있을 때만 강함. 경로 짝을 못 쟀으면 보통(fail-closed).
+#' @param mc8 MC8 결과 list(label · exposure_varies · share_beats_size_exposure_path · majority_share) 또는 라벨 문자열(구 호출 — v3.2 에서는 타이밍 미해소)
+#' @param evidence 타이밍 방어 증거 기록 1건(gv3_timing_evidence 의 entry) 또는 NULL
+gv3_cr_for_notch <- function(cr, mc8, cfg, evidence = NULL) {
   req <- .gv3_or(cfg$cr_notch$strong_requires, "none")
   if (!identical(cr, "strong") || identical(req, "none")) return(cr)
-  if (identical(req, "mc8_selection_defense")) return(if (identical(mc8_label, "selection_defense")) "strong" else "normal")
+  lab <- if (is.list(mc8)) .gv3_or(mc8$label, NA_character_) else as.character(.gv3_or(mc8, NA_character_))[1]
+  if (identical(req, "mc8_selection_defense")) return(if (identical(lab, "selection_defense")) "strong" else "normal")
+  if (identical(req, "mc8_selection_or_timing_evidence"))
+    return(if (gv3_notch_basis(mc8, evidence) %in% c("selection", "timing_evidence")) "strong" else "normal")
   stop("[grade_v3] cr_notch.strong_requires 어휘 밖: ", req)
+}
+
+#' v3.2 노치 근거 — not_selection | selection | timing_evidence | timing_no_evidence | timing_unresolved
+gv3_notch_basis <- function(mc8, evidence = NULL) {
+  lab <- if (is.list(mc8)) .gv3_or(mc8$label, NA_character_) else as.character(.gv3_or(mc8, NA_character_))[1]
+  if (!identical(lab, "selection_defense")) return("not_selection")
+  if (!is.list(mc8)) return("timing_unresolved")                     # 라벨만으로는 경로 짝을 모른다
+  varies <- mc8$exposure_varies
+  if (identical(varies, FALSE)) return("selection")                  # 노출 경로 고정 — 타이밍 성분이 없다
+  sp  <- suppressWarnings(as.numeric(.gv3_or(mc8$share_beats_size_exposure_path, NA_real_))[1])
+  maj <- suppressWarnings(as.numeric(.gv3_or(mc8$majority_share, NA_real_))[1])
+  if (!isTRUE(varies) || !is.finite(sp) || !is.finite(maj)) return("timing_unresolved")
+  if (sp > maj) return("selection")                                  # 노출 경로까지 맞춘 짝을 과반에서 이김
+  if (isTRUE(gv3_timing_evidence_ok(evidence))) "timing_evidence" else "timing_no_evidence"
+}
+
+#' 타이밍 방어 증거 기록 1건이 A′ (a)(b)(c) 를 모두 충족하나 — 플래그는 라운드 평가(사전등록 판정)가 쓴다
+GV3_TIMING_FLAGS <- c("a_deep_beta_majority", "a_fast_beta_majority", "b_both_engines", "c_slow_lag1_retained")
+gv3_timing_evidence_ok <- function(evidence) {
+  if (!is.list(evidence) || !length(evidence)) return(FALSE)
+  all(vapply(GV3_TIMING_FLAGS, function(k) isTRUE(evidence[[k]]), logical(1)))
+}
+
+#' 증거 등록부에서 이 전략의 기록을 찾는다(strategy_id 우선 · 없으면 산출물 디렉터리) — 없거나 못 읽으면 NULL(fail-closed)
+gv3_timing_evidence <- function(cfg, strategy_id = NA_character_, dir = NA_character_, root = NULL) {
+  p <- .gv3_or(cfg$cr_notch$timing_evidence, NA_character_)
+  if (is.na(p) || !nzchar(p)) return(NULL)
+  p <- gsub("\\\\", "/", p)                                                 # Windows 역슬래시 경로(tempdir 등)를 슬래시로
+  f <- if (grepl("^([A-Za-z]:)?/", p)) p else file.path(.gv3_root(root), p)
+  if (!file.exists(f)) return(NULL)
+  reg <- tryCatch(fromJSON(f, simplifyVector = FALSE), error = function(e) NULL)
+  ent <- if (is.list(reg)) reg$entries else NULL
+  if (!length(ent)) return(NULL)
+  rt <- paste0(.gv3_root(root), "/")
+  rel <- function(d) { d <- gsub("\\\\", "/", as.character(d)); if (startsWith(d, rt)) substring(d, nchar(rt) + 1L) else d }
+  sid <- as.character(.gv3_or(strategy_id, NA_character_))[1]
+  hit <- Filter(function(z) (!is.na(sid) && nzchar(sid) && identical(as.character(.gv3_or(z$strategy_id, "")), sid)) ||
+                  (!is.na(dir) && nzchar(as.character(dir)) && identical(rel(.gv3_or(z$dir, "")), rel(dir))), ent)
+  if (length(hit)) hit[[length(hit)]] else NULL
+}
+
+#' 증거 기록 쓰기(라운드 평가 전용 writer) — 같은 (strategy_id, round_id) 는 교체 · 원자적 쓰기 · 플래그 4종과 출처 필수
+gv3_timing_evidence_add <- function(entry, cfg, root = NULL) {
+  need <- c("strategy_id", "dir", "round_id", "prereg_md5", "unit", GV3_TIMING_FLAGS)
+  miss <- setdiff(need, names(entry))
+  if (length(miss)) stop("[grade_v3] 타이밍 증거 기록 필드 누락: ", paste(miss, collapse = ","))
+  if (!all(vapply(GV3_TIMING_FLAGS, function(k) is.logical(entry[[k]]) && length(entry[[k]]) == 1L && !is.na(entry[[k]]), logical(1))))
+    stop("[grade_v3] 타이밍 증거 플래그는 TRUE/FALSE 하나씩이어야 한다")
+  p <- .gv3_or(cfg$cr_notch$timing_evidence, NA_character_)
+  if (is.na(p) || !nzchar(p)) stop("[grade_v3] cr_notch.timing_evidence 경로가 설정에 없다")
+  p <- gsub("\\\\", "/", p)                                                 # Windows 역슬래시 경로(tempdir 등)를 슬래시로
+  f <- if (grepl("^([A-Za-z]:)?/", p)) p else file.path(.gv3_root(root), p)
+  reg <- if (file.exists(f)) fromJSON(f, simplifyVector = FALSE) else list(schema = "timing_defense_evidence_v1", entries = list())
+  keep <- Filter(function(z) !(identical(as.character(z$strategy_id), as.character(entry$strategy_id)) &&
+                                 identical(as.character(z$round_id), as.character(entry$round_id))), .gv3_or(reg$entries, list()))
+  entry$recorded_at <- format(Sys.time(), "%Y-%m-%dT%H:%M:%S%z")
+  reg$entries <- c(keep, list(entry))
+  tmp <- paste0(f, ".tmp", Sys.getpid())
+  writeLines(toJSON(reg, auto_unbox = TRUE, pretty = TRUE, null = "null", digits = NA), tmp, useBytes = TRUE)
+  if (!file.rename(tmp, f)) { unlink(tmp); stop("[grade_v3] 증거 등록부 쓰기 실패: ", f) }
+  invisible(f)
 }
 
 # MC8 계약(matched_controls.R)을 사적 환경에 싣는다 — 행동 카드 계약은 .gv3_deps 환경 것을 넘긴다
@@ -141,7 +215,12 @@ gv3_cr_for_notch <- function(cr, mc8_label, cfg) {
   list(status = .gv3_or(k$controls$status, ctl$status), label = .gv3_or(a$label, NA_character_),
        share_beats_size_exposure = .gv3_or(a$share_beats_size_exposure, NA_real_),
        share_beats_exposure = .gv3_or(a$share_beats_exposure, NA_real_), share_beats_bench = .gv3_or(a$share_beats_bench, NA_real_),
-       median_placebo_p = .gv3_or(a$median_placebo_p, NA_real_), exec_price = ep$value, universe = uni, raw_source = rw$source)
+       median_placebo_p = .gv3_or(a$median_placebo_p, NA_real_),
+       # v3.2 선택 / 타이밍 구분 입력(헌장 빈칸 9 A′) — 노출 경로가 변할 때만 경로 짝이 있다
+       exposure_varies = .gv3_or(k$controls$exposure_profile$varies, NA),
+       share_beats_size_exposure_path = .gv3_or(a$share_beats_size_exposure_path, NA_real_),
+       majority_share = .gv3_or(k$controls$attribution$majority_share, NA_real_),
+       exec_price = ep$value, universe = uni, raw_source = rw$source)
 }
 
 #' A·B 문턱 — essence 와 같은 로더로 tier_graduation 정본을 읽는다. 정본 미해소(리터럴 폴백)면 멈춘다.
@@ -405,10 +484,21 @@ gv3_score_bt <- function(bt, root = NULL, ctx = NULL, gates = NULL) {
   if (identical(cs$cr, "strong") && !identical(.gv3_or(cfg$cr_notch$strong_requires, "none"), "none"))
     mc8 <- tryCatch(.gv3_mc8(X, card, ctx, root, e),
                     error = function(err) list(status = "error", label = NA_character_, err = conditionMessage(err)))
-  cr_notch <- gv3_cr_for_notch(cs$cr, mc8$label, cfg)
+  # v3.2 — 타이밍 방어(경로 짝 미통과)면 증거 등록부를 본다(없으면 보통 · fail-closed)
+  basis <- NA_character_; tev <- NULL
+  if (identical(cs$cr, "strong") && identical(.gv3_or(cfg$cr_notch$strong_requires, "none"), "mc8_selection_or_timing_evidence")) {
+    basis <- gv3_notch_basis(mc8)
+    if (identical(basis, "timing_no_evidence")) {
+      tev <- tryCatch(gv3_timing_evidence(cfg, as.character(.gv3_or(X$ar$strategy_id, NA_character_))[1], dir, root), error = function(err) NULL)
+      basis <- gv3_notch_basis(mc8, tev)
+    }
+  }
+  cr_notch <- gv3_cr_for_notch(cs$cr, mc8, cfg, tev)
   dec <- gv3_decide(S, S_B, fl, oos_parts, cr_notch, cfg, gates = gates)
   grade <- dec$grade; why <- dec$blocked_by
-  if (identical(cs$cr, "strong") && !identical(cr_notch, "strong")) why <- c(why, paste0("cr:strong_without_selection(", .gv3_or(mc8$label, mc8$status), ")"))
+  if (identical(cs$cr, "strong") && !identical(cr_notch, "strong"))
+    why <- c(why, if (!is.na(basis) && !identical(basis, "not_selection")) paste0("cr:strong_", basis) else
+                   paste0("cr:strong_without_selection(", .gv3_or(mc8$label, mc8$status), ")"))
 
   list(schema = "grade_v3_v1", mode = cfg$mode, dir = dir, nav_source = .gv3_or(X$nav_source, "contract"),
        strategy_id = as.character(.gv3_or(X$ar$strategy_id, NA)),
@@ -425,6 +515,7 @@ gv3_score_bt <- function(bt, root = NULL, ctx = NULL, gates = NULL) {
                   pass_recent = .gv3_or(rr$pass_recent, NA_real_), pass_oos = pass_oos, pass_min = pass_min,
                   pass_min_status = cfg$oos$rolling_pass_min_status, parts = as.list(oos_parts), gate = oos_gate),
        S_B = S_B, band = dec$band, notch = dec$notch, notch_a = dec$notch_a, cr_notch = cr_notch, mc8 = mc8,
+       cr_notch_basis = basis, timing_evidence = if (is.null(tev)) NULL else tev[c("round_id", "unit", GV3_TIMING_FLAGS)],
        rules_version = as.character(.gv3_or(cfg$rules_version, "v3.0")),
        crisis_def = as.character(.gv3_or(ctx$bc_cfg$crisis_episode_def, "running_peak_drawdown")),
        grade_v3 = grade, blocked_by = why)

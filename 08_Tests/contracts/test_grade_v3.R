@@ -126,6 +126,75 @@ ps <- file.path(TD, "gv3_sr.json"); cj <- fromJSON(file.path(ROOT, "06_Registry/
 cj$cr_notch$strong_requires <- "bogus"; writeLines(toJSON(cj, auto_unbox = TRUE, null = "null", digits = NA), ps)
 chk("C20 [위반 주입] strong_requires 어휘 밖 → 멈춘다", throws(gv3_cfg(ROOT, path = ps)))
 
+## ★v3.2(10-18 · 헌장 빈칸 9 A′) — MC8 selection_defense 를 선택 / 타이밍으로 가른다 · 타이밍은 증거 (a)(b)(c) 가 있을 때만 강함
+cfg_t <- cfg; cfg_t$cr_notch$strong_requires <- "mc8_selection_or_timing_evidence"
+cfg_t$cr_notch$timing_evidence <- file.path(TD, "tev.json")
+M <- function(lab = "selection_defense", varies = TRUE, sp = 0.2, maj = 0.5)
+  list(label = lab, exposure_varies = varies, share_beats_size_exposure_path = sp, majority_share = maj)
+EVD <- function(a1 = TRUE, a2 = TRUE, b = TRUE, c = TRUE)
+  list(strategy_id = "S_X", dir = "stage_artifacts/x", round_id = "RT", prereg_md5 = "m", unit = "both",
+       a_deep_beta_majority = a1, a_fast_beta_majority = a2, b_both_engines = b, c_slow_lag1_retained = c)
+crt <- function(m, ev = NULL, cr = "strong") gv3_cr_for_notch(cr, m, cfg_t, ev)
+chk("C21 현행 설정 = v3.2(mc8_selection_or_timing_evidence · 증거 등록부 경로 · 판 표식 v3.2)",
+    identical(cfg$cr_notch$strong_requires, "mc8_selection_or_timing_evidence") && identical(cfg$rules_version, "v3.2") &&
+      file.exists(file.path(ROOT, cfg$cr_notch$timing_evidence)))
+chk("C22 선택 방어 · 노출 경로 고정(경로 짝 없음) → 선택 → 강함", identical(gv3_notch_basis(M(varies = FALSE, sp = NA_real_)), "selection") &&
+      identical(crt(M(varies = FALSE, sp = NA_real_)), "strong"))
+chk("C23 선택 방어 · 노출 경로가 변함 · 경로 짝 과반 승(0.75 > 0.5) → 선택 → 강함",
+    identical(gv3_notch_basis(M(sp = 0.75)), "selection") && identical(crt(M(sp = 0.75)), "strong"))
+chk("C24 선택 방어 · 경로 짝 미통과(0.25 · 경계 0.5 포함) · 증거 없음 → 타이밍 · 보통(가점 없음)",
+    identical(gv3_notch_basis(M(sp = 0.25)), "timing_no_evidence") && identical(crt(M(sp = 0.25)), "normal") &&
+      identical(gv3_notch_basis(M(sp = 0.5)), "timing_no_evidence") && identical(crt(M(sp = 0.5)), "normal"))
+chk("C25 타이밍 · 증거 (a)(b)(c) 모두 참 → 강함 / 플래그 하나라도 거짓이면 보통",
+    identical(crt(M(sp = 0.25), EVD()), "strong") && identical(gv3_notch_basis(M(sp = 0.25), EVD()), "timing_evidence") &&
+      all(vapply(list(EVD(a1 = FALSE), EVD(a2 = FALSE), EVD(b = FALSE), EVD(c = FALSE)),
+                 function(e) identical(crt(M(sp = 0.25), e), "normal"), logical(1))))
+chk("C26 [fail-closed] 경로 짝을 못 잼(변하는데 NA · 노출 변화 미상) · 라벨 문자열만(구 호출) → 보통",
+    identical(gv3_notch_basis(M(sp = NA_real_)), "timing_unresolved") && identical(crt(M(sp = NA_real_)), "normal") &&
+      identical(crt(M(varies = NA, sp = 0.9)), "normal") && identical(crt("selection_defense"), "normal"))
+chk("C27 선택 방어 아님(크기 · 노출 · 방어 없음 · 판정 불가) → 증거가 있어도 보통 · 약함 · 보통은 그대로",
+    all(vapply(c("size_defense", "exposure_defense", "no_defense", "insufficient"),
+               function(l) identical(crt(M(lab = l, sp = 0.9), EVD()), "normal"), logical(1))) &&
+      identical(crt(M(), cr = "weak"), "weak") && identical(crt(M(), cr = "normal"), "normal"))
+gt <- function(S, m, ev = NULL) g(S, crt(m, ev), cf = cfg_t)
+chk("C28 B 띠 · CR 강함 · 하한 · OOS 충족: 선택이면 A(노치) · 증거 없는 타이밍이면 B · 증거 있는 타이밍이면 A",
+    identical(gt(0.9, M(sp = 0.75))$grade, "A") && identical(gt(0.9, M(sp = 0.25))$grade, "B") &&
+      identical(gt(0.9, M(sp = 0.25), EVD())$grade, "A"))
+## 증거 등록부(라운드 평가 writer · fail-closed 판독)
+chk("C29 등록부 없음 → NULL · writer 로 쓴 기록을 strategy_id · dir 로 찾는다 · 같은 (전략 · 라운드) 는 교체",
+    is.null(gv3_timing_evidence(cfg_t, "S_X", NA_character_, ROOT)) && {
+      gv3_timing_evidence_add(EVD(c = FALSE), cfg_t, ROOT); gv3_timing_evidence_add(EVD(), cfg_t, ROOT)
+      r1 <- gv3_timing_evidence(cfg_t, "S_X", NA_character_, ROOT); r2 <- gv3_timing_evidence(cfg_t, NA_character_, "stage_artifacts/x", ROOT)
+      length(fromJSON(file.path(TD, "tev.json"), simplifyVector = FALSE)$entries) == 1L && isTRUE(r1$c_slow_lag1_retained) &&
+        identical(r2$round_id, "RT") && is.null(gv3_timing_evidence(cfg_t, "S_OTHER", "stage_artifacts/y", ROOT)) })
+chk("C30 [위반 주입] 플래그 누락 · NA 플래그 · 경로 없는 설정 → writer 가 멈춘다 · 깨진 등록부 → NULL(가점 없음)",
+    throws(gv3_timing_evidence_add(EVD()[setdiff(names(EVD()), "b_both_engines")], cfg_t, ROOT)) &&
+      throws(gv3_timing_evidence_add(modifyList(EVD(), list(a_deep_beta_majority = NA)), cfg_t, ROOT)) &&
+      { cf0 <- cfg_t; cf0$cr_notch$timing_evidence <- NULL; throws(gv3_timing_evidence_add(EVD(), cf0, ROOT)) } &&
+      { writeLines("{ broken", file.path(TD, "tev_bad.json")); cfb <- cfg_t; cfb$cr_notch$timing_evidence <- file.path(TD, "tev_bad.json")
+        is.null(gv3_timing_evidence(cfb, "S_X", NA_character_, ROOT)) })
+pt <- file.path(TD, "gv3_te.json"); cj2 <- fromJSON(file.path(ROOT, "06_Registry/grade_v3.json"), simplifyVector = FALSE)
+cj2$cr_notch$timing_evidence <- NULL; writeLines(toJSON(cj2, auto_unbox = TRUE, null = "null", digits = NA), pt)
+chk("C31 [위반 주입] v3.2 요구인데 증거 등록부 경로가 설정에 없음 → gv3_cfg 가 멈춘다", throws(gv3_cfg(ROOT, path = pt)))
+## 뮤테이션(소스 텍스트 치환 사본 — 치환 성사를 먼저 단정한다)
+mut <- function(from, to) {
+  src <- readLines(file.path(ROOT, "02_Infrastructure/contracts/grade_v3.R"), encoding = "UTF-8", warn = FALSE)
+  hit <- grepl(from, src, fixed = TRUE)
+  if (sum(hit) != 1L) return(list(applied = FALSE, n = sum(hit)))
+  src[hit] <- gsub(from, to, src[hit], fixed = TRUE)
+  f <- file.path(TD, "gv3_mut.R"); writeLines(src, f, useBytes = TRUE)
+  en <- new.env(); sys.source(f, envir = en, keep.source = FALSE)
+  list(applied = TRUE, env = en)
+}
+m1 <- mut("if (sp > maj) return(\"selection\")", "if (sp >= maj) return(\"selection\")")
+chk("C32 [뮤테이션] 경로 짝 과반을 '≥'로 느슨하게 하면 경계(0.5)의 타이밍이 선택으로 새어 강함이 된다 — C24 가 잡는다",
+    isTRUE(m1$applied) && identical(m1$env$gv3_cr_for_notch("strong", M(sp = 0.5), cfg_t), "strong") &&
+      identical(crt(M(sp = 0.5)), "normal"), sprintf("(치환 %s)", isTRUE(m1$applied)))
+m2 <- mut("\"b_both_engines\", \"c_slow_lag1_retained\")", "\"b_both_engines\")")
+chk("C33 [뮤테이션] 증거 플래그에서 (c) 느린 약세 lag-1 유지를 빼면 (c) 거짓 증거로 강함이 된다 — C25 가 잡는다",
+    isTRUE(m2$applied) && identical(m2$env$gv3_cr_for_notch("strong", M(sp = 0.25), cfg_t, EVD(c = FALSE)), "strong") &&
+      identical(crt(M(sp = 0.25), EVD(c = FALSE)), "normal"), sprintf("(치환 %s)", isTRUE(m2$applied)))
+
 cat("=== D. 실측 산출물 (재사용 경로 양성 대조 · 위반 주입) ===\n")
 DIR <- file.path(ROOT, "stage_artifacts/replication/20260905_095537_1276/remeasure_close_t1_5562284e")
 need <- c("02_nav.csv", "03_period_returns.csv", "05_benchmark_returns.csv", "06_metrics.csv",

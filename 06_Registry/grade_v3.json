@@ -3,8 +3,8 @@
   "_doc": "등급 v3 (MC7) 설정 정본 — 계약 02_Infrastructure/contracts/grade_v3.R 이 읽는다. 설계 = 04_Research/01_reports/l1_prescription_redesign_20261013/README.md §2 · §3.5 · §7.2 · S0 결과 = s0_grade_v3/README.md. 모든 값에 출처를 단다(하드코딩 금지). 재보정 = 도훈 권한. A·B 문턱의 숫자(Calmar 0.64 · PORT_t 2.95 · 2.0 · CAGR 16% · Sharpe 0.8)는 여기 적지 않는다 — 정본 constraint_defaults.json::tier_graduation 을 essence_score.R::.graduation_params() 로 읽는다(두 곳에 적으면 갈라진다).",
   "mode": "authoritative",
   "mode_source": "MC7 권위 승격(2026-10-13 · decision_register GRADE-V3-PROMOTE · 눈검사 GRADE-V3-S0-EYECHECK 통과) — essence_score.R 이 이 계약으로 권위 등급(essence_grade)을 낸다. 구 5조건 판정은 grade_v921(진단). 이전 단계 = diagnostic(S0 · GRADE-V3-S0-BANDS)",
-  "rules_version": "v3.1",
-  "rules_version_source": "v3.0 = 2026-10-13 MC7 권위 승격(GRADE-V3-PROMOTE) · v3.1 = 같은 날 도훈 결정 GRADE-V3-CR-STRONG-SELECTION(CR '강함' 상향 노치 = MC8 선택(기전) 방어 동반 시만) + CRISIS-DEF-LT2020(행동 카드 위기 정의 = Lunde-Timmermann 20/20). 판이 바뀌면 저장분은 programs/grade_v3_backfill.R 이 다시 채점한다(판 표식 = grade_v3.rules_version)",
+  "rules_version": "v3.2",
+  "rules_version_source": "v3.0 = 2026-10-13 MC7 권위 승격(GRADE-V3-PROMOTE) · v3.1 = 같은 날 도훈 결정 GRADE-V3-CR-STRONG-SELECTION(CR '강함' 상향 노치 = MC8 선택(기전) 방어 동반 시만) + CRISIS-DEF-LT2020(행동 카드 위기 정의 = Lunde-Timmermann 20/20). 판이 바뀌면 저장분은 programs/grade_v3_backfill.R 이 다시 채점한다(판 표식 = grade_v3.rules_version) · v3.2 = 2026-10-18 헌장 §5 빈칸 9 = A′(도훈 10-17 결정 · decision_register CHARTER-GAPS-3-20261017): CR '강함' 상향 노치의 MC8 selection_defense 를 선택(노출 경로 고정 또는 노출 경로까지 맞춘 짝 size_exposure_path 를 과반에서 이김) / 타이밍(경로 짝 미통과)으로 가르고, 타이밍은 증거 기록(a) 같은 β 현금 사본을 깊은 위기 · 빠른 급락 과반에서 이김 (b) 두 엔진 확인 (c) 느린 약세 개선이 한 달 지연에서도 유지 — 이 있을 때만 상향. 증거의 셈 단위(LT 위기 / 독립 상태 일화)는 decision_register GRADE-V32-TIMING-EVENT-UNIT-20261018(도훈 결정 대기 — 그 전까지 증거 기록은 두 판 모두 통과해야 참)",
   "weights": {
     "calmar": 0.6,
     "port_t": 0.4
@@ -37,9 +37,10 @@
     "strong_to_a_requires_floors": true,
     "applies_to": "S_gt_zero",
     "a_blocked_to": "B",
-    "strong_requires": "mc8_selection_defense"
+    "strong_requires": "mc8_selection_or_timing_evidence",
+    "timing_evidence": "06_Registry/timing_defense_evidence.json"
   },
-  "cr_notch_source": "D2 수용(2026-10-13) — CR 강함 = 한 단계 상향(C→B · B→A 는 하한 ∧ OOS 관문 충족 시만) · 약함 = 한 단계 하향(A 불가 · B→C · C→F) · 노치는 S > 0 안에서만(F 는 노치 없음 — GRADE-V3-S0-BANDS). CR 판정 = behavior_card.R 전체 창 verdict(자기 낙폭 조건 포함) · ★strong_requires(10-13 도훈 GRADE-V3-CR-STRONG-SELECTION · MC8 보고서 §7): '강함' 상향 노치는 MC8 귀속(전체 창 · contracts/matched_controls.R)이 선택(기전) 방어일 때만 — 크기 방어 · 노출 방어 · 방어 없음 · 판정 불가 · 대조 불가(롱숏 · 보유 없음 · 오류)면 보통으로 취급(fail-closed). 하향 노치(약함)는 무관",
+  "cr_notch_source": "D2 수용(2026-10-13) — CR 강함 = 한 단계 상향(C→B · B→A 는 하한 ∧ OOS 관문 충족 시만) · 약함 = 한 단계 하향(A 불가 · B→C · C→F) · 노치는 S > 0 안에서만(F 는 노치 없음 — GRADE-V3-S0-BANDS). CR 판정 = behavior_card.R 전체 창 verdict(자기 낙폭 조건 포함) · ★strong_requires(10-13 도훈 GRADE-V3-CR-STRONG-SELECTION · MC8 보고서 §7): '강함' 상향 노치는 MC8 귀속(전체 창 · contracts/matched_controls.R)이 선택(기전) 방어일 때만 — 크기 방어 · 노출 방어 · 방어 없음 · 판정 불가 · 대조 불가(롱숏 · 보유 없음 · 오류)면 보통으로 취급(fail-closed). 하향 노치(약함)는 무관 · ★v3.2(10-18 · A′): strong_requires = mc8_selection_or_timing_evidence — MC8 판정 플라시보는 평균 노출만 맞추므로 위기 타이밍(시변 노출)도 selection_defense 가 된다(P2R03 철학 P2 C-20261017-046 적중 · 경로 짝 0.14~0.29). 선택 = 노출 경로 고정 또는 경로 짝 과반 승 → 강함 · 타이밍 = timing_evidence 등록부(라운드 평가가 쓰는 (a)(b)(c) 플래그)의 기록이 모두 참일 때만 강함 · 경로 짝을 못 쟀거나 기록이 없으면 보통(fail-closed)",
   "oos": {
     "split": "tau_d",
     "gate_components": [
