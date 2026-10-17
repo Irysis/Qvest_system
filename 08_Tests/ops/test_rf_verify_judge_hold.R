@@ -1,6 +1,7 @@
-## test_rf_verify_judge_hold.R — 감사가 측정을 받지 않으면 Judge 트리거를 보류한다(2026-10-17 · 1801.01777 실측)
-##   측정(러너 §11)은 감사 **전에** A 자격 관문을 태워 judge_request.eligible.json(pending)을 낸다. 감사가 미실행 · 상충 · 재구현이면
-##   그 엔진은 재측정 · 보류 · 교체되므로 트리거를 judge_request.held.json(status held:<코드>)으로 옮겨야 한다.
+## test_rf_verify_judge_hold.R — 검증기가 받지 않은 측정의 Judge 트리거를 보류한다(2026-10-17 · 1801.01777 실측)
+##   측정(러너 §11)은 A 자격 관문을 태워 judge_request.eligible.json(pending)을 낸다. 구판은 감사가 측정 **뒤**라 감사 기각 때 트리거가
+##   남았다(감사 자리 보류로 수리). 같은 날 감사가 측정 **앞**으로 옮겨져 감사 기각에는 트리거가 생기지 않고, 남은 자리 =
+##   측정 뒤 검증 실패(fail() — 축 · PIT 구조 · 충실도 꼬리표). fail() 이 트리거를 judge_request.held.json(status held:<코드>)으로 옮긴다.
 ##   검증기(02_Infrastructure/ops/rf_replication_verify.R)의 함수 정의만 격리 환경에 올린다(본문 미실행).
 ## 실행: Rscript 08_Tests/ops/test_rf_verify_judge_hold.R
 suppressPackageStartupMessages(library(jsonlite))
@@ -59,19 +60,40 @@ if (!is.null(HOLD)) {
   chk(file.exists(file.path(tdm, "judge_request.eligible.json")), "2b 돌연변이판은 eligible 이 남는다 → 1b 가 빨개진다(검출력 있음)")
 }
 
-cat("\n[3] 배선 — 감사 처분 3종(미실행 · 상충 · 재구현)이 분기 전에 보류를 부른다\n")
-i_call <- grep(".v1001_hold_judge(dirname(ar)", VL, fixed = TRUE)
-i_cond <- if (length(i_call)) i_call[1] - 1L else NA_integer_
-i_req  <- grep('if (identical(.disp$action, "audit_required"))', VL, fixed = TRUE)
-i_vrd  <- grep('jlog("fidelity_audit_verdict"', VL, fixed = TRUE)
-chk(length(i_call) == 1L, "3a 호출 지점 1곳", length(i_call))
-chk(length(i_call) == 1L && all(vapply(c('"audit_required"', '"audit_conflict"', '"reimplement"'), grepl, logical(1), x = VL[i_cond], fixed = TRUE)),
-    "3b 조건 = audit_required · audit_conflict · reimplement", if (is.finite(i_cond)) VL[i_cond] else "-")
-chk(length(i_call) == 1L && length(i_req) == 1L && length(i_vrd) == 1L && i_vrd[1] < i_call[1] && i_call[1] < i_req[1],
-    "3c 위치 = 감사 판정 기록 뒤 · 첫 처분 분기(audit_required) 앞 — 세 분기 모두 quit 전에 지난다")
-chk(!any(grepl('"proceed_suspect"', VL[i_cond], fixed = TRUE)), "3d 구현 의심 소비(proceed_suspect)는 보류하지 않는다 — 측정을 받는 처분")
+cat("\n[3] 배선 — 감사는 측정 앞(10-17)이라 감사 자리엔 보류가 없고, 측정 뒤 검증 실패(fail())가 보류를 부른다\n")
+CODE <- sub("#.*$", "", VL)
+chk(!any(grepl(".v1001_hold_judge(dirname(ar)", CODE, fixed = TRUE)), "3a 감사 자리 호출 없음 — 감사 시점엔 측정도 트리거도 없다")
+FAIL_TXT <- .def_text("fail")
+chk(!is.null(FAIL_TXT) && grepl(".v1001_hold_judge(", FAIL_TXT, fixed = TRUE) && grepl('exists("ar", envir = .home', FAIL_TXT, fixed = TRUE),
+    "3b fail() 가 산출물 경로(ar)가 있을 때만 보류를 부른다")
 
-unlink(file.path(tempdir(), c("jh_a", "jh_m", "jh_none")), recursive = TRUE)
+cat("\n[4] fail() 구동 — 측정 뒤 실패면 트리거 보류 · 측정 전 실패면 손대지 않음 (양방향 + 뮤테이션)\n")
+.fail_env <- function(fail_txt, td, with_ar) {
+  e <- .load(paste(HOLD, fail_txt, sep = "\n"))
+  e$REQ <- file.path(td, "req.json"); writeLines('{"status":"in_progress"}', e$REQ)
+  e$TITLE <- "픽스처"; e$PKEY <- "9999.00002"
+  e$.v1001_report <- function(...) invisible(TRUE); e$.tg_target_label <- function(t, k) t; e$.v1001_clip_words <- function(x, n) x
+  e$quit <- function(...) stop(structure(class = c("quit_called", "condition"), list(message = "quit", call = NULL)))
+  if (with_ar) e$ar <- file.path(td, "authoritative_remeasure.json")
+  e
+}
+.call_fail <- function(e) tryCatch({ e$fail("pit_structural", "C1 위반 픽스처"); FALSE }, quit_called = function(q) TRUE)
+if (!is.null(FAIL_TXT) && !is.null(HOLD)) {
+  t4 <- .fixture("f"); e4 <- .fail_env(FAIL_TXT, t4, with_ar = TRUE); q4 <- .call_fail(e4)
+  h4 <- tryCatch(fromJSON(file.path(t4, "judge_request.held.json"), simplifyVector = FALSE), error = function(err) list())
+  chk(isTRUE(q4) && !file.exists(file.path(t4, "judge_request.eligible.json")) && identical(h4$status, "held:verify_pit_structural") &&
+        identical(fromJSON(e4$REQ)$status, "failed_needs_session"),
+      "4a 측정 뒤 실패(ar 있음) → 트리거 held:verify_<사유> · 요청 failed_needs_session · 종료", h4$status %||% "-")
+  t5 <- .fixture("g"); e5 <- .fail_env(FAIL_TXT, t5, with_ar = FALSE); q5 <- .call_fail(e5)
+  chk(isTRUE(q5) && file.exists(file.path(t5, "judge_request.eligible.json")) && !file.exists(file.path(t5, "judge_request.held.json")),
+      "4b 측정 전 실패(ar 없음 — 예: pit_preflight) → 트리거 파일을 건드리지 않는다 ★음성")
+  mutf <- sub('  if (exists("ar", envir = .home, inherits = FALSE))\n', "  if (FALSE)\n", FAIL_TXT, fixed = TRUE)
+  chk(!identical(mutf, FAIL_TXT), "4c 뮤테이션 치환 성사(소스 텍스트)")
+  t6 <- .fixture("h"); .call_fail(.fail_env(mutf, t6, with_ar = TRUE))
+  chk(file.exists(file.path(t6, "judge_request.eligible.json")), "4d 보류를 끈 뮤테이션판은 eligible 이 남는다 → 4a 가 빨개진다(검출력)")
+}
+
+unlink(file.path(tempdir(), c("jh_a", "jh_m", "jh_none", "jh_f", "jh_g", "jh_h")), recursive = TRUE)
 cat(sprintf("\n합계: 통과 %d · 실패 %d\n", PASS, FAIL))
 cat(sprintf('{"test":"rf_verify_judge_hold","pass":%d,"fail":%d,"total":%d}\n', PASS, FAIL, PASS + FAIL))
 quit(status = if (FAIL > 0L) 1L else 0L)

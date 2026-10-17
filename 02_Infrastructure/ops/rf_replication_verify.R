@@ -121,6 +121,10 @@ jlog <- function(event, ...) {
 }
 fail <- function(why, detail = "") {
   jlog("verify_failed", why = why, detail = substr(detail, 1, 200))
+  ## 측정 뒤 검증 실패(축 · PIT 구조 · 충실도 꼬리표 …)면 러너 §11 이 낸 Judge 트리거도 보류한다 — 검증기가 받지 않은 측정이다(10-17)
+  .home <- parent.env(environment())
+  if (exists("ar", envir = .home, inherits = FALSE))
+    .v1001_hold_judge(dirname(get("ar", envir = .home)), code = paste0("verify_", why), detail = substr(detail, 1, 200))
   d <- tryCatch(fromJSON(REQ, simplifyVector = FALSE), error = function(e) list())
   d$status <- "failed_needs_session"; d$failure <- why; d$failure_detail <- substr(detail, 1, 400)
   write(toJSON(d, auto_unbox = TRUE, pretty = TRUE, null = "null"), REQ)
@@ -169,9 +173,10 @@ fail <- function(why, detail = "") {
   cap <- .V1001_CHART_CAP[basename(p)]
   setNames(p, ifelse(is.na(cap), basename(p), cap))
 }
-## Judge 트리거 보류 — 측정(러너 §11)이 감사 **전에** 낸 judge_request.eligible.json(pending)을 judge_request.held.json(status held:<코드>)으로
-##   옮긴다. 러너의 관문 보류와 같은 파일 이름 · 같은 status 형식(트리거 아님 · 스폰 없이 도훈 보고) · 원 요청 필드는 그대로 둔다.
-##   (2026-10-17 1801.01777 실측: A 판이 감사에서 기각돼 engine.R 이 개명됐는데 트리거는 pending 으로 남아 그 경로를 가리켰다)
+## Judge 트리거 보류 — 검증기가 받지 않은 측정(측정 뒤 fail())이 러너 §11 에서 낸 judge_request.eligible.json(pending)을
+##   judge_request.held.json(status held:<코드>)으로 옮긴다. 러너의 관문 보류와 같은 파일 이름 · 같은 status 형식(트리거 아님 · 스폰 없이
+##   도훈 보고) · 원 요청 필드는 그대로 둔다. (2026-10-17 1801.01777 실측: A 판이 감사에서 기각돼 engine.R 이 개명됐는데 트리거는
+##   pending 으로 남아 그 경로를 가리켰다. 같은 날 감사가 측정 앞으로 옮겨져 감사 기각에는 트리거가 생기지 않는다 — 남은 자리 = fail())
 .v1001_hold_judge <- function(dir, code, ...) {
   src <- file.path(dir, "judge_request.eligible.json")
   if (!file.exists(src)) return(invisible(FALSE))
@@ -328,6 +333,222 @@ fail <- function(why, detail = "") {
 eng <- file.path(WDIR, "engine.R")
 if (!file.exists(eng) || file.info(eng)$size < 200) fail("engine_too_small", eng)
 
+# ★정적 PIT 사전 점검(2026-10-17) — 러너(§4)는 detect_lookahead 를 엔진을 다 돌린 **뒤에** 해서, 1801.01777 재구현판은
+#   DNN 26회 학습을 끝낸 뒤 주석 속 함수 이름 오탐 1건으로 측정을 통째로 버렸다. 같은 함수를 실행 **전에** 먼저 돌린다(수 초).
+#   러너 안의 검사는 그대로 둔다(러너 = P3R03 핀 · 이중 확인). 위반이면 엔진을 돌리지 않고 같은 실패 경로로 보고한다.
+if (!exists("detect_lookahead", mode = "function"))
+  suppressMessages(source(file.path(ROOT, "02_Infrastructure/validation/lookahead_detector.R")))
+.pre_pit <- tryCatch(detect_lookahead(eng, verbose = FALSE), error = function(e) list(clean = NA, err = conditionMessage(e)))
+if (!isTRUE(.pre_pit$clean)) {
+  .pv <- vapply(.pre_pit$violations %||% list(), function(v) sprintf("line %s [%s] %s", v$line %||% "?", v$check %||% "?", v$msg %||% ""), "")
+  fail("pit_preflight", paste(c(.pre_pit$err, .pv), collapse = "; "))
+}
+jlog("pit_preflight_clean", engine = eng)
+
+## 측정 전 감사 보고의 '직전 판정' 문구 — 등급이 아직 없으면 측정 전(10-17 감사 선행)
+.v1001_gtxt <- function(g) { g <- as.character(g %||% NA_character_)[1]; if (is.na(g) || !nzchar(g)) "측정 전 감사(측정 자원 미사용)" else sprintf("측정 등급 %s", g) }
+G <- NA_character_
+# ── ★④ 적대적 충실도 감사 (도훈 지시 2026-09-04) ─────────────────────────────
+#   ★순서(2026-10-17 도훈 '실행 전에 오류를 잡아낼 순 없나 — 기각 알림을 보면 시간이 너무 아깝다'): 감사는 **측정 앞**에 선다.
+#     청정 모드 감사는 산출물을 보지 않는 코드 · 신고서 · 논문 대조라 측정이 필요 없다. 10-01 이후 25건 중 18건이 기각(1차는 거의 전부)이라
+#     구판(측정 → 감사)은 논문마다 측정 1회를 통째로 버렸다. 이제 기각(reimplement · audit_conflict · audit_required)은 측정 없이 끝나고,
+#     통과(proceed · proceed_suspect)만 측정으로 간다. 등급 G 는 이 시점에 없다(NA — 보고 문구는 .v1001_gtxt).
+#   위 3관문은 전부 **산출물**을 본다(계약·고정축·PIT). "논문대로 구현했는가" 만
+#   재도출이 없었고, FIDELITY.json 은 에이전트 자신의 진술이었다 — 진술은 증거가 아니다.
+#   ★값어치는 A등급 보호보다 **F 판정의 신뢰**에 있다: 아래 base_below_threshold 분기가
+#     ledger_consumed 로 논문을 영구 소비하기 때문이다. 구현이 틀려서 F 였다면 그 논문은
+#     잘못된 이유로 영영 버려진다. 그래서 감사는 **등급 무관 전건**이고 소비 **앞에** 선다.
+#   처분(도훈 선택): misdeclared → 자동 재구현 1회 + 소비 보류. 재구현도 기각되면
+#   소비하되 implementation_suspect 꼬리표를 남긴다(무한 재시도도, 조용한 소비도 아니다).
+suppressMessages(source(file.path(ROOT, "02_Infrastructure/ops/rf_fidelity_audit_lib.R"), local = TRUE))
+.aud_p <- file.path(WDIR, "fidelity_audit.json")
+.rq0 <- tryCatch(fromJSON(REQ, simplifyVector = FALSE), error = function(e) list())
+.aud_tries <- as.integer(.rq0$audit_retries %||% 0L)
+# ★청정 모드 감사 (결정 FA-CLEAN-BASE-PATH · 2026-09-26) — 레인이 RP_LANE_MODE=clean 을 싣으면 감사 레인에 산출물 경로를 주지 않고
+#   (감사 프롬프트가 '청정 모드 — 비공개' 줄을 쓴다) 스폰 한 번에만 가드 표식을 싣는다(측정·원장 쓰기에는 안 샌다).
+#   재구현 피드백(감사 지적)이 측정을 본 감사자의 서술이 되지 않게 — 도우미 = rf_clean_lane_lib.R. 도우미 판독 불능이면 구판 그대로 부르고
+#   감사 출처를 normal 로 남긴다(레인이 그 지적을 청정 재구현에 싣지 않는다 — fail-closed 방향).
+.CLEAN_LIB_OK <- tryCatch({ suppressMessages(source(file.path(ROOT, "02_Infrastructure/ops/rf_clean_lane_lib.R"), local = TRUE)); TRUE },
+                          error = function(e) { jlog("clean_lane_lib_missing", err = conditionMessage(e)); FALSE })
+.CLEAN <- isTRUE(.CLEAN_LIB_OK) && identical(rcl_lane_mode(), "clean")
+.AUD_MODE <- if (.CLEAN) "clean" else "normal"
+if (identical(Sys.getenv("RP_LANE_MODE", "normal"), "clean") && !.CLEAN)
+  jlog("clean_audit_degraded", note = "레인은 청정인데 도우미 판독 불능 — 감사를 구판 조건으로 부른다(감사 지적은 청정 재구현에 실리지 않는다)")
+# 감사 레인 스폰 1회 → rc. system2(stdout=TRUE) 는 rc≠0 일 때만 status 속성을 단다(없으면 0).
+.spawn_audit <- function() {
+  .art <- ""   # ★측정 전 감사(10-17) — 이 엔진의 산출물은 아직 없다(청정 모드와 같은 정보 조건 · 코드 · 신고서 · 논문 대조)
+  .run <- function() system2("bash", c(shQuote(file.path(ROOT, "02_Infrastructure/ops/rf_fidelity_audit.sh")),
+                                       shQuote(WDIR), shQuote(.art), shQuote(URL), shQuote(PKEY %||% "")),
+                             wait = TRUE, stdout = TRUE, stderr = TRUE)
+  r <- if (.CLEAN) rcl_with_env(rcl_clean_env(WDIR), .run()) else .run()
+  as.integer(attr(r, "status") %||% 0L)
+}
+# ★재감사 — 앞 회차 지적 전문을 감사 레인에 넘긴다(2026-10-14 · 1810.08384 감사 상충 실측). 재구현이 받은 피드백 그대로이고,
+#   감사 레인이 항목마다 confirmed/overturned 를 적는다 → 번복(근거 있음)이면 처분이 audit_conflict(세션 판정)로 보낸다.
+#   청정 레인은 청정 감사의 지적만 넘긴다(레인이 재구현 프롬프트에 싣는 조건과 같다 — rf_replication_auto.sh '청정 모드' 절).
+.prior_p  <- file.path(WDIR, ".prior_audit_findings.md")
+.prior_fb <- as.character(.rq0$audit_feedback %||% "")[1]; if (is.na(.prior_fb)) .prior_fb <- ""
+.prior_ok <- .aud_tries >= 1L && nzchar(trimws(.prior_fb)) &&
+             (!.CLEAN || identical(as.character(.rq0$audit_feedback_mode %||% "")[1], "clean"))
+if (.prior_ok) writeLines(enc2utf8(.prior_fb), .prior_p, useBytes = TRUE) else unlink(.prior_p, force = TRUE)
+if (.aud_tries >= 1L && !.prior_ok)
+  jlog("prior_audit_findings_withheld", retries = .aud_tries, has_feedback = nzchar(trimws(.prior_fb)),
+       note = "재감사인데 앞 회차 지적을 넘기지 못했다(피드백 없음 또는 비청정 감사 지적) — 감사 상충은 탐지되지 않는다")
+# ★감사 없이는 개설하지 않는다 (2026-09-06 — 09-05 실사고 3건: 킬스위치·CLI 부재·병합 즉사로 감사가
+#   안 돌았는데 그 부재를 unverifiable 로 읽어 전부 proceed 했다). 관문은 rf_audit_gate 하나다:
+#   스폰 → 읽기 → 처분, 미실행이면 최대 2회 더 스폰(사이 rc 는 fidelity_audit_retry 저널로 남는다).
+#   ★ruling = 세션 판정(감사 상충 뒤 · alpha-search SKILL §5 — 요청의 audit_ruling · 레인은 failure=audit_ruled 면 검증기만 돈다)
+.gate <- rf_audit_gate(WDIR, .spawn_audit, max_retries = 2L, retries_done = .aud_tries, log_fn = jlog,
+                       ruling = .rq0$audit_ruling)
+.aud <- .gate$aud; .disp <- .gate$disp
+.n_ov <- .n_overturned(.aud)
+if (.n_ov > 0L && !identical(.disp$action, "audit_conflict"))
+  jlog("fidelity_prior_overturned", n = .n_ov, action = .disp$action,
+       note = "재감사가 앞 회차 지적을 번복했다 — 이번 판정이 기각이 아니어서 상충 보류는 없다(기록만)")
+jlog("fidelity_audit_verdict", verdict = .aud$verdict, action = .disp$action,
+     undeclared = length(.aud$undeclared_changes %||% list()),
+     mismatch = length(.aud$signal_mismatch %||% list()), retries = .aud_tries,
+     spawns = .gate$spawns, last_rc = .gate$last_rc, audit_mode = .AUD_MODE)
+# (Judge 트리거 보류는 여기서 하지 않는다 — 감사가 측정 앞에 서서 이 시점엔 트리거가 없다. 측정 뒤 검증 실패의 보류 = fail())
+# ★출처 기록(FA-CLEAN-BASE-PATH) — 감사 1건(모드 · 산출물 비공개 여부 · 판정). 청정 재구현이면 아래 분기가 원천 사본 위치를 더한다.
+.aud_src <- NULL
+if (identical(.disp$action, "reimplement") && .CLEAN)
+  .aud_src <- tryCatch(rcl_archive_audit_src(WDIR, .aud_tries + 1L), error = function(e) { jlog("clean_audit_archive_failed", err = conditionMessage(e)); NULL })
+if (isTRUE(.CLEAN_LIB_OK))
+  tryCatch(rcl_prov_audit(WDIR, list(at = format(Sys.time(), "%Y-%m-%dT%H:%M:%S%z"), mode = .AUD_MODE, art_hidden = .CLEAN,
+                                     verdict = as.character(.aud$verdict %||% ""), action = as.character(.disp$action %||% ""),
+                                     spawns = as.integer(.gate$spawns), src = if (is.null(.aud_src)) NULL else .aud_src$rel)),
+           error = function(e) jlog("lane_provenance_audit_failed", err = conditionMessage(e)))
+
+if (identical(.disp$action, "audit_required")) {
+  # ★미실행은 별개 사건이다 — 소비도 개설도 큐 미러도 없이 세션 대기(failed_needs_session/audit_not_run)로
+  #   되돌린다. 엔진은 그대로 둔다: 다음 tick 의 레인(rf_replication_auto.sh)이 audit_not_run + engine.R
+  #   존재를 보면 에이전트 없이 검증기만 다시 돈다 — 30분짜리 재구현을 감사 미실행 때문에 태우지 않는다.
+  .why <- sprintf("%s (스폰 %d회 · 마지막 rc %d)", as.character(.disp$reason %||% "감사 미실행")[1],
+                  as.integer(.gate$spawns), as.integer(.gate$last_rc))
+  .Gs <- as.character(G %||% "NA")[1]
+  jlog("fidelity_audit_not_run", reason = .why, paper_key = PKEY %||% "", grade = .Gs,
+       note = "감사 없이 개설 불가 — 요청을 failed_needs_session/audit_not_run 으로 되돌린다(원장·큐 미러 손대지 않음)")
+  d <- tryCatch(fromJSON(REQ, simplifyVector = FALSE), error = function(e) list())
+  d$status <- "failed_needs_session"; d$failure <- "audit_not_run"; d$failure_detail <- substr(.why, 1, 400)
+  write(toJSON(d, auto_unbox = TRUE, pretty = TRUE, null = "null"), REQ)
+  tryCatch(.v1001_report(target = .tg_target_label(TITLE, PKEY),
+                       status = list(stage = "충실구현 — 적대적 충실도 감사", previous = .v1001_gtxt(G),
+                                     position = sprintf("감사 스폰 %d회 전부 산출 없음", as.integer(.gate$spawns))),
+                       verdict_line = paste0("충실도 감사 미실행 — 소비 · 재료 등록 보류. 사유: ", .v1001_clip_words(.why, 240L)),
+                       next_step = "엔진은 그대로 두고 검증기(감사 → 측정)만 재시도한다(3회 규약). 레인이 죽었으면 저널 fidelity_audit_retry 를 먼저 본다",
+                       push = TRUE),
+    error = function(e) jlog("telegram_failed", err = conditionMessage(e)))
+  quit(status = 0)
+}
+
+if (identical(.disp$action, "audit_conflict")) {
+  # ★감사 상충(2026-10-14 · 1810.08384 실측) — 재감사가 앞 회차 지적을 원문 근거로 번복했다. 재구현이 틀린 지적을 따랐을 수 있어
+  #   이 기각을 구현자 몫(proceed_suspect = 소비 + 꼬리표)으로 세지 않는다. 소비 · 재료 등록 · 큐 미러 없이 이 논문만 보류하고
+  #   (스킵리스트 held_audit_conflict — 선택기 rf_next_paper_pick.py 와 레인 스킵 관문이 revoked 아닌 항목을 집지 않는다)
+  #   레인은 다음 논문으로 간다 — 무인 레인에 사람 대기 종점을 만들지 않는다(재시도 장치 주석 2026-08-30 규약).
+  #   판정 절차 = alpha-search SKILL §5 — 두 판정 모두 재구현 대기열로 운반한다(rf_reimplement_queue_reserve · kind = reimplement | ruling ·
+  #   발행이 보류를 풀고 lane_mode 를 요청에 싣는다 · 2026-10-14 리뷰 C2 · C5 · C6).
+  #   ★audit_conflict.json 은 **판정 재료만** 싣는다 — 청정 작업 디렉터리에 남으므로 등급 · 산출물 경로를 쓰지 않는다(리뷰 U6 · 다음 청정
+  #     구현자가 가드 없이 읽는다). 엔진 지문(engine_md5)과 lane_mode 를 남겨 판정이 이 엔진 · 이 작업 디렉터리에 묶이게 한다(리뷰 C1 · C2).
+  .Gs  <- as.character(G %||% "NA")[1]
+  .rel <- function(p) {   # 접두 고정 문자열 비교 — ROOT 를 정규식에 넣지 않는다(역슬래시 경로의 '\U' 즉사 전례)
+    p <- gsub("\\", "/", p, fixed = TRUE); r <- paste0(sub("/+$", "", gsub("\\", "/", ROOT, fixed = TRUE)), "/")
+    if (startsWith(p, r)) substring(p, nchar(r) + 1L) else p
+  }
+  .ov  <- rf_audit_overturned(.aud)   # 처분과 같은 술어(lib 한 자리) — 근거 있는 번복만
+  .cf_p <- file.path(WDIR, "audit_conflict.json")
+  .now <- format(Sys.time(), "%Y-%m-%dT%H:%M:%S%z")
+  .lm  <- as.character(.rq0$lane_mode %||% (if (.CLEAN) "clean" else "normal"))[1]
+  .emd5 <- if (file.exists(eng)) unname(tools::md5sum(eng)) else ""
+  tryCatch(writeLines(toJSON(list(schema = "audit_conflict_v2", at = .now, paper_key = PKEY %||% "", url = URL, title = TITLE,
+                                  wdir = .rel(WDIR), lane_mode = .lm, engine_md5 = .emd5, audit = .rel(.aud_p),
+                                  audit_retries = .aud_tries, audit_verdict = as.character(.aud$verdict %||% "")[1],
+                                  n_overturned = length(.ov), overturned = .ov,
+                                  prior_feedback = .prior_fb, current_feedback = .disp$feedback %||% ""),
+                             auto_unbox = TRUE, pretty = TRUE, null = "null", na = "null"), .cf_p, useBytes = TRUE),
+           error = function(e) jlog("audit_conflict_write_failed", err = conditionMessage(e)))
+  .skp <- file.path(ROOT, "06_Registry/replication_skiplist.json")
+  .sk_ok <- tryCatch({
+    sk <- if (file.exists(.skp)) fromJSON(.skp, simplifyVector = FALSE) else list(schema = "replication_skiplist_v1", entries = list())
+    live <- vapply(sk$entries %||% list(), function(e) identical(as.character(e$paper_key %||% ""), PKEY) &&
+                     !identical(as.character(e$status %||% ""), "revoked"), logical(1))
+    if (nzchar(PKEY %||% "") && !any(live)) {
+      sk$entries <- c(sk$entries %||% list(), list(list(
+        paper_key = PKEY, status = "held_audit_conflict", added_at = .now, detail = .rel(.cf_p),
+        reason = sprintf("감사 상충 — 재감사가 앞 회차 지적 %d건을 원문 근거로 번복(재구현 %d회). 소비 · 재료 등록 보류 · 세션 판정 대기. ★보류 해제는 status=revoked", length(.ov), .aud_tries))))
+      .tmp <- paste0(.skp, ".tmp", Sys.getpid())
+      writeLines(toJSON(sk, auto_unbox = TRUE, pretty = TRUE, null = "null", na = "null"), .tmp, useBytes = TRUE)
+      if (!file.rename(.tmp, .skp)) { unlink(.tmp); stop("스킵리스트 교체 실패") }
+    }
+    TRUE
+  }, error = function(e) { jlog("audit_conflict_skiplist_failed", err = conditionMessage(e)); FALSE })
+  d <- tryCatch(fromJSON(REQ, simplifyVector = FALSE), error = function(e) list())
+  d$status <- "held_audit_conflict"; d$failure <- "audit_conflict"; d$audit_conflict <- .rel(.cf_p)
+  d$audit_ruling <- NULL                                   # 앞 판정이 남아 있으면 지운다(판정은 대기열 예약으로만 다시 온다)
+  d$failure_detail <- substr(sprintf("재감사 번복 %d건: %s", length(.ov),
+                                     paste(vapply(.ov, function(z) as.character(z$item %||% "")[1], character(1)), collapse = " / ")), 1, 400)
+  write(toJSON(d, auto_unbox = TRUE, pretty = TRUE, null = "null"), REQ)
+  jlog("fidelity_audit_conflict", paper_key = PKEY %||% "", grade = .Gs, n_overturned = length(.ov), retries = .aud_tries,
+       detail = .rel(.cf_p), note = "감사 상충 — 구현자 몫으로 세지 않는다(소비 · 재료 등록 보류 · 스킵리스트 held_audit_conflict · 세션 판정)")
+  tryCatch(.v1001_report(target = .tg_target_label(TITLE, PKEY),
+                       status = list(stage = "충실구현 — 적대적 충실도 감사(재감사)", previous = sprintf("%s · 재구현 %d회", .v1001_gtxt(G), .aud_tries),
+                                     position = "감사 상충 · 소비 보류 · 다음 논문 진행"),
+                       verdict_line = sprintf("재감사가 앞 회차 지적 %d건을 원문 근거로 번복했다 — 재구현이 틀린 지적을 따랐을 수 있어 이 기각을 구현 실패로 세지 않는다",
+                                              length(.ov)),
+                       extra = list(list(type = "text", emoji = "📝", heading = "번복된 앞 회차 지적",
+                                         body = paste(vapply(head(.ov, 4L), function(z) sprintf("• %s — %s", .tg_clip(z$item %||% "", 60L),
+                                                                                                 .tg_clip(z$evidence %||% "", 140L)), character(1)),
+                                                      collapse = "\n"))),
+                       next_step = if (isTRUE(.sk_ok))
+                                     sprintf("세션이 원문으로 판정한다(%s) — 재구현 예약 또는 수용 예약(재구현 대기열)", .rel(.cf_p))
+                                   else "★스킵리스트 보류 기록 실패 — 다음 논문으로 넘어가지 않고 멈춘다(같은 논문 재발행 방지). 세션이 보류를 손으로 남긴 뒤 재개",
+                       push = TRUE),
+    error = function(e) jlog("telegram_failed", err = conditionMessage(e)))
+  ## ★보류 기록에 실패하면 다음 논문으로 넘어가지 않는다(fail-closed · 리뷰 U5): 원장 미소비 + 스킵리스트 미기록이면 선택기가 같은 논문을
+  ##   즉시 처음부터 다시 낸다. 요청은 held 로 두고(레인은 pending 이 아니면 돌지 않는다) 세션이 정리한다.
+  if (isTRUE(.sk_ok))
+    system2("Rscript", c(shQuote(file.path(ROOT, "02_Infrastructure/programs/next_replication.R")), "--root", shQuote(ROOT)), wait = TRUE)
+  quit(status = 0)
+}
+
+if (identical(.disp$action, "reimplement")) {
+  # ★소비 보류 — 원장에 아무것도 열지 않고 요청만 되돌린다. selector 는 원장으로 소비를
+  #   판단하므로, 여기서 열지 않으면 같은 논문이 다시 잡힌다(그게 의도다).
+  .bk <- file.path(WDIR, sprintf("engine.rejected%d.R", .aud_tries + 1L))
+  tryCatch(file.rename(file.path(WDIR, "engine.R"), .bk), error = function(e) NULL)
+  d <- .rq0
+  d$audit_ruling <- NULL                                   # 판정은 그 판정 대상 엔진에만 — 재구현 판으로 옮기지 않는다(리뷰 C1)
+  d$status <- "pending"
+  d$audit_retries <- .aud_tries + 1L
+  d$audit_feedback <- .disp$feedback
+  d$audit_verdict <- .aud$verdict
+  d$audit_at <- format(Sys.time(), "%Y-%m-%dT%H:%M:%S%z")
+  # ★감사 지적의 출처 모드(FA-CLEAN-BASE-PATH) — 레인은 clean 인 지적만 청정 재구현 프롬프트에 싣는다(가림 뒤) ·
+  #   원천 사본(.clean_audit_src/r<n>) 위치를 함께 남긴다(사후 검사가 파일에서 '산출물 비공개 감사' 를 재도출한다)
+  d$audit_feedback_mode <- if (.CLEAN && !is.null(.aud_src)) "clean" else "normal"
+  d$audit_feedback_src <- if (is.null(.aud_src)) NULL else .aud_src$rel
+  write(toJSON(d, auto_unbox = TRUE, pretty = TRUE, null = "null"), REQ)
+  jlog("fidelity_reimplement_requested", paper_key = PKEY %||% "", grade = G,
+       note = "충실도 기각 — 소비 보류. 다음 tick 이 지적사항을 안고 재구현한다")
+  tryCatch({
+    .n_find <- length(.aud$undeclared_changes %||% list()) + length(.aud$signal_mismatch %||% list())
+    .v1001_report(target = .tg_target_label(TITLE, PKEY),
+                status = list(stage = "충실구현 — 적대적 충실도 감사", previous = .v1001_gtxt(G),
+                              position = "감사 기각 · 소비 보류 · 자동 재구현 1회"),
+                verdict_line = sprintf("충실도 감사 기각(%s) — 지적 %d건. 논문을 잘못된 이유로 버리지 않도록 지적을 안고 다시 구현한다",
+                                       as.character(.aud$verdict %||% "?"), .n_find),
+                extra = list(list(type = "text", emoji = "📝", heading = "감사 지적 요약",
+                                  body = rf_audit_tg_brief(.aud, audit_path = sub(paste0("^", ROOT, "/?"), "", .aud_p)))),
+                next_step = "다음 tick 이 지적사항을 안고 재구현한다", push = FALSE) },
+    error = function(e) jlog("telegram_failed", err = conditionMessage(e)))
+  quit(status = 0)
+}
+.aud_suspect <- identical(.disp$action, "proceed_suspect")
+if (.aud_suspect) jlog("fidelity_suspect_proceed", paper_key = PKEY %||% "",
+  note = "재구현도 충실도 기각 — 소비하되 implementation_suspect 로 남긴다")
+
+
 # ── ①-0 의존 패키지 자동 설치 (도훈 지시 2026-08-30 "없으면 바로 깔아쓰게") ──
 #   에이전트에는 Bash 권한을 주지 않는다(안전). 대신 여기서 엔진을 스캔해 설치한다.
 #   2026-08-30 실측: 에이전트가 reticulate 를 쓴 엔진을 냈고 패키지 부재로 계약이 통째로 죽었다.
@@ -433,15 +654,6 @@ if (!.cmsn_known) .cmsn <- NULL
 if (!is.null(.pspec)) jlog("portfolio_spec_from_fidelity",
                            construction = .pspec$construction %||% "?",
                            commission = if (.cmsn_known) .cmsn else "무명시(gross 병기)")
-# ★정적 PIT 사전 점검(2026-10-17) — 러너(§4)는 detect_lookahead 를 엔진을 다 돌린 **뒤에** 해서, 1801.01777 재구현판은
-#   DNN 26회 학습을 끝낸 뒤 주석 속 함수 이름 오탐 1건으로 측정을 통째로 버렸다. 같은 함수를 실행 **전에** 먼저 돌린다(수 초).
-#   러너 안의 검사는 그대로 둔다(러너 = P3R03 핀 · 이중 확인). 위반이면 엔진을 돌리지 않고 같은 실패 경로로 보고한다.
-.pre_pit <- tryCatch(detect_lookahead(eng, verbose = FALSE), error = function(e) list(clean = NA, err = conditionMessage(e)))
-if (!isTRUE(.pre_pit$clean)) {
-  .pv <- vapply(.pre_pit$violations %||% list(), function(v) sprintf("line %s [%s] %s", v$line %||% "?", v$check %||% "?", v$msg %||% ""), "")
-  fail("pit_preflight", paste(c(.pre_pit$err, .pv), collapse = "; "))
-}
-jlog("pit_preflight_clean", engine = eng)
 res <- tryCatch(do.call(run_paper_replication, c(list(
   strategy_name = paste0("RP_AUTO_", gsub("[^A-Za-z0-9]", "", substr(PKEY, 1, 20))),
   strategy_idea = paste0("[무인 충실구현] ", substr(TITLE, 1, 120)),
@@ -503,203 +715,6 @@ jlog("fidelity", label = .fidelity, kept = substr(.fid$kept %||% "", 1, 90),
 G <- AR$essence_grade
 jlog("verified", grade = G, port_t = es$portfolio_alpha_t_nw_lag3, artifacts = dirname(ar))
 
-# ── ★④ 적대적 충실도 감사 (도훈 지시 2026-09-04) ─────────────────────────────
-#   위 3관문은 전부 **산출물**을 본다(계약·고정축·PIT). "논문대로 구현했는가" 만
-#   재도출이 없었고, FIDELITY.json 은 에이전트 자신의 진술이었다 — 진술은 증거가 아니다.
-#   ★값어치는 A등급 보호보다 **F 판정의 신뢰**에 있다: 아래 base_below_threshold 분기가
-#     ledger_consumed 로 논문을 영구 소비하기 때문이다. 구현이 틀려서 F 였다면 그 논문은
-#     잘못된 이유로 영영 버려진다. 그래서 감사는 **등급 무관 전건**이고 소비 **앞에** 선다.
-#   처분(도훈 선택): misdeclared → 자동 재구현 1회 + 소비 보류. 재구현도 기각되면
-#   소비하되 implementation_suspect 꼬리표를 남긴다(무한 재시도도, 조용한 소비도 아니다).
-suppressMessages(source(file.path(ROOT, "02_Infrastructure/ops/rf_fidelity_audit_lib.R"), local = TRUE))
-.aud_p <- file.path(WDIR, "fidelity_audit.json")
-.rq0 <- tryCatch(fromJSON(REQ, simplifyVector = FALSE), error = function(e) list())
-.aud_tries <- as.integer(.rq0$audit_retries %||% 0L)
-# ★청정 모드 감사 (결정 FA-CLEAN-BASE-PATH · 2026-09-26) — 레인이 RP_LANE_MODE=clean 을 싣으면 감사 레인에 산출물 경로를 주지 않고
-#   (감사 프롬프트가 '청정 모드 — 비공개' 줄을 쓴다) 스폰 한 번에만 가드 표식을 싣는다(측정·원장 쓰기에는 안 샌다).
-#   재구현 피드백(감사 지적)이 측정을 본 감사자의 서술이 되지 않게 — 도우미 = rf_clean_lane_lib.R. 도우미 판독 불능이면 구판 그대로 부르고
-#   감사 출처를 normal 로 남긴다(레인이 그 지적을 청정 재구현에 싣지 않는다 — fail-closed 방향).
-.CLEAN_LIB_OK <- tryCatch({ suppressMessages(source(file.path(ROOT, "02_Infrastructure/ops/rf_clean_lane_lib.R"), local = TRUE)); TRUE },
-                          error = function(e) { jlog("clean_lane_lib_missing", err = conditionMessage(e)); FALSE })
-.CLEAN <- isTRUE(.CLEAN_LIB_OK) && identical(rcl_lane_mode(), "clean")
-.AUD_MODE <- if (.CLEAN) "clean" else "normal"
-if (identical(Sys.getenv("RP_LANE_MODE", "normal"), "clean") && !.CLEAN)
-  jlog("clean_audit_degraded", note = "레인은 청정인데 도우미 판독 불능 — 감사를 구판 조건으로 부른다(감사 지적은 청정 재구현에 실리지 않는다)")
-# 감사 레인 스폰 1회 → rc. system2(stdout=TRUE) 는 rc≠0 일 때만 status 속성을 단다(없으면 0).
-.spawn_audit <- function() {
-  .art <- if (.CLEAN) rcl_audit_art(TRUE, dirname(ar)) else dirname(ar)
-  .run <- function() system2("bash", c(shQuote(file.path(ROOT, "02_Infrastructure/ops/rf_fidelity_audit.sh")),
-                                       shQuote(WDIR), shQuote(.art), shQuote(URL), shQuote(PKEY %||% "")),
-                             wait = TRUE, stdout = TRUE, stderr = TRUE)
-  r <- if (.CLEAN) rcl_with_env(rcl_clean_env(WDIR), .run()) else .run()
-  as.integer(attr(r, "status") %||% 0L)
-}
-# ★재감사 — 앞 회차 지적 전문을 감사 레인에 넘긴다(2026-10-14 · 1810.08384 감사 상충 실측). 재구현이 받은 피드백 그대로이고,
-#   감사 레인이 항목마다 confirmed/overturned 를 적는다 → 번복(근거 있음)이면 처분이 audit_conflict(세션 판정)로 보낸다.
-#   청정 레인은 청정 감사의 지적만 넘긴다(레인이 재구현 프롬프트에 싣는 조건과 같다 — rf_replication_auto.sh '청정 모드' 절).
-.prior_p  <- file.path(WDIR, ".prior_audit_findings.md")
-.prior_fb <- as.character(.rq0$audit_feedback %||% "")[1]; if (is.na(.prior_fb)) .prior_fb <- ""
-.prior_ok <- .aud_tries >= 1L && nzchar(trimws(.prior_fb)) &&
-             (!.CLEAN || identical(as.character(.rq0$audit_feedback_mode %||% "")[1], "clean"))
-if (.prior_ok) writeLines(enc2utf8(.prior_fb), .prior_p, useBytes = TRUE) else unlink(.prior_p, force = TRUE)
-if (.aud_tries >= 1L && !.prior_ok)
-  jlog("prior_audit_findings_withheld", retries = .aud_tries, has_feedback = nzchar(trimws(.prior_fb)),
-       note = "재감사인데 앞 회차 지적을 넘기지 못했다(피드백 없음 또는 비청정 감사 지적) — 감사 상충은 탐지되지 않는다")
-# ★감사 없이는 개설하지 않는다 (2026-09-06 — 09-05 실사고 3건: 킬스위치·CLI 부재·병합 즉사로 감사가
-#   안 돌았는데 그 부재를 unverifiable 로 읽어 전부 proceed 했다). 관문은 rf_audit_gate 하나다:
-#   스폰 → 읽기 → 처분, 미실행이면 최대 2회 더 스폰(사이 rc 는 fidelity_audit_retry 저널로 남는다).
-#   ★ruling = 세션 판정(감사 상충 뒤 · alpha-search SKILL §5 — 요청의 audit_ruling · 레인은 failure=audit_ruled 면 검증기만 돈다)
-.gate <- rf_audit_gate(WDIR, .spawn_audit, max_retries = 2L, retries_done = .aud_tries, log_fn = jlog,
-                       ruling = .rq0$audit_ruling)
-.aud <- .gate$aud; .disp <- .gate$disp
-.n_ov <- .n_overturned(.aud)
-if (.n_ov > 0L && !identical(.disp$action, "audit_conflict"))
-  jlog("fidelity_prior_overturned", n = .n_ov, action = .disp$action,
-       note = "재감사가 앞 회차 지적을 번복했다 — 이번 판정이 기각이 아니어서 상충 보류는 없다(기록만)")
-jlog("fidelity_audit_verdict", verdict = .aud$verdict, action = .disp$action,
-     undeclared = length(.aud$undeclared_changes %||% list()),
-     mismatch = length(.aud$signal_mismatch %||% list()), retries = .aud_tries,
-     spawns = .gate$spawns, last_rc = .gate$last_rc, audit_mode = .AUD_MODE)
-# 감사가 이 측정을 받지 않으면(미실행 · 상충 · 재구현) 측정이 먼저 낸 Judge 트리거도 보류한다 — 그 엔진은 재측정 · 보류 · 교체된다
-if (isTRUE(as.character(.disp$action %||% "")[1] %in% c("audit_required", "audit_conflict", "reimplement")))
-  .v1001_hold_judge(dirname(ar), code = paste0("fidelity_", .disp$action), verdict = as.character(.aud$verdict %||% "")[1])
-# ★출처 기록(FA-CLEAN-BASE-PATH) — 감사 1건(모드 · 산출물 비공개 여부 · 판정). 청정 재구현이면 아래 분기가 원천 사본 위치를 더한다.
-.aud_src <- NULL
-if (identical(.disp$action, "reimplement") && .CLEAN)
-  .aud_src <- tryCatch(rcl_archive_audit_src(WDIR, .aud_tries + 1L), error = function(e) { jlog("clean_audit_archive_failed", err = conditionMessage(e)); NULL })
-if (isTRUE(.CLEAN_LIB_OK))
-  tryCatch(rcl_prov_audit(WDIR, list(at = format(Sys.time(), "%Y-%m-%dT%H:%M:%S%z"), mode = .AUD_MODE, art_hidden = .CLEAN,
-                                     verdict = as.character(.aud$verdict %||% ""), action = as.character(.disp$action %||% ""),
-                                     spawns = as.integer(.gate$spawns), src = if (is.null(.aud_src)) NULL else .aud_src$rel)),
-           error = function(e) jlog("lane_provenance_audit_failed", err = conditionMessage(e)))
-
-if (identical(.disp$action, "audit_required")) {
-  # ★미실행은 별개 사건이다 — 소비도 개설도 큐 미러도 없이 세션 대기(failed_needs_session/audit_not_run)로
-  #   되돌린다. 엔진은 그대로 둔다: 다음 tick 의 레인(rf_replication_auto.sh)이 audit_not_run + engine.R
-  #   존재를 보면 에이전트 없이 검증기만 다시 돈다 — 30분짜리 재구현을 감사 미실행 때문에 태우지 않는다.
-  .why <- sprintf("%s (스폰 %d회 · 마지막 rc %d)", as.character(.disp$reason %||% "감사 미실행")[1],
-                  as.integer(.gate$spawns), as.integer(.gate$last_rc))
-  .Gs <- as.character(G %||% "NA")[1]
-  jlog("fidelity_audit_not_run", reason = .why, paper_key = PKEY %||% "", grade = .Gs,
-       note = "감사 없이 개설 불가 — 요청을 failed_needs_session/audit_not_run 으로 되돌린다(원장·큐 미러 손대지 않음)")
-  d <- tryCatch(fromJSON(REQ, simplifyVector = FALSE), error = function(e) list())
-  d$status <- "failed_needs_session"; d$failure <- "audit_not_run"; d$failure_detail <- substr(.why, 1, 400)
-  write(toJSON(d, auto_unbox = TRUE, pretty = TRUE, null = "null"), REQ)
-  tryCatch(.v1001_report(target = .tg_target_label(TITLE, PKEY),
-                       status = list(stage = "충실구현 — 적대적 충실도 감사", previous = sprintf("측정 등급 %s", .Gs),
-                                     position = sprintf("감사 스폰 %d회 전부 산출 없음", as.integer(.gate$spawns))),
-                       verdict_line = paste0("충실도 감사 미실행 — 소비 · 재료 등록 보류. 사유: ", .v1001_clip_words(.why, 240L)),
-                       next_step = "엔진은 그대로 두고 검증기(측정 + 감사)만 재시도한다(3회 규약). 레인이 죽었으면 저널 fidelity_audit_retry 를 먼저 본다",
-                       push = TRUE),
-    error = function(e) jlog("telegram_failed", err = conditionMessage(e)))
-  quit(status = 0)
-}
-
-if (identical(.disp$action, "audit_conflict")) {
-  # ★감사 상충(2026-10-14 · 1810.08384 실측) — 재감사가 앞 회차 지적을 원문 근거로 번복했다. 재구현이 틀린 지적을 따랐을 수 있어
-  #   이 기각을 구현자 몫(proceed_suspect = 소비 + 꼬리표)으로 세지 않는다. 소비 · 재료 등록 · 큐 미러 없이 이 논문만 보류하고
-  #   (스킵리스트 held_audit_conflict — 선택기 rf_next_paper_pick.py 와 레인 스킵 관문이 revoked 아닌 항목을 집지 않는다)
-  #   레인은 다음 논문으로 간다 — 무인 레인에 사람 대기 종점을 만들지 않는다(재시도 장치 주석 2026-08-30 규약).
-  #   판정 절차 = alpha-search SKILL §5 — 두 판정 모두 재구현 대기열로 운반한다(rf_reimplement_queue_reserve · kind = reimplement | ruling ·
-  #   발행이 보류를 풀고 lane_mode 를 요청에 싣는다 · 2026-10-14 리뷰 C2 · C5 · C6).
-  #   ★audit_conflict.json 은 **판정 재료만** 싣는다 — 청정 작업 디렉터리에 남으므로 등급 · 산출물 경로를 쓰지 않는다(리뷰 U6 · 다음 청정
-  #     구현자가 가드 없이 읽는다). 엔진 지문(engine_md5)과 lane_mode 를 남겨 판정이 이 엔진 · 이 작업 디렉터리에 묶이게 한다(리뷰 C1 · C2).
-  .Gs  <- as.character(G %||% "NA")[1]
-  .rel <- function(p) {   # 접두 고정 문자열 비교 — ROOT 를 정규식에 넣지 않는다(역슬래시 경로의 '\U' 즉사 전례)
-    p <- gsub("\\", "/", p, fixed = TRUE); r <- paste0(sub("/+$", "", gsub("\\", "/", ROOT, fixed = TRUE)), "/")
-    if (startsWith(p, r)) substring(p, nchar(r) + 1L) else p
-  }
-  .ov  <- rf_audit_overturned(.aud)   # 처분과 같은 술어(lib 한 자리) — 근거 있는 번복만
-  .cf_p <- file.path(WDIR, "audit_conflict.json")
-  .now <- format(Sys.time(), "%Y-%m-%dT%H:%M:%S%z")
-  .lm  <- as.character(.rq0$lane_mode %||% (if (.CLEAN) "clean" else "normal"))[1]
-  .emd5 <- if (file.exists(eng)) unname(tools::md5sum(eng)) else ""
-  tryCatch(writeLines(toJSON(list(schema = "audit_conflict_v2", at = .now, paper_key = PKEY %||% "", url = URL, title = TITLE,
-                                  wdir = .rel(WDIR), lane_mode = .lm, engine_md5 = .emd5, audit = .rel(.aud_p),
-                                  audit_retries = .aud_tries, audit_verdict = as.character(.aud$verdict %||% "")[1],
-                                  n_overturned = length(.ov), overturned = .ov,
-                                  prior_feedback = .prior_fb, current_feedback = .disp$feedback %||% ""),
-                             auto_unbox = TRUE, pretty = TRUE, null = "null", na = "null"), .cf_p, useBytes = TRUE),
-           error = function(e) jlog("audit_conflict_write_failed", err = conditionMessage(e)))
-  .skp <- file.path(ROOT, "06_Registry/replication_skiplist.json")
-  .sk_ok <- tryCatch({
-    sk <- if (file.exists(.skp)) fromJSON(.skp, simplifyVector = FALSE) else list(schema = "replication_skiplist_v1", entries = list())
-    live <- vapply(sk$entries %||% list(), function(e) identical(as.character(e$paper_key %||% ""), PKEY) &&
-                     !identical(as.character(e$status %||% ""), "revoked"), logical(1))
-    if (nzchar(PKEY %||% "") && !any(live)) {
-      sk$entries <- c(sk$entries %||% list(), list(list(
-        paper_key = PKEY, status = "held_audit_conflict", added_at = .now, detail = .rel(.cf_p),
-        reason = sprintf("감사 상충 — 재감사가 앞 회차 지적 %d건을 원문 근거로 번복(재구현 %d회). 소비 · 재료 등록 보류 · 세션 판정 대기. ★보류 해제는 status=revoked", length(.ov), .aud_tries))))
-      .tmp <- paste0(.skp, ".tmp", Sys.getpid())
-      writeLines(toJSON(sk, auto_unbox = TRUE, pretty = TRUE, null = "null", na = "null"), .tmp, useBytes = TRUE)
-      if (!file.rename(.tmp, .skp)) { unlink(.tmp); stop("스킵리스트 교체 실패") }
-    }
-    TRUE
-  }, error = function(e) { jlog("audit_conflict_skiplist_failed", err = conditionMessage(e)); FALSE })
-  d <- tryCatch(fromJSON(REQ, simplifyVector = FALSE), error = function(e) list())
-  d$status <- "held_audit_conflict"; d$failure <- "audit_conflict"; d$audit_conflict <- .rel(.cf_p)
-  d$audit_ruling <- NULL                                   # 앞 판정이 남아 있으면 지운다(판정은 대기열 예약으로만 다시 온다)
-  d$failure_detail <- substr(sprintf("재감사 번복 %d건: %s", length(.ov),
-                                     paste(vapply(.ov, function(z) as.character(z$item %||% "")[1], character(1)), collapse = " / ")), 1, 400)
-  write(toJSON(d, auto_unbox = TRUE, pretty = TRUE, null = "null"), REQ)
-  jlog("fidelity_audit_conflict", paper_key = PKEY %||% "", grade = .Gs, n_overturned = length(.ov), retries = .aud_tries,
-       detail = .rel(.cf_p), note = "감사 상충 — 구현자 몫으로 세지 않는다(소비 · 재료 등록 보류 · 스킵리스트 held_audit_conflict · 세션 판정)")
-  tryCatch(.v1001_report(target = .tg_target_label(TITLE, PKEY),
-                       status = list(stage = "충실구현 — 적대적 충실도 감사(재감사)", previous = sprintf("측정 등급 %s · 재구현 %d회", .Gs, .aud_tries),
-                                     position = "감사 상충 · 소비 보류 · 다음 논문 진행"),
-                       verdict_line = sprintf("재감사가 앞 회차 지적 %d건을 원문 근거로 번복했다 — 재구현이 틀린 지적을 따랐을 수 있어 이 기각을 구현 실패로 세지 않는다",
-                                              length(.ov)),
-                       extra = list(list(type = "text", emoji = "📝", heading = "번복된 앞 회차 지적",
-                                         body = paste(vapply(head(.ov, 4L), function(z) sprintf("• %s — %s", .tg_clip(z$item %||% "", 60L),
-                                                                                                 .tg_clip(z$evidence %||% "", 140L)), character(1)),
-                                                      collapse = "\n"))),
-                       next_step = if (isTRUE(.sk_ok))
-                                     sprintf("세션이 원문으로 판정한다(%s) — 재구현 예약 또는 수용 예약(재구현 대기열)", .rel(.cf_p))
-                                   else "★스킵리스트 보류 기록 실패 — 다음 논문으로 넘어가지 않고 멈춘다(같은 논문 재발행 방지). 세션이 보류를 손으로 남긴 뒤 재개",
-                       push = TRUE),
-    error = function(e) jlog("telegram_failed", err = conditionMessage(e)))
-  ## ★보류 기록에 실패하면 다음 논문으로 넘어가지 않는다(fail-closed · 리뷰 U5): 원장 미소비 + 스킵리스트 미기록이면 선택기가 같은 논문을
-  ##   즉시 처음부터 다시 낸다. 요청은 held 로 두고(레인은 pending 이 아니면 돌지 않는다) 세션이 정리한다.
-  if (isTRUE(.sk_ok))
-    system2("Rscript", c(shQuote(file.path(ROOT, "02_Infrastructure/programs/next_replication.R")), "--root", shQuote(ROOT)), wait = TRUE)
-  quit(status = 0)
-}
-
-if (identical(.disp$action, "reimplement")) {
-  # ★소비 보류 — 원장에 아무것도 열지 않고 요청만 되돌린다. selector 는 원장으로 소비를
-  #   판단하므로, 여기서 열지 않으면 같은 논문이 다시 잡힌다(그게 의도다).
-  .bk <- file.path(WDIR, sprintf("engine.rejected%d.R", .aud_tries + 1L))
-  tryCatch(file.rename(file.path(WDIR, "engine.R"), .bk), error = function(e) NULL)
-  d <- .rq0
-  d$audit_ruling <- NULL                                   # 판정은 그 판정 대상 엔진에만 — 재구현 판으로 옮기지 않는다(리뷰 C1)
-  d$status <- "pending"
-  d$audit_retries <- .aud_tries + 1L
-  d$audit_feedback <- .disp$feedback
-  d$audit_verdict <- .aud$verdict
-  d$audit_at <- format(Sys.time(), "%Y-%m-%dT%H:%M:%S%z")
-  # ★감사 지적의 출처 모드(FA-CLEAN-BASE-PATH) — 레인은 clean 인 지적만 청정 재구현 프롬프트에 싣는다(가림 뒤) ·
-  #   원천 사본(.clean_audit_src/r<n>) 위치를 함께 남긴다(사후 검사가 파일에서 '산출물 비공개 감사' 를 재도출한다)
-  d$audit_feedback_mode <- if (.CLEAN && !is.null(.aud_src)) "clean" else "normal"
-  d$audit_feedback_src <- if (is.null(.aud_src)) NULL else .aud_src$rel
-  write(toJSON(d, auto_unbox = TRUE, pretty = TRUE, null = "null"), REQ)
-  jlog("fidelity_reimplement_requested", paper_key = PKEY %||% "", grade = G,
-       note = "충실도 기각 — 소비 보류. 다음 tick 이 지적사항을 안고 재구현한다")
-  tryCatch({
-    .n_find <- length(.aud$undeclared_changes %||% list()) + length(.aud$signal_mismatch %||% list())
-    .v1001_report(target = .tg_target_label(TITLE, PKEY),
-                status = list(stage = "충실구현 — 적대적 충실도 감사", previous = sprintf("측정 등급 %s", G),
-                              position = "감사 기각 · 소비 보류 · 자동 재구현 1회"),
-                verdict_line = sprintf("충실도 감사 기각(%s) — 지적 %d건. 논문을 잘못된 이유로 버리지 않도록 지적을 안고 다시 구현한다",
-                                       as.character(.aud$verdict %||% "?"), .n_find),
-                extra = list(list(type = "text", emoji = "📝", heading = "감사 지적 요약",
-                                  body = rf_audit_tg_brief(.aud, audit_path = sub(paste0("^", ROOT, "/?"), "", .aud_p)))),
-                next_step = "다음 tick 이 지적사항을 안고 재구현한다", push = FALSE) },
-    error = function(e) jlog("telegram_failed", err = conditionMessage(e)))
-  quit(status = 0)
-}
-.aud_suspect <- identical(.disp$action, "proceed_suspect")
-if (.aud_suspect) jlog("fidelity_suspect_proceed", paper_key = PKEY %||% "",
-  note = "재구현도 충실도 기각 — 소비하되 implementation_suspect 로 남긴다")
 
 # ── ★B등급 이상 신호를 팩터 DB 에 무인 등록 (도훈 지시 2026-09-01) ───────────
 #   충실구현이 낸 신호가 어디에도 적립되지 않아, B+ 를 받아도 그 논문의 25칸이 끝나면

@@ -365,7 +365,8 @@ txt = '\n'.join(L)
 res.append('W4 %d' % (txt.count('prov-pre') >= 2 and 'prov-post' in txt and 'RP_LANE_MODE="$LANE_MODE"' in txt))
 V = io.open(os.path.join(ops, 'rf_replication_verify.R'), encoding='utf-8').read()
 m = re.search(r'\.spawn_audit <- function\(\) \{([\s\S]*?)\n\}', V)
-res.append('W5 %d' % (bool(m) and 'rcl_with_env(rcl_clean_env(WDIR)' in m.group(1) and 'rcl_audit_art(TRUE' in m.group(1)))
+# (10-17 감사 선행) 감사가 측정 앞이라 산출물 경로 자체가 없다 — 빈 문자열을 넘기고 측정 경로(dirname(ar)) 참조는 0
+res.append('W5 %d' % (bool(m) and 'rcl_with_env(rcl_clean_env(WDIR)' in m.group(1) and re.search(r'\.art <- ""', m.group(1)) is not None and 'dirname(ar)' not in m.group(1)))
 res.append('W6 %d' % ('audit_feedback_mode' in V and 'rcl_archive_audit_src' in V and 'rcl_prov_audit' in V))
 print('\n'.join(res))
 PYEOF
@@ -375,7 +376,7 @@ wv(){ printf '%s\n' "$wres" | tr -d '\r' | awk -v k="$1" '$1==k{print $2}'; }
 [ "$(wv W2)" = 1 ] && ok "W2 normal 호출은 구판 그대로(--disallowed-tools Bash,Agent)" || ng "W2" "$wres"
 [ "$(wv W3)" = 1 ] && ok "W3 청정 표식 export 0(호출 앞 임시 대입만 — 검증기·자식에 안 샌다)" || ng "W3" "$wres"
 [ "$(wv W4)" = 1 ] && ok "W4 출처 기록 실행 전(청정·normal)·후 + 검증기에 RP_LANE_MODE" || ng "W4" "$wres"
-[ "$(wv W5)" = 1 ] && ok "W5 검증기 감사 스폰 = 도우미 경유(표식 임시 대입 · 산출물 경로 비움)" || ng "W5" "$wres"
+[ "$(wv W5)" = 1 ] && ok "W5 검증기 감사 스폰 = 도우미 경유(표식 임시 대입 · 산출물 경로 비움 · 측정 경로 참조 없음 — 10-17 감사 선행)" || ng "W5" "$wres"
 [ "$(wv W6)" = 1 ] && ok "W6 검증기: 감사 지적 출처 모드 · 원천 보존 · 출처 기록 덧붙임" || ng "W6" "$wres"
 
 # ═══ D 레인(동적) ═══
@@ -556,7 +557,7 @@ wd <- Sys.getenv("CL_WD"); res <- character(0)
 Sys.unsetenv(c("QVEST_CLEAN_LANE", "QVEST_CLEAN_WDIR")); Sys.setenv(QVEST_CLEAN_WDIR = "keep_me")
 inside <- rcl_with_env(rcl_clean_env("C:\\a\\b"), c(Sys.getenv("QVEST_CLEAN_LANE"), Sys.getenv("QVEST_CLEAN_WDIR")))
 res <- c(res, sprintf("V1 %d", as.integer(identical(inside, c("1", "C:/a/b")) && identical(Sys.getenv("QVEST_CLEAN_LANE", NA), NA_character_) && identical(Sys.getenv("QVEST_CLEAN_WDIR"), "keep_me"))))
-res <- c(res, sprintf("V2 %d", as.integer(identical(rcl_audit_art(TRUE, "x/y"), "") && identical(rcl_audit_art(FALSE, "x/y"), "x/y"))))
+res <- c(res, sprintf("V2 %d", as.integer(!exists("rcl_audit_art"))))   # 10-17 감사 선행 — 산출물 경로 도우미 퇴역(검증기가 모드 무관 빈 경로)
 a <- rcl_archive_audit_src(wd, 1L)
 m <- jsonlite::fromJSON(file.path(wd, ".clean_audit_src/r1/manifest.json"), simplifyVector = FALSE)
 res <- c(res, sprintf("V3 %d", as.integer(identical(a$rel, ".clean_audit_src/r1") && all(c(".audit_prompt_signal.txt", "fidelity_audit.json") %in% names(m$files)) &&
@@ -571,7 +572,7 @@ EOF
 vres="$(cd "$VR" && env CL_LIB="$(wp "$SRC_OPS/rf_clean_lane_lib.R")" CL_WD="$(wp "$VR/wd")" R_ENVIRON_USER="$EMPTY_RENV" QM_ROOT="$(wp "$VR")" CLAUDE_PROJECT_DIR="$(wp "$VR")" "$RSCRIPT_REAL" "$(wp "$T/v.R")" 2>&1 | tr -d '\r')"
 vv(){ printf '%s\n' "$vres" | awk -v k="$1" '$1==k{print $2}'; }
 [ "$(vv V1)" = 1 ] && ok "V1 가드 표식 임시 대입 → 원복(없던 변수 삭제 · 있던 값 복원 · 역슬래시 → 슬래시)" || ng "V1" "$vres"
-[ "$(vv V2)" = 1 ] && ok "V2 청정 = 산출물 경로 비움 / 평시 = 그대로" || ng "V2" "$vres"
+[ "$(vv V2)" = 1 ] && ok "V2 산출물 경로 도우미(rcl_audit_art) 퇴역 — 감사가 측정 앞이라 넘길 산출물이 없다(10-17)" || ng "V2" "$vres"
 [ "$(vv V3)" = 1 ] && ok "V3 감사 원천 보존(.clean_audit_src/r1 · 매니페스트 sha256 = 사본)" || ng "V3" "$vres"
 [ "$(vv V4)" = 1 ] && ok "V4 출처 기록 audits 덧붙임(기존 필드 보존)" || ng "V4" "$vres"
 [ "$(vv V5)" = 1 ] && ok "V5 레인 모드 = clean 만 clean(그 밖 = normal)" || ng "V5" "$vres"

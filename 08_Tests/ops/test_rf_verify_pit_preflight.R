@@ -13,6 +13,9 @@ i_end <- grep('jlog("pit_preflight_clean"', VL, fixed = TRUE)
 i_run <- grep("res <- tryCatch(do.call(run_paper_replication", VL, fixed = TRUE)
 chk(length(i_pre) == 1L && length(i_end) == 1L && length(i_run) == 1L && i_pre < i_end && i_end < i_run,
     "1 위치 — 사전 점검(detect_lookahead) → 통과 기록 → 러너 호출 순서", paste(i_pre, i_end, i_run))
+i_gate <- grep("rf_audit_gate(", sub("#.*$", "", VL), fixed = TRUE)
+chk(length(i_end) == 1L && length(i_gate) >= 1L && length(i_run) == 1L && i_end < i_gate[1] && i_gate[1] < i_run,
+    "1b 위치 — 사전 점검 → 충실도 감사 → 러너(10-17 감사 선행 · 수 초 검사가 LLM 감사보다 먼저)", paste(i_end, i_gate[1], i_run))
 if (length(i_pre) == 1L && length(i_end) == 1L) {
   BLOCK <- parse(text = paste(VL[i_pre:i_end], collapse = "\n"))
   run_block <- function(code) {

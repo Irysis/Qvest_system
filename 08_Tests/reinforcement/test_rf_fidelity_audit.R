@@ -202,7 +202,9 @@ if (!is.na(i_cf)) {
   ev$ROOT <- SB; ev$REQ <- file.path(SB, "06_Registry/replication_request.json"); ev$WDIR <- file.path(SB, "w")
   ev$eng <- file.path(SB, "w/engine.R"); ev$.CLEAN <- TRUE; ev$.rq0 <- list(lane_mode = "clean")
   ev$PKEY <- "9999.00001"; ev$URL <- "https://arxiv.org/abs/9999.00001"; ev$TITLE <- "샌드박스 논문"
-  ev$G <- "F"; ev$ar <- file.path(SB, "art/authoritative_remeasure.json"); ev$.aud_p <- file.path(SB, "w/fidelity_audit.json")
+  ev$G <- NA_character_; ev$.aud_p <- file.path(SB, "w/fidelity_audit.json")   # 감사 = 측정 앞(10-17) — 등급 · 산출물 경로(ar) 없음
+  i_gx <- which(startsWith(vf, ".v1001_gtxt <- function("))[1]              # 보고 문구 도우미 = 운영 정의 그대로
+  if (!is.na(i_gx)) eval(parse(text = vf[i_gx]), envir = ev)
   ev$.aud_tries <- 1L; ev$.prior_fb <- "- 신호 불일치: [signal] [모멘텀 식 — 일별 평균] …"
   ev$.disp <- list(action = "audit_conflict", feedback = "- 미신고 변경: [signal] [12-1 누적 아님] …", n_overturned = 1L)
   ev$.aud <- list(verdict = "misdeclared", prior_review = list(
@@ -226,6 +228,9 @@ if (!is.na(i_cf)) {
     ok("D7 분기 실행 — 보류 1건(revoked 옛 항목 옆) · 요청 held · audit_conflict.json(근거 있는 번복 1) · 푸시 1통 · 다음 논문 발행") else
     ng("D7 분기 실행", sprintf("quit=%s held=%d req=%s cf=%s sent=%d calls=%s", quitted, length(held), rq$status %||% "?",
                              file.exists(cfj), length(sent), paste(called, collapse = ",")))
+  if (length(sent) >= 1L && grepl("측정 전", as.character(sent[[1]]$status$previous %||% ""), fixed = TRUE))
+    ok("D7c 보고의 직전 판정 = '측정 전 감사' — 감사가 측정 앞이라 등급이 없다(10-17)") else
+    ng("D7c 직전 판정 문구", if (length(sent)) as.character(sent[[1]]$status$previous %||% "-") else "보고 없음")
   ## 리뷰 C1 · C2 · U6 — 판정 재료에 엔진 지문 · 레인 모드가 실리고, 청정 작업 디렉터리 파일에 등급 · 산출물 경로가 없고, 앞 판정은 지워진다
   cfo <- if (file.exists(cfj)) fromJSON(cfj, simplifyVector = FALSE) else list()
   if (identical(cfo$engine_md5, unname(tools::md5sum(file.path(SB, "w/engine.R")))) && identical(cfo$lane_mode, "clean") &&
@@ -248,6 +253,24 @@ i_pw <- which(grepl(".prior_audit_findings.md", code, fixed = TRUE))[1]
 i_gt <- which(grepl("rf_audit_gate(", code, fixed = TRUE))[1]
 if (!is.na(i_pw) && !is.na(i_gt) && i_pw < i_gt) ok("D6 앞 회차 지적 파일을 감사 관문 앞에서 쓴다(재감사가 확인/번복할 대상)") else
   ng("D6 앞 회차 지적 전달 배선", sprintf("pw=%s gate=%s", i_pw, i_gt))
+## D9 — 감사가 **측정 앞**(2026-10-17 도훈 '실행 전에 오류를 잡아낼 순 없나'): 기각(재구현 · 상충 · 미실행)은 측정 자원을 쓰지 않는다
+.order_ok <- function(lines) {
+  cd <- sub("#.*$", "", lines)
+  at <- function(s) which(grepl(s, cd, fixed = TRUE))[1]
+  ix <- c(pre = at("detect_lookahead(eng"), gate = at("rf_audit_gate("), pkg = at(".deps <- .extract_pkgs(eng)"),
+          run = at("do.call(run_paper_replication"))
+  all(!is.na(ix)) && !is.unsorted(ix, strictly = TRUE)
+}
+if (.order_ok(vf)) ok("D9 순서 = PIT 사전 점검 → 충실도 감사 → 패키지 설치 → 측정(러너) — 기각은 측정 없이 끝난다") else
+  ng("D9 감사가 측정 앞에 있지 않다")
+## 양성 대조 — 감사 관문 줄을 러너 호출 뒤로 옮긴 사본(소스 텍스트 이동)을 D9 가 잡는가
+i_g9 <- which(grepl("rf_audit_gate(", code, fixed = TRUE))[1]
+i_r9 <- which(grepl("do.call(run_paper_replication", code, fixed = TRUE))[1]
+if (!is.na(i_g9) && !is.na(i_r9) && i_g9 < i_r9) {
+  mut9 <- append(vf[-i_g9], vf[i_g9], after = i_r9 - 1L)   # 관문 줄을 빼면 러너 줄이 한 줄 당겨진다 → 그 바로 뒤에 넣는다
+  if (!identical(mut9, vf) && !.order_ok(mut9)) ok("D9b 양성 대조 — 감사를 측정 뒤로 옮긴 사본은 D9 가 빨개진다(검출력)") else
+    ng("D9b 양성 대조 실패 — 순서 검사가 뒤바뀐 사본을 통과시킨다")
+} else ng("D9b 양성 대조 준비 실패", sprintf("gate=%s run=%s", i_g9, i_r9))
 
 cat("\n=== E. 배선 (주석 제외) ===\n")
 code_of <- function(f) paste(sub("#.*$", "", readLines(file.path(ROOT, f), warn = FALSE)), collapse = "\n")

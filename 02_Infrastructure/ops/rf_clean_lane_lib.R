@@ -2,7 +2,8 @@
 # rf_clean_lane_lib.R — 검증기(rf_replication_verify.R) 쪽 청정 모드 도우미 (결정 FA-CLEAN-BASE-PATH · 도훈 2026-09-26)
 #
 # 무엇: 청정 충실구현 레인(RP_LANE_MODE=clean)의 적대적 충실도 감사를 **측정 비공개 조건**으로 부른다 —
-#   ① 감사 레인에 산출물 경로를 주지 않는다(rcl_audit_art — 빈 문자열 · 감사 프롬프트가 '청정 모드 — 비공개' 줄을 쓴다)
+#   ① 감사 레인에 산출물 경로를 주지 않는다 — 10-17 부터 감사가 측정 **앞**이라 산출물 자체가 없고, 검증기가 모드 무관 빈 문자열을 넘긴다
+#      (감사 프롬프트가 '청정 모드 — 비공개' 줄을 쓴다 · 구 도우미 rcl_audit_art 는 그 변경으로 퇴역)
 #   ② 감사 스폰 한 번에만 가드 표식(QVEST_CLEAN_LANE · QVEST_CLEAN_WDIR)을 싣는다(rcl_with_env — 끝나면 원복 · 측정·원장 쓰기에 새지 않는다)
 #   ③ 재구현을 부르는 감사면 그 감사의 프롬프트·판정 파일을 작업 디렉터리 .clean_audit_src/r<n>/ 에 보존한다(rcl_archive_audit_src) —
 #      다음 판 프롬프트의 감사 지적이 청정 감사에서 왔음을 사후 검사(rf_clean_base.R)가 **파일에서** 재도출한다(감사 파일은 다음 감사가 덮는다)
@@ -17,9 +18,6 @@ suppressMessages(library(jsonlite))
 
 #' 레인 모드 — 검증기 환경변수(레인 셸이 싣는다). clean 외 값은 전부 normal.
 rcl_lane_mode <- function() if (identical(Sys.getenv("RP_LANE_MODE", "normal"), "clean")) "clean" else "normal"
-
-#' 감사 레인에 넘길 산출물 경로 — 청정이면 빈 문자열(감사 프롬프트가 비공개 줄을 쓴다)
-rcl_audit_art <- function(clean, art) if (isTRUE(clean)) "" else as.character(art)
 
 #' 환경변수를 잠깐 싣고 expr 을 돌린 뒤 원복(없던 변수는 지운다) — 감사 스폰 한 번에만 가드 표식
 rcl_with_env <- function(vars, expr) {
