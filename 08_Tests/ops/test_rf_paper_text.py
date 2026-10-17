@@ -138,6 +138,29 @@ def main():
         rc, out = run(w6, "https://arxiv.org/abs/9999.00006", html=sf)
         check("F1 너무 짧은 본문(초록 · 안내 페이지) → rc 3 · fail · paper.md 없음", rc == 3 and out.startswith("fail why=") and not paper(w6), out)
 
+        # ── N 네트워크 경로 = 레인과 같은 인터프리터(QVEST_PY — venv 아닌 시스템 파이썬)로 로컬 HTTP 서버에서 받는다(10-17 실운영 실측:
+        #   검사는 venv 로만 돌아 'No module named requests' 를 못 잡았다 — 오프라인 모드는 받기 경로를 안 탄다) ──
+        import http.server, threading, functools
+        lane_py = os.environ.get("QVEST_PY") or PY
+        srv_dir = os.path.join(tmp, "srv"); os.makedirs(srv_dir); shutil.copyfile(hf, os.path.join(srv_dir, "paper.html"))
+        httpd = http.server.ThreadingHTTPServer(("127.0.0.1", 0), functools.partial(http.server.SimpleHTTPRequestHandler, directory=srv_dir))
+        th = threading.Thread(target=httpd.serve_forever, daemon=True); th.start()
+        try:
+            base = "http://127.0.0.1:%d" % httpd.server_address[1]
+            wn = os.path.join(tmp, "wn"); os.makedirs(wn)
+            p = subprocess.run([lane_py, PT, "--url", base + "/paper.html", "--wdir", wn, "--timeout", "20"], capture_output=True, text=True, encoding="utf-8")
+            outn = (p.stdout.strip().split("\n") or [""])[-1]
+            check("N1 레인 인터프리터(QVEST_PY)로 HTTP 받기 → kind=html · 축자본 생성(비 arXiv 링크 = 그 주소 그대로)",
+                  p.returncode == 0 and "kind=html" in outn and "## 2 Method" in paper(wn), "py=%s rc=%s out=%s err=%s" % (lane_py, p.returncode, outn, p.stderr[-200:]))
+            wm = os.path.join(tmp, "wm"); os.makedirs(wm)
+            p = subprocess.run([lane_py, PT, "--url", base + "/no_such.html", "--wdir", wm, "--timeout", "20"], capture_output=True, text=True, encoding="utf-8")
+            check("N2 HTTP 404 → rc 3 · fail(상태 코드 기록) · 축자본 없음", p.returncode == 3 and "404" in p.stdout and not paper(wm), p.stdout[-200:])
+        finally:
+            httpd.shutdown()
+        src_txt = io.open(PT, encoding="utf-8").read()
+        check("N3 수집기는 표준 라이브러리 + pypdf(지연 import)만 — requests 등 venv 전용 의존 없음",
+              not re.search(r"^\s*import requests|^\s*from requests", src_txt, re.M))
+
         # ── C 청정 규칙 — 산출 디렉터리 이름이 사전등록 핀의 레인 파일 정규식 안인가(핀 파일에서 재도출) ──
         rule = json.loads(io.open(os.path.join(ROOT, "06_Registry", "prereg", "clean_base_rule.config.json"), encoding="utf-8").read())
         rx = [re.compile(r) for r in ((rule.get("exposure") or {}).get("wdir") or {}).get("lane_file_regex") or []]

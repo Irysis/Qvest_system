@@ -215,13 +215,19 @@ def pdf_to_text(data):
 
 # ── 받기 ──────────────────────────────────────────────────────────────────────
 def _get(url, timeout):
-    import requests
+    """표준 라이브러리만(urllib) — 레인의 QVEST_PY 는 venv 가 아닌 시스템 파이썬이라 requests 가 없다(10-17 첫 실운영 실측:
+    2601.04602 세 출처 전부 'No module named requests'). 리디렉션은 urllib 가 따른다 · HTTP 오류는 상태 코드로 돌려준다."""
+    import urllib.error
+    import urllib.request
     last = None
     for _ in range(2):
         try:
-            r = requests.get(url, headers={"User-Agent": UA}, timeout=timeout, allow_redirects=True)
-            return r.status_code, r.content, (r.headers.get("content-type") or "")
-        except Exception as e:      # 연결 오류만 한 번 더
+            req = urllib.request.Request(url, headers={"User-Agent": UA})
+            with urllib.request.urlopen(req, timeout=timeout) as r:
+                return r.status, r.read(), (r.headers.get("content-type") or "")
+        except urllib.error.HTTPError as e:      # 404 등 — 다음 출처로(재시도 없음)
+            return e.code, b"", ""
+        except Exception as e:                   # 연결 오류만 한 번 더
             last = e
             time.sleep(3)
     raise RuntimeError("요청 실패: %s" % str(last)[:160])
