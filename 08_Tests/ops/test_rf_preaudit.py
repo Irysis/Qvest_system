@@ -352,6 +352,37 @@ def main():
         rc, out, rq7 = gate_run(bad, dict(base_req), cfg=cfg_bad)
         check("G11 broken config → fail-open proceed", rc == 0 and "verdict=error" in out, out)
 
+        # ── A 제출 전 자가 감사 절(10-17 · 구현자 프롬프트) — 축 정본에서 그때 만든다(사본 없음) ─────────────
+        AXP = os.path.join(ROOT, "06_Registry", "rf_fidelity_axes.json")
+        def sab(axes_path=None):
+            cmd = [PY, PA, "--self-audit-block", "--root", ROOT] + (["--axes", axes_path] if axes_path else [])
+            return subprocess.run(cmd, capture_output=True, text=True, encoding="utf-8")
+        axes_reg = J(AXP)["axes"]
+        pa1 = sab()
+        check("A1 self-audit block rc 0 · every registry axis key + title present (derived from the registry file)",
+              pa1.returncode == 0 and axes_reg and all(("축 키 %s" % a["key"]) in pa1.stdout and a["title"] in pa1.stdout for a in axes_reg),
+              "rc=%s missing=%s" % (pa1.returncode, [a["key"] for a in axes_reg if ("축 키 %s" % a["key"]) not in pa1.stdout]))
+        check("A2 block asks for the self_audit record + code-path tracing instead of artifacts (audit precedes measurement)",
+              "self_audit" in pa1.stdout and "코드 경로 추적으로 대신" in pa1.stdout, pa1.stdout[:160])
+        ax_m = J(AXP)
+        ax_m["axes"][0]["title"] = "뮤테이션 축 제목 ZZ"
+        W(os.path.join(tmp, "axes_mut.json"), ax_m)
+        pa3 = sab(os.path.join(tmp, "axes_mut.json"))
+        check("A3 registry edit flows into the block (single source — mutated title appears, old one gone)",
+              pa3.returncode == 0 and "뮤테이션 축 제목 ZZ" in pa3.stdout and axes_reg[0]["title"] not in pa3.stdout, pa3.stdout[:120])
+        W(os.path.join(tmp, "axes_broken.json"), "{ broken")
+        pa4 = sab(os.path.join(tmp, "axes_broken.json"))
+        check("A4 broken registry → rc 3 · empty stdout (no half block)", pa4.returncode == 3 and not pa4.stdout.strip(),
+              "rc=%s out=%r" % (pa4.returncode, pa4.stdout[:80]))
+        W(os.path.join(tmp, "axes_nofocus.json"), {"axes": [{"key": a["key"], "title": a["title"]} for a in axes_reg]})
+        pa5 = sab(os.path.join(tmp, "axes_nofocus.json"))
+        check("A5 registry without usable axes (no focus) → rc 3 · empty stdout", pa5.returncode == 3 and not pa5.stdout.strip(),
+              "rc=%s" % pa5.returncode)
+        foc = {a["key"]: a.get("focus") or "" for a in axes_reg}
+        check("A6 axis registry carries the current harness facts (universe = 전 종목 + 위생 · timing = D16) — stale K200∪KQ150 swap sentence gone",
+              "전 종목 + 위생" in foc.get("universe", "") and "D16" in foc.get("timing", "")
+              and "K200∪KQ150 으로 바꾸는 것이" not in foc.get("universe", ""), foc.get("universe", "")[:120])
+
         # ── S 청정 sanitize 통과 ──────────────────────────────────────
         fb = rq.get("failure_detail") or ""
         if os.path.isfile(CLPY) and os.path.isfile(CLCFG):

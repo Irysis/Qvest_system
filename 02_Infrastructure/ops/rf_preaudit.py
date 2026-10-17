@@ -199,6 +199,34 @@ def harness_block(root, cfg):
     return "\n".join([head, H.get("prompt_guide") or "", ""] + body), ep
 
 
+def self_audit_block(root, axes_path=None):
+    """제출 전 적대적 자가 감사 절(구현자 프롬프트) — 축 정본(06_Registry/rf_fidelity_axes.json)에서 그때 만든다.
+    감사자(rf_fidelity_fanout.sh — 축마다 검증자 1명)가 받는 축 제목 · 할 일(focus) · 반례 지시를 그대로 싣는다 — 사본을 들고 있지 않는다
+    (등록부 schema_note: 문서 사본은 낙후한다). 2026-10-17 도훈 '사전 코드 감사로 기각되는 상황을 만들지 않는 게 최우선'.
+    반환 = 프롬프트 절 텍스트. 등록부 판독 불능 · 쓸 축 0개면 예외(호출자는 절 없이 진행하고 저널에 남긴다)."""
+    ap = axes_path or os.path.join(root, "06_Registry", "rf_fidelity_axes.json")
+    axes = _load_json(ap).get("axes") or []
+    rows = [a for a in axes if isinstance(a, dict) and a.get("key") and a.get("title") and a.get("focus")]
+    if not rows:
+        raise RuntimeError("축 정본에 쓸 축이 없다 — 절을 지어내지 않는다")
+    L = ["### ★제출 전 적대적 자가 감사 — 감사자가 볼 축을 네가 먼저 본다 (2026-10-17)",
+         "측정 **전에** 축마다 검증자 1명이 원문 전문과 engine.R 을 대조하며 **이 구현이 논문과 다르다는 것을 입증하라**는 지시를 받는다"
+         "(FIDELITY.json 은 믿지 않는다). 한 축이라도 근거 있는 미신고 1건이면 전체 재구현이다.",
+         "그러니 engine.R 과 FIDELITY.json 을 다 쓴 뒤 **감사자 역할로 바꿔** 아래 각 축의 지시를 그대로 수행하라 — 일치를 확인하는 일이"
+         " 아니라 다른 지점을 찾는 일이다. 찾으면 ① 논문으로 되돌리거나 ② changed 에 적어라(적는 쪽이 싸다). 더 못 찾을 때까지 반복한다.",
+         "산출물(holdings 등)을 보라는 지시는 코드 경로 추적으로 대신한다 — 측정은 감사 뒤에 있다.",
+         ""]
+    for i, a in enumerate(rows, 1):
+        L.append("%d. **%s** (축 키 %s) — %s" % (i, a["title"], a["key"], a["focus"]))
+        if a.get("counterexample"):
+            L.append("   반례: %s" % a["counterexample"])
+    L += ["",
+          "결과를 FIDELITY.json 의 self_audit 에 축마다 한 항목으로 남겨라(축 키 = %s): " % ", ".join(a["key"] for a in rows) +
+          "{axis: 축 키, paper_quote: 원문 위치(절·식·표) + 짧은 인용, engine_lines: engine.R 행 범위, status: match 또는 declared 또는 fixed, note}.",
+          "(match = 논문과 같다 · declared = 다르고 changed 에 적었다 · fixed = 자가 감사에서 찾아 논문대로 고쳤다)"]
+    return "\n".join(L)
+
+
 def run(wdir, root, cfg):
     F = []   # findings
     stats = {}
@@ -604,6 +632,19 @@ def main(argv):
             return EXIT_PASS
         except Exception as e:
             sys.stderr.write("[rf_preaudit] harness-block 실패: %s\n" % str(e)[:200])
+            return EXIT_ERROR
+    if "--self-audit-block" in argv:
+        # 프롬프트 조립용(10-17) — 실패하면 빈 출력·rc 3(레인은 절 없이 진행하고 저널 self_audit_block_absent 에 남긴다)
+        ap1 = argparse.ArgumentParser()
+        ap1.add_argument("--self-audit-block", action="store_true")
+        ap1.add_argument("--root", required=True)
+        ap1.add_argument("--axes", default=None)
+        a1 = ap1.parse_args(argv)
+        try:
+            sys.stdout.write(self_audit_block(a1.root, a1.axes) + "\n")
+            return EXIT_PASS
+        except Exception as e:
+            sys.stderr.write("[rf_preaudit] self-audit-block 실패: %s\n" % str(e)[:200])
             return EXIT_ERROR
     ap = argparse.ArgumentParser()
     ap.add_argument("--wdir", required=True)
