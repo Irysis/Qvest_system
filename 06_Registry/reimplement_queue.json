@@ -26,6 +26,94 @@
       "issued_at": "2026-09-07T09:46:12+0900",
       "issued_request": "06_Registry/replication_request.json",
       "issued_by": "reinforce_auto_next_paper(rf_reimplement_queue_take)"
+    },
+    {
+      "paper_key": "2411.13555",
+      "url": "https://arxiv.org/abs/2411.13555",
+      "paper_title": "Deep Learning in Long-Short Stock Portfolio Allocation: An Empirical Study",
+      "wdir": "04_Research/strategies/RP_AUTO_CLEAN_2411_13555",
+      "kind": "reimplement",
+      "decided_by": "dohoon",
+      "lane_mode": "clean",
+      "decision": "도훈 10-17 '6. 4번 해결 후 재측정 승인' — 레인 재설계(REPLICATION-ALL-METHODS-20261017) 뒤 처음부터 재구현 · 측정 축 all_hyg_px1000_2000_v1",
+      "audit_feedback": "[세션 점검 · 도훈 10-17 재측정 승인] 레인 규칙 개정(모든 방법론 · 수치 격자 대표 칸 · 미명시 보충 후 신고 · 핵심 모델 보호 · 계산 시간 상한 없음 · 포트폴리오 없는 논문 = 레인 표준 구성 · 측정 축 = 전 종목 + 위생 + 전날 수정 종가 1,000원 미만 제외) 뒤 처음부터 재구현한다. 앞 판을 원문과 대조한 점검 지적(아래 항목은 원문 위치를 직접 읽고 판단하라 — 지적이 원문과 다르면 audit_disputes 에 근거를 적어라):\n- [주결과 4모델 중 MLP 1칸만 구현] 표 2 · 표 3 의 MLP · CNN · LSTM · Transformer 를 전부 변형으로(venv torch). 대표 = 논문이 스스로 꼽은 방법(원문으로 정하라). 시퀀스 길이 미명시는 생략 사유가 아니다 — 보충 후 constants 에 신고.\n- [eq (19) 공분산 대각 근사] 상관 항을 지운 대각 Σ 는 계산량 사유의 간이 대체다 — 논문 Σ 그대로.\n- [학습 표본 무작위 축소] 재학습마다 학습 표본 일부만 뽑은 것 — 논문은 학습 표본 전부를 쓴다.\n- [Σ 추정 창] 논문은 학습 데이터에서 추정한다 — 모델 연의 학습 창으로 추정해도 PIT 다(매일 갱신하는 확장 분산은 변경 · 신고 대상).\n- [eq (19) 입력 수익률 단위 미신고] λ=0.5 의 실효가 단위(소수 · %)로 갈린다 — 원문 근거로 정하고 신고.\n- [거래량 0 행 처리 미신고] log1p(0) 이 표준화 뒤 극값이 된다 — 논문 절차에 맞게 처리하고 신고.\n- [§5 포트폴리오 형태] 같은 종목군을 담고 비중을 바꾸는 논문 구성을 코드로 재현하고, claims 에 코드가 실제로 만드는 보유를 적어라(측정 뒤 기계 대조).",
+      "audit_feedback_mode": "clean",
+      "audit_verdict": "session_omission_review",
+      "audit_retries": 0,
+      "prior": {
+        "engine": "engine.rejected1.R",
+        "note": "세션 점검 대상 판(바이트 동일 사본)"
+      },
+      "order": 2,
+      "status": "reserved",
+      "queued_at": "2026-10-17T15:17:20+0900",
+      "source": "session"
+    },
+    {
+      "paper_key": "2507.01964",
+      "url": "https://arxiv.org/abs/2507.01964",
+      "paper_title": "Forecasting Nigerian Equity Stock Returns Using Long Short-Term Memory Technique",
+      "wdir": "04_Research/strategies/RP_AUTO_CLEAN_2507_01964",
+      "kind": "reimplement",
+      "decided_by": "dohoon",
+      "lane_mode": "clean",
+      "decision": "도훈 10-17 '6. 4번 해결 후 재측정 승인' — 레인 재설계(REPLICATION-ALL-METHODS-20261017) 뒤 처음부터 재구현 · 측정 축 all_hyg_px1000_2000_v1",
+      "audit_feedback": "[세션 점검 · 도훈 10-17 재측정 승인] 레인 규칙 개정(모든 방법론 · 수치 격자 대표 칸 · 미명시 보충 후 신고 · 핵심 모델 보호 · 계산 시간 상한 없음 · 포트폴리오 없는 논문 = 레인 표준 구성 · 측정 축 = 전 종목 + 위생 + 전날 수정 종가 1,000원 미만 제외) 뒤 처음부터 재구현한다. 앞 판을 원문과 대조한 점검 지적(아래 항목은 원문 위치를 직접 읽고 판단하라 — 지적이 원문과 다르면 audit_disputes 에 근거를 적어라):\n- [포트폴리오 없는 예측 논문] 레인 표준 구성으로 측정한다 — construction_source = lane · FACTORS = 모델 예측값(프롬프트 '모든 방법론' ⑤의 portfolio_spec 그대로).\n- [종목별 LSTM 을 전 종목 공통 1모델로 축약] §3 · Table 3 의 종목별 개별 모형을 논문대로(venv torch — Keras/TF 동등 구현 · 신고). 순수 R 소형 대체 금지.\n- [학습 표본 축소 · 재학습 수 축소] 재학습당 표본을 일부만 쓴 것 · 모형 수를 줄인 것 — 논문 절차(80/20)대로.\n- [대조 모형 ANN · CNN] Table 4 의 비교 방법이 주결과면 변형으로(원문으로 판정).\n- [드롭아웃 위치 · 입력 피처(OHLV 나열 vs 1개)] 해석 선택이면 원문 근거와 함께 신고.\n- [MinMaxScaler 전체 적합의 PIT 대체] 학습셋 한정 척도와 창별 척도 중 논문 의도에 가까운 것을 근거와 함께 고르고 신고.",
+      "audit_feedback_mode": "clean",
+      "audit_verdict": "session_omission_review",
+      "audit_retries": 0,
+      "prior": {
+        "engine": "engine.rejected2.R",
+        "note": "세션 점검 대상 판(바이트 동일 사본)"
+      },
+      "order": 3,
+      "status": "reserved",
+      "queued_at": "2026-10-17T15:17:20+0900",
+      "source": "session"
+    },
+    {
+      "paper_key": "2604.16773",
+      "url": "https://arxiv.org/abs/2604.16773",
+      "paper_title": "Topological Risk Parity",
+      "wdir": "04_Research/strategies/RP_AUTO_CLEAN_2604_16773",
+      "kind": "reimplement",
+      "decided_by": "dohoon",
+      "lane_mode": "clean",
+      "decision": "도훈 10-17 '6. 4번 해결 후 재측정 승인' — 레인 재설계(REPLICATION-ALL-METHODS-20261017) 뒤 처음부터 재구현 · 측정 축 all_hyg_px1000_2000_v1",
+      "audit_feedback": "[세션 점검 · 도훈 10-17 재측정 승인] 레인 규칙 개정(모든 방법론 · 수치 격자 대표 칸 · 미명시 보충 후 신고 · 핵심 모델 보호 · 계산 시간 상한 없음 · 포트폴리오 없는 논문 = 레인 표준 구성 · 측정 축 = 전 종목 + 위생 + 전날 수정 종가 1,000원 미만 제외) 뒤 처음부터 재구현한다. 앞 판을 원문과 대조한 점검 지적(아래 항목은 원문 위치를 직접 읽고 판단하라 — 지적이 원문과 다르면 audit_disputes 에 근거를 적어라):\n- [Variant II(Semi-Supervised TRP) 전체 미구현] 초록 · §5 · 표 1 이 Variant I 과 동격의 주결과로 제시한다 — 둘 다 변형으로(Case B 는 추가 데이터 불필요 · Case A 의 섹터 데이터가 없으면 그 칸만 J1 로 신고).\n- [ρ = 1 끝점 한 칸] 논문은 ρ∈[0,1] 보간을 핵심 전파 계수로 두고 ρ<1 의 분기점 비보존을 의도된 특징이라 부른다(eq 10 · Remark 3) — 수치 격자면 논문이 대표로 쓴 칸을 원문으로 정하고 근거를 적어라.\n- [루트 규칙 3안 중 hub 1칸] §5.1 Step 2 의 세 안이 주결과의 별개 방법인지 판정해 방법이면 변형으로, 격자면 대표 칸 + 근거.\n- [eq 14 클립 c · 최소비중 η 를 '값 미명시'로 생략] 다른 미명시 값(ρ · L · k · ε · 신호 s)은 보충했다 — 같은 기준으로 보충 후 신고(이중 기준 금지).\n- [신호 s 는 논문 밖(배분기 논문)] 보충값으로 정하되 근거(관례 · 상위 문헌)와 함께 — 기전 이식이면 adapted.\n- [claims] 롱/숏 · 순노출을 코드 경로가 실제로 만드는 보유대로 적어라 — 측정 뒤 보유 기록과 기계 대조된다(앞 판은 신고와 실제 구성이 달랐다).",
+      "audit_feedback_mode": "clean",
+      "audit_verdict": "session_omission_review",
+      "audit_retries": 0,
+      "prior": {
+        "engine": "engine.rejected1.R",
+        "note": "세션 점검 대상 판(바이트 동일 사본)"
+      },
+      "order": 4,
+      "status": "reserved",
+      "queued_at": "2026-10-17T15:17:20+0900",
+      "source": "session"
+    },
+    {
+      "paper_key": "2412.12516",
+      "url": "https://arxiv.org/abs/2412.12516",
+      "paper_title": "Enhanced Momentum with Momentum Transformers",
+      "wdir": "04_Research/strategies/RP_AUTO_CLEAN_2412_12516",
+      "kind": "reimplement",
+      "decided_by": "dohoon",
+      "lane_mode": "clean",
+      "decision": "도훈 10-17 '6. 4번 해결 후 재측정 승인' — 레인 재설계(REPLICATION-ALL-METHODS-20261017) 뒤 처음부터 재구현 · 측정 축 all_hyg_px1000_2000_v1",
+      "audit_feedback": "[세션 점검 · 도훈 10-17 재측정 승인] 레인 규칙 개정(모든 방법론 · 수치 격자 대표 칸 · 미명시 보충 후 신고 · 핵심 모델 보호 · 계산 시간 상한 없음 · 포트폴리오 없는 논문 = 레인 표준 구성 · 측정 축 = 전 종목 + 위생 + 전날 수정 종가 1,000원 미만 제외) 뒤 처음부터 재구현한다. 앞 판을 원문과 대조한 점검 지적(아래 항목은 원문 위치를 직접 읽고 판단하라 — 지적이 원문과 다르면 audit_disputes 에 근거를 적어라):\n- [학습형 TFT 를 닫힌 해 선형 결합 · 커널 평균으로 대체] Decoder-only TFT(LSTM 인코딩 · VSN · GLU · GRN · 멀티헤드 어텐션 · dense + tanh)를 논문대로 venv torch 로 학습한다(A3 간이 대체 금지).\n- [주결과 변형] Table 1 의 방법 TFT · TFT-CPD · LSTM-CPD 는 변형으로 · 창 길이(252/378) · 헤드 수(4/6)는 수치 격자 → 대표 칸만. 대표 = 논문 주결과 칸(원문 확인).\n- [손실 · 학습] 음의 샤프 손실 + SGD · 드롭아웃 · 하이퍼파라미터는 상위 [3][6] 규약 — 미명시는 보충 후 신고.\n- [입력 252 일간 스텝을 주간으로 접음] 모델 입력은 일간 그대로 — 하네스(H10)가 접는 것은 집행 주기이지 모델 내부 스텝이 아니다.\n- [변동성 표적 배분을 '미명시'로 생략] 상위 프레임워크의 다른 미명시 항목(지평 · MACD · EW 변동성)과 같은 기준으로 보충 후 신고.\n- [CPD] lookback 21 변화점 탐지(§3.1)를 논문대로.",
+      "audit_feedback_mode": "clean",
+      "audit_verdict": "session_omission_review",
+      "audit_retries": 0,
+      "prior": {
+        "engine": "engine.rejected2.R",
+        "note": "세션 점검 대상 판(바이트 동일 사본)"
+      },
+      "order": 5,
+      "status": "reserved",
+      "queued_at": "2026-10-17T15:17:20+0900",
+      "source": "session"
     }
   ]
 }
