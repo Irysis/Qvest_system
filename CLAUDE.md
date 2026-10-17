@@ -48,7 +48,7 @@
 
 | 단계 | 축 |
 |---|---|
-| 충실구현 | **논문 그대로**(롱숏·종목수·비중·리밸). 등급 = 15bps 순비용 판(논문 기준 병기) |
+| 충실구현 | **논문 그대로**(롱숏·종목수·비중·리밸). 등급 = 15bps 순비용 판(논문 기준 병기). ★주결과 방법 **전부**(변형 스위치 · 대표 = 논문이 꼽은 방법 · 측정 전 고정 · 나머지 = DSR 대상) · 수치 격자 = 대표 칸만 · 미명시 = 보충 후 신고(생략 = J1~J4) · 핵심 모델 간이 대체 금지 · 계산 시간 상한 없음 · 포트폴리오 없는 논문 = 레인 표준 구성(10-17 · decision_register REPLICATION-ALL-METHODS-20261017 · 정본 `06_Registry/rf_replication_variants.json`) |
 | 처방·조립 | long-only(w≥0) · ≤25종 · 15bps(v2.4 delta) · 비중 상한 없음 · LIQ 2e8 |
 | 측정 축 (10-13 전환) | **현 측정 축 = epoch `all_hyg_px1000_2000_v1`**(10-17 · `all_hyg_2000_v1` + 동전주 바닥 = 전날 수정 종가 1,000원 미만 제외 · decision_register MEASUREMENT-AXIS-PX1000-20261017 · ★수정주가 수준은 이후 기업행위를 반영 — PIT 경계 기록 · 정본 `constraint_defaults.json::measurement_axis` · 계약 `contracts/measurement_axis.R` 주입 · decision_register MEASUREMENT-AXIS-SWITCH-ALLHYG2000): 유니버스 전 종목 + 위생(D11 · MC1 — 관리종목·거래정지·불성실공시 제외 + 유동성 t−1 · 월말 스냅샷 전진) · 2000-01-01~(D15 · MC3 ✅ B안 — 실효 시작 = 신호 폭 ≥ 보유 × 2 첫 신호일부터 성과 · A 관문 창 이탈은 그 실효 시작 기준 · decision_register MC3-EFFECTIVE-START-B) · Σw≤1 잔여 현금(MC5 ✅ `reinforcement/rf_axes.R` · 현금을 만드는 층은 아직 오버레이뿐) · 리밸 월간(주간 신호면 주간 — D16 · MC4 ✅ 하네스 · 셀 엔진 주간 신호 생성은 미구현 · 주간 처방 오버레이 금지). ★**등급 비교는 같은 epoch 안에서만** — 구 축(`k200kq150_2005_v1` = K200∪KQ150 · 2005~) 산출물(S0 소급표 · 2계층 풀 · BOOK_0001)과 섞지 말 것 |
 | 공통 | **PIT C1~C15 절대**(`.claude/rules/pit.md`) · 정보 경계 τ_D = **2022-12-31**: 처방 에이전트는 그 이전 성과만 본다(이후 = 강건성 시험 · 사람·등급·Judge·BOOK 은 전기간) |

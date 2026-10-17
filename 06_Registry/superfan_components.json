@@ -73,7 +73,8 @@
       {"severity": "fail", "regex": "^Error in |Execution halted", "label": "R 오류"},
       {"severity": "fail", "regex": "failed_needs_session|rate_limit|weekly limit|HTTP 429|authentication_error", "label": "레인 정지 사유"},
       {"severity": "warn", "regex": "audit_conflict", "label": "감사 상충"},
-      {"severity": "warn", "regex": "refresh_lock_stale", "label": "리프레시 잠금 stale"}]},
+      {"severity": "warn", "regex": "refresh_lock_stale", "label": "리프레시 잠금 stale"},
+      {"severity": "warn", "regex": "\\[rp_auto\\] claim_live_long", "label": "장시간 실행 — 생존 claim 이 claim_stale_hours 초과(계산 시간 상한 없음 · 10-17 — 멈춘 실행인지 세션이 확인)"}]},
     {"id": "lane_alive", "kind": "freshness", "file": ".cache/scheduler_logs/reinforce_auto_{YYYYMMDD}.log", "max_age_h": 8, "severity": "fail"},
     {"id": "request_state", "kind": "json_field", "file": "06_Registry/replication_request.json", "path": "status",
      "bad_values": ["failed_needs_session", "failed"], "severity": "fail"}

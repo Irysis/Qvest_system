@@ -452,9 +452,22 @@ run_paper_replication <- function(strategy_name, strategy_idea, factor_engine_pa
                                   # ★데이터 컷오프 (2026-09-24 · 플랜 P0-07). NULL = 절단 없음(구판 비트 동일 · auth 키 추가 0).
                                   #   "YYYY-MM-DD" = load_rawdata 직후 그 날 이하로 절단(.rp_apply_data_cutoff) + 엔진 산출도 절단 +
                                   #   auth measurement_regime 에 data_cutoff·data_fingerprint·절단 기록을 싣는다.
-                                  data_cutoff = NULL) {
+                                  data_cutoff = NULL,
+                                  # ★엔진 변수 주입 (2026-10-17 · 결정 REPLICATION-ALL-METHODS-20261017 — 도훈 '모든 방법론') — 이름 있는 목록.
+                                  #   예: list(.RP_VARIANT = "lstm") — 엔진 환경에 RAWDATA · BM_DT · .RP_START_DATE 와 같이 넣는다(엔진의 변형 스위치).
+                                  #   NULL = 주입 없음(구판 비트 동일 · auth 키 추가 0). 실린 값은 measurement_regime.engine_vars 에 기록된다(재현 = 같은 값을 넘긴다).
+                                  engine_vars = NULL) {
   `%||%` <- function(a, b) if (is.null(a) || length(a) == 0L || (length(a) == 1L && is.na(a))) b else a
   stopifnot(file.exists(factor_engine_path))
+  if (!is.null(engine_vars)) {
+    .ev_nm <- names(engine_vars)
+    if (!is.list(engine_vars) || !length(engine_vars) || is.null(.ev_nm) || any(!nzchar(.ev_nm)) || anyDuplicated(.ev_nm) ||
+        any(.ev_nm %in% c("RAWDATA", "BM_DT", ".RP_START_DATE", "FACTORS", "PORTFOLIO", "SIGNAL_BREADTH")))
+      stop("[replication] engine_vars 는 이름 있는 목록이어야 하고 계약 입력(RAWDATA · BM_DT · .RP_START_DATE) · 엔진 산출(FACTORS · PORTFOLIO · SIGNAL_BREADTH) 이름을 쓸 수 없다")
+    if (!all(vapply(engine_vars, function(v) is.atomic(v) && length(v) == 1L && !is.na(v), logical(1))))
+      stop("[replication] engine_vars 값은 길이 1 원자값이어야 한다(산출물에 기록할 수 있는 값만 주입한다)")
+    rm(.ev_nm)
+  }
   # 측정 축 기본값 해석 — 넘기지 않은 축은 활성 epoch 에서(설정 정본 · fail-closed). 엔진 · 데이터 적재 전에 확정한다.
   if (is.null(universe) || is.null(start_date)) {
     .ep_act <- ma_epoch(root = .RP_ROOT)
@@ -546,6 +559,7 @@ run_paper_replication <- function(strategy_name, strategy_idea, factor_engine_pa
   #   측정 축 시작(2000-01-01)이 엔진까지 안 간다(유니버스 플래그와 같은 형태). 엔진이 읽을 값을 넘긴다 — 지금 엔진은 안 읽으므로 무영향,
   #   축 전환 때 엔진이 이 값을 쓰도록 바꾼다(보고서 mc1_integration · 신규 엔진 프롬프트 규약).
   fe_env$.RP_START_DATE <- as.Date(start_date)
+  for (.ev in names(engine_vars)) assign(.ev, engine_vars[[.ev]], envir = fe_env)   # 변형 스위치 등(NULL = 0회 · 구판 동일)
   source(factor_engine_path, local = fe_env)
   has_pf <- exists("PORTFOLIO", envir = fe_env, inherits = FALSE) && is.data.table(fe_env$PORTFOLIO)
   has_fx <- exists("FACTORS", envir = fe_env, inherits = FALSE) && is.data.table(fe_env$FACTORS)
@@ -804,7 +818,8 @@ run_paper_replication <- function(strategy_name, strategy_idea, factor_engine_pa
       exec_price_paper = sim_paper$diagnostics$exec_price,
       cost_model_version = sim_grade$cost_model_version,
       harness_md5 = tryCatch(unname(as.character(tools::md5sum(file.path(.RP_INFRA, "replication", "replication_harness.R")))),
-                             error = function(e) NA_character_)), data_vintage)),
+                             error = function(e) NA_character_)), data_vintage,
+      if (length(engine_vars)) list(engine_vars = engine_vars))),
     ## ★essence_score 가 산출한 겼을 **떨어뜨리지 않는다** (도훈 2026-09-04).
     ##   이 쓰기는 반환 list 를 통째로 실지 않고 필드를 골라 쓴다. 그래서 새로
     ##   붙인 rolling_grade / defensive_score / grade_base 가 산출물에서 사라졌다 —

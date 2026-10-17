@@ -202,8 +202,8 @@ grep -qE "06_metrics.csv|07_benchmark_compare.csv" 02_Infrastructure/ops/rf_perf
 grep -q "run_analysis(.sim_fa" 02_Infrastructure/alpha_search/run_paper_replication.R && ok "FF3/FF5/Carhart + FMB 생산 배선" || ng "팩터 회귀 미생산"
 ## 2026-10-16 도훈 "파마맥베스 … 메세지 다시 살려줘" — [팩터 분석]은 보고 1통의 섹션(비중형 엔진은 사후 분석 · 점수 = 보유 비중)
 VNC=$(sed 's/#.*$//' "$VERIFY")
-printf '%s' "$VNC" | grep -q "replication_factor_analysis.R" && [ "$(printf '%s' "$VNC" | grep -c 'extra = c(.v1001_grade_extra(dirname(ar)), .v1001_factor_section(dirname(ar)))')" = "2" ] \
-  && ok "[팩터 분석] = 검증기 보고 1통의 섹션(성공 분기 2곳 · 사후 분석 배선)" || ng "팩터 분석 섹션 미배선"
+printf '%s' "$VNC" | grep -q "replication_factor_analysis.R" && [ "$(printf '%s' "$VNC" | grep -c 'extra = c(.v1001_grade_extra(dirname(ar)), .v1001_variants_extra(), .v1001_factor_section(dirname(ar)))')" = "2" ] \
+  && ok "[팩터 분석] · [논문 방법 N종](10-17) = 검증기 보고 1통의 섹션(성공 분기 2곳 · 사후 분석 배선)" || ng "팩터 분석 · 변형 섹션 미배선"
 printf '%s' "$VNC" | grep -q 'jlog("factor_analysis"' && ok "분석 상태 기록(근거 · 상태 · 사유 · 소요)" || ng "분석 상태가 조용히 넘어간다"
 ! printf '%s' "$VNC" | grep -q "tg_pass_analysis" && ok "[팩터 분석] 별도 발송 없음(1단위 1통)" || ng "팩터 분석을 따로 또 보낸다"
 
@@ -257,9 +257,23 @@ _mkclaim_aged(){ rm -rf "$_RPD/claim"; mkdir -p "$_RPD/claim"; echo $$ > "$_RPD/
 # (C3) 위반 주입: 살아있는 소유자 + 나이 3h < stale 6h → 회수 금지
 : > "$_RPD/jlog.jsonl"; _mkreq in_progress; _mkclaim_aged 3; export _RP_STALE=6; _mkcfg 0 1; _rprun; unset _RP_STALE
 [ "$(_st)" = "in_progress" ] && [ -d "$_RPD/claim" ] && ! grep -q claim_stale_reclaim "$_RPD/jlog.jsonl" && ok "C3 생존 소유자 3h claim 유지(stale 6h 전)" || ng "C3 3h 생존 claim 을 빼앗았다" "status=$(_st)"
-# (C4) 양성 대조: 생존 소유자라도 나이 ≥ stale 이면 회수
+# (C4) 10-17 도훈 '논문당 계산 시간 상한 없음' — 생존 소유자는 나이 ≥ stale 이어도 회수하지 않고 claim_live_long 만 남긴다
 : > "$_RPD/jlog.jsonl"; _mkreq in_progress; _mkclaim_aged 7; export _RP_STALE=6; _mkcfg 0 1; _rprun; unset _RP_STALE
-[ "$(_st)" = "pending" ] && grep -q '"stale_h": "6"' "$_RPD/jlog.jsonl" && grep -q '"alive": "1"' "$_RPD/jlog.jsonl" && ok "C4 7h ≥ 6h 생존 claim 회수(alive=1 표식)" || ng "C4 stale 상한" "status=$(_st) $(_ev)"
+[ "$(_st)" = "in_progress" ] && [ -d "$_RPD/claim" ] && grep -q claim_live_long "$_RPD/jlog.jsonl" && ! grep -q claim_stale_reclaim "$_RPD/jlog.jsonl" \
+  && ok "C4 7h ≥ 6h 생존 claim 유지 + claim_live_long 경고(계산 시간 상한 없음 · 10-17)" || ng "C4 생존 claim 처리" "status=$(_st) $(_ev)"
+# (C4b) 양성 대조: 설정 live_claim_reclaim=true(격리 사본 · QVEST_RP_VARIANTS_CFG) 면 구판 그대로 회수(alive=1 표식) — 배선이 설정을 읽는다
+"$PY" -c "import io,json,os;src=os.path.join(os.environ.get('QM_ROOT') or '.','06_Registry','rf_replication_variants.json');d=json.loads(io.open(src,'rb').read().decode('utf-8'));d['compute']['live_claim_reclaim']=True;io.open(r'$_RPD/variants_cfg.json','w',encoding='utf-8').write(json.dumps(d,ensure_ascii=False))"
+: > "$_RPD/jlog.jsonl"; _mkreq in_progress; _mkclaim_aged 7; export _RP_STALE=6; _mkcfg 0 1
+QVEST_RP_VARIANTS_CFG="$_RPD/variants_cfg.json" _rprun; unset _RP_STALE
+[ "$(_st)" = "pending" ] && grep -q '"stale_h": "6"' "$_RPD/jlog.jsonl" && grep -q '"alive": "1"' "$_RPD/jlog.jsonl" \
+  && ok "C4b 설정 live_claim_reclaim=true → 7h 생존 claim 회수(구판 동작 · alive=1)" || ng "C4b 설정 미배선" "status=$(_st) $(_ev)"
+# (C4c) 소유자 표식이 없는 구판 claim 은 생존을 알 수 없다 → 나이 ≥ stale 이면 회수(구판 그대로)
+: > "$_RPD/jlog.jsonl"; _mkreq in_progress; rm -rf "$_RPD/claim"; mkdir -p "$_RPD/claim"; touch -d "7 hours ago" "$_RPD/claim"; export _RP_STALE=6; _mkcfg 0 1; _rprun; unset _RP_STALE
+[ "$(_st)" = "pending" ] && grep -q claim_stale_reclaim "$_RPD/jlog.jsonl" && ok "C4c 소유자 표식 없는 7h claim 회수(나이 기준)" || ng "C4c 구판 claim" "status=$(_st) $(_ev)"
+# (C5) 구현 에이전트 시간 상한 = 설정 변수(구판 3000 리터럴 0곳 · 기본 0 = 상한 없음)
+LNC=$(sed 's/#.*$//' "$LANE")
+[ "$(printf '%s' "$LNC" | grep -c 'rf_llm_agent_run "$PF" "$RUN_OUT" "$RP_AGENT_TMO"')" = "2" ] && ! printf '%s' "$LNC" | grep -q 'rf_llm_agent_run "$PF" "$RUN_OUT" 3000' \
+  && grep -q '"agent_timeout_sec": 0' 06_Registry/rf_replication_variants.json && ok "C5 구현 에이전트 시간 상한 = 설정(0 = 상한 없음 · 호출 2곳)" || ng "C5 시간 상한 배선"
 # (R0) 양성 대조: 격리 잠금 경로가 실제로 읽힌다 — 방금 만든 빈 잠금 디렉터리(held:empty_pid) → halt_refresh_lock
 #      요청은 done 으로 둔다(잠금이 무시되면 no_pending_request 로 끝난다 — 에이전트를 띄우지 않는다)
 : > "$_RPD/jlog.jsonl"; rm -rf "$_RPD/claim"; _mkreq done; mkdir -p "$_RPD/refresh.lock"; _mkcfg 0 1; _rprun; rm -rf "$_RPD/refresh.lock"

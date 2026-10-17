@@ -8,6 +8,9 @@
 #    ★엔진은 재실행하지 않는다 — rf_cell_engine.R 이 .cache/rf_base_signal 에 쓰고, FDB 빈티지가 바뀌어 같은 패널이 안 나온다.
 #    ★RAWDATA 는 저장 산출의 마지막 날(2026-09-18)에서 자른다(측정 당시 데이터 끝). 과거 행이 개정되면(수정주가 재기준 등)
 #      비트 대조가 깨질 수 있다 — 그때는 코드가 아니라 빈티지 문제이며, 이 검사는 max|Δ| 를 함께 출력해 가른다.
+#    ★(10-17) 가르는 것을 기계로 한다 — 증분 적재(Update_File · naver · KRX)가 바꿀 수 있는 행은 source ≠ quantiwise(원본 수출본) 인 행뿐이다.
+#      그 첫 날(개정 가능 경계)보다 앞 구간이 비트 동일하고 차이가 경계 뒤에만 있으면 '빈티지 개정' = SKIP(미측정 — PASS 아님) ·
+#      경계 앞에 차이가 하나라도 있으면 코드 회귀 = FAIL(구판 그대로). 실측 10-17: 퀀티 OHLCVS 재수출 적재로 03-30~10-16 행 교체 → ret_net max|Δ| 0.0109.
 # ④ 같은 픽스처의 close_t1 판: 구조 단정만(관측일 = legacy − 1 · 리밸 수 동일 · 비용 기장일 = exec 다음 거래일).
 #    계약 경유 수치(essence)는 QVEST_GOLDEN_REPORT_T1=1 일 때 출력만 한다(판정 없음 — 재측정·원장 반영은 P0-05/06).
 #    2026-09-24 실측(이 검사 · 현 빈티지): grade B · CAGR .251 · SR 1.060 · MDD .580 · Calmar .433 · PT 3.777 · OOS .117 · IR .827
@@ -76,8 +79,10 @@ pspec <- list(construction = spec0$construction, n_long = auth$replication$n_max
               weighting = spec0$weight_method, rebalance = spec0$rebalance)       # 워커 portfolio_spec 과 같은 모양
 W <- rp$.rp_build_weights(FAC, NULL, pspec)
 t0 <- Sys.time()
-RAW <- as.data.table(read_parquet(RAWP, col_select = c("Date", "Ticker", "Ret")))
+RAW <- as.data.table(read_parquet(RAWP, col_select = c("Date", "Ticker", "Ret", "source")))
 RAW <- RAW[Date <= END]
+REV0 <- suppressWarnings(min(RAW[!source %in% "quantiwise"]$Date))   # 개정 가능 경계(증분 원천 첫 날 · 원본 수출본 구간은 불변)
+RAW[, source := NULL]                                                  # 재현 입력은 구판과 같은 3열
 BM <- as.data.table(read_parquet(BMP, col_select = c("Date", "BM_Ret")))
 cat(sprintf("  (RAWDATA %d행 · 끝 %s · 적재 %.1fs)\n", nrow(RAW), END, as.numeric(difftime(Sys.time(), t0, units = "secs"))))
 
@@ -119,9 +124,23 @@ bit <- c(
   benchmark = identical(L$bt$benchmark_returns$benchmark_ret, bt0$benchmark_returns$benchmark_ret),
   bench_cmp = identical(L$bt$benchmark_compare$strategy_value, bt0$benchmark_compare$strategy_value))
 dmx <- if (nrow(pr1) == nrow(pr0)) max(abs(pr1$ret_net - pr0$ret_net)) else NA_real_
-if (all(bit)) ok(sprintf("③ legacy 비트 재현: ret_net·nav_net·metrics·benchmark·benchmark_compare identical (%d일 · %.0fs)", nrow(pr1), tL)) else
-  ng(sprintf("③ 비트 불일치 — %s · ret_net max|Δ| %s (빈티지 개정이면 ≤1e-12 수준)",
-             paste(names(bit)[!bit], collapse = ","), format(dmx)))
+.same_axis <- nrow(pr1) == nrow(pr0) && identical(as.Date(pr1$date), as.Date(pr0$date))
+.dv <- if (.same_axis) which(pr1$ret_net != pr0$ret_net) else integer(0)
+.first_div <- if (length(.dv)) min(as.Date(pr1$date[.dv])) else as.Date(NA)
+VINTAGE <- !all(bit) && .same_axis && length(.dv) > 0L && is.finite(REV0) && isTRUE(.first_div >= REV0)
+ng_v <- function(m) if (VINTAGE) sk(paste0(m, " — 빈티지 개정(위 ③ 판정 · 미측정)")) else ng(m)
+if (all(bit)) ok(sprintf("③ legacy 비트 재현: ret_net·nav_net·metrics·benchmark·benchmark_compare identical (%d일 · %.0fs)", nrow(pr1), tL)) else if (VINTAGE) {
+  sk(sprintf("③ 비트 대조 미측정 — 빈티지 개정: 차이 첫 날 %s ≥ 개정 가능 경계 %s(증분 원천 첫 날) · 불일치 %s · ret_net max|Δ| %s",
+             format(.first_div), format(REV0), paste(names(bit)[!bit], collapse = ","), format(dmx)))
+  ok(sprintf("③p 개정 경계(%s) 앞 %d일 ret_net 비트 동일 — 하네스 코드 경로 동일(차이는 경계 뒤 데이터 개정분)", format(REV0), sum(as.Date(pr1$date) < REV0)))
+  ## 판별기 양성 대조 — 경계 앞 첫 날에 1e-9 차이를 주입한 사본은 빈티지로 분류되지 않는다(경계 앞 차이 = 코드 회귀 → FAIL 경로)
+  .p <- copy(pr1); .p$ret_net[1] <- .p$ret_net[1] + 1e-9
+  .fd2 <- min(as.Date(.p$date[which(.p$ret_net != pr0$ret_net)]))
+  if (!isTRUE(.fd2 >= REV0)) ok(sprintf("③c 판별기 양성 대조 — 경계 앞(%s) 주입 차이는 빈티지가 아니다(코드 회귀로 분류)", format(.fd2))) else
+    ng("③c 판별기 양성 대조 실패 — 경계 앞 주입 차이를 빈티지로 넘긴다")
+} else
+  ng(sprintf("③ 비트 불일치 — %s · ret_net max|Δ| %s · 차이 첫 날 %s · 개정 가능 경계 %s(경계 앞 차이 = 코드 회귀)",
+             paste(names(bit)[!bit], collapse = ","), format(dmx), format(.first_div), format(REV0)))
 dd1 <- m1[metric_name == "Max_DD_Duration_Months"]$metric_value; dd0 <- m0[metric_name == "Max_DD_Duration_Months"]$metric_value
 span_m <- as.numeric(difftime(max(pr1$date), min(pr1$date), units = "days")) / (365.25 / 12)
 if (length(dd1) == 1L && length(dd0) == 1L && is.finite(dd1) && dd1 > 0 && dd1 <= span_m + 1 && abs(dd1 - dd0 / 21) <= max(3, 0.15 * dd1))
@@ -133,11 +152,11 @@ v1 <- unlist(L$es$essence[keys]); v0 <- unlist(es0$essence[keys]); va <- unlist(
 if (identical(v1, v0) && identical(L$es$grade, es0$grade))
   ok(sprintf("③ essence 전정밀도 = 저장 bt 재채점 (grade %s · CAGR %.4f · SR %.4f · MDD %.4f · Calmar %.4f · PT %.4f)",
              L$es$grade, v1["cagr"], v1["net_sharpe"], v1["mdd"], v1["calmar"], v1["portfolio_alpha_t_nw_lag3"])) else
-  ng(sprintf("③ essence 불일치 — 재현 %s vs 저장 재채점 %s", paste(signif(v1, 6), collapse = "/"), paste(signif(v0, 6), collapse = "/")))
+  ng_v(sprintf("③ essence 불일치 — 재현 %s vs 저장 재채점 %s", paste(signif(v1, 6), collapse = "/"), paste(signif(v0, 6), collapse = "/")))
 if (identical(L$es$grade, auth$essence_grade) && all(abs(round(v1, 3) - va) < 1e-9))
   ok(sprintf("③ 저장 authoritative_remeasure.json 과 일치(3자리): grade %s · CAGR %.3f · SR %.3f · MDD %.3f · Calmar %.3f · PT %.3f",
              auth$essence_grade, va["cagr"], va["net_sharpe"], va["mdd"], va["calmar"], va["portfolio_alpha_t_nw_lag3"])) else
-  ng(sprintf("③ authoritative 불일치 — %s vs %s", paste(round(v1, 3), collapse = "/"), paste(va, collapse = "/")))
+  ng_v(sprintf("③ authoritative 불일치 — %s vs %s", paste(round(v1, 3), collapse = "/"), paste(va, collapse = "/")))
 
 # ── P0-03 (legacy 산출에서) ──
 g1 <- pr1$ret_gross; g0 <- pr0$ret_gross
@@ -147,7 +166,7 @@ if (abs(g1[1] - (pr1$ret_net[1] + 0.0015)) < 1e-15 && abs(pr1$cost_ret[1] - 0.00
   ng(sprintf("P0-03 첫 행 — ret_gross %s cost_ret %s", g1[1], pr1$cost_ret[1]))
 dg <- max(abs(g1[-1] - g0[-1]))
 if (dg < 1e-12) ok(sprintf("P0-03 2행 이후 ret_gross = 저장값(되짚기 경로) 부동소수 수준 max|Δ| %.1e — 등급 입력(ret_net) 불변", dg)) else
-  ng(sprintf("P0-03 2행 이후 ret_gross 차 %.3e", dg))
+  ng_v(sprintf("P0-03 2행 이후 ret_gross 차 %.3e", dg))
 wr <- sort(L$bt$audit[status != "PASS", check_name])
 if (identical(L$bt$manifest$integrity_status, "PASS") && !nrow(L$bt$audit[check_name == "cost_sign_nonnegative" & status != "PASS"]))
   ok(sprintf("P0-03 integrity PASS (저장본 WARNING — WARN 4종 해소) · cost_model_version=%s", L$bt$manifest$cost_model_version)) else

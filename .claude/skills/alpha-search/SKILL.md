@@ -22,6 +22,13 @@ description: 1계층 알파 서칭 (v10.01) — 논문 1편을 완전 충실구�
    **등급은 15bps 순비용 판**(essence 문턱 15bps 보정 — gross 등급은 인플레).
 5. **미명시 값만 보충**하고 보충 사실을 명시. PIT C1~C15 는 절대(t-1 규약).
 6. **근거 논문 원문 링크 필수** — `source_paper=list(url=...)` 없으면 러너가 거부.
+7. ★**모든 방법론**(2026-10-17 도훈 '1. 대표칸만 / 2. 논문당 계산 시간 상한 없음 / 3. 포트폴리오 구성이 가능하다면 구현하여 성과 측정' ·
+   decision_register REPLICATION-ALL-METHODS-20261017 · 정본 `06_Registry/rf_replication_variants.json`): 주결과의 방법 · 모델 · 구성법을 **전부**
+   한 엔진의 변형으로(스위치 `.RP_VARIANT` · 기본값 = 논문 대표) · 수치 격자는 대표 칸만 · 미명시는 보충 후 신고(생략 = J1~J4 만) ·
+   핵심 모델 간이 대체 금지(딥러닝 = venv torch · 계산 시간 상한 없음) · 포트폴리오 없는 논문 = 레인 표준 구성(top_n_long · ew · 하네스 종목수 상한 ·
+   construction_source = lane). 세션 실행은 변형마다 `run_paper_replication(engine_vars = list(.RP_VARIANT = "<id>"), …)` — 대표 = chain/1(권위) ·
+   나머지 = `selection_type = "sweep"`, `n_trials_cumulative = 변형 수`(측정 뒤 최고 고르기 = DSR 대상). 무인 레인은 검증기가 이 순서를 자동으로 탄다
+   (대표 → `<대표>/variants/` · 요약 `variants_summary.json` · 보유 대조 `holdings_check.json`).
 ★구 E-5(25종 절단·L/S long-leg 사상)는 **충실구현 단계에서 폐지** — 실투형 축(long-only·
 ≤25종)은 처방·조립 단계부터 적용된다(`.claude/rules/lean-loop.md` 축 · v10.01).
 

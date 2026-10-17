@@ -491,6 +491,129 @@ def run(wdir, root, cfg):
                 "프롬프트의 '하네스 고지' 대괄호 블록(%s … %s)을 FIDELITY.json 의 harness_disclosure 에 그대로 옮겨라 — "
                 "하네스가 만든 차이(신호일 유니버스 결합·체결 규약·보유 드리프트·무산출 월 이월·비용·표본기간)는 이 블록이 공시한다." % (mk, ek))
 
+    # ── P9~P11 모든 방법론 · 생략 사유 · 레인 구성 (2026-10-17 · 결정 REPLICATION-ALL-METHODS-20261017 — 도훈 '1. 대표칸만 /
+    #   2. 논문당 계산 시간 상한 없음 / 3. 포트폴리오 구성이 가능하다면 구현하여 성과 측정') ─────────────────────────────────────
+    #   음수 CAGR 5편 중 4편이 논문 방법론의 시험이 아니었다(주결과 4방법 중 1칸 · 핵심 모형 간이 대체 · 미명시 이중 기준).
+    #   변형 목록 · 대표 · 변형 스위치 · 신고(claims) · 생략 사유 코드 · 레인 구성 일치는 코드 · 신고서만으로 확정된다 — 측정 전에 거른다.
+    #   내용(주결과의 방법을 빠짐없이 담았는가 · 대표가 논문의 대표인가 · 핵심 모형이 간이판이 아닌가)은 감사의 몫이다.
+    V = S.get("variants") or {}
+    if V.get("required"):
+        vcfg = {}
+        try:
+            vcfg = _load_json(os.path.join(root, V.get("config") or "06_Registry/rf_replication_variants.json"))
+        except Exception as e:
+            raise RuntimeError("변형 설정 판독 불능(%s) — 규칙을 지어내지 않는다" % str(e)[:120])
+        vv = vcfg.get("variants") or {}
+        id_rx = re.compile(vv.get("id_regex") or r"^[a-z][a-z0-9_]{0,39}$")
+        hc = vcfg.get("holdings_claims") or {}
+        req_claims = hc.get("required_keys") or ["long_short", "n_names", "net_exposure", "weighting"]
+        w_enum = set(hc.get("weighting_enum") or ["ew", "vw", "model", "other"])
+        vs, hl = fid.get("variants"), fid.get("headline_variant")
+        ids = []
+        if not isinstance(vs, list) or not vs:
+            add("P9_variants_missing", "fail", "variants 가 없다",
+                "논문 주결과(본문 성과 표 · 그림)에 별개 결과로 보고된 방법 · 모델 · 포트폴리오 구성법을 **전부** 변형으로 적어라 — "
+                "{id, label, paper_quote, portfolio_spec(선택 — 변형마다 다르면), claims{long_short, n_names, net_exposure, weighting}}. "
+                "방법이 하나뿐인 논문도 변형 1개로 적는다. 수치 격자(J×K · ρ · 창 길이)는 논문 대표 칸만 구현한다(변형이 아니다).")
+        else:
+            bad = []
+            for j, it in enumerate(vs, 1):
+                if not isinstance(it, dict):
+                    bad.append("#%d(객체 아님)" % j)
+                    continue
+                vid = str(it.get("id") or "")
+                ids.append(vid)
+                if not id_rx.match(vid):
+                    bad.append("#%d(id %r — 형식 %s)" % (j, vid, id_rx.pattern))
+                for k in ("label", "paper_quote"):
+                    if not str(it.get(k) or "").strip():
+                        bad.append("#%d(%s 빈칸)" % (j, k))
+                cl = it.get("claims")
+                if not isinstance(cl, dict):
+                    bad.append("#%d(claims 없음)" % j)
+                else:
+                    miss = [k for k in req_claims if k not in cl]
+                    if miss:
+                        bad.append("#%d(claims 키 누락 %s — 모르면 null 로 적어라)" % (j, "/".join(miss)))
+                    if "long_short" in cl and not isinstance(cl.get("long_short"), bool):
+                        bad.append("#%d(claims.long_short 는 true/false)" % j)
+                    for k in ("n_names", "net_exposure"):
+                        x = cl.get(k)
+                        if x is not None and (isinstance(x, bool) or not isinstance(x, (int, float))):
+                            bad.append("#%d(claims.%s 는 숫자 또는 null)" % (j, k))
+                    if "weighting" in cl and str(cl.get("weighting") or "") not in w_enum:
+                        bad.append("#%d(claims.weighting %r — %s 중 하나)" % (j, cl.get("weighting"), "|".join(sorted(w_enum))))
+            dup = sorted({x for x in ids if ids.count(x) > 1})
+            if dup:
+                bad.append("중복 id %s" % ", ".join(dup))
+            if bad:
+                add("P9_variants_malformed", "fail", "variants 항목 형식 위반 %d건" % len(bad), ", ".join(bad[:20]))
+            if str(hl or "") not in ids:
+                add("P9_headline_invalid", "fail", "headline_variant %r 가 variants id 에 없다" % hl,
+                    "논문이 스스로 대표로 꼽은 방법(초록 · 결론 · 주결과 표의 강조 칸)의 id 를 측정 전에 적어라 — 권위 등급이 그 변형의 등급이다.")
+            if len(ids) >= 2:
+                ev = vv.get("engine_var") or ".RP_VARIANT"
+                if ev not in code:
+                    add("P9_variant_switch_missing", "fail", "변형이 %d개인데 engine.R 이 변형 스위치 %s 를 읽지 않는다" % (len(ids), ev),
+                        "하네스가 변형마다 %s 에 id 를 넣고 엔진을 한 번씩 돌린다. 엔진은 그 값으로 방법을 고르고, 없으면 대표 변형을 쓴다." % ev)
+                lit = set(re.findall(r"[\"']([a-z][a-z0-9_]*)[\"']", code))
+                miss_ids = [x for x in ids if x and x not in lit]
+                if miss_ids:
+                    add("P9_variant_ids_unused", "fail", "engine.R 에 문자열로 없는 변형 id %d개: %s" % (len(miss_ids), ", ".join(miss_ids[:12])),
+                        "변형마다 엔진 안에 분기가 있어야 한다(id 문자열로 고른다) — 신고만 있고 구현이 없는 변형은 측정이 대표와 같은 값을 낸다.")
+                drx = V.get("default_regex") or r"\.RP_VARIANT\s*else\s*[\"']([a-z][a-z0-9_]*)[\"']"
+                dm = re.search(drx, code)
+                if not dm or dm.group(1) != str(hl or ""):
+                    add("P9_variant_default", "fail",
+                        "변형 스위치의 기본값이 대표(%s)가 아니다(%s)" % (hl, ("기본값 %r" % dm.group(1)) if dm else "기본값 구문 없음"),
+                        "스위치가 비면 대표 변형을 쓴다 — 다른 레인 · 재현(Judge)이 변형 없이 엔진을 부르면 대표가 나와야 한다. "
+                        "형태: VARIANT <- if (exists(\".RP_VARIANT\", inherits = FALSE) && nzchar(.RP_VARIANT)) .RP_VARIANT else \"%s\"" % hl)
+        # P10 — 생략(omitted)은 정당 사유 코드로만(J1~J4 · 설정 정본) · 미명시는 생략 사유가 아니다(보충 후 신고)
+        oc = set((vcfg.get("omit_codes") or {}).keys())
+        ps2 = fid.get("paper_steps")
+        if oc and isinstance(ps2, list):
+            badj = []
+            for j, it in enumerate(ps2, 1):
+                if isinstance(it, dict) and str(it.get("status") or "").strip().lower() == "omitted":
+                    if str(it.get("omit_code") or "").strip() not in oc:
+                        badj.append("#%d %s(omit_code=%s)" % (j, str(it.get("step") or "")[:40], it.get("omit_code") or "빈칸"))
+            if badj:
+                add("P10_omit_code", "fail", "생략(omitted) 단계에 정당 사유 코드가 없다 %d건" % len(badj),
+                    "생략은 %s 만 허용된다(%s). 논문에 값이 없어서(미명시)는 생략 사유가 아니다 — 값을 보충하고 constants 에 "
+                    "source=supplement 로 신고하라. 계산량 · 시간도 사유가 아니다(상한 없음). 해당: %s"
+                    % ("/".join(sorted(oc)), " · ".join("%s %s" % (k, (vcfg.get("omit_codes") or {}).get(k, "")[:24]) for k in sorted(oc)),
+                       ", ".join(badj[:12])))
+        # P11 — 포트폴리오 구성 출처(논문 · 레인). 레인 구성이면 설정의 표준 구성 그대로(구현자가 고르지 않는다)
+        cs = str(fid.get("construction_source") or "")
+        if cs not in ("paper", "lane"):
+            add("P11_construction_source", "fail", "construction_source 가 paper|lane 이 아니다(%r)" % (cs or "빈칸"),
+                "논문이 포트폴리오를 구성했으면 paper, 예측 · 정확도만 보고했으면 lane(레인 표준 구성 — 하네스 고지 · 프롬프트 절).")
+        elif cs == "lane":
+            lc = vcfg.get("lane_construction") or {}
+            std = dict(lc.get("portfolio_spec") or {})
+            tn = None
+            try:
+                tn = _dig(_load_json(os.path.join(root, lc.get("top_n_config") or "02_Infrastructure/worktask/constraint_defaults.json")),
+                          lc.get("top_n_key") or "tier_soft_deployment.max_names")
+            except Exception:
+                tn = None
+            if isinstance(tn, (int, float)) and not isinstance(tn, bool):
+                std["top_n"] = int(tn)
+            top = fid.get("portfolio_spec") if isinstance(fid.get("portfolio_spec"), dict) else {}
+            offs = []
+            for it in (vs if isinstance(vs, list) else []):
+                if not isinstance(it, dict):
+                    continue
+                sp = it.get("portfolio_spec") if isinstance(it.get("portfolio_spec"), dict) else top
+                for k, want in std.items():
+                    got = (sp or {}).get(k)
+                    if str(got).lower() != str(want).lower():
+                        offs.append("%s.%s=%s(표준 %s)" % (it.get("id") or "?", k, got, want))
+            if offs:
+                add("P11_lane_construction", "fail", "레인 구성인데 portfolio_spec 이 레인 표준과 다르다 %d건" % len(offs),
+                    "논문에 포트폴리오가 없으면 레인 표준 구성(%s)을 그대로 쓴다 — 구현자가 종목 수 · 가중을 고르지 않는다: %s"
+                    % (json.dumps(std, ensure_ascii=False), ", ".join(offs[:12])))
+
     # ── P6 방어 코드 범주 — 코드에 있는데 신고 말뭉치에 키워드가 없으면 미신고 후보 ──────────────────
     for cat in cfg.get("categories") or []:
         try:

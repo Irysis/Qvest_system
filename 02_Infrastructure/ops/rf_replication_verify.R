@@ -284,7 +284,8 @@ fail <- function(why, detail = "") {
 ##   고정 축 관문은 충실구현 축(롱숏 · 종목수 논문 그대로)에서 판정하지 않는다(러너가 replication$ 아래에 쓰는 값을 읽지 않는 것도 그 때문).
 .v1001_gate_line <- function() sprintf("검증 관문 통과(계약 · PIT 구조) · 충실도 감사 %s%s%s",
   as.character(.aud$verdict %||% "?")[1],
-  if (isTRUE(.aud_suspect)) " — 재구현 뒤에도 기각: 구현 의심(implementation_suspect)" else "",
+  paste0(if (isTRUE(.aud_suspect)) " — 재구현 뒤에도 기각: 구현 의심(implementation_suspect)" else "",
+         if (isTRUE(get0(".p4_suspect", ifnotfound = FALSE))) " · 측정 뒤 보유 대조 어긋남(신고 ≠ 실측 · implementation_suspect)" else ""),
   { r <- .v1001_ruling(); if (is.null(r)) "" else sprintf(" · 감사 상충 세션 판정 반영(%s · %s)", r$action, r$decision) })
 ## 세션 판정이 적용된 실행인가(감사 관문 ruled) — 요청 · 원장 · 보고 · 카탈로그 메타에 그 사실을 남긴다(리뷰 U13)
 .v1001_ruling <- function() {
@@ -303,6 +304,157 @@ fail <- function(why, detail = "") {
     sprintf("β %s · β 통제 α t %s(%s)", .v1001_num(b), .v1001_num(at),
             if (identical(as.character(a$basis %||% "")[1], "2f")) "2요인" else "1요인")
 }, error = function(e) "")
+## ── 변형 측정 · 보유 대조 (2026-10-17 · 결정 REPLICATION-ALL-METHODS-20261017 — 도훈 '1. 대표칸만 / 2. 논문당 계산 시간 상한 없음 /
+##   3. 포트폴리오 구성이 가능하다면 구현하여 성과 측정') ────────────────────────────────────────────────────────────────────────────
+##   음수 CAGR 5편 점검(04_Research/01_reports/negative_cagr_omission_audit_20261017): 넷이 '논문 방법론의 시험'이 아니었다 — 엔진 1개 =
+##   포트폴리오 1개만 재는 하네스가 칸 선택(주결과 4방법 중 MLP 1칸 · Variant II 미구현 · ρ=1 한 칸)을 그대로 통과시켰다.
+##   이제 FIDELITY.variants 가 있으면 대표(headline_variant · 논문이 꼽은 방법 · 측정 전 고정)를 먼저 잰다 = 권위 등급(이하 소비 ·
+##   재료 · 보고 경로 그대로) · 나머지 변형은 대표 산출물의 variants/ 아래에 같은 계약으로 잰다(sweep · n = 변형 수 — 측정 뒤 최고 변형을
+##   고르는 것은 선정이라 DSR 대상). 변형이 없으면(구판 엔진 · 검증기만 재실행) 구판 그대로. 정본 설정 = 06_Registry/rf_replication_variants.json.
+.RV_CFG <- tryCatch(fromJSON(file.path(ROOT, "06_Registry/rf_replication_variants.json"), simplifyVector = FALSE), error = function(e) NULL)
+.v1001_variants_plan <- function(fid, cfg = .RV_CFG) {
+  vs <- fid$variants
+  if (!is.list(vs) || !length(vs)) return(NULL)
+  ids <- vapply(vs, function(v) as.character((if (is.list(v)) v$id else NULL) %||% "")[1], "")
+  hl  <- as.character(fid$headline_variant %||% "")[1]
+  rx  <- as.character(((cfg %||% list())$variants %||% list())$id_regex %||% "^[a-z][a-z0-9_]{0,39}$")[1]
+  bad <- ids[is.na(ids) | !grepl(rx, ids)]
+  if (length(bad) || anyDuplicated(ids) || is.na(hl) || !hl %in% ids)
+    stop(sprintf("변형 계획 위반 — 형식 밖 id [%s] · 중복 %s · 대표 '%s' %s", paste(bad, collapse = ", "),
+                 if (anyDuplicated(ids)) "있음" else "없음", hl, if (isTRUE(hl %in% ids)) "" else "(변형 목록에 없음)"))
+  ord <- c(which(ids == hl), which(ids != hl))           # 대표가 먼저 — 권위 측정이 실패하면 나머지는 재지 않는다(구판 실패 경로)
+  list(ids = ids[ord], headline = hl, n = length(ids),
+       label  = vapply(vs[ord], function(v) as.character(v$label %||% v$id)[1], ""),
+       spec   = lapply(vs[ord], function(v) v$portfolio_spec %||% NULL),
+       claims = lapply(vs[ord], function(v) v$claims %||% NULL))
+}
+## 측정 뒤 기계 대조(P4 · LLM 없음) — 보유 기록(04_holdings.csv)의 종목 수 · 롱/숏 · 순노출을 신고(variants[].claims)와 대조한다.
+##   판정이 아니라 꼬리표(implementation_suspect)다 — 문턱 · 근거 = rf_replication_variants.json::holdings_claims(실측 실패 2건 사이 값).
+##   청정 감사는 산출물을 안 보므로(측정 전 · 코드 · 신고서 · 논문만) '신고 롱 0.5 · 숏 0.5 → 실측 순숏' 같은 어긋남은 여기서만 잡힌다.
+.v1001_holdings_check <- function(dir, claims, cfg = ((.RV_CFG %||% list())$holdings_claims %||% list())) {
+  h <- tryCatch(fread(file.path(dir, "04_holdings.csv"), select = c("date", "target_weight"), showProgress = FALSE),
+                error = function(e) NULL)
+  if (is.null(h) || !nrow(h)) return(list(status = "no_holdings"))
+  h <- h[is.finite(target_weight) & target_weight != 0]
+  if (!nrow(h)) return(list(status = "empty_holdings"))
+  s <- h[, .(n = .N, long = sum(pmax(target_weight, 0)), short = sum(pmax(-target_weight, 0)),
+             eff = 1 / sum((abs(target_weight) / sum(abs(target_weight)))^2)), by = date]
+  s[, `:=`(net = long - short, gross = long + short)]
+  meas <- list(n_rebalance = nrow(s), n_names_median = stats::median(s$n), eff_n_median = stats::median(s$eff),
+               short_share = mean(s$short > 0), long_median = stats::median(s$long), short_median = stats::median(s$short),
+               net_median = stats::median(s$net), gross_median = stats::median(s$gross))
+  num <- function(x) { x <- suppressWarnings(as.numeric(x %||% NA)[1]); if (is.finite(x)) x else NA_real_ }
+  ssm <- num(cfg$short_share_min); nrm <- num(cfg$n_names_ratio_max); ntol <- num(cfg$net_abs_tol_of_gross)
+  mis <- character(0)
+  if (!is.list(claims) || !length(claims)) return(list(status = "no_claims", measured = meas, mismatch = FALSE, findings = mis))
+  ls <- claims$long_short
+  if (isTRUE(ls) && is.finite(ssm) && !(meas$short_share > ssm))
+    mis <- c(mis, sprintf("롱숏 신고인데 숏이 있는 리밸일 비율 %.2f(문턱 > %.2f)", meas$short_share, ssm))
+  if (identical(ls, FALSE) && meas$short_share > 0)
+    mis <- c(mis, sprintf("롱온리 신고인데 숏이 있는 리밸일 비율 %.2f", meas$short_share))
+  nn <- num(claims$n_names)
+  if (is.finite(nn) && nn > 0 && is.finite(nrm)) {
+    r <- meas$n_names_median / nn
+    if (r > nrm || r < 1 / nrm) mis <- c(mis, sprintf("종목 수 신고 %g · 실측 중앙 %g(비 %.2f · 허용 1/%g~%g)", nn, meas$n_names_median, r, nrm, nrm))
+  }
+  ne <- num(claims$net_exposure)
+  if (is.finite(ne) && is.finite(ntol) && abs(meas$net_median - ne) > ntol * max(meas$gross_median, 1e-12))
+    mis <- c(mis, sprintf("순노출 신고 %g · 실측 중앙 %.2f(총노출 중앙 %.2f × %.2f 초과 차)", ne, meas$net_median, meas$gross_median, ntol))
+  list(status = "ok", measured = meas, claims = claims, mismatch = length(mis) > 0L, findings = mis,
+       rules = list(short_share_min = ssm, n_names_ratio_max = nrm, net_abs_tol_of_gross = ntol))
+}
+## 변형 1개의 요약 행 — 계약 산출물에서 읽기만 한다(손계산 0 · AX-008). 행동 카드는 대표처럼 산출물 옆에 쓴다(위기 방어 판정 병기).
+.v1001_variant_row <- function(id, label, headline, dir, claims = NULL, err = NULL, secs = NA_real_) {
+  row <- list(id = id, label = label, headline = isTRUE(headline), secs = secs)
+  if (!is.null(err)) return(c(row, list(status = "error", error = substr(as.character(err), 1, 300))))
+  a <- tryCatch(fromJSON(file.path(dir, "authoritative_remeasure.json"), simplifyVector = TRUE), error = function(e) NULL)
+  if (is.null(a)) return(c(row, list(status = "no_authoritative_remeasure", artifacts = dir)))
+  e <- a$essence %||% list()
+  cd <- tryCatch({
+    if (!exists("bc_card_from_artifacts", mode = "function")) source(file.path(ROOT, "02_Infrastructure/contracts/behavior_card.R"))
+    z <- bc_card_from_artifacts(dir, root = ROOT); bc_write(z, dir); z$overall
+  }, error = function(err2) NULL)
+  hc <- .v1001_holdings_check(dir, claims)
+  tryCatch(write(toJSON(hc, auto_unbox = TRUE, pretty = TRUE, null = "null", na = "null", digits = 6), file.path(dir, "holdings_check.json")),
+           error = function(err3) NULL)
+  c(row, list(status = "ok", grade = as.character(a$essence_grade %||% NA)[1], run_id = as.character(a$run_id %||% NA)[1],
+              cagr = e$cagr %||% NA, calmar = e$calmar %||% NA, mdd = e$mdd %||% NA, port_t = e$portfolio_alpha_t_nw_lag3 %||% NA,
+              net_sharpe = e$net_sharpe %||% NA, dsr = e$dsr %||% NA,
+              selection_type = as.character(a$selection_type %||% NA)[1], n_trials = a$n_trials_cumulative %||% NA,
+              crisis_verdict = as.character((cd %||% list())$verdict %||% NA)[1],
+              crisis_dd_capture_median = (cd %||% list())$crisis_dd_capture_median %||% NA,
+              bull_up_capture_median = (cd %||% list())$bull_up_capture_median %||% NA,
+              holdings_mismatch = isTRUE(hc$mismatch), holdings_findings = as.list(hc$findings %||% character(0)),
+              judge_trigger = file.exists(file.path(dir, "judge_request.eligible.json")), artifacts = dir))
+}
+## 대표 다음 변형들을 같은 계약으로 잰다 — 측정 인자는 대표와 같고(논문 비용 · 측정 축 · 체결 규약 = 계약 기본값) 다른 것은
+##   변형 스위치(engine_vars) · 변형별 portfolio_spec · 선정 회계(sweep · n = 변형 수) · 산출 위치(대표/variants/)뿐이다.
+##   ★기저 캐시 시드는 대표만(엔진 기본값 = 대표 — 사전검사 P9) · 변형 산출이 같은 키로 캐시를 덮지 않게 이 동안 끈다.
+##   ★변형 하나의 실패는 그 행에만 남는다(대표 · 다른 변형 측정은 계속) — 시간 상한 없음(도훈 10-17 결정 2).
+.v1001_measure_variants <- function(vp, head_dir, head_run_id, base_args, pspec_default) {
+  rows <- list(.v1001_variant_row(vp$ids[1], vp$label[1], TRUE, head_dir, claims = vp$claims[[1]]))
+  if (vp$n > 1L) {
+    old_seed <- Sys.getenv("QVEST_RP_SEED_BASE_CACHE", "")
+    Sys.setenv(QVEST_RP_SEED_BASE_CACHE = "0")
+    on.exit(Sys.setenv(QVEST_RP_SEED_BASE_CACHE = old_seed), add = TRUE)
+    for (i in 2:vp$n) {
+      id <- vp$ids[i]; t0 <- Sys.time()
+      jlog("variant_measure_start", variant = id, i = i, n = vp$n)
+      sp <- vp$spec[[i]] %||% pspec_default
+      args <- utils::modifyList(base_args, list(
+        strategy_name = paste0(base_args$strategy_name, "_v_", id),
+        out_root = file.path(head_dir, "variants"),
+        selection_type = "sweep", n_trials_cumulative = as.integer(vp$n),
+        engine_vars = list(.RP_VARIANT = id),
+        measurement_tags = list(variant_id = id, variant_headline = FALSE, variant_of = head_run_id, n_variants = as.integer(vp$n))))
+      if (!is.null(sp)) args$portfolio_spec <- sp
+      r <- tryCatch(do.call(run_paper_replication, args),
+                    error = function(e) structure(list(err = conditionMessage(e)), class = "rp_err"))
+      secs <- round(as.numeric(difftime(Sys.time(), t0, units = "secs")))
+      if (inherits(r, "rp_err")) {
+        rows[[i]] <- .v1001_variant_row(id, vp$label[i], FALSE, NA_character_, err = r$err, secs = secs)
+      } else {
+        vd <- dirname(r$authoritative_remeasure_path %||% file.path(r$out_dir %||% "", "authoritative_remeasure.json"))
+        rows[[i]] <- .v1001_variant_row(id, vp$label[i], FALSE, vd, claims = vp$claims[[i]], secs = secs)
+      }
+      jlog("variant_measured", variant = id, status = rows[[i]]$status, grade = rows[[i]]$grade %||% NA, secs = secs,
+           holdings_mismatch = isTRUE(rows[[i]]$holdings_mismatch), judge_trigger = isTRUE(rows[[i]]$judge_trigger))
+    }
+  }
+  sm <- list(schema = "replication_variants_v1", decision = "REPLICATION-ALL-METHODS-20261017",
+             headline = vp$headline, n_variants = as.integer(vp$n),
+             selection_note = paste0("대표 = 논문이 꼽은 방법(측정 전 FIDELITY.headline_variant 고정 · chain/1 · 권위 등급) · 나머지 = sweep(n = ",
+                                     vp$n, " · DSR) — 측정 뒤 최고 변형을 고르는 것은 선정이다"),
+             variants = rows, measured_at = format(Sys.time(), "%Y-%m-%dT%H:%M:%S%z"))
+  tryCatch(write(toJSON(sm, auto_unbox = TRUE, pretty = TRUE, null = "null", na = "null", digits = 6), file.path(head_dir, "variants_summary.json")),
+           error = function(e) jlog("variants_summary_write_failed", err = conditionMessage(e)))
+  sm
+}
+## 보고 섹션 — 변형별 등급 한 줄씩(대표 표시) + 대표의 보유 대조 어긋남. 수치는 요약 행(계약 산출물) 그대로.
+.v1001_variants_extra <- function(sm = if (exists(".VSUM", inherits = TRUE)) .VSUM else NULL) {
+  if (is.null(sm) || !length(sm$variants)) return(NULL)
+  pct <- function(x) { x <- suppressWarnings(as.numeric(x)[1]); if (is.finite(x)) sub("^-", "−", sprintf("%.1f%%", 100 * x)) else "NA" }
+  cv <- c(strong = "강함", normal = "보통", weak = "약함", insufficient = "판정 불가")
+  ln <- vapply(sm$variants, function(v) {
+    nm <- sprintf("%s%s", v$id, if (isTRUE(v$headline)) "(대표)" else "")
+    if (!identical(v$status, "ok")) return(sprintf("• %s — 측정 실패: %s", nm, .tg_clip(v$error %||% v$status, 90L)))
+    sprintf("• %s — %s · CAGR %s · Calmar %s · PORT_t %s · 위기 방어 %s%s", nm, v$grade %||% "NA", pct(v$cagr), .v1001_num(v$calmar),
+            .v1001_num(v$port_t), { z <- unname(cv[as.character(v$crisis_verdict %||% "")]); if (length(z) && !is.na(z)) z else "NA" },
+            paste0(if (isTRUE(v$holdings_mismatch)) " · 보유 대조 어긋남" else "",
+                   if (isTRUE(v$judge_trigger)) " · ★Judge 트리거(A 자격 관문 통과 — 비대표 변형 · DSR 포함)" else ""))
+  }, character(1))
+  hd <- sm$variants[[1]]
+  fx <- if (isTRUE(hd$holdings_mismatch)) paste0("\n대표 보유 대조(신고 ≠ 실측): ", paste(unlist(hd$holdings_findings), collapse = " / ")) else ""
+  list(list(type = "text", emoji = "\U0001F9EA",
+            heading = sprintf("논문 방법 %d종 — 대표 %s(논문이 꼽은 방법 · 측정 전 고정) · 나머지는 같은 계약 · DSR 대상", sm$n_variants, sm$headline),
+            body = paste0(paste(ln, collapse = "\n"), fx)))
+}
+## 요청 파일 기록 — 대표 · 변형 수 · 요약 경로 · 변형별 등급(측정 실패면 상태). 변형 측정이 없었으면 NULL(구판과 같은 요청).
+.v1001_variants_req <- function(sm = if (exists(".VSUM", inherits = TRUE)) .VSUM else NULL) {
+  if (is.null(sm)) return(NULL)
+  list(headline = sm$headline, n = sm$n_variants, summary = file.path(dirname(ar), "variants_summary.json"),
+       grades = stats::setNames(lapply(sm$variants, function(v) v$grade %||% v$status), vapply(sm$variants, function(v) v$id, "")))
+}
 ## 보고 줄 — 재료가 어디로 갔는지(프로그램 · 미분류 보류 · 해당 없음)를 그대로 적는다
 .v1001_material_line <- function(ho) {
   if (is.null(ho)) return("재료 인계 실패(저널 v1001_handoff_failed)")
@@ -325,7 +477,7 @@ fail <- function(why, detail = "") {
       meta = c(Filter(Negate(is.null), list(paper_key = as.character(PKEY %||% ""), source_paper_url = URL, fidelity = .fidelity,
                     strategy_idea = paste0("[무인 충실구현] ", substr(TITLE %||% "", 1, 120)),
                     strategy_name = as.character(AR$strategy_name %||% "")[1],
-                    implementation_suspect = isTRUE(.aud_suspect), registered_after_audit = TRUE,
+                    implementation_suspect = isTRUE(.aud_suspect) || isTRUE(get0(".p4_suspect", ifnotfound = FALSE)), registered_after_audit = TRUE,
                     audit_ruling = .v1001_ruling())), meta[setdiff(names(meta), c("paper_key", "strategy_name", "strategy_idea"))])) else NULL
   list(adm = adm, reg = reg, note = .rmm$rmm_gate_note(adm))
 }, error = function(e) { jlog("module_register_failed", err = conditionMessage(e)); NULL })
@@ -545,6 +697,7 @@ if (identical(.disp$action, "reimplement")) {
   quit(status = 0)
 }
 .aud_suspect <- identical(.disp$action, "proceed_suspect")
+.p4_suspect  <- FALSE   # 측정 뒤 보유 대조(P4) 어긋남 — 아래 ①-b 가 채운다(꼬리표 · 판정 아님)
 if (.aud_suspect) jlog("fidelity_suspect_proceed", paper_key = PKEY %||% "",
   note = "재구현도 충실도 기각 — 소비하되 implementation_suspect 로 남긴다")
 
@@ -654,15 +807,24 @@ if (!.cmsn_known) .cmsn <- NULL
 if (!is.null(.pspec)) jlog("portfolio_spec_from_fidelity",
                            construction = .pspec$construction %||% "?",
                            commission = if (.cmsn_known) .cmsn else "무명시(gross 병기)")
-res <- tryCatch(do.call(run_paper_replication, c(list(
+## ★변형 계획(10-17 · 위 '변형 측정' 절) — 대표를 먼저 이 호출로 잰다(변형 스위치 = 대표 id · 대표의 portfolio_spec 이 있으면 그것).
+##   계획 위반(사전검사 P9 를 지나 온 신고서가 깨진 경우)은 측정 없이 실패 — 어느 변형이 권위인지 모르는 채 재지 않는다.
+.VP <- tryCatch(if (is.null(.fid_o)) NULL else .v1001_variants_plan(.fid_o),
+                error = function(e) fail("variants_plan_invalid", conditionMessage(e)))
+if (!is.null(.VP)) jlog("variants_plan", headline = .VP$headline, n = .VP$n, ids = paste(.VP$ids, collapse = ","))
+.BASE_ARGS <- list(
   strategy_name = paste0("RP_AUTO_", gsub("[^A-Za-z0-9]", "", substr(PKEY, 1, 20))),
   strategy_idea = paste0("[무인 충실구현] ", substr(TITLE, 1, 120)),
   # ★측정 축(2026-10-13 MEASUREMENT-AXIS-SWITCH-ALLHYG2000) — universe · start_date 를 넘기지 않는다 = 활성 epoch
-  #   (constraint_defaults.json::measurement_axis.active — 현재 all_hyg_2000_v1 = 전 종목 + 위생 · 2000-01-01). 구 리터럴(K200_KQ150 · 2005)은 축을 박제했다.
+  #   (constraint_defaults.json::measurement_axis.active). 구 리터럴(K200_KQ150 · 2005)은 축을 박제했다.
   factor_engine_path = eng,
   source_paper = list(url = URL, title = TITLE, paper_key = PKEY),
-  commission_paper = .cmsn, send_telegram = FALSE),
-  if (!is.null(.pspec)) list(portfolio_spec = .pspec) else list())),
+  commission_paper = .cmsn, send_telegram = FALSE)
+.HEAD_SPEC <- if (is.null(.VP)) .pspec else (.VP$spec[[1]] %||% .pspec)
+res <- tryCatch(do.call(run_paper_replication, c(.BASE_ARGS,
+  if (!is.null(.HEAD_SPEC)) list(portfolio_spec = .HEAD_SPEC) else list(),
+  if (!is.null(.VP)) list(engine_vars = list(.RP_VARIANT = .VP$headline),
+                          measurement_tags = list(variant_id = .VP$headline, variant_headline = TRUE, n_variants = as.integer(.VP$n))) else list())),
   error = function(e) structure(list(err = conditionMessage(e)), class = "rp_err"))
 if (inherits(res, "rp_err")) fail("replication_error", res$err)
 
@@ -673,10 +835,29 @@ if (!file.exists(ar)) {
   # ★재측정 형제 판(P0-05 · <run>/remeasure_<key>/authoritative_remeasure.json — 원 산출물의 다른 규약 판)은 새 측정이 아니다 —
   #   폴백 후보에서 뺀다(2026-09-24 · 통합 검증 L-B1 · 원장 rebase 형제 위치 = 칸 산출물 안)
   cand <- cand[!grepl("/remeasure_[^/]+/authoritative_remeasure\\.json$", gsub("\\", "/", cand, fixed = TRUE))]
+  # 변형 판(10-17 · <대표>/variants/<run>/)도 새 대표 측정이 아니다 — 폴백 후보에서 뺀다
+  cand <- cand[!grepl("/variants/[^/]+/authoritative_remeasure\\.json$", gsub("\\", "/", cand, fixed = TRUE))]
   if (length(cand)) ar <- cand[which.max(file.mtime(cand))]
 }
 if (!file.exists(ar)) fail("no_authoritative_remeasure", "계약 미경유 = 미측정")
 AR <- fromJSON(ar, simplifyVector = TRUE); es <- AR$essence
+
+# ── ①-b 나머지 변형 측정 + 측정 뒤 보유 대조(P4) — 대표가 권위다(아래 판정 · 소비 · 보고는 전부 대표 기준 · 구판과 같은 경로) ──
+.VSUM <- NULL
+if (!is.null(.VP)) {
+  .VSUM <- .v1001_measure_variants(.VP, dirname(ar), as.character(AR$run_id %||% "")[1], .BASE_ARGS, .pspec)
+  .p4_suspect <- isTRUE(.VSUM$variants[[1]]$holdings_mismatch)
+  jlog("variants_done", headline = .VP$headline, n = .VP$n,
+       grades = paste(vapply(.VSUM$variants, function(v) sprintf("%s=%s", v$id, v$grade %||% v$status), ""), collapse = ","),
+       headline_holdings_mismatch = .p4_suspect)
+} else {
+  # 변형 신고가 없는 구판 엔진 — 대조할 신고(claims)가 없다. 실측만 기록한다(꼬리표 없음 · .p4_suspect = FALSE 그대로)
+  tryCatch(write(toJSON(.v1001_holdings_check(dirname(ar), NULL), auto_unbox = TRUE, pretty = TRUE, null = "null", na = "null", digits = 6),
+                 file.path(dirname(ar), "holdings_check.json")), error = function(e) NULL)
+}
+if (.p4_suspect) jlog("holdings_claim_mismatch", artifacts = dirname(ar),
+                      note = "측정 뒤 보유 대조 — 신고(claims)와 실측(04_holdings.csv)이 어긋남 · implementation_suspect 꼬리표(판정 아님)")
+.impl_suspect <- isTRUE(.aud_suspect) || isTRUE(.p4_suspect)
 
 # ── ② 고정 축 재도출 ──────────────────────────────────────────────────────────
 viol <- character(0)
@@ -830,8 +1011,9 @@ if (is.finite(.base_pt) && .base_pt < .min_pt && !.resc_ok) {
     rf_park_entry(1L, .bid_sk, sprintf(
       "skipped_base_quality — 기저 PORT_t %.3f < %.2f. 논문 소비 처리(측정 · 기록 보존 · 측정 산출물은 프로그램 재료로 인계)%s",
       .base_pt, .min_pt,
-      if (isTRUE(.aud_suspect)) " · implementation_suspect(충실도 감사 — 재구현 뒤에도 기각)" else ""), root = ROOT)
-    jlog("ledger_consumed", base_id = .bid_sk, paper_key = PKEY %||% "", implementation_suspect = isTRUE(.aud_suspect),
+      paste0(if (isTRUE(.aud_suspect)) " · implementation_suspect(충실도 감사 — 재구현 뒤에도 기각)" else "",
+             if (isTRUE(.p4_suspect)) " · implementation_suspect(측정 뒤 보유 대조 어긋남)" else "")), root = ROOT)
+    jlog("ledger_consumed", base_id = .bid_sk, paper_key = PKEY %||% "", implementation_suspect = .impl_suspect, holdings_claim_mismatch = isTRUE(.p4_suspect),
          note = "소비 기록 — selector 가 이 논문을 다시 집지 않는다")
     .qmirror(PKEY, sprintf("skipped_base_quality (PORT_t %.3f)", .base_pt), .bid_sk)
   }, error = function(e) jlog("ledger_consume_failed", err = conditionMessage(e),
@@ -841,12 +1023,14 @@ if (is.finite(.base_pt) && .base_pt < .min_pt && !.resc_ok) {
   .hs <- isTRUE(AR$replication$has_short %||% AR$has_short)
   .ho <- .v1001_handoff(dirname(ar), .bid_sk %||% "skipped", G, kind = "skipped",
                         flags = list(base_below_threshold = TRUE, base_port_t = .base_pt, base_min_port_t = .min_pt,
-                                     implementation_suspect = isTRUE(.aud_suspect), has_short = .hs,
+                                     implementation_suspect = .impl_suspect, holdings_claim_mismatch = isTRUE(.p4_suspect), has_short = .hs,
                                      audit_verdict = as.character(.aud$verdict %||% "")[1]))
   d <- tryCatch(fromJSON(REQ, simplifyVector = FALSE), error = function(e) list())
   d$status <- "done_no_reinforce"; d$grade <- G; d$fidelity <- .fidelity
   d$base_port_t <- .base_pt; d$artifacts <- dirname(ar)
-  d$implementation_suspect <- isTRUE(.aud_suspect); d$audit_verdict <- as.character(.aud$verdict %||% "")[1]
+  d$implementation_suspect <- .impl_suspect; d$holdings_claim_mismatch <- isTRUE(.p4_suspect)
+  d$audit_verdict <- as.character(.aud$verdict %||% "")[1]
+  d$variants <- .v1001_variants_req()                       # 변형 측정 요약(10-17 · 없으면 NULL = 안 실린다)
   d$audit_ruling_applied <- .v1001_ruling()               # 세션 판정으로 진행했으면 그 사실(리뷰 U13 · NULL 이면 안 실린다)
   d$program <- .v1001_prog_code(.ho); d$material <- .v1001_material_line(.ho)
   d$skip_reason <- sprintf("기저 PORT_t %.3f < %.2f — 수익 엔진 문턱 미달(측정 산출물은 재료로 인계)", .base_pt, .min_pt)
@@ -862,7 +1046,7 @@ if (is.finite(.base_pt) && .base_pt < .min_pt && !.resc_ok) {
                        card = .ho$card, artifact = dirname(ar),
                        next_step = paste0("큐 다음 논문 충실구현으로 넘어간다",
                                           if (identical(.v1001_prog_code(.ho), "UNROUTED")) " · 미분류 재료는 라우터 v5 동기화 또는 세션이 프로그램을 정한다" else ""),
-                       push = TRUE, charts = .v1001_charts(dirname(ar)), extra = c(.v1001_grade_extra(dirname(ar)), .v1001_factor_section(dirname(ar)))),
+                       push = TRUE, charts = .v1001_charts(dirname(ar)), extra = c(.v1001_grade_extra(dirname(ar)), .v1001_variants_extra(), .v1001_factor_section(dirname(ar)))),
            error = function(e) jlog("telegram_failed", err = conditionMessage(e)))
   # [팩터 분석] = 위 보고 1통의 섹션(.v1001_factor_section · 10-16) — 따로 보내지 않는다(발송 규칙 §0.1) · 상태는 jlog factor_analysis
   system2("Rscript", c(shQuote(file.path(ROOT, "02_Infrastructure/programs/next_replication.R")), "--root", shQuote(ROOT)), wait = TRUE)
@@ -885,7 +1069,8 @@ tryCatch(rf_open_entry(1L, BID, base_grade = G, paper_key = PKEY,
 tryCatch(rf_park_entry(1L, BID, reason = "v10.01 — 고정 격자 강화 퇴역(2026-10-13). 측정 결과는 리서치 프로그램 재료로 넘어간다(06_Registry/research_programs.json)", root = ROOT),
          error = function(e) jlog("v1001_park_failed", err = conditionMessage(e)))
 .HO <- .v1001_handoff(dirname(ar), BID, G, kind = "engine",
-                      flags = list(implementation_suspect = isTRUE(.aud_suspect), has_short = isTRUE(AR$replication$has_short %||% AR$has_short),
+                      flags = list(implementation_suspect = .impl_suspect, holdings_claim_mismatch = isTRUE(.p4_suspect),
+                                   has_short = isTRUE(AR$replication$has_short %||% AR$has_short),
                                    audit_verdict = as.character(.aud$verdict %||% "")[1]))
 ## 2계층 모듈 등재 — 감사 뒤(2026-10-14 · 러너 §7-c 이관). 자격 미달은 등재기가 저널(module_register_skipped)만 남긴다.
 .RG <- .v1001_register_module("replication", meta = list(base_id = BID))   # strategy_name · strategy_idea = 도우미 기본 메타
@@ -938,7 +1123,8 @@ source(file.path(ROOT, "02_Infrastructure/ops/rf_request_guard.R"))
 .own <- rf_request_mark_done(REQ, PKEY, list(
   base_id = BID, grade = G, artifacts = dirname(ar),
   fidelity = .fidelity, fidelity_detail = .fid,
-  fidelity_audit = .aud, implementation_suspect = isTRUE(.aud_suspect), audit_ruling_applied = .v1001_ruling(),
+  fidelity_audit = .aud, implementation_suspect = .impl_suspect, holdings_claim_mismatch = isTRUE(.p4_suspect),
+  variants = .v1001_variants_req(), audit_ruling_applied = .v1001_ruling(),
   program = .v1001_prog_code(.HO), material = .v1001_material_line(.HO)))
 if (!isTRUE(.own$written))
   jlog("request_done_skipped_retargeted", run_key = .own$run_key, req_key = .own$req_key,
@@ -953,7 +1139,7 @@ tryCatch(.v1001_report(target = .tg_target_label(TITLE, PKEY),
                                    position = .v1001_gate_line(),
                                    previous = sprintf("등급 %s(권위) · 충실도 %s%s", G,
                                                       if (identical(.fidelity, "adapted")) "착안(변형)" else "충실",
-                                                      if (isTRUE(.aud_suspect)) " · 구현 의심 꼬리표" else "")),
+                                                      if (isTRUE(.impl_suspect)) " · 구현 의심 꼬리표" else "")),
                      verdict_line = sprintf("등급 %s(권위 · 15bps 순비용)%s — %s재료: %s",
                                             G, if (nzchar(.BA)) paste0(" · ", .BA) else "",
                                             if (identical(.fidelity, "adapted")) paste0("착안 구현(남긴 기전: ", .v1001_clip_words(.fid$kept %||% "?", 120L), ") · ") else "",
@@ -961,7 +1147,7 @@ tryCatch(.v1001_report(target = .tg_target_label(TITLE, PKEY),
                      card = .HO$card, artifact = dirname(ar),
                      next_step = paste0("프로그램 큐에서 조립 단계(실현 가능성 지도 이후)가 쓴다 · 큐 다음 논문으로 넘어간다",
                                         if (identical(.v1001_prog_code(.HO), "UNROUTED")) " · 미분류 재료는 라우터 v5 동기화 또는 세션이 프로그램을 정한다" else ""),
-                     push = TRUE, charts = .v1001_charts(dirname(ar)), extra = c(.v1001_grade_extra(dirname(ar)), .v1001_factor_section(dirname(ar)))),
+                     push = TRUE, charts = .v1001_charts(dirname(ar)), extra = c(.v1001_grade_extra(dirname(ar)), .v1001_variants_extra(), .v1001_factor_section(dirname(ar)))),
          error = function(e) jlog("telegram_failed", err = conditionMessage(e)))
 # [팩터 분석] = 위 보고 1통의 섹션(.v1001_factor_section · 10-16) — 따로 보내지 않는다(발송 규칙 §0.1) · 상태는 jlog factor_analysis
 system2("Rscript", c(shQuote(file.path(ROOT, "02_Infrastructure/programs/next_replication.R")), "--root", shQuote(ROOT)), wait = TRUE)

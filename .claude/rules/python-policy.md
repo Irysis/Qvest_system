@@ -28,8 +28,10 @@ paths:
   - 감사 시점 결손 3종(`xgboost`·`optuna`·`properscoring`)은 **2026-08-13 설치 완료**(도훈 "노트북 환경이라
     없을거야, 깔아줘"). import 뿐 아니라 **실동작 1회씩 확인**: xgboost fit · properscoring CRPS ·
     optuna 12-trial 탐색.
-  - ⚠**torch 는 CUDA 아님**(`+cpu`) — 구 선언 "PyTorch/cu124" 는 현 노트북 환경과 불일치. 이는 결손이 아니라
-    **환경 사실**이므로 GPU 전제 라운드(예: 구 DPL 8config GPU 전수)는 이 머신에서 재현되지 않는다.
+  - ★**(2026-10-17 재실측) torch 는 이제 CUDA 판이다** — `torch 2.12.1+cu126` · `torch.cuda.is_available() = True` ·
+    NVIDIA GeForce RTX 4080 Laptop GPU(재확인: `.venv_qvest_ml/Scripts/python.exe -c "import torch;print(torch.__version__, torch.cuda.is_available())"`).
+    충실구현 레인 프롬프트는 이 값을 실행 때마다 재서 싣는다(딥러닝 핵심 모델 간이 대체 금지 · decision_register REPLICATION-ALL-METHODS-20261017).
+    (사료) 08-13 감사 시점 표기 `+cpu` 와 "GPU 전제 라운드는 이 머신에서 재현되지 않는다" 는 그때의 환경 사실이었다 — 위 재실측이 덮는다.
   - 교훈: 이 결손은 v8.4 Lane A arm A(참조 기준선이 XGBoost)의 착수 직전에 발견됐다 — **환경 선언은
     라운드 전제이므로 착수 전에 실측**한다(선언만 읽고 들어가면 관문에서 사이클을 버린다).
   - 재확인 1줄:

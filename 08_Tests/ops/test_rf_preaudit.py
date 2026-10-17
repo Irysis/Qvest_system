@@ -8,6 +8,8 @@
 #   M  돌연변이 — 음성 픽스처에 한 가지씩 주입 → 그 코드만 발화(다른 코드가 같이 뜨지 않는지도 본다)
 #   G  관문 처분 — 격리 요청 파일: 보정 요청(exit 10 · pending · 카운터 분리) · 회차 소진 · 통과 · 비활성 · 결합 · 설정 파손 fail-open
 #   S  청정 sanitize 통과 — 보정 피드백이 청정 재구현 절 가림(rf_clean_lane.py sanitize --kind failure)을 지나도 내용이 남는가
+#   V  모든 방법론(10-17 · REPLICATION-ALL-METHODS-20261017) — P9 변형 목록 · 대표 · 스위치 · 기본값 · claims · P10 생략 사유 코드 ·
+#      P11 레인 구성 — 양성 · 음성 · 검사기 뮤테이션(소스 텍스트 치환 사본)
 # 운영 상태를 빌리지 않는다: 픽스처·요청·설정 사본은 전부 임시 디렉터리(등록부·규칙 설정은 읽기만).
 # 실행: .venv_qvest_ml/Scripts/python.exe 08_Tests/ops/test_rf_preaudit.py
 # =============================================================================
@@ -99,7 +101,24 @@ def good_fidelity():
             {"factor_id": "V01_BM", "paper_item": "B/M", "registry_definition": regdef("V01_BM"), "deviation": "none"},
             {"factor_id": "M04_Mom_1", "paper_item": "1M return", "registry_definition": regdef("M04_Mom_1"), "deviation": "none"},
         ],
+        "variants": [{"id": "base", "label": "논문 방법", "paper_quote": "§2 'the strategy'",
+                      "claims": {"long_short": False, "n_names": 25, "net_exposure": 1, "weighting": "ew"}}],
+        "headline_variant": "base",
+        "construction_source": "paper",
     }
+
+
+def v1017_upgrade(fid):
+    """10-17 이전 실전 픽스처(2210.12462 1차)에 새 필수 신고를 얹는다 — 구 검사(P2~P8)의 음성 대조 의미를 지키려는 것.
+    생략 단계에는 그 단계가 원래 지닌 사유와 무관하게 J2 를 붙인다(이 픽스처의 생략 단계는 진단 · 통계 단계)."""
+    fid.setdefault("variants", [{"id": "base", "label": "논문 방법", "paper_quote": "§3",
+                                 "claims": {"long_short": False, "n_names": None, "net_exposure": None, "weighting": "other"}}])
+    fid.setdefault("headline_variant", "base")
+    fid.setdefault("construction_source", "paper")
+    for it in fid.get("paper_steps") or []:
+        if isinstance(it, dict) and str(it.get("status") or "").lower() == "omitted":
+            it.setdefault("omit_code", "J2")
+    return fid
 
 
 def make_fx(base, name, engine=GOOD_ENGINE, fid=None):
@@ -159,7 +178,7 @@ def main():
             expect="P3_duplicate_cluster")
         mut("M4 windows removed", fid_fn=lambda f: f.pop("windows"), expect="P5_windows_missing")
         mut("M5 changed step without note",
-            fid_fn=lambda f: f["paper_steps"].append({"step": "중성화", "paper_quote": "§2.1 'regressed on industry'", "status": "omitted", "note": ""}),
+            fid_fn=lambda f: f["paper_steps"].append({"step": "중성화", "paper_quote": "§2.1 'regressed on industry'", "status": "omitted", "note": "", "omit_code": "J2"}),
             expect="P4_paper_steps_malformed")
         mut("M6 undeclared seed", fid_fn=lambda f: f.update(changed=f["changed"].replace("seed 7 고정 · ", "")),
             expect="P6_seed")
@@ -200,6 +219,7 @@ def main():
         if os.path.isdir(N4_DIR):
             dn4 = os.path.join(tmp, "N4")
             shutil.copytree(N4_DIR, dn4)
+            W(os.path.join(dn4, "FIDELITY.json"), v1017_upgrade(J(os.path.join(dn4, "FIDELITY.json"))))
             rcn4, repn4 = run_pa(dn4)
             check("N4 실전 음성 대조 — 2210.12462 1차(구조 필드 5종 신고) → pass(구판은 오탐 2건)", rcn4 == 0, str(codes(repn4)))
         ENG_C = ENG_K + "for (k in 1:3) { cnt <- 0L }\nn_skip <- 0L\nfor (k in 1:3) n_skip <- n_skip + 1L\n"
@@ -295,6 +315,57 @@ def main():
         d10 = make_fx(tmp, "M10", fid="{ not json")
         rc10, rep10 = run_pa(d10)
         check("M10 unparsable FIDELITY → P1_fidelity_unparsable", rc10 == 1 and "P1_fidelity_unparsable" in codes(rep10), str(codes(rep10)))
+
+        # ── V 모든 방법론(10-17) ─────────────────────────────────────────
+        ENG_V2 = GOOD_ENGINE.replace("FACTORS <-", (
+            'VARIANT <- if (exists(".RP_VARIANT", inherits = FALSE) && nzchar(.RP_VARIANT)) .RP_VARIANT else "lstm"\n'
+            'if (VARIANT == "mlp") X[, sig := sig * 1] else if (VARIANT == "lstm") X[, sig := sig * 1] else stop("unknown variant")\n'
+            "FACTORS <-"))
+
+        def two_variants(f, headline="lstm"):
+            cl = {"long_short": False, "n_names": 25, "net_exposure": 1, "weighting": "ew"}
+            f["variants"] = [{"id": "lstm", "label": "LSTM(논문 대표)", "paper_quote": "Table 2 'LSTM'", "claims": dict(cl)},
+                             {"id": "mlp", "label": "MLP", "paper_quote": "Table 2 'MLP'", "claims": dict(cl)}]
+            f["headline_variant"] = headline
+            f["changed"] += " · 변형 스위치 미지정 시 대표(lstm) — 알 수 없는 변형 id 는 중단(stop)"
+        fv = good_fidelity(); two_variants(fv)
+        rcv, repv = run_pa(make_fx(tmp, "N5", engine=ENG_V2, fid=fv))
+        check("N5 변형 2개 · 스위치 · 기본값=대표 · claims 완비 → pass", rcv == 0, "codes=%s" % codes(repv))
+        mut("M21 variants 빈 목록", fid_fn=lambda f: f.update(variants=[]), expect="P9_variants_missing")
+        mut("M22 대표가 변형 목록에 없다", fid_fn=lambda f: f.update(headline_variant="transformer"), expect="P9_headline_invalid")
+        mut("M23 변형 2개인데 엔진에 스위치가 없다", fid_fn=two_variants, expect="P9_variant_switch_missing", only=False)
+        mut("M24 스위치 기본값이 대표가 아니다", engine=ENG_V2, fid_fn=lambda f: two_variants(f, headline="mlp"), expect="P9_variant_default")
+        mut("M25 신고한 변형 id 가 엔진에 없다", engine=ENG_V2.replace('"mlp"', '"mlp2"'), fid_fn=two_variants, expect="P9_variant_ids_unused")
+        mut("M26 claims 키 누락", fid_fn=lambda f: f["variants"][0]["claims"].pop("net_exposure"), expect="P9_variants_malformed")
+        mut("M27 생략 단계에 사유 코드 없음(미명시를 생략 사유로)",
+            fid_fn=lambda f: f["paper_steps"].append({"step": "변동성 표적 배분", "paper_quote": "§4 'volatility targeting'", "status": "omitted",
+                                                     "note": "목표 변동성 값이 논문에 없어 생략"}), expect="P10_omit_code")
+        mut("M28 생략 사유 코드가 J1~J4 밖", fid_fn=lambda f: f["paper_steps"].append(
+                {"step": "Variant II", "paper_quote": "§5", "status": "omitted", "note": "계산량", "omit_code": "A3"}), expect="P10_omit_code")
+        mut("M29 construction_source 가 paper 나 lane 이 아님", fid_fn=lambda f: f.update(construction_source="harness"), expect="P11_construction_source")
+        mut("M30 레인 구성인데 종목 수를 구현자가 골랐다", fid_fn=lambda f: (f.update(construction_source="lane"),
+            f["portfolio_spec"].update(top_n=30)), expect="P11_lane_construction")
+        fl = good_fidelity(); fl["construction_source"] = "lane"
+        rcl, repl = run_pa(make_fx(tmp, "N6", fid=fl))
+        check("N6 레인 구성 = 표준(top_n_long · ew · 25) → pass", rcl == 0, "codes=%s" % codes(repl))
+        fo = good_fidelity()
+        fo["paper_steps"].append({"step": "예측 정확도 표", "paper_quote": "Table 3 'RMSE'", "status": "omitted",
+                                  "note": "성과 산출에 들어가지 않는 진단", "omit_code": "J2"})
+        rco, repo = run_pa(make_fx(tmp, "N7", fid=fo))
+        check("N7 생략 단계 + 정당 사유 코드(J2) → pass", rco == 0, "codes=%s" % codes(repo))
+        # 검사기 뮤테이션 — 기본값 검사를 끈 사본은 M24 를 놓친다(검출력 · 소스 텍스트 치환 사본)
+        src = io.open(PA, "rb").read().decode("utf-8")
+        msrc = src.replace('if not dm or dm.group(1) != str(hl or ""):', "if False:", 1)
+        check("VM1 검사기 뮤테이션 치환 성사(기본값 검사 끄기)", msrc != src)
+        mpa = os.path.join(tmp, "rf_preaudit_mut.py")
+        io.open(mpa, "wb").write(msrc.encode("utf-8"))
+        fm = good_fidelity(); two_variants(fm, headline="mlp")
+        dm_ = make_fx(tmp, "VM", engine=ENG_V2, fid=fm)
+        pm = subprocess.run([PY, mpa, "--wdir", dm_, "--root", ROOT, "--cfg", CFG, "--out", os.path.join(dm_, "rep.json")],
+                            capture_output=True, text=True, encoding="utf-8")
+        cm = codes(J(os.path.join(dm_, "rep.json"))) if os.path.isfile(os.path.join(dm_, "rep.json")) else ["?"]
+        check("VM2 뮤테이션 사본은 기본값≠대표를 통과시킨다 → M24 가 원본 검사기의 발화임", pm.returncode == 0 and "P9_variant_default" not in cm,
+              "rc=%s codes=%s" % (pm.returncode, cm))
 
         # ── G 관문 처분 ──────────────────────────────────────────────
         def gate_run(wdir, req, cfg=CFG, combo="0"):

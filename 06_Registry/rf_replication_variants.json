@@ -1,0 +1,49 @@
+{
+  "schema": "rf_replication_variants_v1",
+  "decision": "REPLICATION-ALL-METHODS-20261017",
+  "source": "도훈 채팅 2026-10-17 — '1. 대표칸만 / 2. 논문당 계산 시간 상한 없음 / 3. 포트폴리오 구성이 가능하다면 구현하여 성과 측정' (보고서 04_Research/01_reports/negative_cagr_omission_audit_20261017/README.md §3 P1~P5 · 설계 04_Research/01_reports/replication_all_methods_redesign_20261017/README.md)",
+  "why": "음수 CAGR 충실구현 5편 중 4편이 논문 방법론의 시험이 아니었다 — 주결과 방법 4종 중 MLP 1칸만(2411.13555) · 종목별 LSTM 을 공통 1개로(2507.01964) · Variant II 미구현 · ρ=1 한 칸(2604.16773) · TFT 를 닫힌 해로(2412.12516). 프롬프트가 칸 선택을 허용하고 하네스가 엔진 1개 = 포트폴리오 1개만 쟀으며, 감사는 신고된 생략을 adapted 로 통과시켰다.",
+  "variants": {
+    "engine_var": ".RP_VARIANT",
+    "id_regex": "^[a-z][a-z0-9_]{0,39}$",
+    "scope": "논문 주결과(본문의 성과 표 · 그림)에 별개 결과로 보고된 방법 · 모델 · 포트폴리오 구성법 전부. 부록 · 강건성 표만의 설정은 대상 아님.",
+    "grid_rule": "수치 파라미터 격자(J×K · ρ · 창 길이 · 분위 수 · 하이퍼파라미터 스윕)는 논문 대표 칸만 구현한다(도훈 10-17 결정 1 '대표칸만'). 대표 칸 = 논문이 본문 주결과 · 기본값으로 쓴 칸.",
+    "headline_rule": "headline_variant = 논문이 스스로 대표로 꼽은 방법(초록 · 결론 · 주결과 표의 강조 칸) — 측정 전에 FIDELITY.json 에 고정한다. 권위 등급 = 그 변형의 등급.",
+    "non_headline_selection": {
+      "selection_type": "sweep",
+      "n_trials": "n_variants",
+      "basis": "measurement-graduation §3 DSR 적용경계 — 열거된 변형 집합에서 측정 뒤 최고를 고르는 것은 sweep 선정이다. 대표 변형(논문이 고른 것 · 측정 전 고정)은 chain/1 그대로."
+    }
+  },
+  "omit_codes": {
+    "J1": "데이터 없음 — 필요한 패널이 이 환경에 없다(data_pipeline_queue 적재 대상 · 대리변수로 지어내지 않는다)",
+    "J2": "포트폴리오 무관 — 진단 · 그림 · 통계 검정 · 예측 정확도 표처럼 성과 산출에 들어가지 않는 단계",
+    "J3": "PIT 위반 — 논문 절차가 결정 시점에 알 수 없는 정보를 쓴다(대체 구현은 changed 에)",
+    "J4": "측정 축 대체 — 유니버스 · 표본 기간 · 비용 규약은 계약이 정한다"
+  },
+  "lane_construction": {
+    "when": "논문이 예측 · 분류 · 정확도만 보고하고 포트폴리오를 구성하지 않을 때(도훈 10-17 결정 3 '포트폴리오 구성이 가능하다면 구현하여 성과 측정')",
+    "construction_source": "lane",
+    "portfolio_spec": {"construction": "top_n_long", "weighting": "ew"},
+    "top_n_key": "tier_soft_deployment.max_names",
+    "top_n_config": "02_Infrastructure/worktask/constraint_defaults.json",
+    "rebalance": "논문 예측 주기 — 월간 예측이면 월간 · 일간 · 주간 예측이면 일간 신호를 그대로 낸다(하네스가 주 1회로 접는다 · D16 · 하네스 고지 H10)",
+    "engine_output": "FACTORS(Date, Ticker, Score) — Score = 논문 모형의 예측값(클수록 매수)",
+    "basis": "하네스 고정 축(종목수 상한 · 동일가중)과 레인 기존 관례(착안 이식 = 고정 축 25종 · EW)가 같다. 예측값 정렬 → 매기 재구성 → 상위 매수 절차는 Gu, Kelly & Xiu (2020) RFS 33(5) §2.4.2 'Machine learning portfolios'(01_Literature/Alpha_Search_Recharge/20260830/classic_seed/CLASSIC_gu_kelly_xiu_ml.pdf p.42 · https://dachxiu.chicagobooth.edu/download/ML.pdf) — 그 논문의 10분위 · 가치가중 대신 우리 고정 축 상위 N · 동일가중을 쓴다(등급이 롱온리 · KOSPI200 대비로 정의돼 있다).",
+    "impossible": "단면 예측이 아니거나(지수 하나 · 거시 변수만) 예측을 종목 순위로 바꿀 수 없으면 포트폴리오 구성 불가 — 착안 이식(adapted)이 되면 이식, 안 되면 ABORT.txt(J2)."
+  },
+  "holdings_claims": {
+    "required_keys": ["long_short", "n_names", "net_exposure", "weighting"],
+    "weighting_enum": ["ew", "vw", "model", "other"],
+    "short_share_min": 0.5,
+    "n_names_ratio_max": 2.0,
+    "net_abs_tol_of_gross": 0.25,
+    "basis": "측정 뒤 기계 대조(LLM 없음 · P4) — 판정이 아니라 꼬리표(implementation_suspect)다. 문턱은 실측 실패 둘을 잡고 정확 준수(비 1 · 차 0)는 통과시키는 사이 값: 2411.13555 신고 = 논문 구성(분산 보유)인데 실측 평균 보유 1.14종(리밸 87% 가 1종목 100%) · 2604.16773 신고 '롱≈0.5 · 숏≈0.5'(순노출 0)인데 실측 순노출 중앙 −0.51(숏 0.69 · 321 장부 중 269 순숏). short_share_min 0.5 = 행동 카드 다수 문턱(06_Registry/behavior_card.json majority_share)과 같은 값. weighting 은 대조 없이 실측만 병기한다(실측 실패 사례 없음 — 문턱 근거가 없다)."
+  },
+  "compute": {
+    "agent_timeout_sec": 0,
+    "agent_timeout_note": "0 = 상한 없음(도훈 10-17 결정 2 '논문당 계산 시간 상한 없음'). 구판 3000초.",
+    "live_claim_reclaim": false,
+    "live_claim_note": "살아 있는 실행은 나이로 회수하지 않는다 — claim_stale_hours(reinforce_auto_config.json)를 넘기면 저널 claim_live_long 만 남기고(Superfan 감시기가 경고) 실행은 그대로 둔다. 소유자 사망 = 즉시 회수(구판 그대로)."
+  }
+}

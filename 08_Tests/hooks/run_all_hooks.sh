@@ -1838,6 +1838,15 @@ SUITES=(
   # 처방 루프 v0 라운드 도구(2026-10-13 · S2) — 처방 delta 를 엔진 파서로 검증(위반 주입 10종) · 사양 컴파일 고정 축 보존 ·
   #   처방 입력 문서 검사(τ_D 뒤 날짜 · 등급 표기) · 도구 상자 custom 제외 · 오버레이 빌트인 = 엔진 정본 · R6 경로
   "08_Tests/programs/test_rx_round.R"
+  # >>> 10-17 충실구현 레인 — 감사 선행 · 원문 축자본 · 계약 표기 · 모든 방법론(REPLICATION-ALL-METHODS-20261017)
+  #   측정 전 PIT 사전 점검(1b 순서) · 측정 뒤 검증 실패의 Judge 트리거 보류(뮤테이션) · 원문 축자본 수집기(html · e-print · pdf · 레인 인터프리터) ·
+  #   nav 순노출 = 보유 Σw(뮤테이션) · 변형 계획 · 측정 뒤 보유 대조(P4 · 양성 · 경계 · 뮤테이션 · 설정 문턱) · 보고 섹션 · 배선 · engine_vars
+  "08_Tests/ops/test_rf_verify_pit_preflight.R"
+  "08_Tests/ops/test_rf_verify_judge_hold.R"
+  "08_Tests/ops/test_rf_paper_text.py"
+  "08_Tests/contracts/test_bt_contract_exposure.R"
+  "08_Tests/ops/test_rf_verify_variants.R"
+  # <<< 10-17
 )
 
 

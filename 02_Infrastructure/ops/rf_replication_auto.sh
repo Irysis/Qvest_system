@@ -30,6 +30,8 @@ PY="${QVEST_PY:-$ROOT/.venv_qvest_ml/Scripts/python.exe}"
 #   test_reinforce_auto.sh 15항을 다 통과한 채로 살아 있었다.
 REQ="${QVEST_RP_REQUEST:-$ROOT/06_Registry/replication_request.json}"
 CFG="${QVEST_RF_CONFIG:-$ROOT/06_Registry/reinforce_auto_config.json}"
+# 모든 방법론 설정(10-17 · REPLICATION-ALL-METHODS-20261017 — 레인 표준 구성 · 구현 에이전트 시간 상한 · 생존 claim 회수). 덮기 = 검사 격리 전용
+RV_CFG="${QVEST_RP_VARIANTS_CFG:-$ROOT/06_Registry/rf_replication_variants.json}"
 LOG="$ROOT/.cache/scheduler_logs/replication_auto_$(date +%Y%m%d).log"
 JLOG="${QVEST_RP_JLOG:-$ROOT/.cache/reinforce_auto_log.jsonl}"
 CLAIM="${QVEST_RP_CLAIM:-$ROOT/.cache/rf_replication.claim}"
@@ -114,10 +116,24 @@ try:
     print(int(v) if v>=1 else 6)
 except Exception: print(6)" 2>/dev/null | tr -d '\r')   # Windows 파이썬 print 의 CR — 남기면 아래 숫자 검사가 늘 6 으로 떨어진다
   case "$CSTALE" in ''|*[!0-9]*) CSTALE=6;; esac
-  if [ "$CDEAD" = "1" ] || [ "$CAGE" -ge "$CSTALE" ]; then
+  ## ★살아 있는 실행은 나이로 회수하지 않는다 (2026-10-17 · 결정 REPLICATION-ALL-METHODS-20261017 — 도훈 '논문당 계산 시간 상한 없음').
+  ##   모든 방법론(변형마다 측정 · 딥러닝 torch)이면 한 논문이 claim_stale_hours 를 넘는 것이 정상이다. 나이 상한을 넘긴 생존 소유자는
+  ##   회수하지 않고 claim_live_long 만 남긴다(Superfan 감시기 replication_lane 경고 패턴 — 멈춘 실행인지는 세션이 본다).
+  ##   설정 = $RV_CFG(06_Registry/rf_replication_variants.json) compute.live_claim_reclaim(true 면 구판 그대로 회수 · 판독 불능 = 회수 안 함).
+  ##   소유자 표식이 아예 없는 구판 claim 은 생존을 알 수 없어 나이 기준 그대로 · 소유자 사망 = 나이 무관 즉시 회수(구판 그대로).
+  LIVE_RECLAIM=$("$PY" -c "
+import io,json
+try: print('1' if (json.loads(io.open(r'$RV_CFG','rb').read().decode('utf-8')).get('compute') or {}).get('live_claim_reclaim') is True else '0')
+except Exception: print('0')" 2>/dev/null | tr -d '\r')
+  CHAS_OWNER=0; { [ -n "$CWIN" ] || [ -n "$COWN" ]; } && CHAS_OWNER=1
+  if [ "$CDEAD" = "1" ] || { [ "$CAGE" -ge "$CSTALE" ] && { [ "$CHAS_OWNER" = "0" ] || [ "$LIVE_RECLAIM" = "1" ]; }; }; then
     rm -rf "$CLAIM" 2>/dev/null
     # 필드는 인자 하나에 하나 — 구판은 "age_h=.. dead=.." 한 인자라 age_h 값에 뒤가 뭉쳐 기계 판독이 안 됐다
     jl claim_stale_reclaim "age_h=$CAGE" "dead=$CDEAD" "stale_h=$CSTALE" "alive=$(( 1 - CDEAD ))"
+  elif [ "$CAGE" -ge "$CSTALE" ] && [ ! -f "$CLAIM/.live_long_noted" ]; then
+    # claim 하나에 한 번만 남긴다(틱 8분마다 같은 경고가 쌓이지 않게 — 감시기 warn 1건 · 표식은 소유자가 끝날 때 claim 과 함께 지워진다)
+    jl claim_live_long "age_h=$CAGE" "stale_h=$CSTALE" "owner_win=$CWIN" "note=생존 소유자 — 계산 시간 상한 없음(도훈 10-17)이라 회수하지 않는다 · 멈춘 실행이면 세션이 확인"
+    : > "$CLAIM/.live_long_noted" 2>/dev/null || true
   fi
 fi
 
@@ -459,6 +475,22 @@ if [ "${IS_COMBO:-0}" != "1" ]; then
   [ -n "$SELF_AUDIT_SEC" ] || jl self_audit_block_absent "paper=$P_KEY"
 fi
 
+# ── ★모든 방법론(2026-10-17 · 결정 REPLICATION-ALL-METHODS-20261017) — 레인 표준 구성 · torch 환경을 그때 읽는다 ─────────────
+#   레인 표준 구성 = 06_Registry/rf_replication_variants.json lane_construction(종목 수 = constraint_defaults.json 정본) — 프롬프트에 숫자를
+#   박지 않는다. 판독 불능이면 프롬프트에 '설정 판독 불능' 줄이 그대로 실린다(구현자는 레인 구성을 지어내지 않는다 — 사전검사도 같은 설정을
+#   읽으므로 설정 파손이면 검사 불능 = fail-open 으로 측정 · 감사가 최종 판정).
+LANE_SPEC="$("$PY" -c "
+import io,json
+R=r'$ROOT'
+try:
+    v=json.loads(io.open(r'$RV_CFG','rb').read().decode('utf-8'))['lane_construction']
+    sp=dict(v['portfolio_spec']); c=json.loads(io.open(R+'/'+v['top_n_config'],'rb').read().decode('utf-8'))
+    for k in v['top_n_key'].split('.'): c=c[k]
+    sp['top_n']=int(c); print(json.dumps(sp,ensure_ascii=False))
+except Exception as e: print('(설정 판독 불능: %s)' % str(e)[:80])" 2>/dev/null | tr -d '\r')"
+TORCH_LINE="$("$ROOT/.venv_qvest_ml/Scripts/python.exe" -c "import torch;print('torch %s · CUDA %s' % (torch.__version__, torch.cuda.get_device_name(0) if torch.cuda.is_available() else '없음(CPU)'))" 2>/dev/null | tr -d '\r')"
+[ -n "$TORCH_LINE" ] || TORCH_LINE="torch 판독 불능 — 엔진이 import 로 확인"
+
 # ── 헤드리스 에이전트 (권한 축소 · 산출물은 엔진 1개) ────────────────────────
 PROMPT="논문 1편의 **충실구현**을 수행하라. 산출은 **엔진 R 파일 하나**다.
 
@@ -493,6 +525,38 @@ ${P_ACCESS}
 ★단 **지어내기와 이식은 다르다**: 논문이 주지 않는 수치를 임의로 정하면 그건 이식이 아니다.
   이식은 *기전*을 옮기는 것이고, 파라미터는 **우리 고정 축**(25종·월간·EW)을 쓴다.
 
+## ★모든 방법론 — 논문 주결과의 방법을 **전부** 구현한다 (2026-10-17 도훈 결정 '1. 대표칸만 / 2. 논문당 계산 시간 상한 없음 /
+##   3. 포트폴리오 구성이 가능하다면 구현하여 성과 측정')
+실측(10-17 · 음수 CAGR 충실구현 5편 점검): 넷이 논문 방법론의 시험이 아니었다 — 주결과 4방법 중 1칸만 · Variant II 미구현 · ρ=1 한 칸 ·
+TFT 를 닫힌 해로 · 종목별 LSTM 을 공통 1개로. 하나를 골라 구현한 결과로는 논문이 맞는지 틀렸는지 알 수 없다.
+① **방법 = 변형**: 주결과(본문의 성과 표 · 그림)에 별개 결과로 보고된 방법 · 모델 · 포트폴리오 구성법을 전부 구현한다(부록 · 강건성 표만의
+   설정은 대상 아님). 엔진 **하나**에 변형 스위치를 둔다 — 하네스가 변형마다 \`.RP_VARIANT\` 에 id 를 넣고 엔진을 한 번씩 돌린다
+   (대표 먼저 = 권위 등급 · 나머지 = 같은 계약 · 측정 뒤 최고 고르기는 DSR 대상). 스위치 형식(이대로 — 사전검사 P9 가 기본값을 읽는다):
+     .VARIANTS <- c(\"<id1>\", \"<id2>\")
+     VARIANT <- if (exists(\".RP_VARIANT\", inherits = FALSE) && nzchar(.RP_VARIANT)) .RP_VARIANT else \"<headline_variant>\"
+     if (!VARIANT %in% .VARIANTS) stop(\"unknown variant: \", VARIANT)
+   방법이 하나뿐인 논문은 변형 1개(스위치 불요). id = 소문자 · 숫자 · 밑줄(예: lstm · transformer · variant_ii).
+② **격자 = 대표 칸만**: 수치 파라미터 격자(J×K · ρ · 창 길이 · 분위 수 · 하이퍼파라미터 스윕)는 논문 대표 칸(본문 주결과 · 기본값)만. 변형이 아니다.
+③ **미명시 = 보충 후 신고**: 논문에 값이 없으면 보충하고 constants 에 source=supplement + 근거(원 소프트웨어 기본값 · 상위 논문 · 관례)를 적는다.
+   미명시를 이유로 단계 · 방법 · 변형을 빼지 마라 — 한쪽은 보충하고 다른 쪽은 생략하는 **이중 기준**이 감사 기각 사유다.
+   생략(paper_steps status=omitted)은 omit_code 가 J1(데이터 없음) · J2(포트폴리오 무관 — 진단 · 그림 · 정확도 표) · J3(PIT 위반) ·
+   J4(측정 축 대체 — 유니버스 · 기간 · 비용)일 때만이다(사전검사 P10). 계산량 · 시간 · 편의는 생략 사유가 아니다.
+④ **핵심 모델 보호**: 주결과의 모델 · 신호 · 구성은 논문 그대로(아키텍처 · 입력 · 학습 절차 · 손실 · 최적화기 · 재학습 주기 · 앙상블).
+   닫힌 해 · 선형화 · 소형 모델 · 종목 공통 모형 · 학습 표본 축소 · 순수 R 소형 대체로 바꾸지 마라 — **논문당 계산 시간 상한은 없다**.
+   딥러닝 · 학습형 모델은 venv torch 로 구현한다(\`.venv_qvest_ml/Scripts/python.exe\` · ${TORCH_LINE}) — 엔진이 작업본(\`${WDIR}/_work/\`)에
+   파이썬 스크립트를 쓰고 system2 로 부르는 형태(기존 엔진 선례 · 입출력 parquet). seed · 결정성 설정(cudnn deterministic 등)은 constants · changed 에.
+⑤ **포트폴리오가 없는 논문**(예측 · 분류 · 정확도만 보고): 레인 표준 구성으로 측정한다 — FACTORS(Score = 논문 모형의 예측값 · 클수록 매수) +
+   portfolio_spec = ${LANE_SPEC} 그대로(구현자가 종목 수 · 가중을 고르지 않는다 · 설정 06_Registry/rf_replication_variants.json ·
+   절차 근거 Gu, Kelly & Xiu 2020 §2.4.2) · construction_source = \"lane\". 리밸 = 논문 예측 주기. 예측을 종목 순위로 바꿀 수 없으면
+   (지수 하나 · 거시 변수만) 착안 이식(adapted) 또는 ABORT.txt.
+⑥ FIDELITY.json 에 추가 키 3개(사전검사 P9 · P11):
+   variants = [{id, label, paper_quote(주결과 표 · 그림 위치), portfolio_spec(변형마다 다를 때만 — 없으면 최상위 portfolio_spec),
+                claims: {long_short: true|false, n_names: 리밸마다 보유 종목 수(롱+숏) 또는 null, net_exposure: Σw(롱 − 숏) 또는 null,
+                         weighting: ew|vw|model|other}}]
+   headline_variant = 논문이 스스로 대표로 꼽은 방법의 id(초록 · 결론 · 주결과 표의 강조 칸 — 성과를 보고 고르지 않는다 · 측정 전 고정)
+   construction_source = \"paper\"(논문이 구성) 또는 \"lane\"(⑤)
+   ★claims 는 측정 뒤 보유 기록(종목 수 · 롱/숏 · 순노출)과 **기계 대조**된다 — 코드가 실제로 만드는 보유를 적어라(모르면 null).
+
 ★산출에 \`${WDIR}/FIDELITY.json\` 을 함께 써라 — 키 6개:
   fidelity(faithful 또는 adapted) · kept(논문에서 남긴 기전 1줄) ·
   changed(바꾼 것과 이유 1줄) · paper_original_form(논문 원래 산출 형태 1줄) ·
@@ -505,6 +569,7 @@ ${P_ACCESS}
       (네가 만든 비중이 곧 논문 비중이다. 롱숏이면 반드시 이 값이어야 한다 —
        이게 없으면 러너가 숏 다리를 버리고 롱온리 top-N 으로 다시 구성한다.)
     FACTORS 만 만들면 {\"construction\":\"top_n_long\",\"weighting\":\"ew\",\"rebalance\":\"monthly\",\"top_n\":<논문값>}
+      (논문에 포트폴리오가 없으면 위 '모든 방법론' ⑤ 의 레인 표준 그대로)
   ★engine.R 주석에만 적지 마라 — 주석은 아무도 읽지 않는다. 이 파일이 유일한 통로다.
 
 ### ★changed 신고 체크리스트 — 논문에 없는데 네가 넣은 것을 **전부** 적어라
@@ -518,7 +583,7 @@ ${P_ACCESS}
 - 결측 처리 (nafill/locf · 상장 전 상수 · 비유한값 0 치환)
 - 난수·재현 (set.seed · 초기값 · 앞상빌업 횟수 · 앜상블 여부)
 - 창·워밍업 길이를 논문과 다르게 잡은 것
-- 논문이 여러 설정을 보고했는데 하나를 골랏으면 **어느 칸을 골랐는지**
+- 수치 격자의 대표 칸을 어떻게 정했는지(논문이 대표 칸을 명시하지 않았으면 그 추정 근거) — 방법 · 모델 · 구성법은 고르지 않고 전부 변형으로 구현한다('모든 방법론' 절)
 - 논문 수식을 근사한 것 (폐형·선형화·이산화)
 
 ★\"영향이 미미해서 안 적었다\" 는 사유가 아니다. 영향의 크기를 판단하는 것은
@@ -551,6 +616,7 @@ engine.R 과 FIDELITY.json 만 보고 아래를 확인한다. 빠지면 측정 �
 (그리고 이 프롬프트 끝의 '하네스 고지' 대괄호 블록을 harness_disclosure 키에 그대로 옮긴다 — 하네스 쪽 차이는 그 블록이 공시한다.)
 5. declared_role — 논문이 **주장하는** 전략의 역할 한 줄(defensive · offensive · rebound · alpha · diversifier 중 해당 단어 + 근거 문장 위치).
    예: \"defensive — §4.2 하락장에서 손실 축소를 주장\". 성과를 보고 고르지 말고 논문 서술만 옮긴다(판정은 측정이 한다 — 대조용 기록).
+6. variants · headline_variant · construction_source — 위 '모든 방법론' 절 ⑥(사전검사 P9 · P11). omitted 단계는 omit_code(P10).
 
 **제출 전 자가 점검**(사전검사가 그대로 확인한다):
 - engine.R 최상위 숫자 상수가 전부 constants 에 있고 value 가 코드와 같은가.
@@ -558,6 +624,8 @@ engine.R 과 FIDELITY.json 만 보고 아래를 확인한다. 빠지면 측정 �
   언제 비는지와 그 결과(이월)를 changed 에 적었는가.
 - engine.R 에 따옴표로 쓴 팩터 DB 지표 id 가 전부 factor_mapping 에 있는가.
 - engine.R 의 롤링 창이 전부 windows 에 있고 impl 에 종점이 적혀 있는가.
+- 주결과의 방법 · 모델 · 구성법이 전부 variants 에 있고 엔진에 분기가 있는가 · 변형이 2개 이상이면 스위치 기본값이 headline_variant 인가.
+- omitted 단계마다 omit_code(J1~J4)가 있는가 · 미명시 값은 보충해 constants(source=supplement)에 적었는가 · 핵심 모델을 간이판으로 바꾸지 않았는가.
 - engine.R 의 clip·pmax/pmin 상수 · 결측/비유한값 처리 · set.seed · tryCatch 폴백 · 최소 개수 하한 · 유동성 하한 ·
   상태 플래그(관리종목·거래정지) · 커버리지 하한 · 1e-x 분모 가드가 각각 changed 또는 paper_steps note 에 적혀 있는가.
 
@@ -589,7 +657,7 @@ ${SELF_AUDIT_SEC}
   cluster · matrixStats · glmnet · TTR · roll · proxy 등), **없는 패키지는 호출자가 자동 설치**한다
   (검증 러너가 엔진을 스캔해 CRAN 에서 최대 6개까지 설치). 그러니 필요한 패키지를 자유롭게 쓰라.
 - 다만 **정말 필요한 것만** 쓰라 — 의존이 6개를 넘으면 착수가 차단된다.
-- 파이썬 연동(reticulate)도 가능하나, R 로 충분하면 R 로 하라(무인 실행에서 층이 하나 줄어든다).
+- 파이썬 연동도 가능하다 — ★딥러닝 · 학습형 모델은 venv torch 로 구현한다('모든 방법론' ④ · ${TORCH_LINE}). 그 밖에 R 로 충분하면 R 로 하라(무인 실행에서 층이 하나 줄어든다).
 - 원문 접근이 불가하거나 논문을 훼손하지 않고는 구현할 수 없으면 \`ABORT.txt\` 에 사유를 쓰고 멈춰라.
 
 ## 금지
@@ -811,6 +879,16 @@ rf_llm_before_fallback() {
     "why=limit_in_run_output" "moved_aside=${moved:- none}"
 }
 RUN_OUT="$WDIR/.agent_run.out"
+# ★구현 에이전트 시간 상한 = 설정(06_Registry/rf_replication_variants.json compute.agent_timeout_sec · 0 = 상한 없음 — 도훈 10-17 결정 2
+#   '논문당 계산 시간 상한 없음'). 구판 3000초 리터럴. 판독 불능 · 음수 = 0(상한 없음 · GNU timeout 0 = 비활성).
+RP_AGENT_TMO=$("$PY" -c "
+import io,json
+try:
+    v=int((json.loads(io.open(r'$RV_CFG','rb').read().decode('utf-8')).get('compute') or {}).get('agent_timeout_sec',0))
+    print(v if v>=0 else 0)
+except Exception: print(0)" 2>/dev/null | tr -d '\r')
+case "$RP_AGENT_TMO" in ''|*[!0-9]*) RP_AGENT_TMO=0;; esac
+jl agent_timeout "sec=$RP_AGENT_TMO" "note=0 = 상한 없음(도훈 10-17)"
 # ── ★출처 기록 · 실행 전 (FA-CLEAN-BASE-PATH) — 모드·가드/훅/설정 sha256·CLI 도구·프롬프트 sha256·피드백 가림 통계·자동 주입 규칙 지문.
 #   사후 검사(rf_clean_base.R)는 이 기록을 믿지 않고 전사(첫 레코드 = prompt.txt 바이트 · hook_success stdout)·현재 파일과 대조한다.
 #   청정 모드는 기록 실패 = halt(재도출 대상이 없으면 청정을 주장할 수 없다) · normal 은 기록만 시도한다.
@@ -823,7 +901,7 @@ if [ "$LANE_MODE" = "clean" ]; then
     || { jl halt_clean_provenance_failed "paper=$P_KEY"; rm -rf "$SNAP"; exit 0; }
   # ★청정 표식 = 함수 호출 앞 임시 대입(설계 레인과 같은 형) — 이 claude(1차·폴백)와 그 훅에만 실리고 호출 뒤 셸·검증기에는 안 남는다.
   #   셸 통로 7종 + Agent(성과 문맥 주입 훅) + Skill(SKILL.md 원문 주입) 금지 — 목록 정본 = replication_clean_lane.json disallowed_tools_clean(검사 §W).
-  QVEST_CLEAN_LANE=1 QVEST_CLEAN_WDIR="$WDIR" rf_llm_agent_run "$PF" "$RUN_OUT" 3000 \
+  QVEST_CLEAN_LANE=1 QVEST_CLEAN_WDIR="$WDIR" rf_llm_agent_run "$PF" "$RUN_OUT" "$RP_AGENT_TMO" \
     --permission-mode acceptEdits \
     --allowed-tools "Read,Write,Edit,Glob,Grep,WebFetch,WebSearch" \
     --disallowed-tools "Bash,PowerShell,Monitor,REPL,Workflow,CronCreate,RemoteTrigger,Agent,Skill" \
@@ -834,7 +912,7 @@ else
     --allowed "Read,Write,Edit,Glob,Grep,WebFetch,WebSearch" --disallowed "Bash,Agent" \
     --model "$RP_MODEL" --effort "$RP_EFFORT" --fallback-model "${LLM_FALLBACK_MODEL:-}" >> "$LOG" 2>&1 \
     || jl lane_provenance_failed "mode=normal"
-  rf_llm_agent_run "$PF" "$RUN_OUT" 3000 \
+  rf_llm_agent_run "$PF" "$RUN_OUT" "$RP_AGENT_TMO" \
     --permission-mode acceptEdits \
     --allowed-tools "Read,Write,Edit,Glob,Grep,WebFetch,WebSearch" \
     --disallowed-tools "Bash,Agent" \

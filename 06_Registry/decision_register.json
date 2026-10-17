@@ -3394,7 +3394,33 @@
       "registered_at": "2026-10-17T13:15:00+0900",
       "recorded_by": "Q(세션 7a34e194)",
       "evidence": "도훈 채팅 2026-10-17 — '1,000원 미만 동전주들 제외하자' · (PIT 경계 설명 뒤) '아니 수정주가기준 1,000원미만 제외시켜'"
+    },
+    {
+      "id": "REPLICATION-ALL-METHODS-20261017",
+      "title": "충실구현 레인 — 논문 주결과 방법 전부(변형) · 격자 대표 칸 · 계산 시간 상한 없음 · 포트폴리오 없는 논문은 레인 표준 구성",
+      "status": "resolved",
+      "opened_at": "2026-10-17T14:25:38+0900",
+      "options": [
+        "P1 격자: A 전 칸 / B 대표 칸만",
+        "P3 계산 시간: A 상한(예: 3000초 · 6h 회수) 유지 / B 상한 없음",
+        "P5 매매 전략 없는 논문: A 제외 / B proxy 꼬리표 / C 구성 가능하면 구성해 측정"
+      ],
+      "recommendation": "Q 제안 = 방법 · 모델 · 구성법 전부를 변형으로(대표 = 논문 대표 · 측정 전 고정 · 나머지 sweep/DSR) + 미명시 보충 후 신고 + 핵심 모델 보호 + 측정 뒤 보유 기계 대조 — 격자 범위 · 시간 상한 · 무전략 논문 처분은 도훈 결정",
+      "default_until_decided": "레인 정지(replication_lane.enabled=false · 10-17 12:0x 도훈 '일단 리서치 멈춰봐')",
+      "blocks": [
+        "item:replication_remeasure_4papers",
+        "item:replication_lane_resume"
+      ],
+      "owner": "dohoon",
+      "source": "04_Research/01_reports/negative_cagr_omission_audit_20261017/README.md §3 P1~P5 · 설계 04_Research/01_reports/replication_all_methods_redesign_20261017/README.md",
+      "decision": "격자 = B 대표 칸만 · 시간 = B 상한 없음 · 무전략 논문 = C 구성 가능하면 레인 표준 구성으로 측정(construction_source=lane). 구현: 정본 06_Registry/rf_replication_variants.json(변형 규약 · 생략 코드 J1~J4 · 레인 표준 = top_n_long · ew · 하네스 종목수 상한 · 보유 대조 문턱 · 구현 에이전트 시간 상한 0 · 생존 claim 회수 안 함). 레인 프롬프트 '모든 방법론' 절 · 사전검사 P9~P11 · 감사 판정 정의 '신고로 면제되지 않는 차이' + 축 focus · 검증기 = 대표(chain/1 · 권위) 먼저 → 나머지 변형 sweep(n = 변형 수) <대표>/variants/ · 측정 뒤 보유 대조(P4 · implementation_suspect 꼬리표) · 계약 run_paper_replication(engine_vars) · 생존 claim = claim_live_long 경고(Superfan warn).",
+      "decided_by": "dohoon",
+      "decided_at": "2026-10-17T14:25:39+0900",
+      "note": "검사: test_rf_preaudit.py 75/0 · test_rf_verify_variants.R 31/0 · test_replication_lane.sh 89/0 · test_rf_clean_lane.sh 107/0 · test_rf_fidelity_audit.R 67/0 · test_superfan_watch.R 33/0 · 골든 7/0(SKIP 4 = 10-17 퀀티 적재 데이터 개정분 · 경계 앞 5,217일 비트 동일)",
+      "registered_at": "2026-10-17T14:25:38+0900",
+      "recorded_by": "Q(세션 7a34e194)",
+      "evidence": "도훈 채팅 2026-10-17 — (점검 보고 04_Research/01_reports/negative_cagr_omission_audit_20261017 §3 결정 필요 열에 대해) '1. 대표칸만 / 2. 논문당 계산 시간 상한 없음 / 3. 포트폴리오 구성이 가능하다면 구현하여 성과 측정 / … / 6. 4번 해결 후 재측정 승인' · 앞서 '왜 MLP만 썼지? 논문 충실 구현이면 모든 방법론을 다 써야지'"
     }
   ],
-  "last_updated": "2026-10-17T13:15:02+0900"
+  "last_updated": "2026-10-17T14:25:40+0900"
 }

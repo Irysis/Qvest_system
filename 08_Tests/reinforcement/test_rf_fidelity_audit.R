@@ -258,14 +258,14 @@ if (!is.na(i_pw) && !is.na(i_gt) && i_pw < i_gt) ok("D6 앞 회차 지적 파일
   cd <- sub("#.*$", "", lines)
   at <- function(s) which(grepl(s, cd, fixed = TRUE))[1]
   ix <- c(pre = at("detect_lookahead(eng"), gate = at("rf_audit_gate("), pkg = at(".deps <- .extract_pkgs(eng)"),
-          run = at("do.call(run_paper_replication"))
+          run = at("res <- tryCatch(do.call(run_paper_replication"))   # 대표 측정 호출(본문) — 10-17 변형 측정 도우미의 정의 안 호출은 측정 지점이 아니다
   all(!is.na(ix)) && !is.unsorted(ix, strictly = TRUE)
 }
 if (.order_ok(vf)) ok("D9 순서 = PIT 사전 점검 → 충실도 감사 → 패키지 설치 → 측정(러너) — 기각은 측정 없이 끝난다") else
   ng("D9 감사가 측정 앞에 있지 않다")
 ## 양성 대조 — 감사 관문 줄을 러너 호출 뒤로 옮긴 사본(소스 텍스트 이동)을 D9 가 잡는가
 i_g9 <- which(grepl("rf_audit_gate(", code, fixed = TRUE))[1]
-i_r9 <- which(grepl("do.call(run_paper_replication", code, fixed = TRUE))[1]
+i_r9 <- which(grepl("res <- tryCatch(do.call(run_paper_replication", code, fixed = TRUE))[1]
 if (!is.na(i_g9) && !is.na(i_r9) && i_g9 < i_r9) {
   mut9 <- append(vf[-i_g9], vf[i_g9], after = i_r9 - 1L)   # 관문 줄을 빼면 러너 줄이 한 줄 당겨진다 → 그 바로 뒤에 넣는다
   if (!identical(mut9, vf) && !.order_ok(mut9)) ok("D9b 양성 대조 — 감사를 측정 뒤로 옮긴 사본은 D9 가 빨개진다(검출력)") else

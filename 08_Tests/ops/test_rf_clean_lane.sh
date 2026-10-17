@@ -357,7 +357,7 @@ if ok1:
     b = blocks(L, cl[0]); dl, al = tl(b, '--disallowed-tools'), tl(b, '--allowed-tools')
     ok1 = 'QVEST_CLEAN_WDIR="$WDIR"' in b and dl is not None and all(t in dl for t in SH + ['Agent', 'Skill']) and al is not None and not any(t in al for t in SH + ['Agent', 'Skill'])
 res.append('W1 %d' % ok1)
-nm = [i for i, l in enumerate(L) if re.match(r'\s*rf_llm_agent_run "\$PF" "\$RUN_OUT" 3000', l)]
+nm = [i for i, l in enumerate(L) if re.match(r'\s*rf_llm_agent_run "\$PF" "\$RUN_OUT" "\$RP_AGENT_TMO"', l)]   # 10-17 시간 상한 = 설정 변수
 ok2 = len(nm) == 1 and tl(blocks(L, nm[0]), '--disallowed-tools') == ['Bash', 'Agent']
 res.append('W2 %d' % ok2)
 res.append('W3 %d' % (not any(re.search(r'\bexport\s+QVEST_CLEAN_(LANE|WDIR)\b', l) for l in L if not l.strip().startswith('#'))))

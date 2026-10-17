@@ -54,8 +54,11 @@ allowed-tools: Bash(Rscript*) Read Grep Glob Write
    (BearProb 실사고 재발 방지 — placebo/OOS/DSR 이 전부 통과해도 이것만 판별했다).
 5. **재현 검증** — 엔진 재실행 → 등급 재현 일치(`authoritative_remeasure.json` 대조).
    vintage `pin_cache` 태그 확인 (measurement-graduation §7).
+   ★변형 측정(2026-10-17 · REPLICATION-ALL-METHODS-20261017): `measurement_regime.engine_vars`(예: `.RP_VARIANT`)가 있으면
+   재실행에 같은 값을 `run_paper_replication(engine_vars = …)` 로 넘긴다 — 없이 돌리면 엔진 기본값(= 논문 대표 변형)이 나온다.
 6. **n_trials/selection_type 정직성** — chain 자격요건(IS-only 선택 등) 감사.
-   sweep 인데 chain 으로 신고된 구조는 위반.
+   sweep 인데 chain 으로 신고된 구조는 위반. 변형 측정에서 대표가 아닌 변형(`measurement_regime.variant_headline = false`)은
+   sweep · n = 변형 수로 채점돼야 한다(측정 뒤 최고 변형 고르기 = 선정) — chain 이면 위반.
 
 ## 산출 — `judge_verdict.json` (schema v2)
 ```json
