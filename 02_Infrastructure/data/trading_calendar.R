@@ -100,10 +100,12 @@ CALENDAR_CACHE <- file.path(CACHE_DIR, "trading_calendar.parquet")
 
 # ─── Internal: 한국 공휴일 manual list (KRX 임시 휴장 + 대체 휴일) ───────────
 .korean_market_closures_manual <- function() {
+  # ★(2026-10-17 · 도훈 결정 CAL-20241230-REAL-SESSION '하루 복원해') 구판의 "2024 KRX 임시 휴장: 2024-12-30" 은 틀렸다 —
+  #   KRX 공식 휴장일(06_Registry/krx_holidays.json · 2024 연말 휴장 = 12-31)에 없고 퀀티 정본에 그날 세션(코스피200 317.82)이 있다.
+  #   이 목록이 퀀티 날짜에서 12-30 을 지워 캘린더 · RAWDATA 가 그 거래일을 잃었다. 휴장일 정본은 krx_holidays.json 이다 —
+  #   여기는 그 정본에 없는 임시 휴장을 적는 자리로만 남긴다(현재 0건).
   as.Date(c(
-    # 2024 KRX 임시 휴장
-    "2024-12-30",
-    # 향후 추가 시 여기에
+    # 향후 추가 시 여기에(KRX 공시 링크와 함께)
     NULL
   ))
 }

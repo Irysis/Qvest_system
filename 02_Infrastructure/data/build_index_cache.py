@@ -8,11 +8,13 @@ build_index_cache.py — QuantiWise Benchmark_price.xlsx → 지수 캐시 (재�
                  IKS200(코스피200)이 아닌 IKS001(코스피 전체)를 넣고 있었음. 본 스크립트가
                  Code 행을 명시적으로 매칭해 정확한 IKS200을 뽑고, sanity 가드로 재발 방지.
 
-사용: python 02_Infrastructure/data/build_index_cache.py [--update-rawdata] [--allow-grid-change]
+사용: python 02_Infrastructure/data/build_index_cache.py [--update-rawdata] [--allow-grid-change] [--insert-dates YYYY-MM-DD[,..]]
   --update-rawdata     : RAWDATA.parquet의 BM_Ret 을 단일 writer(rawdata_bm_ret_sync.R --apply)로 동기화.
   --allow-grid-change  : benchmark.parquet 의 **날짜 격자 전면 교체**를 허용한다.
                          기본은 격자 보존(과거 삽입·기존 삭제 금지 · 전진만 반영) —
                          이 파일이 trading_calendar.R 의 거래일 권위이기 때문이다.
+  --insert-dates D[,..]: 격자 보존 모드에서 **지정한 과거 날짜만** 삽입한다(xlsx 에 있어야 한다 · 나머지 과거삽입은 그대로 막는다).
+                         캘린더 변경이므로 도훈 결정 근거와 함께만 쓴다 — 첫 사용 2026-10-17 CAL-20241230-REAL-SESSION(2024-12-30 복원).
 """
 import os, sys, shutil
 import numpy as np
@@ -72,7 +74,7 @@ def _write_parquet(df, cols, path):
             arrs[c] = pa.array(df[c].astype("float64"))
     pq.write_table(pa.table(arrs), path)
 
-def main(update_rawdata=False, allow_grid_change=False):
+def main(update_rawdata=False, allow_grid_change=False, insert_dates=()):
     df, cols = _read_indices()
     print(f"[build_index_cache] {len(df)}행 × {len(cols)}지수 | {df.Date.min()} ~ {df.Date.max()}")
 
@@ -106,7 +108,8 @@ def main(update_rawdata=False, allow_grid_change=False):
     #   그대로 쓰므로, 기존 파일과 행 집합이 다르면 **캘린더가 바뀐다**.
     #   실측(2026-09-18): xlsx 9,472행 vs 캐시 9,031행 — 차이는 행마다 성격이 다르다:
     #     · 1990~98 토요장 438행 = 진짜 세션인데 캐시에만 없다(복원 대상)
-    #     · 2024-12-30 = 반대로 유령(QuantiWise RAWDATA·trading_calendar·캐시 셋 다 12-27 이 마지막)
+    #     · 2024-12-30 = (구 판정 '유령' → 2026-10-17 정정: 실제 거래일 — KRX 공식 휴장일 아님 · 퀀티 xlsx 세션.
+    #       구 근거 셋은 순환이었다. CAL-20241230-REAL-SESSION 으로 --insert-dates 복원)
     #   통째로 옳다/그르다 할 수 없으므로 처분은 도훈 판단이다.
     #   ★초판은 경고만 찍고 **그대로 썼다** — 그게 이 밤 내내 고친 바로 그 병(조용한 덮어쓰기)이다.
     #     이제 기본은 **격자 보존**이다: 과거 날짜 삽입·기존 날짜 삭제는 하지 않고, 마지막 날짜
@@ -136,9 +139,16 @@ def main(update_rawdata=False, allow_grid_change=False):
             if drops:
                 print(f"     삭제 예: {[str(d.date()) for d in drops[:3]]} … "
                       f"{[str(d.date()) for d in drops[-3:]]}")
+        want = set(pd.to_datetime(list(insert_dates))) if insert_dates else set()
+        ins = sorted(d for d in hist_inserts if d in want)
+        miss = sorted(want - set(hist_inserts))
+        if miss:
+            print(f"     ※--insert-dates 중 xlsx 과거삽입 후보가 아닌 날짜(이미 있음 · xlsx 에 없음): {[str(d.date()) for d in miss]}")
         if (hist_inserts or drops) and not allow_grid_change:
-            # 격자 보존 — 기존 날짜 ∪ 전진분. 값은 xlsx 우선, 없으면 기존 값 유지.
-            keep = sorted(prev_dates | set(grows))
+            # 격자 보존 — 기존 날짜 ∪ 전진분 (∪ --insert-dates 로 지정한 과거 날짜). 값은 xlsx 우선, 없으면 기존 값 유지.
+            if ins:
+                print(f"     ⇒ --insert-dates 지정 과거삽입 {len(ins)}일: {[str(d.date()) for d in ins]} (나머지 {len(hist_inserts) - len(ins)}일은 막는다)")
+            keep = sorted(prev_dates | set(grows) | set(ins))
             base = pd.DataFrame({"Date": keep})
             xl = bm.copy(); xl["Date"] = pd.to_datetime(xl["Date"])
             merged = base.merge(xl[["Date", "BM_Close"]], on="Date", how="left")
@@ -183,5 +193,12 @@ def main(update_rawdata=False, allow_grid_change=False):
                    ["2026-02","2026-03","2026-04","2026-05","2026-06"]))
 
 if __name__ == "__main__":
+    _ins = ()
+    if "--insert-dates" in sys.argv:
+        _i = sys.argv.index("--insert-dates")
+        if _i + 1 >= len(sys.argv):
+            sys.exit("--insert-dates 에 날짜(YYYY-MM-DD[,..])가 없다")
+        _ins = tuple(s for s in sys.argv[_i + 1].split(",") if s)
     main(update_rawdata=("--update-rawdata" in sys.argv),
-         allow_grid_change=("--allow-grid-change" in sys.argv))
+         allow_grid_change=("--allow-grid-change" in sys.argv),
+         insert_dates=_ins)

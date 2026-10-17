@@ -21,7 +21,7 @@
 #   · 채움(fill)      : RAWDATA 결측 ∧ 벤치 유한값 → 벤치 값. 킬스위치 무관(측정값을 바꾸지 않는다).
 #   · 덮어쓰기(overwrite): RAWDATA 유한값 ≠ 벤치 → 킬스위치(reinforce_auto_config.json::enabled)가
 #                        내려가 있을 때만 · 상한(max_overwrite_per_run) 이하일 때만.
-#   · 보호(protect)   : 설정의 보호 구간(1990~98 토요장 계열 · 2024-12-30)은 어떤 경우에도 안 쓴다.
+#   · 보호(protect)   : 설정의 보호 구간(1990~98 토요장 계열)은 어떤 경우에도 안 쓴다(2024-12-30 은 2026-10-17 복원 결정으로 해제).
 #   · 벤치 지연(bench_lag): RAWDATA 날짜 > 벤치 최신일 → NA 로 두고 경고. **추정 금지.**
 #   · 벤치 결손(bench_missing): 벤치 구간 안인데 벤치에 그 날이 없음 → NA 유지 + 위반.
 #   · 광기값(refused_insane): |벤치 값| > max_abs_ret → 쓰지 않고 위반.

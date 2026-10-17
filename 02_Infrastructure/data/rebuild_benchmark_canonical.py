@@ -24,8 +24,8 @@
   benchmark.parquet 은 trading_calendar.R 의 거래일 유일 권위이므로, 행 집합을 건드리면
   축 이전이 아니라 캘린더 변경이 된다 — 그건 별개 과제이고 처분 대기 중이다:
     · 1990~98 토요장 438행 = **진짜 세션인데 benchmark 에만 없다**(indices/xlsx 엔 있다)
-    · 2024-12-30 = 반대로 **유령**(QuantiWise RAWDATA 2,504종목·trading_calendar·현 benchmark
-      셋 다 2024 마지막 거래일 = 12-27. xlsx 지수 시트에만 행이 있다)
+    · 2024-12-30 = (구 판정 '유령' → 2026-10-17 정정) **실제 거래일** — KRX 공식 휴장일 아님 · 퀀티 xlsx 세션.
+      구 근거 셋(RAWDATA · trading_calendar · benchmark)은 순환이었다. CAL-20241230-REAL-SESSION 으로 복원(build_index_cache --insert-dates)
   ⇒ 행마다 갈리므로 통째로 복원/삭제할 수 없다. 여기서는 손대지 않고 보고만 한다.
   ★부수효과(정직하게 적는다): 격자에 없는 세션의 수익률은 구판에서 **버려졌고**,
     재구축 뒤에는 다음 거래일 수익률에 **합쳐진다**(레벨 시리즈의 올바른 거동).
@@ -300,8 +300,8 @@ def main() -> int:
             '소비하지 않는다 — 새 축에서 모든 배수는 1.0 이다.'),
         'grid_note': (
             '날짜 격자는 재구축이 바꾸지 않는다(trading_calendar.R 의 거래일 권위). '
-            '처분 대기: 1990~98 토요장 438행(진짜 세션인데 benchmark 에만 없음) · '
-            '2024-12-30(반대로 유령 — xlsx 지수 시트에만 있음).'),
+            '토요장 1990~98 438행은 DATA-SAT-CLOSE 로 종결(복원 안 함) · '
+            '2024-12-30 은 2026-10-17 실제 거래일로 복원(CAL-20241230-REAL-SESSION).'),
     }
     BA.write_manifest(manifest)
     print(f'manifest → {BA.MANIFEST_PATH}')

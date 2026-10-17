@@ -8,7 +8,8 @@
 # 축 (양성 대조 + 위반 주입 + 돌연변이 통제):
 #   A 계획      — 합성 RAWDATA+벤치에서 fill/overwrite/protected/bench_lag/거부 분류
 #   B 쓰기      — 결측 채움·정본 일치 · 다른 열·행 순서·형 불변 · 보호 날짜 불변 · 로그는 픽스처 안
-#   C 위반 주입 — 독립 오라클이 (벤치 없는 날 채움 / 다른 열 변경 / 토요장·2024-12-30 변경)을 red 로 잡는다
+#   C 위반 주입 — 독립 오라클이 (벤치 없는 날 채움 / 다른 열 변경 / 토요장 변경)을 red 로 잡는다
+#   (2026-10-17 · CAL-20241230-REAL-SESSION) 2024-12-30 은 보호 해제 — 실제 거래일 복원. 이제 '보호 아님 → 채움' 을 잰다(A4b · B6b)
 #                 + 쓰기기 돌연변이(지연일 추정 채움 · 다른 열 건드림 · 보호 해제 · 동시 writer)가 실제로 red
 #   D 킬스위치  — enabled=true 면 덮어쓰기 거부·채움 허용 · 부재 = 허용 · 광기값·상한·벤치 결손 = 위반
 #   E 메모리 API — rawdata_bm_ret_sync_dt (BM_Ret 열 부재 → 생성·채움)
@@ -128,8 +129,9 @@ chk("A1_fill_missing_with_bench", identical(act(pl0, "2026-09-03"), "fill") && i
 chk("A2_bench_lag_left_na", identical(act(pl0, "2026-09-07"), "bench_lag"))
 chk("A3_mismatch_refused_under_killswitch",
     identical(act(pl0, "2025-01-02"), "refused_killswitch") && identical(act(pl0, "2026-09-02"), "refused_killswitch"))
-chk("A4_protected_saturday_and_ghost",
-    all(c(act(pl0, "1998-12-04"), act(pl0, "1998-12-07"), act(pl0, "2024-12-30")) == "protected"))
+chk("A4_protected_saturday",
+    all(c(act(pl0, "1998-12-04"), act(pl0, "1998-12-07")) == "protected"))
+chk("A4b_20241230_released_is_fill", identical(act(pl0, "2024-12-30"), "fill"))
 chk("A5_equal_is_ok", identical(act(pl0, "2026-09-01"), "ok") && identical(act(pl0, "2024-12-27"), "ok"))
 chk("A6_rc_violation_when_refused", E$bm_ret_plan_rc(pl0) == 3L)
 pl1 <- E$bm_ret_sync_plan(cur, bench_fx, CFG, allow_overwrite = TRUE)
@@ -162,8 +164,8 @@ chk("B4_overwritten_equal_bench",
     all(A[Date == D("2025-01-02")]$BM_Ret == -0.0039494718) && all(A[Date == D("2026-09-02")]$BM_Ret == -0.0407049196))
 chk("B5_lag_day_still_na", all(is.na(A[Date == D("2026-09-07")]$BM_Ret)) && r$rc == 4L)
 chk("B6_protected_unchanged",
-    all(is.na(A[Date == D("1998-12-04")]$BM_Ret)) && all(A[Date == D("1998-12-07")]$BM_Ret == 0.0055) &&
-      all(is.na(A[Date == D("2024-12-30")]$BM_Ret)))
+    all(is.na(A[Date == D("1998-12-04")]$BM_Ret)) && all(A[Date == D("1998-12-07")]$BM_Ret == 0.0055))
+chk("B6b_20241230_filled_equal_bench", all(A[Date == D("2024-12-30")]$BM_Ret == -0.0037927468))
 ov <- oracle(B, A, bench_fx, CFG)
 chk("B7_oracle_clean_other_cols_order_types", length(ov) == 0L &&
       identical(sapply(A, function(x) class(x)[1]), sapply(B, function(x) class(x)[1])), paste(ov, collapse = ";"))
@@ -186,10 +188,8 @@ chk("C1_oracle_red_fill_without_bench", any(grepl("^filled_without_bench", oracl
 X <- copy(A); X[Ticker == "A000010" & Date == D("2026-09-03"), Close := Close + 1]
 chk("C2_oracle_red_other_column", any(grepl("^other_col_changed:Close", oracle(B, X, bench_fx, CFG))))
 X <- copy(A); X[Date == D("1998-12-07"), BM_Ret := 0.002]
-X2 <- copy(A); X2[Date == D("2024-12-30"), BM_Ret := -0.0037927468]
 chk("C3_oracle_red_protected_touched",
-    any(grepl("^protected_touched:1998-12-07", oracle(B, X, bench_fx, CFG))) &&
-      any(grepl("^protected_touched:2024-12-30", oracle(B, X2, bench_fx, CFG))))
+    any(grepl("^protected_touched:1998-12-07", oracle(B, X, bench_fx, CFG))))
 
 # C4: 쓰기기 돌연변이 — 지연일을 직전값으로 '추정' 채움 → 오라클 red
 M <- new.env(); for (nm in ls(E, all.names = TRUE)) assign(nm, get(nm, E), M)
@@ -217,14 +217,14 @@ e5 <- tryCatch({ M5$rawdata_sync_bm_ret(dry_run = FALSE, raw_path = f$raw, bench
                error = function(e) conditionMessage(e))
 chk("C5_mutant_other_column_stopped_before_write", grepl("BM_Ret 외 열이 바뀌었다", e5) && identical(md5(f$raw), h5), e5)
 
-# C6: 보호 해제 돌연변이(설정 protect 비움) → 토요장·2024-12-30 을 쓴다 → 오라클 red (보호가 설정에서 온다는 통제)
+# C6: 보호 해제 돌연변이(설정 protect 비움) → 토요장을 쓴다 → 오라클 red (보호가 설정에서 온다는 통제)
 CFGm <- CFG; CFGm$protect <- CFG$protect[0]
 f <- fresh("c6"); Bc <- rd(f$raw)
 invisible(E$rawdata_sync_bm_ret(dry_run = FALSE, raw_path = f$raw, bench_path = f$bench, cfg = CFGm,
                                 killswitch_path = ks(f$dir, FALSE)))
 o6 <- oracle(Bc, rd(f$raw), bench_fx, CFG)
 chk("C6_mutant_protect_removed_caught",
-    any(grepl("protected_touched:.*1998-12-0", o6)) && any(grepl("2024-12-30", o6)), paste(o6, collapse = ";"))
+    any(grepl("protected_touched:.*1998-12-0", o6)), paste(o6, collapse = ";"))
 
 # C7: 동시 writer — 계획 후 파일이 바뀌면 쓰지 않는다
 M7 <- new.env(); for (nm in ls(E, all.names = TRUE)) assign(nm, get(nm, E), M7)
