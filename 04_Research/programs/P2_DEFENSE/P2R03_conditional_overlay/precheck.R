@@ -12,7 +12,10 @@ PR <- file.path(ROOT, "stage_artifacts/programs/P2_DEFENSE/P2R03_conditional_ove
 if (!file.exists(PR)) { cat("[precheck] 사전등록 없음 — 측정하지 않는다\n"); quit(status = 1L) }
 pre <- fromJSON(PR, simplifyVector = FALSE)
 bad <- c(if (!identical(pre$status, "registered")) "사전등록 status ≠ registered", p2_pin_mismatches(pre, ROOT))
+## 데이터 상태(격리 교차 점검 선택 3 — 갱신 완료 줄은 단계가 실패해도 찍힌다) — 벤치 · RAWDATA 마지막 날을 기록(판정 무관 · 판본 해석용)
+.lastd <- function(f) tryCatch(format(max(as.Date(arrow::read_parquet(file.path(ROOT, ".cache", f), col_select = "Date")$Date))), error = function(e) paste("error:", conditionMessage(e)))
 out <- list(at = format(Sys.time(), "%Y-%m-%dT%H:%M:%S%z"), prereg_md5 = md5(PR), ok = !length(bad), mismatches = bad,
+            data_state = list(benchmark_last = .lastd("benchmark.parquet"), rawdata_last = .lastd("RAWDATA.parquet")),
             data_fingerprint = list(equality = p2_fingerprint(RD, "equality"), record = p2_fingerprint(RD, "record")),
             git_head = tryCatch(system2("git", c("-C", ROOT, "rev-parse", "HEAD"), stdout = TRUE), error = function(e) NA_character_))
 dir.create(file.path(RD, "results"), recursive = TRUE, showWarnings = FALSE)

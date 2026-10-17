@@ -1,4 +1,4 @@
-## P2R03 조건부 · 시변 노출 층 — 엔진 자체 구성(E2 EW · E3 엔트로피 비중) 위에 조건부 노출 층 6종을 얹으면, 같은 β 의 정적 현금 사본보다
+## P2R03 조건부 · 시변 노출 층 — 엔진 자체 구성(E2 EW · E3 엔트로피 비중) 위에 조건부 노출 층 7종을 얹으면, 같은 β 의 정적 현금 사본보다
 ##   깊은 위기 · 빠른 급락에서 덜 빠지고(헌장 빈칸 6 · 8) 하락장 β < 상승장 β 이며(빈칸 3) 강세 구간 과반에서 엔진의 80% 이상을 따라가고(빈칸 7)
 ##   엔진 알파를 잃지 않는가(빈칸 4C)
 ##   설계 = DESIGN.md v3 · Q 자율 판단(J-20261017-007 라운드 선택 · J-009 후보 · J-010 설계) · 판단 Superfan T1(R-20261017-005) · 철학 Superfan P1 ·
@@ -23,7 +23,7 @@ source(file.path(RD, "evaluate.R"))                                             
 PR <- file.path(P$prereg_dir, "prereg.json"); DR <- file.path(RD, "prereg_draft.json")
 ## 격리 교차 점검을 받은 초안 보존본(있으면 등록판에 연결 — 없으면 --register 거부)
 REVIEWED <- Filter(function(z) file.exists(z$path), list(
-  list(version = 1L, path = file.path(RD, "prereg_draft_reviewed_v1.json"), review = "격리 교차 점검(결과 미열람 · 범용 에이전트)"),
+  list(version = 1L, path = file.path(RD, "prereg_draft_reviewed_v1.json"), review = "격리 교차 점검(결과 미열람 · 범용 에이전트) — revise(필수 4 · 권고 6 · 선택 4 · 도훈 즉시 실측 지시로 범위 축소 마무리 · prereg_draft_review_v1.md)"),
   list(version = 2L, path = file.path(RD, "prereg_draft_reviewed_v2.json"), review = "격리 변경분 점검(v1 → v2 · 결과 미열람)"),
   list(version = 3L, path = file.path(RD, "prereg_draft_reviewed_v3.json"), review = "격리 변경분 점검(v2 → v3 · 좁은 범위)")))
 rel <- function(p) sub(paste0("^", ROOT, "/"), "", p)
@@ -57,7 +57,7 @@ OPS <- c("02_Infrastructure/reinforcement/rf_cell_engine.R", "02_Infrastructure/
          "02_Infrastructure/contracts/backtest_result_contract.R", "02_Infrastructure/contracts/save_bt_result.R", "02_Infrastructure/contracts/essence_score.R",
          "02_Infrastructure/contracts/tilt_attribution_config.json", "02_Infrastructure/contracts/rolling_grade.R", "06_Registry/rolling_grade.json",
          "02_Infrastructure/factor_db/factor_z_standard.R", "06_Registry/grade_v3.json")
-EVALF <- c("evaluate.R", "evaluate_fixture.R", "precheck.R", "measure.sh", "fingerprint.sh", "round_rules.R")
+EVALF <- c("evaluate.R", "evaluate_fixture.R", "precheck.R", "measure.sh", "measure_now.sh", "fingerprint.sh", "round_rules.R")
 PIN_CATS <- "lean:entropy"                                                       # E3 RX0 비중(엔진 정의)
 .ops_pins <- function() {
   wc <- fromJSON(file.path(ROOT, "06_Registry/weight_catalog.json"), simplifyVector = FALSE)$entries
@@ -217,7 +217,7 @@ if (!file.exists(BCP)) file.copy(file.path(ROOT, "06_Registry/behavior_card.json
 FS <- p2r03_final_selection_rule(ROOT, BCP)
 ch <- function(item, change, reason) list(item = item, change = change, reason = reason)
 pre <- list(
-  schema = "rx_prereg_v1", program = PROGRAM, round_id = ROUND, status = "draft", draft_version = 1L,
+  schema = "rx_prereg_v1", program = PROGRAM, round_id = ROUND, status = "draft", draft_version = 2L,
   drafted_at = format(Sys.time(), "%Y-%m-%dT%H:%M:%S%z"),
   judgments = list(round_selection = "J-20261017-007", candidates = "J-20261017-009", design = "J-20261017-010", triage = "J-20261017-008",
                    ledger = "06_Registry/q_judgment_ledger.json",
@@ -231,7 +231,7 @@ pre <- list(
     list(what = "철학 Superfan P2(R-20261017-004)는 P3R03_E3_HRP eval.json 시험 창 · 전기간 블록을, 판단 Superfan T1(R-20261017-005)은 등록부 P2R01 블록의 전기간 등급 · S · 시험 창 꼬리표를 열람 — 근거로 쓰지 않음(각 리뷰 파일 머리 선언)", when = "2026-10-17", who = "Superfan"),
     list(what = "철학 Superfan P1(R-20261017-006)은 results/<칸>/eval.json · full/ · authoritative_remeasure.json · 시험 창 차트를 열지 않았고 DIST-GEN 본문 · 커밋 문구의 전기간 수치는 봤으나 근거로 쓰지 않음(리뷰 파일 선언) · 근거로 쓴 β 수치 = P3R03 RX0 보는 창 패킷(구 판본)", when = "2026-10-17", who = "Superfan"),
     list(assessment = paste0("Q 는 시험 창 수치를 본 상태다(τ_D 노출). 선택 · 판정 규칙은 보는 창(≤ 2022-12-31) 지표로만 쓰고 시험 창은 사람 쪽 보고 전용이다. ",
-                             "장치 6종은 원리(조건부 · 횡단면 · 다변량 상태 · 분포 표적 · 추세 · 낙폭)와 P2R02 기록 · 전액 현금 결함 발견으로 골랐고, 시험 창 성과로 고르지 않았다."))),
+                             "장치 7종은 원리(조건부 · 횡단면 · 다변량 상태 · 분포 표적 · 추세 · 낙폭 · 재진입)와 P2R02 기록 · 전액 현금 결함 발견으로 골랐고, 시험 창 성과로 고르지 않았다."))),
   purpose = paste0("엔진 자체 구성 위 조건부 시변 노출 층이 같은 β 정적 현금 사본보다 깊은 위기 · 빠른 급락에서 덜 빠지는가(헌장 빈칸 6 · 8) — ",
                    "하락장 β < 상승장 β · 강세 구간 과반 80% 이상 참여 · 엔진 알파 비열등 · S · 복리 경로 비악화를 지키면서. 등록부 P2_DEFENSE · 병목 = 급락기 낙폭(엔진 = 시장 동행)"),
   conclusion_scope = c(   # 철학 P1 C-20261017-046 여섯 줄(+ 기록 정정 1줄)
@@ -294,12 +294,12 @@ pre <- list(
     note = "판정 대상은 칸마다 그 칸 보는 창 패킷의 위기(실효 시작이 정하는 창)이고 빠름 분류 · 위기 안 월말 수 · 빠른 구간은 같은 칸 산출물의 벤치 일수익으로 다시 계산한다(rules.fast · p2_fast_crash_keys)"),
   rules = list(
     tested = paste0("장치(또는 lag-1 판) × 엔진 판정은 다음을 모두 만족할 때만 — 아니면 미시험(반증 아님): ① 변형 · RX0 둘 다 평가됨(측정 ok ∧ 축 감사 ok) ",
-                    "② 오버레이 집행 증거 — 변형 셀 로그에 '[rf_cell_engine] overlay <kind> | 축 …' 줄 · lag-1 판은 'overlay_shift=1 적용' 줄 있음 · 장치 칸은 그 줄 없음 ",
+                    "② 오버레이 집행 증거 — 변형 셀 로그에 '[rf_cell_engine] overlay <kind> | 축 …' 줄(그 kind = 장치의 kind) · lag-1 판은 'overlay_shift=1 적용' 줄 있음 · 장치 칸은 그 줄 없음 ",
                     "③ 실효 시작 status = ok(두 칸) ④ 같은 선정 집합 — 보는 창 RX0 보유일마다 변형 보유 ⊆ RX0 보유(위반 0 · 변형 보유 결측 0) ⑤ 공통 창 사본 · 보는 창 패킷이 만들어짐 ",
                     "⑥ 위기 짝 — 두 칸의 위기가 모두 짝지어짐(짝 없는 위기 0) ∧ ① 의 짝 ≥ 2 ∧ ② 의 깊은 위기 짝 ≥ 2 ⑦ 판정 입력(①②⑤⑥⑨⑫⑬ · 알파 · 엔진 알파)이 모두 유한. ",
                     "측정 연기(워커 ok=FALSE · deferred)는 판정 전 같은 사양 재측정(rules.remeasure)"),
-    remeasure = "인프라 실패(측정 결과 ok ≠ true) 칸은 measure.sh 가 같은 사양으로 1회 기계 재측정(RX0 먼저 단독 → 12칸) · 재측정 전 그 칸의 옛 칸 평가 캐시 · 지문 삭제 · 평가는 칸 평가 캐시의 산출물 = 현 측정 산출물을 단정",
-    vintage_group = paste0("같은 엔진의 13칸(RX0 + 장치 6 + lag-1 6)은 함께 잰다(measure.sh — E2 묶음 → E3 묶음) · 칸마다 측정 시작 · 종료 데이터 지문(fingerprint.sh equality) — ",
+    remeasure = "인프라 실패(측정 결과 ok ≠ true) 칸은 measure.sh 가 같은 사양으로 1회 기계 재측정(RX0 먼저 단독 → 14칸) · 재측정 전 그 칸의 옛 칸 평가 캐시 · 지문 삭제 · 평가는 칸 평가 캐시의 산출물 = 현 측정 산출물을 단정",
+    vintage_group = paste0("같은 엔진의 15칸(RX0 + 장치 7 + lag-1 7)은 함께 잰다(measure.sh — E2 묶음 → E3 묶음) · 칸마다 측정 시작 · 종료 데이터 지문(fingerprint.sh equality) — ",
                            "묶음 안 지문이 모두 같아야 판정 · 다르면 measure.sh 가 배리어 대기 뒤 그 묶음을 1회 재측정 · 그래도 다르면 evaluate.R 이 평가 전체를 멈춘다. ",
                            "평가 시점 지문을 함께 기록한다(이름 없는 문자열 비교)"),
     common_window = "변형과 RX0 의 실효 시작이 같으면 원 산출 · 다르면 공통 창 사본(늦게 시작한 칸의 첫 기간수익일 · 4파일 절단 · NAV · 벤치 재기준)에 같은 계약 적용 · 실패 = 미시험",
@@ -309,7 +309,8 @@ pre <- list(
                       "② 깊은 위기 과반 — 짝 위기 중 벤치 낙폭(bm_dd) 크기 ≥ 그 집합 중앙값인 위기에서 ① 과 같은 비율 ",
                       "③ β 짝 — k = 변형 β / RX0 β(behavior.stats.beta) · k < 1 이면 RX0 기간수익 · NAV · 보유를 k 배 노출로 낮춘 사본(잔여 현금)에 같은 계약(dp_build) · k ≥ 1 이면 사본 = RX0 · ",
                       "깊은 위기(②의 키)에서 dd_capture < 사본 − tol 인 위기 비율(짝 ≥ 2 · 아니면 'β 대조 미측정' = 통과 불가 · 사본 · 패킷 실패 · k 비유한도 같다) ",
-                      "④ 빠른 급락 — 위기 [고점, 저점] 안에서 벤치가 fast_window_days 거래일 창 안에 fast_drop 이상 하락한 위기(같은 칸 RX0 산출물 05_benchmark_returns 일수익 누적곱) 에서 ",
+                      "④ 빠른 급락 — 위기 [고점, 저점] 안의 어떤 날 a 부터 fast_window_days 거래일 안(a … min(저점, a + 21))의 벤치 수준 최저 / a 수준 − 1 ≤ fast_drop 인 위기 ",
+                      "(벤치 수준 = 같은 칸 RX0 산출물 05_benchmark_returns 일수익 누적곱 · 부동소수 여유 1e-12 · 21거래일 창 수익 = Mishkin & White 1개월 창의 일간 조작화) 에서 ",
                       "dd_capture < ③ 의 사본 − tol 인 위기 비율(짝 ≥ 2 · 아니면 '빠른 급락 미측정' = 통과 불가)"),
     strength = paste0("⑤ β 비대칭(철학 P1 C-044) — 장치 검증(통과 조건) = 변형 하락/상승 β 비(behavior.stats.beta_down / beta_up) < 같은 엔진 RX0 의 비 ",
                       "(비는 정적 축소에 불변 — 변화량만이 시변 층이 만든 비대칭 · 상승 β ≤ 0 · 비유한 = 판정 입력 NA = 미시험) · ",
@@ -326,17 +327,19 @@ pre <- list(
                               "진단(통과 조건 아님) = lag-1 판을 같은 함수로 판정해 장치 칸이 넘은 ③ · ④ 를 lag-1 판도 넘으면 'lag-1 유지' · 아니면 '지연 민감(lag-1 에서 ③ · ④ 붕괴)' 꼬리표 — ",
                               "월간 층은 한 달 안에 시작하는 급락에 원리상 늦고 lag-1 은 그 늦음을 한 달 더 키우므로(T1 C-039) 정당한 빠른 방어를 구조적으로 기각하지 않기 위해서다(pit.md C5 — lag-1 = 의심 신호 · strict A/B = 판정). ",
                               "철학 P1 C-052 유지 조건: (a) '지연 민감' 꼬리표를 결론 · 보고 · P4 후보 묶음 · P3 의견서에 싣는다 ",
-                              "(b) 장치 칸이 느린 약세(빠름으로 분류되지 않은 위기)에서 β 짝 과반(짝 ≥ 2)을 넘었는데 lag-1 판이 못 넘으면 '누출 조사' — 설명될 때까지 최종 선택 보류(p2_lag_hold · lag-1 판 짝 < 2 = 보류 아님) ",
+                              "(b) 장치 칸이 느린 약세(빠름으로 분류되지 않은 위기)에서 β 짝 과반(짝 ≥ 2)을 넘었는데 lag-1 판이 못 넘으면 '누출 조사' — 설명될 때까지 최종 선택 보류(p2_lag_hold · lag-1 판 짝 < 2 = 보류 아님) · ",
+                              "lag-1 판이 미시험이면(측정 실패 · 집행 증거 불일치 · 입력 NA) 장치 칸이 판정됐어도 보류(lag-1 스트레스 없이 고르지 않는다 · pit.md C5 의무 2 · 교차 점검 필수 3) ",
                               "(c) 셀 로그 집행 줄은 집행의 증거이고, PIT 의 증거는 엔진 assert_overlay_pit(가용일 · P0-09 마스크 · 양성 대조 test_rf_overlay_pit_mask.R)다"),
     concentration = "⑧ 깊은 위기 중 한 종목 최악 기여(exposure.top_losers contrib)가 single_name_loss_floor 보다 나쁜 위기가 하나라도 있으면 '집중 손실' · 표 결손 · 깊은 위기 누락 = '집중 손실 미측정' — 둘 다 검증 장치에서 제외(통과여도) · 유효 종목 수 · 최대 비중 기록",
-    recovery = "⑪ 두 칸 모두의 위기에서 변형 회복 관측(st_recovery_obs · 미회복이면 관측 하한)이 RX0 보다 긴 위기 비율 > majority_share 면 '회복 지연' 꼬리표(판정 보조 · 통과 조건 아님)",
+    recovery = "⑪ 두 칸 모두의 위기에서 변형 회복 관측(st_recovery_obs · 미회복(검열)이면 관측 하한 = 무한대로 비교 · 둘 다 미회복 = 제외)이 RX0 보다 긴 위기 비율 > majority_share 면 '회복 지연' 꼬리표(판정 보조 · 통과 조건 아님)",
     pass = "장치 칸 통과 = ① ∧ ② ∧ ③ ∧ ④ ∧ ⑤ ∧ ⑥ ∧ ⑦ ∧ ⑨ ∧ ⑩(구성 증거) ∧ ⑫ ∧ ⑬ · 장치 검증 = 두 엔진 통과 ∧ ⑧ 제외 아님",
-    selection = "검증 장치(두 엔진 통과 ∧ 집중 제외 아님) 중 lag-1 조건 (b) 보류가 아닌 것에서 보는 창 S 의 RX0 대비 증분(두 엔진 평균)이 가장 큰 1개 · 동률(차 < 1e-12)이면 ③ · ④ 비율 합(두 엔진 평균) · 검증 0 = 선택 없음 · 꼬리표: lag-1 · 회복 · ⑤ 수준 · 귀속(MC8 라벨 + β 짝 + size_exposure_path)",
-    round_verdict = "supported = 검증 장치 ≥ 1 · partial = 한 엔진 통과 또는 두 엔진 통과지만 집중 제외 · falsified = 판정된 장치 칸 중 통과 0 · untested = 판정된 장치 칸 0 — '판정(판정 칸/전체 장치 칸 12)'으로 적는다",
+    selection = "검증 장치(두 엔진 통과 ∧ 집중 제외 아님) 중 lag-1 보류(조건 (b) 느린 약세 붕괴 · lag-1 판 미시험 — 어느 엔진이든)가 아닌 것에서 보는 창 S 의 RX0 대비 증분(두 엔진 평균)이 가장 큰 1개 · 동률(차 < 1e-12)이면 ③ · ④ 비율 합(두 엔진 평균) · 검증 0 = 선택 없음 · 꼬리표: lag-1 · 회복 · ⑤ 수준 · 귀속(MC8 라벨 + β 짝 + size_exposure_path)",
+    round_verdict = "supported = 검증 장치 ≥ 1 · partial = 한 엔진 통과 또는 두 엔진 통과지만 집중 제외 · falsified = 판정된 장치 칸 중 통과 0 · untested = 판정된 장치 칸 0 — '판정(판정 칸/전체 장치 칸 14)'으로 적는다",
     failure_semantics = paste0("사전 고정: 평가 상태 · 오버레이 집행 증거 · 실효 시작 · 같은 선정 집합 · 공통 창 · 패킷 · 위기 짝 · 판정 입력 실패 = 그 칸 미시험(반증 아님) / ",
+                               "칸 평가 오류(진단 패킷 · 행동 카드 · 축 감사의 stop) = 그 칸 status eval_error → 짝 판정 미시험 · 평가는 계속(p2_eval_cell · 교차 점검 필수 2) / ",
                                "그 밖의 예기치 않은 평가 오류 = 그 칸 미시험(오류 문구 기록 · 라운드 평가는 계속 — p2_eval_pair_safe) / β 사본 실패 · ③ 짝 < 2 = 'β 대조 미측정'(통과 불가) / ",
                                "④ 짝 < 2 = '빠른 급락 미측정'(통과 불가) / 집중 손실 표 결손 = '집중 손실 미측정'(제외) / 핀 · 행동 카드 사본 · 지문 · 칸 평가 캐시 불일치 = 평가 중단"),
-    files = "칸 평가 = results/<code>/visible/{diagnosis_packet.json, eval_visible.json} · results/<code>/full/{behavior_card.json, eval_full.json, NO_VISIBLE_REVIEW.txt} · 종합 = results/evaluation_visible.json(보는 창 리뷰어 열람 가능) · results/evaluation_full.json(사람 쪽 전용 · C-031)",
+    files = "칸 평가 = results/<code>/visible/{diagnosis_packet.json, eval_visible.json} · results/<code>/full/{behavior_card.json, eval_full.json, NO_VISIBLE_REVIEW.txt} · 종합 = results/evaluation_visible.json(보는 창 리뷰어 열람 가능) · results/evaluation_full.json(사람 쪽 전용 · C-031) · 셀 로그 집행 줄의 노출 수치(평균 · 최소 · 완전현금 · 현금 집행 수)는 전 구간 값이라 보는 창 파일엔 집행 증거(found · shift1 · kind · axis)만 싣고 수치는 사람 쪽 파일로(교차 점검 필수 1 · 보는 창 노출 = record$cash_timing)",
     test_window = "시험 창(2023-01~) 증분 알파 · 위기 포착 · 성과는 사람 쪽 보고만(evaluation_full.json · 선택 · 판정 입력 아님)",
     record = paste0("판정 입력 아님: 오버레이 노출(평균 · 최소 · 완전현금 · 현금 집행 수) · 회전 · 비용 · 평균 노출 · 위기별 표(①~④) · 강세 국면별 표 · 사이클 표 · 롤링 · ",
                     "귀속(MC8) · 집중 · 알파 표준오차 · 여유/표준오차 · 엔진 알파(자격) · 지문 · (철학 P1) Henriksson-Merton 타이밍 회귀(변형 − RX0 월 수익 ~ 벤치 + max(0, −벤치) · ",
@@ -365,10 +368,10 @@ pre <- list(
   philosophy_p1 = .p1_check(),                                                  # 등록 때 다시 확인(--register)
   tests = TESTS,
   precheck = "측정 직전 precheck.R 가 evaluate.R 의 p2_pin_mismatches 로 사양 · 운영 경로 · 카탈로그(비중 1 · 오버레이 7) · 패키지 · R 판 · 평가 경로 · 행동 카드 설정 사본을 다시 대조 — 다르면 측정하지 않는다 · 데이터 지문 기록",
-  data_note = "데이터 판본: RAWDATA · 벤치 퀀티 단일(225f909f2 · 25fa73831) · 2024-12-30 복원(48b3d3bfd) · 측정 축 동전주 바닥(all_hyg_px1000_2000_v1) · 일요일 00:03 Qvest_DailyRefresh 뒤 같은 배치로 잰다(measure.sh 대기) · 지문에 남긴다",
+  data_note = "데이터 판본: RAWDATA · 벤치 퀀티 단일(225f909f2 · 25fa73831) · 2024-12-30 복원(48b3d3bfd) · 측정 축 동전주 바닥(all_hyg_px1000_2000_v1) · 도훈 지시(10-17 20:05 '지금 바로 전략 실측해')로 현 배치(RAWDATA · 벤치 = 10-16 장 마감까지)에서 즉시 잰다(measure.sh --now — 갱신 완료 대기 생략 · 배리어 · precheck · 칸별 지문은 그대로 · 00:03 갱신과 겹쳐 지문이 갈리면 그 묶음 배리어 뒤 1회 재측정) · 지문에 남긴다",
   design_inputs = "DESIGN.md v3 · 카탈로그 arm 정의 · 문헌 착상 7항(BASIS) · 측정 · 평가 계약 코드 · P3R03 사전등록 형식 · 판단 원장 J-20261017-007 · 009 · 010 · T1 리뷰 · 철학 P1 — 시험 창 성과 미사용",
   budget = list(variants = N_ROUND, reference_remeasure = length(ENGINES), diagnostic_lag1 = N_ROUND, rounds = 1L,
-                note = "변형 12 만 시행 수 가산(계보 2002.06975) · RX0 2 · lag-1 12 = 무가산 · DSR 표본 아님(T1 C-038)"),
+                note = sprintf("변형 %d 만 시행 수 가산(계보 2002.06975) · RX0 %d · lag-1 %d = 무가산 · DSR 표본 아님(T1 C-038)", N_ROUND, length(ENGINES), N_ROUND)),
   changes_after_superfan = list(
     ch("T1 C-033 후보 근거", "보는 창 · 현 축 근거로 후보표 재작성 · 추세 현금 · 낙폭 브레이크 재시험(전액 현금 결함 발견) · C4/C5/C6 저변동 = 범위 밖 사유 명기 · DIST 열람 exposures · 후보 J 별도(J-009)",
        "DIST-GEN-155 · 027 은 구 축 · 전기간 · 수익 t 지표였고 P2R02 C4 · C6 제외 사유가 비었다"),
@@ -383,7 +386,23 @@ pre <- list(
        "현금 타이밍(정밀도 · 재현율 · 반등 노출) · 대조 읽기 5쌍 · D4~D7 '원문 구현 아님' · 검증 0 남길 것 · lag-1 조건 (a)(b)(c) — (b) 는 최종 선택 보류 규칙(p2_lag_hold)"), "수용"),
     ch("철학 P1 C-050 P2R02 표기", "P2R02 의 C6 '검증' = 전액 현금 결함 위 측정이라 무효 · C4 '검증' = 빈칸 8(β 짝) 이전 판정 — 이 사전등록 candidates.excluded 와 라운드 보고 · 등록부 메모에 적는다", "수용"),
     ch("철학 P1 C-051 헌장 빈칸 5건", "결정 기록부 상신(타이밍 방어의 자리 · 빈칸 6 과 결정 주기 · 집행 지연 강건성 · 현금 층 재진입 · 세는 단위와 문턱) — 이 라운드 판정은 기본값(현 헌장)으로", "도훈 교정 필요 — 결과 전에 상신")),
-  changes_after_review = list())
+  changes_after_review = list(   # 격리 교차 점검 v1(prereg_draft_review_v1.md · revise · 필수 4 · 권고 6 · 선택 4 — 도훈 '지금 바로 실측' 지시로 점검 범위를 줄여 마무리)
+    ch("필수 1 보는 창 파일의 전 구간 노출 수치", "p2_visible_only 가 집행 줄을 found · shift1 · kind · axis 로 줄이고 수치는 evaluation_full.json(overlay_log_full_period)으로 · rules.files 문장",
+       "셀 로그 집행 줄의 평균 · 최소 · 완전현금 · 현금 집행 수는 2026 까지 전 구간 값이라 보는 창 리뷰어가 시험 창 현금 달을 읽을 수 있었다(τ_D · C-031)"),
+    ch("필수 2 칸 평가 오류의 전체 정지", "p2_eval_cell = tryCatch 안전 호출(실패 칸 status eval_error → 짝 판정 미시험) · rules.failure_semantics 문장",
+       "진단 패킷 · 행동 카드 stop 하나가 30칸 판정 전체를 멈출 수 있었다 · 표현 하한 달(Σw ≈ 1e-9)은 리허설 밖"),
+    ch("필수 3 lag-1 미시험 장치의 선택", "p2_lag_hold — lag-1 판 미시험이면 보류 · 꼬리표 'lag-1 판 미시험 — 최종 선택 보류' · rules.pit_construction (b) · selection 문장 · 픽스처 26",
+       "lag-1 판이 측정 실패 · 집행 줄 불일치로 미시험이면 보류가 FALSE 라 lag-1 스트레스 없이 고를 수 있었다(pit.md C5 의무 2 우회)"),
+    ch("필수 4 칸 수 문장", "rules.vintage_group 15칸 · remeasure 14칸 · round_verdict 분모 14 · budget 문장 = 계산값 · DESIGN 제외표에서 dd_recovery 제거 · measure.sh 주석", "등록 뒤 문장이 코드와 어긋난다"),
+    ch("권고 1 회복 꼬리표의 미회복 위기", "미회복(검열) = 관측 하한 무한대로 비교 · 둘 다 미회복 = 제외 · rules.recovery 문장 · 픽스처 12b", "NA 로 빠져 규칙의 '관측 하한'과 달랐다"),
+    ch("권고 2 평가 단계 배리어", "measure.sh 가 셀 평가 전에 리프레시 배리어를 기다린다(평가가 원천 RAWDATA 를 읽는다 · 2시간 넘게 잡히면 평가 안 함 → 센티널) · 평가 시점 지문은 기록(비교는 측정 묶음 지문 = 판정 기준)",
+       "오늘 즉시 측정은 00:03 전에 끝날 공산이 크지만 겹치면 평가가 바뀌는 원천을 읽는다"),
+    ch("권고 3 집행 줄 kind 대조", "p2_eval_pair 가 집행 줄의 kind = 장치 kind 를 단정(불일치 = 미시험) · rules.tested ② 문장", "엉뚱한 층이 집행돼도 통과했다"),
+    ch("권고 4 ⑤ 변화량 여유 — 불채택", "Δ < 0 엄격 그대로", "철학 P1 C-044 · C-051 — Δ 의 실질 문턱은 새 숫자로 만들지 않고 헌장 빈칸(CHARTER-GAPS-3 항목 5)으로 상신했다 · 결과 전 임의 문턱은 사후 자유도"),
+    ch("권고 5 리허설 밖 경로", "lag-1 미시험 → 보류는 픽스처 26 · 실제 lag-1 로그 형식은 엔진 문자열 그대로 픽스처 7 · 1e-9 달은 실제 산출물이 없어(수리 뒤 첫 측정이 이 라운드) 필수 2 안전 호출로 그 칸만 미시험이 되게 막았다",
+       "1e-9 달 실산출 리허설은 D5 류 셀을 등록 전에 재는 것이라 설계 오염 — 하지 않는다"),
+    ch("권고 6 엔진 스칼라 분기 내부 결합", "기록만(엔진 · 핀 밖) — .M(BM 범위) 밖 신호일 보유는 merge 에서 먼저 빠진다 · 이 라운드 기간(2000~)은 BM 범위 안", "엔진 수리는 다음 하네스 묶음"),
+    ch("선택 1 · 2 · 3 · 4", "p2_select 동률 = 최대와의 차 < 1e-12 인 무리 안에서 ③④ 비율 합 · 빠른 급락 분류 오류를 rules.fast.classify_error 로 기록 · precheck 에 데이터 상태(벤치 · RAWDATA 마지막 날) 기록 · ④ 문장에 21거래일 창 수익 명시", "수용")))
 writeLines(toJSON(pre, auto_unbox = TRUE, pretty = TRUE, null = "null", digits = NA), DR, useBytes = TRUE)
 cat(sprintf("[P2R03] 초안 v%d %s (md5 %s) · 칸 %d(장치 %d + 기준 %d + lag-1 %d) · 검사 %s · 시행 회계 E2 %d · E3 %d\n", pre$draft_version, DR, rk_md5(DR),
             length(cells), N_ROUND, length(ENGINES), N_ROUND,

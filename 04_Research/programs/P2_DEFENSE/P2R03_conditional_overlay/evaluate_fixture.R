@@ -127,13 +127,23 @@ rt <- p2_recovery_tag(rc_m, rc_r, 0.5); rt0 <- p2_recovery_tag(J(CR3), rc_r, 0.5
 rt1 <- p2_recovery_tag(J(copy(CR3)[, st_recovery_obs := c(1, 2, 3)]), J(copy(CR3)[, st_recovery_obs := c(1, 2, 3)]), 0.5)
 if (identical(rt$n_longer, 2L) && isTRUE(rt$tag) && identical(rt0$status, "unmeasured") && identical(rt1$status, "ok") && identical(rt1$tag, FALSE))
   ok("12 회복 — 더 긴 위기 2/3 > 0.5 → '회복 지연' · 관측 열 없음 = 미측정 · 미회복 열 없어도 동작") else ng("12")
+## 12b) 미회복(검열 · 관측 NA) = 관측 하한 무한대 — 변형만 미회복이면 더 긴 위기 · 둘 다 미회복이면 제외(격리 교차 점검 권고 1)
+rc_m2 <- J(copy(CR3)[, `:=`(st_recovery_obs = c(NA, 100, NA), st_recovery_censored = c(TRUE, FALSE, TRUE))])
+rc_r2 <- J(copy(CR3)[, `:=`(st_recovery_obs = c(300, 120, NA), st_recovery_censored = c(FALSE, FALSE, TRUE))])
+rt2 <- p2_recovery_tag(rc_m2, rc_r2, 0.5)
+if (identical(rt2$n_pair, 2L) && identical(rt2$n_longer, 1L) && identical(rt2$n_censored_variant, 1L) && identical(rt2$tag, FALSE))
+  ok("12b 변형만 미회복(2008) = 더 김 · 둘 다 미회복(2020) = 제외 · 짝 2 · 더 긴 1/2 = 과반 아님") else ng("12b", paste(rt2$n_pair, rt2$n_longer))
 
 ## 13) lag-1 꼬리표
 D34 <- list(tested = TRUE, rules = list(beta_deep = list(ok = TRUE), fast = list(ok = TRUE)))
 L34 <- D34; L3 <- list(tested = TRUE, rules = list(beta_deep = list(ok = TRUE), fast = list(ok = FALSE))); D0 <- list(tested = TRUE, rules = list(beta_deep = list(ok = FALSE), fast = list(ok = FALSE)))
 if (identical(p2_lag_tag(D34, L34), "lag-1 유지") && identical(p2_lag_tag(D34, L3), "지연 민감(lag-1 에서 ④ 붕괴)") &&
-    identical(p2_lag_tag(list(tested = FALSE), L34), "lag-1 미시험") && grepl("비교 대상 없음", p2_lag_tag(D0, L34)))
-  ok("13 lag-1 — 유지 · 지연 민감(④) · 미시험 · 장치가 ③④ 못 넘으면 비교 대상 없음") else ng("13")
+    grepl("장치 칸 미시험", p2_lag_tag(list(tested = FALSE), L34)) && grepl("비교 대상 없음", p2_lag_tag(D0, L34)))
+  ok("13 lag-1 — 유지 · 지연 민감(④) · 장치 미시험 · 장치가 ③④ 못 넘으면 비교 대상 없음") else ng("13")
+## 26) lag-1 판 미시험 = 선택 보류(격리 교차 점검 필수 3) · 장치 미시험이면 보류 아님(선택 대상이 아니다)
+LU <- list(tested = FALSE, why = "평가 상태 measure_failed · evaluated")
+if (isTRUE(p2_lag_hold(D34, LU)) && grepl("선택 보류", p2_lag_tag(D34, LU)) && !isTRUE(p2_lag_hold(list(tested = FALSE), LU)))
+  ok("26 lag-1 판 미시험 → 보류 · 꼬리표 '선택 보류' · 장치 미시험 → 보류 아님") else ng("26")
 
 ## 14) 라운드 판정 — 장치 칸만 · 판정 칸 수 표기
 T1 <- data.table(engine = rep(c("E2", "E3"), each = 2), device = rep(c("D1", "D5"), 2), lag = FALSE, tested = TRUE, pass = c(TRUE, FALSE, TRUE, TRUE), excluded = FALSE)
@@ -184,6 +194,10 @@ if (!isTRUE(u1$tested) && grepl("평가 상태", u1$why) && !isTRUE(u2$tested) &
 ## 19) 보는 창 파일에서 시험 창 제외
 vx <- p2_visible_only(list(alpha_test_window = list(t = 1), tbl = data.table(a = 1), rules = list(x = 1)))
 if (is.null(vx$alpha_test_window) && is.null(vx$tbl) && identical(vx$rules$x, 1)) ok("19 p2_visible_only — 시험 창 증분 알파 · 표 행 제거 · 판정 유지") else ng("19")
+## 19b) 보는 창 파일의 집행 줄 = 집행 증거만(전 구간 노출 수치 제거 · 격리 교차 점검 필수 1)
+vo <- p2_visible_only(list(overlay = c(o1, list(kind_expected = "turbulence", kind_ok = TRUE)), rules = list(construction = list(overlay = o1, ok = TRUE))))
+if (setequal(names(vo$overlay), c("found", "shift1", "kind", "axis", "kind_expected", "kind_ok")) && is.null(vo$overlay$full_cash_months) && is.null(vo$overlay$cash_exec) &&
+    is.null(vo$rules$construction$overlay$expo_mean) && isTRUE(vo$rules$construction$ok)) ok("19b 집행 줄 = found · shift1 · kind · axis(+ 기대 kind)만 · 전 구간 노출 · 완전현금 · 현금 집행 수 제거") else ng("19b", paste(names(vo$overlay), collapse = ","))
 
 ## 21) β 비 변화량(⑤ 장치 검증 · 철학 P1 C-044) — 정적 축소(k 배)는 비를 바꾸지 않는다 · 비가 낮아질 때만 참 · 상승 β ≤ 0 = NA
 d0 <- p2_beta_ratio_delta(1.31, 0.99, 1.31, 0.99); dk <- p2_beta_ratio_delta(0.7 * 1.31, 0.7 * 0.99, 1.31, 0.99); dg <- p2_beta_ratio_delta(0.9, 0.95, 1.31, 0.99)

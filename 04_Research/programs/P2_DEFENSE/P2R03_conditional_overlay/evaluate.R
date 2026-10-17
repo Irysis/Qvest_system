@@ -1,4 +1,4 @@
-## P2R03 평가 — 조건부 · 시변 노출 층 6종 × 엔진 2(E2 DNN 원형 EW · E3 B6_36 엔트로피 비중) vs 같은 배치 엔진 자체 구성 RX0 →
+## P2R03 평가 — 조건부 · 시변 노출 층 7종 × 엔진 2(E2 DNN 원형 EW · E3 B6_36 엔트로피 비중) vs 같은 배치 엔진 자체 구성 RX0 →
 ##   사전등록 규칙(stage_artifacts prereg.json rules)을 기계 적용(R2). 수치는 전부 R 계약 산출(dp_build 보는 창 패킷 · mc_card · rk_S ·
 ##   rk_pair_alpha · beta_controlled_alpha — 손계산 없음 · AX-008). 이 파일이 더하는 것은 규칙 적용 · 공통 창 사본 · β 짝 사본 · 빠른 급락
 ##   분류(같은 칸 산출물의 벤치 일수익) · 기록 파싱뿐.
@@ -234,10 +234,13 @@ p2_recovery_tag <- function(cr_m, cr_r, maj) {
   if (!"st_recovery_censored" %in% names(cm)) cm[, st_recovery_censored := NA]
   if (!"st_recovery_censored" %in% names(cr)) cr[, st_recovery_censored := NA]
   J <- merge(cm[, .(k, m = as.numeric(st_recovery_obs), mc = as.logical(st_recovery_censored))],
-             cr[, .(k, r = as.numeric(st_recovery_obs), rc = as.logical(st_recovery_censored))], by = "k")[is.finite(m) & is.finite(r)]
+             cr[, .(k, r = as.numeric(st_recovery_obs), rc = as.logical(st_recovery_censored))], by = "k")
+  ## 미회복(검열) 위기(격리 교차 점검 권고 1) — 관측이 비었어도 '아직 회복 못 함' = 관측 하한 무한대로 비교한다 · 둘 다 미회복 = 비교 불가(제외)
+  J[, `:=`(m = fifelse(!is.finite(m) & mc %in% TRUE, Inf, m), r = fifelse(!is.finite(r) & rc %in% TRUE, Inf, r))]
+  J <- J[!is.na(m) & !is.na(r) & !(is.infinite(m) & is.infinite(r))]
   if (!nrow(J)) return(list(status = "unmeasured", tag = FALSE))
   sh <- mean(J$m > J$r)
-  list(status = "ok", n_pair = nrow(J), n_longer = sum(J$m > J$r), share = sh, tag = sh > maj, per_crisis = J)
+  list(status = "ok", n_pair = nrow(J), n_longer = sum(J$m > J$r), share = sh, tag = sh > maj, n_censored_variant = sum(is.infinite(J$m)), per_crisis = J)
 }
 ## 오버레이 집행 줄(⑩ 구성 증거) — '[rf_cell_engine] overlay <kind> | 축 <스칼라|종목별> | 평균노출 a · 최소 b · 완전현금 c/N개월[ · 횡단면 sd 최대 s]
 ##   [ · 현금 집행(표현 하한) k신호일]' 마지막 줄 + lag 판 'overlay_shift=1 적용' 줄. 현금 집행 꼬리는 b234afb11 이후 판에만 있다(없으면 NA)
@@ -287,14 +290,18 @@ p2_select <- function(xs_by_device, tie = 1e-12) {
     list(device = dv, dS = mean(vapply(xs, function(x) as.numeric(x$non_inferiority$S - x$non_inferiority$S_rx0), numeric(1))),
          r34 = mean(vapply(xs, function(x) as.numeric((x$rules$beta_deep$share %||% NA) + (x$rules$fast$share %||% NA)), numeric(1))))
   })
-  o <- order(-vapply(sc, `[[`, numeric(1), "dS"), -vapply(sc, `[[`, numeric(1), "r34"))
+  ## 동률 = 최대 dS 와의 차가 tie 미만인 장치들(격리 교차 점검 선택 1 — 정확히 같을 때만이 아니라 규칙 문장 '차 < 1e-12') → 그 안에서 r34 큰 순
+  dS <- vapply(sc, `[[`, numeric(1), "dS"); r34 <- vapply(sc, `[[`, numeric(1), "r34")
+  top <- is.finite(dS) & (max(dS, na.rm = TRUE) - dS) < tie
+  o <- order(!top, -ifelse(top, r34, dS), -dS)
   sc <- sc[o]
-  if (length(sc) >= 2L && abs(sc[[1]]$dS - sc[[2]]$dS) < tie) sc[[1]]$tie_break <- "r34"
+  if (sum(top) >= 2L) sc[[1]]$tie_break <- "r34"
   sc
 }
 ## lag-1 진단 꼬리표(⑩ — 통과 조건 아님) — 장치 칸이 ③ · ④ 를 넘었을 때 lag-1 판도 넘으면 'lag-1 유지' · 아니면 '지연 민감(…)'
 p2_lag_tag <- function(d_out, l_out) {
-  if (!isTRUE(d_out$tested) || !isTRUE(l_out$tested)) return("lag-1 미시험")
+  if (!isTRUE(d_out$tested)) return("장치 칸 미시험 — lag-1 비교 없음")
+  if (!isTRUE(l_out$tested)) return(sprintf("lag-1 판 미시험(%s) — 최종 선택 보류(pit.md C5 의무 2 · 격리 교차 점검 필수 3)", l_out$why %||% "?"))
   d3 <- isTRUE(d_out$rules$beta_deep$ok); d4 <- isTRUE(d_out$rules$fast$ok)
   l3 <- isTRUE(l_out$rules$beta_deep$ok); l4 <- isTRUE(l_out$rules$fast$ok)
   hold <- if (p2_lag_hold(d_out, l_out)) " · 느린 약세 개선이 lag-1 에서 붕괴 — 누출 조사 · 최종 선택 보류(철학 P1 C-052 (b))" else ""
@@ -304,7 +311,12 @@ p2_lag_tag <- function(d_out, l_out) {
 }
 ## lag-1 조건 (b)(철학 P1 C-20261017-052) — 장치 칸이 느린 약세(빠름 아닌 위기)에서 β 짝 과반을 넘었는데 lag-1 판이 못 넘으면 누출 조사 대상 →
 ##   설명될 때까지 최종 선택 보류(빠른 급락의 lag-1 붕괴는 월간 층의 정당한 늦음일 수 있으나, 여러 달 이어지는 느린 약세는 한 달 지연으로 무너질 이유가 없다)
-p2_lag_hold <- function(d_out, l_out) isTRUE(d_out$tested) && isTRUE(l_out$tested) && isTRUE(d_out$rules$slow$ok) && identical(l_out$rules$slow$ok, FALSE)
+##   + lag-1 판이 미시험이면(측정 실패 · 집행 증거 불일치 · 입력 NA) 장치 칸이 판정됐어도 lag-1 스트레스 없이 고르지 않는다(보류 · 격리 교차 점검 필수 3)
+p2_lag_hold <- function(d_out, l_out) {
+  if (!isTRUE(d_out$tested)) return(FALSE)
+  if (!isTRUE(l_out$tested)) return(TRUE)
+  isTRUE(d_out$rules$slow$ok) && identical(l_out$rules$slow$ok, FALSE)
+}
 ## 핀 대조 — precheck.R(측정 직전)과 evaluate.R 시작부(샤드 포함)가 같은 함수를 쓴다. 사양 · 운영 경로 · 비중 카탈로그 엔트리 ·
 ##   오버레이 카탈로그 arm · 패키지 · R 판 · 평가 경로 · 행동 카드 설정 사본. 반환 = 불일치 설명(없으면 길이 0)
 p2_pin_mismatches <- function(pre, root) {
@@ -347,7 +359,12 @@ p2_fp_same <- function(a, b) identical(unname(as.character(a)), unname(as.charac
 ##   results/<code>/visible/{diagnosis_packet.json, eval_visible.json}(보는 창 리뷰어 열람 가능) ·
 ##   results/<code>/full/{behavior_card.json, eval_full.json}(사람 쪽 · 열람 금지 표식). 반환 = 둘을 합친 목록(메모리에서만)
 p2_cell_join <- function(v, f) c(v, list(test = f$test, full = f$full))
-p2_eval_cell <- function(root, res_dir, cell, env, tau) {
+## 칸 평가 안전 호출(격리 교차 점검 필수 2) — 진단 패킷 · 행동 카드 · 축 감사의 stop 이 30칸 판정 전체를 멈추지 않게 그 칸만 status = eval_error 로 접는다
+##   (짝 판정은 평가 상태 단정에서 미시험 · 보는 창 파일은 끝에 쓰므로 부분 저장은 캐시가 되지 않는다)
+p2_eval_cell <- function(root, res_dir, cell, env, tau)
+  tryCatch(.p2_eval_cell_core(root, res_dir, cell, env, tau),
+           error = function(e) { cat(sprintf("[평가] %s — 칸 평가 오류: %s\n", cell$code, conditionMessage(e))); list(code = cell$code, status = "eval_error", err = conditionMessage(e)) })
+.p2_eval_cell_core <- function(root, res_dir, cell, env, tau) {
   out_dir <- file.path(res_dir, cell$code)
   fv <- file.path(out_dir, "visible", "eval_visible.json"); ff <- file.path(out_dir, "full", "eval_full.json")
   if (file.exists(fv) && file.exists(ff)) return(p2_cell_join(fromJSON(fv, simplifyVector = FALSE), fromJSON(ff, simplifyVector = FALSE)))
@@ -432,10 +449,14 @@ p2_eval_pair <- function(X, eng, dev, cm, cr, em, er, opts = list()) {
   ## ⑩ 구성 증거 — 오버레이 집행 줄(층 · 축 · 노출 · 현금 집행 수) · lag 판은 'overlay_shift=1 적용' 줄 · 장치 칸은 그 줄이 없어야 한다
   lg <- opts$log %||% file.path(X$res, paste0(cm$code, ".log"))
   L <- if (file.exists(lg)) readLines(lg, warn = FALSE, encoding = "UTF-8") else character(0)
-  ol <- p2_parse_overlay_log(L); out$overlay <- ol
+  ol <- p2_parse_overlay_log(L)
+  ol$kind_expected <- opts$expect_kind %||% (P2R03_DEVICES[[dev]]$kind %||% NA_character_)   # 집행 줄의 층 = 장치의 kind(격리 교차 점검 권고 3)
+  ol$kind_ok <- isTRUE(ol$found) && (is.na(ol$kind_expected) || identical(ol$kind, ol$kind_expected))
+  out$overlay <- ol
   want_shift <- if (!is.null(opts$expect_shift)) isTRUE(opts$expect_shift) else lag
-  if (!isTRUE(ol$found) || !identical(isTRUE(ol$shift1), want_shift))
-    return(.p2_untested(out, sprintf("오버레이 집행 증거 불일치(집행 줄 %s · shift=1 줄 %s · 기대 %s)", isTRUE(ol$found), isTRUE(ol$shift1), want_shift)))
+  if (!isTRUE(ol$found) || !identical(isTRUE(ol$shift1), want_shift) || !isTRUE(ol$kind_ok))
+    return(.p2_untested(out, sprintf("오버레이 집행 증거 불일치(집행 줄 %s · shift=1 줄 %s · 기대 %s · 층 %s/%s)", isTRUE(ol$found), isTRUE(ol$shift1), want_shift,
+                                     ol$kind %||% "-", ol$kind_expected %||% "-")))
   ## 실효 시작
   dm <- X$env$E$ta_resolve_artifact(em$artifacts)$dir; dr <- X$env$E$ta_resolve_artifact(er$artifacts)$dir
   esm <- em$effective_start; esr <- er$effective_start
@@ -533,7 +554,7 @@ p2_eval_pair <- function(X, eng, dev, cm, cr, em, er, opts = list()) {
     beta_deep = list(k = k, k_forced = !is.null(opts$force_k), comparator = if (is.finite(k) && k >= 1) "RX0(k ≥ 1)" else "RX0 × k",
                      n_pair = b3$n_pair, share = b3$share, status = if (!is.null(berr)) "unmeasured" else if (is.na(r3)) "unmeasured(짝 < 2)" else "ok",
                      why = berr, ok = isTRUE(r3), per_crisis = b3$per_crisis),
-    fast      = list(keys = fk$keys, table = fk$table, unclassified = fk$unclassified, n_pair = b4$n_pair, share = b4$share,
+    fast      = list(keys = fk$keys, table = fk$table, unclassified = fk$unclassified, n_pair = b4$n_pair, share = b4$share, classify_error = fk$err %||% NA_character_,
                      status = if (!is.null(berr)) "unmeasured" else if (is.na(r4)) "unmeasured(짝 < 2)" else "ok", ok = isTRUE(r4), per_crisis = b4$per_crisis,
                      record_excluding_no_month_end = list(excluded = fk$no_month_end, n_pair = b4x$n_pair, share = b4x$share)),
     slow      = list(keys = slow_keys, n_pair = bsl$n_pair, share = bsl$share, ok = if (bsl$n_pair >= 2L) isTRUE(bsl$share > MAJ) else NA, per_crisis = bsl$per_crisis,
@@ -602,7 +623,15 @@ p2_eval_pair_safe <- function(X, eng, dev, cm, cr, em, er, opts = list())
            error = function(e) .p2_untested(list(engine = eng, device = dev, cell = cm$code, rx0 = cr$code, lag = isTRUE(cm$lag),
                                                  status = em$status %||% NA, status_rx0 = er$status %||% NA), paste("평가 오류:", conditionMessage(e))))
 ## 보는 창 판정 칸에서 사람 쪽 항목(시험 창 증분 알파)을 뺀다 — evaluation_visible.json 은 이것만 싣는다
-p2_visible_only <- function(x) { x$alpha_test_window <- NULL; x$tbl <- NULL; x }
+##   셀 로그 집행 줄의 노출 수치(평균 · 최소 · 완전현금 · 현금 집행 수 · 횡단면 sd)는 전 구간(시험 창 포함)에서 센 값이라 보는 창 파일에는
+##   집행 증거(found · shift1 · kind · axis)만 남기고 수치는 사람 쪽 파일로 보낸다(격리 교차 점검 필수 1 · C-031) — 보는 창 노출 = record$cash_timing
+P2R03_OVERLAY_VISIBLE_KEYS <- c("found", "shift1", "kind", "axis", "kind_expected", "kind_ok")
+p2_visible_only <- function(x) {
+  x$alpha_test_window <- NULL; x$tbl <- NULL
+  if (!is.null(x$overlay)) x$overlay <- x$overlay[intersect(names(x$overlay), P2R03_OVERLAY_VISIBLE_KEYS)]
+  if (!is.null(x$rules$construction$overlay)) x$rules$construction$overlay <- x$rules$construction$overlay[intersect(names(x$rules$construction$overlay), P2R03_OVERLAY_VISIBLE_KEYS)]
+  x
+}
 
 if (sys.nframe() == 0L) {   # ── 본 실행(스크립트로 불렸을 때만 — 픽스처 · 리허설은 위 함수만 적재) ──
 source("02_Infrastructure/contracts/diagnosis_packet.R")
@@ -687,7 +716,8 @@ VIS <- list(schema = "p2r03_evaluation_visible_v1", evaluated_at = format(Sys.ti
             precheck = list(ok = isTRUE(fromJSON(pc)$ok), at = fromJSON(pc)$at, prereg_md5 = fromJSON(pc)$prereg_md5))
 FULL <- list(schema = "p2r03_evaluation_full_v1", audience = P2R03_FULL_AUDIENCE, evaluated_at = VIS$evaluated_at, prereg_md5 = VIS$prereg_md5,
              cells = lapply(names(EVS), function(cd) list(code = cd, test = EVS[[cd]]$test, full = EVS[[cd]]$full,
-                                                          alpha_test_window = OUT[[cd]]$alpha_test_window %||% NULL)))
+                                                          alpha_test_window = OUT[[cd]]$alpha_test_window %||% NULL,
+                                                          overlay_log_full_period = OUT[[cd]]$overlay %||% NULL)))   # 집행 줄 수치 = 전 구간(필수 1)
 writeLines(toJSON(FULL, auto_unbox = TRUE, pretty = TRUE, null = "null", na = "null", digits = NA), file.path(RES, "evaluation_full.json"), useBytes = TRUE)
 writeLines(toJSON(VIS, auto_unbox = TRUE, pretty = TRUE, null = "null", na = "null", digits = NA), file.path(RES, "evaluation_visible.json"), useBytes = TRUE)
 for (x in OUT) cat(sprintf("[P2R03 평가] %s %s%s — %s%s · 창 %s · ① %s ② %s ③ %s ④ %s ⑤ %s ⑥ %s ⑦ %s ⑨ %s ⑫ %s ⑬ %s · 집중 %s%s\n", x$engine, x$device,

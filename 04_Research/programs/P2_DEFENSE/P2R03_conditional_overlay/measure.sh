@@ -18,6 +18,13 @@ cd $ROOT || exit 2
 export QM_ROOT=C:/Users/99922/OneDrive/Quant_Module_Moltbot
 mkdir -p "$ST" "$ROOT/$RDR/results"
 sentinel() { echo "status=$2 rc=$3 at=$(date +%F' '%T) ${4:-}" > "$ST/$1"; }
+# 병렬 수 — 기본 3(P3R03 와 같다) · '--p=N' 으로 바꾼다(결과 무관 · 같은 PC 에서 충실구현 레인이 돌 때 메모리 여유용 — 10-17 20:10 여유 7.7 GB)
+PAR=3; for a in "$@"; do case "$a" in --p=[1-9]) PAR="${a#--p=}" ;; esac; done
+if [ "${1:-}" = "--now" ]; then
+  # ★즉시 측정(도훈 10-17 20:05 '지금 바로 전략 실측해') — 갱신 완료 줄을 기다리지 않고 현 배치로 잰다. 배리어(갱신이 돌고 있으면 대기) ·
+  #   precheck · 칸별 시작/종료 지문은 그대로 — 측정 중에 00:03 갱신이 데이터를 바꾸면 묶음 지문이 갈려 그 묶음을 배리어 뒤 1회 재측정한다
+  echo "== $(date +%F' '%T) 즉시 측정(--now) — 갱신 완료 대기 생략 · 현 배치 =="
+else
 n0=$(grep -c "=== Daily Refresh v2 Done" "$LOG" 2>/dev/null || true); n0=${n0:-0}
 echo "== $(date +%F' '%T) 데이터 갱신 완료 대기(현재 완료 줄 $n0 · 마감 06:00) =="
 while :; do
@@ -26,6 +33,7 @@ while :; do
   hh=$(date +%H); [ "$hh" -ge 6 ] && [ "$hh" -lt 12 ] && { echo "== $(date +%F' '%T) 마감 06:00 — 현 배치로 진행 =="; break; }
   sleep 120
 done
+fi
 barrier() { bash $ROOT/02_Infrastructure/ops/refresh_barrier.sh wait 7200 60 | sed "s/^/[배리어] /"; return "${PIPESTATUS[0]}"; }
 barrier; brc=$?
 if [ "$brc" = "10" ]; then echo "== $(date +%F' '%T) 배리어 2시간 뒤에도 잡힘 — 측정하지 않는다 =="; sentinel p2r03_measured.done barrier_held 10; exit 4; fi
@@ -48,9 +56,9 @@ VARS="D1 D2 D3 D4 D5 D6 D7 L1 L2 L3 L4 L5 L6 L7"
 group() {   # $1 = 엔진
   echo "== $(date +%F' '%T) 엔진 묶음 $1 — RX0 먼저 단독 =="
   bash -c "mm P2R03_$1_RX0"
-  for v in $VARS; do echo "P2R03_$1_$v"; done | xargs -P 3 -I{} bash -c 'mm {}'
+  for v in $VARS; do echo "P2R03_$1_$v"; done | xargs -P "$PAR" -I{} bash -c 'mm {}'
 }
-same_fp() {   # $1 = 엔진 — 묶음 13칸 시작 · 종료 지문이 모두 같으면 0
+same_fp() {   # $1 = 엔진 — 묶음 15칸 시작 · 종료 지문이 모두 같으면 0
   local f u
   u=$(for c in RX0 $VARS; do for t in fp_start fp_end; do f="$ROOT/$RDR/results/P2R03_$1_$c.$t"; [ -f "$f" ] && tr '\n' '|' < "$f" || echo MISSING; echo; done; done | sort -u | wc -l)
   [ "$u" = "1" ]
@@ -71,6 +79,9 @@ done
 nok=0; for eng in E2 E3; do for c in RX0 $VARS; do okc "P2R03_${eng}_$c" && nok=$((nok+1)); done; done
 echo "== $(date +%F' '%T) 측정 끝 — ok $nok/30 =="
 sentinel p2r03_measured.done measured 0 "ok=$nok/30"
+# 평가 전 배리어(격리 교차 점검 권고 2) — 셀 평가는 원천 RAWDATA 를 읽는다(크기 · 멤버십). 갱신이 돌고 있으면 끝날 때까지 기다리고, 2시간 넘게 잡히면 평가하지 않는다
+barrier; ebrc=$?
+if [ "$ebrc" = "10" ]; then echo "== $(date +%F' '%T) 평가 전 배리어 2시간 뒤에도 잡힘 — 평가하지 않는다 =="; sentinel p2r03_evaluated.done eval_barrier_held 10 "ok=$nok/30"; exit 5; fi
 bash $ROOT/04_Research/programs/_lib/eval_parallel.sh $RDR/evaluate.R auto $RDR/evaluate; erc=$?
 echo "== $(date +%F' '%T) 평가 · 판정 끝(rc=$erc) =="
 sentinel p2r03_evaluated.done "$([ "$erc" = "0" ] && echo evaluated || echo eval_failed)" "$erc" "ok=$nok/30"
