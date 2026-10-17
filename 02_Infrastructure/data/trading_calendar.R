@@ -41,6 +41,8 @@ CALENDAR_CACHE <- file.path(CACHE_DIR, "trading_calendar.parquet")
 #   '평일'로 통과, 06-04~09 누락이 캘린더에서도 누락 → naver/krx 가드 전부 무력화).
 #   benchmark.parquet은 naver_benchmark_update.py chart-API가 '실제 세션 날짜'로만 적재
 #   (2026-06 위기주간 포함 무결 검증, T+30 review DATA_INTEGRITY_001) → 이를 Layer 2로 사용.
+#   ★2026-10-17~ (BENCHMARK-QW-ONLY-20261017) 생산자 = 퀀티 정본 xlsx → build_index_cache.py 단일(격자 보존 · 전진 행만 추가) —
+#     네이버 이어붙이기 퇴역. 정본이 안 들어온 밤은 이 캘린더도 멈추고 benchmark_currency_gate 가 신고한다.
 .extract_bm_dates <- function(start_after = NULL) {
   bm_path <- file.path(CACHE_DIR, "benchmark.parquet")
   if (!file.exists(bm_path)) return(as.Date(character(0)))

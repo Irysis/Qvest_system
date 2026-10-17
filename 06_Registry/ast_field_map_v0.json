@@ -125,11 +125,11 @@
     {
      "group_id": "A4_benchmark_kospi200",
      "domain": "벤치마크 (KOSPI200 = IKS200)",
-     "storage": "C:/Users/99922/OneDrive/Quant_Module_Moltbot/.cache/benchmark.parquet (컬럼 실측: Date:timestamp[ns], BM_Close, BM_Ret). writer 2계: ① build_index_cache.py (03_Universe/Benchmark_price.xlsx에서 IKS200 Code-행 명시 매칭, build_cache.R:33-40 주석 — 구 R 경로의 IKS001 오선택 버그 수리) ② naver_benchmark_update.py::patch_benchmark_parquet() (Naver chart API symbol='KPI200', :77, 일일 patch + sanity 가드 :96-99 recent_max>3000 차단). 접근자 load_rawdata() BM_DT (backtest_harness.R:173)",
+     "storage": "C:/Users/99922/OneDrive/Quant_Module_Moltbot/.cache/benchmark.parquet (컬럼 실측: Date:timestamp[ns], BM_Close, BM_Ret). writer 2계: ① build_index_cache.py (03_Universe/Benchmark_price.xlsx에서 IKS200 Code-행 명시 매칭, build_cache.R:33-40 주석 — 구 R 경로의 IKS001 오선택 버그 수리) ② naver_benchmark_update.py::patch_benchmark_parquet() (Naver chart API symbol='KPI200', :77, 일일 patch + sanity 가드 :96-99 recent_max>3000 차단). 접근자 load_rawdata() BM_DT (backtest_harness.R:173). ★2026-10-17~ (BENCHMARK-QW-ONLY-20261017) writer = ① 단일(퀀티 정본 xlsx · 격자 보존 · 전진 행만) — ② 네이버 이어붙이기 · 검증 퇴역(호출 0)",
      "unit": "daily",
      "universe": "KOSPI200 지수 단일 시계열",
      "reference_ts_semantics": "Date = 거래일, BM_Close = 당일 지수 종가, BM_Ret = pct_change (naver_benchmark_update.py:95). 2026-05-27 도훈 mandate로 label-mislabel 버그(5/27행이 실은 5/26 데이터) 수리 완료 — 현행은 당일 라벨 정합",
-     "availability": "일배치 00:03 KST(daily_refresh.sh) Naver patch — 실측 파일 mtime 2026-07-25 07:13, Date_max 2026-07-24 = T-1 정합. 강제점: availability lag 강제 없음(로더 무필터); 북↔벤치 정렬은 realized_ym 1개월 지연 규약을 소비측이 준수(memory reference-book-benchmark-alignment-realized-ym — lag0 merge = 오정렬)",
+     "availability": "일배치 00:03 KST(daily_refresh.sh) Naver patch(★10-17~ 퀀티 정본 수급 [1pre] 단일 — 미수급 밤은 정지 + 게이트 신고) — 실측 파일 mtime 2026-07-25 07:13, Date_max 2026-07-24 = T-1 정합. 강제점: availability lag 강제 없음(로더 무필터); 북↔벤치 정렬은 realized_ym 1개월 지연 규약을 소비측이 준수(memory reference-book-benchmark-alignment-realized-ym — lag0 merge = 오정렬)",
      "restatement_prone": true,
      "vintage_available": true,
      "ast_leaf_class": "FIELD",

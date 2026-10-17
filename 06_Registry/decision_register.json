@@ -3444,7 +3444,31 @@
       "registered_at": "2026-10-17T15:06:01+0900",
       "recorded_by": "Q(세션 7a34e194)",
       "evidence": "도훈 채팅 2026-10-17 — '이제 퀀티 실행 문제없이 되니까 주가관련 복잡한 규칙들 모두 없애고 Universe update에 있는 파일들 매일 데이터 리프레시할 때 퀀티로 최신화시켜는걸로 Rawdata 관리하자' · 'Consensus_update, Investor_Act_update 이것도 매일해.'"
+    },
+    {
+      "id": "BENCHMARK-QW-ONLY-20261017",
+      "title": "벤치(KOSPI200 지수 · 거래일 캘린더 권위) 원천 = 퀀티 단일 — 밤 [1pre] 네이버 이어붙이기 · 검증 · 아침 6_pre 교차검증 퇴역 · Update_File 목표일 = 벤치 최신일",
+      "status": "resolved",
+      "opened_at": "2026-10-17T16:08:50+0900",
+      "options": [
+        "A 퀀티 단일(정본 미수급 밤 = 벤치 · 캘린더 · Update_File 목표일 정지 + 게이트 축 A(rc=3 포함) · D 신고 · 다음 밤 전 구간 따라잡음)",
+        "B 퀀티 정본 + 네이버 캘린더 이어붙이기 · 트립와이어 검증(구판)"
+      ],
+      "recommendation": "도훈 지시 그대로 A. RAWDATA 퀀티 단일과 짝 — qw_refresh.ps1 Get-Target 이 RAWDATA 최신일이면 네이버 T+0 퇴역 뒤 '이미 받은 날'을 목표로 삼아 새 날짜를 영영 받지 않는 순환이 된다 → 목표일 = 벤치(거래일 캘린더 정본) 최신일로 수리",
+      "default_until_decided": "B(구판)",
+      "blocks": [
+        "item:daily_refresh_benchmark_source"
+      ],
+      "owner": "dohoon",
+      "source": "10-17 RAWDATA 퀀티 단일 전환 뒤 벤치만 네이버 이어붙이기가 남아 있었다(benchmark.parquet 10-06~10-16 8행 BM_Src = naver_kpi200)",
+      "decision": "A — daily_refresh.sh [1pre] ③ 네이버 이어붙이기(--append) · 검증 호출 0 · 정본 수급 rc=3(전제 부재) = _bm_rc=3 → 그날 밤 게이트 축 A 실패 (구판은 네이버가 메워 실패로 세지 않았다). morning_briefing.sh 6_pre 네이버 교차검증 · _BMV_RC 분기 퇴역. qw_refresh.ps1 Get-Target = .cache/benchmark.parquet 최신일(판독 불능이면 구판 RAWDATA 최신일). naver_benchmark_update.py 퇴역 표기 (모듈 시험용 사료 · 복원 = git) · 생산자 문구(BOOK 리밸 사양 · 캘린더 · AST 필드 지도) 정정. 같은 날 이미 퀀티로 10-16 까지 갱신된 정본 xlsx(00:56)로 build_index_cache.py 재생성 → 10-06~10-16 8행 BM_Src naver_kpi200 → quantiwise_iks200 · BM_Close · BM_Ret 값 차 0(두 원천 일치) · 게이트 OK(B lag 1 · C 최대편차 0 · D 정본 10-16) · RAWDATA BM_Ret 동기화 덮어쓰기 0.",
+      "decided_by": "dohoon",
+      "decided_at": "2026-10-17T16:08:51+0900",
+      "note": "검사: test_daily_refresh_qw_block.sh 16/0(B1 네이버 벤치 호출 0 · B2 rc=3 실패 계상 · T1/T2/TM Get-Target 기능 시험 + 뮤테이션 — 구판 함수 = 태그 pre-rawdata-qw-only-20261017) · test_benchmark_currency_gate.R 11/0 · test_refresh_barrier.sh 80/0 · test_book_rebalance_preflight.py 11/0 · test_benchmark_level_axis.R 35/1(S1 = 기존 실패 · 이번 변경 무관). ★10-17 15:46 수동 정본 수급(quantiwise_fetch.py) = rc=3 login_required — 단말 미기동 → 드라이버가 기동 · 로그인 버튼 · 중복 로그인 경고 '예'(09-18 도훈 지시 자동화) → 5초 뒤 로그인 창 재출현(qwMain 재기동 pid 29092→32864). 이력: 경고창 '예' 경로 3/3 이 작동 세션을 못 만들었다(10-06 밤 rc=3 · 10-07 밤 Connect 됐으나 응답 없음 no_change · 10-17 rc=3) → 무인 복구 불가 · 사람 로그인 필요. 퀀티 단일에서 세션 없는 밤 = 벤치 · 캘린더 · RAWDATA 그날 정지(게이트 A · D · DR_FAILED 신고) → 로그인 뒤 다음 밤 전 구간 따라잡음",
+      "registered_at": "2026-10-17T16:08:50+0900",
+      "recorded_by": "Q(세션 7a34e194)",
+      "evidence": "도훈 채팅 2026-10-17 — '벤치마크도 퀀티 단일로 바꿔줘.' (같은 날 RAWDATA-QW-ONLY-20261017 직후)"
     }
   ],
-  "last_updated": "2026-10-17T15:06:02+0900"
+  "last_updated": "2026-10-17T16:08:51+0900"
 }

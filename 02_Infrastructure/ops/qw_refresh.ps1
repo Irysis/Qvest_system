@@ -123,8 +123,17 @@ function Mark-Done($state,$name,$target) { $state[$name]=@{ ymd="$target"; ts=(G
 
 # ---- dates ----
 function Get-Target {
-  $code="import pyarrow.parquet as pq,pandas as pd" + [char]10 + "print(pd.to_datetime(pq.read_table(r'$ROOT\.cache\RAWDATA.parquet',columns=['Date']).to_pandas()['Date']).max().strftime('%Y%m%d'))"
-  try { $r=(& $PY -c $code 2>$null); return "$r".Trim() } catch { return (Get-Date).AddDays(-1).ToString("yyyyMMdd") }
+  # ★(2026-10-17 · 결정 RAWDATA-QW-ONLY-20261017 · BENCHMARK-QW-ONLY-20261017) 목표일 = 거래일 캘린더 정본(.cache/benchmark.parquet)의 최신일.
+  #   벤치는 daily_refresh.sh [1pre] 가 이 수급보다 먼저 퀀티 정본(Benchmark_price.xlsx · CPD-1TD)으로 갱신한다.
+  #   구판은 RAWDATA 최신일이었다 — 네이버 T+0 가 밤마다 RAWDATA 에 새 날짜를 먼저 붙여 줘서 목표가 전진했는데, 퀀티 단일(네이버 퇴역)에서는
+  #   'RAWDATA 최신일 = 이미 받은 날'이라 퀀티가 새 날짜를 영영 받지 않는 순환이 된다. 벤치 판독 불능이면 구판(RAWDATA 최신일), 둘 다 불능이면 어제.
+  foreach ($f in 'benchmark.parquet', 'RAWDATA.parquet') {
+    $p = Join-Path $ROOT ".cache\$f"
+    if (-not (Test-Path $p)) { continue }
+    $code="import pyarrow.parquet as pq,pandas as pd" + [char]10 + "print(pd.to_datetime(pq.read_table(r'$p',columns=['Date']).to_pandas()['Date']).max().strftime('%Y%m%d'))"
+    try { $r=(& $PY -c $code 2>$null); $r="$r".Trim(); if ($r -match '^\d{8}$') { return $r } } catch {}
+  }
+  return (Get-Date).AddDays(-1).ToString("yyyyMMdd")
 }
 function Get-CacheNext($cache) {
   if (-not $cache -or -not (Test-Path $cache)) { return $null }

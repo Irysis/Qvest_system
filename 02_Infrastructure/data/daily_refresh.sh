@@ -153,11 +153,10 @@ run_r '
 #        Benchmark_price.xlsx 의 Refresh 를 눌러 받아온다(qw_excel_refresh.ps1).
 #        rc=3 = 전제 부재(단말 로그인 창·애드인 미등록) — 사람이 로그인해야 하는 상태
 #     ② 새 xlsx 가 있으면       — build_index_cache.py 로 benchmark+indices 재생성
-#     ③ 없으면                  — **조용히 넘어가지 않는다**: Naver 는 항등 이어붙이기로
-#        캘린더만 잇고(배율 추정 없음·트립와이어 통과 필수), 정본 정체는 경보
-#        (.cache/benchmark_axis_alert.json) + 게이트 축 D 가 "정본 xlsx 미갱신 N일" 로 신고한다.
-#     ※Naver 를 아예 막으려면 QVEST_BENCH_NO_NAVER_FALLBACK=1 (그러면 거래일 캘린더가
-#       멈추고 축 B 가 7일 뒤 잡는다 — 그 교환을 알고 고를 것).
+#     ③ 없으면                  — **퀀티 단일(2026-10-17 도훈 '벤치마크도 퀀티 단일로 바꿔줘' · 결정 BENCHMARK-QW-ONLY-20261017)**:
+#        네이버 이어붙이기 · 트립와이어 검증은 퇴역했다(naver_benchmark_update.py 호출 0). 정본이 안 들어온 밤은 벤치 · 거래일 캘린더가
+#        그대로 멈추고(→ 퀀티 Update_File 목표일도 멈춘다 — qw_refresh.ps1 Get-Target = 이 벤치의 최신일) 아래 게이트가 그날 밤 신고한다
+#        (축 A = 갱신기 rc · rc=3 전제 부재도 실패 · 축 D = 정본 xlsx 미갱신 N일). 다음 밤 정본이 들어오면 전 구간이 따라온다(손실 없음).
 # ──────────────────────────────────────────────────────────────────────────────
 echo "[1pre/7] Benchmark (정본 QuantiWise xlsx → 코스피200 포인트)..."
 # Python 체인 (v8.1.1): venv 우선 → QVEST_PY env → 시스템 Python312 fallback
@@ -177,20 +176,14 @@ if [ -n "$QVENV_PY" ]; then
     2) echo "  정본 xlsx 변경 없음 (원격 == 우리 것)" ;;
     3) echo "  ※정본 수급 전제 부재 — .cache/quantiwise_fetch_status.json 참조"
        "$QVENV_PY" -c "import json,sys;d=json.load(open(r'$BASE/.cache/quantiwise_fetch_status.json',encoding='utf-8'));print('   사유:', str(d.get('message') or d.get('result') or '?')[:160])" 2>/dev/null || true
-       echo "   (퀀티 단말에 로그인하면 다음 tick 부터 자동으로 정본이 들어온다. 아래 축 D 가 정체 일수를 신고한다)" ;;
+       echo "   (퀀티 단말에 로그인하면 다음 밤부터 자동으로 정본이 들어온다 — 퀀티 단일이라 오늘 벤치 · 캘린더 · RAWDATA 는 멈춘다)"
+       _bm_rc=3 ;;   # (10-17 퀀티 단일) 구판은 네이버가 메워 실패로 세지 않았다 — 이제 그날 밤 축 A 가 실패로 신고한다
     *) echo "!! 정본 수급 실패 rc=$_qw_rc — 기존 xlsx 유지"; _bm_rc=$_qw_rc ;;
   esac
 
-  # ③ 정본이 새로 안 들어왔으면: Naver 는 **검증**이 기본, 이어붙이기는 캘린더 유지용.
-  if [ "$_qw_rc" != "0" ]; then
-    if [ "${QVEST_BENCH_NO_NAVER_FALLBACK:-0}" = "1" ]; then
-      ( cd "$INFRA" && "$QVENV_PY" data/naver_benchmark_update.py ) || _bm_rc=$?
-    else
-      ( cd "$INFRA" && "$QVENV_PY" data/naver_benchmark_update.py --append ) || _bm_rc=$?
-    fi
-  fi
+  # ③ (퇴역 10-17 · BENCHMARK-QW-ONLY-20261017) 네이버 이어붙이기 · 검증 호출 0 — 정본이 안 들어오면 기존 cache 그대로(퀀티 단일)
   if [ "$_bm_rc" -ne 0 ]; then
-    echo "  benchmark 갱신 FAILED rc=$_bm_rc (기존 cache 유지 — 트립와이어는 캐시를 손대지 않는다)"
+    echo "  benchmark 갱신 FAILED rc=$_bm_rc (기존 cache 유지 — 보충 원천 없음 · 다음 밤 정본이 전 구간을 따라잡는다)"
   fi
 else
   _bm_rc=127
@@ -235,6 +228,8 @@ fi
 #   서술이 바로 그 착각이었다: 축을 선언하지 않은 채 writer 가 여럿이면 파이프라인이
 #   bistable 해져 마지막에 쓴 쪽의 축이 굳는다. 지금은 **셋 다 같은 축**(지수 포인트)을
 #   쓰고, 그 규약이 .cache/benchmark_axis.json 에 선언돼 있다.
+#   (2026-10-17 BENCHMARK-QW-ONLY-20261017: naver_benchmark_update.py 이어붙이기 퇴역 → 밤 writer = build_index_cache.py 하나 ·
+#    rebuild_benchmark_canonical.py 는 수동 축 재구축뿐)
 #   ★그래서 이 스텝의 실패를 삼키면 결손이 **사라진다**: 캘린더가 얼고 -> Naver 는
 #   "already >= target", KRX 는 "gap 0 days" 를 **정직하게** 보고하며 리프레시는
 #   "실패 0" 으로 마감한다. 실측 2026-08-14~20: 거래일 3일(08-18/19/20)이 비었는데

@@ -1,4 +1,8 @@
 # -*- coding: utf-8 -*-
+# ★★ 퇴역 (2026-10-17 · 결정 BENCHMARK-QW-ONLY-20261017 — 도훈 '벤치마크도 퀀티 단일로 바꿔줘') ★★
+#   밤 daily_refresh.sh [1pre] 이어붙이기(--append) · 검증 모드 · 아침 morning_briefing.sh 6_pre 교차검증 호출 0.
+#   벤치 = 퀀티 정본(Benchmark_price.xlsx → build_index_cache.py) 단일. 이 파일은 사료 · 모듈 단위 시험(test_benchmark_scale_seam.py ·
+#   test_naver_benchmark_confirmed_cutoff.py · test_seam_scale_guard.R)용으로만 남긴다 — 새 호출을 붙이지 말 것(복원 = git).
 """naver_benchmark_update.py — 벤치마크 **교차검증기**(기본) + 항등 이어붙이기(옵션)
 
 ★2026-09-18 축 정규화 — 배율 추정·리베이스 경로 폐기(도훈 "데이터 정확하게 쌓는데 배율이 뭔 상관?").

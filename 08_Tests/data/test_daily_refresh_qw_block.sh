@@ -74,6 +74,41 @@ sed 's/#.*$//' "$T/probe.R" | grep -qE "$PRICE_RE" && ok "S2 검사기 양성 �
 grep -q 'ONLY="${QWUF_ONLY:-OHLCVS,Universe_Support,Investor_Act,Consensus}"' 02_Infrastructure/data/qw_updatefile_unattended.sh \
   && ok "S4 수급 대상 = 4종 매일(OHLCVS → Universe_Support → Investor_Act → Consensus)" || ng "S4 수급 대상"
 
+## ④ 벤치 퀀티 단일(BENCHMARK-QW-ONLY-20261017 · 도훈 '벤치마크도 퀀티 단일로 바꿔줘') — 밤 · 아침 실행 코드에 네이버 벤치 호출 0 · rc=3 = 실패
+bh=$(for f in "$DR" 02_Infrastructure/ops/morning_briefing.sh; do sed 's/#.*$//' "$f" | grep -oE 'naver_benchmark_update\.py|QVEST_BENCH_NO_NAVER_FALLBACK|_BMV_RC'; done | sort -u | tr '\n' ' ')
+[ -z "$bh" ] && ok "B1 밤 [1pre] · 아침 6_pre 실행 코드에 네이버 벤치 이어붙이기 · 검증 호출 0" || ng "B1 네이버 벤치 호출 잔존" "$bh"
+awk '/^    3\) echo "  ※정본 수급 전제 부재/{f=1} f&&/;;/{print; exit} f' "$DR" | grep -q '_bm_rc=3' \
+  && ok "B2 벤치 수급 rc=3(전제 부재)도 갱신기 실패로 센다(보충 원천 없음 → 그날 밤 축 A 신고)" || ng "B2 rc=3 실패 처리"
+
+## ⑤ 퀀티 드라이버 목표일 = 벤치 최신일(10-17 순환 결함 수리) — 구판 RAWDATA 최신일이면 퀀티 단일에서 새 날짜를 영영 안 받는다
+PYV="$ROOT/.venv_qvest_ml/Scripts/python.exe"; PS1=02_Infrastructure/ops/qw_refresh.ps1
+fn_of(){ awk '/^function Get-Target \{/{f=1} f{print} f&&/^\}/{exit}'; }
+fn_of < "$PS1" > "$T/gt_fn.ps1"
+mkdir -p "$T/root/.cache"
+"$PYV" -c "
+import sys, pandas as pd
+d = sys.argv[1]
+pd.DataFrame({'Date': pd.to_datetime(['2026-10-15', '2026-10-16', '2026-10-19']), 'BM_Close': [1.0, 2.0, 3.0]}).to_parquet(d + '/benchmark.parquet')
+pd.DataFrame({'Date': pd.to_datetime(['2026-10-15', '2026-10-16']), 'Ticker': ['A', 'A']}).to_parquet(d + '/RAWDATA.parquet')
+" "$(cygpath -w "$T/root/.cache")"
+run_gt(){ { printf '$ROOT = "%s"\n$PY = "%s"\n' "$(cygpath -w "$T/root")" "$(cygpath -w "$PYV")"; cat "$1"; printf 'Get-Target\n'; } > "$T/gt_run.ps1"
+          powershell.exe -NoProfile -ExecutionPolicy Bypass -File "$(cygpath -w "$T/gt_run.ps1")" 2>/dev/null | tr -d '\r' | tail -n 1; }
+[ -s "$T/gt_fn.ps1" ] || ng "T0 Get-Target 함수 추출 실패"
+g1=$(run_gt "$T/gt_fn.ps1")
+[ "$g1" = "20261019" ] && ok "T1 Get-Target = 벤치 최신일 20261019(RAWDATA 최신일 20261016 이 아니다)" || ng "T1 목표일" "$g1"
+mv "$T/root/.cache/benchmark.parquet" "$T/root/.cache/benchmark.bak"; g2=$(run_gt "$T/gt_fn.ps1"); mv "$T/root/.cache/benchmark.bak" "$T/root/.cache/benchmark.parquet"
+[ "$g2" = "20261016" ] && ok "T2 벤치 부재 = 구판(RAWDATA 최신일) 폴백" || ng "T2 폴백" "$g2"
+cp "$T/root/.cache/benchmark.parquet" "$T/root/.cache/benchmark.bak"; printf 'not a parquet' > "$T/root/.cache/benchmark.parquet"
+g4=$(run_gt "$T/gt_fn.ps1"); mv -f "$T/root/.cache/benchmark.bak" "$T/root/.cache/benchmark.parquet"
+[ "$g4" = "20261016" ] && ok "T3 벤치 판독 불능(깨진 파일) = RAWDATA 최신일 폴백(빈 문자열 · 오류문을 목표일로 넘기지 않는다)" || ng "T3 판독 불능 폴백" "$g4"
+mkdir -p "$T/root/.hide"; mv "$T/root/.cache/"*.parquet "$T/root/.hide/"; g5=$(run_gt "$T/gt_fn.ps1"); mv "$T/root/.hide/"*.parquet "$T/root/.cache/"
+y5=$(powershell.exe -NoProfile -Command '(Get-Date).AddDays(-1).ToString("yyyyMMdd")' 2>/dev/null | tr -d '\r')
+[ -n "$g5" ] && [ "$g5" = "$y5" ] && ok "T4 두 파일 모두 부재 = 어제($y5)" || ng "T4 둘 다 부재" "$g5 vs $y5"
+if git show pre-rawdata-qw-only-20261017:"$PS1" 2>/dev/null | fn_of > "$T/gt_old.ps1" && [ -s "$T/gt_old.ps1" ]; then
+  g3=$(run_gt "$T/gt_old.ps1")
+  [ "$g3" = "20261016" ] && ok "TM 뮤테이션(구판 RAWDATA 기준 함수) → 20261016 — T1 은 수리의 발화다(검출력)" || ng "TM 뮤테이션 판독" "$g3"
+else ng "TM 구판 함수 판독 실패(태그 pre-rawdata-qw-only-20261017)"; fi
+
 echo ""
 echo "결과: PASS=$PASS FAIL=$FAIL"
 printf '{"test":"daily_refresh_qw_block","pass":%d,"fail":%d,"total":%d}\n' "$PASS" "$FAIL" "$((PASS+FAIL))"

@@ -129,25 +129,15 @@ for _c in "$BASE/.venv_qvest_ml/Scripts/python.exe" "$BASE/.venv_qvest_ml/bin/py
   [ -x "$_c" ] && P2_PY="$_c" && break
 done
 if [[ -x "$P2_PY" && -d "$P2_BF_DIR" ]]; then
-  # 6_pre. 벤치 **교차검증**(KOSPI200) — 도훈 mandate 2026-05-28, 2026-09-18 역할 변경.
-  #   ★구판은 여기서도 benchmark.parquet 을 썼다(두 번째 writer). 축 정규화 후 갱신기의
-  #     기본 모드는 **검증만**이고, 쓰기는 daily_refresh 의 [1pre] 한 곳으로 모았다 —
-  #     브리핑이 데이터를 바꾸면 "브리핑을 봤더니 값이 달라져 있다" 가 된다.
-  cd "$BASE"
-  # ★2026-09-23 실사고: 구판은 `| tail -5 || true` 로 교차검증 rc 를 버렸다 — 트립와이어가 '1120.74(장중) vs 1123.59'
-  #   를 잡았는데도 [6a] 가 그 장중 벤치로 P3 추론을 진행했다. rc 를 보존하고 rc=1(트립와이어)이면 추론을 건너뛴다.
-  _BMV_LOG="/tmp/qm_bm_verify_$(date +%Y%m%d_%H%M%S).log"
-  "$P2_PY" 02_Infrastructure/data/naver_benchmark_update.py --start_date $(date -d "7 days ago" +%Y-%m-%d) > "$_BMV_LOG" 2>&1
-  _BMV_RC=$?
-  tail -5 "$_BMV_LOG"
+  # 6_pre. (퇴역 2026-10-17 · 결정 BENCHMARK-QW-ONLY-20261017 — 도훈 '벤치마크도 퀀티 단일로 바꿔줘') 네이버 벤치 교차검증(트립와이어) 제거.
+  #   벤치 = 퀀티 정본(Benchmark_price.xlsx → build_index_cache.py) 단일 — 네이버 장중 값과 대조할 원천이 없다(구판 09-23 사고의 장중 값은
+  #   네이버 이어붙이기에서 왔다 · 그 경로도 함께 퇴역). 정본 정체는 밤 [1pre] 게이트(축 A · D)가 신고한다.
   cd "$P2_BF_DIR"
   # 6a. daily inference (오늘 forecast 추가) — P3.
   # [2026-06-01 fix] 601 default(no --asof)는 ret_fwd-dropna로 마지막 행이 잘려 benchmark_max-1(1일 stale)을
   #   forecast → brief가 매일 1일 정체. benchmark 최신 종가일을 --asof로 명시(검증된 forecast-only 경로)해 재발 방지.
   ASOF_BM=$("$P2_PY" -c "import pandas as pd; print(pd.to_datetime(pd.read_parquet('$BASE/.cache/benchmark.parquet', columns=['Date'])['Date']).max().date())" 2>/dev/null)
-  if [[ "$_BMV_RC" == "1" ]]; then
-    echo "[6a] SKIP — 벤치 교차검증 트립와이어 발화(rc=1 · $_BMV_LOG) — 불일치 벤치로 P3 추론하지 않는다(전일 예측 유지)"
-  elif [[ -n "$ASOF_BM" ]]; then
+  if [[ -n "$ASOF_BM" ]]; then
     echo "[6a] 601 inference --asof $ASOF_BM (benchmark 최신 종가일)"
     "$P2_PY" scripts/601_daily_inference.py --model P3 --asof "$ASOF_BM" 2>&1 | tail -5
   else
