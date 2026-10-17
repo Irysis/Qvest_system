@@ -16,8 +16,11 @@ for (g in P$groups) {
   items <- vapply(g$anomalies, function(x) sprintf("%s — %d회 · 처음 %s · 마지막 %s%s", substr(gsub("\\s+", " ", x$text %||% ""), 1, 180), as.integer(x$count %||% 1L),
                                                    hm(x$first_seen), hm(x$last_seen), if (isTRUE(as.integer(x$reopened %||% 0L) > 0L)) " · 재발" else ""), character(1))
   keys <- paste(vapply(g$anomalies, function(x) as.character(x$key %||% ""), character(1)), collapse = ",")
+  ## ★정본 발송기의 bullet 은 항목 ≥ 2(BULLET_MIN) — 이상 1건짜리 알림은 bullet 이면 거부돼 가동(10-16) 뒤 한 통도 나가지 않았다
+  ##   (판단 Superfan T1 C-20261017-036 · 건식 재현). 1건이면 text 절(relaxed 라 길이 상한 면제 · 최소 30자는 항목 문구가 넘는다).
+  what <- if (length(items) >= 2L) list(heading = "무엇이", type = "bullet", items = items) else list(heading = "무엇이", type = "text", body = items[1])
   r <- tryCatch(tg_agent_brief(agent = "Monitoring", title = sprintf("[Superfan·%s] 실패 이상 %d건", nm, length(items)),
-                               sections = list(list(heading = "무엇이", type = "bullet", items = items),
+                               sections = list(what,
                                                list(heading = "다음", type = "text",
                                                     body = "Q 가 세션에서 이 구성요소의 전담 Superfan 으로 원인을 진단하고 고칩니다. 도훈님 조치가 필요하면 진단 뒤 따로 알립니다.")),
                                footer = "결정론 감시기(1시간 · LLM 비용 0) — 같은 이상은 다시 보내지 않고, 재발하면 1통 더 보냅니다",

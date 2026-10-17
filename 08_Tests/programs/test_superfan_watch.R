@@ -3,6 +3,7 @@
 ##   문턱보다 오래된 사건은 세지 않음 · 처음 스캔의 시각 모르는 줄 무시 · 만료 ④ freshness · expect_today · json_field(정상 복귀 = 자동 해소)
 ##   ⑤ ack → 재발 시 재개방 ⑥ 잘림(크기 < 오프셋) ⑦ 같은 로그를 두 구성요소가 따로 본다 ⑧ 정의 검증(위반 주입) ⑨ 부팅 꼬리 · 깨진 상태 '?(…)'
 ##   ⑩ 세션 재개 Resume 줄 배선 ⑪ 운영 정의(06_Registry/superfan_components.json) 검증 통과 ⑫ 양성 대조 — 사건 시각 필터를 끈 사본은 옛 사건을 센다
+##   ⑬ 무인 알림(스텁 발신기) ⑭ 양성 대조 — 정본 발신기 건식(이상 1건 · 2건) · 수리 전 판 빨강(10-17 T1 C-036)
 ROOT <- Sys.getenv("QM_ROOT", "C:/Users/99922/OneDrive/Quant_Module_Moltbot"); setwd(ROOT)
 PASS <- 0L; FAIL <- 0L
 chk <- function(name, ok, detail = "") {
@@ -194,6 +195,22 @@ Sys.setenv(QVEST_SUPERFAN_NOW = "2026-10-16 23:30"); w8(LOG, c("=== run @ Fri Oc
 invisible(run("scan", "--notify")); p4 <- lastp()
 chk("⑬ 야간(23:30) → 무음", isTRUE(p4$mute) && any(grepl("night_owl", gtext(p4))))
 Sys.unsetenv(c("QVEST_SUPERFAN_NOTIFY_CMD", "STUB_DIR")); Sys.setenv(QVEST_SUPERFAN_NOW = "2026-10-16 12:00")
+
+## ⑭ 양성 대조 — 정본 발신기(superfan_notify.R → tg_agent_brief) 건식(QVEST_TG_DRY_RUN=1 · 발송 없음)으로 이상 1건 · 2건 payload 가 둘 다 ok ·
+##   수리 전 판(git b234afb11 의 superfan_notify.R)은 1건 payload 를 fail 로 낸다(⑬ 의 스텁 발신기는 이 결함을 원리상 못 본다 — 판단 Superfan T1 C-20261017-036)
+NOTI <- file.path(ROOT, "02_Infrastructure/programs/superfan_notify.R")
+pay <- function(n) { p <- file.path(TMP, sprintf("pay%d.json", n))
+  an <- lapply(seq_len(n), function(i) list(key = sprintf("k%d", i), rule = "errs", text = sprintf("Error in probe_%d(x) : 정본 발신기 건식 양성 대조 항목 %d", i, i),
+                                           count = 1L, first_seen = "2026-10-17T19:00:00", last_seen = "2026-10-17T19:00:00", reopened = 0L))
+  jsonlite::write_json(list(at = "2026-10-17T19:00:00", mute = TRUE, groups = list(list(component = "alpha", name = "A", anomalies = an))), p, auto_unbox = TRUE); p }
+noti <- function(script, p) { Sys.setenv(QVEST_TG_DRY_RUN = "1", QM_ROOT = ROOT); on.exit(Sys.unsetenv("QVEST_TG_DRY_RUN"))   # Windows 의 system2(env=) 는 Rscript 에 안 먹는다 — 자식은 Sys.setenv 를 물려받는다
+  suppressWarnings(system2("Rscript", c("--no-environ", shQuote(script), shQuote(p)), stdout = TRUE, stderr = FALSE)) }
+o1 <- noti(NOTI, pay(1L)); o2 <- noti(NOTI, pay(2L))
+chk("⑭ 정본 발신기 건식 — 이상 1건 · 2건 payload 둘 다 'SFN alpha ok'", any(o1 == "SFN\talpha\tok") && any(o2 == "SFN\talpha\tok"), paste(c(o1, o2), collapse = " | "))
+OLDN <- file.path(TMP, "superfan_notify_old.R")
+okold <- tryCatch(identical(system2("git", c("-C", shQuote(ROOT), "show", "b234afb11:02_Infrastructure/programs/superfan_notify.R"), stdout = OLDN, stderr = FALSE), 0L), error = function(e) FALSE)
+o0 <- if (isTRUE(okold)) noti(OLDN, pay(1L)) else character(0)
+chk("⑭ 수리 전 판(b234afb11) 빨강 — 이상 1건 payload = 'SFN alpha fail'", isTRUE(okold) && any(o0 == "SFN\talpha\tfail"), paste(o0, collapse = " | "))
 
 Sys.unsetenv(c("QVEST_SUPERFAN_REGISTRY_PATH", "QVEST_SUPERFAN_WATCH_PATH", "QVEST_SUPERFAN_NOW", "QVEST_SESSION_RESUME_PATH", "QVEST_JUDGMENT_LEDGER_PATH"))
 unlink(TMP, recursive = TRUE)

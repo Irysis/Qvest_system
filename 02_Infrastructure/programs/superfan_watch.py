@@ -440,6 +440,11 @@ def _send(root, payload):
     try:
         r = subprocess.run(cmd + [p], capture_output=True, text=True, encoding="utf-8", errors="replace", timeout=300)
         out = r.stdout or ""
+        # ★발신기 stderr(발송기 거부 문구 · R 오류)를 버리지 않는다 — 버리면 실패가 'rc=0 · 발신 실패' 한 줄로만 남아 원인을 못 본다
+        #   (판단 Superfan T1 C-20261017-036: 16회 연속 실패 · 원인 문구 0). 예약 작업 로그(superfan_watch.log)로 간다.
+        err = (r.stderr or "").strip()
+        if r.returncode != 0 or err:
+            sys.stderr.write("[superfan_watch] 발신기 rc=%s%s\n" % (r.returncode, ("\n" + err[-2000:]) if err else ""))
     except Exception as ex:                                            # 발신 실패 = 아무것도 보내지 않은 것으로(다음 시간에 다시)
         out = ""; sys.stderr.write("[superfan_watch] 발신 실패 %s: %s\n" % (type(ex).__name__, ex))
     finally:
