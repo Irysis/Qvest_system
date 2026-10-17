@@ -1,0 +1,87 @@
+{
+  "code": "P2R03_E3_D6",
+  "label": "E3 × 낙폭 브레이크(낙폭 중앙~90분위 선형 축소 · 재시험)",
+  "block": "RX",
+  "fixed_axes": {
+    "long_only": true,
+    "n_max": 25,
+    "universe": "ALL_HYG",
+    "start_date": "2000-01-01",
+    "commission_bps": 15,
+    "liq_adv20_min": 200000000,
+    "weight_cap": null,
+    "base_weight": 0.5,
+    "base_weight_note": "기저(논문) 신호 가중. 등가중이면 팩터 n개에서 1/(1+n) 로 떨어져 결합 깊이와 기저 희석이 교락된다(실측 2026-08-31: 1/2->1/3 희석만으로 B1 다섯 칸 전부 기준선 미달). 고정하면 깊이가 순수 축이 된다. 1팩터일 때 0.5 는 등가중과 수치적으로 동일하다.",
+    "measurement_axis": "all_hyg_px1000_2000_v1"
+  },
+  "base_signal": {
+    "kind": "engine",
+    "path": "C:\\Users\\99922\\OneDrive\\Quant_Module_Moltbot/04_Research/strategies/RP_AUTO_2002_06975/engine.R"
+  },
+  "base_weight": 0.5,
+  "factors": [
+    {
+      "kind": "db",
+      "id": "M01_Mom_12_1"
+    },
+    {
+      "kind": "db",
+      "id": "V10_FCF_Yield"
+    },
+    {
+      "kind": "db",
+      "id": "M08_Residual_Mom"
+    }
+  ],
+  "weighting": {
+    "kind": "catalog",
+    "catalog_id": "lean:entropy",
+    "label": "entropy"
+  },
+  "universe": {
+    "kind": "all_hyg"
+  },
+  "rebalance": {
+    "kind": "rank_buffer",
+    "mult": 2,
+    "label": "buffer_2x"
+  },
+  "defense_sleeve": null,
+  "root_paper": {
+    "url": "https://arxiv.org/abs/2002.06975",
+    "title": "Cross-sectional Stock Price Prediction using Deep Learning for Actual Investment Management",
+    "paper_key": "2002.06975"
+  },
+  "root_papers": [
+    {
+      "url": "https://arxiv.org/abs/2002.06975",
+      "title": "Cross-sectional Stock Price Prediction using Deep Learning for Actual Investment Management",
+      "paper_key": "2002.06975"
+    },
+    {
+      "title": "Chan, Jegadeesh & Lakonishok (1996), Momentum Strategies, JF 51(5)",
+      "url": "https://onlinelibrary.wiley.com/doi/10.1111/j.1540-6261.1996.tb05222.x"
+    },
+    {
+      "title": "Fama & French (1992), The Cross-Section of Expected Stock Returns, JF 47(2)",
+      "url": "https://onlinelibrary.wiley.com/doi/10.1111/j.1540-6261.1992.tb04398.x"
+    }
+  ],
+  "root_paper_families": [
+    "momentum",
+    "value"
+  ],
+  "unmapped_families": [],
+  "idea": "[P2R03 조건부 시변 노출 층 · E3 × D6] 착상 = Grossman & Zhou (1993) Optimal Investment Strategies for Controlling Drawdowns, Mathematical Finance 3(3)(누적 최고 대비 쿠션 비례 규칙) — 원문 구현 아님: 이 arm(dd_brake_q)은 확장창 분위 램프(재시험: P0R01 C3 측정은 전액 현금 결함 위)",
+  "selection_accounting": {
+    "selection_type": "sweep",
+    "family_root": "2002.06975",
+    "lineage": ["RX_P2R03_conditional_overlay", "RX_P0R01_feasibility_map", "RP_20260913_084807_skipped_base_promo1", "RP_20260913_084807_skipped_base"],
+    "n_family_at_registration": 252,
+    "n_trials_basis": "P2R03: 앞선 사전등록 칸 중 계보 2002.06975(E2 · E3 공통) 회계 최댓값 238 + 이 라운드 장치 칸 14(엔진 2 × 장치 7) · RX0 · lag-1 진단 무가산"
+  },
+  "overlay": {
+    "kind": "dd_brake",
+    "arm_id": "dd_brake_q"
+  }
+}

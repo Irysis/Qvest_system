@@ -1,0 +1,53 @@
+{
+  "code": "P2R03_E2_D6",
+  "label": "E2 × 낙폭 브레이크(낙폭 중앙~90분위 선형 축소 · 재시험)",
+  "block": "RX",
+  "fixed_axes": {
+    "long_only": true,
+    "n_max": 25,
+    "commission_bps": 15,
+    "liq_adv20_min": 200000000,
+    "weight_cap": null,
+    "base_weight": 0.5,
+    "measurement_axis": "all_hyg_px1000_2000_v1",
+    "universe": "ALL_HYG",
+    "start_date": "2000-01-01"
+  },
+  "base_signal": {
+    "kind": "engine",
+    "path": "C:/Users/99922/OneDrive/Quant_Module_Moltbot/04_Research/strategies/RP_AUTO_2002_06975/engine.R"
+  },
+  "base_weight": 0.5,
+  "factors": [],
+  "weighting": {
+    "kind": "ew"
+  },
+  "defense_sleeve": null,
+  "root_paper": {
+    "url": "https://arxiv.org/abs/2002.06975",
+    "title": "Cross-sectional Stock Price Prediction using Deep Learning for Actual Investment Management",
+    "paper_key": "2002.06975"
+  },
+  "root_papers": [
+    {
+      "url": "https://arxiv.org/abs/2002.06975",
+      "title": "Cross-sectional Stock Price Prediction using Deep Learning for Actual Investment Management",
+      "paper_key": "2002.06975"
+    }
+  ],
+  "idea": "[P2R03 조건부 시변 노출 층 · E2 × D6] 착상 = Grossman & Zhou (1993) Optimal Investment Strategies for Controlling Drawdowns, Mathematical Finance 3(3)(누적 최고 대비 쿠션 비례 규칙) — 원문 구현 아님: 이 arm(dd_brake_q)은 확장창 분위 램프(재시험: P0R01 C3 측정은 전액 현금 결함 위)",
+  "selection_accounting": {
+    "selection_type": "sweep",
+    "family_root": "2002.06975",
+    "lineage": ["RX_P2R03_conditional_overlay", "RX_P0R01_feasibility_map"],
+    "n_family_at_registration": 252,
+    "n_trials_basis": "P2R03: 앞선 사전등록 칸 중 계보 2002.06975(E2 · E3 공통) 회계 최댓값 238 + 이 라운드 장치 칸 14(엔진 2 × 장치 7) · RX0 · lag-1 진단 무가산"
+  },
+  "universe": {
+    "kind": "all_hyg"
+  },
+  "overlay": {
+    "kind": "dd_brake",
+    "arm_id": "dd_brake_q"
+  }
+}
