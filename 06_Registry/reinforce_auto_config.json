@@ -2,12 +2,14 @@
   "schema": "reinforce_auto_config_v1",
   "enabled": false,
   "replication_lane": {
-    "enabled": true,
+    "enabled": false,
     "resumed_at": "2026-10-17",
     "resumed_note": "도훈 10-17 '6. 4번 해결 후 재측정 승인' — 레인 재설계(REPLICATION-ALL-METHODS-20261017 · a4cc20193) 뒤 재개. 재구현 대기열 4편(order 2~5) 예약 · 정지 = 같은 날 '일단 리서치 멈춰봐 논문구현부부터 점검해야겠어'",
-    "source": "v10.01 2026-10-13 — 충실구현 무인 레인(rf_replication_auto.sh)의 자기 스위치. 구판은 전역 enabled(퇴역 러너 스위치)를 같이 봐서 러너 퇴역이 레인까지 세웠다(삭제 지도 §0-1). ★예약작업(Qvest_ReinforceAutoLoop)은 2026-10-13 현재 꺼져 있다 — 켜는 것은 도훈."
+    "source": "v10.01 2026-10-13 — 충실구현 무인 레인(rf_replication_auto.sh)의 자기 스위치. 구판은 전역 enabled(퇴역 러너 스위치)를 같이 봐서 러너 퇴역이 레인까지 세웠다(삭제 지도 §0-1). ★예약작업(Qvest_ReinforceAutoLoop)은 2026-10-13 현재 꺼져 있다 — 켜는 것은 도훈.",
+    "paused_at": "2026-10-17T22:37",
+    "paused_note": "도훈 10-17 22:2x '레인 잠깐 멈추고 GPU P2R03에 몰아줘' — P2R03 E2 RX0 DNN 새 epoch 261개월 재학습(약 9시간)에 GPU 양보 · 진행 중 구현 에이전트 종료(다음 틱이 claim 회수 · 재구현) · 자동 재개 = P2R03_E2_RX0 측정 끝 또는 10-18 14:00"
   },
-  "retired_v10_01":"2026-10-13 도훈 지시 — 1계층 고정 격자 강화 러너 퇴역(v10.01 목표 역산형 3엔진 리서치로 교체 · 설계 04_Research/01_reports/l1_prescription_redesign_20261013/README.md · 롤백 태그 pre-v10.01-prescription-20261013). enabled=false 는 러너 영구 정지. 이 파일에 남는 키는 다른 레인(llm.lanes · factor_autoregister · replication)이 읽는 것뿐이다.",
+  "retired_v10_01": "2026-10-13 도훈 지시 — 1계층 고정 격자 강화 러너 퇴역(v10.01 목표 역산형 3엔진 리서치로 교체 · 설계 04_Research/01_reports/l1_prescription_redesign_20261013/README.md · 롤백 태그 pre-v10.01-prescription-20261013). enabled=false 는 러너 영구 정지. 이 파일에 남는 키는 다른 레인(llm.lanes · factor_autoregister · replication)이 읽는 것뿐이다.",
   "deploy_window_20260925": "Q 배포 창 22:58~23:4x 종료 — PREREG·V6·B5LAB·CATB 배포(23:35~23:38) · B5_16~20 possible 표식 후 true 복원. 남은 창: R3R_rb·ALLOWP(러너 tick 사이 또는 다음 창)",
   "deploy_window_20260926": "Q 배포 창 2026-09-26T11:16:35+0900 ~ 2026-10-04T08:16:45+0900 종료 — 10-04 08:1x 배포 창 종료 — AXIS·HUMAN·CORE·AGRG·CLEAN·EXPO 관문/표식 1387·7308 park·PREREG fix·LEVER·1505 청정 요청 배포 완료(결정 ENTRY-7308-DISPOSITION 등) · 복원 enabled=True · b5_design.enabled=True",
   "paused_reason": "(해제) 2026-09-25 21:3x 재개 — 도훈 결정 RUNNER-RESTART-AFTER-P0-14 · RUNNER-RESTART-RELAX(P0-14 19:37 · B07 21:29 배포 뒤 현행 격자로 재개 · 유기체 live 0). 선행 배포: P0-05/06 epoch exec_v2_close_t1 · C11 2단계 · P0-08/09 · M1M2 · P0-13 · R2 · B08 상한 · B5M. 뒤따름: R3R(B09 probe·safety_guard) · V6 · 프롬프트 허용 목록 · B5 라벨 · 카탈로그 차단. (직전 정지: 2026-09-24 10:2x 도훈 지시 '무인 1계층 리서치는 멈춰줘' — PIT C11 봉쇄·수리)",
@@ -36,7 +38,11 @@
     "decided_by": "dohoon",
     "decided_at": "2026-09-23",
     "decision_ref": "06_Registry/decision_register.json R1-L2-SELECTION-TYPE · R1-L2-AUTO-ENABLED (director.act=false 유지 · R1-DIRECTOR-ACT)",
-    "arms": ["T", "S", "C"],
+    "arms": [
+      "T",
+      "S",
+      "C"
+    ],
     "arm_timeout_min": 40,
     "min_free_gb": 6,
     "fallback_max_modules": 200,
@@ -76,19 +82,40 @@
     "guards_note": "무한 탐색 방지 가드(판정은 lib 가 jlog overlay_guard_<name> 으로 남긴다): H1 entry 당 자동 1회·재설계 상한·비활성 entry 거부 · H2 사이클당 max_new_arms ∧ 하루 source=b5_design 방출 ≤ daily_arm_cap(방출 원장 집계 · 집계 실패 = 할당 0) · H3 새 arm 을 낸 최근 stagnation_window 라운드의 arm 이 G2 pass B5 칸의 자기 층에 한 번도 못 들면 compose_only(배합만 · 배합 라운드로 창을 비우는 교대 우회를 막으려고 arm 을 낸 라운드만 센다 · 해제 = 그 arm 중 하나가 pass) · H4 활성 생성 arm(상주 제외) > max_active_generated 면 compose_only. 크기·무결성(H5·H6 — 층·칸 상한, 상주·중복·이미 잰 스택 제외)은 verify 가, 방출 정직성(H7)·폴백 기록(H8)은 레인이 진다. 수치는 예산 backstop 이지 연구 제한이 아니다: max_cells 8 = 격자 한 블록(5칸) 위의 설계 여유 · entry 총 15칸 = rfbd_verify 상한(B5_16..B5_30) · max_redesign_rounds 1 = 측정을 보고 다시 짜는 사후 선택을 한 번으로 묶는다 · daily_arm_cap 6 = 자동 사이클 두 번분 · max_active_generated 40 = 현 활성 생성 arm 수(한 자릿수)의 수 배 — 재보정은 도훈 권한."
   },
   "lanes": {
-    "order": ["prereg", "new_paper", "promotion", "counterfactual"],
+    "order": [
+      "prereg",
+      "new_paper",
+      "promotion",
+      "counterfactual"
+    ],
     "order_source": "06_Registry/decision_register.json id=D-G (도훈 2026-09-23) '레인 순서 prereg > 신규 논문 > 승격 > 반사실' — 러너 active 선택 순위(rf_lane_rules.R::rf_lane_select)",
-    "priority_enum": ["prereg", "normal", "idle_only"],
+    "priority_enum": [
+      "prereg",
+      "normal",
+      "idle_only"
+    ],
     "priority_enum_source": "플랜 qvest-1-drifting-eclipse P1-08 'entry priority(prereg/normal/idle_only)와 experiment 필드' (D-G 이행 · 원장 writer rf_open_entry(priority=, experiment=) · rf_set_entry_priority)",
-    "priority_lane": {"prereg": "prereg", "normal": "", "idle_only": "counterfactual"},
+    "priority_lane": {
+      "prereg": "prereg",
+      "normal": "",
+      "idle_only": "counterfactual"
+    },
     "priority_lane_note": "normal(빈 값) = 구조로 판정 — 부모 있음 = promotion · 없음 = new_paper(정본 rf_lane_rules.R::rf_entry_lane). 필드 없는 구 entry = normal.",
-    "nonblocking_priorities": ["idle_only"],
+    "nonblocking_priorities": [
+      "idle_only"
+    ],
     "nonblocking_source": "감사 D8-02(반사실 active 1건이 신규 요청 2511.12129 를 16시간 선점 — rf_replication_auto.sh ACT 가 종류 무구분) · D-G 레인 순서에서 반사실이 최하위 — 반사실은 개설·충실구현을 막지 않고, 요청이 진행 중이면 러너가 반사실 tick 을 양보한다",
     "min_new_papers_per_promotion_generation": 1,
     "min_new_papers_source": "06_Registry/decision_register.json id=D-G '승격 세대당 신규 논문 ≥1' — 최근 승격 자식 개설 뒤 신규 논문 착수(원장 신규 논문 entry · 결합·실험 제외) 수. 큐가 비면 면제(next_paper generation_gate_waived_queue_empty)",
-    "request_attempt_statuses": ["exhausted_retries"],
+    "request_attempt_statuses": [
+      "exhausted_retries"
+    ],
     "request_attempt_statuses_source": "rf_replication_auto.sh 가 쓰는 요청 종결 상태 중 '논문을 실제로 시도했으나 원장 entry 없이 끝남'(자동 재시도 3회 소진) — 세대 하한의 착수로 센다. done_no_reinforce 는 skipped_base entry 를 열므로 원장에서 세고, skipped_by_skiplist 는 시도 전 차단이라 세지 않는다",
-    "request_inflight_statuses": ["pending", "in_progress", "failed_needs_session"],
+    "request_inflight_statuses": [
+      "pending",
+      "in_progress",
+      "failed_needs_session"
+    ],
     "request_inflight_statuses_source": "reinforce_auto_next_paper.R §1.7 halt_request_pending 과 같은 집합 — 이 상태 동안 반사실(비차단) entry 는 러너 tick 을 양보한다(원장 동시 쓰기 차단)",
     "note": "유기체 밖 사람 규칙(설계 최종판 §1.1·§11 · 2026-09-25). 판정 정본 = 02_Infrastructure/reinforcement/rf_lane_rules.R. 이 블록이 없거나 깨지면 러너·next_paper 는 구판 거동(원장 순서 첫 active · active 전부 차단 · 세대 하한 없음)으로 돈다 — FIFO 는 설정과 무관한 수리라 그대로 선다."
   },
@@ -100,7 +127,10 @@
     "compose_only_consecutive_rounds_source": "A2-e 결정 전 권고값 — 설계 최종판 §10 A2(e) Q 권고 'stagnation_window 와 같은 값(2 라운드)을 compose_only 연속 라운드에 적용 — 도훈 확정'. 결정 레지스터에 A2-e 항목 없음(2026-09-25 22시 확인). 단위 = B5 설계 레인 라운드(원장 entry b5_design.rounds · 전 entry at 시각순 · 끝에서부터 연속 compose_only 수) — stagnation_window(arm 을 낸 라운드만 센다 · rf_b5_design_lib.R H3)와 단위가 달라 별도 키",
     "restore_on_g2_pass": true,
     "restore_source": "D-G 'pass 시 복원' — 연속 compose_only 구간 시작 뒤 유효 G2 pass(B5 칸 adversary verdict=pass ∧ A 자격 관문과 같은 표식 필터 a_eligibility_gate.json vintage_flag 를 지난 칸) 1건 이상이면 즉시 전량 복원",
-    "decision_ref": ["D-G", "ORGANIC-DE"],
+    "decision_ref": [
+      "D-G",
+      "ORGANIC-DE"
+    ],
     "accounting": "ORGANIC-DE Q②′(α) 고정 사람 규칙 예외(성과 소비 — 전기간 적대검증 판정) · N_program 계상: 러너 jlog b5_budget_decision.n_evidence = 이 결정이 소비한 적대검증 판정 칸 수. 시행 로그(P1-02 06_Registry/rf_trial_log.jsonl)가 배선되면 그쪽이 정본",
     "scope": "B5 에 아직 시도가 없는 entry 만(진입한 B5 는 동결). B5 칸 = 상주 칸 전부 + 비상주 앞 standing_plus 칸(설계·격자 순서). 예산은 최종 B5 칸 수로 재도출(rf_budget_auto n_b5_cells — 축소분 재가산 차단)",
     "kill_switch": "enabled=false 면 즉시 항등(B5 칸 불변)",
@@ -216,17 +246,78 @@
         "effort": "xhigh",
         "note": "★v10.01(2026-10-13) 메커니즘 지도 추출(paper_atlas_run.sh) — 원문 판독 · 수치 위치 확인이라 판단형(Opus). 산출은 스테이징뿐이고 R 검증기가 위치 없는 수치를 거부하므로 max 까지는 불필요(xhigh)."
       },
-      "analyst": {"model": "opus", "effort": "max", "note": "★v10.01 D12 — 전략 분석가(전략 이해서). 레인 스크립트는 처방 루프 구축 단계에서 생긴다(개선안 §10.4)."},
-      "prescriber": {"model": "opus", "effort": "max", "note": "★v10.01 D12 — 처방 담당(처방전 1~3건)."},
-      "reviewer": {"model": "opus", "effort": "max", "note": "★v10.01 D12 — 리뷰어(사전 가설 대비 기전 판독 · 다음 수). 정보 경계 τ_D 2022-12-31."},
-      "steward": {"model": "opus", "effort": "max", "note": "★v10.01 D12 — 철학 감독관(의견 · 보류 요청만 · 등급 권한 없음)."},
-      "factor_definer": {"model": "opus", "effort": "xhigh", "note": "★v10.01 D12 — 팩터 정의자(논문 근거 → 정의서)."},
-      "coder": {"model": "sonnet", "effort": "high", "note": "★v10.01 D12 — 엔진 · 처방 · 팩터 코더(사양서 → 코드). PIT 는 모델이 아니라 미래값 섭동 검사가 지킨다."},
-      "report_writer": {"model": "sonnet", "effort": "medium", "note": "★v10.01 D12 — 보고 작성(정형 데이터 → 문장). 판정에 닿지 않는다."}
+      "analyst": {
+        "model": "opus",
+        "effort": "max",
+        "note": "★v10.01 D12 — 전략 분석가(전략 이해서). 레인 스크립트는 처방 루프 구축 단계에서 생긴다(개선안 §10.4)."
+      },
+      "prescriber": {
+        "model": "opus",
+        "effort": "max",
+        "note": "★v10.01 D12 — 처방 담당(처방전 1~3건)."
+      },
+      "reviewer": {
+        "model": "opus",
+        "effort": "max",
+        "note": "★v10.01 D12 — 리뷰어(사전 가설 대비 기전 판독 · 다음 수). 정보 경계 τ_D 2022-12-31."
+      },
+      "steward": {
+        "model": "opus",
+        "effort": "max",
+        "note": "★v10.01 D12 — 철학 감독관(의견 · 보류 요청만 · 등급 권한 없음)."
+      },
+      "factor_definer": {
+        "model": "opus",
+        "effort": "xhigh",
+        "note": "★v10.01 D12 — 팩터 정의자(논문 근거 → 정의서)."
+      },
+      "coder": {
+        "model": "sonnet",
+        "effort": "high",
+        "note": "★v10.01 D12 — 엔진 · 처방 · 팩터 코더(사양서 → 코드). PIT 는 모델이 아니라 미래값 섭동 검사가 지킨다."
+      },
+      "report_writer": {
+        "model": "sonnet",
+        "effort": "medium",
+        "note": "★v10.01 D12 — 보고 작성(정형 데이터 → 문장). 판정에 닿지 않는다."
+      }
     },
     "policy_20261013": "★v10.01 D12(도훈 채택 2026-10-13) — 역할별 재배정: 판단(판독 · 분석 · 처방 · 리뷰 · 감사 · 감독 · Judge) = Opus · 명확한 사양 실행(코딩 · 분류 · 요약) = Sonnet · Fable 미사용(llm.fable_limit_fallback 은 Fable 레인이 없어 비활성). 퇴역 레인 키 삭제: b1_design · lcode_mechanism · overlay_propose · b5_design · alpha_search_queue · mode_queue_research · factor_deep_recheck · grid_propose(구 강화 격자 · v10 퇴역 레인). replication 은 판독(Opus max) / 코딩(Sonnet high) 분할 전까지 opus/max 단일. 설계 = 04_Research/01_reports/l1_prescription_redesign_20261013/README.md §10.",
     "policy_20260923": "★도훈 지시 2026-09-23 '무인실행에서 LLM 개입부 모두 opus max 노력으로' — 전 레인 opus/max. 해석기 밖 레인 5종(paper_router·alpha_search_queue·mode_queue_research·factor_deep_recheck·grid_propose)도 rf_llm_resolve 로 배선. 축별 모델 파일(06_Registry/rf_fidelity_axes.json · rf_overlay_adversary_axes.json)도 opus/max. ⚠트레이드오프: 설계자(B5)와 G1 감사자가 같은 계열(opus)이 되어 '다른 계열로 감사' 원칙(overlay_audit note)이 약해진다 — 되돌리기 = prev_setting_20260923.",
-    "prev_setting_20260923": {"replication": ["fable", "max"], "fidelity_audit": ["opus", "xhigh"], "b1_design": ["opus", "high"], "lcode_mechanism": ["opus", "high"], "overlay_propose": ["opus", "high"], "overlay_audit": ["opus", "xhigh"], "b5_design": ["fable", "max"], "cleaner_distill": ["opus", "high"]},
+    "prev_setting_20260923": {
+      "replication": [
+        "fable",
+        "max"
+      ],
+      "fidelity_audit": [
+        "opus",
+        "xhigh"
+      ],
+      "b1_design": [
+        "opus",
+        "high"
+      ],
+      "lcode_mechanism": [
+        "opus",
+        "high"
+      ],
+      "overlay_propose": [
+        "opus",
+        "high"
+      ],
+      "overlay_audit": [
+        "opus",
+        "xhigh"
+      ],
+      "b5_design": [
+        "fable",
+        "max"
+      ],
+      "cleaner_distill": [
+        "opus",
+        "high"
+      ]
+    },
     "prev_setting": {
       "model": "opus",
       "effort": "max",
@@ -290,7 +381,8 @@
   "promote_extend_min_delta": 0.01,
   "promote_extend_note": "★도훈 결정 2026-09-21 — 승격 상한을 '깊이' 가 아니라 **게이트 축의 개선** 으로 옮긴다. 사연: 22632_combo 사슬은 세 세대가 전부 부모를 넘었는데(PORT_t 3.202→3.592→3.806→4.349) depth 4 에서 promote_skipped{depth_cap} 로 잘렸다 — 조건 ①(부모 초과)은 통과했고 오직 깊이만이 막았다. 그런데 상한의 원 사유는 성능 포화가 아니라 예산 공정성이었다. 한편 Grade A 를 막는 축은 Calmar 하나이고(constraint_defaults.json::tier_graduation — MDD 직접 문턱 없음) 그 증분은 +0.072→+0.033→+0.011 로 감속 중이다. 그래서 판정 축을 깊이에서 게이트 축으로 옮기면 '개선 중인데 잘림' 과 '포화인데 계속 돔' 을 동시에 막는다 — 포화가 스스로 상한이 된다. promote_extend_min_delta 0.01 의 근거는 **관측된 최소 증분(+0.011)** 이다: 그보다 작은 개선으로 한 세대(30~36칸 · 약 하루)를 더 태우는 것은 이 사슬이 한 번도 낸 적 없는 크기에 예산을 거는 일이다. promote_max_depth_hard 는 원 사유(예산 공정성)를 남긴 최종 방어선 — 개선이 이어져도 한 논문이 큐를 무한히 먹지 않는다. ★게이트 축 값이 없는 구판 entry 는 연장하지 않는다(gate_axis_unknown) — 확인 못 하는 것을 통과시키지 않는다.",
   "promote_note": "★도훈 지시 2026-08-30 'B등급 이상 전략에 대해 추가 강화프로세스'. 20칸 소진 시 승자가 B 이상이면 그 승자 구성(factors/weighting/universe)을 carry 로 물려 새 20칸 entry 를 열고, 다음 논문은 그 사슬이 끝난 뒤로 밀린다. 승계 조건 2중: ①부모 최고 PORT_t 초과(못 넘으면 같은 실패의 재생산) ②깊이 ≤ promote_max_depth(한 논문이 큐 예산을 무한히 먹지 않게). ★병렬 폭은 늘리지 않았다 — 실측상 RAM 이 제약(워커 1개 ≈ 3GB · 총 31.7GB)이라 다논문 병렬은 농도를 나누는 것이지 처리량을 늘리지 않는다(도훈 결정 2026-08-30: 현행 유지).",
-  "daily_cap_raise_20260921": "120 → 200 (도훈 '자체판단하고 리서치 지속' 2026-09-21). 근거: 이 값이 **용량 아래에서** 루프를 세우고 있었다 — 관측 일간 최대는 157칸(2026-09-13)인데 상한이 120이라 오늘 18:28 에 halt_daily_cap 으로 정지했다(done 120/cap 120). 200 은 관측 최대 위 여유값이고, 실제 자원 가드는 이 값이 아니라 parallel_cells=5(워커당 약 3GB · 총 31.7GB)다 — 그건 건드리지 않았다. 이 값은 페이싱 가드다. ★되돌리기: 이 키를 지우고 daily_cap 을 120 으로. ", "daily_cap_note": "★도훈 지시 2026-08-30 '무한리서치 진행'. 구값 20 은 배치 4회(약 1시간) 만에 루프를 세워 무한 진행과 양립했다. 120 은 실질 상한이 아니다 — 셀 1칸이 약 14분이라 하루 물리적 최대가 100칸 안팛이다. 즉 폭주 backstop 은 유지하되 정상 진행을 막지 않는다.",
+  "daily_cap_raise_20260921": "120 → 200 (도훈 '자체판단하고 리서치 지속' 2026-09-21). 근거: 이 값이 **용량 아래에서** 루프를 세우고 있었다 — 관측 일간 최대는 157칸(2026-09-13)인데 상한이 120이라 오늘 18:28 에 halt_daily_cap 으로 정지했다(done 120/cap 120). 200 은 관측 최대 위 여유값이고, 실제 자원 가드는 이 값이 아니라 parallel_cells=5(워커당 약 3GB · 총 31.7GB)다 — 그건 건드리지 않았다. 이 값은 페이싱 가드다. ★되돌리기: 이 키를 지우고 daily_cap 을 120 으로. ",
+  "daily_cap_note": "★도훈 지시 2026-08-30 '무한리서치 진행'. 구값 20 은 배치 4회(약 1시간) 만에 루프를 세워 무한 진행과 양립했다. 120 은 실질 상한이 아니다 — 셀 1칸이 약 14분이라 하루 물리적 최대가 100칸 안팛이다. 즉 폭주 backstop 은 유지하되 정상 진행을 막지 않는다.",
   "factor_autoregister": {
     "enabled": true,
     "min_grade": "B",
