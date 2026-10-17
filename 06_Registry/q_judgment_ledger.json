@@ -1,6 +1,6 @@
 {
  "schema": "q_judgment_ledger_v1",
- "updated_at": "2026-10-17T04:00:42+0900",
+ "updated_at": "2026-10-18T08:19:35+0900",
  "judgments": [
   {
    "id": "J-20261016-001",
@@ -300,8 +300,10 @@
    ],
    "expectation": "[8.1r] 거짓 실패 0 · 진짜 실패는 그대로 실패",
    "confidence": 0.85,
-   "status": "open",
-   "reviews": [],
+   "status": "reviewed",
+   "reviews": [
+    "R-20261017-005"
+   ],
    "supersedes": null,
    "superseded_by": null
   },
@@ -325,8 +327,10 @@
    ],
    "expectation": "작업 단위 서술형 커밋이 자동 커밋보다 먼저 남는다",
    "confidence": 0.7,
-   "status": "open",
-   "reviews": [],
+   "status": "reviewed",
+   "reviews": [
+    "R-20261017-005"
+   ],
    "supersedes": null,
    "superseded_by": null
   },
@@ -351,8 +355,10 @@
    ],
    "expectation": "등록 뒤 판정 규칙 결함 0(평가 시 발견되면 이 판단이 틀렸다)",
    "confidence": 0.75,
-   "status": "open",
-   "reviews": [],
+   "status": "reviewed",
+   "reviews": [
+    "R-20261017-005"
+   ],
    "supersedes": null,
    "superseded_by": null
   },
@@ -376,8 +382,10 @@
    ],
    "expectation": "새 세션 호출당 맥락 중앙 ≤ 0.5M · 10-23 19:00 전 재소진 없음(반증: 계량이 출력 위주라 주 세션 몫 < 40% 이거나 무조치로도 소진 없음)",
    "confidence": 0.6,
-   "status": "open",
-   "reviews": [],
+   "status": "reviewed",
+   "reviews": [
+    "R-20261017-005"
+   ],
    "supersedes": null,
    "superseded_by": null
   },
@@ -402,8 +410,10 @@
    ],
    "expectation": "14일 안에 이 3규칙 알림이 도훈 조치로 이어진 사건 ≥ 1 이거나, 거짓 알림 0",
    "confidence": 0.65,
-   "status": "open",
-   "reviews": [],
+   "status": "reviewed",
+   "reviews": [
+    "R-20261017-005"
+   ],
    "supersedes": null,
    "superseded_by": null
   },
@@ -431,6 +441,183 @@
    "status": "reviewed",
    "reviews": [
     "R-20261017-003"
+   ],
+   "supersedes": null,
+   "superseded_by": null
+  },
+  {
+   "id": "J-20261017-007",
+   "at": "2026-10-17T18:35:06+0900",
+   "op": "OP-20261017-P2OVL",
+   "kind": "round_selection",
+   "summary": "1계층 재개 = P2OVL(P2 방어 · HRP(E3·E2) 기저 위 조건부 · 횡단면 노출 층) S1 설계 — 데이터 판본 교체(퀀티 단일 · 2024-12-30 복원 · px1000 epoch) 뒤라 RX0 재측정 필수",
+   "rationale": "세션 재개 저널의 진행 중 작업 1순위(도훈 결정 CHARTER-GAPS-2 해소 · 09:54) · P3R03 철학 P2 C-028 수용(구성 레버 포화 → P2 시변 층) · 등록부 P2 ready · 다른 진행 작업 MSM-A 는 2계층·BOOK 관문(11-01 리밸 전 낮 창) 몫",
+   "framework_refs": [
+    "§research-program 0 · lean-loop 입력 ②"
+   ],
+   "evidence": [
+    "session_resume OP-20261017-P2OVL · decision_register CHARTER-GAPS-2-20261017 resolved · P3R03 ROUND_REPORT next_probes 1·2 · DIST-GEN-155/027(스칼라 총노출 축소형 실패 · 횡단면 차등형만 t>2)"
+   ],
+   "alternatives": [
+    "P1 수익 엔진 라운드(재료 59) 또는 P4 조립 — 기각: P3R03 의 다음 탐침이 P2 를 가리키고 헌장 빈칸 6~8 적용 시점이 P2OVL 사전등록"
+   ],
+   "expectation": "장치 후보 = 조건부 횡단면형 3 + 다변량 상태 스칼라 1(비교) · 두 엔진 × 4 = 8칸 + RX0 2 + lag1 스트레스 8 · 통과 기준 = 헌장 빈칸 1~8 + β 짝 판정",
+   "confidence": 0.7,
+   "status": "reviewed",
+   "reviews": [
+    "R-20261017-005",
+    "R-20261017-006"
+   ],
+   "supersedes": null,
+   "superseded_by": null
+  },
+  {
+   "id": "J-20261017-008",
+   "at": "2026-10-17T18:51:47+0900",
+   "op": "OP-20261017-SFWATCH",
+   "kind": "ops",
+   "summary": "구성요소 감시 실패 3건 처리 — daily_refresh 는 오늘 수리분이라 ack(fixed) · scheduler 전담 팬 1명 진단 · morning_chain 실패는 scheduler 상태 중계(task_health 경보)라 팬 생략 → scheduler 진단 뒤 known 처리",
+   "rationale": "규약 §10 은 실패 구성요소마다 전담 팬. morning_chain 이상 문구가 task_health 의 scheduled_task_unhealthy 중계이고 12:01 신규실패(AxiomActivate exit_1 · ReinforceAutoLoop 0xFFFFFFFF)가 scheduler 쪽 사건이라 원인 1개에 팬 1명 — 주간 한도(J-20261017-004) 고려",
+   "framework_refs": [
+    "§10"
+   ],
+   "evidence": [
+    "superfan_watch show --open(18:49) · task_health.log 513-514행"
+   ],
+   "alternatives": [
+    "구성요소마다 팬 2명(morning_chain · scheduler)"
+   ],
+   "expectation": "scheduler 진단이 두 이상의 공통 원인을 특정 · 아니면 morning_chain 팬 추가",
+   "confidence": 0.7,
+   "status": "open",
+   "reviews": [],
+   "supersedes": null,
+   "superseded_by": null
+  },
+  {
+   "id": "J-20261017-009",
+   "at": "2026-10-17T19:16:01+0900",
+   "op": "OP-20261017-P2OVL",
+   "kind": "candidate_selection",
+   "summary": "P2R03 후보 6 = 하방베타 순위 축소 · 특이변동 순위 축소 · 벤치 상태 벡터 거리 게이트 · 확장창 꼬리 확률 게이트 · 추세 현금(재시험) · 낙폭 브레이크(재시험) × 엔진 E2 · E3 + RX0 2 + lag-1 진단 12 = 26칸",
+   "rationale": "비대칭 원천 ②(시변 노출)의 대표를 원리별로 1종씩(횡단면 조건부 2 · 다변량 상태 1 · 분포 표적 1 · 추세 1 · 낙폭 1). 추세 · 낙폭은 P0R01/P2R02 측정이 전액 현금 결함 위라 무효(b234afb11) — 재시험. 변동성 타기팅은 유효 시험(0 노출 달 0)에서 노출 짝 미통과라 제외. 저변동 · 퀄리티 틸트는 선택 변경(원천 ③)이라 같은 선정 집합 대조 밖 — 다음 라운드",
+   "framework_refs": [
+    "§3 · §7"
+   ],
+   "evidence": [
+    "DESIGN.md v2 §3 표 · P0R01 C1/C3/C6 로그(완전현금 102 · 2 · 102개월) · cash_month_probe(0 노출 95개월 전부 수익 ≠ 0) · T1 C-033"
+   ],
+   "alternatives": [
+    "v1 4종 그대로(추세 · 낙폭 제외 유지)"
+   ],
+   "expectation": "장치 중 0~2개가 두 엔진 ③(β 짝) 통과 · 추세 현금은 빠른 급락 ④에서 약함(2020 V자) · ML 꼬리 게이트는 강세 참여 ⑥ 위험",
+   "confidence": 0.6,
+   "status": "reviewed",
+   "reviews": [
+    "R-20261017-006",
+    "R-20261018-002"
+   ],
+   "supersedes": null,
+   "superseded_by": null
+  },
+  {
+   "id": "J-20261017-010",
+   "at": "2026-10-17T19:16:02+0900",
+   "op": "OP-20261017-P2OVL",
+   "kind": "design",
+   "summary": "P2R03 기저 = HRP → 엔진 자체 구성(E2 EW · E3 엔트로피) · ⑩ lag-1 = 진단 꼬리표(통과 조건 = strict-PIT 구성 증거) · ⑫ S 비열등 · ⑬ 복리 경로 추가",
+   "rationale": "헌장 '같은 엔진 기준' = 엔진 자체 구성(10-16 사례) · HRP 기저는 HRP 강세 손실을 기준에 묻고 정적 β 축소와 층 효과를 섞는다(T1 C-034). lag-1 은 이 경로에서 strict A/B 가 구성상 0 이라 누출 판별력이 없고, 월간 층의 빠른 급락 방어를 구조적으로 기각한다 — pit.md 는 lag-1 을 의심 신호로 · strict A/B 를 판정으로 둔다",
+   "framework_refs": [
+    "§5"
+   ],
+   "evidence": [
+    "DESIGN.md v2 §0 · §5 ⑩ 해설 · rf_cell_engine.R assert_overlay_pit(한계 = 홀딩 시작 전날) · pit.md C5"
+   ],
+   "alternatives": [
+    "lag-1 ③④ 유지를 통과 조건으로(v1)"
+   ],
+   "expectation": "철학 P1 이 ⑩ 완화를 '향함'으로 보거나, 아니면 이견 — 이견이면 반영 여부를 근거로 정한다",
+   "confidence": 0.65,
+   "status": "reviewed",
+   "reviews": [
+    "R-20261017-006",
+    "R-20261018-002"
+   ],
+   "supersedes": null,
+   "superseded_by": null
+  },
+  {
+   "id": "J-20261017-011",
+   "at": "2026-10-17T20:36:46+0900",
+   "op": "OP-20261017-P2OVL",
+   "kind": "design",
+   "summary": "CHARTER-GAPS-3 항목 1 권고 정정 — 'B(타이밍 = 기록만 · 가점은 선택 방어만)'를 '현행 v3.1 그대로'라 적은 것은 틀림: MC8 판정 = 평균 노출 플라시보라 위기 타이밍은 이미 selection_defense(가점 대상) · B 는 강화였다 → 수정 권고 A′(가점 자격 + β 짝 깊은 위기 · 빠른 급락 · 두 엔진 · 느린 약세 lag-1 유지)",
+   "rationale": "도훈 질문('어떤 의도로?')에 의도를 재도출하다 matched_controls.R:28 정의(종목 선택 또는 노출 타이밍)와 판정 플라시보 × Ē 를 다시 읽음 · 철학의 핵심이 위기 방어라 범주 배제보다 증거 문턱이 맞다",
+   "framework_refs": [
+    "§5"
+   ],
+   "evidence": [
+    "02_Infrastructure/contracts/matched_controls.R:26-28 · decision_register CHARTER-GAPS-3-20261017"
+   ],
+   "alternatives": [
+    "B 유지"
+   ],
+   "expectation": "도훈이 A 또는 A′ 를 고른다",
+   "confidence": 0.7,
+   "status": "reviewed",
+   "reviews": [
+    "R-20261018-002"
+   ],
+   "supersedes": null,
+   "superseded_by": null
+  },
+  {
+   "id": "J-20261018-001",
+   "at": "2026-10-18T03:55:07+0900",
+   "op": "OP-20261017-P2OVL",
+   "kind": "ops",
+   "summary": "P2R03 측정 재기동(도훈 승인) — E2 RX0 DNN 학습이 VRAM 초과(시스템 메모리 폴백)로 한 달 ~7분 → 1.5~3시간 · PYTORCH_CUDA_ALLOC_CONF=roundup_power2_divisions:2 런처(measure_now_vram.sh)로 재기동 · 완료 달 내용 주소 캐시 재사용",
+   "rationale": "캐시 secs 471(23:55) → 5,983(01:35) → 11,453(03:07) · 스텝 수는 48K → 54K 로 거의 같아 스텝당 시간 12~25배 · 성능 계수기: python 워커 8 = 전용 0.86~1.5GB + 공유 0.2~0.4GB · 어댑터 전용 11.7GB + 공유 2.8GB · 학습 텐서 Xt 186→230MB(달마다 2~6MB 증가 → 2MB 반올림 세그먼트를 매달 새로 잡음) · 할당 시험 커지는 할당 12회 예약 66MB → 설정 시 24MB · 그대로 두면 RX0 24~40시간 + 00:03 갱신이 RAWDATA(재기록 · 같은 크기) · 컨센서스(+101KB) 지문을 바꿔 묶음 재측정 규칙(measure.sh rules.vintage_group)이 어차피 E2 묶음을 다시 잰다 · 일하는 프로세스 정지는 도훈 확인 뒤(feedback 10-17)",
+   "framework_refs": [
+    "measure.sh §mm · rules.vintage_group · feedback-preflight-before-expensive-runs-20261017"
+   ],
+   "evidence": [
+    "04_Research/programs/P2_DEFENSE/P2R03_conditional_overlay/measure_now_vram.sh · results/measure.log 03:53:45 줄"
+   ],
+   "alternatives": [
+    "그대로 둔다(24~40시간 + 묶음 재측정) · 엔진 워커 상한 수정(핀 파일 engine.R — 사전등록 예외라 도훈 결정) · NVIDIA 시스템 메모리 폴백 끄기(시스템 설정 — 도훈 몫)"
+   ],
+   "expectation": "재기동 뒤 캐시 적중 ≈ 136(갱신이 과거 입력을 안 바꿨다면) · 남은 ≈ 125개월 2시간 안팎 · 워커 공유 GPU 메모리 0 근처 유지 · RX0 이후 칸 · 평가 포함 07~08시 완료",
+   "confidence": 0.75,
+   "status": "reviewed",
+   "reviews": [
+    "R-20261018-001"
+   ],
+   "supersedes": null,
+   "superseded_by": null
+  },
+  {
+   "id": "J-20261018-002",
+   "at": "2026-10-18T07:36:34+0900",
+   "op": "OP-20261017-P2OVL",
+   "kind": "verdict",
+   "summary": "P2R03 판정 = falsified(판정 14/14 · 두 엔진 통과 0 · 선택 없음) — ③ β 짝 깊은 위기 과반 0/14(최대 0.50 = 2/4 · D1 · D5 · D7 두 엔진) · ④ 빠른 급락 β 짝 D5 · D7 = 0.75(두 엔진) · ⑤ β 비 개선 D5 · D7(두 엔진) · ⑥ 강세 구간 참여 미달(D5 0.0 · D7 0.2/0.4) · 집중 0 · D3 = 느린 약세 lag-1 붕괴 → 등록 규칙대로 누출 조사 의무(선택 보류)",
+   "rationale": "판정 = evaluate.R 기계 적용(사전등록 md5 41f4a9b4 · 평가 지문 = 측정 지문 E2 · E3 · 측정 30/30) · 해석: 시변 노출 층 7종의 위기 방어는 같은 β 현금 사본(평균 노출 축소)을 깊은 위기 과반에서 넘지 못함 = 노출(β) 방어 · 단 추세 현금(D5) · 낙폭 재진입(D7)은 빠른 급락에서 β 사본을 두 엔진 모두 3/4 이기고 하락/상승 β 비를 낮춤(E2 1.26→0.53 · 0.83 · E3 0.98→0.32 · 0.57) — 빠른 급락 방어 원천 후보이나 강세 참여(반등 상실)와 깊은 위기 2/4 에서 막힘 · 보는 창 지표만 인용",
+   "framework_refs": [
+    "prereg.final_selection_rule ①~⑬ · 헌장 §5 빈칸 9 A′ · 10~13 · lean-loop 라운드 4"
+   ],
+   "evidence": [
+    "04_Research/programs/P2_DEFENSE/P2R03_conditional_overlay/results/evaluation_visible.json · stage_artifacts/programs/P2_DEFENSE/P2R03_conditional_overlay/visual/p2r03_cells.csv"
+   ],
+   "alternatives": [
+    "D5 · D7 을 '부분 통과'로 승격(등록 규칙 밖 · 금지) / 과반 문턱 > 0.5 를 사후 ≥ 0.5 로 완화(R2 위반 · 금지) / 판정 보류하고 위기 표본 확대(사전등록 밖)"
+   ],
+   "expectation": "철학 P2 = 중립(빠른 급락 β 짝 승리는 향함 · 강세 참여 상실은 역행) · 판단 T2 = 해석 · 문턱 적용이 등록 규칙과 일치 · D3 누출 조사 = 신호 타이밍 정상(lag-1 붕괴 = 상태 신호의 빠른 소멸) 예상 — 조사로 확인",
+   "confidence": 0.7,
+   "status": "reviewed",
+   "reviews": [
+    "R-20261018-001",
+    "R-20261018-002"
    ],
    "supersedes": null,
    "superseded_by": null
@@ -556,6 +743,110 @@
     "C-20261017-030",
     "C-20261017-031",
     "C-20261017-032"
+   ]
+  },
+  {
+   "id": "R-20261017-005",
+   "at": "2026-10-17T19:00:09+0900",
+   "role": "judgment",
+   "trigger": "T1",
+   "scope": [
+    "J-20261017-007",
+    "J-20261017-001",
+    "J-20261017-002",
+    "J-20261017-003",
+    "J-20261017-004",
+    "J-20261017-005"
+   ],
+   "file": "04_Research/programs/_supervision/superfan/20261017_1854_T1.md",
+   "round": "P2OVL",
+   "direction": null,
+   "challenges": [
+    "C-20261017-033",
+    "C-20261017-034",
+    "C-20261017-035",
+    "C-20261017-036",
+    "C-20261017-037",
+    "C-20261017-038",
+    "C-20261017-039",
+    "C-20261017-040",
+    "C-20261017-041",
+    "C-20261017-042",
+    "C-20261017-043"
+   ]
+  },
+  {
+   "id": "R-20261017-006",
+   "at": "2026-10-17T19:36:27+0900",
+   "role": "philosophy",
+   "trigger": "P1",
+   "scope": [
+    "J-20261017-007",
+    "J-20261017-009",
+    "J-20261017-010"
+   ],
+   "file": "04_Research/programs/_supervision/superfan/philosophy/20261017_1931_P1_P2R03.md",
+   "round": "P2R03_conditional_overlay",
+   "direction": null,
+   "challenges": [
+    "C-20261017-044",
+    "C-20261017-045",
+    "C-20261017-046",
+    "C-20261017-047",
+    "C-20261017-048",
+    "C-20261017-049",
+    "C-20261017-050",
+    "C-20261017-051",
+    "C-20261017-052",
+    "C-20261017-053",
+    "C-20261017-054"
+   ]
+  },
+  {
+   "id": "R-20261018-001",
+   "at": "2026-10-18T08:01:22+0900",
+   "role": "judgment",
+   "trigger": "T2",
+   "scope": [
+    "J-20261018-002",
+    "J-20261018-001"
+   ],
+   "file": "04_Research/programs/_supervision/superfan/20261018_0755_T2.md",
+   "round": "P2R03_conditional_overlay",
+   "direction": null,
+   "challenges": [
+    "C-20261018-001",
+    "C-20261018-002",
+    "C-20261018-003",
+    "C-20261018-004",
+    "C-20261018-005",
+    "C-20261018-006",
+    "C-20261018-007"
+   ]
+  },
+  {
+   "id": "R-20261018-002",
+   "at": "2026-10-18T08:12:10+0900",
+   "role": "philosophy",
+   "trigger": "P2",
+   "scope": [
+    "J-20261018-002",
+    "J-20261017-011",
+    "J-20261017-009",
+    "J-20261017-010"
+   ],
+   "file": "04_Research/programs/_supervision/superfan/philosophy/20261018_0802_P2_P2R03.md",
+   "round": "P2R03_conditional_overlay",
+   "direction": "neutral",
+   "challenges": [
+    "C-20261018-008",
+    "C-20261018-009",
+    "C-20261018-010",
+    "C-20261018-011",
+    "C-20261018-012",
+    "C-20261018-013",
+    "C-20261018-014",
+    "C-20261018-015"
    ]
   }
  ],
@@ -1618,6 +1909,904 @@
    "role": "philosophy",
    "hold_request": false,
    "responses": [],
+   "outcome": null,
+   "outcome_note": null
+  },
+  {
+   "id": "C-20261017-033",
+   "at": "2026-10-17T19:00:27+0900",
+   "review": "R-20261017-005",
+   "target": "J-20261017-007",
+   "grade": "challenge",
+   "rule": null,
+   "claim": "후보 축소('조건부 횡단면형 3 + 스칼라 1')의 유일한 성과 근거 DIST-GEN-155/027 은 전기간 평균(τ_D 이후 포함 — 카드 '현 판정은 전기간 평균이다' · OOS IS65/OOS35) · 구 축 · 구 고정 격자 B4/B5(08-30~09-13 · 일부 계보 C1 표식) · 지표 = 블록 수익 t 로, 이 라운드 판정(β 짝 깊은 위기 · β 비대칭 · 빠른 급락)과 다른 축이다. 같은 축 보는 창 증거 P2R02 는 이 계열을 0칸 시험했고, 검증 장치 2종(C4 저변동 · C6 추세 현금+저변동 — V2 는 β 미짝)은 제외 사유 없이 빠졌다. book_convexity_brake 는 카탈로그상 scalar_exposure 이고 자기 정의상 국면 급변에 반응하지 않는다(실제 = 횡단면 2 + 스칼라 2 · 빈칸 6 과 기전 불일치). 같은 시기 후속 기록(09-21 G2)도 반대 결론이라 기록상 미정리",
+   "evidence": [
+    "qepm/memory/axioms/distilled/DIST-GEN-155.json",
+    "qepm/memory/axioms/distilled/DIST-GEN-027.json",
+    "stage_artifacts/programs/P2_DEFENSE/P2R02_device_cross_engine/prereg.json",
+    "stage_artifacts/programs/P2_DEFENSE/P2R02_device_cross_engine/ROUND_REPORT.md",
+    "06_Registry/overlay_catalog.json",
+    "00_Lawbook/specs/q_autonomy_decision_framework.md"
+   ],
+   "alternative": "(a) 원리별 후보표를 보는 창 · 현 축 증거만으로(시변 스칼라 C1 · C2 · C3 · 상태 벡터 거리 · vol_x_turb · book_convexity / 상태 조건부 횡단면 축소 dbeta_tilt_rank · csd_idio_tilt · holdlvl_syscrowd_tilt / 정적 방어 보유 C4 · C5 / 결합 C6) — 원리마다 대표 1 + 제외 사유 (b) P2R02 검증 장치 1개(C6 권고)를 β 짝 재검증 칸으로 포함 — P4 방어 후보 목록이 β 미짝 대조로 검증됐으므로 그 신뢰 확인 · 셀 12 안에서 구 카탈로그 arm 1개와 교환 (c) DIST-GEN-155/027 은 기전 가설로만 · exposures 에 '구 축 · 전기간 블록 t 열람 — 선택 근거 아님' · 고른 구 카탈로그 arm 의 시험 창은 '노출된 변형'(C-20261017-023 선례) (d) 후보 선정은 별도 J(candidate_selection)",
+   "falsifier": "DIST-GEN-155/027 L-code 의 측정 창이 ≤ 2022-12 이고 현 epoch 계열이면 τ_D 부분은 틀렸다. 보는 창 · 현 축 증거만으로 후보표를 짜도 같은 4종이 원리별 대표로 나오고 C4 · C6 제외 사유가 기록되면 내 반대는 기록 보완에 그친다",
+   "status": "accepted",
+   "role": "judgment",
+   "hold_request": false,
+   "responses": [
+    {
+     "at": "2026-10-17T19:15:37+0900",
+     "by": "Q",
+     "kind": "accept",
+     "text": "수용 — 후보표를 보는 창 · 현 축 근거로 다시 짰다. 그 과정에서 P2R02 의 C1 · C6(추세 현금) · C3(낙폭 브레이크) 측정이 전액 현금 결함(노출 0 달 = 직전 보유 이월) 위였음을 찾아 수리했다(b234afb11).",
+     "change": "DESIGN v2: 장치 + D5 추세 현금 · D6 낙폭 브레이크 재시험 · C4/C5/C6 저변동 성분 = 선택 변경(방어적 보유)이라 범위 밖(같은 선정 집합 대조가 깨짐) — 제외 사유 명기 · 다음 라운드 후보 · DIST 열람 exposures · 후보 선정 J 별도"
+    }
+   ],
+   "outcome": "vindicated",
+   "outcome_note": "수용 뒤 보는 창 · 현 축으로 후보표를 다시 짜며 전액 현금 결함(b234afb11)을 찾았고 후보가 바뀌었다(D5 · D6 재시험 추가 — 반증 조건 '같은 4종이 원리별 대표로 나오면' 불성립). P2R03 에서 ④ · ⑤ 를 넘은 두 장치 중 하나가 D5(evaluation_visible.json).",
+   "outcome_at": "2026-10-18T08:01:23+0900"
+  },
+  {
+   "id": "C-20261017-034",
+   "at": "2026-10-17T19:00:51+0900",
+   "review": "R-20261017-005",
+   "target": "J-20261017-007",
+   "grade": "challenge",
+   "rule": null,
+   "claim": "계획 '8칸 + RX0 2'에 HRP 기저 단독 칸이 없다. P3R03 기계를 이어받으면 RX0 = 엔진 자체 구성(E2 EW · E3 엔트로피)이고 β 짝 사본 = RX0 의 k 배라, HRP + 층 칸에서 층의 시변 기여와 HRP 의 정적 β 축소(P3R03 E3 통과 3칸 = 노출(β) 방어)가 섞인다. 거꾸로 HRP 를 기준으로 삼으면 빈칸 4 · 7 '같은 엔진 기준'이 HRP 로 표류한다(헌장 빈칸 7 사례 · 보는 창 2016-02~17-10 E3 HRP 0.11 vs RX0 0.61). next_probes 2 는 HRP(E3) 기저인데 E2 HRP 기저 근거가 없다. 새 epoch(px1000 · 전환 시점 종목·일 3.9% · 과거일수록 더 빠짐)에서 엔진 자격 · 병목을 다시 재지 않았다(체계 §1 gv3_window — J-007 근거에 병목 측정 없음)",
+   "evidence": [
+    "stage_artifacts/programs/P3_CONSTRUCTION/P3R03_advanced_construction/prereg.json",
+    "stage_artifacts/programs/P3_CONSTRUCTION/P3R03_advanced_construction/ROUND_REPORT.md",
+    "00_Lawbook/specs/investment_philosophy_charter.md",
+    "06_Registry/decision_register.json",
+    "00_Lawbook/specs/q_autonomy_decision_framework.md"
+   ],
+   "alternative": "셀 = 처치 8 + 기준 4(엔진마다 RX0 = 엔진 자체 구성 — 빈칸 4 · 5 · 7 의 '같은 엔진 기준' · 알파 비열등 기준 / H0 = HRP 단독 — 층 증분과 β 짝 사본의 원천) = 12. 판정: 층 효과 = 처치 vs H0(β 사본 = H0 의 k 배) · 엔진 강점 = 처치 vs RX0. 순서: RX0 · H0 4칸을 먼저 재측정해 보는 창 gv3_window · P1 자격(t(α) ≥ 2 · 상승 포착 ≥ 0.55)으로 병목이 아직 급락기 MDD → Calmar 인지 확인한 뒤 장치 설계 고정(지문이 다르면 처치와 같은 배치로 재측정). E2 에 HRP 기저를 쓰는 이유 1줄 — 아니면 E2 는 엔진 자체 구성 위에 층",
+   "falsifier": "'RX0 2'가 이미 H0 를 뜻하고 엔진 자체 구성 RX0 도 같은 배치로 함께 재거나, 사전등록이 빈칸 4 · 7 기준 = 엔진 자체 구성 · β 사본 = H0 로 정의하면 중복이다. 새 epoch RX0 에서 병목 순서가 그대로면 '먼저 재기'는 실익이 없었다",
+   "status": "accepted",
+   "role": "judgment",
+   "hold_request": false,
+   "responses": [
+    {
+     "at": "2026-10-17T19:15:37+0900",
+     "by": "Q",
+     "kind": "accept",
+     "text": "수용 — 헌장 '같은 엔진 기준' = 엔진 자체 구성(10-16 사례)이 맞다. HRP 를 기저로 두면 HRP 의 강세 손실이 기준에 묻힌다. H0 를 더하는 대신 기저 자체를 엔진 자체 구성으로 바꿨다(층 효과 · 엔진 강점이 같은 기준 · β 짝 = RX0 × k).",
+     "change": "기저 HRP → 엔진 자체 구성(P0R01 C0 사양 · 현 epoch) · 기준 먼저 재기는 두지 않음(병목 = 엔진 구조 · 판본 교체가 위기 노출을 안 바꿈 — RX0 같은 배치 · 보고에 병목 재기재) · 엔진 자격 = RX0 보는 창 β-통제 알파 기록 · 0 이하면 ⑦ 여유 0"
+    }
+   ],
+   "outcome": null,
+   "outcome_note": null
+  },
+  {
+   "id": "C-20261017-035",
+   "at": "2026-10-17T19:00:51+0900",
+   "review": "R-20261017-005",
+   "target": "J-20261017-004",
+   "grade": "challenge",
+   "rule": null,
+   "claim": "주 세션 위생 조치 ②('이 세션은 T3 응답 뒤 넘긴다')가 작동하지 않고 이탈이 기록에 없다. 대화 기록 7a34e194(10-13 07:12 시작 · 압축 15회 · 10-17 5회 · 마지막 18:46 = S1 착수 직후) 사용량: 00:37 응답 뒤 1,165호출 · 호출당 맥락 중앙 0.58M · 캐시 읽기 659M · 이번 주기(10-16 20:00~) 주 세션만 926M(지난 주기 전체 ≈2.56B 의 ≈36% 를 ≈23시간에) · 18:20 재개 뒤 34분 85호출 중앙 0.80M. Q 는 04:03 에 '다음 라운드 설계는 새 세션에서'를 1회 권고했으나 그 뒤 9시간 같은 세션 · 재권고 · 판단 기록 없음 · S1 이 이 세션에서 시작(저널 next_action '새 세션에서 S1'). 재소진 시 P2OVL S1~S3(라운드 보호 예약분) · MSM-A 0~5단계(11-01 리밸 전 낮 창 — D3 A) · 레인을 함께 잃는다",
+   "evidence": [
+    "06_Registry/session_resume.json",
+    "00_Lawbook/specs/superfan_protocol.md",
+    "06_Registry/q_judgment_ledger.json",
+    "04_Research/programs/_supervision/superfan/20261017_1854_T1.md"
+   ],
+   "alternative": "지금(S1 초안 전 · 압축 직후 · J-007 · 저널 갱신 완료) 도훈께 1줄: 'S1 설계는 새 세션(/qvest)에서 재개 기록으로 잇겠습니다' — 저널 next_action 에 이 리뷰 경로 · 원장 pending 기재 · 새 세션이 S1 초안과 Superfan 응답을 맡는다. 도훈이 이 세션 연속을 원하면 운영 판단 1건(비용 수용 · 대량 읽기 서브에이전트)으로 J-004 조치 ② 를 대체 기록",
+   "falsifier": "(a) 주간 한도 계량에서 캐시 읽기 가중이 작아 주 세션 몫이 40% 미만이면 레버가 아니다(T3 C-001 (a)) (b) 이 세션을 그대로 써도 10-23 19:00 전에 재소진하지 않으면 넘김은 불필요했다",
+   "status": "accepted",
+   "role": "judgment",
+   "hold_request": false,
+   "responses": [
+    {
+     "at": "2026-10-17T19:15:37+0900",
+     "by": "Q",
+     "kind": "accept",
+     "text": "수용(부분) — 이 세션은 18시 30분께 맥락 압축을 거쳤다. 측정 기동까지는 이 세션, 평가 · 보고는 session_resume 저널로 새 세션이 이어 받을 수 있게 기록한다. 도훈님께 1줄 고지.",
+     "change": "OP 저널 next 에 새 세션 인계 명령 기록 · 보고에 1줄"
+    }
+   ],
+   "outcome": null,
+   "outcome_note": null
+  },
+  {
+   "id": "C-20261017-036",
+   "at": "2026-10-17T19:02:06+0900",
+   "review": "R-20261017-005",
+   "target": "J-20261017-005",
+   "grade": "challenge",
+   "rule": null,
+   "claim": "감시기 알림이 가동 뒤 한 번도 도훈께 가지 않았다(침묵 실패). superfan_notify.R 이 이상 1건짜리 구성요소를 'bullet' 절 1항목으로 보내고 정본 발송기가 거부한다 — 건식 재현(QVEST_TG_DRY_RUN=1 · 발송 없음): \"[tg_agent_brief] 'bullet' section heading='무엇이' requires items >= 2 (got 1)\" → SFN fail. 감시 로그 03:17~18:17 매시 '발신 실패(다음 시간에 다시)' 16회 · rc=0 · 실패 3건(daily_refresh 03:17 · morning_chain 08:17 · scheduler 12:17) 모두 1건짜리 · notified 없음. 감시기는 발신기 stderr 를 버린다(superfan_watch.py:441 stdout 만 해석). 검사 ⑬ 은 스텁 발신이라 형식 가드를 안 지났다(양성 대조 부재). J-005 의 3규칙 fail 승격은 이 경로 수리 전까지 효과 0 · J-008(18:51) 처리에도 발신기 결함은 없다",
+   "evidence": [
+    ".cache/scheduler_logs/superfan_watch.log",
+    "02_Infrastructure/programs/superfan_notify.R",
+    "02_Infrastructure/programs/superfan_watch.py",
+    ".cache/superfan_watch.json",
+    "00_Lawbook/specs/superfan_protocol.md"
+   ],
+   "alternative": "하네스 최소 수리(침묵 실패 · 체계 §2-1 · §6 검사와 커밋): (a) 항목 1개면 'text'(또는 'summary') 절 (b) 발신기 stderr 를 감시 로그에 남기고 발신 실패 2회 연속이면 부팅 줄 fail (c) 검사 ⑬ 에 정본 발송기를 거치는 건식 양성 대조(1건 · 2건 payload) (d) 수리 뒤 열린 실패를 도훈께 1통(지연 사실 포함)",
+   "falsifier": "텔레그램 채팅에 [Superfan·…] 알림이 실제로 도착해 있었다면 침묵 실패가 아니라 표식 결함이다(그때 쟁점은 매시 재발송)",
+   "status": "accepted",
+   "role": "judgment",
+   "hold_request": false,
+   "responses": [
+    {
+     "at": "2026-10-17T19:15:37+0900",
+     "by": "Q",
+     "kind": "accept",
+     "text": "수용 — 감시기 알림 0통은 침묵 실패다. 측정이 도는 동안 수리한다(단일 항목 = text 절 · stderr 로그 · 정본 발송기 건식 양성 대조 · 수리 뒤 열린 실패 1통).",
+     "change": "superfan_notify 수리(이번 세션)"
+    }
+   ],
+   "outcome": "vindicated",
+   "outcome_note": "4ffc1ec92 가 '가동(10-16) 뒤 알림이 한 통도 나가지 않았다'를 확인 · 수리(수리 전 판 1건 payload = SFN fail · test_superfan_watch ⑭) — 반증 조건(알림 실제 도착) 불성립.",
+   "outcome_at": "2026-10-18T08:01:23+0900"
+  },
+  {
+   "id": "C-20261017-037",
+   "at": "2026-10-17T19:02:06+0900",
+   "review": "R-20261017-005",
+   "target": "J-20261017-007",
+   "grade": "note",
+   "rule": null,
+   "claim": "카탈로그 turbulence · vol_x_turb 는 Kritzman & Li(2010) 금융 난기류(자산 수익 벡터의 마할라노비스 — 크기 이상 + 상관 붕괴)가 아니라 벤치 월간 상태 벡터(rv60 · 횡단면 분산 · 낙폭)의 확장창 마할라노비스 게이트다(rf_cell_engine.R:864-925). 문헌 이름으로 쓰려면 원문 정식화 구현 · 대조 검사(체계 §3 · P3R03 선례), 아니면 '상태 벡터 거리 게이트(카탈로그)'로 적고 문헌 근거를 주장하지 않는다. 워밍업 축소(n_floor 12 · n_min 36)로 보는 창 앞쪽 위기에서는 사실상 꺼져 있다 — 위기 표에 '미발화' 표시",
+   "evidence": [
+    "02_Infrastructure/reinforcement/rf_cell_engine.R",
+    "06_Registry/overlay_catalog.json"
+   ],
+   "alternative": "",
+   "falsifier": "",
+   "status": "closed_note",
+   "role": "judgment",
+   "hold_request": false,
+   "responses": [],
+   "outcome": null,
+   "outcome_note": null
+  },
+  {
+   "id": "C-20261017-038",
+   "at": "2026-10-17T19:02:06+0900",
+   "review": "R-20261017-005",
+   "target": "J-20261017-007",
+   "grade": "note",
+   "rule": null,
+   "claim": "오버레이 PIT 의무 = lag1 스트레스 + assert_overlay_pit HARD + strict-PIT A/B(엔진 overlay_strict) — 계획에 lag1 8 만 있다. 셀 상한 12 는 후보 + 기준 칸으로 세고 lag1 · strict A/B 는 PIT 진단 칸으로 budget 에 따로(DSR 시행 수 제외) · P4 시행 수 = P2R02 6 + 이번 처치 수",
+   "evidence": [
+    ".claude/rules/pit.md",
+    "00_Lawbook/specs/q_autonomy_decision_framework.md"
+   ],
+   "alternative": "",
+   "falsifier": "",
+   "status": "closed_note",
+   "role": "judgment",
+   "hold_request": false,
+   "responses": [],
+   "outcome": null,
+   "outcome_note": null
+  },
+  {
+   "id": "C-20261017-039",
+   "at": "2026-10-17T19:02:07+0900",
+   "review": "R-20261017-005",
+   "target": "J-20261017-007",
+   "grade": "note",
+   "rule": null,
+   "claim": "판정 가능성(체계 §2 검정력): 깊은 위기 보는 창 4 × 엔진 2 · 빈칸 6 빠른 급락은 문헌 정의 뒤 1~3개일 수 있다. 월간 층은 신호가 보유월 시작 전(C5)이라 한 달 안에 시작 · 바닥이 끝나는 급락에 원리상 늦다 — 벤치 사실만으로(전략 성과 미사용) 각 빠른 급락이 보유월 2개 이상에 걸치는지 사전등록에 적고, 걸치지 않는 급락의 판정은 '미결 최빈'을 미리 적어 빈도 한계가 기전 반증으로 읽히지 않게",
+   "evidence": [
+    "00_Lawbook/specs/investment_philosophy_charter.md",
+    "00_Lawbook/specs/q_autonomy_decision_framework.md"
+   ],
+   "alternative": "",
+   "falsifier": "",
+   "status": "closed_note",
+   "role": "judgment",
+   "hold_request": false,
+   "responses": [],
+   "outcome": null,
+   "outcome_note": null
+  },
+  {
+   "id": "C-20261017-040",
+   "at": "2026-10-17T19:03:10+0900",
+   "review": "R-20261017-005",
+   "target": "J-20261017-001",
+   "grade": "note",
+   "rule": null,
+   "claim": "b5dd7b155(1파일 · 7줄)에 체계 §6 의 결과 동일성/위반 주입 검사 · CHANGELOG 가 없다. 기대 '진짜 실패는 그대로 실패'는 검사로만 보인다 — 다음 하네스 묶음에 2건(대상 0 → rc 0 · 실제 오류 → rc ≠ 0)",
+   "evidence": [
+    "02_Infrastructure/ops/rf_role_register_reps.R",
+    "00_Lawbook/specs/q_autonomy_decision_framework.md"
+   ],
+   "alternative": "",
+   "falsifier": "",
+   "status": "closed_note",
+   "role": "judgment",
+   "hold_request": false,
+   "responses": [],
+   "outcome": null,
+   "outcome_note": null
+  },
+  {
+   "id": "C-20261017-041",
+   "at": "2026-10-17T19:03:10+0900",
+   "review": "R-20261017-005",
+   "target": "J-20261017-002",
+   "grade": "endorse",
+   "rule": null,
+   "claim": "원인 조사 대신 '등록 → 커밋 → 측정'으로 위험을 닫은 판단이 작동했다 — P1R02 사전등록 615c4a73e(02:21)가 측정(02:28)보다 앞서고 오늘 커밋 33건 전부 서술형(자동 커밋 0). 유지",
+   "evidence": [
+    "06_Registry/q_judgment_ledger.json"
+   ],
+   "alternative": "",
+   "falsifier": "",
+   "status": "closed_note",
+   "role": "judgment",
+   "hold_request": false,
+   "responses": [],
+   "outcome": null,
+   "outcome_note": null
+  },
+  {
+   "id": "C-20261017-042",
+   "at": "2026-10-17T19:03:11+0900",
+   "review": "R-20261017-005",
+   "target": "J-20261017-003",
+   "grade": "endorse",
+   "rule": null,
+   "claim": "기대(등록 뒤 판정 규칙 결함 0)가 맞았다 — P3R03 평가 뒤 나온 결함은 기록 필드 오표시 1건(eval_matches_measure · 판정 경로 무관)뿐 · 3차 점검 2.6M · 7분 · 임계 경로 밖. 유지",
+   "evidence": [
+    "stage_artifacts/programs/P3_CONSTRUCTION/P3R03_advanced_construction/ROUND_REPORT.md"
+   ],
+   "alternative": "",
+   "falsifier": "",
+   "status": "closed_note",
+   "role": "judgment",
+   "hold_request": false,
+   "responses": [],
+   "outcome": null,
+   "outcome_note": null
+  },
+  {
+   "id": "C-20261017-043",
+   "at": "2026-10-17T19:03:11+0900",
+   "review": "R-20261017-005",
+   "target": "J-20261017-007",
+   "grade": "endorse",
+   "rule": null,
+   "claim": "라운드 방향은 체계대로다 — P3 구성 라운드 중단(C-028 수용) → P2 시변 층 · P2 는 R7 미발동(P2R01 deepen 사유 기록 · P2R02 검증 2) · MSM-A 는 낮 창 몫 · RX0 재측정 필요 인지 · 빈칸 6~8 을 이번 사전등록부터. 대안(P1 · P4) 기각 사유는 경로 의존('다음 탐침') 말고 병목 근거(C-034 의 새 epoch 확인)로 보강하면 된다",
+   "evidence": [
+    "stage_artifacts/programs/P3_CONSTRUCTION/P3R03_advanced_construction/ROUND_REPORT.md",
+    "06_Registry/research_programs.json"
+   ],
+   "alternative": "",
+   "falsifier": "",
+   "status": "closed_note",
+   "role": "judgment",
+   "hold_request": false,
+   "responses": [],
+   "outcome": null,
+   "outcome_note": null
+  },
+  {
+   "id": "C-20261017-044",
+   "at": "2026-10-17T19:36:27+0900",
+   "review": "R-20261017-006",
+   "target": "J-20261017-010",
+   "grade": "challenge",
+   "rule": null,
+   "claim": "⑤(하락장 β < 상승장 β)를 칸 수준으로 두 엔진에 요구하면 장치 검증을 장치가 아니라 엔진이 정한다 — 보는 창 하락/상승 β 비 E2 원형 1.32(1.31/0.99 · 역비대칭) · E3 원형 0.96(1.12/1.16)(P3R03 RX0 = 이번 기저 사양). 정적 축소(β 사본)는 이 비를 바꾸지 않으므로 비의 변화량만이 시변 층이 만든 비대칭이다. E2 는 장치가 방향을 예보해 1.32 를 1 아래로 뒤집어야 하고, E3 는 여유 4% 라 비대칭을 만들지 않아도 통과한다. '검증 0'이 나와도 원인이 E2 엔진인지 장치인지 가를 수 없다.",
+   "evidence": [
+    "04_Research/programs/P2_DEFENSE/P2R03_conditional_overlay/DESIGN.md",
+    "04_Research/programs/_supervision/superfan/philosophy/20261017_0353_P2_P3R03.md",
+    "02_Infrastructure/contracts/behavior_card.R"
+   ],
+   "alternative": "판정을 둘로 — (1) 칸의 방어 주장 = 헌장 문언 그대로(수준 · 빈칸 3·8 · 비 ≥ 1 이면 '노출(β) 방어 — 비대칭 역행' · 방어 주장 불가) (2) 장치 검증(두 엔진) = 변화량(하락/상승 β 비가 같은 엔진 RX0 보다 낮아짐 · Δ < 0). 기록: Henriksson & Merton(1981, J. Business 54(4)) 타이밍 회귀(변형 − RX0 월 수익 ~ 벤치 + max(0, −벤치) · NW lag 3) 계수 · t. Δ 실질 문턱은 새 숫자로 만들지 않고 헌장 빈칸으로.",
+   "falsifier": "새 판본 RX0 재측정에서 E2 의 하락/상승 β 비가 1 미만이면 moot · 어떤 장치든 E2 에서 비를 1 아래로 뒤집으면 refuted(수준 판정이 장치를 가를 수 있었다).",
+   "status": "accepted",
+   "role": "philosophy",
+   "hold_request": false,
+   "responses": [
+    {
+     "at": "2026-10-17T19:40:32+0900",
+     "by": "Q",
+     "kind": "accept",
+     "text": "수용 — 장치 검증(통과 조건)은 하락/상승 β 비의 변화량(변형 비 < RX0 비 · 정적 축소에 불변인 비)으로, 칸의 방어 주장은 헌장 문언대로 수준(비 < 1)으로 나눈다. Henriksson-Merton(1981) 타이밍 회귀는 기록(계약 .nw_fit 경유 · NW 3). Δ 실질 문턱은 헌장 빈칸 상신(C-051).",
+     "change": "⑤ = Δ 비 < 0(통과) · ⑤수준 = 방어 주장 꼬리표 · HM γ · t 기록"
+    }
+   ],
+   "outcome": "refuted",
+   "outcome_note": "반증 조건 충족(P2 R-20261018-002) — 새 판본 E2 RX0 하락/상승 β 비 1.26(≥ 1 → moot 아님) · D5 0.53 · D7 0.83 이 E2 에서 비를 1 아래로 뒤집음 → 수준 판정도 장치를 가를 수 있었다. E3 여유 쪽 우려(D1 · D4 가 Δ > 0 인데 수준 통과)는 나타났으나 판정 불변.",
+   "outcome_at": "2026-10-18T08:12:11+0900"
+  },
+  {
+   "id": "C-20261017-045",
+   "at": "2026-10-17T19:36:27+0900",
+   "review": "R-20261017-006",
+   "target": "J-20261017-009",
+   "grade": "challenge",
+   "rule": null,
+   "claim": "'빠지기' 장치만 있고 '다시 들어가기' 장치가 없다 — dd_recovery(빌트인 rf_cell_engine.R:902-906)의 본질은 낙폭 깊이가 아니라 재진입 규칙(낙폭 국면에서도 직전 1개월 벤치가 오르면 노출 유지)이라 D6(깊이 비례 축소 · 재진입 없음)과 원리가 다르다. 6종 중 5종(D1 · D3 · D4 · D5 · D6)의 상태는 바닥 뒤 늦게 꺼진다(낙폭은 신고점 전까지 · r252 는 바닥 뒤 수개월 음 · rv60 은 60일 창) → 공통 실패 형태 = 반등 상실(원칙 1 '빨리 회복' · 원칙 5 · 헌장 §5 'CR 강함 3' 모양 · J-009 기대 '추세 현금 2020 V자에서 약함'). 도구 상자에서 그 형태를 겨누는 유일한 arm 을 '원리 중복'으로 뺐다 — 설계 §1 '현금을 위기 국면에만'의 시간 비대칭 중 절반(재진입)을 시험하지 않는다. b234afb11 영향 arm 이라 수리 판 유효 측정도 없다.",
+   "evidence": [
+    "04_Research/programs/P2_DEFENSE/P2R03_conditional_overlay/DESIGN.md",
+    "02_Infrastructure/reinforcement/rf_cell_engine.R",
+    "06_Registry/overlay_catalog.json"
+   ],
+   "alternative": "dd_recovery 를 D7 로 더한다(엔진 2 + lag-1 2 · 시행 수 +2) — 예산이 묶이면 D2(상태 = 신호일 하루 횡단면 표준편차 · 잡음 큼)와 맞바꾼다. 사전 기대 등록: 빠른 급락은 보유월 2개 이상 걸친 급락의 둘째 달 이후를 막고 첫 달은 진다 · 반등에서 ⑥ · ⑨ · ⑪ 이 늦게 꺼지는 다섯 장치보다 낫다 · 수중 횡보(2011~16 · 2018~19)에서 휩쏘 · 회전 비용 → ⑦ · ⑫ 위험.",
+   "falsifier": "측정 뒤 늦게 꺼지는 다섯 장치가 ⑥ · ⑨ · ⑪ 에서 RX0 대비 반등 상실을 보이지 않으면 moot · dd_recovery 를 넣었는데 ⑥ · ⑨ · ⑪ 이 그 다섯보다 낫지 않으면 refuted(재진입 규칙이 이 형태를 고치지 못한다).",
+   "status": "accepted",
+   "role": "philosophy",
+   "hold_request": false,
+   "responses": [
+    {
+     "at": "2026-10-17T19:40:33+0900",
+     "by": "Q",
+     "kind": "accept",
+     "text": "수용 — dd_recovery(재진입 규칙 · b234afb11 영향 arm · 수리 판 첫 유효 측정)를 D7 로 더한다(D2 는 유지 — 측정 예산 여유). 재진입 사전 기대(빠른 급락 둘째 달 이후 · 반등 ⑥⑨⑪ 우위 · 수중 횡보 휩쏘 ⑦⑫ 위험)와 반증 조건을 등록한다.",
+     "change": "D7 dd_recovery + L7 · 변형 14칸 · 30칸"
+    }
+   ],
+   "outcome": "refuted",
+   "outcome_note": "반증 조건 둘째 충족(P2 R-20261018-002) — D7 의 ⑥ 0.2/0.4 는 늦게 꺼지는 다섯 중 넷보다 나쁘고 ⑨ 0/3 은 최하 동률 · ⑪ 만 D7 최선(꼬리표 없음 두 엔진) → '낫지 않다'. 전제(공통 실패 형태 = 반등 상실 · 반등 노출 ≤ 위기 노출 7/7 · D5 강세 0/5)와 '원리 중복' 반박(D7–D6 노출 상관 0.45 · ④ 3/4 vs 1/4 · Δ −0.43 vs +0.25)은 맞았다 · 재진입이 '빠지기'와 같은 1개월 규칙에 묶여 2018~19 휩쏘(위기 포착 1.69 · 1.74).",
+   "outcome_at": "2026-10-18T08:12:12+0900"
+  },
+  {
+   "id": "C-20261017-046",
+   "at": "2026-10-17T19:36:27+0900",
+   "review": "R-20261017-006",
+   "target": "J-20261017-010",
+   "grade": "challenge",
+   "rule": null,
+   "claim": "결론 범위(§8)가 방어 절반만 말한다 — ③ · ④ · ⑤ 를 넘었으나 ⑥ · ⑦ · ⑨ · ⑫ · ⑬ 중 하나를 못 넘은 칸의 이름(헌장 §5 'CR 강함 3 — 방어만 · 복리 없음 = 현금 기계' · 현금이 무거운 D5 · D6 · D3 에서 가장 나올 법한 결과)이 없고, P3R03 결론 범위의 엔진 강점 문장이 빠졌으며, MC8 'selection_defense' 는 정의상 '종목 선택 또는 노출 타이밍'(matched_controls.R:28)이라 시변 층(특히 원천 ② + ③ 혼합인 D1 · D2)을 '선택 방어'로 적게 된다. ⑩ '지연 민감' · 단일 엔진 통과 · 상태 계열 · 결정 주기도 결론 문장에 없다(선례 C-20261017-027 — 결론에 없는 것은 보고에서 빠진다).",
+   "evidence": [
+    "04_Research/programs/P2_DEFENSE/P2R03_conditional_overlay/DESIGN.md",
+    "stage_artifacts/programs/P3_CONSTRUCTION/P3R03_advanced_construction/prereg.json",
+    "02_Infrastructure/contracts/matched_controls.R"
+   ],
+   "alternative": "§8 을 여섯 줄로: ① 범위 = 엔진 자체 구성 위 · 이 arm 들(카탈로그 정식화) · 상태 = 시장 실현 스트레스 4축 · 월간 · 보유월 시작 전 신호 — 검증 0 이면 이 상태 계열 · 이 결정 주기에 대한 결론 ② '방어' = ③ ∧ ⑤(칸 수준) · ④ 미달 = '느린 약세 · 여진 방어' ③ ③ · ④ · ⑤ 통과 ∧ ⑥ · ⑦ · ⑨ · ⑫ · ⑬ 중 하나 미달 = '방어만 · 복리 없음(현금 기계)' ④ 엔진 강점 = 엔진 자체 구성 대비 구간별 상승 포착 · 증분 알파 · 사이클 · S ⑤ 귀속 = MC8 + β 짝 + size_exposure_path 병기로 '시변 노출(타이밍) 방어'와 '선택 방어'를 가름 · D1 · D2 = '시변 + 보유 안 기울기 혼합' ⑥ 한 엔진만 통과 = '단일 엔진 · 미확증' · lag-1 붕괴 = '지연 민감'을 결론 · 보고 1줄 · P4 묶음 · P3 의견서에.",
+   "falsifier": "등록본 conclusion_scope 가 이 여섯을 이미 담으면 moot.",
+   "status": "accepted",
+   "role": "philosophy",
+   "hold_request": false,
+   "responses": [
+    {
+     "at": "2026-10-17T19:40:33+0900",
+     "by": "Q",
+     "kind": "accept",
+     "text": "수용 — 결론 범위를 리뷰 여섯 줄(범위 · 방어 정의 · 현금 기계 이름 · 엔진 강점 · 귀속(타이밍 ≠ 선택 · size_exposure_path 병기) · 단일 엔진 · 지연 민감)로 바꾼다.",
+     "change": "prereg conclusion_scope 6줄 · 보고 서식 반영"
+    }
+   ],
+   "outcome": "vindicated",
+   "outcome_note": "P2R03 평가(보는 창) — MC8 이 시변 층 4칸에 selection_defense · 5칸에 size_defense 를 붙였고, 결론 범위 5(β 짝 + size_exposure_path 병기)가 14/14 를 '노출(β) 방어 또는 방어 없음'으로 바로잡음(D5 경로 짝 0.14) · 결론 범위 6 의 '지연 민감'(D5) 기록 · 남은 이탈 = J-002 의 '방어 원천 후보'(R-20261018-002 C-20261018-008).",
+   "outcome_at": "2026-10-18T08:12:12+0900"
+  },
+  {
+   "id": "C-20261017-047",
+   "at": "2026-10-17T19:36:28+0900",
+   "review": "R-20261017-006",
+   "target": "J-20261017-010",
+   "grade": "note",
+   "rule": null,
+   "claim": "④ 빠른 급락 정의는 결과 모양에 맞춘 것으로 보지 않는다(깊이 20% · 창 5종은 문헌 그대로 · 1개월 집합은 P3R03 이 진 위기와 이긴 위기를 함께 담음 · 이번 β 사본은 엔진 자체 구성 사본 · 벤치만으로 분류 · 노출 공시). 원문 대조: 정의 p.6 · 창별 결과 p.6~7(설계 'p.7' → 'p.6~7'). 남은 자유도 둘을 결과 무관 근거로 묶을 것 — (창) 결정 주기가 월간이라 '빠름' = 한 결정 주기 안에 끝나는 하락 · (조작화) 21거래일 이동 창은 '문헌 정의의 일간 조작화'(MW 는 사건을 달력 월로 부르고 월 창 자료는 월말 지수 — p.5~6 각주 3~5) → 달력 월 판 · PS(bbdetection max_chng 20 · 4개월 미만 ≈ MW 3개월) 판 분류를 기록. 표 보정 두 줄: 반응 가능성의 기준점은 빠른 구간 직전 월말(2011-05 의 빠른 구간이 8월 초 시작이면 7월 말 상태가 정함 — '반응 가능'은 9월 추가 하락만) · 2008-11(−20.3% 경계 · 월말 0 · GFC 여진)은 10월 말 상태가 정하므로 지면 '미결 최빈', 이기면 '10월 말 상태 이월 — 2008-05~10 과 한 일화'로 대칭 기록 · ④ 를 2008-11 포함/제외 두 판으로(창이 2004-04 를 담으면 포함판이 독립 일화 문턱 3 → 2). 빠른 21거래일 구간 안 포착(변형 vs β 사본)도 기록.",
+   "evidence": [
+    "04_Research/programs/P2_DEFENSE/P2R03_conditional_overlay/DESIGN.md",
+    "06_Registry/behavior_card.json"
+   ],
+   "alternative": "",
+   "falsifier": "",
+   "status": "closed_note",
+   "role": "philosophy",
+   "hold_request": false,
+   "responses": [],
+   "outcome": null,
+   "outcome_note": null
+  },
+  {
+   "id": "C-20261017-048",
+   "at": "2026-10-17T19:36:28+0900",
+   "review": "R-20261017-006",
+   "target": "J-20261017-009",
+   "grade": "note",
+   "rule": null,
+   "claim": "현금 기계 · 반등 상실의 사전 위험은 평균보다 '사건 뒤'에 있다 — D4: 노출 = 1 − p̂ · 평소 1 근처라 평균 위험은 낮으나, 로지스틱이 학습 범위 가장자리 · 밖에서 1 쪽으로 붙어 급락 직후 반등 첫 달들의 노출을 깎는다 · 초기 확장창(≥ 60개월 · 꼬리 ≥ 5 · glm 경고 억제)은 준분리 위험. D5(r252 음 = 전량 현금) · D6 · D3(확장창 중앙 위 개입 → 90분위 위 전량 현금 — 분위 정의상 개입 ≈ 50% · 전량 현금 ≈ 10% · 측정 아님)가 현금 기계 위험이 가장 크다 — 평균 현금 비중만큼 정적 α 를 잃어 타이밍이 못 메우면 ⑦ 미달이 기계적. D1 은 신고점 전까지 반등 주도 고하방베타 종목(Ang-Chen-Xing 2006 의 하방위험 프리미엄)을 깎는다. D2 는 하루 상태라 정적 기울기에 가깝다. 판정(⑥ · ⑦ · ⑨ · ⑫ · ⑬)은 막는다 — 기록 제안: 장치별 전량 현금 달 비율 · 위기/강세/반등(바닥 뒤 3 · 6개월) 실효 노출(MC8 E_k) · 현금 정밀도(현금 달 중 위기 달) · 재현율(위기 달 중 현금 달) · 사이클 복리의 β 사본 대비.",
+   "evidence": [
+    "02_Infrastructure/reinforcement/rf_cell_engine.R",
+    "04_Research/programs/P2_DEFENSE/P2R03_conditional_overlay/DESIGN.md"
+   ],
+   "alternative": "",
+   "falsifier": "",
+   "status": "closed_note",
+   "role": "philosophy",
+   "hold_request": false,
+   "responses": [],
+   "outcome": null,
+   "outcome_note": null
+  },
+  {
+   "id": "C-20261017-049",
+   "at": "2026-10-17T19:36:28+0900",
+   "review": "R-20261017-006",
+   "target": "J-20261017-009",
+   "grade": "note",
+   "rule": null,
+   "claim": "획일화를 설계된 대조로 — 6종 상태가 모두 같은 시장 실현 스트레스 4축(rv60 · dd · r252 · xs)이고 D1 · D6 은 같은 상태 변수(낙폭 vs 확장창 중앙) · D3 · D6 은 같은 일정(중앙 → 90분위 → 현금)이라 '6종 실패'는 독립 시험 6개의 증거가 아니다. 사전등록 '읽는 법'(판정 아님): D3 vs D6 = 일정 고정 상태 대조 · D1 vs D6 = 같은 상태의 처치 대조(순위형 vs 스칼라) · D5 vs D6 = 추세 부호 vs 깊이 · D4 vs D3 = 학습 꼬리 확률 vs 거리 — '검증 0'이어도 기전 지도가 남는다. 기록: 엔진별 장치 간 노출 경로 상관 · 위기별 승패 겹침(높으면 결론을 '이 상태 계열'로). 선택: vol_median 진단 칸 1쌍(선택 대상 사전 제외 · 시행 수 무가산) — D3 · D4 공통 축 rv60 의 중첩 기저(Moreira & Muir 2017 계열) · 제외 사유의 '유효한 시험'(P2R02 V2)은 무작위 바구니 대조라 같은 보유 β 사본 판정으로는 미시험.",
+   "evidence": [
+    "04_Research/programs/P2_DEFENSE/P2R03_conditional_overlay/DESIGN.md",
+    "stage_artifacts/programs/P2_DEFENSE/P2R02_device_cross_engine/prereg.json"
+   ],
+   "alternative": "",
+   "falsifier": "",
+   "status": "closed_note",
+   "role": "philosophy",
+   "hold_request": false,
+   "responses": [],
+   "outcome": null,
+   "outcome_note": null
+  },
+  {
+   "id": "C-20261017-050",
+   "at": "2026-10-17T19:36:28+0900",
+   "review": "R-20261017-006",
+   "target": "J-20261017-010",
+   "grade": "note",
+   "rule": null,
+   "claim": "등록 전 정리 — (표기) D3 처럼 D4 ~ D6 도 '근거 = 착상 · 원문 구현 아님'(CD 2006 = 변동성 동학 통한 방향 예측 ≠ 꼬리 확률 로지스틱 · MOP 2012 = 자산별 롱숏 변동성 조정 TSMOM · Faber 2007 = 10개월 이동평균 ≠ 시장 12개월 부호 현금 게이트 · Grossman-Zhou 1993 = 누적 최고 대비 쿠션 비례 ≈ 분위 램프) — 결론은 arm 에 대한 것. (P4 후보 목록) P2R02 '검증' C6 은 결함 측정 위라 지금 무효 표기 · C4 '검증'은 빈칸 8 이전(β 짝 없음)이라 '빈칸 8 미적용' 꼬리표 — 등록부 · 라운드 보고에 지금. (판본 단정) §2 '판본 교체가 위기 노출을 바꾸지 않으므로'는 측정 전 단정 → 새 판본 RX0 와 P3R03 RX0 의 보는 창 병목 지표(위기 포착 · Calmar · β · 하락/상승 β)를 보고에 나란히. (남길 것) 13 항목 × 두 엔진이라 '검증 0'이 최빈일 공산 → 장치 × 항목 × 위기 실패 지도(신호 지연 · 현금 비용 · 엔진 비대칭 · 재진입) + 대조 읽기를 사전등록에. (사양) specs/ 는 아직 v1(HRP · D1~D4) → P0R01 C0 기준 재생성(D5 · D6 · L5 · L6) 뒤 md5 고정.",
+   "evidence": [
+    "04_Research/programs/P2_DEFENSE/P2R03_conditional_overlay/DESIGN.md",
+    "04_Research/programs/P2_DEFENSE/P2R03_conditional_overlay/specs",
+    "stage_artifacts/programs/P2_DEFENSE/P2R02_device_cross_engine/ROUND_REPORT.md"
+   ],
+   "alternative": "",
+   "falsifier": "",
+   "status": "closed_note",
+   "role": "philosophy",
+   "hold_request": false,
+   "responses": [],
+   "outcome": null,
+   "outcome_note": null
+  },
+  {
+   "id": "C-20261017-051",
+   "at": "2026-10-17T19:36:28+0900",
+   "review": "R-20261017-006",
+   "target": "SYSTEM",
+   "grade": "note",
+   "rule": null,
+   "claim": "헌장 빈칸 상신(도훈 교정 필요) 5건 — ① 시변 노출(타이밍) 방어의 자리: 원칙 4 '기전 / 노출' 사이 · MC8 정의로는 selection_defense(CR '강함' 상향 자격) — 결과 전에 정할 것 ② 빈칸 6 과 결정 주기: 월간 층에 1개월 급락 방어 요구 = 사전 신호 요구 — 빠른 급락은 현금 층의 몫인가 보유(선택) 방어의 몫인가 ③ 집행 지연(lag-1) 강건성을 철학이 요구하는가(Q 는 진단으로 내림 · 철학 P1 동의 — 요구하면 빈칸 6 과 합쳐 '두 달 앞선 신호') ④ 현금 층의 재진입: 원칙 1 '빨리 회복'은 빈칸 5 꼬리표뿐 — 현금 층에 한해 회복을 판정으로 올릴지(실질 문턱 필요) ⑤ 세는 단위(원칙 2 '매번' = LT 위기 vs 상태 일화 · 2008-05/2008-11) · 기준값 0 근처 비율 판정(⑥) · 비대칭 변화량 Δ 의 실질 문턱 · 이월 빈칸 5 회복 문턱.",
+   "evidence": [
+    "00_Lawbook/specs/investment_philosophy_charter.md"
+   ],
+   "alternative": "",
+   "falsifier": "",
+   "status": "closed_note",
+   "role": "philosophy",
+   "hold_request": false,
+   "responses": [],
+   "outcome": null,
+   "outcome_note": null
+  },
+  {
+   "id": "C-20261017-052",
+   "at": "2026-10-17T19:36:28+0900",
+   "review": "R-20261017-006",
+   "target": "J-20261017-010",
+   "grade": "endorse",
+   "rule": null,
+   "claim": "⑩ 완화(lag-1 = 진단 꼬리표 · 통과 조건 = strict-PIT 구성 증거)는 철학 쪽으로 향한 변경이다 — 빈칸 6 의 표적은 한 결정 주기 안의 방어인데 lag-1 은 바로 그 주기를 지워, 통과 조건이면 정당한 빠른 방어를 정의상 기각하고 느린 약세 방어만 남긴다. 이 경로에서 lag-1 은 누출 판별력이 없다(strict 컷오프 = 현 타이밍 · A/B 구성상 0 · overlay_strict 는 파일 arm ctx 로만 가고 D1 · D2 는 안 읽으며 D3~D6 은 빌트인). 누출 판정자는 구조 가드(P0-09 가용일 마스크 + 넘긴 값 가용일 기반 assert_overlay_pit · 양성 대조 test_rf_overlay_pit_mask.R 돌연변이 포함)이고 pit.md C5 도 lag-1 을 의심 신호, strict A/B · assert 를 판정으로 둔다. 원칙 7 강건성은 시험 창(P3)에서 잰다. 유지 조건 셋: (a) '지연 민감' 꼬리표를 결론 · 보고 1줄 · P4 묶음 · P3 의견서에 (b) 위기 유형별 사전 기대 — 빠른 급락은 lag-1 에서 약해지고 느린 약세의 개선은 유지돼야 한다 · 느린 위기 개선까지 무너지면 누출 조사 · 설명 전 최종 선택 보류 (c) 셀 로그 줄은 '집행 증거', PIT 증거는 엔진 assert 라고 사전등록에 명기. J-010 기대에 대한 답 = 향함(조건부).",
+   "evidence": [
+    "04_Research/programs/P2_DEFENSE/P2R03_conditional_overlay/DESIGN.md",
+    "02_Infrastructure/reinforcement/rf_cell_engine.R",
+    "08_Tests/reinforcement/test_rf_overlay_pit_mask.R",
+    ".claude/rules/pit.md"
+   ],
+   "alternative": "",
+   "falsifier": "",
+   "status": "closed_note",
+   "role": "philosophy",
+   "hold_request": false,
+   "responses": [],
+   "outcome": null,
+   "outcome_note": null
+  },
+  {
+   "id": "C-20261017-053",
+   "at": "2026-10-17T19:36:29+0900",
+   "review": "R-20261017-006",
+   "target": "J-20261017-010",
+   "grade": "endorse",
+   "rule": null,
+   "claim": "기저를 엔진 자체 구성(E2 EW · E3 엔트로피 — P0R01 C0 사양)으로 되돌리고 복리 판정을 승계한 것은 철학대로다 — 헌장 §5 S0 '엔진의 모양 = 정답, 위기 낙폭 = 결함'과 빈칸 4 · 7 '같은 엔진 기준'을 실험 틀로 썼다(C-20261017-034 수용 · 층 효과와 엔진 강점을 같은 칸으로). ⑫ S 비열등 · ⑬ 복리 경로 비악화(P3R03 (e))가 '현금 기계' · '지표 게이밍'을 판정으로 막고, ⑥ 음수 기준 일반화 · ⑦ 엔진 α ≤ 0 이면 여유 0(C-20261017-025)을 넣었다. 빠른 급락 사전 기대표(보유월 걸침 · 첫 월말 뒤 남은 하락 · 2008-11 미결 최빈 — C-20261017-039)로 빈도 한계가 기전 반증으로 읽히지 않게 했다(두 줄 보정은 C-047 note). 칸 종류 분리 · exposures 갱신도 유지.",
+   "evidence": [
+    "04_Research/programs/P2_DEFENSE/P2R03_conditional_overlay/DESIGN.md"
+   ],
+   "alternative": "",
+   "falsifier": "",
+   "status": "closed_note",
+   "role": "philosophy",
+   "hold_request": false,
+   "responses": [],
+   "outcome": null,
+   "outcome_note": null
+  },
+  {
+   "id": "C-20261017-054",
+   "at": "2026-10-17T19:36:29+0900",
+   "review": "R-20261017-006",
+   "target": "J-20261017-009",
+   "grade": "endorse",
+   "rule": null,
+   "claim": "결함 측정(b234afb11 — 0 노출 달 = 직전 보유 이월 · 처치가 가장 세게 걸리는 위기 달에서 처치가 빠짐)으로 닫힐 뻔한 추세 · 낙폭 계열(원칙 4 '현금도 정당한 방어' · '위기 국면에만 현금'을 가장 직접 겨누는 계열)을 D5 · D6 재시험으로 되열고, §8 에 'D5 · D6 결론이 P0R01 · P2R02 판정을 대체'를 넣었다. 변동성 타기팅 제외를 결함 무관한 보는 창 시험(P0R01 C2 · 0 노출 달 0/322)으로 다시 세웠고, 방어적 보유(C4 · C5 · C6 저변동 성분)를 원천 ③ 으로 같은 선정 집합 대조 밖에 둔 것도 철학 P2 의 획일화 주의와 맞다. 자기 정정: 철학 P2(R-20261017-004 ② 5 · C-028 근거)가 인용한 '1차 라운드 추세 현금 알파 손실'은 b234afb11 로 무효 — C-028 본 주장(구성 레버 포화 → 시변 층)은 엔진 밖 β 사본 계산이라 영향 없음.",
+   "evidence": [
+    "04_Research/programs/P2_DEFENSE/P2R03_conditional_overlay/DESIGN.md"
+   ],
+   "alternative": "",
+   "falsifier": "",
+   "status": "closed_note",
+   "role": "philosophy",
+   "hold_request": false,
+   "responses": [],
+   "outcome": null,
+   "outcome_note": null
+  },
+  {
+   "id": "C-20261018-001",
+   "at": "2026-10-18T08:01:22+0900",
+   "review": "R-20261018-001",
+   "target": "J-20261018-002",
+   "grade": "challenge",
+   "rule": null,
+   "claim": "'D5 · D7 = 빠른 급락 방어 원천 후보'는 귀속 오류 — 승패는 급락 속도가 아니라 빠른 구간 앞 상태 전환 여부로 갈린다. 보는 창 노출 경로: D5 현금 2008-07~2009-07 · 2020-03~05, 노출 1.00 2011-07~09 · 2021-06~2022-01 / D7 현금 2008-08~12 · 2020-02~04, 1.00 2011-07~09 → ④ 승 2008 · 2008-11 · 2020(상태가 먼저 꺾인 뒷 다리) · 패 2011(앞선 해 상승으로 상태 미전환 · 포착 0.995). 두 엔진 cash_timing 동일(시장 수준 스칼라 — 타이밍 증거 1 경로) · 일화 단위 ④ 2/3(record_excluding_no_month_end · 도훈 3B-5) · HM γ t 1.49/1.50(D5) · 0.95/0.93(D7) 유의 아님 → 추세 추종 위기 알파(MOP 2012 · HOP 2017)의 재현이지 새 원천이 아니다.",
+   "evidence": [
+    "04_Research/programs/P2_DEFENSE/P2R03_conditional_overlay/results/evaluation_visible.json cells.*.record.expo_m · cash_timing · hm_timing · rules.fast",
+    "stage_artifacts/programs/P2_DEFENSE/P2R03_conditional_overlay/prereg.json fast_crash_prior · conclusion_scope 7",
+    "02_Infrastructure/reinforcement/rf_cell_engine.R:899-906"
+   ],
+   "alternative": "해석 · 보고 · 교훈 = 'D5 · D7 은 상태가 위기 안에서 먼저 꺾인 위기의 뒷 다리만 막는 월간 가격 상태 게이트 · 상태 미전환 위기(2011 · 2021~) 두 장치 모두 패 · 타이밍 증거 1 경로 · 일화 ④ 2/3 · HM t 1.5/0.9 · 새 원천 아님'. 다음 라운드(③ 방어적 보유 × β 짝 · ① 분포 표적)의 표적 위기를 벤치만으로 사전 분류(빠른 구간 직전 월말 r252 ≥ 0 ∧ 낙폭 국면 아님 = 상태 미전환 위기)하고 D5 · D7 은 후보가 아닌 비교 기준 칸으로.",
+   "falsifier": "벤치만(전략 성과 무관)으로 D5 게이트를 재현해 보는 창 밖 빠른 급락 4건(2000-03~04 · 2000-08~09 · 2002-09~10 · 2004-04~05)의 빠른 구간 직전 월말에 3건 이상 이미 현금(r252 < 0)이면 빠른 급락은 대개 상태가 꺾인 뒤 온다 — Q 의 '빠른 급락 방어 원천' 해석이 옳고 내 귀속(표본 특수)은 틀렸다(내 예상 1/4).",
+   "status": "accepted",
+   "role": "judgment",
+   "hold_request": false,
+   "responses": [
+    {
+     "at": "2026-10-18T08:02:44+0900",
+     "by": "Q",
+     "kind": "accept",
+     "text": "수용 — 승패는 급락 속도가 아니라 빠른 구간 앞에서 월간 가격 상태(r252 · 낙폭 국면)가 이미 꺾였는지로 갈렸다(이긴 2008 하반기 · 2020-03 / 진 2011 · 2021~ = 급락 내내 노출 1.00). 두 엔진 = 한 노출 경로(시장 수준 스칼라 게이트) · 일화 단위 ④ 2/3 · HM t 1.5/0.9 로 증거 무게도 가볍다. 알려진 추세 추종 위기 성질(Moskowitz-Ooi-Pedersen 2012 · Hurst-Ooi-Pedersen 2017)의 재확인이지 새 원천이 아니다.",
+     "change": "보고 READ · 교훈 카드 · 다음 브리핑에서 D5 · D7 = '상태가 먼저 꺾인 위기의 뒷 다리만 막는 월간 가격 상태 게이트' · 후보 아닌 비교 기준 칸 · 다음 라운드 표적 = 벤치만으로 미리 분류한 '상태 미전환 위기'(빠른 구간 직전 월말 r252 ≥ 0 ∧ 낙폭 국면 아님) · 반증 검사(보는 창 앞 빠른 급락 4건의 직전 상태)는 다음 라운드 설계 단계에서 벤치만으로"
+    }
+   ],
+   "outcome": null,
+   "outcome_note": null
+  },
+  {
+   "id": "C-20261018-002",
+   "at": "2026-10-18T08:01:22+0900",
+   "review": "R-20261018-001",
+   "target": "J-20261018-002",
+   "grade": "challenge",
+   "rule": null,
+   "claim": "등록된 보고 의무 넷과 막힌 항목 셋이 해석에서 빠졌다 — ① D5 '지연 민감(lag-1 에서 ④ 붕괴 · L5 ④ 2/4)'(conclusion_scope 6 '결론 · 보고 1줄 · P4 묶음 · P3 의견서') ② 일화 단위 ④ 2/3(도훈 CHARTER-GAPS-3B 5 C) ③ 사전 기대 반전: J-20261017-009 '추세 현금 ④ 약함(2020 V자)' · prereg D5 '느린 약세 강함' ↔ ④ 3/4(2020 승) · 느린 약세 β 짝 1/3 · D7 등록 기대(C-045 반증 조건) ↔ ⑥ 1/5 · 2/5(D1 · D3 · D4 · D6 는 통과) · ⑨ 0/3 · ⑪ 만 우위 = 반증(⑪ 제외) ④ 막힌 항목은 ⑥ · ③ 만이 아니다 — ⑨ 네 칸 모두(D5 1/3 · D7 0/3) · ⑫ 네 칸 중 셋 · ⑬ D7 두 엔진 · ⑦ D5 E2(−3.4%/년 < 여유 −2.2%) · D7 E2 는 ① 3/7 · ② 2/4 → 재진입 · 현금 비용(현금 기계 계열).",
+   "evidence": [
+    "04_Research/programs/P2_DEFENSE/P2R03_conditional_overlay/results/evaluation_visible.json lag_tags · rules.fast.record_excluding_no_month_end · rules.bull · cycle · non_inferiority · path · alpha_non_loss · recovery",
+    "stage_artifacts/programs/P2_DEFENSE/P2R03_conditional_overlay/prereg.json conclusion_scope 6 · expectations.D5 · D7 · rules.leave_behind",
+    "06_Registry/decision_register.json CHARTER-GAPS-3B-20261017",
+    "06_Registry/q_judgment_ledger.json J-20261017-009"
+   ],
+   "alternative": "P2R03_READ 줄 · 교훈 카드 · leave_behind 실패 지도에 ①~④ 를 싣고 사전 기대 반전은 다음 판단 기록의 보정 근거로 · 다음 라운드 기대는 '추세 현금 = 느린 약세 방어'를 전제로 쓰지 않는다.",
+   "falsifier": "보낼 보고(READ 문장)와 교훈 카드 초안에 이미 ①~④ 가 있으면 J-002 문장만의 누락이라 moot.",
+   "status": "accepted",
+   "role": "judgment",
+   "hold_request": false,
+   "responses": [
+    {
+     "at": "2026-10-18T08:02:44+0900",
+     "by": "Q",
+     "kind": "accept",
+     "text": "수용 — 등록 보고 의무 넷(D5 지연 민감 · 일화 단위 ④ 2/3 · 사전 기대 반전(J-009 · prereg expectations.D5) · D7 기대 반증(⑪ 만 부분 우위))과 막힌 항목(⑨ 사이클 4칸 미달 · ⑫ S 3/4 미달 · ⑬ D7 경로 · ⑦ D5 E2)이 J-002 에서 빠졌다.",
+     "change": "P2R03 결과 보고 READ 줄 · 교훈 카드 · leave_behind 실패 지도에 ①~④ 를 그대로 싣는다 · 다음 라운드 기대는 '추세 현금 = 느린 약세 방어'를 전제로 쓰지 않는다 · D7 기대 판정은 Q 가 교훈 카드에 쓰고 철학 P2 가 C-045 를 자기 채점한다(둘 다)"
+    }
+   ],
+   "outcome": null,
+   "outcome_note": null
+  },
+  {
+   "id": "C-20261018-003",
+   "at": "2026-10-18T08:01:22+0900",
+   "review": "R-20261018-001",
+   "target": "J-20261018-002",
+   "grade": "note",
+   "rule": null,
+   "claim": "다음 라운드 함정 셋(이번에 노출된 정보): (a) L7(D7 lag-1 진단 칸) S_vis 두 엔진 RX0 위(0.712 vs 0.623 · 1.051 vs 0.842 — S ≥ 1 띠) · HM t 1.71/1.72 — 진단 칸 결과라 '한 달 늦춘 재진입'을 후보로 올리면 결과 선택 · 기전(물속 국면 월간 음의 자기상관)을 벤치만으로 먼저 · 시행 수 가산 (b) 깊은 위기 β 짝 승패가 장치마다 엇갈림(D5 · D7: 2008 · 2020 · D1: 2020 · 2021 · D2 · D3: 2011) — 합집합 규칙은 보는 창 4/4 를 기계적으로 만든다 · exposures 기재 · 결합은 기전으로만 + DSR 시행 수 (c) 시각 보고 ①(p2r03_cum_pnl.png)은 전기간 — Q 가 봤다면 exposures 에 · D5 · D7 계열 계속 여부는 보는 창 기록만으로.",
+   "evidence": [
+    "04_Research/programs/P2_DEFENSE/P2R03_conditional_overlay/results/evaluation_visible.json cells.P2R03_E?_L7 · contrast.deep_wins",
+    "04_Research/programs/P2_DEFENSE/P2R03_conditional_overlay/visual_report.R:3 · 30"
+   ],
+   "alternative": "",
+   "falsifier": "",
+   "status": "closed_note",
+   "role": "judgment",
+   "hold_request": false,
+   "responses": [],
+   "outcome": null,
+   "outcome_note": null
+  },
+  {
+   "id": "C-20261018-004",
+   "at": "2026-10-18T08:01:22+0900",
+   "review": "R-20261018-001",
+   "target": "J-20261018-002",
+   "grade": "note",
+   "rule": null,
+   "claim": "D3 누출 조사를 닫는 경로: 상태 산출은 확장창 · as-of(rf_cell_engine.R:821-822 H = .M[seq_len(t)] + fwd 마스크 · 864-875 μ · Σ · 분위 = H · 682-685 벤치 행 ≤ 신호일 · 674 · 688 xs = 신호일 하루 횡단면 표준편차) — arm 수준 시점 누출 통로가 보이지 않는다. 뒤집힌 것은 느린 약세 3건 중 2017-11~2019-08 하나(두 엔진)이고 승패를 정한 것은 단발 현금 달 2018-05 · 2018-10 · 2019-05(L3 = 2018-06 · 2018-11 · 2019-06). 세 신호일 월말의 거리 성분 분해(어느 축이 90분위를 넘겼나) + as-of 재계산 일치로 닫는다 — xs 하루 스냅숏이면 '누출 아님 · 잡음 단발 게이트 · 느린 약세 개선은 기전 아님'(교훈 · 다음 상태 정의에 반영).",
+   "evidence": [
+    "02_Infrastructure/reinforcement/rf_cell_engine.R:674 · 682-688 · 821-822 · 864-875",
+    "04_Research/programs/P2_DEFENSE/P2R03_conditional_overlay/results/evaluation_visible.json cells.P2R03_E?_D3 · L3 rules.slow · record.expo_m"
+   ],
+   "alternative": "",
+   "falsifier": "",
+   "status": "closed_note",
+   "role": "judgment",
+   "hold_request": false,
+   "responses": [],
+   "outcome": null,
+   "outcome_note": null
+  },
+  {
+   "id": "C-20261018-005",
+   "at": "2026-10-18T08:01:23+0900",
+   "review": "R-20261018-001",
+   "target": "J-20261018-002",
+   "grade": "endorse",
+   "rule": null,
+   "claim": "기계 판정 적용은 등록 규칙 그대로 — 28칸 × 8항목(③ ④ ⑤ ⑥ ⑦ ⑨ ⑫ ⑬)을 위기 · 국면 · 사이클 원값에서 재도출해 기계 플래그와 불일치 0 · 과반 = 비율 > 0.5(evaluate.R:520-521 · 552-553 — ③ 0.50 미통과 정당) · 판정 어휘(610-615) · 두 엔진(274-283) · lag-1 조건 (b)(315-319 · D3 두 엔진 2/3 → 1/3) · 평가 핀 md5 7개 = prereg.evaluation.files · 평가 지문 = 측정 지문 · 대안란이 사후 완화(≥ 0.5) · 부분 통과 승격을 금지로 적음(R2). 유지.",
+   "evidence": [
+    "04_Research/programs/P2_DEFENSE/P2R03_conditional_overlay/evaluate.R:274-319 · 520-553 · 610-615",
+    "04_Research/programs/P2_DEFENSE/P2R03_conditional_overlay/results/evaluation_visible.json",
+    "stage_artifacts/programs/P2_DEFENSE/P2R03_conditional_overlay/prereg.json final_selection_rule · rules · evaluation.files"
+   ],
+   "alternative": "",
+   "falsifier": "",
+   "status": "closed_note",
+   "role": "judgment",
+   "hold_request": false,
+   "responses": [],
+   "outcome": null,
+   "outcome_note": null
+  },
+  {
+   "id": "C-20261018-006",
+   "at": "2026-10-18T08:01:23+0900",
+   "review": "R-20261018-001",
+   "target": "J-20261018-001",
+   "grade": "endorse",
+   "rule": null,
+   "claim": "재기동은 결과 전 · 핀 불변 · 같은 판본 — E2 RX0 산출 전(measure.log 22:19 rc=1 → 기계 재측정 진행 중 정지) · precheck 03:53:52 통과(md5 41f4a9b4 · 불일치 0) · 30칸 시작 · 종료 지문 엔진마다 1종(E2 = E3 = 평가 시점) · DNN 캐시 키 = CODE_VERSION + 사양 + X · y · Xp · 종목 바이트(RP_AUTO_2002_06975/engine.R:557-568)라 바뀐 입력은 적중 불가 · 기대 적중(캐시 919 → 1,044 = +125 · RX0 142.4분 · 07:34 판정 끝) · 갱신이 어차피 묶음 재측정을 부를 것을 읽고 앞당김 · 일하는 프로세스 정지를 도훈께 먼저(feedback 10-17). 유지.",
+   "evidence": [
+    "04_Research/programs/P2_DEFENSE/P2R03_conditional_overlay/results/measure.log",
+    "04_Research/programs/P2_DEFENSE/P2R03_conditional_overlay/results/precheck.json",
+    "04_Research/programs/P2_DEFENSE/P2R03_conditional_overlay/results/P2R03_E?_*.fp_start · fp_end · fpc_*",
+    "04_Research/strategies/RP_AUTO_2002_06975/engine.R:557-568"
+   ],
+   "alternative": "",
+   "falsifier": "",
+   "status": "closed_note",
+   "role": "judgment",
+   "hold_request": false,
+   "responses": [],
+   "outcome": null,
+   "outcome_note": null
+  },
+  {
+   "id": "C-20261018-007",
+   "at": "2026-10-18T08:01:23+0900",
+   "review": "R-20261018-001",
+   "target": "J-20261018-001",
+   "grade": "note",
+   "rule": null,
+   "claim": "재기동 기록 보완 — E2 RX0 4회 기동(20:22 재부팅 중단 · 22:19 rc=1 16.3분 · 기계 재측정 03:53 정지 · 03:53 rc=0) · 재기동이 measure.sh 의 '1회 재측정' · '묶음 1회 재측정' 예산을 초기화(이번엔 미사용 — 30/30 첫 시도 ok · 지문 일치) → 라운드 보고 · 커밋에 시도 이력과 rc=1 원인 1줄 · measure_now_vram.sh · results/ 미추적 → close_round 커밋에 함께.",
+   "evidence": [
+    "04_Research/programs/P2_DEFENSE/P2R03_conditional_overlay/results/measure.log",
+    "04_Research/programs/P2_DEFENSE/P2R03_conditional_overlay/measure.sh"
+   ],
+   "alternative": "",
+   "falsifier": "",
+   "status": "closed_note",
+   "role": "judgment",
+   "hold_request": false,
+   "responses": [],
+   "outcome": null,
+   "outcome_note": null
+  },
+  {
+   "id": "C-20261018-008",
+   "at": "2026-10-18T08:12:10+0900",
+   "review": "R-20261018-002",
+   "target": "J-20261018-002",
+   "grade": "challenge",
+   "rule": null,
+   "claim": "D5 · D7 을 '빠른 급락 방어 원천 후보'로 읽으면 등록 결론 범위 2('방어' = ③ β 짝 ∧ ⑤ 수준)를 어기고 다음 라운드를 현금 기계 쪽으로 민다 — ③ 2/4 · ④ 3/4 의 승리는 독립 사건 2건(2008-05~10 · 2020-01~03 = 꺾인 추세 위 2차 급락: D5 2008-07~ · 2020-03 현금 · D7 2008-08~ · 2020-02~04 현금)이고 2008-11 은 장치 14/14 칸이 이긴 공짜 표(제외 판 2/3) · 꼭대기 급락 2011-08 은 두 장치 노출 1.00(포착 0.99~1.02) · 현금 정밀도 0.34 · 0.53 · 반등 3개월 노출 0.29 · 0.67 ≤ 위기 노출 0.53 · 0.69 · 강세 국면 0/5 · 1~2/5 · E2_D5 상승 포착 0.53 < 0.55(헌장 §4 현금 기계 신호) · E3_D5 는 S 0.87 > RX0 0.84 로 이 라운드 S 최고 칸이지만 헌장 §5 사례 3 모양(2008 +4.1% · 2009 +15.1% vs 엔진 +72.4% · 2012~16 현금 36/60개월) · D5 지연 민감 · HM γ t 0.93~1.50(β 비 하락은 점추정).",
+   "evidence": [
+    "04_Research/programs/P2_DEFENSE/P2R03_conditional_overlay/results/evaluation_visible.json",
+    "04_Research/programs/P2_DEFENSE/P2R03_conditional_overlay/results/P2R03_E3_D5/visible/diagnosis_packet.json",
+    "stage_artifacts/programs/P2_DEFENSE/P2R03_conditional_overlay/prereg.json",
+    "00_Lawbook/specs/investment_philosophy_charter.md"
+   ],
+   "alternative": "보고 1줄 · 교훈 카드 · next_probes 를 'D5 · D7 = 꺾인 추세 위 2차 급락 2건(2008-09~10 · 2020-03)에서 같은 β 현금 사본을 이긴 노출 경로 — 방어 주장 불가(③ 2/4 · 결론 범위 2) · 꼭대기 급락(2011-08) 무방어 · 현금 정밀도 0.34/0.53 · 반등 상실 · D5 = 현금 기계(헌장 §4 신호 · §5 사례 3 모양 — E3 S · Calmar 상승에도 엔진 대비 강세 0/5) · D5 지연 민감 · ④ 3/4(LT) · 2/3(2008-11 제외) · 독립 사건 2 · HM t < 2' 로 적는다. D5 · D7 이웃(재진입 · 추세 창 · 문턱 조정) 라운드는 열지 않기를 권한다(보는 창 사건 2건에 맞춘 곡선 — 원칙 7). 재진입을 다시 시험한다면 '빠지기'와 '들어가기'를 따로 정의한 문헌 규칙 + 사전 기대 + 독립 사건(상태 일화) 세기로.",
+   "falsifier": "evaluation_visible.json per_crisis 에서 D5 · D7 이 2011-05 또는 2021-06 에서 β 사본을 이긴 것으로 나오면(내 판독 오류) 철회 · 등록 결론 범위 2 가 ④ 단독 통과 칸에 '방어'를 허용하는 문언이면 철회.",
+   "status": "accepted",
+   "role": "philosophy",
+   "hold_request": false,
+   "responses": [
+    {
+     "at": "2026-10-18T08:19:34+0900",
+     "by": "Q",
+     "kind": "accept",
+     "text": "수용(T2 C-001 수용분 + 철학 추가 셋) — '빠른 급락 방어 원천 후보'는 결론 범위 2 위반이다. 이긴 빠른 급락은 추세가 이미 꺾인 뒤의 2차 급락 2건(GFC · COVID · 독립 사건 2 · 2008-11 은 14칸 모두 이긴 공짜 표)이고 꼭대기 급락 2011-08 은 노출 1.00.",
+     "change": "보고 · 교훈 이름 = '꺾인 추세 위 2차 급락 2건의 노출 경로'(D5 = 현금 기계 · 지연 민감 · ④ LT 3/4 · 2008-11 제외 2/3 · 독립 사건 2 · HM t < 2) · E3_D5 를 S 순위로 읽지 않는다(헌장 §5 사례 3 모양) · D5 · D7 이웃 라운드(추세 현금 변형)를 열지 않는다 · D5 · D7 은 비교 기준 칸"
+    }
+   ],
+   "outcome": null,
+   "outcome_note": null
+  },
+  {
+   "id": "C-20261018-009",
+   "at": "2026-10-18T08:12:10+0900",
+   "review": "R-20261018-002",
+   "target": "J-20261018-002",
+   "grade": "challenge",
+   "rule": null,
+   "claim": "D4 의 실패를 비대칭 원천 ①(분포 표적)의 증거로 적으면 프로그램의 미측정 레버를 잘못 닫는다 — D4 = 시장 수준 스칼라 사이징 게이트(노출 = 1 − p̂ · 같은 실현 스트레스 4축 · 확장창 로지스틱)로 CLAUDE.md 가 과거 negative 의 구성이라 부른 'ML 을 사이징으로 쓴 구성'이고, ① 은 '표적을 분포로 바꾸는 미측정 축'이다. 사양 이름(variants.D4 '…분포 표적')과 사전등록 overall('통과 0 이면 원천 ①로')이 교훈 카드 · hypothesis_index 에서 'ML 분포 표적 게이트 실패'로 합쳐지면 다음 프로그램이 ① 을 피한다. D4 결과: 위기 노출 0.94 = 비위기 0.94(판별 0) · 반등 3개월 0.78 · 깊은 위기 β 짝 0/4 · ⑦ t −2.42 · −2.67(이 라운드 유일한 유의 알파 손실 · 현금 6%).",
+   "evidence": [
+    "04_Research/programs/P2_DEFENSE/P2R03_conditional_overlay/results/evaluation_visible.json",
+    "stage_artifacts/programs/P2_DEFENSE/P2R03_conditional_overlay/prereg.json",
+    "CLAUDE.md"
+   ],
+   "alternative": "교훈 카드 · hypothesis_index 키워드에 D4 = '시장 수준 꼬리 확률 사이징 게이트(상태 4축) — 원천 ① 아님 · ML 사이징 구성의 과거 negative 재확인' · 실패 형태 = 사건 뒤 현금 · 알파 손실 유의. 다음 원천 ① 설계 P1 에서 D4 와 다른 물체(엔진 학습 안 · 종목 수준 분포 표적)임을 보인다.",
+   "falsifier": "ml_tail_gate 정의가 엔진 학습 안에서 종목 수준 분포 표적을 바꾼다는 근거가 사양 · 카탈로그에 있으면 철회 · 교훈 카드 · hypothesis_index 가 이미 그렇게 구분해 적었으면 moot.",
+   "status": "accepted",
+   "role": "philosophy",
+   "hold_request": false,
+   "responses": [
+    {
+     "at": "2026-10-18T08:19:34+0900",
+     "by": "Q",
+     "kind": "accept",
+     "text": "수용 — D4 는 시장 수준 ML 사이징 게이트(익월 시장 꼬리 확률로 전체 노출을 줄임)이지 비대칭 원천 ①(종목 수준 분포 표적 학습)이 아니다. D4 실패를 원천 ① 의 반증으로 적으면 미측정 레버를 닫는다.",
+     "change": "교훈 카드 · hypothesis_index 기록에 'D4 = 시장 수준 ML 사이징 게이트 · 원천 ①(분포 표적) 아님 — 원천 ① 은 미측정'을 명시"
+    }
+   ],
+   "outcome": null,
+   "outcome_note": null
+  },
+  {
+   "id": "C-20261018-010",
+   "at": "2026-10-18T08:12:10+0900",
+   "review": "R-20261018-002",
+   "target": "J-20261018-002",
+   "grade": "note",
+   "rule": null,
+   "claim": "D3 누출 조사(조건 (b)) 입력 — 보는 창 노출 경로: D3 는 빠른 급락 달 셋(2008-10 · 2011-08 · 2020-03)에서 모두 1.00 이고 바닥 뒤(2008-11~2009-02 · 2020-04~06)에 현금 · 2008-05~10 은 lag-1 이 오히려 낫다(0.94 vs 1.09) · 느린 약세 β 짝 2/3 을 정한 2017-11~2019-08(D3 0.90 vs 사본 1.13 → L3 1.40 vs 1.09)은 2018-10 한 달 전량 현금(9월 말 상태)에 기대고 lag-1 은 그 현금을 2018-11 반등 달로 옮긴다(2018-05 도 같은 모양) → 누출보다 '한 달의 행운 + 빠르게 꺼지는 상태' 모양. 판정은 구조 가드(assert_overlay_pit · P0-09) + 2018-05 · 10 신호일 입력 가용일 + 위기 월 분해로. 자기 정정: 내 조건 (b)(C-052)의 전제 '느린 위기 개선 = 느린 신호'는 빠르게 꺼지는 상태 신호와 긴 수중 위기 안 하위 급락(2018-10 · 21거래일 −14%)에 맞지 않고, 느린 위기 3개라 한 달이 '붕괴'를 만든다 — 조사 개시 신호로만 읽고 보류는 조사 결과로 푼다. 조사와 무관하게 D3 를 '느린 약세 방어'로 적지 않는다(월 단위 한 번의 행운).",
+   "evidence": [
+    "04_Research/programs/P2_DEFENSE/P2R03_conditional_overlay/results/evaluation_visible.json"
+   ],
+   "alternative": "",
+   "falsifier": "",
+   "status": "closed_note",
+   "role": "philosophy",
+   "hold_request": false,
+   "responses": [],
+   "outcome": null,
+   "outcome_note": null
+  },
+  {
+   "id": "C-20261018-011",
+   "at": "2026-10-18T08:12:11+0900",
+   "review": "R-20261018-002",
+   "target": "J-20261018-002",
+   "grade": "note",
+   "rule": null,
+   "claim": "보고 전 남은 등록 기록 · 표기 — ① C-050 판본 나란히(다른 epoch 기록 비교 · 등급 비교 아님): 새 RX0 대 P3R03 RX0 — E2 2008-05 포착 1.021→1.064 · 2020-01 1.281→1.157 · β 비 1.32→1.26 · 2016-02~17-10 강세 0.45→0.16 / E3 0.958→0.961 · 1.275→1.224 · 0.96→0.98 · 0.61→0.42 · Calmar 0.461→0.422 · CAGR 25.3%→22.7% ② leave_behind 실패 지도가 evaluation_visible.json 에 없다 — 보고 전 산출 ③ ④ 두 판(LT 3/4 · 2008-11 제외 2/3) + 독립 사건 2 병기(빈칸 13) ④ ⑤ Δ<0 엄격 부등호가 잡음 통과(E3_D2 Δ −0.005) — 'β 비대칭을 만들었다'는 D5 · D7 에만 · HM t < 2 병기 ⑤ ⑨ 는 짝 없는 위기 4(2007-10 · 2008-05 · 2008-11 · 2020-01)를 빼고 판정 — D5 · D7 사이클 실패는 그들이 이긴 두 위기가 빠진 판정임을 병기 · ⑪ 은 D7 최선 ⑥ J-002 근거의 visual/p2r03_cells.csv 는 사람 쪽(전기간 섞임 가능) — 교훈 카드 · 다음 사전등록 근거는 evaluation_visible.json · visible 패킷만 ⑦ judge_request 14칸 없음(파일 이름만 확인) · MC8 selection_defense 4칸(E2 D3 · D5 · D6 · E3 D5)은 시변 노출(경로 짝 0.14~0.29) — 등급 인용 시 'v3.2 재채점 대기' 꼬리표.",
+   "evidence": [
+    "04_Research/programs/P2_DEFENSE/P2R03_conditional_overlay/results/evaluation_visible.json",
+    "stage_artifacts/programs/P2_DEFENSE/P2R03_conditional_overlay/prereg.json"
+   ],
+   "alternative": "",
+   "falsifier": "",
+   "status": "closed_note",
+   "role": "philosophy",
+   "hold_request": false,
+   "responses": [],
+   "outcome": null,
+   "outcome_note": null
+  },
+  {
+   "id": "C-20261018-012",
+   "at": "2026-10-18T08:12:11+0900",
+   "review": "R-20261018-002",
+   "target": "J-20261017-011",
+   "grade": "note",
+   "rule": null,
+   "claim": "A′ 이행(v3.2)에서 정할 것 — 스칼라 타이밍 층의 '두 엔진'은 사건을 늘리지 않는다: D3~D7 은 두 엔진에서 월 노출 경로가 같고(최대 차 0 · D1 · D2 ≤ 0.034) 깊은 위기 승패 모양도 같다 → A′ (b) 는 엔진 상호작용의 강건성이지 타이밍 사건 수가 아니다('위기 4~7 이라 우연 · 과적합에 약하다'는 약점이 (b) 로 줄지 않는다). A′ (a) 의 깊은 위기 과반 · 빠른 급락 과반은 같은 사건을 두 번 셀 수 있다(2008-11 공짜 표 14/14 · 깊은/빠른 승리가 같은 두 사건). 상신 후보(새 숫자 없음 · P2R03 판정 불변): v3.2 에서 A′ (a) 과반을 독립 사건(상태 일화 · 깊은+빠른 겹침 1건)으로 셀지 — 빈칸 13 기록판을 타이밍 노치에. 자기 정정: 빌트인 스칼라 = 엔진 무관 경로는 설계 때 알 수 있었다(P1 C-051 ① 에서 못 짚음).",
+   "evidence": [
+    "04_Research/programs/P2_DEFENSE/P2R03_conditional_overlay/results/evaluation_visible.json",
+    "00_Lawbook/specs/investment_philosophy_charter.md"
+   ],
+   "alternative": "",
+   "falsifier": "",
+   "status": "closed_note",
+   "role": "philosophy",
+   "hold_request": false,
+   "responses": [],
+   "outcome": null,
+   "outcome_note": null
+  },
+  {
+   "id": "C-20261018-013",
+   "at": "2026-10-18T08:12:11+0900",
+   "review": "R-20261018-002",
+   "target": "J-20261018-002",
+   "grade": "endorse",
+   "rule": null,
+   "claim": "기계 판정(판정 14/14 · 두 엔진 통과 0 · 선택 없음 · 사전등록 md5 41f4a9b4 · 평가 지문 = 측정 지문)과 대안 칸의 'D5 · D7 부분 통과 승격' · '과반 문턱 사후 완화' 금지는 원칙 7 · R2 그대로다. 등록 판정 장치가 철학대로 작동했다 — β 짝 + 귀속 병기(결론 범위 5)가 MC8 selection_defense 4칸 · size_defense 5칸을 '노출(β) 방어 또는 방어 없음'으로 바로잡았고, ⑥ 구간별(빈칸 7) · ⑨ 가 S 가 오른 현금 기계(E3_D5 S 0.87 > 0.84)를 막았으며(S 만 보았다면 '개선'), lag-1 진단이 D5 '지연 민감'을 남겼다.",
+   "evidence": [
+    "04_Research/programs/P2_DEFENSE/P2R03_conditional_overlay/results/evaluation_visible.json"
+   ],
+   "alternative": "",
+   "falsifier": "",
+   "status": "closed_note",
+   "role": "philosophy",
+   "hold_request": false,
+   "responses": [],
+   "outcome": null,
+   "outcome_note": null
+  },
+  {
+   "id": "C-20261018-014",
+   "at": "2026-10-18T08:12:11+0900",
+   "review": "R-20261018-002",
+   "target": "J-20261017-010",
+   "grade": "endorse",
+   "rule": null,
+   "claim": "등록된 후속 경로(통과 0 이면 원천 ① · ③)가 이 결과의 기전과 맞다 — 시장 상태 스칼라 현금은 α 와 β 를 함께 깎는다(E3_D5 2012~16 LT 위기 0 인데 현금 36/60개월 · 엔진 +16.6/+24.5/+40.5/+47.2/+1.4% vs D5 +5.1/−5.0/+23.3/+12.1/−8.8% · ⑦ 선형 α 는 위기 타이밍 이득과 상쇄돼 −2.2%/년 t −0.62 통과). 같은 낙폭 상태(노출 경로 상관 0.94)를 처치만 바꾼 D1(보유 안 순위 축소) vs D6(스칼라 현금): 깊은 위기 β 짝 2/4 vs 0/4 · 강세 국면 4~5/5 vs 3/5 · ⑦ 두 엔진 통과 vs E2 여유 초과 — 엔진을 시장에 남기고 '무엇을 드는가'를 바꾸는 원천 ③ 쪽이 같은 정보를 철학에 더 가깝게 쓴다(C-049 대조 읽기의 결실 · D1 도 통과는 아님).",
+   "evidence": [
+    "04_Research/programs/P2_DEFENSE/P2R03_conditional_overlay/results/evaluation_visible.json",
+    "stage_artifacts/programs/P2_DEFENSE/P2R03_conditional_overlay/prereg.json"
+   ],
+   "alternative": "",
+   "falsifier": "",
+   "status": "closed_note",
+   "role": "philosophy",
+   "hold_request": false,
+   "responses": [],
+   "outcome": null,
+   "outcome_note": null
+  },
+  {
+   "id": "C-20261018-015",
+   "at": "2026-10-18T08:15:12+0900",
+   "review": "R-20261018-002",
+   "target": "J-20261018-002",
+   "grade": "challenge",
+   "rule": null,
+   "claim": "L7(D7 의 한 달 지연 진단 칸)은 보는 창에서 헌장 §5 S0 정답 모양에 가장 가깝다 — 그래서 원칙 7 의 가장 큰 함정이다: E3_L7 CAGR 22.7%(= 엔진 RX0 22.7%) · MDD 33.7%(엔진 53.9%) · Calmar 0.67 · S 1.05(≥ 1 띠) · 상승 포착 중앙 1.39(엔진 1.76) · E2_L7 도 S 0.71 > 0.62. 그러나 lag-1 진단 칸(선택 대상 사전 제외)이고, D7 보다 나은 이유(2018~19 D7 −23 · −18% → L7 −7 · +15% · 수중 국면 월간 음의 자기상관)는 결과를 보고 안 기전이며, 등록 판정으로도 ③ 2/4 · ⑥ 1/5 · ⑨ 1/3 미달 · HM t 1.71/1.72 · 두 엔진 = 한 노출 경로다. 이 칸 또는 '2개월 지연 재진입' 류가 P4 · A 후보로 오르면 과거 위기에 맞춘 곡선이다 — 판단 C-20261018-003 (a)(note)를 보류 요청으로 묶는다.",
+   "evidence": [
+    "04_Research/programs/P2_DEFENSE/P2R03_conditional_overlay/results/evaluation_visible.json",
+    "04_Research/programs/P2_DEFENSE/P2R03_conditional_overlay/results/P2R03_E3_L7/visible/diagnosis_packet.json"
+   ],
+   "alternative": "교훈 카드에 L7 = '진단 칸 · 선택 대상 아님 · 결과로 발견된 모양(원칙 7)'으로 적는다. 그 기전을 시험하려면 (1) 벤치만으로 기전(수중 국면 월간 자기상관)을 먼저 세우고(전략 성과 미사용) (2) 새 사전등록 · 시행 수 가산(L7 포함) (3) 독립 사건(상태 일화) 세기 (4) 판정 통과 뒤 P3 의견서(시험 창)를 거쳐서만 P4 · A 로. 그 전에 L7 류를 P4 · A · BOOK 로 올리면 이 보류 요청을 confirm 묶음에 넣는다(결정 = 도훈).",
+   "falsifier": "L7 류 장치가 벤치만으로 세운 사전등록 기전 가설 아래 새 라운드 판정을 통과하고 시험 창(P3)에서 위기 방어가 재현되면 이 보류 요청은 해제 대상(도훈 확인) · L7 이 사전등록에서 이미 후보로 지정돼 있었다면(내 판독 오류) 철회.",
+   "status": "accepted",
+   "role": "philosophy",
+   "hold_request": true,
+   "responses": [
+    {
+     "at": "2026-10-18T08:19:35+0900",
+     "by": "Q",
+     "kind": "accept",
+     "text": "수용(보류 요청 포함) — L7(D7 의 한 달 지연 진단 칸 · S 가 RX0 보다 높음)은 결과를 보고 발견한 모양이다. 진단 칸으로만 표기한다.",
+     "change": "보고 · 교훈에서 L7 = 진단 칸 표기 · 후보 금지 · 되살리려면 벤치만으로 기전(물속 국면 월간 수익 음의 자기상관) → 새 사전등록(시행 수 가산) → P3 의견서 → P4 · A 승격 전 도훈 확인"
+    }
+   ],
    "outcome": null,
    "outcome_note": null
   }
