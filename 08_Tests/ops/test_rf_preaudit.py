@@ -252,9 +252,10 @@ def main():
         # ── H4~H7 측정 축 epoch 문장 (2026-10-14 — 축 전환 뒤에도 블록이 K200∪KQ150 · 2005~ 를 공시하던 결함) ─────────────
         CD_REAL = J(os.path.join(ROOT, "02_Infrastructure", "worktask", "constraint_defaults.json"))
         act = (CD_REAL.get("measurement_axis") or {}).get("active")
-        check("H4 block names the active epoch and carries its statements (all_hyg: K200_IDX · no KQ150-2010 · no 2005 start)",
+        check("H4 block names the active epoch and carries its statements (all_hyg*: K200_IDX · no KQ150-2010 · no 2005 start · px1000: penny floor 1,000원)",
               ph.returncode == 0 and ("epoch=%s" % act) in hb and
-              (act != "all_hyg_2000_v1" or ("K200_IDX" in hb and "2010-01-29" not in hb and "2005-01-01 이후" not in hb and "{" not in hb.split(mk, 1)[-1])),
+              (not str(act).startswith("all_hyg") or ("K200_IDX" in hb and "2010-01-29" not in hb and "2005-01-01 이후" not in hb and "{" not in hb.split(mk, 1)[-1])) and
+              (act != "all_hyg_px1000_2000_v1" or "수정 종가 ≥ 1,000원(동전주" in hb),
               "act=%s head=%s" % (act, hb[:120]))
         for eid_try, tag in (("k200kq150_2005_v1", "legacy"), ("no_such_epoch", "unknown")):
             cd2 = json.loads(json.dumps(CD_REAL))

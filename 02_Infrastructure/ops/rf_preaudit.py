@@ -183,6 +183,9 @@ def harness_block(root, cfg):
     bm = _dig(edef, "effective_start.breadth_mult")
     if isinstance(bm, (int, float)) and not isinstance(bm, bool):
         vals["breadth_mult"] = "%g" % bm
+    pm = _dig(edef, "price_floor.min_won")                # 동전주 바닥(10-17 · epoch all_hyg_px1000_2000_v1) — 문장에 숫자를 박지 않는다
+    if isinstance(pm, (int, float)) and not isinstance(pm, bool):
+        vals["price_min_won"] = "{:,.0f}원".format(pm)
     body = [H.get("marker") or "[HARNESS-DISCLOSURE v1]"]
     for ln in H.get("lines") or []:
         t = ln

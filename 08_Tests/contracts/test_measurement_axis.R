@@ -18,14 +18,20 @@ cat("=== M1 · M2 설정 ===\n")
 e0 <- ma_epoch(root = root); e1 <- ma_epoch("all_hyg_2000_v1", root = root)
 cd <- fromJSON("02_Infrastructure/worktask/constraint_defaults.json", simplifyVector = FALSE)
 e0 <- ma_epoch("k200kq150_2005_v1", root = root)                    # 구 축(전환 뒤 = 비활성)
-chk("M1a active = 새 축(10-13 전환 · MEASUREMENT-AXIS-SWITCH) · 구 축 = K200_KQ150 · 2005-01-01 · 위생 없음 · 비활성",
-    identical(ma_epoch(root = root)$id, "all_hyg_2000_v1") && identical(e0$universe, "K200_KQ150") &&
+e2 <- ma_epoch("all_hyg_px1000_2000_v1", root = root)               # 위생 + 동전주 바닥(10-17 · 활성)
+chk("M1a active = all_hyg_px1000_2000_v1(10-17 동전주 바닥 · MEASUREMENT-AXIS-PX1000) · 구 축 = K200_KQ150 · 2005-01-01 · 위생 없음 · 비활성",
+    identical(ma_epoch(root = root)$id, "all_hyg_px1000_2000_v1") && identical(e0$universe, "K200_KQ150") &&
       identical(e0$start_date, as.Date("2005-01-01")) && !e0$hygiene && !e0$active)
-chk("M1b 새 축 = ALL_HYG · 2000-01-01 · 하한 = tier_soft_deployment 정본 · 표식 3 · 활성", identical(e1$universe, "ALL_HYG") &&
+chk("M1b all_hyg_2000_v1 = ALL_HYG · 2000-01-01 · 하한 = tier_soft_deployment 정본 · 표식 3 · 바닥 없음 · 비활성(10-17 뒤)", identical(e1$universe, "ALL_HYG") &&
       identical(e1$start_date, as.Date("2000-01-01")) && identical(e1$liq_min, as.numeric(cd$tier_soft_deployment$liquidity_min_won_20d_avg)) &&
-      setequal(e1$excluded_flags, c("AdminStock", "TradingHalt", "UnfaithfulDisc")) && e1$active)
-chk("M2 유니버스 → epoch(ALL_HYG = 활성 all_hyg_2000_v1 · K200_KQ150 = 유일한 구 축)",
-    identical(ma_epoch_by_universe("ALL_HYG", root)$id, "all_hyg_2000_v1") && identical(ma_epoch_by_universe("K200_KQ150", root)$id, e0$id))
+      setequal(e1$excluded_flags, c("AdminStock", "TradingHalt", "UnfaithfulDisc")) && !is.finite(e1$price_min) && !e1$active)
+chk("M1c all_hyg_px1000_2000_v1 = all_hyg_2000_v1 와 같은 위생 + 바닥 = 설정 정본(수정 종가 · 1,000원) · 활성",
+    identical(e2$universe, "ALL_HYG") && identical(e2$start_date, e1$start_date) && identical(e2$liq_min, e1$liq_min) &&
+      setequal(e2$excluded_flags, e1$excluded_flags) && identical(e2$effective_start, e1$effective_start) &&
+      identical(e2$price_min, as.numeric(cd$measurement_axis$epochs$all_hyg_px1000_2000_v1$price_floor$min_won)) &&
+      identical(e2$price_basis, "adjusted_close") && e2$active)
+chk("M2 유니버스 → epoch(ALL_HYG = 활성 all_hyg_px1000_2000_v1 · K200_KQ150 = 유일한 구 축)",
+    identical(ma_epoch_by_universe("ALL_HYG", root)$id, "all_hyg_px1000_2000_v1") && identical(ma_epoch_by_universe("K200_KQ150", root)$id, e0$id))
 
 cat("\n=== 합성 세계 ===\n")
 days <- seq(as.Date("2020-01-01"), by = "day", length.out = 60); days <- days[!format(days, "%u") %in% c("6", "7")]
@@ -91,6 +97,8 @@ chk("M8 universe_corp_action_filter(리팩터) = 구판 인라인 식(NA · 표�
 cat("\n=== M9 · M10 문구 · 커버리지 기록 ===\n")
 chk("M9 FIDELITY 유니버스 문구 — 구 축은 구판 문구 그대로 · 새 축은 위생 명시",
     identical(ma_fidelity_universe("K200_KQ150"), "universe 치환(K200∪KQ150)") && grepl("전 종목 + 위생", ma_fidelity_universe("ALL_HYG"), fixed = TRUE))
+chk("M9b 문구 — 활성 축의 동전주 바닥을 싣는다(1,000원 미만 제외) · 바닥 없음(price_min = NA)이면 문구 없음",
+    grepl("1,000원 미만 제외", ma_fidelity_universe("ALL_HYG"), fixed = TRUE) && !grepl("동전주", ma_fidelity_universe("ALL_HYG", price_min = NA), fixed = TRUE))
 sc <- ma_signal_coverage(R[K200 == 1, list(Date, Ticker)], R)
 chk("M10 신호 커버리지 기록(자르지 않음) — 첫 신호일 · 연도별 폭/멤버 중앙값", identical(sc$status, "ok") && nrow(sc$by_year) >= 1L &&
       identical(sc$first_signal_date, format(min(R[K200 == 1]$Date))))
@@ -152,6 +160,32 @@ chk("M21 커버리지 기록도 엔진 보고 폭을 쓴다(basis engine_reporte
 scf <- ma_signal_coverage(F6, NULL, basis = "factors"); sch <- ma_signal_coverage(W6, NULL, basis = "holdings")
 chk("M18b 커버리지 폭은 선정 전 패널(FACTORS)에서 — 보유 패널로 재면 25로 눌린다(10-13 첫 기록의 결함 · 대조)",
     identical(scf$basis, "factors") && scf$by_year$breadth_median > 25 && identical(sch$by_year$breadth_median, 25))
+
+cat("\n=== P1~P6 동전주 바닥(도훈 10-17 · MEASUREMENT-AXIS-PX1000-20261017) ===\n")
+DP <- mk(); DP[, Close := 1100]; DP[Ticker == "BIG", Vol := 1e6]          # 바닥 위 · 거래대금 1.1e9(하한 위)
+d20 <- days[25]; d21 <- days[26]; d22 <- days[27]   # 유동성 20일 예열(첫 멤버 가능일 = 21번째) 뒤
+DP[Ticker == "BIG" & Date == d20, Close := 900]                             # 하루만 바닥 아래
+at <- function(mm, D, d) mm[which(D$Ticker == "BIG" & D$Date == d)]
+mP2 <- ma_membership(DP, e2); mP1 <- ma_membership(DP, e1)
+chk("P1 [PIT] 바닥은 전날 종가로 판정 — 900원인 날(d20)은 멤버(전날 1,100) · 다음 날(d21)은 탈락 · 그다음(d22) 복귀",
+    isTRUE(at(mP2, DP, d20)) && isFALSE(at(mP2, DP, d21)) && isTRUE(at(mP2, DP, d22)))
+DB <- copy(DP); DB[Ticker == "BIG" & Date == d20, Close := 1000]
+chk("P2 경계 — 전날 정확히 1,000원이면 멤버(≥)", isTRUE(at(ma_membership(DB, e2), DB, d21)))
+chk("P3 바닥 없는 판(all_hyg_2000_v1)은 그날도 멤버 · 바닥 외 모든 행이 두 판에서 같다(비트 동일)",
+    isTRUE(at(mP1, DP, d21)) && identical(mP1[-which(DP$Ticker == "BIG" & DP$Date == d21)], mP2[-which(DP$Ticker == "BIG" & DP$Date == d21)]))
+chk("P4 바닥 형식 오류는 멈춘다(fail-closed) · 설정 없음 = 바닥 없음(NA)",
+    err(.ma_price_floor(list(min_won = 0, basis = "adjusted_close", lag_days = 1), "x")) &&
+      err(.ma_price_floor(list(min_won = 1000, basis = "raw_close", lag_days = 1), "x")) &&
+      err(.ma_price_floor(list(min_won = 1000, basis = "adjusted_close", lag_days = 0), "x")) &&
+      !is.finite(.ma_price_floor(NULL, "x")$min_won))
+injP <- ma_inject_universe(copy(DP), e2)
+chk("P5 기록 — 주입 진단 price_min = 1,000 · ma_record(활성) price_floor 블록 · 바닥 없는 판 = NULL",
+    identical(injP$diag$price_min, 1000) && identical(ma_record(e2, injP$diag)$price_floor$min_won, 1000) && is.null(ma_record(e1)$price_floor))
+src <- readLines("02_Infrastructure/contracts/measurement_axis.R", encoding = "UTF-8", warn = FALSE)
+mut <- sub("px <- ma_close_l1(DT)", "px <- as.numeric(DT$Close)", src, fixed = TRUE)
+envm <- new.env(parent = globalenv()); eval(parse(text = mut, encoding = "UTF-8"), envir = envm)
+chk("P6 뮤테이션(당일 종가) — 치환 성사 · 뮤테이션판은 P1 을 어긴다(d20 탈락) → 검사 검출력",
+    !identical(mut, src) && isFALSE(at(envm$ma_membership(DP, e2), DP, d20)))
 
 cat(sprintf("\n== measurement_axis: PASS %d · FAIL %d ==\n", pass, fail))
 cat(sprintf('{"test":"measurement_axis","pass":%d,"fail":%d,"total":%d}\n', pass, fail, pass + fail))

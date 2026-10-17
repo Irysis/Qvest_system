@@ -13,7 +13,9 @@
 #   — 그날까지 알려진 값만 · PIT). 행이 없는 날(상장 전 · 폐지 후)은 멤버가 아니다.
 # 실효 시작(MC3 · 도훈 B안 10-13): epoch 에 effective_start 규칙이 있으면 신호 폭 ≥ 보유 × 배수 첫 신호일부터 성과를 센다(ma_effective_start)
 #   · A 관문 창 이탈 기준 = 그 실효 시작(ma_window_anchor). 규칙이 없는 epoch(구 축)는 아무것도 바뀌지 않는다.
-# 공개: ma_config · ma_epoch · ma_epoch_by_universe · ma_adv20_l1 · ma_membership · ma_inject_universe ·
+# 동전주 바닥(도훈 10-17 · epoch all_hyg_px1000_2000_v1): epoch 에 price_floor 가 있으면 위생 멤버에 '전날(t−1) 수정 종가 ≥ min_won' 을 더한다
+#   (ma_close_l1). 계기 = 수정주가 정수 반올림 인공물. ★수정주가 수준은 이후 기업행위를 반영한다 — PIT 경계(설정 _source · 결정 기록).
+# 공개: ma_config · ma_epoch · ma_epoch_by_universe · ma_adv20_l1 · ma_close_l1 · ma_membership · ma_inject_universe ·
 #       ma_fidelity_universe · ma_record · ma_signal_coverage · ma_effective_start · ma_window_anchor
 # 검사: 08_Tests/contracts/test_measurement_axis.R
 #==============================================================================
@@ -68,9 +70,37 @@ ma_epoch <- function(id = NULL, root = NULL) {
     flags <- as.character(unlist(e[["excluded_flags"]]))
     if (!length(flags)) stop("[measurement_axis] epoch '", id, "' excluded_flags 비었음")
   }
+  pf <- .ma_price_floor(e[["price_floor"]], id)
   list(id = id, universe = uni, start_date = st, hygiene = isTRUE(e[["hygiene"]]), liq_min = liq,
        excluded_flags = flags, active = identical(id, C$active), source = as.character(.ma_or(e[["source"]], "")),
-       effective_start = .ma_eff_rule(e[["effective_start"]], id))
+       effective_start = .ma_eff_rule(e[["effective_start"]], id),
+       price_min = pf$min_won, price_basis = pf$basis)
+}
+
+#' 동전주 바닥(도훈 10-17 · decision_register MEASUREMENT-AXIS-PX1000-20261017) — 설정에 없으면 NA(구 판 = 바닥 없음 · 비트 동일).
+#'   있으면 형식을 엄격히 본다(fail-closed): min_won > 0 · basis = adjusted_close(수정 종가 — 지금 RAWDATA 의 Close) · lag_days = 1(전날 · C10 과 같은 늦춤).
+#'   ★PIT 경계 기록: 수정주가 수준에는 이후 기업행위가 반영돼 있다(설정 _source) — 수정 전 종가가 생기면 basis = raw_close 로 교체.
+.ma_price_floor <- function(x, id) {
+  if (is.null(x)) return(list(min_won = NA_real_, basis = NA_character_))
+  if (!is.list(x)) stop("[measurement_axis] epoch '", id, "' price_floor 형식 오류(객체 아님)")
+  m <- suppressWarnings(as.numeric(x[["min_won"]]))
+  if (length(m) != 1L || !is.finite(m) || m <= 0) stop("[measurement_axis] epoch '", id, "' price_floor.min_won 판독 실패(> 0 인 수 하나)")
+  b <- as.character(.ma_or(x[["basis"]], ""))
+  if (!identical(b, "adjusted_close")) stop("[measurement_axis] epoch '", id, "' price_floor.basis 미지원: '", b, "' (adjusted_close 만)")
+  lg <- suppressWarnings(as.integer(x[["lag_days"]]))
+  if (!identical(lg, 1L)) stop("[measurement_axis] epoch '", id, "' price_floor.lag_days 는 1 이어야 한다(전날 종가 — PIT)")
+  list(min_won = m, basis = b)
+}
+
+#' 전날 종가(t−1) — 종목별 날짜순 한 칸 늦춤. DT 행 순서대로 돌려준다(DT 불변). 동전주 바닥 판정용.
+ma_close_l1 <- function(DT) {
+  need <- c("Date", "Ticker", "Close")
+  if (!all(need %in% names(DT))) stop("[measurement_axis] 전날 종가 계산 열 부족: ", paste(setdiff(need, names(DT)), collapse = ","))
+  K <- data.table(.i = seq_len(nrow(DT)), Ticker = DT$Ticker, Date = as.Date(DT$Date), .c = as.numeric(DT$Close))
+  setorder(K, Ticker, Date)
+  K[, .p := shift(.c, 1L), by = Ticker]
+  setorder(K, .i)
+  K$.p
 }
 
 #' 실효 시작 규칙(MC3 · 도훈 B안 10-13) — epoch 설정에 없으면 NULL(구 축 = 규칙 없음 · 비트 동일). 있으면 형식을 엄격히 본다(fail-closed —
@@ -122,7 +152,12 @@ ma_membership <- function(DT, ep) {
   if (!identical(sort(ep$excluded_flags), sort(c("AdminStock", "TradingHalt", "UnfaithfulDisc"))))
     stop("[measurement_axis] 표준 판정식은 AdminStock · TradingHalt · UnfaithfulDisc 세 표식만 안다 — 설정과 다름")
   liq <- ma_adv20_l1(DT)
-  corp_action_member(liq, DT$AdminStock, DT$TradingHalt, DT$UnfaithfulDisc, ep$liq_min)
+  mem <- corp_action_member(liq, DT$AdminStock, DT$TradingHalt, DT$UnfaithfulDisc, ep$liq_min)
+  if (is.finite(.ma_or(ep$price_min, NA_real_))) {               # 동전주 바닥 — 전날 수정 종가 ≥ 하한(결측 = 비멤버)
+    px <- ma_close_l1(DT)
+    mem <- mem & !is.na(px) & px >= ep$price_min
+  }
+  mem
 }
 
 #' RAWDATA 주입 — ALL_HYG 면 K200 := 멤버(1/0) · KQ150 := 0 (원 플래그 = K200_IDX/KQ150_IDX). K200_KQ150 이면 아무것도 안 한다.
@@ -141,16 +176,21 @@ ma_inject_universe <- function(RAWDATA, ep) {
   idx_day <- RAWDATA[(K200_IDX %in% c(1, TRUE)) | (KQ150_IDX %in% c(1, TRUE)), .N, by = Date]
   list(RAWDATA = RAWDATA,
        diag = list(mode = "injected", epoch = ep$id, universe = ep$universe, liq_min = ep$liq_min,
+                   price_min = .ma_or(ep$price_min, NA_real_),
                    excluded_flags = ep$excluded_flags, member_rows = sum(mem), index_member_rows = n_idx,
                    members_per_day_median = if (nrow(per_day)) as.numeric(stats::median(per_day$N)) else NA_real_,
                    index_members_per_day_median = if (nrow(idx_day)) as.numeric(stats::median(idx_day$N)) else NA_real_))
 }
 
-#' FIDELITY 의 유니버스 문구 — K200_KQ150 은 구판 문구 그대로(비트 동일 manifest)
-ma_fidelity_universe <- function(universe) {
+#' FIDELITY 의 유니버스 문구 — K200_KQ150 은 구판 문구 그대로(비트 동일 manifest).
+#'   ALL_HYG 의 동전주 바닥 = price_min(NULL 이면 그 유니버스의 활성 epoch 에서 — 판독 실패 = 바닥 문구 없음).
+ma_fidelity_universe <- function(universe, price_min = NULL) {
   if (is.null(universe) || identical(universe, "K200_KQ150") || identical(universe, "INDEX")) return("universe 치환(K200∪KQ150)")
-  if (identical(universe, "ALL_HYG"))
-    return("universe = 전 종목 + 위생(하우스 규칙 · 계약 주입 — 20일 거래대금(t−1) ≥ 하한 · 관리종목 · 거래정지 · 불성실공시 제외)")
+  if (identical(universe, "ALL_HYG")) {
+    if (is.null(price_min)) price_min <- tryCatch(ma_epoch_by_universe("ALL_HYG")$price_min, error = function(e) NA_real_)
+    pf <- if (is.finite(.ma_or(price_min, NA_real_))) sprintf(" · 전날 수정 종가 %s원 미만 제외(동전주)", format(price_min, big.mark = ",")) else ""
+    return(paste0("universe = 전 종목 + 위생(하우스 규칙 · 계약 주입 — 20일 거래대금(t−1) ≥ 하한 · 관리종목 · 거래정지 · 불성실공시 제외", pf, ")"))
+  }
   sprintf("universe = %s", universe)
 }
 
@@ -158,6 +198,7 @@ ma_fidelity_universe <- function(universe) {
 ma_record <- function(ep, diag = NULL) {
   list(epoch = ep$id, universe = ep$universe, start_date = format(ep$start_date), hygiene = ep$hygiene,
        liq_min = ep$liq_min, excluded_flags = ep$excluded_flags, active_epoch = isTRUE(ep$active),
+       price_floor = if (is.finite(.ma_or(ep$price_min, NA_real_))) list(min_won = ep$price_min, basis = ep$price_basis, lag_days = 1L) else NULL,
        membership = diag, source = ep$source, effective_start_rule = ep$effective_start)
 }
 

@@ -3369,7 +3369,32 @@
       "registered_at": "2026-10-17T04:00:42+0900",
       "recorded_by": "Q(세션 7a34e194)",
       "evidence": "도훈 채팅 2026-10-17 — '권고안들 수용할게'"
+    },
+    {
+      "id": "MEASUREMENT-AXIS-PX1000-20261017",
+      "title": "측정 축 동전주 바닥 — 전날 수정 종가 1,000원 미만 종목·일을 측정 유니버스에서 제외(새 epoch all_hyg_px1000_2000_v1)",
+      "status": "resolved",
+      "opened_at": "2026-10-17T13:15:00+0900",
+      "options": [
+        "A 수정 종가(t−1) ≥ 1,000원(지금 데이터 · 미래 기업행위 반영 = PIT 경계)",
+        "B 수정 전 실제 종가(t−1) ≥ 1,000원(수정 전 종가 확보 필요 · PIT 해소)",
+        "C 수정 종가 100원 미만만(반올림 오차 1% 경계 · 영향 0.043%)"
+      ],
+      "recommendation": "Q 권고 = B(실제 가격 · PIT) 또는 C(인공물만) — 수정주가 수준은 이후 분할 · 감자를 반영해 미래 정보를 쓴다(축 전환 시점 측정 유니버스 종목·일의 3.9%)",
+      "default_until_decided": "all_hyg_2000_v1(바닥 없음)",
+      "blocks": [
+        "item:replication_remeasure_4papers"
+      ],
+      "owner": "dohoon",
+      "source": "04_Research/01_reports/negative_cagr_omission_audit_20261017/README.md P6 · 수정주가 10원 미만 반올림 인공물(측정 유니버스 1,916 종목·일 · 2000~2013 · A008080 1↔2원)",
+      "decision": "A 채택(도훈) — 수정 종가 기준. 설정 정본 constraint_defaults.json::measurement_axis 에 epoch all_hyg_px1000_2000_v1 (all_hyg_2000_v1 그대로 + price_floor min_won 1000 · basis adjusted_close · lag_days 1) 추가 · active 전환. 계약 contracts/measurement_axis.R::ma_membership 이 위생 멤버에 '전날 수정 종가 ≥ 1,000원' 을 더한다(결측 = 비멤버). ★PIT 경계(기록 · Judge 참고): 수정주가 수준에는 이후 기업행위가 반영돼 있어 이 바닥은 미래 기업행위 정보를 쓴다 — 수정 전 종가를 확보하면 basis = raw_close 로 교체 후보. 등급 비교는 같은 epoch 안에서만(구 판 산출물과 섞지 않는다).",
+      "decided_by": "dohoon",
+      "decided_at": "2026-10-17T13:15:01+0900",
+      "note": "검사 08_Tests/contracts/test_measurement_axis.R P1~P6(전날 판정 · 경계 · 비트 동일 · 형식 · 기록 · 뮤테이션)",
+      "registered_at": "2026-10-17T13:15:00+0900",
+      "recorded_by": "Q(세션 7a34e194)",
+      "evidence": "도훈 채팅 2026-10-17 — '1,000원 미만 동전주들 제외하자' · (PIT 경계 설명 뒤) '아니 수정주가기준 1,000원미만 제외시켜'"
     }
   ],
-  "last_updated": "2026-10-17T09:54:28+0900"
+  "last_updated": "2026-10-17T13:15:02+0900"
 }

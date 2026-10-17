@@ -158,7 +158,7 @@
   },
   "measurement_axis": {
     "_doc": "측정 축 epoch(v10.01 · MC1 · MC3 · 2026-10-13) — 같은 epoch 안에서만 등급 · 성과를 비교한다. active = 현재 기본 측정 축. 전환(active 변경) = 도훈 확인 — 설계 l1_prescription_redesign_20261013 §9.6(같은 기저를 구 · 신 축으로 함께 재 순효과 확인 뒤). 소비자 = contracts/measurement_axis.R(ma_epoch · ma_inject_universe) · 러너 universe='ALL_HYG' · 셀 엔진 universe.kind='all_hyg'.",
-    "active": "all_hyg_2000_v1",
+    "active": "all_hyg_px1000_2000_v1",
     "epochs": {
       "k200kq150_2005_v1": {"universe": "K200_KQ150", "start_date": "2005-01-01", "hygiene": false,
                             "source": "v10 고정 축(CLAUDE.md 축 표 · lean-loop.md — K200∪KQ150 PIT 시변 멤버십 · 2005-01-01~ · 위생 단계 없음)"},
@@ -168,7 +168,32 @@
                           "excluded_flags": ["AdminStock", "TradingHalt", "UnfaithfulDisc"],
                           "effective_start": {"rule": "breadth_multiple", "breadth_mult": 2, "window_anchor": "effective_start",
                                               "_source": "MC3 B안(도훈 \"B안으로 가자\" 2026-10-13 · decision_register MC3-EFFECTIVE-START-B): 실효 시작 = 신호 폭(유니버스 적용 뒤 점수가 유한한 종목 수) ≥ 보유 수 × breadth_mult 를 처음 만족한 신호일 — 그 전 신호일은 성과에서 뺀다(첫 통과 = PIT). 근거 = 엔진 선정 축 유효성(후보 수 ≤ 보유 수면 선정 무의미)을 여유 2배로 측정 시작에 적용. window_anchor = A 관문 창 이탈 기준을 이 실효 시작으로(허용 12개월 = 엔진 워밍업 · diagnostics.window_allowance_months). 소비자 = contracts/measurement_axis.R::ma_effective_start · run_paper_replication §5-b · rf_runner_gates.R::rf_cell_window."},
-                          "source": "결정 D11(유니버스 전 종목 + 위생) · D15(시작 2000-01-01) — 설계 §9.4 · §3.5 · 위생 = QEPM 공통 헌장 §11 Variant A(factor_z_standard.R::universe_corp_action_filter — 관리종목 · 거래정지 · 불성실공시 제외 + 20일 거래대금 하한). 상장폐지 수익률 규칙(D14)은 도훈 결정으로 제외."}
+                          "source": "결정 D11(유니버스 전 종목 + 위생) · D15(시작 2000-01-01) — 설계 §9.4 · §3.5 · 위생 = QEPM 공통 헌장 §11 Variant A(factor_z_standard.R::universe_corp_action_filter — 관리종목 · 거래정지 · 불성실공시 제외 + 20일 거래대금 하한). 상장폐지 수익률 규칙(D14)은 도훈 결정으로 제외."},
+      "all_hyg_px1000_2000_v1": {
+        "universe": "ALL_HYG",
+        "start_date": "2000-01-01",
+        "hygiene": true,
+        "liq_min_key": "tier_soft_deployment.liquidity_min_won_20d_avg",
+        "liq_basis": "adv20 = 종가 × 거래량의 20거래일 평균, 하루 늦춤(t−1 · PIT C10) — rf_cell_engine.R · 10-10 전 시장 파일럿과 같은 정의",
+        "excluded_flags": [
+          "AdminStock",
+          "TradingHalt",
+          "UnfaithfulDisc"
+        ],
+        "effective_start": {
+          "rule": "breadth_multiple",
+          "breadth_mult": 2,
+          "window_anchor": "effective_start",
+          "_source": "MC3 B안(도훈 \"B안으로 가자\" 2026-10-13 · decision_register MC3-EFFECTIVE-START-B): 실효 시작 = 신호 폭(유니버스 적용 뒤 점수가 유한한 종목 수) ≥ 보유 수 × breadth_mult 를 처음 만족한 신호일 — 그 전 신호일은 성과에서 뺀다(첫 통과 = PIT). 근거 = 엔진 선정 축 유효성(후보 수 ≤ 보유 수면 선정 무의미)을 여유 2배로 측정 시작에 적용. window_anchor = A 관문 창 이탈 기준을 이 실효 시작으로(허용 12개월 = 엔진 워밍업 · diagnostics.window_allowance_months). 소비자 = contracts/measurement_axis.R::ma_effective_start · run_paper_replication §5-b · rf_runner_gates.R::rf_cell_window."
+        },
+        "source": "all_hyg_2000_v1(결정 D11 · D15 · MC1 · MC3) 그대로 + 동전주 바닥(price_floor — 수정 종가 t−1 ≥ 1,000원 · 도훈 10-17). 구 판과 등급 비교 금지(같은 epoch 안에서만).",
+        "price_floor": {
+          "min_won": 1000,
+          "basis": "adjusted_close",
+          "lag_days": 1,
+          "_source": "도훈 2026-10-17 '1,000원 미만 동전주들 제외하자' → '아니 수정주가기준 1,000원미만 제외시켜' (decision_register MEASUREMENT-AXIS-PX1000-20261017). 계기 = 수정주가 원 단위 정수 반올림 인공물(1↔2원 = ±50/100% · 2000~2013 · 측정 유니버스 10원 미만 1,916 종목·일 — 04_Research/01_reports/negative_cagr_omission_audit_20261017/README.md). 판정 = 전날(t−1) 수정 종가 ≥ min_won(유동성 t−1 과 같은 PIT 늦춤). ★PIT 경계(기록): 수정주가 수준에는 이후 기업행위(분할 · 감자)가 반영돼 있어 이 바닥은 미래 기업행위 정보를 쓴다(축 전환 시점 측정 유니버스 종목·일의 3.9% 가 수정 종가 1,000원 미만) — 수정 전 종가를 확보하면 basis = raw_close 로 교체 후보(같은 규칙 · PIT 해소)."
+        }
+      }
     }
   },
   "tier_graduation": {
