@@ -106,7 +106,7 @@ long-only · ≤25종 · **Σw ≤ 1(잔여 현금)** · **전 종목 + 위생 �
 **2000-01~** · **리밸런싱 ≥ 주간** · 종목별 상한 없음 · PIT C1~C15. 측정 계약 개정(MC1~MC5 · MC7 · MC8)이 끝나기 전의 새 축 측정은 판정에 쓰지 않는다.
 등급 = **등급 v3**(2026-10-13 MC7 승격 · essence_score 가 산출): S = (Calmar/0.64)^0.6 × (PORT_t/2.95)^0.4 · B 경계 = S(같은 창 벤치 Calmar, PORT_t 2.0) · A 하한 · 위기 복원력 노치 · τ_D OOS. 구 5조건 판정 = `grade_v921`(진단).
 **규칙 판 v3.1(10-13 도훈)**: 위기 = Lunde-Timmermann 20/20 첫 통과 구간(고점 대비 20% 하락 = 시작 · 저점 대비 20% 반등 = 끝 · CRISIS-DEF-LT2020) · CR '강함' 상향 노치 = MC8 선택(기전) 방어 동반 시만(GRADE-V3-CR-STRONG-SELECTION). 판이 다른 저장분은 `programs/grade_v3_backfill.R` 이 판 표식(`grade_v3.rules_version`)으로 다시 채점한다.
-**규칙 판 v3.2(10-18 · 헌장 빈칸 9 A′ · CHARTER-GAPS-3)**: MC8 selection_defense 를 선택(노출 경로 고정 또는 노출 경로까지 맞춘 짝을 과반에서 이김) / 타이밍(경로 짝 미통과)으로 가른다 — 타이밍 방어는 증거 기록((a) 같은 β 현금 사본을 깊은 위기 · 빠른 급락 과반에서 이김 (b) 두 엔진 (c) 느린 약세 개선이 lag-1 에서도 유지)이 있을 때만 '강함' 상향. **방어 라운드의 평가는 장치가 (a)(b)(c)를 충족하면 `grade_v3.R::gv3_timing_evidence_add` 로 증거를 기록한다**(등록부 `06_Registry/timing_defense_evidence.json` · 셈 단위는 GRADE-V32-TIMING-EVENT-UNIT 결정 전까지 LT · 독립 일화 두 판 모두 통과 = unit 'both').
+**규칙 판 v3.2(10-18 · 헌장 빈칸 9 A′ · CHARTER-GAPS-3)**: MC8 selection_defense 를 선택(노출 경로 고정 또는 노출 경로까지 맞춘 짝을 과반에서 이김) / 타이밍(경로 짝 미통과)으로 가른다 — 타이밍 방어는 증거 기록((a) 같은 β 현금 사본을 깊은 위기 · 빠른 급락 과반에서 이김 (b) 두 엔진 (c) 느린 약세 개선이 lag-1 에서도 유지)이 있을 때만 '강함' 상향. **방어 라운드의 평가는 장치가 (a)(b)(c)를 충족하면 `grade_v3.R::gv3_timing_evidence_add` 로 증거를 기록한다**(등록부 `06_Registry/timing_defense_evidence.json` · 셈 단위 = LT 위기 수 = unit 'lt' — 도훈 10-18 GRADE-V32-TIMING-EVENT-UNIT · 상태 일화 판은 보고 기록판).
 사전등록 당시 정의로 판정해야 하는 라운드는 그 판의 설정 사본을 고정해 `dp_build(…, bcfg = <사본>)` 로 잰다(R2 — 위기 정의가 바뀌어도 반증 의미 불변 · 첫 사례 P2R01).
 
 ## 5. 논문 · 문헌 (자동 · 아침 체인)

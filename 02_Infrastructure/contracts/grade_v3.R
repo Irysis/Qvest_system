@@ -71,9 +71,12 @@ gv3_cfg <- function(root = NULL, path = NULL) {
   sr <- .gv3_or(cfg$cr_notch$strong_requires, "none")
   if (!sr %in% c("none", "mc8_selection_defense", "mc8_selection_or_timing_evidence"))
     stop("[grade_v3] cr_notch.strong_requires 어휘 밖: ", sr, " (none | mc8_selection_defense | mc8_selection_or_timing_evidence)")
-  te <- cfg$cr_notch$timing_evidence
+  te <- cfg$cr_notch[["timing_evidence"]]                                   # [[ ]] = 정확 일치($ 는 timing_unit 등 앞부분 일치로 새는 값을 집는다)
   if (identical(sr, "mc8_selection_or_timing_evidence") && !(is.character(te) && length(te) == 1L && nzchar(te)))
     stop("[grade_v3] strong_requires = mc8_selection_or_timing_evidence 는 cr_notch.timing_evidence(증거 등록부 경로)를 요구한다")
+  tu <- cfg$cr_notch[["timing_unit"]]
+  if (identical(sr, "mc8_selection_or_timing_evidence") && !(is.character(tu) && length(tu) == 1L && tu %in% GV3_TIMING_UNITS))
+    stop("[grade_v3] cr_notch.timing_unit 어휘 밖(", paste(GV3_TIMING_UNITS, collapse = " | "), ") — 증거 셈 단위(GRADE-V32-TIMING-EVENT-UNIT)")
   cfg
 }
 
@@ -94,12 +97,12 @@ gv3_cr_for_notch <- function(cr, mc8, cfg, evidence = NULL) {
   lab <- if (is.list(mc8)) .gv3_or(mc8$label, NA_character_) else as.character(.gv3_or(mc8, NA_character_))[1]
   if (identical(req, "mc8_selection_defense")) return(if (identical(lab, "selection_defense")) "strong" else "normal")
   if (identical(req, "mc8_selection_or_timing_evidence"))
-    return(if (gv3_notch_basis(mc8, evidence) %in% c("selection", "timing_evidence")) "strong" else "normal")
+    return(if (gv3_notch_basis(mc8, evidence, cfg$cr_notch[["timing_unit"]]) %in% c("selection", "timing_evidence")) "strong" else "normal")
   stop("[grade_v3] cr_notch.strong_requires 어휘 밖: ", req)
 }
 
 #' v3.2 노치 근거 — not_selection | selection | timing_evidence | timing_no_evidence | timing_unresolved
-gv3_notch_basis <- function(mc8, evidence = NULL) {
+gv3_notch_basis <- function(mc8, evidence = NULL, unit = NULL) {
   lab <- if (is.list(mc8)) .gv3_or(mc8$label, NA_character_) else as.character(.gv3_or(mc8, NA_character_))[1]
   if (!identical(lab, "selection_defense")) return("not_selection")
   if (!is.list(mc8)) return("timing_unresolved")                     # 라벨만으로는 경로 짝을 모른다
@@ -109,19 +112,23 @@ gv3_notch_basis <- function(mc8, evidence = NULL) {
   maj <- suppressWarnings(as.numeric(.gv3_or(mc8$majority_share, NA_real_))[1])
   if (!isTRUE(varies) || !is.finite(sp) || !is.finite(maj)) return("timing_unresolved")
   if (sp > maj) return("selection")                                  # 노출 경로까지 맞춘 짝을 과반에서 이김
-  if (isTRUE(gv3_timing_evidence_ok(evidence))) "timing_evidence" else "timing_no_evidence"
+  if (isTRUE(gv3_timing_evidence_ok(evidence, unit))) "timing_evidence" else "timing_no_evidence"
 }
 
 #' 타이밍 방어 증거 기록 1건이 A′ (a)(b)(c) 를 모두 충족하나 — 플래그는 라운드 평가(사전등록 판정)가 쓴다
 GV3_TIMING_FLAGS <- c("a_deep_beta_majority", "a_fast_beta_majority", "b_both_engines", "c_slow_lag1_retained")
-gv3_timing_evidence_ok <- function(evidence) {
+#   셈 단위(decision_register GRADE-V32-TIMING-EVENT-UNIT-20261018 · 도훈 10-18 = lt): lt = Lunde-Timmermann 위기 수 · episode = 독립 상태 일화 ·
+#   both = 두 판 모두 통과. 설정 단위(cr_notch.timing_unit)와 기록 단위가 같아야 가점(다른 단위로 센 기록 = 가점 없음).
+GV3_TIMING_UNITS <- c("lt", "episode", "both")
+gv3_timing_evidence_ok <- function(evidence, unit = NULL) {
   if (!is.list(evidence) || !length(evidence)) return(FALSE)
+  if (!is.null(unit) && !identical(as.character(.gv3_or(evidence$unit, NA_character_))[1], as.character(unit)[1])) return(FALSE)
   all(vapply(GV3_TIMING_FLAGS, function(k) isTRUE(evidence[[k]]), logical(1)))
 }
 
 #' 증거 등록부에서 이 전략의 기록을 찾는다(strategy_id 우선 · 없으면 산출물 디렉터리) — 없거나 못 읽으면 NULL(fail-closed)
 gv3_timing_evidence <- function(cfg, strategy_id = NA_character_, dir = NA_character_, root = NULL) {
-  p <- .gv3_or(cfg$cr_notch$timing_evidence, NA_character_)
+  p <- .gv3_or(cfg$cr_notch[["timing_evidence"]], NA_character_)
   if (is.na(p) || !nzchar(p)) return(NULL)
   p <- gsub("\\\\", "/", p)                                                 # Windows 역슬래시 경로(tempdir 등)를 슬래시로
   f <- if (grepl("^([A-Za-z]:)?/", p)) p else file.path(.gv3_root(root), p)
@@ -144,7 +151,9 @@ gv3_timing_evidence_add <- function(entry, cfg, root = NULL) {
   if (length(miss)) stop("[grade_v3] 타이밍 증거 기록 필드 누락: ", paste(miss, collapse = ","))
   if (!all(vapply(GV3_TIMING_FLAGS, function(k) is.logical(entry[[k]]) && length(entry[[k]]) == 1L && !is.na(entry[[k]]), logical(1))))
     stop("[grade_v3] 타이밍 증거 플래그는 TRUE/FALSE 하나씩이어야 한다")
-  p <- .gv3_or(cfg$cr_notch$timing_evidence, NA_character_)
+  if (!(is.character(entry$unit) && length(entry$unit) == 1L && entry$unit %in% GV3_TIMING_UNITS))
+    stop("[grade_v3] 타이밍 증거 unit 어휘 밖(", paste(GV3_TIMING_UNITS, collapse = " | "), ")")
+  p <- .gv3_or(cfg$cr_notch[["timing_evidence"]], NA_character_)
   if (is.na(p) || !nzchar(p)) stop("[grade_v3] cr_notch.timing_evidence 경로가 설정에 없다")
   p <- gsub("\\\\", "/", p)                                                 # Windows 역슬래시 경로(tempdir 등)를 슬래시로
   f <- if (grepl("^([A-Za-z]:)?/", p)) p else file.path(.gv3_root(root), p)
@@ -487,10 +496,11 @@ gv3_score_bt <- function(bt, root = NULL, ctx = NULL, gates = NULL) {
   # v3.2 — 타이밍 방어(경로 짝 미통과)면 증거 등록부를 본다(없으면 보통 · fail-closed)
   basis <- NA_character_; tev <- NULL
   if (identical(cs$cr, "strong") && identical(.gv3_or(cfg$cr_notch$strong_requires, "none"), "mc8_selection_or_timing_evidence")) {
-    basis <- gv3_notch_basis(mc8)
+    tu <- cfg$cr_notch[["timing_unit"]]
+    basis <- gv3_notch_basis(mc8, NULL, tu)
     if (identical(basis, "timing_no_evidence")) {
       tev <- tryCatch(gv3_timing_evidence(cfg, as.character(.gv3_or(X$ar$strategy_id, NA_character_))[1], dir, root), error = function(err) NULL)
-      basis <- gv3_notch_basis(mc8, tev)
+      basis <- gv3_notch_basis(mc8, tev, tu)
     }
   }
   cr_notch <- gv3_cr_for_notch(cs$cr, mc8, cfg, tev)

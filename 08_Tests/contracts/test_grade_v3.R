@@ -131,12 +131,13 @@ cfg_t <- cfg; cfg_t$cr_notch$strong_requires <- "mc8_selection_or_timing_evidenc
 cfg_t$cr_notch$timing_evidence <- file.path(TD, "tev.json")
 M <- function(lab = "selection_defense", varies = TRUE, sp = 0.2, maj = 0.5)
   list(label = lab, exposure_varies = varies, share_beats_size_exposure_path = sp, majority_share = maj)
-EVD <- function(a1 = TRUE, a2 = TRUE, b = TRUE, c = TRUE)
-  list(strategy_id = "S_X", dir = "stage_artifacts/x", round_id = "RT", prereg_md5 = "m", unit = "both",
+EVD <- function(a1 = TRUE, a2 = TRUE, b = TRUE, c = TRUE, unit = "lt")
+  list(strategy_id = "S_X", dir = "stage_artifacts/x", round_id = "RT", prereg_md5 = "m", unit = unit,
        a_deep_beta_majority = a1, a_fast_beta_majority = a2, b_both_engines = b, c_slow_lag1_retained = c)
 crt <- function(m, ev = NULL, cr = "strong") gv3_cr_for_notch(cr, m, cfg_t, ev)
-chk("C21 현행 설정 = v3.2(mc8_selection_or_timing_evidence · 증거 등록부 경로 · 판 표식 v3.2)",
+chk("C21 현행 설정 = v3.2(mc8_selection_or_timing_evidence · 증거 등록부 경로 · 판 표식 v3.2 · 셈 단위 lt = 도훈 10-18)",
     identical(cfg$cr_notch$strong_requires, "mc8_selection_or_timing_evidence") && identical(cfg$rules_version, "v3.2") &&
+      identical(cfg$cr_notch[["timing_unit"]], "lt") &&
       file.exists(file.path(ROOT, cfg$cr_notch$timing_evidence)))
 chk("C22 선택 방어 · 노출 경로 고정(경로 짝 없음) → 선택 → 강함", identical(gv3_notch_basis(M(varies = FALSE, sp = NA_real_)), "selection") &&
       identical(crt(M(varies = FALSE, sp = NA_real_)), "strong"))
@@ -168,11 +169,19 @@ chk("C29 등록부 없음 → NULL · writer 로 쓴 기록을 strategy_id · di
       length(fromJSON(file.path(TD, "tev.json"), simplifyVector = FALSE)$entries) == 1L && isTRUE(r1$c_slow_lag1_retained) &&
         identical(r2$round_id, "RT") && is.null(gv3_timing_evidence(cfg_t, "S_OTHER", "stage_artifacts/y", ROOT)) })
 chk("C30 [위반 주입] 플래그 누락 · NA 플래그 · 경로 없는 설정 → writer 가 멈춘다 · 깨진 등록부 → NULL(가점 없음)",
-    throws(gv3_timing_evidence_add(EVD()[setdiff(names(EVD()), "b_both_engines")], cfg_t, ROOT)) &&
-      throws(gv3_timing_evidence_add(modifyList(EVD(), list(a_deep_beta_majority = NA)), cfg_t, ROOT)) &&
-      { cf0 <- cfg_t; cf0$cr_notch$timing_evidence <- NULL; throws(gv3_timing_evidence_add(EVD(), cf0, ROOT)) } &&
+    throws(gv3_timing_evidence_add(EVD()[setdiff(names(EVD()), "b_both_engines")], cfg_t, TD)) &&
+      throws(gv3_timing_evidence_add(modifyList(EVD(), list(a_deep_beta_majority = NA)), cfg_t, TD)) &&
+      { cf0 <- cfg_t; cf0$cr_notch$timing_evidence <- NULL; throws(gv3_timing_evidence_add(EVD(), cf0, TD)) } &&
       { writeLines("{ broken", file.path(TD, "tev_bad.json")); cfb <- cfg_t; cfb$cr_notch$timing_evidence <- file.path(TD, "tev_bad.json")
         is.null(gv3_timing_evidence(cfb, "S_X", NA_character_, ROOT)) })
+chk("C34 셈 단위(GRADE-V32-TIMING-EVENT-UNIT = lt): 다른 단위(episode · both)로 센 증거 · 단위 없는 증거 → 가점 없음 · lt 증거 → 강함",
+    identical(crt(M(sp = 0.25), EVD(unit = "lt")), "strong") && identical(crt(M(sp = 0.25), EVD(unit = "episode")), "normal") &&
+      identical(crt(M(sp = 0.25), EVD(unit = "both")), "normal") &&
+      identical(crt(M(sp = 0.25), EVD()[setdiff(names(EVD()), "unit")]), "normal"))
+chk("C35 [위반 주입] writer 는 단위 어휘 밖('decade')을 거부한다", throws(gv3_timing_evidence_add(EVD(unit = "decade"), cfg_t, TD)))
+pu <- file.path(TD, "gv3_tu.json"); cj3 <- fromJSON(file.path(ROOT, "06_Registry/grade_v3.json"), simplifyVector = FALSE)
+cj3$cr_notch[["timing_unit"]] <- "decade"; writeLines(toJSON(cj3, auto_unbox = TRUE, null = "null", digits = NA), pu)
+chk("C36 [위반 주입] v3.2 설정의 셈 단위 어휘 밖 → gv3_cfg 가 멈춘다", throws(gv3_cfg(ROOT, path = pu)))
 pt <- file.path(TD, "gv3_te.json"); cj2 <- fromJSON(file.path(ROOT, "06_Registry/grade_v3.json"), simplifyVector = FALSE)
 cj2$cr_notch$timing_evidence <- NULL; writeLines(toJSON(cj2, auto_unbox = TRUE, null = "null", digits = NA), pt)
 chk("C31 [위반 주입] v3.2 요구인데 증거 등록부 경로가 설정에 없음 → gv3_cfg 가 멈춘다", throws(gv3_cfg(ROOT, path = pt)))
