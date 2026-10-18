@@ -68,7 +68,10 @@
     },
     "prior_recoveries": 14,
     "current_run": 17,
-    "span": ["2008-01", "2026-10"]
+    "span": [
+      "2008-01",
+      "2026-10"
+    ]
   },
   "defensive_score": {
     "status": "ok",
@@ -112,7 +115,7 @@
     "grade": "B",
     "S": 0.7628,
     "S_B": 0.43,
-    "rules_version": "v3.1",
+    "rules_version": "v3.2",
     "crisis_def": "lt_first_passage",
     "cr_notch_basis": "normal",
     "mc8": {
@@ -166,7 +169,7 @@
       "retention_calmar": 3.1681,
       "retention_sharpe": 1.3939
     },
-    "parity_max_abs": 0,
+    "parity_max_abs": 5.77315972805081e-15,
     "nav_source": "contract"
   },
   "replication": {
@@ -206,14 +209,22 @@
     "start_date": "2000-01-01",
     "hygiene": true,
     "liq_min": 200000000,
-    "excluded_flags": ["AdminStock", "TradingHalt", "UnfaithfulDisc"],
+    "excluded_flags": [
+      "AdminStock",
+      "TradingHalt",
+      "UnfaithfulDisc"
+    ],
     "active_epoch": true,
     "membership": {
       "mode": "injected",
       "epoch": "all_hyg_2000_v1",
       "universe": "ALL_HYG",
       "liq_min": 200000000,
-      "excluded_flags": ["AdminStock", "TradingHalt", "UnfaithfulDisc"],
+      "excluded_flags": [
+        "AdminStock",
+        "TradingHalt",
+        "UnfaithfulDisc"
+      ],
       "member_rows": 9560963,
       "index_member_rows": 2389616,
       "members_per_day_median": 1068,
@@ -458,5 +469,20 @@
     },
     "window_anchor_basis": "measurement_axis.effective_start (MC3 B — decision_register MC3-EFFECTIVE-START-B)",
     "window_anchor_date_global": "2005-01-01"
+  },
+  "grade_v3_backfill": {
+    "at": "2026-10-18T09:21:02+0900",
+    "tool": "02_Infrastructure/programs/grade_v3_backfill.R",
+    "decision": "decision_register GRADE-V3-CR-STRONG-SELECTION · CRISIS-DEF-LT2020(규칙 판 재채점)",
+    "rules_version": "v3.2",
+    "prior_rules_version": "v3.1",
+    "prior_essence_grade": "B",
+    "prior_md5": "8e14b29e25a8985b248e816b158730b0",
+    "history": [
+      {
+        "rules_version": "v3.1",
+        "essence_grade": "B"
+      }
+    ]
   }
 }

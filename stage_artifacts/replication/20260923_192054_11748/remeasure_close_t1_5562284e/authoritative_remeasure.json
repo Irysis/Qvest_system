@@ -130,7 +130,7 @@
     },
     "reason": "하락월 110개: 초과 +2.05%/월 (t 5.78 · 적중 70%) · 벤치-10% 이하 10개: 초과 +5.37%/월 · 상승월 초과 -0.63%/월"
   },
-  "reasons": "v3: S 0.714 · B 경계 0.438 · 띠 B · CR strong(시험 창 normal) · 노치 +0 · A 아님 사유 floor:port_t,oos:rolling36_pass_oos,gate:dsr_sweep | v921 C: Ensemble: positive alpha이나 B 미달 (블렌드에서만 가치)",
+  "reasons": "v3: S 0.714 · B 경계 0.438 · 띠 B · CR strong(시험 창 normal) · 노치 +0 · A 아님 사유 floor:port_t,oos:rolling36_pass_oos,gate:dsr_sweep,cr:strong_timing_no_evidence | v921 C: Ensemble: positive alpha이나 B 미달 (블렌드에서만 가치)",
   "remeasure": {
     "version": "remeasure_from_holdings_v1",
     "of_artifact": "C:/Users/99922/OneDrive/Quant_Module_Moltbot/stage_artifacts/replication/20260923_192054_11748",
@@ -216,9 +216,9 @@
     "grade": "B",
     "S": 0.7136,
     "S_B": 0.4384,
-    "rules_version": "v3.1",
+    "rules_version": "v3.2",
     "crisis_def": "lt_first_passage",
-    "cr_notch_basis": "strong",
+    "cr_notch_basis": "normal",
     "mc8": {
       "status": "ok",
       "label": "selection_defense",
@@ -231,7 +231,8 @@
     "blocked_by": [
       "floor:port_t",
       "oos:rolling36_pass_oos",
-      "gate:dsr_sweep"
+      "gate:dsr_sweep",
+      "cr:strong_timing_no_evidence"
     ],
     "floors": {
       "port_t": false,
@@ -275,16 +276,20 @@
     "nav_source": "contract"
   },
   "grade_v3_backfill": {
-    "at": "2026-10-13T18:51:01+0900",
+    "at": "2026-10-18T09:17:39+0900",
     "tool": "02_Infrastructure/programs/grade_v3_backfill.R",
     "decision": "decision_register GRADE-V3-CR-STRONG-SELECTION · CRISIS-DEF-LT2020(규칙 판 재채점)",
-    "rules_version": "v3.1",
-    "prior_rules_version": "v3.0",
+    "rules_version": "v3.2",
+    "prior_rules_version": "v3.1",
     "prior_essence_grade": "B",
-    "prior_md5": "374357b52063fe9619c6bc0c65ef56c5",
+    "prior_md5": "ddb1f1bdd7cb5a3f1e120d0a680fb553",
     "history": [
       {
         "rules_version": "v3.0",
+        "essence_grade": "B"
+      },
+      {
+        "rules_version": "v3.1",
         "essence_grade": "B"
       }
     ]
