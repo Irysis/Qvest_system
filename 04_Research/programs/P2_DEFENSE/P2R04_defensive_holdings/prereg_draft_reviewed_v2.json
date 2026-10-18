@@ -1,0 +1,1773 @@
+{
+  "schema": "rx_prereg_v1",
+  "program": "P2_DEFENSE",
+  "round_id": "P2R04_defensive_holdings",
+  "status": "draft",
+  "draft_version": 2,
+  "drafted_at": "2026-10-18T14:36:45+0900",
+  "judgments": {
+    "round_selection": "J-20261018-003",
+    "ledger": "06_Registry/q_judgment_ledger.json",
+    "design": "04_Research/programs/P2_DEFENSE/P2R04_defensive_holdings/DESIGN.md",
+    "reviews": [
+      {
+        "id": "R-20261018-003",
+        "role": "philosophy",
+        "trigger": "P1",
+        "file": "04_Research/programs/_supervision/superfan/philosophy/20261018_1214_P1_P2R04.md"
+      },
+      {
+        "id": "R-20261018-004",
+        "role": "judgment",
+        "trigger": "T1",
+        "file": "04_Research/programs/_supervision/superfan/20261018_1227_T1.md"
+      }
+    ]
+  },
+  "exposures": [
+    {
+      "what": "1차 라운드 · P3R03 · P2R03 의 시험 창 정보 — P2R03 평가 샤드 로그 꼬리(칸별 전기간 UC · DC · CAGR · CDaR 12줄 · 10-18 07:00) · P2R03 전기간 누적 차트(보고 생성 · 10-18)",
+      "when": "2026-10-15 ~ 10-18",
+      "who": "Q(세션)"
+    },
+    {
+      "what": "설계 입력(보는 창 · 성과 무관) — 벤치만으로 낸 위기 상태 분류 2건(_design_notes/state_turn_classify.md · onset_state_classify.md) · 방어 팩터 IC 부호 정렬(defense_direction_agreement.md — 부호만) · P2R03 evaluation_visible.json · 실패 지도(보는 창)",
+      "when": "2026-10-18",
+      "who": "Q"
+    },
+    {
+      "what": "P2R02 C4 · C5 의 구 축 판정(MC8 V2 비율 · 보는 창)을 후보 근거로 썼다 — 시험 창 수치 아님",
+      "when": "2026-10-18",
+      "who": "Q"
+    },
+    {
+      "what": "판단 Superfan T2 C-20261018-003 함정 셋 — L7(D7 lag-1 진단) 결과를 후보로 올리지 않음 · 위기별 승패 지도로 결합 규칙을 짜지 않음(이 라운드는 결합 없음) · 전기간 차트 열람 기록(위)",
+      "when": "2026-10-18",
+      "who": "Q"
+    },
+    {
+      "what": "측정 기계 구현 에이전트(사양 · precheck · measure · register 작성) — 판단 원장 구조 확인 중 도전 C-20261018-015 본문(P2R03 L7 칸 보는 창 지표) · 철학 P1 R-20261018-003 도전 C-20261018-016 ~ 026 본문(실패 지도 보는 창 수치 포함) · 판단 T1 C-20261018-027 본문(RX0 보는 창 S · CAGR · Sharpe · PORT_t)을 열람 · 판정 규칙 · 후보 · 기대 문장 미작성(DESIGN · P1 · T1 옮김) · results/ 미열람",
+      "when": "2026-10-18",
+      "who": "구현 에이전트"
+    },
+    {
+      "assessment": "Q 는 시험 창 수치를 본 상태다(τ_D 노출). 판정 · 선택 규칙은 보는 창(≤ 2022-12-31) 지표로만 쓰고 시험 창은 사람 쪽 보고 전용이다. 장치 4종은 원리(하방β · 저변동 · β 비대칭 · 퀄리티 — 비대칭 원천 ③) · IC 부호 정렬(부호만) · P2R02 기록(보는 창)으로 골랐고 시험 창 성과로 고르지 않았다."
+    }
+  ],
+  "purpose": "현금 비중(얼마나 드느냐)이 아니라 무엇을 드느냐(방어적 보유 · 비대칭 원천 ③)로 위기에서 덜 잃는가 — 같은 β 로 비중만 낮춘 현금 사본(β 짝)보다 깊은 위기 · 빠른 급락에서 덜 잃고 크기 · 노출 짝을 넘는 선택 방어(⑭)이면서 강세 참여 · 알파 · 복리를 지키는가. 방어적 보유는 늘 켜진 선택 기울기라 시점 신호가 없다 — 시장 상태가 꺾이기 전 위기 초입에도 작동할 수 있다(P2R03 타이밍 층의 구조적 사각). 등록부 P2_DEFENSE · 병목 = 급락기 낙폭(엔진 = 시장 동행)",
+  "conclusion_scope": ["1 이 결과는 '방어 팩터 틸트(순위 z 혼합 · 방어 몫 50%) × 같은 DNN 기저의 두 구성(E2 · E3) · 이 축'의 효과다(두 구성 통과는 독립 엔진 강건성이 아니다 — 헌장 빈칸 상신). 두 구성 모두 방어 몫 50%(v3) — 용량 짝(W · 12.5%)이 세기 의존을 가른다(rules.diagnostics_reading).", "2 '방어'는 ③ ∧ ④ ∧ ⑤(수준) ∧ ⑭ 일 때만 쓴다. ⑭ 를 못 넘으면 '크기 방어' 또는 '노출 방어'다. '선택(특성) 방어' 이름은 크기 × β 짝까지 넘을 때만 · 결측 짝이 같은 위기를 이겼으면 그 승리는 '결측 패턴 방어'. ⑭ 미측정(판정어 selection_unmeasured — 분해 필드 부재 · 깊은 위기 짝 < 2 · MC8 insufficient · 오류)이면 방어 이름을 보류한다(크기 · 노출 방어로 접지 않는다 — 결측이 다음 라운드의 동기가 되지 않게).", "3 ③ · ④ · ⑭ 를 넘었으나 ⑥ · ⑦ · ⑨ · ⑫ · ⑬ 중 하나라도 못 넘으면 '저변동 기계'(방어만 · 복리 없음 — C-024).", "4 이 라운드 결과는 이 축에서 P2R02 C4 · C5 의 '검증 · 기각'(구 축 · β 짝 없음)을 대체한다. P2R02 C6(추세 현금 + 저변동) 판정은 전액 현금 결함 위의 측정이라 무효다(10-17 결함 b234afb11 — 등록부 'validated' 를 인용하지 않는다).", "5 검증 0 일 때 남길 것: 장치 × 위기 실패 지도(β 짝 여유 · 크기 × β 짝 · 결측 · 희석 · 용량 읽기 · 크기 · 유동성 귀속 · 보유 겹침 · 국면별 월 차이) — '선택 기울기도 노출 방어'면 다음 = 원천 ① 분포 표적(종목 수준 꼬리 학습).", "6 결합 금지(이 라운드 안): 이 라운드의 장치를 P2R03 장치(D5 · D7 등)와 묶는 결합은 새 사전등록과 결합 칸 자체의 판정으로만 한다 — 위기별 승패 지도의 합집합으로 결합을 고르지 않는다(T2 C-003 · 철학 P1 C-019).", "7 기준점: 위기 방어를 엔진 대비(①)와 시장 대비(벤치 dd_capture < 1 − tol) 둘 다 적는다 — E2 RX0 는 보는 창 위기 일부에서 시장보다 더 빠졌다(엔진 대비 방어 ≠ 시장 대비 방어).", "8 ⑭ 해석 범위(판단 T1 자기 점검 2): '선택 방어'는 위기 분해 선택 항 기준이다 — 3요인(시장 β · EW−CW · 무신호 틸트) 밖 노출(가치 · 모멘텀 · 유동성 · 퀄리티)도 선택으로 세므로 순수 종목 선택 실력이 아니라 MC8 보다 β 에 강한 귀속이고, t−1 적재라 위기 중 조건부 β 하락(H1 · H3 의 기전)도 선택 항으로 잡힌다 — 결론 문장에 이 범위를 함께 적는다.", "9 PIT 경계(기록): Q08_Composite_Quality · V10_FCF_Yield 는 재무 원값이 정정 공시로 과거 값을 덮는다(팩터 레지스트리 restatement_prone · vintage_available false — 정정 전 판본 없음 · 가용 시차 quarterly+45d;annual_3/31 · C4 준수) — 처치 자체가 그 경계 위에 있는 장치 = H4 Q08_Composite_Quality · 기존 팩터 V10_FCF_Yield 는 같은 경계지만 짝(RX0 · 변형) 양쪽 공통 — 그 장치 결론에 'PIT 경계 기록(정정 공시 판본 없음)'을 붙인다."],
+  "candidates": {
+    "selected": [
+      {
+        "code": "H1",
+        "factor": "D04_Downside_Beta",
+        "name": "하방β 틸트",
+        "basis": "Ang, Chen & Xing (2006) Downside Risk, RFS 19(4) — 하방β: 원값 = −(시장 하락일만으로 추정한 β)",
+        "direction": "원값 방향 = 방어 쪽 틸트(보는 창 월말 216개월 ic_sign +1 · 정렬이 공격 쪽으로 뒤집힌 달 0 — _design_notes/defense_direction_agreement.md)"
+      },
+      {
+        "code": "H2",
+        "factor": "D03_RealVol",
+        "name": "저변동 틸트",
+        "basis": "Blitz & van Vliet (2007) The Volatility Effect, JPM 34(1) · Frazzini & Pedersen (2014) Betting Against Beta, JFE 111(1) — 저변동: 원값 = −(252일 실현 변동성) · P2R02 C4 재시험(이 축 · β 짝)",
+        "direction": "원값 방향 = 방어 쪽 틸트(보는 창 월말 216개월 ic_sign +1 · 정렬이 공격 쪽으로 뒤집힌 달 0 — _design_notes/defense_direction_agreement.md)"
+      },
+      {
+        "code": "H3",
+        "factor": "D07_Beta_Asymmetry",
+        "name": "β 비대칭 틸트",
+        "basis": "Ang, Chen & Xing (2006) Downside Risk, RFS 19(4)(상승 · 하락 β 비대칭) — β 비대칭: 원값 = 상승β − 하락β(클수록 오를 때 더 오르고 내릴 때 덜 내림) · 철학 '비대칭'의 종목 수준 대응",
+        "direction": "원값 방향 = 방어 쪽 틸트(보는 창 월말 216개월 ic_sign +1 · 정렬이 공격 쪽으로 뒤집힌 달 0 — _design_notes/defense_direction_agreement.md)"
+      },
+      {
+        "code": "H4",
+        "factor": "Q08_Composite_Quality",
+        "name": "퀄리티 틸트",
+        "basis": "Asness, Frazzini & Pedersen (2019) Quality minus junk, RAS 24 — 퀄리티: 원값 = 복합 퀄리티(GPA · ROE · ROA · 발생액) · P2R02 C5 재시험(이 축 · β 짝)",
+        "direction": "원값 방향 = 방어 쪽 틸트(보는 창 월말 216개월 ic_sign +1 · 정렬이 공격 쪽으로 뒤집힌 달 0 — _design_notes/defense_direction_agreement.md)"
+      }
+    ],
+    "excluded": [
+      {
+        "item": "D08 꼬리β",
+        "reason": "IC 이력 0 → 레지스트리 대체 경로 → 레지스트리 표기(lower_better)가 음수화된 원값과 어긋나 공격 쪽 틸트가 된다(별도 수리 칩 task_7ee1c9a2)"
+      },
+      {
+        "item": "D25 왼꼬리β",
+        "reason": "방어 정렬 78.7%(7번 뒤집힘) — 21% 달은 공격 틸트"
+      },
+      {
+        "item": "D16 공왜도",
+        "reason": "+1 정렬 = 음의 공왜도(위험 프리미엄 쪽) — 위기 방어 틸트가 아님"
+      },
+      {
+        "item": "D01 특이변동 · D02 β · D15 약세β",
+        "reason": "D01 = D03 와 순위 상관 0.99(보는 창 반기 월말 36개 측정 — 같은 신호) · D02 = D04 와 0.715 · D15 = D04 와 같은 하방 축 · 시행 수 예산(판단 T1 C-032)"
+      },
+      {
+        "item": "원천 ① 분포 표적(종목 수준 꼬리 확률 학습)",
+        "reason": "모델 신축이 필요 — 다음 라운드 후보(이번 결과가 '선택 기울기도 노출 방어'면 그 근거)"
+      },
+      {
+        "item": "추세 현금 · 재진입 변형",
+        "reason": "철학 P2 C-008 — D5 · D7 이웃 라운드 금지(비교 기준으로만)"
+      }
+    ],
+    "p2r02_tags": [
+      {
+        "item": "P2R02 C4(저변동 틸트) '검증'",
+        "tag": "구 축 · 빈칸 8(β 짝) 이전 판정 — H2 가 이 축 · β 짝 · ⑭ 로 재시험하고 결과가 대체한다(결론 범위 4)"
+      },
+      {
+        "item": "P2R02 C5(퀄리티 틸트)",
+        "tag": "구 축 · β 짝 이전 판정 — H4 가 이 축 · β 짝 · ⑭ 로 재시험하고 결과가 대체한다(결론 범위 4)"
+      },
+      {
+        "item": "P2R02 C6(추세 현금 + 저변동) '검증'",
+        "tag": "무효 — 전액 현금 결함(b234afb11) 위 측정(결론 범위 4 · 등록부 'validated' 인용 금지)"
+      }
+    ]
+  },
+  "measurement_axis": {
+    "epoch": "all_hyg_px1000_2000_v1"
+  },
+  "tau_d": "2022-12-31",
+  "reference": {
+    "baseline": "같은 엔진 RX0(이 배치에서 P2R03_E?_RX0 사양 = P0R01_E?_C0 사양 그대로 재측정) — 반증 · 비열등 · β 짝 원천 · 시행 수 무가산 · 카탈로그 미등재(QVEST_RP_REGISTER=0)",
+    "e3_note": "E3(B6_36) 의 RX0 = lean:entropy 비중 · 순위 버퍼 2배 · 기존 팩터 3(M01 · V10 · M08) — 장치 칸은 base_weight 0.25 + 기존 3 + 방어 팩터 6회 나열(DNN 25% · 기존 25% · 방어 50% = E2 장치와 같은 방어 몫 · 엔진 알파 구성 DNN : 기존 = RX0 비율 유지 · 판단 T1 C-027) · 도구 상자 기본(RX0 + 방어 1 · w0 0.5 → 방어 12.5%)은 진단 W1~W4",
+    "beta_copy": "β 짝 사본 = RX0 를 k = β(변형)/β(RX0) 배 노출로 낮추고 나머지를 현금으로 둔 사본(P2R03 기계 그대로) · k ≥ 1 이면 사본 = RX0 · 판정 ③ · ④ 에 쓴다",
+    "matched_controls": "크기 · 노출 짝(MC8) — 같은 크기 분포 · 같은 평균 노출의 무작위 포트폴리오 200개 분위(06_Registry/matched_controls.json) · 방어 틸트는 대형주 쪽으로 기울 수 있으므로 크기 방어를 선택 방어로 세지 않는다(⑭)",
+    "size_beta_copy": "크기 × β 짝(평가 기록 · 칸 아님 · 철학 P1 C-017): MC8 크기 바스켓을 변형 β / 바스켓 β 로 낮추고 나머지를 현금으로 둔 사본",
+    "no_lag1": "lag-1 스트레스판 없음 — 시점 신호(오버레이)가 없다 · 팩터 값의 시점은 load_month_factors(Usable_Date ≤ 신호일 · C14 · C15)가 지킨다"
+  },
+  "variants": {
+    "H1": {
+      "name": "하방β 틸트",
+      "factor": "D04_Downside_Beta",
+      "delta": {
+        "E2": {
+          "factors_append": [
+            {
+              "kind": "db",
+              "id": "D04_Downside_Beta"
+            }
+          ],
+          "repeat_n": 1,
+          "base_weight": 0.5
+        },
+        "E3": {
+          "factors_append": [
+            {
+              "kind": "db",
+              "id": "D04_Downside_Beta"
+            }
+          ],
+          "repeat_n": 6,
+          "base_weight": 0.25
+        }
+      },
+      "mix_share": {
+        "E2": 0.5,
+        "E3": 0.5
+      }
+    },
+    "H2": {
+      "name": "저변동 틸트",
+      "factor": "D03_RealVol",
+      "delta": {
+        "E2": {
+          "factors_append": [
+            {
+              "kind": "db",
+              "id": "D03_RealVol"
+            }
+          ],
+          "repeat_n": 1,
+          "base_weight": 0.5
+        },
+        "E3": {
+          "factors_append": [
+            {
+              "kind": "db",
+              "id": "D03_RealVol"
+            }
+          ],
+          "repeat_n": 6,
+          "base_weight": 0.25
+        }
+      },
+      "mix_share": {
+        "E2": 0.5,
+        "E3": 0.5
+      }
+    },
+    "H3": {
+      "name": "β 비대칭 틸트",
+      "factor": "D07_Beta_Asymmetry",
+      "delta": {
+        "E2": {
+          "factors_append": [
+            {
+              "kind": "db",
+              "id": "D07_Beta_Asymmetry"
+            }
+          ],
+          "repeat_n": 1,
+          "base_weight": 0.5
+        },
+        "E3": {
+          "factors_append": [
+            {
+              "kind": "db",
+              "id": "D07_Beta_Asymmetry"
+            }
+          ],
+          "repeat_n": 6,
+          "base_weight": 0.25
+        }
+      },
+      "mix_share": {
+        "E2": 0.5,
+        "E3": 0.5
+      }
+    },
+    "H4": {
+      "name": "퀄리티 틸트",
+      "factor": "Q08_Composite_Quality",
+      "delta": {
+        "E2": {
+          "factors_append": [
+            {
+              "kind": "db",
+              "id": "Q08_Composite_Quality"
+            }
+          ],
+          "repeat_n": 1,
+          "base_weight": 0.5
+        },
+        "E3": {
+          "factors_append": [
+            {
+              "kind": "db",
+              "id": "Q08_Composite_Quality"
+            }
+          ],
+          "repeat_n": 6,
+          "base_weight": 0.25
+        }
+      },
+      "mix_share": {
+        "E2": 0.5,
+        "E3": 0.5
+      }
+    }
+  },
+  "diagnostics": {
+    "n": 13,
+    "engines": ["E2", "E3"],
+    "accounting": "시행 수 무가산(n_family = NA · 사양 회계 = RX0 회계 + control · challenge · diagnostic_of) · DSR 표본 아님 · 선택 대상 아님 · 판정 표 밖 · 2계층 모듈 풀 미등재(QVEST_RP_REGISTER=0)",
+    "mix_derivation": {
+      "device_share": 0.5,
+      "toolbox_share": 0.125,
+      "rule": "rf_cell_engine §4 Score = w·z(DNN) + (1 − w)·평균 z(팩터 열) · 장치 팩터 r 회면 방어 몫 = (1 − w)·r/(n + r) — s = E2 장치 몫 · t = E3 도구 상자 기본 몫 · register.R P2R04_CONST$mix_plan"
+    },
+    "missing_pair": {
+      "codes": ["P2R04_E2_C1", "P2R04_E2_C2", "P2R04_E2_C3", "P2R04_E2_C4"],
+      "pairs": {
+        "P2R04_E2_C1": "P2R04_E2_H1",
+        "P2R04_E2_C2": "P2R04_E2_H2",
+        "P2R04_E2_C3": "P2R04_E2_H3",
+        "P2R04_E2_C4": "P2R04_E2_H4"
+      },
+      "challenge": "C-20261018-016",
+      "purpose": "셀 엔진의 팩터 내부 병합(rf_cell_engine.R §3 merge · inner join)이 만드는 '팩터 결측 종목 제외' 효과만 분리 — 점수는 DNN 100%",
+      "construction": "E2 RX0 사양 + 짝 장치와 같은 팩터 1 · base_weight 1(최상위 · fixed_axes 둘 다) — 점수 = 순위z(DNN) 100% · 팩터 내부 병합의 '결측 종목 제외'만 남는다"
+    },
+    "capacity_pair": {
+      "codes": ["P2R04_E2_W1", "P2R04_E2_W2", "P2R04_E2_W3", "P2R04_E2_W4", "P2R04_E3_W1", "P2R04_E3_W2", "P2R04_E3_W3", "P2R04_E3_W4"],
+      "pairs": {
+        "P2R04_E2_W1": "P2R04_E2_H1",
+        "P2R04_E2_W2": "P2R04_E2_H2",
+        "P2R04_E2_W3": "P2R04_E2_H3",
+        "P2R04_E2_W4": "P2R04_E2_H4",
+        "P2R04_E3_W1": "P2R04_E3_H1",
+        "P2R04_E3_W2": "P2R04_E3_H2",
+        "P2R04_E3_W3": "P2R04_E3_H3",
+        "P2R04_E3_W4": "P2R04_E3_H4"
+      },
+      "challenge": {
+        "E2": "C-20261018-018",
+        "E3": "C-20261018-027"
+      },
+      "purpose": "도구 상자 기본 방어 몫(E3 RX0 + 장치 팩터 1 · w0 0.5 → 12.5%)을 두 구성에 줘 세기 의존(장치 50% 대비)을 가른다",
+      "share": 0.125,
+      "base_weight": {
+        "E2": 0.875,
+        "E3": 0.5
+      },
+      "construction": "RX0 사양 + 짝 장치와 같은 팩터 1 · base_weight = 1 − t·(n + 1)(E2 = 1 − t · E3 = 도구 상자 기본 0.5 그대로) — 방어 몫 t"
+    },
+    "dilution_pair": {
+      "codes": "P2R04_E2_N0",
+      "challenge": "C-20261018-021",
+      "purpose": "방어 내용 없는 50% 혼합(셀 엔진 null_perm · 월별 시드 · 패널 멤버십 그대로라 결측 필터 없음) — ① 개선 중 희석 몫을 읽는다",
+      "factor": {
+        "kind": "null_perm",
+        "id": "null_perm_s20261018",
+        "seed": 20261018
+      },
+      "base_weight": 0.5,
+      "construction": "E2 RX0 사양 + factors [null_perm · id · seed](기존 통제 칸 형식) · base_weight = E2 장치와 같은 혼합 — 셀 엔진 null_perm 분기(월별 시드 · 그 신호일 패널 종목 순열)"
+    },
+    "reading": "rules.diagnostics_reading(사전 고정 · 판정 아님)"
+  },
+  "adaptations": ["장치 = 셀 사양 factors 끝에 팩터 DB 팩터(kind db) r 회 — 엔진 혼합식 Score = w × 순위z(DNN) + (1 − w) × 평균 순위z(팩터 열)(rf_cell_engine.R §4) · E2 = w 0.5 · r 1 · E3 = w 0.25 · r 6(두 구성 방어 몫 50% · 판단 T1 C-027)", "같은 팩터 id 의 r 회 나열은 셀 엔진이 허용한다 — 팩터 결합 루프가 항목마다 태그(.fv1 …)를 따로 달아 같은 팩터를 r 번 내부 병합(같은 결측 필터 · 멱등)하고 순위 z 열 r 개를 rowMeans 에 넣는다(가중 r/(n + r)) · rx_validate 는 id 어휘 · kind 만 본다(중복 검사 없음) · 측정 경로에 팩터 중복 제거(.dedup_factors) 없음(rf_spec_sig.R 은 셀 엔진이 읽지 않는다)", "팩터 값 = load_month_factors(신호일, factor_names = id) 의 Z_Score_Aligned(C13 · C15) — 방향 = as-of IC 부호(Usable_Date ≤ 신호일 · 36행 이상 · C14) · IC 이력이 모자란 신호일은 레지스트리 direction 으로 대체된다(원값이 방어 쪽 저장인 D03 · D04 · D07 은 레지스트리 lower_better 라 그 신호일엔 공격 쪽으로 뒤집힌다 — 셀 로그 방향 원천 줄로 기록)", "팩터 결합 = 신호일 × 종목 내부 결합(rf_cell_engine.R §3 merge) — 그 신호일에 팩터 값이 없는 종목은 후보에서 빠진다(커버리지 축소가 처치에 함께 든다 · ⑩ 보유 차이의 한 원천 · E2 결측 짝 C1~C4 가 그 몫을 따로 잰다)", "E3 의 비중(lean:entropy) · 순위 버퍼 2배 · 기존 팩터 3 은 RX0 그대로 — 점수만 바뀐다"],
+  "cells": [
+    {
+      "code": "P2R04_E2_RX0",
+      "engine": "E2",
+      "component": "RX0",
+      "path": "04_Research/programs/P2_DEFENSE/P2R04_defensive_holdings/specs/P2R04_E2_RX0.json",
+      "md5": "6c3ebf64012fc3c5f13313605e5b3a07",
+      "n_family": null,
+      "reference": true,
+      "diagnostic": false,
+      "spec_copy_of": "P2R03_E2_RX0",
+      "remeasure_of": "P0R01_E2_C0"
+    },
+    {
+      "code": "P2R04_E2_H1",
+      "engine": "E2",
+      "component": "H1",
+      "path": "04_Research/programs/P2_DEFENSE/P2R04_defensive_holdings/specs/P2R04_E2_H1.json",
+      "md5": "3adec927392c6f41c5db78c9d13d4475",
+      "n_family": 260,
+      "reference": false,
+      "diagnostic": false,
+      "device": "H1",
+      "factor": "D04_Downside_Beta",
+      "base_weight": 0.5,
+      "device_repeat": 1,
+      "defense_share": 0.5
+    },
+    {
+      "code": "P2R04_E2_H2",
+      "engine": "E2",
+      "component": "H2",
+      "path": "04_Research/programs/P2_DEFENSE/P2R04_defensive_holdings/specs/P2R04_E2_H2.json",
+      "md5": "865a25e80e402b19833266d83d6a9b28",
+      "n_family": 260,
+      "reference": false,
+      "diagnostic": false,
+      "device": "H2",
+      "factor": "D03_RealVol",
+      "base_weight": 0.5,
+      "device_repeat": 1,
+      "defense_share": 0.5
+    },
+    {
+      "code": "P2R04_E2_H3",
+      "engine": "E2",
+      "component": "H3",
+      "path": "04_Research/programs/P2_DEFENSE/P2R04_defensive_holdings/specs/P2R04_E2_H3.json",
+      "md5": "fcd98a696606024bb6635a52481fe296",
+      "n_family": 260,
+      "reference": false,
+      "diagnostic": false,
+      "device": "H3",
+      "factor": "D07_Beta_Asymmetry",
+      "base_weight": 0.5,
+      "device_repeat": 1,
+      "defense_share": 0.5
+    },
+    {
+      "code": "P2R04_E2_H4",
+      "engine": "E2",
+      "component": "H4",
+      "path": "04_Research/programs/P2_DEFENSE/P2R04_defensive_holdings/specs/P2R04_E2_H4.json",
+      "md5": "47d59cdc6ef7d45ece6ce557aa64a4bd",
+      "n_family": 260,
+      "reference": false,
+      "diagnostic": false,
+      "device": "H4",
+      "factor": "Q08_Composite_Quality",
+      "base_weight": 0.5,
+      "device_repeat": 1,
+      "defense_share": 0.5
+    },
+    {
+      "code": "P2R04_E2_C1",
+      "engine": "E2",
+      "component": "C1",
+      "path": "04_Research/programs/P2_DEFENSE/P2R04_defensive_holdings/specs/P2R04_E2_C1.json",
+      "md5": "83c477774f5f205716b373555fcfff70",
+      "n_family": null,
+      "reference": false,
+      "diagnostic": true,
+      "control": "missing_pair",
+      "challenge": "C-20261018-016",
+      "diagnostic_of": "P2R04_E2_H1",
+      "device": "H1",
+      "factor": "D04_Downside_Beta",
+      "defense_share": 0,
+      "base_weight": 1
+    },
+    {
+      "code": "P2R04_E2_C2",
+      "engine": "E2",
+      "component": "C2",
+      "path": "04_Research/programs/P2_DEFENSE/P2R04_defensive_holdings/specs/P2R04_E2_C2.json",
+      "md5": "bea972b7c1cdac73f7cf828935f6d323",
+      "n_family": null,
+      "reference": false,
+      "diagnostic": true,
+      "control": "missing_pair",
+      "challenge": "C-20261018-016",
+      "diagnostic_of": "P2R04_E2_H2",
+      "device": "H2",
+      "factor": "D03_RealVol",
+      "defense_share": 0,
+      "base_weight": 1
+    },
+    {
+      "code": "P2R04_E2_C3",
+      "engine": "E2",
+      "component": "C3",
+      "path": "04_Research/programs/P2_DEFENSE/P2R04_defensive_holdings/specs/P2R04_E2_C3.json",
+      "md5": "8bdfdd646abe74c7277e2b1d6e1b575e",
+      "n_family": null,
+      "reference": false,
+      "diagnostic": true,
+      "control": "missing_pair",
+      "challenge": "C-20261018-016",
+      "diagnostic_of": "P2R04_E2_H3",
+      "device": "H3",
+      "factor": "D07_Beta_Asymmetry",
+      "defense_share": 0,
+      "base_weight": 1
+    },
+    {
+      "code": "P2R04_E2_C4",
+      "engine": "E2",
+      "component": "C4",
+      "path": "04_Research/programs/P2_DEFENSE/P2R04_defensive_holdings/specs/P2R04_E2_C4.json",
+      "md5": "1e8235195a3481e7244f0d3758e36b5d",
+      "n_family": null,
+      "reference": false,
+      "diagnostic": true,
+      "control": "missing_pair",
+      "challenge": "C-20261018-016",
+      "diagnostic_of": "P2R04_E2_H4",
+      "device": "H4",
+      "factor": "Q08_Composite_Quality",
+      "defense_share": 0,
+      "base_weight": 1
+    },
+    {
+      "code": "P2R04_E2_W1",
+      "engine": "E2",
+      "component": "W1",
+      "path": "04_Research/programs/P2_DEFENSE/P2R04_defensive_holdings/specs/P2R04_E2_W1.json",
+      "md5": "87dd8808104e3eb124dc6ab236787607",
+      "n_family": null,
+      "reference": false,
+      "diagnostic": true,
+      "control": "capacity_pair",
+      "challenge": "C-20261018-018",
+      "diagnostic_of": "P2R04_E2_H1",
+      "device": "H1",
+      "factor": "D04_Downside_Beta",
+      "defense_share": 0.125,
+      "base_weight": 0.875
+    },
+    {
+      "code": "P2R04_E2_W2",
+      "engine": "E2",
+      "component": "W2",
+      "path": "04_Research/programs/P2_DEFENSE/P2R04_defensive_holdings/specs/P2R04_E2_W2.json",
+      "md5": "3e3d41a084c8a89ce1893a829759e7cc",
+      "n_family": null,
+      "reference": false,
+      "diagnostic": true,
+      "control": "capacity_pair",
+      "challenge": "C-20261018-018",
+      "diagnostic_of": "P2R04_E2_H2",
+      "device": "H2",
+      "factor": "D03_RealVol",
+      "defense_share": 0.125,
+      "base_weight": 0.875
+    },
+    {
+      "code": "P2R04_E2_W3",
+      "engine": "E2",
+      "component": "W3",
+      "path": "04_Research/programs/P2_DEFENSE/P2R04_defensive_holdings/specs/P2R04_E2_W3.json",
+      "md5": "f119303432ad32eef9035cd9bbb80373",
+      "n_family": null,
+      "reference": false,
+      "diagnostic": true,
+      "control": "capacity_pair",
+      "challenge": "C-20261018-018",
+      "diagnostic_of": "P2R04_E2_H3",
+      "device": "H3",
+      "factor": "D07_Beta_Asymmetry",
+      "defense_share": 0.125,
+      "base_weight": 0.875
+    },
+    {
+      "code": "P2R04_E2_W4",
+      "engine": "E2",
+      "component": "W4",
+      "path": "04_Research/programs/P2_DEFENSE/P2R04_defensive_holdings/specs/P2R04_E2_W4.json",
+      "md5": "eb1155f838bd61cc959adff8119790a7",
+      "n_family": null,
+      "reference": false,
+      "diagnostic": true,
+      "control": "capacity_pair",
+      "challenge": "C-20261018-018",
+      "diagnostic_of": "P2R04_E2_H4",
+      "device": "H4",
+      "factor": "Q08_Composite_Quality",
+      "defense_share": 0.125,
+      "base_weight": 0.875
+    },
+    {
+      "code": "P2R04_E2_N0",
+      "engine": "E2",
+      "component": "N0",
+      "path": "04_Research/programs/P2_DEFENSE/P2R04_defensive_holdings/specs/P2R04_E2_N0.json",
+      "md5": "53621eb39b9b6d7333a677b3b5c1869d",
+      "n_family": null,
+      "reference": false,
+      "diagnostic": true,
+      "control": "dilution_pair",
+      "challenge": "C-20261018-021",
+      "dilution_share": 0.5,
+      "base_weight": 0.5
+    },
+    {
+      "code": "P2R04_E3_RX0",
+      "engine": "E3",
+      "component": "RX0",
+      "path": "04_Research/programs/P2_DEFENSE/P2R04_defensive_holdings/specs/P2R04_E3_RX0.json",
+      "md5": "c3d30464fb2ce62e864d3f78341e73ec",
+      "n_family": null,
+      "reference": true,
+      "diagnostic": false,
+      "spec_copy_of": "P2R03_E3_RX0",
+      "remeasure_of": "P0R01_E3_C0"
+    },
+    {
+      "code": "P2R04_E3_H1",
+      "engine": "E3",
+      "component": "H1",
+      "path": "04_Research/programs/P2_DEFENSE/P2R04_defensive_holdings/specs/P2R04_E3_H1.json",
+      "md5": "644caa97c0df50b08aad6bf9fb8a6c0c",
+      "n_family": 260,
+      "reference": false,
+      "diagnostic": false,
+      "device": "H1",
+      "factor": "D04_Downside_Beta",
+      "base_weight": 0.25,
+      "device_repeat": 6,
+      "defense_share": 0.5
+    },
+    {
+      "code": "P2R04_E3_H2",
+      "engine": "E3",
+      "component": "H2",
+      "path": "04_Research/programs/P2_DEFENSE/P2R04_defensive_holdings/specs/P2R04_E3_H2.json",
+      "md5": "60060a7fa685625ee8a47774f1860850",
+      "n_family": 260,
+      "reference": false,
+      "diagnostic": false,
+      "device": "H2",
+      "factor": "D03_RealVol",
+      "base_weight": 0.25,
+      "device_repeat": 6,
+      "defense_share": 0.5
+    },
+    {
+      "code": "P2R04_E3_H3",
+      "engine": "E3",
+      "component": "H3",
+      "path": "04_Research/programs/P2_DEFENSE/P2R04_defensive_holdings/specs/P2R04_E3_H3.json",
+      "md5": "22e4fb713303b96764ad5a455d60d200",
+      "n_family": 260,
+      "reference": false,
+      "diagnostic": false,
+      "device": "H3",
+      "factor": "D07_Beta_Asymmetry",
+      "base_weight": 0.25,
+      "device_repeat": 6,
+      "defense_share": 0.5
+    },
+    {
+      "code": "P2R04_E3_H4",
+      "engine": "E3",
+      "component": "H4",
+      "path": "04_Research/programs/P2_DEFENSE/P2R04_defensive_holdings/specs/P2R04_E3_H4.json",
+      "md5": "88a163d4ba6c52f769618fe883b7bc65",
+      "n_family": 260,
+      "reference": false,
+      "diagnostic": false,
+      "device": "H4",
+      "factor": "Q08_Composite_Quality",
+      "base_weight": 0.25,
+      "device_repeat": 6,
+      "defense_share": 0.5
+    },
+    {
+      "code": "P2R04_E3_W1",
+      "engine": "E3",
+      "component": "W1",
+      "path": "04_Research/programs/P2_DEFENSE/P2R04_defensive_holdings/specs/P2R04_E3_W1.json",
+      "md5": "bab312c5c5bd235abba95fa87d12aec6",
+      "n_family": null,
+      "reference": false,
+      "diagnostic": true,
+      "control": "capacity_pair",
+      "challenge": "C-20261018-027",
+      "diagnostic_of": "P2R04_E3_H1",
+      "device": "H1",
+      "factor": "D04_Downside_Beta",
+      "defense_share": 0.125,
+      "base_weight": 0.5
+    },
+    {
+      "code": "P2R04_E3_W2",
+      "engine": "E3",
+      "component": "W2",
+      "path": "04_Research/programs/P2_DEFENSE/P2R04_defensive_holdings/specs/P2R04_E3_W2.json",
+      "md5": "f22e6a1e1bfa5ccae56d511d451da887",
+      "n_family": null,
+      "reference": false,
+      "diagnostic": true,
+      "control": "capacity_pair",
+      "challenge": "C-20261018-027",
+      "diagnostic_of": "P2R04_E3_H2",
+      "device": "H2",
+      "factor": "D03_RealVol",
+      "defense_share": 0.125,
+      "base_weight": 0.5
+    },
+    {
+      "code": "P2R04_E3_W3",
+      "engine": "E3",
+      "component": "W3",
+      "path": "04_Research/programs/P2_DEFENSE/P2R04_defensive_holdings/specs/P2R04_E3_W3.json",
+      "md5": "12e5f8b90323221825be7aea6c78e5b4",
+      "n_family": null,
+      "reference": false,
+      "diagnostic": true,
+      "control": "capacity_pair",
+      "challenge": "C-20261018-027",
+      "diagnostic_of": "P2R04_E3_H3",
+      "device": "H3",
+      "factor": "D07_Beta_Asymmetry",
+      "defense_share": 0.125,
+      "base_weight": 0.5
+    },
+    {
+      "code": "P2R04_E3_W4",
+      "engine": "E3",
+      "component": "W4",
+      "path": "04_Research/programs/P2_DEFENSE/P2R04_defensive_holdings/specs/P2R04_E3_W4.json",
+      "md5": "d7180a22824471168732fa790c7621d3",
+      "n_family": null,
+      "reference": false,
+      "diagnostic": true,
+      "control": "capacity_pair",
+      "challenge": "C-20261018-027",
+      "diagnostic_of": "P2R04_E3_H4",
+      "device": "H4",
+      "factor": "Q08_Composite_Quality",
+      "defense_share": 0.125,
+      "base_weight": 0.5
+    }
+  ],
+  "fast_crash_prior": {
+    "source": "벤치만 · 2000-01 ~ 2022-12 · LT 20/20 · 21거래일 창 최대 하락 · 그 빠른 구간 · 구간 직전 월말(그 달 노출을 정한 신호일) · 위기 안 여부 · 그 월말 뒤 남은 하락 · 달력 월 판(월말→월말) — 전략 성과 무관",
+    "definition": "Mishkin & White (2002) NBER WP 8992 — 정의 p.6 · 창별 결과 p.6~7(20% 하락 = 급락 · 속도 창 1일 · 5일 · 1개월 · 3개월 · 1년). 창 선택 = 1개월: 결정 주기가 월간이고 신호는 보유월 시작 전 자료뿐이라 '빠름' = 한 결정 주기 안에 끝나는 하락 = 월간 층이 사후 대응할 수 없는 하락(철학 §1 '남들 다 깨질 때'를 이 층의 시간 해상도로 옮김). 조작화 = 21거래일 이동 창(문헌 정의의 일간 조작화 — MW 는 사건을 달력 월로 부르고 월 창 자료는 월말 지수 · 이동 창은 월말을 가로지르는 급락을 쪼개지 않는다). 달력 월 판(월말→월말 ≥ 20%)은 기록 — 보는 창에서 2008-05 위기 1건만 해당(짝 < 2 라 판정 불가)",
+    "table": [
+      {
+        "crisis": "2000-01-04 → 2000-05-29",
+        "depth": -0.381,
+        "max21": -0.241,
+        "fast": true,
+        "seg": "2000-03-29 → 2000-04-27",
+        "pre_me": "2000-02-29",
+        "pre_me_inside": true,
+        "drop_after_pre_me": -0.198,
+        "cal_month_min": -0.156,
+        "prior": "반응 가능(구간 직전 월말이 위기 안)"
+      },
+      {
+        "crisis": "2000-06-12 → 2000-12-04",
+        "depth": -0.42,
+        "max21": -0.266,
+        "fast": true,
+        "seg": "2000-08-22 → 2000-09-22",
+        "pre_me": "2000-07-31",
+        "pre_me_inside": true,
+        "drop_after_pre_me": -0.301,
+        "cal_month_min": -0.162,
+        "prior": "반응 가능"
+      },
+      {
+        "crisis": "2001-01-22 → 2001-04-10",
+        "depth": -0.233,
+        "max21": -0.152,
+        "fast": false,
+        "seg": "2001-03-08 → 2001-04-04",
+        "pre_me": "2001-02-28",
+        "pre_me_inside": true,
+        "drop_after_pre_me": -0.155,
+        "cal_month_min": -0.097,
+        "prior": "—(느린 약세)"
+      },
+      {
+        "crisis": "2001-05-29 → 2001-09-27",
+        "depth": -0.264,
+        "max21": -0.187,
+        "fast": false,
+        "seg": "2001-08-27 → 2001-09-25",
+        "pre_me": "2001-07-31",
+        "pre_me_inside": true,
+        "drop_after_pre_me": -0.134,
+        "cal_month_min": -0.126,
+        "prior": "—(느린 약세)"
+      },
+      {
+        "crisis": "2002-04-18 → 2002-10-10",
+        "depth": -0.377,
+        "max21": -0.212,
+        "fast": true,
+        "seg": "2002-09-12 → 2002-10-10",
+        "pre_me": "2002-08-30",
+        "pre_me_inside": true,
+        "drop_after_pre_me": -0.207,
+        "cal_month_min": -0.121,
+        "prior": "반응 가능"
+      },
+      {
+        "crisis": "2002-12-03 → 2003-03-17",
+        "depth": -0.298,
+        "max21": -0.162,
+        "fast": false,
+        "seg": "2003-02-24 → 2003-03-17",
+        "pre_me": "2003-01-30",
+        "pre_me_inside": true,
+        "drop_after_pre_me": -0.127,
+        "cal_month_min": -0.132,
+        "prior": "—(느린 약세)"
+      },
+      {
+        "crisis": "2004-04-23 → 2004-08-02",
+        "depth": -0.239,
+        "max21": -0.232,
+        "fast": true,
+        "seg": "2004-04-23 → 2004-05-17",
+        "pre_me": "2004-03-31",
+        "pre_me_inside": false,
+        "drop_after_pre_me": -0.196,
+        "cal_month_min": -0.073,
+        "prior": "사전 포지셔닝만 — 빠른 구간이 고점에서 시작(직전 월말 = 위기 밖)"
+      },
+      {
+        "crisis": "2007-10-11 → 2008-03-17",
+        "depth": -0.237,
+        "max21": -0.166,
+        "fast": false,
+        "seg": "2007-12-24 → 2008-01-22",
+        "pre_me": "2007-11-30",
+        "pre_me_inside": true,
+        "drop_after_pre_me": -0.175,
+        "cal_month_min": -0.139,
+        "prior": "—(느린 약세)"
+      },
+      {
+        "crisis": "2008-05-16 → 2008-10-24",
+        "depth": -0.494,
+        "max21": -0.364,
+        "fast": true,
+        "seg": "2008-09-25 → 2008-10-24",
+        "pre_me": "2008-08-29",
+        "pre_me_inside": true,
+        "drop_after_pre_me": -0.348,
+        "cal_month_min": -0.21,
+        "prior": "반응 가능(빠른 구간 직전 넉 달이 위기 안)"
+      },
+      {
+        "crisis": "2008-11-05 → 2008-11-20",
+        "depth": -0.203,
+        "max21": -0.203,
+        "fast": true,
+        "seg": "2008-11-05 → 2008-11-20",
+        "pre_me": "2008-10-31",
+        "pre_me_inside": false,
+        "drop_after_pre_me": -0.162,
+        "cal_month_min": -0.046,
+        "prior": "대칭(C-047) — 결과는 10월 말 상태가 정한다: 지면 '미결 최빈(월말 0 · 경계 −20.3%)', 이기면 '10월 말 상태 이월 — 2008-05~10 과 한 상태 일화' · ④ 를 이 위기 포함 · 제외 두 판으로 기록"
+      },
+      {
+        "crisis": "2011-05-02 → 2011-09-26",
+        "depth": -0.275,
+        "max21": -0.225,
+        "fast": true,
+        "seg": "2011-07-27 → 2011-08-22",
+        "pre_me": "2011-06-30",
+        "pre_me_inside": true,
+        "drop_after_pre_me": -0.222,
+        "cal_month_min": -0.126,
+        "prior": "빠른 구간(07-27 시작) 노출 = 6월 말 상태(7월분) · 7월 말 상태(구간 3일째 · 8월분) — '반응 가능'은 8월 · 9월 몫"
+      },
+      {
+        "crisis": "2017-11-03 → 2019-08-07",
+        "depth": -0.256,
+        "max21": -0.14,
+        "fast": false,
+        "seg": "2018-09-27 → 2018-10-29",
+        "pre_me": "2018-08-31",
+        "pre_me_inside": true,
+        "drop_after_pre_me": -0.16,
+        "cal_month_min": -0.121,
+        "prior": "—(느린 약세)"
+      },
+      {
+        "crisis": "2020-01-22 → 2020-03-19",
+        "depth": -0.349,
+        "max21": -0.332,
+        "fast": true,
+        "seg": "2020-02-19 → 2020-03-19",
+        "pre_me": "2020-01-31",
+        "pre_me_inside": true,
+        "drop_after_pre_me": -0.3,
+        "cal_month_min": -0.116,
+        "prior": "1월 말 상태 평온 → 2월분은 막기 어려움 · 2월 말 신호(구간 6거래일째)가 3월을 덮는다"
+      },
+      {
+        "crisis": "2021-06-25 → 2022-09-30",
+        "depth": -0.361,
+        "max21": -0.142,
+        "fast": false,
+        "seg": "2022-05-31 → 2022-07-01",
+        "pre_me": "2022-04-29",
+        "pre_me_inside": true,
+        "drop_after_pre_me": -0.208,
+        "cal_month_min": -0.134,
+        "prior": "—(느린 약세)"
+      }
+    ],
+    "alt_definitions": "기록만: Pagan & Sossounov(2003) 시스템 강세 연대기(bbdetection max_chng 20 · 4개월 미만 국면 인정 ≈ MW 3개월) 판 · P2R02 상대 속도 판(표본 의존 — 2008-05~10 을 '완만'으로 분류해 빈칸 6 사례와 어긋남 · 채택 안 함)",
+    "note": "판정 대상은 칸마다 그 칸 보는 창 패킷의 위기(실효 시작이 정하는 창)이고 빠름 분류 · 위기 안 월말 수 · 빠른 구간은 같은 칸 산출물의 벤치 일수익으로 다시 계산한다(rules.fast · p2_fast_crash_keys)",
+    "inherited_from": {
+      "prereg": "stage_artifacts/programs/P2_DEFENSE/P2R03_conditional_overlay/prereg.json",
+      "md5": "41f4a9b4acc6f50b139303436df081a6",
+      "note": "DESIGN §5 — 빠른 급락 정의 = Mishkin & White 2002 · 21거래일 · −20% · P2R03 표 그대로"
+    }
+  },
+  "rules": {
+    "tested": "장치 × 엔진 판정은 다음을 모두 만족할 때만 — 아니면 미시험(반증 아님): ① 변형 · RX0 둘 다 평가됨(측정 ok ∧ 축 감사 ok) ② 구성 증거(⑩) ③ 실효 시작 status = ok(두 칸) ④ 공통 창 사본 · 보는 창 패킷이 만들어짐 ⑤ 위기 짝 — 두 칸의 위기가 모두 짝지어짐(짝 없는 위기 0) ∧ ① 의 짝 ≥ 2 ∧ ② 의 깊은 위기 짝 ≥ 2 ⑥ 판정 입력(①②⑤⑥⑨⑫⑬ · 알파 · 엔진 알파)이 모두 유한 — ⑭ 결손은 미시험이 아니다: ⑭ 미측정(판정됨 · 통과 불가 · 판정어 selection_unmeasured · rules.selection_attribution · failure_semantics). 측정 연기(워커 ok=FALSE · deferred)는 판정 전 같은 사양 재측정(rules.remeasure). P2R03 의 '같은 선정 집합(변형 보유 ⊆ RX0 보유)' 조건은 두지 않는다 — 이 라운드의 처치는 선택 자체를 바꾼다(⑩ 이 보유 차이를 요구한다)",
+    "remeasure": "인프라 실패(측정 결과 ok ≠ true) 칸은 measure.sh 가 같은 사양으로 1회 기계 재측정(엔진 묶음마다 RX0 먼저 단독 → 나머지 칸 병렬) · 재측정 전 그 칸의 옛 칸 평가 캐시 · 지문 삭제 · 평가는 칸 평가 캐시의 산출물 = 현 측정 산출물을 단정",
+    "vintage_group": "같은 엔진의 칸은 함께 잰다(measure.sh — E2 묶음 14칸 → E3 묶음 9칸 · 진단 칸 포함) · 칸마다 측정 시작 · 종료 데이터 지문(fingerprint.sh equality — RAWDATA · 벤치 · 재무 원값 · 컨센서스 · 팩터 DB 월 스냅샷 · 팩터 레지스트리 · 빌드 해시 · IC 월간 이력 factor_ic_monthly.parquet) — 측정: 묶음 칸(진단 포함) 지문이 갈리면 measure.sh 가 배리어 대기 뒤 그 묶음 전체를 1회 재측정 / 평가: 판정 칸(장치 + RX0) 지문이 모두 같아야 판정 · 다르거나 없으면 evaluate.R 이 평가 전체를 멈춘다 · 진단 칸 지문이 그 엔진 판정 칸 지문과 다르거나 없으면 그 진단 칸만 미시험(판정 계속 — 칸 하나의 문제는 그 칸만). 평가 시점 지문을 함께 기록한다(이름 없는 문자열 비교)",
+    "common_window": "변형과 RX0 의 실효 시작이 같으면 원 산출 · 다르면 공통 창 사본(늦게 시작한 칸의 첫 기간수익일 · 4파일 절단 · NAV · 벤치 재기준)에 같은 계약 적용 · 실패 = 미시험",
+    "pins_at_evaluation": "evaluate.R 은 시작부(셀 평가 샤드 포함)에서 precheck.R 과 같은 함수로 사양 · 운영 경로(팩터 DB 커넥터 · 등급 계약 v3.2 포함) · 팩터 레지스트리 엔트리 · 비중 카탈로그 엔트리 · 패키지 · R 판 · 평가 경로 · 행동 카드 설정 사본을 재대조 — 다르면 평가하지 않는다 · 오버레이 arm 핀 없음(오버레이 없음)",
+    "decisive": "장치 × 엔진(보는 창 패킷 · 같은 엔진 RX0 대비 · tol = crisis_improve_min · 과반 = 비율 > majority_share): ① 위기 과반 — 두 칸 모두의 위기에서 dd_capture < RX0 − tol 인 위기 비율 ② 깊은 위기 과반 — 짝 위기 중 벤치 낙폭(bm_dd) 크기 ≥ 그 집합 중앙값인 위기에서 ① 과 같은 비율 ③ β 짝 — k = 변형 β / RX0 β(behavior.stats.beta) · k < 1 이면 RX0 기간수익 · NAV · 보유를 k 배 노출로 낮춘 사본(잔여 현금)에 같은 계약(dp_build) · k ≥ 1 이면 사본 = RX0 · 깊은 위기(②의 키)에서 dd_capture < 사본 − tol 인 위기 비율(짝 ≥ 2 · 아니면 'β 대조 미측정' = 통과 불가 · 사본 · 패킷 실패 · k 비유한도 같다) ④ 빠른 급락 — 위기 [고점, 저점] 안의 어떤 날 a 부터 fast_window_days 거래일 안(a … min(저점, a + 21))의 벤치 수준 최저 / a 수준 − 1 ≤ fast_drop 인 위기 (벤치 수준 = 같은 칸 RX0 산출물 05_benchmark_returns 일수익 누적곱 · 부동소수 여유 1e-12 · 21거래일 창 수익 = Mishkin & White 1개월 창의 일간 조작화) 에서 dd_capture < ③ 의 사본 − tol 인 위기 비율(짝 ≥ 2 · 아니면 '빠른 급락 미측정' = 통과 불가) · 헌장 빈칸 10(현금 층 · 보유 방어 모두 ④ 로 판정) · 기록: 일화 단위 판(2008-11 제외)",
+    "strength": "⑤ β 비대칭(철학 P1 C-044) — 장치 검증(통과 조건) = 변형 하락/상승 β 비(behavior.stats.beta_down / beta_up) < 같은 엔진 RX0 의 비 (비는 정적 축소에 불변 — 변화량만이 보유 기울기가 만든 비대칭 · 상승 β ≤ 0 · 비유한 = 판정 입력 NA = 미시험) · 칸의 방어 주장(꼬리표 · 헌장 빈칸 3 · 8 문언) = 수준(하락 β < 상승 β) — 미달이면 '노출(β) 방어 — 비대칭 역행 · 방어 주장 불가' ⑥ 강세 참여 — 두 칸의 강세 국면을 (start_ym, end_ym) 으로 짝짓고 변형 up_capture ≥ RX0 − (1 − bull_ratio) × |RX0| 인 국면 비율 > majority_share(짝 ≥ 2) ∧ 변형 상승 포착 중앙값(behavior.summary.bull_up_capture_median) ≥ uc_floor ⑦ 알파 비열등 — 보는 창 증분 β-통제 알파(rk_pair_alpha — 변형 − RX0 월 차이 · 벤치 대비 · NW lag 3) t > alpha_t_floor ∧ 증분 ≥ −alpha_margin_frac × max(엔진 α, 0) (엔진 α = RX0 대 벤치 보는 창 β-통제 알파 · 0 이하면 감소 허용 0) ⑨ 사이클 복리 — 위기를 고점 순으로 놓고 위기마다 '직전 위기 바닥 연월 이후(같은 달 포함) 시작해 이 위기 고점 연월까지(같은 달 포함) 끝난 강세 중 마지막'과 짝(강세 1회 · 짝 없는 위기 기록) · 사이클 수익 (1+강세 st_cum)(1+위기 st_cum) − 1 이 RX0 이상인 사이클 비율 > majority_share(두 칸 같은 짝만 · 짝 2 미만 = 판정 입력 NA = 미시험)",
+    "non_inferiority": "⑫ S — RX0 의 S_vis > 0 이면 S_vis(변형) ≥ S_vis(RX0) − tie_eps · 0 이면 Calmar(변형) ≥ Calmar(RX0) · ⑬ 복리 경로 — mdd_vs_bench ≤ RX0 ∧ CDaR ≤ RX0",
+    "construction": "⑩ 구성 증거(통과 조건) — 변형 셀 로그에 방어 팩터 적재 줄('[rf_cell_engine] cell=<code> | … | factors=<…> | …' 의 factors 가 사양 factors 와 같고 RX0 줄엔 방어 팩터 없음) ∧ 사양 = RX0 factors + 장치 팩터 r 회(E2 r 1 · E3 r 6) · base_weight = 혼합 몫 유도값(E2 0.5 · E3 0.25 — 두 구성 방어 몫 50%) ∧ 보는 창 리밸일 중 변형 보유가 RX0 보유와 다른 리밸 비율 > 0(무처치 = 미시험) · PIT = load_month_factors(Usable_Date ≤ 신호일 · C14 · C15 — 측정 경로의 엔진 코드가 강제) · lag-1 스트레스판 없음(시점 신호 없음)",
+    "concentration": "⑧ 깊은 위기 중 한 종목 최악 기여(exposure.top_losers contrib)가 single_name_loss_floor 보다 나쁜 위기가 하나라도 있으면 '집중 손실' · 표 결손 · 깊은 위기 누락 = '집중 손실 미측정' — 둘 다 검증 장치에서 제외(통과여도) · 유효 종목 수 · 최대 비중 기록",
+    "recovery": "⑪ 두 칸 모두의 위기에서 변형 회복 관측(st_recovery_obs · 미회복(검열)이면 관측 하한 = 무한대로 비교 · 둘 다 미회복 = 제외)이 RX0 보다 긴 위기 비율 > majority_share 면 '회복 지연' 꼬리표(판정 보조 · 통과 조건 아님)",
+    "selection_attribution": "⑭ 선택 귀속(신설 · v3 강화 · 통과 조건) — MC8 귀속(보는 창 · 진단 패킷 controls.attribution.label) = final_selection_rule.mc8_label_required(selection_defense) — 크기 · 평균 노출 짝 플라시보(200개 · 06_Registry/matched_controls.json)를 위기 과반에서 넘음 AND 위기 분해 selection_sum(β · 크기 동시 통제 · 수익 단위 — 위기 (고점, 저점] 일간 선택 기여의 산술합 · diagnosis_packet)이 깊은 위기마다 변형 − RX0 > 0(엄격 · 문턱 없음 — crisis_improve_min 0.03 은 낙폭 포착 비율 단위라 쓰지 않는다)인 위기가 과반(비율 > majority_share · 깊은 위기 짝 ≥ 2 · 판단 T1 C-20261018-028) · 분해 필드 부재 · 짝 < 2 · MC8 라벨 insufficient · 오류 = ⑭ 미측정(판정됨 · 통과 불가 · 판정어 selection_unmeasured · 방어 이름 보류) · size_defense(크기 방어) · exposure_defense(노출 방어) · no_defense = 통과 불가(판정어 size_or_exposure_defense) · 해석 범위(판단 T1 자기 점검 2): 분해 선택 항은 3요인(시장 β · EW−CW · 무신호 틸트) 밖 노출(가치 · 모멘텀 · 유동성 · 퀄리티)도 선택으로 센다 — 순수 실력이 아니라 MC8 보다 β 에 강한 귀속일 뿐이고, t−1 적재라 위기 중 조건부 β 하락(H1 · H3 의 기전)도 선택 항으로 잡힌다(의도에 맞음 · 결론 범위 8)",
+    "pass": "장치 칸 통과 = ① ∧ ② ∧ ③ ∧ ④ ∧ ⑤ ∧ ⑥ ∧ ⑦ ∧ ⑨ ∧ ⑩ ∧ ⑫ ∧ ⑬ ∧ ⑭ · 장치 검증 = 두 엔진(같은 DNN 기저의 두 구성) 통과 ∧ ⑧ 제외 아님 · ⑪ = 꼬리표",
+    "selection": "검증 장치(두 엔진 통과 ∧ 집중 제외 아님) 중 보는 창 S(v3)의 RX0 대비 증분(두 엔진 평균)이 가장 큰 1개 · 동률(차 < 1e-12)이면 ③ · ④ 비율 합(두 엔진 평균) · 검증 0 = 선택 없음 · 진단 칸은 선택 대상 아님 · 꼬리표: 회복 · ⑤ 수준 · 귀속(MC8 라벨 + 분해 선택 항 + β 짝)",
+    "round_verdict": "supported = 검증 장치 ≥ 1 · partial = 한 엔진 통과 또는 두 엔진 통과지만 집중 제외 · falsified = 판정된 장치 칸 중 통과 0 · untested = 판정된 장치 칸 0 — '판정(판정 칸/전체 장치 칸 8)'으로 적는다(진단 13칸은 분모 밖)",
+    "r7_reading": "R7 판독(기계 · 사전 고정 · 판정 아님 · 판단 T1 C-20261018-029): 라운드 '잡음 이내' = 검증 0 ∧ 두 구성에서 ③ 비율 > 0.5 인 장치 0 ∧ S 증분(두 구성 평균) 최대 < tie_eps — 프로그램 예산 R7 의 입력 · P2R03 은 이 정의로 다시 읽어 기록한다",
+    "diagnostics": "진단 칸 13(시행 수 무가산 · DSR 표본 아님 · 선택 대상 아님 · 판정 표 밖 · 2계층 모듈 풀 미등재(QVEST_RP_REGISTER=0 — RX0 와 같다)) — E2 결측 짝 P2R04_E2_C1 · P2R04_E2_C2 · P2R04_E2_C3 · P2R04_E2_C4(철학 P1 C-016) · E2 용량 짝 P2R04_E2_W1 · P2R04_E2_W2 · P2R04_E2_W3 · P2R04_E2_W4(C-018) · E2 희석 짝 P2R04_E2_N0(C-021) · E3 용량 짝 P2R04_E3_W1 · P2R04_E3_W2 · P2R04_E3_W3 · P2R04_E3_W4(판단 T1 C-027). 같은 엔진 묶음으로 재고 묶음 지문과 대조한다 — 진단 칸 지문이 그 엔진 판정 칸 지문과 다르거나 없으면 그 진단 칸만 미시험(판정 계속 · rules.vintage_group) · 칸 평가는 장치 칸과 같은 계약(보는 창 패킷 · 행동 카드) · 읽기 = rules.diagnostics_reading",
+    "diagnostics_reading": "진단 읽기(사전 고정 · 판정 아님 · DESIGN v3 §5): 결측 짝 — Hk 가 β 짝을 이긴 깊은 위기에서 Ck 도 이겼으면 그 승리 = '결측 패턴 방어'(Hk 의 방어로 세지 않는 서술) / 용량 짝(네 칸 E2 · E3 × 50% · 12.5%) — 두 50% 통과 = '같은 처치 두 구성 통과' · E2 50% 통과 ∧ E3 50% 미달 = '구성 의존' · 50% 미달 ∧ 12.5% 통과 = '과용량 의심(희석 과다)' · 50% 통과 ∧ 12.5% 미달 = '용량 의존' · 넷 다 미달 = '이 형태 미달' · 한 구성 단독 실패로 원천 ③ 을 닫지 않는다 / 희석 짝 — Hk 의 ① 개선 위기 중 N0 도 개선한 위기 = '희석 몫'",
+    "failure_semantics": "사전 고정: 평가 상태 · 구성 증거 · 실효 시작 · 공통 창 · 패킷 · 위기 짝 · 판정 입력 실패 = 그 칸 미시험(반증 아님) / 칸 평가 오류(진단 패킷 · 행동 카드 · 축 감사의 stop) = 그 칸 status eval_error → 짝 판정 미시험 · 평가는 계속 / 그 밖의 예기치 않은 평가 오류 = 그 칸 미시험(오류 문구 기록 · 라운드 평가는 계속) / β 사본 실패 · ③ 짝 < 2 = 'β 대조 미측정'(통과 불가) / ④ 짝 < 2 = '빠른 급락 미측정'(통과 불가) / ⑭ 분해 필드 부재 · 깊은 위기 짝 < 2 · MC8 라벨 insufficient · 오류 = '⑭ 미측정'(판정됨 · 통과 불가 · 판정어 selection_unmeasured · 방어 이름 보류 — 크기 · 노출 방어로 접지 않는다) / 집중 손실 표 결손 = '집중 손실 미측정'(제외) / 진단 칸 지문 불일치 · 부재 = 그 진단 칸만 미시험(판정 계속) / 핀 · 행동 카드 사본 · 판정 칸 지문 · 칸 평가 캐시 불일치 = 평가 중단",
+    "files": "칸 평가 = results/<code>/visible/{diagnosis_packet.json, eval_visible.json} · results/<code>/full/{behavior_card.json, eval_full.json, NO_VISIBLE_REVIEW.txt} · 종합 = results/evaluation_visible.json(schema p2r04_evaluation_visible_v1 · 보는 창 리뷰어 열람 가능) · results/evaluation_full.json(사람 쪽 전용 · C-031)",
+    "test_window": "시험 창(2023-01~) 증분 알파 · 위기 포착 · 성과는 사람 쪽 보고만(evaluation_full.json · 선택 · 판정 입력 아님)",
+    "record": "판정 입력 아님(DESIGN v3 §5 기록): 회전 · 비용 · 평균 노출 · 위기별 표(①~④) · 강세 국면별 표 · 사이클 표 · 롤링 · 귀속(MC8) · 집중 · 알파 표준오차 · 엔진 알파(자격) · 지문 · 보유 겹침률(RX0 대비 월별) · 위기 중 보유의 크기 분위 · 유동성 분위 · 무거래일 비율(불가 = '미측정' 꼬리표) · 국면별(위기 · 강세 · 그 밖) 월 차이 · 기준점 둘(엔진 대비 · 시장 대비) · 크기 × β 짝 승패 · RX0 와 P2R03 RX0 동일성 · 칸마다 보는 창 A 조건별 값 · 문턱 거리(grade_v3 계약 · C-031) · ④ 일화 단위 판(2008-11 제외) · 팩터 방향 원천(셀 로그 '[align_factor_direction] loaded-factor direction' 줄의 registry-fallback · default-fallback 합 — 방향 = as-of IC 부호면 0)",
+    "state_unturned": "기록(판정 아님) — 상태 미전환 최대 하락 위기(최대 21거래일 하락 구간 직전 월말에 r252 ≥ 0 ∧ 낙폭 ≤ 확장창 중앙값 — 벤치만 · _design_notes/state_turn_classify.md · 철학 P1 C-019 이름) = final_selection_rule.state_unturned_max_drop_crises 의 β 짝 승패 · 보유 겹침률 · 위기 중 보유의 크기 분위. 판정 조건이 아닌 이유: 깊은 위기로는 1건뿐이다(2021-06~ 위기의 최대 하락 구간 2022-05~07 은 상태가 꺾인 뒤) — 한 위기로 통과를 정하지 않는다(원칙 2 · DESIGN §5)",
+    "leave_behind": "검증 0 일 때 남길 것(DESIGN v3 §8.5): 장치 × 위기 실패 지도(β 짝 여유 · 크기 × β 짝 · 결측 · 희석 · 용량 읽기 · 크기 · 유동성 귀속 · 보유 겹침 · 국면별 월 차이) — '선택 기울기도 노출 방어'면 다음 = 원천 ① 분포 표적(종목 수준 꼬리 학습)의 입력 · P2R05 설계 초안 병렬 착수(판단 T1 C-029)"
+  },
+  "rules_source": "register.R RULES_DEFAULT — DESIGN v3 §5 · P2R03 사전등록 rules 문장 승계(①~⑨ · ⑪~⑬) + ⑩ 구성 증거 · ⑭ 선택 귀속(v3) · 진단 칸 · R7 판독",
+  "expectations": {
+    "note": "선행 기록(구 축 all_hyg_2000_v1 · 보는 창 · P2R02 ROUND_REPORT): 저변동 틸트 C4 = 엔진 단독보다 덜 빠진 (엔진×위기) 쌍 85.2% · MC8 크기 + 노출 짝 플라시보 넘음 55.6% · 상승 포착 ≥ 0.55 엔진 3/3 = '검증' / 퀄리티 틸트 C5 = 74.1% · 37.0% · 3/3 = 기각(V2) · 둘 다 β 짝 판정 없음(빈칸 8 미적용) · 판단 T1 실례: P0R01 E2_C4 는 MC8 0.86 '선택'인데 위기 분해 선택 항은 깊은 위기 4/4 악화 · 개선은 시장 β 항. 최빈 결말 = H1 · H2 노출(β) 방어(③ β 짝 ≤ 2/4 또는 ⑭ 분해 미달) · 검증 0 확률 높음(Q 확신 0.55 — 판단 원장 J-20261018-003)",
+    "H1": "하방β 낮은 쪽 기울기: β ↓(k < 1) · ① · ② 통과 가능 · ③ β 짝 ≤ 2/4 예상(개선이 β 항에서 옴) · ⑤ Δ < 0 가능 · ⑭ 분해 선택 항 미달 예상 · ⑥ 강세 참여 위험 — 근거 방향 주의: Ang · Chen · Xing (2006) 은 하방β 가 높은 종목의 프리미엄을 보였고 이 데이터의 as-of IC 는 저위험 쪽(철학 P1 C-023) — 이 장치는 프리미엄 수확이 아니라 방어 기울기다",
+    "H2": "저변동 기울기(P2R02 C4 재시험): H1 과 다른 축(순위 상관 0.26)이나 같은 저위험 계열 · ① · ② 통과 예상(선행 85%) · ③ 은 P0R01 실례대로 β 항 몫이면 미달 · ⑭ 분해 미달 예상 · ⑥ 강한 강세(대형 성장주 주도)에서 미달 위험",
+    "H3": "β 비대칭(상승β − 하락β 큰 쪽) 기울기: ⑤ Δ < 0 가장 유력(구성상 비대칭) · ③ · ⑭ 불확실(하방β 와 상관 0.61 — H1 과 일부 겹침) · ⑥ 은 상승β 쪽이라 H1 · H2 보다 덜 위험",
+    "H4": "퀄리티 기울기(P2R02 C5 재시험): 저위험 축과 독립(상관 0.08) · 선행 MC8 37% 로 ⑭ 미달 예상 · 2008 · 2011 '질로의 도피' 위기에서 ③ 승리 가능 · 재무 결측(금융업 등)이 결측 짝(C4) 읽기에 영향",
+    "falsification": "기대 반증 = H1 · H2 가 두 구성에서 ③(β 짝 깊은 위기 과반) ∧ ⑭(분해 선택 항) 를 통과하면 'β 항 몫' 기대가 틀린 것 · H4 가 ⑭ 를 통과하면 선행 C5 기각이 이 축 · β 짝 판정에서 뒤집힌 것 — 결과 뒤 기대를 고쳐 쓰지 않는다",
+    "engines": "두 구성(같은 DNN 기저 · 독립 엔진 아님) 모두 방어 몫 50%(v3 · T1 C-027) — 같은 처치의 두 구성 반복 · 용량 짝(12.5%)이 세기 의존을 가른다(§0a · §5 진단 읽기)",
+    "overall": "검증 0 이면 '선택 기울기도 노출 방어'를 남기고 다음 = 원천 ① 분포 표적(§8.5 · P2R05 설계 초안 병렬 착수 · T1 C-029) · 상태 미전환 최대 하락 위기(final_selection_rule.state_unturned_max_drop_crises)의 β 짝 승패는 기록만(§5 — 한 위기로 통과를 정하지 않는다)"
+  },
+  "final_selection_rule": {
+    "calmar_norm": 0.64,
+    "port_t_norm": 2.95,
+    "w_calmar": 0.6,
+    "w_port_t": 0.4,
+    "tie_eps": 0.02,
+    "tie_eps_role": "S 비열등 여유(P3R01 · P3R02 · P3R03 승계)",
+    "uc_floor": 0.55,
+    "uc_floor_source": "behavior_card_cfg_at_prereg.json uc_floor — 철학 '강세 참여 ≥ 55%' 절대 하한",
+    "majority_share": 0.5,
+    "majority_share_source": "behavior_card_cfg_at_prereg.json majority_share — D3 수용(2026-10-13) '과반 에피소드' — 비율이 이 값을 **넘어야** 과반",
+    "crisis_improve_min": 0.03,
+    "crisis_improve_min_evidence": "P2R01 R6 지속성 필터의 '기저 대비 0.03 이상 개선된 위기'(낙폭 포착 기준) 승계 · P3R03 동일 — 결과 전 고정",
+    "alpha_t_floor": -2,
+    "alpha_t_floor_evidence": "헌장 빈칸 4(C)(2026-10-16 도훈 확정) — 유의한 감소 없음(t > −2)",
+    "alpha_margin_frac": 0.2,
+    "alpha_margin_frac_evidence": "헌장 빈칸 4(C)(2026-10-16 도훈 확정) — 감소 ≤ 엔진 자체 보는 창 β-통제 알파의 20% · 엔진 알파 ≤ 0 이면 감소 허용 0",
+    "single_name_loss_floor": -0.1,
+    "single_name_loss_floor_evidence": "헌장 빈칸 1(2026-10-16 도훈 확정) — 깊은 위기 한 종목 기여 < −10% = 집중",
+    "bull_ratio": 0.8,
+    "bull_ratio_evidence": "헌장 빈칸 7(2026-10-17 도훈 확정 · CHARTER-GAPS-2) · 빈칸 4(B)의 80% — 강세 구간 과반에서 기준의 80% 이상",
+    "fast_window_days": 21,
+    "fast_drop": -0.2,
+    "fast_evidence": "Mishkin & White (2002) U.S. Stock Market Crashes and Their Aftermath, NBER WP 8992 p.7 — 20% 하락 = 급락 · 속도 창 1일 · 5일 · 1개월 · 3개월 · 1년 중 1개월(≈ 21거래일)을 '빠름' 경계로(헌장 빈칸 6 — 사전 고정)",
+    "mc8_label_required": "selection_defense",
+    "mc8_label_required_evidence": "DESIGN §5 ⑭ · §8.2 — 변형 칸 보는 창 패킷의 MC8 귀속 라벨(controls.attribution.label · matched_controls.R mc_attribution nested_majority_placebo_v2)이 selection_defense = 크기 · 평균 노출 짝 플라시보를 위기 과반에서 넘음. size_defense · exposure_defense · no_defense · insufficient · 라벨 없음 = 통과 불가(라벨 그대로 기록) — 방어 틸트는 대형주 쪽으로 기울 수 있어 크기 방어를 선택 방어로 세지 않는다(§4)",
+    "state_unturned_max_drop_crises": ["2007-10-11 2008-03-17", "2011-05-02 2011-09-26"],
+    "state_unturned_max_drop_crises_evidence": "기록용 '상태 미전환 최대 하락 위기'(판정 아님 · DESIGN §5 기록 · 철학 P1 C-019 이름 — 구 '꼭대기 시작 손실 위기') — 04_Research/programs/P2_DEFENSE/_design_notes/state_turn_classify.md(벤치만 · τ_D 까지 · 전략 성과 무관 · md5 ebce26b5db4e718d22b21832ead8794f)의 '판정 창에서 최대 하락 구간이 상태 전환 전에 온 위기' 줄을 그대로 읽음(최대 21거래일 하락 구간 직전 월말에 r252 ≥ 0 ∧ 낙폭 ≤ 확장창 중앙값). 깊은 위기로는 1건뿐이라 판정 조건으로 두지 않는다(원칙 2 — 한 위기로 통과를 정하지 않는다)"
+  },
+  "axis_audit": "측정 뒤 04_holdings 실보유가 롱온리 · ≤ max_names · Σw ≤ 1 — 위반 칸 = 측정 무효(미시험)",
+  "behavior_card_cfg": {
+    "path": "04_Research/programs/P2_DEFENSE/P2R04_defensive_holdings/behavior_card_cfg_at_prereg.json",
+    "md5": "6a2a1d21b82858e1ab954fec2085ac32",
+    "same_as_p2r03": true
+  },
+  "operational_pins": {
+    "files": [
+      {
+        "path": "02_Infrastructure/reinforcement/rf_cell_engine.R",
+        "md5": "859d59011d29c1a97e34e99124176f73"
+      },
+      {
+        "path": "02_Infrastructure/reinforcement/rf_base_cache.R",
+        "md5": "f6fef4f9eee6adfb007b0e1d97668f9f"
+      },
+      {
+        "path": "02_Infrastructure/reinforcement/rf_axes.R",
+        "md5": "861cd5ea2079a8b0bc6c07293a5538ca"
+      },
+      {
+        "path": "02_Infrastructure/reinforcement/rf_rebalance.R",
+        "md5": "d94bdf3a73f4e15e9041de5ea48120f2"
+      },
+      {
+        "path": "02_Infrastructure/reinforcement/rf_sleeve.R",
+        "md5": "793fd3baa5458ec9e75373ab4bde8b6c"
+      },
+      {
+        "path": "02_Infrastructure/ops/rf_cell_worker.R",
+        "md5": "522f7fe2dd6c42c09bcfee4a7f109d23"
+      },
+      {
+        "path": "02_Infrastructure/validation/overlay_pit_guard.R",
+        "md5": "5c332c910fe3c1222291f50c40aa3ad6"
+      },
+      {
+        "path": "02_Infrastructure/portfolio/weight_catalog.R",
+        "md5": "4965fb81166c491def4e98498f85c430"
+      },
+      {
+        "path": "02_Infrastructure/methods/method_registry.R",
+        "md5": "c888566422ea377d76489daa8111a9f8"
+      },
+      {
+        "path": "02_Infrastructure/portfolio/strategy_tilt_weights.R",
+        "md5": "8a357be15f6d26701f04abbd02437bc3"
+      },
+      {
+        "path": "02_Infrastructure/portfolio/advanced_weights.R",
+        "md5": "9706fcba893fcb3d09a989d5b39de255"
+      },
+      {
+        "path": "02_Infrastructure/alpha_search/run_paper_replication.R",
+        "md5": "082681228972eff34018139ce4d97d5f"
+      },
+      {
+        "path": "02_Infrastructure/replication/replication_harness.R",
+        "md5": "7cb3fbd5dbf4f4d382701c6c11b6b7ef"
+      },
+      {
+        "path": "02_Infrastructure/backtest_harness.R",
+        "md5": "12b6c29128877c01cd64f1d635716b06"
+      },
+      {
+        "path": "02_Infrastructure/config.R",
+        "md5": "6ec23fe8f355f362b05125be0d154605"
+      },
+      {
+        "path": "02_Infrastructure/contracts/measurement_axis.R",
+        "md5": "113e9efc3abeb1b06ac37fa07a9293fd"
+      },
+      {
+        "path": "02_Infrastructure/contracts/behavior_card.R",
+        "md5": "5ee201eb6ec292bd4ad4219514fe310f"
+      },
+      {
+        "path": "02_Infrastructure/contracts/diagnosis_packet.R",
+        "md5": "8b745a323cc85541d9cc495b138fda8d"
+      },
+      {
+        "path": "02_Infrastructure/contracts/matched_controls.R",
+        "md5": "1b9d8152255231b2e77401f598bbcf14"
+      },
+      {
+        "path": "02_Infrastructure/contracts/grade_v3.R",
+        "md5": "7d96bd602e63c83d78c0f0fd2c7c0dff"
+      },
+      {
+        "path": "02_Infrastructure/contracts/tilt_attribution.R",
+        "md5": "54a200bafc3cd7ff99a7d0742094a15b"
+      },
+      {
+        "path": "02_Infrastructure/contracts/beta_controlled_alpha.R",
+        "md5": "cf44057ab05096ff0424781197af79a8"
+      },
+      {
+        "path": "06_Registry/matched_controls.json",
+        "md5": "f0cf960ab0e6ecebd9c336e61d2b86a7"
+      },
+      {
+        "path": "02_Infrastructure/worktask/constraint_defaults.json",
+        "md5": "3397e490367f3113f3a8350ac1c9ba7c"
+      },
+      {
+        "path": "04_Research/strategies/RP_AUTO_2002_06975/engine.R",
+        "md5": "6b6a8e1a144b4b316c28628b0de7f95d"
+      },
+      {
+        "path": "02_Infrastructure/factor_db/factor_db_connector.R",
+        "md5": "96058305bc9522beb5d80fe6c0957a12"
+      },
+      {
+        "path": "04_Research/programs/_lib/round_kit.R",
+        "md5": "6e18995ad227d48ebfcd86bcfcf7c262"
+      },
+      {
+        "path": "04_Research/programs/_lib/measure_round_cell.R",
+        "md5": "e89452cd59d8f0ef0b4dc4671b1b4699"
+      },
+      {
+        "path": "04_Research/programs/_lib/eval_parallel.sh",
+        "md5": "3897daec2514c650d841d990fce51aa4"
+      },
+      {
+        "path": "02_Infrastructure/ops/refresh_barrier.sh",
+        "md5": "dbedec609eb20c9279d59899690b095a"
+      },
+      {
+        "path": "02_Infrastructure/contracts/backtest_result_contract.R",
+        "md5": "d1d6f81deb61d7145a20b79fbf355b4c"
+      },
+      {
+        "path": "02_Infrastructure/contracts/save_bt_result.R",
+        "md5": "d724252b67e51612ab91f346bc240425"
+      },
+      {
+        "path": "02_Infrastructure/contracts/essence_score.R",
+        "md5": "60c95186c6b19e766358cfbc97fa9ade"
+      },
+      {
+        "path": "02_Infrastructure/contracts/tilt_attribution_config.json",
+        "md5": "290303835afa1cc2f76bc4f898ec6493"
+      },
+      {
+        "path": "02_Infrastructure/contracts/rolling_grade.R",
+        "md5": "42d06ddbd8c9b378c4ff35f7c66ca2a8"
+      },
+      {
+        "path": "06_Registry/rolling_grade.json",
+        "md5": "8e6237fa927c7abc8095db4bc2e5a562"
+      },
+      {
+        "path": "02_Infrastructure/factor_db/factor_z_standard.R",
+        "md5": "c82870c7fc5e8fc046fa9a68b5a13967"
+      },
+      {
+        "path": "06_Registry/grade_v3.json",
+        "md5": "11a6cd091d1c46dfe39c5c1fe108f88c"
+      }
+    ],
+    "catalog_entries": [
+      {
+        "catalog_id": "lean:entropy",
+        "status": "active",
+        "resolver": {
+          "kind": "lean_builtin",
+          "lean_name": "entropy",
+          "carrier_fn": "calc_entropy_weights",
+          "needs_score": true,
+          "cov_hook": false
+        }
+      }
+    ],
+    "factor_registry_entries": [
+      {
+        "id": "D03_RealVol",
+        "path": "02_Infrastructure/factor_db/factor_registry.json",
+        "entry": {
+          "name": "Realized Volatility",
+          "category": "defense",
+          "definition": "252-day realized volatility of returns. Return standard deviation.",
+          "direction": "lower_better",
+          "data_source": "rawdata",
+          "lag_rule": "Date <= sig_d",
+          "update_freq": "daily",
+          "availability": {
+            "type": "fixed",
+            "rule": "T-1"
+          },
+          "restatement_prone": true,
+          "vintage_available": true,
+          "refresh_mode": "auto",
+          "labels": {
+            "economic_family": "defense",
+            "construction": "ratio",
+            "neutrality": "raw",
+            "horizon": "daily",
+            "capacity": "large",
+            "evidence_tier": "B",
+            "macro_sensitivity": "defensive",
+            "regime_profile": {
+              "risk_on": "negative",
+              "elevated": "positive",
+              "crisis": "positive"
+            },
+            "correlation_group": "defense_cluster",
+            "turnover_profile": "medium",
+            "data_dependency": "rawdata"
+          },
+          "lifecycle": {
+            "status": "active",
+            "research_stage": "S7",
+            "mutation_count": 0,
+            "added_date": "2026-03-24",
+            "last_validated": {},
+            "deprecation_reason": {},
+            "mutation_parent": {}
+          },
+          "dedup": {
+            "role": "redundant",
+            "cluster": "DUPC-010",
+            "partners": [
+              "D01_IdioVol",
+              "D22_Tracking_Error",
+              "D45_Downside_Dev",
+              "D47_CVaR_5pct",
+              "D49_VaR_1pct",
+              "D56_Up_Vol",
+              "D57_Down_Vol",
+              "R02_VaR_99",
+              "R03_CVaR_95",
+              "R04_CVaR_99",
+              "R07_Downside_Dev",
+              "R08_Semi_Variance",
+              "R12_Idiosyncratic_Risk"
+            ],
+            "adjudicated": true,
+            "needs_review": false,
+            "evidence": {
+              "max_pair_abs_cor": 0.996787,
+              "measured_at": "2026-08-02",
+              "report": "04_Research/01_reports/factor_db_dedup_20260802.md",
+              "window": "2005-01..2026-06 (258 months)"
+            },
+            "consumption_rule": "자동 병합 금지. 같은 cluster 의 둘 이상을 한 선별 풀에 넣으면 report_redundant_clusters() 가 보고한다 — 선언하거나 하나로 접을 것.",
+            "cluster_label": "volatility_residual"
+          }
+        }
+      },
+      {
+        "id": "D04_Downside_Beta",
+        "path": "02_Infrastructure/factor_db/factor_registry.json",
+        "entry": {
+          "name": "Downside Beta",
+          "category": "defense",
+          "definition": "Beta estimated only on down market days (BM_Ret < 0).",
+          "direction": "lower_better",
+          "data_source": "rawdata",
+          "lag_rule": "Date <= sig_d",
+          "update_freq": "daily",
+          "availability": {
+            "type": "fixed",
+            "rule": "T-1"
+          },
+          "restatement_prone": true,
+          "vintage_available": true,
+          "refresh_mode": "auto",
+          "labels": {
+            "economic_family": "defense",
+            "construction": "ratio",
+            "neutrality": "raw",
+            "horizon": "daily",
+            "capacity": "large",
+            "evidence_tier": "B",
+            "macro_sensitivity": "defensive",
+            "regime_profile": {
+              "risk_on": "negative",
+              "elevated": "positive",
+              "crisis": "positive"
+            },
+            "correlation_group": "defense_cluster",
+            "turnover_profile": "medium",
+            "data_dependency": "rawdata"
+          },
+          "lifecycle": {
+            "status": "active",
+            "research_stage": "S7",
+            "mutation_count": 0,
+            "added_date": "2026-03-24",
+            "last_validated": {},
+            "deprecation_reason": {},
+            "mutation_parent": {}
+          },
+          "dedup": {
+            "role": "redundant",
+            "cluster": "DUPC-012",
+            "partners": [
+              "D15_Cond_Bear_Beta"
+            ],
+            "adjudicated": false,
+            "needs_review": true,
+            "evidence": {
+              "max_pair_abs_cor": 0.997548,
+              "measured_at": "2026-08-02",
+              "report": "04_Research/01_reports/factor_db_dedup_20260802.md",
+              "window": "2005-01..2026-06 (258 months)"
+            },
+            "consumption_rule": "자동 병합 금지. 같은 cluster 의 둘 이상을 한 선별 풀에 넣으면 report_redundant_clusters() 가 보고한다 — 선언하거나 하나로 접을 것."
+          }
+        }
+      },
+      {
+        "id": "D07_Beta_Asymmetry",
+        "path": "02_Infrastructure/factor_db/factor_registry.json",
+        "entry": {
+          "name": "Beta Asymmetry",
+          "category": "defense",
+          "definition": "DownsideBeta - UpsideBeta. Asymmetry in market sensitivity.",
+          "direction": "lower_better",
+          "data_source": "rawdata",
+          "lag_rule": "Date <= sig_d",
+          "update_freq": "daily",
+          "availability": {
+            "type": "fixed",
+            "rule": "T-1"
+          },
+          "restatement_prone": true,
+          "vintage_available": true,
+          "refresh_mode": "auto",
+          "labels": {
+            "economic_family": "defense",
+            "construction": "ratio",
+            "neutrality": "raw",
+            "horizon": "daily",
+            "capacity": "large",
+            "evidence_tier": "B",
+            "macro_sensitivity": "defensive",
+            "regime_profile": {
+              "risk_on": "negative",
+              "elevated": "positive",
+              "crisis": "positive"
+            },
+            "correlation_group": "defense_cluster",
+            "turnover_profile": "medium",
+            "data_dependency": "rawdata"
+          },
+          "lifecycle": {
+            "status": "active",
+            "research_stage": "S7",
+            "mutation_count": 0,
+            "added_date": "2026-03-24",
+            "last_validated": {},
+            "deprecation_reason": {},
+            "mutation_parent": {}
+          }
+        }
+      },
+      {
+        "id": "M01_Mom_12_1",
+        "path": "02_Infrastructure/factor_db/factor_registry.json",
+        "entry": {
+          "name": "12-1 Month Momentum",
+          "category": "momentum",
+          "definition": "252-day cumulative return with 1-month skip. Classic 12-1 momentum signal.",
+          "direction": "higher_better",
+          "data_source": "rawdata",
+          "lag_rule": "Date <= sig_d",
+          "update_freq": "daily",
+          "availability": {
+            "type": "fixed",
+            "rule": "T-1"
+          },
+          "restatement_prone": true,
+          "vintage_available": true,
+          "refresh_mode": "auto",
+          "labels": {
+            "economic_family": "momentum",
+            "construction": "ratio",
+            "neutrality": "raw",
+            "horizon": "daily",
+            "capacity": "mid",
+            "evidence_tier": "B",
+            "macro_sensitivity": "growth_positive",
+            "regime_profile": {
+              "risk_on": "positive",
+              "elevated": "neutral",
+              "crisis": "negative"
+            },
+            "correlation_group": "momentum_cluster",
+            "turnover_profile": "high",
+            "data_dependency": "rawdata"
+          },
+          "lifecycle": {
+            "status": "active",
+            "research_stage": "S7",
+            "mutation_count": 0,
+            "added_date": "2026-03-24",
+            "last_validated": {},
+            "deprecation_reason": {},
+            "mutation_parent": {}
+          },
+          "dedup": {
+            "role": "redundant",
+            "cluster": "DUPC-032",
+            "partners": [
+              "M13_VolAdj_Mom"
+            ],
+            "adjudicated": false,
+            "needs_review": true,
+            "evidence": {
+              "max_pair_abs_cor": 0.967266,
+              "measured_at": "2026-08-02",
+              "report": "04_Research/01_reports/factor_db_dedup_20260802.md",
+              "window": "2005-01..2026-06 (258 months)"
+            },
+            "consumption_rule": "자동 병합 금지. 같은 cluster 의 둘 이상을 한 선별 풀에 넣으면 report_redundant_clusters() 가 보고한다 — 선언하거나 하나로 접을 것."
+          }
+        }
+      },
+      {
+        "id": "M08_Residual_Mom",
+        "path": "02_Infrastructure/factor_db/factor_registry.json",
+        "entry": {
+          "name": "Residual Momentum",
+          "category": "momentum",
+          "definition": "CAPM residual 252-day cumulative return with 1-month skip. Idiosyncratic momentum.",
+          "direction": "higher_better",
+          "data_source": "rawdata",
+          "lag_rule": "Date <= sig_d",
+          "update_freq": "daily",
+          "availability": {
+            "type": "fixed",
+            "rule": "T-1"
+          },
+          "restatement_prone": true,
+          "vintage_available": true,
+          "refresh_mode": "auto",
+          "labels": {
+            "economic_family": "momentum",
+            "construction": "ratio",
+            "neutrality": "raw",
+            "horizon": "daily",
+            "capacity": "mid",
+            "evidence_tier": "B",
+            "macro_sensitivity": "growth_positive",
+            "regime_profile": {
+              "risk_on": "positive",
+              "elevated": "neutral",
+              "crisis": "negative"
+            },
+            "correlation_group": "momentum_cluster",
+            "turnover_profile": "high",
+            "data_dependency": "rawdata"
+          },
+          "lifecycle": {
+            "status": "active",
+            "research_stage": "S7",
+            "mutation_count": 0,
+            "added_date": "2026-03-24",
+            "last_validated": {},
+            "deprecation_reason": {},
+            "mutation_parent": {}
+          }
+        }
+      },
+      {
+        "id": "Q08_Composite_Quality",
+        "path": "02_Infrastructure/factor_db/factor_registry.json",
+        "entry": {
+          "name": "Composite Quality Score",
+          "category": "quality",
+          "definition": "Composite of GPA, ROE, ROA, Accrual signals. Multi-metric quality composite.",
+          "direction": "higher_better",
+          "data_source": "fundamental",
+          "lag_rule": "Factor_Date <= sig_d",
+          "update_freq": "quarterly",
+          "availability": {
+            "type": "regulatory",
+            "rule": "quarterly+45d;annual_3/31"
+          },
+          "restatement_prone": true,
+          "vintage_available": false,
+          "refresh_mode": "manual",
+          "labels": {
+            "economic_family": "quality",
+            "construction": "composite",
+            "neutrality": "raw",
+            "horizon": "quarterly",
+            "capacity": "large",
+            "evidence_tier": "C",
+            "macro_sensitivity": "defensive",
+            "regime_profile": {
+              "risk_on": "neutral",
+              "elevated": "positive",
+              "crisis": "positive"
+            },
+            "correlation_group": "quality_cluster",
+            "turnover_profile": "low",
+            "data_dependency": "fundamental"
+          },
+          "lifecycle": {
+            "status": "active",
+            "research_stage": "S7",
+            "mutation_count": 0,
+            "added_date": "2026-03-24",
+            "last_validated": {},
+            "deprecation_reason": {},
+            "mutation_parent": {}
+          }
+        }
+      },
+      {
+        "id": "V10_FCF_Yield",
+        "path": "02_Infrastructure/factor_db/factor_registry.json",
+        "entry": {
+          "name": "Free Cash Flow Yield",
+          "category": "value",
+          "definition": "(OperatingCF - CapEx) / MarketCap. FCF relative to market value.",
+          "direction": "higher_better",
+          "data_source": "fundamental",
+          "lag_rule": "Factor_Date <= sig_d",
+          "update_freq": "quarterly",
+          "availability": {
+            "type": "regulatory",
+            "rule": "quarterly+45d;annual_3/31"
+          },
+          "restatement_prone": true,
+          "vintage_available": false,
+          "refresh_mode": "manual",
+          "labels": {
+            "economic_family": "value",
+            "construction": "ratio",
+            "neutrality": "raw",
+            "horizon": "quarterly",
+            "capacity": "large",
+            "evidence_tier": "B",
+            "macro_sensitivity": "inflation_positive",
+            "regime_profile": {
+              "risk_on": "neutral",
+              "elevated": "positive",
+              "crisis": "positive"
+            },
+            "correlation_group": "value_cluster",
+            "turnover_profile": "low",
+            "data_dependency": "fundamental"
+          },
+          "lifecycle": {
+            "status": "active",
+            "research_stage": "S7",
+            "mutation_count": 0,
+            "added_date": "2026-03-24",
+            "last_validated": {},
+            "deprecation_reason": {},
+            "mutation_parent": {}
+          },
+          "dedup": {
+            "role": "redundant",
+            "cluster": "DUPC-042",
+            "partners": [
+              "V22_FCFF_EV"
+            ],
+            "adjudicated": false,
+            "needs_review": true,
+            "evidence": {
+              "max_pair_abs_cor": 1,
+              "measured_at": "2026-08-02",
+              "report": "04_Research/01_reports/factor_db_dedup_20260802.md",
+              "window": "2005-01..2026-06 (258 months)"
+            },
+            "consumption_rule": "자동 병합 금지. 같은 cluster 의 둘 이상을 한 선별 풀에 넣으면 report_redundant_clusters() 가 보고한다 — 선언하거나 하나로 접을 것."
+          }
+        }
+      }
+    ],
+    "packages": {
+      "bbdetection": "1.0",
+      "PerformanceAnalytics": "2.0.8",
+      "data.table": "1.17.8",
+      "arrow": "24.0.0"
+    },
+    "r_version": "R version 4.5.2 (2025-10-31 ucrt)"
+  },
+  "evaluation": {
+    "files": [
+      {
+        "path": "04_Research/programs/P2_DEFENSE/P2R04_defensive_holdings/evaluate.R",
+        "md5": "d7c9adb15866109ce1916fb75ae0b563"
+      },
+      {
+        "path": "04_Research/programs/P2_DEFENSE/P2R04_defensive_holdings/evaluate_fixture.R",
+        "md5": "1e3a03d650b30f4e51bf5153a9129c19"
+      },
+      {
+        "path": "04_Research/programs/P2_DEFENSE/P2R04_defensive_holdings/precheck.R",
+        "md5": "f09ca3dbe965126f13c6a7bef6a0635e"
+      },
+      {
+        "path": "04_Research/programs/P2_DEFENSE/P2R04_defensive_holdings/measure.sh",
+        "md5": "ed0446c1195ec38db0ef517606402adb"
+      },
+      {
+        "path": "04_Research/programs/P2_DEFENSE/P2R04_defensive_holdings/measure_now.sh",
+        "md5": "e23e0dd8a2531ecc23093591bb604726"
+      },
+      {
+        "path": "04_Research/programs/P2_DEFENSE/P2R04_defensive_holdings/measure_now_vram.sh",
+        "md5": "9fb89be305240d0e6d92446a1e9a3198"
+      },
+      {
+        "path": "04_Research/programs/P2_DEFENSE/P2R04_defensive_holdings/fingerprint.sh",
+        "md5": "f7e1974a0117f218abe96a61ffed7622"
+      },
+      {
+        "path": "04_Research/programs/P2_DEFENSE/P2R04_defensive_holdings/round_rules.R",
+        "md5": "91fc0e057371f4c882c30f68bc29d316"
+      }
+    ],
+    "note": "판정 구현(evaluate.R) · 픽스처 · precheck · 측정 절차(measure.sh · measure_now.sh · measure_now_vram.sh) · 데이터 지문(fingerprint.sh) · 규칙 상수(round_rules.R)를 결과 전에 고정 — evaluate.R 은 시작부(샤드 포함)에서 이 md5 와 운영 핀 전체를 재대조한다"
+  },
+  "evaluate_consistency": {
+    "evaluate_md5": "d7c9adb15866109ce1916fb75ae0b563",
+    "fs_keys": "ok",
+    "cells_check": "ok",
+    "pins": "ok",
+    "ok": true
+  },
+  "rehearsal": {
+    "script": {
+      "path": "04_Research/programs/P2_DEFENSE/P2R04_defensive_holdings/rehearse.R",
+      "md5": "3aba7c410cd3b726d6e9a2829598367a"
+    },
+    "summary": {
+      "path": "04_Research/programs/P2_DEFENSE/P2R04_defensive_holdings/rehearsal/summary.json",
+      "md5": "dfba81a5026312a0f545e7b47d06eaaa"
+    },
+    "evaluate_md5": "d7c9adb15866109ce1916fb75ae0b563",
+    "pass": true,
+    "inputs": {
+      "variant": "P0R01_E2_C4",
+      "rx0": "P0R01_E2_C0",
+      "fake_codes": [
+        "P2R04_REH_E2_RX0",
+        "P2R04_REH_E2_H2",
+        "P2R04_REH_E2_NULL"
+      ],
+      "forced_start": "2005-03-02",
+      "forced_k": 0.9,
+      "note": "P0R01 같은 엔진 · 같은 배치 두 칸(E2 기준 · E2 D03 저변동 틸트 w0 0.5 · 구 축 all_hyg_2000_v1)을 가짜 코드로 묶은 코드 경로 증명 — 판정용 아님 · 성과 수치 · 시험 창 · 전기간 값은 이 요약에 싣지 않는다"
+    },
+    "seconds": 708
+  },
+  "philosophy_p1": {
+    "ok": true,
+    "reviews": "R-20261018-003",
+    "files": "04_Research/programs/_supervision/superfan/philosophy/20261018_1214_P1_P2R04.md",
+    "n_challenges": 5,
+    "statuses": ["accepted", "accepted", "accepted", "accepted", "accepted"],
+    "checked_at": "2026-10-18T14:36:45+0900"
+  },
+  "tests": [
+    {
+      "path": "08_Tests/programs/test_round_kit_pair_alpha.R",
+      "md5": "9ef40bb9ce7185c5834725b479326f00",
+      "pass": 5,
+      "fail": 0
+    },
+    {
+      "path": "08_Tests/reinforcement/test_rf_cell_engine_smoke.R",
+      "md5": "831fec93d14557949004852a27cab537",
+      "pass": 37,
+      "fail": 0
+    },
+    {
+      "path": "08_Tests/factor_db/test_fdc_read_fastpath.R",
+      "md5": "8640e25b6d0c7b928fac75224d9e9e27",
+      "pass": 13,
+      "fail": 0
+    },
+    {
+      "path": "04_Research/programs/P2_DEFENSE/P2R04_defensive_holdings/evaluate_fixture.R",
+      "md5": "1e3a03d650b30f4e51bf5153a9129c19",
+      "pass": 52,
+      "fail": 0
+    }
+  ],
+  "precheck": "측정 직전 precheck.R 가 (1) evaluate.R 의 핀 대조 함수 ∪ precheck.R 의 같은 정의로 사양 23 · 운영 경로 · 팩터 레지스트리 엔트리 · 비중 카탈로그 1 · 패키지 · R 판 · 평가 경로 · 행동 카드 설정 사본과 등록부 사전등록 md5 를 다시 대조하고 (2) 러너 축 — 06_Registry/reinforce_program.json fixed_axes.n_max · commission_bps(rf_cell_worker.R 가 칸 사양 대신 읽는 종목 수 · 수수료) = 사양 fixed_axes 값(25 · 15 bps)을 키 값으로 단정하고(파일 md5 핀 아님 — 자주 바뀌는 파일) (3) 사전등록 두 사본(stage_artifacts 정본 · 라운드 prereg.json)이 git 에 커밋돼 있고 작업 트리 변경이 없으며 두 md5 가 같은지 본다(등록 → 커밋 → 측정) — 하나라도 어긋나면 측정하지 않는다 · 데이터 지문 · 러너 축 값 기록(results/precheck.json)",
+  "data_note": "데이터 판본: RAWDATA · 벤치 퀀티 단일 · 측정 축 all_hyg_px1000_2000_v1(동전주 바닥) · DNN 예측 = P2R03 이 새 epoch 로 학습한 내용 주소 캐시를 그대로 쓴다(재학습 없음 · DESIGN §2 — 측정 묶음 지문 record 에 남긴다) · 팩터 DB 월 스냅샷 · IC 월간 이력 = equality 지문 대상(처치 원천 · 방향 원천) · 팩터 레지스트리 = 쓰는 엔트리 내용 핀 · PIT 경계(기록): Q08_Composite_Quality · V10_FCF_Yield 는 재무 원값이 정정 공시로 과거 값을 덮는다(팩터 레지스트리 restatement_prone · vintage_available false — 정정 전 판본 없음 · 가용 시차 quarterly+45d;annual_3/31 · C4 준수) — 처치 자체가 그 경계 위에 있는 장치 = H4 Q08_Composite_Quality · 기존 팩터 V10_FCF_Yield 는 같은 경계지만 짝(RX0 · 변형) 양쪽 공통",
+  "design_inputs": "DESIGN.md v3 · _design_notes 3건(defense_direction_agreement · state_turn_classify · onset_state_classify — 벤치 · IC 부호만) · P2R03 사전등록(빠른 급락 표 · 규칙 ①~⑬ 문장 · final_selection_rule 값) · 판단 원장 J-20261018-003 · 철학 P1 R-20261018-003 · 판단 T1 R-20261018-004 · 측정 · 평가 계약 코드 — 시험 창 성과 미사용",
+  "budget": {
+    "variants": 8,
+    "reference_remeasure": 2,
+    "diagnostic": 13,
+    "diagnostic_lag1": 0,
+    "cells": 23,
+    "rounds": 1,
+    "note": "변형 8 만 시행 수 가산(계보 2002.06975 · 252 → 260) · RX0 2 · 진단 13 = 무가산 · lag-1 진단 없음 · DSR 표본 = 변형 칸"
+  },
+  "changes_after_superfan": [
+    {
+      "item": "판단 Superfan T2 C-20261018-001 · 철학 P2 C-008(R-20261018-002) — P2R03 판정 해석",
+      "change": "질문을 '현금 비중'에서 '무엇을 드느냐(방어적 보유 · 원천 ③)'로 옮김 · 추세 현금 · 재진입 변형을 이웃 라운드로 두지 않음(비교 기준으로만 · candidates.excluded)",
+      "reason": "P2R03 의 방어는 노출(β) 방어였고 이긴 빠른 급락은 추세 · 낙폭 상태가 꺾인 뒤의 2차 급락 2건뿐 · 꼭대기에서 시작한 2011-08 급락은 노출 1.00 그대로(DESIGN 머리말)"
+    },
+    {
+      "item": "판단 Superfan T2 C-20261018-003 함정 셋",
+      "change": "L7(D7 lag-1 진단) 결과를 후보로 올리지 않음 · 위기별 승패 지도로 결합 규칙을 짜지 않음(결합 없음) · 전기간 차트 열람을 exposures 에 기록",
+      "reason": "수용(DESIGN §7)"
+    },
+    {
+      "item": "'상태 미전환 최대 하락 위기'의 판정 조건화 — 불채택",
+      "change": "기록만(rules.state_unturned · final_selection_rule.state_unturned_max_drop_crises)",
+      "reason": "깊은 위기로는 1건뿐(2022-05~07 은 상태가 꺾인 뒤) — 한 위기로 통과를 정하지 않는다(원칙 2 · DESIGN §5)"
+    },
+    {
+      "item": "철학 P1 C-20261018-016 결측 짝",
+      "change": "E2 진단 칸 P2R04_E2_C1 · P2R04_E2_C2 · P2R04_E2_C3 · P2R04_E2_C4 — 장치 팩터 + base_weight 1(점수 = DNN 100%) · 판정 표 밖 · 무가산",
+      "reason": "셀 엔진의 팩터 내부 병합이 '방어 팩터 결측 종목 제외'라는 둘째 처치를 얹는다 — β 짝(RX0 사본) · MC8 이 그 경로를 못 거른다"
+    },
+    {
+      "item": "철학 P1 C-20261018-018 용량 짝(E2)",
+      "change": "E2 진단 칸 P2R04_E2_W1 · P2R04_E2_W2 · P2R04_E2_W3 · P2R04_E2_W4 — 장치 팩터 + base_weight 0.875(방어 몫 12.5%) · 판정 표 밖 · 무가산",
+      "reason": "방어 몫 차이가 '엔진 의존'과 '용량 부족'을 교락한다"
+    },
+    {
+      "item": "철학 P1 C-20261018-021 희석 짝",
+      "change": "E2 진단 칸 P2R04_E2_N0 — factors [null_perm · seed 20261018] + base_weight 0.5 · 판정 표 밖 · 무가산",
+      "reason": "DNN 상위 25종은 극단 선택이라 신호 절반을 무정보로 섞기만 해도 ① · ② 가 좋아질 수 있다 — 희석 몫을 따로 읽는다"
+    },
+    {
+      "item": "판단 T1 C-20261018-027 처치 용량",
+      "change": "E3 장치 칸 = base_weight 0.25 + 기존 3 + 장치 팩터 6회 나열(방어 몫 50% = E2 와 같은 처치) · 도구 상자 12.5% 판 = E3 진단 칸 P2R04_E3_W1 · P2R04_E3_W2 · P2R04_E3_W3 · P2R04_E3_W4(P0R01 E3 C4/C5 와 같은 지정 · 무가산)",
+      "reason": "E2 50% · E3 12.5% 면 '두 엔진 공통 통과'가 같은 처치의 반복 검증이 아니라 다른 처치 둘의 동시 통과다"
+    },
+    {
+      "item": "철학 P1 C-20261018-017 크기 × β 동시 짝",
+      "change": "평가 기록 = MC8 크기 바스켓을 변형 β / 바스켓 β 로 낮춘 현금 사본의 깊은 위기 승패 · 결론 이름 '선택(특성) 방어'는 이것까지 넘을 때만(통과 조건 아님) · 불가 = '크기 × β 짝 미측정'",
+      "reason": "③ 은 β 만 · ⑭(MC8) 는 크기 · 평균 노출만 맞춘다 — 대형 · 저β 쪽 이동이 특성 선택 없이 둘 다 넘을 수 있다"
+    },
+    {
+      "item": "판단 T1 C-20261018-028 ⑭ 강화",
+      "change": "⑭ = MC8 selection_defense AND 위기 분해 선택 항(β · 크기 동시 통제)이 깊은 위기 과반에서 RX0 보다 개선 · 필드 부재 = 미측정(통과 불가)",
+      "reason": "P0R01 E2_C4 실례 — MC8 0.86 '선택'인데 분해 선택 항은 깊은 위기 4/4 악화 · 개선은 시장 β 항"
+    },
+    {
+      "item": "철학 P1 C-20261018-019 결론 범위 · 기록 이름",
+      "change": "결론 범위 6(결합은 새 사전등록 · 결합 칸 자체 판정으로만) · 4 확장(P2R02 C6 판정 무효 — 전액 현금 결함 위 측정) · 기록 이름 '상태 미전환 최대 하락 위기'",
+      "reason": "'꼭대기 시작' 기록이 P2R03 D5 · D7 승패 지도와 상보라 합치면 4/4 가 기계적으로 나온다"
+    },
+    {
+      "item": "철학 P1 C-20261018-020 · 024 기록 · 문언",
+      "change": "평가 기록 = 위기 보유 유동성 분위 · 무거래일 비율(불가 = '유동성 귀속 미측정') · 국면별(위기 · 강세 · 그 밖) 월 차이 · 보유 겹침률 · 기준점 둘(엔진 대비 · 시장 대비) · '방어만 · 복리 없음' = '저변동 기계'",
+      "reason": "얇은 거래 종목은 측정 β 가 낮고 MC8 플라시보 모집단엔 유동성 하한이 없다 · 늘 켜진 틸트의 횡보 세금 · 엔진이 시장보다 더 빠지는 위기가 있다"
+    },
+    {
+      "item": "철학 P1 C-20261018-022 · 023 방향 · 근거 · 선택 회계",
+      "change": "방향 = as-of IC 부호(보는 창 216개월 방어 정렬 100% · IC 방향 확정 신호일 2003-05-30 < DNN 첫 신호) · 시험 창 정렬은 P3 에서 기록 · 기대에 ACX(2006) 방향 차이 명시 · 후보 12 중 4 선택(candidates)",
+      "reason": "방어 장치가 정렬 뒤집힘으로 공격 장치가 되는 달 · 근거 논문 방향과 데이터 방향 차이 · 선택 회계"
+    },
+    {
+      "item": "철학 P1 C-20261018-025 기록",
+      "change": "RX0 와 P2R03 RX0 동일성(보는 창 보유 · 순수익) · H1 대 P2R03 D1 대조 읽기(같은 하방β 정보 · 처치 = 늘 켜진 선택 vs 낙폭 국면 축소)",
+      "reason": "동기 자체를 재는 기록"
+    },
+    {
+      "item": "판단 T1 C-20261018-029 실패 뒤 경로",
+      "change": "R7 판독 기계 고정(검증 0 ∧ 두 구성 ③ 과반 장치 0 ∧ S 증분 최대 < tie_eps = 잡음 이내) · 원천 ① 분포 표적 P2R05 설계 초안 병렬 착수",
+      "reason": "최빈 기대가 실패인데 실패 뒤 경로가 없었다"
+    },
+    {
+      "item": "판단 T1 C-20261018-031 · 032 기록 · 제외 근거",
+      "change": "칸마다 보는 창 A 조건별 값 · 문턱 거리(grade_v3 계약) · D01 제외 근거 측정 = D03 와 순위 상관 0.99(보는 창 반기 월말 36개)",
+      "reason": "선택 규칙이 CAGR · Sharpe 하한을 보지 않는다 · '원리 중복'은 진술이었다"
+    },
+    {
+      "item": "판단 T1 C-20261018-034 데이터 판본",
+      "change": "fingerprint.sh equality 에 factor_ic_monthly.parquet 추가(방어 틸트 방향의 원천 · 방향 캐시는 이 파일로 키가 바뀐다)",
+      "reason": "IC 이력이 묶음 지문 밖이면 측정 중 재생성이 방향을 바꿔도 같은 판본으로 읽힌다"
+    },
+    {
+      "item": "판단 T1 C-20261018-035 · 철학 P1 헌장 빈칸",
+      "change": "decision_register CHARTER-GAPS-4-20261018 상신(선택 방어 정의 · 방어 특성 방향 원리 · 방어 기준점 · 독립 엔진 정의) · 기본값 = 현행 헌장 · 이 라운드 판정 불변",
+      "reason": "v3.2 등급 노치의 '선택' 분기도 완전 투자 β 틸트를 선택으로 셀 수 있다 · 사람 판정 필요"
+    }
+  ],
+  "changes_after_review": [
+    {
+      "item": "필수 1 ⑭ 분해 문턱(리뷰 §1 필수 1 · 초안 rules.selection_attribution · evaluate.R:461 · T1 20261018_1227_T1.md:52)",
+      "change": "rules.selection_attribution = MC8 selection_defense AND 위기 분해 selection_sum(β · 크기 동시 통제 · 수익 단위)이 깊은 위기마다 변형 − RX0 > 0(엄격 · 문턱 없음)인 위기가 과반(짝 ≥ 2) · crisis_improve_min 0.03 은 쓰지 않는다 · 구현 = evaluate.R(판정 구현 쪽 — `sv - sr >= tol` → 문턱 없는 엄격 부등호) · 조정자 결정(리뷰 권장 '> tol' 대신 '> 0')",
+      "reason": "문장(개선 = 차 > 0) · 코드(≥ 0.03 · 등호 포함) · T1 원 요구(> tol)가 셋 다 달랐다 · 0.03 의 근거 문장은 낙폭 포착 비율(dd_capture) 단위라 수익 단위 selection_sum 에 빌려 쓸 근거가 없다(재현 R1 — 같은 패킷에서 ⑭ 가 뒤집힘)"
+    },
+    {
+      "item": "필수 2 rules.tested ⑥(리뷰 §1 필수 2 · 초안 rules.tested · evaluate.R:1103-1108)",
+      "change": "⑥ '유한해야 하는 판정 입력' 목록에서 ⑭ 를 뺐다 · '⑭ 결손은 미시험이 아니다 — ⑭ 미측정(판정됨 · 통과 불가 · selection_unmeasured)' 한 줄",
+      "reason": "코드는 ⑭ 를 유한 검사에 넣지 않고 결손을 통과 불가로 센다(판정 칸) · 같은 사전등록 selection_attribution · failure_semantics 와 반대 의미였다"
+    },
+    {
+      "item": "필수 3 ⑭ 미측정 판정어(리뷰 §1 필수 3 · evaluate.R:546-559 · matched_controls.R:437 · 재현 R2 · R3)",
+      "change": "판정어 selection_unmeasured('선택 귀속 미측정 — 방어 이름 보류') 신설 · rules.selection_attribution · failure_semantics · conclusion_scope 2 에 '⑭ 미측정이면 방어 이름 보류(크기 · 노출 방어로 접지 않음)' · MC8 라벨 insufficient = 미측정 · notify.R 판정어 사전 · 구현 = evaluate.R(판정 구현 쪽 · 픽스처 · 리허설 재실행 뒤 초안 재작성)",
+      "reason": "⑭ 결손(분해 필드 부재 · MC8 insufficient)이 판정어 size_or_exposure_defense · 결론 이름 '크기 · 노출 방어'로 접혀 결론 범위 2 · 5(다음 라운드 동기)의 입력이 결측에서 만들어질 수 있었다"
+    },
+    {
+      "item": "필수 4 진단 칸 지문 불일치(리뷰 §1 필수 4 · 초안 rules.vintage_group · rules.diagnostics · evaluate.R 진단 칸 블록)",
+      "change": "rules.vintage_group · diagnostics · failure_semantics — 판정 칸(장치 + RX0) 지문 불일치 · 부재 = 평가 전체 중단 / 진단 칸 지문이 그 엔진 판정 칸 지문과 다르거나 없으면 그 진단 칸만 미시험(판정 계속) · 측정(measure.sh same_fp)은 진단 칸까지 묶어 재측정 — 문장을 코드에 맞춤",
+      "reason": "문장은 진단 칸 지문 불일치도 '평가 전체 중단'이었고 코드는 그 칸만 미시험이다 — 칸 하나의 문제는 그 칸만(failure_semantics 원칙)"
+    },
+    {
+      "item": "필수 5 러너 축(리뷰 §1 필수 5 · rf_cell_worker.R:31-32 · 96-101)",
+      "change": "precheck.R 본 대조 · 건식이 06_Registry/reinforce_program.json fixed_axes.n_max · commission_bps(워커가 칸 사양 대신 읽는 종목 수 · 수수료) = 사양 fixed_axes 값을 키 값으로 단정 · 다르면 측정하지 않음(precheck_fail) · precheck.json 에 러너 축 값 기록 · register.R OPS 주석 · rules.precheck 문장",
+      "reason": "칸 사양의 commission_bps · n_max 는 러너에 가지 않고 워커는 그 파일을 읽는데 핀 · 지문 · precheck 어디에도 없었다 · 9~10월 8회 바뀐 파일이라 md5 핀은 무관한 편집으로 측정을 막는다 → 읽는 키 내용 대조"
+    },
+    {
+      "item": "필수 6 설계 정본 낡은 문장 셋(리뷰 §1 필수 6 · DESIGN.md §2 · §4 · §10)",
+      "change": "DESIGN v3 문장 정정(조정자) — §2 'E3 틸트 약함' · §4 '진단 칸 9' · §10 '장치 팩터 하나'(+ 혼합 몫 식 · 진단 칸 사양 규칙)",
+      "reason": "설계 정본(judgments.design · rules_source)의 세 문장이 v3 구현과 어긋나 §10 으로 재도출하면 E3 장치 칸이 계약 위반으로 보였다"
+    },
+    {
+      "item": "권고 5 등록 → 커밋 → 측정 기계 확인(리뷰 §2 권고 5 · precheck.R git_head 기록만)",
+      "change": "precheck.R 본 대조가 사전등록 두 사본(stage_artifacts 정본 · 라운드 prereg.json)의 git 추적 · 작업 트리 변경 없음 · 두 사본 md5 같음을 단정 — 아니면 측정하지 않음",
+      "reason": "커밋 순서를 기계가 보지 않았다(register.R 은 고정 대상 커밋을 확인한 뒤 사전등록을 쓰지만 그 사전등록의 커밋은 아무도 확인하지 않았다)"
+    },
+    {
+      "item": "권고 8 ⑭ 해석 범위(리뷰 §2 권고 8 · T1 20261018_1227_T1.md 자기 점검 2)",
+      "change": "conclusion_scope 8 · rules.selection_attribution — 분해 선택 항 = 3요인(시장 β · EW−CW · 무신호 틸트) 밖 노출 포함 · t−1 적재라 위기 중 조건부 β 하락(H1 · H3 기전)도 선택 항으로 잡힘",
+      "reason": "T1 이 스스로 적은 해석 범위가 사전등록에 없었다(사전등록 grep 0건)"
+    },
+    {
+      "item": "권고 11 Q08 정정 공시 PIT 경계(리뷰 §2 권고 11 · 초안 operational_pins.factor_registry_entries Q08 · parse_fundamental_xlsx.R:205)",
+      "change": "data_note · conclusion_scope 9 — 핀한 팩터 레지스트리 엔트리에서 restatement_prone ∧ vintage_available false 인 팩터를 읽어 'PIT 경계(기록)' 문장(처치 = H4 Q08 · 기존 팩터 V10 은 짝 양쪽 공통) · H4 결론에 'PIT 경계 기록'",
+      "reason": "정정 공시가 과거 재무 값을 덮는 판본 없음 경계 위에 처치 자체(H4)가 있다(C4 시차는 맞다 — Q4 = 익년 3/31)"
+    },
+    {
+      "item": "선택 3 vintage_group 문장의 IC 월간 이력(리뷰 §3 선택 3)",
+      "change": "rules.vintage_group 지문 원천 목록에 IC 월간 이력(factor_ic_monthly.parquet) 명시",
+      "reason": "판단 T1 C-034 반영이 fingerprint.sh 에만 있고 문장에 없었다"
+    }
+  ]
+}

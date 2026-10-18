@@ -1,0 +1,58 @@
+{
+  "code": "P2R04_E2_C1",
+  "label": "E2 × 결측 짝(커버리지 필터만) C1 — D04_Downside_Beta 결측 종목 제외 · 점수 = DNN 100%(base_weight 1) · P2R04_E2_H1 짝 진단",
+  "block": "RX",
+  "fixed_axes": {
+    "long_only": true,
+    "n_max": 25,
+    "commission_bps": 15,
+    "liq_adv20_min": 200000000,
+    "weight_cap": null,
+    "base_weight": 1,
+    "measurement_axis": "all_hyg_px1000_2000_v1",
+    "universe": "ALL_HYG",
+    "start_date": "2000-01-01"
+  },
+  "base_signal": {
+    "kind": "engine",
+    "path": "C:/Users/99922/OneDrive/Quant_Module_Moltbot/04_Research/strategies/RP_AUTO_2002_06975/engine.R"
+  },
+  "base_weight": 1,
+  "factors": [
+    {
+      "kind": "db",
+      "id": "D04_Downside_Beta"
+    }
+  ],
+  "weighting": {
+    "kind": "ew"
+  },
+  "defense_sleeve": null,
+  "root_paper": {
+    "url": "https://arxiv.org/abs/2002.06975",
+    "title": "Cross-sectional Stock Price Prediction using Deep Learning for Actual Investment Management",
+    "paper_key": "2002.06975"
+  },
+  "root_papers": [
+    {
+      "url": "https://arxiv.org/abs/2002.06975",
+      "title": "Cross-sectional Stock Price Prediction using Deep Learning for Actual Investment Management",
+      "paper_key": "2002.06975"
+    }
+  ],
+  "idea": "[P2R04 진단 · E2 × C1 · 철학 P1 C-20261018-016] 결측 짝 — P2R04_E2_H1 와 같은 팩터 D04_Downside_Beta 를 붙이되 base_weight 1(점수 = 순위z(DNN) 100% · 방어 팩터 가중 0) · 셀 엔진의 팩터 내부 병합(rf_cell_engine.R §3 merge · inner join)이 만드는 '팩터 결측 종목 제외' 효과만 분리한다",
+  "selection_accounting": {
+    "selection_type": "sweep",
+    "family_root": "2002.06975",
+    "lineage": "RX_P0R01_feasibility_map",
+    "n_family_at_registration": 216,
+    "n_trials_basis": "P0R01: 계보 측정 시도 192 + 앞 라운드 변형 3 + 이 라운드 칸 21(엔진 3 × 부품 7 · 선택은 21칸 전체에서)",
+    "diagnostic_of": "P2R04_E2_H1",
+    "control": "missing_pair",
+    "challenge": "C-20261018-016",
+    "n_trials_note": "결측 짝(커버리지 필터만) — 진단 칸 · 시행 수 무가산 · DSR 표본 아님 · 선택 대상 아님 · 판정 표 밖"
+  },
+  "universe": {
+    "kind": "all_hyg"
+  }
+}

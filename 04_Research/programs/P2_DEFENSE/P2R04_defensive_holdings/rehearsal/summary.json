@@ -1,0 +1,215 @@
+{
+  "schema": "p2r04_rehearsal_v1",
+  "at": "2026-10-18T15:05:19+0900",
+  "evaluate_md5": "06a1b8d6201793c4d5b8d37d895c87b9",
+  "round_rules_md5": "91fc0e057371f4c882c30f68bc29d316",
+  "rehearse_md5": "3aba7c410cd3b726d6e9a2829598367a",
+  "files_unchanged_during_run": true,
+  "behavior_card_cfg": "04_Research/programs/P2_DEFENSE/P2R04_defensive_holdings/behavior_card_cfg_at_prereg.json",
+  "inputs": {
+    "variant": "P0R01_E2_C4",
+    "rx0": "P0R01_E2_C0",
+    "fake_codes": ["P2R04_REH_E2_RX0", "P2R04_REH_E2_H2", "P2R04_REH_E2_NULL"],
+    "forced_start": "2005-03-02",
+    "forced_k": 0.9,
+    "note": "P0R01 같은 엔진 · 같은 배치 두 칸(E2 기준 · E2 D03 저변동 틸트 w0 0.5 · 구 축 all_hyg_2000_v1)을 가짜 코드로 묶은 코드 경로 증명 — 판정용 아님 · 성과 수치 · 시험 창 · 전기간 값은 이 요약에 싣지 않는다"
+  },
+  "stages": {
+    "R0_cell_eval": {
+      "pass": true,
+      "checks": {
+        "status_evaluated": true,
+        "visible_file": true,
+        "full_file": true,
+        "packet": true,
+        "card": true,
+        "marker": true,
+        "visible_no_test_full": true,
+        "full_audience": true,
+        "effective_start_ok": true,
+        "visible_packet_dates_le_tau": true
+      },
+      "seconds": 105
+    },
+    "R1_original_window": {
+      "pass": true,
+      "checks": {
+        "tested": true,
+        "rule_fields": true,
+        "ok_flags_logical": true,
+        "verdict_in_vocab": true,
+        "verdict_name": true,
+        "construction_ok": true,
+        "treatment_record": true,
+        "selection_label_recorded": true,
+        "selection_decomp_recorded": true,
+        "reference_points": true,
+        "state_unturned_record": true,
+        "conclusion_name": true,
+        "test_window_split": true,
+        "window_original": true,
+        "blend_half": true,
+        "factor_direction_ok": true,
+        "holdings_differ": true,
+        "selection_decomp_ok": true,
+        "size_beta_ok": true,
+        "liquidity_ok": true,
+        "regime_months_ok": true,
+        "beta_status_ok": true,
+        "selection_status_recorded": true,
+        "tbl_verdict": true,
+        "marker_original": true
+      },
+      "verdict": "exposure_only",
+      "verdict_name": "노출 방어(β 짝 미통과)",
+      "why_class": null,
+      "seconds": 49
+    },
+    "R2_common_window_forced_k": {
+      "pass": true,
+      "checks": {
+        "tested": true,
+        "rule_fields": true,
+        "ok_flags_logical": true,
+        "verdict_in_vocab": true,
+        "verdict_name": true,
+        "construction_ok": true,
+        "treatment_record": true,
+        "selection_label_recorded": true,
+        "selection_decomp_recorded": true,
+        "reference_points": true,
+        "state_unturned_record": true,
+        "conclusion_name": true,
+        "test_window_split": true,
+        "window_common": true,
+        "comparator_scaled": true,
+        "k_forced": true,
+        "packet_starts_after_forced": true,
+        "beta_copy_packet": true,
+        "size_beta_ok": true,
+        "markers_full_copies": true,
+        "no_marker_in_visible_packets": true
+      },
+      "verdict": "size_or_exposure_defense",
+      "verdict_name": "크기 · 노출 방어(⑭ 미통과)",
+      "why_class": null,
+      "seconds": 109
+    },
+    "R3a_device_mismatch": {
+      "pass": true,
+      "verdict": "untested",
+      "why_class": "construction_evidence",
+      "seconds": 0
+    },
+    "R3b_no_treatment": {
+      "pass": true,
+      "verdict": "untested",
+      "why_class": "no_treatment",
+      "seconds": 0
+    },
+    "R4a_diagnostic_role": {
+      "pass": true,
+      "checks": {
+        "tested": true,
+        "rule_fields": true,
+        "ok_flags_logical": true,
+        "verdict_in_vocab": true,
+        "verdict_name": true,
+        "construction_ok": true,
+        "treatment_record": true,
+        "selection_label_recorded": true,
+        "selection_decomp_recorded": true,
+        "reference_points": true,
+        "state_unturned_record": true,
+        "conclusion_name": true,
+        "test_window_split": true,
+        "role_diag": true,
+        "size_beta_skipped": true,
+        "blend_ok": true,
+        "conclusion_diag": true
+      },
+      "verdict": "exposure_only",
+      "verdict_name": "노출 방어(β 짝 미통과)",
+      "why_class": null,
+      "seconds": 36
+    },
+    "R4b_diagnostic_weight_mismatch": {
+      "pass": true,
+      "verdict": "untested",
+      "why_class": "diag_weight",
+      "seconds": 0
+    },
+    "R5_diagnostic_identical_continues": {
+      "pass": true,
+      "checks": {
+        "tested": true,
+        "rule_fields": true,
+        "ok_flags_logical": true,
+        "verdict_in_vocab": true,
+        "verdict_name": true,
+        "construction_ok": true,
+        "treatment_record": true,
+        "selection_label_recorded": true,
+        "selection_decomp_recorded": true,
+        "reference_points": true,
+        "state_unturned_record": true,
+        "conclusion_name": true,
+        "test_window_split": true,
+        "continued_without_treatment": true,
+        "comparator_rx0": true,
+        "alpha_degenerate_tolerated": true,
+        "no_wins": true
+      },
+      "verdict": "not_decisive",
+      "verdict_name": "결정 미달",
+      "why_class": null,
+      "seconds": 1
+    },
+    "R6_readings": {
+      "pass": true,
+      "checks": {
+        "missing_status": true,
+        "missing_counts": true,
+        "capacity_label": true,
+        "dilution_status": true,
+        "n0_summary": true,
+        "other_engine": true
+      },
+      "capacity_label": "이 형태 미달(네 칸 모두 미달)",
+      "seconds": 0
+    },
+    "R7_rx0_identity": {
+      "pass": true,
+      "checks": {
+        "status_ok": true,
+        "fields": true,
+        "self_same": true
+      },
+      "p2r03_vs_p0r01": {
+        "holdings_same": false,
+        "returns_same": false
+      },
+      "seconds": 1
+    },
+    "R8_round_helpers_and_visible_file": {
+      "pass": true,
+      "checks": {
+        "verdict_vocab": true,
+        "label": true,
+        "select_shape": true,
+        "noise_logical": true,
+        "noise_unreadable_one_device": true,
+        "a_distance_fields": true,
+        "json_roundtrip": true,
+        "no_test_window_in_visible": true,
+        "no_cell_log_full_period": true,
+        "no_dates_after_tau": true
+      },
+      "round_verdict": "falsified",
+      "noise_reading": null,
+      "seconds": 1
+    }
+  },
+  "pass": true,
+  "seconds": 300
+}
