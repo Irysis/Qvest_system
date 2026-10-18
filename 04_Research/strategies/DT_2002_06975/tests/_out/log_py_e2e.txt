@@ -1,0 +1,30 @@
+[py-e2e] OK   module DEVICE = cpu - cpu
+[py-e2e] OK   CODE_VERSION / TAUS / N_OUT
+[py-e2e] OK   run_task #1 trains (source = train) - train
+[py-e2e] OK   run_task output columns / rows - ['pred_i', 'Ticker', 'q10_raw', 'q50_raw', 'q90_raw', 'q10', 'q50', 'q90']
+[py-e2e] OK   rearranged heads ordered q10 <= q50 <= q90
+[py-e2e] OK   rearranged = row sort of raw
+[py-e2e] OK   diag cross_rate = crossing share of raw heads - 0.0667
+[py-e2e] OK   diag cache_key = cache_key(task, X, y, Xp, tk)
+[py-e2e] OK   npz: score n x 3 raw + cross_rate + code_version
+[py-e2e] OK   run_task #2 = cache hit, identical output
+[py-e2e] OK   cache key changes with one feature value
+[py-e2e] OK   cache key changes with the seed
+[py-e2e] OK   quantile key != rev3 mean-target key for the same inputs
+[py-e2e] OK   rev3-format npz (n x 1, no code_version) -> cache_read None
+[py-e2e] OK   rearrange known case (crossing 2/4)
+[py-e2e] OK   PIT assertion: label realized after the update day -> RuntimeError
+[py-e2e] OK   run_20261018_000001_1 main() rc 0 (58s) - rc 0 
+[py-e2e] OK   run_20261018_000001_1 pred.parquet columns / rows
+[py-e2e] OK   run_20261018_000001_1 diag columns (pc_* · code_version · cache_key · cross_rate)
+[py-e2e] OK   run_20261018_000001_1 positive control passed in main() (pc_pass, 4000 steps)
+[py-e2e] OK   run_20261018_000001_1 code_version recorded
+[py-e2e] OK   run_20261018_000001_1 month sources ['train', 'train']
+[py-e2e] OK   run_20261018_000002_2 main() rc 0 (55s) - rc 0 
+[py-e2e] OK   run_20261018_000002_2 pred.parquet columns / rows
+[py-e2e] OK   run_20261018_000002_2 diag columns (pc_* · code_version · cache_key · cross_rate)
+[py-e2e] OK   run_20261018_000002_2 positive control passed in main() (pc_pass, 4000 steps)
+[py-e2e] OK   run_20261018_000002_2 code_version recorded
+[py-e2e] OK   run_20261018_000002_2 month sources ['cache', 'cache']
+[py-e2e] OK   second run (cache) predictions identical to the first
+[py-e2e] OK - 29/29 checks

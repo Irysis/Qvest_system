@@ -1,0 +1,360 @@
+{
+  "ok": true,
+  "errors": [],
+  "notes": ["구역 sigma252(orig=+310): 보호 범위 안 삽입 — 읽기 전용 계산인지 확인 대상", "구역 py_cache_key(orig=+561): 보호 범위 안 삽입 — 읽기 전용 계산인지 확인 대상"],
+  "root": "C:/Users/99922/OneDrive/Quant_Module_Moltbot",
+  "source_engine": {
+    "path": "04_Research/strategies/RP_AUTO_2002_06975/engine.R",
+    "md5": "6b6a8e1a144b4b316c28628b0de7f95d",
+    "n_lines": 791
+  },
+  "template": {
+    "path": "04_Research/strategies/DT_2002_06975/engine_template.R",
+    "md5": "e998c0af5cb2069c6aae1592ba0ae8d2",
+    "n_lines": 1199
+  },
+  "n_zones": 26,
+  "zones": [
+    {
+      "name": "header",
+      "orig": "+0",
+      "kind": "insert",
+      "template_lines": "1-17",
+      "n_orig_replaced": 0,
+      "n_zone_lines": 15,
+      "insert_inside_protected": false,
+      "replaced": []
+    },
+    {
+      "name": "ident",
+      "orig": "48-48",
+      "kind": "replace",
+      "template_lines": "65-73",
+      "n_orig_replaced": 1,
+      "n_zone_lines": 7,
+      "insert_inside_protected": false,
+      "replaced": ".TAG <- \"[RP_AUTO_2002_06975]\""
+    },
+    {
+      "name": "dt_const",
+      "orig": "+83",
+      "kind": "insert",
+      "template_lines": "109-127",
+      "n_orig_replaced": 0,
+      "n_zone_lines": 17,
+      "insert_inside_protected": false,
+      "replaced": []
+    },
+    {
+      "name": "workdir",
+      "orig": "101-101",
+      "kind": "replace",
+      "template_lines": "145-149",
+      "n_orig_replaced": 1,
+      "n_zone_lines": 3,
+      "insert_inside_protected": false,
+      "replaced": ".WD    <- file.path(.ROOT, \"04_Research\", \"strategies\", \"RP_AUTO_2002_06975\", \"_work\")"
+    },
+    {
+      "name": "rule_fns",
+      "orig": "+184",
+      "kind": "insert",
+      "template_lines": "233-365",
+      "n_orig_replaced": 0,
+      "n_zone_lines": 131,
+      "insert_inside_protected": false,
+      "replaced": []
+    },
+    {
+      "name": "sigma252",
+      "orig": "+310",
+      "kind": "insert",
+      "template_lines": "492-503",
+      "n_orig_replaced": 0,
+      "n_zone_lines": 10,
+      "insert_inside_protected": true,
+      "replaced": []
+    },
+    {
+      "name": "hist252",
+      "orig": "+424",
+      "kind": "insert",
+      "template_lines": "618-631",
+      "n_orig_replaced": 0,
+      "n_zone_lines": 12,
+      "insert_inside_protected": false,
+      "replaced": []
+    },
+    {
+      "name": "py_ident",
+      "orig": "430-430",
+      "kind": "replace",
+      "template_lines": "637-639",
+      "n_orig_replaced": 1,
+      "n_zone_lines": 1,
+      "insert_inside_protected": false,
+      "replaced": "# dnn_rolling.py - RP_AUTO_2002_06975 rev3 (Abe & Nakagawa 2020, Table 2 DNN5). Written by engine.R on every run; do not edit."
+    },
+    {
+      "name": "py_const",
+      "orig": "446-446",
+      "kind": "replace",
+      "template_lines": "655-671",
+      "n_orig_replaced": 1,
+      "n_zone_lines": 15,
+      "insert_inside_protected": false,
+      "replaced": "CODE_VERSION = \"RP_AUTO_2002_06975/dnn_rolling/rev3\"   # part of every cache key; bump only if fit_predict numerics change"
+    },
+    {
+      "name": "py_head",
+      "orig": "470-470",
+      "kind": "replace",
+      "template_lines": "695-697",
+      "n_orig_replaced": 1,
+      "n_zone_lines": 1,
+      "insert_inside_protected": false,
+      "replaced": "        layers.append(self.linear(prev, 1))"
+    },
+    {
+      "name": "py_forward",
+      "orig": "482-482",
+      "kind": "replace",
+      "template_lines": "709-711",
+      "n_orig_replaced": 1,
+      "n_zone_lines": 1,
+      "insert_inside_protected": false,
+      "replaced": "        return self.net(x).squeeze(1)"
+    },
+    {
+      "name": "py_loss_def",
+      "orig": "492-492",
+      "kind": "replace",
+      "template_lines": "721-723",
+      "n_orig_replaced": 1,
+      "n_zone_lines": 1,
+      "insert_inside_protected": false,
+      "replaced": "    lossf = nn.MSELoss()"
+    },
+    {
+      "name": "py_loss_step",
+      "orig": "509-509",
+      "kind": "replace",
+      "template_lines": "740-743",
+      "n_orig_replaced": 1,
+      "n_zone_lines": 2,
+      "insert_inside_protected": false,
+      "replaced": "            loss = lossf(model(Xt[idx]), yt[idx])"
+    },
+    {
+      "name": "py_rearrange",
+      "orig": "+518",
+      "kind": "insert",
+      "template_lines": "753-762",
+      "n_orig_replaced": 0,
+      "n_zone_lines": 8,
+      "insert_inside_protected": false,
+      "replaced": []
+    },
+    {
+      "name": "py_cache_key",
+      "orig": "+561",
+      "kind": "insert",
+      "template_lines": "806-808",
+      "n_orig_replaced": 0,
+      "n_zone_lines": 1,
+      "insert_inside_protected": true,
+      "replaced": []
+    },
+    {
+      "name": "py_cache_io",
+      "orig": "570-589",
+      "kind": "replace",
+      "template_lines": "817-843",
+      "n_orig_replaced": 20,
+      "n_zone_lines": 25,
+      "insert_inside_protected": false,
+      "replaced": ["def cache_read(key):", "    p = os.path.join(CACHE_DIR, key + \".npz\")", "    if not os.path.exists(p):", "        return None", "    try:", "        z = np.load(p, allow_pickle=False)", "        return dict(score=z[\"score\"].astype(np.float64), tk=z[\"tk\"].astype(str), steps=int(z[\"steps\"]),", "                    skipped=int(z[\"skipped\"]), last_loss=float(z[\"last_loss\"]), secs=float(z[\"secs\"]),", "                    device=str(z[\"device\"]), source=str(z[\"source\"]))", "    except Exception:", "        return None", "", "", "def cache_write(key, score, tk, steps, skipped, last_loss, secs, device, source):", "    p = os.path.join(CACHE_DIR, key + \".npz\")", "    tmp = os.path.join(CACHE_DIR, \"%s.%d.tmp.npz\" % (key, os.getpid()))", "    np.savez(tmp, score=np.asarray(score, dtype=np.float64), tk=np.asarray(tk, dtype=str),", "             steps=np.int64(steps), skipped=np.int64(skipped), last_loss=np.float64(last_loss),", "             secs=np.float64(secs), device=np.str_(device), source=np.str_(source))", "    os.replace(tmp, p)"]
+    },
+    {
+      "name": "py_run_task_tail",
+      "orig": "605-617",
+      "kind": "replace",
+      "template_lines": "859-881",
+      "n_orig_replaced": 13,
+      "n_zone_lines": 21,
+      "insert_inside_protected": false,
+      "replaced": ["    if hit is not None and (len(hit[\"score\"]) != len(tk) or not np.array_equal(hit[\"tk\"], tk)):", "        hit = None", "    if hit is None:", "        t0 = time.time()", "        pred, steps, skipped, last = fit_predict(X, y, Xp, seed)", "        secs = time.time() - t0", "        cache_write(key, pred, tk, steps, skipped, last, secs, DEVICE, \"train\")", "        hit = dict(score=pred.astype(np.float64), steps=steps, skipped=skipped, last_loss=last, secs=secs, device=DEVICE)", "        src = \"train\"", "    out = pd.DataFrame({\"pred_i\": np.repeat(pred_i, len(tk)), \"Ticker\": tk, \"Score\": hit[\"score\"]})", "    diag.update(steps=hit[\"steps\"], skipped=hit[\"skipped\"], last_loss=hit[\"last_loss\"], secs=hit[\"secs\"],", "                source=src, device=hit[\"device\"])", "    return k, out, diag"]
+    },
+    {
+      "name": "py_synth",
+      "orig": "620-632",
+      "kind": "replace",
+      "template_lines": "884-940",
+      "n_orig_replaced": 13,
+      "n_zone_lines": 55,
+      "insert_inside_protected": false,
+      "replaced": ["def synthetic_check(seed, m):", "    # positive control: a known rank-target structure must be learned by the same fit_predict routine", "    rng = np.random.default_rng(seed)", "    n, npred = 20000, 5000", "    X = rng.uniform(0.0, 1.0, size=(n, m)).astype(np.float32)", "    w = rng.normal(size=m).astype(np.float32)", "    f = X @ w + 0.5 * np.sin(6.0 * X[:, 0])", "    y = (pd.Series(f).rank(method=\"average\") / n).to_numpy(dtype=np.float32)", "    Xp = rng.uniform(0.0, 1.0, size=(npred, m)).astype(np.float32)", "    fp = Xp @ w + 0.5 * np.sin(6.0 * Xp[:, 0])", "    pred, steps, skipped, last = fit_predict(X, y, Xp, seed)", "    rho = float(pd.Series(pred).corr(pd.Series(fp), method=\"spearman\"))", "    return rho, steps"]
+    },
+    {
+      "name": "py_main_pc",
+      "orig": "651-655",
+      "kind": "replace",
+      "template_lines": "959-967",
+      "n_orig_replaced": 5,
+      "n_zone_lines": 7,
+      "insert_inside_protected": false,
+      "replaced": ["    rho, steps = synthetic_check(int(sched[\"seed\"].iloc[0]) + 7, m)", "    print(\"[dnn] positive control (synthetic rank target, %d inputs): spearman %.3f after %d steps (%.0fs, device %s)\" % (m, rho, steps, time.time() - t0, DEVIC", "    if not rho > 0.8:", "        print(\"[dnn] positive control FAILED - the training loop does not learn a known structure; aborting\", flush=True)", "        sys.exit(3)"]
+    },
+    {
+      "name": "py_main_diag",
+      "orig": "695-695",
+      "kind": "replace",
+      "template_lines": "1007-1014",
+      "n_orig_replaced": 1,
+      "n_zone_lines": 6,
+      "insert_inside_protected": false,
+      "replaced": "    dg[\"synthetic_rho\"] = rho"
+    },
+    {
+      "name": "r_read",
+      "orig": "721-721",
+      "kind": "replace",
+      "template_lines": "1040-1046",
+      "n_orig_replaced": 1,
+      "n_zone_lines": 5,
+      "insert_inside_protected": false,
+      "replaced": ".PR[, pred_i := as.integer(pred_i)]; .PR[, Ticker := as.character(Ticker)]; .PR[, Score := as.numeric(Score)]"
+    },
+    {
+      "name": "r_pc_assert",
+      "orig": "731-732",
+      "kind": "replace",
+      "template_lines": "1056-1072",
+      "n_orig_replaced": 2,
+      "n_zone_lines": 15,
+      "insert_inside_protected": false,
+      "replaced": [".rho <- as.numeric(.DG$synthetic_rho[1])", "if (!is.finite(.rho) || .rho <= 0.8) stop(sprintf(\"%s 파이썬 양성 대조 미기록/미달(rho %s)\", .TAG, as.character(.rho)))"]
+    },
+    {
+      "name": "r_rule",
+      "orig": "+734",
+      "kind": "insert",
+      "template_lines": "1075-1130",
+      "n_orig_replaced": 0,
+      "n_zone_lines": 54,
+      "insert_inside_protected": false,
+      "replaced": []
+    },
+    {
+      "name": "r_log_adapted",
+      "orig": "776-777",
+      "kind": "replace",
+      "template_lines": "1172-1175",
+      "n_orig_replaced": 2,
+      "n_zone_lines": 2,
+      "insert_inside_protected": false,
+      "replaced": ["cat(sprintf(\"%s adapted(기전 = 논문 그대로: 33→31 팩터(No.32·33 = 설비투자 지급액 data_gap) 유니버스 안 순위/최대순위 0~1 · No.19~31 = 논문 인쇄 식 · 월말 산출 · 표적 = 5일 수익(시가 t+1→종가 t+5) 순위 재척도 ·", "            .TAG))"]
+    },
+    {
+      "name": "r_log_dnn",
+      "orig": "783-785",
+      "kind": "replace",
+      "template_lines": "1181-1186",
+      "n_orig_replaced": 3,
+      "n_zone_lines": 4,
+      "insert_inside_protected": false,
+      "replaced": ["cat(sprintf(\"  DNN: 양성 대조 spearman %.3f · 입력 %d · 예측 출처 [%s] · 장치 [%s] · 워커 %d/논리 CPU %d · 스텝/월 %d~%d · 건너뛴 미니배치(행<2) 합 %d · 최종 학습 MSE 중앙 %.4f · 학습한 달 월당 %.0f초 ", "            .rho, as.integer(.DG$n_inputs[1]), .src_txt, .dev_txt, as.integer(.DG$workers[1]), as.integer(.DG$ncpu[1]), min(.DGo$steps), max(.DGo$steps), sum(.D", "            median(.DGo$last_loss), if (length(.tr_secs)) median(.tr_secs) else 0, .mins))"]
+    },
+    {
+      "name": "r_cleanup",
+      "orig": "+791",
+      "kind": "insert",
+      "template_lines": "1193-1199",
+      "n_orig_replaced": 0,
+      "n_zone_lines": 5,
+      "insert_inside_protected": false,
+      "replaced": []
+    }
+  ],
+  "engines": {
+    "Q50": {
+      "file": "engine_Q50.R",
+      "md5": "c63af1f66ec05bbf3b8db1eefda5dba2",
+      "n_diff_lines": 1,
+      "rule_line": 67,
+      "ok": true
+    },
+    "V1": {
+      "file": "engine_V1.R",
+      "md5": "5039a20e1b033db343130d6274e7f26f",
+      "n_diff_lines": 1,
+      "rule_line": 67,
+      "ok": true
+    },
+    "V2": {
+      "file": "engine_V2.R",
+      "md5": "18aee893a22d216bf596cae6a2ba0ceb",
+      "n_diff_lines": 1,
+      "rule_line": 67,
+      "ok": true
+    },
+    "N1": {
+      "file": "engine_N1.R",
+      "md5": "456d24811a80b4cb43b56a8678af1a1d",
+      "n_diff_lines": 1,
+      "rule_line": 67,
+      "ok": true
+    },
+    "N2": {
+      "file": "engine_N2.R",
+      "md5": "8c90a0375b21575861a1adedb65f4656",
+      "n_diff_lines": 1,
+      "rule_line": 67,
+      "ok": true
+    },
+    "S1": {
+      "file": "engine_S1.R",
+      "md5": "4032dff46513785d7562d56663333be7",
+      "n_diff_lines": 1,
+      "rule_line": 67,
+      "ok": true
+    },
+    "S2": {
+      "file": "engine_S2.R",
+      "md5": "d4d393a6e5dce04a7e73604984cbb73e",
+      "n_diff_lines": 1,
+      "rule_line": 67,
+      "ok": true
+    }
+  },
+  "rx0s": {
+    "file": "rx0s/engine_RX0S.R",
+    "md5": "376a45e2cdac7f966765d663f247d077",
+    "n_diff_lines": 3,
+    "diff_lines": [48, 72, 101],
+    "seed_base": 20261018,
+    "changes": [
+      {
+        "line": 48,
+        "what": "로그 꼬리표",
+        "old": "\"[RP_AUTO_2002_06975]\"",
+        "new": "\"[DT_2002_06975:RX0S]\""
+      },
+      {
+        "line": 72,
+        "what": "시드 기저",
+        "old": ".SEED_BASE <- 20020697L",
+        "new": ".SEED_BASE <- 20261018L"
+      },
+      {
+        "line": 101,
+        "what": "작업 디렉터리",
+        "old": "\"RP_AUTO_2002_06975\", \"_work\")",
+        "new": "\"DT_2002_06975\", \"rx0s\", \"_work\")"
+      }
+    ]
+  },
+  "manifest": {
+    "generated_at": "2026-10-18T17:42:52+0900"
+  }
+}

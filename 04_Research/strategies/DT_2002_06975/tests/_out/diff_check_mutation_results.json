@@ -1,0 +1,126 @@
+{
+  "ok": true,
+  "n_cases": 17,
+  "cases": [
+    {
+      "case": "clean_copy",
+      "expect": "pass",
+      "ok": true,
+      "checker_ok": true,
+      "errors": []
+    },
+    {
+      "case": "out_of_zone_constant",
+      "expect": "구역 밖 차분",
+      "ok": true,
+      "checker_ok": false,
+      "errors": "구역 밖 차분 — 템플릿 87행(재구성 1199행 · 템플릿 1199행): 기대 '.HORIZON  <- 5L                                      # 표적 = p^c_{t+5}/p^o_{t+1} − 1' · 실제 '.HORIZON  <- 6L                                      # 표적 = p^c_{t+5}/p^o_{t+1} − 1'"
+    },
+    {
+      "case": "out_of_zone_comment",
+      "expect": "구역 밖 차분",
+      "ok": true,
+      "checker_ok": false,
+      "errors": "구역 밖 차분 — 템플릿 20행(재구성 1199행 · 템플릿 1199행): 기대 '# Masaya Abe · Kei Nakagawa, \"Cross-sectional Stock Price Prediction using Deep Learning' · 실제 '# Masaya Abe · Kei Nakagawa., \"Cross-sectional Stock Price Prediction using Deep Learning'"
+    },
+    {
+      "case": "out_of_zone_python",
+      "expect": "구역 밖 차분",
+      "ok": true,
+      "checker_ok": false,
+      "errors": "구역 밖 차분 — 템플릿 674행(재구성 1199행 · 템플릿 1199행): 기대 'EPOCHS = 20                                # Table 2 DNN5 epochs' · 실제 'EPOCHS = 21                                # Table 2 DNN5 epochs'"
+    },
+    {
+      "case": "wrong_orig_declaration",
+      "expect": "구역 밖 차분",
+      "ok": true,
+      "checker_ok": false,
+      "errors": ["구역 py_head: 보호 범위 471-481 의 원본 행을 대체한다(orig=471-471)", "구역 밖 차분 — 템플릿 695행(재구성 1199행 · 템플릿 1199행): 기대 '        layers.append(self.linear(prev, 1))' · 실제 '## >>> DT_ZONE py_head orig=471-471'"]
+    },
+    {
+      "case": "zone_replaces_protected",
+      "expect": "보호 범위",
+      "ok": true,
+      "checker_ok": false,
+      "errors": "구역 py_loss_def: 보호 범위 483-491 의 원본 행을 대체한다(orig=491-492)"
+    },
+    {
+      "case": "unclosed_zone",
+      "expect": "닫히기 전에",
+      "ok": true,
+      "checker_ok": false,
+      "errors": ["템플릿 720행: 구역 py_forward 가 닫히기 전에 새 구역 시작(중첩 금지)", "템플릿 722행: 끝 표지 이름 py_loss_def ≠ 시작 py_forward", "템플릿 739행: 구역 py_forward 가 닫히기 전에 새 구역 시작(중첩 금지)", "템플릿 742행: 끝 표지 이름 py_loss_step ≠ 시작 py_forward", "템플릿 752행: 구역 py_forward 가 닫히기 전에 새 구역 시작(중첩 금지)", "템플릿 761행: 끝 표지 이름 py_rearrange ≠ 시작 py_forward", "템플릿 805행: 구역 py_forward 가 닫히기 전에 새 구역 시작(중첩 금지)", "템플릿 807행: 끝 표지 이름 py_cache_key ≠ 시작 py_forward", "템플릿 816행: 구역 py_forward 가 닫히기 전에 새 구역 시작(중첩 금지)", "템플릿 842행: 끝 표지 이름 py_cache_io ≠ 시작 py_forward", "템플릿 858행: 구역 py_forward 가 닫히기 전에 새 구역 시작(중첩 금지)", "템플릿 880행: 끝 표지 이름 py_run_task_tail ≠ 시작 py_forward", "템플릿 883행: 구역 py_forward 가 닫히기 전에 새 구역 시작(중첩 금지)", "템플릿 939행: 끝 표지 이름 py_synth ≠ 시작 py_forward", "템플릿 958행: 구역 py_forward 가 닫히기 전에 새 구역 시작(중첩 금지)", "템플릿 966행: 끝 표지 이름 py_main_pc ≠ 시작 py_forward", "템플릿 1006행: 구역 py_forward 가 닫히기 전에 새 구역 시작(중첩 금지)", "템플릿 1013행: 끝 표지 이름 py_main_diag ≠ 시작 py_forward", "템플릿 1039행: 구역 py_forward 가 닫히기 전에 새 구역 시작(중첩 금지)", "템플릿 1045행: 끝 표지 이름 r_read ≠ 시작 py_forward", "템플릿 1055행: 구역 py_forward 가 닫히기 전에 새 구역 시작(중첩 금지)", "템플릿 1071행: 끝 표지 이름 r_pc_assert ≠ 시작 py_forward", "템플릿 1074행: 구역 py_forward 가 닫히기 전에 새 구역 시작(중첩 금지)", "템플릿 1129행: 끝 표지 이름 r_rule ≠ 시작 py_forward", "템플릿 1171행: 구역 py_forward 가 닫히기 전에 새 구역 시작(중첩 금지)", "템플릿 1174행: 끝 표지 이름 r_log_adapted ≠ 시작 py_forward", "템플릿 1180행: 구역 py_forward 가 닫히기 전에 새 구역 시작(중첩 금지)", "템플릿 1185행: 끝 표지 이름 r_log_dnn ≠ 시작 py_forward", "템플릿 1192행: 구역 py_forward 가 닫히기 전에 새 구역 시작(중첩 금지)", "템플릿 1198행: 끝 표지 이름 r_cleanup ≠ 시작 py_forward", "구역 py_forward(템플릿 709행)이 닫히지 않았다", "구역 밖 차분 — 템플릿 709행(재구성 1018행 · 템플릿 1198행): 기대 '        return self.net(x).squeeze(1)' · 실제 '## >>> DT_ZONE py_forward orig=482-482'"]
+    },
+    {
+      "case": "engine_extra_diff",
+      "expect": "engine_V1.R: 템플릿과 다른 줄 2개",
+      "ok": true,
+      "checker_ok": false,
+      "errors": "engine_V1.R: 템플릿과 다른 줄 2개(67,112) — 규칙 줄(템플릿 67행) 하나만 '.DT_RULE <- \"V1\"' 로 달라야 한다 · 첫 차이 67행: '.DT_RULE <- \"V1\"'"
+    },
+    {
+      "case": "engine_wrong_rule",
+      "expect": "engine_V1.R",
+      "ok": true,
+      "checker_ok": false,
+      "errors": "engine_V1.R: 템플릿과 다른 줄 1개(67) — 규칙 줄(템플릿 67행) 하나만 '.DT_RULE <- \"V1\"' 로 달라야 한다 · 첫 차이 67행: '.DT_RULE <- \"V2\"'"
+    },
+    {
+      "case": "engine_missing",
+      "expect": "생성 엔진 없음: engine_S2.R",
+      "ok": true,
+      "checker_ok": false,
+      "errors": ["생성 엔진 없음: engine_S2.R", "매니페스트 엔진 수 6 ≠ 7"]
+    },
+    {
+      "case": "engine_unexpected_file",
+      "expect": "예정에 없는 엔진 파일",
+      "ok": true,
+      "checker_ok": false,
+      "errors": "예정에 없는 엔진 파일: engine_X.R"
+    },
+    {
+      "case": "rx0s_extra_diff",
+      "expect": "RX0S: 원본과 다른 줄",
+      "ok": true,
+      "checker_ok": false,
+      "errors": "RX0S: 원본과 다른 줄 48,62,72,101 — 48,72,101 행(로그 꼬리표 · 시드 기저 · 작업 디렉터리)뿐이어야 한다 · 예정 밖 첫 차이 62행: '.HORIZON  <- 6L                                      # 표적 = p^c_{t+5}/p^o_{t+1} − 1'"
+    },
+    {
+      "case": "rx0s_wrong_seed",
+      "expect": "부분 문자열만 치환",
+      "ok": true,
+      "checker_ok": false,
+      "errors": "RX0S: 72 행이 '원본 줄의 부분 문자열만 치환' 과 다르다(첫 72행: '.SEED_BASE <- 20261019L                              # ★changed(6) 시드 = 논문 번호(임의 상수) + 월 인덱스')"
+    },
+    {
+      "case": "rx0s_original_workdir",
+      "expect": "RX0S: 원본과 다른 줄",
+      "ok": true,
+      "checker_ok": false,
+      "errors": ["RX0S: 원본과 다른 줄 48,72 — 48,72,101 행(로그 꼬리표 · 시드 기저 · 작업 디렉터리)뿐이어야 한다", "RX0S: 101 행이 '원본 줄의 부분 문자열만 치환' 과 다르다(첫 101행: '.WD    <- file.path(.ROOT, \"04_Research\", \"strategies\", \"RP_AUTO_2002_06975\", \"_work\")')"]
+    },
+    {
+      "case": "rx0s_missing",
+      "expect": "RX0S 엔진 없음",
+      "ok": true,
+      "checker_ok": false,
+      "errors": ["RX0S 엔진 없음: rx0s/engine_RX0S.R", "매니페스트 md5 불일치: ? (기록 ? · 현재 NA)"]
+    },
+    {
+      "case": "manifest_md5",
+      "expect": "매니페스트 md5 불일치",
+      "ok": true,
+      "checker_ok": false,
+      "errors": "매니페스트 md5 불일치: 04_Research/strategies/DT_2002_06975/tests/_out/diffcheck/manifest_md5/engine_V2.R (기록 00000000000000000000000000000000 · 현재 18aee893a22d216bf596cae6a2ba0ceb)"
+    },
+    {
+      "case": "source_engine_changed",
+      "expect": "DT_SOURCE_MD5",
+      "ok": true,
+      "checker_ok": false,
+      "errors": ["원본 engine.R md5 038635a6ccfc091fc054f262083461f0 ≠ 템플릿 DT_SOURCE_MD5 6b6a8e1a144b4b316c28628b0de7f95d — 원본이 바뀌었거나 다른 판의 사본", "구역 밖 차분 — 템플릿 20행(재구성 1199행 · 템플릿 1199행): 기대 '# Masaya Abe · Kei Nakagawa!, \"Cross-sectional Stock Price Prediction using Deep Learning' · 실제 '# Masaya Abe · Kei Nakagawa, \"Cross-sectional Stock Price Prediction using Deep Learning'", "RX0S: 원본과 다른 줄 3,48,72,101 — 48,72,101 행(로그 꼬리표 · 시드 기저 · 작업 디렉터리)뿐이어야 한다 · 예정 밖 첫 차이 3행: '# Masaya Abe · Kei Nakagawa, \"Cross-sectional Stock Price Prediction using Deep Learning'"]
+    }
+  ],
+  "at": "2026-10-18T18:12:43"
+}

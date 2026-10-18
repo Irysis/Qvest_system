@@ -1,0 +1,38 @@
+{
+  "n_linear_layers": [
+    6,
+    6
+  ],
+  "hidden_init_equal": true,
+  "output_layer_shapes": [
+    [
+      1,
+      50
+    ],
+    [
+      3,
+      50
+    ]
+  ],
+  "output_row0_equal": false,
+  "cpu_rng_state_after_init_equal": false,
+  "extra_cpu_uniform_draws_by_quantile_init": 468,
+  "units_linear_50x1_construction": 51,
+  "units_linear_50x3_construction": 153,
+  "units_trunc_normal_1x50": 132,
+  "units_trunc_normal_3x50": 332,
+  "batch_order_equal": true,
+  "cpu_first_step_hidden_output_equal": false,
+  "cpu_hidden_output_equal_when_rng_state_aligned": true,
+  "model_built_on": "cpu (DNN(m) then .to(DEVICE) in fit_predict)",
+  "cuda_deduction_unmeasured": "on CUDA, init draws come from the CPU generator (model built on CPU) while dropout masks come from the CUDA generator, which torch.manual_seed(seed) seeds and init does not touch; both models issue the same dropout calls (5 hidden dropout layers, same batch shapes, same step count) -> by code structure the CUDA dropout stream is the same for RX0 and the quantile model at the same seed. Not measured (GPU reserved).",
+  "rx0s_code_version": "RP_AUTO_2002_06975/dnn_rolling/rev3",
+  "rx0s_positive_control_seed": 20261026,
+  "rx0s_positive_control_spearman_cpu": 0.9837,
+  "rx0s_positive_control_pass_cpu": true,
+  "rx0s_positive_control_secs": 12.3,
+  "rev3_positive_control_spearman_cpu_original_seed": 0.9881,
+  "device": "cpu (CUDA_VISIBLE_DEVICES=-1)",
+  "torch": "2.12.1+cu126",
+  "ok": true
+}
