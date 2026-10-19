@@ -19,6 +19,14 @@ qw_login_click.ps1 — 퀀티 단말 로그인 창의 **버튼만** 눌러 세�
   · ★LOGINCOMPLETE 플래그는 성공 신호가 아니다(로그인 뒤에도 0이었다). 판정은
     **로그인 폼이 사라졌는가**로 한다.
 
+★전면 전환 불가 시 대체 경로 (2026-10-20 · 도훈 "내가 누르는게 아니라 네가 눌러야지"):
+  · 잠금 화면(전면 = LockApp)이나 전경 잠금(사용자가 다른 창을 쓰는 중)이면 SetForegroundWindow 가 거부된다
+    (실측: 2026-10-20 07:17 부팅 직후 잠금 화면 · 기록상 27회 중 10회). 이때 같은 Enter 1회를 키보드 대신
+    **로그인 폼 안 컨트롤에 창 메시지(WM_KEYDOWN/UP)로 게시**한다 — 대상 = 단말 GUI 스레드의 포커스 컨트롤(폼의 자식일 때만) ·
+    없으면 비밀번호 칸(스타일 ES_PASSWORD 로만 식별 · 내용은 읽지 않는다). 대상이 폼의 자식이라 다른 창으로 갈 수 없다.
+    WM_CHAR 는 단말의 TranslateMessage 가 만든다(직접 보내면 Enter 가 두 번).
+    실측: 2026-10-20 잠금 화면에서 이 경로로 세션 열림(포커스 = ID 칸 · 중복 로그인 경고 '예' 1회).
+
 ★PowerShell 함정(이 파일에서 두 번 물렸다): EnumWindows 콜백(델리게이트) 안의 Write-Output 은
   파이프라인에 안 실린다. 그래서 콜백은 **수집만** 하고 출력은 밖에서 한다.
 
@@ -46,6 +54,12 @@ public delegate bool EnumProc(IntPtr h, IntPtr l);
 [DllImport("user32.dll")] public static extern bool ShowWindow(IntPtr h, int n);
 [DllImport("user32.dll")] public static extern void keybd_event(byte vk, byte scan, uint flags, IntPtr extra);
 [DllImport("user32.dll")] public static extern IntPtr SendMessage(IntPtr h, uint msg, IntPtr wp, IntPtr lp);
+[DllImport("user32.dll")] public static extern bool PostMessage(IntPtr h, uint msg, IntPtr wp, IntPtr lp);
+[DllImport("user32.dll")] public static extern bool IsChild(IntPtr parent, IntPtr h);
+[DllImport("user32.dll")] public static extern int GetWindowLong(IntPtr h, int idx);
+[StructLayout(LayoutKind.Sequential)] public struct RECT { public int L; public int T; public int R; public int B; }
+[StructLayout(LayoutKind.Sequential)] public struct GUITHREADINFO { public int cbSize; public int flags; public IntPtr hwndActive; public IntPtr hwndFocus; public IntPtr hwndCapture; public IntPtr hwndMenuOwner; public IntPtr hwndMoveSize; public IntPtr hwndCaret; public RECT rcCaret; }
+[DllImport("user32.dll")] public static extern bool GetGUIThreadInfo(uint tid, ref GUITHREADINFO gui);
 '@
 
 function WinText([IntPtr]$h) {
@@ -99,15 +113,32 @@ Say ("로그인 창 발견 (hwnd={0}) — 기본 버튼을 누른다 (자격증�
 [void][QwL.U]::ShowWindow($login.h, 9)          # SW_RESTORE
 [void][QwL.U]::SetForegroundWindow($login.h)
 Start-Sleep -Milliseconds 700
-if ([QwL.U]::GetForegroundWindow() -ne $login.h) {
-  # ★전면에 못 올렸으면 키를 치지 않는다 — 남의 창에 Enter 를 보내는 일이 없어야 한다.
-  Say '전면 전환 실패 — 키 입력을 보내지 않는다'
-  exit 1
+if ([QwL.U]::GetForegroundWindow() -eq $login.h) {
+  [QwL.U]::keybd_event(0x0D, 0, 0, [IntPtr]::Zero)      # VK_RETURN down
+  Start-Sleep -Milliseconds 80
+  [QwL.U]::keybd_event(0x0D, 0, 2, [IntPtr]::Zero)      # up
+  Say 'Enter 전송 — 경고창/세션 대기'
+} else {
+  # ★전면에 못 올렸으면 키보드로는 치지 않는다 — 남의 창에 Enter 를 보내는 일이 없어야 한다.
+  #   대신 같은 Enter 1회를 로그인 폼 안 컨트롤에 창 메시지로 게시한다(머리말 '대체 경로' · 2026-10-20).
+  $qwPid = [uint32]0; $qwTid = [QwL.U]::GetWindowThreadProcessId($login.h, [ref]$qwPid)
+  $gi = New-Object QwL.U+GUITHREADINFO; $gi.cbSize = [Runtime.InteropServices.Marshal]::SizeOf($gi)
+  $target = [IntPtr]::Zero
+  if ([QwL.U]::GetGUIThreadInfo($qwTid, [ref]$gi) -and $gi.hwndFocus -ne [IntPtr]::Zero -and [QwL.U]::IsChild($login.h, $gi.hwndFocus)) { $target = $gi.hwndFocus }
+  if ($target -eq [IntPtr]::Zero) {
+    $script:qwKids = New-Object System.Collections.ArrayList
+    $cbK = [QwL.U+EnumProc] { param($c, $l) [void]$script:qwKids.Add($c); return $true }
+    [void][QwL.U]::EnumChildWindows($login.h, $cbK, [IntPtr]::Zero)
+    $pw = $script:qwKids | Where-Object { (WinClass $_) -match 'TextBox|Edit' -and ([QwL.U]::GetWindowLong($_, -16) -band 0x20) } | Select-Object -First 1
+    if ($pw) { $target = $pw }
+  }
+  if ($target -eq [IntPtr]::Zero) { Say '전면 전환 실패 · 로그인 폼 안 대상 컨트롤 없음 — 키 입력을 보내지 않는다'; exit 1 }
+  $k1 = [QwL.U]::PostMessage($target, 0x0100, [IntPtr]0x0D, [IntPtr]0x001C0001)                          # WM_KEYDOWN VK_RETURN
+  Start-Sleep -Milliseconds 60
+  $k2 = [QwL.U]::PostMessage($target, 0x0101, [IntPtr]0x0D, [IntPtr]([int64]0xC01C0001 -band 0xFFFFFFFF))   # WM_KEYUP
+  if (-not ($k1 -and $k2)) { Say '전면 전환 실패 · 창 메시지 게시 실패 — 중단'; exit 1 }
+  Say ("전면 전환 불가(잠금 화면 · 전경 잠금) — Enter 를 로그인 폼 안 컨트롤(hwnd={0} {1})에 창 메시지로 게시 — 경고창/세션 대기" -f $target, (WinClass $target))
 }
-[QwL.U]::keybd_event(0x0D, 0, 0, [IntPtr]::Zero)      # VK_RETURN down
-Start-Sleep -Milliseconds 80
-[QwL.U]::keybd_event(0x0D, 0, 2, [IntPtr]::Zero)      # up
-Say 'Enter 전송 — 경고창/세션 대기'
 
 $deadline = (Get-Date).AddSeconds($WaitSec)
 $clicked = 0
