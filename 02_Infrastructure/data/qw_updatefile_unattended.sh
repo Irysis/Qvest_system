@@ -44,7 +44,7 @@ ONLY="${QWUF_ONLY:-OHLCVS,Universe_Support,Investor_Act,Consensus}"   # 10-17 �
 US_MAX=$("$PY" -c "import pyarrow.parquet as pq,pyarrow.compute as pc;print(pc.max(pq.read_table(r'$(cygpath -w "$US_PARQUET" 2>/dev/null || echo "$US_PARQUET")',columns=['Date']).column('Date')))" 2>/dev/null | tr -d '\r')
 snap() { "$PY" -c "import json,sys;d=json.load(open(r'$(cygpath -w "$STATE" 2>/dev/null || echo "$STATE")',encoding='utf-8-sig'));print(';'.join('%s=%s'%(k,(d.get(k) or {}).get('ymd','')) for k in sys.argv[1].split(',')))" "$ONLY" 2>/dev/null | tr -d '\r'; }
 before=$(snap)
-echo "[qwuf] Update_File 무인 수급(퀀티 단일 · 10-17) $ONLY · 벤치 수급 rc=$QW_RC · us_k200 최신 ${US_MAX:-?} · 상한 ${TMO}초 · 전: ${before:-?}"
+echo "[qwuf] Update_File 무인 수급(퀀티 단일 · 10-17) $ONLY · 벤치 수급 rc=$QW_RC · us_k200 최신 ${US_MAX:-?} · 정체 감시 시작 ${TMO}초 · 절대 상한 $([ "${QWUF_HARD_TIMEOUT:-0}" -gt 0 ] && echo "${QWUF_HARD_TIMEOUT}초" || echo 없음) · 전: ${before:-?}"
 if [ -n "${QWUF_REFRESH_CMD:-}" ]; then
   read -r -a CMD <<< "$QWUF_REFRESH_CMD"
 else
@@ -60,7 +60,10 @@ fi
 #   (10-17 4종 매일) 절대 상한 = 4종 실측 합의 약 2배(같은 규약): OHLCVS 42.4분(10-17 · 03-30~10-16 전 구간) + Universe_Support 64.5분(10-17) +
 #   Investor_Act 29.2분(09-19 00:21→00:50) + Consensus 83.9분(09-19 00:50→02:14) = 220분 → 440분(26400초). 조회 자체는 파일마다 1분 남짓이고
 #   대부분 대용량 통합문서 처리다(484 · 273 · 654MB). 멈춤은 정체 감지(STALL_N 회 연속 CPU 무증가)가 따로 끊는다.
-HARD="${QWUF_HARD_TIMEOUT:-26400}"; POLL="${QWUF_POLL_S:-60}"; STALL_N="${QWUF_STALL_N:-5}"
+# ★(2026-10-20 도훈 "제한시간도 없애") 절대 상한 기본 = 0(없음) — 경과 시간만으로는 끊지 않는다. 끊는 것은 정체 감지(TMO 뒤 STALL_N 회 연속
+#   Excel CPU 무증가 = 일하지 않는 Excel)뿐이다. 계기: 10-20 아침 OHLCVS 단독 수급이 세션의 15분 상한에 잘려 6시트 중 1시트만 전진한 채 남았다.
+#   QWUF_HARD_TIMEOUT 에 양수를 주면 예전처럼 절대 상한으로 끊는다(검사 주입 · 수동 운용).
+HARD="${QWUF_HARD_TIMEOUT:-0}"; POLL="${QWUF_POLL_S:-60}"; STALL_N="${QWUF_STALL_N:-5}"
 T0_ISO=$(date '+%Y-%m-%d %H:%M:%S')
 progress() {
   if [ -n "${QWUF_PROGRESS_CMD:-}" ]; then bash -c "$QWUF_PROGRESS_CMD" 2>/dev/null | tr -d '\r'; return; fi
@@ -80,10 +83,11 @@ while kill -0 "$qpid" 2>/dev/null; do
   el=$(( $(date +%s) - t0 )); [ "$el" -lt "$TMO" ] && continue
   cpu=$(progress)
   if [[ "$cpu" =~ ^[0-9]+$ ]] && [ "$cpu" -gt "$last" ]; then
-    stall=0; last=$cpu; echo "[qwuf] 기본 상한 ${TMO}초 경과(${el}초) — 수급 Excel 일하는 중(CPU ${cpu}초) · 기다린다(절대 상한 ${HARD}초)"
+    stall=0; last=$cpu; echo "[qwuf] 정체 감시 시작(${TMO}초) 뒤 ${el}초 — 수급 Excel 일하는 중(CPU ${cpu}초) · 기다린다(절대 상한 $([ "$HARD" -gt 0 ] && echo "${HARD}초" || echo 없음))"
   else stall=$((stall + 1)); fi
-  if [ "$el" -ge "$HARD" ] || [ "$stall" -ge "$STALL_N" ]; then
-    cut=$([ "$el" -ge "$HARD" ] && echo hard || echo stall)
+  hard_hit=0; [ "$HARD" -gt 0 ] && [ "$el" -ge "$HARD" ] && hard_hit=1
+  if [ "$hard_hit" = 1 ] || [ "$stall" -ge "$STALL_N" ]; then
+    cut=$([ "$hard_hit" = 1 ] && echo hard || echo stall)
     echo "[qwuf] ★수급 종료($cut · ${el}초) — 지휘 셸과 이 실행이 띄운 수급 Excel 을 닫는다"
     wp=$(cat "/proc/$qpid/winpid" 2>/dev/null); kill "$qpid" 2>/dev/null
     [ -n "$wp" ] && taskkill //PID "$wp" //T //F >/dev/null 2>&1
