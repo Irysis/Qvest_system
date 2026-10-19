@@ -93,12 +93,20 @@ bmk[, Date := as.Date(Date)]
 kospi <- function(pe, d) { x <- bmk[Date > pe & Date <= d & is.finite(get(bcol))]; c(mtd = prod(1 + x[[bcol]]) - 1, day = { v <- bmk[Date == d, get(bcol)]; if (length(v)) v[1] else NA_real_ }) }
 
 ## 2) 오늘(최신 거래일) 마킹
-last_d <- max(cal); M <- mark_day(last_d)
+##   ★(2026-10-20) NOLAYER4_ASOF=YYYY-MM-DD(리밸 이후 거래일)면 그날을 마킹한다 — PC 가 꺼져 아침 체인이 빠진 날 따라잡기
+##   (도훈 "2일간 멈췄던 아침루틴 돌려주고"). 체인 · KOSPI · 종목 누적 모두 그날 이하 데이터만 쓴다. 비우면 최신 거래일(기존 동작).
+.asof <- Sys.getenv("NOLAYER4_ASOF")
+last_d <- if (nzchar(.asof)) {
+  a <- suppressWarnings(as.Date(.asof))
+  if (is.na(a) || !(a %in% cal)) stop(sprintf("NOLAYER4_ASOF=%s 는 리밸(%s) 이후 거래일이 아니다", .asof, min(hf$reb)))
+  a
+} else max(cal)
+M <- mark_day(last_d)
 reb_date <- M$reb; stk <- M$w; invested <- M$invested; cash <- 1 - invested
 mtd <- M$mtd; dayret <- M$dayret; qtd <- M$qtd; ytd <- M$ytd; days <- seq_len(M$n_days)
 kb <- kospi(M$pe, last_d); bm_mtd <- kb[["mtd"]]; bm_day <- kb[["day"]]
 cum <- raw[Ticker %in% stk$Ticker & Date > reb_date & Date <= last_d][, .(cum = prod(1 + Ret, na.rm = TRUE) - 1), by = Ticker]
-fwrite(M$led, file.path(LT, "book_monthly_ledger.csv"))   # 원장 = 파생 거울(완료월 · 출처 표기)
+if (!nzchar(.asof)) fwrite(M$led, file.path(LT, "book_monthly_ledger.csv"))   # 원장 = 파생 거울(완료월 · 출처 표기) · 평가일 지정(과거 따라잡기) 땐 최신 거울을 덮지 않는다
 n_bt <- sum(M$led$source == "backtest"); n_lv <- sum(M$led$source != "backtest")
 cat(sprintf("[nolayer4-daily] %s | 보유 %s (리밸 %s)%s | 이번 달 %d거래일\n", last_d, basename(hf$path[M$k]), reb_date,
             if (M$pending) " ★이번 달 리밸 대기 — 직전 보유로 평가" else "", M$n_days))
