@@ -20,7 +20,7 @@ rc_rel <- function(p, root = rc_root()) {
   ifelse(startsWith(tolower(p), tolower(r)), substring(p, nchar(r) + 1L), p)
 }
 rc_now <- function() format(Sys.time(), "%Y-%m-%dT%H:%M:%S%z")
-rc_abs <- function(p, root = rc_root()) if (grepl("^([A-Za-z]:|/)", p)) p else file.path(root, p)
+rc_abs <- function(p, root = rc_root()) ifelse(grepl("^([A-Za-z]:|/)", p), p, file.path(root, p))
 
 ## JSON — 읽기는 목록 그대로(simplifyVector = FALSE) · 쓰기는 원자적 교체 · 수치 손실 없음(digits = NA)
 rc_json_read <- function(path) fromJSON(path, simplifyVector = FALSE)

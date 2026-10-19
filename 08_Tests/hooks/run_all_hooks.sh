@@ -1841,6 +1841,8 @@ SUITES=(
   # 공통 판정 코어 v1(2026-10-20 · 1계층 속도 계획 WP1 · L1-SPEED-PLAN-20261020) — 규칙 단일 출처(Kleene NA · 근거 없는 문턱 거부 ·
   #   경계 뮤테이션) · 사양 검사(이름 있는 칸 목록 = P1R01 결함 부류) · τ_D 가림 · P1R01 결과 동일(원래 evaluate.R 격리 사본 vs 코어 바이트 동일)
   "08_Tests/programs/test_round_core_v1.R"
+  #   코어 v1 흐름(격리 — 실제 등록부 · 원장 · stage_artifacts 무쓰기): 등록 거부 7종 · 등록 · P1 판정 · 보는 창 파일 · 종료 · R2 · 캐시 키 · 핀 어휘 · P1 표준 구성 = P0R01 C0 선례
+  "08_Tests/programs/test_round_core_v1_flow.R"
   # >>> 10-17 충실구현 레인 — 감사 선행 · 원문 축자본 · 계약 표기 · 모든 방법론(REPLICATION-ALL-METHODS-20261017)
   #   측정 전 PIT 사전 점검(1b 순서) · 측정 뒤 검증 실패의 Judge 트리거 보류(뮤테이션) · 원문 축자본 수집기(html · e-print · pdf · 레인 인터프리터) ·
   #   nav 순노출 = 보유 Σw(뮤테이션) · 변형 계획 · 측정 뒤 보유 대조(P4 · 양성 · 경계 · 뮤테이션 · 설정 문턱) · 보고 섹션 · 배선 · engine_vars
