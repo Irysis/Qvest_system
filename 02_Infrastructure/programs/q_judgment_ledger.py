@@ -25,8 +25,13 @@
   python … outcome --id C-… --kind vindicated|refuted|moot --text …               # 뒤에 온 증거로 채점
   python … stats [--json] | show [--open] | boot-fragment
 경로 재정의(검사 · 양성 대조용): 환경변수 QVEST_JUDGMENT_LEDGER_PATH.
+★쓰기 잠금(2026-10-20 · WP3 · L1-SPEED-LEVERS-20261020 — 독립 라운드 동시 운영의 전제): 변경 명령(record · review · raise · respond ·
+  counter · settle · outcome)은 읽기 → 고치기 → 쓰기 전체를 qv_lock(02_Infrastructure/ops/qv_lock.py — mkdir + 소유자 pid + stale 판정 +
+  시간 제한)으로 감싸고, 교체 직전 '아직 내 잠금인가'(펜싱)를 본다. 원자적 교체만으로는 두 세션이 같은 판본을 읽고 쓴 갱신 하나가 사라진다
+  (같은 날짜 id 를 둘이 받는 경합 포함). 잠금 라이브러리를 못 읽으면 쓰지 않는다(fail-closed). 읽기 명령은 잠그지 않는다.
+  검사 = 08_Tests/programs/test_ledger_write_locks.py(동시 writer 2개 · 뮤테이션)
 """
-import argparse, datetime as dt, io, json, os, re, sys, tempfile
+import argparse, contextlib, datetime as dt, io, json, os, re, sys, tempfile
 
 SCHEMA = "q_judgment_ledger_v1"
 KINDS = ("round_selection", "candidate_selection", "design", "verdict", "escalation", "no_escalation",
@@ -80,12 +85,31 @@ def load(path):
     return d
 
 
-def save(path, d):
+def _qv():
+    """쓰기 잠금 라이브러리(02_Infrastructure/ops/qv_lock.py) — 없으면 쓰지 않는다."""
+    ops = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "ops")
+    if ops not in sys.path:
+        sys.path.insert(0, ops)
+    import qv_lock
+    return qv_lock
+
+
+@contextlib.contextmanager
+def _ledger_lock(path):
+    q = _qv()
+    with q.write_lock(target=path, purpose="q_judgment_ledger") as h:
+        yield h
+
+
+def save(path, d, lock=None):
     d["updated_at"] = _now()
     os.makedirs(os.path.dirname(path), exist_ok=True)
     fd, tmp = tempfile.mkstemp(prefix=".q_judgment_ledger_", suffix=".tmp", dir=os.path.dirname(path))
     with io.open(fd, "w", encoding="utf-8") as f:
         json.dump(d, f, ensure_ascii=False, indent=1)
+    if lock is not None and not lock.is_mine():   # 펜싱 — 잠금을 잃었으면(매달려 회수당함) 쓰지 않는다
+        os.remove(tmp)
+        raise SystemExit("[q_judgment_ledger] 쓰기 잠금을 잃었다 — 쓰지 않았다(다시 실행): %s" % path)
     os.replace(tmp, path)                      # 원자적 교체(부분 쓰기 없음)
 
 
@@ -342,6 +366,15 @@ def main(argv=None):
     if a.cmd == "boot-fragment":
         print(boot_fragment()); return 0
     path = ledger_path()
+    if a.cmd in ("record", "review", "raise", "respond", "counter", "settle", "outcome"):
+        fn = {"record": cmd_record, "review": cmd_review, "raise": cmd_raise, "respond": cmd_respond,
+              "counter": cmd_counter, "settle": cmd_settle, "outcome": cmd_outcome}[a.cmd]
+        with _ledger_lock(path) as lk:         # 읽기 → 고치기 → 쓰기 전체 · id 부여(_next_id)도 잠금 안
+            d = load(path)
+            out = fn(a, d)
+            save(path, d, lock=lk)
+        print("[q_judgment_ledger] %s %s" % (a.cmd, out or getattr(a, "id", "")))
+        return 0
     d = load(path)
     if a.cmd == "pending":
         js, cs = pending(d)
@@ -358,12 +391,7 @@ def main(argv=None):
         return 0
     if a.cmd == "show":
         print(show(d, only_open=a.open)); return 0
-    fn = {"record": cmd_record, "review": cmd_review, "raise": cmd_raise, "respond": cmd_respond,
-          "counter": cmd_counter, "settle": cmd_settle, "outcome": cmd_outcome}[a.cmd]
-    out = fn(a, d)
-    save(path, d)
-    print("[q_judgment_ledger] %s %s" % (a.cmd, out or getattr(a, "id", "")))
-    return 0
+    return 2                                   # 변경 명령은 위 잠금 경로에서 끝났다 — 여기 오면 알 수 없는 명령
 
 
 if __name__ == "__main__":
