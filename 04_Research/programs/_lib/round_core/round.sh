@@ -38,7 +38,14 @@ evaluate() {
     pids+=($!)
   done
   for p in "${pids[@]}"; do wait "$p" || rc=1; done
-  Rscript "$DRV" "$RD" evaluate > "$ROOT/$RD/results/evaluate.log" 2>&1; local frc=$?
+  # 짝 판정 템플릿(P2 · P3) — 최종 판정의 짝 평가(공통 창 · β 짝 패킷 · 기록)를 같은 K 로 샤딩 → 병합 종합(P1 은 --pairs-only 가 즉시 끝난다)
+  pids=(); rm -rf "$ROOT/$RD/results/.pairs"                                  # 옛 짝 결과가 병합에 섞이지 않게(워커가 죽으면 병합이 '샤드 결과 없음'으로 멈춘다)
+  for i in $(seq 1 "$K"); do
+    Rscript "$DRV" "$RD" evaluate --pairs-only --shard=$i/$K > "$ROOT/$RD/results/evaluate_pairs_${i}of${K}.log" 2>&1 &
+    pids+=($!)
+  done
+  for p in "${pids[@]}"; do wait "$p" || rc=1; done
+  Rscript "$DRV" "$RD" evaluate --merge > "$ROOT/$RD/results/evaluate.log" 2>&1; local frc=$?
   tail -3 "$ROOT/$RD/results/evaluate.log"
   sentinel evaluated "$([ "$frc" = "0" ] && echo evaluated || echo eval_failed)" "$frc" "shards_rc=$rc"
   return $frc

@@ -1847,6 +1847,9 @@ SUITES=(
   "08_Tests/programs/test_round_core_v1_standing.R"
   #   측정 서버(WP2 · 2026-10-20 · 가벼운 판 — 사양 정규화 · 요인 분석 기본 끔 · 스냅샷 파수꾼 · 워커 수 · 뮤테이션 · 무거운 결과 동일 판 = QVEST_MS_TEST_HEAVY=1)
   "08_Tests/programs/test_round_core_measure_server.R"
+  #   코어 v1 짝 판정 P2 · P3(WP1-b) — 끝난 라운드 픽스처 3종을 코어 심으로(P2R04 52 · P2R03 33 · P3R03 48) · 코어 뮤테이션 15 · P2 규칙 종류 ·
+  #   최소 사본 · 샤딩 병합 순서 · 메모 · τ_D 불변 · 사양 라운드 배선 · P2R05 범용분 = 원판 황금값 · 재판정 요약(무거운 재판정 heavy_round_core_v1_p2_rejudge.R 은 SUITES 밖)
+  "08_Tests/programs/test_round_core_v1_p2.R"
   # >>> 10-17 충실구현 레인 — 감사 선행 · 원문 축자본 · 계약 표기 · 모든 방법론(REPLICATION-ALL-METHODS-20261017)
   #   측정 전 PIT 사전 점검(1b 순서) · 측정 뒤 검증 실패의 Judge 트리거 보류(뮤테이션) · 원문 축자본 수집기(html · e-print · pdf · 레인 인터프리터) ·
   #   nav 순노출 = 보유 Σw(뮤테이션) · 변형 계획 · 측정 뒤 보유 대조(P4 · 양성 · 경계 · 뮤테이션 · 설정 문턱) · 보고 섹션 · 배선 · engine_vars

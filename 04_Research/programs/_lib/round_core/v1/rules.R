@@ -14,6 +14,15 @@
 RC_RULE_TYPES <- c("threshold", "all_of", "any_of", "report")
 RC_OPS <- c(">=", ">", "<=", "<", "==")
 RC_NA_MODES <- c("fail", "untested")
+## 규칙 종류 확장(WP1-b · 2026-10-20) — 템플릿 모듈이 종류를 등록한다(rules_p2.R: 위기 과반 · β 짝 승 · 비열등 알파 · 상승 포착 · 축 감사).
+##   등록 = list(validate(r) · resolve(r, root) → r · eval(r, T) → 논리 벡터(NA = 미측정) · sentence(r) · cols(r) → 읽는 판정 표 열). 기본 종류의 의미는 그대로다.
+RC_RULE_EXT <- new.env(parent = emptyenv())
+rc_rule_kind_register <- function(type, validate, resolve, eval, sentence, cols) {
+  if (type %in% RC_RULE_TYPES) stop("[round_core rules] 기본 종류는 다시 등록하지 않는다: ", type)
+  assign(type, list(validate = validate, resolve = resolve, eval = eval, sentence = sentence, cols = cols), envir = RC_RULE_EXT)
+  invisible(type)
+}
+.rc_rule_ext <- function(type) if (is.character(type) && length(type) == 1L && exists(type, envir = RC_RULE_EXT, inherits = FALSE)) get(type, envir = RC_RULE_EXT) else NULL
 
 .rc_rule_err <- function(r, msg) stop(sprintf("[round_core rules] %s: %s", r[["id"]] %||% "<id 없음>", msg), call. = FALSE)
 
@@ -21,9 +30,11 @@ RC_NA_MODES <- c("fail", "untested")
 rc_rule_validate <- function(r, top = TRUE) {
   if (!is.list(r)) stop("[round_core rules] 규칙은 목록이어야 한다")
   if (is.null(r[["id"]]) || !nzchar(r[["id"]]) || !grepl("^[A-Za-z][A-Za-z0-9_]*$", r[["id"]])) .rc_rule_err(r, "id 형식(영문자 시작 · 영숫자 · _)")
-  if (!(r[["type"]] %||% "") %in% RC_RULE_TYPES) .rc_rule_err(r, paste("type 은", paste(RC_RULE_TYPES, collapse = "|")))
+  if (!(r[["type"]] %||% "") %in% c(RC_RULE_TYPES, ls(RC_RULE_EXT))) .rc_rule_err(r, paste("type 은", paste(c(RC_RULE_TYPES, ls(RC_RULE_EXT)), collapse = "|")))
   if (is.null(r[["label"]]) || !nzchar(r[["label"]])) .rc_rule_err(r, "label 없음")
   if (!(r[["na"]] %||% "untested") %in% RC_NA_MODES) .rc_rule_err(r, "na 는 fail|untested")
+  ext <- .rc_rule_ext(r[["type"]])
+  if (!is.null(ext)) { ext[["validate"]](r); return(invisible(TRUE)) }
   if (r[["type"]] %in% c("threshold", "report")) {
     if (is.null(r[["metric"]]) || !nzchar(r[["metric"]])) .rc_rule_err(r, "metric 없음")
     if (!(r[["op"]] %||% "") %in% RC_OPS) .rc_rule_err(r, paste("op 는", paste(RC_OPS, collapse = " ")))
@@ -52,6 +63,8 @@ rc_rules_validate <- function(rules) {
 rc_rules_resolve <- function(rules, root = rc_root()) {
   rc_rules_validate(rules)
   one <- function(r) {
+    ext <- .rc_rule_ext(r[["type"]])
+    if (!is.null(ext)) { r <- ext[["resolve"]](r, root); r[["na"]] <- r[["na"]] %||% "untested"; return(r) }
     if (r[["type"]] %in% c("threshold", "report")) {
       if (!is.null(r[["value_ref"]])) {
         v <- rc_ref_value(r[["value_ref"]], root)
@@ -82,6 +95,8 @@ rc_rules_resolve <- function(rules, root = rc_root()) {
 
 ## 규칙 1개 판정 — T = 판정 표(data.table) · done = 이미 계산한 최상위 규칙 열 · 반환 = 길이 nrow(T) 논리 벡터
 rc_rule_eval <- function(r, T, done = list()) {
+  ext <- .rc_rule_ext(r[["type"]])
+  if (!is.null(ext)) return(.rc_na_apply(ext[["eval"]](r, T), r[["na"]]))
   v <- switch(r[["type"]],
     threshold = .rc_cmp(if (r[["metric"]] %in% names(T)) T[[r[["metric"]]]] else rep(NA_real_, nrow(T)), r[["op"]], r[["value"]]),
     all_of = .rc_and(lapply(r[["of"]], rc_rule_eval, T = T, done = done)),
@@ -110,6 +125,8 @@ rc_rules_apply <- function(rules, T, eligible = rep(TRUE, nrow(T))) {
 .rc_val_str <- function(v) format(v, digits = 15, scientific = FALSE, trim = TRUE, drop0trailing = TRUE)
 rc_rule_sentence <- function(r) {
   nas <- if (identical(r[["na"]] %||% "untested", "fail")) "미측정 = 미달" else "미측정 = 미시험"
+  ext <- .rc_rule_ext(r[["type"]])
+  if (!is.null(ext)) return(sprintf("%s (%s)", ext[["sentence"]](r), nas))
   switch(r[["type"]],
     threshold = sprintf("%s: %s %s %s (%s · %s)", r[["label"]], r[["metric_label"]] %||% r[["metric"]], r[["op"]], .rc_val_str(r[["value"]]), r[["value_source"]] %||% "", nas),
     all_of = sprintf("%s = [%s] 모두 (%s)", r[["label"]], paste(vapply(r[["of"]], rc_rule_sentence, character(1)), collapse = " ∧ "), nas),

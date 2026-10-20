@@ -7,6 +7,7 @@
 ##     reviewed <v> <점검 파일> <ok|revise>   격리 교차 점검 기록
 ##     register         등록(조건 ①~⑧) — 끝나면 커밋 명령을 출력
 ##     evaluate [--cells-only] [--shard=i/K]   칸 평가(내용 주소 캐시) → 판정(verdict.json · evaluation_visible.json)
+##     evaluate --pairs-only --shard=i/K · evaluate --merge   짝 판정 템플릿(P2 · P3) 최종 판정의 짝 평가 샤딩 → 병합 종합(P1 은 무시)
 ##     report [--send] [--next "<다음 단계>"]  보고(기본 dry-run)
 ##     close --note "<해석>" [--p2 <id>] [--t2 <id>]   종료 기록(등록부)
 ##   수치는 R 계약 산출만 · 판정은 등록 때 해석된 규칙(rules_resolved)으로만(R2) · 시험 창 열은 보는 창 파일에 싣지 않는다(τ_D).
@@ -34,19 +35,36 @@ rc_summary <- function(spec, V) {
     list(label = sprintf("자격 %d/%d(평가 %d)%s", length(V$qualified), nrow(T), ne,
                          if (length(V$qualified)) paste0(" — ", paste(V$qualified, collapse = " · ")) else ""),
          qualified = as.list(V$qualified), n_cells = nrow(T), n_evaluated = ne)
-  } else list(label = "요약 없음(템플릿 미지원)")
+  } else if (spec[["template"]] %in% c("p2_device", "p3_construction"))            # 짝 판정 템플릿(WP1-b) — 판정어별 칸 수가 든 라벨
+    list(label = V$verdict_label, verdict = V$verdict, n_judged = V$n_judged, n_total = V$n_total, validated = as.list(V$validated %||% character(0)))
+  else list(label = "요약 없음(템플릿 미지원)")
 }
 
-rc_evaluate <- function(round_dir, root = rc_root(), cells_only = FALSE, shard = NULL, registry_path = NULL) {
+## 짝 판정 템플릿(P2 · P3)의 칸 평가 = 보는 창 / 사람 쪽 분리판(내용 주소 키 · MC8 카드 캐시)
+.rc_pair_templates <- c("p2_device", "p3_construction")
+rc_eval_cell_pairtpl <- function(root, round_dir, c, env, tau) {
+  env$mc8_cache <- TRUE
+  rc_eval_cell_split(root, file.path(round_dir, "results"), list(code = c[["code"]], engine = c[["engine"]], component = c[["component"]],
+                                                                 diagnostic = identical(c[["role"]], "diagnostic"), path = c[["spec"]]), env, tau, cache = "key")
+}
+##   pairs_only + shard = 최종 판정의 짝 평가 샤드(워커 · RDS) · merge = 샤드 결과 병합 뒤 종합(P1 템플릿에서는 무시)
+rc_evaluate <- function(round_dir, root = rc_root(), cells_only = FALSE, shard = NULL, registry_path = NULL, pairs_only = FALSE, merge = FALSE) {
   spec <- rc_spec_load(file.path(round_dir, "round_spec.json"), root = root); P <- rc_paths(round_dir, spec, root)
   pre <- rc_registered(spec, P, root, registry_path)
   mm <- rc_pins_mismatches(pre$pins, root)
   if (length(mm)) stop("[round_core evaluate] 핀 불일치 — 판정하지 않는다:\n", paste(mm, collapse = "\n"))
+  pairtpl <- spec[["template"]] %in% .rc_pair_templates
+  if (isTRUE(pairs_only)) {
+    if (!pairtpl) return(invisible(TRUE))
+    fn <- switch(spec[["template"]], p2_device = rc_p2_evaluate, p3_construction = rc_p3_evaluate)
+    return(invisible(fn(spec, pre, root, round_dir, P, shard = shard, merge = FALSE)))
+  }
   env <- rc_eval_env(root, spec[["behavior_card_cfg"]]); tau <- as.Date(spec[["tau_d"]])
   own <- rc_shard_cells(Filter(function(c) !is.null(c[["spec"]]), spec[["cells"]]), shard)
+  cell_fn <- if (pairtpl) rc_eval_cell_pairtpl else rc_eval_cell
   for (c in own) {
     t0 <- Sys.time()
-    ev <- rc_safe(rc_eval_cell, root, round_dir, c, env, tau, what = c[["code"]])
+    ev <- rc_safe(cell_fn, root, round_dir, c, env, tau, what = c[["code"]])
     rc_perf_log(spec[["round_id"]], "eval_cell", difftime(Sys.time(), t0, units = "secs"), list(code = c[["code"]], ok = ev$ok), root = root)
     cat(sprintf("[평가] %s %s\n", c[["code"]], if (ev$ok) ev$value$status %||% "?" else paste("미시험 —", ev$error)))
   }
@@ -54,15 +72,19 @@ rc_evaluate <- function(round_dir, root = rc_root(), cells_only = FALSE, shard =
   t0 <- Sys.time()
   V <- switch(spec[["template"]],
               p1_qualification = rc_p1_evaluate(spec, pre$rules_resolved, root),
+              p2_device = rc_p2_evaluate(spec, pre, root, round_dir, P, merge = merge),
+              p3_construction = rc_p3_evaluate(spec, pre, root, round_dir, P, merge = merge),
               stop("[round_core evaluate] 이 템플릿의 판정은 아직 코어에 없다: ", spec[["template"]]))
   V$prereg_md5 <- rc_md5(P$prereg); V$summary <- rc_summary(spec, V)
   rc_json_write(V, file.path(P$results, "verdict.json"))
-  vis <- V; vis$table <- V$table[, !grepl("_test$", names(V$table)), with = FALSE]; vis$rules <- NULL
-  vis <- rc_redact_after_tau(vis, tau)
-  lk <- rc_after_tau_leaks(vis, tau)
-  if (length(lk)) stop("[round_core evaluate] 보는 창 파일에 τ_D 이후 날짜가 남았다: ", paste(head(lk, 5), collapse = ","))
-  vis$audience <- "보는 창(τ_D 이전) — 시험 창 열 제외 · 처방 · 리뷰 레인 열람 가능"
-  rc_json_write(vis, file.path(P$results, "evaluation_visible.json"))
+  if (!isTRUE(V$writes_visible)) {                                               # 짝 판정 템플릿은 보는 창 · 사람 쪽 파일을 스스로 쓴다(전수 검사 뒤)
+    vis <- V; vis$table <- V$table[, !grepl("_test$", names(V$table)), with = FALSE]; vis$rules <- NULL
+    vis <- rc_redact_after_tau(vis, tau)
+    lk <- rc_after_tau_leaks(vis, tau)
+    if (length(lk)) stop("[round_core evaluate] 보는 창 파일에 τ_D 이후 날짜가 남았다: ", paste(head(lk, 5), collapse = ","))
+    vis$audience <- "보는 창(τ_D 이전) — 시험 창 열 제외 · 처방 · 리뷰 레인 열람 가능"
+    rc_json_write(vis, file.path(P$results, "evaluation_visible.json"))
+  }
   rc_perf_log(spec[["round_id"]], "judge", difftime(Sys.time(), t0, units = "secs"), root = root)
   cat(sprintf("[판정] %s — %s\n", spec[["round_id"]], V$summary$label))
   invisible(V)
@@ -107,7 +129,9 @@ if (sys.nframe() == 0L) {
     reviewed = { r <- rc_mark_reviewed(rd, rest[1], rest[2], rest[3], ROOT); cat(sprintf("[reviewed] v%s · %s\n", r$version, r$review$verdict)) },
     register = { r <- rc_register(rd, ROOT); cat(sprintf("[register] %s · md5 %s · HEAD %s\n다음: git add 사전등록 두 사본 · 등록부 → 커밋 → measure\n",
                                                          r$prereg, r$md5, substr(r$head, 1, 9))) },
-    evaluate = rc_evaluate(rd, ROOT, cells_only = flag("--cells-only"), shard = if (is.na(sh)) NULL else sh),
+    evaluate = { if (!is.na(sh)) data.table::setDTthreads(1L)                  # 샤드 워커 = 1스레드(K 병렬 과다 구독 방지 · PERFORMANCE.md)
+                 rc_evaluate(rd, ROOT, cells_only = flag("--cells-only"), shard = if (is.na(sh)) NULL else sh,
+                             pairs_only = flag("--pairs-only"), merge = flag("--merge")) },
     report = rc_report(rd, ROOT, send = flag("--send"), next_step = opt("--next")),
     close = { rc_close(rd, note = opt("--note") %||% stop("--note 필요"), philosophy_p2 = opt("--p2") %||% NA_character_,
                        superfan_t2 = opt("--t2") %||% NA_character_, root = ROOT); cat("[close] 등록부 기록\n") },

@@ -1,0 +1,264 @@
+{
+  "schema": "round_core_perf_v1",
+  "updated_at": "2026-10-20T13:43:34+0900",
+  "rule": "결과가 바뀌는 최적화는 쓰지 않는다 — 채택 조건 = 바이트 동일(시각 · 경로 · 평가 시점 지문 제외) · 전후 시간 기록(PERFORMANCE.md)",
+  "note": "등록 당일 대 오늘은 기계 상태가 다르다(같은 구 코드가 오늘 더 느리다) — 속도 비는 같은 날 짝(speedup_same_day)으로 읽는다",
+  "final_judgment": {
+    "P2R04": {
+      "before": {
+        "at": "2026-10-18 15:59",
+        "cell_eval_shards": 3,
+        "cell_eval_seconds": 461,
+        "final_judgment_seconds": 628,
+        "final_judgment_mode": "단일 프로세스(구 evaluate.R)",
+        "source": "results/*.log '셀 평가 샤딩' · '샤드 … 끝' · '종합 판정' 시각"
+      },
+      "before_same_day": {
+        "seconds": 1349,
+        "source": "legacy_P2R04.log",
+        "mode": "구 evaluate.R 격리 사본(legacy_sandbox.R) · 단일 프로세스 · 코어와 같은 날 · 같은 기계"
+      },
+      "after": {
+        "mode": "코어 짝 평가 샤딩 K=2 → 병합",
+        "dt_threads_per_shard": "1(샤드 기본값)",
+        "shards_seconds": 742,
+        "merge_seconds": 34,
+        "final_judgment_seconds": 776,
+        "stage_seconds_summed_over_workers": {
+          "round_cells": 0.85,
+          "packet_build": 1231.99,
+          "liquidity": 56.36,
+          "round_pairs_shard_2/2": 737.12,
+          "size_beta": 88.87,
+          "round_pairs_shard_1/2": 740.38,
+          "round_pairs": 0.29
+        },
+        "memo": [
+          {
+            "ta_hits": 4,
+            "ta_miss": 4,
+            "mc_hits": 0,
+            "mc_miss": 8
+          },
+          {
+            "ta_hits": 4,
+            "ta_miss": 4,
+            "mc_hits": 0,
+            "mc_miss": 8
+          },
+          {
+            "ta_hits": 0,
+            "ta_miss": 0,
+            "mc_hits": 0,
+            "mc_miss": 0
+          }
+        ],
+        "same_result": true
+      },
+      "speedup_vs_registration_day": 0.81,
+      "speedup_same_day": 1.74,
+      "result_identity": "rejudge/RESULTS.json"
+    },
+    "P2R03": {
+      "before": {
+        "at": "2026-10-18 07:34",
+        "cell_eval_shards": 4,
+        "cell_eval_seconds": 688,
+        "final_judgment_seconds": 1844,
+        "final_judgment_mode": "단일 프로세스(구 evaluate.R)",
+        "source": "results/*.log '셀 평가 샤딩' · '샤드 … 끝' · '종합 판정' 시각"
+      },
+      "before_same_day": null,
+      "after": {
+        "mode": "코어 짝 평가 샤딩 K=2 → 병합",
+        "dt_threads_per_shard": "1(샤드 기본값)",
+        "shards_seconds": 1127,
+        "merge_seconds": 23,
+        "final_judgment_seconds": 1150,
+        "stage_seconds_summed_over_workers": {
+          "round_pairs_shard_1/2": 1119.37,
+          "round_cells": 2.09,
+          "packet_build": 2134.53,
+          "round_pairs_shard_2/2": 1123.26,
+          "round_pairs": 0.28
+        },
+        "memo": [
+          {
+            "ta_hits": 12,
+            "ta_miss": 2,
+            "mc_hits": 0,
+            "mc_miss": 14
+          },
+          {
+            "ta_hits": 12,
+            "ta_miss": 2,
+            "mc_hits": 0,
+            "mc_miss": 14
+          },
+          {
+            "ta_hits": 0,
+            "ta_miss": 0,
+            "mc_hits": 0,
+            "mc_miss": 0
+          }
+        ],
+        "same_result": true
+      },
+      "speedup_vs_registration_day": 1.6,
+      "speedup_same_day": null,
+      "result_identity": "rejudge/RESULTS.json"
+    },
+    "P3R03": {
+      "before": {
+        "at": "2026-10-17 03:34",
+        "cell_eval_shards": 3,
+        "cell_eval_seconds": 342,
+        "final_judgment_seconds": 576,
+        "final_judgment_mode": "단일 프로세스(구 evaluate.R)",
+        "source": "results/*.log '셀 평가 샤딩' · '샤드 … 끝' · '종합 판정' 시각"
+      },
+      "before_same_day": null,
+      "after": {
+        "mode": "코어 짝 평가 샤딩 K=2 → 병합",
+        "dt_threads_per_shard": "1(샤드 기본값)",
+        "shards_seconds": 432,
+        "merge_seconds": 19,
+        "final_judgment_seconds": 451,
+        "stage_seconds_summed_over_workers": {
+          "round_pairs_shard_1/2": 426.72,
+          "round_cells": 0.53,
+          "packet_build": 809.49,
+          "round_pairs_shard_2/2": 429.7,
+          "round_pairs": 0.03
+        },
+        "memo": [
+          {
+            "ta_hits": 3,
+            "ta_miss": 2,
+            "mc_hits": 0,
+            "mc_miss": 5
+          },
+          {
+            "ta_hits": 3,
+            "ta_miss": 2,
+            "mc_hits": 0,
+            "mc_miss": 5
+          },
+          {
+            "ta_hits": 0,
+            "ta_miss": 0,
+            "mc_hits": 0,
+            "mc_miss": 0
+          }
+        ],
+        "same_result": true
+      },
+      "speedup_vs_registration_day": 1.28,
+      "speedup_same_day": null,
+      "result_identity": "rejudge/RESULTS.json"
+    }
+  },
+  "experiments": {
+    "P2R04_K2_threads8": {
+      "round": "P2R04",
+      "mode": "코어 짝 평가 샤딩 K=2 → 병합",
+      "dt_threads_per_shard": "8",
+      "shards_seconds": 705,
+      "merge_seconds": 27,
+      "final_judgment_seconds": 732,
+      "stage_seconds_summed_over_workers": {
+        "round_cells": 1.48,
+        "packet_build": 1161.95,
+        "liquidity": 56.2,
+        "round_pairs_shard_2/2": 698.18,
+        "size_beta": 93.49,
+        "round_pairs_shard_1/2": 702.22,
+        "round_pairs": 0.05
+      },
+      "memo": [
+        {
+          "ta_hits": 4,
+          "ta_miss": 4,
+          "mc_hits": 0,
+          "mc_miss": 8
+        },
+        {
+          "ta_hits": 4,
+          "ta_miss": 4,
+          "mc_hits": 0,
+          "mc_miss": 8
+        },
+        {
+          "ta_hits": 0,
+          "ta_miss": 0,
+          "mc_hits": 0,
+          "mc_miss": 0
+        }
+      ],
+      "same_result": true
+    }
+  },
+  "measures": {
+    "beta_copy_minimal": "β 짝 사본 = dp_build 가 읽는 파일만(00 · 01 · authoritative_remeasure.json · 05 + 스케일한 02~04) — 저장 패킷과 바이트 대조(RESULTS.json packets_*)",
+    "pair_sharding": "최종 판정의 변형별 짝 평가(공통 창 · β 짝 패킷 · 크기 × β · 유동성)를 K 워커로 · 병합 순서 고정 · 엔진 알파 삽입 순서 재현",
+    "ta_load_market_memo": "같은 RX0 의 β 짝 사본(같은 보유 종목 · 같은 기간)이 RAWDATA 를 다시 읽지 않는다(프로세스 안 · 계약 함수 그대로)",
+    "mc8_cache": "MC8 카드 · 진단 패킷 mc_controls 입력 해시 캐시(placebo_seed 결정론 · run_id · 경로 제외)",
+    "raw_disk": "원자료(위생 raw) 비압축 RDS 메모 — 기본 꺼짐(cache_check 시간 · 디스크 비용 기록)"
+  },
+  "cache_check": {
+    "raw": {
+      "mc_load_raw_seconds": 13.9087588787079,
+      "first_seconds": 17.9427578449249,
+      "disk_hit_seconds": 4.69862914085388,
+      "same_as_contract": true,
+      "rows": 12286162
+    },
+    "mc8_card": {
+      "fresh_seconds": 33.8484599590302,
+      "first_cached_seconds": 35.8707838058472,
+      "hit_seconds": 0.0507898330688477,
+      "hits": 1,
+      "misses": 1,
+      "same_hit_vs_fresh_copy": true,
+      "hit_keeps_copy_id": true,
+      "hit_source_dir": true
+    },
+    "beta_copy": {
+      "files_full": 29,
+      "files_minimal": 8,
+      "seconds": [
+        69.6562991142273,
+        72.8916959762573
+      ],
+      "same_packet": true
+    },
+    "trim": {
+      "start": "2012-04-03",
+      "files_full": 29,
+      "files_min": 8,
+      "seconds": [
+        46.4643058776855,
+        42.4934360980988
+      ],
+      "same_packet": true
+    },
+    "packet": {
+      "plain_seconds": [
+        72.8916959762573,
+        73.6576120853424
+      ],
+      "memo_seconds": [
+        60.5222110748291,
+        55.6949141025543
+      ],
+      "memo_repeat_seconds": 32.4062738418579,
+      "ta_hits": 2,
+      "ta_miss": 1,
+      "mc_hits": 1,
+      "mc_miss": 2,
+      "same_k1": true,
+      "same_k2": true,
+      "same_repeat": true
+    }
+  }
+}

@@ -13,6 +13,6 @@ local({
   root <- dirname(dirname(dirname(dirname(dirname(here)))))
   if (!exists("pr_record_round", mode = "function"))
     invisible(capture.output(suppressMessages(sys.source(file.path(root, "02_Infrastructure/programs/program_registry.R"), envir = globalenv()))))
-  for (m in RC_MODULES) sys.source(file.path(here, m), envir = globalenv())
+  for (m in c(RC_MODULES, "pair.R", "p2.R", "p3.R", "rules_p2.R")) sys.source(file.path(here, m), envir = globalenv())   # 짝 판정 P2 · P3(WP1-b)
   assign("RC_DIR", here, envir = globalenv())
 })
