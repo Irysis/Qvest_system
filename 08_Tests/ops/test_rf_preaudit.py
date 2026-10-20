@@ -87,7 +87,7 @@ def good_fidelity():
         "changed": ("유니버스 K200∪KQ150 · 결측·비유한값은 제외(is.finite) · 음수는 0 으로 clip(pmax) · seed 7 고정 · "
                     "lm 실패 시 폴백 NULL(tryCatch) · 최소 20종 하한"),
         "paper_original_form": "횡단면 점수",
-        "portfolio_spec": {"construction": "top_n_long", "weighting": "ew", "rebalance": "monthly", "top_n": 25},
+        "portfolio_spec": {"construction": "top_n_long", "weighting": "ew", "rebalance": "monthly", "n_long": 25},
         "commission_paper": None,
         "paper_steps": [
             {"step": "신호", "paper_quote": "§2 'signal is the 12-month mean'", "status": "implemented", "note": "frollmean 12"},
@@ -344,10 +344,116 @@ def main():
                 {"step": "Variant II", "paper_quote": "§5", "status": "omitted", "note": "계산량", "omit_code": "A3"}), expect="P10_omit_code")
         mut("M29 construction_source 가 paper 나 lane 이 아님", fid_fn=lambda f: f.update(construction_source="harness"), expect="P11_construction_source")
         mut("M30 레인 구성인데 종목 수를 구현자가 골랐다", fid_fn=lambda f: (f.update(construction_source="lane"),
-            f["portfolio_spec"].update(top_n=30)), expect="P11_lane_construction")
+            f["portfolio_spec"].update(n_long=30)), expect="P11_lane_construction")
         fl = good_fidelity(); fl["construction_source"] = "lane"
         rcl, repl = run_pa(make_fx(tmp, "N6", fid=fl))
-        check("N6 레인 구성 = 표준(top_n_long · ew · 25) → pass", rcl == 0, "codes=%s" % codes(repl))
+        check("N6 레인 구성 = 표준(top_n_long · ew · n_long 25) → pass", rcl == 0, "codes=%s" % codes(repl))
+        vcfg_ = J(os.path.join(ROOT, "06_Registry", "rf_replication_variants.json"))
+        check("N6b 레인 표준 종목 수 키 = 러너가 읽는 키(설정 size_key ∈ 러너 키)",
+              (vcfg_.get("lane_construction") or {}).get("size_key") in ((repl.get("stats") or {}).get("runner_spec_keys") or []),
+              str((vcfg_.get("lane_construction") or {}).get("size_key")))
+
+        # ── K P12 portfolio_spec 키 = 러너가 읽는 키(10-20 · 1603.00751 사전검사 pass → 감사 misdeclared) ─────────────
+        def warns(rep):
+            return sorted({f["code"] for f in rep.get("findings") or [] if f["severity"] == "warn"})
+        rk = set((rep.get("stats") or {}).get("runner_spec_keys") or [])
+        if not rk:
+            _, rep0 = run_pa(make_fx(tmp, "K0"))
+            rk = set((rep0.get("stats") or {}).get("runner_spec_keys") or [])
+        check("K1 러너 키를 러너 소스에서 뽑는다(construction · weighting · n_long · long_frac · n_max · rebalance · exec_price 포함 · strategy_spec 키 제외)",
+              {"construction", "weighting", "n_long", "long_frac", "n_max", "rebalance", "exec_price"} <= rk
+              and not ({"benchmark_note", "weight_method", "top_n"} & rk), str(sorted(rk)))
+        # 양성 대조 = 1603.00751 의 실제 신고(10-20 레인 · 감사 misdeclared 당시 FIDELITY.portfolio_spec 사본)
+        SPEC_1603 = {"construction": "top_n_long", "weighting": "ew", "rebalance": "quarterly", "top_n": 25}
+        mut("K2 1603.00751 실제 portfolio_spec(top_n) → P12_spec_key_unread", fid_fn=lambda f: f.update(portfolio_spec=dict(SPEC_1603)),
+            expect="P12_spec_key_unread")
+        mut("K3 변형의 portfolio_spec 에 러너가 읽지 않는 키", fid_fn=lambda f: f["variants"][0].update(
+            portfolio_spec={"construction": "top_n_long", "weighting": "ew", "n_long": 25, "lookback": 12}), expect="P12_spec_key_unread")
+        fk = good_fidelity(); fk["portfolio_spec"].pop("n_long")
+        rck, repk = run_pa(make_fx(tmp, "K4", fid=fk))
+        check("K4 종목 수 키 없음 → 경고(P12_spec_size_default)만 · 실패 아님", rck == 0 and "P12_spec_size_default" in warns(repk),
+              "rc=%s warns=%s codes=%s" % (rck, warns(repk), codes(repk)))
+        # 러너 사본에 새 키 소비를 넣으면 그 키가 통과한다 — 키 집합이 러너 코드에서 그때 나온다(사본 · 하드코딩 아님)
+        rsrc = io.open(os.path.join(ROOT, "02_Infrastructure", "alpha_search", "run_paper_replication.R"), "rb").read().decode("utf-8")
+        os.makedirs(os.path.join(tmp, "runner_copy"), exist_ok=True)
+        rcopy = os.path.join(tmp, "runner_copy", "runner.R")
+        io.open(rcopy, "wb").write((rsrc + "\nzz_tmp <- function(spec) spec$zz_new_key\n").encode("utf-8"))
+        ck = J(CFG)
+        ck["structured"]["spec_keys"]["runner_files"] = [rcopy.replace("\\", "/")]
+        cfg_k = os.path.join(tmp, "cfg_runner_copy.json"); W(cfg_k, ck)
+        fz = good_fidelity(); fz["portfolio_spec"]["zz_new_key"] = 1
+        rcz, repz = run_pa(make_fx(tmp, "K5a", fid=fz), cfg=cfg_k)
+        rcz2, repz2 = run_pa(make_fx(tmp, "K5b", fid=fz))
+        check("K5 러너가 새 키를 읽기 시작하면 통과 · 원본 러너로는 실패(키 집합 = 러너 코드에서 그때 뽑음)",
+              rcz == 0 and rcz2 == 1 and "P12_spec_key_unread" in codes(repz2), "rc=%s/%s codes=%s/%s" % (rcz, rcz2, codes(repz), codes(repz2)))
+        coff = J(CFG); coff["structured"]["spec_keys"]["enabled"] = False
+        cfg_off_k = os.path.join(tmp, "cfg_speckeys_off.json"); W(cfg_off_k, coff)
+        f16 = good_fidelity(); f16["portfolio_spec"] = dict(SPEC_1603)
+        rco_, repo_ = run_pa(make_fx(tmp, "K6", fid=f16), cfg=cfg_off_k)
+        check("K6 P12 를 끈 설정은 1603 사양을 통과시킨다 → K2 는 P12 의 발화(검출력)", rco_ == 0, "rc=%s codes=%s" % (rco_, codes(repo_)))
+        cbad = J(CFG); cbad["structured"]["spec_keys"]["runner_files"] = ["02_Infrastructure/alpha_search/__no_runner__.R"]
+        cfg_bad_k = os.path.join(tmp, "cfg_speckeys_bad.json"); W(cfg_bad_k, cbad)
+        rcb, _ = run_pa(make_fx(tmp, "K7"), cfg=cfg_bad_k)
+        check("K7 러너 파일 판독 불능 → 검사 불능(rc 3 · 호출자 fail-open) — 규칙을 지어내지 않는다", rcb == 3, "rc=%s" % rcb)
+
+        # ── C P13 source=paper 상수의 원문 근거(10-20 · 2604.16773 .TRP_RHO 1.0 'paper' — 논문은 ρ ∈ [0,1] 만) ─────────────
+        PAPER_MD = ("# Test paper\n\n## 3 Method\nWe use a lookback window of 12 months for the signal.\n"
+                    "The portfolio holds the top decile.\n\n## 5.1 Procedure\nStep 3. Fix a parameter $\\rho\\in[0,1]$ . For each node,\n"
+                    "define the damping as below.\n\n## A.4 Labels\nWe charge a cost of 0.05% per trade when labelling.\n"
+                    "In our baseline specification we take $\\tau=10^{-3}$ and keep active assets.\n"
+                    "Weight decay is $2\\times 10^{-4}$ and the learning rate 3e-4.\n")
+        ENG_C = GOOD_ENGINE + "LOOKBACK <- 12L\nRHO <- 1.0\n"
+
+        def fx_c(name, consts, cfg=CFG):
+            f = good_fidelity()
+            f["constants"] = consts
+            d = make_fx(tmp, name, engine=ENG_C, fid=f)
+            os.makedirs(os.path.join(d, ".clean_paper"), exist_ok=True)
+            W(os.path.join(d, ".clean_paper", "paper.md"), PAPER_MD)
+            return run_pa(d, cfg=cfg)
+        LB_OK = {"name": "LOOKBACK", "value": 12, "source": "paper", "note": "paper.md:4 'lookback window of 12 months'"}
+        RHO_SUP = {"name": "RHO", "value": 1.0, "source": "supplement", "note": "논문은 ρ ∈ [0,1] 만 — 보충"}
+        rc1, rp1 = fx_c("C1", [LB_OK, RHO_SUP])
+        check("C1 인용 줄에 값이 있는 paper 상수 + 보충 상수 → P13 없음", rc1 == 0 and not [w for w in warns(rp1) if w.startswith("P13")],
+              "rc=%s warns=%s codes=%s" % (rc1, warns(rp1), codes(rp1)))
+        rc2, rp2 = fx_c("C2", [dict(LB_OK, note="논문 값"), RHO_SUP])
+        check("C2 인용 위치 없는 paper 상수 → P13_paper_constant_uncited(경고)", "P13_paper_constant_uncited" in warns(rp2) and rc2 == 0,
+              "rc=%s warns=%s" % (rc2, warns(rp2)))
+        # 양성 대조 = 2604.16773 감사 당시 신고 형태(value 1.0 · source paper · note 가 스스로 수치 없음을 적음)
+        RHO_2604 = {"name": "RHO", "value": 1.0, "source": "paper",
+                    "note": "§5.1 Step 3 'Fix a parameter ρ ∈ [0,1]' — 논문 전문에 수치가 없다 · 대표 칸 1.0"}
+        rc3, rp3 = fx_c("C3", [LB_OK, RHO_2604])
+        check("C3 2604.16773 형태(paper 인데 note 가 '수치가 없다') → P13_paper_constant_contradiction",
+              "P13_paper_constant_contradiction" in warns(rp3), "warns=%s" % warns(rp3))
+        rc4, rp4 = fx_c("C4", [dict(LB_OK, note="§3 'we choose a holding horizon of twelve weeks for robustness'"), RHO_SUP])
+        check("C4 원문 축자본에 없는 인용문 → P13_paper_quote_not_found", "P13_paper_quote_not_found" in warns(rp4), "warns=%s" % warns(rp4))
+        rc5, rp5 = fx_c("C5", [dict(LB_OK, value=24, note="paper.md:4 'lookback window of 12 months'"), RHO_SUP])
+        check("C5 인용 줄에 신고 값이 없다(24 ≠ 12) → P13_paper_value_not_in_citation", "P13_paper_value_not_in_citation" in warns(rp5),
+              "warns=%s" % warns(rp5))
+        cf = J(CFG); cf["structured"]["paper_constants"]["severity"] = "fail"
+        cfg_pf = os.path.join(tmp, "cfg_paperconst_fail.json"); W(cfg_pf, cf)
+        rc6, rp6 = fx_c("C6", [dict(LB_OK, note="논문 값"), RHO_SUP], cfg=cfg_pf)
+        check("C6 설정 severity=fail 로 올리면 실패(rc 1 · 승격 경로)", rc6 == 1 and "P13_paper_constant_uncited" in codes(rp6),
+              "rc=%s codes=%s" % (rc6, codes(rp6)))
+        # 오탐 줄이기(10-20 전수 실측) — 절 번호 인용 · 소수 백분율 · 10 의 거듭제곱 · 다른 대상의 '미명시'
+        rc7, rp7 = fx_c("C7", [dict(LB_OK, note="§3 lookback 12 months"), RHO_SUP])
+        check("C7 절 번호 인용(§3) — 그 절 본문에 값 → P13 없음", not [w for w in warns(rp7) if w.startswith("P13")], "warns=%s" % warns(rp7))
+        rc7b, rp7b = fx_c("C7b", [dict(LB_OK, value=36, note="§3 lookback 36 months"), RHO_SUP])
+        check("C7b 절 번호 인용인데 그 절에 값이 없다(36) → P13_paper_value_not_in_citation", "P13_paper_value_not_in_citation" in warns(rp7b),
+              "warns=%s" % warns(rp7b))
+        TC = {"name": "TC_LABEL", "value": 0.0005, "source": "paper", "note": "A.4 'a cost of 0.05% per trade' — 주결과 비용은 미명시"}
+        TAU = {"name": "TAU", "value": 0.001, "source": "paper", "note": "§A.4 'In our baseline specification we take τ=10^{-3}'"}
+        rc8, rp8 = fx_c("C8", [LB_OK, RHO_SUP, TC, TAU])
+        check("C8 0.0005 = '0.05%' · 0.001 = '10^{-3}' · 다른 대상의 '미명시' → P13 없음(THGNN · 2604 실측 오탐형)",
+              not [w for w in warns(rp8) if w.startswith("P13")], "warns=%s" % warns(rp8))
+        WD = {"name": "WD", "value": 0.0002, "source": "paper", "note": "A.4 weight decay 2e-4"}
+        LR = {"name": "LR", "value": 0.0003, "source": "paper", "note": "A.4 learning rate"}
+        rc9, rp9 = fx_c("C9", [LB_OK, RHO_SUP, WD, LR])
+        check("C9 § 없는 부록 번호(A.4 — 원문 제목 있음) 인용 · 2\\times 10^{-4} · 3e-4 표기 → P13 없음",
+              not [w for w in warns(rp9) if w.startswith("P13")], "warns=%s" % warns(rp9))
+        rc9b, rp9b = fx_c("C9b", [LB_OK, RHO_SUP, dict(WD, note="Z.9 weight decay")])
+        check("C9b 원문 제목에 없는 'Z.9' 는 인용으로 세지 않는다 → P13_paper_constant_uncited", "P13_paper_constant_uncited" in warns(rp9b),
+              "warns=%s" % warns(rp9b))
         fo = good_fidelity()
         fo["paper_steps"].append({"step": "예측 정확도 표", "paper_quote": "Table 3 'RMSE'", "status": "omitted",
                                   "note": "성과 산출에 들어가지 않는 진단", "omit_code": "J2"})

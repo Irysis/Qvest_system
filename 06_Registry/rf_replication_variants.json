@@ -27,6 +27,8 @@
     "portfolio_spec": {"construction": "top_n_long", "weighting": "ew"},
     "top_n_key": "tier_soft_deployment.max_names",
     "top_n_config": "02_Infrastructure/worktask/constraint_defaults.json",
+    "size_key": "n_long",
+    "size_key_basis": "2026-10-20 — 종목 수는 러너(run_paper_replication.R .rp_build_weights)가 읽는 키 n_long 으로 싣는다. 구판은 'top_n' 이었는데 러너가 읽지 않아, 보유 수가 신호 폭 × long_frac(기본) 을 n_max 로 자른 값이 됐다(신호가 넓으면 우연히 25종 · 좁으면 그보다 적다). 사전검사 P11(표준 일치) · P12(러너 미판독 키) · 레인 프롬프트(LANE_SPEC)가 이 키를 같이 읽는다.",
     "rebalance": "논문 예측 주기 — 월간 예측이면 월간 · 일간 · 주간 예측이면 일간 신호를 그대로 낸다(하네스가 주 1회로 접는다 · D16 · 하네스 고지 H10)",
     "engine_output": "FACTORS(Date, Ticker, Score) — Score = 논문 모형의 예측값(클수록 매수)",
     "basis": "하네스 고정 축(종목수 상한 · 동일가중)과 레인 기존 관례(착안 이식 = 고정 축 25종 · EW)가 같다. 예측값 정렬 → 매기 재구성 → 상위 매수 절차는 Gu, Kelly & Xiu (2020) RFS 33(5) §2.4.2 'Machine learning portfolios'(01_Literature/Alpha_Search_Recharge/20260830/classic_seed/CLASSIC_gu_kelly_xiu_ml.pdf p.42 · https://dachxiu.chicagobooth.edu/download/ML.pdf) — 그 논문의 10분위 · 가치가중 대신 우리 고정 축 상위 N · 동일가중을 쓴다(등급이 롱온리 · KOSPI200 대비로 정의돼 있다).",

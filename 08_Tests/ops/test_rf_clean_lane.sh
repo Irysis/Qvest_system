@@ -405,7 +405,7 @@ if [ -n "$wd" ] && [ "${FAKE_NO_ENGINE:-0}" != 1 ]; then
   printf '%s\n' 'suppressPackageStartupMessages(library(data.table))' 'DT <- as.data.table(RAWDATA)' 'setorder(DT, Ticker, Date)' \
     'DT[, r1 := data.table::shift(Close, 1L, type = "lag") / data.table::shift(Close, 2L, type = "lag") - 1, by = Ticker]' \
     'FACTORS <- DT[is.finite(r1), .(Date, Ticker, Score = -r1)]' > "$wd/engine.R"
-  printf '%s' '{"fidelity":"faithful","kept":"k","changed":"유니버스만 K200 합집합 KQ150","paper_original_form":"f","portfolio_spec":{"construction":"top_n_long","weighting":"ew","rebalance":"monthly","top_n":25},"commission_paper":null}' > "$wd/FIDELITY.json"
+  printf '%s' '{"fidelity":"faithful","kept":"k","changed":"유니버스만 K200 합집합 KQ150","paper_original_form":"f","portfolio_spec":{"construction":"top_n_long","weighting":"ew","rebalance":"monthly","n_long":25},"commission_paper":null}' > "$wd/FIDELITY.json"
 fi
 echo "fake claude done"
 EOF

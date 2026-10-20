@@ -596,6 +596,7 @@ fi
 #   레인 표준 구성 = 06_Registry/rf_replication_variants.json lane_construction(종목 수 = constraint_defaults.json 정본) — 프롬프트에 숫자를
 #   박지 않는다. 판독 불능이면 프롬프트에 '설정 판독 불능' 줄이 그대로 실린다(구현자는 레인 구성을 지어내지 않는다 — 사전검사도 같은 설정을
 #   읽으므로 설정 파손이면 검사 불능 = fail-open 으로 측정 · 감사가 최종 판정).
+#   ★종목 수 키 = 설정 lane_construction.size_key(n_long — 러너가 읽는 키 · 10-20 구판 'top_n' 은 러너가 읽지 않았다).
 LANE_SPEC="$("$PY" -c "
 import io,json
 R=r'$ROOT'
@@ -603,7 +604,7 @@ try:
     v=json.loads(io.open(r'$RV_CFG','rb').read().decode('utf-8'))['lane_construction']
     sp=dict(v['portfolio_spec']); c=json.loads(io.open(R+'/'+v['top_n_config'],'rb').read().decode('utf-8'))
     for k in v['top_n_key'].split('.'): c=c[k]
-    sp['top_n']=int(c); print(json.dumps(sp,ensure_ascii=False))
+    sp[v.get('size_key','n_long')]=int(c); print(json.dumps(sp,ensure_ascii=False))
 except Exception as e: print('(설정 판독 불능: %s)' % str(e)[:80])" 2>/dev/null | tr -d '\r')"
 TORCH_LINE="$("$ROOT/.venv_qvest_ml/Scripts/python.exe" -c "import torch;print('torch %s · CUDA %s' % (torch.__version__, torch.cuda.get_device_name(0) if torch.cuda.is_available() else '없음(CPU)'))" 2>/dev/null | tr -d '\r')"
 [ -n "$TORCH_LINE" ] || TORCH_LINE="torch 판독 불능 — 엔진이 import 로 확인"

@@ -26,6 +26,7 @@ import argparse
 import difflib
 import io
 import json
+import math
 import os
 import re
 import shutil
@@ -152,6 +153,110 @@ def _dig(node, dotted):
     for k in dotted.split("."):
         node = node.get(k) if isinstance(node, dict) else None
     return node
+
+
+# ── P12 · P13 헬퍼 (2026-10-20 · 사전검사 pass → 6축 감사 misdeclared 두 유형 — 코드 · 신고서 · 원문만으로 기계 판정) ───────
+_SPEC_KEY_RX_DEFAULT = [r"(?<![A-Za-z0-9_.])(?:portfolio_spec|spec)\$([A-Za-z_][A-Za-z0-9_]*)",
+                        r"(?<![A-Za-z0-9_.])(?:portfolio_spec|spec)\[\[\s*[\"']([A-Za-z_][A-Za-z0-9_]*)[\"']\s*\]\]"]
+
+
+def runner_spec_keys(root, sk):
+    """러너가 실제로 읽는 portfolio_spec 키 — 러너 소스(주석 제외)에서 그때 뽑는다(사본을 두지 않는다 · 러너가 바뀌면 따라간다).
+    `strategy_spec$…` 같은 다른 객체는 앞 글자 경계로 제외한다. 못 뽑으면 예외(검사 불능 → 호출자 fail-open)."""
+    rxs = [re.compile(r) for r in (sk.get("key_regex") or _SPEC_KEY_RX_DEFAULT)]
+    keys = set()
+    for rel in sk.get("runner_files") or ["02_Infrastructure/alpha_search/run_paper_replication.R"]:
+        code = strip_r_comments(io.open(os.path.join(root, rel), "rb").read().decode("utf-8", "replace"))
+        for rx in rxs:
+            keys.update(m.group(1) for m in rx.finditer(code))
+    if not keys:
+        raise RuntimeError("러너에서 portfolio_spec 키를 하나도 뽑지 못했다 — 규칙을 지어내지 않는다")
+    return keys
+
+
+_CITE_LINE_RX = re.compile(r"paper\.md\s*:\s*L?(\d+)(?:\s*[-~]\s*L?(\d+))?")
+_CITE_QUOTE_RX = re.compile(r"[\"'“‘「]([^\"'“”‘’「」]{8,}?)[\"'”’」]")
+_CITE_SEC_RX = re.compile(r"(?:§|\bSection\s+|\bSec\.\s*)\s*([A-Z]?\d+(?:\.\d+)*)")
+_CITE_APPX_RX = re.compile(r"(?<![A-Za-z0-9.§])([A-Z]\.\d+(?:\.\d+)*)(?![0-9])")   # 'A.1 learning rate' — 원문 제목이 있을 때만 인용
+
+
+def _g(f):
+    return "%.10g" % f
+
+
+def _value_forms(v):
+    """신고 값 → 원문에서 찾을 형태(원소마다 정규식 목록). 숫자는 표기를 넓게 본다:
+    0.5 → 0.5 · .5 · 50% · 50\\% / 0.0005 → 0.05% · 5 bp / 0.001 → 1e-3 · 10^{-3} / 정수 → 그 정수 / 날짜 → 그대로.
+    숫자도 날짜도 아닌 문자 값(R 식 등)은 원문 대조가 성립하지 않아 건너뛴다(빈 목록)."""
+    items = v if isinstance(v, list) else [v]
+    out = []
+    for x in items:
+        if x is None or isinstance(x, bool):
+            continue
+        if isinstance(x, str):
+            s = x.strip().rstrip("L")
+            if _DATE_RX.fullmatch(s):
+                out.append([re.compile(re.escape(s))])
+                continue
+            if not s or not _NUM_RX.fullmatch(s):
+                continue
+            x = float(s)
+        f = float(x)
+        reps = {_g(f)}
+        if f.is_integer():
+            reps.add(str(int(f)))
+        for r in list(reps):
+            if r.startswith("0.") or r.startswith("-0."):
+                reps.add(r.replace("0.", ".", 1))
+        forms = [re.compile(r"(?<![0-9.])" + re.escape(r) + r"(?![0-9])") for r in sorted(reps)]
+        if 0 < abs(f) < 1:
+            forms.append(re.compile(r"(?<![0-9.])" + re.escape(_g(f * 100)) + r"\s*\\?%"))
+        if 0 < abs(f) < 0.01:
+            forms.append(re.compile(r"(?<![0-9.])" + re.escape(_g(f * 10000)) + r"\s*(?:bps?|basis\s*points?)", re.I))
+        if f != 0:
+            k = int(math.floor(math.log10(abs(f)) + 1e-12))
+            mant = f / (10 ** k)
+            if abs(k) >= 2 and abs(mant - round(mant, 6)) < 1e-9:
+                ms = _g(round(mant, 6))
+                sg = r"[-−]\s*" if k < 0 else r"\+?\s*"
+                # 3e-4 · 3E-04 · 3 × 10^{-4} · 3\times10^{-4} — 가수가 1 이면 10^{-3} 단독 표기도
+                forms.append(re.compile(r"(?<![0-9.])" + re.escape(ms) + r"(?:\.0+)?\s*[eE]\s*" + sg + r"0*" + str(abs(k)) + r"(?![0-9])"))
+                forms.append(re.compile(r"(?<![0-9.])" + re.escape(ms) + r"\s*(?:\\times|×|x|\*|\\cdot)\s*10\s*\^\s*\{?\s*" + sg + str(abs(k)) + r"\s*\}?"))
+                if ms in ("1", "-1"):
+                    forms.append(re.compile(r"10\s*\^\s*\{?\s*" + sg + str(abs(k)) + r"\s*\}?"))
+        out.append(forms)
+    return out
+
+
+def _section_text(plines, sec):
+    """원문 축자본에서 절 번호(4.2.2 · A.4)의 제목 줄을 찾아 그 절 본문(다음 같은 · 상위 수준 제목 전까지)을 돌려준다. 없으면 None."""
+    hrx = re.compile(r"^(#{1,6})\s*" + re.escape(sec) + r"(?:[.\s]|$)")
+    for i, ln in enumerate(plines):
+        m = hrx.match(ln)
+        if m:
+            lvl = len(m.group(1))
+            j = i + 1
+            while j < len(plines):
+                h = re.match(r"^(#{1,6})\s", plines[j])
+                if h and len(h.group(1)) <= lvl:
+                    break
+                j += 1
+            return "\n".join(plines[i:j])
+    return None
+
+
+def _quote_window(quote, ptext_low):
+    """인용문이 원문 어디에 있는가 — 영문 낱말(3자+)이 순서대로 가깝게(사이 낱말 ≤ 3) 나타나는 첫 자리 ± 200자를 돌려준다.
+    수식 표기(LaTeX · 유니코드 기호)는 낱말로 세지 않는다(같은 문장도 표기가 달라 정확 일치가 안 된다). 못 찾으면 None ·
+    낱말이 2개 미만이면 '' (대조 불가)."""
+    toks = re.findall(r"[A-Za-z]{3,}", quote.lower())
+    if len(toks) < 2:
+        return ""
+    rx = re.compile(r"\b" + r"\W+(?:\w+\W+){0,3}?".join(re.escape(t) for t in toks) + r"\b")
+    m = rx.search(ptext_low)
+    if not m:
+        return None
+    return ptext_low[max(0, m.start() - 200): m.end() + 200]
 
 
 def harness_block(root, cfg):
@@ -598,7 +703,8 @@ def run(wdir, root, cfg):
             except Exception:
                 tn = None
             if isinstance(tn, (int, float)) and not isinstance(tn, bool):
-                std["top_n"] = int(tn)
+                # ★종목 수 키 = 러너가 읽는 키(10-20 · 구판 'top_n' 은 러너가 읽지 않아 보유가 신호 폭 × long_frac 으로 정해졌다)
+                std[lc.get("size_key") or "n_long"] = int(tn)
             top = fid.get("portfolio_spec") if isinstance(fid.get("portfolio_spec"), dict) else {}
             offs = []
             for it in (vs if isinstance(vs, list) else []):
@@ -613,6 +719,103 @@ def run(wdir, root, cfg):
                 add("P11_lane_construction", "fail", "레인 구성인데 portfolio_spec 이 레인 표준과 다르다 %d건" % len(offs),
                     "논문에 포트폴리오가 없으면 레인 표준 구성(%s)을 그대로 쓴다 — 구현자가 종목 수 · 가중을 고르지 않는다: %s"
                     % (json.dumps(std, ensure_ascii=False), ", ".join(offs[:12])))
+
+    # ── P12 portfolio_spec 키 = 러너가 실제로 읽는 키만 (2026-10-20 · 1603.00751 사전검사 pass → 감사 misdeclared) ─────────────
+    #   신고 {construction: top_n_long, weighting: ew, top_n: 25} — 러너는 top_n 을 읽지 않는다. n_long 이 없으면 보유 수는
+    #   신호 폭 × long_frac(기본) 을 n_max 로 자른 값이라, 신호가 좁으면 25종보다 적게 들었다. 신고와 측정이 갈리는 형태다.
+    SK = S.get("spec_keys") or {}
+    if SK.get("enabled", True):
+        rkeys = runner_spec_keys(root, SK)
+        stats["runner_spec_keys"] = sorted(rkeys)
+        allowed = set(rkeys) | set(SK.get("extra_allowed") or [])
+        specs = []
+        if isinstance(fid.get("portfolio_spec"), dict):
+            specs.append(("portfolio_spec", fid["portfolio_spec"]))
+        for it in fid.get("variants") if isinstance(fid.get("variants"), list) else []:
+            if isinstance(it, dict) and isinstance(it.get("portfolio_spec"), dict):
+                specs.append(("variants[%s].portfolio_spec" % (it.get("id") or "?"), it["portfolio_spec"]))
+        unread, size_default = [], []
+        size_cons = SK.get("size_constructions") or ["top_n_long", "decile_long_short", "quantile_long_short"]
+        size_keys = SK.get("size_keys") or ["n_long", "long_frac"]
+        for where, sp in specs:
+            unread += ["%s.%s" % (where, k) for k in sp if k not in allowed]
+            if str(sp.get("construction") or "top_n_long") in size_cons and not any(k in sp for k in size_keys):
+                size_default.append(where)
+        if unread:
+            add("P12_spec_key_unread", SK.get("severity") or "fail",
+                "러너가 읽지 않는 portfolio_spec 키 %d개: %s" % (len(unread), ", ".join(unread[:12])),
+                "러너(run_paper_replication.R)가 이 키를 읽지 않아 신고한 값이 측정에 반영되지 않는다 — 신고와 측정이 갈린다. "
+                "러너가 읽는 키: %s. 종목 수는 n_long(롱숏이면 n_short)이나 long_frac 으로 적어라(top_n 은 읽지 않는다)."
+                % ", ".join(sorted(rkeys)))
+        if size_default:
+            add("P12_spec_size_default", SK.get("size_default_severity") or "warn",
+                "종목 수 키(%s)가 없어 러너 기본값이 보유 수를 정한다 %d곳: %s" % ("/".join(size_keys), len(size_default), ", ".join(size_default[:8])),
+                "논문에 종목 수 · 분위가 있으면 n_long(또는 long_frac)으로 적어라 — 없으면 기본값이 쓰였다고 changed 에 신고하라.")
+
+    # ── P13 source=paper 상수의 원문 근거 (2026-10-20 · 2604.16773 .TRP_RHO 1.0 'paper' — 논문은 ρ ∈ [0,1] 만 적었다) ──────────
+    #   (a) 인용 위치(paper.md:<줄> 또는 원문 인용문)가 note 에 없다 (b) 인용문이 원문 축자본에 없다 (c) 인용 부근에 신고 값이 없다
+    #   (d) note 가 스스로 '논문에 값이 없다'고 적었다(신고 모순). 숫자 표기가 다양해 처음엔 경고 — 오탐률 실측 뒤 fail 승격(설정).
+    PC = S.get("paper_constants") or {}
+    pcs = [it for it in (fid.get("constants") if isinstance(fid.get("constants"), list) else [])
+           if isinstance(it, dict) and str(it.get("source") or "").strip().lower() == "paper"]
+    stats["paper_constants"] = len(pcs)
+    pm_p = os.path.join(wdir, PC.get("paper_rel") or ".clean_paper/paper.md")
+    if PC.get("enabled", True) and pcs and not os.path.isfile(pm_p):
+        stats["paper_text"] = "absent"          # 원문 축자본이 없으면 대조하지 않는다(지어내지 않는다)
+    elif PC.get("enabled", True) and pcs:
+        ptext = io.open(pm_p, "rb").read().decode("utf-8", "replace")
+        plines, plow = ptext.split("\n"), ptext.lower()
+        win = int(PC.get("line_window") or 2)
+        absent_rx = [re.compile(r, re.I) for r in (PC.get("absent_phrases") or [])]
+        uncited, unfound, novalue, contra = [], [], [], []
+        for it in pcs:
+            nm, note = str(it.get("name") or "?"), str(it.get("note") or "")
+            if any(rx.search(note) for rx in absent_rx):
+                contra.append(nm)
+            texts, cited = [], False
+            for m in _CITE_LINE_RX.finditer(note):
+                cited = True
+                a = int(m.group(1)); b = int(m.group(2) or a)
+                texts.append("\n".join(plines[max(0, a - 1 - win): min(len(plines), b + win)]).lower())
+            for m in _CITE_QUOTE_RX.finditer(note):
+                q = m.group(1).strip()
+                w = _quote_window(q, plow)
+                if w == "":
+                    continue                    # 영문 낱말이 부족한 인용(수식 · 기호뿐) — 대조 불가, 위치 근거로 세지 않는다
+                cited = True
+                if w is None:
+                    unfound.append("%s('%s')" % (nm, q[:40]))
+                else:
+                    texts.append(w)
+            for m in _CITE_SEC_RX.finditer(note):
+                cited = True                    # 절 번호 인용도 위치 근거다(원문 제목에 번호가 없으면 값 대조만 못 한다)
+                blk = _section_text(plines, m.group(1))
+                if blk is not None:
+                    texts.append(blk.lower())
+            for m in _CITE_APPX_RX.finditer(note):
+                blk = _section_text(plines, m.group(1))
+                if blk is not None:             # § 없는 부록 번호는 원문에 그 제목이 있을 때만 인용으로 센다(아무 'X.1' 이나 세지 않게)
+                    cited = True
+                    texts.append(blk.lower())
+            if not cited:
+                uncited.append(nm)
+                continue
+            forms = _value_forms(it.get("value"))
+            if texts and forms and not all(any(rx.search(t) for t in texts for rx in fs) for fs in forms):
+                novalue.append("%s=%s" % (nm, json.dumps(it.get("value"), ensure_ascii=False)))
+        sev = PC.get("severity") or "warn"
+        if contra:
+            add("P13_paper_constant_contradiction", sev, "source=paper 인데 note 가 논문에 값이 없다고 적은 상수 %d개: %s" % (len(contra), ", ".join(contra[:12])),
+                "논문에 값이 없으면 source=supplement 로 신고하고 보충 근거를 적어라 — 감사는 이 모순을 misdeclared 로 판정한다.")
+        if uncited:
+            add("P13_paper_constant_uncited", sev, "source=paper 인데 원문 인용 위치가 없는 상수 %d개: %s" % (len(uncited), ", ".join(uncited[:12])),
+                "note 에 paper.md:<줄> 또는 원문 인용문('…')을 적어라 — 감사자와 같은 원문 축자본(.clean_paper/paper.md)에서 찾을 수 있게.")
+        if unfound:
+            add("P13_paper_quote_not_found", sev, "원문 축자본에 없는 인용문 %d개: %s" % (len(unfound), ", ".join(unfound[:8])),
+                "인용은 원문 축자본의 문장을 그대로 옮겨라(요약 · 의역은 감사에서 근거로 인정되지 않는다).")
+        if novalue:
+            add("P13_paper_value_not_in_citation", sev, "인용 위치 부근에 신고 값이 없는 상수 %d개: %s" % (len(novalue), ", ".join(novalue[:12])),
+                "인용한 곳에 그 값이 없으면 논문 값이 아니다 — 값이 실제로 적힌 줄을 인용하거나, 보충값이면 source=supplement 로 고쳐라.")
 
     # ── P6 방어 코드 범주 — 코드에 있는데 신고 말뭉치에 키워드가 없으면 미신고 후보 ──────────────────
     for cat in cfg.get("categories") or []:
