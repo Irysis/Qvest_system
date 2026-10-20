@@ -17,8 +17,12 @@ find_font <- function(w) {
   if (!length(f)) stop(sprintf("[pdf] 현대하모니 %s 글꼴 파일이 없다(%s) — 서식 규칙 글꼴 미설치", w, paste(font_dirs, collapse = " · ")))
   f[1]
 }
-face <- function(w, weight) sprintf('@font-face { font-family: "HDH"; font-weight: %d; font-style: normal; src: url(data:font/ttf;base64,%s) format("truetype"); }',
-                                    weight, jsonlite::base64_enc(readBin(find_font(w), "raw", file.size(find_font(w)))))
+## base64 는 줄바꿈 없이 낸다. jsonlite::base64_enc 는 72자마다 줄을 바꾸는데, CSS url() 안의 줄바꿈은 주소 전체를 무효로 만든다.
+##   10-20 실측: 글꼴이 한 번도 적재되지 않아 Edge 가 기본 한글 글꼴(Noto Sans KR)로 인쇄했다. 그 글꼴이 이름 없는 Type3 로 들어가
+##   이름 검사를 통과했다 → pdf_check.py 가 이제 글자 폭으로 현대하모니인지 대조한다.
+.b64 <- function(f) gsub("[\r\n]", "", jsonlite::base64_enc(readBin(f, "raw", file.size(f))))
+face <- function(w, weight) sprintf('@font-face { font-family: "HDH"; font-weight: %d; font-style: normal; src: url("data:font/ttf;base64,%s") format("truetype"); }',
+                                    weight, .b64(find_font(w)))
 fonts_css <- paste(face("L", 300), face("M", 500), face("B", 700), sep = "\n")
 
 md <- paste(readLines(src, warn = FALSE, encoding = "UTF-8"), collapse = "\n")
@@ -50,7 +54,7 @@ for (.tag in .imgs) {
   if (!file.exists(.p)) .p <- file.path(.img_dir, .p)
   if (!file.exists(.p)) stop("[pdf] 그림 파일 없음: ", .u)
   .mime <- switch(tolower(tools::file_ext(.p)), png = "image/png", jpg = , jpeg = "image/jpeg", svg = "image/svg+xml", "application/octet-stream")
-  body <- gsub(.tag, sprintf('<img src="data:%s;base64,%s"', .mime, jsonlite::base64_enc(readBin(.p, "raw", file.size(.p)))), body, fixed = TRUE)
+  body <- gsub(.tag, sprintf('<img src="data:%s;base64,%s"', .mime, .b64(.p)), body, fixed = TRUE)
 }
 ## 검사 기대값 — 표마다 머리 행 문자열(갈린 표는 다음 쪽에 머리 행이 반복된다)
 .th <- regmatches(body, gregexpr("(?s)<thead>.*?</thead>", body, perl = TRUE))[[1]]
@@ -106,7 +110,8 @@ cat(sprintf("[pdf] %s · %.0f KB\n", out, file.size(out) / 1024))
 py <- Sys.getenv("QVEST_PY")
 if (nzchar(py) && file.exists(py)) {
   ej <- file.path(tempdir(), "pdf_expect.json")
-  writeLines(jsonlite::toJSON(list(tables = as.list(expect_tables), fonts_allowed = c("Consolas", "HDH")), auto_unbox = TRUE), ej, useBytes = TRUE)
+  writeLines(jsonlite::toJSON(list(tables = as.list(expect_tables), fonts_allowed = c("Consolas", "HDharmony"),
+                                   font_files = c(find_font("L"), find_font("M"), find_font("B"))), auto_unbox = TRUE), ej, useBytes = TRUE)
   chk_py <- file.path(dirname(normalizePath(sub("--file=", "", grep("^--file=", commandArgs(FALSE), value = TRUE)[1]), winslash = "/")), "pdf_check.py")
   res <- suppressWarnings(system2(py, c(shQuote(chk_py), shQuote(normalizePath(out, winslash = "/")), shQuote(ej)), stdout = TRUE, stderr = TRUE))
   cat("[pdf-check]", tail(res, 1), "\n")
