@@ -6,9 +6,14 @@
 #                            인프라 실패 1회 재측정 → 엔진 묶음 지문 불일치면 배리어 뒤 묶음 1회 재측정 → evaluate 자동 연쇄
 #                            ('--now' = 갱신 완료 줄 대기 생략 · 배리어 · 사전 점검 · 지문은 그대로)
 #   evaluate [K]             칸 평가 샤딩(K = 여유 RAM ÷ 4GB · 최대 6) → 종합 판정 1회 · 센티널 .cache/round_core/state/<라운드>.evaluated
+#   상설 판(standing: true · WP5 — v1/standing.R):
+#     scan [--dry-run] [--max N] [--out f]   레인 산출 → 자격 큐(입구 규칙 · 사유 코드) — 등록 뒤 시드 + 새 엔진을 원장에 넣는다
+#     standing-measure         배리어 → 대기 항목마다 R2 대조 · 지문 · 정본 셀 워커 → 판정(원장 · 보는 창 표)
+#     standing-check · pending · measure-item <code> · judge · standing-report [--send] · standing-status · superfan-mark
+#   RC_ROOT_POSIX · RC_ROOT_WIN = 다른 작업 트리(worktree)에서 돌릴 때만(기본 = 저장소 · R 쪽은 R_ENVIRON_USER 로 QM_ROOT 를 맞춘다)
 set -u
-ROOT=/c/Users/99922/OneDrive/Quant_Module_Moltbot
-export QM_ROOT=C:/Users/99922/OneDrive/Quant_Module_Moltbot
+ROOT=${RC_ROOT_POSIX:-/c/Users/99922/OneDrive/Quant_Module_Moltbot}
+export QM_ROOT=${RC_ROOT_WIN:-C:/Users/99922/OneDrive/Quant_Module_Moltbot}
 cd "$ROOT" || exit 2
 RD="${1:?round_dir}"; ST="${2:?stage}"; shift 2
 CORE=$ROOT/04_Research/programs/_lib/round_core/v1
@@ -94,5 +99,14 @@ case "$ST" in
     barrier; [ "$?" = "10" ] && { sentinel evaluated eval_barrier_held 10; exit 5; }
     evaluate auto ;;
   evaluate) evaluate "${1:-auto}" ;;
+  scan|standing-check|pending|measure-item|judge|standing-report|standing-status|superfan-mark)
+    exec Rscript "$CORE/standing.R" "$RD" "$ST" "$@" ;;
+  standing-measure)
+    barrier; [ "$?" = "10" ] && { sentinel standing barrier_held 10; echo "== [$TAG] 배리어 2시간 뒤에도 잡힘 — 측정하지 않는다 =="; exit 4; }
+    PEND=$(Rscript "$CORE/standing.R" "$RD" pending) || exit 3
+    for code in $PEND; do Rscript "$CORE/standing.R" "$RD" measure-item "$code" 2>&1 | grep -E "^\[상설\]|Error|에러" | sed "s/^/[$code] /"; done
+    Rscript "$CORE/standing.R" "$RD" judge; jrc=$?
+    sentinel standing "$([ "$jrc" = "0" ] && echo judged || echo judge_failed)" "$jrc" "pending=$(echo $PEND | wc -w)"
+    exit $jrc ;;
   *) exec Rscript "$DRV" "$RD" "$ST" "$@" ;;
 esac
