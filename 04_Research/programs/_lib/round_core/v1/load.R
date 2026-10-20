@@ -2,6 +2,7 @@
 ##   이 판(v1)의 모듈을 정해진 순서로 적재한다. 출시된 판의 파일은 수정하지 않는다(RELEASES.json 매니페스트 · 검사가 막는다) —
 ##   바꿀 일이 생기면 새 판(v2)을 만든다. 라운드는 사전등록에 판 이름과 매니페스트 md5 를 핀으로 건다(R2).
 RC_MODULES <- c("util.R", "rules.R", "metrics.R", "spec.R", "p1.R", "pins.R", "cell_eval.R", "register.R", "driver.R")
+RC_MODULES <- c(RC_MODULES, "standing.R")   # WP5 P1 상설 자격(상설 판 · 판정 원장 · 레인 스캔)
 local({
   of <- NULL
   for (i in rev(seq_len(sys.nframe()))) { f <- sys.frame(i); if (!is.null(f$ofile)) { of <- f$ofile; break } }

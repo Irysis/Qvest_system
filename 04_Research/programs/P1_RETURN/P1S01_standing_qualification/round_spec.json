@@ -1,0 +1,141 @@
+{
+  "schema": "round_spec_v1",
+  "program": "P1_RETURN",
+  "round_id": "P1S01_standing_qualification",
+  "template": "p1_qualification",
+  "core_version": "v1",
+  "tau_d": "2022-12-31",
+  "purpose": "P1 엔진 자격 규칙(P1R01 승계)을 프로그램 단위로 한 번 사전등록한다(도훈 10-20 'P1 상설 자격 등록' · L1-SPEED-LEVERS-20261020). 등록 뒤에는 충실구현 레인이 낸 엔진 가운데 롱온리로 쓸 수 있는 고정 방향 신호 엔진마다 표준 구성(P0R01 C0 형식 · 활성 측정 축)으로 라운드 의식 없이 자동 측정 · 판정한다. 시드 = P1R01 자격 엔진 E2 · E3 의 활성 epoch 같은 판본 재측정(같은 epoch 비교).",
+  "hypothesis": "자격 = 보는 창 β-통제 t(α) ≥ tier_graduation 2.0 ∧ 보는 창 상승 포착 ≥ 0.55(P1R01 승계 · 위기별 하락노출 · 시험 창 α 는 보고 전용). 기대: 레인 엔진 대다수는 미달(수익 엔진은 드물다 — P1R01 · 1계층 1차 라운드 기록). 시드 E2 · E3 은 활성 epoch 에서도 자격 유지 예상 (같은 사양의 보는 창 결과를 본 상태 — 노출 고지). 판정은 엔진마다 독립 · 선택 없음(자격 목록 = P4 후보).",
+  "standing": true,
+  "standing_cfg": {
+    "edition": 1,
+    "program": "P1_RETURN",
+    "generator": "rc_p1_cell_spec",
+    "generator_pin": {
+      "fn": "rc_p1_cell_spec",
+      "fn_md5": "80f8311f3f61e6fd4e8fb5b250521f58",
+      "like": "04_Research/programs/P0_FRONTIER/P0R01_feasibility_map/specs/P0R01_E2_C0.json",
+      "like_md5": "080cfea84f6412c244e0eeecfda689de",
+      "canon": {
+        "measurement_axis": "all_hyg_px1000_2000_v1",
+        "max_names": 25,
+        "cost_bps": 15,
+        "liq_min": 200000000,
+        "long_only": true
+      }
+    },
+    "scan": {
+      "source": "lane_handoff",
+      "lane_root": "04_Research/strategies",
+      "dir_glob": "RP_AUTO_*",
+      "routed_program": "P1_RETURN",
+      "audit_admit": [
+        "faithful",
+        "adapted"
+      ],
+      "orientation_admit": [
+        "engine_native"
+      ],
+      "long_leg_window": "visible",
+      "exclude_combination": true,
+      "pit_static": true
+    },
+    "accounting": {
+      "family_root": "paper_key",
+      "rule": "n_family = max(계보 앞선 사전등록 · 상설 원장 회계 최댓값, 레인 측정 수(대표 + 변형)) + 1 · 시드 = 무가산"
+    },
+    "rejudge_prior_editions": false,
+    "report": {
+      "pass": "push_each",
+      "fail": "daily_summary"
+    },
+    "superfan": {
+      "on_register": [
+        "T1",
+        "P1"
+      ],
+      "on_pass": [
+        "T2",
+        "P2"
+      ],
+      "on_fail": "daily_batch"
+    }
+  },
+  "cells": [
+    {
+      "code": "P1S01_E2_C0",
+      "engine": "E2",
+      "role": "reference",
+      "spec": "04_Research/programs/P1_RETURN/P1S01_standing_qualification/specs/P1S01_E2_C0.json"
+    },
+    {
+      "code": "P1S01_E3_RX0",
+      "engine": "E3",
+      "role": "reference",
+      "spec": "04_Research/programs/P1_RETURN/P1S01_standing_qualification/specs/P1S01_E3_RX0.json"
+    }
+  ],
+  "rules": [
+    {
+      "id": "qualify",
+      "type": "all_of",
+      "label": "수익 엔진 자격",
+      "na": "untested",
+      "of": [
+        {
+          "id": "q_t_alpha",
+          "type": "threshold",
+          "label": "보는 창 β-통제 t(α)",
+          "metric": "t_alpha_vis",
+          "op": ">=",
+          "value_ref": "02_Infrastructure/worktask/constraint_defaults.json::tier_graduation.grade_b_min_portfolio_alpha_t",
+          "na": "untested"
+        },
+        {
+          "id": "q_uc",
+          "type": "threshold",
+          "label": "보는 창 상승 포착",
+          "metric": "uc_vis",
+          "op": ">=",
+          "value": 0.55,
+          "basis": "투자철학 헌장 — 강세 참여 ≥ 55%(P1R01 rules.qualify.uc_floor 승계)",
+          "na": "untested"
+        }
+      ]
+    },
+    {
+      "id": "test_hold",
+      "type": "report",
+      "label": "시험 창 유지(사람 쪽 보고)",
+      "when": "qualify",
+      "metric": "alpha_ann_test",
+      "op": ">",
+      "value": 0,
+      "basis": "P1R01 rules.test_window 승계 — 자격 엔진만 · 판정 아님"
+    }
+  ],
+  "selection": {
+    "rule": "none",
+    "text": "선택 없음 — 자격 엔진 목록이 P4 수익 엔진 후보(P4 에서 고를 때 시행 수로 센다)"
+  },
+  "exposures": [
+    "Q 는 시험 창(2023~) 성과를 본 상태다 — 판정 규칙은 보는 창 열만 쓴다(코어 검사 rc_rules_test_window_use · 시험 창 α 는 보고 전용).",
+    "Q 는 시드와 같은 사양(E2 · E3 × 활성 epoch — P2R03 · P2R04 RX0 칸)의 보는 창 결과를 본 상태다 — 규칙 · 문턱은 P1R01 승계로 고정(재량 없음).",
+    "레인 산출(재료 큐 인계 항목 · 충실도 감사 판정)을 본 상태다 — 입구 규칙은 성과 수치(인계 등급 · PORT_t · CR)를 읽지 않는다(시험 B6 · B7 음성 대조).",
+    "방향 층 정책(engine_native 만 허용)은 엔진 코드의 정적 특성(정본 커넥터 · 부호 층 사용)으로만 정했다 — 성과와 무관."
+  ],
+  "conclusion_scope": [
+    "자격 엔진 목록 = P4 수익 엔진 후보(활성 측정 축 · 같은 epoch 비교만). 자격 ≠ 권위 등급 · Judge · BOOK.",
+    "미달 = 표준 구성(롱온리 ≤25종 EW · 15bps · 활성 축)에서 이 규칙 미달 — 논문 기전 전체의 기각이 아니다(충실구현 등급은 레인 기록).",
+    "입구 제외(사유 코드) = 측정하지 않음 — 판정이 아니다. 정책이 바뀌면(새 판) 다시 볼 수 있다.",
+    "구 epoch(all_hyg_2000_v1) P1R01 판정은 그대로 남는다 — 활성 epoch 의 E2 · E3 자격은 P1S01 시드 판정으로 본다."
+  ],
+  "changes_after_review": [],
+  "changes_after_superfan": [],
+  "tests": [
+    "08_Tests/programs/test_round_core_v1_standing.R",
+    "08_Tests/programs/test_round_core_v1_flow.R"
+  ],
+  "behavior_card_cfg": "04_Research/programs/P1_RETURN/P1S01_standing_qualification/behavior_card_cfg_at_prereg.json"
+}
