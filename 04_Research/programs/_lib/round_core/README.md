@@ -52,15 +52,28 @@ bash 04_Research/programs/_lib/round_core/round.sh <round_dir> close --note "<�
 | `v1/register.R` | 초안 · 점검 기록(drafts.json — 점검본 사본 없음) · 등록 조건 ①~⑧ · 종료 기록 |
 | `v1/driver.R` | 단계 실행(check · precheck · plan · draft · reviewed · register · evaluate · report · close) |
 | `v1/measure_cell.R` · `v1/fingerprint.sh` | 칸 측정(정본 셀 워커) · 데이터 지문 |
-| `round.sh` | 셸 진입 — 측정 파이프라인 · 샤딩 평가 |
+| `v1/pair.R` | 짝 평가 골격(단계 목록 · 라운드 훅 · 미시험 사유) · P2 · P3 공용 도우미(위기 과반 · 깊은 위기 · 사이클 · 집중 · 회복 · 보유 대조 · 공통 창 · β 짝 사본) · 보는 창 / 사람 쪽 칸 평가 · 라운드 판정(판정 칸 수 · 판정어별 칸 수) · 선택 · 샤딩 · 메모(원자료 · ta_load_market · MC8) |
+| `v1/p2.R` | P2(장치 × 엔진) 템플릿 — P2R04 판정 ①~⑭ 단계 · 기록 · 진단 읽기 · R7 · A 거리 · 보는 창 파일(τ_D 가림 · 전수 검사) · P2R05 범용분(시드 띠 · 판정 여유 · Dimson β · 위기 유형 · 유동성 3분위 귀속) · 사양 라운드 판정 |
+| `v1/p3.R` | P3(구성 변형) 템플릿 — P3R03 결정 a~e · S · 알파 · β 짝(중앙값형) · 기전 방어 · 이력 탈락 · 후보 꼬리표 · 사양 라운드 판정 |
+| `v1/rules_p2.R` | rules.R 선언 형식의 P2 규칙 종류 — 위기 과반 · β 짝 승 · 비열등 알파 · 상승 포착 · 축 감사 + 판정 표 · 선언 = 단계 판정 대조 |
+| `rejudge/` | 끝난 라운드 재판정(결과 동일 실증) — 구판 고유 규칙(`P2R04_ext.R` · `P2R03_ext.R` · `P3R03_ext.R`) · 구 이름 심(`shims.R` — 구 픽스처를 코어로) · 재현 루트(`make_repro_root.R`) · 실행 · 대조 · 요약(`rejudge.R` · `run_rejudge.sh` · `compare.R` · `summarize.R` → `RESULTS.json`) · 캐시 실증(`cache_check.R`) · 속도표(`perf_table.R` → `../PERF.json`) · 구판 격리 실행(`legacy_sandbox.R` — 차이 분류) · P2R05 황금값(`p2r05_golden.R`) |
+| `round.sh` | 셸 진입 — 측정 파이프라인 · 샤딩 평가(칸 평가 샤드 → 짝 평가 샤드 → 병합 종합) |
 | `templates/DESIGN_p1.md` | 사고 기록 템플릿(코어 승계 항목은 다시 쓰지 않는다) |
+
+## P2 · P3 라운드(사양만 쓴다)
+- `round_spec.json` — `template: p2_device | p3_construction` · 칸(`code` · `engine` · `role` · `component` · `spec`) · `params`(판정 상수: 값 + 근거 또는 정본 참조) · `devices` · `diagnostics` · `rules`(P2 종류 포함 선언).
+- 고유 규칙이 필요하면 `ext`(라운드 디렉터리 `round_ext.R`)에 `RC_EXT_CFG` · `RC_EXT_HOOKS`(단계 교체) · `RC_EXT_READINGS`(진단 읽기) · `RC_EXT_RULES_MAP` 만 쓴다.
+- 판정 단계 · 기록 · 라운드 판정 · 보는 창 파일은 코어가 한다. 판정 시작에 선언 규칙과 단계 판정을 칸마다 대조해 어긋나면 판정하지 않는다(문구 표류 차단).
 
 ## 검증
 - `08_Tests/programs/test_round_core_v1.R`: 규칙 · 사양 · P1R01 결과 동일. 원래 evaluate.R 격리 사본과 바이트 동일한지 본다.
 - `08_Tests/programs/test_round_core_v1_flow.R`: 격리 흐름. 등록 거부 7종 · 등록 → 판정 → 종료 · R2 · 캐시 키 · 핀 · 표준 구성을 본다.
+- `08_Tests/programs/test_round_core_v1_p2.R`(가벼움): 구 라운드 픽스처 3종을 코어 심으로(P2R04 52 · P2R03 33 · P3R03 48) · 코어 뮤테이션 15 · P2 규칙 종류 · 최소 사본 · 샤딩 · 메모 · τ_D · 사양 라운드 배선 · P2R05 범용분 = 원판 황금값 53 사례(`08_Tests/fixtures/round_core_p2r05_golden.json` · 생성기 `rejudge/p2r05_golden.R`) · 재판정 요약(`rejudge/RESULTS.json`).
+- `08_Tests/programs/heavy_round_core_v1_p2_rejudge.R`(무거움 · SUITES 밖): 등록 커밋 핀 판 재현 루트 위에서 P2R04 → P2R03 → P3R03 재판정 · 저장본 대조 · 작업 사본 패킷 대조 · 요약 갱신.
+  - 10-20 결과(`rejudge/RESULTS.json`): 세 라운드 판정 · 칸 판정 · 핵심 수치 · 보는 창 / 사람 쪽 파일 구조 차이 0 · 작업 사본 패킷 16/16 · 28/28 · 10/10 바이트 동일.
+- `PERF.json`: 최종 판정 전후 시간(등록 당일 로그 · 같은 날 구판 격리 사본 짝 · 스레드 실험) · 캐시 · 메모 실증(`rejudge/cache_check.R`). 짝 평가 시간의 대부분은 패킷(dp_build) — 데이터 표 스레드 수는 거의 무관(8스레드 −6%)하고 샤드 수 K 가 손잡이다.
 
 ## 다음
-- P2/P3 판정 헬퍼(위기 · β 짝 · 과반 · 사이클 · 짝 평가 골격) 이관과 P2R04 · P2R03 · P3R03 결과 동일 재판정.
 - 측정 서버 `ms_submit` 연결(WP2).
 - P1 상설 자격(WP5).
 - v1 출시(RELEASES.json).
