@@ -1,0 +1,16 @@
+{
+  "_doc": "충실구현 레인 논문별 측정 축 덮어쓰기(rf_replication_verify.R 가 읽는다). 등록된 논문만 run_paper_replication 에 universe · start_date(· data_cutoff)를 명시해 활성 epoch 대신 그 축으로 잰다(러너 규약: 인자 명시 = 축을 덮는다). env = 그 측정의 하위 프로세스(엔진 · 파이썬)에 줄 환경변수. 등급은 같은 epoch 안에서만 비교한다 — 여기 오른 논문의 등급은 지정 epoch 의 비교군과만 비교. 추가 · 삭제 = 도훈 결정(decision_register).",
+  "papers": {
+    "2601.04602": {
+      "epoch": "k200kq150_2005_v1",
+      "universe": "K200_KQ150",
+      "start_date": "2005-01-01",
+      "env": {
+        "PYTORCH_CUDA_ALLOC_CONF": "roundup_power2_divisions:2"
+      },
+      "decision_id": "THGNN-AXIS-K200KQ150-20261020",
+      "why": "THGNN(Fanshawe · Masih · Cameron 2026)은 매일 전 종목 쌍의 10일 선행 상관을 예측한다 — 전 종목+위생 축(패널 3,405종 · 하루 평균 1,257종 · 하루 약 79만 쌍)에서 epoch 33~70분 · 75 epoch 약 3일. 논문 유니버스 = S&P 500. 도훈 10-20 'K200∪KQ150 로 처음부터 · 메모리 넘침 수리 · THGNN 만'. PYTORCH_CUDA_ALLOC_CONF = 10-18 실측 VRAM 넘침(전용 11.2GB + 공유 9.7GB · epoch 13 부터 2배 느려짐) 처방(P2R03 선례).",
+      "set_at": "2026-10-20"
+    }
+  }
+}

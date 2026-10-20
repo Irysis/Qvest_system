@@ -820,6 +820,23 @@ if (!is.null(.VP)) jlog("variants_plan", headline = .VP$headline, n = .VP$n, ids
   factor_engine_path = eng,
   source_paper = list(url = URL, title = TITLE, paper_key = PKEY),
   commission_paper = .cmsn, send_telegram = FALSE)
+## ★논문별 측정 축 덮어쓰기(2026-10-20 · 도훈 'THGNN 만 코스피200+코스닥150 · 메모리 넘침 수리' · decision_register THGNN-AXIS-K200KQ150-20261020)
+##   06_Registry/replication_axis_overrides.json 에 오른 논문만 universe · start_date · data_cutoff 를 명시한다(러너 규약: 인자 명시 = 축을 덮는다 —
+##   대표 · 변형 측정이 같은 .BASE_ARGS 를 쓴다). env = 이 측정의 하위 프로세스(엔진 · 파이썬)에 줄 환경변수. 목록에 없는 논문 = 비트 동일(활성 epoch).
+.AXO <- tryCatch({
+  .axp <- file.path(ROOT, "06_Registry", "replication_axis_overrides.json")
+  if (!file.exists(.axp)) NULL else {
+    .axl <- fromJSON(.axp, simplifyVector = FALSE)$papers %||% list()
+    .axk <- names(.axl)[gsub("[^0-9A-Za-z]", "", names(.axl)) == gsub("[^0-9A-Za-z]", "", PKEY)]
+    if (length(.axk)) .axl[[.axk[1]]] else NULL
+  }
+}, error = function(e) fail("axis_override_invalid", conditionMessage(e)))
+if (!is.null(.AXO)) {
+  for (.axa in intersect(c("universe", "start_date", "data_cutoff"), names(.AXO))) .BASE_ARGS[[.axa]] <- as.character(.AXO[[.axa]])
+  if (length(.AXO$env)) do.call(Sys.setenv, lapply(.AXO$env, as.character))
+  jlog("axis_override", epoch = .AXO$epoch %||% "", universe = .AXO$universe %||% "", start_date = .AXO$start_date %||% "",
+       data_cutoff = .AXO$data_cutoff %||% "", env = paste(names(.AXO$env), collapse = ","), decision = .AXO$decision_id %||% "")
+}
 .HEAD_SPEC <- if (is.null(.VP)) .pspec else (.VP$spec[[1]] %||% .pspec)
 res <- tryCatch(do.call(run_paper_replication, c(.BASE_ARGS,
   if (!is.null(.HEAD_SPEC)) list(portfolio_spec = .HEAD_SPEC) else list(),
