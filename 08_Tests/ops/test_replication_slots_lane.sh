@@ -239,6 +239,50 @@ lane QVEST_RP_LAUNCH=foreground
   && ok "W7 디스패처 → 작업자 2개(cpu1 · gpu1) — 각자 슬롯 요청 · 슬롯 로그 · 에이전트 1회씩 · claim 해제 · 구판 요청 무접촉" \
   || ng "W7 끝까지" "done=$(ev slot_worker_done) agent=$(nagent) c=$(rq cpu1 status) g=$(rq gpu1 status) $(tail -3 "$T/lane.out" | tr '\n' ' ')"
 
+# W8 논문별 측정 축 덮어쓰기(main 5170d410d · THGNN-AXIS-K200KQ150-20261020)가 슬롯 경로에서도 칸마다 그대로 적용되는가
+#   검증기의 .BASE_ARGS + 덮어쓰기 블록을 원문에서 떼어 슬롯 작업자 환경(RP_SLOT · QVEST_RP_REQUEST = 슬롯 요청)으로 실행한다(측정 없음).
+#   덮어쓰기 키 = 논문 키(RP_KEY = 레인 P_KEY — 슬롯과 무관) · 대표 · 변형 측정이 같은 .BASE_ARGS(변형은 modifyList 로 축 키를 건드리지 않는다).
+mkfx w8 '{"cpu":2,"gpu":1}' 1
+VER=02_Infrastructure/ops/rf_replication_verify.R
+"$PY" - "$VER" "$T/axo_block.R" <<'PYX'
+import io, re, sys
+s = io.open(sys.argv[1], "rb").read().decode("utf-8")
+m = re.search(r"^\.BASE_ARGS <- list\(.*?^if \(!is\.null\(\.AXO\)\) \{.*?^\}\n", s, re.S | re.M)
+io.open(sys.argv[2], "wb").write((m.group(0) if m else "").encode("utf-8"))
+PYX
+cat > "$T/axo_driver.R" <<'R'
+a <- commandArgs(trailingOnly = TRUE); blk <- a[1]; out <- a[2]
+suppressMessages(library(jsonlite))
+`%||%` <- function(a, b) if (is.null(a) || length(a) == 0L) b else a
+ROOT <- Sys.getenv("QVEST_CODE_ROOT"); PKEY <- Sys.getenv("RP_KEY"); URL <- "u"; TITLE <- "t"; eng <- "engine.R"; .cmsn <- NULL
+.RP_SLOT <- Sys.getenv("RP_SLOT", ""); REQ <- Sys.getenv("QVEST_RP_REQUEST", "")
+EV <- character(0); jlog <- function(event, ...) EV <<- c(EV, event)
+fail <- function(why, detail = "") stop(paste("FAIL", why, detail))
+eval(parse(blk, encoding = "UTF-8"))
+writeLines(toJSON(list(universe = .BASE_ARGS$universe %||% "", start_date = .BASE_ARGS$start_date %||% "",
+                       alloc = Sys.getenv("PYTORCH_CUDA_ALLOC_CONF"), ev = paste(EV, collapse = ","), slot = .RP_SLOT, req = REQ),
+                  auto_unbox = TRUE), out)
+R
+axo(){ env QVEST_CODE_ROOT="$ROOT" RP_SLOT="$1" RP_KEY="$2" QVEST_RP_REQUEST="$T/slots/$1/replication_request.json" PYTORCH_CUDA_ALLOC_CONF= \
+         Rscript "$T/axo_driver.R" "$T/axo_block.R" "$T/axo_$1_$2.json" >/dev/null 2>&1; cat "$T/axo_$1_$2.json" 2>/dev/null; }
+if [ -s "$T/axo_block.R" ] && [ -f 06_Registry/replication_axis_overrides.json ]; then
+  O1=$(axo gpu1 2601.04602); O2=$(axo cpu1 1801.01777); O3=$(axo cpu2 2601.04602)
+  printf '%s' "$O1" | grep -q '"universe":"K200_KQ150"' && printf '%s' "$O1" | grep -q '"start_date":"2005-01-01"' \
+    && printf '%s' "$O1" | grep -q '"alloc":"roundup_power2_divisions:2"' && printf '%s' "$O1" | grep -q '"ev":"axis_override"' \
+    && printf '%s' "$O1" | grep -q '"slot":"gpu1"' && printf '%s' "$O3" | grep -q '"universe":"K200_KQ150"' \
+    && ok "W8 슬롯 작업자(gpu1 · 다른 슬롯 cpu2 도) 검증기 — 2601.04602 는 K200_KQ150 · 2005-01-01 · 할당기 처방 env 로 잰다(덮어쓰기 = 논문 키 기준 · 슬롯 무관)" \
+    || ng "W8 슬롯 경로 축 덮어쓰기" "$O1 | $O3"
+  printf '%s' "$O2" | grep -q '"universe":""' && printf '%s' "$O2" | grep -q '"alloc":""' && printf '%s' "$O2" | grep -q '"ev":""' \
+    && ok "W8 목록에 없는 논문(1801.01777) — 축 · env 불변(활성 epoch · 양방향)" || ng "W8 음성 대조" "$O2"
+  _l_ax=$(grep -n '^if (!is.null(.AXO)) {' "$VER" | head -1 | cut -d: -f1); _l_hd=$(grep -n '^res <- tryCatch(do.call(run_paper_replication, c(.BASE_ARGS,' "$VER" | head -1 | cut -d: -f1)
+  _l_vr=$(grep -n '\.v1001_measure_variants(.VP, dirname(ar), as.character(AR\$run_id %||% "")\[1\], .BASE_ARGS, .pspec)' "$VER" | head -1 | cut -d: -f1)
+  _mod=$(sed -n '/^\.v1001_measure_variants <- function/,/^}/p' "$VER" | sed -n '/modifyList(base_args, list(/,/)))/p')
+  [ -n "$_l_ax" ] && [ -n "$_l_hd" ] && [ -n "$_l_vr" ] && [ "$_l_ax" -lt "$_l_hd" ] && [ "$_l_hd" -lt "$_l_vr" ] \
+    && ! printf '%s' "$_mod" | grep -qE 'universe|start_date|data_cutoff' \
+    && ok "W8 칸마다 — 덮어쓰기(행 $_l_ax) < 대표 측정(행 $_l_hd) < 변형 측정(행 $_l_vr · 같은 .BASE_ARGS · modifyList 가 축 키를 건드리지 않음)" \
+    || ng "W8 칸 순서 · 변형 인자" "ax=$_l_ax hd=$_l_hd vr=$_l_vr"
+else ng "W8 덮어쓰기 블록 또는 설정 파일 없음" "$(head -c 120 "$T/axo_block.R")"; fi
+
 echo
 printf '합계: 통과 %d · 실패 %d\n' "$PASS" "$FAIL"
 printf '{"test":"replication_slots_lane","pass":%d,"fail":%d,"total":%d}\n' "$PASS" "$FAIL" "$((PASS+FAIL))"

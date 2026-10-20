@@ -279,6 +279,28 @@ def main():
         check("G9 셸 대행 잠금 CLI — 소유자 pid 필수(없으면 rc 2) · 살아 있는 소유자면 남은 rc 1 · 틀린 토큰 해제 거부 · 맞는 토큰 해제",
               a1.returncode == 0 and len(tok) == 16 and a2.returncode == 1 and a0.returncode == 2 and a3.returncode == 1 and a4.returncode == 0,
               (a1.returncode, a2.returncode, a0.returncode, a3.returncode, a4.returncode))
+        # 셸 API(qv_lock.sh) — 같은 의미 · 소유자 = 이 셸의 Windows pid
+        sh = os.path.join(OPS, "qv_lock.sh").replace("\\", "/")
+        script = ('. "%s"\n'
+                  'gpu_lease_acquire sh_holder "sh test" 3 >/dev/null; echo "acq=$?"\n'
+                  'gpu_lease_acquire other "x" >/dev/null; echo "other=$?"\n'
+                  'gpu_lease_status\n'
+                  'gpu_lease_release sh_holder >/dev/null; echo "rel=$?"\n'
+                  'qv_lock_acquire name:sh_x 5 600 shtest; echo "lk=$? tok=${#QV_LOCK_TOKEN}"\n'
+                  'ls "$QVEST_LOCK_DIR"\n'
+                  'qv_lock_release name:sh_x; echo "unlk=$?"\n'
+                  'ls "$QVEST_LOCK_DIR" | wc -l\n') % sh
+        env_sh = dict(os.environ, QVEST_PY=PY.replace("\\", "/"), QVEST_LOCK_DIR=os.path.join(tmp, "sh_locks").replace("\\", "/"))
+        rs = subprocess.run(["bash", "-c", script], capture_output=True, text=True, encoding="utf-8", errors="replace", env=env_sh)
+        out = rs.stdout.splitlines()
+        st_line = next((l for l in out if l.startswith("{")), "{}")
+        try:
+            st_sh = json.loads(st_line)
+        except Exception:
+            st_sh = {}
+        check("G10 셸 API(qv_lock.sh) — 임대 획득 rc 0 · 다른 보유자 rc 1 · 상태 JSON(held · cap 3h) · 해제 rc 0 · 이름 잠금 획득(토큰 16자) · 해제 뒤 비움",
+              "acq=0" in out and "other=1" in out and st_sh.get("state") == "held" and st_sh.get("cap_hours") == 3 and "rel=0" in out
+              and "lk=0 tok=16" in out and "sh_x.qvlock" in out and "unlk=0" in out and out[-1].strip() == "0", (out, rs.stderr[-300:]))
     finally:
         for k in kids:
             try:

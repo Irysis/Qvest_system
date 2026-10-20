@@ -131,6 +131,8 @@ bash 08_Tests/ops/test_replication_lane.sh
 
 ## 6. 알려진 경계 · 남은 위험
 
+- **main 병합분과의 관계(5170d410d · THGNN-AXIS-K200KQ150-20261020)**: 검증기의 논문별 측정 축 덮어쓰기(`06_Registry/replication_axis_overrides.json`)는 슬롯 경로에서도 그대로 적용된다 — 덮어쓰기 열쇠는 논문 키(레인 `P_KEY` → 검증기 `RP_KEY`)라 슬롯과 무관하고, 대표 · 변형 측정이 같은 `.BASE_ARGS` 를 쓴다(TEST_RECORD W8). 덮어쓰기의 `env`(예: `PYTORCH_CUDA_ALLOC_CONF`)는 그 논문의 검증기 프로세스에만 실린다 — 슬롯마다 검증기가 따로라 다른 슬롯으로 새지 않는다.
+
 - **메모리**: 슬롯마다 검증기가 RAWDATA 를 적재한다(수 GB). WP2 측정 서버 전까지는 `cpu: 2` 를 상한으로 권고한다.
 - **공유 저널 동시 추가**: `reinforce_auto_log.jsonl` 은 여러 작업자가 한 줄씩 덧붙인다. Windows CRT 의 덧붙이기는 원자적이지 않아 아주 드물게 한 줄이 깨질 수 있다. 판독기는 깨진 줄을 건너뛴다. 기존 감사 팬아웃(6 에이전트)과 같은 수준의 위험이다.
 - **검증기 공유 기록 구간**(팩터 등록 · 원장 L1 개설/접기 · 큐 미러 · 프로그램 큐 · 모듈 등재 · 스킵리스트)은 슬롯끼리 직렬화한다(`.cache/qv_locks/rf_replication.book.qvlock`). 측정은 병렬이다. 세션이 같은 원장을 동시에 쓰는 경우는 범위 밖이다(기존 위험 그대로).
