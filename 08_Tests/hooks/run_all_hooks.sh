@@ -1843,6 +1843,8 @@ SUITES=(
   "08_Tests/programs/test_round_core_v1.R"
   #   코어 v1 흐름(격리 — 실제 등록부 · 원장 · stage_artifacts 무쓰기): 등록 거부 7종 · 등록 · P1 판정 · 보는 창 파일 · 종료 · R2 · 캐시 키 · 핀 어휘 · P1 표준 구성 = P0R01 C0 선례
   "08_Tests/programs/test_round_core_v1_flow.R"
+  #   코어 v1 상설 자격(WP5 · 2026-10-20 · 격리): 레인 스캔 사유 코드 · 항목 R2 거부 · 원장 사슬 변조 탐지 · 새 판 · 보는 창 기록 · 보고
+  "08_Tests/programs/test_round_core_v1_standing.R"
   # >>> 10-17 충실구현 레인 — 감사 선행 · 원문 축자본 · 계약 표기 · 모든 방법론(REPLICATION-ALL-METHODS-20261017)
   #   측정 전 PIT 사전 점검(1b 순서) · 측정 뒤 검증 실패의 Judge 트리거 보류(뮤테이션) · 원문 축자본 수집기(html · e-print · pdf · 레인 인터프리터) ·
   #   nav 순노출 = 보유 Σw(뮤테이션) · 변형 계획 · 측정 뒤 보유 대조(P4 · 양성 · 경계 · 뮤테이션 · 설정 문턱) · 보고 섹션 · 배선 · engine_vars
