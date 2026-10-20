@@ -56,8 +56,11 @@ new_repo() { # stdout = sandbox 경로. 추적 파일 2 + base 커밋 + .cache(.
 run_hook() { # $1=sandbox [$2=threshold override]
   # ★env 경유 필수: `${thr:+VAR=x} cmd` 꼴은 확장 결과가 할당-워드로 인식되지 않아
   #   (assignment는 파싱 시점 리터럴이어야 함) 훅이 아예 실행되지 않는다 — 초판 T3 실측.
+  # ★QVEST_AC_SCOPE=all (WP4 2026-10-20): 훅 기본 범위가 '그 세션이 쓴 경로'(전사 필요)로 바뀌었다.
+  #   이 검사는 밸브 기전을 작업 트리 전체 범위에서 재므로 구 범위를 명시한다. 세션 범위의 밸브·비밀 축은
+  #   test_auto_commit_session_scope.sh 가 잰다.
   local sb="$1" thr="${2:-}"
-  echo '{}' | env QVEST_AC_PROJECT="$sb" QVEST_AC_LOG="$sb.meta/ac.log" \
+  echo '{}' | env QVEST_AC_SCOPE=all QVEST_AC_PROJECT="$sb" QVEST_AC_LOG="$sb.meta/ac.log" \
     QVEST_AC_MARKER="$sb.meta/ac.marker" QVEST_SKIP_AUTO_COMMIT=0 \
     ${thr:+QVEST_AC_BULK_THRESHOLD="$thr"} bash "$HOOK" 2>>"$sb.meta/ac.stderr"
 }

@@ -124,7 +124,10 @@ ncommits()  { git -C "$1" rev-list --count HEAD 2>/dev/null; }
 in_head()   { git -C "$1" show --name-status --format="" HEAD 2>/dev/null | grep -c "$2" || true; }
 
 run_ac() { # $1=cpd $2=qm_root $3=meta $4=hook경로
-  echo '{}' | env CLAUDE_PROJECT_DIR="$1" QM_ROOT="$2" \
+  # ★QVEST_AC_SCOPE=all (WP4 2026-10-20): 훅 기본 범위가 '그 세션이 쓴 경로'(전사 필요)로 바뀌었다 — 이 검사는
+  #   트리 표적(어느 트리에 커밋하나)을 재므로 구 범위를 명시한다. 세션 범위의 트리 표적은
+  #   test_auto_commit_session_scope.sh 가 잰다.
+  echo '{}' | env QVEST_AC_SCOPE=all CLAUDE_PROJECT_DIR="$1" QM_ROOT="$2" \
     QVEST_AC_LOG="$3/ac.log" QVEST_AC_MARKER="$3/ac.marker" \
     QVEST_SKIP_AUTO_COMMIT=0 QVEST_AC_PROJECT= \
     bash "$4" 2>>"$3/ac.stderr"
