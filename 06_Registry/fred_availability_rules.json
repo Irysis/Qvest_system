@@ -1592,6 +1592,31 @@
       ]
     },
     {
+      "id": "QW_KR_CD91",
+      "name": "KR_CD91(QuantiWise)",
+      "aliases": [
+        "xarKOIRKSDACD"
+      ],
+      "source": "QuantiWise ECO Wise › 통화/금융(MB) › 시장금리 › CD(91일) = xarKOIRKSDACD(03_Universe/Global_Macro.xlsx → .cache/qw_global_macro.parquet)",
+      "frequency": "daily",
+      "date_meaning": "한국 거래일 d(CD 91일물 수익률 · 질의서 Data Type Previous = 한국 휴일은 전일값)",
+      "status": "active",
+      "bounds": [
+        {
+          "type": "kr_trading_days_after",
+          "n": 1,
+          "basis": "CD 수익률은 한국 장 마감 뒤 고시된다 → 한국 다음 거래일부터(ECOS KR_CD91 의 '판정서 ② 817Y002 행(CD91 포함): lag 1' 과 같은 규칙). 10-20 대조: ECOS KR_CD91 과 다른 고시(겹치는 5,232일 연 중앙 차 −1~+6bp · 최대 39bp · 10-19 퀀티 3.25 · ECOS 3.37). 도입 = THGNN(2601.04602) 무위험이자율 · 도훈 10-20 '퀀티 CD91 전 구간'(ECOS 817Y002 CD91 = 2005-08-01~ 라 축 첫 7개월 공백)."
+        }
+      ],
+      "vintage": {
+        "revisions": "none_known",
+        "evidence": "시장금리 고시"
+      },
+      "verdict_rows": [
+        "2026-10-20 THGNN rf 출처 결정"
+      ]
+    },
+    {
       "id": "ECOS_USD_PER_EUR",
       "name": "달러/유로(ECOS)",
       "aliases": [],
@@ -1753,7 +1778,7 @@
       ]
     }
   ],
-  "coverage_note": "이 목록 = .cache/macro_fred.parquet·fred_macro.parquet 의 Series_ID 23종 전수(2026-09-24 데이터 확인) + ECOS 8종(ecos_krw_usd 1 + ecos_bond_rates Series 7) + ECOS 731Y002 7종(.cache/ecos_fx_majors.parquet — 6통화 + ECOS_DXY_PROXY · 2026-10-20) + 퀀티 1종(.cache/qw_global_macro.parquet QW_WTI_NYMEX · 2026-10-20). 데이터에 새 계열이 생기면 규칙을 먼저 넣어야 결합된다(fail-closed · 검사 08_Tests/data/test_fred_availability.R A축이 누락을 잡는다).",
+  "coverage_note": "이 목록 = .cache/macro_fred.parquet·fred_macro.parquet 의 Series_ID 23종 전수(2026-09-24 데이터 확인) + ECOS 8종(ecos_krw_usd 1 + ecos_bond_rates Series 7) + ECOS 731Y002 7종(.cache/ecos_fx_majors.parquet — 6통화 + ECOS_DXY_PROXY · 2026-10-20) + 퀀티 2종(.cache/qw_global_macro.parquet QW_WTI_NYMEX · QW_KR_CD91 · 2026-10-20). 데이터에 새 계열이 생기면 규칙을 먼저 넣어야 결합된다(fail-closed · 검사 08_Tests/data/test_fred_availability.R A축이 누락을 잡는다).",
   "residual_risk": [
     "주간·월간 고정 상한은 ALFRED 로 대조한 구간(history_check.coverage)에서만 상한임이 확인됐다. 그 밖(대조 불가 기간)은 미검증.",
     "b2 까지의 R* 는 빈티지 '날짜'만으로 잡은 추정이었고 보수가 아니었다(개정 전용 빈티지를 공표로 세면 이르다 — INDPRO·PERMIT 7건 실증). INDPRO·PERMIT 은 b3 에서 값의 첫 등장으로 재대조했다. 그 밖 계열은 b3_value_check.other_series_open 참조.",

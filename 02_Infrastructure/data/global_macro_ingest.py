@@ -32,7 +32,9 @@ OUT = PROJECT_ROOT / '.cache' / 'qw_global_macro.parquet'
 META = PROJECT_ROOT / '.cache' / 'qw_global_macro_meta.json'
 
 # 퀀티 심볼 → 계열 id(가용일 규칙 id 와 같아야 한다)
-SERIES = {'xcCHPRWDQWTI': 'QW_WTI_NYMEX'}
+#   xarKOIRKSDACD = 통화/금융(MB) › 시장금리 › CD(91일) — 1994-06-29~ 일간. THGNN 무위험이자율(도훈 10-20 '퀀티 CD91 전 구간':
+#   ECOS 817Y002 CD91 은 2005-08-01 부터라 축 첫 7개월이 빈다). ECOS KR_CD91 과는 다른 고시라 값이 다르다(연 중앙 −1~+6bp · 최대 39bp).
+SERIES = {'xcCHPRWDQWTI': 'QW_WTI_NYMEX', 'xarKOIRKSDACD': 'QW_KR_CD91'}
 # 미국 연휴 최장(추수감사절 목 + 주말 = 4역일) + 퀀티 반영 하루 + 여유 = 7역일. 넘으면 수급 정체로 신고한다.
 STALE_DAYS = 7
 HEADER = {'symbol': 8, 'name': 9, 'unit': 11}
