@@ -178,15 +178,51 @@ _CITE_LINE_RX = re.compile(r"paper\.md\s*:\s*L?(\d+)(?:\s*[-~]\s*L?(\d+))?")
 _CITE_QUOTE_RX = re.compile(r"[\"'“‘「]([^\"'“”‘’「」]{8,}?)[\"'”’」]")
 _CITE_SEC_RX = re.compile(r"(?:§|\bSection\s+|\bSec\.\s*)\s*([A-Z]?\d+(?:\.\d+)*)")
 _CITE_APPX_RX = re.compile(r"(?<![A-Za-z0-9.§])([A-Z]\.\d+(?:\.\d+)*)(?![0-9])")   # 'A.1 learning rate' — 원문 제목이 있을 때만 인용
+# 10-20 저녁 재전수 오탐 3건(전부 오탐) — PDF 줄바꿈이 부호와 숫자를 가름(1603 'value -' / '9999') · 숫자 낱말(THGNN 'every three days')
+#   · 연도 구간 길이(THGNN 'from 2006-2018' → 13년). 아래 셋이 그 표기를 받는다.
+_LINEBREAK_SIGN_RX = re.compile(r"([-−])[ \t\r]*\n[ \t\r]*(?=[0-9])")
+_YEAR_SPAN_RX = re.compile(r"(?<![0-9])((?:19|20)[0-9]{2})\s*(?:-|–|—|~|to|through|until|and)\s*((?:19|20)[0-9]{2})(?![0-9])")
+_YEAR_HINT_RX = re.compile(r"(?<![a-z])(?:years?|yrs?)(?![a-z])|년", re.I)
+_NUM_WORDS = ("zero one two three four five six seven eight nine ten eleven twelve thirteen fourteen fifteen sixteen "
+              "seventeen eighteen nineteen").split()
+_TENS_WORDS = {2: "twenty", 3: "thirty", 4: "forty", 5: "fifty", 6: "sixty", 7: "seventy", 8: "eighty", 9: "ninety"}
 
 
 def _g(f):
     return "%.10g" % f
 
 
-def _value_forms(v):
+def _int_words(n):
+    """정수 → 영어 낱말 정규식(원문 소문자본용). 0 · 1 은 넣지 않는다('one of' 처럼 흔해 대조력이 없다)."""
+    if 2 <= n < 20:
+        return [_NUM_WORDS[n]]
+    if 20 <= n < 100:
+        t, u = _TENS_WORDS[n // 10], n % 10
+        return [t] if u == 0 else [t + r"[-\s]+" + _NUM_WORDS[u]]
+    if n == 100:
+        return [r"(?:(?:one|a)\s+)?hundred"]
+    return []
+
+
+class _YearSpan:
+    """연 단위 정수 상수 = 원문 연도 구간 길이('from 2006-2018' → 13 · 끝 연도를 빼는 셈 12 도 인정).
+    정규식처럼 search(t) 만 가진다(대조 루프가 그대로 쓴다)."""
+
+    def __init__(self, n):
+        self.n = n
+
+    def search(self, t):
+        for m in _YEAR_SPAN_RX.finditer(t):
+            d = int(m.group(2)) - int(m.group(1))
+            if d > 0 and self.n in (d, d + 1):
+                return m
+        return None
+
+
+def _value_forms(v, years=False):
     """신고 값 → 원문에서 찾을 형태(원소마다 정규식 목록). 숫자는 표기를 넓게 본다:
-    0.5 → 0.5 · .5 · 50% · 50\\% / 0.0005 → 0.05% · 5 bp / 0.001 → 1e-3 · 10^{-3} / 정수 → 그 정수 / 날짜 → 그대로.
+    0.5 → 0.5 · .5 · 50% · 50\\% / 0.0005 → 0.05% · 5 bp / 0.001 → 1e-3 · 10^{-3} / 정수 → 그 정수 · 2~100 은 영어 낱말
+    (three · twenty-five) / 음수 → '-' 또는 '−' / 날짜 → 그대로. years=True(이름 · note 가 연 단위)면 정수는 원문 연도 구간 길이로도 찾는다.
     숫자도 날짜도 아닌 문자 값(R 식 등)은 원문 대조가 성립하지 않아 건너뛴다(빈 목록)."""
     items = v if isinstance(v, list) else [v]
     out = []
@@ -208,7 +244,8 @@ def _value_forms(v):
         for r in list(reps):
             if r.startswith("0.") or r.startswith("-0."):
                 reps.add(r.replace("0.", ".", 1))
-        forms = [re.compile(r"(?<![0-9.])" + re.escape(r) + r"(?![0-9])") for r in sorted(reps)]
+        forms = [re.compile(r"(?<![0-9.])" + (r"[-−]" + re.escape(r[1:]) if r.startswith("-") else re.escape(r)) + r"(?![0-9])")
+                 for r in sorted(reps)]
         if 0 < abs(f) < 1:
             forms.append(re.compile(r"(?<![0-9.])" + re.escape(_g(f * 100)) + r"\s*\\?%"))
         if 0 < abs(f) < 0.01:
@@ -224,6 +261,10 @@ def _value_forms(v):
                 forms.append(re.compile(r"(?<![0-9.])" + re.escape(ms) + r"\s*(?:\\times|×|x|\*|\\cdot)\s*10\s*\^\s*\{?\s*" + sg + str(abs(k)) + r"\s*\}?"))
                 if ms in ("1", "-1"):
                     forms.append(re.compile(r"10\s*\^\s*\{?\s*" + sg + str(abs(k)) + r"\s*\}?"))
+        if f.is_integer():
+            forms += [re.compile(r"(?<![a-z])" + w + r"(?![a-z])") for w in _int_words(int(f))]
+            if years and 0 < f <= 100:
+                forms.append(_YearSpan(int(f)))
         out.append(forms)
     return out
 
@@ -800,7 +841,8 @@ def run(wdir, root, cfg):
             if not cited:
                 uncited.append(nm)
                 continue
-            forms = _value_forms(it.get("value"))
+            forms = _value_forms(it.get("value"), years=bool(_YEAR_HINT_RX.search(nm + " " + note)))
+            texts = [_LINEBREAK_SIGN_RX.sub(r"\1", t) for t in texts]
             if texts and forms and not all(any(rx.search(t) for t in texts for rx in fs) for fs in forms):
                 novalue.append("%s=%s" % (nm, json.dumps(it.get("value"), ensure_ascii=False)))
         sev = PC.get("severity") or "warn"

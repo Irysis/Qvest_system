@@ -401,7 +401,9 @@ def main():
                     "The portfolio holds the top decile.\n\n## 5.1 Procedure\nStep 3. Fix a parameter $\\rho\\in[0,1]$ . For each node,\n"
                     "define the damping as below.\n\n## A.4 Labels\nWe charge a cost of 0.05% per trade when labelling.\n"
                     "In our baseline specification we take $\\tau=10^{-3}$ and keep active assets.\n"
-                    "Weight decay is $2\\times 10^{-4}$ and the learning rate 3e-4.\n")
+                    "Weight decay is $2\\times 10^{-4}$ and the learning rate 3e-4.\n"
+                    "\n## 6 Data\nTraining data from 2006-2018 and the portfolio is rebalanced every seven days.\n"
+                    "Since not all indicators were available we assigned value -\n9999 to not present values. Missing ranks are set to −5.\n")
         ENG_C = GOOD_ENGINE + "LOOKBACK <- 12L\nRHO <- 1.0\n"
 
         def fx_c(name, consts, cfg=CFG):
@@ -454,6 +456,35 @@ def main():
         rc9b, rp9b = fx_c("C9b", [LB_OK, RHO_SUP, dict(WD, note="Z.9 weight decay")])
         check("C9b 원문 제목에 없는 'Z.9' 는 인용으로 세지 않는다 → P13_paper_constant_uncited", "P13_paper_constant_uncited" in warns(rp9b),
               "warns=%s" % warns(rp9b))
+        # 10-20 저녁 재전수 오탐 3유형(1603 MISSING_FILL · THGNN C_REBAL_DAYS_NONML · C_TRAIN_YEARS) — 받는 쪽과 틀린 값 쪽을 함께 잰다
+
+        def novalue(rep):
+            return " ".join(f.get("title") or "" for f in rep.get("findings") or [] if f["code"] == "P13_paper_value_not_in_citation")
+        MF = {"name": "MISSING_FILL", "value": -9999, "source": "paper",
+              "note": "paper.md:18 'we assigned value -' + paper.md:19 '9999 to not present values'"}
+        rc10, rp10 = fx_c("C10", [LB_OK, RHO_SUP, MF])
+        check("C10 PDF 줄바꿈이 가른 음수('value -' / '9999') → P13 없음(1603 실측 오탐형)", "MISSING_FILL" not in novalue(rp10),
+              "novalue=%s" % novalue(rp10))
+        rc10b, rp10b = fx_c("C10b", [LB_OK, RHO_SUP, dict(MF, value=-9998)])
+        check("C10b 같은 인용에 다른 음수(-9998) → P13_paper_value_not_in_citation", "MISSING_FILL=-9998" in novalue(rp10b),
+              "novalue=%s" % novalue(rp10b))
+        RF = {"name": "RANK_FLOOR", "value": -5, "source": "paper", "note": "paper.md:19 'Missing ranks are set to'"}
+        rc10c, rp10c = fx_c("C10c", [LB_OK, RHO_SUP, RF])
+        rc10d, rp10d = fx_c("C10d", [LB_OK, RHO_SUP, dict(RF, value=-6)])
+        check("C10c · d 유니코드 빼기 '−5' → -5 는 받고 -6 은 경고", "RANK_FLOOR" not in novalue(rp10c) and "RANK_FLOOR=-6" in novalue(rp10d),
+              "c=%s d=%s" % (novalue(rp10c), novalue(rp10d)))
+        RB = {"name": "REBAL_DAYS", "value": 7, "source": "paper", "note": "§6 'the portfolio is rebalanced every seven days'"}
+        rc11, rp11 = fx_c("C11", [LB_OK, RHO_SUP, RB])
+        rc11b, rp11b = fx_c("C11b", [LB_OK, RHO_SUP, dict(RB, value=8)])
+        check("C11 숫자 낱말('every seven days' · THGNN 'three days' 실측 오탐형) → 7 은 받고 8 은 경고",
+              "REBAL_DAYS" not in novalue(rp11) and "REBAL_DAYS=8" in novalue(rp11b), "11=%s 11b=%s" % (novalue(rp11), novalue(rp11b)))
+        TY = {"name": "C_TRAIN_YEARS", "value": 13, "source": "paper", "note": "§6 training data from 2006-2018 (= 13년 길이)"}
+        rc12, rp12 = fx_c("C12", [LB_OK, RHO_SUP, TY, dict(TY, name="C_TRAIN_YEARS_EXCL", value=12)])
+        check("C12 연 단위 상수 = 원문 연도 구간 길이(2006-2018 → 13 · 끝 연도 제외 12) → P13 없음(THGNN 실측 오탐형)",
+              "C_TRAIN_YEARS" not in novalue(rp12), "novalue=%s" % novalue(rp12))
+        rc12b, rp12b = fx_c("C12b", [LB_OK, RHO_SUP, dict(TY, value=15), dict(TY, name="C_WINDOW", note="§6 window")])
+        check("C12b 구간 길이와 다른 값(15) · 연 단위 표지 없는 13 → 둘 다 경고(구간 길이는 연 단위 상수에만)",
+              "C_TRAIN_YEARS=15" in novalue(rp12b) and "C_WINDOW=13" in novalue(rp12b), "novalue=%s" % novalue(rp12b))
         fo = good_fidelity()
         fo["paper_steps"].append({"step": "예측 정확도 표", "paper_quote": "Table 3 'RMSE'", "status": "omitted",
                                   "note": "성과 산출에 들어가지 않는 진단", "omit_code": "J2"})
