@@ -37,6 +37,21 @@ bash 04_Research/programs/_lib/round_core/round.sh <round_dir> report --next "..
 bash 04_Research/programs/_lib/round_core/round.sh <round_dir> close --note "<해석>" --p2 <id> --t2 <id>
 ```
 
+## 상설 판 (P1 상설 자격 · WP5 · 사양 `standing: true` · 첫 판 = `P1_RETURN/P1S01_standing_qualification`)
+
+규칙을 프로그램 단위로 한 번 등록하면, 충실구현 레인이 낸 엔진마다 라운드 의식 없이 측정 · 판정한다. R2 는 그대로다 — 규칙 · 입구 규칙 · 생성 함수 핀(`rc_p1_cell_spec` md5 · 선례 · 정본 고정 축)은 등록본에 고정되고, 항목 칸 사양은 등록된 생성 함수가 재량 없이 만든다(측정 · 판정 직전 다시 만들어 md5 대조). 판정 원장 = 사전등록 정본 옆 `standing_ledger.jsonl`(추가 전용 · 줄마다 앞 줄 md5 사슬 · 보는 창 값만). 규칙을 바꾸면 새 판(P1S02 …) — 옛 판정은 남고, 새 판이 등록되면 옛 판은 새 항목을 받지 않는다. 등록부는 읽기만 한다.
+
+```bash
+round.sh <판> standing-check            # 상설 사양 · 생성 함수 핀 · 시드 회계 검사 → standing_rules.md(사양에서 생성)
+round.sh <판> check · draft · reviewed · register   # 라운드와 같다(등록은 판마다 1회)
+round.sh <판> scan [--dry-run] [--max N] [--out f]  # 레인 산출 → 자격 큐(입구 규칙 · 사유 코드 · 성과 수치 안 읽음)
+round.sh <판> standing-measure          # 배리어 → 대기 항목마다 R2 대조 · 지문 · 정본 셀 워커 → 판정(원장 · standing_visible.json)
+round.sh <판> standing-report [--send]  # 통과 = 엔진마다 push 1통 · 미달 · 미시험 = 일 요약 1통(무음)
+round.sh <판> standing-status           # 측정 · 판정 · 보고 · Superfan 대기 · R2 차단 · 원장 사슬
+round.sh <판> superfan-mark --codes a,b --kind pass|daily --p2 <id> --t2 <id>   # 규약 §11-1
+```
+- 다른 작업 트리(worktree)에서 돌릴 때만 `RC_ROOT_POSIX` · `RC_ROOT_WIN` + `R_ENVIRON_USER`(QM_ROOT 를 그 트리로)를 준다. 기본은 저장소다.
+
 ## 모듈 (v1)
 
 | 파일 | 내용 |
@@ -52,15 +67,17 @@ bash 04_Research/programs/_lib/round_core/round.sh <round_dir> close --note "<�
 | `v1/register.R` | 초안 · 점검 기록(drafts.json — 점검본 사본 없음) · 등록 조건 ①~⑧ · 종료 기록 |
 | `v1/driver.R` | 단계 실행(check · precheck · plan · draft · reviewed · register · evaluate · report · close) |
 | `v1/measure_cell.R` · `v1/fingerprint.sh` | 칸 측정(정본 셀 워커) · 데이터 지문 |
+| `v1/standing.R` | 상설 판 — 사양 검사 · 생성 함수 핀 · 레인 스캔(입구 규칙 · 사유 코드) · 항목 넣기 · 항목 R2 · 측정 · 판정 · 원장(추가 전용 사슬) · 보고 · Superfan 표식 · 상태 |
 | `round.sh` | 셸 진입 — 측정 파이프라인 · 샤딩 평가 |
 | `templates/DESIGN_p1.md` | 사고 기록 템플릿(코어 승계 항목은 다시 쓰지 않는다) |
 
 ## 검증
 - `08_Tests/programs/test_round_core_v1.R`: 규칙 · 사양 · P1R01 결과 동일. 원래 evaluate.R 격리 사본과 바이트 동일한지 본다.
 - `08_Tests/programs/test_round_core_v1_flow.R`: 격리 흐름. 등록 거부 7종 · 등록 → 판정 → 종료 · R2 · 캐시 키 · 핀 · 표준 구성을 본다.
+- `08_Tests/programs/test_round_core_v1_standing.R`: 상설 판 격리(RC_SA_ROOT · 임시 등록부 · 임시 원장 · 임시 레인). 입구 사유 코드 전수 · 주석 토큰 양성 대조 · 성과 무관 음성 대조 · 등록 → 스캔 → 측정(대체 워커) → 판정(코어 P1 판정과 같은 값) → 보고 · 항목 R2 거부 6종 · 칸 평가 예외 재시도 · 원장 사슬 변조 · 추가 잠금 · 새 판. 소스 텍스트 치환 뮤테이션 15종 전부 검출(10-20).
 
 ## 다음
 - P2/P3 판정 헬퍼(위기 · β 짝 · 과반 · 사이클 · 짝 평가 골격) 이관과 P2R04 · P2R03 · P3R03 결과 동일 재판정.
-- 측정 서버 `ms_submit` 연결(WP2).
-- P1 상설 자격(WP5).
+- 측정 서버 `ms_submit` 연결(WP2) — 상설 측정(`standing-measure`)도 서버가 생기면 그쪽을 먼저 쓴다.
+- P1 상설 자격(WP5) — 코어 · 시험 · P1S01 사양 완료 · **등록은 원 세션**(P2R05 종료 또는 WP3 쓰기 잠금 · v1 출시 · WP2 재핀 뒤).
 - v1 출시(RELEASES.json).
