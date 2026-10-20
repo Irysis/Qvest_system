@@ -19,7 +19,10 @@ dir.create(P$results, recursive = TRUE, showWarnings = FALSE)
 out <- file.path(P$results, paste0(code, ".json"))
 if (file.exists(out) && isTRUE(fromJSON(out)$ok)) { cat("[측정] 이미 있음:", code, "\n"); quit(status = 0) }
 role <- cell[[1]]$role %||% "variant"
-if (!identical(role, "variant")) Sys.setenv(QVEST_RP_REGISTER = "0", QVEST_RP_NO_FACTOR_ANALYSIS = "1")
+## 요인 분석 = 라운드 칸 기본 끔(2026-10-20 · WP2 확인 — 라운드 판정 · A 자격 관문 · 모듈 등재가 analysis_* 를 읽지 않는다 · 등급 산출 뒤 단계) ·
+##   A 띠 후보 사후 실행만 RC_FACTOR_ANALYSIS=1 로 켠다. 모듈 풀 등재는 지금처럼 변형 칸만(기준 · 진단 = QVEST_RP_REGISTER=0).
+if (!identical(Sys.getenv("RC_FACTOR_ANALYSIS", "0"), "1")) Sys.setenv(QVEST_RP_NO_FACTOR_ANALYSIS = "1")
+if (!identical(role, "variant")) Sys.setenv(QVEST_RP_REGISTER = "0")
 t0 <- Sys.time()
 rc <- system2("Rscript", c(file.path(ROOT, "02_Infrastructure/ops/rf_cell_worker.R"), shQuote(cs), "1", code, shQuote(out)),
               stdout = file.path(P$results, paste0(code, ".log")), stderr = file.path(P$results, paste0(code, ".err.log")))

@@ -33,7 +33,12 @@ chk("A2 결과 경로 기본값 = <라운드>/results/<code>.json(specs 아래�
 n2 <- .ms_norm_specs(list(list(spec = sp1, code = "Y", role = "reference", env = list(QVEST_RP_NO_FACTOR_ANALYSIS = "0"))), ROOT)
 chk("A3 role ≠ variant = 등재 끔 · 요인 분석 끔(v1 규칙) · env 가 덮는다", identical(n2[[1]]$env$QVEST_RP_REGISTER, "0") && identical(n2[[1]]$env$QVEST_RP_NO_FACTOR_ANALYSIS, "0"))
 n3 <- .ms_norm_specs(data.frame(spec = sp1, code = "Z", role = "variant", stringsAsFactors = TRUE), ROOT)
-chk("A4 data.frame 입력 · variant = env 없음", identical(n3[[1]]$code, "Z") && !length(n3[[1]]$env))
+chk("A4 data.frame 입력 · variant = 등재 유지 · 요인 분석 끔(10-20 라운드 기본)", identical(n3[[1]]$code, "Z") &&
+      is.null(n3[[1]]$env$QVEST_RP_REGISTER) && identical(n3[[1]]$env$QVEST_RP_NO_FACTOR_ANALYSIS, "1"))
+Sys.setenv(RC_FACTOR_ANALYSIS = "1")
+n3b <- .ms_norm_specs(data.frame(spec = sp1, code = "Z", role = "variant", stringsAsFactors = TRUE), ROOT)
+Sys.unsetenv("RC_FACTOR_ANALYSIS")
+chk("A4b RC_FACTOR_ANALYSIS=1(A 띠 사후 실행) = 요인 분석 켬 · variant env 없음", !length(n3b[[1]]$env))
 chk("A5 코드 중복 = 거부", throws(.ms_norm_specs(c(sp1, sp1), ROOT)))
 chk("A6 사양 없음 = 거부", throws(.ms_norm_specs(file.path(td, "none.json"), ROOT)))
 chk("A7 코드 형식 오류 = 거부", throws(.ms_norm_specs(list(list(spec = sp1, code = "a b")), ROOT)))

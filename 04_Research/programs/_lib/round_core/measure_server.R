@@ -100,7 +100,9 @@ ms_workers_auto <- function(n_cells, free_gb = ms_free_gb(),
            if (identical(basename(dirname(sp)), "specs")) file.path(dirname(dirname(sp)), "results", paste0(code, ".json")) else NA_character_
     role <- as.character(.ms_or(c[["role"]], NA_character_))[1]
     env <- list()
-    if (!is.na(role) && !identical(role, "variant")) env <- list(QVEST_RP_REGISTER = "0", QVEST_RP_NO_FACTOR_ANALYSIS = "1")
+    ## 요인 분석 = 라운드 칸 기본 끔(10-20 · 라운드 판정 · A 관문 · 모듈 등재가 읽지 않음 · A 띠 사후 실행만 RC_FACTOR_ANALYSIS=1) · 등재 = 변형 칸만
+    if (!identical(Sys.getenv("RC_FACTOR_ANALYSIS", "0"), "1")) env$QVEST_RP_NO_FACTOR_ANALYSIS <- "1"
+    if (!is.na(role) && !identical(role, "variant")) env$QVEST_RP_REGISTER <- "0"
     if (is.list(c[["env"]]) && length(c[["env"]])) {
       if (is.null(names(c[["env"]])) || any(!nzchar(names(c[["env"]])))) stop("[measure_server] env 는 이름 있는 목록이어야 한다: ", code)
       env[names(c[["env"]])] <- lapply(c[["env"]], function(v) as.character(v)[1])
