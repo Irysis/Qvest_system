@@ -48,6 +48,24 @@ trap '_gate_fail_closed' ERR
 set -u
 
 INPUT=$(cat 2>/dev/null || echo '{}')
+
+# 차단 대상 패턴 — 원장/방법론 정본만. (.py 는 2026-08-24 제거, 위 재등록 이력 참조)
+#   (WP4 2026-10-20) 정의를 빠른 길 앞으로 옮겼다 — 빠른 길이 이 정의 하나에서 판정을 파생한다(낱말 목록 이중 관리 없음:
+#   대상을 넓히면 빠른 길도 함께 넓어진다. test_backtest_contract_audit_gate.R C-2 가 이 패턴에 .py 를 넣어 그 연동을 잰다).
+TARGET_PATTERN='(backtest_registry\.csv$|methodology_(active|memory)\.md$|metrics_official\.csv$)'
+
+# ── 빠른 길 (WP4 2026-10-20 · 훅 지연 — 판정 불변) ─────────────────────────────────
+# 증명: 이 훅은 file_path 를 **원문에서** 뽑는다(grep -oE · 해독 없음). 차단·로그는 그 원문 부분 문자열이 위 패턴(끝 고정
+#   '$')에 걸린 뒤에만 생긴다. 걸리면 끝 고정을 뗀 같은 정규식이 원문 어딘가에 걸린다(같은 글자 · 같은 자리).
+#   fail-closed hay(같은 FILE_PATH, 비면 원문 INPUT)의 패턴도 같은 세 갈래(끝 고정 없음)다. 원문이 끝 고정을 뗀 판에 안
+#   걸리면 원래 경로의 출력은 '{}'(로그 없음)다. 대상 낱말은 ASCII 라 해독·인코딩과 무관하다. 우회 표식
+#   (QVEST_SKIP_BACKTEST_CONTRACT_AUDIT=1)은 감사 로그를 남기는 부수효과가 있어 빠른 길에서 뺀다 — 원래 경로로 간다.
+# 끄기: QVEST_HOOK_FASTPATH=0 (검사 08_Tests/hooks/test_hook_fastpath_equivalence.sh)
+_bca_may_target() { [[ $INPUT =~ ${TARGET_PATTERN//\$/} ]]; }
+if [ "${QVEST_HOOK_FASTPATH:-1}" != "0" ] && [ "${QVEST_SKIP_BACKTEST_CONTRACT_AUDIT:-0}" != "1" ] && ! _bca_may_target; then
+  echo '{}'; exit 0
+fi
+
 LOG="/tmp/backtest_contract_audit.log"
 TS="$(date '+%Y-%m-%d %H:%M:%S')"
 PROJECT="${CLAUDE_PROJECT_DIR:-${QM_ROOT:-/c/Users/99922/OneDrive/Quant_Module_Moltbot}}"
@@ -66,9 +84,7 @@ fi
 
 [ -z "$FILE_PATH" ] && { echo '{}'; exit 0; }
 
-# 차단 대상 패턴 — 원장/방법론 정본만. (.py 는 2026-08-24 제거, 위 재등록 이력 참조)
-TARGET_PATTERN='(backtest_registry\.csv$|methodology_(active|memory)\.md$|metrics_official\.csv$)'
-
+# 차단 대상 패턴 = 위(빠른 길 앞) 정의 하나. (WP4 2026-10-20 이동)
 if ! echo "$FILE_PATH" | grep -qE "$TARGET_PATTERN"; then
   echo '{}'; exit 0
 fi

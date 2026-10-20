@@ -28,6 +28,20 @@ trap 'echo "{}"; exit 0' ERR
 export PYTHONUTF8=1  # (v8.1.2) 인코딩 사고 방지 — harness.md "Hook stdout JSON 규율"
 
 INPUT=$(cat)
+
+# ── 빠른 길 (WP4 2026-10-20 · 훅 지연 — 판정 불변) ─────────────────────────────────
+# 증명: 차단은 `*/optimization_package.json)` 가지(FILE_PATH = 해독값)에서만 나고, 그 밖의 모든 가지
+#   (다른 경로 · 파서 실패 · ERR trap)의 출력은 '{}' 다. 그 가지에 들려면 해독값에 'optimization_package'
+#   가 있어야 하고, JSON 해독에서 영숫자·_ 를 만드는 이스케이프는 \uXXXX 뿐 → 원문에 그 낱말도 '\u' 도
+#   없으면 어떤 파싱 결과로도 그 가지에 들 수 없다 → 출력 '{}' 동일.
+# 끄기: QVEST_HOOK_FASTPATH=0 (검사 08_Tests/hooks/test_hook_fastpath_equivalence.sh)
+if [ "${QVEST_HOOK_FASTPATH:-1}" != "0" ]; then
+  case "$INPUT" in
+    *optimization_package*|*'\u'*) : ;;
+    *) echo '{}'; exit 0 ;;
+  esac
+fi
+
 FILE_PATH=$(echo "$INPUT" | "$QVEST_PY_BIN" -c 'import json,sys; sys.stdout.reconfigure(encoding="utf-8",errors="replace"); d=json.loads(sys.stdin.buffer.read().decode("utf-8","replace")); print(d.get("tool_input",{}).get("file_path",""))' 2>/dev/null || echo "")
 CONTENT=$(echo "$INPUT" | "$QVEST_PY_BIN" -c 'import json,sys; sys.stdout.reconfigure(encoding="utf-8",errors="replace"); d=json.loads(sys.stdin.buffer.read().decode("utf-8","replace")); print(d.get("tool_input",{}).get("content",""))' 2>/dev/null || echo "")
 

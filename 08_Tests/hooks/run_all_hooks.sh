@@ -1861,6 +1861,15 @@ SUITES=(
   #   다음 거래일 재시도 · 대체공휴일 다음 날 최신 · 미수록 해 미측정 · 뮤테이션) · /qvest Data 줄 퀀티 칸
   "08_Tests/ops/test_ensure_data_current_qw.sh"
   # <<< 10-17
+  # >>> 10-20 WP4 훅 지연 · 자동 커밋 범위(L1-SPEED-PLAN-20261020)
+  #   빠른 길 판정 불변 — 켬/끔 등가 52사례(stdout · 종료 코드 · 부수효과 로그 · 발화 원장) · 위반 주입(보호 경로 · \u · 줄 이음 ·
+  #   잘린 JSON · 무인 레인 기억 · 잘못된 UTF-8) · 양성 대조(켬 = 파이썬 0회) · 뮤테이션 13종(낱말 · \u · 줄 이음 · CR · 해독기 ·
+  #   Rule 3 게이트 공유 · 패턴 파생 · 오버레이 추출 줄 경계)
+  "08_Tests/hooks/test_hook_fastpath_equivalence.sh"
+  #   SessionEnd 자동 커밋 세션 범위 — 교차 세션 · 인덱스 격리 · 전사 부재 무커밋 · subagents · 경로 형태 · 비밀 중단 실 인덱스 불변 ·
+  #   격리 밸브 · 충돌 마커 · 삭제 · worktree · 위반 주입(all) · 뮤테이션 2종(전체 add · 동기화 제거)
+  "08_Tests/hooks/test_auto_commit_session_scope.sh"
+  # <<< 10-20 WP4
 )
 
 

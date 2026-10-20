@@ -132,6 +132,27 @@ case "$_gd" in
 esac
 AC_TARGET="branch=$AC_BRANCH tree=$AC_TREE src=$AC_ROOT_SRC"
 
+# ─── 커밋 범위 = 그 세션이 쓴 경로 (WP4 2026-10-20 · 동시 세션 운영 — L1-SPEED-PLAN-20261020 전제 3) ───
+# 왜: 독립 프로그램 라운드를 여러 세션이 동시에 돌리면, 한 세션의 SessionEnd 가 `git add -A` 로 **다른 세션의
+#   미커밋 작업(작성 중인 파일·남이 add 해 둔 인덱스)** 까지 자기 auto-commit 에 쓸어 담는다 — 남의 반쯤 쓴
+#   파일이 내 이름으로 커밋되고, 그 세션의 서술 커밋은 빈 껍데기가 된다.
+# 무엇을: 기본 범위(session) = 이 세션 전사(transcript_path + <session_id>/subagents/*.jsonl)의 Write · Edit ·
+#   MultiEdit · NotebookEdit 대상 경로 ∩ 지금 git status 에 바뀐 것으로 잡히는 경로. 스테이징·비밀 스캔·격리·
+#   커밋은 **임시 인덱스**(HEAD 트리 + 그 경로만)에서 하고, 커밋 뒤 실 인덱스는 커밋한 경로만 HEAD 로 맞춘다 —
+#   다른 세션이 add 해 둔 인덱스 항목은 커밋에도 안 들어가고 그대로 남는다.
+#   전사를 못 읽으면(transcript_path 없음·파일 없음·파이썬 없음) **커밋하지 않는다**(NO_SESSION_SCOPE 로그) —
+#   범위를 모를 때 전체를 쓸어 담는 것이 이 수리가 막는 사고다. 파일은 작업 트리에 남는다(유실 아님).
+# 한계(명시): Bash 로 만든 파일(Rscript 산출 등)은 전사에 경로가 없어 이 안전망 밖이다 — 그 경로는 작업 단위마다
+#   Q 가 서술 커밋한다(CLAUDE.md 커밋 규칙). 같은 파일을 두 세션이 함께 고쳤으면 파일 단위라 둘 다 담긴다.
+# 구 동작(작업 트리 전체) = QVEST_AC_SCOPE=all (검사 픽스처 · 수동 일괄 정리용). 그 외 값은 session.
+# 검사: 08_Tests/hooks/test_auto_commit_session_scope.sh (교차 세션 격리 · 인덱스 격리 · 전사 부재 · subagents ·
+#   경로 형태 · 비밀 중단 시 실 인덱스 불변 · 격리 밸브 · 충돌 마커 · 위반 주입(all) · 뮤테이션)
+AC_SCOPE="${QVEST_AC_SCOPE:-session}"
+[ "$AC_SCOPE" = "all" ] || AC_SCOPE="session"
+AC_TARGET="$AC_TARGET scope=$AC_SCOPE"
+AC_SCOPE_NOTE="범위 = 작업 트리 전체(QVEST_AC_SCOPE=all)."
+
+if [ "$AC_SCOPE" = "all" ]; then
 # 변경 없으면 skip (★어느 트리를 봤는지 함께 남긴다 — "변경 없음"이 '틀린 트리를 봤음'의
 # 위장이 되지 않도록. 오늘 계통의 공통 기전 = 결손을 정상값으로 내려앉힘)
 CHANGES=$(git status --porcelain 2>/dev/null | wc -l)
@@ -200,6 +221,184 @@ if [ "$_NARRATED" = "1" ] && [ "$_MACHINE_ONLY" = "1" ]; then
 fi
 
 git add -A 2>>"$LOG"
+
+else
+# ─── 세션 범위 (기본) ─────────────────────────────────────────────────
+AC_TMPD="$(mktemp -d 2>/dev/null)" || AC_TMPD=""
+if [ -z "$AC_TMPD" ] || [ ! -d "$AC_TMPD" ]; then
+  echo "$TS NO_SESSION_SCOPE reason=no_tmpdir $AC_TARGET" >> "$LOG"
+  echo '{}'; exit 0
+fi
+trap 'rm -rf "$AC_TMPD" 2>/dev/null' EXIT
+if [ -z "${QVEST_PY_BIN:-}" ] || [ ! -x "$QVEST_PY_BIN" ]; then
+  echo "$TS NO_SESSION_SCOPE reason=no_python $AC_TARGET" >> "$LOG"
+  echo '{}'; exit 0
+fi
+if ! git status --porcelain=v1 -z -uall > "$AC_TMPD/status.z" 2>>"$LOG"; then
+  echo "$TS NO_SESSION_SCOPE reason=status_failed $AC_TARGET" >> "$LOG"
+  echo '{}'; exit 0
+fi
+AC_TOP="$(git rev-parse --show-toplevel 2>/dev/null)" || AC_TOP=""
+# 전사 → 이 세션이 쓴 경로 ∩ 바뀐 경로 (NUL 구분 · git 철자) — 출력 1줄: "OK n_uses= n_paths= n_repo= n_scoped= sid=" | "ERR <사유>"
+AC_SCOPE_RC=0
+AC_SCOPE_RES="$(AC_INPUT="$INPUT" AC_TOPLEVEL="$AC_TOP" AC_STATUS_Z="$AC_TMPD/status.z" AC_SCOPE_OUT="$AC_TMPD/scope.z" \
+  "$QVEST_PY_BIN" - 2>>"$LOG" <<'PYEOF'
+import json, os, sys, glob
+EDIT = ("Write", "Edit", "MultiEdit", "NotebookEdit")
+KEYS = [('"name":"%s"' % t).encode() for t in EDIT]
+def norm(p):
+    # 윈도 경로 형태 통일: 역슬래시 → 슬래시 · \\?\ 접두 · /c/… → c:/… · 중복 슬래시 · 끝 슬래시
+    p = p.replace("\\", "/")
+    for pre in ("//?/", "//./"):
+        if p.startswith(pre):
+            p = p[len(pre):]
+    if len(p) >= 3 and p[0] == "/" and p[2] == "/" and p[1].isalpha():
+        p = p[1] + ":" + p[2:]
+    while "//" in p:
+        p = p.replace("//", "/")
+    return p.rstrip("/")
+try:
+    d = json.loads(os.environ.get("AC_INPUT", ""))
+except Exception:
+    print("ERR input_not_json"); sys.exit(3)
+if not isinstance(d, dict):
+    print("ERR input_not_object"); sys.exit(3)
+tp = d.get("transcript_path")
+if not isinstance(tp, str) or not tp:
+    print("ERR no_transcript_path"); sys.exit(3)
+if not os.path.isfile(tp):
+    print("ERR transcript_missing"); sys.exit(3)
+sid = d.get("session_id") if isinstance(d.get("session_id"), str) else ""
+stem = sid or os.path.splitext(os.path.basename(tp))[0]
+files = [tp] + sorted(glob.glob(os.path.join(os.path.dirname(tp), stem, "subagents", "*.jsonl")))
+paths, n_uses = set(), 0
+for f in files:
+    try:
+        fh = open(f, "rb")
+    except OSError:
+        continue
+    with fh:
+        for line in fh:
+            if b'"tool_use"' not in line or not any(k in line for k in KEYS):
+                continue
+            try:
+                e = json.loads(line.decode("utf-8", "replace"))
+            except Exception:
+                continue
+            msg = e.get("message")
+            content = msg.get("content") if isinstance(msg, dict) else None
+            if not isinstance(content, list):
+                continue
+            for c in content:
+                if not (isinstance(c, dict) and c.get("type") == "tool_use" and c.get("name") in EDIT):
+                    continue
+                ti = c.get("input") if isinstance(c.get("input"), dict) else {}
+                p = ti.get("file_path") or ti.get("notebook_path")
+                if not isinstance(p, str) or not p:
+                    continue
+                n_uses += 1
+                q = norm(p)
+                if not (len(q) > 1 and q[1] == ":") and not q.startswith("/"):
+                    cwd = e.get("cwd") if isinstance(e.get("cwd"), str) else ""
+                    if cwd:
+                        q = norm(cwd + "/" + p)
+                paths.add(q)
+changed = {}
+st = open(os.environ["AC_STATUS_Z"], "rb").read().split(b"\0")
+i = 0
+while i < len(st):
+    ent = st[i]; i += 1
+    if len(ent) < 4:
+        continue
+    p = ent[3:].decode("utf-8", "surrogateescape")
+    changed.setdefault(p.lower(), p)
+    if ent[:1] in (b"R", b"C"):
+        i += 1          # 이름 바꾸기·복사의 원래 경로 항목(다른 행위자가 인덱스에 올린 것) — 범위에 넣지 않는다
+root = norm(os.environ.get("AC_TOPLEVEL", "")).lower() + "/"
+scoped, seen, n_repo = [], set(), 0
+for q in sorted(paths):
+    ql = q.lower()
+    if root == "/" or not ql.startswith(root):
+        continue
+    n_repo += 1
+    rel = ql[len(root):]
+    if rel in changed and rel not in seen:
+        seen.add(rel)
+        scoped.append(changed[rel])
+with open(os.environ["AC_SCOPE_OUT"], "wb") as fo:
+    for s in scoped:
+        fo.write(s.encode("utf-8", "surrogateescape") + b"\0")
+print("OK n_uses=%d n_paths=%d n_repo=%d n_scoped=%d sid=%s" % (n_uses, len(paths), n_repo, len(scoped), (sid or stem)[:8]))
+PYEOF
+)" || AC_SCOPE_RC=$?
+case "$AC_SCOPE_RES" in
+  OK*) : ;;
+  *)
+    echo "$TS NO_SESSION_SCOPE reason=${AC_SCOPE_RES:-rc$AC_SCOPE_RC} $AC_TARGET — 전사를 못 읽어 범위 불명 · 커밋하지 않음(파일은 작업 트리에 남는다)" >> "$LOG"
+    echo '{}'; exit 0 ;;
+esac
+AC_SID="${AC_SCOPE_RES##*sid=}"; AC_SID="${AC_SID%% *}"
+AC_SCOPE_N="${AC_SCOPE_RES##*n_scoped=}"; AC_SCOPE_N="${AC_SCOPE_N%% *}"
+case "$AC_SCOPE_N" in ''|*[!0-9]*) AC_SCOPE_N=0 ;; esac
+if [ "$AC_SCOPE_N" -eq 0 ]; then
+  echo "$TS NO_CHANGES $AC_TARGET ($AC_SCOPE_RES)" >> "$LOG"
+  echo '{}'; exit 0
+fi
+AC_SCOPE_NOTE="범위 = 이 세션(session ${AC_SID})이 Write·Edit 로 쓴 경로 중 바뀐 ${AC_SCOPE_N}건 — 다른 세션의 미커밋 파일·인덱스는 제외(QVEST_AC_SCOPE=session)."
+# 임시 인덱스 = HEAD 트리 + 이 세션 경로만. 실 인덱스(다른 세션이 add 해 둔 항목)는 커밋 뒤 동기화 전까지 건드리지 않는다.
+export GIT_INDEX_FILE="$AC_TMPD/index"
+git read-tree HEAD 2>>"$LOG"
+git --literal-pathspecs add -A --pathspec-from-file="$AC_TMPD/scope.z" --pathspec-file-nul 2>>"$LOG"
+CHANGES=$(git diff --cached --name-only 2>/dev/null | wc -l)
+if [ "$CHANGES" -eq 0 ]; then
+  echo "$TS NO_CHANGES $AC_TARGET ($AC_SCOPE_RES · 스테이징 0)" >> "$LOG"
+  echo '{}'; exit 0
+fi
+
+# ─── Secret 스캔 (세션 범위 = 커밋될 내용 그대로 — 새 파일 포함) ──────────────
+TOKEN_HITS=$( (git diff --cached --no-color 2>/dev/null \
+  | grep -cE 'bot[0-9]{9,11}:A[A-Za-z0-9_-]{34,}') 2>/dev/null || echo 0)
+TOKEN_HITS=${TOKEN_HITS//[^0-9]/}; TOKEN_HITS=${TOKEN_HITS:-0}
+GENERIC_HITS=$( (git diff --cached --no-color 2>/dev/null \
+  | grep -ciE '^\+.*(api_?key|api_?secret|password|access_?token|private_?key)[[:space:]]*[=:][[:space:]]*["'"'"'][A-Za-z0-9_+/=-]{24,}') 2>/dev/null || echo 0)
+GENERIC_HITS=${GENERIC_HITS//[^0-9]/}; GENERIC_HITS=${GENERIC_HITS:-0}
+ENV_INCLUDED=0
+git diff --cached --name-only 2>/dev/null | grep -q '^\.env$' && ENV_INCLUDED=1
+if [ "$TOKEN_HITS" -gt 0 ] || [ "$GENERIC_HITS" -gt 0 ] || [ "$ENV_INCLUDED" -eq 1 ]; then
+  echo "$TS SECRET_ABORT token=$TOKEN_HITS generic=$GENERIC_HITS env=$ENV_INCLUDED scope=session" >> "$LOG"
+  MSG="[WARN] [auto-commit] Secret 탐지로 자동 commit 중단."
+  MSG+=" token=$TOKEN_HITS generic=$GENERIC_HITS env=$ENV_INCLUDED (세션 범위 · 실 인덱스 무변경)."
+  MSG+=" /tmp/auto_commit.log 확인 후 수동 정리 필요."
+  MSG_ESC=$(_json_msg "$MSG")
+  echo "{\"hookSpecificOutput\":{\"hookEventName\":\"SessionEnd\",\"additionalContext\":$MSG_ESC}}"
+  exit 0
+fi
+
+# ─── 사연 커밋 우선 (위 all 가지와 같은 규칙 · 대상 = 세션 범위 스테이징) ────────
+_HEAD_SUBJ="$(git log -1 --pretty=%s 2>/dev/null || echo '')"
+case "$_HEAD_SUBJ" in
+  "[auto-commit]"*) _NARRATED=0 ;;
+  "")               _NARRATED=0 ;;
+  *)                _NARRATED=1 ;;
+esac
+_MACHINE_ONLY=1
+while IFS= read -r _f; do
+  [ -n "$_f" ] || continue
+  case "$_f" in
+    stage_artifacts/*|.cache/*|qepm/observability/*|qepm/memory/axioms/*|06_Registry/*) : ;;
+    *) _MACHINE_ONLY=0 ;;
+  esac
+done <<EOF_ST
+$(git diff --cached --name-only 2>/dev/null)
+EOF_ST
+if [ "$_NARRATED" = "1" ] && [ "$_MACHINE_ONLY" = "1" ]; then
+  echo "$TS SKIP_NARRATED head=$(printf '%.60s' "$_HEAD_SUBJ") scope=session" >> "$LOG"
+  MSG="[SKIP] [auto-commit] HEAD 가 사연 커밋이고 이 세션의 남은 변경은 기계 산출물뿐 — 넘어갑니다."
+  MSG_ESC=$(_json_msg "$MSG")
+  echo "{\"hookSpecificOutput\":{\"hookEventName\":\"SessionEnd\",\"additionalContext\":$MSG_ESC}}"
+  exit 0
+fi
+fi
 
 # ─── 대량-신규 격리 밸브 v2 (2026-07-26 근본 재설계, 도훈 지시) ─────────────────────
 # v1(HYG-01 2026-07-03): NEW>100 → 전체 reset 후 CORE_PATHS만 재스테이징.
@@ -330,6 +529,7 @@ $SUMMARY
 ${AC_NOTABLE:-  (없음 — 기계 산출물뿐)}
 $GUARD_NOTE
 자동 생성 (SessionEnd 안전망 — 대화형 세션 종료 · 무인 레인은 커밋하지 않는다). $SESSION_TAG 세션 변경분 보존.
+$AC_SCOPE_NOTE
 Secret 스캔 통과. Push = auto_push_on_stop.sh(같은 SessionEnd 그룹).
 
 Co-Authored-By: Claude Code (SessionEnd hook) <noreply@anthropic.com>
@@ -338,6 +538,18 @@ COMMIT_EOF
 
 if [ $? -eq 0 ]; then
   HASH=$(git rev-parse --short HEAD)
+  # (WP4 세션 범위) 커밋은 임시 인덱스에서 났다 — 실 인덱스는 **커밋한 경로만** 새 HEAD 로 맞춘다.
+  #   안 맞추면 그 경로가 실 인덱스에선 옛 HEAD 내용이라 git status 에 '커밋을 되돌리는 스테이징'으로 보인다.
+  #   다른 세션이 add 해 둔 그 밖의 항목은 그대로 둔다.
+  if [ "$AC_SCOPE" = "session" ]; then
+    if env -u GIT_INDEX_FILE git diff-tree --root --no-commit-id --name-only -r -z HEAD > "$AC_TMPD/committed.z" 2>>"$LOG" \
+       && env -u GIT_INDEX_FILE git --literal-pathspecs reset -q HEAD --pathspec-from-file="$AC_TMPD/committed.z" --pathspec-file-nul 2>>"$LOG"; then
+      :
+    else
+      echo "$TS INDEX_SYNC_FAILED $HASH — 실 인덱스가 커밋한 경로에서 옛 HEAD 를 가리킨다: git reset -q HEAD -- <경로> 로 맞출 것" >> "$LOG"
+      PARTIAL_NOTE="${PARTIAL_NOTE:-} [INDEX_SYNC_FAILED: 실 인덱스 수동 동기화 필요 — $LOG]"
+    fi
+  fi
   echo "$TS AUTO_COMMIT $HASH staged=$STAGED $AC_TARGET${PARTIAL_NOTE}" >> "$LOG"
   # ★대상($AC_TARGET)을 성공 보고 본문에 싣는다 (2026-08-03). 08-02 사고의 본체는
   #   커밋 실패가 아니라 **틀린 트리에 커밋하고 성공을 보고한 것**이었다 — 세션은

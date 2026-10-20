@@ -1,0 +1,610 @@
+{
+ "id": "WP4-HOOK-LATENCY-20261020",
+ "plan": "L1-SPEED-PLAN-20261020 WP4 (C:/Users/99922/.claude/plans/1-mellow-hartmanis.md)",
+ "generated_at": "2026-10-20T12:10:59+09:00",
+ "method": {
+  "bench": "paired · labels interleaved per input (order alternates) · exact settings.json command form (bash -c 'DIR=…; bash \"$DIR/02_Infrastructure/hooks/X.sh\"') · inputs = real tool calls from session transcripts since 2026-10-17 (first N per event) · seq = one hook alone · group = all hooks of the matcher in parallel (Claude Code fan-out) → wall until all exit · log paths re-pointed to a sandbox (identical transformation for both labels)",
+  "before": "main cca32d753 hooks",
+  "after": "WP4 branch hooks",
+  "projection": "transcript wall sum per event × (bench group after_mean / before_mean)",
+  "machine": "Windows 11 · Git Bash 5.3.9 · Python 3.12 (system) · 24 cores — shared workstation with other sessions active during the bench; labels interleaved per input so load drift hits both equally (unchanged hook arm_gen_read_guard = control: Read/Grep/Glob within ±10%)",
+  "inputs": "uniform random sample (seed 20261021) of real tool calls since 2026-10-17: 40 each Bash/Edit/Write/Read/Grep/Glob (+ PostToolUse for Edit/Write)"
+ },
+ "transcript_baseline": {
+  "since": "2026-10-17T00:00:00Z",
+  "sessions": 57,
+  "hook_records": 16192,
+  "hook_ms_sum_min": 172.2,
+  "tool_call_wall_sum_min": 80.3
+ },
+ "group_wall": [
+  {
+   "event": "PostToolUse:Edit",
+   "hook": "ALL",
+   "before_ms": {
+    "n": 40,
+    "mean": 438.9,
+    "p50": 386,
+    "p90": 583
+   },
+   "after_ms": {
+    "n": 40,
+    "mean": 270.4,
+    "p50": 200,
+    "p90": 419
+   },
+   "delta_mean_pct": -38.4
+  },
+  {
+   "event": "PostToolUse:Write",
+   "hook": "ALL",
+   "before_ms": {
+    "n": 40,
+    "mean": 393.0,
+    "p50": 374,
+    "p90": 458
+   },
+   "after_ms": {
+    "n": 40,
+    "mean": 224.5,
+    "p50": 190,
+    "p90": 322
+   },
+   "delta_mean_pct": -42.9
+  },
+  {
+   "event": "PreToolUse:Bash",
+   "hook": "ALL",
+   "before_ms": {
+    "n": 40,
+    "mean": 706.5,
+    "p50": 680,
+    "p90": 843
+   },
+   "after_ms": {
+    "n": 40,
+    "mean": 199.9,
+    "p50": 200,
+    "p90": 226
+   },
+   "delta_mean_pct": -71.7
+  },
+  {
+   "event": "PreToolUse:Edit",
+   "hook": "ALL",
+   "before_ms": {
+    "n": 40,
+    "mean": 808.0,
+    "p50": 759,
+    "p90": 961
+   },
+   "after_ms": {
+    "n": 40,
+    "mean": 343.1,
+    "p50": 298,
+    "p90": 546
+   },
+   "delta_mean_pct": -57.5
+  },
+  {
+   "event": "PreToolUse:Glob",
+   "hook": "ALL",
+   "before_ms": {
+    "n": 40,
+    "mean": 111.9,
+    "p50": 109,
+    "p90": 128
+   },
+   "after_ms": {
+    "n": 40,
+    "mean": 119.9,
+    "p50": 111,
+    "p90": 122
+   },
+   "delta_mean_pct": 7.2
+  },
+  {
+   "event": "PreToolUse:Grep",
+   "hook": "ALL",
+   "before_ms": {
+    "n": 40,
+    "mean": 110.9,
+    "p50": 110,
+    "p90": 125
+   },
+   "after_ms": {
+    "n": 40,
+    "mean": 111.4,
+    "p50": 110,
+    "p90": 125
+   },
+   "delta_mean_pct": 0.5
+  },
+  {
+   "event": "PreToolUse:Read",
+   "hook": "ALL",
+   "before_ms": {
+    "n": 40,
+    "mean": 135.2,
+    "p50": 119,
+    "p90": 154
+   },
+   "after_ms": {
+    "n": 40,
+    "mean": 121.5,
+    "p50": 119,
+    "p90": 147
+   },
+   "delta_mean_pct": -10.2
+  },
+  {
+   "event": "PreToolUse:Write",
+   "hook": "ALL",
+   "before_ms": {
+    "n": 40,
+    "mean": 792.7,
+    "p50": 760,
+    "p90": 960
+   },
+   "after_ms": {
+    "n": 40,
+    "mean": 417.5,
+    "p50": 368,
+    "p90": 684
+   },
+   "delta_mean_pct": -47.3
+  }
+ ],
+ "per_hook": [
+  {
+   "event": "PostToolUse:Edit",
+   "hook": "overlay_pit_grep",
+   "before_ms": {
+    "n": 40,
+    "mean": 425.1,
+    "p50": 356,
+    "p90": 582
+   },
+   "after_ms": {
+    "n": 40,
+    "mean": 229,
+    "p50": 177,
+    "p90": 373
+   },
+   "delta_mean_pct": -46.1
+  },
+  {
+   "event": "PostToolUse:Write",
+   "hook": "overlay_pit_grep",
+   "before_ms": {
+    "n": 40,
+    "mean": 375.4,
+    "p50": 359,
+    "p90": 443
+   },
+   "after_ms": {
+    "n": 40,
+    "mean": 194.3,
+    "p50": 174,
+    "p90": 224
+   },
+   "delta_mean_pct": -48.3
+  },
+  {
+   "event": "PreToolUse:Bash",
+   "hook": "safety_guard",
+   "before_ms": {
+    "n": 40,
+    "mean": 551.4,
+    "p50": 551,
+    "p90": 604
+   },
+   "after_ms": {
+    "n": 40,
+    "mean": 160.4,
+    "p50": 160,
+    "p90": 180
+   },
+   "delta_mean_pct": -70.9
+  },
+  {
+   "event": "PreToolUse:Bash",
+   "hook": "telegram_direct_call_guard",
+   "before_ms": {
+    "n": 40,
+    "mean": 622.6,
+    "p50": 606,
+    "p90": 693
+   },
+   "after_ms": {
+    "n": 40,
+    "mean": 155.4,
+    "p50": 154,
+    "p90": 171
+   },
+   "delta_mean_pct": -75.0
+  },
+  {
+   "event": "PreToolUse:Edit",
+   "hook": "book_write_guard",
+   "before_ms": {
+    "n": 40,
+    "mean": 598.0,
+    "p50": 543,
+    "p90": 678
+   },
+   "after_ms": {
+    "n": 40,
+    "mean": 240.2,
+    "p50": 207,
+    "p90": 311
+   },
+   "delta_mean_pct": -59.8
+  },
+  {
+   "event": "PreToolUse:Edit",
+   "hook": "legacy_write_block",
+   "before_ms": {
+    "n": 40,
+    "mean": 587.8,
+    "p50": 560,
+    "p90": 684
+   },
+   "after_ms": {
+    "n": 40,
+    "mean": 242.4,
+    "p50": 206,
+    "p90": 341
+   },
+   "delta_mean_pct": -58.8
+  },
+  {
+   "event": "PreToolUse:Edit",
+   "hook": "safety_guard",
+   "before_ms": {
+    "n": 40,
+    "mean": 686.6,
+    "p50": 628,
+    "p90": 1003
+   },
+   "after_ms": {
+    "n": 40,
+    "mean": 202.6,
+    "p50": 184,
+    "p90": 231
+   },
+   "delta_mean_pct": -70.5
+  },
+  {
+   "event": "PreToolUse:Glob",
+   "hook": "arm_gen_read_guard",
+   "before_ms": {
+    "n": 40,
+    "mean": 97.2,
+    "p50": 97,
+    "p90": 104
+   },
+   "after_ms": {
+    "n": 40,
+    "mean": 97.2,
+    "p50": 97,
+    "p90": 104
+   },
+   "delta_mean_pct": -0.1
+  },
+  {
+   "event": "PreToolUse:Grep",
+   "hook": "arm_gen_read_guard",
+   "before_ms": {
+    "n": 40,
+    "mean": 98.1,
+    "p50": 98,
+    "p90": 109
+   },
+   "after_ms": {
+    "n": 40,
+    "mean": 97,
+    "p50": 96,
+    "p90": 103
+   },
+   "delta_mean_pct": -1.1
+  },
+  {
+   "event": "PreToolUse:Read",
+   "hook": "arm_gen_read_guard",
+   "before_ms": {
+    "n": 40,
+    "mean": 112.8,
+    "p50": 103,
+    "p90": 117
+   },
+   "after_ms": {
+    "n": 40,
+    "mean": 115.7,
+    "p50": 102,
+    "p90": 131
+   },
+   "delta_mean_pct": 2.5
+  },
+  {
+   "event": "PreToolUse:Write",
+   "hook": "backtest_contract_audit",
+   "before_ms": {
+    "n": 40,
+    "mean": 367.1,
+    "p50": 358,
+    "p90": 435
+   },
+   "after_ms": {
+    "n": 40,
+    "mean": 172.6,
+    "p50": 175,
+    "p90": 209
+   },
+   "delta_mean_pct": -53.0
+  },
+  {
+   "event": "PreToolUse:Write",
+   "hook": "book_write_guard",
+   "before_ms": {
+    "n": 40,
+    "mean": 470.3,
+    "p50": 457,
+    "p90": 549
+   },
+   "after_ms": {
+    "n": 40,
+    "mean": 210.0,
+    "p50": 167,
+    "p90": 418
+   },
+   "delta_mean_pct": -55.4
+  },
+  {
+   "event": "PreToolUse:Write",
+   "hook": "discovery_graduation_gate",
+   "before_ms": {
+    "n": 40,
+    "mean": 460.7,
+    "p50": 454,
+    "p90": 565
+   },
+   "after_ms": {
+    "n": 40,
+    "mean": 164.9,
+    "p50": 160,
+    "p90": 203
+   },
+   "delta_mean_pct": -64.2
+  },
+  {
+   "event": "PreToolUse:Write",
+   "hook": "legacy_write_block",
+   "before_ms": {
+    "n": 40,
+    "mean": 478.3,
+    "p50": 425,
+    "p90": 559
+   },
+   "after_ms": {
+    "n": 40,
+    "mean": 182.9,
+    "p50": 167,
+    "p90": 208
+   },
+   "delta_mean_pct": -61.8
+  },
+  {
+   "event": "PreToolUse:Write",
+   "hook": "safety_guard",
+   "before_ms": {
+    "n": 40,
+    "mean": 537.0,
+    "p50": 536,
+    "p90": 647
+   },
+   "after_ms": {
+    "n": 40,
+    "mean": 206.5,
+    "p50": 163,
+    "p90": 390
+   },
+   "delta_mean_pct": -61.5
+  },
+  {
+   "event": "PreToolUse:Write",
+   "hook": "worktask_constraint_enforcer",
+   "before_ms": {
+    "n": 40,
+    "mean": 443.4,
+    "p50": 431,
+    "p90": 528
+   },
+   "after_ms": {
+    "n": 40,
+    "mean": 148.6,
+    "p50": 150,
+    "p90": 178
+   },
+   "delta_mean_pct": -66.5
+  }
+ ],
+ "projection": {
+  "rows": [
+   {
+    "event": "PreToolUse:Bash",
+    "calls": 3702,
+    "wall_min_measured": 36.48,
+    "wall_min_projected": 10.32,
+    "bench_ratio": 0.283
+   },
+   {
+    "event": "PreToolUse:Edit",
+    "calls": 1095,
+    "wall_min_measured": 14.56,
+    "wall_min_projected": 6.18,
+    "bench_ratio": 0.425
+   },
+   {
+    "event": "PostToolUse:Edit",
+    "calls": 1095,
+    "wall_min_measured": 9.02,
+    "wall_min_projected": 5.56,
+    "bench_ratio": 0.616
+   },
+   {
+    "event": "PreToolUse:Write",
+    "calls": 397,
+    "wall_min_measured": 7.49,
+    "wall_min_projected": 3.94,
+    "bench_ratio": 0.527
+   },
+   {
+    "event": "PreToolUse:Read",
+    "calls": 1095,
+    "wall_min_measured": 4.8,
+    "wall_min_projected": 4.31,
+    "bench_ratio": 0.898
+   },
+   {
+    "event": "PostToolUse:Write",
+    "calls": 397,
+    "wall_min_measured": 2.95,
+    "wall_min_projected": 1.68,
+    "bench_ratio": 0.571
+   },
+   {
+    "event": "SessionStart:startup",
+    "calls": 55,
+    "wall_min_measured": 2.85,
+    "wall_min_projected": 2.85,
+    "bench_ratio": null
+   },
+   {
+    "event": "PreToolUse:Grep",
+    "calls": 390,
+    "wall_min_measured": 1.44,
+    "wall_min_projected": 1.45,
+    "bench_ratio": 1.005
+   },
+   {
+    "event": "PreToolUse:Agent",
+    "calls": 34,
+    "wall_min_measured": 0.38,
+    "wall_min_projected": 0.38,
+    "bench_ratio": null
+   },
+   {
+    "event": "PreToolUse:Glob",
+    "calls": 45,
+    "wall_min_measured": 0.21,
+    "wall_min_projected": 0.23,
+    "bench_ratio": 1.072
+   },
+   {
+    "event": "SessionStart:compact",
+    "calls": 12,
+    "wall_min_measured": 0.05,
+    "wall_min_projected": 0.05,
+    "bench_ratio": null
+   },
+   {
+    "event": "SessionStart:resume",
+    "calls": 2,
+    "wall_min_measured": 0.04,
+    "wall_min_projected": 0.04,
+    "bench_ratio": null
+   }
+  ],
+  "total_wall_min_measured": 80.3,
+  "total_wall_min_projected": 37.0,
+  "delta_pct": -53.9
+ },
+ "large_input_check": [
+  "== 0085_pre_Write.json (207162 B)",
+  "  safety_guard                   before=  419ms  final2=  166ms",
+  "  legacy_write_block             before=  370ms  final2=  147ms",
+  "  book_write_guard               before=  356ms  final2=  374ms",
+  "  discovery_graduation_gate      before=  359ms  final2=   92ms",
+  "  worktask_constraint_enforcer   before=  387ms  final2=  111ms",
+  "  backtest_contract_audit        before=  286ms  final2=  220ms",
+  "== 9039_pre_Write__sg_big_plain.json (120305 B)",
+  "  safety_guard                   before=  481ms  final2=  146ms",
+  "  legacy_write_block             before=  385ms  final2=  143ms",
+  "  book_write_guard               before=  402ms  final2=  137ms",
+  "  discovery_graduation_gate      before=  413ms  final2=  175ms",
+  "  worktask_constraint_enforcer   before=  458ms  final2=  117ms",
+  "  backtest_contract_audit        before=  301ms  final2=  202ms",
+  "== 9040_pre_Write__sg_big_prod_at_end.json (64321 B)",
+  "  safety_guard                   before=  420ms  final2=  376ms",
+  "  legacy_write_block             before=  373ms  final2=  121ms",
+  "  book_write_guard               before=  374ms  final2=  125ms",
+  "  discovery_graduation_gate      before=  358ms  final2=  103ms",
+  "  worktask_constraint_enforcer   before=  378ms  final2=  124ms",
+  "  backtest_contract_audit        before=  312ms  final2=  153ms",
+  "== 0072_post_Write.json (232817 B)",
+  "  overlay_pit_grep               before=  542ms  final2=  276ms",
+  "== 0085_post_Write.json (207317 B)",
+  "  overlay_pit_grep               before=  495ms  final2=  327ms"
+ ],
+ "population_fastpath_fallthrough_pct": {
+  "note": "share of real tool calls (8,296 since 2026-10-17) whose raw input still takes the original path",
+  "PreToolUse:Bash": {
+   "safety_guard": 1.5,
+   "telegram_direct_call_guard": 0.0
+  },
+  "PreToolUse:Edit": {
+   "safety_guard": 2.4,
+   "legacy_write_block": 1.5,
+   "book_write_guard": 4.6
+  },
+  "PreToolUse:Write": {
+   "safety_guard": 11.4,
+   "legacy_write_block": 1.7,
+   "book_write_guard": 20.8,
+   "discovery_graduation_gate": 1.5,
+   "worktask_constraint_enforcer": 1.5,
+   "backtest_contract_audit": 0.6
+  },
+  "PostToolUse": {
+   "overlay_pit_grep_Edit(.R files)": 59.9,
+   "overlay_pit_grep_Write(.R files)": 37.5
+  }
+ },
+ "verification": {
+  "differential_old_vs_new": {
+   "pairs": 3736,
+   "sets": {
+    "real_stratified": 2545,
+    "real_uniform": 720,
+    "adversarial": 471
+   },
+   "compared": "stdout · exit code · stderr · side-effect logs (timestamps masked) · events.jsonl rows",
+   "verdict_mismatches": 0,
+   "other_mismatches": [
+    {
+     "case": "adversarial bt_bad_utf8",
+     "field": "safety_guard events.jsonl file_path",
+     "why": "python path writes U+FFFD for raw invalid UTF-8; Claude Code never emits raw invalid UTF-8 (lone surrogates arrive as \\u escapes → original path)"
+    }
+   ]
+  },
+  "unescape_property_test": {
+   "cases": 3000,
+   "mismatches_vs_python_json": 0
+  },
+  "permanent_tests": {
+   "08_Tests/hooks/test_hook_fastpath_equivalence.sh": "125/0",
+   "08_Tests/hooks/test_auto_commit_session_scope.sh": "51/0"
+  },
+  "hook_battery": {
+   "before": "901 pass / 3 fail / 7 skipped",
+   "after": "1077 pass / 3 fail / 7 skipped",
+   "pre_existing_failures": [
+    "suite_enrollment_guard V7 (13 unenrolled tests)",
+    "axiom_unattended_freeze I3",
+    "cleaner_inject_len_worst W5"
+   ]
+  }
+ }
+}

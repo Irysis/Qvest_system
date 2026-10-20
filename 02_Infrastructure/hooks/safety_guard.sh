@@ -207,6 +207,46 @@ _qmem_block() {
   exit 0
 }
 
+# ── 빠른 길 도우미 (WP4 2026-10-20 · 순수 bash · 서브셸 0) ─────────────────────
+# 빠른 길이 차단 판정을 건너뛰어도 되는 근거는 아래 본문(INPUT 직후) 주석에 있다. 여기 두 함수는
+#   발화 기록(events.jsonl)에 실을 값 — TOOL_NAME · FILE_PATH — 을 파이썬 없이 **확실할 때만** 뽑는다.
+#   확실하지 않으면 1 을 돌려 원래 경로(파이썬 파싱)로 넘긴다 — 기록 내용도 원래 경로와 같게 둔다.
+_qsg_json_unescape() {  # $1 = JSON 문자열 본문(\u 없음 전제) → _Q1 해독값 · 1 = 해독 불가(→ 원래 경로)
+  local s="$1"
+  case "$s" in *\\*) : ;; *) _Q1="$s"; return 0 ;; esac
+  case "$s" in *$'\001'*) return 1 ;; esac
+  s="${s//\\\\/$'\001'}"
+  s="${s//\\\"/\"}"; s="${s//\\\//\/}"
+  s="${s//\\b/$'\b'}"; s="${s//\\f/$'\f'}"; s="${s//\\n/$'\n'}"; s="${s//\\r/$'\r'}"; s="${s//\\t/$'\t'}"
+  case "$s" in *\\*) return 1 ;; esac
+  _Q1="${s//$'\001'/\\}"
+  return 0
+}
+_qsg_fast_fields() {  # INPUT → TOOL_NAME · FILE_PATH (+ 나머지 4필드 '') · 1 = 확실하지 않음(→ 원래 경로)
+  local re
+  case "$INPUT" in '{'*'}') : ;; *) return 1 ;; esac                         # 객체 모양이 아니면(빈 입력·잘림) 파이썬 몫
+  case "$INPUT" in *[[:cntrl:]]*) return 1 ;; esac                          # 날 제어문자 = 엄격 JSON 파서가 거부(JSON.stringify 는 내지 않는다)
+  case "$INPUT" in *'"tool_input":{'*) : ;; *) return 1 ;; esac             # tool_input 이 객체가 아니면 파이썬은 전 필드 '' 로 접는다
+  case "$INPUT" in *'"tool_name"'*'"tool_name"'*) return 1 ;; esac          # 키 2회 이상 = 파이썬(마지막 값)과 어긋날 수 있다
+  re='"tool_name":"([^"\\]*)"'
+  if [[ $INPUT =~ $re ]]; then TOOL_NAME="${BASH_REMATCH[1]}"; else return 1; fi
+  case "$INPUT" in *'"subagent_type"'*|*'"name"'*) return 1 ;; esac      # AGENT_NAME 원천 키 = 없을 때만 '' 가 확실
+  case "$INPUT" in
+    *'"file_path"'*'"file_path"'*) return 1 ;;
+    *'"file_path"'*)
+      re='"file_path":"(([^"\\]|\\.)*)"'
+      if [[ $INPUT =~ $re ]]; then
+        _qsg_json_unescape "${BASH_REMATCH[1]}" || return 1
+        FILE_PATH="$_Q1"
+      else
+        return 1
+      fi ;;
+    *) FILE_PATH='' ;;
+  esac
+  AGENT_NAME=''; COMMAND=''; CONTENT=''; AGENT_PROMPT=''
+  return 0
+}
+
 _gate_fail_closed() {
   local hay="${FILE_PATH:-}${COMMAND:-}"
   [ -n "$hay" ] || hay="${INPUT:-}"
@@ -228,6 +268,53 @@ _gate_fail_closed() {
 trap '_gate_fail_closed' ERR
 
 INPUT=$(cat)
+
+# Rule 3 발화 조건 — 단일 정의 (WP4 2026-10-20). 아래 빠른 길과 Rule 3 가 이 값 하나를 본다.
+#   빠른 길의 증명은 'Rule 3 이 꺼져 있을 때'만 성립한다 — 조건을 두 곳에 따로 쓰면 한쪽(Rule 3 게이트)만 넓혔을 때
+#   빠른 길이 넓힌 범위를 조용히 우회한다(test_safety_guard_memory.sh H gate_inv 가 이 줄을 뒤집어 그 판별력을 잰다).
+_QSG_RULE3=0
+if [ "${QVEST_UNATTENDED_LANE:-}" = "1" ]; then
+  _QSG_RULE3=1
+fi
+
+# ── 빠른 길 (WP4 2026-10-20 · 훅 지연 — 판정 불변) ─────────────────────────────────
+# 무엇: 원문 입력에 보호 낱말이 없으면 파이썬 파싱 없이 '{}' 를 낸다(발화 기록은 그대로 남긴다).
+# 증명(Rule 3 꺼짐 = _QSG_RULE3≠1 — Rule 3 과 fail-closed 기억 가지는 무인 레인 표식에서만 돈다):
+#   차단은 셋뿐이다 — Rule 1(FILE_PATH 에 05_Production · 01_Literature) · Rule 2(줄 이음을 지운 COMMAND 에
+#   05_Production · normalizePath) · fail-closed(FILE_PATH+COMMAND, 비면 원문 INPUT — 줄 이음을 지운 뒤
+#   05_Production · normalizePath · 01_Literature). 셋 다 해독값(또는 원문)에 이 낱말이 있어야 한다.
+#   ① JSON 해독은 이스케이프를 한 글자로 바꿀 뿐 글자를 지우지 않는다. 낱말의 글자(영숫자·_)를 만드는
+#      이스케이프는 \uXXXX 뿐이다 → 원문에 낱말도 '\u' 도 없으면 해독값에도 낱말이 없다.
+#   ② 줄 이음 제거(_qsg_join: 역슬래시+LF · 역슬래시+CR+LF)는 글자를 지워 낱말을 이을 수 있다. 해독값에
+#      역슬래시+LF/CR 이 생기려면 원문에 '\\\n' · '\\\r'(이스케이프 4글자) 또는 \u 가 있어야 하고, 원문
+#      자체(파싱 실패 → hay = INPUT)에 이으려면 원문에 역슬래시+LF/CR 이 있어야 한다 → 넷 다 원래 경로로.
+#   ⇒ 아래 case 를 통과한 입력은 어떤 파싱 결과로도 차단될 수 없다. 출력 '{}' = 원래 경로의 허용 출력.
+# 기록: 원래 경로와 같은 _shared_parse.sh 발화 기록을 사전 파싱 모드($$ 표식)로 남긴다 — 값(TOOL_NAME ·
+#   FILE_PATH)을 확실히 못 뽑으면(_qsg_fast_fields=1: 객체 모양 아님 · tool_input 객체 아님 · 키 중복 ·
+#   AGENT 키 · 해독 불가) 원래 경로로 간다. 남는 차이(둘 다 Claude Code 가 내지 않는 입력): ① '{…}' 모양에
+#   tool_input 객체까지 갖췄는데 파이썬이 못 읽는 문법 오류 JSON 에서 기록 행의 context·file_path 칸(파이썬 경로는
+#   비운다) ② 날 잘못된 UTF-8 바이트가 든 file_path(파이썬 경로는 U+FFFD 로 바꿔 적는다 — JSON.stringify 는 유효한
+#   UTF-8 만 내고 짝 없는 서로게이트는 \u 로 적어 원래 경로로 간다). 둘 다 판정 무관이며 소비면(hook_fire_coverage)은
+#   hook_name·timestamp 만 읽는다(실전 전사 표본 530행은 바이트 동일).
+# 끄기: QVEST_HOOK_FASTPATH=0 (검사 08_Tests/hooks/test_hook_fastpath_equivalence.sh 가 켬/끔 판정을 맞대 본다)
+if [ "${QVEST_HOOK_FASTPATH:-1}" != "0" ] && [ "$_QSG_RULE3" != "1" ]; then
+  case "$INPUT" in
+    *05_Production*|*01_Literature*|*normalizePath*|*'\u'*|*'\\\n'*|*'\\\r'*|*$'\\\n'*|*$'\\\r'*) : ;;
+    *)
+      if _qsg_fast_fields; then
+        _qsg_src="${BASH_SOURCE[0]:-$0}"
+        case "$_qsg_src" in */*) _qsg_src="${_qsg_src%/*}"; [ -n "$_qsg_src" ] || _qsg_src=/ ;; *) _qsg_src=. ;; esac
+        QVEST_PARSE_TRAP=caller
+        QVEST_PARSE_PRESET=$$
+        source "$_qsg_src/_shared_parse.sh"
+        unset QVEST_PARSE_TRAP QVEST_PARSE_PRESET
+        echo '{}'
+        exit 0
+      fi
+      unset TOOL_NAME FILE_PATH COMMAND CONTENT AGENT_NAME AGENT_PROMPT ;;
+  esac
+fi
+
 # (v8.2.1 2026-07-04 감사 A7d) source 구간 fail-open 봉인: _shared_parse.sh 내부
 # fail-open trap('{}' allow) 설치를 옵트아웃(QVEST_PARSE_TRAP=caller) — 위에서
 # 선장전한 _gate_fail_closed trap이 source 실행 구간(파싱 python 호출 등) 오류까지
@@ -273,7 +360,8 @@ if [ "$TOOL_NAME" = "Bash" ]; then
 fi
 
 # Rule 3 (P0-M1): 무인 레인의 기억 디렉터리 쓰기 차단 → memory_inbox 안내. 표식 없으면 건너뛴다.
-if [ "${QVEST_UNATTENDED_LANE:-}" = "1" ]; then
+#   (WP4) 발화 조건 = INPUT 직후의 _QSG_RULE3 단일 정의(빠른 길과 공유).
+if [ "$_QSG_RULE3" = "1" ]; then
   case "$TOOL_NAME" in
     Write|Edit|MultiEdit)
       if _qmem_file_hit "$FILE_PATH"; then _qmem_block; fi ;;

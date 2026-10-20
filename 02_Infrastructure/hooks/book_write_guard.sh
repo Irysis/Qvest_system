@@ -36,6 +36,23 @@ _gate_fail_closed() {
 trap '_gate_fail_closed' ERR
 
 INPUT=$(cat)
+
+# ── 빠른 길 (WP4 2026-10-20 · 훅 지연 — 판정 불변) ─────────────────────────────────
+# 증명: 차단은 FP_NORM(해독값, 역슬래시→슬래시)에 06_Registry/book/ · qepm/mailbox/governor/book_state.json
+#   이 있거나, fail-closed hay(FILE_PATH, 비면 원문 INPUT)에 같은 패턴이 있을 때뿐이다 → '06_Registry' 또는
+#   'book_state' 를 담아야 한다. JSON 해독에서 영숫자·_ 를 만드는 이스케이프는 \uXXXX 뿐(\/ 는 '/' 만 만든다)
+#   → 원문에 두 낱말도 '\u' 도 없으면 어떤 파싱 결과로도 차단될 수 없고, 원래 경로의 출력은 '{}' 다.
+#   객체 모양('{…}')이 아니거나 날 제어문자(엄격 JSON 파서가 거부 — JSON.stringify 는 내지 않는다)가 든 입력은
+#   원래 경로로 보낸다 — 파서 실패 때의 'HOOK_ERR_TRAP allow' 진단 로그 줄까지 그대로 두기 위해서다.
+#   (남는 차이: 그 밖의 문법 오류 JSON 에서 그 진단 줄 1개 — 판정 무관 · 읽는 곳 0건 · 운영 로그 실측 0건.)
+# 끄기: QVEST_HOOK_FASTPATH=0 (검사 08_Tests/hooks/test_hook_fastpath_equivalence.sh)
+if [ "${QVEST_HOOK_FASTPATH:-1}" != "0" ]; then
+  case "$INPUT" in
+    *06_Registry*|*book_state*|*'\u'*|*[[:cntrl:]]*) : ;;
+    '{'*'}') echo '{}'; exit 0 ;;
+  esac
+fi
+
 TOOL=$(printf '%s' "$INPUT" | "$QVEST_PY_BIN" -c 'import json,sys; d=json.load(sys.stdin); print(d.get("tool_name",""))' 2>/dev/null || echo "")
 FILE_PATH=$(printf '%s' "$INPUT" | "$QVEST_PY_BIN" -c 'import json,sys; d=json.load(sys.stdin); print(d.get("tool_input",{}).get("file_path",""))' 2>/dev/null || echo "")
 
