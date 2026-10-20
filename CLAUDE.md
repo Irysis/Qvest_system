@@ -91,7 +91,7 @@
 - Env(User scope): `QM_ROOT`+`QVEST_PY`+`~/.Renviron` 동일값.
 - R+Python 공히 1급(venv `.venv_qvest_ml`) — 언어는 PIT·계약을 면제하지 않는다. R 은 전략 디렉터리 `cd` 후 실행(한글 경로 회피).
 - 톤: 한국어 존댓말. User = Dohoon Kim(도훈), 나 = "Q".
-- **커밋(10-14 도훈 "커밋 규칙 수정")**: Q 가 작업 단위가 끝날 때 **그 경로만** 서술형 메시지(무엇 · 왜 · 검증)로 커밋한다. SessionEnd 자동 커밋(`hooks/auto_commit_on_stop.sh`)은 대화형 세션 종료 안전망뿐 — 무인 · 헤드리스 레인은 커밋 · 푸시하지 않는다(표식 `QVEST_UNATTENDED_LANE` · `QVEST_CLEAN_LANE` · `sdk-cli`). 자동 커밋 제목 = 상위 경로별 파일 수.
+- **커밋(10-14 도훈 "커밋 규칙 수정")**: Q 가 작업 단위가 끝날 때 **그 경로만** 서술형 메시지(무엇 · 왜 · 검증)로 커밋한다. SessionEnd 자동 커밋(`hooks/auto_commit_on_stop.sh`)은 대화형 세션 종료 안전망뿐 — 무인 · 헤드리스 레인은 커밋 · 푸시하지 않는다(표식 `QVEST_UNATTENDED_LANE` · `QVEST_CLEAN_LANE` · `sdk-cli`). 자동 커밋 제목 = 상위 경로별 파일 수. 범위 = 그 세션이 Write · Edit 로 쓴 경로뿐(10-20 WP4 · 동시 세션의 남의 파일을 쓸어 담지 않음 · Bash 로 만든 파일은 Q 가 직접 커밋 · 전사 판독 불가면 커밋 안 함 · 구 동작 `QVEST_AC_SCOPE=all`).
 
 ## 포인터
 

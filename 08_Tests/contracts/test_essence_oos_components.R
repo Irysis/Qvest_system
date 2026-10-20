@@ -5,7 +5,8 @@
 #       02_Infrastructure/worktask/constraint_defaults.json::diagnostics (tier_graduation 밖)
 #
 # 절:
-#   R  등급 불변 — R1 변경 전 판본(git blob)과 identical 대조(합성 25 + 실산출 20) · R2 essence_score()$diagnostics
+#   R  등급 불변 — R1 변경 전 판본(git blob)과 identical 대조(합성 25 + 실산출 20 · 뒤에 붙은 v3 꼬리 · 방어형 귀속 꼬리는
+#      어댑터로 떼고 · R1c 귀속 꼬리가 실산출에 실제로 실렸다) · R2 essence_score()$diagnostics
 #      = essence_diagnostics() 패리티 · R3 진단 설정을 바꿔도/진단이 죽어도 판정 불변(fail-soft)
 #   P  진단 양성 대조 — P1 IS 1.0/OOS 0.7 성분 재현 · P2 창(2012 시작 = 84개월 초과, 2005-02 = 1 · 허용 안)
 #      · P3 골든에서 달력 성분 = 비율 성분 · P4 달력 분할은 시작을 늦춰도 OOS 구간 불변 · P5 설정 결측 = NA(폴백 없음)
@@ -78,10 +79,19 @@ drop_diag <- function(x) x[setdiff(names(x), "diagnostics")]
 ## (v10.01 2026-10-13 MC7) 권위 grade 는 등급 v3 가 됐다. R1 은 'P0-02 가 구 판정 경로를 안 바꿨다'를 지키므로
 ##   새 출력을 구 판정 관점으로 되돌려 비교한다: grade ← grade_v921 · 사유의 v3 접두 제거 · 끝에 붙은 v3 3필드 제외.
 V3_TAIL <- c("grade_basis", "grade_v921", "grade_v3")
+## (2026-10-15 2391601e0 · 리뷰 C3) defensive_score = 생산자 단일 모양 defensive_score.R::ds_record() — 구판이 고르던 7필드
+##   (status · defensive · down · mid · deep · up · reason) 뒤에 귀속 꼬리 4필드가 붙었다(판정 가능 판에만 · 방어형은 등급 비접촉).
+##   R1 은 그 꼬리만 떼고 대조한다: 꼬리는 **끝에 붙은 모양만** 허용(ds_shape_ok) — 앞 7필드의 값 · 순서 변경이나 모르는 필드는 그대로 red.
+DS_TAIL <- c("attribution", "defensive_selection", "beta", "down_resid")
+ds_shape_ok <- function(o, nw) {
+  a <- names(o$defensive_score); b <- names(nw$defensive_score)
+  identical(a, b) || identical(b, c(a, DS_TAIL))
+}
 to_v921 <- function(nw) {
   x <- drop_diag(nw); x <- x[setdiff(names(x), V3_TAIL)]
   x$grade <- nw$grade_v921
   x$reasons <- sub("^.*? \\| v921 (NA|[A-F]): ", "", nw$reasons)
+  if (is.list(x$defensive_score)) x$defensive_score <- x$defensive_score[setdiff(names(x$defensive_score), DS_TAIL)]
   x
 }
 
@@ -170,14 +180,19 @@ if (is.null(E0)) {
 } else {
   for (grp in list(list(nm = "합성", fx = SYN), list(nm = "실산출", fx = REAL))) {
     if (!length(grp$fx)) { sk(sprintf("R1 %s 픽스처 0건", grp$nm)); next }
-    badl <- character(0)
+    badl <- character(0); n_tail <- 0L
     for (k in names(grp$fx)) {
       o <- run_es(E0, grp$fx[[k]]); nw <- run_es(E1, grp$fx[[k]]); NEWRES[[k]] <- nw
-      same <- identical(o, to_v921(nw)) && identical(names(nw), c(names(o), "diagnostics", V3_TAIL))
+      same <- identical(o, to_v921(nw)) && identical(names(nw), c(names(o), "diagnostics", V3_TAIL)) && ds_shape_ok(o, nw)
       if (!same) badl <- c(badl, k)
+      if (!is.null(o$defensive_score) && identical(names(nw$defensive_score), c(names(o$defensive_score), DS_TAIL))) n_tail <- n_tail + 1L
     }
-    chk(sprintf("R1 %s %d종 — 변경 전 판본과 grade·essence·사유·전 필드 identical(진단 칸만 끝에 추가)",
-                grp$nm, length(grp$fx)), !length(badl), paste(badl, collapse = ","))
+    chk(sprintf("R1 %s %d종 — 변경 전 판본과 grade·essence·사유·전 필드 identical(진단 칸 · v3 꼬리 · 방어형 귀속 꼬리만 끝에 추가 · 꼬리 %d종)",
+                grp$nm, length(grp$fx), n_tail), !length(badl), paste(badl, collapse = ","))
+    ## ★처치 전달 — 실산출은 판정 가능한 방어형 기록을 갖는다. 꼬리가 0종이면 꼬리 떼기가 빈 일이 되고(위 대조가 공짜로 참),
+    ##   생산자가 7필드 복사로 되돌아간 C3 회귀(새 측정 전부 dscore_unattributed)도 R1 을 그대로 통과한다.
+    if (identical(grp$nm, "실산출"))
+      chk(sprintf("R1c 실산출 — 방어형 귀속 꼬리(ds_record)가 실제로 실렸다 %d/%d종(≥1 · C3 회귀 감지)", n_tail, length(grp$fx)), n_tail >= 1L)
   }
   if (length(REAL) < 15L) sk(sprintf("R1 실산출 %d/20 만 존재 — 표본 축소", length(REAL)))
 }

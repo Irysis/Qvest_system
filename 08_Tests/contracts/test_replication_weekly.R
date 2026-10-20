@@ -1,7 +1,7 @@
 # test_replication_weekly.R — MC4 주간 리밸런싱 경로 검사기 (양방향 · 합성 데이터 · 구판 하네스 비트 대조)
 #
 # 계약 (MC4 · D16 · 2026-10-13 · 설계 §3.9):
-#   W1 월간(월말 신호 · 월 1회)은 구판과 비트 동일 — close_t1 · close_d_legacy 둘 다(기준본 = git HEAD 의 구판 하네스)
+#   W1 월간(월말 신호 · 월 1회)은 구판과 비트 동일 — close_t1 · close_d_legacy 둘 다(기준본 = 주간 경로 이전 판 고정 blob · W0)
 #   W2 월중 신호일이라도 월 1회면 월간 경로(구판 비트 동일)
 #   W3 주간 신호 → 주간 판정 · 리밸 횟수 = 주 수 · 집행일 = 신호 다음 거래일 · 보유 창 서로소
 #   W4 일간 신호 → ISO 주당 마지막 신호만(일간 불허 · 회계 진단)
@@ -32,15 +32,20 @@ chk <- function(name, ok, detail = "") {
 if (length(.hit) != 1L) stop("backtest_harness.R 에서 get_execution_date 정의를 찾지 못했다")
 eval(.hit[[1]], envir = globalenv())
 
-## 신판(작업 트리) · 구판(git HEAD) 하네스를 각자 환경에
+## 신판(작업 트리) · 구판(고정 blob) 하네스를 각자 환경에
+##   구판 = 주간 경로(MC4 · D16) 이전 판 — 8558e06b6(2026-09-25)의 replication_harness.R blob. 이 검사를 쓸 때는 신판이 미커밋이라
+##   HEAD 가 구판이었지만, 61095bae1(2026-10-14 auto-commit)이 신판을 커밋한 뒤로 HEAD 는 신판이다 — HEAD 를 기준본으로 두면
+##   W0 · W5 가 빨개지고 W1 · W2 의 비트 대조는 아무것도 재지 않는다. blob 은 불변이라 이후 커밋과 무관하게 같은 판본을 가리킨다.
+OLD_HARNESS_BLOB <- "369fcb244905edc3bac20572bd38bb0b2a95c079"
 NEW <- new.env(); sys.source(file.path(root, "02_Infrastructure/replication/replication_harness.R"), envir = NEW, keep.source = FALSE)
 old_src <- tempfile(fileext = ".R")
-old_txt <- tryCatch(system2("git", c("-C", root, "show", "HEAD:02_Infrastructure/replication/replication_harness.R"), stdout = TRUE, stderr = FALSE),
+old_txt <- tryCatch(suppressWarnings(system2("git", c("-C", root, "cat-file", "-p", OLD_HARNESS_BLOB), stdout = TRUE, stderr = FALSE)),
                     error = function(e) character(0))
-HAVE_OLD <- length(old_txt) > 100L && !any(grepl("rep_rebalance_mode", old_txt, fixed = TRUE))
+HAVE_OLD <- is.null(attr(old_txt, "status")) && length(old_txt) > 100L && !any(grepl("rep_rebalance_mode", old_txt, fixed = TRUE))
 OLD <- new.env()
 if (HAVE_OLD) { writeLines(old_txt, old_src, useBytes = TRUE); sys.source(old_src, envir = OLD, keep.source = FALSE) }
-chk("W0 기준본 확보 — git HEAD 의 구판 하네스(주간 경로 없음)", HAVE_OLD, "(git show 실패 또는 HEAD 가 이미 신판 — 구판 비트 대조 불가)")
+chk(sprintf("W0 기준본 확보 — 주간 경로 이전 구판 하네스 blob %s(rep_rebalance_mode 없음)", substr(OLD_HARNESS_BLOB, 1L, 9L)), HAVE_OLD,
+    "(git cat-file 실패 또는 blob 이 신판 — 구판 비트 대조 불가)")
 
 ## 합성 세계 — 평일 달력(공휴일 2일 제외) · 30종목 · 결정론 수익 · 거래량
 set.seed(20261013)
@@ -71,13 +76,13 @@ WM <- mkW(month_end[month_end >= as.Date("2019-11-01") & month_end < as.Date("20
 for (ep in c("close_t1", "close_d_legacy")) {
   n <- run(NEW, WM, ep)
   chk(sprintf("W1 월말 신호 · %s — 판정 monthly · 구판과 비트 동일", ep),
-      identical(n$diagnostics$rebalance$mode, "monthly") && (!HAVE_OLD || same(n, run(OLD, WM, ep))))
+      identical(n$diagnostics$rebalance$mode, "monthly") && HAVE_OLD && same(n, run(OLD, WM, ep)))   # 기준본 없으면 비트 대조 미측정 = red
 }
 mid <- last_td(days[as.integer(format(days, "%d")) <= 15], function(d) format(d, "%Y-%m"))   # 월중(15일 이전 마지막 거래일)
 WMID <- mkW(mid[mid < as.Date("2020-12-15")])
 n2 <- run(NEW, WMID)
 chk("W2 월중 신호일 · 월 1회 — 월간 경로 · 구판 비트 동일(집행 = 익월 첫 거래일)",
-    identical(n2$diagnostics$rebalance$mode, "monthly") && (!HAVE_OLD || same(n2, run(OLD, WMID))) &&
+    identical(n2$diagnostics$rebalance$mode, "monthly") && HAVE_OLD && same(n2, run(OLD, WMID)) &&
       all(format(n2$PORTFOLIO_LOG$Exec_Date, "%Y-%m") > format(n2$PORTFOLIO_LOG$Signal_Date, "%Y-%m")))
 
 cat("\n=== W3 주간 신호 ===\n")

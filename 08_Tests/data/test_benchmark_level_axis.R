@@ -247,6 +247,10 @@ PINNED <- c(
   "02_Infrastructure/regime/ae_pit_features.py",
   "02_Infrastructure/regime/ae_seed_sensitivity_probe.py",
   "02_Infrastructure/regime/ktri_v3_builder.R",
+  # MSM as-of 판(PIT C1 수리 · 결정 PIT-C1-MSM-PARAMS 안 A · 1eb18b24d 2026-10-16) — 정본 .cache/benchmark.parquet 를 직접 읽는다(msma_load_bm).
+  #   적합은 log 수익(비율)이지만 일별 경로가 Price(= BM_Close 레벨) 열을 .cache/msm_asof_daily.parquet 로 수출하고(msm_daily_refit.R 과 같은 꼴),
+  #   원장 행 벤치 해시가 sprintf("%.10f", BM_Close) 의 sha256 이다(msma_bench_sha) → 절대 레벨 의존(ABS_LEVEL)
+  "02_Infrastructure/regime/msm_asof.R",
   "02_Infrastructure/regime/msm_daily_refit.R",
   "02_Infrastructure/regime/regime_cusum.R",
   "02_Infrastructure/regime/regime_ensemble.R",
@@ -254,12 +258,26 @@ PINNED <- c(
   "02_Infrastructure/regime/regime_jump_model.R",
   "02_Infrastructure/regime/regime_vrp.R",
   "02_Infrastructure/reinforcement/overlay_arms/pg2_risk_overlay.R",
+  # B7 as-of 선정(P0-08 · 8558e06b6 2026-09-25) — rf_sl_bench_months 가 정본 bench_path(06_Registry/reinforce_program.json
+  #   B7.selection_asof.bench_path = .cache/benchmark.parquet)의 BM_Close 로 px/shift(px) − 1 월수익만 만든다 → 비율(ABS_LEVEL 아님)
+  "02_Infrastructure/reinforcement/rf_sleeve.R",
   "02_Infrastructure/reports/index_factor_beta.R",
   "02_Infrastructure/sanity_checks/bear_date_audit.R",
   "02_Infrastructure/validation/benchmark_source_parity.R",
   "02_Infrastructure/validation/judge_oos_helper.R",
   "02_Infrastructure/validation/pit_enforcement.R",
   "04_Research/strategies/RP_AUTO_2007_08115/engine.R",
+  # 충실구현 엔진 2편(2026-10-17 분류) — BM_DT = 러너 load_rawdata 의 정본 .cache/benchmark.parquet(backtest_harness.R BM_CACHE).
+  #   2202.05702: 분기말 레벨 비 bml/bml_l − 1 로 벤치 분기수익만 만든다(비율). engine.rejected1.R = 같은 식의 기각 초안.
+  #   1908.01112: 시장 레벨 창을 min-max 정규화한 AR 사상 · cor(가격, 시장 레벨) · 열 단위 노름 정규화 OLS(식 5)에만 쓴다 → 척도 배수에
+  #     예측·순위 불변(절대 문턱은 분모 가드 EPS_RANGE 1e-12 뿐). engine.rejected_preaudit1.R = engine.R 과 바이트 동일한 기각 사본.
+  #   FIDELITY.json 둘 = 벤치 원천 서술(계산 없음). 셋 다 ABS_LEVEL 아님
+  "04_Research/strategies/RP_AUTO_2202_05702/FIDELITY.json",
+  "04_Research/strategies/RP_AUTO_2202_05702/engine.R",
+  "04_Research/strategies/RP_AUTO_2202_05702/engine.rejected1.R",
+  "04_Research/strategies/RP_AUTO_CLEAN_1908_01112/FIDELITY.json",
+  "04_Research/strategies/RP_AUTO_CLEAN_1908_01112/engine.R",
+  "04_Research/strategies/RP_AUTO_CLEAN_1908_01112/engine.rejected_preaudit1.R",
   "04_Research/strategies/RP_AUTO_COMBO_combo_1403_8125_2007_081/engine.R",
   "04_Research/strategies/RP_AUTO_COMBO_combo_1403_8125_2007_081/engine.rejected1.R",
   "04_Research/strategies/RP_AUTO_COMBO_combo_2007_08115_2301_09/engine.R",
@@ -299,10 +317,18 @@ ABS_LEVEL <- c(
   "02_Infrastructure/data/krx_build_rawdata.R",                 # 타 소스 레벨과의 비
   "02_Infrastructure/data/naver_data_collector.R",              # 종합지수 레벨을 BM_Close 로 기록
   "02_Infrastructure/regime/ktri_v3_builder.R",                 # 레벨을 IKS200 이름으로 CSV 수출
+  "02_Infrastructure/regime/msm_asof.R",                        # Price 컬럼 parquet 수출 + 레벨 문자열 sha256(원장 벤치 해시)
   "02_Infrastructure/regime/msm_daily_refit.R",                 # Price 컬럼으로 parquet 수출
   "02_Infrastructure/regime/regime_jump_model.R",               # Price 컬럼(피처표 carry)
   "05_Production/4.Statistical-Technical/4-1.Samsara_Protocol/Step_2_Nirvana_Calc.R"  # sum(BM_Close) md5
 )
+# ★생성 프롬프트 텍스트는 소비자가 아니다 — 하나씩 등재하지 않고 패턴으로 분모에서 뺀다(2026-10-17).
+#   overlay_arms/prompt_gen_<YYYYMMDD>_<HHMMSS>.txt = B5 arm 생성 레인의 LLM 프롬프트(생성기 02_Infrastructure/ops/rf_overlay_propose.sh:143
+#   PF="$ADIR/prompt_${KIND}.txt" — 2026-10-13 v10.01 격자 러너 퇴역 때 삭제 · 산출물만 남았다). BM_Close 는 이미 등재된 소비자
+#   pg2_risk_overlay.R 의 '그 파일만 쓰는 이름' 목록(식별자 인벤토리 1줄 · 10-04~10-10 판 7개)에만 나온다 — 계산이 없다.
+#   그 프롬프트가 낳은 arm 코드(gen_*.R)는 그대로 분모에 남는다. 패턴은 이 이름 꼴만 가린다(S3 가 양방향으로 못박는다).
+GENERATED_TEXT <- c("^02_Infrastructure/reinforcement/overlay_arms/prompt_gen_[0-9]{8}_[0-9]{6}[.]txt$")
+gen_re <- paste(GENERATED_TEXT, collapse = "|")
 scan_dirs <- c("02_Infrastructure", "05_Production", "04_Research/strategies")
 found <- character(0)
 for (dd in scan_dirs) {
@@ -320,13 +346,26 @@ for (dd in scan_dirs) {
   }
 }
 found <- sort(unique(found))
+excluded  <- found[grepl(gen_re, found)]
+found     <- setdiff(found, excluded)
 newcomers <- setdiff(found, PINNED)
 gone      <- setdiff(PINNED, found)
-chk(sprintf("S1 새 BM_Close 소비자 0건 (실측 %d파일)", length(found)),
+chk(sprintf("S1 새 BM_Close 소비자 0건 (실측 %d파일 · 생성 프롬프트 %d 제외)", length(found), length(excluded)),
     length(newcomers) == 0L,
-    sprintf("(미분류 신규: %s)", paste(head(newcomers, 8), collapse = ", ")))
+    sprintf("(미분류 신규 %d건: %s)", length(newcomers), paste(head(newcomers, 8), collapse = ", ")))
 chk("S2 절대-레벨 소비자 목록이 표면 안에 있다",
     all(ABS_LEVEL %in% PINNED), "")
+# S3 — 제외 패턴 양방향: 생성 프롬프트 이름은 가리고(양성), 그 프롬프트가 낳은 arm 코드 · 같은 이름의 코드 ·
+#   다른 꼴의 텍스트 · 다른 폴더 · 등재 소비자 전부는 가리지 않는다(음성). 패턴이 넓어지면 소비자가 조용히 분모에서 빠진다.
+s3_pos <- "02_Infrastructure/reinforcement/overlay_arms/prompt_gen_20261004_084327.txt"
+s3_neg <- c("02_Infrastructure/reinforcement/overlay_arms/gen_20261004_084327.R",
+            "02_Infrastructure/reinforcement/overlay_arms/prompt_gen_20261004_084327.R",
+            "02_Infrastructure/reinforcement/overlay_arms/prompt_gen_notes.txt",
+            "04_Research/strategies/RP_AUTO_X/prompt_gen_20261004_084327.txt",
+            PINNED)
+chk("S3 생성 프롬프트 제외 패턴 양방향 — 생성 프롬프트만 가린다(같은 폴더 arm 코드 · 다른 꼴 텍스트 · 다른 폴더 · 등재 소비자는 그대로)",
+    all(grepl(gen_re, s3_pos)) && !any(grepl(gen_re, s3_neg)),
+    sprintf("(양성 %s · 음성 적중 %s)", all(grepl(gen_re, s3_pos)), paste(s3_neg[grepl(gen_re, s3_neg)], collapse = ", ")))
 if (length(gone)) cat(sprintf("  note  사라진 소비자 %d건(실패 아님): %s\n",
                               length(gone), paste(head(gone, 5), collapse = ", ")))
 
