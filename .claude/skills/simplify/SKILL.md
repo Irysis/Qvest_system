@@ -60,10 +60,11 @@ description: QEPM 3-Agent 아키텍처 인식 코드 검토 + 간소화. Alpha/R
 모든 코드에서 확인:
 - **max_names 25** 적용 여부 (Optimizer + Forge)
 - **long-only** (weights ≥ 0)
-- **weight_bounds — v10: 종목별 상한 폐지 (long-only·Σw=1 만)**
+- **weight_bounds — v10: 종목별 상한 폐지** · **Σw ≤ 1**(잔여 현금 · v10.01 MC5 — 1계층 처방 · 측정 축. 동결된 QEPM Optimizer 경로만 Σw = 1)
 - **liquidity_min 2e8** (LIQ_THRESHOLD)
 - **transaction_cost 15bps** (cost_model_version 준수)
-- **universe** (KOSPI200 ∪ KOSDAQ150)
+- **측정 축 = 활성 epoch**(`constraint_defaults.json::measurement_axis.active` — 현행 `all_hyg_px1000_2000_v1`: 전 종목 + 위생 · 동전주 바닥 · 2000-01~). 구 표기 'universe KOSPI200 ∪ KOSDAQ150' 은 v10.01 이전 축(k200kq150_2005_v1)이다 — 2026-10-20 갱신
+- **1계층 라운드 코드**: 공통 판정 코어(`04_Research/programs/_lib/round_core/`)를 쓰는지(라운드별 판정 코드 복사 금지) · 성능 규칙 `round_core/PERFORMANCE.md`(정수 키 · 한 번 읽기 · 결과 동일 실증) · 한글 경로를 깨는 경로 정규화 함수 금지
 
 ## PIT C1~C15 자동 체크
 

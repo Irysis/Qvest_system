@@ -24,6 +24,15 @@ Rscript -e "source('02_Infrastructure/programs/program_registry.R'); writeLines(
 - **도훈에게 올리는 것만**: 목표 · 고정 축 변경 · BOOK 등록 · 사양 변경 · 비용/정책 · `dohoon_decision` · 사전등록 규율 예외. 선택지 + 권고로 결정 기록부(`dr_open`)에 올리고 보고의 '결정 대기'에 적는다.
 - τ_D 규율은 그대로다 — Q 는 시험 창을 본 상태이므로 선택 · 판정 규칙은 보는 창 지표로만 쓰고 그 노출을 사전등록 `exposures` 에 적는다.
 
+### 라운드 = 세션 (2026-10-20 도훈 결정 L1-SPEED-PLAN-20261020 · 발효 = P2R05 종료 뒤 첫 라운드)
+- 라운드 하나는 새 세션 하나에서 돈다.
+  - 왜: 한 세션을 7일 이어 쓰면 호출마다 맥락 48만~74만 토큰을 다시 읽는다. 이것이 라운드 토큰의 가장 큰 몫이었다.
+  - 라운드를 닫을 때 재개 저널(`session_resume.py`)과 다음 설계 입력(병목 지표 · 실패 지도 · 죽은 구성 · 재료 큐)을 남긴다.
+  - 다음 라운드는 새 세션으로 연다. 사용자 턴이면 바로 시작하고, 자동 이벤트 턴이면 카드로 제안한다.
+  - 세션을 닫을 때 판단 Superfan T3 를 실제로 돌린다.
+- **독립 프로그램 라운드 동시 운영**(L1-SPEED-LEVERS-20261020): 서로의 결과에 기대지 않는 프로그램의 라운드만 별도 세션으로 겹친다.
+  - 전제: 등록부 · 원장 · 저널 쓰기 잠금 배포(WP3) 뒤. GPU 는 임대 규칙을 따른다.
+
 ### 작업 연속성 — 세션 재개 저널 (2026-10-15 도훈 지시)
 - 여러 단계 작업(라운드 · 측정 파이프라인 · 계약 수리)을 시작하면 `session_resume.py begin`(단계 · 먼저 읽을 것 · 다음 할 일), 단계가 바뀔 때마다 `step`, 다음 할 일이 바뀌면 `next`, 분리 실행을 띄우면 `bg`(로그 · 센티널), 도훈 결정 대기는 `decide`, 끝나면 `done`.
 - **다음 할 일은 다음 세션이 그대로 실행할 수 있게** 쓴다(명령 · 파일 · 확인할 센티널). 세션이 갑자기 끊겨도 부팅 `Resume:` 줄과 `/qvest` ⓪ 재개가 여기서 이어 간다.
@@ -53,6 +62,35 @@ Rscript -e "source('02_Infrastructure/programs/program_registry.R'); writeLines(
 상태 어휘: blocked · idle · ready · active · paused · done · killed. 쓰기는 `program_registry.R` 함수만(직접 편집 금지 — 검사 · 원자적 교체).
 
 ## 2. 라운드 한 번 (모든 프로그램 공통)
+
+### 2-0. 공통 판정 코어 round_core v1 (2026-10-20 · L1-SPEED-PLAN-20261020 · 발효 = P2R05 종료 뒤 첫 라운드)
+
+라운드는 더 이상 register.R · evaluate.R · precheck.R · measure.sh · notify.R · close_round.R 을 새로 쓰지 않는다. 라운드가 쓰는 것은 셋뿐이다.
+- `round_spec.json`: 칸 · 엔진 · 규칙 선언 · 선택 · 노출 · 결론 범위.
+- `DESIGN.md`: 사고 기록 — 템플릿 `_lib/round_core/templates/`.
+- 필요할 때만 `round_ext.R`: 같은 선언 형식의 고유 규칙 + 그 픽스처.
+
+정본 · 사용법 = `04_Research/programs/_lib/round_core/README.md`.
+
+- **규칙 단일 출처**
+  - 규칙 선언 하나에서 사전등록 문장 · 판정 실행 · DESIGN 표를 생성한다. 문구 표류(P2R04 · P2R05 필수 지적 11/17)가 구조적으로 사라진다.
+  - 수치 문턱은 `basis` 나 정본 `value_ref` 가 없으면 거부한다.
+  - 미측정은 `na = fail | untested` 이고 통과로 접지 않는다.
+  - 판정 규칙의 내용 · 수 · 설계 재량은 현행대로다(도훈 10-20).
+- **실행기** `bash 04_Research/programs/_lib/round_core/round.sh <round_dir> <단계>`
+  - 단계: check · draft · reviewed · register · measure · evaluate · report · close.
+  - 핀은 한 함수로 대조한다.
+  - 점검본 사본 대신 drafts.json 을 쓴다.
+  - 칸 평가는 내용 주소 캐시를 쓴다(재측정 뒤 옛 평가 금지).
+  - 측정 → 평가는 자동으로 이어진다.
+  - 판정은 `results/verdict.json` 한 곳에 쓰고, 종료 기록과 보고를 여기서 생성한다.
+- **점검 동시 실행**
+  - 사양 초안(`round.sh draft` 가 만드는 `prereg_draft.md`)이 나오면 철학 P1 · 판단 T1 · 격리 교차 점검을 **동시에** 띄운다.
+  - 점검자에게는 라운드 패키지(사양 · ext · 초안 md · 코어 판)만 준다. 코어 자체는 출시할 때 한 번 점검한다.
+  - 점검 횟수는 §12 기본(전체 1회 + 변경분 1회)이다. 등록 조건은 P1 수령 ∧ 점검 ok 다.
+- **P1 라운드**: `rc_init_p1` 이 표준 구성 칸 사양(P0R01 C0 선례 · 고정 축 정본 대조)과 골격을 만든다.
+- **속도 규칙**: `_lib/round_core/PERFORMANCE.md` 를 따른다. 결과 동일 실증과 전후 시간 기록이 없는 최적화는 쓰지 않는다.
+- P2 · P3 판정 틀(위기 · β 짝 · 과반 · 짝 평가)은 코어 이관과 결과 동일 재판정(P2R04 · P2R03 · P3R03)이 끝나는 대로 붙는다. 그 전의 P2 · P3 라운드는 현행 방식이다.
 
 **처방 루프 라운드 도구(v0 · 2026-10-13 S2 파일럿 · D7 별도 모듈)** — 에이전트(분석가 · 처방 담당 · 리뷰어)가 있는 라운드는 이 경로로:
 - 진단 패킷 `contracts/diagnosis_packet.R::dp_build(dir)` — **보는 창(≤ τ_D)만으로 계산**(적재 단계 절단 · 검사 = τ_D 뒤 세계를 바꿔도 바이트 동일).
