@@ -36,6 +36,44 @@ _gate_fail_closed() {
 trap '_gate_fail_closed' ERR
 
 INPUT=$(cat)
+
+# Legacy directory matchers — (WP4 2026-10-20) 정의를 빠른 길 앞으로 옮겼다: 빠른 길이 이 배열 하나에서 판정을 파생한다
+#   (패턴을 더하면 빠른 길도 함께 넓어진다). ★아래 _gate_fail_closed 의 정규식 리터럴도 같은 패턴이어야 한다(구판부터의 짝).
+LEGACY_PATTERNS=(
+  "/_archive_v55/"
+  "/legacy/v55/"
+  "/_archive_4_6/"
+)
+
+# ── 빠른 길 (WP4 2026-10-20 · 훅 지연 — 판정 불변) ─────────────────────────────────
+# 증명: 차단은 FILE_PATH(해독값)가 LEGACY_PATTERNS 의 한 패턴을 담거나, fail-closed hay(FILE_PATH, 비면 원문 INPUT)가
+#   같은 패턴(정규식 리터럴)을 담을 때뿐이다. 패턴을 담으면 그 패턴의 마디('/' 사이 낱말 — 영숫자·_)도 모두 담는다.
+#   JSON 해독은 이스케이프를 한 글자로 바꿀 뿐 글자를 지우지 않고, 영숫자·_ 를 만드는 이스케이프는 \uXXXX 뿐이다(\/ 는
+#   '/' 만 만든다) → 원문에 '\u' 가 없고 어느 패턴의 마디도 다 갖추지 못하면 어떤 파싱 결과로도 차단될 수 없으며,
+#   원래 경로의 출력은 '{}' 다. 객체 모양('{…}')이 아니거나 날 제어문자(엄격 JSON 파서가 거부 — JSON.stringify 는
+#   내지 않는다)가 든 입력은 원래 경로로 보낸다 — 그 경로가 파서 실패 때 남기는 'HOOK_ERR_TRAP allow' 진단 로그 줄까지
+#   그대로 두기 위해서다. (남는 차이: 그 밖의 문법 오류 JSON 에서 그 진단 줄 1개 — 판정 무관 · 읽는 곳 0건 · 운영 로그 실측 0건.)
+# 끄기: QVEST_HOOK_FASTPATH=0 (검사 08_Tests/hooks/test_hook_fastpath_equivalence.sh)
+_lwb_may_match() {  # 원문이 어느 패턴의 마디를 모두 담으면 0(→ 원래 경로) · 순수 bash
+  local p s seg all
+  for p in "${LEGACY_PATTERNS[@]}"; do
+    all=1; s="$p"
+    while [ -n "$s" ]; do
+      seg="${s%%/*}"; s="${s#"$seg"}"; s="${s#/}"
+      [ -z "$seg" ] && continue
+      case "$INPUT" in *"$seg"*) : ;; *) all=0; break ;; esac
+    done
+    [ "$all" = 1 ] && return 0
+  done
+  return 1
+}
+if [ "${QVEST_HOOK_FASTPATH:-1}" != "0" ]; then
+  case "$INPUT" in
+    *'\u'*|*[[:cntrl:]]*) : ;;
+    '{'*'}') _lwb_may_match || { echo '{}'; exit 0; } ;;
+  esac
+fi
+
 TOOL=$(printf '%s' "$INPUT" | "$QVEST_PY_BIN" -c 'import json,sys; d=json.load(sys.stdin); print(d.get("tool_name",""))' 2>/dev/null || echo "")
 FILE_PATH=$(printf '%s' "$INPUT" | "$QVEST_PY_BIN" -c 'import json,sys; d=json.load(sys.stdin); print(d.get("tool_input",{}).get("file_path",""))' 2>/dev/null || echo "")
 
@@ -50,13 +88,7 @@ if [[ "$TOOL" != "Write" && "$TOOL" != "Edit" ]]; then
   exit 0
 fi
 
-# Legacy directory matchers
-LEGACY_PATTERNS=(
-  "/_archive_v55/"
-  "/legacy/v55/"
-  "/_archive_4_6/"
-)
-
+# Legacy directory matchers = 위(빠른 길 앞) LEGACY_PATTERNS 정의 하나. (WP4 2026-10-20 이동)
 for pattern in "${LEGACY_PATTERNS[@]}"; do
   if [[ "$FILE_PATH" == *"$pattern"* ]]; then
     REASON="LEGACY_WRITE_BLOCKED (v7.0 Sprint 5): $pattern is read-only. v7.0 Hardening 격리 정책. legacy 자산 수정 금지. 수정 필요 시 active path로 신규 작성."

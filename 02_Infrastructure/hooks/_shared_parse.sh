@@ -167,6 +167,17 @@ fi
 #   읽힌다. 실측: write_json(pretty=TRUE) 산출물 전량에서 CONTENT 길이 = 1.
 #   수리는 shell 대입문을 python 이 shlex.quote 로 만들어 eval — 개행/인용부호를 그대로
 #   보존하고 추가 프로세스도 늘지 않는다(구판의 sed 서브셸 7회보다 오히려 적다).
+#
+# ★사전 파싱 모드 (WP4 2026-10-20 · 훅 지연 — L1-SPEED-PLAN-20261020)
+#   호출자가 6필드(TOOL_NAME·FILE_PATH·COMMAND·CONTENT·AGENT_NAME·AGENT_PROMPT)를 이미 채웠고
+#   QVEST_PARSE_PRESET 에 **자기 셸의 PID($$)** 를 넣었을 때만 파이썬 파싱을 건너뛴다. 나머지
+#   (export · AGENT_NAME_LC · 발화 기록)는 그대로 돈다 — 기록 경로가 하나로 남는다.
+#   ★값이 $$ 와 같아야 한다: 부모 프로세스가 환경으로 물려준 값(다른 PID)으로는 켜지지 않는다
+#     (환경 누출로 다른 훅의 파싱이 조용히 꺼지는 경로를 막는다). 사용처 = safety_guard.sh 빠른 길.
+if [ "${QVEST_PARSE_PRESET:-}" = "$$" ]; then
+  TOOL_NAME="${TOOL_NAME-}"; FILE_PATH="${FILE_PATH-}"; COMMAND="${COMMAND-}"
+  CONTENT="${CONTENT-}"; AGENT_NAME="${AGENT_NAME-}"; AGENT_PROMPT="${AGENT_PROMPT-}"
+else
 PARSED=$(printf '%s' "$INPUT" | "$QVEST_PY_BIN" -c "
 import sys, json, shlex
 sys.stdout.reconfigure(encoding='utf-8', errors='replace')
@@ -192,8 +203,15 @@ except Exception:
 
 TOOL_NAME=''; FILE_PATH=''; COMMAND=''; CONTENT=''; AGENT_NAME=''; AGENT_PROMPT=''
 eval "$PARSED"
+fi
 export TOOL_NAME FILE_PATH COMMAND CONTENT AGENT_NAME AGENT_PROMPT
-export AGENT_NAME_LC=$(printf '%s' "$AGENT_NAME" | tr 'A-Z' 'a-z')
+# (WP4 2026-10-20) 빈 AGENT_NAME 은 서브셸+tr 없이 '' — printf '' | tr 의 출력도 '' 라 값이 같다.
+#   Write·Edit·Bash 입력엔 subagent_type·name 이 없어 매 호출 ~80ms(서브셸 2 + tr)를 쓰던 자리다.
+if [ -n "$AGENT_NAME" ]; then
+  export AGENT_NAME_LC=$(printf '%s' "$AGENT_NAME" | tr 'A-Z' 'a-z')
+else
+  export AGENT_NAME_LC=''
+fi
 
 #──────────────────────────────────────────────────────────────────────────────
 # 자동 발화 기록 (2026-07-26, 도훈 승인 — v7.0 Sprint 6 원장 배관 부활)

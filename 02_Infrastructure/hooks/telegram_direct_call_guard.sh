@@ -36,6 +36,19 @@ export PYTHONUTF8=1  # (v8.1.2) 인코딩 사고 방지 — harness.md "Hook std
 
 INPUT=$(cat)
 
+# ── 빠른 길 (WP4 2026-10-20 · 훅 지연 — 판정 불변) ─────────────────────────────────
+# 증명: '{}' 가 아닌 출력은 deny 하나뿐이고, deny 는 Rscript -e 페이로드(해독된 COMMAND 의 부분 문자열)에
+#   tg_send_rich( · tg_send_photo( · tg_send( 가 있어야 한다 → 셋 다 'tg_send' 를 담는다. JSON 해독에서
+#   영숫자·_ 를 만드는 이스케이프는 \uXXXX 뿐이므로, 원문에 'tg_send' 도 '\u' 도 없으면 해독값에도 없다.
+#   그 밖의 모든 가지(Bash 아님 · 페이로드 없음 · 파서 실패 · ERR)는 '{}' 다 → 출력 동일.
+# 끄기: QVEST_HOOK_FASTPATH=0 (검사 08_Tests/hooks/test_hook_fastpath_equivalence.sh)
+if [ "${QVEST_HOOK_FASTPATH:-1}" != "0" ]; then
+  case "$INPUT" in
+    *tg_send*|*'\u'*) : ;;
+    *) echo '{}'; exit 0 ;;
+  esac
+fi
+
 TOOL=$(printf '%s' "$INPUT" | "$QVEST_PY_BIN" -c 'import json,sys; sys.stdout.reconfigure(encoding="utf-8",errors="replace"); d=json.loads(sys.stdin.buffer.read().decode("utf-8","replace")); print(d.get("tool_name",""))' 2>/dev/null || echo "")
 COMMAND=$(printf '%s' "$INPUT" | "$QVEST_PY_BIN" -c 'import json,sys; sys.stdout.reconfigure(encoding="utf-8",errors="replace"); d=json.loads(sys.stdin.buffer.read().decode("utf-8","replace")); print(d.get("tool_input",{}).get("command",""))' 2>/dev/null || echo "")
 

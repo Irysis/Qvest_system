@@ -36,6 +36,24 @@ trap '_gate_fail_closed' ERR
 # stdout은 UTF-8 reconfigure. (cp949 환경에서 한글 content가 가드를 침묵 무력화하던 문제)
 export PYTHONUTF8=1
 
+# (WP4 2026-10-20) stdin 은 여기서 한 번 읽는다 — 아래 빠른 길이 원문을 먼저 봐야 한다.
+#   구판은 같은 `INPUT=$(cat)` 를 파이썬 부재 가지와 본 경로에서 각각 읽었다(두 곳 중 한 곳만 실행).
+#   읽는 시점만 앞으로 옮겼고 값·trap 문맥(위 ERR trap 설치 뒤)은 같다.
+INPUT=$(cat)
+
+# ── 빠른 길 (WP4 2026-10-20 · 훅 지연 — 판정 불변) ─────────────────────────────────
+# 증명: 차단은 셋뿐이다 — 파이썬 부재 가지(원문에 'WT-P' ∧ 'request.json') · _gate_fail_closed(hay =
+#   FILE_PATH 해독값, 비면 원문 INPUT 에 'WT-P' ∧ 'request.json') · */WT-P*/request.json 졸업 검사(해독값).
+#   셋 다 'WT-P' 를 담아야 한다. JSON 해독에서 영숫자·'-' 를 만드는 이스케이프는 \uXXXX 뿐 → 원문에
+#   'WT-P' 도 '\u' 도 없으면 어떤 파싱 결과로도 차단될 수 없고, 원래 경로의 출력은 '{}' 다.
+# 끄기: QVEST_HOOK_FASTPATH=0 (검사 08_Tests/hooks/test_hook_fastpath_equivalence.sh)
+if [ "${QVEST_HOOK_FASTPATH:-1}" != "0" ]; then
+  case "$INPUT" in
+    *WT-P*|*'\u'*) : ;;
+    *) echo '{}'; exit 0 ;;
+  esac
+fi
+
 # (v8.2.1 2026-07-03 감사 HOOK-P0-3) bare python3 금지 — Windows Store 스텁이 침묵 무력화.
 # 해석 체인: QVEST_PY(User env) → venv .venv_qvest_ml → 시스템 Python312. 전부 부재 시
 # graduation 대상 write(WT-P*/request.json)만 fail-closed block, 그 외 allow.
@@ -43,7 +61,6 @@ PY="${QVEST_PY:-}"
 { [ -n "$PY" ] && [ -x "$PY" ]; } || PY="C:/Users/99922/OneDrive/Quant_Module_Moltbot/.venv_qvest_ml/Scripts/python.exe"
 [ -x "$PY" ] || PY="C:/Users/99922/AppData/Local/Programs/Python/Python312/python.exe"
 if [ ! -x "$PY" ]; then
-  INPUT=$(cat)
   if printf '%s' "$INPUT" | grep -q 'WT-P' && printf '%s' "$INPUT" | grep -q 'request\.json'; then
     echo '{"decision": "block", "reason": "discovery_graduation_gate: python 실행기 부재(QVEST_PY/venv/Python312 전부 미발견) — graduation 검증 불가 (fail-closed)"}'
   else
@@ -52,7 +69,6 @@ if [ ! -x "$PY" ]; then
   exit 0
 fi
 
-INPUT=$(cat)
 FILE_PATH=$(echo "$INPUT" | "$PY" -c 'import json,sys; sys.stdout.reconfigure(encoding="utf-8",errors="replace"); d=json.loads(sys.stdin.buffer.read().decode("utf-8","replace")); print(d.get("tool_input",{}).get("file_path",""))' 2>/dev/null || echo "")
 CONTENT=$(echo "$INPUT" | "$PY" -c 'import json,sys; sys.stdout.reconfigure(encoding="utf-8",errors="replace"); d=json.loads(sys.stdin.buffer.read().decode("utf-8","replace")); print(d.get("tool_input",{}).get("content",""))' 2>/dev/null || echo "")
 
