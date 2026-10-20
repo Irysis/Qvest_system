@@ -113,9 +113,11 @@ rf_reimplement_queue_reserve <- function(root, entry, jlog = function(event, ...
 #' @param root 저장소 루트 · req_path 요청 파일(06_Registry/replication_request.json) 경로
 #' @param prev 직전 소진 entry 요약(next_paper 의 best · 요청의 prev 필드) — 없으면 NULL
 #' @param jlog 저널 함수(event, ...) — next_paper 의 jlog 를 넘긴다. 기본 = 무동작
+#' @param only_key 다중 슬롯 발행기(rf_replication_slots.py)가 고른 논문 키 — 주면 그 키의 reserved 항목만 본다(NULL = 구판 그대로 맨 앞 항목)
+#' @param slot     요청에 남길 슬롯 이름(NULL = 안 남긴다)
 #' @return list(issued=TRUE, paper_key, entry, request, rejected_engines) 또는 list(issued=FALSE, reason=<chr>)
 rf_reimplement_queue_take <- function(root, req_path, prev = NULL, jlog = function(event, ...) NULL,
-                                      now = format(Sys.time(), "%Y-%m-%dT%H:%M:%S%z")) {
+                                      now = format(Sys.time(), "%Y-%m-%dT%H:%M:%S%z"), only_key = NULL, slot = NULL) {
   qp <- rf_reimplement_queue_path(root)
   ## 0) 요청 슬롯이 바쁘면 손대지 않는다 — next_paper §1.7 과 같은 관문(함수 단독 호출도 안전하게)
   req <- if (file.exists(req_path)) tryCatch(fromJSON(req_path, simplifyVector = FALSE), error = function(e) NULL) else NULL
@@ -135,6 +137,8 @@ rf_reimplement_queue_take <- function(root, req_path, prev = NULL, jlog = functi
 
   ## 2) reserved 항목 · order 오름차순(결측·비수치 order 는 뒤로 · 동순위는 파일 순서)
   idx <- which(vapply(ent, function(e) is.list(e) && identical(as.character(e$status %||% ""), "reserved"), logical(1)))
+  if (!is.null(only_key) && length(only_key) == 1L && !is.na(only_key) && nzchar(only_key))
+    idx <- idx[vapply(idx, function(i) identical(as.character(ent[[i]]$paper_key %||% ""), as.character(only_key)), logical(1))]
   if (!length(idx)) return(list(issued = FALSE, reason = "no_reserved"))
   ord <- vapply(idx, function(i) tryCatch(suppressWarnings(as.numeric(ent[[i]]$order %||% NA_real_)),
                                           error = function(e) NA_real_), numeric(1))
@@ -193,6 +197,7 @@ rf_reimplement_queue_take <- function(root, req_path, prev = NULL, jlog = functi
     audit = e$audit, wdir = e$wdir, decided_by = e$decided_by, queued_at = e$queued_at, queue_order = e$order,
     kind = kind, decision = e$decision)
   if (!is.na(lm)) { req_new$lane_mode <- lm; req_new$lane_mode_source <- "reimplement_queue"; req_new$lane_mode_at <- now }
+  if (!is.null(slot) && length(slot) == 1L && !is.na(slot) && nzchar(slot)) req_new$slot <- as.character(slot)
   ## 청정 레인은 audit_feedback_mode=clean 인 지적만 재구현 프롬프트에 싣는다 — 세션이 원문 판정으로 쓴 피드백이면 예약에 clean 을 적는다
   if (!is.null(e$audit_feedback_mode)) req_new$audit_feedback_mode <- as.character(e$audit_feedback_mode)[1]
   if (identical(kind, "ruling")) {
@@ -207,7 +212,10 @@ rf_reimplement_queue_take <- function(root, req_path, prev = NULL, jlog = functi
   ## 5) 대기열 먼저 issued 로 — 실패하면 발행하지 않는다(폴백)
   qd$entries[[pick_i]]$status         <- "issued"
   qd$entries[[pick_i]]$issued_at      <- now
-  qd$entries[[pick_i]]$issued_request <- "06_Registry/replication_request.json"
+  ## 발행 자리 = 실제 요청 경로(다중 슬롯이면 06_Registry/replication_slots/<slot>/…) — 루트 아래면 상대 경로로 적는다(구판 값과 같은 형식)
+  .rq_rel <- function(p) { p2 <- gsub("\\\\", "/", p); r2 <- paste0(sub("/+$", "", gsub("\\\\", "/", root)), "/")
+                           if (startsWith(tolower(p2), tolower(r2))) substring(p2, nchar(r2) + 1L) else p2 }
+  qd$entries[[pick_i]]$issued_request <- .rq_rel(req_path)
   qd$entries[[pick_i]]$issued_by      <- "next_replication(rf_reimplement_queue_take)"
   wq <- tryCatch({ .rq_write_json(qd, qp); TRUE },
                  error = function(err) { jlog("reimplement_queue_write_failed", stage = "queue", err = conditionMessage(err)); FALSE })

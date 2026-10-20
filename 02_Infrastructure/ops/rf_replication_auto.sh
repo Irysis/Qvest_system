@@ -35,11 +35,35 @@ RV_CFG="${QVEST_RP_VARIANTS_CFG:-$ROOT/06_Registry/rf_replication_variants.json}
 LOG="$ROOT/.cache/scheduler_logs/replication_auto_$(date +%Y%m%d).log"
 JLOG="${QVEST_RP_JLOG:-$ROOT/.cache/reinforce_auto_log.jsonl}"
 CLAIM="${QVEST_RP_CLAIM:-$ROOT/.cache/rf_replication.claim}"
+# ── ★다중 슬롯(2026-10-20 · WP3 · L1-SPEED-LEVERS-20261020) ─────────────────────────────────────────────────────────────
+#   설정 replication_lane.slots = {"cpu":N,"gpu":1} 이 있으면 이 스크립트는 두 얼굴이다:
+#     ① 디스패처(RP_SLOT 없음) — 아래 관문(스위치 · 리프레시 배리어) 뒤 rf_replication_slots.py tick 이 슬롯마다 claim 회수 · 논문 잠금 ·
+#        구판 요청 인수 · GPU 인계함 · 발행을 판정하고, 띄울 슬롯마다 이 스크립트를 RP_SLOT=<slot> 으로 분리 실행한 뒤 바로 끝난다
+#        (예약 작업 Qvest_ReinforceAutoLoop 가 IgnoreNew 라 틱이 작업자를 기다리면 다른 슬롯을 못 채운다).
+#     ② 슬롯 작업자(RP_SLOT=cpuN|gpu1) — 구판 본문 그대로를 슬롯 경로로 돈다: 요청 = 06_Registry/replication_slots/<slot>/replication_request.json ·
+#        claim = .cache/rf_replication.claim.<slot>/ · 로그 = scheduler_logs/replication_auto_<날짜>_<slot>.log. 더해지는 관문 셋 —
+#        논문 잠금 펜싱(같은 논문 중복 금지) · 등급 관문(CPU 슬롯의 GPU 논문 → GPU 인계함 · 측정 직전 구현 의존성으로 한 번 더) · GPU 임대(GPU 슬롯 새 착수 보류).
+#   slots 키가 없으면 구판 단일 슬롯 그대로(이 절은 무동작). 되돌리기 = rf_replication_slots.py config disable. 정본 = rf_replication_slots.py 머리 주석.
+SLOTS_PY="$ROOT/02_Infrastructure/ops/rf_replication_slots.py"
+RP_SLOT="${RP_SLOT:-}"
+RP_SLOT_CLASS=""
+RP_STATE_DIR="${QVEST_RP_STATE_DIR:-$ROOT/.cache}"
+if [ -n "$RP_SLOT" ]; then
+  case "$RP_SLOT" in cpu[1-9]|gpu1) ;; *) echo "[rp_auto] 알 수 없는 슬롯 이름: $RP_SLOT"; exit 2 ;; esac
+  RP_SLOT_DIR="${QVEST_RP_SLOT_DIR:-$ROOT/06_Registry/replication_slots}"
+  REQ="$RP_SLOT_DIR/$RP_SLOT/replication_request.json"
+  CLAIM="$RP_STATE_DIR/rf_replication.claim.$RP_SLOT"
+  RP_SLOT_CLASS="${RP_SLOT%%[0-9]*}"
+  LOG="$RP_STATE_DIR/scheduler_logs/replication_auto_$(date +%Y%m%d)_${RP_SLOT}.log"
+  export RP_SLOT
+  mkdir -p "$RP_STATE_DIR" "$(dirname "$REQ")"
+fi
 mkdir -p "$(dirname "$LOG")"
 
 jl(){ "$PY" -c "
-import io,json,sys,time
+import io,json,os,sys,time
 rec={'ts':time.strftime('%Y-%m-%dT%H:%M:%S%z'),'event':sys.argv[1],'src':'replication_auto'}
+if os.environ.get('RP_SLOT'): rec['slot']=os.environ['RP_SLOT']
 for kv in sys.argv[2:]:
     k,_,v=kv.partition('='); rec[k]=v
 io.open(r'$JLOG','a',encoding='utf-8').write(json.dumps(rec,ensure_ascii=False)+'\n')
@@ -65,6 +89,37 @@ if [ -f "$RB_SH" ] && . "$RB_SH"; then
   esac
 else
   jl halt_refresh_lock "state=error" "reason=barrier_helper_missing"; exit 0
+fi
+# ── ★다중 슬롯 디스패처 (2026-10-20 · WP3) — 슬롯 설정이 있고 이 실행이 작업자가 아니면: 판정 · 발행 → 작업자 분리 실행 → 끝 ──────────────
+#   판정 · 발행 · 회수는 전부 rf_replication_slots.py tick(파이썬 한 곳 · 잠금 안). 셸은 LAUNCH 줄만 받아 띄운다.
+#   띄우기 = nohup 배경 실행(예약 작업의 환경 — 무인 인증 CLAUDE_CODE_OAUTH_TOKEN · PATH — 을 그대로 물려받는다 · 틱이 끝나도 산다).
+#   검사 = QVEST_RP_LAUNCH=print(띄우지 않고 기록만) · foreground(차례로 직접 실행).
+if [ -z "$RP_SLOT" ]; then
+  # 슬롯 켜짐 여부 + 띄우기 방식(설정 replication_lane.launch_mode = detach(기본) | foreground — 분리 실행이 예약 작업 맥락에서 안 되면 되돌리는 손잡이)
+  SLOTS_ON=$("$PY" -c "
+import io,json
+try: rl=json.loads(io.open(r'$CFG','rb').read().decode('utf-8')).get('replication_lane') or {}
+except Exception: rl={}
+s=rl.get('slots'); m=rl.get('launch_mode') if rl.get('launch_mode') in ('detach','foreground') else 'detach'
+print(('1 ' if isinstance(s,dict) and (int(s.get('cpu') or 0)+int(s.get('gpu') or 0))>0 else '0 ')+m)" 2>/dev/null | tr -d '\r')
+  RP_LAUNCH_MODE="${QVEST_RP_LAUNCH:-${SLOTS_ON#* }}"
+  if [ "${SLOTS_ON%% *}" = "1" ]; then
+    PLAN="$("$PY" "$SLOTS_PY" --root "$ROOT" tick 2>>"$LOG")"; PLAN_RC=$?
+    [ "$PLAN_RC" = "0" ] || jl slots_tick_failed "rc=$PLAN_RC"
+    SELF="${BASH_SOURCE[0]:-$0}"
+    for _s in $(printf '%s\n' "$PLAN" | tr -d '\r' | sed -n 's/^LAUNCH \([a-z0-9]*\)$/\1/p'); do
+      _slog="$RP_STATE_DIR/scheduler_logs/replication_auto_$(date +%Y%m%d)_${_s}.log"
+      mkdir -p "$(dirname "$_slog")"
+      case "$RP_LAUNCH_MODE" in
+        print) jl slot_launch_dry "slot=$_s" ;;
+        foreground) RP_SLOT="$_s" RP_CHAIN_DEPTH=0 bash "$SELF" >> "$_slog" 2>&1 < /dev/null; jl slot_worker_done "slot=$_s" "rc=$?" ;;
+        *) RP_SLOT="$_s" RP_CHAIN_DEPTH=0 nohup bash "$SELF" >> "$_slog" 2>&1 < /dev/null &
+           _wp=$!; disown "$_wp" 2>/dev/null || true
+           jl slot_launched "slot=$_s" "pid=$_wp" "log=$_slog" ;;
+      esac
+    done
+    exit 0
+  fi
 fi
 # ── (v10.01 2026-10-13) 구 '강화 active entry 가 있으면 보류' 게이트 삭제 — 고정 격자 강화 러너가 퇴역해 active entry 를
 #   소진할 주체가 없다(그대로 두면 첫 성공 뒤 레인이 영구 정지 · 삭제 지도 §0-3). 검증기는 entry 를 소비 기록으로만 남기고 바로 접는다.
@@ -269,6 +324,12 @@ echo $$ > "$CLAIM/owner"
 ## ★Windows pid 를 함께 남긴다 — 회수 판정의 정본(위 CDEAD 주석 참조).
 cat /proc/$$/winpid > "$CLAIM/owner_win" 2>/dev/null || true
 trap 'rm -rf "$CLAIM" 2>/dev/null' EXIT
+## ★슬롯 작업자(WP3) — 슬롯 이름 · 소유자 시작 시각(pid 재사용 판별 · 09-06 절전 사고) 기록 · 재구현 연쇄 표식 회수(연쇄가 claim 을 다시 잡았다)
+if [ -n "$RP_SLOT" ]; then
+  printf '%s\n' "$RP_SLOT" > "$CLAIM/slot" 2>/dev/null || true
+  rm -f "$CLAIM.chain" 2>/dev/null || true
+  "$PY" "$SLOTS_PY" --root "$ROOT" claim-stamp --claim "$CLAIM" >/dev/null 2>&1 || true
+fi
 
 # ── 논문 정보 ─────────────────────────────────────────────────────────────────
 eval "$("$PY" -c "
@@ -294,6 +355,19 @@ _cp = d.get('count_paper')
 if _cp is None: _cp = (c.get('count_paper') if c else True)
 print('C_COUNT=%s'  % q('1' if _cp else '0'))")"
 [ -n "$P_URL" ] || { jl halt_no_url; exit 1; }
+# ── ★논문 잠금 펜싱(슬롯 작업자 · WP3) — 같은 논문을 다른 자리(슬롯 · GPU 인계함 · 구판 요청)가 바쁘게 쥐고 있으면 착수하지 않는다 ──
+#   과거 사고: 09-13 생존 회수로 같은 논문 1·2·3판이 동시에 돌아 감사 셋이 경합(misdeclared 판 소비). 발행기가 이미 잠금을 잡고 내지만,
+#   세션이 슬롯 요청을 손으로 쓰거나 인계 · 인수가 겹치는 경우를 작업자가 한 번 더 막는다. rc 3 = 이 슬롯 요청을 duplicate_held_elsewhere 로 닫음.
+if [ -n "$RP_SLOT" ]; then
+  printf '%s\n' "$P_KEY" > "$CLAIM/paper" 2>/dev/null || true
+  PLK="$("$PY" "$SLOTS_PY" --root "$ROOT" paper-lock --slot "$RP_SLOT" 2>>"$LOG")"; PLK_RC=$?
+  PLK="$(printf '%s' "$PLK" | tail -n 1 | tr -d '\r')"
+  case "$PLK_RC" in
+    0) ;;
+    3) jl halt_paper_locked_elsewhere "paper=$P_KEY" "holder=${PLK#held_elsewhere }" "note=같은 논문을 다른 자리가 쥐고 있다 — 이 슬롯 요청을 닫았다(중복 실행 금지)"; exit 0 ;;
+    *) jl halt_paper_lock_unavailable "paper=$P_KEY" "rc=$PLK_RC" "out=$PLK" "note=논문 잠금 판정 불가 — 요청을 건드리지 않고 물러난다(다음 틱)"; exit 0 ;;
+  esac
+fi
 
 # ── ★청정 모드 해석 (결정 FA-CLEAN-BASE-PATH · 도훈 2026-09-26 12:24 — "(나) 기존 레인 강화") ──────────────────
 #   청정 = 성과를 보지 않고 논문만으로 쓴 엔진(A 경로 청정 기저 F_A 후보 · rf_clean_base.R 이 전사에서 재도출해 인정).
@@ -324,7 +398,36 @@ WDIR="$ROOT/04_Research/strategies/RP_AUTO_${SLUG}"
 #   paper_key 가 "combo:a+b" 라 SLUG 이 이미 다르지만, 접두로 의도를 드러낸다.
 [ "${IS_COMBO:-0}" = "1" ] && WDIR="$ROOT/04_Research/strategies/RP_AUTO_COMBO_${SLUG}"
 [ "$LANE_MODE" = "clean" ] && WDIR="$ROOT/04_Research/strategies/${LANE_WDIR_PREFIX}${SLUG}"
+# 검사 격리(2026-10-20 · WP3) — QVEST_RP_WDIR_BASE 가 있으면 같은 이름을 그 아래에(슬롯 시험이 저장소 전략 폴더를 만들지 않게 · 운영은 미설정)
+[ -n "${QVEST_RP_WDIR_BASE:-}" ] && WDIR="$QVEST_RP_WDIR_BASE/${WDIR##*/}"
 mkdir -p "$WDIR"
+# ── ★등급 관문 · GPU 임대(슬롯 작업자 · WP3) — 에이전트 · 원문 수집 · 상태 전이보다 앞 ──────────────────────────────────────
+#   ① CPU 슬롯이 GPU 논문(명시 > 구현 의존성(작업 디렉터리의 engine.R 이 torch 를 부름) > 큐 메타 딥러닝 어휘)을 받았으면 GPU 인계함으로 넘기고 끝
+#      (GPU 슬롯이 없는 설정이면 그대로 진행 — 인계받을 자리가 없다). 측정 직전에 한 번 더 본다(rp_gpu_gate_pre_verify).
+#   ② GPU 슬롯의 새 착수(연쇄 깊이 0)는 GPU 임대가 살아 있으면 보류한다 — 요청은 그대로(다음 틱) · 진행 중 연쇄(깊이 ≥ 1)는 끝까지 간다.
+rp_slot_handoff(){   # $1 = 사유 · $2 = verify-only 여부(1/0) — 성공이면 끝낸다 · GPU 슬롯 없음이면 0 을 돌려 진행 · 그 밖 실패면 끝낸다(다음 틱)
+  local ho rc vo=""; [ "${2:-0}" = "1" ] && vo="--verify-only"
+  ho="$("$PY" "$SLOTS_PY" --root "$ROOT" handoff --slot "$RP_SLOT" --reason "$1" $vo 2>>"$LOG")"; rc=$?
+  if [ "$rc" = "0" ]; then jl gpu_handoff_done "paper=$P_KEY" "reason=$1" "verify_only=${2:-0}" "note=GPU 인계함 — GPU 슬롯이 이어 돈다"; exit 0; fi
+  case "$ho" in *no_gpu_slot*) jl gpu_paper_kept_no_gpu_slot "paper=$P_KEY" "note=GPU 슬롯이 없는 설정 — 이 슬롯이 그대로 돈다"; return 0 ;; esac
+  jl gpu_handoff_failed "paper=$P_KEY" "rc=$rc" "out=$(printf '%s' "$ho" | tail -c 200)"; exit 0
+}
+rp_slot_class(){ "$PY" "$SLOTS_PY" --root "$ROOT" classify --req "$REQ" --wdir "$WDIR" 2>>"$LOG" | tail -n 1 | tr -d '\r'; }
+if [ -n "$RP_SLOT" ]; then
+  CLS_LINE="$(rp_slot_class)"
+  jl slot_class "paper=$P_KEY" "class=${CLS_LINE%% *}" "detail=$CLS_LINE" "slot_class=$RP_SLOT_CLASS"
+  if [ "$RP_SLOT_CLASS" = "cpu" ] && [ "${CLS_LINE%% *}" = "gpu" ]; then rp_slot_handoff "gpu_paper_in_cpu_slot:${CLS_LINE#* }" 0; fi
+  if [ "$RP_SLOT_CLASS" = "gpu" ] && [ "${RP_CHAIN_DEPTH:-0}" = "0" ]; then
+    LEASE_ST="$("$PY" "$ROOT/02_Infrastructure/ops/qv_lock.py" lease status --json 2>>"$LOG" | tail -n 1 | tr -d '\r')"
+    LEASE_STATE="$(printf '%s' "$LEASE_ST" | "$PY" -c "import sys,json
+try: print(json.loads(sys.stdin.read()).get('state') or '')
+except Exception: print('unreadable')" 2>/dev/null | tr -d '\r')"
+    case "$LEASE_STATE" in
+      held|unreadable) jl halt_gpu_lease "paper=$P_KEY" "lease=$LEASE_STATE" "detail=$(printf '%s' "$LEASE_ST" | cut -c1-200)" \
+                         "note=GPU 임대 중 — GPU 슬롯은 새 착수를 보류한다(요청 보존 · 다음 틱) · CPU 슬롯은 그대로"; exit 0 ;;
+    esac
+  fi
+fi
 # ── ★원문 축자본 선수집 (2026-10-17 도훈 '사전 코드 감사로 기각되는 상황을 만들지 않는 게 최우선') ─────────────────────
 #   1차 기각 원인 1위 = 전문 미열람(지적 74건 중 24건 · 32% — 전부 요약만 읽은 편 · 04_Research/01_reports/first_pass_rejection_rootcause_20261017/).
 #   WebFetch 는 페이지를 소형 모델이 요약하는 도구(인용 125자 상한)라 원문이 안 들어온다. rf_paper_text.py 가 <WDIR>/.clean_paper/paper.md
@@ -364,7 +467,8 @@ io.open(r'$REQ','wb').write(json.dumps(d,ensure_ascii=False,indent=1).encode('ut
   fi
   # ★RP_LANE_MODE(FA-CLEAN-BASE-PATH) — 청정이면 검증기가 충실도 감사를 청정 조건(산출물 경로 비공개 + 같은 가드 표식)으로 부른다.
   #   가드 표식 자체는 여기서 싣지 않는다(검증기의 측정·원장 쓰기에 새면 안 된다 — 감사 스폰 한 번에만 검증기가 싣는다).
-  QM_ROOT="$ROOT" RP_WDIR="$WDIR" RP_URL="$P_URL" RP_TITLE="$P_TITLE" RP_KEY="$P_KEY" \
+  # QVEST_RP_REQUEST = 이 실행의 요청 파일(슬롯이면 슬롯 요청 · 구판이면 기본 경로 그대로) — 검증기 · 공급기가 같은 파일을 닫는다(WP3)
+  QM_ROOT="$ROOT" RP_WDIR="$WDIR" RP_URL="$P_URL" RP_TITLE="$P_TITLE" RP_KEY="$P_KEY" QVEST_RP_REQUEST="$REQ" \
     QVEST_RP_JLOG="$JLOG" RP_IS_COMBO="${IS_COMBO:-0}" RP_COUNT_PAPER="${C_COUNT:-1}" RP_LANE_MODE="$LANE_MODE" \
     Rscript "$ROOT/02_Infrastructure/ops/rf_replication_verify.R" >> "$LOG" 2>&1
   VRC=$?
@@ -394,6 +498,8 @@ print('%s|%s' % (d.get('status') or '', (d.get('paper') or {}).get('paper_key') 
     jl reimplement_chain_cap "paper=$P_KEY" "depth=$depth" "cap=$cap" "note=연쇄 상한 — 다음 tick 이 잇는다"; return 0
   fi
   jl reimplement_chain "paper=$P_KEY" "depth=$((depth + 1))" "note=기각 직후 재구현 — 다음 tick 을 기다리지 않는다"
+  # 슬롯 작업자: claim 을 놓았다 다시 잡는 수 초 동안 디스패처가 같은 슬롯에 새 작업자를 띄우지 않게 연쇄 표식을 남긴다(재진입이 지운다)
+  [ -n "${RP_SLOT:-}" ] && : > "$CLAIM.chain" 2>/dev/null
   rm -rf "$CLAIM" 2>/dev/null; trap - EXIT
   RP_CHAIN_DEPTH=$((depth + 1)) exec bash "${RP_CHAIN_SELF:-${BASH_SOURCE[0]:-$0}}"
 }
@@ -417,7 +523,16 @@ except Exception: d={}
 r=d.get('audit_ruling'); print('1' if isinstance(r,dict) and r else '0')" 2>/dev/null | tr -d '\r')
 # ★session_reverify(2026-10-17) — 세션이 '엔진 결함이 아니라 검증 계기 결함'으로 판정해 고친 뒤 붙이는 표식(예: 1801.01777 재구현판 —
 #   PIT 정적 검사기가 주석 속 함수 이름을 호출로 오탐 · 검사기 수리 뒤). 재구현 에이전트를 다시 사지 않고 검증기만.
-if { [ "$PREV_FAIL" = "audit_not_run" ] || [ "$PREV_FAIL" = "refresh_lock_deferred" ] || [ "$PREV_FAIL" = "audit_ruled" ] || [ "$PREV_FAIL" = "session_reverify" ] || [ "$HAS_RULING" = "1" ]; } && [ -s "$WDIR/engine.R" ]; then
+## ★측정 직전 등급 관문(슬롯 작업자 · WP3) — CPU 슬롯에서 엔진이 torch 를 부르면 측정하지 않고 GPU 인계함으로(검증기만 이어 돈다 · failure=gpu_handoff)
+rp_gpu_gate_pre_verify(){
+  [ -n "${RP_SLOT:-}" ] && [ "${RP_SLOT_CLASS:-}" = "cpu" ] || return 0
+  local cl; cl="$(rp_slot_class)"
+  [ "${cl%% *}" = "gpu" ] || return 0
+  rp_slot_handoff "engine_gpu_dependency_pre_verify:${cl#* }" 1
+}
+# ★gpu_handoff(2026-10-20 · WP3) — CPU 슬롯이 측정 직전 GPU 엔진을 발견해 넘긴 요청. 엔진은 그대로(사전검사 통과분) → GPU 슬롯은 검증기만.
+if { [ "$PREV_FAIL" = "audit_not_run" ] || [ "$PREV_FAIL" = "refresh_lock_deferred" ] || [ "$PREV_FAIL" = "audit_ruled" ] || [ "$PREV_FAIL" = "session_reverify" ] || [ "$PREV_FAIL" = "gpu_handoff" ] || [ "$HAS_RULING" = "1" ]; } && [ -s "$WDIR/engine.R" ]; then
+  rp_gpu_gate_pre_verify
   # ★refresh_lock_deferred(2026-09-24) — 검증기 직전 리프레시 배리어로 측정 없이 연기된 요청. 엔진은 멀쩡하다 → 검증기만.
   # ★audit_ruled(2026-10-14) — 감사 상충을 세션이 판정해 suspect 수용 · 진행으로 정한 요청(요청의 audit_ruling). 엔진은 그대로 →
   #   검증기만(감사도 다시 사지 않는다 — 감사 관문이 남은 감사 파일 + 판정 처분으로 간다 · alpha-search SKILL §5).
@@ -427,6 +542,8 @@ if { [ "$PREV_FAIL" = "audit_not_run" ] || [ "$PREV_FAIL" = "refresh_lock_deferr
     jl verify_only_retry "paper=$P_KEY" "note=감사 상충 세션 판정 반영 — 에이전트 · 감사 재스폰 없이 검증기만(엔진 보존)"
   elif [ "$PREV_FAIL" = "session_reverify" ]; then
     jl verify_only_retry "paper=$P_KEY" "note=세션 판정 — 검증 계기 결함 수리 뒤 재검증(엔진 보존 · 에이전트 재스폰 없음)"
+  elif [ "$PREV_FAIL" = "gpu_handoff" ]; then
+    jl verify_only_retry "paper=$P_KEY" "note=CPU 슬롯이 넘긴 GPU 엔진 — 에이전트 없이 검증기(측정+감사)만(엔진 보존 · 사전검사 통과분)"
   else
   jl verify_only_retry "paper=$P_KEY" "note=감사 미실행 재시도 — 에이전트 없이 검증기(측정+감사)만 재실행(엔진 보존)"
   fi
@@ -685,7 +802,7 @@ fi
 #   ★남는 제약은 설계 제약이 아니라 **계약**이다 — PIT C1~C15 · 고정 축 · 임의 상수 금지 ·
 #     산출 형식(engine.R + FIDELITY.json). 그건 공통 꼬리가 지고, 여기서 다시 적지 않는다.
 if [ "${IS_COMBO:-0}" = "1" ]; then
-  KOMBO_TXT="$ROOT/.cache/rf_combo_materials.txt"
+  KOMBO_TXT="$ROOT/.cache/rf_combo_materials${RP_SLOT:+_$RP_SLOT}.txt"   # 슬롯마다 따로(두 슬롯의 결합 재료가 한 파일을 덮지 않게)
   "$PY" - "$REQ" "$KOMBO_TXT" <<'PYKOMBO'
 import io, json, sys
 REQ, OUT = sys.argv[1], sys.argv[2]
@@ -1011,6 +1128,7 @@ if [ "$PA_RC" = "10" ]; then
 fi
 
 # ── 측정 + 검증 (계약이 판정한다 — 에이전트 진술은 근거가 아니다) — rp_verify(위 정의) ──
+rp_gpu_gate_pre_verify     # 슬롯 작업자: CPU 슬롯의 torch 엔진 → GPU 인계함(검증기만 · 사전검사 통과분) · 구판 무동작
 rp_verify; VRC=$?
 rp_chain_reimplement "$VRC"
 exit $VRC

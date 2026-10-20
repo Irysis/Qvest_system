@@ -1875,6 +1875,16 @@ SUITES=(
   #   격리 밸브 · 충돌 마커 · 삭제 · worktree · 위반 주입(all) · 뮤테이션 2종(전체 add · 동기화 제거)
   "08_Tests/hooks/test_auto_commit_session_scope.sh"
   # <<< 10-20 WP4
+  # >>> 10-20 WP3 — 충실구현 레인 다중 슬롯 · GPU 임대 · 쓰기 잠금(L1-SPEED-LEVERS-20261020) — 양성 대조(위반 주입) + 뮤테이션(소스 치환 사본)
+  #   잠금 정본(mkdir + 소유자 pid + stale + 시간 제한 · 회수 경합 · 펜싱 · 8프로세스 상호 배제) · GPU 임대(만료 · 보유자 사망 · CLI) · R ↔ 파이썬 상호 판정 ·
+  #   슬롯 디스패처(두 틱 경합 · 소유자 사망 · GPU 오배치 · 같은 논문 중복 · 임대 만료 · 구판 요청 인수 · 소진량 · 부팅 줄) · 레인 셸 배선(작업자 경합 ·
+  #   측정 직전 인계 · 인계분 검증기만 · 임대 보류) · 원장 writer 4종 동시 2개(판단 원장 · 재개 저널 · 프로그램 등록부 · 결정 기록부)
+  "08_Tests/ops/test_qv_lock.py"
+  "08_Tests/ops/test_qv_lock_cross.R"
+  "08_Tests/ops/test_replication_slots.py"
+  "08_Tests/ops/test_replication_slots_lane.sh"
+  "08_Tests/programs/test_ledger_write_locks.py"
+  # <<< 10-20 WP3
 )
 
 

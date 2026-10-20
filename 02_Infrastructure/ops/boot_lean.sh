@@ -110,6 +110,13 @@ def PEND():
     r=J("06_Registry/replication_request.json")
     if r and (r.get("status")=="pending"):
         z.append("★충실구현 대기 1(%s)"%str(((r.get("paper") or {}).get("paper_title") or "?"))[:28])
+    # ★다중 슬롯(2026-10-20 · WP3) — 디스패처(rf_replication_slots.py tick)가 매 틱 쓰는 요약. 파일이 없으면(구판 단일 슬롯) 표기 없음
+    ss=J("06_Registry/replication_slots/_status.json")
+    if ss and isinstance(ss.get("slots"),list):
+        bz=sum(1 for x in ss["slots"] if isinstance(x,dict) and x.get("status") in ("pending","in_progress","failed_needs_session"))
+        at=ss.get("attention") or []
+        z.append("레인 슬롯 %d/%d%s%s"%(bz,len(ss["slots"]),(" · GPU 임대 "+str(ss.get("lease_holder") or "?")) if ss.get("lease")=="held" else "",
+                                     (" · ★확인 %d"%len(at)) if at else ""))
     aq=J("06_Registry/grade_a_queue.json")
     na=sum(1 for e in ((aq or {}).get("entries") or []) if (e.get("status") if isinstance(e,dict) else None)=="awaiting_judge")
     if na: z.append("★A등급 대기 %d(Judge/BOOK confirm)"%na)

@@ -17,8 +17,12 @@
   python … show   [--id OP-…]               # 재개 브리핑(markdown) — 진행 중 전체 또는 1건
   python … boot-line                        # 부팅 Resume 줄(읽기 전용)
 경로 재정의(검사용): 환경변수 QVEST_SESSION_RESUME_PATH.
+★쓰기 잠금(2026-10-20 · WP3 · L1-SPEED-LEVERS-20261020 — 라운드 = 세션 · 동시 세션의 전제): 변경 명령(begin · step · next · bg · decide ·
+  resolve · note · done · abandon)은 읽기 → 고치기 → 쓰기 전체를 qv_lock(02_Infrastructure/ops/qv_lock.py)으로 감싸고 교체 직전 펜싱한다 —
+  두 세션이 각자 작업을 적을 때 한쪽 갱신이 사라지지 않게. 잠금 라이브러리를 못 읽으면 쓰지 않는다. 읽기 명령(show · boot-line)은 잠그지 않는다.
+  검사 = 08_Tests/programs/test_ledger_write_locks.py
 """
-import argparse, datetime as dt, io, json, os, sys, tempfile
+import argparse, contextlib, datetime as dt, io, json, os, sys, tempfile
 
 SCHEMA = "session_resume_v1"
 STATUS_OP = ("in_progress", "blocked", "done", "abandoned")
@@ -51,12 +55,31 @@ def load(path):
     return d
 
 
-def save(path, d):
+def _qv():
+    """쓰기 잠금 라이브러리(02_Infrastructure/ops/qv_lock.py) — 없으면 쓰지 않는다."""
+    ops = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "ops")
+    if ops not in sys.path:
+        sys.path.insert(0, ops)
+    import qv_lock
+    return qv_lock
+
+
+@contextlib.contextmanager
+def _state_lock(path):
+    q = _qv()
+    with q.write_lock(target=path, purpose="session_resume") as h:
+        yield h
+
+
+def save(path, d, lock=None):
     d["updated_at"] = _now()
     os.makedirs(os.path.dirname(path), exist_ok=True)
     fd, tmp = tempfile.mkstemp(prefix=".session_resume_", suffix=".tmp", dir=os.path.dirname(path))
     with io.open(fd, "w", encoding="utf-8") as f:
         json.dump(d, f, ensure_ascii=False, indent=1)
+    if lock is not None and not lock.is_mine():   # 펜싱 — 잠금을 잃었으면 쓰지 않는다
+        os.remove(tmp)
+        raise SystemExit("[session_resume] 쓰기 잠금을 잃었다 — 쓰지 않았다(다시 실행): %s" % path)
     os.replace(tmp, path)                      # 원자적 교체(부분 쓰기 없음)
 
 
@@ -264,12 +287,13 @@ def main(argv=None):
     if a.cmd == "show":
         print(show(oid=a.id)); return 0
     path = state_path()
-    d = load(path)
-    {"begin": cmd_begin, "step": cmd_step, "next": cmd_next, "bg": cmd_bg, "decide": cmd_decide, "resolve": cmd_resolve,
-     "note": cmd_note}.get(a.cmd, lambda *_: None)(a, d)
-    if a.cmd == "done": _close(d, a.id, "done", a.outcome)
-    if a.cmd == "abandon": _close(d, a.id, "abandoned", a.reason)
-    save(path, d)
+    with _state_lock(path) as lk:              # 읽기 → 고치기 → 쓰기 전체를 잠근다(WP3)
+        d = load(path)
+        {"begin": cmd_begin, "step": cmd_step, "next": cmd_next, "bg": cmd_bg, "decide": cmd_decide, "resolve": cmd_resolve,
+         "note": cmd_note}.get(a.cmd, lambda *_: None)(a, d)
+        if a.cmd == "done": _close(d, a.id, "done", a.outcome)
+        if a.cmd == "abandon": _close(d, a.id, "abandoned", a.reason)
+        save(path, d, lock=lk)
     print("[session_resume] %s %s" % (a.cmd, getattr(a, "id", "")))
     return 0
 

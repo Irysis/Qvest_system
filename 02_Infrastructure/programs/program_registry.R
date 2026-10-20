@@ -9,7 +9,13 @@
 # 공개: pr_path · pr_load · pr_validate · pr_save · pr_get · pr_set_status · pr_enqueue · pr_dequeue ·
 #       pr_record_round · pr_mc_set · pr_mc_drop · pr_refresh_blocks · pr_status_lines ·
 #       pr_hold_unrouted · pr_route_unrouted(미분류 재료 — 2026-10-14)
-# 검사: 08_Tests/programs/test_program_registry.R
+# ★쓰기 잠금(2026-10-20 · WP3 · L1-SPEED-LEVERS-20261020 — 독립 프로그램 라운드 동시 운영 · 레인 다중 슬롯의 전제):
+#   원자적 교체는 찢어진 파일만 막는다 — 두 세션(또는 두 슬롯 검증기의 pr_enqueue)이 같은 판본을 읽고 각자 고쳐 쓰면 나중 쪽이 앞 쪽 갱신을
+#   조용히 지운다. 그래서 변경 함수마다 읽기 → 고치기 → 쓰기 전체를 qv_lock(mkdir + 소유자 pid + stale 판정 + 시간 제한 · 정본 qv_lock.py)으로
+#   감싸고, pr_save 는 같은 잠금을 재진입으로 잡은 채 교체 직전에 '아직 내 잠금인가'(펜싱)를 확인한다. 공개 함수의 서명 · 반환은 그대로다.
+#   잠금 자리 = <루트>/.cache/registry_locks/research_programs.json.qvlock(06_Registry 는 OneDrive 동기화 폴더라 잠금 디렉터리를 두지 않는다).
+#   잠금 라이브러리를 못 찾으면 쓰지 않는다(fail-closed — 잠금 없는 쓰기는 갱신 유실을 다시 연다).
+# 검사: 08_Tests/programs/test_program_registry.R · 08_Tests/programs/test_ledger_write_locks.py(동시 writer 2개 · 뮤테이션)
 #==============================================================================
 suppressPackageStartupMessages({ library(jsonlite) })
 
@@ -17,6 +23,29 @@ PR_STATUS <- c("blocked", "idle", "ready", "active", "paused", "done", "killed")
 PR_MC_STATUS <- c("todo", "doing", "done")
 
 .pr_or <- function(a, b) if (is.null(a) || length(a) == 0L) b else a
+
+## 쓰기 잠금 — 라이브러리는 코드 루트(QVEST_CODE_ROOT · QM_ROOT · CLAUDE_PROJECT_DIR · 작업 디렉터리)에서 찾고 세션에 한 번 적재한다
+PR_LOCK_WAIT_S <- 60     # qv_lock 기본값(원장 임계구역은 1초 미만 — 60초는 매달린 경쟁자를 보고하는 시간 · 근거 qv_lock.py)
+PR_LOCK_STALE_S <- 600
+.pr_qv <- function() {
+  e <- getOption("qv_lock.lib")
+  if (is.environment(e) && exists("qv_lock_acquire", envir = e, inherits = FALSE)) return(e)
+  for (r in c(Sys.getenv("QVEST_CODE_ROOT", ""), Sys.getenv("QM_ROOT", ""), Sys.getenv("CLAUDE_PROJECT_DIR", ""), getwd())) {
+    if (!nzchar(r)) next
+    f <- file.path(gsub("\\\\", "/", r), "02_Infrastructure/ops/qv_lock.R")
+    if (file.exists(f)) {
+      e <- new.env(parent = globalenv()); sys.source(f, envir = e)
+      options(qv_lock.lib = e)
+      return(e)
+    }
+  }
+  stop("[program_registry] 쓰기 잠금 라이브러리(02_Infrastructure/ops/qv_lock.R)를 찾지 못했다 — 잠금 없이 쓰지 않는다(QM_ROOT 확인)")
+}
+.pr_lock <- function(p) {
+  q <- .pr_qv()
+  q$qv_lock_acquire(q$qv_lock_dir_for(target = p), wait_s = PR_LOCK_WAIT_S, stale_s = PR_LOCK_STALE_S, purpose = "program_registry")
+}
+.pr_unlock <- function(h) if (!is.null(h)) .pr_qv()$qv_lock_release(h)
 
 .pr_root <- function(root = NULL) {
   for (p in c(root, Sys.getenv("QM_ROOT", ""), getwd())) {
@@ -73,12 +102,15 @@ pr_validate <- function(reg) {
 pr_save <- function(reg, root = NULL, path = NULL) {
   bad <- pr_validate(reg)
   if (length(bad)) stop("[program_registry] 검사 실패 — 쓰지 않는다:\n  ", paste(bad, collapse = "\n  "))
+  p <- .pr_or(path, pr_path(root))
+  h <- .pr_lock(p); on.exit(.pr_unlock(h), add = TRUE)       # 재진입 — 변경 함수가 이미 잡았으면 깊이만 는다(직접 호출자도 쓰기는 직렬화)
   reg$version <- as.integer(.pr_or(reg$version, 0L)) + 1L
   reg$updated_at <- format(Sys.time(), "%Y-%m-%dT%H:%M:%S%z")
-  p <- .pr_or(path, pr_path(root)); tmp <- paste0(p, ".tmp")
+  tmp <- paste0(p, ".tmp", Sys.getpid())
   writeLines(toJSON(reg, auto_unbox = TRUE, pretty = TRUE, null = "null", na = "null", digits = NA),
              tmp, useBytes = TRUE)
-  if (!file.rename(tmp, p)) stop("[program_registry] 원자적 교체 실패: ", p)
+  if (!is.null(h)) tryCatch(.pr_qv()$qv_lock_assert_mine(h, "등록부 교체"), error = function(e) { unlink(tmp); stop(e) })   # 펜싱
+  if (!file.rename(tmp, p)) { unlink(tmp); stop("[program_registry] 원자적 교체 실패: ", p) }
   invisible(reg)
 }
 
@@ -93,6 +125,7 @@ pr_get <- function(reg, id) reg$programs[[.pr_idx(reg, id)]]
 
 pr_set_status <- function(id, status, reason = "", root = NULL, path = NULL) {
   if (!(status %in% PR_STATUS)) stop("[program_registry] 상태 어휘 밖: ", status)
+  .h <- .pr_lock(.pr_or(path, pr_path(root))); on.exit(.pr_unlock(.h), add = TRUE)   # 읽기 → 고치기 → 쓰기 전체를 잠근다(WP3)
   reg <- pr_load(root, path); i <- .pr_idx(reg, id)
   reg$programs[[i]]$status <- status
   reg$programs[[i]]$status_reason <- reason
@@ -104,6 +137,7 @@ pr_set_status <- function(id, status, reason = "", root = NULL, path = NULL) {
 #'   (소비 기록까지 보는 이유: 동기화가 매일 같은 라우팅 산출을 다시 읽어도 이미 쓴 재료가 되살아나지 않게)
 pr_enqueue <- function(id, item, root = NULL, path = NULL) {
   if (is.null(item$key) || !nzchar(item$key)) stop("[program_registry] 큐 항목에 key 가 없다")
+  .h <- .pr_lock(.pr_or(path, pr_path(root))); on.exit(.pr_unlock(.h), add = TRUE)   # 읽기 → 고치기 → 쓰기 전체를 잠근다(WP3)
   reg <- pr_load(root, path)
   for (p in reg$programs) for (q in c(.pr_or(p$queue, list()), .pr_or(p$consumed, list())))
     if (identical(q$key, item$key)) return(invisible(FALSE))
@@ -117,6 +151,7 @@ pr_enqueue <- function(id, item, root = NULL, path = NULL) {
 #' 여러 항목을 한 번에 넣기(한 번 읽고 한 번 쓴다) — items = list(list(program=, item=list(key=, ...)), ...)
 #' @return 실제로 들어간 건수(프로그램별 named integer)
 pr_enqueue_many <- function(items, root = NULL, path = NULL) {
+  .h <- .pr_lock(.pr_or(path, pr_path(root))); on.exit(.pr_unlock(.h), add = TRUE)   # 읽기 → 고치기 → 쓰기 전체를 잠근다(WP3)
   reg <- pr_load(root, path)
   seen <- character(0)
   for (p in reg$programs) for (q in c(.pr_or(p$queue, list()), .pr_or(p$consumed, list()))) seen <- c(seen, .pr_or(q$key, ""))
@@ -137,6 +172,7 @@ pr_enqueue_many <- function(items, root = NULL, path = NULL) {
 
 #' 큐 맨 앞 항목 꺼내기(소비 기록과 함께) — 비어 있으면 NULL
 pr_dequeue <- function(id, consumer = "", root = NULL, path = NULL) {
+  .h <- .pr_lock(.pr_or(path, pr_path(root))); on.exit(.pr_unlock(.h), add = TRUE)   # 읽기 → 고치기 → 쓰기 전체를 잠근다(WP3)
   reg <- pr_load(root, path); i <- .pr_idx(reg, id)
   q <- .pr_or(reg$programs[[i]]$queue, list())
   if (!length(q)) return(NULL)
@@ -154,6 +190,7 @@ pr_dequeue <- function(id, consumer = "", root = NULL, path = NULL) {
 #' @return 넣었으면 TRUE · 같은 key 가 이미 보류 · 큐 · 소비 기록에 있으면 FALSE
 pr_hold_unrouted <- function(item, root = NULL, path = NULL) {
   if (is.null(item$key) || !nzchar(item$key)) stop("[program_registry] 보류 항목에 key 가 없다")
+  .h <- .pr_lock(.pr_or(path, pr_path(root))); on.exit(.pr_unlock(.h), add = TRUE)   # 읽기 → 고치기 → 쓰기 전체를 잠근다(WP3)
   reg <- pr_load(root, path)
   for (q in .pr_or(reg$paper_routing$unrouted, list())) if (identical(q$key, item$key)) return(invisible(FALSE))
   for (p in reg$programs) for (q in c(.pr_or(p$queue, list()), .pr_or(p$consumed, list())))
@@ -167,6 +204,7 @@ pr_hold_unrouted <- function(item, root = NULL, path = NULL) {
 #' 미분류 재료 → 프로그램 큐(라우터 v5 분류 · 세션 분류 공용). routed_by 를 항목에 남긴다.
 #' @return 옮겼으면 TRUE · 보류 목록에 없으면 FALSE
 pr_route_unrouted <- function(key, id, routed_by = "session", root = NULL, path = NULL) {
+  .h <- .pr_lock(.pr_or(path, pr_path(root))); on.exit(.pr_unlock(.h), add = TRUE)   # 읽기 → 고치기 → 쓰기 전체를 잠근다(WP3)
   reg <- pr_load(root, path)
   U <- .pr_or(reg$paper_routing$unrouted, list())
   j <- which(vapply(U, function(x) identical(x$key, key), logical(1)))
@@ -188,6 +226,7 @@ pr_find_key <- function(reg, key) {
 
 #' 특정 key 를 큐에서 소비 기록으로 옮긴다(맨 앞이 아니어도). 큐에 없으면 FALSE
 pr_consume_key <- function(id, key, consumer = "", root = NULL, path = NULL) {
+  .h <- .pr_lock(.pr_or(path, pr_path(root))); on.exit(.pr_unlock(.h), add = TRUE)   # 읽기 → 고치기 → 쓰기 전체를 잠근다(WP3)
   reg <- pr_load(root, path); i <- .pr_idx(reg, id)
   q <- .pr_or(reg$programs[[i]]$queue, list())
   j <- which(vapply(q, function(x) identical(x$key, key), logical(1)))
@@ -211,6 +250,7 @@ pr_consume_key <- function(id, key, consumer = "", root = NULL, path = NULL) {
 pr_record_round <- function(id, round, root = NULL, path = NULL) {
   if (is.null(round$round_id) || !nzchar(round$round_id)) stop("[program_registry] round_id 없음")
   if (is.null(round$prereg) || !nzchar(round$prereg)) stop("[program_registry] 사전등록 경로(prereg) 없음 — R2: 측정 전 등록")
+  .h <- .pr_lock(.pr_or(path, pr_path(root))); on.exit(.pr_unlock(.h), add = TRUE)   # 읽기 → 고치기 → 쓰기 전체를 잠근다(WP3)
   reg <- pr_load(root, path); i <- .pr_idx(reg, id)
   R <- .pr_or(reg$programs[[i]]$rounds, list())
   ids <- vapply(R, function(r) .pr_or(r$round_id, ""), character(1))
@@ -245,6 +285,7 @@ pr_record_round <- function(id, round, root = NULL, path = NULL) {
 #' 측정 계약 항목 상태 갱신 — 끝나면 막혀 있던 프로그램을 다시 계산한다
 pr_mc_set <- function(mc_id, status, artifact = NULL, root = NULL, path = NULL) {
   if (!(status %in% PR_MC_STATUS)) stop("[program_registry] 측정 계약 상태 어휘 밖: ", status)
+  .h <- .pr_lock(.pr_or(path, pr_path(root))); on.exit(.pr_unlock(.h), add = TRUE)   # 읽기 → 고치기 → 쓰기 전체를 잠근다(WP3)
   reg <- pr_load(root, path)
   ids <- vapply(reg$measurement_contract$items, function(m) m$id, character(1))
   j <- match(mc_id, ids); if (is.na(j)) stop("[program_registry] 측정 계약 항목 없음: ", mc_id)
@@ -260,6 +301,7 @@ pr_mc_set <- function(mc_id, status, artifact = NULL, root = NULL, path = NULL) 
 pr_mc_drop <- function(mc_id, reason, decided_by, root = NULL, path = NULL) {
   if (missing(reason) || !nzchar(.pr_or(reason, ""))) stop("[program_registry] 제외 사유 없음 — 결정 기록 없이 계약 항목을 뺄 수 없다")
   if (missing(decided_by) || !nzchar(.pr_or(decided_by, ""))) stop("[program_registry] 결정자 없음")
+  .h <- .pr_lock(.pr_or(path, pr_path(root))); on.exit(.pr_unlock(.h), add = TRUE)   # 읽기 → 고치기 → 쓰기 전체를 잠근다(WP3)
   reg <- pr_load(root, path)
   ids <- vapply(reg$measurement_contract$items, function(m) m$id, character(1))
   j <- match(mc_id, ids); if (is.na(j)) stop("[program_registry] 측정 계약 항목 없음: ", mc_id)

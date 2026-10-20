@@ -65,7 +65,7 @@ COUNT_PAPER <- !identical(Sys.getenv("RP_COUNT_PAPER", "1"), "0")
 #   짝 원본은 인자로 주입된다 — 검사(08_Tests/ops/test_rf_verify_tg_target.R)가 운영 슬롯을 빌리지 않게.
 #   ★main 착지 2026-09-23 — 이 수리는 09-13 worktree(amazing-faraday)에 미커밋으로만 있었다.
 # 반환 = character vector (items 안에서 c() 로 펼쳐진다). suffix 는 첫 줄 꼬리에 붙는다.
-.tg_combo_papers <- function(req = file.path(ROOT, "06_Registry/replication_request.json")) tryCatch({
+.tg_combo_papers <- function(req = REQ) tryCatch({
   d <- fromJSON(req, simplifyVector = FALSE)
   ps <- (d$combo %||% list())$papers %||% list()
   if (!length(ps)) return(NULL)
@@ -107,7 +107,10 @@ COUNT_PAPER <- !identical(Sys.getenv("RP_COUNT_PAPER", "1"), "0")
   else sprintf("  · %s", keys)          # 짝을 확신할 수 없으면 키만 (지어내지 않는다)
   c(sprintf("대상: 결합 %d편%s", length(keys), suffix), lines)
 }
-REQ   <- file.path(ROOT, "06_Registry/replication_request.json")
+## ★요청 파일 = 레인이 넘긴 경로(다중 슬롯 2026-10-20 · WP3 — 슬롯마다 06_Registry/replication_slots/<slot>/replication_request.json) ·
+##   없으면 구판 그대로(06_Registry/replication_request.json). 레인 셸이 QVEST_RP_REQUEST 를 검증기 호출에 싣는다.
+REQ   <- Sys.getenv("QVEST_RP_REQUEST", file.path(ROOT, "06_Registry/replication_request.json"))
+.RP_SLOT <- Sys.getenv("RP_SLOT", "")
 # ★성과 요약 kv·차트 = 예전 알파 서칭 포맷(도훈 지시 2026-08-30).
 #   ★수치를 재계산하지 않는다 — 계약 산출물에서 읽기만 한다(손계산 금지).
 suppressMessages(source(file.path(ROOT, "02_Infrastructure/ops/rf_perf_summary.R")))
@@ -115,9 +118,29 @@ suppressMessages(source(file.path(ROOT, "02_Infrastructure/ops/rf_perf_summary.R
 LOG_P <- Sys.getenv("QVEST_RP_JLOG", file.path(ROOT, ".cache/reinforce_auto_log.jsonl"))
 
 jlog <- function(event, ...) {
-  rec <- c(list(ts = format(Sys.time(), "%Y-%m-%dT%H:%M:%S%z"), event = event, src = "replication_verify"), list(...))
+  rec <- c(list(ts = format(Sys.time(), "%Y-%m-%dT%H:%M:%S%z"), event = event, src = "replication_verify"),
+           if (nzchar(.RP_SLOT)) list(slot = .RP_SLOT), list(...))
   cat(toJSON(rec, auto_unbox = TRUE, null = "null"), "\n", sep = "", file = LOG_P, append = TRUE)
   cat(sprintf("[rp_vfy] %s\n", event))
+}
+## ★다중 슬롯 기록 잠금(2026-10-20 · WP3) — 슬롯 작업자(RP_SLOT)면 측정 뒤 공유 원장 기록 구간(팩터 등록 · 원장 L1 개설/접기 · 큐 미러 ·
+##   프로그램 큐 · 모듈 등재 · 스킵리스트)을 슬롯끼리 직렬화한다. 측정은 병렬 · 이 구간은 수 초. 원장 L1 의 rf_open_entry · rf_park_entry 는
+##   잠금 없는 읽기 · 수정 · 쓰기라 두 검증기가 겹치면 한쪽 소비 기록이 사라진다(→ 같은 논문 재선택 — 2026-08-31 5회 반복 구현 계통).
+##   잠금 = qv_lock 이름 잠금 rf_replication.book(소유 = 이 R 프로세스 · 끝나면 종료 해제 · 죽으면 다음 대기자가 즉시 회수).
+##   대기 상한 > stale 상한 — 매달린 보유자는 대기 중에 회수되므로 대기 초과는 일어나지 않는다(그래도 실패면 기록하고 진행 — 측정 결과를 버리지 않는다).
+.SBL <- new.env(parent = emptyenv()); .SBL$h <- NULL
+.slot_book_lock <- function() {
+  if (!nzchar(.RP_SLOT) || !is.null(.SBL$h)) return(invisible(.SBL$h))
+  tryCatch({
+    .SBL$q <- new.env(parent = globalenv())        # 전용 환경에 적재 — 검증기의 %||% 등 전역 정의를 덮지 않는다
+    sys.source(file.path(ROOT, "02_Infrastructure/ops/qv_lock.R"), envir = .SBL$q)
+    .ld <- file.path(Sys.getenv("QVEST_RP_STATE_DIR", file.path(ROOT, ".cache")), "qv_locks", "rf_replication.book.qvlock")
+    .t0 <- Sys.time()
+    .SBL$h <- .SBL$q$qv_lock_acquire(.ld, wait_s = 3700, stale_s = 3600, purpose = paste0("replication_bookkeeping:", .RP_SLOT))
+    reg.finalizer(.SBL, function(e) if (!is.null(e$h)) e$q$qv_lock_release(e$h), onexit = TRUE)
+    jlog("slot_book_lock", slot_waited_s = round(as.numeric(difftime(Sys.time(), .t0, units = "secs")), 1))
+  }, error = function(e) jlog("slot_book_lock_failed", err = conditionMessage(e), note = "잠금 없이 진행 — 측정 결과를 버리지 않는다(세션 확인)"))
+  invisible(.SBL$h)
 }
 fail <- function(why, detail = "") {
   jlog("verify_failed", why = why, detail = substr(detail, 1, 200))
@@ -133,7 +156,9 @@ fail <- function(why, detail = "") {
                        status = list(stage = "충실구현 — 무인 시도", position = "검증 게이트에서 차단 · 원장 미개설", previous = why),
                        verdict_line = sprintf("무인 충실구현이 검증을 통과하지 못했다 — %s%s", why,
                                               if (nzchar(detail)) paste0(": ", .v1001_clip_words(detail, 300L)) else ""),
-                       next_step = "세션이 원인을 확인해 다시 착수한다(요청 파일: 06_Registry/replication_request.json)",
+                       next_step = sprintf("세션이 원인을 확인해 다시 착수한다(요청 파일: %s)", local({   # 접두 고정 문자열 비교(ROOT 를 정규식에 넣지 않는다)
+                         p <- gsub("\\", "/", REQ, fixed = TRUE); r <- paste0(sub("/+$", "", gsub("\\", "/", ROOT, fixed = TRUE)), "/")
+                         if (startsWith(p, r)) substring(p, nchar(r) + 1L) else p })),
                        push = TRUE),
     error = function(e) jlog("telegram_failed", err = conditionMessage(e)))
   quit(status = 1)
@@ -621,6 +646,7 @@ if (identical(.disp$action, "audit_conflict")) {
                              auto_unbox = TRUE, pretty = TRUE, null = "null", na = "null"), .cf_p, useBytes = TRUE),
            error = function(e) jlog("audit_conflict_write_failed", err = conditionMessage(e)))
   .skp <- file.path(ROOT, "06_Registry/replication_skiplist.json")
+  .slot_book_lock()                                        # 공유 스킵리스트 읽기 · 수정 · 쓰기 — 슬롯끼리 직렬화(다중 슬롯 · 구판 무동작)
   .sk_ok <- tryCatch({
     sk <- if (file.exists(.skp)) fromJSON(.skp, simplifyVector = FALSE) else list(schema = "replication_skiplist_v1", entries = list())
     live <- vapply(sk$entries %||% list(), function(e) identical(as.character(e$paper_key %||% ""), PKEY) &&
@@ -846,7 +872,8 @@ res <- tryCatch(do.call(run_paper_replication, c(.BASE_ARGS,
 if (inherits(res, "rp_err")) fail("replication_error", res$err)
 
 ar <- res$authoritative_remeasure_path %||% file.path(res$out_dir %||% "", "authoritative_remeasure.json")
-if (!file.exists(ar)) {
+## ★다중 슬롯이면 '가장 최근 산출물' 폴백을 쓰지 않는다 — 다른 슬롯의 측정을 이 논문 결과로 집을 수 있다(2026-10-20 · WP3)
+if (!file.exists(ar) && !nzchar(.RP_SLOT)) {
   cand <- list.files(file.path(ROOT, "stage_artifacts/replication"),
                      pattern = "^authoritative_remeasure\\.json$", recursive = TRUE, full.names = TRUE)
   # ★재측정 형제 판(P0-05 · <run>/remeasure_<key>/authoritative_remeasure.json — 원 산출물의 다른 규약 판)은 새 측정이 아니다 —
@@ -912,6 +939,7 @@ jlog("fidelity", label = .fidelity, kept = substr(.fid$kept %||% "", 1, 90),
 
 G <- AR$essence_grade
 jlog("verified", grade = G, port_t = es$portfolio_alpha_t_nw_lag3, artifacts = dirname(ar))
+.slot_book_lock()   # 여기부터 공유 원장 기록(팩터 등록 · 원장 L1 · 큐 미러 · 프로그램 큐 · 모듈 등재) — 슬롯끼리 직렬화(구판 무동작)
 
 
 # ── ★B등급 이상 신호를 팩터 DB 에 무인 등록 (도훈 지시 2026-09-01) ───────────

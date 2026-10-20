@@ -75,65 +75,47 @@ def probe_keys(o, key):
     return ks
 
 
-def main(argv):
-    stage = argv[0] if argv else os.path.join(
-        os.path.dirname(os.path.dirname(HERE)), "stage_artifacts", "paper_recharge")
+def _pairs(stage):
+    """alpha_pending 결과 → [(key, item)] · 실패는 (None, 오류 dict)."""
     try:
         items = alpha_pending(stage)
     except Exception as e:
-        print(json.dumps({"error": "alpha_pending_failed: %s" % e}, ensure_ascii=False))
-        return 0
+        return None, {"error": "alpha_pending_failed: %s" % e}
     if isinstance(items, int):                            # 구현이 개수만 주는 경우
-        print(json.dumps({"error": "alpha_pending_returned_count_only", "n": items}, ensure_ascii=False))
-        return 0
+        return None, {"error": "alpha_pending_returned_count_only", "n": items}
     # ★dict(키=arxiv_id) 또는 list 둘 다 받는다. dict 는 삽입순서를 그대로 큐 순서로 쓴다.
     if isinstance(items, dict):
-        pairs = list(items.items())
-    else:
-        pairs = [("", o) for o in (items or [])]
-    # ★재현 불가로 판정된 논문은 건너뛴다 — 없으면 같은 논문을 영원히 다시 집는다(2026-08-30).
-    skip = set()
-    try:
-        sk = json.load(io.open(os.path.join(os.path.dirname(os.path.dirname(HERE)),
-                                            "06_Registry", "replication_skiplist.json"), encoding="utf-8"))
-        # ★revoked 는 건너뛰지 않는다 — 판정이 철회된 논문은 다시 후보다(AX-000)
-        skip = {str(e.get("paper_key")) for e in (sk.get("entries") or [])
-                if e.get("status") != "revoked"}
-    except Exception:
-        pass
-    # ★이미 강화 원장에 들어온 논문은 소비된 것이다 (도훈 지시 2026-08-30 실사고 수리).
-    #   실사고: 2026-08-30 12:43·12:44 무인 루프가 방금 끝낸 2608.24703 을 연속 두 번 다시
-    #   집었다. 스킵리스트는 "재현 불가" 판정만 담고, alpha_pending() 은 L-code 소비만 본다.
-    #   그 사이에 **무인 충실구현 경로가 통째로 빠져 있었다** — 이 경로로 소비된 논문은
-    #   어느 명부에도 안 실려서 큐 상단에 영원히 남는다.
-    #   ⇒ 원장(reinforce_ledger_l1)이 소비 기록의 정본이다. status 무관 — active/exhausted/
-    #     parked/skipped_base_quality 전부 "이미 손댄 논문"이다.
-    done = set()
-    try:
-        _led = json.load(io.open(os.path.join(os.path.dirname(os.path.dirname(HERE)),
-                                              "06_Registry", "reinforce_ledger_l1.json"),
-                                 encoding="utf-8"))
-        for _e in (_led.get("entries") or []):
-            _k = str(_e.get("paper_key") or "")
-            if _k:
-                done.add(_k)
-    except Exception:
-        pass
+        return list(items.items()), None
+    return [("", o) for o in (items or [])], None
 
+
+def iter_candidates(stage, _pairs_override=None):
+    """큐 순서 그대로 착수 가능한 후보(스킵리스트 · 원장 소비 · 원문 링크 없음 제외)를 낸다 — 다중 슬롯 발행기(rf_replication_slots.py)가
+    등급(gpu/cpu) · 다른 슬롯 점유로 **거르기만** 한다(재정렬 없음 · 2026-10-20 WP3). 각 항목 = main 이 내던 JSON 과 같은 키 + skipped_no_url(그때까지)."""
+    if _pairs_override is not None:
+        pairs = _pairs_override
+    else:
+        pairs, err = _pairs(stage)
+        if err:
+            raise RuntimeError(err["error"])
+    for c in _iter(pairs):
+        yield c
+
+
+def _iter(pairs, stats=None):
+    skip, done = _consumed()
     skipped = 0
-    n_skiplist = 0
-    n_ledger = 0
+    if stats is not None:
+        stats["skipped"] = 0
     for key, o in pairs:
         pk_keys = probe_keys(o, key)
-        if pk_keys & skip:
-            n_skiplist += 1
-            continue
-        if pk_keys & done:
-            n_ledger += 1
+        if pk_keys & skip or pk_keys & done:
             continue
         u = _url_of(o, key)
         if not u:
             skipped += 1
+            if stats is not None:
+                stats["skipped"] = skipped
             continue
         try:
             title = display_name(o)
@@ -144,7 +126,7 @@ def main(argv):
         except Exception:
             pk = str(o.get("paper_key") or o.get("arxiv_id") or key or "")
         fc = o.get("factor_candidate") or {}
-        print(json.dumps({
+        yield {
             "title": title,
             "paper_title": str(o.get("title") or title),          # 원 제목(요약명이 아니라)
             "url": u, "paper_key": pk, "source": o.get("source"),
@@ -152,9 +134,100 @@ def main(argv):
             "factor_name": str(fc.get("name") or ""),
             "factor_def": str(fc.get("def") or "")[:300],         # 후보 팩터 정의
             "kr_feasible": o.get("kr_feasible"),
-            "skipped_no_url": skipped}, ensure_ascii=False))
+            "skipped_no_url": skipped, "_probe_keys": sorted(pk_keys | {pk})}
+
+
+def _consumed():
+    # ★재현 불가로 판정된 논문은 건너뛴다 — 없으면 같은 논문을 영원히 다시 집는다(2026-08-30).
+    #   ★revoked 는 건너뛰지 않는다 — 판정이 철회된 논문은 다시 후보다(AX-000)
+    # ★이미 강화 원장에 들어온 논문은 소비된 것이다 (도훈 지시 2026-08-30 실사고 수리).
+    #   실사고: 2026-08-30 12:43·12:44 무인 루프가 방금 끝낸 2608.24703 을 연속 두 번 다시
+    #   집었다. 스킵리스트는 "재현 불가" 판정만 담고, alpha_pending() 은 L-code 소비만 본다.
+    #   그 사이에 **무인 충실구현 경로가 통째로 빠져 있었다** — 이 경로로 소비된 논문은
+    #   어느 명부에도 안 실려서 큐 상단에 영원히 남는다.
+    #   ⇒ 원장(reinforce_ledger_l1)이 소비 기록의 정본이다. status 무관 — active/exhausted/
+    #     parked/skipped_base_quality 전부 "이미 손댄 논문"이다.
+    skip = set()
+    try:
+        sk = json.load(io.open(os.path.join(os.path.dirname(os.path.dirname(HERE)),
+                                            "06_Registry", "replication_skiplist.json"), encoding="utf-8"))
+        skip = {str(e.get("paper_key")) for e in (sk.get("entries") or []) if e.get("status") != "revoked"}
+    except Exception:
+        pass
+    done = set()
+    try:
+        _led = json.load(io.open(os.path.join(os.path.dirname(os.path.dirname(HERE)),
+                                              "06_Registry", "reinforce_ledger_l1.json"), encoding="utf-8"))
+        for _e in (_led.get("entries") or []):
+            _k = str(_e.get("paper_key") or "")
+            if _k:
+                done.add(_k)
+    except Exception:
+        pass
+    return skip, done
+
+
+def _filtered_main(argv):
+    """다중 슬롯 발행기 · 검사용 거르기 — --only-key K(그 논문이 착수 가능할 때만) · --exclude K1,K2 · --want gpu|cpu · --list N."""
+    import argparse
+    ap = argparse.ArgumentParser(prog="rf_next_paper_pick")
+    ap.add_argument("stage", nargs="?", default=os.path.join(os.path.dirname(os.path.dirname(HERE)), "stage_artifacts", "paper_recharge"))
+    ap.add_argument("--only-key"); ap.add_argument("--exclude", default=""); ap.add_argument("--want", choices=["gpu", "cpu"])
+    ap.add_argument("--list", type=int, default=0)
+    a = ap.parse_args(argv)
+    excl = {x for x in (a.exclude or "").split(",") if x}
+    cfg = None
+    if a.want:
+        import rf_compute_class as _cc
+        cp = os.environ.get("QVEST_RF_CONFIG") or os.path.join(os.path.dirname(os.path.dirname(HERE)), "06_Registry", "reinforce_auto_config.json")
+        try:
+            cfg = json.load(io.open(cp, encoding="utf-8"))
+        except Exception:
+            cfg = None
+    try:
+        gen = iter_candidates(a.stage)
+        out = []
+        for c in gen:
+            keys = set(c.get("_probe_keys") or []) | {c.get("paper_key")}
+            if a.only_key and a.only_key not in keys:
+                continue
+            if keys & excl:
+                continue
+            if a.want:
+                cls = _cc.classify(c, None, cfg)
+                if cls["class"] != a.want:
+                    continue
+                c["compute_class"], c["compute_basis"] = cls["class"], cls["basis"]
+            c.pop("_probe_keys", None)
+            out.append(c)
+            if len(out) >= max(1, a.list):
+                break
+    except RuntimeError as e:
+        print(json.dumps({"error": str(e)}, ensure_ascii=False))
         return 0
-    print(json.dumps({"error": "no_item_with_url", "skipped_no_url": skipped,
+    if not out:
+        print(json.dumps({"error": "no_item_with_url" if not a.only_key else "only_key_not_available", "only_key": a.only_key}, ensure_ascii=False))
+        return 0
+    for c in out:
+        print(json.dumps(c, ensure_ascii=False))
+    return 0
+
+
+def main(argv):
+    if any(x.startswith("--") for x in argv):
+        return _filtered_main(argv)
+    stage = argv[0] if argv else os.path.join(
+        os.path.dirname(os.path.dirname(HERE)), "stage_artifacts", "paper_recharge")
+    pairs, err = _pairs(stage)
+    if err:
+        print(json.dumps(err, ensure_ascii=False))
+        return 0
+    stats = {}
+    for c in _iter(pairs, stats):
+        c.pop("_probe_keys", None)
+        print(json.dumps(c, ensure_ascii=False))
+        return 0
+    print(json.dumps({"error": "no_item_with_url", "skipped_no_url": stats.get("skipped", 0),
                       "n_total": len(pairs)}, ensure_ascii=False))
     return 0
 

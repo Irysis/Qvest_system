@@ -19,6 +19,9 @@ PY="${QVEST_PY:-$ROOT/.venv_qvest_ml/Scripts/python.exe}"
 PASS=0; FAIL=0
 ok(){ printf '  OK   %s\n' "$1"; PASS=$((PASS+1)); }
 ng(){ printf '  FAIL %s — %s\n' "$1" "${2:-}"; FAIL=$((FAIL+1)); }
+# grep -q 는 첫 일치에서 끝나 앞의 printf 가 SIGPIPE(141)를 받는다 — pipefail 아래서는 일치해도 실패로 접힌다(검증기 · 레인 스크립트가
+#   ~100KB 로 커지며 2026-10-20 실측 flake). gq = 입력을 끝까지 읽는 grep(출력 버림) — 같은 판정 · SIGPIPE 없음.
+gq(){ grep "$@" >/dev/null; }
 LANE=02_Infrastructure/ops/rf_replication_auto.sh
 VERIFY=02_Infrastructure/ops/rf_replication_verify.R
 TICK=02_Infrastructure/ops/reinforce_auto_tick.sh
@@ -36,10 +39,10 @@ if "$PY" -c "import ast,io; ast.parse(io.open('02_Infrastructure/ops/rf_next_pap
 
 echo "=== 2. 스케줄 진입점 — 퇴역 러너 호출 0 (양방향 · 주석 제외) ==="
 TICK_NC=$(sed 's/#.*$//' "$TICK")
-if printf '%s' "$TICK_NC" | grep -q "rf_replication_auto.sh" && printf '%s' "$TICK_NC" | grep -q "rf_l2_auto.sh"; then
+if printf '%s' "$TICK_NC" | gq "rf_replication_auto.sh" && printf '%s' "$TICK_NC" | gq "rf_l2_auto.sh"; then
   ok "tick 이 충실구현 레인 · 2계층 레인을 부른다"; else ng "tick 이 남길 레인을 안 부른다"; fi
 RETIRED_RE='reinforce_auto_parallel\.R|reinforce_auto_run\.R|reinforce_auto_next_paper\.R|rf_b1_design\.sh|rf_b5_design\.sh|rf_overlay_propose\.sh|rf_grid_propose\.sh|rf_director\.R'
-if printf '%s' "$TICK_NC" | grep -qE "$RETIRED_RE"; then ng "tick 이 퇴역 레인을 부른다" "$(printf '%s' "$TICK_NC" | grep -oE "$RETIRED_RE" | head -2 | tr '\n' ' ')"
+if printf '%s' "$TICK_NC" | gq -E "$RETIRED_RE"; then ng "tick 이 퇴역 레인을 부른다" "$(printf '%s' "$TICK_NC" | grep -oE "$RETIRED_RE" | head -2 | tr '\n' ' ')"
 else ok "tick 실행 코드에 퇴역 러너·설계 레인·디렉터 호출 0"; fi
 printf 'Rscript "$ROOT/02_Infrastructure/ops/reinforce_auto_parallel.R"\n' > "$T/tick_probe.sh"
 if sed 's/#.*$//' "$T/tick_probe.sh" | grep -qE "$RETIRED_RE"; then ok "퇴역 호출 검사기 양성 대조 발화"; else ng "퇴역 호출 검사기 미발화 — 죽은 검사"; fi
@@ -87,7 +90,7 @@ if printf '%s' "$OUT" | "$PY" -c "
 import sys,json; o=json.loads(sys.stdin.read()); sys.exit(0 if o.get('url','').startswith('http') else 1)" 2>/dev/null; then
   ok "큐 상단 논문 + 원문 링크 산출"; else ng "논문 선택 실패" "${OUT:0:200}"; fi
 mkdir -p "$T/empty_q"; OUT=$("$PY" 02_Infrastructure/ops/rf_next_paper_pick.py "$T/empty_q" 2>&1)
-if printf '%s' "$OUT" | grep -q '"error"'; then ok "빈 큐 → 오류 반환(링크 날조 없음)"; else ng "빈 큐인데 링크를 냈다" "${OUT:0:200}"; fi
+if printf '%s' "$OUT" | gq '"error"'; then ok "빈 큐 → 오류 반환(링크 날조 없음)"; else ng "빈 큐인데 링크를 냈다" "${OUT:0:200}"; fi
 
 echo "=== 5. 자본 경계 (정적 · 실행 코드) ==="
 HITS=$(for f in 02_Infrastructure/reinforcement/rf_cell_engine.R "$SUPPLY" "$VERIFY" 02_Infrastructure/programs/*.R; do
@@ -202,17 +205,17 @@ grep -qE "06_metrics.csv|07_benchmark_compare.csv" 02_Infrastructure/ops/rf_perf
 grep -q "run_analysis(.sim_fa" 02_Infrastructure/alpha_search/run_paper_replication.R && ok "FF3/FF5/Carhart + FMB 생산 배선" || ng "팩터 회귀 미생산"
 ## 2026-10-16 도훈 "파마맥베스 … 메세지 다시 살려줘" — [팩터 분석]은 보고 1통의 섹션(비중형 엔진은 사후 분석 · 점수 = 보유 비중)
 VNC=$(sed 's/#.*$//' "$VERIFY")
-printf '%s' "$VNC" | grep -q "replication_factor_analysis.R" && [ "$(printf '%s' "$VNC" | grep -c 'extra = c(.v1001_grade_extra(dirname(ar)), .v1001_variants_extra(), .v1001_factor_section(dirname(ar)))')" = "2" ] \
+printf '%s' "$VNC" | gq "replication_factor_analysis.R" && [ "$(printf '%s' "$VNC" | grep -c 'extra = c(.v1001_grade_extra(dirname(ar)), .v1001_variants_extra(), .v1001_factor_section(dirname(ar)))')" = "2" ] \
   && ok "[팩터 분석] · [논문 방법 N종](10-17) = 검증기 보고 1통의 섹션(성공 분기 2곳 · 사후 분석 배선)" || ng "팩터 분석 · 변형 섹션 미배선"
-printf '%s' "$VNC" | grep -q 'jlog("factor_analysis"' && ok "분석 상태 기록(근거 · 상태 · 사유 · 소요)" || ng "분석 상태가 조용히 넘어간다"
-! printf '%s' "$VNC" | grep -q "tg_pass_analysis" && ok "[팩터 분석] 별도 발송 없음(1단위 1통)" || ng "팩터 분석을 따로 또 보낸다"
+printf '%s' "$VNC" | gq 'jlog("factor_analysis"' && ok "분석 상태 기록(근거 · 상태 · 사유 · 소요)" || ng "분석 상태가 조용히 넘어간다"
+! printf '%s' "$VNC" | gq "tg_pass_analysis" && ok "[팩터 분석] 별도 발송 없음(1단위 1통)" || ng "팩터 분석을 따로 또 보낸다"
 
 echo "=== 14. v10.01 보고·인계 — 검증기가 행동 카드 · 프로그램 큐 · 발송기를 탄다 ==="
 VC=$(sed 's/#.*$//' "$VERIFY")
-printf '%s' "$VC" | grep -q "bc_card_from_artifacts" && ok "검증기가 행동 카드를 쓴다(bc_card_from_artifacts)" || ng "행동 카드 미배선"
-printf '%s' "$VC" | grep -q "pr_enqueue" && ok "검증기가 엔진을 리서치 프로그램 큐에 넣는다(pr_enqueue)" || ng "프로그램 인계 미배선"
-printf '%s' "$VC" | grep -q "prep_send" && ok "검증기 보고 = v10.01 발송기(prep_send)" || ng "발송기 미배선"
-if printf '%s' "$VC" | grep -qE "rf_auto_notify|rf_block_insights|rf_grade_fanfare|reinforce_auto_next_paper"; then ng "검증기가 퇴역 발송기·이월을 부른다"
+printf '%s' "$VC" | gq "bc_card_from_artifacts" && ok "검증기가 행동 카드를 쓴다(bc_card_from_artifacts)" || ng "행동 카드 미배선"
+printf '%s' "$VC" | gq "pr_enqueue" && ok "검증기가 엔진을 리서치 프로그램 큐에 넣는다(pr_enqueue)" || ng "프로그램 인계 미배선"
+printf '%s' "$VC" | gq "prep_send" && ok "검증기 보고 = v10.01 발송기(prep_send)" || ng "발송기 미배선"
+if printf '%s' "$VC" | gq -E "rf_auto_notify|rf_block_insights|rf_grade_fanfare|reinforce_auto_next_paper"; then ng "검증기가 퇴역 발송기·이월을 부른다"
 else ok "검증기 실행 코드에 퇴역 발송기·이월 호출 0"; fi
 
 echo "=== 15. 충실구현 claim — 죽은 소유자를 회수하는가 (정적) ==="
@@ -272,7 +275,7 @@ QVEST_RP_VARIANTS_CFG="$_RPD/variants_cfg.json" _rprun; unset _RP_STALE
 [ "$(_st)" = "pending" ] && grep -q claim_stale_reclaim "$_RPD/jlog.jsonl" && ok "C4c 소유자 표식 없는 7h claim 회수(나이 기준)" || ng "C4c 구판 claim" "status=$(_st) $(_ev)"
 # (C5) 구현 에이전트 시간 상한 = 설정 변수(구판 3000 리터럴 0곳 · 기본 0 = 상한 없음)
 LNC=$(sed 's/#.*$//' "$LANE")
-[ "$(printf '%s' "$LNC" | grep -c 'rf_llm_agent_run "$PF" "$RUN_OUT" "$RP_AGENT_TMO"')" = "2" ] && ! printf '%s' "$LNC" | grep -q 'rf_llm_agent_run "$PF" "$RUN_OUT" 3000' \
+[ "$(printf '%s' "$LNC" | grep -c 'rf_llm_agent_run "$PF" "$RUN_OUT" "$RP_AGENT_TMO"')" = "2" ] && ! printf '%s' "$LNC" | gq 'rf_llm_agent_run "$PF" "$RUN_OUT" 3000' \
   && grep -q '"agent_timeout_sec": 0' 06_Registry/rf_replication_variants.json && ok "C5 구현 에이전트 시간 상한 = 설정(0 = 상한 없음 · 호출 2곳)" || ng "C5 시간 상한 배선"
 # (R0) 양성 대조: 격리 잠금 경로가 실제로 읽힌다 — 방금 만든 빈 잠금 디렉터리(held:empty_pid) → halt_refresh_lock
 #      요청은 done 으로 둔다(잠금이 무시되면 no_pending_request 로 끝난다 — 에이전트를 띄우지 않는다)
@@ -315,7 +318,7 @@ if [ -s "$_CH/fn.sh" ]; then
   else ng "K6 뮤테이션 치환 불발(소스 텍스트)"; fi
 else ng "K0 레인에 rp_chain_reimplement 정의가 없다"; fi
 LNC=$(sed 's/#.*$//' "$LANE")
-[ "$(printf '%s' "$LNC" | grep -c 'rp_chain_reimplement "\$VRC"')" = "2" ] && printf '%s' "$LNC" | grep -q 'rp_chain_reimplement 0' \
+[ "$(printf '%s' "$LNC" | grep -c 'rp_chain_reimplement "\$VRC"')" = "2" ] && printf '%s' "$LNC" | gq 'rp_chain_reimplement 0' \
   && ok "K7 연쇄 배선 = 검증 2곳(verify-only 재실행 · 정상 끝) + 사전검사 기각 1곳" || ng "K7 연쇄 배선 누락"
 
 echo "=== 19. 구현자 = 감사자와 같은 원문 · 같은 축 (2026-10-17 · 원문 전문 경로 + 제출 전 자가 감사) ==="
@@ -324,9 +327,9 @@ _axid(){ ( P_URL="$1"; eval "$_AXL"; printf '%s' "$P_AXID" ); }
 [ -n "$_AXL" ] && [ "$(_axid https://arxiv.org/abs/1908.01112)" = "1908.01112" ] && [ "$(_axid https://arxiv.org/abs/2411.08864v2)" = "2411.08864" ] \
   && [ -z "$(_axid https://papers.ssrn.com/sol3/papers.cfm?abstract_id=1)" ] \
   && ok "J1 원문 전문 id 추출 — abs · 판 접미사 제거 · arXiv 아님 = 빈 값" || ng "J1 전문 id 추출" "$(_axid https://arxiv.org/abs/2411.08864v2)"
-printf '%s' "$LNC" | grep -q 'https://arxiv.org/html/${P_AXID}v1' && grep -q '^\${P_TEXTLINE}$' "$LANE" && grep -q '^\${P_ACCESS}$' "$LANE" && grep -q '^\${SELF_AUDIT_SEC}$' "$LANE" \
+printf '%s' "$LNC" | gq 'https://arxiv.org/html/${P_AXID}v1' && grep -q '^\${P_TEXTLINE}$' "$LANE" && grep -q '^\${P_ACCESS}$' "$LANE" && grep -q '^\${SELF_AUDIT_SEC}$' "$LANE" \
   && ok "J2 프롬프트 = 원문 줄(축자본 · 없으면 전문 주소) + 읽는 법 + 자가 감사 절(축 정본 생성) 배선" || ng "J2 프롬프트 배선 누락"
-printf '%s' "$LNC" | grep -q 'rf_preaudit.py" --self-audit-block' && printf '%s' "$LNC" | grep -q 'jl self_audit_block_absent' \
+printf '%s' "$LNC" | gq 'rf_preaudit.py" --self-audit-block' && printf '%s' "$LNC" | gq 'jl self_audit_block_absent' \
   && ok "J3 자가 감사 절 = rf_preaudit.py --self-audit-block(사본 없음) · 생성 실패는 저널" || ng "J3 절 생성 배선"
 _sa_line=$(grep -n '^\${SELF_AUDIT_SEC}$' "$LANE" | head -1 | cut -d: -f1); _out_line=$(grep -n '^## 산출 (이것만)$' "$LANE" | head -1 | cut -d: -f1)
 [ -n "$_sa_line" ] && [ -n "$_out_line" ] && [ "$_sa_line" -lt "$_out_line" ] && [ "$(grep -c '^## 산출 (이것만)$' "$LANE")" = "1" ] \
@@ -334,9 +337,9 @@ _sa_line=$(grep -n '^\${SELF_AUDIT_SEC}$' "$LANE" | head -1 | cut -d: -f1); _out
 # J5~J7 — 원문 축자본 선수집(10-17 · 1차 기각 원인 1위 '전문 미열람' 32% · WebFetch = 요약기)
 _mk=$(grep -n '^mkdir -p "\$WDIR"$' "$LANE" | head -1 | cut -d: -f1); _pt=$(grep -n 'rf_paper_text.py" --url "\$P_URL" --wdir "\$WDIR"' "$LANE" | head -1 | cut -d: -f1)
 _pv=$(grep -n '^PREV_FAIL=' "$LANE" | head -1 | cut -d: -f1)
-[ -n "$_mk" ] && [ -n "$_pt" ] && [ -n "$_pv" ] && [ "$_mk" -lt "$_pt" ] && [ "$_pt" -lt "$_pv" ] && printf '%s' "$LNC" | grep -q 'jl paper_text' \
+[ -n "$_mk" ] && [ -n "$_pt" ] && [ -n "$_pv" ] && [ "$_mk" -lt "$_pt" ] && [ "$_pt" -lt "$_pv" ] && printf '%s' "$LNC" | gq 'jl paper_text' \
   && ok "J5 축자본 선수집 = 작업 디렉터리 직후 · 검증기만 재실행 경로보다 앞(두 경로가 같은 파일) · 저널 paper_text" || ng "J5 선수집 배선" "mk=$_mk pt=$_pt pv=$_pv"
-! grep -q 'PDF 를 받았으면 Read' "$LANE" && grep -q '미확인 재현' "$LANE" && printf '%s' "$LNC" | grep -q 'download_paper → read_paper' \
+! grep -q 'PDF 를 받았으면 Read' "$LANE" && grep -q '미확인 재현' "$LANE" && printf '%s' "$LNC" | gq 'download_paper → read_paper' \
   && ok "J6 잘못된 PDF-Read 안내 제거(pdftoppm 부재) · 위임 사양 규칙 · 대체 경로 = arxiv MCP 끝까지" || ng "J6 원문 접근 문구"
 _PB="$T/prompt_block.sh"; _a=$(grep -n '^P_AXID=' "$LANE" | head -1 | cut -d: -f1); _b=$(grep -n '^엔진을 쓰고 1~2줄로 무엇을 구현했는지만 보고하라."$' "$LANE" | head -1 | cut -d: -f1)
 if [ -n "$_a" ] && [ -n "$_b" ]; then
@@ -344,8 +347,8 @@ if [ -n "$_a" ] && [ -n "$_b" ]; then
   _render(){ ( ROOT="$ROOT"; LOG="$T/pb.log"; IS_COMBO=0; P_KEY=T1; P_URL=https://arxiv.org/abs/1908.01112; P_TITLE=t; P_FNAME=x; P_FDEF=y; WDIR=W
                jl(){ :; }; P_TEXT_OK="$1"; PT_OUT="$2"; . "$_PB"; printf '%s' "$PROMPT" ) 2>/dev/null; }
   _r1=$(_render 1 "ok kind=html version=v1 chars=45234 path=.clean_paper/paper.md cached=0"); _r0=$(_render 0 "fail why=x")
-  printf '%s' "$_r1" | grep -q '^원문 축자본: W/.clean_paper/paper.md' && ! printf '%s' "$_r1" | grep -q '^원문 전문: ' \
-    && printf '%s' "$_r0" | grep -q '^원문 전문: https://arxiv.org/html/1908.01112v1' && printf '%s' "$_r0" | grep -q 'arxiv MCP 로 전문을 끝까지' \
+  printf '%s' "$_r1" | gq '^원문 축자본: W/.clean_paper/paper.md' && ! printf '%s' "$_r1" | gq '^원문 전문: ' \
+    && printf '%s' "$_r0" | gq '^원문 전문: https://arxiv.org/html/1908.01112v1' && printf '%s' "$_r0" | gq 'arxiv MCP 로 전문을 끝까지' \
     && ok "J7 렌더 양방향 — 축자본 있음 = 축자본 줄(주소 줄 없음) · 없음 = 전문 주소 + arxiv MCP 대체 지시" || ng "J7 렌더" "$(printf '%s' "$_r1" | sed -n '4,6p')"
 else ng "J7 프롬프트 블록 경계 없음"; fi
 
