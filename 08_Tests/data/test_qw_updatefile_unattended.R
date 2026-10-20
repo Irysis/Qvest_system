@@ -61,6 +61,12 @@ if (identical(as.integer(r9$rc), 0L) && grepl("state=advanced", r9$last) && !fil
 unlink(c(mark, ctr)); r10 <- run("0", us_new, after = TRUE, sleep = "30", tmo = "2", env = pa(grow, hard = "5", stall = "9"))
 if (identical(as.integer(r10$rc), 10L) && grepl("rc=124", r10$last) && file.exists(mark) && r10$secs < 20 && any(grepl("hard", r10$out)))
   ok(sprintf("10 일하는 중이어도 절대 상한(5초)에서 끊고 정리 · 10 · %.0f초", r10$secs)) else ng("10", paste(r10$rc, r10$last, file.exists(mark), r10$secs))
+## 12 기본값(10-20 도훈 '제한시간 없애' · '정체 감지 제거') — 절대 상한 · 정체 끊기 주입 없음 = CPU 가 늘지 않아도 끊지 않고 드라이버 끝까지 기다린다(정체는 로그만)
+unlink(c(mark, ctr)); r12 <- run("0", us_new, after = TRUE, sleep = "8", tmo = "2",
+                                 env = c(QWUF_POLL_S = "1", QWUF_PROGRESS_CMD = "true", QWUF_CLEANUP_CMD = paste0("echo cleaned >> ", ux(mark))))
+if (identical(as.integer(r12$rc), 0L) && grepl("state=advanced", r12$last) && grepl("\trc=0\t", r12$last, fixed = TRUE) && !file.exists(mark) &&
+    r12$secs >= 7 && any(grepl("끊지 않고 기다린다", r12$out)) && !any(grepl("수급 종료", r12$out)))
+  ok(sprintf("12 기본값 = 절대 상한 · 정체 끊기 없음 — CPU 무증가여도 끝까지 받는다 · 정리 없음 · 정체는 로그만 · %.0f초", r12$secs)) else ng("12", paste(r12$rc, r12$last, file.exists(mark), r12$secs))
 if (!is.null(r3$log) && identical(r3$log$state, "advanced") && identical(r3$log$bench_rc, "0") && !is.null(r1$log) && identical(r1$log$state, "skipped"))
   ok("7 기록 json — 상태 · 대상 · 전진 · 벤치 rc") else ng("7")
 ## 11 완료 수 · 미완료 표식(10-17) — 드라이버 END 줄의 done D/N 을 마지막 줄에 싣는다 · D<N 또는 rc≠0 = incomplete=1(호출부 DR_FAILED)
