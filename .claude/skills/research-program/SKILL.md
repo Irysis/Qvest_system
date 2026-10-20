@@ -90,7 +90,13 @@ Rscript -e "source('02_Infrastructure/programs/program_registry.R'); writeLines(
   - 점검 횟수는 §12 기본(전체 1회 + 변경분 1회)이다. 등록 조건은 P1 수령 ∧ 점검 ok 다.
 - **P1 라운드**: `rc_init_p1` 이 표준 구성 칸 사양(P0R01 C0 선례 · 고정 축 정본 대조)과 골격을 만든다.
 - **속도 규칙**: `_lib/round_core/PERFORMANCE.md` 를 따른다. 결과 동일 실증과 전후 시간 기록이 없는 최적화는 쓰지 않는다.
-- P2 · P3 판정 틀(위기 · β 짝 · 과반 · 짝 평가)은 코어 이관과 결과 동일 재판정(P2R04 · P2R03 · P3R03)이 끝나는 대로 붙는다. 그 전의 P2 · P3 라운드는 현행 방식이다.
+- **P2 · P3 판정 틀은 v1 에 붙었다**(10-20 WP1-b · main 6c37495f4).
+  - 모듈: `v1/pair.R`(짝 평가 골격 · 위기 · β 짝 · 과반 · 샤딩) · `p2.R`(장치 × 엔진) · `p3.R`(구성 변형) · `rules_p2.R`(P2 규칙 종류).
+  - P2R04 · P2R03 · P3R03 을 코어로 다시 판정한 결과가 저장본과 같다(`rejudge/RESULTS.json`). 쓰는 법 = round_core README.
+  - ★예외 = P2R05: 등록 전에 라운드 전용 코드로 짜였고, 핀 51개 파일 무접촉 결정(L1-SPEED-PLAN)대로 현행 방식으로 끝낸다. 코어는 P2R05 다음 라운드부터 쓴다.
+- **GPU 확보 = 임대**(10-20 WP3 배포 · `02_Infrastructure/ops/qv_lock.{R,py,sh}` 의 `gpu_lease_acquire` / `gpu_lease_release` · 상한 12h).
+  - lane_hold · lane_pause · 외부 감시는 퇴역이다. 충실구현 레인은 슬롯(CPU 2 + GPU 1)이다.
+  - 요청 상태는 `rf_replication_slots.py status` 로 본다.
 
 **처방 루프 라운드 도구(v0 · 2026-10-13 S2 파일럿 · D7 별도 모듈)** — 에이전트(분석가 · 처방 담당 · 리뷰어)가 있는 라운드는 이 경로로:
 - 진단 패킷 `contracts/diagnosis_packet.R::dp_build(dir)` — **보는 창(≤ τ_D)만으로 계산**(적재 단계 절단 · 검사 = τ_D 뒤 세계를 바꿔도 바이트 동일).
