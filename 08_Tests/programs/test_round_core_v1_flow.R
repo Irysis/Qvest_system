@@ -10,7 +10,7 @@ err_of <- function(expr) tryCatch({ force(expr); "" }, error = function(e) condi
 source("04_Research/programs/_lib/round_core/v1/load.R")
 
 SB <- gsub("\\\\", "/", file.path(tempdir(), "rc_flow")); unlink(SB, recursive = TRUE); dir.create(SB, recursive = TRUE)
-on.exit(unlink(SB, recursive = TRUE), add = TRUE)
+invisible(reg.finalizer(globalenv(), function(e) unlink(SB, recursive = TRUE), onexit = TRUE))  # r-portability 금칙 ②: 최상위 on.exit 는 no-op
 Sys.setenv(RC_SA_ROOT = file.path(SB, "sa"))
 REG <- file.path(SB, "research_programs.json"); invisible(file.copy("06_Registry/research_programs.json", REG))
 LED <- file.path(SB, "ledger.json"); RVR <- file.path(SB, "rv")
