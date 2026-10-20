@@ -15,6 +15,10 @@
   모두 남았다(행 112 · 122 · 133 · 649 · 852~866 · 876 · 942).
 - 상호작용 확인(W8): 덮어쓰기 열쇠 = 논문 키라 슬롯과 무관 · 대표(행 867)와 변형(행 892 · `modifyList` 가 축 키를 안 건드림)이 같은 `.BASE_ARGS` ·
   `fail()` 은 슬롯 요청을 닫는다 · `env` 는 그 검증기 프로세스에만.
+- 두 번째 병합 `61990e0bb`(main `9d2b63ccc` 까지 — WP5 상설 자격 `ccbe55080` + SUITES 편입) · 충돌 0(SUITES 두 항목 공존). WP5 의 레인 스캔은
+  작업 디렉터리(`04_Research/strategies/RP_AUTO_*`)를 읽고 요청 파일을 읽지 않아 슬롯 전환과 무관. 병합 뒤 재실행: round_core_v1_standing 84/84 ·
+  round_core_v1_flow 27/27 · qv_lock 24/24 · qv_lock_cross 13/13 · replication_slots 29/29 · ledger_write_locks 11/11 · replication_slots_lane 18/18 ·
+  replication_lane 89/89.
 
 ## 새 시험 (병합 뒤 · 최종 코드)
 
