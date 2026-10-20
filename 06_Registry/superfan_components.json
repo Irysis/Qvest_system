@@ -77,6 +77,8 @@
       {"severity": "warn", "regex": "\\[rp_auto\\] claim_live_long", "label": "장시간 실행 — 생존 claim 이 claim_stale_hours 초과(계산 시간 상한 없음 · 10-17 — 멈춘 실행인지 세션이 확인)"}]},
     {"id": "lane_alive", "kind": "freshness", "file": ".cache/scheduler_logs/reinforce_auto_{YYYYMMDD}.log", "max_age_h": 8, "severity": "fail"},
     {"id": "request_state", "kind": "json_field", "file": "06_Registry/replication_request.json", "path": "status",
+     "bad_values": ["failed_needs_session", "failed"], "severity": "fail"},
+    {"id": "slots_state", "kind": "json_field", "file": "06_Registry/replication_slots/_status.json", "path": "worst_status",
      "bad_values": ["failed_needs_session", "failed"], "severity": "fail"}
    ]
   },
