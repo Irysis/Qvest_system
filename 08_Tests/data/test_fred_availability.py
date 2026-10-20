@@ -278,6 +278,25 @@ def main():
         ann = fa.fred_avail_annotate(df, "VIXCLS", CAL, RL)
         chk("G2 annotate avail_date 열", [str(x) for x in ann["avail_date"]] == ["2026-08-28", "2026-08-31", "2026-09-01"])
 
+    print("\n=== H 달력 캐시 회귀(2026-10-20) — 적중 때도 날짜를 돌려준다(구판: 서수 → 두 번째 호출부터 _cal 이 죽었다) ===")
+    try:
+        import pyarrow as pa
+        import pyarrow.parquet as pq
+        cp = os.path.join(TD, "cal_cache_regress.parquet")
+        pq.write_table(pa.table({"Date": pa.array([dt.date(2026, 10, 16), dt.date(2026, 10, 19)], pa.date32())}), cp)
+        c1 = fa.fred_kr_calendar(cp)
+        c2 = fa.fred_kr_calendar(cp)
+        chk("H1 캐시 적중(두 번째 호출) = 첫 호출 · 날짜 목록", c1 == c2 and all(isinstance(x, dt.date) for x in c2))
+        os.environ["FRED_AVAIL_CALENDAR_PATH"] = cp
+        try:
+            a1 = fa.fred_avail_date("VIXCLS", "2026-10-16")
+            a2 = fa.fred_avail_date("VIXCLS", "2026-10-16")
+        finally:
+            os.environ.pop("FRED_AVAIL_CALENDAR_PATH", None)
+        chk("H2 기본 달력 경로로 두 번 연속 계산 = 같은 가용일(2026-10-19)", str(a1) == str(a2) == "2026-10-19", f"({a1} · {a2})")
+    except ImportError:
+        skip("H_cal_cache", "pyarrow 없음 — 달력 캐시 회귀 미측정(통과 아님)", "pyarrow")
+
     shutil.rmtree(TD, ignore_errors=True)
     print(f"\n=== 결과: PASS {PASS} · FAIL {FAIL} · SKIP {len(SKIPS)} ===")
     print(json.dumps({"test": "fred_availability_py", "pass": PASS, "fail": FAIL, "skipped": len(SKIPS),

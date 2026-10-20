@@ -510,6 +510,34 @@ run_r '
     error = function(e) cat(sprintf("ECOS bond rates skipped: %s\n", e$message)))
 '
 
+# ─── [4gm] 거시 입력 2종 (2026-10-20 · THGNN 2601.04602 · 도훈 'DXY는 ECOS 프록시로' · 'WTI 일일 갱신까지 편입') ──────────
+#   ① ECOS 731Y002 6통화 + DXY 프록시(ICE 공식) → .cache/ecos_fx_majors.parquet — 위 ECOS 블록과 달리 오류를 삼키지 않는다(실패 = r-step FAILED).
+#   ② 퀀티 경제 질의서 03_Universe/Global_Macro.xlsx(WTI유(NYMEX) xcCHPRWDQWTI) — 벤치와 같은 수급기(quantiwise_fetch.py --dest) →
+#      global_macro_ingest.py → .cache/qw_global_macro.parquet. 가용일 = 06_Registry/fred_availability_rules.json(QW_WTI_NYMEX · ECOS_DXY_PROXY).
+#      벤치 수급이 세션 없음(rc=3)이면 건너뛴다(벤치 게이트가 이미 신고). ★스탬프만 바뀌고 값이 안 오는 밤 = 끊긴 세션(10-20 다른 PC 중복 로그인) —
+#      지평선 불변은 rc=2 로 접히고, 적재기 신선도 검사(마지막 값 > 7역일 → rc=3)가 정체를 신고한다. 끄기: QVEST_QW_GLOBAL_MACRO=0
+cd "$INFRA"
+run_r '
+  source("config.R")
+  source("data/data_collector_ecos.R")
+  ecos_fetch_fx_majors()
+'
+if [ -n "$QVENV_PY" ] && [ "${_qw_rc:-1}" != "3" ] && [ "${QVEST_QW_GLOBAL_MACRO:-1}" != "0" ]; then
+  echo "[4gm] 퀀티 경제 질의서(Global_Macro.xlsx · WTI) 수급..."
+  _gm_rc=0
+  ( cd "$INFRA" && "$QVENV_PY" data/quantiwise_fetch.py --dest "$BASE/03_Universe/Global_Macro.xlsx" --timeout-sec 900 ) || _gm_rc=$?
+  if [ "$_gm_rc" = "0" ] || [ "$_gm_rc" = "2" ]; then
+    _gi_rc=0
+    ( cd "$INFRA" && "$QVENV_PY" data/global_macro_ingest.py ) || _gi_rc=$?
+    [ "$_gi_rc" -ne 0 ] && DR_FAILED+=("global_macro_ingest(rc=$_gi_rc)")
+  else
+    DR_FAILED+=("global_macro_fetch(rc=$_gm_rc)")
+    echo "!! [4gm] 질의서 수급 실패 rc=$_gm_rc — 기존 xlsx · 캐시 유지"
+  fi
+else
+  echo "[4gm] 퀀티 경제 질의서 건너뜀(벤치 수급 rc=${_qw_rc:-?} · QVEST_QW_GLOBAL_MACRO=${QVEST_QW_GLOBAL_MACRO:-1})"
+fi
+
 # ─── Cache Freshness Audit (도훈 mandate 2026-05-15 영구 보호망 L3) ─────────
 # Registry 기반 stale + orphan 양방향 감지, Telegram alert
 cd "$BASE"

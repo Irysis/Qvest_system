@@ -212,6 +212,11 @@ if (!real_ok) {
   }
   ids <- unique(unlist(lapply(fm_paths, function(p) unique(rd(p, "Series_ID")$Series_ID))))
   ecos <- c("ECOS_KRW_USD", unique(rd(eb_path, "Series")$Series))
+  # (2026-10-20) ECOS 731Y002 6통화 + DXY 프록시 · 퀀티 경제 질의서(WTI) — 같은 전수 규칙 검사에 넣는다(규칙 없는 계열 = 결합 불가)
+  fx_path <- file.path(DATA_ROOT, ".cache", "ecos_fx_majors.parquet")
+  gm_path <- file.path(DATA_ROOT, ".cache", "qw_global_macro.parquet")
+  if (file.exists(fx_path)) ecos <- c(ecos, unique(rd(fx_path, "Series")$Series))
+  if (file.exists(gm_path)) ids <- c(ids, unique(rd(gm_path, "Series_ID")$Series_ID))
   have <- names(RL$index)
   miss <- setdiff(c(ids, ecos), have)
   chk(sprintf("E1 데이터 계열 %d종 전수에 규칙 존재(누락 = 결합 불가)", length(c(ids, ecos))), length(miss) == 0L,

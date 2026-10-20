@@ -1,6 +1,6 @@
 {
   "schema": "fred_availability_rules/v1",
-  "version": "2026-09-24.b4",
+  "version": "2026-10-20.b5",
   "plan": "B_fixed_upper_bound",
   "superseded_by": "안 C — ALFRED realtime_start(실공표일)·as-of 빈티지. 그때까지 이 파일의 고정 규칙이 가용일 정본이다.",
   "authority": [
@@ -1565,9 +1565,195 @@
       "verdict_rows": [
         "②KR_CPI"
       ]
+    },
+    {
+      "id": "QW_WTI_NYMEX",
+      "name": "WTI_NYMEX(QuantiWise)",
+      "aliases": [
+        "xcCHPRWDQWTI"
+      ],
+      "source": "QuantiWise ECO Wise › 국제수지/무역/외환(BOP) › 원유 › WTI유(NYMEX) = xcCHPRWDQWTI(03_Universe/Global_Macro.xlsx → .cache/qw_global_macro.parquet)",
+      "frequency": "daily",
+      "date_meaning": "미국 거래일 d(NYMEX 근월물 결제가 · 석유공사 페트로넷과 같은 값) · 질의서 Data Type Previous = 미국 휴장일은 전일값",
+      "status": "active",
+      "bounds": [
+        {
+          "type": "kr_trading_days_after",
+          "n": 1,
+          "basis": "NYMEX 결제 14:30 ET = 한국 d+1 03:30(서머타임)~04:30 KST → 미국 날짜 < 한국 날짜(한국 다음 거래일부터 · VIXCLS 와 같은 정보 기준). 10-20 실측: 미국 10-19 결제 103.66 이 한국 10-20 낮에 퀀티 · 페트로넷에 있고 10-20 행은 비어 있음 · 2020-04-20 = −37.63(근월물 결제가 확인). 도입 = THGNN(2601.04602) 거시 입력 · 도훈 10-20 'WTI 일일 갱신까지 편입'(FRED DCOILWTICO 의 +16역일 보수 오프셋 결합 기각)."
+        }
+      ],
+      "vintage": {
+        "revisions": "none_known",
+        "evidence": "거래소 결제가"
+      },
+      "verdict_rows": [
+        "2026-10-20 출처 판정(기억 reference-qw-eco-wti-dxy-sources)"
+      ]
+    },
+    {
+      "id": "ECOS_USD_PER_EUR",
+      "name": "달러/유로(ECOS)",
+      "aliases": [],
+      "source": "ECOS 731Y002/0000003",
+      "frequency": "daily",
+      "date_meaning": "한국 영업일 d · 서울 d 오전 스냅숏",
+      "status": "active",
+      "bounds": [
+        {
+          "type": "kr_trading_days_after",
+          "n": 0,
+          "basis": "10-20 실측(2015~2024 · FRED H.10 뉴욕 정오와 대조): 731Y002 의 d 값은 FRED d−1 과 수익 상관 0.79(유로 0.795 · 엔 0.792) · 수준 차 중앙 0.09% · FRED d 와는 상관 0.18 · 수준 차 0.26% → 서울 d 오전 스냅숏(유럽 장 전) → 한국 d 15:30 결정에 쓸 수 있다(정보 기준 · 같은 표의 731Y001 원/달러 = n 0 과 같은 성격)."
+        }
+      ],
+      "vintage": {
+        "revisions": "none_known",
+        "evidence": "고시 환율"
+      },
+      "verdict_rows": [
+        "2026-10-20 ECOS 731Y002 시각 판별"
+      ]
+    },
+    {
+      "id": "ECOS_JPY_PER_USD",
+      "name": "일본엔/달러(ECOS)",
+      "aliases": [],
+      "source": "ECOS 731Y002/0000002",
+      "frequency": "daily",
+      "date_meaning": "한국 영업일 d · 서울 d 오전 스냅숏",
+      "status": "active",
+      "bounds": [
+        {
+          "type": "kr_trading_days_after",
+          "n": 0,
+          "basis": "10-20 실측(2015~2024 · FRED H.10 뉴욕 정오와 대조): 731Y002 의 d 값은 FRED d−1 과 수익 상관 0.79(유로 0.795 · 엔 0.792) · 수준 차 중앙 0.09% · FRED d 와는 상관 0.18 · 수준 차 0.26% → 서울 d 오전 스냅숏(유럽 장 전) → 한국 d 15:30 결정에 쓸 수 있다(정보 기준 · 같은 표의 731Y001 원/달러 = n 0 과 같은 성격)."
+        }
+      ],
+      "vintage": {
+        "revisions": "none_known",
+        "evidence": "고시 환율"
+      },
+      "verdict_rows": [
+        "2026-10-20 ECOS 731Y002 시각 판별"
+      ]
+    },
+    {
+      "id": "ECOS_USD_PER_GBP",
+      "name": "달러/영국파운드(ECOS)",
+      "aliases": [],
+      "source": "ECOS 731Y002/0000012",
+      "frequency": "daily",
+      "date_meaning": "한국 영업일 d · 서울 d 오전 스냅숏",
+      "status": "active",
+      "bounds": [
+        {
+          "type": "kr_trading_days_after",
+          "n": 0,
+          "basis": "10-20 실측(2015~2024 · FRED H.10 뉴욕 정오와 대조): 731Y002 의 d 값은 FRED d−1 과 수익 상관 0.79(유로 0.795 · 엔 0.792) · 수준 차 중앙 0.09% · FRED d 와는 상관 0.18 · 수준 차 0.26% → 서울 d 오전 스냅숏(유럽 장 전) → 한국 d 15:30 결정에 쓸 수 있다(정보 기준 · 같은 표의 731Y001 원/달러 = n 0 과 같은 성격)."
+        }
+      ],
+      "vintage": {
+        "revisions": "none_known",
+        "evidence": "고시 환율"
+      },
+      "verdict_rows": [
+        "2026-10-20 ECOS 731Y002 시각 판별"
+      ]
+    },
+    {
+      "id": "ECOS_CAD_PER_USD",
+      "name": "캐나다달러/달러(ECOS)",
+      "aliases": [],
+      "source": "ECOS 731Y002/0000013",
+      "frequency": "daily",
+      "date_meaning": "한국 영업일 d · 서울 d 오전 스냅숏",
+      "status": "active",
+      "bounds": [
+        {
+          "type": "kr_trading_days_after",
+          "n": 0,
+          "basis": "10-20 실측(2015~2024 · FRED H.10 뉴욕 정오와 대조): 731Y002 의 d 값은 FRED d−1 과 수익 상관 0.79(유로 0.795 · 엔 0.792) · 수준 차 중앙 0.09% · FRED d 와는 상관 0.18 · 수준 차 0.26% → 서울 d 오전 스냅숏(유럽 장 전) → 한국 d 15:30 결정에 쓸 수 있다(정보 기준 · 같은 표의 731Y001 원/달러 = n 0 과 같은 성격)."
+        }
+      ],
+      "vintage": {
+        "revisions": "none_known",
+        "evidence": "고시 환율"
+      },
+      "verdict_rows": [
+        "2026-10-20 ECOS 731Y002 시각 판별"
+      ]
+    },
+    {
+      "id": "ECOS_SEK_PER_USD",
+      "name": "스웨덴크로나/달러(ECOS)",
+      "aliases": [],
+      "source": "ECOS 731Y002/0000016",
+      "frequency": "daily",
+      "date_meaning": "한국 영업일 d · 서울 d 오전 스냅숏",
+      "status": "active",
+      "bounds": [
+        {
+          "type": "kr_trading_days_after",
+          "n": 0,
+          "basis": "10-20 실측(2015~2024 · FRED H.10 뉴욕 정오와 대조): 731Y002 의 d 값은 FRED d−1 과 수익 상관 0.79(유로 0.795 · 엔 0.792) · 수준 차 중앙 0.09% · FRED d 와는 상관 0.18 · 수준 차 0.26% → 서울 d 오전 스냅숏(유럽 장 전) → 한국 d 15:30 결정에 쓸 수 있다(정보 기준 · 같은 표의 731Y001 원/달러 = n 0 과 같은 성격)."
+        }
+      ],
+      "vintage": {
+        "revisions": "none_known",
+        "evidence": "고시 환율"
+      },
+      "verdict_rows": [
+        "2026-10-20 ECOS 731Y002 시각 판별"
+      ]
+    },
+    {
+      "id": "ECOS_CHF_PER_USD",
+      "name": "스위스프랑/달러(ECOS)",
+      "aliases": [],
+      "source": "ECOS 731Y002/0000014",
+      "frequency": "daily",
+      "date_meaning": "한국 영업일 d · 서울 d 오전 스냅숏",
+      "status": "active",
+      "bounds": [
+        {
+          "type": "kr_trading_days_after",
+          "n": 0,
+          "basis": "10-20 실측(2015~2024 · FRED H.10 뉴욕 정오와 대조): 731Y002 의 d 값은 FRED d−1 과 수익 상관 0.79(유로 0.795 · 엔 0.792) · 수준 차 중앙 0.09% · FRED d 와는 상관 0.18 · 수준 차 0.26% → 서울 d 오전 스냅숏(유럽 장 전) → 한국 d 15:30 결정에 쓸 수 있다(정보 기준 · 같은 표의 731Y001 원/달러 = n 0 과 같은 성격)."
+        }
+      ],
+      "vintage": {
+        "revisions": "none_known",
+        "evidence": "고시 환율"
+      },
+      "verdict_rows": [
+        "2026-10-20 ECOS 731Y002 시각 판별"
+      ]
+    },
+    {
+      "id": "ECOS_DXY_PROXY",
+      "name": "DXY_proxy(ECOS 731Y002 · ICE 공식)",
+      "aliases": [],
+      "source": "ECOS 731Y002 6통화(유로 · 엔 · 파운드 · 캐나다달러 · 크로나 · 프랑) → ICE FX Indexes Methodology §5.1(상수 50.14348112 · 가중 기하평균) · data_collector_ecos.R::ecos_dxy_proxy",
+      "frequency": "daily",
+      "date_meaning": "한국 영업일 d(6통화가 모두 있는 날 · 1999-01-04~)",
+      "status": "active",
+      "bounds": [
+        {
+          "type": "kr_trading_days_after",
+          "n": 0,
+          "basis": "10-20 실측(2015~2024 · FRED H.10 뉴욕 정오와 대조): 731Y002 의 d 값은 FRED d−1 과 수익 상관 0.79(유로 0.795 · 엔 0.792) · 수준 차 중앙 0.09% · FRED d 와는 상관 0.18 · 수준 차 0.26% → 서울 d 오전 스냅숏(유럽 장 전) → 한국 d 15:30 결정에 쓸 수 있다(정보 기준 · 같은 표의 731Y001 원/달러 = n 0 과 같은 성격). 구성 6통화가 모두 n 0 이라 합성값도 n 0. 대조: 2025-01-02 프록시 108.48 = ICE DXY 2024-12-31 종가 108.49 · 2024-01-02 101.32 = 2023-12-29 종가 101.33."
+        }
+      ],
+      "vintage": {
+        "revisions": "none_known",
+        "evidence": "고시 환율 합성 · ICE 고정 가중"
+      },
+      "verdict_rows": [
+        "2026-10-20 ECOS 731Y002 시각 판별 · 도훈 'DXY는 ECOS 프록시로 만들자'"
+      ]
     }
   ],
-  "coverage_note": "이 목록 = .cache/macro_fred.parquet·fred_macro.parquet 의 Series_ID 23종 전수(2026-09-24 데이터 확인) + ECOS 8종(ecos_krw_usd 1 + ecos_bond_rates Series 7). 데이터에 새 계열이 생기면 규칙을 먼저 넣어야 결합된다(fail-closed · 검사 08_Tests/data/test_fred_availability.R A축이 누락을 잡는다).",
+  "coverage_note": "이 목록 = .cache/macro_fred.parquet·fred_macro.parquet 의 Series_ID 23종 전수(2026-09-24 데이터 확인) + ECOS 8종(ecos_krw_usd 1 + ecos_bond_rates Series 7) + ECOS 731Y002 7종(.cache/ecos_fx_majors.parquet — 6통화 + ECOS_DXY_PROXY · 2026-10-20) + 퀀티 1종(.cache/qw_global_macro.parquet QW_WTI_NYMEX · 2026-10-20). 데이터에 새 계열이 생기면 규칙을 먼저 넣어야 결합된다(fail-closed · 검사 08_Tests/data/test_fred_availability.R A축이 누락을 잡는다).",
   "residual_risk": [
     "주간·월간 고정 상한은 ALFRED 로 대조한 구간(history_check.coverage)에서만 상한임이 확인됐다. 그 밖(대조 불가 기간)은 미검증.",
     "b2 까지의 R* 는 빈티지 '날짜'만으로 잡은 추정이었고 보수가 아니었다(개정 전용 빈티지를 공표로 세면 이르다 — INDPRO·PERMIT 7건 실증). INDPRO·PERMIT 은 b3 에서 값의 첫 등장으로 재대조했다. 그 밖 계열은 b3_value_check.other_series_open 참조.",

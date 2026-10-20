@@ -346,8 +346,8 @@ def fred_kr_calendar(path=None):
         raise FredAvailError(f"[fred_avail] 한국 거래일 달력 없음: {p} — kr_calendar 를 주입하라")
     st = os.stat(p)
     key = ("cal", os.path.abspath(p), st.st_size, st.st_mtime_ns)
-    if key in _CACHE:
-        return list(_CACHE[key])
+    if key in _CACHE:   # ★캐시엔 서수를 둔다 — 적중 때도 날짜로 돌려준다(구판은 서수를 돌려 두 번째 호출부터 _cal 이 죽었다 · 10-20)
+        return [_dt.date.fromordinal(o) for o in _CACHE[key]]
     try:
         import pyarrow.parquet as pq  # noqa: WPS433
         vals = pq.read_table(p, columns=["Date"]).column("Date").to_pylist()

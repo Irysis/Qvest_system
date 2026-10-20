@@ -419,6 +419,28 @@
       "_note": "2026-07-17 orphan 등재. daily_refresh [4] 배선(2026-06-17)으로 이미 매일 갱신 중이었으나 registry 미등재. 소비: regime_forecaster_v3 / sharpe_standard / bearish_forecast. 연휴 클러스터 고려 max_lag 7"
     },
     {
+      "path": ".cache/ecos_fx_majors.parquet",
+      "producer": "02_Infrastructure/data/data_collector_ecos.R",
+      "entry_fn": "ecos_fetch_fx_majors",
+      "schedule": "daily",
+      "date_col": "Date",
+      "max_lag_days": 7,
+      "depends_on": [],
+      "tier": 2,
+      "_note": "2026-10-20 신설 · daily_refresh [4gm]. ECOS 731Y002 6통화(유로 · 엔 · 파운드 · 캐나다달러 · 크로나 · 프랑) + ECOS_DXY_PROXY(ICE FX Indexes Methodology §5.1 공식 · 1999-01-04~). 가용일 = fred_availability_rules.json n 0. 소비: THGNN(2601.04602) 거시 입력. 추석 · 설 연휴 클러스터 고려 max_lag 7"
+    },
+    {
+      "path": ".cache/qw_global_macro.parquet",
+      "producer": "02_Infrastructure/data/global_macro_ingest.py",
+      "entry_fn": "(source)",
+      "schedule": "daily",
+      "date_col": "Date",
+      "max_lag_days": 7,
+      "depends_on": [],
+      "tier": 2,
+      "_note": "2026-10-20 신설 · daily_refresh [4gm](quantiwise_fetch.py --dest 03_Universe/Global_Macro.xlsx → 적재). 퀀티 ECO Wise WTI유(NYMEX) xcCHPRWDQWTI = QW_WTI_NYMEX(1996-01-02~ · 미국 거래일 날짜). 가용일 = fred_availability_rules.json kr_trading_days_after 1. 소비: THGNN(2601.04602) 거시 입력. 미국 연휴(추수감사절+주말) + 퀀티 반영 하루 고려 max_lag 7"
+    },
+    {
       "path": ".cache/macro_fred.parquet",
       "producer": "02_Infrastructure/data/data_collector_fred.R",
       "entry_fn": "fred_run_pipeline",

@@ -190,4 +190,82 @@ ecos_load_bond_rates <- function() {
   as.data.table(read_parquet(ECOS_BOND_CACHE))
 }
 
-cat("[ecos] Loaded. Functions: ecos_fetch_krw(), ecos_load_krw(), ecos_fetch_bond_rates(), ecos_load_bond_rates()\n")
+#==============================================================================
+# 주요국 통화의 대미달러 환율(731Y002 · 일간) 6종 + DXY 프록시 (2026-10-20 · 도훈 'DXY는 ECOS 프록시로 만들자')
+#
+# 왜: THGNN(2601.04602) 거시 입력 DXY. ICE DXY 는 무료 일간 원천이 없고, 연준 달러지수(H.10)는 주간 공표 · 사후 수정이다
+#     (퀀티 '달러인덱스(FRB)' = FRED DTWEXAFEGS 와 761/761일 일치 · 2006~) → 일간 PIT 변수가 못 된다.
+# 공식: ICE FX Indexes Methodology(2018-04) §5.1 p.11 — Index = 상수 × Π(외화/USD)^w ·
+#       DXY 상수 50.14348112 · w = EUR .576 · JPY .136 · GBP .119 · CAD .091 · SEK .042 · CHF .036
+#       https://www.nyse.com/publicdocs/nyse/indices/ICE_FX_Indexes_Methodology.pdf
+# 시각: 731Y002 의 d 값 = 서울 d 오전 스냅숏(10-20 실측 · 2015~2024: FRED 뉴욕 정오 d−1 과 수익 상관 0.79 · 수준 차 중앙 0.09% ·
+#       d 와는 0.18 · 0.26%) → 가용일 규칙 kr_trading_days_after 0(06_Registry/fred_availability_rules.json ECOS_DXY_PROXY).
+# 유로 출범(1999-01-04) 전 바스켓은 마르크 · 프랑 등이라 이 공식이 아니다 → 프록시는 1999-01-04 부터만 만든다.
+# 호가 방향은 ECOS 단위로 확인한다('통화당 달러' = USD/외화 · '달러당 통화' = 외화/USD) — 선언과 다르면 멈춘다(fail-closed).
+#==============================================================================
+if (!exists("ECOS_FX_CACHE")) ECOS_FX_CACHE <- file.path(CACHE_DIR, "ecos_fx_majors.parquet")
+ECOS_FX_SERIES <- list(
+  list(name = "ECOS_USD_PER_EUR", item = "0000003", quote = "usd_per_ccy", w = 0.576),
+  list(name = "ECOS_JPY_PER_USD", item = "0000002", quote = "ccy_per_usd", w = 0.136),
+  list(name = "ECOS_USD_PER_GBP", item = "0000012", quote = "usd_per_ccy", w = 0.119),
+  list(name = "ECOS_CAD_PER_USD", item = "0000013", quote = "ccy_per_usd", w = 0.091),
+  list(name = "ECOS_SEK_PER_USD", item = "0000016", quote = "ccy_per_usd", w = 0.042),
+  list(name = "ECOS_CHF_PER_USD", item = "0000014", quote = "ccy_per_usd", w = 0.036)
+)
+ECOS_DXY_CONST <- 50.14348112
+ECOS_DXY_START <- as.Date("1999-01-04")
+
+#' 6통화 원시값으로 DXY 프록시(ICE §5.1)를 만든다 — 6통화가 모두 있는 날 · 1999-01-04 부터만
+ecos_dxy_proxy <- function(fx) {
+  w <- dcast(fx[Series %in% vapply(ECOS_FX_SERIES, `[[`, "", "name")], Date ~ Series, value.var = "Value")
+  w <- w[Date >= ECOS_DXY_START]
+  w <- w[stats::complete.cases(w)]
+  lg <- rep(log(ECOS_DXY_CONST), nrow(w))
+  for (s in ECOS_FX_SERIES) {
+    x <- w[[s$name]]
+    lg <- lg + s$w * log(if (s$quote == "ccy_per_usd") x else 1 / x)
+  }
+  data.table(Date = w$Date, Value = exp(lg), Series = "ECOS_DXY_PROXY")
+}
+
+#' Fetch 731Y002 6 currencies + DXY proxy → .cache/ecos_fx_majors.parquet (Date, Value, Series)
+#' @export
+ecos_fetch_fx_majors <- function(start_date = "19990101", end_date = NULL) {
+  if (is.null(end_date)) end_date <- format(Sys.Date(), "%Y%m%d")
+  parts <- list()
+  for (s in ECOS_FX_SERIES) {
+    rows <- .ecos_fetch_series("731Y002", s$item, "D", start_date, end_date)
+    if (is.null(rows) || nrow(rows) == 0) stop(sprintf("[ecos_fx] %s (731Y002/%s) 수급 실패", s$name, s$item))
+    unit <- unique(rows$UNIT_NAME)
+    q <- if (all(grepl("통화당 달러", unit))) "usd_per_ccy" else if (all(grepl("달러당 통화", unit))) "ccy_per_usd" else NA_character_
+    if (!identical(q, s$quote)) stop(sprintf("[ecos_fx] %s 호가 방향 불일치 — 단위 '%s' · 선언 %s", s$name, paste(unit, collapse = ","), s$quote))
+    parts[[s$name]] <- data.table(Date = as.Date(rows$TIME, format = "%Y%m%d"), Value = as.numeric(rows$DATA_VALUE),
+                                  Series = s$name)[!is.na(Date) & !is.na(Value)]
+    cat(sprintf("[ecos_fx] %-17s %s %d행 (%s ~ %s)\n", s$name, rows$ITEM_NAME1[1], nrow(parts[[s$name]]),
+                min(parts[[s$name]]$Date), max(parts[[s$name]]$Date)))
+  }
+  fx <- rbindlist(parts)
+  out <- rbindlist(list(fx, ecos_dxy_proxy(fx)))
+  setorder(out, Series, Date)
+  dir.create(dirname(ECOS_FX_CACHE), recursive = TRUE, showWarnings = FALSE)
+  .fx_tmp <- paste0(ECOS_FX_CACHE, ".tmp")   # ecos_fetch_bond_rates 와 같은 temp-rename(OneDrive · arrow mmap 회피)
+  write_parquet(out, .fx_tmp)
+  if (file.exists(ECOS_FX_CACHE)) file.remove(ECOS_FX_CACHE)
+  file.rename(.fx_tmp, ECOS_FX_CACHE)
+  px <- out[Series == "ECOS_DXY_PROXY"]
+  cat(sprintf("[ecos_fx] Cache saved: %s (%d rows · DXY 프록시 %d일 %s ~ %s · 끝 %.3f)\n", ECOS_FX_CACHE, nrow(out),
+              nrow(px), min(px$Date), max(px$Date), tail(px$Value, 1)))
+  out
+}
+
+#' Load 731Y002 6 currencies + DXY proxy from cache
+#' @export
+ecos_load_fx_majors <- function() {
+  if (!file.exists(ECOS_FX_CACHE)) {
+    cat("[ecos_fx] Cache not found, fetching...\n")
+    return(ecos_fetch_fx_majors())
+  }
+  as.data.table(read_parquet(ECOS_FX_CACHE))
+}
+
+cat("[ecos] Loaded. Functions: ecos_fetch_krw(), ecos_load_krw(), ecos_fetch_bond_rates(), ecos_load_bond_rates(), ecos_fetch_fx_majors(), ecos_load_fx_majors()\n")
