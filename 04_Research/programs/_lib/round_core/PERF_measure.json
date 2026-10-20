@@ -1,0 +1,967 @@
+{
+  "schema": "perf_measure_v1",
+  "generated": "2026-10-20T12:08:34+0900",
+  "work_package": "L1-SPEED-PLAN-20261020 WP2",
+  "machine": {
+    "cores_logical": 32,
+    "ram_gb": 31.7,
+    "os": "Windows 11",
+    "r": "4.5.2",
+    "data.table": "1.17.8",
+    "arrow": "24.0.0",
+    "note": "공용 머신 실측 — 같은 시각 P2R05 · 충실구현 레인 · 데일리 리프레시 · 다른 세션 검사가 함께 돌았다. 벽시계는 ±20% 잡음(같은 칸 새 프로세스 2회: 188.2s · 196.3s)"
+  },
+  "data": {
+    "rawdata_rows": 14156943,
+    "rawdata_cols": 21,
+    "rawdata_parquet_mb": 406.1,
+    "rawdata_md5": "6bf29cc9836abfbed2e172d11ac51c2e",
+    "data_version": "577ecb5e85341b90",
+    "source": "C:/qm_cache/RAWDATA.parquet 07:19 판 사본(worktree 전용 캐시 · 측정 내내 고정)"
+  },
+  "cells": {
+    "P0R01_E1_C0": "모멘텀 12-1 · 부품 없음",
+    "P0R01_E1_C1": "모멘텀 × 추세 현금 오버레이",
+    "P0R01_E1_C4": "모멘텀 × 저변동 틸트(팩터 DB D03_RealVol)",
+    "gpu": "세 칸 모두 GPU 불필요(엔진 내장 모멘텀) — DNN 칸은 쓰지 않았다"
+  },
+  "baseline_fresh_process": {
+    "path": "rf_cell_worker.R 새 프로세스(Rscript) — rk_measure_cell 과 같은 경로 · 요인 분석 켬(P2R04 측정과 같은 설정)",
+    "cell": "P0R01_E1_C0",
+    "rcpp_cache": "데움(첫 실행은 sourceCpp 컴파일 +8.5s — Rprof system2)",
+    "peak_working_set_gb": 6.3,
+    "wall_s": 188.19,
+    "r_heap_max_mb": 6295,
+    "stages_s": {
+      "R 기동": 0.17,
+      "셀 워커 머리(라이브러리 · 배리어)": 0.99,
+      "소싱(run_paper_replication.R 연쇄)": 1.29,
+      "원자료 적재(load_rawdata)": 12.33,
+      "측정 축 주입(ma_inject_universe)": 7.51,
+      "  ↳ 위생 멤버십(ma_membership)": 5.79,
+      "엔진 신호(rf_cell_engine.R)": 8,
+      "정적 PIT 검사(detect_lookahead · 러너)": 10.65,
+      "구성(.rp_build_weights · 실효 시작)": 0.35,
+      "시뮬레이션(run_replication_simulation)": 10.43,
+      "계약 구축(build_bt_result)": 39.22,
+      "  ↳ 롤링 지표(build_rolling_metrics)": 37,
+      "계약 감사(audit_bt_result · 정적 PIT 재검사 포함)": 9.66,
+      "저장(save_bt_result)": 0.24,
+      "essence(등급 v3 · 행동 카드)": 5.28,
+      "요인 분석(run_analysis)": 75.59,
+      "차트(generate_charts)": 2.14,
+      "러너 나머지(유니버스 적용 · 패널 parquet · bt rds · 권위 json · 커버리지)": 4.34
+    }
+  },
+  "baseline_rprof": {
+    "sampling_s": 129.1,
+    "interval_s": 0.02,
+    "by_total": [
+      {
+        "fn": "\"doTryCatch\"",
+        "total_s": 128.98,
+        "total_pct": 99.91
+      },
+      {
+        "fn": "\"tryCatch\"",
+        "total_s": 128.98,
+        "total_pct": 99.91
+      },
+      {
+        "fn": "\"tryCatchOne\"",
+        "total_s": 128.98,
+        "total_pct": 99.91
+      },
+      {
+        "fn": "\"tryCatchList\"",
+        "total_s": 128.98,
+        "total_pct": 99.91
+      },
+      {
+        "fn": "\"eval\"",
+        "total_s": 128.92,
+        "total_pct": 99.86
+      },
+      {
+        "fn": "\"run_paper_replication\"",
+        "total_s": 121.96,
+        "total_pct": 94.47
+      },
+      {
+        "fn": "\"[\"",
+        "total_s": 57.72,
+        "total_pct": 44.71
+      },
+      {
+        "fn": "\"[.data.table\"",
+        "total_s": 55.76,
+        "total_pct": 43.19
+      },
+      {
+        "fn": "\"run_analysis\"",
+        "total_s": 51.24,
+        "total_pct": 39.69
+      },
+      {
+        "fn": "\".rows_between\"",
+        "total_s": 36.64,
+        "total_pct": 28.38
+      },
+      {
+        "fn": "\"findInterval\"",
+        "total_s": 35.12,
+        "total_pct": 27.2
+      },
+      {
+        "fn": "\"FUN\"",
+        "total_s": 28.86,
+        "total_pct": 22.35
+      },
+      {
+        "fn": "\"lapply\"",
+        "total_s": 28,
+        "total_pct": 21.69
+      },
+      {
+        "fn": "\"as.double\"",
+        "total_s": 24.76,
+        "total_pct": 19.18
+      },
+      {
+        "fn": "\"build_bt_result\"",
+        "total_s": 24.68,
+        "total_pct": 19.12
+      },
+      {
+        "fn": "\"sapply\"",
+        "total_s": 23.36,
+        "total_pct": 18.09
+      },
+      {
+        "fn": "\"build_rolling_metrics\"",
+        "total_s": 23.34,
+        "total_pct": 18.08
+      },
+      {
+        "fn": "\"rollapply\"",
+        "total_s": 23.26,
+        "total_pct": 18.02
+      },
+      {
+        "fn": "\"rollapply.xts\"",
+        "total_s": 23.26,
+        "total_pct": 18.02
+      },
+      {
+        "fn": "\"Drawdowns\"",
+        "total_s": 22.6,
+        "total_pct": 17.51
+      },
+      {
+        "fn": "\"maxDrawdown\"",
+        "total_s": 21.62,
+        "total_pct": 16.75
+      },
+      {
+        "fn": "\"<Anonymous>\"",
+        "total_s": 14.8,
+        "total_pct": 11.46
+      },
+      {
+        "fn": "\"source\"",
+        "total_s": 14.34,
+        "total_pct": 11.11
+      },
+      {
+        "fn": "\"withVisible\"",
+        "total_s": 14.34,
+        "total_pct": 11.11
+      },
+      {
+        "fn": "\"reclass\"",
+        "total_s": 14.18,
+        "total_pct": 10.98
+      },
+      {
+        "fn": "\"%in%\"",
+        "total_s": 13,
+        "total_pct": 10.07
+      },
+      {
+        "fn": "\"tclass<-\"",
+        "total_s": 12.68,
+        "total_pct": 9.82
+      },
+      {
+        "fn": "\"tclass<-.xts\"",
+        "total_s": 12.62,
+        "total_pct": 9.78
+      },
+      {
+        "fn": "\"withCallingHandlers\"",
+        "total_s": 12.34,
+        "total_pct": 9.56
+      },
+      {
+        "fn": "\"suppressWarnings\"",
+        "total_s": 10.94,
+        "total_pct": 8.47
+      },
+      {
+        "fn": "\"as.character\"",
+        "total_s": 10.76,
+        "total_pct": 8.33
+      },
+      {
+        "fn": "\"isClassWithoutTZ\"",
+        "total_s": 10.76,
+        "total_pct": 8.33
+      },
+      {
+        "fn": "\"is.unsorted\"",
+        "total_s": 10.7,
+        "total_pct": 8.29
+      },
+      {
+        "fn": "\"mtfrm\"",
+        "total_s": 10.58,
+        "total_pct": 8.2
+      },
+      {
+        "fn": "\".la_c11_scan_r\"",
+        "total_s": 10.48,
+        "total_pct": 8.12
+      },
+      {
+        "fn": "\"mtfrm.default\"",
+        "total_s": 10.42,
+        "total_pct": 8.07
+      },
+      {
+        "fn": "\"as.vector\"",
+        "total_s": 10.28,
+        "total_pct": 7.96
+      },
+      {
+        "fn": "\"as.character.default\"",
+        "total_s": 10.24,
+        "total_pct": 7.93
+      },
+      {
+        "fn": "\"regmatches\"",
+        "total_s": 10.18,
+        "total_pct": 7.89
+      },
+      {
+        "fn": "\"as.vector.zoo\"",
+        "total_s": 10.14,
+        "total_pct": 7.85
+      }
+    ],
+    "by_self": [
+      {
+        "fn": "\"as.double\"",
+        "self_s": 24.46,
+        "self_pct": 18.95
+      },
+      {
+        "fn": "\"as.vector\"",
+        "self_s": 10.04,
+        "self_pct": 7.78
+      },
+      {
+        "fn": "\"substring\"",
+        "self_s": 9.2,
+        "self_pct": 7.13
+      },
+      {
+        "fn": "\"system2\"",
+        "self_s": 8.76,
+        "self_pct": 6.79
+      },
+      {
+        "fn": "\"is.unsorted\"",
+        "self_s": 5.6,
+        "self_pct": 4.34
+      },
+      {
+        "fn": "\"forderv\"",
+        "self_s": 5.48,
+        "self_pct": 4.24
+      },
+      {
+        "fn": "\"anyNA\"",
+        "self_s": 5.16,
+        "self_pct": 4
+      },
+      {
+        "fn": "\"copy\"",
+        "self_s": 4.5,
+        "self_pct": 3.49
+      },
+      {
+        "fn": "\"[.data.table\"",
+        "self_s": 4.46,
+        "self_pct": 3.45
+      },
+      {
+        "fn": "\"parquet___arrow___FileReader__ReadTable1\"",
+        "self_s": 2.62,
+        "self_pct": 2.03
+      },
+      {
+        "fn": "\"strptime\"",
+        "self_s": 2.2,
+        "self_pct": 1.7
+      },
+      {
+        "fn": "\".Call\"",
+        "self_s": 1.74,
+        "self_pct": 1.35
+      },
+      {
+        "fn": "\"%in%\"",
+        "self_s": 1.54,
+        "self_pct": 1.19
+      },
+      {
+        "fn": "\"order\"",
+        "self_s": 1.28,
+        "self_pct": 0.99
+      },
+      {
+        "fn": "\"NextMethod\"",
+        "self_s": 1.12,
+        "self_pct": 0.87
+      },
+      {
+        "fn": "\"unique.default\"",
+        "self_s": 1.12,
+        "self_pct": 0.87
+      },
+      {
+        "fn": "\"grepl\"",
+        "self_s": 1.1,
+        "self_pct": 0.85
+      },
+      {
+        "fn": "\"as.POSIXct.POSIXlt\"",
+        "self_s": 0.94,
+        "self_pct": 0.73
+      },
+      {
+        "fn": "\"grid.Call\"",
+        "self_s": 0.86,
+        "self_pct": 0.67
+      },
+      {
+        "fn": "\"gregexpr\"",
+        "self_s": 0.84,
+        "self_pct": 0.65
+      }
+    ]
+  },
+  "baseline_rprof_attribution": [
+    {
+      "hotspot": "롤링 MDD — rollapply.xts 창마다 maxDrawdown(xts) → reclass/tclass/mtfrm",
+      "seconds": 15.1,
+      "where": "backtest_result_contract.R::build_rolling_metrics"
+    },
+    {
+      "hotspot": "요인 분석 .rows_between — findInterval 이 호출마다 vec 를 as.double(24.5s) · is.unsorted(10.7s)",
+      "seconds": 36.6,
+      "where": "strategy_analyzer.R::run_analysis"
+    },
+    {
+      "hotspot": "정적 PIT 검사 C11 — 긴 문자열 regmatches(.la_c11_refs 6.9s) · 러너와 감사가 같은 파일을 두 번",
+      "seconds": 10.5,
+      "where": "lookahead_detector.R(러너 §4 + audit_bt_result 자체 재검사)"
+    },
+    {
+      "hotspot": "load_rawdata — parquet 읽기 2.6s + as.data.table 복사 4.2s",
+      "seconds": 7.1,
+      "where": "backtest_harness.R::load_rawdata"
+    },
+    {
+      "hotspot": "Rcpp sourceCpp 컴파일(worktree 첫 실행 — 캐시 경로가 루트별)",
+      "seconds": 8.5,
+      "where": "backtest_harness.R(운영 루트는 캐시 적중)"
+    }
+  ],
+  "server_identity": {
+    "design": "칸마다 새 프로세스와 같은 출발 상태(.ms_reset) + 셀 워커 rf_cell_worker.R 그대로 평가 · 다른 것 = 스냅샷 사본 · 축 멤버십 재사용 · 정적 PIT 검사 재사용 · 기동/이름공간 1회",
+    "runs": {
+      "fresh": "새 프로세스 3칸(C0 · C1 · C4)",
+      "server_a": "서버 순서 C0→C1→C4(워커 1)",
+      "server_b": "서버 역순 C4→C1→C0(워커 1)"
+    },
+    "rule": "run_id · strategy_id · 산출 경로 · 실행 시각(run_datetime · remeasured_at)만 가리고 산출물 파일 전부 바이트 대조 + bt_result.rds 구성 요소 identical",
+    "result": {
+      "C0 fresh=srvA": {
+        "n_files": 27,
+        "n_same": 27,
+        "diff": {}
+      },
+      "C0 fresh=srvB": {
+        "n_files": 27,
+        "n_same": 27,
+        "diff": {}
+      },
+      "C1 fresh=srvA": {
+        "n_files": 18,
+        "n_same": 18,
+        "diff": {}
+      },
+      "C1 fresh=srvB": {
+        "n_files": 18,
+        "n_same": 18,
+        "diff": {}
+      },
+      "C4 fresh=srvA": {
+        "n_files": 27,
+        "n_same": 27,
+        "diff": {}
+      },
+      "C4 fresh=srvB": {
+        "n_files": 27,
+        "n_same": 27,
+        "diff": {}
+      }
+    },
+    "verdict": "6/6 쌍 · 파일 전부 동일(보유 · 기간 수익 · NAV · authoritative_remeasure · 계약 표 10종 · 요인 분석 · 차트 PNG 바이트 · factors_panel.parquet 바이트 · bt_result.rds) — 채택"
+  },
+  "server_timing_fa_on": {
+    "fresh_s": {
+      "P0R01_E1_C0": 196.285601854324,
+      "P0R01_E1_C1": 110.819817066193,
+      "P0R01_E1_C4": 186.632486820221
+    },
+    "fresh_sum_s": 493.74,
+    "server_a_batch_s": 426.81,
+    "server_b_batch_s": 474.57,
+    "server_a_cells_s": {
+      "P0R01_E1_C0": 168.63,
+      "P0R01_E1_C1": 76.84,
+      "P0R01_E1_C4": 162.38
+    },
+    "server_b_cells_s": {
+      "P0R01_E1_C4": 177.2,
+      "P0R01_E1_C1": 82.02,
+      "P0R01_E1_C0": 193.8
+    },
+    "worker_peak_working_set_gb": 9.91
+  },
+  "server_plus_hotpath_fa_on": {
+    "run": "E1 · 원형 스냅샷 · QVEST_MS_PROFILE=1",
+    "batch": "20261020_110602_41032",
+    "batch_seconds": 224.67,
+    "data_versions": [
+      "577ecb5e85341b90"
+    ],
+    "cells": [
+      {
+        "code": "P0R01_E1_C0",
+        "ok": true,
+        "seconds": 80.34,
+        "memo_axis": "miss",
+        "memo_lookahead": {
+          "hits": 1,
+          "miss": 1
+        },
+        "stages_s": {
+          "load_rawdata": 0.65,
+          "ma_membership": 5.56,
+          "ma_inject_universe": 7.5,
+          "detect_lookahead": 11.07,
+          ".rp_build_weights": 0.22,
+          "ma_effective_start": 0.01,
+          "run_replication_simulation": 10.48,
+          ".rp_paper_summary": 0.14,
+          "build_metrics": 1.05,
+          "build_benchmark_compare": 0.14,
+          "build_rolling_metrics": 1.38,
+          "build_drawdowns": 0.54,
+          "build_bt_result": 3.65,
+          "audit_bt_result": 0.61,
+          "save_bt_result": 0.27,
+          "essence_score": 5.68,
+          "run_analysis": 22.07,
+          "ma_signal_coverage": 0.62,
+          "generate_charts": 4.39,
+          "run_paper_replication": 79.19
+        }
+      },
+      {
+        "code": "P0R01_E1_C1",
+        "ok": true,
+        "seconds": 40.51,
+        "memo_axis": "hit",
+        "memo_lookahead": {
+          "hits": 2,
+          "miss": 0
+        },
+        "stages_s": {
+          "load_rawdata": 0.68,
+          "ma_membership": 0.03,
+          "ma_inject_universe": 1.64,
+          "detect_lookahead": 0.22,
+          "ma_effective_start": 0.03,
+          "run_replication_simulation": 10.14,
+          ".rp_paper_summary": 0.11,
+          "build_metrics": 1.1,
+          "build_benchmark_compare": 0.16,
+          "build_rolling_metrics": 1.39,
+          "build_drawdowns": 0.61,
+          "build_bt_result": 3.63,
+          "audit_bt_result": 0.44,
+          "save_bt_result": 0.27,
+          "essence_score": 4.9,
+          "ma_signal_coverage": 0.63,
+          "generate_charts": 1.47,
+          "run_paper_replication": 39.5
+        }
+      },
+      {
+        "code": "P0R01_E1_C4",
+        "ok": true,
+        "seconds": 85.74,
+        "memo_axis": "hit",
+        "memo_lookahead": {
+          "hits": 2,
+          "miss": 0
+        },
+        "stages_s": {
+          "load_rawdata": 0.71,
+          "ma_membership": 0,
+          "ma_inject_universe": 1.71,
+          "detect_lookahead": 3.06,
+          ".rp_build_weights": 0.33,
+          "ma_effective_start": 0.03,
+          "run_replication_simulation": 11.79,
+          ".rp_paper_summary": 0.16,
+          "build_metrics": 1.15,
+          "build_benchmark_compare": 0.16,
+          "build_rolling_metrics": 1.69,
+          "build_drawdowns": 1,
+          "build_bt_result": 4.39,
+          "audit_bt_result": 0.36,
+          "save_bt_result": 0.33,
+          "essence_score": 5.26,
+          "run_analysis": 21.91,
+          "ma_signal_coverage": 0.69,
+          "generate_charts": 2.2,
+          "run_paper_replication": 84.22
+        }
+      }
+    ]
+  },
+  "server_plus_hotpath_fa_off": {
+    "run": "E2 · 원형 스냅샷 · QVEST_MS_PROFILE=1",
+    "batch": "20261020_111033_37280",
+    "batch_seconds": 155.49,
+    "data_versions": [
+      "577ecb5e85341b90"
+    ],
+    "cells": [
+      {
+        "code": "P0R01_E1_C0",
+        "ok": true,
+        "seconds": 54,
+        "memo_axis": "miss",
+        "memo_lookahead": {
+          "hits": 1,
+          "miss": 1
+        },
+        "stages_s": {
+          "load_rawdata": 0.59,
+          "ma_membership": 5.63,
+          "ma_inject_universe": 7.56,
+          "detect_lookahead": 11.03,
+          ".rp_build_weights": 0.2,
+          "ma_effective_start": 0.01,
+          "run_replication_simulation": 10.53,
+          ".rp_paper_summary": 0.12,
+          "build_metrics": 1.08,
+          "build_benchmark_compare": 0.16,
+          "build_rolling_metrics": 1.43,
+          "build_drawdowns": 0.53,
+          "build_bt_result": 3.75,
+          "audit_bt_result": 0.27,
+          "save_bt_result": 0.25,
+          "essence_score": 5.52,
+          "ma_signal_coverage": 0.52,
+          "generate_charts": 2.12,
+          "run_paper_replication": 52.89
+        }
+      },
+      {
+        "code": "P0R01_E1_C1",
+        "ok": true,
+        "seconds": 37.6,
+        "memo_axis": "hit",
+        "memo_lookahead": {
+          "hits": 2,
+          "miss": 0
+        },
+        "stages_s": {
+          "load_rawdata": 0.6,
+          "ma_membership": 0.02,
+          "ma_inject_universe": 1.43,
+          "detect_lookahead": 0.12,
+          "ma_effective_start": 0.03,
+          "run_replication_simulation": 9.98,
+          ".rp_paper_summary": 0.11,
+          "build_metrics": 1,
+          "build_benchmark_compare": 0.11,
+          "build_rolling_metrics": 1.27,
+          "build_drawdowns": 0.53,
+          "build_bt_result": 3.24,
+          "audit_bt_result": 0.21,
+          "save_bt_result": 0.24,
+          "essence_score": 4.87,
+          "ma_signal_coverage": 0.58,
+          "generate_charts": 1.45,
+          "run_paper_replication": 36.69
+        }
+      },
+      {
+        "code": "P0R01_E1_C4",
+        "ok": true,
+        "seconds": 46.04,
+        "memo_axis": "hit",
+        "memo_lookahead": {
+          "hits": 2,
+          "miss": 0
+        },
+        "stages_s": {
+          "load_rawdata": 0.68,
+          "ma_membership": 0.02,
+          "ma_inject_universe": 1.65,
+          "detect_lookahead": 0.21,
+          ".rp_build_weights": 0.22,
+          "ma_effective_start": 0.03,
+          "run_replication_simulation": 9.89,
+          ".rp_paper_summary": 0.09,
+          "build_metrics": 1.03,
+          "build_benchmark_compare": 0.2,
+          "build_rolling_metrics": 1.26,
+          "build_drawdowns": 0.79,
+          "build_bt_result": 3.59,
+          "audit_bt_result": 0.22,
+          "save_bt_result": 0.23,
+          "essence_score": 4.61,
+          "ma_signal_coverage": 0.57,
+          "generate_charts": 1.49,
+          "run_paper_replication": 45
+        }
+      }
+    ]
+  },
+  "server_plus_hotpath_packed_fa_off": {
+    "run": "E4b · 압축 스냅샷(기본) · 순서 C4→C0→C1 · 계측 끔",
+    "batch": "20261020_112457_18624",
+    "batch_seconds": 186.77,
+    "data_versions": [
+      "577ecb5e85341b90"
+    ],
+    "cells": [
+      {
+        "code": "P0R01_E1_C4",
+        "ok": true,
+        "seconds": 66.67,
+        "memo_axis": "miss",
+        "memo_lookahead": {
+          "hits": 1,
+          "miss": 1
+        },
+        "stages_s": null
+      },
+      {
+        "code": "P0R01_E1_C0",
+        "ok": true,
+        "seconds": 36.92,
+        "memo_axis": "hit",
+        "memo_lookahead": {
+          "hits": 2,
+          "miss": 0
+        },
+        "stages_s": null
+      },
+      {
+        "code": "P0R01_E1_C1",
+        "ok": true,
+        "seconds": 49.68,
+        "memo_axis": "hit",
+        "memo_lookahead": {
+          "hits": 2,
+          "miss": 0
+        },
+        "stages_s": null
+      }
+    ]
+  },
+  "fresh_plus_hotpath": {
+    "run": "E3 · 새 프로세스 · 요인 분석 켬",
+    "cell": "P0R01_E1_C0",
+    "wall_s": 94.45,
+    "r_heap_max_mb": 5280,
+    "stages_s": {
+      "R 기동": 0.18,
+      "셀 워커 머리(라이브러리 · 배리어)": 1.07,
+      "소싱(run_paper_replication.R 연쇄)": 1.37,
+      "원자료 적재(load_rawdata)": 11.38,
+      "측정 축 주입(ma_inject_universe)": 6.98,
+      "  ↳ 위생 멤버십(ma_membership)": 5.36,
+      "엔진 신호(rf_cell_engine.R)": 7.21,
+      "정적 PIT 검사(detect_lookahead · 러너)": 10.18,
+      "구성(.rp_build_weights · 실효 시작)": 0.24,
+      "시뮬레이션(run_replication_simulation)": 9.52,
+      "계약 구축(build_bt_result)": 3.52,
+      "  ↳ 롤링 지표(build_rolling_metrics)": 1.36,
+      "계약 감사(audit_bt_result · 정적 PIT 재검사 포함)": 9.63,
+      "저장(save_bt_result)": 0.24,
+      "essence(등급 v3 · 행동 카드)": 5.47,
+      "요인 분석(run_analysis)": 21.23,
+      "차트(generate_charts)": 1.89,
+      "러너 나머지(유니버스 적용 · 패널 parquet · bt rds · 권위 json · 커버리지)": 4.34
+    }
+  },
+  "worker_peak_working_set_gb": {
+    "fresh_process": 6.3,
+    "server_before_hotpath": 9.91,
+    "E1_fa_on": 8.31,
+    "E2_fa_off": 8.31,
+    "E4_packed_fa_off": 7.55,
+    "default_gb_per_worker": 10,
+    "rule": "ms_workers_auto = floor((여유 GB − 3) ÷ 10) · 최소 1 — 도훈 지시 '(여유 − 3) ÷ 4 이하'의 안쪽"
+  },
+  "hotpath_identity": {
+    "rule": "기준선 = 수정 전 코드 새 프로세스 산출물(heavyD1/fresh) · 요인 분석 끈 판은 analysis_* 제외",
+    "result": {
+      "C0 fresh=E1(server+hot·FA)": {
+        "n_files": 27,
+        "n_same": 27,
+        "diff": {}
+      },
+      "C1 fresh=E1(server+hot·FA)": {
+        "n_files": 18,
+        "n_same": 18,
+        "diff": {}
+      },
+      "C4 fresh=E1(server+hot·FA)": {
+        "n_files": 27,
+        "n_same": 27,
+        "diff": {}
+      },
+      "C0 fresh=E2(server+hot·noFA)": {
+        "n_files": 19,
+        "n_same": 19,
+        "diff": {}
+      },
+      "C1 fresh=E2(server+hot·noFA)": {
+        "n_files": 18,
+        "n_same": 18,
+        "diff": {}
+      },
+      "C4 fresh=E2(server+hot·noFA)": {
+        "n_files": 19,
+        "n_same": 19,
+        "diff": {}
+      },
+      "C0 fresh=E3(fresh+hot)": {
+        "n_files": 27,
+        "n_same": 27,
+        "diff": {}
+      },
+      "C0 fresh=E4b(server+hot·pack·noFA)": {
+        "n_files": 19,
+        "n_same": 19,
+        "diff": {}
+      },
+      "C1 fresh=E4b(server+hot·pack·noFA)": {
+        "n_files": 18,
+        "n_same": 18,
+        "diff": {}
+      },
+      "C4 fresh=E4b(server+hot·pack·noFA)": {
+        "n_files": 19,
+        "n_same": 19,
+        "diff": {}
+      }
+    },
+    "verdict": "10/10 쌍 파일 전부 동일 — 채택"
+  },
+  "incidents": [
+    {
+      "run": "E4(압축 스냅샷 첫 판 · 순서 C4→C0→C1)",
+      "found": "첫 칸 동일 · 둘째 · 셋째 칸 보유 · 수익 · NAV 다름(18~19 파일)",
+      "cause": "압축에서 빠지는 원형 열(Close · Ret · Size 등)을 꺼낼 때 벡터를 그대로 넘겨, 엔진의 setorder(DT, Ticker, Date) 제자리 재배열이 스냅샷을 바꿈",
+      "fix": "원형 열 깊은 사본(data.table::copy) + 스냅샷 파수꾼(표본 4,096행 대조 · 어긋나면 워커 교체)",
+      "evidence": "검사 M1(사본 제거 뮤테이션 → 파수꾼 적발 · 결과 원형 그대로) · 수리 뒤 E4b 3/3 동일"
+    }
+  ],
+  "hotpath_changes": [
+    {
+      "file": "02_Infrastructure/contracts/backtest_result_contract.R",
+      "fn": "build_rolling_metrics",
+      "pinned_p2r05": true,
+      "before_s": 37,
+      "after_s": 1.4,
+      "test": "08_Tests/contracts/test_rolling_metrics_fastpath.R(10/10 · 구판 사본 identical · 비트 · 뮤테이션 2)"
+    },
+    {
+      "file": "02_Infrastructure/strategy_analyzer.R",
+      "fn": "run_analysis .rows_between",
+      "pinned_p2r05": false,
+      "before_s": 75.6,
+      "after_s": 21.2,
+      "test": "08_Tests/contracts/test_analyzer_rows_between_fastpath.R(5/5 · identical · 뮤테이션 2)"
+    },
+    {
+      "file": "02_Infrastructure/contracts/tilt_attribution.R",
+      "fn": "ta_load_market(적재 메모)",
+      "pinned_p2r05": true,
+      "before_s": null,
+      "after_s": null,
+      "test": "08_Tests/contracts/test_contract_load_memo.R(13/13)",
+      "note": "평가 경로 — 같은 프로세스 2회째 읽기 0"
+    },
+    {
+      "file": "02_Infrastructure/contracts/matched_controls.R",
+      "fn": "mc_load_raw(적재 메모 · mmap = FALSE)",
+      "pinned_p2r05": true,
+      "before_s": null,
+      "after_s": null,
+      "test": "08_Tests/contracts/test_contract_load_memo.R(13/13 · T8 다른 프로세스 덮어쓰기 허용)",
+      "note": "구판은 col_select + mmap 읽기가 프로세스 수명 동안 파일 매핑을 쥐어 다른 프로세스의 RAWDATA 덮어쓰기를 막았다(Windows 1224)"
+    }
+  ],
+  "not_adopted": [
+    {
+      "change": "load_rawdata setDT(무복사) · 열 투영",
+      "why": "arrow 가 ALTREP(Arrow 버퍼 래퍼)로 돌려줘 setDT 는 복사를 미루기만 함(실측 이득 1.6초) · 러너는 엔진의 열 수요를 모름 — 적재 비용은 서버 스냅샷이 없앰(12초 → 0.6초)"
+    }
+  ],
+  "heavy_test_final": {
+    "cells": [
+      "P0R01_E1_C0",
+      "P0R01_E1_C1",
+      "P0R01_E1_C4"
+    ],
+    "fresh_s": {
+      "P0R01_E1_C0": 132.080225944519,
+      "P0R01_E1_C1": 142.941910028458,
+      "P0R01_E1_C4": 158.870790958405
+    },
+    "server_a_s": 367.420822143555,
+    "server_b_s": 393.958194971085,
+    "server_a": [
+      {
+        "code": "P0R01_E1_C0",
+        "ok": true,
+        "status": "ok",
+        "rc": 0,
+        "grade": "F",
+        "result": "C:/Users/99922/AppData/Local/Temp/claude/C--Users-99922-OneDrive-Quant-Module-Moltbot/5fff1c50-8ea9-496b-9d01-9ddb42c2f9e6/scratchpad/wp2/runs/heavyD2/srvA/P0R01_E1_C0.json",
+        "artifacts": "C:/Users/99922/AppData/Local/Temp/claude/C--Users-99922-OneDrive-Quant-Module-Moltbot/5fff1c50-8ea9-496b-9d01-9ddb42c2f9e6/scratchpad/wp2/runs/heavyD2/srvA/art/20261020_113743_38708",
+        "log": "C:/Users/99922/AppData/Local/Temp/claude/C--Users-99922-OneDrive-Quant-Module-Moltbot/5fff1c50-8ea9-496b-9d01-9ddb42c2f9e6/scratchpad/wp2/runs/heavyD2/srvA/P0R01_E1_C0.log",
+        "seconds": 122.691881895065,
+        "worker": 1,
+        "attempts": 1,
+        "data_version": "577ecb5e85341b90",
+        "memo_axis": "miss"
+      },
+      {
+        "code": "P0R01_E1_C1",
+        "ok": true,
+        "status": "ok",
+        "rc": 0,
+        "grade": "F",
+        "result": "C:/Users/99922/AppData/Local/Temp/claude/C--Users-99922-OneDrive-Quant-Module-Moltbot/5fff1c50-8ea9-496b-9d01-9ddb42c2f9e6/scratchpad/wp2/runs/heavyD2/srvA/P0R01_E1_C1.json",
+        "artifacts": "C:/Users/99922/AppData/Local/Temp/claude/C--Users-99922-OneDrive-Quant-Module-Moltbot/5fff1c50-8ea9-496b-9d01-9ddb42c2f9e6/scratchpad/wp2/runs/heavyD2/srvA/art/20261020_113946_38708",
+        "log": "C:/Users/99922/AppData/Local/Temp/claude/C--Users-99922-OneDrive-Quant-Module-Moltbot/5fff1c50-8ea9-496b-9d01-9ddb42c2f9e6/scratchpad/wp2/runs/heavyD2/srvA/P0R01_E1_C1.log",
+        "seconds": 100.211866140366,
+        "worker": 1,
+        "attempts": 1,
+        "data_version": "577ecb5e85341b90",
+        "memo_axis": "hit"
+      },
+      {
+        "code": "P0R01_E1_C4",
+        "ok": true,
+        "status": "ok",
+        "rc": 0,
+        "grade": "F",
+        "result": "C:/Users/99922/AppData/Local/Temp/claude/C--Users-99922-OneDrive-Quant-Module-Moltbot/5fff1c50-8ea9-496b-9d01-9ddb42c2f9e6/scratchpad/wp2/runs/heavyD2/srvA/P0R01_E1_C4.json",
+        "artifacts": "C:/Users/99922/AppData/Local/Temp/claude/C--Users-99922-OneDrive-Quant-Module-Moltbot/5fff1c50-8ea9-496b-9d01-9ddb42c2f9e6/scratchpad/wp2/runs/heavyD2/srvA/art/20261020_114128_38708",
+        "log": "C:/Users/99922/AppData/Local/Temp/claude/C--Users-99922-OneDrive-Quant-Module-Moltbot/5fff1c50-8ea9-496b-9d01-9ddb42c2f9e6/scratchpad/wp2/runs/heavyD2/srvA/P0R01_E1_C4.log",
+        "seconds": 82.0062489509583,
+        "worker": 1,
+        "attempts": 1,
+        "data_version": "577ecb5e85341b90",
+        "memo_axis": "hit"
+      }
+    ],
+    "server_b": [
+      {
+        "code": "P0R01_E1_C4",
+        "ok": true,
+        "status": "ok",
+        "rc": 0,
+        "grade": "F",
+        "result": "C:/Users/99922/AppData/Local/Temp/claude/C--Users-99922-OneDrive-Quant-Module-Moltbot/5fff1c50-8ea9-496b-9d01-9ddb42c2f9e6/scratchpad/wp2/runs/heavyD2/srvB/P0R01_E1_C4.json",
+        "artifacts": "C:/Users/99922/AppData/Local/Temp/claude/C--Users-99922-OneDrive-Quant-Module-Moltbot/5fff1c50-8ea9-496b-9d01-9ddb42c2f9e6/scratchpad/wp2/runs/heavyD2/srvB/art/20261020_114411_20876",
+        "log": "C:/Users/99922/AppData/Local/Temp/claude/C--Users-99922-OneDrive-Quant-Module-Moltbot/5fff1c50-8ea9-496b-9d01-9ddb42c2f9e6/scratchpad/wp2/runs/heavyD2/srvB/P0R01_E1_C4.log",
+        "seconds": 129.651715040207,
+        "worker": 1,
+        "attempts": 1,
+        "data_version": "577ecb5e85341b90",
+        "memo_axis": "miss"
+      },
+      {
+        "code": "P0R01_E1_C1",
+        "ok": true,
+        "status": "ok",
+        "rc": 0,
+        "grade": "F",
+        "result": "C:/Users/99922/AppData/Local/Temp/claude/C--Users-99922-OneDrive-Quant-Module-Moltbot/5fff1c50-8ea9-496b-9d01-9ddb42c2f9e6/scratchpad/wp2/runs/heavyD2/srvB/P0R01_E1_C1.json",
+        "artifacts": "C:/Users/99922/AppData/Local/Temp/claude/C--Users-99922-OneDrive-Quant-Module-Moltbot/5fff1c50-8ea9-496b-9d01-9ddb42c2f9e6/scratchpad/wp2/runs/heavyD2/srvB/art/20261020_114621_20876",
+        "log": "C:/Users/99922/AppData/Local/Temp/claude/C--Users-99922-OneDrive-Quant-Module-Moltbot/5fff1c50-8ea9-496b-9d01-9ddb42c2f9e6/scratchpad/wp2/runs/heavyD2/srvB/P0R01_E1_C1.log",
+        "seconds": 94.8666281700134,
+        "worker": 1,
+        "attempts": 1,
+        "data_version": "577ecb5e85341b90",
+        "memo_axis": "hit"
+      },
+      {
+        "code": "P0R01_E1_C0",
+        "ok": true,
+        "status": "ok",
+        "rc": 0,
+        "grade": "F",
+        "result": "C:/Users/99922/AppData/Local/Temp/claude/C--Users-99922-OneDrive-Quant-Module-Moltbot/5fff1c50-8ea9-496b-9d01-9ddb42c2f9e6/scratchpad/wp2/runs/heavyD2/srvB/P0R01_E1_C0.json",
+        "artifacts": "C:/Users/99922/AppData/Local/Temp/claude/C--Users-99922-OneDrive-Quant-Module-Moltbot/5fff1c50-8ea9-496b-9d01-9ddb42c2f9e6/scratchpad/wp2/runs/heavyD2/srvB/art/20261020_114758_20876",
+        "log": "C:/Users/99922/AppData/Local/Temp/claude/C--Users-99922-OneDrive-Quant-Module-Moltbot/5fff1c50-8ea9-496b-9d01-9ddb42c2f9e6/scratchpad/wp2/runs/heavyD2/srvB/P0R01_E1_C0.log",
+        "seconds": 87.3009369373322,
+        "worker": 1,
+        "attempts": 1,
+        "data_version": "577ecb5e85341b90",
+        "memo_axis": "hit"
+      }
+    ],
+    "fresh_artifacts": {
+      "P0R01_E1_C0": "C:/Users/99922/OneDrive/Quant_Module_Moltbot/.claude/worktrees/agent-aee2751fc2e85910c/stage_artifacts/replication/20261020_112936_11524",
+      "P0R01_E1_C1": "C:/Users/99922/OneDrive/Quant_Module_Moltbot/.claude/worktrees/agent-aee2751fc2e85910c/stage_artifacts/replication/20261020_113148_28752",
+      "P0R01_E1_C4": "C:/Users/99922/OneDrive/Quant_Module_Moltbot/.claude/worktrees/agent-aee2751fc2e85910c/stage_artifacts/replication/20261020_113410_11564"
+    }
+  },
+  "snapshot_pack": {
+    "read_s": 9.4131,
+    "copy_s": 0.9674,
+    "pack_s": 10.2552,
+    "unpack_s": 0.7878,
+    "raw_gb": 2.2153,
+    "packed_gb": 1.5825,
+    "identical": true
+  }
+}
