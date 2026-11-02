@@ -1,0 +1,292 @@
+﻿<#
+qvest_setup_common.ps1 — 1_laptop.ps1 · 2_main.ps1 공통 도우미 (점 찍어 불러 쓴다 · 단독 실행 안 함 · 2026-11-01 두 대 운용)
+  출력 · 멈춤 · 관리자 다시 띄우기 · 외부 명령 실행(종료 코드 + 줄) · 도구 찾기 · Claude 메모리 합치기 · 연결(junction) · 항상 유지 ·
+  OneDrive 내려받기 기다림(Wait-Local — 관리자 프로세스의 그 자리 내려받기에 기대지 않는다).
+  PowerShell 5.1: 외부 명령 인자에 큰따옴표를 넣지 않는다(5.1 은 이스케이프하지 않아 인자가 갈라진다 — 2026-11-01 실측).
+#>
+$ErrorActionPreference = 'Stop'
+try { [Console]::OutputEncoding = New-Object Text.UTF8Encoding($false) } catch { }
+$OutputEncoding = New-Object Text.UTF8Encoding($false)
+$env:PYTHONUTF8 = '1'
+$Utf8 = New-Object Text.UTF8Encoding($false)
+$Stamp = Get-Date -Format 'yyyyMMdd_HHmmss'
+$Tar = Join-Path $env:SystemRoot 'System32\tar.exe'
+$script:Warns = New-Object Collections.Generic.List[string]
+
+# 그 기계에 꼭 남길 것 · 남기지 않을 것(항상 이 장치에 유지 — qvest_sync.py pin)
+$PinExclude = @('01_Literature', '99_Archive', '_deleted_FreshIdea', '.claude/worktrees', '.pip_cache', 'catboost_info')
+$PinEssential = @('.git', '.venv_qvest_ml', '.cache', '.claude', '.github', '00_Lawbook', '02_Infrastructure', '03_Universe',
+  '04_Research', '05_Production', '06_Registry', '08_Tests', 'qepm', 'stage_artifacts')
+
+function Assert-Admin([string]$scriptPath, [string[]]$passArgs) {
+  $p = New-Object Security.Principal.WindowsPrincipal([Security.Principal.WindowsIdentity]::GetCurrent())
+  if ($p.IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)) { return }
+  $a = @('-NoProfile', '-ExecutionPolicy', 'Bypass', '-File', ('"' + $scriptPath + '"'), '-Elevated') + $passArgs
+  Start-Process -FilePath 'powershell.exe' -Verb RunAs -ArgumentList $a
+  Write-Host '관리자 권한 창(UAC 확인)에서 이어 갑니다 — 이 창은 닫아도 됩니다.'
+  exit 0
+}
+
+function Step([string]$n, [string]$t) { Write-Host ''; Write-Host ('[{0}] {1}' -f $n, $t) -ForegroundColor Cyan }
+function Ok([string]$t) { Write-Host "  OK    $t" -ForegroundColor Green }
+function Info([string]$t) { Write-Host "  ..    $t" }
+function Warn([string]$t) { Write-Host "  WARN  $t" -ForegroundColor Yellow; $script:Warns.Add($t) }
+
+function Finish([int]$rc) {
+  if ($script:Warns.Count -gt 0) {
+    Write-Host ''
+    Write-Host "확인할 것 $($script:Warns.Count)개:" -ForegroundColor Yellow
+    foreach ($w in $script:Warns) { Write-Host "  - $w" -ForegroundColor Yellow }
+  }
+  try { Stop-Transcript | Out-Null } catch { }
+  if ($script:Elevated) { Write-Host ''; [void](Read-Host '창을 닫으려면 Enter') }
+  exit $rc
+}
+
+function Stop-Here([string]$t) {
+  Write-Host "  STOP  $t" -ForegroundColor Red
+  Write-Host ''
+  Write-Host '멈췄습니다 — 위 사유를 해결한 뒤 같은 명령으로 다시 실행하세요(끝난 단계는 그대로 지나갑니다).' -ForegroundColor Red
+  Finish 1
+}
+
+# 외부 명령: 표준 출력 + 오류를 줄로 모으고(-Show 면 바로 찍음) 종료 코드를 돌려준다. 창이 따로 뜨는 대화형 명령은 쓰지 않는다.
+function Run([string]$Exe, [string[]]$Argv = @(), [switch]$Show) {
+  $old = $ErrorActionPreference; $ErrorActionPreference = 'Continue'
+  $lines = New-Object Collections.Generic.List[string]
+  $rc = 0
+  try {
+    & $Exe @Argv 2>&1 | ForEach-Object {
+      $l = "$_"
+      $lines.Add($l)
+      if ($Show) { Write-Host "        $l" }
+    }
+    $rc = $LASTEXITCODE
+  } catch {
+    $lines.Add($_.Exception.Message); $rc = 255
+    if ($Show) { Write-Host "        $($_.Exception.Message)" }
+  } finally { $ErrorActionPreference = $old }
+  if ($null -eq $rc) { $rc = 0 }
+  return [pscustomobject]@{ Rc = [int]$rc; Out = $lines.ToArray(); Text = ($lines -join "`n") }
+}
+
+function Write-Utf8([string]$path, [string]$text) {
+  [void](New-Item -ItemType Directory -Force -Path (Split-Path $path -Parent))
+  [IO.File]::WriteAllText($path, $text, $Utf8)
+}
+
+function Find-GitBash {
+  $c = @()
+  if ($env:ProgramFiles) { $c += (Join-Path $env:ProgramFiles 'Git\bin\bash.exe') }
+  $g = Get-Command git.exe -ErrorAction SilentlyContinue
+  if ($null -ne $g) { $c += (Join-Path (Split-Path (Split-Path $g.Source -Parent) -Parent) 'bin\bash.exe') }
+  foreach ($p in $c) { if (Test-Path -LiteralPath $p) { return $p } }   # System32\bash.exe(WSL)는 쓰지 않는다
+  return $null
+}
+
+function Test-Py([string]$p) {
+  if (-not $p -or -not (Test-Path -LiteralPath $p)) { return $false }
+  return ((Run $p @('-c', 'import hashlib, json, re, shutil')).Rc -eq 0)        # 기능 프로브 — WindowsApps 스텁은 실패
+}
+
+# 기본 설치 Python(OneDrive 밖 · venv 아님) — 연결 · 내려받기 전에도 돈다
+function Find-BasePython {
+  $c = @(Get-ChildItem -Path (Join-Path $env:LOCALAPPDATA 'Programs\Python\Python3*\python.exe') -ErrorAction SilentlyContinue |
+      Sort-Object FullName -Descending | ForEach-Object { $_.FullName })
+  foreach ($p in $c) { if (Test-Py $p) { return $p } }
+  return $null
+}
+
+function Find-Rscript {
+  $c = @()
+  if ($env:ProgramFiles) {
+    $c += (Join-Path $env:ProgramFiles 'R\R-4.5.2\bin\Rscript.exe')
+    $c += @(Get-ChildItem -Path (Join-Path $env:ProgramFiles 'R\R-*\bin\Rscript.exe') -ErrorAction SilentlyContinue |
+        Sort-Object { $v = [version]'0.0'; [void][version]::TryParse(($_.FullName -replace '^.*\\R-([0-9.]+)\\bin\\.*$', '$1'), [ref]$v); $v } -Descending |
+        ForEach-Object { $_.FullName })
+  }
+  foreach ($p in $c) { if (Test-Path -LiteralPath $p) { return $p } }
+  return $null
+}
+
+function Get-RHomeDir([string]$rs) {
+  if (-not $rs) { return $env:USERPROFILE }
+  $r = Run $rs @('--no-init-file', '-e', 'cat(path.expand(''~''))')
+  $h = @($r.Out | Where-Object { $_ -match '^[A-Za-z]:' } | Select-Object -First 1)
+  if ($r.Rc -eq 0 -and $h.Count -gt 0) { return ($h[0].Trim() -replace '/', '\') }
+  return $env:USERPROFILE
+}
+
+function Read-KeyValue([string]$path) {
+  $h = @{}
+  if (Test-Path -LiteralPath $path) {
+    foreach ($l in [IO.File]::ReadAllLines($path, $Utf8)) { $i = $l.IndexOf('='); if ($i -gt 0) { $h[$l.Substring(0, $i).Trim()] = $l.Substring($i + 1).Trim() } }
+  }
+  return $h
+}
+
+function Get-ProjectKey([string]$path) { return ($path.TrimEnd('\') -replace '[^A-Za-z0-9]', '-') }   # ~/.claude/projects/<키>
+
+function Get-JunctionTarget([string]$p) {
+  $i = Get-Item -LiteralPath $p -Force -ErrorAction SilentlyContinue
+  if ($null -eq $i -or "$($i.LinkType)" -ne 'Junction') { return $null }
+  return ([string](@($i.Target)[0])).TrimEnd('\')
+}
+
+function Test-SameFile([string]$a, [string]$b) {
+  return ((Get-FileHash -LiteralPath $a -Algorithm SHA256).Hash -eq (Get-FileHash -LiteralPath $b -Algorithm SHA256).Hash)
+}
+
+# Claude 메모리 합치기: 없는 파일 = 복사 · MEMORY.md = 줄 합집합(있는 줄 뒤에 새 줄) · 같은 이름 다른 내용 = <이름>.<tag>.md 로 곁에
+function Merge-Memory([string]$src, [string]$dst, [string]$tag) {
+  [void](New-Item -ItemType Directory -Force -Path $dst)
+  $n = 0; $u = 0; $k = 0
+  $base = $src.TrimEnd('\')
+  foreach ($f in @(Get-ChildItem -LiteralPath $base -Recurse -File -Force)) {
+    $rel = $f.FullName.Substring($base.Length + 1)
+    $d = Join-Path $dst $rel
+    [void](New-Item -ItemType Directory -Force -Path (Split-Path $d -Parent))
+    if (-not (Test-Path -LiteralPath $d)) { Copy-Item -LiteralPath $f.FullName -Destination $d; $n++; continue }
+    if (Test-SameFile $d $f.FullName) { continue }
+    if ($f.Name -eq 'MEMORY.md') {
+      $haveText = [IO.File]::ReadAllText($d, $Utf8)
+      $set = New-Object 'System.Collections.Generic.HashSet[string]'
+      foreach ($l in ($haveText -split "`r?`n")) { [void]$set.Add($l.TrimEnd()) }
+      $add = @([IO.File]::ReadAllLines($f.FullName, $Utf8) | Where-Object { $_.Trim() -and -not $set.Contains($_.TrimEnd()) })
+      if ($add.Count -gt 0) {
+        $pre = $(if ($haveText.Length -gt 0 -and -not $haveText.EndsWith("`n")) { "`n" } else { '' })
+        [IO.File]::AppendAllText($d, $pre + (($add -join "`n") + "`n"), $Utf8); $u += $add.Count
+      }
+      continue
+    }
+    $alt = Join-Path (Split-Path $d -Parent) ('{0}.{1}{2}' -f [IO.Path]::GetFileNameWithoutExtension($d), $tag, [IO.Path]::GetExtension($d))
+    Copy-Item -LiteralPath $f.FullName -Destination $alt -Force; $k++
+  }
+  return "새 파일 $n · MEMORY.md 줄 +$u · 같은 이름 다른 내용 $k(→ 이름.$tag.md)"
+}
+
+# ~/.claude/projects/<키>/memory → OneDrive\Qvest_sync\claude_memory (있던 폴더는 합친 뒤 memory.bak_<시각> 으로 남긴다)
+function Set-MemoryJunction([string]$memDir, [string]$shared, [string]$tag) {
+  $t = Get-JunctionTarget $memDir
+  if ($t) {
+    if ($t -ieq $shared.TrimEnd('\')) { Ok "이미 연결: $memDir"; return }
+    Warn "$memDir 가 다른 곳($t)에 연결돼 있음 — 그대로 둠"; return
+  }
+  [void](New-Item -ItemType Directory -Force -Path $shared)
+  if (Test-Path -LiteralPath $memDir) {
+    $msg = Merge-Memory $memDir $shared $tag
+    Rename-Item -LiteralPath $memDir -NewName "memory.bak_$Stamp"
+    Info "합침: $msg · 원래 폴더 = memory.bak_$Stamp"
+  } else {
+    [void](New-Item -ItemType Directory -Force -Path (Split-Path $memDir -Parent))
+  }
+  [void](New-Item -ItemType Junction -Path $memDir -Value $shared)
+  Ok "연결: $memDir -> $shared"
+}
+
+function Invoke-Pin([string]$py, [string]$tool, [string]$root, [int]$marginGb) {
+  $a = @($tool, 'pin', $root, '--margin-gb', "$marginGb", '--apply')
+  foreach ($e in $PinExclude) { $a += @('--exclude', $e) }
+  foreach ($e in $PinEssential) { $a += @('--essential', $e) }
+  return (Run $py $a -Show)
+}
+
+function Set-PinnedFolder([string]$dir) {
+  [void](Run 'attrib' @('+P', '-U', $dir))
+  [void](Run 'attrib' @('+P', '-U', (Join-Path $dir '*'), '/S', '/D'))
+}
+
+# OneDrive 클라우드 전용(아직 안 내려받은) 파일 — RECALL_ON_DATA_ACCESS · RECALL_ON_OPEN · OFFLINE (qvest_machine.sh settled 와 같은 마스크)
+function Get-CloudOnly([string[]]$files) {
+  foreach ($f in $files) {
+    $i = Get-Item -LiteralPath $f -Force -ErrorAction SilentlyContinue
+    if ($i -and (([int]$i.Attributes -band 0x441000) -ne 0)) { $f }
+  }
+}
+
+# 파일 · 폴더를 이 장치에 내려 둔다: 항상 유지(+P) → 한 번씩 읽어 그 자리에서 내려받기 → 남은 클라우드 전용이 0 이 될 때까지 기다림.
+# 관리자 프로세스는 그 자리 내려받기가 안 될 수 있어(OneDrive 는 사용자 세션에서 돈다) 그때는 고정을 보고 OneDrive 가 내려받는다.
+# 돌려주는 값 = 시간 안에 못 내려온 파일 수(0 = 모두 이 장치에 있음).
+function Wait-Local([string[]]$paths, [int]$timeoutMin = 30) {
+  $files = New-Object Collections.Generic.List[string]
+  foreach ($p in $paths) {
+    if (-not $p -or -not (Test-Path -LiteralPath $p)) { continue }
+    if ((Get-Item -LiteralPath $p -Force).PSIsContainer) {
+      Set-PinnedFolder $p
+      foreach ($f in @(Get-ChildItem -LiteralPath $p -Recurse -File -Force)) { $files.Add($f.FullName) }
+    } else { [void](Run 'attrib' @('+P', '-U', $p)); $files.Add($p) }
+  }
+  $buf = New-Object byte[] 1MB
+  foreach ($f in @(Get-CloudOnly $files.ToArray())) {
+    try { $s = [IO.File]::OpenRead($f); try { while ($s.Read($buf, 0, $buf.Length) -gt 0) { } } finally { $s.Dispose() } } catch { }
+  }
+  $until = (Get-Date).AddMinutes($timeoutMin); $shown = Get-Date
+  while ($true) {
+    $left = @(Get-CloudOnly $files.ToArray())
+    if (-not $left.Count) { return 0 }
+    if ((Get-Date) -ge $until) { return $left.Count }
+    if (((Get-Date) - $shown).TotalSeconds -ge 30) { Info "OneDrive 내려받기 기다림 — 남은 파일 $($left.Count)개(예 $(Split-Path $left[0] -Leaf))"; $shown = Get-Date }
+    Start-Sleep -Seconds 10
+  }
+}
+
+function ConvertTo-Fwd([string]$p) { return ($p -replace '\\', '/') }
+
+function Get-HostNames { return @(@($env:COMPUTERNAME, [Net.Dns]::GetHostName()) | Where-Object { $_ } | Select-Object -Unique) }
+
+# machines.conf 의 기계 이름(역할 지정 시 그 역할만)
+function Get-ConfMachines([string]$conf, [string]$role = '') {
+  $n = @()
+  if (Test-Path -LiteralPath $conf) {
+    foreach ($l in [IO.File]::ReadAllLines($conf, $Utf8)) {
+      $t = @($l.Trim() -split '\s+')
+      if ($t.Count -ge 3 -and $t[0] -eq 'machine' -and (-not $role -or $t[2] -eq $role)) { $n += $t[1] }
+    }
+  }
+  return $n
+}
+
+# bash 시험 1개 — 마지막 {"pass":N,"fail":M} 줄 + 종료 코드로 판정(0/N 은 통과가 아니다)
+function Invoke-BashTest([string]$bash, [string]$root, [string]$rel) {
+  $r = Run $bash @('-c', "cd '$(ConvertTo-Fwd $root)' && bash $rel")
+  $p = -1; $f = -1
+  foreach ($l in $r.Out) { if ($l -match '"pass":\s*(\d+),\s*"fail":\s*(\d+)') { $p = [int]$Matches[1]; $f = [int]$Matches[2] } }
+  return [pscustomobject]@{ Name = $rel; Ok = ($r.Rc -eq 0 -and $f -eq 0 -and $p -gt 0); Pass = $p; Fail = $f; Rc = $r.Rc
+    Tail = (@($r.Out | Select-Object -Last 8) -join "`n") }
+}
+
+# qvest_tasks.ps1 를 이 프로세스에서 부른다(출력 그대로 · 종료 코드 돌려줌)
+function Invoke-QvestTasks([string]$ps1, [hashtable]$prm) {
+  try { $global:LASTEXITCODE = 0; & $ps1 @prm; return [int]$LASTEXITCODE }
+  catch { Warn "qvest_tasks.ps1 -Mode $($prm.Mode): $($_.Exception.Message)"; return 1 }
+}
+
+# 내보낸 폴더의 파일 목록(크기 · sha256) — 받는 쪽은 이것으로 OneDrive 가 다 내려왔는지 본다
+function Write-FileList([string]$dir, [string]$listFile, [string[]]$head) {
+  $base = $dir.TrimEnd('\')
+  $rows = New-Object Collections.Generic.List[string]
+  foreach ($h in $head) { $rows.Add("# $h") }
+  foreach ($f in @(Get-ChildItem -LiteralPath $base -Recurse -File -Force | Sort-Object FullName)) {
+    if ($f.FullName -ieq $listFile) { continue }
+    $rows.Add(('{0}{1}{2}{1}{3}' -f $f.Length, "`t", (Get-FileHash -LiteralPath $f.FullName -Algorithm SHA256).Hash.ToLower(),
+        ($f.FullName.Substring($base.Length + 1) -replace '\\', '/')))
+  }
+  Write-Utf8 $listFile (($rows -join "`n") + "`n")
+  return ($rows.Count - $head.Count)
+}
+
+# 목록대로 다 있나 — 빠짐 · 크기 · 해시가 다른 파일(이미 가져와 지운 묶음 = $skipTop 은 건너뜀)
+function Test-FileList([string]$dir, [string]$listFile, [string[]]$skipTop = @()) {
+  $bad = New-Object Collections.Generic.List[string]
+  foreach ($l in [IO.File]::ReadAllLines($listFile, $Utf8)) {
+    if ($l -notmatch '^(\d+)\t([0-9a-f]{64})\t(.+)$') { continue }
+    $rel = $Matches[3]; $size = [long]$Matches[1]; $sha = $Matches[2]
+    if ($skipTop -contains ($rel -split '/')[0]) { continue }
+    $p = Join-Path $dir ($rel -replace '/', '\')
+    $i = Get-Item -LiteralPath $p -Force -ErrorAction SilentlyContinue
+    if ($null -eq $i) { $bad.Add("없음 $rel"); continue }
+    if ($i.Length -ne $size) { $bad.Add("크기 $rel"); continue }
+    if ((Get-FileHash -LiteralPath $p -Algorithm SHA256).Hash.ToLower() -ne $sha) { $bad.Add("내용 $rel") }
+  }
+  return , $bad.ToArray()
+}

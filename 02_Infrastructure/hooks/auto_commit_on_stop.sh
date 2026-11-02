@@ -119,6 +119,16 @@ fi
 cd "$PROJECT" || { echo '{}'; exit 0; }
 # git 작동 확인 (.git이 파일인 경우 — worktree gitlink / WSL 한글경로 gitlink)
 git rev-parse --git-dir >/dev/null 2>&1 || { echo '{}'; exit 0; }
+# >>> QVEST_MACHINE_SETTLE >>> (2026-11-01 두 대 운용 — 02_Infrastructure/ops/machine/qvest_machine.sh settled)
+# 공유 저장소(OneDrive)가 다 내려오지 않았으면 커밋 · 푸시하지 않는다: .git 클라우드 전용 파일 · OneDrive 충돌 사본
+#   (main-<기계명> 등) · 대량 삭제(작업 트리 동기화 중) · 기계별 보류 표식(.cache/machine/hold_<HOST>) 중 하나라도 있으면
+#   SKIP_UNSETTLED. 반쯤 받은 트리를 커밋하면 다른 기계의 작업을 지우는 커밋이 되고, 낡은 ref 위 커밋은 충돌 사본을 만든다.
+#   검사 격리용 우회 = QVEST_SETTLE_CHECK=0. 끼우기 · 빼기 = ops/machine/install_hook_guard.sh [--uninstall].
+_qm_sh="$(dirname "${BASH_SOURCE[0]:-$0}")/../ops/machine/qvest_machine.sh"
+if [ "${QVEST_SETTLE_CHECK:-1}" != "0" ] && [ -f "$_qm_sh" ]; then
+  _qm_res="$(bash "$_qm_sh" settled "$PROJECT" 2>/dev/null)" || { echo "$TS SKIP_UNSETTLED ${_qm_res:-unknown}" >> "$LOG"; echo '{}'; exit 0; }
+fi
+# <<< QVEST_MACHINE_SETTLE <<<
 
 # ─── 대상 트리/브랜치 라벨 ───────────────────────────────────────────
 # 보고에 "무엇을 커밋했나"만 있고 "어디에 커밋했나"가 없어서, worktree 세션에서 main 을
