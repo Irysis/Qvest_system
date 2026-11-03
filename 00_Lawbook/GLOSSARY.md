@@ -293,7 +293,7 @@ P0R01_E2_C4  =  P0 실현 가능성 지도 · 1라운드 · 엔진 E2(2002.06975
 |---|---|---|---|---|---|
 | `night_state/<단계>.done` | 파이프라인 센티널 | ②~④ | `p0_measured` · `v2_prefetch` · `v2_measured` · `p3_measured` · `p0_cells_evaluated` · `p0_evaluated` · `p2r02_evaluated` · `p1r01_evaluated` · `p3r01_evaluated` · `p3r02_repinned` · `pipeline` · `p3r02_measured` | 파이프라인 · measure.sh · 세션 | `04_Research/programs/_lib/night_state/` |
 | `precheck.json` · `<셀>.fp_start/.fp_end` | P3R02 측정 전 대조 · 데이터 지문 | ② | 사양 · 운영 경로 md5 · quadprog · R 판 · RAWDATA · 벤치 캐시 크기 · mtime | `precheck.R` · `measure.sh` | `P3R02/results/` |
-| `factor_db_partcache/v1/<팩터>/<월>.rds` | 팩터×월 파티션 캐시 | ② | `load_month_factors` 의 팩터 지정 읽기 결과(무효화 키 = 월 파일명 · 크기 · mtime · 컬럼) | `factor_db_connector.R` | `.cache/`(= `C:/qm_cache`) |
+| `factor_db_partcache/v1/<팩터>/<월>.rds` | 팩터×월 파티션 캐시 | ② | `load_month_factors` 의 팩터 지정 읽기 결과(무효화 키 = 월 파일명 · 크기 · mtime · 컬럼) | `factor_db_connector.R` | `.cache/`(프로젝트 안 실제 폴더 · git 제외 · OneDrive 동기화 — 2026-11-03 정션 제거) |
 | `rcpp_build/` | Rcpp 빌드 캐시 | ② | 사전 컴파일된 C++ 공유 라이브러리(소스 해시가 같으면 재사용) | `backtest_harness.R` · `strategy_analyzer.R` | `.cache/` |
 | `replication_request.json` | 충실구현 요청 슬롯 | 충실구현 | pending · in_progress · failed_needs_session · held_audit_conflict | `next_replication.R` · 레인 | `06_Registry/` |
 | `RP_AUTO_CLEAN_<slug>/` | 청정 재구현 작업 디렉터리 | 충실구현 | engine.R · FIDELITY.json · fidelity_axis_<축>.json · fidelity_audit.json · lane_provenance.json · (audit_conflict.json) | 레인 · 감사 | `04_Research/strategies/` |
@@ -301,7 +301,7 @@ P0R01_E2_C4  =  P0 실현 가능성 지도 · 1라운드 · 엔진 E2(2002.06975
 | `research_programs.json` | 프로그램 등록부 | 전 단계 | 프로그램 · 라운드 · MC · 재료 큐 · 미분류 보류 | `program_registry.R` 만 | `06_Registry/` |
 | `q_judgment_ledger.json` | 판단 원장 | 전 단계 | Q 판단(J-) · Superfan 리뷰(R- · 역할 judgment T1~T4 / philosophy P1~P4 · 방향 판정) · 도전(C-)과 응답 · 재반박 · 종결 · 보류 요청 · 사후 채점 | `programs/q_judgment_ledger.py` 만 | `06_Registry/` |
 | `superfan_components.json` | 구성요소 Superfan 정의 | 운영 | 구성요소 8개의 코드 · 로그 · 일정 · 감시 규칙(log_patterns · freshness · expect_today · json_field) · dossier 경로 | 사람 편집 · 감시기가 검증 | `06_Registry/` |
-| `superfan_watch.json` | 감시 상태 | 운영 | 로그 오프셋(구성요소 · 규칙별) · 이상(키 · 심각도 · 상태 open/acked/expired/resolved · 사건 시각 · 횟수) | `programs/superfan_watch.py` 만 | `.cache/`(OneDrive 미동기화) |
+| `superfan_watch.json` | 감시 상태 | 운영 | 로그 오프셋(구성요소 · 규칙별) · 이상(키 · 심각도 · 상태 open/acked/expired/resolved · 사건 시각 · 횟수) | `programs/superfan_watch.py` 만 | `.cache/`(git 제외 · 2026-11-03 부터 OneDrive 동기화 — 두 기계가 같은 파일을 본다) |
 | `session_resume.json` | 세션 재개 저널 | 전 단계 | 진행 중 작업의 단계 · 다음 할 일 · 백그라운드 · 결정 대기(부팅 `Resume:` 줄 · 꼬리에 Superfan 대기) | `programs/session_resume.py` 만 | `06_Registry/` |
 
 ### 헷갈리기 쉬운 코드

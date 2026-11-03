@@ -42,9 +42,9 @@ def registry_path(root=None):
 
 
 def watch_path(root=None):
-    """감시 상태(오프셋 · 이상 상태)는 운영 캐시다 — .cache(= C:/qm_cache 정션 · OneDrive 미동기화)에 둔다.
-    등록부(06_Registry)에 두면 스캔마다 동기화가 일어난다(2026-10-16 도훈 질의 '10분 간격 이유' 검토에서 정정).
-    서술형 이력은 구성요소 dossier 가 정본이다."""
+    """감시 상태(오프셋 · 이상 상태)는 운영 캐시다 — .cache(git 제외)에 둔다. 서술형 이력은 구성요소 dossier 가 정본이다.
+    10-16 에 등록부(06_Registry) 대신 .cache 를 고른 이유('스캔마다 동기화가 일어나지 않는다' — 도훈 질의 '10분 간격 이유'
+    검토)는 2026-11-03 부터 참이 아니다: .cache 정션을 없애고 OneDrive 안 실제 폴더로 옮겨 두 기계가 공유한다(스캔마다 이 파일이 올라간다)."""
     return os.environ.get("QVEST_SUPERFAN_WATCH_PATH") or os.path.join(root or _root(), ".cache", "superfan_watch.json")
 
 
