@@ -1,0 +1,236 @@
+{
+  "run_at": "2026-11-06T08:09:40",
+  "composite_start_t0": "2004-02-05",
+  "last_date": "2026-11-05",
+  "data_files": {
+    "benchmark.parquet": {
+      "mtime": "2026-11-06T07:32:40"
+    },
+    "indices.parquet": {
+      "mtime": "2026-11-06T07:32:40"
+    },
+    "ecos_bond_rates.parquet": {
+      "mtime": "2026-10-20T09:41:18"
+    },
+    "ecos_krw_usd.parquet": {
+      "mtime": "2026-10-20T09:41:11"
+    },
+    "fred_macro_wide.parquet": {
+      "mtime": "2026-10-20T10:45:09"
+    },
+    "qw_global_macro.parquet": {
+      "mtime": "2026-10-20T15:56:08"
+    },
+    "RAWDATA.parquet": {
+      "mtime": "2026-11-06T07:27:27"
+    },
+    "investor_stock/investor_wide.parquet": {
+      "mtime": "2026-11-06T07:30:37"
+    }
+  },
+  "data_ranges": {
+    "rawdata_range": [
+      "1995-01-03",
+      "2026-10-30"
+    ],
+    "breadth_universe_n_median": 500.0,
+    "investor_rows_joined": 10578483,
+    "investor_rows_unmatched": 3380,
+    "investor_range": [
+      "2000-01-04",
+      "2026-10-30"
+    ]
+  },
+  "fred_availability_rules": {
+    "version": "2026-10-20.b5",
+    "md5": "46d07ec25ec36a5a3837690dd41602a1",
+    "path": "C:/Users/99922/OneDrive/Quant_Module_Moltbot/06_Registry/fred_availability_rules.json",
+    "regime_key": "c11_avail:2026-10-20.b5:46d07ec2"
+  },
+  "indicator_history_start": {
+    "E1": "1990-02-05",
+    "E2": "1990-01-05",
+    "C1": "2001-01-03",
+    "C2": "2001-02-05",
+    "X1": "2000-01-27",
+    "X2": "2000-01-04",
+    "F1": "2000-01-31",
+    "F2": "2000-03-29",
+    "B1": "1995-10-26",
+    "B2": "1995-02-03",
+    "M1": "2001-01-04",
+    "M2": "1994-07-28",
+    "G1": "2000-01-04",
+    "G2": "2000-01-14"
+  },
+  "params": {
+    "ecdf_min_history_years": {
+      "value": 3,
+      "source": "Holló, Kremer & Lo Duca (2012) CISS, ECB WP 1426 §3.3 — 비재귀 초기 구간(1999-01-08~2002-01-04, 약 3년) 뒤 재귀 변환. 이 시제품은 초기 구간도 재귀로 계산하고(완전 PIT) 이력 3년 미만 지표는 '미유효'로만 표시한다."
+    },
+    "rv_window_obs": {
+      "value": 20,
+      "source": "Duprey, Klaus & Peltonen (2017) CLIFS, J. Financial Stability 32 (BoC SWP 2016-11) §2.1 식(2)·(3) — 실현변동성 = 일별 절대 로그수익(금리는 절대 변화) 20개 평균."
+    },
+    "cmax_window_days": {
+      "value": 730,
+      "source": "Holló, Kremer & Lo Duca (2012) CISS, ECB WP 1426 Table 1 · Duprey, Klaus & Peltonen (2017) CLIFS, J. Financial Stability 32 (BoC SWP 2016-11) §2.1 — CMAX = 2년 이동 창의 최대 누적 손실(Patel & Sarkar 1998, FAJ 54(6)). 2년 = 730역일."
+    },
+    "fx_cmax_window_days": {
+      "value": 183,
+      "source": "Duprey, Klaus & Peltonen (2017) CLIFS, J. Financial Stability 32 (BoC SWP 2016-11) §2.1 — 외환 누적 변화(CUMUL) 창 6개월. 원화 약세 한쪽만 스트레스로 보아 CMAX 꼴(원화 가치의 6개월 최대 누적 하락)로 적용 — 신흥국 FSI 의 환율 압력은 절하 방향(Balakrishnan, Danninger, Elekdag & Tytell 2011, IMF WP 09/133)."
+    },
+    "breadth_drawdown": {
+      "value": 0.2,
+      "source": "Lunde & Timmermann (2004) JBES 22(3) — 약세장 관례 문턱 0.2. 06_Registry/behavior_card.json crisis_lambda_down 과 같은 출처."
+    },
+    "breadth_high_window_obs": {
+      "value": 252,
+      "source": "52주 고가 기준점(George & Hwang 2004, JF 59(5)) — 252 거래일. 최소 관측 200(설계 선택: 창의 약 80%)."
+    },
+    "breadth_high_min_obs": {
+      "value": 200,
+      "source": "설계 선택 — 52주 창의 약 80% 이상 거래 이력이 있는 종목만 고가 대비 낙폭을 잰다."
+    },
+    "breadth_universe_topn": {
+      "value": 500,
+      "source": "설계 선택 — 직전일 시가총액 상위 500(프로젝트 유니버스 universe_v2 KR_TOP500 과 같은 규모)."
+    },
+    "price_floor_krw": {
+      "value": 1000,
+      "source": "측정 축 epoch all_hyg_px1000_2000_v1 의 동전주 바닥(전날 수정 종가 1,000원 미만 제외 · 도훈 10-17)."
+    },
+    "corr_window_obs": {
+      "value": 21,
+      "source": "Pollet & Wilson (2010) JFE 96(3) — 월중 일별 수익률로 계산한 평균 쌍별 상관(1개월 ≈ 21 거래일)."
+    },
+    "corr_topn": {
+      "value": 100,
+      "source": "설계 선택 — 직전일 시가총액 상위 100(KOSPI100 규모). Pollet & Wilson 은 미국 대형 500종."
+    },
+    "flow_windows_obs": {
+      "value": [
+        20,
+        60
+      ],
+      "source": "설계 선택 — 1개월 · 1분기 누적 외국인 순매수(시가총액 대비, 부호 반전 = 순매도가 클수록 스트레스). 외국인 매매의 가격 영향 근거 = Choe, Kho & Stulz (1999) JFE 54(2) · Richards (2005) JFQA 40(1)."
+    },
+    "ewma_lambda_weekly": {
+      "value": 0.93,
+      "source": "Holló, Kremer & Lo Duca (2012) CISS, ECB WP 1426 §3.4 식(4) — 주간 감쇠 λ = 0.93."
+    },
+    "ewma_lambda_daily": {
+      "value": 0.9855906837939876,
+      "source": "주간 λ=0.93 의 반감기(ln0.5/ln0.93 ≈ 9.6주 ≈ 48거래일)를 보존하는 일간 환산 λ_d = 0.93^(1/5)."
+    },
+    "ewma_demean": {
+      "value": 0.5,
+      "source": "Holló, Kremer & Lo Duca (2012) CISS, ECB WP 1426 §3.4 — 하위지수에서 '이론 중앙값' 0.5 를 빼고 공분산을 갱신."
+    },
+    "ewma_init": {
+      "value": {
+        "var": 0.08333333333333333,
+        "cov": 0.0
+      },
+      "source": "균등분포 분산 1/12 · 무상관에서 출발(완전 재귀). CISS 는 초기 구간 평균으로 초기화한다 — 반감기 약 48거래일이라 3년 유효 대기 동안 초깃값 영향은 사라진다(0.986^750 ≈ 2e-5)."
+    },
+    "axis_weights": {
+      "value": "equal (1/7)",
+      "source": "Duprey, Klaus & Peltonen (2017) CLIFS, J. Financial Stability 32 (BoC SWP 2016-11) — 동일 가중 · Holló, Kremer & Lo Duca (2012) CISS, ECB WP 1426 부록 Fig. A.2 — 실물 영향 가중과 동일 가중의 차이가 작다. 결과(위기 적중)에 맞춘 가중 추정은 하지 않는다(과적합 · C1)."
+    },
+    "score_pct_min_obs": {
+      "value": 250,
+      "source": "설계 선택(검증 표 전용) — 지수 · 축 · V-KOSPI 의 재귀 백분위는 자기 이력 250관측(약 1년) 뒤부터 유효. 첫 관측의 재귀 백분위는 정의상 1.0 이라 그대로 두면 거짓 경보가 된다."
+    },
+    "alarm_percentile": {
+      "value": 0.8,
+      "source": "설계 선택(검증 표 전용) — 지수의 재귀 백분위가 0.80 이상이면 '경보'. 감도 = 0.90."
+    },
+    "alarm_cooloff_obs": {
+      "value": 20,
+      "source": "설계 선택(검증 표 전용) — 경보 해제 후 20거래일 안의 재돌파는 같은 경보로 묶는다."
+    },
+    "hit_drawdown": {
+      "value": -0.1,
+      "source": "설계 선택(검증 표 전용) — 경보 뒤 60거래일 안 KOSPI200 이 경보일 대비 −10% 이하면 '적중'. LT 약세장 문턱 0.2 의 절반."
+    },
+    "fwd_horizons_obs": {
+      "value": [
+        20,
+        60
+      ],
+      "source": "설계 선택(검증 표 전용) — 1개월 · 1분기 선행."
+    },
+    "crisis_lambda": {
+      "value": [
+        0.2,
+        0.2
+      ],
+      "source": "contracts/behavior_card.R::bc_crises_lt · 06_Registry/behavior_card.json(crisis_lambda_down/up) — Lunde & Timmermann (2004)."
+    },
+    "lambda_weekly_sensitivity": {
+      "value": [
+        0.89,
+        0.97
+      ],
+      "source": "Holló, Kremer & Lo Duca (2012) CISS, ECB WP 1426 §4 Figure 7 — λ 0.89 · 0.93 · 0.97 감도."
+    }
+  },
+  "latest": {
+    "date": "2026-11-05",
+    "score": 20.04141813314999,
+    "score_pct": 0.8700142450142451,
+    "score_linear": 67.64561672187011,
+    "avg_axis_corr": 0.15508438402038424,
+    "contrib": {
+      "equity": 5.212461241166158,
+      "credit": 4.053854160219079,
+      "fx": 1.3250579885008826,
+      "flow": 5.601544259921415,
+      "breadth": 4.77634553740298,
+      "funding": 0.6058884946430451,
+      "global": -1.5337335487035748
+    },
+    "subindex": {
+      "equity": 0.957276700800663,
+      "credit": 0.6785060409380446,
+      "fx": 0.5101111115693456,
+      "flow": 0.9208046106298453,
+      "breadth": 0.8577034697390675,
+      "funding": 0.4624730521392957,
+      "global": 0.3483181847146473
+    },
+    "axis_pct": {
+      "equity": 0.9794316045560102,
+      "credit": 0.8266960491106564,
+      "fx": 0.3848135798726887,
+      "flow": 0.9260219646125687,
+      "breadth": 0.9412380578458317,
+      "funding": 0.7995919648462021,
+      "global": 0.4642046314514908
+    },
+    "score_20td_ago": 16.255171219106014,
+    "date_20td_ago": "2026-10-07",
+    "contrib_20td_ago": {
+      "equity": 3.563285766729524,
+      "credit": 3.629029816740634,
+      "fx": 1.4086843295644091,
+      "flow": 4.931120078835623,
+      "breadth": 2.327162995674137,
+      "funding": 1.1699208407887374,
+      "global": -0.7740326092270502
+    },
+    "score_60td_ago": 23.893906197413255,
+    "date_60td_ago": "2026-08-06",
+    "vkospi": 58.21,
+    "vkospi_pct": 0.9777362338545207,
+    "max_score_since_t0": 78.40720860720842,
+    "max_score_date": "2008-11-20"
+  },
+  "excluded_inputs": {
+    "msm_daily_latest/msm_hybrid_latest/unified_regime_signal": "전 표본 모수(PIT C1) — 입력 제외",
+    "HY_Spread/BBB_Spread(FRED ICE BofA)": "캐시 이력 2023-10-20~ 뿐 — 역사 검증 불가로 제외",
+    "DEXKOUS(FRED 원/달러)": "가용 규칙 prohibited — ECOS 731Y001 사용"
+  },
+  "elapsed_sec": 20.6
+}
