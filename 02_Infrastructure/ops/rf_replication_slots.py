@@ -45,6 +45,7 @@ import json
 import os
 import re
 import shutil
+import stat
 import subprocess
 import sys
 import time
@@ -74,6 +75,29 @@ def _iso(t=None):
 
 def _rd(p):
     return qv_lock._read_json(p)
+
+
+def _rmtree_force(p):
+    """폴더를 지운다 — 반환 = 지워졌는가.
+    ★2026-11-06 실측: .cache 가 OneDrive 안 실제 폴더가 된 뒤(11-03) 동기화된 폴더는 수 초 안에 읽기 전용(R) 속성을 받는다.
+      rmtree(ignore_errors=True) 는 안 파일만 지우고 R 폴더는 못 지운 채 조용히 끝난다 — 빈 claim 폴더가 '방금 만든 새 claim'
+      (mtime 갱신)으로 남아 작업자가 in_progress 를 되살리지 않았다(11-01 cpu2 6시간 no_pending_request 와 같은 모양).
+      R 을 풀고(os.chmod S_IWRITE) 한 번 더 지운다."""
+    shutil.rmtree(p, ignore_errors=True)
+    if not os.path.isdir(p):
+        return True
+    for dp, _dns, fns in os.walk(p, topdown=False):
+        for n in fns:
+            try:
+                os.chmod(os.path.join(dp, n), stat.S_IWRITE)
+            except OSError:
+                pass
+        try:
+            os.chmod(dp, stat.S_IWRITE)
+        except OSError:
+            pass
+    shutil.rmtree(p, ignore_errors=True)
+    return not os.path.isdir(p)
 
 
 class Lane(object):
@@ -236,13 +260,16 @@ class Lane(object):
         return info
 
     def _reclaim_claim(self, cdir, slot, info, alive_flag):
-        shutil.rmtree(cdir, ignore_errors=True)
+        gone = _rmtree_force(cdir)
         try:
             os.remove(cdir + ".chain")
         except OSError:
             pass
         self.jl("claim_stale_reclaim", slot=slot, age_h=info.get("age_h"), dead=0 if alive_flag else 1,
                 stale_h=self.claim_stale_h(), alive=1 if alive_flag else 0, why=info.get("why"), paper=info.get("paper"))
+        if not gone:     # 회수했다고 적고 폴더가 남으면 작업자는 '새 claim' 으로 읽는다 — 실패를 따로 남긴다(감시기가 본다)
+            self.jl("claim_reclaim_incomplete", slot=slot, path=cdir,
+                    note="claim 폴더를 지우지 못했다 — 작업자가 in_progress 를 되살리지 못한다(no_pending_request 반복) · 세션 확인")
 
     def sweep_claim(self, slot, cdir):
         """슬롯 1개 claim 판정 · 회수 — 반환 = 판정 뒤 claim_info(free | live | starting)."""
@@ -309,7 +336,7 @@ class Lane(object):
                 o = self.paper_lock_owner(key)
                 if o is None:
                     if _now() - qv_lock._mtime(ld) > PAPER_LOCK_NO_OWNER_S:
-                        shutil.rmtree(ld, ignore_errors=True)
+                        _rmtree_force(ld)
                         continue
                     return False, "?"
                 if o.get("slot") == slot:
@@ -319,7 +346,7 @@ class Lane(object):
                     return True, slot
                 if self.paper_lock_live(o):
                     return False, o.get("slot")
-                shutil.rmtree(ld, ignore_errors=True)
+                _rmtree_force(ld)
                 self.jl("paper_lock_stale_reclaim", paper=key, prev_slot=o.get("slot"), by=slot)
                 continue
             qv_lock._atomic_json(os.path.join(ld, "owner.json"),
@@ -330,7 +357,7 @@ class Lane(object):
     def paper_lock_release(self, key, slot):
         o = self.paper_lock_owner(key)
         if o and o.get("slot") == slot:
-            shutil.rmtree(self.paper_lock_dir(key), ignore_errors=True)
+            _rmtree_force(self.paper_lock_dir(key))
             return True
         return False
 
@@ -347,11 +374,11 @@ class Lane(object):
             o = _rd(os.path.join(ld, "owner.json"))
             if not isinstance(o, dict) or not o.get("key"):
                 if _now() - qv_lock._mtime(ld) > PAPER_LOCK_NO_OWNER_S:
-                    shutil.rmtree(ld, ignore_errors=True)
+                    _rmtree_force(ld)
                     n += 1
                 continue
             if not self.paper_lock_live(o):
-                shutil.rmtree(ld, ignore_errors=True)
+                _rmtree_force(ld)
                 n += 1
         return n
 
@@ -513,7 +540,7 @@ class Lane(object):
             cls = self.classify_req(d)["class"] if k else "cpu"
             return {"state": "live", "paper": k, "class": cls, "status": st, "age_h": info.get("age_h")}
         if info["state"] != "free":
-            shutil.rmtree(self.legacy_claim, ignore_errors=True)
+            _rmtree_force(self.legacy_claim)
             self.jl("legacy_claim_reclaim", why=info.get("why"), age_h=info.get("age_h"), paper=k)
         if st not in BUSY or not k:
             return None

@@ -6,6 +6,7 @@
 #   S1 발행 = 등급별 슬롯(GPU 논문 → gpu1 · CPU → cpu) · 논문 잠금 · LAUNCH 3줄 / S2 두 틱 경합 — 슬롯당 발행 1회(+뮤테이션: 잠금 제거 → 2회) /
 #   S3 같은 논문 중복 — 다른 슬롯이 쥔 논문은 duplicate_held_elsewhere(+뮤테이션: 생존 판정 제거 → 빼앗음) /
 #   S4 슬롯 소유자 사망 — 즉시 회수 · 재착수 · 그 논문은 다른 슬롯이 못 가져감 · 생존 소유자 유지 · claim_live_long 1회 · pid 재사용 /
+#   S4d 읽기 전용(R) claim 폴더(OneDrive 동기화 재현 · 11-06) — 폴더까지 회수(+뮤테이션: plain rmtree → 폴더 잔존 · claim_reclaim_incomplete) /
 #   S5 GPU 오배치 — 인계 → gpu1 · 구현 의존성 판별(torch 엔진 = gpu · 아니면 cpu · 큐 메타보다 우선 · +뮤테이션) /
 #   S6 GPU 임대 — 유효 임대 = GPU 슬롯 보류(CPU 그대로) · 만료 = 틱이 풀고 재개(+뮤테이션: 만료 비교 제거 → 영영 보류) · 보유자 사망 /
 #   S7 구판 요청 인수(살아 있는 구판 작업자 = 점유 · 죽으면 회수 후 등급 맞는 슬롯으로) / S8 용량(구판 CPU 점유 = CPU 1 감산) /
@@ -17,12 +18,13 @@ import io
 import json
 import os
 import shutil
+import stat
 import subprocess
 import sys
 import tempfile
 import time
 
-ROOT = os.environ.get("QM_ROOT") or os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
+ROOT =os.environ.get("QM_ROOT") or os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
 OPS = os.path.join(ROOT, "02_Infrastructure", "ops")
 SLOTS = os.path.join(OPS, "rf_replication_slots.py")
 PY = sys.executable
@@ -280,6 +282,49 @@ def main():
         l3, _ = h.tick()
         check("S4 pid 재사용(살아 있는 pid · 시작 시각 불일치) = 죽은 소유자 → 회수 · 재착수", "cpu1" in l3 and
               [e for e in h.events("claim_stale_reclaim") if e.get("slot") == "cpu1" and e.get("why") == "pid_reused"], l3)
+
+        # ── S4d 읽기 전용(R) claim 폴더 — OneDrive 동기화 폴더 재현(2026-11-06) ────────
+        #   .cache 가 OneDrive 안으로 옮겨진 뒤(11-03) 동기화된 폴더는 R 속성을 받고, rmtree(ignore_errors) 는 파일만 지우고 폴더를 남겼다.
+        #   남은 빈 폴더(mtime 갱신)를 작업자가 '새 claim' 으로 읽어 in_progress 를 되살리지 못했다(11-01 cpu2 no_pending_request 반복).
+        def _ro(c):
+            for n in os.listdir(c):
+                os.chmod(os.path.join(c, n), stat.S_IREAD)
+            os.chmod(c, stat.S_IREAD)
+
+        def _rw(c):
+            if os.path.isdir(c):
+                for n in os.listdir(c):
+                    os.chmod(os.path.join(c, n), stat.S_IWRITE)
+                os.chmod(c, stat.S_IWRITE)
+        canary = os.path.join(base, "s4d_canary")
+        os.makedirs(canary)
+        io.open(os.path.join(canary, "owner"), "w").write("1\n")
+        _ro(canary)
+        shutil.rmtree(canary, ignore_errors=True)
+        reproduced = os.path.isdir(canary)          # 전제 — 이 OS 에서 R 폴더가 plain rmtree 를 견디는가(아니면 아래 검사는 공허)
+        _rw(canary)
+        shutil.rmtree(canary, ignore_errors=True)
+        f = Fx(base, "s4d")
+        f.put_req("cpu1", "A.cpu", status="in_progress")
+        f.run(["paper-lock", "--slot", "cpu1"])
+        c4 = f.claim("cpu1", owner_win=DEAD_PID, paper="A.cpu")
+        _ro(c4)
+        l4, _ = f.tick()
+        check("S4d 읽기 전용 claim(죽은 소유자) — 폴더까지 지운다(작업자가 in_progress 를 되살릴 수 있다) · LAUNCH cpu1 · 회수 미완 사건 없음"
+              " · 전제(plain rmtree 가 R 폴더를 남긴다) 재현",
+              reproduced and not os.path.isdir(c4) and "cpu1" in l4 and not f.events("claim_reclaim_incomplete"), (reproduced, l4))
+        m4, ns4 = mutant_dir(base, "s4d", [("rf_replication_slots.py", "        gone = _rmtree_force(cdir)\n",
+                                            "        shutil.rmtree(cdir, ignore_errors=True); gone = not os.path.isdir(cdir)\n")])
+        fm = Fx(base, "s4dm")
+        fm.put_req("cpu1", "A.cpu", status="in_progress")
+        fm.run(["paper-lock", "--slot", "cpu1"], slots_py=m4)
+        c4m = fm.claim("cpu1", owner_win=DEAD_PID, paper="A.cpu")
+        _ro(c4m)
+        fm.tick(slots_py=m4)
+        left = os.path.isdir(c4m)
+        _rw(c4m)
+        check("S4d 뮤테이션(plain rmtree)판은 R claim 폴더를 남긴다 → 위 검사가 잡는 결함 · 남으면 claim_reclaim_incomplete 를 남긴다 · 치환 1곳",
+              ns4 == [1] and left and fm.events("claim_reclaim_incomplete"), (ns4, left))
 
         # ── S5 GPU 오배치 ───────────────────────────────────────────────────
         f = Fx(base, "s5", cands=[{"key": "A.cpu", "source": "queue", "meta": {"paper_title": "Momentum"}}])
