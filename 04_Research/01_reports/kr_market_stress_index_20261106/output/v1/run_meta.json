@@ -1,0 +1,875 @@
+{
+  "run_at": "2026-11-06T08:52:45",
+  "composite_start_t0": "2006-01-02",
+  "last_date": "2026-11-05",
+  "axes": [
+    "equity",
+    "smallcap",
+    "breadth",
+    "liquidity",
+    "rates",
+    "credit",
+    "funding",
+    "fx",
+    "financial",
+    "flow",
+    "global",
+    "contagion"
+  ],
+  "axis_ko": {
+    "equity": "주식(KOSPI200)",
+    "smallcap": "중소형·코스닥",
+    "breadth": "시장 폭",
+    "liquidity": "유동성",
+    "rates": "국채 금리",
+    "credit": "신용 스프레드",
+    "funding": "단기자금",
+    "fx": "외환",
+    "financial": "금융기관",
+    "flow": "외국인 수급",
+    "global": "글로벌 전이",
+    "contagion": "시장 간 전이"
+  },
+  "n_indicators": 34,
+  "indicators": [
+    {
+      "id": "E1",
+      "axis": "equity",
+      "name": "KOSPI200 변동성",
+      "definition": "일별 로그수익² EWMA(λ.85) 제곱근",
+      "source": "benchmark.parquet",
+      "availability_rule": null
+    },
+    {
+      "id": "E2",
+      "axis": "equity",
+      "name": "KOSPI200 CMAX(2년)",
+      "definition": "1 − P/2년 최고",
+      "source": "benchmark.parquet",
+      "availability_rule": null
+    },
+    {
+      "id": "E3",
+      "axis": "equity",
+      "name": "V-KOSPI200",
+      "definition": "내재변동성 지수",
+      "source": "indices.parquet(kospi200_vol)",
+      "availability_rule": null
+    },
+    {
+      "id": "S1",
+      "axis": "smallcap",
+      "name": "코스닥 변동성",
+      "definition": "일별 로그수익² EWMA",
+      "source": "indices.parquet(kosdaq)",
+      "availability_rule": null
+    },
+    {
+      "id": "S2",
+      "axis": "smallcap",
+      "name": "코스닥 CMAX(2년)",
+      "definition": "1 − P/2년 최고",
+      "source": "indices.parquet(kosdaq)",
+      "availability_rule": null
+    },
+    {
+      "id": "S3",
+      "axis": "smallcap",
+      "name": "코스닥 상대 약세(60일)",
+      "definition": "−(코스닥 60일 로그수익 − KOSPI200 60일)",
+      "source": "indices · benchmark",
+      "availability_rule": null
+    },
+    {
+      "id": "B1",
+      "axis": "breadth",
+      "name": "약세 종목 비중",
+      "definition": "시총 상위 500 중 52주 고가 대비 −20% 이하 비중",
+      "source": "RAWDATA",
+      "availability_rule": null
+    },
+    {
+      "id": "B2",
+      "axis": "breadth",
+      "name": "대형주 평균 상관",
+      "definition": "시총 상위 100 의 21일 평균 쌍별 상관",
+      "source": "RAWDATA",
+      "availability_rule": null
+    },
+    {
+      "id": "B3",
+      "axis": "breadth",
+      "name": "중앙 종목 60일 하락",
+      "definition": "−(시총 상위 500 의 60일 수익 중앙값)",
+      "source": "RAWDATA",
+      "availability_rule": null
+    },
+    {
+      "id": "L1",
+      "axis": "liquidity",
+      "name": "대형주 비유동성(Amihud)",
+      "definition": "|수익|/거래대금 20일 평균의 상위 500 중앙값",
+      "source": "RAWDATA",
+      "availability_rule": null
+    },
+    {
+      "id": "L2",
+      "axis": "liquidity",
+      "name": "중소형 비유동성(Amihud)",
+      "definition": "같은 값 · 시총 501~1500위 중앙값",
+      "source": "RAWDATA",
+      "availability_rule": null
+    },
+    {
+      "id": "R1",
+      "axis": "rates",
+      "name": "국고채 10년 금리 변동성",
+      "definition": "일별 금리 변화² EWMA",
+      "source": "research_pull_ecos_817Y002(KR_Gov10Y)",
+      "availability_rule": "KR_Gov10Y"
+    },
+    {
+      "id": "R2",
+      "axis": "rates",
+      "name": "국고채 3년 2년 누적 상승(CMIN)",
+      "definition": "y − 2년 최저(%p)",
+      "source": "research_pull(KR_Gov3Y · 올바른 3년물)",
+      "availability_rule": "KR_Gov3Y"
+    },
+    {
+      "id": "R3",
+      "axis": "rates",
+      "name": "수익률곡선 역전",
+      "definition": "국고채 1년 − 10년(%p)",
+      "source": "research_pull(KR_Gov1Y · KR_Gov10Y)",
+      "availability_rule": "KR_Gov10Y"
+    },
+    {
+      "id": "C1",
+      "axis": "credit",
+      "name": "회사채 AA- 스프레드",
+      "definition": "AA- 3년 − 국고채 3년(%p)",
+      "source": "research_pull(KR_CorpAA · KR_Gov3Y)",
+      "availability_rule": "KR_CorpAA"
+    },
+    {
+      "id": "C2",
+      "axis": "credit",
+      "name": "회사채 BBB- 스프레드",
+      "definition": "BBB- 3년 − 국고채 3년(%p)",
+      "source": "research_pull(KR_CorpBBB · KR_Gov3Y)",
+      "availability_rule": "KR_CorpBBB"
+    },
+    {
+      "id": "C3",
+      "axis": "credit",
+      "name": "저신용 프리미엄",
+      "definition": "BBB- − AA-(%p)",
+      "source": "research_pull",
+      "availability_rule": "KR_CorpBBB"
+    },
+    {
+      "id": "M1",
+      "axis": "funding",
+      "name": "CD − 콜 스프레드",
+      "definition": "CD91 − 콜 1일(%p)",
+      "source": "research_pull(KR_CD91 · KR_Call1D)",
+      "availability_rule": "KR_Call1D"
+    },
+    {
+      "id": "M2",
+      "axis": "funding",
+      "name": "CP − CD 스프레드",
+      "definition": "CP91 − CD91(%p · 단기 신용증권 프리미엄)",
+      "source": "research_pull(KR_CP91 · KR_CD91)",
+      "availability_rule": "KR_CP91"
+    },
+    {
+      "id": "M3",
+      "axis": "funding",
+      "name": "CD 금리 변동성",
+      "definition": "일별 CD91 변화² EWMA",
+      "source": "research_pull(KR_CD91)",
+      "availability_rule": "KR_CD91"
+    },
+    {
+      "id": "X1",
+      "axis": "fx",
+      "name": "원/달러 변동성",
+      "definition": "일별 로그변화² EWMA",
+      "source": "research_pull_ecos_krw(731Y001)",
+      "availability_rule": "ECOS_KRW_USD"
+    },
+    {
+      "id": "X2",
+      "axis": "fx",
+      "name": "원화 가치 CMAX(6개월)",
+      "definition": "1 − 6개월 최저 원/달러 / 현재",
+      "source": "research_pull_ecos_krw",
+      "availability_rule": "ECOS_KRW_USD"
+    },
+    {
+      "id": "X3",
+      "axis": "fx",
+      "name": "원화 고유 약세(20일)",
+      "definition": "Δlog 원/달러 20일 − Δlog DXY 프록시 20일",
+      "source": "research_pull_ecos_krw · fx_majors",
+      "availability_rule": "ECOS_KRW_USD"
+    },
+    {
+      "id": "F1",
+      "axis": "financial",
+      "name": "금융업 CMAX(2년)",
+      "definition": "은행·증권·보험 시총가중 지수의 2년 CMAX",
+      "source": "RAWDATA + us_sector_lv1",
+      "availability_rule": null
+    },
+    {
+      "id": "F2",
+      "axis": "financial",
+      "name": "금융업 고유 변동성",
+      "definition": "2년 이동 OLS 잔차² EWMA(KOSPI200 대비)",
+      "source": "RAWDATA + us_sector_lv1 · benchmark",
+      "availability_rule": null
+    },
+    {
+      "id": "F3",
+      "axis": "financial",
+      "name": "금융업 상대 약세(60일)",
+      "definition": "−(금융업 60일 로그수익 − KOSPI200 60일)",
+      "source": "RAWDATA + us_sector_lv1",
+      "availability_rule": null
+    },
+    {
+      "id": "N1",
+      "axis": "flow",
+      "name": "외국인 순매도 강도(20일)",
+      "definition": "−Σ20일 외국인 순매수 / 시총",
+      "source": "investor_wide + RAWDATA",
+      "availability_rule": null
+    },
+    {
+      "id": "N2",
+      "axis": "flow",
+      "name": "외국인 순매도 강도(60일)",
+      "definition": "60일 판",
+      "source": "investor_wide + RAWDATA",
+      "availability_rule": null
+    },
+    {
+      "id": "N3",
+      "axis": "flow",
+      "name": "외국인 순매도 폭",
+      "definition": "시총 상위 500 중 20일 순매도 종목 비중",
+      "source": "investor_wide + RAWDATA",
+      "availability_rule": null
+    },
+    {
+      "id": "G1",
+      "axis": "global",
+      "name": "VIX",
+      "definition": "CBOE VIX",
+      "source": "research_pull_fred(VIXCLS)",
+      "availability_rule": "VIXCLS"
+    },
+    {
+      "id": "G2",
+      "axis": "global",
+      "name": "세인트루이스 연준 FSI",
+      "definition": "STLFSI4(주간)",
+      "source": "research_pull_fred(STLFSI4)",
+      "availability_rule": "STLFSI4"
+    },
+    {
+      "id": "G3",
+      "axis": "global",
+      "name": "달러 강세(20일)",
+      "definition": "Δlog DXY 프록시 20일",
+      "source": "research_pull_ecos_fx_majors(731Y002)",
+      "availability_rule": "ECOS_DXY_PROXY"
+    },
+    {
+      "id": "T1",
+      "axis": "contagion",
+      "name": "주식·원화 동반 약세",
+      "definition": "−corr21(KOSPI200 수익, Δlog 원/달러)",
+      "source": "benchmark · research_pull_ecos_krw",
+      "availability_rule": "ECOS_KRW_USD"
+    },
+    {
+      "id": "T2",
+      "axis": "contagion",
+      "name": "주식·국채 상관 이탈",
+      "definition": "|corr21 − corr1040|(KOSPI200 수익, Δ국고채 3년)",
+      "source": "benchmark · research_pull(KR_Gov3Y)",
+      "availability_rule": "KR_Gov3Y"
+    }
+  ],
+  "indicator_history_start": {
+    "E1": "1990-04-03",
+    "E2": "1990-01-05",
+    "E3": "2003-01-02",
+    "S1": "1996-09-11",
+    "S2": "1996-07-01",
+    "S3": "1996-09-25",
+    "B1": "1995-10-26",
+    "B2": "1995-02-03",
+    "B3": "1995-04-03",
+    "L1": "1995-01-23",
+    "L2": "1996-07-04",
+    "R1": "2001-03-21",
+    "R2": "1998-11-16",
+    "R3": "2000-12-19",
+    "C1": "1998-11-16",
+    "C2": "2000-10-04",
+    "C3": "2000-10-02",
+    "M1": "1995-01-05",
+    "M2": "1995-01-04",
+    "M3": "1995-03-20",
+    "X1": "2000-03-17",
+    "X2": "2000-01-04",
+    "X3": "2000-01-27",
+    "F1": "1995-01-04",
+    "F2": "1997-04-16",
+    "F3": "1995-04-04",
+    "N1": "2000-01-31",
+    "N2": "2000-03-29",
+    "N3": "2000-01-24",
+    "G1": "1996-01-03",
+    "G2": "1996-01-12",
+    "G3": "1999-01-26",
+    "T1": "2000-02-02",
+    "T2": "2000-11-28"
+  },
+  "data_files": {
+    "RAWDATA.parquet": {
+      "mtime": "2026-11-06T07:27:27"
+    },
+    "investor_wide.parquet": {
+      "mtime": "2026-11-06T07:30:37"
+    },
+    "benchmark.parquet": {
+      "mtime": "2026-11-06T07:32:40"
+    },
+    "indices.parquet": {
+      "mtime": "2026-11-06T07:32:40"
+    },
+    "us_sector_lv1.parquet": {
+      "mtime": "2026-11-06T07:30:48"
+    },
+    "research_pull_ecos_817Y002": {
+      "mtime": "2026-11-06T08:34:10"
+    },
+    "research_pull_ecos_krw": {
+      "mtime": "2026-11-06T08:34:12"
+    },
+    "research_pull_ecos_fx_majors": {
+      "mtime": "2026-11-06T08:34:25"
+    },
+    "research_pull_fred": {
+      "mtime": "2026-11-06T08:34:28"
+    }
+  },
+  "data_ranges": {
+    "rawdata_range": [
+      "1995-01-03",
+      "2026-10-30"
+    ],
+    "breadth_universe_n_median": 500.0,
+    "fin_sector_snapshots": 446,
+    "fin_members_median": 81.0,
+    "investor_rows_joined": 10578483,
+    "investor_rows_unmatched": 3380,
+    "investor_range": [
+      "2000-01-04",
+      "2026-10-30"
+    ]
+  },
+  "research_pull_meta": {
+    "fetched_at": "2026-11-06T08:34:29",
+    "ecos_817Y002_items": {
+      "010101000": {
+        "series": "KR_Call1D",
+        "ecos_name": "콜금리(1일, 전체거래)"
+      },
+      "010190000": {
+        "series": "KR_Gov1Y",
+        "ecos_name": "국고채(1년)"
+      },
+      "010200000": {
+        "series": "KR_Gov3Y",
+        "ecos_name": "국고채(3년)"
+      },
+      "010200001": {
+        "series": "KR_Gov5Y",
+        "ecos_name": "국고채(5년)"
+      },
+      "010210000": {
+        "series": "KR_Gov10Y",
+        "ecos_name": "국고채(10년)"
+      },
+      "010220000": {
+        "series": "KR_Gov20Y",
+        "ecos_name": "국고채(20년)"
+      },
+      "010400000": {
+        "series": "KR_MSB91D",
+        "ecos_name": "통안증권(91일)"
+      },
+      "010400001": {
+        "series": "KR_MSB1Y",
+        "ecos_name": "통안증권(1년)"
+      },
+      "010400002": {
+        "series": "KR_MSB2Y",
+        "ecos_name": "통안증권(2년)"
+      },
+      "010502000": {
+        "series": "KR_CD91",
+        "ecos_name": "CD(91일)"
+      },
+      "010503000": {
+        "series": "KR_CP91",
+        "ecos_name": "CP(91일)"
+      },
+      "010150000": {
+        "series": "KR_KORIBOR3M",
+        "ecos_name": "KORIBOR(3개월)"
+      },
+      "010300000": {
+        "series": "KR_CorpAA",
+        "ecos_name": "회사채(3년, AA-)"
+      },
+      "010320000": {
+        "series": "KR_CorpBBB",
+        "ecos_name": "회사채(3년, BBB-)"
+      },
+      "010501000": {
+        "series": "KR_MMF7D",
+        "ecos_name": "MMF(7일)"
+      },
+      "010260000": {
+        "series": "KR_KDB1Y",
+        "ecos_name": "산금채(1년)"
+      }
+    },
+    "ecos_817Y002_last_date": "2026-11-04",
+    "krw_last_date": "2026-11-05",
+    "fx_last_date": "2026-11-05",
+    "fred_last_dates": {
+      "BAMLC0A4CBBB": "2026-11-04",
+      "BAMLH0A0HYM2": "2026-11-04",
+      "STLFSI4": "2026-10-30",
+      "VIXCLS": "2026-11-04"
+    },
+    "cache_item_code_verification": {
+      "KR_Gov3Y vs ECOS KR_Gov1Y": {
+        "n": 6386,
+        "mean_abs_diff": 0.0,
+        "share_exact": 1.0
+      },
+      "KR_Gov3Y vs ECOS KR_Gov3Y": {
+        "n": 6386,
+        "mean_abs_diff": 0.2754,
+        "share_exact": 0.0174
+      },
+      "KR_CD91 vs ECOS KR_KORIBOR3M": {
+        "n": 5253,
+        "mean_abs_diff": 0.0,
+        "share_exact": 1.0
+      },
+      "KR_CD91 vs ECOS KR_CD91": {
+        "n": 5253,
+        "mean_abs_diff": 0.0355,
+        "share_exact": 0.1881
+      },
+      "KR_Gov10Y vs ECOS KR_Gov10Y": {
+        "n": 6386,
+        "mean_abs_diff": 0.0,
+        "share_exact": 1.0
+      },
+      "KR_CorpAA vs ECOS KR_CorpAA": {
+        "n": 6386,
+        "mean_abs_diff": 0.0,
+        "share_exact": 1.0
+      },
+      "KR_Call1D vs ECOS KR_Call1D": {
+        "n": 6386,
+        "mean_abs_diff": 0.0,
+        "share_exact": 1.0
+      }
+    },
+    "rules_research_copy": "C:/Users/99922/OneDrive/Quant_Module_Moltbot/04_Research/01_reports/kr_market_stress_index_20261106/output/fred_availability_rules_research.json",
+    "rules_added_series": [
+      "KR_Gov1Y",
+      "KR_Gov5Y",
+      "KR_Gov20Y",
+      "KR_MSB91D",
+      "KR_MSB1Y",
+      "KR_MSB2Y",
+      "KR_CP91",
+      "KR_KORIBOR3M",
+      "KR_MMF7D",
+      "KR_KDB1Y"
+    ],
+    "elapsed_sec": 59.0
+  },
+  "fred_availability_rules": {
+    "version": "2026-10-20.b5+research20261106",
+    "md5": "6227a17f19a2306ec9948ffd7a687b24",
+    "path": "C:/Users/99922/OneDrive/Quant_Module_Moltbot/04_Research/01_reports/kr_market_stress_index_20261106/output/fred_availability_rules_research.json",
+    "regime_key": "c11_avail:2026-10-20.b5+research20261106:6227a17f"
+  },
+  "params": {
+    "ewma_vol_lambda": {
+      "value": 0.85,
+      "source": "Chavleishvili & Kremer (2023) 'Measuring systemic financial stress and its risks for growth', ECB WP 2842 (Review of Finance 29(3), 2025) Table 3 주석 — 변동성 = 일별 로그수익 제곱의 EWMA λ = 0.85."
+    },
+    "ewma_vol_seed_obs": {
+      "value": 60,
+      "source": "설계 선택(PIT) — 새 CISS 는 첫 2년 분산으로 초기화(Engle 2009)하나 그것은 워밍업 안 미래참조라, 첫 60관측 분산으로 씨를 두고 재귀. λ=0.85 라 30일이면 씨의 영향이 사라진다."
+    },
+    "ewma_corr_lambda_daily": {
+      "value": 0.85,
+      "source": "Chavleishvili & Kremer (2023) 'Measuring systemic financial stress and its risks for growth', ECB WP 2842 (Review of Finance 29(3), 2025) §4.4 — 순위상관 EWMA 'calibrated smoothing parameter (or decay factor) λ = 0.85'(일간)."
+    },
+    "corr_lambda_sensitivity": {
+      "value": [
+        0.9855906837939876,
+        0.97
+      ],
+      "source": "v0 값(CISS 2012 주간 0.93 의 일간 환산) · 느린 대안 0.97."
+    },
+    "aggregation": {
+      "value": "indicator-level, equal weight 1/N, full N×N EWMA rank correlation",
+      "source": "Chavleishvili & Kremer (2023) 'Measuring systemic financial stress and its risks for growth', ECB WP 2842 (Review of Finance 29(3), 2025) 각주 2 — '하위지수 없이 한 번에 집계 · 전체 15×15 상관 · 지표 동일 가중(실물 영향 가중은 자의적이라는 비판)'."
+    },
+    "ewma_demean": {
+      "value": 0.5,
+      "source": "Holló, Kremer & Lo Duca (2012) CISS, ECB WP 1426 §3.4 — 이론 중앙값 0.5 차감."
+    },
+    "ewma_init": {
+      "value": {
+        "var": 0.08333333333333333,
+        "cov": 0.0
+      },
+      "source": "균등분포 분산 · 무상관 초기화(완전 재귀)."
+    },
+    "ecdf_min_history_years": {
+      "value": 3,
+      "source": "Holló, Kremer & Lo Duca (2012) CISS, ECB WP 1426 §3.3 — 약 3년 사전 구간. 이력 3년 미만 = 미유효."
+    },
+    "pit_rolling_indicators": {
+      "value": [
+        "L1",
+        "L2"
+      ],
+      "source": "Duprey, Klaus & Peltonen (2017) CLIFS, J. Financial Stability 32 §2.2 각주 18 · §5 — '10-year rolling window can be used to gradually discard older periods'. Amihud 비유동성은 시장이 깊어지며 구조적으로 하락한다(이 표본: 상위 500 중앙값 2006 0.012 → 2026 0.0027 · 확장 창 PIT 는 2026 급락에도 ≤ 0.11) — 확장 창 순위로는 영영 켜지지 않으므로 유동성 두 지표만 10년 이동 창 PIT. 나머지 지표는 확장 창."
+    },
+    "pit_rolling_window_obs": {
+      "value": 2520,
+      "source": "Duprey, Klaus & Peltonen (2017) CLIFS, J. Financial Stability 32 — 10년(≈ 2,520 거래일)."
+    },
+    "pit_rolling_min_obs": {
+      "value": 750,
+      "source": "설계 선택 — 3년 이력(ecdf_min_history_years 와 같은 바닥)."
+    },
+    "score_pct_min_obs": {
+      "value": 250,
+      "source": "설계 선택 — 재귀 백분위는 자기 이력 250관측 뒤부터(첫 관측 백분위 = 1 인공물 차단)."
+    },
+    "cmax_window_days": {
+      "value": 730,
+      "source": "Chavleishvili & Kremer (2023) 'Measuring systemic financial stress and its risks for growth', ECB WP 2842 (Review of Finance 29(3), 2025) Table 3 — CMAX 2년(520 영업일) · Patel & Sarkar (1998)."
+    },
+    "fx_cmax_window_days": {
+      "value": 183,
+      "source": "Duprey, Klaus & Peltonen (2017) CLIFS, J. Financial Stability 32 §2.1 — 환율 누적 변화 6개월 · 신흥국은 절하 방향(Balakrishnan et al. 2011, IMF WP 09/133)."
+    },
+    "cmin_window_days": {
+      "value": 730,
+      "source": "Duprey, Klaus & Peltonen (2017) CLIFS, J. Financial Stability 32 §2.1 식(4) — 국채 금리의 2년 최저 대비 상승폭(CMIN)."
+    },
+    "breadth_drawdown": {
+      "value": 0.2,
+      "source": "Lunde & Timmermann (2004) 약세장 관례 0.2 · behavior_card.json crisis_lambda."
+    },
+    "breadth_high_window_obs": {
+      "value": 252,
+      "source": "George & Hwang (2004) JF — 52주 고가."
+    },
+    "breadth_high_min_obs": {
+      "value": 200,
+      "source": "설계 선택 — 52주 창의 약 80%."
+    },
+    "breadth_universe_topn": {
+      "value": 500,
+      "source": "설계 선택 — 직전일 시총 상위 500(KR_TOP500 유니버스 규모)."
+    },
+    "price_floor_krw": {
+      "value": 1000,
+      "source": "측정 축 epoch all_hyg_px1000_2000_v1 — 전날 종가 1,000원 미만 제외."
+    },
+    "corr_window_obs": {
+      "value": 21,
+      "source": "Pollet & Wilson (2010) JFE — 1개월 일별 수익 평균 쌍별 상관."
+    },
+    "corr_topn": {
+      "value": 100,
+      "source": "설계 선택 — 시총 상위 100."
+    },
+    "rel_return_window_obs": {
+      "value": 60,
+      "source": "설계 선택 — 1분기 상대 수익(코스닥 · 금융업 vs KOSPI200)."
+    },
+    "amihud_window_obs": {
+      "value": 20,
+      "source": "Amihud (2002) J. Financial Markets 5(1) — |수익|/거래대금 의 기간 평균 · 1개월."
+    },
+    "amihud_small_rank": {
+      "value": [
+        501,
+        1500
+      ],
+      "source": "설계 선택 — 시총 501~1500위 = 중소형 유동성."
+    },
+    "flow_windows_obs": {
+      "value": [
+        20,
+        60
+      ],
+      "source": "v0 — Choe, Kho & Stulz (1999) · Richards (2005)."
+    },
+    "flow_breadth_window_obs": {
+      "value": 20,
+      "source": "설계 선택 — 20일 순매도 종목 비중."
+    },
+    "fin_sectors": {
+      "value": [
+        "은행",
+        "증권",
+        "보험"
+      ],
+      "source": "Holló, Kremer & Lo Duca (2012) CISS, ECB WP 1426 'financial intermediaries' 축 · 분류 = universe_support/us_sector_lv1(월별 스냅샷 · 직전 스냅샷 사용)."
+    },
+    "beta_window_obs": {
+      "value": 500,
+      "source": "Holló, Kremer & Lo Duca (2012) CISS, ECB WP 1426 Table 1 — 은행 고유수익 = 2년(522 영업일) 이동 OLS 잔차."
+    },
+    "contagion_long_window_obs": {
+      "value": 1040,
+      "source": "Holló, Kremer & Lo Duca (2012) CISS, ECB WP 1426 Table 1 — 주식·채권 상관의 장기 기준 4년(1040 영업일)."
+    },
+    "qr_taus": {
+      "value": [
+        0.05,
+        0.1,
+        0.25,
+        0.5,
+        0.75,
+        0.9,
+        0.95
+      ],
+      "source": "Adrian, Boyarchenko & Giannone (2019) AER 'Vulnerable Growth' — 분위회귀 τ 격자."
+    },
+    "qr_horizon_obs": {
+      "value": 60,
+      "source": "설계 선택 — 60거래일(1분기) 선행 KOSPI200 로그수익(GDP 대신 시장 수익 — GDP 는 분기라 표본 부족)."
+    },
+    "qr_block_obs": {
+      "value": 60,
+      "source": "설계 선택 — 겹치는 60일 창 → 블록 길이 60 의 이동 블록 부트스트랩."
+    },
+    "qr_boot_reps": {
+      "value": 200,
+      "source": "설계 선택 — 신뢰구간 2.5/97.5 백분위."
+    },
+    "nsr_grid": {
+      "value": [
+        0.5,
+        0.99,
+        0.01
+      ],
+      "source": "Kaminsky, Lizondo & Reinhart (1998) IMF Staff Papers — 임계치 격자에서 잡음/신호 최소화."
+    },
+    "nsr_event_horizon_obs": {
+      "value": 60,
+      "source": "설계 선택 — 사건 = LT −20% 첫 통과(위기 확정)가 앞으로 60거래일 안."
+    },
+    "nsr_min_signal_days": {
+      "value": 20,
+      "source": "설계 선택 — 신호일 20일 미만 임계치는 제외."
+    },
+    "nsr_warn_tpr_floor": {
+      "value": 0.5,
+      "source": "설계 선택 — '주의' = 적중률 ≥ 0.5 제약 아래 NSR 최소 · '위험' = 제약 없는 NSR 최소(한국은행 FSI 2단 임계치 12/24 의 구조를 따름)."
+    },
+    "tau_d": {
+      "value": "2022-12-31",
+      "source": "정보 경계 τ_D(CLAUDE.md · D6) — 임계치 선택 · 분위회귀 적합은 이전, 이후는 표본외."
+    },
+    "crisis_lambda": {
+      "value": [
+        0.2,
+        0.2
+      ],
+      "source": "contracts/behavior_card.R::bc_crises_lt — Lunde & Timmermann (2004)."
+    },
+    "hit_drawdown": {
+      "value": -0.1,
+      "source": "v0 — 경보 뒤 60거래일 안 −10%."
+    },
+    "alarm_percentile": {
+      "value": 0.8,
+      "source": "v0."
+    },
+    "alarm_cooloff_obs": {
+      "value": 20,
+      "source": "v0."
+    }
+  },
+  "latest": {
+    "date": "2026-11-05",
+    "score": 19.6017472401536,
+    "score_pct": 0.9311150029188558,
+    "score_linear": 65.89689580946585,
+    "score_axis_level": 20.571036496911688,
+    "avg_corr": 0.1870821919850682,
+    "contrib": {
+      "equity": 3.6959969169406683,
+      "smallcap": 1.8117098750769123,
+      "breadth": 2.6052894327298057,
+      "liquidity": 2.0943365340187543,
+      "rates": 2.644506857664358,
+      "credit": 0.9773943715860101,
+      "funding": 1.506957435941237,
+      "fx": -0.8052869155254327,
+      "financial": 1.4665986603472962,
+      "flow": 3.2074841637116314,
+      "global": -0.07110493051417494,
+      "contagion": 0.4678648381765347
+    },
+    "subindex": {
+      "equity": 0.9603272444531311,
+      "smallcap": 0.7318711014451426,
+      "breadth": 0.7872732308297685,
+      "liquidity": 0.8319444444444444,
+      "rates": 0.7113390989807818,
+      "credit": 0.5424223420577357,
+      "funding": 0.6888529861932183,
+      "fx": 0.38753665817975086,
+      "financial": 0.5157480637562767,
+      "flow": 0.8570399671532201,
+      "global": 0.34907178821309687,
+      "contagion": 0.5733041212715629
+    },
+    "axis_pct": {
+      "equity": 0.9968865538042421,
+      "smallcap": 0.9519361743529869,
+      "breadth": 0.9480443666082895,
+      "liquidity": 0.977427515080755,
+      "rates": 0.9015372640591555,
+      "credit": 0.38898618408250635,
+      "funding": 0.9490173185444639,
+      "fx": 0.20003891807744698,
+      "financial": 0.7482000389180774,
+      "flow": 0.8953103716676396,
+      "global": 0.3557112278653434,
+      "contagion": 0.6536291107219303
+    },
+    "score_20td_ago": 10.463154998457645,
+    "date_20td_ago": "2026-10-07",
+    "contrib_20td_ago": {
+      "equity": 2.302138744168159,
+      "smallcap": 1.2055425986255837,
+      "breadth": 0.5699681476220226,
+      "liquidity": 0.6784398006196206,
+      "rates": 1.3276706688599007,
+      "credit": 0.6446860778184611,
+      "funding": 0.04609458791298515,
+      "fx": 0.6640211076798521,
+      "financial": 0.15046032930325215,
+      "flow": 2.544603375290346,
+      "global": 0.45154872476509245,
+      "contagion": -0.12201916420763059
+    },
+    "score_60td_ago": 19.462755839179007,
+    "date_60td_ago": "2026-08-06",
+    "vkospi": 58.21,
+    "vkospi_pct": 0.9777362338545207,
+    "v0_score": 20.04141813314999,
+    "max_score_since_t0": 67.15677135348554,
+    "max_score_date": "2008-10-29",
+    "top_indicators": [
+      {
+        "id": "L2",
+        "name": "중소형 비유동성(Amihud)",
+        "contrib": 1.2600568632911453,
+        "ecdf_pct": 0.9825396825396825
+      },
+      {
+        "id": "E3",
+        "name": "V-KOSPI200",
+        "contrib": 1.2509555885612211,
+        "ecdf_pct": 0.9777362338545207
+      },
+      {
+        "id": "E1",
+        "name": "KOSPI200 변동성",
+        "contrib": 1.242964889111811,
+        "ecdf_pct": 0.9685660335443741
+      },
+      {
+        "id": "S1",
+        "name": "코스닥 변동성",
+        "contrib": 1.2074251237198368,
+        "ecdf_pct": 0.941564561734213
+      },
+      {
+        "id": "E2",
+        "name": "KOSPI200 CMAX(2년)",
+        "contrib": 1.202076439267636,
+        "ecdf_pct": 0.9346794659604988
+      },
+      {
+        "id": "N2",
+        "name": "외국인 순매도 강도(60일)",
+        "contrib": 1.1941852884314106,
+        "ecdf_pct": 0.9313605857230018
+      },
+      {
+        "id": "N1",
+        "name": "외국인 순매도 강도(20일)",
+        "contrib": 1.1523374767526449,
+        "ecdf_pct": 0.9102486355366889
+      },
+      {
+        "id": "B1",
+        "name": "약세 종목 비중",
+        "contrib": 1.145565734153717,
+        "ecdf_pct": 0.8924224577934825
+      }
+    ],
+    "nsr_selected": {
+      "threshold_risk": 0.99,
+      "nsr_risk_in": 0.06981790734974998,
+      "tpr_risk_in": 0.15,
+      "threshold_warn": 0.72,
+      "nsr_warn_in": 0.563337183773074,
+      "tpr_warn_in": 0.5285714285714286,
+      "oos_risk_tpr": 0.0,
+      "oos_risk_fpr": 0.0,
+      "oos_risk_nsr": NaN,
+      "oos_risk_signal_days": 0,
+      "oos_risk_event_days": 196,
+      "oos_n": 877,
+      "oos_warn_tpr": 0.8418367346938775,
+      "oos_warn_fpr": 0.4331864904552129,
+      "oos_warn_nsr": 0.5145730432074044,
+      "oos_warn_signal_days": 460,
+      "oos_warn_event_days": 196
+    },
+    "tier": "주의"
+  },
+  "elapsed_sec": 126.9
+}

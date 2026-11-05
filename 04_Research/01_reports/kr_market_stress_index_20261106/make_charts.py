@@ -15,16 +15,24 @@ import numpy as np  # noqa: E402
 import pandas as pd  # noqa: E402
 from matplotlib import font_manager  # noqa: E402
 
-HERE = os.path.dirname(os.path.abspath(__file__)).replace("\\", "/")
-OUT, CH = HERE + "/output", HERE + "/charts"
-os.makedirs(CH, exist_ok=True)
+import sys  # noqa: E402
 
-AXES = ["equity", "credit", "fx", "flow", "breadth", "funding", "global"]
-AXIS_KO = {"equity": "주식 변동성·낙폭", "credit": "신용·금리", "fx": "환율", "flow": "외국인 수급",
-           "breadth": "시장 폭·동조화", "funding": "단기 자금", "global": "글로벌 전이"}
-# 구분 색(채도 다른 7색 · 색약 구분 가능)
-COL = {"equity": "#1f4e79", "credit": "#c0504d", "fx": "#e69f00", "flow": "#009e73", "breadth": "#7b4ea3",
-       "funding": "#56b4e9", "global": "#8c8c8c"}
+VARIANT = sys.argv[1] if len(sys.argv) > 1 else "v0"   # v0(7축 · output/) | v1(12축 · output/v1/)
+HERE = os.path.dirname(os.path.abspath(__file__)).replace("\\", "/")
+CH = HERE + "/charts"
+os.makedirs(CH, exist_ok=True)
+if VARIANT == "v1":
+    OUT, DAILY, PFX = HERE + "/output/v1", "kr_stress_v1_daily.parquet", "v1_"
+else:
+    OUT, DAILY, PFX = HERE + "/output", "kr_stress_daily.parquet", ""
+_META = json.load(open(OUT + "/run_meta.json", encoding="utf-8"))
+AXES = _META.get("axes", ["equity", "credit", "fx", "flow", "breadth", "funding", "global"])
+AXIS_KO = _META.get("axis_ko", {"equity": "주식 변동성·낙폭", "credit": "신용·금리", "fx": "환율", "flow": "외국인 수급",
+                                "breadth": "시장 폭·동조화", "funding": "단기 자금", "global": "글로벌 전이"})
+# 구분 색(색약 구분 가능한 12색 — v0 7축은 앞 7색)
+PALETTE = ["#1f4e79", "#c0504d", "#e69f00", "#009e73", "#7b4ea3", "#56b4e9", "#8c8c8c",
+           "#d55e00", "#cc79a7", "#117733", "#882255", "#999933"]
+COL = {a: PALETTE[i % len(PALETTE)] for i, a in enumerate(AXES)}
 
 
 def set_font():
@@ -56,8 +64,9 @@ def shade(ax, eps, lo, hi):
 
 def main():
     fam = set_font()
-    d = pd.read_parquet(OUT + "/kr_stress_daily.parquet")
+    d = pd.read_parquet(OUT + "/" + DAILY)
     d.index = pd.to_datetime(d.index)
+    YMAX = 100 if VARIANT != "v1" else float(np.ceil(d["score"].max() * 1.15 / 5) * 5)
     eps = pd.read_csv(OUT + "/crisis_episodes_lt2020_kospi200.csv", parse_dates=["peak", "confirm", "trough", "recover"])
     meta = json.load(open(OUT + "/run_meta.json", encoding="utf-8"))
     last = d.index[-1]
@@ -71,7 +80,7 @@ def main():
     ax[0].plot(d.index, d["score_linear"], color="#c0504d", lw=0.7, alpha=0.7, label="축 단순 평균 ×100(상관 미반영)")
     p80 = d["score"].expanding(min_periods=250).quantile(0.80)
     ax[0].plot(d.index, p80, color="#555555", lw=0.6, ls="--", label="재귀 80백분위")
-    ax[0].set_ylim(0, 100)
+    ax[0].set_ylim(0, YMAX)
     ax[0].set_ylabel("지수")
     ax[0].legend(loc="upper left", fontsize=9, frameon=False)
     ax[0].set_title(f"국내 자본시장 스트레스 지수 시제품 · {lo.date()}~{last.date()} · 회색 = KOSPI200 Lunde-Timmermann 20/20 위기(고점→바닥 · 점선 = -20% 확정일)", fontsize=12)
@@ -87,7 +96,7 @@ def main():
     for a in ax:
         a.grid(alpha=0.25)
     fig.tight_layout()
-    fig.savefig(CH + "/01_index_timeseries_crises.png", dpi=150)
+    fig.savefig(f"{CH}/{PFX}01_index_timeseries_crises.png", dpi=150)
     plt.close(fig)
 
     # ② 최근 축별 기여 막대 · 최신 vs 20거래일 전
@@ -105,12 +114,12 @@ def main():
     ax.set_yticklabels([AXIS_KO[a] for a in AXES])
     ax.invert_yaxis()
     ax.set_xlabel("지수 기여(점) = w·s_i × Σ_j ρ_ij w·s_j × 100 · 합이 지수")
-    ax.set_title(f"축별 기여 분해 · 지수 {lt['score']:.1f} · 축 평균 상관 {lt['avg_axis_corr']:.2f} · 비교 V-KOSPI {lt['vkospi']:.1f}", fontsize=12)
+    ax.set_title(f"축별 기여 분해 · 지수 {lt['score']:.1f} · 축 평균 상관 {lt.get('avg_axis_corr', lt.get('avg_corr')):.2f} · 비교 V-KOSPI {lt['vkospi']:.1f}", fontsize=12)
     ax.legend(loc="lower right", fontsize=9, frameon=False)
     ax.grid(axis="x", alpha=0.25)
     ax.set_xlim(left=min(0, min(now + prev)) - 1)
     fig.tight_layout()
-    fig.savefig(CH + "/02_axis_contribution_latest.png", dpi=150)
+    fig.savefig(f"{CH}/{PFX}02_axis_contribution_latest.png", dpi=150)
     plt.close(fig)
 
     # ③ 축 기여 누적 면적(월말 표본 · 가독성) + 위기 음영
@@ -119,14 +128,14 @@ def main():
     shade(ax, eps, lo, hi)
     ax.stackplot(m.index, [m[f"c_{a}"] for a in AXES], labels=[AXIS_KO[a] for a in AXES], colors=[COL[a] for a in AXES], alpha=0.9, lw=0)
     ax.plot(d.index, d["score"], color="black", lw=0.6, label="지수(원값)")
-    ax.set_ylim(0, 100)
+    ax.set_ylim(0, YMAX)
     ax.set_title("축별 기여의 시간 변화(주간 표본 · 음의 상관 기여는 0 으로 접음) · 위기마다 켜지는 축이 다르다", fontsize=12)
     ax.legend(loc="upper left", fontsize=8, ncol=4, frameon=False)
     ax.xaxis.set_major_locator(mdates.YearLocator(2))
     ax.xaxis.set_major_formatter(mdates.DateFormatter("%Y"))
     ax.grid(alpha=0.25)
     fig.tight_layout()
-    fig.savefig(CH + "/03_axis_contribution_stacked.png", dpi=150)
+    fig.savefig(f"{CH}/{PFX}03_axis_contribution_stacked.png", dpi=150)
     plt.close(fig)
 
     # ④ 사건 연구 · 고점 · -20% 확정일 기준 평균 경로
@@ -146,7 +155,7 @@ def main():
     ax[0].set_ylabel("지수")
     fig.suptitle("사건 연구 · 위기 고점 · 확정일 전후의 지수 경로(얇은 선 = 위기별 · 굵은 선 = 중앙값)", fontsize=12)
     fig.tight_layout()
-    fig.savefig(CH + "/04_event_study.png", dpi=150)
+    fig.savefig(f"{CH}/{PFX}04_event_study.png", dpi=150)
     plt.close(fig)
 
     # ⑤ 최근 18개월 확대 · 지수 · 기여 · KOSPI200
@@ -157,7 +166,7 @@ def main():
     shade(ax[0], eps, z0, hi)
     ax[0].stackplot(mz.index, [mz[f"c_{a}"] for a in AXES], labels=[AXIS_KO[a] for a in AXES], colors=[COL[a] for a in AXES], alpha=0.9, lw=0)
     ax[0].plot(dz.index, dz["score"], color="black", lw=0.8, label="지수")
-    ax[0].set_ylim(0, max(100, dz["score"].max() * 1.05))
+    ax[0].set_ylim(0, max(YMAX, dz["score"].max() * 1.05))
     ax[0].legend(loc="upper left", fontsize=8, ncol=4, frameon=False)
     ax[0].set_title(f"최근 18개월 · 지수와 축별 기여 · 마지막 {last.date()} = {d['score'].iloc[-1]:.1f}", fontsize=12)
     ax[0].grid(alpha=0.25)
@@ -173,7 +182,7 @@ def main():
     ax[1].xaxis.set_major_locator(mdates.MonthLocator(interval=2))
     ax[1].xaxis.set_major_formatter(mdates.DateFormatter("%Y-%m"))
     fig.tight_layout()
-    fig.savefig(CH + "/05_recent_18m_zoom.png", dpi=150)
+    fig.savefig(f"{CH}/{PFX}05_recent_18m_zoom.png", dpi=150)
     plt.close(fig)
     print("[charts] font =", fam, "| 5 charts →", CH)
 
