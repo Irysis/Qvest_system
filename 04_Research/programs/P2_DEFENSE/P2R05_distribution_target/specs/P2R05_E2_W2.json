@@ -1,0 +1,59 @@
+{
+  "code": "P2R05_E2_W2",
+  "label": "E2 × 진단 W2 — 용량 짝(V2 · 50%)(engine_blend [RP_AUTO_2002_06975/engine.R · DT_2002_06975/engine_V2.R]) · P2R05_E2_V2 · P2R05_E3_V2 짝 진단",
+  "block": "RX",
+  "fixed_axes": {
+    "long_only": true,
+    "n_max": 25,
+    "commission_bps": 15,
+    "liq_adv20_min": 200000000,
+    "weight_cap": null,
+    "base_weight": 0.5,
+    "measurement_axis": "all_hyg_px1000_2000_v1",
+    "universe": "ALL_HYG",
+    "start_date": "2000-01-01"
+  },
+  "base_signal": {
+    "kind": "engine_blend",
+    "paths": [
+      "C:/Users/99922/OneDrive/Quant_Module_Moltbot/04_Research/strategies/RP_AUTO_2002_06975/engine.R",
+      "C:/Users/99922/OneDrive/Quant_Module_Moltbot/04_Research/strategies/DT_2002_06975/engine_V2.R"
+    ]
+  },
+  "base_weight": 0.5,
+  "factors": [],
+  "weighting": {
+    "kind": "ew"
+  },
+  "defense_sleeve": null,
+  "root_paper": {
+    "url": "https://arxiv.org/abs/2002.06975",
+    "title": "Cross-sectional Stock Price Prediction using Deep Learning for Actual Investment Management",
+    "paper_key": "2002.06975"
+  },
+  "root_papers": [
+    {
+      "url": "https://arxiv.org/abs/2002.06975",
+      "title": "Cross-sectional Stock Price Prediction using Deep Learning for Actual Investment Management",
+      "paper_key": "2002.06975"
+    }
+  ],
+  "idea": "[P2R05 진단 · E2 × W2] 용량 짝(V2 · 50%) — engine_blend [RP_AUTO_2002_06975/engine.R(평균 표적) · DT_2002_06975/engine_V2.R] = 신호일 횡단면 rank-Z 평균(0.5 × rank-Z(평균) + 0.5 × rank-Z(q̂10) · rf_cell_engine engine_blend) — E3 의 처치 몫 50% 를 E2 에서 재현해 '용량 의존'과 '구성 의존'을 가른다. engine_blend [RP_AUTO_2002_06975/engine.R · DT_2002_06975/engine_V2.R] · 분위 DNN = 2002.06975 DNN5(RP_AUTO_2002_06975/engine.R 3판)와 같은 31 특징 · 같은 순위 재척도 5일 표적 · 같은 1,000일 창 · 같은 5영업일 갱신 일정 · 같은 시드에서 출력층만 50 → 3(τ = 0.1 · 0.5 · 0.9) · 손실 MSE → 합성 pinball(Koenker & Bassett 1978 · Zou & Yuan 2008) · 예측 뒤 행별 재배열(Chernozhukov, Fernández-Val & Galichon 2010)로 바꾼 분위 DNN(CODE_VERSION DT_2002_06975/dnn_quantile/rev1 · DESIGN §3.1 · §3.3) · 판정 표 밖 · 시행 수 무가산(DESIGN §2.3 · §4 · §5.1(용량) · 판단 T1 C-20261018-027 교훈 승계)",
+  "selection_accounting": {
+    "selection_type": "sweep",
+    "family_root": "2002.06975",
+    "lineage": "RX_P0R01_feasibility_map",
+    "n_family_at_registration": 216,
+    "n_trials_basis": "P0R01: 계보 측정 시도 192 + 앞 라운드 변형 3 + 이 라운드 칸 21(엔진 3 × 부품 7 · 선택은 21칸 전체에서)",
+    "diagnostic_of": [
+      "P2R05_E2_V2",
+      "P2R05_E3_V2"
+    ],
+    "control": "capacity_pair",
+    "design_ref": "DESIGN §2.3 · §4 · §5.1(용량) · 판단 T1 C-20261018-027 교훈 승계",
+    "n_trials_note": "용량 짝(V2 · 50%) — 진단 칸 · 시행 수 무가산 · DSR 표본 아님 · 선택 대상 아님 · 판정 표 밖 · 2계층 모듈 풀 미등재"
+  },
+  "universe": {
+    "kind": "all_hyg"
+  }
+}

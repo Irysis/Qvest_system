@@ -1,0 +1,321 @@
+{
+  "schema": "p2r05_rehearsal_v1",
+  "at": "2026-11-06T08:01:52+0900",
+  "evaluate_md5": "0f7402d9038c44c0a3e0d2482b0e836d",
+  "round_rules_md5": "976192aceb039b8d8f14572e6be7a4e3",
+  "rehearse_md5": "94fa1cbc6fe792ead79cbe41e7ddfaed",
+  "files_unchanged_during_run": true,
+  "behavior_card_cfg": "04_Research/programs/P2_DEFENSE/P2R05_distribution_target/behavior_card_cfg_at_prereg.json",
+  "skeleton_version": 2,
+  "needs": {
+    "R0": {
+      "eval_cell": "p2_eval_cell"
+    },
+    "R1": {
+      "eval_pair": "p5_eval_pair",
+      "tail_gate": "p5_apply_tail_gate",
+      "warm": "p5_warm_check",
+      "template": "p5_template_check"
+    },
+    "R2": {
+      "eval_pair": "p5_eval_pair",
+      "tail_gate": "p5_apply_tail_gate"
+    },
+    "R3": {
+      "eval_pair": "p5_eval_pair",
+      "warm": "p5_warm_check"
+    },
+    "R4": {
+      "tail_block": "p5_tail_block",
+      "warm_resolve": "p5_warm_resolve",
+      "qbound": "p5_qpred_bound",
+      "ydef": "p5_ydef_check",
+      "dt_files": "p5_dt_engine_files",
+      "liq_from": "p5_liq_from",
+      "nw": "p5_nw_fun",
+      "rel": "p5_rel"
+    },
+    "R5": {
+      "eval_pair": "p5_eval_pair",
+      "readings": "p5_readings",
+      "lv_weight": "p5_lv_expect_weight"
+    },
+    "R6": {
+      "eval_pair": "p5_eval_pair",
+      "tail_gate": "p5_apply_tail_gate"
+    },
+    "R7": {
+      "identity": "p2_rx0_identity",
+      "identity_core": "p2_rx0_identity_core",
+      "holdings": ".p2_read_holdings"
+    },
+    "R8": {
+      "verdict": "p2_round_verdict",
+      "select": "p2_select",
+      "noise": "p2_noise_reading",
+      "a_distance": "p2_a_distance",
+      "visible": "p2_visible_only"
+    },
+    "R9": {
+      "visible": "p2_visible_only",
+      "conclusion": "p5_conclusion",
+      "liq_round": "p5_liq_attr_round",
+      "liq_from": "p5_liq_from",
+      "liq_for": "p5_liq_attr_for"
+    },
+    "R10": {
+      "qlog": "p5_qpred_log_check",
+      "warm_resolve": "p5_warm_resolve",
+      "qbound": "p5_qpred_bound",
+      "conclusion": "p5_conclusion",
+      "rel": "p5_rel"
+    }
+  },
+  "inputs": {
+    "materials": {
+      "RX0": "P2R04_E2_RX0",
+      "V2": "P2R04_E2_H2",
+      "LV": "P2R04_E2_W2"
+    },
+    "fake_codes": ["P2R05_REH_E2_RX0", "P2R05_REH_E2_V2", "P2R05_REH_E2_V1", "P2R05_REH_E2_S2", "P2R05_REH_E2_LV", "P2R05_REH_E2_NULL", "P2R05_REH_E2_Q50"],
+    "forced_start": "2005-03-02",
+    "forced_k": 0.9,
+    "specs": "실제 P2R05 사양(specs/P2R05_E2_{RX0,V1,V2,S2,LV,Q50}.json)",
+    "synthetic": {
+      "qpred": ["oracle(표본 밖 실현 순위 − 폭 · ⑮ 양성 대조)", "null(τ + 잡음 · ⑮ 음성 대조)"],
+      "warm_sentinel": ["ok", "partial(한 달 모자람)", "missing"],
+      "bound_sentinel": "측정 묶음 사본 자리(results/warm_sentinel.json) · qpred = 리허설 예측표 저장소 상대 경로 · md5(R4 · R10) · 미묶임 · md5 0(R4 음성)",
+      "cell_logs_r10": "실제 사양 9칸(E2 RX0 · RX0S · V1 · V2 · Q50 · W2 · LV · E3 V1 · V2) + 합성 셀 로그(기저 적재 줄 = 실제 엔진 md5 · '[DT qpred] path=' 줄)",
+      "cell_logs": "분위 칸(V1 · V2 · S2 · NULL) 셀 로그 = 실제 셀 엔진 형식(기저 적재 줄 = DT 엔진 md5 · months = RX0 원 로그)",
+      "pins": "엔진 핀 = 현재 파일 md5(R3 a = V2 엔진 핀만 0)",
+      "template_check": "실제 검사기 실행"
+    },
+    "note": "P2R04 같은 배치 칸(E2 RX0 · E2 저변동 틸트 H2 · E2 용량 짝 W2 = LV 사양 사본)을 가짜 코드로 묶은 코드 경로 증명 + 합성 분위 예측표 · 합성 워밍 센티널 · 합성 분위 칸 셀 로그 — 판정용 아님 · 성과 수치 · 시험 창 · 전기간 값은 이 요약에 싣지 않는다(칸 평가 콘솔 줄도 버린다)"
+  },
+  "stages": {
+    "R0_cell_eval": {
+      "pass": true,
+      "checks": {
+        "status_evaluated": true,
+        "visible_dir": true,
+        "full_dir": true,
+        "marker": true,
+        "effective_start_ok": true,
+        "packet_copies": true,
+        "visible_packet_dates_le_tau": true
+      },
+      "status": {
+        "V2": "evaluated",
+        "RX0": "evaluated",
+        "LV": "evaluated"
+      },
+      "seconds": 228
+    },
+    "R1_original_window": {
+      "pass": true,
+      "checks": {
+        "tested_flag": true,
+        "verdict_in_vocab": true,
+        "verdict_name": true,
+        "construction_recorded": true,
+        "tail_gate_recorded": true,
+        "rules_computed": true,
+        "tested": true,
+        "construction_ok": true,
+        "holdings_differ": true,
+        "warm_ok": true,
+        "template_ok": true,
+        "tail_gate_pass": true
+      },
+      "verdict": "exposure_only",
+      "why_code": null,
+      "seconds": 113
+    },
+    "R2_common_window_forced_k": {
+      "pass": true,
+      "checks": {
+        "tested_flag": true,
+        "verdict_in_vocab": true,
+        "verdict_name": true,
+        "construction_recorded": true,
+        "tail_gate_recorded": true,
+        "rules_computed": true,
+        "window_common": true,
+        "k_forced": true
+      },
+      "verdict": "asymmetry_unmet",
+      "why_code": null,
+      "seconds": 211
+    },
+    "R3_untested_paths": {
+      "pass": true,
+      "checks": {
+        "a_engine_pin": true,
+        "b_no_treatment": true,
+        "c_warm_partial": true,
+        "d_warm_missing": true
+      },
+      "verdicts": {
+        "a": "untested",
+        "b": "untested",
+        "c": "untested",
+        "d": "untested"
+      },
+      "reasons": {
+        "a": "engine_pin",
+        "b": "no_treatment_rx0",
+        "c": "warm_incomplete",
+        "d": "warm_missing"
+      },
+      "seconds": 1
+    },
+    "R4_tail_bound_path": {
+      "pass": true,
+      "checks": {
+        "ydef_ok": true,
+        "sentinel_from_bound_copy": true,
+        "bound_one_file": true,
+        "oracle_passes": true,
+        "null_fails": true,
+        "t_recorded": true,
+        "window_le_tau": true,
+        "records_present": true,
+        "unbound_unmeasured": true,
+        "md5_mismatch_halts": true,
+        "names_unique": true
+      },
+      "status": {
+        "oracle": "ok",
+        "null": "ok",
+        "unbound": "unbound",
+        "md5_mismatch": "예측표 md5 ≠ 측정 묶음(워밍 센티널 qpred.md5)"
+      },
+      "seconds": 47
+    },
+    "R5_diagnostic_and_comparison": {
+      "pass": true,
+      "checks": {
+        "diag_role": true,
+        "diag_computed": true,
+        "cmp_role": true,
+        "cmp_computed": true,
+        "cmp_flavor": true,
+        "readings_ok": true
+      },
+      "verdicts": {
+        "S2": "exposure_only",
+        "LV": "size_or_exposure_defense"
+      },
+      "reasons": {
+        "S2": null,
+        "LV": null
+      },
+      "seconds": 109
+    },
+    "R6_v1_delivery_vs_q50": {
+      "pass": true,
+      "checks": {
+        "same_untested": true,
+        "differ_delivered": true,
+        "differ_computed": true,
+        "same_draw_recorded": true
+      },
+      "verdicts": {
+        "same": "untested",
+        "differ": "exposure_only"
+      },
+      "reasons": {
+        "same": "no_treatment_q50",
+        "differ": null
+      },
+      "same_draw": "ok",
+      "seconds": 168
+    },
+    "R7_rx0_identity": {
+      "pass": true,
+      "checks": {
+        "status_ok": true,
+        "self_same": true
+      },
+      "seconds": 1
+    },
+    "R8_round_helpers_and_visible_file": {
+      "pass": true,
+      "checks": {
+        "verdict_vocab": true,
+        "select_shape": true,
+        "noise_logical": true,
+        "json_roundtrip": true,
+        "no_dates_after_tau": true
+      },
+      "round_verdict": "falsified",
+      "seconds": 1
+    },
+    "R9_records": {
+      "pass": true,
+      "checks": {
+        "record_present": true,
+        "visible_no_dates_after_tau": true,
+        "record_keys_core": true,
+        "margins_present": true,
+        "liq_status_ok": true,
+        "liq_cells_ok": true,
+        "liq_crises_present": true,
+        "liq_all_measured": true,
+        "liq_recon_all": true,
+        "liq_identity_all": true,
+        "liq_improvement_ok": true,
+        "liq_visible_no_dates": true,
+        "conclusion_ok": true
+      },
+      "record_keys": [
+        "state_unturned_max_drop",
+        "size_decile",
+        "rolling",
+        "turnover_annual",
+        "cost_drag_annual",
+        "exposure_mean",
+        "crisis_dd_capture_median"
+      ],
+      "liq_tags_kind": [
+        "저유동 귀속"
+      ],
+      "seconds": 16
+    },
+    "R10_qpred_cell_logs": {
+      "pass": true,
+      "checks": {
+        "same_ok": true,
+        "targets_dt_only": true,
+        "same_match": true,
+        "chained": true,
+        "q50_unverifiable": true,
+        "differ_halts": true,
+        "nolines_unverifiable": true,
+        "conclusion_tag": true
+      },
+      "status": {
+        "same": {
+          "R10_E2_V1": "match",
+          "R10_E2_V2": "match",
+          "R10_E2_Q50": "unverifiable",
+          "R10_E2_W2": "chained",
+          "R10_E3_V1": "chained",
+          "R10_E3_V2": "chained"
+        },
+        "nolines": {
+          "R10_E2_V1": "unverifiable",
+          "R10_E2_V2": "unverifiable",
+          "R10_E2_Q50": "unverifiable",
+          "R10_E2_W2": "unverifiable",
+          "R10_E3_V1": "unverifiable",
+          "R10_E3_V2": "unverifiable"
+        },
+        "differ": "셀 로그 예측표 ≠ 측정 묶음(워밍 센티널 qpred)"
+      },
+      "seconds": 1
+    }
+  },
+  "pass": true,
+  "seconds": 895
+}

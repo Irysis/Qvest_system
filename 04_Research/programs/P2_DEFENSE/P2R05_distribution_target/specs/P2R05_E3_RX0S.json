@@ -1,0 +1,91 @@
+{
+  "code": "P2R05_E3_RX0S",
+  "label": "E3 × 진단 RX0S — 재시드 짝(평균 표적 DNN · 시드만 다름 — .SEED_BASE 한 줄 · 기저 = DT_2002_06975/rx0s/engine_RX0S.R) · P2R05_E3_RX0 짝 진단(시드 잡음 띠)",
+  "block": "RX",
+  "fixed_axes": {
+    "long_only": true,
+    "n_max": 25,
+    "universe": "ALL_HYG",
+    "start_date": "2000-01-01",
+    "commission_bps": 15,
+    "liq_adv20_min": 200000000,
+    "weight_cap": null,
+    "base_weight": 0.5,
+    "base_weight_note": "기저(논문) 신호 가중. 등가중이면 팩터 n개에서 1/(1+n) 로 떨어져 결합 깊이와 기저 희석이 교락된다(실측 2026-08-31: 1/2->1/3 희석만으로 B1 다섯 칸 전부 기준선 미달). 고정하면 깊이가 순수 축이 된다. 1팩터일 때 0.5 는 등가중과 수치적으로 동일하다.",
+    "measurement_axis": "all_hyg_px1000_2000_v1"
+  },
+  "base_signal": {
+    "kind": "engine",
+    "path": "C:/Users/99922/OneDrive/Quant_Module_Moltbot/04_Research/strategies/DT_2002_06975/rx0s/engine_RX0S.R"
+  },
+  "base_weight": 0.5,
+  "factors": [
+    {
+      "kind": "db",
+      "id": "M01_Mom_12_1"
+    },
+    {
+      "kind": "db",
+      "id": "V10_FCF_Yield"
+    },
+    {
+      "kind": "db",
+      "id": "M08_Residual_Mom"
+    }
+  ],
+  "weighting": {
+    "kind": "catalog",
+    "catalog_id": "lean:entropy",
+    "label": "entropy"
+  },
+  "universe": {
+    "kind": "all_hyg"
+  },
+  "rebalance": {
+    "kind": "rank_buffer",
+    "mult": 2,
+    "label": "buffer_2x"
+  },
+  "defense_sleeve": null,
+  "root_paper": {
+    "url": "https://arxiv.org/abs/2002.06975",
+    "title": "Cross-sectional Stock Price Prediction using Deep Learning for Actual Investment Management",
+    "paper_key": "2002.06975"
+  },
+  "root_papers": [
+    {
+      "url": "https://arxiv.org/abs/2002.06975",
+      "title": "Cross-sectional Stock Price Prediction using Deep Learning for Actual Investment Management",
+      "paper_key": "2002.06975"
+    },
+    {
+      "title": "Chan, Jegadeesh & Lakonishok (1996), Momentum Strategies, JF 51(5)",
+      "url": "https://onlinelibrary.wiley.com/doi/10.1111/j.1540-6261.1996.tb05222.x"
+    },
+    {
+      "title": "Fama & French (1992), The Cross-Section of Expected Stock Returns, JF 47(2)",
+      "url": "https://onlinelibrary.wiley.com/doi/10.1111/j.1540-6261.1992.tb04398.x"
+    }
+  ],
+  "root_paper_families": [
+    "momentum",
+    "value"
+  ],
+  "unmapped_families": [],
+  "idea": "[P2R05 진단 · E3 × RX0S] 재시드 짝 — RX0 엔진(RP_AUTO_2002_06975/engine.R 3판)과 .SEED_BASE 한 줄만 다른 사본(engine_RX0S.R · 구현 에이전트 A 생성 · 템플릿 차분 검사기가 '시드 한 줄'을 단정) · 같은 31 특징 · 같은 표적 · 같은 1,000일 창 · 같은 일정 · 다른 시드 → RX0 대비 위기 포착 차의 시드 잡음 띠를 잰다(판정 아님 · 읽기 · 결론 범위 8). 비중 lean:entropy · 순위 버퍼 2배 · 기존 팩터 3(M01_Mom_12_1 · V10_FCF_Yield · M08_Residual_Mom) · base_weight 0.5 는 E3 RX0 그대로 — DNN 몫 50% 에 재시드가 든다(DESIGN §2.3) · 판정 표 밖 · 시행 수 무가산(DESIGN §0b 결정 2 개정(시드 짝 — 이 라운드 안에서 잰다) · 판단 T1 R-20261018-007(C-20261018-054 · 055 · 056))",
+  "selection_accounting": {
+    "selection_type": "sweep",
+    "family_root": "2002.06975",
+    "lineage": [
+      "RX_P0R01_feasibility_map",
+      "RP_20260913_084807_skipped_base_promo1",
+      "RP_20260913_084807_skipped_base"
+    ],
+    "n_family_at_registration": 216,
+    "n_trials_basis": "P0R01: 계보 측정 시도 192 + 앞 라운드 변형 3 + 이 라운드 칸 21(엔진 3 × 부품 7 · 선택은 21칸 전체에서)",
+    "diagnostic_of": "P2R05_E3_RX0",
+    "control": "seed_pair",
+    "design_ref": "DESIGN §0b 결정 2 개정(시드 짝 — 이 라운드 안에서 잰다) · 판단 T1 R-20261018-007(C-20261018-054 · 055 · 056)",
+    "n_trials_note": "재시드 짝(RX0 · 시드만 다름) — 진단 칸 · 시행 수 무가산 · DSR 표본 아님 · 선택 대상 아님 · 판정 표 밖 · 2계층 모듈 풀 미등재"
+  }
+}
