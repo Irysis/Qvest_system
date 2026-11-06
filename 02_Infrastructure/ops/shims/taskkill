@@ -1,0 +1,24 @@
+#!/usr/bin/env bash
+# taskkill 가로채기 — BOOK 러너 전용(run_nolayer4_monthly.sh 가 PATH 맨 앞에 둔다 · 2026-11-06 도훈 지시
+#   "Book 리밸 돌릴 때 다른 작업에 간섭하는부분 다 없애주고 11월 리밸 진행해줘").
+#   05_Production 전진 스크립트(run_pg2_forward_noLayer4.sh — 수정 금지)의 kill_stray 는 'taskkill //F //IM Rscript.exe' 로
+#   이 기계의 R 을 전부 끈다(1계층 레인 · P2R05 · 다른 세션). 파일은 손대지 않고 호출 환경만 바꾼다:
+#   이미지 이름이 R 실행기(Rscript · R · Rterm)면 러너 자기 R 만 끈다(kill_own_r.ps1 — 러너 bash 의 자손 + BOOK 스크립트 고아).
+#   그 밖의 taskkill 호출(/PID 등)은 진짜 taskkill 로 그대로 넘긴다. 시험 주입 = QV_REAL_TASKKILL.
+REAL="${QV_REAL_TASKKILL:-/c/Windows/System32/taskkill.exe}"
+im=""; prev=""
+for a in "$@"; do
+  case "${prev,,}" in /im|//im|-im) im="$a" ;; esac
+  prev="$a"
+done
+case "${im,,}" in
+  rscript.exe|rscript|r.exe|r|rterm.exe|rterm)
+    if [ -z "${QV_KILL_ROOT_WINPID:-}" ]; then
+      echo "[taskkill 가로채기] QV_KILL_ROOT_WINPID 없음 — 아무것도 끄지 않는다(이미지 이름 전체 종료 거부)" >&2
+      exit 0
+    fi
+    here="$(cd "$(dirname "$0")/.." && pwd)"
+    exec powershell -NoProfile -ExecutionPolicy Bypass -File "$(cygpath -w "$here/kill_own_r.ps1")" -RootPid "$QV_KILL_ROOT_WINPID"
+    ;;
+esac
+exec "$REAL" "$@"

@@ -1124,6 +1124,8 @@ SUITES=(
   #   D1 절단 · 빌드 표식 · Gate M 관문 왕복 + 돌연변이 M1~M5. 그리고 Gate M 공통 관문(gate_msm_asof.sh — full 러너 · 예약 월간 [0b] 한 벌).
   "08_Tests/regime/test_regime_signal_msm_asof.R"
   "08_Tests/ops/test_gate_msm_asof.sh"
+  # 2026-11-06: BOOK 러너가 다른 작업의 R 을 끄지 않는다(kill_own_r · taskkill 가로채기) — 양방향 + 뮤테이션 2(DryRun · 기록기만)
+  "08_Tests/ops/test_book_runner_no_interference.sh"
   "08_Tests/regime/test_regime_signal_merge.R"
   # 2026-08-30 신설: m4 BOCPD 팔 가드의 양방향 검증. 구판 가드
   #   `bocpd_expected_runlen_lag >= 12` 는 warm-up 주석을 달고 있었지만 실제로는

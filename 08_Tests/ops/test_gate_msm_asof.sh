@@ -330,17 +330,18 @@ else
     else ng "X 예약 러너($sc): rc=$XRC [1]실행=$([[ "$XLOG" == *"[1a]"* ]] && echo y || echo n) log=$(printf '%s' "$XLOG" | tr '\n' ' ' | head -c 300)"; fi
   done
   # X 돌연변이 — 관문 호출을 'OK' 고정으로 바꾼(우회) 러너 사본은 23 으로 멈추지 않아야 한다(= e2e 판정이 배선을 본다).
-  #   사본은 kill_stray 의 taskkill 도 true 로 무력화한다(치환 성사 단정 — 사본에 taskkill 0건).
+  #   사본은 kill_stray 도 무력화한다(치환 성사 단정 — 함수 첫 줄이 'return 0'). 2026-11-06 부터 kill_stray 는
+  #   이미지 이름 전체 종료가 아니라 러너 자기 R 만 끈다(kill_own_r.ps1 · 도훈 지시 "다른 작업에 간섭하는부분 다 없애줘").
   MT=$((MT+1))
   XM="$SB/mut/run_nolayer4_bypass.sh"
   if mutate "$NL4" "$XM.tmp" '_GM="$(bash "$QM_ROOT/02_Infrastructure/ops/gate_msm_asof.sh"' '_GM="OK mutant-bypass"   # MUTANT-BYPASS'; then
-    sed 's#taskkill //F //IM Rscript\.exe#true#g' "$XM.tmp" > "$XM"
-    if [ "$(grep -c taskkill "$XM")" = "0" ] && [ "$(grep -c taskkill "$NL4")" -ge 1 ] && bash -n "$XM" && xsetup no_marker; then
+    sed 's#^kill_stray(){$#kill_stray(){ return 0#' "$XM.tmp" > "$XM"
+    if [ "$(grep -c '^kill_stray(){ return 0$' "$XM")" = "1" ] && [ "$(grep -c '^kill_stray(){$' "$NL4")" = "1" ] && bash -n "$XM" && xsetup no_marker; then
       xrun "$XM"
       if [ "$XRC" -ne 23 ] && [[ "$XLOG" == *"[0b] Gate M: OK mutant-bypass"* ]] && [[ "$XLOG" != *"XX [0b]"* ]] && [ ! -e "$SB_MSYS/taskkill_called" ]; then
         MK=$((MK+1)); ok "XM 검거: 관문 우회 사본은 표식 없는 캐시로 [0b] 를 지나 rc=$XRC(≠23) — e2e 판정이 배선을 실제로 본다"
       else ng "XM 생존/이상: 우회 사본 rc=$XRC log=$(printf '%s' "$XLOG" | tr '\n' ' ' | head -c 300)"; fi
-    else ng "XM 사본 준비 실패(taskkill 무력화 · 문법 · 모래상자)"; fi
+    else ng "XM 사본 준비 실패(kill_stray 무력화 · 문법 · 모래상자)"; fi
   else ng "XM 돌연변이 치환 실패 — 검사 불능"; fi
 fi
 

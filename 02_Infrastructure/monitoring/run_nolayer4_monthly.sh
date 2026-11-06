@@ -21,7 +21,20 @@ RSCRIPT="$(command -v Rscript || echo '/c/Program Files/R/R-4.5.2/bin/Rscript.ex
 LOGD="$QM_ROOT/.cache/nolayer4_track_logs"; mkdir -p "$LOGD"
 AS_OF="${PG2_AS_OF:-$(date +%Y-%m)-01}"
 TS="$(date +%Y%m%d)"; LOG="$LOGD/track_$TS.log"
-kill_stray(){ taskkill //F //IM Rscript.exe >/dev/null 2>&1 || true; }
+# ★다른 작업 간섭 제거 (2026-11-06 도훈 지시 "Book 리밸 돌릴 때 다른 작업에 간섭하는부분 다 없애주고 11월 리밸 진행해줘")
+#   ① 구 kill_stray 는 이미지 이름으로 이 기계의 R 을 전부 강제 종료했다 — 1계층 레인 · P2R05 측정 · 다른 세션의 R 까지.
+#      이제 이 러너의 R 만 끈다(ops/kill_own_r.ps1: 이 bash 의 살아 있는 자손 + 부모가 죽은 BOOK 스크립트 고아).
+#   ② 05_Production 전진 스크립트(수정 금지)의 같은 줄은 PATH 맨 앞의 가로채기(ops/shims/taskkill)가 같은 규칙으로
+#      바꾼다 — 파일은 손대지 않고 호출 환경만 바꾼다. R 실행기가 아닌 호출은 진짜 taskkill 로 넘어간다.
+#   ③ 이 러너는 낮은 우선순위(BelowNormal)로 돈다 — 자식(R · python)이 물려받아 CPU 를 다른 작업에 먼저 내준다.
+QV_KILL_ROOT_WINPID="$(tr -d '\r\n ' < /proc/$$/winpid 2>/dev/null)"; export QV_KILL_ROOT_WINPID
+export PATH="$(cygpath -u "$QM_ROOT")/02_Infrastructure/ops/shims:$PATH"
+[ -n "$QV_KILL_ROOT_WINPID" ] && powershell -NoProfile -Command "try { (Get-Process -Id $QV_KILL_ROOT_WINPID).PriorityClass = 'BelowNormal' } catch {}" >/dev/null 2>&1
+kill_stray(){
+  [ -n "$QV_KILL_ROOT_WINPID" ] || { echo "!! kill_stray: 러너 pid 판독 실패 — 아무것도 끄지 않는다" | tee -a "$LOG"; return 0; }
+  powershell -NoProfile -ExecutionPolicy Bypass -File "$(cygpath -w "$QM_ROOT/02_Infrastructure/ops/kill_own_r.ps1")" \
+    -RootPid "$QV_KILL_ROOT_WINPID" >> "$LOG" 2>&1 || true
+}
 echo "=== noLayer4 월간 트래킹 $AS_OF ($(date)) ===" | tee "$LOG"
 
 # 0) (리프레시 제거 2026-11-06 — 도훈 지시 "daily_refresh 돌리는 프로세스는 빼버려. 이제 어차피 데이터
