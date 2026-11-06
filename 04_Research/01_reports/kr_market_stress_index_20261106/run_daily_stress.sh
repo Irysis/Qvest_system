@@ -21,9 +21,10 @@ step "start · root=$ROOT"
 if [ "$SKIP_FETCH" = 0 ]; then step "① fetch_research_inputs.py"; run "$PY" fetch_research_inputs.py || exit 3; fi
 step "② build_kr_stress_index_v1.py (KRSI_DAILY=1)"; run "$PY" build_kr_stress_index_v1.py || exit 4
 step "③ make_charts.py v1";                           run "$PY" make_charts.py v1 || exit 5
-# ③b 오늘의 해설(Sonnet · 숫자 출처 자동 검사) — 실패 · 불통과여도 일보는 해설 없이 발행(KRSI_NO_COMMENTARY=1 이면 건너뜀)
-if [ "${KRSI_NO_COMMENTARY:-0}" != "1" ]; then step "③b make_commentary.py"; run "$PY" make_commentary.py || step "★해설 단계 실패(일보는 해설 없이 계속)"; fi
+# ③b 오늘의 해설(Sonnet · 숫자 출처 자동 검사) — ★기본 끔(도훈 11-06: 매일 일보 = 해설 없는 확정본 v1). 시험할 때만 KRSI_COMMENTARY=1(본문 삽입도 같은 변수)
+if [ "${KRSI_COMMENTARY:-0}" = "1" ]; then step "③b make_commentary.py"; run "$PY" make_commentary.py || step "★해설 단계 실패(일보는 해설 없이 계속)"; fi
 step "④ make_daily_report.py $NO_PDF";                run "$PY" make_daily_report.py $NO_PDF || exit 6
-# ⑤ 방법론 문서(쉬운 말 · 전문 — 오늘의 예시 숫자가 들어가므로 매일 다시 쓴다 · daily/latest/kr_stress_methodology.pdf) — 실패해도 일보는 유효
-if [ -z "$NO_PDF" ]; then step "⑤ make_methodology.py --pdf"; run "$PY" make_methodology.py --pdf || step "★방법론 PDF 실패(일보 무관 · 계속)"; fi
+# 방법론 문서는 매일 만들지 않는다(도훈 11-06) — 필요할 때 손으로: make_methodology.py --pdf
+# ⑤ 메일(PDF 일보 + 엑셀 대시보드 → ops/mail_config.json 수신자 · 기준일당 1통) — 발신 자격이 없거나 실패해도 일보는 유효(KRSI_NO_MAIL=1 이면 건너뜀)
+if [ -z "$NO_PDF" ] && [ "${KRSI_NO_MAIL:-0}" != "1" ]; then step "⑤ ops/send_daily_mail.py"; run "$PY" ops/send_daily_mail.py || step "★메일 단계 실패(일보는 유효 · 로그 확인)"; fi
 step "done → $(cat "$HERE/daily/latest/latest.json" 2>/dev/null | tr -d '\n' | cut -c1-200)"

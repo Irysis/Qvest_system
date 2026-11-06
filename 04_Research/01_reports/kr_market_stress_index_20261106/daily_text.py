@@ -481,9 +481,11 @@ def build_markdown(meta, d, st, eps, cv, nsr, rob, day, peaks):
 
 
 def _commentary(day):
-    """daily/<기준일>/commentary.json — 같은 기준일 · 검사 통과분만."""
+    """daily/<기준일>/commentary.json — 같은 기준일 · 검사 통과분만 · ★KRSI_COMMENTARY=1 일 때만(도훈 11-06: 매일 일보는 해설 없는 확정본 v1 기준)."""
     import json
     import os
+    if os.environ.get("KRSI_COMMENTARY") != "1":
+        return None
     p = os.path.join(os.path.dirname(os.path.abspath(__file__)), "daily", str(day), "commentary.json")
     try:
         c = json.load(open(p, encoding="utf-8"))
