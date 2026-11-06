@@ -230,7 +230,7 @@ def write_excel(meta, d, st, eps, cv, nsr, rob, folder, day):
     ws["A22"].alignment = Alignment(wrap_text=True, vertical="top")
     ws.merge_cells("A22:F25")
     r0 = 27
-    _hdr(ws, r0, ["분야", "기여(점 · 합 = 점수)", "하위지수", "심각도(0~100 · 높을수록 나쁨)", "20거래일 전 기여", "변화", "심각도 80 이상 세부 지표"])
+    _hdr(ws, r0, ["분야", "기여도(점 · 합 = 점수)", "하위지수", "심각도(0~100 · 높을수록 나쁨)", "20거래일 전 기여도", "변화", "심각도 80 이상 세부 지표"])
     order = sorted(axes, key=lambda a: -lt["contrib_level"][a])
     for i, a in enumerate(order, start=r0 + 1):
         rows = st[st.axis == a]
@@ -247,14 +247,14 @@ def write_excel(meta, d, st, eps, cv, nsr, rob, folder, day):
         ws.column_dimensions[col].width = w
     bar = BarChart()
     bar.type = "bar"
-    bar.title = f"축별 기여 — {day}"
+    bar.title = f"분야별 기여도 — {day}"
     bar.add_data(Reference(ws, min_col=2, min_row=r0, max_row=r1), titles_from_data=True)
     bar.set_categories(Reference(ws, min_col=1, min_row=r0 + 1, max_row=r1))
     bar.height, bar.width = 9, 16
     bar.legend = None
     ws.add_chart(bar, "I4")
     r2 = r1 + 2
-    _hdr(ws, r2, ["id", "분야", "지표", "값", "심각도(0~100)", "기여(점)", "관측일", "묵음(td)"])
+    _hdr(ws, r2, ["id", "분야", "지표", "값", "심각도(0~100)", "기여도(점)", "관측일", "묵음(td)"])
     top = st.sort_values("contrib_level", ascending=False).head(12)
     for i, r in enumerate(top.itertuples(), start=r2 + 1):
         for j, v in enumerate([r.id, ko[r.axis], r.name, float(r.value), 100 * float(r.ecdf_pct), float(r.contrib_level), str(r.last_obs_date), int(r.stale_trading_days)], start=1):

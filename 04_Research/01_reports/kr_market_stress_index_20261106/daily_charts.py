@@ -202,7 +202,7 @@ def chart_contrib(meta, lt, path):
     ax.set_yticklabels([ko[a] for a in order], fontsize=9)
     ax.axvline(0, color="#444444", lw=0.8)
     ax.grid(axis="x", alpha=0.25)
-    ax.set_xlabel(T(f"분야별 몫(점) — 진한 막대 = 오늘(합 {lt['level']:.0f}) · 연한 막대 = 20거래일 전(합 {lt['level_20td_ago']:.0f})"), fontsize=8.5)
+    ax.set_xlabel(T(f"분야별 기여도(점) — 진한 막대 = 오늘(합 {lt['level']:.0f}) · 연한 막대 = 20거래일 전(합 {lt['level_20td_ago']:.0f})"), fontsize=8.5)
     for s in ("top", "right"):
         ax.spines[s].set_visible(False)
     # 오른쪽 칩 — 축 백분위
@@ -215,7 +215,7 @@ def chart_contrib(meta, lt, path):
         c = pct_color(p)
         ax2.add_patch(Rectangle((0.08, y[i] - 0.33), 0.84, 0.66, facecolor=c, edgecolor="none", alpha=0.9))
         ax2.text(0.5, y[i], f"{100 * p:.0f}", ha="center", va="center", fontsize=9, color="white", fontweight="bold")
-    fig.suptitle(T(f"어느 분야에서 온 스트레스인가 — 점수 {lt['level']:.0f}의 분야별 몫 · 오른쪽 칩 = 심각도(높을수록 나쁨 · 빨강 ≥90 매우 나쁨 · 주황 ≥80 나쁨 · 노랑 ≥60)"),
+    fig.suptitle(T(f"어느 분야에서 온 스트레스인가 — 점수 {lt['level']:.0f}의 분야별 기여도 · 오른쪽 칩 = 심각도(높을수록 나쁨 · 빨강 ≥90 매우 나쁨 · 주황 ≥80 나쁨 · 노랑 ≥60)"),
                  fontsize=9.5, x=0.02, ha="left", y=0.985)
     return _save(fig, path)
 
@@ -368,8 +368,8 @@ def chart_recent(meta, d, eps, bm, path, months=18):
             ax[0].axhline(r[0], color="#777777", lw=0.7, ls=":", zorder=1)
             ax[0].text(last, r[0] + 0.8, T(f"{r[1]} 정점 {r[0]:.0f}"), fontsize=6.8, color="#555555", ha="right", va="bottom")
     ax[0].legend(loc="upper left", ncol=4, frameon=False, fontsize=7.3)
-    ax[0].set_ylabel("점수(분야별 몫을 쌓음)")
-    ax[0].set_title(T(f"최근 {months}개월 — 점수와 분야별 몫(회색 = 코스피200 이 고점 대비 20% 넘게 빠진 구간 · 점선 = -20% 도달일)"), fontsize=9.5, loc="left")
+    ax[0].set_ylabel("스트레스 점수")
+    ax[0].set_title(T(f"최근 {months}개월 — 스트레스 점수와 분야별 기여도(쌓은 색 띠 · 회색 = 코스피200 이 고점 대비 20% 넘게 빠진 구간 · 점선 = -20% 도달일)"), fontsize=9.5, loc="left")
     ax[0].grid(alpha=0.25)
     bz = bm[bm.index >= z0]
     shade(ax[1], eps, z0, last)
