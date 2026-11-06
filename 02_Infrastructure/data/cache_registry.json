@@ -160,8 +160,8 @@
       "_note": "도훈 2026-05-15 audit — daily_refresh 호출 누락 발견. tier 2"
     },
     {
-      "path": ".cache/msm_daily_latest.parquet",
-      "producer": "04_Research/regime_comparison/msm_update.R",
+      "path": ".cache/msm_asof_daily.parquet",
+      "producer": "02_Infrastructure/regime/msm_asof_update.R",
       "entry_fn": "(source)",
       "schedule": "daily",
       "date_col": "Date",
@@ -169,19 +169,8 @@
       "depends_on": [
         ".cache/benchmark.parquet"
       ],
-      "tier": 1
-    },
-    {
-      "path": ".cache/msm_hybrid_latest.parquet",
-      "producer": "04_Research/regime_comparison/msm_update.R",
-      "entry_fn": "(source)",
-      "schedule": "daily",
-      "date_col": "Date",
-      "max_lag_days": 1,
-      "depends_on": [
-        ".cache/benchmark.parquet"
-      ],
-      "tier": 1
+      "tier": 1,
+      "_note": "2026-11-06 MSM as-of 전환(PIT-C1-MSM-PARAMS 안 A) — 구 msm_daily_latest · msm_hybrid_latest(msm_update.R 전 표본 고정 모수 = C1) 항목 대체. 월 MSM 은 regime_signal.R 이 이 일별 경로의 달력 월평균으로 만든다"
     },
     {
       "path": ".cache/unified_regime_signal.parquet",
@@ -191,7 +180,7 @@
       "date_col": "Date",
       "max_lag_days": 35,
       "depends_on": [
-        ".cache/msm_hybrid_latest.parquet",
+        ".cache/msm_asof_daily.parquet",
         ".cache/macro_regime.parquet",
         ".cache/ktri_indices.parquet"
       ],
@@ -208,7 +197,7 @@
       "date_col": "Date",
       "max_lag_days": 3,
       "depends_on": [
-        ".cache/msm_daily_latest.parquet",
+        ".cache/msm_asof_daily.parquet",
         ".cache/fred_macro_wide.parquet",
         ".cache/ktri_indices.parquet"
       ],

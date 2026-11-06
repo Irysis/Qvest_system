@@ -7,6 +7,7 @@
 #        Gate A(하드): 5파일 전부 target 도달? 아니면 ABORT (stale 인제스트 차단)
 #   [1] daily_refresh.sh          incremental_update_all + build_factor_db
 #        Gate B(경고): 최신 factor_db mtime==오늘? (알파 hard-stop이 2차 방어)
+#        Gate M(하드): 통합 국면 신호 = as-of MSM 표식 ∧ sig 월까지 전진? (gate_msm_asof.sh — [2] 하위 [0b] 와 같은 판정)
 #   [2] run_nolayer4_monthly.sh  알파->m4->β_R05->비중 (Layer4 없음) + monitor
 #        Gate C(하드): 홀딩 CSV 생성? 아니면 ABORT
 #        (구 FaithTrend/2-2 경로 → noLayer4/2-3 전환, 도훈 지시 2026-07-03 Layer4 제거)
@@ -161,6 +162,25 @@ else
   say "[1] 인제스트/팩터DB 스킵 (--only-weights)"
 fi
 
+# ── Gate M — 국면 입력의 MSM 추정기 표식 + 신선도 (2026-11-06 · MSM-ASOF-SWITCH-20261017 D4 B · S3 · 적대 검토 #4·#15·#16·#19) ─────
+#   동결 BOOK 엔진(factor_engine.R · m4)은 손대지 않는다. 대신 엔진이 읽는 통합 국면 신호
+#   (.cache/unified_regime_signal.parquet)를 본다. 판정 정본 = 02_Infrastructure/ops/gate_msm_asof.sh — 예약 경로
+#   run_nolayer4_monthly.sh [0b] 와 같은 스크립트 · 같은 판정이다(구판은 여기에 R 판정을 인라인으로 두었다 — 한 벌만 남긴다).
+#     표식: 행 열 msm_estimator 고유값 = asof_yearly:v1 ∧ 파일 속성 같은 값(구 C1 판 · 표식 없음 · 혼합 = 중단 · 폴백 없음)
+#     신선도: SIG_DATE(벤치에서 AS_OF 전 마지막 거래일 · sig 월 안) · sig 월 행 avail_date == SIG_DATE ·
+#             일간 신호 max(Date) ≥ SIG_DATE. 구판은 표식만 봐서 밤 MSM 실패로 동결된 국면을 통과시켰다(검토 #16 —
+#             찍던 max= 는 월말 라벨이라 내용이 언제까지인지 못 보여 줬다).
+#   왜: 구판 MSM 은 1990~2026-01 전 표본 MLE 모수(PIT C1 — 결정 PIT-C1-MSM-PARAMS)라 m4 의 Cash_Pct ·
+#   MSM_Crisis_Prob 입력이 미래 자료로 정해진 값이었다. 원장 재발행이 실패해 라이브가 구판으로 남는 경우를 잡는다.
+#   ★여기 것은 조기 경보다 — [2] 의 run_nolayer4_monthly.sh 가 소비 직전([0b])에 같은 관문을 다시 건다(예약 경로와 한 지점).
+#   ★--only-weights 는 [1] 을 건너뛰므로 이 판정은 그때의 캐시 기준이다(SIG_DATE 도 관문이 벤치에서 다시 구한다).
+#     낡음으로 막히면 리프레시 뒤 재실행한다 — 하위 러너 리프레시를 믿고 넘기지 않는다.
+GM="$(bash "$QM_ROOT/02_Infrastructure/ops/gate_msm_asof.sh" "$AS_OF" "$QM_ROOT" 2>>"$LOG")"
+_GM_RC=$?
+say "  Gate M: ${GM:-BAD (관문 출력 없음)} (rc=$_GM_RC)"
+[ "$_GM_RC" -eq 0 ] && [ "${GM#OK }" != "$GM" ] \
+  || abort "GateM-msm" "통합 국면 신호가 as-of MSM 판이 아니거나 sig 월까지 전진하지 않음(${GM:-판독 실패}) — C1 · 낡은 국면으로 비중을 만들지 않는다([marker] = regime_append_only.R --republish 확인 · [sig_row]/[avail]/[daily] = 밤 MSM as-of 갱신 · 국면 원장 append 확인)" 23
+
 # ── [2] 리밸 (비중 + monitor, Layer4 없음) + Gate C ─────────────────────────
 say "[2] rebalance (run_nolayer4_monthly.sh, AS_OF=$AS_OF)..."
 # ★PG2_REFRESH_DONE (2026-08-30) — 하위 러너에 "리프레시는 이미 했다"를 알린다.
@@ -172,8 +192,15 @@ _REFRESH_DONE=1
 [ "$ONLY_WEIGHTS" = "1" ] && _REFRESH_DONE=0
 say "  → PG2_REFRESH_DONE=$_REFRESH_DONE (0이면 하위 러너가 자체 리프레시 수행)"
 PG2_AS_OF="$AS_OF" PG2_REFRESH_DONE="$_REFRESH_DONE" \
-  bash "02_Infrastructure/monitoring/run_nolayer4_monthly.sh" >> "$LOG" 2>&1 \
-  || say "[warn] run_nolayer4_monthly 일부 step warn (Gate C가 최종 검증)"
+  bash "02_Infrastructure/monitoring/run_nolayer4_monthly.sh" >> "$LOG" 2>&1
+_NL4_RC=$?
+# ★Gate M 전파 (2026-11-06): 하위 러너가 [0b] Gate M 에서 멈추면(rc 23) 이번 실행은 비중을 만들지 않았다.
+#   그 rc 를 아래처럼 경고로 삼키면, 같은 AS_OF 의 이전 홀딩 CSV 가 남아 있을 때 Gate C 가 그것을 이번 산출로 보고
+#   '완료'를 낸다. 위 조기 Gate M 과 하위 [0b] 사이에 국면 파일이 바뀌는 경우(밤 리프레시와 겹침 · --only-weights 의
+#   하위 리프레시)가 그 길이다. 다른 rc 는 종전대로 Gate C/D 가 최종 검증한다.
+[ "$_NL4_RC" -eq 23 ] \
+  && abort "GateM-msm-sub" "하위 러너 run_nolayer4_monthly.sh [0b] Gate M 차단 — 이번 실행은 비중 미산출(로그의 [0b] 줄 확인)" 23
+[ "$_NL4_RC" -eq 0 ] || say "[warn] run_nolayer4_monthly 일부 step warn (rc=$_NL4_RC · Gate C가 최종 검증)"
 [ -f "$HOLD" ] && [ "$(wc -l < "$HOLD")" -ge 5 ] \
   || abort "GateC-weights" "홀딩 CSV 미생성/부실: $HOLD (run_pg2_forward alpha/m4/beta 실패 가능 - 로그 확인)" 30
 

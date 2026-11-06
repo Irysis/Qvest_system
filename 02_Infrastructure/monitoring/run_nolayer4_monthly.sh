@@ -53,6 +53,29 @@ else
   fi
 fi
 
+# 0b) ★Gate M — 국면 입력의 MSM as-of 표식 + 신선도 (2026-11-06 · 결정 PIT-C1-MSM-PARAMS 안 A ·
+#     MSM-ASOF-SWITCH-20261017 D4 B · 적대 검토 #4 · #15 · #16 · #19). 판정 정본 = 02_Infrastructure/ops/gate_msm_asof.sh
+#     (full 러너 Gate M 과 같은 스크립트 · 같은 판정 — 러너에 판정 로직을 복붙하지 않는다).
+#     왜: [1] 의 m4(factor_engine)가 읽는 통합 국면 신호(.cache/unified_regime_signal.parquet)가 ① 구 C1 MSM 판
+#       (1990~2026-01 전 표본 MLE 모수 — 표식 없음 · 혼합)이거나 ② 밤 MSM as-of 갱신 실패로 국면 빌드가 멈춰
+#       sig 월까지 오지 않았으면(sig 월 avail_date ≠ SIG_DATE · 일간 max < SIG_DATE) 비중을 만들지 않는다(폴백 없음).
+#       ②는 리프레시 요약에 '실패 0'으로 남을 수 있어 위 [0] 의 rc 로는 못 잡는다(검토 #16).
+#     ★배선 위치 = [0] 리프레시 뒤 · [1] 앞: 예약 경로(noLayer4_Monthly_PaperTracking → .bat → 이 스크립트)와
+#       full 러너([2] 에서 이 스크립트를 부른다)를 **한 지점**에서 덮는다. full 러너에만 두면 무인 경로가 빈다 —
+#       아래 [1a2] · [1b] 주석의 Gate C/D 와 같은 계통(검토 #4 · #19).
+#     ★fail-closed: 관문 rc≠0 이거나 'OK ' 줄이 아니면(판독 실패 · 관문 부재 포함) 중단한다. 경고로 삼키지 않는다.
+#       exit 23 = full 러너 Gate M 과 같은 코드(이 스크립트의 기존 12~22 와 겹치지 않음 · full 러너는 23 을 받으면 중단).
+#     한계(관문 밖): AS_OF 행이 이미 있는 m4 패널은 [1] 이 재계산하지 않고 재사용한다 — 그 행이 C1 국면으로
+#       만들어졌는지는 이 관문이 보지 못한다(검토 #4 · m4 원장 쪽 소관).
+_GM="$(bash "$QM_ROOT/02_Infrastructure/ops/gate_msm_asof.sh" "$AS_OF" "$QM_ROOT" 2>>"$LOG")"
+_gmrc=$?
+echo "── [0b] Gate M: ${_GM:-BAD (관문 출력 없음)} (rc=$_gmrc)" | tee -a "$LOG"
+if [ "$_gmrc" -ne 0 ] || [ "${_GM#OK }" = "$_GM" ]; then
+  echo "XX [0b] Gate M 차단 — 통합 국면 신호가 as-of MSM 판이 아니거나 sig 월까지 전진하지 않았다. C1 · 낡은 국면으로 비중을 만들지 않는다. 중단" | tee -a "$LOG"
+  echo "        [marker] = regime_append_only.R --republish 상태 확인 · [sig_row]/[avail]/[daily] = 밤 MSM as-of 갱신 · 국면 빌드 · 원장 append 확인" | tee -a "$LOG"
+  exit 23
+fi
+
 # 1) base 최신화 + noLayer4 배포 비중 (alpha->m4->β_R05->비중, Layer4 없음) — 슬롯2-3 하드닝 파이프라인
 #    ★faith 대비: 별도 β_faith 오버레이 스텝 없음. run_pg2_forward_noLayer4.sh가 alpha/m4/generator 자체 포함.
 #    (내부: _recompute_alpha_asof.R + STR_1715 run_all.R + m4 factor_engine → m4_extended.csv/alpha 신선)

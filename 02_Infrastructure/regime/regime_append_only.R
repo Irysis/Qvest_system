@@ -62,6 +62,13 @@ REGIME_LEDGER_AVAIL_COLS    <- c("avail_date")
 REGIME_LEDGER_KEY_COL       <- "c11_regime_key"
 REGIME_LEDGER_KEY_ATTR      <- "c11_avail_regime_key"
 REGIME_LEDGER_ARCHIVE_TAG   <- "pre_c11"
+## ★MSM 추정기 에폭 부분(2026-11-06 · PIT-C1-MSM-PARAMS 안 A · 지도 msm_asof_s2_consumer_map_20261017 §4):
+##   생산자 regime_signal.R 가 행 열 msm_estimator + 파일 속성 msm_estimator 를 C11 도장 옆에 찍는다(값 = asof_yearly:v1).
+##   c11_regime_key 에는 덧붙이지 않는다(C11 정확 일치 가드 9곳). 합성 키 '<c11 키>|msm:<추정기>' 는 이 파일의 에폭 판정
+##   (.rl_epoch · append 의 같은 에폭 검사 · republish 의 후보 키 검사) 안에서만 만든다. 표식 없음 = msm:legacy(전 표본 C1).
+REGIME_LEDGER_MSM_COL       <- "msm_estimator"
+REGIME_LEDGER_MSM_ATTR      <- "msm_estimator"
+REGIME_LEDGER_MSM_LEGACY    <- "msm:legacy"
 
 `%||rl%` <- function(a, b) if (is.null(a)) b else a
 .rl_say <- function(verbose, ...) if (isTRUE(verbose)) cat(sprintf(...))
@@ -142,13 +149,39 @@ regime_ledger_candidate_paths <- function(root = NULL, fresh = FALSE) {
   unique(k)
 }
 ## epoch 분류: legacy(키도 가용일 열도 없음) · keyed(단일 비-NA 키 + Date 형 가용일 열) · malformed(그 밖 — 반쪽 표식)
+## MSM 추정기 부분 — 행 열 고유값 ∪ 파일 속성. 없음 = msm:legacy · 1개 = msm:<값> · 여럿 = NA(반쪽/혼합 표식)
+.rl_msm <- function(obj) {
+  v <- character(0)
+  if (REGIME_LEDGER_MSM_COL %in% names(obj$dt)) v <- unique(as.character(obj$dt[[REGIME_LEDGER_MSM_COL]]))
+  a <- obj$attrs[[REGIME_LEDGER_MSM_ATTR]]
+  if (!is.null(a)) v <- c(v, as.character(a))
+  v <- unique(v)
+  if (!length(v)) return(REGIME_LEDGER_MSM_LEGACY)
+  if (length(v) == 1L && !is.na(v) && nzchar(v)) return(paste0("msm:", v))
+  NA_character_
+}
+## meta 기록 형식 — 접두 없는 추정기 값(as-of 캐시 메타 · parquet 열 · 속성과 같은 'asof_yearly:v1' · 표식 없음 = 'legacy')
+.rl_msm_meta <- function(m) if (length(m) != 1L || is.na(m)) NA_character_ else sub("^msm:", "", m)
+## 합성 키 분해 — '<c11>|msm:<추정기>' → list(c11, msm) · msm 부분이 없는 키(현행 규칙 키 등) = msm NA
+.rl_split_key <- function(k) {
+  k <- as.character(k)
+  if (is.na(k) || !grepl("|msm:", k, fixed = TRUE)) return(list(c11 = k, msm = NA_character_))
+  i <- regexpr("|msm:", k, fixed = TRUE)
+  list(c11 = substr(k, 1L, i - 1L), msm = substr(k, i + 1L, nchar(k)))
+}
+## key = 합성 키(c11|msm) · c11 = 순수 C11 키(행 열 · 메타 · 소비자 가드와 같은 값) · msm = 추정기 부분
 .rl_epoch <- function(obj) {
   k <- .rl_keys(obj)
+  m <- .rl_msm(obj)
   has_av <- all(REGIME_LEDGER_AVAIL_COLS %in% names(obj$dt))
   av_ok <- has_av && all(vapply(REGIME_LEDGER_AVAIL_COLS, function(cl) inherits(obj$dt[[cl]], "Date"), logical(1)))
-  if (!length(k) && !has_av) return(list(kind = "legacy", key = NA_character_))
-  if (length(k) == 1L && !is.na(k) && nzchar(k) && av_ok) return(list(kind = "keyed", key = k))
-  list(kind = "malformed", key = paste(k, collapse = ","),
+  if (!length(k) && !has_av) return(list(kind = "legacy", key = NA_character_, c11 = NA_character_, msm = m))
+  if (length(k) == 1L && !is.na(k) && nzchar(k) && av_ok) {
+    if (is.na(m)) return(list(kind = "malformed", key = k, c11 = k, msm = m,
+                              why = sprintf("MSM 추정기 표식이 단일하지 않다(%s)", paste(unique(c(obj$dt[[REGIME_LEDGER_MSM_COL]], obj$attrs[[REGIME_LEDGER_MSM_ATTR]])), collapse = ","))))
+    return(list(kind = "keyed", key = paste(k, m, sep = "|"), c11 = k, msm = m))
+  }
+  list(kind = "malformed", key = paste(k, collapse = ","), c11 = paste(k, collapse = ","), msm = m,
        why = sprintf("키 %d개(%s) · 가용일 열 %s", length(k), paste(k, collapse = ","),
                      if (!has_av) "없음" else if (!av_ok) "Date 형 아님" else "정상"))
 }
@@ -240,7 +273,8 @@ regime_ledger_append <- function(series = "monthly", root = NULL, as_of = Sys.Da
     U$qvest_atomic_write_parquet(fin, P$pub, tag = "regime-append/init")
     U$qvest_atomic_write_json(list(series = series, frozen_through = as.character(ft_new),
                                    initialized = as.character(Sys.time()), n = nrow(live),
-                                   c11_regime_key = if (ec$kind == "keyed") ec$key else NA_character_,
+                                   c11_regime_key = if (ec$kind == "keyed") ec$c11 else NA_character_,
+                                   msm_estimator = .rl_msm_meta(ec$msm),
                                    rules_key_at_write = rules_key, schema = names(live)),
                               P$meta, auto_unbox = TRUE, pretty = TRUE, na = "null")
     .rl_say(verbose, "[regime-append] ★발행 원장 초기화 (n=%d, frozen_through=%s)\n", nrow(live), ft_new)
@@ -263,11 +297,13 @@ regime_ledger_append <- function(series = "monthly", root = NULL, as_of = Sys.Da
                                    "재기준선 = regime_ledger_republish(dry-run 기본 → --execute) · 현행 규칙 키 %s"),
                             if (ep$kind == "keyed") ep$key else ep$kind, if (ec$kind == "keyed") ec$key else ec$kind,
                             rules_key), pub_epoch = ep$key, cand_epoch = ec$key))
-  if (ep$kind == "keyed" && !is.null(mt$c11_regime_key) && !is.na(mt$c11_regime_key) && !identical(mt$c11_regime_key, ep$key))
-    return(fail(2L, sprintf("발행 원장 parquet epoch(%s) ≠ meta epoch(%s) — 원장 자체 불일치", ep$key, mt$c11_regime_key)))
-  if (ec$kind == "keyed" && !is.na(rules_key) && !identical(rules_key, ec$key))
+  if (ep$kind == "keyed" && !is.null(mt$c11_regime_key) && !is.na(mt$c11_regime_key) && !identical(mt$c11_regime_key, ep$c11))
+    return(fail(2L, sprintf("발행 원장 parquet epoch(%s) ≠ meta epoch(%s) — 원장 자체 불일치", ep$c11, mt$c11_regime_key)))
+  if (ep$kind == "keyed" && !is.null(mt$msm_estimator) && !is.na(mt$msm_estimator) && !identical(mt$msm_estimator, .rl_msm_meta(ep$msm)))
+    return(fail(2L, sprintf("발행 원장 parquet MSM 표식(%s) ≠ meta(%s) — 원장 자체 불일치", .rl_msm_meta(ep$msm), mt$msm_estimator)))
+  if (ec$kind == "keyed" && !is.na(rules_key) && !identical(rules_key, ec$c11))
     .rl_say(verbose, "[regime-append] ⚠ 후보 epoch(%s) ≠ 현행 규칙 키(%s) — 원장은 일관되나 소비자 가드는 stale_epoch 로 볼 것(재빌드·재기준선 필요)\n",
-            ec$key, rules_key)
+            ec$c11, rules_key)
 
   ## ── 동결 구간 대조 (Date <= ft_prev) — 보고만, 적용하지 않음 ─────────────────
   cmpr <- .rl_compare_frozen(pub, live, ft_prev)
@@ -304,7 +340,9 @@ regime_ledger_append <- function(series = "monthly", root = NULL, as_of = Sys.Da
     for (cl in REGIME_LEDGER_AVAIL_COLS) if (!inherits(final[[cl]], "Date"))
       return(fail(2L, sprintf("병합 후 %s 가 Date 형이 아니다(%s) — 표식 계약 파손", cl, class(final[[cl]])[1])))
     fk <- unique(as.character(final[[REGIME_LEDGER_KEY_COL]]))
-    if (!identical(fk, ec$key)) return(fail(2L, sprintf("병합 후 epoch 키 열이 단일하지 않다(%s)", paste(fk, collapse = ","))))
+    if (!identical(fk, ec$c11)) return(fail(2L, sprintf("병합 후 epoch 키 열이 단일하지 않다(%s)", paste(fk, collapse = ","))))
+    if (!identical(.rl_msm(list(dt = final, attrs = out_attrs)), ec$msm))
+      return(fail(2L, sprintf("병합 후 MSM 표식이 후보(%s)와 다르다 — 혼합 원장", ec$msm)))
   }
   setorder(final, Date)
   final <- .rl_apply_attrs(final, out_attrs)
@@ -330,7 +368,8 @@ regime_ledger_append <- function(series = "monthly", root = NULL, as_of = Sys.Da
     U$qvest_atomic_write_parquet(final, P$live, tag = "regime-append/live")   ## 소비자가 안정된 이력을 보도록 라이브도 발행본으로 동기화
     meta_new <- list(series = series, frozen_through = as.character(ft_write),
                      updated = as.character(Sys.time()), n = nrow(final),
-                     c11_regime_key = if (ec$kind == "keyed") ec$key else NA_character_,
+                     c11_regime_key = if (ec$kind == "keyed") ec$c11 else NA_character_,
+                     msm_estimator = .rl_msm_meta(ec$msm),
                      rules_key_at_write = rules_key, schema = names(final))
     if (!is.null(mt$republished)) meta_new$republished <- mt$republished   # 재기준선 이력은 승계
     U$qvest_atomic_write_json(meta_new, P$meta, auto_unbox = TRUE, pretty = TRUE, na = "null")
@@ -434,9 +473,12 @@ regime_ledger_republish <- function(series = c("monthly", "daily"), root = NULL,
     C <- tryCatch(.rl_read(src), error = function(e) e)
     if (inherits(C, "error")) { prob("%s 후보 판독 불가: %s", s, conditionMessage(C)); plan$series[[s]] <- S; next }
     ec <- .rl_epoch(C)
-    S$candidate_epoch <- ec$key; S$candidate_kind <- ec$kind
+    S$candidate_epoch <- ec$key; S$candidate_kind <- ec$kind; S$candidate_c11 <- ec$c11; S$candidate_msm <- ec$msm
+    ## rules_key = 현행 C11 규칙 키(기본) 또는 합성 '<c11>|msm:<추정기>'(MSM 전환 재발행 — 후보 추정기까지 고정)
+    rk <- .rl_split_key(rules_key)
     if (!identical(ec$kind, "keyed")) prob("%s 후보가 C11 표식 판이 아니다(%s) — --rebuild 로 현행 코드 재빌드 필요", s, ec$kind)
-    else if (!identical(ec$key, rules_key)) prob("%s 후보 epoch(%s) ≠ 현행 규칙 키(%s) — --rebuild 필요", s, ec$key, rules_key)
+    else if (!identical(ec$c11, rk$c11)) prob("%s 후보 epoch(%s) ≠ 현행 규칙 키(%s) — --rebuild 필요", s, ec$c11, rk$c11)
+    else if (!is.na(rk$msm) && !identical(ec$msm, rk$msm)) prob("%s 후보 MSM 추정기(%s) ≠ 지정(%s)", s, ec$msm, rk$msm)
     cur_start <- .rl_cur_start(s, as_of)
     comp <- C$dt[Date < cur_start]
     if (!nrow(comp)) prob("%s 후보 완료 구간이 비어 있음(경계 %s)", s, cur_start)
@@ -450,6 +492,11 @@ regime_ledger_republish <- function(series = c("monthly", "daily"), root = NULL,
       if (inherits(PB, "error")) prob("%s 구 발행본 판독 불가: %s", s, conditionMessage(PB)) else {
         epb <- .rl_epoch(PB)
         S$old_epoch <- if (epb$kind == "keyed") epb$key else epb$kind
+        ## ★MSM 후퇴 차단(2026-11-06 적대 검토): 구 발행본이 as-of(비 legacy) MSM 인데 후보가 legacy(전 표본 C1)면 막는다 —
+        ##   rules_key 에 msm 부분이 없는 기본 재발행(다음 C11 규칙 개정 등)이 조용히 C1 MSM 으로 되돌아가는 길.
+        if (identical(ec$kind, "keyed") && !is.na(epb$msm) && !identical(epb$msm, REGIME_LEDGER_MSM_LEGACY) &&
+            identical(ec$msm, REGIME_LEDGER_MSM_LEGACY))
+          prob("%s MSM 후퇴 — 구 발행본 %s → 후보 %s(전 표본 C1) · 재발행 거부", s, epb$msm, ec$msm)
         S$old_meta <- tryCatch(fromJSON(P$meta), error = function(e) NULL)
         S$diff_vs_old <- .rl_diff_summary(PB$dt, C$dt)
       }
@@ -539,7 +586,8 @@ regime_ledger_republish <- function(series = c("monthly", "daily"), root = NULL,
     if (!identical(normalizePath(S$candidate, winslash = "/", mustWork = FALSE), normalizePath(P$live, winslash = "/", mustWork = FALSE)))
       U$qvest_atomic_write_parquet(fin, P$live, tag = "regime-republish/live")
     U$qvest_atomic_write_json(list(series = s, frozen_through = S$frozen_through, updated = as.character(Sys.time()), n = nrow(fin),
-                                   c11_regime_key = S$candidate_epoch, rules_key_at_write = rules_key, schema = names(fin),
+                                   c11_regime_key = S$candidate_c11, msm_estimator = .rl_msm_meta(S$candidate_msm),
+                                   rules_key_at_write = .rl_split_key(rules_key)$c11, schema = names(fin),
                                    republished = list(at = plan$ts, archive_dir = archive_dir, old_epoch = S$old_epoch, reason = reason)),
                               P$meta, auto_unbox = TRUE, pretty = TRUE, na = "null")
     .rl_write_text_atomic(.rl_sidecar_lines(fin), P$side)
@@ -617,9 +665,12 @@ regime_ledger_restore <- function(archive_dir, root = NULL, execute = FALSE, ver
       cand <- b$paths[ss]
     } else cand <- list(monthly = getarg("--candidate-monthly", NULL), daily = getarg("--candidate-daily", NULL))
     cand <- cand[!vapply(cand, function(x) is.null(x) || is.na(x), logical(1))]
+    ## --rules-key '<c11>|msm:<추정기>' = MSM 전환 재발행(후보 추정기 고정) · --reason = 보관 MANIFEST · 원장 meta 사유(2026-11-06)
+    rsn <- getarg("--reason", NULL)
     r <- regime_ledger_republish(ss, root = root, as_of = as_of, candidates = cand, execute = "--execute" %in% a,
                                  archive_dir = getarg("--archive-dir", NULL), plan_out = getarg("--plan-out", NULL),
-                                 expect_plan = getarg("--expect-plan", NULL))
+                                 expect_plan = getarg("--expect-plan", NULL), rules_key = getarg("--rules-key", NULL),
+                                 reason = if (is.null(rsn) || is.na(rsn)) "PIT-C11-REMEDIATION 안 B — C11 epoch 재기준선" else rsn)
     return(r$status)
   }
   cand <- if ("--from-candidate" %in% a) regime_ledger_paths(series, root)$cand else getarg("--candidate", NULL)

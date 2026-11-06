@@ -16,13 +16,35 @@
 #     (S0 판정기 fred_join_violations) + 판정기 양성 대조(라벨+1일 결합은 위반으로 잡힌다)
 #   B 엔진 E2E: 스키마 불변 · 한국 거래일 전부 · 자체검증 PASS(판별력 >0) · Claims_z 도약일 = 03-27(구판 03-23)
 #   C 위반 주입(돌연변이 red): M1 이름 충돌 재현 · M2 라벨 결합(관측일+1일) · M3 계산식 lead · M4 DEXKOUS 재유입
-#   D regime_signal 일간: 척추 = 한국 거래일 · FRED_MRS = 독립 기준선 · V-05 상관 부호 · 돌연변이(같은 날짜) red
+#   D regime_signal 일간: 척추 = 한국 거래일 · FRED_MRS = 독립 기준선(둘 다 사전 조건 달력 최신일 ≥ 벤치 최신일 —
+#     어긋나면 SKIP·사유) · V-05 상관 부호 · 돌연변이(같은 날짜) red
+#     + MSM as-of 입력 계약(2026-11-06 · 아래): D0 as-of 로더 경유 빌드 · D5 첫 행 = as-of 첫날(D1 A) · D5b 판별 사본 ·
+#       D6 msm_estimator 열 · D6b 속성 생존(메모리 · parquet 왕복 = Gate M 판독식) · D7 스키마 · Category_basis ·
+#       D8 월간 빌드(첫 달 · 표식 · fw_* 없음 · Category_basis) · DM 돌연변이(D1 절단 두 줄 삭제 사본 — 소스 텍스트
+#       치환) → D5b · D8a red
 #   E macro_regime: Asof_Date · 계열값 = 독립 기준선 · 2026-08 실례 · ECOS 원/달러 · CPI 날짜 기준 12개월(합성) ·
 #     merge_regime_to_signals Asof 결합·fail-closed · 누출 구성(구판식 월내 마지막 관측) red
-#   F BCS: 확장창 백분위·분위 접두 불변(전표본판 red) · VIX 가용시점 · merge_regime_with_bcs 월중 날짜(구판 YM red)
+#   F BCS: 확장창 백분위·분위 접두 불변(전표본판 red) · VIX 가용시점(D 와 같은 달력 사전 조건) ·
+#     merge_regime_with_bcs 월중 날짜(구판 YM red)
 #   G merge_daily_regime(mode = "exposure_return") = 직전 한국 거래일 행
 # 쓰기: tempdir() 만. 운영 .cache·원장·로그에 쓰지 않는다(운영 캐시는 읽기 전용으로 복사해 쓴다).
 # 실행: Rscript 08_Tests/regime/test_regime_c11_asof.R   (R_ENVIRON_USER=<빈 파일> 권장)
+#
+# ★2026-11-06 MSM as-of 전환(결정 PIT-C1-MSM-PARAMS 안 A · MSM-ASOF-SWITCH-20261017 D1 A · D4 B · 적대 검토 #1·#8·#13·#17):
+#   regime_signal.R 의 MSM 로더는 이제 .cache/msm_asof_daily.parquet 만 읽고 없음 · 추정기 표식 ≠ asof_yearly:v1 ·
+#   벤치보다 낡음이면 stop 한다(폴백 없음). 그래서 사본 목록(NEED)이 구 msm_daily_latest 대신 as-of 경로를
+#   벤치와 같은 시점에 복사하고(낡음 검사 = 사본끼리 대조), HAVE_REAL 도 as-of 경로 존재로 정한다.
+#   사전 조건이 어긋나면(운영 리프레시 중간 상태) 사유(두 날짜 · 운영 경로)를 SKIP 으로 남긴다 — 조용히 넘기거나
+#   판정 범위를 줄여 통과시키지 않는다: as-of 사본 < 벤치 사본 → 기본 경로(낡음 검사 포함) 미측정 SKIP 후 D 절은
+#   경로 덮어쓰기(options(qvest.msm_asof_path) · 낡음 검사만 생략)로 잰다 · 거래일 캘린더 사본 < 벤치 사본 → 달력 기반
+#   정확 대조 축 D1(척추) · D2(FRED_MRS 기준선) · F4(BCS VIX) SKIP — 기준선 fred_avail_date 는 달력 밖 = NA, 엔진
+#   fred_asof_join(extend_calendar=TRUE)은 달력 끝 뒤 평일을 붙여 끝 구간이 계약상 갈린다(가짜 루트 양성 대조로 F4 실측).
+#   기대값 asof_yearly:v1 은 계약값(결정 · Gate M 리터럴)으로 이 시험이 따로 적는다 — 로더 상수를 기대값으로 쓰면
+#   그 상수가 바뀌는 회귀를 못 잡는다. 첫날 · 첫 달은 as-of 사본을 이 시험이 직접 읽어 정한다(특정 날짜 리터럴 없음).
+#   현 자료에선 KTRI(2012-09~)가 as-of 첫날(2004-01-02) 뒤에 시작해 실데이터 일간 빌드의 D1 절단이 지우는 행이 0 이다
+#   → D5 만으론 절단이 빠져도 초록이다. 그래서 as-of 를 KTRI 시작 다음 해부터로 자른 판별 사본(D5b)과 FRED 층이 앞서는
+#   월간 빌드(D8a)로 재고, DM 이 절단 삭제 사본에서 그 둘이 실제로 빨개지는지 매 실행 확인한다.
+#   시험 전체를 돌연변이 사본으로 돌릴 때: C11S3_SRC_SIGNAL=<사본 경로> (정상 실행 아님 — 배너 · 요약 JSON 에 경로 기록).
 
 suppressWarnings(suppressMessages({ library(data.table); library(jsonlite); library(arrow) }))
 
@@ -34,7 +56,9 @@ ROOT <- if (!is.na(.self)) dirname(dirname(dirname(.self))) else
   gsub("\\\\", "/", Sys.getenv("QM_ROOT", "C:/Users/99922/OneDrive/Quant_Module_Moltbot"))
 DATA_ROOT <- gsub("\\\\", "/", Sys.getenv("QM_ROOT", ROOT))
 SRC_ENGINE    <- file.path(ROOT, "02_Infrastructure/regime/regime_engine_daily.R")
-SRC_SIGNAL    <- file.path(ROOT, "02_Infrastructure/regime/regime_signal.R")
+SRC_SIGNAL_DEFAULT <- file.path(ROOT, "02_Infrastructure/regime/regime_signal.R")
+SRC_SIGNAL    <- gsub("\\\\", "/", Sys.getenv("C11S3_SRC_SIGNAL", SRC_SIGNAL_DEFAULT))   # 돌연변이 대조 실행 전용 덮어쓰기
+SRC_OVERRIDDEN <- !identical(SRC_SIGNAL, SRC_SIGNAL_DEFAULT)
 SRC_COLLECTOR <- file.path(ROOT, "02_Infrastructure/data/data_collector_fred.R")
 HELPER        <- file.path(ROOT, "02_Infrastructure/data/fred_availability.R")
 
@@ -50,22 +74,30 @@ skip <- function(axis, reason, missing) {
 quiet <- function(expr) { v <- NULL; invisible(capture.output(v <- suppressWarnings(force(expr)))); v }
 raises <- function(expr) inherits(tryCatch({ quiet(expr); NULL }, error = function(e) e), "error")
 
-TD <- file.path(tempdir(), paste0("c11s3_", as.integer(runif(1, 1e6, 9e6))))
+TD <- gsub("\\\\", "/", file.path(tempdir(), paste0("c11s3_", as.integer(runif(1, 1e6, 9e6)))))   # 슬래시 경로(옵션 · 로그 일관)
 for (d in c("root", ".cache", "research/regime_comparison/output")) dir.create(file.path(TD, d), recursive = TRUE, showWarnings = FALSE)
 writeLines("FRED_API_KEY=TEST_ONLY_DUMMY_KEY_000", file.path(TD, "root", ".env"))   # 수집기 source 용(네트워크 호출 없음)
 
 cat("=== 전제: 소스·도우미 존재 · 실데이터 읽기 전용 사본 ===\n")
+if (SRC_OVERRIDDEN) cat(sprintf("  ★SRC_SIGNAL 덮어쓰기(C11S3_SRC_SIGNAL — 돌연변이 대조 실행 · 정상 실행 아님): %s\n", SRC_SIGNAL))
 for (p in c(SRC_ENGINE, SRC_SIGNAL, SRC_COLLECTOR, HELPER)) chk(paste("존재", basename(p)), file.exists(p), p)
+# ★2026-11-06: 구 msm_daily_latest(전 표본 MLE 모수 · C1) 대신 as-of 경로. 벤치와 한 번의 복사로 같은 시점 사본을 만든다 —
+#   로더의 낡음 검사(as-of 최신일 < 벤치 최신일 = stop)가 사본끼리 대조되게. HAVE_REAL 도 이 목록(= as-of 경로 포함)으로 정한다.
 NEED <- c("macro_fred.parquet", "fred_macro_wide.parquet", "ecos_krw_usd.parquet",
-          "trading_calendar.parquet", "msm_daily_latest.parquet", "benchmark.parquet")
+          "trading_calendar.parquet", "msm_asof_daily.parquet", "benchmark.parquet")
 src_cache <- file.path(DATA_ROOT, ".cache", NEED)
 HAVE_REAL <- all(file.exists(src_cache))
 if (HAVE_REAL) invisible(file.copy(src_cache, file.path(TD, ".cache", NEED), overwrite = TRUE))
+src_of <- function(f) src_cache[match(f, NEED)]                     # 사본의 운영 원본 경로(SKIP 사유 기록용)
 DRV <- file.path(DATA_ROOT, "04_Research/regime_comparison/output/derivatives_indicators_daily.parquet")
 HAVE_DRV <- HAVE_REAL && file.exists(DRV)
 if (HAVE_DRV) invisible(file.copy(DRV, file.path(TD, "research/regime_comparison/output", basename(DRV))))
 KTRI <- file.path(DATA_ROOT, "04_Research/regime_comparison/output/ktri_v3_signals.csv")
 if (file.exists(KTRI)) invisible(file.copy(KTRI, file.path(TD, "research/regime_comparison/output", basename(KTRI))))
+# 월간 load_ktri_signal 은 PROJECT_ROOT/04_Research/… 를 본다(일간은 RESEARCH_OUTPUT) — 운영에선 같은 파일이라 두 자리에 같은 사본
+KTRI_ROOT_DIR <- file.path(TD, "root/04_Research/regime_comparison/output")
+if (file.exists(KTRI)) { dir.create(KTRI_ROOT_DIR, recursive = TRUE, showWarnings = FALSE)
+  invisible(file.copy(KTRI, file.path(KTRI_ROOT_DIR, basename(KTRI)))) }
 
 # 전역 = 격리 경로 (config.R 을 source 하지 않는다 — 운영 경로가 섞이지 않게)
 PROJECT_ROOT <- file.path(TD, "root"); FUNC_PATH <- file.path(ROOT, "02_Infrastructure")
@@ -88,8 +120,34 @@ pick <- function(dates, obs_date, avail, value) {
   list(value = v[idx], obs = as.Date(o[idx]))
 }
 
+# ── MSM as-of 입력 계약 판정(2026-11-06) — 정상 빌드(D5b·D8a)와 돌연변이 사본(DM)이 **같은 함수**로 판정된다 ──
+# D1 A 일간: 첫 행 = as-of 첫날 · MSM 결측 행 0(절단이 없으면 as-of 앞 척추 행이 MSM 결측으로 남는다)
+d1_daily_ok <- function(S, first) is.data.frame(S) && nrow(S) > 0L && identical_d(min(S$Date), first) &&
+  !anyNA(S$MSM_Crisis_Prob)
+# D1 A 월간: 첫 달 = as-of 첫 달
+d1_month_ok <- function(S, first_ym) is.data.frame(S) && nrow(S) > 0L && identical(min(as.character(S$YM)), first_ym)
+first_of <- function(S, col) if (is.data.frame(S) && nrow(S) > 0L) format(min(S[[col]])) else "빌드 없음"
+# Gate M(run_pg2_rebalance_full.sh) 판독식 그대로: parquet 을 읽어 열 고유값 + 파일 속성(attr) — 표식이 왕복에서 살아남는가
+gate_m_read <- function(p) {
+  x <- tryCatch(arrow::read_parquet(p, mmap = FALSE), error = function(e) NULL)
+  if (is.null(x)) return(list(col = "판독 실패", at = "판독 실패"))
+  list(col = unique(as.character(x[["msm_estimator"]])), at = as.character(attr(x, "msm_estimator")))
+}
+stamp_ok <- function(S, g, est) identical(as.character(attr(S, "msm_estimator")), est) && identical(g$col, est) && identical(g$at, est)
+stamp_detail <- function(S, g) sprintf("(메모리 attr %s · 왕복 열 %s · 왕복 attr %s)", paste(attr(S, "msm_estimator"), collapse = ","),
+                                       paste(g$col, collapse = ","), paste(g$at, collapse = ","))
+# Category_basis 독립 판독(5-15 MSM 단락 규칙 — classify_regime_category 를 쓰지 않는다): MSM ≥ 0.9 → CRISIS 는 점수 분류에
+#   없는 라벨이라 언제나 msm_override · MSM < 0.7(또는 결측)이면 단락이 없으므로 score · 그 사이는 점수에 달려 판정하지 않는다
+basis_ok <- function(S, need_hi) {
+  if (!("Category_basis" %in% names(S))) return(FALSE)
+  p <- S$MSM_Crisis_Prob; b <- as.character(S$Category_basis)
+  hi <- !is.na(p) & p >= 0.9; lo <- is.na(p) | p < 0.7
+  !anyNA(b) && all(b %in% c("score", "msm_override")) && (!need_hi || any(hi)) &&
+    all(b[hi] == "msm_override") && all(b[lo] == "score")
+}
+
 if (!HAVE_REAL) {
-  skip("A~E·F3·G", "실데이터 캐시 부재 — 실데이터 축 미측정", paste(NEED[!file.exists(src_cache)], collapse = ","))
+  skip("A~E·F3·G", "실데이터 캐시 부재 — 실데이터 축 미측정", paste(src_cache[!file.exists(src_cache)], collapse = " | "))
 } else {
   CAL <- fred_kr_calendar(file.path(CACHE_DIR, "trading_calendar.parquet"))
   MF  <- as.data.table(read_parquet(FRED_MACRO_CACHE)); MF[, Date := as.Date(Date)]
@@ -231,8 +289,8 @@ if (!HAVE_REAL) {
   RES2 <- quiet(build_daily_regime())
   chk("C5 돌연변이 복구 뒤 재빌드 = 원 결과(주입이 새지 않았다)", isTRUE(all.equal(RES2, RES, check.attributes = FALSE)))
 
-  # ═══ D. regime_signal 일간 ═══
-  cat("\n=== D. regime_signal 일간 FRED_MRS (V-05) ===\n")
+  # ═══ D. regime_signal 일간 + MSM as-of 입력 계약 ═══
+  cat("\n=== D. regime_signal 일간 FRED_MRS (V-05) · MSM as-of 입력 계약(2026-11-06) ===\n")
   FW <- as.data.table(read_parquet(file.path(CACHE_DIR, "fred_macro_wide.parquet"))); FW[, Date := as.Date(Date)]
   FCOLS <- c("VIX", "HY_Spread", "Term_Spread", "Fed_Funds_Rate", "BBB_Spread", "Chi_Fin_Cond")
   ref_mrs <- function(dates) {
@@ -252,29 +310,186 @@ if (!HAVE_REAL) {
     prev <- vv[data.table(Date = u$Date - 1L), on = "Date", roll = TRUE]$dV
     c(same = cor(u$dF, same, use = "complete.obs"), prev = cor(u$dF, prev, use = "complete.obs"))
   }
-  SD <- quiet(build_regime_signal_table_daily(save_path = file.path(TD, "u_daily.parquet"), verbose = FALSE))
-  chk("D1 척추 = 한국 거래일만(FRED 관측일이 행을 만들지 않는다)", all(SD$Date %in% CAL), sprintf("(비거래일 %d)", sum(!(SD$Date %in% CAL))))
-  chk("D1c 표식 계약(r1): unified 일간 avail_date = Date 형·행 날짜 · c11_regime_key = 현행 규칙 키",
-      inherits(SD$avail_date, "Date") && identical(as.integer(SD$avail_date), as.integer(as.Date(SD$Date))) &&
-        all(SD$c11_regime_key == fred_avail_rules_meta()$regime_key))
-  RF <- ref_mrs(SD$Date)
-  dmax <- max(abs(SD$FRED_MRS - RF$FRED_MRS), na.rm = TRUE); nna <- sum(is.na(SD$FRED_MRS) != is.na(RF$FRED_MRS))
-  chk("D2 FRED_MRS = 독립 가용시점 기준선(전 행)", dmax < 1e-9 && nna == 0L, sprintf("(max|d| %.3g · NA 불일치 %d)", dmax, nna))
-  cc <- vcor(SD)
-  chk(sprintf("D3 V-05 부호: cor(ΔFRED_MRS_t, ΔVIX 미국 t)=%+.3f < 0.2 · cor(…, 미국 ≤t−1)=%+.3f > 0.5 (구판 +0.84/−0.08)",
-              cc["same"], cc["prev"]), cc["same"] < 0.2 && cc["prev"] > 0.5)
-  .orig_aw <- .rs_asof_wide
-  .rs_asof_wide <- function(kr_dates, wide, cols, cal) {       # 돌연변이: 관측일 당일 결합(V-05 기전)
-    out <- data.table(Date = as.Date(kr_dates))
-    for (cl in cols) { o <- wide[!is.na(get(cl)), .(Date = as.Date(Date), Value = get(cl))]
-      out[, (cl) := pick(out$Date, o$Date, o$Date, o$Value)$value] }
-    out
+  # ── D 사전 판독(2026-11-06) — 사본을 이 시험이 직접 읽는다(regime_signal 코드를 쓰지 않는 독립 판독) ──
+  #   EST = 계약값(결정 MSM-ASOF-SWITCH-20261017 · Gate M 리터럴 · 생산자 msm_asof.R::MSMA_ESTIMATOR). 로더 상수
+  #   MSM_ESTIMATOR_EXPECTED 를 기대값으로 쓰지 않는다 — 그 상수가 바뀌는 회귀를 잡아야 하므로.
+  EST <- "asof_yearly:v1"
+  ASOF_P <- file.path(CACHE_DIR, "msm_asof_daily.parquet")
+  ASOF_TB <- read_parquet(ASOF_P, as_data_frame = FALSE, mmap = FALSE)
+  ASOF_EST <- paste(as.character(ASOF_TB$metadata$msm_estimator %||% "없음"), collapse = ",")
+  ASOF <- as.data.table(as.data.frame(ASOF_TB)); rm(ASOF_TB)
+  ASOF[, Date := as.Date(Date)]
+  ASOF <- ASOF[!is.na(Date) & !is.na(Crisis_Prob)][order(Date)]          # 로더와 같은 행 정의(Date · Crisis_Prob 결측 제외)
+  asof_first <- min(ASOF$Date); asof_max <- max(ASOF$Date); asof_first_ym <- format(asof_first, "%Y-%m")
+  bm_max  <- max(as.Date(read_parquet(file.path(CACHE_DIR, "benchmark.parquet"), col_select = "Date", mmap = FALSE)$Date), na.rm = TRUE)
+  cal_max <- max(CAL)
+  KT_P <- file.path(TD, "research/regime_comparison/output/ktri_v3_signals.csv")
+  kt_d <- if (file.exists(KT_P)) { kt0 <- fread(KT_P); sort(unique(as.Date(kt0[!is.na(KTRI), DATE]))) } else as.Date(character(0))
+  kt_d <- kt_d[!is.na(kt_d)]
+  cat(sprintf("  (사본) as-of %s ~ %s · 벤치 최신 %s · 거래일 캘린더 최신 %s · KTRI 시작 %s\n", asof_first, asof_max, bm_max,
+              cal_max, if (length(kt_d)) format(min(kt_d)) else "없음"))
+  chk(sprintf("D0a as-of 사본 메타 msm_estimator = %s (로더 입력 계약)", EST), identical(ASOF_EST, EST), ASOF_EST)
+  # 달력이 벤치를 따라왔는가(운영 리프레시 중간 상태 판별). 아니면 달력 기반 정확 대조 축(D1 척추 · D2 기준선 · F4)은
+  #   판정 불가로 SKIP 한다 — 기준선 fred_avail_date 는 달력 밖 가용일 = NA 이고 엔진 fred_asof_join(extend_calendar=TRUE)
+  #   은 달력 끝 뒤 평일을 거래일로 붙이므로 끝 구간에서 계약상 갈린다. 범위를 줄여 통과시키지 않는다(달력 결함을 가리지 않게).
+  CAL_COVERS <- cal_max >= bm_max
+  CALBM_PATHS <- paste(src_of("trading_calendar.parquet"), src_of("benchmark.parquet"), sep = " | ")
+  # as-of 사본이 벤치 사본보다 낡았으면(운영 리프레시 중간 상태 — 생산자 미실행) 기본 경로 로더는 설계대로 stop 한다.
+  #   그 경로는 미측정으로 SKIP 기록하고, D 절은 경로 덮어쓰기(낡음 검사만 생략 · 나머지 동일)로 잰다.
+  op_d <- NULL
+  if (asof_max < bm_max) {
+    skip("D0_asof_default_path",
+         sprintf("as-of 사본 최신일 %s < 벤치 사본 최신일 %s — 운영 리프레시 중간 상태(msm_asof_update.R 미실행). 기본 경로 로더는 설계대로 stop 하므로 기본 경로(낡음 검사 포함)는 미측정 · D 절은 경로 덮어쓰기(qvest.msm_asof_path)로 잰다",
+                 asof_max, bm_max),
+         paste(src_of("msm_asof_daily.parquet"), src_of("benchmark.parquet"), sep = " | "))
+    op_d <- options(qvest.msm_asof_path = ASOF_P)
   }
-  SDm <- quiet(build_regime_signal_table_daily(save_path = file.path(TD, "u_daily_m.parquet"), verbose = FALSE))
-  .rs_asof_wide <- .orig_aw; rm(.orig_aw)
-  dm <- max(abs(SDm$FRED_MRS - RF$FRED_MRS), na.rm = TRUE); ccm <- vcor(SDm)
-  chk(sprintf("D4 돌연변이(같은 날짜 결합) → 기준선 불일치(max|d| %.2f) · 같은 날 상관 %+.3f > 0.5", dm, ccm["same"]),
-      dm > 1 && ccm["same"] > 0.5)
+  SD_P <- file.path(TD, "u_daily.parquet"); SD_ERR <- ""
+  SD <- tryCatch(quiet(build_regime_signal_table_daily(save_path = SD_P, verbose = FALSE)),
+                 error = function(e) { SD_ERR <<- conditionMessage(e); NULL })
+  chk("D0 일간 통합 신호 빌드(as-of 로더 경유 · 사본)", is.data.frame(SD) && nrow(SD) > 0L, SD_ERR)
+  if (is.data.frame(SD) && nrow(SD) > 0L) {
+    # 척추 판정은 달력이 벤치를 따라왔을 때만 — 달력 < 벤치면 벤치 끝 며칠이 달력에 없어 정상 척추도 FAIL 한다.
+    #   그때는 판정 범위를 줄이지 않고(달력 결함을 가리지 않게) 이 축을 사유와 함께 SKIP 한다.
+    if (CAL_COVERS) {
+      chk("D1 척추 = 한국 거래일만(FRED 관측일이 행을 만들지 않는다)", all(SD$Date %in% CAL), sprintf("(비거래일 %d)", sum(!(SD$Date %in% CAL))))
+    } else {
+      skip("D1_spine_kr",
+           sprintf("거래일 캘린더 사본 최신일 %s < 벤치 사본 최신일 %s — 달력이 벤치를 따라오지 못한 상태(운영 리프레시 중간 상태일 수 있다)라 '척추 = 한국 거래일' 판정 불가(척추 중 달력 최신일 뒤 %d행) · 판정 범위를 줄여 통과시키지 않는다",
+                   cal_max, bm_max, sum(SD$Date > cal_max)), CALBM_PATHS)
+    }
+    chk("D1c 표식 계약(r1): unified 일간 avail_date = Date 형·행 날짜 · c11_regime_key = 현행 규칙 키",
+        inherits(SD$avail_date, "Date") && identical(as.integer(SD$avail_date), as.integer(as.Date(SD$Date))) &&
+          all(SD$c11_regime_key == fred_avail_rules_meta()$regime_key))
+    RF <- ref_mrs(SD$Date)
+    dmax <- max(abs(SD$FRED_MRS - RF$FRED_MRS), na.rm = TRUE); nna <- sum(is.na(SD$FRED_MRS) != is.na(RF$FRED_MRS))
+    if (CAL_COVERS) {
+      chk("D2 FRED_MRS = 독립 가용시점 기준선(전 행)", dmax < 1e-9 && nna == 0L, sprintf("(max|d| %.3g · NA 불일치 %d)", dmax, nna))
+    } else {
+      skip("D2_fred_mrs_ref",
+           sprintf("거래일 캘린더 사본 최신일 %s < 벤치 사본 최신일 %s — 기준선(fred_avail_date: 달력 밖 가용일 = NA)과 엔진(fred_asof_join extend_calendar=TRUE: 달력 끝 뒤 평일을 붙임)이 끝 구간에서 계약상 갈릴 수 있어 전 행 일치 판정 불가(이번 차이 max|d| %.3g · NA 불일치 %d) · 시점 결합 판별은 D3·D4 가 계속 잰다",
+                   cal_max, bm_max, dmax, nna), CALBM_PATHS)
+    }
+    cc <- vcor(SD)
+    chk(sprintf("D3 V-05 부호: cor(ΔFRED_MRS_t, ΔVIX 미국 t)=%+.3f < 0.2 · cor(…, 미국 ≤t−1)=%+.3f > 0.5 (구판 +0.84/−0.08)",
+                cc["same"], cc["prev"]), cc["same"] < 0.2 && cc["prev"] > 0.5)
+    .orig_aw <- .rs_asof_wide
+    .rs_asof_wide <- function(kr_dates, wide, cols, cal) {       # 돌연변이: 관측일 당일 결합(V-05 기전)
+      out <- data.table(Date = as.Date(kr_dates))
+      for (cl in cols) { o <- wide[!is.na(get(cl)), .(Date = as.Date(Date), Value = get(cl))]
+        out[, (cl) := pick(out$Date, o$Date, o$Date, o$Value)$value] }
+      out
+    }
+    SDm_ERR <- ""
+    SDm <- tryCatch(quiet(build_regime_signal_table_daily(save_path = file.path(TD, "u_daily_m.parquet"), verbose = FALSE)),
+                    error = function(e) { SDm_ERR <<- conditionMessage(e); NULL })
+    .rs_asof_wide <- .orig_aw; rm(.orig_aw)                       # 돌연변이 빌드가 실패해도 반드시 복구
+    if (is.data.frame(SDm)) {
+      dm <- max(abs(SDm$FRED_MRS - RF$FRED_MRS), na.rm = TRUE); ccm <- vcor(SDm)
+      chk(sprintf("D4 돌연변이(같은 날짜 결합) → 기준선 불일치(max|d| %.2f) · 같은 날 상관 %+.3f > 0.5", dm, ccm["same"]),
+          dm > 1 && ccm["same"] > 0.5)
+    } else chk("D4 돌연변이(같은 날짜 결합) 빌드", FALSE, SDm_ERR)
+
+    # ── MSM as-of 입력 계약(일간 · 실데이터 사본) ──
+    chk(sprintf("D5 D1 A: 일간 첫 행 = as-of 첫날 %s (사본 독립 판독)", asof_first), identical_d(min(SD$Date), asof_first),
+        format(min(SD$Date)))
+    cat(sprintf("  (참고) 실데이터에서 절단 대상 척추 행(as-of 첫날 앞 KTRI 날짜) = %d — 0 이면 D5 는 절단 유무를 가르지 못한다(판별 = D5b · D8a · DM)\n",
+                sum(kt_d < asof_first)))
+    chk(sprintf("D6 표식 열: msm_estimator 전 행 = %s (일간)", EST), identical(unique(as.character(SD$msm_estimator)), EST),
+        paste(unique(SD$msm_estimator), collapse = ","))
+    gmd <- gate_m_read(SD_P)
+    chk("D6b 표식 속성 생존: 메모리 attr · parquet 왕복(Gate M 판독식 — 열 고유값 · attr) 모두 계약값",
+        stamp_ok(SD, gmd, EST), stamp_detail(SD, gmd))
+    DAILY_COLS <- c("Date", "YM", "MSM_Crisis_Prob", "FRED_MRS", "KTRI_Score", "VEA_Score", "Regime_Score", "Regime_Score_smooth",
+                    "Category", "Cash_Pct", "Active_Layers", "Is_Month_End", "last_updated",
+                    "avail_date", "c11_regime_key", "msm_estimator", "Category_basis")
+    chk("D7 일간 스키마 = 구 13열(이름·순서) + 끝에 표식 계약 4열(avail_date · c11_regime_key · msm_estimator · Category_basis) · fw_* 없음",
+        identical(names(SD), DAILY_COLS) && !any(grepl("^fw_", names(SD))), paste(names(SD), collapse = ","))
+    chk(sprintf("D7b Category_basis(라벨 근거): 값 ∈ {score, msm_override} · MSM≥0.9 행(%d) 전부 msm_override · MSM<0.7 행 전부 score",
+                sum(SD$MSM_Crisis_Prob >= 0.9, na.rm = TRUE)), basis_ok(SD, need_hi = TRUE))
+  }
+
+  # ── D5b 판별 사본: 실데이터는 절단 대상이 0행이라(위 참고) as-of 를 KTRI 시작 다음 해 첫 날부터로 자른 사본을 만든다 —
+  #    그 앞 KTRI 날짜가 척추에 들어오므로 절단이 실제로 행을 지워야 첫 행 = 사본 첫날이 된다.
+  #    사본은 경로 덮어쓰기로 준다(낡음 검사 생략 — 이 축과 무관 · 끝 날짜는 원본과 같다). 표식 메타는 그대로 싣는다.
+  CUT_P <- file.path(TD, "msm_cut", "msm_asof_daily.parquet"); cut2 <- as.Date(NA); n_pre <- 0L
+  if (length(kt_d)) {
+    nx <- ASOF[Date > min(kt_d) & format(Date, "%Y") > format(min(kt_d), "%Y"), Date]
+    if (length(nx)) { cut2 <- min(nx); n_pre <- sum(kt_d < cut2) }
+  }
+  SDb <- NULL; SDb_ERR <- ""
+  if (!is.na(cut2)) {
+    dir.create(dirname(CUT_P), recursive = TRUE, showWarnings = FALSE)
+    tb_cut <- arrow::Table$create(as.data.frame(ASOF[Date >= cut2]))
+    tb_cut$metadata$msm_estimator <- EST
+    write_parquet(tb_cut, CUT_P); rm(tb_cut)
+    op <- options(qvest.msm_asof_path = CUT_P)
+    SDb <- tryCatch(quiet(build_regime_signal_table_daily(save_path = file.path(TD, "u_daily_cut.parquet"), verbose = FALSE)),
+                    error = function(e) { SDb_ERR <<- conditionMessage(e); NULL })
+    options(op)
+    chk(sprintf("D5b 판별 사본(as-of 를 %s 부터 · 그 앞 KTRI 척추 %d행): 첫 행 = 사본 첫날 · MSM 결측 행 0", cut2, n_pre),
+        d1_daily_ok(SDb, cut2),
+        if (is.data.frame(SDb)) sprintf("(첫 행 %s · MSM 결측 %d)", first_of(SDb, "Date"), sum(is.na(SDb$MSM_Crisis_Prob))) else SDb_ERR)
+  } else skip("D5b_discriminating_copy", "KTRI 사본이 없거나 KTRI 시작 다음 해의 as-of 날짜가 없다 — 판별 사본 미구성(일간 D1 절단 판별 미측정)", KT_P)
+
+  # ── D8 월간 통합 신호 = Gate M 이 읽는 .cache/unified_regime_signal.parquet 의 생산자(build_regime_signal_table) ──
+  #    FRED 층은 이 시점에 macro_regime 사본이 없어(E 가 만든다) fred_macro_wide 경로로 온다 — 그 달들이 as-of 첫 달 앞에서
+  #    시작하므로 절단이 그 달들을 지워야 첫 달 = as-of 첫 달이 된다(실데이터 판별).
+  SM_P <- file.path(TD, "u_month.parquet"); SM_ERR <- ""
+  SM <- tryCatch(quiet(build_regime_signal_table(save_path = SM_P)), error = function(e) { SM_ERR <<- conditionMessage(e); NULL })
+  chk("D8 월간 통합 신호 빌드(as-of 로더 경유 · 달력 월평균 · 사본)", is.data.frame(SM) && nrow(SM) > 0L, SM_ERR)
+  if (is.data.frame(SM) && nrow(SM) > 0L) {
+    n_pre_m <- sum(unique(format(FW$Date, "%Y-%m")) < asof_first_ym)
+    chk(sprintf("D8a D1 A: 월간 첫 달 = as-of 첫 달 %s (FRED 층이 그 앞 %d개월을 갖는다 — 절단 대상)", asof_first_ym, n_pre_m),
+        d1_month_ok(SM, asof_first_ym), first_of(SM, "YM"))
+    gmm <- gate_m_read(SM_P)
+    chk(sprintf("D8b 월간 표식: msm_estimator 열 전 행 · 메모리 attr · parquet 왕복(Gate M 판독식) 모두 %s", EST),
+        identical(unique(as.character(SM$msm_estimator)), EST) && stamp_ok(SM, gmm, EST), stamp_detail(SM, gmm))
+    MONTH_COLS <- c("Date", "YM", "MSM_Crisis_Prob", "FRED_MRS", "KTRI_Score", "VEA_Score", "Layer1_Alert", "Layer2_Alert",
+                    "Layer3_Alert", "Regime_Score", "Category", "Cash_Pct",
+                    "avail_date", "c11_regime_key", "msm_estimator", "Category_basis")
+    sm_file_cols <- tryCatch(names(read_parquet(SM_P, mmap = FALSE)), error = function(e) "판독 실패")
+    chk("D8c 월간 스키마 = 구 12열(이름·순서) + 끝에 표식 계약 4열 · fw_* 없음(고정 기울기 표 폐지 2026-11-06 · parquet 도)",
+        identical(names(SM), MONTH_COLS) && identical(sm_file_cols, MONTH_COLS), paste(names(SM), collapse = ","))
+    chk("D8d 월간 Category_basis: 값 ∈ {score, msm_override} · MSM≥0.9 달 전부 msm_override · MSM<0.7 달 전부 score",
+        basis_ok(SM, need_hi = FALSE))
+  }
+
+  # ═══ DM. 돌연변이 대조 — D1 절단 두 줄을 지운 사본(소스 텍스트 치환 · deparse 아님) → D5b · D8a 가 빨개지는가 ═══
+  #   사본은 별도 환경(ME)에 source 한다 — 전역 함수(E~G 가 쓰는)는 건드리지 않는다. 판정 = 위와 같은 d1_*_ok 함수.
+  CUT_LINES <- c(daily = "base <- base[Date >= .cut_d]", monthly = "base <- base[YM >= .cut_ym]")
+  SRC_TXT <- readLines(SRC_SIGNAL, encoding = "UTF-8", warn = FALSE)
+  hit <- vapply(CUT_LINES, function(l) sum(trimws(SRC_TXT) == l), integer(1))
+  MUT_TXT <- SRC_TXT
+  MUT_TXT[trimws(MUT_TXT) %in% CUT_LINES] <- "  # (돌연변이 DM: D1 절단 삭제)"
+  chk(sprintf("DM0 치환 성사: 대상 줄 일간 %d · 월간 %d(각 정확히 1) · 사본에 절단 줄 0 · 바뀐 줄 2", hit[["daily"]], hit[["monthly"]]),
+      all(hit == 1L) && !any(trimws(MUT_TXT) %in% CUT_LINES) && sum(MUT_TXT != SRC_TXT) == 2L)
+  MUT_P <- file.path(TD, "regime_signal_mut_d1cut.R")
+  writeLines(MUT_TXT, MUT_P, useBytes = TRUE)
+  ME <- new.env(parent = globalenv()); ME_ERR <- character(0)
+  src_ok <- tryCatch({ quiet(source(MUT_P, local = ME, encoding = "UTF-8")); TRUE },
+                     error = function(e) { ME_ERR <<- c(ME_ERR, paste("source:", conditionMessage(e))); FALSE })
+  SDx <- SMx <- NULL
+  if (src_ok) {
+    if (!is.na(cut2)) {
+      op <- options(qvest.msm_asof_path = CUT_P)
+      SDx <- tryCatch(quiet(ME$build_regime_signal_table_daily(save_path = file.path(TD, "u_daily_cut_mut.parquet"), verbose = FALSE)),
+                      error = function(e) { ME_ERR <<- c(ME_ERR, paste("일간:", conditionMessage(e))); NULL })
+      options(op)
+    }
+    SMx <- tryCatch(quiet(ME$build_regime_signal_table(save_path = file.path(TD, "u_month_mut.parquet"))),
+                    error = function(e) { ME_ERR <<- c(ME_ERR, paste("월간:", conditionMessage(e))); NULL })
+  }
+  chk("DM1 돌연변이 사본 단독 실행: source · 월간 · 일간(판별 사본) 빌드가 돈다(크래시를 red 로 세지 않게)",
+      src_ok && is.data.frame(SMx) && (is.na(cut2) || is.data.frame(SDx)), paste(ME_ERR, collapse = " | "))
+  if (!is.na(cut2)) {
+    chk(sprintf("DM2 돌연변이(일간 절단 삭제) → D5b 단정 red (첫 행 %s · MSM 결측 %d · 사본 첫날 %s)", first_of(SDx, "Date"),
+                if (is.data.frame(SDx)) sum(is.na(SDx$MSM_Crisis_Prob)) else NA_integer_, cut2),
+        is.data.frame(SDx) && !d1_daily_ok(SDx, cut2))
+  } else skip("DM2_daily_mutant", "판별 사본 미구성(D5b SKIP) — 일간 D1 절단 돌연변이 판별 미측정", KT_P)
+  chk(sprintf("DM3 돌연변이(월간 절단 삭제) → D8a 단정 red (첫 달 %s · as-of 첫 달 %s)", first_of(SMx, "YM"), asof_first_ym),
+      is.data.frame(SMx) && !d1_month_ok(SMx, asof_first_ym))
+  if (!is.null(op_d)) options(op_d)
 
   # ═══ E. macro_regime (fred_compute_regime · V-14) ═══
   cat("\n=== E. macro_regime 월 행 = 결정일까지 공표분 ===\n")
@@ -359,8 +574,7 @@ chk("F2 확장창 5분위 접두 불변", identical(as.character(fq[1:300]), as.
 full_q <- function(x) as.character(cut(x, quantile(x, seq(0, 1, 0.2), na.rm = TRUE), include.lowest = TRUE, labels = paste0("Q", 1:5)))
 chk("F2b 대조: 전표본 분위 경계는 접두 불변을 깬다", !identical(full_q(xx)[1:300], full_q(xx[1:300])))
 BC <- data.table(Date = as.Date(c("2020-03-02", "2020-03-31")), BCS = c(0.1, 0.9), BCS_Q = c("Q1", "Q5"))
-SIG <- data.table(Date = as.Date("2020-02-29"), Regime_Score = 10, Category = "RISK_ON", Cash_Pct = 0,
-                  fw_Mom = 0, fw_LowVol = 0, fw_Quality = 0, fw_Value = 0)
+SIG <- data.table(Date = as.Date("2020-02-29"), Regime_Score = 10, Category = "RISK_ON", Cash_Pct = 0)   # 현행 월간 스키마(fw_* 4열 2026-11-06 폐지)
 FB <- quiet(merge_regime_with_bcs(data.table(Date = as.Date(c("2020-03-16", "2020-03-31")), Ticker = "A"),
                                   signal_dt = SIG, bcs_dt = copy(BC)))
 chk("F3 merge_regime_with_bcs: 월중 03-16 은 03-02 BCS(구판 YM 병합은 03-31 값 = 미래)",
@@ -372,8 +586,16 @@ if (HAVE_DRV) {
   pv <- pick(bm_d, vo$Date, fred_avail_date("VIXCLS", vo$Date, kr_calendar = CAL), vo$Value)
   rv <- data.table(Date = bm_d, V = pv$value); rv[, chg3 := V - shift(V, 3)]
   j <- rv[B, on = "Date"]
-  chk("F4 BCS VIX_Chg3 = 가용시점 VIX(미국 날짜 < 한국 날짜)의 3행 변화(전 행)",
-      isTRUE(all.equal(j$VIX_Chg3, j$chg3)), sprintf("(n=%d)", nrow(j)))
+  # D1·D2 와 같은 사전 조건: 달력이 벤치를 못 따라왔으면 기준선(달력 밖 = NA)과 엔진(달력 끝 뒤 평일 붙임)이 끝 구간에서 갈린다
+  if (max(CAL) >= max(bm_d)) {
+    chk("F4 BCS VIX_Chg3 = 가용시점 VIX(미국 날짜 < 한국 날짜)의 3행 변화(전 행)",
+        isTRUE(all.equal(j$VIX_Chg3, j$chg3)), sprintf("(n=%d)", nrow(j)))
+  } else {
+    skip("F4_bcs_vix_ref",
+         sprintf("거래일 캘린더 사본 최신일 %s < 벤치 사본 최신일 %s — 기준선(fred_avail_date: 달력 밖 가용일 = NA)과 엔진(fred_asof_join extend_calendar=TRUE: 달력 끝 뒤 평일을 붙임)이 끝 구간에서 계약상 갈릴 수 있어 전 행 일치 판정 불가 · 범위를 줄여 통과시키지 않는다",
+                 max(CAL), max(bm_d)),
+         paste(src_of("trading_calendar.parquet"), src_of("benchmark.parquet"), sep = " | "))
+  }
 } else skip("F4_bcs_real", "파생지표 캐시 부재 — BCS 실데이터 미측정", DRV)
 
 # ═══ G. merge_daily_regime — 형태 b(노출×r_t) ═══
@@ -390,6 +612,7 @@ if (HAVE_REAL) {
 
 unlink(TD, recursive = TRUE)
 cat(sprintf("\n=== 결과: PASS %d · FAIL %d · SKIP %d ===\n", PASS, FAIL, length(SKIPS)))
-cat(toJSON(list(test = "regime_c11_asof", pass = PASS, fail = FAIL, skipped = length(SKIPS),
-                total = PASS + FAIL, skips = SKIPS), auto_unbox = TRUE), "\n", sep = "")
+SUMMARY <- list(test = "regime_c11_asof", pass = PASS, fail = FAIL, skipped = length(SKIPS), total = PASS + FAIL, skips = SKIPS)
+if (SRC_OVERRIDDEN) SUMMARY$src_signal_override <- SRC_SIGNAL   # 돌연변이 대조 실행 표시(정상 실행이 아님)
+cat(toJSON(SUMMARY, auto_unbox = TRUE), "\n", sep = "")
 quit(status = if (FAIL > 0L) 1L else 0L, save = "no")

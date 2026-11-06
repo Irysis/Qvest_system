@@ -22,32 +22,24 @@ if (rawdata_stale) {
   cat("  RAWDATA FRESH (refit 입력 정상)\n")
 }
 
-# MSM (hybrid + daily 양쪽 stale 시 msm_update.R 단일 호출로 동시 갱신)
-msm_daily_stale <- is_stale(".cache/msm_daily_latest.parquet", "Date", 1L)
-msm_hybrid_stale <- is_stale(".cache/msm_hybrid_latest.parquet", "Date", 1L)
+# MSM — as-of 경로(2026-11-06 전환 · PIT-C1-MSM-PARAMS 안 A): 낡으면 msm_asof.R::msma_update 로 갱신.
+#   ★폴백 없음 — 구 msm_update.R(전 표본 고정 모수)·msm_daily_refit(평활 HMM)은 C1 이라 운영 경로에서 뺐다.
+#   실패하면 아래 국면 재빌드의 로더가 stop 하고 원장 병합이 없다(라이브 불변 · fail-closed).
+msm_asof_stale <- is_stale(".cache/msm_asof_daily.parquet", "Date", 1L)
 unified_stale <- is_stale(".cache/unified_regime_signal.parquet", "Date", 1L)
 msm_refit_succeeded <- FALSE
-if (msm_daily_stale || msm_hybrid_stale) {
-  cat(sprintf("  MSM STALE (daily=%s, hybrid=%s) -> auto-refit via msm_update.R\n",
-              msm_daily_stale, msm_hybrid_stale))
+if (msm_asof_stale) {
+  cat("  MSM(as-of) STALE -> msma_update\n")
   tryCatch({
-    source("02_Infrastructure/backtest_harness.R")
-    source("04_Research/regime_comparison/msm_update.R")
-    cat("  MSM REFIT PASS (hybrid + daily 양쪽 갱신)\n")
+    source("02_Infrastructure/regime/msm_asof.R")
+    msma_update(getwd())
+    cat("  MSM(as-of) PASS\n")
     msm_refit_succeeded <- TRUE
   }, error = function(e) {
-    cat(sprintf("  MSM msm_update.R FAIL: %s — fallback msm_daily_refit\n", e$message))
-    tryCatch({
-      source("02_Infrastructure/regime/msm_daily_refit.R")
-      compute_hmm_daily_signal()
-      cat("  MSM fallback REFIT PASS (daily only)\n")
-      msm_refit_succeeded <<- TRUE
-    }, error = function(e2) {
-      cat(sprintf("  MSM fallback FAIL: %s\n", e2$message))
-    })
+    cat(sprintf("  MSM(as-of) FAIL: %s — 국면 재빌드는 로더가 멈춘다(fail-closed)\n", e$message))
   })
 } else {
-  cat("  MSM FRESH (daily + hybrid 모두, auto-refit skipped)\n")
+  cat("  MSM(as-of) FRESH (refit skipped)\n")
 }
 
 # build_regime_signal_table — MSM refit 후 또는 unified stale 시 monthly + daily 양쪽 재build

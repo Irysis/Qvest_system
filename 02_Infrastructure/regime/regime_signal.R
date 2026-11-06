@@ -42,62 +42,69 @@ cat("[regime_signal] Loading 3-Layer Cascade module...\n")
 
 
 #==============================================================================
-# 1. load_msm_signal() — MSM .RData → monthly Crisis_Prob
+# 0. MSM 입력 = as-of 연말 재적합 경로 (2026-11-06 전환 · 결정 PIT-C1-MSM-PARAMS 안 A ·
+#    MSM-ASOF-SWITCH-20261017 D1 A · D3 A · D4 B · 지도 04_Research/01_reports/msm_asof_s2_consumer_map_20261017)
+#   구판은 .cache/msm_hybrid_latest(월) · msm_daily_latest(일)를 읽었다 — 둘 다 1990~2026-01 전 표본 MLE 모수(C1).
+#   이제 두 로더 모두 .cache/msm_asof_daily.parquet(생산자 02_Infrastructure/regime/msm_asof_update.R —
+#   매년 마지막 한국 거래일까지 자료로만 적합한 θ 를 다음 해에 전방 적용)만 읽는다.
+#   ★폴백 없음(fail-closed): 파일 없음 · 추정기 표식 ≠ asof_yearly:v1 · 벤치 최신일보다 낡음 = stop().
+#     구판의 RData 분기 · 빈 표 반환(→ 일간 90/50 재척도) · LOCF 로 낡음 숨기기가 C1 값을 조용히 되살리던 길이었다.
+#   ★D1 A: 통합 신호는 as-of 경로 첫날(2004-01-02)부터 — 그 전 행은 MSM 의미가 달라지므로 자른다.
+#   ★표식: 행 열 msm_estimator + 파일 속성 msm_estimator(C11 도장 옆 · c11_regime_key 에 덧붙이지 않는다 —
+#     C11 정확 일치 가드 9곳 보호). 발행 원장의 에폭 대조는 regime_append_only.R 가 두 표식을 합쳐서 한다.
+#   시험용 경로 덮어쓰기 = options(qvest.msm_asof_path = ...) (운영 기본값 = 위 캐시).
+#==============================================================================
+
+MSM_ESTIMATOR_EXPECTED <- "asof_yearly:v1"   # msm_asof.R::MSMA_ESTIMATOR 와 같아야 한다(다르면 stop)
+
+.msm_asof_path <- function() getOption("qvest.msm_asof_path", file.path(CACHE_DIR, "msm_asof_daily.parquet"))
+
+## 일별 as-of 경로 로드 + 검증(없음 · 추정기 · 낡음 = stop). 반환 = Date · MSM_Crisis_Prob (+ 속성 msm_estimator)
+.msm_asof_load <- function(where = "regime_signal") {
+  p <- .msm_asof_path()
+  if (!file.exists(p)) stop(sprintf("[%s] MSM as-of 경로 없음: %s — Rscript 02_Infrastructure/regime/msm_asof_update.R", where, p))
+  tb <- arrow::read_parquet(p, as_data_frame = FALSE)
+  est <- tb$metadata$msm_estimator
+  if (is.null(est) || !identical(as.character(est), MSM_ESTIMATOR_EXPECTED))
+    stop(sprintf("[%s] MSM 추정기 표식 불일치(%s ≠ %s): %s", where, if (is.null(est)) "없음" else est, MSM_ESTIMATOR_EXPECTED, p))
+  dt <- as.data.table(as.data.frame(tb))
+  dt[, Date := as.Date(Date)]
+  dt <- dt[!is.na(Date) & !is.na(Crisis_Prob), .(Date, MSM_Crisis_Prob = as.numeric(Crisis_Prob))]
+  setorder(dt, Date)
+  if (!nrow(dt)) stop(sprintf("[%s] MSM as-of 경로가 비어 있다: %s", where, p))
+  ## 낡음 = 벤치(KOSPI200 — as-of 경로의 수익 원천) 최신일보다 앞섬. 생산자가 벤치 갱신 뒤 돌지 않았다는 뜻이다.
+  ## ★2026-11-06 적대 검증: 벤치 파일이 없으면 낡음 검사를 조용히 건너뛰었다(fail-open) → 없으면 stop(fail-closed).
+  ##   옵션 경로(시험 · 수동 재현)일 때 낡음 검사를 끄는 것은 설계 그대로다.
+  if (is.null(getOption("qvest.msm_asof_path"))) {
+    bp <- file.path(CACHE_DIR, "benchmark.parquet")
+    if (!file.exists(bp))
+      stop(sprintf("[%s] MSM as-of 낡음 검사 불가 — 벤치 없음: %s (fail-closed)", where, bp))
+    bmax <- max(as.Date(arrow::read_parquet(bp, col_select = "Date")$Date), na.rm = TRUE)
+    if (max(dt$Date) < bmax)
+      stop(sprintf("[%s] MSM as-of 경로가 낡았다(%s < 벤치 %s) — msm_asof_update.R 를 먼저 돌릴 것", where, max(dt$Date), bmax))
+  }
+  setattr(dt, "msm_estimator", MSM_ESTIMATOR_EXPECTED)
+  dt
+}
+
+## 통합 신호 표식(행 열 + 파일 속성) — 월 · 일 공통
+.msm_stamp <- function(signal_dt) {
+  signal_dt[, msm_estimator := MSM_ESTIMATOR_EXPECTED]
+  setattr(signal_dt, "msm_estimator", MSM_ESTIMATOR_EXPECTED)
+  invisible(signal_dt)
+}
+
+
+#==============================================================================
+# 1. load_msm_signal() — as-of 일별 Crisis_Prob → 달력 월평균 (구판 msm_hybrid Avg_Prob 와 같은 집계)
 #==============================================================================
 
 load_msm_signal <- function() {
-  # Primary: parquet cache (from msm_update.R)
-  msm_parquet <- file.path(CACHE_DIR, "msm_hybrid_latest.parquet")
-
-  if (file.exists(msm_parquet)) {
-    dt <- as.data.table(read_parquet(msm_parquet))
-    dt[, Date := as.Date(Date)]
-    # Avg_Prob = Crisis probability (0-1)
-    setnames(dt, "Avg_Prob", "MSM_Crisis_Prob", skip_absent = TRUE)
-    dt[, YM := format(Date, "%Y-%m")]
-    cat(sprintf("[regime_signal] MSM loaded (parquet): %d months | %s ~ %s\n",
-                nrow(dt), min(dt$Date), max(dt$Date)))
-    return(dt[, .(Date, YM, MSM_Crisis_Prob)])
-  }
-
-  # Fallback: .RData (production)
-  msm_dir <- file.path(PROJECT_ROOT,
-                        "05_Production/1.Regime_Def_Model/1-1.MSM")
-  rdata_files <- list.files(msm_dir, pattern = "MSM\\.RData$",
-                            full.names = TRUE)
-  if (length(rdata_files) == 0) {
-    warning("[regime_signal] No MSM data found. Layer 1 will be disabled.")
-    return(data.table(Date = as.Date(character(0)),
-                      YM = character(0),
-                      MSM_Crisis_Prob = numeric(0)))
-  }
-
-  full_path <- rdata_files[length(rdata_files)]  # latest
-  env <- new.env()
-  load(full_path, envir = env)
-
-  if (exists("monthly_prob", envir = env)) {
-    mp <- env$monthly_prob
-    dt <- data.table(
-      Date = as.Date(index(mp)),
-      MSM_Crisis_Prob = as.numeric(coredata(mp))
-    )
-  } else if (exists("History_Daily", envir = env)) {
-    hd <- as.data.table(env$History_Daily)
-    hd[, Date := as.Date(Date)]
-    hd[, YM := format(Date, "%Y-%m")]
-    dt <- hd[, .(MSM_Crisis_Prob = mean(Crisis_Prob, na.rm = TRUE),
-                  Date = max(Date)), by = YM]
-  } else {
-    warning("[regime_signal] Unrecognized MSM RData structure.")
-    return(data.table(Date = as.Date(character(0)),
-                      YM = character(0),
-                      MSM_Crisis_Prob = numeric(0)))
-  }
-
-  dt[, YM := format(Date, "%Y-%m")]
-  cat(sprintf("[regime_signal] MSM loaded (RData): %d months | %s ~ %s\n",
-              nrow(dt), min(dt$Date), max(dt$Date)))
+  d <- .msm_asof_load("regime_signal")
+  d[, YM := format(Date, "%Y-%m")]
+  dt <- d[, .(Date = max(Date), MSM_Crisis_Prob = mean(MSM_Crisis_Prob)), by = YM]
+  cat(sprintf("[regime_signal] MSM loaded (as-of %s): %d months | %s ~ %s\n",
+              MSM_ESTIMATOR_EXPECTED, nrow(dt), min(dt$YM), max(dt$YM)))
   dt[, .(Date, YM, MSM_Crisis_Prob)]
 }
 
@@ -445,6 +452,14 @@ classify_regime_category <- function(score, msm_prob = NULL) {
   base
 }
 
+## ★2026-11-06(도훈 "확인된 이상 2건 해결하자"): 라벨 근거 표식 — Category 가 점수로 정해졌는지(score),
+##   MSM 단락이 올렸는지(msm_override)를 행마다 남긴다. 단락 라벨은 표시 전용이고 현금(Cash_Pct)은 점수로만 정해지므로
+##   'CRISIS 인데 현금 0%' 가 겉보기 모순으로 읽혔다(2026-10: MSM 0.945 → CRISIS · 점수 42.45 < 45 → 현금 0).
+##   Category · 점수 · 현금 값은 바꾸지 않는다(5-15 규칙 그대로) — 근거를 드러내기만 한다.
+classify_regime_basis <- function(score, msm_prob) {
+  fifelse(classify_regime_category(score, msm_prob) != classify_regime_category(score), "msm_override", "score")
+}
+
 
 #==============================================================================
 # 6. get_cash_allocation() — Score → Graduated Cash %
@@ -463,33 +478,13 @@ get_cash_allocation <- function(score) {
 
 
 #==============================================================================
-# 7. get_factor_adjustments() — Category → Factor Weight Delta
+# 7. (폐지 2026-11-06) get_factor_adjustments() — Category → 팩터 기울기 고정 표
+#   도훈 11-06 "그냥 하드코딩이지?" → "네"(표 폐지 + 데이터 기반 일일 스타일 구성 추천기로 대체).
+#   구판 = 2026-04-17 커밋 0ce36d19d 로 들어온 국면별 고정 기울기(모멘텀 · 저변동 · 퀄리티 · 가치) — 수치 근거 없음
+#   (CLAUDE.md 하드코딩 금지 위반) · CRISIS 행 부재(5-15 MSM 단락 라벨이 중립 기울기로 떨어짐) · 운영 독자 0
+#   (저장소 전수 grep — 시험 가짜 자료 2곳뿐). 통합 신호의 fw_* 4열도 함께 뺐다.
+#   대체 = 별도 산출물 04_Research/01_reports/smartbeta_daily_mix_20261106/(국면 원장 밖 — 매일 바뀌는 값이 원장을 재서술하지 않게).
 #==============================================================================
-#
-# Returns named list of factor weight adjustments (additive deltas)
-# LowVol↑ Quality↑ in risk-off; Mom↑ Value↑ in risk-on
-#==============================================================================
-
-get_factor_adjustments <- function(category) {
-  adj <- data.table(
-    Category = c("RISK_OFF", "CAUTION", "NEUTRAL", "RISK_ON"),
-    fw_Mom    = c(-0.15, -0.05,  0.00,  0.10),
-    fw_LowVol = c( 0.20,  0.10,  0.00, -0.05),
-    fw_Quality = c( 0.10,  0.05,  0.00,  0.00),
-    fw_Value  = c(-0.10, -0.05,  0.00,  0.10)
-  )
-
-  # Vectorized merge
-  input_dt <- data.table(Category = category)
-  result <- merge(input_dt, adj, by = "Category", all.x = TRUE, sort = FALSE)
-
-  # Fill NA (unknown category) with neutral
-  for (col in c("fw_Mom", "fw_LowVol", "fw_Quality", "fw_Value")) {
-    set(result, which(is.na(result[[col]])), col, 0)
-  }
-
-  result
-}
 
 
 #==============================================================================
@@ -559,6 +554,12 @@ build_regime_signal_table <- function(save_path = NULL, daily = FALSE, ...) {
   n_filled <- sum(!is.na(base$FRED_MRS)) - nrow(fred_dt)
   if (n_filled > 0) cat(sprintf("[regime_signal] LOCF filled: FRED %d months\n", n_filled))
 
+  # ── D1 A(MSM-ASOF-SWITCH-20261017): as-of MSM 첫 달 전 행은 자른다(LOCF 뒤 — 이월 값은 그대로) ──
+  .cut_ym <- min(msm_dt$YM)
+  n_cut <- nrow(base[YM < .cut_ym])
+  base <- base[YM >= .cut_ym]
+  if (n_cut > 0) cat(sprintf("[regime_signal] D1 cut: %s 이전 %d개월 제외(as-of MSM 시작)\n", .cut_ym, n_cut))
+
   # ── Layer alerts ──
   base[, Layer1_Alert := (!is.na(MSM_Crisis_Prob) & MSM_Crisis_Prob >= 0.50)]
   base[, Layer2_Alert := (!is.na(FRED_MRS) & FRED_MRS >= 30)]
@@ -576,19 +577,13 @@ build_regime_signal_table <- function(save_path = NULL, daily = FALSE, ...) {
   # ── Cash allocation ──
   base[, Cash_Pct := get_cash_allocation(Regime_Score)]
 
-  # ── Factor adjustments ──
-  adj <- get_factor_adjustments(base$Category)
-  base[, fw_Mom     := adj$fw_Mom]
-  base[, fw_LowVol  := adj$fw_LowVol]
-  base[, fw_Quality := adj$fw_Quality]
-  base[, fw_Value   := adj$fw_Value]
+  # ── (폐지 2026-11-06) 고정 팩터 기울기 fw_* 4열 — §7 참조 ──
 
   # ── Select and order final columns ──
   final_cols <- c("Date", "YM",
                   "MSM_Crisis_Prob", "FRED_MRS", "KTRI_Score", "VEA_Score",
                   "Layer1_Alert", "Layer2_Alert", "Layer3_Alert",
-                  "Regime_Score", "Category", "Cash_Pct",
-                  "fw_Mom", "fw_LowVol", "fw_Quality", "fw_Value")
+                  "Regime_Score", "Category", "Cash_Pct")
   signal_dt <- base[, ..final_cols]
   # ★r1 표식 계약(overlay_pit_guard C11 층 · 통합 검증 BLOCKING '표식 계약 불일치'): 행 열 avail_date(Date) = 그 달
   #   결정일(말일 이하 마지막 한국 거래일 — FRED 층을 그 날 15:30 가용분으로 만든 .rs_month_decision_dates 와 같다)
@@ -598,6 +593,8 @@ build_regime_signal_table <- function(save_path = NULL, daily = FALSE, ...) {
   .rs_key <- tryCatch(fred_avail_rules_meta()$regime_key, error = function(e) NA_character_)
   signal_dt[, c11_regime_key := as.character(.rs_key)]
   setattr(signal_dt, "c11_avail_regime_key", .rs_key)
+  .msm_stamp(signal_dt)   # MSM 추정기 표식(행 열 + 파일 속성) — c11 키와 별도
+  signal_dt[, Category_basis := classify_regime_basis(Regime_Score, MSM_Crisis_Prob)]   # 라벨 근거(score · msm_override) — 끝 열에 덧붙임
 
   # ── Summary ──
   cat("\n[regime_signal] ═══ Distribution ═══\n")
@@ -690,21 +687,10 @@ load_regime_signal <- function() {
 #------------------------------------------------------------------------------
 
 load_msm_daily <- function() {
-  msm_path <- file.path(CACHE_DIR, "msm_daily_latest.parquet")
-  if (!file.exists(msm_path)) {
-    warning("[regime_signal/daily] MSM daily cache missing: ", msm_path)
-    return(data.table(Date = as.Date(character(0)),
-                      MSM_Crisis_Prob = numeric(0)))
-  }
-
-  dt <- as.data.table(read_parquet(msm_path))
-  dt[, Date := as.Date(Date)]
-  setnames(dt, "Crisis_Prob", "MSM_Crisis_Prob", skip_absent = TRUE)
-  dt <- dt[!is.na(Date) & !is.na(MSM_Crisis_Prob), .(Date, MSM_Crisis_Prob)]
-  setorder(dt, Date)
-
-  cat(sprintf("[regime_signal/daily] MSM daily loaded: %d rows | %s ~ %s\n",
-              nrow(dt), format(min(dt$Date)), format(max(dt$Date))))
+  ## ★2026-11-06: as-of 경로만(§0) — 없음 · 추정기 불일치 · 낡음 = stop(구판은 빈 표를 돌려 90/50 재척도로 흘렀다)
+  dt <- .msm_asof_load("regime_signal/daily")
+  cat(sprintf("[regime_signal/daily] MSM daily loaded (as-of %s): %d rows | %s ~ %s\n",
+              MSM_ESTIMATOR_EXPECTED, nrow(dt), format(min(dt$Date)), format(max(dt$Date))))
   dt
 }
 
@@ -957,6 +943,12 @@ build_regime_signal_table_daily <- function(save_path = NULL,
   }
   setorder(base, Date)
 
+  # ── D1 A(MSM-ASOF-SWITCH-20261017): as-of MSM 첫날 전 행은 자른다(병합 · LOCF 뒤 · 평활 앞) ──
+  .cut_d <- min(msm_dt$Date)
+  n_cut <- nrow(base[Date < .cut_d])
+  base <- base[Date >= .cut_d]
+  if (n_cut > 0 && verbose) cat(sprintf("[regime_signal/daily] D1 cut: %s 이전 %d행 제외(as-of MSM 시작)\n", format(.cut_d), n_cut))
+
   # ── Active layers flag (per-row) ─────────────────────────────
   base[, L1_active := !is.na(MSM_Crisis_Prob)]
   base[, L2_active := !is.na(FRED_MRS)]
@@ -1025,6 +1017,8 @@ build_regime_signal_table_daily <- function(save_path = NULL,
   .rs_key <- tryCatch(fred_avail_rules_meta()$regime_key, error = function(e) NA_character_)
   signal_dt[, c11_regime_key := as.character(.rs_key)]
   setattr(signal_dt, "c11_avail_regime_key", .rs_key)
+  .msm_stamp(signal_dt)   # MSM 추정기 표식(행 열 + 파일 속성) — c11 키와 별도
+  signal_dt[, Category_basis := classify_regime_basis(Regime_Score, MSM_Crisis_Prob)]   # 라벨 근거(score · msm_override) — 끝 열에 덧붙임
 
   # ── Summary ──────────────────────────────────────────────────
   if (verbose) {
@@ -1083,6 +1077,8 @@ build_regime_signal_table_daily <- function(save_path = NULL,
       jsonlite::write_json(list(
         regime_tag    = tag,
         regime_tag_m4 = tag_m4,
+        regime_tag_basis = as.character(last_row$Category_basis),   # score | msm_override(표시 전용 단락 — 현금은 점수로만)
+        cash_pct      = round(as.numeric(last_row$Cash_Pct), 4),
         date          = as.character(last_row$Date),
         score         = round(as.numeric(last_row$Regime_Score), 4),
         source        = "unified_regime_signal_daily.parquet",
@@ -1152,8 +1148,7 @@ get_regime_at_date <- function(date, signal_dt = NULL) {
       KTRI_Score = NA_real_, VEA_Score = NA_real_,
       Layer1_Alert = FALSE, Layer2_Alert = FALSE, Layer3_Alert = FALSE,
       Regime_Score = 0, Category = "NEUTRAL",
-      Cash_Pct = 0,
-      fw_Mom = 0, fw_LowVol = 0, fw_Quality = 0, fw_Value = 0
+      Cash_Pct = 0
     ))
   }
 
@@ -1168,8 +1163,8 @@ get_regime_at_date <- function(date, signal_dt = NULL) {
 # FACTORS: data.table(Date, Ticker, Score, ...)
 # signal_dt: output of load_regime_signal()
 #
-# Returns: FACTORS with added regime columns (Regime_Score, Category,
-#          Cash_Pct, fw_Mom, fw_LowVol, fw_Quality, fw_Value)
+# Returns: FACTORS with added regime columns (Regime_Score, Category, Cash_Pct)
+#          (fw_* 고정 기울기 4열은 2026-11-06 폐지 — §7)
 #==============================================================================
 
 merge_regime_signal <- function(FACTORS, signal_dt = NULL) {
@@ -1181,8 +1176,7 @@ merge_regime_signal <- function(FACTORS, signal_dt = NULL) {
   }
 
   # Prepare for rolling join
-  regime_join <- signal_dt[, .(Date, Regime_Score, Category, Cash_Pct,
-                                fw_Mom, fw_LowVol, fw_Quality, fw_Value)]
+  regime_join <- signal_dt[, .(Date, Regime_Score, Category, Cash_Pct)]
   setkey(regime_join, Date)
 
   # Unique dates from FACTORS
@@ -1195,7 +1189,7 @@ merge_regime_signal <- function(FACTORS, signal_dt = NULL) {
 
   # Remove any existing regime columns in FACTORS to avoid conflict
   regime_cols <- c("Regime_Score", "Category", "Cash_Pct",
-                   "fw_Mom", "fw_LowVol", "fw_Quality", "fw_Value")
+                   "fw_Mom", "fw_LowVol", "fw_Quality", "fw_Value")   # fw_* = 폐지 열 — 구판 FACTORS 에 남아 있으면 지운다
   existing <- intersect(names(FACTORS), regime_cols)
   if (length(existing) > 0) {
     FACTORS[, (existing) := NULL]

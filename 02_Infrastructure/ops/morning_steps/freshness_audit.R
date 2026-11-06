@@ -41,8 +41,9 @@ check_freshness <- function(name, path, col, max_lag_days) {
   status <- if (lag_d <= max_lag_days) "FRESH" else "STALE"
   list(name = name, status = status, last_date = as.character(last_d), lag_days = lag_d, max_lag = max_lag_days)
 }
-audits$msm_daily       <- check_freshness("msm_daily",       ".cache/msm_daily_latest.parquet",        "Date", 3)
-audits$msm_hybrid      <- check_freshness("msm_hybrid",      ".cache/msm_hybrid_latest.parquet",       "Date", 3)
+## ★2026-11-06 MSM as-of 전환(PIT-C1-MSM-PARAMS 안 A): 감사 이름 msm_daily 는 유지(소비자 mrs_regime_send 등) · 대상 = as-of 경로.
+##   msm_hybrid(월 파일)는 폐지 — 월 MSM 은 regime_signal.R 이 as-of 일별의 달력 월평균으로 만든다(파일 없음).
+audits$msm_daily       <- check_freshness("msm_daily",       ".cache/msm_asof_daily.parquet",          "Date", 3)
 audits$fred            <- check_freshness("fred",            ".cache/fred_macro.parquet",              "Date", 4)
 audits$ktri_indices    <- check_freshness("ktri_indices",    ".cache/ktri_indices.parquet",            "Date", 3)
 audits$ktri_v3_signals <- check_freshness("ktri_v3_signals", "04_Research/regime_comparison/output/ktri_v3_signals.csv", "DATE", 3)

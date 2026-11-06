@@ -1116,6 +1116,14 @@ SUITES=(
   "08_Tests/regime/test_fred_robust.R"
   "08_Tests/regime/test_ktri_v3_builder.R"
   "08_Tests/regime/test_msm_daily_refit.R"
+  # 2026-11-06 MSM as-of 전환(PIT-C1-MSM-PARAMS 안 A): 운영 국면 경로의 MSM 생산자(msm_asof.R) 검사 편입 —
+  #   10-16 신설 뒤 SUITES 밖이었다. 9축(PC1 커널 · 완료 연도 · 식별 가드 · append-only · 적용 구간 · 접두 불변 ·
+  #   벤치 해시 · 생산자 흐름(캘린더 교정 해 포함) · 운영 원장 = 캐시 재계산) + 10 안전 수리(틀린 명시 루트 · 원자 교체 실패 정지).
+  "08_Tests/regime/test_msm_asof.R"
+  # 같은 전환의 소비자 쪽 계약(적대 검토 #3 · #21): 국면 신호 MSM 로더 3종의 위반 주입(없음 · 다른 표식 · 낡음 · 벤치 부재 fail-closed) ·
+  #   D1 절단 · 빌드 표식 · Gate M 관문 왕복 + 돌연변이 M1~M5. 그리고 Gate M 공통 관문(gate_msm_asof.sh — full 러너 · 예약 월간 [0b] 한 벌).
+  "08_Tests/regime/test_regime_signal_msm_asof.R"
+  "08_Tests/ops/test_gate_msm_asof.sh"
   "08_Tests/regime/test_regime_signal_merge.R"
   # 2026-08-30 신설: m4 BOCPD 팔 가드의 양방향 검증. 구판 가드
   #   `bocpd_expected_runlen_lag >= 12` 는 warm-up 주석을 달고 있었지만 실제로는

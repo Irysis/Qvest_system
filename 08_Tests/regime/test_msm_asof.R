@@ -1,6 +1,7 @@
 ## test_msm_asof.R — 02_Infrastructure/regime/msm_asof.R 검사(결정 PIT-C1-MSM-PARAMS 안 A · 2026-10-16)
 ##   1 PC1 고속 커널 = 운영 조밀 커널 · 2 완료 연도 · 3 식별 가드 · 4 원장 append-only · 5 적용 구간 (r_k, r_{k+1}] · 6 접두 불변(PIT) ·
-##   7 벤치 해시 · 8 생산자 흐름(적합 대역 · 순서 · 승계 · 빈 해 거부 · 재실행 0) · 9 운영 원장 · 캐시(있을 때 — PC2 저장 = 재계산)
+##   7 벤치 해시 · 8 생산자 흐름(적합 대역 · 순서 · 승계 · 빈 해 거부 · 재실행 0) · 9 운영 원장 · 캐시(있을 때 — PC2 저장 = 재계산) ·
+##   10 안전 수리(11-06 — 틀린 명시 루트 정지 · 원자 교체 실패 정지 + 뮤테이션 2종)
 ## 실행: Rscript 08_Tests/regime/test_msm_asof.R
 suppressPackageStartupMessages({ library(data.table); library(jsonlite) })
 ROOT <- "C:/Users/99922/OneDrive/Quant_Module_Moltbot"; Sys.setenv(QM_ROOT = ROOT); setwd(ROOT)
@@ -98,10 +99,19 @@ cond8b <- !length(cf) || all(vapply(cf, function(i) i > 1L && identical(L8$rows[
 tl8g <- file.path(tempdir(), "msm_ledger_t8g.json"); unlink(tl8g)
 msma_ledger_append(tl8g, L8$rows[[1]]); msma_ledger_append(tl8g, L8$rows[[3]])
 u3 <- tryCatch(msma_update(ROOT, ledger = tl8g, out = NULL, bm = bm8, verbose = FALSE), error = function(e) "gap")
+## 캘린더 교정(2026-11-06 · 2024-12-30 복원 사례): 원장 적합일이 그 해 연말 거래일보다 하루 앞서 있어도(같은 해) 덮인 해다 —
+##   새 적합 0 · 멈추지 않음 · 캐시 메타데이터 msm_calendar_shifted_fits 에 어긋남 기록. 같은 원장에서 한 해를 통째로 빼면 여전히 멈춘다(위 u3).
+tl8s <- file.path(tempdir(), "msm_ledger_t8s.json"); unlink(tl8s); to8s <- file.path(tempdir(), "msm_asof_t8s.parquet"); unlink(to8s)
+d8 <- sort(unique(msma_returns(bm8)$Date)); r1 <- L8$rows[[1]]; prev1 <- max(d8[d8 < as.Date(r1$fit_date)])
+r1$fit_date <- format(prev1); r1$data_end <- format(prev1)
+msma_ledger_append(tl8s, r1); for (i in 2:length(L8$rows)) msma_ledger_append(tl8s, L8$rows[[i]])
+u4 <- tryCatch(msma_update(ROOT, ledger = tl8s, out = to8s, bm = bm8, verbose = FALSE), error = function(e) conditionMessage(e))
+m4s <- if (file.exists(to8s)) arrow::read_parquet(to8s, as_data_frame = FALSE)$metadata$msm_calendar_shifted_fits else NA
+cond8c <- is.list(u4) && identical(u4$new_fits, 0L) && identical(m4s, sprintf("%s->%s", format(prev1), dates8[1]))
 msma_fit <- real_fit
-if (cond8 && cond8b && identical(u3, "gap"))
-  ok(sprintf("8 생산자 흐름 — 완료 연도 %d개 순서대로 적합 · 승계 %d행 = 직전 θ · 재실행 새 적합 0 · 캐시 추정기 표식 · 빈 해 거부", nrow(YE8), length(cf))) else
-  ng("8", paste(if (is.character(u1)) u1 else "", paste(acts, collapse = ","), identical(u3, "gap")))
+if (cond8 && cond8b && identical(u3, "gap") && cond8c)
+  ok(sprintf("8 생산자 흐름 — 완료 연도 %d개 순서대로 적합 · 승계 %d행 = 직전 θ · 재실행 새 적합 0 · 캐시 추정기 표식 · 빈 해 거부 · 캘린더 교정 해 허용(%s)", nrow(YE8), length(cf), m4s)) else
+  ng("8", paste(if (is.character(u1)) u1 else "", paste(acts, collapse = ","), identical(u3, "gap"), if (is.character(u4)) u4 else "", m4s))
 
 ## 9) 운영 원장 · 캐시(있을 때) — PC2 저장 캐시 = 원장으로 재계산 · 적합일 = 2003~ 완료 연도 연속 · 가드 어휘
 LP <- msma_ledger_path(ROOT); CP <- file.path(ROOT, ".cache/msm_asof_daily.parquet")
@@ -112,11 +122,41 @@ if (file.exists(LP) && file.exists(CP)) {
   J9 <- merge(st[, .(Date, a = Crisis_Prob)], P9[, .(Date, b = Crisis_Prob)], by = "Date")
   ye9 <- msma_year_ends(RT$Date)
   meta <- arrow::read_parquet(CP, as_data_frame = FALSE)$metadata
-  if (nrow(J9) == nrow(st) && max(abs(J9$a - J9$b)) < 1e-12 && identical(format(S9$fit_date), format(ye9$rf)) &&
+  ## 적합일 = 완료 연도마다 1행(같은 해 · 연말 거래일 이하) — 정확한 연말 일치가 아니다(2024-12-30 복원 뒤 2024 행 = 12-27)
+  if (nrow(J9) == nrow(st) && max(abs(J9$a - J9$b)) < 1e-12 && identical(format(S9$fit_date, "%Y"), as.character(ye9$y)) &&
+      all(S9$fit_date <= ye9$rf) &&
       all(S9$guard_action %in% c("mle", "best_nondegenerate", "carry_forward_previous")) && identical(meta$msm_estimator, "asof_yearly:v1"))
     ok(sprintf("9 운영 원장 %d행(%s~%s) · 캐시 %d일 = 재계산(PC2 최대 차 %.1e) · 추정기 표식", nrow(S9), format(min(S9$fit_date)), format(max(S9$fit_date)),
                nrow(st), max(abs(J9$a - J9$b)))) else ng("9", sprintf("n %d/%d · fit dates %s", nrow(J9), nrow(st), paste(format(S9$fit_date), collapse = ",")))
 } else cat("  SKIP 9 운영 원장 · 캐시 없음(초기 적합 전)\n")
+
+## 10) 안전 결함 수리(2026-11-06 적대 검증) — ① 명시 루트에 config.R 이 없으면 QM_ROOT(운영 루트)로 넘어가지 않고 정지
+##     ② 원자 교체에서 rename · copy 가 모두 실패하면 정지(구판 = copy 반환값을 버려 낡은 파일을 남긴 채 성공).
+##     양성 대조 = 정상 루트 · 미지정 루트(QM_ROOT 폴백) · 정상 교체. 뮤테이션 = 소스 텍스트 치환 사본에서 각 단정이 빨개지는가.
+bad_root <- file.path(tempdir(), "msma_no_config_root"); dir.create(bad_root, showWarnings = FALSE)
+rp_src <- function(tag, val) { p <- file.path(tempdir(), sprintf("msma_rep_%s.txt", tag)); writeLines(val, p); p }
+dst_ok <- file.path(tempdir(), "msma_rep_dst_ok.txt"); unlink(dst_ok)
+dst_bad <- file.path(tempdir(), "msma_no_such_dir", "sub", "dst.txt")      # 상위 폴더 없음 → rename · copy 모두 실패
+try10 <- function(expr) tryCatch(suppressWarnings(expr), error = function(e) paste("ERR:", conditionMessage(e)))
+r10a <- try10(.msma_root(bad_root)); r10b <- try10(.msma_root(ROOT)); r10c <- try10(.msma_root(NULL))
+rp_ok <- try10(.msma_replace(rp_src("a", "x"), dst_ok)); rp_bad <- try10(.msma_replace(rp_src("b", "y"), dst_bad))
+cond10 <- grepl("^ERR:.*지정한 루트", r10a) && identical(r10b, ROOT) && identical(r10c, ROOT) &&
+  isTRUE(rp_ok) && file.exists(dst_ok) && identical(readLines(dst_ok), "x") && grepl("^ERR:.*원자 교체 실패", rp_bad)
+mut10 <- function(tag, pat, rep) {
+  txt <- paste(readLines(file.path(ROOT, "02_Infrastructure/regime/msm_asof.R"), encoding = "UTF-8", warn = FALSE), collapse = "\n")
+  cnt <- function(s) { m <- gregexpr(pat, s, fixed = TRUE)[[1]]; if (m[1] == -1L) 0L else length(m) }
+  mt <- sub(pat, rep, txt, fixed = TRUE)
+  p <- file.path(tempdir(), sprintf("msm_asof_mut10_%s.R", tag)); con <- file(p, open = "wb"); writeLines(mt, con, sep = "\n", useBytes = TRUE); close(con)
+  E <- new.env(parent = globalenv()); sys.source(p, envir = E, keep.source = FALSE)
+  list(applied = cnt(txt) == 1L && cnt(mt) == 0L && !identical(mt, txt), E = E)
+}
+M10a <- mut10("a", 'stop("[msm_asof] 지정한 루트에 02_Infrastructure/config.R 이 없다(운영 루트로 넘어가지 않는다): ", root)', "invisible(NULL)  # MUTANT-10a")
+M10b <- mut10("b", "if (!isTRUE(ok)) stop(", "if (FALSE) stop(")
+red10a <- identical(try10(M10a$E$.msma_root(bad_root)), ROOT)                  # 뮤턴트 = 구판처럼 운영 루트로 넘어간다
+red10b <- isTRUE(try10(M10b$E$.msma_replace(rp_src("c", "z"), dst_bad)))       # 뮤턴트 = 실패를 성공으로 접는다
+if (cond10 && M10a$applied && red10a && M10b$applied && red10b)
+  ok("10 안전 수리 — 틀린 명시 루트 정지(운영 루트 폴백 없음) · 미지정 = QM_ROOT · 교체 실패 정지 · 정상 교체 · 뮤테이션 2종 red") else
+  ng("10", paste(r10a, r10b, r10c, rp_ok, rp_bad, M10a$applied, red10a, M10b$applied, red10b, sep = " | "))
 
 cat(sprintf("\n합계: 통과 %d · 실패 %d\n", PASS, FAIL))
 cat(sprintf('{"test":"msm_asof","pass":%d,"fail":%d,"total":%d}\n', PASS, FAIL, PASS + FAIL))

@@ -25,10 +25,25 @@ MSMA_FIRST_YEAR <- 2003L                              # 결정문 '첫 적합 20
 MSMA_GUARD <- list(gamma_min = 1e-5, sd_ratio = c(0.8, 1.25))   # 사전 고정(2026-10-10)
 
 .msma_root <- function(root = NULL) {
-  for (p in c(root, Sys.getenv("QM_ROOT", ""), Sys.getenv("CLAUDE_PROJECT_DIR", ""))) {
-    if (!is.null(p) && nzchar(p) && file.exists(file.path(p, "02_Infrastructure/config.R"))) return(gsub("\\\\", "/", p))
+  ## ★2026-11-06 적대 검증: root 를 명시했는데 그 경로에 config.R 이 없으면 조용히 QM_ROOT(~/.Renviron = 운영 루트)로 넘어가
+  ##   모래상자 호출이 운영 원장 · .cache 에 쓸 수 있었다 → 명시한 root 는 그 경로만 본다(없으면 stop). 환경변수 폴백은 root 미지정 때만.
+  if (!is.null(root) && length(root) == 1L && !is.na(root) && nzchar(root)) {
+    if (file.exists(file.path(root, "02_Infrastructure/config.R"))) return(gsub("\\\\", "/", root))
+    stop("[msm_asof] 지정한 루트에 02_Infrastructure/config.R 이 없다(운영 루트로 넘어가지 않는다): ", root)
+  }
+  for (p in c(Sys.getenv("QM_ROOT", ""), Sys.getenv("CLAUDE_PROJECT_DIR", ""))) {
+    if (nzchar(p) && file.exists(file.path(p, "02_Infrastructure/config.R"))) return(gsub("\\\\", "/", p))
   }
   stop("[msm_asof] 프로젝트 루트 해석 실패(QM_ROOT)")
+}
+## 원자 교체: rename 실패(대상 잠김 등) 시 copy 로 넘기되, copy 도 실패하면 stop — 낡은 파일을 남긴 채 성공으로 끝나지 않게
+## (★2026-11-06 적대 검증: 구판은 file.copy 반환값을 버려 실패가 조용히 PASS · rc 0 으로 접혔다)
+.msma_replace <- function(tmp, dest) {
+  if (file.rename(tmp, dest)) return(invisible(TRUE))
+  ok <- file.copy(tmp, dest, overwrite = TRUE)
+  unlink(tmp)
+  if (!isTRUE(ok)) stop("[msm_asof] 원자 교체 실패(rename · copy 모두 실패 — 대상 잠김?): ", dest)
+  invisible(TRUE)
 }
 .MSMA <- new.env(parent = emptyenv())
 
@@ -138,7 +153,7 @@ msma_ledger_append <- function(path, row) {
   dir.create(dirname(path), recursive = TRUE, showWarnings = FALSE)
   tmp <- paste0(path, ".tmp_", Sys.getpid())
   writeLines(toJSON(L, auto_unbox = TRUE, pretty = TRUE, null = "null", na = "null", digits = NA), tmp, useBytes = TRUE)
-  if (!file.rename(tmp, path)) { file.copy(tmp, path, overwrite = TRUE); unlink(tmp) }
+  .msma_replace(tmp, path)
   invisible(L)
 }
 ## 원장 → 일정표(fit_date 순 · θ)
@@ -177,9 +192,20 @@ msma_update <- function(root = NULL, ledger = msma_ledger_path(root), out = file
   bm <- bm %||% msma_load_bm(root); RT <- msma_returns(bm)
   L <- msma_ledger_read(ledger); have <- vapply(L$rows, function(z) as.character(z$fit_date), character(1))
   YE <- msma_year_ends(RT$Date)
-  todo <- YE[!(format(rf) %in% have)]
+  ## ★연도 단위 식별(2026-11-06 수리): 완료 연도 y 는 원장에 '그 해의 적합일' 행이 있으면 덮인 것이다.
+  ##   구판은 적합일 문자열이 지금 캘린더의 연말 거래일과 정확히 같아야 했다 → 10-17 2024-12-30 거래일 복원
+  ##   (결정 · 기억 project-20241230-is-a-real-session)으로 2024 연말이 12-27 → 12-30 으로 옮겨가자, 12-27 적합 행이
+  ##   있는데도 '빠진 해'로 멈췄다. 12-27 적합 θ 는 Date ≤ 12-27 자료로만 만들어 (12-27, 다음 적합일] 에 적용되므로
+  ##   PIT 는 그대로다(적합일 < 값 날짜 무결성은 msma_path 가 다시 검사). 원장은 append-only 라 고치지 않고, 어긋남은
+  ##   캐시 메타데이터 msm_calendar_shifted_fits 로 남긴다. 그 해에 적합 행이 아예 없으면 종전대로 멈춘다.
+  have_y <- format(as.Date(have), "%Y")
+  todo <- YE[!(as.character(y) %in% have_y)]
   if (length(have) && nrow(todo) && min(todo$rf) < max(as.Date(have)))
     stop("[msm_asof] 원장 사이에 빠진 해가 있다(", paste(format(todo$rf[todo$rf < max(as.Date(have))]), collapse = ","), ") — append-only 라 끼워 넣지 않는다")
+  shifted <- YE[as.character(y) %in% have_y][, fit := have[match(as.character(y), have_y)]][format(rf) != fit]
+  if (nrow(shifted) && verbose)
+    cat(sprintf("[msm_asof] 캘린더 연말 ≠ 원장 적합일 %d해(%s) — 원장 θ 유지(적합일 이전 자료 · PIT 유효)\n", nrow(shifted),
+                paste(sprintf("%d: 원장 %s · 캘린더 %s", shifted$y, shifted$fit, format(shifted$rf)), collapse = " / ")))
   if (nrow(todo)) {
     jobs <- lapply(seq_len(nrow(todo)), function(i) list(rf = todo$rf[i]))
     fitj <- function(j) { x <- RT[Date <= j$rf]; f <- msma_fit(x$r, root = root); c(j, list(n_obs = nrow(x), first = format(min(x$Date)), sdw = sd(x$r), fit = f)) }
@@ -212,8 +238,9 @@ msma_update <- function(root = NULL, ledger = msma_ledger_path(root), out = file
     tb$metadata$msm_estimator <- MSMA_ESTIMATOR
     tb$metadata$msm_ledger_sha256 <- as.character(openssl::sha256(file(ledger)))
     tb$metadata$msm_bench_revised_since_fit <- paste(unlist(revised), collapse = ",")
+    tb$metadata$msm_calendar_shifted_fits <- paste(sprintf("%s->%s", shifted$fit, format(shifted$rf)), collapse = ",")
     tmp <- paste0(out, ".tmp_", Sys.getpid()); arrow::write_parquet(tb, tmp)
-    if (!file.rename(tmp, out)) { file.copy(tmp, out, overwrite = TRUE); unlink(tmp) }
+    .msma_replace(tmp, out)
   }
   if (verbose) cat(sprintf("[msm_asof] 원장 %d행(%s~%s) · 경로 %d일(%s~%s) · 새 적합 %d · 벤치 수정 감지 %d\n", nrow(S), format(min(S$fit_date)), format(max(S$fit_date)),
                            nrow(P), format(min(P$Date)), format(max(P$Date)), nrow(todo), length(revised)))
