@@ -2373,6 +2373,20 @@ tg_trigger_check <- function(current_metrics, strategy_name = "Portfolio") {
 # + 이모지 포함 텍스트 코멘터리
 # 날짜: 최신 데이터 기준 (월말 아님)
 #==============================================================================
+## ★2026-11-06(도훈 "확인된 이상 2건 해결하자"): 국면 라벨 근거 표시. Category 가 MSM 단락(위기확률 ≥0.9 → CRISIS ·
+##   ≥0.7 → 최소 CAUTION, 2026-05-15 표시 전용 규칙)으로 올라간 행이면 별표와 함께 "현금은 점수로 정해진다"를 붙인다 —
+##   'CRISIS 인데 현금 0%' 가 역발상으로 오독됐다. 근거 열(Category_basis)이 없는 구판 파일이면 라벨만 그대로 쓴다.
+##   차트 글자는 영문(그래프 장치 한글 글꼴 의존 회피 — 기존 차트 제목과 같은 방침).
+.regime_cat_label <- function(r) {
+  lab <- as.character(r$Category)
+  b <- if ("Category_basis" %in% names(r)) as.character(r$Category_basis) else NA_character_
+  if (length(b) == 1L && !is.na(b) && identical(b, "msm_override")) {
+    cp <- if ("Cash_Pct" %in% names(r)) suppressWarnings(as.numeric(r$Cash_Pct)) else NA_real_
+    lab <- sprintf("%s* (MSM-only label; cash %s by score)", lab,
+                   if (length(cp) == 1L && is.finite(cp)) sprintf("%.0f%%", 100 * cp) else "n/a")
+  }
+  lab
+}
 tg_regime_briefing <- function(regime_dt = NULL, ktri_daily = NULL) {
   suppressPackageStartupMessages({
     library(data.table); library(arrow); library(ggplot2); library(scales); library(gridExtra)
@@ -2493,7 +2507,7 @@ tg_regime_briefing <- function(regime_dt = NULL, ktri_daily = NULL) {
                    x = latest_d1$Date, y = latest_d1$Regime_Score_smooth,
                    label = sprintf("NOW %.1f\n%s",
                                    latest_d1$Regime_Score_smooth,
-                                   latest_d1$Category),
+                                   .regime_cat_label(latest_d1)),
                    hjust = 1.1, vjust = 0.5, size = 3.1, fontface = "bold",
                    color = "#0D47A1",
                    fill = scales::alpha("white", 0.92), linewidth = 0.3,
@@ -2507,7 +2521,7 @@ tg_regime_briefing <- function(regime_dt = NULL, ktri_daily = NULL) {
                  "Data: %s | Score %.1f | %s",
                  format(latest_d1$Date),
                  latest_d1$Regime_Score_smooth,
-                 latest_d1$Category),
+                 .regime_cat_label(latest_d1)),
                x = "") +
           theme_minimal(base_size = 13) +
           theme(plot.title = element_text(face = "bold", size = 15),
@@ -2537,7 +2551,7 @@ tg_regime_briefing <- function(regime_dt = NULL, ktri_daily = NULL) {
         sec.axis = sec_axis(~ . / 100, name = "Cash %", labels = percent)) +
       labs(title = "Regime Score & Cash Allocation (24M) [Monthly Fallback]",
            subtitle = sprintf("Data: %s | Score %.1f | %s | Cash %.1f%%",
-                              ref_date, latest$Regime_Score, latest$Category, latest$Cash_Pct * 100)) +
+                              ref_date, latest$Regime_Score, .regime_cat_label(latest), latest$Cash_Pct * 100)) +
       theme_minimal(base_size = 13) +
       theme(plot.title = element_text(face = "bold", size = 15),
             legend.position = "bottom",
@@ -2963,7 +2977,7 @@ tg_regime_briefing <- function(regime_dt = NULL, ktri_daily = NULL) {
                    x = latest_d$Date, y = latest_d$Regime_Score_smooth,
                    label = sprintf("NOW %.1f\n%s\n%s",
                                    latest_d$Regime_Score_smooth,
-                                   latest_d$Category,
+                                   .regime_cat_label(latest_d),
                                    latest_d$Active_Layers),
                    hjust = 1.1, vjust = 0.5, size = 3.2, fontface = "bold",
                    color = "#0D47A1",
@@ -2988,7 +3002,7 @@ tg_regime_briefing <- function(regime_dt = NULL, ktri_daily = NULL) {
                subtitle = sprintf(
                  "Latest: Score %.1f / %s / %s | Crisis_Prob %.1f%% | thin=raw, thick=EWMA smooth, dotdash=Crisis_Prob",
                  latest_d$Regime_Score_smooth,
-                 latest_d$Category, latest_d$Active_Layers,
+                 .regime_cat_label(latest_d), latest_d$Active_Layers,
                  latest_d$MSM_Crisis_Prob * 100),
                x = "") +
           theme_minimal(base_size = 12) +
