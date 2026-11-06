@@ -150,7 +150,9 @@ def html_table(headers, rows, aligns=None, widths=None, small=False, row_bg=None
         tds = []
         for i, c in enumerate(r):
             al = (aligns[i] if aligns else "left")
-            tds.append(f'<td style="padding:3px 5px;border:1px solid #dcdcdc;text-align:{al};vertical-align:middle;background:{bg};{fs}{PC}">{c}</td>')
+            # white-space:normal 은 PDF 도구 CSS 의 `td:first-child { white-space: nowrap }` 를 이긴다(인라인 우선) — 첫 칸에 긴 글이 오면
+            # 첫 열이 쪽 폭을 다 먹고 나머지 열이 세로 글자로 무너지던 사고(11-06 1쪽 카드 표) 방지
+            tds.append(f'<td style="padding:3px 5px;border:1px solid #dcdcdc;text-align:{al};vertical-align:middle;background:{bg};white-space:normal;{fs}{PC}">{c}</td>')
         body.append("<tr>" + "".join(tds) + "</tr>")
     return (f'<table style="width:100%;border-collapse:collapse;margin:4px 0 6px 0"><thead><tr>{th}</tr></thead>'
             f'<tbody>{"".join(body)}</tbody></table>')
@@ -272,19 +274,19 @@ def build_markdown(meta, d, st, eps, cv, nsr, rob, day, peaks):
     # 헤드라인 카드 — 점수(제곱근 눈금 · 기준점 병기) · 역대 순위 · 단계 · 변화 · V-KOSPI
     lab, fg, bg = status(lt["score_pct"])
     top_pct = max(1, round(100 - 100 * lt["score_pct"]))
-    ref_line = " · ".join(f"{r['short']} {r['level']:.0f}" for r in meta["ref_marks"])
+    # ★카드 칸의 글은 짧게 — 긴 기준점 줄은 표 아래 '점수 눈금 읽기' 한 줄에만(첫 칸이 길면 PDF 표 열 배분이 무너진다 · 11-06 실사고)
     cards = html_table(
         ["오늘의 스트레스 점수<br><span style=\"font-weight:400;font-size:7.6pt\">0~100 · 높을수록 나쁨</span>",
-         f"{RANK}<br><span style=\"font-weight:400;font-size:7.6pt\">2006년 이후 {len(d):,} 거래일 중</span>",
+         f"{RANK}<br><span style=\"font-weight:400;font-size:7.6pt\">2006년 이후 {len(d):,} 거래일 · 나쁜 순</span>",
          f"경보 단계<br><span style=\"font-weight:400;font-size:7.6pt\">주의 {lv['warn']:.0f}점 이상 · 위험 {lv['risk']:.0f}점 이상</span>",
          "20거래일 전 → 오늘", "비교: V-KOSPI200<br><span style=\"font-weight:400;font-size:7.6pt\">옵션시장이 보는 변동성</span>"],
         [[f'<span style="font-size:23pt;font-weight:700;color:{fg}">{lt["level"]:.0f}</span><span style="color:#666"> / 100</span>'
-          f'<br><span style="color:#444;font-size:7.4pt">{ref_line}</span>',
-          f'<span style="font-size:16.5pt;font-weight:700;color:{fg};white-space:nowrap">나쁜 순 상위 {top_pct}%</span><br><span style="color:#444;font-size:7.6pt">백분위 {pct(lt["score_pct"])} — 전체 거래일의 {pct(lt["score_pct"])}% 가 오늘보다 평온했습니다</span>',
+          f'<br><span style="color:#444;font-size:7.6pt">평상시 {lv["median"]:.0f} · 2008년 정점 {refs.get("2008년 금융위기", float("nan")):.0f}</span>',
+          f'<span style="font-size:19pt;font-weight:700;color:{fg}">상위 {top_pct}%</span><br><span style="color:#444;font-size:7.6pt">백분위 {pct(lt["score_pct"])} — 거래일의 {pct(lt["score_pct"])}% 가 오늘보다 평온</span>',
           f'<span style="display:inline-block;padding:6px 18px;background:{TIER_FILL[tier]};font-size:15pt;font-weight:700;border-radius:4px;{PC}">{tier}</span>',
           f'<span style="font-size:13pt">{lt["level_20td_ago"]:.0f} → {lt["level"]:.0f}</span><br>{chg_phrase(lt["level"] - lt["level_20td_ago"], fmt="+.0f")}',
           f'<span style="font-size:13pt">{lt["vkospi"]:.1f}</span><br><span style="color:#444">{rank_phrase(lt["vkospi_pct"])}</span>']],
-        aligns=["center"] * 5, widths=["26%", "24%", "17%", "15%", "18%"])
+        aligns=["center"] * 5, widths=["24%", "24%", "18%", "16%", "18%"])
     A(cards)
     A("")
     A(f'<span style="font-size:7.8pt;color:#444">점수 눈금 읽기 — {scale_phrase(meta)} · 100 = 12개 분야가 모두 역대 최악이면서 한 방향으로 움직일 때. '
@@ -295,6 +297,10 @@ def build_markdown(meta, d, st, eps, cv, nsr, rob, day, peaks):
     for b in summary_bullets(meta, d, st, eps, cv, ns, peaks):
         A(f"- {b}")
     A("")
+    # 소제목으로 블록을 나눈다 — PDF 도구는 제목~다음 제목을 한 덩어리(쪽 나눔 금지)로 묶으므로, 요약 글머리와 게이지를 한 덩어리로 두면
+    # 1쪽에 못 들어갈 때 요약까지 통째로 2쪽으로 밀린다(1쪽 = 제목 + 카드만 남는 양식 사고)
+    A("#### 오늘의 자리 — 0~100 눈금과 최근 1년의 길")
+    A("")
     A('<img src="d1_gauge.png" alt="게이지" style="width:100%">')
     A("")
     A(f"위 그림의 윗부분은 오늘의 점수가 0~100 눈금 어디에 있는지를 과거 위기의 정점(눈금 아래 표시)과 나란히 보여 드리고, 아랫부분은 최근 1년 동안 점수가 어떤 길을 밟아 지금에 이르렀는지를 보여 드립니다. "
@@ -302,9 +308,16 @@ def build_markdown(meta, d, st, eps, cv, nsr, rob, day, peaks):
     A("")
 
     # ── 2. 축별 분해 ──
+    # 그림(짧은 블록) → 소제목 → 표(긴 블록) 순 — PDF 도구가 제목 단위로 쪽 나눔을 막으므로, 그림을 앞에 따로 두면 게이지 쪽의 남는 자리에 들어간다
     A("## 2. 어느 분야에서 온 스트레스인가")
     A("")
-    A(f"점수는 12개 분야의 상태를 합친 값이며, 아래 표는 오늘 점수 {lt['level']:.0f}점을 분야별 몫으로 나눈 것입니다. **'{SEV}'** 는 그 분야가 2006년 이후 모든 날과 비교해 얼마나 나쁜 자리에 있는지(0 = 역대 가장 평온 · 100 = 역대 최악)이고, "
+    A(f"점수는 12개 분야의 상태를 합친 값입니다. 아래 그림은 오늘 점수 {lt['level']:.0f}점을 분야별 몫으로 나눈 것(진한 막대 · 모두 더하면 {lt['level']:.0f}점)이고, 연한 막대는 20거래일 전의 몫, 오른쪽 칩은 그 분야의 심각도(0 = 역대 가장 평온 · 100 = 역대 최악)입니다.")
+    A("")
+    A('<img src="d2_axis_contrib.png" alt="축별 기여" style="width:100%">')
+    A("")
+    A("#### 분야별 상세 — 상태 · 심각도 · 최근 3개월 · 기여")
+    A("")
+    A(f"**'{SEV}'** 는 그 분야가 2006년 이후 모든 날과 비교해 얼마나 나쁜 자리에 있는지(0 = 역대 가장 평온 · 100 = 역대 최악)이고, "
       "**'기여'** 는 오늘 점수 가운데 그 분야 몫(점 · 12개를 더하면 점수)입니다. 기여가 음수인 분야는 다른 분야와 반대로 움직여 전체 체계적 위험을 오히려 낮추고 있는 분야입니다. '최근 3개월' 작은 그림은 그 분야 심각도의 65거래일 추이(띠 색 = 보통/다소 나쁨/나쁨/매우 나쁨)입니다.")
     A("")
     rows, rbg = [], []
@@ -338,8 +351,6 @@ def build_markdown(meta, d, st, eps, cv, nsr, rob, day, peaks):
       f"분야 간 **동행률**은 **{cm:.0f}%**(평상시 {cm_med:.0f}% · 2008년 정점 {cm_max:.0f}%)입니다. 동행률 100% 는 모든 분야가 한 방향으로 움직여 점수가 평균 심각도와 같아지는 상태이고, "
       + ("지금은 동행이 평소보다 훨씬 강해 점수가 평균 심각도에 가깝게 올라와 있습니다." if cm >= cm_med + 10 else "지금은 분야들이 따로 움직여 점수가 평균 심각도보다 한참 낮은 자리에 있습니다.") +
       f" 분야 평균 상관은 {lt['avg_corr']:.2f} 입니다.")
-    A("")
-    A('<img src="d2_axis_contrib.png" alt="축별 기여" style="width:100%">')
     A("")
 
     # ── 3. 어떻게 쌓였나 ──

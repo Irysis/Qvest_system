@@ -184,8 +184,8 @@ def chart_contrib(meta, lt, path):
     now = np.array([lt["contrib_level"][a] for a in order])
     prev = np.array([lt["contrib_level_20td_ago"][a] for a in order])
     n = len(order)
-    fig = plt.figure(figsize=(W, 4.9), dpi=DPI)
-    ax = fig.add_axes([0.21, 0.11, 0.56, 0.80])
+    fig = plt.figure(figsize=(W, 4.4), dpi=DPI)      # 4.4in = 게이지 쪽 남는 자리(약 140mm)에 들어가는 높이
+    ax = fig.add_axes([0.21, 0.12, 0.56, 0.79])
     y = np.arange(n)
     ax.barh(y + 0.2, now, height=0.38, color=[col[a] for a in order], zorder=3)
     ax.barh(y - 0.2, prev, height=0.38, color=[col[a] for a in order], alpha=0.33, zorder=3)
