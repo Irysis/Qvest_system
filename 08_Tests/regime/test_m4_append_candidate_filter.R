@@ -64,6 +64,42 @@ p_p <- regexpr("pit_check_rows(add)", txt, fixed = TRUE)
 if (p_f > 0 && p_p > 0 && p_f < p_p)
   ok("③ 순서 = 후보 정제 → PIT 검사 (검사 대상이 정확)") else ng("③ 필터/검사 순서 이상")
 
+# ④ (2026-11-06) 홀딩월 결정행 라벨 = AS_OF — 1일이 휴장이면 재생성본은 첫 거래일로 적는다(11-01 일 → 11-02).
+#   소스의 .m4_relabel_first_td 를 그대로 꺼내 실행한다(재구현 금지). 양방향 + 뮤테이션 1.
+fn_txt <- regmatches(txt, regexpr("(?s)\\.m4_relabel_first_td <- function\\(.*?\\n\\}\\n", txt, perl = TRUE))
+if (length(fn_txt) == 1L && nzchar(fn_txt)) {
+  ev <- new.env(); eval(parse(text = fn_txt), envir = ev)
+  wd <- function(a, b) { d <- seq(as.Date(a), as.Date(b), by = "day"); d[!format(d, "%u") %in% c("6", "7")] }
+  BD <- wd("2026-09-28", "2026-11-06")                              # 평일 = 거래일 모의(10-01 목 · 11-02 월)
+  run_rl <- function(f, dates, as_of, bd = BD) f(data.table(Date = as.Date(dates), v = seq_along(dates)), as.Date(as_of), bd)
+  r1 <- run_rl(ev$.m4_relabel_first_td, "2026-11-02", "2026-11-01")
+  if (identical(as.character(r1$add$Date), "2026-11-01") && identical(as.character(r1$from), "2026-11-02"))
+    ok("④ 1일 휴장 달: 첫 거래일 결정행 11-02 → AS_OF 11-01 (값 열 불변)") else
+    ng(sprintf("④ 휴장 1일 라벨 실패: %s", paste(r1$add$Date, collapse = ",")))
+  r2 <- run_rl(ev$.m4_relabel_first_td, "2026-10-01", "2026-10-01")
+  if (identical(as.character(r2$add$Date), "2026-10-01") && !length(r2$from))
+    ok("④ 1일이 거래일인 달: 손대지 않음(음성 대조)") else ng("④ 거래일 1일 달을 고쳤다")
+  r3 <- run_rl(ev$.m4_relabel_first_td, "2026-11-03", "2026-11-01")
+  if (identical(as.character(r3$add$Date), "2026-11-03") && !length(r3$from))
+    ok("④ 첫 거래일이 아닌 행(데이터 꼬리 등)은 고치지 않음") else ng("④ 첫 거래일 아닌 행을 AS_OF 로 고쳤다")
+  r4 <- run_rl(ev$.m4_relabel_first_td, "2026-11-02", "2026-11-01", bd = as.Date(character(0)))
+  if (identical(as.character(r4$add$Date), "2026-11-02"))
+    ok("④ 벤치 캘린더 판독 불가 → 고치지 않음(뒤 AS_OF 행 검사가 rc 3 으로 막는다 · fail-closed)") else ng("④ 캘린더 없이 고쳤다")
+  # 뮤테이션 — '첫 거래일' 조건을 지운 사본은 꼬리 행(11-03)까지 AS_OF 로 고친다 → ④ 셋째 판정이 잡아야 한다
+  mut_txt <- sub("& add$Date == ft)", ")", fn_txt, fixed = TRUE)
+  if (!identical(mut_txt, fn_txt)) {
+    em <- new.env(); eval(parse(text = mut_txt), envir = em)
+    m3 <- run_rl(em$.m4_relabel_first_td, "2026-11-03", "2026-11-01")
+    if (identical(as.character(m3$add$Date), "2026-11-01"))
+      ok("④ 뮤테이션 검거: 첫 거래일 조건 없는 사본은 꼬리 행을 AS_OF 로 고친다 — 셋째 판정이 그 차이를 잡는다") else
+      ng("④ 뮤테이션 생존 — 판정이 조건을 못 본다")
+  } else ng("④ 뮤테이션 치환 실패 — 검사 불능")
+} else ng("④ .m4_relabel_first_td 정의를 소스에서 못 찾음")
+# ④ 호출 위치 = 후보 정제 뒤 · PIT 검사 앞
+p_r <- regexpr(".m4_relabel_first_td(add, AS_OF", txt, fixed = TRUE)
+if (p_f > 0 && p_r > 0 && p_p > 0 && p_f < p_r && p_r < p_p)
+  ok("④ 순서 = 후보 정제 → 라벨 → PIT 검사(검사가 새 라벨을 잰다)") else ng("④ 라벨 호출 위치 이상")
+
 cat(sprintf("결과: PASS=%d FAIL=%d\n", pass, fail))
 ## ★러너 요약 계약 (v10 2026-09-03) — 없으면 run_all_hooks.sh 가 UNMEASURED 로 계상해 이 스위트의 단언이 총계에 0 으로 들어간다.
 cat(sprintf('{"test":"m4_append_candidate_filter","pass":%d,"fail":%d,"total":%d,"skipped":0}\n', pass, fail, pass + fail))

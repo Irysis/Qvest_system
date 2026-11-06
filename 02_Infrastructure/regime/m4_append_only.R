@@ -92,6 +92,23 @@ if (as.integer(format(AS_OF, "%d")) != 1L) die(2, sprintf("--as-of 는 월 1일�
 ##   나중에 되쓰는 파일은 반드시 mmap=FALSE 로 읽는다.
 rp <- function(p) as.data.table(read_parquet(p, mmap = FALSE))
 
+## ★(2026-11-06) 홀딩월 결정행 라벨 = AS_OF(달력 1일). 1일이 휴장이면 재생성본(factor_engine)은 그 달 결정행을
+##   첫 거래일로 적는다(2026-11-01 일요일 → 11-02). 발행 원장 규약은 아래 후보 필터 주석 ①(발행 08-01 vs 재생성 08-03)대로
+##   달력 1일이고, 배포 생성기는 m4[Date <= AS_OF] 를 읽는다 — 그대로 두면 AS_OF 행 검사가 막고(rc 3 · 11-06 실측),
+##   검사가 없으면 생성기가 직전 달 m4 를 조용히 쓴다. 그 달 **첫 거래일(벤치 캘린더)** 인 후보 행만 AS_OF 로 다시 적는다
+##   — 값 · 입력 컷오프는 그대로이고, 결정월이 같아 PIT 검사(직전 월 마지막 관측)의 기대값도 그대로다.
+##   반환 list(add, from = 고친 행의 원래 날짜, first_td = 그 달 첫 거래일). 검사 = test_m4_append_candidate_filter.R ④.
+.m4_relabel_first_td <- function(add, AS_OF, bench_dates) {
+  none <- as.Date(character(0))
+  if (!nrow(add) || is.na(AS_OF) || !length(bench_dates)) return(list(add = add, from = none, first_td = as.Date(NA)))
+  td <- bench_dates[bench_dates >= AS_OF & format(bench_dates, "%Y-%m") == format(AS_OF, "%Y-%m")]
+  ft <- if (length(td)) min(td) else as.Date(NA)
+  i <- which(!is.na(ft) & ft > AS_OF & add$Date == ft)
+  from <- add$Date[i]
+  if (length(i)) add[i, Date := AS_OF]
+  list(add = add, from = from, first_td = ft)
+}
+
 if (!file.exists(PANEL)) die(2, sprintf("m4 패널 부재: %s", PANEL))
 
 ## ★오진 기록(남겨둠 — 같은 함정에 다시 빠지지 않기 위해): 이 read 가 러너 안에서 무한 대기했을 때
@@ -203,6 +220,16 @@ if (nrow(add)) {
         sum(!.keep), paste(as.character(add$Date[!.keep]), collapse = " "))
   }
   add <- add[.keep]
+}
+## 홀딩월 결정행 라벨 = AS_OF (위 .m4_relabel_first_td 머리말) — 후보 정제 뒤 · PIT 검사 앞
+if (nrow(add)) {
+  .bd <- tryCatch(sort(unique(as.Date(read_parquet(file.path(ROOT, ".cache/benchmark.parquet"),
+                                                   col_select = "Date", mmap = FALSE)$Date))),
+                  error = function(e) as.Date(character(0)))
+  .rl <- .m4_relabel_first_td(add, AS_OF, .bd); add <- .rl$add
+  if (length(.rl$from))
+    say("[m4-append] 결정행 라벨 %s → %s (AS_OF 달력 1일 휴장 · 그 달 첫 거래일 결정행 · 값 · 입력 컷오프 불변)\n",
+        paste(as.character(.rl$from), collapse = " "), as.character(AS_OF))
 }
 if (nrow(add)) {
   say("[m4-append] 신규 %d행 추가: %s\n", nrow(add), paste(as.character(add$Date), collapse = " "))
