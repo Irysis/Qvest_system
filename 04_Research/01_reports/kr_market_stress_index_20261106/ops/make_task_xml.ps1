@@ -28,7 +28,7 @@ $xml = @"
 <?xml version="1.0" encoding="UTF-16"?>
 <Task version="1.3" xmlns="http://schemas.microsoft.com/windows/2004/02/mit/task">
   <RegistrationInfo>
-    <Description>KR capital-market stress daily report (PDF + xlsx). Runs after the nightly data refresh: waits for /tmp/qm_daily_refresh.lock release (cap 240 min, then skips the day). Dohoon 2026-11-06: separate scheduled task. Entry = 04_Research/01_reports/kr_market_stress_index_20261106/ops.</Description>
+    <Description>KR capital-market stress daily report (PDF + xlsx). Runs after the nightly data refresh: waits for /tmp/qm_daily_refresh.lock release and for bench data >= previous KRX session (cap 480 min, then skips the day). Dohoon 2026-11-06: separate scheduled task. Entry = 04_Research/01_reports/kr_market_stress_index_20261106/ops.</Description>
     <URI>\Qvest_StressDaily</URI>
   </RegistrationInfo>
   <Principals>
@@ -41,7 +41,7 @@ $xml = @"
     <DisallowStartIfOnBatteries>false</DisallowStartIfOnBatteries>
     <StopIfGoingOnBatteries>false</StopIfGoingOnBatteries>
     <Enabled>true</Enabled>
-    <ExecutionTimeLimit>PT5H</ExecutionTimeLimit>
+    <ExecutionTimeLimit>PT9H</ExecutionTimeLimit>
     <MultipleInstancesPolicy>IgnoreNew</MultipleInstancesPolicy>
     <StartWhenAvailable>true</StartWhenAvailable>
     <IdleSettings>
