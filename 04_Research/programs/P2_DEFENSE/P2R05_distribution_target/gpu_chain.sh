@@ -19,13 +19,30 @@ CLAIM=$ROOT/.cache/rf_replication.claim.gpu1
 REQ=$ROOT/06_Registry/replication_slots/gpu1/replication_request.json
 DONE_LOG=$ROOT/.cache/scheduler_logs/daily_refresh.log
 PY=$ROOT/.venv_qvest_ml/Scripts/python.exe
+CFG=$ROOT/06_Registry/reinforce_auto_config.json
 START_WAIT_H=18
 END_WAIT_H=40
 cd $ROOT || exit 2
 say() { echo "== $(date +%F' '%T) [P2R05 GPU 연쇄] $*"; }
 T0=2026-11-06T07:20:00     # 노트북 예약 작업 재가동 시각(원 세션 11-06) — 그 뒤 첫 gpu1 측정 시작만 센다(11-01 중단분 제외 · 연쇄를 측정 시작 뒤에 띄워도 잡힌다)
 PAUSED=0
-resume_lane() { [ "$PAUSED" = "1" ] && { "$PY" -X utf8 "$RDR/lane_hold.py" resume "$1"; PAUSED=0; }; }
+## 레인 스위치 = 설정 파일 replication_lane.enabled 를 읽어 확인한다 — lane_hold.py 의 파일 교체(os.replace)는 OneDrive 가 파일을 쥔 순간
+##   WinError 5 로 실패할 수 있다(11-06 session_resume.json 실측). 종료 코드가 아니라 결과 값으로 판정하고 30초 간격 최대 20회 다시 한다.
+lane_enabled() { "$PY" -X utf8 -c "import io,json,sys;print(json.loads(io.open(sys.argv[1],'rb').read().decode('utf-8'))['replication_lane'].get('enabled'))" "$CFG" 2>/dev/null | tr -d '\r'; }   # 경로는 인자로 — MSYS 는 인자만 C:/ 로 바꾼다(-c 문자열 안 /c/ 경로는 Windows 파이썬이 못 연다)
+lane_set() {
+  local want=True; [ "$1" = "pause" ] && want=False
+  for k in $(seq 1 20); do
+    "$PY" -X utf8 "$RDR/lane_hold.py" "$1" "$2" 2>&1 | tail -1
+    [ "$(lane_enabled)" = "$want" ] && return 0
+    say "레인 $1 확인 실패(시도 $k/20 · enabled=$(lane_enabled)) — 30초 뒤 다시"; sleep 30
+  done
+  return 1
+}
+resume_lane() {
+  [ "$PAUSED" = "1" ] || return 0
+  if lane_set resume "$1"; then PAUSED=0; say "레인 재개 확인(enabled=True)"
+  else say "★레인 재개 실패 — 레인이 꺼진 채다 · 세션이 python $RDR/lane_hold.py resume '<사유>' 로 켤 것"; fi
+}
 trap 'resume_lane "P2R05 GPU 연쇄 종료(trap) — 레인 재개"' EXIT
 say "시작 — THGNN(gpu1) 측정 시작 대기(마감 ${START_WAIT_H}h · 기준 시각 $T0)"
 
@@ -60,8 +77,10 @@ while :; do
 done
 
 ## ② 레인 보류
-"$PY" -X utf8 "$RDR/lane_hold.py" pause "도훈 10-18 'THGNN 끝난 뒤 레인 보류' — P2R05 GPU 창(THGNN 측정 시작 확인 뒤 · gpu_chain.sh)" && PAUSED=1
-[ "$PAUSED" = "1" ] || { say "레인 보류 실패 — 워밍하지 않고 끝"; exit 3; }
+PAUSED=1      # 먼저 세운다 — 보류가 반쯤 성공한 채 끝나도 trap 이 재개를 시도한다(재개는 이미 켜져 있으면 확인만 하고 끝난다)
+lane_set pause "도훈 10-18 'THGNN 끝난 뒤 레인 보류' — P2R05 GPU 창(THGNN 측정 시작 확인 뒤 · gpu_chain.sh)" \
+  || { say "레인 보류 실패(20회) — 워밍하지 않고 끝"; exit 3; }
+say "레인 보류 확인(enabled=False)"
 
 ## ③ THGNN 끝 — gpu1 claim 없음 2회 연속
 dl=$(( $(date +%s) + END_WAIT_H * 3600 )); gone=0
@@ -71,7 +90,7 @@ while :; do
   [ "$(date +%s)" -ge "$dl" ] && { say "마감 — THGNN 이 ${END_WAIT_H}h 안에 끝나지 않음 · 워밍하지 않고 끝(레인 재개)"; exit 4; }
   sleep 120
 done
-st=$("$PY" -X utf8 -c "import io,json;d=json.loads(io.open(r'$REQ','rb').read().decode('utf-8'));print(d.get('status'),((d.get('paper') or {}).get('paper_key')))" 2>/dev/null | tr -d '\r')
+st=$("$PY" -X utf8 -c "import io,json,sys;d=json.loads(io.open(sys.argv[1],'rb').read().decode('utf-8'));print(d.get('status'),((d.get('paper') or {}).get('paper_key')))" "$REQ" 2>/dev/null | tr -d '\r')
 say "THGNN 끝(gpu1 claim 없음 · 요청 $st)"
 
 ## ④ 같은 데이터 배치 — 다음 갱신 완료 줄(마감 06:00 규칙)
