@@ -25,7 +25,11 @@ param(
   [string[]]$Only = @(),
   [int]$MaxRounds = 40,
   [switch]$SkipLogin,
-  [switch]$WhatIf
+  [switch]$WhatIf,
+  # ★2026-11-06 구멍 복구용(04_Research/01_reports/quantiwise_data_expansion_20261106/PLAN.md §0 단계 0):
+  #   "Name=YYYYMMDD" 목록 — 그 책의 B5(From)를 캐시 기준 대신 지정 날짜로 쓰고, 상태 · 캐시 '이미 완료' 판정을 건너뛰어 1회 다시 받는다.
+  #   쓰임 = 책당 앵커 1개(F2) 때문에 뒤처진 시트가 남긴 구멍을 사람이 지정한 창으로 다시 받기. 무인 체인은 쓰지 않는다.
+  [string[]]$FromOverride = @()
 )
 $ErrorActionPreference = "Continue"
 $ROOT = "C:\Users\99922\OneDrive\Quant_Module_Moltbot"
@@ -37,6 +41,12 @@ $QWEXE= "C:\WISEfn\Common\Bin\qwMain.exe"
 $QWLAUNCH = "C:\WISEfn\Quantiwise\Quantiwise.exe"  # 런처 경유(qwMain.exe 직접실행은 즉시종료됨 - 실측)
 # -File 로 넘어온 comma-list("A,B,C")를 배열로 정규화 (PowerShell -File array 파싱 quirk)
 $Only = @($Only | ForEach-Object { "$_" -split ',' } | Where-Object { $_ -ne '' })
+$FROM_OVR = @{}
+foreach ($kv in @($FromOverride | ForEach-Object { "$_" -split ',' } | Where-Object { $_ -ne '' })) {
+  $p = $kv -split '=', 2
+  if ($p.Count -ne 2 -or $p[1] -notmatch '^\d{8}$') { Write-Host "[from-override] 형식 오류(Name=YYYYMMDD): $kv"; exit 2 }
+  $FROM_OVR[$p[0]] = $p[1]
+}
 
 # targets (fast -> slow). cache = parquet used to compute incremental B5 (null = keep existing B5)
 $FILES = @(
@@ -188,7 +198,10 @@ function Refresh-One($f,$target) {
   if (-not (Test-Path $f.path)) { Write-Host "[$($f.name)] missing, skip"; return "skip" }
   $b5 = Get-CacheNext $f.cache
   if ($f.name -eq "OHLCVS" -and -not $b5) { $b5 = Get-QwBaseNext }   # 이음매 구멍 방지 (incident 20260711)
-  if ($f.cache -and $b5 -and ([long]$b5 -gt [long]$target)) { Write-Host "[$($f.name)] cache already >= target (next $b5 > $target) -> done"; return "ok" }
+  if ($FROM_OVR.ContainsKey($f.name)) {
+    Write-Host "[$($f.name)] from-override B5=$($FROM_OVR[$f.name]) (캐시 기준 $b5 대신 · 구멍 복구 1회)"
+    $b5 = $FROM_OVR[$f.name]
+  } elseif ($f.cache -and $b5 -and ([long]$b5 -gt [long]$target)) { Write-Host "[$($f.name)] cache already >= target (next $b5 > $target) -> done"; return "ok" }
   Write-Host ("[{0}] refresh start (B5={1} B6=CPD-1TD) {2}" -f $f.name, $(if($b5){$b5}else{'keep'}), (Get-Date -Format HH:mm:ss))
   if ($WhatIf) { return "skip" }
   $xl=$null; $wb=$null; $result="err"
@@ -274,11 +287,14 @@ $target = Get-Target
 Write-Host "target (last trading day) = $target"
 $state = Load-State
 Start-DialogWatcher
-$sel = if ($Only.Count -gt 0) { $FILES | Where-Object { $Only -contains $_.name } } else { $FILES }
+## ★F1(2026-11-06 · PLAN §3.0): PowerShell 5.1 은 결과가 1개면 배열이 아니라 해시테이블 하나를 돌려주고 .Count = 키 수(3)다 →
+##   'done 3/4'(실제 1/4) · 1개 선택 시 미완료가 숨었다. 결과는 언제나 @() 로 감싼다.
+$sel = @(if ($Only.Count -gt 0) { $FILES | Where-Object { $Only -contains $_.name } } else { $FILES })
+foreach ($k in @($FROM_OVR.Keys)) { if ($state.ContainsKey($k)) { $state.Remove($k) } }   # 지정 책은 상태 '완료'를 무시하고 1회 다시 받는다
 $round = 0
 while ($round -lt $MaxRounds) {
   $round++
-  $pending = $sel | Where-Object { -not (Is-Done $state $_.name $target) }
+  $pending = @($sel | Where-Object { -not (Is-Done $state $_.name $target) })
   if ($pending.Count -eq 0) { Write-Host "===== ALL DONE (round $round) ====="; break }
   Write-Host ("--- round {0}: pending {1} [{2}] ---" -f $round, $pending.Count, (($pending | ForEach-Object { $_.name }) -join ', '))
   if (-not $SkipLogin) { if (-not (Ensure-Login)) { Write-Host "[login] failed, retry"; Start-Sleep 5; continue } }
@@ -291,7 +307,7 @@ while ($round -lt $MaxRounds) {
   if ($kicked) { Write-Host "[round $round] kicked -> re-login next round"; Start-Sleep 3 }
 }
 Stop-DialogWatcher
-$doneN = ($sel | Where-Object { Is-Done $state $_.name $target }).Count
+$doneN = @($sel | Where-Object { Is-Done $state $_.name $target }).Count
 Write-Host "===== END $(Get-Date -Format 'HH:mm:ss') / done $doneN/$($sel.Count) (target $target) ====="
 if ($doneN -eq $sel.Count) { Write-Host "next: in R -> source('02_Infrastructure/data/incremental_update_file.R'); incremental_update_all()" }
 else { Write-Host "pending remain -> re-run to resume (idempotent)." }
