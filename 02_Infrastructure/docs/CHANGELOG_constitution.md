@@ -3,6 +3,13 @@
 > CLAUDE.md는 "현재 유효한 헌법"만 담는다. 버전 연혁·릴리스 상세는 본 파일이 SOT.
 > 최신 릴리스 상세: `qvest_v8_4_asymmetry_ml_sot.md` (**v8.4 — 주력 SOT**) · `qvest_v8_3_alpha_discovery_sot.md` (v8.3) · `qvest_v8_1_sot.md` (v8.1) · `qvest_v8_0_upgrade_plan.md` (v8.0)
 
+## v10.01 운영 수리 — 충실구현 레인 claim 회수 · OneDrive 읽기 전용 폴더 (2026-11-06 · 커밋 0cacde89b · 판단 J-20261106-002)
+
+- 무엇: `02_Infrastructure/ops/rf_replication_slots.py` 의 폴더 삭제 7곳(슬롯 claim 회수 · 논문 잠금 회수/해제/청소 · 구판 claim)을 `_rmtree_force`(읽기 전용 속성을 풀고 다시 지움)로 바꿨다. claim 폴더가 끝내 남으면 `claim_reclaim_incomplete` 사건을 남긴다.
+- 왜: 11-03 `.cache` 를 OneDrive 안 실제 폴더로 옮긴 뒤 동기화된 폴더는 수 초 안에 R 속성(0x80431)을 받는다. `shutil.rmtree(ignore_errors=True)` 는 R 폴더 안 파일만 지우고 폴더를 남긴 채 '회수했다'고 적었다 → 빈 claim 이 '새 claim(6시간 미만)'으로 읽혀 작업자가 in_progress 를 되살리지 않고 `no_pending_request` 를 6시간 반복했다(11-01 cpu2 1603.00751 정체 · 11-06 cpu1 · gpu1(THGNN) 도 같은 상태였다).
+- 검증: 실제 OneDrive 동기화 폴더 탐침(plain rmtree 잔존 · 새 함수 삭제) · `08_Tests/ops/test_replication_slots.py` 31/0(S4d 신설 + 뮤테이션 검출).
+- 남은 같은 계열(막지 않음 · 칩): `qv_lock.py::_rmtree_quiet` tomb 잔재 · R `unlink(recursive=TRUE)` 도 R 폴더를 남긴다 · `os.replace` 가 OneDrive 가 쥔 파일에 WinError 5(같은 날 `session_resume.json`) · 레인 셸 시험이 실제 `scheduler_logs/replication_auto_<날짜>.log` 에 쓴다(로그 경로 덮기 없음) · 시험 W8 이 THGNN 시작일 2005-01-01 을 하드코딩(등록부 2000-01-01).
+
 ## v10.01 추가 — 1계층 리서치 속도 극대화 (2026-10-20 · L1-SPEED-PLAN-20261020 · L1-SPEED-LEVERS-20261020)
 
 **도훈**
