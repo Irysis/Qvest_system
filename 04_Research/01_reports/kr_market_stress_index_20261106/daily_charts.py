@@ -21,8 +21,8 @@ W = 7.4          # 본문 폭(in)
 DPI = 200
 PALETTE = ["#1f4e79", "#c0504d", "#e69f00", "#009e73", "#7b4ea3", "#56b4e9", "#8c8c8c",
            "#d55e00", "#cc79a7", "#117733", "#882255", "#999933"]
-SHORT = {"equity": "주식", "smallcap": "중소형", "breadth": "폭", "liquidity": "유동성", "rates": "금리", "credit": "신용",
-         "funding": "자금", "fx": "외환", "financial": "금융기관", "flow": "수급", "global": "글로벌", "contagion": "전이"}
+SHORT = {"equity": "대형주", "smallcap": "중소형", "breadth": "하락 확산", "liquidity": "유동성", "rates": "국채 금리", "credit": "회사채",
+         "funding": "단기자금", "fx": "환율", "financial": "금융주", "flow": "외국인", "global": "해외", "contagion": "시장 간"}
 TIER_FILL = {"정상": "#c8e6c9", "주의": "#fff3c4", "위험": "#ffcdd2"}
 TIER_EDGE = {"정상": "#2e7d32", "주의": "#f9a825", "위험": "#c62828"}
 
@@ -102,7 +102,7 @@ def chart_gauge(lt, ns, pct_20d, path):
     ax.tick_params(axis="x", labelsize=8)
     for s in ("top", "right", "left"):
         ax.spines[s].set_visible(False)
-    ax.set_title(T(f"역사 백분위 — 오늘의 지수는 2006년 이후 날들 중 상위 {100 - today:.0f}% 안 (단계 문턱: 주의 {warn:.0f} · 위험 {risk:.0f})"), fontsize=9.5, loc="left")
+    ax.set_title(T(f"오늘의 스트레스 수준 — 2006년 이후 전체 거래일 중 상위 {100 - today:.0f}% 안 (눈금 = 과거 대비 위치 % · 주의 {warn:.0f} · 위험 {risk:.0f})"), fontsize=9.5, loc="left")
     return _save(fig, path)
 
 
@@ -132,20 +132,20 @@ def chart_contrib(meta, lt, path):
     ax.set_yticklabels([ko[a] for a in order], fontsize=9)
     ax.axvline(0, color="#444444", lw=0.8)
     ax.grid(axis="x", alpha=0.25)
-    ax.set_xlabel("지수 기여(점) — 진한 막대 = 오늘 · 연한 막대 = 20거래일 전 · 합계 = 지수", fontsize=8.5)
+    ax.set_xlabel(T("분야별 몫(점) — 진한 막대 = 오늘 · 연한 막대 = 20거래일 전 · 모두 더하면 지수"), fontsize=8.5)
     for s in ("top", "right"):
         ax.spines[s].set_visible(False)
     # 오른쪽 칩 — 축 백분위
     ax2 = fig.add_axes([0.80, 0.11, 0.18, 0.80], sharey=ax)
     ax2.axis("off")
     ax2.set_xlim(0, 1)
-    ax2.text(0.5, -0.75, "축 백분위", ha="center", va="center", fontsize=8.5, fontweight="bold")
+    ax2.text(0.5, -0.75, "과거 대비 위치", ha="center", va="center", fontsize=8.5, fontweight="bold")
     for i, a in enumerate(order):
         p = lt["axis_pct"][a]
         c = pct_color(p)
         ax2.add_patch(Rectangle((0.08, y[i] - 0.33), 0.84, 0.66, facecolor=c, edgecolor="none", alpha=0.9))
         ax2.text(0.5, y[i], f"{100 * p:.0f}", ha="center", va="center", fontsize=9, color="white", fontweight="bold")
-    fig.suptitle(T(f"축별 기여 분해 — 지수 {lt['score']:.1f} · 축 평균 상관 {lt['avg_corr']:.2f} · 백분위 칩: 빨강 ≥90 · 주황 ≥80 · 노랑 ≥60 · 초록 그 외"),
+    fig.suptitle(T(f"어느 분야에서 온 스트레스인가 — 지수 {lt['score']:.1f}점의 분야별 몫 · 오른쪽 칩 = 과거 대비 위치(빨강 ≥90 · 주황 ≥80 · 노랑 ≥60)"),
                  fontsize=9.5, x=0.02, ha="left", y=0.985)
     return _save(fig, path)
 
@@ -172,9 +172,9 @@ def chart_heatmap(meta, d, path, n=65):
         if v == v:
             ax.text(len(dates) - 1, j, f"{v:.0f}", ha="center", va="center", fontsize=6.8, color="black" if 25 < v < 75 else "white", fontweight="bold")
     cb = fig.colorbar(im, ax=ax, fraction=0.035, pad=0.02)
-    cb.set_label("역사 백분위", fontsize=8.5, rotation=270, labelpad=14)
+    cb.set_label("과거 대비 위치(%)", fontsize=8.5, rotation=270, labelpad=14)
     cb.ax.tick_params(labelsize=8)
-    ax.set_title(T(f"최근 {n}거래일 — 종합 · 축별 역사 백분위(빨강 = 역사적으로 높은 스트레스 · 마지막 열 = 오늘 값)"), fontsize=9.5, loc="left")
+    ax.set_title(T(f"최근 {n}거래일 — 분야별로 언제 켜졌나(빨강 = 과거 대비 높은 스트레스 · 맨 오른쪽 숫자 = 오늘)"), fontsize=9.5, loc="left")
     return _save(fig, path)
 
 
@@ -205,7 +205,7 @@ def chart_radar_hist(meta, d, lt, path):
     ax.set_yticklabels(["50", "80", "90"], fontsize=7, color="#555555")
     ax.set_rlabel_position(15)
     ax.grid(alpha=0.35)
-    ax.set_title(T("12축 역사 백분위 — 모양이 위기 유형을 말한다"), fontsize=9.5, pad=14)
+    ax.set_title(T("12개 분야의 과거 대비 위치 — 모양이 위기의 종류를 보여 줍니다"), fontsize=9.5, pad=14)
     ax.legend(loc="upper center", bbox_to_anchor=(0.5, -0.14), ncol=1, frameon=False, fontsize=7.8)
     # 역사 분포
     ax2 = fig.add_axes([0.58, 0.16, 0.40, 0.70])
@@ -219,9 +219,9 @@ def chart_radar_hist(meta, d, lt, path):
         x = float(s.quantile(q))
         ax2.axvline(x, color="#777777", lw=0.7, ls=":")
         ax2.text(x, ax2.get_ylim()[0] * 1.4, lab, fontsize=7, color="#555555", ha="center")
-    ax2.set_xlabel("지수(0~100)", fontsize=8.5)
-    ax2.set_ylabel("일수(로그)", fontsize=8.5)
-    ax2.set_title(f"지수의 역사 분포({s.index[0].year}~ · {len(s):,}일)", fontsize=9.5)
+    ax2.set_xlabel("스트레스 지수(0~100)", fontsize=8.5)
+    ax2.set_ylabel("거래일 수(로그 눈금)", fontsize=8.5)
+    ax2.set_title(f"지수의 분포({s.index[0].year}년 이후 {len(s):,} 거래일) — 오늘은 어디쯤인가", fontsize=9.5)
     ax2.grid(alpha=0.25)
     for sp in ("top", "right"):
         ax2.spines[sp].set_visible(False)
@@ -237,7 +237,7 @@ def chart_indicators(meta, st, path):
         g = st[st.axis == a].sort_values("ecdf_pct", ascending=False)
         rows.extend(g.to_dict("records"))
     n = len(rows)
-    fig, ax = plt.subplots(figsize=(W, 6.55), dpi=DPI)
+    fig, ax = plt.subplots(figsize=(W, 6.0), dpi=DPI)
     y = np.arange(n)
     for i, r in enumerate(rows):
         c = col[r["axis"]]
@@ -260,11 +260,11 @@ def chart_indicators(meta, st, path):
     ax.set_xlim(0, 112)
     ax.set_xticks(range(0, 101, 20))
     ax.tick_params(axis="x", labelsize=8)
-    ax.set_xlabel(T("역사 백분위 — ● 오늘 · ○ 20거래일 전 · 점선 80 / 90"), fontsize=8.5)
+    ax.set_xlabel(T("과거 대비 위치(%) — ● 오늘 · ○ 20거래일 전 · 점선 80 / 90"), fontsize=8.5)
     ax.grid(axis="x", alpha=0.25)
     for s in ("top", "right"):
         ax.spines[s].set_visible(False)
-    ax.set_title(T("34개 지표의 역사 백분위 — 무엇이 극단에 있나(축별 묶음 · 축 안은 높은 순)"), fontsize=9.5, loc="left")
+    ax.set_title(T("34개 세부 지표 — 무엇이 이례적 수준인가(분야별 묶음 · 분야 안은 높은 순)"), fontsize=9.5, loc="left")
     return _save(fig, path)
 
 
@@ -282,8 +282,8 @@ def chart_recent(meta, d, eps, bm, path, months=18):
     ax[0].plot(dz.index, dz["score"], color="black", lw=0.9, label="지수")
     ax[0].set_ylim(0, max(10.0, float(dz["score"].max()) * 1.12))
     ax[0].legend(loc="upper left", ncol=4, frameon=False, fontsize=7.3)
-    ax[0].set_ylabel("지수 · 축 기여")
-    ax[0].set_title(T(f"최근 {months}개월 — 지수와 축별 기여(회색 = KOSPI200 Lunde-Timmermann 20/20 위기 · 점선 = -20% 확정일)"), fontsize=9.5, loc="left")
+    ax[0].set_ylabel("지수(분야별 몫을 쌓음)")
+    ax[0].set_title(T(f"최근 {months}개월 — 지수와 분야별 몫(회색 = 코스피200 이 고점 대비 20% 넘게 빠진 구간 · 점선 = -20% 도달일)"), fontsize=9.5, loc="left")
     ax[0].grid(alpha=0.25)
     bz = bm[bm.index >= z0]
     shade(ax[1], eps, z0, last)
@@ -303,15 +303,15 @@ def chart_history(meta, d, eps, path):
     lo, hi = d.index[0], d.index[-1]
     fig, ax = plt.subplots(2, 1, figsize=(W, 4.3), dpi=DPI, sharex=True, gridspec_kw={"height_ratios": [2.6, 1.1], "hspace": 0.08})
     shade(ax[0], eps, lo, hi)
-    ax[0].plot(d.index, d["score"], color="#1f4e79", lw=1.0, label="KR-CISS v1")
+    ax[0].plot(d.index, d["score"], color="#1f4e79", lw=1.0, label="스트레스 지수")
     p80 = d["score"].expanding(min_periods=250).quantile(0.80)
-    ax[0].plot(d.index, p80, color="#555555", lw=0.7, ls="--", label="재귀 80백분위")
+    ax[0].plot(d.index, p80, color="#555555", lw=0.7, ls="--", label="그때까지의 과거 80% 선")
     ax[0].plot([hi], [d["score"].iloc[-1]], marker="o", color="#c62828", ms=6, zorder=5)
     ax[0].annotate(f"오늘 {d['score'].iloc[-1]:.1f}", (hi, d["score"].iloc[-1]), xytext=(-6, 10), textcoords="offset points", ha="right", fontsize=8.5, color="#c62828")
     ax[0].set_ylim(0, float(d["score"].max()) * 1.1)
     ax[0].legend(loc="upper left", frameon=False)
     ax[0].set_ylabel("지수")
-    ax[0].set_title(T(f"{lo.date()} ~ {hi.date()} — 회색 = KOSPI200 LT 20/20 위기(고점→바닥)"), fontsize=9.5, loc="left")
+    ax[0].set_title(T(f"{lo.date()} ~ {hi.date()} — 회색 = 코스피200 이 고점 대비 20% 넘게 빠진 구간(고점→저점)"), fontsize=9.5, loc="left")
     ax[0].grid(alpha=0.25)
     shade(ax[1], eps, lo, hi)
     ax[1].plot(d.index, d["vkospi"], color="#444444", lw=0.8, label="V-KOSPI200(비교)")

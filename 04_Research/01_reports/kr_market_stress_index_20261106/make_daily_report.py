@@ -31,6 +31,7 @@ HERE = os.path.dirname(os.path.abspath(__file__)).replace("\\", "/")
 ROOT = os.path.abspath(os.path.join(HERE, "..", "..", "..")).replace("\\", "/")
 sys.path.insert(0, HERE)
 import daily_charts  # noqa: E402
+import daily_text  # noqa: E402  (임원 보고용 본문 — 높임말 · 쉬운 말 · 꾸민 HTML 표)
 
 OUT = HERE + "/output/v1"
 DAILY = HERE + "/daily"
@@ -423,9 +424,11 @@ def main():
     latest = f"{DAILY}/latest"
     os.makedirs(folder, exist_ok=True)
     os.makedirs(latest, exist_ok=True)
+    meta["axis_ko"] = {a: daily_text.AXIS_PLAIN[a][0] for a in meta["axes"]}   # 차트 · 표 · 본문의 분야 이름을 쉬운 말로 통일
     charts = daily_charts.make_all(meta, d, st, eps, bm, folder, nsr.get("v1", {}))
     log("charts", len(charts), "→", folder)
-    md = write_markdown(meta, d, st, eps, nsr, rob, folder, day)
+    md = f"{folder}/kr_stress_daily_{day}.md"
+    open(md, "w", encoding="utf-8", newline="\n").write(daily_text.build_markdown(meta, d, st, eps, cv, nsr, rob, day, peaks_of(d)))
     log("markdown", md)
     xlsx = write_excel(meta, d, st, eps, cv, nsr, rob, folder, day)
     log("excel", xlsx, f"{os.path.getsize(xlsx) / 1e6:.1f} MB")
