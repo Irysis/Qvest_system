@@ -39,13 +39,30 @@
 #       prior_unmeasured   — 직전 적재 지평선(RAWDATA source ∈ quantiwise·quantiwise_update 의 max Date) 미측정
 #       not_advanced       — 공통 지평선 ≤ 직전 적재 지평선(전진 없음)
 #       horizon_row_empty  — (파싱 후) 지평선 날짜 행에 값이 0칸인 값 시트
-#     거부 시 incremental_update_all() 은 나머지 파일을 처리·기록한 뒤 **stop()** → Rscript rc≠0 →
-#     daily_refresh.sh run_r 이 DR_FAILED 에 싣는다(로그 표지 `[GATE_REFUSED]`). 판정 기록 = .cache/update_file_ohlcvs_gate.json
+#     거부 시 incremental_update_all() 은 나머지 파일을 처리·기록한 뒤 **stop()** → Rscript rc≠0(2026-11-06 부터 rc 3 —
+#     아래 ▸rc 계약) → daily_refresh.sh run_r 이 DR_FAILED 에 싣는다(로그 표지 `[GATE_REFUSED]`). 판정 기록 = .cache/update_file_ohlcvs_gate.json
 #     qw_refresh.ps1(단말 드라이버)은 고치지 않는다 — 드라이버가 무엇을 저장하든 적재 쪽에서 막는다.
+#
+#   ▸ **수급 · 컨센서스 · 유니버스 적재 수리 (2026-11-06 · F3 · F4 · F5)** — 계획서
+#     04_Research/01_reports/quantiwise_data_expansion_20261106/PLAN.md §3.0 · §3.5 · 시험 08_Tests/data/test_incremental_update_gates.R
+#     F3 받은 창의 날짜 = 교체: 컨센서스는 eps_1y 하나의 max 이후만 12지표에 붙였고(뒤처진 지표의 날은 영구 손실 — 4지표 10-19),
+#        수급은 패널 전체 max 이후만 붙였다(한 유형만 빈 10-20~10-30 은 다시 받아도 'Date > max' 에 걸린다). 지금은
+#        출력(지표 · 유형 · 시트)마다 '이번 xlsx 가 받은 날짜'의 기존 행을 지우고 새 행을 넣는다(유니버스 적재기와 같은 규약).
+#        ★2차(같은 날 · 독립 검증 지적): 수급 1차 판은 4유형 창의 **합집합**으로 지워, 시트 창이 다르면 그 날짜를 받지 않은
+#          유형의 행을 대체 없이 잃었다 → 유형 × 그 유형의 받은 창으로 교체. 관문 ②에 window_empty(받은 창 0일인 출력)를 더해
+#          머리 판정 date_axis_missing 한 줄이 유일한 방어선이던 상태를 없앴다. 컨센서스 · 유니버스는 이미 출력별이었다(확인).
+#     F4 공용 적재 관문(아래 ─── 공용 적재 관문 절): 머리(탐침 — 시트 · 지평선 일치 · B6 괄호 ≥ 목표일) + 채움비
+#        (그날 채움 수 / 직전 W 축 날짜 중앙값 ≥ 그 항목 이력에서 산출한 문턱). 거부 = 그 책 적재 0 · 캐시 무접촉 · 처리 미기록.
+#     F5 이름 → 적재기 명시 표(완전 일치) 디스패치: 미등록 xlsx = 경고 · 처리 미기록(매 실행 다시 경고) · 이름에 부분 문자열이
+#        들었다고 엉뚱한 적재기를 돌리지 않는다(구판 grepl("Consensus") 등).
+#   ▸ **rc 계약 (incremental_update_all · daily_refresh.sh run_r 이 그대로 받는다)**: 0 정상 · 3 관문 거부(적재 0 · 다음 갱신 때 재시도) ·
+#     4 미등록 xlsx 만 있음 · 1 그 밖의 오류. run_r 은 0 이 아니면 DR_FAILED 에 'r<N>(rc=…)' 를 싣고 체인을 계속한다(호출부 무변경).
+#     거부 · 미등록은 전부 처리 · 기록한 **뒤** 끝에서 R 오류로 알린다 — 잡히면(tryCatch · 시험) 평범한 오류이고,
+#     비대화형에서 잡히지 않고 끝나면 options(error=) 가 그 종료 코드로 내보낸다(대화형 세션은 끄지 않는다).
 #
 # 사용법:
 #   source("02_Infrastructure/incremental_update_file.R")
-#   result <- incremental_update_all()  # 전체 자동
+#   result <- incremental_update_all()  # 전체 자동 (거부 · 미등록 = 끝에서 오류 · Rscript 종료 코드 3/4)
 #   result <- incremental_ohlcvs()      # OHLCVS만 (퇴역 표기 — 재빌드 전용)
 #==============================================================================
 
@@ -494,8 +511,381 @@ incremental_ohlcvs <- function() {
   invisible(list(dates_updated = update_dates, rows = nrow(all_long)))
 }
 
+# ─── 공용 적재 관문 (F4 · 2026-11-06) — 수급 · 컨센서스 · 유니버스 책 ──────────────────
+#   계획서 04_Research/01_reports/quantiwise_data_expansion_20261106/PLAN.md §3.0 F4 · §3.5.
+#   왜: 시트별 지평선 · 채움 관문이 OHLCVS 에만 있었다(위 ohlcvs_update_gate). 나머지 책은 받은 것을 그대로 붙였고
+#     부분 갱신본이 적재됐다 — 실측(2026-11-06 · 운영 .cache 이력 판독):
+#       수급   2026-10-20~10-30 외국인 835~841행(평시 ≈2,353) · 개인 · 기타법인 0행(9거래일)
+#       컨센서스 op_profit_fy1 2026-09-21~10-02 평시의 18%(8거래일) · 4지표(coverage · esbr · escr · op_profit_fy1) 10-19 0행 ·
+#                9지표(esbr · escr · sue 제외) 2026-03-30~04-29 0행(23거래일 — 관측 최장 0행 구간 · 2026-11-06 2차 재측정).
+#                ★1차 주석의 '2026-03-30~04-13 전 지표 0행'은 오독이었다 — 거부 목록(fill_low)만 읽었는데, 04-14~04-29 는
+#                판정이 ref_zero 로 바뀌어 그 목록에 없었다(아래 W 근거) · esbr · escr · sue 는 그 구간에 행이 있다.
+#       유니버스 Sector_Lv2 10-30 · 11-05 0행(그 시트만 갱신 안 됨 · 나머지 7시트는 전진)
+#   관문(하나라도 실패 = 그 책 적재 0 · 캐시 무접촉 · '처리 완료' 미기록 → 다음 갱신 때 재시도 · incremental_update_all rc 3):
+#     ① 머리(탐침 — 파싱 전): probe_failed · sheet_missing · sheet_read_error · not_query_sheet · date_axis_missing ·
+#        horizon_mismatch(질의 시트 A열 마지막 날짜 불일치) · target_unmeasured · b6_unresolved · b6_behind(B6 괄호 < 목표일).
+#        목표일 = 벤치 최신일(qw_refresh.ps1 Get-Target 과 같은 정의) · B6 괄호 규약 = qw_refresh.ps1 완료 판정과 같은 '[YYYYMMDD]'.
+#        ★드라이버는 갱신이 실패한 시트의 B6 를 'CPD-1TD'(괄호 없음)로 남긴 채 저장한다 — 실측 11-06 Universe_Support 09:20
+#          저장본: 7시트는 이전 라운드 값으로 전진, Sector_Lv2 는 10-19 정체, 8시트 모두 B6 미해석. 값만 보고는 못 가른다.
+#     ② 채움(파싱 후): 출력(수급 유형 · 컨센서스 지표 · 유니버스 시트)별 받은 창의 날짜마다
+#        채움비 = 그날 채움 수 / 직전 W 축 날짜 채움 수의 중앙값 ≥ 문턱 — fill_low · history_short · ref_zero · outputs_missing ·
+#        window_empty(받은 창 0일인 출력 — 교체할 날짜가 없는데 '적재'로 기록하지 않는다 · 2026-11-06 2차).
+#        채움 수 = 그 적재기가 실제로 저장하는 행 수(수급 = 0 아닌 순매수 · 컨센서스 = 값 있는 칸 · 유니버스 = 빈칸 아닌 값) —
+#        적재분 이력과 같은 잣대로 센다. 축 = 그 책 적재분의 날짜 합집합(거래 달력을 따로 읽지 않는다).
+#   ★not_advanced(직전 적재 지평선 대비 전진 없음)는 쓰지 않는다 — 받은 창 교체 규약(F3)에서는 지평선이 그대로인
+#     복구 수급(qw_refresh.ps1 -FromOverride)이 정상 경로다. 실패 · 중단 저장본은 ①의 B6 판정이 거른다.
+
+#   W = 직전 비교 창(축 날짜 수 — 일별 책 = 거래일 · 월간 스냅샷 책 = 스냅샷 수). 근거: 저장소 표준 한 달 창(20 거래일 —
+#     유동성 20일 평균 거래대금 · .claude/rules/pit.md)이고, 중앙값의 붕괴점(50%) 덕에 비교 창 안 이상일이
+#     ⌊(W−1)/2⌋ = 9일까지는 기준이 흔들리지 않는다 — 관측된 최장 부분 갱신 연속 = 9거래일(수급 외국인 2026-10-20~10-30).
+#     ★관측된 최장 0행 구간은 23거래일이다(컨센서스 9지표 2026-03-30~04-29 · 2026-11-06 2차 재측정) — W 를 넘는다.
+#       그런 구간이 받은 창에 통째로 들면 구간 안 이상일이 비교 창에 쌓인다: 첫 11일(비교 창 20일 중 0 이 10개 이하 →
+#       중앙값 > 0)은 fill_low, 12번째 날부터(0 이 11개 이상 → 중앙값 0 · 그날도 0)는 ref_zero — 둘 다 거부 사유라 판정
+#       결과는 같다(실측 재현: 03-30~04-13 fill_low · 04-14~04-29 ref_zero). 그 구간을 다시 받는 복구 수급은 받은 창을 새 값으로
+#       이은 계열을 재므로 기준이 0 으로 무너지지 않고, 메우지 않은 긴 구멍 바로 뒤의 정상일은 기준 0 · 그날 > 0 = Inf 로 통과한다
+#       (영구 거부 없음). ⇒ W 는 '최장 구간을 덮는 길이'일 필요가 없다 — 그래서 23거래일 실측에도 W 는 바꾸지 않았다.
+.UF_FILL_W <- 20L
+#   과반 결손 상한 — '그날 채움이 평소(직전 W 중앙값)의 절반 미만'. 문턱 = min(이 값, 그 항목 채움비 이력의 연 1회 수준 분위).
+#     분위 = 1 / (그 항목 축의 연간 날짜 수 중앙값) — 이력에서 연 1회 이상 절반 밑으로 내려간 항목이면 문턱이 그 분위로
+#     내려가, 정상 변동을 영구 거부해 적재가 멈추는 일을 막는다. 실측 근거(2026-11-06 · W=20 · 운영 .cache 이력):
+#     2010 이후 정상일 채움비 최저 = 0.669(수급 기타법인) · 0.707(기관) · 0.805(컨센서스 escr · sue) ·
+#     사고일 = 0.355(외국인 10-20~10-30) · 0.18(op_profit_fy1 09-21~10-02) · 0(개인 · 기타법인 10-20~10-30 · 컨센서스 4지표 10-19 ·
+#     9지표 03-30~04-29 — 그중 04-14~04-29 는 ref_zero · 유니버스 Sector_Lv2 10-30 · 11-05) — 0.5 는 두 군 사이 간극에 있다.
+#     같은 실측에서 이 규칙이 2010 이후 거부했을 날 = 위 사고일뿐(정상일 0 · 독립 검증 재측정에서 재현).
+.UF_FILL_MAJORITY <- 0.5
+#   B6 괄호 = 애드인이 CPD-1TD 를 푼 날짜 — qw_refresh.ps1 완료 판정(\[(\d{8})\])과 같은 규약.
+.UF_B6_RE <- "\\[(\\d{8})\\]"
+
+#   머리 탐침(Python · openpyxl read_only 스트리밍) — 시트마다 A5/B5/A6/B6 와 'D A T E' 라벨 아래 A열 날짜축만 읽고
+#   첫 비날짜 행에서 멈춘다(수백 MB 책의 서식 잔재 행을 읽지 않는다 — us_update_stream_parse.py 와 같은 조기 종료).
+#   readxl 은 시트 XML 전체를 올리므로 B6 한 칸에도 시트당 GB 급 파싱이 된다. 파일 하나만 쓴다는 담당 범위 때문에 여기 싣는다.
+#   ★read_only 는 시트가 선언한 <dimension> 까지만 읽는다 — 선언이 틀린 파일(실측: openxlsx 저장본은 'A1')이면 1행에서 멈춰
+#     날짜축 0 으로 보인다 → reset_dimensions() 로 선언을 무시한다(실물 퀀티 저장본은 'A1:NTP164' 처럼 맞게 선언).
+#   'D A T E' 라벨 탐색 상한 MAX_HEAD = 60행(실물 = 14행 · 라벨이 없으면 날짜축 0 → date_axis_missing).
+.UF_PROBE_PY <- r"--(
+import sys, io, json, datetime
+sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding="ascii", errors="replace")
+from openpyxl import load_workbook
+
+MAX_HEAD = 60
+
+def txt(v):
+    if v is None:
+        return None
+    if isinstance(v, (datetime.datetime, datetime.date)):
+        return v.isoformat()
+    return str(v)
+
+def as_date(v):
+    if isinstance(v, datetime.datetime):
+        return v.date()
+    if isinstance(v, datetime.date):
+        return v
+    if v is None or isinstance(v, bool):
+        return None
+    if isinstance(v, str):
+        try:
+            v = float(v.strip())
+        except ValueError:
+            return None
+    if isinstance(v, (int, float)) and 20000 < v < 80000:
+        return datetime.date(1899, 12, 30) + datetime.timedelta(days=int(v))
+    return None
+
+def probe(ws):
+    r = {"a5": None, "b5": None, "a6": None, "b6": None, "date_row": None, "dates": [], "err": None}
+    if hasattr(ws, "reset_dimensions"):
+        ws.reset_dimensions()
+    started = False
+    for i, row in enumerate(ws.iter_rows(min_row=1, max_col=2, values_only=True), start=1):
+        a = row[0] if len(row) > 0 else None
+        b = row[1] if len(row) > 1 else None
+        if i == 5:
+            r["a5"], r["b5"] = txt(a), txt(b)
+        elif i == 6:
+            r["a6"], r["b6"] = txt(a), txt(b)
+        if not started:
+            if isinstance(a, str) and a.strip() == "D A T E":
+                started = True
+                r["date_row"] = i
+            elif i >= MAX_HEAD:
+                break
+            continue
+        d = as_date(a)
+        if d is None:
+            break
+        r["dates"].append(d.isoformat())
+    return r
+
+def main():
+    if len(sys.argv) != 3:
+        print("PROBE_FAIL usage")
+        return 2
+    xlsx, out = sys.argv[1], sys.argv[2]
+    try:
+        wb = load_workbook(xlsx, read_only=True, data_only=True)
+    except Exception as e:
+        print("PROBE_FAIL open " + repr(e)[:300])
+        return 2
+    sheets = []
+    try:
+        for name in wb.sheetnames:
+            rec = {"sheet": name}
+            try:
+                rec.update(probe(wb[name]))
+            except Exception as e:
+                rec.update({"a5": None, "b5": None, "a6": None, "b6": None, "date_row": None,
+                            "dates": [], "err": repr(e)[:300]})
+            sheets.append(rec)
+    finally:
+        wb.close()
+    with open(out, "w", encoding="utf-8") as fh:
+        json.dump({"schema": "uf_probe_v1", "sheets": sheets}, fh, ensure_ascii=True)
+    print("PROBE_OK n_sheets=%d" % len(sheets))
+    return 0
+
+if __name__ == "__main__":
+    sys.exit(main())
+)--"
+
+#' 파이썬 실행 경로 — QVEST_PY → .venv_qvest_ml (incremental_universe_support 구판과 같은 순서 · openpyxl 만 필요)
+.uf_python <- function(root = PROJECT_ROOT) {
+  cands <- c(Sys.getenv("QVEST_PY", ""), file.path(root, ".venv_qvest_ml/Scripts/python.exe"))
+  cands <- cands[nzchar(cands) & file.exists(cands)]
+  if (length(cands)) cands[1] else NA_character_
+}
+
+#' 머리 탐침 — 실패는 오류가 아니라 판정(probe_failed)으로 돌려준다(미측정을 통과로 접지 않는다).
+#' @return list(ok, err, sheets = data.table(sheet, a5, b5, a6, b6, n_dates, horizon, dates(list), err, query, b6_date))
+.uf_probe_book <- function(xlsx, py = .uf_python()) {
+  fail <- function(msg) list(ok = FALSE, err = msg, sheets = NULL)
+  if (!file.exists(xlsx)) return(fail(paste("xlsx 부재:", xlsx)))
+  if (length(py) != 1L || is.na(py) || !nzchar(py)) return(fail("python 실행 경로 미발견(QVEST_PY · .venv_qvest_ml)"))
+  td <- tempfile("uf_probe_"); dir.create(td, recursive = TRUE, showWarnings = FALSE)
+  on.exit(unlink(td, recursive = TRUE), add = TRUE)
+  pyf <- file.path(td, "uf_probe.py"); js <- file.path(td, "probe.json")
+  writeLines(.UF_PROBE_PY, pyf)
+  # env= 미사용(Windows system2 env 는 인자 주입 트랩 — 유니버스 적재기 주석) · 경로는 argv 로
+  out <- tryCatch(suppressWarnings(system2(py, c(shQuote(pyf), shQuote(xlsx), shQuote(js)), stdout = TRUE, stderr = TRUE)),
+                  error = function(e) structure(conditionMessage(e), status = 127L))
+  st <- attr(out, "status"); if (is.null(st)) st <- 0L
+  sentinel <- any(grepl("^PROBE_OK", out))
+  if (st != 0L || !sentinel || !file.exists(js))
+    return(fail(sprintf("탐침 실패(exit=%s · PROBE_OK %s) %s", st, if (sentinel) "있음" else "없음",
+                        paste(tail(out, 2L), collapse = " | "))))
+  j <- tryCatch(jsonlite::fromJSON(js, simplifyVector = FALSE), error = function(e) NULL)
+  if (is.null(j) || !length(j$sheets)) return(fail("탐침 JSON 판독 불가 또는 시트 0"))
+  s1 <- function(x) if (is.null(x)) NA_character_ else as.character(x)
+  sh <- rbindlist(lapply(j$sheets, function(s) {
+    d <- sort(unique(as.Date(vapply(s$dates, as.character, character(1)))))
+    data.table(sheet = s1(s$sheet), a5 = s1(s$a5), b5 = s1(s$b5), a6 = s1(s$a6), b6 = s1(s$b6),
+               n_dates = length(d), horizon = if (length(d)) max(d) else as.Date(NA),
+               dates = list(d), err = s1(s$err))
+  }))
+  sh[, query := !is.na(a6) & grepl("^Period.*To", a6)]        # 드라이버의 질의 시트 정의(A6 -like "Period*To*")
+  # 금칙 ⑥(02_Infrastructure/docs/rules/r-portability.md): regmatches 의 색인은 perl = TRUE 로 만든다 — Windows TRE 는
+  #   매치 위치를 UTF-16 코드유닛으로 내 non-BMP 문자가 앞에 있으면 추출 창이 밀린다(정상값 모양의 오답).
+  b6s <- ifelse(is.na(sh$b6), "", sh$b6)
+  m <- regmatches(b6s, regexec(.UF_B6_RE, b6s, perl = TRUE))
+  sh[, b6_date := as.Date(vapply(m, function(x) if (length(x) == 2L) x[2] else NA_character_, character(1)), "%Y%m%d")]
+  list(ok = TRUE, err = NA_character_, sheets = sh)
+}
+
+#' 목표일 = 벤치 최신일(qw_refresh.ps1 Get-Target 과 같은 정의). 판독 불가 = NA(미측정 — 관문이 거부한다).
+.uf_target_date <- function(bench = file.path(CACHE_DIR, "benchmark.parquet")) {
+  if (!file.exists(bench)) return(as.Date(NA))
+  d <- tryCatch(read_parquet(bench, col_select = "Date", mmap = FALSE)$Date, error = function(e) NULL)
+  d <- if (is.null(d)) as.Date(character(0)) else as.Date(d)
+  d <- d[!is.na(d)]
+  if (length(d)) max(d) else as.Date(NA)
+}
+
+#' 직전 W 개(자기 자신 제외)의 중앙값 — 앞 W 개는 NA
+.uf_trailing_median <- function(n, W) {
+  m <- rep(NA_real_, length(n))
+  if (length(n) > W) for (i in (W + 1L):length(n)) m[i] <- stats::median(n[(i - W):(i - 1L)])
+  m
+}
+
+#' 채움비 판정(순수 함수).
+#' @param hist    data.table(output, Date, n) — 적재분(기존 패널)의 날짜별 채움 수. 행이 없는 날 = 0.
+#' @param new     data.table(output, Date, n) — 이번 xlsx 파싱분의 날짜별 채움 수.
+#' @param windows named list(output → Date) — 받은 창(교체될 날짜). 창의 날짜는 새 값, 나머지는 적재분으로 이은 계열에서
+#'                그날 채움 수 / 직전 W 축 날짜 중앙값을 잰다(창이 길어도 앞쪽 날의 기준은 적재분 — 부분 갱신의 첫날이 걸린다).
+#' @return data.table(output, Date, n, ref, ratio, thr, q, q_val, why ∈ ok · fill_low · history_short · ref_zero)
+.uf_fill_check <- function(hist, new, windows, W = .UF_FILL_W, majority = .UF_FILL_MAJORITY) {
+  empty <- function() data.table(output = character(0), Date = as.Date(character(0)), n = numeric(0))
+  hist <- if (is.null(hist) || !nrow(hist)) empty() else as.data.table(hist)[, .(output, Date = as.Date(Date), n)]
+  new  <- if (is.null(new)  || !nrow(new))  empty() else as.data.table(new)[, .(output, Date = as.Date(Date), n)]
+  ax <- sort(unique(hist$Date))
+  per_year <- if (length(ax)) as.numeric(stats::median(table(format(ax, "%Y")))) else NA_real_
+  q <- if (is.na(per_year) || per_year <= 0) NA_real_ else 1 / per_year
+  res <- list()
+  for (o in names(windows)) {
+    win <- sort(unique(as.Date(windows[[o]])))
+    if (!length(win)) next
+    h  <- hist[output == o, .(n = sum(n)), by = Date]
+    nh <- numeric(length(ax)); if (nrow(h)) nh[match(h$Date, ax)] <- h$n
+    ## 문턱 — 그 항목 적재분의 채움비 분포(0 = 빈 날은 사고일 후보라 분위 계산에서 뺀다)
+    rh <- nh / .uf_trailing_median(nh, W)
+    rp <- rh[is.finite(rh) & rh > 0]
+    qv <- if (!is.na(q) && length(rp) >= per_year) as.numeric(stats::quantile(rp, q, type = 1, names = FALSE)) else NA_real_
+    thr <- if (is.na(qv)) NA_real_ else min(majority, qv)
+    ## 받은 창 — 병합 후보 계열(창 날짜 = 새 값 · 나머지 = 적재분)
+    axm <- sort(unique(c(ax, win)))
+    nm  <- numeric(length(axm)); nm[match(ax, axm)] <- nh
+    nw  <- new[output == o & Date %in% win, .(n = sum(n)), by = Date]
+    vw  <- numeric(length(win)); if (nrow(nw)) vw[match(nw$Date, win)] <- nw$n
+    nm[match(win, axm)] <- vw
+    for (k in seq_along(win)) {
+      i   <- match(win[k], axm)
+      ref <- if (i > W) stats::median(nm[(i - W):(i - 1L)]) else NA_real_
+      ratio <- if (is.na(ref)) NA_real_ else if (ref > 0) nm[i] / ref else if (nm[i] > 0) Inf else NA_real_
+      why <- if (is.na(thr) || is.na(ref)) "history_short" else if (is.na(ratio)) "ref_zero" else
+        if (ratio < thr) "fill_low" else "ok"
+      res[[length(res) + 1L]] <- data.table(output = o, Date = win[k], n = nm[i], ref = ref, ratio = ratio,
+                                            thr = thr, q = q, q_val = qv, why = why)
+    }
+  }
+  if (!length(res)) return(cbind(empty(), data.table(ref = numeric(0), ratio = numeric(0), thr = numeric(0),
+                                                    q = numeric(0), q_val = numeric(0), why = character(0))))
+  rbindlist(res)
+}
+
+#' 관문 사유 추가(같은 키는 이어 붙인다)
+.uf_gate_add <- function(g, k, msg) {
+  # reasons = 이름 붙은 character — 없는 이름에 [[ ]] 를 쓰면 오류라(리스트와 다르다) 이름으로 먼저 묻는다
+  g$reasons[[k]] <- if (k %in% names(g$reasons)) paste(g$reasons[[k]], msg, sep = " ; ") else msg
+  g$ok <- FALSE
+  g
+}
+
+#' 관문 ① 머리 판정 — 전부 계산하고(조기 종료 없음) 사유를 이름 붙여 남긴다.
+#' @param expected 이 책에서 읽을 질의 시트 이름(적재기 매핑 그대로) · @param target 목표일(벤치 최신일)
+.uf_gate_header <- function(book, probe, expected, target) {
+  g <- list(book = book, ok = TRUE, reasons = character(0), target = as.Date(target)[1], horizon = as.Date(NA),
+            sheets = NULL, fill = NULL)
+  lst <- function(x) paste(x, collapse = ",")
+  if (!isTRUE(probe$ok)) return(.uf_gate_add(g, "probe_failed", probe$err %||% "탐침 실패"))
+  sh <- probe$sheets
+  ex <- sh[sheet %in% expected]
+  g$sheets <- ex
+  miss <- setdiff(expected, sh$sheet)
+  if (length(miss)) g <- .uf_gate_add(g, "sheet_missing", sprintf("질의 시트 없음: %s", lst(miss)))
+  bad <- ex[!is.na(err)]
+  if (nrow(bad)) g <- .uf_gate_add(g, "sheet_read_error", paste(sprintf("%s: %s", bad$sheet, bad$err), collapse = " | "))
+  nq <- ex[!(query %in% TRUE)]$sheet
+  if (length(nq)) g <- .uf_gate_add(g, "not_query_sheet", sprintf("A6 가 Period(To) 가 아님: %s", lst(nq)))
+  noax <- ex[!(n_dates > 0L)]$sheet
+  if (length(noax)) g <- .uf_gate_add(g, "date_axis_missing", sprintf("'D A T E' 아래 날짜축 없음/0일: %s", lst(noax)))
+  ends <- sort(unique(ex[n_dates > 0L]$horizon))
+  if (length(ends) == 1L) g$horizon <- ends
+  if (length(ends) > 1L)
+    g <- .uf_gate_add(g, "horizon_mismatch", sprintf("시트별 지평선 불일치: %s",
+                      lst(sprintf("%s=%s", ex[n_dates > 0L]$sheet, format(ex[n_dates > 0L]$horizon)))))
+  if (is.na(g$target)) {
+    g <- .uf_gate_add(g, "target_unmeasured", "목표일(벤치 최신일) 미측정 — B6 괄호 판정 불가")
+  } else {
+    un <- ex[is.na(b6_date)]
+    if (nrow(un)) g <- .uf_gate_add(g, "b6_unresolved", sprintf("B6 괄호 날짜 없음(갱신 미완 저장 의심): %s",
+                                    lst(sprintf("%s='%s'", un$sheet, un$b6))))
+    bh <- ex[!is.na(b6_date) & b6_date < g$target]
+    if (nrow(bh)) g <- .uf_gate_add(g, "b6_behind", sprintf("B6 괄호 < 목표일 %s: %s", format(g$target),
+                                    lst(sprintf("%s=%s", bh$sheet, format(bh$b6_date, "%Y%m%d")))))
+  }
+  g
+}
+
+#' 관문 ② 채움 판정 결과를 덧붙인다
+#' @param windows (선택) named list(출력 → 받은 창). 받은 창이 0일인 출력 = window_empty 거부(2026-11-06 2차).
+#'   ★왜 두 번 묻나: 머리 판정의 date_axis_missing 한 줄이 이 결함의 유일한 방어선이었다(독립 검증 — 그 줄을 지운 사본이
+#'     기존 시험 46/46 을 통과하고, 날짜축 없는 개인 시트의 책을 받아 1차 판의 합집합 교체로 그 유형 창 행을 지웠다 60→0).
+#'     유형별 교체에서도 그 출력은 갱신 없이 책 전체가 '처리 완료'로 기록된다. 창 0일인 출력은 .uf_fill_check 가 판정할 날이
+#'     없어 건너뛰므로(판정 0건) 채움 판정도 못 본다 — 교체 바로 앞에서 출력마다 창이 있는지 다시 묻는다.
+.uf_gate_fill <- function(g, fc, outputs_missing = character(0), windows = NULL) {
+  g$fill <- fc
+  lst <- function(x, k = 6L) paste(c(head(x, k), if (length(x) > k) sprintf("… 외 %d", length(x) - k)), collapse = ", ")
+  if (length(outputs_missing))
+    g <- .uf_gate_add(g, "outputs_missing", sprintf("파싱 산출 없는 출력(파서가 시트를 조용히 건너뛴 경우 포함): %s",
+                                                     lst(outputs_missing, 20L)))
+  we <- if (is.null(windows)) character(0) else names(windows)[lengths(windows) == 0L]
+  if (length(we))
+    g <- .uf_gate_add(g, "window_empty", sprintf("받은 창 0일인 출력(그 시트 날짜축 없음 — 교체할 날짜가 없는 책을 '적재'로 기록하지 않는다): %s",
+                                                  lst(we, 20L)))
+  if (!is.null(fc) && nrow(fc)) {
+    lo <- fc[why == "fill_low"]; hs <- fc[why == "history_short"]; rz <- fc[why == "ref_zero"]
+    if (nrow(lo)) g <- .uf_gate_add(g, "fill_low", sprintf("채움비 < 문턱 %d건: %s", nrow(lo),
+                     lst(sprintf("%s %s %d/%.0f=%.3f<%.3f", lo$output, format(lo$Date), as.integer(lo$n), lo$ref, lo$ratio, lo$thr))))
+    if (nrow(hs)) g <- .uf_gate_add(g, "history_short", sprintf("비교 이력 부족(직전 비교 창 · 문턱 산출 1년치) %d건: %s",
+                     nrow(hs), lst(sprintf("%s %s", hs$output, format(hs$Date)))))
+    if (nrow(rz)) g <- .uf_gate_add(g, "ref_zero", sprintf("직전 비교 창 중앙값 0 · 그날도 0 %d건: %s",
+                     nrow(rz), lst(sprintf("%s %s", rz$output, format(rz$Date)))))
+  }
+  g
+}
+
+.uf_gate_print <- function(g) {
+  sh <- g$sheets
+  if (!is.null(sh) && nrow(sh)) {
+    hz <- ifelse(sh$n_dates > 0L, format(sh$horizon), "축없음")
+    b6 <- ifelse(is.na(sh$b6_date), "미해석", format(sh$b6_date, "%Y%m%d"))
+    cat(sprintf("  [gate:%s] 시트 지평선/B6: %s\n", g$book, paste(sprintf("%s=%s/%s", sh$sheet, hz, b6), collapse = " ")))
+  }
+  cat(sprintf("  [gate:%s] 공통 지평선 %s · 목표일 %s\n", g$book, format(g$horizon), format(g$target)))
+  f <- g$fill
+  if (!is.null(f) && nrow(f)) {
+    fr <- f[is.finite(ratio)]
+    th <- suppressWarnings(range(f$thr, na.rm = TRUE))
+    if (nrow(fr)) {
+      w <- fr[which.min(ratio)]
+      cat(sprintf("  [gate:%s] 받은 창 %d일 · 채움비 최저 %.3f (%s %s · %d/%.0f) · 문턱 %s\n", g$book, uniqueN(f$Date),
+                  w$ratio, w$output, format(w$Date), as.integer(w$n), w$ref,
+                  if (all(is.finite(th))) sprintf("%.3f~%.3f", th[1], th[2]) else "미산출"))
+    }
+  }
+  cat(sprintf("  [gate:%s] → %s\n", g$book, if (isTRUE(g$ok)) "통과" else "거부"))
+}
+
+#' 판정 기록(처리 상태가 아니다 — 실패해도 적재 판정을 바꾸지 않는다). .cache/update_file_gate_<책>.json
+.uf_gate_record <- function(g, status, xlsx,
+                            path = file.path(CACHE_DIR, sprintf("update_file_gate_%s.json", tolower(g$book)))) {
+  tryCatch({
+    fin <- function(x) if (length(x) && is.finite(x)) x else NA
+    sh <- g$sheets; f <- g$fill
+    rec <- list(schema = "update_file_gate_v1", book = g$book, at = format(Sys.time(), "%Y-%m-%dT%H:%M:%S%z"),
+                status = status, xlsx = xlsx, xlsx_mtime = format(file.mtime(xlsx), "%Y-%m-%d %H:%M:%S"),
+                target = format(g$target), horizon = format(g$horizon), reasons = as.list(g$reasons),
+                sheets = if (is.null(sh)) list() else lapply(seq_len(nrow(sh)), function(k) list(
+                  sheet = sh$sheet[k], query = sh$query[k], b6 = sh$b6[k], horizon = format(sh$horizon[k]),
+                  n_dates = sh$n_dates[k])),
+                fill = if (is.null(f) || !nrow(f)) list() else lapply(split(f, f$output), function(x) list(
+                  thr = fin(x$thr[1]), q = fin(x$q[1]), q_val = fin(x$q_val[1]),
+                  min_ratio = fin(suppressWarnings(min(x$ratio[is.finite(x$ratio)]))), n_window = nrow(x),
+                  not_ok = sprintf("%s:%s", format(x$Date[x$why != "ok"]), x$why[x$why != "ok"]))))
+    tmp <- paste0(path, ".tmp", Sys.getpid())
+    writeLines(jsonlite::toJSON(rec, auto_unbox = TRUE, pretty = TRUE, na = "null", null = "null", digits = 6),
+               tmp, useBytes = TRUE)
+    if (!isTRUE(file.rename(tmp, path))) { suppressWarnings(file.remove(tmp)); stop("rename 실패") }
+    path
+  }, error = function(e) { cat(sprintf("  ⚠ [gate:%s] 판정 기록 실패(판정 불변): %s\n", g$book, conditionMessage(e)))
+                           NA_character_ })
+}
+
+#' 거부 — 사유 출력 · 기록 · 거부 표지 반환(캐시는 이미 무접촉). incremental_update_all 이 rc 3 으로 바꾼다.
+.uf_refuse <- function(g, xlsx, tag) {
+  for (k in names(g$reasons)) cat(sprintf("  ⛔ [GATE_REFUSED] %s — %s\n", k, g$reasons[[k]]))
+  cat(sprintf("[%s] ⛔ [GATE_REFUSED] %s 적재 거부 — 캐시 무접촉 · '처리 완료' 미기록(다음 정상 갱신 때 재시도)\n",
+              tag, basename(xlsx)))
+  .uf_gate_record(g, "refused", xlsx)
+  invisible(list(refused = TRUE, book = g$book, reasons = g$reasons, horizon = g$horizon, target = g$target))
+}
+
 # ─── Consensus 증분 ──────────────────────────────────────────────────────────
-incremental_consensus <- function() {
+#   (2026-11-06 F3 · F4) 지표별 '받은 창의 날짜 = 교체' + 공용 관문. 구판은 eps_1y 하나의 max 이후만 12지표에 붙여
+#   뒤처진 지표의 날을 영구 손실했다(coverage · esbr · escr · op_profit_fy1 의 10-19 — 그 4지표 캐시 max 10-16).
+#   파싱을 관문보다 먼저 하는 이유: 지표별 채움 수가 파싱 산출에서 나오고, 파서(consensus_build_cache)가 시트 오류를
+#   삼켜 산출을 조용히 빠뜨리는 것(outputs_missing)도 파싱 뒤에야 보인다. 파서 오류는 지금처럼 오류로 전파한다.
+incremental_consensus <- function(target = .uf_target_date()) {
   cons_update <- file.path(UPDATE_DIR, "Consensus_update.xlsx")
   if (!file.exists(cons_update)) {
     cat("[incr_consensus] Consensus_update.xlsx 없음. 스킵.\n")
@@ -505,17 +895,14 @@ incremental_consensus <- function() {
   cat("[incr_consensus] Consensus_update.xlsx 증분 처리...\n")
   cons_cache_dir <- file.path(CACHE_DIR, "consensus")
 
-  # 기존 캐시의 max date
+  # 기존 캐시 존재 확인 — ★구판은 이 파일의 max 하나를 12지표 공통 앵커로 썼다(F3 결함). 지금은 존재 확인만 한다.
   ref_file <- file.path(cons_cache_dir, "eps_1y.parquet")
   if (!file.exists(ref_file)) {
     cat("  기존 캐시 없음. base Consensus.xlsx부터 빌드 필요.\n")
     return(invisible(NULL))
   }
-  ref <- as.data.table(read_parquet(ref_file))
-  base_max <- max(ref$Date, na.rm = TRUE)
-  cat(sprintf("  기존 캐시 max: %s\n", base_max))
 
-  # Update_File을 임시 파싱 → base_max 이후만 추출 → 기존 캐시에 append
+  # Update_File을 임시 파싱 → 관문 → 지표별 받은 창 교체
   source(file.path(DATA_DIR, "consensus_parser.R"))
 
   # 임시 디렉토리에 Update_File 파싱
@@ -527,14 +914,46 @@ incremental_consensus <- function() {
   old_xlsx <- CONSENSUS_XLSX
   CONSENSUS_XLSX <<- cons_update
 
+  refused <- NULL
   tryCatch({
     consensus_build_cache(force = TRUE)
 
-    .consensus_append_increment(tmp_dir, cons_cache_dir, base_max)
+    ## (F4) 관문 — ① 머리 탐침(시트 · 지평선 · B6) → ② 지표별 채움비. 시트 → 지표 = 파서 정본(CONSENSUS_METRICS)
+    metrics <- CONSENSUS_METRICS
+    g <- .uf_gate_header("Consensus", .uf_probe_book(cons_update), names(metrics), target)
+    windows <- NULL
+    if (isTRUE(g$ok)) {
+      windows <- setNames(lapply(names(metrics), function(s) g$sheets[sheet == s]$dates[[1]]), unname(metrics))
+      hist <- list(); newc <- list(); missing <- character(0); mx <- character(0)
+      for (m in unname(metrics)) {
+        tp <- file.path(tmp_dir, paste0(m, ".parquet")); cp <- file.path(cons_cache_dir, paste0(m, ".parquet"))
+        if (!file.exists(tp)) { missing <- c(missing, m); next }
+        newc[[m]] <- as.data.table(read_parquet(tp, col_select = "Date", mmap = FALSE))[, .(output = m, n = .N), by = Date]
+        if (file.exists(cp)) {
+          hd <- as.data.table(read_parquet(cp, col_select = "Date", mmap = FALSE))
+          hist[[m]] <- hd[, .(output = m, n = .N), by = Date]
+          mx[m] <- format(max(hd$Date, na.rm = TRUE))
+        } else mx[m] <- "부재"
+      }
+      if (length(mx)) {
+        grp <- split(names(mx), unname(mx))
+        cat(sprintf("  기존 캐시 지표별 max: %s\n",
+                    paste(sprintf("%s=%s", names(grp), vapply(grp, paste, "", collapse = ",")), collapse = " · ")))
+      }
+      g <- .uf_gate_fill(g, .uf_fill_check(rbindlist(hist), rbindlist(newc), windows), missing,
+                     windows = windows)
+    }
+    .uf_gate_print(g)
+    if (!isTRUE(g$ok)) {
+      refused <- .uf_refuse(g, cons_update, "incr_consensus")
+    } else {
+      .consensus_append_increment(tmp_dir, cons_cache_dir, windows)
+      .uf_gate_record(g, "loaded", cons_update)
+      cat("[incr_consensus] 증분 완료.\n")
+    }
 
     # 임시 디렉토리 정리
     unlink(tmp_dir, recursive = TRUE)
-    cat("[incr_consensus] 증분 완료.\n")
   }, error = function(e) {
     unlink(tmp_dir, recursive = TRUE)
     # ★fail-closed (2026-09-19): 구판은 여기서 cat 만 하고 삼켰다 — 그러면 incremental_update_all 이
@@ -545,17 +964,26 @@ incremental_consensus <- function() {
     CONSENSUS_CACHE <<- old_cache
     CONSENSUS_XLSX <<- old_xlsx
   })
+  if (!is.null(refused)) return(refused)
   invisible(TRUE)
 }
 
 # ─── 컨센서스 증분 붙이기 (파싱 산출 → 기존 캐시) ─────────────────────────────
-#' 파서가 tmp_dir 에 쓴 parquet 중 **Date 가 있는 메트릭**만 base_max 이후 행을 붙인다.
+#' 파서가 tmp_dir 에 쓴 parquet 중 **Date 가 있는 메트릭**을 지표별 **받은 창의 날짜 = 교체**로 붙인다(F3 · 2026-11-06).
+#'   그 지표의 받은 창 날짜에 있던 기존 행을 지우고 새 행을 넣는다 — 수급 · 유니버스 적재기와 같은 규약.
+#'   ★구판은 `Date > base_max`(eps_1y 하나의 max) 였다 → 다른 지표가 뒤처진 날(10-19)은 다시 받아도 붙지 않았다.
 #' ★2026-09-19 수리: 파서는 `ticker_map.parquet`(Ticker·Name, Date 없음)도 쓴다. 구판 루프는 그 파일에서
 #'   `tmp_dt[Date > base_max]` 로 죽었고, 그 뒤 알파벳 순서의 메트릭은 **붙지 못했다** — 지금까지 12종이
 #'   전부 'ti' 보다 앞(… target_price < ticker_map)이라 운 좋게 피했을 뿐, 매 적재마다 '오류' 가 찍혔다.
 #'   ticker_map 은 증분이 아니라 **합집합**(새 상장 종목 이름을 잃지 않게)으로 갱신한다.
+#' @param windows named list(지표 → Date) — 받은 창(관문 탐침의 시트 날짜축). NULL = 파싱 산출의 날짜.
+#'   구 3번째 인자(base_max · 날짜 1개)는 폐지 — 들어오면 경고하고 NULL 로 본다.
 #' @return 붙인 메트릭별 행 수(named integer)
-.consensus_append_increment <- function(tmp_dir, cons_cache_dir, base_max) {
+.consensus_append_increment <- function(tmp_dir, cons_cache_dir, windows = NULL) {
+  if (!is.null(windows) && !is.list(windows)) {
+    cat("  ⚠ [incr_consensus] 3번째 인자는 지표별 받은 창(named list) — 구 base_max(날짜 1개) 규약은 폐지(F3) · 파싱 산출의 날짜로 교체한다\n")
+    windows <- NULL
+  }
   tmp_files <- list.files(tmp_dir, pattern = "\\.parquet$", full.names = TRUE)
   added <- integer(0)
   .atomic_write <- function(dt, dest) {
@@ -584,55 +1012,86 @@ incremental_consensus <- function() {
       cat(sprintf("  %s: Date 열 없음 — 증분 대상 아님(건너뜀)\n", metric))
       next
     }
-    new_rows <- tmp_dt[Date > base_max]
-    if (nrow(new_rows) > 0 && file.exists(orig_file)) {
-      orig_dt <- as.data.table(read_parquet(orig_file))
-      # 겹치는 날짜 제거 후 append
-      orig_dt <- orig_dt[!Date %in% unique(new_rows$Date)]
-      combined <- rbind(orig_dt, new_rows, fill = TRUE)
-      setorder(combined, Date)
-      rm(orig_dt); gc()
-      .atomic_write(combined, orig_file)
-      added[[metric]] <- nrow(new_rows)
-      cat(sprintf("  %s: +%d rows (max: %s)\n", metric, nrow(new_rows), max(combined$Date)))
+    mkey <- sub("\\.parquet$", "", metric)
+    if (!is.null(windows) && !length(windows[[mkey]])) {
+      cat(sprintf("  ⚠ %s: 받은 창 정보 없음(관문 대상 밖 산출) — 건너뜀\n", metric))
+      next
     }
+    # 받은 창 = 관문 탐침의 시트 날짜축(또는 파싱 산출의 날짜). ★tmp_dt[, Date] 는 Date 없는 파일에서 오류로 죽는다 —
+    #   조용히 '창 0일'로 건너뛰지 않게 일부러 $ 대신 쓴다(위 ticker_map · Date 가드가 그 파일을 먼저 걸러야 한다).
+    win <- sort(unique(as.Date(if (is.null(windows)) tmp_dt[, Date] else windows[[mkey]])))
+    if (!length(win)) {
+      cat(sprintf("  %s: 받은 창 0일 — 건너뜀\n", metric))
+      next
+    }
+    if (!file.exists(orig_file)) {
+      cat(sprintf("  ⚠ %s: 기존 패널 부재 — 증분 창만으로 역사 패널을 만들지 않는다(건너뜀)\n", metric))
+      next
+    }
+    new_rows <- tmp_dt[as.Date(Date) %in% win]
+    orig_dt <- as.data.table(read_parquet(orig_file))
+    in_win <- as.Date(orig_dt$Date) %in% win
+    # 진단(판정 아님) — 다시 받은 날의 값이 바뀐 칸 수: 퀀티에는 빈티지가 없어 이 수가 사후 정정의 유일한 흔적이다
+    n_chg <- tryCatch({
+      vc <- setdiff(intersect(names(new_rows), names(orig_dt)), c("Date", "Ticker"))[1]
+      mm <- merge(orig_dt[in_win, c("Date", "Ticker", vc), with = FALSE],
+                  new_rows[, c("Date", "Ticker", vc), with = FALSE], by = c("Date", "Ticker"))
+      x <- mm[[paste0(vc, ".x")]]; y <- mm[[paste0(vc, ".y")]]
+      sum(!((is.na(x) & is.na(y)) | (!is.na(x) & !is.na(y) & x == y)))
+    }, error = function(e) NA_integer_)
+    n_old <- sum(in_win)
+    combined <- rbind(orig_dt[!in_win], new_rows, fill = TRUE)
+    setorder(combined, Date)
+    rm(orig_dt); gc()
+    .atomic_write(combined, orig_file)
+    added[[metric]] <- nrow(new_rows)
+    cat(sprintf("  %s: 받은 창 %d일(%s~%s) 교체 · 기존 %d행 → 새 %d행 · 값 바뀐 칸 %s (max: %s)\n", metric,
+                length(win), min(win), max(win), n_old, nrow(new_rows),
+                if (is.na(n_chg)) "?" else format(n_chg), max(combined$Date)))
   }
   invisible(added)
 }
 
 # ─── Investor_Act 증분 ───────────────────────────────────────────────────────
-incremental_investor <- function() {
-  inv_update <- file.path(UPDATE_DIR, "Investor_Act_update.xlsx")
-  if (!file.exists(inv_update)) {
+#   (2026-11-06 F3 · F4) 받은 창의 날짜 = 교체 + 공용 관문. 구판은 패널 전체 max 이후만 붙였다(`Date > base_max`) →
+#   한 유형만 빈 날(10-20~10-30 개인 · 기타법인 0행 · 외국인 35%)은 다시 받아도(-FromOverride) 영영 메워지지 않았고,
+#   (2차 · 같은 날) 교체 단위 = 유형 × 그 유형 시트의 받은 창(④) — 1차 판의 4유형 합집합 교체는 시트 창이 다르면 행을 잃었다.
+#   그 부분 갱신본 자체도 관문 없이 붙었다(11-06 [0b] '개인 0 rows · 기타법인 0 rows' 그대로 적재).
+#   기존 패널 부재 시 증분 창만으로 패널을 만들던 경로(구 base_max 리터럴)는 없앴다 — 관문 history_short 로 거부한다.
+incremental_investor <- function(update_path = file.path(UPDATE_DIR, "Investor_Act_update.xlsx"),
+                                 cache_dir   = file.path(CACHE_DIR, "investor_stock"),
+                                 target      = .uf_target_date()) {
+  if (!file.exists(update_path)) {
     cat("[incr_investor] Investor_Act_update.xlsx 없음. 스킵.\n")
     return(invisible(NULL))
   }
 
   cat("[incr_investor] Investor_Act_update.xlsx 증분 처리...\n")
 
-  inv_cache_dir <- file.path(CACHE_DIR, "investor_stock")
-  if (!dir.exists(inv_cache_dir)) dir.create(inv_cache_dir, recursive = TRUE)
+  if (!dir.exists(cache_dir)) dir.create(cache_dir, recursive = TRUE)
+  all_file  <- file.path(cache_dir, "investor_all.parquet")
+  sheet_map <- c("외인" = "Foreign", "기관" = "Institutional", "개인" = "Individual", "기타법인" = "OtherCorp")
 
-  # 기존 캐시 max date
-  all_file <- file.path(inv_cache_dir, "investor_all.parquet")
-  if (file.exists(all_file)) {
-    existing <- as.data.table(read_parquet(all_file))
-    base_max <- max(existing$Date, na.rm = TRUE)
-    cat(sprintf("  기존 캐시 max: %s (%s rows)\n", base_max, format(nrow(existing), big.mark = ",")))
-  } else {
-    existing <- NULL
-    base_max <- as.Date("2026-03-27")
-    cat(sprintf("  기존 캐시 없음. base_max: %s\n", base_max))
+  ## ① 관문 앞단(머리 탐침 — 시트 · 날짜축 · 지평선 일치 · B6 괄호 ≥ 목표일) + 기존 패널. 거부면 파싱도 하지 않는다.
+  g <- .uf_gate_header("Investor_Act", .uf_probe_book(update_path), names(sheet_map), target)
+  if (!file.exists(all_file))
+    g <- .uf_gate_add(g, "history_short", "기존 패널(investor_all.parquet) 부재 — 증분 창만으로 역사 패널을 만들지 않는다(base 파서 선행)")
+  if (!isTRUE(g$ok)) {
+    .uf_gate_print(g)
+    return(.uf_refuse(g, update_path, "incr_investor"))
   }
+  windows <- setNames(lapply(names(sheet_map), function(s) g$sheets[sheet == s]$dates[[1]]), unname(sheet_map))
 
-  # 4시트 직접 파싱 (QT_to_xts 우회, 5행 스킵)
-  sheet_map <- list("외인" = "Foreign", "기관" = "Institutional",
-                    "개인" = "Individual", "기타법인" = "OtherCorp")
+  existing <- as.data.table(read_parquet(all_file))
+  cat(sprintf("  기존 캐시 max: %s (%s rows)\n", max(existing$Date, na.rm = TRUE), format(nrow(existing), big.mark = ",")))
+
+  ## ② 4시트 직접 파싱 (QT_to_xts 우회, 5행 스킵) — 받은 창 전체(구 'Date > 기존 max' 거르기 폐지)
   all_new <- list()
 
   for (sheet_name in names(sheet_map)) {
+    itype <- sheet_map[[sheet_name]]
     cat(sprintf("  시트 '%s'...\n", sheet_name))
-    raw_df <- as.data.frame(read_xlsx(inv_update, sheet = sheet_name, skip = 7,
+    raw_df <- as.data.frame(read_xlsx(update_path, sheet = sheet_name, skip = 7,
                                        col_names = TRUE, na = c("", "NA")))
     raw_df <- raw_df[-1:-5, ]  # 5행 스킵 (Update_File 공통 형태)
 
@@ -645,28 +1104,34 @@ incremental_investor <- function() {
 
     long <- melt(vals, id.vars = "Date", variable.name = "Ticker",
                  value.name = "NetBuy", variable.factor = FALSE)
-    long <- long[!is.na(Date) & Date > base_max & !is.na(NetBuy) & NetBuy != 0]
-    long[, InvestorType := sheet_map[[sheet_name]]]
+    long <- long[!is.na(Date) & Date %in% windows[[itype]] & !is.na(NetBuy) & NetBuy != 0]
+    long[, InvestorType := itype]
 
-    if (nrow(long) > 0) all_new[[length(all_new) + 1]] <- long
-    cat(sprintf("    %d rows (> %s)\n", nrow(long), base_max))
+    all_new[[length(all_new) + 1L]] <- long
+    cat(sprintf("    %d rows (받은 창 %d일 %s~%s)\n", nrow(long), length(windows[[itype]]),
+                min(windows[[itype]]), max(windows[[itype]])))
     rm(raw_df, vals, long); gc()
   }
-
-  if (length(all_new) == 0) {
-    cat("  증분 데이터 없음.\n")
-    return(invisible(NULL))
-  }
-
   new_dt <- rbindlist(all_new)
 
-  # 기존 캐시에 append (겹치는 날짜 교체)
-  if (!is.null(existing)) {
-    existing <- existing[!Date %in% unique(new_dt$Date)]
-    combined <- rbind(existing, new_dt, fill = TRUE)
-  } else {
-    combined <- new_dt
-  }
+  ## ③ 채움 관문 — 유형별 날짜 채움 수(0 아닌 순매수 행) vs 적재분 이력 · 받은 창 0일인 유형 = window_empty
+  g <- .uf_gate_fill(g, .uf_fill_check(existing[, .(n = .N), by = .(output = InvestorType, Date)],
+                                       new_dt[, .(n = .N), by = .(output = InvestorType, Date)], windows),
+                     windows = windows)
+  .uf_gate_print(g)
+  if (!isTRUE(g$ok)) return(.uf_refuse(g, update_path, "incr_investor"))
+
+  ## ④ 받은 창의 날짜 = 교체 — 유형마다 **그 유형 시트가 받은 날짜**의 기존 행만 지우고 새 행을 넣는다(2026-11-06 2차).
+  ##   ★1차 판은 네 시트 창의 합집합(win_all)으로 4유형을 함께 지웠다 — 시트 창이 다르면(복구 수급에서 시트별 B5 를 손으로
+  ##     고친 책 · PLAN §3.3 시트별 B5) 그 날짜를 받지 않은 유형의 기존 행이 지워지고 대체되지 않았다(독립 검증 모래상자: 개인 12일 ·
+  ##     나머지 5일 · 같은 끝일 → LOADED · 외국인 · 기관 · 기타법인 앞 7일 84→0행). 관문은 끝일만 대조하고 채움 판정은 그 유형
+  ##     창만 재므로 거르지 못한다 — 교체 단위를 판정 단위(유형 × 그 유형의 받은 창)와 같게 둔다. 새 행은 ②에서 이미 유형별 창으로 걸렀다.
+  win_key <- unique(rbindlist(lapply(names(windows), function(ty)
+    if (length(windows[[ty]])) data.table(InvestorType = ty, Date = as.Date(windows[[ty]])))))
+  n_old_by <- if (nrow(win_key)) existing[win_key, on = c("InvestorType", "Date"), nomatch = NULL, .N, by = .EACHI][
+    , .(n = sum(N)), by = InvestorType] else data.table(InvestorType = character(0), n = integer(0))
+  combined <- rbind(if (nrow(win_key)) existing[!win_key, on = c("InvestorType", "Date")] else existing, new_dt, fill = TRUE)
+  rm(existing); gc()
   setorder(combined, Date, Ticker, InvestorType)
   write_parquet(combined, all_file)
 
@@ -675,18 +1140,30 @@ incremental_investor <- function() {
   # investor_wide.parquet는 full 파서(parse_investor_act)에서만 쓰여 영구 stale
   # (실측: all=2026-07-01 vs 분리=2026-03-26 → flow_features_daily 113d stale의 원인).
   for (itype in unique(combined$InvestorType)) {
-    split_path <- file.path(inv_cache_dir, sprintf("investor_%s.parquet", tolower(itype)))
+    split_path <- file.path(cache_dir, sprintf("investor_%s.parquet", tolower(itype)))
     write_parquet(combined[InvestorType == itype], split_path)
   }
   wide <- dcast(combined, Date + Ticker ~ InvestorType, value.var = "NetBuy", fill = 0)
-  write_parquet(wide, file.path(inv_cache_dir, "investor_wide.parquet"))
+  write_parquet(wide, file.path(cache_dir, "investor_wide.parquet"))
   cat(sprintf("  파생 재생성: 분리 %d종 + wide (max: %s)\n",
               uniqueN(combined$InvestorType), max(combined$Date)))
 
-  cat(sprintf("[incr_investor] 완료: +%s rows → 총 %s rows (max: %s)\n",
-              format(nrow(new_dt), big.mark = ","),
-              format(nrow(combined), big.mark = ","),
+  n_new_by <- new_dt[, .(n = .N), by = InvestorType]
+  for (ty in names(windows)) {
+    w <- windows[[ty]]
+    cat(sprintf("  %s: 받은 창 %d일(%s~%s) 교체 · 기존 %s행 → 새 %s행\n", ty, length(w),
+                if (length(w)) format(min(w)) else "-", if (length(w)) format(max(w)) else "-",
+                format(sum(n_old_by[InvestorType == ty]$n), big.mark = ","),
+                format(sum(n_new_by[InvestorType == ty]$n), big.mark = ",")))
+  }
+  win_all <- if (nrow(win_key)) sort(unique(win_key$Date)) else as.Date(character(0))   # 보고용 합집합 — 교체 단위가 아니다(위 ④)
+  cat(sprintf("[incr_investor] 완료: 유형별 받은 창 교체(합집합 %d일 %s~%s) · 기존 %s행 → 새 %s행 → 총 %s rows (max: %s)\n",
+              length(win_all), min(win_all), max(win_all), format(sum(n_old_by$n), big.mark = ","),
+              format(nrow(new_dt), big.mark = ","), format(nrow(combined), big.mark = ","),
               max(combined$Date)))
+  .uf_gate_record(g, "loaded", update_path)
+  invisible(list(refused = FALSE, rows = nrow(new_dt), window = win_all, windows = windows,
+                 n_old = setNames(n_old_by$n, n_old_by$InvestorType)))
 }
 
 # ─── Universe_Support 증분 ───────────────────────────────────────────────────
@@ -696,17 +1173,23 @@ incremental_investor <- function() {
 # 겹침날짜 교체 merge, 검증 PASS)를 표준 경로로 승격:
 #   ① 파싱 = us_update_stream_parse.py (openpyxl read_only 스트리밍 조기종료 — update xlsx
 #      시트 XML이 스타일 잔재로 420~560MB bloat라 openxlsx/readxl 통짜 로드는 메모리 리스크)
-#   ② merge = incremental_investor()와 동형: existing[!Date %in% new_dates] + new rbind
+#   ② merge = 시트(출력) 파일마다 그 시트가 받은 날짜 교체: existing[!Date %in% 받은 창] + new rbind
+#      (2026-11-06 — 받은 창 = 관문 탐침의 그 시트 날짜축. 수급은 유형 × 그 유형 창 교체 · 둘 다 '출력별 받은 창' 규약)
 #      (update 첫 스냅샷이 기존 종점과 겹쳐도 최신 export가 이김 — idempotent 재실행 안전)
 #   ③ 스키마 = 디스크 시맨틱 컬럼명(Date/Ticker/K200 등) 기준 통일. legacy 'Value' 파일은
 #      merge 시 시맨틱명으로 승격 저장
 #   ④ 쓰기 = temp-rename (Windows arrow mmap 잠금 1224 회피 — incremental_consensus 06-17 패턴)
 # 실패는 stop() 전파(fail-closed) — 구현 전처럼 삼켜서 no-op을 "완료"로 위장하지 않는다.
+# [2026-11-06 F4] 공용 관문 — 8시트 지평선 일치 · B6 괄호 ≥ 목표일 · 시트별 채움비. 거부 = 8시트 모두 적재 0(책 단위).
+#   실측: 11-06 09:20 저장본은 Sector_Lv2 만 10-19 에 멈춘 채(나머지 7시트 10-30 · 11-05) '8/8 시트 merge' 로 적재돼
+#   us_sector_lv2 의 10-30 월말 행이 빠졌다. 구판의 '시트 파서 산출 부재 · 신규 0행 → 그 시트만 스킵'도 같은 부분 적재라
+#   이제는 관문 사유(outputs_missing · fill_low)로 책 전체를 거부한다. 병합 날짜 = 받은 창(탐침 날짜축).
 incremental_universe_support <- function(
     update_path = file.path(UPDATE_DIR, "Universe_Support_update.xlsx"),
     cache_dir   = UNIVERSE_SUPPORT_CACHE,
     parser_py   = file.path(DATA_DIR, "us_update_stream_parse.py"),
-    py_exec     = NULL
+    py_exec     = NULL,
+    target      = .uf_target_date()
 ) {
   if (!file.exists(update_path)) {
     cat("[incr_universe_support] Universe_Support_update.xlsx 없음. 스킵.\n")
@@ -718,15 +1201,27 @@ incremental_universe_support <- function(
   if (!exists("UNIVERSE_SUPPORT_SHEET_META")) source(file.path(DATA_DIR, "parse_universe_support.R"))
   if (!file.exists(parser_py)) stop("[incr_universe_support] 파서 부재: ", parser_py)
 
-  # ① Python 스트리밍 파싱 → stage CSV (QVEST_PY = openpyxl 보유 확인됨. pyarrow 불요)
+  # Python 실행 경로 (QVEST_PY = openpyxl 보유 확인됨. pyarrow 불요) — 관문 탐침과 같은 해석
   if (is.null(py_exec)) {
-    py_candidates <- c(Sys.getenv("QVEST_PY", ""),
-                       file.path(PROJECT_ROOT, ".venv_qvest_ml/Scripts/python.exe"))
-    py_candidates <- py_candidates[nzchar(py_candidates) & file.exists(py_candidates)]
-    if (length(py_candidates) == 0)
-      stop("[incr_universe_support] python 실행경로 미발견 (QVEST_PY / .venv_qvest_ml)")
-    py_exec <- py_candidates[1]
+    py_exec <- .uf_python()
+    if (is.na(py_exec)) stop("[incr_universe_support] python 실행경로 미발견 (QVEST_PY / .venv_qvest_ml)")
   }
+  metas <- UNIVERSE_SUPPORT_SHEET_META
+  cnames <- vapply(metas, function(m) m$cache_name, character(1))
+
+  ## (F4) 관문 앞단 — 머리 탐침 + 기존 패널 존재. 거부면 파싱도 하지 않는다.
+  g <- .uf_gate_header("Universe_Support", .uf_probe_book(update_path, py_exec), names(metas), target)
+  no_panel <- cnames[!file.exists(file.path(cache_dir, sprintf("us_%s.parquet", cnames)))]
+  if (length(no_panel))
+    g <- .uf_gate_add(g, "history_short", sprintf(paste0("기존 패널 부재: %s — update xlsx(증분 기간만)로는 역사 패널을 ",
+                      "만들 수 없음(base Universe_Support.xlsx 로 parse_universe_support() 선행)"), paste(no_panel, collapse = ",")))
+  if (!isTRUE(g$ok)) {
+    .uf_gate_print(g)
+    return(.uf_refuse(g, update_path, "incr_universe_support"))
+  }
+  windows <- setNames(lapply(names(metas), function(s) g$sheets[sheet == s]$dates[[1]]), unname(cnames))
+
+  # ① Python 스트리밍 파싱 → stage CSV
   stage_dir <- file.path(tempdir(), paste0("us_incr_", format(Sys.time(), "%Y%m%d_%H%M%S")))
   dir.create(stage_dir, recursive = TRUE, showWarnings = FALSE)
   on.exit(unlink(stage_dir, recursive = TRUE), add = TRUE)
@@ -741,30 +1236,42 @@ incremental_universe_support <- function(
     stop("[incr_universe_support] 스트리밍 파싱 실패 (exit=", py_status,
          ", PARSE_OK 센티널 부재) — 증분 중단")
 
-  # ② 시트별 merge (겹침 날짜 교체 후 rbind) + ④ temp-rename 쓰기
-  n_merged <- 0L
-  for (s in names(UNIVERSE_SUPPORT_SHEET_META)) {
-    meta    <- UNIVERSE_SUPPORT_SHEET_META[[s]]
+  # ② (F4) 시트별 새 값 · 적재분 채움 수 → 채움 관문. 쓰기 전에 8시트 전부 판정한다(책 단위 거부).
+  news <- list(); hist <- list(); newc <- list(); missing <- character(0)
+  for (s in names(metas)) {
+    meta    <- metas[[s]]
     vcol    <- meta$value_col
     new_csv <- file.path(stage_dir, sprintf("us_new_%s.csv", meta$cache_name))
     pq_path <- file.path(cache_dir, sprintf("us_%s.parquet", meta$cache_name))
-
-    if (!file.exists(new_csv)) {
-      cat(sprintf("  ⚠ %s: 파서 산출물 부재 — 스킵\n", meta$cache_name)); next
-    }
-    if (!file.exists(pq_path)) {
-      cat(sprintf(paste0("  ⚠ %s: 기존 패널 부재 — update xlsx(증분 기간만)로는 역사 패널을 만들 수 없음. ",
-                         "base Universe_Support.xlsx로 parse_universe_support() 선행 필요. 스킵.\n"),
-                  meta$cache_name)); next
-    }
+    if (!file.exists(new_csv)) { missing <- c(missing, meta$cache_name); next }
 
     new_dt <- fread(new_csv, encoding = "UTF-8", colClasses = "character")
-    if (nrow(new_dt) == 0) { cat(sprintf("  ⚠ %s: 신규 0행 — 스킵\n", meta$cache_name)); next }
     if (!identical(names(new_dt), c("Date", "Ticker", vcol)))
       stop(sprintf("[incr_universe_support] %s: 파서 CSV 헤더 불일치: %s",
                    meta$cache_name, paste(names(new_dt), collapse = ",")))
     new_dt[, Date := as.Date(Date)]
     if (meta$value_type == "numeric") new_dt[, (vcol) := as.numeric(get(vcol))]
+    news[[meta$cache_name]] <- new_dt
+    newc[[meta$cache_name]] <- new_dt[, .(output = meta$cache_name, n = .N), by = Date]
+
+    ex <- as.data.table(read_parquet(pq_path, mmap = FALSE))
+    setnames(ex, "Value", vcol, skip_absent = TRUE)
+    if (vcol %in% names(ex))
+      hist[[meta$cache_name]] <- ex[!is.na(get(vcol)), .(output = meta$cache_name, n = .N), by = .(Date = as.Date(Date))]
+    rm(ex); gc()
+  }
+  g <- .uf_gate_fill(g, .uf_fill_check(rbindlist(hist), rbindlist(newc), windows), missing,
+                     windows = windows)
+  .uf_gate_print(g)
+  if (!isTRUE(g$ok)) return(.uf_refuse(g, update_path, "incr_universe_support"))
+
+  # ③ 시트별 merge (받은 창의 날짜 교체 후 rbind) + ④ temp-rename 쓰기
+  n_merged <- 0L
+  for (s in names(metas)) {
+    meta    <- metas[[s]]
+    vcol    <- meta$value_col
+    pq_path <- file.path(cache_dir, sprintf("us_%s.parquet", meta$cache_name))
+    new_dt  <- news[[meta$cache_name]]
 
     existing <- as.data.table(read_parquet(pq_path))
     setnames(existing, "Value", vcol, skip_absent = TRUE)   # legacy 'Value' 스키마 → 시맨틱명 승격
@@ -774,7 +1281,8 @@ incremental_universe_support <- function(
                    meta$cache_name, paste(names(existing), collapse = ","),
                    paste(names(new_dt), collapse = ",")))
 
-    upd_dates  <- unique(new_dt$Date)
+    upd_dates  <- windows[[meta$cache_name]]                 # 받은 창(관문이 날짜마다 채움을 확인한 날짜축)
+    new_dt     <- new_dt[Date %in% upd_dates]
     n_prev     <- nrow(existing)
     max_prev   <- max(existing$Date)
     n_replaced <- existing[Date %in% upd_dates, .N]
@@ -807,68 +1315,99 @@ incremental_universe_support <- function(
     rm(combined, new_dt); gc()
   }
 
-  if (n_merged == 0L) {
-    cat("[incr_universe_support] ⚠ merge된 시트 0개 — 증분 미반영. 위 스킵 사유 확인 필요.\n")
-  } else {
-    cat(sprintf("[incr_universe_support] 완료: %d/%d 시트 merge.\n",
-                n_merged, length(UNIVERSE_SUPPORT_SHEET_META)))
-  }
-  invisible(list(n_merged = n_merged))
+  cat(sprintf("[incr_universe_support] 완료: %d/%d 시트 merge.\n", n_merged, length(metas)))
+  .uf_gate_record(g, "loaded", update_path)
+  invisible(list(refused = FALSE, n_merged = n_merged))
 }
 
 # ─── 전체 증분 실행 ──────────────────────────────────────────────────────────
-incremental_update_all <- function() {
+#' (2026-11-06 F5) 이름 → 적재기 **명시 표**(완전 일치) 디스패치. 표 순서 = 처리 순서(구판과 같다).
+#'   구판은 `grepl("OHLCVS"|"Consensus"|"Investor"|"Universe_Support", 변경 경로)` 였다 → ① 표에 없는 xlsx 는 아무도 안 읽는데
+#'   mtime 은 '처리됨'으로 기록돼 영영 버려졌고 ② 이름에 그 부분 문자열만 들어도(예 'Consensus_update_old.xlsx')
+#'   **정본 파일**을 다시 읽는 엉뚱한 적재가 돌며 그 파일도 '처리됨'이 됐다.
+#'   미등록 xlsx = 폴더에 있는 동안 매 실행 경고 · 처리 기록에서 뺀다 · 끝에서 rc 4(거부가 같이 있으면 rc 3)로 알린다 —
+#'   stop 을 즉시 하면 같은 실행의 나머지 책이 멈추므로 전부 처리 · 기록한 뒤에 알린다.
+#' @param loaders 이름(파일명) → 적재기 함수명. 새 책은 여기 등록한다(이름 부분 문자열 금지 · PLAN §3.1).
+incremental_update_all <- function(loaders = c(OHLCVS_update.xlsx           = "incremental_ohlcvs",
+                                               Consensus_update.xlsx        = "incremental_consensus",
+                                               Investor_Act_update.xlsx     = "incremental_investor",
+                                               Universe_Support_update.xlsx = "incremental_universe_support")) {
   cat("=== Incremental Update_File 처리 시작 ===\n\n")
 
   changes <- detect_update_changes()
-  if (length(changes$changed) == 0) {
+  # 미등록 = 폴더에 **있는** 표 밖 xlsx(변경 여부 무관 — 구판이 '처리됨'으로 기록해 둔 파일도 다시 드러난다)
+  unregistered <- sort(setdiff(names(changes$mtimes), names(loaders)))
+  if (length(changes$changed) == 0 && !length(unregistered)) {
     cat("Update_File 변경 없음.\n")
     return(invisible(list(updated = FALSE)))
   }
 
   cat(sprintf("변경 감지: %d 파일\n", length(changes$changed)))
   for (f in changes$changed) cat(sprintf("  → %s\n", basename(f)))
+  for (nm in unregistered)
+    cat(sprintf("  ⚠ [UNREGISTERED] %s — 적재기 표에 없는 xlsx: 적재 안 함 · '처리 완료' 미기록(있는 동안 매 실행 경고) · 이름 → 적재기 등록 필요\n", nm))
   cat("\n")
 
   ohlcvs_result <- NULL
   qw_updated <- FALSE
   ohlcvs_refused <- NULL
+  refused <- list()
+  changed_names <- basename(changes$changed)
 
-  # OHLCVS — 관문 거부면 '처리 완료' 로 기록하지 않고(아래) 끝에서 stop → run_r rc≠0 → DR_FAILED
-  if (any(grepl("OHLCVS", changes$changed))) {
-    ohlcvs_result <- incremental_ohlcvs()
-    if (isTRUE(ohlcvs_result$refused)) ohlcvs_refused <- ohlcvs_result else qw_updated <- TRUE
+  # 표 순서대로 — OHLCVS 관문 거부면 '처리 완료' 로 기록하지 않고(아래) 끝에서 stop → run_r rc 3 → DR_FAILED
+  for (nm in names(loaders)) {
+    if (!nm %in% changed_names) next
+    fn  <- loaders[[nm]]
+    res <- get(fn, envir = environment(), mode = "function")()
+    is_refused <- is.list(res) && isTRUE(res$refused)
+    if (identical(fn, "incremental_ohlcvs")) {
+      ohlcvs_result <- res
+      if (is_refused) ohlcvs_refused <- res else qw_updated <- TRUE
+    } else if (is_refused) {
+      refused[[nm]] <- res
+    } else if (identical(fn, "incremental_consensus")) {
+      qw_updated <- TRUE
+    }
   }
 
-  # Consensus
-  if (any(grepl("Consensus", changes$changed))) {
-    incremental_consensus()
-    qw_updated <- TRUE
-  }
-
-  # Investor_Act
-  if (any(grepl("Investor", changes$changed))) {
-    incremental_investor()
-  }
-
-  # Universe_Support
-  if (any(grepl("Universe_Support", changes$changed))) {
-    incremental_universe_support()
-  }
-
-  # 처리 완료 기록 — 관문이 거부한 OHLCVS 는 직전 기록을 그대로 둔다(없었으면 없는 채로) → 다음 실행이 재시도
+  # 처리 완료 기록 — 관문이 거부한 책은 직전 기록을 그대로 둔다(없었으면 없는 채로) → 다음 실행이 재시도.
+  #   미등록 xlsx 는 기록에서 뺀다(F5 — '처리됨'으로 묻지 않는다).
   mt_save <- changes$mtimes
-  if (!is.null(ohlcvs_refused)) {
+  keep_prev <- c(if (!is.null(ohlcvs_refused)) names(loaders)[loaders == "incremental_ohlcvs"], names(refused))
+  if (length(keep_prev)) {
     prev_files <- .get_last_processed()$files
-    for (nm in names(mt_save)[grepl("OHLCVS", names(mt_save))]) mt_save[[nm]] <- prev_files[[nm]]
+    for (nm in keep_prev) mt_save[[nm]] <- prev_files[[nm]]
   }
+  for (nm in unregistered) mt_save[[nm]] <- NULL
   .save_last_processed(mt_save)
 
+  # 끝에서 알린다 — 다른 책은 이미 처리 · 기록됐다
+  others <- c(if (length(refused)) sprintf("관문 거부 %s",
+                paste(sprintf("%s(%s)", names(refused), vapply(refused, function(r) paste(names(r$reasons), collapse = ","), "")),
+                      collapse = " · ")),
+              if (length(unregistered)) sprintf("미등록 xlsx %s", paste(unregistered, collapse = ",")))
+  if (!is.null(ohlcvs_refused) || length(others)) {
+    ## ★rc 계약(머리 주석 ▸rc 계약): 비대화형(Rscript — daily_refresh.sh run_r)에서 이 오류가 잡히지 않고 끝나면
+    ##   종료 코드 3(관문 거부) · 4(미등록만)로 나간다. options(error=) 는 잡히지 않은 오류에서만 · 스택이 풀리기 전에 불린다.
+    ##   잡히면(tryCatch · 시험) 평범한 R 오류이고 on.exit 가 옵션을 되돌린다. 대화형 세션은 끄지 않는다.
+    .rc <- if (!is.null(ohlcvs_refused) || length(refused)) 3L else 4L
+    if (!interactive()) {
+      .old_err <- options(error = function() quit(save = "no", status = .rc, runLast = FALSE))
+      on.exit(options(.old_err), add = TRUE)
+    }
+  }
   if (!is.null(ohlcvs_refused))
-    stop(sprintf(paste0("[incr_ohlcvs][GATE_REFUSED] OHLCVS_update.xlsx 적재 거부 — %s ",
-                        "(지평선 %s · 직전 적재 %s · 다른 파일은 처리됨 · OHLCVS 는 처리 완료 미기록)"),
-                 paste(names(ohlcvs_refused$reasons), collapse = ","),
-                 format(ohlcvs_refused$horizon), format(ohlcvs_refused$prior_horizon)), call. = FALSE)
+    stop(structure(class = c("update_file_gate_refused", "error", "condition"), list(call = NULL, message = sprintf(paste0(
+      "[incr_ohlcvs][GATE_REFUSED] OHLCVS_update.xlsx 적재 거부 — %s ",
+      "(지평선 %s · 직전 적재 %s · 다른 파일은 처리됨 · OHLCVS 는 처리 완료 미기록)%s"),
+      paste(names(ohlcvs_refused$reasons), collapse = ","),
+      format(ohlcvs_refused$horizon), format(ohlcvs_refused$prior_horizon),
+      if (length(others)) paste0(" · 그 밖에 ", paste(others, collapse = " · ")) else ""))))
+  if (length(others))
+    stop(structure(class = c(if (length(refused)) "update_file_gate_refused" else "update_file_unregistered", "error", "condition"),
+                   list(call = NULL, message = sprintf("[incremental_update_all][%s] %s — 다른 파일은 처리됨 · 해당 책은 처리 완료 미기록",
+                                                       if (length(refused)) "GATE_REFUSED" else "UNREGISTERED",
+                                                       paste(others, collapse = " · ")))))
 
   cat("\n=== Incremental Update 완료 ===\n")
   invisible(list(updated = TRUE, qw_updated = qw_updated, ohlcvs = ohlcvs_result))
