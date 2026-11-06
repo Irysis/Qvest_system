@@ -3,6 +3,8 @@
 매일 **04:00** 에 깨어나 데이터가 준비되면 `run_daily_stress.sh` 를 한 번 돌려 `daily/<기준일>/` · `daily/latest/` 에 PDF · 엑셀 · 차트 · 방법론을
 갱신한다(OneDrive 동기화 폴더라 두 기계 어디서나 `daily/latest/kr_stress_daily_latest.pdf` 로 본다). `daily_refresh.sh` 는 건드리지 않는다(원 세션 소유).
 
+**휴장일엔 쉰다**(도훈 11-06): 오늘이 주말 · KRX 휴장일(`06_Registry/krx_holidays.json`)이면 일보 · 메일 모두 건너뛴다(rc 0). 직전 거래일 마감분은 다음 거래일 04:00 에 만들어 보낸다 — 금요일 마감 → 월요일 아침.
+
 **데이터 준비 = 둘 다 만족**: (a) 밤 리프레시 잠금 `/tmp/qm_daily_refresh.lock` 이 없다 (b) 벤치(퀀티) 최신일 ≥ KRX 직전 거래일
 (`02_Infrastructure/data/krx_holidays.py currency` — 부팅 · ensure_data_current 와 같은 판정). (b) 가 없으면 04:00 에 리프레시가 아직 시작 전일 때
 묵은 데이터로 일보가 나간다. 60초 간격 · 상한 480분(12:00) — 넘기면 rc 7 로 그날은 건너뛴다(묵은 데이터로 일보를 내지 않는다).

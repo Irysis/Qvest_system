@@ -25,6 +25,25 @@ bench_state() {   # '0' 최신 · '1' 미최신 · 'NA' 판정 불가(판정 불
 }
 
 say "Qvest_StressDaily start · host=${COMPUTERNAME:-?} · lock=$LOCK · max_wait=${MAX_WAIT_MIN}m"
+# 오늘이 KRX 거래일이 아니면(주말 · 휴장일) 일보 · 메일 모두 건너뛴다(도훈 11-06 "주말이랑 휴장일엔 보낼 필요 없어").
+#   직전 거래일 마감분은 다음 거래일 04:00 실행이 만든다(예: 금요일 마감 → 월요일 아침 · 휴장일 앞날 마감 → 휴장 다음 거래일 아침).
+#   판정 = 06_Registry/krx_holidays.json(KRX 공시 목록 · 주말 아닌 휴장일). 그해가 등록부에 없으면 주말만 거른다(경고).
+TODAY_ISO="${QVEST_KRX_TODAY:-$(date +%F)}"
+sess="$(PYTHONUTF8=1 "$PY" - "$TODAY_ISO" "$ROOT/06_Registry/krx_holidays.json" <<'PYS' 2>/dev/null
+import json, sys, datetime as dt
+d = dt.date.fromisoformat(sys.argv[1]); reg = json.load(open(sys.argv[2], encoding="utf-8"))
+hol, years = reg.get("holidays") or {}, {int(y) for y in reg.get("years") or []}
+if d.weekday() >= 5: print("closed|주말")
+elif d.isoformat() in hol: print("closed|" + hol[d.isoformat()])
+elif d.year not in years: print("open|등록부에 " + str(d.year) + "년 없음(주말만 판정)")
+else: print("open|거래일")
+PYS
+)"
+case "$sess" in
+  closed\|*) say "오늘($TODAY_ISO)은 휴장(${sess#closed|}) — 일보 · 메일 건너뜀"; exit 0 ;;
+  open\|*)   say "오늘($TODAY_ISO) ${sess#open|} — 진행" ;;
+  *)         say "★거래일 판정 실패(출력 '${sess}') — 진행(판정 불가는 막지 않는다)" ;;
+esac
 waited=0
 while :; do
   bs="$(bench_state)"; st="${bs%%|*}"
