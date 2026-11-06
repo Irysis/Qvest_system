@@ -1,38 +1,43 @@
 #!/usr/bin/env bash
-# P2R05 GPU 창 연쇄(2026-11-06 · 1계층 사이드 세션 · 도훈 10-18 'THGNN 끝난 뒤 레인 보류') — 분리 실행(_lib/detached_env.sh · 세션 밖 · 인자 없음).
-#   측정 절차 · 판정과 무관(사전등록 고정 대상 아님 — GPU 배분 · 순서만). 같은 일을 하던 gpu_handover.py(10-18)는 THGNN 이 새 축 · 처음부터로 바뀌어 전제가 무효다.
-#   ① THGNN(2601.04602 · 레인 gpu1) 측정 시작 대기 — 레인 저널에 T0(11-06 07:20) 뒤 gpu1 axis_override 사건(재구현 · 감사가 끝나 측정 직전).
-#      감사 기각 → 재구현 연쇄는 레인 스위치 관문을 다시 지나므로, 측정이 시작되기 전에는 레인을 멈추지 않는다. 마감 START_WAIT_H 안에 없으면 아무것도 바꾸지 않고 끝(알림).
-#      THGNN 요청이 측정 시작 전에 바쁜 상태(pending · in_progress · failed_needs_session)를 벗어나면(재시도 소진 · 건너뜀 등) 기다리지 않고 ② 로 간다.
-#   ② 레인 보류 — lane_hold.py pause(진행 중 작업은 끝까지 · 새 논문 · 새 GPU 작업 없음 — CPU 슬롯 새 논문도 이 창 동안 쉰다).
-#   ③ GPU 슬롯 끝 대기 — gpu1 claim 이 '살아 있지 않음' 2회 연속(2분 간격): 폴더 없음 ∨ 소유자(owner_win) 사망 ∨ 소유자 표식 없는 빈 claim 10분 초과.
-#      레인이 꺼져 있으면 틱이 죽은 claim 을 회수하지 않으므로 폴더 유무만 보면 죽은 작업자를 마감까지 기다린다(판단 Superfan T3 C-20261106-002).
-#      마감 END_WAIT_H 를 넘으면 워밍하지 않고 끝(레인 재개 · 알림).
-#   비정상 출구(①③ 마감 · 보류 실패 · 재개 실패)마다 알림 1통 = gpu_chain_alert.R(prep_send · 푸시). 워밍 실패는 warm_cache.sh 가 스스로 알린다.
-#   ④ 같은 데이터 배치 — 다음 'Daily Refresh v2 Done' 줄(마감 06:00 규칙 = measure.sh 와 같음) 뒤에 워밍 · 측정이 들어가게 한다
-#      (워밍 센티널은 워밍 시작 · 끝 dnn_input 지문을 남기고 측정 precheck --warm-check 가 현재 지문과 대조한다 — 사이에 갱신이 끼면 측정이 거부된다).
-#   ⑤ warm_cache.sh(레인 꺼짐 · GPU 게이트 마감 = 지금 + 2시간 · 실패 = 자체 알림) → rc 0 이면 notify_done.sh(분기점 1통) + measure_now_vram.sh(측정 → 평가).
-#   ⑥ 끝 = 레인 재개(lane_hold.py resume — 이 스크립트가 보류를 걸었을 때만 · 성공 · 실패 무관 · trap EXIT). 강제 종료(taskkill /F)면 trap 이 안 돈다 →
-#      세션이 `python lane_hold.py resume "<사유>"` 로 직접 켠다.
-# 로그 = .cache/scheduler_logs/p2r05_gpu_chain_<시작일>.log(detached_env.sh 두 번째 인자로 준다)
+# P2R05 GPU 창 연쇄 v4(2026-11-06 · 1계층 사이드 세션) — 분리 실행(_lib/detached_env.sh · 세션 밖 · 인자 없음). 측정 절차 · 판정과 무관(사전등록 핀 아님).
+#   방침(원 세션 11-06 12:3x · 도훈 최신 결정 J-20261018-008 'P2R05 먼저 · THGNN 일시정지'): GPU 임대로 GPU 슬롯만 보류 · CPU 슬롯은 계속 ·
+#   워밍 → 측정 → 임대 해제 뒤 THGNN. (v1~v3 = 레인 전체 보류 · THGNN 먼저 — 근거였던 J-20261018-007 이 J-008 로 대체돼 있었다 · Superfan T3 C-20261106-001)
+#   ① 시작 — 이 연쇄의 앞판이 걸어 둔 레인 보류(paused_note 에 gpu_chain)를 푼다(CPU 슬롯 계속) → GPU 임대 획득(보유자 = 이 연쇄 Windows pid ·
+#      상한 12h · 남은 1시간 미만이면 놓고 다시 잡아 이어 간다). 진행 중인 THGNN 은 임대와 무관하게 계속 돈다(임대는 새 GPU 착수만 막는다).
+#   ② 준비 대기 — 데이터 준비 표식 night_state/p2r05_data_ready.ok(원 세션의 10-20~11-05 수급 · 컨센서스 · 유니버스 복구 + factor_db 202610 · 202611 ·
+#      fdb_daily 재빌드 + 필요 시 국면 원장 재발행이 끝났다는 표식 — 1계층 세션이 원 세션 통지를 받고 쓴다) → 그 뒤 첫 'Daily Refresh v2 Done' 줄
+#      (P2R05 DT 엔진은 .cache/consensus 를 읽고 측정 판본 지문(fingerprint.sh)이 consensus · factor_db 월 파일을 해시한다 — 워밍 · 측정을 갱신 사이
+#      한 판본 안에 넣는다). 갱신 완료 줄이 없으면 06~12시에 리프레시 잠금이 없을 때 현 배치로 진행(measure.sh 와 같은 규칙).
+#   ③ 시작 시점에 THGNN(gpu1)이 아직 돌면 일시정지 — 작업자 bash(claim owner_win) · thgnn.py · 그 부모 검증기 Rscript 만 끝낸다(다른 슬롯 무접촉) →
+#      gpu1 요청 failure=session_reverify(재개 = 엔진 보존 검증기만 · 10-20 표식과 같음).
+#   ④ 임대 새로 잡기 → warm_cache.sh --allow-lane-on(레인 켜짐 · GPU 슬롯은 임대가 막는다) → 임대 새로 잡기 → notify_done.sh(1통) + measure_now_vram.sh.
+#   ⑤ 끝 = 임대 해제(trap) → 다음 틱에 THGNN 재개(일시정지했으면 검증기만). 강제 종료(taskkill /F)면 trap 이 안 돈다 → 임대는 보유자 사망으로 틱이 푼다.
+#   비정상 출구(임대 실패 · 준비 마감 · 일시정지 실패)마다 알림 1통 = gpu_chain_alert.R(prep_send 푸시). 워밍 실패는 warm_cache.sh 가 스스로 알린다.
+# 로그 = .cache/scheduler_logs/p2r05_gpu_chain_<시작일>.log(detached_env.sh 두 번째 인자)
 set -u
 ROOT=/c/Users/99922/OneDrive/Quant_Module_Moltbot
 RDR=$ROOT/04_Research/programs/P2_DEFENSE/P2R05_distribution_target
-JL=$ROOT/.cache/reinforce_auto_log.jsonl
+ST=$ROOT/04_Research/programs/_lib/night_state
+READY=$ST/p2r05_data_ready.ok
 CLAIM=$ROOT/.cache/rf_replication.claim.gpu1
 REQ=$ROOT/06_Registry/replication_slots/gpu1/replication_request.json
 DONE_LOG=$ROOT/.cache/scheduler_logs/daily_refresh.log
+REFRESH_LOCK=/tmp/qm_daily_refresh.lock
 PY=$ROOT/.venv_qvest_ml/Scripts/python.exe
+QVL=$ROOT/02_Infrastructure/ops/qv_lock.py
 CFG=$ROOT/06_Registry/reinforce_auto_config.json
-START_WAIT_H=18
-END_WAIT_H=40
+HOLDER=P2R05_gpu_chain
+THGNN_TOKEN=RP_AUTO_CLEAN_2601_04602     # THGNN 작업 디렉터리 — 이 문자열을 명령 줄에 가진 파이썬만 THGNN 으로 본다(다른 슬롯 무접촉)
+PURPOSE="P2R05 GPU 창(워밍 · 측정) — 원 세션 11-06 · 도훈 J-20261018-008 P2R05 먼저"
+READY_DEADLINE=$(date -d '2026-11-08 12:00' +%s)
 cd $ROOT || exit 2
-say() { echo "== $(date +%F' '%T) [P2R05 GPU 연쇄] $*"; }
-T0=2026-11-06T07:20:00     # 노트북 예약 작업 재가동 시각(원 세션 11-06) — 그 뒤 첫 gpu1 측정 시작만 센다(11-01 중단분 제외 · 연쇄를 측정 시작 뒤에 띄워도 잡힌다)
-PAUSED=0
-## 레인 스위치 = 설정 파일 replication_lane.enabled 를 읽어 확인한다 — lane_hold.py 의 파일 교체(os.replace)는 OneDrive 가 파일을 쥔 순간
-##   WinError 5 로 실패할 수 있다(11-06 session_resume.json 실측). 종료 코드가 아니라 결과 값으로 판정하고 30초 간격 최대 20회 다시 한다.
-lane_enabled() { "$PY" -X utf8 -c "import io,json,sys;print(json.loads(io.open(sys.argv[1],'rb').read().decode('utf-8'))['replication_lane'].get('enabled'))" "$CFG" 2>/dev/null | tr -d '\r'; }   # 경로는 인자로 — MSYS 는 인자만 C:/ 로 바꾼다(-c 문자열 안 /c/ 경로는 Windows 파이썬이 못 연다)
+WINPID=$(tr -d '\r\n ' < /proc/$$/winpid 2>/dev/null)
+say() { echo "== $(date +%F' '%T) [P2R05 GPU 연쇄 v4] $*"; }
+alert() { Rscript "$RDR/gpu_chain_alert.R" "$1" "$2" "$3" > /dev/null 2>&1 && say "알림 1통($1)" || say "알림 실패($1)"; }
+
+## 레인 스위치 = 설정 값으로 확인(파일 교체가 OneDrive 에 WinError 5 로 실패할 수 있다 — 11-06 실측) · 경로는 인자로(MSYS 는 인자만 C:/ 로 바꾼다)
+lane_enabled() { "$PY" -X utf8 -c "import io,json,sys;print(json.loads(io.open(sys.argv[1],'rb').read().decode('utf-8'))['replication_lane'].get('enabled'))" "$CFG" 2>/dev/null | tr -d '\r'; }
+lane_note() { "$PY" -X utf8 -c "import io,json,sys;print(json.loads(io.open(sys.argv[1],'rb').read().decode('utf-8'))['replication_lane'].get('paused_note') or '')" "$CFG" 2>/dev/null | tr -d '\r'; }
 lane_set() {
   local want=True; [ "$1" = "pause" ] && want=False
   for k in $(seq 1 20); do
@@ -42,8 +47,25 @@ lane_set() {
   done
   return 1
 }
-alert() { Rscript "$RDR/gpu_chain_alert.R" "$1" "$2" "$3" > /dev/null 2>&1 && say "알림 1통($1)" || say "알림 실패($1)"; }
-req_state() { "$PY" -X utf8 -c "import io,json,sys;d=json.loads(io.open(sys.argv[1],'rb').read().decode('utf-8'));print(d.get('status'),((d.get('paper') or {}).get('paper_key')))" "$REQ" 2>/dev/null | tr -d '\r'; }
+## GPU 임대 — 보유자 = 이 연쇄(Windows pid). 상태 판독은 qv_lock CLI(JSON).
+lease_json() { "$PY" -X utf8 "$QVL" lease status --json 2>/dev/null | tr -d '\r'; }
+lease_mine() {   # 0 = 이 연쇄가 쥐고 남은 시간 ≥ $1 시간
+  "$PY" -X utf8 -c "import json,sys
+try: d=json.loads(sys.argv[1] or '{}')
+except Exception: sys.exit(1)
+ok=d.get('state')=='held' and d.get('holder')==sys.argv[2] and float(d.get('remaining_h') or 0)>=float(sys.argv[3])
+sys.exit(0 if ok else 1)" "$(lease_json)" "$HOLDER" "${1:-1}"
+}
+lease_take() {   # 놓고 새로 잡는다(같은 보유자 재획득은 연장이 없어서) — 0 = 새 12시간 보유
+  "$PY" -X utf8 "$QVL" lease release --holder "$HOLDER" > /dev/null 2>&1
+  "$PY" -X utf8 "$QVL" lease acquire --holder "$HOLDER" --purpose "$PURPOSE" --cap-hours 12 --holder-pid "$WINPID" --json 2>&1 | tail -1
+  lease_mine 11
+}
+lease_keep() { lease_mine 1 || { say "임대 갱신(남은 1시간 미만 또는 보유 아님)"; lease_take > /dev/null || say "임대 갱신 실패($(lease_json | cut -c1-160))"; }; }
+lease_drop() { "$PY" -X utf8 "$QVL" lease release --holder "$HOLDER" 2>&1 | tail -1; }
+trap 'say "끝 — 임대 해제: $(lease_drop)"' EXIT
+
+done_count() { local n; n=$(grep -c "=== Daily Refresh v2 Done" "$DONE_LOG" 2>/dev/null); echo "${n:-0}"; }
 claim_alive() {    # 0 = gpu1 claim 이 살아 있다 · 1 = 없음 · 소유자 사망 · 표식 없는 빈 claim 10분 초과
   [ -d "$CLAIM" ] || return 1
   local w age
@@ -54,94 +76,107 @@ claim_alive() {    # 0 = gpu1 claim 이 살아 있다 · 1 = 없음 · 소유자
   fi
   tasklist //FI "PID eq $w" //NH 2>/dev/null | awk -v p="$w" '$2==p{f=1} END{exit !f}'
 }
-resume_lane() {
-  [ "$PAUSED" = "1" ] || return 0
-  if lane_set resume "$1"; then PAUSED=0; say "레인 재개 확인(enabled=True)"
-  else say "★레인 재개 실패 — 레인이 꺼진 채다 · 세션이 python $RDR/lane_hold.py resume '<사유>' 로 켤 것"
-       alert "레인 재개 실패" "연쇄가 레인 보류를 풀지 못했다(lane_hold.py resume 20회 실패 · 레인 전체가 꺼진 채)" "세션: python 04_Research/programs/P2_DEFENSE/P2R05_distribution_target/lane_hold.py resume '<사유>' 뒤 enabled=True 확인"; fi
+req_state() { "$PY" -X utf8 -c "import io,json,sys;d=json.loads(io.open(sys.argv[1],'rb').read().decode('utf-8'));print(d.get('status'),((d.get('paper') or {}).get('paper_key')))" "$REQ" 2>/dev/null | tr -d '\r'; }
+stop_thgnn() {   # THGNN 트리만 끝낸다 — claim 소유자 bash · RP_AUTO_CLEAN_2601_04602 를 실행 중인 파이썬 · 그 파이썬의 부모(검증기 Rscript)
+  local w; w=$( { tr -d '\r\n ' < "$CLAIM/owner_win"; } 2>/dev/null )
+  powershell.exe -NoProfile -Command "\$t=@(); if ('$w' -match '^[0-9]+\$') { \$t += [int]'$w' };
+    Get-CimInstance Win32_Process | Where-Object { \$_.Name -match '^python' -and \$_.CommandLine -match '$THGNN_TOKEN' } | ForEach-Object {
+      \$t += \$_.ProcessId; \$pp = Get-CimInstance Win32_Process -Filter ('ProcessId=' + \$_.ParentProcessId);
+      if (\$pp -and \$pp.Name -match '^(Rscript|Rterm|R)\.exe\$') { \$t += \$pp.ProcessId } };
+    \$t | Sort-Object -Unique | ForEach-Object { try { Stop-Process -Id \$_ -Force -ErrorAction Stop; 'stopped ' + \$_ } catch { 'skip ' + \$_ } }" 2>&1 | tr -d '\r' | paste -sd' ' -
 }
-trap 'resume_lane "P2R05 GPU 연쇄 종료(trap) — 레인 재개"' EXIT
-say "시작 — THGNN(gpu1) 측정 시작 대기(마감 ${START_WAIT_H}h · 기준 시각 $T0)"
-
-## ① 측정 시작 — 저널의 gpu1 axis_override(ts ≥ T0)
-started() { "$PY" -X utf8 - "$JL" "$T0" <<'PYX'
-import io, json, sys
-p, t0 = sys.argv[1], sys.argv[2]
-hit = ""
-try:
-    with io.open(p, "rb") as f:
-        f.seek(0, 2); n = f.tell(); f.seek(max(0, n - 4 * 1024 * 1024))
-        for ln in f.read().decode("utf-8", "replace").splitlines():
-            if '"axis_override"' not in ln or '"gpu1"' not in ln:
-                continue
-            try:
-                e = json.loads(ln)
-            except Exception:
-                continue
-            if e.get("event") == "axis_override" and e.get("slot") == "gpu1" and str(e.get("ts", ""))[:19] >= t0:
-                hit = e.get("ts")
-except Exception:
-    pass
-print(hit)
+mark_reverify() {
+  "$PY" -X utf8 - "$REQ" <<'PYX'
+import io, json, os, sys, tempfile, time
+p = sys.argv[1]
+d = json.loads(io.open(p, "rb").read().decode("utf-8"))
+if d.get("status") in ("in_progress", "pending") and (d.get("paper") or {}).get("paper_key") == "2601.04602":
+    d["failure"] = "session_reverify"
+    d["failure_detail"] = ("P2R05 GPU 창(gpu_chain.sh v4 · 원 세션 11-06 · 도훈 J-20261018-008 P2R05 먼저)으로 측정 중 일시정지 — "
+                           "재개는 엔진 보존 검증기만(10-20 · 11-06 과 같은 표식)")
+    d["session_reverify_at"] = time.strftime("%Y-%m-%dT%H:%M:%S%z")
+    for k in range(20):
+        try:
+            fd, tmp = tempfile.mkstemp(dir=os.path.dirname(p), suffix=".tmp")
+            with io.open(fd, "wb") as f:
+                f.write(json.dumps(d, ensure_ascii=False, indent=1).encode("utf-8"))
+            os.replace(tmp, p); print("marked session_reverify"); break
+        except OSError as e:
+            try: os.remove(tmp)
+            except OSError: pass
+            time.sleep(3)
+    else:
+        print("mark failed")
+else:
+    print("not marked (status=%s key=%s)" % (d.get("status"), (d.get("paper") or {}).get("paper_key")))
 PYX
 }
-dl=$(( $(date +%s) + START_WAIT_H * 3600 ))
-while :; do
-  s=$(started | tr -d '\r')
-  [ -n "$s" ] && { say "THGNN 측정 시작 확인($s)"; break; }
-  rs=$(req_state)
-  case "$rs" in
-    "in_progress 2601.04602"|"pending 2601.04602"|"failed_needs_session 2601.04602") ;;
-    *) say "THGNN 요청이 측정 시작 전에 바쁜 상태를 벗어났다(gpu1 요청: ${rs:-판독 실패}) — THGNN 을 기다리지 않고 GPU 창으로 간다"; break ;;
-  esac
-  if [ "$(date +%s)" -ge "$dl" ]; then
-    say "마감 — THGNN 측정 시작 없음 · 레인 그대로 · 끝"
-    alert "THGNN 측정 시작 없음(${START_WAIT_H}h)" "THGNN(2601.04602)이 ${START_WAIT_H}시간 안에 측정을 시작하지 않았다(gpu1 요청: ${rs:-판독 실패}) — 레인 · GPU 그대로 · P2R05 워밍 안 함" \
-          "세션: 레인 저널(.cache/reinforce_auto_log.jsonl) 확인 → P2R05 GPU 창 다시 열기(gpu_chain.sh 재기동 또는 warm_cache.sh)"
-    exit 0
-  fi
-  sleep 120
-done
 
-## ② 레인 보류
-PAUSED=1      # 먼저 세운다 — 보류가 반쯤 성공한 채 끝나도 trap 이 재개를 시도한다(재개는 이미 켜져 있으면 확인만 하고 끝난다)
-if ! lane_set pause "도훈 10-18 'THGNN 끝난 뒤 레인 보류' — P2R05 GPU 창(THGNN 측정 시작 확인 뒤 · gpu_chain.sh)"; then
-  say "레인 보류 실패(20회) — 워밍하지 않고 끝"
-  alert "레인 보류 실패" "lane_hold.py pause 20회 실패 — P2R05 GPU 창을 열지 못했다(워밍 안 함)" "세션: 설정 파일 잠금 원인 확인 뒤 gpu_chain.sh 재기동"
+## ① 레인 · 임대
+say "시작(pid $$ · Windows $WINPID) — 레인 $(lane_enabled) · 임대 $(lease_json | cut -c1-120)"
+if [ "$(lane_enabled)" != "True" ]; then
+  case "$(lane_note)" in
+    *gpu_chain*) lane_set resume "P2R05 GPU 연쇄 v4 — 원 세션 방침: GPU 임대로 GPU 슬롯만 보류 · CPU 슬롯 계속(레인 전체 보류 해제)" \
+                   && say "레인 재개 확인(enabled=True)" \
+                   || alert "레인 재개 실패" "앞판 연쇄가 건 레인 보류를 풀지 못했다(20회)" "세션: python 04_Research/programs/P2_DEFENSE/P2R05_distribution_target/lane_hold.py resume '<사유>'" ;;
+    *) say "레인이 꺼져 있으나 이 연쇄가 건 보류가 아니다($(lane_note | cut -c1-80)) — 건드리지 않는다" ;;
+  esac
+fi
+if lease_take > /dev/null; then say "GPU 임대 획득(12h · 갱신하며 유지)"; else
+  alert "GPU 임대 실패" "P2R05 GPU 창 임대를 잡지 못했다($(lease_json | cut -c1-200))" "세션: 임대 보유자 확인(python 02_Infrastructure/ops/qv_lock.py lease status --json) 뒤 연쇄 재기동"
   exit 3
 fi
-say "레인 보류 확인(enabled=False)"
 
-## ③ GPU 슬롯 끝 — gpu1 claim 이 살아 있지 않음 2회 연속(폴더 없음 ∨ 소유자 사망 ∨ 표식 없는 빈 claim 10분 초과)
-dl=$(( $(date +%s) + END_WAIT_H * 3600 )); gone=0
+## ② 준비 대기 — 데이터 준비 표식 → 그 뒤 첫 갱신 완료 줄(또는 06~12시 · 잠금 없음)
+say "준비 대기 — 표식 $READY(원 세션 데이터 복구 · 재발행 끝) → 그 뒤 첫 Daily Refresh v2 Done · 마감 $(date -d @$READY_DEADLINE +%F' '%T)"
+RSEEN=0; NREADY=0; RMT=0
 while :; do
-  if claim_alive; then gone=0; else gone=$((gone + 1)); fi
-  [ "$gone" -ge 2 ] && break
-  if [ "$(date +%s)" -ge "$dl" ]; then
-    say "마감 — gpu1 작업이 ${END_WAIT_H}h 안에 끝나지 않음 · 워밍하지 않고 끝(레인 재개)"
-    alert "THGNN 끝 대기 마감(${END_WAIT_H}h)" "gpu1 작업(THGNN)이 ${END_WAIT_H}시간 안에 끝나지 않았다(요청: $(req_state)) — 레인 재개 · P2R05 워밍 안 함" "세션: THGNN 로그(scheduler_logs/replication_auto_*_gpu1.log) 확인 → P2R05 GPU 창 다시 열기"
+  lease_keep
+  if [ "$RSEEN" = "0" ] && [ -f "$READY" ]; then
+    RSEEN=1; NREADY=$(done_count); RMT=$(date -r "$READY" +%s)
+    say "데이터 준비 표식 확인($(head -c 200 "$READY" | tr '\n' ' ')) — 갱신 완료 줄 기준 $NREADY"
+  fi
+  if [ "$RSEEN" = "1" ]; then
+    n=$(done_count); hh=$((10#$(date +%H)))
+    if [ "$n" -gt "$NREADY" ]; then
+      ## 워밍(≈8h) + 측정(수 시간)이 다음 밤 00:03 갱신 전에 끝나야 같은 판본이다 — 정오 이후의 갱신 완료면 밤 갱신까지 기다린다
+      if [ "$hh" -lt 12 ]; then say "준비 뒤 갱신 완료 줄 확인($NREADY → $n)"; break; fi
+      say "갱신 완료 줄($NREADY → $n)이 정오 이후 — 워밍 · 측정이 밤 00:03 갱신을 넘는다 · 밤 갱신 완료까지 기다린다"; NREADY=$n
+    fi
+    today6=$(date -d "$(date +%F) 06:00" +%s)
+    if [ "$hh" -ge 6 ] && [ "$hh" -lt 12 ] && [ "$RMT" -lt "$today6" ] && [ ! -d "$REFRESH_LOCK" ]; then
+      say "06~12시 · 표식이 오늘 06시 전 · 리프레시 잠금 없음 — 현 배치로 진행"; break
+    fi
+  fi
+  if [ "$(date +%s)" -ge "$READY_DEADLINE" ]; then
+    say "마감 — 데이터 준비 표식 · 갱신 완료가 마감 안에 오지 않았다 · 워밍 안 함(임대 해제)"
+    alert "준비 대기 마감" "데이터 준비 표식 또는 그 뒤 갱신 완료가 마감($(date -d @$READY_DEADLINE +%F' '%T)) 안에 오지 않았다 — P2R05 워밍 안 함 · GPU 임대 해제" "세션: 원 세션 복구 상태 확인 → 표식 쓰고 연쇄 재기동"
     exit 4
   fi
   sleep 120
 done
-say "gpu1 작업 끝(claim $([ -d "$CLAIM" ] && echo '남음 · 소유자 사망' || echo '없음') · 요청 $(req_state))"
 
-## ④ 같은 데이터 배치 — 다음 갱신 완료 줄(마감 06:00 규칙)
-n0=$(grep -c "=== Daily Refresh v2 Done" "$DONE_LOG" 2>/dev/null || true); n0=${n0:-0}
-say "데이터 갱신 완료 줄 대기(현재 $n0 · 06~12시면 현 배치로 진행)"
-while :; do
-  n=$(grep -c "=== Daily Refresh v2 Done" "$DONE_LOG" 2>/dev/null || true); n=${n:-0}
-  [ "$n" -gt "$n0" ] && { say "갱신 완료 줄 확인($n0 → $n)"; break; }
-  hh=$((10#$(date +%H))); [ "$hh" -ge 6 ] && [ "$hh" -lt 12 ] && { say "06~12시 — 현 배치로 진행"; break; }
-  sleep 120
-done
+## ③ THGNN 이 아직 돌면 일시정지
+if claim_alive; then
+  say "THGNN(gpu1 · $(req_state)) 아직 실행 중 — 일시정지(도훈 J-20261018-008 P2R05 먼저): $(stop_thgnn)"
+  for k in $(seq 1 30); do claim_alive || break; sleep 20; done
+  if claim_alive; then
+    alert "THGNN 일시정지 실패" "gpu1 작업이 10분 안에 끝나지 않았다 — P2R05 워밍 안 함(임대 해제)" "세션: THGNN 프로세스 확인(작업자 bash · thgnn.py · 검증기 Rscript) 뒤 연쇄 재기동"
+    exit 6
+  fi
+  say "THGNN 멈춤 확인 · gpu1 요청: $(mark_reverify)"
+else
+  say "THGNN 은 이미 끝났다(gpu1 요청 $(req_state))"
+fi
 
-## ⑤ 워밍 → 측정
+## ④ 워밍 → 측정(임대는 단계마다 새로 잡아 12시간 상한 안에서 이어 간다)
+lease_take > /dev/null && say "임대 새로 잡음(워밍)" || say "임대 새로 잡기 실패 — 워밍 GPU 게이트가 다른 연산을 기다린다"
 GDL=$(date -d '+2 hours' +%Y-%m-%dT%H:%M)
-say "워밍 시작(warm_cache.sh --gpu-deadline=$GDL)"
-bash "$RDR/warm_cache.sh" --gpu-deadline="$GDL"; wrc=$?
+say "워밍 시작(warm_cache.sh --allow-lane-on --gpu-deadline=$GDL)"
+bash "$RDR/warm_cache.sh" --allow-lane-on --gpu-deadline="$GDL"; wrc=$?
 say "워밍 끝 rc=$wrc"
 if [ "$wrc" != "0" ]; then say "워밍 실패 — 측정하지 않는다(warm_cache.sh 가 알림 · Q 확인)"; exit 5; fi
+lease_take > /dev/null && say "임대 새로 잡음(측정)" || say "임대 새로 잡기 실패"
 bash "$RDR/notify_done.sh" > "$ROOT/.cache/scheduler_logs/p2r05_notify_done_$(date +%Y%m%d).log" 2>&1 &
 bash "$RDR/measure_now_vram.sh"; mrc=$?
 say "측정 · 평가 끝 rc=$mrc"
