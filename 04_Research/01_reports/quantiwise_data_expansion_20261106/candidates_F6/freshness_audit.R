@@ -1,0 +1,796 @@
+# freshness_audit.R — morning_briefing [5/5] freshness audit (외부화, 2026-06-13)
+# 인라인 Rscript -e 에 한글/이모지(⚠️🚨✅→) 리터럴이 들어가면 bash→Windows-R 코드페이지
+# 변환이 멀티바이트를 깨뜨려 "Execution halted"/SIGSEGV 발생. 외부 .R 파일은 UTF-8로 정상
+# read 되므로 본 블록을 파일로 분리. 호출: Rscript -e 'source(".../freshness_audit.R")'
+# 전제: morning_briefing.sh 가 cd "$BASE" 후 호출 (CWD = project root).
+
+root <- Sys.getenv("QM_ROOT", "")
+if (!nzchar(root) || !dir.exists(root)) root <- getwd()
+setwd(root)
+source("02_Infrastructure/config.R")
+suppressPackageStartupMessages({library(data.table); library(arrow); library(jsonlite)})
+
+today <- Sys.Date()
+# [2026-07-14 Q] as_of 순환성 수리 — 구현(benchmark-max 유도)은 '부분 stale'만 잡고,
+#   '전면 stale'(아침 갱신 전체 미도래)이면 as_of가 데이터와 같이 끌려 내려가 전부 FRESH 오판
+#   (07-14 실사고: 07:11 감사가 as_of=07-10으로 KTRI 전전영업일 발송을 통과시킴).
+#   기준일은 데이터가 아닌 달력에서: 주말 제외 직전 평일 후보 → trading_calendar(QW ground
+#   truth)가 후보를 커버하면 휴일 보정, 미커버면 후보 유지(보수 — 드문 평일휴일 아침 오탐은
+#   mrs '보류 알림'으로 표면화, 침묵-stale보다 낫다). 도훈 06-01 월요일 오탐 제거 목적은
+#   주말 스킵 + 달력 휴일 보정으로 유지된다.
+.prev_bd <- function(d) { t <- d - 1; while (format(t, "%u") %in% c("6", "7")) t <- t - 1; t }
+as_of <- .prev_bd(today)
+.cal <- tryCatch(as.Date(as.data.table(read_parquet(".cache/trading_calendar.parquet"))$Date),
+                 error = function(e) as.Date(character(0)))
+if (length(.cal) && max(.cal, na.rm = TRUE) >= as_of && !(as_of %in% .cal)) {
+  as_of <- max(.cal[.cal < as_of])
+}
+if (length(as_of) != 1 || is.na(as_of) || as_of > today) as_of <- today
+
+audits <- list()
+check_freshness <- function(name, path, col, max_lag_days) {
+  if (!file.exists(path)) return(list(name = name, status = "MISSING", path = path))
+  dt <- tryCatch(as.data.table(read_parquet(path)), error = function(e) NULL)
+  if (is.null(dt)) {
+    csv_try <- tryCatch(fread(path), error = function(e) NULL)
+    if (!is.null(csv_try)) dt <- csv_try
+  }
+  if (is.null(dt) || !col %in% names(dt)) return(list(name = name, status = "PARSE_FAIL", path = path))
+  last_d <- max(as.Date(dt[[col]]), na.rm = TRUE)
+  lag_d <- as.integer(as_of - last_d)
+  status <- if (lag_d <= max_lag_days) "FRESH" else "STALE"
+  list(name = name, status = status, last_date = as.character(last_d), lag_days = lag_d, max_lag = max_lag_days)
+}
+## ★2026-11-06 MSM as-of 전환(PIT-C1-MSM-PARAMS 안 A): 감사 이름 msm_daily 는 유지(소비자 mrs_regime_send 등) · 대상 = as-of 경로.
+##   msm_hybrid(월 파일)는 폐지 — 월 MSM 은 regime_signal.R 이 as-of 일별의 달력 월평균으로 만든다(파일 없음).
+audits$msm_daily       <- check_freshness("msm_daily",       ".cache/msm_asof_daily.parquet",          "Date", 3)
+audits$fred            <- check_freshness("fred",            ".cache/fred_macro.parquet",              "Date", 4)
+audits$ktri_indices    <- check_freshness("ktri_indices",    ".cache/ktri_indices.parquet",            "Date", 3)
+audits$ktri_v3_signals <- check_freshness("ktri_v3_signals", "04_Research/regime_comparison/output/ktri_v3_signals.csv", "DATE", 3)
+audits$regime_daily    <- check_freshness("regime_daily",    ".cache/unified_regime_signal_daily.parquet", "Date", 3)
+audits$benchmark       <- check_freshness("benchmark",       ".cache/benchmark.parquet",               "Date", 2)  # KOSPI200 종가
+audits$p3_forecast     <- check_freshness("p3_forecast",     "04_Research/decision_framework/bearish_forecast_v3/03_models/daily_predictions/P3_daily.parquet", "Date", 3)
+# ★역할 태그 (v10.4 2026-09-24) — p3_forecast 는 적재 원천이 아니라 **브리핑 [6a] 의 산출물**(601_daily_inference.py
+#   --model P3)이다. daily_refresh [0c] 가 이 감사를 판정으로 쓰면서, 리프레시가 고칠 수 없는 항목이 DR exit 1 로
+#   둔갑했다(09-23·09-24 — 09-22 PC 절전 · 09-23 장중 추론 행 제거로 P3 최대일이 09-18 로 복귀). 판정 제외 목록의
+#   원천은 여기 하나(JSON downstream_items) — 소비자가 다시 적지 않는다. 보고(stale_items · EDC_RESULT · 텔레그램)는 불변.
+#   선례: ensure_data_current.sh:128 DOWNSTREAM_OUTPUTS. 되돌리기: 아래 한 줄 삭제(= 전 항목 판정).
+if (is.list(audits$p3_forecast)) audits$p3_forecast$role <- "downstream"
+
+# ── 전략 소비 패널 (2026-08-30 도훈 지시로 편입) ──────────────────────────────
+#   왜 여기인가: "데이터 리프레시는 리밸런싱 스킬이 아니라 **데이터 리프레시 쪽에서
+#   관리해야 할 이슈**" — 적재(QuantiWise/DART/MCP/API)의 신선도 소유권은 이 감사기에 있다.
+#   리밸런싱은 그 데이터를 *쓰는* 쪽이고, 낡으면 여기로 넘긴다(자기가 고치지 않는다).
+#   ★그동안 이 6종이 감사 밖이었다 — 2026-08-30 실사고: QuantiWise 다운로드는 성공했는데
+#     적재가 안 돼 consensus/universe_support/investor_act 가 2026-07-24 에 한 달 정지했고,
+#     Gate A(원천 상태파일)와 Gate B(팩터DB 앵커)가 **둘 다 통과**했다. 앵커는 신선한
+#     주가 축이 채우기 때문이다. 감사 목록에 없으면 아무도 안 잰다.
+#   ★max_lag 는 소스 성격으로 재단한다 — 일간(2~3) / 월간 스냅샷(40) / 주간계열 포함(14).
+audits$rawdata          <- check_freshness("rawdata",          ".cache/RAWDATA.parquet",                    "Date", 3)   # 주가 패널(전략 종목선정·유동성)
+audits$consensus        <- check_freshness("consensus",        ".cache/consensus/eps_1y.parquet",           "Date", 10)  # 컨센서스 축(QW 적재)
+audits$investor_act     <- check_freshness("investor_act",     ".cache/investor_stock/investor_all.parquet", "Date", 10)  # 수급 축(QW 적재)
+audits$universe_support <- check_freshness("universe_support", ".cache/universe_support/us_k200.parquet",   "Date", 40)  # K200∪KQ150 월간 스냅샷
+audits$fred_wide        <- check_freshness("fred_wide",        ".cache/fred_macro_wide.parquet",            "Date", 14)  # AE 오버레이 입력(주간계열 포함)
+
+## ══════════════════════════════════════════════════════════════════════════════════════════════
+## ★출력별 감사 (F6 · 2026-11-06 · 같은 날 2차 수리) — 패널 대표 파일 1개가 아니라 **출력마다** 잰다
+##   계획 = 04_Research/01_reports/quantiwise_data_expansion_20261106/PLAN.md §3.0 F6 · §3.9
+##
+##   결함(11-06 실측): 위 패널 3종은 대표 파일 1개(eps_1y · investor_all · us_k200)의 max(Date)만 본다. 그래서
+##     ① 컨센서스 coverage · esbr · escr · op_profit_fy1 의 10-19 결손(이 4종 최신 10-16 · 나머지 8종 10-19)
+##     ② 수급 10-20~10-30(9거래일) 개인 · 기타법인 0행 · 외국인 835~841행(직전 중앙값 약 2,355행)
+##     ③ 유니버스 us_sector_lv2 의 10-30 월말 · 11-05 스냅숏 결손(나머지 7종은 있다)
+##   세 구멍이 모두 FRESH 였다. max 는 '가장 앞선 날' 하나만 말한다 — 같은 책의 다른 출력이 뒤처지거나(①③)
+##   날짜는 있는데 행이 비면(②) 안 보이고, 구멍 뒤 날짜가 채워지면 내부 구멍이 되어 영영 안 보인다.
+##   이 감사가 같은 날 처음 드러낸 구멍(위 셋과 별개): 컨센서스 9종의 2026-03-30~04-29(23거래일) 전면 결손 ·
+##     op_profit_fy1 의 09-21~10-02(8거래일) 채움 110행(직전 중앙값 약 605행 · 비율 0.18).
+##
+##   검사(출력마다): ①신선도 — 출력 자기 최신일의 lag. 문턱 = 그 패널 항목의 max_lag 를 물려받는다(값은 위 한 곳).
+##     ②최신일 채움 — 책 지평선(그 책 출력 전체의 최신일 = 마지막 적재가 닿은 날)의 행 수 / 직전 W 기대일 중앙값 < τ 이면 미달.
+##     ③구멍 — 구멍 창 [E, 책 지평선] 의 기대일 중 행 0 또는 채움 비율 < τ 인 날(②의 날도 여기 들어간다).
+##     + 파생 사본(수급 분리 4종 · wide — 팩터 DB 는 investor_wide 를 읽는다)이 원본과 같은 날까지 닿았나(07-17 113일 정체 계통).
+##     + 감사 목록 밖 출력(캐시 폴더의 미등재 parquet · 미등재 InvestorType) — 목록에 없으면 아무도 안 잰다(신선도 · UNLISTED 만 —
+##       기대 범위를 모르는 출력의 '행 없는 날'은 구멍으로 세지 않는다).
+##   출력 목록 원천: 컨센서스 12 = consensus_parser.R::CONSENSUS_METRICS · 수급 4 = incremental_update_file.R
+##     incremental_investor() 의 sheet_map · 유니버스 8 = parse_universe_support.R::UNIVERSE_SUPPORT_SHEET_META.
+##     세 정의와의 일치는 08_Tests/data/test_freshness_audit_outputs.R 가 정적 파싱으로 지킨다.
+##     qw_updatefile_registry.json(계획 §3.1)이 생기면 아래 표를 그 등록부 읽기로 바꾼다(정본 한 곳).
+##
+##   ★심각도 · 소비 경로 = report_only(보고 전용). stale_items · stale_count · EDC_RESULT 에 **싣지 않는다**.
+##     왜 판정에서 빼나 — ①ensure_data_current.sh 는 EDC_RESULT 의 항목 이름으로 리프레시를 돌릴지 정하고(하류 제외
+##       목록은 그 파일에 하드코딩 — p3_forecast 하나), daily_refresh [0c] 는 stale_items − downstream_items 를 DR_FAILED 에
+##       싣는다. ②밤 리프레시가 못 고치는 구멍이 남는다. 작업 트리(11-06 · 미커밋)의 F2 앵커(qw_refresh.ps1 Get-BookAnchor —
+##       책 B5 = 그 책 출력 전체 max 중 가장 이른 날 + 1 = min(max)+1)는 가장 뒤처진 출력의 끝 뒤만 다시 받고, F3
+##       (incremental_update_file.R — 받은 창의 날짜를 교체 · 컨센서스는 지표별)은 받은 날만 고친다. 그래서 뒤처진 출력의 꼬리 구멍(그 출력
+##       max 뒤 ~ 책 지평선)은 다음 수급 · 적재가 메우지만, 가장 뒤처진 출력의 max 보다 앞에 있는 **내부 구멍**(11-06: 컨센서스
+##       9지표 03-30~04-29 · op_profit_fy1 09-21~10-02 — 꼬리 구멍도 그 출력의 뒤 날짜가 먼저 차면 내부 구멍이 된다)은 앵커가
+##       보지 않는다. 구멍 인지 앵커는 qw_refresh.ps1 의 TODO(F2 권장안)이고 지금은 -FromOverride 수동 복구뿐이다. 못 고치는
+##       경보가 판정에 실리면 부팅마다 47분+ 전체 리프레시가 다시 돌고(10-16 R2 선례 — 고칠 수 없는 퀀티 패널 때문에 아침마다
+##       전체 리프레시 · 브리핑 약 2.5시간 지연 · EDC 의 같은 영업일 재시도 가드(3b)는 하루 1회로 줄일 뿐이다) 밤마다 DR exit 1 ·
+##       [7] 실패 서명이 된다.
+##     어디로 가나 — ①stdout '=== Output Audit' 구간(daily_refresh.log [0c] · 아침 로그) ②JSON output_audit(정본 기록 —
+##       출력별 수치 · 구멍 구간 · 책별 복구 창 시작일 · 직전 구멍 처리 carry) ③기계 줄 FA_OUTPUT_WARN(새 접두어 — EDC 는
+##       ^EDC_RESULT 만 읽는다) ④텔레그램 — 발송 허용 실행(QVEST_FRESHNESS_QUIET≠1: mrs_daily_briefing · EDC 사후 감사)에서
+##       **경보 서명이 바뀔 때만** 1통(새 구멍 · 변경 · 해소). 같은 구멍이 이어지는 동안은 무음이다. 서명 = 정렬된 {출력:사유} ·
+##       구멍은 구간 시작일로 적는다 — lag · 일수 · 구간 끝 같은 날마다 움직이는 값을 빼야 같은 원인이 매일 '새 경보'가 되지
+##       않는다(dr_fail_signature.R 선례 · 하루 경과 시험 = 시험 D축). 상태 = .cache/freshness_output_warn_state.json(서명 +
+##       구멍 기록 runs) · 서명은 발송 ok 뒤에만 커밋(발송 실패 · QUIET 실행이 신규 경보를 먹지 않게) · 서명이 그대로면 runs
+##       (구멍 끝 · 기준선)만 고쳐 쓴다(아래 재측정 범위). 본문 = 4,096자 상한 안(넘는 줄은 생략 표기 · 전문은 JSON).
+##     ★운영 영향 — 밤 체인([1pre-qw] F2 앵커 수급 → [0b'] F3 교체 적재)이나 원래 세션의 복구 적재가 꼬리 구멍을 메우면
+##       서명이 바뀌어 다음 발송 허용 실행이 '변경'(남은 구멍이 있으면) 또는 '해소' 1통을 보낸다 — 측정이 바뀐 것이고 정상 동작이다.
+##       11-06 상태에서 복구 적재(수급 B5=20261020 · 유니버스 B5=20261030 · 컨센서스 10-20~11-05)가 끝나면 수급 · 유니버스 구멍과
+##       컨센서스 STALE 은 풀리고 컨센서스 내부 구멍(03-30~04-29 · op_profit_fy1 09-21~10-02 · 4지표 10-19)은 남을 것으로 본다
+##       (추정 — 적재 뒤 실측으로 확인). 발송 허용 실행이 처음 돌 때는 상태가 없어 '새 경보' 1통이다.
+##     승격 조건 — 구멍 인지 앵커(F2 권장안)가 들어와 밤 리프레시가 창 안 내부 구멍까지 다시 받게 되면 판정 역할로 올린다
+##       (EDC _actionable · [0c] 판독기와 함께 바꾼다). min(max)+1 앵커 · 받은 창 교체만으로는 아니다(내부 구멍이 남는다).
+##     role = "report_only" 는 위 audits 항목에도 쓴다(계획 §3.9 — 소비자가 생기기 전의 새 데이터 패널): 보고 줄 · JSON 은
+##       그대로, stale_items · EDC 에서 빠지고 이 출력별 경보 집합으로 온다.
+##       (downstream 과 다르다 — downstream 은 stale_items 에 남고 소비자가 downstream_items 로 걸러낸다.)
+##
+##   ★측정 불가는 해소가 아니다(2차 수리 · 독립 검증 지적) — 직전 통지 서명의 구멍(HOLE) 중 이번 실행의 창 안 측정이 답하지
+##     않은 것은 서명에서 조용히 빼지 않는다. 그런 경우 = 증분 구간 판별 불가(달력 source 열 없음 · 전 구간 base → E = NA) ·
+##     달력 판독 실패 · 출력 판독 실패 · OHLCVS base 재수출로 E 가 뒤로 가 구멍이 창 밖으로 나감 · 책 지평선이 앞으로 당겨짐.
+##     ①재측정 — 달력과 그 출력을 읽을 수 있으면 그 구멍의 날짜(기록된 시작~끝 · 창 시작 앞까지)를 직접 다시 잰다: 0행 또는
+##       기록된 기준선 대비 τ 미만인 날이 남으면 유지(kept_outside · 토큰 그대로), 다 차면 해소(resolved_outside — 실측 해소라
+##       통지한다). 창 밖 구간은 하위 구간으로 다시 쪼개지 않는다(일부만 차도 토큰 그대로 · 다 차야 해소).
+##     ②이월 — 못 재면(달력 · 출력 판독 실패 · 기록 없는 토큰) 토큰을 그대로 남긴다(carried).
+##     ③창 첫날에서 시작한 창 안 구간은 왼쪽이 잘린 구간이다 — 같은 출력에 창 밖 유지 구간(시작 < E)이 있으면 그 이어짐으로
+##       보고 새 토큰을 만들지 않는다(base 재수출이 구멍 한가운데를 자를 때 '변경' 오발송 방지).
+##     ④감사 목록에서 빠진 출력의 토큰은 범위 밖(dropped · out_of_scope)으로 기록하고 서명에서 뺀다(통지에 '해소 확인 아님' 명시).
+##     기록 = JSON output_audit.carry · FA_OUTPUT_WARN carried= · 로그 '직전 구멍' 줄. 한계 — 창 밖에서 새로 생긴 구멍은 못
+##     본다(책별 base 끝 기록이 없어 창 시작이 OHLCVS 달력 하나다 — 등록부 §3.1 의 책별 E 가 정본 해법).
+## ══════════════════════════════════════════════════════════════════════════════════════════════
+
+## τ — 채움 문턱(그날 행 수 / 직전 W 기대일 중앙값). 근거:
+##   ① 뜻 — 평소 단면의 과반이 빠진 날. 기준선이 중앙값이라 '과반 결손'이 중앙값 붕괴점(50%)과 같은 눈금이다.
+##   ② 실측(11-06 · 기준선 = 직전 20 기대일 중앙값) — 컨센서스 12 · 수급 4 의 2025-03-27~2026-11-05 정상일 최저 0.825(수급
+##      OtherCorp 2025-08-26) · 증분 구간 정상일 최저 0.856(수급 Institutional 2026-07-20) · 유니버스 8 증분 스냅숏 0.993~1.0 /
+##      적재 결손 0.354~0.357(외국인 10-20~10-30) · 0.181~0.185(op_profit_fy1 09-21~10-02) · 0행. 문턱 양쪽 여유가 크다.
+##   ③ '항목 이력의 하위 분위'안은 실측으로 기각했다 — 증분 직전 1년(전 기간 재내보내기라 적재 결손이 없는 구간)의 최저
+##      비율을 문턱으로 쓰면 증분 구간 정상일이 수급 3종에서 18~24일씩 걸렸다(외국인 24 · 개인 23 = 증분 첫 달 04월
+##      0.968~0.99 · 기관 18 = 07월 0.856~0.895). 그 1년이 증분 구간의 정상 변동을 대표하지 못한다. Tukey 울타리(Q1-3·IQR)는
+##      계단형 계열(sue · escr · esbr — 분기마다만 움직인다)에서 IQR=0 이라 문턱이 1.0 으로 퇴화했고(11일씩 걸림), 유니버스
+##      base 는 날마다 6,383행 고정이라 비율이 늘 1 이다.
+##   ④ 여유 감시 — 출력마다 min_ok_ratio(문턱 위 정상일의 최저 비율)를 JSON 에 싣는다. 이 값이 τ 쪽으로 내려오면 문턱을 다시 본다.
+.FA_FILL_MIN <- 0.5
+## 기준선 최소 표본 — 중앙값이 이상치 1개를 견디는 최소 표본(3개 중 1개가 결손이어도 중앙값은 정상값).
+##   미달(창 첫머리 · 새 출력)이면 채움 비율을 재지 않는다(0행 판정만 한다).
+.FA_BASE_MIN_N <- 3L
+.FA_WARN_STATE <- ".cache/freshness_output_warn_state.json"
+## 텔레그램 본문 상한 — Bot API sendMessage 'text: 1-4096 characters after entities parsing'(https://core.telegram.org/bots/api#sendmessage).
+##   셈 = UTF-16 코드 단위(비BMP 이모지 = 2 — 서버 셈법을 확인하지 못해 보수 쪽). 저장소 선례: telegram_notify.R tg_agent_brief §4
+##   '4096자 한계' · 2026-09-05 도훈 '압축판을 만들지 말고 4096자 제한에 맞추라'. 넘으면 HTTP 400 → 서명 미커밋 → 발송 허용
+##   실행마다 재시도 · telegram_send_failures.jsonl live 누적(Superfan fail 규칙)이라, 넘는 본문 줄은 생략 표기로 자른다.
+.FA_TG_MAX <- 4096L
+## 본문 경보 줄 상한(가독 · 1차 판 값) — 11-06 실데이터 경보 16건이 한 통에 다 드는 값. 넘는 출력은 '외 N건' 1줄 · 전문은 JSON.
+.FA_TG_LINES <- 20L
+## 책 표 — kind: daily = 거래일마다 행이 있어야 한다 / snapshot = 월말 거래일 + 수급 시점 스냅숏(유니버스).
+.FA_BOOKS <- list(
+  list(panel = "consensus", book = "Consensus", kind = "daily", dir = ".cache/consensus", file_fmt = "%s.parquet",
+       outputs = c("eps_1y", "bps_1y", "dps_1y", "eps_chg_1m", "eps_chg_3m", "target_price", "sue",
+                   "revenue_fy1", "escr", "esbr", "coverage", "op_profit_fy1"),
+       ignore = "ticker_map.parquet"),                    # 종목명 표(Date 없음 · 적재기가 합집합으로 갱신)
+  list(panel = "investor_act", book = "Investor_Act", kind = "daily", dir = ".cache/investor_stock",
+       path = ".cache/investor_stock/investor_all.parquet", group_col = "InvestorType",
+       outputs = c("Foreign", "Institutional", "Individual", "OtherCorp"),
+       derived_fmt = "investor_%s.parquet", derived_extra = "investor_wide.parquet"),   # 적재기 파생 재생성 이름 그대로
+  list(panel = "universe_support", book = "Universe_Support", kind = "snapshot", dir = ".cache/universe_support",
+       file_fmt = "us_%s.parquet",
+       outputs = c("sector_lv1", "sector_lv2", "float", "k200", "kq150", "trading_halt", "admin_stock", "unfaithful_disc"))
+)
+
+## 날짜 열을 from 이후만 읽는다 — 행 그룹 통계로 건너뛴다(수급 3,200만 행 전체를 읽지 않는다 · 실측 0.09초 vs 전량 1.06초).
+##   데이터셋 스캐너는 mmap 을 쓰지 않는다(적재기의 tmp→rename 교체를 막지 않는다). 필터가 안 붙으면(열 타입 불일치 등)
+##   열만 읽어 R 에서 거른다. 실패 = NULL — 호출자가 PARSE_FAIL 로 적는다(판독 실패를 '구멍 없음'으로 접지 않는다).
+.fa_scan <- function(path, cols, from = NULL, group_col = NULL, group = NULL) {
+  dt <- tryCatch({
+    ds <- arrow::open_dataset(path, format = "parquet")
+    sb <- arrow::ScannerBuilder$create(ds)
+    invisible(sb$Project(cols))
+    e <- NULL
+    if (!is.null(from)) {
+      lit <- arrow::Scalar$create(as.Date(from))
+      ft <- ds$schema$GetFieldByName("Date")$type
+      if (!lit$type$Equals(ft)) lit <- lit$cast(ft)
+      e <- arrow::Expression$field_ref("Date") >= arrow::Expression$scalar(lit)
+    }
+    if (!is.null(group)) {
+      eg <- arrow::Expression$field_ref(group_col) == arrow::Expression$scalar(group)
+      e <- if (is.null(e)) eg else e & eg
+    }
+    if (!is.null(e)) invisible(sb$Filter(e))
+    as.data.table(as.data.frame(sb$Finish()$ToTable()))
+  }, error = function(e) NULL)
+  if (is.null(dt)) {
+    dt <- tryCatch(as.data.table(arrow::read_parquet(path, col_select = tidyselect::all_of(cols), mmap = FALSE)),
+                   error = function(e) NULL)
+    if (is.null(dt) || !"Date" %in% names(dt)) return(NULL)
+    dt[, Date := as.Date(Date)]
+    if (!is.null(from)) dt <- dt[Date >= as.Date(from)]
+    if (!is.null(group)) dt <- dt[dt[[group_col]] == group]
+    return(dt)
+  }
+  dt[, Date := as.Date(Date)]
+  dt
+}
+.fa_last_date <- function(path, group_col = NULL, group = NULL) {   # 창 안에 행이 없을 때만(드묾) — 전 기간 최신일
+  d <- .fa_scan(path, c("Date", group_col), group_col = group_col, group = group)
+  if (is.null(d) || !nrow(d)) as.Date(NA) else max(d$Date)
+}
+
+## E(구멍 창 시작) — 달력 source 가 base 라벨(가장 이른 날의 라벨)인 마지막 날의 다음 거래일 = 증분 구간 첫날.
+##   L(창 길이) = E ~ as_of 의 거래일 수(11-06 = 2026-03-30~ · 149거래일). 근거: 적재 구멍은 증분 적재(Update_File)에서만
+##   생긴다 — base 는 전 기간 재파싱이라 구멍을 만들지 않는다. 창을 '최근 N일'로 자르면 고치지 않은 구멍이 N일 뒤 경보에서
+##   조용히 사라진다(해소와 노화가 같은 모양) — 그래서 창은 base 를 다시 내보낼 때만 줄어든다.
+##   한계: OHLCVS base 만 다시 내보내면 E 가 뒤로 가서 다른 책의 그 사이 구멍이 창 밖으로 나간다(책별 base 끝 기록이 아직
+##   없다 — 등록부가 생기면 책별 E 로). 이미 통지한 구멍은 창 밖에서 다시 잰다(위 '측정 불가는 해소가 아니다'). source 열이
+##   없거나 전 구간이 base 면 E = NA → 창 안 구멍 · 채움 판정은 미측정(신선도 · 직전 구멍 재측정 · 이월만).
+.fa_increment_start <- function(cal) {
+  if (is.null(cal) || !nrow(cal) || !all(c("Date", "source") %in% names(cal))) return(as.Date(NA))
+  d <- as.Date(cal$Date); s <- as.character(cal$source); o <- order(d); d <- d[o]; s <- s[o]
+  nx <- d[d > max(d[s %in% s[1]])]
+  if (length(nx)) min(nx) else as.Date(NA)
+}
+## W(기준선 길이) — 직전 12개 완결 월의 월별 거래일 수 중앙값(달력에서 산출 · 11-06 = 20). 근거: 한 달 = 컨센서스 개정 ·
+##   수급 월 주기 1회분이고, 중앙값 기준선은 연속 미달이 W/2 미만이면 오염되지 않는다(관측 최장 연속 부분 채움 = 9거래일 ·
+##   외국인 10-20~10-30). 0행 날은 기준선에서 뺀다(구멍 그 자체라서 — 관측 최장 연속 0행 = 23거래일 · 컨센서스 03-30~04-29).
+.fa_window_W <- function(cal_dates, as_of) {
+  ym <- format(cal_dates, "%Y-%m")
+  m <- table(ym[ym < format(as_of, "%Y-%m")])
+  if (!length(m)) return(NA_integer_)
+  as.integer(round(stats::median(utils::tail(as.integer(m), 12L))))
+}
+## 기대일 — daily: 창 [E, 지평선] 의 거래일. snapshot: 그 구간의 월말 거래일(달력이 아직 안 끝난 마지막 달은 뺀다 — 달력
+##   마지막 날을 월말로 오인하지 않게) ∪ 책 날짜(그 책 출력 어느 하나에라도 있는 날 — 같은 책은 한 번에 받으므로 한 출력에
+##   있는 날은 모두에 있어야 한다). 창 밖 재측정도 같은 함수에 [구멍 시작, 끝] 을 넘겨 쓴다.
+.fa_expected <- function(kind, cal_dates, E, horizon, book_dates) {
+  if (is.na(E) || is.na(horizon) || !length(cal_dates)) return(as.Date(character(0)))
+  if (identical(kind, "daily")) return(sort(unique(cal_dates[cal_dates >= E & cal_dates <= horizon])))
+  ym <- format(cal_dates, "%Y-%m"); done <- ym < max(ym)
+  me <- as.Date(vapply(split(as.numeric(cal_dates[done]), ym[done]), max, numeric(1)))
+  bd <- book_dates[book_dates >= E & book_dates <= horizon]
+  sort(unique(c(me[me >= E & me <= horizon], bd)))
+}
+## 한 출력의 판정 — 기대일마다 행 수(없으면 0) → 기준선 = 그날 앞 W 개 양수 기대일의 중앙값(창 안만 — base 와 증분은 행
+##   구조가 다르다: 유니버스 base 6,383행/일 = 상장폐지 포함 전 종목 · 증분 약 2,470행) → 미달 = 0행 또는 비율 < τ → 연속 구간.
+##   구간 기록: base = 구간 안 기준선의 최댓값(창 밖 재측정이 쓴다 · 기준선이 없던 구간 = NA → 0행 판정만) ·
+##   cont = 창 밖 유지 구간의 이어짐(아래 .fa_carry_book 이 정한다 · 서명에 토큰을 만들지 않는다).
+.fa_eval <- function(exp_dates, cnt, W, tau = .FA_FILL_MIN, kmin = .FA_BASE_MIN_N) {
+  n <- as.integer(cnt$N[match(exp_dates, cnt$Date)]); n[is.na(n)] <- 0L
+  base <- rep(NA_real_, length(n)); pos <- integer(0)
+  for (i in seq_along(n)) {
+    if (!is.na(W) && length(pos) >= kmin) base[i] <- stats::median(n[utils::tail(pos, W)])
+    if (n[i] > 0L) pos <- c(pos, i)
+  }
+  ratio <- ifelse(is.na(base) | base <= 0, NA_real_, n / base)
+  bad <- n == 0L | (!is.na(ratio) & ratio < tau)
+  runs <- data.frame(from = character(0), to = character(0), days = integer(0), kind = character(0),
+                     min_ratio = numeric(0), base = numeric(0), cont = logical(0), stringsAsFactors = FALSE)
+  if (any(bad)) {
+    r <- rle(bad); e <- cumsum(r$lengths); s <- e - r$lengths + 1L
+    runs <- do.call(rbind, lapply(which(r$values), function(j) {
+      ii <- s[j]:e[j]; z <- n[ii] == 0L; bb <- base[ii][!is.na(base[ii])]
+      data.frame(from = as.character(exp_dates[s[j]]), to = as.character(exp_dates[e[j]]), days = length(ii),
+                 kind = if (all(z)) "zero" else if (!any(z)) "partial" else "mixed",
+                 min_ratio = if (all(z)) 0 else round(min(ratio[ii][!z]), 3),
+                 base = if (length(bb)) max(bb) else NA_real_, cont = FALSE, stringsAsFactors = FALSE)
+    }))
+  }
+  ok <- ratio[!bad & !is.na(ratio)]
+  list(n = n, base = base, ratio = ratio, bad = bad, runs = runs, min_ok_ratio = if (length(ok)) round(min(ok), 3) else NA_real_)
+}
+.fa_nz <- function(x) if (is.null(x) || length(x) != 1L || is.na(x)) NULL else x   # JSON — NA 를 null 로(jsonlite 는 정수 NA 를 "NA" 로 쓴다)
+
+## 직전 통지 상태 — 읽기만(QUIET 실행도 읽는다 · 쓰기는 .fa_notify 만). 없음 · 깨짐 = NULL(이월할 것 없음 → 다음 발송 = '새 경보').
+.fa_state_read <- function(path = .FA_WARN_STATE) {
+  if (!file.exists(path)) return(NULL)
+  st <- tryCatch(jsonlite::fromJSON(path, simplifyVector = TRUE), error = function(e) NULL)
+  if (!is.list(st)) return(NULL)
+  st$signature <- if (is.character(st$signature) && length(st$signature) == 1L && !is.na(st$signature)) st$signature else ""
+  if (!is.data.frame(st$runs)) st$runs <- NULL
+  st
+}
+## 직전 통지 서명의 구멍 토큰 → 구간 표(토큰 · 출력 · 시작 · 끝 · 기준선). 끝 · 기준선은 상태의 runs 기록에서 온다
+##   (기록 없는 토큰 = norec — 재측정 범위를 몰라 이월만 한다).
+.fa_prev_runs <- function(st) {
+  sig <- if (is.list(st) && is.character(st$signature) && length(st$signature) == 1L && !is.na(st$signature)) st$signature else ""
+  if (!nzchar(sig)) return(NULL)
+  tok <- strsplit(sig, " ", fixed = TRUE)[[1]]
+  tok <- tok[grepl(":HOLE@", tok, fixed = TRUE)]
+  if (!length(tok)) return(NULL)
+  pr <- data.frame(token = tok, name = sub(":HOLE@.*$", "", tok), from = sub("^.*:HOLE@", "", tok),
+                   to = NA_character_, base = NA_real_, norec = TRUE, stringsAsFactors = FALSE)
+  rr <- st$runs
+  if (is.data.frame(rr) && nrow(rr) && all(c("token", "to") %in% names(rr))) {
+    m <- match(pr$token, as.character(rr$token)); ok <- !is.na(m)
+    pr$to[ok] <- as.character(rr$to[m[ok]])
+    if ("base" %in% names(rr)) pr$base[ok] <- suppressWarnings(as.numeric(rr$base[m[ok]]))
+    pr$norec[ok] <- FALSE
+  }
+  pr
+}
+
+## 책 하나 — 출력별 행 수 · 지평선 · 기대일 · 출력별 판정 · 파생 사본 · 미등재 출력 · 직전 구멍 재측정/이월.
+.fa_book <- function(bk, cal_dates, E, W, as_of, max_lag, prev = NULL) {
+  from <- if (!is.na(E)) E else as_of - (if (is.na(max_lag)) 0L else max_lag)
+  nm <- function(x) paste0(bk$panel, ".", x)
+  pv <- if (is.data.frame(prev) && nrow(prev)) prev[startsWith(prev$name, paste0(bk$panel, ".")), , drop = FALSE] else NULL
+  if (!is.null(pv) && !nrow(pv)) pv <- NULL
+  ## 직전 구멍이 창 밖에 있으면 그 시작일부터 읽는다(재측정용) — 창 안 판정은 아래에서 [E, 지평선] 기대일만 쓴다
+  scan_from <- from
+  if (length(cal_dates) && !is.null(pv)) {
+    d0 <- as.Date(pv$from, format = "%Y-%m-%d"); d0 <- d0[!is.na(d0)]
+    if (length(d0)) scan_from <- min(scan_from, d0)
+  }
+  items <- list(); cnts <- list(); paths <- list(); grp <- list()
+  stub <- function(name, path, status, ...) list(name = name, panel = bk$panel, path = path, status = status,
+                                                  verdict = "WARN", ...)
+  if (!is.null(bk$group_col)) {
+    dt <- if (file.exists(bk$path)) .fa_scan(bk$path, c("Date", bk$group_col), from = scan_from) else NULL
+    if (is.null(dt)) {
+      for (g in bk$outputs) items[[nm(g)]] <- stub(nm(g), bk$path, if (file.exists(bk$path)) "PARSE_FAIL" else "MISSING", group = g)
+    } else {
+      cnt <- dt[, .N, by = list(Date, G = as.character(get(bk$group_col)))]
+      for (g in union(bk$outputs, sort(unique(cnt$G)))) {          # 미등재 유형도 잰다(신선도 · UNLISTED — 구멍은 아래에서 뺀다)
+        cnts[[nm(g)]] <- cnt[cnt$G == g, list(Date, N)]; paths[[nm(g)]] <- bk$path; grp[[nm(g)]] <- g
+      }
+    }
+  } else {
+    for (o in bk$outputs) {
+      p <- file.path(bk$dir, sprintf(bk$file_fmt, o))
+      if (!file.exists(p)) { items[[nm(o)]] <- stub(nm(o), p, "MISSING"); next }
+      dt <- .fa_scan(p, "Date", from = scan_from)
+      if (is.null(dt)) { items[[nm(o)]] <- stub(nm(o), p, "PARSE_FAIL"); next }
+      cnts[[nm(o)]] <- dt[, .N, by = Date]; paths[[nm(o)]] <- p
+    }
+  }
+  allD <- as.Date(unlist(lapply(cnts, function(x) as.numeric(x$Date))))
+  hz <- if (length(allD)) max(allD) else as.Date(NA)
+  ex <- .fa_expected(bk$kind, cal_dates, E, hz, unique(allD))
+  holes_all <- as.Date(character(0))
+  for (k in names(cnts)) {
+    cn <- cnts[[k]]
+    unl <- !is.null(bk$group_col) && !grp[[k]] %in% bk$outputs
+    last <- if (nrow(cn)) max(cn$Date) else .fa_last_date(paths[[k]], bk$group_col, grp[[k]])
+    lag <- if (is.na(last)) NA_integer_ else as.integer(as_of - last)
+    st <- if (is.na(last)) "MISSING" else if (is.na(max_lag) || lag <= max_lag) "FRESH" else "STALE"
+    ## 목록 밖 유형은 구멍 · 채움을 재지 않는다 — 기대 범위를 모르는 출력의 '행 없는 날'은 구멍이 아니다(UNLISTED 경보만 ·
+    ##   책 복구 창 repair_from 에도 안 들어간다 · 독립 검증 지적 4)
+    ev <- if (length(ex) && !unl) .fa_eval(ex, cn, W) else NULL
+    j <- length(ex)
+    fl <- if (is.null(ev)) NULL else list(date = as.character(ex[j]), n = ev$n[j], base = .fa_nz(ev$base[j]),
+                                          ratio = .fa_nz(round(ev$ratio[j], 3)),
+                                          ok = if (ev$bad[j]) FALSE else if (is.na(ev$ratio[j])) NULL else TRUE)
+    if (!is.null(ev)) holes_all <- c(holes_all, ex[ev$bad])
+    items[[k]] <- list(name = k, panel = bk$panel, path = paths[[k]], group = grp[[k]], status = st,
+                       last_date = .fa_nz(as.character(last)), lag_days = .fa_nz(lag), max_lag = .fa_nz(max_lag),
+                       horizon = .fa_nz(as.character(hz)), fill_latest = fl, holes_measured = !is.null(ev),
+                       holes_n = if (is.null(ev)) NULL else sum(ev$bad), holes = if (is.null(ev)) list() else ev$runs,
+                       min_ok_ratio = if (is.null(ev)) NULL else .fa_nz(ev$min_ok_ratio),
+                       unlisted = if (unl) TRUE else NULL,
+                       verdict = if (st != "FRESH" || unl || (!is.null(ev) && any(ev$bad))) "WARN" else "OK")
+  }
+  dfiles <- character(0)
+  if (!is.null(bk$derived_fmt)) {
+    ## 파생 사본 — 원본과 같은 날까지 닿았나(재생성 실패 = 07-17 113일 정체 계통). 기준일: 유형 분리 파일 = 원본에서 그
+    ##   유형의 최신일(분리 파일은 그 유형 행만 담는다 — 유형 구멍이 분리 파일 끝을 당기는 것은 재생성 실패가 아니다) ·
+    ##   wide = 책 지평선. 신선도 · 구멍은 원본 출력이 이미 잰다(같은 사실을 두 번 경보하지 않는다).
+    dref <- c(stats::setNames(lapply(bk$outputs, function(g) items[[nm(g)]]$last_date %||% NA_character_),
+                              sprintf(bk$derived_fmt, tolower(bk$outputs))),
+              stats::setNames(list(as.character(hz)), bk$derived_extra))
+    dfiles <- names(dref)
+    for (f in dfiles) {
+      p <- file.path(bk$dir, f); k <- nm(paste0("derived_", sub("^investor_", "", sub("[.]parquet$", "", f))))
+      if (!file.exists(p)) { items[[k]] <- stub(k, p, "MISSING", kind = "derived"); next }
+      d <- .fa_scan(p, "Date", from = from)
+      if (is.null(d)) { items[[k]] <- stub(k, p, "PARSE_FAIL", kind = "derived"); next }
+      last <- if (nrow(d)) max(d$Date) else .fa_last_date(p)
+      ref <- as.Date(dref[[f]])
+      st <- if (is.na(last)) "MISSING" else if (!is.na(ref) && last < ref) "BEHIND" else "SYNCED"
+      items[[k]] <- list(name = k, panel = bk$panel, path = p, kind = "derived", status = st,
+                         last_date = .fa_nz(as.character(last)), ref_date = .fa_nz(as.character(ref)),
+                         lag_days = .fa_nz(if (is.na(last)) NA_integer_ else as.integer(as_of - last)), max_lag = .fa_nz(max_lag),
+                         verdict = if (st == "SYNCED") "OK" else "WARN")
+    }
+  }
+  known <- if (!is.null(bk$group_col)) c(basename(bk$path), dfiles) else c(sprintf(bk$file_fmt, bk$outputs), bk$ignore)
+  for (f in setdiff(list.files(bk$dir, pattern = "[.]parquet$"), known)) {
+    k <- nm(sub("[.]parquet$", "", f))
+    items[[k]] <- stub(k, file.path(bk$dir, f), "UNLISTED", unlisted = TRUE)
+  }
+  ca <- .fa_carry_book(pv, items, cnts, bk$kind, cal_dates, E, hz, allD, if (length(ex)) ex[1] else as.Date(NA))
+  items <- ca$items
+  ## 복구 창 시작 = 창 안 구멍 ∪ 창 밖 유지 · 이월 구멍의 가장 이른 날(목록 밖 유형은 위에서 빠졌다)
+  kf <- unlist(lapply(items, function(x) if (is.data.frame(x$holes_kept) && nrow(x$holes_kept)) x$holes_kept$from else NULL),
+               use.names = FALSE)
+  rf_all <- c(holes_all, if (length(kf)) as.Date(kf, format = "%Y-%m-%d") else as.Date(character(0)))
+  rf_all <- rf_all[!is.na(rf_all)]
+  rf <- if (length(rf_all)) min(rf_all) else as.Date(NA)
+  list(items = items, carry = ca$carry,
+       book = list(book = bk$book, kind = bk$kind, horizon = .fa_nz(as.character(hz)), expected_n = length(ex),
+                   repair_from = .fa_nz(as.character(rf)),
+                   repair_hint = if (is.na(rf)) NULL else sprintf("qw_refresh.ps1 -Only %s -FromOverride %s=%s",
+                                                                  bk$book, bk$book, format(rf, "%Y%m%d"))))
+}
+
+## 직전 통지 구멍 중 이번 창 안 측정이 답하지 않은 것 — 재측정(가능하면) · 이월(못 재면) · 범위 밖(목록에서 빠짐).
+##   위 F6 머리말 '측정 불가는 해소가 아니다'. 반환: items(유지분을 holes_kept 로 단 판) · carry(토큰별 처리 기록).
+##   ex1 = 이 책 창 안 첫 기대일(창 첫날에서 시작한 구간 = 왼쪽이 잘린 구간 판별).
+.fa_carry_book <- function(pv, items, cnts, kind, cal_dates, E, hz, allD, ex1) {
+  if (is.null(pv) || !nrow(pv)) return(list(items = items, carry = NULL))
+  rows <- list()
+  for (i in seq_len(nrow(pv))) {
+    r <- pv[i, , drop = FALSE]; k <- r$name; x <- items[[k]]
+    d0 <- as.Date(r$from, format = "%Y-%m-%d"); d1 <- as.Date(r$to, format = "%Y-%m-%d")
+    if (is.na(d1) || (!is.na(d0) && d1 < d0)) d1 <- d0
+    st <- NA_character_; why <- NA_character_
+    if (is.null(x)) { st <- "dropped"; why <- "out_of_scope" }
+    else if (is.na(d0)) { st <- "dropped"; why <- "invalid_token" }
+    else if (isTRUE(x$holes_measured) && !is.na(E) && !is.na(hz) && d0 >= E && d0 <= hz) next
+    else if (!length(cal_dates)) { st <- "carried"; why <- "calendar_unreadable" }
+    else if (is.null(cnts[[k]])) { st <- "carried"; why <- "output_unreadable" }
+    else if (isTRUE(r$norec)) { st <- "carried"; why <- "no_run_record" }
+    else {
+      why <- if (is.na(E)) "window_unknown" else if (d0 < E) "before_window" else "after_horizon"
+      pre <- if (is.na(E)) as.Date(character(0)) else cal_dates[cal_dates < E]
+      hi <- if (!is.na(E) && d0 < E) (if (length(pre)) min(d1, max(pre)) else d0) else d1
+      dd <- .fa_expected(kind, cal_dates, d0, hi, unique(allD))
+      if (!length(dd)) {
+        st <- "carried"
+      } else {
+        cn <- cnts[[k]]; n <- as.integer(cn$N[match(dd, cn$Date)]); n[is.na(n)] <- 0L
+        b <- suppressWarnings(as.numeric(r$base))
+        bad <- n == 0L | (!is.na(b) & b > 0 & n / b < .FA_FILL_MIN)
+        st <- if (any(bad)) "kept_outside" else "resolved_outside"
+      }
+    }
+    rows[[length(rows) + 1L]] <- data.frame(token = r$token, name = k, from = r$from, to = as.character(d1),
+                                            base = suppressWarnings(as.numeric(r$base)), status = st, reason = why,
+                                            stringsAsFactors = FALSE)
+  }
+  if (!length(rows)) return(list(items = items, carry = NULL))
+  cr <- do.call(rbind, rows)
+  kc <- cr[cr$status %in% c("kept_outside", "carried"), , drop = FALSE]
+  for (k in unique(kc$name)) {
+    x <- items[[k]]
+    kk <- kc[kc$name == k, c("token", "from", "to", "base", "status", "reason"), drop = FALSE]
+    h <- x$holes
+    if (!is.na(E) && !is.na(ex1) && is.data.frame(h) && nrow(h) && any(as.Date(kk$from) < E)) {
+      cj <- h$from == as.character(ex1)
+      if (any(cj)) { h$cont <- cj; x$holes <- h }
+    }
+    x$holes_kept <- kk
+    x$verdict <- "WARN"
+    items[[k]] <- x
+  }
+  list(items = items, carry = cr)
+}
+
+## 경보 서명 — 정렬된 {출력:사유}. 구멍은 구간 시작일(HOLE@시작일)로 적는다: 같은 구간이 길어져도 서명은 그대로다.
+##   창 밖 유지 · 이월 구멍은 직전 토큰 그대로 싣고, 그 이어짐(cont)인 창 안 구간은 따로 싣지 않는다.
+.fa_signature <- function(items) {
+  tok <- unlist(lapply(items, function(x) {
+    if (!identical(x$verdict, "WARN")) return(NULL)
+    t <- character(0)
+    if (!x$status %in% c("FRESH", "SYNCED")) t <- c(t, paste0(x$name, ":", x$status))
+    if (isTRUE(x$unlisted)) t <- c(t, paste0(x$name, ":UNLISTED"))
+    h <- x$holes
+    if (is.data.frame(h) && nrow(h) && "cont" %in% names(h)) h <- h[!h$cont, , drop = FALSE]
+    if (is.data.frame(h) && nrow(h)) t <- c(t, paste0(x$name, ":HOLE@", h$from))
+    if (is.data.frame(x$holes_kept) && nrow(x$holes_kept)) t <- c(t, x$holes_kept$token)
+    t
+  }), use.names = FALSE)
+  paste(sort(unique(tok)), collapse = " ")
+}
+## 구멍 기록(상태 runs) — 서명의 구멍 토큰마다 끝 · 기준선. 창 밖 재측정이 이 끝까지 잰다. 이어진 창 안 구간이 있으면
+##   창 밖 유지 구간의 끝을 그 끝까지 늘려 적는다(다음 창 이동 뒤에도 같은 구간 전체를 다시 재게).
+.fa_runs <- function(items, E) {
+  rr <- lapply(items, function(x) {
+    h <- x$holes; k <- x$holes_kept; out <- list()
+    if (is.data.frame(h) && nrow(h)) {
+      hh <- if ("cont" %in% names(h)) h[!h$cont, , drop = FALSE] else h
+      if (nrow(hh)) out[[1]] <- data.frame(token = paste0(x$name, ":HOLE@", hh$from), from = hh$from, to = hh$to,
+                                           base = if ("base" %in% names(hh)) hh$base else NA_real_, stringsAsFactors = FALSE)
+    }
+    if (is.data.frame(k) && nrow(k)) {
+      kt <- as.character(k$to)
+      if (!is.na(E) && is.data.frame(h) && nrow(h) && "cont" %in% names(h) && any(h$cont)) {
+        j <- which(as.Date(k$from) < E)
+        if (length(j)) {
+          j <- j[which.max(as.Date(k$from[j]))]
+          kt[j] <- as.character(max(as.Date(c(kt[j], h$to[h$cont]))))
+        }
+      }
+      out[[length(out) + 1L]] <- data.frame(token = k$token, from = k$from, to = kt, base = k$base, stringsAsFactors = FALSE)
+    }
+    if (length(out)) do.call(rbind, out) else NULL
+  })
+  rr <- rr[!vapply(rr, is.null, logical(1))]
+  if (!length(rr)) return(data.frame(token = character(0), from = character(0), to = character(0), base = numeric(0),
+                                     stringsAsFactors = FALSE))
+  rr <- do.call(rbind, rr); rownames(rr) <- NULL
+  rr[order(rr$token), , drop = FALSE]
+}
+.fa_runs_key <- function(r) {
+  if (!is.data.frame(r) || !nrow(r)) return("")
+  b <- if ("base" %in% names(r)) suppressWarnings(as.numeric(r$base)) else rep(NA_real_, nrow(r))
+  paste(sort(sprintf("%s|%s|%s", r$token, r$to, sprintf("%.6g", b))), collapse = " ")
+}
+
+.fa_output_audit <- function(as_of, audits, st = .fa_state_read()) {
+  cal <- tryCatch(as.data.table(arrow::read_parquet(".cache/trading_calendar.parquet", mmap = FALSE)),
+                  error = function(e) NULL)
+  cal_dates <- if (!is.null(cal) && "Date" %in% names(cal)) sort(unique(as.Date(cal$Date))) else as.Date(character(0))
+  E <- .fa_increment_start(cal)
+  W <- .fa_window_W(cal_dates, as_of)
+  prev <- .fa_prev_runs(st)
+  items <- list(); books <- list(); carry <- list()
+  if (is.data.frame(prev) && nrow(prev)) {   # 어느 책에도 속하지 않는 직전 토큰 = 감사 범위 밖(해소 아님 · 기록만)
+    oos <- !Reduce(`|`, lapply(.FA_BOOKS, function(b) startsWith(prev$name, paste0(b$panel, "."))))
+    if (any(oos)) carry[[1]] <- data.frame(token = prev$token[oos], name = prev$name[oos], from = prev$from[oos],
+                                           to = prev$to[oos], base = prev$base[oos], status = "dropped",
+                                           reason = "out_of_scope", stringsAsFactors = FALSE)
+  }
+  for (bk in .FA_BOOKS) {
+    ml <- suppressWarnings(as.integer(audits[[bk$panel]]$max_lag %||% NA_integer_))
+    r <- .fa_book(bk, cal_dates, E, W, as_of, ml, prev)
+    items <- c(items, r$items); books[[bk$panel]] <- r$book
+    if (!is.null(r$carry)) carry[[length(carry) + 1L]] <- r$carry
+  }
+  for (a in audits) if (identical(a$role, "report_only"))   # 판정에서 빠진 report_only 패널 → 이 경보 집합으로
+    items[[a$name]] <- c(a, list(kind = "panel",
+                                 verdict = if (isTRUE(a$status %in% c("STALE", "MISSING", "PARSE_FAIL"))) "WARN" else "OK"))
+  cr <- if (length(carry)) do.call(rbind, carry) else NULL
+  warn <- names(items)[vapply(items, function(x) identical(x$verdict, "WARN"), logical(1))]
+  list(status = if (is.na(E)) "UNMEASURED_HOLES" else "OK",
+       meta = list(as_of = as.character(as_of), window_from = .fa_nz(as.character(E)), window_to = as.character(as_of),
+                   L = if (is.na(E)) NULL else sum(cal_dates >= E & cal_dates <= as_of), W = .fa_nz(W),
+                   fill_min = .FA_FILL_MIN, base_min_n = .FA_BASE_MIN_N, role = "report_only"),
+       books = books, items = items, warn_items = warn, warn_count = length(warn),
+       carry = if (is.null(cr)) list() else cr,
+       carried_n = if (is.null(cr)) 0L else sum(cr$status %in% c("kept_outside", "carried")),
+       signature = .fa_signature(items), runs = .fa_runs(items, E))
+}
+## F6 실패 표기 — JSON 에 그대로 실을 수 있는 모양(warn_items = I(chr 0)) · 이 표기면 통지하지 않는다.
+.fa_err <- function(stage, e) list(status = "ERROR", error = sprintf("%s: %s", stage, conditionMessage(e)), items = list(),
+                                   warn_items = I(character(0)), warn_count = NULL, carried_n = NULL, signature = NULL)
+.fa_s <- function(x) if (is.null(x) || length(x) != 1L || is.na(x)) "n/a" else as.character(x)
+.fa_runs_str <- function(h) {
+  if (!is.data.frame(h) || !nrow(h)) return("")
+  rng <- ifelse(h$from == h$to, h$from, paste0(h$from, "~", h$to))
+  if ("cont" %in% names(h)) rng <- ifelse(h$cont, paste0("..", rng), rng)   # '..' = 창 밖 유지 구간에서 이어진 구간
+  paste(sprintf("%s(%dd,%s)", rng, h$days, h$kind), collapse = " ")
+}
+.fa_kept_str <- function(k, status) {
+  k <- k[k$status == status, , drop = FALSE]
+  if (!nrow(k)) return("")
+  paste(ifelse(k$from == k$to, k$from, paste0(k$from, "~", k$to)), collapse = " ")
+}
+## 한 줄 사유(ASCII — 텔레그램 · 로그 공용)
+.fa_reason <- function(x) {
+  r <- character(0)
+  if (identical(x$status, "STALE")) r <- c(r, sprintf("STALE(last %s, lag %sd > %sd)", .fa_s(x$last_date), .fa_s(x$lag_days), .fa_s(x$max_lag)))
+  else if (identical(x$status, "BEHIND")) r <- c(r, sprintf("BEHIND(last %s < source %s)", .fa_s(x$last_date), .fa_s(x$ref_date)))
+  else if (!x$status %in% c("FRESH", "SYNCED")) r <- c(r, sprintf("%s(%s)", x$status, .fa_s(x$path)))
+  if (isTRUE(x$unlisted) && !identical(x$status, "UNLISTED")) r <- c(r, "UNLISTED")
+  if (is.data.frame(x$holes) && nrow(x$holes)) r <- c(r, sprintf("HOLE %s", .fa_runs_str(x$holes)))
+  k <- x$holes_kept
+  if (is.data.frame(k) && nrow(k)) {
+    s1 <- .fa_kept_str(k, "kept_outside"); s2 <- .fa_kept_str(k, "carried")
+    if (nzchar(s1)) r <- c(r, sprintf("HOLE-OUTSIDE %s (re-measured outside window, not filled)", s1))
+    if (nzchar(s2)) r <- c(r, sprintf("HOLE-CARRIED %s (unmeasured: %s)", s2, paste(unique(k$reason[k$status == "carried"]), collapse = ",")))
+  }
+  sprintf("%s: %s", x$name, paste(r, collapse = " | "))
+}
+.fa_line <- function(x) {
+  fl <- x$fill_latest
+  fs <- if (is.null(fl)) "fill=n/a" else sprintf("fill@%s=%s", fl$date, if (is.null(fl$ratio)) sprintf("n%d/base<%d", fl$n, .FA_BASE_MIN_N) else sprintf("%.2f", fl$ratio))
+  hs <- if (is.null(x$holes_n)) "" else if (x$holes_n == 0L) "holes=0" else sprintf("holes=%dd %s", x$holes_n, .fa_runs_str(x$holes))
+  ks <- if (is.data.frame(x$holes_kept) && nrow(x$holes_kept)) sprintf("prev=%s", paste(sprintf("%s:%s", x$holes_kept$from, x$holes_kept$status), collapse = ",")) else ""
+  ex <- paste(c(if (identical(x$kind, "derived")) sprintf("source=%s", .fa_s(x$ref_date)), if (isTRUE(x$unlisted)) "UNLISTED",
+                if (nzchar(ks)) ks), collapse = " ")
+  sprintf("  %-34s [%-4s] %-10s last=%s lag=%sd (max %sd) %s %s %s", x$name, x$verdict, x$status, .fa_s(x$last_date),
+          .fa_s(x$lag_days), .fa_s(x$max_lag), if (identical(x$kind, "derived")) "" else fs, hs, ex)
+}
+.fa_json <- function(res) { res$warn_items <- I(as.character(res$warn_items)); res }
+## stdout 보고 — 이 함수의 실패는 호출부 tryCatch 에서 끝난다(판정 · JSON · EDC_RESULT 와 무관).
+.fa_print <- function(res) {
+  if (identical(res$status, "ERROR")) {
+    cat(sprintf("  [output-audit] 감사 실패 — 출력별 판정 미측정(패널 판정은 위 그대로): %s\n", res$error))
+    return(invisible(NULL))
+  }
+  m <- res$meta
+  cat(sprintf("  창 %s~%s (L=%s 거래일 · 증분 구간) · W=%s · 채움 문턱 %.2f · 기준선 최소 %d%s\n",
+              .fa_s(m$window_from), m$window_to, .fa_s(m$L), .fa_s(m$W), m$fill_min, m$base_min_n,
+              if (identical(res$status, "UNMEASURED_HOLES")) " — 증분 구간 판별 불가: 창 안 구멍 · 채움 미측정(신선도 · 직전 구멍 재측정 · 이월만)" else ""))
+  for (x in res$items) cat(.fa_line(x), "\n", sep = "")
+  for (b in res$books) if (!is.null(b$repair_hint))
+    cat(sprintf("  복구 창 %-16s 시작 %s : %s\n", b$book, b$repair_from, b$repair_hint))
+  cr <- res$carry
+  if (is.data.frame(cr) && nrow(cr)) for (i in seq_len(nrow(cr)))
+    cat(sprintf("  직전 구멍 %-48s %-16s (%s)\n", cr$token[i], cr$status[i], .fa_s(cr$reason[i])))
+  cat(sprintf("  출력별 경보 %d건%s\n", res$warn_count,
+              if (res$warn_count) paste0(" — ", paste(res$warn_items, collapse = ", ")) else ""))
+  invisible(NULL)
+}
+## 상태 쓰기 — 임시 파일 → 교체(읽는 쪽이 반쯤 쓴 파일을 보지 않게). 호출 = .fa_notify 만(발송 허용 실행).
+.fa_state_write <- function(nst) {
+  dir.create(dirname(.FA_WARN_STATE), recursive = TRUE, showWarnings = FALSE)
+  tmp <- paste0(.FA_WARN_STATE, ".tmp")
+  jsonlite::write_json(nst, tmp, auto_unbox = TRUE, null = "null", digits = NA)
+  if (file.exists(.FA_WARN_STATE)) file.remove(.FA_WARN_STATE)
+  file.rename(tmp, .FA_WARN_STATE)
+}
+
+## ── F6 출력별 경보 텔레그램 — new/changed = 1통(푸시) · repeat = 무음(로그 1줄 · 구멍 기록만 갱신) · resolved = '해소' 1통 ──
+##   ★문구 리터럴은 이스케이프만 쓴다(원시 한글 · 이모지와 이스케이프를 한 리터럴에 섞지 않는다 — C 로케일 이중 인코딩 ·
+##     08_Tests/ops/test_telegram_literal_homogeneity.py). 출력 이름 · 날짜 · 사유는 ASCII 다. 길이 = .fa_fit(.FA_TG_MAX 상한).
+.fa_message <- function(res, kind, prev_n) {
+  m <- res$meta; cr <- res$carry
+  um <- !identical(res$status, "OK")
+  nk <- as.integer(res$carried_n %||% 0L)
+  oos <- if (is.data.frame(cr) && nrow(cr)) sum(cr$status == "dropped") else 0L
+  if (identical(kind, "resolved")) {
+    s <- sprintf("\u2705 \ucd9c\ub825\ubcc4 \uc2e0\uc120\ub3c4 \uacbd\ubcf4 \ud574\uc18c \u2014 \uc9c1\uc804 %d\uac74", prev_n)
+    if (um) s <- paste0(s, " (\uad6c\uba4d \ubbf8\uce21\uc815 \u2014 \uc99d\ubd84 \uad6c\uac04 \ud310\ubcc4 \ubd88\uac00 \u00b7 \uc0c8 \uad6c\uba4d\uc740 \ud655\uc778 \ubabb \ud568)")
+    if (oos) s <- paste0(s, sprintf("\n\uac10\uc0ac \ubc94\uc704 \ubc16\uc73c\ub85c \ube60\uc9c4 \uad6c\uba4d %d\uac74(\ud574\uc18c \ud655\uc778 \uc544\ub2d8)", oos))
+    return(s)
+  }
+  hdr <- sprintf(if (identical(kind, "changed"))
+    "\U0001F573 \ucd9c\ub825\ubcc4 \uc2e0\uc120\ub3c4 \uacbd\ubcf4 \ubcc0\uacbd \u2014 %d\uac74 (\ubcf4\uace0 \uc804\uc6a9 \u00b7 \ub9ac\ud504\ub808\uc2dc \ud310\uc815 \uc544\ub2d8)"
+    else "\U0001F573 \ucd9c\ub825\ubcc4 \uc2e0\uc120\ub3c4 \uacbd\ubcf4 \u2014 %d\uac74 (\ubcf4\uace0 \uc804\uc6a9 \u00b7 \ub9ac\ud504\ub808\uc2dc \ud310\uc815 \uc544\ub2d8)",
+    res$warn_count)
+  win <- sprintf("as_of %s \u00b7 \uad6c\uba4d \ucc3d %s~%s (%s\uac70\ub798\uc77c) \u00b7 W=%s \u00b7 \ucc44\uc6c0 \ubb38\ud131 %.2f",
+                 m$as_of, .fa_s(m$window_from), m$window_to, .fa_s(m$L), .fa_s(m$W), m$fill_min)
+  if (um) {
+    win <- paste0(win, sprintf(" \u00b7 \uad6c\uba4d \ubbf8\uce21\uc815(\uc99d\ubd84 \uad6c\uac04 \ud310\ubcc4 \ubd88\uac00) \u2014 \uc9c1\uc804 \uad6c\uba4d %d\uac74 \uc7ac\uce21\uc815 \u00b7 \uc774\uc6d4", nk))
+  } else if (nk) {
+    win <- paste0(win, sprintf(" \u00b7 \ucc3d \ubc16 \uc9c1\uc804 \uad6c\uba4d %d\uac74(\uc7ac\uce21\uc815 \u00b7 \uc774\uc6d4)", nk))
+  }
+  ln <- vapply(res$items[res$warn_items], .fa_reason, character(1), USE.NAMES = FALSE)
+  if (length(ln) > .FA_TG_LINES) ln <- c(ln[seq_len(.FA_TG_LINES)], sprintf("\uc678 %d\uac74", length(ln) - .FA_TG_LINES))
+  ro <- if (is.data.frame(cr) && nrow(cr)) cr$token[cr$status == "resolved_outside"] else character(0)
+  if (length(ro)) ln <- c(ln, sprintf("\ucc3d \ubc16 \uc7ac\uce21\uc815 \ud574\uc18c %d\uac74: %s", length(ro), paste(ro, collapse = " ")))
+  if (oos) ln <- c(ln, sprintf("\uac10\uc0ac \ubc94\uc704 \ubc16\uc73c\ub85c \ube60\uc9c4 \uad6c\uba4d %d\uac74(\ud574\uc18c \ud655\uc778 \uc544\ub2d8)", oos))
+  hint <- unlist(lapply(res$books, function(b) if (!is.null(b$repair_hint)) sprintf("%s %s: %s", b$book, b$repair_from, b$repair_hint)),
+                 use.names = FALSE)
+  .fa_fit(head = c(hdr, win, ""), body = paste0("- ", ln),
+          tail = c(if (length(hint)) c("", "\ubcf5\uad6c \ucc3d \uc2dc\uc791(\ucc45\ubcc4 \ucd5c\ucd08 \uad6c\uba4d):", paste0("- ", hint)),
+                   "", "\uc0c1\uc138: qepm/observability/morning_freshness_latest.json \u2192 output_audit"),
+          omit_fmt = "- \u2026 \uc678 %d\uc904 \uc0dd\ub7b5(\ud154\ub808\uadf8\ub7a8 \uae00\uc790 \uc218 \uc0c1\ud55c) \u2014 \uc804\ubb38: JSON output_audit")
+}
+## 텔레그램 길이 셈 — UTF-16 코드 단위(비BMP = 2) · 판독 실패 = 바이트 수(늘 그 이상이라 상한 쪽).
+.fa_u16 <- function(s) {
+  n <- tryCatch({ cp <- utf8ToInt(enc2utf8(s)); if (anyNA(cp)) NA_integer_ else length(cp) + sum(cp > 65535L) },
+                error = function(e) NA_integer_)
+  if (is.na(n)) nchar(s, type = "bytes") else n
+}
+## 본문 맞춤 — head · tail 은 늘 싣고 body 줄은 상한 안에서 앞에서부터(넘치면 생략 줄 1개) · head+tail 만으로 넘치면(병리)
+##   앞에서 잘라 끝 표시. 반환 길이 ≤ limit(UTF-16) 보장(잘린 판 = (limit−1)/2 코드포인트 이하 + 1).
+.fa_fit <- function(head, body, tail, omit_fmt, limit = .FA_TG_MAX) {
+  join <- function(b) paste(c(head, b, tail), collapse = "\n")
+  s <- join(body)
+  if (.fa_u16(s) <= limit) return(s)
+  for (n in rev(seq_len(length(body)) - 1L)) {
+    s <- join(c(body[seq_len(n)], sprintf(omit_fmt, length(body) - n)))
+    if (.fa_u16(s) <= limit) return(s)
+  }
+  paste0(substr(s, 1L, (limit - 1L) %/% 2L), "\u2026")
+}
+.fa_notify <- function(res, st = .fa_state_read()) {
+  sig <- res$signature %||% ""
+  prev <- if (is.list(st)) st$signature %||% "" else ""
+  prev_n <- if (is.list(st) && is.numeric(st$warn_count) && length(st$warn_count) == 1L) as.integer(st$warn_count) else 0L
+  kind <- if (!nzchar(sig)) { if (nzchar(prev)) "resolved" else "ok" } else if (identical(sig, prev)) "repeat" else if (nzchar(prev)) "changed" else "new"
+  if (kind %in% c("ok", "repeat")) {
+    if (identical(kind, "repeat")) {
+      cat(sprintf("[output-audit] 같은 경보 서명 지속(%s~) — 텔레그램 생략(서명이 바뀔 때만 보낸다)\n", .fa_s(st$since)))
+      ## 구멍 기록만 새로 고친다(서명 · since · 마지막 발송은 그대로) — 구멍이 창 밖으로 나간 뒤 재측정이 늘어난 끝까지 보게
+      if (!identical(.fa_runs_key(st$runs), .fa_runs_key(res$runs))) {
+        .fa_state_write(c(st[setdiff(names(st), "runs")], list(runs = res$runs)))
+        cat("[output-audit] 구멍 기록(runs) 갱신 — 서명 불변\n")
+      }
+    }
+    return(invisible(kind))
+  }
+  if (!exists("tg_send", mode = "function")) source("02_Infrastructure/telegram/telegram_notify.R")
+  r <- tg_send(.fa_message(res, kind, prev_n))
+  if (is.list(r) && isTRUE(r$ok)) {
+    .fa_state_write(list(signature = sig, since = if (identical(kind, "resolved")) NULL else as.character(Sys.Date()),
+                         last_kind = kind, last_sent_at = format(Sys.time(), "%Y-%m-%dT%H:%M:%S%z"),
+                         warn_count = res$warn_count, runs = res$runs))
+    cat(sprintf("[output-audit] 텔레그램 %s 발송 · 상태 커밋\n", kind))
+  } else {
+    cat(sprintf("[output-audit] 텔레그램 %s 발송 실패 — 상태 미커밋(다음 발송 허용 실행이 다시 보낸다)\n", kind))
+  }
+  invisible(kind)
+}
+
+## 실행 — 이 구간의 어떤 실패도 위 패널 판정 · JSON · EDC_RESULT 를 막지 않는다(감사기 사망 = EDC 가 'NA → 리프레시'로 읽는다).
+##   보고 출력 · JSON 조립 · 직렬화 · FA 줄 · 텔레그램도 아래에서 각각 감싼다(독립 검증 지적 3).
+.fa_st  <- tryCatch(.fa_state_read(), error = function(e) NULL)
+.fa_res <- tryCatch(.fa_output_audit(as_of, audits, .fa_st), error = function(e) .fa_err("audit", e))
+
+cat("=== Freshness Audit ===\n")
+stale_items <- c()
+for (a in audits) {
+  cat(sprintf("  %-18s [%s] last=%s lag=%dd (max %dd)\n",
+              a$name, a$status, a$last_date %||% "n/a", a$lag_days %||% -1L, a$max_lag %||% -1L))
+  if (identical(a$role, "report_only")) {   # F6 — 판정 제외 · 아래 출력별 경보로 보고(위 F6 머리말 '심각도 · 소비 경로')
+    cat("    -> report_only: stale_items · EDC 판정 제외 (Output Audit 경보로 보고)\n"); next
+  }
+  if (isTRUE(a$status == "STALE") || isTRUE(a$status == "MISSING")) {
+    stale_items <- c(stale_items, sprintf("%s(%s,lag=%dd)", a$name, a$status, a$lag_days %||% -1L))
+  }
+}
+## F6 출력별 감사 보고(판정과 분리된 구간 — 위 패널 줄이 FRESH 여도 출력 단위 구멍은 여기서 보인다) · 출력 실패는 이 구간에서 끝난다
+cat("=== Output Audit (출력별 · 보고 전용 — [0c] 판정 · EDC 리프레시 대상 아님) ===\n")
+tryCatch(.fa_print(.fa_res), error = function(e)
+  cat(sprintf("  [output-audit] 보고 출력 실패 — 출력별 판정은 JSON output_audit 를 본다(패널 판정은 위 그대로): %s\n", conditionMessage(e))))
+downstream_items <- unname(unlist(lapply(audits, function(a) if (identical(a$role, "downstream")) a$name else NULL)))
+audit_path <- "qepm/observability/morning_freshness_latest.json"
+dir.create(dirname(audit_path), recursive = TRUE, showWarnings = FALSE)
+## JSON — output_audit 조립 · 직렬화 실패가 판정 기록(audits · stale_items · downstream_items)을 끊지 않게 감싼다(독립 검증 지적 3).
+##   조립 실패 = 오류 표기로 싣는다 · 직렬화 실패(write_json = toJSON 뒤 writeLines — 파일을 열기 전에 실패한다) = 오류 표기로 다시 쓴다.
+##   오류 표기 재기록까지 실패하면 F6 이전과 같은 실패 경로다(판정 키 자체의 직렬화 실패).
+.fa_payload <- function(oa) list(ran_at = format(Sys.time(), "%Y-%m-%dT%H:%M:%S%z"),
+                                 as_of = as.character(as_of),
+                                 audits = audits,
+                                 stale_count = length(stale_items),
+                                 stale_items = if (length(stale_items) > 0) I(as.character(stale_items)) else list(),
+                                 downstream_items = if (length(downstream_items) > 0) I(as.character(downstream_items)) else list(),
+                                 output_audit = oa)   # F6 — 출력별 감사(보고 전용 · 위 키들의 의미는 불변)
+.fa_write <- function(oa) { write_json(.fa_payload(oa), audit_path, pretty = TRUE, auto_unbox = TRUE, null = "null"); NULL }
+.fa_oa <- tryCatch(.fa_json(.fa_res), error = function(e) e)
+if (inherits(.fa_oa, "error")) { .fa_res <- .fa_err("json_build", .fa_oa); .fa_oa <- .fa_res }
+.fa_wr <- tryCatch(.fa_write(.fa_oa), error = function(e) e)
+if (inherits(.fa_wr, "error")) {
+  cat(sprintf("  [output-audit] JSON 기록 실패 — output_audit 를 오류 표기로 바꿔 다시 쓴다: %s\n", conditionMessage(.fa_wr)))
+  .fa_res <- .fa_err("json_write", .fa_wr)
+  .fa_write(.fa_res)
+}
+cat(sprintf("Audit saved: %s\n", audit_path))
+
+# 기계 판독용 단일 라인 (2026-08-03) — ensure_data_current.sh 가 이 줄만 grep 한다.
+#   ★JSON 을 다시 읽는 별도 Rscript 를 띄우지 않는다: R 세션 기동 비용도 있지만
+#     더 중요한 건 그 하위 프로세스가 조용히 죽으면 호출자가 **빈 문자열**을 받고
+#     그걸 "stale 없음"으로 읽을 수 있다는 점이다(실측으로 그 상태를 봤다).
+#     판정을 만든 바로 그 프로세스가 판정을 직접 뱉는 게 가장 짧은 신뢰 경로다.
+cat(sprintf("EDC_RESULT stale=%d as_of=%s items=%s\n",
+            length(stale_items), as.character(as_of),
+            if (length(stale_items)) paste(vapply(audits, function(a)
+              if (isTRUE(a$status %in% c("STALE","MISSING")) && !identical(a$role, "report_only")) a$name else "",
+              character(1)) |> (\(x) x[nzchar(x)])(), collapse = ",") else "-"))
+# F6 출력별 경보 기계 줄 — 새 접두어(EDC 는 ^EDC_RESULT 만 읽는다 · 이 줄은 판정에 안 쓰인다). status = OK | UNMEASURED_HOLES | ERROR ·
+#   carried = 직전 구멍 중 창 밖 재측정 유지 · 이월 수(측정 불가는 해소가 아니다). 이 줄의 실패도 아래 stale 경보를 막지 않는다.
+tryCatch(cat(sprintf("FA_OUTPUT_WARN status=%s n=%s as_of=%s carried=%s items=%s\n", .fa_res$status, .fa_s(.fa_res$warn_count),
+                     as.character(as_of), .fa_s(.fa_res$carried_n),
+                     if (length(.fa_res$warn_items)) paste(.fa_res$warn_items, collapse = ",") else "-")),
+         error = function(e) cat(sprintf("FA_OUTPUT_WARN status=ERROR n=n/a as_of=%s carried=n/a items=-\n", as.character(as_of))))
+
+# Stale 시 Telegram alert (mrs_daily 의 07:30 brief 전에)
+if (length(stale_items) > 0) {
+  cat(sprintf("\n⚠️ STALE detected (%d items): %s\n", length(stale_items),
+              paste(stale_items, collapse = ", ")))
+  # QVEST_FRESHNESS_QUIET=1 → 판정·JSON 은 그대로 내되 Telegram 발송만 억제 (2026-08-03).
+  #   ensure_data_current.sh 가 "고칠지 말지" 정하려고 **사전** 감사를 한 번 돌린다.
+  #   그 단계의 stale 은 곧 고쳐질 수 있으므로 알릴 이유가 없고, 알리면 같은 아침에
+  #   경보가 두 번 간다(사후 감사에서 한 번 더). ★억제되는 것은 발송뿐 — 판정과
+  #   morning_freshness_latest.json 기록은 항상 남는다(조용한 통과가 아니다).
+  if (identical(Sys.getenv("QVEST_FRESHNESS_QUIET"), "1")) {
+    cat("[freshness] QVEST_FRESHNESS_QUIET=1 — Telegram 발송 억제 (판정/JSON 은 기록됨)\n")
+  } else {
+    source("02_Infrastructure/telegram/telegram_notify.R")
+    msg <- sprintf("\U0001F6A8 Morning Freshness Audit \u2014 %d stale\n\n%s\n\nbrief 07:30 \uc1a1\uc2e0 \uc804 \uc810\uac80 \ud544\uc694",
+                   length(stale_items),
+                   paste(sprintf("- %s", stale_items), collapse = "\n"))
+    tryCatch(tg_send(msg), error = function(e) cat(sprintf("Telegram alert failed: %s\n", e$message)))
+  }
+} else {
+  cat("\n✅ All sources FRESH — brief 07:30 발송 OK\n")
+}
+
+## ── F6 출력별 경보 텔레그램 — 발송 허용 실행(QUIET≠1)에서만 · 경보 서명이 바뀔 때만(위 F6 머리말 '심각도 · 소비 경로') ──
+if (!identical(Sys.getenv("QVEST_FRESHNESS_QUIET"), "1") && !identical(.fa_res$status, "ERROR")) {
+  tryCatch(.fa_notify(.fa_res, .fa_st), error = function(e) cat(sprintf("[output-audit] 텔레그램 경로 오류(판정 · JSON 은 기록됨): %s\n", conditionMessage(e))))
+}
