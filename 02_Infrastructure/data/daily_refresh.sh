@@ -70,21 +70,25 @@ echo "[env] RSCRIPT=$RSCRIPT"
 #   스텝 절반이 죽어도 크론 관점에선 매일 성공이었다.
 #   수리: 호출부 22곳을 건드리지 않고 run_r 자신이 실패를 누적한다(단일 지점).
 #         종료 시 실패 목록을 이름으로 출력 + 비-0 종료 + 텔레그램 본문에도 병기.
+#   (2026-11-06 · 적대 검토 #16 · #20) 선택 2번째 인자 = DR_FAILED 이름표. 주면 'r<N>(rc=..)' 대신 '<이름표>(rc=..)'
+#     로 싣는다 — 스텝 번호는 앞에 블록이 늘면 밀려 [7] 실패 서명(dr_fail_signature.R)이 흔들리므로, 경보를 이름으로
+#     읽어야 하는 블록(MSM as-of)만 쓴다. 이름표에 공백 금지(요약은 공백 구분). 인자 없는 호출부는 종전 그대로(r<N>).
 #──────────────────────────────────────────────────────────────────────────────
 DR_FAILED=()
 DR_STEP=0
 run_r() {
-  local _tmp _rc
+  local _tmp _rc _id
   DR_STEP=$((DR_STEP + 1))
+  _id="${2:-r${DR_STEP}}"
   _tmp=$(mktemp /tmp/qm_refresh_XXXX.R) || {
-    echo "[run_r] mktemp failed"; DR_FAILED+=("r${DR_STEP}:mktemp"); return 1; }
+    echo "[run_r] mktemp failed"; DR_FAILED+=("${_id}:mktemp"); return 1; }
   printf '%s\n' "$1" > "$_tmp"
   "$RSCRIPT" --no-save "$_tmp"
   _rc=$?
   rm -f "$_tmp"
   if [ "$_rc" -ne 0 ]; then
-    DR_FAILED+=("r${DR_STEP}(rc=$_rc)")
-    echo "[run_r] ★r${DR_STEP} FAILED rc=$_rc — 체인은 계속되나 최종 종료코드·요약에 반영됨"
+    DR_FAILED+=("${_id}(rc=$_rc)")
+    echo "[run_r] ★r${DR_STEP}${2:+(${2})} FAILED rc=$_rc — 체인은 계속되나 최종 종료코드·요약에 반영됨"
   fi
   return $_rc
 }
@@ -394,27 +398,29 @@ run_r '
     cat(sprintf("KTRI v3 signals regenerated: %s\n", out_path))
   }, error = function(e) cat(sprintf("KTRI v3 build FAILED: %s\n", e$message)))
 '
-# MSM Daily + Hybrid Refit (도훈 mandate 2026-05-15)
-# Primary: 04_Research/regime_comparison/msm_update.R (Production-aligned, hybrid + daily 양쪽 write)
-# Fallback: 02_Infrastructure/regime/msm_daily_refit.R (lightweight, daily only)
+# MSM — as-of 연말 재적합 경로 (2026-11-06 전환 · 결정 PIT-C1-MSM-PARAMS 안 A · MSM-ASOF-SWITCH-20261017)
+#   생산자 = 02_Infrastructure/regime/msm_asof.R::msma_update(원장 06_Registry/msm_param_schedule.json ·
+#   해가 바뀐 첫 실행에만 1행 적합 · 그 밖엔 .cache/msm_asof_daily.parquet 경로만 다시 쓴다).
+#   ★폴백 없음: 구 msm_update.R(1990~2026-01 전 표본 고정 모수 = C1)와 msm_daily_refit(평활 HMM = C1 이중)은
+#     운영 경로에서 뺐다. 실패하면 as-of 경로가 낡고 → 아래 regime_signal 로더가 stop → 후보 없음 →
+#     원장 병합 없음(라이브 불변 · fail-closed). 구 캐시 msm_daily_latest · msm_hybrid_latest 는 더 갱신하지 않는다.
+#   ★실패 = DR_FAILED 'msm_asof(rc=1)'(2026-11-06 · 적대 검토 #16 · #20): 오류를 cat 으로만 삼키면 Rscript rc=0 이라
+#     run_r 이 못 센다 → 그날 밤 '실패 0' 요약과 함께 국면 갱신이 조용히 멈춘다. 처리기에서 quit(status = 1) 로 끝내고
+#     run_r 이름표 msm_asof 로 싣는다(종료코드 · [7] 요약 · 실패 서명에 닿는다). 체인은 계속 — 뒤 국면 빌드가 낡은
+#     as-of 경로로 stop 하면 아래 원장 루프가 regime_append:<계열>(rc=2) 를 따로 싣는다.
 # 순서 critical: MSM 먼저 → build_regime_signal_table() 그 후 (unified_regime_signal stale 방지)
 cd "$BASE"
 run_r '
   setwd("'"$BASE"'")
   tryCatch({
-    source("02_Infrastructure/config.R")
-    source("02_Infrastructure/backtest_harness.R")
-    source("04_Research/regime_comparison/msm_update.R")
-    cat("[daily_refresh] MSM update.R PASS — hybrid + daily 양쪽 갱신\n")
+    source("02_Infrastructure/regime/msm_asof.R")
+    msma_update(getwd())
+    cat("[daily_refresh] MSM as-of PASS — msm_asof_daily 갱신\n")
   }, error = function(e) {
-    cat(sprintf("[daily_refresh] msm_update.R FAIL: %s — fallback to msm_daily_refit\n", e$message))
-    tryCatch({
-      source("02_Infrastructure/regime/msm_daily_refit.R")
-      compute_hmm_daily_signal()
-      cat("[daily_refresh] msm_daily_refit fallback PASS\n")
-    }, error = function(e2) cat(sprintf("[daily_refresh] MSM fallback FAIL: %s\n", e2$message)))
+    cat(sprintf("[daily_refresh] MSM as-of FAIL: %s — 국면 후보 빌드가 멈춘다(fail-closed · 라이브 불변)\n", e$message))
+    quit(status = 1, save = "no")
   })
-'
+' msm_asof
 
 # build_regime_signal_table — MSM 갱신 후 호출 (monthly + daily 양쪽 rebuild)
 # 차트 (tg_regime_briefing)가 unified_regime_signal + _daily 양쪽 읽으므로 둘 다 재build
@@ -445,6 +451,12 @@ run_r '
 #   ★C11(2026-09-25): 입력 = 위 후보(--from-candidate) · 병합은 표식 열(avail_date·c11_regime_key)·파일 속성 보존 ·
 #   exit 3 = 발행 원장 epoch ≠ 후보 epoch(C11 이전 원장 · 규칙 키 변경) → 병합·기록 없음, 라이브 불변 — 재기준선
 #   (regime_append_only.R --republish, dry-run 기본 → --execute)은 사람이 한다. exit 2 = 후보 부재·판독 불가 → 라이브 불변.
+#   ★rc ∉ {0,1} = DR_FAILED 'regime_append:<계열>(rc=..)'(2026-11-06 · 적대 검토 #16 · #20): 구판은 echo 만 해서
+#     라이브 동결(MSM · 국면 빌드 실패 → 후보 부재 rc=2 · 에폭 불일치 rc=3 · 프로세스 사망)이 종료코드 · [7] 요약에 안 닿았다.
+#     rc=3 도 싣는다 — 재기준선 전까지(MSM 전환 2~3단계 창 포함) 매일 밤 실패로 보이는 것이 의도된 표면화다.
+#     rc=1(재서술 검출 · 발행본 보존)은 종전대로 경고만. ※R 최상위 오류(구문 · 패키지 적재 실패)도 Rscript rc=1 이라
+#     여기서는 경고로 접힌다(별건). ★이 루프에 '(rc=N)' 꼴 출력 줄을 더하지 말 것 — 08_Tests/regime/test_regime_ledger_c11.R
+#     T5 가 루프 출력의 '(rc=2)' 줄 수(=2)를 센다(아래 누적은 출력 없음).
 cd "$QM_ROOT" 2>/dev/null || cd "$INFRA/.."
 for _series in monthly daily; do
   "$RSCRIPT" --no-save "$QM_ROOT/02_Infrastructure/regime/regime_append_only.R" --series "$_series" --root "$BASE" --from-candidate 2>&1
@@ -454,6 +466,10 @@ for _series in monthly daily; do
     1) echo "!! [regime-append/$_series] 동결 구간 재서술 시도 검출 — 발행본 보존됨(상류 확인 필요)" ;;
     3) echo "!! [regime-append/$_series] epoch 불일치 — 병합 없음·라이브 불변 · 재기준선 필요(regime_append_only.R --republish)" ;;
     *) echo "XX [regime-append/$_series] 게이트 실패(rc=$_rc) — 라이브 불변 · 계열 신뢰 불가" ;;
+  esac
+  case "$_rc" in
+    0|1) ;;
+    *) DR_FAILED+=("regime_append:${_series}(rc=$_rc)") ;;
   esac
 done
 cd "$INFRA"
