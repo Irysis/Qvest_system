@@ -297,6 +297,16 @@ def build_markdown(meta, d, st, eps, cv, nsr, rob, day, peaks):
     for b in summary_bullets(meta, d, st, eps, cv, ns, peaks):
         A(f"- {b}")
     A("")
+    # 오늘의 해설(선택) — make_commentary.py 가 Sonnet 으로 쓰고 숫자 자동 검사를 통과한 경우에만(같은 기준일 · passed). 없거나 불통과면 이 절은 없다.
+    cm = _commentary(day)
+    if cm:
+        A(f"#### 오늘의 해설 — AI 작성({cm['model_label']}) · 숫자 출처 자동 검사 통과")
+        A("")
+        A(cm["text"])
+        A("")
+        A('<span style="font-size:7.6pt;color:#666">위 단락은 AI 가 이 보고서의 데이터만 보고 쓴 해설입니다. 본문의 모든 숫자는 데이터의 출처 항목으로 자동 재계산해 일치를 확인했으며, '
+          '예측 · 전망 표현은 싣지 않습니다. 해설이 검사를 통과하지 못한 날은 이 단락 없이 발행됩니다.</span>')
+        A("")
     # 소제목으로 블록을 나눈다 — PDF 도구는 제목~다음 제목을 한 덩어리(쪽 나눔 금지)로 묶으므로, 요약 글머리와 게이지를 한 덩어리로 두면
     # 1쪽에 못 들어갈 때 요약까지 통째로 2쪽으로 밀린다(1쪽 = 제목 + 카드만 남는 양식 사고)
     A("#### 오늘의 자리 — 0~100 눈금과 최근 1년의 길")
@@ -468,6 +478,22 @@ def build_markdown(meta, d, st, eps, cv, nsr, rob, day, peaks):
     A("- **자료 출처**: 한국거래소 시세 · 투자자 수급(퀀티와이즈), 한국은행 ECOS(금리 · 환율), 미국 연준 FRED(VIX · 금융스트레스), V-KOSPI200. 산출 방법과 수치 근거는 `DESIGN_v1_capital_market.md` 와 `output/v1/run_meta.json` 에 있습니다.")
     A("")
     return "\n".join(L) + "\n"
+
+
+def _commentary(day):
+    """daily/<기준일>/commentary.json — 같은 기준일 · 검사 통과분만."""
+    import json
+    import os
+    p = os.path.join(os.path.dirname(os.path.abspath(__file__)), "daily", str(day), "commentary.json")
+    try:
+        c = json.load(open(p, encoding="utf-8"))
+    except Exception:  # noqa: BLE001
+        return None
+    if not c.get("passed") or not c.get("text") or str(c.get("day")) != str(day):
+        return None
+    labels = {"claude-sonnet-5-5": "Claude Sonnet 5.5", "claude-opus-5-5": "Claude Opus 5.5", "claude-haiku-5-5": "Claude Haiku 5.5"}
+    c["model_label"] = labels.get(c.get("model"), c.get("model"))
+    return c
 
 
 def _peak_label(dte):

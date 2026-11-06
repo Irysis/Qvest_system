@@ -21,6 +21,8 @@ step "start · root=$ROOT"
 if [ "$SKIP_FETCH" = 0 ]; then step "① fetch_research_inputs.py"; run "$PY" fetch_research_inputs.py || exit 3; fi
 step "② build_kr_stress_index_v1.py (KRSI_DAILY=1)"; run "$PY" build_kr_stress_index_v1.py || exit 4
 step "③ make_charts.py v1";                           run "$PY" make_charts.py v1 || exit 5
+# ③b 오늘의 해설(Sonnet · 숫자 출처 자동 검사) — 실패 · 불통과여도 일보는 해설 없이 발행(KRSI_NO_COMMENTARY=1 이면 건너뜀)
+if [ "${KRSI_NO_COMMENTARY:-0}" != "1" ]; then step "③b make_commentary.py"; run "$PY" make_commentary.py || step "★해설 단계 실패(일보는 해설 없이 계속)"; fi
 step "④ make_daily_report.py $NO_PDF";                run "$PY" make_daily_report.py $NO_PDF || exit 6
 # ⑤ 방법론 문서(쉬운 말 · 전문 — 오늘의 예시 숫자가 들어가므로 매일 다시 쓴다 · daily/latest/kr_stress_methodology.pdf) — 실패해도 일보는 유효
 if [ -z "$NO_PDF" ]; then step "⑤ make_methodology.py --pdf"; run "$PY" make_methodology.py --pdf || step "★방법론 PDF 실패(일보 무관 · 계속)"; fi
