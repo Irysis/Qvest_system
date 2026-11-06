@@ -294,8 +294,8 @@ def advance_pin(as_of: pd.Timestamp, repin_stale: str | None = None) -> str:
                + "".join(chr(10) + "    · " + x for x in src_stale)
                + chr(10) + "  조치: 데이터 리프레시를 먼저 돌릴 것 — "
                  "bash 02_Infrastructure/data/daily_refresh.sh"
-               + chr(10) + "  (월간 리밸 경로에서는 run_nolayer4_monthly.sh [0] 이 이걸 자동 수행한다. "
-                 "이 게이트가 걸렸다면 그 리프레시가 실제로는 전진하지 못했다는 뜻이다.)")
+               + chr(10) + "  (월간 리밸 러너는 리프레시하지 않는다 — 2026-11-06 도훈 지시로 러너의 리프레시 단계를 걷어냈다. "
+                 "적재는 밤 데이터 리프레시 소관이고, 이 게이트가 걸렸다면 그 리프레시가 원천을 전진시키지 못했다는 뜻이다.)")
 
     import json
     for base, src in PIN_SOURCES.items():          # 원본 부재는 디렉토리를 만들기 **전에** 거부(반쯤 뜬 핀 방지)

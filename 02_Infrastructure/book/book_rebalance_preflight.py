@@ -37,15 +37,30 @@ BOOK 전략마다 필요한 코드·데이터·오버레이가 다르다. 그런
 
 ★fail-closed: 판정 불가는 통과가 아니다. 사양 부재·패널 판독 실패는 BLOCK 으로 센다.
 
+★러너 관문 모드 `--runner-gate` (2026-11-06 도훈 지시 "daily_refresh 돌리는 프로세스는 빼버려.
+  이제 어차피 데이터 리프레시 때 퀀티 데이터들 다 업데이트하니까 필요없어"):
+  리밸 러너는 이제 적재하지 않는다(구 [0] qw_refresh · [1] daily_refresh · [1b] sig 월 팩터DB 재빌드 제거).
+  대신 러너가 이 모드를 불러 **이번 리밸이 읽을 원천이 sig 일까지 왔는지**만 소비면에서 잰다 —
+  사양 `runner_gate` 블록이 무엇을 잴지 정한다. 관용(lag)이 아니라 sig 일 도달이다:
+    ① [calendar] sig 일 = KRX 공식 휴장일 등록부 기준 as_of 직전 거래일(등록부 읽기만 · 받지 않는다).
+       벤치 최대값에서 sig 일을 구하면 벤치가 낡을 때 sig 일도 같이 낡아 관문이 눈을 감는다(순환).
+    ② [benchmark] 벤치의 sig 월 마지막 날 == ①.
+    ③ [reach] runner_gate.sig_reach 의 파일마다 max(Date) ≥ sig 일 — 축마다 따로 잰다.
+    ④ [anchor] sig 월 팩터DB 앵커 == sig 일.
+  러너 산출 패널(m4 · AE · 알파 — decision 모드)은 여기서 재지 않는다(러너가 만들고 러너 게이트가 잰다).
+  마지막 줄 = 'OK sig=…' 또는 'BAD [태그…] …' — 러너는 rc 0 ∧ 'OK ' 줄일 때만 지나간다.
+
 사용:
   python book_rebalance_preflight.py --book-id BOOK_0001 --as-of 2026-09-01
   python book_rebalance_preflight.py --book-id BOOK_0001 --as-of 2026-09-01 --json
+  python book_rebalance_preflight.py --book-id BOOK_0001 --as-of 2026-09-01 --runner-gate [--json]
 
-종료코드: 0 GO / 1 BLOCK(차단 사유 있음) / 2 사양·환경 오류
+종료코드: 0 GO(관문 OK) / 1 BLOCK(관문 BAD — 차단 사유 있음) / 2 사양·환경 오류
 """
 from __future__ import annotations
 
 import argparse
+import glob
 import io
 import json
 import os
@@ -55,6 +70,7 @@ import pandas as pd
 import pyarrow.parquet as pq
 
 ROOT = os.environ.get("QM_ROOT", "C:/Users/99922/OneDrive/Quant_Module_Moltbot").replace("\\", "/")
+_HERE = os.path.dirname(os.path.abspath(__file__))       # chdir 전에 잡는다(상대 경로 호출 대비)
 os.chdir(ROOT)
 SPEC = "02_Infrastructure/book/rebalance_spec.json"
 
@@ -163,11 +179,99 @@ def check_overlays(spec, ctx, panels):
     return rows
 
 
+def _krx_last_session_before(as_of_date):
+    """KRX 공식 휴장일 등록부 기준 as_of 직전 거래일 — (date, None) 또는 (None, 사유).
+    등록부는 읽기만 한다(allow_fetch=False) — 관문이 등록부를 고쳐 쓰지 않는다(갱신 = 데이터 리프레시 소관)."""
+    sys.path.insert(0, os.path.join(_HERE, "..", "data"))
+    try:
+        import krx_holidays
+        return krx_holidays.last_session_before(as_of_date, allow_fetch=False)
+    except Exception as e:                       # 판정 불가 = 통과 아님(호출부가 BAD 로 적는다)
+        return None, f"krx_holidays:{type(e).__name__}"
+
+
+def runner_gate(spec, as_of: pd.Timestamp, as_json: bool) -> int:
+    """러너 관문 — 검사만 · 갱신 없음 (머리말 '★러너 관문 모드' · 도훈 2026-11-06)."""
+    rg = spec.get("runner_gate")
+    if not rg:
+        die(2, f"사양 {spec['book_id']} 에 runner_gate 없음 — 러너 관문이 무엇을 잴지 모른다(fail-closed)")
+    col = rg.get("date_col", "Date")
+    checks = []
+
+    def add(tag, good, detail):
+        checks.append({"check": tag, "ok": bool(good), "detail": detail})
+
+    def dates(path, c):                          # 비어 있지 않은 날짜열 또는 None(=미측정 — 통과로 접지 않는다)
+        d = _read_dates(path, c)
+        d = d.dropna() if d is not None else None
+        return d if d is not None and len(d) else None
+
+    exp, why = _krx_last_session_before(as_of.date())
+    sig = pd.Timestamp(exp) if exp is not None else None
+    if sig is None:
+        add("calendar", False, f"KRX 직전 거래일 판정 불가({why}) — 등록부 06_Registry/krx_holidays.json 은 데이터 리프레시 소관")
+    else:
+        add("calendar", True, f"sig {sig.date()} (KRX 등록부 · as_of {as_of.date()} 직전 거래일)")
+        bd = dates(".cache/benchmark.parquet", "Date")
+        in_m = bd[bd.dt.strftime("%Y%m") == sig.strftime("%Y%m")] if bd is not None else None
+        if bd is None:
+            add("benchmark", False, "benchmark.parquet 판독 불가(UNREADABLE)")
+        elif not len(in_m):
+            add("benchmark", False, f"벤치에 sig 월 거래일 없음(벤치 최대 {bd.max().date()})")
+        else:
+            last = in_m.max().normalize()
+            add("benchmark", last == sig,
+                f"벤치 sig 월 마지막 날 {last.date()}" + ("" if last == sig else
+                f" ≠ sig {sig.date()} — " + ("벤치가 sig 일까지 오지 않았다" if last < sig
+                                            else "등록부가 휴장으로 적은 날에 벤치 세션이 있다(등록부 확인)")))
+        for ent in rg.get("sig_reach", []):
+            skip = set(ent.get("skip", []))
+            files = sorted(f.replace("\\", "/") for f in glob.glob(ent["glob"])
+                           if os.path.basename(f) not in skip)
+            if not files:
+                add("reach", False, f"{ent['glob']}: 파일 없음(MISSING)")
+            for f in files:
+                d = dates(f, col)
+                if d is None:
+                    add("reach", False, f"{f}: {col} 판독 불가(UNREADABLE)")
+                else:
+                    mx = d.max().normalize()
+                    add("reach", mx >= sig, f"{f}: max {mx.date()}" + ("" if mx >= sig else f" < sig {sig.date()}"))
+        ap_ = _fmt({"as_of": str(as_of.date()), "as_of_compact": as_of.strftime("%Y%m%d"),
+                    "sig_ym": sig.strftime("%Y%m")}, rg["anchor"])
+        d = dates(ap_, col) if os.path.exists(ap_) else None
+        if not os.path.exists(ap_):
+            add("anchor", False, f"{ap_}: 파일 없음(MISSING)")
+        elif d is None:
+            add("anchor", False, f"{ap_}: {col} 판독 불가(UNREADABLE)")
+        else:
+            last = d.max().normalize()
+            add("anchor", last == sig, f"{ap_}: 앵커 {last.date()} (기대 {sig.date()})")
+    bad = [c for c in checks if not c["ok"]]
+    tags = sorted({c["check"] for c in bad})
+    sig_s = str(sig.date()) if sig is not None else "NA"
+    line = (f"OK sig={sig_s} reach={sum(c['check'] == 'reach' for c in checks)}files anchor=ok"
+            if not bad else
+            f"BAD [{','.join(tags)}] " + " · ".join(c["detail"] for c in bad[:4])
+            + (f" · 외 {len(bad) - 4}건" if len(bad) > 4 else "") + f" (sig={sig_s})")
+    if as_json:
+        print(json.dumps({"book_id": spec["book_id"], "as_of": str(as_of.date()), "mode": "runner_gate",
+                          "verdict": "OK" if not bad else "BAD", "sig_date": sig_s, "checks": checks},
+                         ensure_ascii=False, indent=2))
+    else:
+        for c in checks:
+            print(f"  [{'OK ' if c['ok'] else 'BAD'}] {c['check']:9s} {c['detail']}")
+        print(line)
+    return 0 if not bad else 1
+
+
 def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--book-id", required=True)
     ap.add_argument("--as-of", required=True, help="홀딩월 1일 (예: 2026-09-01)")
     ap.add_argument("--json", action="store_true", help="기계 판독용 JSON 출력")
+    ap.add_argument("--runner-gate", action="store_true",
+                    help="러너 관문 — 원천의 sig 일 도달 · 앵커만 잰다(머리말 참조)")
     a = ap.parse_args()
 
     if not os.path.exists(SPEC):
@@ -182,6 +286,8 @@ def main() -> int:
     as_of = pd.Timestamp(a.as_of)
     if as_of.day != 1:
         die(2, f"--as-of 는 홀딩월 1일이어야 함: {a.as_of}")
+    if a.runner_gate:
+        return runner_gate(spec, as_of, a.json)
     sig_ts = as_of - pd.Timedelta(days=1)
     # sig_date = 전월 마지막 **거래일**. benchmark 가 거래일 캘린더 단일 권위다.
     bd = _read_dates(".cache/benchmark.parquet", "Date")

@@ -24,34 +24,13 @@ TS="$(date +%Y%m%d)"; LOG="$LOGD/track_$TS.log"
 kill_stray(){ taskkill //F //IM Rscript.exe >/dev/null 2>&1 || true; }
 echo "=== noLayer4 월간 트래킹 $AS_OF ($(date)) ===" | tee "$LOG"
 
-# 0) ★데이터 리프레시 (2026-08-30 신설 — 도훈 지시 "리밸런싱할 때 데이터 리프레시도 진행")
-#    왜: 이 스크립트는 예약 작업(noLayer4_Monthly_PaperTracking)이 .bat 로 **직접** 부르는
-#    경로인데, 리프레시가 **한 스텝도 없었다** — 있는 캐시가 무엇이든 그 위에서 알파·m4·
-#    β·AE 를 계산했다. 그러면 신선도 게이트들이 **구조적으로 눈이 먼다**:
-#      · 아래 [1a2] AE 핀 신선도는 '핀 vs 라이브' 비교라, **라이브 자체가 낡으면 통과**한다.
-#      · Gate B(팩터DB 앵커)·Gate D 는 full 러너에만 있어 예약 경로에선 안 돈다.
-#    ⇒ 소비 직전에 원천을 전진시키고, 전진 실패는 삼키지 않는다.
-#    ★멱등: full 러너(run_pg2_rebalance_full.sh)는 [0]/[1] 에서 이미 refresh 를 돌리고
-#      PG2_REFRESH_DONE=1 을 내려보낸다 → 그 경로에선 중복 실행하지 않는다.
-#    ★QuantiWise(qw_refresh.ps1)는 **여기서 부르지 않는다** — 자동 로그인이 풀린 상태에서
-#      무인 실행하면 빈 PW 로 40회 클릭해 계정 잠금 위험이 있다(2026-08-29 실측).
-#      그건 사람이 붙는 full 러너의 [0]+Gate A 소관으로 남긴다.
-if [ "${PG2_REFRESH_DONE:-0}" = "1" ]; then
-  echo "── [0] 데이터 리프레시 스킵 — 상위 러너가 이미 수행(PG2_REFRESH_DONE=1)" | tee -a "$LOG"
-else
-  echo "[0] 데이터 리프레시 (daily_refresh.sh — ingest + factor DB)..." | tee -a "$LOG"
-  kill_stray
-  QVEST_REFRESH_TG=0 bash "$QM_ROOT/02_Infrastructure/data/daily_refresh.sh" >> "$LOG" 2>&1
-  _drrc=$?
-  # rc 만으로 판정하지 않는다 — 이 체인은 스텝 실패를 fail-soft 로 넘기는 구간이 있어
-  # rc=0 이 "전진했다"를 뜻하지 않는다(2026-08-14~20: 6일 연속 '실패 0' 인데 거래일 3일 결손).
-  # 그래서 rc 는 경고로만 남기고, **전진 여부는 아래 [1a2] AE 원천 신선도 게이트가 실측으로 잡는다**.
-  if [ "$_drrc" -ne 0 ]; then
-    echo "!! [0] daily_refresh rc=$_drrc — 원천 전진 실패 가능. [1a2] 원천 신선도 게이트가 실측 판정" | tee -a "$LOG"
-  else
-    echo "── [0] 데이터 리프레시 완료 (rc=0)" | tee -a "$LOG"
-  fi
-fi
+# 0) (리프레시 제거 2026-11-06 — 도훈 지시 "daily_refresh 돌리는 프로세스는 빼버려. 이제 어차피 데이터
+#    리프레시 때 퀀티 데이터들 다 업데이트하니까 필요없어"). 구 [0] 은 2026-08-30 지시("리밸런싱할 때 데이터
+#    리프레시도 진행")로 여기서 daily_refresh.sh 를 돌렸다 — 예약 경로(noLayer4_Monthly_PaperTracking → .bat →
+#    이 스크립트)가 있는 캐시 위에서 알파 · m4 · β · AE 를 계산하던 구멍을 막으려던 것이다.
+#    지금은 적재가 데이터 리프레시 소관(밤 Qvest_DailyRefresh — 퀀티 Update_File 포함 · 팩터DB 직전 달 finalize ·
+#    부팅 ensure_data_current.sh)이고, 이 러너는 소비만 한다. 그 구멍은 갱신이 아니라 **검사**로 막는다 —
+#    아래 [0c] Gate I(소비면 sig 일 도달 · 팩터DB 앵커). full 러너의 PG2_REFRESH_DONE 플래그도 함께 없앴다.
 
 # 0b) ★Gate M — 국면 입력의 MSM as-of 표식 + 신선도 (2026-11-06 · 결정 PIT-C1-MSM-PARAMS 안 A ·
 #     MSM-ASOF-SWITCH-20261017 D4 B · 적대 검토 #4 · #15 · #16 · #19). 판정 정본 = 02_Infrastructure/ops/gate_msm_asof.sh
@@ -59,8 +38,8 @@ fi
 #     왜: [1] 의 m4(factor_engine)가 읽는 통합 국면 신호(.cache/unified_regime_signal.parquet)가 ① 구 C1 MSM 판
 #       (1990~2026-01 전 표본 MLE 모수 — 표식 없음 · 혼합)이거나 ② 밤 MSM as-of 갱신 실패로 국면 빌드가 멈춰
 #       sig 월까지 오지 않았으면(sig 월 avail_date ≠ SIG_DATE · 일간 max < SIG_DATE) 비중을 만들지 않는다(폴백 없음).
-#       ②는 리프레시 요약에 '실패 0'으로 남을 수 있어 위 [0] 의 rc 로는 못 잡는다(검토 #16).
-#     ★배선 위치 = [0] 리프레시 뒤 · [1] 앞: 예약 경로(noLayer4_Monthly_PaperTracking → .bat → 이 스크립트)와
+#       ②는 리프레시 요약에 '실패 0'으로 남을 수 있어 리프레시 rc 로는 못 잡는다(검토 #16).
+#     ★배선 위치 = [1] 앞(구 [0] 리프레시는 2026-11-06 제거): 예약 경로(noLayer4_Monthly_PaperTracking → .bat → 이 스크립트)와
 #       full 러너([2] 에서 이 스크립트를 부른다)를 **한 지점**에서 덮는다. full 러너에만 두면 무인 경로가 빈다 —
 #       아래 [1a2] · [1b] 주석의 Gate C/D 와 같은 계통(검토 #4 · #19).
 #     ★fail-closed: 관문 rc≠0 이거나 'OK ' 줄이 아니면(판독 실패 · 관문 부재 포함) 중단한다. 경고로 삼키지 않는다.
@@ -74,6 +53,32 @@ if [ "$_gmrc" -ne 0 ] || [ "${_GM#OK }" = "$_GM" ]; then
   echo "XX [0b] Gate M 차단 — 통합 국면 신호가 as-of MSM 판이 아니거나 sig 월까지 전진하지 않았다. C1 · 낡은 국면으로 비중을 만들지 않는다. 중단" | tee -a "$LOG"
   echo "        [marker] = regime_append_only.R --republish 상태 확인 · [sig_row]/[avail]/[daily] = 밤 MSM as-of 갱신 · 국면 빌드 · 원장 append 확인" | tee -a "$LOG"
   exit 23
+fi
+
+# 0c) ★Gate I — 이번 리밸이 읽을 원천의 sig 일 도달 + sig 월 팩터DB 앵커 (검사만 · 2026-11-06 · 위 0) 참조).
+#     판정 정본 = 02_Infrastructure/book/book_rebalance_preflight.py --runner-gate (full 러너 [0] Gate I 와 한 벌 ·
+#     사양 rebalance_spec.json::runner_gate): ① sig 일 = KRX 등록부 기준 AS_OF 직전 거래일 ② 벤치 sig 월 마지막 날 == sig
+#     ③ RAWDATA · 수급 · 컨센서스(계열별) · 유니버스 보조 max(Date) ≥ sig ④ factor_db_<sig 월> 앵커 == sig.
+#     [1] 이하가 원천을 소비하기 직전 한 지점에서 예약 경로와 full 러너를 함께 덮는다.
+#     ★fail-closed: rc≠0 이거나 'OK ' 줄이 아니면(실행기 · 검사기 부재 포함) 중단. exit 24 = full 러너 Gate I 와 같은 코드.
+#     ★위치 = [0b] 뒤: Gate M 판정이 먼저 보이게 둔다(국면 · 입력 두 관문의 사유가 섞이지 않게).
+_GI_PY=""
+for _c in "$QM_ROOT/.venv_qvest_ml/Scripts/python.exe" "${QVEST_PY:-}"; do
+  _c="${_c//\\//}"
+  # ★존재가 아니라 기능으로 고른다 — QVEST_PY 는 pandas 없는 시스템 python 일 수 있다(10-17 실측).
+  [ -n "$_c" ] && "$_c" -c 'import pandas, pyarrow' >/dev/null 2>&1 && { _GI_PY="$_c"; break; }
+done
+if [ -z "$_GI_PY" ]; then
+  echo "XX [0c] Gate I 실행기(pandas · pyarrow) 미발견 — 판정 없이 지나가지 않는다. 중단" | tee -a "$LOG"
+  exit 24
+fi
+_GI="$(PYTHONUTF8=1 "$_GI_PY" "$QM_ROOT/02_Infrastructure/book/book_rebalance_preflight.py" \
+         --book-id "${PG2_BOOK_ID:-BOOK_0001}" --as-of "$AS_OF" --runner-gate 2>>"$LOG" | tee -a "$LOG" | tail -n 1)"
+_girc=$?
+echo "── [0c] Gate I: ${_GI:-BAD (관문 출력 없음)} (rc=$_girc)" | tee -a "$LOG"
+if [ "$_girc" -ne 0 ] || [ "${_GI#OK }" = "$_GI" ]; then
+  echo "XX [0c] Gate I 차단 — 이번 리밸이 읽을 원천이 sig 일까지 오지 않았거나 팩터DB 앵커가 sig 일이 아니다. 러너는 적재하지 않는다(도훈 11-06) — 데이터 리프레시 소관. 중단" | tee -a "$LOG"
+  exit 24
 fi
 
 # 1) base 최신화 + noLayer4 배포 비중 (alpha->m4->β_R05->비중, Layer4 없음) — 슬롯2-3 하드닝 파이프라인

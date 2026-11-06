@@ -2,24 +2,26 @@
 #==============================================================================
 # run_pg2_rebalance_full.sh - PG2 월간 리밸 단일 오케스트레이터 (얇은 래퍼)
 #
-# 기존 3스크립트를 순서대로 호출하고 사이에 fail-loud 게이트를 넣는다. 로직 무수정.
-#   [0] qw_refresh.ps1            QuantiWise -> Update_File 증분 refresh
-#        Gate A(하드): 5파일 전부 target 도달? 아니면 ABORT (stale 인제스트 차단)
-#   [1] daily_refresh.sh          incremental_update_all + build_factor_db
-#        Gate B(경고): 최신 factor_db mtime==오늘? (알파 hard-stop이 2차 방어)
+# 기존 스크립트를 순서대로 호출하고 사이에 fail-loud 게이트를 넣는다. 로직 무수정.
+#   [0] Gate I(하드 · 검사만): 이번 리밸이 읽을 원천이 sig 일까지 왔나 + sig 월 팩터DB 앵커
+#        (book_rebalance_preflight.py --runner-gate · 사양 rebalance_spec.json::runner_gate)
+#        ★러너는 적재하지 않는다 — 2026-11-06 도훈 지시 "daily_refresh 돌리는 프로세스는 빼버려.
+#          이제 어차피 데이터 리프레시 때 퀀티 데이터들 다 업데이트하니까 필요없어".
+#          구 [0] qw_refresh.ps1 + Gate A · [1] daily_refresh.sh + [1b] sig 월 팩터DB 재빌드 + Gate B 제거.
 #        Gate M(하드): 통합 국면 신호 = as-of MSM 표식 ∧ sig 월까지 전진? (gate_msm_asof.sh — [2] 하위 [0b] 와 같은 판정)
 #   [2] run_nolayer4_monthly.sh  알파->m4->β_R05->비중 (Layer4 없음) + monitor
+#        (하위 [0c] 가 소비 직전에 Gate I 를 다시 건다 — 예약 경로와 한 지점)
 #        Gate C(하드): 홀딩 CSV 생성? 아니면 ABORT
 #        (구 FaithTrend/2-2 경로 → noLayer4/2-3 전환, 도훈 지시 2026-07-03 Layer4 제거)
+#   [3] Gate D(하드): 하드 제약 + 재계산 정합(전월 지문)
 #   [STOP] Governor(자본편입)은 호출 안 함 - event-driven, 도훈 수동 confirm.
 #
 # 원칙: 얇은 래퍼 / fail-loud / 멱등(재실행 시 완료분 스킵) / 단일 로그 / 페이퍼 비중까지.
 #
 # 사용:
-#   bash run_pg2_rebalance_full.sh                     # 이번달 1일 AS_OF, 전과정
+#   bash run_pg2_rebalance_full.sh                     # 이번달 1일 AS_OF
 #   PG2_AS_OF=2026-07-01 bash run_pg2_rebalance_full.sh
-#   bash run_pg2_rebalance_full.sh --skip-refresh      # 데이터 이미 신선 -> [1][2]만
-#   bash run_pg2_rebalance_full.sh --only-weights      # [2]만 (팩터DB 신선 가정)
+#   (구 --skip-refresh · --only-weights 는 리프레시 단계가 없어져 받아도 무시한다 — 동작 동일)
 #==============================================================================
 set -uo pipefail
 export QM_ROOT="${QM_ROOT:-C:/Users/99922/OneDrive/Quant_Module_Moltbot}"
@@ -28,6 +30,8 @@ cd "$QM_ROOT"
 
 AS_OF="${PG2_AS_OF:-$(date +%Y-%m)-01}"
 DT="$(echo "$AS_OF" | tr -d '-')"
+# 사양(02_Infrastructure/book/rebalance_spec.json) 키 — 이 러너가 배포하는 BOOK. Gate I 가 이 사양의 runner_gate 로 잰다.
+BOOK_ID="${PG2_BOOK_ID:-BOOK_0001}"
 PY="$QM_ROOT/.venv_qvest_ml/Scripts/python.exe"
 RSCRIPT="$(command -v Rscript || echo '/c/Program Files/R/R-4.5.2/bin/Rscript.exe')"
 LOGD="$QM_ROOT/.cache/pg2_rebalance_logs"; mkdir -p "$LOGD"
@@ -49,12 +53,6 @@ MANIFEST="$HOLD_DIR/${DT}_${HOLD_TAG}_manifest.json"
 PREV_DT="$(date -d "$AS_OF -1 month" +%Y%m01)"
 PREV_HOLD="$HOLD_DIR/${PREV_DT}_${HOLD_TAG}_weights_cap_0p20.csv"
 
-SKIP_REFRESH=0; ONLY_WEIGHTS=0
-for a in "$@"; do case "$a" in
-  --skip-refresh) SKIP_REFRESH=1 ;;
-  --only-weights) ONLY_WEIGHTS=1; SKIP_REFRESH=1 ;;
-esac; done
-
 say(){ echo "$1" | tee -a "$LOG"; }
 abort(){ say "XX ABORT [$1] (exit $3): $2"; exit "$3"; }
 
@@ -62,105 +60,34 @@ say "===== PG2 rebalance FULL | AS_OF=$AS_OF | $(date '+%Y-%m-%d %H:%M:%S') ====
 say "slot: $ADMITTED_ID → ${SLOT_DIR##*/} (tag=$HOLD_TAG)"
 say "gen : ${GEN_SCRIPT#$QM_ROOT/}"
 say "log: $LOG"
+for a in "$@"; do case "$a" in
+  --skip-refresh|--only-weights) say "[note] $a 무시 — 러너에 리프레시 단계가 없다(2026-11-06 도훈 지시 · 적재는 데이터 리프레시 소관)" ;;
+esac; done
 
-# ── [0] QuantiWise refresh + Gate A ─────────────────────────────────────────
-if [ "$SKIP_REFRESH" != "1" ]; then
-  say "[0] QuantiWise refresh (qw_refresh.ps1)..."
-  powershell -ExecutionPolicy Bypass -File "02_Infrastructure/ops/qw_refresh.ps1" >> "$LOG" 2>&1 \
-    || say "[warn] qw_refresh 종료코드!=0 (Gate A가 실 도달여부 검증)"
-  GA="$("$PY" - <<'PYEOF' 2>/dev/null
-import json,os,pyarrow.parquet as pq,pandas as pd
-root=os.environ["QM_ROOT"]
-target=pd.to_datetime(pq.read_table(root+"/.cache/RAWDATA.parquet",columns=["Date"]).to_pandas()["Date"]).max().strftime("%Y%m%d")
-# ★(2026-08-29 수리) 상태 파일은 PowerShell(qw_refresh.ps1)이 쓰므로 **BOM 이 붙는다**.
-#   구판은 `open()` 기본 인코딩으로 읽어 JSONDecodeError → except 로 st={} → 신선하든
-#   낡았든 **언제나 "5종 전부 미달"**을 냈다(실측 2026-08-29: 파일에 20260731 5건이
-#   멀쩡히 있는데 Gate A 는 전건 미달로 보고). 게이트가 '못 읽음'과 '낡음'을 구분 못 하면
-#   차단 사유가 거짓이 된다 — 이 저장소가 반복해 겪은 '계측 사망의 위장' 부류다.
-#   ⇒ utf-8-sig 로 읽고, **읽기 실패는 UNREADABLE 로 따로 보고**한다(미달로 접지 않는다).
-need=["Benchmark","OHLCVS","Universe_Support","Investor_Act","Consensus"]
-p=root+"/.cache/qw_refresh_state.json"
-try:
-    st=json.load(open(p,encoding="utf-8-sig"))
-except FileNotFoundError:
-    print("UNREADABLE(state_file_absent) target="+target); raise SystemExit
-except Exception as e:
-    print("UNREADABLE(%s) target=%s"%(type(e).__name__,target)); raise SystemExit
-miss=[n for n in need if str((st.get(n) or {}).get("ymd"))!=target]
-print("ALLDONE target="+target if not miss else "INCOMPLETE("+",".join(miss)+") target="+target)
-PYEOF
-)"
-  say "  Gate A: $GA"
-  echo "$GA" | grep -q "^ALLDONE" || abort "GateA-refresh" "일부 Update_File target 미달 -> stale 인제스트 방지 (공유자 kick 등, qw_refresh 재실행으로 이어감)" 10
-else
-  say "[0] refresh 스킵 (--skip-refresh)"
-fi
-
-# ── [1] 인제스트 + 팩터DB + Gate B ──────────────────────────────────────────
-if [ "$ONLY_WEIGHTS" != "1" ]; then
-  say "[1] ingest + factor DB (daily_refresh.sh)..."
-  QVEST_REFRESH_TG=0 bash "02_Infrastructure/data/daily_refresh.sh" >> "$LOG" 2>&1 \
-    || say "[warn] daily_refresh 종료코드!=0 (Gate B/알파 hard-stop이 검증)"
-  # ── [1b] sig-month factor DB 강제 재빌드 + IC 재계산 (2026-08-01 추가) ─────
-  #   왜: daily_refresh [6a] 의 update_factor_db_daily() 는 today <- Sys.Date() 기준이라
-  #   **당월만** 빌드한다(factor_db_builder.R:1361-1364). 그런데 월초 리밸의 sig_date 는
-  #   *전월* 말일 → 소비 파일은 전월 DB다. gap-scan(.fdb_gap_months)은 '없는 달'만 잡고
-  #   '있지만 월중 앵커'는 못 잡는다. 실측(2026-08-01): factor_db_202607 의 Date 단일값이
-  #   2026-07-24 로, 월말이 아니었다(07-26 빌드 당시 RAWDATA 가 07-24 까지였던 탓).
-  #   그대로 두면 종목 선정과 β_R05 가 **둘 다 5거래일 낡은 Z-score** 로 계산된다.
-  #   ★순서 의존: 앵커를 고친 *뒤* IC 를 돌려야 한다. 앵커가 월중이면
-  #   ic_pair_completeness 가 file_partial 로 pair 를 건너뛰어 IC 가 전진하지 않는다.
-  SIG_YM="$(date -d "$AS_OF -1 day" +%Y%m)"
-  SIG_DATE="$("$PY" - "$SIG_YM" <<'PYEOF'
-import sys, pyarrow.parquet as pq, pandas as pd
-ym = sys.argv[1]
-b = pd.to_datetime(pq.read_table(".cache/benchmark.parquet", columns=["Date"]).to_pandas()["Date"])
-m = b[b.dt.strftime("%Y%m") == ym]
-print(m.max().strftime("%Y-%m-%d") if len(m) else "")
-PYEOF
-)"
-  [ -n "$SIG_DATE" ] || abort "GateB-sigdate" "sig month $SIG_YM 의 거래일을 benchmark 에서 찾지 못함" 21
-  say "[1b] sig-month factor DB 강제 재빌드 (sig_ym=$SIG_YM sig_date=$SIG_DATE)"
-  #   ★2026-08-29 수리: QM_ROOT 가 역슬래시 형(C:\Users\...)이면 R 문자열 안에서 `\U` 가
-  #   유니코드 이스케이프로 먹혀 **1행 11열에서 파스 에러**로 즉사한다
-  #   (Error: '\U' used without hex digits). 그런데 실패가 `|| say "[warn] ..."` 로 삼켜지고
-  #   Gate B 는 *앵커 날짜*만 보는데 그 앵커는 주가 축(API 경로·신선)이 채우므로 통과한다.
-  #   ⇒ 이 재빌드는 사실상 한 번도 돌지 않은 채 초록만 났다. 슬래시 정규화로 고정.
-  _QM_R="${QM_ROOT//\\//}"
-  _T="$(mktemp /tmp/qm_fdb_XXXX.R)"
-  printf '%s\n' \
-    "setwd('$_QM_R')" \
-    "source('02_Infrastructure/factor_db/factor_db_builder.R')" \
-    "build_factor_db('$SIG_DATE', force = TRUE)" \
-    "compute_all_factor_ic_monthly()" > "$_T"
-  "$RSCRIPT" --no-save "$_T" >> "$LOG" 2>&1 || say "[warn] sig-month 재빌드/IC rc!=0 (Gate B 가 내용으로 검증)"
-  rm -f "$_T"
-
-  # ── Gate B = 앵커 **내용** 검사 (mtime 아님) ────────────────────────────────
-  #   구판은 `ls -1t | head -1` 로 가장 최근 factor_db 를 골라 mtime 만 봤다. 월초에 실행하면
-  #   그건 오늘 만들어진 *당월* DB(예: 202608)라 **소비하지 않는 파일**을 검사하고 초록을 냈다.
-  #   게다가 warn-only 라 abort 도 없었다. 파일이 있다/최근이다 는 "맞는 신호일로 만들어졌나"를
-  #   재지 못한다 — 잴 것을 재도록 앵커 Date 를 직접 검사하고 미달 시 중단한다.
-  GB="$("$PY" - "$SIG_YM" "$SIG_DATE" <<'PYEOF'
-import sys, os, pyarrow.parquet as pq, pandas as pd
-ym, sig = sys.argv[1], sys.argv[2]
-p = f".cache/factor_db/factor_db_{ym}.parquet"
-if not os.path.exists(p):
-    print(f"BAD 파일 부재 {p}"); raise SystemExit
-try:
-    d = pd.to_datetime(pq.read_table(p, columns=["Date"]).to_pandas()["Date"])
-    u = sorted(d.dt.strftime("%Y-%m-%d").unique())
-    print(("OK " if u[-1] == sig else "BAD ") + f"anchor={u[-1]} (기대 {sig}) rows={len(d)} uniq={len(u)}")
-except Exception as e:
-    print(f"BAD read_error={e}")
-PYEOF
-)"
-  say "  Gate B: $GB"
-  echo "$GB" | grep -q "^OK" \
-    || abort "GateB-anchor" "factor_db_$SIG_YM 앵커가 $SIG_DATE 아님 ($GB) — 알파·β_R05 가 낡은 신호일로 계산되는 것을 차단" 22
-else
-  say "[1] 인제스트/팩터DB 스킵 (--only-weights)"
-fi
+# ── [0] Gate I — 입력 도달 + 팩터DB 앵커 (검사만 · 갱신 없음 · 2026-11-06) ──────────────
+#   ★도훈 지시 2026-11-06: "daily_refresh 돌리는 프로세스는 빼버려. 이제 어차피 데이터 리프레시 때
+#     퀀티 데이터들 다 업데이트하니까 필요없어". 그래서 이 러너는 적재하지 않는다 — 구 [0] qw_refresh.ps1 +
+#     Gate A(원천 상태파일) · [1] daily_refresh.sh + [1b] sig 월 팩터DB 강제 재빌드 + IC · Gate B(앵커 내용)를 걷어냈다.
+#     적재 · 팩터DB 월말 확정(+IC)은 데이터 리프레시 소관이다 — 밤 Qvest_DailyRefresh(daily_refresh.sh: 퀀티 Update_File ·
+#     [6a] update_factor_db_daily 의 직전 달 finalize) · 부팅 ensure_data_current.sh. 그쪽이 원천을 전진시키지
+#     못했으면 여기서 멈춘다(우회하지 않는다 · 원천 재적재 뒤 sig 월 팩터DB 재빌드도 그쪽 일이다).
+#   잰다(소비면 · 관용이 아니라 도달): ① sig 일 = KRX 등록부 기준 AS_OF 직전 거래일 ② 벤치 sig 월 마지막 날 == sig
+#     ③ 사양 runner_gate.sig_reach 의 파일마다 max(Date) ≥ sig(RAWDATA · 수급 · 컨센서스 계열별 · 유니버스 보조)
+#     ④ factor_db_<sig 월> 앵커 == sig. 판정 정본 = book_rebalance_preflight.py --runner-gate(하위 [0c] 와 한 벌).
+#   ★Gate A 를 검사로 남기지 않은 이유: 상태파일은 수신 기록이지 적재 증거가 아니다 — 11-06 실측 Consensus
+#     ymd=20261105 인데 소비면 eps_1y 10-19 · op_profit_fy1 10-16 이었고, Benchmark 키는 10-17 벤치 정본 이관 뒤
+#     20260828 에 멈춰 Gate A 는 매번 '미달'을 냈다. 구 Gate B 는 sig 일을 벤치 최대값에서 구해 벤치가 낡으면
+#     sig 일도 같이 낡았다 — ①이 그 순환을 끊는다.
+#   exit 24 (구 Gate A 10 · Gate B 21/22 퇴역). 하위 러너 [0c] 도 같은 판정 · 같은 코드.
+"$PY" -c "import pandas, pyarrow" >/dev/null 2>&1 \
+  || abort "GateI-python" "관문 실행기 기능 확인 실패($PY — pandas · pyarrow import) — 판정 없이 지나가지 않는다" 24
+say "[0] Gate I: 입력 sig 일 도달 + 팩터DB 앵커 (검사만 — 리프레시 없음)"
+GI="$(PYTHONUTF8=1 "$PY" "$QM_ROOT/02_Infrastructure/book/book_rebalance_preflight.py" \
+        --book-id "$BOOK_ID" --as-of "$AS_OF" --runner-gate 2>>"$LOG" | tee -a "$LOG" | tail -n 1)"
+_GI_RC=$?
+say "  Gate I: ${GI:-BAD (관문 출력 없음)} (rc=$_GI_RC)"
+[ "$_GI_RC" -eq 0 ] && [ "${GI#OK }" != "$GI" ] \
+  || abort "GateI-inputs" "이번 리밸이 읽을 원천이 sig 일까지 오지 않았거나 팩터DB 앵커가 sig 일이 아님 — 러너는 적재하지 않는다(도훈 11-06). 데이터 리프레시 소관으로 이관(로그의 [BAD] 줄 확인)" 24
 
 # ── Gate M — 국면 입력의 MSM 추정기 표식 + 신선도 (2026-11-06 · MSM-ASOF-SWITCH-20261017 D4 B · S3 · 적대 검토 #4·#15·#16·#19) ─────
 #   동결 BOOK 엔진(factor_engine.R · m4)은 손대지 않는다. 대신 엔진이 읽는 통합 국면 신호
@@ -173,8 +100,7 @@ fi
 #   왜: 구판 MSM 은 1990~2026-01 전 표본 MLE 모수(PIT C1 — 결정 PIT-C1-MSM-PARAMS)라 m4 의 Cash_Pct ·
 #   MSM_Crisis_Prob 입력이 미래 자료로 정해진 값이었다. 원장 재발행이 실패해 라이브가 구판으로 남는 경우를 잡는다.
 #   ★여기 것은 조기 경보다 — [2] 의 run_nolayer4_monthly.sh 가 소비 직전([0b])에 같은 관문을 다시 건다(예약 경로와 한 지점).
-#   ★--only-weights 는 [1] 을 건너뛰므로 이 판정은 그때의 캐시 기준이다(SIG_DATE 도 관문이 벤치에서 다시 구한다).
-#     낡음으로 막히면 리프레시 뒤 재실행한다 — 하위 러너 리프레시를 믿고 넘기지 않는다.
+#     낡음으로 막히면 데이터 리프레시(밤 MSM as-of 갱신 · 국면 원장 append) 뒤 재실행한다 — 러너는 갱신하지 않는다.
 GM="$(bash "$QM_ROOT/02_Infrastructure/ops/gate_msm_asof.sh" "$AS_OF" "$QM_ROOT" 2>>"$LOG")"
 _GM_RC=$?
 say "  Gate M: ${GM:-BAD (관문 출력 없음)} (rc=$_GM_RC)"
@@ -183,23 +109,18 @@ say "  Gate M: ${GM:-BAD (관문 출력 없음)} (rc=$_GM_RC)"
 
 # ── [2] 리밸 (비중 + monitor, Layer4 없음) + Gate C ─────────────────────────
 say "[2] rebalance (run_nolayer4_monthly.sh, AS_OF=$AS_OF)..."
-# ★PG2_REFRESH_DONE (2026-08-30) — 하위 러너에 "리프레시는 이미 했다"를 알린다.
-#   run_nolayer4_monthly.sh 는 예약 경로에서 직접 호출되므로 자체 [0] 리프레시를 갖게 됐다.
-#   이 플래그가 없으면 여기서 [0]/[1] 을 돌리고 [2] 안에서 **또 돌린다**(중복 = 수십 분 낭비).
-#   ★값은 "돌렸다"가 아니라 "이 실행에서 실제로 수행했다"여야 한다 — --only-weights 는
-#     [1] 을 건너뛰므로 하위가 스스로 갱신하도록 0 으로 내려보낸다(스킵을 완료로 위장 금지).
-_REFRESH_DONE=1
-[ "$ONLY_WEIGHTS" = "1" ] && _REFRESH_DONE=0
-say "  → PG2_REFRESH_DONE=$_REFRESH_DONE (0이면 하위 러너가 자체 리프레시 수행)"
-PG2_AS_OF="$AS_OF" PG2_REFRESH_DONE="$_REFRESH_DONE" \
+#   (구 PG2_REFRESH_DONE 플래그 제거 2026-11-06 — 하위 러너도 리프레시하지 않으므로 알릴 것이 없다)
+PG2_AS_OF="$AS_OF" PG2_BOOK_ID="$BOOK_ID" \
   bash "02_Infrastructure/monitoring/run_nolayer4_monthly.sh" >> "$LOG" 2>&1
 _NL4_RC=$?
-# ★Gate M 전파 (2026-11-06): 하위 러너가 [0b] Gate M 에서 멈추면(rc 23) 이번 실행은 비중을 만들지 않았다.
-#   그 rc 를 아래처럼 경고로 삼키면, 같은 AS_OF 의 이전 홀딩 CSV 가 남아 있을 때 Gate C 가 그것을 이번 산출로 보고
-#   '완료'를 낸다. 위 조기 Gate M 과 하위 [0b] 사이에 국면 파일이 바뀌는 경우(밤 리프레시와 겹침 · --only-weights 의
-#   하위 리프레시)가 그 길이다. 다른 rc 는 종전대로 Gate C/D 가 최종 검증한다.
+# ★Gate M · Gate I 전파 (2026-11-06): 하위 러너가 [0b] Gate M(rc 23) 또는 [0c] Gate I(rc 24)에서 멈추면 이번 실행은
+#   비중을 만들지 않았다. 그 rc 를 아래처럼 경고로 삼키면, 같은 AS_OF 의 이전 홀딩 CSV 가 남아 있을 때 Gate C 가 그것을
+#   이번 산출로 보고 '완료'를 낸다. 위 조기 관문과 하위 관문 사이에 국면 · 원천 파일이 바뀌는 경우(밤 리프레시와 겹침)가
+#   그 길이다. 다른 rc 는 종전대로 Gate C/D 가 최종 검증한다.
 [ "$_NL4_RC" -eq 23 ] \
   && abort "GateM-msm-sub" "하위 러너 run_nolayer4_monthly.sh [0b] Gate M 차단 — 이번 실행은 비중 미산출(로그의 [0b] 줄 확인)" 23
+[ "$_NL4_RC" -eq 24 ] \
+  && abort "GateI-inputs-sub" "하위 러너 run_nolayer4_monthly.sh [0c] Gate I 차단 — 이번 실행은 비중 미산출(로그의 [0c] 줄 확인)" 24
 [ "$_NL4_RC" -eq 0 ] || say "[warn] run_nolayer4_monthly 일부 step warn (rc=$_NL4_RC · Gate C가 최종 검증)"
 [ -f "$HOLD" ] && [ "$(wc -l < "$HOLD")" -ge 5 ] \
   || abort "GateC-weights" "홀딩 CSV 미생성/부실: $HOLD (run_pg2_forward alpha/m4/beta 실패 가능 - 로그 확인)" 30

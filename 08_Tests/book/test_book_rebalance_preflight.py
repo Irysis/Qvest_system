@@ -251,10 +251,134 @@ def main():
         else:
             ng(f"⑧ 미등재 book_id 가 rc={rc} — fail-closed 아님")
 
+    run_gate_cases()
+
     print(f"결과: PASS={PASS} FAIL={FAIL}")
     print(json.dumps({"test": "book_rebalance_preflight", "pass": PASS, "fail": FAIL,
                       "total": PASS + FAIL, "skipped": 0}, ensure_ascii=False))
     return 1 if FAIL else 0
+
+
+# ── 러너 관문(--runner-gate) — 2026-11-06 도훈 지시 "daily_refresh 돌리는 프로세스는 빼버려" ──────────
+#   러너가 적재를 그만두면서 생긴 자리를 이 모드가 검사로 막는다. 양방향으로 건다:
+#   Ⓡ1 [음성 대조] 전부 sig 일 도달 + 앵커 일치 → OK(rc 0) · 마지막 줄 'OK sig=' (러너가 그 줄을 읽는다)
+#   Ⓡ2 [위반] 컨센서스 한 계열만 sig 전에 멈춤 → BAD [reach] — 그 파일을 이름으로 짚고, 다른 계열은 OK(축마다 따로)
+#   Ⓡ3 [위반] 팩터DB 앵커 ≠ sig → BAD [anchor]
+#   Ⓡ4 [순환 차단] 벤치까지 같이 하루 낡음(전부 10-29 · 앵커 10-29) → BAD [benchmark]. 구 Gate B 처럼 sig 일을 벤치
+#       최대값에서 구했다면 OK 가 났을 경우다 — sig 는 KRX 등록부에서 온다.
+#   Ⓡ5 [미측정 ≠ 미달] 파손 계열 = UNREADABLE · 앵커 부재 = MISSING (OK 로 접지 않음) · skip 목록(ticker_map)은 재지 않음
+#   Ⓡ6 [fail-closed] 등록부 부재 → BAD [calendar] · 사양에 runner_gate 없음 → rc 2
+RG_AS_OF, RG_SIG = "2026-11-01", "2026-10-30"     # 2026-10-30(금) = KRX 등록부 기준 11-01 직전 거래일
+
+
+def build_rg_root(tmp, *, data_max=RG_SIG, bench_end=RG_SIG, anchor=RG_SIG, lag_file=None,
+                  corrupt=(), drop=(), registry=True, with_gate=True):
+    days = lambda end: pd.bdate_range("2026-10-01", end).tolist()
+    _wp(f"{tmp}/.cache/benchmark.parquet", pd.DataFrame({"Date": days(bench_end)}))
+    for rel in (".cache/RAWDATA.parquet", ".cache/investor_stock/investor_all.parquet",
+                ".cache/consensus/eps_1y.parquet", ".cache/consensus/op_profit_fy1.parquet",
+                ".cache/universe_support/us_k200.parquet"):
+        end = "2026-10-19" if lag_file and rel.endswith(lag_file) else data_max
+        _wp(f"{tmp}/{rel}", pd.DataFrame({"Date": days(end)}))
+    _wp(f"{tmp}/.cache/consensus/ticker_map.parquet", pd.DataFrame({"Ticker": ["A000020"], "Name": ["x"]}))
+    _wp(f"{tmp}/.cache/factor_db/factor_db_202610.parquet", pd.DataFrame({"Date": pd.to_datetime([anchor])}))
+    if registry:
+        os.makedirs(f"{tmp}/06_Registry", exist_ok=True)
+        shutil.copy(os.path.join(CODE_ROOT, "06_Registry", "krx_holidays.json"), f"{tmp}/06_Registry/krx_holidays.json")
+    gate = {"date_col": "Date", "anchor": ".cache/factor_db/factor_db_{sig_ym}.parquet",
+            "sig_reach": [{"glob": ".cache/RAWDATA.parquet"},
+                          {"glob": ".cache/investor_stock/investor_all.parquet"},
+                          {"glob": ".cache/consensus/*.parquet", "skip": ["ticker_map.parquet"]},
+                          {"glob": ".cache/universe_support/*.parquet"}]}
+    spec = {"book_id": "BOOK_RG", "strategy_id": "FIXTURE", "inputs": [], "overlays": []}
+    if with_gate:
+        spec["runner_gate"] = gate
+    os.makedirs(f"{tmp}/02_Infrastructure/book", exist_ok=True)
+    with open(f"{tmp}/02_Infrastructure/book/rebalance_spec.json", "w", encoding="utf-8") as fh:
+        json.dump({"schema": "book_rebalance_spec_v1", "specs": [spec]}, fh, ensure_ascii=False)
+    for rel in drop:
+        os.remove(f"{tmp}/{rel}")
+    for rel in corrupt:
+        with open(f"{tmp}/{rel}", "wb") as fh:
+            fh.write(b"not a parquet")
+    return tmp
+
+
+def run_rg(tmp, as_json=True):
+    env = dict(os.environ, QM_ROOT=tmp.replace("\\", "/"), PYTHONUTF8="1")
+    cmd = [sys.executable, CHECKER, "--book-id", "BOOK_RG", "--as-of", RG_AS_OF, "--runner-gate"]
+    r = subprocess.run(cmd + (["--json"] if as_json else []), capture_output=True, text=True,
+                       encoding="utf-8", env=env, cwd=tmp)
+    if not as_json:
+        return r.returncode, (r.stdout.strip().splitlines() or [""])[-1]
+    try:
+        return r.returncode, json.loads(r.stdout)
+    except Exception:
+        return r.returncode, {"_raw": (r.stdout + r.stderr)[-300:]}
+
+
+def bad_checks(p, tag=None):
+    return [c for c in p.get("checks", []) if not c["ok"] and (tag is None or c["check"] == tag)]
+
+
+def run_gate_cases():
+    print("=== 러너 관문(--runner-gate) ===")
+    with tempfile.TemporaryDirectory() as t:
+        build_rg_root(t)
+        rc, p = run_rg(t)
+        rc2, last = run_rg(t, as_json=False)
+        if rc == 0 and p.get("verdict") == "OK" and p.get("sig_date") == RG_SIG and rc2 == 0 \
+                and last.startswith(f"OK sig={RG_SIG}"):
+            ok(f"Ⓡ1 전부 도달 → OK · 마지막 줄 '{last[:40]}'")
+        else:
+            ng(f"Ⓡ1 신선한데 막혔다: rc={rc} {p.get('verdict')} sig={p.get('sig_date')} last={last[:80]} {p.get('_raw','')}")
+    with tempfile.TemporaryDirectory() as t:
+        build_rg_root(t, lag_file="op_profit_fy1.parquet")
+        rc, p = run_rg(t)
+        b = bad_checks(p, "reach")
+        eps_ok = any(c["ok"] and "eps_1y" in c["detail"] for c in p.get("checks", []))
+        if rc == 1 and len(b) == 1 and "op_profit_fy1" in b[0]["detail"] and eps_ok:
+            ok("Ⓡ2 한 계열만 낡음 → BAD [reach] 그 파일만 짚음 · 다른 계열 OK(축마다 따로)")
+        else:
+            ng(f"Ⓡ2 계열 낡음 처리 오류: rc={rc} bad={[c['detail'] for c in b]} eps_ok={eps_ok}")
+    with tempfile.TemporaryDirectory() as t:
+        build_rg_root(t, anchor="2026-10-29")
+        rc, p = run_rg(t)
+        if rc == 1 and bad_checks(p, "anchor") and not bad_checks(p, "reach"):
+            ok("Ⓡ3 앵커 ≠ sig → BAD [anchor]")
+        else:
+            ng(f"Ⓡ3 앵커 불일치 미검출: rc={rc} {[c['detail'] for c in bad_checks(p)]}")
+    with tempfile.TemporaryDirectory() as t:
+        build_rg_root(t, data_max="2026-10-29", bench_end="2026-10-29", anchor="2026-10-29")
+        rc, p = run_rg(t)
+        if rc == 1 and bad_checks(p, "benchmark") and p.get("sig_date") == RG_SIG:
+            ok("Ⓡ4 벤치까지 같이 낡음 → BAD [benchmark] (sig 는 등록부 10-30 — 벤치 최대값에 끌려가지 않음)")
+        else:
+            ng(f"Ⓡ4 순환 미차단: rc={rc} sig={p.get('sig_date')} {[c['detail'] for c in bad_checks(p)]}")
+    with tempfile.TemporaryDirectory() as t:
+        build_rg_root(t, corrupt=(".cache/consensus/eps_1y.parquet",), drop=(".cache/factor_db/factor_db_202610.parquet",))
+        rc, p = run_rg(t)
+        unr = [c for c in bad_checks(p, "reach") if "UNREADABLE" in c["detail"]]
+        mis = [c for c in bad_checks(p, "anchor") if "MISSING" in c["detail"]]
+        tmap = [c for c in p.get("checks", []) if "ticker_map" in c["detail"]]
+        if rc == 1 and unr and mis and not tmap:
+            ok("Ⓡ5 파손 = UNREADABLE · 앵커 부재 = MISSING · skip 목록(ticker_map) 미측정")
+        else:
+            ng(f"Ⓡ5 미측정 처리 오류: rc={rc} unr={len(unr)} mis={len(mis)} ticker_map={len(tmap)}")
+    with tempfile.TemporaryDirectory() as t:
+        build_rg_root(t, registry=False)
+        rc, p = run_rg(t)
+        if rc == 1 and bad_checks(p, "calendar") and p.get("verdict") == "BAD":
+            ok("Ⓡ6 등록부 부재 → BAD [calendar] (판정 불가 = 통과 아님)")
+        else:
+            ng(f"Ⓡ6 등록부 부재 처리 오류: rc={rc} {p.get('verdict')} {p.get('_raw','')}")
+    with tempfile.TemporaryDirectory() as t:
+        build_rg_root(t, with_gate=False)
+        rc, p = run_rg(t)
+        if rc == 2:
+            ok("Ⓡ6 사양에 runner_gate 없음 → rc 2 (무엇을 잴지 모르면 통과시키지 않는다)")
+        else:
+            ng(f"Ⓡ6 runner_gate 부재가 rc={rc}")
 
 
 if __name__ == "__main__":

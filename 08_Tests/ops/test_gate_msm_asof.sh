@@ -230,13 +230,15 @@ rung "$GATE" "$AS" "$SB_MSYS/fx/ok";                       exp_ok "E MSYS 형 �
 echo "=== W 러너 배선 ==="
 cl(){ grep -nvE '^[[:space:]]*#' "$1"; }                     # "줄번호:내용" — 주석은 구판 패턴을 인용하므로 뺀다
 firstln(){ cl "$1" | grep -F -- "$2" | head -n 1 | cut -d: -f1; }
-w1(){ # w1 <러너> — 관문 호출이 [0] 리프레시 뒤 · [1] 앞에 있는가(출력 = 판정 문구)
-  local g r f; g="$(firstln "$1" "gate_msm_asof.sh")"; r="$(firstln "$1" "daily_refresh.sh")"; f="$(firstln "$1" "run_pg2_forward_noLayer4.sh")"
+w1(){ # w1 <러너> — 관문 호출이 [1](run_pg2_forward) 앞에 있는가(출력 = 판정 문구).
+      #   구 조건 '[0] 리프레시 뒤'는 2026-11-06 러너 리프레시 제거(도훈 지시 "daily_refresh 돌리는 프로세스는 빼버려")로
+      #   없어졌다 — 리프레시 부재 자체는 test_ae_monthly_plumbing.py WIRE-3 이 잰다.
+  local g f; g="$(firstln "$1" "gate_msm_asof.sh")"; f="$(firstln "$1" "run_pg2_forward_noLayer4.sh")"
   if [ -z "$g" ]; then echo "ABSENT"; return 1; fi
-  if [ -n "$r" ] && [ -n "$f" ] && [ "$r" -lt "$g" ] && [ "$g" -lt "$f" ]; then echo "ORDER_OK refresh=$r gate=$g forward=$f"; return 0; fi
-  echo "ORDER_BAD refresh=${r:-?} gate=$g forward=${f:-?}"; return 1
+  if [ -n "$f" ] && [ "$g" -lt "$f" ]; then echo "ORDER_OK gate=$g forward=$f"; return 0; fi
+  echo "ORDER_BAD gate=$g forward=${f:-?}"; return 1
 }
-_w="$(w1 "$NL4")" && ok "W1 예약 러너: 관문이 [0] 리프레시 뒤 · [1] 앞 ($_w)" || ng "W1 예약 러너 관문 위치 → $_w"
+_w="$(w1 "$NL4")" && ok "W1 예약 러너: 관문이 [1] 앞 ($_w)" || ng "W1 예약 러너 관문 위치 → $_w"
 _g="$(firstln "$NL4" "gate_msm_asof.sh")"
 if cl "$NL4" | grep -F "gate_msm_asof.sh" | grep -qE '\|\|[[:space:]]*(echo|say|true|:)'; then ng "W2 예약 러너: 관문 실패를 || 로 삼킨다"
 elif [ -n "$_g" ] && awk -v s="$_g" 'NR>s && NR<=s+8 && /^[[:space:]]*exit 23([[:space:]]|$)/{f=1} END{exit !f}' "$NL4"; then ok "W2 예약 러너: 관문 실패 = exit 23(삼키지 않음)"
@@ -299,7 +301,7 @@ if mutate "$GATE" "$SB/mut/gate_M6.sh" "@CHK_WRAP_OK" 'if [ "${LINE#OK }" != "$L
 else ng "M6 돌연변이 치환 실패 — 검사 불능"; fi
 
 # ── X: 예약 러너 e2e(모래상자) ────────────────────────────────────────────────
-#   안전망 3겹: ① PG2_REFRESH_DONE=1(리프레시 스킵) ② 가짜 taskkill 을 PATH 맨 앞에(command -v 로 확인 — 아니면 SKIP)
+#   안전망: ① (구 PG2_REFRESH_DONE=1 리프레시 스킵 — 2026-11-06 러너 리프레시 제거로 무의미 · 무해해 남김) ② 가짜 taskkill 을 PATH 맨 앞에(command -v 로 확인 — 아니면 SKIP)
 #   ③ QM_ROOT = 모래상자 — 관문이 못 막으면 [1] 이하가 모래상자 안에서 실패할 뿐 운영 자료에 닿지 않는다.
 echo "=== X 예약 러너 e2e ==="
 FAKEBIN="$SB_MSYS/fakebin"; mkdir -p "$FAKEBIN"

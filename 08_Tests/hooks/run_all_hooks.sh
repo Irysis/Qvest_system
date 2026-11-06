@@ -288,8 +288,8 @@ SUITES=(
   "08_Tests/ops/test_morning_run_rewire.sh"
   # 2026-08-29: m4 append-only 후보 필터(새 달 첫 행만) — 실사고 셋 재현 + PIT 이빨 보존
   "08_Tests/regime/test_m4_append_candidate_filter.R"
-  # 2026-08-29: PG2 Gate A 상태 판독 — BOM 결함(항상 미달 오보) 회귀 + 못읽음/낡음 구분
-  "08_Tests/ops/test_gate_a_state_read.sh"
+  # (2026-08-29 test_gate_a_state_read.sh — 2026-11-06 퇴역: 러너 리프레시 제거(도훈 지시)와 함께 Gate A 를 걷어냈다.
+  #   대체 = 소비면 Gate I(book_rebalance_preflight.py --runner-gate) · 검사 = 08_Tests/book/test_book_rebalance_preflight.py Ⓡ1~Ⓡ6)
   # 2026-08-29: QW 자동로그인 사전 점검 — SAVEUSERPW=0 즉시 중단(헛클릭·잠금위험 차단) 양방향
   "08_Tests/ops/test_qw_autologin_preflight.sh"
   # 2026-08-16 추가: 편입 드리프트 검사(suite_enrollment_check) 위반 주입.
@@ -1822,6 +1822,10 @@ SUITES=(
   "08_Tests/contracts/test_strategy_role.R"
   "08_Tests/data/test_benchmark_axis_rebuild.py"
   "08_Tests/data/test_incremental_update_file_guards.R"
+  # 2026-11-06: 퀀티 적재 관문(F3~F5 — 지표별 받은 창 교체 · 지평선 · B6 · 날짜별 채움 · 명시 디스패치) 위반 주입 + 뮤테이션
+  "08_Tests/data/test_incremental_update_gates.R"
+  # 2026-11-06: qw_refresh.ps1 출력별 min(max)+1 앵커(F2) · keep/done 판정 — 자기 시험 실패는 JSON 으로 직접 종료
+  "08_Tests/data/test_qw_refresh_anchor.sh"
   "08_Tests/data/test_quantiwise_fetch.py"
   "08_Tests/ops/test_rf_factor_autoregister_brief.R"
   "08_Tests/ops/test_rf_overlay_audit.sh"

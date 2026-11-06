@@ -307,19 +307,29 @@ def _():
     return f"rc 분기 + exit {sorted(set(exits))} (타임아웃·parity·입력·PIT 전부 중단)"
 
 
-@case('WIRE-3  ★데이터 리프레시가 AE 갱신보다 앞에 있다 (도훈 지시)')
+_REFRESH_CALL = re.compile(r"daily_refresh\.sh|qw_refresh\.ps1|PG2_REFRESH_DONE")
+
+
+@case('WIRE-3  ★러너는 리프레시하지 않는다(도훈 11-06) — 입력 관문(검사만)이 AE 갱신보다 앞에 있다')
 def _():
-    code = _code_lines(_runner_text())
-    ref = [i for i, ln in enumerate(code) if "daily_refresh.sh" in ln]
-    aei = [i for i, ln in enumerate(code) if "ae_regime_monthly.py" in ln]
-    assert ref, "예약 경로에 데이터 리프레시가 없다 — 낡은 캐시 위에서 전부 계산된다"
-    assert min(ref) < min(aei), \
-        f"리프레시가 AE 뒤에 있다 (refresh {min(ref)} vs AE {min(aei)}) — 핀이 낡은 원천을 굳힌다"
-    assert "PG2_REFRESH_DONE" in _runner_text(), "중복 실행 방지 플래그 없음"
+    # 도훈 2026-11-06 "daily_refresh 돌리는 프로세스는 빼버려. 이제 어차피 데이터 리프레시 때 퀀티 데이터들 다
+    # 업데이트하니까 필요없어" — 구 WIRE-3(2026-08-30 "리밸런싱할 때 데이터 리프레시도 진행" · 리프레시가 AE 앞)을 뒤집는다.
+    # 낡은 캐시 위에서 계산하는 구멍은 갱신이 아니라 검사로 막는다: 소비 직전 Gate I(--runner-gate)가 AE 보다 앞 · 실패 = exit 24.
     full = open(FULL, encoding="utf-8").read()
-    assert "PG2_REFRESH_DONE" in full, \
-        "full 러너가 플래그를 안 내려보냄 → [0]/[1] 과 [2] 안에서 리프레시가 두 번 돈다"
-    return f"refresh(line {min(ref)}) < AE(line {min(aei)}) · 상·하위 플래그 정합"
+    for name, txt in (("예약 러너", _runner_text()), ("full 러너", full)):
+        bad = [ln for ln in _code_lines(txt) if _REFRESH_CALL.search(ln)]
+        assert not bad, f"{name}가 아직 리프레시를 부른다: {bad[0].strip()[:90]}"
+    # 검출기 생존 — 리프레시 호출 한 줄을 끼운 사본은 걸려야 한다(검사가 죽어 늘 통과하는 것을 막는다)
+    mut = _runner_text() + '\nQVEST_REFRESH_TG=0 bash "$QM_ROOT/02_Infrastructure/data/daily_refresh.sh"\n'
+    assert [ln for ln in _code_lines(mut) if _REFRESH_CALL.search(ln)], "검출기 사망 — 끼운 리프레시 호출을 못 잡음"
+    code = _code_lines(_runner_text())
+    gi = [i for i, ln in enumerate(code) if "--runner-gate" in ln]
+    aei = [i for i, ln in enumerate(code) if "ae_regime_monthly.py" in ln]
+    assert gi, "예약 러너에 입력 관문(book_rebalance_preflight.py --runner-gate)이 없다 — 낡은 캐시 위에서 전부 계산된다"
+    assert min(gi) < min(aei), f"입력 관문이 AE 뒤에 있다 (gate {min(gi)} vs AE {min(aei)})"
+    assert re.search(r"(^|\s)exit\s+24(\s|$)", "\n".join(code[min(gi):min(gi) + 8]), re.M), \
+        "입력 관문 뒤 8줄 안에 exit 24 가 없다 — 관문 실패를 삼킬 수 있다"
+    return f"리프레시 호출 0(두 러너) · 끼운 호출 검출 · 입력 관문(line {min(gi)}) < AE(line {min(aei)}) · exit 24"
 
 
 @case('WIRE-MUT  ★검출력 실증: AE 스텝을 지운 사본에서 WIRE-1 이 발화한다')

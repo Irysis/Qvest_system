@@ -1,6 +1,6 @@
 {
   "schema": "book_rebalance_spec_v1",
-  "updated_at": "2026-08-30",
+  "updated_at": "2026-11-06",
   "why": "BOOK 코드별 리밸런싱 사양. 전략마다 필요한 코드·데이터·오버레이가 다르므로 book_id 로 키를 잡는다. ★경계(도훈 지시 2026-08-30): 데이터 적재(QuantiWise/DART/MCP/API)는 **데이터 리프레시 소관**이다. 이 사양은 '무엇을 소비하는가'만 선언하고, 낡으면 리밸을 중단해 그쪽으로 넘긴다 — 여기서 고치지 않는다.",
   "placement_note": "06_Registry/book/ 이 아니라 여기 둔다 — 그 폴더는 BOOK **등록 정본** 전용이고 book_write_guard.sh 가 writer 경유만 허용한다. 본 파일은 등록 항목이 아니라 인프라 사양이다.",
   "checker": "02_Infrastructure/book/book_rebalance_preflight.py",
@@ -16,10 +16,24 @@
         "weights_out": "05_Production/2.Factor_Model/2-4.STR_1715_on_M4gAE_R05_noLayer4_PG2/02_holdings_universe/{as_of_compact}_M4gAE_weights_cap_0p20.csv",
         "manifest_out": "05_Production/2.Factor_Model/2-4.STR_1715_on_M4gAE_R05_noLayer4_PG2/02_holdings_universe/{as_of_compact}_M4gAE_manifest.json",
         "gates": [
-          "GateA(원천 수신)",
-          "GateB(팩터DB 앵커 내용)",
+          "GateI(입력 sig 일 도달 · 팩터DB 앵커 — 검사만 · 아래 runner_gate)",
+          "GateM(국면 as-of MSM 표식 · sig 월 전진)",
+          "GateC(홀딩 CSV 생성)",
           "GateD(하드제약·전월지문)"
-        ]
+        ],
+        "no_refresh_note": "2026-11-06 도훈 지시 \"daily_refresh 돌리는 프로세스는 빼버려. 이제 어차피 데이터 리프레시 때 퀀티 데이터들 다 업데이트하니까 필요없어\" — 러너의 구 [0] qw_refresh+GateA(원천 상태파일) · [1] daily_refresh+[1b] sig 월 팩터DB 재빌드+GateB 를 걷어냈다. 적재 · 팩터DB 월말 확정은 데이터 리프레시(밤 Qvest_DailyRefresh · 부팅 ensure_data_current.sh) 소관이고, 러너는 GateI 로 도달만 잰다."
+      },
+      "runner_gate": {
+        "why": "러너 관문(검사만 · 갱신 없음) — 이번 리밸이 읽을 원천이 sig 일(KRX 공식 휴장일 등록부 기준 as_of 직전 거래일)까지 왔는지 소비면에서 잰다. 관용(lag)이 아니라 도달이다. 판정 = book_rebalance_preflight.py --runner-gate · 호출 = run_pg2_rebalance_full.sh [0] GateI(조기) + run_nolayer4_monthly.sh [0c](소비 직전 · 예약 경로 noLayer4_Monthly_PaperTracking 포함). 구 GateA(qw_refresh_state.json)를 검사로 남기지 않은 이유: 상태파일은 수신 기록이지 적재 증거가 아니다 — 11-06 실측 Consensus ymd=20261105 인데 소비면 eps_1y 10-19 · op_profit_fy1 10-16, Benchmark 키는 10-17 벤치 정본 이관 뒤 20260828 에 멈춰 GateA 가 매번 미달이었다.",
+        "date_col": "Date",
+        "sig_reach": [
+          {"glob": ".cache/RAWDATA.parquet"},
+          {"glob": ".cache/investor_stock/investor_all.parquet"},
+          {"glob": ".cache/consensus/*.parquet", "skip": ["ticker_map.parquet"], "note": "ticker_map = 날짜열 없는 대응표. 계열마다 따로 잰다 — 11-06 eps_1y(10-19)와 op_profit_fy1(10-16)이 달랐다"},
+          {"glob": ".cache/universe_support/*.parquet"}
+        ],
+        "not_in_gate": "fred_macro_wide — 발행 지연이 정상(주간 계열)이라 sig 일 도달을 요구하면 상시 차단된다. AE 입력 원천 신선도는 러너 [1a2] ae_regime_monthly.py 가 관용으로 잰다. 러너 산출 패널(m4 · AE · 알파)은 러너 게이트([1a] · [1a2] · GateC/D)가 잰다.",
+        "anchor": ".cache/factor_db/factor_db_{sig_ym}.parquet"
       },
       "inputs": [
         {
@@ -30,8 +44,8 @@
           "max_lag_days": 5,
           "producer": "02_Infrastructure/data/daily_refresh.sh [1pre-qw] 퀀티 Update_File 수급(qw_updatefile_unattended.sh) → [0b'] incremental_update_all (10-17 RAWDATA-QW-ONLY-20261017)",
           "role": "종목 선정·유동성·수익률 원천",
-          "refresh_owner": "퀀티 Update_File 적재(단일 원천 · 10-17)",
-          "produced_by_runner": true
+          "refresh_owner": "퀀티 Update_File 적재(단일 원천 · 10-17) — 데이터 리프레시 소관",
+          "produced_by_runner": false
         },
         {
           "id": "benchmark",
@@ -41,8 +55,8 @@
           "max_lag_days": 5,
           "producer": "02_Infrastructure/data/daily_refresh.sh [1pre/7] 퀀티 정본 Benchmark_price.xlsx(quantiwise_fetch.py) → build_index_cache.py (10-17 BENCHMARK-QW-ONLY-20261017)",
           "role": "거래일 캘린더 단일 권위 + BM_Ret",
-          "refresh_owner": "퀀티 벤치 정본 적재(단일 원천 · 10-17)",
-          "produced_by_runner": true
+          "refresh_owner": "퀀티 벤치 정본 적재(단일 원천 · 10-17) — 데이터 리프레시 소관",
+          "produced_by_runner": false
         },
         {
           "id": "consensus",
@@ -123,10 +137,10 @@
           "path": ".cache/factor_db/factor_db_{sig_ym}.parquet",
           "date_col": "Date",
           "mode": "anchor",
-          "producer": "run_pg2_rebalance_full.sh [1b] build_factor_db(force=TRUE)",
+          "producer": "02_Infrastructure/data/daily_refresh.sh [6a] update_factor_db_daily() — 직전 달 확정(finalize: 스냅샷 ≠ 그 달 마지막 거래일 또는 data_asof 미달이면 강제 재빌드 + IC 재계산 · factor_db_builder.R::.fdb_update_plan). 구 생산자 run_pg2_rebalance_full.sh [1b] 는 2026-11-06 제거(도훈 지시)",
           "role": "R05_Tail_Risk Z-score (β_R05 입력)",
-          "refresh_owner": "리밸 러너 내부",
-          "produced_by_runner": true
+          "refresh_owner": "데이터 리프레시(팩터DB 월말 확정 · 원천 재적재(구멍 메우기) 뒤 sig 월 재빌드 포함)",
+          "produced_by_runner": false
         }
       ],
       "overlays": [
