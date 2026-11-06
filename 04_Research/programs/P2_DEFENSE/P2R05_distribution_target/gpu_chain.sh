@@ -1,13 +1,14 @@
 #!/usr/bin/env bash
-# P2R05 GPU 창 연쇄 v4(2026-11-06 · 1계층 사이드 세션) — 분리 실행(_lib/detached_env.sh · 세션 밖 · 인자 없음). 측정 절차 · 판정과 무관(사전등록 핀 아님).
+# P2R05 GPU 창 연쇄 v5(2026-11-06 · 1계층 사이드 세션) — 분리 실행(_lib/detached_env.sh · 세션 밖 · 인자 없음). 측정 절차 · 판정과 무관(사전등록 핀 아님).
 #   방침(원 세션 11-06 12:3x · 도훈 최신 결정 J-20261018-008 'P2R05 먼저 · THGNN 일시정지'): GPU 임대로 GPU 슬롯만 보류 · CPU 슬롯은 계속 ·
 #   워밍 → 측정 → 임대 해제 뒤 THGNN. (v1~v3 = 레인 전체 보류 · THGNN 먼저 — 근거였던 J-20261018-007 이 J-008 로 대체돼 있었다 · Superfan T3 C-20261106-001)
 #   ① 시작 — 이 연쇄의 앞판이 걸어 둔 레인 보류(paused_note 에 gpu_chain)를 푼다(CPU 슬롯 계속) → GPU 임대 획득(보유자 = 이 연쇄 Windows pid ·
 #      상한 12h · 남은 1시간 미만이면 놓고 다시 잡아 이어 간다). 진행 중인 THGNN 은 임대와 무관하게 계속 돈다(임대는 새 GPU 착수만 막는다).
-#   ② 준비 대기 — 데이터 준비 표식 night_state/p2r05_data_ready.ok(원 세션의 10-20~11-05 수급 · 컨센서스 · 유니버스 복구 + factor_db 202610 · 202611 ·
-#      fdb_daily 재빌드 + 필요 시 국면 원장 재발행이 끝났다는 표식 — 1계층 세션이 원 세션 통지를 받고 쓴다) → 그 뒤 첫 'Daily Refresh v2 Done' 줄
-#      (P2R05 DT 엔진은 .cache/consensus 를 읽고 측정 판본 지문(fingerprint.sh)이 consensus · factor_db 월 파일을 해시한다 — 워밍 · 측정을 갱신 사이
-#      한 판본 안에 넣는다). 갱신 완료 줄이 없으면 06~12시에 리프레시 잠금이 없을 때 현 배치로 진행(measure.sh 와 같은 규칙).
+#   ② 준비 대기(v5) — 데이터 준비 표식 night_state/p2r05_data_ready.ok(원 세션의 10-20~11-05 수급 · 컨센서스 · 유니버스 복구 + factor_db 202610 · 202611 ·
+#      fdb_daily 재빌드 끝 — 1계층 세션이 원 세션 통지와 데이터 확인 뒤 쓴다 · 국면 원장 재발행은 P2R05 값 · 지문과 무관(11-06 의존 감사)) 뒤,
+#      표식 뒤에 끝난 갱신(Done — 예약 실행 daily_refresh.log · ensure 경로 /tmp/qm_daily_refresh_<날짜>.log) ∧ START_HOUR_MAX 시 전 ∧ 리프레시 잠금 없음 ∧
+#      ensure_data_current --check-only rc 0 일 때만 시작한다(P2R05 DT 엔진은 .cache/consensus · fundamental_merged · RAWDATA 를 읽고 측정 판본 지문은
+#      파일 상태 기반 — 워밍 fp_start 부터 평가 끝까지 데이터 파일이 바뀌면 워밍 실패 · 측정 거부).
 #   ③ 시작 시점에 THGNN(gpu1)이 아직 돌면 일시정지 — 작업자 bash(claim owner_win) · thgnn.py · 그 부모 검증기 Rscript 만 끝낸다(다른 슬롯 무접촉) →
 #      gpu1 요청 failure=session_reverify(재개 = 엔진 보존 검증기만 · 10-20 표식과 같음).
 #   ④ 임대 새로 잡기 → warm_cache.sh --allow-lane-on(레인 켜짐 · GPU 슬롯은 임대가 막는다) → 임대 새로 잡기 → notify_done.sh(1통) + measure_now_vram.sh.
@@ -32,7 +33,7 @@ PURPOSE="P2R05 GPU 창(워밍 · 측정) — 원 세션 11-06 · 도훈 J-202610
 READY_DEADLINE=$(date -d '2026-11-08 12:00' +%s)
 cd $ROOT || exit 2
 WINPID=$(tr -d '\r\n ' < /proc/$$/winpid 2>/dev/null)
-say() { echo "== $(date +%F' '%T) [P2R05 GPU 연쇄 v4] $*"; }
+say() { echo "== $(date +%F' '%T) [P2R05 GPU 연쇄 v5] $*"; }
 alert() { Rscript "$RDR/gpu_chain_alert.R" "$1" "$2" "$3" > /dev/null 2>&1 && say "알림 1통($1)" || say "알림 실패($1)"; }
 
 ## 레인 스위치 = 설정 값으로 확인(파일 교체가 OneDrive 에 WinError 5 로 실패할 수 있다 — 11-06 실측) · 경로는 인자로(MSYS 는 인자만 C:/ 로 바꾼다)
@@ -65,7 +66,21 @@ lease_keep() { lease_mine 1 || { say "임대 갱신(남은 1시간 미만 또는
 lease_drop() { "$PY" -X utf8 "$QVL" lease release --holder "$HOLDER" 2>&1 | tail -1; }
 trap 'say "끝 — 임대 해제: $(lease_drop)"' EXIT
 
-done_count() { local n; n=$(grep -c "=== Daily Refresh v2 Done" "$DONE_LOG" 2>/dev/null); echo "${n:-0}"; }
+latest_done_epoch() {   # 두 로그(예약 실행 >> daily_refresh.log · daily_refresh.sh 자체 tee /tmp/qm_daily_refresh_<날짜>.log — ensure 경로 실행은 여기에만)의 마지막 Done 시각 최댓값
+  local f ln ts e best=0
+  for f in "$DONE_LOG" /tmp/qm_daily_refresh_*.log; do
+    [ -f "$f" ] || continue
+    ln=$(grep -a "=== Daily Refresh v2 Done" "$f" 2>/dev/null | tail -1)
+    [ -n "$ln" ] || continue
+    ts=$(printf '%s' "$ln" | sed -E 's/.*@ (.*) ===.*/\1/')
+    e=$(date -d "$ts" +%s 2>/dev/null) || continue
+    [ "$e" -gt "$best" ] && best=$e
+  done
+  echo "$best"
+}
+data_current() {   # 0 = ensure_data_current 감사 '최신'(rc 0) — 아니면 다음 부팅 · 아침 체인(07:10) · /qvest 가 워밍 중에 갱신을 다시 돌린다(지문 뒤집힘)
+  bash "$ROOT/02_Infrastructure/ops/ensure_data_current.sh" --check-only > "$ST/p2r05_gpu_chain_edc.log" 2>&1
+}
 claim_alive() {    # 0 = gpu1 claim 이 살아 있다 · 1 = 없음 · 소유자 사망 · 표식 없는 빈 claim 10분 초과
   [ -d "$CLAIM" ] || return 1
   local w age
@@ -128,24 +143,27 @@ if lease_take > /dev/null; then say "GPU 임대 획득(12h · 갱신하며 유�
 fi
 
 ## ② 준비 대기 — 데이터 준비 표식 → 그 뒤 첫 갱신 완료 줄(또는 06~12시 · 잠금 없음)
-say "준비 대기 — 표식 $READY(원 세션 데이터 복구 · 재발행 끝) → 그 뒤 첫 Daily Refresh v2 Done · 마감 $(date -d @$READY_DEADLINE +%F' '%T)"
-RSEEN=0; NREADY=0; RMT=0
+## 시작 조건(전부 참일 때만 — 의존 감사 11-06 워크플로 결론 · 워밍 fp_start 부터 평가 끝까지 데이터 파일이 바뀌면 워밍 실패 · 측정 거부):
+##   표식 있음 ∧ 표식 뒤에 끝난 갱신(Done)이 있음 ∧ 지금 START_HOUR_MAX 시 전(워밍 ≈8h + 측정 · 평가가 다음 00:03 갱신 전에 끝나게) ∧
+##   리프레시 잠금 없음 ∧ ensure_data_current 감사 rc 0(최신이 아니면 아침 체인 · 부팅 · /qvest 가 워밍 중에 갱신을 다시 돌린다)
+##   Done 줄은 다른 세션 시험 사본이 같은 /tmp 로그에 쓸 수 있어 단독 신호로 쓰지 않는다(겹조건이 막는다).
+START_HOUR_MAX=10
+say "준비 대기 — 표식 $READY(원 세션 데이터 복구 · 재발행 끝) → 표식 뒤 갱신 완료 ∧ ${START_HOUR_MAX}시 전 ∧ 잠금 없음 ∧ ensure 최신 · 마감 $(date -d @$READY_DEADLINE +%F' '%T)"
+RSEEN=0; THR=0; LAST_NOTE=""
+note_once() { [ "$1" = "$LAST_NOTE" ] || { say "$1"; LAST_NOTE="$1"; }; }
 while :; do
   lease_keep
   if [ "$RSEEN" = "0" ] && [ -f "$READY" ]; then
-    RSEEN=1; NREADY=$(done_count); RMT=$(date -r "$READY" +%s)
-    say "데이터 준비 표식 확인($(head -c 200 "$READY" | tr '\n' ' ')) — 갱신 완료 줄 기준 $NREADY"
+    RSEEN=1; THR=$(date -r "$READY" +%s)
+    say "데이터 준비 표식 확인($(head -c 200 "$READY" | tr '\n' ' ')) — 이 시각($(date -d @$THR +%F' '%T)) 뒤에 끝난 갱신을 기다린다"
   fi
   if [ "$RSEEN" = "1" ]; then
-    n=$(done_count); hh=$((10#$(date +%H)))
-    if [ "$n" -gt "$NREADY" ]; then
-      ## 워밍(≈8h) + 측정(수 시간)이 다음 밤 00:03 갱신 전에 끝나야 같은 판본이다 — 정오 이후의 갱신 완료면 밤 갱신까지 기다린다
-      if [ "$hh" -lt 12 ]; then say "준비 뒤 갱신 완료 줄 확인($NREADY → $n)"; break; fi
-      say "갱신 완료 줄($NREADY → $n)이 정오 이후 — 워밍 · 측정이 밤 00:03 갱신을 넘는다 · 밤 갱신 완료까지 기다린다"; NREADY=$n
-    fi
-    today6=$(date -d "$(date +%F) 06:00" +%s)
-    if [ "$hh" -ge 6 ] && [ "$hh" -lt 12 ] && [ "$RMT" -lt "$today6" ] && [ ! -d "$REFRESH_LOCK" ]; then
-      say "06~12시 · 표식이 오늘 06시 전 · 리프레시 잠금 없음 — 현 배치로 진행"; break
+    ld=$(latest_done_epoch); hh=$((10#$(date +%H)))
+    if [ "$ld" -le "$THR" ]; then note_once "표식 뒤 갱신 완료 대기(마지막 Done $(date -d @$ld +%F' '%T))"
+    elif [ "$hh" -ge "$START_HOUR_MAX" ]; then note_once "갱신 완료($(date -d @$ld +%F' '%T))는 있으나 ${START_HOUR_MAX}시 이후 — 워밍 · 측정이 다음 00:03 갱신을 넘는다 · 다음 갱신까지 기다린다"; THR=$ld
+    elif [ -d "$REFRESH_LOCK" ]; then note_once "리프레시 잠금 있음 — 끝날 때까지 기다린다"
+    elif data_current; then say "시작 조건 충족 — 갱신 완료 $(date -d @$ld +%F' '%T) · 잠금 없음 · ensure 최신"; break
+    else note_once "ensure 감사가 최신 아님($(grep -a -E '사전 감사|stale' "$ST/p2r05_gpu_chain_edc.log" | head -1 | cut -c1-120)) — 다음 갱신까지 기다린다"; THR=$ld
     fi
   fi
   if [ "$(date +%s)" -ge "$READY_DEADLINE" ]; then
