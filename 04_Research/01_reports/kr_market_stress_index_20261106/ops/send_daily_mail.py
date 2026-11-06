@@ -95,6 +95,7 @@ def main():
     if not user or not pw:
         print("[mail] ★발신 자격 없음(사용자 환경 변수 QVEST_MAIL_USER · QVEST_MAIL_APP_PASSWORD) — 보내지 않음. 설정은 ops/README.md")
         return 0
+    pw = pw.replace(" ", "").strip()          # Google 은 앱 비밀번호를 4자씩 띄어 보여 준다 — 띄어 넣어도 되게
     msg["From"] = formataddr(("Qvest 스트레스 일보", user))
     with smtplib.SMTP(cfg["smtp_host"], cfg["smtp_port"], timeout=120) as s:
         s.starttls(context=ssl.create_default_context())
