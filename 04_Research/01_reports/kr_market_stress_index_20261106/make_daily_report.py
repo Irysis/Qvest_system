@@ -20,6 +20,7 @@ import shutil
 import subprocess
 import sys
 
+import numpy as np
 import pandas as pd
 from openpyxl import Workbook
 from openpyxl.chart import BarChart, LineChart, Reference
@@ -62,7 +63,41 @@ def load():
     bm = pd.read_parquet(ROOT + "/.cache/benchmark.parquet")
     bm["Date"] = pd.to_datetime(bm["Date"])
     bm = bm.sort_values("Date").drop_duplicates("Date", keep="last").set_index("Date")["BM_Close"].astype(float)
+    derive_level(meta, d, st, nsr.get("v1", {}))
     return meta, d, st, eps, cv, nsr, rob, bm
+
+
+def derive_level(meta, d, st, ns):
+    """표시용 점수 눈금(도훈 11-06 "점수를 좀 더 직관적으로") — 점수 = 10·√(CISS 원값). 원값은 '분야들이 같이 움직일수록 커지는 합'(포트폴리오 분산 꼴)이라
+    2006년 이후 중앙값 2 · 2008년 정점 67 로 눈금 아래쪽에 몰린다. 분산을 변동성으로 읽듯 제곱근을 취하면 평상시 14 · 2011년 46 · 2020년 61 · 2008년 82.
+    단조 변환이라 백분위 · 단계 · 위기 검증은 그대로다. 분야 · 지표 몫은 오일러 배분(원값 몫 × 10/√원값 — 합 = 점수). 동행률 = 점수 ÷ 34지표 평균 심각도(0~1)."""
+    axes = meta["axes"]
+    lt = meta["latest"]
+    s = d["score"].clip(lower=0)
+    d["level"] = 10 * np.sqrt(s)
+    f = pd.Series(np.where(s > 0, 10 / np.sqrt(s.where(s > 0)), 0.0), index=d.index)
+    for a in axes:
+        d[f"cl_{a}"] = d[f"c_{a}"] * f
+    d["comove"] = (d["level"] / d["score_linear"]).where(d["score_linear"] > 0)
+
+    def lvl(x):
+        return float(10 * np.sqrt(max(float(x), 0.0)))
+
+    def fac(x):
+        return float(10 / np.sqrt(x)) if x and x > 0 else 0.0
+    lt["level"] = lvl(lt["score"])
+    lt["level_20td_ago"] = lvl(lt["score_20td_ago"])
+    lt["level_60td_ago"] = lvl(lt["score_60td_ago"])
+    lt["max_level"] = lvl(lt["max_score_since_t0"])
+    lt["contrib_level"] = {a: v * fac(lt["score"]) for a, v in lt["contrib"].items()}
+    lt["contrib_level_20td_ago"] = {a: v * fac(lt["score_20td_ago"]) for a, v in lt["contrib_20td_ago"].items()}
+    lt["comove"] = lt["level"] / lt["score_linear"] if lt["score_linear"] else float("nan")
+    st["contrib_level"] = st["contrib"] * fac(lt["score"])
+    imax = d["score"].idxmax()
+    meta["levels"] = {"warn": float(d["level"].quantile(ns.get("threshold_warn") or 0.8)), "risk": float(d["level"].quantile(ns.get("threshold_risk") or 0.99)),
+                      "median": float(d["level"].median()), "linear_median": float(d["score_linear"].median()),
+                      "comove_median": float(d["comove"].median()), "comove_at_max": float(d.loc[imax, "comove"])}
+    meta["ref_marks"] = daily_text.ref_marks(d)
 
 
 def tier_of(p, ns):
@@ -78,131 +113,25 @@ def headline_sentence(meta, d, ns):
     ko = meta["axis_ko"]
     on = [ko[a] for a, p in sorted(lt["axis_pct"].items(), key=lambda kv: -kv[1]) if p >= 0.90]
     calm = [ko[a] for a, p in sorted(lt["axis_pct"].items(), key=lambda kv: kv[1]) if p <= 0.40]
-    chg = lt["score"] - lt["score_20td_ago"]
-    dir_ = "올랐다" if chg > 0.5 else "내렸다" if chg < -0.5 else "비슷하다"
-    s = (f"지수 {lt['score']:.1f}(역사 백분위 {100 * lt['score_pct']:.0f}) · 단계 **{tier_of(lt['score_pct'], ns)}** · "
-         f"20거래일 전({lt['date_20td_ago']}) {lt['score_20td_ago']:.1f}보다 {dir_}. ")
-    s += f"90백분위 이상인 축 = {' · '.join(on) if on else '없음'}; 평온한 축(40 이하) = {' · '.join(calm) if calm else '없음'}. "
-    s += f"V-KOSPI200 {lt['vkospi']:.1f}(백분위 {100 * lt['vkospi_pct']:.0f}). 축 평균 상관 {lt['avg_corr']:.2f}"
-    s += "(높음 — 분절이 함께 움직인다 = 체계적)." if lt["avg_corr"] >= 0.3 else "(낮음 — 분절이 함께 움직이진 않는다)."
+    chg = lt["level"] - lt["level_20td_ago"]
+    dir_ = "올랐다" if chg > 1 else "내렸다" if chg < -1 else "비슷하다"
+    s = (f"스트레스 점수 {lt['level']:.0f}/100(원값 {lt['score']:.1f} · 역대 순위 백분위 {100 * lt['score_pct']:.0f}) · 단계 **{tier_of(lt['score_pct'], ns)}** · "
+         f"20거래일 전({lt['date_20td_ago']}) {lt['level_20td_ago']:.0f}보다 {dir_}. ")
+    s += f"심각도 90 이상인 분야 = {' · '.join(on) if on else '없음'}; 평온한 분야(40 이하) = {' · '.join(calm) if calm else '없음'}. "
+    s += f"34지표 평균 심각도 {lt['score_linear']:.0f} · 동행률 {100 * lt['comove']:.0f}% · V-KOSPI200 {lt['vkospi']:.1f}(백분위 {100 * lt['vkospi_pct']:.0f}). 축 평균 상관 {lt['avg_corr']:.2f}"
+    s += "(높음 — 분야들이 함께 움직인다 = 체계적)." if lt["avg_corr"] >= 0.3 else "(낮음 — 분야들이 함께 움직이진 않는다)."
     return s
 
 
 def peaks_of(d, k=8, gap_days=90):
-    s = d["score"].copy()
+    """점수(제곱근 눈금) 봉우리 — 단조 변환이라 날짜는 원값 봉우리와 같다."""
+    s = d["level"].copy()
     out = []
     while len(out) < k and s.notna().any():
         i = s.idxmax()
         out.append((i, float(s.loc[i])))
         s[(s.index >= i - pd.Timedelta(days=gap_days)) & (s.index <= i + pd.Timedelta(days=gap_days))] = float("nan")
     return out
-
-
-# ─────────────────────────────────────────────────────────────────────────────
-def write_markdown(meta, d, st, eps, nsr, rob, folder, day):
-    lt = meta["latest"]
-    ko = meta["axis_ko"]
-    axes = meta["axes"]
-    ns = nsr.get("v1", {})
-    prev = d.iloc[-2] if len(d) > 1 else d.iloc[-1]
-    q = d["score"].quantile([.5, .8, .9, .95, .99])
-    L = []
-    A = L.append
-    A(f"# KR 자본시장 스트레스 일보 — {day}")
-    A("")
-    A(f"산출 {meta['run_at'][:16]} · 지수 = KR-CISS v1(12축 34지표 · 재귀 PIT · 지표 수준 EWMA 순위상관 집계 · 0~100) · 설계 · 근거 = `DESIGN_v1_capital_market.md` · 아이디어 연구(등급 · BOOK 무관)")
-    A("")
-    A("## 1. 오늘의 레벨")
-    A("")
-    A("| 지수 | 역사 백분위 | 단계 | 전일 | 20거래일 전 | 60거래일 전 |")
-    A("|---|---|---|---|---|---|")
-    A(f"| **{lt['score']:.1f}** | **{pct(lt['score_pct'])}** | **{tier_of(lt['score_pct'], ns)}** | {prev['score']:.1f} ({str(prev.name.date())}) | "
-      f"{lt['score_20td_ago']:.1f} ({lt['date_20td_ago']}) | {lt['score_60td_ago']:.1f} ({lt['date_60td_ago']}) |")
-    A("")
-    A("| 선형 평균(상관 미반영) | 축 평균 상관 | V-KOSPI200 | V-KOSPI 백분위 | 전 기간 최고 | 단계 문턱(주의 / 위험) |")
-    A("|---|---|---|---|---|---|")
-    A(f"| {lt['score_linear']:.1f} | {lt['avg_corr']:.2f} | {lt['vkospi']:.1f} | {pct(lt['vkospi_pct'])} | {lt['max_score_since_t0']:.1f} ({lt['max_score_date']}) | "
-      f"{pct(ns.get('threshold_warn'))} / {pct(ns.get('threshold_risk'))} 백분위 |")
-    A("")
-    A('<img src="d1_gauge.png" alt="게이지" style="width:100%">')
-    A("")
-    A(headline_sentence(meta, d, ns))
-    A("")
-    A('<img src="d2_axis_contrib.png" alt="축별 기여" style="width:100%">')
-    A("")
-    A("## 2. 축별 분해 — 어디서 왔고 어떻게 쌓였나")
-    A("")
-    A("| 축 | 기여(점) | 축 백분위 | 20거래일 전 기여 | 변화 | 80백분위 이상 지표 | 신선도 |")
-    A("|---|---|---|---|---|---|---|")
-    for a in sorted(axes, key=lambda a: -lt["contrib"][a]):
-        rows = st[st.axis == a]
-        hot = " · ".join(f"{r.name}({100 * r.ecdf_pct:.0f})" for r in rows.itertuples() if r.ecdf_pct >= 0.8) or "—"
-        fresh = max(int(x) for x in rows.stale_trading_days.fillna(0))
-        A(f"| {ko[a]} | {lt['contrib'][a]:.1f} | {pct(lt['axis_pct'][a])} | {lt['contrib_20td_ago'][a]:.1f} | {lt['contrib'][a] - lt['contrib_20td_ago'][a]:+.1f} | {hot} | "
-          f"{'당일' if fresh == 0 else f'{fresh}거래일 전'} |")
-    A("")
-    A("기여 = w·z_i × Σ_j ρ_ij w·z_j × 100 (합 = 지수). 음수 = 그 축이 다른 축과 역상관으로 움직여 체계성을 깎는다. 축 백분위 = 축 안 지표 PIT 평균의 재귀 백분위. "
-      "아래 히트맵 = 최근 65거래일 동안 어느 축이 언제 켜졌나.")
-    A("")
-    A('<img src="d3_heatmap_65d.png" alt="히트맵" style="width:100%">')
-    A("")
-    A("## 3. 모양으로 보기 — 위기 유형 · 역사 속 위치")
-    A("")
-    A('<img src="d4_radar_hist.png" alt="레이더 · 분포" style="width:100%">')
-    A("")
-    on_now = [ko[a] for a, p in sorted(lt["axis_pct"].items(), key=lambda kv: -kv[1]) if p >= 0.90]
-    A(f"레이더의 모양이 위기 유형이다 — {lt['max_score_date']} 정점은 12축이 거의 모두 바깥에 있었고, 오늘 바깥에 있는 축은 {' · '.join(on_now) if on_now else '없음'}. "
-      f"오른쪽 분포의 전 기간 분위: 중앙값 {q[.5]:.1f} · 80% {q[.8]:.1f} · 90% {q[.9]:.1f} · 95% {q[.95]:.1f} · 99% {q[.99]:.1f}.")
-    A("")
-    A("## 4. 최근 18개월")
-    A("")
-    A('<img src="d6_recent_18m.png" alt="최근 18개월" style="width:100%">')
-    A("")
-    A("## 5. 지표 34개 — 역사 백분위 한눈에")
-    A("")
-    A('<img src="d5_indicators.png" alt="34지표" style="width:100%">')
-    A("")
-    half = len(axes) // 2
-    for k, grp in enumerate((axes[:half], axes[half:]), start=1):
-        A(f"#### 5.{k} {' · '.join(ko[a] for a in grp)}")
-        A("")
-        A("| id | 지표 | 값 | 백분위 | 20거래일 전 | 기여 | 관측일 | 묵음(td) |")
-        A("|---|---|---|---|---|---|---|---|")
-        for r in st[st.axis.isin(grp)].itertuples():
-            v = r.value
-            vs = f"{v:.4g}" if abs(v) < 1 else f"{v:.3f}" if abs(v) < 100 else f"{v:.1f}"
-            A(f"| {r.id} | {r.name} | {vs} | {100 * r.ecdf_pct:.0f} | {100 * r.ecdf_pct_20td_ago:.0f} | {r.contrib:+.2f} | {r.last_obs_date} | {int(r.stale_trading_days)} |")
-        A("")
-    A("## 6. 전 기간")
-    A("")
-    A('<img src="d7_history.png" alt="전 기간" style="width:100%">')
-    A("")
-    pk = peaks_of(d)
-    A("| 봉우리 순위(90일 간격) | 일자 | 지수 | 오늘 / 봉우리 |")
-    A("|---|---|---|---|")
-    for i, (dte, v) in enumerate(pk, start=1):
-        A(f"| {i} | {dte.date()} | {v:.1f} | {lt['score'] / v:.0%} |")
-    A(f"| — | **오늘 {day}** | **{lt['score']:.1f}** | 100% |")
-    A("")
-    e = eps[pd.to_datetime(eps["peak"]) >= pd.Timestamp(meta["composite_start_t0"])].tail(4)
-    A("최근 KOSPI200 Lunde-Timmermann 20/20 위기: " + " · ".join(
-        f"{r.peak}→{r.trough}({100 * r.depth:.0f}%{' · 진행 중' if r.ongoing else ''})" for r in e.itertuples()) + ".")
-    A("")
-    A("## 7. 읽는 법 · 주의")
-    A("")
-    A("- **동행 지표**다 — 고점을 앞서지 않고, 위기 확정(-20%)보다는 앞선다. 방향이 아니라 **꼬리 폭**(≥95백분위 구간의 60일 선행 5% 분위 -33% vs 평시 -11%)을 읽는다.")
-    rl = {r.variant: r for r in rob.itertuples()}
-    v = [rl[k] for k in ("corr_lambda_0.9856", "score_linear", "score_axis_level") if k in rl]
-    if v:
-        A("- **수준이 아니라 백분위로 읽는다** — 상관 기억 · 집계 방식을 바꾸면 수준은 " + " · ".join(f"{x.latest_variant:.1f}" for x in v) +
-          " 로 흔들리지만 백분위는 " + " · ".join(pct(x.latest_variant_pct) for x in v) + f"(본 지수 {pct(lt['score_pct'])}).")
-    A("- 입력 신선도: 국내 시장 자료(RAWDATA · 수급)는 퀀티 최신화 뒤 · 금리 · 환율 · 해외는 ECOS/FRED 직접 수급(가용일 규칙 C11). 묵은 지표는 §5 표의 '묵음' 열.")
-    A("- PIT: 표준화 · 상관 · 백분위 전부 확장 창(미래 관측 없음). 지수 t 는 t 마감 자료 — 신호로 쓰려면 t+1 부터.")
-    A("- 등급 · BOOK · 등록부와 무관한 아이디어 연구 산출물. 수치 결정의 출처 = `output/v1/run_meta.json::params`.")
-    A("")
-    path = f"{folder}/kr_stress_daily_{day}.md"
-    open(path, "w", encoding="utf-8", newline="\n").write("\n".join(L) + "\n")
-    return path
 
 
 def render_pdf(md_path):
@@ -273,15 +202,18 @@ def write_excel(meta, d, st, eps, cv, nsr, rob, folder, day):
     ws.title = "Dashboard"
     ws["A1"] = f"KR 자본시장 스트레스 대시보드 — 데이터 기준 {day} (산출 {meta['run_at'][:16]})"
     ws["A1"].font = Font(bold=True, size=14)
-    ws["A2"] = "KR-CISS v1 · 12축 34지표 · 재귀 PIT · 지표 수준 EWMA 순위상관 집계 · 0~100 · 아이디어 연구(등급 · BOOK 무관) · 설계 = DESIGN_v1_capital_market.md"
+    ws["A2"] = "KR-CISS v1 · 12축 34지표 · 재귀 PIT · 지표 수준 EWMA 순위상관 집계 · 점수 = 10·√원값(0~100) · 아이디어 연구(등급 · BOOK 무관) · 설계 = DESIGN_v1_capital_market.md"
     ws["A2"].font = Font(italic=True, color="595959")
-    kv = [("지수", lt["score"], "0.0"), ("심각도(0~100 · 높을수록 나쁨)", 100 * lt["score_pct"], "0"), ("단계", tier_of(lt["score_pct"], ns), None),
-          ("전일 지수", float(d["score"].iloc[-2]) if len(d) > 1 else None, "0.0"),
-          (f"20거래일 전({lt['date_20td_ago']})", lt["score_20td_ago"], "0.0"), (f"60거래일 전({lt['date_60td_ago']})", lt["score_60td_ago"], "0.0"),
-          ("선형 평균(상관 미반영)", lt["score_linear"], "0.0"), ("축 평균 상관", lt["avg_corr"], "0.00"),
-          ("V-KOSPI200", lt["vkospi"], "0.0"), ("V-KOSPI 심각도(0~100)", 100 * lt["vkospi_pct"], "0"),
-          ("주의 문턱(백분위 %)", 100 * ns.get("threshold_warn", float("nan")), "0"), ("위험 문턱(백분위 %)", 100 * ns.get("threshold_risk", float("nan")), "0"),
-          ("전 기간 최고", f"{lt['max_score_since_t0']:.1f} ({lt['max_score_date']})", None)]
+    lv = meta["levels"]
+    kv = [("스트레스 점수(0~100 · 제곱근 눈금 · 높을수록 나쁨)", lt["level"], "0.0"), ("원값(CISS · 점수²/100)", lt["score"], "0.00"),
+          ("역대 순위(백분위 % · 높을수록 나쁨)", 100 * lt["score_pct"], "0"), ("단계", tier_of(lt["score_pct"], ns), None),
+          ("전일 점수", float(d["level"].iloc[-2]) if len(d) > 1 else None, "0.0"),
+          (f"20거래일 전({lt['date_20td_ago']})", lt["level_20td_ago"], "0.0"), (f"60거래일 전({lt['date_60td_ago']})", lt["level_60td_ago"], "0.0"),
+          ("34지표 평균 심각도(완전 동행 시 점수 상한)", lt["score_linear"], "0.0"), ("동행률(점수 ÷ 평균 심각도 · %)", 100 * lt["comove"], "0"), ("축 평균 상관", lt["avg_corr"], "0.00"),
+          ("V-KOSPI200", lt["vkospi"], "0.0"), ("V-KOSPI 역대 순위(백분위 %)", 100 * lt["vkospi_pct"], "0"),
+          ("주의 문턱(백분위 % / 점수)", f"{100 * ns.get('threshold_warn', float('nan')):.0f} / {lv['warn']:.1f}", None), ("위험 문턱(백분위 % / 점수)", f"{100 * ns.get('threshold_risk', float('nan')):.0f} / {lv['risk']:.1f}", None),
+          ("점수 눈금 기준점", " · ".join(f"{r['label']} {r['level']:.0f}" for r in meta["ref_marks"]), None),
+          ("전 기간 최고", f"{lt['max_level']:.1f} ({lt['max_score_date']})", None)]
     _hdr(ws, 4, ["항목", "값"])
     for i, (k, v, fmt) in enumerate(kv, start=5):
         ws.cell(row=i, column=1, value=k).border = BORDER
@@ -292,18 +224,18 @@ def write_excel(meta, d, st, eps, cv, nsr, rob, folder, day):
         if k == "단계":
             c.fill = PatternFill("solid", fgColor=TIER_COLOR.get(str(v), "FFFFFF"))
             c.font = Font(bold=True)
-    ws.column_dimensions["A"].width = 30
+    ws.column_dimensions["A"].width = 40
     ws.column_dimensions["B"].width = 22
-    ws["A19"] = headline_sentence(meta, d, ns).replace("**", "")
-    ws["A19"].alignment = Alignment(wrap_text=True, vertical="top")
-    ws.merge_cells("A19:F22")
-    r0 = 24
-    _hdr(ws, r0, ["분야", "기여(점)", "하위지수", "심각도(0~100 · 높을수록 나쁨)", "20거래일 전 기여", "변화", "심각도 80 이상 세부 지표"])
-    order = sorted(axes, key=lambda a: -lt["contrib"][a])
+    ws["A22"] = headline_sentence(meta, d, ns).replace("**", "")
+    ws["A22"].alignment = Alignment(wrap_text=True, vertical="top")
+    ws.merge_cells("A22:F25")
+    r0 = 27
+    _hdr(ws, r0, ["분야", "기여(점 · 합 = 점수)", "하위지수", "심각도(0~100 · 높을수록 나쁨)", "20거래일 전 기여", "변화", "심각도 80 이상 세부 지표"])
+    order = sorted(axes, key=lambda a: -lt["contrib_level"][a])
     for i, a in enumerate(order, start=r0 + 1):
         rows = st[st.axis == a]
         hot = " · ".join(f"{r.name}({100 * r.ecdf_pct:.0f})" for r in rows.itertuples() if r.ecdf_pct >= 0.8) or "—"
-        vals = [ko[a], lt["contrib"][a], lt["subindex"][a], 100 * lt["axis_pct"][a], lt["contrib_20td_ago"][a], lt["contrib"][a] - lt["contrib_20td_ago"][a], hot]
+        vals = [ko[a], lt["contrib_level"][a], lt["subindex"][a], 100 * lt["axis_pct"][a], lt["contrib_level_20td_ago"][a], lt["contrib_level"][a] - lt["contrib_level_20td_ago"][a], hot]
         for j, v in enumerate(vals, start=1):
             c = ws.cell(row=i, column=j, value=v)
             c.border = BORDER
@@ -322,34 +254,34 @@ def write_excel(meta, d, st, eps, cv, nsr, rob, folder, day):
     bar.legend = None
     ws.add_chart(bar, "I4")
     r2 = r1 + 2
-    _hdr(ws, r2, ["id", "분야", "지표", "값", "심각도(0~100)", "기여", "관측일", "묵음(td)"])
-    top = st.sort_values("contrib", ascending=False).head(12)
+    _hdr(ws, r2, ["id", "분야", "지표", "값", "심각도(0~100)", "기여(점)", "관측일", "묵음(td)"])
+    top = st.sort_values("contrib_level", ascending=False).head(12)
     for i, r in enumerate(top.itertuples(), start=r2 + 1):
-        for j, v in enumerate([r.id, ko[r.axis], r.name, float(r.value), 100 * float(r.ecdf_pct), float(r.contrib), str(r.last_obs_date), int(r.stale_trading_days)], start=1):
+        for j, v in enumerate([r.id, ko[r.axis], r.name, float(r.value), 100 * float(r.ecdf_pct), float(r.contrib_level), str(r.last_obs_date), int(r.stale_trading_days)], start=1):
             c = ws.cell(row=i, column=j, value=v)
             c.border = BORDER
             c.number_format = {4: "0.0000", 5: "0", 6: "0.00"}.get(j, "General")
 
     # ── Index_Daily (+ 꺾은선 차트) ──
     w2 = wb.create_sheet("Index_Daily")
-    cols = ["score", "score_pct", "score_linear", "score_axis_level", "avg_corr", "vkospi", "vkospi_pct"] + [f"c_{a}" for a in axes] + [f"s_{a}" for a in axes] + [f"pct_{a}" for a in axes]
+    cols = ["level", "score", "score_pct", "score_linear", "comove", "score_axis_level", "avg_corr", "vkospi", "vkospi_pct"] + [f"cl_{a}" for a in axes] + [f"c_{a}" for a in axes] + [f"s_{a}" for a in axes] + [f"pct_{a}" for a in axes]
     dd = d[cols].copy()
     dd["tier"] = [tier_of(p, ns) if p == p else None for p in dd["score_pct"]]
     dd.index.name = "Date"
     _df_to_sheet(w2, dd, num_fmt="0.0000")
     n = len(dd) + 1
     lc = LineChart()
-    lc.title = "KR-CISS v1 (전 기간)"
+    lc.title = "스트레스 점수(0~100 · 제곱근 눈금) — 전 기간"
     lc.add_data(Reference(w2, min_col=2, min_row=1, max_row=n), titles_from_data=True)
     lc.set_categories(Reference(w2, min_col=1, min_row=2, max_row=n))
     lc.height, lc.width = 9, 24
     lc.legend = None
-    ws.add_chart(lc, "I24")
+    ws.add_chart(lc, "I27")
 
     # ── Axes_Latest · Indicators_Latest ──
     w3 = wb.create_sheet("Axes_Latest")
-    ax = pd.DataFrame([{"axis": a, "axis_ko": ko[a], "contrib": lt["contrib"][a], "subindex": lt["subindex"][a], "axis_pct": lt["axis_pct"][a],
-                        "contrib_20td_ago": lt["contrib_20td_ago"][a], "n_indicators": int((st.axis == a).sum())} for a in axes]).set_index("axis")
+    ax = pd.DataFrame([{"axis": a, "axis_ko": ko[a], "contrib_level": lt["contrib_level"][a], "contrib_raw": lt["contrib"][a], "subindex": lt["subindex"][a], "axis_pct": lt["axis_pct"][a],
+                        "contrib_level_20td_ago": lt["contrib_level_20td_ago"][a], "n_indicators": int((st.axis == a).sum())} for a in axes]).set_index("axis")
     _df_to_sheet(w3, ax, date_fmt="@")
     w4 = wb.create_sheet("Indicators_Latest")
     _df_to_sheet(w4, st.set_index("id"), date_fmt="@", num_fmt="0.0000", widths={"name": 30, "definition": 46, "source": 40, "availability_rule": 18})
@@ -366,7 +298,7 @@ def write_excel(meta, d, st, eps, cv, nsr, rob, folder, day):
     z.index.name = "Date"
     _df_to_sheet(w6, z, num_fmt="0.000")
     w7 = wb.create_sheet("AxisContrib_Daily")
-    cc = d[[f"c_{a}" for a in axes]].copy()
+    cc = d[[f"cl_{a}" for a in axes]].copy()          # 점수 눈금의 분야별 몫(합 = 점수) — 원값 몫은 Index_Daily 의 c_<축>
     cc.columns = [ko[a] for a in axes]
     cc.index.name = "Date"
     _df_to_sheet(w7, cc, num_fmt="0.000")
@@ -445,8 +377,9 @@ def main():
         for p in (f"{folder}/{stale}", f"{latest}/{stale}"):
             if os.path.exists(p):
                 os.remove(p)
-    json.dump({"day": day, "run_at": dt.datetime.now().isoformat(timespec="seconds"), "score": meta["latest"]["score"],
+    json.dump({"day": day, "run_at": dt.datetime.now().isoformat(timespec="seconds"), "level": round(meta["latest"]["level"], 2), "score": meta["latest"]["score"],
                "score_pct": meta["latest"]["score_pct"], "tier": tier_of(meta["latest"]["score_pct"], nsr.get("v1", {})),
+               "levels": {k: round(v, 2) for k, v in meta["levels"].items()}, "ref_marks": meta["ref_marks"],
                "pdf": pdf, "xlsx": xlsx, "md": md, "charts": CHART_FILES}, open(f"{latest}/latest.json", "w", encoding="utf-8"), ensure_ascii=False, indent=2)
     log("done", day)
 
