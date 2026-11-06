@@ -95,16 +95,24 @@ if (!exists("ECOS_BOND_CACHE")) ECOS_BOND_CACHE <- file.path(CACHE_DIR, "ecos_bo
 
 # ECOS 시장금리 (817Y002 일별) + CPI (901Y010 월별) 통계표·항목 매핑
 # 기존 ecos_bond_rates.parquet 7 series inherit
+# ★2026-11-06 항목 코드 수리(도훈 '여기서 고치기' · 근거 = ECOS StatisticItemList/817Y002 대조 · 04_Research/01_reports/kr_market_stress_index_20261106/DESIGN_v1_capital_market.md §4.2):
+#   구 KR_Gov3Y = 010190000 은 ECOS 이름 '국고채(1년)'(1년물과 6,386일 100% 일치 · 진짜 3년물과 평균 27.5bp 차) → 국고채(3년) = 010200000
+#   구 KR_CD91  = 010150000 은 ECOS 이름 'KORIBOR(3개월)'(5,253일 100% 일치 · 진짜 CD91 과 3.6bp) → CD(91일) = 010502000
+#   구 매핑이 받던 계열은 사실대로 이름 붙여 남긴다(KR_Gov1Y · KR_KORIBOR3M) + CP(91일) 신설(단기 신용증권 프리미엄 CP−CD).
+#   10-20 'ECOS CD91 vs 퀀티 CD91 고시 차 최대 39bp'(global_macro_ingest.py · QW_KR_CD91 규칙)의 실제 원인 = 이 오표기.
 ECOS_BOND_SERIES <- list(
-  list(name = "KR_Gov3Y",   stat = "817Y002", item = "010190000", freq = "D"),
+  list(name = "KR_Gov3Y",   stat = "817Y002", item = "010200000", freq = "D"),  # 국고채(3년) — 11-06 수리(구 010190000 = 1년)
   list(name = "KR_Gov10Y",  stat = "817Y002", item = "010210000", freq = "D"),
   # 2026-05-19 Q-Lead 자체 부정확 fix: CorpAA = 010300000 (3년 AA-), CorpBBB = 010320000 (3년 BBB-)
   # 이전 매핑 (010320000 / 010330000) 잘못. 기존 cache KR_CorpAA 3.906 정합 검증.
   list(name = "KR_CorpAA",  stat = "817Y002", item = "010300000", freq = "D"),
   list(name = "KR_CorpBBB", stat = "817Y002", item = "010320000", freq = "D"),
-  list(name = "KR_CD91",    stat = "817Y002", item = "010150000", freq = "D"),
+  list(name = "KR_CD91",    stat = "817Y002", item = "010502000", freq = "D"),  # CD(91일) — 11-06 수리(구 010150000 = KORIBOR 3개월)
   list(name = "KR_Call1D",  stat = "817Y002", item = "010101000", freq = "D"),
-  list(name = "KR_CPI",     stat = "901Y009", item = "0",         freq = "M")
+  list(name = "KR_CPI",     stat = "901Y009", item = "0",         freq = "M"),
+  list(name = "KR_Gov1Y",     stat = "817Y002", item = "010190000", freq = "D"),  # 11-06 신설 — 구 'KR_Gov3Y' 가 실제로 받던 계열
+  list(name = "KR_KORIBOR3M", stat = "817Y002", item = "010150000", freq = "D"),  # 11-06 신설 — 구 'KR_CD91' 이 실제로 받던 계열
+  list(name = "KR_CP91",      stat = "817Y002", item = "010503000", freq = "D")   # 11-06 신설 — CP(91일) · 1995~
 )
 
 #' Fetch single ECOS series
