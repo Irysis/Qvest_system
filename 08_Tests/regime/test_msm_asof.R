@@ -138,7 +138,9 @@ rp_src <- function(tag, val) { p <- file.path(tempdir(), sprintf("msma_rep_%s.tx
 dst_ok <- file.path(tempdir(), "msma_rep_dst_ok.txt"); unlink(dst_ok)
 dst_bad <- file.path(tempdir(), "msma_no_such_dir", "sub", "dst.txt")      # 상위 폴더 없음 → rename · copy 모두 실패
 try10 <- function(expr) tryCatch(suppressWarnings(expr), error = function(e) paste("ERR:", conditionMessage(e)))
-r10a <- try10(.msma_root(bad_root)); r10b <- try10(.msma_root(ROOT)); r10c <- try10(.msma_root(NULL))
+r10a <- try10(.msma_root(bad_root)); r10b <- try10(.msma_root(ROOT))
+old_cpd <- Sys.getenv("CLAUDE_PROJECT_DIR", ""); Sys.setenv(CLAUDE_PROJECT_DIR = "")   # 미지정 → QM_ROOT 폴백 경로를 잰다(세션 · 워크트리 무관)
+r10c <- try10(.msma_root(NULL)); Sys.setenv(CLAUDE_PROJECT_DIR = old_cpd)
 rp_ok <- try10(.msma_replace(rp_src("a", "x"), dst_ok)); rp_bad <- try10(.msma_replace(rp_src("b", "y"), dst_bad))
 cond10 <- grepl("^ERR:.*지정한 루트", r10a) && identical(r10b, ROOT) && identical(r10c, ROOT) &&
   isTRUE(rp_ok) && file.exists(dst_ok) && identical(readLines(dst_ok), "x") && grepl("^ERR:.*원자 교체 실패", rp_bad)

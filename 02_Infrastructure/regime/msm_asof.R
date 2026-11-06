@@ -31,7 +31,7 @@ MSMA_GUARD <- list(gamma_min = 1e-5, sd_ratio = c(0.8, 1.25))   # 사전 고정(
     if (file.exists(file.path(root, "02_Infrastructure/config.R"))) return(gsub("\\\\", "/", root))
     stop("[msm_asof] 지정한 루트에 02_Infrastructure/config.R 이 없다(운영 루트로 넘어가지 않는다): ", root)
   }
-  for (p in c(Sys.getenv("QM_ROOT", ""), Sys.getenv("CLAUDE_PROJECT_DIR", ""))) {
+  for (p in c(Sys.getenv("CLAUDE_PROJECT_DIR", ""), Sys.getenv("QM_ROOT", ""))) {   # r-portability 금칙 ④ — CLAUDE_PROJECT_DIR 먼저
     if (nzchar(p) && file.exists(file.path(p, "02_Infrastructure/config.R"))) return(gsub("\\\\", "/", p))
   }
   stop("[msm_asof] 프로젝트 루트 해석 실패(QM_ROOT)")

@@ -300,7 +300,7 @@ gate_run <- function(root, as_of) {
   ln <- grep("^(OK|BAD) ", out, value = TRUE, useBytes = TRUE); ln <- if (length(ln)) ln[length(ln)] else ""
   v <- if (rc == 0L && startsWith(ln, "OK ")) "OK" else if (rc == 1L && startsWith(ln, "BAD ")) "BAD" else "DEAD"
   why <- sub(" \\| .*$", "", ln)                     # 계약 = 'BAD [태그] 사유 ; … | 진단…' — 태그는 사유 부분에서만 센다(진단 문구는 계약 아님)
-  tags <- unique(gsub("^\\[|\\]$", "", regmatches(why, gregexpr("\\[[a-z_]+\\]", why))[[1]]))
+  tags <- unique(gsub("^\\[|\\]$", "", regmatches(why, gregexpr("\\[[a-z_]+\\]", why, perl = TRUE))[[1]]))   # r-portability 금칙 ⑥ — TRE 색인 금지
   list(rc = rc, line = ln, verdict = v, tags = tags)
 }
 gate_desc <- function(g) sprintf("(%s rc=%d · %s)", g$verdict, g$rc, substr(g$line, 1, 220))
