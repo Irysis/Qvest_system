@@ -276,5 +276,22 @@ v0 의 같은 표(≥95: +0.7% · −26.7% · −8.2%)보다 극단 구간의 �
 - 실물 GaR: ECOS 월별 산업생산을 받아 월 평균 지수로 Adrian 식 성장 분위회귀(지금은 시장 수익 대체).
 - 상시 산출이 필요하면 `daily_refresh.sh` 뒤 1줄(연구 범위 밖 · 도훈 결정). 지수 재계산 127초.
 
+## 7. 일보 체인 — 같은 형태 · 내용만 갱신되는 PDF + 엑셀 대시보드 (도훈 11-06 "데일리로 … 가능할까")
+
+가능하고, 시제품이 돌아간다(1회 61초 · ECOS/FRED 직접 수급 포함 약 2분).
+
+| 단계 | 스크립트 | 산출 | 시간 |
+|---|---|---|---|
+| ① 금리 · 환율 · 해외 직접 수급 | `fetch_research_inputs.py` | `output/research_pull_*` | ~60초 |
+| ② 지수 재계산(일보 모드 `KRSI_DAILY=1` = 분위회귀 부트스트랩 생략) | `build_kr_stress_index_v1.py` | `output/v1/` | ~40초 |
+| ③ 차트 | `make_charts.py v1` | `charts/v1_01~05.png` | ~3초 |
+| ④ 일보 PDF + 엑셀 대시보드 | `make_daily_report.py` | `daily/<기준일>/kr_stress_daily_<일자>.md · .pdf` · `kr_stress_dashboard_<일자>.xlsx` + `daily/latest/*_latest.*` · `latest.json` | ~20초 |
+| 묶음 | `run_daily_stress.sh [--skip-fetch] [--no-pdf]` | `daily/logs/run_*.log` | |
+
+- **PDF(5쪽 · A4 가로 · 현대하모니)**: 프로젝트 단일 경로 `00_Lawbook/tools/md_to_print_pdf.R`(서식 규칙 `docs/rules/pdf-output-style.md`) — 원본은 Markdown 템플릿(`make_daily_report.py::write_markdown`)이고 숫자 · 문장 · 표가 매일 채워진다. 구성 = ① 오늘의 레벨(지수 · 백분위 · 단계 · 전일/20일/60일 · V-KOSPI · 자동 한 줄 읽기 · 축별 기여 차트) ② 축별 분해 표 + 최근 18개월 차트 ③ 34 지표 표(값 · 백분위 · 20일 전 · 기여 · 관측일 · 묵음) ④ 역사 속 위치(전 기간 차트 · 봉우리 표 · 최근 LT 위기) ⑤ 읽는 법 · 주의. `pdf-check`(표 갈림 0 · 글꼴 HDharmony) 통과.
+- **엑셀(openpyxl · 8MB)**: `Dashboard`(헤드라인 블록 · 단계 색 · 12축 표 + 데이터 막대 · 조건부 색 · 상위 지표 표 · **네이티브 막대 · 꺾은선 차트**) · `Index_Daily`(지수 · 백분위 · 단계 · 축 기여 · 하위지수 · 축 백분위 · V-KOSPI, 2006~) · `Axes_Latest` · `Indicators_Latest`(34 · 정의 · 원천 · 가용 규칙) · **`Raw_Daily`(34 지표 원값 일별)** · `PIT_Daily`(순위 변환값) · `AxisContrib_Daily` · `Crises`(LT 위기 + 경보 시점) · `Thresholds`(NSR 임계치 · 강건성) · `Meta`(실행 시각 · 입력 파일 mtime · **수치 결정표 PARAMS 와 출처** · 지표 정의). 자동 필터 · 틀 고정.
+- **매일 자동화에 필요한 것(도훈 결정)**: 국내 시장 캐시(RAWDATA · 수급 · 벤치)는 데이터 리프레시가 채우므로 **리프레시가 끝난 뒤** 한 번 돌면 된다 — (a) `daily_refresh.sh` 마지막 줄에 `bash …/run_daily_stress.sh` 1줄(원 세션 · 리프레시 소유자) 또는 (b) 별도 예약 작업(리프레시 종료 뒤 시각 · 기계 스크립트 `02_Infrastructure/ops/machine/`의 예약 작업 게이트에 편입) 또는 (c) 수동. 텔레그램 발송은 넣지 않았다(새 일일 메시지 흐름 = 도훈 결정 · 넣는다면 `tg_agent_brief()` 단일 진입).
+- 산출물 저장: `daily/<일자>/` 는 누적(아카이브) · `daily/latest/` 는 고정 경로. pdf · xlsx · png 는 저장소 미추적(`.gitignore` 규칙) — 디스크(OneDrive)에 남는다. 운영으로 승격하면 보고서 폴더(`04_Research/01_reports/…`)가 아니라 `02_Infrastructure/reports/` 쪽으로 옮기는 것이 맞다(도훈 결정).
+
 ### 산출물
 `output/v1/` — `kr_stress_v1_daily.parquet`(지수 · 백분위 · 축 하위지수 · 기여 · 34 지표 원값 · PIT) · `indicator_status_latest.csv` · `crisis_validation.csv` · `axis_alarm_timing.csv` · `alarm_hit_rate.csv` · `forward_by_percentile_bucket.csv` · `quantile_regression.csv` · `quantile_regression_oos.csv` · `nsr_threshold_grid.csv` · `nsr_selected.json` · `robustness.csv` · `event_study_paths.csv` · `run_meta.json`(수치 결정표 PARAMS · 입력 mtime · 최신 분해 · 경보 단계). `output/research_pull_*`(직접 수급 원자료 · 메타 · 가용 규칙 사본). `charts/v1_01~05`.

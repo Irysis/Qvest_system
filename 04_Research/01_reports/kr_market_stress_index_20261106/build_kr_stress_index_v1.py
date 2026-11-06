@@ -97,6 +97,9 @@ PARAMS = {
     "alarm_cooloff_obs": {"value": 20, "source": "v0."},
 }
 P = {k: v["value"] for k, v in PARAMS.items()}
+if os.environ.get("KRSI_DAILY") == "1":   # 일보 모드 — 분위회귀 블록 부트스트랩 생략(검증 표는 전날과 같다 · 지수 · 분해는 동일)
+    P["qr_boot_reps"] = 0
+    PARAMS["qr_boot_reps"] = {"value": 0, "source": "KRSI_DAILY=1 일보 모드 — 부트스트랩 생략(연구 판 200회 · DESIGN §5.4 의 CI 는 연구 판 실행값)."}
 for k in ("cmax_window_days", "fx_cmax_window_days", "breadth_drawdown", "breadth_high_window_obs", "breadth_high_min_obs",
           "breadth_universe_topn", "price_floor_krw", "corr_window_obs", "corr_topn", "flow_windows_obs", "score_pct_min_obs",
           "ecdf_min_history_years", "alarm_percentile", "alarm_cooloff_obs", "hit_drawdown"):
