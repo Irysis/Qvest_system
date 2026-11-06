@@ -199,6 +199,34 @@ mkdr "Thu Sep 24 00:03:02     2026" "$SENT1" "$DONE1"
 V=$(JUDGE_OVERRIDE="$TMP/mut_selfF.py" run_judge_log "[$DRT]" '{}')
 chk "S12 돌연변이(면제 항상 거짓) → S1 이 경보로 뒤집힘"             YES "$(has "$V" bad Qvest_DailyRefresh)"
 
+# ══ (2026-11-06 레인 · PLAN quantiwise_data_expansion_20261106 §4.7) 레인 실패도 [7] reported 와 Done 양쪽에 있어야 면제 ══
+#   daily_refresh 레인(D · A)은 [0c] 전 합류에서 실패를 병합하고, 로그는 합류 때 테두리 안에 원문 재생된다.
+#   S13 = 레인 블록이 있는 완주 로그 · 레인 항목(dart_daily · lane_A:no_report)이 양쪽에 → 면제(양성 대조)
+#   S13b = 레인 항목이 Done 에만(= [7] 뒤 병합 — 계약 위반) → 경보
+#   S13c = 레인 블록 안에 머리줄(=== Daily Refresh v2 @ · 실행 창 밖 시각)이 끼면 구간이 잘려 면제 불가 → 경보
+#          (레인이 '=== Daily Refresh v2' 로 시작하는 줄을 쓰지 않는 계약의 파수꾼)
+mkdr_lane() {   # $1 = reported 목록 · $2 = Done 목록 · $3 = 레인 블록 안에 끼울 줄(없으면 -)
+  { printf '=== Daily Refresh v2 @ Thu Sep 24 00:03:02     2026 ===\n[0a/7] ...\n[0b/7] ...\n'
+    printf '[lane:D] 시작 pid=101 winpid=9001 로그=/tmp/qm_dr_run_ab12/D.log\n[1pre/7] Benchmark ...\nQWUF\tstate=advanced\tdone=4/4\tincomplete=0\n'
+    printf '──── [lane:D] 재생 시작(rc=0 · 합류 대기 0s · 원본 /tmp/qm_dr_run_ab12/D.log) ────\n[5b/7] DART Quarterly + Insider Daily Incremental...\n'
+    [ "$3" != "-" ] && printf '%s\n' "$3"
+    printf '[run_r] ★r5(dart_daily) FAILED rc=1 — 체인은 계속되나 최종 종료코드·요약에 반영됨\n──── [lane:D] 재생 끝 ────\n[lane:D] 합류 — 실패 1건 병합\n'
+    printf '[lock] 데이터 갱신 완료 — 리프레시 잠금 해제\n[7/7] Telegram + NAV + Memory...\n[7] tg_sent=TRUE reported=%s\n' "$1"
+    printf '=== Daily Refresh v2 Done — ★실패 %d스텝: %s @ Thu Sep 24 01:54:38     2026 ===\n' "$(wc -w <<<"$2")" "$2"
+  } > "$DRLOG"
+}
+LANE_F='ingest_freshness dart_daily(rc=1) lane_A:no_report(rc=137)'
+mkdr_lane "$LANE_F" "$LANE_F" -
+V=$(run_judge_log "[$DRT]" '{}')
+chk "S13 레인 실패가 [7] reported · Done 양쪽에(합류 = [0c] 전) → 면제(양성 대조)" NO  "$(has "$V" bad Qvest_DailyRefresh)"
+chk "S13a 같은 건이 selfrep 으로 기록"                               YES "$(has "$V" selfrep Qvest_DailyRefresh)"
+mkdr_lane "ingest_freshness" "$LANE_F" -
+V=$(run_judge_log "[$DRT]" '{}')
+chk "S13b 레인 항목이 Done 에만(= [7] 뒤 병합 · 계약 위반) → 경보"   YES "$(has "$V" bad Qvest_DailyRefresh)"
+mkdr_lane "$LANE_F" "$LANE_F" '=== Daily Refresh v2 @ Thu Sep 24 00:40:00     2026 ==='
+V=$(run_judge_log "[$DRT]" '{}')
+chk "S13c 레인 블록 안 머리줄이 구간을 자르면 면제 불가 → 경보(레인 줄 계약의 파수꾼)" YES "$(has "$V" bad Qvest_DailyRefresh)"
+
 # ══ v10.4 기보고 원장 확정 조건(D) — 발송되지 않을 신규 실패는 seen 에 확정하지 않는다(09-12 영구 매몰 사례) ══
 TODAY8="$(date +%Y%m%d)"; MK="$TMP/task_health_scheduled_task_unhealthy_${TODAY8}.alert"
 seen_has() { grep -q "\"$1\"" "$TMP/seen.json" 2>/dev/null && echo YES || echo NO; }

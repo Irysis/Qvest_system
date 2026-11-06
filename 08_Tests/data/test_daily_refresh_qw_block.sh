@@ -37,6 +37,7 @@ run_case(){   # $1 = 블록 파일 · $2 = QWUF 줄 · $3 = 스텁 rc · $4 = �
 set -uo pipefail
 DR_FAILED=(); RUNR=0
 run_r(){ RUNR=\$((RUNR + 1)); }
+dr_lane_join(){ :; }   # (2026-11-06 레인) 블록 안 합류 호출 스텁 — 이 검사는 QWUF 판정만 잰다(합류 · 레인 = test_daily_refresh_lanes.sh)
 INFRA="$T/infra"; QVENV_PY="python"; _qw_rc="$4"
 export STUB_LINE='$2' STUB_RC="$3"
 . "$1" >/dev/null 2>&1
@@ -141,7 +142,8 @@ printf 'import os\nopen(os.environ["STUB_BIC_LOG"], "a").write("called\\n")\n' >
 run_pre(){ # $1 = 블록 · $2 = 수급 rc · $3 = 정본 xlsx date_max · $4 = parquet 최신일 → "BIC=<재생성 호출 수>|BM_RC=<갱신기 rc>"
   "$PYV" -c "import json,sys,pandas as pd; json.dump({'before':{'date_max':sys.argv[2]},'message':'stub'}, open(sys.argv[1]+'/quantiwise_fetch_status.json','w')); pd.DataFrame({'Date':pd.to_datetime(['2026-09-30',sys.argv[3]])}).to_parquet(sys.argv[1]+'/benchmark.parquet')" "$T/pre/base/.cache" "$3" "$4"
   rm -f "$T/pre/bic.log"
-  { printf 'set -uo pipefail\nBASE="%s"; INFRA="%s"; QVEST_PY="%s"\nexport STUB_QW_RC="%s" STUB_BIC_LOG="%s"\n' "$T/pre/base" "$T/pre/infra" "$PYV" "$2" "$T/pre/bic.log"
+  # QVENV_PY 를 하네스가 준다(2026-11-06 레인 — Python 해석이 [1pre] 밖 [env] 로 올라갔다). 구판 블록은 자기 탐색 루프로 같은 값을 다시 고른다.
+  { printf 'set -uo pipefail\nBASE="%s"; INFRA="%s"; QVEST_PY="%s"; QVENV_PY="%s"\nexport STUB_QW_RC="%s" STUB_BIC_LOG="%s"\n' "$T/pre/base" "$T/pre/infra" "$PYV" "$PYV" "$2" "$T/pre/bic.log"
     printf '. "%s" >/dev/null 2>&1\nprintf "BM_RC=%%s\\n" "$_bm_rc"\n' "$1"; } > "$T/pre/h.sh"
   local r n; r=$(bash "$T/pre/h.sh" 2>/dev/null | tail -n 1); n=$(cat "$T/pre/bic.log" 2>/dev/null | grep -c called)
   echo "BIC=$n|$r"; }

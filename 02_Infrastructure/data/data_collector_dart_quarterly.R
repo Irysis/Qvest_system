@@ -172,7 +172,7 @@ dart_fetch_quarterly <- function(years = NULL,
 
   # 유니버스 티커 로드
   if (file.exists(RAWDATA_CACHE)) {
-    raw_tickers <- unique(as.data.table(read_parquet(RAWDATA_CACHE))$Ticker)
+    raw_tickers <- unique(as.data.table(read_parquet(RAWDATA_CACHE, col_select = "Ticker"))$Ticker)   # Ticker 열만(2026-11-06 · 전 열 읽기와 같은 집합 · data_collector_dart.R:233 과 같은 수리)
   } else {
     stop("[dart_quarterly] RAWDATA cache not found.")
   }
