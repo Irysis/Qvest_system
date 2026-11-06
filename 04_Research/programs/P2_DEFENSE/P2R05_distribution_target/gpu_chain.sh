@@ -2,9 +2,13 @@
 # P2R05 GPU 창 연쇄(2026-11-06 · 1계층 사이드 세션 · 도훈 10-18 'THGNN 끝난 뒤 레인 보류') — 분리 실행(_lib/detached_env.sh · 세션 밖 · 인자 없음).
 #   측정 절차 · 판정과 무관(사전등록 고정 대상 아님 — GPU 배분 · 순서만). 같은 일을 하던 gpu_handover.py(10-18)는 THGNN 이 새 축 · 처음부터로 바뀌어 전제가 무효다.
 #   ① THGNN(2601.04602 · 레인 gpu1) 측정 시작 대기 — 레인 저널에 T0(11-06 07:20) 뒤 gpu1 axis_override 사건(재구현 · 감사가 끝나 측정 직전).
-#      감사 기각 → 재구현 연쇄는 레인 스위치 관문을 다시 지나므로, 측정이 시작되기 전에는 레인을 멈추지 않는다. 마감 START_WAIT_H 안에 없으면 아무것도 바꾸지 않고 끝.
+#      감사 기각 → 재구현 연쇄는 레인 스위치 관문을 다시 지나므로, 측정이 시작되기 전에는 레인을 멈추지 않는다. 마감 START_WAIT_H 안에 없으면 아무것도 바꾸지 않고 끝(알림).
+#      THGNN 요청이 측정 시작 전에 바쁜 상태(pending · in_progress · failed_needs_session)를 벗어나면(재시도 소진 · 건너뜀 등) 기다리지 않고 ② 로 간다.
 #   ② 레인 보류 — lane_hold.py pause(진행 중 작업은 끝까지 · 새 논문 · 새 GPU 작업 없음 — CPU 슬롯 새 논문도 이 창 동안 쉰다).
-#   ③ THGNN 끝 대기 — gpu1 claim 폴더 없음 2회 연속(2분 간격). 마감 END_WAIT_H 를 넘으면 워밍하지 않고 끝(레인 재개).
+#   ③ GPU 슬롯 끝 대기 — gpu1 claim 이 '살아 있지 않음' 2회 연속(2분 간격): 폴더 없음 ∨ 소유자(owner_win) 사망 ∨ 소유자 표식 없는 빈 claim 10분 초과.
+#      레인이 꺼져 있으면 틱이 죽은 claim 을 회수하지 않으므로 폴더 유무만 보면 죽은 작업자를 마감까지 기다린다(판단 Superfan T3 C-20261106-002).
+#      마감 END_WAIT_H 를 넘으면 워밍하지 않고 끝(레인 재개 · 알림).
+#   비정상 출구(①③ 마감 · 보류 실패 · 재개 실패)마다 알림 1통 = gpu_chain_alert.R(prep_send · 푸시). 워밍 실패는 warm_cache.sh 가 스스로 알린다.
 #   ④ 같은 데이터 배치 — 다음 'Daily Refresh v2 Done' 줄(마감 06:00 규칙 = measure.sh 와 같음) 뒤에 워밍 · 측정이 들어가게 한다
 #      (워밍 센티널은 워밍 시작 · 끝 dnn_input 지문을 남기고 측정 precheck --warm-check 가 현재 지문과 대조한다 — 사이에 갱신이 끼면 측정이 거부된다).
 #   ⑤ warm_cache.sh(레인 꺼짐 · GPU 게이트 마감 = 지금 + 2시간 · 실패 = 자체 알림) → rc 0 이면 notify_done.sh(분기점 1통) + measure_now_vram.sh(측정 → 평가).
@@ -38,10 +42,23 @@ lane_set() {
   done
   return 1
 }
+alert() { Rscript "$RDR/gpu_chain_alert.R" "$1" "$2" "$3" > /dev/null 2>&1 && say "알림 1통($1)" || say "알림 실패($1)"; }
+req_state() { "$PY" -X utf8 -c "import io,json,sys;d=json.loads(io.open(sys.argv[1],'rb').read().decode('utf-8'));print(d.get('status'),((d.get('paper') or {}).get('paper_key')))" "$REQ" 2>/dev/null | tr -d '\r'; }
+claim_alive() {    # 0 = gpu1 claim 이 살아 있다 · 1 = 없음 · 소유자 사망 · 표식 없는 빈 claim 10분 초과
+  [ -d "$CLAIM" ] || return 1
+  local w age
+  w=$( { tr -d '\r\n ' < "$CLAIM/owner_win"; } 2>/dev/null )
+  if [ -z "$w" ]; then
+    age=$(( $(date +%s) - $(date -r "$CLAIM" +%s 2>/dev/null || date +%s) ))
+    [ "$age" -lt 600 ]; return $?
+  fi
+  tasklist //FI "PID eq $w" //NH 2>/dev/null | awk -v p="$w" '$2==p{f=1} END{exit !f}'
+}
 resume_lane() {
   [ "$PAUSED" = "1" ] || return 0
   if lane_set resume "$1"; then PAUSED=0; say "레인 재개 확인(enabled=True)"
-  else say "★레인 재개 실패 — 레인이 꺼진 채다 · 세션이 python $RDR/lane_hold.py resume '<사유>' 로 켤 것"; fi
+  else say "★레인 재개 실패 — 레인이 꺼진 채다 · 세션이 python $RDR/lane_hold.py resume '<사유>' 로 켤 것"
+       alert "레인 재개 실패" "연쇄가 레인 보류를 풀지 못했다(lane_hold.py resume 20회 실패 · 레인 전체가 꺼진 채)" "세션: python 04_Research/programs/P2_DEFENSE/P2R05_distribution_target/lane_hold.py resume '<사유>' 뒤 enabled=True 확인"; fi
 }
 trap 'resume_lane "P2R05 GPU 연쇄 종료(trap) — 레인 재개"' EXIT
 say "시작 — THGNN(gpu1) 측정 시작 대기(마감 ${START_WAIT_H}h · 기준 시각 $T0)"
@@ -72,26 +89,42 @@ dl=$(( $(date +%s) + START_WAIT_H * 3600 ))
 while :; do
   s=$(started | tr -d '\r')
   [ -n "$s" ] && { say "THGNN 측정 시작 확인($s)"; break; }
-  [ "$(date +%s)" -ge "$dl" ] && { say "마감 — THGNN 측정 시작 없음 · 레인 그대로 · 끝"; exit 0; }
+  rs=$(req_state)
+  case "$rs" in
+    "in_progress 2601.04602"|"pending 2601.04602"|"failed_needs_session 2601.04602") ;;
+    *) say "THGNN 요청이 측정 시작 전에 바쁜 상태를 벗어났다(gpu1 요청: ${rs:-판독 실패}) — THGNN 을 기다리지 않고 GPU 창으로 간다"; break ;;
+  esac
+  if [ "$(date +%s)" -ge "$dl" ]; then
+    say "마감 — THGNN 측정 시작 없음 · 레인 그대로 · 끝"
+    alert "THGNN 측정 시작 없음(${START_WAIT_H}h)" "THGNN(2601.04602)이 ${START_WAIT_H}시간 안에 측정을 시작하지 않았다(gpu1 요청: ${rs:-판독 실패}) — 레인 · GPU 그대로 · P2R05 워밍 안 함" \
+          "세션: 레인 저널(.cache/reinforce_auto_log.jsonl) 확인 → P2R05 GPU 창 다시 열기(gpu_chain.sh 재기동 또는 warm_cache.sh)"
+    exit 0
+  fi
   sleep 120
 done
 
 ## ② 레인 보류
 PAUSED=1      # 먼저 세운다 — 보류가 반쯤 성공한 채 끝나도 trap 이 재개를 시도한다(재개는 이미 켜져 있으면 확인만 하고 끝난다)
-lane_set pause "도훈 10-18 'THGNN 끝난 뒤 레인 보류' — P2R05 GPU 창(THGNN 측정 시작 확인 뒤 · gpu_chain.sh)" \
-  || { say "레인 보류 실패(20회) — 워밍하지 않고 끝"; exit 3; }
+if ! lane_set pause "도훈 10-18 'THGNN 끝난 뒤 레인 보류' — P2R05 GPU 창(THGNN 측정 시작 확인 뒤 · gpu_chain.sh)"; then
+  say "레인 보류 실패(20회) — 워밍하지 않고 끝"
+  alert "레인 보류 실패" "lane_hold.py pause 20회 실패 — P2R05 GPU 창을 열지 못했다(워밍 안 함)" "세션: 설정 파일 잠금 원인 확인 뒤 gpu_chain.sh 재기동"
+  exit 3
+fi
 say "레인 보류 확인(enabled=False)"
 
-## ③ THGNN 끝 — gpu1 claim 없음 2회 연속
+## ③ GPU 슬롯 끝 — gpu1 claim 이 살아 있지 않음 2회 연속(폴더 없음 ∨ 소유자 사망 ∨ 표식 없는 빈 claim 10분 초과)
 dl=$(( $(date +%s) + END_WAIT_H * 3600 )); gone=0
 while :; do
-  if [ -d "$CLAIM" ]; then gone=0; else gone=$((gone + 1)); fi
+  if claim_alive; then gone=0; else gone=$((gone + 1)); fi
   [ "$gone" -ge 2 ] && break
-  [ "$(date +%s)" -ge "$dl" ] && { say "마감 — THGNN 이 ${END_WAIT_H}h 안에 끝나지 않음 · 워밍하지 않고 끝(레인 재개)"; exit 4; }
+  if [ "$(date +%s)" -ge "$dl" ]; then
+    say "마감 — gpu1 작업이 ${END_WAIT_H}h 안에 끝나지 않음 · 워밍하지 않고 끝(레인 재개)"
+    alert "THGNN 끝 대기 마감(${END_WAIT_H}h)" "gpu1 작업(THGNN)이 ${END_WAIT_H}시간 안에 끝나지 않았다(요청: $(req_state)) — 레인 재개 · P2R05 워밍 안 함" "세션: THGNN 로그(scheduler_logs/replication_auto_*_gpu1.log) 확인 → P2R05 GPU 창 다시 열기"
+    exit 4
+  fi
   sleep 120
 done
-st=$("$PY" -X utf8 -c "import io,json,sys;d=json.loads(io.open(sys.argv[1],'rb').read().decode('utf-8'));print(d.get('status'),((d.get('paper') or {}).get('paper_key')))" "$REQ" 2>/dev/null | tr -d '\r')
-say "THGNN 끝(gpu1 claim 없음 · 요청 $st)"
+say "gpu1 작업 끝(claim $([ -d "$CLAIM" ] && echo '남음 · 소유자 사망' || echo '없음') · 요청 $(req_state))"
 
 ## ④ 같은 데이터 배치 — 다음 갱신 완료 줄(마감 06:00 규칙)
 n0=$(grep -c "=== Daily Refresh v2 Done" "$DONE_LOG" 2>/dev/null || true); n0=${n0:-0}
