@@ -391,7 +391,10 @@ def build_markdown(meta, d, st, eps, cv, nsr, rob, day, peaks):
     for i, (dte, v) in enumerate(peaks, start=1):
         prow.append([str(i), kdate(dte), f"{v:.0f}", f"{100 * lt['level'] / v:.0f}%", _peak_label(dte)])
     prow.append(["—", f"<b>오늘 {kdate(day)}</b>", f"<b>{lt['level']:.0f}</b>", "100%", f"<b>{tier}</b>"])
-    A(html_table(["순위", "스트레스가 가장 높았던 시기(90일 간격)", "점수", "오늘 / 당시", "당시 상황"], prow, aligns=["center", "left", "right", "right", "left"]))
+    A(f"아래 표는 점수가 가장 높았던 날들(봉우리끼리 90일 이상 간격)입니다. **'오늘 ÷ 당시 정점'** 은 오늘 점수({lt['level']:.0f}점)를 그 위기 정점의 점수로 나눈 값으로, "
+      "오늘의 스트레스 강도가 그때의 몇 % 수준인지를 뜻합니다 — 100% 면 그 위기 정점과 같은 강도, 50% 면 절반입니다(점수 눈금이 선형이라 비율로 읽을 수 있습니다).")
+    A("")
+    A(html_table(["순위", "스트레스가 가장 높았던 시기(90일 간격)", "당시 정점 점수", "오늘 ÷ 당시 정점", "당시 상황"], prow, aligns=["center", "left", "right", "right", "left"]))
     A("")
 
     # ── 5. 최근 18개월 ──

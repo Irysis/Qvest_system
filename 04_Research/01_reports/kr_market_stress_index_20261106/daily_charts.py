@@ -61,9 +61,24 @@ def pct_color(p):
     return "#c62828" if p >= 0.9 else "#ef6c00" if p >= 0.8 else "#f9a825" if p >= 0.6 else "#2e7d32"
 
 
+TARGET_W_PX = int(round(W * DPI))     # 본문 폭 188mm 에 1:1 로 놓이는 픽셀 폭
+
+
 def _save(fig, path):
+    """저장 뒤 폭을 본문 폭으로 맞춘다 — bbox tight 는 제목 · 라벨이 그림 밖으로 나가면 PNG 가 넓어지고, PDF 가 width:100% 로 줄여
+    글자가 차트마다 다른 크기로 보인다(도훈 11-06 "18개월 차트 작아졌어" — 긴 제목이 8.06in 으로 밀어 0.92 배 축소). 좁으면 흰 여백으로 채우고,
+    넓으면 경고한다(제목을 두 줄로 줄이는 것이 수리 — 잘라내지 않는다)."""
     fig.savefig(path, dpi=DPI, bbox_inches="tight", pad_inches=0.12, facecolor="white")
     plt.close(fig)
+    from PIL import Image
+    im = Image.open(path)
+    w, h = im.size
+    if w < TARGET_W_PX:
+        canvas = Image.new("RGB", (TARGET_W_PX, h), "white")
+        canvas.paste(im.convert("RGB"), ((TARGET_W_PX - w) // 2, 0))
+        canvas.save(path, dpi=(DPI, DPI))
+    elif w > TARGET_W_PX + 12:
+        print(f"[charts] ★{os.path.basename(path)} 폭 {w / DPI:.2f}in > {W}in — 제목·라벨이 그림 밖으로 넘쳐 PDF 에서 {TARGET_W_PX / w:.2f}배로 줄어든다", flush=True)
     return path
 
 
@@ -114,7 +129,7 @@ def chart_gauge(meta, lt, ns, d, eps, path, days=250):
     today = lt["level"]
     top_pct = max(1, round(100 - 100 * lt["score_pct"]))
     fig = plt.figure(figsize=(W, 4.45), dpi=DPI)
-    ax = fig.add_axes([0.05, 0.60, 0.92, 0.30])
+    ax = fig.add_axes([0.05, 0.60, 0.90, 0.30])     # 오른쪽 0.05 = '100 / 모든 분야 최악' 눈금 글자 자리(그림 밖으로 나가면 PDF 에서 축소)
     for lo, hi, name in ((0, warn, "정상"), (warn, risk, "주의"), (risk, 100, "위험")):
         ax.barh(0, hi - lo, left=lo, height=0.5, color=TIER_FILL[name], edgecolor=TIER_EDGE[name], lw=0.8)
         if hi - lo > 6:
@@ -147,10 +162,10 @@ def chart_gauge(meta, lt, ns, d, eps, path, days=250):
     ax.tick_params(axis="x", labelsize=7.3, length=2, pad=1)
     for sp in ("top", "right", "left"):
         ax.spines[sp].set_visible(False)
-    ax.set_title(T(f"오늘의 스트레스 점수 {today:.0f} / 100 — 2006년 이후 거래일 중 나쁜 순 상위 {top_pct}% · 주의 {warn:.0f}점 이상 · 위험 {risk:.0f}점 이상 (높을수록 나쁨)"),
-                 fontsize=9.5, loc="left", pad=22)
+    ax.set_title(T(f"오늘의 스트레스 점수 {today:.0f} / 100 — 2006년 이후 거래일 중 나쁜 순 상위 {top_pct}%\n주의 {warn:.0f}점 이상 · 위험 {risk:.0f}점 이상 · 높을수록 나쁨"),
+                 fontsize=9.5, loc="left", pad=16)
     # ── 아래: 최근 1년 점수의 길 ──
-    ax2 = fig.add_axes([0.08, 0.07, 0.89, 0.40])
+    ax2 = fig.add_axes([0.08, 0.07, 0.87, 0.40])
     dz = d.tail(days)
     y = dz["level"]
     for lo, hi, name in ((0, warn, "정상"), (warn, risk, "주의"), (risk, 100, "위험")):
@@ -185,7 +200,7 @@ def chart_contrib(meta, lt, path):
     prev = np.array([lt["contrib_level_20td_ago"][a] for a in order])
     n = len(order)
     fig = plt.figure(figsize=(W, 4.4), dpi=DPI)      # 4.4in = 게이지 쪽 남는 자리(약 140mm)에 들어가는 높이
-    ax = fig.add_axes([0.21, 0.12, 0.56, 0.79])
+    ax = fig.add_axes([0.21, 0.12, 0.56, 0.74])      # 위 0.14 = 두 줄 제목 자리
     y = np.arange(n)
     ax.barh(y + 0.2, now, height=0.38, color=[col[a] for a in order], zorder=3)
     ax.barh(y - 0.2, prev, height=0.38, color=[col[a] for a in order], alpha=0.33, zorder=3)
@@ -206,7 +221,7 @@ def chart_contrib(meta, lt, path):
     for s in ("top", "right"):
         ax.spines[s].set_visible(False)
     # 오른쪽 칩 — 축 백분위
-    ax2 = fig.add_axes([0.80, 0.11, 0.18, 0.80], sharey=ax)
+    ax2 = fig.add_axes([0.80, 0.12, 0.18, 0.74], sharey=ax)
     ax2.axis("off")
     ax2.set_xlim(0, 1)
     ax2.text(0.5, -0.75, "심각도", ha="center", va="center", fontsize=8.5, fontweight="bold")
@@ -215,7 +230,8 @@ def chart_contrib(meta, lt, path):
         c = pct_color(p)
         ax2.add_patch(Rectangle((0.08, y[i] - 0.33), 0.84, 0.66, facecolor=c, edgecolor="none", alpha=0.9))
         ax2.text(0.5, y[i], f"{100 * p:.0f}", ha="center", va="center", fontsize=9, color="white", fontweight="bold")
-    fig.suptitle(T(f"어느 분야에서 온 스트레스인가 — 점수 {lt['level']:.0f}의 분야별 기여도 · 오른쪽 칩 = 심각도(높을수록 나쁨 · 빨강 ≥90 매우 나쁨 · 주황 ≥80 나쁨 · 노랑 ≥60)"),
+    fig.suptitle(T(f"어느 분야에서 온 스트레스인가 — 점수 {lt['level']:.0f}의 분야별 기여도(진한 막대 = 오늘 · 연한 막대 = 20거래일 전)\n"
+                   "오른쪽 칩 = 그 분야의 심각도(높을수록 나쁨 · 빨강 90 이상 · 주황 80 이상 · 노랑 60 이상 · 초록 그 아래)"),
                  fontsize=9.5, x=0.02, ha="left", y=0.985)
     return _save(fig, path)
 
@@ -275,7 +291,7 @@ def chart_radar_hist(meta, d, lt, path):
     ax.set_yticklabels(["50", "80", "90"], fontsize=7, color="#555555")
     ax.set_rlabel_position(15)
     ax.grid(alpha=0.35)
-    ax.set_title(T("12개 분야의 심각도 — 바깥일수록 나쁨 · 모양이 위기의 종류를 보여 줍니다"), fontsize=9.5, pad=14)
+    ax.set_title(T("12개 분야의 심각도 — 바깥일수록 나쁨\n(모양이 위기의 종류를 보여 줍니다)"), fontsize=9.5, pad=12)
     ax.legend(loc="upper center", bbox_to_anchor=(0.5, -0.14), ncol=1, frameon=False, fontsize=7.8)
     # 역사 분포(점수 눈금) + 과거 위기 정점
     ax2 = fig.add_axes([0.58, 0.16, 0.40, 0.70])
@@ -313,6 +329,7 @@ def chart_indicators(meta, st, path):
         rows.extend(g.to_dict("records"))
     n = len(rows)
     fig, ax = plt.subplots(figsize=(W, 6.0), dpi=DPI)
+    fig.subplots_adjust(left=0.40, right=0.985, top=0.935, bottom=0.065)   # 긴 지표 이름이 그림 안에 들어오게(밖으로 나가면 PNG 폭이 늘어 PDF 에서 축소)
     y = np.arange(n)
     for i, r in enumerate(rows):
         c = col[r["axis"]]
@@ -341,11 +358,11 @@ def chart_indicators(meta, st, path):
     ax.set_xlim(0, 118)
     ax.set_xticks(range(0, 101, 20))
     ax.tick_params(axis="x", labelsize=8)
-    ax.set_xlabel(T("심각도(0~100 · 높을수록 나쁨) — ● 오늘 · ○ 20거래일 전 · 점선 80 나쁨 / 90 매우 나쁨"), fontsize=8.5)
+    ax.set_xlabel(T("심각도(0~100 · 높을수록 나쁨) — ● 오늘 · ○ 20거래일 전"), fontsize=8.5)
     ax.grid(axis="x", alpha=0.25)
     for s in ("top", "right"):
         ax.spines[s].set_visible(False)
-    ax.set_title(T("34개 세부 지표의 심각도 — 무엇이 나쁜가(분야별 묶음 · 분야 안은 나쁜 순)"), fontsize=9.5, loc="left")
+    ax.set_title(T("34개 세부 지표의 심각도 — 무엇이 나쁜가\n분야별 묶음 · 나쁜 순 · 점선 80 나쁨 / 90 매우 나쁨"), fontsize=9.5, loc="left")
     return _save(fig, path)
 
 
@@ -358,6 +375,7 @@ def chart_recent(meta, d, eps, bm, path, months=18):
     dz = d[d.index >= z0]
     C = dz[[f"cl_{a}" for a in axes]].clip(lower=0)
     fig, ax = plt.subplots(2, 1, figsize=(W, 4.7), dpi=DPI, sharex=True, gridspec_kw={"height_ratios": [2.3, 1.1], "hspace": 0.08})
+    fig.subplots_adjust(left=0.085, right=0.955, top=0.895, bottom=0.07)   # 두 줄 제목 자리 + 좌우 여백(맨 오른쪽 날짜 눈금 글자까지)을 그림 안에
     shade(ax[0], eps, z0, last)
     ax[0].stackplot(C.index, [C[f"cl_{a}"] for a in axes], labels=[ko[a] for a in axes], colors=[col[a] for a in axes], alpha=0.9, lw=0)
     ax[0].plot(dz.index, dz["level"], color="black", lw=0.9, label="점수")
@@ -369,7 +387,7 @@ def chart_recent(meta, d, eps, bm, path, months=18):
             ax[0].text(last, r[0] + 0.8, T(f"{r[1]} 정점 {r[0]:.0f}"), fontsize=6.8, color="#555555", ha="right", va="bottom")
     ax[0].legend(loc="upper left", ncol=4, frameon=False, fontsize=7.3)
     ax[0].set_ylabel("스트레스 점수")
-    ax[0].set_title(T(f"최근 {months}개월 — 스트레스 점수와 분야별 기여도(쌓은 색 띠 · 회색 = 코스피200 이 고점 대비 20% 넘게 빠진 구간 · 점선 = -20% 도달일)"), fontsize=9.5, loc="left")
+    ax[0].set_title(T(f"최근 {months}개월 — 스트레스 점수(검은 선)와 분야별 기여도(쌓은 색 띠)\n회색 = 코스피200 이 고점 대비 20% 넘게 빠진 구간 · 점선 = -20% 도달일"), fontsize=9.5, loc="left")
     ax[0].grid(alpha=0.25)
     bz = bm[bm.index >= z0]
     shade(ax[1], eps, z0, last)
@@ -388,6 +406,7 @@ def chart_recent(meta, d, eps, bm, path, months=18):
 def chart_history(meta, d, eps, path):
     lo, hi = d.index[0], d.index[-1]
     fig, ax = plt.subplots(2, 1, figsize=(W, 4.3), dpi=DPI, sharex=True, gridspec_kw={"height_ratios": [2.6, 1.1], "hspace": 0.08})
+    fig.subplots_adjust(left=0.075, right=0.985, top=0.9, bottom=0.075)
     shade(ax[0], eps, lo, hi)
     ax[0].plot(d.index, d["level"], color="#1f4e79", lw=1.0, label="스트레스 점수")
     p80 = d["level"].expanding(min_periods=250).quantile(0.80)
@@ -404,7 +423,7 @@ def chart_history(meta, d, eps, path):
     ax[0].set_ylim(0, 100)
     ax[0].legend(loc="upper center", frameon=False, ncol=2)
     ax[0].set_ylabel("점수")
-    ax[0].set_title(T(f"{lo.date()} ~ {hi.date()} — 회색 = 코스피200 이 고점 대비 20% 넘게 빠진 구간(고점→저점)"), fontsize=9.5, loc="left")
+    ax[0].set_title(T(f"{lo.date()} ~ {hi.date()} 스트레스 점수 — 회색 = 코스피200 이 고점 대비 20% 넘게 빠진 구간(고점→저점)"), fontsize=9.5, loc="left")
     ax[0].grid(alpha=0.25)
     shade(ax[1], eps, lo, hi)
     ax[1].plot(d.index, d["vkospi"], color="#444444", lw=0.8, label="V-KOSPI200(비교)")
