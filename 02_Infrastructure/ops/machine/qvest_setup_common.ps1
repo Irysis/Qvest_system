@@ -13,10 +13,12 @@ $Stamp = Get-Date -Format 'yyyyMMdd_HHmmss'
 $Tar = Join-Path $env:SystemRoot 'System32\tar.exe'
 $script:Warns = New-Object Collections.Generic.List[string]
 
-# 그 기계에 꼭 남길 것 · 남기지 않을 것(항상 이 장치에 유지 — qvest_sync.py pin)
+# 그 기계에 꼭 남길 것 · 남기지 않을 것(항상 이 장치에 유지 — qvest_sync.py pin) = 데이터 · 실행 필수.
+# 결과물 폴더(04_Research · stage_artifacts — 메인 11-03 실측 14.2 · 34.1 GB)는 핵심이 아니다: 메인은 그 안의 대조표 파일만
+# 남기고(-Files) 나머지는 열 때 내려받는다(도훈 11-03 '전체 유지는 원치 않음 — 용량')
 $PinExclude = @('01_Literature', '99_Archive', '_deleted_FreshIdea', '.claude/worktrees', '.pip_cache', 'catboost_info')
 $PinEssential = @('.git', '.venv_qvest_ml', '.cache', '.claude', '.github', '00_Lawbook', '02_Infrastructure', '03_Universe',
-  '04_Research', '05_Production', '06_Registry', '08_Tests', 'qepm', 'stage_artifacts')
+  '05_Production', '06_Registry', '08_Tests', 'qepm')
 
 function Assert-Admin([string]$scriptPath, [string[]]$passArgs) {
   $p = New-Object Security.Principal.WindowsPrincipal([Security.Principal.WindowsIdentity]::GetCurrent())
@@ -133,6 +135,84 @@ function Get-JunctionTarget([string]$p) {
   return ([string](@($i.Target)[0])).TrimEnd('\')
 }
 
+# 이 계정의 OneDrive 폴더 — 사용자 환경 변수(레지스트리)에서 읽는다: OneDrive 위치를 옮긴(다시 연결한) 뒤에도 그 전에 연 창의
+# $env:OneDrive 는 옛 값이다(11-03 메인 G: 이전)
+function Get-OneDriveRoot {
+  $v = [Environment]::GetEnvironmentVariable('OneDrive', 'User')
+  if (-not $v) { $v = $env:OneDrive }
+  return "$v".TrimEnd('\')
+}
+
+# 노트북 공통 경로(machine.txt 의 userprofile · onedrive · root) → 이 PC 실제 경로. 사용자 폴더 연결(C:\Users\<노트북 사용자> → 이 PC
+# 사용자 폴더)로 잇고, OneDrive 를 사용자 폴더 밖(예 G:\OneDrive)으로 옮겼으면 사용자 폴더의 OneDrive 자리 → 그 위치를 하나 더
+# 잇는다(OdMoved). Err 가 있으면 이을 수 없다.
+function Get-PathPlan([hashtable]$L, [string]$myProfile, [string]$od, [string]$realRoot) {
+  $ci = [StringComparison]::OrdinalIgnoreCase
+  $lp = "$($L.userprofile)".TrimEnd('\'); $canon = "$($L.root)".TrimEnd('\'); $lod = "$($L.onedrive)".TrimEnd('\')
+  $myProfile = $myProfile.TrimEnd('\'); $od = $od.TrimEnd('\'); $realRoot = $realRoot.TrimEnd('\')
+  $p = [pscustomobject]@{ Err = ''; LapProfile = $lp; CanonRoot = $canon; ProfOD = ''; ProfRoot = ''; OdMoved = $false }
+  if (-not $lp -or -not $canon.StartsWith($lp + '\', $ci)) { $p.Err = "machine.txt 의 root($canon)가 userprofile($lp) 아래가 아님"; return $p }
+  if (-not $lod) { $lod = Split-Path $canon -Parent }                  # 옛 내보내기(onedrive 키 없음) — 작업 트리 바로 위
+  if (-not $lod.StartsWith($lp + '\', $ci) -or -not $canon.StartsWith($lod + '\', $ci) -or -not $realRoot.StartsWith($od + '\', $ci) -or
+    $canon.Substring($lod.Length) -ine $realRoot.Substring($od.Length)) {
+    $p.Err = "노트북 경로($canon)를 이 PC 의 $realRoot 로 이을 수 없음(사용자 폴더 · OneDrive 아래 상대 경로가 다름)"; return $p
+  }
+  $p.ProfOD = $myProfile + $lod.Substring($lp.Length)
+  $p.ProfRoot = $myProfile + $canon.Substring($lp.Length)
+  $p.OdMoved = ($p.ProfOD -ine $od)
+  return $p
+}
+
+# 폴더를 아직 가리키는 것 — [pscustomobject]{ What; Block }. Block = OneDrive 계정 폴더 · 사용자 환경 변수 OneDrive* · 바탕 화면 · 문서
+# (탐색기 · 프로그램이 늘 열어 두는 곳 — 이름 바꾸기가 막히고 폴더 백업이 옛 자리에 남는다). 나머지 셸 폴더(사진 · 스크린샷 …)는
+# 알림만 — 연결 뒤에는 옛 경로가 새 OneDrive 의 같은 자리로 이어진다(11-03 메인 실측: OneDrive 안을 가리키는 셸 폴더 7개).
+function Get-FolderUsers([string]$dir) {
+  $d = $dir.TrimEnd('\')
+  $under = { param($v) $x = [Environment]::ExpandEnvironmentVariables("$v").TrimEnd('\'); $x -and ($x -ieq $d -or $x.StartsWith($d + '\', [StringComparison]::OrdinalIgnoreCase)) }
+  foreach ($a in @(Get-ChildItem -Path 'HKCU:\Software\Microsoft\OneDrive\Accounts' -ErrorAction SilentlyContinue)) {
+    if (& $under (Get-ItemProperty -LiteralPath $a.PSPath -ErrorAction SilentlyContinue).UserFolder) { [pscustomobject]@{ What = "OneDrive 계정 $($a.PSChildName)"; Block = $true } }
+  }
+  $hard = @{ 'Desktop' = '바탕 화면'; 'Personal' = '문서'; '{F42EE2D3-909F-4907-8871-4C22FC0BF756}' = '문서'; '{754AC886-DF64-4CBA-86B5-F7FBF4FBCEF5}' = '바탕 화면' }
+  $sf = Get-ItemProperty -Path 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\User Shell Folders' -ErrorAction SilentlyContinue
+  if ($sf) {
+    foreach ($q in @($sf.PSObject.Properties | Where-Object { $_.Name -notin 'PSPath', 'PSParentPath', 'PSChildName', 'PSDrive', 'PSProvider' })) {
+      if (& $under $q.Value) { [pscustomobject]@{ What = "셸 폴더 $(if ($hard.ContainsKey($q.Name)) { $hard[$q.Name] } else { $q.Name })"; Block = $hard.ContainsKey($q.Name) } }
+    }
+  }
+  foreach ($n in 'OneDrive', 'OneDriveConsumer', 'OneDriveCommercial') {
+    if (& $under ([Environment]::GetEnvironmentVariable($n, 'User'))) { [pscustomobject]@{ What = "환경 변수 $n"; Block = $true } }
+  }
+}
+
+# 사용자 폴더의 옛 OneDrive 자리 → 새 OneDrive 위치(예 C:\Users\User\OneDrive → G:\OneDrive). 실제 폴더(연결 해제 뒤 남은 옛
+# OneDrive)는 지우지 않고 <이름>.old_<시각> 으로 이름만 바꾼다 — 계정 · 셸 폴더 · 환경 변수가 아직 가리키면 손대지 않는다.
+# -CheckOnly = 점검만. 돌려주는 값 = 멈출 사유(빈 문자열 = 됨).
+function Set-OneDriveJunction([string]$profOD, [string]$od, [switch]$CheckOnly) {
+  $profOD = $profOD.TrimEnd('\'); $od = $od.TrimEnd('\')
+  $t = Get-JunctionTarget $profOD
+  if ($t) {
+    if ($t -ine $od) { return "$profOD 가 다른 곳($t)에 연결돼 있음 — 확인 뒤 다시" }
+    if (-not $CheckOnly) { Ok "이미 연결: $profOD -> $od" }
+    return ''
+  }
+  if (Test-Path -LiteralPath $profOD) {
+    $users = @(Get-FolderUsers $profOD)
+    $block = @($users | Where-Object { $_.Block } | ForEach-Object { $_.What })
+    if ($block.Count) { return "옛 OneDrive 폴더($profOD)를 아직 가리킴: $($block -join ' · ') — OneDrive 를 새 위치로 다시 연결하고 폴더 백업(바탕 화면 · 문서)도 다시 켠 뒤 다시" }
+    if ($CheckOnly) { return '' }
+    $soft = @($users | Where-Object { -not $_.Block } | ForEach-Object { $_.What })
+    if ($soft.Count) { Info "옛 OneDrive 안을 가리키는 셸 폴더 $($soft.Count)개 — 연결 뒤 새 OneDrive 의 같은 자리로 이어짐: $($soft -join ' · ')" }
+    $old = "$(Split-Path $profOD -Leaf).old_$Stamp"
+    try { Rename-Item -LiteralPath $profOD -NewName $old -ErrorAction Stop }
+    catch { return "옛 OneDrive 폴더 이름을 못 바꿈($($_.Exception.Message)) — 그 안을 연 프로그램(탐색기 창 · Claude · 터미널 · R)을 닫고 다시(그래도 안 되면 PC 를 다시 시작한 뒤 바로)" }
+    Ok "옛 OneDrive 폴더 → $(Join-Path (Split-Path $profOD -Parent) $old) (지우지 않음 — 확인 뒤 사람이 지운다)"
+  }
+  if ($CheckOnly) { return '' }
+  [void](New-Item -ItemType Junction -Path $profOD -Value $od)
+  Ok "연결: $profOD -> $od"
+  return ''
+}
+
 function Test-SameFile([string]$a, [string]$b) {
   return ((Get-FileHash -LiteralPath $a -Algorithm SHA256).Hash -eq (Get-FileHash -LiteralPath $b -Algorithm SHA256).Hash)
 }
@@ -184,10 +264,13 @@ function Set-MemoryJunction([string]$memDir, [string]$shared, [string]$tag) {
   Ok "연결: $memDir -> $shared"
 }
 
-function Invoke-Pin([string]$py, [string]$tool, [string]$root, [int]$marginGb) {
+# -Files <대조표>: 고른 폴더 밖의 대조표 파일(T · U)을 파일 단위로 더한다 · -NoAll: '전부' 계획 없이 핵심 폴더부터(메인)
+function Invoke-Pin([string]$py, [string]$tool, [string]$root, [int]$marginGb, [string]$files = '', [switch]$noAll) {
   $a = @($tool, 'pin', $root, '--margin-gb', "$marginGb", '--apply')
   foreach ($e in $PinExclude) { $a += @('--exclude', $e) }
   foreach ($e in $PinEssential) { $a += @('--essential', $e) }
+  if ($files) { $a += @('--files', $files) }
+  if ($noAll) { $a += '--no-all' }
   return (Run $py $a -Show)
 }
 
@@ -228,6 +311,44 @@ function Wait-Local([string[]]$paths, [int]$timeoutMin = 30) {
     if (((Get-Date) - $shown).TotalSeconds -ge 30) { Info "OneDrive 내려받기 기다림 — 남은 파일 $($left.Count)개(예 $(Split-Path $left[0] -Leaf))"; $shown = Get-Date }
     Start-Sleep -Seconds 10
   }
+}
+
+# 대조표(manifest.tsv)의 파일(D = 지운 것 제외)이 이 장치에 다 내려올 때까지 기다린다 — [10] 대조가 읽을 파일(도훈 11-04 "기다리게
+# 바꿔줘" · UAC 한 번으로 끝까지). 관리자 프로세스는 그 자리 내려받기가 안 될 수 있어 읽지 않고, 항상 유지로 표시해 둔 것을 OneDrive 가
+# 뒤에서 받는 것을 지켜본다. 기다리는 동안 이 PC 가 절전에 들지 않게 한다(전원 설정은 그대로 · 이 함수가 끝나면 풀림).
+# 그만 기다리는 때 = 첫 파일이 오기 전 $startMin 분 · 온 뒤 줄지 않은 채 $stallMin 분 · 모두 $timeoutMin 분. 돌려주는 값 = 남은 파일 수.
+function Wait-ManifestLocal([string]$root, [string]$manifest, [double]$timeoutMin = 1440, [double]$startMin = 180, [double]$stallMin = 60, [int]$pollSec = 60) {
+  $files = New-Object Collections.Generic.List[string]; $sizes = New-Object Collections.Generic.List[long]
+  foreach ($l in [IO.File]::ReadLines($manifest, $Utf8)) {
+    if ($l.StartsWith('#')) { continue }
+    $c = $l -split "`t", 4
+    if ($c.Count -lt 4 -or $c[0] -eq 'D') { continue }
+    $files.Add((Join-Path $root ($c[3] -replace '/', '\'))); $sizes.Add([long]$c[1])
+  }
+  if (-not ('Qvest.Power' -as [type])) {
+    Add-Type -Namespace Qvest -Name Power -MemberDefinition '[DllImport("kernel32.dll")] public static extern uint SetThreadExecutionState(uint esFlags);'
+  }
+  [void][Qvest.Power]::SetThreadExecutionState([uint32]2147483649)              # ES_CONTINUOUS | ES_SYSTEM_REQUIRED
+  try {
+    $t0 = Get-Date; $first = -1; $best = [int]::MaxValue; $bestAt = $t0; $shown = $t0
+    while ($true) {
+      $left = 0; $bytes = [long]0; $eg = ''
+      for ($i = 0; $i -lt $files.Count; $i++) {
+        try { $a = [int][IO.File]::GetAttributes($files[$i]) } catch { continue }   # 없는 파일은 [10] 이 '빠짐'으로 센다
+        if (($a -band 0x441000) -ne 0) { $left++; $bytes += $sizes[$i]; if (-not $eg) { $eg = Split-Path $files[$i] -Leaf } }
+      }
+      if ($left -eq 0) { return 0 }
+      $now = Get-Date; $gb = [math]::Round($bytes / 1GB, 2)
+      if ($first -lt 0) { $first = $left; Info "대조할 파일 중 아직 클라우드에만 있는 것 $left 개($gb GB) — OneDrive 가 받기를 기다린다" }
+      if ($left -lt $best) { $best = $left; $bestAt = $now }
+      $quiet = ($now - $bestAt).TotalMinutes
+      if (($now - $t0).TotalMinutes -ge $timeoutMin) { Info "기다림 끝($timeoutMin 분) — 남은 $left 개"; return $left }
+      if ($best -eq $first -and $quiet -ge $startMin) { Info "$startMin 분 동안 한 개도 안 내려옴 — 그만 기다린다(OneDrive 가 멈췄거나 고정이 안 됐을 수 있다)"; return $left }
+      if ($best -lt $first -and $quiet -ge $stallMin) { Info "$stallMin 분 동안 줄지 않음 — 그만 기다린다(남은 $left 개 · 예 $eg)"; return $left }
+      if (($now - $shown).TotalMinutes -ge 5) { Info "내려받기 기다림 — 남은 $left 개($gb GB · 예 $eg) · $([int]($now - $t0).TotalMinutes) 분"; $shown = $now }
+      Start-Sleep -Seconds $pollSec
+    }
+  } finally { [void][Qvest.Power]::SetThreadExecutionState([uint32]2147483648) }   # ES_CONTINUOUS — 절전 막기 풀기
 }
 
 function ConvertTo-Fwd([string]$p) { return ($p -replace '\\', '/') }

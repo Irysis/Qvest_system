@@ -2,23 +2,27 @@
 2_main.ps1 — 메인 PC 에서 한 번(노트북 1_laptop.ps1 이 끝나고 OneDrive 가 '최신 상태'가 된 뒤): 노트북에서 내보낸 것을
   가져오고 메인 PC 를 main(우선)으로 세운다 (2026-11-01 두 대 운용 · 도훈 지시 "둘 다 켜져 있을 땐 메인 PC 우선")
 
-  실행 — 보통 PowerShell(관리자 아님):
+  실행 — 보통 PowerShell(관리자 아님 · OneDrive 위치를 옮겼으면 그 뒤에 연 새 창 — 그 전에 연 창의 $env:OneDrive 는 옛 값):
     powershell -NoProfile -ExecutionPolicy Bypass -File "$env:OneDrive\Quant_Module_Moltbot\02_Infrastructure\ops\machine\2_main.ps1"
   노트북 내보내기 · 공유 메모리(클라우드 전용)를 먼저 보통 권한으로 내려받고(항상 유지) 관리자 확인(UAC)을 스스로 띄운다 —
   관리자 프로세스는 클라우드 전용 파일을 그 자리에서 못 내려받을 수 있다.
   -SkipR  R 패키지 생략 · -SkipPin  항상 유지 생략 · -NoTasks  예약 작업 · 생존 신호 등록 생략
 
   [0] 점검 — main 인가 · OneDrive · 노트북 내보내기가 목록(DONE.txt)대로 다 내려왔나 · Python · Git Bash
-  [1] 항상 이 장치에 유지 — OneDrive 가 뒤에서 내려받기 시작(충돌 정리 · 대조 [10] 가 읽을 파일)
+  [1] 항상 이 장치에 유지 — OneDrive 를 사용자 폴더 밖(G:)으로 옮겼으면 Qvest 폴더 전체(도훈 11-04). 아니면 데이터(.cache ·
+      03_Universe) · 실행 필수(.git · venv · 코드 · 등록부) · 대조표 파일만 — 결과물 폴더(04_Research · stage_artifacts)의 나머지는
+      열 때 내려받는다. OneDrive 가 뒤에서 내려받기 시작(대조 [10] 가 읽을 파일). OneDrive 옮기기 자체는 앱에서 사람이 한다
   [2] OneDrive 충돌 사본 정리(노트북 판이 이긴다 · *.jsonl 은 줄 합집합 · 진 판은 Qvest_sync\conflicts\ 로)
-  [3] 경로 연결 C:\Users\<노트북 사용자> → 이 PC 사용자 폴더(코드 · venv · 예약 작업이 박아 둔 경로가 그대로 맞는다)
+  [3] 경로 연결 C:\Users\<노트북 사용자> → 이 PC 사용자 폴더(코드 · venv · 예약 작업이 박아 둔 경로가 그대로 맞는다) · OneDrive 를
+      사용자 폴더 밖(예 G:\OneDrive)으로 옮겼으면 사용자 폴더의 OneDrive 자리 → 그 위치도(옛 폴더는 지우지 않고 이름만 바꾼다)
   [4] 사용자 환경 변수 — 이름만 표시 · 기존 값 백업(%LOCALAPPDATA%\Qvest\env_backup_*.json) · 가져온 뒤 OneDrive 사본 삭제
   [5] 홈 설정 파일(.Renviron · .gitconfig …) — 다르면 기존 것을 <이름>.main_bak_<시각> 으로 두고 바꾼다
   [6] Claude 사용자 설정 — 없는 것만 더한다 · 다른 것은 메인 것 유지 + 곁에 *.laptop 사본
-  [7] Claude 메모리 → OneDrive 공유 폴더 연결(실제 경로 · 연결 경로 두 프로젝트 키 모두)
+  [7] Claude 메모리 → OneDrive 공유 폴더 연결(실제 경로 · 사용자 폴더 경로 · 공통 경로 프로젝트 키 모두)
   [8] 도구 — 노트북에 있고 여기 없는 것(uv 는 winget 설치 · 나머지는 목록)
   [9] R 패키지 — 노트북 판 그대로(묶음) · 묶음에 없으면 CRAN
-  [10] 대조 — OneDrive 사본이 노트북 대조표와 바이트 단위로 같은가(어떤 git 명령보다 먼저: git 은 .git/index 를 다시 쓴다)
+  [10] 대조 — OneDrive 사본이 노트북 대조표와 바이트 단위로 같은가(어떤 git 명령보다 먼저: git 은 .git/index 를 다시 쓴다).
+      대조할 파일이 다 내려올 때까지 먼저 기다린다(도훈 11-04 · 절전 안 함 · -SkipPin 이면 안 기다림)
   [11] 일치: 보류 표식 해제 → 예약 작업 등록(게이트) → 생존 신호(메인 우선) / 불일치: 보류 유지 · 나중에 다시
   [12] 확인 — venv torch · CUDA · R 패키지 · 게이트 상태 · git
 다시 돌려도 같은 결과(이미 가져온 묶음은 건너뛴다). 로그 = OneDrive\Qvest_sync\logs\.
@@ -32,7 +36,7 @@ trap {
 }
 . (Join-Path $PSScriptRoot 'qvest_setup_common.ps1')
 $pass = @(); if ($SkipR) { $pass += '-SkipR' }; if ($SkipPin) { $pass += '-SkipPin' }; if ($NoTasks) { $pass += '-NoTasks' }
-$preSync = Join-Path "$env:OneDrive".TrimEnd('\') 'Qvest_sync'                 # 노트북이 올린 것 — 관리자 창 전에 이 장치로([0] 이 다시 확인)
+$preSync = Join-Path (Get-OneDriveRoot) 'Qvest_sync'                           # 노트북이 올린 것 — 관리자 창 전에 이 장치로([0] 이 다시 확인)
 [void](Wait-Local @((Join-Path $preSync 'from_laptop'), (Join-Path $preSync 'claude_memory')) 30)
 Assert-Admin $PSCommandPath $pass
 
@@ -46,7 +50,7 @@ function Send-SettingChange {
 function Add-Consumed([string]$part) { [IO.File]::AppendAllText($ConsumedFile, "$part`n", $Utf8); $script:Consumed += $part }
 
 Write-Host "Qvest 두 대 운용 — 2단계(메인 PC) · $env:COMPUTERNAME · $(Get-Date -Format 'yyyy-MM-dd HH:mm')"
-$OD = "$env:OneDrive".TrimEnd('\')
+$OD = Get-OneDriveRoot
 $RealRoot = Join-Path $OD 'Quant_Module_Moltbot'
 if (-not $OD -or -not (Test-Path -LiteralPath (Join-Path $RealRoot '02_Infrastructure\ops\machine\2_main.ps1'))) {
   Stop-Here "이 계정의 OneDrive($OD)에 Quant_Module_Moltbot 이 없음 — 메인 PC 사용자 계정으로 실행(관리자 권한 확인에 '예')"
@@ -91,13 +95,16 @@ if ($bad.Count) {
   Stop-Here "노트북 내보내기가 아직 다 안 내려옴($($bad.Count)개) — OneDrive “최신 상태” 뒤 다시"
 }
 $L = Read-KeyValue (Join-Path $Out 'machine.txt')
-$LapProfile = "$($L.userprofile)".TrimEnd('\')
-$CanonRoot = "$($L.root)".TrimEnd('\')
-if (-not $LapProfile -or -not $CanonRoot.StartsWith($LapProfile + '\', [StringComparison]::OrdinalIgnoreCase)) {
-  Stop-Here "machine.txt 의 root($CanonRoot)가 userprofile($LapProfile) 아래가 아님"
-}
-if (($MyProfile + $CanonRoot.Substring($LapProfile.Length)) -ine $RealRoot) {
-  Stop-Here "노트북 경로($CanonRoot)를 이 PC 의 $RealRoot 로 이을 수 없음(사용자 폴더 아래 상대 경로가 다름)"
+$P = Get-PathPlan $L $MyProfile $OD $RealRoot
+if ($P.Err) { Stop-Here $P.Err }
+$LapProfile = $P.LapProfile; $CanonRoot = $P.CanonRoot; $ProfOD = $P.ProfOD; $ProfRoot = $P.ProfRoot; $OdMoved = $P.OdMoved
+if ($OdMoved) {                                                                  # OneDrive 를 사용자 폴더 밖으로 옮김(11-03 메인 G:)
+  $e = Set-OneDriveJunction $ProfOD $OD -CheckOnly
+  if ($e) { Stop-Here $e }
+  if (-not (Get-JunctionTarget $ProfOD) -and (Test-Path -LiteralPath $ProfOD) -and @(Get-Process -Name claude -ErrorAction SilentlyContinue).Count) {
+    Stop-Here 'Claude 가 켜져 있음 — 완전히 닫고 다시([3] 이 옛 OneDrive 폴더 이름을 바꿔야 한다)'
+  }
+  Ok "OneDrive = $OD (사용자 폴더 밖) — [3] 이 $ProfOD → $OD 를 잇는다"
 }
 Ok "노트북 $($L.computername) · 내보낸 시각 $($L.time) · HEAD $($L.head) · 공통 경로 $CanonRoot"
 if (@(Get-Process -Name Rterm, Rgui, rsession, rstudio -ErrorAction SilentlyContinue).Count) { Warn 'R · RStudio 가 켜져 있음 — R 패키지 교체가 막힐 수 있다(닫고 다시 돌리면 그 단계만 다시 한다)' }
@@ -106,9 +113,16 @@ if (@(Get-Process -Name claude -ErrorAction SilentlyContinue).Count) { Info 'Cla
 # ---------------------------------------------------------------- [1]
 Step '1' '항상 이 장치에 유지(OneDrive 가 뒤에서 내려받기 시작)'
 if ($SkipPin) { Info '-SkipPin — 건너뜀' }
+elseif ($OdMoved) {                                                              # OneDrive 를 사용자 폴더 밖(G:)으로 옮겼으면 Qvest 폴더 전체(도훈 11-04 — 탐색기 '항상 이 장치에 유지'와 같게)
+  $pr = Run $Py @($Tool, 'pin', $RealRoot, '--margin-gb', '25', '--apply') -Show   # 제외 · 핵심 목록 없이 = 'all' · 빈 공간이 모자라면 .git · venv 만으로 내려간다
+  [void](Run 'attrib' @('+P', '-U', $RealRoot))                                  # 폴더 자체도 — 새로 생기는 파일이 고정을 물려받는다
+  if ($pr.Rc -ne 0 -or $pr.Text -notmatch '(?m)^PIN all ') { Warn "Qvest 폴더 전체를 항상 유지로 표시하지 못함(rc=$($pr.Rc)) — 위 PIN 줄 확인" }
+  else { Ok "Qvest 폴더 전체 항상 유지: $RealRoot — OneDrive 가 뒤에서 받는다(대조할 파일은 [10] 이 다 내려올 때까지 기다린다)" }
+}
 else {
-  $pr = Invoke-Pin $Py $Tool $RealRoot 25
+  $pr = Invoke-Pin $Py $Tool $RealRoot 25 -Files (Join-Path $Out 'manifest.tsv') -NoAll
   if ($pr.Rc -ne 0) { Warn "항상 유지 일부 실패(rc=$($pr.Rc)) — 위 줄 확인" }
+  Info '노트북 데이터(.cache)가 아직 올라오는 중이면 다 내려온 뒤 Claude 가 데이터 대조 때 항상 유지 · 내려받기를 다시 확인한다'
 }
 
 # ---------------------------------------------------------------- [2]
@@ -127,8 +141,8 @@ if ($r.Rc -eq 3) {
 if ($r.Rc -ne 0) { Stop-Here "충돌 사본 정리 실패(rc=$($r.Rc))" }
 
 # ---------------------------------------------------------------- [3]
-Step '3' "경로 연결 $LapProfile → $MyProfile"
-if ($LapProfile -ieq $MyProfile) { Ok '노트북과 사용자 폴더 경로가 같음 — 연결 불필요' }
+Step '3' "경로 연결 $CanonRoot → $RealRoot"
+if ($LapProfile -ieq $MyProfile) { Ok '노트북과 사용자 폴더 경로가 같음 — 사용자 폴더 연결 불필요' }
 else {
   $jt = Get-JunctionTarget $LapProfile
   if ($jt) {
@@ -140,6 +154,12 @@ else {
     [void](New-Item -ItemType Junction -Path $LapProfile -Value $MyProfile)
     Ok "연결: $LapProfile -> $MyProfile"
   }
+}
+if ($OdMoved) {                                                                  # 사용자 폴더의 OneDrive 자리 → 옮긴 OneDrive
+  $e = Set-OneDriveJunction $ProfOD $OD
+  if ($e) { Stop-Here $e }
+}
+if ($CanonRoot -ine $RealRoot) {
   $probe = ".cache\machine\junction_probe_$Stamp.txt"
   Write-Utf8 (Join-Path $RealRoot $probe) $Stamp
   $seen = (Test-Path -LiteralPath (Join-Path $CanonRoot $probe)) -and ([IO.File]::ReadAllText((Join-Path $CanonRoot $probe)) -eq $Stamp)
@@ -289,7 +309,7 @@ else {
 Step '7' 'Claude 메모리 → OneDrive 공유 폴더'
 $shared = Join-Path $Sync 'claude_memory'
 if (-not (Test-Path -LiteralPath $shared)) { Warn "노트북 공유 메모리($shared) 없음 — 이 PC 메모리로 새로 만든다" }
-foreach ($key in @(@((Get-ProjectKey $RealRoot), (Get-ProjectKey $CanonRoot)) | Select-Object -Unique)) {
+foreach ($key in @(@((Get-ProjectKey $RealRoot), (Get-ProjectKey $ProfRoot), (Get-ProjectKey $CanonRoot)) | Select-Object -Unique)) {   # 실제 · 사용자 폴더(옮기기 전 이 PC 세션) · 공통
   Set-MemoryJunction (Join-Path $cd "projects\$key\memory") $shared $env:COMPUTERNAME
 }
 Set-PinnedFolder $shared
@@ -350,6 +370,13 @@ else {
 
 # ---------------------------------------------------------------- [10]
 Step '10' '대조 — OneDrive 사본 = 노트북 대조표?(어떤 git 명령보다 먼저)'
+if ($SkipPin) { Info '-SkipPin — 내려받기를 기다리지 않는다(항상 유지로 표시하지 않아 OneDrive 가 미리 받지 않는다)' }
+else {                                                                           # 다 받은 뒤 대조 — UAC 한 번으로 끝까지(도훈 11-04)
+  Info '대조가 읽을 파일이 다 내려올 때까지 기다린다 — 이 창을 닫지 마세요(밤새 걸릴 수 있다 · 기다리는 동안 절전 안 함)'
+  $nl = Wait-ManifestLocal $RealRoot (Join-Path $Out 'manifest.tsv')
+  if ($nl) { Warn "대조할 파일 $nl 개가 아직 안 내려옴 — 그대로 대조한다(불일치면 OneDrive “최신 상태” 뒤 2_main.ps1 다시)" }
+  else { Ok '대조할 파일이 모두 이 장치에 있음' }
+}
 Info '추적 파일 · .git 을 전부 읽는다 — OneDrive 가 아직 내려받는 중이면 그만큼 기다린다'
 $report = Join-Path $Sync "main_compare_$Stamp.txt"
 $cr = Run $Py @($Tool, 'compare', $RealRoot, (Join-Path $Out 'manifest.tsv'), '--allow', 'qepm/observability/events.jsonl', '--report', $report) -Show
@@ -413,6 +440,7 @@ if ($match) {
   Write-Host '  1. Claude 앱을 완전히 닫았다 다시 여세요(환경 변수 · 메모리 연결 반영).'
   Write-Host "  2. 세션 폴더 = $CanonRoot (노트북과 같은 경로 — 연결) → /qvest"
   Write-Host '  3. 앞으로: 두 기계에서 Claude 를 동시에 쓰지 않기 · 기계를 바꿀 땐 OneDrive “최신 상태”를 본 뒤 시작.'
+  if ($OdMoved) { Write-Host "  4. 옛 OneDrive 폴더($ProfOD.old_<시각>)는 지우지 않았다 — Claude 가 확인한 뒤 지운다." }
 } else {
   Write-Host '메인 PC 2단계 — 대조가 아직 불일치라 보류 상태로 멈춤.' -ForegroundColor Yellow
   Write-Host '  OneDrive 아이콘이 “최신 상태”가 되면 2_main.ps1 을 다시 돌리세요(끝난 단계는 건너뛴다).'
