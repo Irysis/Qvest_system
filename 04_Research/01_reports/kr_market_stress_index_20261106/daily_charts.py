@@ -78,31 +78,84 @@ def shade(ax, eps, lo, hi):
 
 
 # ── ① 게이지 ──────────────────────────────────────────────────────────────────
-def chart_gauge(lt, ns, pct_20d, path):
+def chart_gauge(lt, ns, d, eps, pct_20d, path, days=250):
+    """위 = 심각도 눈금(0 역대 가장 평온 ~ 100 역대 최악 · 단계 띠 · 오늘 · 전일 · 20일 전 · 60일 전 · V-KOSPI) · 아래 = 최근 1년 심각도의 길(단계 띠 · 급락 구간 음영)."""
     warn = 100 * (ns.get("threshold_warn") or 0.8)
     risk = 100 * (ns.get("threshold_risk") or 0.99)
-    fig, ax = plt.subplots(figsize=(W, 1.75), dpi=DPI)
-    for lo, hi, name in ((0, warn, "정상"), (warn, risk, "주의"), (risk, 100, "위험")):
-        ax.barh(0, hi - lo, left=lo, height=0.55, color=TIER_FILL[name], edgecolor=TIER_EDGE[name], lw=0.8)
-        ax.text((lo + hi) / 2, 0, name, ha="center", va="center", fontsize=9, color=TIER_EDGE[name], fontweight="bold")
     today = 100 * lt["score_pct"]
-    ax.plot([today], [0.42], marker="v", ms=12, color="#111111", zorder=5)
-    ax.text(today, 0.62, f"오늘 {today:.0f}", ha="center", va="bottom", fontsize=10, fontweight="bold")
+    fig = plt.figure(figsize=(W, 4.0), dpi=DPI)
+    ax = fig.add_axes([0.05, 0.60, 0.92, 0.30])
+    for lo, hi, name in ((0, warn, "정상"), (warn, risk, "주의"), (risk, 100, "위험")):
+        ax.barh(0, hi - lo, left=lo, height=0.5, color=TIER_FILL[name], edgecolor=TIER_EDGE[name], lw=0.8)
+        if hi - lo > 6:
+            ax.text((lo + hi) / 2, 0, name, ha="center", va="center", fontsize=9, color=TIER_EDGE[name], fontweight="bold")
+    for x, lab in ((60, "다소 나쁨"), (80, "나쁨"), (90, "매우 나쁨")):     # 세부 단계 경계
+        ax.plot([x, x], [-0.25, 0.25], color="#666666", lw=0.6, ls=":")
+        ax.text(x, 0.30, lab, ha="center", va="bottom", fontsize=6.6, color="#555555")
+    ax.plot([today], [0.42], marker="v", ms=11, color="#111111", zorder=6, clip_on=False)
+    ax.text(min(max(today, 6), 94), 0.70, f"오늘 {today:.0f}", ha="center", va="bottom", fontsize=10.5, fontweight="bold")
+    # 아래쪽 표식 — 같은 값은 한 라벨로 합치고, 가까운 라벨은 최대 3단으로 내려 겹치지 않게
+    marks = []
+    if len(d) > 1 and d["score_pct"].iloc[-2] == d["score_pct"].iloc[-2]:
+        marks.append((100 * float(d["score_pct"].iloc[-2]), "전일", "#333333", "o", 5))
     if pct_20d == pct_20d:
-        x20 = 100 * pct_20d
-        ax.plot([x20], [-0.42], marker="^", ms=9, color="#555555", zorder=5)
-        ax.text(x20, -0.62, f"20거래일 전 {x20:.0f}", ha="center", va="top", fontsize=8.5, color="#444444")
-    vk = 100 * lt["vkospi_pct"]
-    ax.plot([vk], [-0.42], marker="D", ms=7, color="#1f4e79", zorder=5)
-    ax.text(vk, -0.62, f"V-KOSPI {vk:.0f}", ha="center", va="top", fontsize=8.5, color="#1f4e79")
+        marks.append((100 * pct_20d, "20거래일 전", "#555555", "^", 8))
+    i60 = max(0, len(d) - 61)
+    if d["score_pct"].iloc[i60] == d["score_pct"].iloc[i60]:
+        marks.append((100 * float(d["score_pct"].iloc[i60]), "60거래일 전", "#888888", "s", 6))
+    marks.append((100 * lt["vkospi_pct"], "V-KOSPI", "#1f4e79", "D", 6))
+    marks.sort(key=lambda t: t[0])
+    merged = []
+    for x, lab, col, mk, ms in marks:
+        if merged and abs(merged[-1][0] - x) < 1.0:
+            merged[-1] = (merged[-1][0], merged[-1][1] + " · " + lab, merged[-1][2], merged[-1][3], merged[-1][4])
+        else:
+            merged.append((x, lab, col, mk, ms))
+    occupied = [[], [], []]   # 단(level)별로 라벨이 차지한 x 구간 — 글자 폭을 어림해 겹치면 아래 단으로
+    for x, lab, col, mk, ms in merged:
+        text = f"{lab} {x:.0f}"
+        w = 1.45 * len(text)                       # 라벨 폭(눈금 단위 · 7.6pt 어림)
+        if x >= 86:
+            lo, hi, ha, xt = x + 1.5 - w, x + 1.5, "right", x + 1.5
+        elif x <= 14:
+            lo, hi, ha, xt = x - 1.5, x - 1.5 + w, "left", x - 1.5
+        else:
+            lo, hi, ha, xt = x - w / 2, x + w / 2, "center", x
+        lvl = next((k for k in range(3) if all(hi + 1 < a or lo - 1 > b for a, b in occupied[k])), 2)
+        occupied[lvl].append((lo, hi))
+        ax.plot([x], [-0.52], marker=mk, ms=ms, color=col, zorder=5, clip_on=False)
+        ax.text(xt, -0.74 - 0.34 * lvl, text, ha=ha, va="top", fontsize=7.6, color=col)
     ax.set_xlim(-1, 101)
-    ax.set_ylim(-1.15, 1.15)
+    ax.set_ylim(-1.85, 1.05)
     ax.set_yticks([])
     ax.set_xticks(range(0, 101, 10))
-    ax.tick_params(axis="x", labelsize=8)
-    for s in ("top", "right", "left"):
-        ax.spines[s].set_visible(False)
-    ax.set_title(T(f"오늘의 스트레스 수준 — 2006년 이후 전체 거래일 중 상위 {100 - today:.0f}% 안 (눈금 = 과거 대비 위치 % · 주의 {warn:.0f} · 위험 {risk:.0f})"), fontsize=9.5, loc="left")
+    ax.set_xticklabels(["0\n역대 가장 평온"] + [str(x) for x in range(10, 100, 10)] + ["100\n역대 최악"])
+    ax.tick_params(axis="x", labelsize=7.3, length=2, pad=1)
+    for sp in ("top", "right", "left"):
+        ax.spines[sp].set_visible(False)
+    ax.set_title(T(f"오늘의 스트레스 심각도 {today:.0f} — 2006년 이후 전체 거래일 중 나쁜 순으로 상위 {100 - today:.0f}% (높을수록 나쁨 · 주의 {warn:.0f} · 위험 {risk:.0f})"),
+                 fontsize=9.5, loc="left", pad=18)
+    # ── 아래: 최근 1년 심각도의 길 ──
+    ax2 = fig.add_axes([0.08, 0.07, 0.89, 0.40])
+    dz = d.tail(days)
+    y = 100 * dz["score_pct"]
+    for lo, hi, name in ((0, warn, "정상"), (warn, risk, "주의"), (risk, 100, "위험")):
+        ax2.axhspan(lo, hi, color=TIER_FILL[name], alpha=0.55, lw=0, zorder=0)
+    shade(ax2, eps, dz.index[0], dz.index[-1])
+    ax2.plot(dz.index, y, color="#1f4e79", lw=1.3, zorder=3)
+    ax2.fill_between(dz.index, 0, y, color="#1f4e79", alpha=0.08, zorder=2)
+    ax2.plot([dz.index[-1]], [today], marker="o", ms=6, color="#c62828", zorder=5)
+    ax2.annotate(f"{today:.0f}", (dz.index[-1], today), xytext=(6, 0), textcoords="offset points", va="center", fontsize=8.5, color="#c62828", fontweight="bold")
+    ax2.set_ylim(0, 100)
+    ax2.set_yticks([0, 20, 40, 60, 80, 100])
+    ax2.set_ylabel("심각도(높을수록 나쁨)", fontsize=8)
+    ax2.xaxis.set_major_locator(mdates.MonthLocator(interval=2))
+    ax2.xaxis.set_major_formatter(mdates.DateFormatter("%Y-%m"))
+    ax2.tick_params(labelsize=7.5)
+    ax2.grid(alpha=0.25)
+    for sp in ("top", "right"):
+        ax2.spines[sp].set_visible(False)
+    ax2.set_title(T(f"최근 {days}거래일의 심각도 — 어떤 길을 밟아 지금에 왔나(회색 = 코스피200 이 고점 대비 20% 넘게 빠진 구간)"), fontsize=8.8, loc="left")
     return _save(fig, path)
 
 
@@ -139,13 +192,13 @@ def chart_contrib(meta, lt, path):
     ax2 = fig.add_axes([0.80, 0.11, 0.18, 0.80], sharey=ax)
     ax2.axis("off")
     ax2.set_xlim(0, 1)
-    ax2.text(0.5, -0.75, "과거 대비 위치", ha="center", va="center", fontsize=8.5, fontweight="bold")
+    ax2.text(0.5, -0.75, "심각도", ha="center", va="center", fontsize=8.5, fontweight="bold")
     for i, a in enumerate(order):
         p = lt["axis_pct"][a]
         c = pct_color(p)
         ax2.add_patch(Rectangle((0.08, y[i] - 0.33), 0.84, 0.66, facecolor=c, edgecolor="none", alpha=0.9))
         ax2.text(0.5, y[i], f"{100 * p:.0f}", ha="center", va="center", fontsize=9, color="white", fontweight="bold")
-    fig.suptitle(T(f"어느 분야에서 온 스트레스인가 — 지수 {lt['score']:.1f}점의 분야별 몫 · 오른쪽 칩 = 과거 대비 위치(빨강 ≥90 · 주황 ≥80 · 노랑 ≥60)"),
+    fig.suptitle(T(f"어느 분야에서 온 스트레스인가 — 지수 {lt['score']:.1f}점의 분야별 몫 · 오른쪽 칩 = 심각도(높을수록 나쁨 · 빨강 ≥90 매우 나쁨 · 주황 ≥80 나쁨 · 노랑 ≥60)"),
                  fontsize=9.5, x=0.02, ha="left", y=0.985)
     return _save(fig, path)
 
@@ -172,9 +225,9 @@ def chart_heatmap(meta, d, path, n=65):
         if v == v:
             ax.text(len(dates) - 1, j, f"{v:.0f}", ha="center", va="center", fontsize=6.8, color="black" if 25 < v < 75 else "white", fontweight="bold")
     cb = fig.colorbar(im, ax=ax, fraction=0.035, pad=0.02)
-    cb.set_label("과거 대비 위치(%)", fontsize=8.5, rotation=270, labelpad=14)
+    cb.set_label("심각도(0~100 · 높을수록 나쁨)", fontsize=8.5, rotation=270, labelpad=14)
     cb.ax.tick_params(labelsize=8)
-    ax.set_title(T(f"최근 {n}거래일 — 분야별로 언제 켜졌나(빨강 = 과거 대비 높은 스트레스 · 맨 오른쪽 숫자 = 오늘)"), fontsize=9.5, loc="left")
+    ax.set_title(T(f"최근 {n}거래일 — 분야별로 언제 나빠졌나(빨강 = 심각 · 초록 = 평온 · 맨 오른쪽 숫자 = 오늘 심각도)"), fontsize=9.5, loc="left")
     return _save(fig, path)
 
 
@@ -205,7 +258,7 @@ def chart_radar_hist(meta, d, lt, path):
     ax.set_yticklabels(["50", "80", "90"], fontsize=7, color="#555555")
     ax.set_rlabel_position(15)
     ax.grid(alpha=0.35)
-    ax.set_title(T("12개 분야의 과거 대비 위치 — 모양이 위기의 종류를 보여 줍니다"), fontsize=9.5, pad=14)
+    ax.set_title(T("12개 분야의 심각도 — 바깥일수록 나쁨 · 모양이 위기의 종류를 보여 줍니다"), fontsize=9.5, pad=14)
     ax.legend(loc="upper center", bbox_to_anchor=(0.5, -0.14), ncol=1, frameon=False, fontsize=7.8)
     # 역사 분포
     ax2 = fig.add_axes([0.58, 0.16, 0.40, 0.70])
@@ -219,7 +272,7 @@ def chart_radar_hist(meta, d, lt, path):
         x = float(s.quantile(q))
         ax2.axvline(x, color="#777777", lw=0.7, ls=":")
         ax2.text(x, ax2.get_ylim()[0] * 1.4, lab, fontsize=7, color="#555555", ha="center")
-    ax2.set_xlabel("스트레스 지수(0~100)", fontsize=8.5)
+    ax2.set_xlabel("스트레스 지수(0~100 · 높을수록 나쁨)", fontsize=8.5)
     ax2.set_ylabel("거래일 수(로그 눈금)", fontsize=8.5)
     ax2.set_title(f"지수의 분포({s.index[0].year}년 이후 {len(s):,} 거래일) — 오늘은 어디쯤인가", fontsize=9.5)
     ax2.grid(alpha=0.25)
@@ -246,25 +299,31 @@ def chart_indicators(meta, st, path):
         ax.plot([p], [y[i]], marker="o", ms=6.5, color=c, zorder=4)
         if p20 == p20:
             ax.plot([p20], [y[i]], marker="o", ms=5, mfc="white", mec=c, mew=1.1, zorder=3)
-        ax.text(p + 1.4, y[i], f"{p:.0f}", va="center", fontsize=7.6, color="#222222")
+        # 숫자는 눈금 밖 고정 열(x=103)에 — 점 · 20일 전 ○ 와 절대 겹치지 않는다(도훈 11-06 "끝 점이랑 숫자 겹침")
+        ax.text(103, y[i], f"{p:.0f}", va="center", ha="left", fontsize=7.8, color="#222222", fontweight="bold")
+        if p20 == p20:
+            ax.text(109.5, y[i], f"{p20:.0f}", va="center", ha="left", fontsize=7.0, color="#888888")
     bounds = np.cumsum([int((st.axis == a).sum()) for a in axes])
     for b in bounds[:-1]:
         ax.axhline(b - 0.5, color="#dddddd", lw=0.7)
     ax.axvline(80, color="#ef6c00", lw=0.8, ls="--")
     ax.axvline(90, color="#c62828", lw=0.8, ls="--")
+    ax.axvline(100.5, color="#bbbbbb", lw=0.6)
     ax.text(80, -1.1, "80", color="#ef6c00", fontsize=7.5, ha="center")
     ax.text(90, -1.1, "90", color="#c62828", fontsize=7.5, ha="center")
+    ax.text(103, -1.1, "오늘", fontsize=7.2, ha="left", color="#222222")
+    ax.text(109.5, -1.1, "20일 전", fontsize=7.0, ha="left", color="#888888")
     ax.set_yticks(y)
     ax.set_yticklabels([T(f"[{SHORT[r['axis']]}] {r['name']}") for r in rows], fontsize=7.8)
-    ax.set_ylim(n - 0.4, -1.6)
-    ax.set_xlim(0, 112)
+    ax.set_ylim(n - 0.4, -1.8)
+    ax.set_xlim(0, 118)
     ax.set_xticks(range(0, 101, 20))
     ax.tick_params(axis="x", labelsize=8)
-    ax.set_xlabel(T("과거 대비 위치(%) — ● 오늘 · ○ 20거래일 전 · 점선 80 / 90"), fontsize=8.5)
+    ax.set_xlabel(T("심각도(0~100 · 높을수록 나쁨) — ● 오늘 · ○ 20거래일 전 · 점선 80 나쁨 / 90 매우 나쁨"), fontsize=8.5)
     ax.grid(axis="x", alpha=0.25)
     for s in ("top", "right"):
         ax.spines[s].set_visible(False)
-    ax.set_title(T("34개 세부 지표 — 무엇이 이례적 수준인가(분야별 묶음 · 분야 안은 높은 순)"), fontsize=9.5, loc="left")
+    ax.set_title(T("34개 세부 지표의 심각도 — 무엇이 나쁜가(분야별 묶음 · 분야 안은 나쁜 순)"), fontsize=9.5, loc="left")
     return _save(fig, path)
 
 
@@ -332,7 +391,7 @@ def make_all(meta, d, st, eps, bm, folder, ns):
     t20 = pd.Timestamp(lt["date_20td_ago"])
     pct_20d = float(d.loc[t20, "score_pct"]) if t20 in d.index else float("nan")
     out = {}
-    out["gauge"] = chart_gauge(lt, ns, pct_20d, f"{folder}/d1_gauge.png")
+    out["gauge"] = chart_gauge(lt, ns, d, eps, pct_20d, f"{folder}/d1_gauge.png")
     out["contrib"] = chart_contrib(meta, lt, f"{folder}/d2_axis_contrib.png")
     out["heatmap"] = chart_heatmap(meta, d, f"{folder}/d3_heatmap_65d.png")
     out["radar"] = chart_radar_hist(meta, d, lt, f"{folder}/d4_radar_hist.png")

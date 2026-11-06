@@ -38,7 +38,10 @@ IND_PLAIN = {
     "G1": "미국 주식시장 공포지수(VIX)", "G2": "미국 금융스트레스지수(세인트루이스 연준)", "G3": "달러 강세 정도(20일)",
     "T1": "주가 하락과 원화 약세가 함께 가는 정도", "T2": "주가와 국채금리의 관계가 평소와 달라진 정도",
 }
-STATUS = [(0.90, "매우 높음", "#c62828", "#ffcdd2"), (0.80, "높음", "#ef6c00", "#ffe0b2"), (0.60, "다소 높음", "#f9a825", "#fff3c4"), (-1, "낮음 · 보통", "#2e7d32", "#c8e6c9")]
+# 상태 라벨 = 미세먼지 예보처럼 '높을수록 나쁨' 이 바로 읽히는 말(도훈 11-06) — 심각도 ≥90 매우 나쁨 · ≥80 나쁨 · ≥60 다소 나쁨 · 그 외 보통
+STATUS = [(0.90, "매우 나쁨", "#c62828", "#ffcdd2"), (0.80, "나쁨", "#ef6c00", "#ffe0b2"), (0.60, "다소 나쁨", "#f9a825", "#fff3c4"), (-1, "보통", "#2e7d32", "#c8e6c9")]
+SEV = "심각도"            # = 2006년 이후 거래일 중 오늘보다 평온했던 날의 비율(%) · 0 = 역대 가장 평온 · 100 = 역대 최악
+SEV_NOTE = "심각도(%) · 높을수록 나쁨"
 TIER_FILL = {"정상": "#c8e6c9", "주의": "#fff3c4", "위험": "#ffcdd2"}
 
 
@@ -55,8 +58,8 @@ def pct(x):
 
 
 def rank_phrase(p):
-    """백분위 → '상위 n%' 말."""
-    return f"상위 {max(1, round(100 - 100 * p)):.0f}%"
+    """심각도 → '나쁜 순으로 상위 n%' 말(높을수록 나쁨이 바로 읽히게)."""
+    return f"나쁜 순으로 상위 {max(1, round(100 - 100 * p)):.0f}%"
 
 
 def tier_of(p, ns):
@@ -72,27 +75,54 @@ def kdate(x):
     return f"{t.year}년 {t.month}월 {t.day}일"
 
 
+# 인쇄(PDF)에서는 크로미움이 배경색을 기본으로 버린다 — 색이 있는 요소마다 print-color-adjust 를 박아야 칩 · 막대 · 머리 행 색이 PDF 에 남는다.
+PC = "-webkit-print-color-adjust:exact;print-color-adjust:exact;"
+
+
 def chip(color):
-    return f'<span style="display:inline-block;width:9px;height:9px;border-radius:5px;background:{color};margin-right:5px;vertical-align:middle"></span>'
+    return f'<span style="display:inline-block;width:9px;height:9px;border-radius:5px;background:{color};margin-right:5px;vertical-align:middle;{PC}"></span>'
 
 
 def bar(p, color, width_px=70):
     w = max(2, int(round(width_px * max(0.0, min(1.0, p)))))
-    return (f'<span style="display:inline-block;width:{width_px}px;height:9px;background:#eeeeee;vertical-align:middle;border-radius:2px">'
-            f'<span style="display:inline-block;width:{w}px;height:9px;background:{color};border-radius:2px"></span></span>')
+    return (f'<span style="display:inline-block;width:{width_px}px;height:9px;background:#e6e6e6;vertical-align:middle;border-radius:2px;{PC}">'
+            f'<span style="display:inline-block;width:{w}px;height:9px;background:{color};border-radius:2px;{PC}"></span></span>')
 
 
-def html_table(headers, rows, aligns=None, widths=None, small=False):
+def badge(text, fg, bg, size="8.4pt"):
+    return f'<span style="display:inline-block;padding:2px 7px;border-radius:3px;background:{bg};color:{fg};font-weight:700;white-space:nowrap;font-size:{size};{PC}">{text}</span>'
+
+
+def sparkline(values, color, w=84, h=18, bands=True):
+    """최근 n일 심각도(0~1) 추이 — 인라인 SVG(크로미움 인쇄 통과). 띠 = 보통/다소 나쁨/나쁨/매우 나쁨(60 · 80 · 90)."""
+    v = [x for x in values if x == x]
+    if len(v) < 2:
+        return ""
+    n = len(v)
+    xs = [i * (w - 2) / (n - 1) + 1 for i in range(n)]
+    ys = [h - 1 - max(0.0, min(1.0, x)) * (h - 2) for x in v]
+    pts = " ".join(f"{x:.1f},{y:.1f}" for x, y in zip(xs, ys))
+    rects = ""
+    if bands:
+        for lo, hi, col in ((0.0, 0.6, "#e8f5e9"), (0.6, 0.8, "#fff8e1"), (0.8, 0.9, "#ffe9d6"), (0.9, 1.0, "#ffe0e0")):
+            y0 = h - 1 - hi * (h - 2)
+            rects += f'<rect x="0" y="{y0:.1f}" width="{w}" height="{(hi - lo) * (h - 2):.1f}" fill="{col}"/>'
+    return (f'<svg width="{w}" height="{h}" viewBox="0 0 {w} {h}" style="vertical-align:middle;{PC}">{rects}'
+            f'<polyline points="{pts}" fill="none" stroke="{color}" stroke-width="1.4"/>'
+            f'<circle cx="{xs[-1]:.1f}" cy="{ys[-1]:.1f}" r="2.2" fill="{color}"/></svg>')
+
+
+def html_table(headers, rows, aligns=None, widths=None, small=False, row_bg=None):
     fs = "font-size:8.2pt;" if small else ""
-    th = "".join(f'<th style="background:#1f4e79;color:#ffffff;padding:4px 5px;text-align:center;border:1px solid #d9d9d9;{fs}' +
+    th = "".join(f'<th style="background:#1f4e79;color:#ffffff;padding:4px 5px;text-align:center;border:1px solid #16395a;{fs}{PC}' +
                  (f'width:{widths[i]}' if widths and widths[i] else "") + f'">{h}</th>' for i, h in enumerate(headers))
     body = []
     for k, r in enumerate(rows):
-        bg = "#fafafa" if k % 2 else "#ffffff"
+        bg = (row_bg[k] if row_bg and row_bg[k] else ("#f7f7f7" if k % 2 else "#ffffff"))
         tds = []
         for i, c in enumerate(r):
             al = (aligns[i] if aligns else "left")
-            tds.append(f'<td style="padding:3px 5px;border:1px solid #e3e3e3;text-align:{al};vertical-align:middle;background:{bg};{fs}">{c}</td>')
+            tds.append(f'<td style="padding:3px 5px;border:1px solid #dcdcdc;text-align:{al};vertical-align:middle;background:{bg};{fs}{PC}">{c}</td>')
         body.append("<tr>" + "".join(tds) + "</tr>")
     return (f'<table style="width:100%;border-collapse:collapse;margin:4px 0 6px 0"><thead><tr>{th}</tr></thead>'
             f'<tbody>{"".join(body)}</tbody></table>')
@@ -135,21 +165,21 @@ def summary_bullets(meta, d, st, eps, cv, ns, peaks):
     p = lt["score_pct"]
     tier = tier_of(p, ns)
     B = []
-    B.append(f"오늘의 자본시장 스트레스 지수는 **{lt['score']:.1f}점**(100점 만점)으로, 2006년 이후 모든 거래일과 비교하면 **{rank_phrase(p)}** 에 해당하는 높은 수준입니다. "
-             f"경보 단계는 **'{tier}'** 입니다(과거 대비 위치가 {pct(ns.get('threshold_warn'))}% 를 넘으면 주의, {pct(ns.get('threshold_risk'))}% 를 넘으면 위험으로 봅니다).")
+    B.append(f"오늘의 자본시장 스트레스 지수는 **{lt['score']:.1f}점**(0~100 · **높을수록 나쁨**)으로, 2006년 이후 모든 거래일과 비교하면 **{rank_phrase(p)}** 에 드는 나쁜 수준입니다. "
+             f"경보 단계는 **'{tier}'** 입니다(심각도가 {pct(ns.get('threshold_warn'))}% 를 넘으면 주의, {pct(ns.get('threshold_risk'))}% 를 넘으면 위험으로 봅니다).")
     order = sorted(axes, key=lambda a: -lt["contrib"][a])
     top = order[:3]
     share = sum(lt["contrib"][a] for a in top) / lt["score"] if lt["score"] else float("nan")
     B.append("스트레스의 " + (f"약 {100 * share:.0f}%" if share == share else "대부분") + "는 " +
-             " · ".join(f"**{AXIS_PLAIN[a][0]}**({pct(lt['axis_pct'][a])}%)" for a in top) +
-             " 세 분야에서 오고 있습니다. 괄호 안 숫자는 과거 대비 위치(백분위)로, 90 이상이면 2006년 이후 상위 10% 안에 드는 이례적 수준입니다.")
+             " · ".join(f"**{AXIS_PLAIN[a][0]}**(심각도 {pct(lt['axis_pct'][a])})" for a in top) +
+             " 세 분야에서 오고 있습니다. 심각도는 0(역대 가장 평온)~100(역대 최악)으로, 90 이상이면 2006년 이후 나쁜 순으로 상위 10% 안에 드는 이례적 수준입니다.")
     calm = [a for a in axes if lt["axis_pct"][a] <= 0.45]
     sys_axes = ("credit", "fx", "global")
     if all(lt["axis_pct"][a] <= 0.5 for a in sys_axes):
-        B.append("반면 " + " · ".join(f"{AXIS_PLAIN[a][0]}({pct(lt['axis_pct'][a])}%)" for a in sys_axes) +
+        B.append("반면 " + " · ".join(f"{AXIS_PLAIN[a][0]}(심각도 {pct(lt['axis_pct'][a])})" for a in sys_axes) +
                  " 은 평온합니다. 회사채 · 환율 · 해외로 번지지 않았다는 뜻이므로, 현재는 **금융시스템 전반의 위기라기보다 주식시장 내부의 조정**에 가까운 모습으로 판단됩니다.")
     elif calm:
-        B.append("반면 " + " · ".join(f"{AXIS_PLAIN[a][0]}({pct(lt['axis_pct'][a])}%)" for a in calm) + " 은 낮은 수준입니다.")
+        B.append("반면 " + " · ".join(f"{AXIS_PLAIN[a][0]}(심각도 {pct(lt['axis_pct'][a])})" for a in calm) + " 은 평온한 수준입니다.")
     else:
         B.append("모든 분야가 동시에 높은 상태로, 분절을 가리지 않고 번진 체계적 스트레스의 모습입니다.")
     chg = lt["score"] - lt["score_20td_ago"]
@@ -199,14 +229,18 @@ def build_markdown(meta, d, st, eps, cv, nsr, rob, day, peaks):
     A("")
     A(f"작성 {meta['run_at'][:10]} · 지수 산출 기준일 {day}(마지막 거래일 마감 자료) · 연구 시제품(KR-CISS v1) — 투자 판단의 유일한 근거로 쓰지 마시기 바랍니다.")
     A("")
-    # 헤드라인 카드
+    # 헤드라인 카드(높을수록 나쁨이 바로 읽히게)
+    lab, fg, bg = status(lt["score_pct"])
     cards = html_table(
-        ["오늘의 스트레스 지수", "과거 대비 위치", "경보 단계", "20거래일 전 → 오늘", "비교: V-KOSPI200"],
-        [[f'<span style="font-size:20pt;font-weight:700">{lt["score"]:.1f}</span><span style="color:#666"> / 100</span>',
-          f'<span style="font-size:20pt;font-weight:700">{rank_phrase(lt["score_pct"])}</span><br><span style="color:#666">백분위 {pct(lt["score_pct"])}</span>',
-          f'<span style="display:inline-block;padding:6px 18px;background:{TIER_FILL[tier]};font-size:15pt;font-weight:700;border-radius:4px">{tier}</span>',
+        ["오늘의 스트레스 지수<br><span style=\"font-weight:400;font-size:7.6pt\">0~100 · 높을수록 나쁨</span>",
+         f"{SEV}<br><span style=\"font-weight:400;font-size:7.6pt\">0 = 역대 가장 평온 · 100 = 역대 최악</span>",
+         "경보 단계", "20거래일 전 → 오늘", "비교: V-KOSPI200<br><span style=\"font-weight:400;font-size:7.6pt\">옵션시장이 보는 변동성</span>"],
+        [[f'<span style="font-size:21pt;font-weight:700;color:{fg}">{lt["score"]:.1f}</span><span style="color:#666"> / 100</span>',
+          f'<span style="font-size:21pt;font-weight:700;color:{fg}">{pct(lt["score_pct"])}</span><br><span style="color:#444">{rank_phrase(lt["score_pct"])}</span>',
+          f'<span style="display:inline-block;padding:6px 18px;background:{TIER_FILL[tier]};font-size:15pt;font-weight:700;border-radius:4px;{PC}">{tier}</span>'
+          f'<br>{badge(lab, fg, bg, "7.8pt")}',
           f'<span style="font-size:13pt">{lt["score_20td_ago"]:.1f} → {lt["score"]:.1f}</span><br>{chg_phrase(lt["score"] - lt["score_20td_ago"])}',
-          f'<span style="font-size:13pt">{lt["vkospi"]:.1f}</span><br><span style="color:#666">{rank_phrase(lt["vkospi_pct"])}</span>']],
+          f'<span style="font-size:13pt">{lt["vkospi"]:.1f}</span><br><span style="color:#444">{rank_phrase(lt["vkospi_pct"])}</span>']],
         aligns=["center"] * 5)
     A(cards)
     A("")
@@ -217,17 +251,18 @@ def build_markdown(meta, d, st, eps, cv, nsr, rob, day, peaks):
     A("")
     A('<img src="d1_gauge.png" alt="게이지" style="width:100%">')
     A("")
-    A(f"위 눈금은 오늘의 지수가 2006년 이후 전체 거래일 가운데 어디쯤인지를 보여 드립니다. 초록 구간은 평소, 노랑은 주의, 빨강은 2008년 · 2020년 같은 극단적 위기 수준입니다. "
-      f"전일 {prev['score']:.1f}점({str(prev.name.date())}) · 60거래일 전 {lt['score_60td_ago']:.1f}점({lt['date_60td_ago']}) 이었습니다.")
+    A(f"위 그림의 윗부분은 오늘의 심각도가 0(역대 가장 평온)~100(역대 최악) 눈금 어디에 있는지를, 아랫부분은 최근 1년 동안 심각도가 어떤 길을 밟아 지금에 이르렀는지를 보여 드립니다. "
+      f"초록 구간은 평소, 노랑은 주의, 빨강은 2008년 · 2020년 같은 극단적 위기 수준입니다. 전일 {prev['score']:.1f}점({str(prev.name.date())}) · 60거래일 전 {lt['score_60td_ago']:.1f}점({lt['date_60td_ago']}) 이었습니다.")
     A("")
 
     # ── 2. 축별 분해 ──
     A("## 2. 어느 분야에서 온 스트레스인가")
     A("")
-    A("지수는 12개 분야의 상태를 합친 값이며, 아래 표는 그 합계를 분야별로 나눈 것입니다. **'과거 대비 위치'** 는 그 분야가 2006년 이후 모든 날과 비교해 몇 퍼센트 자리에 있는지(백분위)이고, "
-      "**'기여'** 는 오늘 지수 가운데 그 분야 몫(점)입니다. 기여가 음수인 분야는 다른 분야와 반대로 움직여 전체 체계적 위험을 오히려 낮추고 있는 분야입니다.")
+    A(f"지수는 12개 분야의 상태를 합친 값이며, 아래 표는 그 합계를 분야별로 나눈 것입니다. **'{SEV}'** 는 그 분야가 2006년 이후 모든 날과 비교해 얼마나 나쁜 자리에 있는지(0 = 역대 가장 평온 · 100 = 역대 최악)이고, "
+      "**'기여'** 는 오늘 지수 가운데 그 분야 몫(점)입니다. 기여가 음수인 분야는 다른 분야와 반대로 움직여 전체 체계적 위험을 오히려 낮추고 있는 분야입니다. '최근 3개월' 작은 그림은 그 분야 심각도의 65거래일 추이(띠 색 = 보통/다소 나쁨/나쁨/매우 나쁨)입니다.")
     A("")
-    rows = []
+    rows, rbg = [], []
+    sub65 = d.tail(65)
     for a in sorted(axes, key=lambda a: -lt["contrib"][a]):
         p = lt["axis_pct"][a]
         lab, fg, bg = status(p)
@@ -236,15 +271,19 @@ def build_markdown(meta, d, st, eps, cv, nsr, rob, day, peaks):
         fresh = max(int(x) for x in sub.stale_trading_days.fillna(0))
         name, plain = AXIS_PLAIN[a]
         rows.append([
-            f'<span style="display:inline-block;padding:2px 7px;border-radius:3px;background:{bg};color:{fg};font-weight:700;white-space:nowrap">{lab}</span>',
-            f'<b>{name}</b><br><span style="color:#555;font-size:7.8pt">{plain}</span>',
-            f'{bar(p, fg)} <b>{pct(p)}</b>',
-            f'<b>{lt["contrib"][a]:.1f}</b>',
+            badge(lab, fg, bg),
+            f'<b>{name}</b><br><span style="color:#555;font-size:7.6pt">{plain}</span>',
+            f'{bar(p, fg)}&nbsp;<b style="color:{fg};font-size:10pt">{pct(p)}</b>',
+            sparkline(list(sub65[f"pct_{a}"].values), fg),
+            f'<b style="font-size:9.5pt">{lt["contrib"][a]:.1f}</b>',
             chg_phrase(lt["contrib"][a] - lt["contrib_20td_ago"][a]),
-            f'<span style="font-size:7.8pt">{hot}</span>',
-            f'<span style="font-size:7.8pt;color:#555">{"당일" if fresh == 0 else f"{fresh}거래일 전"}</span>'])
-    A(html_table(["상태", "분야", "과거 대비 위치(%)", "기여(점)", "20거래일 전 대비", "지금 높은 세부 지표(과거 대비 80% 이상)", "자료 시점"],
-                 rows, aligns=["center", "left", "left", "right", "center", "left", "center"], widths=["9%", "22%", "15%", "7%", "11%", "28%", "8%"]))
+            f'<span style="font-size:7.6pt">{hot}</span>',
+            f'<span style="font-size:7.6pt;color:#555">{"당일" if fresh == 0 else f"{fresh}거래일 전"}</span>'])
+        rbg.append({"매우 나쁨": "#fff4f4", "나쁨": "#fff7ef", "다소 나쁨": "#fffdf0"}.get(lab, "#ffffff"))
+    A(html_table(["상태<br><span style=\"font-weight:400;font-size:7.2pt\">높을수록 나쁨</span>", "분야", f"{SEV}(0~100)", "최근 3개월", "기여(점)", "20거래일 전 대비",
+                  "지금 나쁜 세부 지표(심각도 80 이상)", "자료 시점"],
+                 rows, aligns=["center", "left", "left", "center", "right", "center", "left", "center"],
+                 widths=["8%", "20%", "14%", "11%", "6%", "10%", "24%", "7%"], row_bg=rbg))
     A("")
     top = sorted(axes, key=lambda a: -lt["contrib"][a])[:3]
     A(f"가장 큰 몫은 **{AXIS_PLAIN[top[0]][0]}**({lt['contrib'][top[0]]:.1f}점)이고, 이어서 {AXIS_PLAIN[top[1]][0]}({lt['contrib'][top[1]]:.1f}점) · {AXIS_PLAIN[top[2]][0]}({lt['contrib'][top[2]]:.1f}점) 순입니다. "
@@ -317,7 +356,7 @@ def build_markdown(meta, d, st, eps, cv, nsr, rob, day, peaks):
     # ── 6. 세부 지표 ──
     A("## 6. 세부 지표 34개 — 무엇이 극단에 있는가")
     A("")
-    A("지수를 이루는 34개 세부 지표를 분야별로 묶어 과거 대비 위치를 표시했습니다. 검은 점이 오늘, 흰 점이 20거래일 전입니다. 점이 오른쪽 빨간 선(90%)을 넘으면 2006년 이후 상위 10% 안의 이례적 수준입니다.")
+    A("지수를 이루는 34개 세부 지표를 분야별로 묶어 심각도(0 = 역대 가장 평온 · 100 = 역대 최악)를 표시했습니다. 검은 점이 오늘, 흰 점이 20거래일 전입니다. 점이 오른쪽 빨간 선(90%)을 넘으면 2006년 이후 상위 10% 안의 이례적 수준입니다.")
     A("")
     A('<img src="d5_indicators.png" alt="34지표" style="width:100%">')
     A("")
@@ -333,7 +372,7 @@ def build_markdown(meta, d, st, eps, cv, nsr, rob, day, peaks):
             irows.append([f'<span style="color:#555">{AXIS_PLAIN[r.axis][0]}</span>', IND_PLAIN.get(r.id, r.name), vs,
                           f'<span style="display:inline-block;padding:1px 6px;border-radius:3px;background:{bg};color:{fg};font-weight:700">{100 * r.ecdf_pct:.0f}</span>',
                           f"{100 * r.ecdf_pct_20td_ago:.0f}", f"{r.contrib:+.2f}", f'<span style="color:#555">{r.last_obs_date}</span>'])
-        A(html_table(["분야", "세부 지표(쉬운 설명)", "오늘 값", "과거 대비 위치(%)", "20거래일 전(%)", "기여(점)", "자료일"], irows,
+        A(html_table(["분야", "세부 지표(쉬운 설명)", "오늘 값", "심각도(0~100)", "20거래일 전(%)", "기여(점)", "자료일"], irows,
                      aligns=["left", "left", "right", "center", "center", "right", "center"], widths=["11%", "40%", "9%", "11%", "10%", "8%", "11%"], small=True))
         A("")
 
@@ -350,15 +389,15 @@ def build_markdown(meta, d, st, eps, cv, nsr, rob, day, peaks):
     A("## 8. 보고서를 읽으실 때 유의하실 점")
     A("")
     A("- **동시성**: 이 지수는 시장 급락과 거의 동시에 오릅니다. 고점을 미리 알려 주지는 못하지만, '공식적인 약세장 기준(고점 대비 -20%)' 보다는 대개 먼저 경보 수준에 도달했습니다.")
-    A("- **숫자보다 위치**: 지수의 절대값은 계산 방식(분야 간 상관의 기억 길이 등)에 따라 달라질 수 있으나, '과거 대비 위치(백분위)' 는 방식과 무관하게 안정적입니다. 보고서의 판단은 모두 백분위를 기준으로 합니다.")
+    A("- **점수보다 심각도**: 지수의 절대값은 계산 방식(분야 간 상관의 기억 길이 등)에 따라 달라질 수 있으나, '심각도(0 = 역대 가장 평온 · 100 = 역대 최악)' 는 방식과 무관하게 안정적입니다. 보고서의 판단은 모두 백분위를 기준으로 합니다.")
     A("- **자료 시점**: 국내 주식 · 수급 자료는 전 거래일 마감 기준이고, 금리 · 환율 · 해외 자료는 공표 시차를 반영해 실제로 알 수 있었던 날짜의 값만 씁니다(미래 정보 없음). 각 분야의 자료 시점은 2절 표의 마지막 열에 있습니다.")
     A("- **경보 단계**: 주의 · 위험 문턱은 2006~2022년 자료에서 '허위 경보 대비 적중' 비율이 가장 좋은 지점으로 정했습니다. 위험 단계(상위 1%)는 2008년 · 2020년 수준에서만 켜집니다.")
     A("- **성격**: 연구용 시제품입니다. 투자 등급 · 포트폴리오 결정과 연결되어 있지 않으며, 단독 근거로 쓰기보다 시장 상황을 공유하는 온도계로 활용하시기 바랍니다.")
     A("")
     A("#### 부록 · 용어 풀이")
     A("")
-    A("- **스트레스 지수(0~100)**: 12개 분야 34개 세부 지표를 각각 '과거 대비 위치' 로 바꾼 뒤, 분야들이 **함께** 움직일수록 크게 치도록 합친 값입니다(유럽중앙은행 CISS 방식). 한 분야만 크게 흔들리면 지수는 완만하게, 여러 분야가 동시에 흔들리면 가파르게 오릅니다.")
-    A("- **과거 대비 위치(백분위)**: 2006년 이후 전체 거래일 중 오늘보다 낮았던 날의 비율(%)입니다. 93이면 상위 7% 안입니다. 모든 비교는 그 시점까지의 과거만 써서 계산합니다.")
+    A("- **스트레스 지수(0~100)**: 12개 분야 34개 세부 지표를 각각 '심각도' 로 바꾼 뒤, 분야들이 **함께** 움직일수록 크게 치도록 합친 값입니다(유럽중앙은행 CISS 방식). 한 분야만 크게 흔들리면 지수는 완만하게, 여러 분야가 동시에 흔들리면 가파르게 오릅니다.")
+    A("- **심각도(0 = 역대 가장 평온 · 100 = 역대 최악)**: 2006년 이후 전체 거래일 중 오늘보다 낮았던 날의 비율(%)입니다. 93이면 상위 7% 안입니다. 모든 비교는 그 시점까지의 과거만 써서 계산합니다.")
     A("- **기여(점)**: 오늘 지수 가운데 각 분야의 몫입니다. 12개 분야의 기여를 모두 더하면 지수가 됩니다.")
     A("- **분야 설명**: " + " / ".join(f"{AXIS_PLAIN[a][0]} = {AXIS_PLAIN[a][1]}" for a in axes) + ".")
     A("- **자료 출처**: 한국거래소 시세 · 투자자 수급(퀀티와이즈), 한국은행 ECOS(금리 · 환율), 미국 연준 FRED(VIX · 금융스트레스), V-KOSPI200. 산출 방법과 수치 근거는 `DESIGN_v1_capital_market.md` 와 `output/v1/run_meta.json` 에 있습니다.")

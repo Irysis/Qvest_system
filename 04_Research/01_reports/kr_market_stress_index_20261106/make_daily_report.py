@@ -275,11 +275,11 @@ def write_excel(meta, d, st, eps, cv, nsr, rob, folder, day):
     ws["A1"].font = Font(bold=True, size=14)
     ws["A2"] = "KR-CISS v1 · 12축 34지표 · 재귀 PIT · 지표 수준 EWMA 순위상관 집계 · 0~100 · 아이디어 연구(등급 · BOOK 무관) · 설계 = DESIGN_v1_capital_market.md"
     ws["A2"].font = Font(italic=True, color="595959")
-    kv = [("지수", lt["score"], "0.0"), ("역사 백분위(%)", 100 * lt["score_pct"], "0"), ("단계", tier_of(lt["score_pct"], ns), None),
+    kv = [("지수", lt["score"], "0.0"), ("심각도(0~100 · 높을수록 나쁨)", 100 * lt["score_pct"], "0"), ("단계", tier_of(lt["score_pct"], ns), None),
           ("전일 지수", float(d["score"].iloc[-2]) if len(d) > 1 else None, "0.0"),
           (f"20거래일 전({lt['date_20td_ago']})", lt["score_20td_ago"], "0.0"), (f"60거래일 전({lt['date_60td_ago']})", lt["score_60td_ago"], "0.0"),
           ("선형 평균(상관 미반영)", lt["score_linear"], "0.0"), ("축 평균 상관", lt["avg_corr"], "0.00"),
-          ("V-KOSPI200", lt["vkospi"], "0.0"), ("V-KOSPI 백분위(%)", 100 * lt["vkospi_pct"], "0"),
+          ("V-KOSPI200", lt["vkospi"], "0.0"), ("V-KOSPI 심각도(0~100)", 100 * lt["vkospi_pct"], "0"),
           ("주의 문턱(백분위 %)", 100 * ns.get("threshold_warn", float("nan")), "0"), ("위험 문턱(백분위 %)", 100 * ns.get("threshold_risk", float("nan")), "0"),
           ("전 기간 최고", f"{lt['max_score_since_t0']:.1f} ({lt['max_score_date']})", None)]
     _hdr(ws, 4, ["항목", "값"])
@@ -298,7 +298,7 @@ def write_excel(meta, d, st, eps, cv, nsr, rob, folder, day):
     ws["A19"].alignment = Alignment(wrap_text=True, vertical="top")
     ws.merge_cells("A19:F22")
     r0 = 24
-    _hdr(ws, r0, ["축", "기여(점)", "하위지수", "축 백분위(%)", "20거래일 전 기여", "변화", "80백분위 이상 지표"])
+    _hdr(ws, r0, ["분야", "기여(점)", "하위지수", "심각도(0~100 · 높을수록 나쁨)", "20거래일 전 기여", "변화", "심각도 80 이상 세부 지표"])
     order = sorted(axes, key=lambda a: -lt["contrib"][a])
     for i, a in enumerate(order, start=r0 + 1):
         rows = st[st.axis == a]
@@ -322,7 +322,7 @@ def write_excel(meta, d, st, eps, cv, nsr, rob, folder, day):
     bar.legend = None
     ws.add_chart(bar, "I4")
     r2 = r1 + 2
-    _hdr(ws, r2, ["id", "축", "지표", "값", "백분위(%)", "기여", "관측일", "묵음(td)"])
+    _hdr(ws, r2, ["id", "분야", "지표", "값", "심각도(0~100)", "기여", "관측일", "묵음(td)"])
     top = st.sort_values("contrib", ascending=False).head(12)
     for i, r in enumerate(top.itertuples(), start=r2 + 1):
         for j, v in enumerate([r.id, ko[r.axis], r.name, float(r.value), 100 * float(r.ecdf_pct), float(r.contrib), str(r.last_obs_date), int(r.stale_trading_days)], start=1):
