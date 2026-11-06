@@ -45,6 +45,8 @@ powershell -ExecutionPolicy Bypass -File "$env:QM_ROOT\04_Research\01_reports\kr
 & "$env:QM_ROOT\.venv_qvest_ml\Scripts\python.exe" "$env:QM_ROOT\04_Research\01_reports\kr_market_stress_index_20261106\ops\send_daily_mail.py"
 ```
 
+★넣는 값은 **Google 계정 비밀번호가 아니라 앱 비밀번호(영문 소문자 16자)** 다. 형식이 다르면 발송기는 로그인을 시도하지 않고 멈춘다(rc 2 — 계정 비밀번호로 반복 시도하면 Google 보안 차단 위험). 서버가 거부하면 진짜 사유(535 BadCredentials 등)를 그대로 출력한다(rc 3).
+
 미리보기(보내지 않음): `send_daily_mail.py --dry-run` · 끄기: `mail_config.json` 의 `enabled` 를 false 또는 `KRSI_NO_MAIL=1`.
 
 ## 확인 · 되돌리기

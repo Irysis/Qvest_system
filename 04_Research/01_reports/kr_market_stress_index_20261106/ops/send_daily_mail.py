@@ -13,6 +13,7 @@ from __future__ import annotations
 
 import datetime as dt
 import json
+import re
 import os
 import smtplib
 import ssl
@@ -95,12 +96,30 @@ def main():
     if not user or not pw:
         print("[mail] ★발신 자격 없음(사용자 환경 변수 QVEST_MAIL_USER · QVEST_MAIL_APP_PASSWORD) — 보내지 않음. 설정은 ops/README.md")
         return 0
-    pw = pw.replace(" ", "").strip()          # Google 은 앱 비밀번호를 4자씩 띄어 보여 준다 — 띄어 넣어도 되게
+    user, pw = user.strip(), pw.replace(" ", "").strip()          # Google 은 앱 비밀번호를 4자씩 띄어 보여 준다 — 띄어 넣어도 되게
+    # ★Gmail SMTP 는 Google 계정 비밀번호를 받지 않는다(2단계 인증 계정 = 앱 비밀번호만). 앱 비밀번호 = 영문 소문자 16자.
+    #   형식이 다르면 로그인을 시도하지 않는다 — 계정 비밀번호로 반복 시도하면 Google 이 보안 차단을 걸 수 있다(11-06 실사고: 12자 일반
+    #   비밀번호 저장 → 서버 535 BadCredentials 가 smtplib 재시도에 가려져 'Connection unexpectedly closed' 로 보였다 — 아래 단일 방식 AUTH 참조).
+    if "gmail.com" in cfg["smtp_host"] and not re.fullmatch(r"[a-z]{16}", pw):
+        print(f"[mail] ★QVEST_MAIL_APP_PASSWORD 가 Gmail 앱 비밀번호 형식(영문 소문자 16자)이 아님(현재 {len(pw)}자) — 로그인 시도 안 함. "
+              "Google 계정 → 보안 → 2단계 인증 → 앱 비밀번호에서 새로 만들어 그 16자를 넣으십시오(계정 비밀번호 아님).")
+        return 2
     msg["From"] = formataddr(("Qvest 스트레스 일보", user))
-    with smtplib.SMTP(cfg["smtp_host"], cfg["smtp_port"], timeout=120) as s:
-        s.starttls(context=ssl.create_default_context())
-        s.login(user, pw)
-        s.send_message(msg)
+    try:
+        with smtplib.SMTP(cfg["smtp_host"], cfg["smtp_port"], timeout=120) as s:
+            s.starttls(context=ssl.create_default_context())
+            s.ehlo()
+            # ★s.login() 을 쓰지 않는다 — PLAIN 이 535(자격 거부)를 받으면 smtplib 가 LOGIN 으로 한 번 더 시도하고, Gmail 은 그 재시도에서
+            #   연결을 끊는다 → 진짜 사유(535 BadCredentials)가 'Connection unexpectedly closed' 로 가려진다(11-06 실측 · 가짜 자격 원시 대화로 확인).
+            s.user, s.password = user, pw
+            s.auth("PLAIN", s.auth_plain, initial_response_ok=True)
+            s.send_message(msg)
+    except smtplib.SMTPAuthenticationError as e:
+        print(f"[mail] ★로그인 거부 {e.smtp_code}: {e.smtp_error.decode(errors='replace')[:200]} — 앱 비밀번호 · 발신 주소(QVEST_MAIL_USER)를 확인하십시오. 보내지 않음.")
+        return 3
+    except (smtplib.SMTPException, OSError) as e:
+        print(f"[mail] ★발송 실패 {type(e).__name__}: {str(e)[:200]} — 보내지 않음(같은 기준일은 다음 실행이 다시 시도).")
+        return 4
     os.makedirs(os.path.dirname(stamp), exist_ok=True)
     json.dump({"day": day, "sent_at": dt.datetime.now().isoformat(timespec="seconds"), "to": cfg["to"], "subject": msg["Subject"],
                "attach_mb": round(total / 1e6, 2)}, open(stamp, "w", encoding="utf-8"), ensure_ascii=False, indent=2)
