@@ -22,4 +22,6 @@ if [ "$SKIP_FETCH" = 0 ]; then step "① fetch_research_inputs.py"; run "$PY" fe
 step "② build_kr_stress_index_v1.py (KRSI_DAILY=1)"; run "$PY" build_kr_stress_index_v1.py || exit 4
 step "③ make_charts.py v1";                           run "$PY" make_charts.py v1 || exit 5
 step "④ make_daily_report.py $NO_PDF";                run "$PY" make_daily_report.py $NO_PDF || exit 6
+# ⑤ 방법론 문서(쉬운 말 · 전문 — 오늘의 예시 숫자가 들어가므로 매일 다시 쓴다 · daily/latest/kr_stress_methodology.pdf) — 실패해도 일보는 유효
+if [ -z "$NO_PDF" ]; then step "⑤ make_methodology.py --pdf"; run "$PY" make_methodology.py --pdf || step "★방법론 PDF 실패(일보 무관 · 계속)"; fi
 step "done → $(cat "$HERE/daily/latest/latest.json" 2>/dev/null | tr -d '\n' | cut -c1-200)"
