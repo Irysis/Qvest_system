@@ -3,8 +3,10 @@
 """스트레스 일보 메일 — daily/latest 의 PDF 일보 + 엑셀 대시보드를 ops/mail_config.json 수신자에게 보낸다(도훈 11-06).
 
 - 기준일당 1통: 보낸 뒤 daily/<기준일>/mail_sent.json 을 남기고, 같은 기준일은 다시 보내지 않는다(--force 로만).
-- 발신 = SMTP(기본 smtp.gmail.com:587 STARTTLS) · 계정 · 앱 비밀번호 = 사용자 환경 변수 QVEST_MAIL_USER · QVEST_MAIL_APP_PASSWORD
-  (값은 저장소 · 로그 · 출력에 남기지 않는다 · 예약 작업 셸에 없으면 사용자 범위 환경 변수를 읽는다). 없으면 '자격 없음'으로 건너뜀(rc 0).
+- 발신 방식 = mail_config.json::method
+  · "gmail_api"(기본 · 도훈 11-06 — 앱 비밀번호 대신): Gmail API + OAuth(권한 gmail.send 하나) · 토큰은 %LOCALAPPDATA%\\Qvest\\secrets 에
+    DPAPI 암호화(ops/gmail_oauth.py). 승인이 아직이면 '자격 없음'으로 건너뜀(rc 0).
+  · "smtp"(예비): smtp.gmail.com:587 + 앱 비밀번호(사용자 환경 변수 QVEST_MAIL_USER · QVEST_MAIL_APP_PASSWORD) — Google 비권장.
 - 본문 = latest.json 요약(점수 · 순위 · 단계 · 기준일) — 숫자는 일보 산출값 그대로.
 실행: <repo>/.venv_qvest_ml/Scripts/python.exe ops/send_daily_mail.py [--dry-run] [--force]
   --dry-run = 메시지를 만들어 크기 · 제목 · 첨부만 출력(보내지 않음 · 자격 불필요).
@@ -12,6 +14,7 @@
 from __future__ import annotations
 
 import datetime as dt
+import email.policy
 import json
 import re
 import os
@@ -92,6 +95,18 @@ def main():
     if dry:
         print("[mail] --dry-run — 보내지 않음")
         return 0
+    if cfg.get("method", "gmail_api") == "gmail_api":
+        sys.path.insert(0, HERE)
+        import gmail_oauth as G
+        if not (os.path.exists(G.CLIENT) and os.path.exists(G.TOKEN)):
+            print(f"[mail] ★Gmail API 승인 전(클라이언트 {os.path.exists(G.CLIENT)} · 토큰 {os.path.exists(G.TOKEN)} — {G.SECRETS}) — 보내지 않음. 설정은 ops/README.md §메일")
+            return 0
+        try:
+            mid = G.send_raw(msg.as_bytes(policy=email.policy.SMTP))
+        except Exception as e:  # noqa: BLE001 — 메일 실패는 일보를 막지 않는다(체인이 rc 를 기록)
+            print(f"[mail] ★발송 실패 {type(e).__name__}: {str(e)[:300]} — 보내지 않음(같은 기준일은 다음 실행이 다시 시도).")
+            return 4
+        return _stamp(stamp, day, cfg, msg, total, f"gmail_api id={mid}")
     user, pw = user_env("QVEST_MAIL_USER"), user_env("QVEST_MAIL_APP_PASSWORD")
     if not user or not pw:
         print("[mail] ★발신 자격 없음(사용자 환경 변수 QVEST_MAIL_USER · QVEST_MAIL_APP_PASSWORD) — 보내지 않음. 설정은 ops/README.md")
@@ -120,10 +135,14 @@ def main():
     except (smtplib.SMTPException, OSError) as e:
         print(f"[mail] ★발송 실패 {type(e).__name__}: {str(e)[:200]} — 보내지 않음(같은 기준일은 다음 실행이 다시 시도).")
         return 4
+    return _stamp(stamp, day, cfg, msg, total, "smtp")
+
+
+def _stamp(stamp, day, cfg, msg, total, via):
     os.makedirs(os.path.dirname(stamp), exist_ok=True)
     json.dump({"day": day, "sent_at": dt.datetime.now().isoformat(timespec="seconds"), "to": cfg["to"], "subject": msg["Subject"],
-               "attach_mb": round(total / 1e6, 2)}, open(stamp, "w", encoding="utf-8"), ensure_ascii=False, indent=2)
-    print(f"[mail] 보냄 → {', '.join(cfg['to'])}")
+               "attach_mb": round(total / 1e6, 2), "via": via}, open(stamp, "w", encoding="utf-8"), ensure_ascii=False, indent=2)
+    print(f"[mail] 보냄 → {', '.join(cfg['to'])} ({via})")
     return 0
 
 

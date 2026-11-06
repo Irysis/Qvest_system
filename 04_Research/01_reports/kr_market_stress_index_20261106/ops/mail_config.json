@@ -1,11 +1,20 @@
 {
-  "_note": "스트레스 일보 메일(도훈 11-06 지시 — 일보 PDF + 엑셀 대시보드만 · 해설 없는 확정본 v1 · 방법론 제외). 발신 계정 · 앱 비밀번호는 여기 두지 않는다 — 사용자 환경 변수 QVEST_MAIL_USER · QVEST_MAIL_APP_PASSWORD(도훈이 직접 설정).",
+  "_note": "스트레스 일보 메일(도훈 11-06 지시 — 일보 PDF + 엑셀 대시보드만 · 해설 없는 확정본 v1 · 방법론 제외). 발신 = Gmail API + OAuth(gmail.send 하나 · 토큰은 %LOCALAPPDATA%\\Qvest\\secrets 에 DPAPI 암호화 · ops/gmail_oauth.py). smtp 는 예비(앱 비밀번호 · Google 비권장).",
   "enabled": true,
-  "to": ["dhkim@hmsec.com"],
+  "method": "gmail_api",
+  "to": [
+    "dhkim@hmsec.com"
+  ],
   "smtp_host": "smtp.gmail.com",
   "smtp_port": 587,
   "subject": "[KR 스트레스 일보] {day} · 스트레스 점수 {level} · {tier} · 나쁜 순 상위 {top}%",
-  "attach": ["kr_stress_daily_latest.pdf", "kr_stress_dashboard_latest.xlsx"],
-  "attach_names": ["KR_stress_daily_{day}.pdf", "KR_stress_dashboard_{day}.xlsx"],
+  "attach": [
+    "kr_stress_daily_latest.pdf",
+    "kr_stress_dashboard_latest.xlsx"
+  ],
+  "attach_names": [
+    "KR_stress_daily_{day}.pdf",
+    "KR_stress_dashboard_{day}.xlsx"
+  ],
   "max_total_mb": 20
 }
