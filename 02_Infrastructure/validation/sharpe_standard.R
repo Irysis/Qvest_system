@@ -11,10 +11,14 @@
 ##   ❌ CAGR / vol — geometric annual return / arithmetic vol mixed metric
 ##   ✅ mean(ER_period) / sd(ER_period) × sqrt(N) — 학술 표준
 ##
-## R_f 처리:
-##   - 일간: KR_Gov3Y (ecos_bond_rates.parquet) annual yield → daily 환산
-##   - 월간: KR_Gov3Y → monthly 환산
-##   - default: Rf = 0 (1990 이전 데이터 부재 시)
+## R_f 처리 (2026-11-06 도훈 결정 SHARPE-STANDARD-RF-CD91-20261106 — "문서 표준만"):
+##   - 일간: KR_CD91 (ecos_bond_rates.parquet · ECOS 817Y002/010502000 CD 91일) annual yield → daily 환산
+##   - 월간: KR_CD91 → monthly 환산
+##   - default: Rf = 0 (계열 부재 시)
+##   ★구판 기본값 'KR_Gov3Y' 는 수집기 항목 코드 오류로 실제로는 국고채 1년(010190000)이었다(11-06 수리 8c6e76207 —
+##     지금 캐시의 KR_Gov3Y = 진짜 3년 · 구 계열 = KR_Gov1Y). 구판 재현이 필요하면 series_name = "KR_Gov1Y".
+##   ★이 파일은 '문서상 표준'이다 — 등급 · 판정의 권위 Sharpe 는 측정 계약(contracts/backtest_result_contract.R ·
+##     build_bt_result → essence_score)이 risk_free_rate = 0 으로 계산한다(초과수익 = 순수익). 이 결정은 그것을 바꾸지 않는다.
 ##
 ## 36년 backtest는 금리 regime 큰 변동 — 가능하면 R_f 차감 권장 (도훈 reference 3번 마지막).
 
@@ -26,11 +30,11 @@ suppressPackageStartupMessages({
 cat("[sharpe_standard] Loaded — Qvest 표준 (2026-04-29 도훈 reference 채택).\n")
 
 ## ─────────────────────────────────────────────────────
-## load_kr_riskfree — KR_Gov3Y 일별 yield → 일별/월별 R_f
+## load_kr_riskfree — KR_CD91(CD 91일) 일별 yield → 일별/월별 R_f (2026-11-06 결정 — 구판 기본값 KR_Gov3Y)
 ## ─────────────────────────────────────────────────────
 load_kr_riskfree <- function(
   bond_path = NULL,
-  series_name = "KR_Gov3Y",
+  series_name = "KR_CD91",
   basis = c("daily", "monthly")
 ) {
   basis <- match.arg(basis)
@@ -51,7 +55,7 @@ load_kr_riskfree <- function(
   setorder(bond, Date)
   if (nrow(bond) == 0) return(NULL)
 
-  # KR_Gov3Y is annual percentage yield (e.g. 6.67 = 6.67%)
+  # ECOS 817Y002 금리는 연 % 수준(e.g. 3.34 = 3.34%) — KR_CD91 · KR_Gov1Y · KR_Gov3Y 공통
   bond[, Yield_decimal := Yield / 100]
   if (basis == "daily") {
     # Daily Rf = (1 + annual_yield)^(1/252) - 1

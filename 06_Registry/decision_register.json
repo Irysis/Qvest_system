@@ -3833,7 +3833,31 @@
       "registered_at": "2026-10-20T18:53:51+0900",
       "recorded_by": "Q(세션 1계층 리서치 프로세스 경량화 · 도훈 채팅 답을 대리 기록)",
       "evidence": "채팅 답(10-20): '지금처럼 두자' — 질문 '충실구현에서 러너가 만드는 포트폴리오의 25종 기본 상한을 없앨까요?'(선택지 '논문 그대로(권장)' / '25 상한 유지')"
+    },
+    {
+      "id": "SHARPE-STANDARD-RF-CD91-20261106",
+      "title": "Sharpe 표준의 무위험수익률 계열 — ECOS 항목 코드 오류 발견 뒤 재지정",
+      "status": "resolved",
+      "opened_at": "2026-11-06T09:16:21+0900",
+      "options": [
+        "1 국고채 1년 유지 — 구 기본값 'KR_Gov3Y' 가 실제로 받던 계열(010190000)을 이름대로(KR_Gov1Y) 명시",
+        "2 국고채 3년 — 문서 의도대로(010200000 · 수리 뒤 KR_Gov3Y)",
+        "3 CD 91일 — KR_CD91(010502000 · 수리 뒤 진짜 CD91)",
+        "적용 범위: (가) 문서상 표준만(02_Infrastructure/validation/sharpe_standard.R — 호출처 0) / (나) 측정 계약 권위 Sharpe(contracts/backtest_result_contract.R · risk_free_rate=0)에도 차감 도입"
+      ],
+      "recommendation": "1(가) — 연속성",
+      "default_until_decided": "현행",
+      "blocks": [],
+      "owner": "dohoon",
+      "source": "스트레스 지수 세션(kr-stress-index) 발견 — ECOS 수집기 817Y002 매핑 오류(KR_Gov3Y = 국고채 1년 · KR_CD91 = KORIBOR 3개월 · 04_Research/01_reports/kr_market_stress_index_20261106/DESIGN_v1_capital_market.md §4.2) · 수집기 수리 커밋 8c6e76207(가용 규칙 b6). Q 확인: 등급의 권위 Sharpe 는 측정 계약이 rf=0 으로 계산하므로 오류는 과거 등급에 영향 없음 · sharpe_standard.R 은 호출처 0(문서상 표준).",
+      "decision": "3(가) — Sharpe 문서상 표준의 무위험수익률 = KR_CD91(CD 91일 · ECOS 817Y002/010502000). 측정 계약의 권위 Sharpe 는 rf=0 그대로(등급 · 판정 불변). 구판 재현 = series_name 'KR_Gov1Y'.",
+      "decided_by": "dohoon",
+      "decided_at": "2026-11-06T09:16:22+0900",
+      "note": "실측: CD91 2001-01-02~2026-11-05 6,399일 · 최근 3.34% · 국고채 1년 대비 평균 −0.027%p. 도훈 발언 순서: 'CD91물로 해' → '아 CD 91일물은 무시' → 'CD91일로 바꿔줘' → '문서 표준만'.",
+      "registered_at": "2026-11-06T09:16:21+0900",
+      "recorded_by": "Q(세션 f9656758)",
+      "evidence": "도훈 채팅 2026-11-06 — 'CD91일로 바꿔줘' · '문서 표준만.'"
     }
   ],
-  "last_updated": "2026-10-20T18:53:53+0900"
+  "last_updated": "2026-11-06T09:16:23+0900"
 }
