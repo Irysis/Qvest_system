@@ -47,6 +47,13 @@
 #   ★이관 레인(P0-M1 · 10종)은 LLM_FALLBACK_MODEL="" 로 부른다 — 구판 동작 보존(구판은 --fallback-model 없음).
 #     한도 폴백을 싣는 호출자 = 이관 전부터 이 함수를 쓰던 replication·b5_design·overlay_audit 뿐
 #     (검사 08_Tests/ops/test_llm_single_entry.sh §G 가 허용 목록으로 잰다).
+#
+# ★CLI 자동 업데이트 (2026-11-07 도훈 "무인레인이 쓰는 npm cli는 최신버전 나올때마다 자동 업데이트" · 방식 2)
+#   npm 전역 CLI 교체는 예약 작업 Qvest_ClaudeCliUpdate(claude_cli_update.sh) 하나만 한다 — 레인 claude 가 0개일 때.
+#   그래서 이 함수는 ① claude 에 DISABLE_AUTOUPDATER=1 · DISABLE_UPDATES=1 을 실어 CLI 내장 업데이터를 끄고
+#   (교체 시점을 못 고르고, 도는 세션의 exe 를 제자리에서 갈면 그 세션이 죽는다 — code.claude.com/docs/en/setup)
+#   ② 업데이터가 설치하는 동안 쥐는 교체 잠금(rf_llm_wait_cli_update)이 있으면 새 claude 를 띄우기 전에 기다린다.
+#   테스트 = 08_Tests/ops/test_claude_cli_update.sh(§L 레인 쪽).
 #==============================================================================
 
 # 한도 문구 — 실측 표본: "You've reached your Fable limit"(09-07) · "You've hit your session limit ·
@@ -99,6 +106,32 @@ print('|'.join([per.get('model') or llm.get('model') or 'opus',
   export LLM_MODEL LLM_EFFORT LLM_FALLBACK_MODEL LLM_FALLBACK_EFFORT
 }
 
+# ★CLI 교체 대기 (2026-11-07) — claude_cli_update.sh 가 npm install 하는 동안 쥐는 교체 잠금(lock 디렉터리)
+#   <root>/.cache/machine/claude_cli_update_<HOST>.lock/ 이 있으면 새 claude 를 띄우지 않고 기다린다.
+#   업데이터는 레인 claude 가 0개일 때만 잠금을 잡으므로 여기서 잠금을 만나는 건 '설치 중'(보통 1~3분)뿐이다.
+#   잠금이 STALE(기본 1800s)보다 오래됐거나 그만큼 기다렸으면 그냥 진행한다 — 죽은 업데이터가 레인을 세우지 않게.
+#   경로 규칙은 claude_cli_update.sh 의 LOCK 과 같다(QVEST_CLI_UPDATE_LOCK 을 주면 둘 다 그 경로를 쓴다).
+rf_llm_wait_cli_update() {
+  local root="${ROOT:-${QM_ROOT:-${CLAUDE_PROJECT_DIR:-}}}" host lk
+  lk="${QVEST_CLI_UPDATE_LOCK:-}"
+  if [ -z "$lk" ]; then
+    [ -n "$root" ] || return 0
+    host="$(printf '%s' "${QVEST_HOST:-${COMPUTERNAME:-$(hostname 2>/dev/null || echo unknown)}}" | tr '[:lower:]' '[:upper:]' | tr -c 'A-Z0-9_.-' '_')"
+    lk="${root//\\//}/.cache/machine/claude_cli_update_${host}.lock"
+  fi
+  [ -d "$lk" ] || return 0
+  local stale="${QVEST_CLI_LOCK_STALE_SEC:-1800}" step="${QVEST_CLI_WAIT_STEP_SEC:-10}" waited=0 age
+  while [ -d "$lk" ]; do
+    age=$(( $(date +%s) - $(stat -c %Y "$lk" 2>/dev/null || echo 0) ))
+    if [ "$age" -ge "$stale" ]; then echo "[rf_llm] CLI 교체 잠금이 stale(${age}s) — 기다리지 않고 진행: $lk" >&2; break; fi
+    if [ "$waited" -ge "$stale" ]; then echo "[rf_llm] CLI 교체 대기 상한(${stale}s) — 진행: $lk" >&2; break; fi
+    [ "$waited" -gt 0 ] || echo "[rf_llm] Claude CLI 교체 중 — 끝날 때까지 기다린다: $lk" >&2
+    sleep "$step"; waited=$((waited + step))
+  done
+  [ "$waited" -eq 0 ] || echo "[rf_llm] CLI 교체 대기 ${waited}s 뒤 시작" >&2
+  return 0
+}
+
 rf_llm_agent_run() {
   local pf="${1:?prompt_file}" out="${2:?run_out}" tmo="${3:?timeout_sec}"
   shift 3
@@ -109,6 +142,11 @@ rf_llm_agent_run() {
   rm -f "$out.primary"
   # ★무인 레인 표식(P0-M1) — 함수 지역 배열이라 호출자가 전역을 덮어도 바뀌지 않는다. 1차·폴백이 같은 배열.
   local lane_env=(CLAUDE_CODE_DISABLE_AUTO_MEMORY=1 QVEST_UNATTENDED_LANE=1)
+  # ★CLI 내장 업데이터 끄기(2026-11-07 · 머리말 'CLI 자동 업데이트') — 교체는 claude_cli_update.sh 만 한다.
+  #   DISABLE_AUTOUPDATER = 백그라운드 확인 · DISABLE_UPDATES = claude update 포함 전부.
+  #   (위 줄은 test_llm_single_entry.sh D8 뮤테이션 테스트의 치환 좌표라 바꾸지 않고 따로 붙인다)
+  lane_env+=(DISABLE_AUTOUPDATER=1 DISABLE_UPDATES=1)
+  rf_llm_wait_cli_update
   env "${lane_env[@]}" timeout "$tmo" "$bin" -p --model "$LLM_MODEL" --effort "$LLM_EFFORT" ${fb[@]+"${fb[@]}"} "$@" \
     < "$pf" > "$out" 2>&1
   LLM_RC=$?
@@ -119,6 +157,7 @@ rf_llm_agent_run() {
     LLM_FELL_BACK=1
     LLM_USED_MODEL="$LLM_FALLBACK_MODEL"
     LLM_USED_EFFORT="${LLM_FALLBACK_EFFORT:-max}"
+    rf_llm_wait_cli_update   # 1차가 끝난 사이에 업데이터가 교체 잠금을 잡았을 수 있다
     env "${lane_env[@]}" timeout "$tmo" "$bin" -p --model "$LLM_USED_MODEL" --effort "$LLM_USED_EFFORT" "$@" \
       < "$pf" > "$out" 2>&1
     LLM_RC=$?

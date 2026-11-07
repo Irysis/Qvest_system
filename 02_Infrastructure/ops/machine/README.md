@@ -67,6 +67,11 @@ python 02_Infrastructure\ops\machine\qvest_sync.py conflicts . --device MAINCOMP
 원래대로 등록한 기계에서 `qvest_tasks.ps1 -Mode Export -Out <폴더>` → `-Mode Apply -From <폴더>`, 다른 기계에서도 같은
 폴더로 `-Mode Apply`(관리자). 감싼 작업을 Export 하면 원본(`jobs\orig`)이 나간다.
 
+원본 XML 을 저장소에 둔 작업은 그 폴더에서 바로 Apply 한다 — 예: `Qvest_ClaudeCliUpdate`(2026-11-07 · 무인 레인 npm CLI
+자동 업데이트 · `machines.conf` `period … local` = 두 기계가 각자 자기 CLI 를 업데이트)는 **기계마다 한 번**
+`qvest_tasks.ps1 -Mode Apply -From 02_Infrastructure\ops\scheduler\_task_xml_backup -Name Qvest_ClaudeCliUpdate`.
+계약 = `02_Infrastructure/ops/claude_cli_update.sh` 머리말 · 테스트 = `08_Tests/ops/test_claude_cli_update.sh`.
+
 ## 검사 (2026-11-01 메인 PC 실측)
 
 - `bash 08_Tests/ops/test_qvest_machine.sh` — 게이트 · 생존 신호 · settled 34 축 `{"pass":34,"fail":0}`.
