@@ -23,6 +23,7 @@ PASS <- 0L; FAIL <- 0L
 ok <- function(m) { PASS <<- PASS + 1L; cat("  OK  ", m, "\n") }
 ng <- function(m, why = "") { FAIL <<- FAIL + 1L; cat("  FAIL", m, if (nzchar(why)) paste0(" — ", why) else "", "\n") }
 ROOT <- Sys.getenv("QM_ROOT", "C:/Users/99922/OneDrive/Quant_Module_Moltbot")
+source(file.path(ROOT, "02_Infrastructure/ops/qv_bash.R"))   # bare "bash" 금지(금칙 ⑦ · 11-07) — WSL 있는 PC 에선 System32 bash 가 PATH 보다 먼저 잡힌다
 PY   <- Sys.getenv("QVEST_PY", file.path(ROOT, ".venv_qvest_ml/Scripts/python.exe"))
 SH   <- file.path(ROOT, "02_Infrastructure/ops/rf_replication_auto.sh")
 LLM_ENV <- file.path(ROOT, "02_Infrastructure/ops/rf_llm_env.sh")   # 한도 정규식·판정 함수 정본(분류 블록이 부른다)
@@ -67,7 +68,7 @@ run_classifier <- function(body, log_text, tag) {
   ##   않아 블록이 "command not found" 로 죽었고 A1~B2 가 상시 FAIL 이었다(검사 장치 결함 · 레인은 정상). 정의는 정본 파일을 그대로 싣는다(사본 금지).
   writeLines(c("#!/usr/bin/env bash", sprintf(". %s", shQuote(LLM_ENV)), "LOG=\"$1\"", "RUN_OUT=\"$1\"", body, 'printf %s "$ENV_FAIL"'),
              sf, useBytes = TRUE)
-  out <- suppressWarnings(system2("bash", c(shQuote(sf), shQuote(lf)), stdout = TRUE, stderr = TRUE))
+  out <- suppressWarnings(system2(qv_bash(), c(shQuote(sf), shQuote(lf)), stdout = TRUE, stderr = TRUE))
   paste(out %||% "", collapse = "")
 }
 
@@ -227,7 +228,7 @@ run_gate <- function(req_json, tag) {
   writeLines(c("#!/usr/bin/env bash", "set -u", 'REQ="$1"', 'PY="$2"',
                'jl(){ echo "[jl] $*"; }', SRC[gs:ge], 'echo "GATE_PASSED"'),
              sf, useBytes = TRUE)
-  out <- suppressWarnings(system2("bash", c(shQuote(sf), shQuote(rq), shQuote(PY)),
+  out <- suppressWarnings(system2(qv_bash(), c(shQuote(sf), shQuote(rq), shQuote(PY)),
                                   stdout = TRUE, stderr = TRUE))
   list(rc = as.integer(attr(out, "status") %||% 0L), txt = paste(out %||% "", collapse = " "))
 }

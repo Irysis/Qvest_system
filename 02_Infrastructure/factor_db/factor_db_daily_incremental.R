@@ -25,6 +25,7 @@ INFRA_DIR <- tryCatch(dirname(dirname(sys.frame(1)$ofile)),
   error = function(e) "/mnt/c/Users/99922/OneDrive/바탕 화면/Quant_Module_Moltbot/02_Infrastructure")
 
 if (!exists("PROJECT_ROOT")) source(file.path(INFRA_DIR, "config.R"))
+source(file.path(INFRA_DIR, "ops", "qv_bash.R"))   # bare "bash" 금지(금칙 ⑦ · 11-07) — WSL 있는 PC 에선 System32 bash 가 PATH 보다 먼저 잡힌다
 if (!is.loaded("roll_beta_cpp")) sourceCpp(file.path(.SELF_DIR, "factor_db_daily_rcpp.cpp"))
 
 FDB_DIR <- file.path(CACHE_DIR, "factor_db_daily")
@@ -45,7 +46,7 @@ update_daily_fdb <- function(ym, verbose = TRUE) {
   sh <- file.path(.SELF_DIR, "run_fdb_incremental.sh")
   if (!file.exists(sh)) stop("run_fdb_incremental.sh 없음: ", sh)
   if (verbose) cat(sprintf("[daily_fdb] 단일월 증분 %s 실행 (%s)\n", ym, basename(sh)))
-  rc <- system2("bash", c(shQuote(sh), ym))
+  rc <- system2(qv_bash(), c(shQuote(sh), ym))
   if (!identical(as.integer(rc), 0L)) stop(sprintf("update_daily_fdb(%s) FAILED rc=%s", ym, rc))
   fpath <- file.path(FDB_DIR, sprintf("fdb_daily_%s.parquet", ym))
   if (verbose) cat(sprintf("[daily_fdb] %s 완료 → %s\n", ym, fpath))
@@ -70,7 +71,7 @@ update_daily_fdb_current <- function(verbose = TRUE) {
   #   구 one-process source(phase6,7,8)는 arrow 1224 회피 위해 드라이버로 대체.
   sh <- file.path(.SELF_DIR, "run_fdb_rebuild.sh")
   cat(sprintf("[daily_fdb] 전량 재빌드(검증 full path, phase당 별도 프로세스, ~48분) — %s\n", basename(sh)))
-  rc <- system2("bash", shQuote(sh))
+  rc <- system2(qv_bash(), shQuote(sh))
   if (!identical(as.integer(rc), 0L)) stop(sprintf("full rebuild FAILED rc=%s", rc))
   invisible(TRUE)
 }

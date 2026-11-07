@@ -530,7 +530,7 @@ rc_standing_pending <- function(round_dir, root = rc_root(), registry_path = NUL
   I <- rc_standing_items(rc_standing_ledger_read(ctx$ledger))
   names(I)[vapply(I, .rcs_pending, logical(1))]
 }
-rc_standing_fingerprint <- function() paste(suppressWarnings(system2("bash", c(shQuote(file.path(RC_DIR, "fingerprint.sh")), "equality"),
+rc_standing_fingerprint <- function() paste(suppressWarnings(system2(qv_bash(), c(shQuote(file.path(RC_DIR, "fingerprint.sh")), "equality"),
                                                                     stdout = TRUE, stderr = FALSE)), collapse = "\n")
 rc_standing_measure_item <- function(round_dir, code, root = rc_root(), registry_path = NULL,
                                      worker = file.path(root, "02_Infrastructure/ops/rf_cell_worker.R"), fingerprint = rc_standing_fingerprint) {

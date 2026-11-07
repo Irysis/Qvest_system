@@ -46,6 +46,7 @@ suppressPackageStartupMessages({ library(data.table); library(jsonlite); library
 }, error = function(e) NA_character_)
 ROOT <- if (!is.na(.self)) dirname(dirname(dirname(.self))) else
   gsub("\\\\", "/", Sys.getenv("CLAUDE_PROJECT_DIR", Sys.getenv("QM_ROOT", "C:/Users/99922/OneDrive/Quant_Module_Moltbot")))
+source(file.path(ROOT, "02_Infrastructure/ops/qv_bash.R"))   # bare "bash" 금지(금칙 ⑦ · 11-07) — WSL 있는 PC 에선 System32 bash 가 PATH 보다 먼저 잡힌다
 GITDIR <- if (dir.exists(file.path(ROOT, ".git"))) ROOT else
   gsub("\\\\", "/", Sys.getenv("QVEST_TEST_GIT_DIR", "C:/Users/99922/OneDrive/Quant_Module_Moltbot"))
 LIB    <- file.path(ROOT, "02_Infrastructure/regime/regime_append_only.R")
@@ -392,7 +393,7 @@ sc_T5 <- function(lib, fred_regime = FREDRG, dr = DRSH) {
   sh <- file.path(R, "night_loop.sh")
   writeLines(c(sprintf('RSCRIPT="%s"; QM_ROOT="%s"; BASE="%s"; INFRA="%s/02_Infrastructure"', RS, R, R, R), X$loop), sh, useBytes = TRUE)
   old <- Sys.getenv(c("QM_ROOT", "CLAUDE_PROJECT_DIR")); Sys.setenv(QM_ROOT = R, CLAUDE_PROJECT_DIR = R)
-  x2 <- suppressWarnings(system2("bash", shQuote(sh), stdout = TRUE, stderr = TRUE)); do.call(Sys.setenv, as.list(old))
+  x2 <- suppressWarnings(system2(qv_bash(), shQuote(sh), stdout = TRUE, stderr = TRUE)); do.call(Sys.setenv, as.list(old))
   r$night_rc <- identical(x1$rc, 0L) && sum(grepl("\\[regime-append/(monthly|daily)\\] OK", x2)) == 2L
   if (!isTRUE(r$night_rc)) cat(tail(c(x1$out, x2), 15), sep = "\n")
   N <- lapply(c(monthly = "monthly", daily = "daily"), function(s) rdp(paths(R, s)$live))
@@ -412,7 +413,7 @@ sc_T5 <- function(lib, fred_regime = FREDRG, dr = DRSH) {
   ng0 <- length(list.files(file.path(R, ".cache"), pattern = "\\.regen_"))
   x5 <- run_rs(rb, wd = file.path(R, "02_Infrastructure"), env = c(env_n[-5], RL_FAIL_BUILD = "1"))
   Sys.setenv(QM_ROOT = R, CLAUDE_PROJECT_DIR = R)
-  x6 <- suppressWarnings(system2("bash", shQuote(sh), stdout = TRUE, stderr = TRUE)); do.call(Sys.setenv, as.list(old))
+  x6 <- suppressWarnings(system2(qv_bash(), shQuote(sh), stdout = TRUE, stderr = TRUE)); do.call(Sys.setenv, as.list(old))
   r$night_build_fail_live_unchanged <- identical(x5$rc, 0L) && sum(grepl("\\(rc=2\\)", x6)) == 2L &&
     identical(bl0, vapply(c("monthly", "daily"), function(s) sha(paths(R, s)$live), "")) &&
     length(list.files(file.path(R, ".cache"), pattern = "\\.regen_")) == ng0

@@ -48,6 +48,7 @@ suppressPackageStartupMessages({
   hit[1]
 }
 PROJ <- .resolve_proj()
+source(file.path(PROJ, "02_Infrastructure/ops/qv_bash.R"))   # bare "bash" 금지(금칙 ⑦ · 11-07) — WSL 있는 PC 에선 System32 bash 가 PATH 보다 먼저 잡힌다
 setwd(PROJ)
 
 # ─── Python 인터프리터 ───────────────────────────────────────────────────────
@@ -119,7 +120,7 @@ cleanup_all <- function() {
     # [fix 2026-07-25] guard는 ${CLAUDE_PROJECT_DIR:-$(pwd)}를 앵커로 쓴다 —
     # 명시 주입해 wd 의존을 없앤다.
     out <- with_project_dir(tryCatch(
-      system2("bash", c(guard, "--force"), stdout = TRUE, stderr = TRUE),
+      system2(qv_bash(), c(guard, "--force"), stdout = TRUE, stderr = TRUE),
       error = function(e) NULL
     ))
     # Best-effort: log but never fail test on cleanup
@@ -129,7 +130,7 @@ cleanup_all <- function() {
     # [fix 2026-07-25] residue 0 자체 강제 — 정리가 실제로 됐는지 확인까지 해야
     # "cleanup obligation"이 계약이 된다(종전엔 --force 출력만 찍고 미검증).
     chk <- with_project_dir(tryCatch(
-      system2("bash", c(guard, "--check"), stdout = TRUE, stderr = TRUE),
+      system2(qv_bash(), c(guard, "--check"), stdout = TRUE, stderr = TRUE),
       error = function(e) NULL
     ))
     if (!is.null(chk)) cat(paste(chk, collapse = "\n"), "\n", sep = "")

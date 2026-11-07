@@ -8,7 +8,8 @@
     "3": "leading-slash path",
     "4": "resolver precedence",
     "5": "shell syntax in system() argv",
-    "6": "regmatches over TRE-indexed match (UTF-16 offset)"
+    "6": "regmatches over TRE-indexed match (UTF-16 offset)",
+    "7": "bare bash as executable (System32 WSL shadows PATH)"
   },
   "code6_note": "금칙 ⑥ 은 파일당 site 수까지 고정한다(기존 등재 파일에 새 위반이 추가되는 사각 차단). 값 = 기준 ① count-only 를 제외한 '값 추출' site 수만.",
   "code6_sites": {
@@ -94,6 +95,7 @@
     "02_Infrastructure/validation/role_honesty_runner.R:6",
     "02_Infrastructure/validation/v8_readiness_gate.R:1",
     "02_Infrastructure/validation/v8_readiness_gate.R:6",
+    "08_Tests/hooks/_archive_v10_lockbox/test_lockbox_audit_path.R:7",
     "08_Tests/hooks/test_cert_rules.R:2",
     "08_Tests/hooks/test_telegram_entity_scan.R:6",
     "08_Tests/integration/test_execution_path_unified.R:3",
@@ -102,5 +104,6 @@
     "08_Tests/regime/test_briefing_partial.R:3",
     "qepm/scripts/hybrid_mode.R:3"
   ],
-  "merge_note_20260803": "금칙 ⑥(TRE/UTF-16) 등재 + code6_sites 를 sad-benz 판에서 취하되, 그 사이 main 에서 **실제로 수리된** lockbox 경로 3건(judge_oos_helper/v61_compliance_audit/windowing)은 등재에서 제외했다. 수리된 위반을 허용 목록에 되돌리면 래칫이 조용히 느슨해진다. | 08-03 2차: telegram_notify.R 4→3(수리로 site 감소 — 래칫을 느슨한 쪽이 아니라 **조이는 쪽**으로 갱신). test_telegram_entity_scan.R:6 신규 등재 = scan_legacy() 안의 **의도적** TRE 재현(C축 음성 기준). 그 파일의 존재 이유가 '구판이 어떻게 틀렸는지'를 같은 픽스처로 보이는 것이라 이 site 는 제거 대상이 아니다 — 제거하면 검사가 무엇과 대조하는지 사라진다. 단 count 를 1 로 고정해 **다른 TRE 가 몰래 늘어나는 것**은 계속 막는다."
+  "merge_note_20260803": "금칙 ⑥(TRE/UTF-16) 등재 + code6_sites 를 sad-benz 판에서 취하되, 그 사이 main 에서 **실제로 수리된** lockbox 경로 3건(judge_oos_helper/v61_compliance_audit/windowing)은 등재에서 제외했다. 수리된 위반을 허용 목록에 되돌리면 래칫이 조용히 느슨해진다. | 08-03 2차: telegram_notify.R 4→3(수리로 site 감소 — 래칫을 느슨한 쪽이 아니라 **조이는 쪽**으로 갱신). test_telegram_entity_scan.R:6 신규 등재 = scan_legacy() 안의 **의도적** TRE 재현(C축 음성 기준). 그 파일의 존재 이유가 '구판이 어떻게 틀렸는지'를 같은 픽스처로 보이는 것이라 이 site 는 제거 대상이 아니다 — 제거하면 검사가 무엇과 대조하는지 사라진다. 단 count 를 1 로 고정해 **다른 TRE 가 몰래 늘어나는 것**은 계속 막는다.",
+  "code7_seed_note_20261107": "금칙 ⑦ 도입 시드 1건 — 08_Tests/hooks/_archive_v10_lockbox 는 아카이브(legacy read-only · v10 lockbox 퇴역 · SUITES 밖) 사본이라 수리하지 않고 수용한다(금칙 ⑥ 도입 시드와 같은 방식). 라이브 존의 나머지 ⑦ 위반은 도입과 같은 커밋에서 전부 qv_bash() 로 수리했다."
 }

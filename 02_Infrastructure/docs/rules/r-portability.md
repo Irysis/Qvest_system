@@ -15,9 +15,9 @@
 
 ---
 
-## 금칙 6종 (위반 시 수리 의무)
+## 금칙 7종 (위반 시 수리 의무)
 
-> **공통 기전 한 줄**: ①~⑤는 "결손을 정상값으로 내려앉힘", ⑥은 "**정상값 모양의 오답**". 방향은 반대지만 급소는 같다 — 호출자가 보는 것이 실패처럼 안 보인다.
+> **공통 기전 한 줄**: ①~⑤는 "결손을 정상값으로 내려앉힘", ⑥은 "**정상값 모양의 오답**", ⑦은 "**기계마다 다른 프로그램이 같은 이름으로 뜸**". 방향은 달라도 급소는 같다 — 호출자가 보는 것이 실패처럼 안 보인다.
 
 ### ① `system2(..., env = ...)` 금지
 Windows에서 `env=` 문자열은 환경변수로 설정되지 않고 **명령줄 첫 인자로 앞에 붙는다**. 실측:
@@ -193,6 +193,29 @@ lengths(regmatches(src, gregexpr("{", src, fixed = TRUE)))                 # fix
 **적용 방침 — 일괄 개서 금지.** 기준 ②가 정적 판정 불가이므로 원장의 44건 대부분은 실제로는 무해할 개연성이 크다. 금칙 ⑥의 래칫은 **새 위반을 막는 장치**이지 기존 44건 개서 지시가 아니다. 개별 수리는 "이 문자열에 이모지/non-BMP가 실제로 섞이는가"를 확인한 자리부터.
 
 **✅ 수리 1건 (잠복 결함, 2026-08-02)**: `telegram_notify.R`의 중복발송 lock `scope_key` 생성이 TRE로 WT-id를 뽑았다. 이모지가 WT-id 앞에 오면 키가 열화한다 — 실측 재현: `WT-D20260802_012` → 이모지 1개 `T-D20260802_012 ` → 2개 `-D20260802_012 R`. 키가 갈리면 **같은 브리핑이 중복 발송된다**(단일 발송 강제가 조용히 무력화). 현재 title에 선행 non-BMP가 0건이라 미발화 상태였고, 수리는 `perl=TRUE` 한 토큰.
+
+### ⑦ bare `"bash"` 를 실행 파일로 넘기지 말 것 → `qv_bash()` (2026-11-07 · 메인 PC 이전 점검 실측)
+Windows 의 실행 파일 탐색은 **System32 를 PATH 보다 먼저 본다**(R `system2`/`system` 은 `SearchPath(NULL, …)` · Python `subprocess` 는 `CreateProcess` · cmd 도 같은 계통). WSL 이 깔린 PC 에는 `C:\Windows\System32\bash.exe`(WSL "Microsoft Bash Launcher")가 있어 bare `"bash"` 가 **리눅스 bash** 를 띄우고, Windows 경로 스크립트를 열지 못해 실패한다. PATH 순서를 바꿔도 소용없다.
+
+```
+메인 PC(WSL Ubuntu · docker-desktop) 실측 — R 4.5.2, PATH 첫 칸 = C:\rtools45/usr/bin
+Sys.which("bash")                        → C:\WINDOWS\SYSTEM32\bash.exe
+system2("bash", c("-c", ...))            → /bin/bash (Ubuntu 5.2.21) status 2
+노트북(WSL 없음) 같은 코드                → C:\rtools45\usr\bin\bash.exe (정상)
+```
+
+★위험은 실패가 아니라 **위장**이다. 지문 함수(`rc_fingerprint` 등)는 오류 문구를 `|` 로 이어 **반환값으로** 돌려준다 → 사전등록 지문과 영원히 달라 "**데이터 지문 불일치**"로 읽힌다. 충실도 감사는 "감사 실패", 훅 배터리는 제약 · 텔레그램 가드가 `{}`(통과)로 보인다(9/15 → Git Bash 고정 시 15/15). 환경 결함이 리서치 판정으로 굳는 경로다.
+
+**대체 (정본)**: `02_Infrastructure/ops/qv_bash.R` 를 source 하고 `system2(qv_bash(), …)`. 해석 순서 = `QVEST_BASH` → PATH 순서의 첫 `bash.exe`(System32 · SysWOW64 · Sysnative · Windows 루트 · WindowsApps 제외 = **WSL 없는 PC 에서 bare `"bash"` 가 뜻하던 바로 그 셸** — R 안에선 Rtools, Git Bash 에서 띄운 프로세스는 Git → 동작 보존) → 고정 후보(Rtools45 · Git) · Windows 에서 하나도 없으면 `stop()`(조용히 WSL 로 떨어지지 않음). Python 짝 = `qv_bash.py`(같은 순서 · `sys.path.append(<ops>)` 후 `from qv_bash import qv_bash`). 선례 = `ops/refresh_barrier.R::rb_bash_path()`.
+
+```r
+source(file.path(ROOT, "02_Infrastructure/ops/qv_bash.R"))
+o <- system2(qv_bash(), c(shQuote(script), mode), stdout = TRUE, stderr = TRUE)
+```
+
+- 셸 스크립트(`.sh`) 안의 `bash x.sh` 와 예약 작업 `.bat`(Git Bash 전체 경로)은 대상이 아니다 — Git Bash 안에서는 PATH 의 `/usr/bin` 이 먼저다.
+- **핀 걸린 진행 · 완료 라운드 파일은 고치지 않는다**(사전등록 무결성). 11-07 기준 미수리 = P2R03 · P2R04 · P3R03 · P2R05 의 `evaluate.R` · `precheck.R`(7곳 · 라이브 존 밖 `04_Research/` 라 검사기 범위 밖). 이 파일들은 WSL 없는 PC 에서 재현된다 — WSL 있는 PC 에서 돌리려면 환경 쪽 조치가 필요하다(메모리 `reference-main-pc-wsl-bash-shadows-bare-bash-20261107`).
+- 강제 = `08_Tests/hooks/test_r_portability.R` 금칙 ⑦(R · 라이브 존) + `08_Tests/ops/test_qv_bash.R`(해석기 위반 주입 · R ↔ Python 같은 답 · 실물 실행 · 함정 전제 재현 · System32 제외 삭제 돌연변이 · Python bare bash 스캔).
 
 ### (동반) bare `python3` 금지
 별도 규칙으로 이미 확립 — `python3`는 Windows Store 스텁("Python" 출력 후 rc 49). `QVEST_PY` → venv 순 해석.

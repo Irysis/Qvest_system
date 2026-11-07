@@ -24,6 +24,7 @@ if (identical(suppressWarnings(as.integer(Sys.getenv("ARROW_IO_THREADS", "0"))),
 .self <- .slash(sub("^--file=", "", grep("^--file=", commandArgs(FALSE), value = TRUE)[1]))
 if (!is.na(.self) && !grepl("^([A-Za-z]:)?/", .self)) .self <- file.path(.slash(getwd()), .self)
 ROOT <- if (!is.na(.self) && file.exists(.self)) dirname(dirname(dirname(.self))) else .slash(Sys.getenv("QM_ROOT", getwd()))
+source(file.path(ROOT, "02_Infrastructure/ops/qv_bash.R"))   # bare "bash" 금지(금칙 ⑦ · 11-07) — WSL 있는 PC 에선 System32 bash 가 PATH 보다 먼저 잡힌다
 ARM  <- file.path(ROOT, "02_Infrastructure/reinforcement/overlay_arms/pg2_risk_overlay.R")
 FE   <- file.path(ROOT, "qepm/mailbox/worktask/WT-D20260430_001/stage_artifacts/factor_engine.R")
 FE_PRE_C11_COMMIT <- "7ea5d8377"   # C11 수리 직전 HEAD(2026-09-24 10:45) — 비중 불변 대조의 기준 엔진
@@ -189,7 +190,7 @@ if (!file.exists(U_SRC) || !file.exists(P_SRC) || !nzchar(Sys.which("bash"))) {
     writeLines(c(sprintf("cd '%s' || exit 9", SB),
                  sprintf("R_ENVIRON_USER='%s' CLAUDE_PROJECT_DIR='%s' QM_ROOT='%s' PG2_AS_OF=2026-10-01 ARROW_IO_THREADS=2 '%s' --no-save fe.R > run.log 2>&1",
                          env_empty, SB, SB, rs), "echo $? > rc.txt"), sh)
-    system2("bash", sh, stdout = FALSE, stderr = FALSE)
+    system2(qv_bash(), sh, stdout = FALSE, stderr = FALSE)
     rc <- suppressWarnings(as.integer(readLines(file.path(SB, "rc.txt"), warn = FALSE)[1]))
     outp <- file.path(SB, "qepm/mailbox/worktask/WT-D20260430_001/stage_artifacts/alpha_scores.parquet")
     list(rc = rc, out = if (file.exists(outp)) as.data.table(read_parquet(outp, mmap = FALSE)) else NULL,

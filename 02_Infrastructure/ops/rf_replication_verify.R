@@ -18,6 +18,7 @@
 suppressMessages({ library(jsonlite); library(data.table) })
 `%||%` <- function(a, b) if (is.null(a) || length(a) == 0L) b else a
 ROOT <- Sys.getenv("QM_ROOT", "C:/Users/99922/OneDrive/Quant_Module_Moltbot")
+source(file.path(ROOT, "02_Infrastructure/ops/qv_bash.R"))   # bare "bash" 금지(금칙 ⑦ · 11-07) — WSL 있는 PC 에선 System32 bash 가 PATH 보다 먼저 잡힌다
 
 # ── 큐 소비 미러 (도훈 2026-09-04) ────────────────────────────────────────────
 #   큐 카운터(alpha-pending)는 alpha_search_queue_done.json 만 본다. 강화 레인의 소비는
@@ -554,7 +555,7 @@ if (identical(Sys.getenv("RP_LANE_MODE", "normal"), "clean") && !.CLEAN)
 # 감사 레인 스폰 1회 → rc. system2(stdout=TRUE) 는 rc≠0 일 때만 status 속성을 단다(없으면 0).
 .spawn_audit <- function() {
   .art <- ""   # ★측정 전 감사(10-17) — 이 엔진의 산출물은 아직 없다(청정 모드와 같은 정보 조건 · 코드 · 신고서 · 논문 대조)
-  .run <- function() system2("bash", c(shQuote(file.path(ROOT, "02_Infrastructure/ops/rf_fidelity_audit.sh")),
+  .run <- function() system2(qv_bash(), c(shQuote(file.path(ROOT, "02_Infrastructure/ops/rf_fidelity_audit.sh")),
                                        shQuote(WDIR), shQuote(.art), shQuote(URL), shQuote(PKEY %||% "")),
                              wait = TRUE, stdout = TRUE, stderr = TRUE)
   r <- if (.CLEAN) rcl_with_env(rcl_clean_env(WDIR), .run()) else .run()

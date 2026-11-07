@@ -21,6 +21,7 @@ suppressPackageStartupMessages({
 pit_intent_scan <- function(strategy_dir, diff_only = TRUE, verbose = FALSE) {
   root <- .intent_root()
   script <- file.path(root, "02_Infrastructure/hooks/run_pit_intent_scan.sh")
+  if (!exists("qv_bash", mode = "function")) source(file.path(root, "02_Infrastructure/ops/qv_bash.R"))   # bare "bash" 금지(금칙 ⑦ · 11-07) — WSL 있는 PC 에선 System32 bash 가 PATH 보다 먼저 잡힌다
   if (!file.exists(script)) {
     return(list(
       clean = TRUE, violations = list(),
@@ -39,7 +40,7 @@ pit_intent_scan <- function(strategy_dir, diff_only = TRUE, verbose = FALSE) {
 
   out <- tryCatch(
     system2(
-      "bash",
+      qv_bash(),
       args = c(shQuote(script), shQuote(strategy_dir), shQuote(mode)),
       stdout = TRUE, stderr = TRUE, timeout = 120
     ),

@@ -37,6 +37,7 @@ ng <- function(m, d = "") { FAIL <<- FAIL + 1L; cat("  FAIL ", m, if (nzchar(d))
 chk <- function(m, cond, d = "") if (isTRUE(cond)) ok(m) else ng(m, d)
 
 ROOT <- sub("/+$", "", gsub("\\", "/", Sys.getenv("QM_ROOT", "C:/Users/99922/OneDrive/Quant_Module_Moltbot"), fixed = TRUE))
+source(file.path(ROOT, "02_Infrastructure/ops/qv_bash.R"))   # bare "bash" 금지(금칙 ⑦ · 11-07) — WSL 있는 PC 에선 System32 bash 가 PATH 보다 먼저 잡힌다
 SWEEP <- file.path(ROOT, "02_Infrastructure/ops/weekly_cleaner_sweep.R")
 HOOK <- file.path(ROOT, "02_Infrastructure/hooks/axiom_context_inject.sh")
 SB0 <- gsub("\\", "/", tempfile("injworst_"), fixed = TRUE)
@@ -89,7 +90,7 @@ ok("W0 weekly_cleaner_sweep.R 에서 .inj_len_worst 대입식 1개 추출")
   for (a in c("forge", "judge", "book", "alpha-research")) for (rt in c("", "WT-R20260923_001 강화")) {
     il <- file.path(sb, ".cache/axiom_inject_last.json"); unlink(il)
     inp <- sprintf('{"tool_name":"Agent","tool_input":{"subagent_type":"%s","prompt":"%s"}}', a, rt)
-    invisible(suppressWarnings(system2("bash", shQuote(HOOK), stdout = TRUE, stderr = FALSE, input = inp)))
+    invisible(suppressWarnings(system2(qv_bash(), shQuote(HOOK), stdout = TRUE, stderr = FALSE, input = inp)))
     lens[paste(a, nzchar(rt))] <- tryCatch(as.integer(fromJSON(il)$len), error = function(e) NA_integer_)
   }
   lens

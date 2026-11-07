@@ -25,6 +25,7 @@
 suppressMessages({ library(jsonlite) })
 `%||%` <- function(a, b) if (is.null(a) || length(a) == 0L) b else a
 ROOT <- Sys.getenv("QM_ROOT", "C:/Users/99922/OneDrive/Quant_Module_Moltbot"); setwd(ROOT)
+source(file.path(ROOT, "02_Infrastructure/ops/qv_bash.R"))   # bare "bash" 금지(금칙 ⑦ · 11-07) — WSL 있는 PC 에선 System32 bash 가 PATH 보다 먼저 잡힌다
 PASS <- 0L; FAIL <- 0L
 ok <- function(m) { PASS <<- PASS + 1L; cat(sprintf("  OK   %s\n", m)) }
 ng <- function(m, d = "") { FAIL <<- FAIL + 1L; cat(sprintf("  FAIL %s%s\n", m, if (nzchar(d)) paste0(" — ", d) else "")) }
@@ -37,7 +38,7 @@ writeLines(c("#!/usr/bin/env bash",
              sprintf('ROOT="%s"', ROOT),
              sprintf('. "%s/02_Infrastructure/ops/rf_axiom_brief.sh"', ROOT),
              "rf_axiom_brief"), .wrap)
-br <- tryCatch(system2("bash", shQuote(.wrap), stdout = TRUE, stderr = TRUE),
+br <- tryCatch(system2(qv_bash(), shQuote(.wrap), stdout = TRUE, stderr = TRUE),
        error = function(e) character(0))
 br <- paste(br, collapse = "\n")
 axf <- list.files(file.path(ROOT, "qepm/memory/axioms/active"), pattern = "^AX-.*[.]json$", full.names = TRUE)

@@ -34,6 +34,7 @@ suppressPackageStartupMessages({ library(jsonlite) })
   hit[1]
 }
 PROJ <- .resolve_proj()
+source(file.path(PROJ, "02_Infrastructure/ops/qv_bash.R"))   # bare "bash" 금지(금칙 ⑦ · 11-07) — WSL 있는 PC 에선 System32 bash 가 PATH 보다 먼저 잡힌다
 setwd(PROJ)
 
 PASS <- 0L; FAIL <- 0L
@@ -56,7 +57,7 @@ run_hook <- function(file_path, content) {
                     tool_input = list(file_path = jsonlite::unbox(file_path),
                                       content   = jsonlite::unbox(content))),
                auto_unbox = FALSE), payload)
-  out <- suppressWarnings(system2("bash", c(shQuote(HOOK_PATH)),
+  out <- suppressWarnings(system2(qv_bash(), c(shQuote(HOOK_PATH)),
                                   stdin = payload, stdout = TRUE, stderr = FALSE))
   paste(out, collapse = "")
 }

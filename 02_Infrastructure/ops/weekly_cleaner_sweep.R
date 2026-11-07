@@ -69,6 +69,7 @@ if (!nzchar(root)) {
 root <- sub("/+$", "", gsub("\\\\", "/", root))
 if (!dir.exists(file.path(root, "02_Infrastructure")))
   stop("[cleaner] project root 미해석: ", root)
+source(file.path(root, "02_Infrastructure", "ops", "qv_bash.R"))   # bare "bash" 금지(금칙 ⑦ · 11-07) — WSL 있는 PC 에선 System32 bash 가 PATH 보다 먼저 잡힌다
 registry_zone <- if (dir.exists(file.path(root, "06_Registry"))) "06_Registry" else "07_Registry"
 
 cat(sprintf("[cleaner] weekly sweep start @ %s root=%s dry_run=%s\n",
@@ -498,7 +499,7 @@ held_axioms <- list()        # 다이제스트 §정제보류(사유)
   for (a in agents) for (rt in c("", "WT-R00000000_000")) {
     unlink(il)
     inp <- sprintf('{"tool_name":"Agent","tool_input":{"subagent_type":"%s","prompt":"%s"}}', a, rt)
-    invisible(tryCatch(suppressWarnings(system2("bash", shQuote(hook), stdout = TRUE, stderr = FALSE, input = inp)),
+    invisible(tryCatch(suppressWarnings(system2(qv_bash(), shQuote(hook), stdout = TRUE, stderr = FALSE, input = inp)),
                        error = function(e) character(0)))
     rec <- tryCatch(fromJSON(il, simplifyVector = FALSE), error = function(e) NULL)
     if (is.null(rec) || is.null(rec$len)) next

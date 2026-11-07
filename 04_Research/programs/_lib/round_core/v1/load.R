@@ -13,6 +13,7 @@ local({
   root <- dirname(dirname(dirname(dirname(dirname(here)))))
   if (!exists("pr_record_round", mode = "function"))
     invisible(capture.output(suppressMessages(sys.source(file.path(root, "02_Infrastructure/programs/program_registry.R"), envir = globalenv()))))
+  sys.source(file.path(root, "02_Infrastructure/ops/qv_bash.R"), envir = globalenv())   # bare "bash" 금지(금칙 ⑦ · 11-07) — WSL 있는 PC 에선 System32 bash 가 PATH 보다 먼저 잡힌다 · rc_fingerprint · rc_standing_fingerprint
   for (m in c(RC_MODULES, "pair.R", "p2.R", "p3.R", "rules_p2.R")) sys.source(file.path(here, m), envir = globalenv())   # 짝 판정 P2 · P3(WP1-b)
   assign("RC_DIR", here, envir = globalenv())
 })

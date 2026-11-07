@@ -17,6 +17,8 @@
   F1 감사기가 p3_forecast 에 role=downstream 을 달고 JSON 에 downstream_items 를 쓴다(정적)
 """
 import json, os, re, shutil, subprocess, sys, tempfile
+sys.path.append(os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "..", "02_Infrastructure", "ops"))
+from qv_bash import qv_bash  # bare "bash" 금지(금칙 ⑦ · 11-07) — WSL 있는 PC 에선 System32 bash 가 PATH 보다 먼저 잡힌다
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 MARK = os.path.join("02_Infrastructure", "hooks", "qvest_hook_router.py")
@@ -97,7 +99,7 @@ def branch(st):
     with open(sh, "w", encoding="utf-8", newline="\n") as h:
         h.write("DR_FAILED=(); DR_STALE_NAMES=''\n_FA_ST=\"$1\"\n" + CASE +
                 'echo "FAILED=${DR_FAILED[*]:-}"; echo "NAMES=${DR_STALE_NAMES:-}"\n')
-    r = subprocess.run(["bash", sh, st], capture_output=True, timeout=60)
+    r = subprocess.run([qv_bash(), sh, st], capture_output=True, timeout=60)
     out = r.stdout.decode("utf-8", "replace").replace("\r", "")
     kv = dict(l.split("=", 1) for l in out.split("\n") if l.startswith(("FAILED=", "NAMES=")))
     return kv, out

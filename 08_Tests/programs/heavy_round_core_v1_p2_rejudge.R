@@ -4,6 +4,7 @@
 ##   공용 무거운 작업 자리(qm_heavy_slot.lock)는 run_rejudge.sh 가 잡는다(--slot-held = 호출자가 이미 잡음).
 ## 사용: QM_ROOT=<이 저장소> Rscript 08_Tests/programs/heavy_round_core_v1_p2_rejudge.R <작업 디렉터리> [--slot-held] [--rounds P2R04,P2R03,P3R03]
 ROOT <- gsub("\\\\", "/", Sys.getenv("QM_ROOT", "C:/Users/99922/OneDrive/Quant_Module_Moltbot")); setwd(ROOT)
+source(file.path(ROOT, "02_Infrastructure/ops/qv_bash.R"))   # bare "bash" 금지(금칙 ⑦ · 11-07) — WSL 있는 PC 에선 System32 bash 가 PATH 보다 먼저 잡힌다
 a <- commandArgs(trailingOnly = TRUE)
 WORK <- gsub("\\\\", "/", a[1]); if (is.na(WORK)) stop("usage: heavy_round_core_v1_p2_rejudge.R <작업 디렉터리> [--slot-held]")
 MAIN <- "C:/Users/99922/OneDrive/Quant_Module_Moltbot"                          # 저장된 칸 산출(읽기만 — 결과 폴더는 git 밖 산출을 담는다)
@@ -22,7 +23,7 @@ for (r in ROUNDS) {
   do.call(Sys.setenv, setNames(list(rr, file.path(MAIN, d$rd, "results")), c(paste0("RC_REPRO_", r), paste0("RC_RES_", r))))
 }
 Sys.setenv(RC_CORE_ROOT = ROOT, RC_SLOT_HELD = if ("--slot-held" %in% a) "1" else "0")
-rc <- system2("bash", c(file.path(RJ, "run_rejudge.sh"), file.path(WORK, "out"), ROUNDS))
+rc <- system2(qv_bash(), c(file.path(RJ, "run_rejudge.sh"), file.path(WORK, "out"), ROUNDS))
 if (!identical(as.integer(rc), 0L)) stop("재판정 실행 실패 rc=", rc)
 sm <- system2("Rscript", c(file.path(RJ, "summarize.R"), file.path(WORK, "out"), file.path(RJ, "RESULTS.json"),
                            vapply(ROUNDS, function(r) sprintf("%s=%s", r, file.path(MAIN, DEF[[r]]$rd, "results")), "")), stdout = TRUE, stderr = TRUE)

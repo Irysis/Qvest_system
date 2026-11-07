@@ -22,6 +22,7 @@ INFRA_DIR <- tryCatch(dirname(dirname(sys.frame(1)$ofile)),
   error = function(e) file.path(Sys.getenv("CLAUDE_PROJECT_DIR", Sys.getenv("QM_ROOT", "G:/Quant_Module_Moltbot")), "02_Infrastructure"))
 source(file.path(INFRA_DIR, "config.R"))
 source(file.path(INFRA_DIR, "backtest_harness.R"))
+source(file.path(INFRA_DIR, "ops", "qv_bash.R"))   # bare "bash" 금지(금칙 ⑦ · 11-07) — WSL 있는 PC 에선 System32 bash 가 PATH 보다 먼저 잡힌다
 
 MEM_FILE <- local({ .c <- c("C:/Users/99922/.claude/projects/C--Users-99922-OneDrive-Quant-Module-Moltbot/memory/methodology_memory.md", "/home/quant/.claude/projects/-mnt-c-Users-User-OneDrive-------Quant-Module-Moltbot/memory/methodology_memory.md"); .e <- .c[file.exists(.c)]; if (length(.e)) .e[1] else .c[1] })  # 2026-06-10 현 경로 1순위
 STRAT_BASE <- file.path(PROJECT_ROOT, "04_Research", "strategies")
@@ -163,7 +164,7 @@ run_revalidation_v2 <- function(n_parallel = 4L) {
     }
     lines <- c(lines, "wait")
     writeLines(lines, batch_sh)
-    system(sprintf("bash %s", batch_sh), wait = TRUE)
+    system2(qv_bash(), shQuote(batch_sh), wait = TRUE)
     unlink(batch_sh)
 
     # 결과 수집 (파일 읽기만)

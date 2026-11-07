@@ -21,6 +21,7 @@
 suppressMessages({ library(jsonlite) })
 `%||%` <- function(a, b) if (is.null(a) || length(a) == 0L) b else a
 ROOT <- Sys.getenv("QM_ROOT", "C:/Users/99922/OneDrive/Quant_Module_Moltbot"); setwd(ROOT)
+source(file.path(ROOT, "02_Infrastructure/ops/qv_bash.R"))   # bare "bash" 금지(금칙 ⑦ · 11-07) — WSL 있는 PC 에선 System32 bash 가 PATH 보다 먼저 잡힌다
 Sys.setenv(QVEST_RP_JLOG = file.path(tempdir(), sprintf("rf_test_jlog_%d.jsonl", Sys.getpid())))
 PASS <- 0L; FAIL <- 0L
 ok <- function(m) { PASS <<- PASS + 1L; cat(sprintf("  OK   %s\n", m)) }
@@ -161,7 +162,7 @@ if (is.null(cfg0)) { ng("D0 설정 템플릿 읽기 실패") } else {
     Sys.setenv(QVEST_RF_CONFIG = cp, QVEST_RP_JLOG = jp)
     on.exit({ if (is.na(old_c)) Sys.unsetenv("QVEST_RF_CONFIG") else Sys.setenv(QVEST_RF_CONFIG = old_c)
               if (is.na(old_j)) Sys.unsetenv("QVEST_RP_JLOG") else Sys.setenv(QVEST_RP_JLOG = old_j) }, add = TRUE)
-    out <- suppressWarnings(system2("bash", c(shQuote(AUD_SH), shQuote(file.path(TMP, "no_such_wdir")), "x", "x", "TESTKEY"),
+    out <- suppressWarnings(system2(qv_bash(), c(shQuote(AUD_SH), shQuote(file.path(TMP, "no_such_wdir")), "x", "x", "TESTKEY"),
                                     stdout = TRUE, stderr = TRUE))
     ev <- if (file.exists(jp)) vapply(readLines(jp, warn = FALSE), function(l) tryCatch(fromJSON(l)$event %||% "", error = function(e) ""), character(1)) else character(0)
     list(events = ev, out = paste(out, collapse = " | "))

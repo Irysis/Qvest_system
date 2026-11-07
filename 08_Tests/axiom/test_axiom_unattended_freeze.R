@@ -38,6 +38,7 @@ ng <- function(m, d = "") { FAIL <<- FAIL + 1L; cat("  FAIL ", m, if (nzchar(d))
 chk <- function(m, cond, d = "") if (isTRUE(cond)) ok(m) else ng(m, d)
 
 ROOT <- sub("/+$", "", gsub("\\", "/", Sys.getenv("QM_ROOT", "C:/Users/99922/OneDrive/Quant_Module_Moltbot"), fixed = TRUE))
+source(file.path(ROOT, "02_Infrastructure/ops/qv_bash.R"))   # bare "bash" 금지(금칙 ⑦ · 11-07) — WSL 있는 PC 에선 System32 bash 가 PATH 보다 먼저 잡힌다
 PROMOTE <- file.path(ROOT, "02_Infrastructure/axiom/promote.R")
 SB0 <- gsub("\\", "/", tempfile("axfreeze_"), fixed = TRUE)
 dir.create(SB0, recursive = TRUE)
@@ -362,7 +363,7 @@ HOOK <- file.path(ROOT, "02_Infrastructure/hooks/axiom_context_inject.sh")
   Sys.setenv(CLAUDE_PROJECT_DIR = sb)
   on.exit(.env_restore(), add = TRUE)
   inp <- '{"tool_name":"Agent","tool_input":{"subagent_type":"judge","prompt":"WT-R20260923_001 강화"}}'
-  out <- suppressWarnings(system2("bash", shQuote(hook), stdout = TRUE, stderr = FALSE, input = inp))
+  out <- suppressWarnings(system2(qv_bash(), shQuote(hook), stdout = TRUE, stderr = FALSE, input = inp))
   ctx <- tryCatch(fromJSON(paste(out, collapse = ""))$hookSpecificOutput$additionalContext, error = function(e) NULL)
   il <- tryCatch(fromJSON(file.path(sb, ".cache/axiom_inject_last.json")), error = function(e) NULL)
   list(ctx = ctx %||% "", il = il)

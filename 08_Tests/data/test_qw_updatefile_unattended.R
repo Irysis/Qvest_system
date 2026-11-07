@@ -5,6 +5,7 @@
 ##   5 전진 없음 → 10 · 6 시간 상한(멈춘 수급) → 10 · 빨리 끝남 · 7 기록 json · 8 SkipLogin 이 빠질 수 없다(정적) · 11 완료 수(done D/N) · 미완료 표식
 suppressPackageStartupMessages({ library(jsonlite) })
 ROOT <- "C:/Users/99922/OneDrive/Quant_Module_Moltbot"; setwd(ROOT); Sys.setenv(QM_ROOT = ROOT)
+source(file.path(ROOT, "02_Infrastructure/ops/qv_bash.R"))   # bare "bash" 금지(금칙 ⑦ · 11-07) — WSL 있는 PC 에선 System32 bash 가 PATH 보다 먼저 잡힌다
 PASS <- 0L; FAIL <- 0L
 ok <- function(m) { PASS <<- PASS + 1L; cat("  OK  ", m, "\n") }
 ng <- function(m, d = "") { FAIL <<- FAIL + 1L; cat("  FAIL", m, d, "\n") }
@@ -24,7 +25,7 @@ run <- function(bench_rc, us, env = character(0), after = TRUE, sleep = "", tmo 
   e <- c(QWUF_REFRESH_CMD = paste("bash", ux(stub)), QWUF_STATE = stf, QWUF_US_PARQUET = us, QWUF_TODAY = "2026-10-17", QWUF_TIMEOUT = tmo, QWUF_LOG = lg,
          STUB_CALLS = calls, STUB_AFTER = if (after) file.path(td, "after.json") else "", STUB_SLEEP = sleep, QVEST_QW_UPDATEFILE_UNATTENDED = "1", env)
   old <- Sys.getenv(names(e), unset = NA); do.call(Sys.setenv, as.list(e)); on.exit({ for (k in names(old)) if (is.na(old[[k]])) Sys.unsetenv(k) else do.call(Sys.setenv, setNames(list(old[[k]]), k)) })
-  t0 <- Sys.time(); o <- suppressWarnings(system2("bash", c(shQuote(ux(SH)), bench_rc, shQuote(ux(PY))), stdout = TRUE, stderr = TRUE))
+  t0 <- Sys.time(); o <- suppressWarnings(system2(qv_bash(), c(shQuote(ux(SH)), bench_rc, shQuote(ux(PY))), stdout = TRUE, stderr = TRUE))
   list(rc = attr(o, "status") %||% 0L, out = o, calls = if (file.exists(calls)) readLines(calls) else character(0), secs = as.numeric(difftime(Sys.time(), t0, units = "secs")),
        log = if (file.exists(lg)) fromJSON(lg) else NULL, last = tail(grep("^QWUF\t", o, value = TRUE), 1))
 }

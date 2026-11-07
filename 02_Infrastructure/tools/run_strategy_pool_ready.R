@@ -6,6 +6,7 @@ suppressPackageStartupMessages({
   library(parallel)
 })
 
+source(file.path(Sys.getenv("CLAUDE_PROJECT_DIR", Sys.getenv("QM_ROOT", ".")), "02_Infrastructure/ops/qv_bash.R"))   # bare "bash" 금지(금칙 ⑦ · 11-07) — WSL 있는 PC 에선 System32 bash 가 PATH 보다 먼저 잡힌다
 args <- commandArgs(trailingOnly = TRUE)
 ready_csv <- if (length(args) >= 1L) args[[1]] else {
   Sys.glob("stage_artifacts/batch_434/*/ready_commands.csv") |>
@@ -69,7 +70,7 @@ run_one <- function(i) {
     row$runnable_command
   )
   cat(sprintf("[ready-runner] start %s | %s\n", row$item_id, row$execution_class))
-  exit <- system2("bash", c("-lc", shQuote(cmd)), stdout = log_path, stderr = log_path)
+  exit <- system2(qv_bash(), c("-lc", shQuote(cmd)), stdout = log_path, stderr = log_path)
   finished <- Sys.time()
   status <- data.frame(
     item_id = row$item_id,

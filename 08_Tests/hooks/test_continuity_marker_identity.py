@@ -49,6 +49,8 @@ import subprocess
 import sys
 import tempfile
 import time
+sys.path.append(os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "..", "02_Infrastructure", "ops"))
+from qv_bash import qv_bash  # bare "bash" 금지(금칙 ⑦ · 11-07) — WSL 있는 PC 에선 System32 bash 가 PATH 보다 먼저 잡힌다
 
 # ─────────────────────────────────────────────────────────────────────────────
 # 루트 해석 — **자기 위치(`__file__`) 가 1순위**, 모든 tier 에 표지 검증.
@@ -371,7 +373,7 @@ def main():
             env["PYTHONUTF8"] = "1"
             payload = json.dumps({"hook_event_name": "Stop", "transcript_path": tp,
                                   "stop_hook_active": False})
-            out = subprocess.run(["bash", hook], input=payload, capture_output=True,
+            out = subprocess.run([qv_bash(), hook], input=payload, capture_output=True,
                                  text=True, env=env, timeout=120).stdout
             return out
 

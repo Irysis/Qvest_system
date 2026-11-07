@@ -3,7 +3,7 @@
 #
 # 계약: 02_Infrastructure/docs/rules/r-portability.md (2026-07-25 승격)
 #
-# 라이브 존의 .R 을 스캔해 금칙 6종을 검출한다.
+# 라이브 존의 .R 을 스캔해 금칙 7종을 검출한다.
 #   ① system2(..., env=)        — Windows에서 환경변수 아닌 인자 주입
 #   ② 스크립트 최상위 on.exit() — 발화하지 않음(cleanup dead code)
 #   ③ 선행 "/" 경로 하드코딩 / startsWith(p,"/") 절대경로 판정
@@ -14,6 +14,9 @@
 #      돌려주는데 regmatches/substr 은 코드포인트로 자른다. 매치 **앞**의 non-BMP
 #      문자(이모지) 1개마다 추출 창이 1칸 밀린다. 길이는 맞으므로 오류가 아니라
 #      **그럴듯한 쓰레기**가 나온다. perl/fixed/useBytes = TRUE 로 회피.
+#   ⑦ bare "bash" 를 실행 파일로 넘김(system2 첫 인자 · system 명령 첫 낱말) — Windows 탐색은
+#      System32 를 PATH 보다 먼저 봐서 WSL 이 있는 PC 에선 System32\bash.exe(WSL)가 뜬다(2026-11-07
+#      메인 PC 실측). 정본 = system2(qv_bash(), ...) (02_Infrastructure/ops/qv_bash.R).
 #
 # 기수록 위반은 ALLOWLIST로 수용(원장 = rule 문서). 신규 위반만 FAIL —
 # 원장을 줄이는 방향으로만 움직이게 한다.
@@ -38,6 +41,11 @@ if (!exists("%||%")) `%||%` <- function(a, b) if (is.null(a)) b else a
   hit[1]
 }
 PROJ <- .resolve_proj()
+# ★정션 정규화(2026-11-07 메인 PC 실측): 아래 live_files 는 경로 정규화를 거치는데, 메인 PC 는
+#   C:\Users\99922 → C:\Users\User → C:\Users\User\OneDrive → G:\OneDrive 정션이라 정규화 결과가 G:/… 로 바뀐다.
+#   루트를 같은 방식으로 정규화하지 않으면 rel_of() 가 접두를 못 떼 키가 절대경로가 되고, 드라이브 콜론이
+#   금칙 코드 자리를 먹어 중단된다(밤 수집은 CLAUDE_PROJECT_DIR=C:/Users/99922/... 로 이 검사기를 돌린다).
+PROJ <- normalizePath(PROJ, winslash = "/", mustWork = FALSE)
 setwd(PROJ)
 
 PASS <- 0L; FAIL <- 0L
@@ -286,13 +294,32 @@ detect <- function(lines) {
   # ⑥ regmatches × TRE 색인 (기준 ① count-only 제외 후)
   if (.regmatches_sites(txt) > 0L) hits <- c(hits, 6L)
 
+  # ⑦ bare "bash" 를 실행 파일로 넘김 (2026-11-07 메인 PC 이전 점검 실측).
+  #   R 의 system2/system 은 실행 파일을 SearchPath(NULL, …) 로 찾는다 — System32 가 PATH 보다 먼저다.
+  #   WSL 이 있으면 C:\Windows\System32\bash.exe(WSL 런처)가 잡혀 Windows 경로 스크립트를 못 연다.
+  #   ★위장: 지문 함수는 오류 문구를 반환값으로 돌려 '데이터 지문 불일치'로 읽힌다(실패처럼 안 보임).
+  #   대상 = system2 의 command(첫 위치 인자 또는 command=) 가 리터럴 "bash"/"bash.exe" ·
+  #          system() 문자열 리터럴이 bash 로 시작. 전체 경로 리터럴 · 변수 · qv_bash() 는 대상 아님.
+  bash_lit <- '^["\'](bash|bash\\.exe)["\']$'
+  for (bd in .system2_calls(txt)) {
+    a <- .split_args(bd)
+    if (!length(a)) next
+    named <- grep("^command\\s*=", a, value = TRUE, perl = TRUE)
+    cmd <- if (length(named)) sub("^command\\s*=\\s*", "", named[1], perl = TRUE)
+           else { pos <- a[!grepl("^[A-Za-z._][A-Za-z0-9._]*\\s*=[^=]", a, perl = TRUE)]; if (length(pos)) pos[1] else "" }
+    if (grepl(bash_lit, cmd, ignore.case = TRUE, perl = TRUE)) { hits <- c(hits, 7L); break }
+  }
+  if (any(grepl('^["\']\\s*(bash|bash\\.exe)(\\s|["\'])', .string_literals(.calls_of(txt, "system")),
+                ignore.case = TRUE, perl = TRUE))) hits <- c(hits, 7L)
+
   unique(hits)
 }
 
 CODE_NAME <- c("1" = "system2(env=)", "2" = "top-level on.exit",
                "3" = "leading-slash path", "4" = "resolver precedence",
                "5" = "shell syntax in system() argv",
-               "6" = "regmatches over TRE-indexed match (UTF-16 offset)")
+               "6" = "regmatches over TRE-indexed match (UTF-16 offset)",
+               "7" = "bare bash as executable (System32 WSL shadows PATH)")
 
 # ─── 본 스캔 ─────────────────────────────────────────────────────────────────
 cat("=== R portability contract scan ===\n")
@@ -429,7 +456,19 @@ fixtures <- list(
                'key <- sprintf("%s_%s", agent, wt[1])')),
   list(code = 6L, name = "regmatches_tre_regexec",
        src = c('mm <- regmatches(body, regexec("family[=:]\\\\s*([a-z_]+)", body))',
-               'family <- mm[[1]][2]'))
+               'family <- mm[[1]][2]')),
+  # ⑦ 4형태: 실제로 있던 두 모양(위치 인자 · stdout 붙은 다중행) + command= + system() 문자열.
+  #   a) round_core v1 pair.R rc_fingerprint 구 구현  b) weekly_cleaner_sweep.R:501 구 구현
+  list(code = 7L, name = "bare_bash_system2_positional",
+       src = c('o <- tryCatch(suppressWarnings(system2("bash", c(shQuote(script), mode, args), stdout = TRUE, stderr = TRUE)),',
+               '              error = function(e) paste("error:", conditionMessage(e)))')),
+  list(code = 7L, name = "bare_bash_system2_single_quote_multiline",
+       src = c("invisible(tryCatch(suppressWarnings(system2('bash', shQuote(hook),",
+               "                   stdout = TRUE, stderr = FALSE, input = inp)), error = function(e) character(0)))")),
+  list(code = 7L, name = "bare_bash_system2_named_command",
+       src = c('x <- system2(stdout = TRUE, command = "bash.exe", args = c("-c", "echo"))')),
+  list(code = 7L, name = "bare_bash_system_string",
+       src = c('out <- system("bash 02_Infrastructure/ops/run.sh --quiet", intern = TRUE)'))
 )
 for (fx in fixtures) {
   got <- detect(fx$src)
@@ -463,7 +502,13 @@ clean_src <- c(
   'op <- lengths(regmatches(src, gregexpr("{", src, fixed = TRUE)))',
   'tok <- regmatches(s, gregexpr("[A-Z]+", s, useBytes = TRUE))[[1]]',
   'mv <- regexpr("L-[0-9]+", ll, perl = TRUE)',
-  'lid <- regmatches(ll, mv)'
+  'lid <- regmatches(ll, mv)',
+  # 금칙 ⑦ 위양성 통제 — 해석기 · 변수 · 전체 경로 · 뒤쪽 인자의 "bash" 는 정본이다
+  'o <- system2(qv_bash(), c(shQuote(script), mode), stdout = TRUE, stderr = TRUE)',
+  'o <- system2(bs, c("--noprofile", "--norc", shQuote(sh)), stdout = TRUE, stderr = FALSE)',
+  'o <- system2("C:/Program Files/Git/usr/bin/bash.exe", shQuote(sh), stdout = TRUE)',
+  'lg <- system2("git", c("log", "--grep", "bash"), stdout = TRUE)',
+  'system("echo bash is not the command here")'
 )
 if (length(detect(clean_src)) == 0L) {
   ok("false_positive_control", "정본 패턴 오검출 0")

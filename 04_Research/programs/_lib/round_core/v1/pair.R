@@ -252,7 +252,7 @@ rc_eng_alpha <- function(X, dir) {
 }
 ## 데이터 지문 — 출처: P2R04 L873-878(p2_fingerprint · p2_fp_same) · script = 지문 스크립트 경로(라운드 fingerprint.sh 또는 코어 v1/fingerprint.sh)
 rc_fingerprint <- function(script, mode = "equality", args = character(0)) {
-  o <- tryCatch(suppressWarnings(system2("bash", c(shQuote(script), mode, args), stdout = TRUE, stderr = TRUE)),
+  o <- tryCatch(suppressWarnings(system2(qv_bash(), c(shQuote(script), mode, args), stdout = TRUE, stderr = TRUE)),
                 error = function(e) paste("error:", conditionMessage(e)))
   paste(o, collapse = "|")
 }

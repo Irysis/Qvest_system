@@ -1899,6 +1899,11 @@ SUITES=(
   "08_Tests/ops/test_replication_slots_lane.sh"
   "08_Tests/programs/test_ledger_write_locks.py"
   # <<< 10-20 WP3
+  # >>> 11-07 메인 PC WSL bash 가로챔 — bare "bash" 금지(금칙 ⑦)의 해석기 qv_bash.R · qv_bash.py: 합성 트리(가짜 System32 ·
+  #   SysWOW64 · WindowsApps · Rtools · Git)에서 해석 순서 · R ↔ 파이썬 같은 답 · 실물(이 PC 해석 결과 실행 · 함정 전제 재현) ·
+  #   돌연변이(System32 제외를 지운 소스 치환 사본) · 파이썬 bare bash 스캔(라이브 존)
+  "08_Tests/ops/test_qv_bash.R"
+  # <<< 11-07
 )
 
 

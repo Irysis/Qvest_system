@@ -19,6 +19,8 @@
 import datetime as dt, hashlib, io, json, os, re, shutil, subprocess, sys, tempfile, time
 
 ROOT = "C:/Users/99922/OneDrive/Quant_Module_Moltbot"
+sys.path.append(os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "..", "..", "..", "02_Infrastructure", "ops"))
+from qv_bash import qv_bash  # bare "bash" 금지(금칙 ⑦ · 11-07) — WSL 있는 PC 에선 System32 bash 가 PATH 보다 먼저 잡힌다
 RD = os.path.join(ROOT, "04_Research/programs/P2_DEFENSE/P2R05_distribution_target")
 LOG = os.path.join(RD, "gpu_handover.log")
 WDIR = os.path.join(ROOT, "04_Research/strategies/RP_AUTO_CLEAN_2601_04602")
@@ -157,7 +159,7 @@ def patch_lane(dry):
     fd, tmp = tempfile.mkstemp(dir=os.path.dirname(LANE_SH), suffix=".tmp")
     with io.open(fd, "w", encoding="utf-8", newline="") as f:
         f.write(new)
-    r = subprocess.run(["bash", "-n", tmp.replace("\\", "/")], capture_output=True, text=True)
+    r = subprocess.run([qv_bash(), "-n", tmp.replace("\\", "/")], capture_output=True, text=True)
     if r.returncode != 0:
         os.remove(tmp)
         raise SystemExit("[handover] 수정본 bash -n 실패 — 원본 유지: %s" % r.stderr[-300:])

@@ -34,6 +34,7 @@ if (!file.exists(file.path(.root, HEALTH_REL))) {
 }
 HEALTH <- file.path(.root, HEALTH_REL)
 HOOK   <- file.path(.root, HOOK_REL)
+source(file.path(.root, "02_Infrastructure/ops/qv_bash.R"))   # bare "bash" 금지(금칙 ⑦ · 11-07) — WSL 있는 PC 에선 System32 bash 가 PATH 보다 먼저 잡힌다
 if (!file.exists(HEALTH)) stop(sprintf("감시기 소스를 못 찾음: %s (러너 위치 문제이지 검사 실패가 아님)", HEALTH))
 if (!file.exists(HOOK))   stop(sprintf("감시기 소스를 못 찾음: %s", HOOK))
 
@@ -145,7 +146,7 @@ e2e_hook <- function() {
   old <- Sys.getenv("CLAUDE_PROJECT_DIR", unset = NA)
   Sys.setenv(CLAUDE_PROJECT_DIR = SBX)
   on.exit({ if (is.na(old)) Sys.unsetenv("CLAUDE_PROJECT_DIR") else Sys.setenv(CLAUDE_PROJECT_DIR = old) }, add = TRUE)
-  out <- suppressWarnings(system2("bash", c(shQuote(HOOK)), stdin = inf, stdout = TRUE, stderr = TRUE))
+  out <- suppressWarnings(system2(qv_bash(), c(shQuote(HOOK)), stdin = inf, stdout = TRUE, stderr = TRUE))
   paste(out, collapse = " ")
 }
 
