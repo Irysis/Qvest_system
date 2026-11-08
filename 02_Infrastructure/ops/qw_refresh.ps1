@@ -142,6 +142,10 @@ public class Win{
  [DllImport("user32.dll")] public static extern IntPtr GetAncestor(IntPtr h,uint f);
  // (2026-11-09) Click 과 같은 지점(창 가운데)을 앞으로 가져온 뒤 그 지점의 최상위 창 주인이 pid 가 아니면 누르지 않고 덮은 창을 돌려준다("" = 눌렀다).
  public static string ClickIfOwn(IntPtr h,uint pid){SetForegroundWindow(h);System.Threading.Thread.Sleep(150);RECT r;GetWindowRect(h,out r);PT p;p.X=(r.L+r.R)/2;p.Y=(r.T+r.B)/2;IntPtr top=GetAncestor(WindowFromPoint(p),2);uint q;GetWindowThreadProcessId(top,out q);if(q!=pid)return Cls(top)+" (pid "+q+")";Click(h);return "";}
+ [DllImport("user32.dll")] public static extern IntPtr GetDlgItem(IntPtr h,int id);
+ [DllImport("user32.dll")] public static extern bool PostMessage(IntPtr h,uint m,IntPtr w,IntPtr l);
+ // (2026-11-09) 창 메시지 Enter(WM_KEYDOWN · WM_CHAR · WM_KEYUP VK_RETURN) — 마우스 · 포커스 불필요 · 화면 덮개 무관.
+ public static void EnterKey(IntPtr h){PostMessage(h,0x0100,(IntPtr)0x0D,(IntPtr)0x001C0001);PostMessage(h,0x0102,(IntPtr)0x0D,(IntPtr)0x001C0001);PostMessage(h,0x0101,(IntPtr)0x0D,new IntPtr(0xC01C0001L));}
 }
 "@
 
@@ -421,9 +425,14 @@ function Ensure-Login {
         $pics=@()
         foreach ($k in [Win]::Kids($h)) { if ([Win]::Cls($k) -eq "ThunderRT6PictureBoxDC") { $pics += [pscustomobject]@{ h=$k; L=[Win]::LeftOf($k) } } }
         $login = ($pics | Sort-Object L | Select-Object -First 1).h
-        ## ★(2026-11-09) 클릭은 실제 마우스라 그 지점을 덮은 창이 받는다 — 11-09 07:44~46 4회가 전부 'Windows 보안' 방화벽 알림
-        ##   (PickerHost · 전체 화면 덮개 Shell_SystemDim)에 떨어졌다. 덮였으면 누르지 않고 멈춘다(남의 창을 누르지 않는다 · 재시도 무의미).
-        if ($login) {
+        ## ★(2026-11-09) 1순위 = 비밀번호 칸(컨트롤 6 · TextBox)에 창 메시지 Enter → 저장된 ID/PW 로 제출된다(입력 0 · 마우스 0).
+        ##   11-09 08:03 실측: 방화벽 알림 덮개가 화면을 덮은 채로 제출 → 승계 대화상자 '예'(감시기) → 세션 살아남.
+        ##   예비 = 물리 클릭(비밀번호 칸을 못 찾을 때만). 클릭은 실제 마우스라 그 지점을 덮은 창이 받는다 — 11-09 07:44~46 4회가 전부
+        ##   'Windows 보안' 방화벽 알림(PickerHost · 전체 화면 덮개 Shell_SystemDim)에 떨어졌다. 덮였으면 누르지 않고 멈춘다.
+        $pwBox = [Win]::GetDlgItem($h, 6)
+        if ($pwBox -ne [IntPtr]::Zero -and [Win]::Cls($pwBox) -like '*TextBox*') {
+          [Win]::EnterKey($pwBox); Write-Host "[login] Enter -> password box (saved credentials)"
+        } elseif ($login) {
           $cover = [Win]::ClickIfOwn([IntPtr]$login, [uint32]$p.Id)
           if ($cover) { $script:LOGIN_BLOCKED = $cover; Write-Host "[login] LOGIN button covered by $cover - not clicking (dismiss that window first)" }
           else { Write-Host "[login] clicked LOGIN (leftmost PictureBox)" }
@@ -432,7 +441,9 @@ function Ensure-Login {
     }
   }
   if ($script:LOGIN_BLOCKED) { return $false }
-  Start-Sleep 9    # watcher auto-confirms takeover Yes
+  ## 제출 뒤 최대 30초(감시기가 승계 '예'를 누른다) — 살아나면 바로 돌아간다. 11-09 08:03 실측 제출 → 살아남 = 19초라
+  ##   구 고정 9초면 false 를 돌려주고, 다음 시도가 Stop-Process 로 진행 중인 로그인을 죽인다.
+  for ($w = 0; $w -lt 30; $w++) { if (QW-Alive) { return $true }; Start-Sleep 1 }
   return (QW-Alive)
 }
 
