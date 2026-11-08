@@ -153,7 +153,15 @@ does_merge <- function(p) {
 }
 writers <- rfiles[vapply(rfiles, is_writer, logical(1))]
 mergers <- writers[vapply(writers, does_merge, logical(1))]
-rel <- function(p) sub(paste0("^", ROOT, "/"), "", gsub("\\\\", "/", normalizePath(p, winslash = "/")))
+# ★정션 정규화(11-08 메인 PC): 경로 정규화는 정션을 풀어 C:/Users/99922/… 를 G:/OneDrive/… 로 바꾼다 —
+#   루트도 같은 방식으로 정규화해야 접두가 떨어진다(안 떼면 D1/D2 가 절대경로로 '미등재' 거짓 실패 · test_r_portability.R 11-07 수리와 같은 이유).
+ROOT_N <- gsub("\\\\", "/", normalizePath(ROOT, winslash = "/", mustWork = FALSE))
+rel <- function(p) {
+  q <- gsub("\\\\", "/", normalizePath(p, winslash = "/"))
+  for (r in unique(c(ROOT_N, ROOT)))
+    if (startsWith(tolower(q), tolower(paste0(r, "/")))) return(substring(q, nchar(r) + 2L))
+  q
+}
 cat(sprintf("  재도출: rawdata writer %d개 · 그중 행결합 %d개\n", length(writers), length(mergers)))
 if (length(mergers) >= 4L) ok(sprintf("D0 병합 writer 재도출 %d개", length(mergers))) else
   ng("D0 병합 writer 를 못 찾았다 — 재도출 패턴 점검 필요")

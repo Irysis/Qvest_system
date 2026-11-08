@@ -291,8 +291,8 @@ chk("F2_block_after_rawdata_writers_before_6a",
       is.na(pos('echo "[1/7]')) && is.na(pos('echo "[2/7]')))
 blk <- if (length(i3b) == 1L) DRS[i3b:iend] else character(0)
 chk("F3_block_calls_single_writer_apply", any(grepl("data/rawdata_bm_ret_sync.R\" --apply", blk, fixed = TRUE)))
-BASH <- Sys.which("bash")
-if (!nzchar(BASH) && file.exists("C:/Program Files/Git/bin/bash.exe")) BASH <- "C:/Program Files/Git/bin/bash.exe"
+source(file.path(PROJ, "02_Infrastructure/ops/qv_bash.R"))   # Sys.which("bash") 금지(금칙 ⑦ · 11-08) — WSL 있는 PC 에선 System32 bash(리눅스)를 돌려준다
+BASH <- tryCatch(qv_bash(), error = function(e) "")
 RSCRIPT <- gsub("\\\\", "/", file.path(R.home("bin"), "Rscript.exe"))
 if (!file.exists(RSCRIPT)) RSCRIPT <- gsub("\\\\", "/", Sys.which("Rscript"))
 run_blk <- function(b, rscript, base, env = character(0)) {

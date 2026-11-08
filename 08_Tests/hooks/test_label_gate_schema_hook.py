@@ -36,6 +36,9 @@ DATA_ROOT = _pick([os.environ.get("QM_ROOT", ""), os.getcwd(), os.environ.get("C
 if not CODE_ROOT:
     print("[FATAL] 코드 루트를 찾지 못함 — schema.json 부재")
     sys.exit(1)
+sys.path.append(os.path.join(CODE_ROOT, "02_Infrastructure", "ops"))
+from qv_bash import qv_bash  # noqa: E402
+
 print("[root] CODE=%s" % CODE_ROOT)
 print("[root] DATA=%s" % (DATA_ROOT or "(없음)"))
 
@@ -201,7 +204,7 @@ else:
         os.makedirs(os.path.join(tmpd, k), exist_ok=True)
         io.open(os.path.join(tmpd, k, "alpha_package.json"), "w", encoding="utf-8").write(
             json.dumps(v, ensure_ascii=False, indent=1))
-    bash = "bash"
+    bash = qv_bash()  # bare "bash" 금지(금칙 ⑦ · 11-08) — WSL 있는 PC 에선 System32 bash(리눅스)가 뜬다
     for k in fixtures:
         payload = json.dumps({"tool_input": {"file_path":
                                              os.path.join(tmpd, k, "alpha_package.json").replace("\\", "/")}})

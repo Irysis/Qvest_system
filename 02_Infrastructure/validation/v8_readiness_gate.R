@@ -20,6 +20,18 @@ suppressPackageStartupMessages({
 
 `%||%` <- function(a, b) if (is.null(a) || length(a) == 0) b else a
 
+# bare "bash" 금지(금칙 ⑦ · 11-08) — run_cmd("bash", …) 는 system2 로 넘어가 WSL 있는 PC(메인)에선
+#   System32 bash(리눅스)가 떠 Windows 경로 러너를 못 연다(test_v8_readiness_hook_dryrun C3 rc=2 · 감싼 함수라 금칙 ⑦ 검사에 안 걸렸다).
+#   qv_bash.R 은 코드라 이 파일 옆에서 먼저 찾는다 — project_root 는 시험 고정 루트일 수 있다.
+if (!exists("qv_bash", mode = "function")) local({
+  cands <- c(tryCatch(file.path(dirname(sys.frame(1)$ofile), "..", "ops", "qv_bash.R"),
+                      error = function(e) NA_character_),
+             file.path(getwd(), "02_Infrastructure", "ops", "qv_bash.R"),
+             file.path(Sys.getenv("QM_ROOT", ""), "02_Infrastructure", "ops", "qv_bash.R"))
+  cands <- cands[!is.na(cands) & file.exists(cands)]
+  if (length(cands)) source(cands[1], local = globalenv())
+})
+
 # ─────────────────────────────────────────────────────────────────
 # Helpers
 # ─────────────────────────────────────────────────────────────────
@@ -70,6 +82,7 @@ run_cmd <- function(cmd, args = character(), env = character(),
     # CLAUDE_PROJECT_DIR env 추가 X — 한글 path가 env string으로 child shell에 전달 시
     # 공백 escape 깨짐 ("화면/Quant_Module_Moltbot: not found"). setwd만으로 child 동일 wd.
   }
+  if (identical(cmd, "bash") && exists("qv_bash", mode = "function")) cmd <- qv_bash()
   rc <- tryCatch(
     system2(cmd, args = args, stdout = tmp_out, stderr = tmp_err,
              env = env, timeout = timeout_sec),

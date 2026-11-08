@@ -52,7 +52,8 @@ cat("=== backtest_contract_audit gate ===\n")
 cat(sprintf("HOOK: %s\n\n", HOOK))
 
 if (!file.exists(HOOK)) { sk("hook_present", "훅 파일 부재", HOOK); emit() }
-BASH <- Sys.which("bash")
+source(file.path(ROOT, "02_Infrastructure/ops/qv_bash.R"))   # Sys.which("bash") 금지(금칙 ⑦ · 11-08) — WSL 있는 PC 에선 System32 bash(리눅스)를 돌려준다
+BASH <- tryCatch(qv_bash(), error = function(e) "")
 if (!nzchar(BASH)) { sk("bash_available", "bash 미탐지", "bash"); emit() }
 
 HOOK_SRC <- readLines(HOOK, warn = FALSE)

@@ -65,7 +65,8 @@ cat(sprintf("RUNNER : %s\n\n", RUNNER))
 if (!file.exists(RUNNER)) {
   skip("anchor", "러너를 이 트리에서 못 찾음", RUNNER); emit()
 }
-BASH <- Sys.which("bash")
+source(file.path(ROOT, "02_Infrastructure/ops/qv_bash.R"))   # Sys.which("bash") 금지(금칙 ⑦ · 11-08) — WSL 있는 PC 에선 System32 bash(리눅스)를 돌려준다
+BASH <- tryCatch(qv_bash(), error = function(e) "")
 if (!nzchar(BASH)) {
   skip("bash_available", "bash 미탐지 — 샌드박스 실행 불가", "bash"); emit()
 }

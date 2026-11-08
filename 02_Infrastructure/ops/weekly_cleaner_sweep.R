@@ -69,7 +69,18 @@ if (!nzchar(root)) {
 root <- sub("/+$", "", gsub("\\\\", "/", root))
 if (!dir.exists(file.path(root, "02_Infrastructure")))
   stop("[cleaner] project root 미해석: ", root)
-source(file.path(root, "02_Infrastructure", "ops", "qv_bash.R"))   # bare "bash" 금지(금칙 ⑦ · 11-07) — WSL 있는 PC 에선 System32 bash 가 PATH 보다 먼저 잡힌다
+# bare "bash" 금지(금칙 ⑦ · 11-07) — WSL 있는 PC 에선 System32 bash 가 PATH 보다 먼저 잡힌다.
+# qv_bash.R 은 코드라 이 스크립트 옆(코드 루트)에서 찾는다 — root 는 데이터 루트라 시험 고정 루트(QM_ROOT = 임시 폴더)에선
+# 코드가 없다(11-08 test_weekly_worktree_prune 중단 · [[feedback-code-root-is-not-data-root]]). 순서 = source 된 파일 옆 → Rscript --file 옆 → root.
+local({
+  fa <- grep("^--file=", commandArgs(trailingOnly = FALSE), value = TRUE)
+  cands <- c(tryCatch(file.path(dirname(sys.frame(1)$ofile), "qv_bash.R"), error = function(e) NA_character_),
+             if (length(fa) == 1) file.path(dirname(sub("^--file=", "", fa)), "qv_bash.R") else NA_character_,
+             file.path(root, "02_Infrastructure", "ops", "qv_bash.R"))
+  cands <- cands[!is.na(cands) & file.exists(cands)]
+  if (!length(cands)) stop("[cleaner] qv_bash.R 미발견 — 스크립트 옆 · root 모두 없음")
+  source(cands[1], local = globalenv())
+})
 registry_zone <- if (dir.exists(file.path(root, "06_Registry"))) "06_Registry" else "07_Registry"
 
 cat(sprintf("[cleaner] weekly sweep start @ %s root=%s dry_run=%s\n",
