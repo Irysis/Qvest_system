@@ -81,7 +81,8 @@ pillow 12 → 13 · python-dateutil 2 → 4 · torch 2.12 → 2.15 · R data.tab
 | 23:29 | PerformanceAnalytics 2.1.0 → 2.0.8 | CRAN Archive 소스 · R 4.6.2 빌드(일회용 예약 작업 33초) · 2.1.0 사본 `.cache/installers/pkg_backup_20261108/` · 보류 등록 `06_Registry/infra_holds.json` |
 | 23:37 | P2R05 핀 맞춤(2차 재핀) | dedc7a49 → bf45f4e7 · 바뀐 잎 정확히 1(PA 판) · 등록부 writer 결함(이력 누락) 수리 뒤 이력 보충 · 커밋 b0c9c3c43 · 1d2abf6bd · 본 대조 ALL OK(워밍 센티널만 없음) |
 | 23:45 | 최신화 도구 보류 · 역의존 | 커밋 d65df9671 · `Infra: R 4.6.2 ✓ · Python 3.15.2 ✓ · venv 0(보류 2) · 시스템Py 0(보류 1) · R패키지 0(보류 1) \| 고정 P2R05(걸림 1)` — ★ 없음 |
-| 23:58~ | 전체 배터리 3차(최종 판 · 제한 6시간) | (결과 아래 ⑧) |
+| 23:58~02:16 | 전체 배터리 3차(최종 판) | 기준선(03:22) 대비 **나빠짐 0** · 나아짐 13 · 실패 123 → 94 · 총 10680 → 10755 · 측정 사라짐 3 = 전부 환경(아래 ⑧) |
+| 02:30~03:45 | 포트 예약 수리(⑥ · 도훈 "회귀 뒤에 고쳐줘") | `qv_psock_cluster()` · 운영 5곳 교체 · 금칙 ⑧ · 커밋 6f0e260e3 |
 | 16:53 | 부팅 Infra 줄 | 커밋 fa0146100 · `Infra: ★최신화 필요 — R 4.6.2 ✓ · Python 3.15.2 ✓ · venv 1(보류 1) · 시스템Py 0(보류 1) · R패키지 0 \| 고정 P2R05` |
 
 ① **메인 시스템 Python 에 pymupdf 가 없었다**(3.12 때도) — `00_Lawbook/tools/pdf_check.py` 가 QVEST_PY 로 돌아 PDF 생성이 검사 단계에서 rc 1(스트레스 일보 실측). 노트북엔 있었다 → 3.15 에 설치 · 일보 ②~④(PDF · 검사 포함) 통과.
@@ -103,7 +104,9 @@ pillow 12 → 13 · python-dateutil 2 → 4 · torch 2.12 → 2.15 · R data.tab
 ⑤ **회귀 — pandas 3 날짜 해상도.** `test_ae_c11_pit_features` 34/1 — pandas 3 는 핀 parquet 날짜를 `datetime64[s]` 로 읽고 운영 스파인은 `[ns]` · `merge_asof` 가 해상도 불일치로 거부. 운영 빌드(E1)는 통과 — 시험의 옛 라벨 재현 줄만 스파인 dtype 에 맞춤(커밋 2b6b6e42e · 새/옛 venv 36/0 · 위반 수 동일).
 ⑥ **업그레이드 무관(측정 사라짐 2건의 정체)**: `test_replication_harness` = ④ · `test_remeasure_from_holdings` = **Windows 포트 예약** — Hyper-V/WSL 이 TCP 11000–11999 중 531개(53%)를 예약해 `parallel::makePSOCKcluster` 의 무작위 포트가 절반쯤 `serverSocket` 실패(단독 3회 중 2회 · 실패 7건은 기준선과 같은 기존 실패). 메인 PC 기존 문제 · 운영 호출 5곳(remeasure 배치 · naver 수집 · grade_v3 backfill/retro · msm_asof) — 후속 과제.
 ⑦ **찾다가 고친 것 2**: (a) 등록부 writer `pr_record_round` 가 `modifyList` 로 합쳐 배열(이름 없는 리스트)을 버렸다 — P2R05 두 번째 supersede 이력이 등록부에 안 쌓였다 → `.pr_merge`(배열 = 통째 교체 · 커밋 b0c9c3c43 · 변종 red 실증) 뒤 사전등록 `repins[2]` 값으로 보충. (b) 최신화 도구가 mpmath 1.3.0 → 1.4.1 을 '올릴 것'으로 셌는데 sympy 1.14.0 이 `mpmath<1.4` 를 요구 — pip 모의 해석은 역의존 상한을 안 본다 → 역의존 판정 추가(커밋 d65df9671) · **mpmath 는 올리지 않음**.
-⑧ 3차 배터리(최종 판): (진행 중)
+⑧ **3차 배터리(최종 판 · 23:58~02:16) — 업그레이드 회귀 0.** 기준선 대비 나빠짐 0 · 나아짐 13 · 2차 대비 나아짐 4(④⑤⑦ 수리분) · 실패 123 → 94.
+   - 측정 사라짐 3 = 전부 환경: `remeasure_from_holdings`(⑥ 포트 예약) · `rf_l2_driver` · `rf_overlay_adversary`(데일리 리프레시 잠금 — 00:03 시작 리프레시가 퀀티 수급 Excel 단계에서 CPU 증가 없이 대기 · 잠금 중엔 미루게 만든 설계대로 `halt_refresh_lock` · `deferred_refresh_lock`). 둘은 2차(잠금 없음)에서 18/0 · 61/0.
+   - ⑥ 포트 예약은 이어서 수리(커밋 6f0e260e3 · `02_Infrastructure/ops/qv_psock.R` · r-portability.md 금칙 ⑧): `remeasure_from_holdings` 5회 연속 포트 오류 0(수리 전 3회 중 2회) · 도우미 시험 11/11(돌연변이 red · 운영 R 840개 직접 호출 0) · 관련 시험 기준선과 같음 · 등급 재채점 2종 · MSM 병렬 경로 실행 정상(적합 = 순차와 같음).
 
 남은 일: ⓐ 노트북 = Python 3.15.2 · R 4.6.2(+패키지) · NVIDIA 드라이버(CUDA 13.2) 맞출 때까지 켜지 않는다(공유 venv 가 3.15 를 가리킨다) ·
 ⓑ Claude 앱 재시작 — 앱은 시작 때 PATH 를 들고 있어 세션 Bash 의 `Rscript` · `python` 이 아직 4.5.2 · 3.12(옛 판을 지우지 않아 동작은 함 · 예약 작업은 새 판) ·
@@ -111,7 +114,7 @@ pillow 12 → 13 · python-dateutil 2 → 4 · torch 2.12 → 2.15 · R data.tab
 ⓔ 옛 R 4.5.2 · Python 3.12 · venv 사본 삭제는 노트북까지 맞춘 뒤 ·
 ⓕ 예약 작업 17개의 실행기 = `Python312\pythonw.exe hidden_launch.pyw …`(감싼 `.cmd` 안에는 옛 경로 없음) — 3.12 를 지우기 전에 `qvest_tasks.ps1 -Mode Export → Apply` 로 다시 감싼다(실행기 탐색이 Python3* 최신을 고른다 · 도구 세션 밖) ·
 ⓖ 노트북도 R 4.6 라이브러리에 **PerformanceAnalytics 2.0.8** 을 소스로 깐다(`.cache/installers/install_pa208.R` 그대로 · 아래 §6 4번 뒤) — 안 하면 노트북만 2.1.0 이 되어 두 대 값이 갈린다 ·
-ⓗ 메인 PC 포트 예약(⑥)으로 `makePSOCKcluster` 가 절반쯤 실패 — 호출부가 비어 있는 포트를 골라 쓰게 하는 수리는 별도 과제.
+ⓗ ~~메인 PC 포트 예약(⑥)으로 `makePSOCKcluster` 가 절반쯤 실패~~ → ✅ 11-09 수리(커밋 6f0e260e3) — 노트북도 같은 코드라 별도 조치 없음(예약 범위는 기계마다 다를 수 있다).
 
 ## 6. 노트북(RAZER_BLADE_16) 맞춤 절차 — 메인과 같은 판으로(켜기 전에 · 도훈 PC 앞)
 
