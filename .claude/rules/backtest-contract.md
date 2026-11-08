@@ -41,6 +41,7 @@ paths:
 ## 핵심 함수 (`02_Infrastructure/contracts/`)
 
 - `build_bt_result(sim_result, strategy_spec, ...)` — 10-component 빌드 (PerformanceAnalytics 표준 함수만)
+  - ★**PerformanceAnalytics 판 = 2.0.8 고정**(2026-11-08 · `06_Registry/infra_holds.json`) — 2.1.0 은 `Return.portfolio`(xts 날짜 비중) 출력 날짜를 한 기간 당기고 · `SharpeRatio.annualized` geometric 기본값을 TRUE → FALSE 로 · `UpDownRatios` 에 geometric = TRUE 를 넣어 측정 정의를 조용히 바꾼다(포착률 값 변경 · 한쪽 구간 없는 입력에서 `build_benchmark_compare` 중단). 판을 올리기 전에 호출부를 판 무관하게 고정하고 옛/새 판 대조 0 차이를 기록할 것(근거 `04_Research/01_reports/env_upgrade_20261109/PLAN.md` §5 ④).
 - `audit_bt_result(bt_result)` — 10 checks. Critical FAIL 시 `metric_type='unavailable'` + `integrity='FAIL'`
 - `save_bt_result(bt_result, output_dir)` — RDS + CSV × 10 + JSON × 2 + XLSX 11-sheet
 - `register_bt_result(bt_result)` — `qepm/registry/backtest_registry.csv` append (audit FAIL 차단)

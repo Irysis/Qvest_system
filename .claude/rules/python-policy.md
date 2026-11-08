@@ -22,7 +22,14 @@ paths:
 - venv: `C:/Users/99922/OneDrive/Quant_Module_Moltbot/.venv_qvest_ml/ (Windows venv, 2026-06-10 재생성)`.
   실행기 = `.venv_qvest_ml/Scripts/python.exe` (Windows venv 이므로 `bin/python` 아님).
 - **★설치 실측 (2026-08-13 감사 → 같은 날 도훈 지시로 결손 해소).** 선언을 믿지 말고 착수 전 import 로 확인할 것.
-  - **현재 전 항목 실재** (python 3.12.10): `torch 2.12.1+cpu` · `xgboost 3.4.0` · `lightgbm 4.6.0` ·
+  - ★**(2026-11-08 환경 최신화 · 메인 PC · 현행)** venv 재생성 — python **3.15.2** · `torch 2.15.0+cu132`(CUDA 13.2 · RTX 4080 SUPER · `cuda.is_available() = True`) ·
+    `xgboost 3.4.1` · `lightgbm 4.7.0` · `ngboost 0.6.0` · `optuna 5.0.0` · `MAPIE 1.6.0` · `statsmodels 0.15.0` · `properscoring 0.1` ·
+    `numpy 2.5.4` · `pandas 3.1.1` · `pyarrow 26.0.1` · `scikit-learn 1.9.1`(68개). 메이저 변경 = pandas 3(문자열 dtype · copy-on-write 기본 ·
+    ★날짜 해상도를 입력에서 추론 — parquet 날짜가 `datetime64[s]` 로 읽혀 `[ns]` 열과 `merge_asof` 하면 MergeError → 키 dtype 을 맞출 것) · optuna 5 ·
+    pyarrow 26. 보류 = `mpmath 1.3.0`(sympy 1.14.0 이 `mpmath<1.4` 요구 · pip 모의 해석은 역의존 상한을 안 본다) · `lifelines 0.30.0`(pandas<3) — 판 보류는
+    `06_Registry/infra_holds.json`(수동) · infra_currency 역의존 판정(자동). R 쪽 = PerformanceAnalytics 2.0.8 고정(2.1.0 이 측정 정의를 바꿈). 옛 venv 사본 `.venv_qvest_ml_py312_20261108`(되돌리기용). R = 4.6.2. 시스템 Python(QVEST_PY) = 3.15.2(openpyxl · numpy · pypdf ·
+    jsonschema · pymupdf — **pandas 없음**). 노트북은 같은 판을 맞출 때까지 이 venv 를 못 쓴다. 절차 · 기록 = `04_Research/01_reports/env_upgrade_20261109/PLAN.md`.
+  - (사료 08-13) 전 항목 실재 (python 3.12.10): `torch 2.12.1+cpu` · `xgboost 3.4.0` · `lightgbm 4.6.0` ·
     `ngboost 0.5.11` · `optuna 4.9.0` · `mapie 1.4.1` · `statsmodels 0.14.6` · `properscoring 0.1` ·
     `numpy 2.4.6` · `pandas 2.3.3` · `pyarrow 24.0.0` · `sklearn 1.9.0`.
   - 감사 시점 결손 3종(`xgboost`·`optuna`·`properscoring`)은 **2026-08-13 설치 완료**(도훈 "노트북 환경이라
