@@ -1,7 +1,8 @@
 #!/bin/bash
 #==============================================================================
 # boot_lean.sh — Qvest 부팅 (2026-08-23 신설 · 2026-09-05 v10 mode 정합 · 2026-10-13 v10.01 프로그램 줄)
-#   상태 6줄만 출력(Data · Queue · Last · Book · Alerts/Budget · Programs). 검사 0 · 수리 0 · R 실행 0 · 테스트 0 · 백그라운드 0 · 항상 exit 0.
+#   상태 8줄만 출력(Data · Queue · Last · Book · Alerts/Budget · Programs · Resume · Infra). 검사 0 · 수리 0 · R 실행 0 · 테스트 0 · 백그라운드 0 · 항상 exit 0.
+#   (Infra = 2026-11-08 — 매일 점검 기록 .cache/machine/infra_currency_<HOST>.json 을 읽기만 · 네트워크 0)
 #   ★필드가 안 읽히면 '?' 로 두고 계속한다(fail-soft) — 부팅이 세션을 막지 않는다.
 #   전수 점검(구 bootstrap.sh 전문)은 주간/수동 ops/health_full.sh 로 분리됐다.
 #==============================================================================
@@ -253,6 +254,16 @@ def RESUME():
     _m=_iu.module_from_spec(_sp); _sp.loader.exec_module(_m)
     return _m.boot_line(P)
 o.append(S(RESUME,"Resume: ?(표시 예외)"))
+# ⑧ Infra(2026-11-08 도훈 "부팅 시에 점검해서 R, 파이썬 버전, 각종 패키지 등 인프라 최신화 시킬 수 있도록") —
+#   매일 05:40 예약 작업 Qvest_InfraCurrency(기계마다)가 쓴 .cache/machine/infra_currency_<HOST>.json 을 읽기만 한다(부팅에서 네트워크 0).
+#   표시 규칙 단일 출처 = 02_Infrastructure/ops/infra_currency.py::infra_line(오래됨 · 보류 · 고정 라운드 판정 포함).
+def INFRA():
+    import importlib.util as _iu
+    _sp=_iu.spec_from_file_location("infra_currency",R("02_Infrastructure","ops","infra_currency.py"))
+    _m=_iu.module_from_spec(_sp); _sp.loader.exec_module(_m)
+    f=R(".cache","machine","infra_currency_%s.json"%os.environ.get("COMPUTERNAME","unknown").upper())
+    return _m.infra_line(json.load(open(f,encoding="utf-8")) if os.path.exists(f) else None)
+o.append(S(INFRA,"Infra: ?(표시 예외)"))
 # (v10.01 · 2026-10-13) 구 ⑦ Rules(방향 규칙 일간 채점 — 디렉터 입력)는 디렉터와 함께 퇴역.
 print("\n".join(o))
 PYEOF

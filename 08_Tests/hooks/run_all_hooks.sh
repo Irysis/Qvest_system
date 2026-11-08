@@ -1910,6 +1910,11 @@ SUITES=(
   #   실물 프로세스 조회 양성 대조
   "08_Tests/ops/test_claude_cli_update.sh"
   # <<< 11-07 CLI
+  # >>> 11-08 인프라 판 점검(도훈 "부팅 시에 점검해서 R, 파이썬 버전, 각종 패키지 등 인프라 최신화") — infra_currency.py 부팅 줄
+  #   표시 규칙(최신 · 뒤처짐 · 보류 · 고정 · 오래됨 · 기록 없음 · 조회 실패) · would-install 파싱 · 열린 라운드 판 고정 읽기 ·
+  #   infra_update.py 계획 분류(보류 · 라운드 고정 · 메이저 · 공유 venv 는 메인에서만) — 오프라인 · 돌연변이 4종 잡힘(11-08 실측)
+  "08_Tests/ops/test_infra_currency.py"
+  # <<< 11-08 Infra
 )
 
 
