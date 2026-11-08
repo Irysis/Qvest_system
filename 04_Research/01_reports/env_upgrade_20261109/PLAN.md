@@ -47,7 +47,16 @@ pillow 12 → 13 · python-dateutil 2 → 4 · torch 2.12 → 2.15 · R data.tab
 
 되돌리기: R 4.5.2 · Python 3.12 는 지우지 않는다(`QVEST_RSCRIPT` · `QVEST_PY` 로 되돌림) · venv 옛판은 보관 폴더에서 이름만 되돌린다.
 
-## 4. 결정이 남은 것
+## 4. 결정 · 준비
 
-- R 4.6.2 설치 방식: 관리자 설치(`C:/Program Files/R` · UAC = 도훈 PC 앞) 또는 사용자 설치(`C:/Users/99922/AppData/Local/Programs/R` · UAC 없음 · Q 진행 · 두 기계 같은 경로).
-- 노트북 NVIDIA 드라이버 갱신 시점(노트북을 다시 쓸 때).
+- ✅ R 4.6.2 = **관리자 설치**(`C:\Program Files\R\R-4.6.2` · 도훈 11-08 "관리자 설치(PC 앞)") — UAC [예]는 도훈이 PC 앞에서(약 100초 안 · 원격 불가).
+- ✅ 설치 파일(11-08 받음 · `.cache\installers\` · OneDrive 로 노트북에도 간다):
+  - `R-4.6.2-win.exe` 91,363,600 B · MD5 `d01b7413cce5540a35eaf8295ef32197` = CRAN `md5sum.R-4.6.2.txt` · 서명 Valid(CN=Martyn Plummer)
+  - `python-3.15.2-amd64.exe` 37,694,360 B · SHA-256 `06e225a2…f15aa` = python.org API · 서명 Valid(CN=Python Software Foundation)
+- ✅ 설치 스크립트(이 폴더 · UTF-8 BOM — PowerShell 5.1 이 BOM 없는 UTF-8 을 CP949 로 읽어 한글이 깨진다) · `-DryRun` 통과(11-08):
+  - `install_r462_admin.ps1` — 대조 → 관리자 아니면 스스로 UAC → 조용한 설치 → `Rscript --version` → `.cache\installers\R-4.6.2-install.result.txt`
+  - `install_py3152_user.ps1` — 대조 → 사용자 설치(PATH · 연결 · py 런처 무접촉) → `python --version` · pip → `…\python-3.15.2-install.result.txt`
+    (도구 세션 밖에서 — 일회용 예약 작업 또는 보통 PowerShell)
+- 실행 방법(11-09): 도훈 "자리에 왔어" → Q 가 일회용 예약 작업(Interactive · Limited)으로 `install_r462_admin.ps1` 을 띄운다 → 화면 UAC [예]
+  (또는 도훈이 보통 PowerShell 에서 `powershell -NoProfile -ExecutionPolicy Bypass -File <이 폴더>\install_r462_admin.ps1`).
+- 남음: 노트북 NVIDIA 드라이버 갱신 시점(노트북을 다시 쓸 때 · 지금 581.08 → CUDA 13.2 지원판).
