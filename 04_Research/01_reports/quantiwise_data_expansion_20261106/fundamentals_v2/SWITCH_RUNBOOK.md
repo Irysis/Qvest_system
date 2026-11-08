@@ -100,9 +100,11 @@ bash 02_Infrastructure/factor_db/run_factor_db_full_rebuild.sh
   - 원본 XML = `ops/scheduler/_task_xml_backup/Qvest_FundV2Update.xml` · 실행기 = `ops/scheduler/Qvest_FundV2Update.bat` · 로그 = `.cache/scheduler_logs/fund_v2_update.log`.
   - 종료 코드: 0 = 끝 · 3 = 전제 조건 · 바쁨 · 세션 끊김 · 1 = 실패. 세션이 끊겨 있으면 재로그인하지 않고 3 으로 끝난다(재로그인은 드라이버 몫).
   - GAAP 은 2007년까지 항목이라 갱신 DB 가 없다.
-- ★시험 상태(11-09): 재무상태 갱신 DB 를 만들고(41항목 × 202412~202609) 리프레시하던 중 18/41 시트에서 세션이 끊겼다.
-  - 적재기는 부분 리프레시 책을 G1 으로 거부했다(쓰기 0). 창 교체 논리는 시험 `test_qw_fund_v2_ingest.py` T9 · T9b 가 덮는다.
-  - 남은 일: 5개 DB 전 과정 실측을 첫 정기 실행 전에 해야 한다. 끊긴 원인 · 막힌 재로그인 = README §7.
+- ✅실측(11-09 08:03~08:35 · 예약 작업 직접 실행 + META · INFO 재실행): BS 41/41 · IS 37/37 · CF 18/18 · META 20/20 · INFO 18/18.
+  - 적재 결과는 신규 · 변경 · 삭제 모두 0 이다(11-08 밤 값과 같음). 1회 ≈ 25분(시트당 6~14초).
+  - 첫 시도는 META 'CompInfo'(글 항목 · 늘 0칸 · 등록부 allow_empty)를 리프레시가 미갱신으로 세어 멈췄다 → 수리 커밋 207e801e1.
+  - 그 전 07:40 에는 세션 끊김으로 BS 18/41 에서 멈췄고, 부분 책은 적재기 G1 이 거부했다. 재로그인 경위 = README §7.
+  - 창 교체 논리 시험 = `test_qw_fund_v2_ingest.py` T9 · T9b.
 - 첫 적재 전 부모 parquet 백업 = `.cache/fundamental_backup/qw_fund_v2_pre_upd_20261109/`(SHA256SUMS.txt).
 - 월간 [5a2/7] 은 그대로 돕니다(v2 생산기에 위임). 입력(FundV2 parquet)이 새로워야 의미가 있습니다.
 
