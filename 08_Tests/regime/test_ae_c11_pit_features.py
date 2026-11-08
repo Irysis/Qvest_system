@@ -455,8 +455,10 @@ def axis_e():
                                           mode="decision_close", kr_calendar=cal))
     chk("E1 실데이터 PIT 빌드 — 해외 6계열 결합쌍 위반 0", nv == 0, f"{len(m)}행 · 위반 {nv}")
     fr = pq.read_table(need[0]).to_pandas()
-    fr["Date"] = pd.to_datetime(fr["Date"])
     sp = aepf.build_kr_spine(need[1])
+    # pandas 3 는 날짜 해상도를 입력에서 추론한다(핀 parquet → datetime64[s]) · merge_asof 는 양쪽 해상도가 같아야 한다 →
+    #   운영 스파인의 판(현재 [ns])에 맞춘다(2026-11-08 환경 최신화 · pandas 2.3.3 → 3.1.1). 값 · 결합 규칙은 그대로.
+    fr["Date"] = pd.to_datetime(fr["Date"]).astype(sp["Date"].dtype)
     lg = pd.merge_asof(sp, fr[["Date"] + FEATS].sort_values("Date"), on="Date", direction="backward")
     nlab = {}
     for f in ["VIX", "StL_Fin_Stress", "Chi_Fin_Cond"]:
