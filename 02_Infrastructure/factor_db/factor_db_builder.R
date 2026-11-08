@@ -401,7 +401,16 @@ cat("[factor_db_builder] Loaded. FACTOR_DB_DIR:", FACTOR_DB_DIR, "\n")
   rm(.vx)
 
   # Fundamentals
-  fund_path <- file.path(CACHE_DIR, "fundamental_merged.parquet")
+  # QVEST_FUND_MERGED (2026-11-09): 시범 산출용 경로 덮어쓰기(재무 병합 v2 한 달 대조 · README §8).
+  #   기본값 = 지금 정본. 정규 체인은 이 변수를 쓰지 않는다.
+  #   빈 값 = 미설정. 값이 있는데 파일이 없으면 멈춘다(재무 없이 조용히 짓지 않는다).
+  fund_path <- Sys.getenv("QVEST_FUND_MERGED")
+  if (nzchar(fund_path)) {
+    if (!file.exists(fund_path)) stop("[factor_db_builder] QVEST_FUND_MERGED 경로가 없다: ", fund_path)
+    cat("  ★Fundamentals 경로 덮어쓰기(QVEST_FUND_MERGED):", fund_path, "\n")
+  } else {
+    fund_path <- file.path(CACHE_DIR, "fundamental_merged.parquet")
+  }
   if (file.exists(fund_path)) {
     .fdb_env$FUND <- as.data.table(read_parquet(fund_path))
     cat(sprintf("  Fundamentals: %s rows\n",

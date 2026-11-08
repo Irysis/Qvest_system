@@ -1,0 +1,23 @@
+{
+  "schema": "fundamental_source/v1",
+  "_doc": "재무 병합 표(.cache/fundamental_merged.parquet)와 분기 표(.cache/fundamental_xlsx.parquet)를 어느 원천으로 만드는가. 읽는 곳 = 02_Infrastructure/data/build_fundamental_derived.R(active = v2 면 fundamental_produce_v2.R 에 위임 · 월간 [5a2/7] · DART 보충 완료 단계가 부른다) · 02_Infrastructure/data/incremental_cache_update.R(xlsx_base_rebuild = false 면 Fundamental.xlsx 재파싱 경로를 건너뛴다). 바꾸는 사람 = 전환 절차서(SWITCH_RUNBOOK.md)를 따라 Q(도훈 결정 범위 안) · 되돌리기 = active 를 v1 로 + 절차서의 사본 복원.",
+  "active": "v1",
+  "xlsx_base_rebuild": false,
+  "sources": {
+    "v1": "Fundamental.xlsx(분기 · 2015~ 는 ISSD · SBB 만) + DART 연간(2015~ · fundamental_dart.parquet) — build_fundamental_derived.R",
+    "v2": "퀀티 재무 DB v2(.cache/qw_fund_v2/FundV2_* · 메인) + DART 정정 검사(서브) + 실제 공시일 · 날짜 순서 계약 — build_fundamental_v2.py → build_fundamental_merged_v2.R(fundamental_produce_v2.R 이 묶는다)"
+  },
+  "switch_runbook": "04_Research/01_reports/quantiwise_data_expansion_20261106/fundamentals_v2/SWITCH_RUNBOOK.md",
+  "decisions": [
+    "2026-11-08 도훈 '퀀티를 메인으로 하고 다트를 서브로 하면 안돼?' → '위 방식대로 가자'(값 = 퀀티 · DART 와 0.5% 넘게 다르면 DART · 날짜 = 퀀티 보고일과 DART 접수일 중 늦은 날 다음 거래일 · DART 없으면 퀀티 미검증 표시)",
+    "2026-11-09 도훈 '보충 끝나면 전체 재빌드해줘'(DART 연간 보충 완료 뒤 v2 전환 + 팩터 DB 전체 재빌드)"
+  ],
+  "history": [
+    {
+      "at": "2026-11-09",
+      "active": "v1",
+      "xlsx_base_rebuild": false,
+      "why": "등록부 신설. Fundamental.xlsx 재파싱 경로를 끈다 — 11-09 00:10 신규 상장 동기화([1pre-dk])가 DATA_Key 99행을 붙여 저장해 파일 시각만 새로워졌고(값 없음), 그 경로는 cwd 02_Infrastructure 에서 상대 경로로 돌아 실패하면서 02_Infrastructure/.cache 빈 폴더를 만든다. v2 가 이 원천을 대신한다."
+    }
+  ]
+}

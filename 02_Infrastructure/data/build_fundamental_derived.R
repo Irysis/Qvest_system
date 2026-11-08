@@ -29,6 +29,22 @@ XLSX_PATH    <- file.path(CACHE_DIR, "fundamental_xlsx.parquet")
 MERGED_PATH  <- file.path(CACHE_DIR, "fundamental_merged.parquet")
 BACKUP_PATH  <- file.path(CACHE_DIR, "fundamental_merged_backup.parquet")
 
+# ---- 원천 선택(06_Registry/fundamental_source.json · 2026-11-09 도훈 결정 '퀀티 메인 · DART 서브') ----
+#   active = "v2" → fundamental_produce_v2.R 에 위임하고 끝낸다(아래 v1 경로는 돌지 않는다). 부르는 곳(월간 [5a2/7] ·
+#   DART 보충 완료 단계)은 그대로 이 파일을 부른다. 등록부가 없으면 v1(전환 전). 등록부를 못 읽거나 값이 이상하면
+#   멈춘다 — 전환 뒤에 조용히 v1 표로 되돌아가는 것을 막는다.
+.src_reg <- file.path(PROJECT_ROOT, "06_Registry", "fundamental_source.json")
+.src_active <- if (file.exists(.src_reg)) jsonlite::fromJSON(.src_reg)$active else "v1"
+if (!(identical(.src_active, "v1") || identical(.src_active, "v2")))
+  stop("[source] 06_Registry/fundamental_source.json::active 가 v1/v2 가 아니다: ", paste(.src_active, collapse = ","))
+if (identical(.src_active, "v2")) {
+  cat("[source] 재무 원천 = v2(퀀티 메인 · DART 정정 검사) — fundamental_produce_v2.R 에 위임\n")
+  .rs <- file.path(R.home("bin"), if (.Platform$OS.type == "windows") "Rscript.exe" else "Rscript")
+  .rc <- system2(.rs, c("--no-save", shQuote(file.path(PROJECT_ROOT, "02_Infrastructure", "data", "fundamental_produce_v2.R"))))
+  quit(save = "no", status = as.integer(.rc))
+}
+cat("[source] 재무 원천 = v1(Fundamental.xlsx + DART 연간)\n")
+
 stopifnot(file.exists(XLSX_PATH), file.exists(MERGED_PATH))
 
 # ---- 1. Load XLSX raw data ----

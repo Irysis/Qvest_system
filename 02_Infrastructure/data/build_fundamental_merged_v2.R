@@ -12,13 +12,26 @@
 #   파생, fundamental_dart.parquet)을 DART 접수 다음 거래일부터 쓴다 = 지금 병합 표가 DART 연도를 쓰는 방식(날짜만 실제).
 #   DART 에 없는 퀀티 전용 항목은 v2 가 미룬 날짜(다음 회계연도 사업보고서 뒤)로 둔다.
 # 날짜: Factor_Date = 쓸 수 있는 첫날(v2 = max(퀀티 공시일, DART 접수일) 다음 거래일).
-# 열: Ticker · Period · Period_Date · Factor_Date · Item · Value · Source · Freq(Q 분기 단독 | A 연간)
-#   Source: QW_V2 · QW_V2_UNVERIFIED(2015~ DART 대조 없음) · QW_V2_DELAYED · DART_RESTATED · QW_V2_derived
-#   ★전환 때: Source == "DART" 로 연간 행을 가르는 소비자 2곳(alpha_search/factor_engine_fq081_dupont_indrel.R:51 ·
-#   fq081_dupont_panel.R:57)은 Freq == "A" 로 바꿔야 한다.
-# 쓰지 않는 것: fundamental_merged.parquet · 팩터 DB(전환 = DART 보충 뒤 팩터 DB 재빌드와 함께 · 도훈 확인).
+#   연간 행 = 그 회계연도 네 분기 가운데 가장 늦은 날(흐름 = 네 분기 합) · 파생 = 그해와 직전 연도 가운데 늦은 날
+#   (성장률 · 평균 · 변화량이 직전 연도 값을 쓴다). 정정 의심 연도의 DART 기록이 퀀티 미룬 값보다도 늦게 나왔으면
+#   (나중 정정 · 11-09 실측 A036030 FY2019 DART 2023-09-01) 그해는 퀀티 미룬 값을 쓴다.
+# ★날짜 순서 계약(11-09 · 지금 병합 표의 성질 = 겹침 0 · 역전 0 · 소비자 39곳이 기댄다): (종목, 항목) 안에서
+#   Factor_Date 는 기간 순서대로 엄격히 는다. 팩터 모듈은 Factor_Date 순위로 '최신 · 직전 기간'을 고르고
+#   (compute_growth.R .get_two_periods 등), 같은 날짜가 둘이면 dcast 가 값 대신 개수(length)를 넣어 그 모듈의
+#   그 항목이 전 종목에서 망가진다(11-09 시범: 삼성전자 매출 성장률 3.0e14 · GR04/GR05 전 종목 같은 값).
+#   ① 늦게 도착한 옛 기간(더 새 기간이 이미 더 일찍 쓰일 수 있었다) = 버린다 — 도착 때 이미 최신이 아니고,
+#      남기면 최신으로 읽힌다. ② 같은 날 도착 = 새 기간을 하루씩 늦춘다. 날짜는 늦추기만 한다(미래참조 없음).
+# 열: Ticker · Period · Period_Date · Factor_Date · Item · Value · Source · Origin · Freq(Q 분기 단독 | A 연간)
+#   Source = 소비자 호환 역할 표지(지금 병합 표와 같은 뜻): XLSX(분기 원계정) · xlsx_derived(분기 파생) · DART(연간 원계정 + 파생)
+#     — 전략 엔진 약 20곳(04_Research/strategies/DT_2002_06975 · RP_AUTO_2002_06975 등)이 이 표지로 연간 · 분기 행을 가른다.
+#   Origin = 실제 출처: QW_V2 · QW_V2_UNVERIFIED(2015~ DART 대조 없음) · QW_V2_DELAYED · DART_RESTATED · QW_V2_derived
+#   (fq081 소비자 2곳은 11-09 Freq == "A" 로도 가른다 — 12월 외 결산 연간 행 포함.)
+# 둘째 산출(--out-xlsx): fundamental_xlsx.parquet 와 같은 꼴의 분기 단독 원계정 41개 전 기간(XF 팩터 ·
+#   xlsx_factor_calculator.R 가 읽는 표) — 같은 날짜 순서 계약.
+# 쓰지 않는 것: fundamental_merged.parquet · fundamental_xlsx.parquet · 팩터 DB(전환 = DART 보충 뒤 팩터 DB 재빌드와 함께).
 # 실행: Rscript build_fundamental_merged_v2.R [--root R] [--v2-dir D] [--qw-dir D] [--dart F] [--registry F] [--out F]
-# 종료: 0 성공 · 1 오류(중복 키 등) · 3 입력 없음
+#        [--out-xlsx F]
+# 종료: 0 성공 · 1 오류(중복 키 · 날짜 순서 계약 위반 등) · 3 입력 없음
 #==============================================================================
 suppressPackageStartupMessages({ library(data.table); library(arrow); library(jsonlite) })
 args <- commandArgs(trailingOnly = TRUE)
@@ -29,8 +42,44 @@ QWD  <- argv("--qw-dir", file.path(ROOT, ".cache", "qw_fund_v2"))
 DART <- argv("--dart", file.path(ROOT, ".cache", "fundamental_dart.parquet"))
 REG  <- argv("--registry", file.path(ROOT, "02_Infrastructure", "data", "qw_updatefile_registry.json"))
 OUT  <- argv("--out", file.path(ROOT, ".cache", "fundamental_merged_v2.parquet"))
+OUTX <- argv("--out-xlsx", file.path(ROOT, ".cache", "fundamental_xlsx_v2.parquet"))
 .self <- sub("^--file=", "", grep("^--file=", commandArgs(FALSE), value = TRUE)[1L])
 source(file.path(dirname(.self), "fundamental_derive_items.R"))
+
+# 날짜 순서 계약(머리말 ★): (종목, 항목) 안에서 기간 순서대로 Factor_Date 가 엄격히 늘게 만든다. 날짜는 늦추기만 한다.
+#   ① 버림: 자기보다 새 기간 가운데 더 이른 날짜가 있는 행(늦게 도착한 옛 기간)
+#   ② 하루씩 늦춤: d_i = max(f_i, d_{i-1} + 1) = i + cummax(f_j - j) (같은 날 도착한 새 기간)
+#   묶음별 함수 호출 대신 묶음 번호 g 에 큰 수를 곱해 더하는 방식으로 묶음 안 누적 최소 · 최대를 한 번에 구한다
+#   (BIG > 날짜 폭 · g · BIG 은 double 로 정확).
+order_contract <- function(D) {
+  setorder(D, Ticker, Item, Period_Date)
+  D[, f := as.integer(Factor_Date)]
+  D[, g := rleid(Ticker, Item)]
+  BIG <- 1e6
+  stopifnot(diff(range(D$f)) + 200 < BIG)
+  sentinel <- max(D$f) + 1L
+  nxt <- shift(D$f, -1L)
+  nxt[is.na(nxt) | D$g != shift(D$g, -1L, fill = -1L)] <- sentinel
+  y <- nxt + D$g * BIG
+  D[, later_min := rev(cummin(rev(y))) - g * BIG]          # 자기보다 새 기간들의 가장 이른 날짜
+  D[, late := f > later_min]
+  D[, hole := !late & shift(late, 1L, fill = FALSE) & g == shift(g, 1L, fill = 0L)]
+  st <- list(rows_in = nrow(D), dropped = sum(D$late), holes_created = sum(D$hole))
+  if ("Source" %in% names(D))
+    st$dropped_by_source <- as.list(D[late == TRUE, .N, by = Source][order(-N), setNames(N, Source)])
+  D <- D[late == FALSE]
+  D[, i := rowid(g)]
+  D[, d := i + (cummax((f - i) + g * BIG) - g * BIG)]
+  st$shifted <- sum(D$d > D$f)
+  st$max_shift_days <- if (st$shifted > 0L) max(D$d - D$f) else 0L
+  # 검사: 늦추기만 했고 · 묶음 안에서 엄격히 는다
+  if (any(D$d < D$f)) stop("[merged-v2] 날짜 순서 계약: 앞당긴 행이 있다")
+  if (any(D$g == shift(D$g, 1L, fill = 0L) & D$d <= shift(D$d, 1L, fill = 0L)))
+    stop("[merged-v2] 날짜 순서 계약: (종목, 항목) 안 Factor_Date 가 엄격히 늘지 않는다")
+  D[, Factor_Date := as.Date(d, origin = "1970-01-01")]
+  D[, c("f", "g", "later_min", "late", "hole", "i", "d") := NULL]
+  list(D = D, stats = st)
+}
 inputs <- c(file.path(V2D, "fund_v2_quarterly.parquet"), file.path(V2D, "fund_v2_annual_check.parquet"),
             file.path(QWD, "fiscal_month.parquet"), DART, REG)
 for (p in inputs) if (!file.exists(p)) { cat("[merged-v2] 입력 없음:", p, "\n"); quit(status = 3) }
@@ -72,11 +121,23 @@ A <- q[P %/% 100L <= 2014L, .(Ticker, Period, Period_Date, Factor_Date, Item = O
 dA <- derive_fundamental_items(A[, .(Ticker, Period, Period_Date, Factor_Date, Item, Value)])
 dA <- dA[Item %in% c("TotalDebt", "NOPAT"), .(Ticker, Period, Period_Date, Factor_Date, Item, Value,
                                                Source = "QW_V2_derived", Freq = "Q")]
+# A2. 2015~ 주식 수(ISSD) · 기중 취득 자기주식 수(SBB)는 분기 그대로 — 지금 병합 표도 2015~ 에 이 둘만 XLSX 분기 행으로
+#     가진다(11-09 실측 · DART 에 없는 항목). 연간 행(B · RQ)에서는 뺀다(같은 기간 키 중복 방지).
+SHQ <- c("ISSD", "SBB")
+A2 <- q[P %/% 100L >= 2015L & Old %in% SHQ, .(Ticker, Period, Period_Date, Factor_Date, Item = Old, Value,
+                                             Source = "QW_V2", Freq = "Q")]
 
 # ---- B. 2015~ 회계연도 말 연간(2014 = 성장률 씨앗) -----------------------------------------------------
 qa <- q[FY >= 2014L]
 key <- unique(qa[P == FYE, .(Ticker, FY, Period_Date, Factor_Date, Check)])
 if (anyDuplicated(key[, .(Ticker, FY)])) { cat("[merged-v2] 오류: 연말 키가 겹친다\n"); quit(status = 1) }
+# 연간 행 날짜 = 그 회계연도 네 분기 가운데 가장 늦은 날: 흐름은 네 분기 합이라, 연말 뒤에 정정된 분기가 있으면
+#   그 정정이 나온 뒤에야 합을 안다(앞당김 금지)
+kq <- qa[, .(fy_fd = max(Factor_Date)), by = .(Ticker, FY)]
+key <- kq[key, on = .(Ticker, FY)]
+n_key_late <- key[fy_fd > Factor_Date, .N]
+key[fy_fd > Factor_Date, Factor_Date := fy_fd][, fy_fd := NULL]
+cat(sprintf("[merged-v2] 연간 날짜 = 네 분기 가운데 가장 늦은 날로 늦춘 기업-연도 %d\n", n_key_late))
 fl <- qa[Item %in% FLOW_V2, .(Value = sum(Value), n = .N), by = .(Ticker, FY, FYE, Old)][n == 4L]
 st <- qa[!(Item %in% FLOW_V2) & P == FYE, .(Ticker, FY, FYE, Old, Value)]
 an <- merge(rbind(fl[, .(Ticker, FY, FYE, Old, Value)], st), key, by = c("Ticker", "FY"))
@@ -92,18 +153,30 @@ if (nrow(lostk[open == FALSE]) > 0L) {
               paste(lostk[open == FALSE, .N, by = FY][order(FY), paste0(FY, ":", N)], collapse = " ")))
 }
 cat(sprintf("[merged-v2] 진행 중인 회계연도(연말 미도래) %d 기업-연도 — 연간 행 없음(정상)\n", nrow(lostk[open == TRUE])))
-RS <- unique(key[Check == "restated", .(Ticker, FY)])
-dB <- derive_fundamental_items(an[, .(Ticker, Period, Period_Date, Factor_Date, Item = Old, Value)])
-dB[, FY := as.integer(Period) %/% 100L]
-dB <- dB[FY >= 2015L & !(Item %in% names(MAP))][!RS, on = .(Ticker, FY)]
-dB <- dB[, .(Ticker, Period, Period_Date, Factor_Date, Item, Value, Source = "QW_V2_derived", Freq = "A")]
-B <- an[FY >= 2015L][!RS, on = .(Ticker, FY)][, .(Ticker, Period, Period_Date, Factor_Date, Item = Old, Value,
-            Source = fifelse(Check == "agree", "QW_V2", "QW_V2_UNVERIFIED"), Freq = "A")]
-
-# ---- C. 정정 의심 기업-연도 = DART 당시 보고서 기록 + 퀀티 전용 항목(미룸) --------------------------------------
+# 정정 의심 기업-연도: DART 당시 기록이 퀀티 미룬 값보다 먼저 쓰일 수 있으면 DART(RS) · 아니면(DART 가 나중 정정본 ·
+#   기록 없음) 퀀티 미룬 값(RSQ) — 둘 다 그 날짜엔 공개된 값이고, 늦게 오는 쪽은 도착 때 이미 최신이 아니다
 ck <- as.data.table(read_parquet(file.path(V2D, "fund_v2_annual_check.parquet")))
 dfd <- unique(ck[!is.na(DART_Factor_Date), .(Ticker, FY, DART_Factor_Date)])
 if (anyDuplicated(dfd[, .(Ticker, FY)])) { cat("[merged-v2] 오류: DART 날짜가 기업-연도마다 하나가 아니다\n"); quit(status = 1) }
+RSk <- merge(unique(key[Check == "restated", .(Ticker, FY, kfd = Factor_Date)]), dfd, by = c("Ticker", "FY"), all.x = TRUE)
+RS  <- RSk[!is.na(DART_Factor_Date) & DART_Factor_Date <= kfd, .(Ticker, FY)]
+RSQ <- RSk[is.na(DART_Factor_Date) | DART_Factor_Date > kfd, .(Ticker, FY)]
+cat(sprintf("[merged-v2] 정정 의심 %d 기업-연도 = DART 당시 기록 %d + 퀀티 미룬 값 %d(DART 기록이 더 늦음 %d · 없음 %d)\n",
+            nrow(RSk), nrow(RS), nrow(RSQ), RSk[!is.na(DART_Factor_Date) & DART_Factor_Date > kfd, .N],
+            RSk[is.na(DART_Factor_Date), .N]))
+dB <- derive_fundamental_items(an[, .(Ticker, Period, Period_Date, Factor_Date, Item = Old, Value)])
+dB[, FY := as.integer(Period) %/% 100L]
+dB <- dB[FY >= 2015L & !(Item %in% names(MAP))][!RS, on = .(Ticker, FY)]
+# 파생은 직전 연도 값을 쓴다(성장률 · 평균 · 변화량) → 날짜 = 그해와 직전 연도 가운데 늦은 날
+pk <- key[, .(Ticker, FY = FY + 1L, prev_fd = Factor_Date)]
+dB <- pk[dB, on = .(Ticker, FY)]
+n_der_redate <- dB[!is.na(prev_fd) & prev_fd > Factor_Date, .N]
+dB[!is.na(prev_fd) & prev_fd > Factor_Date, Factor_Date := prev_fd]
+dB <- dB[, .(Ticker, Period, Period_Date, Factor_Date, Item, Value, Source = "QW_V2_derived", Freq = "A")]
+B <- an[FY >= 2015L][!RSk, on = .(Ticker, FY)][, .(Ticker, Period, Period_Date, Factor_Date, Item = Old, Value,
+            Source = fifelse(Check == "agree", "QW_V2", "QW_V2_UNVERIFIED"), Freq = "A")][!(Item %in% SHQ)]
+
+# ---- C. 정정 의심 기업-연도 = DART 당시 보고서 기록 + 퀀티 전용 항목(미룸) · 또는 퀀티 미룬 값 전부(RSQ) ------------
 dd <- as.data.table(read_parquet(DART))
 num <- setdiff(names(dd)[vapply(dd, is.numeric, logical(1))], "bsns_year")
 for (col in num) if (!is.double(dd[[col]])) set(dd, j = col, value = as.double(dd[[col]]))
@@ -113,32 +186,79 @@ dl <- dl[RS, on = .(Ticker, bsns_year = FY), nomatch = 0L]
 dl <- merge(dl, dfd, by.x = c("Ticker", "bsns_year"), by.y = c("Ticker", "FY"))
 # sprintf, not paste0: paste0(integer(0), "-12-31") returns "-12-31" (length 1) and as.Date() then fails when no
 #   company-year is restated (11-09 대조군 TC)
-DR <- dl[, .(Ticker, Period = sprintf("%d12", bsns_year), Period_Date = as.Date(sprintf("%d-12-31", bsns_year)),
+DR <- dl[, .(Ticker, FY = bsns_year, Period = sprintf("%d12", bsns_year), Period_Date = as.Date(sprintf("%d-12-31", bsns_year)),
              Factor_Date = DART_Factor_Date, Item, Value, Source = "DART_RESTATED", Freq = "A")]
+# DART 파생(원계정 이름 밖)도 직전 연도 값을 쓴다 → 직전 연도 DART 날짜(없으면 퀀티 직전 연도 날짜)와 비교해 늦은 날
+pdd <- dfd[, .(Ticker, FY = FY + 1L, prev_dfd = DART_Factor_Date)]
+DR <- pdd[DR, on = .(Ticker, FY)]
+DR <- pk[DR, on = .(Ticker, FY)]
+DR[, prev_fd := fifelse(!is.na(prev_dfd), prev_dfd, prev_fd)]
+n_dr_redate <- DR[!(Item %in% names(MAP)) & !is.na(prev_fd) & prev_fd > Factor_Date, .N]
+DR[!(Item %in% names(MAP)) & !is.na(prev_fd) & prev_fd > Factor_Date, Factor_Date := prev_fd]
+DR <- DR[, .(Ticker, Period, Period_Date, Factor_Date, Item, Value, Source, Freq)]
+cat(sprintf("[merged-v2] 파생 날짜를 직전 연도 날짜로 늦춘 행: 퀀티 %d · DART %d\n", n_der_redate, n_dr_redate))
 covered <- unique(dl[, .(Ticker, FY = bsns_year, Old = Item)])
-RQ <- an[FY >= 2015L][RS, on = .(Ticker, FY), nomatch = 0L][!covered, on = .(Ticker, FY, Old)]
-RQ <- RQ[, .(Ticker, Period, Period_Date, Factor_Date, Item = Old, Value, Source = "QW_V2_DELAYED", Freq = "A")]
-miss_rs <- nrow(RS) - uniqueN(dl[, .(Ticker, bsns_year)])
-if (miss_rs > 0L) cat(sprintf("[merged-v2] ⚠ 정정 의심 %d 기업-연도에 DART 기록/날짜가 없다 — 퀀티 미룸 값만 남는다\n", miss_rs))
+RQ <- rbind(an[FY >= 2015L][RS, on = .(Ticker, FY), nomatch = 0L][!covered, on = .(Ticker, FY, Old)],
+            an[FY >= 2015L][RSQ, on = .(Ticker, FY), nomatch = 0L])
+RQ <- RQ[, .(Ticker, Period, Period_Date, Factor_Date, Item = Old, Value, Source = "QW_V2_DELAYED", Freq = "A")][!(Item %in% SHQ)]
+miss_rs <- RSk[is.na(DART_Factor_Date), .N]
 
-# ---- D. 합치기 · 검사 · 쓰기 --------------------------------------------------------------------------------
-M <- rbindlist(list(A, dA, B, dB, DR, RQ), use.names = TRUE)
-dup <- M[, .N, by = .(Ticker, Period, Item)][N > 1L]
-if (nrow(dup)) { cat("[merged-v2] 오류: 중복 키", nrow(dup), "\n"); print(head(dup)); quit(status = 1) }
-bad <- M[is.na(Factor_Date) | Factor_Date <= Period_Date]
-if (nrow(bad)) { cat("[merged-v2] 오류: Factor_Date 가 없거나 기간 말 이전인 행", nrow(bad), "\n"); print(head(bad)); quit(status = 1) }
+# ---- D. 합치기 · 검사 · 날짜 순서 계약 · 쓰기 ---------------------------------------------------------------
+.check_keys <- function(D, label) {
+  dup <- D[, .N, by = .(Ticker, Period, Item)][N > 1L]
+  if (nrow(dup)) { cat("[merged-v2] 오류:", label, "중복 키", nrow(dup), "\n"); print(head(dup)); quit(status = 1) }
+  bad <- D[is.na(Factor_Date) | Factor_Date <= Period_Date]
+  if (nrow(bad)) { cat("[merged-v2] 오류:", label, "Factor_Date 가 없거나 기간 말 이전인 행", nrow(bad), "\n"); print(head(bad)); quit(status = 1) }
+}
+.write_atomic <- function(D, path) {
+  tmp <- paste0(path, ".tmp", Sys.getpid())
+  write_parquet(D, tmp, compression = "zstd", compression_level = 5L, write_statistics = FALSE)
+  if (file.exists(path)) unlink(path)
+  if (!file.rename(tmp, path)) { cat("[merged-v2] 오류: 이름 바꾸기 실패", tmp, "\n"); quit(status = 1) }
+}
+.say_order <- function(label, s) {
+  cat(sprintf("[merged-v2] %s 날짜 순서 계약: 늦게 도착한 옛 기간 %s행 버림(바로 뒤 기간에 빈칸 %s) · 같은 날 도착 %s행 늦춤(최대 %d일)\n",
+              label, format(s$dropped, big.mark = ","), format(s$holes_created, big.mark = ","),
+              format(s$shifted, big.mark = ","), as.integer(s$max_shift_days)))
+}
+M <- rbindlist(list(A, A2, dA, B, dB, DR, RQ), use.names = TRUE)
+.check_keys(M, "병합")
+oc <- order_contract(M); M <- oc$D
+.say_order("병합", oc$stats)
+.check_keys(M, "병합(계약 뒤)")
+# Source = 소비자 호환 역할 표지(지금 병합 표의 뜻 그대로: XLSX 분기 원계정 · xlsx_derived 분기 파생 · DART 연간 원계정 +
+#   파생) — 전략 엔진 약 20곳이 Source == "DART" / "XLSX" 로 연간 · 분기 행을 가른다(11-09 전수 검색 · 엔진 파일은 연구
+#   산출물이라 고치지 않는다). 실제 출처는 Origin(QW_V2 · QW_V2_UNVERIFIED · QW_V2_DELAYED · DART_RESTATED · QW_V2_derived).
+setnames(M, "Source", "Origin")
+M[, Source := fifelse(Freq == "A", "DART", fifelse(Origin == "QW_V2_derived", "xlsx_derived", "XLSX"))]
+setcolorder(M, c("Ticker", "Period", "Period_Date", "Factor_Date", "Item", "Value", "Source", "Origin", "Freq"))
 setorder(M, Ticker, Item, Factor_Date)
-tmp <- paste0(OUT, ".tmp", Sys.getpid())
-write_parquet(M, tmp, compression = "zstd", compression_level = 5L, write_statistics = FALSE)
-if (file.exists(OUT)) unlink(OUT)
-if (!file.rename(tmp, OUT)) { cat("[merged-v2] 오류: 이름 바꾸기 실패", tmp, "\n"); quit(status = 1) }
-src <- M[, .N, by = .(Source, Freq)][order(Freq, Source)]
-rep <- list(schema = "fundamental_merged_v2_report/v1", built_at = format(Sys.time(), "%Y-%m-%dT%H:%M:%S"),
+.write_atomic(M, OUT)
+
+# ---- E. 분기 단독 원계정 41개 전 기간(fundamental_xlsx.parquet 꼴 · XF 팩터) --------------------------------------
+X <- q[Old %in% FUND_RAW_ITEMS, .(Ticker, Period, Item = Old, Value, Period_Date, Factor_Date)]
+.check_keys(X, "분기 표")
+ox <- order_contract(X); X <- ox$D
+.say_order("분기 표", ox$stats)
+.check_keys(X, "분기 표(계약 뒤)")
+setcolorder(X, c("Ticker", "Period", "Item", "Value", "Period_Date", "Factor_Date"))
+setorder(X, Ticker, Item, Factor_Date)
+.write_atomic(X, OUTX)
+
+src <- M[, .N, by = .(Source, Origin, Freq)][order(Freq, Source, Origin)]
+rep <- list(schema = "fundamental_merged_v2_report/v2", built_at = format(Sys.time(), "%Y-%m-%dT%H:%M:%S"),
             rows = nrow(M), tickers = uniqueN(M$Ticker), items = uniqueN(M$Item),
-            by_source = setNames(as.list(src$N), paste(src$Freq, src$Source)),
-            restated_company_years = nrow(RS), restated_without_dart = miss_rs,
-            annual_company_years = uniqueN(M[Freq == "A", .(Ticker, Period)]))
+            by_source = setNames(as.list(src$N), paste(src$Freq, src$Source, src$Origin)),
+            restated_company_years = nrow(RSk), restated_dart_record = nrow(RS), restated_qw_delayed = nrow(RSQ),
+            restated_without_dart = miss_rs,
+            annual_company_years = uniqueN(M[Freq == "A", .(Ticker, Period)]),
+            annual_date_raised_to_latest_quarter = n_key_late,
+            derived_date_raised_to_prior_year = list(qw = n_der_redate, dart = n_dr_redate),
+            order_contract = list(merged = oc$stats, xlsx = ox$stats),
+            xlsx = list(path = OUTX, rows = nrow(X), tickers = uniqueN(X$Ticker), items = uniqueN(X$Item)))
 writeLines(toJSON(rep, auto_unbox = TRUE, pretty = TRUE), file.path(dirname(OUT), "fundamental_merged_v2_report.json"), useBytes = TRUE)
-cat(sprintf("[merged-v2] 저장 %s · 행 %s · 종목 %d · 항목 %d · %.0fs\n", OUT, format(nrow(M), big.mark = ","),
-            uniqueN(M$Ticker), uniqueN(M$Item), as.numeric(difftime(Sys.time(), t0, units = "secs"))))
+cat(sprintf("[merged-v2] 저장 %s · 행 %s · 종목 %d · 항목 %d\n", OUT, format(nrow(M), big.mark = ","),
+            uniqueN(M$Ticker), uniqueN(M$Item)))
+cat(sprintf("[merged-v2] 저장 %s · 행 %s · 종목 %d · 항목 %d · %.0fs\n", OUTX, format(nrow(X), big.mark = ","),
+            uniqueN(X$Ticker), uniqueN(X$Item), as.numeric(difftime(Sys.time(), t0, units = "secs"))))
 print(src)

@@ -171,6 +171,19 @@ incremental_fundamental <- function() {
   fund_xlsx <- file.path(RAWDATA_PATH, "Fundamental.xlsx")
   fund_pq   <- file.path(CACHE_DIR, "fundamental_xlsx.parquet")
 
+  # 원천 등록부(06_Registry/fundamental_source.json · 2026-11-09): xlsx_base_rebuild = false 면 건너뛴다.
+  #   재무 원천은 퀀티 재무 DB v2 가 대신하고, 신규 상장 동기화([1pre-dk])가 DATA_Key 만 붙여 이 파일 시각을 바꾼다
+  #   (11-09 00:10 · 값 없음). 등록부를 못 읽으면 재파싱하지 않는다(전환 뒤 v1 표로 덮어쓰는 것을 막는다).
+  .src_reg <- file.path(dirname(RAWDATA_PATH), "06_Registry", "fundamental_source.json")
+  if (file.exists(.src_reg)) {
+    .xb <- tryCatch(jsonlite::fromJSON(.src_reg)$xlsx_base_rebuild, error = function(e) NULL)
+    if (!isTRUE(.xb)) {
+      cat(sprintf("[incr] Fundamental.xlsx 재파싱 꺼짐(06_Registry/fundamental_source.json · xlsx_base_rebuild = %s) — skip.\n",
+                  if (is.null(.xb)) "없음 또는 읽기 실패" else as.character(.xb)))
+      return(invisible(FALSE))
+    }
+  }
+
   if (!.xlsx_newer(fund_xlsx, fund_pq)) {
     cat("[incr] Fundamental.xlsx not newer — skip.\n")
     return(invisible(FALSE))

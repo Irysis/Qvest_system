@@ -44,17 +44,21 @@ setDTthreads(2)
 fq081_build_fundamental_vintages <- function(cache_dir) {
   fp <- file.path(cache_dir, "fundamental_merged.parquet")
   stopifnot(file.exists(fp))
+  # 2026-11-09: 재무 병합 v2(퀀티 메인)는 연간 행을 Freq == "A" 로 표시한다(Source 가 DART 가 아님).
+  #   Freq 열이 있으면 그것을, 없으면(지금 병합 표) 예전 판정을 쓴다.
+  ds <- open_dataset(fp, format = "parquet")
+  has_freq <- "Freq" %in% names(ds$schema)
   f <- as.data.table(
-    open_dataset(fp, format = "parquet") %>%
-      select(Ticker, Period, Period_Date, Factor_Date, Item, Value, Source) %>%
+    ds %>%
+      select(all_of(c("Ticker", "Period", "Period_Date", "Factor_Date", "Item", "Value", "Source", if (has_freq) "Freq"))) %>%
       filter(Item %in% c("Revenue", "NetIncome", "TotalAssets")) %>%
       collect()
   )
   f <- f[!is.na(Ticker) & !is.na(Factor_Date) & is.finite(Value)]
   f[, Factor_Date := as.Date(Factor_Date)]
   f[, q := substr(Period, 5L, 6L)]
-  # 원천별 flow 정의: XLSX = 분기 flow(4분기 누적 필요) / DART Period 12 = 연간 flow(그대로)
-  f[, is_annual_flow := (Source == "DART" & q == "12")]
+  # 원천별 flow 정의: XLSX = 분기 flow(4분기 누적 필요) / DART Period 12 = 연간 flow(그대로) · v2 = Freq
+  if (has_freq) f[, is_annual_flow := (Freq == "A")] else f[, is_annual_flow := (Source == "DART" & q == "12")]
 
   w <- dcast(f, Ticker + Period + Factor_Date + is_annual_flow ~ Item,
              value.var = "Value", fun.aggregate = function(x) x[1])

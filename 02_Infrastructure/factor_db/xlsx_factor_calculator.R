@@ -45,7 +45,16 @@ if (!exists("CACHE_DIR")) {
   CACHE_DIR <- file.path(.xlsx_proj, ".cache")
 }
 
-XLSX_FUND_PATH <- file.path(CACHE_DIR, "fundamental_xlsx.parquet")
+# QVEST_FUND_XLSX (2026-11-09): 시범 산출용 경로 덮어쓰기(재무 v2 분기 표 한 달 대조 · factor_db_builder.R 의
+#   QVEST_FUND_MERGED 와 짝). 기본값 = 지금 정본. 정규 체인은 이 변수를 쓰지 않는다.
+#   빈 값 = 미설정. 값이 있는데 파일이 없으면 멈춘다(XF 팩터를 조용히 비우지 않는다).
+XLSX_FUND_PATH <- Sys.getenv("QVEST_FUND_XLSX")
+if (nzchar(XLSX_FUND_PATH)) {
+  if (!file.exists(XLSX_FUND_PATH)) stop("[xlsx_factor_calc] QVEST_FUND_XLSX 경로가 없다: ", XLSX_FUND_PATH)
+  cat("  ★xlsx 재무 경로 덮어쓰기(QVEST_FUND_XLSX):", XLSX_FUND_PATH, "\n")
+} else {
+  XLSX_FUND_PATH <- file.path(CACHE_DIR, "fundamental_xlsx.parquet")
+}
 
 # ─── Safe division helper ────────────────────────────────────────────────────
 .xf_sdiv <- function(num, den, min_den = 1e-8) {

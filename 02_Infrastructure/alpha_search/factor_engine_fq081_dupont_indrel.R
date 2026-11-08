@@ -38,9 +38,13 @@ suppressPackageStartupMessages({ library(arrow); library(dplyr) })
 
 # ---- 1. 재무 vintage (PM / ATO 수준) ---------------------------------------
 #   Factor_Date = 공시 가능일 (지연 반영 완료, 위 주석 참조). lag 추가 불필요.
+# 2026-11-09: 재무 병합 v2(퀀티 메인)는 연간 행을 Freq == "A" 로 표시한다(Source 가 DART 가 아님).
+#   Freq 열이 있으면 그것을, 없으면(지금 병합 표) 예전 판정을 쓴다 — 두 판 모두에서 같은 뜻.
+.fq_ds <- open_dataset(file.path(.fq_cache, "fundamental_merged.parquet"), format = "parquet")
+.fq_has_freq <- "Freq" %in% names(.fq_ds$schema)
 .fq_f <- as.data.table(
-  open_dataset(file.path(.fq_cache, "fundamental_merged.parquet"), format = "parquet") %>%
-    select(Ticker, Period, Factor_Date, Item, Value, Source) %>%
+  .fq_ds %>%
+    select(all_of(c("Ticker", "Period", "Factor_Date", "Item", "Value", "Source", if (.fq_has_freq) "Freq"))) %>%
     filter(Item %in% c("Revenue", "NetIncome", "TotalAssets")) %>%
     collect()
 )
@@ -48,7 +52,11 @@ suppressPackageStartupMessages({ library(arrow); library(dplyr) })
 .fq_f[, Factor_Date := as.Date(Factor_Date)]
 # C4 lag 근거: Factor_Date 는 이미 공시지연 반영분 (분기 lag +45일 / 연간 lag +90일 = 익년 3/31).
 #   아래 줄은 flow 정의(분기 누적 vs 연간)만 구분하며, 시점 lag 를 다시 만들지 않는다.
-.fq_f[, .is_annual := (Source == "DART" & substr(Period, 5L, 6L) == "12")]  # lag 는 Factor_Date 에 반영됨
+if (.fq_has_freq) {
+  .fq_f[, .is_annual := (Freq == "A")]
+} else {
+  .fq_f[, .is_annual := (Source == "DART" & substr(Period, 5L, 6L) == "12")]  # lag 는 Factor_Date 에 반영됨
+}
 
 .fq_w <- dcast(.fq_f, Ticker + Period + Factor_Date + .is_annual ~ Item,
                value.var = "Value", fun.aggregate = function(x) x[1])
