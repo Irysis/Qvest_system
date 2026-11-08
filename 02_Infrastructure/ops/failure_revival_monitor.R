@@ -60,11 +60,14 @@ suppressWarnings(suppressMessages({
 # ── generic 신호값 로더 (kind별. signal_id 별 분기 없음 — 열린 스키마) ────────
 # 반환: list(ok=TRUE/FALSE, value=<현재값>, note=<진단>).
 .rev_read_parquet <- function(path, cols = NULL) {
-  # OneDrive/Windows arrow 안정화: 단일 IO 스레드(parquet read HANG 방지 —
-  #   [[project-ramp-fullcycle-graduation]] set_io_thread_count(1)이 HANG 해소책).
-  #   arrow가 num_threads<2 경고를 내지만 본 monitor는 소형 신호 parquet만 읽어 무해 → suppress.
+  # arrow IO 스레드 = 최소 2 (★2026-11-08 수리). 구판은 set_io_thread_count(1L) 을 'HANG 해소책'으로
+  #   걸었는데 그 권고는 06-18 에 이미 틀린 것으로 정정됐다(arrow 경고 "num_threads < 2 may hang" 가 실제).
+  #   arrow 24 까지는 mmap=FALSE 일 때만 교착했지만 arrow 26.0.0(R 4.6.2)은 기본 read_parquet 도
+  #   IO 스레드 1개면 무한 교착한다 — 실측 255행 파일: io=1 → 60초 무응답 · io=2/기본 8 → 0.04초.
+  #   증상 = refine_distilled · 모닝브리핑 부활 감시 · test_revival_flags_sync 가 CPU 0 으로 멈춤.
+  #   저장소 관행(m4_append_only.R · reports/*.R)과 같게 '2 미만이면 2'로만 올린다(호출자의 더 큰 값은 존중).
   if (!requireNamespace("arrow", quietly = TRUE)) return(NULL)
-  suppressWarnings(tryCatch(arrow::set_io_thread_count(1L), error = function(e) NULL))
+  try(if (arrow::io_thread_count() < 2L) arrow::set_io_thread_count(2L), silent = TRUE)
   suppressWarnings(tryCatch({
     if (is.null(cols)) arrow::read_parquet(path)
     else arrow::read_parquet(path, col_select = dplyr::all_of(cols))
