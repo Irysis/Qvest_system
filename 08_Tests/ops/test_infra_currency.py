@@ -101,6 +101,54 @@ ck("--include-pinned --include-major → pandas · torch 도 올림(보류는 �
 pl3 = iu.plan(d, {"venv"}, include_pinned=False, include_major=False, role="secondary")
 ck("노트북(secondary) → 공유 venv 안 바꿈", not pl3["venv"]["take"] and any(i["why"] == "공유 venv — 메인에서만" for i in pl3["venv"]["skip"]))
 
+# ⑤ 수동 판 보류(06_Registry/infra_holds.json · 2026-11-08 PerformanceAnalytics 2.0.8 고정) — 양방향
+with tempfile.TemporaryDirectory() as td:
+    ck("보류 파일 없음 → 보류 없음", ic.load_holds(td) == [])
+    os.makedirs(os.path.join(td, "06_Registry"))
+    json.dump({"holds": [{"kind": "R", "name": "PerformanceAnalytics", "version": "2.0.8", "reason": "측정 정의 변경"},
+                         {"kind": "venv", "name": "Typing_Extensions", "reason": "x"},
+                         {"kind": "bogus", "name": "z"}, {"kind": "R"}]},
+              open(os.path.join(td, "06_Registry", "infra_holds.json"), "w", encoding="utf-8"))
+    hs = ic.load_holds(td)
+    ck("보류 읽기 — kind 어휘 밖 · 이름 없는 항목은 버림", [(h["kind"], h["name"]) for h in hs] == [("R", "PerformanceAnalytics"), ("venv", "Typing_Extensions")], str(hs))
+    open(os.path.join(td, "06_Registry", "infra_holds.json"), "w", encoding="utf-8").write("{깨짐")
+    ck("보류 파일 깨짐 → 보류 없음(조용히 막지 않는다)", ic.load_holds(td) == [])
+pa = {"name": "PerformanceAnalytics", "installed": "2.0.8", "latest": "2.1.0", "major": False}
+zo = {"name": "zoo", "installed": "1.9-1", "latest": "1.9-2", "major": False}
+dh = D(r_outdated=[dict(pa), dict(zo)], venv_outdated=[{"name": "typing-extensions", "installed": "4.0", "latest": "4.1", "upgradable": True, "major": False}])
+ic.apply_holds(dh, hs)
+r_by = {i["name"]: i for i in dh["r_outdated"]}
+ck("보류 이름만 upgradable=False · held_manual=사유 · 다른 패키지는 그대로",
+   r_by["PerformanceAnalytics"].get("upgradable", True) is False and r_by["PerformanceAnalytics"].get("held_manual") == "측정 정의 변경"
+   and r_by["zoo"].get("upgradable", True) is True and "held_manual" not in r_by["zoo"], str(r_by))
+ck("파이썬 보류는 PEP 503 이름으로 맞춘다(Typing_Extensions ↔ typing-extensions)", dh["venv_outdated"][0].get("upgradable", True) is False)
+lh = ic.infra_line(ic.apply_holds(D(r_outdated=[dict(pa)]), hs), now=now)
+ck("보류만 남음 → ★ 없음 · 'R패키지 0(보류 1)'", "★" not in lh and "R패키지 0(보류 1)" in lh, lh)
+lnh = ic.infra_line(D(r_outdated=[dict(pa)]), now=now)
+ck("보류 없으면 같은 항목이 ★ · 'R패키지 1'(음성 대조 — 보류가 표시를 실제로 바꾼다)", "★최신화 필요" in lnh and "R패키지 1" in lnh, lnh)
+ph = iu.plan(dh, {"rpkgs"}, include_pinned=True, include_major=True, role="main")
+ck("최신화 계획 — 수동 보류는 --include-pinned · --include-major 여도 건너뜀 · 사유 = 보류 파일",
+   {i["name"] for i in ph["rpkgs"]["take"]} == {"zoo"} and ph["rpkgs"]["skip"][0]["why"].startswith("수동 보류"), str(ph["rpkgs"]))
+
+# ⑥ 역의존 상한(11-08 mpmath 1.4.1 ↔ sympy mpmath<1.4) — 이 시험을 돌리는 해석기의 실제 배포판으로 양방향을 잰다
+import importlib.metadata as _m  # noqa: E402
+_lb = None
+for _d in sorted(_m.distributions(), key=lambda x: (x.metadata["Name"] or "").lower()):
+    for _rs in (_d.requires or []):
+        if ";" in _rs or "<" in _rs or "==" in _rs or "~=" in _rs or ">=" not in _rs:
+            continue                                      # 표식 없는 '하한만' 요구 = 낮은 판은 막고 높은 판은 허용해야 한다
+        _lb = (_d.metadata["Name"], _rs); break
+    if _lb:
+        break
+if _lb is None:
+    ck("역의존 시험 대상(하한만 있는 요구) 찾음", False, "이 해석기에 해당 배포판 없음 — 다른 해석기로 돌릴 것")
+else:
+    _nm = ic.norm(_lb[1].split(">=")[0].strip(" ([")); _lo = ic.reverse_dep_blocks(sys.executable, {_nm: "0.0.1"})
+    _hi = ic.reverse_dep_blocks(sys.executable, {_nm: "9999.0"})
+    ck("역의존 — 깔린 배포판의 하한보다 낮은 새 판은 막는다(%s : %s)" % _lb, bool(_lo.get(_nm)), str(_lo))
+    ck("역의존 — 하한만 있으면 더 높은 새 판은 막지 않는다(음성 대조)", not _hi.get(_nm), str(_hi))
+ck("역의존 조회 실패(해석기 없음) → 빈 사전(막지 않음)", ic.reverse_dep_blocks("C:/no/such/python.exe", {"x": "1"}) == {})
+
 print("[test_infra_currency] PASS=%d FAIL=%d" % (P, F))
 print(json.dumps({"test": "infra_currency", "pass": P, "fail": F, "total": P + F}))
 sys.exit(1 if F else 0)

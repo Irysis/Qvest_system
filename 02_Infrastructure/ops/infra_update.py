@@ -63,7 +63,9 @@ def plan(d, scopes, include_pinned, include_major, role):
         take, skip = [], []
         for i in rows:
             why = None
-            if not i.get("upgradable", True):
+            if i.get("held_manual"):
+                why = "수동 보류(%s)" % ic.HOLDS_FILE
+            elif not i.get("upgradable", True):
                 why = "보류(의존 상한)"
             elif not include_pinned and ((kind == "R" and i["name"] in pins["R"]) or (kind == "py" and ic.norm(i["name"]) in pins["py"])):
                 why = "라운드 고정"
@@ -155,6 +157,7 @@ def main():
     except Exception as e:  # noqa: BLE001
         print("infra_update: 점검 결과를 못 읽음 %s" % e)
         return 2
+    ic.apply_holds(d, ic.load_holds(root))   # 점검 결과가 보류 파일보다 먼저 만들어졌어도 지금의 보류를 따른다
     scopes = {s.strip() for s in a.scope.split(",") if s.strip()}
     role = role_of(root, host)
     P = plan(d, scopes, a.include_pinned, a.include_major, role)

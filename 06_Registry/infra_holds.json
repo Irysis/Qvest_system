@@ -1,0 +1,15 @@
+{
+  "schema": "infra_holds_v1",
+  "_doc": "수동 판 보류 — 최신화 도구(02_Infrastructure/ops/infra_currency.py · infra_update.py)가 '올릴 것'으로 세지 않고 건너뛴다(부팅 Infra 줄 = '(보류 n)'). 판을 올리면 측정 정의가 조용히 바뀌는 등 사람이 확인한 사유가 있을 때만 적는다. 항목마다 kind(R · venv · syspy) · name · version(고정 판) · since · reason · evidence · release_when 필수. 해제 = 이 파일에서 항목을 지우고 release_when 의 대조를 기록.",
+  "holds": [
+    {
+      "kind": "R",
+      "name": "PerformanceAnalytics",
+      "version": "2.0.8",
+      "since": "2026-11-08",
+      "reason": "2.1.0 이 측정 정의를 조용히 바꾼다 — ① Return.portfolio(xts 날짜 비중 · rebalance_on = NA) 출력 날짜를 한 기간 앞으로 당긴다(d2 자산 수익으로 번 값을 d1 날짜로 표시 → 날짜 병합이 하루 어긋남 · FR v4 재배분 대조 중단) ② SharpeRatio.annualized 의 geometric 기본값 TRUE → FALSE(인자 없이 부르는 곳의 연환산 Sharpe 가 바뀜 · 충실구현 논문 기준 요약 등) ③ UpDownRatios 에 geometric = TRUE 신설(상승 · 하락 포착률 값이 바뀌고 상승 또는 하락 구간이 없는 입력에서 오류 → build_benchmark_compare 중단 → 등급 v3 미산출)",
+      "evidence": "04_Research/01_reports/env_upgrade_20261109/PLAN.md §5 ③ — 같은 R 4.6.2 · xts 0.14.3 · zoo 1.9.1 에서 2.0.8 = 옛 환경 값 비트 동일 · 2.1.0 사본 = .cache/installers/pkg_backup_20261108/PerformanceAnalytics_2.1.0",
+      "release_when": "호출부를 판과 무관하게 고정한 뒤(Return.portfolio xts 비중의 날짜 규약 · SharpeRatio.annualized geometric 명시 · UpDownRatios geometric = FALSE 를 2.0.8 호환으로) 같은 입력에서 2.0.8 · 새 판 수치 대조 차이 0 을 기록 · 열린 사전등록 라운드가 이 판을 고정하지 않을 것"
+    }
+  ]
+}

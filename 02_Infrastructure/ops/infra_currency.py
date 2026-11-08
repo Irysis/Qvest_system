@@ -160,7 +160,49 @@ def pip_outdated(exe):
             w = would.get(norm(r["name"]))
             r["upgradable"] = bool(w) and vtuple(w) > vtuple(r["installed"])
             r["to"] = w if r["upgradable"] else None
+        # pip 모의 해석은 '요청한 패키지 + 그 의존'만 풀고 이미 깔린 다른 패키지(역의존)의 상한은 보지 않는다 —
+        #   11-08 실측: mpmath 1.4.1 = 'Would install' 인데 sympy 1.14.0 이 mpmath<1.4 를 요구(올리면 torch 가 쓰는 sympy 요구가 깨진다).
+        #   → 대상 해석기 안에서 깔린 배포판의 활성 요구 조건을 모아 새 판을 허용하지 않는 역의존이 있으면 보류로 돌린다.
+        blocked = reverse_dep_blocks(exe, {norm(r["name"]): r["to"] for r in rows if r.get("upgradable")})
+        for r in rows:
+            b = blocked.get(norm(r["name"]))
+            if b:
+                r["upgradable"], r["to"], r["held_by"] = False, None, b
     return rows, None
+
+
+_REVDEP_CODE = r'''
+import json, sys, importlib.metadata as m
+from pip._vendor.packaging.requirements import Requirement
+from pip._vendor.packaging.utils import canonicalize_name
+cand = json.loads(sys.argv[1]); out = {}
+for d in m.distributions():
+    for rs in (d.requires or []):
+        try:
+            q = Requirement(rs)
+        except Exception:
+            continue
+        if q.marker is not None and not q.marker.evaluate({"extra": ""}):
+            continue                                   # extra 전용 요구(예: scipy 의 test) · 이 환경에 해당 없는 요구는 제외
+        n = canonicalize_name(q.name)
+        if n in cand and str(q.specifier) and not q.specifier.contains(cand[n], prereleases=True):
+            out.setdefault(n, []).append("%s %s requires %s" % (d.metadata["Name"], d.version, rs))
+print("REVDEP" + json.dumps(out))
+'''
+
+
+def reverse_dep_blocks(exe, cand):
+    """{정규화 이름: 새 판} 중 이미 깔린 배포판의 요구 조건이 그 판을 허용하지 않는 것 → {이름: [막는 요구 …]}. 조회 실패 = 빈 사전(막지 않음)."""
+    if not cand or not exe or not os.path.isfile(exe):
+        return {}
+    rc, out = run([exe, "-c", _REVDEP_CODE, json.dumps(cand)], 300)
+    i = out.find("REVDEP")
+    if rc != 0 or i < 0:
+        return {}
+    try:
+        return json.loads(out[i + 6:].strip().splitlines()[0])
+    except ValueError:
+        return {}
 
 
 def r_outdated(rs):
@@ -205,6 +247,28 @@ def open_round_pins(root):
                         "r_version": op.get("r_version"), "r_packages": op.get("packages", {}) or {},
                         "python": {k: v for k, v in py.items() if k not in ("ok", "executable")}})
     return out
+
+
+HOLDS_FILE = "06_Registry/infra_holds.json"
+HOLD_KEYS = {"R": "r_outdated", "venv": "venv_outdated", "syspy": "syspy_outdated"}
+
+
+def load_holds(root):
+    """수동 판 보류(06_Registry/infra_holds.json) — 사람이 확인한 사유(예: 판을 올리면 측정 정의가 조용히 바뀜)로 묶은 판. 파일 없음 · 깨짐 = 보류 없음."""
+    try:
+        d = json.load(open(os.path.join(root, HOLDS_FILE), encoding="utf-8"))
+    except Exception:  # noqa: BLE001
+        return []
+    return [h for h in (d.get("holds") or []) if isinstance(h, dict) and h.get("kind") in HOLD_KEYS and h.get("name")]
+
+
+def apply_holds(d, holds):
+    """보류 항목을 '올릴 수 없음'으로 표시(upgradable=False · held_manual=사유) — 부팅 줄은 (보류 n)으로 세고 infra_update 는 건너뛴다."""
+    for h in holds:
+        for i in d.get(HOLD_KEYS[h["kind"]]) or []:
+            if (i["name"] == h["name"]) if h["kind"] == "R" else (norm(i["name"]) == norm(h["name"])):
+                i["upgradable"], i["to"], i["held_manual"] = False, None, h.get("reason") or "수동 보류"
+    return d
 
 
 def infra_line(d, now=None, stale_h=36):
@@ -297,6 +361,8 @@ def main():
             if norm(i["name"]) in {norm(k) for k in p["python"]}:
                 pinned.append({"round": p["round"], "kind": "venv", "name": i["name"]})
     d["pinned_outdated"] = pinned
+    d["holds"] = load_holds(root)
+    apply_holds(d, d["holds"])
     d["line"] = infra_line(d)
     try:
         os.makedirs(os.path.dirname(out), exist_ok=True)
