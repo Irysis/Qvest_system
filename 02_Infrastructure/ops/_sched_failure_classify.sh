@@ -319,7 +319,7 @@ sched_check_credentials() {
 sched_resolve_python() {
   local c
   for c in "${QVEST_PY:-}" \
-           "/c/Users/99922/AppData/Local/Programs/Python/Python312/python.exe" \
+           "/c/Users/99922/AppData/Local/Programs/Python/Python315/python.exe" \
            "$(command -v python3 2>/dev/null)" \
            "$(command -v python 2>/dev/null)"; do
     [ -n "$c" ] || continue

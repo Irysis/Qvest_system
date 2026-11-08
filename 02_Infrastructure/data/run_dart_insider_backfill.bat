@@ -9,7 +9,7 @@ REM 2026-07-14: BF_END 확장 2024-02(스크립트 기본) -> 2026-06 (task #44 
 REM   + R9 발사조건 연속 200501~202604). 완료 월 200501~202402(230월)은 체크포인트 skip —
 REM   잔여 202403~202606만 수집. budget guard 불변.
 set BF_END=2026-06
-set RSCRIPT=C:\Program Files\R\R-4.5.2\bin\Rscript.exe
+set RSCRIPT=C:\Program Files\R\R-4.6.2\bin\Rscript.exe
 set LOGD=C:\Users\99922\OneDrive\Quant_Module_Moltbot\.cache\dart\insider_backfill\logs
 if not exist "%LOGD%" mkdir "%LOGD%"
 set TS=%DATE:~0,4%%DATE:~5,2%%DATE:~8,2%

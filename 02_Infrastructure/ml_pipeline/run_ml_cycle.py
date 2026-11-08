@@ -373,7 +373,7 @@ def main():
     try:
         import os as _os, subprocess as _sp, shutil as _sh
         _proj = _os.environ.get("CLAUDE_PROJECT_DIR") or _os.environ.get("QM_ROOT") or "G:/Quant_Module_Moltbot"
-        _rbin = _sh.which("Rscript") or r"C:/Program Files/R/R-4.5.2/bin/Rscript.exe"
+        _rbin = _sh.which("Rscript") or r"C:/Program Files/R/R-4.6.2/bin/Rscript.exe"
         _sp.run([_rbin, _os.path.join(_proj, "02_Infrastructure/contracts/register_research_outputs.R")], check=False)
         print("[run_ml_cycle] register_research_outputs 호출 — ML/DPL 산출물 FR 풀 등재 시도")
     except Exception as _e:

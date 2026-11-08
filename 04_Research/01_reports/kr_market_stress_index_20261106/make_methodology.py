@@ -23,7 +23,7 @@ sys.path.insert(0, HERE)
 import daily_text  # noqa: E402
 
 OUT = HERE + "/output/v1"
-RSCRIPT = os.environ.get("QVEST_RSCRIPT", "C:/Program Files/R/R-4.5.2/bin/Rscript.exe")
+RSCRIPT = os.environ.get("QVEST_RSCRIPT", "C:/Program Files/R/R-4.6.2/bin/Rscript.exe")
 PDF_TOOL = ROOT + "/00_Lawbook/tools/md_to_print_pdf.R"
 
 

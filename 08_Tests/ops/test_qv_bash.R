@@ -69,7 +69,7 @@ chk("r_missing_override_raises", grepl("QVEST_BASH", e2), e2)
 chk("r_non_windows_is_bare_bash", identical(E$qv_bash(path = P(d_sys), windows = FALSE), "bash"))
 
 # ─── ② Python 짝 — 같은 합성 입력에 같은 답 ─────────────────────────────────
-py <- c(Sys.getenv("QVEST_PY", ""), "C:/Users/99922/AppData/Local/Programs/Python/Python312/python.exe",
+py <- c(Sys.getenv("QVEST_PY", ""), "C:/Users/99922/AppData/Local/Programs/Python/Python315/python.exe",
         file.path(ROOT, ".venv_qvest_ml/Scripts/python.exe"))
 py <- py[nzchar(py) & file.exists(py)][1]
 if (is.na(py)) {

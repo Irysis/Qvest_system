@@ -30,7 +30,7 @@ KOR="$CODE/02_Infrastructure/ops/kill_own_r.ps1"
 SHIMD="$CODE/02_Infrastructure/ops/shims"
 NL4="$CODE/02_Infrastructure/monitoring/run_nolayer4_monthly.sh"
 FWD_REL="05_Production/2.Factor_Model/2-3.STR_1715_on_M4_R05_noLayer4_PG2/01_reproducible_code/run_pg2_forward_noLayer4.sh"
-RS="${QVEST_RSCRIPT:-/c/Program Files/R/R-4.5.2/bin/Rscript.exe}"
+RS="${QVEST_RSCRIPT:-/c/Program Files/R/R-4.6.2/bin/Rscript.exe}"
 PASS=0; FAIL=0; MK=0; MT=0
 ok(){ echo "  [PASS] $1"; PASS=$((PASS+1)); }
 ng(){ echo "  [FAIL] $1"; FAIL=$((FAIL+1)); }

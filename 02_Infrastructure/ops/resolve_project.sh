@@ -99,7 +99,7 @@ if [ -z "${QVEST_PY_SHIM:-}" ]; then
   _qpy=""
   for _c in "${QVEST_PY:-}" \
             "$PROJECT/.venv_qvest_ml/Scripts/python.exe" \
-            "/c/Users/99922/AppData/Local/Programs/Python/Python312/python.exe" \
+            "/c/Users/99922/AppData/Local/Programs/Python/Python315/python.exe" \
             "$(command -v python3 2>/dev/null)" \
             "$(command -v python 2>/dev/null)"; do
     [ -n "$_c" ] || continue

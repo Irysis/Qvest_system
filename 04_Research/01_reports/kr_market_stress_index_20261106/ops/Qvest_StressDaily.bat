@@ -16,5 +16,5 @@ if not exist "%GITBASH%" (
   exit /b 9
 )
 if not exist "%QM_ROOT%\.cache\scheduler_logs" mkdir "%QM_ROOT%\.cache\scheduler_logs"
-"%GITBASH%" -c "export PATH='/c/Program Files/R/R-4.5.2/bin:'$PATH; export CLAUDE_PROJECT_DIR='%ROOT_U%'; export QM_ROOT='%ROOT_U%'; export QVEST_UNATTENDED=1; export PYTHONUTF8=1; bash '%HERE_U%run_daily_stress_task.sh' >> '%ROOT_U%/.cache/scheduler_logs/stress_daily.log' 2>&1"
+"%GITBASH%" -c "export PATH='/c/Program Files/R/R-4.6.2/bin:'$PATH; export CLAUDE_PROJECT_DIR='%ROOT_U%'; export QM_ROOT='%ROOT_U%'; export QVEST_UNATTENDED=1; export PYTHONUTF8=1; bash '%HERE_U%run_daily_stress_task.sh' >> '%ROOT_U%/.cache/scheduler_logs/stress_daily.log' 2>&1"
 exit /b %ERRORLEVEL%

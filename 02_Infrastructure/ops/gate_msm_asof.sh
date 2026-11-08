@@ -40,7 +40,7 @@ ROOT="${2:-${QM_ROOT:-C:/Users/99922/OneDrive/Quant_Module_Moltbot}}"
 # MSYS 형(/c/... · /tmp/...)은 cygpath 로 네이티브 슬래시 형(C:/...)으로 바꿔 R 에 넘긴다.
 ROOT="${ROOT//\\//}"
 if command -v cygpath >/dev/null 2>&1; then ROOT="$(cygpath -m "$ROOT" 2>/dev/null || echo "$ROOT")"; fi
-RSCRIPT="${QVEST_RSCRIPT:-$(command -v Rscript 2>/dev/null || echo '/c/Program Files/R/R-4.5.2/bin/Rscript.exe')}"
+RSCRIPT="${QVEST_RSCRIPT:-$(command -v Rscript 2>/dev/null || echo '/c/Program Files/R/R-4.6.2/bin/Rscript.exe')}"
 
 bad(){ echo "BAD $*"; exit 1; }
 [[ "$AS_OF" =~ ^[0-9]{4}-[0-9]{2}-01$ ]] || bad "[args] AS_OF='$AS_OF' — 홀딩월 1일(YYYY-MM-01)이어야 한다"

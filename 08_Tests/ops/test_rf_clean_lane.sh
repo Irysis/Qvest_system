@@ -30,9 +30,9 @@
 set -uo pipefail
 ROOT="${QM_ROOT:-C:/Users/99922/OneDrive/Quant_Module_Moltbot}"; ROOT="${ROOT//\\//}"
 PY="${QVEST_CL_PY:-${QVEST_PY:-$ROOT/.venv_qvest_ml/Scripts/python.exe}}"
-[ -x "$PY" ] || PY="C:/Users/99922/AppData/Local/Programs/Python/Python312/python.exe"
+[ -x "$PY" ] || PY="C:/Users/99922/AppData/Local/Programs/Python/Python315/python.exe"
 export PYTHONDONTWRITEBYTECODE=1 PYTHONUTF8=1
-RSCRIPT_REAL="${QVEST_CL_RSCRIPT:-$(command -v Rscript 2>/dev/null || echo "C:/Program Files/R/R-4.5.2/bin/Rscript.exe")}"
+RSCRIPT_REAL="${QVEST_CL_RSCRIPT:-$(command -v Rscript 2>/dev/null || echo "C:/Program Files/R/R-4.6.2/bin/Rscript.exe")}"
 PASS=0; FAIL=0; SKIP=0
 ok(){ PASS=$((PASS+1)); printf '  OK    %s\n' "$1"; }
 ng(){ FAIL=$((FAIL+1)); printf '  FAIL  %s — %s\n' "$1" "${2:-}"; }

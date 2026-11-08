@@ -178,7 +178,7 @@ def main(update_rawdata=False, allow_grid_change=False, insert_dates=()):
     #   정의·보호·킬스위치·원자 쓰기·사후검증은 rawdata_bm_ret_sync.R 하나가 진다.
     if update_rawdata:
         import subprocess
-        rscript = shutil.which("Rscript") or r"C:\Program Files\R\R-4.5.2\bin\Rscript.exe"
+        rscript = shutil.which("Rscript") or r"C:\Program Files\R\R-4.6.2\bin\Rscript.exe"
         sync_r = os.path.join(os.path.dirname(os.path.abspath(__file__)), "rawdata_bm_ret_sync.R")
         env = dict(os.environ, QM_ROOT=os.path.dirname(CACHE))
         rc = subprocess.call([rscript, "--no-save", sync_r, "--apply"], env=env)

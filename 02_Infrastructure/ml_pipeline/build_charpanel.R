@@ -18,7 +18,7 @@
 #
 # Run (PowerShell, heavy arrow -> PowerShell tool):
 #   $env:CLAUDE_PROJECT_DIR="G:/Quant_Module_Moltbot"; $env:PYTHONUTF8="1"
-#   & "C:/Program Files/R/R-4.5.2/bin/Rscript.exe" 02_Infrastructure/ml_pipeline/build_charpanel.R
+#   & "C:/Program Files/R/R-4.6.2/bin/Rscript.exe" 02_Infrastructure/ml_pipeline/build_charpanel.R
 #==============================================================================
 
 suppressPackageStartupMessages({

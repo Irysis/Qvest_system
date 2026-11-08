@@ -2,7 +2,7 @@
 #   ★ SIMPLIFIED driver (value_bm 상관 제거) 사용. AC07은 smoke로 이미 완료(JSON 있으면 skip).
 $env:CLAUDE_PROJECT_DIR = "C:/Users/99922/OneDrive/Quant_Module_Moltbot"
 $env:PYTHONUTF8 = "1"
-$RS = "C:/Program Files/R/R-4.5.2/bin/Rscript.exe"
+$RS = "C:/Program Files/R/R-4.6.2/bin/Rscript.exe"
 $DRIVER = "C:/Users/99922/OneDrive/Quant_Module_Moltbot/02_Infrastructure/alpha_search/driver_ls_generic.R"
 $LOGDIR = "C:/Users/99922/OneDrive/Quant_Module_Moltbot/stage_artifacts/alpha_search/ls_screen"
 New-Item -ItemType Directory -Force -Path $LOGDIR | Out-Null

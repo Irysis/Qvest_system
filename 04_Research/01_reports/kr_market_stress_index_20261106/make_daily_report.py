@@ -36,7 +36,7 @@ import daily_text  # noqa: E402  (임원 보고용 본문 — 높임말 · 쉬�
 
 OUT = HERE + "/output/v1"
 DAILY = HERE + "/daily"
-RSCRIPT = os.environ.get("QVEST_RSCRIPT", "C:/Program Files/R/R-4.5.2/bin/Rscript.exe")
+RSCRIPT = os.environ.get("QVEST_RSCRIPT", "C:/Program Files/R/R-4.6.2/bin/Rscript.exe")
 PDF_TOOL = ROOT + "/00_Lawbook/tools/md_to_print_pdf.R"
 TIER_COLOR = {"정상": "C6EFCE", "주의": "FFEB9C", "위험": "FFC7CE"}
 CHART_FILES = ["d1_gauge.png", "d2_axis_contrib.png", "d3_heatmap_65d.png", "d4_radar_hist.png", "d5_indicators.png", "d6_recent_18m.png", "d7_history.png"]

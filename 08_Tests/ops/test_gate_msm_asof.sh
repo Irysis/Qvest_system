@@ -35,7 +35,7 @@ NL4="$CODE/02_Infrastructure/monitoring/run_nolayer4_monthly.sh"
 FULL="$CODE/02_Infrastructure/ops/run_pg2_rebalance_full.sh"
 RSIG="$CODE/02_Infrastructure/regime/regime_signal.R"
 MSMA="$CODE/02_Infrastructure/regime/msm_asof.R"
-RS="${QVEST_RSCRIPT:-$(command -v Rscript 2>/dev/null || echo '/c/Program Files/R/R-4.5.2/bin/Rscript.exe')}"
+RS="${QVEST_RSCRIPT:-$(command -v Rscript 2>/dev/null || echo '/c/Program Files/R/R-4.6.2/bin/Rscript.exe')}"
 AS="2026-12-01"                                        # 홀딩월 1일 → sig 월 2026-11
 TAGS="marker bench sig_row avail daily read args tmp rscript internal"
 

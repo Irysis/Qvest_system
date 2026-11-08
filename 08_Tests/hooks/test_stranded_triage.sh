@@ -111,7 +111,7 @@ print('ABSENT')" "$1/06_Registry/stranded_repairs.json" "$2" 2>/dev/null
 }
 PYX=""
 for c in "${QVEST_PY:-}" "$PROJ/.venv_qvest_ml/Scripts/python.exe" \
-         "/c/Users/99922/AppData/Local/Programs/Python/Python312/python.exe"; do
+         "/c/Users/99922/AppData/Local/Programs/Python/Python315/python.exe"; do
   [ -n "$c" ] && [ -x "$c" ] && "$c" -c 'import json' >/dev/null 2>&1 && { PYX="$c"; break; }
 done
 [ -n "$PYX" ] || { echo "python 해석 실패" >&2

@@ -102,7 +102,7 @@ function Find-BasePython {
 function Find-Rscript {
   $c = @()
   if ($env:ProgramFiles) {
-    $c += (Join-Path $env:ProgramFiles 'R\R-4.5.2\bin\Rscript.exe')
+    $c += (Join-Path $env:ProgramFiles 'R\R-4.6.2\bin\Rscript.exe')
     $c += @(Get-ChildItem -Path (Join-Path $env:ProgramFiles 'R\R-*\bin\Rscript.exe') -ErrorAction SilentlyContinue |
         Sort-Object { $v = [version]'0.0'; [void][version]::TryParse(($_.FullName -replace '^.*\\R-([0-9.]+)\\bin\\.*$', '$1'), [ref]$v); $v } -Descending |
         ForEach-Object { $_.FullName })

@@ -17,7 +17,7 @@ export R_DATATABLE_NUM_THREADS=1 OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 ARROW_
 cd "$QM_ROOT"
 B23="05_Production/2.Factor_Model/2-3.STR_1715_on_M4_R05_noLayer4_PG2/01_reproducible_code"
 # B21(2-1 슬롯) 참조 제거 (2026-08-02) — base 패널 빌더는 02_Infrastructure/portfolio/ 로 이전
-RSCRIPT="$(command -v Rscript || echo '/c/Program Files/R/R-4.5.2/bin/Rscript.exe')"
+RSCRIPT="$(command -v Rscript || echo '/c/Program Files/R/R-4.6.2/bin/Rscript.exe')"
 LOGD="$QM_ROOT/.cache/nolayer4_track_logs"; mkdir -p "$LOGD"
 AS_OF="${PG2_AS_OF:-$(date +%Y-%m)-01}"
 TS="$(date +%Y%m%d)"; LOG="$LOGD/track_$TS.log"

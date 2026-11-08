@@ -42,7 +42,7 @@ scheduler_alert(){
     return 0
   fi
   local RS_BIN
-  RS_BIN="$(command -v Rscript || echo '/c/Program Files/R/R-4.5.2/bin/Rscript')"
+  RS_BIN="$(command -v Rscript || echo '/c/Program Files/R/R-4.6.2/bin/Rscript')"
   [ -x "$RS_BIN" ] || { log "alert telegram skip: Rscript 없음 (마커는 보존)"; return 0; }
   # (2026-07-25) R 문자열 리터럴 주입 가드: Windows 역슬래시 경로를 R 이 유니코드 이스케이프로
   #   오해해(C:\Users → '\U' used without hex digits) 텔레그램만 조용히 죽던 잠복 버그.
@@ -268,7 +268,7 @@ fi
 _GATE="$BASE/02_Infrastructure/ops/auto_alpha_gate.R"
 _LVB="$BASE/02_Infrastructure/ops/lean_verify_build.py"
 _PIDN="$BASE/02_Infrastructure/ops/paper_id_norm.py"
-_RS_BIN="$(command -v Rscript || echo '/c/Program Files/R/R-4.5.2/bin/Rscript')"
+_RS_BIN="$(command -v Rscript || echo '/c/Program Files/R/R-4.6.2/bin/Rscript')"
 _jget(){ "$PYBIN" -c "import json,io,sys
 try:
     print(json.load(io.open(sys.argv[1], encoding='utf-8-sig')).get(sys.argv[2]) or '')

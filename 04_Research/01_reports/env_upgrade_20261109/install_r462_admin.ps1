@@ -33,7 +33,9 @@ if ($sig.Status -ne 'Valid') { Write-Result "STOP 서명 상태 $($sig.Status)";
 $isAdmin = ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole(
   [Security.Principal.WindowsBuiltInRole]::Administrator)
 $instArgs = @('/VERYSILENT', '/SUPPRESSMSGBOXES', '/NORESTART', '/SP-',
-              '/MERGETASKS="!desktopicon,!quicklaunchicon"', "/DIR=`"$Target`"", "/LOG=`"$Log`"")
+              '/MERGETASKS="!desktopicon,!quicklaunchicon,!recordversion,!associate"', "/DIR=`"$Target`"", "/LOG=`"$Log`"")
+# !recordversion · !associate = 레지스트리 '현재 판'(HKLM\SOFTWARE\R-core) · .RData 연결을 4.5.2 그대로 둔다 —
+#   전환(PATH · QVEST_RSCRIPT)은 따로 하는 단계이고, 그 전엔 다른 세션 · 00:03 체인이 4.5.2 를 쓴다(11-08 593bf0 세션 요청).
 
 if ($DryRun) {
   Write-Result ('DRYRUN md5 OK · 서명 {0} · 관리자={1} · 이미 설치={2} · 명령: "{3}" {4}' -f

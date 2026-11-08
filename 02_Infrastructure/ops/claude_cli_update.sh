@@ -118,7 +118,7 @@ tg() { # $1 이벤트 · $2 제목 · $3 요약 · $4 쉬운 설명(항목을 " 
   [ "$DO_TG" = 1 ] || { say "tg skip(--no-telegram): $ev"; return 0; }
   sched_alert_should_send || { say "tg skip(무인 선언 없음 — 수동 실행): $ev"; return 0; }
   local rs; rs="$(command -v Rscript 2>/dev/null || true)"
-  [ -n "$rs" ] || { [ -x "/c/Program Files/R/R-4.5.2/bin/Rscript.exe" ] && rs="/c/Program Files/R/R-4.5.2/bin/Rscript.exe"; }
+  [ -n "$rs" ] || { [ -x "/c/Program Files/R/R-4.6.2/bin/Rscript.exe" ] && rs="/c/Program Files/R/R-4.6.2/bin/Rscript.exe"; }
   [ -n "$rs" ] || { say "tg skip: Rscript 없음 ($ev)"; return 0; }
   local kv="" pair items="" it
   for pair in "$@"; do kv="${kv}${kv:+, }\"$(clean "${pair%%=*}")\" = \"$(clean "${pair#*=}")\""; done

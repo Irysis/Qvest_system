@@ -59,7 +59,7 @@ fi
 # graduation 대상 write(WT-P*/request.json)만 fail-closed block, 그 외 allow.
 PY="${QVEST_PY:-}"
 { [ -n "$PY" ] && [ -x "$PY" ]; } || PY="C:/Users/99922/OneDrive/Quant_Module_Moltbot/.venv_qvest_ml/Scripts/python.exe"
-[ -x "$PY" ] || PY="C:/Users/99922/AppData/Local/Programs/Python/Python312/python.exe"
+[ -x "$PY" ] || PY="C:/Users/99922/AppData/Local/Programs/Python/Python315/python.exe"
 if [ ! -x "$PY" ]; then
   if printf '%s' "$INPUT" | grep -q 'WT-P' && printf '%s' "$INPUT" | grep -q 'request\.json'; then
     echo '{"decision": "block", "reason": "discovery_graduation_gate: python 실행기 부재(QVEST_PY/venv/Python312 전부 미발견) — graduation 검증 불가 (fail-closed)"}'

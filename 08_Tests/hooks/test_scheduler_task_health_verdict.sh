@@ -38,7 +38,7 @@ SRC="$PROJ/02_Infrastructure/ops/scheduler_task_health.sh"
 # "미실행"이 "검거 실패"와 같은 출력이 된다. 후보 목록에서 영구 제외.
 PY=""
 for c in "${QVEST_PY:-}" "$PROJ/.venv_qvest_ml/Scripts/python.exe" "$PROJ/.venv_qvest_ml/bin/python" \
-         "/c/Users/99922/AppData/Local/Programs/Python/Python312/python.exe"; do
+         "/c/Users/99922/AppData/Local/Programs/Python/Python315/python.exe"; do
   [ -n "$c" ] && [ -x "$c" ] && "$c" -c 'import json,datetime,io,os' >/dev/null 2>&1 && { PY="$c"; break; }
 done
 [ -n "$PY" ] || { echo "python 해석 실패" >&2

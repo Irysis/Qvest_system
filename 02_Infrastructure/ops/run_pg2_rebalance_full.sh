@@ -33,7 +33,7 @@ DT="$(echo "$AS_OF" | tr -d '-')"
 # 사양(02_Infrastructure/book/rebalance_spec.json) 키 — 이 러너가 배포하는 BOOK. Gate I 가 이 사양의 runner_gate 로 잰다.
 BOOK_ID="${PG2_BOOK_ID:-BOOK_0001}"
 PY="$QM_ROOT/.venv_qvest_ml/Scripts/python.exe"
-RSCRIPT="$(command -v Rscript || echo '/c/Program Files/R/R-4.5.2/bin/Rscript.exe')"
+RSCRIPT="$(command -v Rscript || echo '/c/Program Files/R/R-4.6.2/bin/Rscript.exe')"
 LOGD="$QM_ROOT/.cache/pg2_rebalance_logs"; mkdir -p "$LOGD"
 LOG="$LOGD/full_$(date +%Y%m%d_%H%M).log"
 # ── 배포 슬롯 / 산출 파일명 — book_state.admitted_ids 에서 해석 ────────────

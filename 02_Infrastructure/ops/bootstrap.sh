@@ -26,10 +26,10 @@ export PYTHONUTF8=1   # Windows python 기본 cp949 → UTF-8 강제 (PG2/readin
 # (v8.1.1 2026-06-10) 도구 체인 가드 — Rscript/python3 PATH 보정 + 부재 시 명시 카운트 (침묵 실패 금지)
 BOOT_FAILS=0
 if ! command -v Rscript >/dev/null 2>&1; then
-  [ -d "/c/Program Files/R/R-4.5.2/bin" ] && export PATH="/c/Program Files/R/R-4.5.2/bin:$PATH"
+  [ -d "/c/Program Files/R/R-4.6.2/bin" ] && export PATH="/c/Program Files/R/R-4.6.2/bin:$PATH"
 fi
 if ! python3 -c 'import sys' >/dev/null 2>&1; then
-  [ -d "/c/Users/99922/AppData/Local/Programs/Python/Python312" ] && export PATH="/c/Users/99922/AppData/Local/Programs/Python/Python312:$PATH"
+  [ -d "/c/Users/99922/AppData/Local/Programs/Python/Python315" ] && export PATH="/c/Users/99922/AppData/Local/Programs/Python/Python315:$PATH"
 fi
 
 # (v8.1.2 2026-06-11) UTF-8 출력 가드 — Claude Code API 400 'invalid high surrogate' 차단.

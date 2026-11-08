@@ -28,10 +28,10 @@ T='"test":"scheduler_bat_locale"'
 BATDIR="$PROJ/02_Infrastructure/ops/scheduler"
 REBOOT="$BATDIR/Qvest_MorningReboot.bat"
 PY=""
-for c in "${QVEST_PY_BIN:-}" "${QVEST_PY:-}" "$PROJ/.venv_qvest_ml/Scripts/python.exe" "/c/Users/99922/AppData/Local/Programs/Python/Python312/python.exe"; do
+for c in "${QVEST_PY_BIN:-}" "${QVEST_PY:-}" "$PROJ/.venv_qvest_ml/Scripts/python.exe" "/c/Users/99922/AppData/Local/Programs/Python/Python315/python.exe"; do
   [ -n "$c" ] && [ -x "$c" ] && "$c" -c 'import re' >/dev/null 2>&1 && { PY="$c"; break; }
 done
-RS="$(command -v Rscript 2>/dev/null || true)"; [ -n "$RS" ] || RS="/c/Program Files/R/R-4.5.2/bin/Rscript.exe"
+RS="$(command -v Rscript 2>/dev/null || true)"; [ -n "$RS" ] || RS="/c/Program Files/R/R-4.6.2/bin/Rscript.exe"
 { [ -n "$PY" ] && [ -x "$RS" ] && [ -f "$REBOOT" ]; } || { echo "{$T,\"pass\":0,\"fail\":1,\"total\":1,\"preflight\":\"no_python_or_rscript_or_bat\"}"; exit 1; }
 
 TMP="$(mktemp -d)"; trap 'rm -rf "$TMP"' EXIT

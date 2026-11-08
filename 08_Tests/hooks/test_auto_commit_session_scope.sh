@@ -37,7 +37,7 @@ if [ ! -f "$HOOK" ]; then
   exit 1
 fi
 PY="${QVEST_PY:-}"; PY="${PY//\\//}"
-[ -n "$PY" ] && [ -x "$PY" ] || PY="C:/Users/99922/AppData/Local/Programs/Python/Python312/python.exe"
+[ -n "$PY" ] && [ -x "$PY" ] || PY="C:/Users/99922/AppData/Local/Programs/Python/Python315/python.exe"
 if [ ! -x "$PY" ]; then
   echo "FATAL: python 부재"
   echo '{"test":"auto_commit_session_scope","pass":0,"fail":1,"total":1}'

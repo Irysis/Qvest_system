@@ -35,8 +35,8 @@ DIR=$(ls -d /c/Users/99922/OneDrive/Quant_Module_Moltbot /mnt/c/Users/99922/OneD
 [ -z "$DIR" ] && DIR="G:/Quant_Module_Moltbot"
 cd "$DIR" || exit 2
 export CLAUDE_PROJECT_DIR="$DIR" PYTHONUTF8=1
-PY="${QVEST_PY:-C:/Users/99922/AppData/Local/Programs/Python/Python312/python.exe}"
-RS="${QVEST_RSCRIPT:-C:/Program Files/R/R-4.5.2/bin/Rscript.exe}"
+PY="${QVEST_PY:-C:/Users/99922/AppData/Local/Programs/Python/Python315/python.exe}"
+RS="${QVEST_RSCRIPT:-C:/Program Files/R/R-4.6.2/bin/Rscript.exe}"
 pass=0; fail=0
 ok(){ echo "  PASS $1"; pass=$((pass+1)); }
 no(){ echo "  FAIL $1"; fail=$((fail+1)); }

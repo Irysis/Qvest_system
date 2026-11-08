@@ -22,7 +22,7 @@ fi
 #   존재가 아니라 실행으로 판별. resolve_project.sh source 는 set -e 하에서 위험해 인라인.
 PYBIN=""
 for _c in "${QVEST_PY:-}" \
-          "/c/Users/99922/AppData/Local/Programs/Python/Python312/python.exe" \
+          "/c/Users/99922/AppData/Local/Programs/Python/Python315/python.exe" \
           "$(command -v python3 2>/dev/null)" "$(command -v python 2>/dev/null)"; do
   [ -n "$_c" ] || continue
   "$_c" -c 'import sys' >/dev/null 2>&1 && { PYBIN="$_c"; break; }

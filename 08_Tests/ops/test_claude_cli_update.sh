@@ -193,7 +193,7 @@ setup 2.1.261 2.1.319 "idle"; run_upd --channel beta; rc=$?
 echo "--- T. 텔레그램 ---"
 setup 2.1.261 2.1.319 "idle"; run_upd; rc=$?
 has "$FD/log.txt" "tg skip(무인 선언 없음" && ok "T1 수동 실행(무인 선언 없음)은 보내지 않는다" || ng "T1 수동" "$(grep tg "$FD/log.txt")"
-if command -v Rscript >/dev/null 2>&1 || [ -x "/c/Program Files/R/R-4.5.2/bin/Rscript.exe" ]; then
+if command -v Rscript >/dev/null 2>&1 || [ -x "/c/Program Files/R/R-4.6.2/bin/Rscript.exe" ]; then
   # 미리보기 본문의 이모지 수 — tg_send 의 검사 정규식([U+1F300–1F9FF · U+2600–27BF])과 같은 범위로 센다
   emo(){ perl -CSD -ne 'if (/=== dry_run output/) {$on=1; next} if (/tg sent:|tg fail:/) {$on=0} if ($on) { $c += () = /[\x{1F300}-\x{1F9FF}\x{2600}-\x{27BF}]/g } END { print $c+0 }' "$1"; }
   setup 2.1.261 2.1.319 "idle"; EXTRA_ENV=(QVEST_UNATTENDED=1 QVEST_TG_DRY_RUN=1); run_upd; rc=$?

@@ -26,7 +26,7 @@ set -u
 _SELF_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 SRC_HOOKS="$(cd "$_SELF_DIR/../../02_Infrastructure/hooks" 2>/dev/null && pwd)"
 PY="${QVEST_PY:-}"; PY="${PY//\\//}"
-[ -n "$PY" ] && [ -x "$PY" ] || PY="C:/Users/99922/AppData/Local/Programs/Python/Python312/python.exe"
+[ -n "$PY" ] && [ -x "$PY" ] || PY="C:/Users/99922/AppData/Local/Programs/Python/Python315/python.exe"
 if [ -z "$SRC_HOOKS" ] || [ ! -x "$PY" ]; then
   echo "FATAL: hooks 디렉터리 또는 python 부재 (hooks='$SRC_HOOKS' py='$PY')"
   echo '{"test":"hook_fastpath_equivalence","pass":0,"fail":1,"total":1}'

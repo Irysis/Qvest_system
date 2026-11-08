@@ -100,7 +100,7 @@ def backtest(panel,sigvals,H,top_n,bmf):
 # 월간 복리·delta비용을 contract가 정확 산출(discovery non-overlap 근사보다 엄밀).
 def _rscript():
     import glob as _g
-    for c in [shutil.which("Rscript"), "C:/Program Files/R/R-4.5.2/bin/Rscript.exe"]:
+    for c in [shutil.which("Rscript"), "C:/Program Files/R/R-4.6.2/bin/Rscript.exe"]:
         if c and os.path.exists(c): return c
     hits=_g.glob("C:/Program Files/R/R-*/bin/Rscript.exe")
     if hits: return hits[0]

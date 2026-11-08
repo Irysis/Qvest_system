@@ -69,7 +69,7 @@ suppressPackageStartupMessages(library(data.table))
 
 main <- function() {
   SRC <- Sys.getenv("QM_ROOT", "C:/Users/99922/OneDrive/Quant_Module_Moltbot")
-  RS  <- file.path(Sys.getenv("R_HOME", "C:/Program Files/R/R-4.5.2"), "bin/Rscript.exe")
+  RS  <- file.path(Sys.getenv("R_HOME", "C:/Program Files/R/R-4.6.2"), "bin/Rscript.exe")
   ISOLATE <- !identical(Sys.getenv("QVEST_TEST_NO_SANDBOX", "0"), "1")
   SBOX <- file.path(SRC, ".cache", sprintf("_test_blunt_anchor_root_%d", Sys.getpid()))
   R <- if (ISOLATE) .build_sandbox(SRC, SBOX) else SRC

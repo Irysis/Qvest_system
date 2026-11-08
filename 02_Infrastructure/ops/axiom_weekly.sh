@@ -19,8 +19,8 @@ DIR=$(ls -d /c/Users/99922/OneDrive/Quant_Module_Moltbot /mnt/c/Users/99922/OneD
 LOG="${QVEST_AXIOM_LOG:-/tmp/axiom_weekly.log}"
 export CLAUDE_PROJECT_DIR="$DIR" PYTHONUTF8=1
 # Windows-native 인터프리터 (anaconda python / R 4.5.2). 환경변수로 override.
-PY="${QVEST_PY:-C:/Users/99922/AppData/Local/Programs/Python/Python312/python.exe}"
-RS="${QVEST_RSCRIPT:-C:/Program Files/R/R-4.5.2/bin/Rscript.exe}"
+PY="${QVEST_PY:-C:/Users/99922/AppData/Local/Programs/Python/Python315/python.exe}"
+RS="${QVEST_RSCRIPT:-C:/Program Files/R/R-4.6.2/bin/Rscript.exe}"
 cd "$DIR" || exit 2
 
 echo "=== $(date -Iseconds) axiom_weekly v8.0 start ===" >> "$LOG"

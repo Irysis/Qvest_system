@@ -32,7 +32,7 @@ suppressPackageStartupMessages(library(jsonlite))
 .aw_py <- function() {
   cands <- c(Sys.getenv("QVEST_PY", ""),
              "C:/Users/99922/OneDrive/Quant_Module_Moltbot/.venv_qvest_ml/Scripts/python.exe",
-             "C:/Users/99922/AppData/Local/Programs/Python/Python312/python.exe")
+             "C:/Users/99922/AppData/Local/Programs/Python/Python315/python.exe")
   for (p in cands) if (nzchar(p) && file.exists(p)) return(p)
   stop("python interpreter not found (bare python 금지 — QVEST_PY 또는 venv)")
 }

@@ -87,7 +87,7 @@ h2 = mixed(SYN, re.compile(r"(?<!\\)(?:\\\\)*\\u"))
 chk("M1 스캐너 돌연변이(\\U 무시) → 주입을 놓침", h2 == [], str(h2))
 
 # ── 런타임 ─────────────────────────────────────────────────────────────────────────
-RS = shutil.which("Rscript") or r"C:\Program Files\R\R-4.5.2\bin\Rscript.exe"
+RS = shutil.which("Rscript") or r"C:\Program Files\R\R-4.6.2\bin\Rscript.exe"
 PROBE = r'''
 suppressWarnings(suppressMessages(source(Sys.getenv("TG_MOD"))))   # same form as live callers (no encoding arg)
 r <- tg_agent_brief(agent = "Q-Lead", title = "probe", relaxed = TRUE, force = TRUE, dry_run = TRUE,

@@ -27,7 +27,7 @@ fin(){ echo; printf 'PASS=%d FAIL=%d\n' "$PASS" "$FAIL"; printf '{"test":"paper_
 [ -f "$SRC" ] || { echo "  SKIP  라우터 부재"; printf '{"test":"paper_router_prefilter","pass":0,"fail":0,"total":0,"skipped":1,"skips":[{"axis":"ALL","reason":"라우터 부재","missing":"%s"}]}\n' "$SRC"; exit 0; }
 
 PY=""
-for c in "${QVEST_PY:-}" "$ROOT/.venv_qvest_ml/Scripts/python.exe" "/c/Users/99922/AppData/Local/Programs/Python/Python312/python.exe"; do
+for c in "${QVEST_PY:-}" "$ROOT/.venv_qvest_ml/Scripts/python.exe" "/c/Users/99922/AppData/Local/Programs/Python/Python315/python.exe"; do
   c="${c//\\//}"
   [ -n "$c" ] && [ -x "$c" ] && "$c" -c 'import json' >/dev/null 2>&1 && { PY="$c"; break; }
 done

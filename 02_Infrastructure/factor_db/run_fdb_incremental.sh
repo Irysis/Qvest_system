@@ -15,7 +15,7 @@ set -uo pipefail
 YM="${1:?usage: run_fdb_incremental.sh YYYYMM}"
 case "$YM" in [0-9][0-9][0-9][0-9][0-9][0-9]) ;; *) echo "bad YM: $YM (expect YYYYMM)"; exit 2;; esac
 INFRA="C:/Users/99922/OneDrive/Quant_Module_Moltbot/02_Infrastructure"
-RS="/c/Program Files/R/R-4.5.2/bin/Rscript.exe"
+RS="/c/Program Files/R/R-4.6.2/bin/Rscript.exe"
 TS() { date '+%Y-%m-%d %H:%M:%S'; }
 cd "$INFRA" || { echo "cannot cd $INFRA"; exit 2; }
 [ -x "$RS" ] || { echo "Rscript not found: $RS"; exit 2; }
