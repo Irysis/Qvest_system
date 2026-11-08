@@ -78,6 +78,17 @@ if (-not (Test-Path -LiteralPath $Book)) { Write-Host "[peer-refresh] missing $B
 if (-not (QW-Alive)) { Write-Host "[peer-refresh] no live Quantiwise session ([[Quantiwise7]] window) - log in first"; exit 3 }
 if (-not $NoBusyCheck) { $b = Get-Busy; if ($b.Count -gt 0) { Write-Host "[peer-refresh] BUSY:"; $b | ForEach-Object { Write-Host ("  pid {0} {1}" -f $_.ProcessId, $_.Name) }; exit 3 } }
 
+# items that may legitimately come back empty (2026-11-09): same rule as the loader qw_fund_v2_ingest.py G1 -
+#   registry fundamentals_v2.items[].allow_empty or glossary_basis 'gaap' (pre-2007 GAAP lines are empty in recent windows).
+#   11-09 FundV2_META_upd: 'CompInfo' (text item, 0 cells on every refresh since 11-08) counted as NOT REFRESHED -> rc 1 -> the
+#   rolling update stopped before FundV2_INFO_upd. Registry unreadable = empty set = strict (never more lenient than before).
+$emptyOk = @{}
+try {
+  $regPath = Join-Path $PSScriptRoot "..\data\qw_updatefile_registry.json"
+  $regItems = @((Get-Content -LiteralPath $regPath -Raw -Encoding UTF8 | ConvertFrom-Json).fundamentals_v2.items | ForEach-Object { $_ })
+  foreach ($it in $regItems) { if ($it.allow_empty -eq $true -or "$($it.glossary_basis)" -eq 'gaap') { $emptyOk["$($it.sheet)"] = $true } }
+} catch { Write-Host "[peer-refresh] registry not read ($($_.Exception.Message)) - empty sheets count as NOT REFRESHED" }
+
 $xl = $null; $wb = $null; $rc = 1; $t0 = Get-Date
 Write-Host ("[peer-refresh] start {0} {1}" -f $t0.ToString('HH:mm:ss'), $Book)
 try {
@@ -112,8 +123,9 @@ try {
         Write-Host ("  [{0}] after retry: cells {1} | period {2} cells {3}{4}" -f $ws.Name, $filled, "$($ws.Range("$($pen)10").Value2)", $penN, $(if ($penN -eq 0) { ' (still empty - ends early or vendor gap)' } else { '' }))
       }
     }
-    $changed = ($after -ne $before -and $after -like '*Last Update*' -and $filled -gt 0)
-    Write-Host ("  [{0}] links {1} | {2}s | cells {3} | B1 '{4}' -> '{5}' | {6}" -f $ws.Name, $n, $sec, $filled, $before, $after, $(if ($changed) { 'OK' } else { 'NOT REFRESHED' }))
+    $allowEmpty = $emptyOk.ContainsKey($ws.Name)
+    $changed = ($after -ne $before -and $after -like '*Last Update*' -and ($filled -gt 0 -or $allowEmpty))
+    Write-Host ("  [{0}] links {1} | {2}s | cells {3} | B1 '{4}' -> '{5}' | {6}" -f $ws.Name, $n, $sec, $filled, $before, $after, $(if (-not $changed) { 'NOT REFRESHED' } elseif ($filled -eq 0) { 'OK (empty allowed by registry)' } else { 'OK' }))
     if ($changed) { $okN++ }
     if (-not (QW-Alive)) { Write-Host "[peer-refresh] session kicked"; $kicked = $true; break }
   }

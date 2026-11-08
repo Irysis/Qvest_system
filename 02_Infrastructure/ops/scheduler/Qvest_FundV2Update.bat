@@ -10,8 +10,9 @@ set "QVEST_UNATTENDED=1"
 set "PYTHONUTF8=1"
 set "QV_LOG=%QM_ROOT%\.cache\scheduler_logs\fund_v2_update.log"
 cd /d "%QM_ROOT%"
-echo [%DATE% %TIME%] Qvest_FundV2Update start>> "%QV_LOG%"
+>> "%QV_LOG%" echo [%DATE% %TIME%] Qvest_FundV2Update start
 powershell.exe -NoProfile -ExecutionPolicy Bypass -File "%QM_ROOT%\02_Infrastructure\ops\qw_fund_v2_update.ps1" >> "%QV_LOG%" 2>&1
 set "QV_RC=%ERRORLEVEL%"
-echo [%DATE% %TIME%] Qvest_FundV2Update end rc=%QV_RC%>> "%QV_LOG%"
+rem redirect first: 'rc=1>> file' would parse 1>> as a handle redirect and drop the code (11-09 log: 'end rc=')
+>> "%QV_LOG%" echo [%DATE% %TIME%] Qvest_FundV2Update end rc=%QV_RC%
 exit /b %QV_RC%
