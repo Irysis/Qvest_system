@@ -20,6 +20,9 @@ suppressPackageStartupMessages({ library(data.table); library(jsonlite) })
 ROOT <- "C:/Users/99922/OneDrive/Quant_Module_Moltbot"
 Sys.setenv(CLAUDE_PROJECT_DIR = ROOT, QM_ROOT = ROOT); setwd(ROOT)
 `%||%` <- function(a, b) if (is.null(a) || length(a) == 0L) b else a
+## bare "bash" 금지(금칙 ⑦) — WSL 있는 메인 PC 에선 System32 bash(리눅스)가 fingerprint.sh 를 못 열어 지문이 오류 문구가 됐다.
+##   2026-11-08 환경 최신화 재고정(도훈 승인 "P2R05 다시 고정")에 함께 넣은 수리 — 지문 함수의 셸만 바꾼다(지문 정의 · 입력 불변).
+if (!exists("qv_bash", mode = "function")) source(file.path(ROOT, "02_Infrastructure/ops/qv_bash.R"))
 
 P2R05_ROUND_ID <- "P2R05_distribution_target"
 ## ── 경로 계약(DESIGN §7 · §12 — 다른 구현 에이전트 산출과 맞물리는 곳 · 이름만 맞춘다) ─────────────────────────────
@@ -765,7 +768,7 @@ p2_pin_mismatches <- function(pre, root) {
   bad
 }
 p2_fingerprint <- function(rd, mode = "equality") {
-  o <- tryCatch(suppressWarnings(system2("bash", c(shQuote(file.path(rd, "fingerprint.sh")), mode), stdout = TRUE, stderr = TRUE)),
+  o <- tryCatch(suppressWarnings(system2(qv_bash(), c(shQuote(file.path(rd, "fingerprint.sh")), mode), stdout = TRUE, stderr = TRUE)),
                 error = function(e) paste("error:", conditionMessage(e)))
   paste(o, collapse = "|")
 }

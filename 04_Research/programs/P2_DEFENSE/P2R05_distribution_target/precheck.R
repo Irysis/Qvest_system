@@ -21,6 +21,8 @@ suppressPackageStartupMessages({ library(jsonlite) })
 ROOT <- "C:/Users/99922/OneDrive/Quant_Module_Moltbot"
 if (!file.exists(file.path(ROOT, "02_Infrastructure/hooks/qvest_hook_router.py"))) stop("[precheck] 프로젝트 루트 표지 없음: ", ROOT)
 Sys.setenv(CLAUDE_PROJECT_DIR = ROOT, QM_ROOT = ROOT); setwd(ROOT)
+## bare "bash" 금지(금칙 ⑦) — 메인 PC WSL bash 가로챔 수리(2026-11-08 환경 최신화 재고정에 포함 · 지문 정의 · 입력 불변)
+if (!exists("qv_bash", mode = "function")) source(file.path(ROOT, "02_Infrastructure/ops/qv_bash.R"))
 `%||%` <- function(a, b) if (is.null(a) || length(a) == 0L) b else a
 PROGRAM <- "P2_DEFENSE"; ROUND <- "P2R05_distribution_target"
 RD <- file.path(ROOT, "04_Research/programs/P2_DEFENSE/P2R05_distribution_target")
@@ -115,7 +117,7 @@ DTC <- P2R05_DTC
 }
 ## 데이터 지문 — fingerprint.sh(measure.sh · warm_cache.sh 와 같은 정의) · 줄을 '|' 로 잇는다(P2R04 p2_fingerprint 와 같은 형식)
 .pc_fp_local <- function(mode) {
-  o <- tryCatch(suppressWarnings(system2("bash", c(shQuote(file.path(RD, "fingerprint.sh")), mode), stdout = TRUE, stderr = TRUE)),
+  o <- tryCatch(suppressWarnings(system2(qv_bash(), c(shQuote(file.path(RD, "fingerprint.sh")), mode), stdout = TRUE, stderr = TRUE)),
                 error = function(e) paste("error:", conditionMessage(e)))
   paste(o, collapse = "|")
 }

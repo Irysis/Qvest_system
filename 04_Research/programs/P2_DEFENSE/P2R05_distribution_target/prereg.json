@@ -433,7 +433,7 @@
     "note": "공통 난수 사실(DT README §7 · tests/_out/rng_stream_facts.json · CPU 실측 · 격리 점검 v1 권고 1(e)): 같은 시드에서 은닉층 5개 초기값 · 미니배치 순서 = 같음 · 출력층 초기화 · 초기화 뒤 CPU 생성기 상태 · CPU dropout 마스크 = 다름(난수 상태만 맞추면 같다 — 차이의 원천 = 출력층 초기화의 추가 소비) · CUDA = 초기화는 CPU 생성기 · dropout 은 CUDA 생성기라 dropout 흐름을 공유하는 것으로 코드 구조상 추론(미실측 · GPU 예약) — 그래서 RX0S(시드 전체 교체) 띠는 V − RX0 결정의 시드 잡음을 넓게(보수적으로) 잡는다 · DESIGN §3.1 '공통 난수 아님' 문장 정정 = Q(설계 입력 핀)",
     "rng_facts": {
       "path": "04_Research/strategies/DT_2002_06975/tests/_out/rng_stream_facts.json",
-      "md5": "5d4558e9f067e3f5ecf49eb2dafab6d7",
+      "md5": "829596d0e72681b4cb1ef31d70a93aa9",
       "fields": {
         "hidden_init_equal": true,
         "output_row0_equal": false,
@@ -443,7 +443,7 @@
         "cpu_hidden_output_equal_when_rng_state_aligned": true,
         "model_built_on": "cpu (DNN(m) then .to(DEVICE) in fit_predict)",
         "device": "cpu (CUDA_VISIBLE_DEVICES=-1)",
-        "torch": "2.12.1+cu126",
+        "torch": "2.15.0+cu132",
         "ok": true
       },
       "cuda": "공유 추정(코드 구조 추론 · 미실측)"
@@ -1547,11 +1547,11 @@
     ],
     "packages": {
       "bbdetection": "1.0",
-      "PerformanceAnalytics": "2.0.8",
-      "data.table": "1.17.8",
-      "arrow": "24.0.0"
+      "PerformanceAnalytics": "2.1.0",
+      "data.table": "1.18.6.1",
+      "arrow": "26.0.0"
     },
-    "r_version": "R version 4.5.2 (2025-10-31 ucrt)"
+    "r_version": "R version 4.6.2 (2026-10-29 ucrt)"
   },
   "engines": {
     "dir": "04_Research/strategies/DT_2002_06975",
@@ -1923,12 +1923,12 @@
     "python": {
       "ok": true,
       "executable": ".venv_qvest_ml/Scripts/python.exe",
-      "python": "3.12.10",
-      "torch": "2.12.1+cu126",
-      "torch_cuda": "12.6",
-      "numpy": "2.4.6",
-      "pandas": "2.3.3",
-      "pyarrow": "24.0.0"
+      "python": "3.15.2",
+      "torch": "2.15.0+cu132",
+      "torch_cuda": "13.2",
+      "numpy": "2.5.4",
+      "pandas": "3.1.1",
+      "pyarrow": "26.0.1"
     },
     "rx0_engine": {
       "path": "04_Research/strategies/RP_AUTO_2002_06975/engine.R",
@@ -1951,7 +1951,7 @@
     "files": [
       {
         "path": "04_Research/programs/P2_DEFENSE/P2R05_distribution_target/evaluate.R",
-        "md5": "0f7402d9038c44c0a3e0d2482b0e836d"
+        "md5": "39e0105cdc90f9acb2b05d1023faf4a9"
       },
       {
         "path": "04_Research/programs/P2_DEFENSE/P2R05_distribution_target/evaluate_fixture.R",
@@ -1963,7 +1963,7 @@
       },
       {
         "path": "04_Research/programs/P2_DEFENSE/P2R05_distribution_target/precheck.R",
-        "md5": "9d274c2d935f586cc0d86964bc0d273f"
+        "md5": "95a79f6eea33a6d0cb462b205d812aa7"
       },
       {
         "path": "04_Research/programs/P2_DEFENSE/P2R05_distribution_target/engine_checks.R",
@@ -2096,62 +2096,62 @@
     "files": [
       {
         "path": "04_Research/strategies/DT_2002_06975/tests/_out/rule_smoke_results.json",
-        "md5": "38b76959095005ea04e1de72689cb395",
+        "md5": "47972ba89f1e4294bc05beafbf8e7550",
         "ok": true,
         "n": 139,
         "n_ok": 139,
-        "at": "2026-10-18T18:12:44",
+        "at": "2026-11-08T16:07:31",
         "pass": true
       },
       {
         "path": "04_Research/strategies/DT_2002_06975/tests/_out/diff_check_mutation_results.json",
-        "md5": "bfd766f5a76e1391aee26e99bf18db51",
+        "md5": "e01fc300c396b697004fb2672708cc87",
         "ok": true,
         "n_cases": 17,
-        "at": "2026-10-18T18:12:43",
+        "at": "2026-11-08T16:07:28",
         "pass": true
       },
       {
         "path": "04_Research/strategies/DT_2002_06975/tests/_out/static_pit_results.json",
-        "md5": "5fafadafc3dd83cf2044a62afc9b03b4",
+        "md5": "b0efad1e07e408f60072bbce922c78d9",
         "ok": true,
-        "at": "2026-10-18T18:13:00",
+        "at": "2026-11-08T16:07:56",
         "positive_control": true,
         "positive_control_n": 2,
         "pass": true
       },
       {
         "path": "04_Research/strategies/DT_2002_06975/tests/_out/py_e2e_results.json",
-        "md5": "b7a93e0ea8c98d3470e0abda1027db3f",
+        "md5": "469229187277b5c3347aa6f49817e786",
         "ok": true,
         "n": 29,
         "n_ok": 29,
         "device": "cpu (CUDA_VISIBLE_DEVICES=-1)",
-        "at": "2026-10-18T18:00:00",
+        "at": "2026-11-08T16:21:16",
         "pass": true
       },
       {
         "path": "04_Research/strategies/DT_2002_06975/tests/_out/engine_dryrun_results.json",
-        "md5": "f83083f76b16e27cbaafb907d9c29af0",
+        "md5": "0d47a7a002a857e7de8fd2c715b8002c",
         "ok": true,
         "n": 16,
         "n_ok": 16,
-        "at": "2026-10-18T18:11:09",
+        "at": "2026-11-08T16:32:22",
         "pass": true
       },
       {
         "path": "04_Research/strategies/DT_2002_06975/tests/_out/pc_mutation_results.json",
-        "md5": "6ee633453e5675c6a472e6e9fb464789",
+        "md5": "9f9992d4b0d7546dc8da9017b50ff080",
         "correct_pass_all": true,
         "device": "cpu (CUDA_VISIBLE_DEVICES=-1)",
-        "generated_at": "2026-10-18T17:58:02",
+        "generated_at": "2026-11-08T16:16:04",
         "mutants_fail_all": true,
         "mutants_fail_all_n": 4,
         "pass": true
       },
       {
         "path": "04_Research/strategies/DT_2002_06975/tests/_out/rng_stream_facts.json",
-        "md5": "5d4558e9f067e3f5ecf49eb2dafab6d7",
+        "md5": "829596d0e72681b4cb1ef31d70a93aa9",
         "ok": true,
         "device": "cpu (CUDA_VISIBLE_DEVICES=-1)",
         "pass": true
@@ -2538,5 +2538,51 @@
       "review": "04_Research/programs/P2_DEFENSE/P2R05_distribution_target/prereg_draft_review_v3.md"
     }
   ],
-  "git_head_at_register": "0ea7e8e62abfe59d6fcb4e1af44bfa929c1a91bf"
+  "git_head_at_register": "0ea7e8e62abfe59d6fcb4e1af44bfa929c1a91bf",
+  "repins": [
+    {
+      "at": "2026-11-08T16:37:05+0900",
+      "by": "Q",
+      "approved": "도훈 2026-11-08 — 'R과 파이썬, 그리고 각종 사용 패키지들도 최신화' · 시점 '지금 전부 · P2R05 다시 고정' · '진행해줘'",
+      "reason": "환경 최신화(R 4.5.2 → 4.6.2 · Python 3.12.10 → 3.15.2 · torch 2.12.1+cu126 → 2.15.0+cu132) — 결과 전 · 설계(칸 · 규칙 · 상수 · 최종 후보 선택 규칙 · 운영 경로 · 카탈로그) 불변 · 환경 핀만 교체",
+      "from_md5": "9ed7b23fed5b73decb565cdf94eec208",
+      "changed": [
+        "reseed.rng_facts.md5: \"5d4558e9f067e3f5ecf49eb2dafab6d7\" → \"829596d0e72681b4cb1ef31d70a93aa9\"",
+        "reseed.rng_facts.fields.torch: \"2.12.1+cu126\" → \"2.15.0+cu132\"",
+        "operational_pins.packages.PerformanceAnalytics: \"2.0.8\" → \"2.1.0\"",
+        "operational_pins.packages.data.table: \"1.17.8\" → \"1.18.6.1\"",
+        "operational_pins.packages.arrow: \"24.0.0\" → \"26.0.0\"",
+        "operational_pins.r_version: \"R version 4.5.2 (2025-10-31 ucrt)\" → \"R version 4.6.2 (2026-10-29 ucrt)\"",
+        "engines.python.python: \"3.12.10\" → \"3.15.2\"",
+        "engines.python.torch: \"2.12.1+cu126\" → \"2.15.0+cu132\"",
+        "engines.python.torch_cuda: \"12.6\" → \"13.2\"",
+        "engines.python.numpy: \"2.4.6\" → \"2.5.4\"",
+        "engines.python.pandas: \"2.3.3\" → \"3.1.1\"",
+        "engines.python.pyarrow: \"24.0.0\" → \"26.0.1\"",
+        "evaluation.files[1].md5: \"0f7402d9038c44c0a3e0d2482b0e836d\" → \"39e0105cdc90f9acb2b05d1023faf4a9\"",
+        "evaluation.files[4].md5: \"9d274c2d935f586cc0d86964bc0d273f\" → \"95a79f6eea33a6d0cb462b205d812aa7\"",
+        "tests_dt.files[1].md5: \"38b76959095005ea04e1de72689cb395\" → \"47972ba89f1e4294bc05beafbf8e7550\"",
+        "tests_dt.files[1].at: \"2026-10-18T18:12:44\" → \"2026-11-08T16:07:31\"",
+        "tests_dt.files[2].md5: \"bfd766f5a76e1391aee26e99bf18db51\" → \"e01fc300c396b697004fb2672708cc87\"",
+        "tests_dt.files[2].at: \"2026-10-18T18:12:43\" → \"2026-11-08T16:07:28\"",
+        "tests_dt.files[3].md5: \"5fafadafc3dd83cf2044a62afc9b03b4\" → \"b0efad1e07e408f60072bbce922c78d9\"",
+        "tests_dt.files[3].at: \"2026-10-18T18:13:00\" → \"2026-11-08T16:07:56\"",
+        "tests_dt.files[4].md5: \"b7a93e0ea8c98d3470e0abda1027db3f\" → \"469229187277b5c3347aa6f49817e786\"",
+        "tests_dt.files[4].at: \"2026-10-18T18:00:00\" → \"2026-11-08T16:21:16\"",
+        "tests_dt.files[5].md5: \"f83083f76b16e27cbaafb907d9c29af0\" → \"0d47a7a002a857e7de8fd2c715b8002c\"",
+        "tests_dt.files[5].at: \"2026-10-18T18:11:09\" → \"2026-11-08T16:32:22\"",
+        "tests_dt.files[6].md5: \"6ee633453e5675c6a472e6e9fb464789\" → \"9f9992d4b0d7546dc8da9017b50ff080\"",
+        "tests_dt.files[6].generated_at: \"2026-10-18T17:58:02\" → \"2026-11-08T16:16:04\"",
+        "tests_dt.files[7].md5: \"5d4558e9f067e3f5ecf49eb2dafab6d7\" → \"829596d0e72681b4cb1ef31d70a93aa9\""
+      ],
+      "evaluation_files_changed": [
+        "04_Research/programs/P2_DEFENSE/P2R05_distribution_target/evaluate.R",
+        "04_Research/programs/P2_DEFENSE/P2R05_distribution_target/precheck.R"
+      ],
+      "evaluation_change": "evaluate.R · precheck.R — bare bash → qv_bash()(금칙 ⑦ · 메인 PC WSL bash 가로챔 수리) 두 곳만 · 지문 정의 · 판정 논리 · 입력 불변",
+      "tests_dt_rerun": "DT tests/run_all_tests.R 느린 판을 새 환경에서 재실행(3.15.2 · 2.15.0+cu132) — 8/8 통과 · 시험 중 파일 md5 불변 · 옛 증거(Python 3.12 판) 보관 = .cache/installers/p2r05_dt_out_py312_20261108/ · 11-06 세션 재개 메모의 '재실행 금지'는 등록 핀 보호용 — 이 재고정이 대체",
+      "rehearsal_not_rerun": "rehearse.R 은 다시 돌리지 않았다 — rehearsal.evaluate_md5 는 리허설 때 파일(옛 evaluate.R)을 가리키는 역사 기록 · 옛 판과의 차이 = bash 해석 두 곳뿐(판정 논리 불변)",
+      "warm": "워밍 센티널(night_state/p2r05_warm.done)은 아직 없다 — 워밍은 새 사전등록 md5 · 새 torch 로 처음부터(precheck --warm-check 가 사전등록 md5 를 대조)"
+    }
+  ]
 }
