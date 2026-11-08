@@ -23,8 +23,10 @@
 #   source("config.R")
 #   source("data_collector_dart.R")
 #   dart_update_corpcode()                    # corp_code 매핑 테이블 갱신
-#   dart_fetch_all(years = 2015:2024)         # 전체 유니버스 재무제표 수집
+#   dart_fetch_all(years = 2015:2024, backfill = TRUE)  # 과거 연도 보충(명시 years · 진행 장부 · 잠금)
 #   dart_compute_factors()                    # 팩터 계산 + Parquet 저장
+#   과거 연도 보충의 정본 진입점 = data/dart_annual_backfill.R --backfill (일일 콜 예산 · 체인 회피 ·
+#   완료 시 fundamental_dart/merged 재생성) — 2026-11-08
 #
 # API 제한: 일 10,000건 / 분당 ~100건 (안전하게 0.7초 간격)
 #==============================================================================
@@ -153,6 +155,15 @@ dart_update_corpcode <- function(force = FALSE) {
   res
 }
 
+# 일시 실패 + 사유 코드 (2026-11-08 — 연간 진행 장부 last_code 용).
+# .dart_result_status() 는 attr "dart_status"="fail" 을 보고 종전 NULL 과 같은 "fail" 을 낸다
+# (분기 수집기 포함 호출부 동작 불변 — 0행이라 `is.null(dt) || nrow(dt) == 0` 분기도 같다).
+.dart_fail_result <- function(code) {
+  res <- .dart_empty_result("fail")
+  setattr(res, "dart_code", as.character(code))
+  res
+}
+
 # .dart_fetch_single 반환 → 상태 분류 ("ok" / "empty" / "rate_limit" / "fail")
 # 단일 정본 (2026-07-26): 종전 data_collector_dart_quarterly.R 에 동일 구현이
 # 중복 정의돼 있었다. 이 attr 규약을 정의하는 곳(위 .dart_empty_result)에 붙인다.
@@ -175,11 +186,11 @@ dart_update_corpcode <- function(force = FALSE) {
     fs_div     = fs_div
   ), timeout(30))
 
-  if (status_code(resp) != 200) return(NULL)
+  if (status_code(resp) != 200) return(.dart_fail_result(sprintf("http_%d", status_code(resp))))
 
   body <- content(resp, "text", encoding = "UTF-8")
   json <- tryCatch(fromJSON(body), error = function(e) NULL)
-  if (is.null(json)) return(NULL)
+  if (is.null(json)) return(.dart_fail_result("parse"))
 
   # DART 응답 코드 확인
   #  "000" = 정상, "013" = 데이터 없음, "020" = 한도 초과
@@ -191,7 +202,7 @@ dart_update_corpcode <- function(force = FALSE) {
     if (!is.null(json$status) && json$status == "013") {
       return(.dart_empty_result("empty"))
     }
-    return(NULL)
+    return(.dart_fail_result(if (is.null(json$status)) "no_status" else json$status))
   }
 
   if (is.null(json$list) || length(json$list) == 0) return(.dart_empty_result("empty"))
@@ -214,94 +225,177 @@ dart_update_corpcode <- function(force = FALSE) {
 #
 # 인자 추가:
 #   max_calls  일 10,000콜 한도 대비 이번 실행 예산 (fail-closed halt). 기본 Inf.
-#   prioritize 직전연도에 제출 이력이 있는 corp 를 앞으로 (예산이 잘려도 실제
-#              제출사는 먼저 채워진다 — 이 경로엔 EMPTY 원장이 없어 미제출사가
-#              매 실행 재조회되기 때문. 원장 도입은 별건)
+#   prioritize 직전연도 자료 보유 corp 를 앞으로 (in-season 에 실제 제출사가 먼저 채워진다)
+#
+# [2026-11-08 연간 완결 분모 수리 — dart_submission_window.R §완결 분모 정정]
+#   ① 요청 대상 = 그 해 12월 상장(corpcode 매칭) + 익년 1/1~4/15 신규 상장
+#      (dart_listed_corps_by_year). 종전 = RAWDATA 전 기간 티커 × 연도(CJ) — 상장 전·
+#      폐지 뒤 연도까지 물어 헛콜(2콜/건)이 섞였다.
+#   ② 진행 장부(dart_annual_ledger.parquet): 자료 없음·실패를 백오프와 함께 적는다.
+#      종전엔 EMPTY 원장이 없어 미제출사가 매 실행 재조회됐다 → 예산 3,000 이 신규사
+#      대신 같은 미제출사에 쓰였다(원인 ③). 해결된 키는 다시 묻지 않는다.
+#   ③ 순서 = 직전연도 자료 보유 → 최근 연도 → 그 해 12월 시가총액 큰 순.
+#   ④ backfill = TRUE: years 명시 필수 — 과거 연도(lookback 밖)는 이 플래그로만 연다.
+#      deadline(POSIXct) 이 지나면 진행분 저장 후 중단(다음 날 00:03 체인과 겹치지 않게).
+#   ⑤ 잠금 .cache/dart/dart_raw_financials.lock: 월간 [5a] 와 보충 실행이 같은 원시 캐시를
+#      동시에 덮어쓰지 않게 한다. 잠금 중이면 건너뛴다(12시간 지난 잠금 = 묵은 잠금 인계).
+#   ⑥ 콜 사용량은 체크포인트마다 증분으로 남긴다(dart_calls_used_today 가 중간 종료에도
+#      실제 사용량을 본다). 원시 캐시는 mmap = FALSE 로 읽고, 교체 실패는 조용히 넘기지 않는다.
 dart_fetch_all <- function(years = NULL,
                             reprt_code = "11011",
                             fs_div = "CFS",
                             delay = 0.7,
                             resume = TRUE,
                             max_calls = Inf,
-                            prioritize = TRUE) {
+                            prioritize = TRUE,
+                            backfill = FALSE,
+                            deadline = NULL,
+                            today = Sys.Date(),
+                            grace_days = 60L,
+                            max_consecutive_fail = 25L,
+                            checkpoint_every = 200L) {
+  caller <- if (isTRUE(backfill)) "dart_fetch_all[backfill]" else "dart_fetch_all"
+  if (isTRUE(backfill) && is.null(years)) {
+    stop("[dart] backfill = TRUE 는 years 를 명시해야 한다 (과거 연도는 명시 플래그로만 연다)")
+  }
+  today <- as.Date(today)
+
+  if (!.dart_annual_lock_acquire(mode = if (isTRUE(backfill)) "backfill" else "pipeline")) {
+    .dart_log_api_usage(caller, 0L, 0L, 0L, 0L, "locked", "raw_financials_lock_held")
+    return(invisible(list(skipped = "locked", calls = 0L)))
+  }
+  on.exit(.dart_annual_lock_release(), add = TRUE)
+
   # corp_code 매핑 로드
   if (!file.exists(DART_CORPCODE)) dart_update_corpcode()
   corpmap <- as.data.table(read_parquet(DART_CORPCODE))
+  if (!file.exists(RAWDATA_CACHE)) stop("[dart] RAWDATA cache not found. Run build_cache.R first.")
 
-  # 유니버스 티커 로드 (RAWDATA에서)
-  if (file.exists(RAWDATA_CACHE)) {
-    raw_tickers <- unique(as.data.table(read_parquet(RAWDATA_CACHE, col_select = "Ticker"))$Ticker)   # Ticker 열만(2026-11-06 · 전 열 읽기와 같은 3,669종 · R 힙 최대 4.8GB→0.3GB · 12.4→1.1초 실측)
-  } else {
-    stop("[dart] RAWDATA cache not found. Run build_cache.R first.")
+  # 그 해 상장 집합 (분모 + 요청 대상) — 실패 시 전 기간 티커로 후퇴(로그로 드러낸다)
+  listed_tbl <- tryCatch(dart_listed_corps_by_year(rawdata_path = RAWDATA_CACHE, corpmap = corpmap),
+                         error = function(e) {
+                           cat(sprintf("[dart] ⚠ 상장 집합 산출 실패(%s) — 전 기간 티커로 후퇴\n",
+                                       conditionMessage(e)))
+                           NULL
+                         })
+  if (!is.null(listed_tbl)) {
+    um <- attr(listed_tbl, "unmatched")
+    cat(sprintf("[dart] 상장 집합: %d 회사·연도 (12월 상장 %d · 1~4월 신규 %d) | corpcode 미매칭 %d\n",
+                nrow(listed_tbl), sum(listed_tbl$in_denominator), sum(!listed_tbl$in_denominator),
+                if (is.null(um) || nrow(um) == 0L) 0L else sum(um$n)))
   }
 
-  # 매칭
-  matched <- corpmap[Ticker %in% raw_tickers]
-  cat(sprintf("[dart] Universe: %d tickers | Matched in DART: %d\n",
-              length(raw_tickers), nrow(matched)))
-
-  # 이미 수집된 데이터 로드 (resume 모드)
+  # 이미 수집된 데이터 로드 (resume 모드) — mmap = FALSE: 같은 경로를 이 실행에서 다시 쓴다
   existing <- NULL
   if (resume && file.exists(DART_RAW_CACHE)) {
-    existing <- as.data.table(read_parquet(DART_RAW_CACHE))
+    existing <- as.data.table(read_parquet(DART_RAW_CACHE, mmap = FALSE))
     cat(sprintf("[dart] Resuming: %d existing records loaded\n", nrow(existing)))
   }
+  ledger <- dart_annual_load_ledger()
+  cat(sprintf("[dart] 진행 장부: %d 키 (empty %d · fail %d)\n", nrow(ledger),
+              sum(ledger$status == "empty"), sum(ledger$status == "fail")))
 
-  # ── 후보 연도 결정 (P2-01) ────────────────────────────────────────────────
+  # ── 후보 연도 결정 (P2-01 · 2026-11-08 분모 = 그 해 상장 기업) ──────────────
   if (is.null(years)) {
-    years <- dart_due_annual_years(path = DART_RAW_CACHE)
+    years <- dart_due_annual_years(today = today, path = DART_RAW_CACHE, listed_tbl = listed_tbl,
+                                   ledger = ledger, grace_days = grace_days)
     if (length(years) == 0L) {
-      cat("[dart] 제출창 기준 수집 대상 연도 없음 — 전 연도 커버리지 도달.\n")
-      .dart_log_api_usage("dart_fetch_all", 0L, 0L, 0L, 0L, "", "no_due_year")
-      return(invisible(existing))
+      cat("[dart] 제출창 기준 수집 대상 연도 없음 — 전 연도 상장 대비 해결 문턱 도달.\n")
+      .dart_log_api_usage(caller, 0L, 0L, 0L, 0L, "", "no_due_year")
+      return(invisible(list(skipped = "no_due_year", calls = 0L)))
     }
-    cat(sprintf("[dart] 후보 연도(제출창+커버리지 판정): %s\n",
-                paste(years, collapse = ", ")))
+    cat(sprintf("[dart] 후보 연도(제출창+상장 대비 해결 판정): %s\n", paste(years, collapse = ", ")))
+  }
+  years <- sort(unique(as.integer(years)))
+
+  # 수집 대상 후보 — 그 해 상장 집합 (연도 자체가 집합에 없으면 전 기간 티커로 후퇴)
+  cand <- NULL
+  no_list_years <- years
+  if (!is.null(listed_tbl)) {
+    cand <- listed_tbl[bsns_year %in% years, .(corp_code, bsns_year, Ticker, corp_name, mcap)]
+    no_list_years <- setdiff(years, unique(listed_tbl$bsns_year))
+  }
+  if (length(no_list_years) > 0L) {
+    raw_tickers <- unique(as.data.table(read_parquet(RAWDATA_CACHE, col_select = "Ticker"))$Ticker)
+    matched <- corpmap[Ticker %in% raw_tickers]
+    fb <- CJ(corp_code = matched$corp_code, bsns_year = no_list_years, sorted = FALSE)
+    fb <- merge(fb, matched[, .(corp_code, Ticker, corp_name)], by = "corp_code")
+    fb[, mcap := NA_real_]
+    cand <- rbindlist(list(cand, fb), use.names = TRUE)
+    cat(sprintf("[dart] 상장 집합 없는 연도 %s → 전 기간 티커 %d사로 후퇴\n",
+                paste(no_list_years, collapse = ","), nrow(matched)))
   }
 
-  # 수집 대상 목록 생성
-  tasks <- CJ(corp_code = matched$corp_code, bsns_year = years, sorted = FALSE)
-  tasks <- merge(tasks, matched[, .(corp_code, Ticker, corp_name)], by = "corp_code")
+  # 제출창 미개시 제거 → 자료 보유 제외(resume) → 장부 백오프 제외 (보충 계획과 같은 함수)
+  existing_keys <- if (!is.null(existing) && nrow(existing) > 0) {
+    unique(existing[, .(corp_code, bsns_year = as.integer(bsns_year))])
+  } else NULL
+  tasks <- dart_annual_pending_tasks(cand, keys = existing_keys, ledger = ledger, today = today,
+                                     grace_days = grace_days, reprt_code = reprt_code)
+  cn <- attr(tasks, "counts")
+  cat(sprintf("[dart] 요청 대상 %d → 제출창 열림 %d → 자료 보유 제외 %d → 장부 백오프 제외 %d (연도 %s)\n",
+              cn[["candidates"]], cn[["window_open"]], cn[["after_data"]], cn[["after_backoff"]],
+              paste(years, collapse = ",")))
 
-  # 제출창 미개시 연도 제거 (명시 years 로 미래연도가 들어와도 낭비 차단)
-  tasks <- .dart_filter_tasks_by_window(tasks, today = Sys.Date(), default_reprt = reprt_code)
-
-  # 이미 수집된 건 제외
-  if (!is.null(existing) && nrow(existing) > 0) {
-    existing_keys <- unique(existing[, .(corp_code, bsns_year)])
-    tasks <- tasks[!existing_keys, on = c("corp_code", "bsns_year")]
-    cat(sprintf("[dart] Remaining tasks after resume: %d\n", nrow(tasks)))
-  }
-
-  # 우선순위: 직전연도 제출 이력 corp 를 앞으로
-  if (isTRUE(prioritize) && nrow(tasks) > 0 && !is.null(existing) && nrow(existing) > 0) {
-    prev_keys <- unique(existing[, .(corp_code, prev_year = bsns_year + 1L)])
-    setnames(prev_keys, "prev_year", "bsns_year")
-    prev_keys[, has_prev := TRUE]
-    tasks <- merge(tasks, prev_keys, by = c("corp_code", "bsns_year"), all.x = TRUE)
-    tasks[is.na(has_prev), has_prev := FALSE]
-    setorder(tasks, -has_prev, corp_code)
-    cat(sprintf("[dart] 우선순위: 직전연도 제출 이력 corp %d / %d\n",
+  # 순서: 직전연도 자료 보유 → 최근 연도 → 시가총액 큰 순
+  if (nrow(tasks) > 0L) {
+    tasks[, has_prev := 0L]
+    if (isTRUE(prioritize) && !is.null(existing) && nrow(existing) > 0) {
+      prev_keys <- unique(existing[, .(corp_code, bsns_year = as.integer(bsns_year) + 1L)])
+      tasks[prev_keys, has_prev := 1L, on = c("corp_code", "bsns_year")]
+    }
+    setorder(tasks, -has_prev, -bsns_year, -mcap, corp_code, na.last = TRUE)
+    cat(sprintf("[dart] 우선순위: 직전연도 자료 보유 corp %d / %d\n",
                 sum(tasks$has_prev), nrow(tasks)))
   }
 
   total <- nrow(tasks)
   if (total == 0) {
-    cat("[dart] All data already collected.\n")
-    .dart_log_api_usage("dart_fetch_all", 0L, 0L, 0L, 0L, "", "no_task")
-    return(invisible(existing))
+    cat("[dart] All data already collected (또는 장부 백오프).\n")
+    .dart_log_api_usage(caller, 0L, 0L, 0L, 0L, "", "no_task")
+    return(invisible(list(skipped = "no_task", calls = 0L)))
   }
 
-  cat(sprintf("[dart] Fetching %d company-year combinations (%.0f min estimated)...\n",
-              total, total * delay / 60))
+  cat(sprintf("[dart] Fetching %d company-year combinations (%.0f min estimated · 예산 %s콜)...\n",
+              total, total * delay / 60, format(max_calls)))
 
   # 수집 루프
-  results <- list()
-  n_success <- 0
-  n_fail    <- 0
-  n_empty   <- 0
+  results  <- list()
+  attempts <- list()   # 진행 장부에 적을 시도 (empty / fail)
+  n_success <- 0L
+  n_fail    <- 0L
+  n_empty   <- 0L
   n_calls   <- 0L      # 실제 발신 API 콜 수 (CFS + OFS fallback 각각 1콜)
-  halted    <- ""      # "" | "max_calls" | "rate_limit"
+  halted    <- ""      # "" | "max_calls" | "rate_limit" | "deadline" | "consecutive_fail"
+  consec_fail <- 0L
+  calls_logged <- 0L
+  n_saved_results <- 0L
+  n_done <- 0L
+  t_start <- Sys.time()
+
+  # 원시 캐시 교체 — 실패를 조용히 넘기지 않는다(tmp 보존 + 오류)
+  .save_raw <- function() {
+    batch <- rbindlist(results, fill = TRUE)
+    if (!is.null(existing)) batch <- rbindlist(list(existing, batch), fill = TRUE)
+    .dart_tmp <- paste0(DART_RAW_CACHE, ".tmp")
+    write_parquet(batch, .dart_tmp)
+    if (file.exists(DART_RAW_CACHE) && !file.remove(DART_RAW_CACHE)) {
+      stop("[dart] 원시 캐시 교체 실패(기존 파일 삭제) — tmp 보존: ", .dart_tmp)
+    }
+    if (!file.rename(.dart_tmp, DART_RAW_CACHE)) {
+      stop("[dart] 원시 캐시 교체 실패(이름 바꾸기) — tmp 보존: ", .dart_tmp)
+    }
+    nrow(batch)
+  }
+  # 진행 장부 저장 — 언제나 (원래 장부 + 지금까지 시도 전부)로 다시 만든다(횟수 이중 합산 방지)
+  .save_ledger <- function() {
+    ok_keys <- if (length(results)) {
+      unique(rbindlist(lapply(results, function(d) d[1L, .(corp_code, bsns_year = as.integer(bsns_year))])))
+    } else NULL
+    led <- .dart_annual_ledger_merge(ledger, if (length(attempts)) rbindlist(attempts) else NULL, ok_keys)
+    dart_annual_save_ledger(led)
+    led
+  }
 
   for (i in seq_len(total)) {
     task <- tasks[i]
@@ -311,6 +405,12 @@ dart_fetch_all <- function(years = NULL,
       cat(sprintf("  !! [%d/%d] max_calls 예산 소진(%d/%s) — 진행분 저장 후 종료\n",
                   i, total, n_calls, format(max_calls)))
       halted <- "max_calls"
+      break
+    }
+    if (!is.null(deadline) && Sys.time() >= deadline) {
+      cat(sprintf("  !! [%d/%d] 마감 시각 %s 도달 — 진행분 저장 후 종료\n",
+                  i, total, format(deadline, "%H:%M")))
+      halted <- "deadline"
       break
     }
 
@@ -330,6 +430,7 @@ dart_fetch_all <- function(years = NULL,
     n_calls <- n_calls + 1L
     st_primary  <- .dart_result_status(dt)
     st_fallback <- NA_character_
+    dt2 <- NULL
 
     if (st_primary %in% c("empty", "fail") && fs_div == "CFS") {
       # 연결재무제표 없으면 개별재무제표 시도 (비연결 법인은 OFS만 존재)
@@ -358,32 +459,45 @@ dart_fetch_all <- function(years = NULL,
       halted <- "rate_limit"
       break
     }
+    n_done <- n_done + 1L
 
     if (st == "ok") {
       dt[, Ticker := task$Ticker]
       dt[, corp_code := task$corp_code]
       results[[length(results) + 1]] <- dt
-      n_success <- n_success + 1
-    } else if (st == "empty") {
-      n_empty <- n_empty + 1
+      n_success <- n_success + 1L
+      consec_fail <- 0L
     } else {
-      n_fail <- n_fail + 1
+      code <- if (st == "empty") "013" else {
+        cc <- c(attr(dt2, "dart_code", exact = TRUE), attr(dt, "dart_code", exact = TRUE), "fail")
+        cc[1L]
+      }
+      attempts[[length(attempts) + 1L]] <- data.table(
+        corp_code = task$corp_code, bsns_year = as.integer(task$bsns_year), reprt_code = reprt_code,
+        Ticker = task$Ticker, status = st, last_code = code,
+        last_attempt_date = Sys.Date(), n_attempts = 1L)
+      if (st == "empty") { n_empty <- n_empty + 1L; consec_fail <- 0L }
+      else { n_fail <- n_fail + 1L; consec_fail <- consec_fail + 1L }
+    }
+    # 연속 실패 차단기 — 점검(800)·네트워크 장애 때 예산을 헛콜로 태우지 않는다
+    if (consec_fail >= max_consecutive_fail) {
+      cat(sprintf("  !! [%d/%d] 연속 실패 %d건(마지막 사유 %s) — 진행분 저장 후 종료\n",
+                  i, total, consec_fail, attempts[[length(attempts)]]$last_code))
+      halted <- "consecutive_fail"
+      break
     }
 
-    # 중간 저장 (매 200건)
-    if (length(results) > 0 && length(results) %% 200 == 0) {
-      cat("  > Checkpoint save...\n")
-      batch <- rbindlist(results, fill = TRUE)
-      if (!is.null(existing)) {
-        batch <- rbindlist(list(existing, batch), fill = TRUE)
+    # 중간 저장 (매 checkpoint_every 건 처리) — 원시 캐시(새 자료가 있을 때) + 장부 + 콜 사용량 증분
+    if (i %% checkpoint_every == 0L) {
+      if (length(results) > n_saved_results) {
+        cat("  > Checkpoint save...\n")
+        .save_raw()
+        n_saved_results <- length(results)
       }
-      # [fix 2026-06-17] Windows arrow mmap(error 1224) — existing이 DART_RAW_CACHE를
-      # mmap한 채라 동일 경로 write_parquet halt 회피, temp-rename. (existing은 이후
-      # checkpoint·최종저장에 반복 참조되므로 rm 불가 — rename으로 inode 교체)
-      .dart_tmp <- paste0(DART_RAW_CACHE, ".tmp")
-      write_parquet(batch, .dart_tmp)
-      if (file.exists(DART_RAW_CACHE)) file.remove(DART_RAW_CACHE)
-      file.rename(.dart_tmp, DART_RAW_CACHE)
+      .save_ledger()
+      .dart_log_api_usage(caller, n_calls - calls_logged, halted = "", note = "checkpoint")
+      calls_logged <- n_calls
+      .dart_annual_lock_touch()
     }
 
     # Rate limit (DART: ~100/min → 0.7초 간격)
@@ -391,33 +505,57 @@ dart_fetch_all <- function(years = NULL,
   }
 
   # 최종 저장
-  if (length(results) > 0) {
-    all_data <- rbindlist(results, fill = TRUE)
-    if (!is.null(existing)) {
-      all_data <- rbindlist(list(existing, all_data), fill = TRUE)
-    }
-    # [fix 2026-06-17] Windows arrow mmap(error 1224) — existing이 DART_RAW_CACHE를 mmap한
-    # 채라 동일 경로 write_parquet halt 회피, temp-rename (checkpoint와 동일).
-    .dart_tmp <- paste0(DART_RAW_CACHE, ".tmp")
-    write_parquet(all_data, .dart_tmp)
-    if (file.exists(DART_RAW_CACHE)) file.remove(DART_RAW_CACHE)
-    file.rename(.dart_tmp, DART_RAW_CACHE)
-    cat(sprintf("\n[dart] DONE. Total records: %d | Success: %d | Empty: %d | Fail: %d | calls: %d\n",
-                nrow(all_data), n_success, n_empty, n_fail, n_calls))
-    cat(sprintf("[dart] Saved to: %s\n", DART_RAW_CACHE))
-    .dart_log_api_usage("dart_fetch_all", n_calls, n_success, n_empty, n_fail, halted,
-                        sprintf("years=%s", paste(years, collapse = "|")))
-    if (nzchar(halted)) {
-      cat(sprintf("[dart] 조기 종료(%s) — 잔여 task 는 다음 실행에서 자동 재개.\n", halted))
-    }
-    invisible(all_data)
-  } else {
-    cat(sprintf("[dart] No new data fetched. | Empty: %d | Fail: %d | calls: %d\n",
-                n_empty, n_fail, n_calls))
-    .dart_log_api_usage("dart_fetch_all", n_calls, 0L, n_empty, n_fail, halted,
-                        sprintf("years=%s|no_new_data", paste(years, collapse = "|")))
-    invisible(existing)
+  n_rows <- NA_integer_
+  if (length(results) > n_saved_results) n_rows <- .save_raw()
+  led <- .save_ledger()
+  el_min <- as.numeric(difftime(Sys.time(), t_start, units = "mins"))
+  note <- sprintf("years=%s|tasks=%d/%d|calls_total=%d|elapsed_min=%.1f",
+                  paste(years, collapse = "|"), n_done, total, n_calls, el_min)
+  .dart_log_api_usage(caller, n_calls - calls_logged, n_success, n_empty, n_fail, halted, note)
+  cat(sprintf("\n[dart] DONE. tasks %d/%d | Success: %d | Empty: %d | Fail: %d | calls: %d (%.2f/task) | %.1f분\n",
+              n_done, total, n_success, n_empty, n_fail, n_calls,
+              if (n_done > 0) n_calls / n_done else NA_real_, el_min))
+  if (!is.na(n_rows)) cat(sprintf("[dart] Saved to: %s (%d rows)\n", DART_RAW_CACHE, n_rows))
+  cat(sprintf("[dart] 진행 장부: %d 키 → %s\n", nrow(led), basename(DART_ANNUAL_LEDGER())))
+  if (nzchar(halted)) {
+    cat(sprintf("[dart] 조기 종료(%s) — 잔여 task 는 다음 실행에서 자동 재개.\n", halted))
   }
+  invisible(list(skipped = "", calls = n_calls, ok = n_success, empty = n_empty, fail = n_fail,
+                 halted = halted, tasks_total = total, tasks_done = n_done, elapsed_min = el_min))
+}
+
+# ─── 연간 원시 캐시 잠금 (2026-11-08) ─────────────────────────────────────────
+# 파일 잠금(.lock) — OneDrive 동기화 폴더에서 R unlink 가 폴더를 남기는 함정이 있어
+# 디렉터리 잠금 대신 파일을 쓴다. 12시간 지나면 묵은 잠금으로 보고 인계한다.
+DART_ANNUAL_LOCK <- file.path(DART_CACHE_DIR, "dart_raw_financials.lock")
+DART_ANNUAL_LOCK_STALE_H <- 12
+
+.dart_annual_lock_acquire <- function(mode = "pipeline", path = DART_ANNUAL_LOCK) {
+  if (file.exists(path)) {
+    age_h <- as.numeric(difftime(Sys.time(), file.mtime(path), units = "hours"))
+    holder <- tryCatch(readLines(path, warn = FALSE)[1L], error = function(e) "?")
+    if (is.finite(age_h) && age_h < DART_ANNUAL_LOCK_STALE_H) {
+      cat(sprintf("[dart] 연간 원시 캐시 잠금 중(%s · %.1f시간 전) — 이번 실행은 건너뛴다\n",
+                  holder, age_h))
+      return(FALSE)
+    }
+    cat(sprintf("[dart] 묵은 잠금 인계(%s · %.1f시간)\n", holder, age_h))
+  }
+  writeLines(sprintf("pid=%d mode=%s at=%s host=%s", Sys.getpid(), mode,
+                     format(Sys.time(), "%Y-%m-%dT%H:%M:%S"), Sys.info()[["nodename"]]), path)
+  TRUE
+}
+
+.dart_annual_lock_touch <- function(path = DART_ANNUAL_LOCK) {
+  if (file.exists(path)) Sys.setFileTime(path, Sys.time())
+  invisible(NULL)
+}
+
+.dart_annual_lock_release <- function(path = DART_ANNUAL_LOCK) {
+  if (!file.exists(path)) return(invisible(FALSE))
+  own <- tryCatch(readLines(path, warn = FALSE)[1L], error = function(e) "")
+  if (grepl(sprintf("^pid=%d ", Sys.getpid()), own)) unlink(path)
+  invisible(TRUE)
 }
 
 
@@ -1202,7 +1340,13 @@ dart_run_pipeline <- function(years = NULL, force_corpcode = FALSE, max_calls = 
 
   # Step 2: Fetch financial statements
   cat("\n── Step 2: Fetch financial statements ──\n")
-  dart_fetch_all(years = years, max_calls = max_calls)
+  fr <- dart_fetch_all(years = years, max_calls = max_calls)
+  if (identical(fr$skipped, "locked")) {
+    # 보충 실행이 원시 캐시를 쓰는 중 — 반쯤 교체된 캐시로 팩터를 다시 만들지 않는다.
+    # 잠금을 쥔 실행이 끝나면 그쪽(dart_annual_backfill.R)이 팩터를 다시 만든다.
+    cat("[dart] 원시 캐시 잠금 중 — Step 3(팩터 재계산) 건너뜀\n")
+    return(invisible(fr))
+  }
 
   # Step 3: Compute factors
   cat("\n── Step 3: Compute fundamental factors ──\n")
