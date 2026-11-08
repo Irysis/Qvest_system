@@ -93,12 +93,17 @@ bash 02_Infrastructure/factor_db/run_factor_db_full_rebuild.sh
 - 스위트 총계 래칫: `bash 02_Infrastructure/ops/suite_totals_watch.sh --collect` → `--check`
 - 기록: README §8 · 메모리 · decision_register(전환 사실)
 
-## 7. 전환 뒤 정기 갱신 (전환 전에 정할 것)
+## 7. 전환 뒤 정기 갱신 (11-09 등록 — 도훈 '2번 정기갱신 만든다')
 
-- 퀀티 재무 DB(FundV2_*) 리프레시는 지금 수동입니다(`ops/qw_peer_refresh.ps1`).
-- 정기 실행이 없으면 v2 표는 마지막으로 리프레시한 날에 멈춥니다. 정기 실행 = `ops/qw_fund_v2_update.ps1` · 갱신용 DB `_upd` · 주 1회 + 공시 마감 직후.
-  - 예약 작업 등록은 도훈 확인이 필요합니다.
-  - 갱신용 DB(`_upd`)는 아직 만들어 시험하지 않았습니다.
+- 예약 작업 `Qvest_FundV2Update`(커밋 510b30692)가 `ops/qw_fund_v2_update.ps1` 을 돈다. 갱신용 DB 5개(`FundV2_*_upd` · 최근 8분기)를 만들고 → DATA_Key 동기화 → 리프레시 → 부모 parquet 의 그 창을 교체한다(값 변화 = `revisions.parquet`).
+  - 일정: 매주 토 13:00 + 공시 기한 다음 날(4/1 · 5/16 · 8/15 · 11/15) 13:00. 첫 실행은 11-14 13:00 이다.
+  - 원본 XML = `ops/scheduler/_task_xml_backup/Qvest_FundV2Update.xml` · 실행기 = `ops/scheduler/Qvest_FundV2Update.bat` · 로그 = `.cache/scheduler_logs/fund_v2_update.log`.
+  - 종료 코드: 0 = 끝 · 3 = 전제 조건 · 바쁨 · 세션 끊김 · 1 = 실패. 세션이 끊겨 있으면 재로그인하지 않고 3 으로 끝난다(재로그인은 드라이버 몫).
+  - GAAP 은 2007년까지 항목이라 갱신 DB 가 없다.
+- ★시험 상태(11-09): 재무상태 갱신 DB 를 만들고(41항목 × 202412~202609) 리프레시하던 중 18/41 시트에서 세션이 끊겼다.
+  - 적재기는 부분 리프레시 책을 G1 으로 거부했다(쓰기 0). 창 교체 논리는 시험 `test_qw_fund_v2_ingest.py` T9 · T9b 가 덮는다.
+  - 남은 일: 5개 DB 전 과정 실측을 첫 정기 실행 전에 해야 한다. 끊긴 원인 · 막힌 재로그인 = README §7.
+- 첫 적재 전 부모 parquet 백업 = `.cache/fundamental_backup/qw_fund_v2_pre_upd_20261109/`(SHA256SUMS.txt).
 - 월간 [5a2/7] 은 그대로 돕니다(v2 생산기에 위임). 입력(FundV2 parquet)이 새로워야 의미가 있습니다.
 
 ## 8. 되돌리기

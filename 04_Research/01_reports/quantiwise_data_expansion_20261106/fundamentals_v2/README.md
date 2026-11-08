@@ -342,11 +342,14 @@ DB 구성은 다음과 같습니다(등록부 `dbs`).
 - [ ] `qw_refresh.ps1`(핵심 5책 · 매일 체인)의 닫기 멈춤 대비 — Close($true) 구조라 '저장 확인 뒤에만 끊기'로 설계해야 함(검토)
 - [ ] 리프레시 드라이버의 부분 수신 재시도가 2007년에 끝나는 GAAP 항목에도 걸려 시트당 1~2분을 버린다(등록부 glossary_basis 'gaap' 을 드라이버에 넘기면 생략 가능)
 - [x] 문헌 표 2개 도착 → §3 대조 완료(빠진 원천 계정은 glossary 에 없어 `not_available` · 기업정보 시계열은 INFO DB 로)
-- [ ] 갱신 실행기 `ops/qw_fund_v2_update.ps1` 정기 실행 등록(주 1회 · 공시 시즌 매일 후보 — 예약 작업은 도훈 확인)
+- [x] 갱신 실행기 `ops/qw_fund_v2_update.ps1` 정기 실행 등록 — 예약 작업 `Qvest_FundV2Update`(11-09 · 도훈 '2번 정기갱신 만든다' · 커밋 510b30692). 매주 토 13:00 + 공시 기한 다음 날 13:00 · 첫 실행 11-14. 상세 = `SWITCH_RUNBOOK.md` §7
+- [ ] 갱신 DB 5개 전 과정 실측(첫 정기 실행 전). 11-09 재무상태 갱신 DB 를 18/41 시트까지 받다가 07:40 HQDE0300631-W03(203.227.19.224) 의 같은 아이디 로그인으로 끊겼다.
+  - 재로그인 클릭 4회는 'Windows 보안' 방화벽 알림 덮개에 떨어졌다. 알림 = R for Windows front-end · 11-08 22:59 PSOCK 서버 소켓 · 보안 설정이라 도훈이 직접 처리한다.
+  - 그래서 `qw_refresh.ps1` 에 `-LoginOnly` 와 덮인 화면 클릭 금지(ClickIfOwn)를 넣었다.
 - [ ] 퀀티 드라이버 공용 함수(ColName · Get-Busy · QW-Alive/Kick-Dialog 가 3~4곳에 따로 있음 · /simplify 11-08) · 바쁨 판정을 명령줄 정규식 대신 잠금 파일로(다른 세션의 grep 명령이 걸린다 · 11-08 실측)
 - [x] 병합 경로 결정(도훈 11-08 '위 방식대로 가자') → 병합 v2 · 날짜 순서 계약 · 전환 장치(§8 3단계)
 - [ ] DART 보충 완료 뒤 전환 + 팩터 DB 전체 재빌드(도훈 11-09 지시 · `SWITCH_RUNBOOK.md`)
-- [ ] 갱신용 DB(최근 8분기 창 · `window_quarters`) 등록 · 체인 단계(주간 또는 공시 시즌 매일)
+- [x] 갱신용 DB(최근 8분기 창 · `window_quarters`) 등록(등록부 FundV2_*_upd 5개) · 실행 = 위 예약 작업(체인 단계가 아니라 별도 작업)
 - [ ] 금융업 고유 계정(은행 · 보험 · 증권)
 - [ ] 기존 오표기 2건(RetainedEarnings · ShortTermBorr, ≤2014)의 팩터 DB 영향 정량화.
   - 참조는 16개 파일 82곳입니다. `compute_accrual.R` 14 · `xlsx_factor_calculator.R` 13 · `compute_quality.R` 5 · `compute_value.R` 4 · `compute_quality_xf_native.R` 4 · `compute_growth.R` 3 · `compute_risk.R` 2 · `factor_engine_altman_z.R` 3 등입니다.
