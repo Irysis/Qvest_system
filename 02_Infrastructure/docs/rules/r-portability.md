@@ -15,7 +15,7 @@
 
 ---
 
-## 금칙 7종 (위반 시 수리 의무)
+## 금칙 8종 (위반 시 수리 의무 · ⑧ = 2026-11-09 추가)
 
 > **공통 기전 한 줄**: ①~⑤는 "결손을 정상값으로 내려앉힘", ⑥은 "**정상값 모양의 오답**", ⑦은 "**기계마다 다른 프로그램이 같은 이름으로 뜸**". 방향은 달라도 급소는 같다 — 호출자가 보는 것이 실패처럼 안 보인다.
 
@@ -216,6 +216,28 @@ o <- system2(qv_bash(), c(shQuote(script), mode), stdout = TRUE, stderr = TRUE)
 - 셸 스크립트(`.sh`) 안의 `bash x.sh` 와 예약 작업 `.bat`(Git Bash 전체 경로)은 대상이 아니다 — Git Bash 안에서는 PATH 의 `/usr/bin` 이 먼저다.
 - **핀 걸린 진행 · 완료 라운드 파일은 고치지 않는다**(사전등록 무결성). 11-07 기준 미수리 = P2R03 · P2R04 · P3R03 · P2R05 의 `evaluate.R` · `precheck.R`(7곳 · 라이브 존 밖 `04_Research/` 라 검사기 범위 밖). 이 파일들은 WSL 없는 PC 에서 재현된다 — WSL 있는 PC 에서 돌리려면 환경 쪽 조치가 필요하다(메모리 `reference-main-pc-wsl-bash-shadows-bare-bash-20261107`).
 - 강제 = `08_Tests/hooks/test_r_portability.R` 금칙 ⑦(R · 라이브 존) + `08_Tests/ops/test_qv_bash.R`(해석기 위반 주입 · R ↔ Python 같은 답 · 실물 실행 · 함정 전제 재현 · System32 제외 삭제 돌연변이 · Python bare bash 스캔).
+
+### ⑧ `parallel::makePSOCKcluster()` · `makeCluster()` 를 직접 부르지 말 것 → `qv_psock_cluster()` (2026-11-09 · 메인 PC 포트 예약 실측)
+Windows(Hyper-V/WSL 동적 예약)는 TCP 포트를 묶음으로 예약한다. R `parallel` 은 기본 포트를 **패키지를 불러올 때 한 번** 11000–11999 에서 무작위로 정하고(`initDefaultClusterOptions`) 그 프로세스의 모든 클러스터가 그 포트를 쓴다 — 그 포트가 예약 범위면 같은 프로세스에서 몇 번을 다시 불러도 실패한다.
+
+```
+메인 PC(MAINCOMPUTER) 실측 2026-11-08 — netsh interface ipv4 show excludedportrange protocol=tcp
+예약 11004–11103 · 11186–11385 · 11491–11690 · 11969–12068 → 기본 범위 1000개 중 531개(53%)
+makePSOCKcluster(1, port = 11348L)       → creation of server socket failed: port 11348 cannot be opened
+(점유된 포트도 같은 오류 — 시험은 포트를 미리 점유해 어느 PC 에서나 재현한다)
+```
+
+★위험은 **간헐성**이다. 프로세스마다 포트가 새로 뽑히므로 같은 시험이 어떤 날은 통과하고 어떤 날은 요약 없이 죽는다(실사례 `test_remeasure_from_holdings.R` 단독 3회 중 2회 · 전체 회귀에서 '측정 사라짐' → 업그레이드 회귀로 오인하기 쉬움). 운영에선 배치 재측정 · 등급 재채점 · MSM 적합 · 네이버 수집이 멈추거나 순차로 떨어진다.
+
+**대체 (정본)**: `02_Infrastructure/ops/qv_psock.R` 를 source 하고 `cl <- qv_psock_cluster(n)`(정리는 종전대로 `parallel::stopCluster(cl)`). `R_PARALLEL_PORT` 가 숫자면 그 포트 그대로 · 아니면 후보 포트(같은 범위 · 1000 과 서로소 보폭 · 전역 난수 미사용)를 `makePSOCKcluster(n, port = p)` 로 차례로 시도하고 **'서버 소켓을 못 엶' 오류일 때만** 다음 후보로 넘어간다(작업자 기동 실패 등 다른 오류 = 그대로 stop) · 다 막히면 `stop()`(조용히 NULL 아님 · 순차 폴백은 호출자가 정한다).
+
+```r
+if (!exists("qv_psock_cluster", mode = "function")) source(file.path(root, "02_Infrastructure/ops/qv_psock.R"))
+cl <- qv_psock_cluster(nw); on.exit(parallel::stopCluster(cl), add = TRUE)
+```
+
+- 예약 범위 자체를 바꾸는 것(`netsh` · Hyper-V 설정)은 시스템 설정이라 이 계약의 대상이 아니다(도훈 권한).
+- 강제 = `08_Tests/ops/test_qv_psock.R`(점유 포트 주입 · 전부 막힘 · 포트 아닌 오류 · `R_PARALLEL_PORT` · 난수 불변 · 재시도 제거 돌연변이 · **운영 R 코드(`02_Infrastructure` · `04_Research/programs`) 직접 호출 0 정적 검사**). 11-09 교체 5곳 = `contracts/remeasure_from_holdings.R` · `data/naver_data_collector.R` · `programs/grade_v3_backfill.R` · `programs/grade_v3_retro.R` · `regime/msm_asof.R`.
 
 ### (동반) bare `python3` 금지
 별도 규칙으로 이미 확립 — `python3`는 Windows Store 스텁("Python" 출력 후 rc 49). `QVEST_PY` → venv 순 해석.

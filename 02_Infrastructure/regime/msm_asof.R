@@ -210,7 +210,8 @@ msma_update <- function(root = NULL, ledger = msma_ledger_path(root), out = file
     jobs <- lapply(seq_len(nrow(todo)), function(i) list(rf = todo$rf[i]))
     fitj <- function(j) { x <- RT[Date <= j$rf]; f <- msma_fit(x$r, root = root); c(j, list(n_obs = nrow(x), first = format(min(x$Date)), sdw = sd(x$r), fit = f)) }
     fits <- if (cores > 1L && length(jobs) > 1L) {
-      cl <- parallel::makeCluster(min(cores, length(jobs))); on.exit(parallel::stopCluster(cl), add = TRUE)
+      if (!exists("qv_psock_cluster", mode = "function")) source(file.path(root, "02_Infrastructure/ops/qv_psock.R"))   # 포트 예약 회피(금칙 ⑧ · 11-09)
+      cl <- qv_psock_cluster(min(cores, length(jobs))); on.exit(parallel::stopCluster(cl), add = TRUE)
       parallel::clusterExport(cl, c("RT", "root"), envir = environment())
       parallel::clusterCall(cl, function(rt) { Sys.setenv(QM_ROOT = rt); source(file.path(rt, "02_Infrastructure/regime/msm_asof.R")); NULL }, root)
       parallel::parLapply(cl, jobs, fitj)

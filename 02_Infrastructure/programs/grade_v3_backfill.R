@@ -103,7 +103,8 @@ init_worker <- quote({
   NULL })
 t0 <- Sys.time()
 res <- if (WORKERS > 1L) {
-  cl <- makeCluster(WORKERS)
+  source(file.path(ROOT, "02_Infrastructure/ops/qv_psock.R"))   # 포트 예약 회피(금칙 ⑧ · 11-09)
+  cl <- qv_psock_cluster(WORKERS)
   tryCatch({
     clusterExport(cl, c("ROOT", "%||%", "init_worker"))
     invisible(clusterEvalQ(cl, eval(init_worker)))

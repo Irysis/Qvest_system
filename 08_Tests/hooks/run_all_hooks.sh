@@ -1904,6 +1904,11 @@ SUITES=(
   #   돌연변이(System32 제외를 지운 소스 치환 사본) · 파이썬 bare bash 스캔(라이브 존)
   "08_Tests/ops/test_qv_bash.R"
   # <<< 11-07
+  # >>> 11-09 메인 PC 포트 예약 — makePSOCKcluster · makeCluster 직접 호출 금지(금칙 ⑧)의 탐색기 qv_psock.R: 점유 포트 주입 →
+  #   다음 후보로 성공 · 전부 막힘 = stop · 포트 아닌 오류 재시도 없음 · R_PARALLEL_PORT 존중 · 난수 불변 · 돌연변이(재시도 제거) ·
+  #   운영 R 코드 직접 호출 0(정적)
+  "08_Tests/ops/test_qv_psock.R"
+  # <<< 11-09
   # >>> 11-07 무인 레인 npm CLI 자동 업데이트(도훈 방식 2 = 예약 작업 Qvest_ClaudeCliUpdate) — claude_cli_update.sh 를 가짜 npm ·
   #   가짜 설치 · 가짜 프로세스 목록으로(최신 · 업데이트 · 사용 중 · 조회 사망 · 경합 · 재설치 · npm 자체 롤백 · 버전 앵커 · 교체 잠금) ·
   #   텔레그램 미리보기 · rf_llm_env.sh 레인 쪽(업데이터 끄기 변수 · 교체 중 대기 · 상한 · 경로 일치) · 뮤테이션 테스트 7 ·

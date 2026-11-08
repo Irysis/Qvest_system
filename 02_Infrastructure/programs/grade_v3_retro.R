@@ -89,7 +89,8 @@ t0 <- Sys.time()
 score_one <- function(d) tryCatch(list(ok = TRUE, r = gv3_score_dir(d, ROOT, CTX)),
                                   error = function(err) list(ok = FALSE, dir = d, err = conditionMessage(err)))
 res <- if (WORKERS > 1L) {
-  cl <- makeCluster(WORKERS)
+  source(file.path(ROOT, "02_Infrastructure/ops/qv_psock.R"))   # 포트 예약 회피(금칙 ⑧ · 11-09)
+  cl <- qv_psock_cluster(WORKERS)
   out <- tryCatch({
     clusterExport(cl, "ROOT")
     invisible(clusterEvalQ(cl, {

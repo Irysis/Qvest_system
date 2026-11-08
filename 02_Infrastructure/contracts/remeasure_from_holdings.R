@@ -915,7 +915,8 @@ rfh_batch <- function(artifacts, exec_prices = c("close_d_legacy", "close_t1"), 
   } else {
     src <- file.path(root, "02_Infrastructure/contracts/remeasure_from_holdings.R")
     if (nzchar(.RFH_SELF) && file.exists(.RFH_SELF)) src <- .RFH_SELF
-    cl <- parallel::makePSOCKcluster(nw)
+    if (!exists("qv_psock_cluster", mode = "function")) source(file.path(root, "02_Infrastructure/ops/qv_psock.R"))   # 포트 예약 회피(금칙 ⑧ · 11-09)
+    cl <- qv_psock_cluster(nw)
     on.exit(parallel::stopCluster(cl), add = TRUE)
     lf <- function(src, root, eps, rp, bp) {
       options(rfh.verbose = FALSE)

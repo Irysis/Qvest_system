@@ -275,7 +275,8 @@ naver_collect_adjusted <- function(codes, start, end, cfg = naver_collector_conf
 
   res <- NULL
   if (nw > 1L && length(codes) > nw) {
-    cl <- tryCatch(parallel::makePSOCKcluster(nw), error = function(e) NULL)
+    if (!exists("qv_psock_cluster", mode = "function")) source(file.path(PROJECT_ROOT, "02_Infrastructure/ops/qv_psock.R"))   # 포트 예약 회피(금칙 ⑧ · 11-09)
+    cl <- tryCatch(qv_psock_cluster(nw), error = function(e) NULL)
     if (is.null(cl)) {
       cat("[naver_adj][WARN] 클러스터 기동 실패 — 순차로 폴백\n")
     } else {
