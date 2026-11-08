@@ -1,8 +1,8 @@
 {
   "schema": "research_programs_v1",
   "_doc": "v10.01 목표 역산형 3엔진 리서치의 정본 등록부(2026-10-13 도훈 지시 '이 리서치 프로세스를 지속가능하게 운영할 인프라'). 쓰기는 02_Infrastructure/programs/program_registry.R 경유만(원자적 · 스키마 검사). 설계 = 04_Research/01_reports/l1_prescription_redesign_20261013/README.md(§대안 설계 · §2 등급 v3 · §3 처방 루프 · §9 유니버스 · §10 에이전트).",
-  "version": 80,
-  "updated_at": "2026-11-08T16:37:05+0900",
+  "version": 82,
+  "updated_at": "2026-11-08T23:42:21+0900",
   "target_spec": {
     "_doc": "0단계 목표 명세 — 설계는 이 행동 목표로 한다. 등급(essence v3)은 결과 보고 문턱. 수치 출처를 단다(하드코딩 금지).",
     "upside_capture_min": {
@@ -1751,7 +1751,7 @@
         {
           "round_id": "P2R05_distribution_target",
           "prereg": "stage_artifacts/programs/P2_DEFENSE/P2R05_distribution_target/prereg.json",
-          "prereg_md5": "dedc7a496a601502e27d2b95cdcebeb0",
+          "prereg_md5": "bf45f4e7636ef7b1955cb5f712d76878",
           "status": "registered",
           "n_variants": 4,
           "n_diagnostic": 6,
@@ -1775,13 +1775,20 @@
             "P2R05_E3_V2",
             "P2R05_E3_LV"
           ],
-          "recorded_at": "2026-11-08T16:37:05+0900",
+          "recorded_at": "2026-11-08T23:42:21+0900",
           "supersede_history": [
             {
               "from_md5": "9ed7b23fed5b73decb565cdf94eec208",
               "to_md5": "dedc7a496a601502e27d2b95cdcebeb0",
               "at": "2026-11-08T16:37:05+0900",
               "reason": "환경 최신화(R 4.5.2 → 4.6.2 · Python 3.12.10 → 3.15.2 · torch 2.12.1+cu126 → 2.15.0+cu132) — 결과 전 · 설계(칸 · 규칙 · 상수 · 최종 후보 선택 규칙 · 운영 경로 · 카탈로그) 불변 · 환경 핀만 교체"
+            },
+            {
+              "from_md5": "dedc7a496a601502e27d2b95cdcebeb0",
+              "to_md5": "bf45f4e7636ef7b1955cb5f712d76878",
+              "at": "2026-11-08T23:37:58+0900",
+              "reason": "PerformanceAnalytics 2.1.0 → 2.0.8 고정(R 4.6.2 소스 빌드 · 11-08 23:29) — 2.1.0 은 xts 날짜 비중의 Return.portfolio 출력 날짜를 한 기간 앞으로 당기고 · SharpeRatio.annualized 의 geometric 기본값을 TRUE → FALSE 로 바꾸고 · UpDownRatios 에 geometric = TRUE 를 새로 넣어(값 변경 · 상승/하락 구간이 없는 입력에서 오류) 측정 정의를 조용히 바꾼다. 같은 R 4.6.2 · xts 0.14.3 · zoo 1.9.1 에서 2.0.8 = 옛 환경 값 비트 동일(실측). 결과 전 · 설계(칸 · 규칙 · 상수 · 최종 후보 선택 규칙 · 운영 경로 · 카탈로그) 불변 · 환경 핀 1칸",
+              "recorded_late": "2026-11-08T23:42:21+0900 — writer 결함(modifyList 가 이름 없는 리스트를 합치지 못해 이력 원소를 버림)으로 빠진 이력을 writer 수리(.pr_merge) 뒤 사전등록 repins[2] 값으로 보충"
             }
           ]
         }

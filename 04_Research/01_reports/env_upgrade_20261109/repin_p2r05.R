@@ -14,10 +14,15 @@
 ## 안전: ① 두 사본 md5 같음 ② 바꾸지 않은 채 다시 직렬화 = 바이트 동일(아니면 중단 — 서식이 바뀌면 안 된다) ③ 바뀐 칸 = 허용 목록 안 ④ 새 값 = 현재 실측.
 ## 실행: Rscript repin_p2r05.R            계획만(쓰기 0)
 ##       Rscript repin_p2r05.R --apply    두 사본 쓰기 → 등록부 pr_record_round(supersedes md5 = 옛 md5 · 사유)
+##   (11-08 밤 추가) --entry=<json>          repins[] 서술 칸(approved · reason · 그 밖의 설명 칸)을 파일에서 읽는다 — 없으면 11-08 첫 재핀 문구 그대로
+##                   --expect-changed=<a,b>  바뀐 잎 경로 집합이 정확히 이것이 아니면 중단(두 번째 재핀 = PerformanceAnalytics 1칸)
 suppressPackageStartupMessages(library(jsonlite))
 ROOT <- "C:/Users/99922/OneDrive/Quant_Module_Moltbot"
 setwd(ROOT); Sys.setenv(CLAUDE_PROJECT_DIR = ROOT, QM_ROOT = ROOT)
-APPLY <- "--apply" %in% commandArgs(trailingOnly = TRUE)
+ARGS <- commandArgs(trailingOnly = TRUE)
+APPLY <- "--apply" %in% ARGS
+ENTRY <- sub("^--entry=", "", grep("^--entry=", ARGS, value = TRUE))
+EXPECT <- unlist(strsplit(sub("^--expect-changed=", "", grep("^--expect-changed=", ARGS, value = TRUE)), ","))
 `%||%` <- function(a, b) if (is.null(a) || length(a) == 0L) b else a
 RD <- file.path(ROOT, "04_Research/programs/P2_DEFENSE/P2R05_distribution_target")
 PR <- file.path(ROOT, "stage_artifacts/programs/P2_DEFENSE/P2R05_distribution_target/prereg.json")
@@ -80,24 +85,29 @@ if (any(!grepl("^engines\\.python", grep("^engines\\.", CH, value = TRUE)))) sto
 if (any(!grepl("^reseed\\.rng_facts", grep("^reseed\\.", CH, value = TRUE)))) stop("[repin] reseed 절에서 rng_facts 밖이 바뀌었다")
 if (any(!grepl("^operational_pins\\.(r_version|packages)", grep("^operational_pins\\.", CH, value = TRUE)))) stop("[repin] 운영 핀에서 판 밖(경로 · 카탈로그)이 바뀌었다")
 cat(sprintf("[repin] 바뀐 잎 %d개:\n", length(CH))); cat(paste0("  · ", CH, collapse = "\n"), "\n")
+if (length(EXPECT)) {   # 바뀐 잎 '경로'(값 앞부분)가 기대 집합과 정확히 같아야 한다
+  got <- sub(":.*$", "", CH)
+  if (!setequal(got, EXPECT)) stop("[repin] 바뀐 잎이 기대와 다르다 — 기대 {", paste(EXPECT, collapse = ", "), "} · 실제 {", paste(got, collapse = ", "), "} · 중단")
+  cat("[repin] 바뀐 잎 = 기대 집합 ✓\n")
+}
 
 ev_changed <- vapply(seq_along(pre$evaluation$files), function(i) !identical(pre$evaluation$files[[i]]$md5, new$evaluation$files[[i]]$md5), logical(1))
-new$repins <- c(pre$repins %||% list(), list(list(
-  at = format(Sys.time(), "%Y-%m-%dT%H:%M:%S%z"),
-  by = "Q",
+txt <- if (length(ENTRY)) fromJSON(ENTRY[1], simplifyVector = FALSE) else list(   # 기본 = 11-08 첫 재핀 문구(그대로)
   approved = "도훈 2026-11-08 — 'R과 파이썬, 그리고 각종 사용 패키지들도 최신화' · 시점 '지금 전부 · P2R05 다시 고정' · '진행해줘'",
   reason = paste0("환경 최신화(R ", sub("^R version ([0-9.]+).*$", "\\1", op$r_version), " → ", sub("^R version ([0-9.]+).*$", "\\1", R.version.string),
                   " · Python ", pre$engines$python$python, " → ", PYV$python, " · torch ", pre$engines$python$torch, " → ", PYV$torch,
                   ") — 결과 전 · 설계(칸 · 규칙 · 상수 · 최종 후보 선택 규칙 · 운영 경로 · 카탈로그) 불변 · 환경 핀만 교체"),
-  from_md5 = OLD,
-  changed = as.list(CH),
-  evaluation_files_changed = as.list(vapply(pre$evaluation$files[ev_changed], function(f) f$path, "")),
   evaluation_change = "evaluate.R · precheck.R — bare bash → qv_bash()(금칙 ⑦ · 메인 PC WSL bash 가로챔 수리) 두 곳만 · 지문 정의 · 판정 논리 · 입력 불변",
   tests_dt_rerun = paste0("DT tests/run_all_tests.R 느린 판을 새 환경에서 재실행(", PYV$python, " · ", PYV$torch, ") — 8/8 통과 · 시험 중 파일 md5 불변 · ",
                           "옛 증거(Python 3.12 판) 보관 = .cache/installers/p2r05_dt_out_py312_20261108/ · 11-06 세션 재개 메모의 '재실행 금지'는 등록 핀 보호용 — 이 재고정이 대체"),
   rehearsal_not_rerun = "rehearse.R 은 다시 돌리지 않았다 — rehearsal.evaluate_md5 는 리허설 때 파일(옛 evaluate.R)을 가리키는 역사 기록 · 옛 판과의 차이 = bash 해석 두 곳뿐(판정 논리 불변)",
-  warm = "워밍 센티널(night_state/p2r05_warm.done)은 아직 없다 — 워밍은 새 사전등록 md5 · 새 torch 로 처음부터(precheck --warm-check 가 사전등록 md5 를 대조)"
-)))
+  warm = "워밍 센티널(night_state/p2r05_warm.done)은 아직 없다 — 워밍은 새 사전등록 md5 · 새 torch 로 처음부터(precheck --warm-check 가 사전등록 md5 를 대조)")
+if (!all(c("approved", "reason") %in% names(txt))) stop("[repin] --entry 에 approved · reason 이 없다")
+new$repins <- c(pre$repins %||% list(), list(c(
+  list(at = format(Sys.time(), "%Y-%m-%dT%H:%M:%S%z"), by = "Q", approved = txt$approved, reason = txt$reason,
+       from_md5 = OLD, changed = as.list(CH),
+       evaluation_files_changed = as.list(vapply(pre$evaluation$files[ev_changed], function(f) f$path, ""))),
+  txt[setdiff(names(txt), c("approved", "reason"))])))
 NEWF <- tempfile(fileext = ".json"); wr(new, NEWF); NEW <- md5(NEWF)
 chk <- fromJSON(NEWF, simplifyVector = FALSE)
 stopifnot(identical(chk$operational_pins$r_version, R.version.string), identical(cj(chk$engines$python[DTC$PY_KEYS]), cj(PYV[DTC$PY_KEYS])),
