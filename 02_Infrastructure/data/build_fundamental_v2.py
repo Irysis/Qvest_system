@@ -12,7 +12,8 @@
 출력(원자적 쓰기 · 기본 .cache/fundamental_v2/):
   fund_v2_quarterly.parquet  Ticker · Period · Period_Date · Item · Value · Avail_Date(그 값이 공개된 날) ·
                              Factor_Date(Avail_Date 다음 거래일 = 쓸 수 있는 첫날) · Avail_Basis · Check · Db
-  fund_v2_annual_check.parquet  Ticker · FY · Item · QW_Value · DART_Value · Rel_Diff · DART_Date · Same
+  fund_v2_annual_check.parquet  Ticker · FY · Item · QW_Value · DART_Value · Rel_Diff · DART_Date ·
+                             DART_Factor_Date(DART 접수일 다음 거래일) · Same
   fund_v2_build_report.json  행 수 · 검사 결과 · 날짜 근거 분포
 Avail_Basis: qw_report(퀀티 공시일) · dart_rcept(DART 접수일이 더 늦음) · rule(공시일 없음 → 고정 규칙) ·
   restated_next_fy(정정 의심 → 다음 회계연도 사업보고서 공시일)
@@ -158,6 +159,9 @@ def build(a) -> int:
     raw["DART_Date"] = pd.to_datetime(raw["rcept_no"].astype(str).str[:8], format="%Y%m%d", errors="coerce")
     raw = raw.groupby(["Ticker", "bsns_year"], as_index=False)["DART_Date"].max()
     raw["Period"] = (raw["bsns_year"] * 100 + 12).astype(np.int32)
+    # DART 사업연도 ↔ 기간 대응: 접수일이 그 회계연도 말 이전이면 같은 기간의 보고서가 아니다(결산월 변경 등 ·
+    #   11-09 실측 A000760 'FY2015' 접수 2015-06-29). 날짜에도 대조에도 쓰지 않는다.
+    raw = raw[raw["DART_Date"] > pd.to_datetime(raw["bsns_year"].astype(str) + "-12-31")]
     keys = keys.merge(raw[["Ticker", "Period", "DART_Date"]], on=["Ticker", "Period"], how="left")
     dec = keys["FiscalMonth"] == 12
     keys.loc[~dec, "DART_Date"] = pd.NaT  # 12월 결산만 DART 연도와 대응시킨다
@@ -197,7 +201,8 @@ def build(a) -> int:
     chk = qa.merge(dl, on=["Ticker", "FY", "Item"], how="inner").rename(columns={"Value": "QW_Value"})
     chk["Rel_Diff"] = np.abs(chk["QW_Value"] - chk["DART_Value"]) / np.maximum(np.abs(chk["DART_Value"]), 1.0)
     chk["Same"] = chk["Rel_Diff"] <= tol
-    chk = chk.merge(raw.rename(columns={"bsns_year": "FY"})[["Ticker", "FY", "DART_Date"]], on=["Ticker", "FY"], how="left")
+    # 접수일이 확인된(회계연도 말 뒤) DART 행만 대조한다 — 대응이 안 맞는 비교는 정정 의심을 잘못 만든다
+    chk = chk.merge(raw.rename(columns={"bsns_year": "FY"})[["Ticker", "FY", "DART_Date"]], on=["Ticker", "FY"], how="inner")
     cy = chk.groupby(["Ticker", "FY"], as_index=False).agg(n_items=("Same", "size"), n_diff=("Same", lambda s: int((~s).sum())))
     restated = set(map(tuple, cy.loc[cy["n_diff"] > 0, ["Ticker", "FY"]].to_numpy()))
     checked = set(map(tuple, cy[["Ticker", "FY"]].to_numpy()))
@@ -226,6 +231,9 @@ def build(a) -> int:
     cal = pc.unique(pq.read_table(cal_p, columns=["Date"])["Date"]).to_numpy(zero_copy_only=False).astype("datetime64[D]")
     cal = np.sort(cal)
     keys["Factor_Date"] = next_trading_day(keys["Avail_Date"].to_numpy("datetime64[D]"), cal)
+    # 연간 대조 표: DART 당시 보고서 값을 쓸 수 있는 첫날(병합 v2 가 다른 칸을 DART 값으로 바꿀 때 쓴다)
+    dd2 = chk["DART_Date"].to_numpy("datetime64[D]")
+    chk["DART_Factor_Date"] = np.where(np.isnat(dd2), np.datetime64("NaT", "D"), next_trading_day(dd2, cal))
 
     # ---- 5. 붙이기 · 쓰기 ------------------------------------------------------------------------------------
     rows["Ticker"] = rows["Ticker"].astype(str)
@@ -242,8 +250,11 @@ def build(a) -> int:
                               ("Factor_Date", pa.date32()), ("Avail_Basis", pa.string()), ("Check", pa.string()),
                               ("Db", pa.string())]))
     atomic_write_table(tbl, out / "fund_v2_quarterly.parquet")
-    ck = pa.Table.from_pandas(chk[["Ticker", "FY", "Item", "QW_Value", "DART_Value", "Rel_Diff", "DART_Date", "Same"]],
-                              preserve_index=False)
+    ck = pa.Table.from_pandas(chk[["Ticker", "FY", "Item", "QW_Value", "DART_Value", "Rel_Diff", "DART_Date",
+                                   "DART_Factor_Date", "Same"]], preserve_index=False)
+    ck = ck.cast(pa.schema([("Ticker", pa.string()), ("FY", pa.int32()), ("Item", pa.string()), ("QW_Value", pa.float64()),
+                            ("DART_Value", pa.float64()), ("Rel_Diff", pa.float64()), ("DART_Date", pa.date32()),
+                            ("DART_Factor_Date", pa.date32()), ("Same", pa.bool_())]))
     atomic_write_table(ck, out / "fund_v2_annual_check.parquet")
     rep = {
         "schema": "fund_v2_build_report/v1", "built_at": dt.datetime.now().strftime("%Y-%m-%dT%H:%M:%S"),
