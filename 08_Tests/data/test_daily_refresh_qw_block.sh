@@ -21,7 +21,8 @@ DR=02_Infrastructure/data/daily_refresh.sh
 T="$(cygpath -m "$(mktemp -d)" 2>/dev/null)"; [ -n "$T" ] || T="$(mktemp -d)"; trap 'rm -rf "$T"' EXIT
 
 ## 블록 = '# --- [1pre-qw]' 줄부터 다음 절('# --- BMG-01') 앞까지
-awk '/^# --- \[1pre-qw\]/{f=1} /^# --- BMG-01/{f=0} f' "$DR" > "$T/block.sh"
+# 끝 표지 = 다음 블록 머리줄. (11-08) [1pre-qw] 와 BMG-01 사이에 [1pre-ext](확장 질의서)가 들어왔다 — 그 블록은 이 스텁 하네스의 대상이 아니다.
+awk '/^# --- \[1pre-qw\]/{f=1} /^# --- (BMG-01|\[1pre-ext\])/{f=0} f' "$DR" > "$T/block.sh"
 [ -s "$T/block.sh" ] && grep -q 'qw_updatefile_unattended.sh' "$T/block.sh" && ok "0 [1pre-qw] 블록을 실제 daily_refresh.sh 에서 잘랐다($(wc -l < "$T/block.sh")줄)" || ng "0 블록 추출 실패"
 
 ## 스텁 수급 스크립트($INFRA/data/qw_updatefile_unattended.sh) — STUB_LINE 을 마지막 줄로 내고 STUB_RC 로 끝난다
@@ -135,7 +136,9 @@ else ng "NM 구판 분기 판독 실패(태그 pre-rawdata-qw-only-20261017)"; f
 
 ## ⑦ [1pre] 정본 xlsx 가 benchmark.parquet 보다 앞서면 수급 rc 와 무관하게 재생성(10-17 부팅 규칙 · 실측 10-17 00:56 xlsx 가 parquet 에 안 실림)
 #   실제 [1pre] 블록을 잘라 수급기 · 재생성기를 스텁으로 바꿔 돌린다(퀀티 · 엑셀 · 운영 .cache 무접촉).
-awk '/^echo "\[1pre\/7\] Benchmark/{f=1} /^# --- \[1pre-qw\]/{f=0} f' "$DR" > "$T/pre_blk.sh"
+# 끝 표지 = 다음 블록 머리줄. (11-08) [1pre] 와 [1pre-qw] 사이에 [1pre-dk](신규 상장 동기화)가 들어왔다 — 그 블록까지 자르면
+#   스텁 환경에 없는 $RSCRIPT 에서 멈춰 BM_RC 를 못 찍는다(P1~P4 거짓 실패 실측) → [1pre-dk] 머리줄에서도 멈춘다.
+awk '/^echo "\[1pre\/7\] Benchmark/{f=1} /^# --- \[1pre-(qw|dk)\]/{f=0} f' "$DR" > "$T/pre_blk.sh"
 mkdir -p "$T/pre/infra/data" "$T/pre/base/.cache"
 printf 'import os, sys\nsys.exit(int(os.environ.get("STUB_QW_RC", "2")))\n' > "$T/pre/infra/data/quantiwise_fetch.py"
 printf 'import os\nopen(os.environ["STUB_BIC_LOG"], "a").write("called\\n")\n' > "$T/pre/infra/data/build_index_cache.py"

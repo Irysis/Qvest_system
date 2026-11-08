@@ -207,6 +207,26 @@ else
   echo "  python 미발견 - benchmark 갱신 skipped (기존 cache 유지)"
 fi
 
+# --- [1pre-dk] 신규 상장 동기화 (2026-11-08 · 04_Research/01_reports/quantiwise_data_expansion_20261106/BUILD_20261108.md §1) ---------------
+#   KRX 상장 목록(벤치 최신일 · data/krx_listing_snapshot.R) → 정본 종목 목록(06_Registry/qw_datakey_master.json · 추가만 · data/qw_datakey_master.py)
+#   → 퀀티 DB DATA_Key 끝 붙이기(행 8 · 항목 시트 A열 정렬 검증 · 백업 · ops/qw_datakey_sync.ps1). 붙인 DB의 보충 시작일 =
+#   .cache/qw_backfill_pending.json → 바로 아래 [1pre-qw] 래퍼가 -FromOverride 로 한 번 넘긴다(끝낸 DB는 대기열에서 지운다).
+#   왜: DATA_Key 를 손으로 관리해 11-06 기준 신규 상장 46종이 RAWDATA 에 없었고, 3개 DB에 53종이 빠져 위생 표식이 NA 였다(PLAN F7).
+#   실패해도 수급은 평소 창으로 진행한다(DR_FAILED 에만 싣는다). 끄기: QVEST_DK_SYNC=0 · 검사: 08_Tests/data/test_qw_datakey_sync.ps1
+if [ "${QVEST_DK_SYNC:-1}" = "1" ] && [ -n "$QVENV_PY" ]; then
+  echo "[1pre-dk] 신규 상장 동기화(KRX 상장 목록 → 정본 → 퀀티 DB DATA_Key)..."
+  cd "$INFRA"
+  "$RSCRIPT" --no-save data/krx_listing_snapshot.R; _dk_snap_rc=$?          # 0 저장 · 2 응답 없음(휴장 · 지연 → 직전 스냅숏 사용) · 1 오류
+  [ "$_dk_snap_rc" -eq 1 ] && DR_FAILED+=("dk_krx_snapshot(rc=1)")
+  "$QVENV_PY" -X utf8 data/qw_datakey_master.py --update; _dk_m_rc=$?
+  if [ "$_dk_m_rc" -eq 1 ]; then
+    DR_FAILED+=("dk_master(rc=1)")
+  else
+    powershell.exe -NoProfile -ExecutionPolicy Bypass -File "$(cygpath -w "$INFRA/ops/qw_datakey_sync.ps1")" -InChain; _dk_rc=$?
+    [ "$_dk_rc" -ne 0 ] && DR_FAILED+=("dk_sync(rc=$_dk_rc)") && echo "!! [1pre-dk] DATA_Key 동기화 rc=$_dk_rc — DB는 저장되지 않았거나 일부만(평소 창으로 수급은 진행)"
+  fi
+fi
+
 # --- [1pre-qw] 퀀티 Update_File 4종 매일 수급 — RAWDATA 주가 원천 = 퀀티 단일 (2026-10-17 · 결정 RAWDATA-QW-ONLY-20261017) -------------
 #   도훈 10-17 "이제 퀀티 실행 문제없이 되니까 주가관련 복잡한 규칙들 모두 없애고 Universe update 에 있는 파일들 매일 데이터 리프레시할 때
 #   퀀티로 최신화시켜는걸로 Rawdata 관리하자" · "Consensus_update, Investor_Act_update 이것도 매일해". (구 QW-UPDATEFILE-UNATTENDED 안 A 의 확장)
@@ -235,6 +255,27 @@ if [ "$_qwuf_rc" -eq 0 ]; then
     source("data/incremental_update_file.R")
     incremental_update_all()
   '
+fi
+
+# --- [1pre-ext] 퀀티 확장 질의서(등록부 group=ext · glossary 코드로 만든 DB) 수급 · 적재 (2026-11-08 · BUILD_20261108.md §2) -----------
+#   등록부 02_Infrastructure/data/qw_updatefile_registry.json 의 ext DB 중 **만들어진 DB만**(03_Universe/Update_File_ext/*.xlsx 존재) 같은 무인 래퍼로
+#   받는다(QWUF_GROUP=ext → qw_refresh.ps1 -Group ext · 시작일 앵커 = 그 DB 출력 전부의 min(max)+1 · 신규 상장 보충도 같은 대기열).
+#   전진하면 범용 적재기(data/qw_ext_ingest.py — 관문 G1 시트 종료일 동일 · G2 항목 코드 · G3 채움 · 끝 미공표 자르기)로 .cache/qw_ext/ 에 싣는다.
+#   ★아직 소비자 없음(보고 전용) — 실패는 DR_FAILED 로 싣되 RAWDATA 체인은 막지 않는다. 끄기: QVEST_QW_EXT=0
+#   검사: 08_Tests/data/test_qw_ext_ingest.py · test_qw_updatefile_unattended.R
+if [ "${QVEST_QW_EXT:-1}" = "1" ] && [ -n "$QVENV_PY" ] && [ "${_qwuf_state:-}" != "skipped" ]; then
+  _ext_books="$("$QVENV_PY" -X utf8 -c "import json,os,sys;b=sys.argv[1];r=json.load(open(os.path.join(b,'02_Infrastructure','data','qw_updatefile_registry.json'),encoding='utf-8'));print(','.join(x['name'] for x in r['books'] if x.get('group')=='ext' and x.get('layout')=='ts' and os.path.exists(os.path.join(b,*x['path'].split('/')))))" "$(cygpath -w "$BASE" 2>/dev/null || echo "$BASE")" 2>/dev/null | tr -d '\r')"
+  if [ -n "$_ext_books" ]; then
+    echo "[1pre-ext] 퀀티 확장 질의서 수급: $_ext_books"
+    QWUF_GROUP=ext QWUF_ONLY="$_ext_books" QWUF_LOG="$BASE/.cache/qw_updatefile_unattended_ext.json" \
+      bash "$INFRA/data/qw_updatefile_unattended.sh" "${_qw_rc:-1}" "$QVENV_PY"; _ext_rc=$?
+    if [ "$_ext_rc" -eq 0 ]; then
+      "$QVENV_PY" -X utf8 "$INFRA/data/qw_ext_ingest.py"; _ei_rc=$?
+      { [ "$_ei_rc" -eq 1 ] || [ "$_ei_rc" -eq 3 ]; } && DR_FAILED+=("qw_ext_ingest(rc=$_ei_rc)") && echo "!! [1pre-ext] 확장 적재 rc=$_ei_rc(1 오류 · 3 관문 거부 — .cache/qw_ext/_ingest_state.json)"
+    fi
+  else
+    echo "[1pre-ext] 만들어진 확장 질의서 없음 — 건너뜀"
+  fi
 fi
 
 # --- BMG-01 거래일 지평선 게이트 (2026-08-20 신설) ---------------------------

@@ -77,8 +77,25 @@ cleanup() {
   if [ -n "${QWUF_CLEANUP_CMD:-}" ]; then bash -c "$QWUF_CLEANUP_CMD" 2>/dev/null; return; fi
   powershell.exe -NoProfile -Command "\$t=[datetime]'$T0_ISO'; Get-Process EXCEL -ErrorAction SilentlyContinue | Where-Object { \$_.StartTime -ge \$t } | Stop-Process -Force" >/dev/null 2>&1
 }
+# ★(2026-11-08 · BUILD_20261108.md §1) 신규 상장 보충: ops/qw_datakey_sync.ps1 이 DB DATA_Key 끝에 새 종목을 붙이면
+#   .cache/qw_backfill_pending.json 에 DB별 보충 시작일(붙인 종목의 상장일 최솟값)을 남긴다 → 여기서 -FromOverride 로 한 번 넘기고,
+#   드라이버가 그 DB를 목표일까지 끝내면(상태 ts ≥ 이 실행 시작) 대기열에서 지운다. 못 끝내면 남겨 다음 밤에 다시 넘긴다.
+#   검사 주입: QWUF_BACKFILL_PENDING(경로). 가짜 수급 명령(QWUF_REFRESH_CMD)을 쓰는 검사는 경로를 주지 않으면 실제 대기열을 읽지 않는다.
+PENDING="${QWUF_BACKFILL_PENDING:-}"
+[ -z "$PENDING" ] && [ -z "${QWUF_REFRESH_CMD:-}" ] && PENDING="$BASE/.cache/qw_backfill_pending.json"
+BFPY="$BASE/02_Infrastructure/data/qw_backfill_pending.py"
+OVR=""
+if [ -n "$PENDING" ] && [ -f "$PENDING" ]; then
+  OVR=$("$PY" "$(cygpath -w "$BFPY" 2>/dev/null || echo "$BFPY")" overrides --pending "$(cygpath -w "$PENDING" 2>/dev/null || echo "$PENDING")" --only "$ONLY" 2>/dev/null | tr -d '\r')
+fi
+[ -n "$OVR" ] && echo "[qwuf] 신규 상장 보충 창(qw_backfill_pending.json) → -FromOverride $OVR"
+T0_TS=$(date '+%Y-%m-%dT%H:%M:%S')
 QW_OUT=$(mktemp)
-"${CMD[@]}" -SkipLogin -Only "$ONLY" -MaxRounds 2 > "$QW_OUT" 2>&1 &
+XARGS=(); [ -n "$OVR" ] && XARGS=(-FromOverride "$OVR")   # 호출 줄은 하나로 둔다(검사 8 — -SkipLogin 고정 불변식)
+# ★(2026-11-08 · BUILD_20261108.md §2) QWUF_GROUP=ext → 드라이버 -Group ext(등록부 qw_updatefile_registry.json 의 glossary 질의서 DB).
+#   호출부(daily_refresh.sh [1pre-ext])가 QWUF_ONLY(만든 DB 이름) · QWUF_LOG(별도 기록)를 같이 준다. 기본 core = 동작 불변.
+[ "${QWUF_GROUP:-core}" = "ext" ] && XARGS+=(-Group ext)
+"${CMD[@]}" -SkipLogin -Only "$ONLY" -MaxRounds 2 ${XARGS[@]+"${XARGS[@]}"} > "$QW_OUT" 2>&1 &
 qpid=$!
 t0=$(date +%s); last=-1; stall=0; cut=""
 while kill -0 "$qpid" 2>/dev/null; do
@@ -111,6 +128,10 @@ _dn=$(grep -oE 'done [0-9]+/[0-9]+' "$QW_OUT" | tail -n 1 | sed 's/^done //'); r
 if [ "$rc" != "0" ]; then INC=1
 elif [ -n "$_dn" ] && [ "${_dn%%/*}" -lt "${_dn##*/}" ]; then INC=1; fi
 after=$(snap)
+if [ -n "$OVR" ]; then   # 보충을 넘긴 DB 중 이번 실행에서 목표일을 끝낸 DB만 대기열에서 지운다(ts ≥ 시작)
+  "$PY" "$(cygpath -w "$BFPY" 2>/dev/null || echo "$BFPY")" clear --pending "$(cygpath -w "$PENDING" 2>/dev/null || echo "$PENDING")" \
+    --state "$(cygpath -w "$STATE" 2>/dev/null || echo "$STATE")" --since "$T0_TS" --books "$(echo "$OVR" | sed -E 's/=[0-9]{8}//g')" 2>&1 | tr -d '\r' | sed 's/^/[qwuf] /'
+fi
 adv=0
 IFS=';' read -r -a B <<< "$before"; IFS=';' read -r -a A <<< "$after"
 for i in "${!A[@]}"; do [ "${A[$i]}" != "${B[$i]:-}" ] && adv=$((adv + 1)); done

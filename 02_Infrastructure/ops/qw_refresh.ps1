@@ -29,7 +29,10 @@ param(
   # ★2026-11-06 구멍 복구용(04_Research/01_reports/quantiwise_data_expansion_20261106/PLAN.md §0 단계 0):
   #   "Name=YYYYMMDD" 목록 — 그 책의 B5(From)를 캐시 기준 대신 지정 날짜로 쓰고, 상태 · 캐시 '이미 완료' 판정을 건너뛰어 1회 다시 받는다.
   #   쓰임 = 책당 앵커 1개(F2) 때문에 뒤처진 시트가 남긴 구멍을 사람이 지정한 창으로 다시 받기. 무인 체인은 쓰지 않는다.
-  [string[]]$FromOverride = @()
+  [string[]]$FromOverride = @(),
+  # ★2026-11-08(BUILD_20261108.md §2 · PLAN §3.3): core = 아래 New-QwBookTable 5책(기본 · 동작 불변) · ext = 등록부
+  #   02_Infrastructure/data/qw_updatefile_registry.json 의 group=ext · layout=ts 책(glossary 코드로 만든 질의서 · 03_Universe/Update_File_ext).
+  [ValidateSet('core', 'ext')][string]$Group = 'core'
 )
 $ErrorActionPreference = "Continue"
 $ROOT = "C:\Users\99922\OneDrive\Quant_Module_Moltbot"
@@ -96,7 +99,19 @@ function New-QwBookTable([string]$root) {
     @{ name="Consensus";        path=(Join-Path $upd "Consensus_update.xlsx");        anchor="outputs"; outputs=$cons }
   )
 }
-$FILES = @(New-QwBookTable $ROOT)
+#  ext 책 표 = 등록부가 단일 출처(책 경로 · 시트별 출력 parquet). 앵커 = 그 출력 전부의 min(max)+1(core 와 같은 F2 규칙) —
+#  출력이 아직 없으면(첫 수급) keep = 생성기(ops/qw_book_build.ps1 -From)가 쓴 B5 그대로 받는다.
+function New-QwExtTable([string]$root) {
+  $regPath = Join-Path $root "02_Infrastructure\data\qw_updatefile_registry.json"
+  $reg = Get-Content -LiteralPath $regPath -Raw -Encoding UTF8 | ConvertFrom-Json
+  $out = @()
+  foreach ($b in @($reg.books | Where-Object { $_.group -eq 'ext' -and $_.layout -eq 'ts' })) {
+    $outs = @($b.sheets | ForEach-Object { @{ id = "$($_.sheet)"; path = (Join-Path $root ("$($_.output)" -replace '/', '\')) } })
+    $out += @{ name = "$($b.name)"; path = (Join-Path $root ("$($b.path)" -replace '/', '\')); anchor = "outputs"; outputs = $outs }
+  }
+  return $out
+}
+$FILES = if ($Group -eq 'ext') { @(New-QwExtTable $ROOT) } else { @(New-QwBookTable $ROOT) }
 
 Add-Type @"
 using System;using System.Text;using System.Runtime.InteropServices;using System.Collections.Generic;
@@ -353,14 +368,37 @@ function Get-BookAnchor($f, $target) {
 #         실제로 구멍을 메운다. 남은 한계 = 위의 내부 구멍(max 기반 앵커는 못 본다)과 창 상한 없음(Get-BookAnchor 주석 · 결정 사항).
 
 # ---- session ----
+# 2026-11-08 수리: 중복 로그인 종료 대화상자(#32770 · 제목 'Quantiwise7G' · 본문 '[HOST(IP)]에서 같은 아이디로 … 중복사용으로
+#   프로그램을 종료합니다')가 떠 있으면 아래 제목 검사('*Quantiwise7*')를 통과해 끊긴 세션이 살아 있는 것으로 보였다
+#   → Ensure-Login 이 재로그인을 건너뛰고 라운드가 무수급으로 끝났다(11-08 15:2x · 17:15 실측 2회).
+#   대화상자가 보이면 세션 없음으로 본다. 재로그인은 한 실행에 1회까지(도훈 11-06 상시 위임 '반복 경쟁 금지' —
+#   두 번째로 끊기면 다른 기기가 쓰는 중이라 보고 멈춘다).
+$script:KICKS = 0
+function Kick-Dialog {
+  $p = Get-Process qwMain -EA SilentlyContinue
+  if (-not $p) { return $null }
+  $dup = "$([char]0xC911)$([char]0xBCF5)"   # '중복'
+  foreach ($h in [Win]::Wins([uint32]$p.Id)) {
+    if ([Win]::Cls($h) -eq '#32770' -and [Win]::Txt($h) -like '*Quantiwise*') {
+      foreach ($k in [Win]::Kids($h)) { $t = [Win]::Txt($k); if ($t -match '\(\d{1,3}(\.\d{1,3}){3}\)\]' -or $t.Contains($dup)) { return $h } }
+    }
+  }
+  return $null
+}
 function QW-Alive {
   $p = Get-Process qwMain -EA SilentlyContinue
   if (-not $p) { return $false }
+  if (Kick-Dialog) { return $false }
   foreach ($h in [Win]::Wins([uint32]$p.Id)) { $t=[Win]::Txt($h); if ($t -like "*Quantiwise7*" -and $t -notlike "*Login*") { return $true } }
   return $false
 }
 function Ensure-Login {
   if (QW-Alive) { return $true }
+  if (Kick-Dialog) {
+    $script:KICKS++
+    Write-Host "[login] duplicate-login termination dialog (kick #$($script:KICKS))"
+    if ($script:KICKS -gt 1) { Write-Host "[login] kicked again in this run - another device is using this ID; not competing (stop)"; return $false }
+  }
   Write-Host "[login] no session -> launching + login"
   Get-Process qwMain -EA SilentlyContinue | Stop-Process -Force -EA SilentlyContinue
   Start-Sleep 1
@@ -491,7 +529,12 @@ while ($round -lt $MaxRounds) {
   $pending = @($sel | Where-Object { -not (Is-Done $state $_.name $target) })
   if ($pending.Count -eq 0) { Write-Host "===== ALL DONE (round $round) ====="; break }
   Write-Host ("--- round {0}: pending {1} [{2}] ---" -f $round, $pending.Count, (($pending | ForEach-Object { $_.name }) -join ', '))
-  if (-not $SkipLogin) { if (-not (Ensure-Login)) { Write-Host "[login] failed, retry"; Start-Sleep 5; continue } }
+  if (-not $SkipLogin) {
+    if (-not (Ensure-Login)) {
+      if ($script:KICKS -gt 1) { Write-Host "[round $round] stop: kicked twice (no login war)"; break }
+      Write-Host "[login] failed, retry"; Start-Sleep 5; continue
+    }
+  }
   $kicked=$false
   foreach ($f in $pending) {
     $r = Refresh-One $f $target
