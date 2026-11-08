@@ -16,7 +16,9 @@
 param(
   [Parameter(Mandatory = $true)][string]$Book,
   [string[]]$Sheets = @(),
-  [switch]$NoBusyCheck
+  [switch]$NoBusyCheck,
+  # close guard (11-08): seconds Workbook.Close/Excel.Quit may take before a guard process kills this Excel
+  [int]$CloseGuardSec = 120
 )
 $ErrorActionPreference = "Continue"
 $Sheets = @($Sheets | ForEach-Object { "$_" -split ',' } | Where-Object { $_ -ne '' })
@@ -107,7 +109,7 @@ try {
         $after = "$($ws.Range('B1').Value2)"; $sec = [int]((Get-Date) - $ts).TotalSeconds
         $filled = [int]$xl.WorksheetFunction.CountA($ws.Range("D14:$(ColNameP $lastC)5000"))
         $penN = [int]$xl.WorksheetFunction.CountA($ws.Range("$($pen)14:$($pen)5000"))
-        Write-Host ("  [{0}] after retry: cells {1} · period {2} cells {3}{4}" -f $ws.Name, $filled, "$($ws.Range("$($pen)10").Value2)", $penN, $(if ($penN -eq 0) { ' (still empty - ends early or vendor gap)' } else { '' }))
+        Write-Host ("  [{0}] after retry: cells {1} | period {2} cells {3}{4}" -f $ws.Name, $filled, "$($ws.Range("$($pen)10").Value2)", $penN, $(if ($penN -eq 0) { ' (still empty - ends early or vendor gap)' } else { '' }))
       }
     }
     $changed = ($after -ne $before -and $after -like '*Last Update*' -and $filled -gt 0)
@@ -121,9 +123,34 @@ try {
 } catch {
   Write-Host "[peer-refresh] ERROR: $($_.Exception.Message)"; $rc = 1
 } finally {
+  # close guard (11-08 22:01, FundV2_IS): Save() had written the book, then an Office dialog for the OneDrive-synced
+  #   file ('cannot merge your changes with the latest changes', class NUIDialog) blocked Workbook.Close for 30 min
+  #   and stalled the chain. Close($false) keeps nothing that was not saved, so killing this Excel while it hangs in
+  #   close/quit loses nothing. The guard is a separate process (this thread is the one that hangs) and is stopped
+  #   as soon as close/quit return.
+  #   The guard matches pid AND start time (a reused pid is never killed) and exits 9 only when it killed.
+  $guard = $null; $xlPid = 0; $xlTicks = 0L
+  if ($xl) {
+    try { [void][QpWin]::GetWindowThreadProcessId([IntPtr]$xl.Hwnd, [ref]$xlPid) } catch {}
+    if ($xlPid -gt 0) { try { $xlTicks = (Get-Process -Id $xlPid -EA Stop).StartTime.Ticks } catch {} }
+    if ($xlTicks -gt 0) {
+      $gcmd = "Start-Sleep $CloseGuardSec; `$p = Get-Process -Id $xlPid -EA SilentlyContinue; " +
+              "if (`$p -and `$p.ProcessName -eq 'EXCEL' -and `$p.StartTime.Ticks -eq $xlTicks) { Stop-Process -Id $xlPid -Force; exit 9 }; exit 0"
+      try { $guard = Start-Process powershell -WindowStyle Hidden -PassThru -ArgumentList @('-NoProfile', '-Command', $gcmd); $null = $guard.Handle }
+      catch { Write-Host "[peer-refresh] close guard not started: $($_.Exception.Message)" }
+    } else { Write-Host "[peer-refresh] close guard not armed (Excel pid not resolved)" }
+  }
+  $tc = Get-Date
   if ($wb) { try { $wb.Close($false) } catch {} }
-  if ($xl) { try { $xl.Quit() } catch {}; [Runtime.InteropServices.Marshal]::ReleaseComObject($xl) | Out-Null }
+  if ($xl) { try { $xl.Quit() } catch {}; try { [Runtime.InteropServices.Marshal]::ReleaseComObject($xl) | Out-Null } catch {} }
   [GC]::Collect(); [GC]::WaitForPendingFinalizers()
+  if ($guard) {
+    # $null = .Handle above keeps ExitCode readable (PS 5.1 Start-Process -PassThru quirk)
+    if (((Get-Date) - $tc).TotalSeconds -ge ($CloseGuardSec - 1)) { [void]$guard.WaitForExit(5000) }
+    if ($guard.HasExited) {
+      if ($guard.ExitCode -eq 9) { Write-Host ("[peer-refresh] close guard fired: Excel pid {0} did not close within {1}s - killed (book state = last Save)" -f $xlPid, $CloseGuardSec) }
+    } else { try { $guard.Kill() } catch {} }
+  }
 }
 Write-Host "[peer-refresh] END rc=$rc"
 exit $rc

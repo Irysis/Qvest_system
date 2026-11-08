@@ -124,7 +124,9 @@ def sheet_long(s: str, sh: dict):
     tk = np.repeat(np.array(codes, dtype=object), len(per))
     pr = np.tile(np.array(per, dtype=object), len(codes))
     if sh["kind"] == "text":
-        txt = raw.map(lambda v: None if v is None else str(v).strip())
+        # pd.isna, not 'v is None' (11-08): a text-only column is inferred as pandas 3 str dtype, which turns None
+        #   into NaN, and str(NaN) = 'nan' was written for every empty cell (INFO text items = the whole panel).
+        txt = raw.map(lambda v: None if pd.isna(v) else str(v).strip())
         df = pd.DataFrame({"Ticker": tk, "Period": pr, "Item": s, "Value": np.nan, "Text": txt})
         return df[df["Text"].notna() & (df["Text"] != "")]
     num = pd.to_numeric(raw, errors="coerce")

@@ -158,6 +158,16 @@ try:
         ok("T9b 갱신용 DB 첫 적재의 채움 급감(부모 60 → 10) → 3(G3 가 부모 채움으로 걸림)") if rc == 3 else ng(f"T9b rc={rc}")
     finally:
         PER = keep
+    # T11 글자 항목의 빈칸(11-08 실측): 글자만 든 열은 pandas 3 가 str dtype 으로 추론해 None 을 NaN 으로 바꾼다.
+    #   구판은 'v is None' 만 봐서 빈칸마다 Text 'nan' 행을 썼다(INFO 감사의견 · 상장폐지사유 등 전 패널 43만 행).
+    sh = {"codes": CODES[:3], "periods": ["202312", "202403"], "kind": "text",
+          "vals": [["적정", None], [None, None], ["한정", "n/a"]]}
+    t11 = M.sheet_long("AuditOpinion", sh)
+    sh_mixed = dict(sh, vals=[["KS", None], [None, "KQ"], [None, None]])
+    t11b = M.sheet_long("MarketType", sh_mixed)
+    good = list(t11["Text"]) == ["적정", "한정"] and list(t11b["Text"]) == ["KS", "KQ"] \
+        and not any(str(x).lower() in ("nan", "none", "") for x in list(t11["Text"]) + list(t11b["Text"]))
+    ok("T11 글자 항목 빈칸 → 행 없음('nan' · 'None' 글자 없음)") if good else ng(f"T11 {list(t11['Text'])} {list(t11b['Text'])}")
     # TM 뮤테이션 — G3 를 끄면 T5 모양이 통과해야 한다
     ratio = M.FILL_RATIO; M.FILL_RATIO = 0.0
     try:
