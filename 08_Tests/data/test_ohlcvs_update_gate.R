@@ -16,7 +16,12 @@
 #     · 다른 파일은 처리·기록 · 판정 기록 JSON · 다음 실행이 재시도(변경 재감지)
 #   E 통합(지평선 불일치 — Size 시트 하루 뒤짐) 거부
 #   F 통합(양성 대조) — 전진·일치면 관문 통과해 적재 경로로 진행 / 지평선 행이 빈 Size 시트는 파싱 후 거부
-#   M 돌연변이 6종 red — 거부 반환 삭제 · 판정 항상 통과 · OHLCVS 기록 유지 삭제 · 끝 stop 삭제 · 불일치 판정 삭제 · 빈 행 거부 삭제
+#   N 새 자료 없음(2026-11-09 · 도훈 승인 — 주말 · 휴일 재저장이 월 · 화 아침마다 r2(rc=3) 를 내던 것):
+#     지평선 = 직전 적재 ∧ 값 6시트 B6 괄호 = 지평선 → 거부 아님 · RAWDATA 무접촉 · 처리 완료 기록 · 판정 기록 no_new_data
+#     / B6 가 지평선보다 뒤 = 지금처럼 거부 / 지평선이 뒤로 감 = 거부(순수 판정) · A10~A15 = 같은 규칙의 순수 함수 사례
+#   P 사전 점검 — B6 탐침(파이썬 · openpyxl) 카나리아. 실패 = 결과 미발행(죽은 탐침의 거부를 '검거'로 읽지 않는다)
+#   M 돌연변이 10종 red — 거부 반환 삭제 · 판정 항상 통과 · OHLCVS 기록 유지 삭제 · 끝 stop 삭제 · 불일치 판정 삭제 · 빈 행 거부 삭제
+#     · B6 일치 요구 삭제 · 새 자료 없음 판정 끔 · B6 탐침 생략 · 같은 날 요구 삭제
 #
 # 격리: 적재기 파일을 **파싱해서 필요한 정의만** 격리 env 에 올린다(config·캘린더 적재 없음).
 #   UPDATE_DIR·CACHE_DIR·상태 파일·판정 기록 = 전부 tempdir. 운영 .cache·원장·로그 쓰기 0.
@@ -42,8 +47,15 @@ cat(sprintf("[test_ohlcvs_update_gate] 대상: %s (%d줄)\n", SRC, length(src_li
 
 WANTED <- c(".OHLCVS_VAR_SHEETS", ".OHLCVS_QW_SOURCES", "ohlcvs_sheet_horizons", ".ohlcvs_prior_horizon",
             "ohlcvs_update_gate", ".ohlcvs_horizon_fill_problems", ".ohlcvs_gate_print",
-            ".ohlcvs_gate_record", ".ohlcvs_refuse", "incremental_ohlcvs", "incremental_update_all",
-            "detect_update_changes", ".get_last_processed", ".save_last_processed")
+            ".ohlcvs_gate_record", ".ohlcvs_refuse", ".ohlcvs_no_new", "incremental_ohlcvs", "incremental_update_all",
+            "detect_update_changes", ".get_last_processed", ".save_last_processed",
+            ".UF_PROBE_PY", ".UF_B6_RE", ".uf_probe_book")
+# B6 탐침 파이썬 — 소스 .uf_python 과 같은 순서(QVEST_PY → <ROOT>/.venv_qvest_ml). 격리 env 의 PROJECT_ROOT 는 tempdir 라 여기서 한 번 정한다.
+PY <- local({
+  c0 <- c(Sys.getenv("QVEST_PY", ""), file.path(ROOT, ".venv_qvest_ml/Scripts/python.exe"))
+  c0 <- c0[nzchar(c0) & file.exists(c0)]
+  if (length(c0)) c0[1] else NA_character_
+})
 
 load_defs <- function(lines, env) {
   exprs <- parse(text = lines, keep.source = FALSE, encoding = "UTF-8")
@@ -76,10 +88,10 @@ TICK <- c("A000010", "A000020", "A000030")
 # 합성 수출본 — 실물 형식(08-29 판 실측): 1 Refresh/0 · 5 Period(From) · 6 Period(To) · 8 Code · 11 Unit
 #   · 14 'D A T E' · 15~ 데이터. 시트 7장 = Open High Low Close Vol Size + DATA_Key(날짜축 없음)
 #------------------------------------------------------------------------------
-make_sheet_matrix <- function(dates, val_fun, empty_last = FALSE) {
+make_sheet_matrix <- function(dates, val_fun, empty_last = FALSE, b6 = "CPD-1TD") {
   nc <- 1L + length(TICK)
   hdr <- list(c("Refresh", "0"), c("0"), c("Time Series (Company)"), c("Frequency", "Daily"),
-              c("Period(From)", "20260330"), c("Period(To)", "CPD-1TD"), character(0),
+              c("Period(From)", "20260330"), c("Period(To)", b6), character(0),
               c("Code", TICK), c("Name", paste0("N", seq_along(TICK))), c("Item Code", rep("S000", length(TICK))),
               c("Unit", rep("local", length(TICK))), c("Base Date"), character(0), c("D A T E", rep("item", length(TICK))))
   M <- matrix(NA_character_, nrow = length(hdr) + length(dates), ncol = nc)
@@ -91,12 +103,14 @@ make_sheet_matrix <- function(dates, val_fun, empty_last = FALSE) {
   }
   M
 }
+# b6 = 전 시트 같은 값(문자열 하나) 또는 시트 이름 붙은 벡터 — 실물 갱신본은 'CPD-1TD [YYYYMMDD]'(11-09 운영 저장본 판독)
 write_qw_xlsx <- function(path, sheet_dates, sheet_order = c("Open", "High", "Low", "Close", "Vol", "Size"),
-                          empty_last = character(0), data_key = TRUE) {
+                          empty_last = character(0), data_key = TRUE, b6 = "CPD-1TD") {
   wb <- openxlsx::createWorkbook()
   for (s in sheet_order) {
     d <- sheet_dates[[s]]
-    M <- make_sheet_matrix(as.Date(d), function(k, dd) 1000 + 10 * k + seq_along(TICK), empty_last = s %in% empty_last)
+    b6s <- if (is.null(names(b6))) b6[1] else if (s %in% names(b6)) b6[[s]] else "CPD-1TD"
+    M <- make_sheet_matrix(as.Date(d), function(k, dd) 1000 + 10 * k + seq_along(TICK), empty_last = s %in% empty_last, b6 = b6s)
     openxlsx::addWorksheet(wb, s)
     openxlsx::writeData(wb, s, as.data.frame(M, stringsAsFactors = FALSE), colNames = FALSE)
   }
@@ -139,6 +153,7 @@ new_env <- function(lines, tag) {
   env$.load_calendar <- function() stop("SENTINEL_PAST_GATE")
   env$consensus_calls <- 0L
   env$incremental_consensus <- function() { env$consensus_calls <- env$consensus_calls + 1L; invisible(TRUE) }
+  env$.uf_python <- function(...) PY        # 탐침 파이썬(위 PY — 사전 점검 P1 이 살아 있음을 확인한다)
   load_defs(lines, env)
   make_rawdata(file.path(env$CACHE_DIR, "rawdata.parquet"))
   env
@@ -191,10 +206,66 @@ core_checks <- function(lines, verbose = FALSE) {
   out(tryCatch(res <- e$incremental_ohlcvs(), error = function(x) err <<- conditionMessage(x)))
   r$F2_empty_row_refused <- is.null(err) && isTRUE(res$refused) && "horizon_row_empty" %in% names(res$reasons)
   r$F2_rawdata_untouched <- identical(md5(rp), m0)
+  ## N 새 자료 없음 — 지평선 08-28 = 직전 적재 08-28 ∧ 값 6시트 B6 [20260828] → 거부 아님 · 적재 0 · 처리 완료 기록
+  e <- new_env(lines, "N")
+  xl <- write_qw_xlsx(file.path(e$UPDATE_DIR, "OHLCVS_update.xlsx"), same_dates(D_OLD), b6 = "CPD-1TD [20260828]")
+  cf <- file.path(e$UPDATE_DIR, "Consensus_update.xlsx"); writeBin(as.raw(1:9), cf)
+  old_t <- Sys.time() - 7200
+  saveRDS(list(time = old_t, files = list(OHLCVS_update.xlsx = old_t, Consensus_update.xlsx = old_t)), e$LAST_PROCESSED_FILE)
+  rp <- file.path(e$CACHE_DIR, "rawdata.parquet"); m0 <- md5(rp)
+  res <- NULL; err <- NULL
+  out(tryCatch(res <- e$incremental_update_all(), error = function(x) err <<- conditionMessage(x)))
+  r$N1_no_new_no_error <- is.null(err) && isTRUE(rf(res, "ohlcvs")$no_new_data) && !isTRUE(rf(res, "ohlcvs")$refused) &&
+                          e$consensus_calls == 1L
+  r$N2_rawdata_untouched <- identical(md5(rp), m0)
+  lp <- readRDS(e$LAST_PROCESSED_FILE)
+  r$N3_ohlcvs_recorded <- isTRUE(abs(as.numeric(lp$files$OHLCVS_update.xlsx) - as.numeric(file.mtime(xl))) < 1)
+  rec <- tryCatch(jsonlite::fromJSON(e$OHLCVS_GATE_RECORD), error = function(x) NULL)
+  r$N4_record_no_new <- identical(rec$status, "no_new_data") && identical(rec$horizon, "2026-08-28") &&
+                        isTRUE(grepl("새 자료 없음", rec$note, fixed = TRUE))
+  ## N5 B6 [20260831] 가 지평선 08-28 보다 뒤 = 받아야 할 날을 못 받은 저장 → 지금처럼 stop([GATE_REFUSED] not_advanced)
+  e <- new_env(lines, "N5")
+  write_qw_xlsx(file.path(e$UPDATE_DIR, "OHLCVS_update.xlsx"), same_dates(D_OLD), b6 = "CPD-1TD [20260831]")
+  rp <- file.path(e$CACHE_DIR, "rawdata.parquet"); m0 <- md5(rp)
+  err <- NULL
+  out(tryCatch(e$incremental_update_all(), error = function(x) err <<- conditionMessage(x)))
+  r$N5_b6_later_refused <- !is.null(err) && grepl("GATE_REFUSED", err, fixed = TRUE) && grepl("not_advanced", err, fixed = TRUE) &&
+                           identical(md5(rp), m0)
+  ## N6 B6 가 한 시트(Vol)만 뒤 → 거부(시트마다 묻는다)
+  e <- new_env(lines, "N6")
+  write_qw_xlsx(file.path(e$UPDATE_DIR, "OHLCVS_update.xlsx"), same_dates(D_OLD),
+                b6 = c(Open = "CPD-1TD [20260828]", High = "CPD-1TD [20260828]", Low = "CPD-1TD [20260828]",
+                       Close = "CPD-1TD [20260828]", Vol = "CPD-1TD [20260831]", Size = "CPD-1TD [20260828]"))
+  res <- NULL; err <- NULL
+  out(tryCatch(res <- e$incremental_ohlcvs(), error = function(x) err <<- conditionMessage(x)))
+  r$N6_one_sheet_later_refused <- is.null(err) && isTRUE(rf(res, "refused")) && "not_advanced" %in% names(rf(res, "reasons"))
+  ## N7 지평선이 직전 적재보다 뒤로 간 저장(B6 = 그 지평선) → 순수 판정이 거부(호출부 같은 날 조건과 이중 방어)
+  hzb <- data.table(pos = 1:6, sheet = e$.OHLCVS_VAR_SHEETS, date_axis = TRUE, n_dates = 3L,
+                    horizon = as.Date("2026-08-27"), last_row_date = as.Date("2026-08-27"), err = NA_character_)
+  gb <- e$ohlcvs_update_gate(hzb, as.Date("2026-08-28"),
+                             b6 = data.table(sheet = e$.OHLCVS_VAR_SHEETS, b6_date = as.Date("2026-08-27")))
+  r$N7_gate_backwards_refused <- !isTRUE(gb$ok) && !isTRUE(gb$skip) && "not_advanced" %in% names(gb$reasons)
   unlist(r)
 }
+rf <- function(x, k) if (is.list(x) && !inherits(x, "condition")) x[[k]] else NULL   # 반환값 안전 접근(성공 TRUE · NULL 에 $ 금지)
 
 #==============================================================================
+cat("\n[P] 사전 점검 — B6 탐침 카나리아\n")
+pre_fail <- function(why) {
+  cat(sprintf("FAIL(preflight): %s — 계측이 살아 있지 않아 케이스 결과를 발행하지 않는다\n", why))
+  cat(sprintf('{"test":"ohlcvs_update_gate","pass":0,"fail":1,"total":1,"skipped":0,"preflight":"%s"}\n', gsub('"', "'", why)))
+  quit(status = 1)
+}
+if (is.na(PY)) pre_fail("탐침 파이썬 미발견(QVEST_PY · <ROOT>/.venv_qvest_ml)")
+ep <- new.env(parent = globalenv()); ep$`%||%` <- `%||%`; ep$.uf_python <- function(...) PY
+load_defs(src_lines, ep)
+cp <- ep$.uf_probe_book(write_qw_xlsx(file.path(TMP, "canary.xlsx"), same_dates(D_OLD), b6 = "CPD-1TD [20260828]"))
+cv <- if (isTRUE(cp$ok)) cp$sheets[sheet %in% ep$.OHLCVS_VAR_SHEETS] else NULL
+if (is.null(cv) || nrow(cv) != 6L || anyNA(cv$b6_date) || !all(cv$b6_date == as.Date("2026-08-28")))
+  pre_fail(sprintf("B6 탐침 카나리아 실패(python=%s): %s", gsub("\\\\", "/", PY),
+                   if (!isTRUE(cp$ok)) cp$err else paste(sprintf("%s=%s", cp$sheets$sheet, cp$sheets$b6), collapse = " / ")))
+ok(sprintf("P1 B6 탐침 카나리아: 값 6시트 'CPD-1TD [20260828]' → 2026-08-28 판독 (python=%s)", basename(PY)))
+
 cat("\n[A] 판정 순수 함수\n")
 e0 <- new.env(parent = globalenv()); e0$`%||%` <- `%||%`
 e0$OHLCVS_GATE_RECORD <- file.path(TMP, "a_gate.json"); load_defs(src_lines, e0)
@@ -227,6 +298,25 @@ chk(!g$ok && all(c("sheet_order", "date_axis_missing") %in% names(g$reasons)), "
 chk(identical(e0$.ohlcvs_horizon_fill_problems(c(Open = 3L, Size = 3L), as.Date("2026-09-01")), character(0)) &&
     identical(names(e0$.ohlcvs_horizon_fill_problems(c(Open = 3L, Size = 0L), as.Date("2026-09-01"))), "horizon_row_empty"),
     "A9 지평선 행 값 칸: 전부 >0 → 문제 0 · Size 0칸 → horizon_row_empty")
+b6_of <- function(d) data.table(sheet = c(e0$.OHLCVS_VAR_SHEETS, "DATA_Key"), b6_date = as.Date(c(rep(d, 6), NA)))
+g <- e0$ohlcvs_update_gate(hz_ok, as.Date("2026-09-22"), b6 = b6_of("2026-09-22"))
+chk(!isTRUE(g$ok) && isTRUE(g$skip) && !length(g$reasons) && isTRUE(grepl("새 자료 없음", g$note, fixed = TRUE)),
+    "A10 지평선 = 직전 적재 ∧ 값 6시트 B6 = 지평선 → 새 자료 없음(skip · 거부 사유 0 · DATA_Key B6 는 안 본다)")
+b <- b6_of("2026-09-22"); b[sheet == "Size", b6_date := as.Date("2026-09-23")]
+g <- e0$ohlcvs_update_gate(hz_ok, as.Date("2026-09-22"), b6 = b)
+chk(!g$ok && !isTRUE(g$skip) && identical(names(g$reasons), "not_advanced"),
+    "A11 Size 만 B6 09-23(받아야 할 날을 못 받은 저장) → not_advanced 거부")
+b <- b6_of("2026-09-22"); b[sheet == "High", b6_date := as.Date(NA)]
+g <- e0$ohlcvs_update_gate(hz_ok, as.Date("2026-09-22"), b6 = b)
+chk(!g$ok && !isTRUE(g$skip) && identical(names(g$reasons), "not_advanced"), "A12 High B6 미해석 → not_advanced 거부(미측정을 통과로 접지 않는다)")
+g <- e0$ohlcvs_update_gate(hz_ok, as.Date("2026-09-23"), b6 = b6_of("2026-09-22"))
+chk(!g$ok && !isTRUE(g$skip) && identical(names(g$reasons), "not_advanced"), "A13 지평선이 직전 적재보다 뒤로 감(B6 = 지평선이어도) → 거부")
+h <- copy(hz_ok); h[4:5, sheet := c("Vol", "Close")]
+g <- e0$ohlcvs_update_gate(h, as.Date("2026-09-22"), b6 = b6_of("2026-09-22"))
+chk(!g$ok && !isTRUE(g$skip) && all(c("sheet_order", "not_advanced") %in% names(g$reasons)),
+    "A14 다른 사유(시트 순서)가 있으면 B6 가 맞아도 새 자료 없음으로 접지 않는다")
+g <- e0$ohlcvs_update_gate(hz_ok, as.Date("2026-09-22"), b6 = b6_of("2026-09-22")[sheet != "Vol"])
+chk(!g$ok && !isTRUE(g$skip) && identical(names(g$reasons), "not_advanced"), "A15 B6 표에 Vol 시트 없음 → 거부")
 
 cat("\n[B] 합성 수출본(실물 형식) 판독\n")
 xb <- write_qw_xlsx(file.path(TMP, "b.xlsx"), same_dates(D_NEW))
@@ -259,7 +349,14 @@ lbl <- c(D_stop_gate_refused = "D1 전진 없는 저장본 → incremental_updat
          E_rawdata_untouched = "E2 RAWDATA md5 불변",
          F1_passes_to_load = "F1 양성 대조: 전진·일치 → 관문 통과, 적재 경로(캘린더 단계)까지 진행",
          F2_empty_row_refused = "F2 지평선 행이 빈 Size 시트 → 파싱 후 horizon_row_empty 거부",
-         F2_rawdata_untouched = "F2' RAWDATA md5 불변")
+         F2_rawdata_untouched = "F2' RAWDATA md5 불변",
+         N1_no_new_no_error = "N1 지평선 = 직전 적재 ∧ B6 = 지평선 → incremental_update_all 이 오류 없이 끝남(rc 0 · 새 자료 없음) · Consensus 처리",
+         N2_rawdata_untouched = "N2 RAWDATA md5 불변(적재 0)",
+         N3_ohlcvs_recorded = "N3 OHLCVS 는 처리 완료 기록(같은 파일을 다시 묻지 않는다)",
+         N4_record_no_new = "N4 판정 기록 JSON = no_new_data · 지평선 08-28 · note",
+         N5_b6_later_refused = "N5 B6 가 지평선보다 뒤 → 지금처럼 stop([GATE_REFUSED] not_advanced) · RAWDATA 불변",
+         N6_one_sheet_later_refused = "N6 Vol 시트만 B6 가 뒤 → 거부(시트마다 묻는다)",
+         N7_gate_backwards_refused = "N7 지평선이 뒤로 간 저장(B6 = 그 지평선) → 순수 판정 거부")
 for (k in names(lbl)) chk(isTRUE(base_r[[k]]), lbl[[k]], if (!isTRUE(base_r[[k]])) paste0("값=", base_r[[k]]) else "")
 if (!all(base_r)) { cat("  (상세 재실행 — 로그)\n"); invisible(core_checks(src_lines, verbose = TRUE)) }
 
@@ -268,7 +365,7 @@ MUT <- list(
   list(id = "M1 거부 반환 삭제", expect_red = c("D_stop_gate_refused"),   # E 는 빈 행 보강 판정이 이중으로 막는다(심층 방어)
        f = function(l) mutate_line(l, "  if (!isTRUE(.gate$ok)) return(.ohlcvs_refuse(.gate, ohlcvs_update))", "  NULL")),
   list(id = "M2 판정 항상 통과", expect_red = c("D_stop_gate_refused"),
-       f = function(l) mutate_sub(l, "list(ok = !length(rs), reasons = rs", "list(ok = TRUE, reasons = rs")),
+       f = function(l) mutate_sub(l, "list(ok = !length(rs) && !no_new, skip = no_new,", "list(ok = TRUE, skip = no_new,")),
   list(id = "M3 OHLCVS 기록 유지 삭제", expect_red = c("D_ohlcvs_not_recorded", "D_retry_next_run"),
        f = function(l) mutate_sub(l, "mt_save[[nm]] <- prev_files[[nm]]", "invisible(NULL)")),
   list(id = "M4 끝 stop 삭제", expect_red = c("D_stop_gate_refused"),
@@ -276,7 +373,16 @@ MUT <- list(
   list(id = "M5 불일치 판정 삭제", expect_red = c("E_mismatch_refused"),
        f = function(l) mutate_line(l, "  if (length(hzs) != 1L)", "  if (FALSE)")),
   list(id = "M6 빈 행 거부 삭제", expect_red = c("F2_empty_row_refused"),
-       f = function(l) mutate_line(l, "    return(.ohlcvs_refuse(.gate, ohlcvs_update))", "    NULL"))
+       f = function(l) mutate_line(l, "    return(.ohlcvs_refuse(.gate, ohlcvs_update))", "    NULL")),
+  list(id = "M7 B6 일치 요구 삭제", expect_red = c("N5_b6_later_refused", "N6_one_sheet_later_refused"),
+       f = function(l) mutate_sub(l, "!anyNA(b6d) && all(b6d == common)", "!anyNA(b6d)")),
+  list(id = "M8 새 자료 없음 판정 끔", expect_red = c("N1_no_new_no_error", "N3_ohlcvs_recorded", "N4_record_no_new"),
+       f = function(l) mutate_sub(l, "no_new <- !length(rs) && common == prior_horizon", "no_new <- FALSE && common == prior_horizon")),
+  list(id = "M9 B6 탐침 생략", expect_red = c("N1_no_new_no_error"),
+       f = function(l) mutate_line(l, "  if (identical(names(.gate$reasons), \"not_advanced\") && isTRUE(.gate$horizon == .gate$prior_horizon)) {",
+                                   "  if (FALSE) {")),
+  list(id = "M10 같은 날 요구 삭제", expect_red = c("N7_gate_backwards_refused"),
+       f = function(l) mutate_sub(l, "common == prior_horizon && !anyNA(b6d)", "common <= prior_horizon && !anyNA(b6d)"))
 )
 for (m in MUT) {
   ml <- tryCatch(m$f(src_lines), error = function(e) e)

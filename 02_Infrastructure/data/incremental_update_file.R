@@ -38,6 +38,13 @@
 #       horizon_mismatch   — 날짜축 시트(DATA_Key 처럼 날짜축 없는 시트는 제외)의 A열 마지막 날짜가 서로 다름
 #       prior_unmeasured   — 직전 적재 지평선(RAWDATA source ∈ quantiwise·quantiwise_update 의 max Date) 미측정
 #       not_advanced       — 공통 지평선 ≤ 직전 적재 지평선(전진 없음)
+#         ★예외 '새 자료 없음'(2026-11-09 · 도훈 승인): 지평선 = 직전 적재 ∧ 값 6시트의 B6 괄호(질의 종료일 · CPD-1TD) = 지평선이면
+#           주말 · 휴일 밤의 정상 재저장이다(OHLCVS 는 '이미 완료' 판정 없이 밤마다 다시 받는다 · qw_refresh.ps1 anchor=qw_base).
+#           거부가 아니다 — 적재 0 · RAWDATA 무접촉 · 처리 완료 기록 · rc 0. B6 가 지평선보다 뒤 · B6 미해석 · 지평선이 뒤로 감
+#           = 지금처럼 not_advanced 거부(받아야 할 날을 못 받은 저장). B6 는 지평선 = 직전 적재일 때만 탐침으로 읽는다
+#           (.uf_probe_book — F4 머리 관문과 같은 판독 · 그 밖의 날엔 추가 비용 0). 구판은 이 경우도 거부해 r2(rc=3)를 냈다
+#           (11-09 월 첫 관측 · 주마다 월 · 화 아침 반복 예상) — 같은 단계의 진짜 거부(지표 DB 3개)가 실패 서명(dr_fail_signature.R —
+#           rc 를 지운 단계 이름)에 묻힌다.
 #       horizon_row_empty  — (파싱 후) 지평선 날짜 행에 값이 0칸인 값 시트
 #     거부 시 incremental_update_all() 은 나머지 파일을 처리·기록한 뒤 **stop()** → Rscript rc≠0(2026-11-06 부터 rc 3 —
 #     아래 ▸rc 계약) → daily_refresh.sh run_r 이 DR_FAILED 에 싣는다(로그 표지 `[GATE_REFUSED]`). 판정 기록 = .cache/update_file_ohlcvs_gate.json
@@ -55,7 +62,7 @@
 #        (그날 채움 수 / 직전 W 축 날짜 중앙값 ≥ 그 항목 이력에서 산출한 문턱). 거부 = 그 책 적재 0 · 캐시 무접촉 · 처리 미기록.
 #     F5 이름 → 적재기 명시 표(완전 일치) 디스패치: 미등록 xlsx = 경고 · 처리 미기록(매 실행 다시 경고) · 이름에 부분 문자열이
 #        들었다고 엉뚱한 적재기를 돌리지 않는다(구판 grepl("Consensus") 등).
-#   ▸ **rc 계약 (incremental_update_all · daily_refresh.sh run_r 이 그대로 받는다)**: 0 정상 · 3 관문 거부(적재 0 · 다음 갱신 때 재시도) ·
+#   ▸ **rc 계약 (incremental_update_all · daily_refresh.sh run_r 이 그대로 받는다)**: 0 정상(OHLCVS '새 자료 없음' 포함) · 3 관문 거부(적재 0 · 다음 갱신 때 재시도) ·
 #     4 미등록 xlsx 만 있음 · 1 그 밖의 오류. run_r 은 0 이 아니면 DR_FAILED 에 'r<N>(rc=…)' 를 싣고 체인을 계속한다(호출부 무변경).
 #     거부 · 미등록은 전부 처리 · 기록한 **뒤** 끝에서 R 오류로 알린다 — 잡히면(tryCatch · 시험) 평범한 오류이고,
 #     비대화형에서 잡히지 않고 끝나면 options(error=) 가 그 종료 코드로 내보낸다(대화형 세션은 끄지 않는다).
@@ -164,8 +171,10 @@ ohlcvs_sheet_horizons <- function(xlsx) {
 
 #' 관문 판정(순수 함수) — 전부 계산하고(조기 종료 없음) 사유를 이름 붙여 남긴다.
 #' @param hz  ohlcvs_sheet_horizons() 결과 · @param prior_horizon Date(NA 가능)
-#' @return list(ok, reasons = named character, horizon, prior_horizon, sheets = hz)
-ohlcvs_update_gate <- function(hz, prior_horizon, required = .OHLCVS_VAR_SHEETS) {
+#' @param b6  (선택) .uf_probe_book()$sheets — 시트별 B6 괄호 날짜(b6_date = 질의 종료일). '새 자료 없음' 판정에만 쓴다.
+#' @return list(ok, skip, reasons = named character, horizon, prior_horizon, sheets = hz, note)
+#'   skip = '새 자료 없음'(머리 주석 ▸적재 안전 관문 not_advanced ★예외) — 그때 ok = FALSE · reasons 빈 값 · note = 사유.
+ohlcvs_update_gate <- function(hz, prior_horizon, required = .OHLCVS_VAR_SHEETS, b6 = NULL) {
   rs <- character(0)
   add <- function(k, msg) rs[[k]] <<- msg
   hz <- as.data.table(hz)
@@ -187,14 +196,23 @@ ohlcvs_update_gate <- function(hz, prior_horizon, required = .OHLCVS_VAR_SHEETS)
     add("horizon_mismatch", if (!length(hzs)) "날짜축 시트 0개" else
       sprintf("시트별 지평선 불일치: %s", paste(sprintf("%s=%s", ax$sheet, format(ax$horizon)), collapse = ",")))
   prior_horizon <- as.Date(prior_horizon)
+  no_new <- FALSE; note <- NA_character_
   if (length(prior_horizon) != 1L || is.na(prior_horizon)) {
     add("prior_unmeasured", "직전 적재 지평선(RAWDATA 퀀티 출처 max Date) 미측정 — 전진 여부 판정 불가")
   } else if (!is.na(common) && common <= prior_horizon) {
-    add("not_advanced", sprintf("공통 지평선 %s ≤ 직전 적재 %s — 갱신이 전진하지 않았다(실패·중단 저장 의심)",
-                                format(common), format(prior_horizon)))
+    ## '새 자료 없음' = 다른 사유 0 ∧ 지평선 = 직전 적재 ∧ 값 시트 전부 B6 = 지평선. 하나라도 아니면 지금처럼 거부한다.
+    b6d <- as.Date(if (is.null(b6)) rep(NA, length(required)) else b6$b6_date[match(required, b6$sheet)])
+    no_new <- !length(rs) && common == prior_horizon && !anyNA(b6d) && all(b6d == common)
+    if (no_new) {
+      note <- sprintf("새 자료 없음 — 공통 지평선 %s = 직전 적재 = 값 시트 B6(질의 종료일) · 적재 생략(실패 아님)", format(common))
+    } else {
+      add("not_advanced", sprintf("공통 지평선 %s ≤ 직전 적재 %s — 갱신이 전진하지 않았다(실패·중단 저장 의심) · B6 %s",
+                                  format(common), format(prior_horizon),
+                                  if (all(is.na(b6d))) "미확인" else paste(sprintf("%s=%s", required, format(b6d, "%Y%m%d")), collapse = ",")))
+    }
   }
-  list(ok = !length(rs), reasons = rs, horizon = common,
-       prior_horizon = if (length(prior_horizon) == 1L) prior_horizon else as.Date(NA), sheets = hz)
+  list(ok = !length(rs) && !no_new, skip = no_new, reasons = rs, horizon = common,
+       prior_horizon = if (length(prior_horizon) == 1L) prior_horizon else as.Date(NA), sheets = hz, note = note)
 }
 
 #' 파싱 후 보강 판정 — 지평선 날짜 행에 값이 0칸인 값 시트(날짜만 늘고 값이 빈 저장).
@@ -209,7 +227,7 @@ ohlcvs_update_gate <- function(hz, prior_horizon, required = .OHLCVS_VAR_SHEETS)
   cat(sprintf("  [gate] 시트 지평선: %s\n", paste(sprintf("%s=%s", sh$sheet,
       ifelse(sh$date_axis %in% TRUE, format(sh$horizon), "날짜축없음")), collapse = " ")))
   cat(sprintf("  [gate] 공통 지평선 %s · 직전 적재 %s → %s\n", format(g$horizon), format(g$prior_horizon),
-              if (isTRUE(g$ok)) "통과" else "거부"))
+              if (isTRUE(g$ok)) "통과" else if (isTRUE(g$skip)) "새 자료 없음(적재 생략 · 실패 아님)" else "거부"))
 }
 
 #' 판정 기록(처리 상태가 아니다 — 실패해도 적재 판정을 바꾸지 않는다).
@@ -219,7 +237,7 @@ ohlcvs_update_gate <- function(hz, prior_horizon, required = .OHLCVS_VAR_SHEETS)
                 status = status, xlsx = xlsx,
                 xlsx_mtime = format(file.mtime(xlsx), "%Y-%m-%d %H:%M:%S"),
                 horizon = format(g$horizon), prior_horizon = format(g$prior_horizon),
-                reasons = as.list(g$reasons),
+                reasons = as.list(g$reasons), note = g$note %||% NA_character_,
                 sheets = lapply(seq_len(nrow(g$sheets)), function(k) list(
                   sheet = g$sheets$sheet[k], date_axis = g$sheets$date_axis[k],
                   horizon = format(g$sheets$horizon[k]), n_dates = g$sheets$n_dates[k])))
@@ -235,6 +253,13 @@ ohlcvs_update_gate <- function(hz, prior_horizon, required = .OHLCVS_VAR_SHEETS)
   cat("[incr_ohlcvs] ⛔ [GATE_REFUSED] OHLCVS_update.xlsx 적재 거부 — RAWDATA 무접촉 · '처리 완료' 미기록(다음 정상 갱신 때 재시도)\n")
   .ohlcvs_gate_record(g, "refused", xlsx)
   invisible(list(refused = TRUE, reasons = g$reasons, horizon = g$horizon, prior_horizon = g$prior_horizon))
+}
+
+#' 새 자료 없음(2026-11-09) — 거부가 아니다: 적재 0 · RAWDATA 무접촉 · 처리 완료로 기록된다(같은 파일을 다시 묻지 않는다).
+.ohlcvs_no_new <- function(g, xlsx) {
+  cat(sprintf("[incr_ohlcvs] %s\n", g$note))
+  .ohlcvs_gate_record(g, "no_new_data", xlsx)
+  invisible(list(no_new_data = TRUE, horizon = g$horizon, prior_horizon = g$prior_horizon))
 }
 
 # ─── OHLCVS 증분 ── ★퇴역 표기(전진 용도) 2026-09-07 ─────────────────────────
@@ -253,9 +278,17 @@ incremental_ohlcvs <- function() {
   RAWDATA_CACHE <- file.path(CACHE_DIR, "rawdata.parquet")
 
   ## ★적재 안전 관문 (2026-09-23) — RAWDATA 를 읽기·쓰기 **전에** 판정한다. 거부 = 무접촉 반환.
-  .gate <- ohlcvs_update_gate(ohlcvs_sheet_horizons(ohlcvs_update),
-                              .ohlcvs_prior_horizon(RAWDATA_CACHE))
+  .hz <- ohlcvs_sheet_horizons(ohlcvs_update)
+  .prior <- .ohlcvs_prior_horizon(RAWDATA_CACHE)
+  .gate <- ohlcvs_update_gate(.hz, .prior)
+  ## (2026-11-09) 지평선 = 직전 적재일 때만 B6(질의 종료일)를 읽어 '새 자료 없음'(주말 · 휴일 재저장)과 실패 저장을 가른다.
+  ##   탐침 실패 = b6 없음 → 지금처럼 not_advanced 거부(미측정을 통과로 접지 않는다).
+  if (identical(names(.gate$reasons), "not_advanced") && isTRUE(.gate$horizon == .gate$prior_horizon)) {
+    .pb <- .uf_probe_book(ohlcvs_update)
+    .gate <- ohlcvs_update_gate(.hz, .prior, b6 = if (isTRUE(.pb$ok)) .pb$sheets else NULL)
+  }
   .ohlcvs_gate_print(.gate)
+  if (isTRUE(.gate$skip)) return(.ohlcvs_no_new(.gate, ohlcvs_update))
   if (!isTRUE(.gate$ok)) return(.ohlcvs_refuse(.gate, ohlcvs_update))
 
   raw <- as.data.table(read_parquet(RAWDATA_CACHE))
@@ -1362,7 +1395,7 @@ incremental_update_all <- function(loaders = c(OHLCVS_update.xlsx           = "i
     is_refused <- is.list(res) && isTRUE(res$refused)
     if (identical(fn, "incremental_ohlcvs")) {
       ohlcvs_result <- res
-      if (is_refused) ohlcvs_refused <- res else qw_updated <- TRUE
+      if (is_refused) ohlcvs_refused <- res else if (!(is.list(res) && isTRUE(res$no_new_data))) qw_updated <- TRUE
     } else if (is_refused) {
       refused[[nm]] <- res
     } else if (identical(fn, "incremental_consensus")) {
