@@ -26,6 +26,8 @@ param(
   [int]$MaxRounds = 40,
   [switch]$SkipLogin,
   [switch]$WhatIf,
+  # ★2026-11-09: 로그인만 하고 끝낸다(책 수급 · 상태 무접촉 — 아래 main 첫머리). 낮 시간 중복 로그인 종료 뒤 재로그인(도훈 11-06 상시 위임)용.
+  [switch]$LoginOnly,
   # ★2026-11-06 구멍 복구용(04_Research/01_reports/quantiwise_data_expansion_20261106/PLAN.md §0 단계 0):
   #   "Name=YYYYMMDD" 목록 — 그 책의 B5(From)를 캐시 기준 대신 지정 날짜로 쓰고, 상태 · 캐시 '이미 완료' 판정을 건너뛰어 1회 다시 받는다.
   #   쓰임 = 책당 앵커 1개(F2) 때문에 뒤처진 시트가 남긴 구멍을 사람이 지정한 창으로 다시 받기. 무인 체인은 쓰지 않는다.
@@ -135,6 +137,11 @@ public class Win{
  public static List<IntPtr> Kids(IntPtr p){var r=new List<IntPtr>();EnumChildWindows(p,(h,l)=>{r.Add(h);return true;},IntPtr.Zero);return r;}
  public static void Click(IntPtr h){RECT r;GetWindowRect(h,out r);int x=(r.L+r.R)/2,y=(r.T+r.B)/2;SetForegroundWindow(h);SetCursorPos(x,y);System.Threading.Thread.Sleep(120);mouse_event(0x2,0,0,0,IntPtr.Zero);System.Threading.Thread.Sleep(60);mouse_event(0x4,0,0,0,IntPtr.Zero);}
  public static int LeftOf(IntPtr h){RECT r;GetWindowRect(h,out r);return r.L;}
+ [StructLayout(LayoutKind.Sequential)] public struct PT{public int X,Y;}
+ [DllImport("user32.dll")] public static extern IntPtr WindowFromPoint(PT p);
+ [DllImport("user32.dll")] public static extern IntPtr GetAncestor(IntPtr h,uint f);
+ // (2026-11-09) Click 과 같은 지점(창 가운데)을 앞으로 가져온 뒤 그 지점의 최상위 창 주인이 pid 가 아니면 누르지 않고 덮은 창을 돌려준다("" = 눌렀다).
+ public static string ClickIfOwn(IntPtr h,uint pid){SetForegroundWindow(h);System.Threading.Thread.Sleep(150);RECT r;GetWindowRect(h,out r);PT p;p.X=(r.L+r.R)/2;p.Y=(r.T+r.B)/2;IntPtr top=GetAncestor(WindowFromPoint(p),2);uint q;GetWindowThreadProcessId(top,out q);if(q!=pid)return Cls(top)+" (pid "+q+")";Click(h);return "";}
 }
 "@
 
@@ -374,6 +381,7 @@ function Get-BookAnchor($f, $target) {
 #   대화상자가 보이면 세션 없음으로 본다. 재로그인은 한 실행에 1회까지(도훈 11-06 상시 위임 '반복 경쟁 금지' —
 #   두 번째로 끊기면 다른 기기가 쓰는 중이라 보고 멈춘다).
 $script:KICKS = 0
+$script:LOGIN_BLOCKED = ''   # (2026-11-09) LOGIN 단추를 다른 창이 덮음 = 그 창 설명(비면 막힘 없음) — Ensure-Login 이 채운다
 function Kick-Dialog {
   $p = Get-Process qwMain -EA SilentlyContinue
   if (-not $p) { return $null }
@@ -413,10 +421,17 @@ function Ensure-Login {
         $pics=@()
         foreach ($k in [Win]::Kids($h)) { if ([Win]::Cls($k) -eq "ThunderRT6PictureBoxDC") { $pics += [pscustomobject]@{ h=$k; L=[Win]::LeftOf($k) } } }
         $login = ($pics | Sort-Object L | Select-Object -First 1).h
-        if ($login) { [Win]::Click([IntPtr]$login); Write-Host "[login] clicked LOGIN (leftmost PictureBox)" } else { Write-Host "[login] LOGIN PictureBox not found" }
+        ## ★(2026-11-09) 클릭은 실제 마우스라 그 지점을 덮은 창이 받는다 — 11-09 07:44~46 4회가 전부 'Windows 보안' 방화벽 알림
+        ##   (PickerHost · 전체 화면 덮개 Shell_SystemDim)에 떨어졌다. 덮였으면 누르지 않고 멈춘다(남의 창을 누르지 않는다 · 재시도 무의미).
+        if ($login) {
+          $cover = [Win]::ClickIfOwn([IntPtr]$login, [uint32]$p.Id)
+          if ($cover) { $script:LOGIN_BLOCKED = $cover; Write-Host "[login] LOGIN button covered by $cover - not clicking (dismiss that window first)" }
+          else { Write-Host "[login] clicked LOGIN (leftmost PictureBox)" }
+        } else { Write-Host "[login] LOGIN PictureBox not found" }
       }
     }
   }
+  if ($script:LOGIN_BLOCKED) { return $false }
   Start-Sleep 9    # watcher auto-confirms takeover Yes
   return (QW-Alive)
 }
@@ -519,6 +534,25 @@ $target = Get-Target
 Write-Host "target (last trading day) = $target"
 $state = Load-State
 Start-DialogWatcher
+## ★(2026-11-09) -LoginOnly — 세션만 되살리고 끝낸다. 드라이버 전체를 돌리면 끝나지 않은 책을 평소 창으로 다시 받아,
+##   그날 밤 [0b] 가 적재할 보충 창(-FromOverride 로 받은 책)을 덮는다. Ensure-Login 규칙 그대로(종료 알림 뒤 재로그인 1회 · 두 번째 종료 = 멈춤).
+##   종료 코드 0 = 세션 살아 있음 · 4 = 로그인 실패 · 다시 밀려남(반복 경쟁 금지 — 도훈에게 알린다) · LOGIN 단추가 덮임.
+##   한 번에 안 될 때가 있어(11-08 15:28 두 번째 클릭에 성공) 아래 라운드 루프의 '[login] failed, retry' 와 같게 5초 쉬고 다시 하되
+##   3회까지만(계정 잠금 위험 · 08-29). LOGIN 단추를 다른 창이 덮었으면(11-09 07:44~46 방화벽 알림 덮개 — 4회 전부 거기 떨어짐) 곧바로 멈춘다.
+if ($LoginOnly) {
+  $alive = $false
+  for ($i = 1; $i -le 3 -and -not $alive; $i++) {
+    $alive = Ensure-Login
+    if (-not $alive) {
+      if ($script:KICKS -gt 1 -or $script:LOGIN_BLOCKED) { break }
+      Write-Host "[login-only] attempt $i failed"
+      if ($i -lt 3) { Start-Sleep 5 }
+    }
+  }
+  Stop-DialogWatcher
+  Write-Host "===== LOGIN-ONLY END $(Get-Date -Format 'HH:mm:ss') / alive=$alive / kicks=$($script:KICKS)$(if ($script:LOGIN_BLOCKED) { " / covered by $($script:LOGIN_BLOCKED)" }) ====="
+  exit $(if ($alive) { 0 } else { 4 })
+}
 ## ★F1(2026-11-06 · PLAN §3.0): PowerShell 5.1 은 결과가 1개면 배열이 아니라 해시테이블 하나를 돌려주고 .Count = 키 수(3)다 →
 ##   'done 3/4'(실제 1/4) · 1개 선택 시 미완료가 숨었다. 결과는 언제나 @() 로 감싼다.
 $sel = @(if ($Only.Count -gt 0) { $FILES | Where-Object { $Only -contains $_.name } } else { $FILES })
@@ -532,6 +566,7 @@ while ($round -lt $MaxRounds) {
   if (-not $SkipLogin) {
     if (-not (Ensure-Login)) {
       if ($script:KICKS -gt 1) { Write-Host "[round $round] stop: kicked twice (no login war)"; break }
+      if ($script:LOGIN_BLOCKED) { Write-Host "[round $round] stop: LOGIN button covered by $($script:LOGIN_BLOCKED) (dismiss that window, then re-run)"; break }
       Write-Host "[login] failed, retry"; Start-Sleep 5; continue
     }
   }
