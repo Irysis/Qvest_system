@@ -238,6 +238,17 @@ pr_consume_key <- function(id, key, consumer = "", root = NULL, path = NULL) {
   invisible(TRUE)
 }
 
+# 라운드 기록 병합 — modifyList 와 같되 **이름 없는 리스트(JSON 배열)는 통째로 교체**한다.
+#   modifyList 는 이름 없는 리스트를 재귀로 합치려다 이름이 없어 아무것도 안 하고 옛 값을 남긴다 → 덧붙인 원소가 조용히 사라진다.
+#   (2026-11-08 실사고: P2R05 두 번째 supersede(dedc7a49 → bf45f4e7) 이력이 supersede_history 에 쌓이지 않았다 · variants 재기록도 같은 이유로 무시됐다)
+.pr_merge <- function(x, val) {
+  for (k in names(val)) {
+    v <- val[[k]]
+    x[[k]] <- if (is.list(v) && !is.null(names(v)) && is.list(x[[k]]) && !is.null(names(x[[k]]))) .pr_merge(x[[k]], v) else v
+  }
+  x
+}
+
 #' 라운드 기록 — round_id · prereg(사전등록 경로) 필수. 결과는 나중에 같은 round_id 로 덮어 쓴다
 #'   ★R2 — 경로만이 아니라 **내용(md5)**도 잰다(2026-10-15 도훈 권고 수용 · 구판은 경로만 비교해 같은 경로의 내용 교체를 못 막았다):
 #'   ① 기록된 prereg_md5 와 다른 md5 로 갱신 = 사전등록 교체 — 결과 전(status = registered)이고 round$supersedes$md5 가 옛 md5 와 같을 때만
@@ -276,7 +287,7 @@ pr_record_round <- function(id, round, root = NULL, path = NULL) {
       if (!is.na(want) && !is.na(have) && !identical(want, have))
         stop("[program_registry] 사전등록 파일이 등록 뒤 바뀌었다(기록 md5 ", substr(want, 1, 8), " ≠ 파일 ", substr(have, 1, 8), ") — 결과를 기록하지 않는다(R2): ", round$round_id)
     }
-    R[[j]] <- modifyList(old, round)
+    R[[j]] <- .pr_merge(old, round)
   }
   reg$programs[[i]]$rounds <- R
   pr_save(reg, root, path)

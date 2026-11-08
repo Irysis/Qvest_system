@@ -70,6 +70,23 @@ ok_sup <- !errs(pr_record_round("P1_RETURN", list(round_id = "R9", prereg = "pre
 r9 <- Filter(function(x) identical(x$round_id, "R9"), pr_get(pr_load(root = sbr), "P1_RETURN")$rounds)[[1]]
 chk("결과 전 · supersedes$md5 = 옛 md5 → 대체 허용 · 이력(from → to) 기록 · supersedes 필드는 남기지 않음",
     ok_sup && identical(r9$prereg_md5, m2) && length(r9$supersede_history) == 1L && identical(r9$supersede_history[[1]]$from_md5, m1) && is.null(r9$supersedes))
+## 두 번째 supersede — 이력은 덧붙어야 한다(2026-11-08 실사고: modifyList 가 이름 없는 리스트(배열)를 합치지 못해 P2R05 두 번째 이력이 조용히 빠졌다)
+pg <- file.path(sbr, "pre/R10.json"); writeLines('{"v":1}', pg); n1 <- unname(tools::md5sum(pg))
+pr_record_round("P1_RETURN", list(round_id = "R10", prereg = "pre/R10.json", prereg_md5 = n1, status = "registered", variants = list("A", "B")), root = sbr)
+writeLines('{"v":2}', pg); n2 <- unname(tools::md5sum(pg))
+pr_record_round("P1_RETURN", list(round_id = "R10", prereg = "pre/R10.json", prereg_md5 = n2, status = "registered", supersedes = list(md5 = n1, reason = "1차")), root = sbr)
+writeLines('{"v":3}', pg); n3 <- unname(tools::md5sum(pg))
+pr_record_round("P1_RETURN", list(round_id = "R10", prereg = "pre/R10.json", prereg_md5 = n3, status = "registered",
+                                  supersedes = list(md5 = n2, reason = "2차"), variants = list("A", "B", "C")), root = sbr)
+r10 <- Filter(function(x) identical(x$round_id, "R10"), pr_get(pr_load(root = sbr), "P1_RETURN")$rounds)[[1]]
+chk("supersede 두 번 → 이력 2건(n1→n2 · n2→n3) · 순서 보존(위반 주입 = 구판 modifyList 면 1건)",
+    length(r10$supersede_history) == 2L && identical(r10$supersede_history[[1]]$to_md5, n2) &&
+      identical(r10$supersede_history[[2]]$from_md5, n2) && identical(r10$supersede_history[[2]]$to_md5, n3) && identical(r10$prereg_md5, n3),
+    sprintf("이력 %d건", length(r10$supersede_history)))
+chk("배열 칸(variants)을 다시 기록하면 통째로 바뀐다(옛 배열이 남지 않는다)",
+    identical(unlist(r10$variants), c("A", "B", "C")), paste(unlist(r10$variants), collapse = ","))
+chk("이름 있는 칸은 여전히 합친다(다른 칸은 보존 — 배열 교체가 병합 전체를 덮지 않는다)",
+    identical(r10$status, "registered") && identical(r10$prereg, "pre/R10.json"))
 pr_record_round("P1_RETURN", list(round_id = "R9", prereg = "pre/R9.json", prereg_md5 = m2, status = "complete", verdict = "x"), root = sbr)
 chk("결과 · 종료가 기록된 뒤 md5 교체는 supersedes 가 있어도 거부(위반 주입)",
     errs(pr_record_round("P1_RETURN", list(round_id = "R9", prereg = "pre/R9.json", prereg_md5 = m1, status = "complete",
