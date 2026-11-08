@@ -69,9 +69,24 @@ fi
 #   QWUF_STALL_N 에 양수를 주면 예전처럼 그 횟수 연속 무증가에서 끊는다(검사 주입 · 수동 운용).
 HARD="${QWUF_HARD_TIMEOUT:-0}"; POLL="${QWUF_POLL_S:-60}"; STALL_N="${QWUF_STALL_N:-0}"
 T0_ISO=$(date '+%Y-%m-%d %H:%M:%S')
+# ★(2026-11-09) 진행 = 이 실행이 띄운 Excel 마다의 누적 CPU 를 합한 값 — 이미 닫힌 Excel 몫도 남기므로 줄지 않는다.
+#   구판은 '지금 살아 있는 Excel 의 CPU 합'을 최댓값과 비교했다. 책 하나가 끝나 그 Excel 이 닫히면 합이 떨어져, 새 Excel 이 그 값을
+#   따라잡을 때까지 'CPU 증가 없음'으로 찍혔다(11-09 실측: 02:03~03:20 Investor_Act · Consensus 를 받는 중인데 73분 동안 '증가 없음' →
+#   다른 세션이 '수급 멈춤'으로 보고). 키 = pid + 시작 시각(pid 재사용 대비). 주입 명령이 숫자 하나만 내면 키 하나다(구 동작과 같다).
+#   $( ) 로 부르면 하위 셸이라 CPU_SEEN 이 남지 않는다 → 결과는 CPU_TOT 에 둔다(아직 본 Excel 이 없으면 빈 값 · 함수 반환값은 늘 0 — 구판과 같다).
+declare -A CPU_SEEN=(); CPU_TOT=""
 progress() {
-  if [ -n "${QWUF_PROGRESS_CMD:-}" ]; then bash -c "$QWUF_PROGRESS_CMD" 2>/dev/null | tr -d '\r'; return; fi
-  powershell.exe -NoProfile -Command "\$t=[datetime]'$T0_ISO'; \$p=Get-Process EXCEL -ErrorAction SilentlyContinue | Where-Object { \$_.StartTime -ge \$t }; if (\$p) { [int](\$p | Measure-Object -Property CPU -Sum).Sum }" 2>/dev/null | tr -d '\r'
+  local out a b k t=0
+  if [ -n "${QWUF_PROGRESS_CMD:-}" ]; then out=$(bash -c "$QWUF_PROGRESS_CMD" 2>/dev/null | tr -d '\r')
+  else out=$(powershell.exe -NoProfile -Command "\$t=[datetime]'$T0_ISO'; Get-Process EXCEL -ErrorAction SilentlyContinue | Where-Object { \$_.StartTime -ge \$t } | ForEach-Object { '{0}_{1:yyyyMMddHHmmss} {2}' -f \$_.Id, \$_.StartTime, [int]\$_.CPU }" 2>/dev/null | tr -d '\r'); fi
+  while read -r a b; do
+    [ -n "$a" ] || continue
+    if [ -z "$b" ]; then k=_; b=$a; else k=$a; fi
+    [[ "$b" =~ ^[0-9]+$ ]] || continue
+    [ "$b" -gt "${CPU_SEEN[$k]:--1}" ] && CPU_SEEN[$k]=$b
+  done <<< "$out"
+  for k in "${!CPU_SEEN[@]}"; do t=$((t + ${CPU_SEEN[$k]})); done
+  CPU_TOT=""; if [ "${#CPU_SEEN[@]}" -gt 0 ]; then CPU_TOT=$t; fi
 }
 cleanup() {
   if [ -n "${QWUF_CLEANUP_CMD:-}" ]; then bash -c "$QWUF_CLEANUP_CMD" 2>/dev/null; return; fi
@@ -102,12 +117,12 @@ while kill -0 "$qpid" 2>/dev/null; do
   w=0; while [ "$w" -lt "$POLL" ] && kill -0 "$qpid" 2>/dev/null; do sleep 1; w=$((w + 1)); done
   kill -0 "$qpid" 2>/dev/null || break
   el=$(( $(date +%s) - t0 )); [ "$el" -lt "$TMO" ] && continue
-  cpu=$(progress)
+  progress; cpu=$CPU_TOT
   if [[ "$cpu" =~ ^[0-9]+$ ]] && [ "$cpu" -gt "$last" ]; then
-    stall=0; last=$cpu; echo "[qwuf] 정체 감시 시작(${TMO}초) 뒤 ${el}초 — 수급 Excel 일하는 중(CPU ${cpu}초) · 기다린다(절대 상한 $([ "$HARD" -gt 0 ] && echo "${HARD}초" || echo 없음))"
+    stall=0; last=$cpu; echo "[qwuf] 정체 감시 시작(${TMO}초) 뒤 ${el}초 — 수급 Excel 일하는 중(누적 CPU ${cpu}초) · 기다린다(절대 상한 $([ "$HARD" -gt 0 ] && echo "${HARD}초" || echo 없음))"
   else
     stall=$((stall + 1))
-    [ $(( (stall - 1) % 10 )) -eq 0 ] && echo "[qwuf] 정체 감시 — 수급 Excel CPU 증가 없음 ${stall}회 연속(${el}초) · $([ "$STALL_N" -gt 0 ] && echo "${STALL_N}회에서 끊는다" || echo "끊지 않고 기다린다")"
+    [ $(( (stall - 1) % 10 )) -eq 0 ] && echo "[qwuf] 정체 감시 — 수급 Excel 누적 CPU 증가 없음 ${stall}회 연속(${el}초) · $([ "$STALL_N" -gt 0 ] && echo "${STALL_N}회에서 끊는다" || echo "끊지 않고 기다린다")"
   fi
   hard_hit=0; [ "$HARD" -gt 0 ] && [ "$el" -ge "$HARD" ] && hard_hit=1
   stall_hit=0; [ "$STALL_N" -gt 0 ] && [ "$stall" -ge "$STALL_N" ] && stall_hit=1

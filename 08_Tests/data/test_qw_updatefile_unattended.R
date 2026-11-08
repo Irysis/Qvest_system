@@ -2,7 +2,7 @@
 ##   수급 명령을 스텁으로 바꿔(QWUF_REFRESH_CMD) 운영 퀀티 · .cache 를 건드리지 않는다.
 ##   (10-17 RAWDATA 퀀티 단일 · 결정 RAWDATA-QW-ONLY-20261017) 1 벤치 수급 rc=3(전제 부재)만 건너뜀 · 1b rc=1 · 1c rc=2 여도 시도 · 2 꺼짐 ·
 ##   3 4종 매일(OHLCVS → Universe_Support → Investor_Act → Consensus) · -SkipLogin · -MaxRounds 2 · 전진 → 0 · 4 Universe_Support 가 최신이어도 4종(월말 조건 퇴역) ·
-##   5 전진 없음 → 10 · 6 시간 상한(멈춘 수급) → 10 · 빨리 끝남 · 7 기록 json · 8 SkipLogin 이 빠질 수 없다(정적) · 11 완료 수(done D/N) · 미완료 표식
+##   5 전진 없음 → 10 · 6 시간 상한(멈춘 수급) → 10 · 빨리 끝남 · 7 기록 json · 8 SkipLogin 이 빠질 수 없다(정적) · 11 완료 수(done D/N) · 미완료 표식 · 13 진행 계측 = Excel 별 누적 CPU(책 전환은 정체가 아니다 · 11-09)
 suppressPackageStartupMessages({ library(jsonlite) })
 ROOT <- "C:/Users/99922/OneDrive/Quant_Module_Moltbot"; setwd(ROOT); Sys.setenv(QM_ROOT = ROOT)
 source(file.path(ROOT, "02_Infrastructure/ops/qv_bash.R"))   # bare "bash" 금지(금칙 ⑦ · 11-07) — WSL 있는 PC 에선 System32 bash 가 PATH 보다 먼저 잡힌다
@@ -68,6 +68,21 @@ unlink(c(mark, ctr)); r12 <- run("0", us_new, after = TRUE, sleep = "8", tmo = "
 if (identical(as.integer(r12$rc), 0L) && grepl("state=advanced", r12$last) && grepl("\trc=0\t", r12$last, fixed = TRUE) && !file.exists(mark) &&
     r12$secs >= 7 && any(grepl("끊지 않고 기다린다", r12$out)) && !any(grepl("수급 종료", r12$out)))
   ok(sprintf("12 기본값 = 절대 상한 · 정체 끊기 없음 — CPU 무증가여도 끝까지 받는다 · 정리 없음 · 정체는 로그만 · %.0f초", r12$secs)) else ng("12", paste(r12$rc, r12$last, file.exists(mark), r12$secs))
+## 13 진행 계측 = 이 실행이 띄운 Excel 마다의 누적 CPU 합(11-09) — 책 하나가 끝나 그 Excel 이 닫혀도 진행 값이 줄지 않는다
+##   13a 책 전환: A(50 → 100)가 닫히고 B(5 · 10 · …)가 일한다. 구 계측(살아 있는 Excel 의 합)은 5 < 100 이라 '증가 없음'으로 찍고 STALL 2 에서 끊었다
+##   13b 진짜 정체: A · B 둘 다 늘지 않는다 → 누적도 그대로 → STALL 2 에서 끊는다(계측이 늘 '일하는 중'만 내는 게 아니라는 대조)
+trans <- paste0("f=", ux(ctr), "; n=$(cat $f 2>/dev/null || echo 0); n=$((n+1)); echo $n > $f; ",
+                "if [ $n -le 2 ]; then echo \"A_1 $((n*50))\"; else echo \"B_2 $(( (n-2)*5 ))\"; fi")
+unlink(c(mark, ctr)); r13a <- run("0", us_new, after = TRUE, sleep = "8", tmo = "2", env = pa(trans))
+if (identical(as.integer(r13a$rc), 0L) && grepl("state=advanced", r13a$last) && !file.exists(mark) && !any(grepl("수급 종료", r13a$out)) &&
+    !any(grepl("증가 없음", r13a$out)) && any(grepl("일하는 중", r13a$out)))
+  ok(sprintf("13a 책 전환(앞 Excel 닫힘 · 새 Excel 일함) = 진행 — '증가 없음' 없이 끝까지 받는다 · 정리 없음 · %.0f초", r13a$secs)) else
+  ng("13a", paste(c(r13a$rc, r13a$last, file.exists(mark), grep("qwuf", r13a$out, value = TRUE)), collapse = " | "))
+flat <- "printf 'A_1 100\\nB_2 50\\n'"
+unlink(c(mark, ctr)); r13b <- run("0", us_new, after = TRUE, sleep = "30", tmo = "2", env = pa(flat))
+if (identical(as.integer(r13b$rc), 10L) && grepl("rc=124", r13b$last) && file.exists(mark) && r13b$secs < 25)
+  ok(sprintf("13b Excel 둘 다 일하지 않으면 누적도 그대로 → STALL 2 에서 끊고 정리 · 10 · %.0f초", r13b$secs)) else
+  ng("13b", paste(c(r13b$rc, r13b$last, file.exists(mark), r13b$secs), collapse = " | "))
 if (!is.null(r3$log) && identical(r3$log$state, "advanced") && identical(r3$log$bench_rc, "0") && !is.null(r1$log) && identical(r1$log$state, "skipped"))
   ok("7 기록 json — 상태 · 대상 · 전진 · 벤치 rc") else ng("7")
 ## 11 완료 수 · 미완료 표식(10-17) — 드라이버 END 줄의 done D/N 을 마지막 줄에 싣는다 · D<N 또는 rc≠0 = incomplete=1(호출부 DR_FAILED)
