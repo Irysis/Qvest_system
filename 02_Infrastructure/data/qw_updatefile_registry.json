@@ -282,7 +282,7 @@
     ],
     "ts_dbs": [
       {"name": "FundV2_TAX", "file": "FundV2_TAX_TS.xlsx", "parquet": ".cache/qw_fund_v2/FundV2_TAX.parquet",
-       "_why": "11-09 도훈 '지금 수집' — QMJ 의 당기법인세부채(TXP)를 2000년부터. dbs 와 분리한 키다(리프레시 · 갱신 · DATA_Key 동기화 스크립트가 dbs 를 순회한다 — 시계열 책은 그 경로 밖).",
+       "_why": "11-09 도훈 '지금 수집' — QMJ 의 당기법인세부채(TXP)를 2000년부터. dbs 와 분리한 키다(Peer 책 빌더 · 리프레시 · Peer 적재기가 dbs 를 순회한다 — 시계열 책은 그 경로 밖). DATA_Key 동기화와 정기 갱신은 ts_dbs 를 따로 읽는다(11-09).",
        "layout": "timeseries_company", "frequency": "Q", "base_date": "FQ0", "period_from": "20000101",
        "period_map": "행 날짜 d 의 값 = d − 1분기 결산분기(FQ0 · 기본 3개월 래깅 · 공식 XLA 매뉴얼 http://seven.quantiwise.com/Manual/QW7_User Manual/Quantiwise7_XLA(Kor).pdf p.58 · p.64)",
        "unit": "Local thou(빈 칸 = 재무 아이템 기본 천원 · 매뉴얼 p.63) → ×1000 = 원",
@@ -298,7 +298,11 @@
        "identity": "TaxPayable(당기법인세부채) = OtherCurLiabInclTax − NonInterestCurLiab + TradePayables",
        "validated_20261109": "전 종목 적재 815,039행 · 3,385사 · 200003~202609 · 12월 결산 TXP 보유 = v2 자산총계 보유사의 94.4~96.3%(2000~2025 해마다) · DART 대조(FY2015~2025 · 17,829 기업-연도) 정확 97.0% · 1% 이내 97.4%(국내만 97.6% · 98.1%) · 이연법인세 증감 네 분기 합 vs DART 정확 94.6% · 음수 TXP 0.10%",
        "pit": "값 = 퀀티 정정 뒤 값(다른 v2 항목과 같은 판 한계). 가용일은 같은 기업-기간의 v2 1단계 표 Factor_Date 에 붙여 쓴다(병합 표 181항목 검사 때문에 병합 표에는 넣지 않는다).",
-       "update": "정기 갱신(Qvest_FundV2Update) 미포함 — 수동 실행(빌더 → 적재기). 남은 일 = 갱신 단계 · DATA_Key 동기화 대상 추가",
+       "update": {"db": "FundV2_TAX_upd", "file": "FundV2_TAX_TS_upd.xlsx", "window_quarters": 8, "runner": "02_Infrastructure/ops/qw_fund_v2_update.ps1",
+         "_why": "11-09 도훈 '법인세 B코드 파트도 정기 갱신에도 넣자' — 예약 작업 Qvest_FundV2Update(토 13:00 · 공시 마감 다음 날 13:00)에 포함. 첫 예정 실행 11-14.",
+         "steps": "DATA_Key 동기화(전체 책 FundV2_TAX_TS.xlsx — 새 상장) → 수집기 -WindowQuarters 8 -NoRelogin(전체 책을 틀로 · 최근 8분기 → 갱신 책) → 적재기 --window(Peer 갱신 DB 와 같은 window_merge — 창만 교체 · 변경 · 삭제는 revisions.parquet Db = FundV2_TAX_upd)",
+         "gates": "세션 끊김 = 재로그인 없이 rc 3(재로그인은 드라이버 몫) · B1 오늘 갱신 · 시트별 숫자 칸 > 0 · '#INVALID OPTION'(금융업) 문자열 제외 · 날짜 행 = 연속 분기 · 창 시작 = 기대 창 시작 · 끝 = 기대 창 끝 또는 한 분기 앞 · 부모 대비 채움 급감 · 매입채무 양성 대조 ≥ 0.98",
+         "verified_20261109": "실측 13:29~14:08 rc 0 · 창 202412~202609 · new 0 · changed 0 · deleted 0 · 양성 대조 0.99903 · 시트당 약 10분(행 수와 무관 — 종목 수가 시간을 정한다) · 짧은 리프레시는 틀의 옛 행을 안 지운다 → 수집기가 먼저 지운다"},
        "status": "loaded_20261109"}
     ]
   }

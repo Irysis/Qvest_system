@@ -17,12 +17,21 @@
 #     to -Out. Ingest = 02_Infrastructure/data/qw_fund_v2_tax_ingest.py.
 #   Session: a duplicate-login termination dialog (body has '(IP)]' or the word for 'duplicate') -> ONE
 #     'qw_refresh.ps1 -LoginOnly' (standing delegation 11-06) and one retry of that sheet; kicked again -> stop (rc 4, no login war).
-#     Any other dialog or a dead session -> stop (rc 3/4) and report. Never types credentials.
-# Exit: 0 ok - 1 error - 3 no live session - 4 kicked twice / unknown dialog
+#     -NoRelogin (weekly update, qw_fund_v2_update.ps1): no re-login at all - a kick stops with rc 4 (re-login belongs to the
+#     driver). Any other dialog or a dead session -> stop (rc 3/4) and report. Never types credentials.
+#   Busy: another Quantiwise job (same patterns as qw_fundamental_book.ps1 Get-Busy) -> rc 3 before any Excel starts.
+#   -WindowQuarters N (weekly update, 11-09 Dohoon 'jeonggi gaengsin-e neocha'): the last N quarters ending at the last
+#     quarter-end month <= today (same rule as qw_fundamental_book.ps1 period_to 'auto' + window_quarters). Date row d = quarter
+#     d - 1Q and the add-in starts at the last quarter-end on or before B5 (From 20000101 -> first row 1999-12), so B5 = the
+#     first day of the quarter after the window's first quarter (202412..202609 -> 20250101 -> rows 2024-12 ..) gives the
+#     window plus one earlier row - the ingest drops that row and checks the start and the end.
+# Exit: 0 ok - 1 error - 3 busy / no live session - 4 kicked (twice, or once with -NoRelogin) / unknown dialog
 param(
   [string]$Template = '',
   [string]$Out = '',
   [string]$From = '20000101',
+  [int]$WindowQuarters = 0,
+  [switch]$NoRelogin,
   [string]$Work = '',
   [int]$CloseGuardSec = 120
 )
@@ -76,6 +85,22 @@ function QW-Alive {
   return $false
 }
 function ColName([int]$n) { $s = ''; while ($n -gt 0) { $r = ($n - 1) % 26; $s = [char](65 + $r) + $s; $n = [int][Math]::Floor(($n - 1) / 26) }; return $s }
+# Same patterns as qw_fundamental_book.ps1 Get-Busy (another Quantiwise job or an automation Excel)
+function Get-Busy {
+  return @(Get-CimInstance Win32_Process | Where-Object {
+    ($_.Name -eq 'powershell.exe' -and $_.CommandLine -match 'qw_refresh[^ ]*\.ps1|qw_excel_refresh\.ps1|qw_datakey_sync\.ps1|qw_peer_refresh\.ps1') -or
+    ($_.Name -eq 'bash.exe' -and $_.CommandLine -match 'qw_updatefile_unattended\.sh|daily_refresh\.sh') -or
+    ($_.Name -eq 'python.exe' -and $_.CommandLine -match 'quantiwise_fetch\.py') -or
+    ($_.Name -eq 'EXCEL.EXE' -and $_.CommandLine -match '/automation')
+  })
+}
+# B5 for the last $n quarters ending at the last quarter-end month <= $td (header: the book also gets one earlier row)
+function Window-From([datetime]$td, [int]$n) {
+  $qm = @(3, 6, 9, 12) | Where-Object { (New-Object datetime($td.Year, $_, 1)).AddMonths(1).AddDays(-1) -le $td.Date } | Select-Object -Last 1
+  $pto = if ($qm) { $td.Year * 100 + $qm } else { ($td.Year - 1) * 100 + 12 }
+  $k = [int][Math]::Floor($pto / 100) * 4 + [int](($pto % 100) / 3) - 1 - ($n - 1) + 1
+  return ('{0}{1:d2}01' -f [int][Math]::Floor($k / 4), (($k % 4) * 3 + 1))
+}
 
 $runs = @(
   @{ sheet = 'B201700_M'; code = 'B201700.M' },
@@ -83,8 +108,11 @@ $runs = @(
   @{ sheet = 'B201600_M'; code = 'B201600.M' },
   @{ sheet = 'B100300_M'; code = 'B100300.M' }
 )
-Say "start template=$Template out=$Out from=$From work=$Work"
+if ($WindowQuarters -gt 0) { $From = Window-From (Get-Date) $WindowQuarters }
+Say "start template=$Template out=$Out from=$From window=$WindowQuarters norelogin=$([bool]$NoRelogin) work=$Work"
 if (-not (Test-Path $Template)) { Say "template missing"; exit 1 }
+$busy = Get-Busy
+if ($busy.Count -gt 0) { Say ("BUSY - another Quantiwise job / automation Excel: " + (($busy | ForEach-Object { "$($_.ProcessId) $($_.Name)" }) -join ', ')); exit 3 }
 if (Kick-Dialog) { Say "duplicate-login dialog at start - not handled here (run qw_refresh.ps1 -LoginOnly first)"; exit 4 }
 if (Other-Dialog) { Say "unknown Quantiwise dialog at start - stop and report"; exit 4 }
 if (-not (QW-Alive)) { Say "no live Quantiwise session"; exit 3 }
@@ -109,17 +137,24 @@ try {
       $ws = $wb.Worksheets.Item($r.sheet); $ws.Activate()
       $ws.Range('B5').Value2 = $From; $ws.Range('B6').Value2 = 'CPD-1TD'; $ws.Range('B10').Value2 = $r.code
       [void]$ws.Range("B12:$($lastC)12").ClearContents(); $ws.Range("B12:$($lastC)12").Value2 = 'FQ0'
+      # A shorter refresh leaves the template's rows below its own (11-09 first window run: 9 fresh rows over the 2002~ rows of
+      #   the full-book template - the ingest refused the duplicated quarters) -> clear the old data block first. Events off
+      #   for the clear only (data cells; the add-in reacts to its parameter cells).
+      $ur0 = $ws.UsedRange; $last0 = $ur0.Row + $ur0.Rows.Count - 1
+      if ($last0 -ge 15) { $xl.EnableEvents = $false; try { [void]$ws.Range("A15:$($lastC)$last0").ClearContents() } finally { $xl.EnableEvents = $true } }
       $before = "$($ws.Range('B1').Text)"; $t0 = Get-Date
       foreach ($h in $ws.Hyperlinks) { if ($h.ScreenTip -like 'Quantiwise*') { $h.Follow() } }
       $secs = [int]((Get-Date) - $t0).TotalSeconds
       $after = "$($ws.Range('B1').Text)"
-      $ur = $ws.UsedRange; $last = $ur.Row + $ur.Rows.Count - 1
+      $ur = $ws.UsedRange; $last = [Math]::Max(15, $ur.Row + $ur.Rows.Count - 1)
       $rng = $ws.Range("B15:$($lastC)$last")
+      $nrow = [int]$xl.WorksheetFunction.CountA($ws.Range("A15:A$last"))
       $num = [int]$xl.WorksheetFunction.Count($rng); $inv = [int]$xl.WorksheetFunction.CountIf($rng, '#INVALID*')
-      Say ("{0} code={1} B12='{2}' rows={3} numeric={4} invalid={5} B1 '{6}' -> '{7}' | {8}s" -f $r.sheet, $r.code, $ws.Range('B12').Text, [Math]::Max(0, $last - 14), $num, $inv, $before, $after, $secs)
+      Say ("{0} code={1} B12='{2}' date rows={3} (A15:A{4}) numeric={5} invalid={6} B1 '{7}' -> '{8}' | {9}s" -f $r.sheet, $r.code, $ws.Range('B12').Text, $nrow, $last, $num, $inv, $before, $after, $secs)
       $kicked = [bool](Kick-Dialog)
       # refreshed = stamp moved AND dated today (a same-day rerun keeps today's old stamp if the refresh silently did nothing)
       if (-not $kicked -and (QW-Alive) -and $after -ne $before -and $after -like "*$today*" -and $num -gt 0) { break }
+      if ($kicked -and $NoRelogin) { $rc = 4; throw "kicked on $($r.sheet) - no re-login here (-NoRelogin; re-login belongs to the driver)" }
       if ($kicked -and -not $relogged -and $attempt -eq 1) {
         Say "duplicate-login dialog -> qw_refresh.ps1 -LoginOnly (once) and retry $($r.sheet)"
         & powershell -NoProfile -ExecutionPolicy Bypass -File (Join-Path $PSScriptRoot 'qw_refresh.ps1') -LoginOnly | ForEach-Object { Say "  $_" }

@@ -353,6 +353,7 @@ DB 구성은 다음과 같습니다(등록부 `dbs`).
     - 이연법인세 증감: 네 분기 합 vs DART 연간(당기 − 전기 열) 정확 94.6% · 12월 값 하나로는 7%(분기 증감이라서).
     - 음수 당기법인세부채 0.10%(214칸).
   - 쓰는 법: 병합 표에는 넣지 않는다(181항목 검사). QMJ 엔진이 같은 기업-기간의 v2 1단계 표 Factor_Date 에 붙여 쓴다. 값은 정정 뒤 값(다른 v2 항목과 같은 판 한계).
+  - 정기 갱신(11-09): `Qvest_FundV2Update` 가 최근 8분기 창을 다시 받아 교체한다(값 변화 = `revisions.parquet` Db `FundV2_TAX_upd`). 전체 재적재도 같은 병합 함수를 쓴다(값 변화 = Db `FundV2_TAX` · fetched = B1 스탬프). 상세 = `SWITCH_RUNBOOK.md` §7.
 
 ## 7. 남은 일
 
@@ -371,7 +372,11 @@ DB 구성은 다음과 같습니다(등록부 `dbs`).
 - [x] 병합 경로 결정(도훈 11-08 '위 방식대로 가자') → 병합 v2 · 날짜 순서 계약 · 전환 장치(§8 3단계)
 - [x] DART 보충 완료 뒤 전환 + 팩터 DB 전체 재빌드 착수(11-09 11:40 · §8 · `SWITCH_RUNBOOK.md`)
 - [x] 법인세 B 코드 원천 DB `FundV2_TAX` 적재(11-09 · 도훈 '지금 수집' · §8 · 등록부 `fundamentals_v2.ts_dbs`)
-- [ ] `FundV2_TAX` 정기 갱신 — `Qvest_FundV2Update` 에 시계열 책 단계(빌더 `ops/qw_fund_v2_tax_ts.ps1` → 적재기 `data/qw_fund_v2_tax_ingest.py`)와 DATA_Key 동기화 대상 추가. 지금은 수동 실행이다.
+- [x] `FundV2_TAX` 정기 갱신 — `Qvest_FundV2Update` 의 마지막 단계로 넣었다(11-09 · 도훈 '법인세 B코드 파트도 정기 갱신에도 넣자').
+  - DATA_Key 동기화가 `ts_dbs` 를 읽는다 · 수집기 `-WindowQuarters 8 -NoRelogin` · 적재기 `--window`(Peer 와 같은 `window_merge`). 첫 정기 실행 11-14 13:00.
+  - 실행기 실패 정책도 바꿨다 — 한 DB 실패가 다른 DB 를 막지 않는다(세션 · 바쁨은 전체 정지). 상세 = `SWITCH_RUNBOOK.md` §7.
+  - ✅실측(11-09 13:29~14:08 · rc 0): 창 202412~202609 · new 0 · changed 0 · deleted 0 · 양성 대조 0.99903. 시트당 약 10분(행 수와 무관 — 1회 ≈ 40분).
+    - 첫 시도(13:15)에서 짧은 리프레시가 틀의 옛 행을 남기는 것을 보고 수집기를 고쳤다. 그 시도는 13:24 회사망 중복 로그인으로 끊겨 아무것도 안 쓰고 멈췄다(13:28 재로그인 1회).
 - [x] 갱신용 DB(최근 8분기 창 · `window_quarters`) 등록(등록부 FundV2_*_upd 5개) · 실행 = 위 예약 작업(체인 단계가 아니라 별도 작업)
 - [ ] 금융업 고유 계정(은행 · 보험 · 증권)
 - [ ] 기존 오표기 2건(RetainedEarnings · ShortTermBorr, ≤2014)의 팩터 DB 영향 정량화.

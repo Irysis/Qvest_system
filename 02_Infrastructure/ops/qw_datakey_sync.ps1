@@ -83,6 +83,14 @@ if (Test-Path -LiteralPath $regPath) {
         $p = if ($UnivDir -ne (Join-Path $ROOT "03_Universe")) { Join-Path (Join-Path $UnivDir "Fundamental_v2") "$($d.file)" } else { Join-Path (Join-Path $ROOT ($fvDir -replace '/', '\')) "$($d.file)" }
         if (-not $BOOKS.Contains("$($d.name)")) { $BOOKS["$($d.name)"] = @{ path = $p; layout = 'peer'; optional = $true } }
       }
+      # fundamentals_v2 time-series DBs (FundV2_TAX - Time Series (Company) layout, ops/qw_fund_v2_tax_ts.ps1) - 2026-11-09.
+      #   Guarded: '$null | ForEach-Object' runs once with $null, which would register an empty book name.
+      if ($reg.fundamentals_v2.ts_dbs) {
+        foreach ($d in @($reg.fundamentals_v2.ts_dbs | ForEach-Object { $_ })) {
+          $p = if ($UnivDir -ne (Join-Path $ROOT "03_Universe")) { Join-Path (Join-Path $UnivDir "Fundamental_v2") "$($d.file)" } else { Join-Path (Join-Path $ROOT ($fvDir -replace '/', '\')) "$($d.file)" }
+          if ("$($d.name)" -and -not $BOOKS.Contains("$($d.name)")) { $BOOKS["$($d.name)"] = @{ path = $p; layout = 'ts'; optional = $true } }
+        }
+      }
     }
   } catch { Write-Host "[dk-sync] WARN registry unreadable ($regPath): $($_.Exception.Message)" }
 }

@@ -138,6 +138,64 @@ def sheet_long(s: str, sh: dict):
     return df[df["Value"].notna()]
 
 
+def window_merge(old, new, win: set, db_name: str, fetched: str):
+    """부모 표 old 의 창 win((항목, 기간) 집합)을 new 로 교체한다 — 갱신용 DB · FundV2_TAX 창 갱신(qw_fund_v2_tax_ingest.py)이 같이 쓴다.
+    old: Ticker · Period · Item · Value · Text · first_fetched_at · last_fetched_at / new: Ticker · Period · Item · Value · Text.
+    창 밖 옛 행은 그대로 · 같은 값은 first_fetched_at 유지 · 바뀐 값 = revisions 'changed'(first_fetched_at = fetched) ·
+    창 안에서 사라진 값 = 'deleted'(현재 표에서 뺀다). 반환 (res, revs[DataFrame], counts{new, changed, deleted})."""
+    import numpy as np
+    import pandas as pd
+    m = old.merge(new, on=KEYS, how="outer", suffixes=("_old", ""), indicator=True)
+    in_win = pd.Series([(i, p) in win for i, p in zip(m["Item"], m["Period"])], index=m.index)
+    both = m["_merge"] == "both"
+    # pandas 3: 읽은 parquet 문자열 = StringDtype(NaN) · 새 값 = object(None) — 둘 다 object 로 맞추고
+    # 빈 값을 같은 표지로 바꿔 비교한다('\x00' 표지는 StringDtype 쪽에서 같다고 나오지 않았다 · 11-08 실측).
+    def _norm_txt(s):
+        return s.astype(object).where(s.notna(), "<NA>")
+    same_v = (m["Value_old"].fillna(np.inf) == m["Value"].fillna(np.inf)) & (_norm_txt(m["Text_old"]) == _norm_txt(m["Text"]))
+    changed = both & ~same_v
+    deleted = (m["_merge"] == "left_only") & in_win
+    revs = []
+    for kind, mask in (("changed", changed), ("deleted", deleted)):
+        if mask.any():
+            r = m.loc[mask]
+            revs.append(pd.DataFrame({
+                "Ticker": r["Ticker"], "Period": r["Period"], "Item": r["Item"], "Db": db_name,
+                "old_value": r["Value_old"], "new_value": r["Value"] if kind == "changed" else np.nan,
+                "old_text": r["Text_old"], "new_text": r["Text"] if kind == "changed" else None,
+                "old_first_fetched_at": r["first_fetched_at"], "detected_at": fetched, "kind": kind}))
+    keep_old = (m["_merge"] == "left_only") & ~in_win
+    res = pd.DataFrame({"Ticker": m["Ticker"], "Period": m["Period"], "Item": m["Item"]})
+    res["Value"] = np.where(keep_old, m["Value_old"], m["Value"])
+    res["Text"] = m["Text_old"].where(keep_old, m["Text"])
+    res["first_fetched_at"] = np.where(both & same_v, m["first_fetched_at"],
+                                       np.where(keep_old, m["first_fetched_at"], fetched))
+    res["last_fetched_at"] = np.where(keep_old, m["last_fetched_at"], fetched)
+    res = res.loc[~deleted].sort_values(KEYS, kind="stable").reset_index(drop=True)
+    counts = {"new": int((m["_merge"] == "right_only").sum()), "changed": int(changed.sum()), "deleted": int(deleted.sum())}
+    return res, revs, counts
+
+
+def write_revisions(rev_path: Path, revs: list) -> None:
+    """revisions.parquet 에 revs 를 덧붙인다(누적 · 원자적 쓰기) · 비어 있고 파일이 없으면 빈 표를 만든다."""
+    import pandas as pd
+    import pyarrow as pa
+    import pyarrow.parquet as pq
+    rschema = pa.schema([("Ticker", pa.string()), ("Period", pa.string()), ("Item", pa.string()), ("Db", pa.string()),
+                         ("old_value", pa.float64()), ("new_value", pa.float64()), ("old_text", pa.string()),
+                         ("new_text", pa.string()), ("old_first_fetched_at", pa.string()),
+                         ("detected_at", pa.string()), ("kind", pa.string())])
+    if revs:
+        add = pd.concat(revs, ignore_index=True)
+        old_r = pq.read_table(rev_path).to_pandas() if rev_path.exists() else add.iloc[0:0]
+        allr = pd.concat([old_r, add], ignore_index=True)
+        rt = pa.Table.from_pandas(allr, schema=rschema, preserve_index=False)
+        atomic_write(rev_path, lambda p: pq.write_table(rt, p))
+    elif not rev_path.exists():
+        et = pa.Table.from_pylist([], schema=rschema)
+        atomic_write(rev_path, lambda p: pq.write_table(et, p))
+
+
 def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--root", default=os.environ.get("QM_ROOT") or str(Path(__file__).resolve().parents[2]))
@@ -146,7 +204,6 @@ def main() -> int:
     ap.add_argument("--db", action="append", default=[])
     ap.add_argument("--dry-run", action="store_true")
     a = ap.parse_args()
-    import numpy as np
     import pandas as pd
     import pyarrow as pa
     import pyarrow.parquet as pq
@@ -234,35 +291,10 @@ def main() -> int:
         else:
             old = pd.DataFrame(columns=["Ticker", "Period", "Item", "Value", "Text", "first_fetched_at", "last_fetched_at"])
         win = {(s, p) for s, sh in sheets.items() for p in sh["periods"]}
-        m = old.merge(new, on=KEYS, how="outer", suffixes=("_old", ""), indicator=True)
-        in_win = pd.Series([(i, p) in win for i, p in zip(m["Item"], m["Period"])], index=m.index)
-        both = m["_merge"] == "both"
-        # pandas 3: 읽은 parquet 문자열 = StringDtype(NaN) · 새 값 = object(None) — 둘 다 object 로 맞추고
-        # 빈 값을 같은 표지로 바꿔 비교한다('\x00' 표지는 StringDtype 쪽에서 같다고 나오지 않았다 · 11-08 실측).
-        def _norm_txt(s):
-            return s.astype(object).where(s.notna(), "<NA>")
-        same_v = (m["Value_old"].fillna(np.inf) == m["Value"].fillna(np.inf)) & (_norm_txt(m["Text_old"]) == _norm_txt(m["Text"]))
-        changed = both & ~same_v
-        deleted = (m["_merge"] == "left_only") & in_win
-        for kind, mask in (("changed", changed), ("deleted", deleted)):
-            if mask.any():
-                r = m.loc[mask]
-                new_revs.append(pd.DataFrame({
-                    "Ticker": r["Ticker"], "Period": r["Period"], "Item": r["Item"], "Db": name,
-                    "old_value": r["Value_old"], "new_value": r["Value"] if kind == "changed" else np.nan,
-                    "old_text": r["Text_old"], "new_text": r["Text"] if kind == "changed" else None,
-                    "old_first_fetched_at": r["first_fetched_at"], "detected_at": fetched, "kind": kind}))
-        keep_old = (m["_merge"] == "left_only") & ~in_win
-        res = pd.DataFrame({"Ticker": m["Ticker"], "Period": m["Period"], "Item": m["Item"]})
-        res["Value"] = np.where(keep_old, m["Value_old"], m["Value"])
-        res["Text"] = m["Text_old"].where(keep_old, m["Text"])
-        res["first_fetched_at"] = np.where(both & same_v, m["first_fetched_at"],
-                                           np.where(keep_old, m["first_fetched_at"], fetched))
-        res["last_fetched_at"] = np.where(keep_old, m["last_fetched_at"], fetched)
-        res = res.loc[~deleted].sort_values(KEYS, kind="stable").reset_index(drop=True)
-        n_new = int((m["_merge"] == "right_only").sum())
+        res, revs, cnt = window_merge(old, new, win, name, fetched)
+        new_revs.extend(revs)
         print(f"[fund-v2] {name}: 적재 — 시트 {len(sheets)} · 기간 {len(next(iter(sheets.values()))['periods'])} · "
-              f"행 {len(res):,} · 신규 {n_new:,} · 변경 {int(changed.sum()):,} · 삭제 {int(deleted.sum()):,} · 스탬프 {fetched}")
+              f"행 {len(res):,} · 신규 {cnt['new']:,} · 변경 {cnt['changed']:,} · 삭제 {cnt['deleted']:,} · 스탬프 {fetched}")
         if not a.dry_run:
             schema = pa.schema([("Ticker", pa.string()), ("Period", pa.string()), ("Item", pa.string()),
                                 ("Value", pa.float64()), ("Text", pa.string()),
@@ -274,19 +306,7 @@ def main() -> int:
         loaded += 1
 
     if not a.dry_run and loaded:
-        rschema = pa.schema([("Ticker", pa.string()), ("Period", pa.string()), ("Item", pa.string()), ("Db", pa.string()),
-                             ("old_value", pa.float64()), ("new_value", pa.float64()), ("old_text", pa.string()),
-                             ("new_text", pa.string()), ("old_first_fetched_at", pa.string()),
-                             ("detected_at", pa.string()), ("kind", pa.string())])
-        if new_revs:
-            add = pd.concat(new_revs, ignore_index=True)
-            old_r = pq.read_table(rev_path).to_pandas() if rev_path.exists() else add.iloc[0:0]
-            allr = pd.concat([old_r, add], ignore_index=True)
-            rt = pa.Table.from_pandas(allr, schema=rschema, preserve_index=False)
-            atomic_write(rev_path, lambda p: pq.write_table(rt, p))
-        elif not rev_path.exists():
-            et = pa.Table.from_pylist([], schema=rschema)
-            atomic_write(rev_path, lambda p: pq.write_table(et, p))
+        write_revisions(rev_path, new_revs)
         if fiscal_new:
             fm_old = pq.read_table(fm_path).to_pandas() if fm_path.exists() else pd.DataFrame(columns=["Ticker", "FiscalMonth", "fetched_at"])
             fm = {r.Ticker: (r.FiscalMonth, r.fetched_at) for r in fm_old.itertuples()}
