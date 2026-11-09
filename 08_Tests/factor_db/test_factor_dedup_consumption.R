@@ -227,8 +227,17 @@ if (!db_ok) {
   }
 
   # 신규 선언 5쌍이 실제로 접히는가 (이 라운드의 회귀 가드)
-  NEW_ALIAS <- c("C09_Earnings_Surprise_Sq", "C10_SUE_Persistence",
-                 "C13_Revision_Breadth_3m", "M25_Earnings_Mom_Streak")
+  #   (2026-11-10) C10 · C13 은 빠졌다 — 창 결함이 만든 복제였고 수리 뒤 재측정 rho 0.50~0.66 이라 별칭 해제
+  #   (04_Research/01_reports/factor_alias_remeasure_20261110/). 해제분은 아래에서 '살아남는가'로 거꾸로 잰다.
+  NEW_ALIAS <- c("C09_Earnings_Surprise_Sq", "M25_Earnings_Mom_Streak")
+  LIFTED <- intersect(c("C10_SUE_Persistence", "C13_Revision_Breadth_3m"), unique(base$Factor_Name))
+  if (!length(LIFTED)) {
+    skip("lifted_aliases_survive", "해제된 별칭(C10 · C13)이 이 vintage 풀에 없음")
+  } else if (all(LIFTED %in% unique(ded$Factor_Name))) {
+    ok("lifted_aliases_survive", sprintf("%s — 별칭 해제 뒤 접히지 않고 남는다", paste(LIFTED, collapse = ", ")))
+  } else {
+    bad("lifted_aliases_survive", sprintf("★해제했는데 여전히 접힘: %s", paste(setdiff(LIFTED, unique(ded$Factor_Name)), collapse = ", ")))
+  }
   tgt <- intersect(NEW_ALIAS, unique(base$Factor_Name))
   if (!length(tgt)) {
     skip("new_5pairs_collapsed", "신규 alias 가 이 vintage 풀에 없음")

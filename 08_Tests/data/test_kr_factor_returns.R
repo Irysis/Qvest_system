@@ -169,5 +169,5 @@ x_mkt <- x_mkt[Ticker %in% RAW0[Date == as.Date("2011-06-30") & member == TRUE]$
 ok(isTRUE(abs(mk_mkt(res) - x_mkt[, sum(ME * Ret) / sum(ME)]) < 1e-12), "⑧ 대조 — 시장(MKT_TOTAL)은 상한 없는 가치가중(직전 월말 멤버)")
 
 cat(sprintf("[test_kr_factor_returns] %d PASS / %d FAIL\n", pass, fail))
-cat(toJSON(list(suite = "test_kr_factor_returns", pass = pass, fail = fail), auto_unbox = TRUE), "\n")
+cat(toJSON(list(test = "kr_factor_returns", pass = pass, fail = fail, total = pass + fail), auto_unbox = TRUE), "\n")  # 배터리 요약 줄 — 키 test 필수(run_all_hooks.sh)
 if (fail > 0L) quit(save = "no", status = 1L)

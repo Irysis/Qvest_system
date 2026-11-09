@@ -29,9 +29,10 @@ FC_BUILDER <- "factor_combinable.R v1.1"
 FC_STORED <- "stored_raw_value"      # 저장값 방향(v1.1) — 이 값이 아닌 저장본은 읽지 않고(멈춤) 빌드는 전부 다시 짓는다
 
 fc_root <- function() {
-  r <- Sys.getenv("QM_ROOT", "")
-  if (!nzchar(r)) r <- Sys.getenv("CLAUDE_PROJECT_DIR", "")
-  if (!nzchar(r)) stop("[fc] QM_ROOT · CLAUDE_PROJECT_DIR 미설정 — 루트를 지어내지 않는다")
+  # 순서 = CLAUDE_PROJECT_DIR → QM_ROOT (r-portability 금칙 ④ — ~/.Renviron 의 QM_ROOT 는 export 로 못 덮는다)
+  r <- Sys.getenv("CLAUDE_PROJECT_DIR", "")
+  if (!nzchar(r)) r <- Sys.getenv("QM_ROOT", "")
+  if (!nzchar(r)) stop("[fc] CLAUDE_PROJECT_DIR · QM_ROOT 미설정 — 루트를 지어내지 않는다")
   gsub("\\\\", "/", r)
 }
 

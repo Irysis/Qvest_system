@@ -214,6 +214,7 @@ def main():
     finally:
         shutil.rmtree(tmp, ignore_errors=True)
     print(f"\n[test_factor_direction_basis] {PASS} passed, {FAIL} failed")
+    print(json.dumps({"test": "factor_direction_basis", "pass": PASS, "fail": FAIL, "total": PASS + FAIL}))  # 배터리 요약 줄(run_all_hooks.sh)
     sys.exit(1 if FAIL else 0)
 
 

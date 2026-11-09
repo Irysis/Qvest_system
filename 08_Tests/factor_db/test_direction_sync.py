@@ -188,6 +188,7 @@ def main():
         chk("M3 direction 보존 제거 → S1c 가 걸린다(소비자 방향이 바뀐다)", not sm3["s1c"])
         shutil.rmtree(Rm3["td"], ignore_errors=True)
     print(f"\n[test_direction_sync] {PASS} passed, {FAIL} failed")
+    print(json.dumps({"test": "direction_sync", "pass": PASS, "fail": FAIL, "total": PASS + FAIL}))  # 배터리 요약 줄(run_all_hooks.sh)
     sys.exit(1 if FAIL else 0)
 
 

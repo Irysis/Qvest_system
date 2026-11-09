@@ -368,6 +368,13 @@ SUITES=(
   #   (PIT BE · 비멤버 · 상한 가치가중 · 월간 복리 · RF 전 거래일 · 완결 월) + 위반 주입 4종(PIT 거름 · RF 당일 ·
   #   당일 시총 가중 · 상한 제거). 구판 파일은 HML · RMW · CMA 를 월말 하루 수익으로 만들고 RF = 0 이었다.
   "08_Tests/data/test_kr_factor_returns.R"
+  # 2026-11-10 추가: 재무 DB v2 4종(11-08~09 작성 · 그동안 배터리 미편입 — suite_enrollment E2 가 잡던 21건 중 4건) — 수집(qw_fund_v2_ingest ·
+  #   결산월별 분기 표지 qw_fund_v2_tax_ingest) → 1단계 표(build_fundamental_v2 · 퀀티 메인 · DART 정정 검사) → 병합(build_fundamental_merged_v2 ·
+  #   날짜 순서 계약 · 전환 장치). 팩터 DB 와 FF 요인 빌더가 v2 를 읽기 시작했으므로(11-09 전환) 밤마다 돈다. 합성 자료만 · venv 자기 재실행.
+  "08_Tests/data/test_qw_fund_v2_ingest.py"
+  "08_Tests/data/test_qw_fund_v2_tax_ingest.py"
+  "08_Tests/data/test_build_fundamental_v2.py"
+  "08_Tests/data/test_build_fundamental_merged_v2.py"
   # 2026-11-09 추가: 결합용 팩터 뷰(factor_db/factor_combinable.R · FACTOR-COMBINABLE-VIEW-20261109) — 순위 [−1,1] · 부호 대칭(방향 =
   #   부호표 곱의 근거) · 부분집합 재순위 · 별칭 · 계열 · 합성 저장본 읽기 9 + 위반 주입 4(동순위 · 재순위 · PIT 가드 · 부호 고르기)
   "08_Tests/factor_db/test_factor_combinable.R"
@@ -385,6 +392,10 @@ SUITES=(
   # 2026-11-09 추가: XF → DART 이름 채우기(.fdb_xf_fill_merge) 변환 — 음수 저장 4개 = −x · V08 = 1/x · DART 우선 · 짝 밖 불변 +
   #   돌연변이 2(변환 제거). 구판은 이름만 바꿔 채움 행 부호 · 역수가 뒤집혔다.
   "08_Tests/factor_db/test_xf_fill_merge.R"
+  # 2026-11-10 추가: 부분 재계산 도구(factor_db/rebuild_factor_subset.R) — 쓸 것 없는 달(옛 파일에 대상 행 없음 + 새 계산 빈 결과)
+  #   = 성공 · written FALSE · 지문 기록 / 옛 대상 행이 있는데 새 계산이 비면 실패 유지 · 잃은 쓰기 검사(크기 · 수정 시각) +
+  #   돌연변이 3(쓸 것 없음 가지 제거 · 옛 대상 행 확인 제거 · 수정 시각 비교 제거). 실사고 11-09 = 1990-01~03 이 실패로 셌다.
+  "08_Tests/factor_db/test_rebuild_factor_subset.R"
   # 2026-07-26 추가(R1): DART reprt_code ↔ 분기 매핑 위반 주입.
   #   원 결함 = REPRT_MAP 이 11014→q1 / 11013→q3 로 뒤집혀 3분기(11월 접수) 보고서가
   #   Factor_Date 5/15 를 받음 → 중앙 시차 −183일 · look-ahead 99.8%(PIT C4).

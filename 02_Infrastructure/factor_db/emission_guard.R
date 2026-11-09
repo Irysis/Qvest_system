@@ -306,6 +306,30 @@ emission_dedup_pairs <- function(registry) {
 }
 
 #------------------------------------------------------------------------------
+# 별칭 쌍(alias → canonical) — 낡은 별칭 검사(축 I)의 입력 (2026-11-10)
+#   alias = '구성상 같은 양'(apply_factor_dedup.R role 정의)이라 그 선언은 데이터로 재검증할 수 있다.
+#   redundant · 군집 · partners 는 '겹침'일 뿐 같은 양이 아니므로 넣지 않는다.
+#------------------------------------------------------------------------------
+emission_alias_pairs <- function(registry) {
+  empty <- data.table(alias = character(), canonical = character())
+  if (is.character(registry) && length(registry) == 1L) {
+    if (!file.exists(registry)) return(empty)
+    registry <- fromJSON(registry, simplifyVector = FALSE)
+  }
+  if (!is.list(registry) || length(registry) == 0L) return(empty)
+  rows <- lapply(names(registry), function(k) {
+    # ★정확 일치 [[ ]] — `$` 는 목록에서 부분 일치라 'dedup' 으로 시작하는 다른 키(예: 이력)를 집을 수 있다(11-10 실사고)
+    d <- registry[[k]][["dedup"]]
+    if (!is.list(d) || !identical(as.character(d[["role"]])[1], "alias") || is.null(d[["canonical"]])) return(NULL)
+    cn <- as.character(d[["canonical"]])[1]
+    if (is.na(cn) || !nzchar(cn) || identical(cn, k)) return(NULL)
+    data.table(alias = k, canonical = cn)
+  })
+  out <- rbindlist(rows)
+  if (nrow(out)) out else empty
+}
+
+#------------------------------------------------------------------------------
 # 선언 래칫 — 정당한 상수/중복을 축별로 선언한다 (emission_expected_absent 방식 답습)
 #------------------------------------------------------------------------------
 emission_load_identity_baseline <- function(path) {
@@ -328,11 +352,14 @@ emission_load_identity_baseline <- function(path) {
 #                   = 빌더가 write 직전에 쥐고 있는 바로 그 객체
 # @param dedup_pairs emission_dedup_pairs() 산출 ("a||b" 정렬 키)
 # @param identity_baseline emission_load_identity_baseline() 산출
+# @param alias_pairs emission_alias_pairs() 산출 data.table(alias, canonical) — 낡은 별칭 검사(axis_I$alias_stale ·
+#                    alias_checked). NULL 이면 그 검사만 생략(구 호출부 호환)
 # @return list(axis_D, axis_T, axis_I, warnings, verdict)  ★stop() 하지 않는다
 #------------------------------------------------------------------------------
 factor_identity_check <- function(result, ym,
                                   dedup_pairs = character(0),
                                   identity_baseline = NULL,
+                                  alias_pairs = NULL,
                                   tie_warn = 0.99, tie_watch = 0.95,
                                   rho_warn = 0.999, min_obs = 30L,
                                   value_col = "Z_Score",
@@ -353,13 +380,14 @@ factor_identity_check <- function(result, ym,
     why <- if (is.null(result) || !is.data.table(result)) "result 가 data.table 이 아님"
            else if (nrow(result) == 0L) "result 0행"
            else sprintf("필수 컬럼 결측: %s", paste(missing_cols, collapse = ","))
-    return(list(guard = "factor_identity_check", version = "1.0", ym = ym_cur,
+    return(list(guard = "factor_identity_check", version = "1.1", ym = ym_cur,
                 axis_D = list(status = "UNMEASURED", reason = why, dead = character(0),
                               dead_declared = character(0), detail = na_dt()),
                 axis_T = list(status = "UNMEASURED", reason = why, tie_warn = character(0),
                               tie_watch = character(0), stat_liveness = NA_real_, detail = na_dt()),
                 axis_I = list(status = "UNMEASURED", reason = why, undeclared = na_dt(),
-                              n_pairs_hit = 0L, n_declared = 0L, detail = na_dt()),
+                              n_pairs_hit = 0L, n_declared = 0L, detail = na_dt(),
+                              alias_checked = 0L, alias_stale = na_dt()),
                 warnings = sprintf("[identity_guard] %s — 3축 전부 측정 불가 (%s). ★'경보 0'이 아니라 UNMEASURED 다", ym_cur, why),
                 verdict = "UNMEASURED"))
   }
@@ -388,7 +416,8 @@ factor_identity_check <- function(result, ym,
                  tie_warn = character(0), tie_watch = character(0),
                  stat_liveness = NA_real_, detail = na_dt())
   axis_I <- list(status = "UNMEASURED", reason = NA_character_, undeclared = na_dt(),
-                 n_pairs_hit = 0L, n_declared = length(dedup_pairs), detail = na_dt())
+                 n_pairs_hit = 0L, n_declared = length(dedup_pairs), detail = na_dt(),
+                 alias_checked = 0L, alias_stale = na_dt())
 
   if (is.na(vcol)) {
     r <- sprintf("value_col '%s' 부재 — 축 T/I 측정 불가", value_col)
@@ -484,6 +513,32 @@ factor_identity_check <- function(result, ym,
             paste(sprintf("%s~%s(%.6f)", und$factor_a, und$factor_b, und$abs_rho), collapse = ", ")))
         }
       }
+      # ── 낡은 별칭 선언 (2026-11-10) — 같은 격자 C 를 거꾸로 읽는다 ───────────────
+      #   alias 는 '구성상 같은 양'이라 |rho| 가 rho_warn 아래면 선언이 데이터와 어긋난 것이다.
+      #   실사고: C10 · C13 별칭은 창 결함이 만든 복제였는데, 창 수리(08-10) 가 전 기간에 반영된 뒤(11-10)에도
+      #   선언이 남아 dedup=TRUE 소비자(결합용 뷰 기본값 등)가 서로 다른 두 팩터를 버렸다(재측정 rho 0.50~0.66).
+      #   그때 이 축은 미선언 중복만 보고 선언된 쌍은 침묵했으므로 아무 경보도 없었다. 겹침 수가 min_obs 미만인 쌍은
+      #   판정하지 않는다(alias_checked 에 세지 않음 — 못 잰 것을 '이상 없음'으로 세지 않는다).
+      if (!is.null(alias_pairs) && !(is.data.frame(alias_pairs) && all(c("alias", "canonical") %in% names(alias_pairs)))) {
+        # 형식 불량은 이 검사만 건너뛴다 — D · T 결과까지 오류로 잃지 않는다(설계 원칙 ① · stop 없음)
+        warnings <- c(warnings, sprintf("[identity_guard] %s — alias_pairs 형식 불량(alias · canonical 열 필요) → 낡은 별칭 검사 UNMEASURED", ym_cur))
+      } else if (!is.null(alias_pairs) && nrow(alias_pairs) > 0L) {
+        ap <- as.data.table(alias_pairs)[alias %in% gn & canonical %in% gn]
+        if (nrow(ap)) {
+          ix <- cbind(match(ap$alias, gn), match(ap$canonical, gn))
+          ap[, `:=`(abs_rho = abs(C[ix]), n_common = as.integer(N[ix]))]
+          ap <- ap[n_common >= min_obs]
+          axis_I$alias_checked <- nrow(ap)
+          st <- ap[!is.finite(abs_rho) | abs_rho < rho_warn]
+          axis_I$alias_stale <- st
+          if (nrow(st) > 0L) {
+            warnings <- c(warnings, sprintf(
+              "[identity_guard] %s — ★낡은 별칭 선언(축 I) %d쌍: alias 는 같은 양이어야 하는데 |rho| < %.3f → 재측정 · 해제 대상(dedup=TRUE 소비자가 다른 팩터를 버린다): %s",
+              ym_cur, nrow(st), rho_warn,
+              paste(sprintf("%s→%s(%.4f · n %d)", st$alias, st$canonical, st$abs_rho, st$n_common), collapse = ", ")))
+          }
+        }
+      }
     }
   }
   axis_D <- list(status = "OK", reason = NA_character_, dead = dead_new,
@@ -492,7 +547,7 @@ factor_identity_check <- function(result, ym,
 
   undiag <- identity_baseline[diagnosed == FALSE, factor]
 
-  list(guard = "factor_identity_check", version = "1.0", ym = ym_cur,
+  list(guard = "factor_identity_check", version = "1.1", ym = ym_cur,
        thresholds = list(tie_warn = tie_warn, tie_watch = tie_watch,
                          rho_warn = rho_warn, min_obs = min_obs, value_col = value_col),
        axis_D = axis_D, axis_T = axis_T, axis_I = axis_I,
@@ -545,11 +600,13 @@ factor_emission_guard <- function(result, ym, fdb_dir, registry_path,
           result            = result,
           ym                = ym,
           dedup_pairs       = emission_dedup_pairs(registry_path),
-          identity_baseline = emission_load_identity_baseline(identity_baseline_path))
-        cat(sprintf("  [identity_guard] %s: 죽은배출 %d종(선언 %d) · 동률 %d종(관찰 %d) · 중복 미선언 %d쌍(선언대조 %d쌍) → %s\n",
+          identity_baseline = emission_load_identity_baseline(identity_baseline_path),
+          alias_pairs       = emission_alias_pairs(registry_path))
+        cat(sprintf("  [identity_guard] %s: 죽은배출 %d종(선언 %d) · 동률 %d종(관찰 %d) · 중복 미선언 %d쌍(선언대조 %d쌍) · 낡은 별칭 %d쌍(검사 %d) → %s\n",
                     ym, length(idr$axis_D$dead), length(idr$axis_D$dead_declared),
                     length(idr$axis_T$tie_warn), length(idr$axis_T$tie_watch),
-                    nrow(idr$axis_I$undeclared), idr$axis_I$n_declared, idr$verdict))
+                    nrow(idr$axis_I$undeclared), idr$axis_I$n_declared,
+                    nrow(idr$axis_I$alias_stale), as.integer(idr$axis_I$alias_checked), idr$verdict))
         for (ax in c("axis_D", "axis_T", "axis_I")) {
           if (identical(idr[[ax]]$status, "UNMEASURED")) {
             cat(sprintf("  [identity_guard] ★%s UNMEASURED — %s (경보 0 이 아니다)\n",
@@ -591,4 +648,4 @@ factor_emission_guard <- function(result, ym, fdb_dir, registry_path,
   invisible(out)
 }
 
-cat("[factor_db] emission_guard.R loaded (v1.2 — 존재축 R/S/P + 정체 3축 D/T/I)\n")
+cat("[factor_db] emission_guard.R loaded (v1.3 — 존재축 R/S/P + 정체 3축 D/T/I + 낡은 별칭)\n")

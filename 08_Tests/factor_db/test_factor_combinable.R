@@ -7,8 +7,8 @@
 #   M 위반 주입 6종(동순위 규칙 · 재순위 제거 · PIT 가드 제거 · 부호 열 바꾸기 · 방어 결측 빼기 제거 · 저장 부호 되돌리기 제거)
 #==============================================================================
 suppressPackageStartupMessages({ library(data.table); library(arrow); library(jsonlite) })
-ROOT <- gsub("\\\\", "/", Sys.getenv("QM_ROOT", Sys.getenv("CLAUDE_PROJECT_DIR", "")))
-if (!nzchar(ROOT)) stop("QM_ROOT 미설정")
+ROOT <- gsub("\\\\", "/", Sys.getenv("CLAUDE_PROJECT_DIR", Sys.getenv("QM_ROOT", "")))  # 금칙 ④ — CLAUDE_PROJECT_DIR 먼저
+if (!nzchar(ROOT)) stop("CLAUDE_PROJECT_DIR · QM_ROOT 미설정")
 FCF <- file.path(ROOT, "02_Infrastructure/factor_db/factor_combinable.R")
 PASS <- 0L; FAIL <- 0L
 chk <- function(name, ok, detail = "") {

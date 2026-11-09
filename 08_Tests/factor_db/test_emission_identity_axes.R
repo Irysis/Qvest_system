@@ -20,8 +20,13 @@
 #
 # 구조 8축:
 #   P. 실패널 확보    — 이후 모든 실데이터 축의 기준선 (0 을 스킵으로 읽지 않는다)
-#   V. 위반 주입 4종  — ①비트동일 ②단조변환 ③전건 상수 ④99.5% 동일
-#   N. 음성 대조      — 기확정 결함(C01≡C10 · C04≡C13 · C15)을 실제로 잡는가
+#   V. 위반 주입 5종  — ①비트동일 ②단조변환 ③전건 상수 ④99.5% 동일 ⑥낡은 별칭(+ 돌연변이)
+#   N. 실데이터 대조  — 남은 결함(C11≡M25 · C01≡C09)은 잡고, 고친 결함(C10 · C13 · C15)은 풀렸는가
+#                       + 등록부 별칭 선언 전부가 실패널과 맞는가(낡은 별칭 0)
+#     ★2026-11-10 개정: C10 · C13 · C15 는 창 결함(08-10 수리)의 산물이었고 11-09~10 전 기간 재계산으로 고쳐졌다
+#       (재측정 rho 0.50~0.66 · C15 가시 213행). 실패널에서 결함이 사라졌으므로 그 대조를 '잡는가'에서
+#       '풀렸는가'로 옮기고, 검출력(죽은 배출 · 낡은 별칭)은 합성 주입(V3b · V6)과 돌연변이(Z2 · V6c)로 지킨다.
+#       등록부 별칭 해제 = 04_Research/01_reports/factor_alias_remeasure_20261110/
 #   G. 양성 대조      — 정상 팩터가 같은 실행에서 정상으로 남는가 (과민 아님)
 #   X. 면제           — 시장레벨 15종이 DEAD_EMISSION 으로 오분류되지 않는가 (양방향)
 #   Z. 죽은 통계      — sd(Z)=1 항등 실측 + 가드가 그것에 의존하지 않음 (돌연변이)
@@ -60,6 +65,7 @@ suppressMessages(source(GUARD_SRC))
 
 DEDUP <- emission_dedup_pairs(REGISTRY)
 IDB   <- emission_load_identity_baseline(IDBASE)
+ALIAS <- emission_alias_pairs(REGISTRY)   # 낡은 별칭 검사 입력(alias → canonical)
 
 #==============================================================================
 cat("\n=== P. 실패널 확보 — 이후 실데이터 축의 기준선 ===\n")
@@ -111,7 +117,7 @@ FULL <- if (HAVE_PANEL) mk_full(panel) else NULL
 
 # ★기준 판정 1회 — 음성·양성 대조가 **같은 실행·같은 호출**을 공유한다
 BASE <- if (HAVE_PANEL) factor_identity_check(FULL, panel_ym, dedup_pairs = DEDUP,
-                                              identity_baseline = IDB) else NULL
+                                              identity_baseline = IDB, alias_pairs = ALIAS) else NULL
 if (HAVE_PANEL) {
   ok("P2_base_verdict", sprintf("D 미선언 %d (선언 %d) · T warn %d/watch %d · I hit %d 중 미선언 %d → %s",
      length(BASE$axis_D$dead), length(BASE$axis_D$dead_declared),
@@ -142,10 +148,18 @@ if (!HAVE_PANEL || !BASE_F %in% panel$Factor_Name) {
     copy(src)[, `:=`(Factor_Name = "INJ3_CONST_COVERED", Z_Score = 0, Raw_Value = 0)],
     # ③-b 전건 상수 → 빌더가 Z=NA/Coverage=FALSE 로 번역한 상태 → 축 D 가 잡아야 한다
     copy(src)[, `:=`(Factor_Name = "INJ3_CONST_DEAD", Z_Score = NA_real_,
-                     Raw_Value = 1.0, Coverage = FALSE)]
+                     Raw_Value = 1.0, Coverage = FALSE)],
+    # ⑥ 낡은 별칭 — 같은 값 분포를 종목 사이에서 섞었다(순위 정보 0). 아래 ALIAS_INJ 가 BASE_F 의 별칭으로 선언한다.
+    #   C10 · C13 사고의 재현: 선언은 '같은 양'인데 데이터는 다른 양이다.
+    copy(src)[, `:=`(Factor_Name = "INJ6_STALE_ALIAS",
+                     Z_Score = Z_Score[{ set.seed(20261110L); sample.int(n) }])][, Raw_Value := Z_Score]
   ), use.names = TRUE)
+  # 별칭 선언 주입: ⑥ = 낡은 별칭(잡혀야 함) · ① = 참 별칭(같은 호출에서 잡히면 안 됨 — 과민 대조)
+  ALIAS_INJ <- rbindlist(list(ALIAS, data.table(alias = c("INJ6_STALE_ALIAS", "INJ1_BITWISE"),
+                                                canonical = BASE_F)), use.names = TRUE)
   RINJ <- factor_identity_check(rbindlist(list(FULL, inj), use.names = TRUE),
-                                panel_ym, dedup_pairs = DEDUP, identity_baseline = IDB)
+                                panel_ym, dedup_pairs = DEDUP, identity_baseline = IDB,
+                                alias_pairs = ALIAS_INJ)
   und <- RINJ$axis_I$undeclared
   hit_pair <- function(f) if (nrow(und) == 0L) NA_real_ else {
     h <- und[(factor_a == BASE_F & factor_b == f) | (factor_a == f & factor_b == BASE_F)]
@@ -205,6 +219,46 @@ if (!HAVE_PANEL || !BASE_F %in% panel$Factor_Name) {
         sprintf("선언 대조를 지워도 경보량 불변 (%d→%d) — registry dedup 을 안 읽고 있다",
                 nrow(und), nrow(RNODECL$axis_I$undeclared)))
   }
+
+  # ⑥ 낡은 별칭 — 선언된 별칭을 데이터로 재검증하는가 (2026-11-10 · C10 · C13 사고: 선언된 쌍은 침묵했다)
+  ast <- RINJ$axis_I$alias_stale
+  r6 <- if (is.null(ast) || !nrow(ast)) NA_real_ else ast[alias == "INJ6_STALE_ALIAS", abs_rho][1]
+  if (!is.na(r6) && r6 < 0.5) {
+    ok("V6_stale_alias_caught", sprintf("섞은 사본을 별칭으로 선언 → 낡은 별칭 검거 (|rho| %.4f < %.3f)", r6, RINJ$thresholds$rho_warn))
+  } else {
+    bad("V6_stale_alias_caught", sprintf("★낡은 별칭 미검거 (|rho| %s) — 선언된 쌍은 침묵하던 구판 상태", format(r6)))
+  }
+  if (isTRUE(RINJ$axis_I$alias_checked >= 2L) && !"INJ1_BITWISE" %in% ast$alias) {
+    ok("V6b_true_alias_not_stale", sprintf("참 별칭(비트 동일)은 같은 호출에서 미발화 · 검사 %d쌍", RINJ$axis_I$alias_checked))
+  } else {
+    bad("V6b_true_alias_not_stale", sprintf("참 별칭 오검거 또는 검사 부족 (검사 %s쌍 · 발화 %s)",
+        format(RINJ$axis_I$alias_checked), paste(ast$alias, collapse = ",")))
+  }
+  # 돌연변이 — 낡은 별칭 판정 줄을 무력화하면(= 선언된 쌍은 침묵하던 구판) V6 가 걸려야 한다.
+  #   소스 텍스트 치환(deparse 아님) · 치환 성사 단정 · 사본 단독 로드.
+  gsrc <- readLines(GUARD_SRC, encoding = "UTF-8", warn = FALSE)
+  pat6 <- "st <- ap[!is.finite(abs_rho) | abs_rho < rho_warn]"
+  hit6 <- which(grepl(pat6, gsrc, fixed = TRUE))
+  M6 <- NULL; msrc <- gsrc
+  if (length(hit6) == 1L) {
+    msrc[hit6] <- sub(pat6, "st <- ap[0L]", msrc[hit6], fixed = TRUE)
+    mf6 <- tempfile("guard_m6_", fileext = ".R"); writeLines(msrc, mf6, useBytes = TRUE)
+    M6 <- new.env(parent = globalenv())
+    if (!isTRUE(tryCatch({ invisible(capture.output(suppressMessages(sys.source(mf6, envir = M6)))); TRUE },
+                         error = function(e) FALSE))) M6 <- NULL
+    unlink(mf6)
+  }
+  if (is.environment(M6) && !identical(msrc, gsrc) && is.function(M6$factor_identity_check)) {
+    rm6 <- M6$factor_identity_check(rbindlist(list(FULL, inj), use.names = TRUE), panel_ym, dedup_pairs = DEDUP,
+                                    identity_baseline = IDB, alias_pairs = ALIAS_INJ)
+    if (!"INJ6_STALE_ALIAS" %in% rm6$axis_I$alias_stale$alias) {
+      ok("V6c_mutation_stale_line", "판정 줄 무력화 사본은 낡은 별칭을 놓친다 — V6 통과는 그 줄 덕이다")
+    } else {
+      bad("V6c_mutation_stale_line", "판정 줄을 지워도 검거 — V6 가 다른 경로로 통과(대조 공허)")
+    }
+  } else {
+    bad("V6c_mutation_stale_line", sprintf("돌연변이 치환 실패(일치 %d줄) 또는 사본 로드 실패 — 대조 공허", length(hit6)))
+  }
 }
 
 #==============================================================================
@@ -234,16 +288,52 @@ if (!HAVE_PANEL) {
       bad(id, sprintf("★%s ~ %s 가 검출은 됐으나 declared=FALSE — registry dedup 선언이 소실됨", a, b))
     }
   }
-  chk_pair("N1_C01_eq_C10", "C01_SUE", "C10_SUE_Persistence")
-  chk_pair("N2_C04_eq_C13", "C04_ESBR", "C13_Revision_Breadth_3m")
   chk_pair("N3_C11_eq_M25", "C11_Earnings_Streak", "M25_Earnings_Mom_Streak")
   chk_pair("N4_C01_eq_C09", "C01_SUE", "C09_Earnings_Surprise_Sq")
 
-  if ("C15_Forecast_Error_Trend" %in% BASE$axis_D$dead) {
-    d <- BASE$axis_D$detail[Factor_Name == "C15_Forecast_Error_Trend"]
-    ok("N5_C15_dead_emission", sprintf("축 D 검거 — n_rows %d · n_cov %d", d$n_rows[1], d$n_cov[1]))
+  # 고친 결함 (2026-11-10 개정) — 창 수리(08-10)가 전 기간에 반영된 뒤 복제가 풀렸고 등록부 별칭도 해제됐는가.
+  #   구 N1 · N2 는 '잡는가'였다. 결함이 실패널에서 사라졌으므로 '풀렸는가'로 옮긴다(검출력은 V1 · V2 · V6 가 합성으로 지킨다).
+  rk_rho <- function(a, b) {
+    x <- panel[Factor_Name == a, .(Ticker, x = Z_Score)]; y <- panel[Factor_Name == b, .(Ticker, y = Z_Score)]
+    m <- merge(x, y, by = "Ticker")[is.finite(x) & is.finite(y)]
+    if (nrow(m) < 30L) return(c(rho = NA_real_, n = nrow(m)))
+    c(rho = abs(cor(rank(m$x), rank(m$y))), n = nrow(m))
+  }
+  chk_repaired <- function(id, a, b) {
+    r <- rk_rho(a, b); key <- paste(pmin(a, b), pmax(a, b), sep = "||"); thr <- BASE$thresholds$rho_warn
+    if (!is.finite(r[["rho"]])) {
+      bad(id, sprintf("★%s ~ %s 겹침 %d종목 — 실패널에서 판정 불가(풀렸는지 모른다)", a, b, as.integer(r[["n"]])))
+    } else if (r[["rho"]] >= thr) {
+      bad(id, sprintf("★%s ~ %s |rho| %.6f — 다시 복제다(창 결함 재발 의심)", a, b, r[["rho"]]))
+    } else if (key %in% DEDUP) {
+      bad(id, sprintf("★%s ~ %s 는 풀렸는데(|rho| %.4f) 등록부가 아직 같은 양으로 선언 — 낡은 선언", a, b, r[["rho"]]))
+    } else {
+      ok(id, sprintf("%s ~ %s 복제 풀림(|rho| %.4f · n %d) + 등록부 선언 해제", a, b, r[["rho"]], as.integer(r[["n"]])))
+    }
+  }
+  chk_repaired("N1_C10_repaired", "C01_SUE", "C10_SUE_Persistence")
+  chk_repaired("N2_C13_repaired", "C04_ESBR", "C13_Revision_Breadth_3m")
+
+  # C15 — 죽은 배출이 살아났는가(가시 행 · 고유값) + 축 D 가 오검거하지 않는가(검출력 = V3b · Z2 합성)
+  c15 <- panel[Factor_Name == "C15_Forecast_Error_Trend"]
+  c15_dead <- "C15_Forecast_Error_Trend" %in% BASE$axis_D$dead
+  if (nrow(c15) >= 30L && uniqueN(c15$Z_Score) > 1L && !c15_dead) {
+    ok("N5_C15_alive", sprintf("C15 가시 %d행 · 고유값 %d · 축 D 미발화", nrow(c15), uniqueN(c15$Z_Score)))
   } else {
-    bad("N5_C15_dead_emission", "★C15_Forecast_Error_Trend 미검거 — 죽은 배출 축이 죽어 있다")
+    bad("N5_C15_alive", sprintf("★C15 가시 %d행 · 고유값 %d · 축 D 발화 %s — 살아나지 않았거나 오검거",
+                                nrow(c15), uniqueN(c15$Z_Score), c15_dead))
+  }
+
+  # 등록부 별칭 선언 전부가 실패널과 맞는가 — 다음 수리가 선언을 또 낡게 만들면 여기서(그리고 빌더 경고로) 걸린다
+  pres <- ALIAS[alias %in% panel$Factor_Name & canonical %in% panel$Factor_Name]
+  ast0 <- BASE$axis_I$alias_stale
+  n_st <- if (is.null(ast0)) 0L else nrow(ast0)
+  if (nrow(pres) >= 1L && isTRUE(BASE$axis_I$alias_checked >= 1L) && n_st == 0L) {
+    ok("N6_aliases_match_data", sprintf("별칭 선언 %d쌍 · 실패널 검사 %d쌍 · 낡은 별칭 0", nrow(ALIAS), BASE$axis_I$alias_checked))
+  } else {
+    bad("N6_aliases_match_data", sprintf("★낡은 별칭 %d쌍(검사 %s / 패널 존재 %d): %s", n_st,
+        format(BASE$axis_I$alias_checked), nrow(pres),
+        if (n_st == 0L) "-" else paste(sprintf("%s→%s(%.4f)", ast0$alias, ast0$canonical, ast0$abs_rho), collapse = ", ")))
   }
 }
 
@@ -358,12 +448,18 @@ if (!HAVE_PANEL) {
     s <- res[Coverage %in% TRUE, .(sd_z = sd(Z_Score, na.rm = TRUE)), by = Factor_Name]
     sort(s[is.finite(sd_z) & sd_z < 1e-12, Factor_Name])
   }
-  lost <- broken(FULL)
-  if (!"C15_Forecast_Error_Trend" %in% lost && "C15_Forecast_Error_Trend" %in% BASE$axis_D$dead) {
-    ok("Z2_guard_not_on_dead_axis",
-       sprintf("sd(Z) 축 가드는 %d종만 검거(C15 놓침) · 현행 축 D 는 검거 — 돌연변이가 검출력을 실증", length(lost)))
+  # (2026-11-10) 실패널 C15 가 살아났으므로 대상을 합성 죽은 배출(INJ3_CONST_DEAD · V3b)로 옮긴다 — 같은 구조(행 O · Coverage 전건 FALSE)
+  if (exists("RINJ") && exists("inj")) {
+    lost <- broken(rbindlist(list(FULL, inj), use.names = TRUE))
+    if (!"INJ3_CONST_DEAD" %in% lost && "INJ3_CONST_DEAD" %in% RINJ$axis_D$dead) {
+      ok("Z2_guard_not_on_dead_axis",
+         sprintf("sd(Z) 축 가드는 %d종만 검거(INJ3_CONST_DEAD 놓침) · 현행 축 D 는 검거 — 돌연변이가 검출력을 실증", length(lost)))
+    } else {
+      bad("Z2_guard_not_on_dead_axis", sprintf("sd(Z) 가드 검거 %s · 축 D 검거 %s — 대조가 검출력을 실증하지 못함",
+                                               "INJ3_CONST_DEAD" %in% lost, "INJ3_CONST_DEAD" %in% RINJ$axis_D$dead))
+    }
   } else {
-    bad("Z2_guard_not_on_dead_axis", "돌연변이 가드가 여전히 C15 를 잡음 — N5 통과가 축 D 덕이 아닐 수 있음")
+    bad("Z2_guard_not_on_dead_axis", "주입 패널 부재(V0) — 돌연변이 대조 불가")
   }
   if (isTRUE(BASE$axis_T$stat_liveness > 0)) {
     ok("Z3_axisT_statistic_alive", sprintf("축 T stat_liveness sd(modal_frac) = %.6f > 0",
@@ -412,6 +508,17 @@ if (identical(r_novcol$axis_T$status, "UNMEASURED") && identical(r_novcol$axis_I
 } else {
   bad("U2_missing_value_col_unmeasured",
       sprintf("T=%s I=%s", r_novcol$axis_T$status, r_novcol$axis_I$status))
+}
+# (2026-11-10) 낡은 별칭 입력 형식 불량 → 그 검사만 UNMEASURED 경고 · 축 T 결과는 그대로(오류로 정체 검사 전체를 잃지 않는다)
+r_badap <- tryCatch(factor_identity_check(cont, "202608", dedup_pairs = DEDUP, identity_baseline = IDB,
+                                          alias_pairs = data.table(x = 1)), error = function(e) NULL)
+if (!is.null(r_badap) && identical(r_badap$axis_T$status, "OK") &&
+    any(grepl("alias_pairs 형식 불량", r_badap$warnings, fixed = TRUE)) && identical(r_badap$axis_I$alias_checked, 0L)) {
+  ok("U2b_bad_alias_pairs_isolated", "alias_pairs 형식 불량 → 경고 + 낡은 별칭 검사만 생략 · 축 T OK 유지")
+} else {
+  bad("U2b_bad_alias_pairs_isolated", if (is.null(r_badap)) "형식 불량 입력에 오류 — 정체 검사 전체를 잃는다"
+                                       else sprintf("T=%s · 경고 %d · alias_checked %s", r_badap$axis_T$status,
+                                                    length(r_badap$warnings), format(r_badap$axis_I$alias_checked)))
 }
 # 어떤 입력에도 stop 하지 않는다 (설계 원칙 ① — 정당한 상수 팩터가 실재하므로)
 crashed <- tryCatch({

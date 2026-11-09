@@ -171,4 +171,5 @@ if (is.function(M5)) { r <- run_month(M5); chk("M5 월간 방어 보기 제거 �
 
 unlink(TMP, recursive = TRUE)
 cat(sprintf("\n[test_load_daily_factors] %d passed, %d failed\n", PASS, FAIL))
+cat(sprintf('{"test":"load_daily_factors","pass":%d,"fail":%d,"total":%d}\n', PASS, FAIL, PASS + FAIL))  # 배터리 요약 줄(run_all_hooks.sh)
 if (FAIL > 0L) quit(save = "no", status = 1L)

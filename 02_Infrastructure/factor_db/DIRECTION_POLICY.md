@@ -80,13 +80,12 @@ writer: `factor_db/apply_direction_basis.py`(등록부 두 사본에 쓰는 유�
 9. 앞서 쌓인 것: F-Score 재측정 · 11-10 아침 점검 · FF5 추적기 CMA 부호 · QMJ · P2R05 재핀.
 
 **시험 · 문서**
-10. 재빌드로 깨진 시험 2건(test_emission_guard F3 · test_emission_identity_axes N5/Z2)을 합성 대조로.
-11. 시험 총계 기준선 재승격(시험 통과 뒤).
-12. 규칙 문서 갱신(factor-db.md · pit.md — 세션 경계에서): 두 방향 · 야간 동기화 · 결합용 뷰 v1.1.
+10. 시험 총계 기준선 재승격 — 이 작업 관련 시험은 11-10 에 전부 통과 · 집계됨(깨진 2건 수리 · 요약 줄 없던 6건 · 재무 v2 4건 편입). 기준선은 배터리의 다른 실패(11-10 밤 107 — r_portability 35 · map_freshness_content 11 등 다른 작업분)가 0 이 된 뒤에만 올릴 수 있다(suite_totals_watch 가 fail > 0 이면 승격 거부).
+11. 규칙 문서 갱신(factor-db.md · pit.md — 세션 경계에서): 두 방향 · 야간 동기화 · 결합용 뷰 v1.1 · emission_guard v1.3 낡은 별칭.
 
 **판단 재검토 후보(판정표 · Q 덮어쓰기)**
-13. 확인 못 한 인용 — Bollerslev, Li & Zhao 2020 의 부호(D58 · R14) · Akbas 외 · Lesmond 외 1999 · Goyenko 외 2009 · Bekaert 외 2007 · 상방 베타 무프리미엄 요약(D06 · D26).
-14. 해석이 갈릴 수 있는 것 — R17 시장 레버리지(Penman 외 2007 은 B/M 통제 뒤 반대) · 거래량 추세 무리 G30(Q 가 방어를 '급증 = 급락 위험'으로 덮어씀) · RE05 · MA02/MA03(위기 종류에 따라) · L37(코드가 횡단면 수준).
+12. 확인 못 한 인용 — Bollerslev, Li & Zhao 2020 의 부호(D58 · R14) · Akbas 외 · Lesmond 외 1999 · Goyenko 외 2009 · Bekaert 외 2007 · 상방 베타 무프리미엄 요약(D06 · D26).
+13. 해석이 갈릴 수 있는 것 — R17 시장 레버리지(Penman 외 2007 은 B/M 통제 뒤 반대) · 거래량 추세 무리 G30(Q 가 방어를 '급증 = 급락 위험'으로 덮어씀) · RE05 · MA02/MA03(위기 종류에 따라) · L37(코드가 횡단면 수준).
 
 ## 7. 사고 기록
 

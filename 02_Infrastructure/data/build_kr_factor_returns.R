@@ -29,9 +29,10 @@ suppressPackageStartupMessages({ library(data.table); library(arrow); library(js
 KRF_BUILDER <- "build_kr_factor_returns.R v1.0"
 
 krf_root <- function() {
-  r <- Sys.getenv("QM_ROOT", "")
-  if (!nzchar(r)) r <- Sys.getenv("CLAUDE_PROJECT_DIR", "")
-  if (!nzchar(r)) stop("[krf] QM_ROOT · CLAUDE_PROJECT_DIR 미설정 — 루트를 지어내지 않는다")
+  # 순서 = CLAUDE_PROJECT_DIR → QM_ROOT (r-portability 금칙 ④ — ~/.Renviron 의 QM_ROOT 는 export 로 못 덮는다)
+  r <- Sys.getenv("CLAUDE_PROJECT_DIR", "")
+  if (!nzchar(r)) r <- Sys.getenv("QM_ROOT", "")
+  if (!nzchar(r)) stop("[krf] CLAUDE_PROJECT_DIR · QM_ROOT 미설정 — 루트를 지어내지 않는다")
   gsub("\\\\", "/", r)
 }
 

@@ -121,4 +121,5 @@ if (is.environment(EM[[1]])) chk("M1 쓸 것 없음 가지 제거(구판) → S1
 if (is.environment(EM[[2]])) { o <- run_case(EM[[2]]); chk("M2 옛 대상 행 확인 제거 → S2 · V1 이 걸린다", !s2(o) && !v1(o)) }
 if (is.environment(EM[[3]])) chk("M3 검사 수정 시각 비교 제거 → V2 가 걸린다", !v2(run_case(EM[[3]])))
 cat(sprintf("\n[test_rebuild_factor_subset] %d passed, %d failed\n", PASS, FAIL))
+cat(sprintf('{"test":"rebuild_factor_subset","pass":%d,"fail":%d,"total":%d}\n', PASS, FAIL, PASS + FAIL))  # 배터리 요약 줄(run_all_hooks.sh)
 if (FAIL > 0L) quit(save = "no", status = 1L)
