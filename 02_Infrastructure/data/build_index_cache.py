@@ -68,10 +68,14 @@ def _write_parquet(df, cols, path):
     for c in cols:
         # ★2026-09-18: provenance(BM_Src) 같은 문자열 열도 실을 수 있게 — 구판은 전부
         #   float64 로 캐스팅해서 문자열 열이 조용히 사라졌다.
-        if df[c].dtype == object:
-            arrs[c] = pa.array(df[c].astype(str))
-        else:
+        # ★2026-11-10: 판별을 '숫자형인가'로 바꾼다 — pandas 3(11-08 환경 최신화)은 문자열 열을 object 가 아니라
+        #   str(StringDtype)로 만든다. 구판 `dtype == object` 가 빗나가 격자 보존 모드의 BM_Src(np.where 로 만든
+        #   'quantiwise_iks200')를 float64 로 캐스팅하다 죽었다 — 11-10 00:17 벤치 갱신 rc=1 → 거래일 캘린더 11-06 정지 →
+        #   수급 목표일 11-06(no_advance) → RAWDATA 정지. object 열은 예전처럼 문자열로 싣는다(판 무관 같은 출력).
+        if pd.api.types.is_numeric_dtype(df[c]):
             arrs[c] = pa.array(df[c].astype("float64"))
+        else:
+            arrs[c] = pa.array(df[c].astype(str), type=pa.string())
     pq.write_table(pa.table(arrs), path)
 
 def main(update_rawdata=False, allow_grid_change=False, insert_dates=()):

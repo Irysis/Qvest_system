@@ -300,6 +300,55 @@ def _():
             f'사본 {len(short)}행(~{short["Date"].max().date()}) — 경로 인자가 실제로 쓰인다')
 
 
+# ── ⑦ 정본 writer 의 문자열 열 판별 — pandas 판과 무관해야 한다 (2026-11-10 실사고) ──────
+@case('BIC-W1 build_index_cache._write_parquet — 문자열 열(BM_Src)을 숫자로 캐스팅하지 않는다(pandas 3 str 형 포함)')
+def _():
+    """★실사고(2026-11-10 00:17): 11-08 환경 최신화로 venv 가 pandas 3 이 됐다. pandas 3 은 문자열 열을 object 가 아니라
+    str(StringDtype)로 만든다. writer 의 구 판별 `dtype == object` 가 빗나가 격자 보존 모드의 BM_Src(np.where 로 만든
+    'quantiwise_iks200')를 float64 로 캐스팅하다 죽었다 → 벤치 갱신 rc=1 → 거래일 캘린더 11-06 정지 → 수급 목표일 11-06
+    (no_advance) → RAWDATA 정지 · 캐시 신선도 CRITICAL. 새 거래일이 들어온 첫 밤에만 이 경로를 타서 환경 최신화 회귀
+    시험에 안 걸렸다. 이 칸은 ① 고친 writer 가 str · object · 숫자 열을 각각 string · string · double 로 싣고 값이 같은지
+    ② 구 판별로 되돌린 사본(소스 텍스트 치환)이 pandas 3 에서 같은 입력에 실제로 죽는지(검사 공허 방지)를 잰다.
+    """
+    import importlib
+    import pyarrow.parquet as pq
+    BIC = importlib.import_module('build_index_cache')
+    d = pd.to_datetime(['2026-11-05', '2026-11-06', '2026-11-09']).date
+    close = np.array([770.0, 772.5, 778.4])
+    df = pd.DataFrame({'Date': d, 'BM_Close': close})
+    df['BM_Ret'] = df['BM_Close'] / df['BM_Close'].shift(1) - 1
+    df['BM_Src'] = np.where(df['BM_Close'].notna(), 'quantiwise_iks200', 'legacy_cache_kept')   # 격자 보존 모드와 같은 생성
+    df['SRC_OBJ'] = pd.Series(['a', 'b', 'c'], dtype=object)                                   # 구판(pandas 2) 형태
+    cols = ['BM_Close', 'BM_Ret', 'BM_Src', 'SRC_OBJ']
+    with tempfile.TemporaryDirectory() as td:
+        p = Path(td) / 'bm.parquet'
+        BIC._write_parquet(df, cols, str(p))
+        t = pq.read_table(p)
+    ty = {f.name: str(f.type) for f in t.schema}
+    assert ty == {'Date': 'date32[day]', 'BM_Close': 'double', 'BM_Ret': 'double', 'BM_Src': 'string', 'SRC_OBJ': 'string'}, f'스키마 {ty}'
+    assert t.column('BM_Src').to_pylist() == ['quantiwise_iks200'] * 3 and t.column('SRC_OBJ').to_pylist() == ['a', 'b', 'c'], '문자열 값이 바뀌었다'
+    assert np.allclose(t.column('BM_Close').to_numpy(), close), '숫자 값이 바뀌었다'
+    # ② 돌연변이 — 구 판별(`dtype == object`)로 되돌린 사본. 치환 성사를 먼저 단정한다(빗나가면 대조가 공허해진다).
+    src = (ROOT / '02_Infrastructure' / 'data' / 'build_index_cache.py').read_text(encoding='utf-8')
+    new_pred = 'if pd.api.types.is_numeric_dtype(df[c]):'
+    assert src.count(new_pred) == 1, f'치환 대상 줄 {src.count(new_pred)}개 — writer 판별 줄이 바뀌었다(검사 갱신 필요)'
+    mut = src.replace(new_pred, 'if not (df[c].dtype == object):')
+    ns = {'__name__': 'bic_mutant'}
+    exec(compile(mut, 'build_index_cache_mutant', 'exec'), ns)
+    str_is_object = df['BM_Src'].dtype == object
+    if str_is_object:
+        return f'pandas {pd.__version__}: str 열이 object 라 구 판별도 통과 — 고친 writer 스키마 정상(돌연변이 대조는 pandas 3 에서만 의미)'
+    with tempfile.TemporaryDirectory() as td:
+        try:
+            ns['_write_parquet'](df, cols, str(Path(td) / 'm.parquet'))
+            died = False
+        except ValueError:
+            died = True
+    assert died, '구 판별 사본이 pandas 3 str 열에서 죽지 않았다 — 이 칸이 실사고를 재현하지 못한다'
+    return (f'pandas {pd.__version__}: BM_Src dtype={df["BM_Src"].dtype} — 고친 writer = string 그대로 · '
+            f'구 판별 사본 = ValueError(11-10 실사고 재현)')
+
+
 def main() -> int:
     print('=' * 78)
     print('test_benchmark_axis_rebuild — 정본 재구축 양방향 검사')

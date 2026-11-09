@@ -1858,6 +1858,9 @@ SUITES=(
   #   판정 · 자동 확장 금지)에 맞춰 '등록부 출처 arm ⊆ 디렉터리' 판정으로 고쳤다(반대 방향 = 빌더 재현 불가만 결함).
   "08_Tests/contracts/test_strategy_role.R"
   "08_Tests/data/test_benchmark_axis_rebuild.py"
+  # 2026-11-10: 국민연금 월 덧붙이기(refresh_nps) — 현재 파일 포함 · 내용 달 해석 + 캐시 · 기존 행 불변 · 스키마 · 같은 달 판 2개 ·
+  #   라벨/자료 공간 불일치 + 돌연변이 6(오프라인 · 포털 가짜)
+  "08_Tests/data/test_nps_refresh_append.py"
   "08_Tests/data/test_incremental_update_file_guards.R"
   # 2026-11-06: 퀀티 적재 관문(F3~F5 — 지표별 받은 창 교체 · 지평선 · B6 · 날짜별 채움 · 명시 디스패치) 위반 주입 + 뮤테이션
   "08_Tests/data/test_incremental_update_gates.R"

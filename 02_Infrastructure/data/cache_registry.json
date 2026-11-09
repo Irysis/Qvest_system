@@ -387,14 +387,14 @@
       "path": ".cache/flow_features_daily.parquet",
       "producer": "04_Research/strategies/flow_concentration_ml/01_flow_features.R",
       "entry_fn": "(source)",
-      "schedule": "weekly",
+      "schedule": "on_demand",
       "date_col": "Date",
-      "max_lag_days": 90,
+      "max_lag_days": null,
       "depends_on": [
         ".cache/investor_stock/"
       ],
       "tier": 3,
-      "_note": "도훈 audit — research output, weekly catch-up. investor_stock source data ~60d lag = max_lag 14 → 90 (2026-05-24 정정). 2026-07-17 배관수리: incr_investor가 investor_all만 갱신하고 분리 파일을 방치해 113d stale — 분리/wide 동반 재생성 배선 후 재빌드"
+      "_note": "2026-11-10 재분류 weekly → on_demand · max_lag 90 → null(신선도 경보 STALE_WARN lag 132 — 텔레그램 Cache Freshness Alert). 근거(실측): ① 'weekly' 를 실행하는 실행기가 없다 — cache_registry_run() 을 부르는 예약 스크립트 0(정의 · cache_freshness_audit 의 source 뿐) · 생산자 01_flow_features.R 은 수동 실행 전용(마지막 빌드 2026-07-17 배관수리 재빌드) ② 소비자 = 리서치뿐 — bearish_forecast_v1 01_feature_assembler.R(H6) · bearish_forecast_v2_alt_data 03_orthogonality_audit.R · flow_concentration_ml/02_flow_model.R · 동결 QEPM WT 사료. 일일 라이브 경로(P3 약세 예측 v3 · 아침 브리핑)는 이 파일을 읽지 않는다(grep). ⇒ 소비 시점 생성물(ic_matrix_expanding 07-14 재분류와 같은 취지 — on_demand 에 stale 개념 부적용). 다시 쓸 때 = 01_flow_features.R 을 먼저 돌린다(입력 .cache/investor_stock/ 은 일일 갱신 중). 라이브 소비자가 생기면 weekly + 실행기 배선으로 되돌린다. (구 메모: 도훈 audit — research output, weekly catch-up · investor_stock ~60d lag → max_lag 14 → 90(2026-05-24) · 2026-07-17 배관수리: incr_investor 가 investor_all 만 갱신하고 분리 파일을 방치해 113d stale — 분리/wide 동반 재생성 배선 후 재빌드)"
     },
     {
       "path": ".cache/ecos_bond_rates.parquet",
