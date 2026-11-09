@@ -80,6 +80,33 @@ FACTOR_REG_PATH <- file.path(FACTOR_DB_DIR, "factor_registry.json")
   .fdc_registry
 }
 
+# ---- 일간 · 월간 저장 대응표 (2026-11-09 · decision_register FACTOR-DIRECTION-STORAGE-REPAIR-20261109) ----
+#   load_daily_factors 가 월간 값으로 잰 부호(IC · 등록부)를 일간 값에 옮길 때 곱한다. 같은 이름의 일간 값이 월간 값과
+#   같은지(same) · 부호만 반대인지(negated) · 다른 양인지(mismatch)를 월말마다 대조한 표다.
+#   생성 = python -I 02_Infrastructure/factor_db/daily_monthly_parity.py · 경로 바꾸기(검사용) = options(qvest.daily_parity_path = ...).
+.fdc_parity <- new.env(parent = emptyenv())
+
+.daily_parity_path <- function() {
+  getOption("qvest.daily_parity_path",
+            file.path(dirname(CACHE_DIR), "06_Registry", "factor_daily_monthly_parity.json"))
+}
+
+.load_daily_parity <- function() {
+  p <- .daily_parity_path()
+  if (!file.exists(p)) {
+    stop("[load_daily_factors] 일간 · 월간 저장 대응표 없음: ", p,
+         " — python -I 02_Infrastructure/factor_db/daily_monthly_parity.py 로 만든다(정렬은 이 표 없이 하지 않는다)")
+  }
+  key <- paste0(p, "|", as.numeric(file.info(p)$mtime))
+  if (!is.null(.fdc_parity[[key]])) return(.fdc_parity[[key]])
+  fs <- fromJSON(p, simplifyVector = FALSE)$factors
+  if (!length(fs)) stop("[load_daily_factors] 대응표에 팩터가 없다: ", p)
+  tb <- data.table(Factor_Name = names(fs),
+                   parity = vapply(fs, function(x) as.character(x$status %||% NA_character_)[1], character(1)))
+  assign(key, tb, envir = .fdc_parity)
+  tb
+}
+
 # ---- de-dup 소비 배선 (2026-08-09) --------------------------------------------
 # registry 의 dedup 선언을 **행동으로** 잇는 지점. 라벨만 있고 소비자가 0이면
 # 선언된 중복은 선별·Ω 추정에서 계속 이중 투표한다(2026-08-09 실측: 표본 6월
@@ -156,7 +183,8 @@ FACTOR_REG_PATH <- file.path(FACTOR_DB_DIR, "factor_registry.json")
   # v2.1: col_select — N_Stocks 미사용. any_of()로 Usable_Date 부재 legacy 파일 호환 유지.
   .fdc_ic_hist <<- as.data.table(read_parquet(
     FACTOR_IC_MONTHLY_PATH,
-    col_select = tidyselect::any_of(c("Factor_Name", "IC", "Date", "Usable_Date"))
+    col_select = tidyselect::any_of(c("Factor_Name", "IC", "Date", "Usable_Date")),
+    mmap = FALSE   # Windows: 매핑이 열려 있으면 IC 재계산의 덮어쓰기가 막힌다(오류 1224 · 2026-11-09)
   ))
   .fdc_ic_hist[, Date := as.Date(Date)]
   # v2.0 (L-168): ensure Usable_Date is also Date type for consistent filtering
@@ -524,44 +552,89 @@ load_daily_factors <- function(ym = NULL, date_range = NULL, factors = NULL,
     dt <- dt[Date <= pit_max]
   }
 
-  # ---- C13 direction alignment (월간 ic_sign 경로 재사용) ----
+  # ---- C13 방향 정렬 (2026-11-09 수리 · decision_register FACTOR-DIRECTION-STORAGE-REPAIR-20261109) ----
+  #   ① 부호는 날마다 as-of 로 정한다 — 그 날 쓸 수 있던 IC(Usable_Date ≤ 그 날)의 부호. 구판은 요청 구간 끝(pit_max) 하나로
+  #      전 구간의 부호를 정해, 여러 달을 한 번에 읽으면 앞 날짜가 나중에야 알 수 있는 IC 로 정렬됐다(C1 · C14).
+  #   ② 월간 값으로 잰 부호를 일간 값에 옮길 때 일간 · 월간 저장 대응표(06_Registry/factor_daily_monthly_parity.json ·
+  #      생성 = factor_db/daily_monthly_parity.py)를 곱한다: same = 그대로 · negated = 부호 반대 · mismatch(같은 이름 다른 값) ·
+  #      no_overlap · 표에 없음 = 정렬 거부(틀린 정렬 대신 멈춤 · factors 를 명시하면 오류 · 전 팩터 요청이면 그 열을 뺀다).
+  #      constant · constant_same · daily_only(횡단면 상수 · 월간 짝 없음)는 옮길 부호가 없어 등록부 · 기본 부호 그대로(경고).
+  #   등록부 방향(대체 · registry 모드)은 저장값 기준이다(등록부 direction_basis = stored_raw_value).
   ic_sign_map <- NULL
   if (isTRUE(align_direction) && nrow(dt) > 0L) {
-    ic_dir <- if (identical(direction, "ic_asof")) .load_ic_direction_cached(pit_max, min_ic_months = 36L) else NULL
+    par <- .load_daily_parity()
+    pm <- merge(data.table(Factor_Name = sel_facs), par, by = "Factor_Name", all.x = TRUE)
+    pm[is.na(parity), parity := "absent"]
+    refuse <- pm[parity %in% c("mismatch", "no_overlap", "absent"), Factor_Name]
+    if (length(refuse)) {
+      msg <- sprintf("일간 값이 월간의 같은 이름 값과 같지 않아(또는 대응표에 없어) 정렬할 수 없는 팩터 %d개: %s",
+                     length(refuse), paste(sprintf("%s(%s)", refuse, pm$parity[match(refuse, pm$Factor_Name)]), collapse = ", "))
+      if (!is.null(factors)) {
+        stop("[load_daily_factors] ", msg,
+             " — 원값이 필요하면 align_direction = FALSE · 정렬이 필요하면 일간 빌더 정의를 월간에 맞추고 대응표를 다시 만든다(daily_monthly_parity.py)")
+      }
+      cat("[load_daily_factors] WARN: ", msg, " — 열을 뺀다(attr dropped_parity)\n", sep = "")
+      dt[, (refuse) := NULL]
+      sel_facs <- setdiff(sel_facs, refuse)
+      pm <- pm[!Factor_Name %in% refuse]
+    }
+    pm[, mult := fifelse(parity == "negated", -1L, 1L)]
     registry <- .load_registry()
-    reg_sign <- if (!is.null(registry) && length(registry)) {
-      data.table(
-        Factor_Name = names(registry),
-        sign = sapply(registry, function(x) {
-          d <- x$direction %||% "higher_better"
-          if (identical(d, "lower_better")) -1L else 1L
-        }),
-        src = "registry"
-      )
-    } else NULL
+    reg_sign <- if (!is.null(registry) && length(registry)) data.table(
+      Factor_Name = names(registry),
+      reg = vapply(registry, function(x) if (identical(x$direction %||% "higher_better", "lower_better")) -1L else 1L, integer(1))
+    ) else data.table(Factor_Name = character(0), reg = integer(0))
 
-    ic_sign_map <- data.table(Factor_Name = sel_facs, sign = 1L, src = "default")
-    if (!is.null(reg_sign)) {
-      ic_sign_map[reg_sign, on = "Factor_Name", `:=`(sign = i.sign, src = i.src)]
+    days <- sort(unique(dt$Date))
+    if (identical(direction, "ic_asof")) {
+      ih <- .load_ic_history()
+      ud <- if ("Usable_Date" %in% names(ih)) sort(unique(ih$Usable_Date[!is.na(ih$Usable_Date)])) else as.Date(character(0))
+      k <- findInterval(as.numeric(days), as.numeric(ud))
+      seg <- data.table(Date = days, asof = ud[ifelse(k > 0L, k, NA_integer_)])
+    } else {
+      seg <- data.table(Date = days, asof = as.Date(NA))
     }
-    if (!is.null(ic_dir) && nrow(ic_dir[!is.na(ic_sign)])) {
-      ic_sign_map[ic_dir[!is.na(ic_sign)], on = "Factor_Name",
-                  `:=`(sign = i.ic_sign, src = "ic")]
+    maps <- rbindlist(lapply(unique(seg$asof), function(a) {
+      m <- copy(pm[, .(Factor_Name, parity, mult)])
+      m[reg_sign, on = "Factor_Name", base := i.reg]
+      m[, src := fifelse(is.na(base), "default", "registry")]
+      m[is.na(base), base := 1L]
+      if (!is.na(a)) {
+        ic <- .load_ic_direction_cached(a, min_ic_months = 36L)
+        if (!is.null(ic) && nrow(ic[!is.na(ic_sign)])) {
+          m[ic[!is.na(ic_sign)], on = "Factor_Name", `:=`(base = i.ic_sign, src = "ic")]
+        }
+      }
+      m[, `:=`(asof = a, sign = base * mult)]
+      m
+    }))
+    dt[seg, .fdc_asof := i.asof, on = "Date"]
+    n_flip <- 0L
+    for (f in sel_facs) {
+      mf <- maps[Factor_Name == f]
+      s <- mf$sign[match(dt$.fdc_asof, mf$asof)]
+      if (any(s == -1L, na.rm = TRUE)) {
+        set(dt, j = f, value = dt[[f]] * s)
+        n_flip <- n_flip + 1L
+      }
     }
-    flip <- ic_sign_map[sign == -1L, Factor_Name]
-    if (length(flip)) {
-      dt[, (flip) := lapply(.SD, function(x) -x), .SDcols = flip]
+    dt[, .fdc_asof := NULL]
+    ic_sign_map <- maps
+    la <- if (all(is.na(seg$asof))) as.Date(NA) else max(seg$asof, na.rm = TRUE)
+    last <- if (is.na(la)) maps[is.na(asof)] else maps[!is.na(asof) & asof == la]
+    cat(sprintf(paste0("[load_daily_factors] C13 정렬(as-of 날마다 · 부호 구간 %d개 · 마지막 as-of %s): IC=%d / registry=%d / default=%d · ",
+                       "대응표 same=%d negated=%d 무방향=%d | 부호를 바꾼 열 %d\n"),
+                uniqueN(seg$asof), if (all(is.na(seg$asof))) "없음(등록부)" else format(max(seg$asof, na.rm = TRUE)),
+                last[src == "ic", .N], last[src == "registry", .N], last[src == "default", .N],
+                pm[parity %in% c("same"), .N], pm[parity == "negated", .N],
+                pm[parity %in% c("constant", "constant_same", "daily_only"), .N], n_flip))
+    nod <- pm[parity %in% c("constant", "daily_only"), Factor_Name]
+    if (length(nod)) {
+      cat(sprintf("[load_daily_factors] WARN: 월간 짝과 순위 대조가 안 되는 열 %d개(횡단면 상수 · 월간 짝 없음) — 등록부 · 기본 부호 그대로: %s%s\n",
+                  length(nod), paste(head(nod, 8L), collapse = ", "),
+                  if (length(nod) > 8L) sprintf(" ... (+%d)", length(nod) - 8L) else ""))
     }
-    cat(sprintf(
-      "[load_daily_factors] C13 정렬(월간 ic_sign 재사용, pit_max=%s): IC=%d / registry=%d / default=%d | flip=%d\n",
-      pit_max, ic_sign_map[src == "ic", .N], ic_sign_map[src == "registry", .N],
-      ic_sign_map[src == "default", .N], length(flip)))
-    if (ic_sign_map[src == "default", .N] > 0L) {
-      .dnames <- ic_sign_map[src == "default", Factor_Name]
-      cat(sprintf("[load_daily_factors] WARN: IC/registry 부재 %d열 — sign=+1 가정 (PTR/RE_* 시장레벨 열 포함 가능): %s%s\n",
-                  length(.dnames), paste(head(.dnames, 8L), collapse = ", "),
-                  if (length(.dnames) > 8L) sprintf(" ... (+%d)", length(.dnames) - 8L) else ""))
-    }
+    if (length(refuse)) setattr(dt, "dropped_parity", refuse)
   }
 
   # ---- Attrs ----
