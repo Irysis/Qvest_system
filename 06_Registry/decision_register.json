@@ -3946,7 +3946,29 @@
       "registered_at": "2026-11-09T12:09:18+0900",
       "recorded_by": "Q(세션 fe712ea2)",
       "evidence": "도훈 채팅 2026-11-09 — '보충 끝나면 전체 재빌드해줘'"
+    },
+    {
+      "id": "REPLICATION-LS-PAPER-BHR-20261109",
+      "title": "충실구현 롱숏 다리 결합 — 보유 기간 매수 후 보유 수익의 차를 보고하는 논문은 논문식(bhr)으로 잰다",
+      "status": "resolved",
+      "opened_at": "2026-11-09T12:32:51+0900",
+      "options": [
+        "A 논문식 — 하네스에 ls_combination = 'bhr' 선택지 추가(기본 daily 유지 · 기존 측정 재현 불변) · v2 전환 뒤 F-Score 재측정부터 적용",
+        "B 지금 하네스(매일 Rg = GL·L − GS·S) 유지 · 차이는 보고서에 신고만"
+      ],
+      "recommendation": "A",
+      "default_until_decided": "B(현행 매일 결합)",
+      "blocks": [],
+      "owner": "dohoon",
+      "source": "11-09 F-Score(Piotroski 2000) 2026 포트폴리오 분석 — 숏 1종목(SK디앤디) 창에서 하네스 매일 결합 +82.2% vs 논문식 +51.1% (replication_harness.R:339 · 04_Research/strategies/RP_SESSION_piotroski2000_v2/analysis_2026/ · 메모리 project-replication-harness-ls-daily-leg-combination-20261109)",
+      "decision": "A — 논문식. ① run_replication_simulation(ls_combination = 'daily' | 'bhr') · 기본 daily(구판 비트 동일 · auth 키 추가 0) · bhr = 보유창 안 달러 매수 후 보유 장부 N = 1 + GL(Π(1+L)−1) − GS(Π(1+S)−1) · 창 끝 = GL·BHR_L − GS·BHR_S · N ≤ 0 = 자본 소진(창 나머지 0 · n_ruin_windows). ② run_paper_replication 은 portfolio_spec$ls_combination 으로 받는다 · bhr 이면 measurement_regime 에 ls_combination · n_ruin_windows 기록(Judge 재현 인자). ③ 적용 범위 = 보유 기간 매수 후 보유 수익(의 차)을 보고하는 논문(연 보유 등) — 측정 전에 FIDELITY 에 신고 · 월간 리밸 논문은 daily 유지(측정 뒤 고르기 금지). ④ 첫 적용 = v2 전환 뒤 F-Score 재측정. 시험 = 08_Tests/contracts/test_replication_ls_combination.R(17 · run_all_hooks.sh 편입).",
+      "decided_by": "dohoon",
+      "decided_at": "2026-11-09T12:32:52+0900",
+      "note": "기존 시험 회귀 없음(하네스 46 · 패리티 6 · 주간 23). 골든 재현(test_replication_exec_golden) 4 FAIL 은 변경 전 하네스(HEAD)로도 같은 4건 · 같은 수치 — 데이터 판 차이로 기존 문제(별도).",
+      "registered_at": "2026-11-09T12:32:51+0900",
+      "recorded_by": "Q(세션 fe712ea2)",
+      "evidence": "도훈 채팅 2026-11-09 — '논문식으로 진행'"
     }
   ],
-  "last_updated": "2026-11-09T12:09:20+0900"
+  "last_updated": "2026-11-09T12:32:52+0900"
 }

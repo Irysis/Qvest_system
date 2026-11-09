@@ -266,6 +266,9 @@ SUITES=(
   # 2026-10-13 MC4(D16 · 주간 리밸런싱): 하네스 주간 경로 — 월간 구판 비트 동일(git HEAD 기준본) · 일간→주간 · 구판 침묵 붕괴 대조 ·
   #   거래량 0 제외 · PIT 섭동 · 비용 · 러너 FIDELITY 자동 신고 / C5 컷오프 주간 일반화(holding_window_cutoff · 월말 동치 · 월 규칙 오용 차단)
   "08_Tests/contracts/test_replication_weekly.R"
+  # 2026-11-09 REPLICATION-LS-PAPER-BHR(도훈 '논문식으로 진행'): 다리 결합 ls_combination — bhr 알려진 사례(1.21 vs daily 0.16) ·
+  #   롱만 항등 · 다리 여러 종목 · 창 두 개 · 자본 소진 · 허용 밖 멈춤 · 미지정 = daily · bhr 가지 끈 돌연변이 red · 러너 배선(한 호출 삭제 red)
+  "08_Tests/contracts/test_replication_ls_combination.R"
   "08_Tests/validation/test_overlay_window_cutoff.R"
   # 2026-10-13 MC1 · MC3(D11 · D15): 측정 축 epoch 계약 — 설정 · t−1 거래대금 · 위생 멤버십 · PIT 섭동 · 주입(원 플래그 보존 · 구 축 무변경) ·
   #   fail-closed · 표준 필터 리팩터 동치 · 커버리지 기록

@@ -12,6 +12,13 @@
 #   - leg 결합(GL·L − GS·S)·월간 집계(apply.monthly + Return.cumulative)는
 #     driver_ls_generic.R (2026-06-06) 이 확립한 선례를 그대로 따른다.
 #   - NAV 누적 cumprod 는 build_benchmark_returns 와 동일 관용(수익 합성이 아니라 누적).
+#   ★다리 결합 ls_combination (2026-11-09 · 도훈 '논문식으로 진행' · decision_register REPLICATION-LS-PAPER-BHR-20261109):
+#   - "daily"(기본 · 구판 비트 동일): 매일 Rg = GL·L − GS·S — 다리 노출을 매일 NAV 의 GL · GS 로 되돌린다.
+#   - "bhr"(논문식): 보유창 안에서 달러 매수 후 보유 장부 N_t = 1 + GL·(Π(1+L) − 1) − GS·(Π(1+S) − 1) ·
+#     Rg_t = N_t / N_{t−1} − 1 — 창 끝 수익 = GL·BHR_L − GS·BHR_S(Piotroski 2000 표 3 처럼 보유 기간 매수 후 보유
+#     수익의 차를 보고하는 논문). 다리 안 계산(Return.portfolio)은 같다. N ≤ 0(숏 급등으로 자본 소진)이면 그 창의
+#     나머지를 0 으로 두고 diagnostics$n_ruin_windows 에 센다. 롱만 · GL = 1 이면 daily 와 같다(시험 고정).
+#     F-Score 2026 실측: 숏 1종목 창에서 daily +82% vs 논문식 +51%(메모리 project-replication-harness-ls-daily-leg-combination-20261109).
 #
 # ★집행 규약 exec_price (2026-09-24 · 플랜 P0-04 · 감사 D4-01 critical ·
 #   결정 레지스터 06_Registry/decision_register.json id=EXEC-PRICE — 도훈 2026-09-23
@@ -211,9 +218,14 @@ run_replication_simulation <- function(RAWDATA, BM_DT, WEIGHTS,
                                        commission = 0.0015,
                                        start_date = "2005-01-01",
                                        exec_price = NULL,
-                                       rebalance = "auto") {
+                                       rebalance = "auto",
+                                       ls_combination = "daily") {
   `%||%` <- function(a, b) if (is.null(a) || length(a) == 0L || (length(a) == 1L && is.na(a))) b else a
   exec_price <- rep_resolve_exec_price(exec_price)
+  ls_combination <- as.character(ls_combination %||% "daily")[1]
+  if (!ls_combination %in% c("daily", "bhr"))
+    stop(sprintf("[replication] ls_combination 은 daily | bhr 만 받는다(받은 값: %s)", ls_combination))
+  n_ruin <- 0L
   stopifnot(is.data.table(WEIGHTS), all(c("Date", "Ticker", "Weight") %in% names(WEIGHTS)))
   W <- copy(WEIGHTS)
   if (!inherits(W$Date, "Date")) W[, Date := as.Date(Date)]
@@ -335,8 +347,19 @@ run_replication_simulation <- function(RAWDATA, BM_DT, WEIGHTS,
     dd <- merge(dd, if (!is.null(S)) S$ret[, .(Date, Sr = Ret)] else data.table(Date = hold_pool, Sr = 0),
                 by = "Date", all.x = TRUE)
     dd[!is.finite(Lr), Lr := 0]; dd[!is.finite(Sr), Sr := 0]
-    # 결합 = GL·L − GS·S (driver_ls_generic 선례 — leg 산출은 Return.portfolio, 결합은 선형)
-    dd[, Rg := GL * Lr - GS * Sr]
+    if (identical(ls_combination, "bhr")) {
+      # 논문식 — 창 안 달러 매수 후 보유 장부(머리 주석 ★다리 결합). 누적은 창 안에서만(창 사이는 NAV cumprod 가 잇는다).
+      setorder(dd, Date)
+      dd[, N := 1 + GL * (cumprod(1 + Lr) - 1) - GS * (cumprod(1 + Sr) - 1)]
+      .ru <- which(dd$N <= 0)
+      if (length(.ru)) { dd[.ru[1]:.N, N := 0]; n_ruin <- n_ruin + 1L }
+      .np <- c(1, head(dd$N, -1L))
+      dd[, Rg := ifelse(.np > 0, N / .np - 1, 0)]
+      dd[, N := NULL]
+    } else {
+      # 결합 = GL·L − GS·S (driver_ls_generic 선례 — leg 산출은 Return.portfolio, 결합은 선형)
+      dd[, Rg := GL * Lr - GS * Sr]
+    }
 
     # 비용: 리밸 1회, Σ|Δw_target| × commission (부재 종목 = 0 — 신규 편입/전량 청산 포함)
     cur_w <- setNames(md$Weight, md$Ticker)
@@ -417,11 +440,13 @@ run_replication_simulation <- function(RAWDATA, BM_DT, WEIGHTS,
                             open_t1 = "exec_date intraday multiplicative (Rn = (1-c)(1+Rg)-1)"),
       n_overlap_days = n_overlap,
       open_guard = if (identical(exec_price, "open_t1")) og else NULL,
-      rebalance = rb_diag                      # MC4 — 주기 · 집행 규칙 · (주간) 신호 정리 회계
+      rebalance = rb_diag,                     # MC4 — 주기 · 집행 규칙 · (주간) 신호 정리 회계
+      ls_combination = ls_combination,         # 다리 결합(daily | bhr) — 11-09 REPLICATION-LS-PAPER-BHR
+      n_ruin_windows = n_ruin
     ),
     strategy_gross_xts = xts(D$Rg, order.by = D$Date),
     cost_model_version = rep_cost_model_version(exec_price)
   )
 }
 
-cat("[replication_harness.R] Loaded (v10 · exec_price 인자화 2026-09-24 · 주간 경로 MC4 2026-10-13) — run_replication_simulation(RAWDATA, BM_DT, WEIGHTS, commission, start_date, exec_price, rebalance)\n")
+cat("[replication_harness.R] Loaded (v10 · exec_price 인자화 2026-09-24 · 주간 경로 MC4 2026-10-13) — run_replication_simulation(RAWDATA, BM_DT, WEIGHTS, commission, start_date, exec_price, rebalance, ls_combination)\n")

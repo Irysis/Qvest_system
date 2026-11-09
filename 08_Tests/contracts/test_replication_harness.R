@@ -477,7 +477,8 @@ if (.wiring_ok(rp_exprs)) ok("⑯ 러너: sim_paper·sim_grade 가 exec_price �
   ng("⑯ 러너 배선 이상 — sim 호출이 exec_price 를 안 넘기거나 spec 을 직접 조립")
 rp_lines <- readLines(rp_src, warn = FALSE, encoding = "UTF-8")
 mut16 <- sub("commission = 0.0015, start_date = start_date,", "commission = 0.0015, start_date = start_date)", rp_lines, fixed = TRUE)
-mut16 <- mut16[!grepl("^\\s*exec_price = exec_price\\)\\s*$", mut16)]
+## (11-09) sim_grade 줄 끝에 ls_combination 인자가 붙었다(REPLICATION-LS-PAPER-BHR) — 그 꼴도 지운다(안 지우면 고아 줄로 parse 실패 = 위양성 FAIL)
+mut16 <- mut16[!grepl("^\\s*exec_price = exec_price(, ls_combination = ls_comb)?\\)\\s*$", mut16)]
 if (!identical(mut16, rp_lines)) {
   tf <- tempfile(fileext = ".R"); writeLines(mut16, tf, useBytes = TRUE)
   mex <- tryCatch(parse(tf, encoding = "UTF-8", keep.source = FALSE), error = function(e) NULL); unlink(tf)

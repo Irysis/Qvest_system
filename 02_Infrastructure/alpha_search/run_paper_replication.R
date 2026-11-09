@@ -484,6 +484,10 @@ run_paper_replication <- function(strategy_name, strategy_idea, factor_engine_pa
   exec_price_basis <- if (is.null(exec_price)) "constraint_defaults.json::execution.exec_price" else "argument"
   exec_price <- rep_resolve_exec_price(exec_price)
   exec_price_paper <- rep_resolve_exec_price(portfolio_spec$exec_price %||% exec_price)
+  # 다리 결합(2026-11-09 · REPLICATION-LS-PAPER-BHR-20261109): portfolio_spec$ls_combination = "bhr" 이면 논문식(보유창 매수 후 보유
+  #   수익의 차) · 기본 "daily" = 구판 비트 동일(auth 키 추가 0). 허용 밖 값이면 여기서 멈춘다(fail-closed).
+  ls_comb <- as.character(portfolio_spec$ls_combination %||% "daily")[1]
+  if (!ls_comb %in% c("daily", "bhr")) stop(sprintf("[replication] portfolio_spec$ls_combination 은 daily | bhr 만(받은 값: %s)", ls_comb))
   # 근거 논문 — 충실구현은 필수(논문을 재현하는 단계에서 논문을 뺄 수 없다),
   #   강화 레인은 2026-09-03 해제(도훈 지시). 호출자가 require_source_paper=FALSE 로 가른다.
   if (isTRUE(require_source_paper) &&
@@ -700,12 +704,12 @@ run_paper_replication <- function(strategy_name, strategy_idea, factor_engine_pa
   comm_paper <- commission_paper %||% 0
   sim_paper <- run_replication_simulation(RAWDATA, BM_DT, WEIGHTS,
                                           commission = comm_paper, start_date = start_date,
-                                          exec_price = exec_price_paper)
-  # 재사용은 비용·집행 규약이 **둘 다** 같을 때만(규약이 다르면 같은 sim 이 아니다)
+                                          exec_price = exec_price_paper, ls_combination = ls_comb)
+  # 재사용은 비용·집행 규약이 **둘 다** 같을 때만(규약이 다르면 같은 sim 이 아니다) · 다리 결합은 두 판 같은 값
   sim_grade <- if (identical(comm_paper, 0.0015) && identical(exec_price_paper, exec_price)) sim_paper else
     run_replication_simulation(RAWDATA, BM_DT, WEIGHTS,
                                commission = 0.0015, start_date = start_date,
-                               exec_price = exec_price)
+                               exec_price = exec_price, ls_combination = ls_comb)
   paper_sum <- .rp_paper_summary(sim_paper)
   cat(sprintf("[replication] 논문 기준(비용 %.0fbps · 집행 %s): CAGR %.1f%% · SR %.2f · MDD %.1f%% · %d개월\n",
               comm_paper * 1e4, sim_paper$diagnostics$exec_price, paper_sum$cagr * 100, paper_sum$sharpe,
@@ -819,7 +823,9 @@ run_paper_replication <- function(strategy_name, strategy_idea, factor_engine_pa
       cost_model_version = sim_grade$cost_model_version,
       harness_md5 = tryCatch(unname(as.character(tools::md5sum(file.path(.RP_INFRA, "replication", "replication_harness.R")))),
                              error = function(e) NA_character_)), data_vintage,
-      if (length(engine_vars)) list(engine_vars = engine_vars))),
+      if (length(engine_vars)) list(engine_vars = engine_vars),
+      if (!identical(ls_comb, "daily")) list(ls_combination = sim_grade$diagnostics$ls_combination %||% ls_comb,
+                                             n_ruin_windows = sim_grade$diagnostics$n_ruin_windows %||% NA_integer_))),
     ## ★essence_score 가 산출한 겼을 **떨어뜨리지 않는다** (도훈 2026-09-04).
     ##   이 쓰기는 반환 list 를 통째로 실지 않고 필드를 골라 쓴다. 그래서 새로
     ##   붙인 rolling_grade / defensive_score / grade_base 가 산출물에서 사라졌다 —
