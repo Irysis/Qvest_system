@@ -364,6 +364,10 @@ SUITES=(
   #   A축이 동결·코호트 결손을 주입하고, D축이 판정부를 무력화해 A가 통과로 뒤집히는지
   #   대조한다 — "경보 0건"이 건강인지 계측 사망인지는 그렇게만 갈린다.
   "08_Tests/data/test_cache_content_reach.R"
+  # 2026-11-09 추가: 한국 FF 팩터 수익 빌더(data/build_kr_factor_returns.R) 계약 — 합성 30종목 오라클 대조
+  #   (PIT BE · 비멤버 · 상한 가치가중 · 월간 복리 · RF 전 거래일 · 완결 월) + 위반 주입 4종(PIT 거름 · RF 당일 ·
+  #   당일 시총 가중 · 상한 제거). 구판 파일은 HML · RMW · CMA 를 월말 하루 수익으로 만들고 RF = 0 이었다.
+  "08_Tests/data/test_kr_factor_returns.R"
   # 2026-07-26 추가(R1): DART reprt_code ↔ 분기 매핑 위반 주입.
   #   원 결함 = REPRT_MAP 이 11014→q1 / 11013→q3 로 뒤집혀 3분기(11월 접수) 보고서가
   #   Factor_Date 5/15 를 받음 → 중앙 시차 −183일 · look-ahead 99.8%(PIT C4).

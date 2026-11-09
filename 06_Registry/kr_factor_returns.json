@@ -1,0 +1,80 @@
+{
+  "schema": "kr_factor_returns_cfg_v1",
+  "_doc": "한국 Fama-French 팩터 수익(일간 · 월간) + 파마-맥베스 통제 특성(월간) 빌더 설정 정본 — 02_Infrastructure/data/build_kr_factor_returns.R 이 읽는다. 2026-11-09 도훈 '재빌드 뒤 갱신해주고 팩터조정알파 및 파마-맥베스 분석에 쓰이는 기초데이터도 데일리로 최신화'. 모든 값에 출처를 단다(하드코딩 금지). 구판(.cache/kr_factor_returns_v2.parquet · 99_Archive/reorg_20261014/04_Research/worktask_scratch/WT-D20260425_009/step0_kr_ff5_backfill.R)은 HML · RMW · CMA 를 월말 하루 수익(RAWDATA Ret = 일간)으로 만들었고 RF = 0 이었다 — 이 설정이 그것을 대체한다.",
+  "version": "krff_v1.0",
+  "start_date": "2000-01-01",
+  "start_date_source": "측정 축 epoch 시작(constraint_defaults.json::measurement_axis · D15 · 2000-01-01~)과 같게 둔다",
+  "lookback_start": "1998-11-01",
+  "lookback_start_source": "모멘텀 t−12 월말 종가 + 20일 거래대금(t−1) 창이 2000-01 첫 구성에 닿도록 13개월 + 여유",
+  "universe": {
+    "rule": "measurement_axis_active_epoch",
+    "_source": "요인을 전략이 사는 같은 유니버스에서 만든다 — contracts/measurement_axis.R::ma_membership(위생 · 20일 거래대금 t−1 · 동전주 바닥). 등급 비교가 같은 epoch 안에서만인 것처럼 요인 수익도 epoch 에 묶인다(meta.epoch)"
+  },
+  "fundamentals": {
+    "table": ".cache/fundamental_v2/fund_v2_quarterly.parquet",
+    "requires_active_source": "v2",
+    "registry": "06_Registry/fundamental_source.json",
+    "_source": "퀀티 재무 DB v2 1단계 표 — 분기 이산 값 + Factor_Date(그 값을 쓸 수 있는 날 · 날짜 순서 계약). 병합 표는 2015 전후로 분기/연간 행이 갈려 정의가 이어지지 않는다(2000~2014 = Q 행 · 2015~ = A 행)"
+  },
+  "rf": {
+    "bond_path": ".cache/ecos_bond_rates.parquet",
+    "series": "KR_CD91",
+    "daily_rule": "rf_d = (1 + y_{d−1}/100)^(1/252) − 1 · y_{d−1} = 전 거래일까지 마지막 고시값",
+    "_source": "CD(91일) ECOS 817Y002/010502000 — validation/sharpe_standard.R::load_kr_riskfree 와 같은 계열(decision_register SHARPE-STANDARD-RF-CD91-20261106) · 전 거래일 금리를 쓴다(그날 아침에 아는 값)"
+  },
+  "annual_sort": {
+    "formation_month": 6,
+    "hold_months": 12,
+    "size_rule": "big_top_share",
+    "big_share": 0.90,
+    "char_breakpoints": [0.30, 0.70],
+    "breakpoint_set": "big",
+    "_source": "Fama & French (1993) JFE 33:3-56 https://doi.org/10.1016/0304-405X(93)90023-5 (6월 말 구성 · 7월~이듬해 6월 보유 · B/M = t−1 회계연도 BE / t−1 12월 말 ME) · Fama & French (2015) JFE 116:1-22 https://doi.org/10.1016/j.jfineco.2014.10.010 (OP · INV 정렬 · SMB = 세 정렬 평균) · 국제판 breakpoints = Fama & French (2012) JFE 105:457-472 https://doi.org/10.1016/j.jfineco.2012.05.011 §2(Big = 6월 시총 상위 90% · 특성 30/70 = Big 종목 분위) · Fama & French (2017) JFE 123:441-463 https://doi.org/10.1016/j.jfineco.2016.11.004(국제 5요인 같은 규칙). 한국엔 NYSE 가 없어 국제판을 쓴다"
+  },
+  "momentum": {
+    "rebalance": "monthly",
+    "skip_months": 1,
+    "lookback_months": 11,
+    "big_share": 0.90,
+    "char_breakpoints": [0.30, 0.70],
+    "breakpoint_set": "big",
+    "_source": "Carhart (1997) JF 52:57-82 https://doi.org/10.1111/j.1540-6261.1997.tb03808.x (모멘텀 요인) · 구성 = Kenneth French 자료실 UMD(2×3 · 직전 t−12~t−2 수익 · 월간 재구성 · 30/70) · t−1 건너뛰기 = Jegadeesh & Titman (1993) JF 48:65-91 https://doi.org/10.1111/j.1540-6261.1993.tb04702.x · 국제판 Big 규칙 = Fama & French (2012) §2"
+  },
+  "weighting": {
+    "rule": "capped_vw",
+    "cap_quantile": 0.80,
+    "cap_set": "big",
+    "cap_update": "monthly",
+    "applies_to": "factor_portfolios",
+    "market": "vw",
+    "_source": "Jensen, Kelly & Pedersen (2023) 'Is There a Replication Crisis in Finance?' JF 78(5):2465-2518 https://doi.org/10.1111/jofi.13249 — NBER w28432 p.5 'capped value-weighting that winsorizes market caps at the NYSE 80th percentile' · p.29 '...market equity winsorized at the NYSE 80th percentile' · 동기(p.5) = 순수 가치가중의 소수 메가캡 쏠림을 피해 국가 간 요인 행태가 안정적. 한국엔 NYSE 가 없어 국제판의 NYSE 대용(Big = 시총 상위 90% · FF 2012)의 80 분위를 직전 월말마다 잡는다. 실측 근거(11-09 후보 빌드): 순수 가치가중이면 2026-06 구성 Big 포트폴리오 단일 종목 비중 최대 0.78(INV Big-공격적) · 0.76(OP Big-우량) — 삼성전자 · SK하이닉스가 멤버 시총의 27% · 26%. 시장(MKT)은 가치가중 그대로(시장 포트폴리오 정의)"
+  },
+  "definitions": {
+    "BE": "지배주주지분(EquityParent · 없으면 자본총계 − 비지배지분) − 우선주자본금(없으면 0) · t−1 12월 말 잔액. 이연법인세부채는 원천에 없다(FF 1993 · 2015 의 'if available')",
+    "OP": "(영업이익 − 이자비용) / BE · t−1 달력연도 3 · 6 · 9 · 12월 분기 4개 합(영업이익 4분기 모두 필요 · 이자비용 빠진 분기 = 0). 한국 영업이익 = 매출 − 매출원가 − 판관비(K-IFRS 1001 · K-GAAP 같은 정의)라 FF (2015) 분자(revenues − COGS − SG&A − interest expense)와 같다",
+    "INV": "TA(t−1 12월 말) / TA(t−2 12월 말) − 1 · FF (2015)",
+    "fiscal_year": "달력연도(3 · 6 · 9 · 12월 분기) — 12월 결산이 절대다수. 다른 결산월은 같은 12개월 창의 흐름으로 쓴다",
+    "pit": "재무 값은 Factor_Date ≤ 구성일(6월 마지막 거래일)인 것만 쓴다(잔액 · 분기 4개 모두). 구성일 종가로 정렬하고 다음 거래일부터 보유한다",
+    "returns": "일간 가치가중(전날 시가총액 = RAWDATA Size) · 월간 = 일간 포트폴리오 수익을 달 안에서 복리한 포트폴리오 월간 수익의 조합(French 자료실과 같은 순서)",
+    "market": "MKT_TOTAL = 직전 월말 멤버의 일간 가치가중 수익 · MKT = MKT_TOTAL − RF",
+    "limits": "상장폐지 수익 없음 — 보유 중 상폐된 종목은 마지막 거래일 뒤 포트폴리오에서 빠진다(RAWDATA 에 상폐 수익 열이 없다 · 상폐 수익 편의 남음). 수익 = 수정주가 일간 수익(RAWDATA Ret · 현금배당 미포함 여부는 원천 정의를 따른다 — 전략 측정과 같은 열)"
+  },
+  "guards": {
+    "min_big_for_breakpoints": 10,
+    "trading_day_min_rows": 100,
+    "_source": "자료 위생 문턱(연구 결정 아님) — Big 종목이 10개 미만이면 분위를 잡지 않고 그 정렬은 그 기간 NA(지어내지 않는다) · 그날 종목 행이 100개 미만인 날짜는 거래일로 보지 않는다(드문 휴일 행 배제 · 한국 상장사는 1990년대부터 600개 이상)"
+  },
+  "chars": {
+    "max_fiscal_age_years": 2,
+    "_source": "파마-맥베스 통제 특성(월말) — 그 월말까지 공개된 가장 최근 회계연도 값 · 회계연도가 월말 연도 − 2 보다 오래되면 NA(FF 1993 의 t−1 회계연도 규칙이 허용하는 최대 나이 18개월에 공시 지연 여유)"
+  },
+  "outputs": {
+    "daily": "kr_factor_returns_daily.parquet",
+    "monthly": "kr_factor_returns_v2.parquet",
+    "ports_monthly": "kr_ff_portfolios_monthly.parquet",
+    "chars_monthly": "kr_factor_chars_monthly.parquet",
+    "meta": "kr_factor_returns_meta.json",
+    "vintage_dir": "kr_factor_returns_vintages",
+    "_source": "월간 파일 이름은 소비자(factor_portfolios.R · fe_residmom.R · judge_lockbox_harness.R 등)가 읽는 구 경로를 그대로 쓴다 — 열 의미: MKT = 시장 초과수익(MKT_TOTAL − RF) · RF = CD91 · SMB = 3요인판(B/M 정렬) · SMB5 = 5요인판(세 정렬 평균)"
+  }
+}
