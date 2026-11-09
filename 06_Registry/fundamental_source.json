@@ -1,7 +1,7 @@
 {
   "schema": "fundamental_source/v1",
   "_doc": "재무 병합 표(.cache/fundamental_merged.parquet)와 분기 표(.cache/fundamental_xlsx.parquet)를 어느 원천으로 만드는가. 읽는 곳 = 02_Infrastructure/data/build_fundamental_derived.R(active = v2 면 fundamental_produce_v2.R 에 위임 · 월간 [5a2/7] · DART 보충 완료 단계가 부른다) · 02_Infrastructure/data/incremental_cache_update.R(xlsx_base_rebuild = false 면 Fundamental.xlsx 재파싱 경로를 건너뛴다). 바꾸는 사람 = 전환 절차서(SWITCH_RUNBOOK.md)를 따라 Q(도훈 결정 범위 안) · 되돌리기 = active 를 v1 로 + 절차서의 사본 복원.",
-  "active": "v1",
+  "active": "v2",
   "xlsx_base_rebuild": false,
   "sources": {
     "v1": "Fundamental.xlsx(분기 · 2015~ 는 ISSD · SBB 만) + DART 연간(2015~ · fundamental_dart.parquet) — build_fundamental_derived.R",
@@ -18,6 +18,12 @@
       "active": "v1",
       "xlsx_base_rebuild": false,
       "why": "등록부 신설. Fundamental.xlsx 재파싱 경로를 끈다 — 11-09 00:10 신규 상장 동기화([1pre-dk])가 DATA_Key 99행을 붙여 저장해 파일 시각만 새로워졌고(값 없음), 그 경로는 cwd 02_Infrastructure 에서 상대 경로로 돌아 실패하면서 02_Infrastructure/.cache 빈 폴더를 만든다. v2 가 이 원천을 대신한다."
+    },
+    {
+      "at": "2026-11-09T11:40",
+      "active": "v2",
+      "xlsx_base_rebuild": false,
+      "why": "전환(절차서 §4 · 도훈 '보충 끝나면 전체 재빌드해줘'). 시작 조건: DART 연간 보충 complete · compute_done(11:25:38 · FY2015~2025 미해결 0) · 측정 중 라운드 없음 · 배리어 free · 퀀티 재무 DB 11-09 08:35 리프레시. 후보(99초): 병합 8,926,054행 · 3,709사 · 181항목 / 분기 7,602,802행 · 41항목 · 날짜 순서 겹침 0 · 역전 0 · 정정 의심 4,878 기업-연도. 한 달 시범(2012-06 · 2025-06): 굳은 팩터 옛 = 새(15 · 13 · 국면 팩터) · 값 있는 종목 v2 가 많음 · 큰 차이는 옛 표 결함(부채비율 계열 · 이익잉여금 오표기)과 정의 차이."
     }
   ]
 }

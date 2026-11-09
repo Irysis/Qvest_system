@@ -335,6 +335,12 @@ DB 구성은 다음과 같습니다(등록부 `dbs`).
   - 시범용 경로 덮어쓰기: `QVEST_FUND_MERGED`(factor_db_builder.R) · `QVEST_FUND_XLSX`(xlsx_factor_calculator.R). 정규 체인은 쓰지 않습니다.
   - 전체 재빌드: `02_Infrastructure/factor_db/run_factor_db_full_rebuild.sh`(사전 점검 · 사본 · 월간 · 일간 · IC · 텔레그램). 사전 점검이 정규 갱신 중(배리어 held)과 v1 원천을 막는 것을 실측했습니다.
   - 절차서: `SWITCH_RUNBOOK.md` · 도구: `tools/`(fdb_trial.R · trial_compare.py · fd_order_audit.py).
+- ★전환 실행(11-09 11:40 · 도훈 '보충 끝나면 전체 재빌드해줘' · 절차서 §1~§5)
+  - 시작 조건: DART 연간 보충 complete · compute_done(11:25:38 · FY2015~2025 미해결 0) · 측정 중 라운드 없음 · 배리어 free · 퀀티 재무 DB 리프레시 11-09 08:35.
+  - 후보(99초 · 보충 끝난 DART 반영): 병합 8,926,054행 · 3,709사 · 181항목 / 분기 7,602,802행 · 41항목. 날짜 순서 겹침 0 · 역전 0. 정정 의심 4,878 기업-연도(보충 전 1,425). 날짜 순서 계약으로 버린 행 병합 64,852 · 분기 550,844(정정 미룸 기간이 다음 기간보다 늦게 도착 — §9 의 '늦음').
+  - 한 달 시범(2012-06 · 2025-06 · 옛 표 = 보충 뒤 다시 만든 v1): 굳은 팩터 옛 = 새(15 · 13 — 국면 · 거시 팩터) · 값 있는 종목 v2 가 많음(2025-06 3,763 vs 3,672) · 큰 차이 = 부채비율 계열(옛 표 0 덮어쓰기) · XF_PR02(오표기) · 발생액 · 정의 차이.
+  - 전환: 등록부 `active = v2` → `build_fundamental_derived.R` 위임 → 정본 교체(96초). 사본 `.cache/fundamental_backup/pre_v2_20261109_114017/` · 표식 `ACTIVE_V2`. 정본 `fd_order_audit` rc 0 · `Origin` 열 있음.
+  - 팩터 DB 전체 재빌드 11:41:44 착수(WMI 로 세션과 분리 — `Start-Process` 로 띄운 첫 시도는 도구 프로세스와 함께 바로 죽었다 · 로그 0 바이트). 로그 `.cache/scheduler_logs/factor_db_full_rebuild_20261109_114145.log` · 월간 사본 `.cache/factor_db_backup/fund_v2_20261109_114145/factor_db`.
 
 ## 7. 남은 일
 

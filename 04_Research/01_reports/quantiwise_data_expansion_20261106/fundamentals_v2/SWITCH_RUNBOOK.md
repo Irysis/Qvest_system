@@ -80,7 +80,8 @@ bash 02_Infrastructure/factor_db/run_factor_db_full_rebuild.sh
   - 리프레시 배리어 free(정규 갱신 · RAWDATA 쓰기 잠금)
   - 다른 팩터 빌드 없음
 - 단계마다 시작 전에 배리어를 기다립니다(최대 2시간).
-- 세션이 꺼져도 계속 돌도록, PowerShell `Start-Process` 로 세션과 떼어서 띄웁니다.
+- 세션이 꺼져도 계속 돌도록 세션과 떼어서 띄웁니다. ★Claude 도구 셸에서 `Start-Process` 로 띄우면 도구 프로세스가 끝날 때 함께 죽습니다(11-09 실측 · 로그 0 바이트). WMI 로 띄웁니다:
+  `Invoke-CimMethod -ClassName Win32_Process -MethodName Create -Arguments @{ CommandLine = '"C:\Program Files\Git\bin\bash.exe" -c "cd /g/OneDrive/Quant_Module_Moltbot && bash 02_Infrastructure/factor_db/run_factor_db_full_rebuild.sh > .cache/scheduler_logs/<이름>.out.log 2>&1"'; CurrentDirectory = '<루트>' }`
 - 중간에 실패하면 요약 JSON(`.cache/scheduler_logs/factor_db_full_rebuild_<시각>.json`)에서 단계와 사본 경로를 보고, `--from daily` 또는 `--from ic` 로 이어서 돌립니다.
 
 ## 6. 검사 (Q)
