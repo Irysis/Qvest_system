@@ -1848,6 +1848,9 @@ SUITES=(
   "08_Tests/reinforcement/test_rf_rebalance.R"
   #   등급 v3 진단 계약(MC7 · S0) — S 정의 고정점 · 교환 관계 · 정의역 · 문턱 정본 폴백 거부 · 결정표 · 재현 대조 위반 주입
   "08_Tests/contracts/test_grade_v3.R"
+  # 등급 v3.3 팩터 조정 알파 노치(2026-11-09 · GRADE-V33-FACTOR-ALPHA-NOTCH-20261109) — 결정표 11 · 합성 요인 통계 7(최솟값 · 부분 월 ·
+  #   시험 창 · 관측 부족) · 요인 묶음 fail-closed 3(해시) · 자격 7 · 위반 주입 5(CR 약함 제외 · 최솟값 · 시험 창 · 관문 · A 하한)
+  "08_Tests/contracts/test_grade_v3_fa_notch.R"
   # <<< 편입 드리프트 수리
   # MC8 크기 짝 · 노출 짝 무신호 대조(2026-10-13 · v10.01) — 양성 대조(전략 = 바스켓 · 벤치 × Ē 정확 일치) · 크기 착시(노출 짝만이면
   #   selection 오판 돌연변이) · 플라시보 분위 판정(운 좋은 한 종목 = 평균 비교 오판 돌연변이) · 타이밍 경로 진단 · PIT as-of 위반 주입 ·

@@ -3968,7 +3968,30 @@
       "registered_at": "2026-11-09T12:32:51+0900",
       "recorded_by": "Q(세션 fe712ea2)",
       "evidence": "도훈 채팅 2026-11-09 — '논문식으로 진행'"
+    },
+    {
+      "id": "GRADE-V33-FACTOR-ALPHA-NOTCH-20261109",
+      "title": "등급 v3.3 — 팩터 조정 알파가 통계적으로 유의하면 한 단계 상향(FF3 · Carhart4 · FF5 · FF6 최소 t)",
+      "status": "resolved",
+      "opened_at": "2026-11-09T15:08:43+0900",
+      "options": [
+        "1안 FF 알파만 — 4개 모형 NW(lag 3) t(α) 최솟값 · C→B ≥ tier_graduation B 문턱(2.0) · B→A ≥ A 문턱(2.95) + 기존 A 하한 · OOS · 관문 · 시험 창(τ_D 뒤) 네 모형 알파 모두 양수 · 스윕이면 DSR · 파마-맥베스는 진단",
+        "2안 1안 + 파마-맥베스 점수 기울기 NW t ≥ 2.0 확인(러너 · 라운드에 파마-맥베스 추가 · 통제 특성 확대 · 사양 사전 고정)",
+        "3안 문턱 하나(2.95) — C→B 도 A 문턱"
+      ],
+      "recommendation": "1안",
+      "default_until_decided": "v3.2(노치 없음)",
+      "blocks": [],
+      "owner": "dohoon",
+      "source": "도훈 11-09 '재빌드 뒤 갱신해주고 팩터조정알파 및 파마-맥베스 분석에 쓰이는 기초데이터도 데일리로 최신화 시켜줘. 그리고 이 분석에서 통계적 유의성이 확인되면 높은 등급을 부여할 수 있게 등급체계도 수정하자'(같은 날 오전 '팩터 DB가 전략 생산에 기여하고 있다면 충분' 결정을 뒤집음). 시험 적용(후보 요인 · 현 축 99기록 · 87전략: B 48 · C 16 · F 23) — B 48 중 37 이 이미 최소 t ≥ 2.95 이나 A 를 막는 것은 시험 창 롤링 36 통과율(34) · 스윕 DSR(33) · PORT_t 하한(20). 1안 = 2안 = C→B 2건(F-Score Piotroski 2000 · 1603.00751 SVM-SMO 전 특성) — 후자는 위기 방어 약함 감점(B 띠 → C)이라 'CR 약함이면 노치 없음'으로 제외 → F-Score 1건.",
+      "decision": "1안 + CR 약함 제외. ① 통계 = grade_v3.json::fa_notch.models(FF3 · Carhart4 · FF5(SMB5) · FF6) 알파의 Newey-West(lag 3) t 최솟값 · 월간 순수익 − RF · 전기간 관측 ≥ rolling_grade.json::window_months(36) · 부분 월 제외. ② C→B = t_min ≥ tier_graduation.grade_b_min_portfolio_alpha_t · B→A = t_min ≥ tier_graduation.min_portfolio_alpha_t_nw ∧ 기존 A 하한 · OOS · 관문 전부(새 숫자 없음). ③ 자격 = τ_D 뒤 시험 창 네 모형 알파 점추정 모두 양수(시험 창 관측 ≥ 12) · 스윕 선정이면 DSR 관문 통과 · 위기 방어(CR) 약함이면 없음(투자철학 우선 — 약함 감점을 상쇄하지 않는다) · F 없음 · 기록 epoch = 요인 epoch. ④ 요인 = 02_Infrastructure/data/build_kr_factor_returns.R 산출(설정 06_Registry/kr_factor_returns.json · 국제판 FF 구성 · 측정 축 유니버스 · 상한 가치가중 JKP 2023 · CD91) · 월간 내용 해시가 meta 와 같을 때만(fail-closed) · 기록에 factor_md5. ⑤ 파마-맥베스는 등급에 쓰지 않는다 — 매 시점 절편이 시장 움직임을 흡수해 시점 조절 · 구성 알파가 보이지 않는다(진단 · 통제 특성 확대). ⑥ 활성화 = 정본 요인 파일 교체(팩터 DB 전체 재빌드 뒤) 직후 fa_notch.enabled = true · rules_version v3.3 · 저장분 재채점(programs/grade_v3_backfill.R) · 등급이 바뀐 대상은 정정 보고.",
+      "decided_by": "dohoon",
+      "decided_at": "2026-11-09T15:08:44+0900",
+      "note": "구현 = contracts/grade_v3.R(gv3_decide ④ · gv3_fa_ctx · gv3_fa_stats · .gv3_fa_eval) · essence_score.R(.essence_v3_record 에 fa_notch · fa) · 시험 08_Tests/contracts/test_grade_v3_fa_notch.R 33/33(위반 주입 5) · test_grade_v3 63/63 · test_essence_score 28/28 · essence_oos_components 45/45 회귀 없음. 통합 확인(스크래치 후보 요인 · enabled): F-Score C→B(t_min 2.11 FF3) · SVM-SMO 전 특성 C 유지(cr_weak) · P2R03_E3_RX0 B 유지(t_min 4.46 · A 는 OOS 관문). 구 요인 파일(.cache/kr_factor_returns_v2.parquet · WT-D20260425_009 step0)은 HML · RMW · CMA 를 월말 하루 수익으로 만들고 RF = 0 — 지금까지의 FF 알파 진단 수치는 그 파일 기준이다.",
+      "registered_at": "2026-11-09T15:08:43+0900",
+      "recorded_by": "Q(세션 fe712ea2)",
+      "evidence": "도훈 채팅 2026-11-09 — '1안으로 가자'(앞서 1안 · 2안 비교 · 파마-맥베스 역할 설명 뒤)"
     }
   ],
-  "last_updated": "2026-11-09T12:32:52+0900"
+  "last_updated": "2026-11-09T15:08:45+0900"
 }

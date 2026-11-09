@@ -584,7 +584,24 @@ essence_diagnostics <- function(bt_result, oos_stat_version = "v2", root = NULL)
                   pass_oos = r4(v3$oos$pass_oos), pass_min = r4(v3$oos$pass_min), pass_life = r4(v3$oos$pass_life),
                   S_is = r4(v3$oos$S_is), S_oos = r4(v3$oos$S_oos), retention_calmar = r4(v3$oos$retention_calmar),
                   retention_sharpe = r4(v3$oos$retention_sharpe)),
-       parity_max_abs = v3$parity_max_abs, nav_source = v3$nav_source)
+       parity_max_abs = v3$parity_max_abs, nav_source = v3$nav_source,
+       fa_notch = if (is.null(v3$fa_notch)) 0L else as.integer(v3$fa_notch), fa = .essence_v3_fa_record(v3$fa, r4))
+}
+## 팩터 조정 알파(v3.3 · GRADE-V33-FACTOR-ALPHA-NOTCH-20261109) 기록 요약 — 모형별 t · α · 시험 창 α · 요인 판(내용 해시)
+.essence_v3_fa_record <- function(fa, r4) {
+  if (!is.list(fa)) return(list(status = "not_run"))
+  nz <- function(a, b = NA) if (is.null(a) || !length(a)) b else a
+  md <- fa$models
+  mods <- if (is.data.frame(md) && nrow(md)) setNames(lapply(seq_len(nrow(md)), function(i)
+            list(t = r4(md$t[i]), alpha_ann = r4(md$alpha_ann[i]), n = md$n[i],
+                 test_alpha_ann = r4(md$test_alpha_ann[i]), test_n = md$test_n[i])), md$model) else NULL
+  list(status = nz(fa$status, NA_character_), enabled = isTRUE(fa$enabled), eligible = isTRUE(fa$eligible),
+       applied = isTRUE(fa$applied), why_not = as.list(nz(fa$why_not, character(0))),
+       t_min = r4(fa$t_min), t_min_model = nz(fa$t_min_model, NA_character_), test_all_pos = isTRUE(fa$test_all_pos),
+       n_months = nz(fa$n_months), nw_lag = nz(fa$nw_lag), tau_d = nz(fa$tau_d, NA_character_), models = mods,
+       factor_md5 = nz(fa$factor_md5, NA_character_), factor_vintage = nz(fa$factor_vintage, NA_character_),
+       factor_epoch = nz(fa$factor_epoch, NA_character_), record_epoch = nz(fa$record_epoch, NA_character_),
+       error = nz(fa$error, NULL))
 }
 
 essence_score <- function(bt_result, n_trials_cumulative = NULL,

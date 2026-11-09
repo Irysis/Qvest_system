@@ -19,8 +19,13 @@
 #   롤링 36M = 06_Registry/rolling_grade.json → rolling_grade.R
 #   지표 계산 = backtest_result_contract.R::build_metrics · build_benchmark_compare (essence 와 같은 함수)
 #
+# v3.3(2026-11-09 도훈 '1안으로 가자' · decision_register GRADE-V33-FACTOR-ALPHA-NOTCH-20261109) 팩터 조정 알파 노치:
+#   FF3 · Carhart4 · FF5 · FF6 알파 NW t 최솟값 — C→B = B 문턱 · B→A = A 문턱 + 기존 A 하한 · 시험 창 알파 모두 양수 ·
+#   관문(스윕 DSR) · CR 약함 · F 제외 · 요인 = 정본 빌더 산출(내용 해시 검증) · 설정 fa_notch.enabled 로 켠다.
+#
 # 공개: gv3_cfg · gv3_thresholds · gv3_ctx · gv3_S · gv3_window · gv3_decide · gv3_score_dir · gv3_score_bt · gv3_row · gv3_bench_history
-# 검사: 08_Tests/contracts/test_grade_v3.R
+#       gv3_fa_ctx · gv3_fa_stats(팩터 조정 알파)
+# 검사: 08_Tests/contracts/test_grade_v3.R · 08_Tests/contracts/test_grade_v3_fa_notch.R
 #==============================================================================
 suppressPackageStartupMessages({ library(data.table); library(jsonlite) })
 
@@ -41,7 +46,7 @@ suppressPackageStartupMessages({ library(data.table); library(jsonlite) })
 .gv3_deps <- function(root) {
   if (isTRUE(.GV3$loaded) && identical(.GV3$root, root)) return(invisible(.GV3$e))
   e <- new.env(parent = globalenv())
-  for (f in c("backtest_result_contract.R", "essence_score.R", "rolling_grade.R", "behavior_card.R")) {
+  for (f in c("backtest_result_contract.R", "essence_score.R", "rolling_grade.R", "behavior_card.R", "beta_controlled_alpha.R")) {
     p <- file.path(root, "02_Infrastructure/contracts", f)
     if (!file.exists(p)) stop("[grade_v3] 의존 계약 없음: ", p)
     invisible(utils::capture.output(suppressMessages(sys.source(p, envir = e, keep.source = FALSE))))   # 적재 안내 cat 억제
@@ -77,7 +82,35 @@ gv3_cfg <- function(root = NULL, path = NULL) {
   tu <- cfg$cr_notch[["timing_unit"]]
   if (identical(sr, "mc8_selection_or_timing_evidence") && !(is.character(tu) && length(tu) == 1L && tu %in% GV3_TIMING_UNITS))
     stop("[grade_v3] cr_notch.timing_unit 어휘 밖(", paste(GV3_TIMING_UNITS, collapse = " | "), ") — 증거 셈 단위(GRADE-V32-TIMING-EVENT-UNIT)")
+  .gv3_fa_cfg_check(cfg[["fa_notch"]])
   cfg
+}
+
+# 팩터 조정 알파 노치 설정 어휘(v3.3 · GRADE-V33-FACTOR-ALPHA-NOTCH-20261109) — 없으면 노치 없음(구 판과 같다) · 있으면 형식을 엄격히 본다
+.gv3_fa_cfg_check <- function(fa) {
+  if (is.null(fa)) return(invisible(NULL))
+  bad <- function(msg) stop("[grade_v3] fa_notch ", msg)
+  if (!is.logical(fa$enabled) || length(fa$enabled) != 1L || is.na(fa$enabled)) bad("enabled 는 참/거짓 하나")
+  if (!identical(fa$statistic, "min_over_models_nw_t_alpha")) bad("statistic 어휘 밖(min_over_models_nw_t_alpha)")
+  m <- fa$models
+  if (!is.list(m) || length(m) < 1L || is.null(names(m)) || any(!nzchar(names(m))) ||
+      !all(vapply(m, function(v) is.character(v) && length(v) >= 1L && "MKT" %in% v, logical(1))))
+    bad("models 는 이름 있는 요인 목록(각 모형에 MKT 포함)")
+  lag <- suppressWarnings(as.integer(fa$nw_lag))
+  if (length(lag) != 1L || is.na(lag) || lag < 1L) bad("nw_lag 판독 실패(1 이상 정수)")
+  if (!identical(fa$c_to_b_t, "tier_graduation.grade_b_min_portfolio_alpha_t") ||
+      !identical(fa$b_to_a_t, "tier_graduation.min_portfolio_alpha_t_nw")) bad("문턱 키 어휘 밖(tier_graduation B · A 문턱만)")
+  if (!identical(fa$b_to_a_requires, "a_floors_oos_gates")) bad("b_to_a_requires 어휘 밖(a_floors_oos_gates)")
+  if (!identical(fa$test_window, "tau_d_all_models_alpha_positive")) bad("test_window 어휘 밖(tau_d_all_models_alpha_positive)")
+  tm <- suppressWarnings(as.integer(fa$test_min_months))
+  if (length(tm) != 1L || is.na(tm) || tm < 1L) bad("test_min_months 판독 실패")
+  if (!identical(fa$min_months, "rolling_grade.window_months")) bad("min_months 어휘 밖(rolling_grade.window_months)")
+  if (!isTRUE(fa$excludes_cr_weak) || !isTRUE(fa$requires_gates)) bad("excludes_cr_weak · requires_gates 는 참이어야 한다")
+  if (!identical(fa$applies_to, "S_gt_zero")) bad("applies_to 어휘 밖(S_gt_zero)")
+  if (!identical(fa$epoch_rule, "record_epoch_equals_factor_epoch")) bad("epoch_rule 어휘 밖")
+  for (k in c("factor_file", "factor_daily", "factor_meta"))
+    if (!(is.character(fa[[k]]) && length(fa[[k]]) == 1L && nzchar(fa[[k]]))) bad(paste0(k, " 경로 없음"))
+  invisible(NULL)
 }
 
 #' CR '강함' 상향 노치의 MC8 조건(decision_register GRADE-V3-CR-STRONG-SELECTION · 도훈 10-13 · MC8 보고서 §7)
@@ -383,7 +416,9 @@ gv3_bench_history <- function(root = NULL) {
 #'   ① 띠: S ≤ 0 = F · S ≥ A 경계 = A · S ≥ S_B = B · 그 밖 = C
 #'   ② A 띠 차단: 하한 ∨ OOS 관문 미충족이면 a_blocked_to(B)
 #'   ③ CR 노치(F 제외): 강함 = C→B · B→A(하한 ∧ OOS 충족 시만) / 약함 = 한 단계 하향(A 불가 · B→C · C→F)
-gv3_decide <- function(S, S_B, floors, oos_parts, cr, cfg, gates = NULL) {
+#'   ④ 팩터 조정 알파 노치(v3.3 · F · CR 약함 제외 · fa$eligible 일 때만): C→B = t_min ≥ th_b · B→A = t_min ≥ th_a ∧ 하한 · OOS · 관문
+#' @param fa NULL 이면 ④ 없음(구 판) · list(eligible, t_min, th_b, th_a) — 자격(시험 창 · 관문 · epoch)은 호출자가 판정한다
+gv3_decide <- function(S, S_B, floors, oos_parts, cr, cfg, gates = NULL, fa = NULL) {
   a <- cfg$a_boundary
   gates <- if (is.null(gates)) logical(0) else vapply(gates, isTRUE, logical(1))
   a_ok <- all(floors) && all(oos_parts) && all(gates)
@@ -392,7 +427,7 @@ gv3_decide <- function(S, S_B, floors, oos_parts, cr, cfg, gates = NULL) {
   if (!all(oos_parts)) why <- c(why, paste0("oos:", names(oos_parts)[!oos_parts]))
   if (!all(gates)) why <- c(why, paste0("gate:", names(gates)[!gates]))
   if (identical(cr, "weak") && isTRUE(cfg$cr_notch$weak_blocks_a)) why <- c(why, "cr:weak")
-  out <- list(grade = NA_character_, band = NA_character_, notch = 0L, blocked_by = why, notch_a = FALSE)
+  out <- list(grade = NA_character_, band = NA_character_, notch = 0L, blocked_by = why, notch_a = FALSE, fa_notch = 0L)
   if (length(S) != 1L || !is.finite(S)) return(out)
   sb_ok <- length(S_B) == 1L && is.finite(S_B)
   band <- if (S <= 0) "F" else if (S >= a) "A" else if (sb_ok && S >= S_B) "B" else if (sb_ok) "C" else NA_character_
@@ -409,15 +444,139 @@ gv3_decide <- function(S, S_B, floors, oos_parts, cr, cfg, gates = NULL) {
       g <- lv[max(1L, match(g, lv) - 1L)]; out$notch <- -1L
     }
   }
+  # ④ 팩터 조정 알파 노치 — 위기 방어 약함이면 주지 않는다(철학 우선 · 약함 감점을 상쇄하지 않는다) · F 는 없음
+  if (!is.null(fa) && isTRUE(fa$eligible) && g %in% c("C", "B") && !identical(cr, "weak")) {
+    if (g == "C" && isTRUE(fa$t_min >= fa$th_b)) { g <- "B"; out$fa_notch <- 1L }
+    else if (g == "B" && isTRUE(fa$t_min >= fa$th_a) && a_ok) { g <- "A"; out$fa_notch <- 1L; out$notch_a <- TRUE }
+  }
   out$grade <- g
   out
+}
+
+## ── 팩터 조정 알파(v3.3 · 2026-11-09 도훈 '1안으로 가자' · decision_register GRADE-V33-FACTOR-ALPHA-NOTCH-20261109) ──
+#   통계 = 설정 fa_notch.models(FF3 · Carhart4 · FF5 · FF6) 알파의 Newey-West t 중 최솟값(모형 고르기 차단) · 월간 순수익 − RF.
+#   요인 = 정본 빌더(02_Infrastructure/data/build_kr_factor_returns.R) 산출 · 월간 내용 해시가 meta 와 같을 때만(fail-closed).
+#   자격 = 시험 창(τ_D 뒤) 네 모형 알파 모두 양수 · 관문(스윕이면 DSR) 통과 · 기록 epoch = 요인 epoch · 설정 enabled.
+#   CR 약함 · F 는 gv3_decide 가 막는다. 파마-맥베스는 등급에 쓰지 않는다(진단 — 시점 조절 · 구성 알파가 보이지 않는다).
+
+#' 요인 묶음(채점 컨텍스트에 한 번) — 없거나 해시가 다르면 status = factor_unavailable(노치 없음 · 지어내지 않는다)
+gv3_fa_ctx <- function(root, cfg) {
+  fa <- cfg[["fa_notch"]]
+  if (is.null(fa)) return(list(status = "not_configured", enabled = FALSE))
+  out <- list(status = "factor_unavailable", enabled = isTRUE(fa$enabled))
+  fp <- file.path(root, fa$factor_file); mp <- file.path(root, fa$factor_meta); dp <- file.path(root, fa$factor_daily)
+  miss <- c(fp, mp, dp)[!file.exists(c(fp, mp, dp))]
+  if (length(miss)) { out$reason <- paste("요인 파일 없음:", paste(basename(miss), collapse = ",")); return(out) }
+  meta <- tryCatch(fromJSON(mp, simplifyVector = TRUE), error = function(e) NULL)
+  if (is.null(meta) || !identical(meta$schema, "kr_factor_returns_meta_v1")) { out$reason <- "meta 판독 불가 · 스키마 다름"; return(out) }
+  b <- new.env(parent = globalenv())
+  ok <- tryCatch({ invisible(utils::capture.output(suppressMessages(sys.source(
+          file.path(root, "02_Infrastructure/data/build_kr_factor_returns.R"), envir = b, keep.source = FALSE)))); TRUE },
+        error = function(e) FALSE)
+  if (!ok) { out$reason <- "요인 빌더 적재 실패(내용 해시 함수 단일 출처)"; return(out) }
+  Fm <- tryCatch(data.table::as.data.table(arrow::read_parquet(fp)), error = function(e) NULL)
+  if (is.null(Fm)) { out$reason <- "월간 요인 판독 불가"; return(out) }
+  md5 <- tryCatch(b$.krf_content_md5(Fm, meta$monthly$content_cols), error = function(e) NA_character_)
+  if (!identical(md5, as.character(meta$monthly$content_md5))) { out$reason <- "월간 요인 내용 해시가 meta 와 다르다"; return(out) }
+  Dd <- tryCatch(data.table::as.data.table(arrow::read_parquet(dp, col_select = "Date")), error = function(e) NULL)
+  if (is.null(Dd) || !nrow(Dd)) { out$reason <- "일간 요인(거래일 달력) 판독 불가"; return(out) }
+  Fm[, Date := as.Date(Date)]
+  if (!"ym" %in% names(Fm)) Fm[, ym := as.integer(format(Date, "%Y%m"))]
+  list(status = "ok", enabled = isTRUE(fa$enabled), F = Fm, cal = sort(unique(as.Date(Dd$Date))), md5 = md5,
+       epoch = as.character(.gv3_or(meta$epoch, NA_character_)), universe = as.character(.gv3_or(meta$universe, NA_character_)),
+       builder = as.character(.gv3_or(meta$builder, NA_character_)),
+       vintage = as.character(.gv3_or(meta$monthly$vintage_file, NA_character_)))
+}
+
+#' 월간 순수익(완결 월) — 일간이면 요인 달력의 그 달 첫 · 마지막 거래일이 모두 들어 있는 달만(부분 월은 요인 월간과 맞지 않는다)
+.gv3_fa_monthly <- function(pr, cal) {
+  P <- pr[is.finite(ret_net), .(date = as.Date(date), r = as.numeric(ret_net))][order(date)]
+  if (!nrow(P)) return(data.table(ym = integer(0), r = numeric(0)))
+  f0 <- tolower(trimws(as.character(pr$frequency[1])))
+  if (grepl("^(m|month|monthly)$", f0)) {
+    M <- P[, .(ym = as.integer(format(date, "%Y%m")), r)]
+    if (anyDuplicated(M$ym)) stop("[grade_v3] 월간 수익에 같은 달 행이 둘 이상")
+    return(M)
+  }
+  if (!grepl("^(d|day|daily)$", f0)) stop("[grade_v3] 팩터 조정 알파는 일간 · 월간 수익만 잰다 — 빈도 ", f0)
+  C <- data.table(date = as.Date(cal))[, ym := as.integer(format(date, "%Y%m"))][, .(c0 = min(date), c1 = max(date)), by = ym]
+  G <- P[, .(p0 = min(date), p1 = max(date)), by = .(ym = as.integer(format(date, "%Y%m")))]
+  keep <- merge(G, C, by = "ym")[p0 <= c0 & p1 >= c1, ym]
+  m <- xts::apply.monthly(xts::xts(P$r, order.by = P$date), PerformanceAnalytics::Return.cumulative)
+  M <- data.table(ym = as.integer(format(zoo::index(m), "%Y%m")), r = as.numeric(m[, 1]))
+  M[ym %in% keep]
+}
+
+#' 모형별 NW t(α) · 연율 α · 시험 창 α — M(ym, r) × 요인 월간(ym · Date · RF · 요인 열)
+#' @return list(models = 표, t_min, t_min_model, test_all_pos, n_months, …) — 한 모형이라도 관측 부족이면 t_min = NA
+gv3_fa_stats <- function(M, Fm, models, nw_lag, min_months, test_min, tau, nw_fit) {
+  J <- merge(M, Fm, by = "ym")
+  tab <- rbindlist(lapply(names(models), function(nm) {
+    v <- as.character(models[[nm]])
+    miss <- setdiff(c("RF", "Date", v), names(J))
+    if (length(miss)) stop("[grade_v3] 요인 열 없음: ", paste(miss, collapse = ","))
+    Z <- J[stats::complete.cases(J[, c("r", "RF", v), with = FALSE])]
+    na_row <- data.table(model = nm, n = nrow(Z), t = NA_real_, alpha_ann = NA_real_, test_n = NA_integer_, test_alpha_ann = NA_real_)
+    if (nrow(Z) < min_months) return(na_row)
+    f <- tryCatch(nw_fit(Z$r - Z$RF, as.matrix(Z[, v, with = FALSE]), lag = nw_lag), error = function(e) NULL)
+    if (is.null(f)) return(na_row)
+    Zt <- Z[Date > tau]
+    ft <- if (nrow(Zt) >= test_min) tryCatch(nw_fit(Zt$r - Zt$RF, as.matrix(Zt[, v, with = FALSE]), lag = nw_lag), error = function(e) NULL) else NULL
+    data.table(model = nm, n = as.integer(f$n), t = unname(f$t[1]), alpha_ann = 12 * unname(f$coef[1]),
+               test_n = nrow(Zt), test_alpha_ann = if (is.null(ft)) NA_real_ else 12 * unname(ft$coef[1]))
+  }))
+  all_t <- all(is.finite(tab$t))
+  t_min <- if (all_t) min(tab$t) else NA_real_
+  list(models = tab, t_min = t_min, t_min_model = if (all_t) tab$model[which.min(tab$t)] else NA_character_,
+       test_all_pos = all(is.finite(tab$test_alpha_ann)) && all(tab$test_alpha_ann > 0),
+       n_months = nrow(M), nw_lag = nw_lag, min_months = min_months, test_min_months = test_min, tau_d = format(tau))
+}
+
+# 기록의 측정 축 epoch — 디렉터리판은 권위 기록의 measurement_axis.epoch · 메모리판(bt)은 유니버스가 활성 epoch 와 같을 때 그 epoch
+.gv3_record_epoch <- function(X, root) {
+  ep <- tryCatch(as.character(X$ar$measurement_axis$epoch), error = function(e) character(0))
+  if (length(ep) == 1L && !is.na(ep) && nzchar(ep)) return(ep)
+  uni <- as.character(.gv3_or(X$spec$universe, NA_character_))[1]
+  cd <- tryCatch(fromJSON(file.path(root, "02_Infrastructure/worktask/constraint_defaults.json"), simplifyVector = FALSE),
+                 error = function(e) NULL)
+  act <- as.character(.gv3_or(cd$measurement_axis$active, NA_character_))
+  if (!is.na(act) && !is.na(uni) && identical(as.character(cd$measurement_axis$epochs[[act]]$universe), uni)) return(act)
+  NA_character_
+}
+
+#' 팩터 조정 알파 평가 — 기록(record)과 gv3_decide 입력(decide)을 낸다. 자격이 없으면 decide$eligible = FALSE(사유 why_not)
+.gv3_fa_eval <- function(X, ctx, cfg, root, gates, cr, e) {
+  fa <- cfg[["fa_notch"]]; fx <- .gv3_or(ctx$fa, list(status = "not_configured", enabled = FALSE))
+  rec <- list(status = as.character(fx$status), enabled = isTRUE(fx$enabled), eligible = FALSE, why_not = character(0))
+  if (is.null(fa) || !identical(fx$status, "ok")) {
+    rec$why_not <- as.character(.gv3_or(fx$reason, fx$status))
+    return(list(record = rec, decide = NULL))
+  }
+  rec$factor_md5 <- fx$md5; rec$factor_epoch <- fx$epoch; rec$factor_vintage <- fx$vintage
+  rec$record_epoch <- .gv3_record_epoch(X, root)
+  st <- tryCatch(gv3_fa_stats(.gv3_fa_monthly(X$pr, fx$cal), fx$F, fa$models, as.integer(fa$nw_lag),
+                              as.integer(ctx$rg$window_months), as.integer(fa$test_min_months), as.Date(ctx$bc_cfg$tau_d), e$.nw_fit),
+                 error = function(err) structure(list(err = conditionMessage(err)), class = "gv3_err"))
+  if (inherits(st, "gv3_err")) { rec$status <- "error"; rec$error <- st$err; rec$why_not <- "error"; return(list(record = rec, decide = NULL)) }
+  rec <- c(rec, st)
+  why <- character(0)
+  if (!identical(rec$record_epoch, fx$epoch)) why <- c(why, "epoch_mismatch")
+  if (!is.finite(st$t_min)) why <- c(why, "short")
+  if (!isTRUE(st$test_all_pos)) why <- c(why, "test_window_alpha_not_all_positive")
+  g <- if (is.null(gates)) logical(0) else vapply(gates, isTRUE, logical(1))
+  if (length(g) && !all(g)) why <- c(why, paste0("gate:", names(g)[!g]))
+  if (identical(cr, "weak")) why <- c(why, "cr_weak")
+  if (!isTRUE(fx$enabled)) why <- c(why, "disabled")
+  rec$eligible <- !length(why); rec$why_not <- why
+  list(record = rec, decide = list(eligible = rec$eligible, t_min = st$t_min, th_b = ctx$th$port_t_b, th_a = ctx$th$port_t_a))
 }
 
 #' 채점 컨텍스트(설정 · 문턱 · 카드 설정 · 롤링 설정 · 긴 벤치 이력) — 여러 칸을 채점할 때 한 번만 만든다
 gv3_ctx <- function(root = NULL) {
   root <- .gv3_root(root); e <- .gv3_deps(root)
-  list(cfg = gv3_cfg(root), th = gv3_thresholds(root), bc_cfg = e$bc_cfg(root),
-       rg = e$rg_params(root), bm_hist = gv3_bench_history(root))
+  cfg <- gv3_cfg(root)
+  list(cfg = cfg, th = gv3_thresholds(root), bc_cfg = e$bc_cfg(root),
+       rg = e$rg_params(root), bm_hist = gv3_bench_history(root), fa = gv3_fa_ctx(root, cfg))
 }
 
 #' 디렉터리 1개 채점
@@ -504,7 +663,13 @@ gv3_score_bt <- function(bt, root = NULL, ctx = NULL, gates = NULL) {
     }
   }
   cr_notch <- gv3_cr_for_notch(cs$cr, mc8, cfg, tev)
-  dec <- gv3_decide(S, S_B, fl, oos_parts, cr_notch, cfg, gates = gates)
+  fae <- .gv3_fa_eval(X, ctx, cfg, root, gates, cr_notch, e)                # v3.3 팩터 조정 알파(설정 없으면 기록만 not_configured)
+  dec <- gv3_decide(S, S_B, fl, oos_parts, cr_notch, cfg, gates = gates, fa = fae$decide)
+  fae$record$applied <- identical(dec$fa_notch, 1L)
+  if (isTRUE(fae$record$eligible) && !isTRUE(fae$record$applied))
+    fae$record$why_not <- c(fae$record$why_not,
+      if (identical(dec$band, "F")) "band_F" else if (identical(dec$grade, "A")) "already_A"
+      else if (identical(dec$grade, "B") && isTRUE(fae$record$t_min >= ctx$th$port_t_a)) "a_blocked" else "t_below")
   grade <- dec$grade; why <- dec$blocked_by
   if (identical(cs$cr, "strong") && !identical(cr_notch, "strong"))
     why <- c(why, if (!is.na(basis) && !identical(basis, "not_selection")) paste0("cr:strong_", basis) else
@@ -525,6 +690,7 @@ gv3_score_bt <- function(bt, root = NULL, ctx = NULL, gates = NULL) {
                   pass_recent = .gv3_or(rr$pass_recent, NA_real_), pass_oos = pass_oos, pass_min = pass_min,
                   pass_min_status = cfg$oos$rolling_pass_min_status, parts = as.list(oos_parts), gate = oos_gate),
        S_B = S_B, band = dec$band, notch = dec$notch, notch_a = dec$notch_a, cr_notch = cr_notch, mc8 = mc8,
+       fa = fae$record, fa_notch = dec$fa_notch,
        cr_notch_basis = basis, timing_evidence = if (is.null(tev)) NULL else tev[c("round_id", "unit", GV3_TIMING_FLAGS)],
        rules_version = as.character(.gv3_or(cfg$rules_version, "v3.0")),
        crisis_def = as.character(.gv3_or(ctx$bc_cfg$crisis_episode_def, "running_peak_drawdown")),
@@ -548,6 +714,7 @@ gv3_row <- function(r) {
              calmar_is = r$oos$is$calmar, calmar_oos = r$oos$oos$calmar,
              pass_life = r$oos$pass_life, pass_oos = r$oos$pass_oos, oos_gate = r$oos$gate,
              S_B = r$S_B, band = r$band, notch = r$notch, notch_a = r$notch_a,
+             fa_status = g(r$fa$status), fa_t_min = g(r$fa$t_min), fa_eligible = isTRUE(r$fa$eligible), fa_notch = g(r$fa_notch),
              blocked_by = paste(r$blocked_by, collapse = ";"),
              period_start = r$period[1], period_end = r$period[2])
 }

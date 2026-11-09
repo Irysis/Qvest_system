@@ -58,6 +58,31 @@
     "rolling_rescue_f_to_c": false
   },
   "rescue_source": "도훈 수용 2026-10-13 (GRADE-V3-S0-BANDS ③) — v3 는 롤링 구제(F→C · rolling_grade.R::rg_rescue)를 싣지 않는다. PORT_t <= 0 = F 는 S 의 정의역 규칙이고, 최근 국면 회복 기록은 롤링 지표(pass_life · pass_oos)로 남는다",
+  "fa_notch": {
+    "enabled": false,
+    "statistic": "min_over_models_nw_t_alpha",
+    "models": {
+      "FF3": ["MKT", "SMB", "HML"],
+      "Carhart4": ["MKT", "SMB", "HML", "WML"],
+      "FF5": ["MKT", "SMB5", "HML", "RMW", "CMA"],
+      "FF6": ["MKT", "SMB5", "HML", "RMW", "CMA", "WML"]
+    },
+    "nw_lag": 3,
+    "c_to_b_t": "tier_graduation.grade_b_min_portfolio_alpha_t",
+    "b_to_a_t": "tier_graduation.min_portfolio_alpha_t_nw",
+    "b_to_a_requires": "a_floors_oos_gates",
+    "test_window": "tau_d_all_models_alpha_positive",
+    "test_min_months": 12,
+    "min_months": "rolling_grade.window_months",
+    "excludes_cr_weak": true,
+    "requires_gates": true,
+    "applies_to": "S_gt_zero",
+    "epoch_rule": "record_epoch_equals_factor_epoch",
+    "factor_file": ".cache/kr_factor_returns_v2.parquet",
+    "factor_daily": ".cache/kr_factor_returns_daily.parquet",
+    "factor_meta": ".cache/kr_factor_returns_meta.json"
+  },
+  "fa_notch_source": "도훈 결정 2026-11-09 '1안으로 가자'(decision_register GRADE-V33-FACTOR-ALPHA-NOTCH-20261109 · 직전 '팩터조정알파 및 파마-맥베스 분석에서 통계적 유의성이 확인되면 높은 등급을 부여할 수 있게 등급체계도 수정하자'). 통계 = 4개 모형(FF3 = Fama & French 1993 · Carhart4 = Carhart 1997 · FF5 = Fama & French 2015 · FF6 = FF5 + 모멘텀, Fama & French 2018 JFE 128:234-252 'Choosing factors') 알파의 Newey-West t 최솟값 — 모형을 골라 쓰는 여지를 없앤다. lag 3 = measurement-graduation §2 규약(PORT_t 와 같다). 문턱 = 새 숫자 없음: C→B = tier_graduation.grade_b_min_portfolio_alpha_t(현 B 문턱) · B→A = tier_graduation.min_portfolio_alpha_t_nw(현 A 문턱 · Harvey-Liu-Zhu 2016) + 기존 A 하한 · OOS · 관문 전부. 자격 = τ_D(behavior_card.json::tau_d) 뒤 시험 창에서 네 모형 알파 점추정 모두 양수(시험 창 관측 test_min_months = 12 — beta_controlled_alpha.R 의 '유효 관측 12 미만 판정 불가' 가드와 같다) · 전기간 관측 ≥ rolling_grade.json::window_months(36) · 스윕형 선정이면 DSR 관문(gates) 통과 · 위기 방어(CR) 약함이면 없음(투자철학 우선 — 약함 감점을 상쇄하지 않는다 · Q 권고 · 도훈 수용 11-09) · F 없음 · 기록 epoch = 요인 epoch. 파마-맥베스는 등급에 쓰지 않는다(매 시점 절편이 시장 움직임을 흡수해 시점 조절 · 구성 알파가 보이지 않는다 — 진단). 요인 = 02_Infrastructure/data/build_kr_factor_returns.R 산출(설정 06_Registry/kr_factor_returns.json) · 월간 내용 해시가 meta 와 같을 때만(fail-closed · 기록에 factor_md5). enabled = false 인 동안은 통계만 기록(노치 없음) — 정본 요인 파일 교체(팩터 DB 재빌드 뒤) 직후 rules_version v3.3 과 함께 켜고 저장분을 재채점한다(programs/grade_v3_backfill.R). 시험 적용(11-09 후보 요인 · 현 축 87전략): C→B 2건 중 1건은 CR 약함이라 제외 → F-Score(Piotroski 2000) 1건",
   "cdar": "behavior_card.json::cdar_alpha",
   "cdar_source": "D5 수용(2026-10-13) — S 에는 전기간 Calmar, 진단에 CDaR 병기",
   "controls_note": "크기 짝 · 노출 짝 대조(MC8)는 아직 없다 — CR '강함' 은 '크기 · 노출 방어' 와 '선택 방어' 가 구분되지 않은 상태로 기록된다(README §3.5 조건 · behavior_card controls.status = not_provided)"
