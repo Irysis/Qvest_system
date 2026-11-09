@@ -341,6 +341,18 @@ DB 구성은 다음과 같습니다(등록부 `dbs`).
   - 한 달 시범(2012-06 · 2025-06 · 옛 표 = 보충 뒤 다시 만든 v1): 굳은 팩터 옛 = 새(15 · 13 — 국면 · 거시 팩터) · 값 있는 종목 v2 가 많음(2025-06 3,763 vs 3,672) · 큰 차이 = 부채비율 계열(옛 표 0 덮어쓰기) · XF_PR02(오표기) · 발생액 · 정의 차이.
   - 전환: 등록부 `active = v2` → `build_fundamental_derived.R` 위임 → 정본 교체(96초). 사본 `.cache/fundamental_backup/pre_v2_20261109_114017/` · 표식 `ACTIVE_V2`. 정본 `fd_order_audit` rc 0 · `Origin` 열 있음.
   - 팩터 DB 전체 재빌드 11:41:44 착수(WMI 로 세션과 분리 — `Start-Process` 로 띄운 첫 시도는 도구 프로세스와 함께 바로 죽었다 · 로그 0 바이트). 로그 `.cache/scheduler_logs/factor_db_full_rebuild_20261109_114145.log` · 월간 사본 `.cache/factor_db_backup/fund_v2_20261109_114145/factor_db`.
+- ★법인세 B 코드 원천 DB `FundV2_TAX`(11-09 · 도훈 '지금 수집' · QMJ 의 당기법인세부채)
+  - 방법: 시계열(Company) 책 · 12행 Base Date = FQ0. 공식 XLA 매뉴얼 p.58 · p.64 — 재무 항목은 보고 시점(FQ0 · FY0)을 넣어야 값이 온다. 비우면 M 코드는 빈칸 · B 코드는 '#INVALID OPTION'(오전 97분 헛수집의 원인). 행 날짜 d 의 값 = d − 1분기 결산분기(3개월 래깅) · 천원.
+  - 항목(용어집 IFRS · '제조' 정의라 금융사는 결측): OtherCurLiabInclTax(B201700.M 기타유동부채 = 당기법인세부채 + 기타유동부채 + (매입채무및기타채무 − 매입채무)) · NonInterestCurLiab(B101400.M = 매입채무및기타채무 + 기타유동부채) · TradePayables(B201600.M) · DeferredTaxNetChange(B100300.M = ΔDTL − ΔDTA · 분기 증감).
+  - 항등식: 당기법인세부채 = OtherCurLiabInclTax − NonInterestCurLiab + TradePayables. 이연법인세부채 잔액은 여전히 없다(증감만).
+  - 수집(11:58~12:37 · 시트당 9~10분): 3,767사 중 3,385사 · 200003~202609 · 815,039행 → `.cache/qw_fund_v2/FundV2_TAX.parquet`(보고 `FundV2_TAX_ingest_report.json`). 빈 단위 칸 4사(상장 폐지 A150840 · A208340 · 신규 A0001A0 · A0011A0)는 매뉴얼 p.63 기본 천원으로 읽었다(v2 매입채무와 천원 단위 정확 일치 확인).
+  - 검증(`tools/tax_b_code_check.py` → `tax_b_code_check_20261109.json`):
+    - 12월 결산 당기법인세부채 보유 = v2 자산총계 보유사의 94.4~96.3%(2000~2025 해마다 · 빠진 몫은 대부분 금융사).
+    - DART 대조(FY2015~2025 · CFS 우선 · 17,829 기업-연도): 정확 97.0% · 1% 이내 97.4% · 국내만 97.6% · 98.1%. 불일치 542 = 둘 다 0 아님 429(비율 중앙값 1.000 — DART 백만 원 반올림 · 해외 상장사 A9… 22%) · B 0 / DART 양수 92 · DART 0 / B 양수 21. DART 에 줄이 없는 5,472건은 B 값 0 이 90.1%.
+    - ★정답 고르기: DART 에 같은 뜻 줄이 둘(표준 id + 비표준, 또는 미지급법인세 + 당기법인세부채)이면 한쪽이 0 인 경우가 있어 '절댓값 최대'로 고른다. `tax_liab_check.py` 는 첫 줄을 골랐다(A064820 FY2023 · A015230 FY2024 가 가짜 불일치였다).
+    - 이연법인세 증감: 네 분기 합 vs DART 연간(당기 − 전기 열) 정확 94.6% · 12월 값 하나로는 7%(분기 증감이라서).
+    - 음수 당기법인세부채 0.10%(214칸).
+  - 쓰는 법: 병합 표에는 넣지 않는다(181항목 검사). QMJ 엔진이 같은 기업-기간의 v2 1단계 표 Factor_Date 에 붙여 쓴다. 값은 정정 뒤 값(다른 v2 항목과 같은 판 한계).
 
 ## 7. 남은 일
 
@@ -357,7 +369,9 @@ DB 구성은 다음과 같습니다(등록부 `dbs`).
   - META 'CompInfo' 빈 칸 허용 수리 = 207e801e1.
 - [ ] 퀀티 드라이버 공용 함수(ColName · Get-Busy · QW-Alive/Kick-Dialog 가 3~4곳에 따로 있음 · /simplify 11-08) · 바쁨 판정을 명령줄 정규식 대신 잠금 파일로(다른 세션의 grep 명령이 걸린다 · 11-08 실측)
 - [x] 병합 경로 결정(도훈 11-08 '위 방식대로 가자') → 병합 v2 · 날짜 순서 계약 · 전환 장치(§8 3단계)
-- [ ] DART 보충 완료 뒤 전환 + 팩터 DB 전체 재빌드(도훈 11-09 지시 · `SWITCH_RUNBOOK.md`)
+- [x] DART 보충 완료 뒤 전환 + 팩터 DB 전체 재빌드 착수(11-09 11:40 · §8 · `SWITCH_RUNBOOK.md`)
+- [x] 법인세 B 코드 원천 DB `FundV2_TAX` 적재(11-09 · 도훈 '지금 수집' · §8 · 등록부 `fundamentals_v2.ts_dbs`)
+- [ ] `FundV2_TAX` 정기 갱신 — `Qvest_FundV2Update` 에 시계열 책 단계(빌더 `ops/qw_fund_v2_tax_ts.ps1` → 적재기 `data/qw_fund_v2_tax_ingest.py`)와 DATA_Key 동기화 대상 추가. 지금은 수동 실행이다.
 - [x] 갱신용 DB(최근 8분기 창 · `window_quarters`) 등록(등록부 FundV2_*_upd 5개) · 실행 = 위 예약 작업(체인 단계가 아니라 별도 작업)
 - [ ] 금융업 고유 계정(은행 · 보험 · 증권)
 - [ ] 기존 오표기 2건(RetainedEarnings · ShortTermBorr, ≤2014)의 팩터 DB 영향 정량화.

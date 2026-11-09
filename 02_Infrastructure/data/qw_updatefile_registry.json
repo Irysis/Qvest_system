@@ -119,8 +119,8 @@
       "pending": "정정치 판별(퀀티 202312 값 = DART FY2023 보고서 당기 수치인가, FY2024 보고서 전기(비교) 수치인가) — R · Python 환경 교체 뒤"
     },
     "not_available": [
-      {"what": "B 코드(FCF 상세)", "note": "Peer Analysis 로는 값이 오지 않는다(11-08 시험 2회)"},
-      {"what": "당기법인세부채(TXP)", "note": "glossary 표준 항목 없음 — DART 원장"},
+      {"what": "B 코드(FCF 상세)", "note": "Peer Analysis 로는 값이 오지 않는다(11-08 시험 2회) → 11-09 시계열(Company) + 12행 Base Date FQ0 로는 온다(공식 XLA 매뉴얼 p.58 · p.64) — 법인세 4종은 ts_dbs FundV2_TAX"},
+      {"what": "당기법인세부채(TXP)", "note": "glossary 표준 항목 없음 → 11-09 B 코드 항등식 TaxPayable = OtherCurLiabInclTax − NonInterestCurLiab + TradePayables 로 산출(ts_dbs FundV2_TAX · 2000~ · 비금융) · 금융업은 DART 원장(2015~)"},
       {"what": "이연법인세부채(TXDITC — FF BE 정의) · 선급비용(XPP) · 미지급비용(XACC) · 선수수익(DRC) · 영업권(GDWL) · 순확정급여부채 · 리스부채", "note": "문헌 T1 · T2(lit_variables_academic.md · lit_variables_expert.md)인데 glossary 재무(종목) 표준 항목에 없음(11-08 검색) — 2015~ DART 원장 ifrs-full_* 계정 · 2015 이전 없음. 현금 기반 영업이익(Ball 2016)의 운전자본은 현금흐름표 운전자본증감(M131025)으로 대신 가능"},
       {"what": "금융업 전용 계정(은행 · 보험 · 증권)", "note": "표준 M 항목만 수집 — 금융업 고유 계정은 다음 단계"}
     ],
@@ -279,6 +279,27 @@
       {"name": "FundV2_CF_upd", "file": "FundV2_CF_upd.xlsx", "target": "FundV2_CF", "items_from": "FundV2_CF", "window_quarters": 8, "status": "planned"},
       {"name": "FundV2_META_upd", "file": "FundV2_META_upd.xlsx", "target": "FundV2_META", "items_from": "FundV2_META", "window_quarters": 8, "status": "planned"},
       {"name": "FundV2_INFO_upd", "file": "FundV2_INFO_upd.xlsx", "target": "FundV2_INFO", "items_from": "FundV2_INFO", "window_quarters": 8, "status": "planned"}
+    ],
+    "ts_dbs": [
+      {"name": "FundV2_TAX", "file": "FundV2_TAX_TS.xlsx", "parquet": ".cache/qw_fund_v2/FundV2_TAX.parquet",
+       "_why": "11-09 도훈 '지금 수집' — QMJ 의 당기법인세부채(TXP)를 2000년부터. dbs 와 분리한 키다(리프레시 · 갱신 · DATA_Key 동기화 스크립트가 dbs 를 순회한다 — 시계열 책은 그 경로 밖).",
+       "layout": "timeseries_company", "frequency": "Q", "base_date": "FQ0", "period_from": "20000101",
+       "period_map": "행 날짜 d 의 값 = d − 1분기 결산분기(FQ0 · 기본 3개월 래깅 · 공식 XLA 매뉴얼 http://seven.quantiwise.com/Manual/QW7_User Manual/Quantiwise7_XLA(Kor).pdf p.58 · p.64)",
+       "unit": "Local thou(빈 칸 = 재무 아이템 기본 천원 · 매뉴얼 p.63) → ×1000 = 원",
+       "scope": "비금융(B 코드 = 용어집 '제조' 정의) — 은행 · 보험 · 증권은 '#INVALID OPTION'(결측) · 코드는 .M 필수(접미 없으면 전 종목 #INVALID OPTION)",
+       "builder": "02_Infrastructure/ops/qw_fund_v2_tax_ts.ps1", "ingest": "02_Infrastructure/data/qw_fund_v2_tax_ingest.py",
+       "check": "04_Research/01_reports/quantiwise_data_expansion_20261106/fundamentals_v2/tools/tax_b_code_check.py",
+       "items": [
+         {"item": "OtherCurLiabInclTax", "code": "B201700.M", "name": "기타유동부채(FCF2)", "definition": "당기법인세부채(미지급법인세) + 기타유동부채 + (매입채무및기타채무 − 매입채무)"},
+         {"item": "NonInterestCurLiab", "code": "B101400.M", "name": "비이자부유동부채(FCF1)", "definition": "매입채무및기타채무 + 기타유동부채"},
+         {"item": "TradePayables", "code": "B201600.M", "name": "매입채무(FCF2)", "definition": "매입채무"},
+         {"item": "DeferredTaxNetChange", "code": "B100300.M", "name": "이연법인세증감(FCF1)", "definition": "이연법인세부채 − 이연법인세부채(전기) + 이연법인세자산(전기) − 이연법인세자산 — 분기 증감(연간 = 네 분기 합)"}
+       ],
+       "identity": "TaxPayable(당기법인세부채) = OtherCurLiabInclTax − NonInterestCurLiab + TradePayables",
+       "validated_20261109": "전 종목 적재 815,039행 · 3,385사 · 200003~202609 · 12월 결산 TXP 보유 = v2 자산총계 보유사의 94.4~96.3%(2000~2025 해마다) · DART 대조(FY2015~2025 · 17,829 기업-연도) 정확 97.0% · 1% 이내 97.4%(국내만 97.6% · 98.1%) · 이연법인세 증감 네 분기 합 vs DART 정확 94.6% · 음수 TXP 0.10%",
+       "pit": "값 = 퀀티 정정 뒤 값(다른 v2 항목과 같은 판 한계). 가용일은 같은 기업-기간의 v2 1단계 표 Factor_Date 에 붙여 쓴다(병합 표 181항목 검사 때문에 병합 표에는 넣지 않는다).",
+       "update": "정기 갱신(Qvest_FundV2Update) 미포함 — 수동 실행(빌더 → 적재기). 남은 일 = 갱신 단계 · DATA_Key 동기화 대상 추가",
+       "status": "loaded_20261109"}
     ]
   }
 }
