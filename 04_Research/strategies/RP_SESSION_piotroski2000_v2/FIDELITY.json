@@ -1,182 +1,199 @@
 {
-  "schema": "fidelity_session_v1",
-  "fidelity": "faithful",
-  "paper": {
-    "citation": "Piotroski, J. D. (2000). Value Investing: The Use of Historical Financial Statement Information to Separate Winners from Losers. Journal of Accounting Research 38 (Supplement): 1-41.",
-    "url": "https://doi.org/10.2307/2672906",
-    "read_from": "Chicago GSB Selected Paper 84 판(2002-01 · 원문 전문 · chicagobooth.edu/~/media/FE874EE65F624AAEBD0166B1974FD74D.pdf) — 신호 정의 §2.3 · 표본 §3.1 · 수익 §3.2 · 표 1 변수 정의 · 표 3 · §4.2 순위 합 대안"
+ "schema": "fidelity_session_v1",
+ "fidelity": "faithful",
+ "paper": {
+  "citation": "Piotroski, J. D. (2000). Value Investing: The Use of Historical Financial Statement Information to Separate Winners from Losers. Journal of Accounting Research 38 (Supplement): 1-41.",
+  "url": "https://doi.org/10.2307/2672906",
+  "read_from": "Chicago GSB Selected Paper 84 판(2002-01 · 원문 전문 · chicagobooth.edu/~/media/FE874EE65F624AAEBD0166B1974FD74D.pdf) — 신호 정의 §2.3 · 표본 §3.1 · 수익 §3.2 · 표 1 변수 정의 · 표 3 · §4.2 순위 합 대안"
+ },
+ "lane": "세션 충실구현 · 퀀티 재무 DB v2 직접 판독(.cache/fundamental_v2/fund_v2_quarterly.parquet) · v2 전환 전 판독(원장 · 풀 · L-code 부작용 끔)",
+ "headline_variant": "hl",
+ "variants": [
+  {
+   "id": "hl",
+   "label": "High F_SCORE(8~9) 롱 − Low F_SCORE(0~1) 숏 · 고 BM 5분위 · 동일가중 · 1년 매수 후 보유",
+   "paper_quote": "[초록 · p.3] buys expected winners and shorts expected losers generates a 23% annual return · [표 3 Panel A] High—Low 0.230",
+   "claims": {
+    "long_short": true,
+    "n_names": null,
+    "net_exposure": 0.0,
+    "weighting": "ew"
+   }
   },
-  "lane": "세션 충실구현 · 퀀티 재무 DB v2 직접 판독(.cache/fundamental_v2/fund_v2_quarterly.parquet) · v2 전환 전 판독(원장 · 풀 · L-code 부작용 끔)",
-  "headline_variant": "hl",
-  "variants": [
-    {
-      "id": "hl",
-      "label": "High F_SCORE(8~9) 롱 − Low F_SCORE(0~1) 숏 · 고 BM 5분위 · 동일가중 · 1년 매수 후 보유",
-      "paper_quote": "[초록 · p.3] buys expected winners and shorts expected losers generates a 23% annual return · [표 3 Panel A] High—Low 0.230",
-      "claims": {
-        "long_short": true,
-        "n_names": null,
-        "net_exposure": 0.0,
-        "weighting": "ew"
-      }
-    },
-    {
-      "id": "ha",
-      "label": "High F_SCORE(8~9) 롱 − 고 BM 전체 숏(표 3 High—All) · 동일가중 · 같은 종목 롱/숏은 순비중으로 합침(수익 동일)",
-      "paper_quote": "[§3.3] the second test compares high F_SCORE firms against the complete portfolio of all high BM firms · [표 3 Panel A] High—All 0.075",
-      "claims": {
-        "long_short": true,
-        "n_names": null,
-        "net_exposure": 0.0,
-        "weighting": "ew"
-      }
-    },
-    {
-      "id": "rank",
-      "label": "RANK_SCORE(신호 연간 순위 합) 5분위 최상 − 최하 · 분위 경계 = 직전 회계연도 분포 · 동일가중",
-      "paper_quote": "[§2.3.4 · §4.2] the main results of this paper are also presented using an alternative methodology where the signal realizations are annually ranked and summed · highest and lowest ranked score quintile 0.092",
-      "claims": {
-        "long_short": true,
-        "n_names": null,
-        "net_exposure": 0.0,
-        "weighting": "ew"
-      }
-    }
-  ],
-  "not_implemented": [
-    {
-      "what": "2년 보유(표 3 Panel C)",
-      "code": "grid",
-      "why": "수치 격자 — 대표 칸(1년)만(REPLICATION-ALL-METHODS-20261017 결정 1)"
-    },
-    {
-      "what": "Low = F_SCORE ≤ 2(각주 8)",
-      "code": "grid",
-      "why": "강건성 정의 — 주결과 아님(논문: qualitatively similar)"
-    },
-    {
-      "what": "규모 3분위 · 애널리스트 · 회전율 · 주가 하위표본(표 4~6)",
-      "code": "J2",
-      "why": "하위표본 분해 — 포트폴리오 구성법이 아니다"
-    },
-    {
-      "what": "부트스트랩 검정 · 사후 이익 발표 수익(표 9)",
-      "code": "J2",
-      "why": "성과 산출에 들어가지 않는 검정"
-    }
-  ],
-  "kept": "아홉 신호의 원문 정의 · 이진화 · 합(0~9) · High 8~9 / Low 0~1 · 고 BM 5분위(직전 회계연도 분포 경계) · 회계연도말 BM · 다섯째 달 초 편입 · 1년 매수 후 보유 · 동일가중 · 롱숏 · 상장폐지 수익 0 · 종목 수 상한 없음 · 유동성 필터 없음(논문 무명시) · 비용 무명시(gross 병기)",
-  "changed": "유니버스 · 기간 = 측정 축(epoch all_hyg_px1000_2000_v1 · 전 종목 + 위생 + 동전주 바닥 · 러너 주입)만",
-  "paper_original_form": "논문 수익은 기업-연도 1년 BHR 의 표본 평균(풀링)이다 — 여기서는 매년 같은 날 편입하는 달력 포트폴리오(롱 − 숏)의 일간 수익으로 옮겼다(12월 결산 단일 코호트라 시점 겹침 없음). 23% 는 시장조정 BHR 평균 차이지 달력 포트폴리오 연수익이 아니다 — 대조는 방향 · 크기 수준으로만 한다.",
-  "supplements": [
-    {
-      "item": "특별항목 전 순이익",
-      "paper": "net income before extraordinary items",
-      "impl": "계속사업이익(IncomeContOps · 중단사업 제외 — Compustat IB 정의와 같은 범위) − (K-GAAP 특별이익 − 특별손실). K-GAAP 특별손익은 세전 값이라 세효과를 분리하지 못했다(보충 · 2007 이후 특별손익 항목 없음 → 차감 0). 실측: 2000~2006 IncomeContOps = NetIncome(천원 단위 반올림 차이) — 퀀티 계속사업이익은 그 기간 특별손익을 포함한다"
-    },
-    {
-      "item": "CFO 공백(FY2000~2002)",
-      "paper": "현금흐름표 부재 연도의 대체 방법 — 원문에 없음(각주 11 은 자본 발행 식별에 '현금흐름표 또는 자금원천표'를 썼다고만 적는다)",
-      "impl": "대체하지 않는다. 영업현금흐름이 없는 기업-연도는 '신호 산출 자료 부족'으로 표본에서 빠진다(§3.1 retain firms ... with sufficient financial statement data). v2 분기 표의 영업현금흐름 · 자본증감은 2003년 1분기부터 실재(FY2000~2002 = 24~31사) → 아홉 신호를 갖춘 첫 해 = FY2003(편입 2004-04 말). 신호를 빼거나 7점 만점으로 바꾸지 않았다. 유효 시작은 러너의 실효 시작 규칙이 정한다"
-    },
-    {
-      "item": "장기부채(ΔLEVER)",
-      "paper": "total long-term debt (including the portion of long-term debt classified as current) scaled by average total assets",
-      "impl": "장기차입금 + 사채(퀀티 사채 = 전환 · 신주인수권 · 교환사채 포함 — 실측 사채 ≥ 전환사채 99.5%) + CurrentBorr(퀀티 M113300) + 유동성사채(CurrentBonds · M113400). ★사실 정정(2026-11-09 Q 검토): 퀀티 M113300 = 단기차입금 + 유동성장기차입금(+ IFRS 유동 리스부채)이다 — 원문의 '유동성 대체분'에 단기차입금이 섞인다(근거 04_Research/01_reports/quantiwise_data_expansion_20261106/fundamentals_v2/README.md §ShortTermBorr ← CurrentBorr). 정의는 측정 전에 정한 그대로 두었다(결과를 본 뒤 바꾸면 사후 선택) — v2 전환 뒤 재측정 때 측정 전에 다시 정한다. 항목 결측 = 0(총자산이 있는 기업-연도)"
-    },
-    {
-      "item": "ΔLEVER · ΔLIQUID · ΔMARGIN · ΔTURN 의 무변화",
-      "paper": "fell(rose) · improved · positive",
-      "impl": "엄격 부등호 — 무변화(예: 두 해 모두 장기부채 0)는 0점. 원문 '하락하면 1'을 그대로 읽었다"
-    },
-    {
-      "item": "EQ_OFFER",
-      "paper": "did not issue common equity in the year preceding portfolio formation (현금흐름표 · 자금원천표로 식별)",
-      "impl": "현금흐름표 '자본의 증감'(EquityChangeCF · 네 분기 합) > 0 이면 발행(0점). 순액이라 같은 해 발행 + 자사주 매입이 섞이면 순발행만 잡는다 · 우선주 발행이 섞인다(보충). 현금흐름표가 있는 해에 항목 결측 = 0(발행 없음)"
-    },
-    {
-      "item": "ΔTURN 분모",
-      "paper": "본문 §2.3.3 = 기초 총자산 · 표 1 = 평균 총자산(원문 불일치)",
-      "impl": "본문 정의(기초 총자산)"
-    },
-    {
-      "item": "매출총이익",
-      "paper": "net sales less cost of goods sold",
-      "impl": "GrossProfit · 결측이면 Revenue − COGS · 매출 ≤ 0 인 기업-연도는 자료 부족(금융업 대부분 자연 제외)"
-    },
-    {
-      "item": "BM · 시가총액",
-      "paper": "book value of equity at the end of fiscal year t / MVE(fiscal year-end shares × closing price)",
-      "impl": "장부 자본 = 지배주주 자본총계(없으면 자본총계) − 우선주자본금(액면) · 시가총액 = 12월 마지막 거래일 RAWDATA Size(보통주). 장부 자본 ≤ 0 은 BM 산출 불가(보충 — Fama-French 관행)"
-    },
-    {
-      "item": "BM 분위 경계 표본",
-      "paper": "all firms with sufficient data · prior fiscal year's BM distribution",
-      "impl": "직전 회계연도의 회계연도말 측정 축 멤버(위생 멤버십) 중 BM 산출 가능 기업 전부의 80 백분위(type 7)"
-    },
-    {
-      "item": "결산월",
-      "paper": "각 기업 회계연도말 뒤 다섯째 달 초(기업마다 다른 날)",
-      "impl": "12월 결산만(현행 결산월 표 FiscalMonth = 12 ∧ 행 표식 non_dec_fy 아님) — 비12월 결산 141사(3.8%)는 제외. 하네스가 신호일 사이를 매수 후 보유로 잇는 단일 포트폴리오라 엇갈린 코호트를 넣으면 가짜 회전율이 생긴다. 결산월 표는 현행 스냅샷이다(과거 결산월 변경 기업 = 행 표식으로 보완)"
-    },
-    {
-      "item": "편입 · 체결",
-      "paper": "beginning of the fifth month after fiscal year-end",
-      "impl": "신호일 = 이듬해 4월 마지막 거래일 · 하네스 집행 = 5월 첫 거래일 종가(close_t1 · 계약 기본값) → 수익은 그다음 거래일부터 12개월(다음 해 5월 첫 거래일 종가까지)"
-    },
-    {
-      "item": "분기 완결",
-      "paper": "annual data",
-      "impl": "손익 · 영업현금흐름 · 매출 = 네 분기 단독값이 모두 있어야 연간값(분기 누락 기업-연도 = 자료 부족)"
-    },
-    {
-      "item": "늦은 공시 · 정정 미룸",
-      "paper": "다섯째 달을 고른 이유 = 자료 가용 보장",
-      "impl": "가용일 > 신호일이면 그해 그 기업은 빠진다(직전 회계연도로 대체하지 않는다 — 같은 신호를 두 해 쓰게 된다)"
-    },
-    {
-      "item": "RANK_SCORE 방향",
-      "paper": "signal realizations ranked between zero and one each year and summed",
-      "impl": "좋은 쪽이 높게: ROA · CFO · ΔROA · ΔLIQUID · ΔMARGIN · ΔTURN 은 그대로, ACCRUAL · ΔLEVER 는 부호를 바꿔 순위, EQ_OFFER 는 0/1 지표를 평균 순위. 순위 표본 = 그해 고 BM ∧ 아홉 신호 기업. 첫 해는 직전 분포가 없어 편입 없음"
-    },
-    {
-      "item": "빈 Low 해",
-      "paper": "High−Low 는 두 군이 있어야 정의된다(원문 수익은 풀링 평균이라 빈 해가 문제되지 않는다)",
-      "impl": "Low(0~1) 또는 High 가 공집합인 편입일은 그해 포트폴리오를 만들지 않는다 → 하네스가 직전 코호트를 다음 편입일까지 보유(FY2015 → 2015-05 코호트를 2017-05 까지 2년 보유 · 1년 보유 이탈 1회). FY2003(2004-04 편입)은 Low 0 이라 대표 hl 의 첫 편입은 2005-04 · 가용일 미룸으로 빠진 FY2015 고 BM 기업 34곳 중 F 0~1 은 1곳(엔진 진단 — 정정 미룸 제외가 Low 를 비운 것은 아니다)"
-    },
-    {
-      "item": "RANK_SCORE 5분위 경계의 최소 표본",
-      "paper": "prior fiscal year's RANK_SCORE distribution",
-      "impl": "직전 분포 관측이 5개 미만이면 경계를 정의하지 않는다(5분위당 1개). 첫 판(variants/*_superseded_prior1)은 FY2002 후보 1개뿐인 분포로 FY2003 을 갈랐다 — 그 판은 인용 금지 · 재측정판이 정본"
-    }
-  ],
-  "pit_boundary": [
-    "퀀티 재무 값은 정정 뒤 값(최신판)이다. FY2015~ 12월 결산 중 DART 와 0.5% 넘게 다른 기업-연도는 v2 가 다음 해 사업보고서 뒤로 가용일을 미뤘다(Avail_Basis restated_next_fy) — 그해 편입에서 빠진다.",
-    "DART 연간 보충이 진행 중이라 FY2015~ 미검사분(Check no_dart)과 FY2014 까지 전부(pre2015)는 나중 정정이 원래 공시 날짜에 실려 있을 수 있다(판 자료 없음 — 측정된 성과에 정정 정보가 섞였을 가능성).",
-    "가용일은 엔진에서 다시 강제한다: max(쓴 행 t · t-1 · t-2 의 Factor_Date, 익년 3/31) ≤ 편입 신호일.",
-    "수정주가 · 수정 주식 수 수준은 이후 기업행위를 반영한다(측정 축 동전주 바닥 · PIT 경계 기록 · MEASUREMENT-AXIS-PX1000-20261017)."
-  ],
-  "commission_paper": 0,
-  "portfolio_spec": {
-    "construction": "engine_direct",
-    "weighting": "paper",
-    "rebalance": "annual (신호일 = 4월 마지막 거래일 · 하네스는 신호일 사이를 매수 후 보유)"
+  {
+   "id": "ha",
+   "label": "High F_SCORE(8~9) 롱 − 고 BM 전체 숏(표 3 High—All) · 동일가중 · 같은 종목 롱/숏은 순비중으로 합침(수익 동일)",
+   "paper_quote": "[§3.3] the second test compares high F_SCORE firms against the complete portfolio of all high BM firms · [표 3 Panel A] High—All 0.075",
+   "claims": {
+    "long_short": true,
+    "n_names": null,
+    "net_exposure": 0.0,
+    "weighting": "ew"
+   }
   },
-  "declared_role": "잔차 알파(가치주 안 재무 건전성 선별 · 롱숏)",
-  "harness_disclosure": "run_replication_simulation 은 신호일 사이 다리 안을 Return.portfolio(rebalance_on = NA) 매수 후 보유로 잇는다 — 1년 보유 · 기간 중 표류가 논문 방식과 같다. 다리 결합은 GL·L − GS·S(일간 선형). 회전율 비용은 목표 비중 차이 근사. 하네스 진단의 rebalance 라벨은 'monthly'(신호일이 달마다 1개 이하이면 월간 경로)지만 실제 신호일은 해마다 1개다.",
-  "observations": {
-    "short_leg": "대표 hl 숏(F 0~1) 평균 4.4종 · 최소 1종(2010 · 2011 · 2017 · 2026 편입) — 논문 표본(Low 396 · 연 약 19)보다 훨씬 얇다. 최대낙폭 −72.5%(2010-05 → 2012-10)는 숏 1종 해에 생겼다",
-    "high_bm_breadth": "고 BM ∧ 아홉 신호 후보 연 53~588(직전 분포 경계라 하락장 다음 해에 커진다 — 논문 각주 7 과 같은 현상)",
-    "late_exclusions": "가용일 > 신호일로 빠진 멤버 기업 FY2015~ 연 159~284(정정 미룸 restated_next_fy 가 대부분)"
+  {
+   "id": "rank",
+   "label": "RANK_SCORE(신호 연간 순위 합) 5분위 최상 − 최하 · 분위 경계 = 직전 회계연도 분포 · 동일가중",
+   "paper_quote": "[§2.3.4 · §4.2] the main results of this paper are also presented using an alternative methodology where the signal realizations are annually ranked and summed · highest and lowest ranked score quintile 0.092",
+   "claims": {
+    "long_short": true,
+    "n_names": null,
+    "net_exposure": 0.0,
+    "weighting": "ew"
+   }
+  }
+ ],
+ "not_implemented": [
+  {
+   "what": "2년 보유(표 3 Panel C)",
+   "code": "grid",
+   "why": "수치 격자 — 대표 칸(1년)만(REPLICATION-ALL-METHODS-20261017 결정 1)"
   },
-  "engine_md5_note": "pitcut 수리판 엔진 md5 = a5c2ee6349d1a87cb8c90ce6f8cd396e (정본 산출 stage_artifacts/replication/20261109_105545_37508)",
-  "pit_repairs": [
-    {
-      "date": "2026-11-09",
-      "found_by": "Q 검토",
-      "leak": "고 BM 5분위 경계(cut80_prior)가 경계 표본 FY yr−1 행의 가용일을 보지 않았다 — 편입 신호일 d 이후에야 쓸 수 있는 장부가(정정 공시 늦은 접수 등)가 경계 분포에 섞였다(선정 통계 as-of 위반 · pit.md C1)",
-      "fix": "경계 표본 = FY yr−1 ∧ BM 산출 가능 ∧ 회계연도말 측정 축 멤버 ∧ max(장부 자본 항목 Factor_Date(fd_be), 익년 3/31) ≤ d. fd_be = 실제로 쓴 자본 항목(지배주주 자본총계, 없으면 자본총계)과 우선주자본금의 Factor_Date 최대 — 행 전체 fd 보다 좁고 원문 경계가 쓰는 값과 같다. 진단 열 n_cut · n_cut_late 추가",
-      "invalidated": "stage_artifacts/replication/20261109_102936_33072_superseded_pitcut (variants 포함 · 인용 금지)"
-    }
-  ]
+  {
+   "what": "Low = F_SCORE ≤ 2(각주 8)",
+   "code": "grid",
+   "why": "강건성 정의 — 주결과 아님(논문: qualitatively similar)"
+  },
+  {
+   "what": "규모 3분위 · 애널리스트 · 회전율 · 주가 하위표본(표 4~6)",
+   "code": "J2",
+   "why": "하위표본 분해 — 포트폴리오 구성법이 아니다"
+  },
+  {
+   "what": "부트스트랩 검정 · 사후 이익 발표 수익(표 9)",
+   "code": "J2",
+   "why": "성과 산출에 들어가지 않는 검정"
+  }
+ ],
+ "kept": "아홉 신호의 원문 정의 · 이진화 · 합(0~9) · High 8~9 / Low 0~1 · 고 BM 5분위(직전 회계연도 분포 경계) · 회계연도말 BM · 다섯째 달 초 편입 · 1년 매수 후 보유 · 동일가중 · 롱숏 · 상장폐지 수익 0 · 종목 수 상한 없음 · 유동성 필터 없음(논문 무명시) · 비용 무명시(gross 병기)",
+ "changed": "유니버스 · 기간 = 측정 축(epoch all_hyg_px1000_2000_v1 · 전 종목 + 위생 + 동전주 바닥 · 러너 주입)만",
+ "paper_original_form": "논문 수익은 기업-연도 1년 BHR 의 표본 평균(풀링)이다 — 여기서는 매년 같은 날 편입하는 달력 포트폴리오(롱 − 숏)의 일간 수익으로 옮겼다(12월 결산 단일 코호트라 시점 겹침 없음). 23% 는 시장조정 BHR 평균 차이지 달력 포트폴리오 연수익이 아니다 — 대조는 방향 · 크기 수준으로만 한다.",
+ "supplements": [
+  {
+   "item": "특별항목 전 순이익",
+   "paper": "net income before extraordinary items",
+   "impl": "계속사업이익(IncomeContOps · 중단사업 제외 — Compustat IB 정의와 같은 범위) − (K-GAAP 특별이익 − 특별손실). K-GAAP 특별손익은 세전 값이라 세효과를 분리하지 못했다(보충 · 2007 이후 특별손익 항목 없음 → 차감 0). 실측: 2000~2006 IncomeContOps = NetIncome(천원 단위 반올림 차이) — 퀀티 계속사업이익은 그 기간 특별손익을 포함한다"
+  },
+  {
+   "item": "CFO 공백(FY2000~2002)",
+   "paper": "현금흐름표 부재 연도의 대체 방법 — 원문에 없음(각주 11 은 자본 발행 식별에 '현금흐름표 또는 자금원천표'를 썼다고만 적는다)",
+   "impl": "대체하지 않는다. 영업현금흐름이 없는 기업-연도는 '신호 산출 자료 부족'으로 표본에서 빠진다(§3.1 retain firms ... with sufficient financial statement data). v2 분기 표의 영업현금흐름 · 자본증감은 2003년 1분기부터 실재(FY2000~2002 = 24~31사) → 아홉 신호를 갖춘 첫 해 = FY2003(편입 2004-04 말). 신호를 빼거나 7점 만점으로 바꾸지 않았다. 유효 시작은 러너의 실효 시작 규칙이 정한다"
+  },
+  {
+   "item": "장기부채(ΔLEVER)",
+   "paper": "total long-term debt (including the portion of long-term debt classified as current) scaled by average total assets",
+   "impl": "장기차입금 + 사채(퀀티 사채 = 전환 · 신주인수권 · 교환사채 포함 — 실측 사채 ≥ 전환사채 99.5%) + CurrentBorr(퀀티 M113300) + 유동성사채(CurrentBonds · M113400). ★사실 정정(2026-11-09 Q 검토): 퀀티 M113300 = 단기차입금 + 유동성장기차입금(+ IFRS 유동 리스부채)이다 — 원문의 '유동성 대체분'에 단기차입금이 섞인다(근거 04_Research/01_reports/quantiwise_data_expansion_20261106/fundamentals_v2/README.md §ShortTermBorr ← CurrentBorr). 정의는 측정 전에 정한 그대로 두었다(결과를 본 뒤 바꾸면 사후 선택) — v2 전환 뒤 재측정 때 측정 전에 다시 정한다. 항목 결측 = 0(총자산이 있는 기업-연도)"
+  },
+  {
+   "item": "ΔLEVER · ΔLIQUID · ΔMARGIN · ΔTURN 의 무변화",
+   "paper": "fell(rose) · improved · positive",
+   "impl": "엄격 부등호 — 무변화(예: 두 해 모두 장기부채 0)는 0점. 원문 '하락하면 1'을 그대로 읽었다"
+  },
+  {
+   "item": "EQ_OFFER",
+   "paper": "did not issue common equity in the year preceding portfolio formation (현금흐름표 · 자금원천표로 식별)",
+   "impl": "현금흐름표 '자본의 증감'(EquityChangeCF · 네 분기 합) > 0 이면 발행(0점). 순액이라 같은 해 발행 + 자사주 매입이 섞이면 순발행만 잡는다 · 우선주 발행이 섞인다(보충). 현금흐름표가 있는 해에 항목 결측 = 0(발행 없음)"
+  },
+  {
+   "item": "ΔTURN 분모",
+   "paper": "본문 §2.3.3 = 기초 총자산 · 표 1 = 평균 총자산(원문 불일치)",
+   "impl": "본문 정의(기초 총자산)"
+  },
+  {
+   "item": "매출총이익",
+   "paper": "net sales less cost of goods sold",
+   "impl": "GrossProfit · 결측이면 Revenue − COGS · 매출 ≤ 0 인 기업-연도는 자료 부족(금융업 대부분 자연 제외)"
+  },
+  {
+   "item": "BM · 시가총액",
+   "paper": "book value of equity at the end of fiscal year t / MVE(fiscal year-end shares × closing price)",
+   "impl": "장부 자본 = 지배주주 자본총계(없으면 자본총계) − 우선주자본금(액면) · 시가총액 = 12월 마지막 거래일 RAWDATA Size(보통주). 장부 자본 ≤ 0 은 BM 산출 불가(보충 — Fama-French 관행)"
+  },
+  {
+   "item": "BM 분위 경계 표본",
+   "paper": "all firms with sufficient data · prior fiscal year's BM distribution",
+   "impl": "직전 회계연도의 회계연도말 측정 축 멤버(위생 멤버십) 중 BM 산출 가능 기업 전부의 80 백분위(type 7)"
+  },
+  {
+   "item": "결산월",
+   "paper": "각 기업 회계연도말 뒤 다섯째 달 초(기업마다 다른 날)",
+   "impl": "12월 결산만(현행 결산월 표 FiscalMonth = 12 ∧ 행 표식 non_dec_fy 아님) — 비12월 결산 141사(3.8%)는 제외. 하네스가 신호일 사이를 매수 후 보유로 잇는 단일 포트폴리오라 엇갈린 코호트를 넣으면 가짜 회전율이 생긴다. 결산월 표는 현행 스냅샷이다(과거 결산월 변경 기업 = 행 표식으로 보완)"
+  },
+  {
+   "item": "편입 · 체결",
+   "paper": "beginning of the fifth month after fiscal year-end",
+   "impl": "신호일 = 이듬해 4월 마지막 거래일 · 하네스 집행 = 5월 첫 거래일 종가(close_t1 · 계약 기본값) → 수익은 그다음 거래일부터 12개월(다음 해 5월 첫 거래일 종가까지)"
+  },
+  {
+   "item": "분기 완결",
+   "paper": "annual data",
+   "impl": "손익 · 영업현금흐름 · 매출 = 네 분기 단독값이 모두 있어야 연간값(분기 누락 기업-연도 = 자료 부족)"
+  },
+  {
+   "item": "늦은 공시 · 정정 미룸",
+   "paper": "다섯째 달을 고른 이유 = 자료 가용 보장",
+   "impl": "가용일 > 신호일이면 그해 그 기업은 빠진다(직전 회계연도로 대체하지 않는다 — 같은 신호를 두 해 쓰게 된다)"
+  },
+  {
+   "item": "RANK_SCORE 방향",
+   "paper": "signal realizations ranked between zero and one each year and summed",
+   "impl": "좋은 쪽이 높게: ROA · CFO · ΔROA · ΔLIQUID · ΔMARGIN · ΔTURN 은 그대로, ACCRUAL · ΔLEVER 는 부호를 바꿔 순위, EQ_OFFER 는 0/1 지표를 평균 순위. 순위 표본 = 그해 고 BM ∧ 아홉 신호 기업. 첫 해는 직전 분포가 없어 편입 없음"
+  },
+  {
+   "item": "빈 Low 해",
+   "paper": "High−Low 는 두 군이 있어야 정의된다(원문 수익은 풀링 평균이라 빈 해가 문제되지 않는다)",
+   "impl": "Low(0~1) 또는 High 가 공집합인 편입일은 그해 포트폴리오를 만들지 않는다 → 하네스가 직전 코호트를 다음 편입일까지 보유(FY2015 → 2015-05 코호트를 2017-05 까지 2년 보유 · 1년 보유 이탈 1회). FY2003(2004-04 편입)은 Low 0 이라 대표 hl 의 첫 편입은 2005-04 · 가용일 미룸으로 빠진 FY2015 고 BM 기업 34곳 중 F 0~1 은 1곳(엔진 진단 — 정정 미룸 제외가 Low 를 비운 것은 아니다)"
+  },
+  {
+   "item": "RANK_SCORE 5분위 경계의 최소 표본",
+   "paper": "prior fiscal year's RANK_SCORE distribution",
+   "impl": "직전 분포 관측이 5개 미만이면 경계를 정의하지 않는다(5분위당 1개). 첫 판(variants/*_superseded_prior1)은 FY2002 후보 1개뿐인 분포로 FY2003 을 갈랐다 — 그 판은 인용 금지 · 재측정판이 정본"
+  }
+ ],
+ "pit_boundary": [
+  "퀀티 재무 값은 정정 뒤 값(최신판)이다. FY2015~ 12월 결산 중 DART 와 0.5% 넘게 다른 기업-연도는 v2 가 다음 해 사업보고서 뒤로 가용일을 미뤘다(Avail_Basis restated_next_fy) — 그해 편입에서 빠진다.",
+  "DART 연간 보충이 진행 중이라 FY2015~ 미검사분(Check no_dart)과 FY2014 까지 전부(pre2015)는 나중 정정이 원래 공시 날짜에 실려 있을 수 있다(판 자료 없음 — 측정된 성과에 정정 정보가 섞였을 가능성).",
+  "가용일은 엔진에서 다시 강제한다: max(쓴 행 t · t-1 · t-2 의 Factor_Date, 익년 3/31) ≤ 편입 신호일.",
+  "수정주가 · 수정 주식 수 수준은 이후 기업행위를 반영한다(측정 축 동전주 바닥 · PIT 경계 기록 · MEASUREMENT-AXIS-PX1000-20261017)."
+ ],
+ "commission_paper": 0,
+ "portfolio_spec": {
+  "construction": "engine_direct",
+  "weighting": "paper",
+  "rebalance": "annual (신호일 = 4월 마지막 거래일 · 하네스는 신호일 사이를 매수 후 보유)"
+ },
+ "declared_role": "잔차 알파(가치주 안 재무 건전성 선별 · 롱숏)",
+ "harness_disclosure": "run_replication_simulation 은 신호일 사이 다리 안을 Return.portfolio(rebalance_on = NA) 매수 후 보유로 잇는다 — 1년 보유 · 기간 중 표류가 논문 방식과 같다. 다리 결합은 GL·L − GS·S(일간 선형). 회전율 비용은 목표 비중 차이 근사. 하네스 진단의 rebalance 라벨은 'monthly'(신호일이 달마다 1개 이하이면 월간 경로)지만 실제 신호일은 해마다 1개다.",
+ "observations": {
+  "short_leg": "대표 hl 숏(F 0~1) 평균 4.4종 · 최소 1종(2010 · 2011 · 2017 · 2026 편입) — 논문 표본(Low 396 · 연 약 19)보다 훨씬 얇다. 최대낙폭 −72.5%(2010-05 → 2012-10)는 숏 1종 해에 생겼다",
+  "high_bm_breadth": "고 BM ∧ 아홉 신호 후보 연 53~588(직전 분포 경계라 하락장 다음 해에 커진다 — 논문 각주 7 과 같은 현상)",
+  "late_exclusions": "가용일 > 신호일로 빠진 멤버 기업 FY2015~ 연 159~284(정정 미룸 restated_next_fy 가 대부분)"
+ },
+ "engine_md5_note": "pitcut 수리판 엔진 md5 = a5c2ee6349d1a87cb8c90ce6f8cd396e (정본 산출 stage_artifacts/replication/20261109_105545_37508)",
+ "pit_repairs": [
+  {
+   "date": "2026-11-09",
+   "found_by": "Q 검토",
+   "leak": "고 BM 5분위 경계(cut80_prior)가 경계 표본 FY yr−1 행의 가용일을 보지 않았다 — 편입 신호일 d 이후에야 쓸 수 있는 장부가(정정 공시 늦은 접수 등)가 경계 분포에 섞였다(선정 통계 as-of 위반 · pit.md C1)",
+   "fix": "경계 표본 = FY yr−1 ∧ BM 산출 가능 ∧ 회계연도말 측정 축 멤버 ∧ max(장부 자본 항목 Factor_Date(fd_be), 익년 3/31) ≤ d. fd_be = 실제로 쓴 자본 항목(지배주주 자본총계, 없으면 자본총계)과 우선주자본금의 Factor_Date 최대 — 행 전체 fd 보다 좁고 원문 경계가 쓰는 값과 같다. 진단 열 n_cut · n_cut_late 추가",
+   "invalidated": "stage_artifacts/replication/20261109_102936_33072_superseded_pitcut (variants 포함 · 인용 금지)"
+  }
+ ],
+ "pre_registration_remeasure_v2": {
+  "registered_at": "2026-11-09T12:34:37+09:00",
+  "registered_by": "Q(세션 fe712ea2) — 측정 전 고정 · 결과를 보기 전",
+  "applies_to": "v2 전환(11-09 11:40) + 팩터 DB 전체 재빌드(factor_db_full_rebuild_20261109_114145) 완료 뒤 재측정 — 대표 hl(chain/1) · ha · rank(sweep · n = 3)",
+  "ls_combination": {
+   "value": "bhr",
+   "basis": "원문 표 3 = 기업-연도 1년 매수 후 보유 수익(BHR) 평균의 차 · decision_register REPLICATION-LS-PAPER-BHR-20261109(도훈 '논문식으로 진행') · 하네스 커밋 6c990e7f9e"
+  },
+  "ltd": {
+   "value": "LongTermBorr + Bonds + CurrentBonds(M113400 유동성사채)",
+   "paper": "total long-term debt (including the portion of long-term debt classified as current) scaled by average total assets",
+   "why": "퀀티 M113300(CurrentBorr) = 단기차입금 + 유동성장기차입금(+ IFRS 유동 리스부채) — 단기차입금이 섞여 장기부채 정의를 바꾼다. 빼면 원문의 유동성 대체분 중 유동성장기차입금이 빠진다(퀀티에 단독 항목 없음) — 그 누락을 신고한다. 사채의 유동성 대체분(M113400)은 넣는다.",
+   "replaces": "첫 측정의 장기부채(장기차입금 + 사채 + M113300 + M113400)"
+  },
+  "unchanged": "그 밖 신호 정의 · 변형 3종 · 편입 시점(4월 말 신호 · 5월 첫 거래일 종가 집행) · 가용일 규칙(Factor_Date · 익년 3/31) · 고 BM 경계 as-of(pit_repairs) · 12월 결산만 · CFO 공백 처리 · 빈 Low 해(2016-04) 직전 코호트 보유(현금 표현 불가 — 신고 유지)",
+  "side_effects": "재측정은 v2 측정이므로 기본 경로(L-code · 원장 L1 · 모듈 등재 자격 판정) — 첫 측정의 끄기 스위치는 쓰지 않는다"
+ }
 }
