@@ -5,12 +5,15 @@
 #   decision_register FACTOR-COMBINABLE-VIEW-20261109 · 설정 정본 06_Registry/factor_combinable.json(출처 전부)
 #
 # 무엇을 하나(매 시점 횡단면 · PIT):
-#   ① 값 = 정본 접근자 load_month_factors(direction = "registry", coverage_min = 0) — 등록부 이론 방향으로 정렬된 z
+#   ① 값 = 정본 접근자 load_month_factors(direction = "registry", coverage_min = 0) — 등록부 방향으로 정렬된 z
 #      (팩터 DB parquet 직접 읽기 없음 · C15)
 #   ② 변환 = 팩터별 횡단면 순위 → [−1, 1](동순위 평균) — Gu, Kelly & Xiu (2020) RFS 33(5):2223-2273
 #   ③ 저장 = .cache/factor_combinable/fc_YYYYMM.parquet(wide Ticker × 팩터 · int16 = 값 × 10000 · 결측 = NA)
-#   ④ 방향 = 저장값은 등록부 방향. 과거 IC 방향(ic_asof)은 부호표 fc_signs.parquet 의 s_rel = s_ic × s_reg 를 곱한다 —
-#      [−1, 1] 순위는 값의 부호를 뒤집으면 정확히 −1 배(동순위 평균 포함)라 다시 계산하지 않아도 같다(시험 ①)
+#   ④ 방향 = 저장값은 저장 원값 방향(v1.1 · 정렬된 순위 × 빌드 때 등록부 부호 s_reg — 순위는 부호를 뒤집으면 정확히 −1 배라
+#      되돌리기가 정확하다 · 시험 P2). 읽을 때 부호표 fc_signs.parquet 의 부호를 곱한다: registry = s_reg(기대수익) ·
+#      ic_asof = s_ic(그 달 as-of 36개월 IC → 등록부 → +1) · defensive = s_def(등록부 방어 방향 · 위험 · 유동성 계열만).
+#      등록부 방향이 바뀌어도 월 파일을 다시 지을 필요가 없다 — 부호표는 빌드마다 전부 다시 만든다
+#      (v1.0 은 등록부 방향으로 저장해, 등록부가 바뀌면 증분 빌드가 옛 방향 달과 새 방향 달을 섞었다 · TWO-VIEWS-20261109)
 #   ⑤ 읽기 = fc_load_month(sig_date, direction, factors, tickers, missing, dedup, family) — tickers 를 주면 그 안에서 다시
 #      순위(저장값은 원값의 단조 변환이라 부분집합 순위가 정확) · 결측 0(= 횡단면 중앙값) · 계열 평균 · 별칭 접기
 #   ⑥ 갱신 = 증분 — 원천 월 파일(크기 · 수정 시각)이 바뀐 달 + 가장 최근 달 · 부호표 · 커버리지는 매번 다시
@@ -22,7 +25,8 @@
 suppressPackageStartupMessages({ library(data.table); library(arrow); library(jsonlite) })
 
 `%||%` <- function(a, b) if (is.null(a) || length(a) == 0L || (length(a) == 1L && is.na(a))) b else a
-FC_BUILDER <- "factor_combinable.R v1.0"
+FC_BUILDER <- "factor_combinable.R v1.1"
+FC_STORED <- "stored_raw_value"      # 저장값 방향(v1.1) — 이 값이 아닌 저장본은 읽지 않고(멈춤) 빌드는 전부 다시 짓는다
 
 fc_root <- function() {
   r <- Sys.getenv("QM_ROOT", "")
@@ -53,6 +57,13 @@ fc_rank_pm1 <- function(x) {
   if (n == 1L) out[ok] <- 0
   else if (n > 1L) out[ok] <- 2 * (frank(x[ok], ties.method = "average") - 1) / (n - 1) - 1
   out
+}
+
+#' 저장 원값 방향 순위 — 정렬된 값의 순위 × 그 정렬에 쓴 부호(s0 = ±1). 순위는 부호를 뒤집으면 정확히 −1 배(동순위 평균)라
+#' fc_rank_pm1(저장 원값)과 같다(시험 P6)
+fc_to_stored <- function(z_aligned, s0) {
+  if (length(s0) != 1L || !s0 %in% c(-1L, 1L)) stop("[fc] 정렬 부호는 +1 · −1 하나여야 한다")
+  fc_rank_pm1(z_aligned) * s0
 }
 
 #' 별칭 접기(열 단위) — 정본이 같은 패널에 있을 때만 별칭을 뺀다(이름을 바꾸지 않는다 · collapse_alias_rows 와 같은 규칙)
@@ -93,14 +104,30 @@ fc_family_scores <- function(W, cat_map) {
 }
 
 .fc_reg_signs <- function(reg) {
-  if (is.null(reg) || !length(reg)) return(data.table(Factor_Name = character(0), s_reg = integer(0), category = character(0)))
+  if (is.null(reg) || !length(reg)) return(data.table(Factor_Name = character(0), s_reg = integer(0), s_def = integer(0), category = character(0)))
+  sg <- function(d) if (identical(d, "lower_better")) -1L else if (identical(d, "higher_better")) 1L else NA_integer_
   data.table(Factor_Name = names(reg),
              s_reg = vapply(reg, function(x) if (identical(x$direction %||% "higher_better", "lower_better")) -1L else 1L, integer(1)),
+             s_def = vapply(reg, function(x) if (length(x$direction_defensive) == 1L) sg(x$direction_defensive) else NA_integer_, integer(1)),
              category = vapply(reg, function(x) as.character(x$category %||% NA_character_)[1], character(1)))
 }
 
 ## ── 빌드(월간 저장형 · 증분) ─────────────────────────────────────────────────
 .fc_month_end <- function(ym) { d <- as.Date(paste0(ym, "01"), "%Y%m%d"); seq(d, by = "1 month", length.out = 2L)[2L] - 1L }
+
+#' 빌드 잠금 — 같은 저장 폴더에 빌드 두 개가 동시에 쓰지 않게(일일 체인 [6e] 증분 · 수동/진행기 --full).
+#' 잠금 = 폴더 생성(원자적). 다른 빌드가 쥐고 있으면 NULL(건너뜀 · CLI rc 5). max_age_h 보다 오래된 잠금은 죽은 빌드로 보고 넘겨받는다.
+fc_lock <- function(out, max_age_h = 6) {
+  lk <- file.path(out, ".build.lock")
+  if (dir.exists(lk)) {
+    age <- as.numeric(difftime(Sys.time(), file.info(lk)$mtime, units = "hours"))
+    if (is.finite(age) && age < max_age_h) return(NULL)
+    unlink(lk, recursive = TRUE)
+  }
+  if (!dir.create(lk, showWarnings = FALSE)) return(NULL)
+  writeLines(sprintf("pid=%d at=%s", Sys.getpid(), format(Sys.time(), "%Y-%m-%dT%H:%M:%S")), file.path(lk, "owner"))
+  lk
+}
 
 .fc_write_atomic <- function(tbl, path) {
   tmp <- paste0(path, ".tmp_", Sys.getpid())
@@ -114,6 +141,12 @@ fc_build <- function(root = fc_root(), out = NULL, full = FALSE, months = NULL, 
   cfg <- fc_config(root); E <- .fc_env(root)
   out <- out %||% file.path(root, cfg$storage$dir)
   dir.create(out, recursive = TRUE, showWarnings = FALSE)
+  lk <- fc_lock(out)
+  if (is.null(lk)) {
+    if (verbose) cat("[fc] 다른 빌드가 잠금(.build.lock)을 쥐고 있다 — 건너뛴다\n")
+    return(invisible(structure(list(skipped = "locked"), class = "fc_skipped")))
+  }
+  on.exit(unlink(lk, recursive = TRUE), add = TRUE)
   sc <- as.numeric(cfg$storage$value_scale)
   src <- list.files(E$FACTOR_DB_DIR, pattern = "^factor_db_[0-9]{6}\\.parquet$", full.names = TRUE)
   if (!length(src)) stop("[fc] 팩터 DB 월 파일 없음: ", E$FACTOR_DB_DIR)
@@ -123,6 +156,10 @@ fc_build <- function(root = fc_root(), out = NULL, full = FALSE, months = NULL, 
   setorder(FP, ym)
   meta_p <- file.path(out, cfg$storage$meta_file)
   old <- if (file.exists(meta_p)) tryCatch(fromJSON(meta_p, simplifyVector = TRUE), error = function(e) NULL) else NULL
+  if (!is.null(old) && !identical(old$stored_direction, FC_STORED)) {
+    if (verbose) cat(sprintf("[fc] 저장본 방향이 '%s'(현행 '%s' 아님) — 전부 다시 짓는다\n", old$stored_direction %||% "?", FC_STORED))
+    full <- TRUE
+  }
   OM <- if (!is.null(old$months)) as.data.table(old$months) else NULL
   have <- file.exists(file.path(out, sprintf(cfg$storage$month_file, FP$ym)))
   if (isTRUE(full) || is.null(OM)) todo <- FP$ym else {
@@ -135,6 +172,7 @@ fc_build <- function(root = fc_root(), out = NULL, full = FALSE, months = NULL, 
   todo <- sort(todo)
   if (verbose) cat(sprintf("[fc] 원천 월 %d · 다시 만들 달 %d%s\n", nrow(FP), length(todo), if (length(todo)) sprintf(" (%s ~ %s)", min(todo), max(todo)) else ""))
   NM <- list(); COV <- list()
+  RS0 <- .fc_reg_signs(E$.load_registry())                              # 접근자가 정렬에 쓴 바로 그 등록부(같은 환경 캐시)
   for (ym in todo) {
     invisible(utils::capture.output(L0 <- E$load_month_factors(.fc_month_end(ym), coverage_min = 0, direction = "registry")))
     f_used <- attr(L0, "factor_db_file") %||% NA_character_
@@ -142,7 +180,11 @@ fc_build <- function(root = fc_root(), out = NULL, full = FALSE, months = NULL, 
     L <- as.data.table(L0); rm(L0)
     if (!identical(f_used, paste0("factor_db_", ym, ".parquet"))) stop("[fc] 접근자가 다른 달 파일을 돌려줬다(", f_used, ") — ", ym)
     if (!nrow(L)) next
-    L[, v := fc_rank_pm1(Z_Score_Aligned), by = Factor_Name]
+    # 저장 = 저장 원값 방향: 정렬된 순위 × 그 정렬에 쓴 등록부 부호(등록부에 없는 팩터 = 접근자 기본 +1)
+    L[RS0, on = "Factor_Name", s0 := i.s_reg]
+    L[is.na(s0), s0 := 1L]
+    L[, v := fc_to_stored(Z_Score_Aligned, s0[1L]), by = Factor_Name]
+    L[, s0 := NULL]
     nt <- uniqueN(L$Ticker)
     COV[[ym]] <- L[, .(ym = ym, n = sum(!is.na(v)), coverage = sum(!is.na(v)) / nt), by = Factor_Name]
     W <- dcast(L, Ticker ~ Factor_Name, value.var = "v")
@@ -175,28 +217,27 @@ fc_build <- function(root = fc_root(), out = NULL, full = FALSE, months = NULL, 
   CV <- CV[ym %in% MM$ym]
   setorder(CV, ym, Factor_Name)
   .fc_write_atomic(arrow_table(CV), cov_p)
-  # 부호표 — 매번 전부(IC 이력이 바뀌면 과거 달 부호도 바뀔 수 있다)
+  # 부호표 — 매번 전부(IC 이력 · 등록부가 바뀌면 과거 달 부호도 바뀔 수 있다 · 저장값은 저장 원값 방향이라 부호만 곱하면 된다)
   RS <- .fc_reg_signs(E$.load_registry())
   SG <- rbindlist(lapply(MM$ym, function(m) {
     a <- as.Date(MM[ym == m]$asof)
     f <- CV[ym == m, .(Factor_Name)]
     ic <- NULL
     invisible(utils::capture.output(ic <- tryCatch(E$.load_ic_direction_cached(a, 36L), error = function(e) NULL)))
-    f <- merge(f, RS[, .(Factor_Name, s_reg)], by = "Factor_Name", all.x = TRUE)
+    f <- merge(f, RS[, .(Factor_Name, s_reg, s_def)], by = "Factor_Name", all.x = TRUE)
     if (!is.null(ic) && nrow(ic)) f <- merge(f, ic[!is.na(ic_sign), .(Factor_Name, ic_sign)], by = "Factor_Name", all.x = TRUE)
     else f[, ic_sign := NA_integer_]
-    # align_factor_direction 의 IC 경로와 같은 대체 순서: IC → 등록부 → +1
+    # align_factor_direction 의 IC 경로와 같은 대체 순서: IC → 등록부(기대수익) → +1 · 방어 방향은 대체 없음(없으면 NA)
     f[, `:=`(s_ic = as.integer(fifelse(!is.na(ic_sign), ic_sign, fifelse(!is.na(s_reg), s_reg, 1L))),
              src_ic = fifelse(!is.na(ic_sign), "ic", fifelse(!is.na(s_reg), "registry", "default")),
-             s_reg = as.integer(fcoalesce(s_reg, 1L)))]
-    f[, s_rel := s_ic * s_reg]
-    f[, .(ym = m, asof = format(a), Factor_Name, s_reg, s_ic, src_ic, s_rel)]
+             s_reg = as.integer(fcoalesce(s_reg, 1L)), s_def = as.integer(s_def))]
+    f[, .(ym = m, asof = format(a), Factor_Name, s_reg, s_ic, src_ic, s_def)]
   }))
   .fc_write_atomic(arrow_table(SG), file.path(out, cfg$storage$signs_file))
   bh <- tryCatch(readLines(file.path(E$FACTOR_DB_DIR, "build_hash.txt"), n = 1L), error = function(e) NA_character_)
   meta <- list(schema = "factor_combinable_meta_v1", builder = FC_BUILDER, cfg_version = cfg$version,
                built_at = format(Sys.time(), "%Y-%m-%dT%H:%M:%S%z"), factor_db_build_hash = bh,
-               stored_direction = "registry", value_scale = sc, transform = cfg$transform$rule,
+               stored_direction = FC_STORED, value_scale = sc, transform = cfg$transform$rule,
                n_months = nrow(MM), first = min(MM$ym), last = max(MM$ym), rebuilt = length(NM),
                months = MM)
   writeLines(toJSON(meta, auto_unbox = TRUE, pretty = TRUE, digits = NA, na = "null"), meta_p, useBytes = TRUE)
@@ -207,7 +248,8 @@ fc_build <- function(root = fc_root(), out = NULL, full = FALSE, months = NULL, 
 
 ## ── 읽기(월간) ───────────────────────────────────────────────────────────────
 #' @param sig_date 신호일(그 달 as-of 이상 — 월말 신호일로 부른다 · 더 이르면 멈춘다 · PIT)
-#' @param direction "ic_asof"(기본) | "registry" · @param tickers 이 종목 안에서 다시 순위(예: 측정 축 멤버)
+#' @param direction "ic_asof"(기본) | "registry"(등록부 기대수익 방향) | "defensive"(등록부 방어 방향 — 없는 팩터는 factors 로
+#'   명시하면 멈추고, 아니면 빼고 info$dropped_no_defensive 에 적는다) · @param tickers 이 종목 안에서 다시 순위(예: 측정 축 멤버)
 #' @param missing "zero"(기본 = 횡단면 중앙값) | "na" · @param dedup 별칭 접기(기본 TRUE) · @param family 계열 평균 표
 #' @return list(panel = Ticker × 팩터, families = Ticker × 계열, n_avail, meta = 팩터 표, info)
 fc_load_month <- function(sig_date, direction = NULL, factors = NULL, tickers = NULL, missing = NULL, dedup = NULL,
@@ -222,6 +264,9 @@ fc_load_month <- function(sig_date, direction = NULL, factors = NULL, tickers = 
   p <- file.path(dir, sprintf(cfg$storage$month_file, key_ym))
   if (!file.exists(p)) stop("[fc] 결합용 뷰에 그 달이 없다(", key_ym, ") — 이전 달로 대체하지 않는다")
   meta <- fromJSON(file.path(dir, cfg$storage$meta_file), simplifyVector = TRUE)
+  if (!identical(meta$stored_direction, FC_STORED))
+    stop(sprintf("[fc] 저장본 방향 '%s' — 이 판(%s)은 '%s' 저장본만 읽는다(--build --full 로 다시 지을 것)",
+                 meta$stored_direction %||% "?", FC_BUILDER, FC_STORED))
   MM <- as.data.table(meta$months)
   asof <- as.Date(MM[ym == key_ym, asof][1])
   if (is.na(asof)) stop("[fc] 그 달 as-of 기록 없음: ", key_ym)
@@ -236,12 +281,22 @@ fc_load_month <- function(sig_date, direction = NULL, factors = NULL, tickers = 
   }
   for (c in fc) set(W, j = c, value = as.numeric(W[[c]]) / sc)
   SG <- as.data.table(read_parquet(file.path(dir, cfg$storage$signs_file), mmap = FALSE))[ym == key_ym]
-  if (identical(direction, "ic_asof")) {
-    s <- SG[Factor_Name %in% fc, setNames(s_rel, Factor_Name)]
-    miss_s <- setdiff(fc, names(s))
-    if (length(miss_s)) stop("[fc] 부호표에 없는 팩터(", paste(head(miss_s, 5), collapse = ","), ") — 지어내지 않는다")
-    for (c in fc) if (s[[c]] == -1L) set(W, j = c, value = -W[[c]])
+  # 방향 = 부호표의 부호를 곱한다(저장값 = 저장 원값 방향) — registry = s_reg · ic_asof = s_ic · defensive = s_def
+  scol <- switch(direction, registry = "s_reg", ic_asof = "s_ic", defensive = "s_def")
+  miss_s <- setdiff(fc, SG$Factor_Name)
+  if (length(miss_s)) stop("[fc] 부호표에 없는 팩터(", paste(head(miss_s, 5), collapse = ","), ") — 지어내지 않는다")
+  s <- SG[Factor_Name %in% fc, setNames(get(scol), Factor_Name)]
+  no_def <- character(0)
+  if (identical(direction, "defensive")) {
+    no_def <- sort(names(s)[is.na(s)])
+    if (length(no_def)) {
+      if (!is.null(factors)) stop("[fc] 방어 방향이 없는 팩터(", paste(head(no_def, 8), collapse = ","), ") — 방어 방향은 위험 · 유동성 계열에만 있다")
+      cat(sprintf("[fc] 방어 방향이 없는 팩터 %d개를 뺀다(info$dropped_no_defensive)\n", length(no_def)))
+      fc <- setdiff(fc, no_def); W <- W[, c("Ticker", fc), with = FALSE]
+    }
   }
+  if (anyNA(s[fc])) stop("[fc] 부호표 부호 결측(", paste(head(fc[is.na(s[fc])], 5), collapse = ","), ") — 지어내지 않는다")
+  for (c in fc) if (s[[c]] == -1L) set(W, j = c, value = -W[[c]])
   if (!is.null(tickers)) {
     W <- W[Ticker %in% as.character(tickers)]
     for (c in fc) set(W, j = c, value = fc_rank_pm1(W[[c]]))
@@ -262,10 +317,11 @@ fc_load_month <- function(sig_date, direction = NULL, factors = NULL, tickers = 
     if (!is.null(FAM)) for (c in setdiff(names(FAM), "Ticker")) set(FAM, which(is.na(FAM[[c]])), c, 0)
   }
   M <- data.table(Factor_Name = fc, category = unname(cat_map[fc]))
-  M <- merge(M, SG[, .(Factor_Name, s_reg, s_ic, src_ic, s_rel)], by = "Factor_Name", all.x = TRUE)
+  M <- merge(M, SG[, .(Factor_Name, s_reg, s_ic, src_ic, s_def)], by = "Factor_Name", all.x = TRUE)
   list(panel = W, families = FAM, n_avail = n_avail, meta = M,
        info = list(ym = key_ym, asof = format(asof), sig_date = format(sig), direction = direction, missing = missing,
-                   dedup = dedup, rerank_within_tickers = !is.null(tickers), n_factors = length(fc), builder = meta$builder))
+                   dedup = dedup, rerank_within_tickers = !is.null(tickers), n_factors = length(fc), builder = meta$builder,
+                   dropped_no_defensive = no_def))
 }
 
 #' 여러 달을 쌓는다(Date = 그 달 신호일 · 패널만) — 머신러닝 학습 표용
@@ -295,5 +351,6 @@ if (sys.nframe() == 0L) {
   arg <- function(k) { i <- match(k, a); if (is.na(i) || i == length(a)) NULL else a[i + 1L] }
   if (!("--build" %in% a)) { cat("쓰기: Rscript factor_combinable.R --build [--full] [--out DIR] [--months YYYYMM,...]\n"); quit(save = "no", status = 2L) }
   ms <- arg("--months"); ms <- if (is.null(ms)) NULL else strsplit(ms, ",", fixed = TRUE)[[1]]
-  invisible(fc_build(out = arg("--out"), full = "--full" %in% a, months = ms))
+  res <- fc_build(out = arg("--out"), full = "--full" %in% a, months = ms)
+  if (inherits(res, "fc_skipped")) quit(save = "no", status = 5L)   # 잠금 — 다른 빌드가 도는 중(일일 체인 [6e] 는 정보로 본다)
 }

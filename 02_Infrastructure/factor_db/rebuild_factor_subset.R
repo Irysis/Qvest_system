@@ -8,6 +8,8 @@
 #      DART 쪽이 음수로 저장하는 Q05 · Q15 · GR03 · AC05 는 채움 행만 부호가 반대였고 V08_PSR 은 채움 행이 역수였다.
 #   ② XF 계열 DART 쪽 정의(compute_quality_xf_native.R)가 등록부 · 엑셀 쪽과 다른 양이었다 — LL05(금액 대 비율) · PR02(분모) ·
 #      EF01(분자) · GD02 · GD03(전기 음수면 부호 반전) · RI02(절댓값 대 음수화) · PR04(엑셀 쪽 = 순이자비용/총자산).
+#   ③ R19 위험 합성(compute_risk.R) — 성분 R01 만 '높을수록 위험 큼'으로 저장돼 다른 성분(높을수록 위험 낮음)과 반대 방향으로
+#      평균됐다(2026-11-09 · decision_register FACTOR-DIRECTION-TWO-VIEWS-20261109 · R01 에 −1 을 곱해 합성).
 #   수리된 코드로 대상 팩터만 다시 계산한다 — 다른 팩터는 같은 코드라 다시 계산해도 값이 같다(전체 재빌드 ≈ 10시간 대신).
 #
 # 방법(달마다): build_factor_db(sig_d, save = FALSE, force = TRUE, modules = MODS) — 재무 모듈만 돌리고 빌더의 XF 병합 · 표준화를
@@ -33,8 +35,9 @@ if (!exists("%||%", mode = "function")) `%||%` <- function(a, b) if (is.null(a))
 
 RFS_TARGET <- c("Q05_Accrual", "Q15_Debt_to_Equity", "GR03_Asset_Growth", "AC05_NOA", "V08_PSR",
                 "XF_LL05_WorkingCapital", "XF_PR02_RetainedEarnings_Ratio", "XF_EF01_InventoryTurnover",
-                "XF_GD02_OpProfit_Growth", "XF_GD03_OCF_Growth", "XF_RI02_CapEx_proxy", "XF_PR04_NetInterestMargin")
-RFS_MODS <- c("value", "quality", "quality_xf_native", "accrual", "growth", "xlsx_fund")
+                "XF_GD02_OpProfit_Growth", "XF_GD03_OCF_Growth", "XF_RI02_CapEx_proxy", "XF_PR04_NetInterestMargin",
+                "R19_Composite_Risk")
+RFS_MODS <- c("value", "quality", "quality_xf_native", "accrual", "growth", "xlsx_fund", "risk")
 RFS_FILL_NEG <- c("Q05_Accrual", "Q15_Debt_to_Equity", "GR03_Asset_Growth", "AC05_NOA")   # 채움 행 = −옛 값
 RFS_FILL_RECIP <- "V08_PSR"                                                                # 채움 행 = 1/옛 값
 

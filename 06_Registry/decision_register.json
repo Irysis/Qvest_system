@@ -4057,7 +4057,30 @@
       "decided_at": "2026-11-09T17:49:27+0900",
       "note": "Q 가 실측 · 감사 · 수리 · 검사. 방향 판정은 코드와 등록부 문구만으로(성과 · IC 미사용 — 이론 방향이 자료에서 오지 않게).",
       "registered_at": "2026-11-09T17:49:26+0900"
+    },
+    {
+      "id": "FACTOR-DIRECTION-TWO-VIEWS-20261109",
+      "title": "팩터 등록부 방향을 두 필드로 — 기대수익 방향(문헌) + 방어 방향(위험 · 유동성 계열)",
+      "status": "resolved",
+      "opened_at": "2026-11-09T21:00:23+0900",
+      "options": [
+        "A안: 위험 · 유동성 계열 = 방어 방향 · 나머지 = 기대수익 문헌 방향(한 필드)",
+        "B안: 전 계열 = 기대수익 문헌 방향(한 필드)",
+        "C안: 기대수익 방향 + 방어 방향 두 필드(정렬 대체 · FF5 = 기대수익 · 방어 틸트 · 결합용 뷰 = 골라 씀)"
+      ],
+      "recommendation": "A안(Q 추천 — 정의 문구 대부분이 이미 방어 뜻 · 바뀌는 방향이 가장 적다)",
+      "default_until_decided": "등록부 이론 방향 30개가 문헌 · 같은 양 일관성과 어긋난 채로 소비",
+      "blocks": [],
+      "owner": "dohoon",
+      "source": "도훈 11-09 '334개 중 136개(41%)는 과거 IC 방향이 이론 방향과 반대이다 이게 어떤 의미지?' 이후 저장 규약 수리 (FACTOR-DIRECTION-STORAGE-REPAIR-20261109) 중 Q 감사 — 등록부 이론 방향 30개가 문헌 · 정의 문구 · 같은 양 일관성과 어긋남 (단기 반전 · RSI · VaR/CVaR · 공왜도 · 왜도 · 상승 β · β 비대칭 · 국면 지표 · 부채비율 · 유동성 계열 · R19 합성 부호 결함).",
+      "decision": "C안(도훈 11-09). 등록부 엔트리마다 direction = 기대수익 방향(저장값 기준 · 문헌 — 정렬 대체 경로 · registry 모드 · FF5 · 스마트베타 추적이 쓴다) + direction_economic_basis(literature · literature_mixed_defensive_tiebreak · code_and_definition · registry_original) · 인용, 위험 · 유동성 범위 계열(defense · risk · regime · liquidity · leverage · size)은 direction_defensive(저장값 기준 · 위기 하락 노출↓ · 상승 참여↑ 쪽이 높게) + definition 기준 값 · 이유. 동률 규칙(Q): 문헌이 갈리거나 없으면 기대수익 = 방어(definition 기준). 같은 양(또는 정확히 반대 부호) 팩터는 두 방향 모두 일관. 접근자 load_month_factors · load_daily_factors(direction = 'defensive') · 결합용 뷰 v1.1(저장 = 저장 원값 방향 · 읽을 때 s_reg · s_ic · s_def 를 곱한다 — 등록부가 바뀌어도 월 파일 재빌드 불필요). 기준과 무관한 수리 8(M04 · M29 · M30 · M18 단기 반전 · XF_RI02 투자 · AC18 발생액 · Q18 영업 레버리지 · AC08 부채 조달) + R19 합성 부호(R01 에 −1 · compute_risk.R · 부분 재계산 편입). 판단에 성과 · IC 미사용(C1 · C14). 결과: 방어 방향 158 · 기대수익 방향 변경 47(범위 안 36 — 비유동성 · 크기 · 공왜도 · 왜도 · VIX 베타 · 시장 레버리지 · VaR 동률 등 · 범위 밖 같은 양 3 · 기준 무관 8) · 정의 문구 5 · 같은 양 무리 37(모두 일관) · DOI 는 Crossref 로 확인한 것만. 자동 반영: add_factor.R 등재 시 필드 · 야간 동기화 daily_refresh [6f](apply_direction_basis.py --sync — 새 엔트리 자동 등재 · 손 편집 충돌 · 부호 드리프트 · 두 사본 불일치 경보) · 결합용 뷰 증분 [6e] · 대응표 월 1회 [6g]. 정책 · 남은 과제 = 02_Infrastructure/factor_db/DIRECTION_POLICY.md. 상설 검사 test_factor_direction_basis.py B6 · B7 · B8(+돌연변이) · test_direction_sync.py 14 · test_load_daily_factors.R ⑮~⑳ · test_factor_combinable.R v1.1(29).",
+      "decided_by": "dohoon",
+      "decided_at": "2026-11-09T21:00:24+0900",
+      "note": "근거 표 06_Registry/factor_direction_audit.json(schema v2 · two_views) · writer factor_db/apply_direction_basis.py",
+      "registered_at": "2026-11-09T21:00:23+0900",
+      "recorded_by": "Q(세션 fe712ea2)",
+      "evidence": "도훈 채팅 응답 'C안'(2026-11-09) — Q 의 A안/B안/C안 질문에 대한 답"
     }
   ],
-  "last_updated": "2026-11-09T17:49:27+0900"
+  "last_updated": "2026-11-09T21:00:25+0900"
 }

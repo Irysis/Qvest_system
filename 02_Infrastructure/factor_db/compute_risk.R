@@ -217,16 +217,21 @@ compute_risk <- function(RAWDATA, sig_date, FUND = NULL, CONSENSUS = NULL) {
   }
 
   # ==========================================================================
-  # R19: Composite Risk Score = mean(z(R01), z(R07), z(R13), z(R17))
+  # R19: Composite Risk Score = mean(z(-R01), z(R07), z(R13), z(R17)) — 성분 모두 '높을수록 위험이 낮게' 맞춘다
+  #   2026-11-09 수리(decision_register FACTOR-DIRECTION-TWO-VIEWS-20261109): R07 · R13 · R17 은 위험을 음수로 저장해
+  #   높을수록 위험이 낮은데 R01 만 손실 크기(-q05 > 0)로 저장돼 높을수록 위험이 컸다 → 구판 합성은 서로 반대 방향 성분의
+  #   평균이었다. R01 에 -1 을 곱해 같은 방향으로 맞춘다(R01 저장값 자체는 그대로).
   # ==========================================================================
   all_res <- rbindlist(results, use.names = TRUE, fill = TRUE)
   if (nrow(all_res) > 0L) {
+    comp_sign <- c(R01_VaR_95 = -1, R07_Downside_Dev = 1, R13_NCSKEW = 1, R17_Market_Leverage = 1)
     comp_factors <- c("R01_VaR_95", "R07_Downside_Dev", "R13_NCSKEW")
     if ("R17_Market_Leverage" %in% all_res$Factor_Name) {
       comp_factors <- c(comp_factors, "R17_Market_Leverage")
     }
     comp_dt <- all_res[Factor_Name %in% comp_factors]
     if (nrow(comp_dt) > 0L) {
+      comp_dt[, Raw_Value := Raw_Value * comp_sign[Factor_Name]]   # 사본(all_res 부분집합) — 성분 저장값은 바뀌지 않는다
       # Cross-sectional z-score per factor
       comp_dt[, z_val := {
         m <- mean(Raw_Value, na.rm = TRUE)

@@ -80,6 +80,20 @@ FACTOR_REG_PATH <- file.path(FACTOR_DB_DIR, "factor_registry.json")
   .fdc_registry
 }
 
+# ---- 등록부 방향 보기 (2026-11-09 · decision_register FACTOR-DIRECTION-TWO-VIEWS-20261109) ----
+#   등록부는 팩터마다 두 방향을 저장값 기준으로 적는다:
+#     direction           = 기대수익 방향(문헌 · 정렬 대체 경로 · registry 모드 · FF5 · 스마트베타 추적이 쓴다)
+#     direction_defensive = 방어 방향(위기 하락 노출↓ · 상승 참여↑ 쪽 = higher · 위험 · 유동성 계열만 · 없으면 NULL)
+#   view = "defensive" 면 방어 방향이 있는 엔트리만 남기고 그 값을 direction 자리에 놓은 사본을 돌려준다
+#   (align_factor_direction 의 registry-only 경로에 그대로 넘긴다 · 원본 캐시는 바꾸지 않는다).
+.registry_view <- function(registry, view = c("expected_return", "defensive")) {
+  view <- match.arg(view)
+  if (identical(view, "expected_return") || is.null(registry) || !length(registry)) return(registry)
+  ok <- vapply(registry, function(x) is.list(x) && length(x$direction_defensive) == 1L &&
+                 x$direction_defensive %in% c("higher_better", "lower_better"), logical(1))
+  lapply(registry[ok], function(x) { x$direction <- x$direction_defensive; x })
+}
+
 # ---- 일간 · 월간 저장 대응표 (2026-11-09 · decision_register FACTOR-DIRECTION-STORAGE-REPAIR-20261109) ----
 #   load_daily_factors 가 월간 값으로 잰 부호(IC · 등록부)를 일간 값에 옮길 때 곱한다. 같은 이름의 일간 값이 월간 값과
 #   같은지(same) · 부호만 반대인지(negated) · 다른 양인지(mismatch)를 월말마다 대조한 표다.
@@ -341,11 +355,14 @@ FACTOR_REG_PATH <- file.path(FACTOR_DB_DIR, "factor_registry.json")
 #'   코드를 날조하지 않기 위해). 반환값 attribute `dedup_dropped` /
 #'   `dedup_orphan_alias` / `dedup_redundant` 에 무엇을 했는지 전부 노출된다.
 #'   ★선별·랭킹·Ω 추정에 쓰는 풀이면 TRUE 를 권장한다. 단순 조회·재현은 FALSE.
-#' @param direction "ic_asof"(기본 · 그 시점까지 36개월 IC 로 방향) | "registry"(등록부에 미리 선언된 이론 방향 —
-#'   자료를 보지 않고 정한 부호 · align_factor_direction(sig_date = NULL) 경로 · 2026-11-09 도훈 C13 해석 확장
-#'   decision_register FACTOR-COMBINABLE-VIEW-20261109 · 수동 반전(NEGATE/FLIP)은 여전히 금지)
+#' @param direction "ic_asof"(기본 · 그 시점까지 36개월 IC 로 방향 · 모자라면 등록부 기대수익 방향) | "registry"(등록부에
+#'   미리 선언된 기대수익 방향 — 자료를 보지 않고 정한 부호 · align_factor_direction(sig_date = NULL) 경로 · 2026-11-09 도훈
+#'   C13 해석 확장 decision_register FACTOR-COMBINABLE-VIEW-20261109) | "defensive"(등록부 방어 방향 direction_defensive —
+#'   위험 · 유동성 계열만 있다 · 위기 하락 노출↓ · 상승 참여↑ 쪽이 높게 · IC 를 보지 않는다 · decision_register
+#'   FACTOR-DIRECTION-TWO-VIEWS-20261109). 방어 방향이 없는 팩터는 factor_names 로 명시하면 오류, 아니면 빼고 attr
+#'   dropped_no_defensive 에 적는다. 수동 반전(NEGATE/FLIP)은 여전히 금지 — 부호는 등록부 · IC 에서만 온다.
 load_month_factors <- function(sig_date, coverage_min = 0.05, factor_names = NULL,
-                               dedup = FALSE, direction = c("ic_asof", "registry")) {
+                               dedup = FALSE, direction = c("ic_asof", "registry", "defensive")) {
   direction <- match.arg(direction)
   sig_d <- as.Date(sig_date)
   ym_tag <- format(sig_d, "%Y%m")
@@ -399,8 +416,23 @@ load_month_factors <- function(sig_date, coverage_min = 0.05, factor_names = NUL
 
   # Direction alignment (v2.0 PIT-safe: pass sig_date for expanding IC window)
   #   direction = "registry" 면 sig_date 를 넘기지 않아 등록부 방향만 쓴다(기존 registry-only 경로 · 자료 무사용)
+  #   direction = "defensive" 면 등록부 방어 방향(direction_defensive)만 쓴다 — 같은 registry-only 경로에 방어 방향 보기를 넘긴다
   registry <- .load_registry()
-  dt <- align_factor_direction(dt, registry, sig_date = if (identical(direction, "ic_asof")) sig_d else NULL)
+  no_def <- character(0)
+  if (identical(direction, "defensive")) {
+    rv <- .registry_view(registry, "defensive")
+    no_def <- setdiff(unique(dt$Factor_Name), names(rv))
+    if (length(no_def)) {
+      msg <- sprintf("방어 방향(direction_defensive)이 없는 팩터 %d개: %s%s", length(no_def),
+                     paste(head(sort(no_def), 12L), collapse = ", "), if (length(no_def) > 12L) sprintf(" ... (+%d)", length(no_def) - 12L) else "")
+      if (!is.null(factor_names)) stop("[load_month_factors] ", msg, " — 방어 방향은 위험 · 유동성 계열에만 있다(06_Registry/factor_direction_audit.json)")
+      cat("[load_month_factors] ", msg, " — 뺀다(attr dropped_no_defensive)\n", sep = "")
+      dt <- dt[!Factor_Name %in% no_def]
+    }
+    dt <- align_factor_direction(dt, rv, sig_date = NULL)
+  } else {
+    dt <- align_factor_direction(dt, registry, sig_date = if (identical(direction, "ic_asof")) sig_d else NULL)
+  }
 
   result <- dt[, .(Ticker, Factor_Name, Z_Score_Aligned)]
 
@@ -424,6 +456,7 @@ load_month_factors <- function(sig_date, coverage_min = 0.05, factor_names = NUL
   attr(result, "factor_db_asof_date") <- asof_date
   attr(result, "factor_db_file") <- basename(fpath)
   attr(result, "direction") <- direction
+  if (length(no_def)) attr(result, "dropped_no_defensive") <- sort(no_def)
 
   result
 }
@@ -471,11 +504,13 @@ load_month_factors <- function(sig_date, coverage_min = 0.05, factor_names = NUL
 #'   스키마에 없는 요청은 WARN 후 제외.
 #' @param align_direction Logical. TRUE(기본) = C13 방향정렬 (value * ic_sign,
 #'   higher = better). ic_sign map은 attr "ic_sign_map"으로 첨부.
+#' @param direction "ic_asof"(기본) | "registry"(등록부 기대수익 방향) | "defensive"(등록부 방어 방향 — 없는 팩터는
+#'   factors 로 명시하면 오류 · 아니면 열을 빼고 attr dropped_no_defensive) — 월간 load_month_factors 와 같은 뜻
 #' @return data.table (wide): Date, Ticker, <factor cols>. attrs:
 #'   pit_max / months_loaded / value_semantics / direction_aligned /
 #'   ic_sign_map (정렬 시) / fdb_daily_registry_version
 load_daily_factors <- function(ym = NULL, date_range = NULL, factors = NULL,
-                               align_direction = TRUE, direction = c("ic_asof", "registry")) {
+                               align_direction = TRUE, direction = c("ic_asof", "registry", "defensive")) {
   direction <- match.arg(direction)     # "registry" = 등록부 선언 방향만(월간 load_month_factors 와 같은 뜻 · 2026-11-09)
   if (is.null(ym) && is.null(date_range)) {
     stop("[load_daily_factors] ym 또는 date_range 중 하나는 필수입니다.")
@@ -578,8 +613,22 @@ load_daily_factors <- function(ym = NULL, date_range = NULL, factors = NULL,
       sel_facs <- setdiff(sel_facs, refuse)
       pm <- pm[!Factor_Name %in% refuse]
     }
-    pm[, mult := fifelse(parity == "negated", -1L, 1L)]
     registry <- .load_registry()
+    no_def <- character(0)
+    if (identical(direction, "defensive")) {          # 방어 방향 보기 — 방어 방향이 없는 열은 정렬하지 않는다(지어내지 않는다)
+      registry <- .registry_view(registry, "defensive")
+      no_def <- setdiff(sel_facs, names(registry))
+      if (length(no_def)) {
+        msg <- sprintf("방어 방향(direction_defensive)이 없는 팩터 %d개: %s%s", length(no_def),
+                       paste(head(no_def, 12L), collapse = ", "), if (length(no_def) > 12L) sprintf(" ... (+%d)", length(no_def) - 12L) else "")
+        if (!is.null(factors)) stop("[load_daily_factors] ", msg, " — 방어 방향은 위험 · 유동성 계열에만 있다(06_Registry/factor_direction_audit.json)")
+        cat("[load_daily_factors] WARN: ", msg, " — 열을 뺀다(attr dropped_no_defensive)\n", sep = "")
+        dt[, (no_def) := NULL]
+        sel_facs <- setdiff(sel_facs, no_def)
+        pm <- pm[!Factor_Name %in% no_def]
+      }
+    }
+    pm[, mult := fifelse(parity == "negated", -1L, 1L)]
     reg_sign <- if (!is.null(registry) && length(registry)) data.table(
       Factor_Name = names(registry),
       reg = vapply(registry, function(x) if (identical(x$direction %||% "higher_better", "lower_better")) -1L else 1L, integer(1))
@@ -635,6 +684,7 @@ load_daily_factors <- function(ym = NULL, date_range = NULL, factors = NULL,
                   if (length(nod) > 8L) sprintf(" ... (+%d)", length(nod) - 8L) else ""))
     }
     if (length(refuse)) setattr(dt, "dropped_parity", refuse)
+    if (length(no_def)) setattr(dt, "dropped_no_defensive", no_def)
   }
 
   # ---- Attrs ----

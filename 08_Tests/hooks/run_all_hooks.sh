@@ -378,6 +378,10 @@ SUITES=(
   # 2026-11-09 추가: 등록부 방향 = 저장값 기준(같은 결정) — 필드 · 불변식 · 빌더 부호 드리프트(감사 표 code_negated_at_audit 대조) ·
   #   등록부 ↔ 감사 표 · 두 사본 바이트 동일 + 돌연변이(D34 음수화 제거 → 드리프트 검거). 해석기 = 시스템 파이썬(표준 라이브러리만).
   "08_Tests/factor_db/test_factor_direction_basis.py"
+  # 2026-11-09 추가: 등록부 방향 야간 동기화(apply_direction_basis.py --sync · daily_refresh [6f] · FACTOR-DIRECTION-TWO-VIEWS-20261109) —
+  #   새 엔트리 자동 등재(소비자 direction 그대로) · 손 편집 충돌 · 두 사본 합집합/충돌 · 동시 변경 거부 · 멱등 · 부호 드리프트 · 서식
+  #   정규화 + 돌연변이 3(충돌 검사 · 동시성 검사 · direction 보존 제거). 합성 자료만 · 표준 라이브러리만.
+  "08_Tests/factor_db/test_direction_sync.py"
   # 2026-11-09 추가: XF → DART 이름 채우기(.fdb_xf_fill_merge) 변환 — 음수 저장 4개 = −x · V08 = 1/x · DART 우선 · 짝 밖 불변 +
   #   돌연변이 2(변환 제거). 구판은 이름만 바꿔 채움 행 부호 · 역수가 뒤집혔다.
   "08_Tests/factor_db/test_xf_fill_merge.R"

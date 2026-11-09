@@ -766,6 +766,60 @@ if ! QM_ROOT="$BASE" Rscript "$BASE/02_Infrastructure/ops/rf_factor_backfill_tic
 fi
 
 # ──────────────────────────────────────────────────────────────────────────────
+# [6f] 등록부 방향 동기화 · 감시 (2026-11-09 · decision_register FACTOR-DIRECTION-TWO-VIEWS-20261109)
+#   도훈 'C안으로 수정된 정책도 추후 팩터 DB 업데이트에 자동으로 반영되게끔'. 등록부 방향은 저장값 기준이고 위험 · 유동성 계열은
+#   방어 방향을 따로 둔다. 새 팩터는 여러 길(add_factor.R · 세션이 고친 compute_*.R · 등록부를 다시 쓰는 R 도구)로 들어오므로
+#   매일 같은 규칙으로 맞춘다: 새 엔트리 = 감사 표 자동 등재 + 필드 채움(소비자 direction 은 그대로) · 위험 계열 = 방어 방향 판정 대기 ·
+#   손 편집 충돌 · 빌더 부호 드리프트 · 두 사본 불일치 = 고치지 않고 경보(DR_FAILED). 상세 = factor_db/DIRECTION_POLICY.md
+#   rc 0 정상 · 3 경보 · 4 동시 변경(다음 밤) · 그 밖 = 미측정. 검사 = 08_Tests/factor_db/test_direction_sync.py
+# ──────────────────────────────────────────────────────────────────────────────
+echo "[6f/7] 등록부 방향 동기화 · 감시..."
+if [ -n "$QVENV_PY" ]; then
+  _ds_out="$(cd "$BASE" && QM_ROOT="$BASE" "$QVENV_PY" -I "$INFRA/factor_db/apply_direction_basis.py" --sync 2>&1)"
+  _ds_rc=$?
+  printf '%s\n' "$_ds_out" | head -40
+  case "$_ds_rc" in
+    0) : ;;
+    3) DR_FAILED+=("direction_sync:alert($(printf '%s' "$_ds_out" | grep -m1 '^\[direction_sync\]' | sed 's/.*사본 \([a-z]*\).*충돌 \([0-9]*\).*드리프트 \([0-9]*\).*/사본 \1 · 충돌 \2 · 드리프트 \3/'))") ;;
+    4) echo "  [6f] 읽은 뒤 등록부가 바뀌어(동시 쓰기) 쓰지 않음 — 다음 밤에 다시" ;;
+    *) DR_FAILED+=("direction_sync:unmeasured(rc=$_ds_rc)") ;;
+  esac
+else
+  echo "  [6f] QVENV_PY 부재 — 동기화 생략(미측정)"
+  DR_FAILED+=("direction_sync:no_python")
+fi
+
+# ──────────────────────────────────────────────────────────────────────────────
+# [6e] 결합용 팩터 뷰 증분 갱신 (2026-11-09 도훈 '결합용 뷰도 자동 업데이트 되게끔' · FACTOR-COMBINABLE-VIEW-20261109)
+#   [6a] 당월 빌드 · [6d] 백필 · [6f] 등록부 동기화 뒤 — 바뀐 달 + 가장 최근 달 + 부호표 전부(등록부 방향 바뀜도 부호표가 흡수).
+#   첫 전체 빌드는 별도(--build --full)이며 그 전에는 건너뛴다(fc_meta.json 없음). 다른 빌드가 잠금을 쥐면 건너뛴다(rc 5).
+# ──────────────────────────────────────────────────────────────────────────────
+if [ -f "$BASE/.cache/factor_combinable/fc_meta.json" ]; then
+  echo "[6e/7] 결합용 팩터 뷰 증분 갱신..."
+  ( cd "$BASE" && QM_ROOT="$BASE" "$RSCRIPT" --no-save "$INFRA/factor_db/factor_combinable.R" --build ); _fc_rc=$?
+  case "$_fc_rc" in
+    0) : ;;
+    5) echo "  [6e] 다른 결합용 뷰 빌드가 잠금을 쥐고 있어 건너뜀(다음 밤)" ;;
+    *) DR_FAILED+=("factor_combinable(rc=$_fc_rc)") ;;
+  esac
+else
+  echo "[6e/7] 결합용 팩터 뷰 — 첫 전체 빌드 전(fc_meta.json 없음) · 건너뜀"
+fi
+
+# ──────────────────────────────────────────────────────────────────────────────
+# [6g] 일간 · 월간 저장 대응표 월 1회 재측정 (2026-11-09 · FACTOR-DIRECTION-STORAGE-REPAIR-20261109)
+#   load_daily_factors 가 월간 부호를 일간 값에 옮길 때 곱하는 표(06_Registry/factor_daily_monthly_parity.json). 새 팩터 · 빌더 정의
+#   변경이 표에 들어오게 매달 다시 잰다(표에 없는 일간 팩터는 접근자가 정렬을 거부한다 — 안전한 기본값). 표가 27일 넘게 묵었을 때만.
+# ──────────────────────────────────────────────────────────────────────────────
+_par_json="$BASE/06_Registry/factor_daily_monthly_parity.json"
+if [ -n "$QVENV_PY" ] && { [ ! -f "$_par_json" ] || [ -n "$(find "$_par_json" -mtime +27 2>/dev/null)" ]; }; then
+  echo "[6g/7] 일간 · 월간 대응표 재측정(27일 경과)..."
+  ( cd "$BASE" && QM_ROOT="$BASE" "$QVENV_PY" -I "$INFRA/factor_db/daily_monthly_parity.py" ) || DR_FAILED+=("daily_monthly_parity(rc=$?)")
+else
+  echo "[6g/7] 일간 · 월간 대응표 — 최근(27일 안) · 건너뜀"
+fi
+
+# ──────────────────────────────────────────────────────────────────────────────
 # [6c] conditional_ic_matrix 주간 재계산 (월요일) — 2026-07-25 배선
 #   .cache/conditional_ic_matrix.csv — pit.md V6 Gap-Directed 가설 조향 캐시.
 #   기존 producer 경로(memory/monthly_distill.sh)는 ① Windows 스케줄러 task 미등록

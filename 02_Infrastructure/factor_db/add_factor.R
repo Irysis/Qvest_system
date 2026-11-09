@@ -125,7 +125,13 @@ add_factor <- function(id, name, category, template, params = list(),
   # 2) registry 동기화 (backup + round-trip + validate; 실패 시 복원)
   if (isTRUE(sync_registry)) {
     af <- .af_availability_fields(source)   # AST v1.1: 4필드 없는 신규 엔트리 등록 금지
+    # 방향 정책(2026-11-09 · decision_register FACTOR-DIRECTION-TWO-VIEWS-20261109 · factor_db/DIRECTION_POLICY.md):
+    #   direction = 저장값 기준(소비자가 저장값에 곱한다). 템플릿 · 엔진 패널은 정의 = 저장값이라 stored_sign = 1 · 기대수익 방향 =
+    #   direction · 근거 = registry_original(문헌 검토 전). 위험 · 유동성 계열의 방어 방향은 야간 동기화(daily_refresh [6f])가
+    #   '판정 대기'로 올린다(판정 전에는 방어 보기에서 빠진다).
     entry <- list(name=name, category=category, definition=def, direction=direction,
+      direction_economic=direction, direction_economic_basis="registry_original", stored_sign=1L,
+      direction_basis="stored_raw_value",
       data_source=source, lag_rule="Factor_Date <= sig_d", update_freq="monthly",
       availability=af$availability, restatement_prone=af$restatement_prone,
       vintage_available=af$vintage_available, refresh_mode=af$refresh_mode,

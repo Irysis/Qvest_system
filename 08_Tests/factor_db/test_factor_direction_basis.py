@@ -11,9 +11,18 @@
      안 고치면 걸린다(뜻 판정은 감사 표 몫 — 파서는 '정의가 음수화를 말하나'를 판정하지 않는다).
   B5 등록부 ↔ 감사 표 — stored_sign · direction_economic · direction 이 감사 표와 같다.
   B4 두 등록부 사본(02_Infrastructure · .cache) 바이트 동일
+  B6 방어 방향(2026-11-09 두 방향 분리 · FACTOR-DIRECTION-TWO-VIEWS-20261109) — 위험 · 유동성 범위 계열(defense · risk · regime ·
+     liquidity · leverage · size) 엔트리는 direction_defensive(저장값 기준) · direction_defensive_definition · 이유를 갖고(감사 표가
+     null 이라 이유와 함께 적은 것만 예외) 불변식 direction_defensive = f(definition, stored_sign) 을 지킨다
+  B7 기대수익 방향 근거 — direction_economic_basis ∈ {literature · literature_mixed_defensive_tiebreak · code_and_definition ·
+     registry_original} · 문헌 근거면 인용 필수 · 동률 규칙(문헌이 갈리거나 없음)이면 기대수익 = 방어(definition 기준)
+  B8 같은 양 일관성 — 감사 표 two_views.groups 의 같은 양(또는 정확히 반대 부호) 팩터끼리 기대수익 · 방어 방향이 같다(부호 반영)
   M1 돌연변이 — 빌더 사본에서 D34 의 음수화를 지우면 B3 가 D34 를 잡는다(검사가 죽지 않았음을 실증)
+  M2 · M3 · M4 돌연변이 — 등록부 사본에서 방어 방향 한 개 뒤집기(B6) · 같은 양 무리의 기대수익 방향 한 개 뒤집기(B8) ·
+     문헌 근거 지우기(B7)가 각각 잡힌다
 표준 라이브러리만 쓴다(배터리 해석기 = 시스템 파이썬).
 """
+import copy
 import glob
 import json
 import os
@@ -21,15 +30,84 @@ import re
 import shutil
 import sys
 import tempfile
+from datetime import date, timedelta
 
 ROOT = os.environ.get("QM_ROOT", r"G:/OneDrive/Quant_Module_Moltbot")
+sys.path.insert(0, os.path.join(ROOT, "02_Infrastructure", "factor_db"))
+from direction_code_parser import code_negation  # noqa: E402 — 야간 동기화(apply_direction_basis.py --sync)와 같은 판독기
 REG = os.path.join(ROOT, "02_Infrastructure", "factor_db", "factor_registry.json")
 REG_CACHE = os.path.join(ROOT, ".cache", "factor_db", "factor_registry.json")
 AUDIT = os.path.join(ROOT, "06_Registry", "factor_direction_audit.json")
 CODE = os.path.join(ROOT, "02_Infrastructure", "factor_db")
 DIRS = ("higher_better", "lower_better")
-NEG_DEF = re.compile(r"(?i)\bnegat|^\s*[-−]|\b(minus|negative of)\b")
+SCOPE = ("defense", "risk", "regime", "liquidity", "leverage", "size")
+BASES = ("literature", "literature_mixed_defensive_tiebreak", "code_and_definition", "registry_original")
+GRACE_DAYS = 2      # 새로 등재된 팩터는 야간 동기화(daily_refresh [6f])가 필드를 채울 때까지 이 날수만큼 WARN(실패 아님)
 PASS = FAIL = 0
+
+
+def flip(d):
+    return "lower_better" if d == "higher_better" else "higher_better"
+
+
+def stored_dir(d, s):
+    return d if s == 1 else flip(d)
+
+
+def check_defensive(facs, audit):
+    """B6 — 범위 계열은 방어 방향을 갖는다(감사 표가 이유와 함께 null 로 적은 것만 예외) · 불변식 · 이유."""
+    bad = []
+    for k, e in facs.items():
+        dd, ds = e.get("direction_defensive_definition"), e.get("direction_defensive")
+        if dd is None:
+            if ds is not None:
+                bad.append(f"{k}(definition 없이 저장값 방어 방향만)")
+            elif e.get("category") in SCOPE:
+                a = audit.get(k, {})
+                if not (a.get("defensive_definition") is None and (a.get("defensive_reason") or "").strip()):
+                    bad.append(f"{k}(범위 계열인데 방어 방향 없음 · 감사 표 이유도 없음)")
+            continue
+        if dd not in DIRS or ds != stored_dir(dd, e.get("stored_sign")):
+            bad.append(f"{k}(불변식 direction_defensive = f(definition, stored_sign))")
+        elif not (e.get("direction_defensive_reason") or "").strip():
+            bad.append(f"{k}(방어 방향 이유 없음)")
+    return bad
+
+
+def check_basis(facs):
+    """B7 — 근거 종류 어휘 · 문헌 근거 인용 · 동률 규칙(기대수익 = 방어)."""
+    bad = []
+    for k, e in facs.items():
+        b = e.get("direction_economic_basis")
+        if b not in BASES:
+            bad.append(f"{k}(basis {b})")
+            continue
+        if b in ("literature", "literature_mixed_defensive_tiebreak") and not (e.get("direction_economic_evidence") or "").strip():
+            bad.append(f"{k}(문헌 근거인데 인용 없음)")
+        if b == "literature_mixed_defensive_tiebreak" and e.get("direction_economic") != e.get("direction_defensive_definition"):
+            bad.append(f"{k}(동률 규칙인데 기대수익 ≠ 방어)")
+    return bad
+
+
+def check_groups(facs, groups):
+    """B8 — 같은 양 무리: 기준 양으로 옮긴 기대수익 · 방어 방향이 모두 같다."""
+    bad = []
+    for g in groups:
+        ref_e, ref_d = set(), set()
+        for m in g.get("members", []):
+            e = facs.get(m.get("name"))
+            s = m.get("sign_vs_ref")
+            if e is None or s not in (1, -1):
+                bad.append(f"{g.get('id')}({m.get('name')} 없음 · 부호 {s})")
+                continue
+            ref_e.add(stored_dir(e.get("direction_economic"), s))
+            if e.get("direction_defensive_definition"):
+                ref_d.add(stored_dir(e.get("direction_defensive_definition"), s))
+        if len(ref_e) > 1:
+            bad.append(f"{g.get('id')}(기대수익 방향 불일치)")
+        if len(ref_d) > 1:
+            bad.append(f"{g.get('id')}(방어 방향 불일치)")
+    return bad
 
 
 def chk(name, ok, detail=""):
@@ -38,68 +116,6 @@ def chk(name, ok, detail=""):
         PASS += 1; print(f"  [ok]   {name}")
     else:
         FAIL += 1; print(f"  [FAIL] {name} {detail}")
-
-
-def _expr_after(s, i):
-    depth, j = 0, i
-    while j < len(s):
-        c = s[j]
-        if c in "([{":
-            depth += 1
-        elif c in ")]}":
-            if depth == 0:
-                break
-            depth -= 1
-        elif c == "," and depth == 0:
-            break
-        j += 1
-    return " ".join(s[i:j].split())
-
-
-_DIV_NEG = re.compile(r"^\.?[A-Za-z_]*div[A-Za-z0-9_]*\(\s*[-−]")
-
-
-def _is_neg(expr):
-    """음수화 = 식이 '-' 로 시작 · 또는 나눗셈 도우미의 첫 인자가 '-' 로 시작(.sdiv(-(ni - ocf), ta) = −(ni − ocf)/ta)."""
-    e = expr.strip().lstrip("(").strip()
-    return e.startswith("-") or e.startswith("−") or bool(_DIV_NEG.match(e))
-
-
-_BARE = re.compile(r"[A-Za-z_.][A-Za-z0-9_.]*")
-
-
-def _resolve(s, expr, pos, depth=0):
-    """식이 변수 이름이면 같은 파일에서 pos 직전 대입(:= · <- · = · list(X = y) 의 X = y)을 따라간다(최대 8단).
-    음수화 = 마지막으로 닿은 식이 '-' 로 시작. NA 초기화(d01 <- d02 <- NA_real_)는 건너뛰고 그 앞 대입을 본다."""
-    e = expr.strip().lstrip("(").strip()
-    if not _BARE.fullmatch(e):
-        return _is_neg(e)
-    if depth >= 8:
-        return None
-    pat = re.compile(r"(?<![A-Za-z0-9_.$])" + re.escape(e) + r"\s*(?::=|<-|=)(?!=)\s*")
-    cands = list(pat.finditer(s[:pos]))
-    for a in reversed(cands):
-        rhs = _expr_after(s, a.end())
-        r = rhs.strip()
-        if not r or r.startswith("NA") or _BARE.fullmatch(r.split("<-")[0].strip()) and "<-" in r:
-            continue                                   # NA 초기화 · 사슬 대입의 가운데
-        return _resolve(s, rhs, a.start(), depth + 1)
-    return None
-
-
-def code_negation(code_dir):
-    """팩터 → True(음수화) | False | None(해결 못함). 직접 식 + 같은 파일 안 변수 추적(직전 대입)."""
-    out = {}
-    for fp in sorted(glob.glob(os.path.join(code_dir, "compute_*.R"))):
-        s = open(fp, encoding="utf-8", errors="replace").read()
-        for m in re.finditer(r'Factor_Name\s*=\s*"([A-Za-z0-9_]+)"\s*,\s*Raw_Value\s*=\s*', s):
-            name, expr = m.group(1), _expr_after(s, m.end())
-            if expr.startswith("NA_real_") or expr == "NA":
-                continue
-            res = _resolve(s, expr, m.start())
-            old = out.get(name, "unset")
-            out[name] = res if old in ("unset", res) else None   # 경로마다 부호가 다르면 해결 못함
-    return out
 
 
 def b3_drift(audit, neg):
@@ -121,25 +137,67 @@ def main():
         pass
     reg = json.load(open(REG, encoding="utf-8"))
     facs = {k: v for k, v in reg.items() if isinstance(v, dict)}
+    cutoff = (date.today() - timedelta(days=GRACE_DAYS)).isoformat()
+    def young(k):           # 등재 GRACE_DAYS 안 — 야간 동기화가 아직 안 돌았을 수 있다(경고만)
+        ad = str(((facs.get(k) or {}).get("lifecycle") or {}).get("added_date") or "")
+        return ad >= cutoff
     bad1 = [k for k, e in facs.items() if e.get("direction_basis") != "stored_raw_value" or e.get("stored_sign") not in (1, -1)
             or e.get("direction_economic") not in DIRS or e.get("direction") not in DIRS]
+    warn1 = [k for k in bad1 if young(k)]
+    if warn1:
+        print(f"  [WARN] 새 등재 {len(warn1)}개가 아직 방향 필드 없음(야간 동기화 대기 · {GRACE_DAYS}일 넘으면 실패): {', '.join(warn1[:8])}")
+    bad1 = [k for k in bad1 if k not in warn1]
     chk(f"B1 엔트리 {len(facs)}개 모두 저장값 기준 필드(direction_basis · stored_sign · direction_economic)", not bad1, ", ".join(bad1[:10]))
+    bad1 = bad1 + warn1
     def want_dir(e):
         de = e.get("direction_economic")
         return de if e.get("stored_sign") == 1 else ("lower_better" if de == "higher_better" else "higher_better")
     bad2 = [k for k, e in facs.items() if k not in bad1 and e.get("direction") != want_dir(e)]
     chk("B2 불변식 direction = f(direction_economic, stored_sign)", not bad2, ", ".join(bad2[:10]))
-    audit = json.load(open(AUDIT, encoding="utf-8"))["factors"]
+    A = json.load(open(AUDIT, encoding="utf-8"))
+    audit = A["factors"]
+    groups = (A.get("two_views") or {}).get("groups") or []
     neg = code_negation(CODE)
     both = sum(1 for k, a in audit.items() if a.get("code_negated_at_audit") is not None and neg.get(k) is not None)
     bad3 = b3_drift(audit, neg)
     chk(f"B3 빌더 부호 드리프트 없음(감사 · 지금 둘 다 판정된 {both}개)", not bad3, "; ".join(bad3[:8]))
     bad5 = [k for k, e in facs.items() if k in audit and (e.get("stored_sign") != audit[k]["stored_sign"] or
-            e.get("direction_economic") != audit[k]["direction_economic"] or e.get("direction") != audit[k]["direction_stored"])]
+            e.get("direction_economic") != audit[k]["direction_economic"] or e.get("direction") != audit[k]["direction_stored"] or
+            e.get("direction_economic_basis") != audit[k].get("economic_basis", "registry_original") or
+            e.get("direction_defensive_definition") != audit[k].get("defensive_definition"))]
     miss5 = [k for k in facs if k not in audit]
+    warn5 = [k for k in miss5 if young(k)]
+    if warn5:
+        print(f"  [WARN] 새 등재 {len(warn5)}개가 아직 감사 표 밖(야간 동기화 대기): {', '.join(warn5[:8])}")
+    miss5 = [k for k in miss5 if k not in warn5]
     chk(f"B5 등록부 ↔ 감사 표 일치(엔트리 {len(facs)} · 감사 밖 {len(miss5)})", not bad5 and not miss5, ", ".join((bad5 + miss5)[:10]))
     same = os.path.exists(REG_CACHE) and open(REG, "rb").read() == open(REG_CACHE, "rb").read()
     chk("B4 등록부 사본 둘 바이트 동일", same)
+    n_def = sum(1 for e in facs.values() if e.get("direction_defensive"))
+    bad6 = check_defensive(facs, audit)
+    chk(f"B6 방어 방향 — 범위 계열 보유 · 불변식 · 이유(방어 방향 {n_def}개)", not bad6 and n_def > 0, ", ".join(bad6[:10]))
+    bad7 = check_basis(facs)
+    chk("B7 기대수익 방향 근거 — 어휘 · 인용 · 동률 규칙", not bad7, ", ".join(bad7[:10]))
+    bad8 = check_groups(facs, groups)
+    chk(f"B8 같은 양 일관성(무리 {len(groups)}개)", not bad8 and len(groups) > 0, ", ".join(bad8[:10]))
+    # 돌연변이 — 등록부 사본(메모리)에서 하나씩 어긋나게 해 각 검사가 잡는지
+    m2 = copy.deepcopy(facs)
+    k2 = next((k for k, e in m2.items() if e.get("direction_defensive")), None)
+    if k2:
+        m2[k2]["direction_defensive"] = flip(m2[k2]["direction_defensive"])
+    chk("M2 돌연변이(방어 방향 한 개 뒤집기) — B6 가 잡는다", k2 is not None and any(x.startswith(k2 + "(") for x in check_defensive(m2, audit)))
+    m3 = copy.deepcopy(facs)
+    g3 = next((g for g in groups if len(g.get("members", [])) >= 2 and all(m.get("name") in m3 for m in g["members"])), None)
+    if g3:
+        k3 = g3["members"][0]["name"]
+        m3[k3]["direction_economic"] = flip(m3[k3]["direction_economic"])
+    chk("M3 돌연변이(같은 양 무리의 기대수익 방향 한 개 뒤집기) — B8 이 잡는다",
+        g3 is not None and any(x.startswith(g3["id"] + "(기대수익") for x in check_groups(m3, groups)))
+    m4 = copy.deepcopy(facs)
+    k4 = next((k for k, e in m4.items() if e.get("direction_economic_basis") == "literature"), None)
+    if k4:
+        m4[k4]["direction_economic_evidence"] = ""
+    chk("M4 돌연변이(문헌 근거 지우기) — B7 이 잡는다", k4 is not None and any(x.startswith(k4 + "(") for x in check_basis(m4)))
     tmp = tempfile.mkdtemp(prefix="dirbasis_")
     try:
         for fp in glob.glob(os.path.join(CODE, "compute_*.R")):

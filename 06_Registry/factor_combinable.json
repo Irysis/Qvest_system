@@ -1,7 +1,7 @@
 {
   "schema": "factor_combinable_cfg_v1",
   "_doc": "결합용 팩터 뷰 설정 정본 — 02_Infrastructure/factor_db/factor_combinable.R 이 읽는다. 2026-11-09 도훈 '만들기 · 이론 방향 선택지도 추가(C13 해석 확장)' + '결합용 뷰도 자동 업데이트 되게끔 만들어줘'(decision_register FACTOR-COMBINABLE-VIEW-20261109). 모든 값에 출처를 단다.",
-  "version": "fc_v1.0",
+  "version": "fc_v1.1",
   "transform": {
     "rule": "cross_sectional_rank_to_pm1",
     "ties": "average",
@@ -14,8 +14,8 @@
   },
   "direction": {
     "default": "ic_asof",
-    "options": ["ic_asof", "registry"],
-    "_source": "ic_asof = 정본 접근자의 기존 정렬(그 시점까지 36개월 IC · Usable_Date ≤ 신호일 · C13 · C14) · registry = factor_registry.json 의 선언 방향(higher_better / lower_better — 자료를 보지 않고 미리 정한 이론 부호 · align_factor_direction(sig_date = NULL) 경로). 도훈 11-09 C13 해석 확장 — 수동 반전(NEGATE_FACTORS · FLIP_SIGN)은 여전히 금지"
+    "options": ["ic_asof", "registry", "defensive"],
+    "_source": "ic_asof = 정본 접근자의 기존 정렬(그 시점까지 36개월 IC · Usable_Date ≤ 신호일 · C13 · C14 · 모자라면 등록부 기대수익 방향) · registry = factor_registry.json 의 기대수익 방향 direction(higher_better / lower_better — 자료를 보지 않고 문헌으로 미리 정한 부호 · align_factor_direction(sig_date = NULL) 경로) · defensive = 등록부 방어 방향 direction_defensive(위기 하락 노출↓ · 상승 참여↑ 쪽이 높게 · 위험 · 유동성 계열에만 있다 · 도훈 11-09 'C안' — decision_register FACTOR-DIRECTION-TWO-VIEWS-20261109). 도훈 11-09 C13 해석 확장 — 수동 반전(NEGATE_FACTORS · FLIP_SIGN)은 여전히 금지"
   },
   "dedup": {
     "default": true,
@@ -33,7 +33,7 @@
     "coverage_file": "fc_coverage.parquet",
     "meta_file": "fc_meta.json",
     "value_scale": 10000,
-    "_source": "저장 인코딩(연구 결정 아님) — [−1, 1] 값을 × 10000 정수(int16)로 저장한다. 종목 3,300 이하에서 순위 간격 2/(n−1) ≥ 6e-4 > 1e-4 라 서로 다른 순위가 겹치지 않는다. 저장값 방향 = registry · ic_asof 는 부호표 s_rel = s_ic × s_reg 를 곱해 얻는다"
+    "_source": "저장 인코딩(연구 결정 아님) — [−1, 1] 값을 × 10000 정수(int16)로 저장한다. 종목 3,300 이하에서 순위 간격 2/(n−1) ≥ 6e-4 > 1e-4 라 서로 다른 순위가 겹치지 않는다. 저장값 방향 = 저장 원값(v1.1 · stored_raw_value) · 읽을 때 부호표의 s_reg(registry) · s_ic(ic_asof) · s_def(defensive)를 곱한다 — 등록부 방향이 바뀌어도 월 파일을 다시 지을 필요가 없다(v1.0 은 등록부 방향으로 저장해 증분 빌드가 옛 · 새 방향 달을 섞을 수 있었다)"
   },
   "update": {
     "rule": "incremental_source_fingerprint",
