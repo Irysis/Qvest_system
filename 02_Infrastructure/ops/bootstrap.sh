@@ -205,13 +205,23 @@ if [ -f "$RAWDATA_PARQUET" ] && [ -f "$PROJECT/.cache/benchmark.parquet" ]; then
   fi
 fi
 
-# kr_factor_returns_v2 신선도 (FF3 회귀 의존 — value 2002-08~)
-KRF_V2="$PROJECT/.cache/kr_factor_returns_v2.parquet"
-if [ -f "$KRF_V2" ]; then
-  KRF_AGE=$(( ($(date +%s) - $(stat -c %Y "$KRF_V2" 2>/dev/null || echo 0)) / 86400 ))
-  echo "[boot] kr_factor_returns_v2: OK (age ${KRF_AGE}d · MKT/SMB 2001-04~ · HML/RMW/CMA 2002-08~)"
+# FF 요인 신선도 (2026-11-10 운영 교체 — 정본 빌더 data/build_kr_factor_returns.R · 일일 체인 [5c] · 팩터 조정 알파 · 등급 v3.3 노치 입력)
+#   판독 = meta 의 일간 끝 날짜(파일 수정 시각이 아니라 내용) · 월간 끝 · 월간 내용 md5 · epoch. 일간 끝이 7일 넘게 지나면 WARN.
+KRF_META="$PROJECT/.cache/kr_factor_returns_meta.json"
+if [ -f "$KRF_META" ]; then
+  KRF_DLAST=$(awk '/"daily": *\{/{f=1} f && /"last":/{gsub(/[^0-9-]/,""); print; exit}' "$KRF_META")
+  KRF_MLAST=$(awk '/"monthly": *\{/{f=1} f && /"last":/{gsub(/[^0-9-]/,""); print; exit}' "$KRF_META")
+  KRF_MD5=$(sed -n 's/.*"content_md5": *"\([0-9a-f]\{12\}\).*/\1/p' "$KRF_META" | head -n 1)
+  KRF_EP=$(sed -n 's/.*"epoch": *"\([^"]*\)".*/\1/p' "$KRF_META" | head -n 1)
+  KRF_DS=$(date -d "${KRF_DLAST:-1970-01-01}" +%s 2>/dev/null || echo 0)
+  KRF_LAG=$(( ($(date +%s) - KRF_DS) / 86400 ))
+  if [ -n "$KRF_DLAST" ] && [ "$KRF_LAG" -le 7 ]; then
+    echo "[boot] FF 요인: OK (일간 ~$KRF_DLAST · 월간 ~${KRF_MLAST:-?} · md5 ${KRF_MD5:-?} · ${KRF_EP:-?})"
+  else
+    echo "[boot] WARN: FF 요인 일간 끝 ${KRF_DLAST:-?}(${KRF_LAG}일 전) — 일일 체인 [5c] 확인(Rscript 02_Infrastructure/data/build_kr_factor_returns.R)"
+  fi
 else
-  echo "[boot] WARN: kr_factor_returns_v2 부재 — FF 알파/residual momentum 전략 불가"
+  echo "[boot] WARN: FF 요인 meta 부재(.cache/kr_factor_returns_meta.json) — 팩터 조정 알파 · 등급 v3.3 노치 불가(Rscript 02_Infrastructure/data/build_kr_factor_returns.R)"
 fi
 
 # 4f. (감사 SC-01/SC-06, 2026-07-03) Gap vector 신선도 — WARN-only (블록 아님).

@@ -72,10 +72,14 @@ run_multifactor_regression <- function(strat_xts, bm_xts = NULL, factor_dt = NUL
   if (nrow(reg) < 24L) return(NULL)              # 최소 24개월
   reg[, Excess := StratRet - RF]
 
+  # FF5 · FF6 의 SMB = 5요인판(SMB5 — 크기 × B/M · OP · INV 세 정렬의 평균 · Fama-French 2015 §2) · 없으면(구 캐시) SMB.
+  #   FF6 = FF5 + 모멘텀(Fama-French 2018 'Choosing factors'). 등급 v3.3 팩터 조정 알파(grade_v3.json::fa_notch.models)와 같은 네 모형.
+  smb5 <- if ("SMB5" %in% names(reg)) "SMB5" else "SMB"
   models <- list(
     FF3      = "MKT + SMB + HML",
     Carhart4 = "MKT + SMB + HML + WML",          # WML = 모멘텀(UMD)
-    FF5      = "MKT + SMB + HML + RMW + CMA"
+    FF5      = sprintf("MKT + %s + HML + RMW + CMA", smb5),
+    FF6      = sprintf("MKT + %s + HML + RMW + CMA + WML", smb5)
   )
   out <- list()
   for (nm in names(models)) {
@@ -108,11 +112,11 @@ run_multifactor_regression <- function(strat_xts, bm_xts = NULL, factor_dt = NUL
   out
 }
 
-#' KR 팩터 캐시 재빌드 — 캐시가 이미 존재하므로 stub (재빌드는 외부 스크립트).
+#' KR 팩터 캐시 재빌드 — 여기선 stub. 정본 빌더 = 02_Infrastructure/data/build_kr_factor_returns.R(일일 체인 [5c] · 2026-11-10 운영 교체).
 build_kr_factor_returns <- function(...) {
-  cat("[factor_portfolios] KR factor 캐시 존재(재빌드 불요):", KR_FACTOR_CACHE, "\n")
+  cat("[factor_portfolios] KR factor 캐시:", KR_FACTOR_CACHE, "— 재빌드는 Rscript 02_Infrastructure/data/build_kr_factor_returns.R\n")
   invisible(KR_FACTOR_CACHE)
 }
 
 cat(sprintf("[factor_portfolios] Loaded (재작성 2026-06-04). 캐시: %s\n", basename(KR_FACTOR_CACHE)))
-cat("[factor_portfolios] Functions: load_kr_factor_returns() / run_multifactor_regression() [FF3/Carhart4/FF5]\n")
+cat("[factor_portfolios] Functions: load_kr_factor_returns() / run_multifactor_regression() [FF3/Carhart4/FF5/FF6]\n")

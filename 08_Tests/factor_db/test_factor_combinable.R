@@ -127,6 +127,24 @@ lock_check <- function(env) {
 k <- lock_check(G)
 chk("K1 잠금을 쥔 동안 두 번째 빌드는 건너뛴다(NULL)", isTRUE(k$held))
 chk("K2 6시간 넘게 묵은 잠금은 넘겨받는다(죽은 빌드)", isTRUE(k$stale))
+# 읽기 전용(R) 속성 잠금 — OneDrive 동기화 폴더가 수 초 안에 붙인다(11-10 실측: R unlink 가 폴더를 조용히 남겨 다음 빌드가 모두 건너뜀)
+ro <- function(p) system2("attrib", c("+r", shQuote(gsub("/", "\\\\", p))), stdout = FALSE, stderr = FALSE)
+lock_ro_check <- function(env) {
+  TK <- file.path(tempdir(), sprintf("fc_lockro_%d_%d", Sys.getpid(), sample.int(1e6, 1))); dir.create(TK)
+  on.exit({ Sys.chmod(list.dirs(TK), "777", use_umask = FALSE); unlink(TK, recursive = TRUE) }, add = TRUE)
+  P <- file.path(TK, "premise"); dir.create(P); ro(P); unlink(P, recursive = TRUE)
+  premise <- dir.exists(P)                                                  # 전제 재현: 그냥 unlink 는 R 폴더를 남긴다
+  l1 <- env$fc_lock(TK); ro(l1); suppressWarnings(env$fc_release(l1))
+  released <- !dir.exists(l1)
+  if (dir.exists(l1)) { Sys.chmod(l1, "777", use_umask = FALSE); unlink(l1, recursive = TRUE) }
+  l2 <- env$fc_lock(TK); ro(l2); Sys.setFileTime(l2, Sys.time() - 7 * 3600)
+  l3 <- suppressWarnings(env$fc_lock(TK))
+  list(premise = premise, released = released, stale_ro = !is.null(l3))
+}
+kr <- lock_ro_check(G)
+chk("K3 [전제] 읽기 전용 폴더는 그냥 unlink 로 남는다(이 검사가 공허하지 않다)", isTRUE(kr$premise))
+chk("K4 읽기 전용이 된 잠금도 빌드 끝에 지운다", isTRUE(kr$released))
+chk("K5 읽기 전용인 묵은 잠금도 넘겨받는다", isTRUE(kr$stale_ro))
 
 cat("=== M. 위반 주입(검사가 살아 있나) ===\n")
 M1 <- mutant('ties.method = "average"', 'ties.method = "first"')
@@ -147,6 +165,9 @@ chk("M6 저장 부호 되돌리기를 지우면 정렬 부호 −1 팩터가 거
     !isTRUE(all.equal(M6$fc_to_stored(al, -1L), G$fc_rank_pm1(x))))
 M7 <- mutant("    if (is.finite(age) && age < max_age_h) return(NULL)\n", "")
 chk("M7 잠금 확인을 지우면 두 빌드가 겹친다(K1 이 잡는다)", !isTRUE(lock_check(M7)$held))
+M8 <- mutant('  if (dir.exists(p)) { Sys.chmod(p, "777", use_umask = FALSE); unlink(p, recursive = TRUE) }\n', "")
+k8 <- lock_ro_check(M8)
+chk("M8 읽기 전용 풀기를 지우면 잠금이 남고 묵은 잠금도 못 넘겨받는다(K4 · K5 가 잡는다)", !isTRUE(k8$released) && !isTRUE(k8$stale_ro))
 
 unlink(c(TD, TD9, TD10), recursive = TRUE)
 cat(sprintf("\n== factor_combinable: PASS %d · FAIL %d ==\n", PASS, FAIL))

@@ -331,15 +331,15 @@
       "path": ".cache/kr_factor_returns.parquet",
       "producer": "04_Research/worktask_scratch/WT-D20260425_009/step0_kr_ff5_backfill.R",
       "entry_fn": "(source — writes v2)",
-      "schedule": "monthly",
+      "schedule": "on_demand",
       "date_col": "Date",
-      "max_lag_days": 180,
+      "max_lag_days": null,
       "depends_on": [
         ".cache/RAWDATA.parquet",
         ".cache/fundamental_merged.parquet"
       ],
       "tier": 3,
-      "_note": "FF5 v1 (legacy) + v2 (active, kr_factor_returns_v2.parquet). PIT lag: 연결산 5월 적용 → 항상 ~5개월 behind. 2026-05-24 도훈 audit: max_lag 35 → 180 정정 (PIT 정합)"
+      "_note": "legacy(갱신 없음) — 2026-11-10 정본 빌더 02_Infrastructure/data/build_kr_factor_returns.R 로 운영 교체(일일 체인 [5c]). 생산자 퇴역 · 남은 소비자 = regime/regime_garch.R::test_regime_garch(시험 함수)뿐. 구판 결함: HML · RMW · CMA = 월말 하루 수익 차 · RF 0 · 2026-03-04 정지. 사본 .cache/kr_factor_returns_backup/pre_krff_v1_20261110/. (구 메모: FF5 v1 legacy · 2026-05-24 max_lag 35 → 180)"
     },
     {
       "path": ".cache/factor_db/",
@@ -499,17 +499,63 @@
     },
     {
       "path": ".cache/kr_factor_returns_v2.parquet",
-      "producer": "04_Research/worktask_scratch/WT-D20260425_009/step0_kr_ff5_backfill.R",
-      "entry_fn": "(source)",
-      "schedule": "monthly",
+      "producer": "02_Infrastructure/data/build_kr_factor_returns.R",
+      "entry_fn": "(source — CLI · krf_main)",
+      "schedule": "daily",
       "date_col": "Date",
-      "max_lag_days": 180,
+      "max_lag_days": 40,
       "depends_on": [
         ".cache/RAWDATA.parquet",
-        ".cache/fundamental_merged.parquet"
+        ".cache/fundamental_v2/fund_v2_quarterly.parquet",
+        ".cache/ecos_bond_rates.parquet"
+      ],
+      "tier": 2,
+      "_note": "2026-11-10 운영 교체 — 정본 빌더 build_kr_factor_returns.R(설정 06_Registry/kr_factor_returns.json · 일일 체인 [5c]). 월간 FF 요인 = 완결 월만(MKT = 초과수익 · RF = CD91 · SMB · SMB5 · HML · RMW · CMA · WML). 소비: factor_portfolios.R · grade_v3.R(v3.3 팩터 조정 알파 — 내용 md5 = meta 일 때만) · fe_residmom 등. max_lag 40 = 완결 월 기준(월말 직전 약 31일 + 연휴 여유). 구판(WT-D20260425_009 step0 · 07-17 orphan 등재) 결함: HML · RMW · CMA = 월말 하루 수익 차 · RF 0 · 2026-03-04 정지 — 사본 .cache/kr_factor_returns_backup/pre_krff_v1_20261110/"
+    },
+    {
+      "path": ".cache/kr_factor_returns_daily.parquet",
+      "producer": "02_Infrastructure/data/build_kr_factor_returns.R",
+      "entry_fn": "(source — CLI · krf_main)",
+      "schedule": "daily",
+      "date_col": "Date",
+      "max_lag_days": 7,
+      "depends_on": [
+        ".cache/RAWDATA.parquet",
+        ".cache/fundamental_v2/fund_v2_quarterly.parquet",
+        ".cache/ecos_bond_rates.parquet"
+      ],
+      "tier": 2,
+      "_note": "2026-11-10 신설. 일간 FF 요인 + 거래일 달력(grade_v3 팩터 조정 알파가 부분 월을 가른다). 연휴 클러스터 고려 max_lag 7(ecos_bond_rates 와 같음)"
+    },
+    {
+      "path": ".cache/kr_ff_portfolios_monthly.parquet",
+      "producer": "02_Infrastructure/data/build_kr_factor_returns.R",
+      "entry_fn": "(source — CLI · krf_main)",
+      "schedule": "daily",
+      "date_col": "Date",
+      "max_lag_days": 40,
+      "depends_on": [
+        ".cache/RAWDATA.parquet",
+        ".cache/fundamental_v2/fund_v2_quarterly.parquet",
+        ".cache/ecos_bond_rates.parquet"
       ],
       "tier": 3,
-      "_note": "2026-07-17 orphan 등재. FF5 v2 (active) — v1 entry의 '(source — writes v2)' 산출물인데 v2 자체는 미등재였음. PIT lag 동일(연결산 5월 적용 → ~5개월 behind)"
+      "_note": "2026-11-10 신설. 크기 × 특성 정렬 포트폴리오 월간 수익(요인의 재료 · 진단)"
+    },
+    {
+      "path": ".cache/kr_factor_chars_monthly.parquet",
+      "producer": "02_Infrastructure/data/build_kr_factor_returns.R",
+      "entry_fn": "(source — CLI · krf_main)",
+      "schedule": "daily",
+      "date_col": "Date",
+      "max_lag_days": 40,
+      "depends_on": [
+        ".cache/RAWDATA.parquet",
+        ".cache/fundamental_v2/fund_v2_quarterly.parquet",
+        ".cache/ecos_bond_rates.parquet"
+      ],
+      "tier": 2,
+      "_note": "2026-11-10 신설. 파마-맥베스 통제 특성 월말 패널(log ME · B/M · OP · INV · 모멘텀 — 재무 = Factor_Date ≤ 월말)"
     },
     {
       "path": ".cache/fundamental_xlsx.parquet",

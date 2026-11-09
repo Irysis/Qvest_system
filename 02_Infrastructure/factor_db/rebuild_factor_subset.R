@@ -16,6 +16,7 @@
 #   그대로 탄다(표준화는 팩터별 독립 — backfill_custom_factor 와 같은 전제) → 대상 팩터 행만 골라 기존 월 파일의 그 팩터 행과 교체 →
 #   임시 파일에 쓰고 덮어쓰기(빌더 관례 · Windows 매핑 잠금 회피 = 읽기 mmap = FALSE).
 # 단정(달마다 · 어기면 그 달은 쓰지 않는다): 대상 밖 행은 옛 파일과 같다(행 수 · 값) · 열 이름 · 순서 · 형이 같다 · 새 행 Date = 신호일.
+# 쓸 것 없는 달(옛 파일 · 새 산출 모두 대상 행 0) = 성공 · written = FALSE · 지금 지문 기록(11-10 수리 — 전에는 실패로 셌다).
 # 기록: .cache/factor_db/subset_rebuild_log.jsonl(달 · 팩터별 옛/새 행 수 · 부호 반전 · 역수 · 그대로 · 바뀜 행 수 · 코드 rev · 시각).
 #
 # 사용:
@@ -92,16 +93,33 @@ rebuild_factor_subset <- function(root = .rfs_root(), months = NULL, from = NULL
   rev <- tryCatch(system2("git", c("-C", root, "rev-parse", "--short", "HEAD"), stdout = TRUE, stderr = FALSE)[1], error = function(e) NA_character_)
   cat(sprintf("[subset] 대상 %d개 달 · 팩터 %d · 모듈 %s · dry_run=%s\n", length(files), length(RFS_TARGET),
               paste(RFS_MODS, collapse = ","), dry_run))
-  t0 <- Sys.time(); n_done <- 0L; n_bad <- 0L
+  t0 <- Sys.time(); n_done <- 0L; n_bad <- 0L; n_none <- 0L
+  # 쓸 것 없는 달 = 옛 파일에도 새 산출에도 대상 팩터 행이 없다(예: 1990-01~03 — 재무 모듈 자료 이전). 파일은 그대로가 맞으므로
+  #   성공(written = FALSE)으로 기록하고 지금 지문을 남긴다 — 잃은 쓰기 검사가 그 뒤 변경만 잡는다. 옛 파일에 대상 행이 있는데 새 산출이
+  #   비면 여전히 실패다(고친 코드가 팩터를 잃었다). 11-10 진행기가 이 세 달을 실패로 세어 IC · 결합용 뷰를 건너뛸 뻔했다.
+  none_rec <- function(ym, sig_d, old, fi0, why) {
+    list(ts = format(Sys.time(), "%Y-%m-%dT%H:%M:%S%z"), ym = ym, sig_date = format(sig_d), code_rev = rev,
+         dry_run = dry_run, ok = TRUE, written = FALSE, nothing_to_write = TRUE, note = why,
+         rows_old = nrow(old), rows_new = nrow(old),
+         written_size = as.numeric(fi0$size), written_mtime = as.numeric(fi0$mtime))
+  }
   for (i in seq_along(files)) {
     fp <- files[i]; ym <- yms[i]; t1 <- Sys.time()
     fi0 <- file.info(fp)[, c("size", "mtime")]
     old <- as.data.table(read_parquet(fp, mmap = FALSE))
     sig_d <- as.Date(old$Date[1])
+    n_old_t <- old[Factor_Name %in% RFS_TARGET, .N]
     invisible(capture.output(res <- build_factor_db(sig_d, save = FALSE, force = TRUE, modules = RFS_MODS)))
-    if (is.null(res) || !nrow(res)) { cat(sprintf("  [ERR %s] 부분 산출 비어 있음\n", ym)); n_bad <- n_bad + 1L; next }
-    res <- as.data.table(res)
-    new <- res[Factor_Name %in% RFS_TARGET]
+    empty <- is.null(res) || !nrow(res) || !"Factor_Name" %in% names(res)
+    new <- if (empty) NULL else as.data.table(res)[Factor_Name %in% RFS_TARGET]
+    if (empty || !nrow(new)) {
+      why <- if (empty) "부분 산출 비어 있음" else "부분 산출에 대상 팩터 행 없음"
+      if (n_old_t > 0L) { cat(sprintf("  [ERR %s] %s · 옛 파일 대상 행 %d — 고친 코드가 팩터를 잃었나\n", ym, why, n_old_t)); n_bad <- n_bad + 1L; next }
+      cat(toJSON(none_rec(ym, sig_d, old, fi0, paste0(why, " · 옛 파일 대상 행 0 — 쓸 것 없음")), auto_unbox = TRUE, digits = NA), "\n",
+          file = log_path, append = TRUE, sep = "")
+      if (verbose) cat(sprintf("  %s 쓸 것 없음(%s · 옛 대상 행 0)\n", ym, why))
+      n_none <- n_none + 1L; next
+    }
     miss <- setdiff(names(old), names(new))
     if (length(miss)) { cat(sprintf("  [ERR %s] 새 행에 없는 열: %s\n", ym, paste(miss, collapse = ","))); n_bad <- n_bad + 1L; next }
     new <- new[, names(old), with = FALSE]
@@ -155,8 +173,9 @@ rebuild_factor_subset <- function(root = .rfs_root(), months = NULL, from = NULL
     }
   }
   if (isTRUE(write_hash) && n_done > 0L && exists(".write_build_hash", mode = "function")) .write_build_hash()
-  cat(sprintf("[subset] 끝: 쓴 달 %d · 실패 %d · %.1f분\n", n_done, n_bad, as.numeric(difftime(Sys.time(), t0, units = "mins"))))
-  invisible(list(done = n_done, bad = n_bad))
+  cat(sprintf("[subset] 끝: 쓴 달 %d · 쓸 것 없음 %d · 실패 %d · %.1f분\n", n_done, n_none, n_bad,
+              as.numeric(difftime(Sys.time(), t0, units = "mins"))))
+  invisible(list(done = n_done, none = n_none, bad = n_bad))
 }
 
 # 잃은 쓰기 검사: 기록(--log 들)에 남긴 쓴 직후 지문(크기 · 수정 시각)과 지금 파일이 다르면 그 뒤 다른 쓰기가 덮은 것 —

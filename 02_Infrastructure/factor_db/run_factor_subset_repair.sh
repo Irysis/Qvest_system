@@ -15,22 +15,36 @@
 #   ⑨ 요약 JSON + 텔레그램 1통(성공 = 무음 · 실패 = 알림).
 #
 # 사용: bash 02_Infrastructure/factor_db/run_factor_subset_repair.sh <전체 재빌드 요약 JSON 경로> [--workers 3]
+#       bash 02_Infrastructure/factor_db/run_factor_subset_repair.sh --resume <STAMP>
+#         재개 = ①~③ 건너뛰고 그 STAMP 의 작업자 기록으로 ④ 검사부터(⑤~⑧ 이 실패했을 때 · 같은 로그에 이어 쓰고 앞 요약은 .prev_* 로 남긴다)
 # 띄우기 — 세션과 떼어서(★Claude 도구 셸의 Start-Process 는 도구가 끝날 때 함께 죽는다 · SWITCH_RUNBOOK §5 와 같이 WMI):
 #   Invoke-CimMethod -ClassName Win32_Process -MethodName Create -Arguments @{ CommandLine = '"C:\Program Files\Git\bin\bash.exe" -c "cd /g/OneDrive/Quant_Module_Moltbot && bash 02_Infrastructure/factor_db/run_factor_subset_repair.sh <json> > .cache/scheduler_logs/<이름>.out.log 2>&1"' }
 #==============================================================================
 set -u
 ROOT="${QM_ROOT_BASH:-/g/OneDrive/Quant_Module_Moltbot}"
-export QM_ROOT="${QM_ROOT:-G:/OneDrive/Quant_Module_Moltbot}"
+# R 문자열 안에 넣으므로 슬래시로 — 사용자 환경변수 QM_ROOT 는 'C:\Users\…' 라 R 이 '\U' 를 이스케이프로 읽고 멈췄다
+# (11-10 01:14 첫 실행 ⑤ build_hash · ⑥ IC · 텔레그램이 모두 이 오류로 실패)
+QM_ROOT="${QM_ROOT:-G:/OneDrive/Quant_Module_Moltbot}"
+export QM_ROOT="${QM_ROOT//\\//}"
 RS="C:/Program Files/R/R-4.6.2/bin/Rscript.exe"
 PY="$ROOT/.venv_qvest_ml/Scripts/python.exe"
 TOOL="$ROOT/02_Infrastructure/factor_db/rebuild_factor_subset.R"
-WAIT_JSON="${1:?전체 재빌드 요약 JSON 경로가 필요하다}"
+RESUME=""
+if [ "${1:-}" = "--resume" ]; then
+  RESUME="${2:?--resume 뒤에 STAMP(예 20261109_175958)가 필요하다}"; WAIT_JSON=""; shift 2
+else
+  WAIT_JSON="${1:?전체 재빌드 요약 JSON 경로가 필요하다}"; shift
+fi
 NW=3
-if [ "${2:-}" = "--workers" ] && [ -n "${3:-}" ]; then NW="$3"; fi
-STAMP=$(date +%Y%m%d_%H%M%S)
+if [ "${1:-}" = "--workers" ] && [ -n "${2:-}" ]; then NW="$2"; fi
+STAMP="${RESUME:-$(date +%Y%m%d_%H%M%S)}"
 LOGDIR="$ROOT/.cache/scheduler_logs"
 LOG="$LOGDIR/factor_subset_repair_$STAMP.log"
 SUMMARY="$LOGDIR/factor_subset_repair_$STAMP.json"
+if [ -n "$RESUME" ]; then
+  ls "$LOGDIR"/subset_worker_"${STAMP}"_r*_w*.jsonl > /dev/null 2>&1 || { echo "재개할 작업자 기록이 없다: $STAMP" >&2; exit 2; }
+  [ -f "$SUMMARY" ] && mv "$SUMMARY" "${SUMMARY%.json}.prev_$(date +%Y%m%d_%H%M%S).json"
+fi
 T0=$(date +%s)
 say() { echo "[$(date '+%m-%d %H:%M:%S')] $*" | tee -a "$LOG"; }
 
@@ -52,7 +66,7 @@ JS
   cat > "$rfile" <<RS
 suppressWarnings(suppressMessages(source(file.path("$QM_ROOT", "02_Infrastructure", "telegram", "telegram_notify.R"))))
 res <- tryCatch(tg_agent_brief(
-  agent = "Q-Lead", title = "[데이터] 팩터 DB 결함 수리 재계산 $1 — 영향 12팩터 · 재무 v2",
+  agent = "Q-Lead", title = "[데이터] 팩터 DB 결함 수리 재계산 $1 — ${N_FAC:+영향 ${N_FAC}팩터 · }재무 v2${RESUME:+ (재개)}",
   relaxed = TRUE, force = TRUE, mute = $mute, lock_scope = "factor_subset_repair_$STAMP",
   sections = list(
     list(type = "summary", body = "$2"),
@@ -66,18 +80,22 @@ RS
 }
 
 # ---- ① 전체 재빌드 끝 대기 ------------------------------------------------------------------
-say "① 전체 재빌드 끝 대기: $WAIT_JSON"
-n=0
-until [ -f "$WAIT_JSON" ] && [ -z "$(others)" ]; do
-  n=$((n + 1)); [ "$n" -gt 120 ] && { finish "실패" "전체 재빌드가 10시간 안에 끝나지 않았다 — 재계산 안 함"; exit 1; }
-  sleep 300
-done
-RES=$("$PY" -I -c "import json,sys; print(json.load(open(sys.argv[1], encoding='utf-8')).get('result',''))" "$(cygpath -w "$WAIT_JSON")" 2>/dev/null | tr -d '\r')
-say "전체 재빌드 결과 = $RES"
-if [ "$RES" != "성공" ]; then finish "실패" "전체 재빌드 결과가 '$RES' — 부분 재빌드 위에 덧칠하지 않는다(재계산 안 함)"; exit 1; fi
+if [ -z "$RESUME" ]; then
+  say "① 전체 재빌드 끝 대기: $WAIT_JSON"
+  n=0
+  until [ -f "$WAIT_JSON" ] && [ -z "$(others)" ]; do
+    n=$((n + 1)); [ "$n" -gt 120 ] && { finish "실패" "전체 재빌드가 10시간 안에 끝나지 않았다 — 재계산 안 함"; exit 1; }
+    sleep 300
+  done
+  RES=$("$PY" -I -c "import json,sys; print(json.load(open(sys.argv[1], encoding='utf-8')).get('result',''))" "$(cygpath -w "$WAIT_JSON")" 2>/dev/null | tr -d '\r')
+  say "전체 재빌드 결과 = $RES"
+  if [ "$RES" != "성공" ]; then finish "실패" "전체 재빌드 결과가 '$RES' — 부분 재빌드 위에 덧칠하지 않는다(재계산 안 함)"; exit 1; fi
+else
+  say "재개 — ①~③ 건너뜀(작업자 기록 $STAMP 그대로) · ④ 검사부터"
+fi
 
 # ---- ② 달 목록 ---------------------------------------------------------------------------------
-CUR=$(date +%Y%m)
+CUR="${STAMP:0:6}"   # 이번 달 = 첫 실행의 달(재개가 달을 넘겨도 같은 달을 뺀다 · 그 뒤 생긴 달은 ④ 검사가 다시 할 달로 잡는다)
 mapfile -t MONTHS < <(ls "$ROOT/.cache/factor_db" | sed -n 's/^factor_db_\([0-9]\{6\}\)\.parquet$/\1/p' | sort | grep -v "^$CUR\$")
 N_MONTHS=${#MONTHS[@]}
 say "② 달 ${N_MONTHS}개(이번 달 $CUR 제외) · 작업자 $NW"
@@ -99,15 +117,21 @@ run_worker() {  # $1 = 작업자 번호 $2 = 달 목록 $3 = 회차 → rc 0 = �
 }
 
 # ---- ③ 작업자 병렬 ----------------------------------------------------------------------------
-say "③ 작업자 $NW 개 시작"
-declare -a PIDS
-for k in $(seq 0 $((NW - 1))); do
-  [ -n "${LISTS[$k]:-}" ] || continue
-  run_worker "$k" "${LISTS[$k]}" 0 & PIDS[$k]=$!
-done
-WRC=0
-for k in "${!PIDS[@]}"; do wait "${PIDS[$k]}" || WRC=1; done
-say "③ 작업자 끝(rc 모음 $WRC)"
+if [ -z "$RESUME" ]; then
+  say "③ 작업자 $NW 개 시작"
+  declare -a PIDS
+  for k in $(seq 0 $((NW - 1))); do
+    [ -n "${LISTS[$k]:-}" ] || continue
+    run_worker "$k" "${LISTS[$k]}" 0 & PIDS[$k]=$!
+  done
+  WRC=0
+  for k in "${!PIDS[@]}"; do wait "${PIDS[$k]}" || WRC=1; done
+  say "③ 작업자 끝(rc 모음 $WRC — 1 이어도 ④ 검사가 판정한다)"
+fi
+# 대상 팩터 수 = 작업자 기록의 per_factor(알림 표제 · 끝 문장 — 손으로 적은 수는 어긋났다: '12' 대 실제 13)
+N_FAC=$(tail -n 1 "$LOGDIR/subset_worker_${STAMP}_r0_w0.jsonl" 2>/dev/null \
+  | "$PY" -I -c "import json,sys; print(len(json.loads(sys.stdin.read()).get('per_factor') or {}))" 2>/dev/null | tr -d '\r')
+[ "${N_FAC:-0}" -gt 0 ] 2>/dev/null || N_FAC=""
 
 # ---- ④ 잃은 쓰기 검사 → 다시 ---------------------------------------------------------------
 ROUNDS=0; REDO_LEFT=""
@@ -138,5 +162,5 @@ say "⑧ 결합용 팩터 뷰 전체 빌드 시작"
 t8=$(date +%s)
 "$RS" --no-save "$(cygpath -m "$ROOT/02_Infrastructure/factor_db/factor_combinable.R")" --build --full >> "$LOG" 2>&1; FC_RC=$?
 say "⑧ 결합용 뷰 rc=$FC_RC · $(( ($(date +%s) - t8) / 60 ))분"
-finish "성공" "영향 12팩터를 고친 코드 · 재무 v2 로 전 기간 다시 계산했다(달 $N_MONTHS · 이번 달은 일일 체인이 짓는다) · IC · 대응표 갱신 · 결합용 뷰 rc ${FC_RC:-skip}"
+finish "성공" "영향 ${N_FAC:-?}팩터를 고친 코드 · 재무 v2 로 전 기간 다시 계산했다(달 $N_MONTHS · 이번 달은 일일 체인이 짓는다) · IC · 대응표 갱신 · 결합용 뷰 rc ${FC_RC:-skip}"
 exit 0

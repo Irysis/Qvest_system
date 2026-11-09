@@ -122,11 +122,21 @@ fc_lock <- function(out, max_age_h = 6) {
   if (dir.exists(lk)) {
     age <- as.numeric(difftime(Sys.time(), file.info(lk)$mtime, units = "hours"))
     if (is.finite(age) && age < max_age_h) return(NULL)
-    unlink(lk, recursive = TRUE)
+    if (!.fc_rmdir(lk)) { warning("[fc] 묵은 잠금 폴더를 지우지 못했다 — 건너뛴다: ", lk); return(NULL) }
   }
   if (!dir.create(lk, showWarnings = FALSE)) return(NULL)
   writeLines(sprintf("pid=%d at=%s", Sys.getpid(), format(Sys.time(), "%Y-%m-%dT%H:%M:%S")), file.path(lk, "owner"))
   lk
+}
+fc_release <- function(lk) if (!.fc_rmdir(lk)) warning("[fc] 잠금 폴더를 지우지 못했다 — 다음 빌드가 6시간 건너뛴다: ", lk)
+
+#' 폴더 지우기 — OneDrive 동기화 폴더는 수 초 안에 읽기 전용(R) 속성을 받고, R unlink 는 그 폴더를 조용히 남긴다.
+#'   11-10 실측: 첫 전체 빌드 뒤 잠금 폴더가 남아 다음 빌드가 모두 건너뛰었고, 6시간 뒤 넘겨받기도 같은 unlink 라 영영 막힐 뻔했다
+#'   (같은 함정 = 충실구현 레인 claim 폴더 · 0cacde89b). 남으면 속성을 풀고(Sys.chmod — Windows 에서는 읽기 전용 비트) 한 번 더 지운다.
+.fc_rmdir <- function(p) {
+  unlink(p, recursive = TRUE)
+  if (dir.exists(p)) { Sys.chmod(p, "777", use_umask = FALSE); unlink(p, recursive = TRUE) }
+  !dir.exists(p)
 }
 
 .fc_write_atomic <- function(tbl, path) {
@@ -146,7 +156,7 @@ fc_build <- function(root = fc_root(), out = NULL, full = FALSE, months = NULL, 
     if (verbose) cat("[fc] 다른 빌드가 잠금(.build.lock)을 쥐고 있다 — 건너뛴다\n")
     return(invisible(structure(list(skipped = "locked"), class = "fc_skipped")))
   }
-  on.exit(unlink(lk, recursive = TRUE), add = TRUE)
+  on.exit(fc_release(lk), add = TRUE)
   sc <- as.numeric(cfg$storage$value_scale)
   src <- list.files(E$FACTOR_DB_DIR, pattern = "^factor_db_[0-9]{6}\\.parquet$", full.names = TRUE)
   if (!length(src)) stop("[fc] 팩터 DB 월 파일 없음: ", E$FACTOR_DB_DIR)
