@@ -1,7 +1,8 @@
-## test_grade_v3_fa_notch.R — 등급 v3.3 팩터 조정 알파 노치 검사기(양성 대조 + 위반 주입)
-## 대상: 02_Infrastructure/contracts/grade_v3.R(gv3_decide ④ · gv3_fa_stats · .gv3_fa_monthly · gv3_fa_ctx · .gv3_fa_eval)
-## 결정: decision_register GRADE-V33-FACTOR-ALPHA-NOTCH-20261109(도훈 11-09 '1안으로 가자')
-##   A 결정 함수 경우표 · B 합성 요인 통계(정답을 아는 자료) · C 요인 묶음 fail-closed · D 자격 판정 · M 위반 주입 5종
+## test_grade_v3_fa_notch.R — 등급 v3.3 검사기(팩터 조정 알파 노치 + A 의 OOS 관문 구성 요소) · 양성 대조 + 위반 주입
+## 대상: 02_Infrastructure/contracts/grade_v3.R(gv3_decide ④ · gv3_fa_stats · .gv3_fa_monthly · gv3_fa_ctx · .gv3_fa_eval · gv3_oos_parts)
+## 결정: decision_register GRADE-V33-FACTOR-ALPHA-NOTCH-20261109(도훈 11-09 '1안으로 가자') ·
+##       GRADE-V33-OOS-TEST-WINDOW-CALMAR-20261109(도훈 11-09 '대안으로 교체' — 롤링 36 통과율 → 시험 창 Calmar ≥ 같은 창 KOSPI200 Calmar)
+##   A 결정 함수 경우표 · B 합성 요인 통계(정답을 아는 자료) · C 요인 묶음 fail-closed · D 자격 판정 · O OOS 관문 요소 · M 위반 주입 7종
 suppressPackageStartupMessages({ library(data.table); library(jsonlite); library(arrow) })
 `%||%` <- function(a, b) if (is.null(a)) b else a
 ROOT <- gsub("\\\\", "/", Sys.getenv("CLAUDE_PROJECT_DIR", Sys.getenv("QM_ROOT", "")))
@@ -131,6 +132,26 @@ r <- ev(cx = cx0); chk("D6 enabled = FALSE → 통계는 기록 · 자격 없음
 Xb <- list(pr = mk_pr(0.01), ar = list(), spec = list(universe = "K200_KQ150"))
 r <- ev(x = Xb); chk("D7 메모리판 · 유니버스가 활성 epoch 와 다르면 epoch 미상 → 자격 없음", !isTRUE(r$decide$eligible) && "epoch_mismatch" %in% r$record$why_not)
 
+cat("=== O. A 의 OOS 관문 구성 요소(gv3_oos_parts · 설정 oos.gate_components) ===\n")
+NEWC <- c("test_window_cr_not_weak", "test_window_calmar_vs_bench"); OLDC <- c("test_window_cr_not_weak", "rolling36_pass_oos")
+o <- G$gv3_oos_parts("normal", 0.37, 0.5, 1.47, 0.85, NEWC)
+chk("O1 시험 창 Calmar 1.47 ≥ KOSPI200 0.85 → 통과 · 롤링 0.37 은 기록만(새 구성)", isTRUE(all(o$parts)) && identical(names(o$parts), NEWC) &&
+      identical(unname(o$all["rolling36_pass_oos"]), FALSE))
+o <- G$gv3_oos_parts("normal", 0.37, 0.5, 0.60, 0.85, NEWC)
+chk("O2 시험 창 Calmar 0.60 < KOSPI200 0.85 → 미달", !isTRUE(o$parts[["test_window_calmar_vs_bench"]]))
+o <- G$gv3_oos_parts("normal", 0.37, 0.5, NA, 0.85, NEWC)
+chk("O3 시험 창 Calmar 결측(관측 부족) → 미달(fail-closed)", !isTRUE(o$parts[["test_window_calmar_vs_bench"]]))
+o <- G$gv3_oos_parts("normal", 0.37, 0.5, 1.47, 0.85, OLDC)
+chk("O4 구 구성(롤링 36)이면 같은 입력이 미달 — 구성을 설정이 정한다", !isTRUE(all(o$parts)) && identical(names(o$parts), OLDC))
+o <- G$gv3_oos_parts("weak", 0.9, 0.5, 1.47, 0.85, NEWC)
+chk("O5 시험 창 위기 방어 약함 → 미달(그대로 유지되는 요소)", !isTRUE(o$parts[["test_window_cr_not_weak"]]))
+thr <- function(expr) inherits(tryCatch({ force(expr); NULL }, error = function(e) e), "error")
+chk("O6 [위반 주입] 어휘 밖 구성 요소 · 빈 구성 → 멈춘다", thr(G$gv3_oos_parts("normal", 1, 0.5, 1, 1, "made_up")) &&
+      thr(G$gv3_oos_parts("normal", 1, 0.5, 1, 1, character(0))))
+pc <- tempfile(fileext = ".json"); cj <- fromJSON(file.path(ROOT, "06_Registry/grade_v3.json"), simplifyVector = FALSE)
+cj$oos$gate_components <- list("test_window_cr_not_weak", "made_up"); writeLines(toJSON(cj, auto_unbox = TRUE), pc)
+chk("O7 [위반 주입] 설정의 구성 요소 어휘 밖 → gv3_cfg 가 멈춘다", thr(G$gv3_cfg(ROOT, path = pc)))
+
 cat("=== M. 위반 주입(검사가 살아 있나) ===\n")
 M1 <- mutant('g %in% c("C", "B") && !identical(cr, "weak")', 'g %in% c("C", "B")')
 chk("M1 CR 약함 제외를 지우면 A7 이 B 로 뒤집힌다(A7 이 잡는다)", identical(dec(M1, 0.60, cr = "weak", t = 3.0)$grade, "B"))
@@ -143,6 +164,11 @@ M4 <- mutant('  if (length(g) && !all(g)) why <- c(why, paste0("gate:", names(g)
 chk("M4 관문 조건을 지우면 D3 이 자격을 얻는다(D3 이 잡는다)", isTRUE(ev(env = M4, gates = c(dsr_sweep = FALSE))$decide$eligible))
 M5 <- mutant("isTRUE(fa$t_min >= fa$th_a) && a_ok", "isTRUE(fa$t_min >= fa$th_a)")
 chk("M5 B→A 의 하한 조건을 지우면 A4 가 A 로 뒤집힌다(A4 가 잡는다)", identical(dec(M5, 0.60, t = 3.0, fl = replace(FL, "cagr", FALSE))$grade, "A"))
+
+M6 <- mutant("calmar_tw >= bench_calmar_tw", "calmar_tw <= bench_calmar_tw")
+chk("M6 시험 창 비교 방향을 뒤집으면 O1 이 미달로 뒤집힌다(O1 이 잡는다)", !isTRUE(all(M6$gv3_oos_parts("normal", 0.37, 0.5, 1.47, 0.85, NEWC)$parts)))
+M7 <- mutant("list(parts = all_parts[components], all = all_parts)", "list(parts = all_parts, all = all_parts)")
+chk("M7 구성 선택을 무시하면(전부 관문) O1 이 롤링 때문에 미달이 된다(O1 이 잡는다)", !isTRUE(all(M7$gv3_oos_parts("normal", 0.37, 0.5, 1.47, 0.85, NEWC)$parts)))
 
 unlink(TR, recursive = TRUE)
 cat(sprintf("\n== grade_v3_fa_notch: PASS %d · FAIL %d ==\n", PASS, FAIL))

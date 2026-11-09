@@ -583,7 +583,9 @@ essence_diagnostics <- function(bt_result, oos_stat_version = "v2", root = NULL)
        oos = list(tau_d = v3$oos$tau_d, gate = isTRUE(v3$oos$gate), parts = v3$oos$parts,
                   pass_oos = r4(v3$oos$pass_oos), pass_min = r4(v3$oos$pass_min), pass_life = r4(v3$oos$pass_life),
                   S_is = r4(v3$oos$S_is), S_oos = r4(v3$oos$S_oos), retention_calmar = r4(v3$oos$retention_calmar),
-                  retention_sharpe = r4(v3$oos$retention_sharpe)),
+                  retention_sharpe = r4(v3$oos$retention_sharpe),
+                  components = if (is.null(v3$oos$components)) NULL else as.list(v3$oos$components),
+                  parts_all = v3$oos$parts_all, calmar_tw = r4(v3$oos$calmar_tw), bench_calmar_tw = r4(v3$oos$bench_calmar_tw)),
        parity_max_abs = v3$parity_max_abs, nav_source = v3$nav_source,
        fa_notch = if (is.null(v3$fa_notch)) 0L else as.integer(v3$fa_notch), fa = .essence_v3_fa_record(v3$fa, r4))
 }

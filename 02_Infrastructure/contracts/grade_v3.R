@@ -83,6 +83,10 @@ gv3_cfg <- function(root = NULL, path = NULL) {
   if (identical(sr, "mc8_selection_or_timing_evidence") && !(is.character(tu) && length(tu) == 1L && tu %in% GV3_TIMING_UNITS))
     stop("[grade_v3] cr_notch.timing_unit 어휘 밖(", paste(GV3_TIMING_UNITS, collapse = " | "), ") — 증거 셈 단위(GRADE-V32-TIMING-EVENT-UNIT)")
   .gv3_fa_cfg_check(cfg[["fa_notch"]])
+  gc_ <- as.character(unlist(cfg$oos$gate_components))
+  if (!length(gc_) || length(setdiff(gc_, GV3_OOS_COMPONENTS)))
+    stop("[grade_v3] oos.gate_components 어휘 밖 · 비었음(", paste(setdiff(gc_, GV3_OOS_COMPONENTS), collapse = ","), ") — 어휘 = ",
+         paste(GV3_OOS_COMPONENTS, collapse = " | "))
   cfg
 }
 
@@ -153,6 +157,21 @@ GV3_TIMING_FLAGS <- c("a_deep_beta_majority", "a_fast_beta_majority", "b_both_en
 #   셈 단위(decision_register GRADE-V32-TIMING-EVENT-UNIT-20261018 · 도훈 10-18 = lt): lt = Lunde-Timmermann 위기 수 · episode = 독립 상태 일화 ·
 #   both = 두 판 모두 통과. 설정 단위(cr_notch.timing_unit)와 기록 단위가 같아야 가점(다른 단위로 센 기록 = 가점 없음).
 GV3_TIMING_UNITS <- c("lt", "episode", "both")
+# A 의 OOS 관문 구성 요소 어휘 — 설정 oos.gate_components 가 이 중에서 고른다(전부 계산해 기록 · 고른 것만 관문)
+#   test_window_calmar_vs_bench = τ_D 뒤 시험 창 Calmar ≥ 같은 창 KOSPI200 Calmar(도훈 11-09 '대안으로 교체' ·
+#   decision_register GRADE-V33-OOS-TEST-WINDOW-CALMAR-20261109 — 롤링 36 통과율은 시험 창에 끝나는 창의 대부분이 τ_D 이전 달을 담아
+#   시험 창이 아니라 주로 보는 창을 쟀다 · 시장 자신도 통과율 0.30)
+GV3_OOS_COMPONENTS <- c("test_window_cr_not_weak", "rolling36_pass_oos", "test_window_calmar_vs_bench")
+
+#' OOS 관문 구성 요소(순수 함수) — 후보 셋을 모두 계산하고 components 만 관문(parts)으로 돌려준다. 결측 = 거짓(fail-closed)
+gv3_oos_parts <- function(cr_test, pass_oos, pass_min, calmar_tw, bench_calmar_tw, components) {
+  all_parts <- c(test_window_cr_not_weak = !(cr_test %in% c("weak", "error")) && !is.na(cr_test),
+                 rolling36_pass_oos = isTRUE(is.finite(pass_oos) && is.finite(pass_min) && pass_oos >= pass_min),
+                 test_window_calmar_vs_bench = isTRUE(is.finite(calmar_tw) && is.finite(bench_calmar_tw) && calmar_tw >= bench_calmar_tw))
+  bad <- setdiff(components, GV3_OOS_COMPONENTS)
+  if (!length(components) || length(bad)) stop("[grade_v3] oos.gate_components 어휘 밖 · 비었음: ", paste(bad, collapse = ","))
+  list(parts = all_parts[components], all = all_parts)
+}
 gv3_timing_evidence_ok <- function(evidence, unit = NULL) {
   if (!is.list(evidence) || !length(evidence)) return(FALSE)
   if (!is.null(unit) && !identical(as.character(.gv3_or(evidence$unit, NA_character_))[1], as.character(unit)[1])) return(FALSE)
@@ -642,8 +661,11 @@ gv3_score_bt <- function(bt, root = NULL, ctx = NULL, gates = NULL) {
   rr <- e$rg_rolling(X$pr[, .(date, ret_net)], X$br[, .(date, benchmark_ret)], params = ctx$rg, keep_series = TRUE)
   pass_oos <- if (identical(rr$status, "ok")) { s <- rr$series[ym > tau_ym]; if (nrow(s)) mean(s$pass) else NA_real_ } else NA_real_
   pass_min <- num(ctx$rg$rescue_min_recent_pass)
-  oos_parts <- c(test_window_cr_not_weak = !(cs$cr_test %in% c("weak", "error")) && !is.na(cs$cr_test),
-                 rolling36_pass_oos = isTRUE(is.finite(pass_oos) && is.finite(pass_min) && pass_oos >= pass_min))
+  # 같은 시험 창의 KOSPI200(공표 벤치를 전략처럼 같은 계약 함수로) — 시험 창 Calmar 비교 요소용
+  bench_oos <- gv3_window(B$pr, B$pr[, .(date, benchmark_ret = ret_net, benchmark_id = as.character(X$br$benchmark_id[1]))],
+                          B$nv, from = tau + 1, root = root)
+  op <- gv3_oos_parts(cs$cr_test, pass_oos, pass_min, oos_w$calmar, bench_oos$calmar, as.character(unlist(cfg$oos$gate_components)))
+  oos_parts <- op$parts
   oos_gate <- all(oos_parts)
 
   S_B <- gv3_S(bench$calmar, th$port_t_b, th, cfg$weights)        # B 경계 = 같은 창 벤치 Calmar · 현행 B PORT_t 모서리의 S
@@ -688,7 +710,9 @@ gv3_score_bt <- function(bt, root = NULL, ctx = NULL, gates = NULL) {
                   retention_sharpe = ratio(oos_w$sharpe, is_w$sharpe),
                   rolling_status = rr$status, pass_life = .gv3_or(rr$pass_life, NA_real_),
                   pass_recent = .gv3_or(rr$pass_recent, NA_real_), pass_oos = pass_oos, pass_min = pass_min,
-                  pass_min_status = cfg$oos$rolling_pass_min_status, parts = as.list(oos_parts), gate = oos_gate),
+                  pass_min_status = cfg$oos$rolling_pass_min_status, parts = as.list(oos_parts), gate = oos_gate,
+                  parts_all = as.list(op$all), components = names(oos_parts),
+                  calmar_tw = oos_w$calmar, bench_calmar_tw = bench_oos$calmar, bench_cagr_tw = bench_oos$cagr),
        S_B = S_B, band = dec$band, notch = dec$notch, notch_a = dec$notch_a, cr_notch = cr_notch, mc8 = mc8,
        fa = fae$record, fa_notch = dec$fa_notch,
        cr_notch_basis = basis, timing_evidence = if (is.null(tev)) NULL else tev[c("round_id", "unit", GV3_TIMING_FLAGS)],

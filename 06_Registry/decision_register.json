@@ -3991,7 +3991,29 @@
       "registered_at": "2026-11-09T15:08:43+0900",
       "recorded_by": "Q(세션 fe712ea2)",
       "evidence": "도훈 채팅 2026-11-09 — '1안으로 가자'(앞서 1안 · 2안 비교 · 파마-맥베스 역할 설명 뒤)"
+    },
+    {
+      "id": "GRADE-V33-OOS-TEST-WINDOW-CALMAR-20261109",
+      "title": "A 의 OOS 관문 — 롤링 36개월 통과율을 '시험 창 Calmar ≥ 같은 창 KOSPI200 Calmar' 로 교체(시험 창 위기 방어 약함 아님은 유지)",
+      "status": "resolved",
+      "opened_at": "2026-11-09T15:52:20+0900",
+      "options": [
+        "대안 교체 — oos.gate_components = test_window_cr_not_weak + test_window_calmar_vs_bench(τ_D 뒤 시험 창 전체 1창 · 같은 계약 함수 gv3_window 로 전략 · 벤치 Calmar)",
+        "현행 유지 — test_window_cr_not_weak + rolling36_pass_oos(시험 창에 끝나는 36M 창 통과율 ≥ 0.5)"
+      ],
+      "recommendation": "대안 교체",
+      "default_until_decided": "현행(rolling36_pass_oos)",
+      "blocks": [],
+      "owner": "dohoon",
+      "source": "도훈 11-09 '롤링 36개월 통과율 기준은 너무 빡센 기준인가?' → 실측(현 축 87전략): 통과 5/87 · 중앙 0.28 · KOSPI200 자신도 0.30(전기간 0.12) · 시험 창에 끝나는 46창 중 35창이 τ_D 이전 달을 담음(시험 창이 아니라 주로 2020~2022 를 잼) · 시험 창에 온전히 든 창 11개만 세면 강세장 한 번이라 KOSPI200 도 1.00. 대안(시험 창 Calmar ≥ 같은 창 KOSPI200 Calmar) 통과 38/87 · v3.3 노치와 함께 A = 3기록(P2R03_E3_RX0 · P2R04_E3_RX0(같은 엔진) · P2R03_E3_L2 — 시험 창 Calmar 1.47~1.60 vs 0.85 · FF 최소 t ≈ 4.5).",
+      "decision": "대안 교체. ① A 의 OOS 관문 = 시험 창(τ_D 뒤 · behavior_card.json::tau_d) 위기 방어 약함 아님 ∧ 시험 창 Calmar ≥ 같은 시험 창 KOSPI200 Calmar (전략 · 벤치 모두 contracts/grade_v3.R::gv3_window = build_metrics · 시험 창 관측 24개월 미만이면 결측 = 미달 · fail-closed). ② 롤링 36개월 통과율(pass_oos · pass_life)은 진단으로 계속 기록(관문 아님). ③ 구현 = gv3_oos_parts(후보 셋 모두 계산 · 설정 oos.gate_components 가 고름 · 어휘 밖 = 멈춤). ④ 활성화 = v3.3(팩터 조정 알파 노치 GRADE-V33-FACTOR-ALPHA-NOTCH-20261109)과 함께 — 정본 요인 파일 교체 직후 grade_v3.json oos.gate_components 교체 · rules_version v3.3 · 저장분 재채점 · A 가 된 기록은 A 자격 관문 → Judge(PIT).",
+      "decided_by": "dohoon",
+      "decided_at": "2026-11-09T15:52:21+0900",
+      "note": "시험 test_grade_v3_fa_notch.R O1~O7 · M6 · M7(42/42) · test_grade_v3 63/63 · test_essence_score 28/28. 미리 보기(두 변경 켬 · 스크래치 후보 요인): F-Score C→B · SVM-SMO 전 특성 C(cr_weak) · P2R03_E3_RX0 · P2R04_E3_RX0 · P2R03_E3_L2 B→A.",
+      "registered_at": "2026-11-09T15:52:20+0900",
+      "recorded_by": "Q(세션 fe712ea2)",
+      "evidence": "도훈 채팅 2026-11-09 — '대안으로 교체'(대안의 쉬운 설명 뒤)"
     }
   ],
-  "last_updated": "2026-11-09T15:08:45+0900"
+  "last_updated": "2026-11-09T15:52:22+0900"
 }
