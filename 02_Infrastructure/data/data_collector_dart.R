@@ -174,6 +174,28 @@ dart_update_corpcode <- function(force = FALSE) {
   if (nrow(res) > 0) "ok" else "fail"
 }
 
+# 응답 연도 ≠ 요청 연도 (2026-11-09 · 연간 수집 루프 dart_fetch_all 전용 — 분기 경로는 동작 불변).
+#   fnlttSinglAcntAll 이 요청한 사업연도가 아닌 보고서를 돌려주는 경우가 있다. 실측: 코스나인
+#   (00442455) bsns_year=2024 요청 → '제 25 기'(FY2025) 보고서(접수 20260324000091). .dart_fetch_single 은
+#   응답의 bsns_year 를 쓰므로 그 행이 FY2025 로 한 벌씩 더 쌓였고(4벌), 요청 키(FY2024)는 자료도
+#   장부 기록도 없이 '안 받음'으로 남아 매 실행 다시 요청됐다 → 보충 완결(요청 대상 0)이 영영 안 왔다.
+#   요청 연도 행만 남긴다. 하나도 없으면 '자료 없음'(dart_code year_mismatch_<응답 연도>)으로 돌려
+#   진행 장부에 사유와 함께 적힌다. 응답 행에 요청 연도를 다시 붙이지 않는다 — 다른 해 숫자에 이른
+#   Factor_Date 가 붙으면 미래참조(C4)다.
+.dart_keep_requested_year <- function(res, bsns_year) {
+  if (!identical(.dart_result_status(res), "ok") || !"bsns_year" %in% names(res)) return(res)
+  hit <- res$bsns_year %in% as.integer(bsns_year)   # NA 연도 = 불일치
+  if (all(hit)) return(res)
+  if (!any(hit)) {
+    out <- .dart_empty_result("empty")
+    setattr(out, "dart_code", paste0("year_mismatch_",
+                                     paste(sort(unique(res$bsns_year)), collapse = "_")))
+    return(out)
+  }
+  cat(sprintf("    [dart] 응답에 요청 연도(%s) 밖 행 %d개 — 버린다\n", bsns_year, sum(!hit)))
+  res[hit]
+}
+
 .dart_fetch_single <- function(corp_code, bsns_year, reprt_code = "11011",
                                 fs_div = "CFS") {
   url <- "https://opendart.fss.or.kr/api/fnlttSinglAcntAll.json"
@@ -427,6 +449,7 @@ dart_fetch_all <- function(years = NULL,
         NULL
       }
     )
+    dt <- .dart_keep_requested_year(dt, task$bsns_year)
     n_calls <- n_calls + 1L
     st_primary  <- .dart_result_status(dt)
     st_fallback <- NA_character_
@@ -438,6 +461,7 @@ dart_fetch_all <- function(years = NULL,
         .dart_fetch_single(task$corp_code, task$bsns_year, reprt_code, "OFS"),
         error = function(e) NULL
       )
+      dt2 <- .dart_keep_requested_year(dt2, task$bsns_year)
       n_calls <- n_calls + 1L
       st_fallback <- .dart_result_status(dt2)
       if (st_fallback == "ok") {
@@ -468,10 +492,12 @@ dart_fetch_all <- function(years = NULL,
       n_success <- n_success + 1L
       consec_fail <- 0L
     } else {
-      code <- if (st == "empty") "013" else {
-        cc <- c(attr(dt2, "dart_code", exact = TRUE), attr(dt, "dart_code", exact = TRUE), "fail")
-        cc[1L]
-      }
+      # '자료 없음' 사유 = 013 · 단 응답 연도 불일치면 year_mismatch_<응답 연도>(위 .dart_keep_requested_year)
+      code <- c(attr(dt2, "dart_code", exact = TRUE), attr(dt, "dart_code", exact = TRUE),
+                if (st == "empty") "013" else "fail")[1L]
+      if (startsWith(code, "year_mismatch"))
+        cat(sprintf("  ~ [%d/%d] %s (%s) %d: 응답 연도 불일치(%s) — 그 행은 쓰지 않고 '자료 없음'으로 기록\n",
+                    i, total, task$corp_name, task$Ticker, task$bsns_year, code))
       attempts[[length(attempts) + 1L]] <- data.table(
         corp_code = task$corp_code, bsns_year = as.integer(task$bsns_year), reprt_code = reprt_code,
         Ticker = task$Ticker, status = st, last_code = code,

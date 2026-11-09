@@ -399,7 +399,8 @@ dart_annual_keys <- function(path = NULL) {
 
 #------------------------------------------------------------------------------
 # 진행 장부 (연간 11011) — 자료를 못 받은 시도만 적는다(자료 수신 = 원시 캐시가 장부).
-#   status "empty" : CFS·OFS 모두 status 013/빈 목록 (자료 없음)
+#   status "empty" : CFS·OFS 모두 status 013/빈 목록 (자료 없음) · 또는 응답이 요청 연도가 아닌 해의
+#                    보고서(last_code year_mismatch_<응답 연도> · 2026-11-09 — data_collector_dart.R)
 #   status "fail"  : HTTP·파싱·기타 status (일시 실패 — 재시도 대상)
 #   '자료 없음'이 **마감(창 끝) + grace 뒤에 관측**됐으면 확인된 자료 없음(해결)으로 센다.
 #   마감 전 관측분은 아직 안 낸 것일 수 있다 → 미해결 · 마감+grace 가 지나면 한 번 더 묻는다.

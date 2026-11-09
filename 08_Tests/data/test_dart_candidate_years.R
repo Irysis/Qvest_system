@@ -38,6 +38,13 @@
 #   I. 배선 — 연간은 listed · 분기는 prior_year 명시 · 수집기·보충 CLI 가 같은 요청 대상 함수를
 #      쓰는가 · 보충은 --backfill 플래그 없이 API 를 부르지 않는가 · 체인이 보충을 부르지 않는가
 #
+# 2026-11-09 추가 (응답 연도 ≠ 요청 연도 — 보충 완결이 1건에서 영영 안 오던 결함):
+#   코스나인(00442455) FY2024 요청에 DART 가 FY2025 보고서를 돌려줬다 → 그 행이 FY2025 로 4벌 쌓이고
+#   FY2024 키는 자료도 장부도 없이 매 실행 다시 요청됐다(요청 대상 1 에서 정지).
+#   J. 응답 연도 — 요청 연도 행만 남기는가 · 하나도 없으면 '자료 없음'(사유 year_mismatch_*)인가 ·
+#      정상 응답은 그대로인가 · 돌연변이 통제(판정을 끈 사본은 J2 를 통과하지 못해야 한다) ·
+#      배선(연간 루프 CFS·OFS 두 호출 뒤에 붙고 장부 사유로 넘어가며, 분기 수집기는 동작 불변)
+#
 # 단독 실행: Rscript 08_Tests/data/test_dart_candidate_years.R
 # 배터리   : 08_Tests/hooks/run_all_hooks.sh (SUITES 배열)
 #==============================================================================
@@ -526,6 +533,89 @@ cat("\n=== I. 배선 ===\n")
   if (!any(grepl("dart_annual_backfill|backfill\\s*=\\s*TRUE", R)))
     ok("I5_chain_does_not_backfill") else
     bad("I5_chain_does_not_backfill", "daily_refresh.sh 가 보충을 부른다 — 체인 콜 예산 침범")
+}
+
+cat("\n=== J. 응답 연도 ≠ 요청 연도 (연간 수집 루프 · 2026-11-09) ===\n")
+{
+  CF <- "02_Infrastructure/data/data_collector_dart.R"
+  CL <- readLines(CF, warn = FALSE, encoding = "UTF-8")
+  # 수집기는 config.R · httr · API 키를 끌어오므로 통째로 source 하지 않는다 — 파싱만 하고
+  # 결과 규약 함수 4개의 정의식만 새 환경에서 평가한다(실행 0 · API 0콜).
+  want <- c(".dart_empty_result", ".dart_fail_result", ".dart_result_status", ".dart_keep_requested_year")
+  load_defs <- function(lines) {
+    E <- new.env(parent = globalenv()); got <- character(0)
+    for (e in parse(text = lines, keep.source = FALSE, encoding = "UTF-8")) {
+      if (is.call(e) && identical(e[[1L]], as.name("<-")) && is.name(e[[2L]]) &&
+          as.character(e[[2L]]) %in% want) { eval(e, E); got <- c(got, as.character(e[[2L]])) }
+    }
+    attr(E, "got") <- got
+    E
+  }
+  E <- load_defs(CL)
+  if (setequal(attr(E, "got"), want)) ok("J0_helpers_parsed", "정의식 4개만 평가") else
+    bad("J0_helpers_parsed", paste("없음:", paste(setdiff(want, attr(E, "got")), collapse = ",")))
+  mk <- function(years) data.table(account_nm = paste0("a", seq_along(years)), bsns_year = as.integer(years))
+  j2_pass <- function(r, rs) identical(rs(r), "empty") && nrow(r) == 0L &&
+    identical(attr(r, "dart_code", exact = TRUE), "year_mismatch_2025")
+  kr <- E$.dart_keep_requested_year; rs <- E$.dart_result_status
+
+  # J1: 정상 응답(전부 요청 연도)은 그대로 — 기존 수집 결과를 바꾸지 않는다
+  d1 <- mk(c(2024, 2024, 2024)); r1 <- kr(d1, 2024)
+  if (identical(r1, d1) && identical(rs(r1), "ok")) ok("J1_matching_rows_unchanged") else
+    bad("J1_matching_rows_unchanged", sprintf("status=%s nrow=%d", rs(r1), nrow(r1)))
+
+  # J2: 코스나인 장면(위반 주입) — 요청 2024 · 응답 전부 2025(120행) → '자료 없음' · 사유 year_mismatch_2025
+  r2 <- kr(mk(rep(2025, 120)), 2024)
+  if (j2_pass(r2, rs)) ok("J2_year_mismatch_is_empty", "FY2025 행을 FY2024 요청 결과로 쌓지 않는다") else
+    bad("J2_year_mismatch_is_empty", sprintf("status=%s nrow=%d code=%s", rs(r2), nrow(r2),
+                                             format(attr(r2, "dart_code", exact = TRUE))))
+
+  # J3: 섞인 응답 → 요청 연도 행만 남긴다(다른 해 행에 요청 연도를 다시 붙이지 않는다)
+  invisible(capture.output(r3 <- kr(mk(c(2024, 2025, 2024)), 2024)))
+  if (identical(rs(r3), "ok") && nrow(r3) == 2L && all(r3$bsns_year == 2024L) &&
+      identical(r3$account_nm, c("a1", "a3"))) ok("J3_mixed_keeps_requested_only") else
+    bad("J3_mixed_keeps_requested_only", sprintf("nrow=%d years=%s", nrow(r3), paste(r3$bsns_year, collapse = ",")))
+
+  # J4: ok 가 아닌 결과(자료 없음 · 실패 · 쿼터 초과 · NULL)는 손대지 않는다 — 020 즉시 중단 등 기존 분기 불변
+  e0 <- E$.dart_empty_result("empty"); f0 <- E$.dart_fail_result("http_500"); q0 <- E$.dart_empty_result("rate_limit")
+  if (identical(kr(e0, 2024), e0) && identical(kr(f0, 2024), f0) && identical(kr(q0, 2024), q0) &&
+      is.null(kr(NULL, 2024))) ok("J4_non_ok_passthrough") else
+    bad("J4_non_ok_passthrough", "비정상 결과의 상태 · 사유가 바뀜")
+
+  # J5: 돌연변이 통제 — 판정을 끈 사본(무조건 그대로 반환)은 J2 를 통과하지 못해야 한다.
+  #     소스 텍스트 치환(deparse 치환은 줄바꿈된 호출을 조용히 빗나간다) · 치환 성사 · 사본 파싱을 단정.
+  pat <- "^  if \\(all\\(hit\\)\\) return\\(res\\)$"
+  n_hit <- sum(grepl(pat, CL))
+  ML <- sub(pat, "  return(res)", CL)
+  EM <- tryCatch(load_defs(ML), error = function(e) NULL)
+  mut_ok <- n_hit == 1L && !is.null(EM) && setequal(attr(EM, "got"), want) &&
+    !j2_pass(EM$.dart_keep_requested_year(mk(rep(2025, 120)), 2024), EM$.dart_result_status)
+  if (mut_ok) ok("J5_mutant_fails_J2", "판정을 끈 사본 → FY2025 120행이 FY2024 결과로 통과(검사가 살아 있음)") else
+    bad("J5_mutant_fails_J2", sprintf("치환 %d곳 · 사본 파싱 %s", n_hit, !is.null(EM)))
+
+  # J6: 배선 — 연간 루프의 CFS · OFS 두 호출 뒤에 각각 붙고, 장부 사유가 dart_code 를 받으며,
+  #     분기 수집기(data_collector_dart_quarterly.R)는 이 판정을 쓰지 않는다(이번 수리 범위 밖 — 동작 불변)
+  nc <- function(L) L[!grepl("^\\s*#", L)]
+  s0 <- grep("^dart_fetch_all <- function", CL)
+  s1 <- if (length(s0) == 1L) s0 + grep("^}", CL[(s0 + 1L):length(CL)])[1L] else NA_integer_
+  FA <- if (is.finite(s1)) nc(CL[s0:s1]) else character(0)
+  i_cfs <- grep(".dart_fetch_single(task$corp_code, task$bsns_year, reprt_code, fs_div)", FA, fixed = TRUE)
+  i_ofs <- grep('.dart_fetch_single(task$corp_code, task$bsns_year, reprt_code, "OFS")', FA, fixed = TRUE)
+  i_k1  <- grep(".dart_keep_requested_year(dt, task$bsns_year)", FA, fixed = TRUE)
+  i_k2  <- grep(".dart_keep_requested_year(dt2, task$bsns_year)", FA, fixed = TRUE)
+  i_st1 <- grep("st_primary  <- .dart_result_status(dt)", FA, fixed = TRUE)
+  i_st2 <- grep("st_fallback <- .dart_result_status(dt2)", FA, fixed = TRUE)
+  code_ln <- any(grepl('if (st == "empty") "013" else "fail")[1L]', FA, fixed = TRUE))
+  Q <- nc(rd2("02_Infrastructure/data/data_collector_dart_quarterly.R"))
+  wired <- length(i_cfs) == 1L && length(i_ofs) == 1L && length(i_k1) == 1L && length(i_k2) == 1L &&
+    length(i_st1) == 1L && length(i_st2) == 1L &&
+    i_cfs < i_k1 && i_k1 < i_st1 && i_ofs < i_k2 && i_k2 < i_st2 && code_ln &&
+    !any(grepl("dart_keep_requested_year", Q, fixed = TRUE))
+  if (wired) ok("J6_wired_annual_only", "CFS · OFS 응답 → 연도 판정 → 상태 분류 · 장부 사유 · 분기 불변") else
+    bad("J6_wired_annual_only", sprintf("cfs=%s k1=%s st1=%s ofs=%s k2=%s st2=%s code=%s",
+                                        paste(i_cfs, collapse = ","), paste(i_k1, collapse = ","),
+                                        paste(i_st1, collapse = ","), paste(i_ofs, collapse = ","),
+                                        paste(i_k2, collapse = ","), paste(i_st2, collapse = ","), code_ln))
 }
 
 cat(sprintf("\nTOTAL: %d pass / %d fail\n", PASS, FAIL))
