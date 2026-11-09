@@ -4013,7 +4013,30 @@
       "registered_at": "2026-11-09T15:52:20+0900",
       "recorded_by": "Q(세션 fe712ea2)",
       "evidence": "도훈 채팅 2026-11-09 — '대안으로 교체'(대안의 쉬운 설명 뒤)"
+    },
+    {
+      "id": "FACTOR-COMBINABLE-VIEW-20261109",
+      "title": "결합용 팩터 뷰(월간 저장형 · 자동 갱신) + 방향 기준에 등록부 이론 방향 선택지(C13 해석 확장)",
+      "status": "resolved",
+      "opened_at": "2026-11-09T16:16:48+0900",
+      "options": [
+        "만들기 · 방향은 과거 IC 만(C13 그대로)",
+        "만들기 · 이론 방향 선택지도 추가(C13 해석 확장)",
+        "지금은 안 함"
+      ],
+      "recommendation": "만들기 · 방향은 과거 IC 만(C13 그대로)",
+      "default_until_decided": "없음(팩터 DB 를 쓰는 쪽이 각자 결합)",
+      "blocks": [],
+      "owner": "dohoon",
+      "source": "도훈 11-09 '팩터 DB에 있는 팩터들은 모두 선형/비선형 결합 가능한 형태로 적재되는건가?' → Q 실측(2010-06 월간): 344팩터 z 평균 0 · 표준편차 1 · 커버리지 206~3,297종목 · 상관 0.9 넘는 쌍 312 · 별칭 11 · 344개 전부 과거 36개월 IC 방향 · 왜도 |1| 초과 194 → '쉽게 결합할 수 있도록 정렬도 가능해?' → 선택지 제시",
+      "decision": "만들기 · 이론 방향 선택지도 추가 + 자동 갱신(도훈 '결합용 뷰도 자동 업데이트 되게끔 만들어줘'). ① 접근자 load_month_factors · load_daily_factors 에 direction = 'ic_asof'(기본 · 기존 동작 그대로) | 'registry'(factor_registry.json 선언 방향 · align_factor_direction(sig_date = NULL) 기존 경로 · 자료 무사용). ★C13 해석 확장: 등록부에 미리 선언된 이론 방향으로 정렬한 값(정본 접근자 경유)은 허용 — 수동 반전(NEGATE_FACTORS · FLIP_SIGN)과 호출자가 부호를 지정하는 것은 여전히 금지. ② 결합용 뷰 = 02_Infrastructure/factor_db/factor_combinable.R(설정 06_Registry/factor_combinable.json) — 팩터별 횡단면 순위 → [−1, 1](Gu, Kelly & Xiu 2020) · 결측 0(횡단면 중앙값) · 별칭 접기 · 계열(category) 평균 · tickers 안 재순위 · 저장 = .cache/factor_combinable/fc_YYYYMM.parquet(등록부 방향 · int16) + 부호표(과거 IC 방향 = s_rel 곱) · 일간 = fc_daily 즉석. ③ 자동 갱신 = 증분(원천 월 파일 크기 · 수정 시각이 바뀐 달 + 가장 최근 달 · 부호표 매번) · 일일 체인 [6e](팩터 DB 갱신 뒤) — 첫 전체 빌드와 체인 연결은 팩터 DB 전체 재빌드 끝난 뒤.",
+      "decided_by": "dohoon",
+      "decided_at": "2026-11-09T16:16:50+0900",
+      "note": "시험 08_Tests/factor_db/test_factor_combinable.R 19/19(위반 주입 4) · 접근자 회귀 dedup 16 · daily_pit 56 · c11_monthly 55 · read_fastpath 13. 실자료 대조(2005-06 · 2010-06 · 두 방향): 결측 위치 일치 · 최대 |차| 5e-5(저장 반올림). 2010-06 기본 뷰 = 334팩터(별칭 11 접음) · 16계열 · 3,298종목 · 읽기 0.4초 · 334개 중 136개(41%)는 과거 IC 방향이 이론 방향과 반대. 저장 크기 달당 2.2~2.6MB(zstd · 전체 약 1.1GB). 규칙 문서(.claude/rules/factor-db.md · pit.md 의 C13 줄) 문구는 v3.3 활성화와 함께 세션 경계에서 고친다.",
+      "registered_at": "2026-11-09T16:16:48+0900",
+      "recorded_by": "Q(세션 fe712ea2)",
+      "evidence": "도훈 채팅 2026-11-09 — '만들기 · 이론 방향 선택지도 추가(C13 해석 확장)' · '결합용 뷰도 자동 업데이트 되게끔 만들어줘'"
     }
   ],
-  "last_updated": "2026-11-09T15:52:22+0900"
+  "last_updated": "2026-11-09T16:16:50+0900"
 }

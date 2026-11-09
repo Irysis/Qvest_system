@@ -313,8 +313,12 @@ FACTOR_REG_PATH <- file.path(FACTOR_DB_DIR, "factor_registry.json")
 #'   코드를 날조하지 않기 위해). 반환값 attribute `dedup_dropped` /
 #'   `dedup_orphan_alias` / `dedup_redundant` 에 무엇을 했는지 전부 노출된다.
 #'   ★선별·랭킹·Ω 추정에 쓰는 풀이면 TRUE 를 권장한다. 단순 조회·재현은 FALSE.
+#' @param direction "ic_asof"(기본 · 그 시점까지 36개월 IC 로 방향) | "registry"(등록부에 미리 선언된 이론 방향 —
+#'   자료를 보지 않고 정한 부호 · align_factor_direction(sig_date = NULL) 경로 · 2026-11-09 도훈 C13 해석 확장
+#'   decision_register FACTOR-COMBINABLE-VIEW-20261109 · 수동 반전(NEGATE/FLIP)은 여전히 금지)
 load_month_factors <- function(sig_date, coverage_min = 0.05, factor_names = NULL,
-                               dedup = FALSE) {
+                               dedup = FALSE, direction = c("ic_asof", "registry")) {
+  direction <- match.arg(direction)
   sig_d <- as.Date(sig_date)
   ym_tag <- format(sig_d, "%Y%m")
   fpath <- file.path(FACTOR_DB_DIR, paste0("factor_db_", ym_tag, ".parquet"))
@@ -366,8 +370,9 @@ load_month_factors <- function(sig_date, coverage_min = 0.05, factor_names = NUL
   dt <- dt[Factor_Name %in% keep_factors & Coverage == TRUE & !is.na(Z_Score)]
 
   # Direction alignment (v2.0 PIT-safe: pass sig_date for expanding IC window)
+  #   direction = "registry" 면 sig_date 를 넘기지 않아 등록부 방향만 쓴다(기존 registry-only 경로 · 자료 무사용)
   registry <- .load_registry()
-  dt <- align_factor_direction(dt, registry, sig_date = sig_d)
+  dt <- align_factor_direction(dt, registry, sig_date = if (identical(direction, "ic_asof")) sig_d else NULL)
 
   result <- dt[, .(Ticker, Factor_Name, Z_Score_Aligned)]
 
@@ -390,6 +395,7 @@ load_month_factors <- function(sig_date, coverage_min = 0.05, factor_names = NUL
   attr(result, "factor_db_build_hash") <- build_hash
   attr(result, "factor_db_asof_date") <- asof_date
   attr(result, "factor_db_file") <- basename(fpath)
+  attr(result, "direction") <- direction
 
   result
 }
@@ -441,7 +447,8 @@ load_month_factors <- function(sig_date, coverage_min = 0.05, factor_names = NUL
 #'   pit_max / months_loaded / value_semantics / direction_aligned /
 #'   ic_sign_map (정렬 시) / fdb_daily_registry_version
 load_daily_factors <- function(ym = NULL, date_range = NULL, factors = NULL,
-                               align_direction = TRUE) {
+                               align_direction = TRUE, direction = c("ic_asof", "registry")) {
+  direction <- match.arg(direction)     # "registry" = 등록부 선언 방향만(월간 load_month_factors 와 같은 뜻 · 2026-11-09)
   if (is.null(ym) && is.null(date_range)) {
     stop("[load_daily_factors] ym 또는 date_range 중 하나는 필수입니다.")
   }
@@ -520,7 +527,7 @@ load_daily_factors <- function(ym = NULL, date_range = NULL, factors = NULL,
   # ---- C13 direction alignment (월간 ic_sign 경로 재사용) ----
   ic_sign_map <- NULL
   if (isTRUE(align_direction) && nrow(dt) > 0L) {
-    ic_dir <- .load_ic_direction_cached(pit_max, min_ic_months = 36L)
+    ic_dir <- if (identical(direction, "ic_asof")) .load_ic_direction_cached(pit_max, min_ic_months = 36L) else NULL
     registry <- .load_registry()
     reg_sign <- if (!is.null(registry) && length(registry)) {
       data.table(

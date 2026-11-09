@@ -1,0 +1,42 @@
+{
+  "schema": "factor_combinable_cfg_v1",
+  "_doc": "결합용 팩터 뷰 설정 정본 — 02_Infrastructure/factor_db/factor_combinable.R 이 읽는다. 2026-11-09 도훈 '만들기 · 이론 방향 선택지도 추가(C13 해석 확장)' + '결합용 뷰도 자동 업데이트 되게끔 만들어줘'(decision_register FACTOR-COMBINABLE-VIEW-20261109). 모든 값에 출처를 단다.",
+  "version": "fc_v1.0",
+  "transform": {
+    "rule": "cross_sectional_rank_to_pm1",
+    "ties": "average",
+    "_source": "Gu, Kelly & Xiu (2020) 'Empirical Asset Pricing via Machine Learning' RFS 33(5):2223-2273 https://doi.org/10.1093/rfs/hhaa009 — 특성을 매 시점 횡단면 순위로 바꿔 [−1, 1] 구간에 놓는다(분포 · 극단값 차이를 없애 선형 합성 · 비선형 모형 입력을 같은 모양으로). 동순위 평균이면 값의 부호를 뒤집을 때 결과가 정확히 −1 배라 방향은 부호표 곱으로 바꿀 수 있다"
+  },
+  "missing": {
+    "default": "zero",
+    "options": ["zero", "na"],
+    "_source": "Gu, Kelly & Xiu (2020) — 결측 특성은 횡단면 중앙값으로 채운다([−1, 1] 순위에서 중앙값 = 0). 'na' 는 결측을 그대로 둔다(모형이 결측을 직접 다룰 때)"
+  },
+  "direction": {
+    "default": "ic_asof",
+    "options": ["ic_asof", "registry"],
+    "_source": "ic_asof = 정본 접근자의 기존 정렬(그 시점까지 36개월 IC · Usable_Date ≤ 신호일 · C13 · C14) · registry = factor_registry.json 의 선언 방향(higher_better / lower_better — 자료를 보지 않고 미리 정한 이론 부호 · align_factor_direction(sig_date = NULL) 경로). 도훈 11-09 C13 해석 확장 — 수동 반전(NEGATE_FACTORS · FLIP_SIGN)은 여전히 금지"
+  },
+  "dedup": {
+    "default": true,
+    "_source": "factor_dup_scan.R::resolve_factor_canonical — 별칭(alias)은 정본이 같은 패널에 있을 때만 접는다(이름을 바꾸지 않는다 · collapse_alias_rows 와 같은 규칙). 중복 투표 방지"
+  },
+  "family": {
+    "source": "factor_registry.json::category",
+    "composite": "mean_of_available",
+    "_source": "계열 평균 = 그 계열 팩터 중 값이 있는 것의 평균(Asness, Frazzini & Pedersen 2019 RAS 24:34-112 의 '남은 측정치 평균' 규칙 · Jensen, Kelly & Pedersen 2023 의 주제별 묶기). 값이 하나도 없으면 결측(missing 규칙을 따른다)"
+  },
+  "storage": {
+    "dir": ".cache/factor_combinable",
+    "month_file": "fc_%s.parquet",
+    "signs_file": "fc_signs.parquet",
+    "coverage_file": "fc_coverage.parquet",
+    "meta_file": "fc_meta.json",
+    "value_scale": 10000,
+    "_source": "저장 인코딩(연구 결정 아님) — [−1, 1] 값을 × 10000 정수(int16)로 저장한다. 종목 3,300 이하에서 순위 간격 2/(n−1) ≥ 6e-4 > 1e-4 라 서로 다른 순위가 겹치지 않는다. 저장값 방향 = registry · ic_asof 는 부호표 s_rel = s_ic × s_reg 를 곱해 얻는다"
+  },
+  "update": {
+    "rule": "incremental_source_fingerprint",
+    "_source": "원천 팩터 DB 월 파일의 크기 · 수정 시각이 바뀐 달과 가장 최근 달만 다시 만든다 · 부호표는 매번 전부 다시(IC 이력이 바뀌면 과거 달 부호도 바뀔 수 있다 · 가볍다) · 일일 체인 [6e](팩터 DB 갱신 뒤)"
+  }
+}

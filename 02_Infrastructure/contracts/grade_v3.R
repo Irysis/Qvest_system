@@ -493,11 +493,11 @@ gv3_fa_ctx <- function(root, cfg) {
           file.path(root, "02_Infrastructure/data/build_kr_factor_returns.R"), envir = b, keep.source = FALSE)))); TRUE },
         error = function(e) FALSE)
   if (!ok) { out$reason <- "요인 빌더 적재 실패(내용 해시 함수 단일 출처)"; return(out) }
-  Fm <- tryCatch(data.table::as.data.table(arrow::read_parquet(fp)), error = function(e) NULL)
+  Fm <- tryCatch(data.table::as.data.table(arrow::read_parquet(fp, mmap = FALSE)), error = function(e) NULL)   # 매핑 없이(밤 [5c] 덮어쓰기를 막지 않게)
   if (is.null(Fm)) { out$reason <- "월간 요인 판독 불가"; return(out) }
   md5 <- tryCatch(b$.krf_content_md5(Fm, meta$monthly$content_cols), error = function(e) NA_character_)
   if (!identical(md5, as.character(meta$monthly$content_md5))) { out$reason <- "월간 요인 내용 해시가 meta 와 다르다"; return(out) }
-  Dd <- tryCatch(data.table::as.data.table(arrow::read_parquet(dp, col_select = "Date")), error = function(e) NULL)
+  Dd <- tryCatch(data.table::as.data.table(arrow::read_parquet(dp, col_select = "Date", mmap = FALSE)), error = function(e) NULL)
   if (is.null(Dd) || !nrow(Dd)) { out$reason <- "일간 요인(거래일 달력) 판독 불가"; return(out) }
   Fm[, Date := as.Date(Date)]
   if (!"ym" %in% names(Fm)) Fm[, ym := as.integer(format(Date, "%Y%m"))]

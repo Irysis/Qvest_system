@@ -368,6 +368,9 @@ SUITES=(
   #   (PIT BE · 비멤버 · 상한 가치가중 · 월간 복리 · RF 전 거래일 · 완결 월) + 위반 주입 4종(PIT 거름 · RF 당일 ·
   #   당일 시총 가중 · 상한 제거). 구판 파일은 HML · RMW · CMA 를 월말 하루 수익으로 만들고 RF = 0 이었다.
   "08_Tests/data/test_kr_factor_returns.R"
+  # 2026-11-09 추가: 결합용 팩터 뷰(factor_db/factor_combinable.R · FACTOR-COMBINABLE-VIEW-20261109) — 순위 [−1,1] · 부호 대칭(방향 =
+  #   부호표 곱의 근거) · 부분집합 재순위 · 별칭 · 계열 · 합성 저장본 읽기 9 + 위반 주입 4(동순위 · 재순위 · PIT 가드 · 부호 고르기)
+  "08_Tests/factor_db/test_factor_combinable.R"
   # 2026-07-26 추가(R1): DART reprt_code ↔ 분기 매핑 위반 주입.
   #   원 결함 = REPRT_MAP 이 11014→q1 / 11013→q3 로 뒤집혀 3분기(11월 접수) 보고서가
   #   Factor_Date 5/15 를 받음 → 중앙 시차 −183일 · look-ahead 99.8%(PIT C4).
