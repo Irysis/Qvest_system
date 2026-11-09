@@ -868,10 +868,7 @@ essence_score <- function(bt_result, n_trials_cumulative = NULL,
                     error = function(e) list(error = conditionMessage(e)))
     if (is.null(.v3$error) && length(.v3$grade_v3) == 1L && !is.na(.v3$grade_v3)) {
       grade <- .v3$grade_v3
-      reasons <- paste0(sprintf("v3: S %.3f · B 경계 %.3f · 띠 %s · CR %s(시험 창 %s) · 노치 %+d%s",
-                                .v3$S, .v3$S_B, .v3$band, as.character(.v3$card$cr), as.character(.v3$card$cr_test),
-                                as.integer(.v3$notch),
-                                if (length(.v3$blocked_by)) paste0(" · A 아님 사유 ", paste(.v3$blocked_by, collapse = ",")) else ""),
+      reasons <- paste0(.ESS_V3$e$gv3_reason_head(.v3),   # 머리 문장 단일 출처(grade_v3.R · 저장분 재채점과 같은 함수)
                         " | v921 ", if (is.na(.grade_v921)) "NA" else .grade_v921, ": ", reasons)
     } else {
       grade <- NA_character_

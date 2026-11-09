@@ -65,10 +65,7 @@ one <- function(p) tryCatch({
   rec$rules_version <- RULES_VER                                     # 판 표식(hard_fail 기록에도 — 없으면 매번 다시 채점된다)
   new <- if (hf) "F" else as.character(v3$grade_v3)
   if (!hf && (length(new) != 1L || is.na(new))) return(c(base, status = "v3_na", new_grade = NA_character_))
-  pre <- if (hf) "" else sprintf("v3: S %.3f · B 경계 %.3f · 띠 %s · CR %s(시험 창 %s) · 노치 %+d%s | v921 %s: ",
-                                  v3$S, v3$S_B, v3$band, as.character(v3$card$cr), as.character(v3$card$cr_test),
-                                  as.integer(v3$notch),
-                                  if (length(v3$blocked_by)) paste0(" · A 아님 사유 ", paste(v3$blocked_by, collapse = ",")) else "", old)
+  pre <- if (hf) "" else paste0(gv3_reason_head(v3), " | v921 ", old, ": ")   # 머리 문장 단일 출처(grade_v3.R · 새 측정과 같은 함수)
   A$essence_grade <- new
   A$grade_scheme <- "grade_v3"
   if (!rescore) A$grade_v921 <- old                                  # 재채점이면 구 5조건 판정 기록은 그대로 둔다
@@ -79,7 +76,7 @@ one <- function(p) tryCatch({
   pre <- if (rescore && !hf) sub("\\| v921 [^:]*: $", paste0("| v921 ", as.character(A$grade_v921 %||% "NA"), ": "), pre) else pre
   A$reasons <- paste0(pre, rs)
   A$grade_v3_backfill <- list(at = format(Sys.time(), "%Y-%m-%dT%H:%M:%S%z"), tool = "02_Infrastructure/programs/grade_v3_backfill.R",
-                              decision = if (rescore) "decision_register GRADE-V3-CR-STRONG-SELECTION · CRISIS-DEF-LT2020(규칙 판 재채점)"
+                              decision = if (rescore) paste0("decision_register ", .gv3_rv_decision(RULES_VER), "(규칙 판 재채점 ", old_rv, " → ", RULES_VER, ")")
                                          else "decision_register GRADE-V3-PROMOTE",
                               rules_version = RULES_VER, prior_rules_version = old_rv,
                               prior_essence_grade = old, prior_md5 = base$old_md5,
@@ -90,7 +87,8 @@ one <- function(p) tryCatch({
   if (!identical(as.character(chk$essence_grade), new) || !identical(chk$grade_scheme, "grade_v3"))
     stop("왕복 검증 실패")
   c(base, status = "ok", new_grade = new, S = if (hf) NA_real_ else v3$S, band = if (hf) NA_character_ else v3$band,
-    notch = if (hf) 0L else v3$notch, old_text = txt, new_text = as.character(nt))
+    notch = if (hf) 0L else v3$notch, fa_notch = if (hf) 0L else as.integer(v3$fa_notch %||% 0L),
+    fa_t_min = if (hf) NA_real_ else as.numeric(v3$fa$t_min %||% NA_real_), old_text = txt, new_text = as.character(nt))
 }, error = function(err) list(path = p, status = "error", err = conditionMessage(err)))
 
 init_worker <- quote({
@@ -137,6 +135,7 @@ if (WRITE) {
 man <- rbindlist(lapply(res, function(z) data.table(path = sub(paste0("^", ROOT, "/"), "", z$path), status = z$status,
                                                      old_grade = z$old_grade %||% NA_character_, new_grade = z$new_grade %||% NA_character_,
                                                      S = as.numeric(z$S %||% NA), band = as.character(z$band %||% NA), notch = as.integer(z$notch %||% NA),
+                                                     fa_notch = as.integer(z$fa_notch %||% NA), fa_t_min = as.numeric(z$fa_t_min %||% NA),
                                                      old_md5 = z$old_md5 %||% NA_character_, new_md5 = z$new_md5 %||% NA_character_,
                                                      err = z$err %||% NA_character_)), fill = TRUE)
 fwrite(man, file.path(OUT, if (WRITE) "backfill_manifest.csv" else "backfill_manifest_dryrun.csv"))

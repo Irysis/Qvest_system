@@ -103,7 +103,7 @@
     },
     "reason": "하락월 109개: 초과 +0.48%/월 (t 1.04 · 적중 53%) · 벤치-10% 이하 10개: 초과 -0.23%/월 · 상승월 초과 -0.34%/월"
   },
-  "reasons": "v3: S 0.000 · B 경계 0.435 · 띠 F · CR normal(시험 창 normal) · 노치 +0 · A 아님 사유 floor:port_t,floor:calmar,floor:cagr,floor:sharpe,oos:rolling36_pass_oos,gate:dsr_sweep | v921 C: non-positive alpha (PORT_t<=0 또는 net_IR<=0); recent_regime 구제(F->C): 전기간 F 이나 롤링 36개월 기준 최근 12점 중 92% 가 절대문턱 통과 (현재 SR 1.02 · CAGR 33.5% · MDD 29.0% · Calmar 1.16). 생애 충족 13%. ★과거 회복→재붕괴 9회 — 이번 회복이 처음이 아니다",
+  "reasons": "v3: S 0.000 · B 경계 0.435 · 띠 F · CR normal(시험 창 normal) · 노치 +0 · A 아님 사유 floor:port_t,floor:calmar,floor:cagr,floor:sharpe,oos:test_window_calmar_vs_bench,gate:dsr_sweep | v921 C: non-positive alpha (PORT_t<=0 또는 net_IR<=0); recent_regime 구제(F->C): 전기간 F 이나 롤링 36개월 기준 최근 12점 중 92% 가 절대문턱 통과 (현재 SR 1.02 · CAGR 33.5% · MDD 29.0% · Calmar 1.16). 생애 충족 13%. ★과거 회복→재붕괴 9회 — 이번 회복이 처음이 아니다",
   "replication": {
     "source_paper": {
       "url": "https://arxiv.org/abs/2202.05702",
@@ -138,7 +138,7 @@
     "grade": "F",
     "S": 0,
     "S_B": 0.4345,
-    "rules_version": "v3.2",
+    "rules_version": "v3.3",
     "crisis_def": "lt_first_passage",
     "cr_notch_basis": "normal",
     "mc8": {
@@ -155,7 +155,7 @@
       "floor:calmar",
       "floor:cagr",
       "floor:sharpe",
-      "oos:rolling36_pass_oos",
+      "oos:test_window_calmar_vs_bench",
       "gate:dsr_sweep"
     ],
     "floors": {
@@ -186,7 +186,7 @@
       "gate": false,
       "parts": {
         "test_window_cr_not_weak": true,
-        "rolling36_pass_oos": false
+        "test_window_calmar_vs_bench": false
       },
       "pass_oos": 0.3111,
       "pass_min": 0.5,
@@ -194,19 +194,82 @@
       "S_is": 0.1608,
       "S_oos": 0,
       "retention_calmar": 9.3647,
-      "retention_sharpe": 2.9949
+      "retention_sharpe": 2.9949,
+      "components": [
+        "test_window_cr_not_weak",
+        "test_window_calmar_vs_bench"
+      ],
+      "parts_all": {
+        "test_window_cr_not_weak": true,
+        "rolling36_pass_oos": false,
+        "test_window_calmar_vs_bench": false
+      },
+      "calmar_tw": 0.8854,
+      "bench_calmar_tw": 1.1161
     },
     "parity_max_abs": 2.15799600411515e-15,
-    "nav_source": "contract"
+    "nav_source": "contract",
+    "fa_notch": 0,
+    "fa": {
+      "status": "ok",
+      "enabled": true,
+      "eligible": false,
+      "applied": false,
+      "why_not": [
+        "epoch_mismatch",
+        "gate:dsr_sweep"
+      ],
+      "t_min": 1.4183,
+      "t_min_model": "FF6",
+      "test_all_pos": true,
+      "n_months": 256,
+      "nw_lag": 3,
+      "tau_d": "2022-12-31",
+      "models": {
+        "FF3": {
+          "t": 1.5868,
+          "alpha_ann": 0.049,
+          "n": 256,
+          "test_alpha_ann": 0.1726,
+          "test_n": 43
+        },
+        "Carhart4": {
+          "t": 1.43,
+          "alpha_ann": 0.0437,
+          "n": 256,
+          "test_alpha_ann": 0.1589,
+          "test_n": 43
+        },
+        "FF5": {
+          "t": 1.5704,
+          "alpha_ann": 0.0491,
+          "n": 256,
+          "test_alpha_ann": 0.1778,
+          "test_n": 43
+        },
+        "FF6": {
+          "t": 1.4183,
+          "alpha_ann": 0.0438,
+          "n": 256,
+          "test_alpha_ann": 0.1633,
+          "test_n": 43
+        }
+      },
+      "factor_md5": "6a2970256f7d6bb216612978353e9229",
+      "factor_vintage": "kr_factor_returns_vintages/6a2970256f7d.parquet",
+      "factor_epoch": "all_hyg_px1000_2000_v1",
+      "record_epoch": null,
+      "error": null
+    }
   },
   "grade_v3_backfill": {
-    "at": "2026-10-18T09:03:18+0900",
+    "at": "2026-11-10T04:58:12+0900",
     "tool": "02_Infrastructure/programs/grade_v3_backfill.R",
-    "decision": "decision_register GRADE-V3-CR-STRONG-SELECTION · CRISIS-DEF-LT2020(규칙 판 재채점)",
-    "rules_version": "v3.2",
-    "prior_rules_version": "v3.1",
+    "decision": "decision_register GRADE-V33-FACTOR-ALPHA-NOTCH-20261109 · GRADE-V33-OOS-TEST-WINDOW-CALMAR-20261109(규칙 판 재채점 v3.2 → v3.3)",
+    "rules_version": "v3.3",
+    "prior_rules_version": "v3.2",
     "prior_essence_grade": "F",
-    "prior_md5": "4720b824542fc16a51094b7b880a2b22",
+    "prior_md5": "9f4c60ca4ff03f94ccda52d28d119538",
     "history": [
       {
         "rules_version": "v3.0",
@@ -214,6 +277,10 @@
       },
       {
         "rules_version": "v3.1",
+        "essence_grade": "F"
+      },
+      {
+        "rules_version": "v3.2",
         "essence_grade": "F"
       }
     ]

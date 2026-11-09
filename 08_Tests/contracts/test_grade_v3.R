@@ -135,10 +135,12 @@ EVD <- function(a1 = TRUE, a2 = TRUE, b = TRUE, c = TRUE, unit = "lt")
   list(strategy_id = "S_X", dir = "stage_artifacts/x", round_id = "RT", prereg_md5 = "m", unit = unit,
        a_deep_beta_majority = a1, a_fast_beta_majority = a2, b_both_engines = b, c_slow_lag1_retained = c)
 crt <- function(m, ev = NULL, cr = "strong") gv3_cr_for_notch(cr, m, cfg_t, ev)
-chk("C21 현행 설정 = v3.2(mc8_selection_or_timing_evidence · 증거 등록부 경로 · 판 표식 v3.2 · 셈 단위 lt = 도훈 10-18)",
-    identical(cfg$cr_notch$strong_requires, "mc8_selection_or_timing_evidence") && identical(cfg$rules_version, "v3.2") &&
+chk("C21 현행 설정 = v3.3(v3.2 의 CR 규칙 유지 · 셈 단위 lt + 11-10 팩터 알파 노치 켬 · OOS 관문 = 시험 창 CR · 시험 창 Calmar vs 벤치)",
+    identical(cfg$cr_notch$strong_requires, "mc8_selection_or_timing_evidence") && identical(cfg$rules_version, "v3.3") &&
       identical(cfg$cr_notch[["timing_unit"]], "lt") &&
-      file.exists(file.path(ROOT, cfg$cr_notch$timing_evidence)))
+      file.exists(file.path(ROOT, cfg$cr_notch$timing_evidence)) &&
+      isTRUE(cfg$fa_notch$enabled) &&
+      identical(unlist(cfg$oos$gate_components), c("test_window_cr_not_weak", "test_window_calmar_vs_bench")))
 chk("C22 선택 방어 · 노출 경로 고정(경로 짝 없음) → 선택 → 강함", identical(gv3_notch_basis(M(varies = FALSE, sp = NA_real_)), "selection") &&
       identical(crt(M(varies = FALSE, sp = NA_real_)), "strong"))
 chk("C23 선택 방어 · 노출 경로가 변함 · 경로 짝 과반 승(0.75 > 0.5) → 선택 → 강함",

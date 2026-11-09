@@ -35,7 +35,7 @@
   "dsr_gate_applied": false,
   "selection_type": "chain",
   "hard_fail": false,
-  "reasons": "v3: S 0.366 · B 경계 0.421 · 띠 C · CR normal(시험 창 normal) · 노치 +0 · A 아님 사유 floor:port_t,floor:cagr,floor:sharpe,oos:rolling36_pass_oos | v921 C: Ensemble: positive alpha이나 B 미달 (블렌드에서만 가치)",
+  "reasons": "v3: S 0.366 · B 경계 0.421 · 띠 C · CR normal(시험 창 normal) · 노치 +0 · A 아님 사유 floor:port_t,floor:cagr,floor:sharpe,oos:test_window_calmar_vs_bench | v921 C: Ensemble: positive alpha이나 B 미달 (블렌드에서만 가치)",
   "contract": {
     "integrity_status": "WARNING",
     "audit_pass": 15,
@@ -55,7 +55,7 @@
     "grade": "C",
     "S": 0.3664,
     "S_B": 0.421,
-    "rules_version": "v3.2",
+    "rules_version": "v3.3",
     "crisis_def": "lt_first_passage",
     "cr_notch_basis": "normal",
     "mc8": {
@@ -71,7 +71,7 @@
       "floor:port_t",
       "floor:cagr",
       "floor:sharpe",
-      "oos:rolling36_pass_oos"
+      "oos:test_window_calmar_vs_bench"
     ],
     "floors": {
       "port_t": false,
@@ -101,7 +101,7 @@
       "gate": false,
       "parts": {
         "test_window_cr_not_weak": true,
-        "rolling36_pass_oos": false
+        "test_window_calmar_vs_bench": false
       },
       "pass_oos": 0.3095,
       "pass_min": 0.5,
@@ -109,19 +109,81 @@
       "S_is": 0.36,
       "S_oos": 0,
       "retention_calmar": 10.9183,
-      "retention_sharpe": 2.3041
+      "retention_sharpe": 2.3041,
+      "components": [
+        "test_window_cr_not_weak",
+        "test_window_calmar_vs_bench"
+      ],
+      "parts_all": {
+        "test_window_cr_not_weak": true,
+        "rolling36_pass_oos": false,
+        "test_window_calmar_vs_bench": false
+      },
+      "calmar_tw": 1.87,
+      "bench_calmar_tw": 2.2063
     },
     "parity_max_abs": 8.88178419700125e-16,
-    "nav_source": "contract"
+    "nav_source": "contract",
+    "fa_notch": 0,
+    "fa": {
+      "status": "ok",
+      "enabled": true,
+      "eligible": false,
+      "applied": false,
+      "why_not": [
+        "epoch_mismatch"
+      ],
+      "t_min": 1.0658,
+      "t_min_model": "FF6",
+      "test_all_pos": true,
+      "n_months": 255,
+      "nw_lag": 3,
+      "tau_d": "2022-12-31",
+      "models": {
+        "FF3": {
+          "t": 1.6713,
+          "alpha_ann": 0.0418,
+          "n": 255,
+          "test_alpha_ann": 0.0781,
+          "test_n": 41
+        },
+        "Carhart4": {
+          "t": 1.1223,
+          "alpha_ann": 0.0261,
+          "n": 255,
+          "test_alpha_ann": 0.0038,
+          "test_n": 41
+        },
+        "FF5": {
+          "t": 1.6106,
+          "alpha_ann": 0.0407,
+          "n": 255,
+          "test_alpha_ann": 0.0747,
+          "test_n": 41
+        },
+        "FF6": {
+          "t": 1.0658,
+          "alpha_ann": 0.025,
+          "n": 255,
+          "test_alpha_ann": 0.0098,
+          "test_n": 41
+        }
+      },
+      "factor_md5": "6a2970256f7d6bb216612978353e9229",
+      "factor_vintage": "kr_factor_returns_vintages/6a2970256f7d.parquet",
+      "factor_epoch": "all_hyg_px1000_2000_v1",
+      "record_epoch": null,
+      "error": null
+    }
   },
   "grade_v3_backfill": {
-    "at": "2026-10-18T08:52:48+0900",
+    "at": "2026-11-10T04:38:26+0900",
     "tool": "02_Infrastructure/programs/grade_v3_backfill.R",
-    "decision": "decision_register GRADE-V3-CR-STRONG-SELECTION · CRISIS-DEF-LT2020(규칙 판 재채점)",
-    "rules_version": "v3.2",
-    "prior_rules_version": "v3.1",
+    "decision": "decision_register GRADE-V33-FACTOR-ALPHA-NOTCH-20261109 · GRADE-V33-OOS-TEST-WINDOW-CALMAR-20261109(규칙 판 재채점 v3.2 → v3.3)",
+    "rules_version": "v3.3",
+    "prior_rules_version": "v3.2",
     "prior_essence_grade": "C",
-    "prior_md5": "bea0ea5afb4ae779d6f3e7f0ef98174e",
+    "prior_md5": "130e8ece13065aa912d1218c66154148",
     "history": [
       {
         "rules_version": "v3.0",
@@ -129,6 +191,10 @@
       },
       {
         "rules_version": "v3.1",
+        "essence_grade": "C"
+      },
+      {
+        "rules_version": "v3.2",
         "essence_grade": "C"
       }
     ]

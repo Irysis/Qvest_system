@@ -94,7 +94,7 @@
     },
     "reason": "하락월 111개: 초과 +2.00%/월 (t 4.82 · 적중 63%) · 벤치-10% 이하 10개: 초과 +1.88%/월 · 상승월 초과 -0.62%/월"
   },
-  "reasons": "v3: S 0.528 · B 경계 0.432 · 띠 B · CR normal(시험 창 normal) · 노치 +0 · A 아님 사유 floor:port_t,oos:rolling36_pass_oos | v921 C: Ensemble: positive alpha이나 B 미달 (블렌드에서만 가치)",
+  "reasons": "v3: S 0.528 · B 경계 0.432 · 띠 B · CR normal(시험 창 normal) · 노치 +0 · A 아님 사유 floor:port_t,oos:test_window_calmar_vs_bench | v921 C: Ensemble: positive alpha이나 B 미달 (블렌드에서만 가치)",
   "replication": {
     "source_paper": {
       "url": "https://arxiv.org/abs/2404.08129",
@@ -129,7 +129,7 @@
     "grade": "B",
     "S": 0.5279,
     "S_B": 0.432,
-    "rules_version": "v3.2",
+    "rules_version": "v3.3",
     "crisis_def": "lt_first_passage",
     "cr_notch_basis": "normal",
     "mc8": {
@@ -143,7 +143,7 @@
     "notch_a": false,
     "blocked_by": [
       "floor:port_t",
-      "oos:rolling36_pass_oos"
+      "oos:test_window_calmar_vs_bench"
     ],
     "floors": {
       "port_t": false,
@@ -173,7 +173,7 @@
       "gate": false,
       "parts": {
         "test_window_cr_not_weak": true,
-        "rolling36_pass_oos": false
+        "test_window_calmar_vs_bench": false
       },
       "pass_oos": 0.2,
       "pass_min": 0.5,
@@ -181,19 +181,81 @@
       "S_is": 0.6391,
       "S_oos": 0,
       "retention_calmar": 2.9625,
-      "retention_sharpe": 1.1056
+      "retention_sharpe": 1.1056,
+      "components": [
+        "test_window_cr_not_weak",
+        "test_window_calmar_vs_bench"
+      ],
+      "parts_all": {
+        "test_window_cr_not_weak": true,
+        "rolling36_pass_oos": false,
+        "test_window_calmar_vs_bench": false
+      },
+      "calmar_tw": 0.9016,
+      "bench_calmar_tw": 1.071
     },
     "parity_max_abs": 6.66133814775094e-16,
-    "nav_source": "contract"
+    "nav_source": "contract",
+    "fa_notch": 0,
+    "fa": {
+      "status": "ok",
+      "enabled": true,
+      "eligible": false,
+      "applied": false,
+      "why_not": [
+        "epoch_mismatch"
+      ],
+      "t_min": 3.0945,
+      "t_min_model": "Carhart4",
+      "test_all_pos": true,
+      "n_months": 258,
+      "nw_lag": 3,
+      "tau_d": "2022-12-31",
+      "models": {
+        "FF3": {
+          "t": 3.2427,
+          "alpha_ann": 0.1037,
+          "n": 258,
+          "test_alpha_ann": 0.0418,
+          "test_n": 43
+        },
+        "Carhart4": {
+          "t": 3.0945,
+          "alpha_ann": 0.0932,
+          "n": 258,
+          "test_alpha_ann": 0.0486,
+          "test_n": 43
+        },
+        "FF5": {
+          "t": 3.2723,
+          "alpha_ann": 0.1017,
+          "n": 258,
+          "test_alpha_ann": 0.0398,
+          "test_n": 43
+        },
+        "FF6": {
+          "t": 3.1256,
+          "alpha_ann": 0.091,
+          "n": 258,
+          "test_alpha_ann": 0.0457,
+          "test_n": 43
+        }
+      },
+      "factor_md5": "6a2970256f7d6bb216612978353e9229",
+      "factor_vintage": "kr_factor_returns_vintages/6a2970256f7d.parquet",
+      "factor_epoch": "all_hyg_px1000_2000_v1",
+      "record_epoch": null,
+      "error": null
+    }
   },
   "grade_v3_backfill": {
-    "at": "2026-10-18T08:56:46+0900",
+    "at": "2026-11-10T04:39:20+0900",
     "tool": "02_Infrastructure/programs/grade_v3_backfill.R",
-    "decision": "decision_register GRADE-V3-CR-STRONG-SELECTION · CRISIS-DEF-LT2020(규칙 판 재채점)",
-    "rules_version": "v3.2",
-    "prior_rules_version": "v3.1",
+    "decision": "decision_register GRADE-V33-FACTOR-ALPHA-NOTCH-20261109 · GRADE-V33-OOS-TEST-WINDOW-CALMAR-20261109(규칙 판 재채점 v3.2 → v3.3)",
+    "rules_version": "v3.3",
+    "prior_rules_version": "v3.2",
     "prior_essence_grade": "B",
-    "prior_md5": "7a63c065401d3f8d8d840598483ba43f",
+    "prior_md5": "ea716561b3856c84e972254c820d87ff",
     "history": [
       {
         "rules_version": "v3.0",
@@ -201,6 +263,10 @@
       },
       {
         "rules_version": "v3.1",
+        "essence_grade": "B"
+      },
+      {
+        "rules_version": "v3.2",
         "essence_grade": "B"
       }
     ]

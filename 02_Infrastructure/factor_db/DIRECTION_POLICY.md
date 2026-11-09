@@ -75,7 +75,7 @@ writer: `factor_db/apply_direction_basis.py`(등록부 두 사본에 쓰는 유�
 
 **측정 · 등급**
 6. 영향 라운드 재측정 — D03 · D04 · D07 쓴 24칸(P0R01 6 · P2R01 1 · P2R04 15 · P2R05 2) + 재무 v1 정정값 누출(V10 · Q08 쓴 현 축 라운드 전부) + **이번 기대수익 방향 47개 변경을 쓴 칸 찾기**(IC 36개월 전 대체 · registry 모드). 재측정 전에는 그 판정 인용 금지.
-7. v3.3 A 후보 3개(P2R03_E3_RX0 · P2R04_E3_RX0 · P2R03_E3_L2) → 재측정 뒤 A 자격 관문 → Judge.
+7. v3.3 A 3개(P2R03_E3_RX0 · P2R04_E3_RX0 · P2R03_E3_L2) — 11-10 재채점에서 팩터 알파 노치로 B → A(최소 t 4.46~4.47 · FF6). 재무 v1 위 측정이라 **보류**: 재무 v2 팩터 DB 로 재측정(run_paper_replication — A 자격 관문이 그때 정식으로 돈다) → Judge. 그 전에는 A 인용 금지(FUND-V2-PRIOR-GRADES-REMEASURE-ON-CITE). 재채점 기록 = `04_Research/01_reports/l1_prescription_redesign_20261013/s0_grade_v3/v33_backfill_20261110/`.
 8. 정정 텔레그램(prep_send) — 영향 라운드 방어 판정.
 9. 앞서 쌓인 것: F-Score 재측정 · 11-10 아침 점검 · FF5 추적기 CMA 부호 · QMJ · P2R05 재핀.
 

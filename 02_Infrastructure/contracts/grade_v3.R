@@ -721,6 +721,30 @@ gv3_score_bt <- function(bt, root = NULL, ctx = NULL, gates = NULL) {
        grade_v3 = grade, blocked_by = why)
 }
 
+#' 규칙 판 → 그 판을 정한 결정(decision_register id) — 저장분 재채점 기록(grade_v3_backfill$decision)의 출처 문구.
+#'   11-10: 재채점 문구가 v3.1 결정으로 고정돼 있어 v3.2 · v3.3 재채점도 v3.1 출처를 적을 뻔했다. 새 판을 만들면 여기에 한 줄 더한다
+#'   (없으면 '미등록'으로 적고 멈추지 않는다 — 재채점 자체는 grade_v3.json 의 판 표식이 정한다).
+.GV3_RV_DECISION <- c("v3.0" = "GRADE-V3-PROMOTE",
+                      "v3.1" = "GRADE-V3-CR-STRONG-SELECTION · CRISIS-DEF-LT2020",
+                      "v3.2" = "CHARTER-GAPS-3-20261017 · GRADE-V32-TIMING-EVENT-UNIT-20261018",
+                      "v3.3" = "GRADE-V33-FACTOR-ALPHA-NOTCH-20261109 · GRADE-V33-OOS-TEST-WINDOW-CALMAR-20261109")
+.gv3_rv_decision <- function(rv) {
+  d <- unname(.GV3_RV_DECISION[as.character(rv)[1]])
+  if (length(d) != 1L || is.na(d)) paste0("(판 ", as.character(rv)[1], " 결정 미등록 — grade_v3.R .GV3_RV_DECISION)") else d
+}
+
+#' 등급 사유 머리 문장 — 새 측정(essence_score.R)과 저장분 재채점(programs/grade_v3_backfill.R)이 같은 함수를 쓴다
+#'   (11-10 · 두 곳에 같은 sprintf 가 복제돼 있었다 — 복제는 조용히 갈라진다). 팩터 조정 알파 노치(v3.3)가 등급을 올렸으면
+#'   '팩터 알파 노치 +1(최소 t · 모형)'을 싣는다 — 보고가 등급 근거를 보이게. 재채점은 '^v3: … | v921 X: ' 머리를 걷어내므로 '|' 를 쓰지 않는다.
+gv3_reason_head <- function(v3) {
+  fa <- if (identical(as.integer(.gv3_or(v3$fa_notch, 0L))[1], 1L) && is.list(v3$fa))
+    sprintf(" · 팩터 알파 노치 +1(최소 t %.2f · %s)", as.numeric(.gv3_or(v3$fa$t_min, NA_real_))[1],
+            as.character(.gv3_or(v3$fa$t_min_model, "?"))[1]) else ""
+  sprintf("v3: S %.3f · B 경계 %.3f · 띠 %s · CR %s(시험 창 %s) · 노치 %+d%s%s",
+          v3$S, v3$S_B, v3$band, as.character(v3$card$cr), as.character(v3$card$cr_test), as.integer(v3$notch), fa,
+          if (length(v3$blocked_by)) paste0(" · A 아님 사유 ", paste(v3$blocked_by, collapse = ",")) else "")
+}
+
 #' 채점 결과 → 표 1행(평탄)
 gv3_row <- function(r) {
   g <- function(x) if (is.null(x) || !length(x)) NA else x[[1]]

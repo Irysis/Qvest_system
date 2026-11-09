@@ -36,7 +36,7 @@
   "structural_drawdown": true,
   "selection_type": "chain",
   "dsr_gate_applied": false,
-  "reasons": "v3: S 0.000 · B 경계 0.402 · 띠 F · CR weak(시험 창 weak) · 노치 +0 · A 아님 사유 floor:port_t,floor:calmar,floor:cagr,floor:sharpe,oos:test_window_cr_not_weak,oos:rolling36_pass_oos,cr:weak | v921 C: non-positive alpha (PORT_t<=0 또는 net_IR<=0); structural_drawdown(판정 아님 — 라우팅 근거): MDD 63.4%, 45%+ episodes=20/15, 55%+ episodes=7/6, 수중 표본비 0.05/0.25; [소급 2026-09-04] recent_regime 구제(F->C): 전기간 F 이나 롤링 36개월 기준 최근 12점 중 75% 가 절대문턱 통과 (현재 SR 0.70 · CAGR 23.7% · MDD 41.9% · Calmar 0.57). 생애 충족 8%. ★과거 회복→재붕괴 3회 — 이번 회복이 처음이 아니다",
+  "reasons": "v3: S 0.000 · B 경계 0.402 · 띠 F · CR weak(시험 창 weak) · 노치 +0 · A 아님 사유 floor:port_t,floor:calmar,floor:cagr,floor:sharpe,oos:test_window_cr_not_weak,oos:test_window_calmar_vs_bench,cr:weak | v921 C: non-positive alpha (PORT_t<=0 또는 net_IR<=0); structural_drawdown(판정 아님 — 라우팅 근거): MDD 63.4%, 45%+ episodes=20/15, 55%+ episodes=7/6, 수중 표본비 0.05/0.25; [소급 2026-09-04] recent_regime 구제(F->C): 전기간 F 이나 롤링 36개월 기준 최근 12점 중 75% 가 절대문턱 통과 (현재 SR 0.70 · CAGR 23.7% · MDD 41.9% · Calmar 0.57). 생애 충족 8%. ★과거 회복→재붕괴 3회 — 이번 회복이 처음이 아니다",
   "replication": {
     "source_paper": {
       "title": "Banz (1981), The Relationship Between Return and Market Value of Common Stocks, JFE 9(1)",
@@ -134,7 +134,7 @@
     "grade": "F",
     "S": 0,
     "S_B": 0.4017,
-    "rules_version": "v3.2",
+    "rules_version": "v3.3",
     "crisis_def": "lt_first_passage",
     "cr_notch_basis": "weak",
     "mc8": {
@@ -152,7 +152,7 @@
       "floor:cagr",
       "floor:sharpe",
       "oos:test_window_cr_not_weak",
-      "oos:rolling36_pass_oos",
+      "oos:test_window_calmar_vs_bench",
       "cr:weak"
     ],
     "floors": {
@@ -183,7 +183,7 @@
       "gate": false,
       "parts": {
         "test_window_cr_not_weak": false,
-        "rolling36_pass_oos": false
+        "test_window_calmar_vs_bench": false
       },
       "pass_oos": 0.2222,
       "pass_min": 0.5,
@@ -191,19 +191,82 @@
       "S_is": 0.1227,
       "S_oos": 0,
       "retention_calmar": 9.6873,
-      "retention_sharpe": 3.0818
+      "retention_sharpe": 3.0818,
+      "components": [
+        "test_window_cr_not_weak",
+        "test_window_calmar_vs_bench"
+      ],
+      "parts_all": {
+        "test_window_cr_not_weak": false,
+        "rolling36_pass_oos": false,
+        "test_window_calmar_vs_bench": false
+      },
+      "calmar_tw": 0.5605,
+      "bench_calmar_tw": 1.0547
     },
     "parity_max_abs": 3.09474668114262e-15,
-    "nav_source": "contract"
+    "nav_source": "contract",
+    "fa_notch": 0,
+    "fa": {
+      "status": "ok",
+      "enabled": true,
+      "eligible": false,
+      "applied": false,
+      "why_not": [
+        "epoch_mismatch",
+        "cr_weak"
+      ],
+      "t_min": 0.0686,
+      "t_min_model": "Carhart4",
+      "test_all_pos": true,
+      "n_months": 234,
+      "nw_lag": 3,
+      "tau_d": "2022-12-31",
+      "models": {
+        "FF3": {
+          "t": 0.4013,
+          "alpha_ann": 0.0116,
+          "n": 234,
+          "test_alpha_ann": 0.0407,
+          "test_n": 43
+        },
+        "Carhart4": {
+          "t": 0.0686,
+          "alpha_ann": 0.0019,
+          "n": 234,
+          "test_alpha_ann": 0.0113,
+          "test_n": 43
+        },
+        "FF5": {
+          "t": 0.5548,
+          "alpha_ann": 0.0161,
+          "n": 234,
+          "test_alpha_ann": 0.0466,
+          "test_n": 43
+        },
+        "FF6": {
+          "t": 0.227,
+          "alpha_ann": 0.0065,
+          "n": 234,
+          "test_alpha_ann": 0.0166,
+          "test_n": 43
+        }
+      },
+      "factor_md5": "6a2970256f7d6bb216612978353e9229",
+      "factor_vintage": "kr_factor_returns_vintages/6a2970256f7d.parquet",
+      "factor_epoch": "all_hyg_px1000_2000_v1",
+      "record_epoch": null,
+      "error": null
+    }
   },
   "grade_v3_backfill": {
-    "at": "2026-10-18T08:41:02+0900",
+    "at": "2026-11-10T04:30:10+0900",
     "tool": "02_Infrastructure/programs/grade_v3_backfill.R",
-    "decision": "decision_register GRADE-V3-CR-STRONG-SELECTION · CRISIS-DEF-LT2020(규칙 판 재채점)",
-    "rules_version": "v3.2",
-    "prior_rules_version": "v3.1",
+    "decision": "decision_register GRADE-V33-FACTOR-ALPHA-NOTCH-20261109 · GRADE-V33-OOS-TEST-WINDOW-CALMAR-20261109(규칙 판 재채점 v3.2 → v3.3)",
+    "rules_version": "v3.3",
+    "prior_rules_version": "v3.2",
     "prior_essence_grade": "F",
-    "prior_md5": "70d20a68325d542be087787d6d99b0b7",
+    "prior_md5": "99865c3f486ff78479262ef9a38e56a0",
     "history": [
       {
         "rules_version": "v3.0",
@@ -211,6 +274,10 @@
       },
       {
         "rules_version": "v3.1",
+        "essence_grade": "F"
+      },
+      {
+        "rules_version": "v3.2",
         "essence_grade": "F"
       }
     ]

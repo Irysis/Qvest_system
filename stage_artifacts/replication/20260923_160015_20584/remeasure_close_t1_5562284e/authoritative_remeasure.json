@@ -130,7 +130,7 @@
     },
     "reason": "하락월 110개: 초과 +1.47%/월 (t 4.12 · 적중 66%) · 벤치-10% 이하 10개: 초과 +0.92%/월 · 상승월 초과 +0.13%/월"
   },
-  "reasons": "v3: S 0.650 · B 경계 0.438 · 띠 B · CR normal(시험 창 normal) · 노치 +0 · A 아님 사유 oos:rolling36_pass_oos | v921 B: Component: PORT_t>=2.0 & net_IR>0.2; A 미달[OOS_ret -0.10<0.7(band fail),Calmar<0.64]",
+  "reasons": "v3: S 0.650 · B 경계 0.438 · 띠 B · CR normal(시험 창 normal) · 노치 +0 | v921 B: Component: PORT_t>=2.0 & net_IR>0.2; A 미달[OOS_ret -0.10<0.7(band fail),Calmar<0.64]",
   "remeasure": {
     "version": "remeasure_from_holdings_v1",
     "of_artifact": "C:/Users/99922/OneDrive/Quant_Module_Moltbot/stage_artifacts/replication/20260923_160015_20584",
@@ -216,7 +216,7 @@
     "grade": "B",
     "S": 0.6496,
     "S_B": 0.4384,
-    "rules_version": "v3.2",
+    "rules_version": "v3.3",
     "crisis_def": "lt_first_passage",
     "cr_notch_basis": "normal",
     "mc8": {
@@ -228,9 +228,7 @@
     "band": "B",
     "notch": 0,
     "notch_a": false,
-    "blocked_by": [
-      "oos:rolling36_pass_oos"
-    ],
+    "blocked_by": [],
     "floors": {
       "port_t": true,
       "calmar": true,
@@ -256,10 +254,10 @@
     },
     "oos": {
       "tau_d": "2022-12-31",
-      "gate": false,
+      "gate": true,
       "parts": {
         "test_window_cr_not_weak": true,
-        "rolling36_pass_oos": false
+        "test_window_calmar_vs_bench": true
       },
       "pass_oos": 0.3556,
       "pass_min": 0.5,
@@ -267,19 +265,81 @@
       "S_is": 0.6598,
       "S_oos": 0,
       "retention_calmar": 4.6394,
-      "retention_sharpe": 1.6561
+      "retention_sharpe": 1.6561,
+      "components": [
+        "test_window_cr_not_weak",
+        "test_window_calmar_vs_bench"
+      ],
+      "parts_all": {
+        "test_window_cr_not_weak": true,
+        "rolling36_pass_oos": false,
+        "test_window_calmar_vs_bench": true
+      },
+      "calmar_tw": 1.3909,
+      "bench_calmar_tw": 1.1063
     },
     "parity_max_abs": 2.66453525910038e-15,
-    "nav_source": "contract"
+    "nav_source": "contract",
+    "fa_notch": 0,
+    "fa": {
+      "status": "ok",
+      "enabled": true,
+      "eligible": false,
+      "applied": false,
+      "why_not": [
+        "epoch_mismatch"
+      ],
+      "t_min": 3.2061,
+      "t_min_model": "FF6",
+      "test_all_pos": true,
+      "n_months": 257,
+      "nw_lag": 3,
+      "tau_d": "2022-12-31",
+      "models": {
+        "FF3": {
+          "t": 3.5773,
+          "alpha_ann": 0.102,
+          "n": 257,
+          "test_alpha_ann": 0.1443,
+          "test_n": 43
+        },
+        "Carhart4": {
+          "t": 3.2377,
+          "alpha_ann": 0.086,
+          "n": 257,
+          "test_alpha_ann": 0.1364,
+          "test_n": 43
+        },
+        "FF5": {
+          "t": 3.4988,
+          "alpha_ann": 0.0985,
+          "n": 257,
+          "test_alpha_ann": 0.1529,
+          "test_n": 43
+        },
+        "FF6": {
+          "t": 3.2061,
+          "alpha_ann": 0.0824,
+          "n": 257,
+          "test_alpha_ann": 0.1442,
+          "test_n": 43
+        }
+      },
+      "factor_md5": "6a2970256f7d6bb216612978353e9229",
+      "factor_vintage": "kr_factor_returns_vintages/6a2970256f7d.parquet",
+      "factor_epoch": "all_hyg_px1000_2000_v1",
+      "record_epoch": null,
+      "error": null
+    }
   },
   "grade_v3_backfill": {
-    "at": "2026-10-18T09:08:50+0900",
+    "at": "2026-11-10T04:44:51+0900",
     "tool": "02_Infrastructure/programs/grade_v3_backfill.R",
-    "decision": "decision_register GRADE-V3-CR-STRONG-SELECTION · CRISIS-DEF-LT2020(규칙 판 재채점)",
-    "rules_version": "v3.2",
-    "prior_rules_version": "v3.1",
+    "decision": "decision_register GRADE-V33-FACTOR-ALPHA-NOTCH-20261109 · GRADE-V33-OOS-TEST-WINDOW-CALMAR-20261109(규칙 판 재채점 v3.2 → v3.3)",
+    "rules_version": "v3.3",
+    "prior_rules_version": "v3.2",
     "prior_essence_grade": "B",
-    "prior_md5": "8529915c75c976493d87e12baed8e3e4",
+    "prior_md5": "98ab57efaae307700f8b0f029612008a",
     "history": [
       {
         "rules_version": "v3.0",
@@ -287,6 +347,10 @@
       },
       {
         "rules_version": "v3.1",
+        "essence_grade": "B"
+      },
+      {
+        "rules_version": "v3.2",
         "essence_grade": "B"
       }
     ]

@@ -36,7 +36,7 @@
   "structural_drawdown": true,
   "selection_type": "chain",
   "dsr_gate_applied": false,
-  "reasons": "v3: S 0.246 · B 경계 0.434 · 띠 C · CR weak(시험 창 weak) · 노치 -1 · A 아님 사유 floor:port_t,floor:calmar,floor:cagr,floor:sharpe,oos:test_window_cr_not_weak,oos:rolling36_pass_oos,cr:weak | v921 C: Ensemble: positive alpha이나 B 미달 (블렌드에서만 가치); structural_drawdown(판정 아님 — 라우팅 근거): MDD 69.6%, 45%+ episodes=39/15, 55%+ episodes=21/6, 수중 표본비 0.16/0.25",
+  "reasons": "v3: S 0.246 · B 경계 0.434 · 띠 C · CR weak(시험 창 weak) · 노치 -1 · A 아님 사유 floor:port_t,floor:calmar,floor:cagr,floor:sharpe,oos:test_window_cr_not_weak,cr:weak | v921 C: Ensemble: positive alpha이나 B 미달 (블렌드에서만 가치); structural_drawdown(판정 아님 — 라우팅 근거): MDD 69.6%, 45%+ episodes=39/15, 55%+ episodes=21/6, 수중 표본비 0.16/0.25",
   "replication": {
     "source_paper": {
       "title": "Moskowitz & Grinblatt (1999), Do Industries Explain Momentum?, JF 54(4)",
@@ -133,7 +133,7 @@
     "grade": "F",
     "S": 0.2457,
     "S_B": 0.434,
-    "rules_version": "v3.2",
+    "rules_version": "v3.3",
     "crisis_def": "lt_first_passage",
     "cr_notch_basis": "weak",
     "mc8": {
@@ -151,7 +151,6 @@
       "floor:cagr",
       "floor:sharpe",
       "oos:test_window_cr_not_weak",
-      "oos:rolling36_pass_oos",
       "cr:weak"
     ],
     "floors": {
@@ -182,7 +181,7 @@
       "gate": false,
       "parts": {
         "test_window_cr_not_weak": false,
-        "rolling36_pass_oos": false
+        "test_window_calmar_vs_bench": true
       },
       "pass_oos": 0.25,
       "pass_min": 0.5,
@@ -190,19 +189,82 @@
       "S_is": 0.0996,
       "S_oos": 0.9377,
       "retention_calmar": 26.2587,
-      "retention_sharpe": 4.2556
+      "retention_sharpe": 4.2556,
+      "components": [
+        "test_window_cr_not_weak",
+        "test_window_calmar_vs_bench"
+      ],
+      "parts_all": {
+        "test_window_cr_not_weak": false,
+        "rolling36_pass_oos": false,
+        "test_window_calmar_vs_bench": true
+      },
+      "calmar_tw": 1.4492,
+      "bench_calmar_tw": 1.0915
     },
     "parity_max_abs": 2.1094237467878e-15,
-    "nav_source": "contract"
+    "nav_source": "contract",
+    "fa_notch": 0,
+    "fa": {
+      "status": "ok",
+      "enabled": true,
+      "eligible": false,
+      "applied": false,
+      "why_not": [
+        "epoch_mismatch",
+        "cr_weak"
+      ],
+      "t_min": 1.3488,
+      "t_min_model": "Carhart4",
+      "test_all_pos": true,
+      "n_months": 257,
+      "nw_lag": 3,
+      "tau_d": "2022-12-31",
+      "models": {
+        "FF3": {
+          "t": 1.4159,
+          "alpha_ann": 0.0754,
+          "n": 257,
+          "test_alpha_ann": 0.1844,
+          "test_n": 42
+        },
+        "Carhart4": {
+          "t": 1.3488,
+          "alpha_ann": 0.0701,
+          "n": 257,
+          "test_alpha_ann": 0.1874,
+          "test_n": 42
+        },
+        "FF5": {
+          "t": 1.5684,
+          "alpha_ann": 0.0805,
+          "n": 257,
+          "test_alpha_ann": 0.2274,
+          "test_n": 42
+        },
+        "FF6": {
+          "t": 1.5093,
+          "alpha_ann": 0.0758,
+          "n": 257,
+          "test_alpha_ann": 0.2315,
+          "test_n": 42
+        }
+      },
+      "factor_md5": "6a2970256f7d6bb216612978353e9229",
+      "factor_vintage": "kr_factor_returns_vintages/6a2970256f7d.parquet",
+      "factor_epoch": "all_hyg_px1000_2000_v1",
+      "record_epoch": null,
+      "error": null
+    }
   },
   "grade_v3_backfill": {
-    "at": "2026-10-18T08:43:35+0900",
+    "at": "2026-11-10T04:32:26+0900",
     "tool": "02_Infrastructure/programs/grade_v3_backfill.R",
-    "decision": "decision_register GRADE-V3-CR-STRONG-SELECTION · CRISIS-DEF-LT2020(규칙 판 재채점)",
-    "rules_version": "v3.2",
-    "prior_rules_version": "v3.1",
+    "decision": "decision_register GRADE-V33-FACTOR-ALPHA-NOTCH-20261109 · GRADE-V33-OOS-TEST-WINDOW-CALMAR-20261109(규칙 판 재채점 v3.2 → v3.3)",
+    "rules_version": "v3.3",
+    "prior_rules_version": "v3.2",
     "prior_essence_grade": "F",
-    "prior_md5": "c2a686f6ff149e5b434d4e3ee3456782",
+    "prior_md5": "ac5a20d5fb81a6b5503a60771abcc627",
     "history": [
       {
         "rules_version": "v3.0",
@@ -210,6 +272,10 @@
       },
       {
         "rules_version": "v3.1",
+        "essence_grade": "F"
+      },
+      {
+        "rules_version": "v3.2",
         "essence_grade": "F"
       }
     ]
