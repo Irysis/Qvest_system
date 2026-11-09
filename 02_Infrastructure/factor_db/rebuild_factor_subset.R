@@ -92,6 +92,7 @@ rebuild_factor_subset <- function(root = .rfs_root(), months = NULL, from = NULL
   t0 <- Sys.time(); n_done <- 0L; n_bad <- 0L
   for (i in seq_along(files)) {
     fp <- files[i]; ym <- yms[i]; t1 <- Sys.time()
+    fi0 <- file.info(fp)[, c("size", "mtime")]
     old <- as.data.table(read_parquet(fp, mmap = FALSE))
     sig_d <- as.Date(old$Date[1])
     invisible(capture.output(res <- build_factor_db(sig_d, save = FALSE, force = TRUE, modules = RFS_MODS)))
@@ -117,6 +118,14 @@ rebuild_factor_subset <- function(root = .rfs_root(), months = NULL, from = NULL
                 secs = round(as.numeric(difftime(Sys.time(), t1, units = "secs")), 1))
     if (!ok) { cat(sprintf("  [ERR %s] 단정 실패(대상 밖 행 · 열 · 날짜) — 쓰지 않음\n", ym)); n_bad <- n_bad + 1L }
     if (ok && !dry_run) {
+      # 낙관적 동시성 — 읽은 뒤 다른 쓰기(예: 일일 체인 [6d] 백필)가 이 파일을 바꿨으면 이번 결과는 옛 내용 기준이라 쓰지 않는다.
+      fi1 <- file.info(fp)[, c("size", "mtime")]
+      if (!identical(fi0$size, fi1$size) || !identical(as.numeric(fi0$mtime), as.numeric(fi1$mtime))) {
+        cat(sprintf("  [RETRY %s] 읽은 뒤 파일이 바뀜(동시 쓰기) — 이 달은 다음 실행/--verify 가 다시 한다\n", ym))
+        rec$ok <- FALSE; rec$concurrent_change <- TRUE; n_bad <- n_bad + 1L
+        cat(toJSON(rec, auto_unbox = TRUE, digits = NA), "\n", file = log_path, append = TRUE, sep = "")
+        next
+      }
       tmp <- paste0(fp, ".subset_tmp")
       write_parquet(out, tmp)
       rm(old); gc()
@@ -130,6 +139,8 @@ rebuild_factor_subset <- function(root = .rfs_root(), months = NULL, from = NULL
                                   new[order(Factor_Name, Ticker)], check.attributes = FALSE))
       rm(back); gc()
       if (!chk_keep || !chk_new) stop(sprintf("[subset] 쓴 뒤 대조 실패 %s (대상 밖 %s · 대상 %s) — 이 달을 build_factor_db(save = TRUE) 로 다시 지을 것", ym, chk_keep, chk_new))
+      fi2 <- file.info(fp)[, c("size", "mtime")]
+      rec$written_size <- as.numeric(fi2$size); rec$written_mtime <- as.numeric(fi2$mtime)
       n_done <- n_done + 1L
     }
     cat(toJSON(rec, auto_unbox = TRUE, digits = NA), "\n", file = log_path, append = TRUE, sep = "")
@@ -143,6 +154,29 @@ rebuild_factor_subset <- function(root = .rfs_root(), months = NULL, from = NULL
   if (isTRUE(write_hash) && n_done > 0L && exists(".write_build_hash", mode = "function")) .write_build_hash()
   cat(sprintf("[subset] 끝: 쓴 달 %d · 실패 %d · %.1f분\n", n_done, n_bad, as.numeric(difftime(Sys.time(), t0, units = "mins"))))
   invisible(list(done = n_done, bad = n_bad))
+}
+
+# 잃은 쓰기 검사: 기록(--log 들)에 남긴 쓴 직후 지문(크기 · 수정 시각)과 지금 파일이 다르면 그 뒤 다른 쓰기가 덮은 것 —
+#   그 달 목록을 돌려준다(진행기가 다시 돌린다). 기록에 없는 달(아직 안 한 달)도 함께 돌려준다.
+verify_subset_writes <- function(log_paths, root = .rfs_root(), exclude = NULL) {
+  .rfs_load(root)
+  recs <- unlist(lapply(log_paths[file.exists(log_paths)], function(lp) lapply(readLines(lp, warn = FALSE), function(l)
+    tryCatch(fromJSON(l, simplifyVector = FALSE), error = function(e) NULL))), recursive = FALSE)
+  recs <- Filter(function(r) !is.null(r) && isTRUE(r$ok) && !isTRUE(r$dry_run) && !is.null(r$written_mtime), recs)
+  last <- list(); for (r in recs) last[[r$ym]] <- r
+  files <- sort(list.files(FACTOR_DB_DIR, pattern = "^factor_db_\\d{6}\\.parquet$", full.names = TRUE))
+  yms <- sub("^factor_db_(\\d{6})\\.parquet$", "\\1", basename(files))
+  keep <- !(yms %in% exclude); files <- files[keep]; yms <- yms[keep]
+  bad <- character(0)
+  for (i in seq_along(files)) {
+    r <- last[[yms[i]]]
+    if (is.null(r)) { bad <- c(bad, yms[i]); next }
+    fi <- file.info(files[i])
+    if (!isTRUE(all.equal(as.numeric(fi$size), r$written_size)) || abs(as.numeric(fi$mtime) - r$written_mtime) > 1e-3) bad <- c(bad, yms[i])
+  }
+  cat(sprintf("[verify] 달 %d · 기록 %d · 다시 할 달 %d%s\n", length(files), length(last), length(bad),
+              if (length(bad)) paste0(": ", paste(head(bad, 20), collapse = ","), if (length(bad) > 20) " …" else "") else ""))
+  invisible(bad)
 }
 
 # 양성 대조: 같은 달을 전 모듈로 지은 값과 부분 산출 값이 대상 팩터에서 같은가(쓰기 없음)
@@ -163,6 +197,13 @@ check_full_equivalence <- function(ym, root = .rfs_root()) {
 if (sys.nframe() == 0L) {
   a <- commandArgs(trailingOnly = TRUE)
   arg <- function(k) { i <- match(k, a); if (is.na(i) || i == length(a)) NULL else a[i + 1L] }
+  if ("--verify" %in% a) {
+    lp <- strsplit(arg("--verify"), ",", fixed = TRUE)[[1]]
+    ex <- arg("--exclude"); ex <- if (is.null(ex)) NULL else strsplit(ex, ",", fixed = TRUE)[[1]]
+    bad <- verify_subset_writes(lp, exclude = ex)
+    cat("REDO:", paste(bad, collapse = ","), "\n")
+    quit(save = "no", status = 0L)
+  }
   if ("--check-full" %in% a) {
     ok <- check_full_equivalence(arg("--check-full"))
     quit(save = "no", status = if (isTRUE(ok)) 0L else 1L)
