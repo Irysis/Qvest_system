@@ -371,6 +371,16 @@ SUITES=(
   # 2026-11-09 추가: 결합용 팩터 뷰(factor_db/factor_combinable.R · FACTOR-COMBINABLE-VIEW-20261109) — 순위 [−1,1] · 부호 대칭(방향 =
   #   부호표 곱의 근거) · 부분집합 재순위 · 별칭 · 계열 · 합성 저장본 읽기 9 + 위반 주입 4(동순위 · 재순위 · PIT 가드 · 부호 고르기)
   "08_Tests/factor_db/test_factor_combinable.R"
+  # 2026-11-09 추가: 일간 접근자 load_daily_factors 방향 정렬 계약(FACTOR-DIRECTION-STORAGE-REPAIR-20261109 — 이전엔 검사 0건) —
+  #   날마다 as-of 부호(Usable_Date ≤ 그 날) · 일간 · 월간 저장 대응표(same · negated · mismatch/absent 거부) · 등록부 대체 ·
+  #   registry 모드 · 대응표 없음 = 멈춤 + 돌연변이 3(구간 끝 하나 · 대응표 곱 제거 · 거부 제거). 합성 자료만.
+  "08_Tests/factor_db/test_load_daily_factors.R"
+  # 2026-11-09 추가: 등록부 방향 = 저장값 기준(같은 결정) — 필드 · 불변식 · 빌더 부호 드리프트(감사 표 code_negated_at_audit 대조) ·
+  #   등록부 ↔ 감사 표 · 두 사본 바이트 동일 + 돌연변이(D34 음수화 제거 → 드리프트 검거). 해석기 = 시스템 파이썬(표준 라이브러리만).
+  "08_Tests/factor_db/test_factor_direction_basis.py"
+  # 2026-11-09 추가: XF → DART 이름 채우기(.fdb_xf_fill_merge) 변환 — 음수 저장 4개 = −x · V08 = 1/x · DART 우선 · 짝 밖 불변 +
+  #   돌연변이 2(변환 제거). 구판은 이름만 바꿔 채움 행 부호 · 역수가 뒤집혔다.
+  "08_Tests/factor_db/test_xf_fill_merge.R"
   # 2026-07-26 추가(R1): DART reprt_code ↔ 분기 매핑 위반 주입.
   #   원 결함 = REPRT_MAP 이 11014→q1 / 11013→q3 로 뒤집혀 3분기(11월 접수) 보고서가
   #   Factor_Date 5/15 를 받음 → 중앙 시차 −183일 · look-ahead 99.8%(PIT C4).

@@ -4036,7 +4036,28 @@
       "registered_at": "2026-11-09T16:16:48+0900",
       "recorded_by": "Q(세션 fe712ea2)",
       "evidence": "도훈 채팅 2026-11-09 — '만들기 · 이론 방향 선택지도 추가(C13 해석 확장)' · '결합용 뷰도 자동 업데이트 되게끔 만들어줘'"
+    },
+    {
+      "id": "FACTOR-DIRECTION-STORAGE-REPAIR-20261109",
+      "title": "팩터 방향 · 저장 규약 결함 수리 — 등록부 저장값 기준 · 일간 접근자 as-of · XF 채움 변환 · XF 계열 정의 + 영향 팩터 v2 재계산",
+      "status": "resolved",
+      "opened_at": "2026-11-09T17:49:26+0900",
+      "options": [
+        "제대로 수리: 등록부 방향을 저장값 기준으로(코드 감사) + 일간 접근자(as-of · 일간·월간 대응표) + 빌더 XF 채움 · XF 계열 정의 + 영향 팩터 전 기간 v2 재계산 + 상설 검사",
+        "등록부만 고치고 빌더 · 일간은 그대로",
+        "지금은 안 함"
+      ],
+      "recommendation": "제대로 수리: 등록부 방향을 저장값 기준으로(코드 감사) + 일간 접근자(as-of · 일간·월간 대응표) + 빌더 XF 채움 · XF 계열 정의 + 영향 팩터 전 기간 v2 재계산 + 상설 검사",
+      "default_until_decided": "없음(결함이 있는 채로 소비)",
+      "blocks": [],
+      "owner": "dohoon",
+      "source": "도훈 11-09 '334개 중 136개(41%)는 과거 IC 방향이 이론 방향과 반대이다 이게 어떤 의미지?' → Q 실측: 불일치는 잡음(34) · 저장 부호 차이(빌더가 음수로 저장 · 등록부는 원래 양 기준) · 선호 대 프리미엄(유동성 등)으로 갈림. 확인 중 결함 발견 — ① 등록부 방향이 저장값과 어긋난 팩터가 IC 36개월 미만 구간(등록부 대체)에서 거꾸로 정렬(P2R04 방어 틸트 D03 · D04 · D07 이 2000-06 ~ 2002-06 정렬값 대 저장값 순위 상관 −1.000 · 10-18 설계 노트가 '별도 수리'로 적고 미수리) ② 일간 접근자가 구간 끝 IC 하나로 전 구간 부호(C1 · C14) + 일간 값이 월간 같은 이름 값과 다름(공통 288 중 같음 86 · 반대 56 · 다름 146 · 4달 실측) ③ 월간 빌더 XF 채움이 DART 저장 규약을 무시(Q05 · Q15 · GR03 · AC05 부호 반대 · V08 역수) ④ XF 계열 DART 쪽 정의가 등록부 · 엑셀과 다른 양(LL05 금액 · PR02 분모 · EF01 분자 · GD02 · GD03 전기 음수 · RI02 절댓값 · PR04 엑셀 순이자비용). 도훈 '결함 수리 제대로 해야겠다 이거 치명적인데' · '재무DB v2 기준으로 팩터 계산 다시해'",
+      "decision": "제대로 수리(도훈 지시). ① 등록부 = 저장값 기준(direction_basis = stored_raw_value · direction_economic · stored_sign · 바뀐 항목 direction_history) — 코드 감사(서브에이전트 371개 손 추적 + 검사 파서 재도출 213/221 일치) 표 06_Registry/factor_direction_audit.json · 방향 71개 변경 · 정의 문구 14개를 저장값에 맞춤(writer factor_db/apply_direction_basis.py · 두 사본 바이트 동일). 수리 뒤 2000~2002 방어 틸트 정렬 = 저장 방어 값 +1.000. ② load_daily_factors = 날마다 as-of 부호(Usable_Date ≤ 그 날) + 대응표 06_Registry/factor_daily_monthly_parity.json(생성 factor_db/daily_monthly_parity.py · 같음 0.98 이상 전 달) — negated = 부호 보정 · mismatch · 표에 없음 = 정렬 거부. ③ 빌더: XF 채움 변환(.fdb_xf_fill_merge · −x 4 · 1/x 1) · XF 계열 DART 정의 6 + 엑셀 PR04 · build_factor_db(modules =) 부분 산출(저장 금지). ④ 영향 팩터 12개 전 기간 재계산 = factor_db/rebuild_factor_subset.R(부분 = 전체 산출 동일 실증 201006 27,497행) — 월간 전체 재빌드(v2) 끝난 뒤 3병렬 · 그 뒤 IC 재계산. 상설 검사: test_load_daily_factors.R 18 · test_factor_direction_basis.py 6 · test_xf_fill_merge.R 8(돌연변이 포함). 남은 일: 일간 빌더 정의를 월간에 맞추기(대응표 mismatch 201) · 영향 라운드 칸 24(P0R01 · P2R01 · P2R04 · P2R05) 재측정 · 이론 방향 의문 30(문헌 대조 — 도훈 결정).",
+      "decided_by": "dohoon",
+      "decided_at": "2026-11-09T17:49:27+0900",
+      "note": "Q 가 실측 · 감사 · 수리 · 검사. 방향 판정은 코드와 등록부 문구만으로(성과 · IC 미사용 — 이론 방향이 자료에서 오지 않게).",
+      "registered_at": "2026-11-09T17:49:26+0900"
     }
   ],
-  "last_updated": "2026-11-09T16:16:50+0900"
+  "last_updated": "2026-11-09T17:49:27+0900"
 }

@@ -402,8 +402,10 @@ compute_xlsx_fundamentals <- function(RAWDATA, sig_date, FUND = NULL, CONSENSUS 
   results[["XF_PR03_TaxRate"]] <- dt[!is.na(xf_pr_tr) & is.finite(xf_pr_tr),
     .(Ticker, Factor_Name = "XF_PR03_TaxRate", Raw_Value = xf_pr_tr)]
 
-  # XF_PR04: Net Interest Margin = NetInterestExp / TotalAssets
-  dt[, xf_pr_nim := .xf_sdiv(NetInterestExp, TotalAssets)]
+  # XF_PR04: Net Interest Margin = (InterestIncome - InterestExp) / Revenue — 등록부 정의 · DART 쪽 파생 항목 NetInterestMargin 과 같은 식.
+  #   2026-11-09 수리(FACTOR-DIRECTION-STORAGE-REPAIR-20261109): 구판 = NetInterestExp(순이자비용) / TotalAssets — DART 행(순이자수익/매출)과
+  #   부호 · 분모가 달라 한 열에 섞였다.
+  dt[, xf_pr_nim := .xf_sdiv(InterestIncome - InterestExp, Revenue)]
   results[["XF_PR04_NetInterestMargin"]] <- dt[!is.na(xf_pr_nim) & is.finite(xf_pr_nim),
     .(Ticker, Factor_Name = "XF_PR04_NetInterestMargin", Raw_Value = xf_pr_nim)]
 

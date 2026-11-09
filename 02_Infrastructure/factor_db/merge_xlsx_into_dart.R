@@ -29,6 +29,9 @@
 #   source("02_Infrastructure/factor_db/merge_xlsx_into_dart.R")
 #   merge_xlsx_into_dart()
 #==============================================================================
+stop("[merge_xlsx_into_dart] 퇴역(2026-11-09 · FACTOR-DIRECTION-STORAGE-REPAIR-20261109) — 이 일괄 후처리는 XF 값을 이름만 바꿔 넣어 ",
+     "DART 가 음수로 저장하는 Q05 · Q15 · GR03 · AC05 의 채움 부호를 뒤집고 V08_PSR 에 역수를 넣는다. XF 채우기는 ",
+     "factor_db_builder.R::.fdb_xf_fill_merge(변환 포함 · 검사 08_Tests/factor_db/test_xf_fill_merge.R)가 맡는다.", call. = FALSE)
 
 suppressPackageStartupMessages({
   library(data.table)

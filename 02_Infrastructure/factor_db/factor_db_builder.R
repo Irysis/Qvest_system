@@ -848,7 +848,83 @@ cat("[factor_db_builder] Loaded. FACTOR_DB_DIR:", FACTOR_DB_DIR, "\n")
 #' @return data.table in long format: Date, Ticker, Factor_Name, Raw_Value,
 #'         Z_Score, Z_Sector, Rank_Pct, Coverage
 #' @export
-build_factor_db <- function(sig_date, save = TRUE, force = FALSE) {
+#' XF(엑셀 · 퀀티) → DART 이름 채우기 병합 — build_factor_db 의 한 단계(2026-11-09 함수로 분리 · 검사 08_Tests/factor_db/test_xf_fill_merge.R).
+#' DART 값이 있는 종목은 DART 를 쓰고, 없는 종목만 XF 값을 그 DART 이름으로 채운다. 채울 때 .XF_FILL_TRANSFORM 으로 DART 저장 규약에 맞춘다.
+.fdb_xf_fill_merge <- function(combined, verbose = TRUE) {
+  # Remove XF_ factors (xlsx originals already merged into DART names)
+  # Inline xlsx-into-dart merge (per Quality factor merge principle):
+  #   - 19 mapped pairs (DART <- XF): DART preferred (higher quality),
+  #     XF fills gap only when DART has 0 rows for this sig_date
+  #   - Unmapped XF_* (DU/EF/GD/LL/PR/RI) preserved as standalone
+  # See merge_xlsx_into_dart.R for batch post-process (legacy compatibility)
+  .XF_TO_DART <- c(
+    XF_Q01_GPA               = "Q01_GPA",
+    XF_Q02_ROE               = "Q02_ROE",
+    XF_Q03_ROA               = "Q03_ROA",
+    XF_A01_Accrual           = "Q05_Accrual",
+    XF_Q05_Gross_Margin      = "Q10_Gross_Margin",
+    XF_Q07_Net_Margin        = "Q11_Net_Margin",
+    XF_Q04_Asset_Turnover    = "Q12_Asset_Turnover",
+    XF_Q08_Interest_Coverage = "Q32_Interest_Coverage",
+    XF_L01_Debt_to_Equity    = "Q15_Debt_to_Equity",
+    XF_L02_Current_Ratio     = "Q14_Current_Ratio",
+    XF_P01_Piotroski_F       = "Q04_Piotroski_F",
+    XF_V01_BM                = "V01_BM",
+    XF_V02_EP                = "V02_EP",
+    XF_V03_CFP               = "V03_CFP",
+    XF_V04_SP                = "V08_PSR",
+    XF_G01_Asset_Growth      = "GR03_Asset_Growth",
+    XF_G02_Revenue_Growth    = "GR01_Revenue_Growth",
+    XF_G03_Earnings_Growth   = "GR02_Earnings_Growth",
+    XF_A02_NOA               = "AC05_NOA"
+  )
+  # Per-ticker merge: for each (ticker, sig_date) pair, DART value preferred;
+  # XF (QuantiWise) used only when DART lacks coverage for that specific ticker.
+  # Dohoon mandate (2026-05-23): "DART에서 구할 수 없는 과거데이터를 퀀티와이즈로 보강"
+  # ★채움 변환(2026-11-09 수리 · FACTOR-DIRECTION-STORAGE-REPAIR-20261109): 채우는 XF 값은 DART 이름의 저장 규약과 같은 양이어야 한다.
+  #   구판은 이름만 바꿔 넣어, DART 쪽이 음수로 저장하는 4개(Q05 · Q15 · GR03 · AC05)는 채움 행만 부호가 반대였고, V08_PSR(시총/매출)은
+  #   채움 행이 역수(XF_V04_SP = 매출/시총)였다 — 한 횡단면 안에서 두 규약이 섞여 순위가 뒤집혔다(서브에이전트 코드 감사 · 달마다 채움 수백~1,900행).
+  .XF_FILL_TRANSFORM <- list(
+    XF_A01_Accrual        = function(x) -x,                                        # Q05 = −(NI − OCF)/TA
+    XF_L01_Debt_to_Equity = function(x) -x,                                        # Q15 = −(TotalDebt/TE)
+    XF_G01_Asset_Growth   = function(x) -x,                                        # GR03 = −(dTA/|TA_prev|)
+    XF_A02_NOA            = function(x) -x,                                        # AC05 = −(OA − OL)/TA
+    XF_V04_SP             = function(x) fifelse(is.finite(x) & x > 0, 1 / x, NA_real_)  # V08 = 시총/매출 = 1/(매출/시총) · 매출 ≤ 0 은 V08 도 제외
+  )
+  .n_filled <- 0L; .n_dropped_dup <- 0L
+  for (xf_nm in names(.XF_TO_DART)) {
+    dart_nm <- .XF_TO_DART[[xf_nm]]
+    xf_rows   <- combined[Factor_Name == xf_nm]
+    if (nrow(xf_rows) == 0L) next
+    dart_tickers <- combined[Factor_Name == dart_nm, unique(Ticker)]
+    # XF tickers NOT covered by DART → adopt as fill (renamed to DART)
+    xf_fill <- xf_rows[!Ticker %in% dart_tickers]
+    xf_drop <- nrow(xf_rows) - nrow(xf_fill)
+    if (nrow(xf_fill) > 0L) {
+      xf_fill <- copy(xf_fill)[, Factor_Name := dart_nm]
+      .tf <- .XF_FILL_TRANSFORM[[xf_nm]]
+      if (!is.null(.tf)) {
+        xf_fill[, Raw_Value := .tf(Raw_Value)]
+        xf_fill <- xf_fill[is.finite(Raw_Value)]
+      }
+      .n_filled <- .n_filled + nrow(xf_fill)
+    }
+    # Remove all mapped XF rows + append fill rows under DART name
+    combined <- rbindlist(list(combined[Factor_Name != xf_nm], xf_fill),
+                          use.names = TRUE, fill = TRUE)
+    .n_dropped_dup <- .n_dropped_dup + xf_drop
+  }
+  if (isTRUE(verbose) && .n_filled + .n_dropped_dup > 0L) {
+    cat(sprintf("  Quality merge: %d XF→DART filled (per-ticker), %d XF dropped (DART covered)\n",
+                .n_filled, .n_dropped_dup))
+  }
+  combined
+}
+
+build_factor_db <- function(sig_date, save = TRUE, force = FALSE, modules = NULL) {
+  # modules (2026-11-09 · FACTOR-DIRECTION-STORAGE-REPAIR-20261109): NULL = 전 모듈(기존 동작). 이름을 주면 그 모듈만 계산한다 —
+  #   결함 팩터만 다시 계산할 때(rebuild_factor_subset.R) 재무 모듈만 돌리려는 용도. 일부 모듈 산출은 월 파일 전체가 아니므로 저장 금지.
+  if (!is.null(modules) && isTRUE(save)) stop("[build_factor_db] modules 를 고른 부분 산출은 save = TRUE 로 쓸 수 없다(월 파일 전체를 덮는다)")
   sig_d <- as.Date(sig_date)
   ym_tag <- format(sig_d, "%Y%m")
   out_path <- file.path(FACTOR_DB_DIR, paste0("factor_db_", ym_tag, ".parquet"))
@@ -918,7 +994,14 @@ if (!force && file.exists(out_path)) {
     custom = "custom_factors"
   )
 
-  for (nm in names(.fdb_env$module_funcs)) {
+  .run_mods <- names(.fdb_env$module_funcs)
+  if (!is.null(modules)) {
+    .bad_mods <- setdiff(modules, .run_mods)
+    if (length(.bad_mods)) stop("[build_factor_db] 모르는 모듈: ", paste(.bad_mods, collapse = ", "))
+    .run_mods <- intersect(.run_mods, modules)
+    cat(sprintf("  ★부분 산출(modules): %s\n", paste(.run_mods, collapse = ", ")))
+  }
+  for (nm in .run_mods) {
     fn <- .fdb_env$module_funcs[[nm]]
     display <- module_display[[nm]]
     tryCatch({
@@ -945,58 +1028,7 @@ if (!force && file.exists(out_path)) {
 
   combined <- rbindlist(all_factors, use.names = TRUE, fill = TRUE)
 
-  # Remove XF_ factors (xlsx originals already merged into DART names)
-  # Inline xlsx-into-dart merge (per Quality factor merge principle):
-  #   - 19 mapped pairs (DART <- XF): DART preferred (higher quality),
-  #     XF fills gap only when DART has 0 rows for this sig_date
-  #   - Unmapped XF_* (DU/EF/GD/LL/PR/RI) preserved as standalone
-  # See merge_xlsx_into_dart.R for batch post-process (legacy compatibility)
-  .XF_TO_DART <- c(
-    XF_Q01_GPA               = "Q01_GPA",
-    XF_Q02_ROE               = "Q02_ROE",
-    XF_Q03_ROA               = "Q03_ROA",
-    XF_A01_Accrual           = "Q05_Accrual",
-    XF_Q05_Gross_Margin      = "Q10_Gross_Margin",
-    XF_Q07_Net_Margin        = "Q11_Net_Margin",
-    XF_Q04_Asset_Turnover    = "Q12_Asset_Turnover",
-    XF_Q08_Interest_Coverage = "Q32_Interest_Coverage",
-    XF_L01_Debt_to_Equity    = "Q15_Debt_to_Equity",
-    XF_L02_Current_Ratio     = "Q14_Current_Ratio",
-    XF_P01_Piotroski_F       = "Q04_Piotroski_F",
-    XF_V01_BM                = "V01_BM",
-    XF_V02_EP                = "V02_EP",
-    XF_V03_CFP               = "V03_CFP",
-    XF_V04_SP                = "V08_PSR",
-    XF_G01_Asset_Growth      = "GR03_Asset_Growth",
-    XF_G02_Revenue_Growth    = "GR01_Revenue_Growth",
-    XF_G03_Earnings_Growth   = "GR02_Earnings_Growth",
-    XF_A02_NOA               = "AC05_NOA"
-  )
-  # Per-ticker merge: for each (ticker, sig_date) pair, DART value preferred;
-  # XF (QuantiWise) used only when DART lacks coverage for that specific ticker.
-  # Dohoon mandate (2026-05-23): "DART에서 구할 수 없는 과거데이터를 퀀티와이즈로 보강"
-  .n_filled <- 0L; .n_dropped_dup <- 0L
-  for (xf_nm in names(.XF_TO_DART)) {
-    dart_nm <- .XF_TO_DART[[xf_nm]]
-    xf_rows   <- combined[Factor_Name == xf_nm]
-    if (nrow(xf_rows) == 0L) next
-    dart_tickers <- combined[Factor_Name == dart_nm, unique(Ticker)]
-    # XF tickers NOT covered by DART → adopt as fill (renamed to DART)
-    xf_fill <- xf_rows[!Ticker %in% dart_tickers]
-    xf_drop <- nrow(xf_rows) - nrow(xf_fill)
-    if (nrow(xf_fill) > 0L) {
-      xf_fill <- copy(xf_fill)[, Factor_Name := dart_nm]
-      .n_filled <- .n_filled + nrow(xf_fill)
-    }
-    # Remove all mapped XF rows + append fill rows under DART name
-    combined <- rbindlist(list(combined[Factor_Name != xf_nm], xf_fill),
-                          use.names = TRUE, fill = TRUE)
-    .n_dropped_dup <- .n_dropped_dup + xf_drop
-  }
-  if (.n_filled + .n_dropped_dup > 0L) {
-    cat(sprintf("  Quality merge: %d XF→DART filled (per-ticker), %d XF dropped (DART covered)\n",
-                .n_filled, .n_dropped_dup))
-  }
+  combined <- .fdb_xf_fill_merge(combined)   # XF → DART 이름 채우기(변환 포함) — 함수 정의는 build_factor_db 위
   # Unmapped XF (DU/EF/GD/LL/PR/RI 25개): both compute_quality_xf_native (DART)
   # AND xlsx_factor_calculator (QuantiWise) emit same Factor_Name.
   # Per-(Ticker, Factor_Name) dedup keep first → DART preferred (module called earlier).
@@ -1061,7 +1093,9 @@ if (!force && file.exists(out_path)) {
   # ★stop 하지 않는다 — 정당한 vintage 결측까지 죽이면 가드가 꺼진다.
   #   경고 + 사이드카 기록이 정본. save=FALSE(시범 산출)면 판정만 하고 원장은
   #   건드리지 않는다(드라이런이 역사를 오염시키면 회귀 판정이 무너진다).
-  .emission_report <- factor_emission_guard(
+  # 부분 산출(modules 지정 · 2026-11-09)은 전 팩터가 아니라 감시가 뜻이 없다(빠진 모듈 팩터 전부를 '회귀'로 셈) — 건너뛴다.
+  #   부분 산출은 저장이 막혀 있고, 바꿔 끼운 월 파일은 rebuild_factor_subset.R 이 쓴 뒤 다시 읽어 대조한다.
+  .emission_report <- if (!is.null(modules)) NULL else factor_emission_guard(
     result        = result,
     ym            = ym_tag,
     fdb_dir       = FACTOR_DB_DIR,

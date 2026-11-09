@@ -120,11 +120,18 @@ compute_quality_xf_native <- function(RAWDATA, sig_date, FUND = NULL, CONSENSUS 
     results <- .emit(results, "XF_LL04_QuickRatio",
       qr[!is.na(val), .(Ticker, Factor_Name = "XF_LL04_QuickRatio", Raw_Value = val)])
   }
-  # LL05 WorkingCapital = pre-computed (or CurrentAssets - CurrentLiabilities)
-  wc <- .pull("WorkingCapital")
-  if (nrow(wc) > 0L) {
-    results <- .emit(results, "XF_LL05_WorkingCapital",
-      wc[!is.na(val), .(Ticker, Factor_Name = "XF_LL05_WorkingCapital", Raw_Value = val)])
+  # LL05 WorkingCapital = (CurrentAssets - CurrentLiab) / TotalAssets — 등록부 정의 · 엑셀 쪽(xlsx_factor_calculator.R)과 같은 비율.
+  #   2026-11-09 수리(FACTOR-DIRECTION-STORAGE-REPAIR-20261109): 구판은 파생 항목 WorkingCapital(원 단위 금액)을 그대로 써서
+  #   엑셀 채움 행(비율)과 한 열에 섞였다(한 횡단면에 금액과 비율이 같이 순위 매겨짐).
+  ca_ll <- .pull("CurrentAssets"); cl_ll <- .pull("CurrentLiab"); ta_ll <- .pull("TotalAssets")
+  if (nrow(ca_ll) > 0L && nrow(cl_ll) > 0L && nrow(ta_ll) > 0L) {
+    m <- merge(merge(ca_ll[, .(Ticker, ca = val)], cl_ll[, .(Ticker, cl = val)], by = "Ticker", all = FALSE),
+               ta_ll[, .(Ticker, ta = val)], by = "Ticker", all = FALSE)
+    m <- m[!is.na(ca) & !is.na(cl) & !is.na(ta) & abs(ta) > 1e-8]
+    if (nrow(m) > 0L) {
+      results <- .emit(results, "XF_LL05_WorkingCapital",
+        m[, .(Ticker, Factor_Name = "XF_LL05_WorkingCapital", Raw_Value = (ca - cl) / ta)])
+    }
   }
 
   # ── Profitability (XF_PR01~05) ───────────────────────────────────────────
@@ -134,16 +141,17 @@ compute_quality_xf_native <- function(RAWDATA, sig_date, FUND = NULL, CONSENSUS 
     results <- .emit(results, "XF_PR01_EBITDA_Margin",
       em_m[!is.na(val), .(Ticker, Factor_Name = "XF_PR01_EBITDA_Margin", Raw_Value = val)])
   }
-  # PR02 RetainedEarnings_Ratio = RetainedEarnings / TotalAssets
-  re_v <- .pull("RetainedEarnings"); ta_v <- .pull("TotalAssets")
-  if (nrow(re_v) > 0L && nrow(ta_v) > 0L) {
-    m <- merge(re_v[, .(Ticker, re = val)], ta_v[, .(Ticker, ta = val)],
+  # PR02 RetainedEarnings_Ratio = RetainedEarnings / TotalEquity — 등록부 정의 · 엑셀 쪽과 같은 분모.
+  #   2026-11-09 수리: 구판 분모 = TotalAssets(엑셀 채움 행은 TotalEquity) — 한 열에 두 양이 섞였다. ta_v 는 RI02 가 쓴다.
+  re_v <- .pull("RetainedEarnings"); ta_v <- .pull("TotalAssets"); te_pr <- .pull("TotalEquity")
+  if (nrow(re_v) > 0L && nrow(te_pr) > 0L) {
+    m <- merge(re_v[, .(Ticker, re = val)], te_pr[, .(Ticker, te = val)],
                by = "Ticker", all = FALSE)
-    m <- m[!is.na(re) & !is.na(ta) & ta > 1e-8]
+    m <- m[!is.na(re) & !is.na(te) & abs(te) > 1e-8]
     if (nrow(m) > 0L) {
       results <- .emit(results, "XF_PR02_RetainedEarnings_Ratio",
         m[, .(Ticker, Factor_Name = "XF_PR02_RetainedEarnings_Ratio",
-              Raw_Value = re / ta)])
+              Raw_Value = re / te)])
     }
   }
   # PR03 TaxRate = EffectiveTaxRate
@@ -172,15 +180,16 @@ compute_quality_xf_native <- function(RAWDATA, sig_date, FUND = NULL, CONSENSUS 
   }
 
   # ── Efficiency (XF_EF01~04) ──────────────────────────────────────────────
-  # EF01 InventoryTurnover = Revenue / Inventories (Inventories alias from builder)
-  inv_v <- .pull("Inventories"); rev_v <- .pull("Revenue")
-  if (nrow(inv_v) > 0L && nrow(rev_v) > 0L) {
-    m <- merge(rev_v[, .(Ticker, rv = val)], inv_v[, .(Ticker, iv = val)],
+  # EF01 InventoryTurnover = COGS / Inventories — 등록부 정의 · 엑셀 쪽과 같은 분자(Inventories alias from builder).
+  #   2026-11-09 수리: 구판 분자 = Revenue(엑셀 채움 행은 COGS) — 한 열에 두 양이 섞였다.
+  inv_v <- .pull("Inventories"); cogs_v <- .pull("COGS")
+  if (nrow(inv_v) > 0L && nrow(cogs_v) > 0L) {
+    m <- merge(cogs_v[, .(Ticker, cg = val)], inv_v[, .(Ticker, iv = val)],
                by = "Ticker", all = FALSE)
-    m <- m[!is.na(rv) & !is.na(iv) & iv > 1e-8]
+    m <- m[!is.na(cg) & !is.na(iv) & abs(iv) > 1e-8]
     if (nrow(m) > 0L) {
       results <- .emit(results, "XF_EF01_InventoryTurnover",
-        m[, .(Ticker, Factor_Name = "XF_EF01_InventoryTurnover", Raw_Value = rv / iv)])
+        m[, .(Ticker, Factor_Name = "XF_EF01_InventoryTurnover", Raw_Value = cg / iv)])
     }
   }
   # EF02 DaysPayable = pre-computed
@@ -210,17 +219,30 @@ compute_quality_xf_native <- function(RAWDATA, sig_date, FUND = NULL, CONSENSUS 
       gd01[!is.na(growth) & is.finite(growth),
             .(Ticker, Factor_Name = "XF_GD01_GrossProfit_Growth", Raw_Value = growth)])
   }
-  # GD02 OpProfit_Growth = pre-computed (OPGrowth)
-  opg <- .pull("OPGrowth")
+  # GD02 · GD03 = (L − L_prev) / |L_prev| — 등록부 정의 · 엑셀 쪽과 같은 식.
+  #   2026-11-09 수리: 파생 항목 OPGrowth · OCFGrowth = L / shift(L) − 1 (fundamental_derive_items.R) 은 전기 값이 음수면 부호가
+  #   뒤집힌다(엑셀 채움 행은 |전기| 로 나눈다). 같은 시점의 수준 값으로 전기 값을 되살려(L_prev = L / (1 + g)) 정의대로 바꾼다.
+  #   같은 Factor_Date 에 수준 · 성장률이 둘 다 있는 가장 최근 시점만 쓴다(dcast 집계 함수 명시 — 겹침을 개수로 세지 않게).
+  .growth_abs <- function(level_item, growth_item) {
+    x <- fp[Item %in% c(level_item, growth_item), .(Ticker, Factor_Date, Item, Value)]
+    if (!nrow(x) || !all(c(level_item, growth_item) %in% x$Item)) return(data.table(Ticker = character(), val = numeric()))
+    w <- dcast(x, Ticker + Factor_Date ~ Item, value.var = "Value", fun.aggregate = function(v) v[length(v)], fill = NA_real_)
+    setnames(w, c(level_item, growth_item), c("lv", "gr"))
+    w <- w[is.finite(lv) & is.finite(gr)]
+    setorder(w, Ticker, Factor_Date)
+    w <- w[, .SD[.N], by = Ticker]
+    w[, prev := lv / (1 + gr)]
+    w[is.finite(prev) & abs(prev) > 1e-8, .(Ticker, val = (lv - prev) / abs(prev))]
+  }
+  opg <- .growth_abs("OperatingProfit", "OPGrowth")
   if (nrow(opg) > 0L) {
     results <- .emit(results, "XF_GD02_OpProfit_Growth",
-      opg[!is.na(val), .(Ticker, Factor_Name = "XF_GD02_OpProfit_Growth", Raw_Value = val)])
+      opg[is.finite(val), .(Ticker, Factor_Name = "XF_GD02_OpProfit_Growth", Raw_Value = val)])
   }
-  # GD03 OCF_Growth = pre-computed (OCFGrowth)
-  ocg <- .pull("OCFGrowth")
+  ocg <- .growth_abs("OperatingCF", "OCFGrowth")
   if (nrow(ocg) > 0L) {
     results <- .emit(results, "XF_GD03_OCF_Growth",
-      ocg[!is.na(val), .(Ticker, Factor_Name = "XF_GD03_OCF_Growth", Raw_Value = val)])
+      ocg[is.finite(val), .(Ticker, Factor_Name = "XF_GD03_OCF_Growth", Raw_Value = val)])
   }
   # GD04 Dividend_Growth = YoY Dividends
   gd04 <- .pull_yoy("Dividends")
@@ -237,7 +259,8 @@ compute_quality_xf_native <- function(RAWDATA, sig_date, FUND = NULL, CONSENSUS 
     results <- .emit(results, "XF_RI01_RnD_to_Revenue",
       rdi[!is.na(val), .(Ticker, Factor_Name = "XF_RI01_RnD_to_Revenue", Raw_Value = val)])
   }
-  # RI02 CapEx_proxy = |InvestCF| / TotalAssets (proxy)
+  # RI02 CapEx_proxy = −InvestCF / TotalAssets — 등록부 정의 · 엑셀 쪽과 같은 식(투자 지출이면 InvestCF < 0).
+  #   2026-11-09 수리: 구판 = |InvestCF| / TA — 투자 유입(InvestCF > 0) 종목에서 엑셀 채움 행과 부호가 달랐다.
   ic <- .pull("InvestCF")
   if (nrow(ic) > 0L && nrow(ta_v) > 0L) {
     m <- merge(ic[, .(Ticker, icf = val)], ta_v[, .(Ticker, ta = val)],
@@ -246,7 +269,7 @@ compute_quality_xf_native <- function(RAWDATA, sig_date, FUND = NULL, CONSENSUS 
     if (nrow(m) > 0L) {
       results <- .emit(results, "XF_RI02_CapEx_proxy",
         m[, .(Ticker, Factor_Name = "XF_RI02_CapEx_proxy",
-              Raw_Value = abs(icf) / ta)])
+              Raw_Value = -icf / ta)])
     }
   }
   # RI03 SGA_to_Revenue = SGAEfficiency (pre-computed)
