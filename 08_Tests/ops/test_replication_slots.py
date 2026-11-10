@@ -473,13 +473,18 @@ def main():
               and st.get("worst_status") == "failed_needs_session", st)
         src = io.open(os.path.join(ROOT, "02_Infrastructure", "ops", "boot_lean.sh"), encoding="utf-8").read()
         m = re.search(r"^def PEND\(\):\n(?:[ \t].*\n|\n)+", src, re.M)
+        # (2026-11-10) PEND 가 부팅 보조 S · LANE_TICK 을 쓴다(레인 틱 나이 표기) — 같은 원문에서 함께 떼어 실행한다(대역이 아니라 실제 정의).
+        #   전에는 PEND 정의만 떼어 exec 해서 NameError 로 이 시험이 S12 에서 멈췄다(S13 이후 미실행 · 요약 줄 없음).
+        m_s = re.search(r"^def S\(f,d=None\):\n(?:[ \t].*\n)+", src, re.M)
+        m_lt = re.search(r"^def LANE_TICK\(ss,now=None\):\n(?:[ \t].*\n)+", src, re.M)
         out_on = out_off = None
-        if m:
-            import glob as _glob
+        if m and m_s and m_lt:
+            import glob as _glob, datetime as _dt
             def run_pend(root):
-                ns = {"glob": _glob, "os": os, "time": time, "json": json,
+                ns = {"glob": _glob, "os": os, "time": time, "json": json, "dt": _dt,
                       "R": lambda *a: os.path.join(root, *a),
                       "J": lambda p: rj(os.path.join(root, p))}
+                exec(m_s.group(0), ns); exec(m_lt.group(0), ns)
                 exec(m.group(0), ns)
                 return ns["PEND"]()
             broot = os.path.join(base, "bootroot")
@@ -488,7 +493,8 @@ def main():
             shutil.copy(os.path.join(f.slotdir, "_status.json"), os.path.join(broot, "06_Registry", "replication_slots", "_status.json"))
             out_on = run_pend(broot)
         check("S12 부팅 줄 — 요약이 있으면 '레인 슬롯 바쁨/전체 · ★확인 n' · 없으면(구판) 표기 없음(양방향)",
-              m is not None and "레인 슬롯 3/3" in (out_on or "") and "★확인 1" in (out_on or "") and "레인 슬롯" not in (out_off or "x"),
+              m is not None and m_s is not None and m_lt is not None and "레인 슬롯 3/3" in (out_on or "") and "★확인 1" in (out_on or "")
+              and "레인 슬롯" not in (out_off or "x"),
               (out_on, out_off))
     finally:
         for k in kids:

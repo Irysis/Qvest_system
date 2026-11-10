@@ -2,14 +2,14 @@
   "schema": "reinforce_auto_config_v1",
   "enabled": false,
   "replication_lane": {
-    "enabled": false,
-    "resumed_at": "2026-10-20T11:01",
-    "resumed_note": "THGNN K200∪KQ150 재측정 시작 — 요청 session_reverify(측정기만) · 축 덮어쓰기 06_Registry/replication_axis_overrides.json · 결정 THGNN-AXIS-K200KQ150-20261020",
+    "enabled": true,
+    "resumed_at": "2026-11-06T12:47",
+    "resumed_note": "P2R05 GPU 연쇄 v4 — 원 세션 방침: GPU 임대로 GPU 슬롯만 보류 · CPU 슬롯 계속(레인 전체 보류 해제)",
     "source": "v10.01 2026-10-13 — 충실구현 무인 레인(rf_replication_auto.sh)의 자기 스위치. 구판은 전역 enabled(퇴역 러너 스위치)를 같이 봐서 러너 퇴역이 레인까지 세웠다(삭제 지도 §0-1). ★예약작업(Qvest_ReinforceAutoLoop)은 2026-10-13 현재 꺼져 있다 — 켜는 것은 도훈.",
-    "paused_at": "2026-10-20T13:39",
-    "paused_note": "THGNN 재측정 중지 — 도훈 10-20 '멈추고 고쳐서 다시': group_avg_corr 비교 종목 = 전 기간 멤버 합집합(미래 편입 종목 포함 · PIT) 수리 + 거시 5개(DGS10 · VIX + FRED 추가 3) 반영 뒤 재측정",
+    "paused_at": "2026-11-06T12:31",
+    "paused_note": "도훈 10-18 'THGNN 끝난 뒤 레인 보류' — P2R05 GPU 창(THGNN 측정 시작 확인 뒤 · gpu_chain.sh)",
     "slots": {
-      "cpu": 2,
+      "cpu": 0,
       "gpu": 1
     },
     "gpu_lease": {
@@ -17,8 +17,11 @@
       "max_cap_hours": 12.0,
       "basis": "L1-SPEED-LEVERS-20261020 note '상한 12h/라운드' — P2R05 GPU 추정 ≈8h(paused_note) + 50% · 운영 매개변수(조정 가능)"
     },
-    "slots_enabled_at": "2026-10-20T14:08:43+0900",
-    "slots_note": "WP3 다중 슬롯(rf_replication_slots.py) — 슬롯 = cpu1..cpuN + gpu1 · torch 논문 = GPU 슬롯만 · GPU 임대 존중 · 되돌리기 = rf_replication_slots.py config disable(slots 키 제거 → 구판 단일 슬롯)"
+    "slots_enabled_at": "2026-11-10T22:31:07+0900",
+    "slots_note": "WP3 다중 슬롯(rf_replication_slots.py) — 슬롯 = cpu1..cpuN + gpu1 · torch 논문 = GPU 슬롯만 · GPU 임대 존중 · 되돌리기 = rf_replication_slots.py config disable(slots 키 제거 → 구판 단일 슬롯)",
+    "not_before": "2026-11-13T19:10:00+09:00",
+    "not_before_set_at": "2026-11-10T22:31:06+0900",
+    "not_before_note": "시작 관문 — 이 시각 전에는 레인이 아무 일도 하지 않는다(rf_replication_auto.sh · 스위치 바로 뒤) · 해제 = rf_replication_slots.py config not-before clear"
   },
   "retired_v10_01": "2026-10-13 도훈 지시 — 1계층 고정 격자 강화 러너 퇴역(v10.01 목표 역산형 3엔진 리서치로 교체 · 설계 04_Research/01_reports/l1_prescription_redesign_20261013/README.md · 롤백 태그 pre-v10.01-prescription-20261013). enabled=false 는 러너 영구 정지. 이 파일에 남는 키는 다른 레인(llm.lanes · factor_autoregister · replication)이 읽는 것뿐이다.",
   "deploy_window_20260925": "Q 배포 창 22:58~23:4x 종료 — PREREG·V6·B5LAB·CATB 배포(23:35~23:38) · B5_16~20 possible 표식 후 true 복원. 남은 창: R3R_rb·ALLOWP(러너 tick 사이 또는 다음 창)",

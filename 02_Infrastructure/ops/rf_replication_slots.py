@@ -34,6 +34,9 @@
   status [--line] [--json]     슬롯 상태
   burn [--days 7] [--json]     일 소진량(레인 저널 기반 — 구현 에이전트 수 · 분 · 감사 에이전트 수 · 한도 사건)
   config enable --cpu 2 --gpu 1 | config disable | config show     배포 · 되돌리기(설정 원자적 편집)
+  config not-before <ISO-8601(시간대 필수)|clear>   시작 관문(레인이 그 시각 전에는 아무 일도 안 한다 · 11-10 REPLICATION-LANE-RESTART-SLOTS-20261110)
+    ★1슬롯(동시 실행 1) = config enable --cpu 0 --gpu 1 — GPU 슬롯 하나가 모든 논문을 받는다(CPU 슬롯이 없으면 무엇이든 · 인계함 소비 · GPU 임대 존중).
+      --cpu 1 --gpu 0 은 인계함(_gpu_inbox)을 영영 비우지 않고 torch 논문이 임대를 보지 않은 채 GPU 를 쓴다(쓰지 말 것).
 검사 = 08_Tests/ops/test_replication_slots.py · 08_Tests/ops/test_replication_slots_lane.sh
 """
 import argparse
@@ -852,6 +855,41 @@ class Lane(object):
             os.replace(tmp, self.cfg_path)
             return rl
 
+    @staticmethod
+    def parse_not_before(v):
+        """시작 관문 값 검사 — rf_replication_auto.sh 관문 판정과 같은 규칙(ISO-8601 · 시간대 필수 · 'Z' 허용). 반환 = 정규화 문자열 · 실패 = ValueError."""
+        s = str(v or "").strip()
+        if not s:
+            raise ValueError("빈 값")
+        t = dt.datetime.fromisoformat(s[:-1] + "+00:00" if s[-1:] in ("Z", "z") else s)
+        if t.tzinfo is None or t.utcoffset() is None:
+            raise ValueError("시간대 없음: %s" % s)
+        return t.isoformat()
+
+    def config_not_before(self, value):
+        """replication_lane.not_before 설정 · 해제(clear) — 값 검사가 실패하면 설정을 쓰지 않는다(REPLICATION-LANE-RESTART-SLOTS-20261110)."""
+        clear = str(value or "").strip().lower() == "clear"
+        nb = None if clear else self.parse_not_before(value)
+        with qv_lock.write_lock(target=self.cfg_path, wait_s=30, purpose="replication_lane.not_before"):
+            c = _rd(self.cfg_path)
+            if not isinstance(c, dict):
+                raise SystemExit("[rp_slots] 설정 판독 불가: %s" % self.cfg_path)
+            rl = c.setdefault("replication_lane", {})
+            if clear:
+                rl.pop("not_before", None)
+                rl["not_before_cleared_at"] = _iso()
+            else:
+                rl["not_before"] = nb
+                rl["not_before_set_at"] = _iso()
+                rl["not_before_note"] = ("시작 관문 — 이 시각 전에는 레인이 아무 일도 하지 않는다(rf_replication_auto.sh · 스위치 바로 뒤) · "
+                                         "해제 = rf_replication_slots.py config not-before clear")
+            tmp = self.cfg_path + ".nb.tmp"
+            with io.open(tmp, "w", encoding="utf-8", newline="\n") as f:
+                json.dump(c, f, ensure_ascii=False, indent=2)
+                f.write("\n")
+            os.replace(tmp, self.cfg_path)
+            return rl
+
 
 class _LockCtx(object):
     def __init__(self, lockdir, wait_s, purpose):
@@ -902,7 +940,8 @@ def main(argv=None):
     cs = sp.add_parser("claim-stamp"); cs.add_argument("--claim", required=True)
     s = sp.add_parser("status"); s.add_argument("--line", action="store_true"); s.add_argument("--json", action="store_true")
     b = sp.add_parser("burn"); b.add_argument("--days", type=int, default=7); b.add_argument("--json", action="store_true")
-    cf = sp.add_parser("config"); cf.add_argument("op", choices=["enable", "disable", "show"])
+    cf = sp.add_parser("config"); cf.add_argument("op", choices=["enable", "disable", "show", "not-before"])
+    cf.add_argument("value", nargs="?", default=None)      # not-before 전용: ISO-8601(시간대 필수) | clear
     cf.add_argument("--cpu", type=int, default=2); cf.add_argument("--gpu", type=int, default=1)
     a = ap.parse_args(argv)
     L = Lane(a.root)
@@ -959,8 +998,22 @@ def main(argv=None):
         return 0
     if a.cmd == "config":
         if a.op == "show":
-            print(json.dumps({k: L.rl.get(k) for k in ("enabled", "slots", "gpu_lease")}, ensure_ascii=False))
+            print(json.dumps({k: L.rl.get(k) for k in ("enabled", "slots", "gpu_lease", "not_before")}, ensure_ascii=False))
             return 0
+        if a.op == "not-before":
+            if a.value is None:
+                print("[rp_slots] config not-before <ISO-8601(시간대 필수)|clear>", file=sys.stderr)
+                return 2
+            try:
+                rl = L.config_not_before(a.value)
+            except ValueError as ex:
+                print("[rp_slots] not_before 거부(설정 무변경): %s" % ex, file=sys.stderr)
+                return 2
+            print(json.dumps({k: rl.get(k) for k in ("enabled", "slots", "not_before")}, ensure_ascii=False))
+            return 0
+        if a.value is not None:
+            print("[rp_slots] %s 는 값 인자를 받지 않는다: %s" % (a.op, a.value), file=sys.stderr)
+            return 2
         rl = L.config_edit(a.op == "enable", a.cpu, a.gpu)
         print(json.dumps({k: rl.get(k) for k in ("enabled", "slots", "gpu_lease")}, ensure_ascii=False))
         return 0

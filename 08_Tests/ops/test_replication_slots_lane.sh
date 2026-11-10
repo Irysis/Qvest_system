@@ -267,10 +267,12 @@ axo(){ env QVEST_CODE_ROOT="$ROOT" RP_SLOT="$1" RP_KEY="$2" QVEST_RP_REQUEST="$T
          Rscript "$T/axo_driver.R" "$T/axo_block.R" "$T/axo_$1_$2.json" >/dev/null 2>&1; cat "$T/axo_$1_$2.json" 2>/dev/null; }
 if [ -s "$T/axo_block.R" ] && [ -f 06_Registry/replication_axis_overrides.json ]; then
   O1=$(axo gpu1 2601.04602); O2=$(axo cpu1 1801.01777); O3=$(axo cpu2 2601.04602)
-  printf '%s' "$O1" | grep -q '"universe":"K200_KQ150"' && printf '%s' "$O1" | grep -q '"start_date":"2005-01-01"' \
+  # (2026-11-10) 기대 시작일은 등록부에서 읽는다 — 10-20 도훈 지시(2005 → 2000) 뒤 고정 글자 '2005-01-01' 이 낡아 W8 이 계속 실패했다
+  _w8_sd=$("$PY" -c "import json,io;print(json.load(io.open('06_Registry/replication_axis_overrides.json',encoding='utf-8'))['papers']['2601.04602']['start_date'])" 2>/dev/null | tr -d '\r')
+  [ -n "$_w8_sd" ] && printf '%s' "$O1" | grep -q '"universe":"K200_KQ150"' && printf '%s' "$O1" | grep -q "\"start_date\":\"$_w8_sd\"" \
     && printf '%s' "$O1" | grep -q '"alloc":"roundup_power2_divisions:2"' && printf '%s' "$O1" | grep -q '"ev":"axis_override"' \
     && printf '%s' "$O1" | grep -q '"slot":"gpu1"' && printf '%s' "$O3" | grep -q '"universe":"K200_KQ150"' \
-    && ok "W8 슬롯 작업자(gpu1 · 다른 슬롯 cpu2 도) 검증기 — 2601.04602 는 K200_KQ150 · 2005-01-01 · 할당기 처방 env 로 잰다(덮어쓰기 = 논문 키 기준 · 슬롯 무관)" \
+    && ok "W8 슬롯 작업자(gpu1 · 다른 슬롯 cpu2 도) 검증기 — 2601.04602 는 K200_KQ150 · 등록부 시작일($_w8_sd) · 할당기 처방 env 로 잰다(덮어쓰기 = 논문 키 기준 · 슬롯 무관)" \
     || ng "W8 슬롯 경로 축 덮어쓰기" "$O1 | $O3"
   printf '%s' "$O2" | grep -q '"universe":""' && printf '%s' "$O2" | grep -q '"alloc":""' && printf '%s' "$O2" | grep -q '"ev":""' \
     && ok "W8 목록에 없는 논문(1801.01777) — 축 · env 불변(활성 epoch · 양방향)" || ng "W8 음성 대조" "$O2"

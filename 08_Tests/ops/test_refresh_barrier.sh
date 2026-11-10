@@ -291,7 +291,7 @@ RPA="$OPS/rf_replication_auto.sh"; E="$T/rp"; mkdir -p "$E"; EM="$TM/rp"
 # (v10.01 2026-10-13) 레인 스위치 = replication_lane.enabled(구판 = 전역 enabled · 퇴역 러너 스위치) — 격리 사본에서 레인 스위치만 켠다
 #   (전역 enabled 는 운영값 false 그대로 → 레인이 퇴역 스위치와 무관하게 돈다 · 운영 설정의 레인 상태를 빌리지 않는다).
 #   구판 rprun 의 QVEST_RP_ALLOW_CONCURRENT=1 은 '강화 active 보류' 게이트를 비켜 가던 것 — 게이트 삭제로 뺐다.
-"$PY" -c "import io,json,os;d=json.loads(io.open(os.path.join(r'$ROOT','06_Registry','reinforce_auto_config.json'),'rb').read().decode('utf-8'));rl=d.get('replication_lane');rl=rl if isinstance(rl,dict) else {};rl['enabled']=True;rl.pop('slots',None);d['replication_lane']=rl;io.open(r'$EM/cfg.json','w',encoding='utf-8').write(json.dumps(d,ensure_ascii=False))"
+"$PY" -c "import io,json,os;d=json.loads(io.open(os.path.join(r'$ROOT','06_Registry','reinforce_auto_config.json'),'rb').read().decode('utf-8'));rl=d.get('replication_lane');rl=rl if isinstance(rl,dict) else {};rl['enabled']=True;rl.pop('slots',None);rl.pop('not_before',None);d['replication_lane']=rl;io.open(r'$EM/cfg.json','w',encoding='utf-8').write(json.dumps(d,ensure_ascii=False))"
 mkreq(){ printf '{"requested_at":"2026-01-01T00:00:00+0900","source":"test","paper":{"title":"t","paper_title":"t","url":"http://x","paper_key":"TEST_RB","source":"arxiv"},"status":"%s"}\n' "$1" > "$E/req.json"; }
 mkdir -p "$E/.cache/scheduler_logs"
 rprun(){ rm -f "$E/jlog.jsonl"; QM_ROOT="$EM" QVEST_PY="$PY" QVEST_RP_REQUEST="$EM/req.json" QVEST_RP_CLAIM="$EM/claim" QVEST_RP_JLOG="$EM/jlog.jsonl" QVEST_RF_CONFIG="$EM/cfg.json" \

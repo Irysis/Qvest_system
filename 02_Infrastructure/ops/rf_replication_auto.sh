@@ -79,6 +79,48 @@ try: print((json.loads(io.open(r'$CFG','rb').read().decode('utf-8')).get('replic
 except Exception: print('False')" 2>/dev/null)
 # ★v10.01 (2026-10-13): 전역 enabled 는 퇴역한 고정 격자 러너의 스위치다 — 충실구현 레인은 replication_lane.enabled 만 본다
 [ "$EN" = "True" ] || { jl halt_disabled; exit 0; }
+# ── ★시작 관문 not_before (도훈 11-10 REPLICATION-LANE-RESTART-SLOTS-20261110 "충실구현레인 리셋 뒤 1슬롯 켜") ─────────────────
+#   설정 replication_lane.not_before(ISO-8601 · 시간대 필수 · 예 "2026-11-13T19:10:00+09:00")가 있으면 그 시각 전에는 아무 일도 하지 않고 0 종료한다 —
+#   claim · 요청 발행 · 슬롯 디스패치 · 에이전트(LLM) · 측정 전부 없음. 스위치 바로 뒤라 디스패처 · 슬롯 작업자(RP_SLOT) · 구판 단일 슬롯 모두가 지난다.
+#   키 없음 · null · 빈 문자열 = 관문 없음(종전 동작). 문자열 아님 · 해석 불가 · 시간대 없음 · 판정기 실패(빈 출력) = 닫힘(fail-closed · 사유 기록).
+#   기준 시각 이음새(시험 전용) = QVEST_RP_NOW_EPOCH(유닉스 초). 설정 = rf_replication_slots.py config not-before <ISO|clear>.
+#   대기 줄은 표준 출력으로도 남는다 — 틱 래퍼(reinforce_auto_tick.sh)가 일별 로그 reinforce_auto_<날짜>.log 에 담아 Superfan lane_alive 가 산 레인으로 읽는다.
+NB_LINE=$("$PY" -c "
+import io,json,math,os,sys,time,datetime as dt
+try:
+    rl=json.loads(io.open(sys.argv[1],'rb').read().decode('utf-8')).get('replication_lane') or {}
+except Exception:
+    print('invalid cfg_unreadable'); sys.exit(0)
+v=rl.get('not_before') if isinstance(rl,dict) else None
+if v is None or (isinstance(v,str) and not v.strip()):
+    print('open none'); sys.exit(0)
+if not isinstance(v,str):
+    print('invalid not_string'); sys.exit(0)
+s=v.strip()
+try:
+    t=dt.datetime.fromisoformat(s[:-1]+'+00:00' if s[-1:] in ('Z','z') else s)
+except Exception:
+    print('invalid unparsable'); sys.exit(0)
+if t.tzinfo is None or t.utcoffset() is None:
+    print('invalid no_timezone'); sys.exit(0)
+n=os.environ.get('QVEST_RP_NOW_EPOCH','').strip()
+try:
+    now=float(n) if n else time.time()
+except ValueError:
+    print('invalid bad_now_seam'); sys.exit(0)
+left=t.timestamp()-now
+print(('wait %d %s' % (math.ceil(left), t.isoformat())) if left>0 else ('open passed %s' % t.isoformat()))
+" "$CFG" 2>/dev/null | tr -d '\r')
+case "${NB_LINE%% *}" in
+  open) ;;
+  wait) NB_REST="${NB_LINE#wait }"
+        jl halt_not_before "state=wait" "not_before=${NB_REST#* }" "wait_s=${NB_REST%% *}" "note=시작 관문 전 — 요청 · claim · 슬롯 · 에이전트 무접촉"
+        echo "[rp_auto] 시작 관문 대기 — not_before=${NB_REST#* } · 남은 ${NB_REST%% *}초 · 아무 일도 하지 않고 종료"
+        exit 0 ;;
+  *)    jl halt_not_before "state=invalid" "reason=${NB_LINE#invalid }" "note=not_before 판독 불가 — 닫힘(fail-closed) · 설정 확인"
+        echo "[rp_auto] 시작 관문 판독 불가(${NB_LINE:-판정기 실패}) — 닫힘 · 아무 일도 하지 않고 종료"
+        exit 0 ;;
+esac
 # ── ★리프레시 배리어 — 레인 진입 (도훈 결정 OPS-RUNNER-REFRESH-BARRIER · 2026-09-24) ─────────────────────
 #   이 레인의 RAWDATA 읽기는 검증기(rf_replication_verify.R → run_paper_replication → load_rawdata)다.
 #   잠금이 살아 있으면 요청·claim 을 **건드리지 않고**(pending 유지 · auto_retries 무소모) 물러난다.
