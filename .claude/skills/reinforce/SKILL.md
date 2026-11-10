@@ -1,6 +1,6 @@
 ---
 name: reinforce
-description: 강화 (v10.01 · 2026-10-13) — ①2계층 강화 절차(무한 · 원장 reinforce_ledger_l2 · 축 = 국면식별/전략결합 · A 면 2계층 = l2_judge_request.json(관문 없음) → Judge(PIT) · 트리거 정본 = judge.md §스폰 조건) ②처방 도구 상자(셀 엔진 rf_cell_engine.R · 블록 어휘 reinforce_program.json · 팩터/비중/오버레이 등록부와 픽커 · 오버레이 신설 검증 G1/G2 · A 자격 관문). 1계층 고정 격자 강화 러너는 2026-10-13 퇴역(코드 삭제) — 1계층 처방은 research-program SKILL(P4 조립·처방 루프)이 맡는다. 원장 L1 은 충실구현 소비 기록만 남는다.
+description: 강화 (v10.01 · 2026-10-13) — ①2계층 강화 절차(무한 · 원장 reinforce_ledger_l2 · 축 = 국면식별/전략결합 · A 면 2계층 = l2_judge_request.json(풀 자격 보류 관문 l2_a_eligibility 통과분만 — 풀 모듈이 전부 현 측정 축 · 팩터 DB 판 최신 · 보류 = l2_judge_request.held.json) → Judge(PIT) · 트리거 정본 = judge.md §스폰 조건) ②처방 도구 상자(셀 엔진 rf_cell_engine.R · 블록 어휘 reinforce_program.json · 팩터/비중/오버레이 등록부와 픽커 · 오버레이 신설 검증 G1/G2 · A 자격 관문). 1계층 고정 격자 강화 러너는 2026-10-13 퇴역(코드 삭제) — 1계층 처방은 research-program SKILL(P4 조립·처방 루프)이 맡는다. 원장 L1 은 충실구현 소비 기록만 남는다.
 ---
 
 # 강화 (v10.01 — 2계층 강화 + 처방 도구 상자)
@@ -28,7 +28,7 @@ description: 강화 (v10.01 · 2026-10-13) — ①2계층 강화 절차(무한 �
 5. **결과 기록** — `rf_record_result(2, base_id, n, grade, essence, artifacts, l_code, lessons)`.
 6. **L-code** — `emit_lcode(mode = "reinforcement", ...)` · C/F 면 next_probe ≥2.
 7. **텔레그램** — `tg_agent_brief(..., title = "[2계층·강화 n] {전략} — {축} (등급 {g})")`(분모 없음). 양식 = qvest-telegram SKILL.
-8. **분기** — Grade A → **2계층** = `06_Registry/l2_judge_request.json`(`status=pending` · `rf_l2_auto.R` 발행 · 관문 없음 — A 자격 관문은 1계층 충실구현·프로그램 라운드 경로) → Judge(PIT 전담 · `.claude/agents/judge.md`) → `rf_record_judge(...)` → PASS = BOOK 후보(도훈 confirm) · FAIL = 등급 무효 · 수리 후 재측정. 미달 → 다음 시도. 등급 미발행(NA)은 체인이 실제로 막혔을 때만 — 막힌 지점을 사유로 적는다.
+8. **분기** — Grade A → **2계층** = `06_Registry/l2_judge_request.json`(`status=pending` · `rf_l2_auto.R` 발행 · v10.2(2026-11-10): 풀 자격 보류 관문 `rf_l2_lib.R::l2_a_eligibility` 통과분만 — 풀의 모든 모듈이 현 측정 축 · 팩터 DB 판 최신 · 보류 = `l2_judge_request.held.json`(트리거 아님) · 1계층의 `rf_a_eligibility` 와는 다른 관문) → Judge(PIT 전담 · `.claude/agents/judge.md`) → `rf_record_judge(...)` → PASS = BOOK 후보(도훈 confirm) · FAIL = 등급 무효 · 수리 후 재측정. 미달 → 다음 시도. 등급 미발행(NA)은 체인이 실제로 막혔을 때만 — 막힌 지점을 사유로 적는다.
 
 ## 3. 처방 도구 상자 (1계층 프로그램이 빌려 쓴다 — 자산이지 절차가 아니다)
 

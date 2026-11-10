@@ -451,7 +451,7 @@ chk("G6d reinforce SKILL — 1계층 후보별 요청 트리거를 현행으로 
 #    (description · 시도 절차 §8 Grade A 줄) · judge.md ② 가 계층별로 같은 말을 하는가(1계층 관문 규칙을 강화 전체로 전칭하지 않는다) ──
 L2A <- rd("02_Infrastructure/ops/rf_l2_auto.R")
 g_l2_emit  <- has(L2A, "file.path(ROOT, \"06_Registry/l2_judge_request.json\")") && has(L2A, "if (identical(grade, \"A\")) {")
-g_l2_gated <- grepl("rf_a_eligibility|grade_a_queue", L2A, perl = TRUE)
+g_l2_gated <- grepl("rf_a_eligibility|l2_a_eligibility|grade_a_queue", L2A, perl = TRUE)   # (2026-11-10) 2계층 풀 자격 보류 관문 = l2_a_eligibility(rf_l2_lib.R)
 cat(sprintf("       (재도출: 2계층 A → l2_judge_request.json 발행=%s · 관문 경유=%s)\n", g_l2_emit, g_l2_gated))
 gate_word_ok <- function(x, gated) if (isTRUE(gated)) !has(x, "관문 없음") else has(x, "관문 없음")
 ## (v10.01) 2계층만 남았다 — description 과 시도 절차 8단계(분기) 줄이 2계층 트리거·관문 여부를 코드와 같게 말하는가
@@ -579,10 +579,13 @@ chk("MG6e reinforce description 에 퇴역 1계층 후보별 요청 트리거 �
 mg_f <- sub("**2계층** = `06_Registry/l2_judge_request.json`", "**2계층** = (삭제)", RFn, fixed = TRUE)
 chk("MG6f reinforce 8단계 분기 줄에서 2계층 트리거 파일 삭제 → G6f red",
     !identical(mg_f, RFn) && !rf_layer_ok(mg_f))
-chk("MG6g 2계층이 관문 경유로 바뀐 가상 상태(g_l2_gated=TRUE) → 현 reinforce SKILL · judge.md ② 의 '관문 없음' 이 red",
-    !rf_layer_ok(RFSt, gated = TRUE) && !jdg_l2_ok(JDGt, gated = TRUE))
-mg_L <- lines_of(RFn); mg_i <- grep("^8\\. \\*\\*분기\\*\\* — Grade A → ", mg_L, perl = TRUE); mg_L[mg_i] <- gsub("관문 없음", "", mg_L[mg_i], fixed = TRUE)
-chk("MG6h reinforce 8단계 분기 줄의 2계층 '관문 없음' 삭제 → red", length(mg_i) == 1L && !rf_layer_ok(paste(mg_L, collapse = "\n")))
+## (2026-11-10) 2계층에 풀 자격 보류 관문(l2_a_eligibility)이 생겨 코드 재도출 상태가 '관문 경유'로 바뀌었다 — 두 돌연변이를 상태에 매이지 않게 고쳤다:
+##   MG6g = 코드 상태를 반대로 뒤집은 가상 상태에서는 현 문서가 red 여야 한다 · MG6h = 8단계 줄의 관문 문구를 반대로 바꾸면 red 여야 한다.
+chk(sprintf("MG6g 2계층 관문 상태를 반대로 뒤집은 가상 상태(g_l2_gated=%s) → 현 reinforce SKILL · judge.md ② 가 red", !g_l2_gated),
+    !rf_layer_ok(RFSt, gated = !g_l2_gated) && !jdg_l2_ok(JDGt, gated = !g_l2_gated))
+mg_L <- lines_of(RFn); mg_i <- grep("^8\\. \\*\\*분기\\*\\* — Grade A → ", mg_L, perl = TRUE)
+mg_L[mg_i] <- if (isTRUE(g_l2_gated)) paste0(mg_L[mg_i], " (관문 없음)") else gsub("관문 없음", "", mg_L[mg_i], fixed = TRUE)
+chk("MG6h reinforce 8단계 분기 줄의 2계층 관문 문구를 코드와 반대로 바꿈 → red", length(mg_i) == 1L && !rf_layer_ok(paste(mg_L, collapse = "\n")))
 chk("MG6i judge.md ② 의 l2_judge_request.json 삭제 → red", !jdg_l2_ok(gsub("06_Registry/l2_judge_request.json", "(삭제)", JDGt, fixed = TRUE)))
 
 cat(sprintf("\n== test_qepm_advisor_contract: %d pass · %d fail ==\n", P, F))

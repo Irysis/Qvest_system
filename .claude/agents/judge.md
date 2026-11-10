@@ -23,7 +23,7 @@ allowed-tools: Bash(Rscript*) Read Grep Glob Write
   ① ~~1계층 강화 후보별 요청~~(`reinforce_auto_parallel.R` · `qepm/mailbox/judge_request_<BID>_<n>.json` ∧ `grade_a_queue` awaiting_judge) —
      **v10.01(2026-10-13) 퇴역**: 고정 격자 강화 러너가 삭제돼 이 경로로는 새 요청이 나오지 않는다. 남은 `grade_a_queue` 항목은 사료로만 읽는다.
      1계층 프로그램 라운드(research-program SKILL)의 측정은 `run_paper_replication` 을 거치므로 A 면 아래 ③ 과 같은 관문·트리거를 탄다.
-  ② **2계층** = `06_Registry/l2_judge_request.json`(`status=pending` · `rf_l2_auto.R` — essence A 면 발행 · A 자격 관문 없음).
+  ② **2계층** = `06_Registry/l2_judge_request.json`(`status=pending` · `rf_l2_auto.R` — essence A ∧ 풀 자격 보류 관문 `rf_l2_lib.R::l2_a_eligibility` 통과일 때만 발행 · v10.2 2026-11-10: 풀의 모든 모듈이 현 측정 축 · 팩터 DB 판 최신이어야 한다 · 보류 = `l2_judge_request.held.json` — 트리거 아님).
   ③ **1계층 충실구현 · 프로그램 라운드**(`run_paper_replication` 단독 실행 · 무인 충실구현 레인 `rf_replication_verify.R` · 프로그램 라운드 측정 · 어드바이저 측정) =
      `run_paper_replication.R` §11 이 A 면 **A 자격 관문**(`rf_runner_gates.R::rf_a_eligibility` · 충실구현 입력 어댑터
      `.rp_a_gate_inputs` · 회계 요건 = `a_eligibility_gate.json` `accounting_fail.replication_required_selection_type` · P0-13 2026-09-25)을 태운다.

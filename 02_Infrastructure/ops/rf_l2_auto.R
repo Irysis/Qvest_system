@@ -112,7 +112,7 @@ main <- function() {
   gates <- l2_mc_gates(runs$T$mc)
   lessons <- c(l2_lessons(runs, gates, cfg, pool_truncated, pool_n), if (nzchar(step0)) sprintf("step0: %s", substr(step0, 1, 300)) else character(0))
   if (l2_forbidden_label(lessons, gates)) stop("MC1 미전달인데 '국면조건부' 라벨이 교훈에 들어 있다")
-  T <- runs$T$result; eT <- T$essence %||% list(); grade <- .l2_chr(T$grade)
+  T <- runs$T$result; eT <- T$essence %||% list(); grade <- .l2_chr(T$grade); jr <- NULL
   lc <- file.path(ROOT, "stage_artifacts/l_code/factor_rotation", sprintf("l_code_%s.json", run_id)); if (!file.exists(lc)) lc <- NULL
   LED$rf_record_result(2L, base_id, n, grade = grade,
     essence = list(port_t = .l2_num(eT$portfolio_alpha_t_nw_lag3), calmar = .l2_num(eT$calmar), cagr = .l2_num(eT$cagr), mdd = .l2_num(eT$mdd),
@@ -125,13 +125,22 @@ main <- function() {
     artifacts = diag_dir, l_code = lc, lessons = lessons, root = ROOT)
   jl("recorded", base_id = base_id, n = n, grade = grade, mc1 = gates$mc1_delivered)
   if (identical(grade, "A")) {
-    .l2_write_atomic(list(schema = "l2_judge_request_v1", status = "pending", base_id = base_id, attempt_n = n, run_id = run_id, requested_at = format(Sys.time(), "%Y-%m-%dT%H:%M:%S%z"),
-                          note = "2계층 essence A — Judge(PIT) 는 세션 전용. /qvest 에서 Judge 스폰 · PASS 후 BOOK 은 도훈 confirm"), file.path(ROOT, "06_Registry/l2_judge_request.json"))
-    jl("judge_requested", base_id = base_id, n = n) }
+    ## (11-10 감사 F) A 자격 보류 관문 — 풀 epoch 단일·현행 ∧ 판 표식 최신일 때만 Judge 트리거(rf_l2_lib.R::l2_a_eligibility)
+    jr <- l2_judge_payload(ROOT, CODE_ROOT, base_id, n, run_id, pool_path = full_pool)
+    if (isTRUE(jr$eligible)) {
+      .l2_write_atomic(c(list(schema = "l2_judge_request_v1", status = "pending"), jr$body,
+                         list(note = "2계층 essence A + A 자격(풀 epoch 단일·현행 · 판 표식 최신) — Judge(PIT) 는 세션 전용. /qvest 에서 Judge 스폰 · PASS 후 BOOK 은 도훈 confirm")),
+                       file.path(ROOT, "06_Registry/l2_judge_request.json"))
+      jl("judge_requested", base_id = base_id, n = n)
+    } else {
+      .l2_write_atomic(c(list(schema = "l2_judge_request_held_v1", status = "held"), jr$body,
+                         list(note = "A 띠이나 A 자격 보류 — Judge 트리거 아님. 사유 해소(현 축 · 수리 뒤 판으로 풀 재측정) 뒤 재실측")),
+                       file.path(ROOT, "06_Registry/l2_judge_request.held.json"))
+      jl("judge_held", base_id = base_id, n = n, reasons = paste(jr$reasons, collapse = ",")) } }
   req$status <- "done"; req$completed_at <- format(Sys.time(), "%Y-%m-%dT%H:%M:%S%z")
   req$result <- list(run_id = run_id, grade = grade, arms = lapply(runs, function(r) list(ok = r$ok, grade = .l2_chr((r$result %||% list())$grade), minutes = r$minutes)), mc1_delivered = gates$mc1_delivered)
   l2_request_write(req, ROOT)
-  if (!identical(Sys.getenv("QVEST_L2_NOTIFY", "1"), "0")) jl("telegram", sent = l2_notify(base_id, n, runs, gates, lessons, ROOT, CODE_ROOT, grade))
+  if (!identical(Sys.getenv("QVEST_L2_NOTIFY", "1"), "0")) jl("telegram", sent = l2_notify(base_id, n, runs, gates, lessons, ROOT, CODE_ROOT, grade, judge_held = identical(grade, "A") && !isTRUE((jr %||% list())$eligible)))
   jl("l2_done", base_id = base_id, n = n, grade = grade)
   0L
 }

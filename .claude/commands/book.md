@@ -36,9 +36,13 @@ v10 폐지 — legacy 동결 사료.
 source("02_Infrastructure/book/book_registry.R")
 register_book_entry(kind="factor_strategy"|"rotation_rule", strategy_id=..., layer=1|2,
                     grade="A", grade_basis="essence_score(authoritative_remeasure.json)",
-                    judge_verdict_path=..., source_papers=list(list(title=,url=)), ...)
+                    judge_verdict_path=..., confirm="<도훈 confirm 시각 · 인용>",
+                    authoritative_path="<산출물>/authoritative_remeasure.json | <FR>_result.json",
+                    source_papers=list(list(title=,url=)), ...)
 ```
-- writer 가 judge_verdict 의 `pit_pass=true` 를 **실제로 읽어** 검증한다(진술 불가).
+- writer 가 judge_verdict 의 `pit_pass=true` · `schema=judge_verdict_v2` · `strategy_id`=등록 대상을 **실제로 읽어** 검증한다(진술 불가).
+- (11-10 감사 F) `confirm` 비면 거부 · `authoritative_path` 의 등급이 A 아니면 거부(grade 인자는 진술) · 축 기록(`measurement_axis$epoch`)이 없거나 현 측정 축과 다르면 거부 · 팩터 DB 판 표식 낡음이면 거부(`contracts/factor_db_vintage.R`) — mandate 는 축 · 판 검사 예외(confirm 은 필수).
+- 트래킹 `update_book_tracking` 은 last_nav_date 역행(낡은 자료로 다시 돈 결과)을 거부한다.
 - mandate 예외 = `grade_basis="dohoon_mandate_YYYYMMDD"` (선례: BOOK_0001 = 구 PG2).
 - **등록 전 도훈 confirm 필수** — 자동 등록 없음.
 

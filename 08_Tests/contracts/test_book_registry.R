@@ -20,6 +20,19 @@ dir.create(file.path(TMP, "02_Infrastructure"), recursive = TRUE, showWarnings =
 file.create(file.path(TMP, "02_Infrastructure", "config.R"))
 source("02_Infrastructure/book/book_registry.R")
 R <- TMP
+## (11-10 감사 F) writer 가 권위 파일 · 현 측정 축 · 팩터 DB 판 표식을 재도출한다 — 임시 루트에 그 계약과 설정 사본
+for (f in c("02_Infrastructure/contracts/measurement_axis.R", "02_Infrastructure/contracts/factor_db_vintage.R",
+            "02_Infrastructure/worktask/constraint_defaults.json")) {
+  dir.create(dirname(file.path(TMP, f)), recursive = TRUE, showWarnings = FALSE); file.copy(f, file.path(TMP, f))
+}
+dir.create(file.path(TMP, "06_Registry"), recursive = TRUE, showWarnings = FALSE)
+write(toJSON(list(schema = "factor_db_vintage_v1", entries = list(list(id = "T1", completed_at = "2026-11-10T12:00:00+0900", scope = "all"))),
+             auto_unbox = TRUE), file.path(TMP, "06_Registry/factor_db_vintage.json"))
+ACT <- fromJSON("02_Infrastructure/worktask/constraint_defaults.json", simplifyVector = FALSE)$measurement_axis$active
+AD <- file.path(TMP, "art", "20261111_000000_1"); dir.create(AD, recursive = TRUE)
+write(toJSON(list(essence_grade = "A", run_id = "20261111_000000_1", measurement_axis = list(epoch = ACT)), auto_unbox = TRUE),
+      file.path(AD, "authoritative_remeasure.json"))
+AP <- file.path(AD, "authoritative_remeasure.json")
 
 # ① B등급 거부
 r1 <- tryCatch({ register_book_entry("factor_strategy", "S1", 1L, grade = "B", root = R); "no_stop" },
@@ -28,7 +41,7 @@ if (grepl("A등급만", r1)) ok("① B등급 등록 거부") else ng(sprintf("�
 
 # ② verdict 부재 거부 (mandate 아님)
 r2 <- tryCatch({ register_book_entry("factor_strategy", "S1", 1L, grade = "A",
-                                     judge_verdict_path = NULL, root = R); "no_stop" },
+                                     judge_verdict_path = NULL, confirm = "t", authoritative_path = AP, root = R); "no_stop" },
                error = function(e) conditionMessage(e))
 if (grepl("judge_verdict_path 필수", r2)) ok("② verdict 없는 A 등록 거부") else ng(sprintf("② 통과됨: %s", r2))
 
@@ -36,25 +49,25 @@ if (grepl("judge_verdict_path 필수", r2)) ok("② verdict 없는 A 등록 거�
 vf <- file.path(TMP, "verdict_fail.json")
 write(toJSON(list(schema = "judge_verdict_v2", pit_pass = FALSE), auto_unbox = TRUE), vf)
 r3 <- tryCatch({ register_book_entry("factor_strategy", "S1", 1L, grade = "A",
-                                     judge_verdict_path = vf, root = R); "no_stop" },
+                                     judge_verdict_path = vf, confirm = "t", authoritative_path = AP, root = R); "no_stop" },
                error = function(e) conditionMessage(e))
 if (grepl("pit_pass", r3)) ok("③ pit_pass=false verdict 거부 (재도출)") else ng(sprintf("③ 통과됨: %s", r3))
 
 # 정상 등록 (pit_pass=true)
 vt <- file.path(TMP, "verdict_pass.json")
-write(toJSON(list(schema = "judge_verdict_v2", pit_pass = TRUE), auto_unbox = TRUE), vt)
+write(toJSON(list(schema = "judge_verdict_v2", strategy_id = "S1", pit_pass = TRUE), auto_unbox = TRUE), vt)
 e1 <- register_book_entry("factor_strategy", "S1", 1L, grade = "A",
-                          judge_verdict_path = vt, root = R)
+                          judge_verdict_path = vt, confirm = "test confirm", authoritative_path = AP, root = R)
 if (identical(e1$book_id, "BOOK_0001")) ok("정상 등록 BOOK_0001") else ng("등록 실패")
 
 # mandate 예외
 e2 <- register_book_entry("rotation_rule", "FR_X", 2L, grade = "A",
-                          grade_basis = "dohoon_mandate_20260829", root = R)
+                          grade_basis = "dohoon_mandate_20260829", confirm = "test confirm", root = R)
 if (identical(e2$book_id, "BOOK_0002")) ok("mandate 예외 등록 (verdict 불요)") else ng("mandate 예외 실패")
 
 # ④ 중복 거부
 r4 <- tryCatch({ register_book_entry("factor_strategy", "S1", 1L, grade = "A",
-                                     judge_verdict_path = vt, root = R); "no_stop" },
+                                     judge_verdict_path = vt, confirm = "test confirm", authoritative_path = AP, root = R); "no_stop" },
                error = function(e) conditionMessage(e))
 if (grepl("이미 등록", r4)) ok("④ 중복 등록 거부") else ng(sprintf("④ 중복 통과: %s", r4))
 

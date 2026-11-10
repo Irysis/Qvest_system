@@ -148,8 +148,68 @@ l2_lessons <- function(runs, gates, cfg, pool_truncated = FALSE, pool_n = NA) {
 }
 l2_forbidden_label <- function(text, gates) identical(gates$mc1_delivered, FALSE) && any(grepl("국면조건부", text, fixed = TRUE) & !grepl("붙이지 않는다", text, fixed = TRUE))
 
+# ── 2계층 A 자격 보류 관문 (2026-11-10 v10.2 감사 레인 F) ──────────────────────────────────────
+#   왜: 구판은 T arm 이 essence A 면 곧바로 l2_judge_request.json(Judge 트리거)을 썼다. 그런데 풀에는
+#   측정 축(epoch)이 다른 모듈과 팩터 DB 수리 전 측정이 섞여 있었다(11-10 실측: 71개 중 69 = 축 기록 없는 구 축 ·
+#   1 = all_hyg_2000_v1 · 1 = 현 축 · 71 전부 판 표식 낡음). 헌법 = "등급 비교는 같은 epoch 안에서만" ·
+#   lean-loop 7 = "팩터 DB 수리 전에 잰 측정은 재측정 전 A 자격 없음". 1계층은 rf_a_eligibility 가 같은 일을 한다.
+#   이 관문은 등급을 바꾸지 않는다 — A 를 Judge 로 보낼지(eligible) 사유와 함께 묶어 둘지(held)만 정한다.
+#   판정 재료 = 풀 모듈의 등재 산출물 디렉터리(카탈로그 bt_result_path · 없으면 등재 sim 의 디렉터리)의
+#   authoritative_remeasure.json::measurement_axis$epoch 과 contracts/factor_db_vintage.R::fdv_stale.
+.l2_mod_dir <- function(root, rec, cat_rec) {
+  p <- .l2_chr((cat_rec %||% list())$bt_result_path)
+  if (!nzchar(p)) p <- .l2_chr(rec$registered_sim_result_path)
+  if (!nzchar(p)) return("")
+  d <- dirname(gsub("\\", "/", p, fixed = TRUE))
+  if (grepl("^([A-Za-z]:|/)", d)) d else file.path(root, d)
+}
+.l2_dir_epoch <- function(d) {
+  a <- .l2_rj(file.path(d, "authoritative_remeasure.json"))
+  if (is.null(a)) return("no_authoritative")
+  e <- .l2_chr((a$measurement_axis %||% list())$epoch)
+  if (nzchar(e)) e else "pre_axis_record"            # 축 기록(10-13~) 이전 산출 = 구 축
+}
+l2_a_eligibility <- function(root, code_root = root, pool_path = "") {
+  pp <- if (nzchar(pool_path)) pool_path else file.path(root, "06_Registry/module_performance.json")
+  mp <- .l2_rj(pp)
+  if (is.null(mp) || !length(mp$modules)) return(list(eligible = FALSE, reasons = "pool_unreadable_or_empty", n_modules = 0L, pool = pp))
+  cat_m <- (.l2_rj(file.path(root, "06_Registry/module_catalog.json")) %||% list())$modules %||% list()
+  act <- tryCatch({ e <- new.env(); sys.source(file.path(code_root, "02_Infrastructure/contracts/measurement_axis.R"), envir = e)
+                    e$ma_config(root)$active }, error = function(err) "")
+  fdv <- tryCatch({ e <- new.env(); sys.source(file.path(code_root, "02_Infrastructure/contracts/factor_db_vintage.R"), envir = e); e },
+                  error = function(err) NULL)
+  led <- if (is.null(fdv)) NULL else tryCatch(fdv$fdv_ledger(root), error = function(err) NULL)
+  ids <- names(mp$modules)
+  ep <- character(length(ids)); st <- rep(NA, length(ids))
+  for (i in seq_along(ids)) {
+    rec <- mp$modules[[i]]; sid <- .l2_chr(rec$source_strategy_id); cr <- cat_m[[ids[i]]] %||% (if (nzchar(sid)) cat_m[[sid]] else NULL)
+    d <- .l2_mod_dir(root, rec, cr)
+    if (!nzchar(d)) { ep[i] <- "no_artifact_dir"; next }
+    ep[i] <- .l2_dir_epoch(d)
+    if (!is.null(led)) st[i] <- tryCatch(isTRUE(fdv$fdv_stale(d, ledger = led)$stale), error = function(err) NA)
+  }
+  why <- character(0)
+  if (!nzchar(act)) why <- c(why, "active_epoch_unreadable")
+  off <- sum(ep != act)
+  if (nzchar(act) && off > 0L) why <- c(why, sprintf("pool_epoch_off_active:%d/%d", off, length(ids)))
+  if (is.null(led)) why <- c(why, "factor_db_vintage_unreadable")
+  else {
+    if (any(st %in% TRUE)) why <- c(why, sprintf("pool_factor_db_stale:%d/%d", sum(st %in% TRUE), length(ids)))
+    if (any(is.na(st) & ep != "no_artifact_dir")) why <- c(why, sprintf("pool_vintage_unknown:%d", sum(is.na(st) & ep != "no_artifact_dir")))
+  }
+  list(eligible = !length(why), reasons = why, n_modules = length(ids), active_epoch = act,
+       epoch_tally = as.list(table(ep)), n_stale = sum(st %in% TRUE), pool = pp)
+}
+#' A 일 때만 부른다 — 판정 + 기록 본문. 쓰기는 드라이버(rf_l2_auto.R)가 한다: 통과 = l2_judge_request.json(Judge 트리거) · 보류 = l2_judge_request.held.json(트리거 아님)
+l2_judge_payload <- function(root, code_root, base_id, n, run_id, pool_path = "") {
+  el <- l2_a_eligibility(root, code_root, pool_path)
+  list(eligible = isTRUE(el$eligible), reasons = el$reasons,
+       body = list(base_id = base_id, attempt_n = n, run_id = run_id, requested_at = format(Sys.time(), "%Y-%m-%dT%H:%M:%S%z"),
+                   a_eligibility = el[c("eligible", "reasons", "n_modules", "active_epoch", "epoch_tally", "n_stale")]))
+}
+
 # ── 텔레그램 [2계층·강화 n] ─────────────────────────────────────────────────────────────────
-l2_notify <- function(base_id, n, runs, gates, lessons, root, code_root, grade) {
+l2_notify <- function(base_id, n, runs, gates, lessons, root, code_root, grade, judge_held = FALSE) {
   ok <- tryCatch({
     TG <- new.env(parent = globalenv())
     invisible(capture.output(suppressMessages(suppressWarnings(sys.source(file.path(code_root, "02_Infrastructure/telegram/telegram_notify.R"), envir = TG)))))
@@ -161,8 +221,8 @@ l2_notify <- function(base_id, n, runs, gates, lessons, root, code_root, grade) 
         "직전 판정" = sprintf("T %s · S %s · C %s · MC1 %s", g("T"), g("S"), g("C"), if (isTRUE(gates$mc1_delivered)) "전달" else if (identical(gates$mc1_delivered, FALSE)) "미전달" else "?"))),
       list(type = "bullet", heading = "arm 결과", items = vapply(names(runs), function(a) { r <- runs[[a]]; e <- (r$result %||% list())$essence %||% list()
         sprintf("%s(%s): grade %s · PORT_t %s · Calmar %s · MDD %s · %s분%s", a, L2_ARMS[[a]]$label, g(a), .l2_f3(e$portfolio_alpha_t_nw_lag3), .l2_f3(e$calmar), .l2_f3(e$mdd), .l2_chr(r$minutes), if (isTRUE(r$ok)) "" else " ★실패") }, character(1))),
-      list(type = "bullet", heading = "교훈", items = if (length(lessons) >= 2L) substr(lessons, 1, 220) else c(substr(lessons, 1, 220), "다음 회차 = 디렉터 규칙 4 감시(MC1 2회 연속 미전달이면 π₀ 재실행 중단)")))
-    res <- TG$tg_agent_brief(agent = "Q-Lead", title = sprintf("[2계층·강화 %d] %s — T %s · S %s · C %s%s", n, base_id, g("T"), g("S"), g("C"), if (identical(grade, "A")) " ★A — Judge 요청" else ""),
+      list(type = "bullet", heading = "교훈", items = if (length(lessons) >= 2L) substr(lessons, 1, 220) else c(substr(lessons, 1, 220), "다음 회차 = 세션이 원장 교훈으로 요청 발행(디렉터 rf_director.R 는 10-13 퇴역)")))
+    res <- TG$tg_agent_brief(agent = "Q-Lead", title = sprintf("[2계층·강화 %d] %s — T %s · S %s · C %s%s", n, base_id, g("T"), g("S"), g("C"), if (identical(grade, "A")) (if (isTRUE(judge_held)) " ★A 띠 — 자격 보류(Judge 아님)" else " ★A — Judge 요청") else ""),
                              sections = secs, lock_scope = sprintf("rf_l2_%s_%d", base_id, n), relaxed = TRUE, glossary = FALSE, decode_jargon = FALSE, decode_mode = "off")
     isTRUE(res$ok %||% TRUE)
   }, error = function(e) { message("[l2_auto] 텔레그램 실패: ", conditionMessage(e)); FALSE })

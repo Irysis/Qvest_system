@@ -29,6 +29,8 @@ suppressPackageStartupMessages({ library(jsonlite) })
   stop("[book_registry] project root 미발견")
 }
 
+if (!exists("%||%")) `%||%` <- function(a, b) if (is.null(a) || length(a) == 0L || (length(a) == 1L && is.na(a))) b else a
+
 BOOK_KINDS <- c("factor_strategy", "rotation_rule")
 BOOK_STATUS <- c("active", "suspended", "retired")
 
@@ -79,17 +81,30 @@ read_book <- function(root = .bk_root()) {
 #' @param strategy_id 전략 id (rotation_rule 이면 fr_id)
 #' @param grade_basis 등급 출처. mandate 예외("dohoon_mandate_*")가 아니면
 #'   judge_verdict_path 의 pit_pass=true 를 실제로 읽어 검증한다(진술 아님 — 재도출).
+#' (2026-11-10 v10.2 감사 F) 관문 보강 — 진술이 아니라 재도출:
+#'   · confirm: 도훈 confirm 의 기록(메시지 시각 · 인용 등 비어 있지 않은 문자열). 비면 거부 — "confirm 은 세션 책임"이던
+#'     구판은 confirm 없는 등록을 기계적으로 막지 못했다.
+#'   · authoritative_path(mandate 아니면 필수): 1계층 = 산출물의 authoritative_remeasure.json(essence_grade) ·
+#'     2계층 = FR <id>_result.json(grade). 그 파일의 등급이 A 가 아니면 거부(grade 인자는 진술일 뿐이다).
+#'     축 기록(measurement_axis$epoch)이 있으면 현 측정 축과 같아야 하고, 그 산출물 디렉터리가 팩터 DB 판 표식에
+#'     낡음이면 거부(lean-loop 7 · contracts/factor_db_vintage.R). 축 기록이 없는 산출물(10-13 이전 = 구 축)도 거부.
+#'   · judge verdict: schema judge_verdict_v2 ∧ strategy_id 가 등록 대상과 같아야 한다(남의 PASS 로 등록 금지).
 register_book_entry <- function(kind, strategy_id, layer, grade = "A",
                                 grade_basis = "essence_score(authoritative_remeasure.json)",
                                 judge_verdict_path = NULL,
                                 source_papers = list(), code_path = "",
                                 official_metrics = list(), registered_by = "dohoon",
+                                confirm = NULL, authoritative_path = NULL,
                                 root = .bk_root()) {
   stopifnot(kind %in% BOOK_KINDS)
   if (!identical(as.character(grade), "A"))
     stop("[book_registry] BOOK 은 A등급만 등록한다 (도훈 지시) — B 이하는 강화 프로세스로")
+  if (is.null(confirm) || !nzchar(trimws(paste(as.character(confirm), collapse = " "))))
+    stop("[book_registry] confirm 필수 — 도훈 confirm 기록(시각 · 인용) 없이 등록 불가")
   is_mandate <- grepl("^dohoon_mandate", as.character(grade_basis))
+  axis_rec <- NULL
   if (!is_mandate) {
+    axis_rec <- .bk_verify_authoritative(authoritative_path, root)
     if (is.null(judge_verdict_path) || !file.exists(file.path(root, judge_verdict_path)) &&
         !file.exists(judge_verdict_path))
       stop("[book_registry] judge_verdict_path 필수 (mandate 예외 아님) — Judge(PIT) PASS 없이 등록 불가")
@@ -97,6 +112,10 @@ register_book_entry <- function(kind, strategy_id, layer, grade = "A",
     v <- tryCatch(fromJSON(vp, simplifyVector = FALSE), error = function(e) NULL)
     if (is.null(v) || !isTRUE(v$pit_pass))
       stop("[book_registry] judge_verdict pit_pass != true — PIT 미통과 전략은 등록 불가")
+    if (!identical(as.character(v$schema %||% ""), "judge_verdict_v2"))
+      stop("[book_registry] judge_verdict schema != judge_verdict_v2 — 판결서 형식 불명")
+    if (!identical(as.character(v$strategy_id %||% ""), as.character(strategy_id)))
+      stop(sprintf("[book_registry] judge_verdict strategy_id(%s) != 등록 대상(%s) — 다른 전략의 판결서", as.character(v$strategy_id %||% "없음"), strategy_id))
   }
   obj <- read_book(root)
   dup <- vapply(obj$entries, function(e) identical(e$strategy_id, strategy_id) &&
@@ -108,7 +127,8 @@ register_book_entry <- function(kind, strategy_id, layer, grade = "A",
     layer = as.integer(layer), grade = "A", grade_basis = as.character(grade_basis),
     judge_verdict_path = judge_verdict_path,
     registered_at = format(Sys.time(), "%Y-%m-%dT%H:%M:%S%z"),
-    registered_by = registered_by,
+    registered_by = registered_by, confirm = paste(as.character(confirm), collapse = " "),
+    authoritative_path = authoritative_path, measurement_axis = axis_rec,
     source_papers = source_papers, code_path = as.character(code_path),
     official_metrics = official_metrics,
     tracking = list(last_run = NULL, last_nav_date = NULL, artifacts = list(), history = list()),
@@ -119,6 +139,29 @@ register_book_entry <- function(kind, strategy_id, layer, grade = "A",
               entry$book_id, strategy_id, kind, as.integer(layer), grade_basis))
   .bk_signal_rebalance_spec(entry$book_id, strategy_id, root)
   invisible(entry)
+}
+
+#' 권위 산출물 재도출 — A ∧ 현 축 ∧ 판 표식 최신. 통과 시 축 기록(list)을 돌려준다.
+.bk_verify_authoritative <- function(authoritative_path, root) {
+  if (is.null(authoritative_path) || !nzchar(authoritative_path))
+    stop("[book_registry] authoritative_path 필수 (mandate 예외 아님) — 등급을 진술이 아니라 권위 파일에서 재도출한다")
+  ap <- if (file.exists(authoritative_path)) authoritative_path else file.path(root, authoritative_path)
+  if (!file.exists(ap)) stop(sprintf("[book_registry] authoritative_path 부재: %s", authoritative_path))
+  a <- tryCatch(fromJSON(ap, simplifyVector = FALSE), error = function(e) NULL)
+  if (is.null(a)) stop("[book_registry] authoritative 파일 판독 실패")
+  g <- as.character(a$essence_grade %||% a$grade %||% "")[1]
+  if (!identical(g, "A")) stop(sprintf("[book_registry] 권위 등급 = %s (A 아님) — 진술 grade='A' 는 증거가 아니다", if (nzchar(g)) g else "NA"))
+  ep <- as.character((a$measurement_axis %||% list())$epoch %||% "")[1]
+  act <- tryCatch({ e <- new.env(); sys.source(file.path(root, "02_Infrastructure/contracts/measurement_axis.R"), envir = e)
+                    e$ma_config(root)$active }, error = function(err) "")
+  if (!nzchar(act)) stop("[book_registry] 현 측정 축 판독 실패(constraint_defaults.json::measurement_axis) — fail-closed")
+  if (!nzchar(ep)) stop("[book_registry] 권위 파일에 측정 축 기록 없음(10-13 이전 = 구 축) — 현 축 재측정 뒤 등록")
+  if (!identical(ep, act)) stop(sprintf("[book_registry] 측정 축 %s != 현 축 %s — 등급 비교는 같은 epoch 안에서만", ep, act))
+  fs <- tryCatch({ e <- new.env(); sys.source(file.path(root, "02_Infrastructure/contracts/factor_db_vintage.R"), envir = e)
+                   e$fdv_stale(dirname(ap), root = root) }, error = function(err) list(stale = NA, reason = conditionMessage(err)))
+  if (!identical(fs$stale, FALSE))
+    stop(sprintf("[book_registry] 팩터 DB 판 표식 %s — %s", if (isTRUE(fs$stale)) "낡음" else "판정 불가", as.character(fs$reason %||% "")))
+  list(epoch = ep, factor_db_valid_from = fs$valid_from %||% NA_character_, checked_at = format(Sys.time(), "%Y-%m-%dT%H:%M:%S%z"))
 }
 
 #' 리밸 사양 미작성 신호 (도훈 지시 2026-08-30)
@@ -175,6 +218,11 @@ update_book_tracking <- function(book_id, run_result, root = .bk_root()) {
   if (!length(i)) stop(sprintf("[book_registry] book_id 부재: %s", book_id))
   i <- i[1]
   tr <- obj$entries[[i]]$tracking
+  ## (11-10 감사 F) 낡은 자료로 다시 돌린 트래킹이 last_nav_date 를 뒤로 돌리지 못한다 — 역행은 거부(이력에도 안 남긴다)
+  .new_nav <- suppressWarnings(as.Date(as.character(run_result$last_nav_date %||% NA)))
+  .old_nav <- suppressWarnings(as.Date(as.character(tr$last_nav_date %||% NA)))
+  if (length(.new_nav) && length(.old_nav) && !is.na(.new_nav) && !is.na(.old_nav) && .new_nav < .old_nav)
+    stop(sprintf("[book_registry] last_nav_date 역행 %s < 기록 %s — 낡은 자료의 트래킹은 기록하지 않는다", .new_nav, .old_nav))
   rec <- c(list(ran_at = format(Sys.time(), "%Y-%m-%dT%H:%M:%S%z")), run_result)
   tr$history[[length(tr$history) + 1L]] <- rec   # append-only
   tr$last_run <- rec$ran_at

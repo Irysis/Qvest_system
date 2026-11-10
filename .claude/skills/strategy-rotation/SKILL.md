@@ -52,6 +52,12 @@ backtested) → `audit_bt_result` → `essence_score`(A/B/C/F) → `register_fr_
 
 ## 3. ★모듈 풀 = 2단 게이트 (v10 — "B등급 이상" 도훈 지시)
 
+> ★**현행 사실(2026-11-10 감사 F — 아래 ①은 legacy 모드 서술)**: 운영 풀 모드 = **role**(`06_Registry/strategy_role.json::pool.mode` · 도훈 10-06).
+> 풀 = 역할 대표(`strategy_roles.json`)만이고 **역할 등급 B+** 가 자격이다 — essence 등급 floor 는 이 모드에서 적용되지 않는다
+> (`build_module_performance.R:357` `eligible = TRUE, route = "role_rep"`). 11-10 실측 풀 71 = essence C 53 · B 13 · F 5,
+> 측정 축 기록 = 구 축(기록 없음) 69 · `all_hyg_2000_v1` 1 · 현 축 1, 팩터 DB 판 표식 낡음 71/71. 풀 게이트에는 epoch · 판 표식 검사가 없다 —
+> 대신 A 경로에 **A 자격 보류 관문**(`rf_l2_lib.R::l2_a_eligibility` · 풀 epoch 단일·현행 ∧ 판 최신이어야 `l2_judge_request.json`, 아니면 `l2_judge_request.held.json`)이 있다.
+
 **①자격 = essence grade ∈ {A, B}** (전략 단위, `grade_basis` = essence 계열 또는
 dohoon_mandate) — `build_module_performance.R` 전방 필터(env `QVEST_L2_GRADE_FLOOR`,
 기본 `B`; `OFF` = 진단 전용). legacy 무등급 모듈은 **권위 재측정 후 grade 기입 시**
@@ -105,7 +111,7 @@ IR 무관이라 admission 이 유일한 품질 게이트" — 등급 floor 만�
 essence Grade A 확정 시에만: ① Judge(PIT 전담) 스폰(`.claude/agents/judge.md` —
 2계층 추가 축: regime 신호 t-1(C5)·`regime_label_gate` 통과·publisher append-only
 무결성) → ② `judge_verdict.json` pit_pass=true → ③ **BOOK 등록**
-(`register_book_entry(kind="rotation_rule", fr_id=...)` — 도훈 confirm 수동) →
+(`register_book_entry(kind="rotation_rule", strategy_id=<FR id>, layer=2, confirm=..., authoritative_path=<FR>_result.json)` — 도훈 confirm 수동 · `fr_id` 인자는 없다) →
 `rf_record_judge()` 원장 기록. PIT FAIL = 등급 무효 → 수리 후 재측정.
 ★governor·book_state 는 폐지(v10) — BOOK(`06_Registry/book/book_registry.json`)이 승계.
 
