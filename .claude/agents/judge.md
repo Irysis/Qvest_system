@@ -30,6 +30,11 @@ allowed-tools: Bash(Rscript*) Read Grep Glob Write
      통과분만 산출 디렉터리에 `judge_request.eligible.json`(`status=pending` · schema `judge_request_v2` · a_eligibility) 발행 — 그것이 충실구현
      트리거다(grade_a_queue 미기록 · 스폰 = Q-Lead). 보류 = 같은 자리 `judge_request.held.json`(`held:<코드>` · 사유) · 요청 미발행 → 스폰 없이
      `[1계층]` A 후보(보류 사유 병기)로 도훈에게 보고한다. 어드바이저 측정은 통과여도 자동 스폰하지 않는다(도훈 지시로만 — 어드바이저 규약).
+     ★v10.2(2026-11-10): **스윕형 선정의 최종 후보**(프로그램 라운드의 사전등록 최종 후보 · 강화 사슬의 닫기 후보)는 닫을 때 선택 현실 점검으로
+     다시 채점한 뒤(`programs/selection_regrade.R`) `programs/round_candidate_gate.R::rcg_route` 가 같은 A 자격 관문을 한 번 더 태운다 —
+     통과면 같은 자리 `judge_request.eligible.json`(`source = "round_candidate_gate"`), 보류면 `judge_request.held.json`. 측정 시점에 나간 요청보다
+     이 닫기 판정이 우선한다. 상시 보류(설정으로 끌 수 없음) 세 가지가 더해졌다: `factor_db_stale`(팩터 DB 수리 전 측정) ·
+     `rule_change_beneficiary`(규칙 변경으로 등급이 오른 발효 전 기록) · `selection_check_missing`(스윕 후보인데 선택 현실 점검 미제출).
 - 산출 디렉터리의 `judge_request.json`(구 강화 셀 산출 — v10.01 러너 퇴역)·
   `judge_request.held.json`(관문 보류)·구 단일 `qepm/mailbox/judge_request.json`(퇴역 `reinforce_auto_run.R`)은 **트리거가 아니다**.
   QEPM WT 체인(forge→judge 전이·dossier 스폰·`/worktask promote`)은 **동결**(도훈 `QEPM-R0-FREEZE` 2026-09-25) —

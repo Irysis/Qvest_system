@@ -55,6 +55,8 @@ round.sh <판> superfan-mark --codes a,b --kind pass|daily --p2 <id> --t2 <id>  
 ```
 - 다른 작업 트리(worktree)에서 돌릴 때만 `RC_ROOT_POSIX` · `RC_ROOT_WIN` + `R_ENVIRON_USER`(QM_ROOT 를 그 트리로)를 준다. 기본은 저장소다.
 
+정기 실행(2026-11-10) — `bash 02_Infrastructure/ops/standing_board_run.sh [--dry-run] [--send]`: 등록된 상설 판(사양 `standing: true` · round_id = 디렉터리 이름 · 사전등록 정본 있음)마다 한 틱 = `scan` → 입구 통과 대기 항목(`pending`)이 있고 리프레시 배리어(`refresh_barrier.sh status` 한 번 · 잠김 · 판정기 없음 = 이번 틱 측정 건너뜀)가 열려 있으면 `standing-measure` → `standing-report`(기본 드라이런 · `--send` 일 때만 발송). 판이 없으면 조용히 0 종료. 자체 잠금 `.cache/standing_board_run.lock`(살아 있는 보유자 = 건너뛰고 0 · 죽은 pid = 인계) · 로그 `.cache/scheduler_logs/standing_board_<시각>.log` · 어느 단계든 실패하면 rc 1(다른 단계 · 판은 계속). `--dry-run` = 할 일 · 배리어 · 잠금 상태만 출력(round.sh · R 미호출). **예약 작업 등록은 하지 않았다**(도훈 승인 뒤 별도). 시험 = `08_Tests/ops/test_standing_board_run.sh`.
+
 - 입구 수리(11-10): 방향 층은 호출마다 `direction` 인자로 가른다 — `"registry"` | `"defensive"` 문자열 상수 = `factor_db_static`(engine_native 허용 시 함께 허용) · 인자 없음 · `"ic_asof"` · 판정 불가 값 = `factor_db_asof`. 결합용 뷰 `fc_load_month(s)` · `fc_daily` 도 같은 규칙으로 본다. 레인 산출이 팩터 DB 수리 전 측정이어도(`contracts/factor_db_vintage.R::fdv_stale = TRUE`) 입구에서 빼지 않고 표식만 남긴다(열 `factor_db_vintage` = stale | current | na — 상설 측정이 지금의 팩터 DB 위에서 새로 잰다 · 시험은 `RC_FDV_LEDGER` 로 임시 원장). 낡은 측정의 소비는 A 자격 관문과 P4 기저 풀(등급으로 들어오는 경로)이 막는다. 자격 통과 목록 읽기 = `rc_standing_qualified(program)`.
 
 ## P4 강화 사슬 (p4_chain · v1/p4.R · v10.2 · 2026-11-10)
@@ -65,7 +67,8 @@ round.sh <판> superfan-mark --codes a,b --kind pass|daily --p2 <id> --t2 <id>  
 source("04_Research/programs/_lib/round_core/v1/load.R")
 pool <- rc_p4_base_pool()                               # 등록부 kind = engine + 상설 자격 → 자격(상설 통과 ∨ 권위 등급 A/B) · 제외 사유 코드
 gap  <- rc_p4_gap("<산출 폴더>")                         # 보는 창 A 하한별 값 · 문턱 · 여유 · 병목(시험 창 값 없음)
-rc_p4_chain_new("<사슬 디렉터리>", "P4C01_<이름>", base_key = "<풀 key>", pool, base_cell_spec = "<기저 칸 사양>",
+rc_p4_base_cell_spec("<풀 key>", pool, out_path = "<f>.json")   # 기저 칸 사양 = P1 표준 구성 생성기(rc_p1_cell_spec) 그대로 · 논문 메타 = rc_standing_paper
+rc_p4_chain_new("<사슬 디렉터리>", "P4C01_<이름>", base_key = "<풀 key>", pool,   # base_cell_spec 생략 = 위 도우미가 <사슬>/base_cell_spec.json 을 만든다
                 adoption_rules = list(                    # 보는 창 지표만 · 숫자는 정본 참조(value_ref) + source 문구(필수 셋: dS_vis · uc_vis · d_dd_capture_median_vis)
                   list(id = "improve", type = "threshold", label = "보는 창 S 개선", metric = "dS_vis", op = ">=",
                        value_ref = "04_Research/programs/P3_CONSTRUCTION/P3R03_advanced_construction/prereg.json::final_selection_rule.tie_eps", source = "…"),
@@ -74,21 +77,30 @@ rc_p4_chain_new("<사슬 디렉터리>", "P4C01_<이름>", base_key = "<풀 key>
                   list(id = "crisis_no_worse", type = "threshold", label = "위기 하락 포착 비악화", metric = "d_dd_capture_median_vis", op = "<=",
                        value = 0, basis = "정의 — 비악화 = 부모 이하", source = "…")),
                 budget = list(max_steps = <정수>, max_steps_source = "<출처>", noise_k = <정수>, noise_k_source = "<출처>"))   # 예산 숫자는 사양 작성자가 출처와 함께(기본값 없음)
-rc_p4_chain_register("<사슬 디렉터리>", pool)             # 원장 첫 줄(사양 md5 · 해석된 규칙 · 기저 보는 창 지표)
+rc_p4_chain_register("<사슬 디렉터리>", pool, p1 = "<철학 P1 R-id>", t1 = "<판단 T1 R-id>")   # 원장 첫 줄(사양 md5 · 해석된 규칙 · 기저 보는 창 지표 · 영수증)
 ```
 
 ```bash
-round.sh <사슬 디렉터리> p4-pool [--out f] · p4-check · p4-register · p4-design [--out f]     # 설계 입력 = 생성기 입력(보는 창만)
+round.sh - p4-base-spec --key "<풀 key>" --out <f>.json                    # 기저 칸 사양만 따로 만들 때
+round.sh <사슬 디렉터리> p4-pool [--out f] · p4-check · p4-design [--out f]  # 설계 입력 = 생성기 입력(보는 창만)
+round.sh <사슬 디렉터리> p4-register --p1 <R-id> --t1 <R-id>              # 감독 영수증 없으면 거부
+round.sh <사슬 디렉터리> p4-base-measure                              # 기준 칸(k = 0) — 걸음 전 필수 · 기저 칸 사양을 걸음과 같은 러너 · 배리어 · 지문 · 판 표식으로 → base_measured
 round.sh <사슬 디렉터리> p4-step-open --k 1 --hypothesis "…" --mechanism "…" --block <유형> --cell <칸 사양> --parent 0 --generator g1
-#   (칸 측정 = 정본 셀 워커 — 이 코어 밖)
-round.sh <사슬 디렉터리> p4-step-decide --k 1 --artifacts <산출 폴더>      # 보는 창 지표 → 등록 채택 규칙 → accept | reject · r7
-round.sh <사슬 디렉터리> p4-status · p4-close --note "…" --probe "…" --probe "…" [--lesson "…"] [--regrade-write]
+round.sh <사슬 디렉터리> p4-step-measure --k 1                             # 배리어 대기 → 칸 사양 md5 대조 → 정본 셀 워커 → 원장 step_measured(종료 0 · 4 배리어 · 1 실패)
+round.sh <사슬 디렉터리> p4-step-decide --k 1 [--artifacts <산출 폴더>]     # 산출 = step_measured 기록(넘기면 같아야 함) · 보는 창 지표(부모 0 = base_measured) → 채택 규칙 → accept | reject · r7
+round.sh <사슬 디렉터리> p4-status · p4-close --note "…" --probe "…" --probe "…" [--lesson "…"] [--regrade-write] --p2 <R-id> --t2 <R-id>
 round.sh - p4-generator-review [--out f]                                   # 블록 유형별 채택률 · 보는 창 dS_vis · 주된 기각 사유(다음 판 재료)
 ```
+- 명령 순서: `p4-register` → **`p4-base-measure`** → (`p4-design` → `p4-step-open` → `p4-step-measure` → `p4-step-decide`)× → `p4-close`. 기준 칸 측정 전에는 걸음 열기 · 측정 · 판정 · 설계 입력이 거부된다(건너뛰기 경로 없음).
+- 원장(`chain_steps.jsonl`) 이벤트: `chain_registered`(규칙 해석본 · 영수증 · 풀 산출 지표 `base_metrics` = **참고 기록 · 판정에 안 씀**) · `base_measured` | `base_measure_failed` · `step_open` · `step_measured` | `step_measure_failed` · `step_result`(`artifacts_source` · `parent_basis`) · `chain_closed`.
+- 기준 칸 측정(`rc_p4_base_measure(chain_dir, root, runner, barrier, fingerprint, vintage, metrics_fun)`): 기저 칸 사양 md5 = 사슬 판 확인 → 측정 사본 `measure/k0.spec.json`(sweep · family_root = 사슬 id · 시행 1) · role base → `base_measured`{artifacts · measured_spec_md5 · metrics(보는 창 — `rc_p4_visible_metrics`) · vintage · same_construction(기록) · measured_at}. 첫 걸음을 포함한 모든 비교의 기저 지표 = `base_measured$metrics` · 닫기 재채점 시행 집합의 기저 = `base_measured$artifacts`.
+- 팩터 DB 판 표식: 측정마다 `contracts/factor_db_vintage.R::fdv_stamp` 의 직렬화 md5(`vintage.id` · 수리 수)를 `base_measured` · `step_measured` 에 적는다(완료 시각은 τ_D 뒤 날짜라 싣지 않는다). 걸음 측정 직전 표식 ≠ 기준 칸 표식이면 재지 않고 사유(원장 무기록) — "이 사슬을 닫고 새 사슬에서 기준 칸부터 다시". 판정도 표식이 다른 측정은 거부 · 닫기는 허용 · 표식 판독 불가 = 측정 거부(fail-closed).
+- 걸음 측정(`rc_p4_step_measure(chain_dir, k, root, runner, barrier, fingerprint)`): 기준 칸 측정됨 · 열린 미판정 걸음 · 칸 사양 md5 = 열 때(R2) · 리프레시 배리어(`refresh_barrier.R::rb_status` — held · error 면 재지 않고 사유 반환 · 원장 무기록) → 측정 사본 `<사슬>/measure/k<k>.spec.json`(열린 사양 + `selection_accounting` 만 다시 씀: `selection_type = sweep` · `family_root = 사슬 id` · 계보 누적 시행 = 기저 1 + 지금까지 연 걸음 수 · `n_trials_basis` 문구 — 사슬도 회계는 스윕) → 기본 러너 `rc_p4_runner_default` = `Rscript rf_cell_worker.R <사양> 1 <사슬>_k<k> <결과 json>`(`v1/measure_cell.R` 와 같은 호출 · 요인 분석 끔 · **2계층 모듈 풀 등재 끔** `QVEST_RP_REGISTER = 0` — 기준 칸 · 걸음 칸 모두) → 데이터 지문 앞뒤 대조. ok ∧ 산출 폴더 ∧ 지문 같음 = `step_measured`{k · artifacts · vintage · measured_at · md5}, 아니면 `step_measure_failed`(다시 잴 수 있다). 시험은 `runner` 에 가짜 러너를 넣는다.
+- 감독 영수증(라운드 등록 ⑥ 과 같은 규율 — 판단 원장 `06_Registry/q_judgment_ledger.json`): 등록 = 철학 P1(`register.R::rc_p1_check` 재사용 — 대상 round = 사슬 id · 파일 `…_P1_P4Cnn.md`) + 판단 T1 · 닫기 = 철학 P2 + 판단 T2 · 생성기 개정 `rxg_revise(…, philosophy_review = <R-id>)` = 철학 P1 | P4 · 대상 round = `P4_generator_<새 판 id>`. 공통: id 실재 · 역할 · 트리거 · 대상 일치 · 파일 실재 · 도전 · 정지 응답 · 열린 보류 요청 없음. 시험 우회 = `ledger` · `review_root` 인자(임시 원장)뿐.
 - 걸음 열기 기계 검사: 앞 걸음 판정됨 · k 연번 · 칸 사양 1개(처음 보는 md5) · 부모 = 사슬 머리 · 부모와 **한 블록 유형만** 다름(고정 축 · 어휘 밖 축 거부 · 기저 변경은 풀 안 자격 엔진만) · 가설 · 기전 문장 · τ_D 뒤 날짜 없음 · 예산 안 · 생성기 md5 = 사슬 판.
-- 닫기: 최종 후보 = 마지막 채택 걸음 · 결과 원장(`rc_outcome_record` · extra = 생성기 판 · 걸음 수 · 블록 유형별 채택/기각) · 마감 훅 `programs/selection_regrade.R::sr_regrade`(기저 + 모든 걸음 칸 = 시행 집합 · 결과는 `finalize.json`(사람 쪽)에만 · 원장엔 상태 · md5) · Judge 요청 파일은 쓰지 않는다.
+- 닫기: 최종 후보 = 마지막 채택 걸음(채택 0 · 걸음 ≥ 1 이면 기저 자신 k = 0 · 기준 칸 산출 · 걸음 0 = `no_candidate`) · 결과 원장(`rc_outcome_record` · extra = 생성기 판 · 걸음 수 · 블록 유형별 채택/기각 · P2 · T2 id) · 마감 훅 `programs/selection_regrade.R::sr_regrade`(기준 칸 산출 + 모든 걸음 칸 = 시행 집합 · 결과는 `finalize.json`(사람 쪽)에만 · 원장엔 상태 · md5) → 새 등급 A 면 후보 관문 `programs/round_candidate_gate.R::rcg_route(후보, <사슬>_k<k>, 측정 사본 사양, root, write)`(파일이 있을 때 · 요약 action · eligible · codes · path 는 `finalize.json` 에만). 원장 · 결과 원장의 `candidate_gate` = `pending`(관문 파일 없음) | `evaluated`(A 아님도 같은 값 — 등급이 상태로 새지 않게) | `error` | `not_run`. Judge 요청 파일은 쓰지 않는다. 모듈 풀 등재 = 최종 후보 1개만 · `regrade_write` ∧ 재채점 뒤 등급 A | B 일 때 정본 등재기 `contracts/register_measured_module.R::rmm_register_measured(후보 산출, origin_mode = "replication", meta = 사슬)`를 측정 밖에서 사후 호출(sim 없이 계약 CSV 로 재조립 — `rf_replication_verify.R` 감사 뒤 등재와 같은 경로 · 자격은 등재기의 계약 술어가 다시 낸다) · `module_pool` = registered | not_registered | not_attempted | pending_manual(등재기 없음) | error → `finalize.json` · 결과 원장 줄.
 - 처방 도구 상자(`02_Infrastructure/programs/rx_round.R`): `rx_validate(impl, root, pool)` 이 `base_signal`(풀 key · `engine_blend` keys ≥ 2 · 경로 지정 거부)과 `factors[].direction`(ic_asof | registry | defensive — defensive 는 등록부 방어 방향이 있는 팩터만)을 받는다 · 도구 상자 표에 방어 방향 열 · 헌장 격차 절 `rx_charter_gap_md(gap)`.
-- 시험: `08_Tests/programs/test_round_core_v1_p4_chain.R`(격리 — 임시 등록부 · 원장 · 생성기 등록부 · 합성 산출물).
+- 시험: `08_Tests/programs/test_round_core_v1_p4_chain.R`(격리 — 임시 등록부 · 원장 · 생성기 등록부 · 판단 원장 · 합성 산출물 · 가짜 러너 · 가짜 재채점 · 관문 파일 · 실제 측정 없음).
 
 ## 모듈 (v1)
 

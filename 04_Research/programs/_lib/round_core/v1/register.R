@@ -147,17 +147,66 @@ rc_register <- function(round_dir, root = rc_root(), registry_path = NULL, ledge
 ## 종료 기록 — verdict.json(판정 단일 출처)에서 등록부 결과를 만든다 · 해석 메모 · 리뷰 id 는 Q 가 넘긴다
 ##   (2026-11-10 · v10.2) 닫는 단계 기계화 — 다음 탐침(≥ 2 또는 사유) · 교훈 · 목표 축 판독(r7)을 받아 결과 원장(outcomes.R)에 남긴다.
 ##   원장 기록(τ_D 날짜 검사 포함)을 먼저 만들고, 등록부 기록이 성공한 뒤에 원장에 쓴다 — 어느 쪽이 실패해도 반쪽 기록이 남지 않는다.
+##   (2026-11-10 · v10.2) 마감 훅 — 짝 판정 템플릿(p2 · p3)의 사전등록 최종 후보가 스윕이면 02_Infrastructure/programs/round_candidate_gate.R::rcg_finalize
+##   (선택 현실 점검 재채점 → A 면 A 자격 관문 → 후보 폴더에 judge_request.eligible/held.json)를 파일이 있으면 부른다. 닫기 기록에는 상태 문자열만 남긴다
+##   (등록부 = 칸별 상태 · 결과 원장 = 거친 상태 — 전 기간 수치 · 등급은 후보 폴더의 파일에만). 마감 실패는 닫기를 막지 않는다(finalize = "error: …").
 rc_close <- function(round_dir, note, philosophy_p2 = NA_character_, superfan_t2 = NA_character_, extra = list(),
                      root = rc_root(), registry_path = NULL, probes = character(0), lessons = character(0), r7 = NA_character_,
-                     no_probes_reason = NULL, outcomes_path = NULL) {
+                     no_probes_reason = NULL, outcomes_path = NULL, finalize = TRUE, finalize_write = TRUE, finalize_fn = NULL) {
   spec <- rc_spec_load(file.path(round_dir, "round_spec.json"), root = root, check_files = FALSE); P <- rc_paths(round_dir, spec, root)
   V <- rc_json_read(file.path(P$results, "verdict.json"))
   if (!identical(V$prereg_md5, rc_md5(P$prereg))) stop("[round_core close] 판정이 지금 사전등록(md5)으로 난 것이 아니다(R2)")
   rec <- rc_outcome_record(spec, V, note, probes = probes, lessons = lessons, r7 = r7, no_probes_reason = no_probes_reason, P = P, root = root)
+  fz <- if (isTRUE(finalize)) tryCatch(rc_close_finalize(spec, V, P, root = root, write = finalize_write, fn = finalize_fn),
+                                       error = function(e) list(status = paste0("error: ", conditionMessage(e)), coarse = "error"))
+        else list(status = "skip: finalize = FALSE", coarse = "skip")
+  rec$finalize <- fz$coarse
   pr_record_round(spec[["program"]], c(list(round_id = spec[["round_id"]], prereg = P$prereg_rel, prereg_md5 = rc_md5(P$prereg), status = "complete",
                                            verdict = c(V$summary, list(note = note)), philosophy_p2 = philosophy_p2, superfan_t2 = superfan_t2,
-                                           report = rc_rel(file.path(P$results, "verdict.json"), root)), extra),
+                                           report = rc_rel(file.path(P$results, "verdict.json"), root), finalize = fz$status), extra),
                   root = root, path = registry_path)
   rc_outcome_append_round(rec, if (is.null(outcomes_path)) rc_outcomes_path(root, registry_path) else outcomes_path)
-  invisible(TRUE)
+  invisible(fz)
+}
+
+## 사전등록 최종 후보(짝 판정 템플릿) — verdict.json 의 selected[[1]](p2 = device · p3 = method · 사전등록 final_selection_rule 로 고른 단위)의
+##   판정 칸(진단 · 기준 칸 제외 · 엔진마다 1칸) + 시행 집합 = 이 라운드가 잰 모든 칸의 산출 폴더(results/<칸>.json ok · artifacts)
+rc_close_candidates <- function(spec, V, P, root = rc_root()) {
+  meas <- function(code) { j <- file.path(P$results, paste0(code, ".json")); if (!file.exists(j)) return(NA_character_)
+    r <- tryCatch(rc_json_read(j), error = function(e) NULL)
+    if (!isTRUE(r$ok) || !length(r$artifacts)) NA_character_ else gsub("\\\\", "/", rc_abs(as.character(r$artifacts)[1], root)) }
+  cells <- spec[["cells"]] %||% list()
+  arts <- vapply(cells, function(c) meas(c[["code"]]), character(1))
+  sel <- V$selected %||% list()
+  unit <- if (length(sel)) as.character(sel[[1]]$device %||% sel[[1]]$method %||% NA_character_)[1] else NA_character_
+  cand <- if (is.na(unit)) list() else Filter(Negate(is.null), lapply(seq_along(cells), function(i) { c <- cells[[i]]
+    if (!identical(c[["component"]], unit) || (c[["role"]] %||% "") %in% c("diagnostic", "reference")) return(NULL)
+    list(code = c[["code"]], engine = c[["engine"]], spec = if (!is.null(c[["spec"]])) rc_abs(c[["spec"]], root) else NULL, artifacts = arts[i]) }))
+  list(unit = unit, candidates = cand, trials = unique(arts[!is.na(arts)]))
+}
+
+## 마감 훅 본체 — 반환 list(status = 등록부용 한 줄(칸별) · coarse = 결과 원장용(done | skip | error))
+rc_close_finalize <- function(spec, V, P, root = rc_root(), write = TRUE, fn = NULL) {
+  tpl <- spec[["template"]] %||% ""
+  if (!(tpl %in% c("p2_device", "p3_construction"))) return(list(status = paste0("skip: 템플릿 ", tpl, "(최종 후보 없음)"), coarse = "skip"))
+  K <- rc_close_candidates(spec, V, P, root)
+  if (is.na(K$unit)) return(list(status = sprintf("skip: 최종 후보 없음(판정 %s)", V$verdict %||% "?"), coarse = "skip"))
+  if (!length(K$candidates)) return(list(status = sprintf("skip: 최종 후보 %s 의 판정 칸 없음", K$unit), coarse = "skip"))
+  f <- file.path(root, "02_Infrastructure/programs/round_candidate_gate.R")
+  if (!is.function(fn)) {
+    if (!file.exists(f)) return(list(status = "pending: round_candidate_gate.R 없음", coarse = "pending"))
+    e <- new.env(parent = globalenv()); sys.source(f, envir = e, keep.source = FALSE); fn <- e$rcg_finalize
+  }
+  st <- vapply(K$candidates, function(c) {
+    if (is.na(c$artifacts)) return(sprintf("%s: skip 측정 산출 없음", c$code))
+    au <- tryCatch(rc_json_read(file.path(c$artifacts, "authoritative_remeasure.json")), error = function(e) NULL)
+    if (is.null(au)) return(sprintf("%s: skip 권위 기록 판독 불가", c$code))
+    if (!identical(as.character(au$selection_type %||% "")[1], "sweep")) return(sprintf("%s: skip 스윕 아님(%s)", c$code, as.character(au$selection_type %||% "없음")[1]))
+    r <- tryCatch(fn(c$artifacts, K$trials, strategy_id = as.character(au$strategy_id %||% paste(spec[["round_id"]], c$code, sep = ":"))[1],
+                     spec_path = c$spec, root = root, write = write),
+                  error = function(e) list(status = paste0("error: ", conditionMessage(e))))
+    sprintf("%s: %s", c$code, as.character(r$status %||% "?")[1])
+  }, character(1))
+  list(status = sprintf("최종 후보 %s · 시행 %d칸 · %s", K$unit, length(K$trials), paste(st, collapse = " | ")),
+       coarse = if (any(grepl(": error", st, fixed = TRUE))) "error" else "done")
 }

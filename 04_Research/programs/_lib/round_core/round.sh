@@ -11,7 +11,8 @@
 #     standing-measure         배리어 → 대기 항목마다 R2 대조 · 지문 · 정본 셀 워커 → 판정(원장 · 보는 창 표)
 #     standing-check · pending · measure-item <code> · judge · standing-report [--send] · standing-status · superfan-mark
 #   P4 강화 사슬(v1/p4.R · <round_dir> = 사슬 디렉터리 · 아래 기본 분기가 driver.R 로 넘긴다):
-#     p4-pool · p4-check · p4-register · p4-design · p4-step-open · p4-step-decide · p4-status · p4-close · p4-generator-review
+#     p4-pool · p4-base-spec · p4-check · p4-register --p1 --t1 · p4-design · p4-step-open · p4-step-decide · p4-status · p4-close --p2 --t2 · p4-generator-review
+#     p4-base-measure · p4-step-measure --k <n>  배리어 대기(기준 칸 = 걸음 전 필수)(상설 측정과 같다 · 2시간 뒤에도 잡히면 종료 4) → R 쪽이 배리어 재확인 · 칸 사양 md5 대조 · 정본 셀 워커 → 원장 step_measured
 #   RC_ROOT_POSIX · RC_ROOT_WIN = 다른 작업 트리(worktree)에서 돌릴 때만(기본 = 저장소 · R 쪽은 R_ENVIRON_USER 로 QM_ROOT 를 맞춘다)
 set -u
 ROOT=${RC_ROOT_POSIX:-/c/Users/99922/OneDrive/Quant_Module_Moltbot}
@@ -117,5 +118,10 @@ case "$ST" in
     Rscript "$CORE/standing.R" "$RD" judge; jrc=$?
     sentinel standing "$([ "$jrc" = "0" ] && echo judged || echo judge_failed)" "$jrc" "pending=$(echo $PEND | wc -w)"
     exit $jrc ;;
+  p4-base-measure|p4-step-measure)
+    barrier; [ "$?" = "10" ] && { sentinel p4measure barrier_held 10; echo "== [$TAG] 배리어 2시간 뒤에도 잡힘 — 측정하지 않는다 =="; exit 4; }
+    Rscript "$DRV" "$RD" "$ST" "$@"; mrc=$?
+    sentinel p4measure "$(case $mrc in 0) echo measured ;; 4) echo barrier_held ;; *) echo measure_failed ;; esac)" "$mrc"
+    exit $mrc ;;
   *) exec Rscript "$DRV" "$RD" "$ST" "$@" ;;
 esac

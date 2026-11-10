@@ -11,9 +11,12 @@
 ##     report [--send] [--next "<다음 단계>"]  보고(기본 dry-run)
 ##     close --note "<해석>" --probe "<다음 탐침>" --probe "<…>" [--lesson "<교훈>"]… [--r7 noise|signal] [--p2 <id>] [--t2 <id>]
 ##           종료 기록(등록부 + 결과 원장 06_Registry/round_outcomes.jsonl) · 탐침 2개 미만이면 --no-probes "<사유>" · 글에 τ_D 뒤 날짜가 있으면 멈춤
-##     P4 강화 사슬(v1/p4.R · <round_dir> = 사슬 디렉터리): p4-pool [--out f] · p4-check · p4-register · p4-design [--out f] ·
-##       p4-step-open --k --hypothesis --mechanism --block --cell --parent --generator · p4-step-decide --k --artifacts · p4-status ·
-##       p4-close --note --probe ×2 [--lesson] [--r7] [--no-probes] [--regrade-write] · p4-generator-review [--out f]
+##     P4 강화 사슬(v1/p4.R · <round_dir> = 사슬 디렉터리): p4-pool [--out f] · p4-base-spec --key <풀 key> --out f · p4-check ·
+##       p4-register --p1 <철학 P1 id> --t1 <판단 T1 id> · p4-design [--out f] ·
+##       p4-base-measure(기준 칸 k = 0 · 걸음 전 필수 · 종료 0 · 4 배리어 · 1 실패 · 판 표식 변경/불명 = 1) ·
+##       p4-step-open --k --hypothesis --mechanism --block --cell --parent --generator · p4-step-measure --k(종료 0 측정 · 4 배리어 · 1 실패) ·
+##       p4-step-decide --k [--artifacts](측정 기록과 같아야 한다) · p4-status ·
+##       p4-close --note --probe ×2 [--lesson] [--r7] [--no-probes] [--regrade-write] --p2 <철학 P2 id> --t2 <판단 T2 id> · p4-generator-review [--out f]
 ##   수치는 R 계약 산출만 · 판정은 등록 때 해석된 규칙(rules_resolved)으로만(R2) · 시험 창 열은 보는 창 파일에 싣지 않는다(τ_D).
 
 rc_shard_cells <- function(cells, shard) {
@@ -149,16 +152,26 @@ if (sys.nframe() == 0L) {
                   for (i in seq_len(nrow(P))) cat(sprintf("  %s %s · %s\n", if (P$eligible[i]) "[자격]" else "[제외]", P$key[i], if (nzchar(P$reason[i])) P$reason[i] else "—")) },
     "p4-check" = { rr <- rc_p4_chain_check(rc_json_read(rc_p4_spec_path(rd)), ROOT)
                    cat(paste0("- ", rc_rules_sentences(rr)), sep = "\n"); cat("[p4-check] 사슬 판 검사 통과\n") },
-    "p4-register" = { rc_p4_chain_register(rd, rc_p4_base_pool(ROOT), ROOT); cat("[p4-register] 사슬 판 등록(원장 첫 줄)\n") },
+    "p4-base-spec" = { out <- rc_p4_base_cell_spec(opt("--key") %||% stop("--key 필요"), rc_p4_base_pool(ROOT), ROOT, opt("--out") %||% stop("--out 필요"))
+                       cat(sprintf("[p4-base-spec] %s → %s · md5 %s\n", opt("--key"), rc_rel(out, ROOT), rc_md5(out))) },
+    "p4-register" = { rc_p4_chain_register(rd, rc_p4_base_pool(ROOT), ROOT, p1 = opt("--p1"), t1 = opt("--t1")); cat("[p4-register] 사슬 판 등록(원장 첫 줄)\n") },
+    "p4-base-measure" = { r <- rc_p4_base_measure(rd, ROOT)
+                          cat(sprintf("[p4-base-measure] 기준 칸 — %s%s\n", r$status, if (!is.null(r$reason)) paste0(" · ", r$reason) else ""))
+                          quit(status = switch(r$status, measured = 0L, already = 0L, barrier_held = 4L, 1L)) },
+    "p4-step-measure" = { r <- rc_p4_step_measure(rd, opt("--k") %||% stop("--k 필요"), ROOT)
+                          cat(sprintf("[p4-step-measure] 걸음 %s — %s%s\n", r$k, r$status, if (!is.null(r$reason)) paste0(" · ", r$reason) else ""))
+                          quit(status = switch(r$status, measured = 0L, already = 0L, barrier_held = 4L, 1L)) },
     "p4-design" = { txt <- rc_p4_design_input(ROOT, rd, pool = rc_p4_base_pool(ROOT), out = opt("--out") %||% file.path(rd, "design_input.md"))
                     cat(sprintf("[p4-design] 설계 입력 %d줄 → %s\n", length(strsplit(txt, "\n")[[1]]), rc_rel(opt("--out") %||% file.path(rd, "design_input.md"), ROOT))) },
     "p4-step-open" = { rc_p4_step_open(rd, opt("--k"), opt("--hypothesis"), opt("--mechanism"), opt("--block"), opt("--cell"), opt("--parent"),
                                        opt("--generator"), ROOT, pool = rc_p4_base_pool(ROOT)); cat("[p4-step-open] 걸음 원장 기록\n") },
-    "p4-step-decide" = { r <- rc_p4_step_decide(rd, opt("--k"), opt("--artifacts"), ROOT); cat(sprintf("[p4-step-decide] 걸음 %s — %s\n", r$k, r$decision)) },
+    "p4-step-decide" = { r <- rc_p4_step_decide(rd, opt("--k"), opt("--artifacts"), ROOT)
+                         cat(sprintf("[p4-step-decide] 걸음 %s — %s(산출 출처 %s)\n", r$k, r$decision, r$artifacts_source)) },
     "p4-status" = writeLines(rc_p4_status(rd, ROOT)),
     "p4-close" = { multi <- function(k) { i <- which(rest == k); i <- i[i < length(rest)]; if (length(i)) rest[i + 1L] else character(0) }
                    r <- rc_p4_close(rd, note = opt("--note") %||% stop("--note 필요"), probes = multi("--probe"), lessons = multi("--lesson"),
-                                    r7 = opt("--r7") %||% NA_character_, no_probes_reason = opt("--no-probes"), root = ROOT, regrade_write = flag("--regrade-write"))
+                                    r7 = opt("--r7") %||% NA_character_, no_probes_reason = opt("--no-probes"), root = ROOT, regrade_write = flag("--regrade-write"),
+                                    philosophy_p2 = opt("--p2") %||% NA_character_, superfan_t2 = opt("--t2") %||% NA_character_)
                    cat(sprintf("[p4-close] %s · 마감 %s\n", r$label, r$finalize$status)) },
     "p4-generator-review" = { r <- rc_p4_generator_review(ROOT, out = opt("--out")); cat(r$md, sep = "\n") },
     stop("모르는 단계: ", st))

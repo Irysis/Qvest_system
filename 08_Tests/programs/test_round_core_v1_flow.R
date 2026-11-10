@@ -103,6 +103,54 @@ chk("C7d 결과 원장 1줄 — 라운드 · 프로그램 · 탐침 2 · 교훈 
       length(o1[[1]]$lessons) == 1L && identical(o1[[1]]$r7, "noise") && !is.null(o1[[1]]$epoch) && identical(o1[[1]]$prereg_md5, rc_md5(P$prereg)))
 rc_close(RD, note = "자체 시험", registry_path = REG, probes = c("탐침 하나", "탐침 둘"))
 chk("C7e 같은 라운드를 다시 닫아도 원장은 한 줄(추가 전용 · 중복 없음)", length(rc_outcomes_read(OUTL)) == 1L)
+## 마감 훅(2026-11-10 · v10.2 · round_candidate_gate.R::rcg_finalize) — P1 틀은 최종 후보가 없다 · 마감 실패는 닫기를 막지 않는다
+chk("C7m P1 틀 닫기 = 마감 훅 건너뜀(등록부 finalize = 'skip: 템플릿 p1_qualification…' · 결과 원장 = skip)",
+    startsWith(as.character(e2[[1]]$finalize %||% ""), "skip: 템플릿 p1_qualification") && identical(o1[[1]]$finalize, "skip"),
+    as.character(e2[[1]]$finalize %||% "(없음)"))
+local({
+  orig <- rc_close_finalize
+  assign("rc_close_finalize", function(...) stop("주입 오류"), envir = globalenv())
+  on.exit(assign("rc_close_finalize", orig, envir = globalenv()), add = TRUE)
+  r <- tryCatch(rc_close(RD, note = "자체 시험", registry_path = REG, probes = c("탐침 하나", "탐침 둘")), error = function(e) e)
+  e3 <- Filter(function(z) identical(z$round_id, RID), pr_get(pr_load(path = REG), "P1_RETURN")$rounds)
+  chk("C7n 마감 훅 오류 → 닫기는 끝난다(등록부 complete · finalize = 'error: …' · 결과 원장 한 줄 그대로)",
+      !inherits(r, "error") && identical(e3[[1]]$status, "complete") && startsWith(as.character(e3[[1]]$finalize %||% ""), "error: 주입 오류") &&
+        length(rc_outcomes_read(OUTL)) == 1L, if (inherits(r, "error")) conditionMessage(r) else as.character(e3[[1]]$finalize %||% ""))
+})
+## 사전등록 최종 후보 읽기(p2 · p3) — verdict.json selected[[1]] 단위의 판정 칸(진단 · 기준 칸 제외) · 시행 집합 = 잰 칸 전부 · 스윕만 마감
+local({
+  FD <- file.path(SB, "fin"); RS <- file.path(FD, "results"); dir.create(RS, recursive = TRUE)
+  SPF <- file.path(FD, "cell_spec.json"); writeLines('{"code":"E1_D1"}', SPF)
+  cl <- list(list(code = "E1_D1", engine = "E1", component = "D1", role = "variant", spec = SPF),
+             list(code = "E2_D1", engine = "E2", component = "D1", role = "variant", spec = SPF),
+             list(code = "E1_D1x", engine = "E1", component = "D1", role = "diagnostic", spec = SPF),
+             list(code = "E1_RX0", engine = "E1", component = "RX0", role = "reference", spec = SPF),
+             list(code = "E1_D2", engine = "E1", component = "D2", role = "variant", spec = SPF),
+             list(code = "E2_D2", engine = "E2", component = "D2", role = "variant", spec = SPF))
+  for (c in cl) { a <- file.path(FD, "arts", c$code); dir.create(a, recursive = TRUE)
+    writeLines(as.character(jsonlite::toJSON(list(strategy_id = paste0("S_", c$code), essence_grade = "A",
+                                                  selection_type = if (identical(c$code, "E2_D1")) "chain" else "sweep"), auto_unbox = TRUE)),
+               file.path(a, "authoritative_remeasure.json"))
+    if (!identical(c$code, "E2_D2")) writeLines(as.character(jsonlite::toJSON(list(ok = TRUE, artifacts = a), auto_unbox = TRUE)), file.path(RS, paste0(c$code, ".json"))) }
+  sp2 <- list(template = "p2_device", round_id = "P2R99_selftest", cells = cl); PP <- list(results = RS)
+  calls <- list()
+  fn <- function(candidate_dir, trial_dirs, strategy_id, spec_path, root, write) {
+    calls[[length(calls) + 1L]] <<- list(cand = candidate_dir, n = length(trial_dirs), sid = strategy_id, spec = spec_path, write = write)
+    list(status = "regrade ok(A→A) · gate publish") }
+  f1 <- rc_close_finalize(sp2, list(selected = list(list(device = "D1")), verdict = "supported"), PP, write = FALSE, fn = fn)
+  chk("C7o 최종 후보 = selected[[1]] 단위(D1)의 판정 칸 E1_D1 · E2_D1(진단 · 기준 칸 제외) · 스윕만 마감(E2_D1 chain = skip) · 시행 집합 = 잰 칸 5",
+      length(calls) == 1L && identical(basename(calls[[1]]$cand), "E1_D1") && calls[[1]]$n == 5L && identical(calls[[1]]$sid, "S_E1_D1") &&
+        identical(calls[[1]]$spec, SPF) && identical(calls[[1]]$write, FALSE) && grepl("E1_D1: regrade ok", f1$status) &&
+        grepl("E2_D1: skip 스윕 아님(chain)", f1$status, fixed = TRUE) && !grepl("E1_D1x|E1_RX0", f1$status) && identical(f1$coarse, "done"), f1$status)
+  f2 <- rc_close_finalize(sp2, list(selected = list(), verdict = "falsified"), PP, fn = fn)
+  f3 <- rc_close_finalize(sp2, list(selected = list(list(device = "D2"))), PP, fn = fn)
+  f4 <- rc_close_finalize(sp2, list(selected = list(list(device = "D1"))), PP, fn = function(...) stop("재채점 실패"))
+  f5 <- rc_close_finalize(c(sp2[setdiff(names(sp2), "template")], list(template = "p3_construction")), list(selected = list(list(method = "D1"))), PP, fn = fn)
+  chk("C7p 최종 후보 없음(판정 falsified) = skip · 측정 산출 없는 칸 = skip · 마감 오류 = 칸별 'error: …'(coarse error) · p3 는 method 단위",
+      startsWith(f2$status, "skip: 최종 후보 없음") && identical(f2$coarse, "skip") && grepl("E2_D2: skip 측정 산출 없음", f3$status) &&
+        grepl("E1_D1: error: 재채점 실패", f4$status) && identical(f4$coarse, "error") && grepl("최종 후보 D1", f5$status) && length(calls) == 3L,
+      paste(f2$status, f3$status, f4$status, f5$status, sep = " || "))
+})
 rc_probe_consume(paste0(RID, "#1"), "NEXT_ROUND", OUTL)
 chk("C7f 탐침 이어받기 — 열린 탐침 1개 남음 · 같은 탐침 재사용 거부 · 없는 탐침 거부",
     length(rc_open_probes(OUTL, "P1_RETURN")) == 1L && grepl("이미 이어받은", err_of(rc_probe_consume(paste0(RID, "#1"), "OTHER", OUTL))) &&
