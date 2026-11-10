@@ -1,0 +1,22 @@
+{
+  "schema": "chain_tick_v1",
+  "_doc": "강화 사슬 무인 틱(02_Infrastructure/ops/chain_tick.sh) 스위치 · 상한. 읽는 곳 = 02_Infrastructure/programs/chain_tick.R config. 쓰기 = 사람(도훈 · 세션). 판독 불가 = 틱이 아무것도 하지 않는다(fail-closed · 경보 1통). 끄기 = enabled false(다음 틱부터 무음 0 종료) · 사슬 하나만 = <사슬>/tick_hold 파일 · 한 번만 = 환경 QVEST_CHAIN_TICK=off.",
+  "enabled": true,
+  "enabled_source": "decision_register CHAIN-AUTOMATION-STANDING-BOARD-AND-TICK-20261110 — 도훈 11-10 '만들고 바로 켠다' · 저녁 '사슬 무인틱 구축은 해둬'",
+  "measures_per_tick": 1,
+  "measures_per_tick_source": "Qvest_StandingBoard 작업 = MultipleInstancesPolicy IgnoreNew · ExecutionTimeLimit PT24H(02_Infrastructure/ops/scheduler/_task_xml_backup/Qvest_StandingBoard.xml) — 틱이 재는 동안 그 시간의 상설 판 틱이 건너뛰어진다 · 셀 워커 1개 정점 7.45 GB(기억 카드 project-main-pc-ram-benchmark-20261103 · 32 GB 에 워커 2개) — 상설 판 측정과 같은 기계를 나눈다",
+  "gen_calls_per_chain_per_tick": 1,
+  "gen_calls_per_chain_per_tick_source": "사슬형 — 앞 걸음 판정 전 다음 걸음을 열 수 없다(04_Research/programs/_lib/round_core/v1/p4.R::rc_p4_step_open '앞 걸음이 판정되지 않았다') · 열린 걸음은 측정을 거쳐야 판정된다 → 생성 호출 수는 측정 수 + 연속 실패 상한으로 위가 막힌다(하루 상한 숫자를 따로 두지 않는다)",
+  "gen_max_consecutive_failures_ref": "04_Research/programs/_lib/round_core/v1/standing.R::RC_STANDING_MAX_FAILS",
+  "gen_max_consecutive_failures_source": "코어 포기 규칙과 같은 뜻('2번째 실패면 사람이 본다' · standing.R · p4.R::rc_p4_step_abandon) — 값은 코어 상수를 읽는다(사본 없음)",
+  "gen_timeout_sec": 3600,
+  "gen_timeout_sec_source": "02_Infrastructure/programs/rx_lane.sh 처방 레인 기본 TMO 3600(같은 청정 레인 · 같은 종류의 처방 프롬프트) · 환경 QVEST_RUN_TIMEOUT 이 덮는다",
+  "stall_alert_min_source": "별도 숫자 없음 — gen_timeout_sec/60(살아 있는 홀더가 자기 timeout 을 넘겼다 = timeout 실패 = 매달림) · 환경 QVEST_STALL_ALERT_MIN 이 덮는다",
+  "llm_backoff": "until_next_day",
+  "llm_backoff_source": "한도 사유는 자동 재시도하지 않는다(paper_router_run.sh 07-26 도훈 지시) · 경보 단위 = 하루(sched_alert_emit 1일 1회) — 다음 날 첫 틱이 다시 시도",
+  "lanes_dir": "04_Research/programs/P4_ASSEMBLY/_lanes",
+  "lanes_dir_source": "생성기 작업 폴더 = 저장소 안 · 사슬 폴더 밖(p4.R::rc_p4_generator_workdir) · 청정 레인 읽기 가드 R6 가 그 폴더만 연다 · %TEMP% 금지(자동 정리 사고 카드 reference-windows-storage-sense-deletes-session-scratchpad-in-temp-20261003)",
+  "llm_lane": "chain_generator",
+  "llm_lane_source": "rf_llm_env.sh::rf_llm_resolve — 06_Registry/reinforce_auto_config.json llm.lanes 에 없으면 llm.model/effort(도훈 09-23 '무인 LLM 개입부 모두 opus max')",
+  "notify_close_wait": true
+}

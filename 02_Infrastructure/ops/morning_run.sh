@@ -328,9 +328,10 @@ date '+%H:%M:%S' > "${LOCK}.done" 2>/dev/null || true
     # (v10 2026-09-02) 집계 대상 = **자체 텔레그램이 없는 마커**만. task_health·paper_router 는 sched_alert_emit/scheduler_alert 로
     #   이미 자기 경보를 보내므로 같은 사실이 하루 2번 도달했고, 같은 날 두 번째 morning_run(cron+logon)은 자기 마커
     #   unattended_line_daily_digest_* 를 1건으로 다시 셌다(today=N 부풀림).
-    _TN=$(ls "$_ADIR"/*_"${_TT}".alert 2>/dev/null | grep -v -E '/(unattended_line|task_health|paper_router)_' | wc -l | tr -d ' ')
+    #   (2026-11-10) 강화 사슬 무인 틱(chain_tick_* · chain_gen_*)도 sched_alert_emit 으로 자기 경보를 보낸다 — 같은 이유로 집계에서 뺀다.
+    _TN=$(ls "$_ADIR"/*_"${_TT}".alert 2>/dev/null | grep -v -E '/(unattended_line|task_health|paper_router|chain_tick|chain_gen)_' | wc -l | tr -d ' ')
     if [ "${_TN:-0}" -gt 0 ]; then
-      _TC=$(ls "$_ADIR"/*_"${_TT}".alert 2>/dev/null | grep -v -E '/(unattended_line|task_health|paper_router)_' | sed "s#.*/##; s#_${_TT}\.alert\$##" \
+      _TC=$(ls "$_ADIR"/*_"${_TT}".alert 2>/dev/null | grep -v -E '/(unattended_line|task_health|paper_router|chain_tick|chain_gen)_' | sed "s#.*/##; s#_${_TT}\.alert\$##" \
             | sort -u | paste -sd'; ' - 2>/dev/null)
       # reason 에 날짜를 넣어 **하루 1건**으로 스로틀한다(sched_alert_emit 은 comp+reason 1일 1회).
       sched_alert_emit "unattended_line" "daily_digest_${_TT}" \

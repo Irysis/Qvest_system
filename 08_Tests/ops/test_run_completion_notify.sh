@@ -25,7 +25,7 @@ fi
 
 # (2026-11-10) 퇴역 러너 mode_queue_research_run.sh · alpha_search_queue_run.sh(· factor_deep_recheck_run.sh)는
 #   삭제됐다(PRUNE-EXTRA-DELETIONS-20261110). 알림 배선 계약은 살아 있는 러너에 대해 계속 잰다 — 대상 0개면 FAIL(공허 통과 금지).
-RUNNERS="paper_router_run.sh"
+RUNNERS="paper_router_run.sh chain_gen_run.sh"   # chain_gen_run.sh = 강화 사슬 생성기(11-10)
 n_live=0; for f in $RUNNERS; do [ -f "$OPS/$f" ] && n_live=$((n_live+1)); done
 [ "$n_live" -ge 1 ] && ok "검사 대상 러너 $n_live 개 실재" || ng "검사 대상" "살아 있는 러너 0개 — 검사가 공허해진다"
 

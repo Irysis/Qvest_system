@@ -32,7 +32,7 @@ tokstate(){ if [ -n "${CLAUDE_CODE_OAUTH_TOKEN:-}" ]; then echo "SET"; else echo
 # (2026-11-10) 퇴역 러너 3종(alpha_search_queue_run · factor_deep_recheck_run · mode_queue_research_run)은
 #   삭제됐다(PRUNE-EXTRA-DELETIONS-20261110). 이 계약(source < 수리줄 < claude 호출 · 지문 · 값 노출 금지)은
 #   살아 있는 무인 LLM 러너에 대해 계속 잰다. 대상이 0개가 되면 아래 가드가 FAIL 한다(공허 통과 금지).
-RUNNERS="paper_router_run"
+RUNNERS="paper_router_run chain_gen_run"   # chain_gen_run = 강화 사슬 생성기(11-10 CHAIN-AUTOMATION-STANDING-BOARD-AND-TICK-20261110)
 n_live=0; for f in $RUNNERS; do [ -f "$ROOT/02_Infrastructure/ops/$f.sh" ] && n_live=$((n_live+1)); done
 [ "$n_live" -ge 1 ] && ok "검사 대상 러너 $n_live 개 실재" || ng "검사 대상" "살아 있는 러너 0개 — 검사가 공허해진다"
 

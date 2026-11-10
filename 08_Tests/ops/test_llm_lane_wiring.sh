@@ -100,12 +100,12 @@ done
 fab=$("$PY" -c "import io,json;c=json.loads(io.open(r'$ROOT/06_Registry/reinforce_auto_config.json','rb').read().decode('utf-8'));L=(c.get('llm') or {}).get('lanes',{});print(' '.join(sorted(k for k,v in L.items() if 'fable' in str((v or {}).get('model','')).lower())))" | tr -d '\r')
 [ -z "$fab" ] && ok "C6c fable 배정 레인 0(D12 — Opus 로 대체)" || ng "C6c fable 레인 잔존" "$fab"
 c7=0
-for f in paper_router_run.sh paper_atlas_run.sh; do
+for f in paper_router_run.sh paper_atlas_run.sh chain_gen_run.sh; do
   bash -n "$OPS/$f" || { ng "C7 문법 $f"; c7=1; }
 done
-[ "$c7" -eq 0 ] && ok "C7 2 레인 문법(bash -n)"
+[ "$c7" -eq 0 ] && ok "C7 3 레인 문법(bash -n)"
 # C8 (P0-M1) — 레인의 호출은 단일 진입을 거친다: 해석값(LLM_MODEL/LLM_EFFORT)이 rf_llm_agent_run 으로 흘러간다
-for f in paper_router_run.sh paper_atlas_run.sh; do
+for f in paper_router_run.sh paper_atlas_run.sh chain_gen_run.sh; do
   if grep -q 'rf_llm_agent_run ' "$OPS/$f"; then ok "C8 $f → rf_llm_agent_run"; else ng "C8 $f" "단일 진입 미경유"; fi
 done
 
