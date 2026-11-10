@@ -53,7 +53,9 @@ TOOL=$(printf '%s' "$INPUT" | "$QVEST_PY_BIN" -c 'import json,sys; sys.stdout.re
 COMMAND=$(printf '%s' "$INPUT" | "$QVEST_PY_BIN" -c 'import json,sys; sys.stdout.reconfigure(encoding="utf-8",errors="replace"); d=json.loads(sys.stdin.buffer.read().decode("utf-8","replace")); print(d.get("tool_input",{}).get("command",""))' 2>/dev/null || echo "")
 
 # Only Bash tool
-if [ "$TOOL" != "Bash" ]; then
+# (v10.2 · 2026-11-10 도훈 결정 HOOK-POWERSHELL-COVERAGE-20261110) PowerShell 도구의 명령도 본다 — 전에는 Bash 도구만 검사해
+#   PowerShell 로 내린 직접 호출(Rscript -e "tg_send(...)" 등)이 그대로 통과했다. 판정식은 같다(명령 원문 검사).
+if [ "$TOOL" != "Bash" ] && [ "$TOOL" != "PowerShell" ]; then
   echo '{}'
   exit 0
 fi

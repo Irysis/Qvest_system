@@ -101,6 +101,20 @@
         ]
       },
       {
+        "_doc_powershell_guards": "PowerShell 경로 보호선 — Bash 와 같은 두 가드(생산 폴더 쓰기 차단 + 텔레그램 직접 호출 차단). 2026-11-10 도훈 결정 HOOK-POWERSHELL-COVERAGE-20261110: 전에는 Bash 도구 명령만 검사해 PowerShell 로 내린 명령이 두 가드를 그대로 통과했다. 검사 = 08_Tests/hooks/test_hook_powershell_coverage.sh",
+        "matcher": "PowerShell",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "DIR=${CLAUDE_PROJECT_DIR:-${QM_ROOT:-$PWD}}; bash \"$DIR/02_Infrastructure/hooks/safety_guard.sh\""
+          },
+          {
+            "type": "command",
+            "command": "DIR=${CLAUDE_PROJECT_DIR:-${QM_ROOT:-$PWD}}; bash \"$DIR/02_Infrastructure/hooks/telegram_direct_call_guard.sh\""
+          }
+        ]
+      },
+      {
         "_doc_agent_inject": "에이전트 스폰 시 공리·고정축 컨텍스트 주입 (context only, 차단 없음).",
         "matcher": "Agent",
         "hooks": [

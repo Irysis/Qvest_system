@@ -1973,6 +1973,9 @@ SUITES=(
   #   텔레그램 직접 호출 가드 — 실제 호출 10형태(전체 경로 Rscript.exe · 다른 플래그 · 둘째 -e · R -e · 변수 실행기 · heredoc 등) 차단 ·
   #   음성 8(grep/sed 의 -e · 파일 만들기 · 정본 진입) · 새 추출부를 끈 사본(돌연변이) · 한계 기록(파일로 돌리는 꼴).
   "08_Tests/hooks/test_telegram_guard_forms.sh"
+  # 2026-11-10 추가(도훈 결정 HOOK-POWERSHELL-COVERAGE-20261110): 차단 훅 2종(안전 가드 · 텔레그램 직접 호출 가드)이 PowerShell 도구의
+  #   명령도 본다 — 등록(settings.json) · 생산 폴더 쓰기 7형태 차단 · 읽기 3형태 허용 · 텔레그램 직접 호출 차단 · Bash 판정 불변 · 돌연변이 2.
+  "08_Tests/hooks/test_hook_powershell_coverage.sh"
   #   SessionEnd 자동 커밋 세션 범위 — 교차 세션 · 인덱스 격리 · 전사 부재 무커밋 · subagents · 경로 형태 · 비밀 중단 실 인덱스 불변 ·
   #   격리 밸브 · 충돌 마커 · 삭제 · worktree · 위반 주입(all) · 뮤테이션 2종(전체 add · 동기화 제거)
   "08_Tests/hooks/test_auto_commit_session_scope.sh"

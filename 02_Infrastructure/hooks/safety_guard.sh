@@ -17,8 +17,8 @@
 #   자동 기억 스위치(CLAUDE_CODE_DISABLE_AUTO_MEMORY=1)가 1층, 이 규칙이 2층이다 — 스위치가 풀려도 쓰기는 막힌다.
 #   ★표식이 없으면(대화형 세션·Q) 이 규칙은 **한 줄도 실행되지 않는다** — 평시 비용·소음 0.
 #   Bash 판정은 정적 최선이다(우회 3종 — 글롭·문자열 결합·find — 는 검사가 양성 대조로 잡는다).
-#   ★한계(명시): 이 훅의 등록 matcher 는 Write|Edit · Bash 뿐이다(settings.json) — MultiEdit·NotebookEdit·
-#     PowerShell 도구 경로는 여기 오지 않는다. 등록 확장은 settings.json 변경(별도 결정)이다.
+#   ★한계(명시): 이 훅의 등록 matcher 는 Write|Edit · Bash · PowerShell 이다(settings.json — PowerShell 은 2026-11-10 도훈 결정
+#     HOOK-POWERSHELL-COVERAGE-20261110 로 추가) — MultiEdit·NotebookEdit 도구 경로는 여기 오지 않는다(등록 확장 = 별도 결정).
 #   검사: 08_Tests/hooks/test_safety_guard_memory.sh
 #
 # (R3R 2026-09-25 · 결정 R3R-D2-MULTILINE) 여러 줄 명령 — bash 의미대로 판정:
@@ -346,9 +346,18 @@ if [ "$TOOL_NAME" = "Write" ] || [ "$TOOL_NAME" = "Edit" ]; then
 fi
 
 # Rule 2: Bash에서 05_Production에 쓰기 시도 차단 (> 또는 mv/cp 대상일 때만)
-if [ "$TOOL_NAME" = "Bash" ]; then
+#   (v10.2 · 2026-11-10 도훈 결정 HOOK-POWERSHELL-COVERAGE-20261110) PowerShell 도구의 명령도 같은 규칙으로 본다 — 전에는 Bash 도구만
+#   검사해 PowerShell 로 내린 쓰기가 그대로 통과했다. Bash 갈래의 판정식은 글자 하나 바꾸지 않았다. PowerShell 갈래는 쓰기 동사
+#   (별칭은 낱말 경계로 · cmdlet · 리디렉션)를 대소문자 무시로 본다 — 읽기(Get-Content · Select-String · Format-Table)는 걸리지 않는다.
+#   한계는 Bash 와 같다(정적 최선): 변수에 담은 경로 · 폴더로 들어간 뒤의 상대 경로는 못 잡는다.
+if [ "$TOOL_NAME" = "Bash" ] || [ "$TOOL_NAME" = "PowerShell" ]; then
   _qsg_join "$COMMAND"   # (R3R·D2) 줄 이음만 잇는다 — 개행은 명령 경계 그대로(grep 줄 단위: 개행으로 갈린 두 명령을 잇지 않는다)
-  if printf '%s\n' "$_Q1" | grep -qE "(>|mv|cp|rm).*05_Production"; then
+  if [ "$TOOL_NAME" = "PowerShell" ]; then
+    if printf '%s\n' "$_Q1" | grep -qiE "(>|(^|[^A-Za-z-])(mv|cp|rm|del|ren|move|copy|ni|sc|ac|rd|rmdir|md|mkdir)([^A-Za-z-]|$)|(Move|Copy|Remove|Rename|New|Set|Clear)-Item(Property)?|(Set|Add|Clear)-Content|Out-File|Tee-Object|Export-[A-Za-z]+).*05_Production"; then
+      echo '{"decision":"block","reason":"05_Production/ write attempt via PowerShell"}'
+      exit 0
+    fi
+  elif printf '%s\n' "$_Q1" | grep -qE "(>|mv|cp|rm).*05_Production"; then
     echo '{"decision":"block","reason":"05_Production/ write attempt via Bash"}'
     exit 0
   fi
@@ -365,7 +374,7 @@ if [ "$_QSG_RULE3" = "1" ]; then
   case "$TOOL_NAME" in
     Write|Edit|MultiEdit)
       if _qmem_file_hit "$FILE_PATH"; then _qmem_block; fi ;;
-    Bash)
+    Bash|PowerShell)
       if _qmem_cmd_hit "$COMMAND"; then _qmem_block; fi ;;
   esac
 fi
