@@ -23,6 +23,53 @@ chk("A4 참조 해석 — 정본 설정 tier_graduation.grade_b_min_portfolio_al
 chk("A5 참조 키 없음 = 멈춤", throws(rc_ref_value("02_Infrastructure/worktask/constraint_defaults.json::tier_graduation.없는_키")))
 chk("A6 상대 경로", identical(rc_rel(file.path(ROOT, "06_Registry/x.json")), "06_Registry/x.json"))
 
+cat("E 처방 입력 정보 경계 검사(rc_input_issues · 11-10(2) 감사 U11 — fail-closed · 양방향)\n")
+## [E-begin] — 이 구간은 돌연변이 대조 스크립트가 그대로 떼어 다시 돌린다(수리 전 검사기로는 실패해야 한다)
+## 막아야 할 문장 — 감사 시나리오 원문 + 등급 표기 어순 · τ_D 뒤 연도 표기 · 시험 창 수치
+E_BLOCK <- c(
+  "전기간 A등급 후보 · 2023~2025 시험 창 Calmar 0.41 · 23년 급락에서 방어",       # 감사 시나리오 원문(U11)
+  "기저는 C등급에 머물렀다", "A 등급 후보로 올랐다", "Grade B 판정", "B→A 상향", "C -> B 로 올라감", "A급 전략이다", "등급: A",
+  "{\"essence_grade\": \"B\"}", "A 자격 통과", "등급은 B 였다", "graded A", "A grade 전략", "B 띠에 들었다", "A 후보로 BOOK 상신",
+  "Mar 2023 급락", "20230315 리밸에서", "2023H1 성과", "FY2024 실적", "2024-03 위기", "24.3Q 반등", "23H2 반등", "202403 리밸",
+  "’23 하락장", "1Q24 반등", "2024년 3분기", "2023년 이후 급락", "2023~2025 구간",
+  "시험 창 Calmar 0.41", "OOS Sharpe 1.2", "강건성 구간에서 CAGR 18%", "τ_D 이후 하락 포착 0.62", "시험 창 위기 3건 모두 방어", "holdout CAGR 0.15",
+  "전기간 Sharpe 0.9",
+  ## 11-10(3) 재수리(독립 검증 미흡 4종) — 하이픈 어순 · 한국어 서술형 이동 · 판정 · 전기간 다른 표기 · 줄바꿈 · 긴 간격 우회
+  "Grade-A 전략", "grade–B 후보", "B에서 A로 올라갔다", "A로 승급", "A 로 올라섰다", "B 로 상향", "C에서 B로", "A 판정을 받았다", "최종 판정 A", "F 판정",
+  "판정은 B", "전체 기간 Calmar 0.41", "전 구간 Sharpe 0.9", "전체 표본 CAGR 17%", "검증 구간 Calmar 0.41",
+  "시험 창\n Calmar 0.41", "시험 창에서 위기 방어가 유지됐고 상승 포착도 기대보다 높은 0.62였다",
+  "OOS 에서는\n위기 하락 포착이 보는 창보다 훨씬 낮아 0.48 수준", "| 시험 창 | 0.41 |")
+## 통과해야 할 문장 — 실제 교훈 · 원장 · 설계 입력에 쓰이는 표현(τ_D 이전 연도 · 칸 · 블록 라벨 · 문턱 이름 · 규범 문장)
+E_PASS <- c(
+  "2015~2016 위기에서 방어가 약했다", "칸 A 와 칸 B 를 비교", "B1 블록 채택", "2008-10-24 바닥 · arXiv 2002.06975 · 2022-12",
+  "등급 산식 S 는 Calmar 와 PORT_t 의 가중 기하평균", "보는 창 Calmar 0.81 · 상승 포착 0.58", "τ_D 이전 위기 하락 포착 0.71",
+  "A 하한 중 PORT_t 가 병목", "RP_AUTO_2002_06975 엔진 · P1R02_1801_long_leg", "36개월 롤링 IC 로 고른다(전기간 IC 를 쓰지 않는다)",
+  "dS_vis 0.12 개선 · 위기 비악화", "2022년 급락 · 2020년 3월 코로나", "1Q22 하락 · 2022Q4 반등", "시험 창 판정은 사람 쪽만 본다",
+  "교훈: P2R04 방어 틸트 β 짝 0/8 — 희석", "15bps · ≤ 25종 · LIQ 2e8", "MC8 짝 대조 · CR 노치", "B 블록 → A 블록 순서",
+  "12년 표본 · 10년 보유", "F-Score 팩터 · C1~C15 체크리스트", "교훈: 정적 노출 축소는 비대칭을 못 만든다",
+  "교훈: tail_overlay 연속 기각 — 보는 창 위기 수 부족", "PBO 0.3 · DSR 0.97 은 진단", "생성기 gen_20260918_235445 의 기각 걸음",
+  "2022년 12월까지의 위기만 본다",
+  ## 11-10(3) 재수리 — 라벨 이동 · A/B 비교 · 보는 창 전 구간 · 문단이 다른 시험 창 언급(오탐 방지)
+  "칸 A 로 옮겨 측정", "칸 B 에서 칸 C 로 바꿨다", "칸 B에서 A로 옮겼다", "strict-PIT A/B 판정에서 인플레 없음", "블록 A 판정 규칙은 사전등록에 고정",
+  "보는 창 전체 기간 Calmar 0.81", "보는 창 전 구간 Sharpe 0.9", "τ_D 이전 구간 위기 하락 포착 0.71", "판정 대기 · dS_vis 0.04",
+  "- 보는 창 Calmar 0.81\n- 시험 창 값은 싣지 않는다", "보는 창 Sharpe 0.9\n\n시험 창 판정은 사람 쪽만 본다",
+  "Grade 산식 메모 · 등급 하한 점검", "B1 블록에서 B2 블록으로 옮겼다",
+  RC_P4_REASONS[["not_qualified"]],                                                     # 설계 입력 기저 풀 사유 문장(실제)
+  "> 보는 창(τ_D = 2022-12-31 까지)의 R 계약 산출만 싣는다. 시험 창 값 · 등급 · 그 뒤 날짜는 없다. 수치를 새로 계산하지 마라.")   # 설계 입력 머리말(실제)
+e_ok <- function(s, ...) isTRUE(tryCatch(rc_input_issues(s, TAU, ...)$ok, error = function(e) NA))
+eb <- vapply(E_BLOCK, function(s) !e_ok(s), logical(1)); ep <- vapply(E_PASS, function(s) e_ok(s), logical(1))
+chk(sprintf("E1 막아야 할 문장 %d개 전부 거부(등급 어순 · τ_D 뒤 연도 표기 · 시험 창 수치)", length(E_BLOCK)), all(eb), paste("통과해 버린 것:", paste(E_BLOCK[!eb], collapse = " | ")))
+chk(sprintf("E2 통과해야 할 문장 %d개 전부 통과(τ_D 이전 연도 · 칸 · 블록 라벨 · 실제 원장 · 설계 입력 표현)", length(E_PASS)), all(ep), paste("막힌 것:", paste(E_PASS[!ep], collapse = " | ")))
+chk("E3 사례 수 — 양쪽 각 15개 이상", length(E_BLOCK) >= 15L && length(E_PASS) >= 15L)
+AL <- "2023년 이후의 시장 사건 · 성과는 사전학습으로 알고 있더라도 **근거로 쓰지 마라**"
+chk("E4 allow — 코드가 준 지시문 그 문장만 지운다(같은 글의 다른 τ_D 뒤 표기는 그대로 막는다)",
+    e_ok(paste("- ", AL, "(처방이 시험 창에 맞춰지면 시험이 무효가 된다)."), allow = AL) && !e_ok(paste(AL, "· 2023년 급락에서 방어"), allow = AL) && !e_ok(AL))
+chk("E5 τ_D 판독 불가 = 막는다(fail-closed)", !isTRUE(tryCatch(rc_input_issues("평범한 교훈", NA)$ok, error = function(e) FALSE)) &&
+      !isTRUE(tryCatch(rc_input_issues("평범한 교훈", "not-a-date")$ok, error = function(e) FALSE)))
+ci5 <- rc_input_issues("A등급 · 2024년 · 시험 창 Calmar 0.4", TAU)
+chk("E6 사유에 세 범주(연도 · 등급 · 시험 창 수치)가 함께 실린다", grepl("연도", ci5$why) && grepl("등급 표기", ci5$why) && grepl("시험 창", ci5$why) && length(ci5$windows) >= 1L)
+## [E-end]
+
 cat("B 규칙 단일 출처\n")
 thr <- function(id, metric, op, value, na = "untested", basis = "검사용 근거") list(id = id, type = "threshold", label = id, metric = metric, op = op, value = value, basis = basis, na = na)
 chk("B1 수치 문턱에 근거 없음 = 거부(하드코딩 금지)", throws(rc_rules_validate(list(list(id = "x", type = "threshold", label = "x", metric = "m", op = ">=", value = 1)))))

@@ -12,6 +12,8 @@
 #   L8 탐침 이어받기 두 번 → 두 번째 거부 · 열린 탐침 감소 · 자동 이어받기 호출처 0(GAP)
 #   L9 생성기 개정 근거 = 결과 원장에 없는 id → 거부 / 있는 id → 다음 관문(철학 영수증)까지 감
 #   L10 교훈에 '등급 C' 표기 → 기록은 받아들여짐 → 이후 생성기 검토가 멈춤(쓰기 · 읽기 검사 비대칭 = 원장 독살 GAP)
+#   L11 (11-10(2) 감사 U11) 교훈 · 탐침 · 라벨의 흔한 등급 표기(A등급 · B→A · A급) · τ_D 뒤 연도(2023~2025 · 23년 · Mar 2023 · 20230315 ·
+#       2023H1 · FY2024) · 시험 창 수치 → 기록 거부 / τ_D 이전 연도 · 칸 · 블록 라벨은 받음 / 옛 나쁜 줄은 처방 입력 읽기만 빼고 건수 경고
 #   K1 계기: 주별 표(라운드 1 · 사슬 1 · 탐침) · 개정 근거로 안 쓴 사슬 1 → 근거 등록 뒤 0 · 허용 목록 밖 열 거부(돌연변이)
 #==============================================================================
 suppressPackageStartupMessages({ library(jsonlite); library(data.table) })
@@ -122,6 +124,38 @@ bad10 <- c(rec_of("P4C91", program = "P4_ASSEMBLY", template = "p4_chain", probe
 .rc_outcome_write(bad10, OPg)
 g10b <- tryCatch(suppressWarnings(rc_p4_generator_review(root = S, chain_dirs = character(0), outcomes_path = OPg)), error = function(e) conditionMessage(e))
 chk(is.list(g10b) && !grepl("등급 C", g10b$md, fixed = TRUE), "L10b 옛 나쁜 줄(등급 표기)은 설계 입력 · 생성기 검토에서 그 줄만 빠진다(경고) · 멈추지 않는다")
+
+cat("\n[L11] 정보 경계 검사 확장(11-10(2) 감사 U11) — 흔한 등급 · 연도 · 시험 창 표기\n")
+## 감사 시나리오 원문: 사슬 닫기 교훈에 전기간 등급 · τ_D 뒤 연도 범위 · 시험 창 수치 · 두 자리 연도
+U11 <- "전기간 A등급 후보 · 2023~2025 시험 창 Calmar 0.41 · 23년 급락에서 방어"
+e11 <- err(rec_of("P4C93", program = "P4_ASSEMBLY", template = "p4_chain", probes = c("a", "b"), lessons = U11))
+chk(grepl("처방 입력 금지 정보", e11) && grepl("등급 표기", e11) && grepl("연도", e11) && grepl("시험 창", e11), "L11a 시나리오 교훈 → 기록 단계에서 거부(세 범주 사유)", e11)
+for (s in c("기저는 C등급에 머물렀다", "B→A 상향", "A급 전략", "Mar 2023 급락에서 방어", "20230315 리밸", "2023H1 성과", "FY2024", "OOS Sharpe 1.2",
+            ## 11-10(3) 재수리 — 하이픈 어순 · 서술형 이동 · 판정 · 전기간 다른 표기 · 한 칸 안 줄바꿈 · 긴 간격
+            "Grade-A 전략", "B에서 A로 올라갔다", "A 판정을 받았다", "전체 기간 Calmar 0.41", "시험 창\n Calmar 0.41",
+            "시험 창에서 위기 방어가 유지됐고 상승 포착도 기대보다 높은 0.62였다"))
+  chk(!identical(err(rec_of("P4C93", program = "P4_ASSEMBLY", template = "p4_chain", probes = c("a", "b"), lessons = s)), "no_stop"), sprintf("L11b 교훈 '%s' 거부", s))
+for (s in c("2015~2016 위기에서 방어가 약했다", "칸 A 와 칸 B 비교 · B1 블록 채택", "보는 창 Calmar 0.81",
+            "칸 B 에서 칸 C 로 바꿨다", "보는 창 전 구간 Sharpe 0.9", "strict-PIT A/B 판정에서 인플레 없음"))
+  chk(identical(err(rec_of("P4C93", program = "P4_ASSEMBLY", template = "p4_chain", probes = c("a", "b"), lessons = s)), "no_stop"), sprintf("L11c 대조 — 교훈 '%s' 는 받는다", s))
+chk(!identical(err(rec_of("P4C93", program = "P4_ASSEMBLY", template = "p4_chain", probes = c("시험 창 CAGR 18% 재확인", "b"), lessons = "교훈")), "no_stop") &&
+      !identical(err(rec_of("P4C93", program = "P4_ASSEMBLY", template = "p4_chain", probes = c("a", "b"), lessons = "교훈", label = "사슬 — 최종 후보 A등급")), "no_stop"),
+    "L11d 탐침 · 판정 라벨 칸도 같은 검사")
+## L11e 이미 원장에 들어간 옛 줄(검사 강화 전 · 쓰기 우회) — 원장은 그대로 · 처방 입력 읽기만 그 줄을 빼고 건수를 경고로 남긴다
+OPu <- file.path(S, "u11_outcomes.jsonl"); invisible(file.copy(OP, OPu))
+n_before <- length(readLines(OPu, warn = FALSE))
+bad11 <- rec_of("P4C94", program = "P4_ASSEMBLY", template = "p4_chain", probes = c("기저 교체 탐침", "가중 탐침"), lessons = "교훈 자리"); bad11$lessons <- list(U11)
+.rc_outcome_write(bad11, OPu)
+w11 <- character(0)
+md11 <- withCallingHandlers(paste(rc_outcomes_md(OPu, program = NULL, last = 50L, tau_clean = tau), collapse = "\n"),
+                            warning = function(w) { w11 <<- c(w11, conditionMessage(w)); invokeRestart("muffleWarning") })
+chk(!grepl("시험 창 Calmar", md11, fixed = TRUE) && !grepl("P4C94", md11, fixed = TRUE), "L11e 처방 입력 읽기(tau_clean) — 옛 나쁜 줄은 설계 입력에서 빠진다")
+chk(any(grepl("미통과 줄 1개", w11, fixed = TRUE) & grepl("P4C94", w11, fixed = TRUE)), "L11f 건너뛴 건수 · 라운드 id 를 경고(로그)로 남긴다", paste(w11, collapse = " | "))
+chk(!any(vapply(suppressWarnings(rc_open_probes(OPu, tau_clean = tau)), function(p) grepl("^P4C94#", p$ref), logical(1))), "L11g 그 줄의 탐침도 열린 탐침에서 빠진다")
+chk(length(readLines(OPu, warn = FALSE)) == n_before + 1L && grepl("시험 창 Calmar", paste(rc_outcomes_md(OPu, program = NULL, last = 50L), collapse = "\n"), fixed = TRUE),
+    "L11h 원장은 추가 전용 그대로(고치지 않음) · 사람 쪽 읽기(tau_clean 없음)는 전부 본다")
+g11 <- tryCatch(suppressWarnings(rc_p4_generator_review(root = S, chain_dirs = character(0), outcomes_path = OPu)), error = function(e) conditionMessage(e))
+chk(is.list(g11) && !grepl("시험 창 Calmar", g11$md, fixed = TRUE), "L11i 생성기 검토는 멈추지 않고 그 줄만 뺀다", if (is.character(g11)) g11 else "")
 
 cat("\n[K1] 계기 — 주별 표 · 개정 대기\n")
 ev <- klm_collect(S, outcomes_path = OP, standing_files = character(0), lane_log = file.path(S, "none.jsonl"))
