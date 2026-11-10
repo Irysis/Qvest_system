@@ -3,6 +3,24 @@
 근거 = `../lanes/audit_H2_crosscut.md` §8 + 도훈 11-10 저녁 결정 카드. 예약 작업의 등록 · 변경은 Claude 세션 안에서 할 수 없다(세션의 HKCU · AppData 쓰기는 가상화된다) —
 **도훈이 일반 PowerShell(관리자 불필요 · Claude 밖)** 에서 실행한다. 메인 PC 기준이다.
 
+## ★11-11 08:02 적용 결과 — 남은 것은 아래 세 줄
+
+도훈이 1단계를 붙여넣었다(11-11 08:02). Q 가 읽기 전용으로 확인한 결과:
+
+- **된 것**: AxiomReview · MonthlyDistill 꺼짐 · AxiomActivate · WeightCatalogGrow 등록 해제 · **ReinforceAutoLoop 켜짐**(실행기 08:02 재작성 · 시작 관문 때문에 11-13 19:10 전에는 일하지 않는다) · noLayer4_Monthly_PaperTracking 은 이미 등록돼 있었다(다음 실행 12-03 09:00).
+- **안 된 것**: `Qvest_InfraCurrency` · `Qvest_StandingBoard` 미등록 · 꺼진 Axiom 두 작업의 실행기가 `jobs\off` 로 안 옮겨짐.
+- **원인 = 이 절차서의 결함(Q 의 실수)**: `powershell -File … -Name a,b,c` 는 쉼표 목록을 **문자열 하나**로 넘긴다 → 그런 이름의 작업이 없어 아무것도 하지 않고 조용히 끝났다(이름 하나짜리였던 레인 켜기만 적용됐다). 아래처럼 이름마다 한 번씩 부르면 된다(`-WhatIf` 로 두 작업 모두 APPLY 계획이 나오는 것을 확인했다). 1단계 블록도 같은 식으로 고쳤다.
+
+```powershell
+$R = 'G:\OneDrive\Quant_Module_Moltbot'
+$Q = "$R\02_Infrastructure\ops\machine\qvest_tasks.ps1"
+$X = "$R\02_Infrastructure\ops\scheduler\_task_xml_backup"
+$T = "$env:USERPROFILE\Desktop\qvest_tasks_20261110"
+foreach ($n in 'Qvest_InfraCurrency','Qvest_StandingBoard') { powershell -NoProfile -ExecutionPolicy Bypass -File $Q -Mode Apply -From $X -Name $n }
+foreach ($n in 'Qvest_AxiomReview','Qvest_MonthlyDistill') { powershell -NoProfile -ExecutionPolicy Bypass -File $Q -Mode Apply -From "$T\after" -Name $n }
+powershell -NoProfile -ExecutionPolicy Bypass -File $Q -Mode Status
+```
+
 ## 현재 상태와 할 일
 
 | 작업 | 상태 | 할 일 | 근거 |
@@ -38,10 +56,10 @@ Unregister-ScheduledTask -TaskName Qvest_WeightCatalogGrow -Confirm:$false
 
 # 3) 끈 상태를 다시 내보내고 실행기를 jobs\off 로 옮긴다
 powershell -NoProfile -ExecutionPolicy Bypass -File $Q -Mode Export -Out "$T\after"
-powershell -NoProfile -ExecutionPolicy Bypass -File $Q -Mode Apply -From "$T\after" -Name Qvest_AxiomReview,Qvest_MonthlyDistill
+foreach ($n in 'Qvest_AxiomReview','Qvest_MonthlyDistill') { powershell -NoProfile -ExecutionPolicy Bypass -File $Q -Mode Apply -From "$T\after" -Name $n }
 
 # 4) 새 작업 등록 — 인프라 판 점검 · 상설 판 + 사슬 틱 · BOOK 월간 트래킹
-powershell -NoProfile -ExecutionPolicy Bypass -File $Q -Mode Apply -From $X -Name Qvest_InfraCurrency,Qvest_StandingBoard,noLayer4_Monthly_PaperTracking
+foreach ($n in 'Qvest_InfraCurrency','Qvest_StandingBoard') { powershell -NoProfile -ExecutionPolicy Bypass -File $Q -Mode Apply -From $X -Name $n }
 
 # 5) 저장소 밖 고아 실행기 삭제(있는 것만)
 Remove-Item "$env:LOCALAPPDATA\Qvest\jobs\Qvest_ZZ_wraptest.cmd","$env:LOCALAPPDATA\Qvest\jobs\off\DART_Insider_Backfill.cmd","$env:LOCALAPPDATA\Qvest\jobs\off\Qvest_AxiomActivate.cmd","$env:LOCALAPPDATA\Qvest\jobs\off\Qvest_WeightCatalogGrow.cmd" -ErrorAction SilentlyContinue
