@@ -40,7 +40,7 @@
 1. **사전등록**(측정 전 · 파일) — 가설 · 기대 방향(행동 카드 지표) · 반증 조건 · 변형 수 상한 · 최종 후보 선택 규칙. `pr_record_round` 로 등록(결과 뒤 변경 = writer 거부). 설계안이 정해지면 **철학 Superfan P1**(투자철학 정렬 · 백그라운드 · 기다리지 않음 — 10-16 도훈 지시) 의견을 반영해 등록한다.
 2. **측정** — 정본 계약만(`run_paper_replication` → essence). 손계산 금지(AX-008).
 3. **행동 카드** — `contracts/matched_controls.R::mc_card(dir)`(행동 카드 `behavior_card.R` · 위기 = Lunde-Timmermann 20/20 첫 통과 구간 + MC8 크기·노출 짝 대조 · 귀속 = 선택/크기/노출 방어/방어 없음 · 판정은 무작위 짝 플라시보의 분위). 방어 주장 = 귀속 라벨과 함께(크기 방어 · 노출 방어를 '실력'으로 쓰지 않는다 · CR '강함' 등급 노치는 선택 방어(노출 경로 짝까지 이김) 또는 증거 (a)(b)(c)를 갖춘 타이밍 방어만 — 등급 v3.2 에서 정한 규칙 · 현행 판 v3.3 · 헌장 빈칸 9 A′ · 라운드 평가가 증거를 `grade_v3.R::gv3_timing_evidence_add` 로 기록).
-4. **판정** — 사전등록한 반증 조건으로. 판정 직후 **철학 Superfan P2**가 방향 판정(향함 · 중립 · 역행)을 남기고 보고에 1줄로 실린다(규약 `00_Lawbook/specs/superfan_protocol.md` §11). 권위 등급(`authoritative_remeasure.json::essence_grade`)만 인용 — **등급 v3.3**(종합점수 S = Calmar 6 : PORT_t 4 가중 기하평균 + 하한 + 팩터 조정 알파 노치 + 위기 복원력 노치 + 시험 창 OOS 관문 · 11-10 발효). MDD 직접 문턱 없음(Calmar 와 CR 노치로만 닿는다).
+4. **판정** — 사전등록한 반증 조건으로. 판정 직후 **철학 Superfan P2**가 방향 판정(향함 · 중립 · 역행)을 남기고 보고에 1줄로 실린다(규약 `00_Lawbook/specs/superfan_protocol.md` §11). 권위 등급(`authoritative_remeasure.json::essence_grade`)만 인용 — **등급 v3.4**(종합점수 S = Calmar 6 : PORT_t 4 가중 기하평균 + 하한 + 팩터 조정 알파 노치 + 위기 복원력 노치 + 시험 창 OOS 관문 + 스윕이면 선택 현실 점검 · 11-10 발효). MDD 직접 문턱 없음(Calmar 와 CR 노치로만 닿는다).
 5. **보고** — 리서치 1단위 = 1통 `prep_send`(`programs/program_report.R` · 발송 규칙 = qvest-telegram SKILL §0).
 6. **닫기 · 교훈** — `round.sh close`: 다음 탐침 ≥ 2(없으면 사유) · 교훈 · 목표 축 판독 → 결과 원장. 기전이 특정되는 실패만 L-code · 교훈엔 τ_D 이전 수치만.
 

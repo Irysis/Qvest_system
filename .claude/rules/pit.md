@@ -22,7 +22,7 @@
 | C1 | full-sample 통계 사용 (rolling/expanding window만). ★**평가 창 결과를 소비하는 자동 선정 규칙도 C1/C14 대상이다**(2026-09-23 도훈 확정 · D-E) — 팩터·arm·슬리브를 전기간 IC·ic_bad·상관으로 고르면 시점 t 보유를 미래 통계로 정한 것이다. 선정 통계는 as-of(`Usable_Date <= 결정 시점`)로만. 사람이 문헌 근거로 고르는 것은 해당 없음 |
 | C2 | same-day circular reference |
 | C3 | 같은 기간 집계 → 적용 |
-| C4 | 재무제표 lag 위반 (annual = **익년 3/31**, quarterly 45일+ / DART 분기 고정일 5/15·8/15·11/15 — 2026-07-25 도훈 확정, 현 구현(data_collector_dart.R:840) 정합. 구 표기 'annual 5월' 폐기. ⚠ xlsx 경로의 Q4 일률 +45d(≈익년 2/14)는 3/31 대비 공격적 — 수리 항목, AST v1.1 SOT §3 참조) |
+| C4 | 재무제표 lag 위반 (annual = **익년 3/31**, quarterly 45일+ / DART 분기 고정일 5/15·8/15·11/15 — 2026-07-25 도훈 확정, 현 구현(data_collector_dart.R:840) 정합. 구 표기 'annual 5월' 폐기. ⚠ xlsx 경로의 Q4 일률 +45d(≈익년 2/14)는 3/31 대비 공격적 — 수리 항목, AST v1.1 SOT §3 참조). ★재무 v2(11-09~ · `06_Registry/fundamental_source.json` active = v2): 쓸 수 있는 첫날 = 퀀티 공시일과 DART 접수일 중 늦은 날의 **다음 거래일**(실제 공시일 기준) · 공시일이 없을 때만 위 고정 규칙. ★팩터 DB 수리 이전 측정은 재측정 전 인용 · 소비 금지 — 기계 판정 = `contracts/factor_db_vintage.R`(A 자격 상시 보류 `factor_db_stale`) |
 | C5 | overlay signal 타이밍 위반 — 신호는 **홀딩월 시작 전** 데이터만 (§ 오버레이 신호 타이밍) |
 | C6 | survivorship bias |
 | C7 | 자동 탐지 패턴 (lookahead_detector.R) |
@@ -30,9 +30,9 @@
 | C9 | VT/DD same-day 사용 (`dd_lag <- c(0, dd_pct[-n])`) |
 | C10 | 유동성 필터 당일 거래량 사용 (t-1 PIT) |
 | C11 | 데이터 시간축 검증 (FRED 시차 등) |
-| C13 | NEGATE_FACTORS / FLIP_SIGN 금지. Z_Score_Aligned only |
+| C13 | NEGATE_FACTORS / FLIP_SIGN 금지. Z_Score_Aligned only. 방향은 정본 접근자의 `direction` 인자로만 고른다 — `ic_asof`(기본 · 그 날까지의 IC 부호) · `registry`(등록부에 미리 선언된 기대수익 방향) · `defensive`(등록부 방어 방향). 시점을 넘는 학습 · 고정 방향 정렬은 `registry`, 방어 틸트는 `defensive`(11-09 FACTOR-COMBINABLE-VIEW · FACTOR-DIRECTION-TWO-VIEWS · 정책 `factor_db/DIRECTION_POLICY.md`) |
 | C14 | IC 접근 시 Usable_Date <= sig_date |
-| C15 | Factor DB parquet 직접 load 금지. `load_month_factors()` 경유 |
+| C15 | Factor DB parquet 직접 load 금지. `load_month_factors()` 경유 · 결합용 뷰(순위 [−1,1])는 `fc_load_month()` 경유 — 저장본 `.cache/factor_combinable/` 직접 읽기도 같은 위반(스캐너 `c15_load_path_scan.R`) |
 
 ## 종목수 + 유동성 (실투용)
 

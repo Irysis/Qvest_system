@@ -274,8 +274,22 @@ if (is.null(.flist)) {
 .load_factor <- function(fs, tag) {
   if (identical(fs$kind, "db")) {
     suppressMessages(source(file.path(.RF_ROOT, "02_Infrastructure/factor_db/factor_db_connector.R")))
+    ## (v10.2 · 2026-11-10 배선) 팩터 방향 선택 — factors[].direction = "ic_asof"(기본 · 그 날까지의 IC 부호 · 종전 동작 그대로) |
+    ##   "registry"(등록부에 미리 선언된 기대수익 방향) | "defensive"(등록부 방어 방향 — 방어 틸트 · 방어 슬리브용).
+    ##   값은 정본 접근자의 direction 인자로만 간다(수동 부호 반전 없음 · C13). 필드가 없으면 호출 모양까지 종전과 같다.
+    ##   방어 방향이 등록부에 없는 팩터에 "defensive" 를 요구하면 멈춘다(조용히 팩터가 빠지지 않게).
+    .dir <- as.character(if (is.null(fs$direction)) "ic_asof" else fs$direction)[1]
+    if (!(.dir %in% c("ic_asof", "registry", "defensive")))
+      stop("[rf_cell_engine] 팩터 방향 어휘 밖: ", .dir, " (ic_asof | registry | defensive) — ", fs$id)
+    if (identical(.dir, "defensive")) {
+      .reg <- jsonlite::fromJSON(file.path(.RF_ROOT, "02_Infrastructure/factor_db/factor_registry.json"), simplifyVector = FALSE)
+      .ent <- (if (!is.null(.reg$factors)) .reg$factors else .reg)[[fs$id]]
+      if (is.null(.ent) || is.null(.ent$direction_defensive) || !nzchar(as.character(.ent$direction_defensive)[1]))
+        stop("[rf_cell_engine] 팩터 ", fs$id, " 에는 등록부 방어 방향(direction_defensive)이 없다 — direction = \"defensive\" 불가")
+    }
     L <- lapply(.sig_dates, function(d) {
-      f <- tryCatch(load_month_factors(d, factor_names = fs$id), error = function(e) NULL)   # C15
+      f <- tryCatch(if (identical(.dir, "ic_asof")) load_month_factors(d, factor_names = fs$id)
+                    else load_month_factors(d, factor_names = fs$id, direction = .dir), error = function(e) NULL)   # C15
       if (is.null(f) || !nrow(f)) return(NULL)
       f <- as.data.table(f)
       if (!"Z_Score_Aligned" %in% names(f)) return(NULL)                                     # C13
