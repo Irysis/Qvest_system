@@ -39,7 +39,25 @@ for lab,cs in (("rawdata",(".cache/rawdata.parquet",".cache/RAWDATA.parquet")),(
     if w or not v: bad.append(lab+":"+(w[0] if w else "부재"))
 _h=S(lambda: (dt.datetime.now()-dt.datetime.fromisoformat(str(d.get("ran_at"))[:19])).total_seconds()/3600.0)
 ra="?" if _h is None else HH(_h)+(" ★audit stale" if _h>36 else "")
-_nm=S(lambda: set(__import__("pyarrow.parquet",fromlist=["x"]).read_schema(R(".cache","rawdata.parquet")).names))
+# ★부팅 메모(2026-11-10 H2 감사 2단계 · 출력 불변) — ① 의 세 계산(rawdata 스키마 · 팩터 IC 이름 집합 · 퀀티 최신성)은 pyarrow 가져오기 +
+#   parquet 읽기로 부팅의 절반 이상을 썼다(부하 중 실측: 가져오기 2.0 s · IC 열 읽기 3.0 s). 결과를 원천 파일 지문(경로 · mtime_ns · 크기 ·
+#   퀀티 최신성은 오늘 날짜까지)을 키로 .cache/boot_memo.json 에 적어 두고, 지문이 같으면 그 결과를 쓴다(같은 입력 → 같은 결과).
+#   지문이 하나라도 다르거나 · 파일이 없거나 · 메모를 못 읽으면 원래 계산(예외도 원래대로 전파 → S/try 가 받는다). 실패 결과(예외 ·
+#   퀀티 'NA')는 적지 않는다 — 일시 오류를 굳히지 않는다. 끄기: QVEST_BOOT_MEMO=0. 검사: 08_Tests/ops/test_boot_lean_memo.sh
+_MEMO_P=R(".cache","boot_memo.json"); _MEMO_ON=os.environ.get("QVEST_BOOT_MEMO","1")!="0"
+_memo=(S(lambda: json.load(open(_MEMO_P,encoding="utf-8")),{}) if _MEMO_ON else {}) or {}
+if not isinstance(_memo,dict): _memo={}
+_memo_dirty=[False]
+def MEMO(key,paths,fn,keep=lambda v: True):
+    if not _MEMO_ON: return fn()
+    try: fp=[[p,os.stat(p).st_mtime_ns,os.stat(p).st_size] for p in paths]
+    except Exception: return fn()
+    e=_memo.get(key)
+    if isinstance(e,dict) and e.get("fp")==fp and "v" in e: return e["v"]
+    v=fn()
+    if keep(v): _memo[key]={"fp":fp,"v":v}; _memo_dirty[0]=True
+    return v
+_nm=S(lambda: set(MEMO("rawdata_schema_names",[R(".cache","rawdata.parquet")],lambda: list(__import__("pyarrow.parquet",fromlist=["x"]).read_schema(R(".cache","rawdata.parquet")).names))))
 mem="K200/KQ150 "+("?" if _nm is None else ("OK" if {"K200","KQ150"}<=_nm else "부재"))
 # ★팩터 배출 격차 (2026-09-01) — emission_guard 는 매 빌드 돌고 있었는데 **소비자가 없어서**
 #   registry 373 중 42종이 조용히 빠진 걸 아무도 못 봤다. 차단이 아니라 표면화다.
@@ -47,8 +65,7 @@ mem="K200/KQ150 "+("?" if _nm is None else ("OK" if {"K200","KQ150"}<=_nm else "
 def _fgap():
     try:
         reg=json.load(io.open(R(".cache","factor_db","factor_registry.json"),encoding="utf-8"))
-        import pyarrow.parquet as _pq
-        ic=set(_pq.read_table(R(".cache","factor_db","factor_ic_monthly.parquet"),columns=["Factor_Name"])["Factor_Name"].to_pylist())
+        ic=set(MEMO("factor_ic_names",[R(".cache","factor_db","factor_ic_monthly.parquet")],lambda: list(set(__import__("pyarrow.parquet",fromlist=["x"]).read_table(R(".cache","factor_db","factor_ic_monthly.parquet"),columns=["Factor_Name"])["Factor_Name"].to_pylist()))))
         ea=json.load(io.open(R("02_Infrastructure","factor_db","emission_expected_absent.json"),encoding="utf-8"))
         dec={e.get("factor") for e in (ea.get("expected_absent") or [])}
         # ★격차에서 빼야 하는 두 부류 (2026-09-01):
@@ -69,8 +86,16 @@ import io
 #   퀀티 단일에선 캘린더도 퀀티가 늘리므로 위 감사(캘린더 기준)로는 퀀티 정체가 안 보인다 — 이 칸이 그것을 보인다.
 def _qwcur():
     try:
-        import sys as _s; _s.path.insert(0, R("02_Infrastructure","data")); import krx_holidays as _kh
-        st, bm, exp = _kh.bench_currency(dt.date.today(), allow_fetch=False)   # 판정 정본(ensure_data_current 와 같은 함수)
+        _td=dt.date.today()
+        def _bc():
+            import sys as _s; _s.path.insert(0, R("02_Infrastructure","data")); import krx_holidays as _kh
+            r=_kh.bench_currency(_td, allow_fetch=False)   # 판정 정본(ensure_data_current 와 같은 함수)
+            # 정확히 date 인 칸만 iso 로 적는다(그 밖 타입 = 'r' 원값 · 그런 결과는 메모하지 않는다 — 아래 keep)
+            return [x.isoformat() if type(x) is dt.date else x for x in r]+[["d" if type(x) is dt.date else ("s" if x is None or isinstance(x,str) else "r") for x in r]]
+        # 메모 지문 = krx_holidays.py 의 ROOT(QM_ROOT 또는 그 파일 기준 프로젝트)로 본 벤치 · 휴장일 등록부 + 판정 코드 자체 + 오늘
+        _kr=os.environ.get("QM_ROOT") or P
+        _v=MEMO("bench_currency|"+_td.isoformat(),[os.path.join(_kr,".cache","benchmark.parquet"),os.path.join(_kr,"06_Registry","krx_holidays.json"),R("02_Infrastructure","data","krx_holidays.py")],_bc,keep=lambda v: v[0]!="NA" and "r" not in v[3])
+        st, bm, exp = [dt.date.fromisoformat(x) if f=="d" else x for x,f in zip(_v[:3],_v[3])]
         if st == "NA": return ("퀀티 ?(%s)" % exp, False)
         if st == "1": return ("★퀀티 미최신 %s<%s" % (bm.strftime("%m-%d"), exp.strftime("%m-%d")), True)
         return ("퀀티 %s ✓" % bm.strftime("%m-%d"), False)
@@ -80,7 +105,27 @@ _qw, _qwb = _qwcur()
 o.append("Data: 키캐시 %d/4%s · audit %s · rawdata %s · bench %s · %s · %s · %s%s"%(4-len(bad)," ["+", ".join(bad)+"]" if bad else " OK",ra,HH(AG(".cache/rawdata.parquet")),HH(AG(".cache/benchmark.parquet")),mem,_fgap(),_qw,"  → 부팅 규칙: bash 02_Infrastructure/ops/ensure_data_current.sh (백그라운드 · 퀀티 로그인 · 최신화)" if _qwb else ("  → bash 02_Infrastructure/data/daily_refresh.sh" if bad else "")))
 # ② Queue — 미소비 논문 수(비숫자면 UNREPORTED, 0 으로 접지 않음) + frontier open 상위 2
 #   ★v10 (2026-08-29): 강화 원장 active(L1 n/25 · L2 무한) + data-pipeline open 병기 (fail-soft ?)
-_r=S(lambda: subprocess.run([PY,R("02_Infrastructure","ops","research_pool_predicates.py"),"alpha-pending",R("stage_artifacts","paper_recharge")],capture_output=True,text=True,timeout=90).stdout.strip())
+# (2026-11-10 H2 감사 2단계) 자식 파이썬(기동 0.5~0.8 s) 대신 같은 프로세스에서 모듈을 불러 CLI 와 같은 일을 한다 — `alpha-pending <dir>`
+#   의 표준 출력 = 모듈 실행 중 찍힌 것 + len(pend) 한 줄(정상) · 원장 손상(LedgerUnreadable)이나 그 밖의 예외 = 그때까지 찍힌 것뿐
+#   (CLI 는 숫자를 내지 않고 rc 3 · 트레이스백은 stderr). 그 출력을 그대로 모아 strip 하므로 q 판정(숫자 · UNREPORTED)이 같다.
+#   sys.path[0] = ops 폴더(CLI 와 같은 형제 모듈 해석) · stdout 은 잡아 두고 되돌린다. 끄기: QVEST_BOOT_INPROC=0(구 자식 프로세스).
+def _alpha_pending_out():
+    import importlib.util as _iu, contextlib as _cl
+    _od=R("02_Infrastructure","ops"); _buf=io.StringIO()
+    sys_path_saved=list(__import__("sys").path); __import__("sys").path.insert(0,_od)
+    try:
+        with _cl.redirect_stdout(_buf):
+            try:
+                _sp=_iu.spec_from_file_location("research_pool_predicates",os.path.join(_od,"research_pool_predicates.py"))
+                _m=_iu.module_from_spec(_sp); _sp.loader.exec_module(_m)
+                print(len(_m.alpha_pending(R("stage_artifacts","paper_recharge"))))
+            except (Exception, SystemExit):
+                pass
+    finally:
+        __import__("sys").path[:]=sys_path_saved
+    return _buf.getvalue().strip()
+import io
+_r=S(_alpha_pending_out) if os.environ.get("QVEST_BOOT_INPROC","1")!="0" else S(lambda: subprocess.run([PY,R("02_Infrastructure","ops","research_pool_predicates.py"),"alpha-pending",R("stage_artifacts","paper_recharge")],capture_output=True,text=True,timeout=90).stdout.strip())
 q=_r if (_r or "").isdigit() else "UNREPORTED"; fq=[]
 for e in ((J("06_Registry/alpha_frontier_queue.json") or {}).get("entries") or []):
     st=str(e.get("status") or ""); ow=str(e.get("owner") or "")
@@ -186,7 +231,10 @@ def hasp(f):
     mm=re.match(r"---\s*\n(.*?)\n---",open(f,encoding="utf-8",errors="replace").read(2000),re.S)
     return bool(mm and re.search(r"^paths\s*:",mm.group(1),re.M))
 rb=sum(os.path.getsize(f) for f in glob.glob(R(".claude","rules","*.md")) if not S(lambda: hasp(f),False))
-hk=S(lambda: len(set(re.findall(r"hooks/([A-Za-z0-9_.-]+\.sh)",open(R(".claude","settings.json"),encoding="utf-8").read()))))
+# (2026-11-10 H2 감사 2단계) 등록된 command 값만 센다 — 구판은 settings.json 원문 전체를 훑어 설명문(_doc_*) 속 시험 경로
+#   (08_Tests/hooks/test_hook_powershell_coverage)까지 세어 `hooks 14/13` 오탐을 냈다. 모집단 = hooks.<이벤트>[].hooks[].command 안의
+#   02_Infrastructure/hooks/<이름>.sh. 검사: 08_Tests/ops/test_boot_lean_memo.sh H 축
+hk=S(lambda: len({m for G in json.load(open(R(".claude","settings.json"),encoding="utf-8"))["hooks"].values() for g in G for h in (g.get("hooks") or []) for m in re.findall(r"02_Infrastructure/hooks/([A-Za-z0-9_.-]+\.sh)",str(h.get("command") or ""))}))
 # ★세션 전사 폴더의 이름은 '세션이 실제로 연 경로'에서 만들어진다(예: G--OneDrive-Quant-Module-Moltbot). 부팅의 P(정본 경로)로 이름을
 #   만들면 여는 경로가 다른 기계(메인 PC = G: 드라이브)에서 폴더를 못 찾아 게이지가 늘 '?' 였다(2026-11-10 전수점검).
 #   프로젝트 폴더명 꼬리로 끝나는 폴더들에서 가장 최근 전사를 고른다(워크트리 세션 폴더는 꼬리가 달라 빠진다).
@@ -282,6 +330,12 @@ def INFRA():
     return _m.infra_line(json.load(open(f,encoding="utf-8")) if os.path.exists(f) else None)
 o.append(S(INFRA,"Infra: ?(표시 예외)"))
 # (v10.01 · 2026-10-13) 구 ⑦ Rules(방향 규칙 일간 채점 — 디렉터 입력)는 디렉터와 함께 퇴역.
+# 부팅 메모 기록(바뀐 것이 있을 때만 · 원자적 교체 · 실패해도 출력 불변)
+def _memo_write():
+    t=_MEMO_P+".tmp%d"%os.getpid()
+    with open(t,"w",encoding="utf-8") as fh: json.dump(_memo,fh)
+    os.replace(t,_MEMO_P)
+if _memo_dirty[0]: S(_memo_write)
 print("\n".join(o))
 PYEOF
 mkdir -p "$PROJECT/.cache" 2>/dev/null || true

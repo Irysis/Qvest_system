@@ -112,7 +112,9 @@ def run(today, bench):
     class _D(datetime.date):
         @classmethod
         def today(cls): return datetime.date.fromisoformat(today)
-    ns = {'R': lambda *a: os.path.join(SB, *a), 'dt': types.SimpleNamespace(date=_D)}
+    # 부팅 메모(2026-11-10) — _qwcur 가 MEMO · os · P 를 쓴다. 여기서는 판정 문구만 보므로 메모는 통과 스텁(메모 자체 = test_boot_lean_memo.sh)
+    ns = {'R': lambda *a: os.path.join(SB, *a), 'dt': types.SimpleNamespace(date=_D), 'os': os, 'P': SB,
+          'MEMO': lambda key, paths, fn, keep=None: fn()}
     exec(m.group(0), ns)
     return ns['_qwcur']()
 for t, b in (('2026-10-20', '2026-10-16'), ('2026-10-20', '2026-10-19'), ('2026-10-06', '2026-10-02'), ('2028-01-04', '2027-12-30')):
