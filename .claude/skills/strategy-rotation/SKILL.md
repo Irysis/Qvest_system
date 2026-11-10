@@ -10,6 +10,10 @@ description: 2계층 — 전략 로테이션 리서치 (v10). 1계층이 생산�
 계층. 모듈을 생산하지 않고 소비하는 meta-layer. 산출 = `FR_XXXX` 운용체계.
 페르소나 = `02_Infrastructure/docs/rules/quant-identity.md`.
 
+> ★**착수 조건 (2026-11-10 도훈 결정 `L2-START-ON-DOHOON-INSTRUCTION-20261110`)**: "2계층 리서치는 내가 지시하면 시작" — 도훈이 지시할 때만 시작한다.
+> 그때까지 무인 레인(`reinforce_auto_config.json::l2_auto.enabled = false`) · 풀 재측정 · 세션 임의 착수를 하지 않는다. 지금 풀 71개 중 현 측정 축 모듈은 1개다
+> (감사 `arch_audit/lanes/audit_F_l2_book.md`). A 경로 관문(`l2_a_eligibility` — 풀 모듈 전부 현 축 · 팩터 DB 판 최신)과 BOOK writer 관문은 그대로다.
+
 ## 0. 논문 기반 착수 (v10 — 아이디어는 논문에서 시작한다)
 
 1계층과 마찬가지로 **최초 아이디어 설계는 논문에서 시작**한다. 단 무인 수집기
