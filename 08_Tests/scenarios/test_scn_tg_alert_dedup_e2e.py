@@ -14,6 +14,8 @@
   S4 같은 실패를 두 발신기가 봄 → 1통(양 순서) · 양보한 쪽은 상대가 놓으면 다시 잡음 · 죽은 보유자의 미확정 키는 다음 claim 이 가져감
   S5 꺼진 작업(이 기계 · 신선한 측정) → 0통
   S6 낡은 · 다른 기계 · 기계 표식 없는 측정 → 꺼짐을 믿지 않음(억제 안 함)
+  S8 꺼짐 직접 조회(3차 · 11-10 저녁 오경보) — 측정 낡음 + 조회 '꺼짐' → 0통 · 조회 실패/응답 누락 + 측정 낡음 → 1통(fail-closed) ·
+     조회 '켜짐' + 로그 낡음 → 1통 · 꺼짐 확인 → 열린 낡음 이상 해소 + 원인 키 해소 · 다음 실행 재개방 없음 · 다시 켜진 뒤 낡음 → 1통 더
   S7 생성 R — tg_agent_brief ok = FALSE 면 종료 코드 ≠ 0 → 셸이 키를 놓고 마커에 실패 표식 · ok = TRUE 면 확정
   M  수리마다 되돌린 돌연변이 사본(소스 텍스트 치환 · 치환 성사 단정) → 대응 시나리오가 빨개짐
 마지막 줄 = {"test":...,"pass":N,"fail":N,"total":N}
@@ -83,6 +85,15 @@ def mk_root(comps=(), mut=None):
        "d['measured_at']=os.environ['QVEST_ALERT_DEDUP_NOW'].replace(' ','T')+':00'\n"
        "io.open(sys.argv[1],'w',encoding='utf-8').write(json.dumps(d,ensure_ascii=False))\n")
     wr(T + "/empty.Renviron", "")
+    # 가짜 작업 스케줄러 조회(QVEST_SUPERFAN_TASK_QUERY_CMD) — 기본 'fail'(종료 2 = 직접 조회 실패 → task_health 산출로 물러남 · S1~S7 은 그 경로) ·
+    # 'ok' = query_states.json 의 상태 · 'partial' = 첫 이름만 응답(누락 = 실패로 봐야 한다). 운영 스케줄러는 묻지 않는다.
+    wr(T + "/mode_query", "fail"); wr(T + "/query_states.json", "{}")
+    wr(T + "/mock_query.py",
+       "import json,sys,os,io\nT=os.path.dirname(os.path.abspath(__file__))\nm=open(os.path.join(T,'mode_query')).read().strip()\n"
+       "io.open(os.path.join(T,'query_calls.log'),'a',encoding='utf-8').write(' '.join(sys.argv[1:])+'\\n')\n"
+       "if m=='fail': sys.exit(2)\nst=json.load(io.open(os.path.join(T,'query_states.json'),encoding='utf-8'))\n"
+       "names=sys.argv[1:] if m=='ok' else sys.argv[1:2]\n"
+       "[print('%s|%s'%(n,st.get(n,'Missing'))) for n in names]\n")
     return T
 
 
@@ -94,7 +105,7 @@ def env(T, hm):
         e.pop(k, None)
     e.update({"QVEST_SUPERFAN_NOW": now, "QVEST_ALERT_DEDUP_NOW": now, "QVEST_ALERT_DEDUP_PATH": T + "/.cache/alert_dedup.json",
               "QVEST_SUPERFAN_NOTIFY_CMD": "%s %s/mock_notify.py" % (PY, T), "QVEST_SCHED_ALERT_RSCRIPT": T + "/mock_rscript.sh",
-              "QVEST_TH_COLLECTOR_CMD": "%s %s/mock_collector.py" % (PY, T), "QVEST_PY": PY, "QVEST_UNATTENDED": "1",
+              "QVEST_TH_COLLECTOR_CMD": "%s %s/mock_collector.py" % (PY, T), "QVEST_SUPERFAN_TASK_QUERY_CMD": "%s %s/mock_query.py" % (PY, T), "QVEST_PY": PY, "QVEST_UNATTENDED": "1",
               "BASE": T, "QM_ROOT": T, "CLAUDE_PROJECT_DIR": T, "PYTHONUTF8": "1", "R_ENVIRON_USER": T + "/empty.Renviron",
               "TG_BOT_TOKEN": "TEST_TOKEN_NOT_REAL", "TG_CHAT_ID": "0"})
     return e
@@ -275,6 +286,42 @@ def s6(mut=None):
     return out
 
 
+def s8(mut=None):
+    """꺼짐 직접 조회 — task_health 산출은 낡았다(17시간 초과 · 같은 기계 · 꺼짐 표시)고 둔다: 판정은 조회만이 바꾼다."""
+    out = {}
+    def root():
+        T = mk_root([comp_fresh("lane", "Qvest_Off", "logs/lane.log")], mut=mut)
+        wr(T + "/06_Registry/scheduler_task_health.json", json.dumps({"measured_at": at("12:00", "2026-01-01"), "measured_on": ME,
+                                                                       "tasks": [task("Qvest_Off", state="Disabled", enabled=False)]}))
+        return T
+    def ws(T):
+        return json.load(io.open(T + "/.cache/superfan_watch.json", encoding="utf-8"))
+    def q(T, mode, state=None):
+        set_mode(T, "query", mode)
+        if state:
+            wr(T + "/query_states.json", json.dumps({"Qvest_Off": state}))
+    # a 조회 = 꺼짐 · 측정 낡음 → 0통
+    T = root(); q(T, "ok", "Disabled"); watch(T, "12:30")
+    out["a"] = (sf(T), ws(T).get("task_state", {}).get("source"),
+                os.path.exists(T + "/query_calls.log") and "Qvest_Off" in io.open(T + "/query_calls.log", encoding="utf-8").read())
+    # b 조회 실패 · 측정 낡음 → 1통(fail-closed)
+    T = root(); q(T, "fail"); watch(T, "12:30"); out["b"] = (sf(T), ws(T).get("task_state", {}).get("source"))
+    # b2 응답 누락(다른 이름만) → 실패로 보고 물러남 → 1통
+    T = mk_root([comp_fresh("lane", "Qvest_Off", "logs/lane.log"), comp_fresh("aaa", "Qvest_Aaa", "logs/aaa.log")], mut=mut)
+    wr(T + "/query_states.json", json.dumps({"Qvest_Off": "Disabled", "Qvest_Aaa": "Disabled"})); set_mode(T, "query", "partial")
+    watch(T, "12:30"); out["b2"] = sorted(sf(T))
+    # c 조회 = 켜짐 · 로그 낡음 → 1통 → d 꺼짐 확인 → 해소 · 원인 키 해소 → e 다음 실행(여전히 꺼짐) 재개방 없음 → f 다시 켜짐 → 1통 더
+    T = root(); q(T, "ok", "Ready"); watch(T, "12:30")
+    out["c"] = sf(T); out["c_key"] = (store(T).get("task:Qvest_Off") or {}).get("state")
+    q(T, "ok", "Disabled"); watch(T, "13:30")
+    W = ws(T); an = [a for a in W["anomalies"].values() if a["component"] == "lane"]
+    out["d"] = ([a["status"] for a in an], (store(T).get("task:Qvest_Off") or {}).get("state"), W.get("task_state", {}).get("source"))
+    watch(T, "14:30"); W = ws(T)
+    out["e"] = ([a["status"] for a in W["anomalies"].values() if a["component"] == "lane"], sf(T))
+    q(T, "ok", "Ready"); watch(T, "15:30"); out["f"] = sf(T)
+    return out
+
+
 def s7(mut=None):
     """실제 Rscript 로 생성 R 을 돌린다 — 가짜 telegram_notify.R(임시 루트) 이 TG_MODE 대로 ok 를 돌려준다."""
     res = {}
@@ -336,6 +383,17 @@ chk("S6b 낡은 측정(17시간 초과) → 억제 안 함(1통)", r6["old"] == 
 chk("S6c 기계 표식 없는 측정 → 억제 안 함(1통)", r6["no_machine"] == ["lane"], str(r6))
 chk("S6d 대조: 같은 기계 · 신선 → 억제(0통)", r6["trusted"] == [], str(r6))
 
+print("== S8 꺼짐 직접 조회(측정 파일 신선도와 무관) ==")
+r8 = s8()
+chk("S8a 측정 낡음 + 직접 조회 '꺼짐' → 0통 · 근거 direct · 그 작업을 물었음", r8["a"] == ([], "direct", True), str(r8["a"]))
+chk("S8b 직접 조회 실패 + 측정 낡음 → 1통(fail-closed · 근거 none)", r8["b"] == (["lane"], "none"), str(r8["b"]))
+chk("S8b2 응답 누락(물은 이름 일부만) = 조회 실패 → 둘 다 경보", r8["b2"] == ["aaa", "lane"], str(r8["b2"]))
+chk("S8c 직접 조회 '켜짐' + 로그 낡음 → 1통 · 원인 키 확정", r8["c"] == ["lane"] and r8["c_key"] == "confirmed", str(r8))
+chk("S8d 꺼짐 확인 → 열린 낡음 이상 해소 · 원인 키 해소 · 근거 direct", r8["d"][0] == ["resolved"] and r8["d"][1] in (None, "released")
+    and r8["d"][2] == "direct", str(r8["d"]))
+chk("S8e 다음 실행(꺼짐 유지) → 재개방 없음 · 추가 발송 없음", r8["e"] == (["resolved"], ["lane"]), str(r8["e"]))
+chk("S8f 다시 켜진 뒤 낡음 → 같은 날 1통 더(합계 2)", r8["f"] == ["lane", "lane"], str(r8["f"]))
+
 print("== S7 생성 R 종료 코드 계약(실제 Rscript · 가짜 발송기) ==")
 r7 = s7()
 chk("S7a ok = FALSE → 결과 send_failed · 키 놓음 · 마커 실패 표식", r7["FALSE"]["called"] and r7["FALSE"]["result"] == ["RESULT=send_failed"]
@@ -368,6 +426,13 @@ m = s6([(SW, "        if not (-0.25 <= age_h <= TASK_HEALTH_MAX_AGE_H):", "     
 chk("M9 측정 신선도 확인 제거 사본 → S6b 빨강(낡은 '꺼짐'으로 억제)", m["old"] == [], str(m))
 m = s4([(DD, ' or (now - ca).total_seconds() > CLAIM_STALE_SEC)', ')')])
 chk("M10 죽은 보유자 인계 제거 사본 → S4e 빨강(0통)", m["stale_take"] == [], str(m["stale_take"]))
+
+m = s8([(SW, "    st, why = _task_states_direct(names)\n    if st is not None:", "    st, why = None, \"mutant\"\n    if st is not None:")])
+chk("M11 직접 조회 제거 사본 → S8a 빨강(낡은 측정 = 모름 → 꺼진 작업 경보 1통)", m["a"][0] == ["lane"], str(m["a"]))
+m = s8([(SW, "        if off_keys:\n            dd = _dedup()", "        if False:\n            dd = _dedup()")])
+chk("M12 꺼짐 해소 때 원인 키 해소 제거 사본 → S8f 빨강(다시 켜진 뒤 낡음이 같은 날 원인 키에 접혀 0통)", m["f"] == ["lane"], str(m["f"]))
+m = s8([(SW, "    if seen != set(names):", "    if False:")])
+chk("M13 응답 누락 검사 제거 사본 → S8b2 빨강(빠진 이름이 '켜짐'으로 · 응답한 첫 이름(Qvest_Aaa · 꺼짐)만 억제 → lane 1통)", m["b2"] == ["lane"], str(m["b2"]))
 
 print(json.dumps({"test": "scn_tg_alert_dedup_e2e", "pass": P, "fail": F, "total": P + F}))
 sys.exit(1 if F else 0)

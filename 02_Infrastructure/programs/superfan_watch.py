@@ -374,10 +374,12 @@ def _scan_freshness(root, W, cid, r, now, events):
 
 
 def _clear(W, cid, rid, now):
-    """상태형 규칙(신선도 · 완료 표식 · JSON 필드)이 정상으로 돌아오면 그 규칙의 열린 이상을 자동 해소한다."""
+    """상태형 규칙(신선도 · 완료 표식 · JSON 필드)이 정상으로 돌아오면 그 규칙의 열린 이상을 자동 해소한다. 반환 = 이번에 해소한 이상들."""
+    out = []
     for a in W.get("anomalies", {}).values():
         if a["component"] == cid and a["rule"] == rid and a["status"] in ("open", "acked"):
-            a["status"] = "resolved"; a["resolved_at"] = _iso(now)
+            a["status"] = "resolved"; a["resolved_at"] = _iso(now); out.append(a)
+    return out
 
 
 def _fmt_today(pattern, now):
@@ -643,6 +645,8 @@ def _scan_ledger_activity(root, W, cid, r, now, events):
 #   ① 꺼진 것은 '낡음 · 정지'를 알리지 않는다 — 구성요소의 sched_task(예약 작업)가 task_health 산출(06_Registry/scheduler_task_health.json)에서
 #      enabled = false 면 신선도 · 완료 표식 규칙을 재지 않는다(실측: 꺼진 ReinforceAutoLoop 의 로그 '파일 없음' 35회 · 2통).
 #      판독 실패 · 작업 미수록 · 다른 기계가 잰 측정 · 낡은 측정(TASK_HEALTH_MAX_AGE_H) = 켜진 것으로 본다(경보 쪽 · fail-closed · 2026-11-10 2차).
+#      ★3차(11-10 저녁): 꺼짐은 감시기가 작업 스케줄러에 직접 묻는다(_task_states_direct) — task_health 산출은 직접 조회가 실패했을 때만 쓴다 ·
+#      근거는 감시 상태 task_state.source(direct | task_health | none)에 남긴다 · 꺼짐으로 해소한 낡음 이상은 원인 키도 놓는다.
 #   ② 원인 하나 = 하루 한 통 — 원인 키를 ops/alert_dedup.py 저장소에 이상마다 잡는다(_anom_keys: 실행 실패 규칙(cause = task_run) = 'task:<작업>'
 #      (task_health 경보와 같은 키) · cause_key 가 있으면 그 키 · 그 밖 = 'sf:<구성요소>:<규칙>:<이상 키>'). 확정(발송 성사) 뒤에만 '오늘 보냄' ·
 #      못 잡은 이상은 '키 K 에 양보'로 적고 K 가 확정되지 않았으면 다음 실행에 다시 잡는다 · 발신 실패면 잡은 키를 완전히 놓는다.
@@ -687,6 +691,85 @@ def _task_states(root, now=None):
 
 def _task_disabled(states, name):
     return bool(name) and states.get(name) is False
+
+
+# ── 꺼짐 직접 조회(2026-11-10 3차 · 도훈 "오경보 해결해") ──────────────────────────────────────────────────────
+#   왜: 2차판은 꺼짐을 task_health 산출(다른 작업이 뜬 파일)의 신선도에 걸었다 — 수집(12:00 · 20:00 · 아침 체인)이 하루 빠지거나 PC 가
+#   꺼졌다 켜지면 측정이 17시간을 넘고, 일부러 꺼 둔 작업마다 '로그 낡음' 경보가 다시 나갔다(11-10 17:17 Qvest_ReinforceAutoLoop 1통).
+#   그래서 감시기가 이 기계의 작업 스케줄러에 지금 상태를 직접 묻는다(PowerShell Get-ScheduledTask 한 번 · 읽기 전용).
+#   순서: ① 직접 조회 ② 실패하면 task_health 산출(같은 기계 · 신선 — _task_states) ③ 그것도 못 믿으면 {}(= 켜진 것으로 · fail-closed).
+#   직접 조회는 그 기계 자신의 스케줄러라 '다른 기계가 공유 폴더에 쓴 값으로 이 기계의 꺼짐을 판정하지 않는' 성질이 그대로다.
+#   성공 = 종료 코드 0 ∧ 물은 이름이 전부 응답에 있음(없는 작업 = 'Missing' 줄) — 하나라도 빠지면 실패로 보고 물러난다.
+#   상태 Disabled 만 꺼짐 · Ready/Running/Queued 등 = 켜짐 · Missing = 모름(켜진 것으로). 같은 이름이 여러 폴더에 있으면 하나라도 켜져 있으면 켜짐.
+#   시험 이음새: QVEST_SUPERFAN_TASK_QUERY_CMD(공백 분리 명령 + 작업 이름들을 인자로 · 표준 출력 '이름|상태' 줄) — QVEST_SUPERFAN_NOTIFY_CMD 와 같은 관습.
+#   시간 상한 근거: 실측 4.3 초(2026-11-10 21:00 메인 PC · 부하 중 · powershell 냉시동 포함 · 작업 3개) — 상한 30 초는 그 약 7배 여유(판단 · 실측 근거) ·
+#   넘기면 실패로 보고 ②로 물러난다(감시 전체는 계속). QVEST_SUPERFAN_TASK_QUERY_TIMEOUT_S 로 바꿀 수 있다.
+TASK_QUERY_TIMEOUT_S = float(os.environ.get("QVEST_SUPERFAN_TASK_QUERY_TIMEOUT_S", "30"))
+_TASK_NAME_OK = re.compile(r"^[A-Za-z0-9_.\-]+$")
+
+
+def _powershell():
+    p = os.path.join(os.environ.get("SystemRoot") or os.environ.get("SYSTEMROOT") or r"C:\Windows",
+                     "System32", "WindowsPowerShell", "v1.0", "powershell.exe")
+    if os.path.exists(p):
+        return p
+    import shutil
+    return shutil.which("powershell.exe") or shutil.which("powershell")
+
+
+def _task_states_direct(names):
+    """(states | None, 사유) — 이 기계의 작업 스케줄러 직접 조회. 실패(명령 없음 · 시간 초과 · 종료 코드 ≠ 0 · 응답 누락) = None."""
+    import subprocess
+    names = sorted({n for n in names if n and _TASK_NAME_OK.match(n)})
+    if not names:
+        return None, "no_task_names"
+    fake = os.environ.get("QVEST_SUPERFAN_TASK_QUERY_CMD", "").split()
+    if fake:
+        cmd = fake + names
+    else:
+        ps = _powershell()
+        if not ps:
+            return None, "powershell_not_found"
+        script = ("$ErrorActionPreference='Stop'; foreach($n in @(%s)){ $t=@(Get-ScheduledTask -TaskName $n -ErrorAction SilentlyContinue); "
+                  "if($t.Count -gt 0){ foreach($x in $t){ '{0}|{1}' -f $n,$x.State } } else { '{0}|Missing' -f $n } }"
+                  % ",".join("'%s'" % n for n in names))
+        cmd = [ps, "-NoProfile", "-NonInteractive", "-ExecutionPolicy", "Bypass", "-Command", script]
+    try:
+        r = subprocess.run(cmd, capture_output=True, timeout=TASK_QUERY_TIMEOUT_S)
+    except subprocess.TimeoutExpired:
+        return None, "timeout_%ss" % TASK_QUERY_TIMEOUT_S
+    except Exception as ex:
+        return None, "exec_failed:%s" % type(ex).__name__
+    if r.returncode != 0:
+        return None, "rc_%d" % r.returncode
+    seen, states = set(), {}
+    for ln in (r.stdout or b"").decode("utf-8", "replace").splitlines():
+        parts = ln.strip().split("|")
+        if len(parts) < 2:
+            continue
+        n, st = parts[0].strip(), parts[1].strip()
+        hit = next((x for x in names if x.lower() == n.lower()), None)
+        if hit is None:
+            continue
+        seen.add(hit)
+        if st.lower() == "missing":
+            continue
+        en = st.lower() != "disabled"
+        states[hit] = states.get(hit, False) or en          # 여러 폴더에 같은 이름 — 하나라도 켜져 있으면 켜짐
+    if seen != set(names):
+        return None, "incomplete_reply(%d/%d)" % (len(seen), len(names))
+    return states, "ok"
+
+
+def _task_states_resolved(root, now, names):
+    """(states, 근거) — 근거 = direct | task_health | none. 직접 조회 실패 때만 task_health 산출(같은 기계 · 신선)로 물러난다."""
+    st, why = _task_states_direct(names)
+    if st is not None:
+        return st, {"source": "direct", "detail": why}
+    fb = _task_states(root, now)
+    if fb:
+        return fb, {"source": "task_health", "detail": "direct_failed:" + why}
+    return {}, {"source": "none", "detail": "direct_failed:" + why + " · task_health 못 믿음(없음 · 다른 기계 · 낡음)"}
 
 
 def _dedup_path(root):
@@ -780,21 +863,39 @@ def scan(root=None, only=None):
     dflt = float(reg.get("default_max_event_age_h", 48))
     fn = {"log_patterns": _scan_log_rule, "freshness": _scan_freshness, "expect_today": _scan_expect_today, "json_field": _scan_json_field,
           "jsonl_ledger": _scan_jsonl_ledger, "ledger_covers": _scan_ledger_covers, "ledger_activity": _scan_ledger_activity}
-    states = _task_states(root, now)
+    wanted = [c.get("sched_task") for c in reg["components"] if c.get("sched_task") and (not only or c["id"] == only)
+              and any(r.get("kind") in STALENESS_KINDS for r in c.get("rules", []))]
+    if wanted:
+        states, basis = _task_states_resolved(root, now, wanted)
+    else:
+        states, basis = {}, {"source": "none", "detail": "no_staleness_rules_with_task"}
+    W["task_state"] = dict(basis, at=_iso(now), disabled=sorted(n for n, v in states.items() if v is False))
     for c in reg["components"]:
         if only and c["id"] != only:
             continue
         rules = [dict(r, max_event_age_h=r.get("max_event_age_h", dflt)) if r["kind"] == "log_patterns" else r for r in c.get("rules", [])]
         off = _task_disabled(states, c.get("sched_task"))
+        off_resolved = []
         for r in rules:
             if off and r["kind"] in STALENESS_KINDS:          # ① 꺼진 작업의 낡음 · 미완료는 재지 않고 열린 것은 해소
-                _clear(W, c["id"], r["id"], now)
+                off_resolved += _clear(W, c["id"], r["id"], now)
                 continue
             try:
                 fn[r["kind"]](root, W, c["id"], r, now, events)
             except Exception as ex:                                    # 규칙 하나의 실패가 감시 전체를 멈추지 않게 — 그 자체를 이상으로
                 _flag(W, events, c["id"], r.get("id", "?"), "warn", "감시 규칙 실행 실패 %s: %s" % (type(ex).__name__, ex), {}, now)
-        W.setdefault("components", {})[c["id"]] = dict({"last_scan": _iso(now)}, **({"disabled_task": c["sched_task"]} if off else {}))
+        W.setdefault("components", {})[c["id"]] = dict({"last_scan": _iso(now)}, **({"disabled_task": c["sched_task"], "task_state_source": basis["source"]} if off else {}))
+        # ①' 꺼짐으로 해소한 '실행 낡음' 이상의 원인 키도 놓는다(task:<작업> · sf:…) — 다시 켜진 뒤 실제로 낡으면 새 일화로 1통(같은 날이어도).
+        #    구성요소 cause_key 는 그 발신처 몫이라 여기서도 안 지운다.
+        off_keys = [k for a in off_resolved for k in _anom_keys(c, a) if k.startswith("task:") or k.startswith("sf:")] \
+            if not c.get("cause_key") else []
+        if off_keys:
+            dd = _dedup()
+            if dd:
+                try:
+                    dd.resolve(off_keys, path=_dedup_path(root))
+                except Exception:
+                    pass
         # ② 해소 — 구성요소 고유 키(sf:…)는 그 이상이 정상 복귀(resolved)하면 지운다(같은 날 재발도 다시 1통).
         #    task:<작업> 키는 task_health 가 그 작업이 경보 뒤 건강하게 다시 돌았을 때 지운다(scheduler_task_health.sh · resolve-healthy) ·
         #    구성요소 cause_key 는 그 발신처 몫이라 여기서 안 지운다.

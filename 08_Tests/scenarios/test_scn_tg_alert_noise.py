@@ -16,6 +16,7 @@
 import io, json, os, re, shutil, subprocess, sys, tempfile
 
 REAL = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+CODE_ROOT = os.environ.get("QVEST_E2E_CODE_ROOT") or REAL     # 임시 루트에 복사할 코드의 출처(수리 사본 대조용) — 평소엔 저장소 · 렌더 · 정적 검사는 REAL
 PY = sys.executable
 BASH = r"C:\Program Files\Git\bin\bash.exe" if os.name == "nt" else "bash"
 ME = os.environ.get("COMPUTERNAME") or __import__("socket").gethostname()
@@ -44,7 +45,7 @@ def mk_root(mut=None):
     T = tempfile.mkdtemp(prefix="scn_noise_").replace("\\", "/")
     for rel in ("02_Infrastructure/programs/superfan_watch.py", "02_Infrastructure/ops/alert_dedup.py",
                 "02_Infrastructure/ops/_sched_failure_classify.sh", "02_Infrastructure/ops/scheduler_task_health.sh"):
-        dst = os.path.join(T, rel); os.makedirs(os.path.dirname(dst), exist_ok=True); shutil.copyfile(os.path.join(REAL, rel), dst)
+        dst = os.path.join(T, rel); os.makedirs(os.path.dirname(dst), exist_ok=True); shutil.copyfile(os.path.join(CODE_ROOT, rel), dst)
     for rel, (a, b) in (mut or {}).items():
         p = os.path.join(T, rel); s = io.open(p, encoding="utf-8", newline="").read()
         n = s.count(a)
@@ -93,7 +94,9 @@ def env(T, now="2026-11-10 11:30"):
     e.update({"QVEST_SUPERFAN_NOW": now, "QVEST_ALERT_DEDUP_NOW": now, "QVEST_ALERT_DEDUP_PATH": T + "/.cache/alert_dedup.json",
               "QVEST_SUPERFAN_NOTIFY_CMD": "%s %s/mock_notify.py" % (PY.replace("\\", "/"), T),
               "QVEST_SCHED_ALERT_RSCRIPT": T + "/mock_rscript.sh", "QVEST_PY": PY.replace("\\", "/"),
-              "QVEST_UNATTENDED": "1", "BASE": T, "TG_BOT_TOKEN": "TEST_TOKEN_NOT_REAL", "TG_CHAT_ID": "0"})
+              "QVEST_UNATTENDED": "1", "BASE": T,
+              # 꺼짐 직접 조회(3차)는 이 시험에서 '실패'로 고정 — 운영 스케줄러를 묻지 않고 task_health 산출 경로(축 X)를 잰다(직접 조회 축 = e2e S8)
+              "QVEST_SUPERFAN_TASK_QUERY_CMD": "%s -c raise(SystemExit(2))" % PY.replace("\\", "/"), "TG_BOT_TOKEN": "TEST_TOKEN_NOT_REAL", "TG_CHAT_ID": "0"})
     for k in ("QVEST_SUPERFAN_REGISTRY_PATH", "QVEST_SUPERFAN_WATCH_PATH", "QVEST_SUPERFAN_TASK_HEALTH_PATH", "QVEST_NO_ALERT"):
         e.pop(k, None)
     return e
