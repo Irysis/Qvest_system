@@ -335,7 +335,7 @@ FAMILY_PATTERNS <- list(
   if (!nzchar(lcode)) stop("l_code 필드 부재 + 파일명 복원 실패: ", basename(path))
   d$l_code <- lcode
   d$source_file <- sub(paste0("^", root, "/"), "", gsub("\\\\", "/", path))
-  d$mtime <- format(file.info(path)$mtime, "%Y-%m-%dT%H:%M:%S")
+  d$mtime <- format(file.info(path, extra_cols = FALSE)$mtime, "%Y-%m-%dT%H:%M:%S")
   d
 }
 
@@ -722,7 +722,7 @@ HI_WT_TERMINAL_REGEX <- "TERMINAT|ABORT|ARCHIV|REJECT|KILL|FAIL|NEGATIVE|DEFERRE
 
   # 활동 신호 = 디렉터리 내 최신 파일 mtime (status.json updated_at 문자열보다 신뢰)
   fs <- list.files(wt_dir, full.names = TRUE)
-  mt <- suppressWarnings(max(file.info(fs)$mtime, na.rm = TRUE))
+  mt <- suppressWarnings(max(file.info(fs, extra_cols = FALSE)$mtime, na.rm = TRUE))
   age_days <- suppressWarnings(as.numeric(difftime(Sys.time(), mt, units = "days")))
   fresh <- is.finite(age_days) && age_days <= HI_INFLIGHT_FRESH_DAYS
 
@@ -767,6 +767,109 @@ HI_WT_TERMINAL_REGEX <- "TERMINAT|ABORT|ARCHIV|REJECT|KILL|FAIL|NEGATIVE|DEFERRE
 # --------------------------------------------------------------------
 # 빌더
 # --------------------------------------------------------------------
+# --------------------------------------------------------------------
+# (2026-11-10 감사 레인 K) 원본 L-code 철회 판정 — 단일 정본 lcode_validity.py check 를 부른다(50개씩).
+#   정본 호출이 실패하면(파이썬 · 스크립트 부재) **보수 폴백** = 판정 필드(pit_invalid · retracted_by)가 *있기만 해도* 제외.
+#   값 판정을 R 로 재구현하지 않는다 — 폴백은 '있으면 뺀다'뿐이고, basis 에 폴백 사실을 남긴다.
+# --------------------------------------------------------------------
+HI_INVALIDATION_FIELDS <- c("pit_invalid", "retracted_by")   # = lcode_schema.R::LCODE_INVALIDATION_FIELDS
+.hi_raw_invalid <- function(paths, root = QM_ROOT) {
+  py <- Sys.getenv("QVEST_PY", "")
+  if (!nzchar(py) || !file.exists(py)) py <- file.path(root, ".venv_qvest_ml", "Scripts", "python.exe")
+  script <- file.path(root, "02_Infrastructure", "axiom", "lcode_validity.py")
+  canon <- tryCatch({
+    if (!file.exists(script)) stop("lcode_validity.py 부재")
+    if (!file.exists(py)) stop("python 부재: ", py)
+    had <- Sys.getenv("PYTHONUTF8", NA_character_); Sys.setenv(PYTHONUTF8 = "1")
+    on.exit(if (is.na(had)) Sys.unsetenv("PYTHONUTF8") else Sys.setenv(PYTHONUTF8 = had), add = TRUE)
+    res <- logical(0)
+    for (ch in split(paths, ceiling(seq_along(paths) / 50))) {
+      out <- suppressWarnings(system2(py, c(shQuote(script), "check", shQuote(ch)), stdout = TRUE, stderr = FALSE))
+      st <- attr(out, "status"); if (!is.null(st) && st != 0) stop("check status=", st)
+      r <- fromJSON(paste(out, collapse = "\n"), simplifyVector = TRUE)
+      if (length(r$invalid) != length(ch)) stop("check 결과 길이 불일치")
+      res <- c(res, is.na(r$invalid) | as.logical(r$invalid))   # 못 읽음(NA) = 제외(보수)
+    }
+    res
+  }, error = function(e) structure(conditionMessage(e), class = "hi_err"))
+  if (!inherits(canon, "hi_err")) return(list(exclude = canon, basis = "lcode_validity.py check"))
+  message("[hypothesis_index][WARN] 철회 판정 정본 호출 실패(", canon, ") — 보수 폴백(판정 필드가 있으면 제외)")
+  ex <- vapply(paths, function(p) {
+    d <- tryCatch(fromJSON(p, simplifyVector = FALSE), error = function(e) NULL)
+    is.null(d) || any(HI_INVALIDATION_FIELDS %in% names(d))
+  }, logical(1), USE.NAMES = FALSE)
+  # 못 읽는 파일은 원래 경로(아래 parse 실패 카운트)로 넘긴다 — 여기서 빼면 parse_fail 계기가 죽는다
+  rd <- vapply(paths, function(p) !is.null(tryCatch(fromJSON(p, simplifyVector = FALSE), error = function(e) NULL)), logical(1), USE.NAMES = FALSE)
+  list(exclude = ex & rd, basis = paste0("fallback_presence(", canon, ")"))
+}
+
+# --------------------------------------------------------------------
+# (h) v10.2 학습 원장 (2026-11-10 감사 레인 K) — 결과 원장 round_outcomes.jsonl + P4 걸음 원장 chain_steps.jsonl.
+#   왜: v10.2 의 학습 고리는 이 두 원장에 사는데 조회 원천 목록에 없었다 — 닫힌 라운드 · 기각된 걸음이 lookup 에 안 보였다
+#   (method_registry (f) · overlay (g) 와 같은 '측정했는데 안 보이는' 계통).
+#   ★두 원장은 쓰는 쪽(round_core)이 τ_D 날짜 검사를 통과한 글만 싣는다 — 여기서는 수치를 옮기지 않는다(개수 · 판정 라벨 · 사유 코드만).
+#   자기 id 공간(RO_ · P4S_)이라 (a)~(g) 와 병합 충돌 없음.
+# --------------------------------------------------------------------
+.hi_jsonl <- function(path) {
+  if (!file.exists(path)) return(list())
+  L <- readLines(path, warn = FALSE, encoding = "UTF-8"); L <- L[nzchar(trimws(L))]
+  Filter(Negate(is.null), lapply(L, function(s) tryCatch(fromJSON(s, simplifyVector = FALSE), error = function(e) NULL)))
+}
+.hi_v102_sources <- function(root) {
+  c(file.path(root, "06_Registry", "round_outcomes.jsonl"),
+    Sys.glob(file.path(root, "04_Research", "programs", "P4_ASSEMBLY", "*", "chain_steps.jsonl")))
+}
+.hi_parse_outcomes <- function(path) {
+  out <- list()
+  for (r in .hi_jsonl(path)) {
+    if (!identical(r$schema, "round_outcome_v1") || !identical(r$kind %||% "round", "round")) next
+    rid <- as.character(r$round_id %||% "")[1]; if (!nzchar(rid)) next
+    les <- unlist(r$lessons %||% list()); prb <- unlist(r$probes %||% list())
+    ttl <- paste(c(sprintf("%s [%s] %s", rid, r$program %||% "?", r$verdict_label %||% ""),
+                   if (length(les)) paste("교훈:", paste(les, collapse = " / ")),
+                   if (length(prb)) paste("다음 탐침:", paste(prb, collapse = " / "))), collapse = " — ")
+    text <- .hi_lc(c(ttl, r$note %||% ""))
+    out[[length(out) + 1L]] <- list(
+      strategy_id = paste0("RO_", rid),
+      hypothesis_signature = .hi_signature(.hi_infer_family(text), .hi_infer_signal_group(text, rid),
+                                           as.character(r$epoch %||% "unknown"), as.character(r$template %||% "round")),
+      title = ttl,
+      verdict = if (identical(r$r7, "noise")) "ROUND_NOISE" else if (identical(r$r7, "signal")) "ROUND_SIGNAL" else "ROUND_CLOSED",
+      grade = "",
+      key_metrics = list(n_cells = r$n_cells %||% NA, n_variants = r$n_variants %||% NA, n_probes = length(prb)),
+      source_paths = "06_Registry/round_outcomes.jsonl",
+      source_types = "round_outcomes",
+      research_mode = if (identical(r$template, "p4_chain")) "p4_chain" else "program_round",
+      date = substr(as.character(r$at %||% ""), 1, 10))
+  }
+  out
+}
+.hi_parse_chain_steps <- function(path, root = QM_ROOT) {
+  R <- .hi_jsonl(path); chain <- basename(dirname(path)); out <- list()
+  res <- Filter(function(x) identical(x$event, "step_result"), R)
+  for (o in Filter(function(x) identical(x$event, "step_open"), R)) {
+    k <- as.character(o$k %||% "?")[1]
+    rr <- Filter(function(x) identical(as.character(x$k %||% ""), k), res)
+    dec <- if (length(rr)) as.character(rr[[1]]$decision %||% "") else ""
+    codes <- if (length(rr)) unique(sub(":.*$", "", unlist(rr[[1]]$reasons %||% list()))) else character(0)
+    ttl <- sprintf("%s 걸음 %s [%s] %s", chain, k, o$block_type %||% "?", o$hypothesis %||% "")
+    text <- .hi_lc(c(ttl, o$mechanism %||% ""))
+    out[[length(out) + 1L]] <- list(
+      strategy_id = sprintf("P4S_%s_k%s", chain, k),
+      hypothesis_signature = .hi_signature(.hi_infer_family(text), .hi_infer_signal_group(text, ttl), "p4_chain",
+                                           paste0("block_", o$block_type %||% "unknown")),
+      title = ttl,
+      verdict = if (identical(dec, "accept")) "STEP_ACCEPT" else if (identical(dec, "reject")) "STEP_REJECT" else "STEP_PENDING",
+      grade = "",
+      key_metrics = list(reject_codes = paste(codes, collapse = ";"), generator = as.character(o$generator_version %||% "")),
+      source_paths = sub(paste0("^", root, "/"), "", gsub("\\\\", "/", path)),
+      source_types = "p4_chain_steps",
+      research_mode = "p4_chain",
+      date = substr(as.character(o$at %||% ""), 1, 10))
+  }
+  out
+}
+
 build_hypothesis_index <- function(root = QM_ROOT, out_path = HI_INDEX_PATH,
                                    verbose = TRUE) {
   entries <- list()   # keyed by strategy_id
@@ -815,7 +918,7 @@ build_hypothesis_index <- function(root = QM_ROOT, out_path = HI_INDEX_PATH,
   # --- (b) lcode corpus ---
   lc_path <- file.path(root, ".cache/lcode_corpus.json")
   lc_seen <- character(0)   # (task#54-1) corpus 반영된 l_code 키 — 보충 스캔 dedup (corpus 우선)
-  lc_mtime <- if (file.exists(lc_path)) file.info(lc_path)$mtime
+  lc_mtime <- if (file.exists(lc_path)) file.info(lc_path, extra_cols = FALSE)$mtime
               else as.POSIXct("1970-01-01", tz = "UTC")   # corpus 부재 → 전체 원본 스캔
   if (file.exists(lc_path)) {
     lc <- tryCatch(fromJSON(lc_path, simplifyVector = FALSE), error = function(e) NULL)
@@ -848,8 +951,19 @@ build_hypothesis_index <- function(root = QM_ROOT, out_path = HI_INDEX_PATH,
     Sys.glob(file.path(root, "stage_artifacts/l_code_*.json"))
   )
   if (length(raw_lc_paths)) {
-    fi_raw <- file.info(raw_lc_paths)
+    fi_raw <- file.info(raw_lc_paths, extra_cols = FALSE)   # (11-10) extra_cols=FALSE — OneDrive 1,945파일 실측 12.7초 → 2.6초
     raw_new <- raw_lc_paths[!is.na(fi_raw$mtime) & fi_raw$mtime > lc_mtime]
+    # ★2026-11-10 (감사 레인 K): 보충 스캔도 철회 · PIT 무효 표식을 거른다. corpus 가 정체된 동안(11-07 이후 수확기 0회)
+    #   새로 철회 표식을 단 원본은 corpus.invalidated_lcodes 에 없어서, 이 스캔이 원본을 직접 파싱해 **다시 색인**했다.
+    #   판정은 단일 정본(lcode_validity.py::lcode_invalidation · CLI check)을 부른다 — R 재구현 금지(lcode_schema.R 규약).
+    if (length(raw_new)) {
+      inv <- .hi_raw_invalid(raw_new, root)
+      if (any(inv$exclude)) {
+        cov$lcode_supplement_invalidated_excluded <- sum(inv$exclude)
+        cov$lcode_supplement_validity_basis <- inv$basis
+        raw_new <- raw_new[!inv$exclude]
+      }
+    }
     for (p in raw_new) {
       pe <- tryCatch({
         d <- .hi_raw_lcode_entry(p, root)
@@ -948,6 +1062,17 @@ build_hypothesis_index <- function(root = QM_ROOT, out_path = HI_INDEX_PATH,
     }
   }
 
+  # --- (h) v10.2 학습 원장 (2026-11-10 — 결과 원장 + P4 걸음 원장 · 위 .hi_parse_outcomes 머리말) ---
+  cov$v102_round_outcomes_indexed <- 0L; cov$v102_chain_steps_indexed <- 0L
+  for (p in .hi_v102_sources(root)) {
+    ents <- tryCatch(if (basename(p) == "round_outcomes.jsonl") .hi_parse_outcomes(p) else .hi_parse_chain_steps(p, root),
+                     error = function(err) { message(sprintf("[hypothesis_index][WARN] v10.2 원장 parse 실패 skip: %s (%s)", basename(p), conditionMessage(err))); list() })
+    for (e in ents) if (add_entry(e)) {
+      if (identical(e$source_types, "round_outcomes")) cov$v102_round_outcomes_indexed <- cov$v102_round_outcomes_indexed + 1L
+      else cov$v102_chain_steps_indexed <- cov$v102_chain_steps_indexed + 1L
+    }
+  }
+
   # --- (e) in-flight WT mailbox (2026-07-10 M6 — 원천 5) ---
   #   반드시 (a)~(d) 뒤에 합류: 동일 strategy_id 병합 시 완주 산출물이 base가 되어
   #   IN_PROGRESS가 확정 verdict를 덮지 않는다 (.hi_merge verdict 규칙).
@@ -1001,8 +1126,12 @@ build_hypothesis_index <- function(root = QM_ROOT, out_path = HI_INDEX_PATH,
   tmp_path <- file.path(dirname(out_path),
                         paste0(".", basename(out_path), ".tmp_", Sys.getpid()))
   write_json(out, tmp_path, auto_unbox = TRUE, pretty = TRUE, null = "null")
-  if (file.exists(out_path)) suppressWarnings(file.remove(out_path))
+  # (2026-11-10 감사 레인 K) 먼저 지우지 않고 덮어 쓴다 — R 의 file.rename 은 Windows 에서도 대상 파일을 교체한다(실측 TRUE).
+  #   구판의 '지우고 → rename' 은 그 사이에 다른 세션의 lookup 이 '인덱스 없음'으로 멈추는 창을 만들었다(병렬 세션 lookup = 재빌드).
   renamed <- suppressWarnings(file.rename(tmp_path, out_path))
+  if (!isTRUE(renamed) && file.exists(out_path)) {
+    suppressWarnings(file.remove(out_path)); renamed <- suppressWarnings(file.rename(tmp_path, out_path))
+  }
   if (!isTRUE(renamed)) {
     ok_copy <- suppressWarnings(file.copy(tmp_path, out_path, overwrite = TRUE))
     suppressWarnings(file.remove(tmp_path))
@@ -1089,7 +1218,7 @@ HI_QUERY_ALIAS <- list(
 # 최신이면 인덱스가 뒤처짐. warn=TRUE면 경고 메시지 (auto-rebuild 경로에선 FALSE로 억제).
 .hi_stale_check <- function(index_path, root = QM_ROOT, warn = TRUE) {
   if (!file.exists(index_path)) return(invisible(NULL))
-  idx_mt <- file.info(index_path)$mtime
+  idx_mt <- file.info(index_path, extra_cols = FALSE)$mtime
   srcs <- c("06_Registry/distilled_knowledge.json",
             "06_Registry/module_catalog.json",
             ".cache/lcode_corpus.json",
@@ -1105,28 +1234,34 @@ HI_QUERY_ALIAS <- list(
   stale <- character(0)
   for (s in srcs) {
     p <- file.path(root, s)
-    if (file.exists(p) && file.info(p)$mtime > idx_mt) stale <- c(stale, s)
+    if (file.exists(p) && file.info(p, extra_cols = FALSE)$mtime > idx_mt) stale <- c(stale, s)
   }
   # (task#54-1 2026-07-13) 원본 L-code 파일이 인덱스보다 최신이면 stale — corpus 정체와
   #   무관하게 lookup 자동 재빌드(→ 보충 스캔 소비)가 트리거되도록 원본 계층을 직접 감시.
   raw_lc <- c(Sys.glob(file.path(root, "stage_artifacts/l_code/*/l_code_*.json")),
               Sys.glob(file.path(root, "stage_artifacts/l_code_*.json")))
   if (length(raw_lc)) {
-    raw_mt <- suppressWarnings(max(file.info(raw_lc)$mtime, na.rm = TRUE))
+    raw_mt <- suppressWarnings(max(file.info(raw_lc, extra_cols = FALSE)$mtime, na.rm = TRUE))
     if (is.finite(raw_mt) && raw_mt > idx_mt) stale <- c(stale, "stage_artifacts/l_code (원본 L-code)")
   }
   # (M6 2026-07-10) in-flight WT 원천 stale 검사 — mailbox의 request/status.json 최신 mtime
   wt_files <- Sys.glob(file.path(root, "qepm/mailbox/worktask/*", c("status.json", "request.json")))
   if (length(wt_files)) {
-    wt_mt <- suppressWarnings(max(file.info(wt_files)$mtime, na.rm = TRUE))
+    wt_mt <- suppressWarnings(max(file.info(wt_files, extra_cols = FALSE)$mtime, na.rm = TRUE))
     if (is.finite(wt_mt) && wt_mt > idx_mt) stale <- c(stale, "qepm/mailbox/worktask (in-flight WT)")
   }
   # (2026-08-16 P0#1) overlay 드레인 결과가 인덱스보다 최신이면 stale — 신규 드레인이
   #   lookup 에 자동 반영되도록 결과 계층을 직접 감시 (method_registry 08-13 결함과 동형 예방).
   od_files <- Sys.glob(file.path(root, "06_Registry/overlay_ab_results/*.json"))
   if (length(od_files)) {
-    od_mt <- suppressWarnings(max(file.info(od_files)$mtime, na.rm = TRUE))
+    od_mt <- suppressWarnings(max(file.info(od_files, extra_cols = FALSE)$mtime, na.rm = TRUE))
     if (is.finite(od_mt) && od_mt > idx_mt) stale <- c(stale, "06_Registry/overlay_ab_results (overlay drain)")
+  }
+  # (2026-11-10 감사 레인 K) v10.2 학습 원장(h) — 결과 원장 · P4 걸음 원장이 인덱스보다 새면 stale
+  v1 <- .hi_v102_sources(root); v1 <- v1[file.exists(v1)]
+  if (length(v1)) {
+    v_mt <- suppressWarnings(max(file.info(v1, extra_cols = FALSE)$mtime, na.rm = TRUE))
+    if (is.finite(v_mt) && v_mt > idx_mt) stale <- c(stale, "v10.2 학습 원장(round_outcomes · chain_steps)")
   }
   if (length(stale) && warn) {
     message(sprintf("[hypothesis_index][경고] 인덱스 stale — 다음 원천이 인덱스보다 최신: %s. build 권장 (Rscript 02_Infrastructure/tools/hypothesis_index.R build)",
@@ -1179,9 +1314,34 @@ HI_QUERY_ALIAS <- list(
 #   ★P1→M6 (2026-07-10): stale 감지 시 경고-only → 인라인 자동 재빌드 (auto_rebuild=TRUE
 #     기본. 전체 빌드 실측 ~2s. 재빌드 실패 시 기존 인덱스로 폴백 + 경고 — lookup은 항상 응답).
 # --------------------------------------------------------------------
+# (2026-11-10 감사 레인 K) 조회의 재빌드 = 공유 등록부 쓰기다. 병렬 세션 둘이 같은 순간 lookup 하면 둘 다 재빌드했다.
+#   ① 재빌드는 잠금(<index>.rebuild.lock — dir.create 원자 선점, 저장소 관행 cleaner_claim · shared_registry_io 와 같은 원리) 안에서만.
+#      잠금을 못 잡으면 재빌드하지 않고 기존 인덱스로 조회한다(다른 프로세스가 짓는 중 — 조회는 항상 응답).
+#   ② 죽은 잠금 회수 = HI_LOCK_STALE_SEC(600초) 초과. 근거: 운영 원천 전체 빌드 실측(11-10 · 3,055항목 · 이 PC) 57초 —
+#      그 약 10배를 넘긴 잠금만 크래시 잔재로 본다(살아 있는 빌드를 빼앗지 않는다). 머리말의 '빌드 ~2s'(07-10)는 낡았다.
+#   ③ HI_NO_AUTO_REBUILD=1 이면 조회는 읽기만 한다(어드바이저 · 감사 · 시험의 읽기 전용 조회 — 공유 등록부 쓰기 0).
+HI_LOCK_STALE_SEC <- 600
+.hi_distilled_retired <- function(root = QM_ROOT) {
+  st <- tryCatch(fromJSON(file.path(root, "06_Registry", "axiom_engine_status.json"), simplifyVector = FALSE), error = function(e) NULL)
+  !is.null(st) && identical(st[["promotion_enabled"]], FALSE)
+}
+.hi_with_rebuild_lock <- function(index_path, fun) {
+  lk <- paste0(index_path, ".rebuild.lock")
+  got <- suppressWarnings(dir.create(lk, showWarnings = FALSE))
+  if (!got && dir.exists(lk)) {
+    age <- as.numeric(difftime(Sys.time(), file.info(lk, extra_cols = FALSE)$mtime, units = "secs"))
+    if (is.finite(age) && age > HI_LOCK_STALE_SEC) { unlink(lk, recursive = TRUE, force = TRUE); got <- suppressWarnings(dir.create(lk, showWarnings = FALSE)) }
+  }
+  if (!got) { message("[hypothesis_index] 다른 프로세스가 재빌드 중(잠금) — 재빌드하지 않고 기존 인덱스로 조회"); return(FALSE) }
+  on.exit(unlink(lk, recursive = TRUE, force = TRUE), add = TRUE)
+  fun(); TRUE
+}
 lookup_hypothesis <- function(keywords, index_path = HI_INDEX_PATH,
                               max_rows = 30L, auto_rebuild = TRUE,
                               root = QM_ROOT) {
+  if (identical(Sys.getenv("HI_NO_AUTO_REBUILD", "0"), "1")) auto_rebuild <- FALSE   # (2026-11-10) 읽기 전용 조회 스위치
+  # (2026-11-10) 다른 프로세스가 교체하는 순간의 '없음'을 잠깐 기다린다(구판 교체 창 · 원격 동기화 지연) — 0.25초 × 8
+  for (.w in 1:8) { if (file.exists(index_path)) break; Sys.sleep(0.25) }
   # ★root 이음매 (2026-08-22 신설): 인라인 재빌드/stale 검사가 index_path 와 무관하게
   #   QM_ROOT 원천을 훑던 구조를 끊는다. 이것이 없으면 샌드박스 index_path 를 줘도
   #   원천은 **생산 트리**를 읽어, 검사가 생산 원장을 만져야만 성립했다
@@ -1196,8 +1356,7 @@ lookup_hypothesis <- function(keywords, index_path = HI_INDEX_PATH,
     message(sprintf("[hypothesis_index] stale 감지(%s) → 인라인 자동 재빌드",
                     paste(stale, collapse = ", ")))
     ok <- tryCatch({
-      build_hypothesis_index(root = root, out_path = index_path, verbose = FALSE)
-      TRUE
+      .hi_with_rebuild_lock(index_path, function() build_hypothesis_index(root = root, out_path = index_path, verbose = FALSE))
     }, error = function(e) {
       message("[hypothesis_index][경고] 인라인 재빌드 실패 — 기존(stale) 인덱스로 진행: ",
               conditionMessage(e))
@@ -1211,7 +1370,8 @@ lookup_hypothesis <- function(keywords, index_path = HI_INDEX_PATH,
     message("[hypothesis_index][경고] 인덱스 파싱 실패(손상 추정): ", conditionMessage(e),
             " → 강제 재빌드")
     ok <- tryCatch({
-      build_hypothesis_index(root = root, out_path = index_path, verbose = FALSE)
+      # 손상 치유는 잠금을 못 잡아도(다른 프로세스가 짓는 중) 그 결과를 다시 읽으면 된다 — 아래 재파싱이 판정한다
+      .hi_with_rebuild_lock(index_path, function() build_hypothesis_index(root = root, out_path = index_path, verbose = FALSE))
       TRUE
     }, error = function(e2) {
       message("[hypothesis_index][오류] 강제 재빌드 실패: ", conditionMessage(e2))
@@ -1233,12 +1393,18 @@ lookup_hypothesis <- function(keywords, index_path = HI_INDEX_PATH,
   # 각 키워드 별칭 확장(P0#3)
   kw_exp <- lapply(kws, .hi_expand_kw)
 
+  # (2026-11-10 감사 레인 K · 속도) 항목마다 .hi_entry_matches 를 부르던 이중 루프(3,055항목 × 별칭 후보)를
+  #   haystack 벡터 1회 조립 + 후보별 벡터 grepl 로 바꿨다. 판정 문자열(.hi_entry_matches 의 paste)과 AND/OR 의미는 같다.
+  hay <- vapply(idx$entries, function(e) tolower(paste(e$hypothesis_signature, e$title, e$verdict,
+                                                       e$grade %||% "", e$strategy_id, collapse = " ")), character(1))
   collect <- function(expansions) {
-    rows <- list()
-    for (e in idx$entries) {
-      if (.hi_entry_matches(e, expansions)) rows[[length(rows) + 1L]] <- .hi_row(e)
+    hit <- rep(TRUE, length(hay))
+    for (cands in expansions) {
+      any_c <- rep(FALSE, length(hay))
+      for (k in cands) any_c <- any_c | grepl(k, hay, fixed = TRUE)
+      hit <- hit & any_c
     }
-    rows
+    lapply(idx$entries[which(hit)], .hi_row)
   }
 
   rows <- collect(kw_exp)
@@ -1258,6 +1424,12 @@ lookup_hypothesis <- function(keywords, index_path = HI_INDEX_PATH,
   # distilled 계층 우선 노출(폴백 배너 상황에서도), 그 다음 date 내림차순.
   # dist_rank 0 = distilled(먼저), 1 = 그 외. date는 문자열 역순.
   dist_rank <- ifelse(grepl("^DISTILLED", df$verdict), 0L, 1L)
+  # (2026-11-10 감사 레인 K) DIST 수명주기가 퇴역(06_Registry/axiom_engine_status.json::promotion_enabled = false · AXIOM-ENGINE-DISPOSITION-20261110)
+  #   하면 DIST 카드는 더 자라지 않는 사료다. 그대로 앞에 세우면 상위 30행이 전부 옛 카드로 차서(실측 11-10: momentum · defense ·
+  #   regime overlay · dividend 4어 모두 30/30 DIST) 충실구현 · 라운드 · 걸음 결과가 조회면에 안 보인다 → 퇴역이면 날짜 순만.
+  #   같은 판(v10.2)에서 진행 중 WT 표식(IN_PROGRESS · INFLIGHT_STALE — QEPM WT 동결 QEPM-R0-FREEZE 아래 새로 생기지 않는다)은 결과가 아니라
+  #   표식이라 맨 뒤로 보낸다: 11-06 기기 이관으로 mailbox 파일 시각이 바뀌어 4~5월 WT 30건이 IN_PROGRESS(11-06)로 상위를 차지했다(실측 11-10).
+  if (.hi_distilled_retired(root)) dist_rank <- ifelse(df$verdict %in% c("IN_PROGRESS", "INFLIGHT_STALE"), 2L, 1L)
   ord <- order(dist_rank, -xtfrm(df$date))
   df <- df[ord, , drop = FALSE]
   rownames(df) <- NULL
@@ -1278,7 +1450,10 @@ if (sys.nframe() == 0 && !interactive()) {
     #   대체로 어떻게 끝났나 · 뭘 열어볼까")은 세 조각뿐이다.
     #   ★`lookup_hypothesis()` 의 **반환값은 불변**이다 — R 에서 부르면 종전대로 전체
     #     데이터프레임이 온다. 줄인 것은 CLI 표면이지 계약이 아니다.
-    res <- lookup_hypothesis(args[-1])
+    # (2026-11-10) --no-rebuild = 읽기 전용 조회(공유 등록부 쓰기 0). ★이 CLI 블록의 코드 줄은 ASCII 만(비ASCII = 유니코드 이스케이프) —
+    #   블록을 떼어 Rscript -e 로 돌리거나 UTF-8 아닌 코드 페이지에서 읽을 때 'unexpected input' 파싱 오류가 보고됐다(11-10 레인 E2).
+    kw <- setdiff(args[-1], "--no-rebuild")
+    res <- if ("--no-rebuild" %in% args) lookup_hypothesis(kw, auto_rebuild = FALSE) else lookup_hypothesis(kw)
     n <- if (is.data.frame(res)) nrow(res) else 0L
     cnt <- function(pat) if (n == 0L) 0L else sum(grepl(pat, res$verdict))
     top <- ""
@@ -1292,7 +1467,7 @@ if (sys.nframe() == 0 && !interactive()) {
       top <- paste(lab, collapse = " ")
     }
     cat(sprintf(
-      "[hypothesis_index] %d hits (FAIL %d · DISTILLED_NEG %d · PASS %d · MARGINAL %d) top: %s — 상세: lookup_hypothesis() in R\n",
+      "[hypothesis_index] %d hits (FAIL %d \u00b7 DISTILLED_NEG %d \u00b7 PASS %d \u00b7 MARGINAL %d) top: %s \u2014 \uc0c1\uc138: lookup_hypothesis() in R\n",
       n, cnt("^FAIL"), cnt("^DISTILLED"), cnt("^PASS"), cnt("^MARGINAL"), top))
   } else {
     cat("usage:\n  Rscript hypothesis_index.R build\n  Rscript hypothesis_index.R lookup <keyword> [keyword...]\n")

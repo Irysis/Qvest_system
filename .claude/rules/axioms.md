@@ -14,6 +14,12 @@ paths:
 - Mapping: `qepm/memory/axioms/axiom_sot_map.json`
 - Health: `02_Infrastructure/memory/memory_knowledge_health.R` (hard 10 + warning 13 — v9.1 신설 **HARD_8** active mode-local 전건 `refine_verdict==REFINED` · **HARD_9** 활성 상한(모드당 ≤6 · 총 ≤20) · **HARD_10** 주입 계측 24h ∧ len ≤2000 ∧ 3마커 생존 · **WARN_12** tombstone 재발급 · **WARN_13** 역링크 충돌)
 
+**★v10.2 처분 (2026-11-10 · 도훈 결정 `AXIOM-ENGINE-DISPOSITION-20261110` "기록 · 조회만 남긴다")**:
+- **남은 것** = 상시 전제(Active Law) 4건(아래 · 주입 훅 `axiom_context_inject.sh` 가 고정부로 주입) · 교훈 원장 L-code(`02_Infrastructure/axiom/{lcode_emit,lcode_schema}.R` · `{lcode_harvester,lcode_validity}.py`) · 조회 `Rscript 02_Infrastructure/tools/hypothesis_index.R lookup <kw>`(사실 기록 · 금지 목록 아님 · `--no-rebuild` = 읽기 전용).
+- **보관된 것** = 승격 기계(`promote` · `promote_global` · `review` · `refine_statement` · `axiom_rollback`) · DIST 수명주기(`distilled.R` · `cluster_extractor.py`) · 부활 감시(`failure_revival_monitor.R`) · 주간 공리 보고 — `99_Archive/axiom_engine_v10_2_20261110/`(MANIFEST). 스위치 = `06_Registry/axiom_engine_status.json`(`promotion_enabled = false`). 아래 본문의 그 스크립트 호출 문구는 **사료**다(실행하면 파일이 없다).
+- 1계층의 학습 고리는 결과 원장 `06_Registry/round_outcomes.jsonl`(round_core `close` · `p4-close`)이 맡는다 — 교훈 정본은 거기와 L-code 다.
+- **되살리는 법**: MANIFEST 순서대로 보관 파일을 원래 상대 경로에 복원(또는 태그 `pre-v10.2-prune-20261110`) → `axiom_engine_status.json::promotion_enabled = true` → 보관 시험 6종을 SUITES 에 다시 등재. 결정 재상정은 decision_register.
+
 **Derived cache (NOT authoritative)**:
 - `.cache/axiom_core.json` — bootstrap regenerate. 권위 X. 동기화 STALE 시 WARN (hard fail X).
 - `02_Infrastructure/prompts/_shared_prefix.md` — agent prefix injection.
@@ -28,7 +34,7 @@ AX-code (Lv0) > PIT C1-C15 (Lv1) > L-code (Lv2) > Signals (Lv3)
 
 ## 2-Tier (v8.0)
 
-**★mode-local `AX-<MODE>-NNN` 은 본 파일에 열거하지 않는다** (2026-08-23 v9.1). 정본 = `qepm/memory/axioms/axiom_sot_map.json` + `qepm/memory/axioms/active/modes/**`. 이유: v9.1부터 mode-local 활성화가 **무인**(`refine_statement.R` R0~R6)이라 목록이 주 단위로 바뀐다 — 여기 적으면 이 파일이 즉시 낡고, `memory_knowledge_health.R` HARD_3(문서↔JSON 불일치)이 매주 발화한다. 현재 활성 목록은 `Rscript -e 'source("02_Infrastructure/axiom/promote.R"); list_active_axioms()'`. 아래 "Active Law (4)" 절은 **global tier 전용**이며 그 4건만 본 파일이 문서화한다.
+**★mode-local `AX-<MODE>-NNN` 은 본 파일에 열거하지 않는다** (2026-08-23 v9.1). 정본 = `qepm/memory/axioms/axiom_sot_map.json` + `qepm/memory/axioms/active/modes/**`. 이유: v9.1부터 mode-local 활성화가 **무인**(`refine_statement.R` R0~R6)이라 목록이 주 단위로 바뀐다 — 여기 적으면 이 파일이 즉시 낡고, `memory_knowledge_health.R` HARD_3(문서↔JSON 불일치)이 매주 발화한다. 현재 활성 목록은 `qepm/memory/axioms/active/modes/**` 의 `status == "active"` 파일(현재 0건 — 09-23 동결 · v10.2 보관 뒤 `promote.R::list_active_axioms()` 는 보관소에만 있다). 아래 "Active Law (4)" 절은 **global tier 전용**이며 그 4건만 본 파일이 문서화한다.
 ★2026-09-23 (도훈 `AX-D1-FREEZE`·`AX-D3-MODELOCAL`): **무인 활성 기본 OFF**(`QVEST_AXIOM_UNATTENDED` 기본 0 — 활성화 = `approve_axiom`) · mode-local 19건 전량 `deprecated/*_rollback_20260923.json` + `tombstones.json`(근거 L-code 무접촉). 현재 mode-local 활성 0건. 강화 기억은 P3 rf_lessons 로 일원화(AX-D2 — 4번째 기억층 금지).
 
 mode-local `AX-<MODE>-NNN` (`active/modes/<mode>/`, MODE=AS/AR/QPM/JG/GV/FR/RR/RAMP) + global `AX-NNN` (`active/`). negative 공리 = **Distilled 탐색지도**(INV-7, 재도전 대상 — Law 아님. 2026-07-05 AX-003/004/005/007 active→Distilled 강등, DIST 카드/Ledger 이관). Law 잔존 = process 규칙(polarity 없음, AX-000/001/002/008). 엔진 SOT: `02_Infrastructure/docs/rules/axiom-engine.md` (원전 r7 복원 + INV-1~7).
@@ -66,5 +72,5 @@ mode-local `AX-<MODE>-NNN` (`active/modes/<mode>/`, MODE=AS/AR/QPM/JG/GV/FR/RR/R
 - `qepm/memory/axioms/active/AX-*.json` (active Law 4건: 000/001/002/008) + `deprecated/AX-*_demoted_to_distilled_20260705.json` (강등 4건)
 - `qepm/memory/axioms/candidates/CAND_*.json` (pending — AX-006 candidate-only)
 - `qepm/memory/axioms/axiom_sot_map.json` (Documented ↔ JSON 매핑)
-- `02_Infrastructure/axiom/lcode_harvester.py` (L-code → AX-code 승격 파이프라인)
+- `02_Infrastructure/axiom/lcode_harvester.py` (L-code 수확 → `.cache/lcode_corpus.json` · 철회 표식 제외 — v10.2 에서 승격 파이프라인 하류는 보관, 수확 · 조회만 남음)
 - `02_Infrastructure/memory/memory_knowledge_health.R` (health gate hard 10 + warning 13 — v9.1 공리 무인 활성화 계약 HARD_8/9/10 · WARN_12/13 포함)

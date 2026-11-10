@@ -42,10 +42,10 @@ Rscript 02_Infrastructure/ops/cleaner_distill_lib.R gate
 `06_Registry/distill_manifest_YYYYMMDD.json` 을 읽고 **네 가지만** 본다:
 1. `deleted[]` — 지워진 것 중 지우면 안 됐던 게 있나. 있으면 `git checkout` 으로 되살리고(추적분) 보호 목록에 등재.
 2. `rejected[]` — 기계가 거부한 사유가 **매주 같은 것**이면 목록이나 가드가 낡은 것이다.
-3. `dist_drafts[]` — `ok=false` 사유. 방화벽 backstop 이 반복 거부하면 프롬프트의 (d) 절이 안 먹고 있다.
+3. `dist_drafts[]` — v10.2 퇴역 뒤엔 비어 있어야 한다(있으면 레인 프롬프트가 퇴역 분기를 못 읽은 것).
 4. `digest` — 실측만 쓰였나(추정 수치·회피표현 grep).
 
-**★백로그 속도**: `pending_5axis` 잔량이 줄고 있나. 안 줄면 `cleaner_distill.max_drafts`(현행 8)가 유입보다 느린 것이다 — 그게 조정 신호다.
+**★학습 고리**: digest 의 학습 고리 절에서 닫힌 라운드 · 사슬이 0 인 주가 이어지거나 열린 탐침만 늘면 그게 그 주의 관찰이다(구 `pending_5axis` 백로그 속도 점검은 퇴역).
 
 ---
 
@@ -96,45 +96,13 @@ Rscript 02_Infrastructure/ops/cleaner_distill_lib.R gate
 - **실측만** (measurement-graduation §1): 수치는 해당 런의 실제 기록 파일에서 인용, `metric_type` 라벨 병기. **추정·재구성 금지** ([[feedback-performance-real-code-only]]).
 - 각 실험: 가설 1줄 / 결론(PASS·FAIL·screen-tier 등) / 핵심 수치(출처 파일 경로) / 후속 여부.
 
-**axiom 후보 현황 (의무 절 — 2026-07-04 주간 axiom 사이클 Cleaner 통합)**:
-- 기계 스윕 step [3.5]가 harvester→cluster_extractor→promote 진단을 돌리고 pending의 `axiom_candidates` 섹션(`n_pending` / `failing_axis_histogram` / `near_miss`)을 채운다 (정규 경로 — 구 `axiom_weekly.sh`는 수동/보조 retain).
-- digest에 **axiom 후보 현황 절 포함**: pending 건수 + 실패 축 히스토그램(어느 축 결측이 승격을 막는지) + near-miss 목록.
+**학습 고리 현황 (의무 절 — v10.2 · 2026-11-10)**:
+- 재료 §1b(`02_Infrastructure/memory/knowledge_loop_metrics.R` — 결과 원장 · 상설 원장 · 레인 저널의 **개수 · 비율만**)를 digest 에 옮긴다: 주별 닫힌 라운드 · 사슬 · 새 탐침/이어받음 · 상설 자격 · 사전 감사 1차 통과율 · 충실도 1회 통과 · 개정 근거로 안 쓴 닫힌 사슬 수. 사슬 걸음 지표(채택률 · 걸음당 개선 · 되풀이 기각)는 `02_Infrastructure/programs/rx_generator_scorecard.R` 가 정본이다.
+- 닫힌 라운드 0 · 열린 탐침만 쌓임 · 원장 손상 경고가 있으면 맨 위 1줄.
 
-**★ v9.1 공리 사다리 산출 (2026-08-23 §7-S4 — 의무 절. 구 v9 '승인 대기 큐'를 대체)**:
-- **승인 대행은 더 이상 이 스킬의 역할이 아니다.** 공리 활성화는 `refine_statement.R` 의 **R0~R6 품질 게이트**가 무인으로 판정한다(INV-6 재정의 = 주입면 자격 게이트). digest 에는 **사후 통지 2절**을 옮긴다:
-  - `axiom_candidates.activated_axioms[]` → `- [활성] AX-AS-001 (alpha_search, L-code 187건) <statement_inject 70자> · 되돌리기: deactivate_axiom(c("AX-AS-001"), reason=)`
-  - `axiom_candidates.held_axioms[]` → `- [보류/HELD] AX-JG-001 (judge_gate, 13건) 미통과=R5_revival (시도 2회)` — **사유를 반드시 적는다**(사유 없는 보류 목록은 다음 주에 아무 행동도 유발하지 않는다).
-- `axiom_candidates.activation_hold` 가 비어 있지 않으면 **맨 위에 경고 1줄**: 회로차단기가 이번 주 공리 쓰기를 전면 중단했다는 뜻이다(사유 = 활성 예정 >3 · 상한 초과 · dry-run crash · 주입 len>1900). 이건 실패가 아니라 설계된 상태이며, 조치는 `activation_hold.action` 에 들어 있다.
-- `axiom_candidates.auto_mapped_negative[]`(음성 클러스터 자동 지도된 DIST id)도 1줄 목록으로 병기 — **공리가 아니라 탐색지도**(INV-7)이며 승인 대상이 아니다.
-- `axiom_candidates.n_promote_skipped` / `promote_skips[]`: 스폰 자체를 건너뛴 후보(단일 L-code = `SKIP_SINGLETON`, 입력 불변 = `SKIP_UNCHANGED`). **이 수가 크다는 건 정상**이다 — 새 정보가 없는 후보를 매주 재채점하지 않는다는 뜻. 0으로 떨어지면 오히려 사전판정 배선이 죽은 것이므로 확인할 것.
-- **★HELD 사유 소비가 이 스킬의 새 공리 역할이다**(정제가 아니라 *입력 수리*): `R5_revival`=멤버 L-code 에 `next_probe`/`live_trigger` 보강 · `R4_falsification`=반증 시도 구조화 기록 · `R0_polarity`=클러스터 polarity 오라벨 정정(`cluster_extractor.py` 재추출) · `R1_members`=결측 supporting 정리 · `R6_distinct`=중복 클러스터 병합 · `R2_tokens`/`R3_mechanism`=emit 지점 보강. 입력이 바뀌면 `refine_input_sha` 가 달라져 **다음 스윕이 자동 재시도**한다(영구 SKIP 없음, AX-000). statement 문안 자체를 손으로 고치지 말 것 — 조립기가 결정적으로 다시 만든다.
-
-**★ INV-6 자동초안 흐름 (2026-07-04 도훈 confirm — "무인 정제 금지" → "무인 *활성화* 금지" 재정의)**:
-DIST 초안 lifecycle이 반자동화됨:
-```
-pending_5axis → [자동초안 에이전트 + 적대검증] → proposed(주입 안 됨) → [도훈 승인] → distilled(주입 가능) → promoted | expired
-```
-- **★자동화 경계 (2026-09-05 개정 — 한 칸 옮겨졌다)**: 무인 기계 스윕(`weekly_cleaner_sweep`, 토 09:00)은 여전히 **harvest→cluster→promote 진단 + 후보 현황 집계까지만** 하고 `status:"awaiting_distill"`로 멈춘다(스윕 스크립트는 `draft_proposed`를 호출하지 않는다 — 이 문장은 불변). 달라진 것은 그 **다음 소비자**다: pending_5axis → proposed 자동초안은 이제 **무인 증류 레인**(`cleaner_distill_run.sh`)이 수행하고, 세션은 그 레인이 못 돌았을 때만 대신한다. proposed → distilled 활성화(주입 스트림 개방)는 **여전히 도훈 배치 승인**이 필수다 — 무인화가 옮긴 것은 *초안 작성자*이지 *활성화 게이트*가 아니다. 즉: 스윕은 재료, **초안은 무인 레인(세션은 폴백)**, 활성화는 승인.
-- **자동초안(허용)**: 본 /cleaner 세션 에이전트가 pending_5axis → proposed 로 `statement_refined` 초안 + `adversarial_verdict`(적대검증)를 작성. **초안 수치·결론은 supporting L-code 실측 결론만** — 창작 금지.
-- **자동초안 적대검증 5체크 (a~e — 초안 승인 전 의무)**:
-  - (a) **과장**: 헤드라인 수치가 게이트/재현/deflate 반영 없이 낙관적인가? envelope-상대 정직 서술로 강등.
-  - (b) **근거**: 결론이 supporting L-code 실측에 실제로 뒷받침되는가? (proxy를 backtested로 오라벨 금지).
-  - (c) **AX-000**: 3~4회 실패를 '구조적 한계/dead-end'로 단정하는가? → 재작성(탐색 계속 · 미해결 열어둠 허용).
-  - (d) **★의미기반 제약 방화벽 (정규식 아님)**: `Rscript -e 'source("02_Infrastructure/axiom/constraint_firewall.R"); print(load_firewall_context())'` 로 **원리 + 케이스 few-shot을 읽고**, 초안이 고정 제약 6종(종목수≤25·유동성 2e8·long-only·Σw≤1·전 종목+위생·15bps — v10: 비중 상한 폐지)+PIT를 실패 원인으로 **귀속**하거나 제약 **완화**를 레버로 제시하는지 **에이전트(LLM)가 의미로 판정**한다. 씨앗 케이스에 없는 임의 패러프레이즈·영어·미묘한 프레이밍도 원리로 일반화해 잡는다. **위반 시**: envelope-안 레버(overlay·잔차 sleeve·비-return·DPL·regime-conditional·multi-sleeve·composite·ML sizing) 상대로 재작성 + `append_firewall_case(caught, why, reframed)` 로 케이스 라이브러리에 축적(자기발전 — 잡을수록 방화벽이 똑똑해짐). ('봉투 안에서 이 경로는 천장' 정직 서술 · '미해결 열어둠'은 위반 아님 — 통과.) 정규식 backstop은 `check_constraint_firewall(text, mode="backstop")` — 비-소진적 최종 그물일 뿐(draft_proposed 내부 가드가 자동 호출).
-  - (e) **프론티어 생성 (실패는 앞을 가리켜야)**: 초안이 미탐색 인접(`frontier`)을 담는가? 없으면 생성한다 — 실패 메커니즘이 가리키는 근거 있는 인접 hypothesis(구성-인접 + 메커니즘 동기, envelope-안). 예: "EP-단독이 value premium 약화+quality mix 부재로 F" → frontier = value+quality composite / regime-conditional value / spread-reversion. **창작 금지**(claim이 아니라 hypothesis, 적대검증 대상). negative 초안은 `frontier`(list) + `live_trigger`({type:regime|spread|data|time…, condition, monitored_source} — 열린 스키마) + `expiry` 필수 필드로 `draft_proposed(..., frontier=, live_trigger=, expiry=)` 저장.
-- **노출(모닝브리핑)**: `02_Infrastructure/ops/morning_steps/axiom_approval_queue.R`(스텝 [5b/5])가 status=proposed 목록을 사람이 읽는 요약(dist_id·statement 1줄·적대검증·supporting L-code 수·만료)으로 매일 노출.
-- **활성화(도훈 승인 게이트, 무인 금지)**: 도훈이 `Rscript -e 'source("02_Infrastructure/axiom/distilled.R"); approve_proposed(c("DIST-..."))'` 로 배치 승인 → status=proposed → distilled 전환 시에만 주입 3배선(inject/hypothesis_index/strategic_truths)이 소비. **proposed·pending_5axis 초안은 절대 주입 안 됨**(INV-6 안전속성 보존).
-- **불변**: 주입 3배선은 status=distilled만 소비. active AX JSON 무변경(DIST 계층 작업). `quarantined_evidence`(현 6건, 07-04 증거계보 감사 TAINTED)는 초안·정제·활성화 대상 제외.
-
-**★ 백로그 드레인 + stale 대조 규약 (2026-07-17 도훈 승인 수리 — 2주 운영 감사)**:
-- **① pending_5axis 드레인 의무**: 매 /cleaner 세션 시작 시 `06_Registry/distilled_knowledge.json`에서 `status="pending_5axis"` **잔량 + 최고령 `created_at`** 확인(실측 2026-07-17: 49건, 최고령 2026-07-08 등재분). 세션당 **최소 초안 처리량 = 권장 5건+** — 우선순위는 **supporting L-code 수 상위**(pending → proposed 자동초안 + 위 적대검증 5체크). near-miss만 집고 백로그 전체를 이월하는 패턴 금지(W28 "잔여 pending_5axis 백로그 차주 이월" 반복이 49건 적체의 원인 — 이월 시 사유·잔량 명기).
-- **② quarantined_evidence 잔량 확인**: `status="quarantined_evidence"` 잔량·정체일 1줄 보고(실측 2026-07-17: 6건, 07-04 TAINTED 이후 13일 정체) — 초안 대상 제외는 불변, 잔량 방치는 관측 대상.
-- **③ distilled ↔ settled-negative 주기 대조 (§0.1 원리5 — 메커니즘·카드도 Cleaner 리뷰 대상)**: 승인된 `status="distilled"` 카드의 `frontier`/`statement_refined`를 최신 settled-negative 목록(measurement-graduation §5·§6 + 메모리 settled 항목)과 대조 — settled-negative를 '미검증 레버'로 광고 중인 stale 카드는 **재정제 대상 등재**(`refine_distilled`). 실사례: **DIST-RAMP-006**이 frontier에 DPL(2026-06-26 settled-negative — 재제안 금지)을 미검증 레버로 광고 중이며 잔차 sleeve 스태킹 항목도 07-05 RAMP R1 config-scoped 미달 실측 미반영 — **07-18 재정제 대상**.
-
-- **④ 재등재 supersede = 기계 상시 (2026-08-02 배선 — 수동 회수 반복 종료)**: 부분집합 구 카드 회수는 이제 **엔진이 매 harvest/cluster 사이클마다 자동 집행**한다 (`cluster_extractor.py::supersede_subsumed`, `build_distilled` 후-패스). 판정 = 08-02 수동 회수 9건과 **동일 엄격 기준**(진부분집합 ∧ family/polarity/type/research_mode 전부 동일 ∧ 지식 손실 0 ∧ 구 카드가 저술 지식 미보유). 사유 형식도 동일(`superseded_by=<id> — 같은 클러스터…`)이라 이력 검색이 일관되며 꼬리 문구로 엔진/수동 출처가 갈린다. `status=distilled|promoted|quarantined_evidence`는 대상 제외.
-  - **/cleaner 세션의 일 = 기계가 회수하지 **않은** 것**: 실행 로그의 `[warn:lossy]`(부분겹침 — 구 카드 전용 L-code 보유), `[warn:authored]`(정제 초안 보유), `protected-skip`(활성 카드 부분집합) 3종이 수동 판단 큐다. 08-02 실측: lossy 3쌍(QPM-003⊄007 / QPM-014⊄035 / RAMP-013⊄003), protected-skip 6쌍.
-  - 수동 단발 실행: `Rscript 02_Infrastructure/axiom/distilled.R supersede [--dry-run]` (또는 `cluster_extractor.py --supersede-only`). 카드 파일은 삭제하지 않고 status만 전환(이력 보존).
-  - 가드: `08_Tests/axiom/test_distilled_supersede.py` (배터리 등재). **돌연변이 축 M1~M5가 본체** — 08-02 드레인 이후 저장소 추가 회수 대상이 0건이라 정상 경로만으로는 로직 사망과 정상이 겉보기 같다.
+**★ 공리 사이클 · DIST 초안 — v10.2 퇴역 (2026-11-10 · `AXIOM-ENGINE-DISPOSITION-20261110`)**:
+- 승격 기계(`promote` · `refine_statement` · 회로차단기)와 DIST 수명주기(`cluster_extractor` · `distilled.R` · `draft_proposed` · `approve_proposed` · `morning_steps/axiom_approval_queue.R` 노출)는 `99_Archive/axiom_engine_v10_2_20261110/` 로 보관됐다. 스위치 = `06_Registry/axiom_engine_status.json::promotion_enabled = false` — 주간 스윕은 수확(harvester)만 돌고, 증류 재료 §2 · §3 은 '퇴역' 한 줄로 바뀌며, 무인 레인은 DIST 초안을 내지 않는다(`dist_drafts` = 빈 배열 · 내더라도 apply 가 퇴역 사유로 버린다).
+- 이 절의 구 절차(axiom 후보 현황 · v9.1 공리 사다리 HELD 사유 소비 · INV-6 자동초안 5체크 · pending_5axis 백로그 드레인 · supersede)는 **사료**다 — git 이력(태그 `pre-v10.2-prune-20261110` 이전 판)에 원문이 있다. 되살리는 법 = `02_Infrastructure/docs/rules/axiom-engine.md` 첫 절.
 
 ### ③ 엑기스 적립 (L-code + 메모리)
 
@@ -175,10 +143,9 @@ pending_5axis → [자동초안 에이전트 + 적대검증] → proposed(주입
   - 에이전트에겐 **Bash 가 없다** — 스스로 지울 수 없고 삭제 요청 JSON 만 낸다.
   - 집행 전 기계가 재도출한다: 보호목록(`06_Registry/cleaner_protected_paths.json`) · 참조0 `git grep` · 최근 24h 수정분 제외 · 건수/용량 상한. **에이전트의 `reason` 은 근거가 아니다.**
   - 검증 실패 = release 안 함 → 다음 훅이 재시도(조용한 통과 없음).
-- **여전히 금지**: **DIST `proposed` → `distilled` 무인 활성화**(INV-6 — `approve_proposed` 는 도훈 권한. 무인 레인은 `proposed` 까지만 쓰고 주입 3배선은 건드리지 않는다). 공리(AX-*)는 별개 층으로 `refine_statement.R` R0~R6 이 무인 판정한다(2026-08-30) — **두 계층을 섞지 말 것**.
+- **여전히 금지**: 퇴역한 DIST · 공리 층을 손으로 되살려 쓰는 것(보관 파일 복원 = 도훈 결정 재상정 뒤) · 증류가 `qepm/memory/axioms/**` · `06_Registry/distilled_knowledge.json` 을 고치는 것.
 - **§0.2 claim 없이 증류 착수 금지** — claim `claimed=TRUE` 확인 전 digest 작성·L-code 발행·삭제 금지 (2-pass 중복실행 방지). in_progress면 병합 정합만. 무인 레인도 같은 규약을 지킨다.
 - **2계층 충돌 시 손으로 밀어붙이지 말 것** — gate 가 `reinforce_active` 로 연기했다는 건 강화 러너가 원장·`stage_artifacts` 를 쓰고 있다는 뜻이다. 그 창에서 증류를 수동 실행하면 게이트를 우회하는 것이다.
-- **DIST 초안 무인 *활성화* 금지 (INV-6, DIST 카드 한정)** — DIST 카드는 자동초안(pending→proposed)+적대검증까지 허용되나 proposed → distilled 활성화는 **도훈 배치 승인 게이트 필수**(`approve_proposed`). ★**공리(AX-<MODE>-NNN)는 다르다(v9.1)**: 활성화는 `refine_statement.R` R0~R6 가 무인 판정하며 이 스킬은 승인 대행이 아니라 **HELD 사유 소비**(위 §공리 사다리 산출)를 한다. 두 계층을 섞지 말 것 — DIST 는 탐색지도 카드, AX 는 mode-local 공리다.
 - **무인 레인의 기억 쓰기 금지 (P0-M1 2026-09-24)** — 무인 증류 레인을 포함해 `QVEST_UNATTENDED_LANE=1` 레인은 기억 디렉터리에 쓰지 못한다(훅 차단). 기억 후보는 `06_Registry/memory_inbox/` 로 가고 ③b 에서 세션이 판정한다. 차단을 우회해 기억을 직접 고치게 하는 프롬프트를 레인에 넣지 말 것.
 - digest에 proxy/추정 수치를 실측처럼 기재 금지 (answer-principles 회피표현 grep 대상).
 - `stage_artifacts/` 내부는 인벤토리 소스일 뿐 — 어떤 파일도 이동·수정·삭제 금지 (§6 불변 런 기록).
@@ -197,5 +164,5 @@ pending_5axis → [자동초안 에이전트 + 적대검증] → proposed(주입
 - `02_Infrastructure/ops/scheduler/Qvest_WeeklyCleaner.bat` + Task Scheduler `Qvest_WeeklyCleaner`
 - `02_Infrastructure/docs/rules/artifact-storage.md` §3.1 / §4 / §8
 - `02_Infrastructure/axiom/lcode_emit.R` · `.claude/skills/qvest-telegram/SKILL.md`
-- `02_Infrastructure/axiom/constraint_firewall.R` (의미기반 제약 방화벽 — semantic 우선·케이스 학습) · `06_Registry/firewall_cases.json` (케이스 라이브러리) · `02_Infrastructure/axiom/distilled.R` (`draft_proposed` frontier/live_trigger/expiry)
+- `02_Infrastructure/axiom/constraint_firewall.R` (의미기반 제약 방화벽 — 재료 §4 컨텍스트 · L-code 발행 판단에 계속 쓴다) · `06_Registry/firewall_cases.json` · `02_Infrastructure/memory/knowledge_loop_metrics.R` (재료 §1b 학습 고리 계기) · 시험 `08_Tests/scenarios/test_scn_knowledge_distill.sh`
 - `02_Infrastructure/docs/rules/axiom-engine.md` §0.1(메커니즘 비-ossification) + INV-7(negative=탐색지도, 제약 방화벽)

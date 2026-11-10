@@ -71,6 +71,25 @@ ROOT <- .cd_root()
 }
 
 .cd_pending_path <- function() file.path(ROOT, ".cache", "cleaner_pending.json")
+## (v10.2 · 2026-11-10) 승격 기계 · DIST 수명주기 퇴역 여부 — weekly_cleaner_sweep.R::.axiom_promotion_retired 와 같은 판독(파일 없음 · 깨짐 = 종전 동작)
+.cd_axiom_retired <- function() {
+  st <- .cd_read_json(file.path(ROOT, "06_Registry", "axiom_engine_status.json"), NULL)
+  !is.null(st) && identical(st[["promotion_enabled"]], FALSE)
+}
+## 결과 원장의 열린 탐침(이어받지 않은 것) — round_core v1/outcomes.R::rc_open_probes 와 같은 정의(읽기만 · 손상 줄은 건너뛰고 계기가 따로 센다)
+.cd_open_probes <- function(path) {
+  if (!file.exists(path)) return(character(0))
+  R <- Filter(Negate(is.null), lapply(readLines(path, warn = FALSE, encoding = "UTF-8"), function(s)
+    tryCatch(jsonlite::fromJSON(s, simplifyVector = FALSE), error = function(e) NULL)))
+  R <- Filter(function(r) identical(r$schema, "round_outcome_v1"), R)
+  used <- vapply(Filter(function(r) identical(r$kind, "probe_consumed"), R), function(r) as.character(r$ref %||% ""), "")
+  out <- character(0)
+  for (r in Filter(function(r) identical(r$kind %||% "round", "round"), R)) for (i in seq_along(r$probes)) {
+    ref <- sprintf("%s#%d", r$round_id, i)
+    if (!(ref %in% used)) out <- c(out, sprintf("%s (%s): %s", ref, r$program %||% "?", as.character(r$probes[[i]])))
+  }
+  out
+}
 
 # ── jsonl 이벤트 로그 (b1_design 과 같은 싱크 규약 — 검사가 운영 로그를 오염 못 하게 분리) ──
 .cd_jlog <- function(event, ...) {
@@ -293,6 +312,29 @@ cd_materials <- function(out_path) {
   ad("  .cache/cleaner_pending.json  (inventory / sweep_detail / axiom_candidates / step_status)")
   ad("")
 
+  # ── (v10.2 · 2026-11-10 감사 레인 K) 학습 고리 현황 — 결과 원장 · 걸음 원장 · 상설 원장 · 레인 저널의 운영 지표(개수 · 비율만) ──
+  #   주간 digest 가 v10.2 의 실제 학습 고리를 보게 한다. 승격 기계 · DIST 수명주기가 보관된 뒤에도 재료 §2 · §3 이 공리 · DIST 초안을
+  #   요구해 에이전트가 집행되지 않을 초안을 매주 썼다(apply 가 퇴역 사유로 버린다) — 퇴역이면 그 두 절을 한 줄 안내로 바꾼다.
+  retired <- .cd_axiom_retired()
+  ad("## 1b. v10.2 학습 고리 (결과 원장 · 걸음 원장 · 상설 원장 · 레인 저널 — 개수 · 비율만)")
+  kl <- tryCatch({
+    e <- new.env(parent = globalenv())
+    sys.source(file.path(ROOT, "02_Infrastructure", "memory", "knowledge_loop_metrics.R"), envir = e)
+    ev <- e$klm_collect(ROOT)
+    c(e$klm_format(e$klm_weekly(ev, 2L), e$klm_snapshot(ev, ROOT)),
+      vapply(utils::head(.cd_open_probes(ev$outcomes_path), 10L), function(p) sprintf("- 열린 탐침 %s", p), ""))
+  }, error = function(err) sprintf("⚠ 학습 고리 계기 실패: %s — digest 에 '미측정'으로 적어라", conditionMessage(err)))
+  for (x in kl) ad("%s", x)
+  ad("")
+
+  if (isTRUE(retired)) {
+    ad("## 2. 공리 사이클 — 퇴역(v10.2 · AXIOM-ENGINE-DISPOSITION-20261110 · 06_Registry/axiom_engine_status.json)")
+    ad("- 승격 기계 · DIST 수명주기는 보관됐다(99_Archive/axiom_engine_v10_2_20261110/). 공리 · DIST 절을 쓰지 말고 위 §1b 를 digest 의무 절로 옮겨라.")
+    ad("")
+    ad("## 3. DIST 초안 대상 0건 (퇴역 — 초안을 내지 마라 · dist_drafts 는 빈 배열)")
+    ad("")
+    pick <- list()
+  } else {
   # ── 2. 공리 사이클 현황 ────────────────────────────────────────────────
   ac <- pj$axiom_candidates %||% list()
   ad("## 2. 공리 사이클 (스윕 [3.5] 산출 — digest 의 의무 절)")
@@ -340,6 +382,7 @@ cd_materials <- function(out_path) {
     }
     ad("")
   }
+  }   # (v10.2) 퇴역 분기 끝
 
   # ── 4. 제약 방화벽 컨텍스트 (적대검증 (d) — 의미기반 판정용) ────────────
   ad("## 4. 제약 방화벽 컨텍스트 (적대검증 (d) — 의미로 판정하라)")

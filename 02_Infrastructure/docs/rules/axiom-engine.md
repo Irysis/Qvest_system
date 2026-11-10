@@ -3,6 +3,14 @@
 **v2 (2026-07-04 엔진 재설계 — 도훈 mandate "L-code 전수점검 증류 + 엔진 사상부터 재설계 + 4모드 실가동 재배선"). 원전 r7(`00_Lawbook/specs/r7_axiom_design.md`) 5축 보존 + 4-mode 2-tier + Distilled 소비층 + 회수(retrieval) 1급.**
 **위반 = AX-002 동급.** 상위 헌법: `.claude/rules/axioms.md`(global 공리 본문) / `measurement-graduation.md`(metric_type).
 
+## ★v10.2 처분 (2026-11-10 · 도훈 결정 `AXIOM-ENGINE-DISPOSITION-20261110` — "기록 · 조회만 남긴다") — 이 절이 아래 본문보다 우선한다
+
+- **왜**: 90일간 승격 0 · 주입 변동부가 바꾼 결정 0. 1계층의 학습 고리는 결과 원장(`06_Registry/round_outcomes.jsonl` — round_core `close` · `p4-close` 가 쓰고 `rc_p4_design_input` · `rc_p4_generator_review` 가 읽는다)이 맡는다.
+- **남은 것(현행)**: ①Ledger — `lcode_emit.R` · `lcode_schema.R` · `lcode_harvester.py`(수확 · 철회 표식 제외 → `.cache/lcode_corpus.json`) · `lcode_validity.py`(철회 판정 단일 정본) ②조회 — `tools/hypothesis_index.R`(원천 (a)~(h) · (h) = v10.2 결과 원장 + P4 걸음 원장 · `lookup --no-rebuild` 읽기 전용 · 재빌드는 잠금 안에서만) ③상시 전제 4건(AX-000 · 001 · 002 · 008 — 훅 `axiom_context_inject.sh` 고정부. 변동부 · 과거 실패 구성은 주입하지 않고 조회 안내만) ④주간 스윕 `weekly_cleaner_sweep.R` 의 수확 단계 · 증류 레인 `cleaner_distill_run.sh`(digest · L-code · 정리 — DIST 초안은 집행 안 함 · 재료 §1b = 학습 고리 계기 `memory/knowledge_loop_metrics.R`).
+- **보관된 것(사료 — 실행하면 파일이 없다)**: §1 파이프라인의 cluster → CAND/DIST → promote → promote_global → inject · review · rollback · weekly_report · run_axiom_weekly 전부, §2 INV-5 · INV-6 의 활성화 기계(`refine_statement.R` · `approve_*` · `deactivate_axiom`), INV-7 부활 기구(`failure_revival_monitor.R` · `revival_spec`), §3 · §3-v9 의 5축 · 사다리 · 회로차단기, §3c-3 strategic_truths 블록 갱신, §3e 주간 사이클의 cluster · promote 단계, §4 의 해당 파일. 위치 = `99_Archive/axiom_engine_v10_2_20261110/`(MANIFEST · 원래 상대 경로). 스위치 = `06_Registry/axiom_engine_status.json`(`promotion_enabled = false`).
+- **그대로인 규율**: 철회 표식 규약(`pit_invalid` · `retracted_by`) · emit 스키마 v2(§3b) · INV-7 의 '실패는 금지가 아니라 지도'(조회 결과는 사실 기록 · 차별점 명시 시 재도전) · 제약 방화벽의 원리(고정 축을 실패 원인 · 레버로 쓰지 않는다).
+- **되살리는 법**: MANIFEST 순서대로 보관 파일을 원래 상대 경로에 복원(또는 태그 `pre-v10.2-prune-20261110`) → `promotion_enabled = true` → 보관 시험 6종 SUITES 재등재 → decision_register 재상정. 데이터 파일(원장 · 승인 큐 JSON)은 옮기지 않았으므로 그대로 이어진다.
+
 **재설계 전제 (A1·A2·A3 3진단 통합)**: 승격 0의 인과는 문턱이 아니라 **emit 입력 결측**(falsification 0/598 · portfolio_alpha_t 98% 결측). 따라서 v2는 **문턱·INV 일절 불변** — ①emit이 축을 채우게(스키마 v2) ②Ledger와 Law 사이 Distilled 소비층 신설 ③4모드 회수 배선 완결이 전부다. E2E 실증: 필수필드 완비 emit 1건 → 5축 전부 실입력 도달 → hurdles PPPPP (sandbox 2026-07-04).
 
 ## §0. 3층 산출물 모델
