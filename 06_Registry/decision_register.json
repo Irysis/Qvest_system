@@ -4177,7 +4177,7 @@
     {
       "id": "SELECTION-RC-CALIBRATION-20261110",
       "title": "선택 현실 점검(등급 v3.4)의 보정값 두 가지 — ① 유의수준 alpha ② PBO 의 역할. DSR-GATE-FORM '(나)' 구현에서 Q 가 근거를 붙여 기본값을 넣었고, 등급 문턱이라 확정은 도훈 권한",
-      "status": "open",
+      "status": "resolved",
       "opened_at": "2026-11-10T11:35:39+0900",
       "options": [
         "① alpha 0.05(문헌 관례 · 현행 기본) / alpha 0.5(종전 DSR >= 0.5 를 같은 틀로 옮긴 수준)",
@@ -4188,12 +4188,34 @@
       "blocks": [],
       "owner": "dohoon",
       "source": "06_Registry/grade_v3.json::selection_bias_source · 08_Tests/contracts/test_selection_reality_check.R",
+      "decision": "② PBO = 진단 유지 — 산출 · 기록하고 관례 문턱 0.05 초과면 표식만 남긴다(A 를 막지 않는다 · grade_v3.json::selection_bias.pbo.role = diagnostic 그대로). ① 유의수준은 이번에 답하지 않았다 — 현행 0.05 를 그대로 두고 SELECTION-RC-ALPHA-20261110 로 남긴다.",
+      "decided_by": "dohoon",
+      "decided_at": "2026-11-10T12:18:19+0900",
+      "note": "근거(Q 보고): 닮은 변형끼리의 시행 집합은 전부 진짜 알파여도 PBO 가 0.5 근처로 나온다(합성 대조 0.69 · 시험 T12 · T19) — 0.05 를 관문으로 쓰면 그런 집합은 구조적으로 통과할 수 없다. 관문으로 바꾸려면 새 결정 항목.",
+      "registered_at": "2026-11-10T11:35:39+0900",
+      "recorded_by": "Q(전수점검 · v10.2 세션)",
+      "evidence": "도훈 채팅 2026-11-10: \"진단 유지\"(질문 '선택 현실 점검에서 PBO 를 진단으로 둘까요, A 를 막는 관문으로 올릴까요?'에 대한 답)"
+    },
+    {
+      "id": "SELECTION-RC-ALPHA-20261110",
+      "title": "선택 현실 점검(등급 v3.4)의 유의수준 alpha — 0.05(문헌 관례 · 현행 설정) 대 0.5(종전 DSR >= 0.5 를 같은 틀로 옮긴 수준)",
+      "status": "open",
+      "opened_at": "2026-11-10T12:18:20+0900",
+      "options": [
+        "0.05 유지",
+        "0.5 로 — 종전 관문과 같은 수준(시행 수 세는 법만 바뀐 것이 된다)"
+      ],
+      "recommendation": "0.05 유지 — 종전보다 수준은 엄격하고 시행 수를 세는 법만 고쳤다(완화 아님). 0.5 는 닮은 변형 집합에서 요구 t 가 A 하한(2.0) 아래로 내려가 관문이 사실상 서지 않는다",
+      "default_until_decided": "0.05(06_Registry/grade_v3.json::selection_bias.alpha 현행값)",
+      "blocks": [],
+      "owner": "dohoon",
+      "source": "06_Registry/grade_v3.json::selection_bias_source · 04_Research/01_reports/qvest_v10_2_audit_redesign_20261110/README.md §8-4",
       "decision": null,
       "decided_by": null,
       "decided_at": null,
       "note": null,
-      "registered_at": "2026-11-10T11:35:39+0900"
+      "registered_at": "2026-11-10T12:18:20+0900"
     }
   ],
-  "last_updated": "2026-11-10T12:10:53+0900"
+  "last_updated": "2026-11-10T12:18:21+0900"
 }
