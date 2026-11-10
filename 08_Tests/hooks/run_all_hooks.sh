@@ -1901,6 +1901,9 @@ SUITES=(
   # 등급 v3.3 팩터 조정 알파 노치(2026-11-09 · GRADE-V33-FACTOR-ALPHA-NOTCH-20261109) — 결정표 11 · 합성 요인 통계 7(최솟값 · 부분 월 ·
   #   시험 창 · 관측 부족) · 요인 묶음 fail-closed 3(해시) · 자격 7 · 위반 주입 5(CR 약함 제외 · 최솟값 · 시험 창 · 관문 · A 하한)
   "08_Tests/contracts/test_grade_v3_fa_notch.R"
+  # 등급 v3.4 선택 현실 점검(2026-11-10 · DSR-GATE-FORM-20261110) — 통계량 = 계약 PORT_t · 조정 p값 = Romano & Wolf 2016 알고리즘 4.1 직접 계산 일치 ·
+  #   음성 대조(잡음 40개 중 최고의 통과율 ≈ alpha) · 양성 대조 · 닮은 변형의 환산 독립 시행 수 · PBO · 관문 fail-closed 5 · 돌연변이(보정 제거)
+  "08_Tests/contracts/test_selection_reality_check.R"
   # <<< 편입 드리프트 수리
   # MC8 크기 짝 · 노출 짝 무신호 대조(2026-10-13 · v10.01) — 양성 대조(전략 = 바스켓 · 벤치 × Ē 정확 일치) · 크기 착시(노출 짝만이면
   #   selection 오판 돌연변이) · 플라시보 분위 판정(운 좋은 한 종목 = 평균 비교 오판 돌연변이) · 타이밍 경로 진단 · PIT as-of 위반 주입 ·

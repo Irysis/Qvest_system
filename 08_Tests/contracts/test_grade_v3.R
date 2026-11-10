@@ -135,8 +135,10 @@ EVD <- function(a1 = TRUE, a2 = TRUE, b = TRUE, c = TRUE, unit = "lt")
   list(strategy_id = "S_X", dir = "stage_artifacts/x", round_id = "RT", prereg_md5 = "m", unit = unit,
        a_deep_beta_majority = a1, a_fast_beta_majority = a2, b_both_engines = b, c_slow_lag1_retained = c)
 crt <- function(m, ev = NULL, cr = "strong") gv3_cr_for_notch(cr, m, cfg_t, ev)
-chk("C21 현행 설정 = v3.3(v3.2 의 CR 규칙 유지 · 셈 단위 lt + 11-10 팩터 알파 노치 켬 · OOS 관문 = 시험 창 CR · 시험 창 Calmar vs 벤치)",
-    identical(cfg$cr_notch$strong_requires, "mc8_selection_or_timing_evidence") && identical(cfg$rules_version, "v3.3") &&
+chk("C21 현행 설정 = v3.4(v3.3 의 채점 그대로 — CR 규칙 · 셈 단위 lt · 팩터 알파 노치 · OOS 관문 = 시험 창 CR · 시험 창 Calmar vs 벤치 + 11-10 선택 편향 절 · v3.3 저장분은 채점 동일)",
+    identical(cfg$cr_notch$strong_requires, "mc8_selection_or_timing_evidence") && identical(cfg$rules_version, "v3.4") &&
+      identical(unlist(cfg$rules_version_compatible), "v3.3") && is.list(cfg$selection_bias) &&
+      identical(cfg$selection_bias$without_check, "dsr_legacy") &&
       identical(cfg$cr_notch[["timing_unit"]], "lt") &&
       file.exists(file.path(ROOT, cfg$cr_notch$timing_evidence)) &&
       isTRUE(cfg$fa_notch$enabled) &&
@@ -268,6 +270,37 @@ if (!all(file.exists(file.path(DIR, c(need, "bt_result.rds"))))) {
   rS <- EE$essence_score(bt, n_trials_cumulative = 1e6, selection_type = "sweep", sidecar_log = FALSE)
   chk("E4 스윕형 선정 · DSR 미달 → v3 에 gate:dsr_sweep 사유(A 불가)", "gate:dsr_sweep" %in% unlist(rS$grade_v3$blocked_by),
       paste(unlist(rS$grade_v3$blocked_by), collapse = ","))
+  ## (v3.4 · 2026-11-10 DSR-GATE-FORM) 선택 현실 점검이 스윕 관문을 대신한다 — 시행 집합 = 이 전략 + 닮은 변형 3개(임시 폴더)
+  SE <- new.env(parent = globalenv())
+  invisible(capture.output(suppressMessages(sys.source(file.path(ROOT, "02_Infrastructure/contracts/selection_reality_check.R"), envir = SE))))
+  scfg <- SE$src_cfg(ROOT)
+  P0 <- fread(file.path(DIR, "03_period_returns.csv")); B0 <- fread(file.path(DIR, "05_benchmark_returns.csv"))
+  set.seed(34L)
+  vdirs <- vapply(1:3, function(i) {
+    d <- file.path(TD, paste0("sel_var", i)); dir.create(d, showWarnings = FALSE)
+    Pi <- copy(P0); Pi[, ret_net := ret_net + rnorm(.N, 0, 0.0005)]
+    fwrite(Pi, file.path(d, "03_period_returns.csv")); fwrite(B0, file.path(d, "05_benchmark_returns.csv")); d
+  }, character(1))
+  ck <- SE$src_check_dirs(vdirs, DIR, cfg = scfg)
+  pt <- as.numeric(as.data.table(bt$benchmark_compare)[metric_name == "Portfolio_Alpha_t_NW_lag3", active_value][1])
+  chk("E4a 선택 점검의 후보 t = 이 전략의 계약 PORT_t(폴더 적재가 계약과 같은 계열을 만든다)", abs(ck$candidate_t - pt) < 1e-6 * max(1, abs(pt)),
+      sprintf("(점검 %.6f vs 계약 %.6f)", ck$candidate_t, pt))
+  rR <- EE$essence_score(bt, n_trials_cumulative = 1e6, selection_type = "sweep", selection_check = ck, sidecar_log = FALSE)
+  bR <- unlist(rR$grade_v3$blocked_by)
+  chk("E4b 선택 점검을 제출한 스윕 — 관문 = selection_rc · DSR 은 진단(관문 아님 · 수치는 기록)",
+      identical(rR$selection_gate$mode, "reality_check") && !isTRUE(rR$dsr_gate_applied) && !("gate:dsr_sweep" %in% bR) &&
+        (("gate:selection_rc" %in% bR) == !isTRUE(ck$pass)) && is.finite(rR$essence$dsr) && identical(rR$selection_check$version, scfg$version),
+      sprintf("(점검 통과 %s · 조정 p %.4f · 사유 %s)", isTRUE(ck$pass), ck$p_adj_candidate, paste(bR, collapse = ",")))
+  ck2 <- ck; ck2$candidate_t <- ck$candidate_t + 1; ck2$p_adj_candidate <- 0.001
+  rF <- EE$essence_score(bt, n_trials_cumulative = 1e6, selection_type = "sweep", selection_check = ck2, sidecar_log = FALSE)
+  chk("E4c [위반 주입] 다른 전략의 점검 결과(후보 t 불일치) → 관문 미통과(fail-closed) · 사유 기록",
+      "gate:selection_rc" %in% unlist(rF$grade_v3$blocked_by) && identical(rF$selection_gate$ok, FALSE) && grepl("PORT_t", rF$selection_gate$reason, fixed = TRUE),
+      as.character(rF$selection_gate$reason))
+  rC <- EE$essence_score(bt, n_trials_cumulative = 5, selection_type = "chain", selection_check = ck, sidecar_log = FALSE)
+  chk("E4d 사슬형 선정에는 선택 관문이 없다(점검을 넘겨도 무시)", identical(rC$selection_gate$mode, "none") &&
+        !any(grepl("^gate:", unlist(rC$grade_v3$blocked_by))) && !isTRUE(rC$dsr_gate_applied))
+  chk("E4e 점검을 제출하지 않은 스윕은 종전 DSR 관문 그대로(경과 규정)", identical(rS$selection_gate$mode, "dsr_legacy") && isTRUE(rS$dsr_gate_applied) &&
+        is.null(rS$selection_check))
   # [위반 주입] 등급 v3 계약이 없는 루트 — 구 판정으로 조용히 떨어지면 안 된다(NA = 미측정)
   SB2 <- file.path(tempdir(), sprintf("gv3_ess_%d", Sys.getpid()))
   dir.create(file.path(SB2, "06_Registry"), recursive = TRUE, showWarnings = FALSE)

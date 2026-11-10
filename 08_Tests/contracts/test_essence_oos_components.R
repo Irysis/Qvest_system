@@ -78,7 +78,7 @@ mutate_src <- function(path, old, new, name) {
 drop_diag <- function(x) x[setdiff(names(x), "diagnostics")]
 ## (v10.01 2026-10-13 MC7) 권위 grade 는 등급 v3 가 됐다. R1 은 'P0-02 가 구 판정 경로를 안 바꿨다'를 지키므로
 ##   새 출력을 구 판정 관점으로 되돌려 비교한다: grade ← grade_v921 · 사유의 v3 접두 제거 · 끝에 붙은 v3 3필드 제외.
-V3_TAIL <- c("grade_basis", "grade_v921", "grade_v3")
+V3_TAIL <- c("grade_basis", "grade_v921", "grade_v3", "selection_gate", "selection_check")   # v3.4(11-10): 선택 편향 관문 기록 2필드도 끝에 붙는다
 ## (2026-10-15 2391601e0 · 리뷰 C3) defensive_score = 생산자 단일 모양 defensive_score.R::ds_record() — 구판이 고르던 7필드
 ##   (status · defensive · down · mid · deep · up · reason) 뒤에 귀속 꼬리 4필드가 붙었다(판정 가능 판에만 · 방어형은 등급 비접촉).
 ##   R1 은 그 꼬리만 떼고 대조한다: 꼬리는 **끝에 붙은 모양만** 허용(ds_shape_ok) — 앞 7필드의 값 · 순서 변경이나 모르는 필드는 그대로 red.

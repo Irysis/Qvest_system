@@ -727,7 +727,10 @@ gv3_score_bt <- function(bt, root = NULL, ctx = NULL, gates = NULL) {
 .GV3_RV_DECISION <- c("v3.0" = "GRADE-V3-PROMOTE",
                       "v3.1" = "GRADE-V3-CR-STRONG-SELECTION · CRISIS-DEF-LT2020",
                       "v3.2" = "CHARTER-GAPS-3-20261017 · GRADE-V32-TIMING-EVENT-UNIT-20261018",
-                      "v3.3" = "GRADE-V33-FACTOR-ALPHA-NOTCH-20261109 · GRADE-V33-OOS-TEST-WINDOW-CALMAR-20261109")
+                      "v3.3" = "GRADE-V33-FACTOR-ALPHA-NOTCH-20261109 · GRADE-V33-OOS-TEST-WINDOW-CALMAR-20261109",
+                      ## v3.4(11-10): 스윕형 선정의 A 관문 = 선택 현실 점검(gates$selection_rc · contracts/selection_reality_check.R) ·
+                      ##   DSR 은 진단. 이 파일의 채점식(S · 하한 · 노치 · OOS)은 v3.3 그대로다 — 관문은 호출자(essence_score)가 gates 로 넘긴다.
+                      "v3.4" = "DSR-GATE-FORM-20261110")
 .gv3_rv_decision <- function(rv) {
   d <- unname(.GV3_RV_DECISION[as.character(rv)[1]])
   if (length(d) != 1L || is.na(d)) paste0("(판 ", as.character(rv)[1], " 결정 미등록 — grade_v3.R .GV3_RV_DECISION)") else d

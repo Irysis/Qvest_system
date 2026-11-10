@@ -51,11 +51,15 @@ one <- function(p) tryCatch({
   # 이미 v3 — 규칙 판이 현행과 같으면 건너뜀(멱등) · 다르면 다시 채점(규칙 개정 소급 · 2026-10-13 GRADE-V3-CR-STRONG-SELECTION · CRISIS-DEF-LT2020)
   rescore <- identical(A$grade_scheme, "grade_v3")
   old_rv <- if (rescore) as.character(A$grade_v3$rules_version %||% "v3.0") else NA_character_
-  if (rescore && identical(old_rv, RULES_VER)) return(c(base, status = "already", new_grade = old))
+  ## (v3.4 · 11-10) 채점이 같은 판(grade_v3.json::rules_version_compatible)의 저장분도 건너뛴다 — v3.4 는 선택 점검을 제출한 측정의
+  ##   관문만 바꾸므로 v3.3 저장분을 다시 채점할 이유가 없다(소급 승격 없음 · 도훈 11-10).
+  if (rescore && (identical(old_rv, RULES_VER) || old_rv %in% RULES_COMPAT)) return(c(base, status = "already", new_grade = old))
   if (is.na(old)) return(c(base, status = "no_contract", new_grade = NA_character_))
   hf <- isTRUE(A$hard_fail)
   gates <- NULL
-  if (isTRUE(A$dsr_gate_applied)) {
+  if (identical(as.character(A$selection_gate$mode %||% ""), "reality_check")) {
+    gates <- c(selection_rc = isTRUE(A$selection_gate$ok))            # v3.4: 선택 현실 점검이 관문이던 기록 — 저장된 판정 그대로
+  } else if (isTRUE(A$dsr_gate_applied)) {
     dv <- suppressWarnings(as.numeric(A$dsr %||% NA)[1])
     gates <- c(dsr_sweep = isTRUE(is.finite(dv) && dv >= DSR_MIN))
   }
@@ -98,6 +102,7 @@ init_worker <- quote({
   CTX <- gv3_ctx(ROOT)
   DSR_MIN <- .e$.graduation_params(refresh = TRUE, root = ROOT)$dsr_min
   RULES_VER <- as.character(CTX$cfg$rules_version %||% "v3.0")      # 현행 규칙 판(grade_v3.json) — 다른 판의 v3 기록은 다시 채점
+  RULES_COMPAT <- as.character(unlist(CTX$cfg$rules_version_compatible %||% character(0)))   # 채점이 같은 앞선 판(건너뜀)
   NULL })
 t0 <- Sys.time()
 res <- if (WORKERS > 1L) {

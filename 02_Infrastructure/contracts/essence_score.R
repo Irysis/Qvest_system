@@ -20,6 +20,9 @@
 #                            1논문/1알파 + 가설주도 순차개선 chain(selection_type="chain")엔 부적용
 #                            (도훈 mandate 2026-05-31/2026-06-10; chain 자격 = IS-only 변형선택 + holdout 1회 — measurement-graduation §3).
 #                            DSR 수치는 n_trials>1이면 진단용으로 항상 산출(게이트와 무관).
+#   ★등급 v3.4(2026-11-10 도훈 "DSR은 (나) 적용" · DSR-GATE-FORM-20261110): 권위 등급(v3)의 스윕 관문은 **선택 현실 점검**이다 —
+#     selection_check(contracts/selection_reality_check.R: 실제 시행 집합의 재표집 다중 검정)를 넘기면 그것이 A 관문이고 DSR 은 진단.
+#     넘기지 않은 스윕은 위 DSR 관문 그대로다(경과 규정 · 저장분 소급 승격 없음). 수치 · 근거 = 06_Registry/grade_v3.json::selection_bias.
 #
 # 18-component proxy 합산(hurdle_gate.R)은 폐기 — 진단용으로만 retain.
 #
@@ -606,6 +609,42 @@ essence_diagnostics <- function(bt_result, oos_stat_version = "v2", root = NULL)
        error = nz(fa$error, NULL))
 }
 
+## ── 선택 편향 관문 (등급 v3.4 · 2026-11-10 도훈 "DSR은 (나) 적용" · decision_register DSR-GATE-FORM-20261110) ─────────
+##   스윕형 선정의 A 관문을 고른다:
+##     · selection_check(contracts/selection_reality_check.R 결과)를 받았으면 그것이 관문(gates$selection_rc)이고 DSR 은 진단이다.
+##     · 받지 않았으면 종전 DSR 관문(gates$dsr_sweep) 그대로다 — 저장분 · 구 호출자의 경과 규정(소급 승격 없음).
+##   결과물 확인(형식 · 설정 판 · 후보 t = 이 전략의 PORT_t)에 실패하면 통과가 아니다(fail-closed · 사유 기록).
+.ESS_SRC <- new.env(parent = emptyenv())
+.essence_selection_gate <- function(selection_check, port_t, is_sweep, dsr_ok) {
+  if (!isTRUE(is_sweep)) return(list(mode = "none", gates = NULL, ok = NA, reason = NA_character_, record = NULL))
+  if (is.null(selection_check))
+    return(list(mode = "dsr_legacy", gates = c(dsr_sweep = isTRUE(dsr_ok)), ok = isTRUE(dsr_ok),
+                reason = "선택 점검 미제출 — 종전 DSR 관문(경과 규정)", record = NULL))
+  g <- tryCatch({
+    root <- .graduation_root()
+    if (is.na(root)) { r0 <- gsub("\\\\", "/", Sys.getenv("QM_ROOT", unset = "")); if (nzchar(r0)) root <- r0 }
+    if (is.na(root) || !nzchar(root)) stop("프로젝트 루트 해석 실패")
+    if (is.null(.ESS_SRC$e) || !identical(.ESS_SRC$root, root)) {
+      p <- file.path(root, "02_Infrastructure", "contracts", "selection_reality_check.R")
+      if (!file.exists(p)) stop("선택 현실 점검 계약 없음: ", p)
+      e <- new.env(parent = globalenv())
+      invisible(utils::capture.output(suppressMessages(sys.source(p, envir = e, keep.source = FALSE))))
+      .ESS_SRC$e <- e; .ESS_SRC$root <- root; .ESS_SRC$cfg <- e$src_cfg(root)
+    }
+    .ESS_SRC$e$src_gate(selection_check, port_t, .ESS_SRC$cfg)
+  }, error = function(err) list(ok = FALSE, reason = paste0("선택 점검 판독 실패: ", conditionMessage(err))))
+  n1 <- function(x) { v <- suppressWarnings(as.numeric(if (is.null(x) || !length(x)) NA else x[[1]])); if (length(v) && is.finite(v)) v else NA_real_ }
+  pb <- if (is.list(selection_check$pbo)) selection_check$pbo else list()
+  rec <- list(version = as.character(if (is.null(selection_check$version)) NA else selection_check$version),
+              n_trials = n1(selection_check$n_trials), n_obs = n1(selection_check$n_obs),
+              candidate_t = n1(selection_check$candidate_t), p_adj_candidate = n1(selection_check$p_adj_candidate),
+              alpha = n1(selection_check$alpha), required_t = n1(selection_check$required_t),
+              effective_independent_trials = n1(selection_check$effective_independent_trials),
+              pbo = n1(pb$pbo), pbo_role = as.character(if (is.null(pb$role)) NA else pb$role), pbo_flagged = isTRUE(pb$flagged),
+              set_hash = as.character(if (is.null(selection_check$set_hash)) NA else selection_check$set_hash))
+  list(mode = "reality_check", gates = c(selection_rc = isTRUE(g$ok)), ok = isTRUE(g$ok), reason = as.character(g$reason), record = rec)
+}
+
 essence_score <- function(bt_result, n_trials_cumulative = NULL,
                           # (v9 §3.3) 기본값 정본 = constraint_defaults.json::tier_graduation.
                           #   R 기본인자는 지연 평가라 호출자가 명시 전달하면 그 값이 우선한다
@@ -614,6 +653,9 @@ essence_score <- function(bt_result, n_trials_cumulative = NULL,
                           oos_is_ratio_override = NULL,
                           calmar_min = .graduation_params()$calmar_min,
                           selection_type = NULL,
+                          # (v3.4) 선택 현실 점검 결과(contracts/selection_reality_check.R::src_check_dirs) — 스윕형 선정의 A 관문.
+                          #   NULL = 종전 DSR 관문(경과 규정). 사슬형 · 단일 시행에는 쓰지 않는다.
+                          selection_check = NULL,
                           oos_stat_version = "v2",
                           escalation_evidence = NULL,
                           oos_fail_pattern = NULL,
@@ -748,6 +790,8 @@ essence_score <- function(bt_result, n_trials_cumulative = NULL,
   contract_ok <- is.finite(port_t) && is.finite(net_ir)  # 계약 경유 여부
   # DSR 게이트: sweep형 selection에서만 요구. chain/1논문/1알파에선 부적용(통과 간주).
   dsr_ok <- if (is_sweep) (is.finite(dsr) && dsr >= .gp$dsr_min) else TRUE
+  ## (v3.4) 권위 등급(v3)의 스윕 관문 — 선택 점검을 받았으면 그것, 아니면 종전 DSR(위 dsr_ok). 아래 v921 진단 판정은 dsr_ok 그대로 쓴다.
+  .sel <- .essence_selection_gate(selection_check, port_t, is_sweep, dsr_ok)
   ## ★MDD 직접 조건은 **의도적으로 없다** (도훈 확인 2026-08-24 — 되살리지 말 것).
   ##   제2목표의 `MDD < 25%` 는 Calmar 로 **비율**로 걸려 있다:
   ##     min_calmar 0.64 = 16% / 25% = 제2목표 CAGR / 제2목표 MDD
@@ -864,7 +908,7 @@ essence_score <- function(bt_result, n_trials_cumulative = NULL,
     ## judge 주입 F 는 v3 에서도 F 다 — 위 롤링 구제(v921 계열)가 F→C 로 올렸어도 권위 등급에는 싣지 않는다
     grade <- "F"
   } else if (contract_ok) {
-    .v3 <- tryCatch(.essence_v3(bt_result, gates = if (is_sweep) c(dsr_sweep = isTRUE(dsr_ok)) else NULL),
+    .v3 <- tryCatch(.essence_v3(bt_result, gates = .sel$gates),   # v3.4: selection_rc(점검 제출) | dsr_sweep(경과 규정) | 없음(사슬 · 단일)
                     error = function(e) list(error = conditionMessage(e)))
     if (is.null(.v3$error) && length(.v3$grade_v3) == 1L && !is.na(.v3$grade_v3)) {
       grade <- .v3$grade_v3
@@ -948,7 +992,9 @@ essence_score <- function(bt_result, n_trials_cumulative = NULL,
     hard_fail_source = if (hard_fail_injected) "injected" else "none",
     n_trials_cumulative = n_trials_cumulative,
     selection_type = selection_type,
-    dsr_gate_applied = is_sweep,
+    ## (v3.4) dsr_gate_applied = DSR 이 실제로 A 를 막는 관문이었는가 — 선택 점검이 관문이면 FALSE(DSR 은 진단).
+    ##   저장분 재채점(grade_v3_backfill.R)은 이 값과 selection_gate 로 같은 관문을 다시 세운다.
+    dsr_gate_applied = identical(.sel$mode, "dsr_legacy"),
     oos_stat_version = oos_stat_version,
     oos_retention_splits = round(oos_retention_splits, 3),
     oos_band_status = oos_band_status,
@@ -990,6 +1036,10 @@ essence_score <- function(bt_result, n_trials_cumulative = NULL,
   .res$grade_basis <- "grade_v3"
   .res$grade_v921 <- .grade_v921
   .res$grade_v3 <- .essence_v3_record(.v3, contract_ok, hard_fail)
+  ## (v3.4) 선택 편향 관문 기록 — 같은 규약으로 끝에 붙인다. mode = none(사슬 · 단일) | dsr_legacy(점검 미제출 스윕) | reality_check.
+  ##   selection_check 는 점검을 받았을 때만 요약이 들어가고 그 밖에는 NULL 이다(필드 자리는 늘 있다).
+  .res$selection_gate <- list(mode = .sel$mode, ok = .sel$ok, reason = .sel$reason)
+  .res["selection_check"] <- list(.sel$record)
 
   # ── AST v1.1 Step 4 사이드카 (SOT §5) — append-only, 채점 무관여, fail-soft ──
   #  2026-08-02 수리: 인라인 writer → 단일 writer ast_sidecar_log() 위임.

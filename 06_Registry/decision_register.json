@@ -4084,7 +4084,7 @@
     {
       "id": "LADDER-REFERENCE-ASSEMBLY-20261110",
       "title": "기준 사다리 측정 — BOOK_0001 조리법(기저 알파 → 국면 조건부 노출 → 꼬리위험 오버레이 → 구성)을 현 축의 1계층 부품 칸으로 재는 것이 11-06 'BOOK_0001 재측정은 하지마'(KQ150 출범 전 멤버십 건)의 범위 밖인가",
-      "status": "open",
+      "status": "resolved",
       "opened_at": "2026-11-10T10:11:16+0900",
       "options": [
         "A 착수 — BOOK 등록부 · 트래킹 · 등급 무접촉 · PIT 청정 입력(C11 가용시점 판 · as-of MSM)만 · 결과는 처방 루프의 기준 사다리 · 재도출 시험에만 쓴다(09-24 PIT-C11-BOOK0001 · 10-10 PIT-C1-MSM-PARAMS 승인분의 집행을 겸한다)",
@@ -4098,16 +4098,18 @@
       ],
       "owner": "dohoon",
       "source": "04_Research/01_reports/qvest_v10_2_audit_redesign_20261110/README.md §3 · §6 결정 2",
-      "decision": null,
-      "decided_by": null,
-      "decided_at": null,
-      "note": null,
-      "registered_at": "2026-11-10T10:11:16+0900"
+      "decision": "착수하지 않는다(상정 철회) — 기준 사다리(BOOK_0001 조리법을 현 축 부품으로 재는 것)는 도훈의 요구가 아니었다. 요구 = 충실구현 레인이 자체적으로 찾아내는 알파 기저로 BOOK_0001급 성과를 내는 전략을 1계층 강화 프로세스가 재귀적 자기개선으로 스스로 찾아내게 하는 것.",
+      "decided_by": "dohoon",
+      "decided_at": "2026-11-10T11:00:01+0900",
+      "note": "설계 §3 개정: 기준점 = 합성 양성(A 경로 소방 훈련) · 목표 높이 = BOOK_0001 등록 성과(목표 서술 · 관문 아님) · 입력 = 레인 기저(상설 자격 통과 엔진) · 루프 = 사슬형 처방 + 결과 원장 + 생성기 개정. 11-06 'BOOK_0001 재측정은 하지마'와의 충돌 소지도 사라진다.",
+      "registered_at": "2026-11-10T10:11:16+0900",
+      "recorded_by": "Q(전수점검 · v10.2 세션)",
+      "evidence": "도훈 채팅 2026-11-10: \"내가 말한 BOOK-0001급 전략을 재귀적 자기개선으로 도출하라는건 충실구현 레인에서 자체적으로 찾아내는 알파기저로 BOOK-0001급 성과를 달성하는 전략을 스스로 찾아낼 수 있게끔 1계층 강화 프로세스 개선해달라는 거였어\""
     },
     {
       "id": "DSR-GATE-FORM-20261110",
       "title": "DSR 관문의 형태 — 현행은 계보 누적 칸 수(216~264)를 독립 시행으로 세고 시행 간 SR 분산을 가정값으로 두며 활성 SR 하나에 걸린다(스윕이면 하드 · 사슬이면 면제). 현 축 B 47건 중 42건이 걸려 있다",
-      "status": "open",
+      "status": "resolved",
       "opened_at": "2026-11-10T10:11:18+0900",
       "options": [
         "가 현행 유지",
@@ -4119,11 +4121,13 @@
       "blocks": [],
       "owner": "dohoon",
       "source": "04_Research/01_reports/qvest_v10_2_audit_redesign_20261110/README.md §8 · §6 결정 3",
-      "decision": null,
-      "decided_by": null,
-      "decided_at": null,
-      "note": null,
-      "registered_at": "2026-11-10T10:11:18+0900"
+      "decision": "나 — DSR 은 진단으로 내린다(항상 산출 · 기록 · A 를 막지 않는다). 선택 편향은 ⓐ A 자격을 사전등록 최종 후보 칸으로 제한 ⓑ 계보의 실제 시행 집합에 대한 재표집 검정(현실 점검 · SPA · 단계적 다중 검정) + PBO 로 막는다. 앞으로 등록되는 계보 · 라운드부터 적용 · 이미 보인 기록의 소급 승격 없음(재측정 때 새 규칙 + 수혜 기록 표식).",
+      "decided_by": "dohoon",
+      "decided_at": "2026-11-10T10:59:59+0900",
+      "note": "구현 = 등급 규칙 새 판(v3.4) — contracts/selection_reality_check.R(신설) · contracts/essence_score.R(스윕 관문 교체 · DSR 진단) · 06_Registry/grade_v3.json(selection_bias 절 · 수치 근거) · A 자격 관문의 최종 후보 역할 검사. 설계 04_Research/01_reports/qvest_v10_2_audit_redesign_20261110/README.md §8.",
+      "registered_at": "2026-11-10T10:11:18+0900",
+      "recorded_by": "Q(전수점검 · v10.2 세션)",
+      "evidence": "도훈 채팅 2026-11-10: \"DSR은 (나) 적용\""
     },
     {
       "id": "GRADE-V33-NOTCH-ASOF-AND-RULE-CHANGE-PROCEDURE-20261110",
@@ -4145,7 +4149,49 @@
       "decided_at": null,
       "note": null,
       "registered_at": "2026-11-10T10:11:19+0900"
+    },
+    {
+      "id": "SECRETS-ROTATION-DEFER-20261110",
+      "title": "비밀 값 교체 시점 — 전수점검이 찾은 평문 백업 파일 1개 · git 추적 설정 파일의 API 키 1개 · 점검 중 도구 출력에 찍힌 값 3개",
+      "status": "resolved",
+      "opened_at": "2026-11-10T11:00:02+0900",
+      "options": [
+        "지금 교체",
+        "추후 교체"
+      ],
+      "recommendation": "교체(설계 §6 결정 4)",
+      "default_until_decided": "현행",
+      "blocks": [],
+      "owner": "dohoon",
+      "source": "04_Research/01_reports/qvest_v10_2_audit_redesign_20261110/README.md §6 결정 4 · findings_ledger.md",
+      "decision": "추후 교체 — 지금은 교체하지 않는다. 시점은 도훈이 정한다.",
+      "decided_by": "dohoon",
+      "decided_at": "2026-11-10T11:00:04+0900",
+      "note": "교체 대상 목록(값 없이 위치만)은 findings_ledger.md 에 있다. 교체 전까지 그 값을 출력 · 커밋 · 전송에 싣지 않는다.",
+      "registered_at": "2026-11-10T11:00:02+0900",
+      "recorded_by": "Q(전수점검 · v10.2 세션)",
+      "evidence": "도훈 채팅 2026-11-10: \"API는 추후 교체로 정할게\""
+    },
+    {
+      "id": "SELECTION-RC-CALIBRATION-20261110",
+      "title": "선택 현실 점검(등급 v3.4)의 보정값 두 가지 — ① 유의수준 alpha ② PBO 의 역할. DSR-GATE-FORM '(나)' 구현에서 Q 가 근거를 붙여 기본값을 넣었고, 등급 문턱이라 확정은 도훈 권한",
+      "status": "open",
+      "opened_at": "2026-11-10T11:35:39+0900",
+      "options": [
+        "① alpha 0.05(문헌 관례 · 현행 기본) / alpha 0.5(종전 DSR >= 0.5 를 같은 틀로 옮긴 수준)",
+        "② PBO = 진단(현행 기본 · 표식만) / PBO = 관문(문헌 관례 0.05 초과면 A 불가)"
+      ],
+      "recommendation": "① 0.05 유지 — 종전보다 수준은 엄격하고 시행 수 세는 법만 고쳤다(완화 아님). ② 진단 유지 — 닮은 변형 집합은 PBO 가 0.5 근처라 0.05 관문은 구조적으로 통과 불가(시험 T12 · T19 실증: 전부 진짜 알파여도 PBO 0.69)",
+      "default_until_decided": "alpha 0.05 · PBO 진단(06_Registry/grade_v3.json::selection_bias 현행값)",
+      "blocks": [],
+      "owner": "dohoon",
+      "source": "06_Registry/grade_v3.json::selection_bias_source · 08_Tests/contracts/test_selection_reality_check.R",
+      "decision": null,
+      "decided_by": null,
+      "decided_at": null,
+      "note": null,
+      "registered_at": "2026-11-10T11:35:39+0900"
     }
   ],
-  "last_updated": "2026-11-10T10:11:19+0900"
+  "last_updated": "2026-11-10T11:35:40+0900"
 }
