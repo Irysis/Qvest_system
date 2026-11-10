@@ -1,0 +1,20 @@
+{
+  "_doc": "rf_cdar_construct.R 설정 초안(2026-11-10 레인 E3). 등록부 편입 = 총괄 결정. 스윕 대상 아님(사전 단일 고정).",
+  "alpha": 0.95,
+  "alpha_source": "행동 카드와 같은 값(06_Registry/behavior_card.json::cdar_alpha = 0.95 · Chekhlov, Uryasev & Zabarankin 2005 IJTAF 8(1) https://doi.org/10.1142/S0219024905002767 관례값) — 처방 목적과 진단 지표가 같은 꼬리를 본다. 252 시나리오에서 꼬리 표본 ≈ 12.6개.",
+  "max_names": 25,
+  "max_names_source": "고정 축 종목수 ≤ 25(CLAUDE.md 축 표 · pit.md 종목수 hook 강제 · 도훈 2026-05-29)",
+  "pool_size": 50,
+  "pool_size_source": "계산 매개변수(성과 매개변수 아님) — 점수 상위 2 × max_names 를 후보로 풀고 비영 비중이 25 를 넘으면 상위 25 로 줄여 다시 푼다. 셀 엔진 catalog 분기는 이미 ≤ 25종 선정(SEL)을 넘기므로 그 경로에서는 발동하지 않는다. 소요 시간 실측 = 08_Tests/reinforcement/test_rf_cdar_construct.R 시간 표.",
+  "nu_rule": "ew_candidates",
+  "nu_kappa": 1.0,
+  "nu_source": "ν = κ × CDaR(같은 후보 동일가중) · κ = 1 — '구성이 기준판(EW · P3 구성 라운드의 대조)보다 낙폭 경로를 나쁘게 하지 않는다'. 대안 bench(시장 경로 × κ)는 위기 복원력 '강함' 조건(같은 창 전략 MDD ≤ 벤치 MDD · grade_v3 · behavior_card strong_mdd_vs_bench_max)과 대응. κ < 1 은 근거가 생기기 전에는 쓰지 않는다.",
+  "weight_tol": 1e-9,
+  "weight_tol_source": "단체법 해의 수치 잔재 제거(lpSolve 기본 허용오차 1e-9 대) — cvar_lp_rockafellar_uryasev_2000.R 의 1e-10 상대 문턱과 같은 목적.",
+  "tc_lambda": 0,
+  "tc_lambda_source": "기본 끔 — 15bps 비용은 측정 계약(v2.4 delta)이 붙인다. 회전 인지 항은 강화 사슬의 별도 걸음(B6 회전 통제 블록과 같은 유형)으로만 켠다.",
+  "adapter_mode": "max_mu_cdar_cap",
+  "adapter_mode_source": "min_cdar 는 현행 qepm:CDaR_LP(advanced_weights.R::calc_cdar_weights)와 같은 문제라 카탈로그 중복이다. 새 칸 = 원문의 주 문제(기대수익 최대화 s.t. CDaR ≤ ν). 카탈로그 계약(wrap_adapter Σw = 1)이므로 어댑터는 budget eq — Σw ≤ 1 현금판은 셀 엔진 패치 뒤에만.",
+  "max_prune_rounds": 3,
+  "max_prune_rounds_source": "가지치기 반복 상한(계산 안전장치) — 1회 가지치기 뒤 재풀이 해의 비영 수가 25 를 넘으면 다시 줄인다. 넘으면 오류(조용히 26종 이상을 내지 않는다)."
+}
