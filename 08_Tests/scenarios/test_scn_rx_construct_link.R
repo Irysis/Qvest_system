@@ -28,10 +28,16 @@ chk <- function(name, cond, why = "") { ok <- isTRUE(tryCatch(cond, error = func
   cat(sprintf("  [%s] %s%s\n", if (ok) "PASS" else "FAIL", name, if (!ok && nzchar(why)) paste0(" — ", substr(why, 1, 300)) else "")) }
 skp <- function(name) { SKIP <<- SKIP + 1L; cat(sprintf("  [SKIP] %s\n", name)) }
 
-## 수리 전 엔진(git HEAD 판) — 기존 칸 사양의 결과 불변 기준
-HEADENG <- file.path(tempdir(), "rf_cell_engine_HEAD.R")
-gh <- suppressWarnings(system2("git", c("-C", shQuote(ROOT), "show", "HEAD:02_Infrastructure/reinforcement/rf_cell_engine.R"), stdout = HEADENG, stderr = FALSE))
-HAVE_HEAD <- identical(as.integer(gh), 0L) && file.exists(HEADENG) && file.size(HEADENG) > 1000
+## 기존 칸 사양의 결과 불변 기준 = 고정 골든 지문(2026-11-10 감사 U13 수리 — 구판은 git HEAD 엔진과 비교해 커밋 뒤 자기 자신과의 비교가 됐다).
+##   값 = 선택지 도입 직전 엔진(98b679826 = 9a35a915b^)과 수리 전 HEAD(f6622318f) 둘 다로 이 픽스처를 돌려 얻은 PORTFOLIO 지문(두 판 일치 실측).
+##   지문 = 행 수 : md5(Date, Ticker, Weight 의 16진 부동소수 표기(%a · 비트 정확), Leg 를 (Date, Ticker) 순으로 한 줄씩).
+##   픽스처 날짜 = 운영 요인 수익 거래일(real) 또는 합성 평일(synth) — 두 경우를 각각 고정한다(SCN_FORCE_SYNTH_DATES=1 이면 synth 강제).
+##   ★이 값이 바뀌면 기존 칸 결과가 바뀐 것이다 — 엔진만이 아니라 카탈로그 · 하네스 변경도 잡는다(의도한 변경이면 근거와 함께 새 값으로).
+GOLDEN <- list(real  = c(`lean:ivol` = "1500:690f47d3eada66dfca4f4c7771715d91", `paper:ERCMRT2010` = "1500:4da66bcc54d19adae0e62004194d16d4"),
+               synth = c(`lean:ivol` = "1500:fd4b85e8620665e2bfb4e7a9681a2ff1", `paper:ERCMRT2010` = "1500:c7809fd0e187c92f53b02db115142809"))
+port_fp <- function(P) { if (is.null(P)) return(NA_character_); X <- P[order(Date, Ticker)]
+  f <- tempfile("scn_fp_"); writeLines(paste(format(X$Date), X$Ticker, sprintf("%a", as.numeric(X$Weight)), X$Leg, sep = ","), f, useBytes = TRUE)
+  paste0(nrow(X), ":", unname(tools::md5sum(f))) }
 
 AXES <- list(long_only = TRUE, n_max = 25L, universe = "K200_KQ150", start_date = "2005-01-01", commission_bps = 15L, liq_adv20_min = 2e8)
 make_fixture <- function(d, n_tk = 50L, idx_n = 40L) {
@@ -46,17 +52,18 @@ make_fixture <- function(d, n_tk = 50L, idx_n = 40L) {
 FRP <- file.path(ROOT, ".cache/kr_factor_returns_daily.parquet")
 DATES <- if (file.exists(FRP)) { suppressMessages(library(arrow)); fd <- sort(unique(as.Date(arrow::read_parquet(FRP, col_select = "Date")$Date)))
                                  fd[fd >= as.Date("2003-06-02") & fd <= as.Date("2009-12-30")] } else as.Date(character(0))
-REAL_DATES <- length(DATES) > 1000L
+REAL_DATES <- length(DATES) > 1000L && !nzchar(Sys.getenv("SCN_FORCE_SYNTH_DATES", ""))
 if (!REAL_DATES) { DATES <- seq(as.Date("2003-06-02"), as.Date("2009-12-30"), by = "day"); DATES <- DATES[as.integer(format(DATES, "%w")) %in% 1:5] }
 FIX <- make_fixture(DATES)
 BMF <- { t <- copy(FIX); setorder(t, Ticker, Date); t[, r := Close / shift(Close, 1L) - 1, by = Ticker]; t[is.finite(r), .(BM_Ret = mean(r)), by = Date][order(Date)] }
 PX <- list(kind = "price", id = "lowvol60")
 base_spec <- function(...) modifyList(list(code = "SCN", label = "scn", block = "T", fixed_axes = AXES, base_signal = list(kind = "mom_12_1"),
                                            factor2 = PX, weighting = list(kind = "ew"), universe = list(kind = "k200_kq150")), list(...))
-run_cell <- function(spec, engine = ENGINE) {
+run_cell <- function(spec, engine = ENGINE, afn = NULL, bm = BMF) {
   p <- tempfile("scn_spec_", fileext = ".json"); writeLines(toJSON(spec, auto_unbox = TRUE, pretty = TRUE, null = "null"), p)
   Sys.setenv(RF_CELL_SPEC = p); on.exit(Sys.unsetenv("RF_CELL_SPEC"))
-  env <- new.env(); assign("RAWDATA", copy(FIX), envir = env); assign("BM_DT", BMF, envir = env); err <- NULL
+  env <- new.env(); assign("RAWDATA", copy(FIX), envir = env); assign("BM_DT", bm, envir = env); err <- NULL
+  if (!is.null(afn)) assign(".TEST_AFN", afn, envir = env)   # 주입 엔진 사본(inj_engine)만 읽는다 — 운영 엔진은 이 이름을 모른다
   logs <- utils::capture.output(suppressWarnings(suppressMessages(tryCatch(source(engine, local = env), error = function(e) err <<- conditionMessage(e)))))
   list(err = err, logs = logs, P = if (exists("PORTFOLIO", envir = env, inherits = FALSE)) get("PORTFOLIO", envir = env) else NULL)
 }
@@ -64,16 +71,18 @@ same_port <- function(a, b) !is.null(a$P) && !is.null(b$P) && isTRUE(all.equal(a
 
 cat("== (a) 기존 칸 사양 결과 불변 ==\n")
 WC <- list(kind = "catalog", catalog_id = "lean:ivol")
+GM <- GOLDEN[[if (REAL_DATES) "real" else "synth"]]
 r_new <- run_cell(base_spec(weighting = WC))
-if (HAVE_HEAD) {
-  r_old <- run_cell(base_spec(weighting = WC), engine = HEADENG)
-  chk("A1 카탈로그 lean:ivol — 수리 전(HEAD) 엔진과 PORTFOLIO 비트 동일", is.null(r_new$err) && is.null(r_old$err) && same_port(r_new, r_old), r_new$err %||% r_old$err %||% "")
-  r_exp <- run_cell(base_spec(weighting = c(WC, list(sigma_provider = "sample", allow_cash = FALSE, lean_n_days = "native"))))
-  chk("A2 기본값을 명시해도(sample · allow_cash false · native) HEAD 와 비트 동일", is.null(r_exp$err) && same_port(r_exp, r_old), r_exp$err %||% "")
-  WE <- list(kind = "catalog", catalog_id = "paper:ERCMRT2010")
-  e_new <- run_cell(base_spec(weighting = WE)); e_old <- run_cell(base_spec(weighting = WE), engine = HEADENG)
-  chk("A3 Σ 를 쓰는 arm(paper:ERCMRT2010) 표본 Σ 기본 — HEAD 와 비트 동일", is.null(e_new$err) && same_port(e_new, e_old), e_new$err %||% e_old$err %||% "")
-} else { skp("A1~A3 git HEAD 판 엔진을 꺼내지 못함"); e_new <- run_cell(base_spec(weighting = list(kind = "catalog", catalog_id = "paper:ERCMRT2010"))) }
+chk(sprintf("A1 카탈로그 lean:ivol — 고정 골든 지문(%s 날짜)과 PORTFOLIO 비트 동일", if (REAL_DATES) "real" else "synth"),
+    is.null(r_new$err) && identical(port_fp(r_new$P), GM[["lean:ivol"]]), r_new$err %||% sprintf("지문 %s ≠ %s", port_fp(r_new$P), GM[["lean:ivol"]]))
+r_exp <- run_cell(base_spec(weighting = c(WC, list(sigma_provider = "sample", allow_cash = FALSE, lean_n_days = "native"))))
+chk("A2 기본값을 명시해도(sample · allow_cash false · native) 골든과 비트 동일", is.null(r_exp$err) && identical(port_fp(r_exp$P), GM[["lean:ivol"]]), r_exp$err %||% port_fp(r_exp$P))
+WE <- list(kind = "catalog", catalog_id = "paper:ERCMRT2010")
+e_new <- run_cell(base_spec(weighting = WE))
+chk("A3 Σ 를 쓰는 arm(paper:ERCMRT2010) 표본 Σ 기본 — 골든과 비트 동일", is.null(e_new$err) && identical(port_fp(e_new$P), GM[["paper:ERCMRT2010"]]), e_new$err %||% port_fp(e_new$P))
+## A4 [양성 대조] 지문은 결과 변화를 잡는다 — 비중 한 칸을 2⁻⁵² 상대만큼 바꾸면 지문이 달라진다(동어반복 비교가 아님)
+P4 <- copy(r_new$P); if (!is.null(P4) && nrow(P4)) P4[1L, Weight := Weight * (1 + .Machine$double.eps)]
+chk("A4 [양성 대조] 비중 1칸 1 ulp 교란 → 지문 불일치(골든 비교가 공허하지 않다)", !is.null(P4) && !identical(port_fp(P4), GM[["lean:ivol"]]))
 
 cat("== (b) P-1 요인 Σ ==\n")
 if (REAL_DATES) {
@@ -186,6 +195,114 @@ chk("G2 [처치 미전달] cdar_nu_rule = bench 도 같은 arm 에서 멈춘다"
 mG <- mut_engine("        if (.nNuP > 0L && .nNuSame == .nNuP) stop(", "        if (FALSE) stop(")
 rg <- if (is.null(mG)) list(err = "치환 불성사") else run_cell(base_spec(weighting = c(WC, list(cdar_nu_rule = "ew"))), engine = mG)
 chk("G3 [돌연변이 red] 전달 가드 삭제 → G1 칸이 조용히 완주한다(치환 1곳 성사 · 가드가 유일한 방어선)", !is.null(mG) && is.null(rg$err), rg$err %||% "")
+
+## ── (h)~(l) 2026-11-10 감사 U13 — 칸이 선언한 처치가 포트폴리오에 안 닿으면 멈춘다(조용한 다른 것으로의 대체 금지) ──
+##   주입 엔진 사본: '.afn <- .row$adapter_fn[[1]]' 한 줄만 '.TEST_AFN 이 있으면 그것' 으로 바꾼다(치환 1곳 단정) — 등록부에 아직 없는
+##   낙폭 예산 어댑터(CUZ 2005 · rf_cdar_construct.R)를 카탈로그 행(lean:ivol) 자리에 끼워 엔진의 실제 루프 · 가드를 태운다.
+INJ_FROM <- "      .afn <- .row$adapter_fn[[1]]"
+inj_engine <- function(extra = list(), src = etxt) {
+  pairs <- c(list(c(INJ_FROM, "      .afn <- if (exists(\".TEST_AFN\", inherits = FALSE)) .TEST_AFN else .row$adapter_fn[[1]]")), extra)
+  hits <- integer(0)
+  for (p in pairs) { hits <- c(hits, lengths(regmatches(src, gregexpr(p[1], src, fixed = TRUE)))); src <- sub(p[1], p[2], src, fixed = TRUE) }
+  if (any(hits != 1L)) return(NULL)
+  f <- tempfile("rf_cell_engine_inj_", fileext = ".R"); writeLines(src, f, useBytes = TRUE); f
+}
+CDAR_SRC <- file.path(ROOT, "02_Infrastructure/reinforcement/rf_cdar_construct.R")
+ADP_SRC  <- file.path(ROOT, "02_Infrastructure/methods/adapters/cdar_lp_chekhlov_uryasev_zabarankin_2005.R")
+MRE <- new.env(parent = globalenv()); suppressMessages(sys.source(file.path(ROOT, "02_Infrastructure/methods/method_registry.R"), envir = MRE))
+load_cuz <- function(cdar_path = CDAR_SRC) {   # 어댑터 사본(모듈 경로만 바꿈) → 판 표식 arm 과 같은 래퍼(budget = le)
+  s <- readLines(ADP_SRC, warn = FALSE, encoding = "UTF-8")
+  i <- grep('source(file.path(.cuz_root, "02_Infrastructure", "reinforcement", "rf_cdar_construct.R"), local = TRUE)', s, fixed = TRUE)
+  if (length(i) != 1L) return(NULL)
+  s[i] <- sprintf('source("%s", local = TRUE)', gsub("\\\\", "/", cdar_path))
+  f <- tempfile("cuz_", fileext = ".R"); writeLines(s, f, useBytes = TRUE); e <- new.env(parent = globalenv())
+  invisible(capture.output(suppressMessages(sys.source(f, envir = e))))
+  MRE$wrap_adapter(get("method_weights", e), "CDaRCapCUZ2005", ub = 1, budget = "le")
+}
+CUZ <- load_cuz(); IE <- inj_engine()
+n_cash_days <- function(P) if (is.null(P)) NA_integer_ else P[, sum(Weight), by = Date][V1 < 1 - 1e-6, .N]
+WI <- list(kind = "catalog", catalog_id = "lean:ivol")   # 주입 사본에서는 행 확인용 자리(비중은 .TEST_AFN 이 낸다)
+BM_FLAT <- BMF[, .(Date, BM_Ret = 0.0005)]               # 낙폭 0 인 벤치 — Σw = 1 로는 어떤 후보 묶음도 예산(ν = 0)을 못 맞춘다
+BM_SOFT <- BMF[, .(Date, BM_Ret = BM_Ret * 0.3)]         # 같은 경로 · 진폭 30% — 현금(Σw ≤ 1)으로만 맞는 예산
+chk("H0 [배선] 주입 엔진 사본 치환 1곳 · CUZ 어댑터 적재", !is.null(IE) && is.function(CUZ))
+
+cat("== (h) weighting 닫힌 어휘 — 읽지 않는 kind 의 선택지 · 오타 키 = 멈춤 ==\n")
+h1 <- run_cell(base_spec(weighting = list(kind = "ew", allow_cash = TRUE)))
+chk("H1 {kind: ew, allow_cash: true} → 멈춘다(ew 가지는 선택지를 안 읽는다 · 부모와 같은 포트폴리오를 '현금 칸'으로 재지 않는다)",
+    !is.null(h1$err) && grepl("읽지 않는 키", h1$err, fixed = TRUE) && grepl("allow_cash", h1$err, fixed = TRUE), h1$err %||% "멈추지 않았다")
+h2 <- run_cell(base_spec(weighting = list(kind = "inv_vol", window = 60L, cdar_nu_rule = "bench")))
+chk("H2 {kind: inv_vol, cdar_nu_rule: bench} → 멈춘다", !is.null(h2$err) && grepl("cdar_nu_rule", h2$err, fixed = TRUE), h2$err %||% "멈추지 않았다")
+h3 <- run_cell(base_spec(weighting = c(WC, list(alow_cash = TRUE))))
+chk("H3 catalog 오타 키(alow_cash) → 멈춘다(기본 Σw = 1 로 조용히 측정 금지)", !is.null(h3$err) && grepl("alow_cash", h3$err, fixed = TRUE), h3$err %||% "멈추지 않았다")
+h4 <- run_cell(base_spec(weighting = list(kind = "inv_vol", window = 60L, label = "iv60")))
+chk("H4 [음성 대조] 어휘 안 키(inv_vol window · label)는 통과", is.null(h4$err), h4$err %||% "")
+mH <- mut_engine("  if (length(.wbad)) stop(", "  if (FALSE) stop(")
+rh <- if (is.null(mH)) list(err = "치환 불성사") else run_cell(base_spec(weighting = list(kind = "inv_vol", window = 60L, cdar_nu_rule = "bench")), engine = mH)
+chk("H5 [돌연변이 red] 어휘 가드 삭제 → H2 칸이 조용히 완주한다(치환 1곳 · 가드가 유일한 방어선)", !is.null(mH) && is.null(rh$err), rh$err %||% "")
+rh6 <- if (is.null(mH)) list(err = "치환 불성사") else run_cell(base_spec(weighting = list(kind = "ew", allow_cash = TRUE)), engine = mH)
+chk("H6 [이중 방어] 어휘 가드를 지워도 ew + allow_cash 는 최종 비중 현금 재확인이 멈춘다", !is.null(mH) && !is.null(rh6$err) && grepl("최종 비중", rh6$err, fixed = TRUE), rh6$err %||% "멈추지 않았다")
+
+cat("== (i) allow_cash + cap_core — 합성이 구성 층 현금을 지우면 멈춘다 ==\n")
+WCASH <- c(WI, list(allow_cash = TRUE, cdar_nu_rule = "bench"))
+i0 <- if (is.null(IE)) list(err = "주입 불가") else run_cell(base_spec(weighting = WCASH), engine = IE, afn = CUZ, bm = BM_SOFT)
+chk("I0 [양성 대조] 낙폭 예산 + allow_cash(cap_core 없음) → 완주 · 최종 비중에 현금 신호일 > 0", is.null(i0$err) && isTRUE(n_cash_days(i0$P) > 0L), i0$err %||% sprintf("현금일 %s", n_cash_days(i0$P)))
+i1 <- if (is.null(IE)) list(err = "주입 불가") else run_cell(base_spec(weighting = WCASH, cap_core = list(k = 2L)), engine = IE, afn = CUZ, bm = BM_SOFT)
+chk("I1 allow_cash + cap_core(k = 2) → 멈춘다(위성 재정규화가 현금을 지운다 · 처치 미전달)", !is.null(i1$err) && grepl("cap_core", i1$err, fixed = TRUE) && grepl("allow_cash", i1$err, fixed = TRUE), i1$err %||% sprintf("멈추지 않았다(최종 현금일 %s)", n_cash_days(i1$P)))
+IE2 <- inj_engine(list(c("if (!is.null(.CC) && .CASH_DECL) stop(", "if (FALSE) stop(")))
+i2 <- if (is.null(IE2)) list(err = "치환 불성사") else run_cell(base_spec(weighting = WCASH, cap_core = list(k = 2L)), engine = IE2, afn = CUZ, bm = BM_SOFT)
+chk("I2 [이중 방어] 조합 가드를 지운 사본 → 최종 비중 현금 재확인이 멈춘다", !is.null(IE2) && !is.null(i2$err) && grepl("최종 비중", i2$err, fixed = TRUE), i2$err %||% "멈추지 않았다")
+IE3 <- inj_engine(list(c("if (!is.null(.CC) && .CASH_DECL) stop(", "if (FALSE) stop("), c("  if (.nCashF == 0L) stop(", "  if (FALSE) stop(")))
+i3 <- if (is.null(IE3)) list(err = "치환 불성사") else run_cell(base_spec(weighting = WCASH, cap_core = list(k = 2L)), engine = IE3, afn = CUZ, bm = BM_SOFT)
+chk("I3 [돌연변이 red · 결함 재현] 두 가드를 다 지우면 조용히 완주하고 최종 현금 0(구성 층 현금이 사라진 채 '현금 칸'으로 측정)",
+    !is.null(IE3) && is.null(i3$err) && identical(n_cash_days(i3$P), 0L), i3$err %||% sprintf("현금일 %s", n_cash_days(i3$P)))
+
+cat("== (k) 낙폭 예산 실행 불가 → 최소 CDaR 복원을 센다 · 과반이면 멈춘다 ==\n")
+WB <- c(WI, list(cdar_nu_rule = "bench"))
+k1 <- if (is.null(IE)) list(err = "주입 불가") else run_cell(base_spec(weighting = WB), engine = IE, afn = CUZ, bm = BM_FLAT)
+chk("K1 bench + Σw = 1 · 예산을 못 맞추는 신호일 전부 → 멈춘다(최소 CDaR 로 조용히 바뀐 칸을 '점수 최대화 s.t. CDaR ≤ 벤치' 로 채점하지 않는다)",
+    !is.null(k1$err) && grepl("최소 CDaR", k1$err, fixed = TRUE) && grepl("과반", k1$err, fixed = TRUE), k1$err %||% "멈추지 않았다")
+k2 <- if (is.null(IE)) list(err = "주입 불가") else run_cell(base_spec(weighting = WB), engine = IE, afn = CUZ, bm = BMF)
+chk("K2 [음성 대조] 같은 칸 · 실제 같은 창 벤치(동일가중 50종) → 완주하고 복원 수를 로그에 적거나 0", is.null(k2$err), k2$err %||% "")
+CDAR_M <- { s <- readLines(CDAR_SRC, warn = FALSE, encoding = "UTF-8"); h <- grepl("if (is.function(.lis)) .lis(fb)", s, fixed = TRUE)
+            s[h] <- sub("if (is.function(.lis)) .lis(fb)", "if (FALSE) .lis(fb)", s[h], fixed = TRUE); f <- tempfile("cdar_m_", fileext = ".R"); writeLines(s, f, useBytes = TRUE); list(f = f, n = sum(h)) }
+CUZ_M <- if (CDAR_M$n == 1L) load_cuz(CDAR_M$f) else NULL
+k3 <- if (is.null(CUZ_M) || is.null(IE)) list(err = "치환 불성사") else run_cell(base_spec(weighting = WB), engine = IE, afn = CUZ_M, bm = BM_FLAT)
+chk("K3 [돌연변이 red · 결함 재현] 구성 모듈의 복원 통지 한 줄 삭제(치환 1곳) → K1 칸이 조용히 완주한다", CDAR_M$n == 1L && is.null(k3$err), k3$err %||% "")
+
+cat("== (l) lean_n_days = cell 전달 탐침 ==\n")
+l2 <- run_cell(base_spec(weighting = c(WE, list(lean_n_days = "cell"))))
+chk("L1 n_days 를 안 읽는 arm(paper:ERCMRT2010 · 이미 칸 창 전체를 쓴다)에 lean_n_days = cell → 멈춘다(처치 미전달 · 별도 시행 금지)",
+    !is.null(l2$err) && grepl("lean_n_days", l2$err, fixed = TRUE) && grepl("처치 미전달", l2$err, fixed = TRUE), l2$err %||% "멈추지 않았다")
+mL <- mut_engine("    if (.nLnSame == .nLnP) stop(", "    if (FALSE) stop(")
+rl <- if (is.null(mL)) list(err = "치환 불성사") else run_cell(base_spec(weighting = c(WE, list(lean_n_days = "cell"))), engine = mL)
+chk("L2 [돌연변이 red · 결함 재현] 탐침 가드 삭제 → L1 칸이 조용히 완주하고 기본 칸과 비트 동일", !is.null(mL) && is.null(rl$err) && identical(port_fp(rl$P), port_fp(e_new$P)), rl$err %||% "")
+
+cat("== (m) 요인 Σ — 설정 요인 열 축소 신호일 집계(엔진 실제 문장 평가) ==\n")
+el2 <- readLines(ENGINE, warn = FALSE, encoding = "UTF-8")
+l_dc <- grep("if (identical(.so$model, \"ts\") && length(.so$diag$requested_missing)) .nDrop <<- .nDrop + 1L", el2, fixed = TRUE)
+l_dg <- grep("if (.nDrop * 2L > .nSig) stop(", el2, fixed = TRUE)
+chk("M0 엔진에 열 축소 집계 · 가드 문장이 각 1곳", length(l_dc) == 1L && length(l_dg) == 1L, sprintf("집계 %d · 가드 %d", length(l_dc), length(l_dg)))
+run_drop <- function(sos, cnt_line = el2[l_dc]) {
+  p <- new.env(parent = globalenv()); p$.nDrop <- 0L; p$.nSig <- length(sos); p$.SP <- "factor:ts:base"; p$.FCV <- list(cfg = list(factor_columns = c("MKT_TOTAL", "WML")))
+  for (s in sos) { e <- new.env(parent = p); e$.so <- s; if (length(cnt_line)) eval(parse(text = cnt_line), e) }
+  list(n = p$.nDrop, err = tryCatch({ if (length(l_dg)) eval(parse(text = el2[l_dg]), new.env(parent = p)); NULL }, error = function(e) conditionMessage(e)))
+}
+so_full <- list(model = "ts", diag = list(requested_missing = character(0))); so_drop <- list(model = "ts", diag = list(requested_missing = "WML"))
+dm <- if (length(l_dc) == 1L) run_drop(list(so_drop, so_drop, so_full)) else list(n = NA, err = NULL)
+chk("M1 열 축소 신호일 2/3(과반) → 멈춘다 · 2 로 센다", identical(dm$n, 2L) && !is.null(dm$err) && grepl("요인 모형 미전달", dm$err, fixed = TRUE), dm$err %||% "멈추지 않았다")
+dn <- if (length(l_dc) == 1L) run_drop(list(so_drop, so_full, so_full)) else list(n = NA, err = "x")
+chk("M2 소수(1/3)면 진행하고 센다(pca 폴백 과반 규칙과 같은 문턱)", identical(dn$n, 1L) && is.null(dn$err), dn$err %||% "")
+dmu <- if (length(l_dc) == 1L) run_drop(list(so_drop, so_drop, so_full), cnt_line = "invisible(NULL)") else list(err = "x")
+chk("M3 [돌연변이 red] 집계 문장 제거 → M1 칸이 멈추지 않는다", is.null(dmu$err), dmu$err %||% "")
+
+cat("== (s) 서명 — 기본값과 같은 선언은 기본 칸과 같은 칸 ==\n")
+SG <- new.env(parent = globalenv()); sys.source(file.path(ROOT, "02_Infrastructure/reinforcement/rf_spec_sig.R"), envir = SG)
+sg <- function(w) SG$.spec_sig(base_spec(weighting = w))
+SIG_WC_GOLD <- "price:lowvol60|ew|{\"kind\":\"catalog\",\"catalog_id\":\"lean:ivol\"}|{\"kind\":\"k200_kq150\"}|[]|mom_12_1"
+chk("S1 기존 칸 서명 불변(고정 문자열)", identical(sg(WC), SIG_WC_GOLD), sg(WC))
+chk("S2 기본값 명시(cdar_nu_rule ew · allow_cash false · sample · native) = 생략과 같은 서명",
+    identical(sg(c(WC, list(cdar_nu_rule = "ew"))), sg(WC)) && identical(sg(c(WC, list(allow_cash = FALSE, sigma_provider = "sample", lean_n_days = "native"))), sg(WC)))
+chk("S3 처치 값(bench · allow_cash true)은 다른 서명", !identical(sg(c(WC, list(cdar_nu_rule = "bench"))), sg(WC)) && !identical(sg(c(WC, list(allow_cash = TRUE))), sg(WC)))
 
 cat(sprintf("\n%s\n", toJSON(list(test = "test_scn_rx_construct_link", pass = PASS, fail = FAIL, total = PASS + FAIL, skipped = SKIP), auto_unbox = TRUE)))
 quit(status = if (FAIL > 0L) 1L else 0L)

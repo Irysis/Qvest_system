@@ -198,16 +198,22 @@ rx_toolbox_md <- function(root = NULL) {
   # 비정상 UTF-8 바이트(pdftotext 산출 등)가 있으면 정규식이 그 문자열을 건너뛴다(경고만 내고 미검사 = 거짓 통과) — 먼저 정리한다
   txt <- iconv(paste(txt, collapse = "\n"), from = "UTF-8", to = "UTF-8", sub = "")
   if (is.na(txt)) stop("[rx_round] ", what, " 인코딩 판독 불가 — 검사할 수 없다(fail-closed)")
-  # ★perl = TRUE 필수(2026-11-10 전수점검): 기본 엔진의 gregexpr + regmatches 는 BMP 밖 문자(수식 기호 등) 뒤에서
-  #   위치가 어긋나 그 뒤 날짜를 놓친다(1~3자 선행 시 미검출 = 거짓 통과). 바로 아래 연월 · 등급 검사는 이미 perl 이다.
-  d <- regmatches(txt, gregexpr("(19|20)\\d{2}-(0[1-9]|1[0-2])-(0[1-9]|[12]\\d|3[01])", txt, perl = TRUE))[[1]]
-  bad <- d[suppressWarnings(as.Date(d)) > tau]
-  ym <- regmatches(txt, gregexpr("(?<![0-9-])(19|20)\\d{2}-(0[1-9]|1[0-2])(?![0-9-])", txt, perl = TRUE))[[1]]
-  bad <- c(bad, ym[ym > format(tau, "%Y-%m")])
-  gr <- regmatches(txt, gregexpr("(등급|Grade|grade)\\s*[ABCF](?![A-Za-z])", txt, perl = TRUE))[[1]]
-  if (length(bad) || length(gr))
-    stop(sprintf("[rx_round] %s 에 처방 입력 금지 정보: τ_D 초과 날짜 %s · 등급 표기 %s", what,
-                 paste(utils::head(unique(bad), 5), collapse = ","), paste(utils::head(unique(gr), 5), collapse = ",")))
+  if (length(tau) != 1L || is.na(tau)) stop("[rx_round] ", what, " τ_D 판독 불가(behavior_card.json) — 검사할 수 없다(fail-closed)")
+  # 11-10(2) 감사 U11 — 검사 규칙은 round_core v1 util.R::rc_input_issues 한 구현(결과 원장 쓰기 · 읽기 · 설계 입력 · 생성기 검토와 같다).
+  #   전에는 여기 따로 둔 정규식이 '등급 X' 어순 · ISO 날짜만 봐서 'A등급' · 'B→A' · '2023~2025' · '23년' · '시험 창 Calmar 0.41' 이 통과했다.
+  #   검사기 파일이 없거나 적재가 실패하면 멈춘다(fail-closed). 적재는 격리 환경(전역을 더럽히지 않는다).
+  uf <- file.path(root, "04_Research/programs/_lib/round_core/v1/util.R")
+  if (!file.exists(uf)) stop("[rx_round] 처방 입력 검사기 없음(", uf, ") — 검사할 수 없다(fail-closed)")
+  ce <- new.env(parent = globalenv())
+  ok_src <- tryCatch({ invisible(utils::capture.output(suppressMessages(sys.source(uf, envir = ce, keep.source = FALSE)))); TRUE }, error = function(e) FALSE)
+  if (!ok_src || !is.function(ce$rc_input_issues)) stop("[rx_round] 처방 입력 검사기 적재 실패 — 검사할 수 없다(fail-closed)")
+  # 헌장(rx_charter_md)이 코드로 쓰는 정보 경계 지시문 한 문장만 허용(데이터가 아닌 고정 규범 문장 · τ_D 다음 해 = 시험 창 시작을 가리킨다)
+  allow <- paste0(as.integer(format(tau, "%Y")) + 1L, "년 이후의 시장 사건 · 성과는 사전학습으로 알고 있더라도 **근거로 쓰지 마라**")
+  # 11-10(3) — 시험 창 수치 검사가 문단 단위가 되면서 헌장 등급 절(같은 문단에 문턱 수치)의 관문 이름 'OOS 관문'이 걸린다.
+  #   rx_charter_md 가 코드로 쓰는 그 고정 구절만 지운다(관문 이름 · 수치 아님 — 같은 문단의 다른 OOS 표기와 수치는 그대로 막는다)
+  allow <- c(allow, "위기 복원력(CR) 노치 + OOS 관문.")
+  ci <- ce$rc_input_issues(txt, tau, allow = allow)
+  if (!isTRUE(ci$ok)) stop(sprintf("[rx_round] %s 에 처방 입력 금지 정보: %s", what, ci$why))
   invisible(TRUE)
 }
 
@@ -352,6 +358,20 @@ rx_validate <- function(impl, root = NULL, pool = NULL) {
       if (!is.null(ac) && !(is.logical(ac) && length(ac) == 1L && !is.na(ac))) add("weighting.allow_cash 는 true | false")
       if (!is.null(ln) && !(is.character(ln) && length(ln) == 1L && ln %in% c("native", "cell"))) add("weighting.lean_n_days 어휘 밖(native | cell)")
     }
+    ## (2026-11-10 · 감사 U13) 닫힌 하위 키 어휘 — 셀 엔진 .WT_KEYS(rf_cell_engine.R 5절 앞)와 같다. 그 kind 가 읽지 않는 키 · 오타 = 거부
+    ##   (엔진도 같은 조건에서 멈춘다 — 조용히 버리면 부모와 같은 포트폴리오가 '처치' 칸이 된다). label = 사람용 이름(모든 kind).
+    wkeys <- list(ew = character(0), score_tilt = "eps", rank_weight = character(0), rank_weight_sqrt = character(0), inv_vol = "window",
+                  catalog = c("catalog_id", "lookback_days", "sigma_provider", "allow_cash", "lean_n_days", "cdar_nu_rule"))
+    if (k %in% names(wkeys)) {
+      wbad <- setdiff(names(impl$weighting), c("kind", "label", wkeys[[k]]))
+      if (length(wbad)) add("weighting.kind = ", k, " 가 읽지 않는 키(오타 · 다른 kind 전용): ", paste(wbad, collapse = ","),
+                            " — 허용 = kind · label", if (length(wkeys[[k]])) paste0(" · ", paste(wkeys[[k]], collapse = " · ")) else "")
+    }
+    nu <- impl$weighting$cdar_nu_rule
+    if (!is.null(nu) && !(is.character(nu) && length(nu) == 1L && nu %in% c("ew", "bench"))) add("weighting.cdar_nu_rule 어휘 밖(ew | bench)")
+    ## allow_cash + cap_core(k > 0) = 거부 — cap_core 합성이 위성을 재정규화해 구성 층 현금을 지운다(엔진도 멈춘다)
+    cck <- suppressWarnings(as.integer(.rx_or(impl$cap_core$k, 0L))[1])
+    if (isTRUE(ac) && !is.null(impl$cap_core) && isTRUE(cck > 0L)) add("weighting.allow_cash 와 cap_core(k > 0)는 함께 쓸 수 없다 — cap_core 합성이 구성 층 현금을 지운다")
   }
   if (!is.null(impl$universe)) {
     k <- as.character(.rx_or(impl$universe$kind, ""))

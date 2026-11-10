@@ -139,5 +139,25 @@ if (length(l_nu) == 1L) {
      "[돌연변이] 어휘 밖 탐침 제거(치환 1) → ew 칸의 정본 어댑터를 '안 읽음'으로 오판(어휘 밖 탐침이 필요함을 검출)")
 } else ck(FALSE, "[돌연변이] 탐침 정의 없음")
 
+cat("[9] 실행 불가 → 최소 CDaR 복원은 조용하지 않다(mode_used · 청취자 통지 · 2026-11-10 감사 U13)\n")
+## 빡빡한 사례(β 1.5 · bench ν) + Σw = 1 → LP 실행 불가 → min_cdar 복원. 셀 엔진은 청취자로 신호일을 센다(과반이면 멈춤 — test_scn_rx_construct_link.R K1).
+al9 <- E$rcd_bench_align(Rt, dts, BM[Date < d], d, alpha)
+hits <- character(0); old9 <- options(rcd.fallback_listener = function(msg) hits <<- c(hits, msg))
+o9 <- E$rcd_construct(al9$R, E$.CUZ_CFG, mu = mu, budget = "eq", bench = al9$b, nu_rule = "bench")
+options(old9)
+ck(identical(o9$mode, "max_mu_cdar_cap") && identical(o9$mode_used, "min_cdar(fallback)") && !is.na(o9$fallback),
+   sprintf("복원 → mode_used = %s(요청 mode %s 와 구별 · fallback 기록)", if (is.null(o9$mode_used)) "NULL" else o9$mode_used, o9$mode))
+ck(length(hits) >= 1L && grepl("min_cdar 복원", hits[1], fixed = TRUE), sprintf("청취자 통지 %d회", length(hits)))
+ck(E$rcd_cdar(al9$R %*% o9$w, alpha) > o9$nu, sprintf("[결함 실증] 복원 해의 CDaR %.4f > 예산 ν %.4f — 처치(예산 준수)가 아니다", E$rcd_cdar(al9$R %*% o9$w, alpha), o9$nu))
+o9n <- E$rcd_construct(al9$R, E$.CUZ_CFG, mu = mu, budget = "eq", bench = al9$b, nu_rule = "bench")   # 청취자 없음(기본)
+ck(identical(o9n$w, o9$w), "청취자 유무와 무관하게 해 비트 동일(통지는 부작용 없음)")
+hits2 <- character(0); old9 <- options(rcd.fallback_listener = function(msg) hits2 <<- c(hits2, msg))
+o9b <- E$rcd_construct(Rb, E$.CUZ_CFG, mu = mu, budget = "le"); options(old9)
+ck(identical(o9b$mode_used, o9b$mode) && is.na(o9b$fallback) && !length(hits2), "[음성 대조] 실행 가능 → mode_used = mode · 통지 없음")
+M9 <- mutate(CDAR, list(c("if (is.function(.lis)) .lis(fb)", "if (FALSE) .lis(fb)")))
+EM9 <- load_adapter(M9$path); hits3 <- character(0); old9 <- options(rcd.fallback_listener = function(msg) hits3 <<- c(hits3, msg))
+invisible(EM9$rcd_construct(al9$R, EM9$.CUZ_CFG, mu = mu, budget = "eq", bench = al9$b, nu_rule = "bench")); options(old9)
+ck(M9$n == 1L && !length(hits3), sprintf("[돌연변이] 통지 줄 삭제(치환 %d) → 청취자가 복원을 모른다(엔진 집계의 유일한 입력임을 검출)", M9$n))
+
 cat(sprintf('{"test":"test_rf_cdar_bench_budget","pass":%d,"fail":%d,"total":%d}\n', P, Fl, P + Fl))
 if (Fl > 0L) quit(status = 1L)

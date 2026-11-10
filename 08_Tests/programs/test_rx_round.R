@@ -96,6 +96,27 @@ chk("D2 τ_D 이후 연-월 거부", err(.rx_assert_clean("2024-08 급락", ROOT
 chk("D3 등급 표기 거부", err(.rx_assert_clean("이 신호는 등급 B 였다", ROOT, "t")) && err(.rx_assert_clean("Grade A 후보", ROOT, "t")))
 chk("D4 τ_D 이전 날짜 · arXiv id · 지표 이름은 통과(거짓 양성 없음)",
     !err(.rx_assert_clean("2008-10-24 바닥 · arXiv 2002.06975 · 2022-12 · 등급 산식 S", ROOT, "t")))
+## D5~D8 (11-10(2) 감사 U11) — 처방 레인 문서 검사가 round_core util.R::rc_input_issues 한 구현을 쓴다(흔한 표기 · fail-closed)
+rx_bad <- c("A등급 후보", "B→A 상향", "A급 전략", "등급: A", "A 자격 통과", "2023~2025 구간", "23년 급락", "Mar 2023", "20230315", "2023H1",
+            "FY2024", "24.3Q", "시험 창 Calmar 0.41", "OOS Sharpe 1.2", "전기간 A등급 후보 · 2023~2025 시험 창 Calmar 0.41 · 23년 급락에서 방어",
+            ## 11-10(3) 재수리 — 하이픈 어순 · 서술형 이동 · 판정 · 전기간 다른 표기 · 줄바꿈 우회 · 관문 이름 허용이 결과 서술까지 넓어지지 않음
+            "Grade-A 전략", "B에서 A로 올라갔다", "최종 판정 A", "전체 기간 Calmar 0.41", "시험 창\n Calmar 0.41", "OOS 관문 통과 · Calmar 0.41",
+            "S ≥ 1 + 하한(Sharpe ≥ 0.8) + 위기 복원력(CR) 노치 + OOS 관문. OOS Calmar 0.41")
+rb <- vapply(rx_bad, function(s) err(.rx_assert_clean(s, ROOT, "t")), logical(1))
+chk(sprintf("D5 흔한 등급 · 연도 · 시험 창 표기 %d개 거부", length(rx_bad)), all(rb), paste("통과해 버린 것:", paste(rx_bad[!rb], collapse = " | ")))
+rx_good <- c("2015~2016 위기에서 방어가 약했다", "칸 A 와 칸 B 비교 · B1 블록", "A 하한 중 PORT_t 가 병목", "보는 창 Calmar 0.81", "생성기 gen_20260918_235445",
+             "칸 A 로 옮겨 측정", "보는 창 전 구간 Sharpe 0.9", "- S ≥ 1 + 하한(Sharpe ≥ 0.8) + 위기 복원력(CR) 노치 + OOS 관문.")
+rg <- vapply(rx_good, function(s) !err(.rx_assert_clean(s, ROOT, "t")), logical(1))
+chk(sprintf("D6 τ_D 이전 연도 · 칸 · 블록 라벨 · 문턱 이름 %d개 통과", length(rx_good)), all(rg), paste("막힌 것:", paste(rx_good[!rg], collapse = " | ")))
+AL <- "2023년 이후의 시장 사건 · 성과는 사전학습으로 알고 있더라도 **근거로 쓰지 마라**"
+chk("D7 헌장의 정보 경계 지시문 한 문장만 허용 · 같은 해 다른 표기는 막는다",
+    !err(.rx_assert_clean(paste0("- ", AL, "(처방이 시험 창에 맞춰지면 시험이 무효가 된다)."), ROOT, "t")) && err(.rx_assert_clean(paste(AL, "· 2023년 급락"), ROOT, "t")))
+pk <- list(performance = list(strategy = list(port_t = 2.1, cagr = 0.15)), tau_d = "2022-12-31", window = c("2000-01-01", "2022-12-31"))
+chk("D8 헌장 · 도구 상자 생성은 새 검사를 통과한다(규범 문서 거짓 양성 없음)", !err(rx_charter_md(pk, ROOT)) && !err(rx_toolbox_md(ROOT)))
+uf <- readLines(file.path(ROOT, "02_Infrastructure/programs/rx_round.R"), encoding = "UTF-8")
+i0 <- grep("^\\.rx_assert_clean <- function", uf); i1 <- i0 + which(grepl("^}", uf[(i0 + 1L):length(uf)]))[1]
+body <- paste(uf[i0:i1], collapse = "\n")
+chk("D9 .rx_assert_clean 은 자체 정규식 없이 util.R::rc_input_issues 를 부른다(한 구현)", grepl("rc_input_issues(", body, fixed = TRUE) && !grepl("gregexpr", body, fixed = TRUE))
 
 cat("\n=== E. 문서 · 경로 ===\n")
 tb <- rx_toolbox_md(ROOT)
@@ -160,6 +181,24 @@ chk("F8 카탈로그 칸 선택지(E3 연결 P-1~P-3) — 어휘 안 통과 · �
     isTRUE(wv(sigma_provider = "factor:ts:dd_state", allow_cash = TRUE, lean_n_days = "cell")) && isTRUE(wv(sigma_provider = "sample")) &&
       !isTRUE(wv(sigma_provider = "factor:pca:base")) && !isTRUE(wv(allow_cash = "yes")) && !isTRUE(wv(lean_n_days = "60")) &&
       !isTRUE(rx_validate(list(weighting = list(kind = "ew", allow_cash = TRUE)), ROOT)$ok) && grepl("\"allow_cash\": true", tb, fixed = TRUE))
+## F9 (2026-11-10 · 감사 U13) 닫힌 하위 키 어휘 — 오타 · 다른 kind 전용 키 · ν 규칙 어휘 · allow_cash + cap_core
+wk <- function(w, ...) rx_validate(c(list(weighting = w), list(...)), ROOT)$ok
+chk("F9 weighting 닫힌 어휘 — 오타 키 · catalog 밖 cdar_nu_rule · 어휘 밖 ν 규칙 · allow_cash + cap_core 거부 · 기존 형식(label · window · eps · lookback_days) 통과",
+    !isTRUE(wk(list(kind = "catalog", catalog_id = wt$catalog_id[1], alow_cash = TRUE))) &&
+      !isTRUE(wk(list(kind = "inv_vol", window = 60L, cdar_nu_rule = "bench"))) && !isTRUE(wk(list(kind = "score_tilt", allowcash = TRUE))) &&
+      !isTRUE(wk(list(kind = "catalog", catalog_id = wt$catalog_id[1], cdar_nu_rule = "max"))) &&
+      !isTRUE(wk(list(kind = "catalog", catalog_id = wt$catalog_id[1], allow_cash = TRUE), cap_core = list(k = 2L))) &&
+      isTRUE(wk(list(kind = "catalog", catalog_id = wt$catalog_id[1], allow_cash = TRUE), cap_core = list(k = 0L))) &&
+      isTRUE(wk(list(kind = "catalog", catalog_id = wt$catalog_id[1], label = wt$label[1], lookback_days = 252L, cdar_nu_rule = "bench"))) &&
+      isTRUE(wk(list(kind = "inv_vol", window = 60L, label = "iv"))) && isTRUE(wk(list(kind = "score_tilt", eps = 0.05))) && isTRUE(wk(list(kind = "ew"))))
+## F10 [돌연변이 red] 닫힌 어휘 문장을 지운 사본은 오타 키를 통과시킨다(치환 1곳 성사 단정 — 그 문장이 유일한 방어선)
+.rxs <- readLines(file.path(ROOT, "02_Infrastructure/programs/rx_round.R"), warn = FALSE, encoding = "UTF-8")
+.hit <- grepl("      if (length(wbad)) add(", .rxs, fixed = TRUE)
+.rxs[.hit] <- sub("      if (length(wbad)) add(", "      if (FALSE) add(", .rxs[.hit], fixed = TRUE)
+.rxf <- tempfile("rx_round_mut_", fileext = ".R"); writeLines(.rxs, .rxf, useBytes = TRUE)
+RXM <- new.env(parent = globalenv()); invisible(capture.output(suppressMessages(sys.source(.rxf, envir = RXM))))
+chk("F10 [돌연변이 red] 어휘 문장 삭제(치환 1곳) → 오타 키 칸이 통과한다",
+    sum(.hit) == 1L && isTRUE(RXM$rx_validate(list(weighting = list(kind = "catalog", catalog_id = wt$catalog_id[1], alow_cash = TRUE)), ROOT)$ok))
 
 cat(sprintf("\n== rx_round: PASS %d · FAIL %d ==\n", PASS, FAIL))
 cat(sprintf('{"test":"rx_round","pass":%d,"fail":%d,"total":%d}\n', PASS, FAIL, PASS + FAIL))

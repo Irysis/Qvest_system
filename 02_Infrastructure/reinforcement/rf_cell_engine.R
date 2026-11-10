@@ -422,6 +422,22 @@ SIGNAL_BREADTH <- PANEL[, list(breadth = uniqueN(Ticker)), by = Date]
 
 # ── 5. 선정 + 비중 ────────────────────────────────────────────────────────────
 .wt <- SPEC$weighting %||% list(kind = "ew")
+## ★weighting 하위 키 닫힌 어휘(2026-11-10 · 감사 U13) — 그 키를 실제로 읽는 kind 에서만 받는다. 모르는 키(오타) · 그 kind 가 읽지 않는 선택지 = 멈춤.
+##   조용히 버리면 부모와 비트 동일한 포트폴리오가 '처치' 칸으로 측정 · 채점되고(사슬 걸음 · 시행 집합이 부푼다) 오타 키는 기본값으로 재진다.
+##   어휘 = 아래 5절 가지가 읽는 키 그대로(score_tilt eps · inv_vol window · catalog catalog_id · lookback_days · P-1~P-3 · ν 규칙) + label(사람용 이름 · 모든 kind).
+##   같은 어휘 = programs/rx_round.R rx_validate(처방 검증). kind 가 어휘 밖이면 5절 switch 가 종전대로 멈춘다.
+.WT_KEYS <- list(ew = character(0), score_tilt = "eps", rank_weight = character(0), rank_weight_sqrt = character(0), inv_vol = "window",
+                 catalog = c("catalog_id", "lookback_days", "sigma_provider", "allow_cash", "lean_n_days", "cdar_nu_rule"))
+.wk <- as.character(.wt$kind %||% "")[1]
+if (!is.na(.wk) && .wk %in% names(.WT_KEYS)) {
+  .wbad <- setdiff(names(.wt), c("kind", "label", .WT_KEYS[[.wk]]))
+  if (length(.wbad)) stop(sprintf("[rf_cell_engine] weighting.kind = %s 가 읽지 않는 키: %s (이 kind 의 어휘 = kind · label%s) — 조용히 버리면 처치 미전달 칸이 된다",
+                                  .wk, paste(.wbad, collapse = ", "), if (length(.WT_KEYS[[.wk]])) paste0(" · ", paste(.WT_KEYS[[.wk]], collapse = " · ")) else ""))
+}
+## ★allow_cash + cap_core 조합 거부(U13) — 5.4 cap_core 합성(rf_capcore.R::rf_cc_compose)은 위성을 (1 − Σ코어) × f / Σf 로 재정규화해 Σw = 1 을 만든다.
+##   구성 층 현금(Σw < 1)이 거기서 전부 주식으로 다시 채워지므로 '현금 통과' 칸이 완전 투자로 측정된다(처치 미전달). 최종 비중 현금 재확인은 5.4 뒤에 한 번 더.
+.CASH_DECL <- isTRUE(.wt$allow_cash)
+if (!is.null(.CC) && .CASH_DECL) stop("[rf_cell_engine] weighting.allow_cash 와 cap_core(k > 0)는 함께 쓸 수 없다 — cap_core 합성이 위성을 Σ = 1 − Σ코어 로 재정규화해 구성 층 현금을 지운다(처치 미전달)")
 .sector_neutral_pick <- function(x, n) {
   x <- x[order(-Score)]
   x[, .r := seq_len(.N), by = .(Date, Sector)]
@@ -559,6 +575,10 @@ if (identical(.wt$kind, "ew")) {
       if (!(.LND %in% c("native", "cell"))) stop("[rf_cell_engine] weighting.lean_n_days 어휘 밖: ", .LND, " (native | cell)")
       .FCV <- NULL; .nSig <- 0L; .nFB <- 0L; .nProbe <- 0L; .nSame <- 0L; .nCash <- 0L
       .nVFB <- 0L; .nUnt <- 0L; .nNuP <- 0L; .nNuSame <- 0L   # (11-10 G8) 변형 base 폴백 · 미처치 합(pca ∪ 변형 폴백) · ν 규칙 전달 탐침
+      .nDrop <- 0L; .nLnP <- 0L; .nLnSame <- 0L; .nCdFB <- 0L; .cdfb_hit <- FALSE   # (11-10 U13) 요인 열 축소 · lean 창 전달 탐침 · 낙폭 예산 실행 불가 복원
+      ## (U13) 낙폭 예산 구성(rf_cdar_construct.R::rcd_construct)이 실행 불가 날 최소 CDaR 로 복원하면 이 청취자를 부른다 — 래퍼(wrap_adapter)가 비중 외 속성을
+      ##   지우므로 통지는 옵션 청취자로 받는다. 본 호출 직전에 표식을 내리고 직후에 읽는다(탐침 호출은 세지 않는다). 루프가 끝나면(오류여도) 원래 옵션으로 되돌린다.
+      .cd_lis_old <- options(rcd.fallback_listener = function(msg) .cdfb_hit <<- TRUE)
       ## (11-10 G8) ν 규칙 전달 탐침 — 규칙을 읽는 arm 은 ①규칙을 빼면 ②어휘 밖 값을 주면(정본 어댑터는 rcd_nu_rule 이 거부 → 래퍼 EW) 비중이 달라진다. 둘 다 같으면 그 arm 은 규칙을 안 읽는다(처치 미전달). 탐침 출력은 삼킨다(래퍼의 EW 폴백 줄이 칸 로그를 어지럽히지 않게).
       .rf_nu_ignored <- function(afn, ctx, w) { .same <- function(v) !is.null(v) && length(v) == length(w) && all(is.finite(v)) && sum(v) > 0 && isTRUE(all.equal(v / sum(v), w / sum(w), tolerance = 1e-10)); .run <- function(cx) { v <- NULL; invisible(utils::capture.output(v <- tryCatch(as.numeric(afn(cx)), error = function(e) NULL))); v }; cx0 <- ctx[setdiff(names(ctx), c("cdar_nu_rule", "bench_ret", "R_dates"))]; cxz <- ctx; cxz$cdar_nu_rule <- "__nu_rule_probe__"; .same(.run(cx0)) && .same(.run(cxz)) }
       if (!identical(.SP, "sample")) {
@@ -578,7 +598,7 @@ if (identical(.wt$kind, "ew")) {
       ##   같은 행 집합(그 종목들 · Date < d)을 키 조인으로 꺼낸다 — 아래 dcast 가 Date · Ticker 로 정렬하므로 행 순서는 결과와 무관 ·
       ##   조인 키는 unique(nm)(중복 종목이 행을 복제하지 않게 — 구판 %in% 와 같은 집합)
       .RTK <- DT[, .(Date, Ticker, .ret)]; setkey(.RTK, Ticker)
-      W <- rbindlist(lapply(.sig_dates, function(d) {
+      W <- tryCatch(rbindlist(lapply(.sig_dates, function(d) {
         nm <- SEL[Date == d, Ticker]
         if (length(nm) < 2L) return(NULL)
         H <- .RTK[.(unique(nm)), nomatch = NULL][Date < d]   # C2: 창 종점 t-1
@@ -596,6 +616,7 @@ if (identical(.wt$kind, "ew")) {
           .Sg <- .so$Sigma[keep, keep, drop = FALSE]; .nSig <<- .nSig + 1L
           if (!identical(.so$model, "ts")) .nFB <<- .nFB + 1L
           .vu <- .so$variant_used %||% NA_character_; if (!identical(.vu, .FCV$variant)) .nVFB <<- .nVFB + 1L; if (!identical(.so$model, "ts") || !identical(.vu, .FCV$variant)) .nUnt <<- .nUnt + 1L   # (11-10 G8) 변형이 표본 부족으로 base 로 떨어진 신호일도 미처치로 센다
+          if (identical(.so$model, "ts") && length(.so$diag$requested_missing)) .nDrop <<- .nDrop + 1L   # (11-10 U13) 설정 요인 열 중 그 창에 못 쓴 열이 있는 신호일(as-of 가용성 축소)
         }
         ctx <- list(assets = keep, R = R, mu = stats::setNames(as.numeric(mu), keep),
                     Sigma = .Sg, ub = 1, lookback_days = nrow(R),
@@ -603,26 +624,33 @@ if (identical(.wt$kind, "ew")) {
         if (identical(.LND, "cell")) ctx$n_days <- nrow(R)   # P-3(선택 시만 · 기본 ctx 모양 그대로)
         if (!is.null(.NUR)) { ctx$cdar_nu_rule <- .NUR; if (!is.null(.BMB)) { ctx$R_dates <- M$Date; ctx$bench_ret <- .BMB[Date < d] } }   # ν 규칙 · 벤치는 Date < d 만(선택 시만 · 기본 ctx 모양 그대로)
         if (.CASH) ctx$allow_cash <- TRUE                     # P-2b(선택 시만) — 판 표식(budget = "le") arm 의 합 ≤ 1 정규형이 이 표식을 본다(method_registry.R wrap_adapter)
+        .cdfb_hit <<- FALSE                                  # (U13) 본 호출의 복원 통지만 센다
         w <- tryCatch(as.numeric(.afn(ctx)), error = function(e) NULL)
         if (is.null(w) || length(w) != length(keep) || !all(is.finite(w)) || sum(w) <= 0) return(NULL)
+        if (isTRUE(.cdfb_hit)) .nCdFB <<- .nCdFB + 1L
         if (!is.null(.FCV) && .nProbe < 3L) {     # P-1 전달 확인 — 같은 신호일 표본 Σ 판과 비중이 같으면 Σ 를 안 쓰는 arm(처치 미전달)
           .cs <- ctx; .cs$Sigma <- stats::cov(R); .ws <- tryCatch(as.numeric(.afn(.cs)), error = function(e) NULL)
           .nProbe <<- .nProbe + 1L
           if (!is.null(.ws) && length(.ws) == length(w) && isTRUE(all.equal(.ws / sum(.ws), w / sum(w), tolerance = 1e-10))) .nSame <<- .nSame + 1L
         }
         if (!is.null(.NUR) && .nNuP < 3L) { .nNuP <<- .nNuP + 1L; if (.rf_nu_ignored(.afn, ctx, w)) .nNuSame <<- .nNuSame + 1L }   # (11-10 G8) ν 규칙 전달 확인(sigma 탐침과 같은 수 · 선택 시만)
+        if (identical(.LND, "cell") && .nLnP < 3L && nrow(R) >= .LB) {   # (U13) P-3 전달 확인 — 칸 창(.LB 행)이 다 찬 신호일에 n_days 를 뺀 판과 비중 비교(sigma 탐침과 같은 수)
+          .cl <- ctx; .cl$n_days <- NULL; .wl <- tryCatch(as.numeric(.afn(.cl)), error = function(e) NULL); .nLnP <<- .nLnP + 1L
+          if (!is.null(.wl) && length(.wl) == length(w) && all(is.finite(.wl)) && sum(.wl) > 0 && isTRUE(all.equal(.wl / sum(.wl), w / sum(w), tolerance = 1e-10))) .nLnSame <<- .nLnSame + 1L
+        }
         w <- .rf_wt_finalize(w, .CASH)
         if (.CASH && sum(w) < 1 - 1e-6) .nCash <<- .nCash + 1L
         if (stats::sd(w) < 1e-10) .nEW <<- .nEW + 1L else .nOK <<- .nOK + 1L
         data.table(Date = d, Ticker = keep, w = w)
-      }), use.names = TRUE)
+      }), use.names = TRUE), finally = options(.cd_lis_old))
       if (is.null(W) || !nrow(W)) stop("[rf_cell_engine] 카탈로그 arm 이 어떤 시점에도 비중을 못 냈다: ", .cid)
       ## P-1 · P-2 처치 전달 가드(선택한 칸만 · 기존 EW 폴백 가드와 같은 규율 — 미전달은 '효과 없음'이 아니라 '미측정')
       if (!is.null(.FCV)) {
         if (.nFB * 2L > .nSig) stop(sprintf("[rf_cell_engine] sigma_provider %s — 관측 요인 모형이 아니라 pca 로 내려간 신호일 %d / %d(과반) · 측정 무효", .SP, .nFB, .nSig))
         if (.nUnt * 2L > .nSig) stop(sprintf("[rf_cell_engine] sigma_provider %s — 요청 변형(%s)으로 측정되지 않은 신호일 %d / %d(과반 · pca 폴백 %d · 변형 표본 부족 base 폴백 %d) · 처치 미전달 · 측정 무효", .SP, .FCV$variant, .nUnt, .nSig, .nFB, .nVFB))
         if (.nProbe > 0L && .nSame == .nProbe) stop(sprintf("[rf_cell_engine] sigma_provider %s — arm %s 비중이 표본 Σ 판과 같다(탐침 %d/%d · Σ 를 안 쓰는 arm · 처치 미전달)", .SP, .cid, .nSame, .nProbe))
-        cat(sprintf("[rf_cell_engine] sigma_provider %s | 요인 Σ 신호일 %d · pca 폴백 %d · 변형 폴백 %d · 탐침 동일 %d/%d\n", .SP, .nSig, .nFB, .nVFB, .nSame, .nProbe))
+        if (.nDrop * 2L > .nSig) stop(sprintf("[rf_cell_engine] sigma_provider %s — 설정 요인 열(%s) 중 일부를 못 쓴 신호일 %d / %d(과반 · pca 폴백과 같은 문턱) · 선언한 요인 모형 미전달 · 측정 무효", .SP, paste(.FCV$cfg$factor_columns, collapse = "+"), .nDrop, .nSig))
+        cat(sprintf("[rf_cell_engine] sigma_provider %s | 요인 Σ 신호일 %d · pca 폴백 %d · 변형 폴백 %d · 요인 열 축소 %d · 탐침 동일 %d/%d\n", .SP, .nSig, .nFB, .nVFB, .nDrop, .nSame, .nProbe))
       }
       if (!is.null(.NUR)) {                       # (11-10 G8) ν 규칙 전달 가드 — 규칙을 안 읽는 arm 에 실린 칸은 '벤치 낙폭 예산' 칸이 아니다
         if (.nNuP > 0L && .nNuSame == .nNuP) stop(sprintf("[rf_cell_engine] cdar_nu_rule %s — arm %s 비중이 규칙 없음 · 어휘 밖 탐침과 같다(탐침 %d/%d · 규칙을 안 읽는 arm · 처치 미전달)", .NUR, .cid, .nNuSame, .nNuP))
@@ -631,6 +659,17 @@ if (identical(.wt$kind, "ew")) {
       if (.CASH) {
         if (.nCash == 0L) stop(sprintf("[rf_cell_engine] allow_cash — arm %s 가 현금(Σw < 1)을 만든 신호일 0(판 표식 budget = le 없는 arm 은 정규형 Σw = 1 · 표식 arm 이면 예산이 묶이지 않음 · 처치 미전달)", .cid))
         cat(sprintf("[rf_cell_engine] allow_cash | 현금을 든 신호일 %d\n", .nCash))
+      }
+      if (identical(.LND, "cell")) {              # (11-10 U13) P-3 전달 가드 — 본문 문자열 검사(위)만으로는 arm 이 lean 캐리어를 타는지 모른다
+        if (.nLnP == 0L) stop(sprintf("[rf_cell_engine] lean_n_days = cell — arm %s: 칸 창(%d행)이 다 찬 신호일이 없어 전달을 확인하지 못했다(fail-closed)", .cid, .LB))
+        if (.nLnSame == .nLnP) stop(sprintf("[rf_cell_engine] lean_n_days = cell — arm %s 비중이 n_days 없는 판과 같다(탐침 %d/%d · 이 arm 은 ctx$n_days 를 안 읽는다 · 처치 미전달)", .cid, .nLnSame, .nLnP))
+        cat(sprintf("[rf_cell_engine] lean_n_days cell | 탐침 동일 %d/%d\n", .nLnSame, .nLnP))
+      }
+      if (.nCdFB > 0L) {                          # (11-10 U13) 낙폭 예산 실행 불가 → 최소 CDaR 복원(rcd_construct) — 선언한 '점수 최대화 s.t. CDaR ≤ ν' 가 아닌 날
+        .nV <- .nOK + .nEW                        #   분모 = 비중을 낸 신호일 · 문턱 = 과반(sigma_provider pca 폴백 .nFB · 변형 폴백 .nUnt 와 같은 규칙)
+        if (.nCdFB * 2L > .nV) stop(sprintf("[rf_cell_engine] arm %s — 낙폭 예산(max μ s.t. CDaR ≤ ν)을 비중 합 예산 안에서 못 맞춰 최소 CDaR 로 복원된 신호일 %d / %d(과반) · 처치 미전달 · 측정 무효", .cid, .nCdFB, .nV))
+        cat(sprintf("[rf_cell_engine] WARN arm %s — 낙폭 예산 실행 불가 → 최소 CDaR 복원 신호일 %d / %d(소수 · 진단 rf_diag cdar_budget_fallback)\n", .cid, .nCdFB, .nV))
+        .RF_DIAG$cdar_budget_fallback <- list(catalog_id = .cid, n_fallback = .nCdFB, n_days = .nV, nu_rule = .NUR %||% "default")
       }
       # ★조작확인 — 폴백이 조용하니 우리가 시끄럽게 만든다. 미전달은 '효과 없음' 이 아니라 '미측정' 이다.
       if (.nOK == 0L)
@@ -706,6 +745,11 @@ if (!is.null(.CC)) {
                                            mean_truncated = mean(.cc$diag$n_truncated), max_hold = max(.cc$diag$n_hold),
                                            min_size_cov = min(.cc_core$diag$size_cov)))
   cat(sprintf("[rf_cell_engine] %s\n", rf_cc_report(.CC, .cc$diag, .cc_core$diag)))
+}
+## (11-10 U13) 현금 처치는 최종 비중(비중 단계 뒤 층 = cap_core 합성까지)에서 다시 본다 — 뒤 층이 구성 층 현금을 지우면 처치 미전달(오버레이 현금은 별도 층)
+if (.CASH_DECL) {
+  .nCashF <- if (exists("PORTFOLIO")) PORTFOLIO[, list(s = sum(Weight)), by = Date][s < 1 - 1e-6, .N] else 0L
+  if (.nCashF == 0L) stop("[rf_cell_engine] allow_cash — 최종 비중(cap_core 등 비중 단계 뒤 층 포함)에 현금(Σw < 1)을 든 신호일 0 · 처치 미전달")
 }
 
 # ── 5.5 리스크 오버레이 (도훈 지시 2026-08-30) ────────────────────────────────

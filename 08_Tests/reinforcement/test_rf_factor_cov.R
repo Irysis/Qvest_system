@@ -163,5 +163,28 @@ M2 <- mut_load('vu <- if (is.na(fb)) variant else "base"', "vu <- variant")
 om2 <- M2$e$rfc_ts_cov(W$R, W$F, cfg, variant = "dd_state", F_hist = W$F)
 ck(M2$n == 1L && !identical(om2$variant_used, "base"), sprintf("치환 %d · variant_used 고정 돌연변이 → 폴백이 base 로 안 보인다(검출)", M2$n))
 
+cat("[11] 설정 요인 열 축소 보고 · 날짜 덮음 직접 판정 (2026-11-10 감사 U13)\n")
+## 구판: 창 안 일부 날짜에 결측인 비시장 열(또는 표에 없는 설정 열)을 빼고도 model = ts · variant_used = 요청 그대로 → 셀 엔진이 못 셌다.
+set.seed(31); dU <- seq(as.Date("2015-01-01"), by = "day", length.out = 400L); dU0 <- dU[301]
+FU <- data.table(Date = dU); for (cn in cfg$factor_columns) FU[, (cn) := stats::rnorm(.N, 0, 0.01)]
+BU <- matrix(stats::rnorm(8 * length(cfg$factor_columns), 1, 0.3), 8)
+RU <- as.matrix(FU[Date < dU0, cfg$factor_columns, with = FALSE]) %*% t(BU) + matrix(stats::rnorm(300 * 8, 0, 0.01), 300); colnames(RU) <- sprintf("A%d", 1:8)
+mkU <- function(F, e = environment(rfc_sigma_ctx)) e$rfc_sigma_ctx(list(assets = colnames(RU), R = RU, R_dates = dU[1:300], decision_date = dU0,
+                                                                       factor_returns = function() F[Date < dU0]), cfg, "base")
+nm_nonmkt <- setdiff(cfg$factor_columns, cfg$market_column)[length(setdiff(cfg$factor_columns, cfg$market_column))]
+u0 <- mkU(FU)
+ck(identical(u0$model, "ts") && length(u0$diag$requested_missing) == 0L, "완전한 요인 표 → requested_missing 없음(기본 경로)")
+FU2 <- copy(FU); FU2[250:260, (nm_nonmkt) := NA_real_]
+u1 <- mkU(FU2)
+ck(identical(u1$model, "ts") && identical(u1$diag$requested_missing, nm_nonmkt), sprintf("창 안 결측 비시장 열(%s) → ts 로 진행하되 requested_missing 에 그 열(%s)",
+   nm_nonmkt, paste(u1$diag$requested_missing, collapse = ",")))
+FU3 <- copy(FU)[, (nm_nonmkt) := NULL]; u2 <- mkU(FU3)
+ck(identical(u2$diag$requested_missing, nm_nonmkt), "표에 없는 설정 열 → requested_missing")
+FU4 <- FU[!(Date %in% dU[100:105])]; u3 <- mkU(FU4)
+ck(identical(u3$model, "pca") && grepl("덮지 못함", u3$diag$fallback, fixed = TRUE), "R 날짜 일부를 요인 표가 못 덮음 → pca · 사유(날짜 덮음 직접 판정)")
+M3 <- mut_load("o$diag$requested_missing <- unique(", "o$diag$zz_mutated_off <- unique(")   # 접두어가 같은 이름은 `$` 부분 일치로 다시 잡힌다 — 다른 이름으로
+u1m <- mkU(FU2, M3$e)
+ck(M3$n == 1L && length(u1m$diag$requested_missing) == 0L, sprintf("[돌연변이] 보고 줄 비활성(치환 %d) → 열 축소가 안 보인다(검출 · 엔진 집계의 유일한 입력)", M3$n))
+
 cat(sprintf('{"test":"test_rf_factor_cov","pass":%d,"fail":%d,"total":%d}\n', P, Fl, P + Fl))
 if (Fl > 0L) quit(status = 1L)

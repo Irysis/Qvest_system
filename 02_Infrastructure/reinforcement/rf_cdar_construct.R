@@ -167,6 +167,10 @@ rcd_construct <- function(R, cfg, mu = NULL, mode = NULL, budget = "eq", nu = NU
         s <- rcd_solve(R[, cand, drop = FALSE], cfg, mode = "min_cdar", budget = "eq", w_prev = wp)
         secs <- secs + s$sec
         if (!isTRUE(s$ok)) stop("[rcd] min_cdar 도 실패(status ", s$status, ")")
+        ## (2026-11-10 · 감사 U13) 복원은 조용하면 안 된다 — 반환 mode_used 에 표기하고, 호출 경로(셀 엔진)가 등록한 청취자에 알린다.
+        ##   래퍼(wrap_adapter)가 비중 외 속성을 지우므로 통지는 옵션 청취자로 간다. 청취자가 없으면(기본) 아무것도 하지 않는다 — 해 · 반환 비중 불변.
+        .lis <- getOption("rcd.fallback_listener")
+        if (is.function(.lis)) .lis(fb)
       } else stop("[rcd] LP 실패(status ", s$status, ")")
     }
     act <- names(s$w)[s$w > 0]
@@ -177,6 +181,7 @@ rcd_construct <- function(R, cfg, mu = NULL, mode = NULL, budget = "eq", nu = NU
   w <- stats::setNames(numeric(length(a)), a); w[names(s$w)] <- s$w
   if (sum(w > 0) > cfg$max_names) stop("[rcd] 가지치기 후에도 비영 비중 > max_names")
   list(w = w, cash = max(0, 1 - sum(w)), cdar = s$cdar, lp_cdar = s$lp_cdar, nu = nu, mode = mode,
+       mode_used = if (is.na(fb)) mode else "min_cdar(fallback)",   # (U13) 실제로 푼 문제 — 실행 불가 복원이면 요청 mode 가 아니다
        budget = budget, n_active = sum(w > 0), effn = if (sum(w) > 0) sum(w)^2 / sum(w^2) else 0,
        rounds = rounds, sec = secs, fallback = fb, nnz = s$nnz)
 }

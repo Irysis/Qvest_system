@@ -362,7 +362,8 @@ rfc_sigma_ctx <- function(ctx, cfg, variant = "base") {
     stale <- NA_character_
     if (!is.null(ctx$R_dates)) {
       Fw <- F[data.table(Date = as.Date(ctx$R_dates)), on = "Date"]; al <- "dates"
-      if (anyNA(Fw$Date) || anyNA(Fw[[cfg$market_column]])) stale <- "요인 표가 R 날짜를 덮지 못함"
+      ## (2026-11-10 · 감사 U13) 날짜 덮음은 조인 전 표에서 직접 센다 — 구판 anyNA(Fw$Date) 는 i 쪽 날짜로 조인한 결과라 늘 거짓이었다(시장 열 결측 검사가 대신 잡았다)
+      if (!all(as.Date(ctx$R_dates) %in% F$Date) || anyNA(Fw[[cfg$market_column]])) stale <- "요인 표가 R 날짜를 덮지 못함"
     } else {
       Fw <- utils::tail(F, nrow(R)); al <- "tail"
       # ★날짜 없는 끝 맞춤은 요인 표가 낡으면 조용히 어긋난다 — 마지막 요인일이 결정일에서 너무 멀면 쓰지 않는다
@@ -375,6 +376,8 @@ rfc_sigma_ctx <- function(ctx, cfg, variant = "base") {
       if (sum(colSums(is.finite(Fm)) == nrow(Fm)) >= 1L) {
         o <- rfc_ts_cov(R, Fm, cfg, variant = variant, F_hist = as.matrix(F[, cols, with = FALSE]))
         o$diag$align <- al
+        ## (U13) 설정 요인 집합 중 이 창에서 못 쓴 열(표에 없음 ∪ 창 안 결측으로 뺌) — 소비자(셀 엔진)가 '요청 요인 모형 미충족' 신호일로 센다
+        o$diag$requested_missing <- unique(c(setdiff(cfg$factor_columns, cols), o$diag$dropped_factors))
         if (identical(variant, "dd_state")) o$diag$state_path_start <- .rfc_path_start(F, cfg$market_column)
         return(o)
       }

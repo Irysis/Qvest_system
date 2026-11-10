@@ -6,7 +6,7 @@
 #   만들 참이었다. 서명이 갈리는 순간 "같은 포트폴리오" 판정이 소비자마다 달라진다.
 #   본문은 러너에서 **그대로 옮겼다** — 거동 변경 0.
 #
-# 제공: .rf_attempt_code / .rf_taken_codes / .rf_free_cells / .fkey / .fkeys / .dedup_factors / .same_axis / .rp_all_factors / .spec_sig / .ov_layers / .ov_key / .ov_canon / .ov_stack / .ov_own_layers / .ov_arm_ids
+# 제공: .rf_attempt_code / .rf_taken_codes / .rf_free_cells / .fkey / .fkeys / .dedup_factors / .same_axis / .rp_all_factors / .wt_canon / .spec_sig / .ov_layers / .ov_key / .ov_canon / .ov_stack / .ov_own_layers / .ov_arm_ids
 # 요구: jsonlite(toJSON) · %||%
 #==============================================================================
 suppressPackageStartupMessages(library(jsonlite))
@@ -92,11 +92,22 @@ if (!exists("%||%")) `%||%` <- function(a, b) if (is.null(a) || length(a) == 0L)
   if (!is.null(sp$factor3) && !identical(sp$factor3$kind %||% "", "none")) out <- c(out, list(sp$factor3))
   out
 }
+#' weighting 서명 정규형(2026-11-10 · 감사 U13) — 기본값과 같은 선언(셀 엔진 catalog 가지 P-1~P-3 · ν 규칙의 기본)을 지운다.
+#'   {…, cdar_nu_rule: "ew"} · allow_cash false · sigma_provider "sample" · lean_n_days "native" 는 생략과 비트 동일한 포트폴리오다
+#'   (test_scn_rx_construct_link.R A2 · test_rf_cdar_bench_budget.R [4]) — 다른 서명이면 같은 칸이 별도 시행이 된다.
+#'   지울 키가 없으면 입력을 그대로 돌려준다(기존 서명 비트 동일).
+.wt_canon <- function(w) {
+  if (!is.list(w) || is.null(names(w))) return(w)
+  dflt <- list(sigma_provider = "sample", allow_cash = FALSE, lean_n_days = "native", cdar_nu_rule = "ew")
+  drop <- names(dflt)[vapply(names(dflt), function(k) !is.null(w[[k]]) && identical(unname(unlist(w[[k]])), dflt[[k]]), logical(1))]
+  if (!length(drop)) return(w)
+  w[setdiff(names(w), drop)]
+}
 .spec_sig <- function(sp) paste(c(
   paste(.fkeys(.rp_all_factors(sp)), collapse = "+"),
   # ★기저 가중은 측정에 들어가는 축이다 — w0 만 다른 두 칸은 다른 포트폴리오다(2026-09-01)
   as.character(sp$base_weight %||% "ew"),
-  as.character(toJSON(sp$weighting %||% list(kind = "ew"),          auto_unbox = TRUE)),
+  as.character(toJSON(.wt_canon(sp$weighting) %||% list(kind = "ew"), auto_unbox = TRUE)),
   as.character(toJSON(sp$universe  %||% list(kind = "k200_kq150"),  auto_unbox = TRUE)),
   # ★2층 이상만 순서를 정렬한다(.ov_canon) — 단층·NULL 은 구판과 비트 동일한 문자열이다.
   # ★overlay 는 **정확한 이름**으로 읽는다 ([[ ]] · 2026-09-17 WP-R). `sp$overlay` 는 부분 일치라 overlay 키가 없는 스펙
