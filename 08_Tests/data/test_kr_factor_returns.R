@@ -273,7 +273,8 @@ lv <- mj[["restated_record"]][["late_version_pending"]]               # [[ ]] = 
 mc <- mj[["annual_sort_causes"]]
 bz <- lv[["bm_by_fy"]]; nt <- lv[["bm_total_not_decision_target"]]
 ok(is.data.frame(mc) && isTRUE(mc$excl_late_dart_version[mc$fy == 2011 & mc$sort == "BM"] == 1) &&
-     is.list(lv) && identical(lv[["status"]], "dohoon_decision_pending") && isTRUE(lv[["rule_changed"]] == FALSE) &&
+     is.list(lv) && identical(lv[["status"]], "decided_keep_missing") && identical(lv[["decision"]], "KRFF-LATE-DART-VERSION-DISPOSITION-20261110") &&
+     isTRUE(lv[["rule_changed"]] == FALSE) &&
      identical(lv[["decision_target"]], "excl_late_dart_version") &&
      is.data.frame(bz) && isTRUE(bz$excl_late_dart_version[bz$fy == 2011] == 1) && isTRUE(bz$excl_late_filing[bz$fy == 2011] == 1) &&
      isTRUE(bz$excl_late_restated_no_record[bz$fy == 2011] == 1) && isTRUE(bz$excl_late_restated[bz$fy == 2011] == 1) &&

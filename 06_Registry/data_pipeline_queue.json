@@ -1,688 +1,814 @@
 {
- "schema_version": "data_pipeline_queue_v1",
- "note": "v10 (2026-08-29 도훈 지시): 데이터 부재는 기각 사유가 아니다 — 트리아지(paper_router_v4)가 verdict=data_pipeline_required 논문을 여기 적재하고, 세션이 도훈 승인 후 수집 파이프라인 구축 라운드로 소비한다. status: open → building → ready(리서치 재개 가능) / abandoned. append-only, entries 삭제 금지.",
- "entries": [
-  {
-   "paper_key": "axv:2104.04264",
-   "paper_id": "2104.04264",
-   "title": "Risks of heterogeneously persistent higher moments",
-   "missing_data": [
-    "인트라데이 틱 데이터 (1분봉 이하)"
-   ],
-   "candidate_sources": [
-    "Bloomberg/Refinitiv",
-    "KRX 공시 API",
-    "Google Trends API"
-   ],
-   "status": "open",
-   "date": "20260830"
-  },
-  {
-   "paper_key": "axv:2303.09406",
-   "paper_id": "2303.09406",
-   "title": "Exploiting Supply Chain Interdependencies for Stock Return Prediction: A Full-State Graph Convolutional LSTM",
-   "missing_data": [
-    "기업 공급망 연결 네트워크 DB"
-   ],
-   "candidate_sources": [
-    "Bloomberg/Refinitiv",
-    "KRX 공시 API",
-    "Google Trends API"
-   ],
-   "status": "open",
-   "date": "20260830"
-  },
-  {
-   "paper_key": "axv:2209.08825",
-   "paper_id": "2209.08825",
-   "title": "SEC Form 13F-HR: Statistical investigation of trading imbalances and profitability analysis",
-   "missing_data": [
-    "기관 보유 분기 상세 DB (한국 수탁은행 데이터 필요)"
-   ],
-   "candidate_sources": [
-    "Bloomberg/Refinitiv",
-    "KRX 공시 API",
-    "Google Trends API"
-   ],
-   "status": "open",
-   "date": "20260830"
-  },
-  {
-   "paper_key": "axv:2007.11546",
-   "paper_id": "2007.11546",
-   "title": "A Research on Cross-sectional Return Dispersion and Volatility of US Stock Market during COVID-19",
-   "missing_data": [
-    "Google Trends 종목별 검색지수"
-   ],
-   "candidate_sources": [
-    "Bloomberg/Refinitiv",
-    "KRX 공시 API",
-    "Google Trends API"
-   ],
-   "status": "open",
-   "date": "20260830"
-  },
-  {
-   "paper_key": "axv:2001.04185",
-   "paper_id": "2001.04185",
-   "title": "Zooming In on Equity Factor Crowding",
-   "missing_data": [
-    "기관 메타오더 DB (크라우딩 측정 — 기관 대형 주문 익명 데이터)"
-   ],
-   "candidate_sources": [
-    "KRX 기관 매매 통계",
-    "Bloomberg institution flow"
-   ],
-   "status": "open",
-   "date": "20260830"
-  },
-  {
-   "id": "DP_LETF_NAV_20260830",
-   "status": "open",
-   "priority": "medium",
-   "need": "레버리지 ETF NAV/AUM + 레버리지배수(L) 일간 패널 (KR 상장 LETF)",
-   "why": "루프게인 K_i = Σ_f A_f(L_f²−L_f) 산출에 필수. 없으면 전이 이탈·익일 리버설 신호가 정의되지 않는다.",
-   "source_paper": "Woo (2026), The Loop-Gain Matrix, arXiv:2608.22768",
-   "blocked": "RP_AUTO_2608_22768 무인 충실구현",
-   "logged_at": "2026-08-30T11:32:52+0900",
-   "note": "인프라 전역 grep 결과 ETF NAV/AUM 패널 부재. 'leverage' 히트는 전부 DART 재무 레버리지비율(부채)."
-  },
-  {
-   "id": "DP_ETF_HOLDINGS_20260830",
-   "status": "open",
-   "priority": "low",
-   "need": "ETF→기초자산 보유내역(구성종목·비중) 시계열",
-   "why": "종가충격계수 Φ(자·교차) 구성 — 어느 종목이 receiver 인지 판별 불가.",
-   "source_paper": "arXiv:2608.22768",
-   "blocked": "RP_AUTO_2608_22768",
-   "logged_at": "2026-08-30T11:32:52+0900"
-  },
-  {
-   "id": "DP_CLOSING_AUCTION_20260830",
-   "status": "open",
-   "priority": "medium",
-   "need": "장중/종가단일가(closing-auction) 가격 — 하루를 pre-close / closing-window 로 분해",
-   "why": "종가 이탈 r2 를 r1 과 분리하려면 일간 OHLC 로 불가. ★이 결손은 이 논문 밖에서도 쓰인다 — 마감효과·유동성 연구 계열 전반.",
-   "source_paper": "arXiv:2608.22768",
-   "blocked": "RP_AUTO_2608_22768",
-   "logged_at": "2026-08-30T11:32:52+0900"
-  },
-  {
-   "paper_key": "axv:2009.01317",
-   "paper_id": "2009.01317",
-   "title": "Towards Earnings Call and Stock Price Movement",
-   "missing_data": [
-    "어닝콜 텍스트(스크립트)"
-   ],
-   "candidate_sources": [
-    "DART 실적발표 IR자료 텍스트화 파이프라인 구축"
-   ],
-   "status": "open",
-   "date": "20260831"
-  },
-  {
-   "paper_key": "axv:2203.12460",
-   "paper_id": "2203.12460",
-   "title": "An Exploratory Study of Stock Price Movements from Earnings Calls",
-   "missing_data": [
-    "어닝콜 텍스트"
-   ],
-   "candidate_sources": [
-    "DART/IR 어닝콜 스크립트"
-   ],
-   "status": "open",
-   "date": "20260831"
-  },
-  {
-   "paper_key": "axv:2411.13813",
-   "paper_id": "2411.13813",
-   "title": "The Value of Information from Sell-side Analysts",
-   "missing_data": [
-    "애널리스트 추정치/목표주가 컨센서스"
-   ],
-   "candidate_sources": [
-    "Fnguide/DataGuide 컨센서스 API"
-   ],
-   "status": "open",
-   "date": "20260831"
-  },
-  {
-   "paper_key": "axv:2408.06634",
-   "paper_id": "2408.06634",
-   "title": "Harnessing Earnings Reports for Stock Predictions: A QLoRA-Enhanced LLM Approach",
-   "missing_data": [
-    "실적발표 원문 텍스트 + LLM 파이프라인"
-   ],
-   "candidate_sources": [
-    "DART 사업보고서/실적발표 텍스트"
-   ],
-   "status": "open",
-   "date": "20260831"
-  },
-  {
-   "paper_key": "axv:2411.08726",
-   "paper_id": "2411.08726",
-   "title": "Analyst Reports and Stock Performance: Evidence from the Chinese Market",
-   "missing_data": [
-    "애널리스트 리포트 텍스트"
-   ],
-   "candidate_sources": [
-    "국내 증권사 리포트 아카이브"
-   ],
-   "status": "open",
-   "date": "20260831"
-  },
-  {
-   "paper_key": "axv:cond-mat/0410079v1",
-   "paper_id": "cond-mat/0410079",
-   "title": "Experts' earning forecasts: bias, herding and gossamer information",
-   "missing_data": [
-    "애널리스트 이익 전망치 패널"
-   ],
-   "candidate_sources": [
-    "Fnguide 컨센서스"
-   ],
-   "status": "open",
-   "date": "20260831"
-  },
-  {
-   "paper_key": "axv:2402.04775",
-   "paper_id": "2402.04775",
-   "title": "Cyber risk and the cross-section of stock returns",
-   "missing_data": [
-    "사이버 침해/리스크 공시 데이터"
-   ],
-   "candidate_sources": [
-    "DART 공시 텍스트 마이닝"
-   ],
-   "status": "open",
-   "date": "20260831"
-  },
-  {
-   "paper_key": "axv:2108.05721",
-   "paper_id": "2108.05721",
-   "title": "Networks of News and Cross-Sectional Returns",
-   "missing_data": [
-    "뉴스 co-mention 네트워크 데이터"
-   ],
-   "candidate_sources": [
-    "뉴스 API + NER 파이프라인"
-   ],
-   "status": "open",
-   "date": "20260831"
-  },
-  {
-   "paper_key": "axv:1005.3535",
-   "paper_id": "1005.3535",
-   "title": "Intraday Patterns in the Cross-section of Stock Returns",
-   "missing_data": [
-    "인트라데이 분단위 데이터"
-   ],
-   "candidate_sources": [
-    "KRX 틱/분봉 데이터"
-   ],
-   "status": "open",
-   "date": "20260831"
-  },
-  {
-   "paper_key": "axv:2301.09173",
-   "paper_id": "2301.09173",
-   "title": "Labor Income Risk and the Cross-Section of Expected Returns",
-   "missing_data": [
-    "산업별 노동소득 성장률"
-   ],
-   "candidate_sources": [
-    "통계청/한국은행 산업별 임금통계"
-   ],
-   "status": "open",
-   "date": "20260831"
-  },
-  {
-   "paper_key": "axv:2111.06655",
-   "paper_id": "2111.06655",
-   "title": "Profit warnings and stock returns: Evidence from moroccan stock exchange",
-   "missing_data": [
-    "이익전망 하향(profit warning) 공시 이벤트"
-   ],
-   "candidate_sources": [
-    "DART 실적 잠정치/정정공시"
-   ],
-   "status": "open",
-   "date": "20260831"
-  },
-  {
-   "paper_key": "axv:2207.00716",
-   "paper_id": "2207.00716",
-   "title": "A Study on Impact of Environmental Accounting on Profitability of Companies listed in Bombay Stock Exchange",
-   "missing_data": [
-    "환경회계 공시 지표"
-   ],
-   "candidate_sources": [
-    "ESG 공시(한국거래소 지속가능경영보고서)"
-   ],
-   "status": "open",
-   "date": "20260831"
-  },
-  {
-   "paper_key": "axv:2604.13260",
-   "paper_id": "2604.13260",
-   "title": "Which Voices Move Markets? Speaker Identity and the Cross-Section of Post-Earnings Returns",
-   "missing_data": [
-    "어닝콜 발언자 식별 + 텍스트"
-   ],
-   "candidate_sources": [
-    "어닝콜 스크립트 + 화자분리"
-   ],
-   "status": "open",
-   "date": "20260831"
-  },
-  {
-   "paper_key": "axv:2508.16936",
-   "paper_id": "2508.16936",
-   "title": "THEME: Enhancing Thematic Investing with Semantic Stock Representations and Temporal Dynamics",
-   "missing_data": [
-    "테마/시맨틱 종목 임베딩용 텍스트(뉴스·공시)"
-   ],
-   "candidate_sources": [
-    "뉴스/공시 텍스트 임베딩 파이프라인"
-   ],
-   "status": "open",
-   "date": "20260831"
-  },
-  {
-   "paper_key": "axv:2603.20965",
-   "paper_id": "2603.20965",
-   "title": "Learning to Aggregate Zero-Shot LLM Agents for Corporate Disclosure Classification",
-   "missing_data": [
-    "기업공시 분류용 텍스트"
-   ],
-   "candidate_sources": [
-    "DART 공시 텍스트"
-   ],
-   "status": "open",
-   "date": "20260831"
-  },
-  {
-   "paper_key": "axv:2210.00731",
-   "paper_id": "2210.00731",
-   "title": "Sentiment Analysis of ESG disclosures on Stock Market",
-   "missing_data": [
-    "ESG 공시 텍스트"
-   ],
-   "candidate_sources": [
-    "ESG 보고서 텍스트"
-   ],
-   "status": "open",
-   "date": "20260831"
-  },
-  {
-   "paper_key": "axv:1906.09024",
-   "paper_id": "1906.09024",
-   "title": "BERT-based Financial Sentiment Index and LSTM-based Stock Return Predictability",
-   "missing_data": [
-    "뉴스 텍스트(BERT 감성)"
-   ],
-   "candidate_sources": [
-    "뉴스 API"
-   ],
-   "status": "open",
-   "date": "20260831"
-  },
-  {
-   "paper_key": "axv:2105.12825",
-   "paper_id": "2105.12825",
-   "title": "Trade the Event: Corporate Events Detection for News-Based Event-Driven Trading",
-   "missing_data": [
-    "뉴스 기반 기업이벤트 데이터"
-   ],
-   "candidate_sources": [
-    "뉴스 이벤트 추출 파이프라인"
-   ],
-   "status": "open",
-   "date": "20260831"
-  },
-  {
-   "paper_key": "axv:2001.06275",
-   "paper_id": "2001.06275",
-   "title": "Corporate Governance, Noise Trading and Liquidity of Stocks",
-   "missing_data": [
-    "기업지배구조 지수"
-   ],
-   "candidate_sources": [
-    "한국기업지배구조원 등급"
-   ],
-   "status": "open",
-   "date": "20260831"
-  },
-  {
-   "paper_key": "axv:2606.29290",
-   "paper_id": "2606.29290",
-   "title": "Supply Chain Propagation of Textual Signals: LLM Embeddings and Cross-Sectional Return Predictability",
-   "missing_data": [
-    "공급망 네트워크 + 텍스트"
-   ],
-   "candidate_sources": [
-    "공급망 연결데이터 + 텍스트"
-   ],
-   "status": "open",
-   "date": "20260831"
-  },
-  {
-   "paper_key": "axv:2006.04639",
-   "paper_id": "2006.04639",
-   "title": "Dynamic Network Risk",
-   "missing_data": [
-    "기업간 네트워크(공급망/지분) 데이터"
-   ],
-   "candidate_sources": [
-    "공급망/지분연결 데이터"
-   ],
-   "status": "open",
-   "date": "20260831"
-  },
-  {
-   "paper_key": "axv:2110.10800",
-   "paper_id": "2110.10800",
-   "title": "Media abnormal tone, earnings announcements, and the stock market",
-   "missing_data": [
-    "미디어 톤(어조) 텍스트"
-   ],
-   "candidate_sources": [
-    "뉴스 텍스트 톤분석"
-   ],
-   "status": "open",
-   "date": "20260831"
-  },
-  {
-   "paper_key": "axv:2503.01886",
-   "paper_id": "2503.01886",
-   "title": "Advanced Deep Learning Techniques for Analyzing Earnings Call Transcripts: Methodologies and Applications",
-   "missing_data": [
-    "어닝콜 텍스트"
-   ],
-   "candidate_sources": [
-    "DART/IR 어닝콜 스크립트"
-   ],
-   "status": "open",
-   "date": "20260831"
-  },
-  {
-   "paper_key": "axv:2209.11914",
-   "paper_id": "2209.11914",
-   "title": "Credit Information in Earnings Calls",
-   "missing_data": [
-    "어닝콜 신용정보 텍스트"
-   ],
-   "candidate_sources": [
-    "어닝콜 스크립트"
-   ],
-   "status": "open",
-   "date": "20260831"
-  },
-  {
-   "paper_key": "axv:2211.03287",
-   "paper_id": "2211.03287",
-   "title": "Institutional ownership and liquidity commonality: evidence from Australia",
-   "missing_data": [
-    "기관투자자 보유지분 변동 데이터"
-   ],
-   "candidate_sources": [
-    "거래소 기관/외국인 보유비중 공시"
-   ],
-   "status": "open",
-   "date": "20260831"
-  },
-  {
-   "paper_key": "axv:2209.12863",
-   "paper_id": "2209.12863",
-   "title": "Automatic Identification and Classification of Share Buybacks and their Effect on Short-, Mid- and Long-Term Returns",
-   "missing_data": [
-    "자사주 매입 이벤트 데이터"
-   ],
-   "candidate_sources": [
-    "DART 자사주 취득/처분 공시"
-   ],
-   "status": "open",
-   "date": "20260831"
-  },
-  {
-   "paper_key": "axv:1911.04199",
-   "paper_id": "1911.04199",
-   "title": "Quantitative earnings enhancement from share buybacks",
-   "missing_data": [
-    "자사주 매입 데이터"
-   ],
-   "candidate_sources": [
-    "DART 자사주 공시"
-   ],
-   "status": "open",
-   "date": "20260831"
-  },
-  {
-   "paper_key": "axv:2505.12269",
-   "paper_id": "2505.12269",
-   "title": "Vague Knowledge: Evidence from Analyst Reports",
-   "missing_data": [
-    "애널리스트 리포트 텍스트"
-   ],
-   "candidate_sources": [
-    "증권사 리포트 아카이브"
-   ],
-   "status": "open",
-   "date": "20260831"
-  },
-  {
-   "paper_key": "axv:1301.6638",
-   "paper_id": "1301.6638",
-   "title": "On the relation between forecast precision and trading profitability of financial analysts",
-   "missing_data": [
-    "애널리스트 전망정밀도 패널"
-   ],
-   "candidate_sources": [
-    "Fnguide 컨센서스"
-   ],
-   "status": "open",
-   "date": "20260831"
-  },
-  {
-   "paper_key": "axv:2502.20489",
-   "paper_id": "2502.20489",
-   "title": "Do Sell-side Analyst Reports Have Investment Value?",
-   "missing_data": [
-    "애널리스트 리포트 텍스트"
-   ],
-   "candidate_sources": [
-    "증권사 리포트 아카이브"
-   ],
-   "status": "open",
-   "date": "20260831"
-  },
-  {
-   "paper_key": "axv:2101.04480",
-   "paper_id": "2101.04480",
-   "title": "Text analysis in financial disclosures",
-   "missing_data": [
-    "공시 텍스트"
-   ],
-   "candidate_sources": [
-    "DART 공시 텍스트"
-   ],
-   "status": "open",
-   "date": "20260831"
-  },
-  {
-   "paper_key": "axv:2411.06076",
-   "paper_id": "2411.06076",
-   "title": "BreakGPT: Leveraging Large Language Models for Predicting Asset Price Surges",
-   "missing_data": [
-    "뉴스/텍스트 + LLM"
-   ],
-   "candidate_sources": [
-    "뉴스 API"
-   ],
-   "status": "open",
-   "date": "20260831"
-  },
-  {
-   "paper_key": "axv:1306.5302",
-   "paper_id": "1306.5302",
-   "title": "Factorising equity returns in an emerging market through exogenous shocks and capital flows",
-   "missing_data": [
-    "외국인/자본유입 데이터"
-   ],
-   "candidate_sources": [
-    "KRX 외국인 순매수 데이터"
-   ],
-   "status": "open",
-   "date": "20260831"
-  },
-  {
-   "paper_key": "axv:2606.09478",
-   "paper_id": "2606.09478",
-   "title": "Volatility Forecasting and Return Prediction under Market Regimes: Evidence from High-Frequency Chinese Equity Data",
-   "missing_data": [
-    "고빈도 중국주식 데이터"
-   ],
-   "candidate_sources": [
-    "인트라데이 데이터"
-   ],
-   "status": "open",
-   "date": "20260831"
-  },
-  {
-   "paper_key": "axv:2201.04393",
-   "paper_id": "2201.04393",
-   "title": "Dissecting the explanatory power of ESG features on equity returns by sector, capitalization, and year with interpretable machine learning",
-   "missing_data": [
-    "ESG 특성 데이터"
-   ],
-   "candidate_sources": [
-    "ESG 평가등급"
-   ],
-   "status": "open",
-   "date": "20260831"
-  },
-  {
-   "paper_key": "axv:2208.07248",
-   "paper_id": "2208.07248",
-   "title": "New drugs and stock market: how to predict pharma market reaction to clinical trial announcements",
-   "missing_data": [
-    "임상시험 결과 발표 이벤트 데이터"
-   ],
-   "candidate_sources": [
-    "DART 임상시험 결과 공시(비정형, 미통합)"
-   ],
-   "status": "open",
-   "date": "20260912"
-  },
-  {
-   "paper_key": "axv:2508.20426",
-   "paper_id": "2508.20426",
-   "title": "Nonlinear Evidence of Investor Heterogeneity: Retail Cash Flows as Drivers of Market Dynamics",
-   "missing_data": [
-    "투자자유형별(개인/기관/외국인) 매매대금 데이터"
-   ],
-   "candidate_sources": [
-    "KRX 투자자별 매매동향(일별, 미통합)"
-   ],
-   "status": "open",
-   "date": "20260912"
-  },
-  {
-   "paper_key": "axv:2509.24254",
-   "paper_id": "2509.24254",
-   "title": "Extracting the Structure of Press Releases for Predicting Earnings Announcement Returns",
-   "missing_data": [
-    "실적발표 보도자료(press release) 원문 텍스트"
-   ],
-   "candidate_sources": [
-    "국내 실적발표 보도자료/공시 텍스트(미통합)"
-   ],
-   "status": "open",
-   "date": "20260912"
-  },
-  {
-   "paper_key": "axv:2002.07477",
-   "paper_id": "2002.07477",
-   "title": "ESG investments: Filtering versus machine learning approaches",
-   "missing_data": [
-    "ESG 프로파일 패널 데이터"
-   ],
-   "candidate_sources": [
-    "한국ESG기준원 등급 데이터(미통합)"
-   ],
-   "status": "open",
-   "date": "20260912"
-  },
-  {
-   "paper_key": "axv:2601.11958",
-   "paper_id": "2601.11958",
-   "title": "Autonomous Market Intelligence: Agentic AI Nowcasting Predicts Stock Returns",
-   "missing_data": [
-    "실시간 뉴스/웹 텍스트 검색 기반 LLM 에이전트 조사가 핵심 — 국내 실시간 텍스트마이닝·에이전트 조사 인프라 부재(2025-04 이후만 존재하는 방법론이라 과거 재현도 불가)"
-   ],
-   "candidate_sources": [],
-   "status": "open",
-   "date": "20260917"
-  },
-  {
-   "paper_key": "axv:2307.15718",
-   "paper_id": "2307.15718",
-   "title": "Option Smile Volatility and Implied Probabilities: Implications of Concavity in IV Curves",
-   "missing_data": [
-    "개별종목 옵션 데이터 — 국내는 지수(KOSPI200) 옵션만 존재, 개별주식 옵션 시장 부재"
-   ],
-   "candidate_sources": [],
-   "status": "open",
-   "date": "20260917"
-  },
-  {
-   "paper_key": "axv:2012.06573",
-   "paper_id": "2012.06573",
-   "title": "Risk & returns around FOMC press conferences: a novel perspective from computer vision",
-   "engine": "defense",
-   "missing_data": [
-    "FOMC press conference video/audio data for computer-vision complexity measure"
-   ],
-   "candidate_sources": [
-    "Federal Reserve webcast archive",
-    "C-SPAN video archive"
-   ],
-   "status": "open",
-   "date": "20261015"
-  },
-  {
-   "paper_key": "axv:2604.21433",
-   "paper_id": "2604.21433",
-   "title": "ChatGPT as a Time Capsule: The Limits of Price Discovery",
-   "engine": "return",
-   "missing_data": [
-    "frozen LLM checkpoints with known knowledge cutoffs",
-    "large matched public-text corpus"
-   ],
-   "candidate_sources": [
-    "역사적 모델 체크포인트(OpenAI/Anthropic 릴리즈 이력)",
-    "국내 뉴스/공시 텍스트 아카이브"
-   ],
-   "status": "open",
-   "date": "20261015"
-  },
-  {
-   "paper_key": "axv:1604.05598",
-   "paper_id": "1604.05598",
-   "title": "Regime switching vine copula models for global equity and volatility indices",
-   "engine": "defense",
-   "missing_data": [
-    "Korean implied volatility index (VKOSPI) time series",
-    "global equity/volatility index cross-section for copula dependence estimation"
-   ],
-   "candidate_sources": [
-    "KRX market data (VKOSPI)",
-    "Bloomberg/Refinitiv implied volatility indices",
-    "CBOE/Yahoo Finance global volatility indices"
-   ],
-   "status": "open",
-   "date": "20261015"
-  }
- ]
+  "schema_version": "data_pipeline_queue_v1",
+  "note": "v10 (2026-08-29 도훈 지시): 데이터 부재는 기각 사유가 아니다 — 트리아지(paper_router_v4)가 verdict=data_pipeline_required 논문을 여기 적재하고, 세션이 도훈 승인 후 수집 파이프라인 구축 라운드로 소비한다. status: open → building → ready(리서치 재개 가능) / abandoned. append-only, entries 삭제 금지.",
+  "entries": [
+    {
+      "paper_key": "axv:2104.04264",
+      "paper_id": "2104.04264",
+      "title": "Risks of heterogeneously persistent higher moments",
+      "missing_data": [
+        "인트라데이 틱 데이터 (1분봉 이하)"
+      ],
+      "candidate_sources": [
+        "Bloomberg/Refinitiv",
+        "KRX 공시 API",
+        "Google Trends API"
+      ],
+      "status": "open",
+      "date": "20260830"
+    },
+    {
+      "paper_key": "axv:2303.09406",
+      "paper_id": "2303.09406",
+      "title": "Exploiting Supply Chain Interdependencies for Stock Return Prediction: A Full-State Graph Convolutional LSTM",
+      "missing_data": [
+        "기업 공급망 연결 네트워크 DB"
+      ],
+      "candidate_sources": [
+        "Bloomberg/Refinitiv",
+        "KRX 공시 API",
+        "Google Trends API"
+      ],
+      "status": "open",
+      "date": "20260830"
+    },
+    {
+      "paper_key": "axv:2209.08825",
+      "paper_id": "2209.08825",
+      "title": "SEC Form 13F-HR: Statistical investigation of trading imbalances and profitability analysis",
+      "missing_data": [
+        "기관 보유 분기 상세 DB (한국 수탁은행 데이터 필요)"
+      ],
+      "candidate_sources": [
+        "Bloomberg/Refinitiv",
+        "KRX 공시 API",
+        "Google Trends API"
+      ],
+      "status": "open",
+      "date": "20260830"
+    },
+    {
+      "paper_key": "axv:2007.11546",
+      "paper_id": "2007.11546",
+      "title": "A Research on Cross-sectional Return Dispersion and Volatility of US Stock Market during COVID-19",
+      "missing_data": [
+        "Google Trends 종목별 검색지수"
+      ],
+      "candidate_sources": [
+        "Bloomberg/Refinitiv",
+        "KRX 공시 API",
+        "Google Trends API"
+      ],
+      "status": "open",
+      "date": "20260830"
+    },
+    {
+      "paper_key": "axv:2001.04185",
+      "paper_id": "2001.04185",
+      "title": "Zooming In on Equity Factor Crowding",
+      "missing_data": [
+        "기관 메타오더 DB (크라우딩 측정 — 기관 대형 주문 익명 데이터)"
+      ],
+      "candidate_sources": [
+        "KRX 기관 매매 통계",
+        "Bloomberg institution flow"
+      ],
+      "status": "open",
+      "date": "20260830"
+    },
+    {
+      "id": "DP_LETF_NAV_20260830",
+      "status": "open",
+      "priority": "medium",
+      "need": "레버리지 ETF NAV/AUM + 레버리지배수(L) 일간 패널 (KR 상장 LETF)",
+      "why": "루프게인 K_i = Σ_f A_f(L_f²−L_f) 산출에 필수. 없으면 전이 이탈·익일 리버설 신호가 정의되지 않는다.",
+      "source_paper": "Woo (2026), The Loop-Gain Matrix, arXiv:2608.22768",
+      "blocked": "RP_AUTO_2608_22768 무인 충실구현",
+      "logged_at": "2026-08-30T11:32:52+0900",
+      "note": "인프라 전역 grep 결과 ETF NAV/AUM 패널 부재. 'leverage' 히트는 전부 DART 재무 레버리지비율(부채)."
+    },
+    {
+      "id": "DP_ETF_HOLDINGS_20260830",
+      "status": "open",
+      "priority": "low",
+      "need": "ETF→기초자산 보유내역(구성종목·비중) 시계열",
+      "why": "종가충격계수 Φ(자·교차) 구성 — 어느 종목이 receiver 인지 판별 불가.",
+      "source_paper": "arXiv:2608.22768",
+      "blocked": "RP_AUTO_2608_22768",
+      "logged_at": "2026-08-30T11:32:52+0900"
+    },
+    {
+      "id": "DP_CLOSING_AUCTION_20260830",
+      "status": "open",
+      "priority": "medium",
+      "need": "장중/종가단일가(closing-auction) 가격 — 하루를 pre-close / closing-window 로 분해",
+      "why": "종가 이탈 r2 를 r1 과 분리하려면 일간 OHLC 로 불가. ★이 결손은 이 논문 밖에서도 쓰인다 — 마감효과·유동성 연구 계열 전반.",
+      "source_paper": "arXiv:2608.22768",
+      "blocked": "RP_AUTO_2608_22768",
+      "logged_at": "2026-08-30T11:32:52+0900"
+    },
+    {
+      "paper_key": "axv:2009.01317",
+      "paper_id": "2009.01317",
+      "title": "Towards Earnings Call and Stock Price Movement",
+      "missing_data": [
+        "어닝콜 텍스트(스크립트)"
+      ],
+      "candidate_sources": [
+        "DART 실적발표 IR자료 텍스트화 파이프라인 구축"
+      ],
+      "status": "open",
+      "date": "20260831"
+    },
+    {
+      "paper_key": "axv:2203.12460",
+      "paper_id": "2203.12460",
+      "title": "An Exploratory Study of Stock Price Movements from Earnings Calls",
+      "missing_data": [
+        "어닝콜 텍스트"
+      ],
+      "candidate_sources": [
+        "DART/IR 어닝콜 스크립트"
+      ],
+      "status": "open",
+      "date": "20260831"
+    },
+    {
+      "paper_key": "axv:2411.13813",
+      "paper_id": "2411.13813",
+      "title": "The Value of Information from Sell-side Analysts",
+      "missing_data": [
+        "애널리스트 추정치/목표주가 컨센서스"
+      ],
+      "candidate_sources": [
+        "Fnguide/DataGuide 컨센서스 API"
+      ],
+      "status": "open",
+      "date": "20260831"
+    },
+    {
+      "paper_key": "axv:2408.06634",
+      "paper_id": "2408.06634",
+      "title": "Harnessing Earnings Reports for Stock Predictions: A QLoRA-Enhanced LLM Approach",
+      "missing_data": [
+        "실적발표 원문 텍스트 + LLM 파이프라인"
+      ],
+      "candidate_sources": [
+        "DART 사업보고서/실적발표 텍스트"
+      ],
+      "status": "open",
+      "date": "20260831"
+    },
+    {
+      "paper_key": "axv:2411.08726",
+      "paper_id": "2411.08726",
+      "title": "Analyst Reports and Stock Performance: Evidence from the Chinese Market",
+      "missing_data": [
+        "애널리스트 리포트 텍스트"
+      ],
+      "candidate_sources": [
+        "국내 증권사 리포트 아카이브"
+      ],
+      "status": "open",
+      "date": "20260831"
+    },
+    {
+      "paper_key": "axv:cond-mat/0410079v1",
+      "paper_id": "cond-mat/0410079",
+      "title": "Experts' earning forecasts: bias, herding and gossamer information",
+      "missing_data": [
+        "애널리스트 이익 전망치 패널"
+      ],
+      "candidate_sources": [
+        "Fnguide 컨센서스"
+      ],
+      "status": "open",
+      "date": "20260831"
+    },
+    {
+      "paper_key": "axv:2402.04775",
+      "paper_id": "2402.04775",
+      "title": "Cyber risk and the cross-section of stock returns",
+      "missing_data": [
+        "사이버 침해/리스크 공시 데이터"
+      ],
+      "candidate_sources": [
+        "DART 공시 텍스트 마이닝"
+      ],
+      "status": "open",
+      "date": "20260831"
+    },
+    {
+      "paper_key": "axv:2108.05721",
+      "paper_id": "2108.05721",
+      "title": "Networks of News and Cross-Sectional Returns",
+      "missing_data": [
+        "뉴스 co-mention 네트워크 데이터"
+      ],
+      "candidate_sources": [
+        "뉴스 API + NER 파이프라인"
+      ],
+      "status": "open",
+      "date": "20260831"
+    },
+    {
+      "paper_key": "axv:1005.3535",
+      "paper_id": "1005.3535",
+      "title": "Intraday Patterns in the Cross-section of Stock Returns",
+      "missing_data": [
+        "인트라데이 분단위 데이터"
+      ],
+      "candidate_sources": [
+        "KRX 틱/분봉 데이터"
+      ],
+      "status": "open",
+      "date": "20260831"
+    },
+    {
+      "paper_key": "axv:2301.09173",
+      "paper_id": "2301.09173",
+      "title": "Labor Income Risk and the Cross-Section of Expected Returns",
+      "missing_data": [
+        "산업별 노동소득 성장률"
+      ],
+      "candidate_sources": [
+        "통계청/한국은행 산업별 임금통계"
+      ],
+      "status": "open",
+      "date": "20260831"
+    },
+    {
+      "paper_key": "axv:2111.06655",
+      "paper_id": "2111.06655",
+      "title": "Profit warnings and stock returns: Evidence from moroccan stock exchange",
+      "missing_data": [
+        "이익전망 하향(profit warning) 공시 이벤트"
+      ],
+      "candidate_sources": [
+        "DART 실적 잠정치/정정공시"
+      ],
+      "status": "open",
+      "date": "20260831"
+    },
+    {
+      "paper_key": "axv:2207.00716",
+      "paper_id": "2207.00716",
+      "title": "A Study on Impact of Environmental Accounting on Profitability of Companies listed in Bombay Stock Exchange",
+      "missing_data": [
+        "환경회계 공시 지표"
+      ],
+      "candidate_sources": [
+        "ESG 공시(한국거래소 지속가능경영보고서)"
+      ],
+      "status": "open",
+      "date": "20260831"
+    },
+    {
+      "paper_key": "axv:2604.13260",
+      "paper_id": "2604.13260",
+      "title": "Which Voices Move Markets? Speaker Identity and the Cross-Section of Post-Earnings Returns",
+      "missing_data": [
+        "어닝콜 발언자 식별 + 텍스트"
+      ],
+      "candidate_sources": [
+        "어닝콜 스크립트 + 화자분리"
+      ],
+      "status": "open",
+      "date": "20260831"
+    },
+    {
+      "paper_key": "axv:2508.16936",
+      "paper_id": "2508.16936",
+      "title": "THEME: Enhancing Thematic Investing with Semantic Stock Representations and Temporal Dynamics",
+      "missing_data": [
+        "테마/시맨틱 종목 임베딩용 텍스트(뉴스·공시)"
+      ],
+      "candidate_sources": [
+        "뉴스/공시 텍스트 임베딩 파이프라인"
+      ],
+      "status": "open",
+      "date": "20260831"
+    },
+    {
+      "paper_key": "axv:2603.20965",
+      "paper_id": "2603.20965",
+      "title": "Learning to Aggregate Zero-Shot LLM Agents for Corporate Disclosure Classification",
+      "missing_data": [
+        "기업공시 분류용 텍스트"
+      ],
+      "candidate_sources": [
+        "DART 공시 텍스트"
+      ],
+      "status": "open",
+      "date": "20260831"
+    },
+    {
+      "paper_key": "axv:2210.00731",
+      "paper_id": "2210.00731",
+      "title": "Sentiment Analysis of ESG disclosures on Stock Market",
+      "missing_data": [
+        "ESG 공시 텍스트"
+      ],
+      "candidate_sources": [
+        "ESG 보고서 텍스트"
+      ],
+      "status": "open",
+      "date": "20260831"
+    },
+    {
+      "paper_key": "axv:1906.09024",
+      "paper_id": "1906.09024",
+      "title": "BERT-based Financial Sentiment Index and LSTM-based Stock Return Predictability",
+      "missing_data": [
+        "뉴스 텍스트(BERT 감성)"
+      ],
+      "candidate_sources": [
+        "뉴스 API"
+      ],
+      "status": "open",
+      "date": "20260831"
+    },
+    {
+      "paper_key": "axv:2105.12825",
+      "paper_id": "2105.12825",
+      "title": "Trade the Event: Corporate Events Detection for News-Based Event-Driven Trading",
+      "missing_data": [
+        "뉴스 기반 기업이벤트 데이터"
+      ],
+      "candidate_sources": [
+        "뉴스 이벤트 추출 파이프라인"
+      ],
+      "status": "open",
+      "date": "20260831"
+    },
+    {
+      "paper_key": "axv:2001.06275",
+      "paper_id": "2001.06275",
+      "title": "Corporate Governance, Noise Trading and Liquidity of Stocks",
+      "missing_data": [
+        "기업지배구조 지수"
+      ],
+      "candidate_sources": [
+        "한국기업지배구조원 등급"
+      ],
+      "status": "open",
+      "date": "20260831"
+    },
+    {
+      "paper_key": "axv:2606.29290",
+      "paper_id": "2606.29290",
+      "title": "Supply Chain Propagation of Textual Signals: LLM Embeddings and Cross-Sectional Return Predictability",
+      "missing_data": [
+        "공급망 네트워크 + 텍스트"
+      ],
+      "candidate_sources": [
+        "공급망 연결데이터 + 텍스트"
+      ],
+      "status": "open",
+      "date": "20260831"
+    },
+    {
+      "paper_key": "axv:2006.04639",
+      "paper_id": "2006.04639",
+      "title": "Dynamic Network Risk",
+      "missing_data": [
+        "기업간 네트워크(공급망/지분) 데이터"
+      ],
+      "candidate_sources": [
+        "공급망/지분연결 데이터"
+      ],
+      "status": "open",
+      "date": "20260831"
+    },
+    {
+      "paper_key": "axv:2110.10800",
+      "paper_id": "2110.10800",
+      "title": "Media abnormal tone, earnings announcements, and the stock market",
+      "missing_data": [
+        "미디어 톤(어조) 텍스트"
+      ],
+      "candidate_sources": [
+        "뉴스 텍스트 톤분석"
+      ],
+      "status": "open",
+      "date": "20260831"
+    },
+    {
+      "paper_key": "axv:2503.01886",
+      "paper_id": "2503.01886",
+      "title": "Advanced Deep Learning Techniques for Analyzing Earnings Call Transcripts: Methodologies and Applications",
+      "missing_data": [
+        "어닝콜 텍스트"
+      ],
+      "candidate_sources": [
+        "DART/IR 어닝콜 스크립트"
+      ],
+      "status": "open",
+      "date": "20260831"
+    },
+    {
+      "paper_key": "axv:2209.11914",
+      "paper_id": "2209.11914",
+      "title": "Credit Information in Earnings Calls",
+      "missing_data": [
+        "어닝콜 신용정보 텍스트"
+      ],
+      "candidate_sources": [
+        "어닝콜 스크립트"
+      ],
+      "status": "open",
+      "date": "20260831"
+    },
+    {
+      "paper_key": "axv:2211.03287",
+      "paper_id": "2211.03287",
+      "title": "Institutional ownership and liquidity commonality: evidence from Australia",
+      "missing_data": [
+        "기관투자자 보유지분 변동 데이터"
+      ],
+      "candidate_sources": [
+        "거래소 기관/외국인 보유비중 공시"
+      ],
+      "status": "open",
+      "date": "20260831"
+    },
+    {
+      "paper_key": "axv:2209.12863",
+      "paper_id": "2209.12863",
+      "title": "Automatic Identification and Classification of Share Buybacks and their Effect on Short-, Mid- and Long-Term Returns",
+      "missing_data": [
+        "자사주 매입 이벤트 데이터"
+      ],
+      "candidate_sources": [
+        "DART 자사주 취득/처분 공시"
+      ],
+      "status": "open",
+      "date": "20260831"
+    },
+    {
+      "paper_key": "axv:1911.04199",
+      "paper_id": "1911.04199",
+      "title": "Quantitative earnings enhancement from share buybacks",
+      "missing_data": [
+        "자사주 매입 데이터"
+      ],
+      "candidate_sources": [
+        "DART 자사주 공시"
+      ],
+      "status": "open",
+      "date": "20260831"
+    },
+    {
+      "paper_key": "axv:2505.12269",
+      "paper_id": "2505.12269",
+      "title": "Vague Knowledge: Evidence from Analyst Reports",
+      "missing_data": [
+        "애널리스트 리포트 텍스트"
+      ],
+      "candidate_sources": [
+        "증권사 리포트 아카이브"
+      ],
+      "status": "open",
+      "date": "20260831"
+    },
+    {
+      "paper_key": "axv:1301.6638",
+      "paper_id": "1301.6638",
+      "title": "On the relation between forecast precision and trading profitability of financial analysts",
+      "missing_data": [
+        "애널리스트 전망정밀도 패널"
+      ],
+      "candidate_sources": [
+        "Fnguide 컨센서스"
+      ],
+      "status": "open",
+      "date": "20260831"
+    },
+    {
+      "paper_key": "axv:2502.20489",
+      "paper_id": "2502.20489",
+      "title": "Do Sell-side Analyst Reports Have Investment Value?",
+      "missing_data": [
+        "애널리스트 리포트 텍스트"
+      ],
+      "candidate_sources": [
+        "증권사 리포트 아카이브"
+      ],
+      "status": "open",
+      "date": "20260831"
+    },
+    {
+      "paper_key": "axv:2101.04480",
+      "paper_id": "2101.04480",
+      "title": "Text analysis in financial disclosures",
+      "missing_data": [
+        "공시 텍스트"
+      ],
+      "candidate_sources": [
+        "DART 공시 텍스트"
+      ],
+      "status": "open",
+      "date": "20260831"
+    },
+    {
+      "paper_key": "axv:2411.06076",
+      "paper_id": "2411.06076",
+      "title": "BreakGPT: Leveraging Large Language Models for Predicting Asset Price Surges",
+      "missing_data": [
+        "뉴스/텍스트 + LLM"
+      ],
+      "candidate_sources": [
+        "뉴스 API"
+      ],
+      "status": "open",
+      "date": "20260831"
+    },
+    {
+      "paper_key": "axv:1306.5302",
+      "paper_id": "1306.5302",
+      "title": "Factorising equity returns in an emerging market through exogenous shocks and capital flows",
+      "missing_data": [
+        "외국인/자본유입 데이터"
+      ],
+      "candidate_sources": [
+        "KRX 외국인 순매수 데이터"
+      ],
+      "status": "open",
+      "date": "20260831"
+    },
+    {
+      "paper_key": "axv:2606.09478",
+      "paper_id": "2606.09478",
+      "title": "Volatility Forecasting and Return Prediction under Market Regimes: Evidence from High-Frequency Chinese Equity Data",
+      "missing_data": [
+        "고빈도 중국주식 데이터"
+      ],
+      "candidate_sources": [
+        "인트라데이 데이터"
+      ],
+      "status": "open",
+      "date": "20260831"
+    },
+    {
+      "paper_key": "axv:2201.04393",
+      "paper_id": "2201.04393",
+      "title": "Dissecting the explanatory power of ESG features on equity returns by sector, capitalization, and year with interpretable machine learning",
+      "missing_data": [
+        "ESG 특성 데이터"
+      ],
+      "candidate_sources": [
+        "ESG 평가등급"
+      ],
+      "status": "open",
+      "date": "20260831"
+    },
+    {
+      "paper_key": "axv:2208.07248",
+      "paper_id": "2208.07248",
+      "title": "New drugs and stock market: how to predict pharma market reaction to clinical trial announcements",
+      "missing_data": [
+        "임상시험 결과 발표 이벤트 데이터"
+      ],
+      "candidate_sources": [
+        "DART 임상시험 결과 공시(비정형, 미통합)"
+      ],
+      "status": "open",
+      "date": "20260912"
+    },
+    {
+      "paper_key": "axv:2508.20426",
+      "paper_id": "2508.20426",
+      "title": "Nonlinear Evidence of Investor Heterogeneity: Retail Cash Flows as Drivers of Market Dynamics",
+      "missing_data": [
+        "투자자유형별(개인/기관/외국인) 매매대금 데이터"
+      ],
+      "candidate_sources": [
+        "KRX 투자자별 매매동향(일별, 미통합)"
+      ],
+      "status": "open",
+      "date": "20260912"
+    },
+    {
+      "paper_key": "axv:2509.24254",
+      "paper_id": "2509.24254",
+      "title": "Extracting the Structure of Press Releases for Predicting Earnings Announcement Returns",
+      "missing_data": [
+        "실적발표 보도자료(press release) 원문 텍스트"
+      ],
+      "candidate_sources": [
+        "국내 실적발표 보도자료/공시 텍스트(미통합)"
+      ],
+      "status": "open",
+      "date": "20260912"
+    },
+    {
+      "paper_key": "axv:2002.07477",
+      "paper_id": "2002.07477",
+      "title": "ESG investments: Filtering versus machine learning approaches",
+      "missing_data": [
+        "ESG 프로파일 패널 데이터"
+      ],
+      "candidate_sources": [
+        "한국ESG기준원 등급 데이터(미통합)"
+      ],
+      "status": "open",
+      "date": "20260912"
+    },
+    {
+      "paper_key": "axv:2601.11958",
+      "paper_id": "2601.11958",
+      "title": "Autonomous Market Intelligence: Agentic AI Nowcasting Predicts Stock Returns",
+      "missing_data": [
+        "실시간 뉴스/웹 텍스트 검색 기반 LLM 에이전트 조사가 핵심 — 국내 실시간 텍스트마이닝·에이전트 조사 인프라 부재(2025-04 이후만 존재하는 방법론이라 과거 재현도 불가)"
+      ],
+      "candidate_sources": [],
+      "status": "open",
+      "date": "20260917"
+    },
+    {
+      "paper_key": "axv:2307.15718",
+      "paper_id": "2307.15718",
+      "title": "Option Smile Volatility and Implied Probabilities: Implications of Concavity in IV Curves",
+      "missing_data": [
+        "개별종목 옵션 데이터 — 국내는 지수(KOSPI200) 옵션만 존재, 개별주식 옵션 시장 부재"
+      ],
+      "candidate_sources": [],
+      "status": "open",
+      "date": "20260917"
+    },
+    {
+      "paper_key": "axv:2012.06573",
+      "paper_id": "2012.06573",
+      "title": "Risk & returns around FOMC press conferences: a novel perspective from computer vision",
+      "engine": "defense",
+      "missing_data": [
+        "FOMC press conference video/audio data for computer-vision complexity measure"
+      ],
+      "candidate_sources": [
+        "Federal Reserve webcast archive",
+        "C-SPAN video archive"
+      ],
+      "status": "open",
+      "date": "20261015"
+    },
+    {
+      "paper_key": "axv:2604.21433",
+      "paper_id": "2604.21433",
+      "title": "ChatGPT as a Time Capsule: The Limits of Price Discovery",
+      "engine": "return",
+      "missing_data": [
+        "frozen LLM checkpoints with known knowledge cutoffs",
+        "large matched public-text corpus"
+      ],
+      "candidate_sources": [
+        "역사적 모델 체크포인트(OpenAI/Anthropic 릴리즈 이력)",
+        "국내 뉴스/공시 텍스트 아카이브"
+      ],
+      "status": "open",
+      "date": "20261015"
+    },
+    {
+      "paper_key": "axv:1604.05598",
+      "paper_id": "1604.05598",
+      "title": "Regime switching vine copula models for global equity and volatility indices",
+      "engine": "defense",
+      "missing_data": [
+        "Korean implied volatility index (VKOSPI) time series",
+        "global equity/volatility index cross-section for copula dependence estimation"
+      ],
+      "candidate_sources": [
+        "KRX market data (VKOSPI)",
+        "Bloomberg/Refinitiv implied volatility indices",
+        "CBOE/Yahoo Finance global volatility indices"
+      ],
+      "status": "open",
+      "date": "20261015"
+    },
+    {
+      "paper_key": "axv:2609.08881",
+      "paper_id": "2609.08881",
+      "title": "The Double-Edged Sword of Short-Selling Bans",
+      "engine": "defense",
+      "missing_data": [
+        "한국 숏셀링 금지/제한 시행 기간 캘린더"
+      ],
+      "candidate_sources": [
+        "금융위/거래소 공시"
+      ],
+      "status": "open",
+      "date": "20261017"
+    },
+    {
+      "paper_key": "axv:2611.04119",
+      "paper_id": "2611.04119",
+      "title": "Multidimensional Views Behind Target-Price Revisions: An LLM-Based Representation of Analyst Outlooks",
+      "engine": "return",
+      "missing_data": [
+        "애널리스트 리서치 리포트 전문(정성적 서술) 텍스트"
+      ],
+      "candidate_sources": [
+        "증권사 리포트 PDF 코퍼스",
+        "DART/FSS 공시 연계 리포트 아카이브"
+      ],
+      "status": "open",
+      "date": "20261107"
+    },
+    {
+      "paper_key": "axv:1803.02962",
+      "paper_id": "1803.02962",
+      "title": "Does the time horizon of the return predictive effect of investor sentiment vary with stock characteristics? A Granger causality analysis in the frequency domain",
+      "engine": "return",
+      "missing_data": [
+        "투자자심리지수 구성요소(폐쇄형펀드 할인율, IPO 물량/수익률, 신용거래 비중 등)"
+      ],
+      "candidate_sources": [
+        "KRX 신용거래 통계",
+        "KOFIA IPO 통계",
+        "자체 합성 심리지수 구축"
+      ],
+      "status": "open",
+      "date": "20261107"
+    },
+    {
+      "paper_key": "axv:1204.5055",
+      "paper_id": "1204.5055",
+      "title": "Value matters: Predictability of Stock Index Returns",
+      "engine": "defense",
+      "missing_data": [
+        "KOSPI 주기조정 실질 EPS(CAPE 분모) 장기 시계열(2000~)"
+      ],
+      "candidate_sources": [
+        "FnGuide/WISEfn 지수 EPS 시계열",
+        "한국은행 ECOS GDP deflator(실질화)"
+      ],
+      "status": "open",
+      "date": "20261107"
+    },
+    {
+      "paper_key": "axv:2506.21775",
+      "paper_id": "2506.21775",
+      "title": "On the hidden costs of passive investing",
+      "engine": "construction",
+      "missing_data": [
+        "종가(클로징옥션) 체결가·체결량 intraday 데이터"
+      ],
+      "candidate_sources": [
+        "KRX 틱데이터 아카이브",
+        "Bloomberg/Refinitiv 종가경매 데이터"
+      ],
+      "status": "open",
+      "date": "20261107"
+    },
+    {
+      "paper_key": "axv:2305.16632",
+      "paper_id": "2305.16632",
+      "title": "Causality between investor sentiment and the shares return on the Moroccan and Tunisian financial markets",
+      "engine": "return",
+      "missing_data": [
+        "투자자심리지수(SENT/ARMS 류) 구성요소"
+      ],
+      "candidate_sources": [
+        "KRX 신용거래·공매도 통계",
+        "자체 합성 심리지수 구축"
+      ],
+      "status": "open",
+      "date": "20261107"
+    },
+    {
+      "paper_key": "axv:1511.01824",
+      "paper_id": "1511.01824",
+      "title": "Positive skewness, anti-leverage, reverse volatility asymmetry, and short sale constraints: Evidence from the Chinese markets",
+      "engine": "return",
+      "missing_data": [
+        "종목별 공매도 제약(금지/제한) 상태 목록 — KR 규제이력"
+      ],
+      "candidate_sources": [
+        "KRX 공매도 종합포털 과거 데이터",
+        "금융위 공매도 금지 공고 아카이브"
+      ],
+      "status": "open",
+      "date": "20261107"
+    },
+    {
+      "paper_key": "decision:KRFF-LATE-DART-VERSION-DISPOSITION-20261110",
+      "paper_id": "",
+      "title": "DART 최초 제출본 재무(연간) — 한국 FF 요인 연간 정렬의 구성일 시점 값",
+      "engine": "infra",
+      "missing_data": [
+        "DART 사업보고서 최초 제출본(정정 전 판)의 재무 값 — 보유 DART 판이 구성일(6월 말) 뒤의 기재정정본이라 그 시점에 쓸 값이 없는 기업-연도(B/M 정렬 기준 누계 1,268건 · 연도별 건수 = .cache/kr_factor_returns_meta.json::annual_sort_causes)"
+      ],
+      "candidate_sources": [
+        "OpenDART 공시 목록(list.json)에서 사업보고서의 최초 접수번호(rcept_no)와 정정 접수번호를 가른다",
+        "최초 접수번호의 원문(document.xml · XBRL)에서 재무 값을 뽑는다 — fnlttSinglAcntAll 은 최신 정정본만 준다(11-08 확인)",
+        "퀀티와이즈 재무 v2 의 정정 검사 결과(Check = restated · agree)와 대조해 값이 달라지는 기업-연도만 채운다"
+      ],
+      "status": "open",
+      "date": "20261110",
+      "approved": true,
+      "approved_by": "dohoon",
+      "approved_at": "2026-11-10",
+      "decision": "KRFF-LATE-DART-VERSION-DISPOSITION-20261110",
+      "note": "도훈 11-10 카드: '결측 유지 + 최초 제출본 수집' — 지금은 결측 유지(미래참조 없음). 수집이 끝나면 요인 표를 다시 짓고(build_kr_factor_returns.R) 같은 축 기록을 재채점한다(등급 규칙 변경 절차 measurement-graduation §3b). 쓸 수 있는 첫날 = 최초 접수일 다음 거래일(pit.md C4)."
+    }
+  ]
 }

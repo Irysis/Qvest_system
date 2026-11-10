@@ -611,11 +611,14 @@ krf_write <- function(res, out, cfg, inputs, epoch, vintage = TRUE, rs_diag = NU
                        excl_late_filing, excl_late_restated_no_record, excl_late_unknown_basis, excl_late_restated)] else NULL
   tot <- function(c) if (is.null(bmz)) 0L else as.integer(sum(bmz[[c]]))
   late_pending <- list(
-    status = "dohoon_decision_pending", rule_changed = FALSE, current_rule = "결측 유지((i))",
+    ## (2026-11-10 도훈 결정 KRFF-LATE-DART-VERSION-DISPOSITION-20261110) 결측 유지 + 최초 제출본 수집 승인 — 규칙 불변.
+    ##   DART 최초 제출본 재무 파이프라인(06_Registry/data_pipeline_queue.json)이 그 판을 공급하면 이 군이 줄어든다.
+    status = "decided_keep_missing", decision = "KRFF-LATE-DART-VERSION-DISPOSITION-20261110",
+    rule_changed = FALSE, current_rule = "결측 유지((i))",
     options = c("(i) 결측 유지", "(ii) 최초 공시일로 편입"),
     decision_target = "excl_late_dart_version",
     doc = paste("결정 대상 = 보유 DART 판이 구성일 뒤 기재정정본이라 구성일에 쓸 판이 원천에 없는 기업-연도(v2 표 Avail_Basis = dart_rcept ·",
-                "Factor_Date 가 보유 판 접수일로 미뤄진 군 = excl_late_dart_version) — 처분 결정 전까지 결측으로 세기만 한다.",
+                "Factor_Date 가 보유 판 접수일로 미뤄진 군 = excl_late_dart_version) — 도훈 11-10 결정: 결측 유지(최초 제출본 수집 승인 · 수집 전까지 결측으로 센다).",
                 "행마다 원인은 하나다: (ii) 로도 남는 원인(퀀티 공시 자체가 구성일 뒤 = excl_late_filing · 정정 의심인데 DART 기록 없음 =",
                 "excl_late_restated_no_record · 근거 미상 = excl_late_unknown_basis · 정정 의심 기록 날짜 뒤 = excl_late_restated ·",
                 "자료 없음)을 먼저 세고 excl_late_dart_version 은 결측 원인 가운데 마지막이다 — 결정 대상 칸에는 결정 대상 군만 든다.",
@@ -676,7 +679,7 @@ krf_main <- function(args = commandArgs(trailingOnly = TRUE)) {
               nrow(res$chars), substr(meta$monthly$content_md5, 1, 12), as.numeric(difftime(Sys.time(), t0, units = "secs"))))
   lv <- meta$restated_record$late_version_pending
   nt <- lv$bm_total_not_decision_target
-  cat(sprintf(paste0("[krf] B/M 정렬 결측 — 보유 DART 판 접수일 뒤(처분 도훈 결정 대기) 누계 %d · 결정 대상 밖: 퀀티 공시 뒤 %d · ",
+  cat(sprintf(paste0("[krf] B/M 정렬 결측 — 보유 DART 판 접수일 뒤(결측 유지 — 도훈 11-10 결정 · 최초 제출본 수집 대기) 누계 %d · 결정 대상 밖: 퀀티 공시 뒤 %d · ",
                      "정정 의심 기록 없음 %d · 근거 미상 %d · 정정 의심 기록 날짜 뒤 %d (연도별 = meta annual_sort_causes)\n"),
               as.integer(lv$bm_total_late_dart_version), as.integer(nt$late_filing), as.integer(nt$late_restated_no_record),
               as.integer(nt$late_unknown_basis), as.integer(nt$late_restated)))
