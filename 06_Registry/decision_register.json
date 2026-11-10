@@ -4276,7 +4276,7 @@
     {
       "id": "REPLICATION-LANE-RESTART-SLOTS-20261110",
       "title": "충실구현 레인 재가동 구성 — 이 PC 에서 예약 작업(Qvest_ReinforceAutoLoop)이 꺼져 있어 새 기저 공급이 멈춰 있다",
-      "status": "open",
+      "status": "resolved",
       "opened_at": "2026-11-10T17:23:05+0900",
       "options": [
         "CPU 1 + GPU 1(RAM 32GB 에서 안전 · 변형 4개짜리 대기 논문은 대표 변형만)",
@@ -4288,11 +4288,13 @@
       "blocks": [],
       "owner": "dohoon",
       "source": "04_Research/01_reports/qvest_v10_2_audit_redesign_20261110/arch_audit/README.md · lanes/audit_D_replication.md",
-      "decision": null,
-      "decided_by": null,
-      "decided_at": null,
-      "note": null,
-      "registered_at": "2026-11-10T17:23:05+0900"
+      "decision": "계정 주간 사용 한도 리셋(2026-11-13 19:00 KST) 뒤 1슬롯(한 번에 논문 한 편)으로 재가동",
+      "decided_by": "dohoon",
+      "decided_at": "2026-11-10T20:59:54+0900",
+      "note": "구현 = 레인 시작 관문 replication_lane.not_before(리셋 전에는 일하지 않는다) + 1슬롯 구성. 예약 작업 켜기(Enable + Export → Apply)는 세션 밖 PowerShell 이 필요하다 — 절차서 arch_audit/procedures/scheduled_tasks_20261110.md. 카드의 원 선택지(CPU 1 + GPU 1 · CPU 2 + GPU 1 · 켜지 않음)가 아니라 최종 보고의 선택지 '리셋 뒤 1슬롯'을 고름.",
+      "registered_at": "2026-11-10T17:23:05+0900",
+      "recorded_by": "Q(아키텍처 전체 감사 · v10.2 세션)",
+      "evidence": "도훈 2026-11-10 저녁 지시(원문): '충실구현레인 리셋 뒤 1슬롯 켜' — Q 의 최종 보고 질문 '충실구현 레인을 언제 · 몇 슬롯으로 다시 켤까요?'에 대한 답"
     },
     {
       "id": "PAPER-QUERY-AND-ORDER-REDESIGN-20261110",
@@ -4457,5 +4459,5 @@
       "evidence": "도훈 결정 카드 2026-11-10 저녁: '상설 판 정기 실행과 강화 사슬 무인 틱(사람 없이 다음 걸음을 재는 자동화)을 만들까요?' = '만들고 바로 켠다'"
     }
   ],
-  "last_updated": "2026-11-10T17:23:33+0900"
+  "last_updated": "2026-11-10T20:59:55+0900"
 }
