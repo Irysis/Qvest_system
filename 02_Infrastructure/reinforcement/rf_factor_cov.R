@@ -27,6 +27,8 @@
 #              LT 의 사후 전환점 판정(미래 경로가 확정)은 쓰지 않는다. Ω_state 는 결정 시점 이전 전체 요인 이력(확장 창)에서,
 #              B · D 는 종목 창에서(배리어 스트레스 방식: 노출 유지 · 요인 공분산만 위기판).
 #   상태 표본이 min_state_obs 미만이면 base 로 돌아가고 diag$fallback 에 사유를 적는다(조용히 바꾸지 않는다).
+#   반환 variant_used = 실제로 쓴 변형(폴백이면 "base") — 소비자(셀 엔진)가 처치 미전달 신호일로 센다(2026-11-10 G8).
+#   dd_state 의 상태 경로 = 시장 열 하나의 전체 이력(요인 열 가용 시작과 무관) · Ω 표본 = 상태일 ∩ 선택 요인 열 완전 행.
 #
 # 안전장치
 #   수축(옵션) — Ledoit & Wolf (2004) 'A well-conditioned estimator for large-dimensional covariance matrices'
@@ -146,6 +148,12 @@ rfc_state_mask <- function(m, variant, thr) {
 }
 
 .rfc_min_obs <- function(K, cfg) as.integer(ceiling(cfg$min_obs_per_param * (K + 1)))
+#' dd_state 상태 경로 시작일(진단) — 날짜가 있는 요인 이력에서 시장 열 값이 있는 첫날(rfc_ts_cov 의 상태 경로와 같은 행 집합)
+.rfc_path_start <- function(FH, mkt) {
+  if (!mkt %in% names(FH)) return(NA_character_)
+  x <- FH$Date[is.finite(FH[[mkt]])]
+  if (length(x)) format(min(x)) else NA_character_
+}
 
 #------------------------------------------------------------------------------
 # 모형
@@ -168,22 +176,29 @@ rfc_ts_cov <- function(R, F, cfg, variant = "base", F_hist = NULL) {
   if (sum(rows) < .rfc_min_obs(K, cfg)) stop(sprintf("[rfc] 관측 %d < 최소 %d (모수당 %s × (K+1))", sum(rows), .rfc_min_obs(K, cfg), cfg$min_obs_per_param))
   fit <- rfc_ols_betas(R[rows, , drop = FALSE], F[rows, , drop = FALSE])
   Fo <- F[rows, , drop = FALSE]
+  sdiag <- list()
   if (identical(variant, "dd_state")) {
     H <- as.matrix(F_hist %||% F)
+    if (!mkt %in% colnames(F) || !mkt %in% colnames(H)) stop("[rfc] dd_state 변형에 시장 열 '", mkt, "' 이 없다")
+    # ★상태 표식 = 시장 열 하나의 전체 이력(값이 있는 날 · 요인 열 가용 시작과 무관 — 2026-11-10 G8 수리).
+    #   종전은 요인 열 전부의 complete.cases 로 자른 뒤 경로를 만들어, 늦게 시작한 열(SMB5 · CMA 2002-07)이 창에 들면
+    #   경로 시작이 옮겨지며 고점이 재설정됐다. Ω 표본 선택(상태일 ∩ 선택 요인 열이 모두 있는 행)은 표식과 따로 한다.
+    mrow <- is.finite(H[, mkt])
+    st <- logical(nrow(H)); st[mrow] <- rfc_state_mask(H[mrow, mkt], "dd_state", cfg$dd_state_threshold)
     H <- H[, colnames(F), drop = FALSE]
-    H <- H[stats::complete.cases(H), , drop = FALSE]
-    if (!mkt %in% colnames(H)) stop("[rfc] dd_state 변형에 시장 열 '", mkt, "' 이 없다")
-    st <- rfc_state_mask(H[, mkt], "dd_state", cfg$dd_state_threshold)
-    if (sum(st) >= .rfc_min_obs(K, cfg)) Fo <- H[st, , drop = FALSE]
-    else fb <- sprintf("dd_state 표본 %d < %d → base", sum(st), .rfc_min_obs(K, cfg))
+    sel <- st & stats::complete.cases(H)
+    if (sum(sel) >= .rfc_min_obs(K, cfg)) Fo <- H[sel, , drop = FALSE]
+    else fb <- sprintf("dd_state 표본 %d < %d → base", sum(sel), .rfc_min_obs(K, cfg))
+    sdiag <- list(state_path_n = sum(mrow), n_state_days = sum(st))
   }
+  vu <- if (is.na(fb)) variant else "base"                      # 실제로 쓴 변형(표본 부족 폴백이면 base) — 소비자가 센다
   Om <- if (isTRUE(cfg$shrink_omega)) rfc_lw2004(Fo)$S else .rfc_cov(Fo)
   S <- fit$B %*% Om %*% t(fit$B) + diag(fit$D, length(fit$D))
   dimnames(S) <- list(colnames(R), colnames(R))
   g <- rfc_guard(S, cfg$kappa_max)
-  list(Sigma = g$S, B = fit$B, Omega = Om, D = fit$D, K = K, model = "ts", variant = variant,
-       diag = list(n_obs = sum(rows), n_omega = nrow(Fo), dropped_factors = dropped, fallback = fb,
-                   kappa_before = g$kappa_before, kappa_after = g$kappa_after, clipped = g$clipped))
+  list(Sigma = g$S, B = fit$B, Omega = Om, D = fit$D, K = K, model = "ts", variant = variant, variant_used = vu,
+       diag = c(list(n_obs = sum(rows), n_omega = nrow(Fo), dropped_factors = dropped, fallback = fb,
+                     kappa_before = g$kappa_before, kappa_after = g$kappa_after, clipped = g$clipped), sdiag))
 }
 
 #' 통계 요인(주성분) 모형 — 요인 수 = Bai-Ng IC_p2. 상태 변형의 시장 열 = 종목 동일가중 평균(대용 · diag 에 표기)
@@ -202,7 +217,7 @@ rfc_pca_cov <- function(R, cfg, variant = "base") {
   Om <- .rfc_cov(Fp[rows, , drop = FALSE])
   S <- fit$B %*% Om %*% t(fit$B) + diag(fit$D, length(fit$D)); dimnames(S) <- list(colnames(R), colnames(R))
   g <- rfc_guard(S, cfg$kappa_max)
-  list(Sigma = g$S, B = fit$B, Omega = Om, D = fit$D, K = K, model = "pca", variant = variant,
+  list(Sigma = g$S, B = fit$B, Omega = Om, D = fit$D, K = K, model = "pca", variant = variant, variant_used = if (is.na(fb)) variant else "base",
        diag = list(n_obs = sum(rows), market_proxy = "rowMeans(R)", fallback = fb,
                    kappa_before = g$kappa_before, kappa_after = g$kappa_after, clipped = g$clipped))
 }
@@ -226,7 +241,7 @@ rfc_cs_cov <- function(R, X, cfg, variant = "base") {
   D <- apply(E[rows, , drop = FALSE], 2, stats::var)
   S <- X1 %*% Om %*% t(X1) + diag(D, length(D)); dimnames(S) <- list(colnames(R), colnames(R))
   g <- rfc_guard(S, cfg$kappa_max)
-  list(Sigma = g$S, B = X1, Omega = Om, D = D, K = K, model = "cs", variant = variant,
+  list(Sigma = g$S, B = X1, Omega = Om, D = D, K = K, model = "cs", variant = variant, variant_used = if (is.na(fb)) variant else "base",
        diag = list(n_obs = sum(rows), fallback = fb, kappa_before = g$kappa_before,
                    kappa_after = g$kappa_after, clipped = g$clipped))
 }
@@ -269,8 +284,10 @@ rfc_sigma_asof <- function(ret, fac = NULL, decision_date, assets, lookback, cfg
     if (nmiss) stop(sprintf("[rfc] 요인 표가 종목 창 날짜를 덮지 못한다(%d/%d일 없음 · 요인 마지막 %s)", nmiss, length(dates),
                             if (nrow(fh)) format(max(fh$Date)) else "없음"))
     Fw <- fh[data.table(Date = dates), on = "Date"]
-    rfc_ts_cov(R, as.matrix(Fw[, cols, with = FALSE]), cfg, variant = variant,
-               F_hist = as.matrix(fh[, cols, with = FALSE]))
+    o <- rfc_ts_cov(R, as.matrix(Fw[, cols, with = FALSE]), cfg, variant = variant,
+                    F_hist = as.matrix(fh[, cols, with = FALSE]))
+    if (identical(variant, "dd_state")) o$diag$state_path_start <- .rfc_path_start(fh, cfg$market_column)
+    o
   } else if (identical(model, "pca")) rfc_pca_cov(R, cfg, variant = variant)
   else rfc_cs_cov(R, X, cfg, variant = variant)
   out$assets <- keep; out$window <- range(dates); out$decision_date <- d
@@ -358,6 +375,7 @@ rfc_sigma_ctx <- function(ctx, cfg, variant = "base") {
       if (sum(colSums(is.finite(Fm)) == nrow(Fm)) >= 1L) {
         o <- rfc_ts_cov(R, Fm, cfg, variant = variant, F_hist = as.matrix(F[, cols, with = FALSE]))
         o$diag$align <- al
+        if (identical(variant, "dd_state")) o$diag$state_path_start <- .rfc_path_start(F, cfg$market_column)
         return(o)
       }
     }

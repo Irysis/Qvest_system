@@ -121,5 +121,23 @@ el_m <- sub("ctx$bench_ret <- .BMB[Date < d]", "ctx$bench_ret <- .BMB", el[l_in]
 e3 <- new.env(); e3$.wt <- list(cdar_nu_rule = "bench"); e3$BM_DT <- BMD; eval(parse(text = el[l_pre]), e3); e3$ctx <- list(); e3$M <- data.table(Date = dts); e3$d <- d; eval(parse(text = el_m), e3)
 ck(!identical(el_m, el[l_in]) && max(e3$ctx$bench_ret$Date) >= d, "엔진 벤치 컷 제거(치환 1) → 결정일 이후 행이 ctx 에 실림(검출)")
 
+cat("[8] 셀 엔진 ν 규칙 전달 탐침(.rf_nu_ignored · 실제 문장 평가 · 2026-11-10 G8)\n")
+l_nu <- grep(".rf_nu_ignored <- function(afn, ctx, w) {", el, fixed = TRUE)
+ck(length(l_nu) == 1L, sprintf("엔진에 ν 규칙 전달 탐침 정의 1곳(%d)", length(l_nu)))
+NE <- new.env(parent = globalenv()); if (length(l_nu) == 1L) eval(parse(text = el[l_nu]), NE)
+nu_ign <- function(afn, cx, env = NE) { w <- as.numeric(q(afn(cx))); if (!exists(".rf_nu_ignored", envir = env)) return(NA); env$.rf_nu_ignored(afn, cx, w) }
+ck(identical(nu_ign(W, ctxf(Rt)), FALSE), "[양성] CUZ 어댑터 + bench(빡빡한 예산 · 현금) → 규칙을 읽는다(탐침 다름)")
+ck(identical(nu_ign(W, ctxf(Rb, rule = "ew", cash = FALSE)), FALSE), "[양성] CUZ 어댑터 + ew(규칙 없음과 비트 동일인 별칭) → 어휘 밖 탐침이 거부되어 읽는다고 판정")
+NR <- mr$wrap_adapter(function(ctx) stats::setNames(as.numeric(ctx$mu[ctx$assets]), ctx$assets), "NoNuRule", ub = 1)
+ck(identical(nu_ign(NR, ctxf(Rt)), TRUE) && identical(nu_ign(NR, ctxf(Rb, rule = "ew", cash = FALSE)), TRUE), "[음성] 규칙을 안 읽는 arm(μ 비례) → bench · ew 모두 '안 읽음'(엔진이 처치 미전달로 멈춘다)")
+lg8 <- utils::capture.output(invisible(nu_ign(W, ctxf(Rb, rule = "ew", cash = FALSE))))
+ck(!any(grepl("EW 폴백", lg8)), "탐침의 래퍼 EW 폴백 줄은 삼킨다(칸 로그 오염 없음)")
+if (length(l_nu) == 1L) {
+  ln_m <- sub(".same(.run(cx0)) && .same(.run(cxz))", ".same(.run(cx0))", el[l_nu], fixed = TRUE)
+  NM <- new.env(parent = globalenv()); eval(parse(text = ln_m), NM)
+  ck(!identical(ln_m, el[l_nu]) && identical(nu_ign(W, ctxf(Rb, rule = "ew", cash = FALSE), env = NM), TRUE),
+     "[돌연변이] 어휘 밖 탐침 제거(치환 1) → ew 칸의 정본 어댑터를 '안 읽음'으로 오판(어휘 밖 탐침이 필요함을 검출)")
+} else ck(FALSE, "[돌연변이] 탐침 정의 없음")
+
 cat(sprintf('{"test":"test_rf_cdar_bench_budget","pass":%d,"fail":%d,"total":%d}\n', P, Fl, P + Fl))
 if (Fl > 0L) quit(status = 1L)

@@ -124,5 +124,44 @@ log3 <- utils::capture.output(S3 <- wf(ctx3))
 ck(any(grepl("align=dates", log3)) && max(abs(S3 - o$Sigma)) < 1e-12, "R_dates 전달 → 날짜 맞춤(정공법) · 같은 Σ")
 ck(isTRUE(all.equal(wf(ctx1), wf(ctx1))), "결정론(같은 ctx 두 번 같은 Σ)")
 
+cat("[9] dd_state 상태 경로는 요인 열 가용 시작과 무관(시장 열 전체 이력 · 2026-11-10 G8 수리)\n")
+## 실데이터 결함 모사: 시장 열은 처음부터 · 다른 요인 열(SMB5)은 늦게 시작(앞 250행 NA). 앞부분에 고점 → 35% 하락 → 고점 아래 정체.
+##   종전(complete.cases 로 거른 뒤 경로) = 경로가 251행에서 1 로 다시 시작해 고점이 재설정 → 상태일 0 → base 로 떨어졌다.
+set.seed(21); nH <- 600L
+mH <- c(rep(0.002, 100), rep(log(0.65) / 100, 100), stats::rnorm(400, 0, 0.003))
+mH[101:200] <- exp(mH[101:200]) - 1
+HH <- cbind(MKT_TOTAL = mH, SMB5 = c(rep(NA, 250), stats::rnorm(350, 0, 0.006)), HML = stats::rnorm(nH, 0, 0.005))
+st_full <- rfc_state_mask(HH[, "MKT_TOTAL"], "dd_state", cfg$dd_state_threshold)       # 시장 열 하나의 as-of 경로(독립 기대값)
+sel_exp <- st_full & stats::complete.cases(HH)
+oh <- rfc_ts_cov(W$R, W$F, cfg, variant = "dd_state", F_hist = HH)
+ck(sum(sel_exp) >= 200L && oh$diag$n_omega == sum(sel_exp) && is.na(oh$diag$fallback),
+   sprintf("Ω 표본 = 시장 전 경로 상태일 ∩ 요인 완전 행 %d (얻음 %d · fb %s)", sum(sel_exp), oh$diag$n_omega, oh$diag$fallback))
+ck(isTRUE(all.equal(oh$Omega, stats::cov(HH[sel_exp, colnames(W$F), drop = FALSE]), tolerance = 1e-12)), "Ω_state = cov(상태일 ∩ 완전 행) — 표식과 표본 선택 분리")
+ck(identical(oh$variant_used, "dd_state") && oh$diag$state_path_n == nH && oh$diag$n_state_days == sum(st_full), "variant_used = dd_state · 진단에 상태 경로 길이 · 상태일")
+## 모든 열이 처음부터 있으면 종전과 같은 표본(기본 이력 모양에서 결과 불변)
+ck(os$diag$n_omega == sum(st) && identical(os$variant_used, "dd_state"), "열 결측 없는 이력 → 종전과 같은 상태 표본")
+ck(identical(of$variant_used, "base") && identical(od$variant_used, "downside") && identical(o$variant_used, "base"), "표본 부족으로 떨어진 변형은 variant_used = base(소비자가 셀 수 있게)")
+odf <- rfc_ts_cov(W$R[1:60, ], W$F[1:60, ], cfg, variant = "downside")
+ck(!is.na(odf$diag$fallback) && identical(odf$variant_used, "base"), sprintf("downside 표본 부족 → variant_used = base (%s)", odf$diag$fallback))
+## rfc_sigma_ctx 경로 — 날짜가 있는 이력에서 상태 경로 시작일을 진단에 남긴다
+dH <- d0 - rev(seq_len(nH)); FH <- data.table(Date = dH, HH)
+oc9 <- rfc_sigma_ctx(list(assets = a, R = W$R, R_dates = tail(dH, 252L), decision_date = d0, factor_returns = function() { x <- copy(FH); x[tail(seq_len(nH), 252L), (colnames(W$F)) := as.data.table(W$F)]; x }), cfg, "dd_state")
+ck(identical(oc9$model, "ts") && identical(oc9$diag$state_path_start, format(dH[1])) && is.na(oc9$diag$fallback),
+   sprintf("rfc_sigma_ctx dd_state — 상태 경로 시작 %s(= 시장 열 첫날 · 요인 열 SMB5 시작 %s 아님)", oc9$diag$state_path_start %||% "없음", format(dH[251])))
+
+cat("[10] 돌연변이 — 상태 경로를 요인 완전 행으로 되돌리면 [9] 가 잡는다(소스 텍스트 치환 · 치환 수 단언)\n")
+src <- readLines(file.path(.root, "02_Infrastructure/reinforcement/rf_factor_cov.R"), warn = FALSE, encoding = "UTF-8")
+mut_load <- function(from, to) {
+  hit <- grepl(from, src, fixed = TRUE); s2 <- src; s2[hit] <- gsub(from, to, s2[hit], fixed = TRUE)
+  f <- tempfile(fileext = ".R"); writeLines(s2, f, useBytes = TRUE); e <- new.env(parent = globalenv())
+  suppressWarnings(suppressMessages(sys.source(f, envir = e))); list(e = e, n = sum(hit))
+}
+M1 <- mut_load("mrow <- is.finite(H[, mkt])", "mrow <- stats::complete.cases(H[, colnames(F), drop = FALSE])")
+om1 <- tryCatch(M1$e$rfc_ts_cov(W$R, W$F, cfg, variant = "dd_state", F_hist = HH), error = function(e) NULL)
+ck(M1$n == 1L && !is.null(om1) && om1$diag$n_omega != sum(sel_exp), sprintf("치환 %d · 돌연변이 n_omega %s ≠ %d(검출)", M1$n, if (is.null(om1)) "오류" else om1$diag$n_omega, sum(sel_exp)))
+M2 <- mut_load('vu <- if (is.na(fb)) variant else "base"', "vu <- variant")
+om2 <- M2$e$rfc_ts_cov(W$R, W$F, cfg, variant = "dd_state", F_hist = W$F)
+ck(M2$n == 1L && !identical(om2$variant_used, "base"), sprintf("치환 %d · variant_used 고정 돌연변이 → 폴백이 base 로 안 보인다(검출)", M2$n))
+
 cat(sprintf('{"test":"test_rf_factor_cov","pass":%d,"fail":%d,"total":%d}\n', P, Fl, P + Fl))
 if (Fl > 0L) quit(status = 1L)

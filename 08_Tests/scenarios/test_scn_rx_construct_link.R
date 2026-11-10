@@ -143,5 +143,49 @@ if (REAL_DATES) {
 rm3 <- if (is.null(mP3)) list(err = "치환 불성사") else run_cell(base_spec(weighting = c(WC, list(lean_n_days = "cell"))), engine = mP3)
 chk("E3 [가드 양성 대조] 엔진의 캐리어 판독 문장을 없는 토큰으로 바꾸면 D4 칸이 멈춘다(캐리어가 n_days 를 안 읽는 판을 잡는 가드가 살아 있다)", !is.null(mP3) && !is.null(rm3$err) && grepl("ctx$n_days", rm3$err, fixed = TRUE), rm3$err %||% "멈추지 않았다")
 
+cat("== (f) 변형 미전달 집계 · cdar_nu_rule 전달 가드 (2026-11-10 G8) ==\n")
+## F1~F3: 엔진의 실제 문장(집계 한 줄 · 가드 한 줄)을 그대로 평가 — 변형(downside · dd_state)이 표본 부족으로 base 로 떨어진 신호일을 센다
+el <- readLines(ENGINE, warn = FALSE, encoding = "UTF-8")
+l_cnt <- grep(".vu <- .so$variant_used %||% NA_character_;", el, fixed = TRUE)
+l_grd <- grep("if (.nUnt * 2L > .nSig) stop(", el, fixed = TRUE)
+chk("F0 엔진에 변형 미전달 집계 · 가드 문장이 각 1곳", length(l_cnt) == 1L && length(l_grd) == 1L, sprintf("집계 %d · 가드 %d", length(l_cnt), length(l_grd)))
+## 실제 공급자 출력으로 .so 를 만든다 — 상태 없는 이력(fallback → variant_used base) · 급락 이력(상태 표본 충분)
+Hst <- copy(FR); Hst[1:150, MKT_TOTAL := -0.004]                        # 앞 150일 약 45% 하락 · 이후 고점 아래
+mkS <- function(F) list(assets = colnames(Rm), R = Rm, R_dates = dd[1:300], decision_date = d0, factor_returns = function() F[Date < d0])
+FRn <- copy(FR); FRn[, MKT_TOTAL := abs(MKT_TOTAL) * 0.1]               # 시장이 오르기만 하는 이력 — 상태일 0(폴백 확정)
+so_fb <- FE$rfc_sigma_ctx(mkS(FRn), cfg, "dd_state"); so_ok <- FE$rfc_sigma_ctx(mkS(Hst), cfg, "dd_state")
+chk("F1 공급자 — 상태 없는 이력은 ts 이면서 variant_used = base · 급락 이력은 dd_state",
+    identical(so_fb$model, "ts") && identical(so_fb$variant_used, "base") && identical(so_ok$variant_used, "dd_state"),
+    sprintf("fb %s/%s · ok %s/%s", so_fb$model, so_fb$variant_used %||% "NULL", so_ok$model, so_ok$variant_used %||% "NULL"))
+run_counts <- function(sos, variant, cnt_line = el[l_cnt], grd_line = el[l_grd]) {
+  p <- new.env(parent = globalenv()); p$.nFB <- 0L; p$.nVFB <- 0L; p$.nUnt <- 0L; p$.nSig <- length(sos); p$.SP <- paste0("factor:ts:", variant)
+  p$.FCV <- list(variant = variant)
+  for (s in sos) { e <- new.env(parent = p); e$.so <- s; if (length(cnt_line)) eval(parse(text = cnt_line), e)
+                   if (!identical(s$model, "ts")) p$.nFB <- p$.nFB + 1L }
+  err <- tryCatch({ if (length(grd_line)) eval(parse(text = grd_line), new.env(parent = p)); NULL }, error = function(e) conditionMessage(e))
+  list(nVFB = p$.nVFB, nUnt = p$.nUnt, err = err)
+}
+c_maj <- if (length(l_cnt) == 1L && length(l_grd) == 1L) run_counts(list(so_fb, so_fb, so_fb, so_ok, so_ok), "dd_state") else list(err = NULL, nVFB = NA)
+chk("F2 [처치 미전달] 변형이 base 로 떨어진 신호일 3/5(과반) → 멈춘다 · 폴백 3 으로 센다",
+    identical(c_maj$nVFB, 3L) && !is.null(c_maj$err) && grepl("처치 미전달", c_maj$err), c_maj$err %||% sprintf("멈추지 않았다(폴백 %s)", c_maj$nVFB))
+c_min <- if (length(l_cnt) == 1L && length(l_grd) == 1L) run_counts(list(so_fb, so_fb, so_ok, so_ok, so_ok), "dd_state") else list(err = "문장 없음", nVFB = NA)
+chk("F3 소수(2/5)면 진행하고 센다(기존 pca 폴백 과반 규칙과 같은 문턱)", identical(c_min$nVFB, 2L) && is.null(c_min$err), c_min$err %||% "")
+so_b <- FE$rfc_sigma_ctx(mkS(FRn), cfg, "base")
+c_base <- if (length(l_cnt) == 1L) run_counts(list(so_b, so_b, so_b), "base") else list(err = "문장 없음", nUnt = NA)
+chk("F4 base 변형은 집계 0 · 가드 미발화(기본 경로 동작 불변)", identical(c_base$nUnt, 0L) && is.null(c_base$err), c_base$err %||% "")
+c_mut <- if (length(l_cnt) == 1L) run_counts(list(so_fb, so_fb, so_fb, so_ok, so_ok), "dd_state", cnt_line = "invisible(NULL)") else list(err = "x")
+chk("F5 [돌연변이 red] 집계 문장 제거 → F2 칸이 멈추지 않는다(집계가 유일한 방어선)", is.null(c_mut$err), c_mut$err %||% "")
+chk("F6 [배선] 요약 줄에 변형 폴백 수가 실린다", grepl("변형 폴백 %d", etxt, fixed = TRUE))
+
+## G1~G3: cdar_nu_rule 은 그 규칙을 읽는 arm 이 아니면 멈춘다(sigma_provider 탐침과 같은 모양 · 양성 대조 = test_rf_cdar_bench_budget.R [8] CUZ 어댑터)
+g1 <- run_cell(base_spec(weighting = c(WC, list(cdar_nu_rule = "ew"))))
+chk("G1 [처치 미전달] 규칙을 안 읽는 arm(lean:ivol)에 cdar_nu_rule = ew → 멈춘다(조용한 무시 · 별도 칸 계상 금지)",
+    !is.null(g1$err) && grepl("cdar_nu_rule", g1$err, fixed = TRUE) && grepl("처치 미전달", g1$err, fixed = TRUE), g1$err %||% "멈추지 않았다")
+g2 <- run_cell(base_spec(weighting = c(WC, list(cdar_nu_rule = "bench"))))
+chk("G2 [처치 미전달] cdar_nu_rule = bench 도 같은 arm 에서 멈춘다", !is.null(g2$err) && grepl("처치 미전달", g2$err, fixed = TRUE), g2$err %||% "멈추지 않았다")
+mG <- mut_engine("        if (.nNuP > 0L && .nNuSame == .nNuP) stop(", "        if (FALSE) stop(")
+rg <- if (is.null(mG)) list(err = "치환 불성사") else run_cell(base_spec(weighting = c(WC, list(cdar_nu_rule = "ew"))), engine = mG)
+chk("G3 [돌연변이 red] 전달 가드 삭제 → G1 칸이 조용히 완주한다(치환 1곳 성사 · 가드가 유일한 방어선)", !is.null(mG) && is.null(rg$err), rg$err %||% "")
+
 cat(sprintf("\n%s\n", toJSON(list(test = "test_scn_rx_construct_link", pass = PASS, fail = FAIL, total = PASS + FAIL, skipped = SKIP), auto_unbox = TRUE)))
 quit(status = if (FAIL > 0L) 1L else 0L)

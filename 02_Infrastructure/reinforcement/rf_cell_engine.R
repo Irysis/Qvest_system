@@ -558,6 +558,9 @@ if (identical(.wt$kind, "ew")) {
         stop("[rf_cell_engine] weighting.sigma_provider 어휘 밖: ", .SP, " (sample | factor:ts:base | factor:ts:downside | factor:ts:dd_state)")
       if (!(.LND %in% c("native", "cell"))) stop("[rf_cell_engine] weighting.lean_n_days 어휘 밖: ", .LND, " (native | cell)")
       .FCV <- NULL; .nSig <- 0L; .nFB <- 0L; .nProbe <- 0L; .nSame <- 0L; .nCash <- 0L
+      .nVFB <- 0L; .nUnt <- 0L; .nNuP <- 0L; .nNuSame <- 0L   # (11-10 G8) 변형 base 폴백 · 미처치 합(pca ∪ 변형 폴백) · ν 규칙 전달 탐침
+      ## (11-10 G8) ν 규칙 전달 탐침 — 규칙을 읽는 arm 은 ①규칙을 빼면 ②어휘 밖 값을 주면(정본 어댑터는 rcd_nu_rule 이 거부 → 래퍼 EW) 비중이 달라진다. 둘 다 같으면 그 arm 은 규칙을 안 읽는다(처치 미전달). 탐침 출력은 삼킨다(래퍼의 EW 폴백 줄이 칸 로그를 어지럽히지 않게).
+      .rf_nu_ignored <- function(afn, ctx, w) { .same <- function(v) !is.null(v) && length(v) == length(w) && all(is.finite(v)) && sum(v) > 0 && isTRUE(all.equal(v / sum(v), w / sum(w), tolerance = 1e-10)); .run <- function(cx) { v <- NULL; invisible(utils::capture.output(v <- tryCatch(as.numeric(afn(cx)), error = function(e) NULL))); v }; cx0 <- ctx[setdiff(names(ctx), c("cdar_nu_rule", "bench_ret", "R_dates"))]; cxz <- ctx; cxz$cdar_nu_rule <- "__nu_rule_probe__"; .same(.run(cx0)) && .same(.run(cxz)) }
       if (!identical(.SP, "sample")) {
         .fe <- new.env(parent = globalenv())
         invisible(utils::capture.output(suppressMessages(sys.source(file.path(.RF_ROOT, "02_Infrastructure/reinforcement/rf_factor_cov.R"), envir = .fe, keep.source = FALSE))))
@@ -592,6 +595,7 @@ if (identical(.wt$kind, "ew")) {
                                            factor_returns = function() .FCV$FR[Date < d]), .FCV$cfg, .FCV$variant)
           .Sg <- .so$Sigma[keep, keep, drop = FALSE]; .nSig <<- .nSig + 1L
           if (!identical(.so$model, "ts")) .nFB <<- .nFB + 1L
+          .vu <- .so$variant_used %||% NA_character_; if (!identical(.vu, .FCV$variant)) .nVFB <<- .nVFB + 1L; if (!identical(.so$model, "ts") || !identical(.vu, .FCV$variant)) .nUnt <<- .nUnt + 1L   # (11-10 G8) 변형이 표본 부족으로 base 로 떨어진 신호일도 미처치로 센다
         }
         ctx <- list(assets = keep, R = R, mu = stats::setNames(as.numeric(mu), keep),
                     Sigma = .Sg, ub = 1, lookback_days = nrow(R),
@@ -606,6 +610,7 @@ if (identical(.wt$kind, "ew")) {
           .nProbe <<- .nProbe + 1L
           if (!is.null(.ws) && length(.ws) == length(w) && isTRUE(all.equal(.ws / sum(.ws), w / sum(w), tolerance = 1e-10))) .nSame <<- .nSame + 1L
         }
+        if (!is.null(.NUR) && .nNuP < 3L) { .nNuP <<- .nNuP + 1L; if (.rf_nu_ignored(.afn, ctx, w)) .nNuSame <<- .nNuSame + 1L }   # (11-10 G8) ν 규칙 전달 확인(sigma 탐침과 같은 수 · 선택 시만)
         w <- .rf_wt_finalize(w, .CASH)
         if (.CASH && sum(w) < 1 - 1e-6) .nCash <<- .nCash + 1L
         if (stats::sd(w) < 1e-10) .nEW <<- .nEW + 1L else .nOK <<- .nOK + 1L
@@ -615,8 +620,13 @@ if (identical(.wt$kind, "ew")) {
       ## P-1 · P-2 처치 전달 가드(선택한 칸만 · 기존 EW 폴백 가드와 같은 규율 — 미전달은 '효과 없음'이 아니라 '미측정')
       if (!is.null(.FCV)) {
         if (.nFB * 2L > .nSig) stop(sprintf("[rf_cell_engine] sigma_provider %s — 관측 요인 모형이 아니라 pca 로 내려간 신호일 %d / %d(과반) · 측정 무효", .SP, .nFB, .nSig))
+        if (.nUnt * 2L > .nSig) stop(sprintf("[rf_cell_engine] sigma_provider %s — 요청 변형(%s)으로 측정되지 않은 신호일 %d / %d(과반 · pca 폴백 %d · 변형 표본 부족 base 폴백 %d) · 처치 미전달 · 측정 무효", .SP, .FCV$variant, .nUnt, .nSig, .nFB, .nVFB))
         if (.nProbe > 0L && .nSame == .nProbe) stop(sprintf("[rf_cell_engine] sigma_provider %s — arm %s 비중이 표본 Σ 판과 같다(탐침 %d/%d · Σ 를 안 쓰는 arm · 처치 미전달)", .SP, .cid, .nSame, .nProbe))
-        cat(sprintf("[rf_cell_engine] sigma_provider %s | 요인 Σ 신호일 %d · pca 폴백 %d · 탐침 동일 %d/%d\n", .SP, .nSig, .nFB, .nSame, .nProbe))
+        cat(sprintf("[rf_cell_engine] sigma_provider %s | 요인 Σ 신호일 %d · pca 폴백 %d · 변형 폴백 %d · 탐침 동일 %d/%d\n", .SP, .nSig, .nFB, .nVFB, .nSame, .nProbe))
+      }
+      if (!is.null(.NUR)) {                       # (11-10 G8) ν 규칙 전달 가드 — 규칙을 안 읽는 arm 에 실린 칸은 '벤치 낙폭 예산' 칸이 아니다
+        if (.nNuP > 0L && .nNuSame == .nNuP) stop(sprintf("[rf_cell_engine] cdar_nu_rule %s — arm %s 비중이 규칙 없음 · 어휘 밖 탐침과 같다(탐침 %d/%d · 규칙을 안 읽는 arm · 처치 미전달)", .NUR, .cid, .nNuSame, .nNuP))
+        cat(sprintf("[rf_cell_engine] cdar_nu_rule %s | 탐침 동일 %d/%d\n", .NUR, .nNuSame, .nNuP))
       }
       if (.CASH) {
         if (.nCash == 0L) stop(sprintf("[rf_cell_engine] allow_cash — arm %s 가 현금(Σw < 1)을 만든 신호일 0(판 표식 budget = le 없는 arm 은 정규형 Σw = 1 · 표식 arm 이면 예산이 묶이지 않음 · 처치 미전달)", .cid))
