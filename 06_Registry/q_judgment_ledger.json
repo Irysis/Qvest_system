@@ -1,6 +1,6 @@
 {
  "schema": "q_judgment_ledger_v1",
- "updated_at": "2026-11-06T12:31:49+0900",
+ "updated_at": "2026-11-10T13:27:04+0900",
  "judgments": [
   {
    "id": "J-20261016-001",
@@ -866,6 +866,372 @@
    "status": "open",
    "reviews": [],
    "supersedes": "J-20261106-003",
+   "superseded_by": "J-20261106-005"
+  },
+  {
+   "id": "J-20261106-005",
+   "at": "2026-11-06T12:47:32+0900",
+   "op": "OP-20261018-P2DT",
+   "kind": "priority",
+   "summary": "GPU 순서 = P2R05 먼저(원 세션 11-06 답 · 도훈 최신 J-20261018-008) — 임대로 GPU 슬롯만 보류 · 레인 켬 · 워밍은 데이터 준비 표식(복구 · 재발행 끝) 뒤 첫 갱신 완료(정오 전) · 그때 THGNN 이 돌면 일시정지(검증기만 재개)",
+   "rationale": "원 세션이 'THGNN 먼저'를 대체된 J-007 근거 오류로 정정하고 P2R05 먼저를 지시(조건: 리프레시 끝 뒤 · 국면 재발행 의존 시 그 뒤). 정찰: DT 엔진이 .cache/consensus(특성 13~18 · 7일 캐리) · fundamental_merged 를 읽고 fingerprint.sh 가 consensus · factor_db 월 파일을 해시 → 원 세션의 10-20~11-05 데이터 복구(오늘 오후) 전에는 워밍해도 측정 전 판본이 바뀌어 거부된다. 워밍 ≈8h + 측정이 다음 00:03 갱신을 넘지 않게 정오 전 시작만 허용 → 실질 시작 = 오늘 밤 정기 갱신 완료 뒤. THGNN(12:31 시작 · ≈8~10h)은 그 전에 끝날 공산이 커 지금 멈추면 GPU 만 비어 있게 된다 → 시작 시점에 아직 돌면 그때 일시정지. 임대 12h 상한은 남은 1시간 미만에서 놓고 다시 잡아 잇는다(원 세션 지시 '측정 끝까지 보류')",
+   "framework_refs": [
+    "원 세션 cross-session 11-06 12:3x · 도훈 J-20261018-008 · 판단 Superfan T3 C-20261106-001"
+   ],
+   "evidence": [
+    "gpu_chain.sh v4(2eb1d703b) 12:47 기동 · 레인 enabled=True · 임대 P2R05_gpu_chain"
+   ],
+   "alternatives": [
+    "지금 THGNN 을 멈추고 즉시 워밍(데이터 복구 전 · 판본 거부 위험 · 00:03 갱신 넘김) · 레인 전체 보류 유지(CPU 슬롯 하루 쉼)"
+   ],
+   "expectation": "THGNN 오늘 밤 종료 · 데이터 준비 표식(오늘 오후) → 11-07 새벽 갱신 완료 뒤 워밍 → 11-07 오후 평가",
+   "confidence": 0.7,
+   "status": "open",
+   "reviews": [],
+   "supersedes": "J-20261106-004",
+   "superseded_by": null
+  },
+  {
+   "id": "J-20261110-001",
+   "at": "2026-11-10T13:26:35+0900",
+   "op": "OP-20261110-V102-LADDER",
+   "kind": "harness_change",
+   "summary": "[소급 11-10 10:13] Qvest v10.2 사다리 루프 채택 — 기준점부터 · 새 계보 · 시행은 예산 · 상설 판 · 막지 않는다 · 닫으면 남긴다(결과 원장) · 루프가 고치는 것은 생성기뿐",
+   "rationale": "전수점검: A 부재 원인 = 한 계보에 갇힌 생성 · 시행 소진 · 기준점 부재 · 정지(23일 0라운드) — 검증을 더하지 않고 순서를 바꾼다(도훈 '한계없이 고민하고 결론')",
+   "framework_refs": [
+    "§2 선택 순서",
+    "§6 하네스 변경"
+   ],
+   "evidence": [
+    "04_Research/01_reports/qvest_v10_2_audit_redesign_20261110/README.md",
+    "98ddbcbf1"
+   ],
+   "alternatives": [
+    "v10.01 루프 유지 + 검증 보강"
+   ],
+   "expectation": "4주 안 닫힌 라운드 · 사슬이 결과 원장에 쌓인다(정지 재발 없음)",
+   "confidence": 0.6,
+   "status": "open",
+   "reviews": [],
+   "supersedes": null,
+   "superseded_by": null
+  },
+  {
+   "id": "J-20261110-002",
+   "at": "2026-11-10T13:26:36+0900",
+   "op": "OP-20261110-V102-LADDER",
+   "kind": "priority",
+   "summary": "[소급 11-10 10:13] P2R05 를 등록본 보존 채 뒤로 미룸(측정 시작 때 재핀) — 코어 v1 출시 · P1 상설 자격을 먼저 연다",
+   "rationale": "등록만 된 P2R05 가 코어 출시 · P1 상설 자격 · P4 판단을 '종료 뒤'로 묶었다(설계 README §1 · 원칙 '막지 않는다') — 결정이 아니라 Q 진행",
+   "framework_refs": [
+    "§2-2 막힌 선행 조건",
+    "§6"
+   ],
+   "evidence": [
+    "04_Research/01_reports/qvest_v10_2_audit_redesign_20261110/README.md#6"
+   ],
+   "alternatives": [
+    "P2R05 종료까지 대기",
+    "P2R05 철회"
+   ],
+   "expectation": "P1S01 등록 · 측정이 P2R05 종료 전에 시작된다 · P2R05 재개 때 재핀만으로 측정 가능",
+   "confidence": 0.7,
+   "status": "open",
+   "reviews": [],
+   "supersedes": null,
+   "superseded_by": null
+  },
+  {
+   "id": "J-20261110-003",
+   "at": "2026-11-10T13:26:39+0900",
+   "op": "",
+   "kind": "escalation",
+   "summary": "[소급 11-10 10:11] DSR 관문 형태 상신 — (가) 유지 (나) 진단으로 내리고 재표집 검정 (다) 논문 정의로 교정 · Q 권고 (나) · 앞으로만 적용 → 도훈 (나)",
+   "rationale": "현행 DSR 이 계보 누적 칸 수를 독립 시행으로 세고 분산을 가정값으로 두어 관문이 부적합 · 등급 관문 변경 = 도훈 권한",
+   "framework_refs": [
+    "§5 목표 · 고정 축"
+   ],
+   "evidence": [
+    "06_Registry/decision_register.json#DSR-GATE-FORM-20261110",
+    "04_Research/01_reports/qvest_v10_2_audit_redesign_20261110/README.md#8"
+   ],
+   "alternatives": [
+    "(가)",
+    "(다)"
+   ],
+   "expectation": "소급 승격 0 · 앞으로 등록되는 계보부터 선택 현실 점검 적용",
+   "confidence": 0.7,
+   "status": "open",
+   "reviews": [],
+   "supersedes": null,
+   "superseded_by": null
+  },
+  {
+   "id": "J-20261110-004",
+   "at": "2026-11-10T13:26:41+0900",
+   "op": "",
+   "kind": "escalation",
+   "summary": "[소급 11-10 10:11] 등급 v3.3 — 요인 구성의 시점 준수 여부 · 규칙 변경 때 수혜 기록을 미리 보지 않는 절차를 상신 · 결정 전 기본값 = 현 축 A 3기록 인용 보류 → 도훈 '재검 + 절차 명문화'",
+   "rationale": "전수점검 PIT 레인: 요인 구성 미래참조 의심 · 11-09 OOS 관문 결정 근거란에 수혜 기록 이름이 있었다 — 등급 규칙 · PIT 판단은 도훈 권한",
+   "framework_refs": [
+    "§5"
+   ],
+   "evidence": [
+    "06_Registry/decision_register.json#GRADE-V33-NOTCH-ASOF-AND-RULE-CHANGE-PROCEDURE-20261110"
+   ],
+   "alternatives": [
+    "노치 즉시 비활성"
+   ],
+   "expectation": "요인 재검 결과와 변경 절차 명문화가 결정된다 · 그 전 A 3기록 인용 0",
+   "confidence": 0.7,
+   "status": "open",
+   "reviews": [],
+   "supersedes": null,
+   "superseded_by": null
+  },
+  {
+   "id": "J-20261110-005",
+   "at": "2026-11-10T13:26:44+0900",
+   "op": "",
+   "kind": "other",
+   "summary": "[소급 11-10 11:00] 기준 사다리(BOOK_0001 조리법을 현 축 부품으로 재측정) 상정 철회 — 도훈 요구의 오독 정정: 요구 = 레인이 찾은 알파 기저에서 강화 프로세스가 스스로 BOOK_0001급을 찾게",
+   "rationale": "도훈 11-10 정정 발언 · 첫 판 설계 §3 은 11-06 'BOOK_0001 재측정은 하지마'와도 가까웠다 · 교훈: 'X급'은 그 전략의 재현이 아니라 성과 수준 목표다",
+   "framework_refs": [
+    "§1 판단의 원천(도훈 지시)"
+   ],
+   "evidence": [
+    "06_Registry/decision_register.json#LADDER-REFERENCE-ASSEMBLY-20261110"
+   ],
+   "alternatives": [
+    "기준 사다리 유지 + 사슬 병행"
+   ],
+   "expectation": "설계 §3 이 '레인 기저 → 강화 사슬'로 바뀌고 기준 사다리 측정 0",
+   "confidence": 0.85,
+   "status": "open",
+   "reviews": [],
+   "supersedes": null,
+   "superseded_by": null
+  },
+  {
+   "id": "J-20261110-006",
+   "at": "2026-11-10T13:26:47+0900",
+   "op": "",
+   "kind": "harness_change",
+   "summary": "[소급 11-10 11:36] 등급 v3.4 구현 — 스윕형 선정의 A 관문 = 선택 현실 점검(실제 시행 집합 재표집 다중 검정 · 통계량 = PORT_t) · 미제출 스윕 = 종전 DSR(경과) · DSR · PBO 진단 · 채점식 v3.3 그대로 [등급 규칙 변경 — 소급 T4 대상]",
+   "rationale": "DSR-GATE-FORM (나) 집행 · 수치는 grade_v3.json::selection_bias(근거 *_source) · 결정 근거 = 문헌 · 합성 자료 대조(개별 기록 미열람)",
+   "framework_refs": [
+    "§6 결정 집행"
+   ],
+   "evidence": [
+    "5b42d80f4",
+    "02_Infrastructure/contracts/selection_reality_check.R",
+    "02_Infrastructure/programs/selection_regrade.R"
+   ],
+   "alternatives": [
+    "DSR 식만 교정"
+   ],
+   "expectation": "소급 승격 0 · 재채점은 수혜 기록 표식과 함께",
+   "confidence": 0.65,
+   "status": "open",
+   "reviews": [],
+   "supersedes": null,
+   "superseded_by": null
+  },
+  {
+   "id": "J-20261110-007",
+   "at": "2026-11-10T13:26:49+0900",
+   "op": "",
+   "kind": "harness_change",
+   "summary": "[소급 11-10 11:51] 팩터 DB 판 표식 — 수리 원장 06_Registry/factor_db_vintage.json + 계약 factor_db_vintage.R · A 자격 상시 보류 factor_db_stale · 기저 풀 제외 · 상설 입구 표식",
+   "rationale": "수리 전 측정이 표식 없이 소비되는 경로 차단 · 원장은 추가 전용",
+   "framework_refs": [
+    "§2-1"
+   ],
+   "evidence": [
+    "e96f334ba",
+    "02_Infrastructure/contracts/factor_db_vintage.R"
+   ],
+   "alternatives": [
+    "수리마다 영향 칸 수동 목록"
+   ],
+   "expectation": "수리 뒤 원장 한 줄 누락은 구성요소 감시 factor_db_vintage 가 잡는다",
+   "confidence": 0.75,
+   "status": "open",
+   "reviews": [],
+   "supersedes": null,
+   "superseded_by": null
+  },
+  {
+   "id": "J-20261110-008",
+   "at": "2026-11-10T13:26:51+0900",
+   "op": "",
+   "kind": "design",
+   "summary": "[소급 11-10 12:10] P4 조립 골격 = 엔진 우선 — 레인 엔진 풀의 기저 위에 강화 사슬(p4_chain)이 한 걸음씩 얹는다(가설 하나 · 칸 하나 · 블록 하나) · 생성기 판 관리",
+   "rationale": "10-15 골격의 근거가 바뀜 · 도훈 결정 · 스윕을 사슬이라 부르지 않도록 걸음 단위 원장과 닫기 재채점을 붙였다",
+   "framework_refs": [
+    "§2-3",
+    "§3"
+   ],
+   "evidence": [
+    "06_Registry/decision_register.json#P4-SKELETON-REVIEW-20261018",
+    "838f7147a",
+    "04_Research/programs/_lib/round_core/README.md"
+   ],
+   "alternatives": [
+    "E2 DNN × C4 저변동 골격 유지"
+   ],
+   "expectation": "기저 풀 자격 엔진 ≥ 1 이 생기면 사슬 1호 등록",
+   "confidence": 0.65,
+   "status": "open",
+   "reviews": [],
+   "supersedes": null,
+   "superseded_by": null
+  },
+  {
+   "id": "J-20261110-009",
+   "at": "2026-11-10T13:26:53+0900",
+   "op": "",
+   "kind": "escalation",
+   "summary": "[소급 11-10 11:35~12:21] 선택 현실 점검 보정값 상신 — PBO 역할 · 유의수준 · Q 가 근거를 붙여 기본값을 넣고 확정은 도훈에게 → PBO = 진단 유지 · alpha = 0.05",
+   "rationale": "등급 문턱 재보정 = 도훈 권한 · 0.5 는 닮은 변형 집합에서 관문이 서지 않음(합성 대조)",
+   "framework_refs": [
+    "§5"
+   ],
+   "evidence": [
+    "06_Registry/decision_register.json#SELECTION-RC-CALIBRATION-20261110",
+    "06_Registry/decision_register.json#SELECTION-RC-ALPHA-20261110"
+   ],
+   "alternatives": [
+    "alpha 0.5(종전 DSR 수준)",
+    "PBO 관문화"
+   ],
+   "expectation": "grade_v3.json::selection_bias 값 불변",
+   "confidence": 0.8,
+   "status": "open",
+   "reviews": [],
+   "supersedes": null,
+   "superseded_by": null
+  },
+  {
+   "id": "J-20261110-010",
+   "at": "2026-11-10T13:26:55+0900",
+   "op": "",
+   "kind": "escalation",
+   "summary": "[소급 11-10 11:00] 비밀 값 교체 시점 상신 → 추후 교체 · 교체 전 그 값을 출력 · 커밋 · 전송에 싣지 않음",
+   "rationale": "외부 서비스 자격 = 비용 · 정책(도훈 권한)",
+   "framework_refs": [
+    "§5 비용 · 정책"
+   ],
+   "evidence": [
+    "06_Registry/decision_register.json#SECRETS-ROTATION-DEFER-20261110"
+   ],
+   "alternatives": [
+    "즉시 교체"
+   ],
+   "expectation": "교체 결정 전 새 노출 0",
+   "confidence": 0.8,
+   "status": "open",
+   "reviews": [],
+   "supersedes": null,
+   "superseded_by": null
+  },
+  {
+   "id": "J-20261110-011",
+   "at": "2026-11-10T13:26:56+0900",
+   "op": "",
+   "kind": "escalation",
+   "summary": "[11-10 오후] 결정 카드 4건을 한꺼번에 상신 — 헌장 빈칸 4건(12항목) · 알파 노치 재검/절차 · Axiom 처분 · 차단 훅 PowerShell 적용 → 도훈 전부 권고안",
+   "rationale": "헌장 · 등급 규칙 절차 · 엔진 처분 · 훅 등록은 도훈 권한 — 도훈 지시 '결정할 것은 한꺼번에 카드로'",
+   "framework_refs": [
+    "§5"
+   ],
+   "evidence": [
+    "06_Registry/decision_register.json#CHARTER-GAPS-4-20261018",
+    "06_Registry/decision_register.json#AXIOM-ENGINE-DISPOSITION-20261110",
+    "06_Registry/decision_register.json#HOOK-POWERSHELL-COVERAGE-20261110",
+    "1b964cc67"
+   ],
+   "alternatives": [
+    "항목별 개별 상신"
+   ],
+   "expectation": "열린 결정 0 · 헌장 §5 에 빈칸 14~24 반영",
+   "confidence": 0.8,
+   "status": "open",
+   "reviews": [],
+   "supersedes": null,
+   "superseded_by": null
+  },
+  {
+   "id": "J-20261110-012",
+   "at": "2026-11-10T13:26:59+0900",
+   "op": "",
+   "kind": "harness_change",
+   "summary": "[11-10 오후] 등급 규칙 변경 절차 집행 — measurement-graduation §3b(익명 집계로 결정 · 수혜 기록 표식 · 발효 뒤 등록분부터) + A 자격 상시 보류 rule_change_beneficiary + 일괄 재채점의 수혜 표식(끈질긴 표식) [등급 규칙 주변 변경 — T4 대상]",
+   "rationale": "도훈 카드 '재검 + 절차 명문화' 집행 — 절차를 문서에만 두면 방어선이 아니므로 관문 보류와 표식 함수로 기계화(양성 대조 · 돌연변이 시험). 문턱 · 채점식은 불변",
+   "framework_refs": [
+    "§6 결정 집행"
+   ],
+   "evidence": [
+    ".claude/rules/measurement-graduation.md",
+    "02_Infrastructure/reinforcement/rf_runner_gates.R",
+    "02_Infrastructure/programs/grade_v3_backfill.R",
+    "08_Tests/reinforcement/test_rf_a_eligibility.R",
+    "08_Tests/programs/test_grade_v3_backfill_mark.R"
+   ],
+   "alternatives": [
+    "문서 절차만(기계 보류 없음)"
+   ],
+   "expectation": "규칙 변경으로 오른 발효 전 기록은 재측정 전 Judge 요청이 나가지 않는다",
+   "confidence": 0.7,
+   "status": "open",
+   "reviews": [],
+   "supersedes": null,
+   "superseded_by": null
+  },
+  {
+   "id": "J-20261110-013",
+   "at": "2026-11-10T13:27:01+0900",
+   "op": "",
+   "kind": "design",
+   "summary": "[11-10 오후] 강화 사슬 보강 — 기준 칸을 사슬이 직접 잰다(k = 0 · 풀 산출 지표는 참고만) · 걸음 칸은 2계층 모듈 풀 미등재(최종 후보만 재채점 뒤 B 이상) · 사슬 안 측정은 같은 팩터 DB 판",
+   "rationale": "첫 걸음 비교에 구성 차이(논문 구성 대 표준 구성)와 데이터 판 차이가 섞이고, 선택 현실 점검의 시행 집합이 같은 축의 일별 수익을 요구한다 — 측정 타당성 결함",
+   "framework_refs": [
+    "§2-1 측정 신뢰"
+   ],
+   "evidence": [
+    "04_Research/programs/_lib/round_core/v1/p4.R"
+   ],
+   "alternatives": [
+    "표준 구성 기저만 사슬 허용(기준 칸 측정 생략)"
+   ],
+   "expectation": "사슬 첫 걸음의 dS_vis 가 같은 구성 · 같은 판의 기준 칸 대비로 계산된다",
+   "confidence": 0.7,
+   "status": "open",
+   "reviews": [],
+   "supersedes": null,
+   "superseded_by": null
+  },
+  {
+   "id": "J-20261110-014",
+   "at": "2026-11-10T13:27:04+0900",
+   "op": "",
+   "kind": "priority",
+   "summary": "[11-10 오후] 도훈 지시 '전체 아키텍처 감사 · 시나리오 테스트 · 안 쓰는 배선/테스트 삭제 · 속도 최적화' — 영역별 감사 레인 병렬 착수 · 코어 v1 출시와 P1 상설 자격 등록은 감사 수리 뒤로",
+   "rationale": "감사가 라운드 코어 · 레인 · 시험 목록을 고칠 수 있어, 출시 핀을 먼저 걸면 다시 풀어야 한다. 감사 결함 중 측정 신뢰 · 침묵 실패를 먼저 닫는다",
+   "framework_refs": [
+    "§2 선택 순서"
+   ],
+   "evidence": [
+    "04_Research/01_reports/qvest_v10_2_audit_redesign_20261110/README.md"
+   ],
+   "alternatives": [
+    "코어 출시 · 상설 등록 먼저, 감사는 병행"
+   ],
+   "expectation": "감사 수리 커밋 뒤 코어 v1 출시 → P1S01 등록 순서로 진행",
+   "confidence": 0.7,
+   "status": "open",
+   "reviews": [],
+   "supersedes": null,
    "superseded_by": null
   }
  ],
@@ -1279,6 +1645,29 @@
     "C-20261106-005",
     "C-20261106-006",
     "C-20261106-007"
+   ]
+  },
+  {
+   "id": "R-20261106-002",
+   "at": "2026-11-06T14:53:49+0900",
+   "role": "philosophy",
+   "trigger": "P1",
+   "scope": [],
+   "file": "04_Research/programs/_supervision/superfan/philosophy/20261106_1450_P1_P2T0.md",
+   "round": "P2T0_rl_probe",
+   "direction": null,
+   "challenges": [
+    "C-20261106-008",
+    "C-20261106-009",
+    "C-20261106-010",
+    "C-20261106-011",
+    "C-20261106-012",
+    "C-20261106-013",
+    "C-20261106-014",
+    "C-20261106-015",
+    "C-20261106-016",
+    "C-20261106-017",
+    "C-20261106-018"
    ]
   }
  ],
@@ -5006,6 +5395,226 @@
    "falsifier": "",
    "status": "closed_note",
    "role": "judgment",
+   "hold_request": false,
+   "responses": [],
+   "outcome": null,
+   "outcome_note": null
+  },
+  {
+   "id": "C-20261106-008",
+   "at": "2026-11-06T14:55:30+0900",
+   "review": "R-20261106-002",
+   "target": "SYSTEM",
+   "grade": "challenge",
+   "rule": null,
+   "claim": "후행 상태 — RL 라운드 '언제' 지렛대(s2 60일 변동성 백분위 · s4 자기 낙폭 백분위)의 상태 의존 몫이 깊은 위기가 아니라 저점 뒤 반등기에 몰리고, T0b-s2 도 반등 달이 식별한다. 벤치만 · 수익 없는 타이밍 지도(DNN · g=½·s2 · ḡ 0.125): g−ḡ = 저점 뒤 1~6개월 +0.265(17달) · 깊은 창 스트레스 +0.063(9) · 확인 스트레스 +0.011(11 · 2018-10 −12.2% 는 g=0). DNN 확인 달 s2 상위 1/4 24달 중 17달이 저점 뒤 1~6개월 · 스트레스 2달. 시장 모형 초과수익(β-조정)은 반등기 원시 참여 비용(β 축소 자체)을 못 본다 — P2R03 '현금이 위기 뒤에 들어갔다'의 보유 층 재현 위험(원칙 1 · 5 · 빈칸 4 · 7 · 12).",
+   "evidence": [
+    "04_Research/programs/_supervision/superfan/philosophy/20261106_1450_P1_P2T0.md C-① · C:/Users/99922/AppData/Local/Temp/claude/9690c5033ea8579c/f9656758-3276-4837-b867-6b6a5febe96d/scratchpad/p2t0_review/bench_stress_calendar.R(벤치 ≤ 2022-12-29 · 탐침 상태 함수 그대로) · README §2.3 · §2.12 · _design_notes/onset_state_classify.md(꼭대기 시작 6/7) · Daniel & Moskowitz 2016 JFE 공황 상태 · 기준: 헌장 원칙 1 · 5 · 빈칸 4 · 7 · 12 · lean-loop 철학 줄(비대칭 필요조건)"
+   ],
+   "alternative": "등록 전 고정 · 수익 없음 · 판정식 불변: (1) 타이밍 지도 기록을 G2 와 별개로 늘 계산 — 달 분류(깊은 창 안 스트레스 · 확인 스트레스 · 저점 뒤 1~6개월 · 붐 · 그 밖)별 s_k · g_m−ḡ · 사전 β 비 k̂_m(g_m)=β̂(H(g_m))/β̂(H(0))(README §2.6 · 수익 없음) · 보유 겹침 (2) T0b b_m 달 분류별 평균 + 저점 뒤 1~6개월 뺀 γ 기록 판 (3) 판독 고정: 통과 축 (g_m−ḡ) 평균이 저점 뒤 > 확인 스트레스면 '후행 상태 — 반등기 방어 켜짐' 꼬리표 · 처분 상한 CONDITIONAL_LAUNCH · 라운드 conclusion_scope · 반증표에 '⑥ 구간별 · ⑨ 미달'을 예상 실패 형태로 (4) 후행성이 덜한 상태는 문헌 근거가 있을 때 라운드 설계에서(처방 아님).",
+   "falsifier": "(i) 수익 없는 타이밍 지도에서 통과 축(s4 단독 · 두 축 평균)의 (g_m−ḡ)가 저점 뒤 1~6개월 ≤ 확인 스트레스 달이면 틀렸다(s2 단독은 벤치 계산으로 이미 아님) (ii) 라운드가 열린 뒤 ⑥ 구간별(2009-03~ · 2020-04~ 강세 구간)이 두 구성 모두 같은 엔진 기준 80% 이상이면 '후행 상태 → 반등 참여 손실' 주장은 틀렸다.",
+   "status": "open",
+   "role": "philosophy",
+   "hold_request": false,
+   "responses": [],
+   "outcome": null,
+   "outcome_note": null
+  },
+  {
+   "id": "C-20261106-009",
+   "at": "2026-11-06T14:55:31+0900",
+   "review": "R-20261106-002",
+   "target": "SYSTEM",
+   "grade": "challenge",
+   "rule": null,
+   "claim": "확인 표본 구성 — T0a 판정은 사실상 'DNN 후보 × 온건 스트레스 ≤ 12달'이라 철학 표적('남들 다 깨질 때 · 이 엔진')을 재지 못하고 미시험 바닥(< 12)에 붙는다. 벤치 달력(탐침 규칙 · ≤ 2022): 스트레스 31 = 깊은 창 9 + 확인 22(E0 11 · DNN 11 · 초안 추측 35~45) · 확인 22 중앙 −9.5% 아래 11 = E0 9 · DNN 2. D03 적재 경로(P2R04 E2_H2 로그 align 줄): 신호일 2000-01~04 팩터 0 · 2000-05~2003-04 레지스트리 대체(defense_direction_agreement.md '공격 쪽으로 뒤집는다 — 별도 수리' · 커넥터 md5 96058305 미수리) → E0 확인 스트레스 11 중 10 이 빠지고 2003-09 만 남음 → 판정 ≤ 12 · −9.5% 이하 2(2008-01 · 2018-10 — 느린 약세 LT 안). T0a 통과 = P2R04 '분산 위기에선 저변동이 이김'의 같은 쪽 재확인(S0 · 빈칸 2 · 6). 합성: 평균 0 · 음의 왜도 귀무에서 현행 판정식 거짓 통과 T12 15.2% · T22 12.2%(명목 5%) · 검정력 80% 효과 = sd(b_m)의 약 0.8배(T12).",
+   "evidence": [
+    "04_Research/programs/_supervision/superfan/philosophy/20261106_1450_P1_P2T0.md C-② · 04_Research/programs/P2_DEFENSE/P2R04_defensive_holdings/results/P2R04_E2_H2.log(align_factor_direction 줄만) · 04_Research/programs/P2_DEFENSE/_design_notes/defense_direction_agreement.md · C:/Users/99922/AppData/Local/Temp/claude/9690c5033ea8579c/f9656758-3276-4837-b867-6b6a5febe96d/scratchpad/p2t0_review/bench_stress_calendar.R · C:/Users/99922/AppData/Local/Temp/claude/9690c5033ea8579c/f9656758-3276-4837-b867-6b6a5febe96d/scratchpad/p2t0_review/sim_t0a_size_power_T22.R · 기준: 헌장 §5 S0 · 빈칸 2 · 6 · 원칙 2 · 7"
+   ],
+   "alternative": "등록 전 · 결과 무관: (1) samples.expected_count 를 계산값으로(벤치 22 · D03 경로 → 판정 ≤ 12 · 심한 달 2) (2) 택일 — (a) 주 D = 탐침 자체 −252일 변동성 rank-Z(volz · 방향 고정 · C13 무관) · D03 정렬값은 기록 → E0 심한 달 9 회복(판정 22 · 깊은 절반 11) · DNN 라운드 착수는 합본 통과 ∧ DNN 확인 달 b̄ > 0(기저 일치) · E0 만의 통과는 결정 ② A 근거 · 달 재표집 부트스트랩-t 등 왜도 강건 귀무를 FL 과 함께(교차 점검 몫) 또는 (b) D03 유지 → purpose · 결론 범위를 'DNN · 온건 스트레스(≤ 12달) — 남들 다 깨질 때는 재지 않음'으로 · 처분 표에 '통과여도 라운드 ③ · ④ 증거는 탐색 등급(README §1.5)' (3) 어느 쪽이든 판정 달별 벤치 · 기저 · other_lt 표 + 깊은 절반 b̄ + 한 달 · 에피소드 빼기 b̄ 기록(판정 아님).",
+   "falsifier": "real 실행에서 T0a 판정 달 ≥ 20 이고 그중 벤치 수익 ≤ −9.5% 달이 ≥ 6 이면(대체 경로가 탐침 적재에서 D03 를 뒤집지 않아 E0 심한 달이 남음) 표본 구성 주장은 틀렸다.",
+   "status": "open",
+   "role": "philosophy",
+   "hold_request": false,
+   "responses": [],
+   "outcome": null,
+   "outcome_note": null
+  },
+  {
+   "id": "C-20261106-010",
+   "at": "2026-11-06T14:55:31+0900",
+   "review": "R-20261106-002",
+   "target": "SYSTEM",
+   "grade": "challenge",
+   "rule": null,
+   "claim": "비대칭이 없다 — T0a 는 하방(스트레스) 달만 본다. 시장 모형 고정 β̂ 아래 방어 특성 종목의 실효 β 가 하락 · 상승 양쪽에서 같은 만큼 낮으면(대칭 β 오추정 = 노출 축소) 스트레스 달 b > 0 · 붐 달 b < 0 이고 T0a 는 이를 'β 너머 선택 정보'로 통과시킨다. P2R04 저변동(같은 D03)의 실패 원인이 ⑤ 하락/상승 β 비 역행(C-047 · 1.26→1.33 · 0.98→1.17)이고 라운드는 ⑤ 를 통과 필수로 둔다(README §2.5 '분기 B 는 ⑤ 사전 확률 낮음') — 관문이 라운드의 가장 그럴듯한 실패를 못 본다(빈칸 3 · 8 · 원칙 5). 거울 표본은 있다: 붐 달(≥ 엄격히 앞선 확장창 80분위) 확인 기간 39 · 방향 점검 뒤 29(DNN 27). 근사상 T0b-s2 γ > 0 은 비대칭(δ_d > δ_u)을 일부 담지만 T0a 단독 · 부산물 판독 · s4 경로는 담지 않는다.",
+   "evidence": [
+    "04_Research/programs/_supervision/superfan/philosophy/20261106_1450_P1_P2T0.md C-③ · 원장 C-20261018-047 · README §2.5 · C:/Users/99922/AppData/Local/Temp/claude/9690c5033ea8579c/f9656758-3276-4837-b867-6b6a5febe96d/scratchpad/p2t0_review/bench_stress_calendar.R(붐 달력) · 기준: 헌장 빈칸 3 · 8 · 13 · 원칙 5"
+   ],
+   "alternative": "T0a 기록에 거울 판(같은 추정기 · 같은 표본 규칙의 붐 달 b_up + NW t) · 판독 고정: 함의 β 감소 δ = b̄/|R̄_m| 로 δ_down > δ_up(엄격 · 빈칸 13 의 Δ < 0 과 같은 규칙 · 새 문턱 없음)이 아니면 T0a 통과에 '대칭 β 오추정형 — ⑤ 미지원' 꼬리표 · 처분 상한 CONDITIONAL_LAUNCH — 또는 착수 조건에 넣음(교집합-합집합 검정이라 1종 오류 불변 · Berger 1982).",
+   "falsifier": "real 실행에서 b_up 가 0 근처(|t| < 1)이고 δ_down > 0 이면 거울은 T0a 와 같은 말(이 도전 moot) · 라운드에서 T0a 통과 ∧ δ_down ≤ δ_up 인데 ⑤ 가 두 구성 모두 통과하면 틀렸다.",
+   "status": "open",
+   "role": "philosophy",
+   "hold_request": false,
+   "responses": [],
+   "outcome": null,
+   "outcome_note": null
+  },
+  {
+   "id": "C-20261106-011",
+   "at": "2026-11-06T14:55:31+0900",
+   "review": "R-20261106-002",
+   "target": "SYSTEM",
+   "grade": "challenge",
+   "rule": null,
+   "claim": "결론 범위가 두 방향 모두 넘친다 — (i) T0a.purpose '깊은 위기 3/4 가 β 너머 선택 정보였는가를 선택 밖 표본으로 확인'은 불가하다(깊은 위기 창 = 판정 표본 밖 · C-② 로 판정 달 = 온건 스트레스) (ii) 미달 부산물 'W2 의 3/4 = β · 표본 행운'은 n≈12 에서 검정력 80% 효과가 sd(b_m)의 약 0.8배라 '검출 못 함'을 '행운의 증거'로 키운다 (iii) 통과 부산물 행이 없어 통과가 C-046(저변동 틸트 류 P4 · A 후보 전 도훈 확인) 해제 근거로 읽힐 수 있다 — C-046 해제 조건(Q 수용 10-18) = 새 사전등록 판정 통과 + 시험 창(P3) 위기 방어 재현 + 도훈 확인 · 보류 이유(⑤ 역행 · COVID 엔진보다 악화 · ⑬)는 T0a 가 재지 않는다.",
+   "evidence": [
+    "04_Research/programs/_supervision/superfan/philosophy/20261106_1450_P1_P2T0.md C-④ · 원장 C-20261018-046 응답(해제 조건) · prereg_draft.json T0a.purpose · disposition.table · 선례 C-20261017-027 · 기준: 헌장 원칙 7 · 빈칸 13 · 규약 §11(P1 결론 범위)"
+   ],
+   "alternative": "T0a.purpose = '확인 표본(C-② 선택에 따른 범위 명시)에서 D 의 β · 크기 · 유동성 너머 선택 정보가 있는가 — W2 깊은 위기 3/4 자체는 판정하지 않는다' · disposition 에 통과 부산물 '확인 표본 범위의 선택 정보 — C-046 해제 근거 아님(해제 조건 셋 그대로)' · 미달 부산물 '검출 못 함 — MDE80(required_effect · n = 판정 달 · t = 실현 문턱 · sd = sd(b_m)) 동반 · W2 판독은 MDE 가 W2 함의 효과보다 작을 때만' · 결과 보고 · L-code · hypothesis_index 문장에 같은 범위.",
+   "falsifier": "등록본 purpose · disposition · record_rules 가 이미 범위와 MDE 를 함께 적고 있으면 불필요했다 · 탐침 결과가 C-046 응답 · P4-SKELETON-REVIEW 에 끝내 인용되지 않으면 moot.",
+   "status": "open",
+   "role": "philosophy",
+   "hold_request": false,
+   "responses": [],
+   "outcome": null,
+   "outcome_note": null
+  },
+  {
+   "id": "C-20261106-012",
+   "at": "2026-11-06T14:55:31+0900",
+   "review": "R-20261106-002",
+   "target": "SYSTEM",
+   "grade": "endorse",
+   "rule": null,
+   "claim": "주 추정기 = 시장 모형 초과수익(열린 질문 1 — 철학 의견: 유지). 종목 수준 β 짝(β̂ × 시장 + 현금)을 이겨야 하는 척도라 빈칸 8(같은 β 현금 사본) · 라운드 ③ · ⑯(사전 β 경로 사본)과 같은 말을 하고, README 원식의 합성 귀무 거짓 통과 53.5%(z 26)는 '크기 · β 방어 착시'(§4)로 라운드를 여는 통로다 · 크기 · 유동성 동시 통제 = C-017 의 종목 수준판 · 위기 달 β 압축은 보수 쪽(통과는 그만큼 강하게 읽힘). 함께 유지: '착수 안 함 ≠ 미시험' · 현금 없는 행동(현금 기계 구조상 불가) · HR 우선 · F2~F6 이름 규칙 · β 경로 사본 · 절단 재현 감사 · 결정론.",
+   "evidence": [
+    "04_Research/programs/_supervision/superfan/philosophy/20261106_1450_P1_P2T0.md E-⑤ · test_probe_synthetic_result.json(MC1 · MC2 · N3) · DESIGN.md §4-1 · §8-3 · 기준: 헌장 빈칸 8 · §4 크기 방어 착시"
+   ],
+   "alternative": "",
+   "falsifier": "",
+   "status": "closed_note",
+   "role": "philosophy",
+   "hold_request": false,
+   "responses": [],
+   "outcome": null,
+   "outcome_note": null
+  },
+  {
+   "id": "C-20261106-013",
+   "at": "2026-11-06T14:55:31+0900",
+   "review": "R-20261106-002",
+   "target": "SYSTEM",
+   "grade": "note",
+   "rule": null,
+   "claim": "2008-11 은 스트레스 달이 아니다(보유월 벤치 −4.64% > 엄격히 앞선 확장창 20분위 −6.81%) — 열린 질문 6 은 T0a 에서 해당 없음. 다만 T0b 표본(전 달) · 저점 뒤 반등 달(s2 0.98)로 들어간다(C-① 판독 대상).",
+   "evidence": [
+    "C:/Users/99922/AppData/Local/Temp/claude/9690c5033ea8579c/f9656758-3276-4837-b867-6b6a5febe96d/scratchpad/p2t0_review/bench_stress_calendar.csv"
+   ],
+   "alternative": "",
+   "falsifier": "",
+   "status": "closed_note",
+   "role": "philosophy",
+   "hold_request": false,
+   "responses": [],
+   "outcome": null,
+   "outcome_note": null
+  },
+  {
+   "id": "C-20261106-014",
+   "at": "2026-11-06T14:55:31+0900",
+   "review": "R-20261106-002",
+   "target": "SYSTEM",
+   "grade": "note",
+   "rule": null,
+   "claim": "T0b 크기는 대체로 지켜진다 — 합성 5장면(실제 자료 0 · t0b_run 그대로 · 300회 · 귀무 999 · b_m 지속 성분 0~25% ρ 0.95 · 추세 · 장기기억 상태)에서 1종 오류 0.3~3.0%(명목 단측 1.25% · 이항 99% 상한 9/300 — 지속 10% 장면이 상한에 닿음) · 12개월 원형 블록 귀무가 지속성에 적응(문턱 중앙 2.37→2.82). 판정 변경 근거 아님 · 격리 교차 점검에 수치 전달. T0a 는 C-② 의 음의 왜도 크기 부풀림이 남는다.",
+   "evidence": [
+    "C:/Users/99922/AppData/Local/Temp/claude/9690c5033ea8579c/f9656758-3276-4837-b867-6b6a5febe96d/scratchpad/p2t0_review/sim_t0b_persistence.R · C:/Users/99922/AppData/Local/Temp/claude/9690c5033ea8579c/f9656758-3276-4837-b867-6b6a5febe96d/scratchpad/p2t0_review/sim_t0b_out_full.txt"
+   ],
+   "alternative": "",
+   "falsifier": "",
+   "status": "closed_note",
+   "role": "philosophy",
+   "hold_request": false,
+   "responses": [],
+   "outcome": null,
+   "outcome_note": null
+  },
+  {
+   "id": "C-20261106-015",
+   "at": "2026-11-06T14:55:31+0900",
+   "review": "R-20261106-002",
+   "target": "SYSTEM",
+   "grade": "note",
+   "rule": null,
+   "claim": "소형주 착시(C-076 · 4라운드 연속 미측정)는 탐침이 재기 가장 싼 자리다 — 얇은 거래 종목은 측정 변동성이 낮아 D03 가 높고, 스트레스 달 가격 반영이 늦어(가격제한폭 · 비동시 거래 — Scholes & Williams 1977 · Dimson 1979) 그 달 손실이 작게 잡힌 뒤 다음 달 따라잡을 수 있다 · 유동성 십분위 선형 통제로는 비선형 하위 꼬리를 다 못 거른다. 기록 제안: 스트레스 달 m+1 기울기(되돌림 · 2022-12 는 m+1 = 2023-01 이라 τ_D 로 제외) · 유동성 3분위 안 rank D 판(README E2_D03LN 의 탐침판) · 판독 고정 '되돌림이 b 의 절반 이상이면 지연 반영형'.",
+   "evidence": [
+    "04_Research/programs/_supervision/superfan/philosophy/20261106_1450_P1_P2T0.md N-⑧ · 원장 C-20261018-076"
+   ],
+   "alternative": "",
+   "falsifier": "",
+   "status": "closed_note",
+   "role": "philosophy",
+   "hold_request": false,
+   "responses": [],
+   "outcome": null,
+   "outcome_note": null
+  },
+  {
+   "id": "C-20261106-016",
+   "at": "2026-11-06T14:55:32+0900",
+   "review": "R-20261106-002",
+   "target": "SYSTEM",
+   "grade": "note",
+   "rule": null,
+   "claim": "뒤따를 RL 라운드의 사전학습 창(README §2.12 · 2000-02~2004-12 · E0)이 셀 엔진 D03 를 쓰면 신호일 2000-05~2003-04 36개월은 공격 쪽으로 뒤집힌 D 로 학습한다(C-② 근거와 같음) — 정책이 '방어 몫 ↑ = 급락에 더 깨짐'을 배워 사전 고정 판독 '평시 저위험 알파 수확(방어 아님)'으로 갈 수 있다. README §2.13-5 '레지스트리 기본 방향을 쓰고 기록'은 이 팩터에선 뒤집힘이다 — 라운드 사전등록 전 수리 · 그 구간 제외 · 자체 계산 D 중 하나를 정하고, C-② 의 (a)/(b) 선택과 같게.",
+   "evidence": [
+    "04_Research/programs/P2_DEFENSE/P2R04_defensive_holdings/results/P2R04_E2_H2.log(align 줄) · _design_notes/defense_direction_agreement.md · README §2.12 · §2.13-5"
+   ],
+   "alternative": "",
+   "falsifier": "",
+   "status": "closed_note",
+   "role": "philosophy",
+   "hold_request": false,
+   "responses": [],
+   "outcome": null,
+   "outcome_note": null
+  },
+  {
+   "id": "C-20261106-017",
+   "at": "2026-11-06T14:55:32+0900",
+   "review": "R-20261106-002",
+   "target": "SYSTEM",
+   "grade": "note",
+   "rule": null,
+   "claim": "획일화 · 엔진 축 — 같은 DNN 계보 · 저변동 계열의 네 번째 P2 후보(P2R03 D1 · P2R04 H2/W2 · P2R05 꼬리 · 이번 D03 용량). 깊은 위기 4 · 엔진 1계열은 README 스스로 'RL 이 풀지 못한다'고 적었다 — 결정 ② A(C-075 경로 · 새 기저 엔진 위 장치 라이브러리의 한 칸)가 원칙 2 '매번'을 더 많은 위기로 잰다. 탐침이 착수를 내도 P2 계속 · 정지 판단과 함께 이 순서를 보고 1줄로.",
+   "evidence": [
+    "README §1.4 표 · 원장 C-20261018-075 · 결정 기록부 RL-STRATEGY-RESEARCH-20261106 ②"
+   ],
+   "alternative": "",
+   "falsifier": "",
+   "status": "closed_note",
+   "role": "philosophy",
+   "hold_request": false,
+   "responses": [],
+   "outcome": null,
+   "outcome_note": null
+  },
+  {
+   "id": "C-20261106-018",
+   "at": "2026-11-06T14:55:32+0900",
+   "review": "R-20261106-002",
+   "target": "SYSTEM",
+   "grade": "note",
+   "rule": null,
+   "claim": "절차 — 판단 원장에 이 설계 판단(J)이 없다(오늘 J-20261106-001~005 = P2R05 · 레인 · GPU). 규약 §8 판단 기록('설계')을 등록 전에 · 등록 흐름(SKILL §2-0)은 P1 수령 · 도전 응답 뒤 등록(10-17 도훈) — 이 리뷰 scope 가 빈 이유.",
+   "evidence": [
+    "06_Registry/q_judgment_ledger.json judgments · 00_Lawbook/specs/superfan_protocol.md §8"
+   ],
+   "alternative": "",
+   "falsifier": "",
+   "status": "closed_note",
+   "role": "philosophy",
    "hold_request": false,
    "responses": [],
    "outcome": null,
