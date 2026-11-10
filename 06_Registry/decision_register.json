@@ -4272,7 +4272,190 @@
       "registered_at": "2026-11-10T12:39:26+0900",
       "recorded_by": "Q(전수점검 · v10.2 세션)",
       "evidence": "도훈 결정 카드 2026-11-10: \"차단 훅(안전 가드 · 텔레그램 직접 호출 가드)을 PowerShell 도구에도 걸까요?\" = \"건다\""
+    },
+    {
+      "id": "REPLICATION-LANE-RESTART-SLOTS-20261110",
+      "title": "충실구현 레인 재가동 구성 — 이 PC 에서 예약 작업(Qvest_ReinforceAutoLoop)이 꺼져 있어 새 기저 공급이 멈춰 있다",
+      "status": "open",
+      "opened_at": "2026-11-10T17:23:05+0900",
+      "options": [
+        "CPU 1 + GPU 1(RAM 32GB 에서 안전 · 변형 4개짜리 대기 논문은 대표 변형만)",
+        "CPU 2 + GPU 1(현 설정값)",
+        "아직 켜지 않는다"
+      ],
+      "recommendation": "CPU 1 + GPU 1 — 셀 워커 1개 정점 7.45GB 실측(11-03) · 32GB 에서 워커 2개는 RAM 이 먼저 막힌다",
+      "default_until_decided": "현행",
+      "blocks": [],
+      "owner": "dohoon",
+      "source": "04_Research/01_reports/qvest_v10_2_audit_redesign_20261110/arch_audit/README.md · lanes/audit_D_replication.md",
+      "decision": null,
+      "decided_by": null,
+      "decided_at": null,
+      "note": null,
+      "registered_at": "2026-11-10T17:23:05+0900"
+    },
+    {
+      "id": "PAPER-QUERY-AND-ORDER-REDESIGN-20261110",
+      "title": "논문 수집 질의 재편과 다음 논문 순서 — 방어 · 분포 표적 질의 추가 · 일부 질의 최신순 · 큐 순서 가중",
+      "status": "resolved",
+      "opened_at": "2026-11-10T17:23:07+0900",
+      "options": [
+        "질의 재편 + 순서 가중",
+        "질의만 추가",
+        "현행 유지"
+      ],
+      "recommendation": "질의 재편 + 순서 가중 — 최근 30일 신규 4편 · 발견 243편 중 위기 성과 보고 4편 · 관련도 상위 10건이 날마다 같아 새 유입이 0 인 고정점",
+      "default_until_decided": "현행",
+      "blocks": [],
+      "owner": "dohoon",
+      "source": "04_Research/01_reports/qvest_v10_2_audit_redesign_20261110/arch_audit/README.md · lanes/audit_C_papers.md §9 P-C1 · P-C5",
+      "decision": "질의 재편 + 순서 가중 — 방어 · 분포 표적 질의를 더하고 일부 질의는 최신순으로 돌린다(08-29 '최신성 불요'를 일부 변경). 큐는 빈 엔진 · 롱온리 구성 가능한 논문을 앞에 둔다.",
+      "decided_by": "dohoon",
+      "decided_at": "2026-11-10T17:23:09+0900",
+      "note": "구현: 표적 질의 10개 추가(기존 30개는 관련도순 그대로 · 표적 질의만 관련도 + 최신순 두 번) · 순서 규칙은 등록부 파일에 한 번 등록(06_Registry/next_paper_order.json) · 순서 키는 논문 메타 · 라우터 필드 · 소비 건수뿐(성과 · 등급을 읽지 않는다 — 정보 경계). lean-loop '입력 — 등록부가 정한다'의 등록부 규칙이 FIFO 에서 이 규칙으로 바뀐다.",
+      "registered_at": "2026-11-10T17:23:07+0900",
+      "recorded_by": "Q(아키텍처 전체 감사 · v10.2 세션)",
+      "evidence": "도훈 결정 카드 2026-11-10 저녁: '논문 수집이 최근 30일 새 논문 4편에 그쳤습니다(방어 주제 질의 30개 중 2개 · 분포 주제 0개 · 관련도순만). 수집과 큐 순서를 어떻게 할까요?' = '질의 재편 + 순서 가중 (Recommended)'"
+    },
+    {
+      "id": "L2-START-ON-DOHOON-INSTRUCTION-20261110",
+      "title": "2계층(전략 로테이션) 리서치의 가동 — 풀 71개 중 현 측정 축 모듈 1개",
+      "status": "resolved",
+      "opened_at": "2026-11-10T17:23:11+0900",
+      "options": [
+        "정지 유지 + 재개 조건(Q 가 재개 상신)",
+        "풀 재측정부터 시작",
+        "무인 레인 퇴역",
+        "도훈이 지시하면 시작"
+      ],
+      "recommendation": "정지 유지 + 재개 조건",
+      "default_until_decided": "현행",
+      "blocks": [],
+      "owner": "dohoon",
+      "source": "04_Research/01_reports/qvest_v10_2_audit_redesign_20261110/arch_audit/README.md",
+      "decision": "2계층 리서치는 도훈이 지시하면 시작한다 — 그때까지 2계층 무인 틱 · 풀 재측정 · 세션 착수를 하지 않는다.",
+      "decided_by": "dohoon",
+      "decided_at": "2026-11-10T17:23:13+0900",
+      "note": "도훈이 고른 답은 보기 밖 직접 입력이다. Q 는 2계층을 임의로 시작하지 않는다(상신도 도훈이 물을 때). 2계층 A 경로의 관문(l2_a_eligibility) · BOOK writer 관문은 그대로 유지.",
+      "registered_at": "2026-11-10T17:23:11+0900",
+      "recorded_by": "Q(아키텍처 전체 감사 · v10.2 세션)",
+      "evidence": "도훈 결정 카드 2026-11-10 저녁: '2계층(전략 로테이션)은 모듈 풀 71개 중 현 측정 축 모듈이 1개뿐이라 돌릴 재료가 없습니다. 어떻게 둘까요?' = '2계층 리서치는 내가 지시하면 시작'"
+    },
+    {
+      "id": "KRFF-LATE-DART-VERSION-DISPOSITION-20261110",
+      "title": "한국 FF 요인 연간 정렬의 잔여분(보유 DART 판이 구성일 뒤 기재정정본인 기업-연도 1,268건) 처분",
+      "status": "resolved",
+      "opened_at": "2026-11-10T17:23:14+0900",
+      "options": [
+        "결측 유지 + 최초 제출본 수집",
+        "결측 유지만",
+        "최초 공시일로 편입"
+      ],
+      "recommendation": "결측 유지 + 최초 제출본 수집 — 정정 뒤 값을 최초 공시일에 쓰면 정정분만큼 미래 정보(C4)",
+      "default_until_decided": "현행",
+      "blocks": [],
+      "owner": "dohoon",
+      "source": "04_Research/01_reports/qvest_v10_2_audit_redesign_20261110/arch_audit/README.md · review/fa_notch_asof_audit.md · 커밋 34ff6b03f(빌더 진단)",
+      "decision": "결측 유지 + 최초 제출본 수집 — 지금은 결측으로 둔다(미래참조 없음). DART 최초 제출본 재무를 모으는 파이프라인 구축을 승인한다.",
+      "decided_by": "dohoon",
+      "decided_at": "2026-11-10T17:23:16+0900",
+      "note": "빌더 규칙(.krf_pick) 불변. 파이프라인 = 06_Registry/data_pipeline_queue.json 에 승인 항목으로 적재(구축은 별도 작업 — OpenDART 호출이 필요하다). 수집이 끝나면 요인 표를 다시 짓고 같은 축 기록을 재채점한다(등급 규칙 변경 절차 §3b 적용).",
+      "registered_at": "2026-11-10T17:23:14+0900",
+      "recorded_by": "Q(아키텍처 전체 감사 · v10.2 세션)",
+      "evidence": "도훈 결정 카드 2026-11-10 저녁: '한국 FF 요인 정렬에서 1,268 기업-연도가 빠집니다(보유한 DART 판이 구성일 뒤의 정정본이라 그 시점에 쓸 값이 없음). 어떻게 처리할까요?' = '결측 유지 + 최초 제출본 수집 (Recommended)'"
+    },
+    {
+      "id": "QEPM-WT-CHAIN-UNWIRE-20261110",
+      "title": "동결된 QEPM WT 체인의 처분 — 가드 훅 3개(legacy_write_block · discovery_graduation_gate · worktask_constraint_enforcer)가 쓰기마다 돈다",
+      "status": "resolved",
+      "opened_at": "2026-11-10T17:23:18+0900",
+      "options": [
+        "배선 분리(훅 3개 등록 해제 · 시험 주간 층 · 코드 보존)",
+        "코드까지 삭제",
+        "현행 유지"
+      ],
+      "recommendation": "배선 분리 — 동결(QEPM-R0-FREEZE)은 도훈이 재상정으로 풀 수 있게 코드를 남긴다",
+      "default_until_decided": "현행",
+      "blocks": [],
+      "owner": "dohoon",
+      "source": "04_Research/01_reports/qvest_v10_2_audit_redesign_20261110/arch_audit/README.md · lanes/audit_Q_qepm.md · lanes/audit_H2_crosscut.md",
+      "decision": "배선 분리 — 가드 훅 3개 등록 해제 · 관련 시험은 주간 층으로. 코드는 남겨 재상정 시 되살릴 수 있다. 어드바이저(/advisor)는 유지.",
+      "decided_by": "dohoon",
+      "decided_at": "2026-11-10T17:23:20+0900",
+      "note": "등록 훅 스크립트 수 13 → 10. 되살리려면 QEPM-R0-FREEZE 재상정 + 훅 3개 재등록(.claude/settings.json 이력). 동결 가드(WT 생성 · 다중 트랙 워크플로 즉시 종료)는 따로 넣는다.",
+      "registered_at": "2026-11-10T17:23:18+0900",
+      "recorded_by": "Q(아키텍처 전체 감사 · v10.2 세션)",
+      "evidence": "도훈 결정 카드 2026-11-10 저녁: '동결된 QEPM WT 체인(alpha→risk→optimizer→forge)의 가드 훅 3개가 파일을 쓸 때마다 돌고 있습니다. 체인을 어떻게 처분할까요? (어드바이저 /advisor 는 유지)' = '배선 분리 (Recommended)'"
+    },
+    {
+      "id": "BOOK-MONTHLY-TRACKING-TASK-20261110",
+      "title": "BOOK_0001 월간 트래킹 예약 작업 — 지금은 작업이 없어 30일 넘는 공백이 감지되지 않는다",
+      "status": "resolved",
+      "opened_at": "2026-11-10T17:23:22+0900",
+      "options": [
+        "예약 작업 재등록",
+        "수동 + 공백 경보"
+      ],
+      "recommendation": "예약 작업 재등록",
+      "default_until_decided": "현행",
+      "blocks": [],
+      "owner": "dohoon",
+      "source": "04_Research/01_reports/qvest_v10_2_audit_redesign_20261110/arch_audit/README.md · lanes/audit_F_l2_book.md · procedures/scheduled_tasks_20261110.md",
+      "decision": "예약 작업 재등록 — 월 1회 자동 추적. 등록은 도훈이 일반 PowerShell 에서(절차서).",
+      "decided_by": "dohoon",
+      "decided_at": "2026-11-10T17:23:24+0900",
+      "note": "등록 절차 = arch_audit/procedures/scheduled_tasks_20261110.md 2단계. 실투자 집행 없음(BOOK = 리서치 장부).",
+      "registered_at": "2026-11-10T17:23:22+0900",
+      "recorded_by": "Q(아키텍처 전체 감사 · v10.2 세션)",
+      "evidence": "도훈 결정 카드 2026-11-10 저녁: 'BOOK_0001 월간 트래킹 예약 작업이 없어 30일 넘는 공백이 감지되지 않습니다. 어떻게 할까요?' = '예약 작업 재등록 (Recommended)'"
+    },
+    {
+      "id": "PRUNE-EXTRA-DELETIONS-20261110",
+      "title": "추가 삭제 승인 — 구 알파서치 엔진 묶음 · .cache 백업 · 낡은 작업 트리 · BOOK 구 추적 자료",
+      "status": "resolved",
+      "opened_at": "2026-11-10T17:23:26+0900",
+      "options": [
+        "구 알파서치 엔진 39개",
+        ".cache 백업 9.5GB",
+        "낡은 작업 트리",
+        "BOOK 구 추적 자료"
+      ],
+      "recommendation": "넷 다 삭제 가능(검증자 판정 dead · 호출자 없음) — .cache 백업만 git 밖이라 복구 불가",
+      "default_until_decided": "현행",
+      "blocks": [],
+      "owner": "dohoon",
+      "source": "04_Research/01_reports/qvest_v10_2_audit_redesign_20261110/arch_audit/README.md · lists/delete_held_refs_39.txt · lists/delete_held_manual.tsv · lanes/audit_H2_crosscut.md §9",
+      "decision": "넷 다 삭제 — 구 알파서치 엔진 39개 · .cache 백업 9.5GB · 낡은 작업 트리(브랜치 보존) · BOOK 구 추적 자료(live_track 자료와 위기 감시 보고 3종).",
+      "decided_by": "dohoon",
+      "decided_at": "2026-11-10T17:23:28+0900",
+      "note": "삭제 전 살아 있는 참조를 다시 확인한다 — BOOK 월간 트래킹(같은 날 재등록 결정)이 쓰는 파일은 지우지 않는다. 추적 파일 롤백 = 태그 pre-v10.2-prune-20261110.",
+      "registered_at": "2026-11-10T17:23:26+0900",
+      "recorded_by": "Q(아키텍처 전체 감사 · v10.2 세션)",
+      "evidence": "도훈 결정 카드 2026-11-10 저녁: '추가로 지워도 되는 것을 모두 골라 주세요(고르지 않은 것은 그대로 둡니다).' = '구 알파서치 엔진 39개, .cache 백업 9.5GB, 낡은 작업 트리, BOOK 구 추적 자료'"
+    },
+    {
+      "id": "CHAIN-AUTOMATION-STANDING-BOARD-AND-TICK-20261110",
+      "title": "상설 판 정기 실행과 강화 사슬 무인 틱 — 자동화를 만들지 · 언제 켤지",
+      "status": "resolved",
+      "opened_at": "2026-11-10T17:23:30+0900",
+      "options": [
+        "건식 1주 뒤 켠다",
+        "만들고 바로 켠다",
+        "수동만"
+      ],
+      "recommendation": "건식 1주 뒤 켠다",
+      "default_until_decided": "현행",
+      "blocks": [],
+      "owner": "dohoon",
+      "source": "04_Research/01_reports/qvest_v10_2_audit_redesign_20261110/arch_audit/README.md · lanes/audit_E1_l1.md §11",
+      "decision": "만들고 바로 켠다 — 상설 판 정기 실행과 강화 사슬 무인 틱을 만들고 건식 기간 없이 운영한다.",
+      "decided_by": "dohoon",
+      "decided_at": "2026-11-10T17:23:32+0900",
+      "note": "사슬 등록과 닫기는 계속 감독 영수증(철학 P1/P2 · 판단 T1/T2)이 필요하다 — 무인 구간은 기준 칸 측정 · 걸음 설계 · 열기 · 측정 · 판정. 실제 가동은 예약 작업(상설 판 · 레인 틱)이 켜진 뒤(등록 = 도훈 PowerShell).",
+      "registered_at": "2026-11-10T17:23:30+0900",
+      "recorded_by": "Q(아키텍처 전체 감사 · v10.2 세션)",
+      "evidence": "도훈 결정 카드 2026-11-10 저녁: '상설 판 정기 실행과 강화 사슬 무인 틱(사람 없이 다음 걸음을 재는 자동화)을 만들까요?' = '만들고 바로 켠다'"
     }
   ],
-  "last_updated": "2026-11-10T12:39:29+0900"
+  "last_updated": "2026-11-10T17:23:33+0900"
 }
