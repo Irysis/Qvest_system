@@ -307,13 +307,16 @@ chk(length(m11) == 3L && identical(m12$why, "ok") && isTRUE(abs(m12$value - 4.2)
     sprintf("m11=%s m12=%s", paste(m11, collapse = ","), m12$why))
 
 ## ── G. factor_db_stale (v10.2 · 2026-11-10) — 팩터 DB 수리 이전 측정은 재측정 전 A 자격이 없다(상시 보류 · 설정으로 끌 수 없다) ──
-##   판 표식 계약 · 원장이 루트에 없으면(위의 모든 사례) 판정 불가라 보류하지 않는다. 여기서는 샌드박스 루트에 계약 사본과 원장을 두고
-##   실행 id 가 든 산출 폴더로 양방향을 본다.
+##   판 표식 계약 · 원장이 둘 다 없는 합성 루트(위의 모든 사례 · .git 없음)는 판정 대상이 아니라 보류하지 않는다. 여기서는 샌드박스 루트에
+##   계약 사본과 원장을 두고 실행 id 가 든 산출 폴더로 양방향을 본다.
+##   ★(G2 수리 11-10) 'unknown 통과'는 측정 시각만 모를 때뿐 — 운영 루트(계약 · 원장 중 하나라도 있거나 .git)에서 원장 · 계약 부재 · 판독 실패는
+##   factor_db_vintage_unreadable 상시 보류(G5~G9) · [돌연변이] 그 보류를 지운 사본은 깨진 원장 위 수리 전 측정을 발행한다(G10).
 cat("=== G. factor_db_stale ===\n")
+GL <- file.path(S, "06_Registry/factor_db_vintage.json"); GC <- file.path(S, "02_Infrastructure/contracts/factor_db_vintage.R")
+g_led <- function(entries) writeLines(toJSON(list(schema = "factor_db_vintage_v1", entries = entries), auto_unbox = TRUE, null = "null"), GL)
+G_OK <- list(list(id = "REPAIR-T", completed_at = "2026-11-10T01:00:00+09:00", scope = "all"))
 invisible(file.copy(file.path(ROOT, "02_Infrastructure/contracts/factor_db_vintage.R"), file.path(S, "02_Infrastructure/contracts"), overwrite = TRUE))
-writeLines(toJSON(list(schema = "factor_db_vintage_v1",
-                       entries = list(list(id = "REPAIR-T", completed_at = "2026-11-10T01:00:00+09:00", scope = "all"))), auto_unbox = TRUE),
-           file.path(S, "06_Registry/factor_db_vintage.json"))
+g_led(G_OK)
 el_old <- elig_of(mk_att(31, "B2_6", mk_art("20261105_090000_1"), sp_ok))
 el_new <- elig_of(mk_att(32, "B2_6", mk_art("20261110_090000_2"), sp_ok))
 el_unk <- elig_of(mk_att(33, "B2_6", art_ok, sp_ok))
@@ -321,15 +324,56 @@ chk("factor_db_stale" %in% el_old$codes && !isTRUE(el_old$eligible) && identical
     "G1 수리 완료보다 앞선 실행 id 의 산출 → factor_db_stale 보류(발행 막음)", codes_of(el_old))
 chk(!("factor_db_stale" %in% el_new$fired) && identical(el_new$facts$factor_db_vintage, "current") && identical(codes_of(el_new), codes_of(e0)),
     "G2 수리 뒤 실행 id 의 산출 → 보류 없음(다른 판정은 기준 사례와 같다)", codes_of(el_new))
-chk(!("factor_db_stale" %in% el_unk$fired) && identical(el_unk$facts$factor_db_vintage, "unknown"),
-    "G3 실행 id 없는 산출(측정 시각 모름) → 보류하지 않고 사실만 기록", codes_of(el_unk))
+chk(!("factor_db_stale" %in% el_unk$fired) && !("factor_db_vintage_unreadable" %in% el_unk$fired) && identical(el_unk$facts$factor_db_vintage, "unknown"),
+    "G3 실행 id 없는 산출(측정 시각 모름 · 원장 정상) → 보류하지 않고 사실만 기록", codes_of(el_unk))
 gcfg <- fromJSON(file.path(S, "06_Registry/a_eligibility_gate.json"), simplifyVector = FALSE)
-chk(!("factor_db_stale" %in% RF_A_HOLD_CODES) && !("factor_db_stale" %in% names(gcfg$holds)),
-    "G4 상시 보류 — 설정 on/off 집합(RF_A_HOLD_CODES · a_eligibility_gate.json)에 없어 끌 수 없다")
-unlink(file.path(S, "06_Registry/factor_db_vintage.json"))
+chk(!any(c("factor_db_stale", "factor_db_vintage_unreadable") %in% RF_A_HOLD_CODES) && !any(c("factor_db_stale", "factor_db_vintage_unreadable") %in% names(gcfg$holds)),
+    "G4 상시 보류 — 설정 on/off 집합(RF_A_HOLD_CODES · a_eligibility_gate.json)에 없어 끌 수 없다(factor_db_stale · factor_db_vintage_unreadable)")
+g_unr <- function(el) "factor_db_vintage_unreadable" %in% el$codes && !isTRUE(el$eligible) && identical(el$facts$factor_db_vintage, "unreadable")
+unlink(GL)
 el_off <- elig_of(mk_att(34, "B2_6", mk_art("20261105_090000_3"), sp_ok))
-chk(!("factor_db_stale" %in% el_off$fired) && identical(el_off$facts$factor_db_vintage, "unknown"),
-    "G5 [대조] 원장이 없는 루트에서는 같은 산출이 보류되지 않는다 — G1 의 보류는 원장 판정에서 왔다", codes_of(el_off))
+chk(g_unr(el_off), "G5 계약은 있는데 원장이 없는 루트(OneDrive 충돌로 이름이 바뀐 경우) → factor_db_vintage_unreadable 보류(종전: 'unknown' 통과)", codes_of(el_off))
+writeLines(c('{"schema": "factor_db_vintage_v1", "entries": [', '  {"id": "REPAIR-T", "completed_at": "2026-11-10T01:00:00+09:00", "scope": "all"},', ']}'), GL)
+el_js <- elig_of(mk_att(35, "B2_6", mk_art("20261105_090000_4"), sp_ok))
+chk(g_unr(el_js), "G6 손으로 한 줄 붙이다 끝 쉼표를 남긴 원장(JSON 문법 오류) → factor_db_vintage_unreadable 보류", codes_of(el_js))
+g_led(list(list(id = "REPAIR-T", completed_at = "2026-11-10T01:00:00+09:00", scope = "All")))
+el_sc <- elig_of(mk_att(36, "B2_6", mk_art("20261105_090000_5"), sp_ok))
+el_sc_unk <- elig_of(mk_att(37, "B2_6", art_ok, sp_ok))
+chk(g_unr(el_sc) && g_unr(el_sc_unk), "G7 scope 오타(\"All\") → 보류 — 측정 시각을 모르는 산출도 판독 실패면 보류(unknown 통과는 원장이 정상일 때뿐)",
+    paste(codes_of(el_sc), codes_of(el_sc_unk)))
+g_led(list(list(id = "REPAIR-T", completed_at = "2026-11-10 01:00", scope = "all")))
+el_tm <- elig_of(mk_att(38, "B2_6", mk_art("20261105_090000_6"), sp_ok))
+chk(g_unr(el_tm), "G8 완료 시각을 오프셋 없는 분 단위로 적은 원장 → 보류(해석 못 하면 멈춘다)", codes_of(el_tm))
+g_led(G_OK); unlink(GC)
+el_nc <- elig_of(mk_att(39, "B2_6", mk_art("20261105_090000_7"), sp_ok))
+chk(g_unr(el_nc), "G9 원장은 있는데 계약이 없는 루트 → 보류", codes_of(el_nc))
+# [돌연변이] 판독 불가 보류를 지운 사본 — 깨진 원장 위 수리 전 측정이 발행된다(= G6 이 그 줄에 기대고 있음을 실증). 소스 텍스트 치환 · 치환 성사 단정.
+invisible(file.copy(file.path(ROOT, "02_Infrastructure/contracts/factor_db_vintage.R"), file.path(S, "02_Infrastructure/contracts"), overwrite = TRUE))
+writeLines(c('{"schema": "factor_db_vintage_v1", "entries": [', '  {"id": "REPAIR-T", "completed_at": "2026-11-10T01:00:00+09:00", "scope": "all"},', ']}'), GL)
+src_v <- readLines(file.path(ROOT, "02_Infrastructure/reinforcement/rf_runner_gates.R"), encoding = "UTF-8", warn = FALSE)
+pat_v <- '  if (identical(fvs, "unreadable")) add("factor_db_vintage_unreadable", .rfg_s1(fv$reason))'
+hit_v <- sum(src_v == pat_v); mut_v <- src_v; mut_v[src_v == pat_v] <- "  # MUTANT: 판독 불가 보류 제거"
+MV <- file.path(S, "rf_runner_gates_mut_g.R"); writeLines(enc2utf8(mut_v), MV, useBytes = TRUE)
+MVE <- new.env(parent = globalenv())
+invisible(capture.output(suppressMessages({
+  sys.source(file.path(ROOT, "02_Infrastructure/reinforcement/reinforce_ledger.R"), envir = MVE)
+  sys.source(file.path(ROOT, "02_Infrastructure/reinforcement/rf_spec_sig.R"), envir = MVE)
+  sys.source(MV, envir = MVE) })))
+att_v <- mk_att(40, "B2_6", mk_art("20261105_090000_8"), sp_ok); ent_v <- list(base_id = BID, status = "active", attempts = list(att_v))
+gm <- MVE$rf_a_eligibility(ent_v, att_v, NULL, MVE$rf_a_ctx(MVE$rf_runner_ctx(S), list(ent_v), BID, axes = NULL))
+go <- elig_of(att_v)
+chk(hit_v == 1L && isTRUE(gm$eligible) && identical(gm$facts$factor_db_vintage, "unreadable") && g_unr(go),
+    "G10 [돌연변이] 판독 불가 보류를 지운 사본(치환 1곳 성사)은 깨진 원장 위 수리 전 측정을 발행한다 — 원본은 보류(G6 이 그 차이를 본다)",
+    sprintf("치환 %d · 사본 eligible %s · 원본 %s", hit_v, isTRUE(gm$eligible), codes_of(go)))
+# 판 표식 장치가 없는 합성 루트로 되돌린다(H 절은 그 상태를 전제한다) — 대조: .git 만 있어도 운영 루트로 본다
+unlink(c(GL, GC))
+el_syn <- elig_of(mk_att(45, "B2_6", mk_art("20261105_090000_9"), sp_ok))
+writeLines("gitdir: x", file.path(S, ".git"))
+el_git <- elig_of(mk_att(46, "B2_6", mk_art("20261105_090000_10"), sp_ok))
+unlink(file.path(S, ".git"))
+chk(!("factor_db_vintage_unreadable" %in% el_syn$fired) && identical(el_syn$facts$factor_db_vintage_state, "no_vintage_root") && identical(codes_of(el_syn), codes_of(e0)) && g_unr(el_git),
+    "G11 [대조] 계약 · 원장 · .git 이 모두 없는 합성 루트 = 판정 대상 아님(보류 없음 · 기준 사례와 같다) · .git 이 있으면(운영 작업 트리) 장치 부재 = 보류",
+    paste(codes_of(el_syn), codes_of(el_git)))
 
 ## ── H. rule_change_beneficiary (v10.2 · 2026-11-10 · 도훈 결정 GRADE-V33-NOTCH-ASOF-AND-RULE-CHANGE-PROCEDURE-20261110) ──
 ##   등급 규칙이 바뀌기 전에 잰 기록이 그 변경으로 등급이 오른 것(수혜 기록)은 그 등급으로 A 자격을 얻지 못한다(상시 보류).

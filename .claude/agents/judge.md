@@ -33,7 +33,8 @@ allowed-tools: Bash(Rscript*) Read Grep Glob Write
      ★v10.2(2026-11-10): **스윕형 선정의 최종 후보**(프로그램 라운드의 사전등록 최종 후보 · 강화 사슬의 닫기 후보)는 닫을 때 선택 현실 점검으로
      다시 채점한 뒤(`programs/selection_regrade.R`) `programs/round_candidate_gate.R::rcg_route` 가 같은 A 자격 관문을 한 번 더 태운다 —
      통과면 같은 자리 `judge_request.eligible.json`(`source = "round_candidate_gate"`), 보류면 `judge_request.held.json`. 측정 시점에 나간 요청보다
-     이 닫기 판정이 우선한다. 상시 보류(설정으로 끌 수 없음) 세 가지가 더해졌다: `factor_db_stale`(팩터 DB 수리 전 측정) ·
+     이 닫기 판정이 우선한다. 상시 보류(설정으로 끌 수 없음) 네 가지가 더해졌다: `factor_db_stale`(팩터 DB 수리 전 측정) ·
+     `factor_db_vintage_unreadable`(판 표식 원장 · 계약을 못 읽음 — 운영 루트에서는 판정 불가 = 보류 · 2026-11-10) ·
      `rule_change_beneficiary`(규칙 변경으로 등급이 오른 발효 전 기록) · `selection_check_missing`(스윕 후보인데 선택 현실 점검 미제출).
 - 산출 디렉터리의 `judge_request.json`(구 강화 셀 산출 — v10.01 러너 퇴역)·
   `judge_request.held.json`(관문 보류)·구 단일 `qepm/mailbox/judge_request.json`(퇴역 `reinforce_auto_run.R`)은 **트리거가 아니다**.

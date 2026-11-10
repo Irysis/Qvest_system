@@ -4,7 +4,8 @@
 #   러너(run_paper_replication.R)를 통째로 source 하지 않는다(데이터 적재 · 텔레그램). 대상 정의만 parse → eval 로 꺼내 격리 환경에서 부른다.
 #   S1 판 표식 — 수리 뒤 측정: status ok · measured_at = run_id · 원장 md5 일치 · 수리 3건 · stale_at_measure FALSE · 빌드 도장
 #   S2 판 표식 — 수리 앞 측정(낡은 판): stale_at_measure TRUE · hits = 수리 id → 같은 폴더를 계약 fdv_stale 이 낡음으로 판정(A 관문 factor_db_stale 의 입력)
-#   S3 판 표식 — 진행 중 수리(completed_at 없음): in_progress 에 id · 측정 시각과 무관하게 낡음
+#   S2b~S2e 선언 팩터(G2 수리 11-10) — 셀 엔진 칸 사양 → 기록 → 계약 fdv_stale 이 팩터 목록 수리를 비켜 간다 · 엔진 기저 · 사양 없음 = 낡음(대조)
+#   S3 판 표식 — 진행 중 수리(completed_at 없음): in_progress 에 id · 측정 시각과 무관하게 낡음 · valid_from = NA
 #   S4 판 표식 — 원장 파손: 측정을 막지 않고 status = "error: …"(판정 경로 불변)
 #   S5 원자적 쓰기 — 정상: 파일 생성 · 임시 파일 없음 · 되읽기 일치 / 직렬화 실패: 권위 이름 미생성 · 임시 파일 정리 · 오류 전파
 #   S6 배선 — 러너 본문이 판 표식을 auth 에 싣고(끄기 스위치 포함) 권위 기록을 원자적 쓰기로 쓴다 · 돌연변이(배선 제거) 탐지
@@ -70,16 +71,40 @@ ok(isTRUE(s2$stale_at_measure) && setequal(unlist(s2$stale_hits), c("R1", "R2", 
 write_json(list(run_id = "20261106_215452_30584", essence_grade = "A", factor_db_vintage = s2), file.path(d2, "authoritative_remeasure.json"), auto_unbox = TRUE, null = "null")
 v2 <- FDV$fdv_stale(d2, ledger = FDV$fdv_ledger(TMP))
 ok(isTRUE(v2$stale), "S2 같은 폴더를 계약 fdv_stale 이 낡음으로 판정 — A 관문 factor_db_stale · 기저 풀 제외의 입력", v2$reason)
+## S2b~S2e (G2 수리 11-10) 선언 팩터 = 셀 엔진의 칸 사양(spec_path = RF_CELL_SPEC)에서 뽑아 기록 → 계약 fdv_stale 이 그 기록으로 비켜 간다
+SPD <- file.path(TMP, "specs"); dir.create(SPD, showWarnings = FALSE)
+SP_MOM <- file.path(SPD, "cell_mom.json")
+writeLines(toJSON(list(code = "B2_1", base_signal = list(kind = "mom_12_1"), factors = list(list(kind = "db", id = "M01_Mom12_1"))), auto_unbox = TRUE), SP_MOM)
+SP_ENG <- file.path(SPD, "cell_eng.json")
+writeLines(toJSON(list(code = "B2_2", base_signal = list(kind = "engine", path = "x/engine.R"), factors = list(list(kind = "db", id = "M01_Mom12_1"))), auto_unbox = TRUE), SP_ENG)
 d2b <- mk_out("20261110_120000_222")
-writeLines(toJSON(list(base_signal = list(kind = "factors"), factors = list(list(id = "M01_Mom12_1"))), auto_unbox = TRUE), file.path(d2b, "cell_spec.json"))
-s2b <- E$.rp_fdv_stamp(d2b, "20261110_120000_222", code_root = ROOT, data_root = TMP)
-ok(identical(s2b$stale_at_measure, FALSE) && identical(unlist(s2b$declared_factors), "M01_Mom12_1"),
-   "S2b 범위 수리(R3 11:26) 앞이지만 선언 팩터가 범위 밖 — 낡지 않음 · 선언 팩터 기록")
+s2b <- E$.rp_fdv_stamp(d2b, "20261110_120000_222", code_root = ROOT, data_root = TMP, spec_path = SP_MOM)
+ok(identical(s2b$stale_at_measure, FALSE) && identical(unlist(s2b$declared_factors), "M01_Mom12_1") && identical(s2b$declared_factors_basis, "cell_spec") &&
+     identical(s2b$declared_spec_md5, unname(tools::md5sum(SP_MOM))),
+   "S2b 셀 엔진 칸 사양 → 선언 팩터 · 근거(cell_spec) · 사양 md5 기록")
+d2c <- mk_out("20261110_100000_333")        # R2(01:38) 뒤 · R3(11:26 · Q16 만) 앞
+s2c <- E$.rp_fdv_stamp(d2c, "20261110_100000_333", code_root = ROOT, data_root = TMP, spec_path = SP_MOM)
+write_json(list(run_id = "20261110_100000_333", essence_grade = "A", factor_db_vintage = s2c), file.path(d2c, "authoritative_remeasure.json"), auto_unbox = TRUE, null = "null", na = "null")
+v2c <- FDV$fdv_stale(d2c, ledger = FDV$fdv_ledger(TMP))
+ok(identical(s2c$stale_at_measure, FALSE) && identical(v2c$stale, FALSE) && identical(v2c$declared_factors, 1L),
+   "S2c 팩터 목록 수리(R3) 앞 측정이지만 선언 팩터가 범위 밖 → 기록 · 계약 판정 둘 다 현행(선언 비켜 가기가 운영 산출물에서 발화)", v2c$reason)
+d2d <- mk_out("20261110_100000_444")
+s2d <- E$.rp_fdv_stamp(d2d, "20261110_100000_444", code_root = ROOT, data_root = TMP, spec_path = SP_ENG)
+write_json(list(run_id = "20261110_100000_444", essence_grade = "A", factor_db_vintage = s2d), file.path(d2d, "authoritative_remeasure.json"), auto_unbox = TRUE, null = "null", na = "null")
+ok(is.na(s2d$declared_factors[1]) && isTRUE(s2d$stale_at_measure) && isTRUE(FDV$fdv_stale(d2d, ledger = FDV$fdv_ledger(TMP))$stale),
+   "S2d 엔진 기저 칸 사양 → 선언 알 수 없음(NA) → 같은 시각이라도 R3 에 닿아 낡음(보수)")
+d2e <- mk_out("20261110_100000_555")
+s2e <- E$.rp_fdv_stamp(d2e, "20261110_100000_555", code_root = ROOT, data_root = TMP)
+write_json(list(run_id = "20261110_100000_555", essence_grade = "A", factor_db_vintage = s2e), file.path(d2e, "authoritative_remeasure.json"), auto_unbox = TRUE, null = "null", na = "null")
+ok(is.na(s2e$declared_factors[1]) && isTRUE(FDV$fdv_stale(d2e, ledger = FDV$fdv_ledger(TMP))$stale),
+   "S2e [대조] 칸 사양 없이(논문 엔진) 같은 시각 측정 → 낡음 — S2c 의 현행은 기록된 선언에서 왔다")
 
 cat("=== S3 진행 중 수리 ===\n")
 mk_ledger(c(L3, list(list(id = "R4_RUNNING", scope = "all"))))
 s3 <- E$.rp_fdv_stamp(d1, "20261110_130000_111", code_root = ROOT, data_root = TMP)
 ok(identical(unlist(s3$in_progress), "R4_RUNNING") && isTRUE(s3$stale_at_measure), "S3 진행 중 수리(completed_at 없음) → in_progress · 측정 시각과 무관하게 낡음")
+ok(is.na(s3$valid_from) && identical(s1$valid_from, "2026-11-10T11:26:00"),
+   "S3 진행 중 수리가 있으면 기록의 valid_from = NA(아직 유효한 판 없음 — 기록이 자기 낡음 판정과 모순되지 않는다) · 완료뿐이면 마지막 완료 시각")
 ok(!identical(s3$ledger_md5, s1$ledger_md5), "S3 원장이 바뀌면 원장 md5 도 바뀐다(사후 재도출 키)")
 
 cat("=== S4 원장 파손 ===\n")
@@ -103,8 +128,11 @@ src <- readLines(RUNNER, warn = FALSE, encoding = "UTF-8")
 wired <- function(s) any(grepl("auth\\$factor_db_vintage <- \\.rp_fdv_stamp\\(OUT_DIR, run_id", s)) &&
   any(grepl("\\.rp_write_json_atomic\\(auth, file\\.path\\(OUT_DIR, \"authoritative_remeasure\\.json\"\\)", s)) &&
   !any(grepl("^\\s*write_json\\(auth, file\\.path\\(OUT_DIR, \"authoritative_remeasure\\.json\"\\)", s)) &&
-  any(grepl("QVEST_RP_FDV_STAMP", s))
-ok(wired(src), "S6 러너가 판 표식을 auth 에 싣고 권위 기록을 원자적 쓰기로 쓴다(끄기 스위치 포함)")
+  any(grepl("QVEST_RP_FDV_STAMP", s)) &&
+  any(grepl('Sys.getenv("RF_CELL_SPEC", "") else NULL)', s, fixed = TRUE))
+ok(wired(src), "S6 러너가 판 표식을 auth 에 싣고(셀 엔진이면 칸 사양 경로를 넘긴다) 권위 기록을 원자적 쓰기로 쓴다(끄기 스위치 포함)")
+m3 <- sub('Sys.getenv("RF_CELL_SPEC", "") else NULL)', 'NULL else NULL)', src, fixed = TRUE)
+ok(sum(m3 != src) == 1L && !wired(m3), "S6 돌연변이 ③ 칸 사양 경로 전달 제거 → 탐지(치환 1곳 성사)")
 m1 <- sub("auth$factor_db_vintage <- .rp_fdv_stamp(", "auth$factor_db_vintage_DISABLED <- .rp_fdv_stamp(", src, fixed = TRUE)
 ok(sum(m1 != src) == 1L && !wired(m1), "S6 돌연변이 ① 판 표식 배선 제거 → 탐지(치환 1곳 성사)")
 m2 <- sub(".rp_write_json_atomic(auth, file.path(OUT_DIR, \"authoritative_remeasure.json\"),", "write_json(auth, file.path(OUT_DIR, \"authoritative_remeasure.json\"),", src, fixed = TRUE)

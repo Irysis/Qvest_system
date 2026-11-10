@@ -5,6 +5,7 @@
 #   S1  A 자격 관문 — 풀 전부 현 축 · 판 표식 최신 → eligible
 #   S2  풀에 축 기록 없는 모듈(구 축) 1개 → held(pool_epoch_off_active)
 #   S3  풀에 팩터 DB 수리 전 측정 1개 → held(pool_factor_db_stale)
+#   S3b 풀에 측정 시각 모르는 모듈 1개 → held(pool_vintage_unknown) · [돌연변이] isTRUE() 접기 사본은 eligible
 #   S4  풀 비었음/파손 → held
 #   S5  드라이버 종단: 스텁 T = A · 혼합 풀 → l2_judge_request.held.json 만 · Judge 요청 없음 · jlog judge_held
 #   S6  드라이버 종단: 스텁 T = A · 깨끗한 풀 → l2_judge_request.json(v2 · a_eligibility 기록)
@@ -57,6 +58,17 @@ chk(!isTRUE(e2$eligible) && any(grepl("^pool_epoch_off_active:1/3", e2$reasons))
 invisible(mk_pool(c(clean, list(M4 = list(run = "20261101_010000_4", epoch = ACT))))); e3 <- L2$l2_a_eligibility(S, CR)
 chk(!isTRUE(e3$eligible) && any(grepl("^pool_factor_db_stale:1/3", e3$reasons)) && !any(grepl("epoch", e3$reasons)),
     "S3 수리 전 측정 1 (같은 축) → held(pool_factor_db_stale:1/3) · 축 사유 없음", paste(e3$reasons, collapse = ","))
+## S3b (G2 수리 11-10) 실행 id · 측정 시각 필드가 없는 모듈 산출(같은 축) → 측정 시각 모름 = held(pool_vintage_unknown) — 구판 isTRUE() 는 '현행'으로 접었다
+invisible(mk_pool(c(clean, list(M5 = list(run = "legacy_noid_5", epoch = ACT))))); e3b <- L2$l2_a_eligibility(S, CR)
+chk(!isTRUE(e3b$eligible) && any(grepl("^pool_vintage_unknown:1$", e3b$reasons)) && !any(grepl("pool_factor_db_stale|epoch", e3b$reasons)),
+    "S3b 측정 시각 모르는 모듈 1 (같은 축) → held(pool_vintage_unknown:1) · 낡음 · 축 사유 없음", paste(e3b$reasons, collapse = ","))
+src3 <- readLines(file.path(CR, "02_Infrastructure/ops/rf_l2_lib.R"), warn = FALSE, encoding = "UTF-8")
+pat3 <- "s <- fdv$fdv_stale(d, ledger = led)$stale; if (is.logical(s) && length(s) == 1L) s else NA"
+nh3 <- sum(grepl(pat3, src3, fixed = TRUE))
+mut3 <- file.path(S, "stubs/rf_l2_lib_mut3.R"); writeLines(gsub(pat3, "isTRUE(fdv$fdv_stale(d, ledger = led)$stale)", src3, fixed = TRUE), mut3, useBytes = TRUE)
+LM3 <- new.env(); sys.source(mut3, envir = LM3); em3 <- LM3$l2_a_eligibility(S, CR)
+chk(nh3 == 1L && isTRUE(em3$eligible), "S3b [돌연변이] isTRUE() 로 되돌린 사본(치환 1곳 성사)은 같은 풀을 eligible 로 통과시킨다 — 원본 보류가 그 차이를 본다",
+    paste(nh3, paste(em3$reasons, collapse = ",")))
 writeLines("{broken", file.path(S, "06_Registry/module_performance.json")); e4 <- L2$l2_a_eligibility(S, CR)
 chk(!isTRUE(e4$eligible) && identical(e4$reasons, "pool_unreadable_or_empty"), "S4 풀 파손 → held(pool_unreadable_or_empty)")
 

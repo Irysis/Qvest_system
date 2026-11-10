@@ -186,7 +186,9 @@ l2_a_eligibility <- function(root, code_root = root, pool_path = "") {
     d <- .l2_mod_dir(root, rec, cr)
     if (!nzchar(d)) { ep[i] <- "no_artifact_dir"; next }
     ep[i] <- .l2_dir_epoch(d)
-    if (!is.null(led)) st[i] <- tryCatch(isTRUE(fdv$fdv_stale(d, ledger = led)$stale), error = function(err) NA)
+    # ★(G2 수리 11-10) NA(측정 시각 모름)를 보존한다 — 구판 isTRUE() 는 NA 를 FALSE(현행)로 접어 아래 pool_vintage_unknown 보류가 예외 때만 켜졌다.
+    if (!is.null(led)) st[i] <- tryCatch({ s <- fdv$fdv_stale(d, ledger = led)$stale; if (is.logical(s) && length(s) == 1L) s else NA },
+                                         error = function(err) NA)
   }
   why <- character(0)
   if (!nzchar(act)) why <- c(why, "active_epoch_unreadable")

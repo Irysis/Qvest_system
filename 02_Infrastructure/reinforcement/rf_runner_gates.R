@@ -627,17 +627,35 @@ rf_a_ctx <- function(rctx, entries, base_id, axes = NULL, gate = NULL, dossier_r
 }
 
 #' 팩터 DB 판 표식 판독(v10.2) — 계약 contracts/factor_db_vintage.R::fdv_stale 를 관문 문맥 루트에서 싣고 산출 폴더를 판정한다.
-#'   계약 · 원장이 그 루트에 없으면 판정 불가(NA)다(시험용 임시 루트 등).
+#'   반환 state: current | stale | unknown(측정 시각만 모름 — 계약이 정상 반환한 NA) | unreadable(판정 장치 결함 → 상시 보류) |
+#'   no_vintage_root(판 표식 장치가 없는 루트 — 보류하지 않음).
+#'   ★운영 루트 판별(G2 수리 11-10): 계약(02_Infrastructure/contracts/factor_db_vintage.R)과 원장(06_Registry/factor_db_vintage.json)은 둘 다
+#'     저장소에 추적되는 파일이다(git ls-files) — 운영 루트에는 반드시 함께 있다. 그래서 ① 둘 중 하나라도 있거나 ② 루트가 git 작업 트리(.git)
+#'     이면 '원장이 있어야 하는 루트'로 보고, 계약 · 원장 부재 · 적재 · 판독 실패(JSON 문법 · 스키마 · scope 오타 · 완료 시각 형식)는
+#'     unreadable(보류)이다 — BOOK writer(identical(stale, FALSE) 아니면 거부) · 2계층(factor_db_vintage_unreadable)과 같은 fail-closed.
+#'     둘 다 없고 .git 도 없는 루트(시험용 합성 루트 · tempdir)만 no_vintage_root 로 판정하지 않는다(종전 동작).
 .rfg_fdb_vintage <- function(attempt, ctx) {
   root <- gsub("\\\\", "/", .rfg_s1(ctx$root %||% .RFG_ROOT()))
   p <- file.path(root, "02_Infrastructure", "contracts", "factor_db_vintage.R")
-  if (!file.exists(p) || !file.exists(file.path(root, "06_Registry", "factor_db_vintage.json")))
-    return(list(stale = NA, reason = "판 표식 계약 · 원장 없음"))
+  lp <- file.path(root, "06_Registry", "factor_db_vintage.json")
+  hc <- file.exists(p); hl <- file.exists(lp); hg <- file.exists(file.path(root, ".git"))
+  if (!hc && !hl && !hg) return(list(stale = NA, state = "no_vintage_root", reason = "판 표식 계약 · 원장이 없는 루트(합성 시험 루트) — 판정 대상 아님"))
+  if (!hc || !hl)
+    return(list(stale = NA, state = "unreadable",
+                reason = sprintf("판 표식 %s 없음(운영 루트 — 계약 %s · 원장 %s · git %s) — fail-closed", if (!hl) "원장" else "계약",
+                                 if (hc) "있음" else "없음", if (hl) "있음" else "없음", if (hg) "있음" else "없음")))
+  e <- new.env(parent = globalenv())
+  ld <- tryCatch({ sys.source(p, envir = e, keep.source = FALSE); e$fdv_ledger(root, path = lp) }, error = function(err) err)
+  if (inherits(ld, "error")) return(list(stale = NA, state = "unreadable", reason = paste0("판 표식 원장 · 계약 판독 실패: ", conditionMessage(ld), " — fail-closed")))
   art <- gsub("\\\\", "/", .rfg_s1(attempt$artifacts))
-  if (!nzchar(art)) return(list(stale = NA, reason = "산출 폴더 없음"))
+  if (!nzchar(art)) return(list(stale = NA, state = "unknown", reason = "산출 폴더 없음(측정 시각 모름)"))
   if (!dir.exists(art) && dir.exists(file.path(root, art))) art <- file.path(root, art)
-  e <- new.env(parent = globalenv()); sys.source(p, envir = e, keep.source = FALSE)
-  e$fdv_stale(art, root)
+  v <- tryCatch(e$fdv_stale(art, ledger = ld), error = function(err) err)
+  if (inherits(v, "error")) return(list(stale = NA, state = "unreadable", reason = paste0("판 표식 판정 실패: ", conditionMessage(v), " — fail-closed")))
+  if (!(is.logical(v$stale) && length(v$stale) == 1L))
+    return(list(stale = NA, state = "unreadable", reason = "판 표식 판정 결과 모양 이상(stale 이 논리값 하나가 아니다) — fail-closed"))
+  v$state <- if (is.na(v$stale)) "unknown" else if (v$stale) "stale" else "current"
+  v
 }
 
 #' 규칙 변경 수혜 표식 판독(v10.2) — 권위 기록(authoritative_remeasure.json)에서 읽는다. 표식이 없으면 수혜 아님(none).
@@ -680,9 +698,15 @@ rf_a_eligibility <- function(entry, attempt, spec, ctx) {
   # ⓪-b factor_db_stale (v10.2 · 2026-11-10 · 전수점검 배선 감사) — 팩터 DB 수리(06_Registry/factor_db_vintage.json) 이전에 잰 측정은
   #   재측정 전 A 자격이 없다("인용 전 재측정"을 사람 글에서 기계 판정으로). control_cell 과 같은 상시 보류다(설정으로 끌 수 없고
   #   RF_A_HOLD_CODES 집합 밖). 측정 시각을 모르면(실행 id 없는 시험 폴더 등) 보류하지 않고 사실만 남긴다 — 실측 산출 폴더는 실행 id 를 갖는다.
-  fv <- tryCatch(.rfg_fdb_vintage(attempt, ctx), error = function(e) list(stale = NA, reason = paste0("판 표식 판독 실패: ", conditionMessage(e))))
-  fx$factor_db_vintage <- if (is.na(fv$stale)) "unknown" else if (isTRUE(fv$stale)) "stale" else "current"
+  #   ★(G2 수리 11-10) 'unknown 통과'는 측정 시각만 모르는 경우로 한정한다. 원장 · 계약 부재(운영 루트) · 판독 실패(JSON 문법 · 스키마 ·
+  #   scope 오타 · 완료 시각 형식)는 factor_db_vintage_unreadable 상시 보류(같은 계약을 쓰는 BOOK · 2계층과 같은 fail-closed ·
+  #   facts = "unreadable"). 판 표식 장치가 없는 합성 시험 루트만 판정하지 않는다(facts = "unknown" · state = no_vintage_root).
+  fv <- tryCatch(.rfg_fdb_vintage(attempt, ctx), error = function(e) list(stale = NA, state = "unreadable", reason = paste0("판 표식 판독 실패: ", conditionMessage(e), " — fail-closed")))
+  fvs <- .rfg_s1(fv$state %||% "unreadable")
+  fx$factor_db_vintage <- if (identical(fvs, "unreadable")) "unreadable" else if (isTRUE(fv$stale)) "stale" else if (identical(fv$stale, FALSE)) "current" else "unknown"
+  fx$factor_db_vintage_state <- fvs
   fx$factor_db_vintage_reason <- .rfg_s1(fv$reason)
+  if (identical(fvs, "unreadable")) add("factor_db_vintage_unreadable", .rfg_s1(fv$reason))
   if (isTRUE(fv$stale)) add("factor_db_stale", .rfg_s1(fv$reason))
   # ⓪-c rule_change_beneficiary (v10.2 · 2026-11-10 · 도훈 결정 GRADE-V33-NOTCH-ASOF-AND-RULE-CHANGE-PROCEDURE-20261110) — 등급 규칙이
   #   바뀌기 전에 잰 기록이 그 규칙 변경으로 등급이 오른 것(수혜 기록)은 그 등급으로 A 자격을 얻지 못한다. 새 규칙은 발효 뒤 등록 · 측정분부터
@@ -804,7 +828,7 @@ rf_a_eligibility <- function(entry, attempt, spec, ctx) {
   if (!isTRUE(ctx$rule_ready)) add("rule_pending", "판정 규칙 미확정 — D-B: 보고만")
   act <- if (isTRUE(G$ok)) G$active else stats::setNames(rep(TRUE, length(RF_A_HOLD_CODES)), RF_A_HOLD_CODES)
   u <- unique(fired)
-  on <- u[vapply(u, function(k) k %in% c("gate_config", "control_cell", "factor_db_stale", "rule_change_beneficiary") || isTRUE(act[k]), logical(1))]
+  on <- u[vapply(u, function(k) k %in% c("gate_config", "control_cell", "factor_db_vintage_unreadable", "factor_db_stale", "rule_change_beneficiary") || isTRUE(act[k]), logical(1))]
   list(eligible = !length(on), codes = on, inactive = setdiff(u, on), fired = u, detail = detail, facts = fx,
        gate_source = G$source, gate_active = names(act)[act], regime_current = cur, self_unverified = isTRUE(su$hold),
        evaluated_at = format(Sys.time(), "%Y-%m-%dT%H:%M:%S%z"))

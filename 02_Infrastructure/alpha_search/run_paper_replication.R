@@ -417,7 +417,11 @@ source(file.path(.RP_INFRA, "contracts", "measurement_axis.R"))   # MC1 · MC3 �
 #     측정 순간의 낡음 판정(stale_at_measure — 진행 중 수리가 있으면 TRUE) · 팩터 DB 빌드 도장(build_hash.txt · 월 파일 수 · 최신 mtime).
 #   계약 함수는 격리 환경에 적재해 그대로 부른다(사본 · 재구현 없음). code_root = 계약 파일 위치 · data_root = 원장 · 팩터 DB 위치(운영은 둘 다 .RP_ROOT).
 #   실패는 측정을 막지 않는다 — status = "error: …" 로 남고, 소비자(A 자격 관문 · 기저 풀)는 종전대로 실행 시각으로 판정한다(fail-open 이 아니라 판정 경로 불변).
-.rp_fdv_stamp <- function(out_dir, run_id, code_root = .RP_ROOT, data_root = code_root) {
+#   ★선언 팩터(G2 수리 11-10): 셀 엔진 실행이면(spec_path = RF_CELL_SPEC) 그 칸 사양에서 계약 fdv_spec_declared_factors() 로 뽑아
+#     declared_factors(+ declared_factors_basis = "cell_spec" · 사양 경로 · md5)로 남긴다 — 계약 fdv_stale 이 이 기록을 읽어, 팩터 목록 범위 수리가
+#     그 팩터를 쓰지 않은 칸을 낡음으로 묶지 않게 한다. 사양이 없거나(논문 엔진) 팩터 DB 를 따로 읽을 수 있는 부품이 있으면 NA(= 알 수 없음 ·
+#     닿은 것으로 · 보수). stale_at_measure 도 같은 선언으로 판정한다(기록과 소비자 판정이 어긋나지 않게).
+.rp_fdv_stamp <- function(out_dir, run_id, code_root = .RP_ROOT, data_root = code_root, spec_path = NULL) {
   rid <- regmatches(as.character(run_id), regexpr("[0-9]{8}_[0-9]{6}", as.character(run_id)))
   t0 <- if (length(rid)) as.POSIXct(rid, format = "%Y%m%d_%H%M%S", tz = "Asia/Seoul") else as.POSIXct(NA)
   base <- list(schema = "rp_factor_db_vintage_stamp_v1", contract = "02_Infrastructure/contracts/factor_db_vintage.R",
@@ -428,8 +432,10 @@ source(file.path(.RP_INFRA, "contracts", "measurement_axis.R"))   # MC1 · MC3 �
     sys.source(file.path(code_root, "02_Infrastructure", "contracts", "factor_db_vintage.R"), envir = e, keep.source = FALSE)
     lp <- file.path(data_root, "06_Registry", "factor_db_vintage.json")
     L <- e$fdv_ledger(data_root, path = lp)
-    v <- e$fdv_stale(out_dir, ledger = L)
-    df <- e$fdv_declared_factors(out_dir)
+    sp <- if (length(spec_path) == 1L && !is.na(spec_path) && nzchar(spec_path) && file.exists(spec_path))
+      jsonlite::fromJSON(spec_path, simplifyVector = FALSE) else NULL
+    df <- if (is.null(sp)) NULL else e$fdv_spec_declared_factors(sp)
+    v <- e$fdv_stale(out_dir, ledger = L, declared = df)
     fdb <- file.path(data_root, ".cache", "factor_db")
     bh <- file.path(fdb, "build_hash.txt")
     mf <- list.files(fdb, pattern = "^factor_db_[0-9]{6}\\.parquet$", full.names = TRUE)
@@ -438,7 +444,10 @@ source(file.path(.RP_INFRA, "contracts", "measurement_axis.R"))   # MC1 · MC3 �
                  repairs = lapply(L$entries, function(x) list(id = x$id, completed_at = x$completed_at %||% NA_character_)),
                  in_progress = as.list(vapply(Filter(function(x) is.null(x$completed_at), L$entries), function(x) as.character(x$id), "")),
                  declared_factors = if (is.null(df)) NA else as.list(df),
-                 declared_factors_note = if (is.null(df)) "알 수 없음(엔진 기저 · 칸 사양 없음) — 범위가 팩터 목록인 수리도 닿은 것으로 본다(계약 규칙)" else NA_character_,
+                 declared_factors_basis = if (is.null(df)) NA_character_ else "cell_spec",
+                 declared_spec = if (is.null(sp)) NA_character_ else gsub("\\\\", "/", spec_path),
+                 declared_spec_md5 = if (is.null(sp)) NA_character_ else unname(tools::md5sum(spec_path)),
+                 declared_factors_note = if (is.null(df)) "알 수 없음(논문 엔진 · 엔진 기저 · 팩터 DB 를 따로 읽는 부품 · 칸 사양 없음) — 범위가 팩터 목록인 수리도 닿은 것으로 본다(계약 규칙)" else NA_character_,
                  stale_at_measure = v$stale, stale_hits = as.list(v$hits %||% character(0)),
                  factor_db_build = list(build_hash = if (file.exists(bh)) substr(paste(readLines(bh, warn = FALSE), collapse = " "), 1L, 200L) else NA_character_,
                                         n_month_files = length(mf),
@@ -929,7 +938,9 @@ run_paper_replication <- function(strategy_name, strategy_idea, factor_engine_pa
   }
   # 팩터 DB 판 표식(v10.2 · 레인 D) — 위 .rp_fdv_stamp 머리 주석. 끄기 = QVEST_RP_FDV_STAMP=0(검사 격리 전용)
   if (!identical(Sys.getenv("QVEST_RP_FDV_STAMP", "1"), "0"))
-    auth$factor_db_vintage <- .rp_fdv_stamp(OUT_DIR, run_id, code_root = .RP_ROOT, data_root = PROJECT_ROOT)
+    auth$factor_db_vintage <- .rp_fdv_stamp(OUT_DIR, run_id, code_root = .RP_ROOT, data_root = PROJECT_ROOT,
+                                            spec_path = if (identical(basename(as.character(factor_engine_path)[1]), "rf_cell_engine.R"))
+                                              Sys.getenv("RF_CELL_SPEC", "") else NULL)   # 선언 팩터 = 셀 엔진이 읽은 칸 사양에서만
   saveRDS(bt, file.path(OUT_DIR, "bt_result.rds"))
   .rp_write_json_atomic(auth, file.path(OUT_DIR, "authoritative_remeasure.json"),
                         auto_unbox = TRUE, pretty = TRUE, digits = 6, na = "null")
