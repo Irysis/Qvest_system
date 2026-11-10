@@ -31,8 +31,13 @@ gv3b_benefit_mark <- function(A, new, old, old_rv, rules_ver, at = format(Sys.ti
 #'   (2026-11-10 요인 빌더 v1.1 — 표본 거르기 미래참조 수리로 2016-07 이후 요인이 바뀐다). 대상 = 저장 fa 블록에 factor_md5 가 있는
 #'   기록(= 요인 epoch 와 같은 축에서 노치 평가를 탄 것)이고 그 값이 현행 요인 md5 와 다른 것. 현행 md5 를 모르면(요인 문맥 미가동) 낡음으로 보지 않는다.
 gv3b_fa_stale <- function(A, fa_md5_now) {
-  now <- as.character(fa_md5_now %||% NA_character_)[1]; old <- as.character(A$grade_v3$fa$factor_md5 %||% NA_character_)[1]
-  !is.na(now) && nzchar(now) && !is.na(old) && nzchar(old) && !identical(old, now)
+  fa <- A$grade_v3$fa
+  now <- as.character(fa_md5_now %||% NA_character_)[1]; old <- as.character(fa$factor_md5 %||% NA_character_)[1]
+  ## 요인 표는 한 측정 축(epoch)의 것이다 — 기록의 축이 요인 축과 같을 때만 팩터 조정 알파가 등급에 닿는다(다른 축은 노치 자격이 없다).
+  ##   다른 축 기록에도 factor_md5 는 참고로 적히므로, 축을 보지 않으면 요인 표가 바뀔 때마다 전 기록(수천 건)을 다시 채점하게 된다.
+  re <- as.character(fa$record_epoch %||% NA_character_)[1]; fe <- as.character(fa$factor_epoch %||% NA_character_)[1]
+  same_axis <- !is.na(re) && nzchar(re) && !is.na(fe) && nzchar(fe) && identical(re, fe)
+  same_axis && !is.na(now) && nzchar(now) && !is.na(old) && nzchar(old) && !identical(old, now)
 }
 args <- commandArgs(trailingOnly = TRUE)
 argv <- function(k, d = NULL) { i <- match(k, args); if (is.na(i) || i == length(args)) d else args[i + 1L] }

@@ -68,8 +68,12 @@ chk(identical(a7$benefit, FALSE), "A7 알 수 없는 등급 글자 = 수혜로 �
 
 cat("=== F. 요인 표가 바뀐 기록은 규칙 판이 같아도 다시 채점한다 ===\n")
 fs <- L$env$gv3b_fa_stale
-rec <- function(md5) list(grade_v3 = list(rules_version = "v3.4", fa = if (is.null(md5)) list(status = "not_run") else list(factor_md5 = md5)))
+rec <- function(md5, re = "E1", fe = "E1") list(grade_v3 = list(rules_version = "v3.4",
+  fa = if (is.null(md5)) list(status = "not_run") else list(factor_md5 = md5, record_epoch = re, factor_epoch = fe)))
 chk(is.function(fs) && isTRUE(fs(rec("old111"), "new222")), "F1 저장 fa 블록의 factor_md5 ≠ 현행 요인 md5 → 낡음(다시 채점 대상)")
+chk(is.function(fs) && identical(fs(rec("old111", re = "E_OLD", fe = "E1"), "new222"), FALSE) &&
+      identical(fs(rec("old111", re = NA_character_, fe = "E1"), "new222"), FALSE),
+    "F5 기록의 측정 축이 요인 축과 다르거나 모르면 대상 아님(노치가 등급에 닿지 않는 기록 — 요인이 바뀔 때마다 전 기록을 다시 채점하지 않는다)")
 chk(is.function(fs) && identical(fs(rec("same"), "same"), FALSE), "F2 같은 md5 → 낡지 않음(건너뜀 유지)")
 chk(is.function(fs) && identical(fs(rec(NULL), "new222"), FALSE), "F3 fa 블록에 md5 가 없는 기록(다른 축 · 노치 평가 안 탐) → 대상 아님")
 chk(is.function(fs) && identical(fs(rec("old111"), NA_character_), FALSE) && identical(fs(rec("old111"), NULL), FALSE),
