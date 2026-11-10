@@ -557,6 +557,14 @@ held_axioms <- list()        # 다이제스트 §정제보류(사유)
        exit = exit_code, exit_parsed = exit_parsed,
        verdict_line = if (length(hit)) hit[1] else NA_character_)
 }
+## (2026-11-10 v10.2 · Axiom 엔진 처분) 승격 기계 · DIST 수명주기 퇴역 스위치 — 06_Registry/axiom_engine_status.json 의
+##   promotion_enabled 가 false 면 후보 순회(사전판정 · dry-run · promote)를 하지 않는다. 수확(lcode_harvester)은 기록 · 조회 층이라 계속 돈다.
+##   주입 변동부를 끄면 종전의 '주입 길이 초과' HOLD 가 풀리므로, 처분을 길이 계기가 아니라 이 설정으로 직접 건다.
+##   파일이 없거나 못 읽으면 종전 동작(FALSE). 되돌리기 = promotion_enabled 를 true 로.
+.axiom_promotion_retired <- function(root) {
+  st <- tryCatch(fromJSON(file.path(root, "06_Registry", "axiom_engine_status.json"), simplifyVector = FALSE), error = function(e) NULL)
+  !is.null(st) && identical(st[["promotion_enabled"]], FALSE)
+}
 run_step("axiom_weekly_cycle", {
   ax_dir <- file.path(root, "02_Infrastructure", "axiom")
   # bare python 금지 — venv(qvest_ml) 우선, QVEST_PY 환경변수로 override
@@ -579,6 +587,11 @@ run_step("axiom_weekly_cycle", {
     cands <- list.files(file.path(root, "qepm", "memory", "axioms", "candidates"),
                         pattern = "^CAND_.*\\.json$", full.names = TRUE)
     promote_r <- file.path(ax_dir, "promote.R")
+    if (.axiom_promotion_retired(root)) {
+      cat(sprintf("  | [axiom] 승격 · DIST 수명주기 퇴역(06_Registry/axiom_engine_status.json) — 후보 %d건 순회 생략
+", length(cands)))
+      cands <- character(0)
+    }
 
     # ── v9 사전 판정: 스폰할 가치가 없는 후보를 먼저 걸러낸다 (Rscript 미스폰) ──
     #   ① promotable == FALSE (단일 L-code — independence 원리상 불가, 재채점해도 같은 답)

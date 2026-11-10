@@ -1511,6 +1511,9 @@ SUITES=(
   #   ·D5 문언(D: enforcement_hook 의미론은 mode 값 고정 없이 · AX-008 최상위 v2.0 기준만)·전파 가드(P: 주입면 구 문언 0)
   #   — 돌연변이 M-B1~3·M-H·M-I·M-D1~4·M-P
   "08_Tests/axiom/test_axiom_unattended_freeze.R"
+  # 2026-11-10 추가(v10.2 Axiom 처분): 처분 스위치(06_Registry/axiom_engine_status.json) — 주간 스윕이 promotion_enabled 를 읽어 후보 순회를
+  #   건너뛴다(수확은 유지) · 판독 6사례 · 배선 순서 · 운영 설정. 주입 훅 쪽 스위치는 test_axiom_inject_tau_d.sh §G.
+  "08_Tests/axiom/test_axiom_engine_status_switch.R"
   #   철회 L-code 차단(P·H·C·S) + 강화 증류 끔 — 돌연변이 M-H·M-C
   "08_Tests/axiom/test_lcode_retraction_filter.py"
   #   주간 스윕 HOLD '주입 길이 > 1900' 판정 입력 = 헤더 변형 최악값(문턱 불변) — 스폰 순서 무관·운영 계측 무접촉 · 돌연변이 M-W1·M-W2
@@ -1911,6 +1914,9 @@ SUITES=(
   "08_Tests/programs/test_rx_round.R"
   # 2026-11-10 추가(전수점검): 정보 경계 날짜 검사가 BMP 밖 문자 뒤 날짜도 잡는다(처방 입력 검사 · 보는 창 가림 · 누출 검사).
   "08_Tests/programs/test_tau_d_date_nonbmp.R"
+  # 2026-11-10 추가(v10.2): 시행 예산 계산 도구 — 등급 계약의 DSR 함수를 그대로 써서 시행 수별 필요한 최소 활성 SR · 최대 시행 수를 낸다
+  #   (계약 연결 · 왕복 · 단조 · 경계 · 시행 수를 무시하는 사본 = 돌연변이).
+  "08_Tests/programs/test_trial_budget.R"
   # 공통 판정 코어 v1(2026-10-20 · 1계층 속도 계획 WP1 · L1-SPEED-PLAN-20261020) — 규칙 단일 출처(Kleene NA · 근거 없는 문턱 거부 ·
   #   경계 뮤테이션) · 사양 검사(이름 있는 칸 목록 = P1R01 결함 부류) · τ_D 가림 · P1R01 결과 동일(원래 evaluate.R 격리 사본 vs 코어 바이트 동일)
   "08_Tests/programs/test_round_core_v1.R"
@@ -2021,6 +2027,16 @@ SUITES=(
 TOTAL_PASS=0
 TOTAL_FAIL=0
 TESTS_JSON=""
+# ★스위트별 소요 시간 · 경로 (2026-11-10 전수점검) — 종전 결과 파일에는 스위트가 **이름으로만** 실려 경로도 시간도 없었다.
+#   그래서 배터리가 130분으로 불어도 어느 스위트가 무거운지 잴 수 없었고(대리 지표로 추정), 폴더별 합계(예: regime)를 내려면
+#   같은 시험을 다른 러너로 한 번 더 돌려야 했다. 경로 · 초 · 종료 코드 · pass/fail/skipped 를 "timings" 로 함께 남긴다.
+#   소비자: suite_totals_watch.sh(regime 합계 — 중복 러너 대체) · 단계(밤/주간) 프로필 산정.
+TIMINGS_JSON=""
+_timing_add() {   # <경로> <초> <rc> <pass|null> <fail|null> <skipped|null>
+  local _p="${4//[^0-9]/}" _f="${5//[^0-9]/}" _s="${6//[^0-9]/}"
+  [[ -n "$TIMINGS_JSON" ]] && TIMINGS_JSON+=","
+  TIMINGS_JSON+="{\"suite\":\"$1\",\"secs\":${2:-0},\"rc\":${3:-null},\"pass\":${_p:-null},\"fail\":${_f:-null},\"skipped\":${_s:-null}}"
+}
 UNREPORTED=()
 # ★미측정 ≠ 실패 (2026-08-24 신설) — 종전엔 요약 JSON 미발행을 일괄 `TOTAL_FAIL+=1` 로
 #   계상했다. 규칙 자체는 2026-07-25 의 정당한 수리(그전엔 전 suite 미보고 시 FINAL 0/0/0
@@ -2117,8 +2133,11 @@ for line in sys.stdin.read().splitlines():
         d=json.loads(s)
     except Exception:
         continue
-    if isinstance(d,dict) and "test" in d: pick=s
+    if isinstance(d,dict) and "test" in d: pick=s; d0=d
 print(pick)
+# 둘째 줄(2026-11-10): 고른 요약의 수치 — "ok <pass> <fail> <skipped>" 또는 "no". 종전엔 본 루프가 같은 JSON 을 파이썬으로
+#   네 번 더 읽었다(키 확인 1 + 수치 3 · 스위트당 약 0.8초 × 400여 스위트). 값은 종전과 같은 d.get(키, 0) 이다.
+print(("ok %s %s %s" % (d0.get("pass",0), d0.get("fail",0), d0.get("skipped",0))) if pick else "no")
 ' 2>/dev/null
 }
 
@@ -2127,10 +2146,15 @@ for test_script in "${SUITES[@]}"; do
   #   이 루프가 유일한 실행 루프이므로 필터 지점도 여기 하나뿐이다.
   [[ -n "${QVEST_SUITES_EXCLUDE:-}" && "$test_script" =~ $QVEST_SUITES_EXCLUDE ]] && continue
   [[ -n "${QVEST_SUITES_ONLY:-}" && ! "$test_script" =~ $QVEST_SUITES_ONLY ]] && continue
-  _rg0="$(_reg_fp_strict)"; _ra0="$(_reg_fp_adv)"
+  # ★지문 재사용(2026-11-10): 앞 스위트의 '뒤' 지문이 곧 이 스위트의 '앞' 지문이다 — 둘 사이에는 러너의 장부 정리뿐이라
+  #   다시 잴 이유가 없다(등록부 6개 + Distilled 카드 477장 해시 = 약 1.4초 · 스위트마다 두 번 재던 것을 한 번으로).
+  #   첫 스위트 · 필터로 건너뛴 직후에는 '앞' 지문이 없으므로 새로 잰다.
+  if [[ -n "${_rg_prev:-}" ]]; then _rg0="$_rg_prev"; _ra0="$_ra_prev"
+  else _rg0="$(_reg_fp_strict)"; _ra0="$(_reg_fp_adv)"; fi
   _name="$(basename "$test_script")"; _name="${_name%.*}"
   # 헤더는 **실행 전에** 낸다 — 멈춘 suite 를 이름으로 특정할 수 있어야 한다.
   echo "─── Running: $_name ───"
+  _t0=$SECONDS
   # ★exit code 는 파이프 안에서 잃는다 — `$( cmd | filter )` 의 $? 는 filter 의 것이고,
   #   PIPESTATUS 는 명령치환 서브셸 밖으로 나오지 않는다. 게다가 바로 아래
   #   `_rg1="$(...)"` 가 $? 를 덮어쓴다. ⇒ 출력을 먼저 통째로 받고 RC 를 **즉시** 읽는다.
@@ -2148,12 +2172,17 @@ for test_script in "${SUITES[@]}"; do
   else
     RAW=$(bash "$PROJ_DIR/$test_script" 2>&1); RC=$?
   fi
+  _dt=$((SECONDS - _t0))
   OUT=$(printf '%s\n' "$RAW" | _last_summary_json)
+  # _last_summary_json 은 두 줄을 낸다 — 요약 JSON(없으면 빈 줄) · 수치 줄. 파이썬 줄끝(CR)을 걷고 가른다.
+  OUT="${OUT//$'\r'/}"; _SUMLINE="${OUT##*$'\n'}"
+  if [[ "$OUT" == *$'\n'* ]]; then OUT="${OUT%$'\n'*}"; else OUT=""; fi
   # 구 사전 스캔 루프가 하던 유일한 실효(출력 표시)를 여기서 그대로 낸다 —
   #   같은 출력이고, 실행은 한 번뿐이다.
   echo "$RAW"
   echo ""
   _rg1="$(_reg_fp_strict)"; _ra1="$(_reg_fp_adv)"
+  _rg_prev="$_rg1"; _ra_prev="$_ra1"
   if [[ "$_rg0" != "$_rg1" ]]; then
     while IFS= read -r _dl; do
       [[ -n "$_dl" ]] && REGISTRY_DIRTY+=("$(basename "$test_script") :: $_dl")
@@ -2164,13 +2193,13 @@ for test_script in "${SUITES[@]}"; do
       [[ -n "$_dl" ]] && REGISTRY_ADVISORY+=("$(basename "$test_script") :: $_dl")
     done < <(_reg_diff_names "$_ra0" "$_ra1")
   fi
-  if echo "$OUT" | "$QVEST_PY_BIN" -c 'import json,sys; d=json.loads(sys.stdin.read()); exit(0 if "test" in d else 1)' 2>/dev/null; then
-    PASS=$(echo "$OUT" | "$QVEST_PY_BIN" -c 'import json,sys; print(json.load(sys.stdin).get("pass",0))')
-    FAIL=$(echo "$OUT" | "$QVEST_PY_BIN" -c 'import json,sys; print(json.load(sys.stdin).get("fail",0))')
-    SKIP=$(echo "$OUT" | "$QVEST_PY_BIN" -c 'import json,sys; print(json.load(sys.stdin).get("skipped",0))')
+  _ok=""; PASS=0; FAIL=0; SKIP=0
+  read -r _ok PASS FAIL SKIP <<< "$_SUMLINE" || true
+  if [[ "$_ok" == "ok" && -n "$OUT" ]]; then
     TOTAL_PASS=$((TOTAL_PASS + PASS))
     TOTAL_FAIL=$((TOTAL_FAIL + FAIL))
     TOTAL_SKIP=$((TOTAL_SKIP + SKIP))
+    _timing_add "$test_script" "$_dt" "${RC:-}" "$PASS" "$FAIL" "$SKIP"
     # 전제 부재 사유는 **경로까지** 보존한다. "무언가 없어서 건너뜀"은 조치 불가능한
     # 보고이고, 조치 불가능한 보고는 결국 무시된다(= 조용한 통과와 같아진다).
     if [[ "$SKIP" -gt 0 ]]; then
@@ -2201,6 +2230,7 @@ for s in sk:
     #   가르는 이유는 관대해지려는 게 아니라 반대다 — 뭉쳐 놓으면 신규 실패가 상시
     #   카운트에 묻혀 보이지 않는다. 두 버킷 다 status 를 FAIL 로 만든다.
     UNREPORTED+=("$test_script")
+    _timing_add "$test_script" "$_dt" "${RC:-}" "" "" ""
     if [[ "${RC:-1}" -ne 0 ]]; then
       UNMEASURED_FAILING+=("$test_script (exit ${RC:-?})")
       TOTAL_FAIL=$((TOTAL_FAIL + 1))
@@ -2246,6 +2276,9 @@ cat > "$RESULTS_FILE" <<EOF
                  _e="${_l//\\/\\\\}"; _e="${_e//\"/\\\"}"
                  if [[ -n "$_j" ]]; then _j+=","; fi; _j+="\"$_e\""
                done; printf '%s' "$_j")],
+  "tier": "${QVEST_SUITES_TIER:-full}",
+  "elapsed_sec": $SECONDS,
+  "timings": [$TIMINGS_JSON],
   "tests": [$TESTS_JSON]
 }
 EOF

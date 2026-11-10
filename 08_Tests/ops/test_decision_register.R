@@ -138,7 +138,11 @@ cat("\n=== C 소비·계약 ===\n")
 ap <- BL[grepl("^o\\.append\\(", BL)]
 if (any(grepl("S(PROGRAMS", ap, fixed = TRUE) & grepl("S(DECISIONS", ap, fixed = TRUE)))
   ok("C1 Programs 줄(v10.01 · 구 Director) 한 o.append 에 DECISIONS 부기(새 줄 아님)") else ng("C1 소비 줄 없음")
-if (length(ap) == 6L) ok("C2 부팅 o.append 6개(줄 수 계약 — v10.01 · Director·Rules 퇴역)") else ng("C2 줄 수 변경", as.character(length(ap)))
+## 줄 수 계약 = 부팅 스크립트 머리말이 선언한 줄 수('상태 N줄만 출력')와 실제 o.append 수가 같다(2026-11-10 — 종전엔 6 을 박아 두어,
+##   도훈 지시로 Resume(10-15) · Infra(11-08) 줄이 늘자 이 검사가 계속 빨갰다. 선언과 코드가 어긋날 때만 red 여야 한다).
+decl_n <- suppressWarnings(as.integer(sub("^.*상태 ([0-9]+)줄만 출력.*$", "\\1", grep("상태 [0-9]+줄만 출력", BL, value = TRUE)[1])))
+if (!is.na(decl_n) && length(ap) == decl_n) ok(sprintf("C2 부팅 o.append %d개 = 머리말 선언 %d줄(줄 수 계약)", length(ap), decl_n)) else
+  ng("C2 줄 수 변경", sprintf("o.append %d · 머리말 선언 %s", length(ap), as.character(decl_n)))
 if (!any(grepl("subprocess|os\\.system|Popen|\\.write\\(|['\"][wa]b?['\"]", blk))) ok("C3 DECISIONS 블록 읽기 전용(프로세스·쓰기 없음)") else ng("C3 블록이 쓰거나 실행한다")
 after <- if (file.exists(REAL)) unname(tools::md5sum(REAL)) else NA_character_
 if (identical(after, real_md5)) ok("C4 운영 06_Registry/decision_register.json 무접촉(md5 전후 동일)") else ng("C4 운영 레지스터가 바뀌었다")

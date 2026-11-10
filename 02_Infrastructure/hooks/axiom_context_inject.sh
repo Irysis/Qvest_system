@@ -148,7 +148,7 @@ CLAUDE_MD="$DIR/CLAUDE.md"
 # (v9 2026-08-23) 변동부 단일 원천 — lcode_harvester.py::write_positive_context() 산출물.
 POSITIVE_CTX="$DIR/.cache/positive_context.json"
 ESC=$(printf '%s' "$HEADER" | CB="$CACHE_BODY" PC="$POSITIVE_CTX" CM="$CLAUDE_MD" \
-      ML="$CACHE_ML" IL="$INJECT_LAST" QVEST_INJECT_AGENT="$AGENT_NAME_LC" QVEST_ROUND_TYPE="$ROUND_TYPE" QVEST_INJECT_TAUD="$TAUD_AGENT" "$QVEST_PY_BIN" -c "
+      ML="$CACHE_ML" IL="$INJECT_LAST" QVEST_INJECT_AGENT="$AGENT_NAME_LC" QVEST_ROUND_TYPE="$ROUND_TYPE" QVEST_INJECT_TAUD="$TAUD_AGENT" AXST="$(dirname "$CLAUDE_MD")/06_Registry/axiom_engine_status.json" "$QVEST_PY_BIN" -c "
 import json, os, sys
 def rd(p):
     try:
@@ -302,6 +302,21 @@ if TAUD and not CLEAN:
     pos_lines, dist_lines, rec_lines, dead_line = [], [], [], '[정보 경계 대상 스폰 — 성과·교훈·dead 문맥 제외(2022-12-31 뒤 수치를 읽지 않는 에이전트)]'
     pc_status = 'tau_d_agent_excluded'
 
+# (2026-11-10 v10.2 · Axiom 엔진 처분) 변동부 스위치 — 06_Registry/axiom_engine_status.json 의 inject_variable_part 가 false 면
+#   변동부(최고 전략 성과 줄 · 양성 DIST · 최근 교훈 · dead)를 싣지 않고 조회 안내 한 줄로 바꾼다. 근거 = 전수점검 레인 R:
+#   지난 90일 변동부가 바꾼 결정 0 · 감축 사다리 9/10단이라 정제 카드는 실리지도 않음 · 스폰마다 전 기간 성과가 새는 경로.
+#   파일이 없거나 못 읽으면 종전대로 싣는다(이 스위치는 방어선이 아니라 운영 설정이다 · 되돌리기 = 값을 true 로).
+#   ★이 블록은 셸 -c 큰따옴표 안이다 — 주석에도 큰따옴표 · 백틱 · 달러 금지.
+VAR_OFF = False
+try:
+    _st = json.load(open(os.environ.get('AXST', ''), encoding='utf-8'))
+    VAR_OFF = (_st.get('inject_variable_part') is False)
+except Exception:
+    VAR_OFF = False
+if VAR_OFF and not CLEAN and not TAUD:
+    pos_lines, dist_lines, rec_lines, dead_line = [], [], [], '[과거 교훈 · 실패 구성은 주입하지 않는다(v10.2) — 필요하면 Rscript 02_Infrastructure/tools/hypothesis_index.R lookup <키워드> 로 조회]'
+    pc_status = 'variable_part_off'
+
 H_POS = '[현재 최고 연구-tier 전략 — 여기서 출발·결합할 것]'
 H_DIST = '[검증된 양성 지식]'
 # 공리 블록: 고정부 — 절대 절단 대상 아님.
@@ -413,6 +428,7 @@ try:
                        'pc_status': pc_status,
                        'clean_lane': CLEAN,
                        'tau_d_agent': TAUD,
+                       'variable_part_off': VAR_OFF,
                        'markers': {'positive': H_POS[:20] in ctx,
                                    'recent': '[최근 교훈' in ctx,
                                    'dead': 'dead configs' in ctx,

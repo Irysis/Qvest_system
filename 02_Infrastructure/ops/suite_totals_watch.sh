@@ -52,10 +52,61 @@ st_pick_hooks_final() {
 }
 
 
+#─────────────────────────────────────────────────────────────────────────
+# --- 같은 날 재수집 건너뛰기 (2026-11-10 전수점검) ---------------------------
+#   아침 체인(ensure_data_current → daily_refresh)이 자료가 낡았다고 리프레시를 다시 돌리면 후처리 끝의 이 수집(배터리 약 130분)도
+#   다시 돈다 — 11-10 아침 브리핑이 그 끝까지 기다렸다. 수집은 하루 한 번이면 된다: 최근 수집이 오늘 날짜이고 값이 온전하면 건너뛴다.
+#   강제 = QVEST_ST_FORCE=1 또는 `--collect --force`. 검사: 08_Tests/ops/test_suite_totals_anchor.sh
+st_collected_today() {   # <latest.json> [오늘 YYYY-MM-DD] → 0 = 오늘 온전히 수집됨(hooks 수치 있음)
+  local f="${1:-}" today="${2:-$(date +%Y-%m-%d)}" d
+  [ -f "$f" ] || return 1
+  d=$(grep -oE '"collected_at": *"[0-9]{4}-[0-9]{2}-[0-9]{2}' "$f" | grep -oE '[0-9]{4}-[0-9]{2}-[0-9]{2}' | head -1)
+  [ -n "$d" ] && [ "$d" = "$today" ] || return 1
+  grep -qE '"hooks": *[0-9]+' "$f"          # 수집 실패(null)로 끝난 날은 다시 수집한다
+}
+
+# --- 폴더별 합계를 러너 결과에서 읽는다 (2026-11-10) -------------------------
+#   종전엔 regime 합계를 얻으려고 08_Tests/regime/run_all.R 을 한 번 더 돌렸다. 그 러너는 sys.source 한 시험의 quit() 에서 죽어
+#   09-12 부터 regime = null 이었고(기준선 승격 불가), 같은 시험 25개는 배터리 목록에도 전부 있어 이중 실행이었다.
+#   러너가 결과 파일에 남기는 "timings"(경로 · pass · fail)에서 그 폴더 몫만 더한다. 출력 = "<total> <fail>" (없으면 빈 줄).
+st_folder_totals() {     # <hook_dryrun_results.json> <폴더 접두 예: 08_Tests/regime/>
+  [ -x "$PY" ] && [ -f "${1:-}" ] || return 0
+  "$PY" - "$1" "${2:-}" <<'PYEOF' 2>/dev/null
+import io, json, sys
+try:
+    d = json.load(io.open(sys.argv[1], encoding="utf-8"))
+    rows = [t for t in (d.get("timings") or []) if str(t.get("suite", "")).startswith(sys.argv[2])]
+    if rows and all(isinstance(t.get("pass"), int) and isinstance(t.get("fail"), int) for t in rows):
+        print(sum(t["pass"] + t["fail"] for t in rows), sum(t["fail"] for t in rows))
+except Exception:
+    pass
+PYEOF
+}
+
+# --- 단계(tier) — 밤 = nightly · 주 1회 = full (2026-11-10 전수점검) -----------
+#   배터리 전체는 130분이고 매일 밤 리프레시 끝에서 돌았다. 대상이 전부 퇴역한 스위트까지 매일 돌 이유가 없다.
+#   설정 = 08_Tests/hooks/profiles/tiers.json(full_weekday — ISO 요일 1~7) · 밤에 빼는 목록 = profiles/nightly.exclude(한 줄 한 경로 · # 주석).
+#   설정을 못 읽으면 full(아무것도 빼지 않는다 — 조용히 줄이지 않는다). 강제 = QVEST_SUITES_TIER=full|nightly.
+st_pick_tier() {         # <tiers.json> [오늘 ISO 요일] → full | nightly
+  local f="${1:-}" dow="${2:-$(date +%u)}" fw
+  [ -f "$f" ] || { printf 'full'; return 0; }
+  fw=$(grep -oE '"full_weekday"[[:space:]]*:[[:space:]]*[1-7]' "$f" | grep -oE '[1-7]$' | head -1)
+  [ -n "$fw" ] || { printf 'full'; return 0; }
+  if [ "$dow" = "$fw" ]; then printf 'full'; else printf 'nightly'; fi
+}
+st_profile_regex() {     # <프로필 파일> → 러너의 QVEST_SUITES_EXCLUDE 에 넣을 정규식(경로를 | 로 이음 · 점은 이스케이프)
+  [ -s "${1:-}" ] || return 0
+  grep -v '^[[:space:]]*#' "$1" | tr -d '\r' | grep -v '^[[:space:]]*$' | sed 's/[[:space:]]*$//; s/\./\\./g' | paste -sd'|' -
+}
+
 collect() {
   mkdir -p "$DIR/.cache"
   local hooks regime contract continuity
   local hooks_out regime_out cont_out hooks_fail regime_fail continuity_fail hooks_unmeasured
+  if [ "${QVEST_ST_FORCE:-0}" != "1" ] && [ "${1:-}" != "--force" ] && st_collected_today "$LATEST"; then
+    echo "[suite-totals] 오늘 이미 수집됨($(grep -oE '"collected_at": *"[^"]+"' "$LATEST" | head -1)) — 재수집 건너뜀(강제 = QVEST_ST_FORCE=1)"
+    return 0
+  fi
 
   # (2026-07-26 probe① 도훈 승인) fail 축 동시 수집 — 구판은 total만 봐서
   # total=pass+fail 구조상 FAIL이 나도 총계 불변 = 회귀가 감시를 그냥 통과했다.
@@ -74,7 +125,14 @@ collect() {
   #   2단 앵커: (1) 러너 현행 계약(skipped 포함)을 **정확히** 요구하고 tail -1
   #             (2) 없으면 구 형식 폴백, 역시 tail -1 (첫 줄이 아니라 마지막 줄)
   #   ★head -1 로 되돌리지 말 것. 검사: 08_Tests/ops/test_suite_totals_anchor.sh
-  _hooks_raw=$(cd "$DIR" && CLAUDE_PROJECT_DIR="$DIR" bash 08_Tests/hooks/run_all_hooks.sh 2>/dev/null)
+  # (2026-11-10) 러너 출력을 버리지 않는다 — 종전엔 표준출력을 변수로만 받고 표준오류는 /dev/null 로 보내, 실패한 단언의 내용이
+  #   어디에도 남지 않았다(총계 fail=107 만 보이고 무엇이 왜 실패했는지는 다시 돌려야 알 수 있었다). 마지막 1회분을 남긴다.
+  mkdir -p "$DIR/.cache/test_results"
+  local tier="${QVEST_SUITES_TIER:-$(st_pick_tier "$DIR/08_Tests/hooks/profiles/tiers.json")}" excl="${QVEST_SUITES_EXCLUDE:-}"
+  if [ "$tier" = "nightly" ] && [ -z "$excl" ]; then excl="$(st_profile_regex "$DIR/08_Tests/hooks/profiles/nightly.exclude")"; fi
+  [ -n "$excl" ] || tier="full"                                    # 뺀 것이 없으면 그 실행은 전체다
+  _hooks_raw=$(cd "$DIR" && CLAUDE_PROJECT_DIR="$DIR" QVEST_SUITES_TIER="$tier" QVEST_SUITES_EXCLUDE="$excl" bash 08_Tests/hooks/run_all_hooks.sh 2>"$DIR/.cache/test_results/run_all_hooks_last.stderr.log")
+  printf '%s\n' "$_hooks_raw" > "$DIR/.cache/test_results/run_all_hooks_last.log" 2>/dev/null || true
   hooks_out=$(st_pick_hooks_final "$_hooks_raw")
   unset _hooks_raw
   hooks=$(printf '%s' "$hooks_out" | grep -oE '[0-9]+ total' | grep -oE '[0-9]+')
@@ -82,9 +140,10 @@ collect() {
   # ★unmeasured (v10 2026-09-03): 요약 JSON 을 안 내는 스위트는 러너가 UNMEASURED 로 계상한다 —
   #   그 스위트의 단언은 총계에 **0 으로** 들어가므로 '조용한 커버리지 구멍'이다. fail 과 같은 급으로 본다.
   hooks_unmeasured=$(printf '%s' "$hooks_out" | grep -oE '[0-9]+ unmeasured' | grep -oE '[0-9]+')
-  regime_out=$(cd "$DIR" && CLAUDE_PROJECT_DIR="$DIR" Rscript 08_Tests/regime/run_all.R 2>/dev/null)
-  regime=$(printf '%s' "$regime_out" | grep -oE 'of [0-9]+ total' | grep -oE '[0-9]+')
-  regime_fail=$(printf '%s' "$regime_out" | grep -oE '[0-9]+ failed' | grep -oE '[0-9]+' | head -1)
+  # regime 합계 = 러너 결과의 08_Tests/regime/ 몫(위 st_folder_totals — 중복 러너 대체). 못 읽으면 null(0 으로 접지 않는다).
+  regime_out=$(st_folder_totals "$DIR/.cache/test_results/hook_dryrun_results.json" "08_Tests/regime/" | tr -d '\r')
+  regime="${regime_out%% *}"; regime_fail="${regime_out##* }"
+  [ -n "$regime_out" ] || { regime=""; regime_fail=""; }
   contract=$(cd "$DIR" && CLAUDE_PROJECT_DIR="$DIR" Rscript 08_Tests/contract_regression/run_contract_regression.R 2>/dev/null \
           | grep -oE 'cases=[0-9]+' | grep -oE '[0-9]+' | head -1)
   cont_out=$([ -x "$PY" ] && "$PY" "$DIR/02_Infrastructure/tests/test_continuity_gate.py" 2>/dev/null \
@@ -111,6 +170,7 @@ collect() {
   printf '{\n' > "$LATEST"
   printf '  "collected_at": "%s",\n' "$(date -Iseconds)" >> "$LATEST"
   printf '  "tree_head": %s,\n' "$( [ -n "${head_sha:-}" ] && printf '"%s"' "$head_sha" || printf 'null' )" >> "$LATEST"
+  printf '  "tier": "%s",\n' "${tier:-full}" >> "$LATEST"
   printf '  "hooks": %s,\n'      "${hooks:-null}"      >> "$LATEST"
   printf '  "regime": %s,\n'     "${regime:-null}"     >> "$LATEST"
   printf '  "contract_regression": %s,\n' "${contract:-null}" >> "$LATEST"
@@ -199,7 +259,13 @@ if fail_hits:
         print("  ※이 수치는 위 수집 시점 트리의 사실입니다. 현재 상태를 알려면 "
               "'bash 02_Infrastructure/ops/suite_totals_watch.sh --collect' 재실행.", file=sys.stderr)
 
-keys = [k for k in b if k not in ("collected_at", "note", "tree_head")]
+# (2026-11-10) 단계가 다른 수집은 총계를 견주지 않는다 — 밤(nightly) 수집을 전체(full) 기준선과 비교하면 일부러 뺀 만큼이 '감소'로 뜬다.
+#   fail 축(위)은 단계와 무관하게 그대로 본다.
+lt, bt = (l.get("tier") or "full"), (b.get("tier") or "full")
+tier_skip = ("hooks", "regime") if lt != bt else ()
+if tier_skip:
+    print("[suite-totals] 단계 %s 수집 — 기준선(%s)과 총계 비교 생략(%s). 전체 실행에서 비교한다" % (lt, bt, " · ".join(tier_skip)))
+keys = [k for k in b if k not in ("collected_at", "note", "tree_head", "tier") and k not in tier_skip]
 drops, unknown, ok = [], [], []
 for k in keys:
     bv, lv = b.get(k), l.get(k)
@@ -229,7 +295,10 @@ promote() {
   "$PY" - "$LATEST" "$BASELINE" <<'PYEOF'
 import io, json, sys
 l = json.load(io.open(sys.argv[1], encoding="utf-8"))
-if any(v is None for k, v in l.items() if k not in ("collected_at", "tree_head")):
+if (l.get("tier") or "full") != "full":
+    print("단계 %s 수집 — 기준선 승격 거부(전체 실행만 기준선이 된다 · QVEST_SUITES_TIER=full 로 --collect --force)" % l.get("tier"))
+    sys.exit(1)
+if any(v is None for k, v in l.items() if k not in ("collected_at", "tree_head", "tier")):
     print("null 포함 — 기준선 승격 거부(불완전 수집을 기준선으로 삼으면 이후 감소를 못 잡는다)")
     sys.exit(1)
 l["note"] = ("테스트 스위트 총계 기준선. 감소 = 회귀가 아니라 침묵 결손 우선 의심. "
@@ -242,7 +311,7 @@ PYEOF
 # 라이브러리 모드: QVEST_ST_LIB=1 로 source 하면 디스패처를 돌리지 않는다(테스트용).
 if [ "${QVEST_ST_LIB:-0}" = "1" ]; then return 0 2>/dev/null || exit 0; fi
 case "$MODE" in
-  --collect)  collect ;;
+  --collect)  collect "${2:-}" ;;
   --baseline) promote ;;
   --check|*)  check ;;
 esac

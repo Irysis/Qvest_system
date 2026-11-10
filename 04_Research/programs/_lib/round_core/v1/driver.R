@@ -9,7 +9,8 @@
 ##     evaluate [--cells-only] [--shard=i/K]   칸 평가(내용 주소 캐시) → 판정(verdict.json · evaluation_visible.json)
 ##     evaluate --pairs-only --shard=i/K · evaluate --merge   짝 판정 템플릿(P2 · P3) 최종 판정의 짝 평가 샤딩 → 병합 종합(P1 은 무시)
 ##     report [--send] [--next "<다음 단계>"]  보고(기본 dry-run)
-##     close --note "<해석>" [--p2 <id>] [--t2 <id>]   종료 기록(등록부)
+##     close --note "<해석>" --probe "<다음 탐침>" --probe "<…>" [--lesson "<교훈>"]… [--r7 noise|signal] [--p2 <id>] [--t2 <id>]
+##           종료 기록(등록부 + 결과 원장 06_Registry/round_outcomes.jsonl) · 탐침 2개 미만이면 --no-probes "<사유>" · 글에 τ_D 뒤 날짜가 있으면 멈춤
 ##   수치는 R 계약 산출만 · 판정은 등록 때 해석된 규칙(rules_resolved)으로만(R2) · 시험 창 열은 보는 창 파일에 싣지 않는다(τ_D).
 
 rc_shard_cells <- function(cells, shard) {
@@ -133,7 +134,10 @@ if (sys.nframe() == 0L) {
                  rc_evaluate(rd, ROOT, cells_only = flag("--cells-only"), shard = if (is.na(sh)) NULL else sh,
                              pairs_only = flag("--pairs-only"), merge = flag("--merge")) },
     report = rc_report(rd, ROOT, send = flag("--send"), next_step = opt("--next")),
-    close = { rc_close(rd, note = opt("--note") %||% stop("--note 필요"), philosophy_p2 = opt("--p2") %||% NA_character_,
-                       superfan_t2 = opt("--t2") %||% NA_character_, root = ROOT); cat("[close] 등록부 기록\n") },
+    close = { multi <- function(k) { i <- which(rest == k); i <- i[i < length(rest)]; if (length(i)) rest[i + 1L] else character(0) }   # 되풀이 인자
+              rc_close(rd, note = opt("--note") %||% stop("--note 필요"), philosophy_p2 = opt("--p2") %||% NA_character_,
+                       superfan_t2 = opt("--t2") %||% NA_character_, root = ROOT, probes = multi("--probe"), lessons = multi("--lesson"),
+                       r7 = opt("--r7") %||% NA_character_, no_probes_reason = opt("--no-probes"))
+              cat("[close] 등록부 · 결과 원장 기록\n") },
     stop("모르는 단계: ", st))
 }

@@ -109,4 +109,25 @@ sys.exit(0 if n==1 else 1)' "$H/axiom_context_inject.sh" "$MUT" && ok "F0 돌연
 OUT_F="$(render "$MUT" '{"tool_input":{"subagent_type":"superfan-philosophy","prompt":"P1"}}')"
 has "$OUT_F" "$PERF1" && ok "F1 판정 줄이 없으면 Superfan 에 성과 줄이 들어간다 — B 가 이것을 잡는다" || ng "F1 돌연변이 검출" "돌연변이에서도 성과 줄이 없다(검사가 병을 못 본다)"
 
+echo "== G 변동부 스위치(v10.2 · 06_Registry/axiom_engine_status.json) =="
+# 스위치 파일이 없는 샌드박스(위 A)는 변동부가 실린다 = 음성 대조. 여기서는 파일을 놓고 켠다/끈다.
+mkdir -p "$SB/06_Registry"
+echo '{"schema":"axiom_engine_status_v1","inject_variable_part":false}' > "$SB/06_Registry/axiom_engine_status.json"
+OUT_G="$(render "$H/axiom_context_inject.sh" '{"tool_input":{"subagent_type":"general-purpose","prompt":"코드 위치 조사"}}')"
+if has "$OUT_G" "$PERF1" || has "$OUT_G" "$PERF2"; then ng "G1 스위치 off → 일반 스폰도 성과 · 교훈 줄 없음" "성과 수치가 들어갔다"; else ok "G1 스위치 off → 일반 스폰도 성과 · 교훈 줄 없음"; fi
+has "$OUT_G" "hypothesis_index.R lookup" && ok "G2 조회 안내 한 줄이 대신 실린다" || ng "G2 조회 안내" "없음: ${OUT_G:0:160}"
+has "$OUT_G" "$FIXED" && ok "G3 고정부(공리)는 그대로" || ng "G3 고정부" "사라짐"
+"$PY" -X utf8 -c 'import json,sys
+d=json.load(open(sys.argv[1],encoding="utf-8")); sys.exit(0 if (d.get("variable_part_off") is True and d.get("pc_status")=="variable_part_off") else 1)' "$SB/.cache/axiom_inject_last.json" \
+  && ok "G4 계측에 variable_part_off=true" || ng "G4 계측" "표식 없음"
+OUT_G5="$(render "$H/axiom_context_inject.sh" '{"tool_input":{"subagent_type":"superfan","prompt":"T1"}}')"
+has "$OUT_G5" "$MARK" && ok "G5 스위치 off 여도 Superfan 스폰은 정보 경계 줄이 우선" || ng "G5 우선순위" "${OUT_G5:0:120}"
+echo '{"schema":"axiom_engine_status_v1","inject_variable_part":true}' > "$SB/06_Registry/axiom_engine_status.json"
+OUT_G6="$(render "$H/axiom_context_inject.sh" '{"tool_input":{"subagent_type":"general-purpose","prompt":"코드 위치 조사"}}')"
+has "$OUT_G6" "$PERF1" && ok "G6 스위치 true → 변동부가 다시 실린다(되돌리기 경로)" || ng "G6 되돌리기" "성과 줄 없음"
+echo '{broken' > "$SB/06_Registry/axiom_engine_status.json"
+OUT_G7="$(render "$H/axiom_context_inject.sh" '{"tool_input":{"subagent_type":"general-purpose","prompt":"코드 위치 조사"}}')"
+has "$OUT_G7" "$PERF1" && ok "G7 스위치 파일이 깨졌으면 종전대로 싣는다(훅이 죽지 않는다)" || ng "G7 깨진 파일" "${OUT_G7:0:120}"
+rm -f "$SB/06_Registry/axiom_engine_status.json"
+
 finish

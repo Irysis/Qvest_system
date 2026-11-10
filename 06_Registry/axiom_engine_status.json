@@ -1,0 +1,18 @@
+{
+  "schema": "axiom_engine_status_v1",
+  "decided_at": "2026-11-10",
+  "decided_by": "Q (도훈 11-10 'Axiom 엔진 존치 여부 검증 — 개선해서 계속 활용할지 없앨지' · '기존 방식에 얽매이지 말고 결론내봐')",
+  "evidence": "04_Research/01_reports/qvest_v10_2_audit_redesign_20261110/README.md §7 · findings_ledger.md 레인 R",
+  "disposition": {
+    "record_and_lookup": "keep — L-code 원장 · hypothesis_index 조회(02_Infrastructure/tools/hypothesis_index.R). 조건: 측정 축 표식 · 정보 경계 경고(미구현 — 남은 과제)",
+    "promotion_and_dist_lifecycle": "retire — 지난 90일 승격 0(무인 승격 19건 전부 롤백) · 승인 카드 정제 08-23 뒤 0. 코드 보관과 호출처 12곳 재배선은 별도 작업(코드는 그대로 있다 · 주간 스윕 3.5단계는 promotion_enabled 를 읽어 후보 순회를 건너뛴다)",
+    "inject_variable_part": "off — 아래 스위치",
+    "weekly_review_and_monthly_distill_tasks": "retire — 예약 작업 AxiomReview · MonthlyDistill 끄기는 도훈(시스템 설정)",
+    "process_axioms": "keep — AX-000/001/002/008 은 주입 고정부에 그대로 실린다(상시 로드 규칙으로 옮기는 것은 코드 보관 작업에서)"
+  },
+  "inject_variable_part": false,
+  "promotion_enabled": false,
+  "_promotion_enabled_doc": "02_Infrastructure/ops/weekly_cleaner_sweep.R 3.5단계가 읽는다. false = 후보 순회(사전판정 · dry-run · promote) 생략 · 수확(lcode_harvester)은 계속. 되돌리기 = true.",
+  "_inject_variable_part_doc": "02_Infrastructure/hooks/axiom_context_inject.sh 가 읽는다. false = 에이전트 스폰 주입에서 변동부(최고 전략 성과 줄 · 양성 DIST · 최근 교훈 · dead)를 빼고 조회 안내 한 줄만 싣는다. 되돌리기 = true(또는 이 파일 삭제 — 파일이 없으면 종전대로 싣는다). 고정부(공리 · 고정 축 · 정체성 · 프론티어)는 값과 무관하게 실린다.",
+  "learning_loop_replacement": "06_Registry/round_outcomes.jsonl(결과 원장 · round_core v1 outcomes.R) — 1계층 라운드의 다음 탐침 · 교훈 · 목표 축 판독"
+}

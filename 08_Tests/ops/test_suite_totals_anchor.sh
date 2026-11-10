@@ -98,6 +98,79 @@ mut_tot=$(tot "$(mut "$INCIDENT")")
 chk "X1 구판(head -1)은 7 을 집는다 = 이 검사가 실제 결함을 구분한다" "7" "$mut_tot"
 
 echo
+echo "=== 같은 날 재수집 건너뛰기 (2026-11-10 — 아침 체인이 리프레시를 다시 돌릴 때 배터리 중복 실행) ==="
+TD="$(mktemp -d 2>/dev/null || echo "/tmp/st_anchor_$$")"; mkdir -p "$TD"
+mk_latest() { printf '{\n  "collected_at": "%sT03:34:33+09:00",\n  "tree_head": "abc1234",\n  "hooks": %s,\n  "regime": null\n}\n' "$1" "$2" > "$TD/latest.json"; }
+yn() { if "$@"; then echo yes; else echo no; fi; }
+mk_latest "2026-11-10" "10975"
+chk "S1 오늘 수집 · 수치 있음 → 건너뜀"            "yes" "$(yn st_collected_today "$TD/latest.json" "2026-11-10")"
+chk "S2 어제 수집 → 다시 수집"                     "no"  "$(yn st_collected_today "$TD/latest.json" "2026-11-11")"
+mk_latest "2026-11-10" "null"
+chk "S3 오늘 수집이지만 hooks=null(수집 실패) → 다시 수집" "no" "$(yn st_collected_today "$TD/latest.json" "2026-11-10")"
+chk "S4 최근 수집 파일 없음 → 수집"                "no"  "$(yn st_collected_today "$TD/none.json" "2026-11-10")"
+# 돌연변이: 수치 확인을 뺀 판은 수집 실패한 날에도 건너뛴다 — S3 이 그것을 잡는다
+st_today_mut() { local d; d=$(grep -oE '"collected_at": *"[0-9]{4}-[0-9]{2}-[0-9]{2}' "$1" | grep -oE '[0-9]{4}-[0-9]{2}-[0-9]{2}' | head -1); [ "$d" = "$2" ]; }
+chk "X2 수치 확인이 없으면 실패한 수집도 건너뛴다 = S3 이 실제 결함을 구분한다" "yes" "$(yn st_today_mut "$TD/latest.json" "2026-11-10")"
+
+echo
+echo "=== 폴더별 합계 — 러너 결과의 timings 에서(중복 러너 대체) ==="
+cat > "$TD/res.json" <<'JSON'
+{"timings":[{"suite":"08_Tests/regime/test_a.R","secs":3,"rc":0,"pass":10,"fail":1,"skipped":0},
+            {"suite":"08_Tests/regime/test_b.R","secs":1,"rc":0,"pass":5,"fail":0,"skipped":0},
+            {"suite":"08_Tests/ops/test_c.sh","secs":2,"rc":0,"pass":7,"fail":0,"skipped":0}]}
+JSON
+chk "T1 regime 몫만 더한다(총 16 · 실패 1)" "16 1" "$(st_folder_totals "$TD/res.json" "08_Tests/regime/" | tr -d '\r')"
+cat > "$TD/res_null.json" <<'JSON'
+{"timings":[{"suite":"08_Tests/regime/test_a.R","secs":3,"rc":1,"pass":null,"fail":null,"skipped":null},
+            {"suite":"08_Tests/regime/test_b.R","secs":1,"rc":0,"pass":5,"fail":0,"skipped":0}]}
+JSON
+chk "T2 요약을 못 낸 스위트가 섞이면 빈 값(0 으로 접지 않는다 → null)" "" "$(st_folder_totals "$TD/res_null.json" "08_Tests/regime/" | tr -d '\r')"
+echo '{"tests":[]}' > "$TD/res_old.json"
+chk "T3 timings 가 없는 구판 결과 → 빈 값"         "" "$(st_folder_totals "$TD/res_old.json" "08_Tests/regime/" | tr -d '\r')"
+echo
+echo "=== 단계(tier) — 밤 목록 · 주 1회 전체 (2026-11-10) ==="
+echo '{"schema":"suite_tiers_v1","full_weekday": 6}' > "$TD/tiers.json"
+chk "R1 전체 요일(6)이면 full"                       "full"    "$(st_pick_tier "$TD/tiers.json" 6)"
+chk "R2 그 밖의 요일이면 nightly"                    "nightly" "$(st_pick_tier "$TD/tiers.json" 2)"
+chk "R3 설정 파일이 없으면 full(조용히 줄이지 않는다)" "full"   "$(st_pick_tier "$TD/none.json" 2)"
+echo '{"full_weekday": "토"}' > "$TD/tiers_bad.json"
+chk "R4 요일 값을 못 읽으면 full"                    "full"    "$(st_pick_tier "$TD/tiers_bad.json" 2)"
+printf '# 주석\n08_Tests/ops/test_a.sh\n\n  # 들여쓴 주석\n08_Tests/hooks/test_b.R  \n' > "$TD/nightly.exclude"
+RX="$(st_profile_regex "$TD/nightly.exclude")"
+chk "R5 프로필 → 정규식(주석 · 빈 줄 제외 · 점 이스케이프)" '08_Tests/ops/test_a\.sh|08_Tests/hooks/test_b\.R' "$RX"
+m1=no; [[ "08_Tests/ops/test_a.sh" =~ $RX ]] && m1=yes
+m2=no; [[ "08_Tests/ops/test_axsh" =~ $RX ]] && m2=yes
+chk "R6 정규식이 목록의 경로에 걸린다"               "yes" "$m1"
+chk "R7 점이 임의 글자로 풀리지 않는다(test_axsh 는 안 걸림)" "no" "$m2"
+chk "R8 프로필이 없으면 빈 값(아무것도 빼지 않는다)" "" "$(st_profile_regex "$TD/none.exclude")"
+# 운영 프로필의 경로가 전부 실재 · 배터리 목록에 있다(없는 경로를 빼는 프로필은 조용히 무의미해진다)
+PROF="$ROOT/08_Tests/hooks/profiles/nightly.exclude"; miss=0; n=0
+if [ -f "$PROF" ]; then
+  while IFS= read -r ln; do
+    ln="${ln%$'\r'}"; case "$ln" in ''|'#'*) continue ;; esac; n=$((n+1))
+    { [ -f "$ROOT/$ln" ] && grep -qF "\"$ln\"" "$ROOT/08_Tests/hooks/run_all_hooks.sh"; } || miss=$((miss+1))
+  done < "$PROF"
+fi
+chk "R9 운영 밤 제외 목록 — 경로 전부 실재 · 배터리 목록에 있음(${n}종)" "0" "$miss"
+# 단계가 다른 수집은 총계를 견주지 않는다 · 밤 수집은 기준선이 될 수 없다
+BASELINE="$TD/base.json"; LATEST="$TD/latest.json"
+printf '{"collected_at":"2026-08-03T09:56:04+09:00","tree_head":"x","hooks":1000,"regime":50,"hooks_fail":0}\n' > "$BASELINE"
+printf '{"collected_at":"2026-11-10T03:00:00+09:00","tree_head":"x","tier":"nightly","hooks":870,"regime":50,"hooks_fail":0,"regime_fail":0}\n' > "$LATEST"
+out_n="$(check 2>&1)"; rc_n=$?
+chk "R10 밤 수집(870) vs 전체 기준선(1000) → '총계 감소' 아님(rc 0)" "0" "$rc_n"
+chk "R11 생략 사실을 출력에 적는다"                 "yes" "$(printf '%s' "$out_n" | grep -q '총계 비교 생략' && echo yes || echo no)"
+printf '{"collected_at":"2026-11-10T03:00:00+09:00","tree_head":"x","tier":"full","hooks":870,"regime":50,"hooks_fail":0,"regime_fail":0}\n' > "$LATEST"
+check >/dev/null 2>&1; rc_f=$?
+chk "R12 [대조] 전체 수집이 줄었으면 그대로 경보(rc 1)" "1" "$rc_f"
+printf '{"collected_at":"2026-11-10T03:00:00+09:00","tree_head":"x","tier":"nightly","hooks":870,"regime":50,"hooks_fail":3,"regime_fail":0}\n' > "$LATEST"
+check >/dev/null 2>&1; rc_ff=$?
+chk "R13 밤 수집이어도 fail > 0 은 경보(rc 1)"       "1" "$rc_ff"
+cp "$BASELINE" "$TD/base_before.json"
+promote >/dev/null 2>&1; rc_p=$?
+chk "R14 밤 수집은 기준선 승격 거부(rc 1 · 기준선 불변)" "1 same" "$rc_p $(cmp -s "$BASELINE" "$TD/base_before.json" && echo same || echo changed)"
+rm -rf "$TD" 2>/dev/null
+
+echo
 echo "=== test_suite_totals_anchor: $PASS PASS / $FAIL FAIL ==="
 echo "{\"test\":\"suite_totals_anchor\",\"pass\":$PASS,\"fail\":$FAIL,\"skipped\":0,\"total\":$((PASS+FAIL))}"
 [ "$FAIL" -gt 0 ] && exit 1

@@ -338,7 +338,7 @@ if (!file.exists(inj_last)) {
     mk <- ij$markers %|L|% list()
     # 청정 레인 · 정보 경계(τ_D) 대상 스폰은 훅이 변동부(성과 · 교훈 · dead)를 **일부러** 뺀다 — 그 스폰이 마지막이면 마커 3종이
     #   없는 것이 정상이다(2026-11-10: tau_d 분기 신설 · 청정 레인 분기는 그 전부터 같은 오경보 여지가 있었다). 길이 · 신선도는 그대로 본다.
-    by_design <- isTRUE(ij$clean_lane) || isTRUE(ij$tau_d_agent)
+    by_design <- isTRUE(ij$clean_lane) || isTRUE(ij$tau_d_agent) || isTRUE(ij$variable_part_off)   # 변동부 스위치(v10.2)가 꺼진 주입도 같다
     mk_ok <- by_design || (isTRUE(mk$positive) && isTRUE(mk$recent) && isTRUE(mk$dead))
     probs <- c(if (!is.finite(age_h) || age_h > 24) sprintf("계측 %.1fh 경과(>24h)", age_h),
                if (!is.finite(ilen) || ilen > 2000L) sprintf("주입 길이 %s > 2000", as.character(ilen)),

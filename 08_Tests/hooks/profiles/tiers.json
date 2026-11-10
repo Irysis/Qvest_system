@@ -1,0 +1,8 @@
+{
+  "schema": "suite_tiers_v1",
+  "_doc": "시험 배터리 단계(2026-11-10 전수점검 · v10.2). 밤 리프레시 끝의 수집(02_Infrastructure/ops/suite_totals_watch.sh --collect)이 읽는다. full_weekday 인 날은 전체(full)를, 그 밖의 날은 profiles/nightly.exclude 를 뺀 밤 목록(nightly)을 돈다. 이 파일을 못 읽으면 전체를 돈다.",
+  "full_weekday": 6,
+  "_full_weekday_basis": "ISO 요일 6 = 토요일. 토요일 밤 수집은 주말이라 아침 체인이 브리핑 없이 데이터 최신성만 보므로(morning_run 주말 가지) 전체 실행이 사람을 기다리게 하지 않고, 같은 날 09:00 주간 클리너 스윕과 한 주기를 이룬다. 근거가 바뀌면 이 값을 바꾼다(1~7).",
+  "nightly_exclude": "08_Tests/hooks/profiles/nightly.exclude",
+  "next": "스위트별 소요 시간(결과 파일의 timings)이 전체 실행 한 번 뒤부터 쌓인다 — 그 값으로 무거운 스위트를 밤 목록에서 더 뺄지 정한다."
+}

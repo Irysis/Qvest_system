@@ -145,14 +145,19 @@ rc_register <- function(round_dir, root = rc_root(), registry_path = NULL, ledge
 }
 
 ## 종료 기록 — verdict.json(판정 단일 출처)에서 등록부 결과를 만든다 · 해석 메모 · 리뷰 id 는 Q 가 넘긴다
+##   (2026-11-10 · v10.2) 닫는 단계 기계화 — 다음 탐침(≥ 2 또는 사유) · 교훈 · 목표 축 판독(r7)을 받아 결과 원장(outcomes.R)에 남긴다.
+##   원장 기록(τ_D 날짜 검사 포함)을 먼저 만들고, 등록부 기록이 성공한 뒤에 원장에 쓴다 — 어느 쪽이 실패해도 반쪽 기록이 남지 않는다.
 rc_close <- function(round_dir, note, philosophy_p2 = NA_character_, superfan_t2 = NA_character_, extra = list(),
-                     root = rc_root(), registry_path = NULL) {
+                     root = rc_root(), registry_path = NULL, probes = character(0), lessons = character(0), r7 = NA_character_,
+                     no_probes_reason = NULL, outcomes_path = NULL) {
   spec <- rc_spec_load(file.path(round_dir, "round_spec.json"), root = root, check_files = FALSE); P <- rc_paths(round_dir, spec, root)
   V <- rc_json_read(file.path(P$results, "verdict.json"))
   if (!identical(V$prereg_md5, rc_md5(P$prereg))) stop("[round_core close] 판정이 지금 사전등록(md5)으로 난 것이 아니다(R2)")
+  rec <- rc_outcome_record(spec, V, note, probes = probes, lessons = lessons, r7 = r7, no_probes_reason = no_probes_reason, P = P, root = root)
   pr_record_round(spec[["program"]], c(list(round_id = spec[["round_id"]], prereg = P$prereg_rel, prereg_md5 = rc_md5(P$prereg), status = "complete",
                                            verdict = c(V$summary, list(note = note)), philosophy_p2 = philosophy_p2, superfan_t2 = superfan_t2,
                                            report = rc_rel(file.path(P$results, "verdict.json"), root)), extra),
                   root = root, path = registry_path)
+  rc_outcome_append_round(rec, if (is.null(outcomes_path)) rc_outcomes_path(root, registry_path) else outcomes_path)
   invisible(TRUE)
 }

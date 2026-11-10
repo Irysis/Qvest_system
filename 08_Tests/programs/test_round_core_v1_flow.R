@@ -86,12 +86,43 @@ chk("C5 보는 창 파일 — 시험 창 열 없음 · τ_D 이후 날짜 없음
     paste(cols, collapse = ","))
 vj <- rc_json_read(file.path(P$results, "verdict.json"))
 chk("C6 판정 기록 = 지금 사전등록 md5 · 요약 라벨", identical(vj$prereg_md5, rc_md5(P$prereg)) && grepl("^자격 2/3", vj$summary$label))
-rc_close(RD, note = "자체 시험", registry_path = REG)
+## 닫는 단계 기계화(2026-11-10 · v10.2 결과 원장) — 격리 등록부 옆에 원장이 생긴다(운영 06_Registry/round_outcomes.jsonl 무접촉)
+OUTL <- rc_outcomes_path(registry_path = REG)
+chk("C7a 다음 탐침 2개 미만 = 종료 거부(사유도 없으면)", grepl("다음 탐침이 2개 미만", err_of(rc_close(RD, note = "자체 시험", registry_path = REG, probes = "하나뿐"))) && !file.exists(OUTL))
+chk("C7b 해석 글에 정보 경계 뒤 날짜 = 종료 거부 · 원장 · 등록부 무기록",
+    grepl("정보 경계 뒤 날짜", err_of(rc_close(RD, note = "2024-03-15 급락에서 확인", registry_path = REG, probes = c("탐침 하나", "탐침 둘")))) && !file.exists(OUTL) &&
+      !identical(Filter(function(z) identical(z$round_id, RID), pr_get(pr_load(path = REG), "P1_RETURN")$rounds)[[1]]$status, "complete"))
+chk("C7c 목표 축 판독 어휘 밖 = 거부", grepl("어휘 밖", err_of(rc_close(RD, note = "자체 시험", registry_path = REG, probes = c("a", "b"), r7 = "maybe"))))
+rc_close(RD, note = "자체 시험", registry_path = REG, probes = c("탐침 하나", "탐침 둘"), lessons = "교훈 하나", r7 = "noise")
 e2 <- Filter(function(z) identical(z$round_id, RID), pr_get(pr_load(path = REG), "P1_RETURN")$rounds)
 chk("C7 종료 기록 — complete · 판정 요약 · 해석 메모", identical(e2[[1]]$status, "complete") && grepl("^자격 2/3", e2[[1]]$verdict$label) &&
       identical(e2[[1]]$verdict$note, "자체 시험"))
+o1 <- rc_outcomes_read(OUTL)
+chk("C7d 결과 원장 1줄 — 라운드 · 프로그램 · 탐침 2 · 교훈 1 · 목표 축 판독 · 측정 축 · 사전등록 md5",
+    length(o1) == 1L && identical(o1[[1]]$round_id, RID) && identical(o1[[1]]$program, "P1_RETURN") && length(o1[[1]]$probes) == 2L &&
+      length(o1[[1]]$lessons) == 1L && identical(o1[[1]]$r7, "noise") && !is.null(o1[[1]]$epoch) && identical(o1[[1]]$prereg_md5, rc_md5(P$prereg)))
+rc_close(RD, note = "자체 시험", registry_path = REG, probes = c("탐침 하나", "탐침 둘"))
+chk("C7e 같은 라운드를 다시 닫아도 원장은 한 줄(추가 전용 · 중복 없음)", length(rc_outcomes_read(OUTL)) == 1L)
+rc_probe_consume(paste0(RID, "#1"), "NEXT_ROUND", OUTL)
+chk("C7f 탐침 이어받기 — 열린 탐침 1개 남음 · 같은 탐침 재사용 거부 · 없는 탐침 거부",
+    length(rc_open_probes(OUTL, "P1_RETURN")) == 1L && grepl("이미 이어받은", err_of(rc_probe_consume(paste0(RID, "#1"), "OTHER", OUTL))) &&
+      grepl("원장에 없는 탐침", err_of(rc_probe_consume(paste0(RID, "#9"), "OTHER", OUTL))) && grepl("형식", err_of(rc_probe_consume("no_hash", "OTHER", OUTL))))
+md <- rc_outcomes_md(OUTL, "P1_RETURN")
+chk("C7g 다음 설계 입력(markdown) — 탐침 2줄(하나는 '이어받음') · 교훈 · 연속 '잡음 이내' 1회",
+    sum(grepl("다음 탐침", md)) == 2L && sum(grepl("(이어받음)", md, fixed = TRUE)) == 1L && any(grepl("교훈: 교훈 하나", md)) &&
+      identical(rc_r7_streak(OUTL, "P1_RETURN"), 1L))
+## 양성 대조 — 날짜 검사 줄을 뺀 사본은 정보 경계 뒤 날짜가 든 글을 받아들인다(C7b 가 이것을 잡는다)
+local({
+  src <- readLines(file.path(RC_DIR, "outcomes.R"), warn = FALSE, encoding = "UTF-8")
+  hit <- grep('if (length(leaks)) stop("[round_core close] 결과 원장 글에 정보 경계 뒤 날짜가 있다', src, fixed = TRUE)
+  mut <- src; if (length(hit) == 1L) mut[hit] <- ""
+  e <- new.env(parent = globalenv()); eval(parse(text = mut, keep.source = FALSE), envir = e)
+  s <- rc_spec_load(file.path(RD, "round_spec.json"), check_files = FALSE)
+  r <- tryCatch(e$rc_outcome_record(s, rc_json_read(file.path(P$results, "verdict.json")), "2024-03-15 급락", probes = c("a", "b"), P = P), error = function(x) x)
+  chk("C7h 날짜 검사를 뺀 사본은 경계 뒤 날짜를 통과시킨다 — C7b 가 실제로 잰다", length(hit) == 1L && !inherits(r, "error") && identical(r$note, "2024-03-15 급락"))
+})
 cat("x", file = P$prereg, append = TRUE)
-chk("C8 판정 뒤 사전등록 변경 → 종료 기록 거부(R2)", grepl("R2", err_of(rc_close(RD, note = "재기록", registry_path = REG))))
+chk("C8 판정 뒤 사전등록 변경 → 종료 기록 거부(R2)", grepl("R2", err_of(rc_close(RD, note = "재기록", registry_path = REG, probes = c("a", "b")))))
 
 cat("D 캐시 키 · 핀 어휘\n")
 AD <- file.path(SB, "art"); dir.create(AD)

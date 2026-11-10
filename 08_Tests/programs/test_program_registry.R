@@ -23,6 +23,15 @@ errs <- function(expr) inherits(tryCatch(expr, error = function(e) e), "error")
 live <- pr_path()
 live_md5 <- tools::md5sum(live)
 tmp <- tempfile(fileext = ".json"); file.copy(live, tmp)
+## ★운영 상태를 빌리지 않는다(2026-11-10 전수점검): 운영 큐에 재료가 쌓이고(P1 69건) · 미분류 재료 줄이 생기고 · P4 가 도훈 결정으로
+##   ready 가 되면서, '빈 큐 · blocked P4 · 줄 수'를 가정한 검사 5건이 writer 결함 없이 빨개져 있었다(야간 배터리 상시 실패).
+##   사본에서 큐 · 미분류 재료를 비우고 잰다(스키마 · 프로그램 목록은 운영 그대로 — writer 가 실제 모양을 받는지는 계속 본다).
+local({
+  r <- pr_load(path = tmp)
+  for (i in seq_along(r$programs)) { r$programs[[i]]$queue <- list(); r$programs[[i]]$consumed <- list() }
+  if (!is.null(r$paper_routing)) r$paper_routing$unrouted <- list()
+  pr_save(r, path = tmp)
+})
 
 cat("=== A. 운영 등록부 검사 통과 ===\n")
 chk("운영 등록부 스키마 통과", length(pr_validate(pr_load(path = live))) == 0L,
@@ -106,6 +115,9 @@ reg <- pr_load(path = tmp)
 i0 <- which(vapply(reg$programs, function(p) identical(p$id, "P0_FRONTIER"), logical(1)))
 reg$programs[[i0]]$status <- "blocked"
 reg$programs[[i0]]$blocked_by <- lapply(reg$measurement_contract$items, function(m) m$id)
+## P4 도 같다 — 운영 P4 는 도훈 10-15 결정으로 ready 다. 규칙(선행 프로그램이 done 이 아니면 blocked 유지)을 재려면 사본에서 blocked 로 둔다.
+i4 <- which(vapply(reg$programs, function(p) identical(p$id, "P4_ASSEMBLY"), logical(1)))
+reg$programs[[i4]]$status <- "blocked"; reg$programs[[i4]]$blocked_by <- list("P0_FRONTIER")
 chk("측정 계약이 하나라도 남으면 P0 는 blocked 유지(음성 대조)",
     length(reg$measurement_contract$items) == 0L ||
       { rr <- reg; rr$measurement_contract$items[[1]]$status <- "todo"; identical(pr_get(pr_refresh_blocks(rr), "P0_FRONTIER")$status, "blocked") })
