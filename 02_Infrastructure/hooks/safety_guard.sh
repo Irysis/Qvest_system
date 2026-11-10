@@ -37,6 +37,14 @@ _qsg_join() {  # $1 → _Q1 : 줄 이음 \<CR><LF>·\<LF> 만 제거(bash 의미
   s="${s//$'\\\r\n'/}"; s="${s//$'\\\n'/}"
   _Q1="$s"
 }
+_qsg_psjoin() {  # _Q1 → _Q1 : PowerShell 줄 이음 백틱+CRLF·LF·CR = 공백 하나 (2026-11-10 적대적 검토 1차 U8)
+  #   PowerShell 은 백틱+개행을 한 명령 안의 공백으로 읽는다 — `Copy-Item a.R `<개행>  -Destination 05_Production\a.R` 은 한 명령이다.
+  #   글자를 지우지 않고 공백으로 이으므로 낱말을 새로 만들지 않는다(빠른 길 증명 ②에 새 경우가 생기지 않는다). 개행 경계는 그대로.
+  local s="$_Q1" bt='`'
+  while [[ "$s" == *"$bt"$'\r\r'* ]]; do s="${s//"$bt"$'\r\r'/"$bt"$'\r'}"; done   # 백틱 + CR 여럿 + LF 도 한 줄 이음으로
+  s="${s//"$bt"$'\r\n'/ }"; s="${s//"$bt"$'\n'/ }"; s="${s//"$bt"$'\r'/ }"
+  _Q1="$s"
+}
 _qsg_oneline() {  # $1 → _Q1 : _qsg_join 뒤 CRLF·LF·CR = ' ; ' (Rule 3 토큰화 전용 — read -a 는 첫 줄만 읽는다)
   local s
   _qsg_join "$1"; s="$_Q1"
@@ -246,6 +254,16 @@ _qsg_fast_fields() {  # INPUT → TOOL_NAME · FILE_PATH (+ 나머지 4필드 ''
   AGENT_NAME=''; COMMAND=''; CONTENT=''; AGENT_PROMPT=''
   return 0
 }
+_qsg_fast_ps_clear() {  # _qsg_fast_fields 뒤 — PowerShell 이면 보호 낱말을 대소문자 무시로 다시 본다 · 1 = 원래 경로로 (2026-11-10 U8)
+  #   PowerShell 갈래의 Rule 2 는 grep -qiE(대소문자 무시)다 — 05_production · 05_PRODUCTION 도 차단된다. 위 case 는 대소문자를
+  #   구분하므로 PowerShell 입력은 여기서 한 번 더 걸러야 '빠른 길이 허용하면 느린 길도 허용'이 성립한다. Bash · Write · Edit 의
+  #   느린 길은 대소문자를 구분하므로(위 case 와 같은 기준) 이 검사를 타지 않는다 — 그 갈래의 판정은 글자 하나 바뀌지 않는다.
+  if [ "${TOOL_NAME:-}" != "PowerShell" ]; then return 0; fi
+  case "${INPUT,,}" in
+    *05_production*|*01_literature*|*normalizepath*) return 1 ;;
+  esac
+  return 0
+}
 
 _gate_fail_closed() {
   local hay="${FILE_PATH:-}${COMMAND:-}"
@@ -288,7 +306,9 @@ fi
 #   ② 줄 이음 제거(_qsg_join: 역슬래시+LF · 역슬래시+CR+LF)는 글자를 지워 낱말을 이을 수 있다. 해독값에
 #      역슬래시+LF/CR 이 생기려면 원문에 '\\\n' · '\\\r'(이스케이프 4글자) 또는 \u 가 있어야 하고, 원문
 #      자체(파싱 실패 → hay = INPUT)에 이으려면 원문에 역슬래시+LF/CR 이 있어야 한다 → 넷 다 원래 경로로.
-#   ⇒ 아래 case 를 통과한 입력은 어떤 파싱 결과로도 차단될 수 없다. 출력 '{}' = 원래 경로의 허용 출력.
+#   ③ (2026-11-10 U8) PowerShell 갈래의 Rule 2 는 05_Production 을 대소문자 무시로 본다 → TOOL_NAME=PowerShell 이면
+#      _qsg_fast_ps_clear 가 원문을 소문자로 접어 다시 본다. PowerShell 줄 이음(백틱+개행 → 공백)은 글자를 지우지 않아 낱말을 만들지 않는다.
+#   ⇒ 아래 case(+ PowerShell 이면 소문자 재검사)를 통과한 입력은 어떤 파싱 결과로도 차단될 수 없다. 출력 '{}' = 원래 경로의 허용 출력.
 # 기록: 원래 경로와 같은 _shared_parse.sh 발화 기록을 사전 파싱 모드($$ 표식)로 남긴다 — 값(TOOL_NAME ·
 #   FILE_PATH)을 확실히 못 뽑으면(_qsg_fast_fields=1: 객체 모양 아님 · tool_input 객체 아님 · 키 중복 ·
 #   AGENT 키 · 해독 불가) 원래 경로로 간다. 남는 차이(둘 다 Claude Code 가 내지 않는 입력): ① '{…}' 모양에
@@ -301,7 +321,7 @@ if [ "${QVEST_HOOK_FASTPATH:-1}" != "0" ] && [ "$_QSG_RULE3" != "1" ]; then
   case "$INPUT" in
     *05_Production*|*01_Literature*|*normalizePath*|*'\u'*|*'\\\n'*|*'\\\r'*|*$'\\\n'*|*$'\\\r'*) : ;;
     *)
-      if _qsg_fast_fields; then
+      if _qsg_fast_fields && _qsg_fast_ps_clear; then
         _qsg_src="${BASH_SOURCE[0]:-$0}"
         case "$_qsg_src" in */*) _qsg_src="${_qsg_src%/*}"; [ -n "$_qsg_src" ] || _qsg_src=/ ;; *) _qsg_src=. ;; esac
         QVEST_PARSE_TRAP=caller
@@ -353,6 +373,7 @@ fi
 if [ "$TOOL_NAME" = "Bash" ] || [ "$TOOL_NAME" = "PowerShell" ]; then
   _qsg_join "$COMMAND"   # (R3R·D2) 줄 이음만 잇는다 — 개행은 명령 경계 그대로(grep 줄 단위: 개행으로 갈린 두 명령을 잇지 않는다)
   if [ "$TOOL_NAME" = "PowerShell" ]; then
+    _qsg_psjoin            # (U8) PowerShell 줄 이음(백틱+개행)도 한 명령으로 — 쓰기 동사와 경로를 두 줄로 가른 꼴
     if printf '%s\n' "$_Q1" | grep -qiE "(>|(^|[^A-Za-z-])(mv|cp|rm|del|ren|move|copy|ni|sc|ac|rd|rmdir|md|mkdir)([^A-Za-z-]|$)|(Move|Copy|Remove|Rename|New|Set|Clear)-Item(Property)?|(Set|Add|Clear)-Content|Out-File|Tee-Object|Export-[A-Za-z]+).*05_Production"; then
       echo '{"decision":"block","reason":"05_Production/ write attempt via PowerShell"}'
       exit 0

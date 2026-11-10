@@ -91,11 +91,23 @@ add("s_block_cont_split", "safety_guard", "B", hi("Bash", {"command": "cp a.R 05
 add("s_block_u_escape", "safety_guard", "B", '{"tool_name":"Bash","tool_input":{"command":"cp a \\u0030\\u0035_Production/x"}}')
 add("s_block_invalid_prod", "safety_guard", "B", '{"tool_name":"Bash","tool_input":{"command":"cp a 05_Production/x"')
 add("s_block_lane_memory", "safety_guard", "B", hi("Write", {"file_path": "C:\\Users\\x\\.claude\\projects\\p\\memory\\a.md", "content": "a"}), "QVEST_UNATTENDED_LANE=1")
+# PowerShell 갈래(2026-11-10 적대적 검토 1차 U8) — Rule 2 PowerShell 판은 경로를 대소문자 무시로 본다 · 백틱+개행 = 줄 이음
+add("s_ps_allow", "safety_guard", "A", hi("PowerShell", {"command": "Get-Process | Select-Object -First 3", "description": "d"}))
+add("s_ps_block_lower", "safety_guard", "B", hi("PowerShell", {"command": "Remove-Item 05_production\\x.R"}))
+add("s_ps_block_upper", "safety_guard", "B", hi("PowerShell", {"command": "Copy-Item a.R .\\05_PRODUCTION\\a.R"}))
+add("s_ps_allow_lower_read", "safety_guard", "A", hi("PowerShell", {"command": "Get-Content 05_production\\x.R -TotalCount 3"}))
+add("s_ps_block_backtick", "safety_guard", "B", hi("PowerShell", {"command": "Copy-Item a.R `\n  -Destination .\\05_Production\\a.R"}))
+add("s_bash_lower_unchanged", "safety_guard", "A", hi("Bash", {"command": "cp x.R 05_production/x.R"}))
 # telegram_direct_call_guard
 add("t_allow", "telegram_direct_call_guard", "A", hi("Bash", {"command": "Rscript -e 'cat(1)'"}))
 add("t_allow_brief", "telegram_direct_call_guard", "A", hi("Bash", {"command": "Rscript -e \"tg_agent_brief('q','t',list()); tg_send('x')\""}))
 add("t_deny_direct", "telegram_direct_call_guard", "B", hi("Bash", {"command": "Rscript -e \"tg_send('hi')\""}))
 add("t_deny_u", "telegram_direct_call_guard", "B", '{"tool_name":"Bash","tool_input":{"command":"Rscript -e \\"tg\\u005fsend(1)\\""}}')
+add("t_ps_allow", "telegram_direct_call_guard", "A", hi("PowerShell", {"command": "Get-Process | Select-Object -First 3"}))
+add("t_ps_deny_herestring", "telegram_direct_call_guard", "B", hi("PowerShell", {"command": "@'\ntg_send(\"x\")\n'@ | Rscript -"}))
+add("t_ps_deny_backtick", "telegram_direct_call_guard", "B", hi("PowerShell", {"command": "Rscript `\n  -e \"tg_send('x')\""}))
+add("t_ps_deny_hs_token_literal", "telegram_direct_call_guard", "B", hi("PowerShell", {"command": "@'\nx\n'@ | Out-Null; Rscript -e \"tg_send('x') __qvest_hs_7__\""}))
+add("t_ps_deny_var_exec_flag", "telegram_direct_call_guard", "B", hi("PowerShell", {"command": "@'\ntg_send(\"x\")\n'@ | & $R --vanilla -"}))
 # legacy_write_block
 add("l_allow", "legacy_write_block", "A", hi("Write", {"file_path": "C:/Q/x.R", "content": "a"}))
 add("l_allow_invalid", "legacy_write_block", "A", '{"tool_name":"Write","tool_input":{"file_path":"C:/Q/x.R"')
