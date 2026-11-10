@@ -34,4 +34,6 @@ old_line <- "print('C_COUNT=%s'  % q('1' if c.get('count_paper') else '0'))"
 got <- harness(cases[[1]]$j, old_line)
 if (identical(got, "0")) ok("B 구판 로직은 비결합 요청을 0 으로 (검사가 병을 본다)") else ng("B 구판 재현 실패", got)
 cat(sprintf("\n== test_rp_count_paper: %d pass · %d fail ==\n", P, F))
+# 요약 JSON(2026-11-10) — 이 줄이 없어 러너가 이 스위트를 '미측정'으로 셌다.
+cat(sprintf('{"test":"rp_count_paper","pass":%d,"fail":%d,"total":%d}\n', as.integer(P), as.integer(F), as.integer(P + F)))
 if (F > 0L) quit(status = 1L)

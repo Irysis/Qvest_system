@@ -250,4 +250,6 @@ chk("F3_gate_reads_build_state", any(grepl("_asof/_last_update.txt", DR, fixed =
 
 unlink(TMP, recursive = TRUE)
 cat(sprintf("\n[test_fdb_state_gate] %d PASS / %d FAIL\n", N_PASS, N_FAIL))
+# 요약 JSON(2026-11-10) — 이 줄이 없어 러너가 이 스위트를 '미측정'으로 셌다.
+cat(sprintf('{"test":"fdb_state_gate","pass":%d,"fail":%d,"total":%d}\n', as.integer(N_PASS), as.integer(N_FAIL), as.integer(N_PASS + N_FAIL)))
 if (N_FAIL > 0L) quit(status = 1L)

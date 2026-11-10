@@ -170,7 +170,10 @@ def _key(cid, rid, text):
 
 
 def _record(W, cid, rid, sev, text, evidence, now, from_new_lines, event_time=None):
-    """이상 1건 갱신 — 같은 키면 count · last_seen 만. 확인(acked) · 만료(expired) · 해소(resolved)된 이상이 새 사건으로 다시 나오면 재개방."""
+    """이상 1건 갱신 — 같은 키면 count · last_seen 만. 확인(acked) · 만료(expired)된 이상이 새 사건(새 로그 줄)으로 다시 나오면 재개방.
+    해소(resolved)는 상태형 규칙이 정상 복귀했다는 뜻이므로, 그 뒤 같은 상태가 다시 잡히면 새 일화다 — 새 줄 여부와 무관하게 재개방한다
+    (2026-11-10: 상태형 규칙은 from_new_lines 가 늘 거짓이라 해소 뒤 재발이 'seen' 으로 묻혀 알림이 영영 가지 않았다).
+    확인(acked)한 상태가 그대로 이어지는 것은 재개방하지 않는다(정상 복귀를 거쳐야 새 일화)."""
     k = _key(cid, rid, text)
     A = W.setdefault("anomalies", {})
     a = A.get(k)
@@ -183,7 +186,7 @@ def _record(W, cid, rid, sev, text, evidence, now, from_new_lines, event_time=No
     a["last_seen"] = ts; a["count"] += 1; a["text"] = text[:400]; a["evidence"] = evidence
     if et:
         a["event_time"] = et
-    if a["status"] in ("acked", "expired", "resolved") and from_new_lines:
+    if a["status"] == "resolved" or (a["status"] in ("acked", "expired") and from_new_lines):
         a["status"] = "open"; a["reopened"] += 1
         return "reopened"
     return "seen"

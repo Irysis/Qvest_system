@@ -279,4 +279,6 @@ if (identical(Sys.getenv("QVEST_MS_TEST_HEAVY"), "1")) {
 
 unlink(td, recursive = TRUE)
 cat(sprintf("\n== test_round_core_measure_server: PASS %d · FAIL %d ==\n", PASS, FAIL))
+# 요약 JSON(2026-11-10) — 이 줄이 없어 러너가 이 스위트를 '미측정'으로 셌다.
+cat(sprintf('{"test":"round_core_measure_server","pass":%d,"fail":%d,"total":%d}\n', as.integer(PASS), as.integer(FAIL), as.integer(PASS + FAIL)))
 if (FAIL > 0L) quit(status = 1)

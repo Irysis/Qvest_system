@@ -118,7 +118,10 @@ emit_lcode <- function(mode, strategy_id, grade, lesson_text,
     ct_inferred <- TRUE
   }
 
-  prefix <- .LCODE_MODE_PREFIX[[mode]] %||% "GEN"
+  # ★2026-11-10 수리: 이름 있는 원자 벡터의 [[ 는 없는 이름에 NULL 이 아니라 오류("subscript out of bounds")를 낸다.
+  #   구판 `.LCODE_MODE_PREFIX[[mode]] %||% "GEN"` 의 GEN 폴백은 그래서 한 번도 돈 적이 없고, 맵에 없는 mode 는
+  #   교훈째로 사라졌다(주간 증류 6주 14건). 이름을 먼저 확인한다.
+  prefix <- if (isTRUE(as.character(mode)[1] %in% names(.LCODE_MODE_PREFIX))) unname(.LCODE_MODE_PREFIX[[mode]]) else "GEN"
   auto_id <- is.null(l_code)
   if (auto_id)
     l_code <- sprintf("L-%s-%s", prefix, format(Sys.time(), "%Y%m%d_%H%M%S"))

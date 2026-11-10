@@ -406,6 +406,56 @@ cd_materials <- function(out_path) {
 }
 
 #==============================================================================
+# 증류 항목 → 발행 인자 정규화 · 발행 결과 판독 (2026-11-10 전수점검 수리)
+#
+#   주간 증류의 L-code 발행은 09-05 레인 도입 뒤 한 번도 디스크에 닿지 못했다. 원인 셋:
+#   ① 항목의 mode "cleaner" 는 스키마(LCODE_VALID_MODES)에도 접두 맵에도 없다 → 접두 조회에서 오류
+#      ("subscript out of bounds" — 6주 14건).
+#   ② 등급 칸에 "F (라운드 판정 — H1 기각)" · "NA (연구 조사 …)" 같은 서술이 온다 → 등급 enum(A/B/C/F) 검증에서 막힌다.
+#   ③ emit_lcode 는 성공하면 경로 문자열을, 막히면 NULL 을 돌려주는데 구판은 `o$l_code` 로 읽었다 —
+#      성공은 '$ 연산자' 오류로 실패 처리되고, 막힌 것(NULL)은 "발행"으로 성공 처리됐다
+#      (10-03 · 10-10 매니페스트의 ok=true 4건은 디스크에 없다 — 그중 하나가 바로 ①을 적은 교훈이었다).
+#   검사: 08_Tests/ops/test_cleaner_distill_lcode.R (위반 주입 포함)
+#==============================================================================
+cd_lcode_item_norm <- function(l, valid_modes = NULL, schema_src = NULL) {
+  if (is.null(valid_modes) && !is.null(schema_src) && file.exists(schema_src)) {
+    se <- new.env(parent = globalenv())
+    valid_modes <- tryCatch({ suppressMessages(sys.source(schema_src, envir = se)); get("LCODE_VALID_MODES", envir = se) },
+                            error = function(e) NULL)
+  }
+  m0 <- trimws(as.character(l$mode %||% ""))
+  mode <- if (nzchar(m0) && !is.null(valid_modes) && m0 %in% valid_modes) m0 else "weekly_distill"
+  g0 <- trimws(as.character(l$grade %||% ""))
+  # 등급 글자가 맨 앞에 홀로 서 있을 때만 성과 등급으로 읽는다 — "F (라운드 판정 …)" → F · "NA …" · "partial(…)" · "A_DEF" → 등급 아님
+  mm <- regmatches(g0, regexpr("^[ABCF](?![A-Za-z_])", g0, perl = TRUE))
+  has_grade <- length(mm) == 1L && nzchar(mm)
+  distill <- identical(mode, "weekly_distill")
+  list(mode = mode,
+       grade = if (has_grade) mm else "",
+       # 종합 교훈은 새 성과 관측이 아니다 — 등급이 있어도 summary(같은 증거를 성과 기록으로 두 번 세지 않게).
+       # 등급이 없으면 어느 mode 든 process(성과 기록은 등급이 필수라 등급 없는 performance 는 검증에서 막힌다).
+       record_type = if (!has_grade) "process" else if (distill) "summary" else NULL,
+       tags = if (distill) paste0("WEEKLY_DISTILL", if (nzchar(m0) && !identical(m0, "weekly_distill")) paste0(",", toupper(m0)) else "") else NULL,
+       mode_raw = m0, grade_raw = g0)
+}
+
+cd_lcode_emit_result <- function(o, it = NULL) {
+  md <- as.character((it %||% list())$mode %||% NA_character_)
+  if (is.null(o))
+    return(list(ok = FALSE, mode = md,
+                reason = "발행 거부 — 스키마 검증 미통과(증류 로그의 [emit_lcode][BLOCKED] 줄 참조)"))
+  if (is.list(o))   # dry_run = TRUE 는 기록 목록을 돌려준다(파일 없음)
+    return(list(ok = !is.null(o$l_code), l_code = as.character(o$l_code %||% NA_character_), mode = md, reason = "dry-run"))
+  p <- as.character(o)[1]
+  if (is.na(p) || !nzchar(p) || !file.exists(p))
+    return(list(ok = FALSE, mode = md, reason = sprintf("발행 경로 미확인(%s)", substr(as.character(p), 1L, 120L))))
+  id <- tryCatch(as.character(fromJSON(p, simplifyVector = FALSE)$l_code %||% NA_character_),
+                 error = function(e) NA_character_)
+  if (is.na(id) || !nzchar(id)) return(list(ok = FALSE, mode = md, reason = "발행 파일에 l_code 없음"))
+  list(ok = TRUE, l_code = id, mode = md, file = basename(p), reason = "emitted")
+}
+
+#==============================================================================
 # apply — 에이전트 산출 검증 + 집행
 #==============================================================================
 cd_apply <- function(result_path) {
@@ -474,24 +524,36 @@ cd_apply <- function(result_path) {
       if (!eok) { lres[[length(lres)+1L]] <- list(ok = FALSE, reason = "lcode_emit.R 적재 실패"); next }
       if (!nzchar(txt)) { lres[[length(lres)+1L]] <- list(ok = FALSE, reason = "lesson_text 빈값"); next }
       if (txt %in% seen) { lres[[length(lres)+1L]] <- list(ok = FALSE, reason = "중복(corpus 동일 lesson_text)"); next }
+      it <- cd_lcode_item_norm(l, valid_modes = if (exists("LCODE_VALID_MODES", envir = ee)) get("LCODE_VALID_MODES", envir = ee) else NULL,
+                               schema_src = file.path(ROOT, "02_Infrastructure", "axiom", "lcode_schema.R"))
       r <- tryCatch({
-        o <- ee$emit_lcode(mode = as.character(l$mode %||% "cleaner"),
+        o <- ee$emit_lcode(mode = it$mode,
                            strategy_id = as.character(l$strategy_id %||% "WEEKLY_DISTILL"),
-                           grade = as.character(l$grade %||% "NA"),
+                           grade = it$grade,
                            lesson_text = txt,
                            metric_type = as.character(l$metric_type %||% "estimated"),
+                           record_type = it$record_type,
                            mechanism_hypothesis = l$mechanism_hypothesis,
                            next_probe = l$next_probe,
                            family = l$family,
                            core_reference = as.character(l$core_reference %||% ""),
-                           tags = l$tags)
-        list(ok = TRUE, l_code = as.character(o$l_code %||% o %||% "발행"), reason = "emitted")
+                           tags = l$tags %||% it$tags,
+                           project_root = ROOT)
+        cd_lcode_emit_result(o, it)
       }, error = function(e) list(ok = FALSE, reason = conditionMessage(e)))
       lres[[length(lres)+1L]] <- r
     }
   }
   rep$lcodes <- lres
+  rep$n_lcodes_req <- length(lcs)
   rep$n_lcodes_ok <- sum(vapply(lres, function(x) isTRUE(x$ok), logical(1)))
+  # ★요청이 있었는데 하나도 발행되지 않으면 조용히 넘기지 않는다 — 6주간 '무인 증류 완주' 줄 뒤에서 14건이 사라졌다.
+  #   중복(이미 corpus 에 있는 교훈)만으로 0건인 것은 정상이라 제외한다.
+  .n_dup <- sum(vapply(lres, function(x) identical(substr(as.character(x$reason %||% ""), 1L, 2L), "중복"), logical(1)))
+  rep$lcodes_all_failed <- (rep$n_lcodes_req - .n_dup) > 0L && rep$n_lcodes_ok == 0L
+  if (isTRUE(rep$lcodes_all_failed))
+    cat(sprintf("[cleaner_distill][WARN] ★L-code 발행 0/%d — 사유: %s\n", rep$n_lcodes_req,
+                paste(unique(vapply(lres, function(x) substr(as.character(x$reason %||% "?"), 1L, 80L), character(1))), collapse = " | ")))
 
   # ── (4) 삭제 집행 — 여기가 기계 재도출의 본체 ──────────────────────────
   dels <- res$deletions %||% list()
@@ -595,7 +657,8 @@ cd_apply <- function(result_path) {
   cat(toJSON(rep[c("week_of","digest","n_drafts_ok","n_lcodes_ok","deletions","manifest_path")],
              auto_unbox = TRUE, null = "null"), "\n", sep = "")
   .cd_jlog("apply_done", digest_ok = dg_ok, n_drafts_ok = rep$n_drafts_ok,
-           n_lcodes_ok = rep$n_lcodes_ok, n_deleted = length(executed),
+           n_lcodes_ok = rep$n_lcodes_ok, n_lcodes_req = rep$n_lcodes_req %||% 0L,
+           lcodes_all_failed = isTRUE(rep$lcodes_all_failed), n_deleted = length(executed),
            n_rejected = length(rejected))
   cat(sprintf("[cleaner_distill] apply 완료 — digest=%s DIST초안 %d건 L-code %d건 삭제 %d건(거부 %d)\n",
               if (dg_ok) "OK" else "MISSING", rep$n_drafts_ok, rep$n_lcodes_ok,
@@ -626,16 +689,22 @@ cd_notify <- function(manifest_path) {
   ac <- pj$axiom_candidates %||% list()
   secs <- list(
     list(type = "summary", heading = "주간 클리너 — 무인 증류 완료",
-         body = sprintf("%s 주차 증류를 무인 레인이 완주했다. digest %s · DIST 초안 %d건(proposed — 주입 안 됨) · L-code %d건 · 잔재 삭제 %d건(기계 거부 %d건).",
-                        as.character(m$week_of %||% "?"),
-                        if (isTRUE((m$digest %||% list())$ok)) "작성" else "미작성",
-                        n_dr, n_lc, length(dl), length(rj))),
+         # 요약 줄 = 1줄 헤드라인 규격(SUMMARY_MAX 자). 종전 문장은 주차 문자열이 들어가면 104자라 발송이 매번 실패했다(2026-11-10 수리).
+         #   그래도 규격을 넘으면 발송기의 tg_summary_fit 이 잘라서 보낸다(무인 보고는 침묵보다 잘린 줄이 낫다).
+         body = tg_summary_fit(sprintf("%s 주차 증류 완주 — digest %s · DIST 초안 %d건 · L-code %d건 · 잔재 삭제 %d건(기계 거부 %d건)",
+                                       as.character(m$week_of %||% "?"),
+                                       if (isTRUE((m$digest %||% list())$ok)) "작성" else "미작성",
+                                       n_dr, n_lc, length(dl), length(rj)))),
     list(type = "bullet", heading = "산출", items = c(
       sprintf("digest: %s", as.character((m$digest %||% list())$path %||% "없음")),
       sprintf("매니페스트: %s", basename(manifest_path)),
       sprintf("DIST 초안 %d/%d건 — 활성화는 여전히 도훈 승인(approve_proposed). 초안은 주입 스트림에 안 들어간다",
               n_dr, length(dr)),
-      sprintf("L-code %d/%d건 발행", n_lc, length(lc)),
+      # ★0/n 을 평문으로 두면 6주 동안 아무도 못 봤다 — 요청이 있었는데 전부 실패면 표식을 단다(중복 제외).
+      sprintf("L-code %d/%d건 발행%s", n_lc, length(lc),
+              if (length(lc) > 0L && n_lc == 0L &&
+                  any(!vapply(lc, function(x) identical(substr(as.character(x$reason %||% ""), 1L, 2L), "중복"), logical(1))))
+                " ★전부 실패 — 매니페스트 lcodes[].reason 확인" else ""),
       sprintf("삭제 %d건 / 기계 거부 %d건 (보호구역·참조잔존·24h내 수정)", length(dl), length(rj)),
       sprintf("공리 pending %s건 · 정제보류 %d건",
               as.character(ac$n_pending %||% "?"), length(ac$held_axioms %||% list()))

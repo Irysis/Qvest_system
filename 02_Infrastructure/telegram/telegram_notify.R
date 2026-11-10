@@ -1091,6 +1091,15 @@ tg_format_summary <- function(text, emoji = "\U0001F4CC") {
   sprintf("%s <b>%s</b>", emoji, tg_html_escape(text))
 }
 
+# tg_summary_fit: **무인 발송부용** — 요약 줄을 헤드라인 규격(SUMMARY_MAX)에 맞춘다. 넘으면 잘라서 보낸다.
+#   무인 보고는 침묵보다 잘린 줄이 낫다(2026-11-10: 주간 클리너 스윕 · 무인 증류 완료 보고가 요약 120자 · 104자로 매주 발송
+#   실패했고, fail-soft 라 로그에만 남았다). 대화형 호출자는 쓰지 않는다 — 규격 위반은 위 stop 으로 드러나야 한다.
+#   검사 = 08_Tests/ops/test_cleaner_tg_headline.R
+tg_summary_fit <- function(text) {
+  mx <- .TG_CONFIG$SUMMARY_MAX
+  if (is.character(text) && length(text) == 1L && nchar(text) > mx) paste0(substr(text, 1L, mx - 1L), "…") else text
+}
+
 # ── v6.6 (2026-05-27) — Quant 고유명사 whitelist 확장 (도훈 mandate) ──────────
 # 퀀트 리서치 자주 쓰는 영어 고유명사 면제 list. bullet + kv key 양쪽 적용.
 .QUANT_WHITELIST <- c(

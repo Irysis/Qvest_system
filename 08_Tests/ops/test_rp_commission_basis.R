@@ -61,4 +61,6 @@ if (grepl("comm_paper *<- *commission_paper *%[|][|]% *0", rsrc))
   ng("D 러너 계약이 바뀌었다", "래퍼가 NULL 을 넘기는 전제가 깨졌다")
 
 cat(sprintf("\n== test_rp_commission_basis: %d pass · %d fail ==\n", P, F))
+# 요약 JSON(2026-11-10) — 이 줄이 없어 러너가 이 스위트를 '미측정'으로 셌다.
+cat(sprintf('{"test":"rp_commission_basis","pass":%d,"fail":%d,"total":%d}\n', as.integer(P), as.integer(F), as.integer(P + F)))
 if (F > 0L) quit(status = 1L)

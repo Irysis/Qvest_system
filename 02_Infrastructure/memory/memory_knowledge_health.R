@@ -336,7 +336,10 @@ if (!file.exists(inj_last)) {
     age_h <- as.numeric(difftime(Sys.time(), file.info(inj_last)$mtime, units = "hours"))
     ilen <- suppressWarnings(as.integer(ij$len %|L|% NA))
     mk <- ij$markers %|L|% list()
-    mk_ok <- isTRUE(mk$positive) && isTRUE(mk$recent) && isTRUE(mk$dead)
+    # 청정 레인 · 정보 경계(τ_D) 대상 스폰은 훅이 변동부(성과 · 교훈 · dead)를 **일부러** 뺀다 — 그 스폰이 마지막이면 마커 3종이
+    #   없는 것이 정상이다(2026-11-10: tau_d 분기 신설 · 청정 레인 분기는 그 전부터 같은 오경보 여지가 있었다). 길이 · 신선도는 그대로 본다.
+    by_design <- isTRUE(ij$clean_lane) || isTRUE(ij$tau_d_agent)
+    mk_ok <- by_design || (isTRUE(mk$positive) && isTRUE(mk$recent) && isTRUE(mk$dead))
     probs <- c(if (!is.finite(age_h) || age_h > 24) sprintf("계측 %.1fh 경과(>24h)", age_h),
                if (!is.finite(ilen) || ilen > 2000L) sprintf("주입 길이 %s > 2000", as.character(ilen)),
                if (!mk_ok) sprintf("마커 소실(positive=%s recent=%s dead=%s)",
@@ -359,8 +362,9 @@ if (!file.exists(inj_last)) {
                 as.character(ij$ml_rendered %|L|% "?"),
                 as.character(ij$ml_active_total %|L|% "?"), as.character(ij$ladder_rung %|L|% "?")))
     } else {
-      cat(sprintf("  주입 len=%d/2000 · 마커 3종 생존 · mode-local %s/%s 렌더 · rung %s · %.1fh 전\n",
-                  ilen, as.character(ij$ml_rendered %|L|% 0), as.character(ij$ml_active_total %|L|% 0),
+      cat(sprintf("  주입 len=%d/2000 · %s · mode-local %s/%s 렌더 · rung %s · %.1fh 전\n",
+                  ilen, if (by_design) "변동부 제외 스폰(청정 레인 · 정보 경계 대상 — 마커 검사 면제)" else "마커 3종 생존",
+                  as.character(ij$ml_rendered %|L|% 0), as.character(ij$ml_active_total %|L|% 0),
                   as.character(ij$ladder_rung %|L|% "?"), age_h))
     }
   }

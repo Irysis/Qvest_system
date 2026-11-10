@@ -1113,6 +1113,9 @@ run_step("write_pending", {
 # =============================================================================
 # (2026-07-26 WCS-06) DRY 에서도 force=TRUE 로 **실발송**되던 경로 — dry-run 은 관측이지
 #   통보가 아니다. QVEST_CLEANER_NO_TG 와 별개로 DRY 자체가 억제 사유가 된다.
+# (2026-11-10) 요약 줄 = 1줄 헤드라인 규격(telegram_notify.R .TG_CONFIG SUMMARY_MIN~SUMMARY_MAX 자). 종전 문장이 120자라 발송이 8회 연속
+#   실패했다(fail-soft 라 로그에만 남고 주간 보고가 한 번도 도착하지 않았다). 헤드라인은 짧게, 세부는 불릿으로. 그래도 규격을 넘으면
+#   발송기의 tg_summary_fit 이 잘라서 보낸다. 시험 = 08_Tests/ops/test_cleaner_tg_headline.R.
 if (Sys.getenv("QVEST_CLEANER_NO_TG", "0") != "1" && !DRY) {
   run_step("telegram", {
     owd <- getwd(); setwd(root); on.exit(setwd(owd), add = TRUE)
@@ -1126,9 +1129,10 @@ if (Sys.getenv("QVEST_CLEANER_NO_TG", "0") != "1" && !DRY) {
     n_gc <- inventory$git_log_7d$n_commits %||% 0
     secs <- list(
       list(type = "summary", heading = "주간 Cleaner 기계 스윕",
-           body = sprintf("정크 %d건 자동 정리 + 주간 리서치 인벤토리 수집 완료. 증류(엑기스 추출·DIST 초안·L-code 적립·잔재 삭제)는 곧바로 무인 레인이 이어받는다 — 완료 보고가 따로 온다(충돌 시 연기 후 일간 재시도).",
-                          sweep_deleted_n)),
+           body = tg_summary_fit(sprintf("정크 %d건 자동 정리 · 주간 리서치 인벤토리 수집 완료 — 증류는 무인 레인이 이어받는다",
+                                         sweep_deleted_n))),
       list(type = "bullet", heading = "이번 주 인벤토리", items = c(
+        "증류(엑기스 추출 · DIST 초안 · L-code 적립 · 잔재 삭제) 완료 보고는 따로 온다(충돌 시 연기 후 일간 재시도)",
         sprintf("실험 신규 엔트리 %d건 (stage_artifacts 7일)", n_sa),
         sprintf("신규 교훈 L-code %d건", n_lc),
         sprintf("axiom 후보 대기 %s건 (near-miss %s건 — /cleaner에서 정제)",

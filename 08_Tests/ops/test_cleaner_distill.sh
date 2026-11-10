@@ -263,4 +263,6 @@ fi
 
 echo ""
 echo "=== 결과: PASS=$PASS FAIL=$FAIL ==="
+# 요약 JSON(2026-11-10) — 이 줄이 없어 러너가 09-05 부터 이 스위트를 '미측정'으로 셌다(통과 25건이 총계에 안 잡힘).
+printf '{"test":"cleaner_distill","pass":%d,"fail":%d,"total":%d}\n' "$PASS" "$FAIL" "$((PASS + FAIL))"
 [ "$FAIL" = "0" ] || exit 1

@@ -82,6 +82,34 @@ rules <- vapply(openA("alpha"), `[[`, "", "rule")
 res <- vapply(Filter(function(a) a$rule %in% c("fresh", "done", "js"), st()$anomalies), `[[`, "", "status")
 chk("④ 정상 복귀 → 상태형 이상 자동 해소(resolved)", !any(c("fresh", "done", "js") %in% rules) && all(res == "resolved"), paste(res, collapse = ","))
 
+## ④-b 해소 뒤 재발 = 새 일화 → 재개방(2026-11-10 — 상태형 규칙은 새 로그 줄이 없어 재발이 'seen' 으로 묻혔다) + 확인한 상태가 이어지면 그대로
+jsA <- function() Filter(function(a) identical(a$rule, "js"), st()$anomalies)
+writeLines('{"status":"failed"}', JS)
+ev <- run("scan")
+j1 <- jsA()
+chk("④-b 해소 뒤 같은 상태 재발 → open · reopened 1(새 키 아님)", length(j1) == 1L && identical(j1[[1]]$status, "open") && j1[[1]]$reopened == 1L,
+    if (length(j1)) paste(j1[[1]]$status, j1[[1]]$reopened) else "none")
+chk("④-b 재발이 사건 줄로 남는다(알림 대상이 된다)", any(grepl("reopened js", ev$out, fixed = TRUE)), paste(ev$out, collapse = " | "))
+invisible(run("scan"))
+chk("④-b 재발이 이어지는 동안은 다시 재개방하지 않는다(reopened 그대로 1)", jsA()[[1]]$reopened == 1L && identical(jsA()[[1]]$status, "open"))
+invisible(run("ack", "--key", jsA()[[1]]$key, "--kind", "known", "--note", shQuote("알려진 상태")))
+invisible(run("scan"))
+chk("④-b 확인(acked)한 상태가 이어지면 acked 유지(정상 복귀 없이 재개방 안 함)", identical(jsA()[[1]]$status, "acked") && jsA()[[1]]$reopened == 1L, jsA()[[1]]$status)
+writeLines('{"status":"ok"}', JS); invisible(run("scan"))
+writeLines('{"status":"failed"}', JS); invisible(run("scan"))
+chk("④-b 확인 → 정상 복귀 → 재발 → 재개방(reopened 2)", identical(jsA()[[1]]$status, "open") && jsA()[[1]]$reopened == 2L, paste(jsA()[[1]]$status, jsA()[[1]]$reopened))
+## ④-c 양성 대조 — 수리 전 조건으로 되돌린 사본은 해소 뒤 재발을 놓친다
+src_b <- readLines(TOOL, warn = FALSE, encoding = "UTF-8")
+tgt_b <- '    if a["status"] == "resolved" or (a["status"] in ("acked", "expired") and from_new_lines):'
+hit_b <- which(src_b == tgt_b)
+mut_b <- src_b; if (length(hit_b) == 1L) mut_b[hit_b] <- '    if a["status"] in ("acked", "expired", "resolved") and from_new_lines:'
+MTB <- file.path(TMP, "superfan_watch_mut_reopen.py"); writeLines(mut_b, MTB, useBytes = TRUE)
+writeLines('{"status":"ok"}', JS); invisible(run("scan", tool = MTB))
+writeLines('{"status":"failed"}', JS); invisible(run("scan", tool = MTB))
+chk("④-c 치환 성사(1곳) · 수리 전 조건이면 해소 뒤 재발이 resolved 로 묻힌다 — ④-b 가 이것을 잡는다",
+    length(hit_b) == 1L && identical(jsA()[[1]]$status, "resolved") && jsA()[[1]]$reopened == 2L, paste(length(hit_b), jsA()[[1]]$status, jsA()[[1]]$reopened))
+writeLines('{"status":"ok"}', JS); invisible(run("scan"))     # 뒤 검사를 위해 정상으로 되돌림
+
 ## ⑤ ack → 재발 시 재개방
 k <- Filter(function(a) identical(a$text, "WARN real warning"), st()$anomalies)[[1]]$key
 chk("⑤ ack 사유 없으면 거부(위반 주입)", run("ack", "--key", k, "--kind", "known", "--note", shQuote(" "))$rc != 0L)

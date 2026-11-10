@@ -94,7 +94,14 @@ LCODE_VALID_MODES <- c("alpha_search", "alpha_research", "qepm_legacy",
                        ##   신규 발행은 없다 — 워커가 QVEST_RP_NO_LCODE=1 로 막고, 셀 교훈 정본은 블록 L-code(reinforcement).
                        ##   prefix 맵(lcode_emit/promote/cluster_extractor)에는 넣지 않는다 — paper_replication·reinforcement 와
                        ##   같은 GEN 폴백(선행 부채)이며, id 는 원 L-RP-* 그대로 둔다(불투명 식별자).
-                       "reinforcement_cell")
+                       "reinforcement_cell",
+                       ## ★2026-11-10 (전수점검): 주간 증류 레인(cleaner_distill_lib.R)이 내는 **주 단위 종합 교훈**.
+                       ##   증류 항목은 mode 를 "cleaner" 로 내는데 그 값은 이 enum 에도 접두 맵에도 없어서, 09-05 레인 도입 뒤
+                       ##   발행이 한 번도 성공하지 못했다(6주 14건 · 10-03 증류가 스스로 원인을 교훈으로 적었으나 그 교훈도 유실).
+                       ##   충실구현 · 강화 모드로 접지 않는다 — 종합 교훈이 '최신 리서치 1단위'(부팅 Last 줄 · 공리 엄밀성 축의
+                       ##   성과 기록 수)로 세이면 같은 증거를 두 번 센다. 그래서 별도 라벨 + record_type=summary/process 로 낸다.
+                       ##   접두 맵에는 넣지 않는다(GEN — lcode_emit 의 폴백이 이 수리로 실제로 돈다).
+                       "weekly_distill")
 # research_mode normalize 규칙 (promote GEN 폴백 봉합, A2-F8②)
 ## ★v9.21 개명 (도훈 지시 2026-08-24 "팩터 로테이션은 전략 로테이션으로"):
 ##   `factor_rotation` → `strategy_rotation`. **이름이 코드 현실과 오히려 일치하게 된다** —
