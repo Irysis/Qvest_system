@@ -1,6 +1,6 @@
 {
  "schema": "session_resume_v1",
- "updated_at": "2026-11-10T10:27:05+0900",
+ "updated_at": "2026-11-10T12:13:47+0900",
  "operations": [
   {
    "id": "OP-20261015-MSM-A",
@@ -551,7 +551,7 @@
    "goal": "전수점검 결론(A 미산출 = 생성 편중 · 시행 소진 · 기준점 부재 · 정지)에 따라 1계층의 일하는 순서를 바꿔 계약 경로 A 를 낸다 — 설계 README §4 의 순서와 완료 기준",
    "status": "in_progress",
    "started_at": "2026-11-10T10:27:03+0900",
-   "updated_at": "2026-11-10T10:27:05+0900",
+   "updated_at": "2026-11-10T12:13:47+0900",
    "steps": [
     {
      "id": "S0",
@@ -583,15 +583,15 @@
      "status": "pending",
      "note": "",
      "artifacts": [],
-     "updated_at": null
+     "updated_at": "2026-11-10T12:13:47+0900"
     },
     {
      "id": "S4",
      "title": "기준 사다리 측정(도훈 확인 뒤 — LADDER-REFERENCE-ASSEMBLY-20261110)",
-     "status": "pending",
-     "note": "",
+     "status": "skipped",
+     "note": "도훈 11-10 상정 철회(LADDER-REFERENCE-ASSEMBLY-20261110 resolved) — 기준 사다리는 요구가 아니었다",
      "artifacts": [],
-     "updated_at": null
+     "updated_at": "2026-11-10T11:52:05+0900"
     },
     {
      "id": "S5",
@@ -599,10 +599,10 @@
      "status": "pending",
      "note": "",
      "artifacts": [],
-     "updated_at": null
+     "updated_at": "2026-11-10T12:13:47+0900"
     }
    ],
-   "next_action": "새 세션에서 S1 — round_core README 와 04_Research/programs/P1_RETURN/P1S01_standing_qualification 사양 확인 → P2R05_distribution_target 연기(등록본 md5 보존 · 판단 원장 기록 · 재개 때 재핀) → RELEASES.json → round.sh <판> standing-check · check · draft · (철학 Superfan P1) · reviewed · register → scan --dry-run. standing-measure 는 FACTOR-DB-TOTALDEBT-ZERO-REPAIR-20261110 종료 확인 뒤",
+   "next_action": "새 세션에서 S1 — 코어 v1 출시(RELEASES.json) + P1 상설 자격 P1S01 등록 · standing-measure(엔진 신호를 표준 롱온리 구성으로 지금의 팩터 DB 위에서 새로 잰다) → 기저 풀(round.sh - p4-pool)에 자격 엔진이 생기면 강화 사슬 1호(p4-check · p4-register · p4-design · p4-step-open …). 레인은 도훈이 재가동. 설계 README §3 · §4(11-10 오후 개정)",
    "context_files": [
     "04_Research/01_reports/qvest_v10_2_audit_redesign_20261110/README.md",
     "04_Research/01_reports/qvest_v10_2_audit_redesign_20261110/findings_ledger.md",
@@ -612,10 +612,9 @@
    ],
    "background": [],
    "decisions": [
-    "LADDER-REFERENCE-ASSEMBLY-20261110 — 기준 사다리 측정 착수 여부(Q 권고 A 착수 · 기본값 B 착수하지 않음 · P4_ASSEMBLY 차단)",
-    "DSR-GATE-FORM-20261110 — DSR 관문 형태(Q 권고 나: 진단으로 내리고 후보 역할 제한 + 재표집 검정 · 앞으로만 적용 · 기본값 가 현행)",
     "GRADE-V33-NOTCH-ASOF-AND-RULE-CHANGE-PROCEDURE-20261110 — 알파 노치 요인 as-of 재검 + 규칙 변경 절차",
-    "레인 재가동(S0) · 비밀 값 교체 — 설계 README §6 결정 1 · 4(도훈 직접 조치)"
+    "레인 재가동(S0) · 비밀 값 교체 — 설계 README §6 결정 1 · 4(도훈 직접 조치)",
+    "SELECTION-RC-CALIBRATION-20261110 — 선택 현실 점검 alpha(0.05 기본 대 0.5) · PBO 역할(진단 기본 대 관문)"
    ],
    "log": [
     {
@@ -641,6 +640,42 @@
     {
      "at": "2026-11-10T10:27:05+0900",
      "text": "11-10 전수점검 세션 마감: 수리 20건 · 새 부품(결과 원장 · 시행 예산) · 규칙 개정 · 결정 3건 상정 · 커밋 5c05969b8~4f5d7772f · 분기점 텔레그램 1통 발송. 측정 · 라운드 등록은 하지 않았다"
+    },
+    {
+     "at": "2026-11-10T11:52:05+0900",
+     "text": "11-10 오후(도훈 추가 지시): DSR (나) = 등급 v3.4 커밋 5b42d80f4(선택 현실 점검 계약 · essence selection_check · 저장분 소급 없음) · 팩터 DB 배선 커밋 e96f334ba(판 표식 원장 factor_db_vintage.json · A 자격 상시 보류 factor_db_stale · selection_regrade.R · C15 결합용 뷰). 기준 사다리(S4)는 상정 철회 — 요구는 '충실구현 레인 기저 → 강화 사슬이 스스로 BOOK_0001급'. 강화 사슬(p4_chain · round_core v1/p4.R · rx_generator.json)은 작업 레인이 구현 중(검토 · 커밋 전). 팩터 DB 총부채 수리는 11:15 성공 · 이번 달 11:26. ★기저 풀 엔진 12건은 전부 수리 전 측정 = 재측정이 첫 일"
+    },
+    {
+     "at": "2026-11-10T11:52:05+0900",
+     "text": "S4 → skipped · 도훈 11-10 상정 철회(LADDER-REFERENCE-ASSEMBLY-20261110 resolved) — 기준 사다리는 요구가 아니었다"
+    },
+    {
+     "at": "2026-11-10T12:13:33+0900",
+     "text": "다음: 새 세션에서 S1 — 코어 v1 출시(RELEASES.json) + P1 상설 자격 P1S01 등록 · standing-measure(엔진 신호를 표준 롱온리 구성으로 지금의 팩터 DB 위에서 새로 잰다) → 기저 "
+    },
+    {
+     "at": "2026-11-10T12:13:33+0900",
+     "text": "결정 대기: SELECTION-RC-CALIBRATION-20261110 — 선택 현실 점검 alpha(0.05 기본 대 0.5) · PBO 역할(진단 기본 대 관문)"
+    },
+    {
+     "at": "2026-11-10T12:13:33+0900",
+     "text": "결정 해소: LADDER-REFERENCE-ASSEMBLY-20261110 — 기준 사다리 측정 착수 여부(Q 권고 A 착수 · 기본값 B 착수하지 않음 · P4_ASSEMBLY 차단) → 도훈 11-10 상정 철회 — 요구는 레인 기저 → 강화 사슬"
+    },
+    {
+     "at": "2026-11-10T12:13:34+0900",
+     "text": "결정 해소: DSR-GATE-FORM-20261110 — DSR 관문 형태(Q 권고 나: 진단으로 내리고 후보 역할 제한 + 재표집 검정 · 앞으로만 적용 · 기본값 가 현행) → 도훈 11-10 (나) 적용 — 등급 v3.4(커밋 5b42d80f4)"
+    },
+    {
+     "at": "2026-11-10T12:13:34+0900",
+     "text": "11-10 오후 마감: 강화 사슬 p4_chain 커밋 838f7147a(시험 85 · 코어 회귀 통과) · P4 등록부 항목 갱신(blocked_by 해제 · 자격 0 명시) · P4-SKELETON-REVIEW = B 방향 · 규칙 문서(CLAUDE.md · lean-loop · SKILL §0-1 · pit.md · measurement-graduation) 반영. 남음: 최종 후보 A 자격 관문 어댑터 + Judge 요청(칸 경로) · 도구 상자 확장(as-of 국면 게이트 arm · 꼬리 오버레이 · 상한) · B7 슬리브 부호 기준"
+    },
+    {
+     "at": "2026-11-10T12:13:47+0900",
+     "text": "S3 → pending"
+    },
+    {
+     "at": "2026-11-10T12:13:47+0900",
+     "text": "S5 → pending"
     }
    ]
   }

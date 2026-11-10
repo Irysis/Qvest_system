@@ -291,3 +291,12 @@
 - 레인 Q(전략강화 재설계) · 레인 O2(시험 목록 분류)는 보고 없이 중단됨(재개 불가 통지). 해당 영역의 결론은 README §2 · §3 · §5-2 — Q 직접 작성.
 - 추가 수리(README §5): 시험 2종 운영 상태 의존 제거 · 감시 계열 3종 편입 · 러너 간소화(timings · 파이썬 1회 · 지문 재사용) · suite_totals_watch(같은 날 건너뛰기 · 로그 보존 · 국면 합계 · 밤/주 단계) · 결과 원장(round_core outcomes.R) · 시행 예산(trial_budget.R) · Axiom 처분 스위치.
 - 커밋: 5c05969b80 · 72bae6a27 · 3b4651760 · 322d05514 · 98ddbcbf1(v10.2). 결정 상정 3건: LADDER-REFERENCE-ASSEMBLY-20261110 · DSR-GATE-FORM-20261110 · GRADE-V33-NOTCH-ASOF-AND-RULE-CHANGE-PROCEDURE-20261110.
+
+## 마감 기록 2 (11-10 오후 — 도훈 추가 지시 뒤)
+- 요구 정정: 'BOOK_0001급 재귀 도출' = 충실구현 레인의 알파 기저로 1계층 강화 프로세스가 스스로 찾게. 기준 사다리 상정 철회(LADDER-REFERENCE-ASSEMBLY-20261110 resolved) · P4-SKELETON-REVIEW-20261018 = B 방향.
+- 커밋: 5b42d80f4(등급 v3.4) · e96f334ba(판 표식 · A 자격 상시 보류 · 재채점 도구 · C15) · 98b679826(셀 엔진 방향 · 규칙 문서) · 838f7147a(강화 사슬 · 생성기 판 · 상설 입구).
+- 조사 보고 전문(같은 폴더): factor_db_wiring_audit.md(팩터 DB 수리 × v10.2 소비자 · 고칠 곳 13) · l1_reinforce_map.md(강화 프로세스 지도 · 끊긴 고리 13).
+- 구현은 작업 레인 1개(강화 사슬)가 했고 Q 가 변경 범위 · 핵심 코드 · 시험 7종을 다시 확인했다. Q 가 고친 것: 상설 판 입구에서 낡은 레인 측정을 '제외'하던 것을 '표식만'으로(판이 통째로 멈추는 과한 차단).
+- 운영 기저 풀: 엔진 재료 12 · 자격 0(factor_db_stale 12 · not_qualified 10 · needs_long_leg 9 · audit_not_passed 4 · implementation_suspect 4 · no_engine 2).
+- 팩터 DB 총부채 수리: chain_state.json done/ok 11:15:32 · 요약 result 성공 · factor_db_202611.parquet 11:26 · 재계산 프로세스 0(직접 확인).
+- 근거 문장 원문 확인(내려받은 PDF 에서 추출): Romano & Wolf 2016 알고리즘 4.1 · 'M = 1000' / Bailey 외 'S = 16' · 'PBO > 0.05' / Politis & White 2004 식 (6).
