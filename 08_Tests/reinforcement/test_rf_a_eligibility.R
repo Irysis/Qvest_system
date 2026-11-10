@@ -413,6 +413,17 @@ hm <- ME$rf_a_eligibility(ent_m, att_m, NULL, ME$rf_a_ctx(ME$rf_runner_ctx(S), l
 chk(sum(hit_g) == 1L && isTRUE(hm$eligible) && "rule_change_beneficiary" %in% hm$inactive,
     "H6 [돌연변이] 상시 보류 목록에서 뺀 사본 → 수혜 기록이 발행된다(치환 1곳 성사) — H1 이 그 차이를 본다",
     sprintf("치환 %d · eligible %s · codes %s", sum(hit_g), isTRUE(hm$eligible), codes_of(hm)))
+# (R3 · 11-10) 재채점을 다시 돌린 기록의 모양 — 직전 등급은 이미 오른 A 지만 측정 당시 등급 B 와 비교한 끈질긴 표식이 남는다 → 보류 유지
+mark_rerun <- function(tag) {
+  d <- mk_art(tag); p <- file.path(d, "authoritative_remeasure.json"); au <- fromJSON(p, simplifyVector = FALSE)
+  au$selection_regrade <- list(benefits_from_rule_change = TRUE, rules_version = "v3.4", prior_essence_grade = "A",
+                               measured_grade = "B", measured_grade_source = "measured_grade", measured_before_rule_change = TRUE,
+                               history = list(list(at = "2026-11-10T09:00:00+0900", essence_grade = "A")))
+  writeLines(toJSON(au, auto_unbox = TRUE, null = "null"), p); d
+}
+h7 <- elig_of(mk_att(45, "B2_6", mark_rerun("h_rerun"), sp_ok))
+chk("rule_change_beneficiary" %in% h7$codes && !isTRUE(h7$eligible) && identical(h7$facts$rule_change_benefit, "beneficiary"),
+    "H7 두 번째 재채점 기록(직전 등급 A · 측정 당시 B · 표식 유지) → rule_change_beneficiary 보류 유지", codes_of(h7))
 
 unlink(c(S, S2, S3, LCOPY), recursive = TRUE, force = TRUE)
 cat(sprintf("\n합계: 통과 %d · 실패 %d · 생략 %d\n", PASS, FAIL, SKIP))

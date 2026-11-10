@@ -101,6 +101,54 @@ if (!all(file.exists(file.path(DIR, need)))) {
   chk(sprintf("T14 등록 시행 id 가 빠진 집합 → 관문 미통과(%s)", rid$reason), identical(rid$gate_ok, FALSE) && grepl("누락", rid$reason))
   r4 <- E$sr_regrade(cand, vars, root = ROOT, write = FALSE, expected = EX4)
   chk(sprintf("T15 대조: 기대와 맞는 집합은 구조 검사를 지나 조정 p 로 판정된다(%s)", r4$reason), grepl("^조정 p", r4$reason))
+  ## (R3 · 11-10) 수혜 표식은 끈질기다(measurement-graduation §3b) — 측정 당시 등급(measured_grade)과 비교하고 재실행이 TRUE 를 FALSE 로 내리지 못한다.
+  ##   등급이 오르는 사본 = 측정 당시 등급을 재채점 결과보다 낮게 적은 사본(재채점 등급은 CSV 로 나므로 그대로다). 재채점 등급이 F 면 오를 칸이 없어 건너뛴다.
+  RK <- c(F = 0L, C = 1L, B = 2L, A = 3L)
+  if (identical(r$grade_after, "F")) { skipped <- skipped + 1L; cat("  [skip] T16~T21 — 재채점 등급 F(오를 칸 없음)\n") } else {
+    low <- "F"
+    up_d <- mk("up", function(A) { A$essence_grade <- low; A })
+    apu <- file.path(up_d, "authoritative_remeasure.json")
+    u1 <- E$sr_regrade(up_d, vars, root = ROOT, write = TRUE, expected = EX4); U1 <- fromJSON(apu, simplifyVector = FALSE)
+    chk(sprintf("T16 발효 전 기록이 재채점으로 오르면(%s → %s) 수혜 표식 TRUE · 측정 당시 등급 = %s", low, u1$grade_after, low),
+        RK[[u1$grade_after]] > RK[[low]] && isTRUE(u1$benefits_from_rule_change) && isTRUE(U1$selection_regrade$benefits_from_rule_change) &&
+          identical(U1$selection_regrade$measured_grade, low))
+    u2 <- E$sr_regrade(up_d, vars, root = ROOT, write = TRUE, expected = EX4); U2 <- fromJSON(apu, simplifyVector = FALSE)
+    chk(sprintf("T17 두 번째 재채점(직전 등급 %s = 이미 오른 값)도 표식을 유지한다 · 측정 당시 등급 %s 그대로 · 직전 등급은 사실대로", u2$grade_before, low),
+        identical(u2$grade_before, u1$grade_after) && isTRUE(u2$benefits_from_rule_change) && isTRUE(U2$selection_regrade$benefits_from_rule_change) &&
+          identical(U2$selection_regrade$measured_grade, low) && identical(U2$selection_regrade$prior_essence_grade, u1$grade_after))
+    mu <- md5(apu)
+    u3 <- E$sr_regrade(up_d, vars, root = ROOT, write = FALSE, expected = EX4)
+    chk("T18 세 번째 드라이런도 표식 TRUE 를 돌려주고 디스크는 그대로다", isTRUE(u3$benefits_from_rule_change) && !isTRUE(u3$written) && identical(md5(apu), mu))
+    ## 옛 도구가 두 번 돌아 표식을 이미 FALSE 로 덮은 기록(measured_grade 필드 없음) — 보존 원본(pre_selection_regrade)의 등급으로 되살린다
+    lg <- U2; lg$selection_regrade$measured_grade <- NULL; lg$selection_regrade$benefits_from_rule_change <- FALSE
+    writeLines(toJSON(lg, auto_unbox = TRUE, pretty = TRUE, digits = NA, null = "null", na = "null"), apu, useBytes = TRUE)
+    u4 <- E$sr_regrade(up_d, vars, root = ROOT, write = TRUE, expected = EX4); U4 <- fromJSON(apu, simplifyVector = FALSE)
+    chk("T19 옛 도구가 FALSE 로 덮은 기록 → 보존 원본의 측정 당시 등급과 비교해 표식 TRUE 로 되돌린다",
+        isTRUE(u4$benefits_from_rule_change) && isTRUE(U4$selection_regrade$benefits_from_rule_change) && identical(U4$selection_regrade$measured_grade, low))
+    ## 측정 당시 등급을 어디서도 읽을 수 없는 재실행(필드 없음 · 보존 원본 없음) — 수혜 아님을 보일 수 없으니 표식 TRUE(fail-closed)
+    lg2 <- U4; lg2$selection_regrade$measured_grade <- NULL; lg2$selection_regrade$benefits_from_rule_change <- FALSE
+    writeLines(toJSON(lg2, auto_unbox = TRUE, pretty = TRUE, digits = NA, null = "null", na = "null"), apu, useBytes = TRUE)
+    file.remove(file.path(up_d, "authoritative_remeasure.pre_selection_regrade.json"))
+    u5 <- E$sr_regrade(up_d, vars, root = ROOT, write = FALSE, expected = EX4)
+    chk("T20 측정 당시 등급 판독 불가인 발효 전 재실행 → 표식 TRUE(fail-closed)", isTRUE(u5$benefits_from_rule_change))
+    ## 대조 — 오르지 않은 사본(cand)은 재실행해도 FALSE 그대로 · 측정 당시 등급 = 원래 등급
+    chk("T21 [대조] 오르지 않은 기록은 두 번 돌려도 표식 FALSE · 측정 당시 등급 = 원 기록 등급",
+        identical(A2$selection_regrade$benefits_from_rule_change, FALSE) && identical(A2$selection_regrade$measured_grade, as.character(A0$essence_grade)) &&
+          !isTRUE(r2$benefits_from_rule_change))
+    ## [돌연변이] 수리 전 판정식(직전 등급과 비교 · 끈질김 없음)으로 되돌린 사본 → 두 번째 재채점이 표식을 FALSE 로 덮는다(T17 이 그 차이를 본다)
+    SRF <- file.path(ROOT, "02_Infrastructure", "programs", "selection_regrade.R")
+    s_txt <- readLines(SRF, warn = FALSE, encoding = "UTF-8")
+    nd3 <- "benefit <- isTRUE(prev_benefit) || (seen_before && (is.na(m0) || up))"
+    h3 <- which(grepl(nd3, s_txt, fixed = TRUE)); ms <- s_txt
+    if (length(h3) == 1L) ms[h3] <- sub(nd3, "benefit <- seen_before && isTRUE(.SR_GRADE_RANK[[new]] > .SR_GRADE_RANK[[old]])", ms[h3], fixed = TRUE)
+    MSF <- file.path(TD, "sr_mut.R"); writeLines(enc2utf8(ms), MSF, useBytes = TRUE)
+    EM <- new.env(parent = globalenv()); sys.source(MSF, envir = EM, keep.source = FALSE)
+    up_m <- mk("up_mut", function(A) { A$essence_grade <- low; A })
+    invisible(EM$sr_regrade(up_m, vars, root = ROOT, write = TRUE, expected = EX4))
+    um2 <- EM$sr_regrade(up_m, vars, root = ROOT, write = TRUE, expected = EX4)
+    chk("T22 [돌연변이] 직전 등급 비교로 되돌린 사본 → 두 번째 재채점이 표식을 FALSE 로 덮는다(치환 1곳 성사)",
+        length(h3) == 1L && !identical(ms[h3], s_txt[h3]) && identical(um2$benefits_from_rule_change, FALSE))
+  }
   unlink(TD, recursive = TRUE)
 }
 

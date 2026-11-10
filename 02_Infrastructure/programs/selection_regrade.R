@@ -14,6 +14,7 @@
 #   채점식은 계약 그대로다(gv3_score_dir · 관문만 selection_rc). 후보가 아닌 칸에는 쓰지 않는다 — 호출자(라운드 닫기)가 최종 후보만 넘긴다.
 #   ★수혜 표식: 규칙이 바뀌기 전에 이미 측정돼 있던 기록이 이 재채점으로 등급이 오르면 benefits_from_rule_change = TRUE 로 남긴다
 #     (규칙 변경 뒤 이미 본 결과가 득을 본 사실을 숨기지 않는다 — 설계 README §8-3 ④).
+#     비교 기준 = 측정 당시 등급(selection_regrade$measured_grade · 첫 재채점 전 원본) · 한 번 TRUE 면 재실행이 내리지 못한다(R3 · 11-10).
 # 사용: Rscript 02_Infrastructure/programs/selection_regrade.R <후보 폴더> <시행 폴더 1> [<시행 폴더 2> ...] --expect-n <등록 시행 수> [--expect-ids a,b] [--write]
 #   ★기대 시행 집합(G1 · 11-10): 관문은 등록 시행 수 · id 와 점검 집합을 대조한다 — 기대를 주지 않으면 관문 미통과(fail-closed).
 #==============================================================================
@@ -81,9 +82,28 @@ sr_regrade <- function(candidate_dir, trial_dirs, root = NULL, write = FALSE, cf
   measured <- as.character(.sr_or(A$measured_at, .sr_or(A$remeasured_at, .sr_or(A$generated_at, NA_character_))))
   eff <- as.character(fromJSON(cfg$path, simplifyVector = FALSE)$selection_bias$effective_from)
   seen_before <- !is.na(measured) && nzchar(measured) && substr(measured, 1L, 10L) < eff
-  up <- isTRUE(.SR_GRADE_RANK[[new]] > .SR_GRADE_RANK[[old]])
+  ## ★수혜 표식은 끈질기다(R3 · 11-10 · measurement-graduation §3b) — 비교 기준은 '직전 등급'(재실행이면 이미 오른 값)이 아니라
+  ##   측정 당시 등급(measured_grade · 첫 재채점 전 원본)이다. 한 번 TRUE 인 표식은 재실행이 FALSE 로 내리지 못한다.
+  ##   (grade_v3_backfill.R::gv3b_benefit_mark 의 measured_grade 보존과 같은 원리.) 측정 당시 등급 = 기록이 들고 다니는 measured_grade →
+  ##   없으면(옛 도구가 쓴 기록) 보존 원본(pre_selection_regrade)의 등급 → 첫 재채점이면 직전 등급. 재실행인데 어디서도 못 읽으면 NA —
+  ##   수혜 아님을 보일 수 없으므로 발효 전 기록이면 표식 TRUE(fail-closed).
+  prev <- A[["selection_regrade"]]; first <- is.null(prev)
+  prev_benefit <- is.list(prev) && isTRUE(prev[["benefits_from_rule_change"]])
+  m0 <- old; m0_src <- "prior_essence_grade(첫 재채점)"
+  if (!first) {
+    m0 <- if (is.list(prev)) as.character(.sr_or(prev[["measured_grade"]], NA_character_))[1] else NA_character_
+    m0_src <- "measured_grade"
+    if (is.na(m0) || !(m0 %in% names(.SR_GRADE_RANK))) {
+      pp <- file.path(candidate_dir, "authoritative_remeasure.pre_selection_regrade.json")
+      m0 <- if (file.exists(pp)) tryCatch(as.character(.sr_or(fromJSON(pp, simplifyVector = FALSE)[["essence_grade"]], NA_character_))[1],
+                                          error = function(e) NA_character_) else NA_character_
+      m0_src <- "pre_selection_regrade.json"
+    }
+  }
+  if (is.na(m0) || !(m0 %in% names(.SR_GRADE_RANK))) { m0 <- NA_character_; m0_src <- "unreadable" }
+  up <- !is.na(m0) && isTRUE(.SR_GRADE_RANK[[new]] > .SR_GRADE_RANK[[m0]])
+  benefit <- isTRUE(prev_benefit) || (seen_before && (is.na(m0) || up))
   now <- format(Sys.time(), "%Y-%m-%dT%H:%M:%S%z")
-  first <- is.null(A$selection_regrade)
 
   A$essence_grade <- new
   A$grade_v3 <- rec
@@ -96,7 +116,8 @@ sr_regrade <- function(candidate_dir, trial_dirs, root = NULL, write = FALSE, cf
     at = now, tool = "02_Infrastructure/programs/selection_regrade.R", decision = "decision_register DSR-GATE-FORM-20261110",
     rules_version = as.character(.sr_or(v3$rules_version, NA)), prior_essence_grade = old,
     prior_md5 = unname(as.character(tools::md5sum(ap))), prior_dsr_gate_applied = isTRUE(fromJSON(txt, simplifyVector = FALSE)$dsr_gate_applied),
-    measured_at = measured, measured_before_rule_change = seen_before, benefits_from_rule_change = (seen_before && up),
+    measured_at = measured, measured_before_rule_change = seen_before, measured_grade = m0, measured_grade_source = m0_src,
+    benefits_from_rule_change = benefit,
     check_file = "selection_reality_check.json",
     history = c(.sr_or(A$selection_regrade$history, list()), if (!first) list(list(at = A$selection_regrade$at, essence_grade = old)) else list()))
   nt <- toJSON(A, auto_unbox = TRUE, pretty = TRUE, digits = NA, null = "null", na = "null")
@@ -114,7 +135,7 @@ sr_regrade <- function(candidate_dir, trial_dirs, root = NULL, write = FALSE, cf
     written <- TRUE
   }
   list(status = "ok", grade_before = old, grade_after = new, gate_ok = isTRUE(g$ok), reason = as.character(g$reason),
-       benefits_from_rule_change = (seen_before && up), check = chk, written = written)
+       benefits_from_rule_change = benefit, measured_grade = m0, check = chk, written = written)
 }
 
 if (sys.nframe() == 0L) {
